@@ -5,6 +5,22 @@
   "results": [
     {
       "status": "PASS",
+      "label": "NEW zapis wejsciowy jest STARY: brak 5 pol meta FAL 760-761",
+      "extra": {
+        "obecne": [],
+        "resourceLedgerHistoryWZapisie": 6
+      }
+    },
+    {
+      "status": "PASS",
+      "label": "NEW dziennik „Skad zapasy\" po wczytaniu = wpisy zapisu",
+      "extra": {
+        "got": 6,
+        "want": 6
+      }
+    },
+    {
+      "status": "PASS",
       "label": "NEW liczba miast (wszyscy wlasciciele) po wczytaniu = zapis",
       "extra": {
         "got": 42,
@@ -38,6 +54,11 @@
       "extra": false
     },
     {
+      "status": "NIE_ZMIERZONO",
+      "label": "NEW dryf ekonomii przy niepustych mapach zamowien",
+      "extra": "w tym zapisie puste: orderMultByCity, orderGrowthMultByCity, orderValueByCity (niepuste mapy NIE ZMIERZONE)"
+    },
+    {
       "status": "PASS",
       "label": "NEW „Zakoncz ture\" dziala 3 razy (tura rosnie o 1)",
       "extra": [
@@ -48,19 +69,13 @@
       ]
     },
     {
-      "status": "NIE_ZMIERZONO",
-      "label": "NEW dziennik „Skad zapasy\" pusty po wczytaniu i rosnie po tickach",
-      "extra": "brak haka odczytu dziennika/UI; zapis zawiera resourceLedgerHistory, ale nie odczytano go po wczytaniu"
-    },
-    {
-      "status": "NIE_ZMIERZONO",
-      "label": "NEW scenariusz 0 miast (stary zapis bez flagi playerEverOwnedCityByOwner)",
-      "extra": "nie wygenerowano zapisu bez miast w tym przebiegu"
-    },
-    {
-      "status": "NIE_ZMIERZONO",
-      "label": "MUTACJA: usuniecie ochrony Array.isArray -> narzedzie czerwone",
-      "extra": "wykonano RECZNIE poza narzedziem na kopii bundla (scratchpad, bez zmian w repo): usuniety guard savedOrderMult -> narzedzie FAIL=2 (spichlerz 0 zamiast 203; pageerror \"ke is not iterable\"); patrz raport"
+      "status": "PASS",
+      "label": "NEW dziennik „Skad zapasy\" rosnie po tickach (lub limit)",
+      "extra": {
+        "przed": 6,
+        "po": 9,
+        "limit": 10
+      }
     },
     {
       "status": "PASS",

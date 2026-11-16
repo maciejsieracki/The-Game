@@ -4,9 +4,19 @@
   "seed": 4242,
   "results": [
     {
-      "status": "PASS",
-      "label": "OLD zaklada stolice gracza",
-      "extra": true
+      "status": "FAIL",
+      "label": "OLD tura 1 zatrzymana: cannot-end",
+      "extra": {
+        "stop": "cannot-end",
+        "tura": 1,
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      }
     },
     {
       "status": "PASS",
@@ -16,7 +26,7 @@
     {
       "status": "PASS",
       "label": "OLD zapis odczytany z IndexedDB",
-      "extra": 1023935
+      "extra": 827510
     },
     {
       "status": "PASS",
@@ -28,12 +38,13 @@
       "label": "OLD zapis zapisany do pliku",
       "extra": {
         "strip": false,
+        "noFound": true,
         "removed": {
           "meta": [],
           "top": []
         },
-        "bytes": 1024382,
-        "turn": null
+        "bytes": 827753,
+        "turn": 1
       }
     }
   ]

@@ -24,8 +24,13 @@
  *        = metryki zapisane w chwili zapisu (brak dryfu ekonomii),
  *     A3 isAwaitingFirstPlayerCity()=false gdy gracz ma miasta,
  *     A4 „Zakoncz ture" dziala 3 razy (tura rosnie o 1 na kazde klikniecie).
- *   NIE ZMIERZONO: dziennik „Skad zapasy" (brak haka odczytu UI), scenariusz 0 miast,
- *   mutacja Array.isArray (osobny przebieg na kopii poza repo).
+ *   A0 zapis wejsciowy jest stary (brak 5 pol meta FAL 760-761); A5 dziennik „Skad zapasy" po
+ *   wczytaniu = wpisy zapisu (hak __ledgerRealPathDebug, realna sciezka). Scenariusz 0 miast
+ *   (gracz mial miasta, po usunieciu ich z zapisu, bez flagi) robi osobny skrypt JSON
+ *   evidence/make-nocity-save.cjs (SYMULACJA); ta sama faza new mierzy wtedy A4 („Zakoncz ture").
+ *   NIE ZMIERZONO: sciezka klikniecia w menu DOM (wczytanie idzie tym samym loadGameFromSlot, hak
+ *   loadSlot to ta sama funkcja); niepuste mapy zamowien (w zapisie puste); mutacja Array.isArray
+ *   (osobny przebieg na kopii bundla: evidence/mutant-run.sh).
  *
  * Uzycie (z gra/):
  *   node tools/save-load-old-save-compat-live.cjs --phase old --old-dist <dir> --save-out <f> [--turns 6] [--strip-from-current]
@@ -254,7 +259,7 @@ async function phaseOld() {
   fs.mkdirSync(path.dirname(SAVE_FILE), { recursive: true });
   fs.writeFileSync(SAVE_FILE, JSON.stringify(obj));
   fs.writeFileSync(SAVE_FILE + '.metrics.json', JSON.stringify(metricsAtSave));
-  check(true, 'OLD zapis zapisany do pliku', { strip: STRIP, removed, bytes: fs.statSync(SAVE_FILE).size, turn: obj.turn ?? null });
+  check(true, 'OLD zapis zapisany do pliku', { strip: STRIP, removed, bytes: fs.statSync(SAVE_FILE).size, turn: obj.tura ?? obj.turn ?? null });
 }
 
 async function phaseNew() {
@@ -265,6 +270,13 @@ async function phaseNew() {
   const eco0 = fs.existsSync(metricsPath) ? JSON.parse(fs.readFileSync(metricsPath, 'utf8')) : null;
   const expectCities = saveObj.cities ? saveObj.cities.length : null;
   const expectUnits = saveObj.units ? saveObj.units.length : null;
+  // A0: wejsciowy zapis MUSI byc stary (bez pol FAL 760-761). Bez tej asercji test mogl by przejsc na nowym zapisie.
+  const META_PRESENT = META_FIELDS_760_761.filter((f) => saveObj.meta && f in saveObj.meta);
+  check(META_PRESENT.length === 0, 'NEW zapis wejsciowy jest STARY: brak 5 pol meta FAL 760-761', { obecne: META_PRESENT, resourceLedgerHistoryWZapisie: Array.isArray(saveObj.resourceLedgerHistory) ? saveObj.resourceLedgerHistory.length : null });
+  // Mapy zamowien puste w tym zapisie: dryf przy niepustych mapach jest poza zakresem tego przebiegu.
+  const EMPTY_MAPS = ['orderMultByCity', 'orderGrowthMultByCity', 'orderValueByCity'].filter((k) => !saveObj.meta || JSON.stringify(saveObj.meta[k] ?? null).length <= 4);
+  // Dziennik „Skad zapasy" w zapisie (liczba wpisow tury); po wczytaniu porownywany z odczytem hakiem realnej sciezki.
+  const savedLedgerN = Array.isArray(saveObj.resourceLedgerHistory) ? saveObj.resourceLedgerHistory.length : null;
   const srv = startServer(DIST);
   const browser = await launch();
   try {
@@ -289,9 +301,16 @@ async function phaseNew() {
     const eco1 = await playerEconomy(page);
     const world = await page.evaluate(() => { const d = window.__cityStateStartUnitsTestDebug.dumpState(); return { cities: d.cities.length, units: d.units.length }; });
     info('NEW po wczytaniu', { st, eco: eco1, swiat: world, zapis: { expectCities, expectUnits }, eco0 });
+    // A5: dziennik „Skad zapasy" po wczytaniu = liczba wpisow w zapisie (defekt #432: 5 -> 0). Hak realnej sciezki.
+    const ledgerLoaded = await page.evaluate(() => window.__ledgerRealPathDebug.savedHistory().length);
+    const ledgerMem = await page.evaluate(() => window.__ledgerRealPathDebug.historyForSave().length);
+    const ledgerCap = await page.evaluate(() => window.__ledgerRealPathDebug.historyN());
+    info('NEW dziennik „Skad zapasy" po wczytaniu', { wZapisie: savedLedgerN, poWczytaniuPole: ledgerLoaded, pamiecWszyscy: ledgerMem, limit: ledgerCap });
+    if (savedLedgerN !== null) check(ledgerLoaded === savedLedgerN, 'NEW dziennik „Skad zapasy" po wczytaniu = wpisy zapisu', { got: ledgerLoaded, want: savedLedgerN });
+    else nzm('NEW dziennik „Skad zapasy" po wczytaniu', 'zapis nie zawiera resourceLedgerHistory');
     check(expectCities === null || world.cities === expectCities, 'NEW liczba miast (wszyscy wlasciciele) po wczytaniu = zapis', { got: world.cities, want: expectCities });
     check(expectUnits === null || world.units === expectUnits, 'NEW liczba jednostek (wszyscy wlasciciele) po wczytaniu = zapis', { got: world.units, want: expectUnits });
-    check(eco1.miasta === (eco0 ? eco0.miasta : eco1.miasta), 'NEW miasta gracza = metryki zapisu', { got: eco1.miasta, want: eco0 ? eco0.miasta : null });
+    if (eco0) check(eco1.miasta === eco0.miasta, 'NEW miasta gracza = metryki zapisu', { got: eco1.miasta, want: eco0.miasta });
     if (eco0) {
       const keys = ['skarbiec', 'spichlerz', 'miasta', 'obywatele', 'rekruci', 'jednostkiWojskowe', 'jednostkiCywilne', 'utrzymanieBudynkowPieniadz', 'utrzymanieGarnizonuPieniadz'];
       const diff = keys.filter((k) => eco0[k] !== eco1[k]).map((k) => ({ k, zapis: eco0[k], wczytane: eco1[k] }));
@@ -300,6 +319,8 @@ async function phaseNew() {
       nzm('NEW ekonomia po wczytaniu = zapis', 'brak pliku metryk zapisu (' + metricsPath + ')');
     }
     if (st.myCities > 0) check(st.awaiting === false, 'NEW isAwaitingFirstPlayerCity()=false przy miastach gracza', st.awaiting);
+    else info('NEW 0 miast gracza: isAwaitingFirstPlayerCity() (obserwacja, kryterium = A4 „Zakoncz ture")', { awaiting: st.awaiting, myCities: st.myCities });
+    if (EMPTY_MAPS.length) nzm('NEW dryf ekonomii przy niepustych mapach zamowien', 'w tym zapisie puste: ' + EMPTY_MAPS.join(', ') + ' (niepuste mapy NIE ZMIERZONE)');
     const ctr = {};
     const turns = [st.turn];
     for (let i = 0; i < 3; i++) {
@@ -310,9 +331,9 @@ async function phaseNew() {
     }
     const ok3 = turns.length === 4 && turns.every((t, i) => i === 0 || (t !== null && t === turns[i - 1] + 1));
     check(ok3, 'NEW „Zakoncz ture" dziala 3 razy (tura rosnie o 1)', turns);
-    nzm('NEW dziennik „Skad zapasy" pusty po wczytaniu i rosnie po tickach', 'brak haka odczytu dziennika/UI; zapis zawiera resourceLedgerHistory, ale nie odczytano go po wczytaniu');
-    nzm('NEW scenariusz 0 miast (stary zapis bez flagi playerEverOwnedCityByOwner)', 'nie wygenerowano zapisu bez miast w tym przebiegu');
-    nzm('MUTACJA: usuniecie ochrony Array.isArray -> narzedzie czerwone', 'wykonano RECZNIE poza narzedziem na kopii bundla (scratchpad, bez zmian w repo): usuniety guard savedOrderMult -> narzedzie FAIL=2 (spichlerz 0 zamiast 203; pageerror "ke is not iterable"); patrz raport');
+    const ledgerAfter = await page.evaluate(() => window.__ledgerRealPathDebug.savedHistory().length);
+    if (savedLedgerN !== null) check(ledgerAfter > ledgerLoaded || ledgerLoaded >= ledgerCap, 'NEW dziennik „Skad zapasy" rosnie po tickach (lub limit)', { przed: ledgerLoaded, po: ledgerAfter, limit: ledgerCap });
+    info(st.myCities === 0 ? 'NEW scenariusz 0 miast (zapis z usunietymi miastami gracza): wynik tur' : 'NEW wynik tur (gracz ma miasta; scenariusz 0 miast: evidence/make-nocity-save.cjs)', { turns, myCities: st.myCities });
     check(errs.length === 0, 'NEW brak pageerror i bledow konsoli', errs.slice(0, 5));
     await ctx.close();
   } finally {

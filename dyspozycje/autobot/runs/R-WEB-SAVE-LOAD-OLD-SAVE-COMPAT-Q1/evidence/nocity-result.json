@@ -1,0 +1,86 @@
+{
+  "phase": "new",
+  "strip": false,
+  "seed": 4242,
+  "results": [
+    {
+      "status": "PASS",
+      "label": "NEW zapis wejsciowy jest STARY: brak 5 pol meta FAL 760-761",
+      "extra": {
+        "obecne": [],
+        "resourceLedgerHistoryWZapisie": 6
+      }
+    },
+    {
+      "status": "PASS",
+      "label": "NEW dziennik „Skad zapasy\" po wczytaniu = wpisy zapisu",
+      "extra": {
+        "got": 6,
+        "want": 6
+      }
+    },
+    {
+      "status": "PASS",
+      "label": "NEW liczba miast (wszyscy wlasciciele) po wczytaniu = zapis",
+      "extra": {
+        "got": 41,
+        "want": 41
+      }
+    },
+    {
+      "status": "PASS",
+      "label": "NEW liczba jednostek (wszyscy wlasciciele) po wczytaniu = zapis",
+      "extra": {
+        "got": 61,
+        "want": 61
+      }
+    },
+    {
+      "status": "NIE_ZMIERZONO",
+      "label": "NEW ekonomia po wczytaniu = zapis",
+      "extra": "brak pliku metryk zapisu (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/compat/save-old-nocity.json.metrics.json)"
+    },
+    {
+      "status": "NIE_ZMIERZONO",
+      "label": "NEW dryf ekonomii przy niepustych mapach zamowien",
+      "extra": "w tym zapisie puste: orderMultByCity, orderGrowthMultByCity, orderValueByCity (niepuste mapy NIE ZMIERZONE)"
+    },
+    {
+      "status": "FAIL",
+      "label": "NEW tura 1 zatrzymana: cannot-end",
+      "extra": {
+        "stop": "cannot-end",
+        "tura": 7,
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        }
+      }
+    },
+    {
+      "status": "FAIL",
+      "label": "NEW „Zakoncz ture\" dziala 3 razy (tura rosnie o 1)",
+      "extra": [
+        7,
+        null
+      ]
+    },
+    {
+      "status": "FAIL",
+      "label": "NEW dziennik „Skad zapasy\" rosnie po tickach (lub limit)",
+      "extra": {
+        "przed": 6,
+        "po": 6,
+        "limit": 10
+      }
+    },
+    {
+      "status": "PASS",
+      "label": "NEW brak pageerror i bledow konsoli",
+      "extra": []
+    }
+  ]
+}
