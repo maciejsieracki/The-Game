@@ -2417,3 +2417,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dlaczego jeszcze bez integracji T2:** pełny test wymaga ≥8 GB wolnego miejsca (CLAUDE.md, zasada 5). Brakuje ok. 0,7 GB. Integrację zrobię, gdy EXEC-T1 lub T3 zakończą i zwolnią swoje cache.
 - **Aktywne, nie ruszane:** `/tmp/claude-0/k5doc-geo-target-r2` (T3) i `wf_487c53ff-a4c-3-tgt-r2` (EXEC-T1), `/tmp/claude-0/ev9f1` (decyzja właściciela).
 - **Parity:** `585bb48e0`.
+
+## Przebieg (09:47 UTC — heartbeat: 2/4 aktywnych, bez startów przy 7,3 GB; kandydaci na bazie T2 FC `03dfa64c2` wstrzymani)
+
+- **EXEC-T1 r2** (`wf_487c53ff-a4c`) i **T3 GEOMETRIA** (`wf_7d52ae9a-3df`): po Operatorze i Evaluatorze, bez FC.
+- **T2 CELE** (`wf_1c92bca8-2d5`): FC PASS-WITH-NOTES `03dfa64c2`, integracja czeka na ≥8 GB (pełny test).
+- **Wolne sloty (2):** DOC-T5a, DOC-T4 i DOC-T6 mogą mieć bazę `03dfa64c2` (zgodnie z regułą heartbeatu), ale start kodu Rust wymaga 8 GB (CLAUDE.md, zasada 5). Dysk 7,3 GB — wstrzymane.
+- **Parity:** `585bb48e0`.
