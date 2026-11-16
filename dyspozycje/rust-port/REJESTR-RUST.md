@@ -2930,3 +2930,13 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Dispatche r3/r4 (`3e2367892`):** T4b — tylko bramka na merge; T6 — tylko pełny test na `87829df94`; T5a — poprawka wektorów granic, base `761768677`.
 - **Uruchomione ponownie:** T5a r3 (`wf_4f8fcb4a-b7c`), T4b bramka (`wf_a6a0b1b3-74a`). T6 pełny test odłożony do zwolnienia dysku (dwie kompilacje naraz zajmują ~8 GB).
 - **Reguła:** Operatorzy Haiku; Evaluator i FC Sonnet.
+
+### Przebieg — heartbeat (2026-11-17 ~23:50 UTC): 2/4 aktywne, dysk 2,4 GB — bez nowych startów
+
+- **Aktywne Workflow (2/4):**
+  - K5DOC-T5a strzelec-kite, runda 3 (`wf_4f8fcb4a-b7c`), Haiku; etap Operator. Baza `761768677`. Target `t5a-r3-target` (3,3 GB w scratchpadzie) w użyciu, nie ruszany.
+  - K5DOC-T4b `_advanceStep`, bramka na merge `3d016a5ae` (`wf_a6a0b1b3-74a`), Haiku; etap Operator.
+- **Krok 1 (sloty):** poniżej 4 aktywnych, ale dysk 2,4 GB < 4 GB — heartbeat zabrania startów. Nie uruchamiam nowych tematów. Kandydaci na czwarty i trzeci slot: bramka T6 na `87829df94` (pełny test, czeka na dysk) i tematy zablokowane zależnościami T4b/T4c (T7a/T7b).
+- **Krok 2:** brak FC PASS bez integracji. T4b i T6 czekają na zielone bramki na merge/na tree przed FF.
+- **Krok 3 (sprzątanie):** nie usuwam worktree ani targetów działających. Zakończone już usunięte w poprzednim przebiegu.
+- **Ryzyko:** dwie kompilacje naraz zajmują ~5 GB. Przy spadku poniżej ~1 GB należy zatrzymać jeden z workflow (najpóźniej wstrzymać T4b bramkę) i zwolnić jego target. Decyzja o zatrzymaniu pozostaje w czacie.
