@@ -10321,3 +10321,9 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 
 ### Start 2026-11-16 ~05:00 UTC — R-WEB-SAVE-LOAD-DESERIALIZE-FIELDS-AUDIT-Q1 (Haiku, cand 178aa1a5b)
 - Audyt (tylko narzędzie): które pola SaveGame gubi jawna lista pól w `deserializeGame` (save.ts ~686–760); weryfikacja pól dopisanych w FALACH 760/761; kandydaci na poprawki, bez implementacji.
+
+### FALA 763 — R-WEB-SAVE-LOAD-DESERIALIZE-FIELDS-AUDIT-Q1 (#434) — WDROŻONE NA ROBOCZĄ (2026-11-16)
+- main 459354a12, ROBOCZA MD5 6b8fa405 (Raw = manifest; sidecary zgodne). FC PASS-WITH-NOTES (kandydat bfca8d03b, raport 71def8b3e; runda 1/5, Haiku; czas ok. 13 min). Refs `refs/keep/R-WEB-DESER-AUDIT-r1-{op,eval,obrona,fc}`. Bramki: tsc 0, logic 213/213, 5 referencyjnych, vite OK.
+- Dostarczono (tylko `gra/tools/save-load-deserialize-fields-audit.cjs` + evidence): audyt na żywo (seed 4242, 2 tury, zapis A 43 887 B / zapis B po wczytaniu w nowej stronie 44 012 B, 282 liście): `deserializeGame` NIE gubi żadnego pola zapisu (faza a: OK 193, OK_PUSTA 89, NIEPRZETESTOWANE_BRAK_W_PROBCE 4; faza b: OK 191, OK_PUSTA 86, ZMIENIONE_PO_RESTORE 4, EFEMERYCZNE 1 = meta.savedAt). Mutacja `resourceLedgerHistory` → czerwone. Brak kandydatów R-WEB-* (brak pól GUBIONYCH).
+- Cztery ZMIENIONE_PO_RESTORE (nie gubione; regenerowane): `cities.podzialPracy` null→{procentBudynki:50} (default cities.ts:432, powiązane z #424), `meta.bronzeEraEnterTurnByOwner`, `meta.ironEraEnterTurnByOwner` (wpływ NIE ZMIERZONO), `meta.diplomaticContactEstablished` (pusty zbiór, nieistotne). `nnsAiOverrides` nie jest w zapisie jako własne pole (lokalna Map main.ts:7543; w FALI 760 zapisane w meta).
+- NIE ZMIERZONO: pola wewnątrz cities/units/mapSnapshot (liście), `autoMarch`/`plannedMarches`/`recruitGeneralId`/`rallyPoints` (brak w próbce), scenariusz 0 miast (#433), wpływ pól ZMIENIONE_PO_RESTORE na tick; tylko jedna próbka.
