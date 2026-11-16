@@ -10565,3 +10565,6 @@ r1/r2 (Haiku): stan, akcja, render, znacznik, testy zapisu — ale wyzwalacz i n
 
 ### Nowy temat pomiarowy 2026-11-17: R-WEB-DIPLO-WEARY40-SIM-MEASURE-Q1
 Pomiar w Node (≥3 ziarna × ≥150 tur × ≥4 civ AI) zmęczenia wojną 40 tur + pokoju wymuszonego (FALA 783): eliminacje, snowball, pętle wojen, pokoje przy cenie 0. Tylko narzędzia + raport; Haiku r1. STATUS: **OTWARTE** (uruchomiony).
+
+### FALA 784 (2026-11-17) — WDROŻONE na ROBOCZĄ: AI pilnuje pustych miast w wojnie (rekrutacja garnizonu)
+GARRISON (FC ed8c91142, integracja 3fdcab34b, PASS-WITH-NOTES): AI w wojnie lub zagrożeniu rekrutuje Wojownika w każdym mieście bez jednostki wojskowej (istniejąca ścieżka zakupu, bramki bez zmian). Pomiar Node (model): puste miasta AI w wojnie t10/30/60/100 62,5/58,3/55,1/39,3% → 0%; w pokoju 87,5% bez zmian (świadomie). ROBOCZA 4cdc5adc, main 8bc385dee, raw MD5 = manifest, 3 sidecary OK. NIE ZMIERZONO: żywa gra (bramki manpower/surowców/epoki), Wojownik we wszystkich epokach/civ, zdobyte miasta (0,33 przed i po). Dług Rust: REPIN reguły garnizonu.
