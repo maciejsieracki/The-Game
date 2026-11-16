@@ -1,3 +1,9 @@
+## ROBOCZA b1559163 -- 2026-11-14 -- FALA 757: diagnoza zawieszenia Zakoncz ture t51 (narzedzie) (testowa)
+
+- Narzedzie endturn-t57-repro.cjs + evidence: t51 seed 4242 = otwarta audiencja dyplomatyczna wstrzymuje kolejke odlozonych bitew (zamierzone + dlug harnessu). Bez zmian gra/src.
+- Weryfikacja: FC PASS-WITH-NOTES 2cd7911fb; logic 213/213, vite OK, MD5 Raw
+- Limity: t57, t89 seed 777, tabela 5 ziaren NIE ZMIERZONO
+
 ## ROBOCZA 6550bf16 -- 2026-11-14 -- FALA 756: sonda rozkazow recznych a pelny ruch (narzedzie) (testowa)
 
 - Narzedzie pomiarowe battle-manual-orders-full-move-repro (gra/tools): marsz reczny 1,00 heksa na aktywacje (zgodne z decyzja A); ruch+cios w rundzie AUTO 5/60, reczne 0/60; przepadek ok. 2 MP nierozstrzygniety (ABC). Bez zmian gra/src.

@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "6550bf16a39f21b08a9f51585e88c66c",
-  "bundleSha256": "475f66ec7f382d3d43fbede11b292883a2a0e5d95bace72083de8b79a1ef8a09",
+  "bundleMd5": "b155916393f5e8424b90267f83854eca",
+  "bundleSha256": "b898b0bf638da71491c15845d709b4826443be590913bf87906a7c3d1e6e9115",
   "bundleBytes": 14802686,
   "sourceSnapshot": {
-    "source": "main c50b64e20 + 6972825ae (tools-only)",
+    "source": "main 1afc302bc + 2cd7911fb (tools-only)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 756: Narzedzie pomiarowe battle-manual-orders-full-move-repro (gra/tools): marsz reczny 1,00 heksa na aktywacje (zgodne z decyzja A); ruch+cios w rundzie AUTO 5/60, reczne 0/60; przepadek ok. 2 MP nierozstrzygniety (ABC). Bez zmian gra/src."
+    "FALA 757: Narzedzie endturn-t57-repro.cjs + evidence: t51 seed 4242 = otwarta audiencja dyplomatyczna wstrzymuje kolejke odlozonych bitew (zamierzone + dlug harnessu). Bez zmian gra/src."
   ],
   "verification": [
-    "FC PASS-WITH-NOTES 6972825ae; logic 213/213, vite OK, MD5 Raw"
+    "FC PASS-WITH-NOTES 2cd7911fb; logic 213/213, vite OK, MD5 Raw"
   ],
   "limits": [
-    "tylko Hastati MP 3, jedna scena, sonda omija doktryne obroncy; live NIE ZMIERZONO"
+    "t57, t89 seed 777, tabela 5 ziaren NIE ZMIERZONO"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES BATTLE-MANUAL-ORDERS-FULL-MOVE-REPRO-Q1 r1 (kandydat 703cc4ca4, raport 6972825ae): sonda sceny (tylko gra/tools, bez zmian gra/src), Hastati 6 vs 6, ziarna 1-3. Marsz reczny = 1,00 heksa na aktywacje (ZGODNE z decyzja A); ruch+cios w tej samej rundzie AUTO 5/60, reczne 0/60; przepadek ok. 2 MP po kroku = NIE ROZSTRZYGNIETE (ABC wlasciciela A/B/C). Noty: tylko Hastati MP 3, jedna scena, sonda omija doktryne obroncy; zachowanie live NIE ZMIERZONO."
+    "notes": "FC PASS-WITH-NOTES ENDTURN-T57-DIAGNOSIS-Q1 r2 (kandydat e45c12470, raport 2cd7911fb): diagnoza tylko narzedzie gra/tools/endturn-t57-repro.cjs + evidence, bez zmian gra/src. Zawieszenie t51 (seed 4242) odtworzone na zywo: otwarta audiencja dyplomatyczna (isOtherEndTurnModalOpen main.ts:33403) wstrzymuje kolejke odlozonych bitew; po jej zamknieciu tura przechodzi (t51-t56). Zachowanie zamierzone + dlug harnessu, nie trwaly deadlock. NIE ZMIERZONO: t57, t89 seed 777, tabela 5 ziaren; ABC: tresc podpowiedzi main.ts:40729 i czy audiencja AI ma blokowac koniec tury."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-15T23:38:14",
+  "hubGeneratedAt": "2026-11-16T00:23:33",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "6550bf16a39f21b08a9f51585e88c66c",
+      "md5": "b155916393f5e8424b90267f83854eca",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "6550bf16a39f21b08a9f51585e88c66c",
+      "md5": "b155916393f5e8424b90267f83854eca",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "6550bf16a39f21b08a9f51585e88c66c",
+      "md5": "b155916393f5e8424b90267f83854eca",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "6550bf16a39f21b08a9f51585e88c66c",
+      "md5": "b155916393f5e8424b90267f83854eca",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "6550bf16a39f21b08a9f51585e88c66c",
+      "md5": "b155916393f5e8424b90267f83854eca",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "6550bf16a39f21b08a9f51585e88c66c",
+      "md5": "b155916393f5e8424b90267f83854eca",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "6550bf16a39f21b08a9f51585e88c66c",
+      "md5": "b155916393f5e8424b90267f83854eca",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "6550bf16a39f21b08a9f51585e88c66c",
+      "md5": "b155916393f5e8424b90267f83854eca",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "6550bf16a39f21b08a9f51585e88c66c",
+      "md5": "b155916393f5e8424b90267f83854eca",
       "sizeBytes": 14802686
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "6550bf16a39f21b08a9f51585e88c66c",
+      "md5": "b155916393f5e8424b90267f83854eca",
       "sizeBytes": 14802686
     }
   ],
-  "md5": "6550bf16a39f21b08a9f51585e88c66c",
+  "md5": "b155916393f5e8424b90267f83854eca",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
