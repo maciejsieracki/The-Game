@@ -2221,3 +2221,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Refy:** `refs/keep/RENDERER-PIN-ZGODNOSC-ROZP-{FC,OB,OP}`. **Sprzątanie:** worktree `wf_d9201240-c60-1..4`.
 - **Sloty:** 2 z 4 — P4-1H MOVE-Q6 (`wf_b1e51033-24c`, obrona, Opus), ROZP terminu rzeki w produkcji (`wf_7d64cefe-7a1`, Haiku/Sonnet). Dwa wolne.
 - **Dysk:** 12 GB.
+
+## Przebieg (04:5x UTC — wynik rozpoznania `terrain_river_attack_multiplier` w produkcji)
+
+- **TERRAIN-MULT-PRODUKCJA-ROZP-Q1:** FC PASS-WITH-NOTES `bbadddcc5` (operator `d26ac51f7`, obrona `87ff5cbc4`). **Wynik: obie kopie są logicznie zgodne z pinem; nie znaleziono rozbieżności w wyniku.** Kopia A (`siege_tactics_inputs_terrain.rs:148`) 1:1 z `combat.ts:677` (teren obrońcy); kopia B (`siege_tactics_blow_inputs.rs:21`) odpowiada `_singleBlow` (`battleScene.ts:8861`, kafel atakującego) i jest używana w `siege_tactics_blow_full.rs:245`. **Wpływ na grę: NIE_ZMIERZONO** — `siege_tactics_loop`/`blow_full` nie mają jeszcze produkcyjnego wywołania (#113). Zalecenia ewaluatora: osobny temat z wektorami dla `blow_env_for` (kopia B nie ma wektora pinu, równoważność dowiedziona testem ręcznym); nazwa parametru `defender_terrain` w kopii A myli (przekazywany jest teren atakującego) — bez zmiany wyniku.
+- **Uwaga procesowa (wykryta, nie wpływa na kod):** FC `bbadddcc5` NIE jest potomkiem aktualnego parity — jego przodkiem jest `c284fe02d` (linia `origin/main`), merge-tree zwraca konflikt. **Nie zintegrowano go.** Na parity dodano tylko pliki runu: `47745929a` (dokumenty `01-rozpoznanie.md`, `02a-obrona.md`, `03-final-control.md`), commit docs-only. Refy: `refs/keep/TERRAIN-MULT-ROZP-{FC,OB,OP}`. **Zasada na przyszłość:** przed FF/merge zawsze sprawdzać `git merge-base` z bieżącym parity; FC spoza linii parity wymaga wyciągnięcia samych plików runu.
+- **Sprawdzenie pozostałych integracji dokumentacji:** `09d92eb24`, `de88d9d55` (EXEC merge), `b151636e8` — wszystkie mają parity jako przodka lub bazę na linii parity; zakres `dyspozycje/` (zweryfikowane).
+- **Sloty:** 1 z 4 — P4-1H MOVE-Q6 (`wf_b1e51033-24c`, obrona, Opus). Trzy wolne — brak odblokowanego tematu kodu bez decyzji.
+- **Dysk:** 12 GB.
