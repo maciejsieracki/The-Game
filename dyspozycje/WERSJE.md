@@ -1,3 +1,9 @@
+## ROBOCZA 838d10eb -- 2026-11-14 -- FALA 760: zapis i wczytanie daja ten sam stan co przebieg ciagly (dryf stanu) (testowa)
+
+- Poprawka main.ts +47: zapisywane i odtwarzane nnsAiOverrides oraz mnozniki Porzadku (orderMult/growthMult/orderValue); resume-test 10/10 (seedy 4242, 777, 31337) zamiast 0/3; test regresji save-load-roundtrip-state-drift-test + mutacje; runner normalizuje stackGroupId.
+- Weryfikacja: FC PASS-WITH-NOTES 8a91ed421; tsc 0, logic 213/213, load-game-regression 34/0, ledger-save-history 15/0, vite OK, MD5 Raw
+- Limity: stary zapis w przegladarce, horyzont 40-50 tur, map-snapshot-load-test NIE ZMIERZONO; budowaPriorytetTypow = ABC; resourceLedgerHistory = #432
+
 ## ROBOCZA b3e02480 -- 2026-11-14 -- FALA 759: pomiar na zywo mieszanej armii po FALACH 750-758 (narzedzie) (testowa)
 
 - Pomiar live 80 bitew (seedy 11-18): ciosy/jedn./ture max 1, niewykorzystany ruch max 2,9%; rozrzut frontu M1 max 2, M2 max 1, M3 max 3 (A1 zlamany dla skladu asymetrycznego). Narzedzie +2 linie (sklad M3). Bez zmian gra/src.

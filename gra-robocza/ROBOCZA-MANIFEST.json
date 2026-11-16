@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "b3e02480227e09a739a459b8c128cf75",
-  "bundleSha256": "90596ec013632b9d1e5922034f2d9c2789e19d4f4a5cff680e436fc5b7043417",
-  "bundleBytes": 14802686,
+  "bundleMd5": "838d10ebc5782b02092b2f6949e0e83e",
+  "bundleSha256": "b22e23d738cc8ee68bd5c63ade59cb666f50fb9bb405f7038e7a2924ef31f17a",
+  "bundleBytes": 14803688,
   "sourceSnapshot": {
-    "source": "main cb29ce7af + f2e2e910d (tools-only)",
+    "source": "main 0d8b414e2 + 8a91ed421 (main.ts +47, gra/tools)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 759: Pomiar live 80 bitew (seedy 11-18): ciosy/jedn./ture max 1, niewykorzystany ruch max 2,9%; rozrzut frontu M1 max 2, M2 max 1, M3 max 3 (A1 zlamany dla skladu asymetrycznego). Narzedzie +2 linie (sklad M3). Bez zmian gra/src."
+    "FALA 760: Poprawka main.ts +47: zapisywane i odtwarzane nnsAiOverrides oraz mnozniki Porzadku (orderMult/growthMult/orderValue); resume-test 10/10 (seedy 4242, 777, 31337) zamiast 0/3; test regresji save-load-roundtrip-state-drift-test + mutacje; runner normalizuje stackGroupId."
   ],
   "verification": [
-    "FC PASS-WITH-NOTES f2e2e910d; logic 213/213, vite OK, MD5 Raw"
+    "FC PASS-WITH-NOTES 8a91ed421; tsc 0, logic 213/213, load-game-regression 34/0, ledger-save-history 15/0, vite OK, MD5 Raw"
   ],
   "limits": [
-    "prog A1 dla skladow asymetrycznych = ABC; kandydat R-WEB-BATTLE-FRONT-SPREAD-ASYM-Q1 nienaprawiany"
+    "stary zapis w przegladarce, horyzont 40-50 tur, map-snapshot-load-test NIE ZMIERZONO; budowaPriorytetTypow = ABC; resourceLedgerHistory = #432"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES LIVE-VERIFY-MIXED-ARMY-REMEASURE-Q1 r1 (kandydat 0b4874e19, raport f2e2e910d): pomiar na zywo mieszanej armii po FALACH 750-758 (80 bitew, seedy 11-18, 3 sklady x N2 + N3 ucieczka/poscig/neverRout). Ciosy/jedn./ture max 1, niewykorzystany ruch max 2,9%, pageerror 0. Rozrzut frontu: M1 max 2 (na progu), M2 max 1, M3 max 3 (A1 zlamany we wszystkich 8 ziarnach, wynik niezalezny od ziarna = 3 prawdziwe obserwacje). Kandydat R-WEB-BATTLE-FRONT-SPREAD-ASYM-Q1 opisany, nienaprawiany; prog A1 dla skladow asymetrycznych = ABC wlasciciela. Tylko narzedzie (+2 linie skladu M3) i evidence."
+    "notes": "FC PASS-WITH-NOTES SAVE-LOAD-ROUNDTRIP-STATE-DRIFT-Q1 r3 (kandydat c1024adc5, raport 8a91ed421): zapis->wczytanie->t+1..t+10 daje ten sam skrot co przebieg ciagly (--resume-test 10/10 na seedach 4242 i 777, Evaluator tez 31337; przed poprawka 0/3). Przyczyna: stan liczony na koncu tury N i czytany przez tick N+1 zyl tylko w pamieci modulu main.ts: nnsAiOverrides oraz orderMultMap/growthMultMap/orderValueMap. Poprawka +47 linii main.ts (4 nowe pola meta zapisywane przy niepustych mapach, odczyt chroniony Array.isArray, stary zapis wczytuje sie jak dotad), test regresji save-load-roundtrip-state-drift-test.cjs + mutacje czerwone. Zostaja jawnie: budowaPriorytetTypow (DO ABC), resourceLedgerHistory (#432). NIE ZMIERZONO: wczytanie starego zapisu w przegladarce (tylko analiza kodu + load-game-regression 34/0), horyzont 40-50 tur, map-snapshot-load-test."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T02:07:47",
+  "hubGeneratedAt": "2026-11-16T04:03:31",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "b3e02480227e09a739a459b8c128cf75",
-      "sizeBytes": 14802686
+      "md5": "838d10ebc5782b02092b2f6949e0e83e",
+      "sizeBytes": 14803688
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "b3e02480227e09a739a459b8c128cf75",
-      "sizeBytes": 14802686
+      "md5": "838d10ebc5782b02092b2f6949e0e83e",
+      "sizeBytes": 14803688
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "b3e02480227e09a739a459b8c128cf75",
-      "sizeBytes": 14802686
+      "md5": "838d10ebc5782b02092b2f6949e0e83e",
+      "sizeBytes": 14803688
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "b3e02480227e09a739a459b8c128cf75",
-      "sizeBytes": 14802686
+      "md5": "838d10ebc5782b02092b2f6949e0e83e",
+      "sizeBytes": 14803688
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "b3e02480227e09a739a459b8c128cf75",
-      "sizeBytes": 14802686
+      "md5": "838d10ebc5782b02092b2f6949e0e83e",
+      "sizeBytes": 14803688
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "b3e02480227e09a739a459b8c128cf75",
-      "sizeBytes": 14802686
+      "md5": "838d10ebc5782b02092b2f6949e0e83e",
+      "sizeBytes": 14803688
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "b3e02480227e09a739a459b8c128cf75",
-      "sizeBytes": 14802686
+      "md5": "838d10ebc5782b02092b2f6949e0e83e",
+      "sizeBytes": 14803688
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "b3e02480227e09a739a459b8c128cf75",
-      "sizeBytes": 14802686
+      "md5": "838d10ebc5782b02092b2f6949e0e83e",
+      "sizeBytes": 14803688
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "b3e02480227e09a739a459b8c128cf75",
-      "sizeBytes": 14802686
+      "md5": "838d10ebc5782b02092b2f6949e0e83e",
+      "sizeBytes": 14803688
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "b3e02480227e09a739a459b8c128cf75",
-      "sizeBytes": 14802686
+      "md5": "838d10ebc5782b02092b2f6949e0e83e",
+      "sizeBytes": 14803688
     }
   ],
-  "md5": "b3e02480227e09a739a459b8c128cf75",
+  "md5": "838d10ebc5782b02092b2f6949e0e83e",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
