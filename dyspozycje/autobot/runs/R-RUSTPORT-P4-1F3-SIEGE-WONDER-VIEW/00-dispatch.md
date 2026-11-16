@@ -44,3 +44,9 @@ Mutacje (MUSZĄ dać FAIL, wyniki w raporcie): (a) `ruin = era >= absolut`; (b) 
 3. Brak `#[ignore]`, brak osłabionych asercji, zero zmian poza allowlistą.
 4. Commit jawnym `git add` (nigdy `-A`). NIE commituj `Cargo.lock`. Bez push do parity. Raport w `dyspozycje/autobot/runs/R-RUSTPORT-P4-1F3-SIEGE-WONDER-VIEW/`.
 5. `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` poza repo i unikalny; usuń po bramkach.
+
+## DODATEK — Final Control na Obronie (runda FC)
+- Kod Obrony: `92dce8414a44ee442412ea2e29dd8efd29053d55`; Evaluator: `48ef28025`; Operator PASS `999083029`.
+- Baza kodu tematu: `585bb48e0` (ocena względem niej, NIE względem parity, które ma już F6).
+- Bez ponownego Operatora. Każdy zarzut Evaluatora i Obrony: NAPRAW / ODDAL / DO DECYZJI CZŁOWIEKA; jeden NAPRAW = FAIL.
+- Wynik: `03-final-control.md` w katalogu runu.
