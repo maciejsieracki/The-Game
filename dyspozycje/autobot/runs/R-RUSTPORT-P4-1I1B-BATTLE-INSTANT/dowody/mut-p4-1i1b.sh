@@ -9,7 +9,7 @@ mkdir -p "$W"
 for f in src/domain/siege_tactics_instant.rs src/domain/siege_tactics_outcome.rs; do cp "$f" "$W/$(basename "$f").bak"; done
 export CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 CARGO_TARGET_DIR="$W/tgt"
 restore() { for f in src/domain/siege_tactics_instant.rs src/domain/siege_tactics_outcome.rs; do cp "$W/$(basename "$f").bak" "$f"; done; }
-for m in M1 M2 M3 M4 M5 M6; do
+for m in M1 M2 M3 M4 M5 M6 M7 M8 M9; do
   restore
   python3 "$HERE/mut-p4-1i1b.py" "$E" "$m" >/dev/null || { echo "$m APPLY-FAIL"; continue; }
   out=$(cargo test --test p4_1i1b_battle_instant 2>&1)

@@ -213,6 +213,9 @@ pub enum OutcomeError {
     Id(IdOutOfRange),
     /// Roster dłuższy niż `u32::MAX` (liczniki `_sideEndStats`).
     RosterTooLarge(usize),
+    /// E4: `siege_wall_col` producenta i sceny „Pomiń” różnią się co do oblężenia (`>= 0`) albo `wallBreached` DTO
+    /// różni się od `InstantSkipOutcome::wall_ever_breached` (ta sama reguła `:3720-3722` liczona dwiema ścieżkami).
+    InstantWallMismatch,
 }
 
 impl From<IdOutOfRange> for OutcomeError {
@@ -355,7 +358,8 @@ pub fn build_battle_outcome(input: &OutcomeInput<'_>) -> Result<BattleOutcomeDto
 /// `this.log` sprzed „Pomiń” pozostaje NIE_ZMIERZONA do P4-1I3 (#247), tak jak w E1–E3.
 ///
 /// # Errors
-/// Jak [`build_battle_outcome`].
+/// Jak [`build_battle_outcome`]; dodatkowo [`OutcomeError::InstantWallMismatch`], gdy `siege_wall_col` albo
+/// `wall_ever_breached` są niespójne z `skip` (wejście wołającego #113 z rozbieżnych źródeł).
 pub fn build_battle_outcome_instant(
     atk: &[OutcomeUnit],
     def: &[OutcomeUnit],
@@ -370,7 +374,16 @@ pub fn build_battle_outcome_instant(
         wall_ever_breached,
         EndPath::InstantSkip(InstantSkipData::from_skip(skip)),
     );
+    if (siege_wall_col >= 0) != (skip.siege_wall_col >= 0.0) {
+        return Err(OutcomeError::InstantWallMismatch);
+    }
     let mut dto = build_battle_outcome(&input)?;
+    if dto
+        .wall_breached
+        .is_some_and(|w| w != skip.wall_ever_breached)
+    {
+        return Err(OutcomeError::InstantWallMismatch);
+    }
     dto.log = skip.result.log.clone();
     Ok(dto)
 }

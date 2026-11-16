@@ -142,6 +142,9 @@ class Scene {
 ${L(bs, 3715, 3748)}
 }
 
+const UNIT_KEYS = new Set(['id', 'kategoria', 'hp', 'q', 'r', 'facing', 'stats', 'nazwa', 'fortified', 'pancerz',
+  'parametry', 'civ', 'diff', 'hungry', 'gold', 'dead', 'onWall']);
+const STAT_KEYS = new Set(['Jednostka', 'Typ', 'meleeAttack', 'meleeDefence']);
 export function run(v: any): any {
   CALLS = []; TCU = [];
   const s = new Scene();
@@ -155,6 +158,14 @@ export function run(v: any): any {
   s.attackerOwnTerritory = sc.atkOwn; s.defenderOwnTerritory = sc.defOwn; s.shallowSea = sc.shallowSea;
   s.siegeWallCol = sc.siegeWallCol; s.wallEverBreached = sc.wallEverBreached;
   const mk = (u: any, side: string) => {
+    // Obrona r1 (zarzut 5): stub toCombatUnit NIE stosuje applyVeteranFracToCombatUnit (:1371), więc wejście
+    // z weteranem (veteranBonusFrac) albo innym polem spoza listy przestałoby być porównaniem z pinem — odrzuć.
+    for (const k of Object.keys(u)) {
+      if (!UNIT_KEYS.has(k)) throw new Error('pole jednostki poza stubem toCombatUnit: ' + k);
+    }
+    for (const k of Object.keys(u.stats ?? {})) {
+      if (!STAT_KEYS.has(k)) throw new Error('pole stats poza stubem toCombatUnit: ' + k);
+    }
     const bu: any = { id: u.id, kategoria: u.kategoria, hp: u.hp, stats: u.stats };
     if (u.nazwa !== undefined) bu.nazwa = u.nazwa;
     if (u.fortified) bu.fortifiedInField = true;

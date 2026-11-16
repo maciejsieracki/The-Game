@@ -105,5 +105,33 @@
   ],
   "def": [
    {"id": 1111, "kategoria": "piechota", "hp": 60, "q": 2, "r": 1, "facing": 1, "fortified": true, "stats": {"Jednostka": "Weteran", "meleeAttack": 18, "meleeDefence": 9}}
+  ]},
+ {"name": "obronca_w_brodzie_kara",
+  "scene": {"terrain": "Plaskie (rownina/laka)", "map": {"cols": 5, "rows": 2, "isMountain": false,
+     "tiles": [0,0,4,0,0, 0,0,4,0,0]},
+   "atkCiv": [], "defCiv": [], "wallProc": 0, "cityDefense": false, "hungerMult": 0.75,
+   "atkDiff": 1, "defDiff": 1, "goldMult": 0.75, "atkOwn": false, "defOwn": false, "shallowSea": false,
+   "siegeWallCol": -1, "wallEverBreached": false},
+  "atk": [
+   {"id": 1201, "kategoria": "piechota", "hp": 50, "q": 1, "r": 0, "facing": 1, "stats": {"Jednostka": "Szturmowiec", "meleeAttack": 20, "meleeDefence": 8}},
+   {"id": 1202, "kategoria": "piechota", "hp": 40, "q": 1, "r": 1, "facing": 1, "stats": {"Jednostka": "Tarczownik", "meleeAttack": 14, "meleeDefence": 10}}
+  ],
+  "def": [
+   {"id": 1211, "kategoria": "piechota", "hp": 50, "q": 2, "r": 0, "facing": 3, "stats": {"Jednostka": "Brodowy", "meleeAttack": 10, "meleeDefence": 12}},
+   {"id": 1212, "kategoria": "piechota", "hp": 45, "q": 2, "r": 1, "facing": 3, "fortified": true, "stats": {"Jednostka": "Brodowy okopany", "meleeAttack": 9, "meleeDefence": 11}}
+  ]},
+ {"name": "miasto_bez_muru_wzgorze",
+  "scene": {"terrain": "Wzgorza", "map": {"cols": 5, "rows": 2, "isMountain": false,
+     "tiles": [0,0,2,2,0, 0,0,0,1,0]},
+   "atkCiv": [], "defCiv": [], "wallProc": 0, "cityDefense": true, "hungerMult": 0.75,
+   "atkDiff": 1, "defDiff": 1, "goldMult": 0.75, "atkOwn": false, "defOwn": true, "shallowSea": false,
+   "siegeWallCol": -1, "wallEverBreached": false},
+  "atk": [
+   {"id": 1301, "kategoria": "piechota", "hp": 50, "q": 1, "r": 0, "facing": 1, "stats": {"Jednostka": "Najezdzca", "meleeAttack": 18, "meleeDefence": 7}},
+   {"id": 1302, "kategoria": "piechota", "hp": 45, "q": 1, "r": 1, "facing": 1, "stats": {"Jednostka": "Najezdzca", "meleeAttack": 16, "meleeDefence": 6}}
+  ],
+  "def": [
+   {"id": 1311, "kategoria": "piechota", "hp": 50, "q": 2, "r": 0, "facing": 3, "stats": {"Jednostka": "Milicja wzgorza", "meleeAttack": 11, "meleeDefence": 9}},
+   {"id": 1312, "kategoria": "piechota", "hp": 40, "q": 3, "r": 1, "facing": 3, "stats": {"Jednostka": "Milicja lasu", "meleeAttack": 10, "meleeDefence": 8}}
   ]}
 ]

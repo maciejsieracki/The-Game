@@ -18,6 +18,14 @@ M = {
     "M5": (OUT, "    dto.log = skip.result.log.clone();\n", "    let _ = &skip.result.log;\n"),
     # Dodatkowo: regula machiny w producencie DTO (E4, :3720-3722).
     "M6": (OUT, "if is_siege && d.attacker_has_live_siege_unit {", "if false && is_siege && d.attacker_has_live_siege_unit {"),
+    # Obrona r1 (zarzut 1, mutacja Evaluatora E1): bez kary brodu dla obroncy w brodzie (:20517-20519).
+    "M7": (INST, "cu_d.melee_defence *= 1.0 - scene.consts.brod_kara_obrona;",
+           "let _ = scene.consts.brod_kara_obrona;"),
+    # Obrona r1 (zarzut 2, mutacja Evaluatora E2): hasMur zawsze true (:20480).
+    "M8": (INST, "let has_mur = scene.wall_defense_total_proc > 0.0;",
+           "let has_mur = true || scene.wall_defense_total_proc > 0.0;"),
+    # Obrona r1 (zarzut 6): bez kontroli zgodnosci zrodel muru w producencie E4.
+    "M9": (OUT, "    if dto\n        .wall_breached\n", "    if false && dto\n        .wall_breached\n"),
 }
 f, a, b = M[n]
 p = f"{root}/{f}"

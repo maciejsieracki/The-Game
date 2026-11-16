@@ -279,6 +279,9 @@ pub struct InstantResult {
 /// Wynik `_skipInstantFallback` (`:3715-3748`) bez ekranu końca.
 #[derive(Debug, Clone, PartialEq)]
 pub struct InstantSkipOutcome {
+    /// `this.siegeWallCol` sceny, na której policzono regułę machiny (`:3720`); producent DTO E4 sprawdza zgodność
+    /// z własnym `siege_wall_col` (obrona r1, zarzut 6).
+    pub siege_wall_col: f64,
     /// `this.wallEverBreached` po regule machiny (`:3720-3722`).
     pub wall_ever_breached: bool,
     /// Czy atakujący ma żywą machinę oblężniczą (`this.atk.some(u => !u.dead && isSiegeUnit(u.bu))`).
@@ -556,6 +559,7 @@ pub fn skip_instant_fallback(
     let alive_def: Vec<&InstantUnit> = def.iter().filter(|u| !u.dead).collect();
     let result = compute_instant_result(&alive_atk, &alive_def, scene, resolver);
     InstantSkipOutcome {
+        siege_wall_col: scene.siege_wall_col,
         wall_ever_breached,
         attacker_has_live_siege_unit: live_siege,
         result,

@@ -5216,5 +5216,936 @@
     }
    ]
   }
+ },
+ {
+  "name": "obronca_w_brodzie_kara",
+  "input": {
+   "name": "obronca_w_brodzie_kara",
+   "scene": {
+    "terrain": "Plaskie (rownina/laka)",
+    "map": {
+     "cols": 5,
+     "rows": 2,
+     "isMountain": false,
+     "tiles": [
+      0,
+      0,
+      4,
+      0,
+      0,
+      0,
+      0,
+      4,
+      0,
+      0
+     ]
+    },
+    "atkCiv": [],
+    "defCiv": [],
+    "wallProc": 0,
+    "cityDefense": false,
+    "hungerMult": 0.75,
+    "atkDiff": 1,
+    "defDiff": 1,
+    "goldMult": 0.75,
+    "atkOwn": false,
+    "defOwn": false,
+    "shallowSea": false,
+    "siegeWallCol": -1,
+    "wallEverBreached": false
+   },
+   "atk": [
+    {
+     "id": 1201,
+     "kategoria": "piechota",
+     "hp": 50,
+     "q": 1,
+     "r": 0,
+     "facing": 1,
+     "stats": {
+      "Jednostka": "Szturmowiec",
+      "meleeAttack": 20,
+      "meleeDefence": 8
+     }
+    },
+    {
+     "id": 1202,
+     "kategoria": "piechota",
+     "hp": 40,
+     "q": 1,
+     "r": 1,
+     "facing": 1,
+     "stats": {
+      "Jednostka": "Tarczownik",
+      "meleeAttack": 14,
+      "meleeDefence": 10
+     }
+    }
+   ],
+   "def": [
+    {
+     "id": 1211,
+     "kategoria": "piechota",
+     "hp": 50,
+     "q": 2,
+     "r": 0,
+     "facing": 3,
+     "stats": {
+      "Jednostka": "Brodowy",
+      "meleeAttack": 10,
+      "meleeDefence": 12
+     }
+    },
+    {
+     "id": 1212,
+     "kategoria": "piechota",
+     "hp": 45,
+     "q": 2,
+     "r": 1,
+     "facing": 3,
+     "fortified": true,
+     "stats": {
+      "Jednostka": "Brodowy okopany",
+      "meleeAttack": 9,
+      "meleeDefence": 11
+     }
+    }
+   ]
+  },
+  "expect": {
+   "winner": "atakujacy",
+   "shown": "atakujacy",
+   "survivors": [
+    [
+     1202,
+     "13"
+    ]
+   ],
+   "log": [
+    "P Szturmowiec>Brodowy Rzeka front 0 A37 D28",
+    "P Tarczownik>Brodowy okopany Rzeka front 0 A31 D34",
+    "P Szturmowiec>Brodowy Rzeka front 0 A24 D6",
+    "P Tarczownik>Brodowy okopany Rzeka front 0 A22 D23",
+    "P Szturmowiec>Brodowy Rzeka front 0 A11 D0",
+    "P Tarczownik>Brodowy okopany Rzeka front 0 A13 D12",
+    "P Szturmowiec>Brodowy okopany Rzeka front 0 A0 D0",
+    "=== Natychmiastowy wynik: ATAKUJACY wygrywa ==="
+   ],
+   "wallEverBreached": false,
+   "defBonus": [
+    [
+     2,
+     0,
+     false,
+     "0"
+    ],
+    [
+     2,
+     1,
+     false,
+     "0"
+    ],
+    [
+     2,
+     0,
+     false,
+     "0"
+    ],
+    [
+     2,
+     1,
+     false,
+     "0"
+    ],
+    [
+     2,
+     0,
+     false,
+     "0"
+    ],
+    [
+     2,
+     1,
+     false,
+     "0"
+    ],
+    [
+     2,
+     1,
+     false,
+     "0"
+    ]
+   ],
+   "calls": [
+    {
+     "a": "Szturmowiec",
+     "d": "Brodowy",
+     "aAtk": "20",
+     "aDef": "8",
+     "aHp": "50",
+     "dAtk": "10",
+     "dDef": "9",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Rzeka",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Tarczownik",
+     "d": "Brodowy okopany",
+     "aAtk": "14",
+     "aDef": "10",
+     "aHp": "40",
+     "dAtk": "9",
+     "dDef": "12.375",
+     "dHp": "45",
+     "maxRounds": 30,
+     "defenderTerrain": "Rzeka",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Szturmowiec",
+     "d": "Brodowy",
+     "aAtk": "20",
+     "aDef": "8",
+     "aHp": "37",
+     "dAtk": "10",
+     "dDef": "9",
+     "dHp": "28",
+     "maxRounds": 30,
+     "defenderTerrain": "Rzeka",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Tarczownik",
+     "d": "Brodowy okopany",
+     "aAtk": "14",
+     "aDef": "10",
+     "aHp": "31",
+     "dAtk": "9",
+     "dDef": "12.375",
+     "dHp": "34",
+     "maxRounds": 30,
+     "defenderTerrain": "Rzeka",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Szturmowiec",
+     "d": "Brodowy",
+     "aAtk": "20",
+     "aDef": "8",
+     "aHp": "24",
+     "dAtk": "10",
+     "dDef": "9",
+     "dHp": "6",
+     "maxRounds": 30,
+     "defenderTerrain": "Rzeka",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Tarczownik",
+     "d": "Brodowy okopany",
+     "aAtk": "14",
+     "aDef": "10",
+     "aHp": "22",
+     "dAtk": "9",
+     "dDef": "12.375",
+     "dHp": "23",
+     "maxRounds": 30,
+     "defenderTerrain": "Rzeka",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Szturmowiec",
+     "d": "Brodowy okopany",
+     "aAtk": "20",
+     "aDef": "8",
+     "aHp": "11",
+     "dAtk": "9",
+     "dDef": "12.375",
+     "dHp": "12",
+     "maxRounds": 30,
+     "defenderTerrain": "Rzeka",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    }
+   ],
+   "tcu": [
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    }
+   ]
+  }
+ },
+ {
+  "name": "miasto_bez_muru_wzgorze",
+  "input": {
+   "name": "miasto_bez_muru_wzgorze",
+   "scene": {
+    "terrain": "Wzgorza",
+    "map": {
+     "cols": 5,
+     "rows": 2,
+     "isMountain": false,
+     "tiles": [
+      0,
+      0,
+      2,
+      2,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+     ]
+    },
+    "atkCiv": [],
+    "defCiv": [],
+    "wallProc": 0,
+    "cityDefense": true,
+    "hungerMult": 0.75,
+    "atkDiff": 1,
+    "defDiff": 1,
+    "goldMult": 0.75,
+    "atkOwn": false,
+    "defOwn": true,
+    "shallowSea": false,
+    "siegeWallCol": -1,
+    "wallEverBreached": false
+   },
+   "atk": [
+    {
+     "id": 1301,
+     "kategoria": "piechota",
+     "hp": 50,
+     "q": 1,
+     "r": 0,
+     "facing": 1,
+     "stats": {
+      "Jednostka": "Najezdzca",
+      "meleeAttack": 18,
+      "meleeDefence": 7
+     }
+    },
+    {
+     "id": 1302,
+     "kategoria": "piechota",
+     "hp": 45,
+     "q": 1,
+     "r": 1,
+     "facing": 1,
+     "stats": {
+      "Jednostka": "Najezdzca",
+      "meleeAttack": 16,
+      "meleeDefence": 6
+     }
+    }
+   ],
+   "def": [
+    {
+     "id": 1311,
+     "kategoria": "piechota",
+     "hp": 50,
+     "q": 2,
+     "r": 0,
+     "facing": 3,
+     "stats": {
+      "Jednostka": "Milicja wzgorza",
+      "meleeAttack": 11,
+      "meleeDefence": 9
+     }
+    },
+    {
+     "id": 1312,
+     "kategoria": "piechota",
+     "hp": 40,
+     "q": 3,
+     "r": 1,
+     "facing": 3,
+     "stats": {
+      "Jednostka": "Milicja lasu",
+      "meleeAttack": 10,
+      "meleeDefence": 8
+     }
+    }
+   ]
+  },
+  "expect": {
+   "winner": "atakujacy",
+   "shown": "atakujacy",
+   "survivors": [
+    [
+     1301,
+     "2"
+    ],
+    [
+     1302,
+     "11"
+    ]
+   ],
+   "log": [
+    "P Najezdzca>Milicja wzgorza Wzgorza front 0 A34 D30",
+    "P Najezdzca>Milicja lasu Las front 0 A28 D20",
+    "P Najezdzca>Milicja wzgorza Wzgorza front 0 A18 D10",
+    "P Najezdzca>Milicja lasu Las front 0 A11 D0",
+    "P Najezdzca>Milicja wzgorza Wzgorza front 0 A2 D0",
+    "=== Natychmiastowy wynik: ATAKUJACY wygrywa ==="
+   ],
+   "wallEverBreached": false,
+   "defBonus": [
+    [
+     2,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     1,
+     false,
+     "0"
+    ],
+    [
+     2,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     1,
+     false,
+     "0"
+    ],
+    [
+     2,
+     0,
+     false,
+     "0"
+    ]
+   ],
+   "calls": [
+    {
+     "a": "Najezdzca",
+     "d": "Milicja wzgorza",
+     "aAtk": "18",
+     "aDef": "7",
+     "aHp": "50",
+     "dAtk": "11",
+     "dDef": "9",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Wzgorza",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": "1",
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Najezdzca",
+     "d": "Milicja lasu",
+     "aAtk": "16",
+     "aDef": "6",
+     "aHp": "45",
+     "dAtk": "10",
+     "dDef": "8",
+     "dHp": "40",
+     "maxRounds": 30,
+     "defenderTerrain": "Las",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": "1",
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Najezdzca",
+     "d": "Milicja wzgorza",
+     "aAtk": "18",
+     "aDef": "7",
+     "aHp": "34",
+     "dAtk": "11",
+     "dDef": "9",
+     "dHp": "30",
+     "maxRounds": 30,
+     "defenderTerrain": "Wzgorza",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": "1",
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Najezdzca",
+     "d": "Milicja lasu",
+     "aAtk": "16",
+     "aDef": "6",
+     "aHp": "28",
+     "dAtk": "10",
+     "dDef": "8",
+     "dHp": "20",
+     "maxRounds": 30,
+     "defenderTerrain": "Las",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": "1",
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Najezdzca",
+     "d": "Milicja wzgorza",
+     "aAtk": "18",
+     "aDef": "7",
+     "aHp": "18",
+     "dAtk": "11",
+     "dDef": "9",
+     "dHp": "10",
+     "maxRounds": 30,
+     "defenderTerrain": "Wzgorza",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": "1",
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    }
+   ],
+   "tcu": [
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    }
+   ]
+  }
  }
 ]
