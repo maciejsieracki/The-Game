@@ -4703,13 +4703,29 @@ function applyWarAllInCapitalToCommands(
       keep.add(cmd.unitId);
     }
   }
-  let planned = eligible.filter(u => !keep.has(u.id));
-  if (planned.length === 0) return;
+  // R-WEB-AI-WAR-CITY-GARRISON-ONE-REST-TO-GENERAL-Q1: w wojnie kazde miasto AI, ktore ma na
+  // swoim heksie jednostke bojowa, zatrzymuje JEDNA z nich jako garnizon (nie wychodzi do marszu
+  // ani zbiorki, nawet gdy general jest daleko). Wodz (isGeneral) nie jest garnizonem. Reszta
+  // jednostek idzie do marszu/zbiorki jak dotad. Miasta puste NIE sa tu uzupelniane (proba
+  // przesuniecia najblizszej jednostki ustawiala ja poza obroncy domu -- ai-war-defend-home-test
+  // gubil miasto; patrz runda 1 raportu). Rekrutacja NIE jest zmieniana.
+  const compareIds = (a: RuntimeUnit, b: RuntimeUnit): number => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  const garrisonIds = new Set<string>();
+  for (const city of cities.filter(c => c.ownerId === playerId).sort(
+    (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+  )) {
+    const stayers = eligible
+      .filter(u => u.q === city.q && u.r === city.r && !keep.has(u.id) && u.isGeneral !== true)
+      .sort(compareIds);
+    if (stayers.length > 0) garrisonIds.add(stayers[0]!.id);
+  }
+  let planned = eligible.filter(u => !keep.has(u.id) && !garrisonIds.has(u.id));
   const plannedIds = new Set(planned.map(u => u.id));
   for (let i = commands.length - 1; i >= 0; i--) {
     const cmd = commands[i]!;
-    if (cmd.type === 'move' && plannedIds.has(cmd.unitId)) commands.splice(i, 1);
+    if (cmd.type === 'move' && (plannedIds.has(cmd.unitId) || garrisonIds.has(cmd.unitId))) commands.splice(i, 1);
   }
+  if (planned.length === 0) return;
   // R-WEB-AI-ARMY-CONCENTRATION-REPLACEMENT-Q1 (flaga ARMY_CONSOLIDATION ON): jednostki spoza
   // skupiska >= ARMY_CONCENTRATION_MIN_UNITS (np. armia zastepcza po stracie glownej) nie
   // maszeruja na cel pojedynczo -- zbieraja sie w jednym miescie zbiorki; gdy prog zebrany,
