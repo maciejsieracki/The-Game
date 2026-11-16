@@ -18,14 +18,14 @@
 //!   (`setup.ts:759-776`) + heksy obcych miast (`foreignCityHexKeys`) dodane do blokad i usuniete z
 //!   `passThrough` ([`occupied_for_move`]).
 
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::sync::OnceLock;
 
 use crate::data::units_combat::parse_units;
 use crate::domain::pathfinding::ruch_jednostek::{
     build_move_occupancy, Klucz, MoveOccupancy, RuchHex, RuchJednostka, RuchMapa, TerenBazowy,
 };
-use crate::domain::pathfinding::CityHexRef;
+use crate::domain::pathfinding::{add_foreign_city_block_coords, CityHexRef};
 use crate::domain::playable::{
     base_type_id, PlayableState, PlayableTerrain, PlayableTile, PlayableUnit,
 };
@@ -183,12 +183,14 @@ pub fn occupied_for_move(
     let except: Vec<String> = except_ids.iter().map(ToString::to_string).collect();
     let except_refs: Vec<&str> = except.iter().map(String::as_str).collect();
     let mut occ = build_move_occupancy(&units, mover_owner_id, &except_refs);
-    for city in city_hex_refs(state) {
-        if city.owner_id != mover_owner_id {
-            let key = (city.q, city.r);
-            occ.blocked.insert(key);
-            occ.pass_through.remove(&key);
-        }
+    // `foreignCityHexKeys` z RJ-REPIN Q3 (wariant na wspolrzednych: `MoveOccupancy` uzywa `(q, r)`,
+    // nie kluczy tekstowych), bez wlasnej kopii filtra wlasciciela.
+    let foreign =
+        add_foreign_city_block_coords(&BTreeSet::new(), mover_owner_id, &city_hex_refs(state));
+    for hex in foreign {
+        let key = (hex.q, hex.r);
+        occ.blocked.insert(key);
+        occ.pass_through.remove(&key);
     }
     occ
 }
