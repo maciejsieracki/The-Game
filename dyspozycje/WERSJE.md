@@ -1,3 +1,9 @@
+## ROBOCZA cb305af1 -- 2026-11-16 -- FALA 776: Laczenie z jednostka oblegajaca: koniec bledu BOOT ERROR typeId (testowa)
+
+- Strażnik w obsludze laczenia (promptMergeIfCoLocated): gdy po ruchu nie ma jednostek przybywajacych (np. oblegajaca jednostka wchodzi na heks innej), gra nie wywala sie bledem typeId, tylko loguje ostrzezenie i wraca.
+- Weryfikacja: tsc 0, army-merge-besieger-only-move-test 8/0 (mutant 5/3), siege-nearby-lock-join 23/0, army-split-besieging 21/0, load-game-regression 34/0, 5 bramek referencyjnych; zywy Chromium: blad odtworzony na bazie, zniknal po poprawce
+- Limity: NIE ZMIERZONO: dokladna sciezka Polacz->applyMerge ze zrzutu wlasciciela, Idz do wodza, odroczony prompt, wczytany zapis; jesli BOOT ERROR wroci - potrzebny zapis gry sprzed kliku
+
 ## ROBOCZA cc014eb0 -- 2026-11-16 -- FALA 775: Rozdzielanie armii oblegajacej: wydzielone jednostki bez oblezenia i z pelnym ruchem (testowa)
 
 - Jednostki wydzielone przez Rozdziel z armii oblegajacej miasto traca oblezenie (oblegaCityId) i fortyfikacje w polu, maja pelny ruch i nie licza sie do grup oblezenia; reszta armii nadal oblega, a gdy nikt nie zostaje przy murze oblezenie jest zdjete.
