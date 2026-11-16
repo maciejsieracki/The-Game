@@ -2641,3 +2641,14 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Wynik pętli dystansu (#100):** Operator d1dbd1ff3 PASS-WITH-NOTES, FC raport 9aaee0ca8 PASS-WITH-NOTES. Commity zachowane lokalnie (`refs/keep/COMBAT-PETLA-DYSTANSU-op` i `-fc`, push referencji odrzucony przez proxy). Nie zintegrowano: dubluje COMBAT-HARNESS R1–R3, decyzja o scaleniu u orkiestratora.
 - **Dysk:** 15 GB wolnego. Sprzątanie: usunięto worktree wf_a01f4cfa-dd0 (-1, -4, -5).
 - **Otwarte:** push referencji `keep` (I4 `54fa4c704`, dwa COMBAT) odrzucany przez proxy; zarzut trailera commitu z nazwą modelu w `463fb2636` (decyzja #289).
+
+### Przebieg — stała instrukcja użytkownika (sprzątanie + workerzy), 2026-11-16 ~18:35 UTC
+
+- **Parity:** `d66aaa3a7` (FF z `55e00a164`: wektory AUTO V1/V5/V6, bramki fmt/clippy EXIT 0, test 3751 passed, 0 failed).
+- **Sloty: 2 z 4 aktywne:**
+  - Integracja #311 (test czułości filtra obrońców, commit `597bdcd8a`, wynik FC PASS) na `d66aaa3a7`, HAIKU, `wf_d6ab4ac2-b7f`. FF po zielonej bramce.
+  - Wektory AUTO V2 i V7 (#296, część bez blokady), HAIKU Operator, SONNET Evaluator i FC, `wf_5fee88d9-4fc`, dispatch `90ff3f2c8`, baza `d66aaa3a7`.
+- **Wolne sloty — brak czystych tematów:** V8 wymaga #148, V9–V13 wymagają #109/#107, V14 wymaga decyzji #97; #100 wymaga decyzji o scaleniu z COMBAT-HARNESS; pozostałe pozycje czekają na decyzje właściciela (#308, #282, #115/#120, #135, #310 D1–D6) albo zależą od niezintegrowanego kodu (#304, #165).
+- **Zamknięte z dowodem:** #174 (js_max/js_min ze znakiem zera na parity, test pełny zielony), #295 (`p6_8i_pick` przechodzi w pełnym teście i bramce FC).
+- **Sprzątanie:** usunięto worktree zakończonych workflowów (AUTO, filtr, dokumenty); commity bez odpowiednika na parity zachowano referencjami `refs/keep/cleanup-*`. Usunięto scratch `target-311` i `tgt`. Dysk 19 GB wolnego, potem 20 GB.
+- **Otwarte:** push referencji `keep` odrzucany przez proxy (I4 `54fa4c704`, COMBAT-PETLA `d1dbd1ff3`/`9aaee0ca8`); trailer commitu `463fb2636` zawiera nazwę modelu (decyzja #289); #100 do decyzji o scaleniu.
