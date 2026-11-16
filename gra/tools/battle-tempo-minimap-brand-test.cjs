@@ -99,7 +99,7 @@ for (const el of [outer, row, frame, btnOff, btnOn, btnAuto]) {
 }
 assert.ok(used.size >= 6, 'panel używa co najmniej 6 tokenów marki');
 for (const t of used) {
-  assert.ok(tokensCss.includes(t + ':') || t === '--tg-focus-ring' || tokensCss.includes(t + ' '), `token ${t} nieobecny w tokens.css`);
+  assert.ok(tokensCss.includes(t + ':') || tokensCss.includes(t + ' '), `token ${t} nieobecny w tokens.css`);
 }
 
 // (C) — źródło battleScene.ts: wiązanie UI bez zmiany logiki.

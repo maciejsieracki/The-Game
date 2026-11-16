@@ -252,6 +252,7 @@ import {
   battleLossTextColor,
 } from './battleHudTheme';
 import { civIconSvg, brandIconSvg } from '../ui/icons/brandAssets';
+import { ensureBrandRootTokens } from '../ui/brandTokenVars';
 import { leaderPortraitUrl, leaderName, civIconIdFromCivLabel } from '../ui/leaderPortraits';
 import { showEndScreen1E } from './endScreen1E';
 import { markBattleSceneOpen, markBattleSceneClosed } from './battleSceneOpen';
@@ -12446,6 +12447,9 @@ export class BattleScene {
    */
   private _buildMinimapOverlay(): void {
     const TEMPO_ROW_H = 42;
+    // Tokeny marki (var(--tg-*)) muszą być wstrzyknięte przed budową panelu Tempo,
+    // także gdy scena startuje bez menu/wiki (R-WEB-UI-BATTLE-TEMPO-MINIMAP-PANEL-BRANDBOOK-Q1).
+    ensureBrandRootTokens();
     const wrap = document.createElement('div');
     Object.assign(wrap.style, {
       // Zadanie #17: prawy dolny rog — patrz _syncMinimapPosition (wywolane

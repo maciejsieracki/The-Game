@@ -399,9 +399,9 @@ export function applyTempoBtn1E(el: HTMLButtonElement, opts?: { active?: boolean
     borderRadius: 'var(--tg-radius-btn, 8px)',
     border: active ? '2px solid var(--tg-gold-primary, #e8d88a)' : '2px solid rgba(232,216,138,0.4)',
     background: active
-      ? (auto ? 'var(--tg-btn-primary)' : 'linear-gradient(180deg,rgba(232,216,138,0.24),rgba(232,216,138,0.06))')
-      : 'var(--tg-panel-grad)',
-    color: auto && active ? 'var(--tg-btn-primary-ink)' : 'var(--tg-gold-primary)',
+      ? (auto ? 'var(--tg-btn-primary, linear-gradient(180deg,#f0dc88,#b99a28))' : 'linear-gradient(180deg,rgba(232,216,138,0.24),rgba(232,216,138,0.06))')
+      : 'var(--tg-panel-grad, linear-gradient(180deg,rgba(18,24,32,0.96),rgba(8,10,16,0.96)))',
+    color: auto && active ? 'var(--tg-btn-primary-ink, #2e2708)' : 'var(--tg-gold-primary, #e8d88a)',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
