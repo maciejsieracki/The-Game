@@ -1405,9 +1405,11 @@ import { checkVictory, checkDefeat, techIdsInGameScope, allTechInScopeResearched
 import type { VictoryPlayer, VictoryInput } from './game/victory';
 import {
   showVictoryScreen,
+  hideVictoryScreen,
   buildVictoryScreenData,
   formatVictoryTitle,
 } from './ui/victoryScreen';
+import type { VictoryScreenData } from './ui/victoryScreen';
 import {
   loadBarbParams, barbariansActive, spawnCamps, tickCamps, decideBarbarianMoves,
   scaleBarbParamsForLevel, pickBronzeBarbUnit, isCampRaidReady, migrateBarbariansLevel,
@@ -36445,6 +36447,36 @@ async function boot(): Promise<void> {
      * goes through the async launchIncomingMapFieldBattle; its onResolved runs after the
      * end-of-turn check already ran). Same rule (checkDefeat) and screen; dominance and
      * science stay in the end-of-turn block. */
+    /** DEFEATSCR: porażka = pełny koniec gry z podsumowaniem. „Wczytaj grę” chowa ekran dopiero
+     *  po wyborze zapisu; „Anuluj” w dialogu albo nieudane wczytanie przywraca ekran porażki
+     *  (gameOver nie zostaje na ślepo ustawione bez ekranu). „Rozpocznij od nowa” = nowa gra (reload). */
+    function pokazEkranPorazki(screenData: VictoryScreenData): void {
+      // DEFEATSCR obrona r1 (zarzut 4 / zachowanie live): odłożone i otwarte „Broni się” z tury
+      // porażki nie mogą wypłynąć POD dialog „Wczytaj grę” (live: pb-overlay przykrywał przycisk
+      // „Wczytaj” w dialogu). Koniec gry = bitwy już się nie rozstrzygną.
+      try { clearDeferredAutoPreBattleQueue(); } catch { /* best-effort */ }
+      try { if (isPreBattleOpen()) hidePreBattle(); } catch { /* best-effort */ }
+      showVictoryScreen(screenData, () => location.reload(), () => {
+        hideVictoryScreen();
+        void (async () => {
+          const any = await savePresence.refresh();
+          if (!any) {
+            showHintMessage('Brak zapisów na tym urządzeniu.', 3500);
+            pokazEkranPorazki(screenData);
+            return;
+          }
+          await showLoadGameDialog({
+            onLoad: (slotId) => {
+              void loadGameFromSlot(slotId, true).then(() => {
+                if (gameOver) pokazEkranPorazki(screenData);
+              });
+            },
+            onCancel: () => pokazEkranPorazki(screenData),
+          });
+        })();
+      });
+    }
+
     function sprawdzPrzegranaPoUtracieMiasta(): void {
       if (gameOver || truceTestSuppressVictory || rebelProtectionTestSkipVictoryCheck) return;
       const defeat = checkDefeat({
@@ -36455,11 +36487,13 @@ async function boot(): Promise<void> {
       if (defeat === null) return;
       gameOver = true;
       const eraLabelsDefeat = ['', 'Kamień', 'Brąz', 'Żelazo'];
-      showVictoryScreen(buildVictoryScreenData(defeat, {
+      pokazEkranPorazki(buildVictoryScreenData(defeat, {
         turn,
         eraLabel: eraLabelsDefeat[player.era] ?? ('Epoka ' + player.era),
-        civLabel: player.civType,
-      }), () => location.reload());
+        // DEFEATSCR obrona r1 (zarzut 2): nazwa wyświetlana zamiast surowego klucza civType.
+        civLabel: civDisplayNameForKey(String(player.civType ?? '')),
+        technologieZbadane: player.zbadane.size,
+      }));
       console.log('[Victory] ' + formatVictoryTitle(defeat.rodzaj, turn) + ' gracz=0 rodzaj=' + defeat.rodzaj + ' (po bitwie)');
     }
 
@@ -46362,9 +46396,15 @@ async function boot(): Promise<void> {
                   ? powerShare(objectivePowerForOwner(0), potegiWszystkich)
                   : undefined,
                 eraLabel: eraLabels[player.era] ?? ('Epoka ' + player.era),
-                civLabel: player.civType,
+                // DEFEATSCR obrona r1 (zarzut 2): ta sama nazwa wyświetlana także dla zwycięstw (wspólne pole).
+                civLabel: civDisplayNameForKey(String(player.civType ?? '')),
+                technologieZbadane: player.zbadane.size,
               });
-              showVictoryScreen(screenData, () => location.reload());
+              if (vResult.rodzaj === 'przegrana') {
+                pokazEkranPorazki(screenData);
+              } else {
+                showVictoryScreen(screenData, () => location.reload());
+              }
               if (isVictory2) {
                 showHintMessage('<b>' + formatVictoryTitle(vResult.rodzaj, turn) + '</b>', 4000);
               }
