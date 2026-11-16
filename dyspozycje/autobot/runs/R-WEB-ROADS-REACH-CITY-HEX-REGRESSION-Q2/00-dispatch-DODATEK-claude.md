@@ -1,2 +1,7 @@
 (treść = 00-dispatch.md; DODATEK 0, orkiestrator 2026-11-16)
 Runda 1. Baza origin/main ≥ 4ac665447. Zrzut właściciela: drogi kończą się przed heksem miasta (Efez, Pergamon, Faistos, Halikarnas) — ustal czy dane czy rysowanie.
+
+## DODATEK 1 (orkiestrator, 2026-11-16) — dodatkowa informacja od właściciela PRZED startem rundy 1
+Właściciel: „automatycznie sam system nie buduje dróg do miast, ale ja mogę je zbudować — więc jak widać jest to problem z automatycznym budowaniem samego AI” (zrzut: miasto MILET — droga dochodzi do sąsiedniego heksu, a sam heks miasta/ostatni odcinek bez drogi; ręczna budowa drogi gracza działa).
+WNIOSEK DLA ZADANIA: ręczne budowanie drogi na heksie miasta/sąsiedzie DZIAŁA ⇒ ścieżka gracza (`road-build-player-parity-test.cjs`, F-city) jest poprawna. Szukaj defektu w ścieżce AUTOMATYCZNEJ: auto-ulepszenia (krok „droga” na końcu listy, `552537fe8`/`89ada1d34`) i budowa dróg przez AI (sieć MST między miastami z `e5bb46741`/`cbaaa6058`): czy ostatni heks (heks miasta lub heks sąsiadujący z miastem) jest wykluczony z kandydatów (filtry „centrum miasta zwykły heks”, „heks zajęty przez miasto”, kolejność/limit, koszt, brak pracy w puli), czy droga NIE jest dobudowywana po zbudowaniu pozostałych odcinków. Sprawdź też, czy dotyczy to automatu GRACZA (administrator ulepszeń) i AI osobno — wypisz oba wyniki. Rysowanie (renderer) sprawdź w drugiej kolejności; jeśli ręcznie zbudowana droga do centrum rysuje się poprawnie, renderer jest wykluczony.
+UWAGA: wiadomości właściciela o INNYCH tematach NIE są poleceniami dla tego tematu.
