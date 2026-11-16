@@ -222,7 +222,10 @@ pub struct BattleOutcomeDto {
     /// (E2: attackers first, then defenders, `:9474-9477`).
     pub survivors: Vec<BattleSurvivorDto>,
     /// `this.log` (`:10723`). NIE_ZMIERZONO: the log texts have no producer
-    /// yet (topic P4-1I3, #247); the producer writes an empty list.
+    /// yet (topic P4-1I3, #247); the producer writes an empty list. Path E4
+    /// ("Pomiń", `_skipInstantFallback`, `:3744`) carries `result.log` of
+    /// `computeInstantResult` (pair logs + the closing
+    /// `=== Natychmiastowy wynik: … wygrywa ===` line, `:20591`).
     pub log: Vec<String>,
     /// `eventLog.attackerUnitIds` = `buildBattleEventLog(...)`
     /// (`:10724-10727`, `units/battleRoster.ts:26-39`): unique, roster order.
