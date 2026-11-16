@@ -10283,3 +10283,10 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 
 ### Start 2026-11-16 ~01:55 UTC — R-WEB-LIVE-VERIFY-MIXED-ARMY-REMEASURE-Q1 (Haiku, cand cb29ce7af)
 - Ponowny pomiar mieszanej armii na żywo (≥8 nowych ziaren × ≥3 składy) po FALACH 750–758: rozrzut frontu był dokładnie na limicie 2; tylko pomiar, defekty → kandydaci. Zadanie z #272/#335.
+
+### FALA 759 — R-WEB-LIVE-VERIFY-MIXED-ARMY-REMEASURE-Q1 — WDROŻONE NA ROBOCZĄ (2026-11-16)
+- main 0d8b414e2, ROBOCZA MD5 b3e02480 (Raw = manifest; sidecary zgodne). FC PASS-WITH-NOTES (kandydat 0b4874e19, raport f2e2e910d; runda 1/5, Haiku; czas całości ok. 17 min). Refs `refs/keep/R-WEB-MIXED-REMEASURE-r1-{op,eval,obrona,fc}`. Bramki: tsc 0, logic 213/213, 5 referencyjnych, vite OK.
+- Dostarczono (tylko `gra/tools` +2 linie składu M3 + evidence): pomiar na żywo po FALACH 750–758, 80 bitew (seedy 11–18; N2 mieszana armia 3 składy × 8 ziaren = 24, N3 ucieczka/pościg/neverRout = 56). Ciosy/jednostkę/turę max 1; niewykorzystany ruch max 2,9% (próg 10%); pageerror 0, timeout 0. Rozrzut frontu przed zderzeniem: M1 max 2 (na progu, PASS), M2 max 1 (PASS), M3 max 3 (A1 ≤2 złamany w 8/8 ziaren). N3 wszystkie PASS (neverRout nie rozbijane, uciekinierzy ≤50% ruchu, pościg konnicy aktywny).
+- Uwagi FC: rozrzut zależy od składu, nie od ziarna (3 próbki, nie 24); przyczyna M3 NIE ZMIERZONA (hipoteza „więcej konnicy” sprzeczna z danymi: obrońca M3 i M1 po 4 konnice, def1 3 vs 1); wynik NIE jest regresją FALI 750 (M1/M2 w limicie).
+- KANDYDAT (nienaprawiany): R-WEB-BATTLE-FRONT-SPREAD-ASYM-Q1 (neutralna nazwa) — repro: part n2, auto, seed 11, atk Wojownik:6,Łucznik:8,Konnica:6 vs def Wojownik:12,Łucznik:4,Konnica:4; `_lineAdvanceCap` ~8469 wyłącza sufit kolumnowy dla konnicy (hipoteza, NIE ZMIERZONO).
+- DO ZAPYTANIA RANO (ABC): próg A1 (rozrzut ≤2) dla składów asymetrycznych — czy zostaje (wtedy kandydat do naprawy), czy poluzować dla M3 (dopuścić 3).
