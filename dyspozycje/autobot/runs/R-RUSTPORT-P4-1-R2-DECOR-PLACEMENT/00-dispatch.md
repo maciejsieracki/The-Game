@@ -37,3 +37,13 @@ ISTNIEJĄCE: moduły `rust-port/renderer/src/decor/` (forest, jungle, desert, me
 3. Brak `#[ignore]`, brak osłabionych asercji, zero zmian poza allowlistą.
 4. Commit jawnym `git add` (nigdy `-A`), BEZ `Cargo.lock`, BEZ nazwy modelu w treści i trailerach. Bez push do parity. Raport w `dyspozycje/autobot/runs/R-RUSTPORT-P4-1-R2-DECOR-PLACEMENT/`.
 5. `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` poza repo i unikalny; usuń po bramkach.
+
+## DODATEK r2 (po BLOCK r1; BAZA = commit r1 `47f491508`, kod już jest)
+
+Runda 1 dała BLOCK: kod i testy `decor_placement_scene` są poprawne (9/9), ale strażnik `tests/decor_web_parity.rs:1702-1718` (`decor_sources()`, z P4-17) zakłada brak podkatalogów w `decor/` i wywala 2 testy (`decor_uses_jsmath_not_platform_libm`, `decor_reuses_core_instead_of_copies`). Decyzja orkiestratora: wariant A.
+
+Zmiany r2 (BAZA: `47f491508`, worktree detached na nim):
+1. ALLOWLISTA rozszerzona o `rust-port/renderer/tests/decor_web_parity.rs` — WYŁĄCZNIE funkcja `decor_sources()` (zamiana na skan rekursywny katalogu `decor/`, bez osłabiania asercji, z zachowaniem `assert out.len() >= 10`). Żadnych innych zmian w tym pliku.
+2. Poprawka numerów linii pinu w komentarzach `tests/decor_placement_scene.rs` i w `decor/placement/mod.rs` (wskazane przez Ewaluatora r1, sprawdzić `git grep -n` w 07d2fbd72): V1 warunek `scene.ts:2348` (nie :2347); V2 `isWarmJungleForestHex` :2354; wariant i obrót dżungli :2355-2356; wariant i obrót lasu :2365-2366; V3 baseY :2349, position/scale :2352-2353.
+3. Brak innych zmian. Bramki jak w r1, PEŁNE `cargo test --all-targets --no-fail-fast` musi dać EXIT 0 (w tym `decor_web_parity` 12/12).
+4. Commit r2 jako osobny commit na `47f491508`; trailer bez nazwy modelu.
