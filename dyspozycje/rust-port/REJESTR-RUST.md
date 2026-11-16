@@ -2343,3 +2343,14 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **EXEC-T2-MOVE-GATE** (`wf_479bcc22-c55`): Operator w toku (Haiku).
 - **H-MANUAL-ROZP** (`wf_d8a3e31a-461`): Operator w toku (Haiku, recon bez kodu).
 - **Parity:** `316ded4b7` (bez zmian). **Dysk:** 14 GB wolnego.
+
+## Przebieg (07:09 UTC — FC rozpoznania trybu ręcznego H; integracja docs-only; 3/4 slotów)
+
+- **H-MANUAL-ROZP-Q1** (`wf_d8a3e31a-461`): Operator → Evaluator PASS-WITH-NOTES (7 zarzutów) → Obrona przyjęła wszystkie → **FC PASS-WITH-NOTES `5c900cdf9`**. Wynik: tryb ręczny oblężenia nie działa w produkcji Rust — `_performSiegeManualOrder` (pin 18435-18475) nieportowany, `ProdOps::perform_player_order` (`siege_tactics_loop.rs:773`) to atrapa, sterownik wyklucza tryb ręczny i oblężenie (`:1036-1039`). Helpery taranu, wieży i podejścia są zportowane, ale nieподłączone.
+- **Kolejność H (z recon):** H1 (`player_unit_idle`) zwinięte do EXEC-T1 (#266) → T2 → H2 (`_rangedTargetInRange`/`_targetInRange`, z `meleeBlockedByWall`) → H3 (`_performSiegeManualOrder`, nowe pliki) → T3/T4 → T8 → H4 (wiring, jedyny temat dotykający `siege_tactics_loop.rs` w czterech miejscach).
+- **Zależność jawna (Evaluator Z1):** samo odblokowanie trybu ręcznego nie wystarczy — H4 wymaga zdjęcia gałęzi „oblężenie” w `siege_tactics_loop.rs:1038-1039`; to zakres #113 lub osobnego tematu (NIE_ZMIERZONO, decyzja orkiestratora).
+- **Integracja:** FC `5c900cdf9` nie jest na linii parity (przodek `a61337844`). Wniesiono tylko pliki runu (docs-only) na worktree z parity → commit `f38675a8`, FF `rust-port/parity-v2` = `f38675a8` (readback zgodny).
+- **Pytanie techniczne (rozstrzygam sam, nie gameplay):** H2 zwinąć do #179/#148 — przyjęte jako kierunek; wykonanie czeka na te tematy.
+- **Sloty: 3 z 4.** K5DOC-T0 (`wf_a3de76ac-91a`, Obrona), EXEC-T1-QUEUE (`wf_acc61d3f-1fa`), EXEC-T2-MOVE-GATE (`wf_479bcc22-c55`). Czwarty slot wolny: kolejne tematy portu zależą od T0 (T2', T5a, T6, T4), od EXEC-T2 (DOC-T4), od #179/#148 (H2) lub są do decyzji właściciela (ZŁOŻA #104, R7K7C #106, ZDOBYCIE #115, CRED #120). Nie dokładam tematu bez zależności.
+- **Taski:** #265 zamknięty; #255, #266, #267 w toku.
+- **Dysk:** 14 GB wolnego.
