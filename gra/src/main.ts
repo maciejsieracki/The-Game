@@ -15591,6 +15591,15 @@ async function boot(): Promise<void> {
       }
 
       const arrivingUnits = onHex.filter(x => movedSet.has(x.id));
+      // R-WEB-ARMY-MERGE-JOIN-BESIEGING-TYPEID-CRASH-Q2: gdy wszystkie ruszone jednostki są OBLEGAJĄCE
+      // (oblegaCityId), nie wchodzą do `onHex` (coLocatedForMergePrompt je pomija), więc `arrivingUnits`
+      // jest puste i `arrivingUnits[0]!` dawało `undefined` -> TypeError „reading 'typeId'” w mergeUnitRow
+      // (BOOT ERROR). Nie ma czego scalać -- bez monitu, z logiem diagnostycznym.
+      // EN: all moved units besieging -> arrivingUnits empty -> no prompt, log, return (no crash).
+      if (arrivingUnits.length === 0) {
+        console.warn('[ArmyMerge] pominięto monit: ruszone jednostki są oblegające (brak przybyłych)', movedUnitIds);
+        return;
+      }
       const arrivingRow = arrivingUnits.length === 1
         ? mergeUnitRow(arrivingUnits[0]!)
         : {
