@@ -10267,3 +10267,6 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 - Dostarczono (tylko `gra/tools`): runner `ai-economy-measure-run.cjs` zamyka audiencję dyplomatyczną / panel łączenia armii / kartę odkrycia przed „Zakończ turę”; liczniki `diploAudienceClosed/armyMergeClosed/techNoticeClosed` liczone PO zniknięciu blokady (3 próby bez skutku = zrzut DOM); state.json po każdej turze. Live seed 4242 do t60 przez t51 (10 s) i t57 (15 s).
 - NIE ZMIERZONO: czy bazowy runner na seed 4242 w ogóle się zawiesza w tym przebiegu (dowód „przechodzi”, nie „naprawia”); panel armii i karta tech na żywo (tylko atrapy DOM); niezerowy stuckQueueHeals. Hash ścieżki gry po zamknięciu audiencji („Wróć”) nieporównywalny z wcześniejszymi przebiegami pomiarowymi.
 - Następny krok: #415 runda 2 (cand = main cb29ce7af).
+
+### Start 2026-11-16 ~02:00 UTC — #415 R-WEB-AI-UPKEEP-ONOFF-MEASURE-100T-Q1 runda 2 (wf_bb026fa6-c26, Haiku, cand cb29ce7af = main po FALI 758)
+- Przebiegi ciągłe w tle bez `timeout`, 4 przebiegi sekwencyjnie (seed 4242/777 × ON/OFF), zbieranie wojen/eliminacji; DODATEK 1.
