@@ -2841,3 +2841,16 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Integracja R2 (`11d7e4763`, FC PASS, runda 2):** bramka renderera NIE uruchomiona. Warunek: ≥12 GB wolnego i brak budujących workerów. Dysk 11 GB, budują R4, T5a i T4b r2. Parity `2edc808d7` (R6 na szczycie), merge R2 przebudowany na nowym parity.
 - **Sprzątanie:** usunięte worktree R6 (`wf_f53eacb7-7f9-1/2`) i R2 r2 (`wf_b838b674-86e-1/2/3`), targety `tgt-fc-r2decor` i `tgt-r6eval`. Refy keep: `P4-1-R6-op-2edc808d7`, `P4-1-R6-fc-29bbe05bd`, `P4-1-R2-r2-99e27dae5`, `P4-1-R2-merge-fcf54456e`, `P4-1-R2-merge2-11d7e4763`, `P4-1-R2-fc-r2-c4f43bcbd`.
 - **Trwające Workflow:** R4 (Opus, Operator), T5a (Haiku, Operator), T4b r2 (Haiku, Operator).
+
+### Przebieg — heartbeat (2026-11-16 ~22:18 UTC): 4/4 slotów zajęte, brak zakończonych FC
+
+- **Sloty: 4/4 aktywne** (sprawdzone w dziennikach `subagents/workflows`, żaden nie ma werdyktu FC):
+  - K5DOC-T4b `_advanceStep`, runda 2 (`wf_8919e89c-4ba`), Haiku; baza `57907d39e` (WIP r1). Etap: Evaluator.
+  - K5DOC-T5a strzelec-kite, runda 2 (`wf_f88b947e-171`), Haiku; baza `7de3417e8`. Etap: Operator.
+  - R4 ulepszenia, zasoby, wioski, runda 2 (`wf_92cfa6de-fdf`), Opus; baza `aa9d36ac4`. Etap: Operator.
+  - K5DOC-T6 jazda, implementacja (`wf_7a5e569c-542`), Haiku; baza `2edc808d7`. Etap: Operator.
+- **Rozpoznanie K5DOC-T6 (`daf56eddd`): PASS.** Dispatch implementacji `cf0a9c2a6`. Zależność od T4b (#313) i T5a (#257) niepotwierdzona; kod nie wymaga ich wg rozpoznania. Orkiestrator potwierdzi przed FF.
+- **Krok 2 (zakończone FC PASS bez integracji):** brak. Integracja R2 (`11d7e4763`) i renderera (Q5+R1+R3+R5) czeka na bramkę: ≥12 GB wolnego i brak budujących workerów. Dysk 14 GB, budują cztery workery.
+- **Krok 3 (sprzątanie):** brak zakończonych tematów od ostatniego sprzątania. Worktree: 9 (integ-r2, integ-rend, wf_8919…-1 zablokowany przez T4b r2, pozostałe trzy aktywne).
+- **Reguła modeli:** Operatorzy Haiku, z wyjątkiem R4 (Opus, 3D). Evaluator i FC Sonnet. Decyzje gameplay zostają w czacie (pytania ABC #358).
+- **Zadania:** 31 zadań dodanych w nocy (#328–#358), najcięższe Opus na początku. Zablokowane: #334, #335, #336, #337 (mgła #253, pętla K5LOOP), #349, #350 (decyzje formatu i wariantu A/B).
