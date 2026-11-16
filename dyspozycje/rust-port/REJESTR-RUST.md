@@ -2409,3 +2409,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dlaczego bez startów:** dysk 5,3 GB < próg 8 GB dla tematów z kodem (CLAUDE.md, zasada 5). Pozostałe kandydaty (DOC-T4/T5a/T6 z bazą `03dfa64c2`) są dozwolone regułą heartbeatu, ale wstrzymane tym samym progiem dysku.
 - **Cache aktywne:** `k5doc-target-r2`, `ev_t1q1_target`, `tgt-ev` (po 3,2 GB każdy) — w użyciu, nie ruszane. Stare katalogi w `/tmp/claude-0` są małe (<12 MB), nie zwalniają miejsca.
 - **Parity:** `585bb48e0`.
+
+## Przebieg (09:40 UTC — tick: dysk 3,1 → 7,3 GB; T2 czeka na integrację)
+
+- **Stan:** EXEC-T1 r2 (`wf_487c53ff-a4c`) i T3 GEOMETRIA (`wf_7d52ae9a-3df`) — oba po Operatorze i Evaluatorze, w toku dalszych etapów (cargo żywe). T2 CELE — FC PASS-WITH-NOTES `03dfa64c2`, integracja odłożona.
+- **Sprzątanie:** proces testu obrony T2 już nie działa. Usunięto worktree T2 `-3` (HEAD `1aa85c8b2` w `refs/keep/cleanup-T2-wt3`) i cache `/tmp/claude-0/k5doc-target-r2` (3,2 GB). **Dysk: 7,3 GB.**
+- **Dlaczego jeszcze bez integracji T2:** pełny test wymaga ≥8 GB wolnego miejsca (CLAUDE.md, zasada 5). Brakuje ok. 0,7 GB. Integrację zrobię, gdy EXEC-T1 lub T3 zakończą i zwolnią swoje cache.
+- **Aktywne, nie ruszane:** `/tmp/claude-0/k5doc-geo-target-r2` (T3) i `wf_487c53ff-a4c-3-tgt-r2` (EXEC-T1), `/tmp/claude-0/ev9f1` (decyzja właściciela).
+- **Parity:** `585bb48e0`.
