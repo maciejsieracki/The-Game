@@ -47,7 +47,6 @@ function sceneFor(BattleScene, own, enemies) {
   scene.occByKey = new Map([...own, ...enemies].map(u => [key(u.q, u.r), u]));
   scene._enemiesOf = u => (u.side === 'atk' ? scene.def : scene.atk).filter(e => !e.dead && !e.removed && !e.routed && !e.fadingOut);
   scene._isPlayerSide = side => side === 'atk';
-  scene._isUnitDoctrineAuto = () => false;
   scene._passableForUnit = (_u, q, r) => q >= 0 && q < 64 && r >= 0 && r < 72;
   scene._destAllowedByBlockade = () => true;
   scene._compactAttackAllowsStep = () => true;

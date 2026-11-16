@@ -19050,11 +19050,13 @@ export class BattleScene {
    * R-WEB-BATTLE-MANUAL-ORDERS-FULL-MOVE-STRIKE-AT-END-Q1: rozkaz RECZNY (marsz / atak) = pelny ruch w jednej aktywacji,
    * jak w AUTO: po kazdym kroku, jesli zostaly punkty ruchu i rozkaz trwa, ponownie wykonujemy rozkaz (bez czekania
    * na kolejna aktywacje). Cios nastepuje na koncu ruchu, gdy wrog jest w zasiegu; max 1 cios na jednostke na ture.
-   * Doktryny AI (isUnitDoctrineAuto) i pozostali nie sa objete -- zachowanie bez zmian.
+   * Doktryny AI nie wplywaja na lancuch rozkazu recznego (rozkaz ma pierwszenstwo).
    */
   private _manualOrderChainActive(ru: RuntimeBattleUnit): boolean {
     if (this.finished || this._autoBattleSuspended || ru.dead || ru.fadingOut || ru.removed) return false;
-    if (!this._manualMode || !this._isPlayerSide(ru.side) || this._isUnitDoctrineAuto(ru)) return false;
+    // Rozkaz reczny ma pierwszenstwo przed doktryna (ABC A 2026-11-15): jednostka bez doktryny i bez grupy
+    // (isUnitDoctrineAuto=true z domyslu) tez idzie lancuchem. Warunek doktryny usuniety po zarzucie Evaluatora.
+    if (!this._manualMode || !this._isPlayerSide(ru.side)) return false;
     if (ru.struckRound === this.roundNo) return false;
     const t = ru.playerOrder.type;
     if (t !== 'move' && t !== 'attackMove' && t !== 'attack') return false;
