@@ -241,6 +241,11 @@ const ASH_ACTION_ICONS: Partial<Record<string, string>> = {
     '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none">'
     + '<path d="M20.7 14.9A9 9 0 1 1 9.4 3.3a7.2 7.2 0 0 0 11.3 11.6z"/>'
     + '</svg>',
+  // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: „Zasadzka" -- krzyż celowniczy (ukryte zastawienie).
+  ambush:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    + '<circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>'
+    + '</svg>',
   'scout-explore':
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
     + '<circle cx="12" cy="12" r="9"/>'

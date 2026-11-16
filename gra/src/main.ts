@@ -56,6 +56,7 @@ window.addEventListener('unhandledrejection', (e) => {
 import { humanizeId, nazwaCywilizacji, nazwaWyswietlana } from './game/text-names';
 import { TEREN_LABEL_PL } from './map/terrain-names';
 import { normalizeDetDigestStackGroups } from './game/det-digest-normalize';
+import { AMBUSH_BLOCK_MESSAGES, canSetAmbush, cancelAmbush, isStackAmbushed, setAmbush } from './game/ambush';
 import * as THREE from 'three';
 import { loadGameData } from './data/loader';
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from './map/generator';
@@ -27197,6 +27198,16 @@ async function boot(): Promise<void> {
           disabled: unitSentryActionDisabled(active, stackRuch),
           active: active.sentry === true,
         });
+        // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: "Zasadzka" -- zużywa całą pulę ruchu stosu,
+        // poza miastem; odwołanie bez kosztu. Blokada z powodem -- patrz game/ambush.ts.
+        const ambushActive = isStackAmbushed(stack);
+        const ambushCheck = canSetAmbush(stack, { cityOnHex: cityAtUnit(active) !== undefined, inBattle: isSaveBlockedByBattle() });
+        actions.push({
+          id: 'ambush',
+          label: ambushActive ? 'Odwołaj zasadzkę' : 'Zasadzka',
+          disabled: ambushActive ? false : !ambushCheck.ok,
+          active: ambushActive,
+        });
         // P-SCOUT-EXPLORE-Q1=A: przycisk Zwiedzaj — tylko zwiadowca, domyślnie OFF.
         if (isScoutUnit(active)) {
           const exploring = active.autoExplore === true;
@@ -27428,6 +27439,23 @@ async function boot(): Promise<void> {
         } else {
           for (const su of stack) su.sentry = false;
           showHintMessage('Obudzono: ' + u.typeId, 2000);
+        }
+        refreshD1bHud();
+      } else if (actionId === 'ambush') {
+        // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: zastawienie / odwołanie zasadzki na całym stosie.
+        if (isStackAmbushed(stack)) {
+          cancelAmbush(stack);
+          showHintMessage('Zasadzka odwołana', 2000);
+        } else {
+          const check = canSetAmbush(stack, { cityOnHex: cityAtUnit(u) !== undefined, inBattle: isSaveBlockedByBattle() });
+          if (!check.ok) {
+            showHintMessage(AMBUSH_BLOCK_MESSAGES[check.reason], 3000);
+            return;
+          }
+          clearPlannedMarch(u.id, true);
+          setAmbush(stack);
+          showHintMessage('Zasadzka zastawiona', 2500);
+          clearPlayerUnitSelection();
         }
         refreshD1bHud();
       } else if (actionId === 'scout-explore') {
@@ -33902,6 +33930,8 @@ async function boot(): Promise<void> {
       // zamiast zostać "ukrytym" duchem na nowym heksie.
       const garnizonCity = u.inGarnizon === true ? cityAtUnit(u) : undefined;
       const stack = playerStackAt(u);
+      // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: rozkaz ruchu zdejmuje zasadzkę (armia się rusza).
+      cancelAmbush(stack);
       if (wakeStackForMoveOrder(stack)) {
         if (garnizonCity) syncGarnizonForCity(garnizonCity);
       }

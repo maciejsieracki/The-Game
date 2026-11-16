@@ -81,6 +81,10 @@ export interface RuntimeUnit {
    *  tury, ownerId-agnostyczne). Trwałe między turami poza tym — nic innego nie
    *  czyści tego pola automatycznie. */
   sentry?: boolean;
+  /** R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: jednostka stoi w zasadzce (game/ambush.ts).
+   *  Wroga niewidoczna, nie zajmuje heksu dla wroga; zdejmowane przy ruchu, odwołaniu
+   *  lub wyzwoleniu przez wrogą armię w wojnie. Brak pola = brak zasadzki (stare zapisy). */
+  ambush?: boolean;
   /** P-SCOUT-EXPLORE-Q1=A: auto-zwiedzanie mapy — domyślnie wyłączone (undefined/false).
    *  Po włączeniu zużywa ruch od razu + kontynuuje na EOT (Q2=A założenie). */
   autoExplore?: boolean;
