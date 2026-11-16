@@ -1,3 +1,9 @@
+## ROBOCZA fbafced0 -- 2026-11-16 -- FALA 771: Kolejka pusta tylko gdy jest co wybudowac (testowa)
+
+- Powiadomienie Produkcja: <miasto> Kolejka pusta pojawia sie tylko gdy w miescie jest dostepny i osiagalny budynek lub ulepszenie a kolejka jest pusta; sama mozliwosc rekrutacji jednostek go nie wywoluje; tekst: wybierz budynek
+- Weryfikacja: tsc 0; logic-test 213/213; notif-empty-queue-buildable 20/0; notif-empty-queue-gate-behaviour 11/0; load-game-regression 34/0; FC PASS-WITH-NOTES (b0f4356b9)
+- Limity: Zywy bieg w Chromium (stan ze zrzutu wlasciciela) i galaz Ulepsz NIE ZMIERZONO; weryfikacja na zywo po deployu
+
 ## ROBOCZA 4676942d -- 2026-11-16 -- FALA 770: Bramka utrzymania armii AI wlaczona (testowa)
 
 - Bramka rekrutacji AI oparta na zapasie (zloto/zywnosc) WLACZONA: AI nie kupuje jednostek, gdy zapas nie pokrywa utrzymania na 15 tur (margines 0,1); dotyczy tylko AI, nie gracza

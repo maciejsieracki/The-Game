@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4676942d55dc487e79a9d8659dc5237d",
-  "bundleSha256": "8e673b4fe81fce070c37cc87293835fedb1078b7cc4d2446af0abe4077e7d575",
-  "bundleBytes": 14808730,
+  "bundleMd5": "fbafced0c371793c29fef2d9c17b3cda",
+  "bundleSha256": "bb647af342b9512b32a9b5212414183fc930a47fd84ec5133b8e215a55160562",
+  "bundleBytes": 14808045,
   "sourceSnapshot": {
-    "source": "FALA 770: FC e2bfd3b2c scalone w main, build Vite poza repo",
+    "source": "FALA 771: FC 893fec505 scalone w main, build Vite poza repo",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 770: Bramka rekrutacji AI oparta na zapasie (zloto/zywnosc) WLACZONA: AI nie kupuje jednostek, gdy zapas nie pokrywa utrzymania na 15 tur (margines 0,1); dotyczy tylko AI, nie gracza"
+    "FALA 771: Powiadomienie Produkcja: <miasto> Kolejka pusta pojawia sie tylko gdy w miescie jest dostepny i osiagalny budynek lub ulepszenie a kolejka jest pusta; sama mozliwosc rekrutacji jednostek go nie wywoluje; tekst: wybierz budynek"
   ],
   "verification": [
-    "tsc 0; logic-test 213/213; ai-upkeep-runway-test 17/0; ai-upkeep-wiring-test 4/0; load-game-regression 34/0; FC PASS-WITH-NOTES (7f1e9f274)"
+    "tsc 0; logic-test 213/213; notif-empty-queue-buildable 20/0; notif-empty-queue-gate-behaviour 11/0; load-game-regression 34/0; FC PASS-WITH-NOTES (b0f4356b9)"
   ],
   "limits": [
-    "Smoke w Chromium na koncowym SHA, hash przy wlaczone=false, wplyw na tempo rekrutacji i balans AI oraz wiki/Civpedia NIE ZMIERZONO"
+    "Zywy bieg w Chromium (stan ze zrzutu wlasciciela) i galaz Ulepsz NIE ZMIERZONO; weryfikacja na zywo po deployu"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES AI-UPKEEP-RUNWAY-GATE-ENABLE-Q1 r1 (kandydat 7f1e9f274, FC e2bfd3b2c): bramka rekrutacji AI oparta na zapasie WLACZONA decyzja wlasciciela (wlaczone=true, runwayTurns 15, margin 0,1); dotyczy tylko zakupu jednostek przez AI, nie gracza. tsc 0, test bramki 17/0, test wpiecia 4/0, 5 bramek zielonych, load-game-regression 34/0, mutacje na kopii czerwone. NIE ZMIERZONO: smoke w Chromium na koncowym SHA (smoke Operatora t1-45 przed usunieciem licznikow: brak bledow konca tury, deficyt zlota AI 0, ok. 77% zablokowanych sprawdzen do t45), hash przy wlaczone=false (dowod z kodu), wplyw na tempo rekrutacji i balans AI, wiki/Civpedia."
+    "notes": "FC PASS-WITH-NOTES NOTIF-EMPTY-QUEUE-NO-BUILDING-AVAILABLE-Q2 r1 (kandydat b0f4356b9, FC 893fec505): powiadomienie Produkcja: <miasto> Kolejka pusta nie wynika juz z mozliwosci rekrutacji jednostek (usunieta galez z cityHasActionableProduction); pojawia sie tylko gdy jest dostepny i osiagalny budynek lub ulepszenie, a kolejka pusta; tekst: wybierz budynek. tsc 0, testy notif-empty-queue 20/0 i gate-behaviour 11/0 (realne funkcje, przypadki i-iv, mutacje), 5 bramek zielonych, load-game-regression 34/0. NIE ZMIERZONO: zywy bieg w Chromium (stan ze zrzutu wlasciciela), galaz Ulepsz (ten sam predykat co panel, ryzyko resztkowe) — weryfikacja na zywo po deployu."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T17:44:01",
+  "hubGeneratedAt": "2026-11-16T18:00:20",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4676942d55dc487e79a9d8659dc5237d",
-      "sizeBytes": 14808730
+      "md5": "fbafced0c371793c29fef2d9c17b3cda",
+      "sizeBytes": 14808045
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4676942d55dc487e79a9d8659dc5237d",
-      "sizeBytes": 14808730
+      "md5": "fbafced0c371793c29fef2d9c17b3cda",
+      "sizeBytes": 14808045
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "4676942d55dc487e79a9d8659dc5237d",
-      "sizeBytes": 14808730
+      "md5": "fbafced0c371793c29fef2d9c17b3cda",
+      "sizeBytes": 14808045
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "4676942d55dc487e79a9d8659dc5237d",
-      "sizeBytes": 14808730
+      "md5": "fbafced0c371793c29fef2d9c17b3cda",
+      "sizeBytes": 14808045
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "4676942d55dc487e79a9d8659dc5237d",
-      "sizeBytes": 14808730
+      "md5": "fbafced0c371793c29fef2d9c17b3cda",
+      "sizeBytes": 14808045
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "4676942d55dc487e79a9d8659dc5237d",
-      "sizeBytes": 14808730
+      "md5": "fbafced0c371793c29fef2d9c17b3cda",
+      "sizeBytes": 14808045
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "4676942d55dc487e79a9d8659dc5237d",
-      "sizeBytes": 14808730
+      "md5": "fbafced0c371793c29fef2d9c17b3cda",
+      "sizeBytes": 14808045
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "4676942d55dc487e79a9d8659dc5237d",
-      "sizeBytes": 14808730
+      "md5": "fbafced0c371793c29fef2d9c17b3cda",
+      "sizeBytes": 14808045
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "4676942d55dc487e79a9d8659dc5237d",
-      "sizeBytes": 14808730
+      "md5": "fbafced0c371793c29fef2d9c17b3cda",
+      "sizeBytes": 14808045
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "4676942d55dc487e79a9d8659dc5237d",
-      "sizeBytes": 14808730
+      "md5": "fbafced0c371793c29fef2d9c17b3cda",
+      "sizeBytes": 14808045
     }
   ],
-  "md5": "4676942d55dc487e79a9d8659dc5237d",
+  "md5": "fbafced0c371793c29fef2d9c17b3cda",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
