@@ -280,9 +280,26 @@ export function applyMinimap1E(el: HTMLElement): void {
   Object.assign(el.style, {
     borderRadius: '12px',
     overflow: 'hidden',
-    background: '#0a0f16',
+    background: 'var(--tg-bg-deep, #080a12)',
     border: '3px solid #6a5212',
     boxShadow: 'inset 0 0 0 2px rgba(232,216,138,0.3),0 6px 16px rgba(0,0,0,0.6)',
+  });
+}
+
+/**
+ * Rama minimapy w panelu Tempo (R-WEB-UI-BATTLE-TEMPO-MINIMAP-PANEL-BRANDBOOK-Q1):
+ * tło i obwódka z tokenów marki (--tg-bg-deep / --tg-gold-dim). Tylko oprawa,
+ * rysowanie znaczników i kamery bez zmian.
+ */
+export function applyTempoMinimapFrame1E(el: HTMLElement): void {
+  Object.assign(el.style, {
+    position: 'relative',
+    flex: '1',
+    cursor: 'crosshair',
+    borderTop: 'none',
+    borderRadius: '0',
+    background: 'var(--tg-bg-deep, #080a12)',
+    boxShadow: 'inset 0 0 0 1px var(--tg-gold-dim, #a08030), inset 0 1px 0 rgba(232,216,138,0.14)',
   });
 }
 
@@ -336,40 +353,55 @@ export function commanderPortraitRingSvg(ringPct: number): string {
  */
 export function applyTempoMinimapOuterPanel1E(el: HTMLElement): void {
   Object.assign(el.style, {
-    borderRadius: '14px',
+    borderRadius: 'var(--tg-radius-panel, 12px)',
     overflow: 'hidden',
-    border: '2px solid rgba(232,216,138,0.4)',
-    background: 'linear-gradient(180deg,rgba(20,26,38,0.72),rgba(8,10,16,0.75))',
-    backdropFilter: 'blur(7px)',
-    boxShadow: '0 12px 30px rgba(0,0,0,0.6)',
+    border: 'var(--tg-border-gold, 2px solid rgba(232,216,138,0.45))',
+    background: 'var(--tg-panel-grad, linear-gradient(180deg,rgba(18,24,32,0.96),rgba(8,10,16,0.96)))',
+    boxShadow: '0 12px 40px rgba(0,0,0,.6)',
     fontFamily: BATTLE_FONT,
   });
 }
 
-/** Rząd „Tempo" nad minimapą — separator dolny. */
+/** Rząd „Tempo" nad minimapą — separator dolny z tokenu złotego. */
 export function applyTempoRow1E(el: HTMLElement): void {
   Object.assign(el.style, {
     display: 'flex',
     alignItems: 'center',
     gap: '6px',
     padding: '8px 10px',
-    borderBottom: '1px solid rgba(232,216,138,0.2)',
+    borderBottom: '1px solid var(--tg-gold-dim, #a08030)',
   });
 }
 
-/** Mały przycisk tempa (pauza / − / + / AUTO-komputer) — 26×26 (§3). */
+const TEMPO_BTN_STYLE_ID = 'civ-tempo-btn-styles';
+
+/** Stany hover/focus przycisków Tempo (klasa .civ-tempo-btn), wstrzykiwane jednorazowo. */
+function injectTempoBtnStyles(): void {
+  if (typeof document === 'undefined' || document.getElementById(TEMPO_BTN_STYLE_ID)) return;
+  const style = document.createElement('style');
+  style.id = TEMPO_BTN_STYLE_ID;
+  style.textContent = `
+    .civ-tempo-btn:not(:disabled):hover { border-color: var(--tg-gold-primary, #e8d88a) !important; color: #f4e6a8 !important; }
+    .civ-tempo-btn:focus-visible { outline: 2px solid var(--tg-focus-ring, #e8d88a); outline-offset: 2px; }
+  `;
+  document.head.appendChild(style);
+}
+
+/** Mały przycisk tempa (pauza / − / + / AUTO-komputer) — 26×26, kolory z tokenów marki. */
 export function applyTempoBtn1E(el: HTMLButtonElement, opts?: { active?: boolean; auto?: boolean }): void {
+  injectTempoBtnStyles();
+  el.classList.add('civ-tempo-btn');
   const active = opts?.active ?? false;
   const auto = opts?.auto ?? false;
   Object.assign(el.style, {
     width: '26px',
     height: '26px',
-    borderRadius: '6px',
-    border: active ? '1px solid #e8d88a' : '1px solid rgba(232,216,138,0.3)',
+    borderRadius: 'var(--tg-radius-btn, 8px)',
+    border: active ? '2px solid var(--tg-gold-primary, #e8d88a)' : '2px solid rgba(232,216,138,0.4)',
     background: active
-      ? (auto ? 'linear-gradient(180deg,#f0dc88,#b99a28)' : 'linear-gradient(180deg,#2a2410,#161206)')
-      : 'linear-gradient(180deg,#161c28,#0a0d14)',
-    color: active ? (auto ? '#2e2708' : '#f4e6a8') : BATTLE_GOLD,
+      ? (auto ? 'var(--tg-btn-primary)' : 'linear-gradient(180deg,rgba(232,216,138,0.24),rgba(232,216,138,0.06))')
+      : 'var(--tg-panel-grad)',
+    color: auto && active ? 'var(--tg-btn-primary-ink)' : 'var(--tg-gold-primary)',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
