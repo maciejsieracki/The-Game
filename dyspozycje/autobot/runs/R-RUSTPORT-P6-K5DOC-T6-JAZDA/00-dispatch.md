@@ -48,3 +48,14 @@ WZÓR: moduł T4a/T5a — `rust-port/engine/src/domain/siege_tactics_pathstep.rs
 3. Brak `#[ignore]`, brak osłabionych asercji, zero zmian poza allowlistą.
 4. Commit jawnym `git add` (nigdy `-A`), BEZ `Cargo.lock`, BEZ nazwy modelu w treści i trailerach. Bez push do parity. Raport `01-operator-r1.md` w `dyspozycje/autobot/runs/R-RUSTPORT-P6-K5DOC-T6-JAZDA/`.
 5. `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` poza repo i unikalny; usuń po bramkach.
+
+## DODATEK r2 — RUNDA INTEGRACYJNA (po BLOCK dysku rundy 1 i obronie; BAZA NADPISANA)
+
+- Runda 1: Operator BLOCK (dysk), Evaluator FAIL (luka kary spearAdj w szarży i brak pełnego testu), Obrona naprawiła zarzuty 1, 3, 4 (commit `30c1e1392`, `87829df94`). FC: PASS-WITH-NOTES na `87829df94`.
+- BAZA (jedyna obowiązująca): `87829df94`. Worktree detached. Kodu NIE zmieniaj.
+- Zadanie: WYŁĄCZNIE bramka integracyjna na tym drzewie, przy dysku ≥ 8 GB (`df -h /` przed każdą komendą):
+  1. `cargo fmt --check` w `rust-port/engine` — EXIT 0.
+  2. `cargo clippy --all-targets -- -D warnings` — EXIT 0.
+  3. `cargo test --all-targets --no-fail-fast` — PEŁNY test, EXIT 0, z liczbami (suites, passed, failed, ignored). Limit czasu 2 h; jeśli zawiesi się na `p6_8i_pick`, zapisz dokładny przebieg i czas, nie omijaj.
+  4. `cargo test --test p6_k5doc_cavalry` — 10/10.
+- Raport `02-operator-r2.md` w run dir z kodami wyjścia. Commit tylko raportu (jawny `git add`, bez `Cargo.lock`, bez nazwy modelu). Nic nie pushuj do parity; nie dotykaj kodu.
