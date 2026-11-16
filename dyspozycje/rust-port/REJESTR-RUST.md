@@ -2536,3 +2536,15 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Brak odblokowanych tematów Opus do startu:** I5 (#280) i F2 (#278) zablokowane (K5LOOP / mgła #253); overlay 1F4/1F5 wymaga ręcznego scalenia `overlays_view.rs` z pełnym testem, nie nowego Workflow; 1F3 FC po opłaceniu subskrypcji.
 - **Parity:** `9f7c55499`. **Dysk:** 17 GB.
 - **Rozbieżność z harmonogramem:** prompt heartbeatu wymaga Haiku/Sonnet; reguła właściciela dla 3D to Opus we wszystkich rolach (zachowana).
+
+### Przebieg — heartbeat Rust „twardy bit”, 2026-11-16 16:19 UTC
+
+- **Sloty: 3 z 4 aktywne** (trzy Workflow, trzy procesy cargo):
+  - INTEG nakładek 1F5 + 1F4 na `9f7c55499` (OPUS, `wf_4b0573bb-d8f`): integracja w toku, pełny test engine.
+  - BRAMKI FC 1F3 na `25fdeb11a` (OPUS, `wf_129a66e9-6b5`): clippy/test w toku (poprzedni FC zakończył się INFRA, nie defektem).
+  - INTEG K5DOC-T2 CELE (`03dfa64c2`) + T3 GEOMETRIA (`efa3b7642`) na `9f7c55499` (HAIKU, `wf_e50cec97-fe3`), dispatch `2a0967eaa`. Obie gałęzie scalają się czysto osobno; integracja sekwencyjnie.
+- **Czwarty slot wstrzymany — nie ma czystego tematu:** kandydaci z kolejki wymagają decyzji właściciela (#97 zakres trybu ręcznego: K5-LOOP-AUTO vs T1–T3; #106 pkt 4: dispatch przez wszystkie fotele; #115 / #120 wariant A/B; #135 kolejność zwarcia) albo kodu, którego nie ma na parity (#113, #109). Start „dla zapełnienia” zabroniony regułą.
+- **Parity:** `9f7c55499`, bez zmian w tym przebiegu. FF po zielonych bramkach integracji nakładek i T2/T3.
+- **Dysk:** 15 GB wolnego. Sprzątanie w tej turze: zabity osierocony bieg FC 1F3, usunięte `fc1f3_target`, `integ-i23-target`, worktree `ev9f1` i worktree FC 1F3 (branch `fc/…1F3…` z `25fdeb11a` zostaje).
+- **Otwarte, nieprzeprowadzone:** `refs/keep/R-RUSTPORT-P4-1I4-fc` = `54fa4c704` (I4 FC PASS-WITH-NOTES) — push na remote odrzucany przez proxy (`remote end hung up`), zostaje lokalnie. Proces `p6_8i_pick` z usuniętego targetu do weryfikacji w logu.
+- **Rozbieżność z harmonogramem:** prompt heartbeatu wymaga Haiku na Operatorze i Sonnet na Evaluatorze/FC; reguła właściciela dla tematów 3D to Opus we wszystkich rolach (zachowana dla 1F3/1F4/1F5). Integracja T2/T3 na Haiku zgodnie z regułą integracji.
