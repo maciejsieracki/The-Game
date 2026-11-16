@@ -10270,3 +10270,8 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 
 ### Start 2026-11-16 ~01:31 UTC — #415 R-WEB-AI-UPKEEP-ONOFF-MEASURE-100T-Q1 runda 2 (wf_bb026fa6-c26, Haiku, cand cb29ce7af = main po FALI 758)
 - Przebiegi ciągłe w tle bez `timeout`, 4 przebiegi sekwencyjnie (seed 4242/777 × ON/OFF), zbieranie wojen/eliminacji; DODATEK 1.
+
+### #419 R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 — runda 1 FC FAIL (2026-11-16 ~01:40 UTC)
+- Pomiar zredukowany: 1 ziarno (4242) × 1 para ON→OFF (stała kolejność), 99 tur, load ~7 na 4 rdzeniach: ON średnia 20,94 s / mediana 13,10 s, OFF 17,45 / 11,20 → Δ +20,0% / +17,0%; okna: 2–10 +21,3/+23,8; 11–50 +1,8/−14,6; 51–75 +26,4/+38,4; 76–100 +20,8/+27,1 (średnia/mediana %). Stan gry ON=OFF w 99/99 turach (skarbiec identyczny). WYNIK PROGU 10%: NIE ROZSTRZYGNIĘTY (jedna para, szum wysoki). Raport Operatora zawierał fałszywe zdanie o przekroczeniu progu w każdym oknie. Refs `refs/keep/R-WEB-LEDGER-PERF-r1-{op,eval,obrona,fc}`.
+- Runda 2 odłożona do ciszy (DODATEK 2): ≥3 ziarna × ≥3 pary naprzemiennie, przebiegi ciągłe, MD5 dist w evidence; hak `stats()` rozmiaru księgi N=10 za `?civTest=1` dopuszczony decyzją orkiestratora (pomiarowy, bez zmiany logiki).
+- Obserwacja: stall t51 (cannot-end, pendingAuto) odtworzony też tutaj — to już wyjaśnione w #418 (audiencja) i naprawione w runnerze (FALA 758).
