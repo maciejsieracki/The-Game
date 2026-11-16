@@ -1040,3 +1040,98 @@ fn one_batch_keeps_list_order_and_web_positions() {
     assert!(lunge < kill, "MeleeLunge before kill_unit");
     assert!(unit(&q, third.att).removed);
 }
+
+/// Obrona r1, zarzut 1 (contract of the P5 driver): in a fast-forward the pin
+/// lowers `bu.hp` and calls `_updateHpBar` at every blow (`:8991-8992`) while
+/// the engine emits no `Damage` (`_spawnDamageLabel` returns under
+/// `_ffActive`, `:9940-9943`). The tracked HP is stale after it: without
+/// `apply_snapshot` the next `Damage` shows the wrong bar, with it the bar
+/// equals the pin (`_updateHpBar` ratio `:9637-9639`).
+#[test]
+fn fast_forward_gap_is_closed_by_snapshot() {
+    let Worlds { events, q, .. } = worlds();
+    let m = &melees(&events)[0];
+    let hp0 = unit(&q, m.def).spawn.hp;
+    let max_hp = unit(&q, m.def).spawn.max_hp;
+    let morale = unit(&q, m.def).spawn.morale;
+    let ff_dmg = 5.0;
+    let hp_ff = hp0 - ff_dmg;
+    let bar = |b: &BattleScene3| {
+        let u = unit(b, m.def);
+        b.field.field.scene.nodes[u.bars.hp_fg].scale.x
+    };
+    let dmg = |t0: f64| {
+        act(
+            t0,
+            BattleActionKindDto::Damage {
+                target: m.def,
+                dmg: DMG_ATT,
+            },
+        )
+    };
+    // The fast-forward produced only a frame (no `Damage`).
+    let ff_frame = frame(10.0, vec![frame_unit(&q, m.def, hp_ff, morale)]);
+
+    // Without the snapshot: the frame alone does not move the HP bar.
+    let mut q1 = q.clone();
+    let mut pb1 = BattlePlayback::new(&q1, PlaybackOpts::default());
+    pb1.push_frame(&ff_frame).expect("frame");
+    pb1.push_actions(&[dmg(20.0)]).expect("push");
+    pb1.play_until(&mut q1, 20.0, 0.0).expect("play");
+    assert_eq!(
+        pb1.hp(m.def),
+        Some(hp0 - DMG_ATT),
+        "stale HP without snapshot"
+    );
+    assert_ne!(bar(&q1), (hp_ff - DMG_ATT) / max_hp);
+
+    // With the snapshot at the end of the fast-forward: the pin bar.
+    let mut q2 = q.clone();
+    let mut pb2 = BattlePlayback::new(&q2, PlaybackOpts::default());
+    pb2.apply_snapshot(&mut q2, &ff_frame).expect("snapshot");
+    assert_eq!(bar(&q2), hp_ff / max_hp);
+    pb2.push_actions(&[dmg(20.0)]).expect("push");
+    pb2.play_until(&mut q2, 20.0, 0.0).expect("play");
+    assert_eq!(pb2.hp(m.def), Some(hp_ff - DMG_ATT));
+    assert_eq!(bar(&q2), (hp_ff - DMG_ATT) / max_hp);
+}
+
+/// Obrona r1, zarzut 6: an item the scene cannot represent does not stall
+/// the animations in flight; the frame at `now` is stepped like without the
+/// error (lunge `MeleeLunge::step`, `stepAnim` `:9119-9156`).
+#[test]
+fn error_does_not_stall_animations() {
+    let Worlds { events, q, .. } = worlds();
+    let m = &melees(&events)[0];
+    let ghost = UnitId::try_new(999_999).expect("id");
+    let melee = act(
+        m.t0,
+        BattleActionKindDto::Melee {
+            attacker: m.att,
+            target: m.def,
+            hit_at: m.t0 + BLOW_HIT_T,
+        },
+    );
+    let mid = m.t0 + 100.0;
+    let mut ok = q.clone();
+    let mut pb_ok = BattlePlayback::new(&ok, PlaybackOpts::default());
+    pb_ok
+        .push_actions(std::slice::from_ref(&melee))
+        .expect("push");
+    pb_ok.play_until(&mut ok, m.t0, 0.0).expect("play");
+    pb_ok.play_until(&mut ok, mid, 0.0).expect("play");
+
+    let mut bad = q.clone();
+    let mut pb_bad = BattlePlayback::new(&bad, PlaybackOpts::default());
+    pb_bad
+        .push_actions(&[melee, act(mid, BattleActionKindDto::Rout { id: ghost })])
+        .expect("push");
+    pb_bad.play_until(&mut bad, m.t0, 0.0).expect("play");
+    assert_eq!(
+        pb_bad.play_until(&mut bad, mid, 0.0),
+        Err(PlaybackError::UnknownUnit(ghost))
+    );
+    assert_ne!(pos_of(&bad, m.att), pos_of(&q, m.att), "lunge moved");
+    assert!(ok == bad, "same scene as without the error");
+    assert_eq!(pb_bad.lunges_in_flight(), pb_ok.lunges_in_flight());
+}

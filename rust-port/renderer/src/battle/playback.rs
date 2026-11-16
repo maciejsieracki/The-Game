@@ -238,6 +238,17 @@ struct ActiveLunge {
 
 /// The playback state: queued items, animations in flight, tracked HP,
 /// damage labels and the trace of scene calls.
+///
+/// Contract of the caller (the P5 battle driver), the DTOs carry no flag for
+/// it: during a fast-forward the pin keeps lowering `bu.hp` and calling
+/// `_updateHpBar` at every blow (`:8991-8992`), but the engine emits no
+/// `Damage` (`_spawnDamageLabel` returns under `_ffActive`, `:9940-9943`;
+/// producer `engine/src/domain/siege_tactics_loop.rs` `emit`). The tracked
+/// HP is then stale, so after every fast-forward (and before the next
+/// `Damage` is played) the caller MUST call [`Self::apply_snapshot`] with the
+/// frame of the end of the fast-forward. Without it the next `Damage` shows
+/// `spawn / last tracked HP − dmg` instead of the engine HP (pinned by the
+/// test `fast_forward_gap_is_closed_by_snapshot`).
 #[derive(Debug, Clone, PartialEq)]
 pub struct BattlePlayback {
     opts: PlaybackOpts,
@@ -351,8 +362,21 @@ impl BattlePlayback {
     ///
     /// # Errors
     /// The first item the scene cannot represent; items before it are
-    /// applied, the failing one is dropped.
+    /// applied, the failing one is dropped, the items after it stay queued.
+    /// The animation frame at `now` is stepped in both cases, so the
+    /// animations already in flight do not stall on an error.
     pub fn play_until(
+        &mut self,
+        b: &mut BattleScene3,
+        now: f64,
+        wall_clock: f64,
+    ) -> Result<(), PlaybackError> {
+        let res = self.play_items(b, now, wall_clock);
+        self.step_animations(b, now);
+        res
+    }
+
+    fn play_items(
         &mut self,
         b: &mut BattleScene3,
         now: f64,
@@ -367,7 +391,6 @@ impl BattlePlayback {
                 Item::Frame(f) => self.apply_frame(b, &f)?,
             }
         }
-        self.step_animations(b, now);
         Ok(())
     }
 
@@ -557,6 +580,10 @@ impl BattlePlayback {
     /// Applies a frame now: the morale and ammunition bars of every unit
     /// still in the scene (`_updateMoraleBar`, `_updateAmmoBar`). Removed
     /// units are skipped (detached, `_removeUnitFromScene` `:9915-9918`).
+    /// The frame fields `dead` / `removed` / `hp` do not change the scene: a
+    /// unit leaves it only through a `Kill` action (in P4-1I3 every death is a
+    /// blow). Deaths without a blow (breach, `_fleeStep`) get their action in
+    /// P4-1I5 (#249/#280), which revisits this.
     ///
     /// # Errors
     /// [`PlaybackError::UnknownUnit`] for a unit the scene does not have.
