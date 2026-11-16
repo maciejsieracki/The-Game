@@ -2394,3 +2394,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **K5DOC-T2-CELE** (`wf_1c92bca8-2d5`): Operator w toku (Haiku).
 - **K5DOC-T3-GEOMETRIA** (`wf_7d52ae9a-3df`): Operator w toku (Haiku).
 - **Parity:** `585bb48e0`. **Dysk:** 11 GB wolnego. **Sloty:** 3/4 (czwarty wolny — brak niezależnego kandydata).
+
+## Przebieg (09:18 UTC — T2 CELE FC PASS-WITH-NOTES; integracja odłożona do czasu miejsca na dysku)
+
+- **K5DOC-T2-CELE** (`wf_1c92bca8-2d5`): FC PASS-WITH-NOTES `03dfa64c2` (obrona r2 `1aa85c8b2`, Evaluator r1 `05e405efc`). Ancestry: baza `126432304` jest przodkiem; merge-tree czysty; zakres = 5 plików allowlisty (`mod.rs`, `siege_tactics_doctrine_target.rs`, testy, generator, wektory) + dokumentacja. Zero zmian w `gra/` i `siege_tactics_loop.rs` (wpięcie w T8/#113).
+- **Ograniczenie:** pełny `cargo test --all-targets` NIE został potwierdzony w rundzie r2 (proces testu z obrony `k5doc-target-r2` działa od >9 min, nie zakończył się). Bramka integracyjna z pełnym testem wykonana zostanie przy ≥8 GB wolnego miejsca. Ref: `refs/keep/K5DOC-T2-fc` (`03dfa64c2`).
+- **Sprzątanie:** worktree T2 `-1` i `-2` usunięte (HEAD-y w `refs/keep/cleanup-T2-wt1..2`), cache `scratchpad/target-t1-r2` (3,2 GB, runda 2 Operatora EXEC-T1 już zakończona) usunięty. **Dysk: 5,3 GB.**
+- **Nie usuwane:** `k5doc-target-r2` (aktywny proces testu T2), `ev_t1q1_target` (aktywny Evaluator EXEC-T1), `tgt-ev` (aktywny T3), `/tmp/claude-0/ev9f1` (decyzja właściciela).
+- **Parity:** `585bb48e0`. **Sloty:** EXEC-T1 r2 (Evaluator), T3 (Evaluator), T2 (po FC, czeka na integrację).
