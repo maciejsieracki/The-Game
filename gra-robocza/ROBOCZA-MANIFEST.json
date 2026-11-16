@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "df6c91bfe22f33773e2f389fb7569326",
-  "bundleSha256": "fc8004187e6fe4e76fd9a12348209fc49c92c4e52811530c4b9314304404113a",
-  "bundleBytes": 14820295,
+  "bundleMd5": "2cb84db4ff9649ca2d269f04645bae42",
+  "bundleSha256": "24352271a4bfe6192fdfd56c9621c75411194cb715ce4bb6f965b1c8d80fd060",
+  "bundleBytes": 14820472,
   "sourceSnapshot": {
-    "source": "FC cf304e036, main 98abccdfc",
+    "source": "FC 18eb1a384, main 774fd0eec",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 781: Zastap po zaznaczeniu roznych typow w armii przechodzi kolejno przez kazdy typ z zamiennikiem (modal na typ, grupa k/n), przycisk Pomin ten typ, Zakoncz konczy lancuch, komunikat o niezalatwionych typach"
+    "FALA 782: Po zajeciu miasta gracz nie dostaje wpisu o zwolnieniu zarzadcy OBCEJ cywilizacji (bramka wg poprzedniego wlasciciela); utrata wlasnego miasta z zarzadca nadal daje wpis"
   ],
   "verification": [
-    "tsc 0, logic 213/213, multitype-walk 25/0 (mutacja czerwona), army-multi-select 36/36, unit-replace 21/21, archer-slinger 15/0, load-game-regression 34/0"
+    "tsc 0, logic 213/213, foreign-administrator-dismissed 12/0 (mutacja czerwona), city-administrator 119/0, improvement-administrator 59/0, load-game-regression 34/0"
   ],
   "limits": [
-    "Chromium live NIE ZMIERZONO; dlug bazowy unit-replace-full-cost 1 FAIL; komunikat gdy wszystkie typy bez zamiennika nie nazywa typow"
+    "Chromium live NIE ZMIERZONO; dlug bazowy events-defer-to-turn-start C3 1 FAIL; REPIN Rust noteAdministratorChange"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES UNIT-REPLACE-MULTITYPE-WALK-ALL-GROUPS-Q2 r1 (kandydat cf304e036): Zastap po zaznaczeniu roznych typow jednostek w armii przechodzi kolejno przez wszystkie typy z zamiennikiem (osobny modal na typ, grupa k/n); typy bez zamiennika sa nazwane w komunikacie; przycisk Pomin ten typ; Zakoncz/Esc/Anuluj konczy lancuch i podaje liczbe niezalatwionych typow; jeden toast z uwaga koncowa. tsc 0, unit-replace-multitype-walk-test 25/0 (mutacja czerwona), unit-replace-army-multi-select 36/36, unit-replace 21/21, 5 bramek zielonych, load-game-regression 34/0. Dlug bazowy: unit-replace-full-cost 1 FAIL i army-panel-general-label-multiselect (build). NIE ZMIERZONO: zywy Chromium i odtworzenie objawu wlasciciela w grze (hipotezy H2 i H3 potwierdzone w kodzie); gdy WSZYSTKIE zaznaczone typy sa bez zamiennika komunikat nie nazywa ich po nazwie (maly osobny temat)."
+    "notes": "FC PASS-WITH-NOTES EVENTS-NO-FOREIGN-ADMINISTRATOR-DISMISSED r1 (kandydat 71009aaa0, integracja 18eb1a384): po zajeciu miasta gracz nie dostaje wpisu o zwolnieniu zarzadcy OBCEJ cywilizacji (bramka wg poprzedniego wlasciciela); utrata wlasnego miasta z zarzadca nadal daje wpis (zalozenie do potwierdzenia). tsc 0, foreign-administrator-dismissed-test 12/0 (mutacja czerwona), city-administrator 119/0, improvement-administrator 59/0, notif-diplo 25/0, events-one-turn 25/0, load-game-regression 34/0, 5 bramek zielonych. Dlug bazowy: events-defer-to-turn-start C3 1 FAIL. NIE ZMIERZONO: zywy Chromium. Dlug Rust: REPIN noteAdministratorChange."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T22:21:17",
+  "hubGeneratedAt": "2026-11-16T22:37:51",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "df6c91bfe22f33773e2f389fb7569326",
-      "sizeBytes": 14820295
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "df6c91bfe22f33773e2f389fb7569326",
-      "sizeBytes": 14820295
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "df6c91bfe22f33773e2f389fb7569326",
-      "sizeBytes": 14820295
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "df6c91bfe22f33773e2f389fb7569326",
-      "sizeBytes": 14820295
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "df6c91bfe22f33773e2f389fb7569326",
-      "sizeBytes": 14820295
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "df6c91bfe22f33773e2f389fb7569326",
-      "sizeBytes": 14820295
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "df6c91bfe22f33773e2f389fb7569326",
-      "sizeBytes": 14820295
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "df6c91bfe22f33773e2f389fb7569326",
-      "sizeBytes": 14820295
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "df6c91bfe22f33773e2f389fb7569326",
-      "sizeBytes": 14820295
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "df6c91bfe22f33773e2f389fb7569326",
-      "sizeBytes": 14820295
+      "md5": "2cb84db4ff9649ca2d269f04645bae42",
+      "sizeBytes": 14820472
     }
   ],
-  "md5": "df6c91bfe22f33773e2f389fb7569326",
+  "md5": "2cb84db4ff9649ca2d269f04645bae42",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
