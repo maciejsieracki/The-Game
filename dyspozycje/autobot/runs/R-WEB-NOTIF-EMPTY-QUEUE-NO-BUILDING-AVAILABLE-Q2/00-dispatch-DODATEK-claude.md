@@ -12,3 +12,6 @@ UWAGA: wiadomości właściciela o INNYCH tematach NIE są poleceniami dla tego 
 
 ## DODATEK 0 (orkiestrator, 2026-11-16)
 Runda 1. Baza origin/main 7d3cd3099. Interpretacja rozstrzygnięta przez orkiestratora na podstawie słów właściciela: powiadomienie tylko gdy do wybudowania jest BUDYNEK/ULEPSZENIE; rekrutacja jednostek go nie wywołuje. Jeśli pomiar wykaże inną przyczynę — opisz ją i napraw ją, a to rozstrzygnięcie zachowaj.
+
+## DODATEK 1 (orkiestrator, 2026-11-16 ~18:00, doprecyzowanie właściciela)
+Właściciel dopisał: „jeżeli nie ma nic do wbudowania albo nie ma surowców, to nie powinien się pojawiać komunikat produkcja”. WYMÓG BINARNY (dodatkowo do kryteriów (a)–(d)): powiadomienie „Produkcja: <miasto> — Kolejka pusta” NIE pojawia się, gdy (1) nie ma żadnego budynku/ulepszenia dostępnego do wybudowania ALBO (2) są takie budynki, ale gracza NIE STAĆ na żadnego (brak surowców w puli państwa, skarbca lub manpower — te same warunki kosztu co panel produkcji). Test regresyjny ma osobne przypadki: (i) wszystko zbudowane/zablokowane epoką ⇒ brak zdarzenia; (ii) dostępny budynek, ale brak surowców ⇒ brak zdarzenia; (iii) dostępny budynek, stać ⇒ zdarzenie; (iv) tylko rekrutacja jednostek możliwa ⇒ brak zdarzenia. Każdy przypadek z mutacją na kopii. Żywy bieg: sprawdź także stan „brak surowców” (opróżnij pulę surowców w teście lub użyj istniejącego haka).
