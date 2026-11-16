@@ -56,3 +56,7 @@ FALE 650–748 (zob. rejestr). Decyzje ABC 2026-11-14/15: miedź bez zmian; AI o
 
 ## KRÓTKA ŚCIĄGA PO UPADKU KONTENERA
 Worktree, journale (`/root/.claude/projects/.../subagents/workflows/<wf>/journal.jsonl`) i refs przeżywają restart. Wznów workflow: `Workflow({scriptPath, resumeFromRunId:<wf id TEGO samego tematu>, args: IDENTYCZNE})` — **nie zamieniaj ID między tematami** (incydent 2026-11-15). Wyniki rund: python po `journal.jsonl` (linie `"type":"result"`, pole `result`; ostatni = FC).
+
+## ZALEŻNE — NOWE (2026-11-16 01:25)
+- **#415 runda 2: R-WEB-AI-UPKEEP-ONOFF-MEASURE-100T-Q1** — r1 FC FAIL (refs `refs/keep/R-WEB-UPKEEP-ONOFF-r1-*`), DODATEK 1 zapisany. START dopiero po FC PASS + wdrożeniu **R-WEB-HARNESS-CLOSE-DIPLO-AUDIENCE-Q1** (wf_8e38b091-f78). `cand` = SHA origin/main PO tym wdrożeniu (nie wcześniej!). `round: 2`, Haiku (r1 = 1 nieudana runda). Przebiegi ciągłe w tle, sekwencyjnie (ok. 3 h).
+- **#432 + defekt `playerEverOwnedCityByOwner`** (nie odtwarzany po wczytaniu; blokuje „Zakończ turę” gdy gracz ma 0 miast) — tematy zapisu/wczytania; START po zakończeniu #424 (te same pliki save/load).

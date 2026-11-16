@@ -10255,3 +10255,9 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 
 ### Start 2026-11-16 ~00:25 UTC — R-WEB-HARNESS-CLOSE-DIPLO-AUDIENCE-Q1 (wf_8e38b091-f78, Haiku, cand f80f90a99)
 - Z diagnozy #418: runner pomiarowy ma zamykać audiencję dyplomatyczną / panel łączenia armii / kartę odkrycia (blokady `isOtherEndTurnModalOpen`) i utrwalać liczniki; dowód: przebieg seed 4242 przez t51 i t57. Tylko narzędzie. Uwaga: ten sam plik runnera zmienia #424 (stackGroupId) — konflikt rozwiązuję merge-tree przy integracji.
+
+### #415 R-WEB-AI-UPKEEP-ONOFF-MEASURE-100T-Q1 — runda 1 FC FAIL (2026-11-16 ~01:25 UTC)
+- Operator BLOCK (żaden przebieg nie doszedł do t100: OFF 4242 t70, OFF 777 t80, ON 4242 t71, ON 777 t80), Evaluator 6 zarzutów, Obrona BLOCK (przyjęła 5 z 6), FC FAIL — wszystkie zarzuty NAPRAW. Refs `refs/keep/R-WEB-UPKEEP-ONOFF-r1-{op,eval,obrona,fc}`.
+- Dane częściowe (opisowo, 1 przebieg na ziarno, NIE wniosek): wojsko AI w ON niższe we wszystkich 5 porównaniach od t50 (np. 4242 t70: 458 vs 551; 777 t80: 648 vs 722); skarbce bez spójnego kierunku (±3%); liczba AI spada 41→14–16 do t50 w OBU flagach (błąd selekcji).
+- NOWY DEFEKT (gra, poza zakresem): po wczytaniu zapisu `playerEverOwnedCityByOwner` nie jest odtwarzana → gdy gracz harnessu ma 0 miast, `isAwaitingFirstPlayerCity` blokuje „Zakończ turę” (main.ts ~13660). Temat po #424 (zapis/wczytanie).
+- Runda 2: DODATEK 1 zapisany; start po wdrożeniu naprawy runnera (audiencja), przebiegi ciągłe w tle bez `timeout`. Flaga zostaje OFF; decyzja o włączeniu = ABC właściciela.
