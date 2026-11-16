@@ -10840,12 +10840,6 @@ async function boot(): Promise<void> {
     /** R-WEB-AI-ARMY-UPKEEP-Q2: suma zywnoscNetto miast owner'a z OSTATNIEGO ticku (przed zużyciem armii).
      *  Baza bramki zapasu (aiUpkeepRunwayAllows). Brak wpisu = bramka nieaktywna dla tej tury. Nie zapisywana w save. */
     const aiFoodTickNetByOwner = new Map<number, number>();
-    /** R-WEB-AI-UPKEEP-RUNWAY-GATE-ENABLE-Q1: liczniki bramki zapasu (tylko odczyt pomiarowy; zapis wyłącznie
-     *  w aiUpkeepRunwayAllows). Eksport window.__aiUpkeepGateStats TYLKO z ?civTest=1 (zero wpływu na grę). */
-    const aiUpkeepGateStats = { calls: 0, flagOff: 0, noTickData: 0, allowed: 0, blocked: 0 };
-    if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
-      (window as any).__aiUpkeepGateStats = aiUpkeepGateStats;
-    }
     const aiTargetMemoryByOwner: AiTargetMemoryByOwner = new Map();
     /** R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): licznik zakupów jednostek za złoto
      *  (rush) TEGO ownera W TEJ turze -- zerowany na wejściu w sekcję ownera w runAiPhase
@@ -37379,11 +37373,10 @@ async function boot(): Promise<void> {
      */
     function aiUpkeepRunwayAllows(ownerId: number, unitTypeId: string, goldCost: number): boolean {
       const cfg = aiUpkeepParamsRaw.AI_UPKEEP_RUNWAY_GATE;
-      aiUpkeepGateStats.calls++;
-      if (!cfg.wlaczone) { aiUpkeepGateStats.flagOff++; return true; }
+      if (!cfg.wlaczone) return true;
       const income = aiGoldIncomeByOwner.get(ownerId);
       const foodTick = aiFoodTickNetByOwner.get(ownerId);
-      if (income === undefined || foodTick === undefined) { aiUpkeepGateStats.noTickData++; return true; }
+      if (income === undefined || foodTick === undefined) return true;
       const toEcon = (list: ReadonlyArray<{ typeId: string }>): EconUnit[] => list.map(u => ({
         ownerId, typeId: u.typeId, camping: false, onOwnTerritory: true,
       }));
@@ -37410,7 +37403,6 @@ async function boot(): Promise<void> {
         foodNetPerTurn: foodTick - milBefore,
         unitFoodUpkeep: Math.max(0, milAfter - milBefore),
       }, { runwayTurns: cfg.runwayTurns, margin: cfg.margin });
-      if (allowed) aiUpkeepGateStats.allowed++; else aiUpkeepGateStats.blocked++;
       return allowed;
     }
 
