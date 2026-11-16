@@ -2110,3 +2110,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sloty:** 2 z 4 — R7K7C PARITY-MISSING0 r2 (`wf_e42107cb-dc8`, Haiku/Sonnet, baza = parity `b3c0b2209` po FF P4-1H), P4-1I1B BATTLE-INSTANT (`wf_aafc5812-7e5`, Opus, operator).
 - **Sprzątanie:** worktree `integ-P4-1H`, cache `target-integ-H1`, worktree `wf_312e0180-927-1..4` i `/tmp/ct-q4-fc-927-4` usunięte; worktree r1 R7K7C `wf_e8d80c7c-629-1..3` usunięte (refy zachowane, gałąź `wip/R-RUSTPORT-P6-R7K7C-PARITY-MISSING0-Q1` zostaje lokalnie).
 - **Dysk:** ok. 13 GB (67%) po sprzątaniu.
+
+## Przebieg (01:2x UTC — start P4-1H PREVIEW-Q5, #251)
+
+- **Start:** `R-RUSTPORT-P4-1H-PREVIEW-Q5` (#251, OPUS we wszystkich rolach — seria P4-1), dispatch `714d27f6d` na `claude/rust-sivvrn`, baza `b3c0b2209` (Q4 zintegrowany). Workflow `wf_7546f307-6dc`.
+- **Zakres:** `preview_path` (`refreshHoverPathPreview`, `refreshPlannedMarchPreview`), `PathRouteDto { hexes, turn_stops }`, `budget = None`. Pole `path_route` dla warstwy zostaje w #242/#237.
+- **Q6 (#252) nie startuje równolegle:** wspólne pliki `playable.rs`/`bridge.rs` z Q5; start po integracji Q5. Q6 musi przejść `movement` na `f64` (decyzja z Q4).
+- **Sloty:** 3 z 4 — R7K7C PARITY-MISSING0 r2 (`wf_e42107cb-dc8`, Haiku/Sonnet), P4-1I1B BATTLE-INSTANT (`wf_aafc5812-7e5`, Opus), P4-1H PREVIEW-Q5 (`wf_7546f307-6dc`, Opus). Czwarty wolny: brak odblokowanego tematu bez konfliktu plików (#239 — decyzja o fogu; #252 — po Q5).
+- **Dysk:** ok. 13 GB przed startem.
