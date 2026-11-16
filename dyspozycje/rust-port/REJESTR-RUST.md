@@ -2281,3 +2281,15 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Decyzja do właściciela (nieodebrana):** czy mam uznać zmianę kontraktu `ActivateOps` za decyzję techniczną orkiestratora (rekomendacja: tak) — wtedy startuje EXEC.
 - **Procesowo:** worktree zakończonego RENDERER (`wf_59b7fc97-124-*`) usunięte w poprzednim ticku; `scratchpad/target` niezidentyfikowany (nie ruszany).
 - **Dysk:** 16 GB wolnego.
+
+## Przebieg (05:39 UTC — wynik rozpoznania doktryny/strzelca/muru #112)
+
+- **K5LOOP-DOCTRINA-ROZP-Q1** (`wf_8cdeaadf-cf7`): Operator `caeca2d6b` PASS-WITH-NOTES → Evaluator PASS-WITH-NOTES (7 zarzutów, w tym 4 istotne) → Obrona przyjęła wszystkie, `b8f092415` → **FC PASS-WITH-NOTES `540aa813c`** (erratum i podział T0–T9).
+- **Ustalenia:** doktryna AUTO, strzelec i ruch szykiem nie mają odpowiednika w Rust. `ProdBody` (`siege_tactics_loop.rs:1036-1046`) odsyła każdą aktywację z doktryną, strzelcem, trybem ręcznym lub oblężeniem do „unported”; `ProdOps::doctrine_step` (`:776`) zwraca `false`. Brak `_executeGroupDoctrineStep` (pin `17966-18083`) i ok. 30 wołanych funkcji.
+- **Rozbieżność zakresu z pinem (do naprawy w porcie, nie do decyzji):** pin pozwala doktrynie atakującej piechocie działać w oblężeniu (bramka `6087-6097` wyklucza tylko obrońców i machiny), a Rust wyklucza całe oblężenie (`siege_tactics_loop.rs:1038-1039`).
+- **Poprawki z Evaluatora:** `_unitBattleClass`/`_prefsForUnit` są w pinie (`17486-17520`) — pominięte w r1; `_performSiegeManualOrder` (`18435-18470`) i gałąź `move` z `_performPlayerOrder` (`18300-18429`) nie były w tabeli; `_doctrineMoveDest` gałąź domyślna i `_attackFormationRallyPoint`/`_chargeMoveDest` są martwym kodem na pinie.
+- **Propozycja podziału:** T0–T9 w `01-rozpoznanie.md` i erracie FC (kolejność: żywa ścieżka domyślna przed konfiguracją UI; T9 = ruch skirmish `_performPlayerOrder`, którego `ProdOps::perform_player_order` dziś nie obsługuje). Allowlisty w raporcie §5.
+- **Decyzja techniczna (orkiestratora, nie właściciela):** port pinu 1:1 także dla piechoty w oblężeniu — zgodnie z zasadą parytetu z webem. Pytanie „wpięcie razem z #113 czy osobno” rozstrzygam jako rekomendację B: T1–T7 osobno, wpięcie T8 w #113.
+- **Integracja:** FC `540aa813c` **nie jest na linii parity** (przodek `a61337844`, merge-tree konflikt, diff ~18 tys. plików). Zgodnie z incydentem TERRAIN-MULT wniesiono tylko pliki runu (docs-only) na worktree z parity: commit `1a4982574`, FF `rust-port/parity-v2` = `1a4982574` (readback `git ls-remote` zgodny). Zmiany kodu: zero.
+- **Procesowo:** worktree `wf_8cdeaadf-cf7-1..4` i worktree dokumentacji usunięte. Dispatch `66171e279`, rejestr z `33dc2fc72`.
+- **Sloty:** 1 z 4 — K5-BLOW-ENV-WEKTORY-Q1 (`wf_6ab179f1-525`, Evaluator, Sonnet; Operator PASS-WITH-NOTES `1c82ab4b6`, lokalnie).
