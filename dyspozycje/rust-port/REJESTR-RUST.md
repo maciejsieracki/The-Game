@@ -2590,3 +2590,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Korekta do rejestru:** część wpisów oznaczonych „ZINTEGROWANE” dotyczy funkcji wołanych wyłącznie z testów (`apply_dipl_deltas_to_state`, `eliminate_owner`, `run_economy_tick_for_game`). Zadanie #309 zajmie się korektą bez zmiany historii commitów.
 - **Zadania z audytu:** #114 (eliminacja, krok 1), #298/#299 (R7K7C), #304 (ekonomia; rozpoznanie faz w toku), #305 (DeclareWar), #306 (oblężenie i dystans), #307 (zdobycie miasta), #308 (DECYZJA ABC: droga DTO do renderera).
 - **Uwaga do audytu:** Evaluator zwrócił, że sformułowanie „advance_turn woła tylko wojnę” jest zbyt mocne, bo występuje też faza zwycięstwa (`evaluate_victory`). Dokument wymaga tej poprawki przy użyciu w dispatchach.
+
+### Przebieg — heartbeat Rust „twardy bit” (druga połowa, 17:47 UTC), 2026-11-16
+
+- **FF parity `rust-port/parity-v2` = `55e00a164`** (z `9a71caf8a`): integracja FC I4 BATTLE-CONSUMER (`54fa4c704`). Bramki na merge: renderer fmt/clippy/test EXIT 0 (559 passed), engine fmt/clippy/test EXIT 0 (3735 passed, 0 failed, 1 ignored pre-existing). Readback zgodny.
+- **Zarzuty z FC I4 do rejestru** (nieblokujące): sterownik P5 musi wołać `apply_snapshot` po FF przed kolejnym `Damage`; `BattlePlayback` bez produkcyjnego wołającego; `Kill` ustawia HP=0 (rewizja w I5 dla śmierci bez ciosu).
+- **Sloty: 2 z 4 aktywne:** wektory AUTO V1/V5/V6 (#118, `wf_55097f16-9ad`) i wektory pętli dystansu (#100, `wf_a01f4cfa-dd0`). Dwa wolne: kolejne czyste tematy wymagają decyzji właściciela (#308 droga DTO, #97 tryb ręczny, #282 fotele) albo rozpoznania (#310 pola ekonomii do zaplanowania).
+- **Dysk:** 15 GB. Parity bez zmian poza FF I4.
+- **Otwarte:** `refs/keep` I4 (`54fa4c704`) odrzucany przez proxy; weryfikacja logu `p6_8i_pick`.
