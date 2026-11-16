@@ -33,6 +33,7 @@ pub mod jungle;
 pub mod meadow;
 mod object;
 mod parts;
+pub mod placement;
 pub mod relief;
 pub mod river_lod;
 pub mod style;

@@ -1,0 +1,37 @@
+{
+  "_comment": "R-RUSTPORT-P4-1-R2-DECOR-PLACEMENT fixture: map 3x20 (r-major, default terrain 'laka'), terrain overrides, forest hexes (nakladka 'las'), cities, placed wonders, unit hexes and fog codes (0/1/2, default 2). Expectations are in tests/decor_placement_scene.rs with pin 07d2fbd72 references. Climate rows for height 20 (style.rs climate_zone_at): r=2 temperate, r=6 tropical, r=10 arid, r=13 tropical, r=15 temperate.",
+  "width": 3,
+  "height": 20,
+  "seed": 12345,
+  "terrain": [
+    { "q": 1, "r": 0, "t": "plytkie_morze" },
+    { "q": 1, "r": 2, "t": "wzgorza" },
+    { "q": 2, "r": 6, "t": "rownina" },
+    { "q": 2, "r": 13, "t": "gory" },
+    { "q": 0, "r": 15, "t": "pustynia" },
+    { "q": 2, "r": 19, "t": "morze" }
+  ],
+  "forest": [
+    [1, 0],
+    [0, 2],
+    [1, 2],
+    [0, 6],
+    [2, 6],
+    [1, 10],
+    [2, 10],
+    [0, 13],
+    [1, 13],
+    [2, 13],
+    [0, 15]
+  ],
+  "cities": [[2, 10], [0, 1]],
+  "wonders": [
+    { "q": 0, "r": 13, "ruin": false },
+    { "q": 1, "r": 13, "ruin": true }
+  ],
+  "units": [[0, 2], [2, 10], [1, 1]],
+  "fog": [
+    { "q": 0, "r": 6, "code": 1 },
+    { "q": 0, "r": 15, "code": 0 }
+  ]
+}

@@ -1699,21 +1699,27 @@ fn river_lod_matches_web() {
 // ---------------------------------------------------------------------------
 // 6. Reuse guard (round 2, Evaluator objections 1-2).
 
+/// Every `*.rs` file under `src/decor/`, sub-directories included
+/// (recursive scan, e.g. `decor/placement/`), sorted by path.
 fn decor_sources() -> Vec<(PathBuf, String)> {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/decor");
-    let mut out = Vec::new();
-    for e in std::fs::read_dir(&dir).unwrap_or_else(|e| panic!("{}: {e}", dir.display())) {
-        let p = e.expect("dir entry").path();
-        assert!(
-            !p.is_dir(),
-            "decor/ has no sub-directories: {}",
-            p.display()
-        );
-        if p.extension().is_some_and(|x| x == "rs") {
-            let src = std::fs::read_to_string(&p).expect("read");
-            out.push((p, src));
+    fn walk(dir: &std::path::Path, out: &mut Vec<(PathBuf, String)>) {
+        let mut entries: Vec<PathBuf> = std::fs::read_dir(dir)
+            .unwrap_or_else(|e| panic!("{}: {e}", dir.display()))
+            .map(|e| e.expect("dir entry").path())
+            .collect();
+        entries.sort();
+        for p in entries {
+            if p.is_dir() {
+                walk(&p, out);
+            } else if p.extension().is_some_and(|x| x == "rs") {
+                let src = std::fs::read_to_string(&p).expect("read");
+                out.push((p, src));
+            }
         }
     }
+    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/decor");
+    let mut out = Vec::new();
+    walk(&dir, &mut out);
     assert!(out.len() >= 10, "decor sources not found");
     out
 }
