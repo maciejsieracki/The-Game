@@ -2293,3 +2293,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Integracja:** FC `540aa813c` **nie jest na linii parity** (przodek `a61337844`, merge-tree konflikt, diff ~18 tys. plików). Zgodnie z incydentem TERRAIN-MULT wniesiono tylko pliki runu (docs-only) na worktree z parity: commit `1a4982574`, FF `rust-port/parity-v2` = `1a4982574` (readback `git ls-remote` zgodny). Zmiany kodu: zero.
 - **Procesowo:** worktree `wf_8cdeaadf-cf7-1..4` i worktree dokumentacji usunięte. Dispatch `66171e279`, rejestr z `33dc2fc72`.
 - **Sloty:** 1 z 4 — K5-BLOW-ENV-WEKTORY-Q1 (`wf_6ab179f1-525`, Evaluator, Sonnet; Operator PASS-WITH-NOTES `1c82ab4b6`, lokalnie).
+
+## Przebieg (05:48 UTC — heartbeat: start T0 doktryny, fala 1)
+
+- **Sloty:** 2 z 4 aktywne: K5-BLOW-ENV-WEKTORY-Q1 (`wf_6ab179f1-525`, Obrona, Haiku; Operator PASS-WITH-NOTES `1c82ab4b6`) i **K5DOC-PROD-UNIT-STAN-T0** (`wf_a3de76ac-91a`, Operator, Haiku).
+- **Start T0** (`R-RUSTPORT-P6-K5DOC-PROD-UNIT-STAN-T0`, fala 1 z §5 rozpoznania #112): pola stanu doktryny w `ProdUnit` (`siege_tactics_loop.rs:736`) bez zmiany zachowania + `_forwardCol` (pin 6748) + `GroupDoctrine`. Baza `1a4982574` (parity, docs-only nad `59746d373`). Dispatch `4bc68386` wypchnięty przed startem. Skrypt `topic-R-RUSTPORT-P6-K5DOC-PROD-UNIT-STAN-T0.js` (Operator/Obrona Haiku, Evaluator/FC Sonnet).
+- **Zakres wg recon:** T0 jest pierwszy i sam, bo `siege_tactics_loop.rs` jest współdzielony z #109, #113, #147–#150. Po jego integracji startują równolegle T2', T6, T5a, T4 (fala 1 z §5).
+- **Pozostałe kandydaci:** nieruszane — ZŁOŻA, COMBAT-WEJSCIA, R7K7C, ZDOBYCIE, ActivateOps — czekają na decyzje.
+- **Dysk:** 14 GB wolnego.
