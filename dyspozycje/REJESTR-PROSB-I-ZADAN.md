@@ -10409,14 +10409,14 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 - Pozostałe czerwone (5×pr141): ledger v1/v3 (stary snapshot, regeneracja poza allowlistą), ledger v4 / evidence-ledger-behavior / runtime-ordinary-scope (artefakty nigdy w repo, klasa C). NIE ZMIERZONO: mutacje stubów harnessu; martwa pozostałość `wspolnaReligia` w main.ts:44101 (osobny temat sprzątania po #342).
 - ABC DO WŁAŚCICIELA: B-2 (panel „Rozbicie obrony” pokazuje wpisy zerowe dla Greków) oraz co zrobić z 5 starymi testami ledgerów pr141.
 
-### 2026-11-16 ~15:05 UTC — FALA 768 WDROŻONA (ROBOCZA MD5 662cbc20, main aea463644)
+### 2026-11-16 ~14:30 UTC — FALA 768 WDROŻONA (ROBOCZA MD5 662cbc20, main aea463644)
 - Scalone FC: 0961a7fa1 (TEST-DEBT-BASELINE-Q4 r1, kandydat bac531c58), 3678bad7c, 62305f155, a63d8a1fa (LEDGER r5 / RETREAT / OLDSAVE-compat); merge czysty (MERGED 00881c550), tsc 0, logic-test 213/213, defense-breakdown 49/0, budynek-civ-bonus-u17 7/0, war-epoch-player-first-main-guard 35/0, load-game-regression 34/0, vite 0. Raw MD5 = manifest (662cbc20804fa54ced02ff39eb4b16f5), 3 sidecary audio zgodne (5b990bc3…, 0a9a1047…, 9e88be9f…).
 - Co to daje w grze: panel „Rozbicie obrony” nie pokazuje wpisów zerowych (decyzja właściciela A, #436 B-2). Poza tym: 5 testów pr141 oznaczonych jako wycofane (README-WYCOFANE-TESTY-pr141.md), hak `ledgerStats` za `?civTest=1` i narzędzia pomiarowe (ledger, odwrót, zgodność starych zapisów) — bez zmiany zachowania gry.
 - NIE ZMIERZONO: render panelu w Chromium; próg 10% ledgera (1 ziarno) i kampania limitu odwrotu NIE ROZSTRZYGNIĘTE; `wspolnaReligia` main.ts:44101 nietknięte.
 - Sprzątanie: refs/keep/TESTDEBT-Q4-r1-{op,eval,obrona,fc} zapisane, worktree wf_f4f5a306-135-* usunięte, /home/user/integ usunięty.
 - Do właściciela (weryfikacja w grze): panel „Rozbicie obrony” bez zer (Grecy).
 
-### 2026-11-16 ~16:00 UTC — FALA 769 WDROŻONA (ROBOCZA MD5 f24457ae, main 8265bbec0)
+### 2026-11-16 ~14:40 UTC — FALA 769 WDROŻONA (ROBOCZA MD5 f24457ae, main 8265bbec0)
 - R-WEB-SAVE-LOAD-OLD-SAVE-ZERO-CITIES-NO-AWAIT-FIRST-CITY-Q1 (ZEROCITY r1: Operator Haiku → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES, kandydat eeeb518b5, kod operatora 8111fb3bf, FC 666d58ef9; refs/keep/ZEROCITY-r1-{op,eval,obrona,fc}). Zmiana: `gra/src/main.ts` restoreGameFromSave — stary zapis bez `playerEverOwnedCityByOwner` z turą > 1 dostaje flagę dla foteli ludzkich, więc po wczytaniu „Zakończ turę” nie wraca do stanu „czekam na pierwsze miasto” (decyzja właściciela A).
 - Build: MERGED 8a88dd525, tsc 0, logic 213/213, save-load-player-owned-city-test PASS (3 mutacje), load-game-regression 34/0, vite 0. Raw MD5 = manifest (f24457ae9cabdb0f0f03a6d8e1280dbd), 3 sidecary audio zgodne.
 - Co to daje w grze: stary zapis (bez flagi) z turą > 1 nie blokuje „Zakończ turę” oczekiwaniem na pierwsze miasto.
