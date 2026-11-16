@@ -1,0 +1,25 @@
+M1 s11 | contactRound=2 | spread min/avg/max=0/0.75/2 (n=4) | maxHits=1 | verdict=PASS
+M1 s12 | contactRound=2 | spread min/avg/max=0/0.75/2 (n=4) | maxHits=1 | verdict=PASS
+M1 s13 | contactRound=2 | spread min/avg/max=0/0.75/2 (n=4) | maxHits=1 | verdict=PASS
+M1 s14 | contactRound=2 | spread min/avg/max=0/0.75/2 (n=4) | maxHits=1 | verdict=PASS
+M1 s15 | contactRound=2 | spread min/avg/max=0/0.75/2 (n=4) | maxHits=1 | verdict=PASS
+M1 s16 | contactRound=2 | spread min/avg/max=0/0.75/2 (n=4) | maxHits=1 | verdict=PASS
+M1 s17 | contactRound=2 | spread min/avg/max=0/0.75/2 (n=4) | maxHits=1 | verdict=PASS
+M1 s18 | contactRound=2 | spread min/avg/max=0/0.75/2 (n=4) | maxHits=1 | verdict=PASS
+M2 s11 | contactRound=2 | spread min/avg/max=0/0.50/1 (n=4) | maxHits=1 | verdict=PASS
+M2 s12 | contactRound=2 | spread min/avg/max=0/0.50/1 (n=4) | maxHits=1 | verdict=PASS
+M2 s13 | contactRound=2 | spread min/avg/max=0/0.50/1 (n=4) | maxHits=1 | verdict=PASS
+M2 s14 | contactRound=2 | spread min/avg/max=0/0.50/1 (n=4) | maxHits=1 | verdict=PASS
+M2 s15 | contactRound=2 | spread min/avg/max=0/0.50/1 (n=4) | maxHits=1 | verdict=PASS
+M2 s16 | contactRound=2 | spread min/avg/max=0/0.50/1 (n=4) | maxHits=1 | verdict=PASS
+M2 s17 | contactRound=2 | spread min/avg/max=0/0.50/1 (n=4) | maxHits=1 | verdict=PASS
+M2 s18 | contactRound=2 | spread min/avg/max=0/0.50/1 (n=4) | maxHits=1 | verdict=PASS
+M3 s11 | contactRound=2 | spread min/avg/max=0/1.50/3 (n=4) | maxHits=1 | verdict=A1 rozrzut frontu 3 > 2
+M3 s12 | contactRound=2 | spread min/avg/max=0/1.50/3 (n=4) | maxHits=1 | verdict=A1 rozrzut frontu 3 > 2
+M3 s13 | contactRound=2 | spread min/avg/max=0/1.50/3 (n=4) | maxHits=1 | verdict=A1 rozrzut frontu 3 > 2
+M3 s14 | contactRound=2 | spread min/avg/max=0/1.50/3 (n=4) | maxHits=1 | verdict=A1 rozrzut frontu 3 > 2
+M3 s15 | contactRound=2 | spread min/avg/max=0/1.50/3 (n=4) | maxHits=1 | verdict=A1 rozrzut frontu 3 > 2
+M3 s16 | contactRound=2 | spread min/avg/max=0/1.50/3 (n=4) | maxHits=1 | verdict=A1 rozrzut frontu 3 > 2
+M3 s17 | contactRound=2 | spread min/avg/max=0/1.50/3 (n=4) | maxHits=1 | verdict=A1 rozrzut frontu 3 > 2
+M3 s18 | contactRound=2 | spread min/avg/max=0/1.50/3 (n=4) | maxHits=1 | verdict=A1 rozrzut frontu 3 > 2
+HIST per-battle max spread: {"0":0,"1":8,"2":8,"3+":8,"NA":0}

@@ -36,6 +36,8 @@ const SCENARIOS = [
   // N2: mieszana armia. Hastati celowo NIE uzyty jako "piechota" (ma pile = liczy sie jako strzelec); Wojownik = czysta piechota.
   { id: 'M1', part: 'n2', name: 'mieszana: piechota+strzelcy+konnica (lustro)', atk: 'Wojownik:10,Lucznik:6,Konnica:4', def: 'Wojownik:10,Lucznik:6,Konnica:4', modes: ['auto'] },
   { id: 'M2', part: 'n2', name: 'mieszana z machinami (Katapulta)', atk: 'Wojownik:8,Lucznik:6,Konnica:4,Katapulta:2', def: 'Wojownik:10,Lucznik:6,Konnica:2', modes: ['auto'] },
+  // M3 (RE-MEASURE-Q1): trzeci sklad mieszany, asymetryczny (atakujacy strzelcy/konnica, obronca ciezsza piechota) -- dispatch wymaga >= 3 skladow
+  { id: 'M3', part: 'n2', name: 'mieszana asymetryczna: piechota slaba + strzelcy + konnica (atak) vs piechota mocna', atk: 'Wojownik:6,Lucznik:8,Konnica:6', def: 'Wojownik:12,Lucznik:4,Konnica:4', modes: ['auto'] },
   // N3: neverRout w scenariuszu (Chaska = "walczy do smierci"), przewaga przeciwnika z konnica -> rozbicie, ucieczka, poscig
   { id: 'R1', part: 'n3', name: 'neverRout (Chaska x4) + piechota vs piechota+konnica', atk: 'Wojownik z maczugą (Chaska):4,Wojownik:12', def: 'Wojownik:16,Konnica:8', modes: ['auto', 'skip'] },
   { id: 'R2', part: 'n3', name: 'wrecz 12v12 (Hastati) -- anomalia instant/skip', atk: 'Hastati:12', def: 'Hastati:12', modes: ['auto', 'skip', 'instant'] },
