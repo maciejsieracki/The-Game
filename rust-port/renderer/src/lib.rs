@@ -31,6 +31,7 @@ pub mod cities;
 pub mod core;
 pub mod decor;
 pub mod geom;
+pub mod improvements;
 pub mod jsmath;
 pub mod labels;
 pub mod material;

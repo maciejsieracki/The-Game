@@ -1,0 +1,459 @@
+{
+ "topic": "R-RUSTPORT-P4-1-R4-IMPROVEMENTS-RESOURCES",
+ "pin": "07d2fbd72",
+ "source": "Constants copied by hand from gra/src/main.ts at the pin (git show 07d2fbd72:gra/src/main.ts); the line of every value is next to it. Expected orders follow the pin call order described in expected.order. Not produced by the Rust code under test.",
+ "constants": {
+  "ownerCol": {
+   "value": 16766282,
+   "pin": "main.ts:3172 buildImprovementSectored(layers, 0xffd54a, undefined, HEX_R, relief, roadMask)"
+  },
+  "surfaceLift": {
+   "value": 0.01,
+   "pin": "main.ts:16874 return topY + 0.01; main.ts:3092 baseY + relief + 0.01"
+  },
+  "depositEdgeR": {
+   "value": 0.62,
+   "pin": "main.ts:3050 DEPOSIT_EDGE_R"
+  },
+  "depositTargetSpan": {
+   "value": 0.55,
+   "pin": "main.ts:3051 DEPOSIT_TARGET_SPAN"
+  },
+  "depositEdgeRElevated": {
+   "value": 0.8,
+   "pin": "main.ts:3055 DEPOSIT_EDGE_R_ELEVATED"
+  },
+  "depositTargetSpanElevated": {
+   "value": 0.34,
+   "pin": "main.ts:3056 DEPOSIT_TARGET_SPAN_ELEVATED"
+  },
+  "depositMaxScale": {
+   "value": 0.6,
+   "pin": "main.ts:3079 Math.min(0.6, (targetSpan * HEX_R) / maxSpan)"
+  },
+  "depositRotQ": {
+   "value": 1.3,
+   "pin": "main.ts:3224 hex.coords.q * 1.3 + hex.coords.r * 0.7"
+  },
+  "depositRotR": {
+   "value": 0.7,
+   "pin": "main.ts:3224"
+  },
+  "overlayCollapseMinMeshes": {
+   "value": 7,
+   "pin": "main.ts:3177 OVERLAY_COLLAPSE_MIN_MESHES"
+  },
+  "villageRotY": {
+   "value": 0.1,
+   "pin": "main.ts:3385 WIOSKA_OBOZ_LAYOUT.wioska.budynek.rotY (render/wioska-oboz.ts:140-146)"
+  },
+  "fogExploredBrightness": {
+   "value": 0.175,
+   "pin": "game/visibility.ts:31 FOG_EXPLORED_BRIGHTNESS"
+  }
+ },
+ "external": {
+  "showResourceDepositOverlay": true,
+  "lamaDepositVisible": false,
+  "zlozeHidden": [
+   [
+    2,
+    2
+   ]
+  ],
+  "depositOverlaySuppressed": [
+   [
+    0,
+    2
+   ]
+  ],
+  "preservesHillRelief": [],
+  "pin": "main.ts:15423 (toggle), :3105-3107 (llama), :3213 (visibleZloze), :3113-3121 (dedicated improvement), :16839-16849 (relief)"
+ },
+ "map": {
+  "width": 4,
+  "height": 3,
+  "seed": 12345,
+  "hexes": [
+   {
+    "coord": {
+     "q": 0,
+     "r": 0
+    },
+    "terenBazowy": "laka",
+    "rzekaKrawedzie": []
+   },
+   {
+    "coord": {
+     "q": 1,
+     "r": 0
+    },
+    "terenBazowy": "wzgorza",
+    "rzekaKrawedzie": []
+   },
+   {
+    "coord": {
+     "q": 2,
+     "r": 0
+    },
+    "terenBazowy": "laka",
+    "rzekaKrawedzie": []
+   },
+   {
+    "coord": {
+     "q": 3,
+     "r": 0
+    },
+    "terenBazowy": "rownina",
+    "rzekaKrawedzie": []
+   },
+   {
+    "coord": {
+     "q": 0,
+     "r": 1
+    },
+    "terenBazowy": "laka",
+    "rzekaKrawedzie": []
+   },
+   {
+    "coord": {
+     "q": 1,
+     "r": 1
+    },
+    "terenBazowy": "rownina",
+    "rzekaKrawedzie": []
+   },
+   {
+    "coord": {
+     "q": 2,
+     "r": 1
+    },
+    "terenBazowy": "wzgorza",
+    "rzekaKrawedzie": []
+   },
+   {
+    "coord": {
+     "q": 3,
+     "r": 1
+    },
+    "terenBazowy": "morze",
+    "rzekaKrawedzie": []
+   },
+   {
+    "coord": {
+     "q": 0,
+     "r": 2
+    },
+    "terenBazowy": "laka",
+    "rzekaKrawedzie": []
+   },
+   {
+    "coord": {
+     "q": 1,
+     "r": 2
+    },
+    "terenBazowy": "laka",
+    "rzekaKrawedzie": []
+   },
+   {
+    "coord": {
+     "q": 2,
+     "r": 2
+    },
+    "terenBazowy": "rownina",
+    "rzekaKrawedzie": []
+   },
+   {
+    "coord": {
+     "q": 3,
+     "r": 2
+    },
+    "terenBazowy": "laka",
+    "rzekaKrawedzie": []
+   }
+  ],
+  "rivers": [],
+  "riverRenderPaths": []
+ },
+ "hexState": [
+  {
+   "nakladka": "zloze_gliny",
+   "ulepszenie": "brak",
+   "ulepszenia": [
+    "farma",
+    "droga"
+   ],
+   "improvementKey": "droga",
+   "zloze": null,
+   "villagePresent": false,
+   "terraces": false,
+   "coveringImprovement": true,
+   "roadMask": 5
+  },
+  {
+   "nakladka": "brak",
+   "ulepszenie": "brak",
+   "ulepszenia": null,
+   "improvementKey": null,
+   "zloze": "miedz",
+   "villagePresent": false,
+   "terraces": false,
+   "coveringImprovement": false,
+   "roadMask": 0
+  },
+  {
+   "nakladka": "brak",
+   "ulepszenie": "brak",
+   "ulepszenia": null,
+   "improvementKey": null,
+   "zloze": null,
+   "villagePresent": true,
+   "terraces": false,
+   "coveringImprovement": false,
+   "roadMask": 0
+  },
+  {
+   "nakladka": "brak",
+   "ulepszenie": "brak",
+   "ulepszenia": null,
+   "improvementKey": null,
+   "zloze": null,
+   "villagePresent": true,
+   "terraces": false,
+   "coveringImprovement": false,
+   "roadMask": 0
+  },
+  {
+   "nakladka": "zloze_bydla",
+   "ulepszenie": "brak",
+   "ulepszenia": null,
+   "improvementKey": null,
+   "zloze": null,
+   "villagePresent": false,
+   "terraces": false,
+   "coveringImprovement": false,
+   "roadMask": 0
+  },
+  {
+   "nakladka": "brak",
+   "ulepszenie": "brak",
+   "ulepszenia": null,
+   "improvementKey": null,
+   "zloze": null,
+   "villagePresent": false,
+   "terraces": false,
+   "coveringImprovement": false,
+   "roadMask": 0
+  },
+  {
+   "nakladka": "brak",
+   "ulepszenie": "brak",
+   "ulepszenia": [
+    "tarasy"
+   ],
+   "improvementKey": "tarasy",
+   "zloze": "",
+   "villagePresent": false,
+   "terraces": true,
+   "coveringImprovement": true,
+   "roadMask": 0
+  },
+  {
+   "nakladka": "brak",
+   "ulepszenie": "brak",
+   "ulepszenia": null,
+   "improvementKey": null,
+   "zloze": "miedz",
+   "villagePresent": false,
+   "terraces": false,
+   "coveringImprovement": false,
+   "roadMask": 0
+  },
+  {
+   "nakladka": "brak",
+   "ulepszenie": "brak",
+   "ulepszenia": [
+    "warzelnia_soli"
+   ],
+   "improvementKey": "warzelnia_soli",
+   "zloze": "sol",
+   "villagePresent": false,
+   "terraces": false,
+   "coveringImprovement": true,
+   "roadMask": 0
+  },
+  {
+   "nakladka": "zloze_lamy",
+   "ulepszenie": "brak",
+   "ulepszenia": null,
+   "improvementKey": null,
+   "zloze": null,
+   "villagePresent": false,
+   "terraces": false,
+   "coveringImprovement": false,
+   "roadMask": 0
+  },
+  {
+   "nakladka": "brak",
+   "ulepszenie": "brak",
+   "ulepszenia": null,
+   "improvementKey": null,
+   "zloze": "zelazo",
+   "villagePresent": false,
+   "terraces": false,
+   "coveringImprovement": false,
+   "roadMask": 0
+  },
+  {
+   "nakladka": "brak",
+   "ulepszenie": "brak",
+   "ulepszenia": null,
+   "improvementKey": null,
+   "zloze": "miedz",
+   "villagePresent": false,
+   "terraces": false,
+   "coveringImprovement": false,
+   "roadMask": 0
+  }
+ ],
+ "fog": {
+  "state": [
+   2,
+   2,
+   1,
+   0,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   0
+  ]
+ },
+ "fogActive": true,
+ "notes": [
+  {
+   "q": 0,
+   "r": 0,
+   "note": "placed farma+droga, road mask 0b000101 (arms 0 and 2), clay deposit: improvement mesh + overlay pushed again by spawnImprovementMesh (main.ts:17101)"
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "note": "copper on a hill: compactDepositAtEdge elevated branch (main.ts:3066-3067, :3084-3090)"
+  },
+  {
+   "q": 2,
+   "r": 0,
+   "note": "village on an explored hex: shown, dimmed by FOG_EXPLORED_BRIGHTNESS (main.ts:3430-3443, render/fogDim.ts:16-26)"
+  },
+  {
+   "q": 3,
+   "r": 0,
+   "note": "village on an unexplored hex: hidden (main.ts:3432-3434)"
+  },
+  {
+   "q": 0,
+   "r": 1,
+   "note": "cattle deposit: implicit layer 'bydlo' (main.ts:3130-3131), no overlay (main.ts:3102-3104)"
+  },
+  {
+   "q": 1,
+   "r": 1,
+   "note": "no overlay kind, no deposit: nothing (main.ts:3212-3214)"
+  },
+  {
+   "q": 2,
+   "r": 1,
+   "note": "terraces on a hill: hill + terraces, y = topYAt without +0.01 (main.ts:17085-17090, :16871-16872); zloze '' is falsy (map/deposit-era.ts:26)"
+  },
+  {
+   "q": 3,
+   "r": 1,
+   "note": "water: no overlay (main.ts:3211)"
+  },
+  {
+   "q": 0,
+   "r": 2,
+   "note": "dedicated improvement on salt: hexSuppressesResourceOverlay true (gap G2, ExternalInputs)"
+  },
+  {
+   "q": 1,
+   "r": 2,
+   "note": "llama deposit for a non-llama civ: no overlay (main.ts:3105-3107, gap G3)"
+  },
+  {
+   "q": 2,
+   "r": 2,
+   "note": "iron below its era: visibleZloze undefined (main.ts:3213, gap G1)"
+  },
+  {
+   "q": 3,
+   "r": 2,
+   "note": "copper on an unexplored hex: overlay built, hidden by syncResourceOverlayFog (main.ts:3284-3292)"
+  }
+ ],
+ "expected": {
+  "layers": {
+   "0,0": [
+    "farma",
+    "droga"
+   ],
+   "0,1": [
+    "bydlo"
+   ],
+   "2,1": [
+    "tarasy"
+   ],
+   "0,2": [
+    "warzelnia_soli"
+   ],
+   "pin": "main.ts:3126-3137 mergedImprovementLayers"
+  },
+  "improvementMeshOrder": [
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    1
+   ],
+   [
+    2,
+    1
+   ],
+   [
+    0,
+    2
+   ]
+  ],
+  "resourceOverlayOrder": [
+   [
+    1,
+    0
+   ],
+   [
+    3,
+    2
+   ],
+   [
+    0,
+    0
+   ]
+  ],
+  "villageOrder": [
+   [
+    2,
+    0
+   ],
+   [
+    3,
+    0
+   ]
+  ],
+  "order": "sync_snapshot = runDeferredResourceOverlaysAfterHide (main.ts:3272-3281): rebuildResourceOverlays pushes (0,0),(1,0),(3,2) in map order (main.ts:3237-3257); syncLivestockAndPlacedMeshes (main.ts:16234-16251) spawns (0,0),(0,1),(2,1),(0,2); spawnImprovementMesh(0,0) ends with syncResourceOverlayAtHex(0,0) (main.ts:17101), which splices (0,0) out and pushes it again at the end (main.ts:3200-3205, :3227)"
+ }
+}
