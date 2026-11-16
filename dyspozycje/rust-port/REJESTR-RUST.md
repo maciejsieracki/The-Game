@@ -2504,3 +2504,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Czwarty slot wstrzymany:** dysk 5,3 GB (reguła 5 wymaga ≥ 8 GB dla tematów z kodem Rust).
 - **Integracje:** brak nowych FC PASS do scalenia w tym przebiegu. Parity `0f3483e57` (F6). Do zrobienia: merge I2 (`0e3c149fa`) na `0f3483e57` z pełnym testem engine; FC 1F3 (po opłaceniu subskrypcji).
 - **Rozbieżność z harmonogramem:** prompt heartbeatu wymaga Haiku/Sonnet; reguła właściciela dla 3D to Opus we wszystkich rolach (zachowana).
+
+### Przebieg — P4-1I3 BATTLE-ACTIONS: FC PASS-WITH-NOTES, 2026-11-16 ~15:15 UTC
+
+- **FC:** `0deb9a075` (baza: FC I2 `43709ed0a`, kod po Obronie `001af723d`). Na WIP: `wip/R-RUSTPORT-P4-1I3-BATTLE-ACTIONS-integracja`, `refs/keep/P4-1I3-fc`.
+- **Bramki:** view-model fmt/clippy/test zielone; engine: 496 binarek testowych, 3666 passed, 0 failed (wykonane sekwencyjnie, bo jednorazowy `cargo test` przekracza limit 590 s).
+- **Kolejność integracji:** I2 (`43709ed0a`, merge `0e3c149fa` do powtórzenia na `0f3483e57`) MUSI wejść przed I3. Dopiero potem I3.
+- **Zarzuty do przeniesienia (nie blokują):** I5 / K5LOOP-OUTCOME — skutki trafienia wieży poza zabiciem i gałąź `neverRout`; I4 — kierunek jednostki w oknie `[t0, hitAt)` z akcji `Facing`; przy wpinaniu #113 — unikalność id jednostek między stronami.
+- **Dysk:** 4,8 GB — pełny test engine dla I2/I3 wymaga ≥ 8 GB.
