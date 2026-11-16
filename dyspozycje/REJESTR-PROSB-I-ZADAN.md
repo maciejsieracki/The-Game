@@ -10415,3 +10415,12 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 - NIE ZMIERZONO: render panelu w Chromium; próg 10% ledgera (1 ziarno) i kampania limitu odwrotu NIE ROZSTRZYGNIĘTE; `wspolnaReligia` main.ts:44101 nietknięte.
 - Sprzątanie: refs/keep/TESTDEBT-Q4-r1-{op,eval,obrona,fc} zapisane, worktree wf_f4f5a306-135-* usunięte, /home/user/integ usunięty.
 - Do właściciela (weryfikacja w grze): panel „Rozbicie obrony” bez zer (Grecy).
+
+### 2026-11-16 ~16:00 UTC — FALA 769 WDROŻONA (ROBOCZA MD5 f24457ae, main 8265bbec0)
+- R-WEB-SAVE-LOAD-OLD-SAVE-ZERO-CITIES-NO-AWAIT-FIRST-CITY-Q1 (ZEROCITY r1: Operator Haiku → Evaluator PASS-WITH-NOTES → Obrona → FC PASS-WITH-NOTES, kandydat eeeb518b5, kod operatora 8111fb3bf, FC 666d58ef9; refs/keep/ZEROCITY-r1-{op,eval,obrona,fc}). Zmiana: `gra/src/main.ts` restoreGameFromSave — stary zapis bez `playerEverOwnedCityByOwner` z turą > 1 dostaje flagę dla foteli ludzkich, więc po wczytaniu „Zakończ turę” nie wraca do stanu „czekam na pierwsze miasto” (decyzja właściciela A).
+- Build: MERGED 8a88dd525, tsc 0, logic 213/213, save-load-player-owned-city-test PASS (3 mutacje), load-game-regression 34/0, vite 0. Raw MD5 = manifest (f24457ae9cabdb0f0f03a6d8e1280dbd), 3 sidecary audio zgodne.
+- Co to daje w grze: stary zapis (bez flagi) z turą > 1 nie blokuje „Zakończ turę” oczekiwaniem na pierwsze miasto.
+- Znane (z Evaluatora/FC, nie błąd kodu): stary zapis z 0 miast pozwala na jedno „Zakończ turę”, potem porażka wg istniejącej reguły R-WEB-DEFEAT-LAST-CITY (Operator r1 błędnie przypisał blokadę bramce NNS; przyczyna = gameOver z checkDefeat). Kryterium „3× Zakończ turę” przeformułowane na „≥1 tura, brak blokady awaiting”. Pytanie A/B (grać dalej bez porażki = nowy mechanizm) zostawiam właścicielowi jako NIEBLOKUJĄCE — domyślnie A zostaje.
+- NIE ZMIERZONO: roundtrip seed 777, ekonomia po wczytaniu zapisu 0 miast, MP/hotseat, tura 1 nowej gry w żywej grze (tylko analiza statyczna).
+- Sprzątanie: worktree wf_1b638048-582-* usunięte, /home/user/integ usunięty.
+- Do właściciela (weryfikacja w grze): wczytaj stary zapis z turą > 1 i zakończ turę; zapis z 0 miast = jedna tura, potem porażka.
