@@ -1,10 +1,10 @@
-# R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 — raport Operatora (runda 4/5, dokumentacyjna)
+# R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 — raport Operatora (runda 5/5, dokumentacyjna)
 
 STATUS: PASS-WITH-NOTES (runda dokumentacyjna wg DODATKU 5: raport poprawiony, bramki zmierzone; próg 10% NIE ROZSTRZYGNIĘTE, 1 ziarno)
 DOMAIN: GAME (tylko pomiar; w `gra/src` zmiana wyłącznie z rundy 3: hak odczytu `ledgerStats` za `?civTest=1`; w rundzie 4 `gra/src` NIE zmieniano)
 TEMAT: R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1
 GOAL: pomiar kosztu czasu tury zapisu do księgi „Skąd zapasy” (ON vs OFF) w konfiguracji DOMYŚLNEJ na harnessie AI z miastami (DODATEK 4: pary na wspólnym slocie t50, okno t51–t80; NIE 100 tur). Runda 4: korekta raportu wg zarzutów FC r3 (sekcja KOREKTY) i pełne bramki.
-BAZA: 16d9b9841 (obrona r3; potomek origin/main 459354a12). Worktree detach na tym SHA.
+BAZA: 23f28558e (obrona r4; `refs/keep/LEDGER-PERF-r4-obrona`; potomek 16d9b9841 (obrona r3), potomek origin/main 459354a12). Worktree detach na tym SHA.
 
 ## ZMIANY / COMMIT
 - Runda 4 zmienia wyłącznie plik `dyspozycje/autobot/runs/R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1/10-operator-claude.md` (korekty) i ten sam katalog run (sekcja KOREKTY). Kod gry i narzędzia bez zmian.
@@ -29,7 +29,7 @@ BAZA: 16d9b9841 (obrona r3; potomek origin/main 459354a12). Worktree detach na t
 - Testy live (Chromium, pomiary) w rundzie 4 NIE wykonywane (DODATEK 5 pkt 3).
 
 ## WYNIK POMIARU — SEED 4242 (okno t51–t80; rozgrzewka t51/t61/t71 odrzucona; 27 tur na przebieg) — dane z rundy 3, bez zmian
-Projekt: slot t50 (ON, domyślny) → 4 przebiegi t51→t80 w kolejności ON1, OFF1, OFF2, ON2 (każdy z kopii tego samego slotu; ON1 wznowiony ze slotu t60/t70, pozostałe ze slotu t70).
+Projekt: jeden slot t50 (zapis ON, domyślny) → 4 przebiegi t51→t80 w kolejności ON1, OFF1, OFF2, ON2, każdy wznowiony z TEGO SAMEGO slotu t50 (wszystkie 4 przebiegi startują z jednego slotu t50; zob. KOREKTY 7). Nie ma wznowień ze slotu t60/t70.
 
 | przebieg | średnia s/turę | mediana s/turę | średni load1 | księga (bajty JSON) t60 / t70 / t80 |
 |---|---|---|---|---|
@@ -60,6 +60,8 @@ Poniższe zdania z wersji rundy 3 zostały USUNIĘTE lub zastąpione, nie są ju
 4. Obserwacja o braku historii ledgera po wczytaniu „wbrew FALI 760” jest WYCOFANA. Spadek 972 632 B → 118 419 B po wczytaniu jest zgodny z filtrem `isHuman` przy zapisie slotu (`gra/src/main.ts:39799`), a nie z utratą historii. Wpływ na Δ% NIE OSZACOWANO (brak przebiegu kontrolnego; porównanie ciągłej gry z wczytaną nie jest like-for-like).
 5. Zdanie „0 tur spełnia warunek load” jest błędne; poprawnie: 12 tur (sekcja WYNIK).
 6. Pozycje „uptime/load przed każdym segmentem w evidence” i „tsc/hook-test/5 bramek zielone z r2” są wycofane; bramki zmierzone w rundzie 4 (sekcja TESTY RUNDY 4).
+7. (runda 5, zarzut FC r4 / 30-obrona zarzut 3) Zdanie „ON1 wznowiony ze slotu t60/t70, pozostałe ze slotu t70” jest WYCOFANE. Dane (zob. `30-obrona-claude.md`, zarzut 3) wskazują jeden slot t50 dla wszystkich 4 przebiegów: wiersze tur 2–50 są identyczne we wszystkich czterech plikach JSONL. Wartości księgi t60/t70 w tabeli powyżej dotyczą odpowiednich tur przebiegów, a nie punktów startu wznowień.
+8. (runda 5) Zdanie o przebiegu ziarna 777 „ON1 50→70 uruchomiony przy load 2,36 i przerwany przy load 7,3” nie ma śladu w drzewie (zob. zarzut 1 powyżej); traktować jako NIEZWERYFIKOWANE i nieuwzględnione w wynikach.
 
 ## BLOKADY
 - Rozstęp same-variant ≥ 10% (ON 17,5%, OFF 8,4%): wynik NIE ROZSTRZYGNIĘTY.
