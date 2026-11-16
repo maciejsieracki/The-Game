@@ -2335,3 +2335,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Taski:** dodano #255–#268 (DOC-T0…T8, DOC-H, EXEC-T1…T7). #112 zamknięty jako rozbity na DOC-T*. #255, #265, #266, #267 w toku.
 - **Sprzątanie dysku:** usunięto nieaktywne cache (`/tmp/claude-0/fc-tgt`, `fc-tgt-missing0`, `tgt`) i pliki robocze scratchpadu (`web.tar`, `a.tar`, `w`, `w9`, `__pycache__`). Worktree zakończonych runów `wf_f3b76b65-261-3` i `wf_5a965001-591-4` zapisane przez `git stash push -u` (wpisy `stash@{0}` i `stash@{1}`) i usunięte. **Dysk: 17 GB wolnego** (było 7,1 GB).
 - **Nie ruszane:** cache aktywnego T0 (`/tmp/claude-0/k5doc-r2-target`, 3,1 GB), `/tmp/claude-0/ev9f1` (1,2 GB, niezacommitowane zmiany — decyzja właściciela), worktree `wf_a3de76ac-91a-*`.
+
+## Przebieg (06:54 UTC — heartbeat: 4/4 slotów, brak FC do integracji)
+
+- **K5DOC-PROD-UNIT-STAN-T0** (`wf_a3de76ac-91a`): Operator i Evaluator zakończone, Obrona w toku (Haiku).
+- **EXEC-T1-QUEUE** (`wf_acc61d3f-1fa`): Operator w toku (Haiku).
+- **EXEC-T2-MOVE-GATE** (`wf_479bcc22-c55`): Operator w toku (Haiku).
+- **H-MANUAL-ROZP** (`wf_d8a3e31a-461`): Operator w toku (Haiku, recon bez kodu).
+- **Parity:** `316ded4b7` (bez zmian). **Dysk:** 14 GB wolnego.
