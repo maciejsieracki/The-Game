@@ -13,6 +13,7 @@ use civ_engine::domain::diplomacy::{
     ActiveDeal, CivilizationPair, Relation, RelationStatus, TreatyKind,
 };
 use civ_engine::domain::eliminacja::eliminate_owner;
+use civ_engine::domain::playable::MovementPoints;
 use civ_engine::domain::playable::{PlayableState, PlayableUnit, PlayableUnitKind};
 use civ_engine::domain::types::PositionDto;
 use civ_engine::domain::war_forced_pairing::{ForcedWarPairState, ForcedWarSaveState};
@@ -29,8 +30,8 @@ fn unit(id: u64, owner: u64) -> PlayableUnit {
         owner_id: PlayerId::new(owner),
         kind: PlayableUnitKind::Warrior,
         position: PositionDto::new(0, 0),
-        movement: 2,
-        movement_max: 2,
+        movement: MovementPoints::from(2_u8),
+        movement_max: MovementPoints::from(2_u8),
         selected: false,
     }
 }

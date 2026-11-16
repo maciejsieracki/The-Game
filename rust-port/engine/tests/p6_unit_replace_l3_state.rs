@@ -333,7 +333,7 @@ fn zamiana_nie_zmienia_pozostalych_pol_stanu() {
     // Poza ekonomia i ruchem jednostki (zuzyty) reszta stanu jest identyczna.
     before.economy = game.state().economy.clone();
     before.status = game.state().status.clone();
-    before.units[0].movement = 0;
+    before.units[0].movement = civ_engine::domain::playable::MovementPoints::ZERO;
     assert_eq!(game.state(), &before);
 }
 

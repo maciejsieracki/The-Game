@@ -19,6 +19,7 @@
 mod bridge;
 
 use bridge::{CivEngineAdapter, EngineCommand, EnginePort, MockEngineAdapter};
+use civ_engine::domain::playable::MovementPoints;
 use civ_engine::domain::playable::{PlayableMarchStopReason, PlayablePlannedMarch};
 use civ_engine::{
     PlayableError, PlayableGame, PlayableState, PlayableUnit, PlayableUnitKind, PlayerId,
@@ -47,8 +48,8 @@ fn unit(id: u64, owner: u64) -> PlayableUnit {
         owner_id: PlayerId::new(owner),
         kind: PlayableUnitKind::Warrior,
         position: PositionDto::new(2, 1),
-        movement: 1,
-        movement_max: 1,
+        movement: MovementPoints::from(1_u8),
+        movement_max: MovementPoints::from(1_u8),
         selected: false,
     }
 }

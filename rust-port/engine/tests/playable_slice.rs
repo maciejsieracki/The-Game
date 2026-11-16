@@ -50,28 +50,26 @@ fn select_and_move_unit_updates_only_the_selected_unit_position() {
 }
 
 #[test]
-fn movement_rejects_out_of_bounds_impassable_and_out_of_range_destinations() {
+fn movement_rejects_route_less_destinations_and_plans_multi_hex_marches() {
+    // P4-1H Q6: `move_unit` = web `planMarchTo` (`main.ts:31213-31298` @ `07d2fbd72`) - brak reguly
+    // "tylko sasiad". Cel poza mapa: `computePath` -> `[]` (`setup.ts`, `!map.hexes.has(dest)`) ->
+    // „Marsz przerwany: brak trasy do celu” (`main.ts:31267-31270`), stan bez zmian.
     let mut game = PlayableGame::new(params()).expect("default scenario is valid");
     game.select_unit(1).expect("human unit can be selected");
+    let before = game.state().clone();
 
     assert_eq!(
         game.move_unit(1, PositionDto::new(8, 1)),
-        Err(PlayableError::DestinationOutOfBounds(PositionDto::new(
-            8, 1
-        )))
+        Err(PlayableError::MarchNoRoute)
     );
-    assert_eq!(
-        game.move_unit(1, PositionDto::new(0, 0)),
-        Err(PlayableError::DestinationImpassable(PositionDto::new(0, 0)))
-    );
-    assert_eq!(
-        game.move_unit(1, PositionDto::new(4, 1)),
-        Err(PlayableError::DestinationOutOfRange {
-            distance: 2,
-            movement: 1,
-        })
-    );
-    assert_eq!(game.state().units[0].position, PositionDto::new(2, 1));
+    assert_eq!(game.state(), &before);
+
+    // Cel o 2 heksy (rowniny `y = 1`, ruch 1): rozkaz przyjety, pierwszy odcinek 1 heks, plan zostaje.
+    game.move_unit(1, PositionDto::new(4, 1))
+        .expect("two-hex march is a legal multi-turn order");
+    assert_eq!(game.state().units[0].position, PositionDto::new(3, 1));
+    assert_eq!(game.state().units[0].movement, 0);
+    assert_eq!(game.state().planned_marches.len(), 1);
 }
 
 #[test]

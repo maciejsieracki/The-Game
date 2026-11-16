@@ -6,6 +6,7 @@
 //! @07d2fbd72 = `{ Laka: 1, Rownina: 1, Pustynia: 2, Wybrzeze: 99, Wzgorza: 2, Gory: 99, Morze: 99,
 //! Polarny: 99 }`, `forestExtra: 1` (identyczny z `rust-port/engine/data/terrain-movement.json`).
 
+use civ_engine::domain::playable::MovementPoints;
 use std::collections::HashSet;
 
 use civ_engine::domain::pathfinding::ruch_jednostek::{
@@ -45,8 +46,8 @@ fn unit(id: u64, owner: u64, x: u16, y: u16, movement: u8, movement_max: u8) -> 
         owner_id: PlayerId::new(owner),
         kind: PlayableUnitKind::Warrior,
         position: PositionDto::new(x, y),
-        movement,
-        movement_max,
+        movement: MovementPoints::from(movement),
+        movement_max: MovementPoints::from(movement_max),
         selected: false,
     }
 }
