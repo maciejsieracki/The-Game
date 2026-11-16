@@ -38539,9 +38539,15 @@ async function boot(): Promise<void> {
           if (getDiploRelation(a, b).status === 'wojna') pairs.push({ a, b });
         }
       }
+      // DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1 (zarzut Evaluatora 1): gracz (człowiek) też podlega
+      // pokojowi wymuszonemu przy 100% zmęczenia wojną z główną AI. Para gracz↔AI przechodzi przez ten sam tick.
+      const humanOwner = ME();
+      for (const m of majors) {
+        if (getDiploRelation(humanOwner, m).status === 'wojna') pairs.push({ a: humanOwner, b: m });
+      }
       if (pairs.length === 0 && warWearinessByPairKey.size === 0) return;
       refreshObjectivePowerCache();
-      runWarWearinessTick({
+      const outcomes = runWarWearinessTick({
         store: warWearinessByPairKey,
         turn,
         pairs,
@@ -38591,6 +38597,16 @@ async function boot(): Promise<void> {
         finalize: (loser, winner, lockTurns) => { finalizePeaceTreatyBetween(loser, winner, lockTurns); },
         log: msg => console.log(`[Dyplomacja] R-WEB-WEARINESS: ${msg}`),
       });
+      // Gracz dowiaduje się o pokoju wymuszonym (toast; okno i wpis w „Ważne” — poza tym krokiem, patrz raport).
+      for (const o of outcomes) {
+        if (o.action !== 'forced_peace') continue;
+        const [pa, pb] = o.pairKey.split('_').map(Number);
+        if (pa !== humanOwner && pb !== humanOwner) continue;
+        const given = o.plan?.histogram.miasto ?? 0;
+        const other = pa === humanOwner ? pb! : pa!;
+        const who = ownerDiploLabel(other);
+        showHintMessage(`Wojna z ${who} osiągnęła 100% zmęczenia — pokój wymuszony${given > 0 ? `; miasta oddane: ${given}` : ' (bez miast)'}`, 8000);
+      }
     }
 
     /**
