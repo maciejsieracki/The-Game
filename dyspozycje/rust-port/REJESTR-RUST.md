@@ -2741,3 +2741,13 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
   - `wf_43129880-afd` (OUTCOME r4 #109, RUCH-FACING #123): RUCH-FACING BLOCK (Operator, Evaluator, FC). OUTCOME r4 bez wyniku w dzienniku (ostatni zapis 19:16). NIE_ZMIERZONO, czy jeszcze biegnie.
   - Wolne sloty: 2 z 4.
 - **Dysk:** 13 GB wolnego.
+
+### Przebieg — heartbeat Rust (19:48 UTC) i stała instrukcja, 2026-11-16
+
+- **Test pick (bramka V2/V7):** `pick_auto_improvements_matches_pinned_web_vectors` przeszedł w 299,5 s (`pick.exit` = 0). To długi test, nie zawieszenie: agent przerwał go po 5 minutach (SIGTERM), więc wynik BLOCK wynikał z limitu czasu, nie z błędu. Pełna bramka na `0e04a75c6` uruchomiona w tle (`gate-*.log`, `gate.exit`).
+- **FF parity-v2:** NIE wykonany. Czeka na zieloną pełną bramkę. Po niej FF `0fccd8dbf` → `0e04a75c6`, potem integracja NaN/Inf (`wf_a2bf4706-6d5`, FC PASS-WITH-NOTES).
+- **Sprzątanie:** usunięte worktree `wf_5fee88d9-4fc-2`, `-3`, `wf_7fdf1cf6-fb3-1` (commity przodkami `0e04a75c6`, zabezpieczone `refs/keep/V2V7-integ-0e04a75c6` i `refs/keep/T4-recon-ee38abed9`). Dysk 18 GB wolnego.
+- **Nowy workflow:** K5DOC-T4a helpery ścieżki pieszego (#312), `wf_cf05e21c-412`. Dispatch `5d1fb09cf` na `claude/rust-sivvrn` (readback zgodny). Baza `0fccd8dbf`. Operator Haiku, Evaluator Sonnet, FC Sonnet. Dispatch zawiera korekty Evaluatora rozpoznania T4 (reguła muru to komentarz w pinie, asymetria `allowFirstStep`, `passable_for_unit` już istnieje).
+- **Aktywne workflowy:** 2 z 4 (`wf_43129880-afd` OUTCOME r4 w toku, RUCH-FACING BLOCK; `wf_cf05e21c-412` T4a).
+- **Wolne sloty: 2 — brak czystego tematu, powód:** #107 K5LOOP-FACING i #257 K5DOC-T5a dotykają `siege_tactics_loop.rs`/`ProdBody`, które zajmuje OUTCOME r4 (konflikt, nie wymyślam obejścia). #269/#270 PRIO-3D (Opus, renderer) czekają na decyzję drogi DTO #308. #263–#264, #259–#261 zależą od ProdBody i #284. #106/#115/#120 blokują decyzje #282/#285/#286.
+- **Otwarte:** NaN/Inf integracja, OUTCOME r4 po zakończeniu, push `refs/keep` odrzucany przez proxy (nie obchodzić).
