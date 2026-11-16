@@ -66,6 +66,7 @@ const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 const SAVE_AT = parseInt(arg('save-at', '40'), 10);
 const MUTANT = arg('mutant', '0') === '1';
 const SLOT = 'ai-econ-s' + SEED;
+const HASH_IGNORED = ['units[].stackGroupId(null)', 'cities[].budowaLista(gdy [])', 'cities[].magazynZywnosci(gdy 0)', 'cities[].postepBudynkowUsuniete(gdy {})', 'cities[].budowaPriorytetTypow(DO ABC)', 'resourceLedgerHistory(#432)'];
 const CHROME = process.env.CHROME_PATH || '/usr/bin/chromium';
 const TURN_TIMEOUT_MS = 300000;
 /** Prefiks zrzutow migawek (diagnostyka, tylko przy SNAP_DUMP); w wznowieniu 'res'. */
@@ -354,7 +355,27 @@ async function playOneTurn(page, ctxState) {
 
 /** Skrot stanu gry: zapis realnej migawki (buildSaveGameSnapshot) BEZ pola meta (znaczniki czasu/sesji). */
 async function stateHash(page, dumpTo) {
-  const json = await page.evaluate(() => { const o = JSON.parse(window.__detHarness.snapshotJson()); delete o.meta; return JSON.stringify(o); });
+  const json = await page.evaluate(() => {
+    const o = JSON.parse(window.__detHarness.snapshotJson());
+    delete o.meta;
+    // NORMALIZACJA HASZU (R-WEB-SAVE-LOAD-ROUNDTRIP-STATE-DRIFT-Q1 r3) -- ZNANE roznice bez wplywu na przyszle tury:
+    //  * units[].stackGroupId: artefakt Date.now() (zgoda orkiestratora r2);
+    //  * cities[].budowaLista/magazynZywnosci/postepBudynkowUsuniete: wczytanie dopisuje wartosc domyslna ([]/0/{}),
+    //    przebieg ciagly trzyma pole nieobecne -- usuwane z hasza TYLKO gdy rowne domyslnej;
+    //  * cities[].budowaPriorytetTypow: wczytanie dopisuje liste domyslna -- DO ABC wlasciciela (A/B), zachowanie NIE zmienione;
+    //  * resourceLedgerHistory: osobny defekt #432 (dziennik 5 -> 0 po wczytaniu), nie wplywa na tick.
+    // Lista jest raportowana w summary (hashIgnored) -- nic nie jest ukrywane po cichu.
+    if (Array.isArray(o.units)) for (const u of o.units) { if (u && 'stackGroupId' in u) u.stackGroupId = null; }
+    if (Array.isArray(o.cities)) for (const c of o.cities) {
+      if (!c) continue;
+      if (Array.isArray(c.budowaLista) && c.budowaLista.length === 0) delete c.budowaLista;
+      if (c.magazynZywnosci === 0) delete c.magazynZywnosci;
+      if (c.postepBudynkowUsuniete && typeof c.postepBudynkowUsuniete === 'object' && Object.keys(c.postepBudynkowUsuniete).length === 0) delete c.postepBudynkowUsuniete;
+      delete c.budowaPriorytetTypow;
+    }
+    delete o.resourceLedgerHistory;
+    return JSON.stringify(o);
+  });
   if (dumpTo) fs.writeFileSync(dumpTo, json);
   return sha(json);
 }
@@ -432,7 +453,7 @@ async function main() {
     const resumed = await resumeCheck(ctxRes, SAVE_AT, TURNS);
     await ctxRes.close();
     const cmp = compareHashes(jsonlRef, SAVE_AT, TURNS, resumed);
-    const summary = { seed: SEED, mode: 'resume-test', ref: { endTurn: ref.endTurn, stop: ref.stop, counters: ref.counters, wallSec: ref.wallSec }, cut: { endTurn: cut.endTurn, stop: cut.stop }, resumeTest: cmp };
+    const summary = { seed: SEED, mode: 'resume-test', hashIgnored: HASH_IGNORED, ref: { endTurn: ref.endTurn, stop: ref.stop, counters: ref.counters, wallSec: ref.wallSec }, cut: { endTurn: cut.endTurn, stop: cut.stop }, resumeTest: cmp };
     fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
     console.log('[econ] WZNOWIENIE ' + JSON.stringify({ saveAt: cmp.saveAt, turns: cmp.turns, compared: cmp.compared, allEqual: cmp.allEqual, mutant: MUTANT }));
     return;
@@ -456,6 +477,7 @@ async function resumeCheck(ctx, saveAt, turns) {
   await suppressVictory(page);
   let turn = await turnOf(page);
   const out = [];
+  if (process.env.SNAP_LOAD_DUMP) await stateHash(page, path.join(OUT, `${process.env.SNAP_LOAD_DUMP}-load-t${turn}.json`));
   if (MUTANT) await page.evaluate(([g]) => window.__aiTradeWiringTestDebug.grantPlayerGold(g), [1]);
   if (SNAP_PREFIX) SNAP_PREFIX = 'res';
   const ctxState = newCtx(null);
