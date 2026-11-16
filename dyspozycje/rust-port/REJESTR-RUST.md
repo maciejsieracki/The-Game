@@ -2155,3 +2155,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Refy:** `refs/keep/Q5-K5-MERGE`, `refs/keep/P4-1H-PREVIEW-Q5-{OP,EV,OB,FC}`, `refs/keep/K5-AUTO-WEKTORY-{OP,EV,OB,FC}`, `refs/keep/R7K7C-PARITY-MISSING0-R2-{OP,OB,EV,RAPORT,FC,MERGE}`.
 - **Sprzątanie:** worktree Q5 (`wf_7546f307-6dc-1..4`), K5 (`wf_4c16ed22-a6c-1..4`), R7K7C r2 (`wf_e42107cb-dc8-1..4`), `integ-Q5`, `integ-R7`; cache `/tmp/fc_tgt_m0`, `/tmp/fc-k5-target`, `target-r2`, `target-integ-QK5`, `target-integ-R7`.
 - **Sloty:** 1 aktywny (P4-1I1B BATTLE-INSTANT, ewaluator, Sonnet — rozbieżność z regułą Opus zgłoszona).
+
+## Przebieg (03:xx UTC — start P4-1H MOVE-Q6 (#252))
+
+- **Start:** `R-RUSTPORT-P4-1H-MOVE-Q6` (#252, OPUS we wszystkich rolach — seria P4-1), dispatch `e30d02815` na `claude/rust-sivvrn`, baza `9f1a29af3` (Q5, K5 V5/V6, R7K7C r2 zintegrowane). Workflow `wf_b1e51033-24c`.
+- **Errata wiążące w dispatchu:** `movement` na `f64` (decyzja z Q4; lista plików testów z `git grep` w raporcie); `PlayerId` ≠ `ownerId` (NIE_ZMIERZONO, bez zgadywania); strażnik `isMe` poza silnikiem; `armyStackLimit` = 500 jawnie.
+- **Sloty:** 2 z 4 — P4-1I1B BATTLE-INSTANT (`wf_aafc5812-7e5`, ewaluator, Sonnet — rozbieżność z regułą Opus zgłoszona), P4-1H MOVE-Q6 (`wf_b1e51033-24c`, Opus).
+- **Nie uruchomiono (2 wolne sloty):** V15 `_executeQueuedOrders` (`battleScene.ts:3603`) i V16 `_ffEnterAuto` (`:3709`) — osobne tematy portu, wymagają dispatchu z rozpoznaniem (brak portu w `engine/src`); #239 (fog, decyzja właściciela); #236/#237/#241–#243 (zależności od producentów nakładek).
+- **Dysk:** ok. 14 GB.
