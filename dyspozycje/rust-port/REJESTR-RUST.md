@@ -2144,3 +2144,14 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Refy:** `refs/keep/P4-1H-PREVIEW-Q5-{OP,EV,OB,FC}`. **Sprzątanie:** worktree `wf_7546f307-6dc-1..4` usunięte.
 - **Sloty:** 3 z 4 działające (R7K7C r2 — ewaluator, P4-1I1B — ewaluator, K5 AUTO — obrona/FC); Q5 zakończony.
 - **Dysk:** 4,1 GB (90%) — poniżej progu 8 GB; bez nowych startów kodu Rust do czasu odzyskania miejsca.
+
+## Przebieg (02:5x–03:xx UTC — integracja trzech tematów na parity; K5 AUTO częściowo)
+
+- **Parity:** `b3c0b2209` → `b6aa05024` (Q5 + K5) → `9f1a29af3` (R7K7C r2). Każdy krok fast-forward, odczyt z GitHub zgodny.
+- **P4-1H PREVIEW-Q5 (#251):** FC PASS-WITH-NOTES `18478e3a6` (kod `8408a2535`). Zintegrowany (`0d2f399a2` → część `b6aa05024`). Notatki FC: strażnik `isMe` i Żegluga do #237/#242 i Q6; garnizon nieportowany (zamknąć przy garnizonach).
+- **K5 AUTO-WEKTORY (#118):** FC PASS-WITH-NOTES `9a79cc1e3` (obrona `7e88ba0c5`, operator `104bc216a` = BLOCK na V15/V16). Zintegrowany wektory **V5, V6** (`tests/p6_k5_auto_vectors*`, generator `gen_pin_fragments.sh` + `pin_fragments.sha256`). **Nieobjęte:** V15 `_executeQueuedOrders` (`battleScene.ts:3603`) i V16 `_ffEnterAuto` (`:3709`) — brak portu w `rust-port/engine/src` (`siege_tactics_loop.rs:698-702` → `halt_unsupported`); wymagają osobnych tematów portu. Mutacje (b)/(c) NIE_ZMIERZONO. Notatka FC: Sha-256 przez `gen_pin_fragments.sh --check` (bash), nie `cargo test`.
+- **R7K7C PARITY-MISSING0 r2 (#106 część 1):** FC PASS-WITH-NOTES `90519cd92` (kod `fd067a800`, obrona `ead5cf35b`). Zintegrowany: brak wpisu = 0 (`Ledger::balance`, `apply_dipl_deltas_to_state`), wektory ≥150 (167 przypadków, `owner_pools_vectors_from_pin_match_rust`). Notatki: wektory pokrywają tylko `apply`; ścieżka `Ledger` (balance/praca_of/danina/D3) — testy ręczne, propozycja LEDGER-VEC-Q1; asercja „Trybut zerwany” luźniejsza niż pin (`diplomacy-economy.ts:111`); zmiana zachowania D3 (handel Praca bez puli: brak błędu, dostawa nie dochodzi do skutku — zgodnie z pinem `0 < kwota`). **#106 nie jest zamknięte:** wpięcie `apply_dipl_deltas_to_state` do `run_diplomacy_war_phase` to osobny temat (WIRING-IMPL).
+- **Bramki na `9f1a29af3`:** silnik `fmt 0`, `clippy 0`, `test 0` — **3590 passed, 0 failed, 1 ignored** (ignorowany istniał wcześniej).
+- **Refy:** `refs/keep/Q5-K5-MERGE`, `refs/keep/P4-1H-PREVIEW-Q5-{OP,EV,OB,FC}`, `refs/keep/K5-AUTO-WEKTORY-{OP,EV,OB,FC}`, `refs/keep/R7K7C-PARITY-MISSING0-R2-{OP,OB,EV,RAPORT,FC,MERGE}`.
+- **Sprzątanie:** worktree Q5 (`wf_7546f307-6dc-1..4`), K5 (`wf_4c16ed22-a6c-1..4`), R7K7C r2 (`wf_e42107cb-dc8-1..4`), `integ-Q5`, `integ-R7`; cache `/tmp/fc_tgt_m0`, `/tmp/fc-k5-target`, `target-r2`, `target-integ-QK5`, `target-integ-R7`.
+- **Sloty:** 1 aktywny (P4-1I1B BATTLE-INSTANT, ewaluator, Sonnet — rozbieżność z regułą Opus zgłoszona).
