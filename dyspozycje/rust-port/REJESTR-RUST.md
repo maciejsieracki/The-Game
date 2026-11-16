@@ -2478,3 +2478,15 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **P4-1I2 — bramka engine:** pierwszy przebieg `cargo test --all-targets` został przerwany restartem sesji (log urwany 12:39, test `pick_auto_improvements_matches_pinned_web_vectors` działał ponad 60 s). Ponowiony odłączony przez `setsid`. FF `parity-v2` (`05b872fc5` → `0e3c149fa`) dopiero po zielonym wyniku.
 - **Dysk:** 8,5 GB wolnego.
 - **Rozbieżność z harmonogramem:** prompty heartbeatu wymagają Haiku na Operatorze/Obronie i Sonnet na Evaluatorze/FC; reguła właściciela dla 3D to Opus we wszystkich rolach (zachowana).
+
+### Przebieg — P4-1F6 BUILD-SELECTION-VIEW zintegrowany, 2026-11-16 ~14:40 UTC
+
+- **Parity:** `rust-port/parity-v2` = `0f3483e57` (FF z `05b872fc5`). FC PASS-WITH-NOTES (`0f3483e57`, kod `24f57d81`). Evaluator odtworzył pełne bramki na `24f57d81` (fmt, clippy `-D warnings`, `cargo test --all-targets`: 3667 passed, 0 failed) i mutacje (a)(b)(c) dają FAIL. Różnica `24f57d81`→`0f3483e57` to tylko dokumentacja (zero zmian w `rust-port`/`gra`).
+- **Zależności do przeniesienia do składacza OverlaysViewDto (P4-1G Q6, #237):**
+  - Z-1: producent `build_highlight`/`selection` nie ma wołającego w Rust; składacz musi podać `can_found_player_city_at` (przez `StartRevealContext`), `list_qualifying_wonder_hexes_for_owner`, `get_qualifying_hexes`, `PendingImprovementsTurn::undo_key_set()` i `UiState.selectedUnitId`.
+  - Z-2: `foundingTerritoryOpts`, `ownerEra`, `cityLimitBase` nie są przeniesione (zostają po stronie wołającego).
+  - Z-3: test cofania używa ręcznie wpisanych kluczy `"3,0:farma"`; należy zastąpić kluczami z `undo_key_set()`.
+  - Z-4: `selection` nie sprawdza `isMe(u.ownerId)` (pin `main.ts:7117`); składacz musi filtrować lub dodać filtr.
+- **Konflikt do rozstrzygnięcia:** `overlays_view.rs` powstał w F6 (na bazie go nie było) i jest też tworzony przez 1F3, 1F4, 1F5. Przy ich integracji będzie konflikt.
+- **Do zrobienia:** 1I2 (`0e3c149fa`) był scalony z poprzednim parity — trzeba powtórzyć merge na `0f3483e57` i pełny cargo test engine przy ≥ 8 GB.
+- **Dysk:** sprzątanie zakończonych cache i worktree; działające tematy (I3, 1F5, recenzja 1F4) nie są ruszane.
