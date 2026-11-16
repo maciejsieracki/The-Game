@@ -107,6 +107,8 @@ async function modalCheck(browser) {
   const audHidden = await page.evaluate(() => document.querySelector('.civ-diplo-aud').style.display === 'none');
   check('blokady: audiencja dyplomatyczna zamknieta przyciskiem i policzona (diploAudienceClosed)',
     ctx.diploAudienceClosed === 1 && audHidden, 'licznik=' + ctx.diploAudienceClosed + ' ukryta=' + audHidden);
+  // Usuwamy atrape po 0b, zeby ewentualna niezamknieta audiencja nie kaskadowala na 0c-0e (izolacja diagnozy).
+  await page.evaluate(() => document.querySelectorAll('.civ-diplo-aud').forEach(el => el.remove()));
 
   // 0c) panel laczenia armii (przycisk „Zostaw osobno” = zamyka, usuwa korzen panelu).
   await page.evaluate(() => {
@@ -134,11 +136,27 @@ async function modalCheck(browser) {
   check('blokady: karta odkrycia technologii zamknieta przyciskiem i policzona (techNoticeClosed)',
     ctx.techNoticeClosed === 1 && tnGone, 'licznik=' + ctx.techNoticeClosed + ' usunieta=' + tnGone);
 
-  // 0e) blokada bez przycisku zamkniecia NIE jest zamykana ani liczona (zostaje do zrzutu DOM).
+  // 0e) blokada bez przycisku zamkniecia NIE jest zamykana ani liczona (zostaje do zrzutu DOM). Osobny ctx (bez wplywu 0a-0d).
+  const ctxE = runner.newCtx(null);
   await page.evaluate(() => { const d = document.createElement('div'); d.className = 'civ-diplo-aud'; d.innerHTML = '<p>brak przycisku</p>'; document.body.appendChild(d); });
-  const before = countAll();
-  await runner.closeEndTurnModals(page, ctx);
-  check('blokady: audiencja bez przycisku nie jest liczona jako zamknieta', countAll() === before, 'suma przed=' + before + ' po=' + countAll());
+  const stuckE = await runner.closeEndTurnModals(page, ctxE);
+  const sumE = runner.MODAL_KEYS.reduce((s, k) => s + ctxE[k], 0);
+  const stillE = await page.evaluate(() => !!document.querySelector('.civ-diplo-aud p'));
+  check('blokady: audiencja bez przycisku nie jest liczona jako zamknieta (zostaje w DOM)', sumE === 0 && stillE && stuckE.length === 0, 'suma=' + sumE + ' zostala=' + stillE + ' niezamkniete=' + JSON.stringify(stuckE));
+  await page.evaluate(() => document.querySelectorAll('.civ-diplo-aud').forEach(el => el.remove()));
+
+  // 0f) przycisk, ktory NIE usuwa blokady (klik bez skutku): licznik NIE rosnie mimo kliknec (zawyzanie wykryte).
+  const ctxF = runner.newCtx(null);
+  await page.evaluate(() => {
+    const host = document.createElement('div');
+    host.id = 'civ-tech-discovery-notice-host';
+    host.innerHTML = '<button type="button" data-act="close">✕</button>';
+    document.body.appendChild(host);
+  });
+  const stuckF = await runner.closeEndTurnModals(page, ctxF);
+  check('blokady: klik bez skutku (blokada zostaje) nie podbija licznika i jest zglaszany jako niezamkniety',
+    ctxF.techNoticeClosed === 0 && stuckF.includes('techNoticeClosed'), 'licznik=' + ctxF.techNoticeClosed + ' niezamkniete=' + JSON.stringify(stuckF));
+  await page.evaluate(() => document.getElementById('civ-tech-discovery-notice-host') && document.getElementById('civ-tech-discovery-notice-host').remove());
   await page.close();
 }
 

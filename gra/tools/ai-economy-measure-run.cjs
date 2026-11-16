@@ -126,14 +126,41 @@ function blockerDumpInPage() {
   return out;
 }
 
-/** Zamyka blokady modalne az do skutku (max 20 kursow), liczac kazde zamkniecie w ctx. */
+/** Blokady modalne nadal otwarte (ten sam predykat co closeModalsInPage; uruchamiane w PRZEGLADARCE). */
+function openModalKeysInPage() {
+  const open = [];
+  const aud = document.querySelector('.civ-diplo-aud');
+  if (aud && aud.style.display !== 'none') open.push('diploAudienceClosed');
+  if (document.getElementById('civ-amp-title')) open.push('armyMergeClosed');
+  if (document.getElementById('civ-tech-discovery-notice-host')) open.push('techNoticeClosed');
+  return open;
+}
+
+/**
+ * Zamyka blokady modalne az do skutku (max 20 kursow). Zamkniecie jest liczone w ctx DOPIERO po sprawdzeniu, ze blokada
+ * zniknela po kliknieciu (300 ms); klik bez skutku NIE podbija licznika. Zwraca liste kluczy, ktorych klik nie zamknal
+ * (pusta = wszystko zamkniete). Gdy klik 3x z rzedu nie daje skutku, petla konczy sie i zapisuje zrzut DOM na stderr.
+ */
 async function closeEndTurnModals(page, ctx) {
+  const stuck = new Set();
+  let noEffect = 0;
   for (let k = 0; k < 20; k++) {
-    const closed = await page.evaluate(closeModalsInPage);
-    if (closed.length === 0) return;
-    for (const key of closed) ctx[key]++;
+    const clicked = await page.evaluate(closeModalsInPage);
+    if (clicked.length === 0) return [...stuck];
     await wait(300);
+    const still = await page.evaluate(openModalKeysInPage);
+    let effect = false;
+    for (const key of clicked) {
+      if (still.includes(key)) stuck.add(key);
+      else { ctx[key]++; effect = true; }
+    }
+    if (effect) noEffect = 0;
+    else if (++noEffect >= 3) {
+      console.error('[econ] blokada nie znika po kliknieciu (3 proby): ' + JSON.stringify(await page.evaluate(blockerDumpInPage)));
+      break;
+    }
   }
+  return [...stuck];
 }
 
 function ensureBuild() {

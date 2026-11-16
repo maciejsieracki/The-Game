@@ -140,7 +140,10 @@ przed każdym „Zakończ turę”, w pętli leczenia kolejki bitew i podczas cz
 | panel łączenia armii | `#civ-amp-title` | `.civ-amp-btn-sep` („Zostaw osobno”) | `armyMergeClosed` |
 | karta odkrycia technologii | `#civ-tech-discovery-notice-host` | `[data-act="close"]` (✕) | `techNoticeClosed` |
 
-- Każde zamknięcie jest liczone osobno. Rekord tury zawiera `modalClosedThisTurn` (przyrost w tej turze); summary i
+- Każde zamknięcie jest liczone osobno, ale DOPIERO po sprawdzeniu, że blokada zniknęła po kliknięciu (300 ms);
+  klik bez skutku nie podbija licznika. Blokada, która po kliknięciu nie znika (3 próby z rzędu), jest zgłaszana na
+  stderr z zrzutem DOM (`[econ] blokada nie znika po kliknieciu`). Liczniki w przebiegach sprzed tej zmiany były
+  liczone przy samym kliknięciu. Rekord tury zawiera `modalClosedThisTurn` (przyrost w tej turze); summary i
   state zawierają sumy. Blokada bez przycisku zamknięcia nie jest liczona i zostaje w zrzucie DOM (`why.modal`).
 - `state.json` jest zapisywany po KAŻDEJ turze (nie tylko przy zapisie slotu). Liczniki wznowienia startują od
   `slotCounters` (wartości z chwili zapisu slotu), więc tury po slocie nie są liczone dwa razy.
