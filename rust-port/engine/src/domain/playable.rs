@@ -650,6 +650,46 @@ pub struct PlayableState {
     /// Web czyta tylko `has` / `add` / `clear` / `size`, wiec kolejnosc zbioru nie ma znaczenia.
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     pub moved_by_player_this_turn: BTreeSet<UnitId>,
+    /// P4-1F3: web `City.oblegane` (`game/cities.ts:858` @ `07d2fbd72`, `boolean?`): miasta oblegane.
+    /// Trzymane obok `PlayableCity` (nie w niej), jak `PlayableReplaceUnit`, zeby nie lamac literalow
+    /// tej struktury. Brak id = `oblegane` falsy (web `undefined`/`false`). Czyta je producent
+    /// `overlays_view::siege_views` (web `refreshSiegeMarkers`, `main.ts:17492-17530`). Pusty => pole
+    /// pomijane w DTO i zapisie (stan sprzed zmiany bajt w bajt).
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    pub oblegane: BTreeSet<CityId>,
+    /// P4-1F3: web `City.siegeMachines.ready` (`game/cities.ts:884`, `game/siegeMachines.ts:6-26`):
+    /// gotowe machiny miasta w kolejnosci tablicy. Brak wpisu = web `city.siegeMachines?.ready ?? []`
+    /// (`render/siegeCampSync.ts:7-12`). Kolejka i postep budowy (`queue`, `buildProgress`) nie naleza
+    /// do tego tematu. Pusty => pole pomijane w DTO i zapisie.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub siege_machines_ready: BTreeMap<CityId, Vec<PlayableSiegeMachineKind>>,
+    /// P4-1F3: web `placedWorldWonders` (`main.ts:4025`, `PlacedWonder[]` bez `ruin`), kolejnosc
+    /// tablicy. `ruin` liczy producent `overlays_view::wonder_views` (web `placedWonderSnapshot`,
+    /// `main.ts:4205-4210`). Pusty => pole pomijane w DTO i zapisie.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub placed_world_wonders: Vec<PlayablePlacedWonder>,
+}
+
+/// P4-1F3: web `SiegeMachineKind` (`game/siegeMachines.ts:6`); forma serde = napisy weba.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum PlayableSiegeMachineKind {
+    /// `'taran'`.
+    Taran,
+    /// `'wieza'`.
+    Wieza,
+}
+
+/// P4-1F3: jeden postawiony cud, web `PlacedWonder` (`render/wonderRenderer.ts:12-19`) bez `ruin`
+/// (web nie trzyma `ruin` w `placedWorldWonders`; dopisuje go `placedWonderSnapshot`). Nazwy pol = web
+/// (`wonderId`, `q`, `r`, `ownerId`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlayablePlacedWonder {
+    pub wonder_id: String,
+    pub q: i32,
+    pub r: i32,
+    pub owner_id: PlayerId,
 }
 
 /// P4-1J: jeden plan marszu, web `PlannedMarchDest` (`planned-march.ts:16-23`) z kluczem mapy
@@ -838,6 +878,9 @@ impl PlayableState {
             march_stop_notified: BTreeMap::new(),
             march_stop_detail: BTreeMap::new(),
             moved_by_player_this_turn: BTreeSet::new(),
+            oblegane: BTreeSet::new(),
+            siege_machines_ready: BTreeMap::new(),
+            placed_world_wonders: Vec::new(),
         }
     }
 }
@@ -1007,6 +1050,9 @@ impl PlayableGame {
                 march_stop_notified: BTreeMap::new(),
                 march_stop_detail: BTreeMap::new(),
                 moved_by_player_this_turn: BTreeSet::new(),
+                oblegane: BTreeSet::new(),
+                siege_machines_ready: BTreeMap::new(),
+                placed_world_wonders: Vec::new(),
             },
             phase_queue: EventQueue::new(),
         };

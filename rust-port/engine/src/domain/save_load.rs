@@ -42,8 +42,10 @@ use super::{
         planned_marches_from_save, planned_marches_to_save, AutoMarchSave, PlannedMarchDest,
         PlannedMarchSaved, RuchJednostka,
     },
-    playable::{PlayablePlannedMarch, PlayableState},
-    UnitId,
+    playable::{
+        PlayablePlacedWonder, PlayablePlannedMarch, PlayableSiegeMachineKind, PlayableState,
+    },
+    CityId, UnitId,
 };
 #[cfg(not(test))]
 use super::{GameStateDto, Rng};
@@ -65,8 +67,10 @@ use civ_engine::{
         planned_marches_from_save, planned_marches_to_save, AutoMarchSave, PlannedMarchDest,
         PlannedMarchSaved, RuchJednostka,
     },
-    domain::playable::{PlayablePlannedMarch, PlayableState},
-    UnitId,
+    domain::playable::{
+        PlayablePlacedWonder, PlayablePlannedMarch, PlayableSiegeMachineKind, PlayableState,
+    },
+    CityId, UnitId,
 };
 #[cfg(test)]
 use civ_engine::{GameStateDto, Rng};
@@ -158,6 +162,34 @@ pub struct SaveSnapshot {
     /// serializacji, zeby epoka ludzi przezyla ponowny zapis i odczyt.
     #[serde(rename = "gracze", skip_serializing_if = "Option::is_none")]
     gracze: Option<Value>,
+    /// P4-1F3: stan oblezenia miast `PlayableState` (web `City.oblegane` i `City.siegeMachines.ready`,
+    /// `game/cities.ts:858`, `:884`). Web zapisuje je w obiektach miast, a `GameStateDto` ich nie
+    /// niesie, wiec Rust trzyma je w addytywnym kluczu `citySiege` (pola wpisu = nazwy weba). Pusty =>
+    /// klucz pomijany (zapis sprzed zmiany bajt w bajt).
+    #[serde(rename = "citySiege", default, skip_serializing_if = "Vec::is_empty")]
+    city_siege: Vec<SavedCitySiege>,
+}
+
+/// P4-1F3: stan oblezenia jednego miasta w zapisie (`citySiege[]`), pola jak web `City`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SavedCitySiege {
+    /// Id miasta (`GameStateDto` / `PlayableState`).
+    pub city_id: CityId,
+    /// Web `city.oblegane` (`undefined`/`false` => pole pominiete).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub oblegane: bool,
+    /// Web `city.siegeMachines` (tylko `ready`; `queue`/`buildProgress` poza zakresem P4-1F3).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub siege_machines: Option<SavedSiegeMachines>,
+}
+
+/// P4-1F3: web `SiegeMachinesState.ready` (`game/siegeMachines.ts:8-12`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SavedSiegeMachines {
+    /// Gotowe machiny w kolejnosci tablicy.
+    #[serde(default)]
+    pub ready: Vec<PlayableSiegeMachineKind>,
 }
 
 /// Web `AutoMarchSave` (`autoMarch` in the save). Only `leaderId` as non-empty string survives.
@@ -573,6 +605,27 @@ struct SnapshotWire {
     /// Zla forma nie jest bledem ladowania - wpis po prostu nie daje epoki.
     #[serde(default)]
     gracze: Option<Value>,
+    /// P4-1F3: `citySiege` (addytywny klucz Rust). Zla forma wpisu nie jest bledem ladowania - wpis
+    /// jest pomijany (jak pozostale pola opcjonalne zapisu).
+    #[serde(default, rename = "citySiege", deserialize_with = "lenient_city_siege")]
+    city_siege: Option<Vec<SavedCitySiege>>,
+}
+
+/// P4-1F3: `citySiege` jako tablica; wpisy o zlej formie (i nie-tablica) sa pomijane.
+fn lenient_city_siege<'de, D>(deserializer: D) -> Result<Option<Vec<SavedCitySiege>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value = Value::deserialize(deserializer)?;
+    Ok(match value {
+        Value::Array(items) => Some(
+            items
+                .into_iter()
+                .filter_map(|item| serde_json::from_value::<SavedCitySiege>(item).ok())
+                .collect(),
+        ),
+        _ => None,
+    })
 }
 
 /// P6-ZAPIS-ERA-ZAPISU: epoki wlascicieli z zapisu, zrodla jak web `empireEpochForOwner`
@@ -631,6 +684,7 @@ impl SaveSnapshot {
             auto_march: None,
             owner_eras: BTreeMap::new(),
             gracze: None,
+            city_siege: Vec::new(),
         }
     }
 
@@ -760,6 +814,45 @@ impl SaveSnapshot {
             &self.planned_marches,
             self.auto_march.as_ref(),
             player_owner_id,
+        )
+    }
+
+    /// P4-1F3: kopia z wpisami `citySiege` (stan oblezenia miast).
+    pub fn with_city_siege(mut self, city_siege: Vec<SavedCitySiege>) -> Self {
+        self.city_siege = city_siege;
+        self
+    }
+
+    /// P4-1F3: zapisane wpisy `citySiege` (puste, gdy brak).
+    pub fn city_siege(&self) -> &[SavedCitySiege] {
+        &self.city_siege
+    }
+
+    /// P4-1F3: kopia ze stanem oblezen i cudow `PlayableState`, jak web `buildSaveGameSnapshot`:
+    /// `meta.placedWorldWonders` = `placedWorldWonders.slice()` (`main.ts:37450`), a `oblegane` /
+    /// `siegeMachines.ready` (w webie pola miast) w `citySiege` ([`playable_city_siege_to_save`]).
+    /// Pusty stan nie zostawia kluczy (web zawsze pisze `placedWorldWonders: []`; tu pominiete, zeby
+    /// zapis bez nowych pol byl bajt w bajt jak przed zmiana).
+    pub fn with_playable_siege_wonders(mut self, state: &PlayableState) -> Self {
+        if state.placed_world_wonders.is_empty() {
+            self.meta.extra.remove(PLACED_WORLD_WONDERS_KEY);
+        } else {
+            let wonders = serde_json::to_value(&state.placed_world_wonders)
+                .unwrap_or_else(|_| Value::Array(Vec::new()));
+            self.meta
+                .extra
+                .insert(PLACED_WORLD_WONDERS_KEY.to_owned(), wonders);
+        }
+        self.with_city_siege(playable_city_siege_to_save(state))
+    }
+
+    /// P4-1F3: odczyt stanu oblezen i cudow do `PlayableState`. Zasady:
+    /// [`restore_playable_siege_wonders`].
+    pub fn restore_siege_wonders(&self, state: &mut PlayableState) -> SiegeWonderRestoreReport {
+        restore_playable_siege_wonders(
+            state,
+            self.meta.extra.get(PLACED_WORLD_WONDERS_KEY),
+            &self.city_siege,
         )
     }
 
@@ -998,6 +1091,120 @@ pub fn restore_playable_planned_marches(
     report
 }
 
+/// P4-1F3: klucz `meta` z postawionymi cudami (web `main.ts:37450`, odczyt `:46459-46461`).
+pub const PLACED_WORLD_WONDERS_KEY: &str = "placedWorldWonders";
+
+/// P4-1F3: pominiecia przy odczycie oblezen i cudow (jawne, nie ciche).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct SiegeWonderRestoreReport {
+    /// Indeksy wpisow `meta.placedWorldWonders`, ktorych `PlayableState` nie umie wyrazic
+    /// (`wonderId` nie-napis, `q`/`r` nie calkowite `i32`, `ownerId` nie calkowite `>= 0`).
+    pub unrepresentable_wonders: Vec<usize>,
+    /// Id miast z `citySiege`, ktorych nie ma w `state.cities` (wpis pominiety).
+    pub unknown_cities: Vec<CityId>,
+}
+
+/// P4-1F3: `citySiege` z `PlayableState`: jeden wpis na miasto z `oblegane` albo gotowymi machinami,
+/// rosnaco po id miasta. Pusta lista machin nie tworzy pola `siegeMachines`.
+pub fn playable_city_siege_to_save(state: &PlayableState) -> Vec<SavedCitySiege> {
+    let mut ids: Vec<CityId> = state.oblegane.iter().copied().collect();
+    ids.extend(
+        state
+            .siege_machines_ready
+            .iter()
+            .filter(|(_, ready)| !ready.is_empty())
+            .map(|(id, _)| *id),
+    );
+    ids.sort();
+    ids.dedup();
+    ids.into_iter()
+        .map(|city_id| SavedCitySiege {
+            city_id,
+            oblegane: state.oblegane.contains(&city_id),
+            siege_machines: state
+                .siege_machines_ready
+                .get(&city_id)
+                .filter(|ready| !ready.is_empty())
+                .map(|ready| SavedSiegeMachines {
+                    ready: ready.clone(),
+                }),
+        })
+        .collect()
+}
+
+/// Liczba JS calkowita `>= 0` mieszczaca sie dokladnie w `f64` (`-0` daje `0`).
+fn js_owner_id(value: f64) -> Option<u64> {
+    const EXACT_LIMIT: f64 = 9_007_199_254_740_991.0;
+    if value.is_finite() && (0.0..=EXACT_LIMIT).contains(&value) && value.fract() == 0.0 {
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        let id = value as u64;
+        Some(id)
+    } else {
+        None
+    }
+}
+
+/// Jeden wpis `placedWorldWonders` z zapisu w postaci `PlayableState` (`None` = niewyrazalny).
+fn saved_placed_wonder(item: &Value) -> Option<PlayablePlacedWonder> {
+    let wonder_id = item.get("wonderId")?.as_str()?.to_owned();
+    let q = js_i32(item.get("q")?.as_f64()?)?;
+    let r = js_i32(item.get("r")?.as_f64()?)?;
+    let owner_id = js_owner_id(item.get("ownerId")?.as_f64()?)?;
+    Some(PlayablePlacedWonder {
+        wonder_id,
+        q,
+        r,
+        owner_id: PlayerId::new(owner_id),
+    })
+}
+
+/// P4-1F3: odczyt oblezen i cudow do `PlayableState`:
+///
+/// 1. `placed_world_wonders` = web `Array.isArray(saved.meta?.placedWorldWonders) ? slice : []`
+///    (`main.ts:46459-46461`): nie-tablica albo brak => pusta lista; wpis niewyrazalny w Rust jest
+///    pominiety i zgloszony w raporcie (odchylenie od weba, ktory trzyma surowy obiekt). Pole `ruin`
+///    zapisu jest ignorowane (liczy je producent widoku);
+/// 2. `oblegane` i `siege_machines_ready` czyszczone i odtwarzane z `citySiege` dla miast obecnych w
+///    `state.cities`; wpis nieznanego miasta jest pominiety i zgloszony. Pusta lista machin = brak wpisu.
+pub fn restore_playable_siege_wonders(
+    state: &mut PlayableState,
+    placed: Option<&Value>,
+    city_siege: &[SavedCitySiege],
+) -> SiegeWonderRestoreReport {
+    let mut report = SiegeWonderRestoreReport::default();
+    state.placed_world_wonders.clear();
+    if let Some(Value::Array(items)) = placed {
+        for (index, item) in items.iter().enumerate() {
+            match saved_placed_wonder(item) {
+                Some(wonder) => state.placed_world_wonders.push(wonder),
+                None => report.unrepresentable_wonders.push(index),
+            }
+        }
+    }
+    state.oblegane.clear();
+    state.siege_machines_ready.clear();
+    for entry in city_siege {
+        if !state.cities.iter().any(|city| city.id == entry.city_id) {
+            report.unknown_cities.push(entry.city_id);
+            continue;
+        }
+        if entry.oblegane {
+            state.oblegane.insert(entry.city_id);
+        }
+        match entry.siege_machines.as_ref() {
+            Some(machines) if !machines.ready.is_empty() => {
+                state
+                    .siege_machines_ready
+                    .insert(entry.city_id, machines.ready.clone());
+            }
+            _ => {
+                state.siege_machines_ready.remove(&entry.city_id);
+            }
+        }
+    }
+    report
+}
+
 /// Surowy wczyt snapshotu: wersja, wymagane pola, walidacja. NIE wykonuje migracji P6-ZAPIS-MIGRACJE:
 /// limit wodzow zalezy od epoki wlasciciela (odczytywanej z zapisu przez [`SaveSnapshot::owner_era`]),
 /// a limit stosu od listy ludzkich graczy, czyli od kontekstu wolajacego.
@@ -1086,7 +1293,8 @@ impl<'de> Deserialize<'de> for RawSnapshot {
             .with_planned_marches(wire.planned_marches.unwrap_or_default())
             .with_auto_march(wire.auto_march)
             .with_owner_eras(owner_eras)
-            .with_gracze(wire.gracze);
+            .with_gracze(wire.gracze)
+            .with_city_siege(wire.city_siege.unwrap_or_default());
         snapshot.validate().map_err(de::Error::custom)?;
         Ok(RawSnapshot(snapshot))
     }
