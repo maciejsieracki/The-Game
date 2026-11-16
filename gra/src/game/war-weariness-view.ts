@@ -20,6 +20,7 @@ import {
   type WarWearinessParams,
 } from './war-weariness';
 import { compareMilitaryStrength, type MilitarySide } from './diplomacy-military-strength';
+import { formatTurCountAcc } from '../ui/formatPl';
 
 /** Rola strony w wojnie wg siły militarnej (remis = w progu parytetu). */
 export type WarWearinessRole = 'wygrywa' | 'przegrywa' | 'rowny';
@@ -148,4 +149,84 @@ export function warWearinessSideView(
   if (view.aId === ownId) return { own: view.a, rival: view.b };
   if (view.bId === ownId) return { own: view.b, rival: view.a };
   throw new Error(`warWearinessSideView: brak strony o id ${ownId}`);
+}
+
+/**
+ * Etapy zmęczenia wojną do wyświetlenia w panelu dyplomacji — wyłącznie z parametrów (bez zahardkodowanych progów):
+ * 50% = chęć pokoju, 80% = AI proponuje pokój z miastami, 100% = pokój wymuszony (DIPLO-WAR-WEARINESS-40-TURNS-…-Q1).
+ */
+export interface WarWearinessStagePl {
+  /** Próg w procentach (z parametru × 100, zaokrąglony). */
+  procent: number;
+  /** Opis etapu po polsku. */
+  opis: string;
+}
+
+export function warWearinessStagesPl(P: WarWearinessParams = WAR_WEARINESS_PARAMS): WarWearinessStagePl[] {
+  return [
+    { procent: Math.round(P.zmeczenie.progChetnosci * 100), opis: 'chęć pokoju' },
+    { procent: Math.round(P.zmeczenie.progKoncaZmeczenia * 100), opis: 'AI proponuje pokój z miastami' },
+    { procent: Math.round(P.zmeczenie.progWymuszonyPokoj * 100), opis: 'pokój wymuszony' },
+  ];
+}
+
+/**
+ * Liczba tur, po których poziom zmęczenia (0..1) osiągnie `target`. Zmęczenie rośnie o 1/pelneTur na turę
+ * (plus zmienione miasta), więc tury = ceil((target − level) × pelneTur). Już osiągnięty próg → 0.
+ */
+export function warWearinessTurnsToLevel(
+  level: number,
+  target: number,
+  P: WarWearinessParams = WAR_WEARINESS_PARAMS,
+): number {
+  const gap = clamp01(target) - clamp01(level);
+  if (gap <= 0) return 0;
+  return Math.ceil(gap * P.zmeczenie.pelneTur - 1e-9);
+}
+
+/** Podpowiedź „za ile tur” dla następnego etapu (przy 100% — pokój wymuszony). Czysta funkcja z parametrów. */
+export function warWearinessNextStagePl(
+  level: number,
+  P: WarWearinessParams = WAR_WEARINESS_PARAMS,
+): string {
+  const lvl = clamp01(level);
+  const next = warWearinessStagesPl(P).find((s) => lvl < s.procent / 100 - 1e-9);
+  if (next === undefined) return 'Pokój wymuszony (100%).';
+  const turns = warWearinessTurnsToLevel(lvl, next.procent / 100, P);
+  return `Za ${formatTurCountAcc(turns)}: ${next.procent}% — ${next.opis}. Przy 100% pokój wymuszony.`;
+}
+
+/** Pełna lista etapów do panelu dyplomacji (wszystkie 3 progi naraz, z parametrów). */
+export function warWearinessStagesSummaryPl(P: WarWearinessParams = WAR_WEARINESS_PARAMS): string {
+  return 'Etapy: ' + warWearinessStagesPl(P).map((s) => `${s.procent}% — ${s.opis}`).join('; ') + '.';
+}
+
+export interface ForcedPeaceTextInput {
+  /** Nazwa drugiej strony pokoju (AI). */
+  otherName: string;
+  /** true = gracz oddaje miasta (przegrywający); false = gracz otrzymuje miasta. */
+  humanIsLoser: boolean;
+  /** Nazwy miast przeniesionych w pokoju wymuszonym (pusta lista = pokój bez wymiany miast). */
+  cityNames: readonly string[];
+}
+
+export interface ForcedPeaceText {
+  title: string;
+  lead: string;
+  terms: string;
+}
+
+/**
+ * Tekst natywnego okna „pokój wymuszony” (DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1, DODATEK 1 pkt 1–2).
+ * Czysta funkcja: okno (ui/diplomacyAudience.ts) tylko ją wyświetla.
+ */
+export function forcedPeaceModalTextPl(inp: ForcedPeaceTextInput): ForcedPeaceText {
+  const terms = inp.cityNames.length === 0
+    ? 'Pokój bez wymiany miast.'
+    : (inp.humanIsLoser ? 'Oddajesz: ' : 'Otrzymujesz: ') + inp.cityNames.join(', ') + '.';
+  return {
+    title: 'Pokój wymuszony',
+    lead: `Wojna z ${inp.otherName} osiągnęła 100% zmęczenia — pokój wymuszony.`,
+    terms,
+  };
 }

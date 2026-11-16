@@ -150,9 +150,8 @@ async function main() {
       }).filter(c => c.targetId === '0');
     };
     const PEACE_CMDS = new Set(['oferuj_miasto_za_pokoj', 'oferuj_trybut_za_pokoj', 'zaproponuj_pokoj']);
-    // R-WEB-TEST-DEBT-DIPLO-PEACE-BASE-Q1: przy 30 turach wojny zmęczenie = 1,00 >= progKoncaZmeczenia 0,8
-    // i AI proponuje pokój BEZWARUNKOWY (ai.ts ~7050, FALA 689/W58b) — obowiązująca reguła. Przedział
-    // „przed końcem zmęczenia” (12 tur = 0,60) zachowuje asercję: bez miasta do oddania brak propozycji.
+    // R-WEB-DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: skala 40 tur (2,5%/turę). 12 tur = 0,30 (przed progiem
+    // 50%): bez miasta do oddania brak propozycji pokoju.
     const weakNoCityGold = aiDecide(12, 5000, 1, 100, 200);
     check('h1 D2: słabsza AI, 1 miasto, duże złoto -> brak oferty złota za pokój',
       !weakNoCityGold.some(c => c.type === 'oferuj_trybut_za_pokoj'), weakNoCityGold);
@@ -162,32 +161,33 @@ async function main() {
     const weakCityTruce = aiDecide(10, 5000, 6, 100, 200);
     check('h3 słabsza AI z 6 miastami, wojna < 20 tur -> oferuj_miasto_za_pokoj z rodzajem rozejm',
       weakCityTruce.length === 1 && weakCityTruce[0].type === 'oferuj_miasto_za_pokoj' && weakCityTruce[0].rodzaj === 'rozejm', weakCityTruce);
-    // R-WEB-TEST-DEBT-DIPLO-PEACE-BASE-Q1: 14 tur = zmęczenie 0,70 (przed progiem 0,8) i < AI_ROZEJM_DO_TUR (20) → rozejm z miastem.
-    // Pokój z miastem przed 20 turami nie jest osiągalny: zmęczenie = tury/20 >= 1,0 od tury 20 (bezwarunkowy koniec).
+    // R-WEB-DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: 14 tur = zmęczenie 0,35 (przed progiem 0,8) i < AI_ROZEJM_DO_TUR (20) → rozejm z miastem.
     const weakCityPeace = aiDecide(14, 0, 6, 100, 200);
     check('h4 słabsza AI z 6 miastami, zmęczenie < 0,8 (14 tur) -> oferuj_miasto_za_pokoj z rodzajem rozejm',
       weakCityPeace.length === 1 && weakCityPeace[0].type === 'oferuj_miasto_za_pokoj' && weakCityPeace[0].rodzaj === 'rozejm', weakCityPeace);
-    // h6: koniec zmęczenia (30 tur = 1,00 >= 0,8) — słabsza AI proponuje pokój BEZWARUNKOWY, bez miasta i zapłaty.
-    const weakEndWeary = aiDecide(30, 0, 6, 100, 200);
-    check('h6 słabsza AI, koniec zmęczenia (30 tur): zaproponuj_pokoj bezwarunkowy, bez miasta i zapłaty',
-      weakEndWeary.length === 1 && weakEndWeary[0].type === 'zaproponuj_pokoj' && weakEndWeary[0].bezwarunkowy === true
-      && weakEndWeary[0].rodzaj === 'pokoj' && !weakEndWeary.some(c => c.type === 'oferuj_miasto_za_pokoj'), weakEndWeary);
-    // h6b (granica 0,8 = tura 16): od tury 16 poziom zmęczenia >= progKoncaZmeczenia, więc bezwarunkowy koniec
-    // wyprzedza gałąź „miasto za pokój” (rodzaj pokój, wojna >= 20 tur) — ta gałąź jest nieosiągalna przy
-    // obowiązujących progach (zmęczenie = tury/20 + 0,1·straty, straty tylko podnoszą poziom).
-    const weakBoundary16 = aiDecide(16, 0, 6, 100, 200);
-    check('h6b słabsza AI, granica 16 tur (zmęczenie 0,80): zaproponuj_pokoj bezwarunkowy, brak oferty miasta',
-      weakBoundary16.length === 1 && weakBoundary16[0].type === 'zaproponuj_pokoj' && weakBoundary16[0].bezwarunkowy === true
-      && !weakBoundary16.some(c => c.type === 'oferuj_miasto_za_pokoj'), weakBoundary16);
+    // h6 (R-WEB-DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1, ABC 2026-11-16): 80% = AI tylko PROPONUJE pokój
+    // z miastami (bezwarunkowy koniec zmęczenia usunięty). Stara asercja (30 tur, „bezwarunkowy”) była na skali 20 tur.
+    // Nowa: 32 tury = 0,80 → słabsza AI oferuje miasto za pokój (rodzaj pokój), nigdy pokój bezwarunkowy.
+    const weakEndWeary = aiDecide(32, 0, 6, 100, 200);
+    check('h6 słabsza AI, 80% zmęczenia (32 tury): oferta miasta za pokój, bez pokoju bezwarunkowego',
+      weakEndWeary.length === 1 && weakEndWeary[0].type === 'oferuj_miasto_za_pokoj' && weakEndWeary[0].rodzaj === 'pokoj'
+      && !weakEndWeary.some(c => c.bezwarunkowy === true), weakEndWeary);
+    // h6b (100% = 40 tur): słabsza AI nadal OFERUJE miasto za pokój (pozytywnie, jak h6) i nie składa pokoju
+    // bezwarunkowego. Pokój wymuszony to efekt tyku dyplomacji (test wiringu osobno), nie propozycja AI.
+    const weakFullWeary = aiDecide(40, 0, 6, 100, 200);
+    check('h6b słabsza AI, 100% zmęczenia (40 tur): dokładnie oferuj_miasto_za_pokoj (rodzaj pokoj), bez bezwarunkowego',
+      weakFullWeary.length === 1 && weakFullWeary[0].type === 'oferuj_miasto_za_pokoj' && weakFullWeary[0].rodzaj === 'pokoj'
+      && !weakFullWeary.some(c => c.bezwarunkowy === true), weakFullWeary);
     // h5: silniejsza AI przed końcem zmęczenia (14 tur) nie składa żadnej oferty pokoju/rozejmu ani miasta.
     const strongAi = aiDecide(14, 5000, 6, 200, 100);
     check('h5 silniejsza AI przed końcem zmęczenia (14 tur) nie składa oferty pokoju/rozejmu ani miasta wobec gracza',
       !strongAi.some(c => PEACE_CMDS.has(c.type)), strongAi);
-    // h5b: silniejsza AI na końcu zmęczenia (30 tur) — także ona proponuje pokój BEZWARUNKOWY (bez miasta).
-    const strongEndWeary = aiDecide(30, 5000, 6, 200, 100);
-    check('h5b silniejsza AI, koniec zmęczenia (30 tur): wyłącznie zaproponuj_pokoj bezwarunkowy',
-      strongEndWeary.length === 1 && strongEndWeary[0].type === 'zaproponuj_pokoj' && strongEndWeary[0].bezwarunkowy === true,
-      strongEndWeary);
+    // h5b: silniejsza AI (wygrywająca) na 80% zmęczenia (32 tury) — wynik MUSI być pusty (zero ofert, także pokoju
+    // bezwarunkowego). Czułość: ta sama konfiguracja dla słabszej AI daje pozytywną ofertę miasta (h6, 32 tury),
+    // więc pusta lista dla silniejszej nie jest wynikiem martwego kodu — mutacja „AI zawsze pusta” łamie h6/h6b.
+    const strongEndWeary = aiDecide(32, 5000, 6, 200, 100);
+    check('h5b silniejsza AI, 80% zmęczenia (32 tury): pusty wynik (brak pokoju bezwarunkowego i brak oferty miasta)',
+      strongEndWeary.length === 0, strongEndWeary);
 
     console.log('');
     console.log('diplo-peace-weaker-seeks-city-only-test: ' + pass + ' pass / ' + fail + ' fail');

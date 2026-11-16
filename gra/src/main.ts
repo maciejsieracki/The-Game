@@ -1552,6 +1552,7 @@ import {
   showDiplomacyAudience, hideDiplomacyAudience, updateDiplomacyAudience, isDiplomacyAudienceOpen,
   showWarConsentModal,
   showAllianceObligationModal,
+  showForcedPeaceModal,
   type AudienceAction, type NegotiationPayload, type PendingNegotiationRow,
   type AudienceOtherRelations, type AudienceRelationPartner,
   negotiationRoundCounterText,
@@ -21164,9 +21165,7 @@ async function boot(): Promise<void> {
         // givePn/receivePn AI = 0/0 — payload dziś zawsze goły w tym miejscu (żaden branch
         // wyżej nie dotyczy 'zaproponuj_pokoj'); gdyby to się kiedyś zmieniło, resolveProposalPn
         // czytałby realne wartości, ale dziś jest to poza zakresem (payload:{} zawsze).
-        // R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: koniec zmęczenia = pokój BEZWARUNKOWY (bez płatności).
-        const unconditionalEnd = workingCmd.bezwarunkowy === true;
-        const neededPn = unconditionalEnd ? 0 : peaceOfferAiRequestPn(
+        const neededPn = peaceOfferAiRequestPn(
           0, 0, relationTotal(relForPeace), basePnPeace, difficultyForPeace,
         );
         if (neededPn > 0) {
@@ -21177,7 +21176,7 @@ async function boot(): Promise<void> {
         }
         // Zakres: WYŁĄCZNIE rozejm (pokój zostaje bit w bit — ten sam ubytek zmierzony w kontroli
         // pokoju, decyzja o pokoju poza tym tematem; patrz raport R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1).
-        peaceBareAllowed = (workingCmd.rodzaj === 'rozejm' || unconditionalEnd)
+        peaceBareAllowed = workingCmd.rodzaj === 'rozejm'
           && neededPn <= 0
           && !converted.payload.giveItems?.length
           && !converted.payload.receiveItems?.length
@@ -38615,9 +38614,15 @@ async function boot(): Promise<void> {
           if (getDiploRelation(a, b).status === 'wojna') pairs.push({ a, b });
         }
       }
+      // DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1 (zarzut Evaluatora 1): gracz (człowiek) też podlega
+      // pokojowi wymuszonemu przy 100% zmęczenia wojną z główną AI. Para gracz↔AI przechodzi przez ten sam tick.
+      const humanOwner = ME();
+      for (const m of majors) {
+        if (getDiploRelation(humanOwner, m).status === 'wojna') pairs.push({ a: humanOwner, b: m });
+      }
       if (pairs.length === 0 && warWearinessByPairKey.size === 0) return;
       refreshObjectivePowerCache();
-      runWarWearinessTick({
+      const outcomes = runWarWearinessTick({
         store: warWearinessByPairKey,
         turn,
         pairs,
@@ -38667,6 +38672,32 @@ async function boot(): Promise<void> {
         finalize: (loser, winner, lockTurns) => { finalizePeaceTreatyBetween(loser, winner, lockTurns); },
         log: msg => console.log(`[Dyplomacja] R-WEB-WEARINESS: ${msg}`),
       });
+      // Gracz dostaje natywne okno oraz wpis w „Ważne” (warEventLog) po pokoju wymuszonym (zarzut Evaluatora 1+2).
+      for (const o of outcomes) {
+        if (o.action !== 'forced_peace') continue;
+        if (o.winner !== humanOwner && o.loser !== humanOwner) continue;
+        const cityNames = (o.plan?.items ?? [])
+          .filter(i => i.kind === 'miasto')
+          .map(i => cities.find(c => c.id === i.id)?.name ?? i.id);
+        const given = cityNames.length;
+        const humanIsLoser = o.loser === humanOwner;
+        const other = humanIsLoser ? o.winner! : o.loser!;
+        const who = ownerDiploLabel(other);
+        const evId = `forced-peace-${turn}-${o.pairKey}`;
+        if (!warEventLog.some(e => e.id === evId)) {
+          warEventLog.unshift({
+            id: evId,
+            icon: '⚔',
+            title: 'Pokój wymuszony: ' + who,
+            subtitle: given > 0 ? (humanIsLoser ? 'Oddajemy miasta: ' + given : 'Otrzymujemy miasta: ' + given) : 'Pokój bez wymiany miast',
+            kind: 'enemy',
+            turnCreated: turn,
+          });
+          trimWarEventLog();
+          refreshD1bHud();
+        }
+        showForcedPeaceModal({ otherName: who, humanIsLoser, cityNames });
+      }
     }
 
     /**
@@ -44872,8 +44903,7 @@ async function boot(): Promise<void> {
                 if (peaceTraceState.on) {
                   const trPlr = (xs: AIDiplomacyCommand[]): string[] => xs
                     .filter(c => c.targetId === '0')
-                    .map(c => c.type + ((c as { bezwarunkowy?: boolean }).bezwarunkowy ? '/bezw' : '')
-                      + ((c as { rodzaj?: string }).rodzaj ? '/' + (c as { rodzaj?: string }).rodzaj : ''));
+                    .map(c => c.type + ((c as { rodzaj?: string }).rodzaj ? '/' + (c as { rodzaj?: string }).rodzaj : ''));
                   // Odczyty BEZ wstawiania (getDiploRelation / diplomaticContactEstablishedSet dopisują brakujący wpis do Map).
                   const trRel = diplomacyRelations.get(ownerId < ME() ? `${ownerId}_${ME()}` : `${ME()}_${ownerId}`) ?? defaultNeutralRelation();
                   const trMeta = diplomacyPairMeta.get(diploPairKey(ownerId, ME())) as (DiploPairMeta & WarPairMetaR1) | undefined;
