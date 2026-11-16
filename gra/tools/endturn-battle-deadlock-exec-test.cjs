@@ -125,7 +125,7 @@ function buildFactory(mainSrc) {
   const prog = `
 function __factory(deps: any) {
   const { isPreBattleOpen, hidePreBattle, hasPendingAutoPreBattle, oldestPendingAutoPreBattleAgeMs,
-    clearDeferredAutoPreBattleQueue, flushDeferredAutoPreBattle, isDiplomacyAudienceOpen, isArmyMergePanelOpen,
+    clearDeferredAutoPreBattleQueue, flushDeferredAutoPreBattle, isDiplomacyAudienceOpen, isArmyMergePanelOpen, isTechDiscoveryNoticeOpen,
     isAwaitingFirstPlayerCity, isTurnTransitionActive, endTurnTransition, showHintMessage,
     switchActiveHuman, beginOnboardingFoundCity, endActiveHumanTurn, humanSeats, window, console,
     isBattleSceneOpen, isPostBattleSummaryOpen, isMe, isSensibleTradeActionId, negotiationStillValid,
@@ -240,7 +240,7 @@ function advanceFakeClock(ms) {
 function makeEnv(PB, mainSrc) {
   const { factory } = buildFactory(mainSrc);
   const env = {
-    audience: false, armyMerge: false, transition: false, battleScene: false, postSummary: false,
+    audience: false, armyMerge: false, techNotice: false, transition: false, battleScene: false, postSummary: false,
     hints: [], warns: [], endTurnCalls: [],
   };
   const capConsole = {
@@ -259,6 +259,7 @@ function makeEnv(PB, mainSrc) {
     flushDeferredAutoPreBattle: PB.flushDeferredAutoPreBattle,
     isDiplomacyAudienceOpen: () => env.audience,
     isArmyMergePanelOpen: () => env.armyMerge,
+    isTechDiscoveryNoticeOpen: () => env.techNotice,
     isBattleSceneOpen: () => env.battleScene,
     isPostBattleSummaryOpen: () => env.postSummary,
     isMe: (id) => id === 0,

@@ -40755,6 +40755,19 @@ async function boot(): Promise<void> {
       // / EN: mirrors the same extended block in the hint -- without this, a barbarian
       // battle waiting in the queue (isPreBattleOpen()===false, aiCmdResume===null) hit no
       // branch in this function, so the player got no message despite the button being blocked.
+      // R-WEB-UI-END-TURN-HINT-DIPLO-AUDIENCE-TEXT-Q1: modal przed gałęzią bitwy (tylko tekst).
+      if (isDiplomacyAudienceOpen()) {
+        showHintMessage('Zamknij okno audiencji dyplomatycznej, potem zakończ turę.', 3500);
+        return;
+      }
+      if (isArmyMergePanelOpen()) {
+        showHintMessage('Zamknij panel łączenia armii, potem zakończ turę.', 3500);
+        return;
+      }
+      if (isTechDiscoveryNoticeOpen()) {
+        showHintMessage('Zamknij kartę odkrycia technologii, potem zakończ turę.', 3500);
+        return;
+      }
       if (isPreBattleOpen() || hasPendingAutoPreBattle()) {
         showHintMessage('Zakończ ekran bitwy, potem zakończ turę.', 3500);
         return;
