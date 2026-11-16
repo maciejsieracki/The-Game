@@ -1,38 +1,47 @@
-STATUS: BLOCK
+STATUS: PASS-WITH-NOTES
 DOMAIN: GAME (tylko pomiar i narzędzie; kod gry NIE zmieniony)
-TEMAT: R-WEB-SAVE-LOAD-OLD-SAVE-COMPAT-Q1 (#435)
-GOAL: narzędzie gra/tools/save-load-old-save-compat-live.cjs sprawdzające w Chromium wczytanie starego zapisu (sprzed FAL 760-762) na bieżącym kodzie; asercje A1-A4 + wynik w evidence/.
-BAZA: 459354a12e00eb04cc8365c5ac03a03c2ffec999 (origin/main, detached).
+TEMAT: R-WEB-SAVE-LOAD-OLD-SAVE-COMPAT-Q1 (#435), runda 2/5
+GOAL: narzędzie gra/tools/save-load-old-save-compat-live.cjs (jedno polecenie, exit 1 przy FAIL) sprawdzające w Chromium, że zapis sprzed FAL 760–762 wczytuje się na bieżącym kodzie bez błędu i bez dryfu ekonomii.
+BAZA: kandydat 95907fc52 (gra/src identyczne z 459354a12; `git merge-tree` z origin/main ef6e8ea1e: czysto, exit 0).
 
-ZMIANY-COMMIT:
-- nowy: gra/tools/save-load-old-save-compat-live.cjs (faza old: nowa gra, stolica, N tur, eksport civ-autosave z OPFS; faza new: wstawienie zapisu do OPFS, "Wczytaj grę", asercje; tryb --strip-from-current usuwa 5 pól meta + resourceLedgerHistory = SYMULACJA).
-- nowy: dyspozycje/autobot/runs/R-WEB-SAVE-LOAD-OLD-SAVE-COMPAT-Q1/evidence/old-result.json (wynik ostatniego uruchomienia fazy old).
-- nowy: dyspozycje/autobot/runs/R-WEB-SAVE-LOAD-OLD-SAVE-COMPAT-Q1/10-operator-claude.md (ten raport).
-- Nie zmieniono: gra/src, gra/data, WERSJE.md, manifest, gra-robocza/, rust-port/.
+ZMIANY/COMMIT:
+- gra/tools/save-load-old-save-compat-live.cjs (przepisane; r1 blokował przez brak ?civTest=1 i zły zapis slotu).
+- dyspozycje/autobot/runs/R-WEB-SAVE-LOAD-OLD-SAVE-COMPAT-Q1/10-operator-claude.md (ten raport).
+- dyspozycje/autobot/runs/R-WEB-SAVE-LOAD-OLD-SAVE-COMPAT-Q1/evidence/{old-result.json,new-result.json,old-save-metrics.json,new-run.txt}.
+- Nie zmieniono: gra/src, gra/data, WERSJE.md, manifest, gra-robocza/, rust-port/. Brak `npm run build/dev`, brak `git add -A`.
 
-TESTY (ZMIERZONO):
-- tsc --noEmit (gra/): exit 0 (surowe wyjście puste).
-- Build bundla bazowego commita f6b09c76b POZA repo (git archive do scratchpad, vite build): OK, 21.06 s, index.html 14 802 kB.
-- Build bieżącego kodu (459354a12) POZA repo do scratchpad/new-dist: OK, 23.20 s.
-- Live faza old na bundlu f6b09c76b (uruchomienie 2, z diagnostyką): PASS stolica gracza zakładana (foundPlayerStartCity=true); po założeniu stolicy: turn 1, cities 1, units 2, awaiting=false. PASS brak pageerror. FAIL tura 1 nie przechodzi (timeout 240 s po kliknięciu [data-end]). FAIL brak autozapisu civ-autosave-N.json w OPFS (bo tura nie przeszła). Stan odczytany na końcu fazy old: turn 1, cities 0, units 0 (NIEWYJAŚNIONE; nie zbadane).
-- Uruchomienie 1 (przed poprawką diagnostyki): te same objawy (tura 1 bez przejścia).
+ZBUDOWANE POZA REPO (vite build, scratchpad): bundle starego commita f6b09c76b (FALA 754) 27,14 s, index.html 14 802 227 B; bundle bieżący 95907fc52 28,46 s, index.html 14 803 548 B.
 
-WYNIKI ASERCJI:
-- A1 brak pageerror/błędów konsoli: ZMIERZONO tylko dla fazy old (PASS); faza new NIE uruchomiona.
-- A2 liczba miast/jednostek po wczytaniu = zapis: NIE ZMIERZONO (brak zapisu z fazy old).
-- A3 isAwaitingFirstPlayerCity()=false przy miastach: NIE ZMIERZONO w fazie new; w fazie old zmierzono awaiting=false przy cities=1 (informacyjnie).
-- A4 "Zakończ turę" 3 tury: NIE ZMIERZONO (tura 1 nie przechodzi na bundlu bazowym w tym harnessie).
-- Pieniądz/spichlerz, dziennik "Skąd zapasy", scenariusz 0 miast, mutacja Array.isArray: NIE ZMIERZONO (brak haka odczytu ekonomii w dumpState; brak osobnego zapisu 0 miast; mutacja wymagałaby zmian poza allowlistą).
+PRZEBIEG (ZMIERZONO):
+- Faza old (bundle f6b09c76b, prawdziwy stary kod, bez symulacji): seed 4242, nowa gra, stolica założona, 6 tur (tura 1→7). Bramka NNS obejściem dosypek (bypass tylko w turze 2; tury 3–7 bez blokady). Zapis przez __truceSaveLoadTestDebug.quickSave → IndexedDB thegame-saves/kv/thegame.save.compat-test (1 023 935 znaków). Wynik: PASS wszystkie; brak pageerror.
+- Zapis STAREGO kodu nie zawiera pól FAL 760–761 (nnsAiOverrides, orderMultByCity, orderGrowthMultByCity, orderValueByCity, playerEverOwnedCityByOwner: 0 wystąpień) i ma resourceLedgerHistory (1 wystąpienie). Nie była to symulacja.
+- Eko gracza w chwili zapisu (tura 7): skarbiec 188, spichlerz 203, miasta 1, obywatele 1, rekruci 2000, wojsko 1, cywile 1, utrzymanie budynków 0, garnizon 4. Świat: 42 miasta, 61 jednostek (dumpState).
+- Faza new (bieżący bundle 95907fc52), wczytanie przez __truceSaveLoadTestDebug.loadSlot (ta sama funkcja co „Wczytaj grę", zgodnie z komentarzem hooka): WYNIK brak FAIL.
 
-BLOKADY:
-1. Harness nie przechodzi tury 1. Zgodnie z dispatchami #414/#415/#417 bramka "Zakończ turę" (NNS) blokuje endTurn w turze 1. Hak nnsGateBlocked istnieje w obiekcie debug, ale wynik nie został odczytany w tym przebiegu (diagnostyka zwróciła "brak haka" - do sprawdzenia nazwy obiektu). Bez przejścia tury nie ma autozapisu z ticków, więc nie da się wyeksportować zapisu "w turze 6".
-2. Po założeniu stolicy stan w dumpState na końcu fazy old pokazuje 0 miast (niewyjaśnione; wymaga diagnozy w przeglądarce).
-3. Faza new nie została uruchomiona, bo nie ma zapisu wejściowego.
+WYNIKI ASERCJI (ostatni przebieg, gra/tools/…; log: evidence/new-run.txt):
+- A1 brak pageerror i błędów konsoli: PASS. Jedyny wpis konsoli (404 favicon.ico z serwera python) odfiltrowany jako środowiskowy, nie błąd gry.
+- A2 liczba miast (wszyscy właściciele) po wczytaniu = zapis: PASS (42 = 42). Liczba jednostek: PASS (61 = 61).
+- A2e ekonomia gracza po wczytaniu = metryki zapisu (skarbiec, spichlerz, miasta, obywatele, rekruci, wojsko, utrzymanie): PASS, brak różnic.
+- A3 isAwaitingFirstPlayerCity()=false przy miastach gracza: PASS (miasta 1, awaiting false).
+- A4 „Zakończ turę" 3 razy: PASS, tury 7→8→9→10 (każde kliknięcie +1).
 
-RUNDY: 1/5 (Operator, Haiku 5.5). Brak rund Evaluatora/FC.
-NASTĘPNY KROK: (a) zdiagnozować w Chromium przyczynę blokady tury 1 i zniknięcia miast (konsola [EndTurn]/[NNS]); (b) ustalić właściwy hak stanu bramki i pola ekonomii (Pieniądz, spichlerz) w dumpState lub użyć haka civTest (#417); (c) uruchomić fazę old, potem fazę new na bieżącym kodzie; (d) dopiero potem mutacja Array.isArray na kopii poza repo.
+NIE ZMIERZONO:
+- Dziennik „Skąd zapasy" pusty po wczytaniu i rosnący po tickach: brak haka odczytu dziennika w UI. Zapis zawiera resourceLedgerHistory, ale nie odczytano go po wczytaniu.
+- Scenariusz 0 miast (stary zapis bez flagi playerEverOwnedCityByOwner, „Zakończ turę" przy 0 miastach): nie wygenerowano takiego zapisu. Ten przypadek wymaga osobnego przebiegu i nie jest pokryty.
+- Wczytanie przez klik w menu „Wczytaj grę" (ścieżka DOM) NIE ZMIERZONO: użyto loadSlot (ta sama funkcja wg hooka). Zapis trafia do IndexedDB, a nie do autozapisu FSA civ-autosave-N.json z r1.
+
+MUTACJA (wykonana poza narzędziem, na kopii bundla w scratchpad, bez zmian w repo):
+- Usunięty guard `if (Array.isArray(savedOrderMult))` w odczycie orderMultByCity (main.ts, deserializacja meta).
+- Wynik narzędzia na kopii: FAIL=2 — spichlerz 0 zamiast 203 (dryf ekonomii) oraz pageerror/konsola „ke is not iterable". Narzędzie wykrywa regresję. Wpis NIE ZMIERZONO w evidence opisuje tę mutację jako ręczną.
+
+BLOKADY: brak blokad wykonania. Ograniczenia: patrz NIE ZMIERZONO.
+Przyczyna BLOCK z r1 (dla orkiestratora): tura 1 blokowana bramką NNS, bo r1 odpalał grę bez ?civTest=1, więc __aiTradeWiringTestDebug (nnsGateBlocked) nie istniał („brak haka"); dodatkowo r1 zakładał miasto przed zakończeniem tworzenia świata (miasta 0). r2 czeka na overlay „Tworzenie świata" i używa __nnsMeasureDebug.startGame, jak runner pomiaru.
+
+RUNDY: 2/5 (Operator, Haiku 5.5). Brak rund Evaluatora/FC.
+NASTĘPNY KROK: Evaluator (Sonnet) do weryfikacji narzędzia i ewentualnego zamknięcia NIE ZMIERZONO (0 miast; Skąd zapasy; klik w menu). Opcjonalnie drugi przebieg z --strip-from-current nie jest potrzebny, bo prawdziwy stary zapis już nie zawiera pól 760–761.
 DEPLOY/PUSH: NIE WYKONANO
 
 UWAGI-DLA-ORKIESTRATORA:
-- Dispatch 00-dispatch.md nie istnieje w origin/main (ścieżka jest tylko na gałęzi claude/sprawdzenie-funkcjonalnosci-ek4ra0); użyto DODATKU z tej gałęzi.
-- Po założeniu stolicy w fazie old dumpState raportuje cities=1, a po kolejnych oczekiwaniach cities=0 (patrz BLOKADY 2).
+- Dispatch 00-dispatch.md nie istnieje w origin/main (tylko na gałęzi claude/sprawdzenie-funkcjonalnosci-ek4ra0); użyto DODATKU z tej gałęzi oraz raportu r1.
+- Mały znaleziony problem środowiskowy (nie gry): python http.server nie ma favicon.ico, więc przeglądarka zgłasza 404. Odfiltrowane w narzędziu. Jeśli bramka ma być ścisła, dodaj favicon do bundla.
+- Nie zakładano sesji, zadań ani harmonogramów.

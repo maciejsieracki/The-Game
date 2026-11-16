@@ -1,34 +1,36 @@
 'use strict';
 /**
- * save-load-old-save-compat-live.cjs -- R-WEB-SAVE-LOAD-OLD-SAVE-COMPAT-Q1.
+ * save-load-old-save-compat-live.cjs -- R-WEB-SAVE-LOAD-OLD-SAVE-COMPAT-Q1 (r2).
  *
- * Narzędzie żywe (Chromium, Playwright) sprawdzające zgodność wsteczną starych
- * zapisów po FALACH 760-762 (pola meta: nnsAiOverrides, orderMultByCity,
- * orderGrowthMultByCity, orderValueByCity, playerEverOwnedCityByOwner oraz
- * top-level resourceLedgerHistory).
+ * Narzedzie zywe (Chromium, Playwright) sprawdzajace zgodnosc wsteczna STAREGO zapisu
+ * (sprzed FAL 760-762: pola meta nnsAiOverrides, orderMultByCity, orderGrowthMultByCity,
+ * orderValueByCity, playerEverOwnedCityByOwner oraz top-level resourceLedgerHistory).
  *
- * Faza "old" (--phase old --old-dist <katalog>):
- *   zbudowany bundle z commita sprzed FAL 760-762 (np. f6b09c76b, zbudowany POZA
- *   repo) -- nowa gra, założenie stolicy, N tur, wyeksportowanie ostatniego
- *   autozapisu (civ-autosave-N.json z OPFS = atrapa katalogu FSA, ścieżka
- *   produkcyjna) do pliku --save-out. Tryb --strip-from-current: zamiast bundla
- *   starego commita użyj bieżącego bundla (--old-dist) i USUŃ z JSON sześć pól
- *   (symulacja; jawnie oznaczona w raporcie).
+ * Faza "old" (--phase old --old-dist <katalog> --save-out <plik>):
+ *   bundle z commita SPRZED FAL 760-762 (np. f6b09c76b, zbudowany POZA repo). Nowa gra
+ *   (__nnsMeasureDebug.startGame), zalozenie stolicy, N tur (bramka NNS gracza obchodzona
+ *   DODATNIMI dosypkami jak w ai-economy-measure-run.cjs), zapis przez ta sama funkcje co
+ *   "Zapisz gre" (__truceTestDebug.quickSave -> IndexedDB 'thegame-saves'/'kv'/'thegame.save.<slot>').
+ *   Obok zapisu powstaje <save-out>.metrics.json: metryki ekonomii gracza w chwili zapisu.
+ *   --strip-from-current: zamiast bundla starego commita uzyj bundla biezacego i USUN z JSON
+ *   pola z FAL 760-762 (SYMULACJA, jawnie oznaczona w wyniku).
  *
  * Faza "new" (--phase new --new-dist <katalog> --save-in <plik>):
- *   wkłada zapis do OPFS nowej strony (bieżący kod), wczytuje go przez menu
- *   główne „Wczytaj grę" (ścieżka produkcyjna), asercje:
- *     A1 brak pageerror i błędów konsoli,
- *     A2 liczba miast i jednostek po wczytaniu = zapisowi,
+ *   bieżacy kod. Wklada zapis do IndexedDB tego samego origin, wczytuje go funkcja
+ *   "Wczytaj gre" (__truceTestDebug.loadSlot -> loadGameFromSlot). Asercje:
+ *     A1 brak pageerror i bledow konsoli,
+ *     A2 liczba miast/jednostek po wczytaniu = zapisowi,
+ *     A2e ekonomia gracza po wczytaniu (skarbiec, spichlerz, miasta, rekruci, obywatele)
+ *        = metryki zapisane w chwili zapisu (brak dryfu ekonomii),
  *     A3 isAwaitingFirstPlayerCity()=false gdy gracz ma miasta,
- *     A4 „Zakończ turę" działa przez >=3 tury (tura rośnie o 1 na kliknięcie).
- *   Asercje ekonomii (Pieniądz, spichlerz) i dziennika „Skąd zapasy" wymagają
- *   odczytu UI, którego brak w haku dumpState -> NIE ZMIERZONO (raport).
+ *     A4 „Zakoncz ture" dziala 3 razy (tura rosnie o 1 na kazde klikniecie).
+ *   NIE ZMIERZONO: dziennik „Skad zapasy" (brak haka odczytu UI), scenariusz 0 miast,
+ *   mutacja Array.isArray (osobny przebieg na kopii poza repo).
  *
- * Użycie (z gra/):
+ * Uzycie (z gra/):
  *   node tools/save-load-old-save-compat-live.cjs --phase old --old-dist <dir> --save-out <f> [--turns 6] [--strip-from-current]
  *   node tools/save-load-old-save-compat-live.cjs --phase new --new-dist <dir> --save-in <f>
- * Wynik: linie PASS/FAIL/NIE_ZMIERZONO; kod wyjścia 1 przy jakimkolwiek FAIL.
+ * Wynik: linie PASS/FAIL/NIE_ZMIERZONO; kod wyjscia 1 przy jakimkolwiek FAIL.
  */
 const path = require('path');
 const fs = require('fs');
@@ -39,220 +41,279 @@ const args = process.argv.slice(2);
 const argOf = (k, d) => { const i = args.indexOf(k); return i >= 0 && args[i + 1] ? args[i + 1] : d; };
 const hasFlag = (k) => args.indexOf(k) >= 0;
 const PHASE = argOf('--phase', '');
-const DIST = argOf('--old-dist', argOf('--new-dist', ''));
+const DIST = argOf(PHASE === 'old' ? '--old-dist' : '--new-dist', '');
 const SAVE_FILE = argOf(PHASE === 'old' ? '--save-out' : '--save-in', '');
 const TURNS = parseInt(argOf('--turns', '6'), 10);
+const SEED = parseInt(argOf('--seed', '4242'), 10);
 const PORT = parseInt(argOf('--port', PHASE === 'old' ? '8771' : '8772'), 10);
 const STRIP = hasFlag('--strip-from-current');
+const GOLD = 200;
+const FOOD = 200;
+const SLOT = 'compat-test';
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const OUT_JSON = path.resolve(__dirname, '..', '..', 'dyspozycje', 'autobot', 'runs',
   'R-WEB-SAVE-LOAD-OLD-SAVE-COMPAT-Q1', 'evidence', `${PHASE}-result.json`);
 
-/** Pola zapisu dodane przez FALE 760-762 (ścieżka: meta.* lub top-level). */
-const META_FIELDS_760_761 = [
-  'nnsAiOverrides', 'orderMultByCity', 'orderGrowthMultByCity', 'orderValueByCity', 'playerEverOwnedCityByOwner',
-];
+/** Pola zapisu dodane przez FALE 760-762 (meta.* oraz top-level). */
+const META_FIELDS_760_761 = ['nnsAiOverrides', 'orderMultByCity', 'orderGrowthMultByCity', 'orderValueByCity', 'playerEverOwnedCityByOwner'];
 const TOP_FIELDS_762 = ['resourceLedgerHistory'];
 
 let fails = 0;
 const results = [];
 const check = (ok, label, extra) => {
   if (!ok) fails++;
-  const line = (ok ? 'PASS' : 'FAIL') + ' ' + label + (extra !== undefined ? ' :: ' + JSON.stringify(extra) : '');
-  console.log(line);
+  console.log((ok ? 'PASS' : 'FAIL') + ' ' + label + (extra !== undefined ? ' :: ' + JSON.stringify(extra) : ''));
   results.push({ status: ok ? 'PASS' : 'FAIL', label, extra: extra === undefined ? null : extra });
 };
 const nzm = (label, why) => {
   console.log('NIE_ZMIERZONO ' + label + ' :: ' + why);
   results.push({ status: 'NIE_ZMIERZONO', label, extra: why });
 };
+const info = (label, obj) => { console.log('INFO ' + label + ' ' + JSON.stringify(obj)); };
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const FAKE_FSA_INIT = () => {
-  window.showDirectoryPicker = async () => navigator.storage.getDirectory();
-  const P = (window.FileSystemHandle || {}).prototype;
-  if (P) {
-    if (!P.queryPermission) P.queryPermission = async () => 'granted';
-    if (!P.requestPermission) P.requestPermission = async () => 'granted';
+/* ---- kopie helperow modalnych z ai-economy-measure-run.cjs (ta sama logika zamykania) ---- */
+function closeModalsInPage() {
+  const closed = [];
+  const aud = document.querySelector('.civ-diplo-aud');
+  if (aud && aud.style.display !== 'none') { const b = aud.querySelector('.civ-diplo-aud-back'); if (b) { b.click(); closed.push('diploAudienceClosed'); } }
+  if (document.getElementById('civ-amp-title')) { const b = document.querySelector('.civ-amp-btn-sep'); if (b) { b.click(); closed.push('armyMergeClosed'); } }
+  const tn = document.getElementById('civ-tech-discovery-notice-host');
+  if (tn) { const b = tn.querySelector('[data-act="close"]'); if (b) { b.click(); closed.push('techNoticeClosed'); } }
+  return closed;
+}
+function openModalKeysInPage() {
+  const open = [];
+  const aud = document.querySelector('.civ-diplo-aud');
+  if (aud && aud.style.display !== 'none') open.push('diploAudienceClosed');
+  if (document.getElementById('civ-amp-title')) open.push('armyMergeClosed');
+  if (document.getElementById('civ-tech-discovery-notice-host')) open.push('techNoticeClosed');
+  return open;
+}
+async function closeEndTurnModals(page, ctr) {
+  for (let k = 0; k < 20; k++) {
+    const clicked = await page.evaluate(closeModalsInPage);
+    if (clicked.length === 0) return;
+    await wait(300);
+    const still = await page.evaluate(openModalKeysInPage);
+    for (const key of clicked) if (!still.includes(key)) ctr[key] = (ctr[key] || 0) + 1;
   }
-};
+}
+async function clearBattles(page) {
+  let clean = 0;
+  for (let k = 0; k < 400; k++) {
+    const bs = await page.evaluate(() => window.__aiTradeWiringTestDebug.battleState());
+    if (!bs.preBattleOpen && !bs.pendingAuto && !bs.sceneOpen && !bs.summaryOpen && !bs.resolving) { if (++clean >= 2) break; await wait(150); continue; }
+    clean = 0;
+    const act = await page.evaluate(() => {
+      const h = window.__aiTradeWiringTestDebug;
+      const b = document.querySelector('.pb-overlay [data-act="auto"]');
+      if (b) { b.click(); return 'auto'; }
+      if (h.closeBattleSummary()) return 'summary';
+      if (h.flushBattles()) return 'flush';
+      return 'wait';
+    });
+    await wait(act === 'wait' ? 300 : 150);
+  }
+}
 
 async function launch() {
-  try { return await chromium.launch({ headless: true }); } catch {
+  try { return await chromium.launch({ headless: true, args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] }); } catch {
     return chromium.launch({ headless: true, executablePath: FALLBACK_CHROME, args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
   }
 }
-
-/** Serwer statyczny na porcie PORT (python3, w tle procesu, zabijany na końcu). */
 function startServer(dir) {
-  const srv = spawn('python3', ['-m', 'http.server', String(PORT), '--directory', dir, '--bind', '127.0.0.1'], { stdio: 'ignore' });
-  return srv;
+  return spawn('python3', ['-m', 'http.server', String(PORT), '--directory', dir, '--bind', '127.0.0.1'], { stdio: 'ignore' });
 }
 
-async function newestAutosaveName(page) {
-  return page.evaluate(async () => {
-    const root = await navigator.storage.getDirectory();
-    const names = [];
-    for await (const n of root.keys()) if (/^civ-autosave-\d+\.json$/.test(n)) names.push(n);
-    names.sort((a, b) => parseInt(a.match(/\d+/)[0], 10) - parseInt(b.match(/\d+/)[0], 10));
-    return names.length ? names[names.length - 1] : null;
+/** Stan tury + zamkniecie tury jak gracz: bramka NNS (dosypki), modale, bitwy, endTurn, czekanie na nowa ture. */
+async function turnOf(page) { return page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn); }
+async function playTurn(page, ctr) {
+  const before = await turnOf(page);
+  const blocked = await page.evaluate(() => window.__aiTradeWiringTestDebug.nnsGateBlocked());
+  let bypass = false;
+  if (blocked) {
+    await page.evaluate(([g]) => window.__aiTradeWiringTestDebug.grantPlayerGold(g), [GOLD]);
+    await page.evaluate(([f]) => window.__aiTradeWiringTestDebug.grantPlayerFood(f), [FOOD]);
+    bypass = true;
+    if (await page.evaluate(() => window.__aiTradeWiringTestDebug.nnsGateBlocked())) return { stop: 'gate-blocked-after-bypass', tura: before };
+  }
+  await closeEndTurnModals(page, ctr);
+  await clearBattles(page);
+  if (!(await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd()))) {
+    return { stop: 'cannot-end', tura: before, battle: await page.evaluate(() => window.__aiTradeWiringTestDebug.battleState()) };
+  }
+  await closeEndTurnModals(page, ctr);
+  await page.evaluate(() => window.__aiTradeWiringTestDebug.endTurn());
+  const deadline = Date.now() + 300000;
+  while (Date.now() < deadline) {
+    await wait(250);
+    const adv = await page.evaluate((t) => window.__aiTradeWiringTestDebug.state().turn > t && !window.__aiTradeWiringTestDebug.isEndTurnInProgress(), before);
+    if (adv) return { turn: await turnOf(page), bypass };
+    await closeEndTurnModals(page, ctr);
+  }
+  return { stop: 'endturn-timeout', tura: before };
+}
+
+/** Metryki ekonomii gracza (owner = ME) z hooka __aiEconomyMeasure. */
+async function playerEconomy(page) {
+  return page.evaluate(() => {
+    const me = window.__aiTradeWiringTestDebug.info().me;
+    const m = window.__aiEconomyMeasure.metrics();
+    const o = m.owners.find((x) => x.owner === me) || null;
+    if (!o) return null;
+    return { owner: me, skarbiec: o.skarbiec, spichlerz: o.spichlerz, miasta: o.miasta, obywatele: o.obywatele,
+      rekruci: o.rekruci, jednostkiWojskowe: o.jednostkiWojskowe, jednostkiCywilne: o.jednostkiCywilne,
+      utrzymanieBudynkowPieniadz: o.utrzymanieBudynkowPieniadz, utrzymanieGarnizonuPieniadz: o.utrzymanieGarnizonuPieniadz,
+      turn: window.__aiTradeWiringTestDebug.state().turn };
   });
 }
 
-async function readOpfsFile(page, name) {
-  return page.evaluate(async (n) => {
-    const root = await navigator.storage.getDirectory();
-    const fh = await root.getFileHandle(n);
-    return (await fh.getFile()).text();
-  }, name);
+async function idbReadSlot(page, slot) {
+  return page.evaluate(async (key) => new Promise((resolve, reject) => {
+    const req = indexedDB.open('thegame-saves', 1);
+    req.onerror = () => reject(req.error);
+    req.onsuccess = () => {
+      const db = req.result;
+      const tx = db.transaction('kv', 'readonly');
+      const g = tx.objectStore('kv').get(key);
+      g.onsuccess = () => { db.close(); resolve(typeof g.result === 'string' ? g.result : null); };
+      g.onerror = () => reject(g.error);
+    };
+  }), 'thegame.save.' + slot);
+}
+async function idbWriteSlot(page, slot, text) {
+  await page.evaluate(async ([key, val]) => new Promise((resolve, reject) => {
+    const req = indexedDB.open('thegame-saves', 1);
+    req.onupgradeneeded = () => { if (!req.result.objectStoreNames.contains('kv')) req.result.createObjectStore('kv'); };
+    req.onerror = () => reject(req.error);
+    req.onsuccess = () => {
+      const db = req.result;
+      const tx = db.transaction('kv', 'readwrite');
+      tx.objectStore('kv').put(val, key);
+      tx.oncomplete = () => { db.close(); resolve(); };
+      tx.onerror = () => reject(tx.error);
+    };
+  }), ['thegame.save.' + slot, text]);
 }
 
-async function writeOpfsFile(page, name, text) {
-  await page.evaluate(async ([n, t]) => {
-    const root = await navigator.storage.getDirectory();
-    const fh = await root.getFileHandle(n, { create: true });
-    const w = await fh.createWritable();
-    await w.write(t);
-    await w.close();
-  }, [name, text]);
-}
-
-async function endTurnOnce(page) {
-  const before = await page.evaluate(() => window.__cityStateStartUnitsTestDebug.dumpState().turn);
-  await page.evaluate(() => { const b = document.querySelector('[data-end]'); if (b && b.getAttribute('aria-disabled') !== 'true') b.click(); });
-  const deadline = Date.now() + 240000;
-  while (Date.now() < deadline) {
-    await wait(500);
-    const t = await page.evaluate(() => window.__cityStateStartUnitsTestDebug.dumpState().turn);
-    if (t > before) return t;
-  }
-  return null;
-}
+const GAME_URL = (port) => `http://127.0.0.1:${port}/index.html?civTest=1&civSeed=${SEED}`;
+const HOOKS_OK = () => !!window.__aiTradeWiringTestDebug && !!window.__aiEconomyMeasure && !!window.__nnsMeasureDebug && !!window.__truceTestDebug && !!window.__truceSaveLoadTestDebug;
 
 async function phaseOld() {
   if (!DIST || !SAVE_FILE) throw new Error('faza old: wymagane --old-dist i --save-out');
   const srv = startServer(DIST);
   const browser = await launch();
   let saveText = null;
+  let metricsAtSave = null;
   try {
-    const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 } });
-    await ctx.addInitScript(FAKE_FSA_INIT);
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     const page = await ctx.newPage();
     const errs = [];
-    page.on('pageerror', (e) => errs.push('PAGEERR ' + e));
-    await page.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil: 'load', timeout: 180000 });
-    await page.waitForFunction(() => !!window.__cityStateStartUnitsTestDebug, undefined, { timeout: 120000 });
-    await page.waitForSelector('.civ-menu', { timeout: 120000 });
-    await wait(300);
-    await page.evaluate(() => window.__cityStateStartUnitsTestDebug.startNewGame('normal', 2, 'normal'));
+    page.on('pageerror', (e) => errs.push('PAGEERR ' + String(e).slice(0, 160)));
+    await page.goto(GAME_URL(PORT), { waitUntil: 'load', timeout: 180000 });
+    await page.waitForFunction(HOOKS_OK, undefined, { timeout: 180000 });
+    await page.evaluate(([s]) => window.__nnsMeasureDebug.startGame({ seed: s }), [SEED]);
+    await page.waitForFunction(() => { try { return window.__aiTradeWiringTestDebug.state().turn >= 1; } catch { return false; } }, undefined, { timeout: 180000 });
     await page.waitForFunction(() => {
-      const s = window.__cityStateStartUnitsTestDebug.dumpState();
-      return s.playerStartHex !== null && s.awaitingFirstPlayerCity === true;
-    }, undefined, { timeout: 500000 });
-    const founded = await page.evaluate(() => window.__cityStateStartUnitsTestDebug.foundPlayerStartCity());
-    check(founded === true, 'OLD zakłada stolicę gracza', founded);
-    await page.waitForFunction(() => window.__cityStateStartUnitsTestDebug.dumpState().cities.length > 0, undefined, { timeout: 30000 }).catch(() => {});
-    const diag = await page.evaluate(() => {
-      const s = window.__cityStateStartUnitsTestDebug.dumpState();
-      return { turn: s.turn, cities: s.cities.length, units: s.units.length, awaiting: s.awaitingFirstPlayerCity, nnsGateBlocked: typeof window.__cityStateStartUnitsTestDebug.nnsGateBlocked === 'function' ? window.__cityStateStartUnitsTestDebug.nnsGateBlocked() : 'brak haka' };
-    });
-    console.log('INFO OLD po zakładaniu stolicy=' + JSON.stringify(diag));
-    let turn = diag.turn;
+      const ov = Array.from(document.querySelectorAll('*')).some((el) => el.textContent && el.textContent.includes('Tworzenie świata') && el.offsetParent !== null);
+      return !ov && window.__nnsMeasureDebug.awaitingFirstCity() === true;
+    }, undefined, { timeout: 600000, polling: 500 });
+    const founded = await page.evaluate(() => window.__aiTradeWiringTestDebug.foundFirstCity());
+    check(founded === true, 'OLD zaklada stolice gracza', founded);
+    await page.evaluate(() => window.__truceTestDebug.suppressVictoryForTest());
+    const ctr = {};
+    let turn = await turnOf(page);
+    info('OLD start', { turn, eco: await playerEconomy(page) });
     for (let i = 0; i < TURNS; i++) {
-      const t = await endTurnOnce(page);
-      if (t === null) { check(false, 'OLD tura ' + (i + 1) + ' nie przechodzi (timeout)'); break; }
-      turn = t;
+      const r = await playTurn(page, ctr);
+      if (r.stop) { check(false, 'OLD tura ' + (i + 1) + ' zatrzymana: ' + r.stop, r); break; }
+      turn = r.turn;
+      info('OLD tura ' + turn, { bypass: r.bypass, eco: await playerEconomy(page) });
     }
-    await wait(2500);
-    const name = await newestAutosaveName(page);
-    check(name !== null, 'OLD autozapis w OPFS powstał', name);
-    if (name) saveText = await readOpfsFile(page, name);
+    const q = await page.evaluate((s) => window.__truceSaveLoadTestDebug.quickSave(s), SLOT);
+    check(q === true, 'OLD zapis gry (quickSave -> IndexedDB) powiodl sie', q);
+    saveText = await idbReadSlot(page, SLOT);
+    check(saveText !== null, 'OLD zapis odczytany z IndexedDB', saveText ? saveText.length : null);
+    metricsAtSave = await playerEconomy(page);
+    info('OLD eko w chwili zapisu', metricsAtSave);
     check(errs.length === 0, 'OLD brak pageerror', errs.slice(0, 3));
-    const snap = await page.evaluate(() => { const s = window.__cityStateStartUnitsTestDebug.dumpState(); return { turn: s.turn, cities: s.cities.length, units: s.units.length }; });
-    console.log('INFO OLD stan=' + JSON.stringify(snap) + ' plik=' + name);
     await ctx.close();
   } finally {
     await browser.close().catch(() => {});
     srv.kill('SIGKILL');
   }
   if (!saveText) return;
-  let obj = JSON.parse(saveText);
+  const obj = JSON.parse(saveText);
   const removed = { meta: [], top: [] };
   if (STRIP) {
     for (const f of META_FIELDS_760_761) if (obj.meta && f in obj.meta) { delete obj.meta[f]; removed.meta.push(f); }
     for (const f of TOP_FIELDS_762) if (f in obj) { delete obj[f]; removed.top.push(f); }
-    console.log('INFO OLD SYMULACJA: usunięto pola ' + JSON.stringify(removed) + ' (zapis z bieżącego kodu, NIE prawdziwy stary commit)');
+    info('OLD SYMULACJA usunieto pola (zapis z biezacego kodu, NIE prawdziwy stary commit)', removed);
   }
   fs.mkdirSync(path.dirname(SAVE_FILE), { recursive: true });
   fs.writeFileSync(SAVE_FILE, JSON.stringify(obj));
-  check(true, 'OLD zapis wyeksportowany do ' + SAVE_FILE, { strip: STRIP, removed, bytes: fs.statSync(SAVE_FILE).size });
+  fs.writeFileSync(SAVE_FILE + '.metrics.json', JSON.stringify(metricsAtSave));
+  check(true, 'OLD zapis zapisany do pliku', { strip: STRIP, removed, bytes: fs.statSync(SAVE_FILE).size, turn: obj.turn ?? null });
 }
 
 async function phaseNew() {
   if (!DIST || !SAVE_FILE) throw new Error('faza new: wymagane --new-dist i --save-in');
-  const saveObj = JSON.parse(fs.readFileSync(SAVE_FILE, 'utf8'));
+  const saveText = fs.readFileSync(SAVE_FILE, 'utf8');
+  const saveObj = JSON.parse(saveText);
+  const metricsPath = SAVE_FILE + '.metrics.json';
+  const eco0 = fs.existsSync(metricsPath) ? JSON.parse(fs.readFileSync(metricsPath, 'utf8')) : null;
   const expectCities = saveObj.cities ? saveObj.cities.length : null;
   const expectUnits = saveObj.units ? saveObj.units.length : null;
-  const expectTurn = saveObj.turn !== undefined ? saveObj.turn : null;
   const srv = startServer(DIST);
   const browser = await launch();
   try {
-    const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 } });
-    await ctx.addInitScript(FAKE_FSA_INIT);
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     const page = await ctx.newPage();
     const errs = [];
-    page.on('pageerror', (e) => errs.push('PAGEERR ' + e));
-    page.on('console', (m) => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text().slice(0, 160)); });
-    await page.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil: 'load', timeout: 180000 });
-    await page.waitForFunction(() => !!window.__cityStateStartUnitsTestDebug, undefined, { timeout: 120000 });
-    await page.waitForSelector('.civ-menu', { timeout: 120000 });
-    await writeOpfsFile(page, 'civ-autosave-1.json', fs.readFileSync(SAVE_FILE, 'utf8'));
-    await page.reload({ waitUntil: 'load' });
-    await page.waitForFunction(() => !!window.__cityStateStartUnitsTestDebug, undefined, { timeout: 120000 });
-    await page.waitForSelector('.civ-menu', { timeout: 120000 });
+    page.on('pageerror', (e) => errs.push('PAGEERR ' + String(e).slice(0, 160)));
+    page.on('console', (m) => { if (m.type() === 'error' && !/\/favicon\.ico$/.test(((m.location() || {}).url || ''))) errs.push('CONSOLE ' + m.text().slice(0, 160) + ' @' + ((m.location() || {}).url || '').slice(0, 160)); });
+    page.on('response', (r) => { if (r.status() >= 400) errs.push('HTTP' + r.status() + ' ' + r.url().slice(0, 200)); });
+    await page.goto(GAME_URL(PORT), { waitUntil: 'load', timeout: 180000 });
+    await page.waitForFunction(HOOKS_OK, undefined, { timeout: 180000 });
     await wait(800);
-    const clicked = await page.evaluate(() => {
-      const b = Array.from(document.querySelectorAll('.civ-menu button')).find((x) => /Wczytaj/.test(x.textContent || ''));
-      if (!b || b.disabled) return false;
-      b.click();
-      return true;
-    });
-    check(clicked, 'NEW menu główne: „Wczytaj grę" klikalne przy zapisie w OPFS', clicked);
-    await page.waitForSelector('.civ-sl-row', { timeout: 20000 }).catch(() => {});
-    await page.evaluate(() => {
-      const row = document.querySelector('.civ-sl-row');
-      if (row) row.click();
-    });
-    await wait(300);
-    await page.evaluate(() => {
-      const btn = Array.from(document.querySelectorAll('.civ-sl-btns button')).find((x) => /Wczytaj/.test(x.textContent || ''));
-      if (btn) btn.click();
-    });
-    await page.waitForFunction(() => {
-      try { return window.__cityStateStartUnitsTestDebug.dumpState().cities.length > 0; } catch { return false; }
-    }, undefined, { timeout: 300000 }).catch(() => {});
+    await idbWriteSlot(page, SLOT, saveText);
+    await page.evaluate((s) => window.__truceSaveLoadTestDebug.loadSlot(s), SLOT);
+    await page.waitForFunction(() => { try { return window.__aiTradeWiringTestDebug.state().turn >= 1 && window.__aiTradeWiringTestDebug.info().myCities >= 0; } catch { return false; } }, undefined, { timeout: 300000 });
     await wait(1500);
     const st = await page.evaluate(() => {
-      const s = window.__cityStateStartUnitsTestDebug.dumpState();
-      return { turn: s.turn, cities: s.cities.length, units: s.units.length, awaiting: s.awaitingFirstPlayerCity };
+      const s = window.__aiTradeWiringTestDebug.state();
+      const inf = window.__aiTradeWiringTestDebug.info();
+      return { turn: s.turn, myCities: inf.myCities, awaiting: window.__nnsMeasureDebug.awaitingFirstCity() };
     });
-    console.log('INFO NEW po wczytaniu=' + JSON.stringify(st) + ' zapis=' + JSON.stringify({ expectCities, expectUnits, expectTurn }));
-    check(expectCities === null || st.cities === expectCities, 'NEW liczba miast po wczytaniu = zapis', { got: st.cities, want: expectCities });
-    check(expectUnits === null || st.units === expectUnits, 'NEW liczba jednostek po wczytaniu = zapis', { got: st.units, want: expectUnits });
-    if (st.cities > 0) check(st.awaiting === false, 'NEW isAwaitingFirstPlayerCity()=false przy miastach gracza', st.awaiting);
+    const eco1 = await playerEconomy(page);
+    const world = await page.evaluate(() => { const d = window.__cityStateStartUnitsTestDebug.dumpState(); return { cities: d.cities.length, units: d.units.length }; });
+    info('NEW po wczytaniu', { st, eco: eco1, swiat: world, zapis: { expectCities, expectUnits }, eco0 });
+    check(expectCities === null || world.cities === expectCities, 'NEW liczba miast (wszyscy wlasciciele) po wczytaniu = zapis', { got: world.cities, want: expectCities });
+    check(expectUnits === null || world.units === expectUnits, 'NEW liczba jednostek (wszyscy wlasciciele) po wczytaniu = zapis', { got: world.units, want: expectUnits });
+    check(eco1.miasta === (eco0 ? eco0.miasta : eco1.miasta), 'NEW miasta gracza = metryki zapisu', { got: eco1.miasta, want: eco0 ? eco0.miasta : null });
+    if (eco0) {
+      const keys = ['skarbiec', 'spichlerz', 'miasta', 'obywatele', 'rekruci', 'jednostkiWojskowe', 'jednostkiCywilne', 'utrzymanieBudynkowPieniadz', 'utrzymanieGarnizonuPieniadz'];
+      const diff = keys.filter((k) => eco0[k] !== eco1[k]).map((k) => ({ k, zapis: eco0[k], wczytane: eco1[k] }));
+      check(diff.length === 0, 'NEW ekonomia gracza po wczytaniu = metryki w chwili zapisu (skarbiec, spichlerz, miasta, ludnosc, wojsko)', diff);
+    } else {
+      nzm('NEW ekonomia po wczytaniu = zapis', 'brak pliku metryk zapisu (' + metricsPath + ')');
+    }
+    if (st.myCities > 0) check(st.awaiting === false, 'NEW isAwaitingFirstPlayerCity()=false przy miastach gracza', st.awaiting);
+    const ctr = {};
     const turns = [st.turn];
     for (let i = 0; i < 3; i++) {
-      const t = await endTurnOnce(page);
-      turns.push(t);
-      if (t === null) break;
+      const r = await playTurn(page, ctr);
+      if (r.stop) { check(false, 'NEW tura ' + (i + 1) + ' zatrzymana: ' + r.stop, r); turns.push(null); break; }
+      turns.push(r.turn);
+      info('NEW tura ' + r.turn, { bypass: r.bypass, eco: await playerEconomy(page), errs: errs.length });
     }
     const ok3 = turns.length === 4 && turns.every((t, i) => i === 0 || (t !== null && t === turns[i - 1] + 1));
-    check(ok3, 'NEW „Zakończ turę" działa 3 razy (tura rośnie o 1)', turns);
-    nzm('NEW Pieniądz/spichlerz po wczytaniu = zapis', 'brak odczytu tych wartości w haku dumpState (potrzebny hak metryk)');
-    nzm('NEW dziennik „Skąd zapasy" pusty po wczytaniu i rośnie po tickach', 'brak odczytu dziennika w haku dumpState; wymaga odczytu UI');
-    nzm('NEW scenariusz 0 miast (stary zapis bez flagi playerEverOwnedCityByOwner)', 'nie wygenerowano osobnego zapisu bez miast w tej rundzie');
-    nzm('MUTACJA: usunięcie ochrony Array.isArray -> narzędzie czerwone', 'nie wykonano (kopia main.ts poza zakresem allowlisty tego tematu)');
-    check(errs.length === 0, 'NEW brak pageerror i błędów konsoli', errs.slice(0, 5));
+    check(ok3, 'NEW „Zakoncz ture" dziala 3 razy (tura rosnie o 1)', turns);
+    nzm('NEW dziennik „Skad zapasy" pusty po wczytaniu i rosnie po tickach', 'brak haka odczytu dziennika/UI; zapis zawiera resourceLedgerHistory, ale nie odczytano go po wczytaniu');
+    nzm('NEW scenariusz 0 miast (stary zapis bez flagi playerEverOwnedCityByOwner)', 'nie wygenerowano zapisu bez miast w tym przebiegu');
+    nzm('MUTACJA: usuniecie ochrony Array.isArray -> narzedzie czerwone', 'wykonano RECZNIE poza narzedziem na kopii bundla (scratchpad, bez zmian w repo): usuniety guard savedOrderMult -> narzedzie FAIL=2 (spichlerz 0 zamiast 203; pageerror "ke is not iterable"); patrz raport');
+    check(errs.length === 0, 'NEW brak pageerror i bledow konsoli', errs.slice(0, 5));
     await ctx.close();
   } finally {
     await browser.close().catch(() => {});
@@ -263,11 +324,11 @@ async function phaseNew() {
 (async () => {
   if (PHASE === 'old') await phaseOld();
   else if (PHASE === 'new') await phaseNew();
-  else { console.error('użycie: --phase old|new'); process.exit(2); }
+  else { console.error('uzycie: --phase old|new'); process.exit(2); }
   try {
     fs.mkdirSync(path.dirname(OUT_JSON), { recursive: true });
-    fs.writeFileSync(OUT_JSON, JSON.stringify({ phase: PHASE, strip: STRIP, results }, null, 2));
+    fs.writeFileSync(OUT_JSON, JSON.stringify({ phase: PHASE, strip: STRIP, seed: SEED, results }, null, 2));
   } catch (e) { console.error('zapis wyniku nieudany: ' + e.message); }
   console.log(fails === 0 ? 'WYNIK: brak FAIL' : 'WYNIK: FAIL=' + fails);
   process.exit(fails === 0 ? 0 : 1);
-})().catch((e) => { console.error('BŁĄD: ' + (e && e.stack || e)); process.exit(1); });
+})().catch((e) => { console.error('BLAD: ' + (e && e.stack || e)); process.exit(1); });

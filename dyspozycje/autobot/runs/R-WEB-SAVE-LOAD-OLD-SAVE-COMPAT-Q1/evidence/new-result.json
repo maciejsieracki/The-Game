@@ -1,0 +1,71 @@
+{
+  "phase": "new",
+  "strip": false,
+  "seed": 4242,
+  "results": [
+    {
+      "status": "PASS",
+      "label": "NEW liczba miast (wszyscy wlasciciele) po wczytaniu = zapis",
+      "extra": {
+        "got": 42,
+        "want": 42
+      }
+    },
+    {
+      "status": "PASS",
+      "label": "NEW liczba jednostek (wszyscy wlasciciele) po wczytaniu = zapis",
+      "extra": {
+        "got": 61,
+        "want": 61
+      }
+    },
+    {
+      "status": "PASS",
+      "label": "NEW miasta gracza = metryki zapisu",
+      "extra": {
+        "got": 1,
+        "want": 1
+      }
+    },
+    {
+      "status": "PASS",
+      "label": "NEW ekonomia gracza po wczytaniu = metryki w chwili zapisu (skarbiec, spichlerz, miasta, ludnosc, wojsko)",
+      "extra": []
+    },
+    {
+      "status": "PASS",
+      "label": "NEW isAwaitingFirstPlayerCity()=false przy miastach gracza",
+      "extra": false
+    },
+    {
+      "status": "PASS",
+      "label": "NEW „Zakoncz ture\" dziala 3 razy (tura rosnie o 1)",
+      "extra": [
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "status": "NIE_ZMIERZONO",
+      "label": "NEW dziennik „Skad zapasy\" pusty po wczytaniu i rosnie po tickach",
+      "extra": "brak haka odczytu dziennika/UI; zapis zawiera resourceLedgerHistory, ale nie odczytano go po wczytaniu"
+    },
+    {
+      "status": "NIE_ZMIERZONO",
+      "label": "NEW scenariusz 0 miast (stary zapis bez flagi playerEverOwnedCityByOwner)",
+      "extra": "nie wygenerowano zapisu bez miast w tym przebiegu"
+    },
+    {
+      "status": "NIE_ZMIERZONO",
+      "label": "MUTACJA: usuniecie ochrony Array.isArray -> narzedzie czerwone",
+      "extra": "wykonano RECZNIE poza narzedziem na kopii bundla (scratchpad, bez zmian w repo): usuniety guard savedOrderMult -> narzedzie FAIL=2 (spichlerz 0 zamiast 203; pageerror \"ke is not iterable\"); patrz raport"
+    },
+    {
+      "status": "PASS",
+      "label": "NEW brak pageerror i bledow konsoli",
+      "extra": []
+    }
+  ]
+}

@@ -1,26 +1,40 @@
 {
   "phase": "old",
   "strip": false,
+  "seed": 4242,
   "results": [
     {
       "status": "PASS",
-      "label": "OLD zakłada stolicę gracza",
+      "label": "OLD zaklada stolice gracza",
       "extra": true
     },
     {
-      "status": "FAIL",
-      "label": "OLD tura 1 nie przechodzi (timeout)",
-      "extra": null
+      "status": "PASS",
+      "label": "OLD zapis gry (quickSave -> IndexedDB) powiodl sie",
+      "extra": true
     },
     {
-      "status": "FAIL",
-      "label": "OLD autozapis w OPFS powstał",
-      "extra": null
+      "status": "PASS",
+      "label": "OLD zapis odczytany z IndexedDB",
+      "extra": 1023935
     },
     {
       "status": "PASS",
       "label": "OLD brak pageerror",
       "extra": []
+    },
+    {
+      "status": "PASS",
+      "label": "OLD zapis zapisany do pliku",
+      "extra": {
+        "strip": false,
+        "removed": {
+          "meta": [],
+          "top": []
+        },
+        "bytes": 1024382,
+        "turn": null
+      }
     }
   ]
 }
