@@ -97,6 +97,8 @@ function ensureStyles(): void {
 .civ-asp-title{font:700 12px/1.2 var(--tg-font-title,Georgia,serif);letter-spacing:.12em;text-transform:uppercase;color:var(--gold);}
 .civ-asp-sub{font-size:11px;color:var(--muted);margin-top:4px;}
 .civ-asp-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:14px 18px;}
+/* R-WEB-UI-ARMY-PICK-SELECT-ALL-BY-TYPE-Q1: rząd chipów przypięty u góry przewijanego ciała (50+ jednostek). */
+.civ-asp-body>.civ-atc-row{position:sticky;top:-14px;z-index:2;background:rgba(12,17,26,0.98);margin:-14px -18px 10px;padding:14px 18px 8px;}
 .civ-asp-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;}
 .civ-asp-units{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:var(--asp-row);gap:var(--asp-gap);
   padding:var(--asp-pad);margin-bottom:6px;overflow-y:auto;overflow-x:hidden;
@@ -258,7 +260,7 @@ export function showArmySplitPanel(opts: ArmySplitPanelOpts): void {
     + centerHtml + directionOrder.map(cellFor).join('') + '</div>';
   // Skróty „zaznacz wszystkich <typ>” (typ po typeId; generał liczy się do swojego typu).
   const typeGroups = groupUnitsByType(
-    opts.units.map(u => ({ id: u.id, typeId: u.typeId ?? u.name, name: u.name, isGeneral: u.commanderTitle !== undefined })),
+    opts.units.map(u => ({ id: u.id, typeId: u.typeId ?? u.name, name: u.name, label: u.typeLabel, isGeneral: u.commanderTitle !== undefined })),
     { includeGenerals: true },
   );
   const chipsHtml = armyTypeChipRowHtml(

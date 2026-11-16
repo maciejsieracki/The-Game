@@ -16,6 +16,8 @@ export interface ArmyMergeUnitRow {
   id: string;
   /** Identyfikator typu (typeId) — skróty „zaznacz wszystkich <typ>” grupują po nim. */
   typeId?: string;
+  /** Nazwa wyświetlana typu (etykieta chipa „zaznacz wszystkich”); `name` bywa surowym typeId. */
+  typeLabel?: string;
   name: string;
   icon?: string;
   ruchLeft?: number;

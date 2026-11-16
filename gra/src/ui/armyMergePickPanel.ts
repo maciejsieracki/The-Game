@@ -120,7 +120,7 @@ export function showArmyMergePickPanel(opts: ArmyMergePickPanelOpts): void {
   function renderInner(): void {
     // Skróty „zaznacz wszystkich <typ>” (typ po typeId; generał liczy się do swojego typu).
     const typeGroups = groupUnitsByType(
-      opts.sourceUnits.map(u => ({ id: u.id, typeId: u.typeId ?? u.name, name: u.name, isGeneral: u.commanderTitle !== undefined })),
+      opts.sourceUnits.map(u => ({ id: u.id, typeId: u.typeId ?? u.name, name: u.name, label: u.typeLabel, isGeneral: u.commanderTitle !== undefined })),
       { includeGenerals: true },
     );
     const chipsHtml = armyTypeChipRowHtml(

@@ -15,8 +15,10 @@
 export interface ArmyTypeChipUnit {
   id: string;
   typeId: string;
-  /** Nazwa typu do etykiety chipa. */
+  /** Nazwa typu do etykiety chipa (surowe typeId, gdy wiersz nie ma nazwy wyświetlanej). */
   name: string;
+  /** Nazwa wyświetlana typu (np. „Łucznik”); gdy brak — używana jest `name`. */
+  label?: string;
   /** Generał/wódz (rola dowódcy na karcie). */
   isGeneral?: boolean;
 }
@@ -51,7 +53,7 @@ export function groupUnitsByType(
     if (!opts.includeGenerals && u.isGeneral === true) continue;
     let group = byType.get(u.typeId);
     if (!group) {
-      group = { typeId: u.typeId, label: u.name, ids: [] };
+      group = { typeId: u.typeId, label: u.label ?? u.name, ids: [] };
       byType.set(u.typeId, group);
     }
     group.ids.push(u.id);
@@ -85,6 +87,32 @@ export function toggleArmyTypeChip(selected: Set<string>, group: ArmyTypeGroup):
     if (allSelected) selected.delete(id);
     else selected.add(id);
   }
+}
+
+/**
+ * Skrót „zaznacz wszystkich <typ>” na pasku zaznaczenia stosu (stan trzymany w `state`).
+ * Grupa = jednostki o tym `typeId` BEZ generała/wodza. Brak jednostek tego typu → stan bez zmian.
+ * Gdy `state.key` różni się od `key` (inny stos) → zaczyna od pustego zbioru. Zwraca nowy stan.
+ */
+export interface StackTypePickUnit {
+  id: string;
+  typeId: string;
+  isGeneral?: boolean;
+}
+
+export function togglePickTypeOnStackState(
+  state: { key: string; ids: Set<string> },
+  key: string,
+  stack: readonly StackTypePickUnit[],
+  typeId: string,
+): { key: string; ids: Set<string> } {
+  const ids = stack
+    .filter(su => su.typeId === typeId && su.isGeneral !== true)
+    .map(su => su.id);
+  if (ids.length === 0) return state;
+  const next = state.key !== key ? { key, ids: new Set<string>() } : state;
+  toggleArmyTypeChip(next.ids, { typeId, label: typeId, ids });
+  return next;
 }
 
 /** Przycisk chipa (HTML). `attrs` to gotowe atrybuty (np. data-chip-type="…"), już zescapowane. */

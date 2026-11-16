@@ -809,7 +809,7 @@ import {
   type DiploPlayerSummary,
 } from './ui/diploListHud';
 import { armyStackCardIdentity, type ArmyStackHudState } from './ui/armyStackHud';
-import { toggleArmyTypeChip } from './ui/armyTypeChips';
+import { togglePickTypeOnStackState } from './ui/armyTypeChips';
 import { sortArmyStackGeneralsFirst } from './ui/armyStackLabel';
 import { formatArmiaLabel, formatJednostkiCount, formatMiastaCount, formatTurCountAcc, pluralPl } from './ui/formatPl';
 import type {
@@ -15529,11 +15529,13 @@ async function boot(): Promise<void> {
       if (canvas.style.cursor !== cursor) canvas.style.cursor = cursor;
     }
 
-    function mergeUnitRow(u: RuntimeUnit): { id: string; typeId: string; name: string; icon: string; ruchLeft: number; ruchMax: number; commanderTitle?: 'Wódz' | 'Generał' } {
+    function mergeUnitRow(u: RuntimeUnit): { id: string; typeId: string; typeLabel: string; name: string; icon: string; ruchLeft: number; ruchMax: number; commanderTitle?: 'Wódz' | 'Generał' } {
       const def = lookupUnitDef(u.typeId);
       return {
         id: u.id,
         typeId: u.typeId,
+        // Nazwa wyświetlana typu dla chipów „zaznacz wszystkich” (name zostaje surowym typeId jak dotąd).
+        typeLabel: String(def?.nazwa ?? def?.Nazwa ?? u.typeId),
         name: u.typeId,
         icon: unitIconSvg(def, u.typeId),
         ruchLeft: u.ruchLeft,
@@ -26931,13 +26933,7 @@ async function boot(): Promise<void> {
      * → dodaje wszystkie tego typu; wszystkie zaznaczone → odznacza je. Inne typy bez zmian.
      */
     function togglePickUnitTypeOnStack(active: RuntimeUnit, typeId: string): void {
-      const key = armyPickKey(active);
-      const ids = playerStackAt(active)
-        .filter(su => su.typeId === typeId && su.isGeneral !== true)
-        .map(su => su.id);
-      if (ids.length === 0) return;
-      if (stackPickState.key !== key) stackPickState = { key, ids: new Set<string>() };
-      toggleArmyTypeChip(stackPickState.ids, { typeId, label: typeId, ids });
+      stackPickState = togglePickTypeOnStackState(stackPickState, armyPickKey(active), playerStackAt(active), typeId);
     }
 
     function clearUnitPicks(): void {

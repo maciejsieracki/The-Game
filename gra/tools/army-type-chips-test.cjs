@@ -233,6 +233,62 @@ async function main() {
   check('tooltip: pojedyncza jednostka bez chipa-pustki (pusty stos bez grup -> pusty HTML)',
     tip.buildUnitStackTypeChipsHtml([{ id: 'g9', typeId: 'Wojownik', name: 'Wojownik', commanderTitle: 'Wódz' }], esc) === '');
 
+  // --- D. etykieta chipa = nazwa wyświetlana (typeLabel), nie surowe typeId -------------------
+  console.log('\n== D. etykiety chipów (nazwa wyświetlana) ==');
+  const labelRows = () => [
+    { id: 'l1', typeId: 'lucznik_t', name: 'lucznik_t', typeLabel: 'Łucznik' },
+    { id: 'l2', typeId: 'lucznik_t', name: 'lucznik_t', typeLabel: 'Łucznik' },
+  ];
+  asp.showArmySplitPanel({
+    hexLabel: '(3,3)',
+    units: labelRows(),
+    destHexes: [{ q: 4, r: 3, label: 'Heks E' }],
+    onSplit() {},
+    onCancel() {},
+  });
+  // Split domyślnie zaznacza jedną jednostkę, więc etykieta to „Łucznik 1/2” (część) — ważne: nazwa wyświetlana, nie typeId.
+  const splitLabelText = $('.civ-asp [data-chip-type="lucznik_t"]') ? $('.civ-asp [data-chip-type="lucznik_t"]').textContent : null;
+  check('split: chip pokazuje nazwę wyświetlaną „Łucznik …”, nie surowe typeId',
+    splitLabelText !== null && splitLabelText.startsWith('Łucznik ') && !splitLabelText.includes('lucznik_t'), splitLabelText);
+  asp.hideArmySplitPanel();
+  amp.showArmyMergePickPanel({
+    hexLabel: '(3,3)',
+    sourceUnits: labelRows(),
+    targets: [{ q: 4, r: 3, label: 'Sąsiedni stos', units: [] }],
+    onMerge() {},
+    onCancel() {},
+  });
+  check('merge: chip pokazuje nazwę wyświetlaną „Łucznik ×2”',
+    $('.civ-ampk [data-chip-type="lucznik_t"]') !== null && $('.civ-ampk [data-chip-type="lucznik_t"]').textContent === 'Łucznik ×2',
+    $('.civ-ampk [data-chip-type="lucznik_t"]') && $('.civ-ampk [data-chip-type="lucznik_t"]').textContent);
+  amp.hideArmyMergePickPanel();
+  const gl = chips.groupUnitsByType([{ id: 'z1', typeId: 'T', name: 'T', label: 'Nazwa' }, { id: 'z2', typeId: 'T', name: 'T' }], { includeGenerals: true });
+  check('groupUnitsByType: etykieta z label, a bez label — z name', gl.length === 1 && gl[0].label === 'Nazwa' && gl[0].ids.length === 2, gl);
+
+  // --- E. pasek stosu na mapie: stan skrótu typu (togglePickTypeOnStackState, używany przez main.ts) ---
+  console.log('\n== E. pasek stosu: przełączanie typu w stanie zaznaczenia ==');
+  const stackUnits = [
+    ...['a1', 'a2', 'a3', 'a4', 'a5', 'a6'].map(id => ({ id, typeId: 'Lucznik' })),
+    ...['p1', 'p2', 'p3', 'p4'].map(id => ({ id, typeId: 'Procarz' })),
+    { id: 'w1', typeId: 'Wojownik' },
+    { id: 'w2', typeId: 'Wojownik' },
+    { id: 'g1', typeId: 'Wojownik', isGeneral: true },
+  ];
+  const st0 = { key: '', ids: new Set() };
+  const st1 = chips.togglePickTypeOnStackState(st0, 'K1', stackUnits, 'Lucznik');
+  check('stos: klik typu zaznacza dokładnie 6 łuczników i nic innego', JSON.stringify(sorted([...st1.ids])) === JSON.stringify(sorted(['a1', 'a2', 'a3', 'a4', 'a5', 'a6'])), [...st1.ids]);
+  check('stos: klucz stanu ustawiony na klucz stosu', st1.key === 'K1');
+  const st2 = chips.togglePickTypeOnStackState(st1, 'K1', stackUnits, 'Lucznik');
+  check('stos: drugi klik odznacza łuczników', st2.ids.size === 0, [...st2.ids]);
+  const st3 = chips.togglePickTypeOnStackState(st2, 'K1', stackUnits, 'Wojownik');
+  check('stos: skrót Wojownik nie zaznacza generała (2 jednostki)', JSON.stringify(sorted([...st3.ids])) === JSON.stringify(['w1', 'w2']), [...st3.ids]);
+  const st4 = chips.togglePickTypeOnStackState(st3, 'K2', stackUnits, 'Procarz');
+  check('stos: inny klucz stosu zaczyna od pustego zbioru (bez starych id)', st4.key === 'K2' && JSON.stringify(sorted([...st4.ids])) === JSON.stringify(sorted(['p1', 'p2', 'p3', 'p4'])), [...st4.ids]);
+  const st5 = chips.togglePickTypeOnStackState(st4, 'K2', stackUnits, 'Generał-nieistnieje');
+  check('stos: typ bez jednostek zwraca stan bez zmian (ten sam obiekt)', st5 === st4);
+  const st6 = chips.togglePickTypeOnStackState({ key: 'K2', ids: new Set(['p1']) }, 'K2', stackUnits, 'Procarz');
+  check('stos: częściowo zaznaczony typ — klik dopina wszystkie', JSON.stringify(sorted([...st6.ids])) === JSON.stringify(sorted(['p1', 'p2', 'p3', 'p4'])), [...st6.ids]);
+
   console.log(`\nSUMMARY army-type-chips-test${MUTATE ? ' [MUTATE]' : ''}: ${pass} pass, ${fail} fail`);
   process.exit(fail === 0 ? 0 : 1);
 }
