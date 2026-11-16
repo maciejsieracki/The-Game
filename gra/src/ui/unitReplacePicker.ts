@@ -53,6 +53,9 @@ export interface UnitReplacePickerOptions {
   /** Aktualny skarbiec gracza -- do wyszarzenia pozycji nie do sfinansowania. */
   skarb: number;
   onPick: (newTypeId: string) => void;
+  /** Pomiń ten typ: przycisk w stopce; zamyka okno i przechodzi do następnego typu łańcucha. */
+  onSkip?: () => void;
+  /** Zakończ (Anuluj, tło, Esc): przerywa cały łańcuch zamian. */
   onCancel?: () => void;
 }
 
@@ -103,6 +106,11 @@ ${MAP_UNIT_1E_SHARED_CSS}
 .civ-urp-cost.free{color:#7ad0a0;}
 .civ-urp-cost.short{color:#e08a6a;}
 .civ-urp-empty{padding:18px 14px;text-align:center;color:#8a8070;font-size:0.82em;}
+.civ-urp-ftr{flex:none;display:flex;justify-content:flex-end;padding:0 14px 12px;}
+.civ-urp-skip{font:inherit;font-size:0.78em;padding:6px 12px;border-radius:8px;cursor:pointer;
+  color:var(--civ-gold-primary,#e8d88a);background:rgba(255,255,255,.04);
+  border:1px solid rgba(232,216,138,.35);}
+.civ-urp-skip:hover{background:rgba(255,255,255,.08);border-color:rgba(232,216,138,.6);}
 `;
   document.head.appendChild(s);
 }
@@ -245,6 +253,20 @@ export function showUnitReplacePicker(opts: UnitReplacePickerOptions): void {
   }
 
   panel.appendChild(list);
+  if (opts.onSkip) {
+    const footer = document.createElement('div');
+    footer.className = 'civ-urp-ftr';
+    const skip = document.createElement('button');
+    skip.type = 'button';
+    skip.className = 'civ-urp-skip';
+    skip.textContent = 'Pomiń ten typ';
+    skip.addEventListener('click', () => {
+      hideUnitReplacePicker();
+      opts.onSkip?.();
+    });
+    footer.appendChild(skip);
+    panel.appendChild(footer);
+  }
   overlay.appendChild(panel);
   document.body.appendChild(overlay);
   root = overlay;
