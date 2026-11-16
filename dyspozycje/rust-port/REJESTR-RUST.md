@@ -2190,3 +2190,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Blokady (dowody z grepu i pinu):** B1 — brak portu `_executeUnitsImmediate` (pin `battleScene.ts:18578`); B2 — zmiana `queued_order_ids` (`BTreeSet`→`Vec`) wymaga edycji 8 plików testów poza allowlistą (`p6_k5loop_outcome_pin`, `loop_body`, `loop_body_pin`, `loop_resume`, `wylom_tower`, `tower_target_wiring`, `wieze_2b1`, `wieze_2b2`); B3 — brak portów `_toggleManualMode` (`:17348`) i `_kickoffBattleTurn` (`:3615`); `FfEvent::EnterAuto` nadal `halt_unsupported`.
 - **Decyzja orkiestratora:** wariant **A** (rozszerzenie allowlisty o 8 plików testów na mechaniczne `BTreeSet::new()`→`Vec::new()`) — zaakceptowany jako techniczny; **nie uruchomiony**, bo sam V15 wymaga najpierw portu `_executeUnitsImmediate`. Kolejność tematów: (1) `K5-AUTO-EXEC` (port `_executeUnitsImmediate`, pin `:18578`); (2) `K5-AUTO-V15` (kontener + allowlista A + wektory z `p6_k5_port_v15_v16.rs.txt`); (3) `K5-AUTO-TOGGLE-KICKOFF` (`_toggleManualMode`, `_kickoffBattleTurn`) → V16.
 - **Stan:** V15/V16 nadal NIE zrobione (#118 zamknięte tylko dla V5/V6). Dispatche do napisania w kolejnym cyklu; brak startu w tym ticku.
+
+## Przebieg (03:5x UTC — heartbeat slotów: 3 z 4 — start dwóch rozpoznań tylko do odczytu)
+
+- **Start (ROZP, odczyt, bez kodu):** `R-RUSTPORT-P6-K5-AUTO-EXEC-ROZP-Q1` (`wf_bf7d52b8-33d`) — mapa `_executeUnitsImmediate` (pin `battleScene.ts:18578`) i podział portu K5-AUTO-EXEC; `R-RUSTPORT-P6-COMBAT-WEJSCIA-ROZP-Q1` (`wf_2c30a0ad-1e6`) — kroki `resolveCombat` przed pętlą dystansu (#135/#167) i zależności `COMBAT-RESOLVE-PAIR`. Dispatche `096f145ef` na `claude/rust-sivvrn`, baza `474487792`. Modele: Haiku/Sonnet (silnik, odczyt).
+- **Sloty:** 3 z 4 — P4-1H MOVE-Q6 (`wf_b1e51033-24c`, operator, Opus), dwa rozpoznania. Czwarty wolny: brak odblokowanego tematu kodu bez rozpoznania.
+- **Dysk:** 16 GB.
