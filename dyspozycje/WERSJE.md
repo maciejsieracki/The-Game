@@ -1,3 +1,9 @@
+## ROBOCZA 53a9463a -- 2026-11-16 -- FALA 783: Zmeczenie wojna 40 tur, pokoj wymuszony przy 100 procent (testowa)
+
+- Zmeczenie wojna pelne po 40 turach; 80% = oferta przegrywajacego; 100% = pokoj wymuszony z miastami przegrywajacego (gracz tez: okno + Wazne); panel dyplomacji: etapy 50/80/100% i za ile tur; migracja szczytu starych zapisow; Civpedia
+- Weryfikacja: tsc 0, logic 213/213, 12 testow tematu zielonych (forced-peace 14/0 z mutantem, wiring 13/0, stages-view 22/0, migration-peak 7/0, weaker-seeks 35/0, city-cession-r3 72/0, 20-turns 31/0, pw-behavior 147/0, ai-war-weariness-peace 101/0, nonnegative 21/0, balance-accept 32/0), load-game-regression 34/0
+- Limity: NIE ZMIERZONO: symulacja >=3 ziarna x 150 tur, zywy Chromium, test wiringu main.ts gracza; unit-replace-full-cost 39/1 dlug bazowy; REPIN Rust
+
 ## ROBOCZA 2cb84db4 -- 2026-11-16 -- FALA 782: Wydarzenia bez wpisu o zwolnieniu zarzadcy obcej cywilizacji (testowa)
 
 - Po zajeciu miasta gracz nie dostaje wpisu o zwolnieniu zarzadcy OBCEJ cywilizacji (bramka wg poprzedniego wlasciciela); utrata wlasnego miasta z zarzadca nadal daje wpis
