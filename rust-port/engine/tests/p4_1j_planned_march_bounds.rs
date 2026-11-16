@@ -13,6 +13,7 @@ mod events;
 #[allow(dead_code, unused_imports)]
 mod save_load;
 
+use civ_engine::domain::playable::MovementPoints;
 use civ_engine::domain::playable::PlayablePlannedMarch;
 use civ_engine::{PlayableState, PlayableUnit, PlayableUnitKind, PlayerId, PositionDto, UnitId};
 use save_load::{
@@ -26,8 +27,8 @@ fn unit(id: u64) -> PlayableUnit {
         owner_id: PlayerId::new(1),
         kind: PlayableUnitKind::Warrior,
         position: PositionDto::new(0, 0),
-        movement: 1,
-        movement_max: 1,
+        movement: MovementPoints::from(1_u8),
+        movement_max: MovementPoints::from(1_u8),
         selected: false,
     }
 }

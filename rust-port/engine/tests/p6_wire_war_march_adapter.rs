@@ -2,6 +2,7 @@
 //!
 //! Rdzen: `p6_wire_war_march_core.rs`; wektory z weba: `p6_wire_war_march_vectors.rs`.
 
+use civ_engine::domain::playable::MovementPoints;
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 use civ_engine::domain::ai_war_march_plan::{
@@ -59,8 +60,8 @@ fn adapter_with_enemy_city_orders_all_in_for_owner_only() {
         owner_id: PlayerId::new(1),
         kind: PlayableUnitKind::Warrior,
         position: PositionDto::new(0, 2),
-        movement: 2,
-        movement_max: 2,
+        movement: MovementPoints::from(2_u8),
+        movement_max: MovementPoints::from(2_u8),
         selected: false,
     });
     let extras: HashMap<String, CityWarExtras> = HashMap::new();
@@ -176,8 +177,8 @@ fn adapter_state() -> PlayableState {
         owner_id: PlayerId::new(owner),
         kind: PlayableUnitKind::Warrior,
         position: PositionDto::new(x, y),
-        movement: 2,
-        movement_max: 2,
+        movement: MovementPoints::from(2_u8),
+        movement_max: MovementPoints::from(2_u8),
         selected: false,
     };
     state.units = vec![mk(1, 1, 0, 1), mk(2, 2, 3, 1)];
@@ -263,8 +264,8 @@ fn adapter_enemy_and_opaque_state_changes_wave_target() {
             owner_id: PlayerId::new(1),
             kind: PlayableUnitKind::Warrior,
             position: PositionDto::new(x, y),
-            movement: 2,
-            movement_max: 2,
+            movement: MovementPoints::from(2_u8),
+            movement_max: MovementPoints::from(2_u8),
             selected: false,
         });
     }

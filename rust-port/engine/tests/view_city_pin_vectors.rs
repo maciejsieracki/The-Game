@@ -9,6 +9,7 @@
 //! jest w harnessie przepisany z numerami linii (`gen/harness.cjs`). Sprawdzenie zgodnosci bloku z pinem:
 //! `python3 -I …/gen_city_view_vectors.py --check`.
 
+use civ_engine::domain::playable::MovementPoints;
 use std::collections::{BTreeMap, BTreeSet};
 
 use civ_engine::domain::building_costs::p6_7b::StockRecord;
@@ -2137,8 +2138,8 @@ fn build(sc: &Value) -> Built {
                 u16::try_from(u(&x["q"])).expect("q"),
                 u16::try_from(u(&x["r"])).expect("r"),
             ),
-            movement: 1,
-            movement_max: 1,
+            movement: MovementPoints::from(1_u8),
+            movement_max: MovementPoints::from(1_u8),
             selected: false,
         })
         .collect();

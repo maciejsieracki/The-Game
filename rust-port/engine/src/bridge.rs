@@ -33,10 +33,16 @@ pub enum EngineCommand {
     AddPlayer { id: u64, name: String },
     /// Select the human unit that the next map click should move.
     SelectUnit { unit_id: u64 },
-    /// Move a selected human unit to one legal adjacent destination.
+    /// P4-1H Q6: order a march of the selected human unit (web `planMarchTo(destQ, destR,
+    /// attackUnitId?)`, `main.ts:31213-31298` @ `07d2fbd72`): the destination may be any hex with a
+    /// route; the first segment runs at once, the rest stays as a planned march. `attack_unit_id`
+    /// marks an enemy target (march-then-attack; the battle itself is outside this command). An
+    /// absent field keeps the previous JSON shape (`{unit_id, destination}`).
     MoveUnit {
         unit_id: u64,
         destination: PositionDto,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        attack_unit_id: Option<u64>,
     },
     /// P4-1H: cancel the planned march of one human unit (web `clearPlannedMarch(unitId, force)`,
     /// `main.ts:31051-31056` @ `07d2fbd72`). `force=false` keeps a march-then-attack plan; no plan is
@@ -286,9 +292,10 @@ impl EnginePort for CivEngineAdapter {
             EngineCommand::MoveUnit {
                 unit_id,
                 destination,
+                attack_unit_id,
             } => self
                 .game
-                .move_unit(unit_id, destination)
+                .move_unit_with_attack(unit_id, destination, attack_unit_id)
                 .map_err(|error| BridgeError::engine_rejected(error.to_string()))?,
             EngineCommand::CancelPlannedMarch { unit_id, force } => self
                 .game
@@ -388,11 +395,12 @@ impl EnginePort for MockEngineAdapter {
             EngineCommand::MoveUnit {
                 unit_id,
                 destination,
+                attack_unit_id,
             } => {
                 let game = self.game.as_mut().ok_or_else(|| {
                     BridgeError::engine_rejected("create session before moving a unit")
                 })?;
-                game.move_unit(unit_id, destination)
+                game.move_unit_with_attack(unit_id, destination, attack_unit_id)
                     .map_err(|error| BridgeError::engine_rejected(error.to_string()))?;
                 self.state = game.state().clone();
             }

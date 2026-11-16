@@ -3,6 +3,7 @@
 //! Node 22 `--experimental-strip-types` na `gra/src/game/ai-war-target-select.ts` z `origin/main`).
 //! Test: wejscia zbudowane w `PlayableState` -> adaptery -> `build_war_city_targets` == wynik weba.
 
+use civ_engine::domain::playable::MovementPoints;
 use std::collections::HashMap;
 
 use civ_engine::domain::playable::{
@@ -59,8 +60,8 @@ fn build_state(s: &Value) -> PlayableState {
                 u["x"].as_u64().unwrap() as u16,
                 u["y"].as_u64().unwrap() as u16,
             ),
-            movement: 2,
-            movement_max: 2,
+            movement: MovementPoints::from(2_u8),
+            movement_max: MovementPoints::from(2_u8),
             selected: false,
         })
         .collect();

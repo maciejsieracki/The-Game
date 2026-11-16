@@ -12,7 +12,10 @@ use std::{error::Error, fmt};
 use super::brake_power::{objective_power_for_owner, ObjectivePowerRaw};
 use super::building_costs::p6_7b::StockRecord;
 use super::pathfinding::ruch_jednostek::MoveOccupancy;
-use super::playable_movement::{occupied_for_move, PlayableMoveModel};
+use super::playable_movement::{
+    occupied_for_move, plan_march_to, stack_limit_block_message, PlayableMoveModel,
+    MARCH_FOREIGN_CITY_HINT, MARCH_NO_ROUTE_HINT,
+};
 use super::turn_war_inputs::{
     build_war_inputs, power_raw_for_owner, production_config, start_epoch_number,
 };
@@ -389,9 +392,99 @@ pub struct PlayableUnit {
     pub owner_id: PlayerId,
     pub kind: PlayableUnitKind,
     pub position: PositionDto,
-    pub movement: u8,
-    pub movement_max: u8,
+    /// Web `ruchLeft` (`number`, `RuntimeUnit`, `setup.ts:40`); P4-1H Q6: `f64` w [`MovementPoints`].
+    pub movement: MovementPoints,
+    /// Web `ruch` (`number`); P4-1H Q6: `f64` w [`MovementPoints`].
+    pub movement_max: MovementPoints,
     pub selected: bool,
+}
+
+/// P4-1H Q6 (`R-RUSTPORT-P4-1H-MOVE-Q6`, errata 1 z Q4): punkty ruchu jednostki jako `f64` (web
+/// `ruch` / `ruchLeft` to `number`; koszty drog sa ulamkowe: 1/3, 2/3, 0,2 - `road-movement.ts`).
+///
+/// Cienka obwoluta `f64` (wartosc: [`MovementPoints::get`]) zamiast golego `f64`, bo:
+/// - `PlayableState` derywuje `Eq` (bridge derywuje `Eq` nad stanem): jak `PlayableReplaceEconomy`,
+///   `Eq` jest reczny przy niezmienniku "tylko skonczone wartosci" (zrodla: `u8` ze startu, JSON - bez
+///   NaN/Inf - oraz `max(0, pula - koszt)` z kosztem odcinka, ktory nigdy nie jest `Infinity`, bo
+///   `truncatePathToBudget` nie wpuszcza heksa o koszcie `Infinity`);
+/// - zapis/odczyt JSON pozostaje bajt w bajt: calkowita wartosc serializuje sie jak dawne `u8` (`1`,
+///   nie `1.0`; tak tez `JSON.stringify` weba), ulamkowa jako liczba zmiennoprzecinkowa; odczyt
+///   przyjmuje obie formy;
+/// - istniejace wolania `f64::from(unit.movement)` (np. `war_world_view.rs`) zostaja bez zmian.
+#[derive(Debug, Clone, Copy, Default, PartialEq, PartialOrd)]
+pub struct MovementPoints(f64);
+
+impl MovementPoints {
+    pub const ZERO: Self = Self(0.0);
+
+    /// Niezmiennik typu (podstawa recznego `Eq`): tylko skonczone wartosci. Pilnowany w buildach
+    /// debug/test (`debug_assert!`); w release brak kosztu (obrona Q6, zarzut 4 Evaluatora).
+    pub const fn new(value: f64) -> Self {
+        debug_assert!(
+            value.is_finite(),
+            "MovementPoints: wartosc nieskonczona lub NaN"
+        );
+        Self(value)
+    }
+
+    pub const fn get(self) -> f64 {
+        self.0
+    }
+}
+
+/// Niezmiennik: tylko skonczone wartosci (patrz typ), wiec `==` jest zwrotne.
+impl Eq for MovementPoints {}
+
+impl From<u8> for MovementPoints {
+    fn from(value: u8) -> Self {
+        Self(f64::from(value))
+    }
+}
+
+impl From<f64> for MovementPoints {
+    fn from(value: f64) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<MovementPoints> for f64 {
+    fn from(value: MovementPoints) -> Self {
+        value.0
+    }
+}
+
+/// Porownanie z literalem calkowitym (web `u.ruchLeft === 0`); dawne asercje `movement == 1` na `u8`.
+impl PartialEq<i32> for MovementPoints {
+    fn eq(&self, other: &i32) -> bool {
+        self.0 == f64::from(*other)
+    }
+}
+
+/// Najwieksza liczba calkowita dokladnie reprezentowana w `f64` (`Number.MAX_SAFE_INTEGER` + 1).
+const MOVEMENT_EXACT_INT_LIMIT: f64 = 9_007_199_254_740_992.0;
+
+impl Serialize for MovementPoints {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let value = self.0;
+        if value.is_finite() && value.fract() == 0.0 && value.abs() <= MOVEMENT_EXACT_INT_LIMIT {
+            // Calkowita wartosc jak dawne `u8` / web `JSON.stringify` (`-0` -> `0`).
+            #[allow(clippy::cast_possible_truncation)]
+            let int = value as i64;
+            if int >= 0 {
+                serializer.serialize_u64(int.unsigned_abs())
+            } else {
+                serializer.serialize_i64(int)
+            }
+        } else {
+            serializer.serialize_f64(value)
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for MovementPoints {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        f64::deserialize(deserializer).map(Self)
+    }
 }
 
 /// P6-UNIT-REPLACE-L3 etap 2: stan jednostki potrzebny do zamiany (web: pola `unit`).
@@ -755,12 +848,16 @@ pub enum PlayableError {
     UnitNotFound(u64),
     UnitNotOwned(u64),
     UnitNotSelected(u64),
-    DestinationOutOfBounds(PositionDto),
-    DestinationImpassable(PositionDto),
-    DestinationNotAdjacent,
-    DestinationOutOfRange {
-        distance: u32,
-        movement: u8,
+    /// P4-1H Q6: web `planMarchTo` `plan.fullPath.length === 0` (`main.ts:31267-31270`): hint
+    /// „Marsz przerwany: brak trasy do celu”. Obejmuje cel poza mapa (`computePath`: `!map.hexes.has`
+    /// -> `[]`) i cel = pozycja jednostki (`planPathTurns` -> `fullPath: []`).
+    MarchNoRoute,
+    /// P4-1H Q6: web `!attackTarget && !canOccupyHexForUnit(u, destQ, destR)` (`main.ts:31271-31277`).
+    MarchForeignCity,
+    /// P4-1H Q6: web `!attackTarget && !canJoinStackAt(units, stack, destQ, destR, armyStackLimit())`
+    /// (`main.ts:31279-31282`); `limit` = `armyStackLimit()` = 500.
+    MarchStackLimit {
+        limit: i64,
     },
     TurnPhaseQueueIncomplete {
         expected: usize,
@@ -798,19 +895,11 @@ impl fmt::Display for PlayableError {
                 write!(formatter, "unit {id} is not owned by the human player")
             }
             Self::UnitNotSelected(id) => write!(formatter, "select unit {id} before moving it"),
-            Self::DestinationOutOfBounds(position) => {
-                write!(formatter, "destination {position} is outside the map")
+            Self::MarchNoRoute => formatter.write_str(MARCH_NO_ROUTE_HINT),
+            Self::MarchForeignCity => formatter.write_str(MARCH_FOREIGN_CITY_HINT),
+            Self::MarchStackLimit { limit } => {
+                formatter.write_str(&stack_limit_block_message(*limit))
             }
-            Self::DestinationImpassable(position) => {
-                write!(formatter, "destination {position} is not passable")
-            }
-            Self::DestinationNotAdjacent => {
-                formatter.write_str("a unit may move only to an adjacent hex")
-            }
-            Self::DestinationOutOfRange { distance, movement } => write!(
-                formatter,
-                "destination is {distance} hexes away but only {movement} movement remains"
-            ),
             Self::TurnPhaseQueueIncomplete { expected, actual } => write!(
                 formatter,
                 "turn phase queue resolved {actual} phases; expected {expected}"
@@ -882,8 +971,8 @@ impl PlayableGame {
             owner_id: HUMAN_PLAYER_ID,
             kind: PlayableUnitKind::Warrior,
             position: PositionDto::new(START_X, START_Y),
-            movement: 1,
-            movement_max: 1,
+            movement: MovementPoints::from(1_u8),
+            movement_max: MovementPoints::from(1_u8),
             selected: false,
         }];
         // P6-ZWYCIESTWO-WIRING: flaga startowa = miasto gracza zalozone przy starcie (pin main.ts:16508 /
@@ -923,6 +1012,19 @@ impl PlayableGame {
         };
         game.enqueue_turn_phases(1);
         Ok(game)
+    }
+
+    /// P4-1H Q6: gra z gotowego stanu (scenariusz startowy/testowy, jak `set_human_treasury`; brak
+    /// komendy w UI i brak produkcyjnej sciezki wczytania). Kolejka faz = swieza kolejka biezacej tury
+    /// (`enqueue_turn_phases(state.turn)`), tak jak po `new` i po `advance_turn`.
+    pub fn from_state(state: PlayableState) -> Self {
+        let turn = state.turn;
+        let mut game = Self {
+            state,
+            phase_queue: EventQueue::new(),
+        };
+        game.enqueue_turn_phases(turn);
+        game
     }
 
     pub fn state(&self) -> &PlayableState {
@@ -970,58 +1072,52 @@ impl PlayableGame {
         Ok(())
     }
 
+    /// Komenda `move_unit { unit_id, destination }` bez jawnego celu ataku; patrz
+    /// [`PlayableGame::move_unit_with_attack`].
     pub fn move_unit(
         &mut self,
         unit_id: u64,
         destination: PositionDto,
     ) -> Result<(), PlayableError> {
-        if !self.state.map.contains(destination) {
-            return Err(PlayableError::DestinationOutOfBounds(destination));
-        }
-        let tile = self
-            .state
-            .map
-            .tile(destination)
-            .expect("map contains destination");
-        if !tile.passable {
-            return Err(PlayableError::DestinationImpassable(destination));
-        }
-        let unit_index = self
+        self.move_unit_with_attack(unit_id, destination, None)
+    }
+
+    /// P4-1H Q6 (`R-RUSTPORT-P4-1H-MOVE-Q6`, #252): komenda `move_unit { unit_id, destination,
+    /// attack_unit_id? }` = web `planMarchTo(destQ, destR, attackUnitId?)` (`main.ts:31213-31298` @
+    /// `07d2fbd72`) + pierwszy segment `executeMarchSegmentForUnit` (`main.ts:31477-31544`) ze skutkami
+    /// konca animacji w zakresie stanu (`main.ts:44100-44111`, `:44180-44194`). Logika:
+    /// [`super::playable_movement::plan_march_to`]. Cel moze byc dowolnie daleko (brak reguly
+    /// "tylko sasiad"); trasa z `planPathTurns`.
+    ///
+    /// Bramki komendy przed `planMarchTo` (jak dotad): jednostka istnieje (`UnitNotFound`), nalezy do
+    /// gracza (`UnitNotOwned`, web `!isMe(u.ownerId)` `:31228`), jest zaznaczona (`UnitNotSelected`,
+    /// web `units.find(x => x.id === selectedId)` `:31227`). Odrzucony rozkaz nie zmienia stanu.
+    pub fn move_unit_with_attack(
+        &mut self,
+        unit_id: u64,
+        destination: PositionDto,
+        attack_unit_id: Option<u64>,
+    ) -> Result<(), PlayableError> {
+        let unit = self
             .state
             .units
             .iter()
-            .position(|unit| unit.id.get() == unit_id)
+            .find(|unit| unit.id.get() == unit_id)
             .ok_or(PlayableError::UnitNotFound(unit_id))?;
-        let unit = &self.state.units[unit_index];
         if unit.owner_id != HUMAN_PLAYER_ID {
             return Err(PlayableError::UnitNotOwned(unit_id));
         }
         if self.state.selected_unit_id != Some(unit_id) {
             return Err(PlayableError::UnitNotSelected(unit_id));
         }
-        let distance = axial_distance(unit.position, destination);
-        if distance == 0 {
-            return Err(PlayableError::DestinationNotAdjacent);
-        }
-        if distance > u32::from(unit.movement) {
-            return Err(PlayableError::DestinationOutOfRange {
-                distance,
-                movement: unit.movement,
-            });
-        }
-        if distance != 1 {
-            return Err(PlayableError::DestinationNotAdjacent);
-        }
-        // P4-1H Q4: web `markPlayerMovedUnit(u.id)` (`main.ts:31284`) po bramkach rozkazu, przed
-        // wykonaniem segmentu. Sam ruch (1 heks) bez zmian - pelny `planMarchTo` to Q6 (#252).
-        let moved_id = unit.id;
-        self.state.mark_player_moved_unit(moved_id);
-        let mut moved = self.state.units[unit_index].clone();
-        moved.position = destination;
-        moved.movement = moved.movement.saturating_sub(distance as u8);
-        self.state.units[unit_index] = moved;
-        self.state.status = format!("Jednostka {} ruszyła na {}.", unit_id, destination);
-        Ok(())
+        let id = unit.id;
+        plan_march_to(
+            &mut self.state,
+            id,
+            destination,
+            attack_unit_id.map(UnitId::new),
+        )
+        .map(|_| ())
     }
 
     /// P4-1H (`R-RUSTPORT-P4-1H-CANCEL-Q2`): komenda `cancel_planned_march { unit_id, force }`,
@@ -1245,7 +1341,7 @@ impl PlayableGame {
                     },
                 );
                 // Adapter zeruje ruch_left (web: zamiana zuzywa ruch).
-                self.state.units[unit_index].movement = target.ruch_left as u8;
+                self.state.units[unit_index].movement = MovementPoints::new(target.ruch_left);
                 self.state.status = format!("Jednostka {unit_id} zamieniona na {new_type_id}.");
                 Ok(())
             }
@@ -1533,14 +1629,6 @@ fn next_seed(state: &mut u32) -> u32 {
     *state
 }
 
-fn axial_distance(from: PositionDto, to: PositionDto) -> u32 {
-    let dq = (i32::from(from.x()) - i32::from(to.x())).unsigned_abs();
-    let dr = (i32::from(from.y()) - i32::from(to.y())).unsigned_abs();
-    let ds = (i32::from(from.x()) + i32::from(from.y()) - i32::from(to.x()) - i32::from(to.y()))
-        .unsigned_abs();
-    dq.max(dr).max(ds)
-}
-
 fn event_for_phase(turn: u32, phase: TurnPhase) -> TurnEvent {
     match phase {
         TurnPhase::StartTurn => TurnEvent::TurnStarted(turn),
@@ -1721,8 +1809,8 @@ mod unit_replace_error_tests {
             owner_id: PlayerId::new(2),
             kind: PlayableUnitKind::Warrior,
             position: PositionDto::new(5, 5),
-            movement: 2,
-            movement_max: 2,
+            movement: MovementPoints::from(2_u8),
+            movement_max: MovementPoints::from(2_u8),
             selected: false,
         });
         let before = game.state().clone();

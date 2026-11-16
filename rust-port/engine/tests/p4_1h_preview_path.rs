@@ -10,6 +10,7 @@
 //! Mapy sa korytarzem jednego rzedu (`r = 0`), wiec `computePath` ma dokladnie jedna trase (brak
 //! remisow kolejnosci w kolejce priorytetowej); sasiedzi spoza mapy nie istnieja w `map.hexes`.
 
+use civ_engine::domain::playable::MovementPoints;
 use civ_engine::domain::playable::PlayablePlannedMarch;
 use civ_engine::domain::playable_movement::{preview_path, preview_path_plan};
 use civ_engine::{
@@ -37,8 +38,8 @@ fn unit(id: u64, owner: u64, x: u16, movement: u8, movement_max: u8) -> Playable
         owner_id: PlayerId::new(owner),
         kind: PlayableUnitKind::Warrior,
         position: PositionDto::new(x, 0),
-        movement,
-        movement_max,
+        movement: MovementPoints::from(movement),
+        movement_max: MovementPoints::from(movement_max),
         selected: false,
     }
 }

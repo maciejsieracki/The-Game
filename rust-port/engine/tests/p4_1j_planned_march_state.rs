@@ -20,6 +20,7 @@ mod save_load;
 #[allow(dead_code)]
 mod snapshot;
 
+use civ_engine::domain::playable::MovementPoints;
 use civ_engine::domain::playable::{PlayableMarchStopReason, PlayablePlannedMarch};
 use civ_engine::{
     CityDto, CityId, CivilizationDto, GameStateDto, MapDto, PlayableGame, PlayableState,
@@ -61,8 +62,8 @@ fn unit(id: u64, owner: u64, x: u16, y: u16) -> PlayableUnit {
         owner_id: PlayerId::new(owner),
         kind: PlayableUnitKind::Warrior,
         position: PositionDto::new(x, y),
-        movement: 1,
-        movement_max: 1,
+        movement: MovementPoints::from(1_u8),
+        movement_max: MovementPoints::from(1_u8),
         selected: false,
     }
 }
