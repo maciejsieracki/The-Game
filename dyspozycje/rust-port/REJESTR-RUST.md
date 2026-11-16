@@ -2175,3 +2175,18 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sloty:** aktywne 3 — P4-1I1B BATTLE-INSTANT (`wf_aafc5812-7e5`, FC, Sonnet), P4-1H MOVE-Q6 (`wf_b1e51033-24c`, operator, Opus), K5 port V15/V16 (`wf_64cdfe7b-3a5`, operator, Haiku). Czwarty wolny: brak odblokowanego tematu z jasnym zakresem (#239 — decyzja o fogu; #236/#237/#240–#243 — zależności od producentów nakładek).
 - **FC/integracja:** brak nowych werdyktów FC. Parity `9f1a29af3`.
 - **Dysk:** 12 GB (70%) — ponad próg 8 GB.
+
+## Przebieg (03:5x UTC — integracja P4-1I1B BATTLE-INSTANT; blokada V15/V16 K5-AUTO)
+
+- **P4-1I1B BATTLE-INSTANT (#245):** FC PASS-WITH-NOTES `ce433a07f` (kod `991556084`, obrona `6e70d41e8`, ewaluator `fc3bb2f09`, raport `c773dec50`). Merge `--no-ff` na parity `9f1a29af3` → `474487792` (fast-forward, odczyt z GitHub zgodny). Bramki: silnik `fmt 0`, `clippy 0`, `test 0`; view-model `fmt 0`, `clippy 0`, `test 0` — **3701 passed, 0 failed, 1 ignored** (ignorowany istniał wcześniej).
+- **Decyzja techniczna D1 (przyjęta przez orkiestratora):** `InstantPairResolver` (trait) zamiast `combat::resolve`, bo `combat::resolve` nie jest portem web `resolveCombat` (inny model, brak opcji i logu). **Konsekwencja:** produkcyjny resolver dla E4 nie istnieje do czasu portu `resolveCombat` (combat.ts:842-1251) — **nowy temat do kolejki: `R-RUSTPORT-COMBAT-RESOLVE-PAIR`** (zależny od #135/#167). Odblokowuje #113, #246, #248.
+- **Zarzuty FC do pokrycia (wpisane jako otwarte):** (a) kara brodu obrońcy (`battleScene.ts:20517-20519`) — obrona dodała wektor `obronca_w_brodzie_kara`; (b) obrona miasta bez muru (`:20480`) — dodany `miasto_bez_muru_wzgorze`; (c) log E4 bajt-w-bajt tylko dla linii końca `:20591`, linie par NIE_ZMIERZONO do portu resolveCombat; (d) API `siege_wall_col` — obrona dodała `OutcomeError::InstantWallMismatch`.
+- **Refy:** `refs/keep/P4-1I1B-BATTLE-INSTANT-{FC,OP,OB,EV,RAPORT}`, `refs/keep/P4-1I1B-MERGE`. **Sprzątanie:** worktree `wf_aafc5812-7e5-1..4` i `integ-I1B`; cache `target-integ-I1B`.
+- **Model:** ewaluator i FC na Sonnet — rozbieżność z regułą Opus dla serii P4-1 (zgłoszona właścicielowi).
+
+## Przebieg (04:0x UTC — K5-AUTO port V15/V16: BLOCK operatora, decyzja orkiestratora)
+
+- **Wynik:** operator `22bd3d651` = BLOCK (brak kodu); ewaluator PASS-WITH-NOTES potwierdził blokady; obrona `1dc784599` przyjęła wszystkie zarzuty; FC `185979d36` PASS-WITH-NOTES (wyłącznie blokady). Refy `refs/keep/K5-AUTO-PORT-V15-V16-{OP,OB,FC}`.
+- **Blokady (dowody z grepu i pinu):** B1 — brak portu `_executeUnitsImmediate` (pin `battleScene.ts:18578`); B2 — zmiana `queued_order_ids` (`BTreeSet`→`Vec`) wymaga edycji 8 plików testów poza allowlistą (`p6_k5loop_outcome_pin`, `loop_body`, `loop_body_pin`, `loop_resume`, `wylom_tower`, `tower_target_wiring`, `wieze_2b1`, `wieze_2b2`); B3 — brak portów `_toggleManualMode` (`:17348`) i `_kickoffBattleTurn` (`:3615`); `FfEvent::EnterAuto` nadal `halt_unsupported`.
+- **Decyzja orkiestratora:** wariant **A** (rozszerzenie allowlisty o 8 plików testów na mechaniczne `BTreeSet::new()`→`Vec::new()`) — zaakceptowany jako techniczny; **nie uruchomiony**, bo sam V15 wymaga najpierw portu `_executeUnitsImmediate`. Kolejność tematów: (1) `K5-AUTO-EXEC` (port `_executeUnitsImmediate`, pin `:18578`); (2) `K5-AUTO-V15` (kontener + allowlista A + wektory z `p6_k5_port_v15_v16.rs.txt`); (3) `K5-AUTO-TOGGLE-KICKOFF` (`_toggleManualMode`, `_kickoffBattleTurn`) → V16.
+- **Stan:** V15/V16 nadal NIE zrobione (#118 zamknięte tylko dla V5/V6). Dispatche do napisania w kolejnym cyklu; brak startu w tym ticku.
