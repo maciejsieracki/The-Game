@@ -39922,6 +39922,13 @@ async function boot(): Promise<void> {
           wiarygodnoscN7ActivePairs: Array.from(wiarygodnoscN7ActivePairs),
           aiOwnerCivMap: Array.from(aiOwnerCivMap.entries()),
           ownerDisplayName: Array.from(ownerDisplayName.entries()),
+          // R-WEB-SAVE-LOAD-PLAYER-OWNED-CITY-AND-LEDGER-HISTORY-Q1 (#433): flaga „fotel kiedykolwiek
+          // miał miasto” (per właściciel). Bez niej po wczytaniu gracz z 0 miastami blokował
+          // „Zakończ turę” (isAwaitingFirstPlayerCity). Pole dopisywane TYLKO gdy zbiór niepusty;
+          // stary zapis bez pola -> odczyt heurystyczny (ma miasto teraz), patrz restoreGameFromSave.
+          ...(playerEverOwnedCityByOwner.size > 0
+            ? { playerEverOwnedCityByOwner: Array.from(playerEverOwnedCityByOwner) }
+            : {}),
           zlozeGrants: zlozeGrants.slice(),
           surowiecBooleanGrants: basketTransferCtx.surowiecBooleanGrants,
           battlePowerPtsByOwner: Array.from(battlePowerPtsByOwner.entries()),
@@ -49234,6 +49241,14 @@ async function boot(): Promise<void> {
       playerEverOwnedCityByOwner.clear();
       for (const oid of saved.humanOwnerIds) {
         if (cities.some(c => c.ownerId === oid)) playerEverOwnedCityByOwner.add(oid);
+      }
+      // R-WEB-SAVE-LOAD-PLAYER-OWNED-CITY-AND-LEDGER-HISTORY-Q1 (#433): zapisana flaga (unia z
+      // heurystyka wyzej -- fotel z miastem nadal dostaje true). Stary zapis bez pola: sama heurystyka.
+      const savedEverOwnedCity: unknown = saved.meta?.playerEverOwnedCityByOwner;
+      if (Array.isArray(savedEverOwnedCity)) {
+        for (const oid of savedEverOwnedCity) {
+          if (typeof oid === 'number' && Number.isFinite(oid)) playerEverOwnedCityByOwner.add(oid);
+        }
       }
       // R-HOTSEAT-ETAP7-SAVELOAD-Q1 (v3): `gracze[]`/`exploredByHuman` ZASTĘPUJĄ
       // pojedyncze `gracz`/`explored`. Odtwarzamy WSZYSTKIE fotele z zapisu do
