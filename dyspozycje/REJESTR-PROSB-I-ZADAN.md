@@ -10574,3 +10574,6 @@ Przeniesienie narzędzi pomiarowych UPKEEP-ONOFF r3 (FC 6af3003f9) na aktualny m
 
 ### FALA 785 (2026-11-17) — WDROŻONE na ROBOCZĄ: gwiazdka generała w bitwie we wszystkich ścieżkach (także po Reset rozstawienia)
 GENSTAR (FC 5b275ed46, integracja 3c96d46ca, PASS-WITH-NOTES): jasna gwiazdka nad generałem w 4 ścieżkach budowy grupy jednostki (start, replay/wczytanie, obrona oblężonego, rozstawienie z Reset). ROBOCZA 62f493be, main 6d474b826, raw MD5 = manifest, 3 sidecary OK. NIE ZMIERZONO: żywy Chromium po Reset; 4 timeouty battle-* na dłuższym limicie (dług bazowy). Dług Rust: REPIN znacznika generała. Następny: panel TEMPO + minimapa (#462).
+
+### UPKEEP-TOOLS r1 → FC PASS-WITH-NOTES (2026-11-17) — tylko narzędzia, wejdzie z najbliższą FALĄ
+Kandydat 154b2fd13 (raport FC 3fffd9b57; refs/keep/UPKEEPTOOLS-r1-fc): `ai-economy-measure-run.cjs` + `ai-economy-measure-upkeep-onoff.cjs` + test haka (metryki wojen, tryb ON/OFF po FALI 770). Zero zmian w gra/src i gra/data, więc bundle ROBOCZEJ bez zmian — integracja do main razem z najbliższą FALĄ (merge FC). Hook-test 20/20 w Chromium, tsc 0. NIE ZMIERZONO: pełne 100 tur ON/OFF, odtworzenie liczb UPKEEP-ONOFF. Metryka `upkeepGate` = null (brak `window.__aiUpkeepGateStats` w src) → osobny niski temat po decyzji (hak w src).
