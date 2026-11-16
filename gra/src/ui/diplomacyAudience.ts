@@ -54,6 +54,7 @@ import {
   RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON,
 } from '../game/diplomacy-proposals';
 import type { ProposalPayload } from '../game/diplomacy-proposals';
+import { forcedPeaceModalTextPl, type ForcedPeaceTextInput } from '../game/war-weariness-view';
 import {
   audienceActionStatusNote,
   uiActionAllowsMultipleOwnOnTable,
@@ -1208,6 +1209,34 @@ export function showAllianceObligationModal(opts: AllianceObligationModalOptions
     close();
     opts.onRefuse();
   });
+  modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) close(); });
+}
+
+export type ForcedPeaceModalOptions = ForcedPeaceTextInput;
+
+/**
+ * DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1 (zarzut Evaluatora 1+2): natywne okno po pokoju wymuszonym
+ * (100% zmęczenia wojną z główną AI; dotyczy gracza jako przegrywającego i wygrywającego). Tekst: forcedPeaceModalTextPl.
+ */
+export function showForcedPeaceModal(opts: ForcedPeaceModalOptions): void {
+  ensureStyles();
+  if (modalOverlay !== null) modalOverlay.remove();
+  modalOverlay = document.createElement('div');
+  modalOverlay.className = 'civ-diplo-modal-overlay';
+  const text = forcedPeaceModalTextPl(opts);
+  modalOverlay.innerHTML =
+    '<div class="civ-diplo-modal cd-war-consent-modal" role="dialog" aria-modal="true">' +
+      '<h3>' + esc(text.title) + '</h3>' +
+      '<p class="cd-war-lead">' + esc(text.lead) + '</p>' +
+      '<p>' + esc(text.terms) + '</p>' +
+      '<div class="cd-modal-btns cd-war-consent-btns">' +
+        '<button type="button" class="dip-gold-btn cd-forced-peace-ok">Rozumiem</button>' +
+      '</div></div>';
+  document.body.appendChild(modalOverlay);
+  const close = (): void => {
+    if (modalOverlay !== null) { modalOverlay.remove(); modalOverlay = null; }
+  };
+  modalOverlay.querySelector('.cd-forced-peace-ok')?.addEventListener('click', close);
   modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) close(); });
 }
 

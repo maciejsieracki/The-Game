@@ -6197,7 +6197,7 @@ import type { GameDifficulty } from './difficulty-cost';
 import { TypCywilizacji } from '../types/player';
 import {
   WAR_WEARINESS_PARAMS, warWearinessLevel, isWarWeary, loserDespair, despairStage, offerMultiplier,
-  wearyMilitaryShare, wearinessUnconditionalEndDue,
+  wearyMilitaryShare,
 } from './war-weariness';
 import {
   AI_TRADE_GOLD_MAX,
@@ -6601,7 +6601,7 @@ export type AIDiplomacyCommand =
    */
   | { type: 'zada_miasto_za_pokoj';  targetId: string; powod: string; cityId: string; cityPn: number }
   /** R-WEB-TRUCE-Q1 r4 (N4): 'rozejm' gdy wojna < AI_ROZEJM_DO_TUR; brak pola = pokój (dawne zachowanie). */
-  | { type: 'zaproponuj_pokoj';      targetId: string; powod: string; rodzaj?: 'pokoj' | 'rozejm'; bezwarunkowy?: boolean }
+  | { type: 'zaproponuj_pokoj';      targetId: string; powod: string; rodzaj?: 'pokoj' | 'rozejm' }
   | { type: 'zadaj_trybut';          targetId: string; powod: string }
   | { type: 'oferuj_trybut_za_pokoj'; targetId: string; powod: string; goldOnce?: number }
   | { type: 'zaproponuj_sojusz'; targetId: string; powod: string; allianceKind?: 'defensywny' | 'pelny' }
@@ -7045,25 +7045,9 @@ export function decideAIDiplomacy(
     const wearyStage = despairStage(wearyDespair);
     const wearyCityBonus = wearyStage >= 2 ? WAR_WEARINESS_PARAMS.czlowiek.rwProgBonusMax * wearyDespair : 0;
     const wearyOfferMult = wearyStage >= 2 ? offerMultiplier(wearyStage, 0) : 1;
-    // R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: na końcu zmęczenia AI (także silniejsza) sama proponuje pokój
-    // BEZWARUNKOWY (bez miasta i zapłaty); gracz decyduje sam. Przed tym progiem obowiązują reguły miasta za pokój.
-    if (
-      rel.stanWojny
-      && rel.partnerId === '0'
-      && aiPeaceTimeOk
-      // Ta sama funkcja x co w tabeli PW (war-weariness.ts: wearinessPeaceItemPw): x = 1 ⇔ Z = C ⇔ R = 0.
-      && wearinessUnconditionalEndDue(wearyLevel)
-    ) {
-      komendy.push({
-        type:     'zaproponuj_pokoj',
-        targetId: rel.partnerId,
-        rodzaj:   'pokoj',
-        // Flaga dla main.ts (enqueueNegotiationFromAiCmd): bez żądania płatności i bez wymogu oddania miasta.
-        bezwarunkowy: true,
-        powod:    `koniec zmeczenia wojna (zmeczenie ${wearyLevel.toFixed(2)}, tury wojny=${turnsAtWarRel}): pokoj bezwarunkowy (bez miasta i zaplaty)`,
-      });
-      continue;
-    }
+    // DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: przy 80% zmęczenia AI NIE składa pokoju bezwarunkowego —
+    // obowiązuje istniejąca eskalacja (pokój/rozejm z miastem poniżej). Pokój przy 100% jest wymuszony (tick AI↔AI,
+    // war-weariness.ts: runWarWearinessTick; wojny z graczem: patrz temat — gracz nie jest jeszcze objęty wymuszeniem).
     if (
       rel.stanWojny
       && rel.partnerId === '0'

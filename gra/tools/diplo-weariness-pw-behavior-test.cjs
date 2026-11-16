@@ -2,7 +2,7 @@
 /**
  * diplo-weariness-pw-behavior-test.cjs -- R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1, runda 2 (BEHAWIORALNY).
  * Nie tautologia: wola PRAWDZIWE sciezki — decideAIDiplomacy (ai.ts) i evaluateProposal (diplomacy-proposals.ts).
- *   (b)  tury 10..20 x 3 mnozniki ceny C: AI proponuje pokoj bezwarunkowy (zaproponuj_pokoj bezwarunkowy)
+ *   (b)  tury 20..40 (skala 40 tur) x 3 mnozniki ceny C: AI proponuje pokoj bezwarunkowy (zaproponuj_pokoj bezwarunkowy)
  *        <=> bilans tabeli po Z >= 0 (R = C - Z = 0).
  *   (b2) tabela: pwBalance(t) - pwBalance(10) == Z(t) = wearinessPeaceItemPw(C, L(t)) dla slabszej AI
  *        (mutacja basePn = cenaPokojuPn wylacza Z i daje CZERWONE).
@@ -98,17 +98,18 @@ for (const mnoznik of [0.7, 1.0, 1.5]) {
   const label = `mnoznik=${mnoznik}`;
   // C(t) = cena pokoju w turze t, odczytana z odrzucenia silniejszej AI („wymagane C PN").
   const cAt = (t) => priceFromStrongerReason(t);
-  check(`C0 ${label}: cena pokoju odczytana w turze 10`, cAt(10) !== null && cAt(10) > 0, { cena: cAt(10) });
-  for (let t = 10; t <= 20; t++) {
+  check(`C0 ${label}: cena pokoju odczytana w turze 10`, cAt(20) !== null && cAt(20) > 0, { cena: cAt(20) });
+  for (let t = 20; t <= 40; t++) {
     const C = cAt(t);
     const Z = M.wearinessPeaceItemPw(C, L_OF(t));
     const proposes = aiDecision({ t, silaAI: 75 });
     const bal = tableBalance(t);
-    // (b) decyzja AI <=> bilans tabeli >= 0 (R = C - Z = 0)
-    check(`(b) ${label} tura ${t}: AI proponuje bezwarunkowy pokoj (${proposes}) <=> bilans tabeli >= 0 (${bal})`,
-      proposes === (bal >= 0), { t, proposes, bal, Z, C });
-    // (b2) przed progiem konca zmeczenia bilans rosnie z kazda tura (Z rosnie, C stale): mutacja basePn=C -> plasko
-    if (t >= 11 && t <= 15) {
+    // (b) DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: 80%+ NIE daje pokoju bezwarunkowego (galezi nie ma w ai.ts);
+    // bilans tabeli >= 0 (R = C - Z = 0) przy 80%+ oznacza tylko zerowa dopłate miasta w pozycji PW, nie propozycje bezwarunkowa.
+    check(`(b) ${label} tura ${t}: AI NIE proponuje bezwarunkowego pokoju (${proposes}); bilans tabeli ${bal}`,
+      proposes === false, { t, proposes, bal, Z, C });
+    // (b2) przed progiem 80% bilans rosnie z kazda tura (Z rosnie, C stale): mutacja basePn=C -> plasko (L 0,525..0,625)
+    if (t >= 21 && t <= 25) {
       const prev = tableBalance(t - 1);
       check(`(b2) ${label} tura ${t}: bilans rosnie wzgledem tury ${t - 1} (Z=${Z})`, bal > prev, { t, bal, prev });
     }
@@ -143,9 +144,9 @@ function aiToPlayerPeace({ t }) {
   }));
   return { withWar, zeroWar };
 }
-for (const t of [10, 15, 20]) {
+for (const t of [20, 30, 40]) {
   const { withWar, zeroWar } = aiToPlayerPeace({ t });
-  const zExpected = t === 10 ? 0 : null; // tura 10: L=0,5 => x=0 => Z=0; tury 15/20: Z>0
+  const zExpected = t === 20 ? 0 : null; // skala 40 tur (DIPLO-WAR-WEARINESS-40-TURNS): tura 20: L=0,5 => x=0 => Z=0; tury 30/40: Z>0
   check(`(f) AI->gracz tura ${t}: wiersz Z po stronie gracza (wearinessSide=player)`,
     withWar.wearinessSide === 'player' && withWar.wearinessInfo && withWar.wearinessInfo.turnsAtWar === t
     && (zExpected === 0 ? withWar.wearinessPw === 0 : withWar.wearinessPw > 0),

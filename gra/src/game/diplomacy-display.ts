@@ -21,6 +21,7 @@ import {
 import { nazwaWyswietlana } from './text-names';
 import { isTruceActive } from './diplomacy-peace-lock';
 import { formatTurCountAcc } from '../ui/formatPl';
+import { warWearinessNextStagePl, warWearinessStagesSummaryPl } from './war-weariness-view';
 
 const MATRIX = loadCivMatrix();
 
@@ -392,7 +393,8 @@ export function warWearinessLabelPl(view: {
   if (view.zmeczenie !== undefined) {
     return {
       label: 'Zmęczenie wojną ' + warWearinessPercentPl(view.zmeczenie),
-      tooltip: 'Zmęczenie wojną rośnie z każdą turą wojny i z utraconymi miastami; wysoka wartość zwiększa chęć pokoju.',
+      tooltip: 'Zmęczenie wojną rośnie z każdą turą wojny i z utraconymi miastami; wysoka wartość zwiększa chęć pokoju. '
+        + warWearinessNextStagePl(view.zmeczenie) + ' ' + warWearinessStagesSummaryPl(),
     };
   }
   return null;

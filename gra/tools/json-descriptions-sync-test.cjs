@@ -152,8 +152,16 @@ if (warCur && dipCur) {
     if (rel === WAR_JSON && base && base.czlowiek && 'rabatCenyPokojuMax' in base.czlowiek) {
       delete base.czlowiek.rabatCenyPokojuMax;
     }
-    check('a1: ' + rel + ' — wartości bez prefiksu _ równe wersji bazowej ' + BASE,
-      sameJson(stripUnderscore(cur), stripUnderscore(base)));
+    // DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1 (ABC właściciela 2026-11-16): celowe zmiany wobec bazy —
+    // pełne zmęczenie po 40 turach (było 20) i nowy próg pokoju wymuszonego progWymuszonyPokoj=1,0. Reszta bez zmian.
+    let curCmp = cur;
+    if (rel === WAR_JSON && base && base.zmeczenie) {
+      base.zmeczenie.pelneTur = 40;
+      curCmp = JSON.parse(JSON.stringify(cur));
+      if (curCmp.zmeczenie) delete curCmp.zmeczenie.progWymuszonyPokoj;
+    }
+    check('a1: ' + rel + ' — wartości bez prefiksu _ równe wersji bazowej ' + BASE + ' (+ celowe: pelneTur 40, progWymuszonyPokoj)',
+      sameJson(stripUnderscore(curCmp), stripUnderscore(base)));
   }
 }
 
@@ -192,8 +200,9 @@ const srcDir = path.join(REPO, 'gra', 'src');
 
 // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: jedna funkcja konca zmeczenia — progKoncaZmeczenia czyta wearinessPeaceX,
 // a wearinessUnconditionalEndDue = wearinessPeaceX(...) >= 1 (dawna forma `level >= P.zmeczenie.progKoncaZmeczenia` nieaktualna).
-check('c1: progKoncaZmeczenia czytane przez wearinessPeaceX, a wearinessUnconditionalEndDue = wearinessPeaceX >= 1 (war-weariness.ts)',
-  wwSrc.includes('P.zmeczenie.progKoncaZmeczenia') && wwSrc.includes('return wearinessPeaceX(level, P) >= 1;'));
+check('c1: progKoncaZmeczenia czytane przez wearinessPeaceX (skala PW); pokój wymuszony = wearinessForcedPeaceDue (progWymuszonyPokoj, war-weariness.ts)',
+  wwSrc.includes('P.zmeczenie.progKoncaZmeczenia') && wwSrc.includes('return level >= P.zmeczenie.progWymuszonyPokoj;')
+  && !wwSrc.includes('wearinessUnconditionalEndDue'));
 check('c2: progWzajemnyPokoj czytane w warunku wyjścia awaryjnego (war-weariness.ts)',
   wwSrc.includes('lvl >= P.zmeczenie.progWzajemnyPokoj'));
 check('c3: wyjście awaryjne wymaga odrzuceniaDoKapitulacji (war-weariness.ts)',
