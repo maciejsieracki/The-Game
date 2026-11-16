@@ -2072,3 +2072,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **#236 (P4-1G Q5 ADAPTER-OVERLAYS) — nie startuje:** wiersz rozpoznania wymaga producentów nakładek B-1F (P4-1F2–F6, #239–#243), jeszcze niezrobionych.
 - **Sloty:** 2 z 4 — P4-1I1 (`wf_8948228b-2a5`, ewaluator) i P4-1H Q4 (`wf_312e0180-927`, operator).
 - **Dysk:** 10 GB (75%) po sprzątaniu integracji F1/Q4.
+
+## Przebieg (00:2x UTC — heartbeat: start R7K7C PARITY-MISSING0)
+
+- **Start:** `R-RUSTPORT-P6-R7K7C-PARITY-MISSING0-Q1` (#106, pierwszy z trzech tematów wg rozpoznania `R-RUSTPORT-P6-R7K7C-WIRING-ROZPOZNANIE-Q1.md` §7), dispatch `2336e18b3` na `claude/rust-sivvrn`, baza `1bacc7621`. Workflow `wf_e8d80c7c-629`. Modele silnika zgodne z regułą: Operator HAIKU, Obrona HAIKU, Evaluator SONNET, FC SONNET.
+- **Decyzja techniczna:** brak wpisu = 0 (wariant B, parytet `?? 0` z pinu, §3 rozpoznania). Zapisana w tym wpisie.
+- **Następne (po integracji tego tematu):** R7K7C-WIRING-IMPL (wpięcie `apply_dipl_deltas_to_state` w `run_diplomacy_war_phase`, `playable.rs:1247`), potem R7K7C-VEC (wektory ≥150).
+- **Sloty:** 3 z 4 — P4-1I1 (`wf_8948228b-2a5`, FC), P4-1H Q4 (`wf_312e0180-927`, ewaluator), R7K7C PARITY-MISSING0 (`wf_e8d80c7c-629`, operator).
+- **Dysk:** ok. 8–9 GB.
