@@ -2387,3 +2387,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sloty 3/4:** EXEC-T1-QUEUE r2 (`wf_487c53ff-a4c`, cargo w `target-t1-r2`), K5DOC-T2-CELE (`wf_1c92bca8-2d5`, cargo w `scratch_k5/target-t2`), K5DOC-T3-GEOMETRIA (`wf_7d52ae9a-3df`, cargo w `tgt-k5doc-geom`). Wszystkie na etapie Operatora, procesy żyją.
 - **Sprzątanie:** worktree rundy 1 EXEC-T1 (`wf_acc61d3f-1fa-1..3`) usunięte po zapisaniu HEAD w `refs/keep/cleanup-EXEC-T1-r1-wt1..3` (`9b8ef8560`, `6fd1c850a`, `3e370995e`); cache `/tmp/claude-0/t1-target` (290 MB, runda 1) usunięty. **Dysk: 9,1 GB.**
 - **Parity:** `585bb48e0` (bez zmian). Czwarty slot wolny: brak niezależnego kandydata.
+
+## Przebieg (08:47 UTC — heartbeat: 3/4 slotów, bez FC do integracji)
+
+- **EXEC-T1-QUEUE r2** (`wf_487c53ff-a4c`): Operator zakończony, w toku Evaluator (Sonnet).
+- **K5DOC-T2-CELE** (`wf_1c92bca8-2d5`): Operator w toku (Haiku).
+- **K5DOC-T3-GEOMETRIA** (`wf_7d52ae9a-3df`): Operator w toku (Haiku).
+- **Parity:** `585bb48e0`. **Dysk:** 11 GB wolnego. **Sloty:** 3/4 (czwarty wolny — brak niezależnego kandydata).
