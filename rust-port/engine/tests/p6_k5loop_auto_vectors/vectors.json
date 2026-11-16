@@ -1,0 +1,1278 @@
+{
+  "source": "gra/src/battle/battleScene.ts @ 07d2fbd72",
+  "pin_refs": {
+    "TURN_GAP_MS": "battleScene.ts:1023",
+    "ACT_GAP_MS": "battleScene.ts:1014",
+    "beginFromState": "battleScene.ts:5696-5704",
+    "beginPhase": "battleScene.ts:5707-5745",
+    "finishPhase": "battleScene.ts:5961-5973",
+    "haltTurn": "battleScene.ts:17333-17344",
+    "launch": "battleScene.ts:5865-5905"
+  },
+  "act_gap_ms": 160,
+  "turn_gap_ms": 240,
+  "vectors": [
+    {
+      "id": "v1a_attackers_first_when_attackers_live",
+      "pin": "battleScene.ts:5696-5704 (wybor strony) + 5707-5745 (faza)",
+      "title": "Dwoch zywych atakujacych i dwoch obroncow: pierwsza faza to atak, obrona czeka",
+      "setup": {
+        "token": 3,
+        "pending": 0,
+        "phase": null,
+        "finished": false,
+        "manual": false,
+        "suspended": false,
+        "awaiting": false,
+        "siege_wall_col": -1,
+        "check_end": false,
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "a1",
+            "side": "atk",
+            "q": 1,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "d1",
+            "side": "def",
+            "q": 6,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "resolutions": [],
+        "ops": [
+          {
+            "op": "begin_from_state"
+          }
+        ]
+      },
+      "expect": {
+        "banners": [
+          "a0"
+        ],
+        "begin_phase_calls": [
+          {
+            "side": "atk",
+            "ids": [
+              "a0",
+              "a1"
+            ]
+          }
+        ],
+        "end_checks": [],
+        "scheduled": [
+          {
+            "ms": 160,
+            "timer": "finishPhase"
+          }
+        ],
+        "resolution_ids": [
+          "a0",
+          "a1"
+        ],
+        "phase_after": "atk",
+        "pending_after": 0,
+        "token_after": 4,
+        "suspended_after": false,
+        "awaiting_after": false
+      }
+    },
+    {
+      "id": "v1b_defenders_first_when_no_attacker_left",
+      "pin": "battleScene.ts:5696-5704 (galaz else: faza obrony)",
+      "title": "Atakujacy martwi lub usunieci: pierwsza faza to obrona",
+      "setup": {
+        "token": 3,
+        "pending": 0,
+        "phase": null,
+        "finished": false,
+        "manual": false,
+        "suspended": false,
+        "awaiting": false,
+        "siege_wall_col": -1,
+        "check_end": false,
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0,
+            "dead": true,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "a1",
+            "side": "atk",
+            "q": 1,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": true,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "d1",
+            "side": "def",
+            "q": 6,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "resolutions": [],
+        "ops": [
+          {
+            "op": "begin_from_state"
+          }
+        ]
+      },
+      "expect": {
+        "banners": [
+          "d0"
+        ],
+        "begin_phase_calls": [
+          {
+            "side": "def",
+            "ids": [
+              "d0",
+              "d1"
+            ]
+          }
+        ],
+        "end_checks": [],
+        "scheduled": [
+          {
+            "ms": 160,
+            "timer": "finishPhase"
+          }
+        ],
+        "resolution_ids": [
+          "d0",
+          "d1"
+        ],
+        "phase_after": "def",
+        "pending_after": 0,
+        "token_after": 4,
+        "suspended_after": false,
+        "awaiting_after": false
+      }
+    },
+    {
+      "id": "v1c_acted_attacker_is_skipped",
+      "pin": "battleScene.ts:5698-5703 (filtr liveUnacted)",
+      "title": "Atakujacy juz dzialajacy w tej turze nie wchodzi do fazy ataku",
+      "setup": {
+        "token": 3,
+        "pending": 0,
+        "phase": null,
+        "finished": false,
+        "manual": false,
+        "suspended": false,
+        "awaiting": false,
+        "siege_wall_col": -1,
+        "check_end": false,
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": true
+          },
+          {
+            "id": "a1",
+            "side": "atk",
+            "q": 1,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "resolutions": [],
+        "ops": [
+          {
+            "op": "begin_from_state"
+          }
+        ]
+      },
+      "expect": {
+        "banners": [
+          "a1"
+        ],
+        "begin_phase_calls": [
+          {
+            "side": "atk",
+            "ids": [
+              "a1"
+            ]
+          }
+        ],
+        "end_checks": [],
+        "scheduled": [
+          {
+            "ms": 160,
+            "timer": "finishPhase"
+          }
+        ],
+        "resolution_ids": [
+          "a1"
+        ],
+        "phase_after": "atk",
+        "pending_after": 0,
+        "token_after": 4,
+        "suspended_after": false,
+        "awaiting_after": false
+      }
+    },
+    {
+      "id": "v1d_siege_wall_blocks_turn_start",
+      "pin": "battleScene.ts:5697 (siegeWallCol >= 0 -> brak fazy AUTO wsadowej)",
+      "title": "Oblezenie z murem: sciezka AUTO wsadowa nie startuje",
+      "setup": {
+        "token": 3,
+        "pending": 0,
+        "phase": null,
+        "finished": false,
+        "manual": false,
+        "suspended": false,
+        "awaiting": false,
+        "siege_wall_col": 0,
+        "check_end": false,
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "a1",
+            "side": "atk",
+            "q": 1,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "d1",
+            "side": "def",
+            "q": 6,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "resolutions": [],
+        "ops": [
+          {
+            "op": "begin_from_state"
+          }
+        ]
+      },
+      "expect": {
+        "banners": [],
+        "begin_phase_calls": [],
+        "end_checks": [],
+        "scheduled": [],
+        "resolution_ids": [],
+        "phase_after": null,
+        "pending_after": 0,
+        "token_after": 3,
+        "suspended_after": false,
+        "awaiting_after": false
+      }
+    },
+    {
+      "id": "v1e_manual_mode_blocks_turn_start",
+      "pin": "battleScene.ts:5697 (_manualMode -> return)",
+      "title": "Tryb reczny: start fazy AUTO z aktualnego stanu nie rusza",
+      "setup": {
+        "token": 3,
+        "pending": 0,
+        "phase": null,
+        "finished": false,
+        "manual": true,
+        "suspended": false,
+        "awaiting": false,
+        "siege_wall_col": -1,
+        "check_end": false,
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "a1",
+            "side": "atk",
+            "q": 1,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "d1",
+            "side": "def",
+            "q": 6,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "resolutions": [],
+        "ops": [
+          {
+            "op": "begin_from_state"
+          }
+        ]
+      },
+      "expect": {
+        "banners": [],
+        "begin_phase_calls": [],
+        "end_checks": [],
+        "scheduled": [],
+        "resolution_ids": [],
+        "phase_after": null,
+        "pending_after": 0,
+        "token_after": 3,
+        "suspended_after": false,
+        "awaiting_after": false
+      }
+    },
+    {
+      "id": "v1f_finished_battle_blocks_turn_start",
+      "pin": "battleScene.ts:5697 (finished -> return)",
+      "title": "Zakonczona bitwa: start fazy AUTO nie rusza",
+      "setup": {
+        "token": 3,
+        "pending": 0,
+        "phase": null,
+        "finished": true,
+        "manual": false,
+        "suspended": false,
+        "awaiting": false,
+        "siege_wall_col": -1,
+        "check_end": false,
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "a1",
+            "side": "atk",
+            "q": 1,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "d1",
+            "side": "def",
+            "q": 6,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "resolutions": [],
+        "ops": [
+          {
+            "op": "begin_from_state"
+          }
+        ]
+      },
+      "expect": {
+        "banners": [],
+        "begin_phase_calls": [],
+        "end_checks": [],
+        "scheduled": [],
+        "resolution_ids": [],
+        "phase_after": null,
+        "pending_after": 0,
+        "token_after": 3,
+        "suspended_after": false,
+        "awaiting_after": false
+      }
+    },
+    {
+      "id": "v1g_suspended_blocks_phase_start",
+      "pin": "battleScene.ts:5708 (_autoBattleSuspended -> return w _beginAutoBatchPhase)",
+      "title": "Zawieszona fala AUTO: _beginAutoBatchPhase nie startuje fazy",
+      "setup": {
+        "token": 3,
+        "pending": 0,
+        "phase": null,
+        "finished": false,
+        "manual": false,
+        "suspended": true,
+        "awaiting": false,
+        "siege_wall_col": -1,
+        "check_end": false,
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "a1",
+            "side": "atk",
+            "q": 1,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "d1",
+            "side": "def",
+            "q": 6,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "resolutions": [],
+        "ops": [
+          {
+            "op": "begin_phase",
+            "side": "atk",
+            "ids": [
+              "a0",
+              "a1"
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "banners": [],
+        "begin_phase_calls": [],
+        "end_checks": [],
+        "scheduled": [],
+        "resolution_ids": [],
+        "phase_after": null,
+        "pending_after": 0,
+        "token_after": 3,
+        "suspended_after": true,
+        "awaiting_after": false
+      }
+    },
+    {
+      "id": "v5a_attack_phase_end_starts_defense_with_filter",
+      "pin": "battleScene.ts:5961-5973 (filtr obroncow :5964, start fazy def :5966)",
+      "title": "Koniec fali atakujacego bez konca bitwy: obrona startuje tylko na obroncach z filtra pinu",
+      "setup": {
+        "token": 3,
+        "pending": 0,
+        "phase": "atk",
+        "finished": false,
+        "manual": false,
+        "suspended": false,
+        "awaiting": false,
+        "siege_wall_col": -1,
+        "check_end": false,
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 3,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "d1",
+            "side": "def",
+            "q": 4,
+            "r": 0,
+            "dead": false,
+            "fading_out": true,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "d2",
+            "side": "def",
+            "q": 5,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": true
+          },
+          {
+            "id": "d3",
+            "side": "def",
+            "q": 6,
+            "r": 0,
+            "dead": true,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "d4",
+            "side": "def",
+            "q": 7,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": true,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "resolutions": [],
+        "ops": [
+          {
+            "op": "finish",
+            "token": 3
+          }
+        ]
+      },
+      "expect": {
+        "banners": [
+          "d0"
+        ],
+        "begin_phase_calls": [
+          {
+            "side": "def",
+            "ids": [
+              "d0"
+            ]
+          }
+        ],
+        "end_checks": [
+          false
+        ],
+        "scheduled": [
+          {
+            "ms": 160,
+            "timer": "finishPhase"
+          }
+        ],
+        "resolution_ids": [
+          "d0"
+        ],
+        "phase_after": "def",
+        "pending_after": 0,
+        "token_after": 4,
+        "suspended_after": false,
+        "awaiting_after": false
+      }
+    },
+    {
+      "id": "v5b_defense_phase_end_schedules_next_turn",
+      "pin": "battleScene.ts:5969-5972 (koniec fazy obrony -> TURN_GAP_MS)",
+      "title": "Koniec fazy obrony bez konca bitwy: nastepna tura po TURN_GAP_MS 240",
+      "setup": {
+        "token": 3,
+        "pending": 0,
+        "phase": "def",
+        "finished": false,
+        "manual": false,
+        "suspended": false,
+        "awaiting": false,
+        "siege_wall_col": -1,
+        "check_end": false,
+        "atk": [],
+        "def": [],
+        "resolutions": [],
+        "ops": [
+          {
+            "op": "finish",
+            "token": 3
+          }
+        ]
+      },
+      "expect": {
+        "banners": [],
+        "begin_phase_calls": [],
+        "end_checks": [
+          false
+        ],
+        "scheduled": [
+          {
+            "ms": 240,
+            "timer": "beginTurn"
+          }
+        ],
+        "resolution_ids": [],
+        "phase_after": null,
+        "pending_after": 0,
+        "token_after": 3,
+        "suspended_after": false,
+        "awaiting_after": false
+      }
+    },
+    {
+      "id": "v5c_attacker_wins_in_attack_phase_no_defense",
+      "pin": "battleScene.ts:5963 (_checkEnd w fazie atakujacego -> return)",
+      "title": "Atakujacy wygrywa w swojej fazie: obrona nie startuje, brak timera",
+      "setup": {
+        "token": 3,
+        "pending": 0,
+        "phase": "atk",
+        "finished": false,
+        "manual": false,
+        "suspended": false,
+        "awaiting": false,
+        "siege_wall_col": -1,
+        "check_end": true,
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "resolutions": [],
+        "ops": [
+          {
+            "op": "finish",
+            "token": 3
+          }
+        ]
+      },
+      "expect": {
+        "banners": [],
+        "begin_phase_calls": [],
+        "end_checks": [
+          true
+        ],
+        "scheduled": [],
+        "resolution_ids": [],
+        "phase_after": "atk",
+        "pending_after": 0,
+        "token_after": 3,
+        "suspended_after": false,
+        "awaiting_after": false
+      }
+    },
+    {
+      "id": "v5d_stale_token_is_ignored",
+      "pin": "battleScene.ts:5962 (token !== _autoBatchToken -> return)",
+      "title": "Przeterminowany token: _finishAutoBatchPhase nic nie zmienia i nie sprawdza konca",
+      "setup": {
+        "token": 3,
+        "pending": 0,
+        "phase": "atk",
+        "finished": false,
+        "manual": false,
+        "suspended": false,
+        "awaiting": false,
+        "siege_wall_col": -1,
+        "check_end": false,
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "resolutions": [],
+        "ops": [
+          {
+            "op": "finish",
+            "token": 2
+          }
+        ]
+      },
+      "expect": {
+        "banners": [],
+        "begin_phase_calls": [],
+        "end_checks": [],
+        "scheduled": [],
+        "resolution_ids": [],
+        "phase_after": "atk",
+        "pending_after": 0,
+        "token_after": 3,
+        "suspended_after": false,
+        "awaiting_after": false
+      }
+    },
+    {
+      "id": "v5e_manual_mode_blocks_finish",
+      "pin": "battleScene.ts:5962 (_manualMode -> return)",
+      "title": "Tryb reczny: _finishAutoBatchPhase nie wchodzi w faze",
+      "setup": {
+        "token": 3,
+        "pending": 0,
+        "phase": "atk",
+        "finished": false,
+        "manual": true,
+        "suspended": false,
+        "awaiting": false,
+        "siege_wall_col": -1,
+        "check_end": false,
+        "atk": [],
+        "def": [],
+        "resolutions": [],
+        "ops": [
+          {
+            "op": "finish",
+            "token": 3
+          }
+        ]
+      },
+      "expect": {
+        "banners": [],
+        "begin_phase_calls": [],
+        "end_checks": [],
+        "scheduled": [],
+        "resolution_ids": [],
+        "phase_after": "atk",
+        "pending_after": 0,
+        "token_after": 3,
+        "suspended_after": false,
+        "awaiting_after": false
+      }
+    },
+    {
+      "id": "v6a_halt_mid_wave_late_callback_dropped",
+      "pin": "battleScene.ts:17333-17344 (token++) + 5868-5876 (complete: token !== _autoBatchToken)",
+      "title": "Przerwanie w polowie fali: spozniony callback ciosu nie zmienia stanu ani nie planuje finishu",
+      "setup": {
+        "token": 7,
+        "pending": 2,
+        "phase": "atk",
+        "finished": false,
+        "manual": false,
+        "suspended": false,
+        "awaiting": false,
+        "siege_wall_col": -1,
+        "check_end": false,
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "a1",
+            "side": "atk",
+            "q": 1,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "d1",
+            "side": "def",
+            "q": 6,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "resolutions": [
+          {
+            "unit_id": "a0",
+            "side": "atk",
+            "kind": "attack",
+            "target_id": "d0"
+          },
+          {
+            "unit_id": "a1",
+            "side": "atk",
+            "kind": "hold",
+            "target_id": null
+          }
+        ],
+        "ops": [
+          {
+            "op": "launch_attack",
+            "attacker": "a0",
+            "target": "d0",
+            "token": 7
+          },
+          {
+            "op": "halt",
+            "suspend": true
+          },
+          {
+            "op": "deliver_attack_done"
+          }
+        ]
+      },
+      "expect": {
+        "banners": [],
+        "begin_phase_calls": [],
+        "end_checks": [],
+        "scheduled": [],
+        "resolution_ids": [],
+        "phase_after": null,
+        "pending_after": 0,
+        "token_after": 8,
+        "suspended_after": true,
+        "awaiting_after": true
+      }
+    },
+    {
+      "id": "v6b_halt_without_suspend_keeps_flag_clear",
+      "pin": "battleScene.ts:17333-17344 (suspendInFlight=false: bez _autoBattleSuspended)",
+      "title": "Przerwanie bez zawieszenia: flaga zawieszenia zostaje false, spozniony callback ignorowany",
+      "setup": {
+        "token": 7,
+        "pending": 2,
+        "phase": "atk",
+        "finished": false,
+        "manual": false,
+        "suspended": false,
+        "awaiting": false,
+        "siege_wall_col": -1,
+        "check_end": false,
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "a1",
+            "side": "atk",
+            "q": 1,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "d1",
+            "side": "def",
+            "q": 6,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "resolutions": [
+          {
+            "unit_id": "a0",
+            "side": "atk",
+            "kind": "attack",
+            "target_id": "d0"
+          },
+          {
+            "unit_id": "a1",
+            "side": "atk",
+            "kind": "hold",
+            "target_id": null
+          }
+        ],
+        "ops": [
+          {
+            "op": "launch_attack",
+            "attacker": "a0",
+            "target": "d0",
+            "token": 7
+          },
+          {
+            "op": "halt",
+            "suspend": false
+          },
+          {
+            "op": "deliver_attack_done"
+          }
+        ]
+      },
+      "expect": {
+        "banners": [],
+        "begin_phase_calls": [],
+        "end_checks": [],
+        "scheduled": [],
+        "resolution_ids": [],
+        "phase_after": null,
+        "pending_after": 0,
+        "token_after": 8,
+        "suspended_after": false,
+        "awaiting_after": true
+      }
+    },
+    {
+      "id": "v6c_callback_before_halt_counts_down",
+      "pin": "battleScene.ts:5868-5876 (kontrola: callback przy zgodnym tokenie zmniejsza _autoBatchPending)",
+      "title": "Kontrola: callback przed przerwaniem zmniejsza licznik fali o jeden, bez finishu",
+      "setup": {
+        "token": 7,
+        "pending": 2,
+        "phase": "atk",
+        "finished": false,
+        "manual": false,
+        "suspended": false,
+        "awaiting": false,
+        "siege_wall_col": -1,
+        "check_end": false,
+        "atk": [
+          {
+            "id": "a0",
+            "side": "atk",
+            "q": 0,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "a1",
+            "side": "atk",
+            "q": 1,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "def": [
+          {
+            "id": "d0",
+            "side": "def",
+            "q": 5,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          },
+          {
+            "id": "d1",
+            "side": "def",
+            "q": 6,
+            "r": 0,
+            "dead": false,
+            "fading_out": false,
+            "removed": false,
+            "routed": false,
+            "acted": false
+          }
+        ],
+        "resolutions": [
+          {
+            "unit_id": "a0",
+            "side": "atk",
+            "kind": "attack",
+            "target_id": "d0"
+          },
+          {
+            "unit_id": "a1",
+            "side": "atk",
+            "kind": "hold",
+            "target_id": null
+          }
+        ],
+        "ops": [
+          {
+            "op": "launch_attack",
+            "attacker": "a0",
+            "target": "d0",
+            "token": 7
+          },
+          {
+            "op": "deliver_attack_done"
+          }
+        ]
+      },
+      "expect": {
+        "banners": [],
+        "begin_phase_calls": [],
+        "end_checks": [],
+        "scheduled": [],
+        "resolution_ids": [
+          "a0",
+          "a1"
+        ],
+        "phase_after": "atk",
+        "pending_after": 1,
+        "token_after": 7,
+        "suspended_after": false,
+        "awaiting_after": false
+      }
+    }
+  ]
+}
