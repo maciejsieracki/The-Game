@@ -2520,3 +2520,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Merge z parity `0f3483e57`:** konflikt add/add w `overlays_view.rs` (F6 i 1F5 tworzą ten sam plik). Ten sam konflikt ma 1F4. Scalenie to współdzielenie kodu, nie wybór wersji.
 - **Zarzuty do rejestru (nieblokujące):** składacz `reachable_overlay`/`path_route_overlay` nie jest wołany w produkcji (P4-1G Q6); `is_me` (aktywny fotel) zamiast `is_human_owner` — dług przy #281; granica kosztu scalenia pokryta testem r7.
 - **Kolejność integracji:** I2 → I3 → overlays (1F4, 1F5, 1F3), każdy z pełną bramką przy ≥ 8 GB.
+
+### Przebieg — integracja P4-1I2 + P4-1I3 na parity, 2026-11-16 ~15:45 UTC
+
+- **Parity `rust-port/parity-v2` = `9f7c55499`** (FF z `0f3483e57`). Merge zawiera FC I3 `0deb9a075`, który zawiera FC I2 `43709ed0a`.
+- **Bramki na merge:** view-model fmt/clippy/test zielone; engine fmt/clippy zielone; pełny `cargo test --all-targets` engine: **3687 passed, 0 failed** (uruchomiony w tle, odłączony od sesji).
+- **Zarzuty do przeniesienia (nieblokujące):** I4 — kierunek jednostki w oknie `[t0, hitAt)` (z akcji `Facing`); I5 / K5LOOP-OUTCOME — skutki trafienia wieży poza zabiciem i gałąź `neverRout`; #113 — unikalność id jednostek między stronami przy wpinaniu produkcji.
+- **Do scalenia na nowym parity (konflikty w `overlays_view.rs`):** 1F4 (FC `1724516c2`), 1F5 (FC `63b4f0dd8`). 1F3 — FC po opłaceniu subskrypcji.
+- **W toku:** P4-1I4 BATTLE-CONSUMER (Opus, baza FC I3 `0deb9a075`, Workflow `wf_965d78f9-294`): Evaluator zakończony, Obrona/FC w toku.
+- **Dysk:** 18 GB wolnego po sprzątaniu worktree integracji.
