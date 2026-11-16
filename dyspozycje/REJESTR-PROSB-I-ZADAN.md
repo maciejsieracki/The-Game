@@ -10354,3 +10354,5 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 
 ### INFRA 2026-11-16 ~07:45 UTC: po restarcie kontenera klasyfikator trybu auto dla subagentów nie zwraca werdyktu
 - Skutki: #415 r3 (wf_27744d11-44a) przerwany AbortError („Auto mode is unavailable: no safety verdict for 10 responses”); #435 (wf_b6d4f271-a3e): Operator zakończył BLOCK z pomiarem częściowym (tura 1 nie przechodzi w harnessie), Evaluator/FC INFRA (Bash niedostępny) — nic niezweryfikowane; #436 r2 (wf_83c8e2ee-608): Operator BLOCK (3 poprawki testów niezacommitowane w worktree wf_83c8e2ee-608-1), Evaluator INFRA, Obrona BLOCK. NIE wolno traktować tych FC jako werdyktów merytorycznych. Plan: sprawdzić, czy klasyfikator wrócił, i wznawiać tematy kolejnymi rundami tych samych ID (INFRA nie liczy się do limitu 5 rund).
+
+### Dispatche z decyzji ABC 2026-11-16 zapisane (start po przywróceniu klasyfikatora): R-WEB-BATTLE-MANUAL-ORDERS-FULL-MOVE-STRIKE-AT-END-Q1, R-WEB-SAVE-LOAD-NO-DEFAULT-BUILD-PRIORITY-ON-LOAD-Q1, R-WEB-BATTLE-FRONT-SPREAD-ASYM-CAUSE-MEASURE-Q1; następny w kolejności (po pierwszym): R-WEB-BATTLE-COLLISION-ARBITRATION-MANUAL-UNSELECTED-Q1.
