@@ -2865,3 +2865,17 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Dysk:** podczas oceny 5,9–6,6 GB; po FF i sprzątaniu 14 GB. Próg 8 GB przed nowymi startami Rust obowiązuje.
 - **Sprzątanie:** usunięte worktree R4 r2 (`wf_92cfa6de-fdf-1`, `-3`; `-2` już nie istniało). Refy keep: `P4-1-R4-fc-32c84d6a9`, `P4-1-R4-op-4d968529b`. Usunięcie targetów w scratchpadzie pominięte: nie zweryfikowano ścieżek, a polecenie `rm` z rozwinięciem zmiennej zostało zablokowane przez zabezpieczenie.
 - **Zadania:** #322 i #329 zamknięte. Kolejna bramka integracyjna renderera (#330) wymaga zmergowania R4 do `integ-rend` (konflikt tylko w `lib.rs`, jedna linia).
+
+### Przebieg — heartbeat (2026-11-16 ~22:50 UTC): 3/4 slotów aktywne, czwarty bez czystego tematu
+
+- **Aktywne Workflow (3/4):**
+  - K5DOC-T4b `_advanceStep`, runda 2 (`wf_8919e89c-4ba`), Haiku; etap FC.
+  - K5DOC-T5a strzelec-kite, runda 2 (`wf_f88b947e-171`), Haiku; etap Evaluator.
+  - K5DOC-T6 jazda, implementacja (`wf_7a5e569c-542`), Haiku; etap Evaluator.
+- **Krok 2:** brak FC PASS bez integracji. Trzy workflow nadal w toku.
+- **Krok 3 (sprzątanie):** worktree 11 (w tym zablokowany `wf_8919…-1` T4b r2). Dysk 9 GB po sprzątaniu, 14 GB przy poprzednim pomiarze. Bramka renderera (#330) czeka na ≥12 GB i brak budujących workerów.
+- **Czwarty slot — powód pustego:**
+  - #100 COMBAT-HARNESS (`wf_a01f4cfa-dd0`) jest już w fazie FC, więc nie startuję drugiego workflow na tym samym temacie.
+  - #97, #104, #106, #107, #113, #115, #120, #121–#125 zablokowane decyzjami (#282, #286, format zapisu) lub zależnościami (K5LOOP, facing, #123).
+  - Kandydaci z listy 328–358 wymagają rozpoznania (Haiku, tylko odczyt) albo decyzji właściciela (#358). Rozpoznanie dla #261 (falanga) lub #263 (MODEL-UI) można uruchomić w następnym heartbeacie.
+- **Reguła modeli:** Operatorzy Haiku, Evaluator i FC Sonnet. Opus tylko dla R4 (zamknięte) i zadań 3D z listy 328–337.
