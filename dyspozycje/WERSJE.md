@@ -1,3 +1,9 @@
+## ROBOCZA f06ba9eb -- 2026-11-16 -- FALA 780: Droga brukowana: budowa od zera albo ulepszenie zwyklej drogi (testowa)
+
+- Droga brukowana moze byc zbudowana od zera na heksie bez drogi (koszt Droga + Brukowana = 40 pracy; zalozenie do potwierdzenia) albo jako ulepszenie istniejacej Drogi (25 jak dotad); tooltip heksa i HUD budowy pokazuja oba koszty; AI i auto-ulepszenia bez zmian decyzji.
+- Weryfikacja: tsc 0, road-paved-direct-build-test 15/0, roads-* testy zielone, map-road-movement 27/0, hex-tooltip 63/0, auto-improvements 46/0, load-game-regression 34/0, 5 bramek referencyjnych
+- Limity: NIE ZMIERZONO: zywy Chromium tooltip i panel, test kolejki/anulowania/zapisu brukowanej od zera, wiki bundle; dlug bazowy map-improvement-qualify i auto-fort-claim
+
 ## ROBOCZA a33381a5 -- 2026-11-16 -- FALA 779: Lucznik moze awansowac na Procarza w Zastap (testowa)
 
 - Lucznik (standardowy) ma w danych Zastap specjalnie = Procarz / Procarz (Huaracoc); Zastap (gracz i AI, te same reguly, pelny koszt rekrutacji, limit 10% armii na ture) pozwala go awansowac na Procarza (Brąz, wymaga Koszar); kierunek tylko Lucznik -> Procarz.

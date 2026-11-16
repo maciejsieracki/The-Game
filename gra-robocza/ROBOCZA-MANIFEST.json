@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "a33381a56e681a571256711619d87b0f",
-  "bundleSha256": "c734c8a170ab544ed754d2eb7115d6c1437dfc7c24543e19c6f5aa630361bdc8",
-  "bundleBytes": 14817735,
+  "bundleMd5": "f06ba9ebe1a1777d0b09c469505a1bce",
+  "bundleSha256": "deb6bfeeb1eed45f32151f1dc2a422bcbcefc442085dc89f1622e45d40e08fc5",
+  "bundleBytes": 14818452,
   "sourceSnapshot": {
-    "source": "FC c79a65654, main cb077b588",
+    "source": "FC 162e95664, main 0c80544ee",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 779: Lucznik (standardowy) ma w danych Zastap specjalnie = Procarz / Procarz (Huaracoc); Zastap (gracz i AI, te same reguly, pelny koszt rekrutacji, limit 10% armii na ture) pozwala go awansowac na Procarza (Brąz, wymaga Koszar); kierunek tylko Lucznik -> Procarz."
+    "FALA 780: Droga brukowana moze byc zbudowana od zera na heksie bez drogi (koszt Droga + Brukowana = 40 pracy; zalozenie do potwierdzenia) albo jako ulepszenie istniejacej Drogi (25 jak dotad); tooltip heksa i HUD budowy pokazuja oba koszty; AI i auto-ulepszenia bez zmian decyzji."
   ],
   "verification": [
-    "tsc 0, unit-replace-archer-slinger-test 15/0, promotion-table PASS, unit-replace 21/21, ai-era-unit-promotion 17/0, ai-unit-replace-same-rules 45/0, load-game-regression 34/0, 5 bramek referencyjnych"
+    "tsc 0, road-paved-direct-build-test 15/0, roads-* testy zielone, map-road-movement 27/0, hex-tooltip 63/0, auto-improvements 46/0, load-game-regression 34/0, 5 bramek referencyjnych"
   ],
   "limits": [
-    "NIE ZMIERZONO: zrzut pickera w Chromium, ilosciowy wplyw na AI; ABC: Inkowie widza oba warianty Procarza, narodowi lucznicy bez przejscia; dlug bazowy unit-replace-full-cost 39/1"
+    "NIE ZMIERZONO: zywy Chromium tooltip i panel, test kolejki/anulowania/zapisu brukowanej od zera, wiki bundle; dlug bazowy map-improvement-qualify i auto-fort-claim"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES DATA-REPLACE-ARCHER-TO-SLINGER-Q1 r1 (kandydat c79a65654): Lucznik (standardowy) ma w danych units.json Zastap specjalnie = Procarz/Procarz (Huaracoc), wiec Zastap (gracz i AI, te same reguly, pelny koszt rekrutacji, limit 10% armii na ture) pozwala awansowac go na Procarza (Brąz, wymaga Koszar); kierunek tylko Lucznik->Procarz. tsc 0, unit-replace-archer-slinger-test 15/0, promotion-table PASS, unit-replace 21/21, ai-era-unit-promotion 17/0, ai-unit-replace-same-rules 45/0, 5 bramek zielonych, load-game-regression 34/0. Dlug bazowy: unit-replace-full-cost 39/1 i ai-army-replacement-concentration 34/1 identyczne na bazie. ABC do wlasciciela: Inkowie widza oba warianty Procarza; narodowi lucznicy (Egipt, Sumer, Asyria) bez przejscia na Procarza. NIE ZMIERZONO: zrzut pickera w Chromium, ilosciowy wplyw na AI. Dlug Rust: REPIN tabeli zamian."
+    "notes": "FC PASS-WITH-NOTES ROAD-PAVED-DIRECT-BUILD-OR-UPGRADE-Q1 r1 (kandydat 162e95664): droga brukowana moze byc zbudowana od zera na heksie bez drogi (koszt Droga+Brukowana = 40 pracy, zalozenie orkiestratora do potwierdzenia przez wlasciciela) albo jako ulepszenie istniejacej Drogi (25 jak dotad); tooltip heksa i HUD budowy pokazuja oba koszty (25 z Droga / 40 od zera); AI i auto-ulepszenia bez zmian decyzji. tsc 0, road-paved-direct-build-test 15/0, roads-* 24/57/99/17/19, map-road-movement 27/0, hex-tooltip 63/0, auto-improvements 46/0, autoimprove-stages-q1 299/0, load-game-regression 34/0, 5 bramek zielonych. Dlug bazowy: map-improvement-qualify, auto-fort-claim. NIE ZMIERZONO: zywy Chromium tooltip/panel, test kolejki/anulowania/zapisu brukowanej od zera, wiki bundle niezsynchronizowany, tooltip pokazuje opcje poza siecia drog (zachowanie sprzed tematu dla zwyklej Drogi). Dlug Rust: kwalifikator i koszt."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T21:51:22",
+  "hubGeneratedAt": "2026-11-16T22:16:28",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "a33381a56e681a571256711619d87b0f",
-      "sizeBytes": 14817735
+      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
+      "sizeBytes": 14818452
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "a33381a56e681a571256711619d87b0f",
-      "sizeBytes": 14817735
+      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
+      "sizeBytes": 14818452
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "a33381a56e681a571256711619d87b0f",
-      "sizeBytes": 14817735
+      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
+      "sizeBytes": 14818452
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "a33381a56e681a571256711619d87b0f",
-      "sizeBytes": 14817735
+      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
+      "sizeBytes": 14818452
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "a33381a56e681a571256711619d87b0f",
-      "sizeBytes": 14817735
+      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
+      "sizeBytes": 14818452
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "a33381a56e681a571256711619d87b0f",
-      "sizeBytes": 14817735
+      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
+      "sizeBytes": 14818452
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "a33381a56e681a571256711619d87b0f",
-      "sizeBytes": 14817735
+      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
+      "sizeBytes": 14818452
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "a33381a56e681a571256711619d87b0f",
-      "sizeBytes": 14817735
+      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
+      "sizeBytes": 14818452
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "a33381a56e681a571256711619d87b0f",
-      "sizeBytes": 14817735
+      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
+      "sizeBytes": 14818452
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "a33381a56e681a571256711619d87b0f",
-      "sizeBytes": 14817735
+      "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
+      "sizeBytes": 14818452
     }
   ],
-  "md5": "a33381a56e681a571256711619d87b0f",
+  "md5": "f06ba9ebe1a1777d0b09c469505a1bce",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
