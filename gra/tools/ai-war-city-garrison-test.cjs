@@ -140,6 +140,13 @@ const movesOf = (cmds, id) => cmds.filter(c => c.type === 'move' && c.unitId ===
     const n = [u1, u2].map(u => movesOf(cmds, u.id).length);
     ok(n.filter(x => x === 0).length === 1 && n.filter(x => x >= 1).length === 1,
       `T2: w miescie z dwiema jednostkami dokladnie jedna zostaje garnizonem, druga idzie (rozkazow: ${n.join(',')})`);
+    // T2b: jednostka, ktora wychodzi, rusza W STRONE celu wojny (T1-T2 nie wystarcza: samo "ma rozkaz" nie dowodzi kierunku).
+    const mover = [u1, u2].find(u => movesOf(cmds, u.id).length >= 1);
+    const mv = mover !== undefined ? movesOf(cmds, mover.id)[0] : undefined;
+    const dBefore = mover !== undefined ? GOOD.hexDistance(mover.q, mover.r, ENEMY1.q, ENEMY1.r) : NaN;
+    const dAfter = mv !== undefined ? GOOD.hexDistance(mv.toQ, mv.toR, ENEMY1.q, ENEMY1.r) : NaN;
+    ok(mv !== undefined && dAfter < dBefore,
+      `T2b: wychodzaca jednostka zbliza sie do celu wojny (odl. ${dBefore} -> ${dAfter})`);
   }
 
   // ---- T6: miasto z jednostka bez ruchu (ruchLeft 0) juz ma garnizon -- obie ruchliwe jednostki
@@ -169,6 +176,14 @@ const movesOf = (cmds, id) => cmds.filter(c => c.type === 'move' && c.unitId ===
     const mutBreaks = movesOf(cmds, s.bGarrison.id).length > 0
       || [s.cOne, s.cTwo].every(u => movesOf(cmds, u.id).length >= 1);
     ok(mutBreaks, 'MUTACJA: bez garnizonow jednostki z miast wychodza (test czerwony na mutancie)');
+    // Mutant musi lamac sam T2 (dokladnie jedna zostaje): obie jednostki z miasta A dostaja ruch.
+    nextUid = 700;
+    const mu1 = mk(CITY_A.q, CITY_A.r);
+    const mu2 = mk(CITY_A.q, CITY_A.r);
+    const mcmds = decide(MUT, [mu1, mu2]);
+    const mn = [mu1, mu2].map(u => movesOf(mcmds, u.id).length);
+    ok(!(mn.filter(x => x === 0).length === 1 && mn.filter(x => x >= 1).length === 1),
+      `MUTACJA T2: mutant nie zostawia dokladnie jednej jednostki (rozkazow: ${mn.join(',')})`);
   }
 
   console.log(`ai-war-city-garrison-test: ${passed} PASS, ${failed} FAIL`);

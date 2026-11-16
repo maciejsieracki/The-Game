@@ -68,3 +68,82 @@ Orkiestrator: (a) decyzje BLOKAD 1–3; (b) jeśli zgoda na main.ts — runda 2 
 - Commit kandydata 4609fc88d nie zawiera się w gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0`; jego rodzicem jest cb077b588 (sprawdzone `git merge-base --is-ancestor`).
 
 DEPLOY/PUSH: NIE WYKONANO
+
+
+---
+
+# RUNDA 3/5 — obrona Operatora (Haiku 5.5), kandydat 3967f73f6 (kod r1 bez zmian)
+
+STATUS: BLOCK
+DOMAIN: GAME (AI wojna / rozmieszczenie wojsk)
+TEMAT: R-WEB-AI-WAR-CITY-GARRISON-ONE-REST-TO-GENERAL-Q1
+GOAL: wojna AI pilnuje KAZDEGO miasta co najmniej jedna jednostka bojowa; puste miasta uzupelniane (przesuniecie nadwyzki, a gdy brak — rekrutacja najtanszej w istniejacym budzecie); reszta do generala.
+BAZA: 3967f73f6 (= 3524f5f38 + raport r2). Pre-round baza cb077b588. origin/main w chwili pracy: 774fd0eec.
+
+## ODPOWIEDZI NA ZARZUTY EVALUATORA (036853da9)
+- Zarzut 1 (KRYTYCZNY, puste miasta): ODRZUCAM wdrozenie w tej rundzie — PRZYJMUJE, ze rdzen NIE jest zalatwiony. Trzy proby wariantu (b) (ponizej) daly regresje w testach bramek i zostaly cofniete. Wariant (a) (rekrutacja) NIE wdrozony (BLOKADA 1).
+- Zarzut 2 (Faza 1 NIE ZMIERZONO): PRZYJMUJE. Metryki % niepilnowanych miast nie napisano w tej rundzie. Nie twierdze, ze pomiar jest niewykonalny w Node — po prostu nie zostal zbudowany.
+- Zarzut 3 (r2 pominal decyzje DODATKU 2): PRZYJMUJE czesciowo. Wariant (a) nie zrobiony (BLOKADA 1). Wariant (b) probowany 3 razy w tej rundzie, kazdy odrzucony dowodem.
+- Zarzut 4 (brak bramek referencyjnych/determinizmu/load): PRZYJMUJE. Teraz zmierzone, patrz TESTY.
+- Zarzut 5 (T2 slaba): PRZYJMUJE i naprawiam: dodano T2b (wychodzaca jednostka zbliza sie do celu wojny) i asercje mutanta dla T2. Baseline cb077b588 daje T1/T2 czerwone.
+- Zarzut 6 (integracja/merge do main): PRZYJMUJE — integracja nie wykonana w tej rundzie, patrz NASTEPNY KROK (wynik merge-tree w TESTY).
+- Zarzut 7 (dlug Rust, pelna lista): PRZYJMUJE czesciowo — patrz DLUG RUST.
+
+## ZMIANY / COMMIT
+- `gra/tools/ai-war-city-garrison-test.cjs` — T2b (kierunek ruchu wychodzacej jednostki do celu wojny) + asercja "mutant lamie T2". Kod gry `gra/src/game/ai.ts` NIE zmieniony wzgledem 3967f73f6 (eksperymenty cofniete `git checkout`).
+- Ten raport (sekcja rundy 3).
+- Commit: SHA HEAD podany w zwrocie orkiestratorowi.
+
+## EKSPERYMENTY WARIANTU (b) — wszystkie ODRZUCONE, kod cofniety
+Miejsce: `applyWarAllInCapitalToCommands`, po wyjeciu garnizonow, przed kolejka zbiorki; jeden krok `firstStep` ku pustemu miastu; max 1 na miasto na ture.
+- V1 — najblizsza jednostka z `planned` (nadwyzka = wszystko poza garnizonami i obroncami domu): ai-war-defend-home-test 27 passed / 3 failed (FAIL: "PRZED: A traci miasto mimo garnizonu (utracone=0)", "PO: najezdzcy zwalczeni po 15 turach (zywych=3)", "stan po 8 turach identyczny OFF vs ON"); ai-army-scattered-merge-test 31/2 (S1/S3 — zmiana "1 zostaje"); ai-army-replacement-concentration-test 32/3 (S3, S5, regresja "skupisko 4 rusza najpozniej w turze 2"); ai-army-all-civs-general-muster-test 24/2 (P6, P7).
+- V2 — jak V1 + wykluczenie jednostek w kontakcie z wroga armia (promien zaangazowania): wynik IDENTYCZNY jak V1.
+- V3 — jak V2 + tylko nadwyzka (jednostka stoi z inna jednostka bojowa na heksie): defend-home 25/5 (FAIL: "PRZED: A traci miasto mimo garnizonu", "PRZED: A zdobywa miasto B...", "PO: wraca tylko oddzial 1..3 z 10 (wrocilo=4)", "PO: agresor zdobywa miasta (zdobyte=0, PRZED=0)", "M1 brak P2: mutacja wykryta (T2)"); scattered-merge 26/7; replacement 32/3; muster 25/1; garrison-test 6/0.
+WNIOSEK: przesuniecie nadwyzki psuje obrone domu i zbiorke. Zadna wersja nie przechodzi bez regresji; dalsza praca wymaga projektu filtra (BLOKADA 2).
+
+## FAZA 1 (pomiar)
+NIE ZMIERZONO. Nie napisano metryki "% miast AI bez jednostki" (tury 10/30/60/100, >=3 ziarna, wojna/pokoj, zdobyte miasta w 30 turach, czas tury). Nie uruchomiono zywego biegu (Chromium `ai-economy-measure-run.cjs`). To zaniedbanie Operatora w tej rundzie, nie dowod niewykonalnosci.
+
+## TESTY (liczby z surowego wyjscia; kod r1 = 3967f73f6, ai.ts bez zmian)
+- `node node_modules/typescript/bin/tsc --noEmit`: exit 0.
+- ai-war-city-garrison-test: 8 PASS / 0 FAIL (po wzmocnieniu T2/T2b i mutancie T2).
+- Baseline garrison-test na zrodle cb077b588 (overlay poza worktree, GARRISON_BASELINE=1): 4 PASS / 2 FAIL — T1 i T2 czerwone.
+- ai-war-defend-home-test: 30 passed / 0 failed.
+- ai-army-scattered-merge-test: 33 passed / 0 failed. UWAGA: Evaluator podal 31/2 dla tego samego kodu; u mnie 33/0 (uruchomione w tej rundzie). Rozbieznosc NIE WYJASNIONA.
+- ai-army-replacement-concentration-test: 34 passed / 1 failed (`atrybucja` — dlug bazowy, czerwony takze na cb077b588).
+- ai-army-all-civs-general-muster-test: 26 PASS / 0 FAIL.
+- ai-war-gate-test: 24 passed / 0 failed.
+- ai-general-war-campaign-test: 51 passed / 0 failed.
+- ai-home-defense-vs-barbarians-test: 46 passed / 0 failed.
+- logic-test: LOGIC OK (213/213).
+- tech-tree-test: 20 pass / 0 fail.
+- research-test: PASSED 33 / FAILED 0.
+- unit-replace-test: exit 0, wszystkie [OK].
+- combat-test: exit 0, "All sanity checks passed."
+- determinism-same-seed-test: WYNIK PASS (exit 0).
+- load-game-regression-test: 34 PASS / 0 FAIL.
+- NIE ZMIERZONO w tej rundzie: ai-move-full-range-test, ai-army-composition, pelny pomiar ekonomii AI.
+
+## DLUG RUST (zarzut 7)
+- W tej worktree (sparse) `grep -rln "warAllIn|WAR_ALLIN|applyWarAllIn" rust-port` nie zwrocil trafien — NIE ZMIERZONO, czy istnieje odpowiednik w rust-port.
+- Zmiana r1 dotyczy wylacznie `gra/src/game/ai.ts` w `applyWarAllInCapitalToCommands` (blok `garrisonIds`: sortowanie po id, zatrzymanie pierwszej jednostki bojowej na heksie miasta). REPIN: ta regula przy deployu do Rust.
+
+## BLOKADY
+1. DECYZJA (ABC): uzupelnianie pustych miast — wariant (a) rekrutacja najtanszej jednostki z priorytetem w ISTNIEJACYM budzecie wymaga zmiany `gra/src/main.ts` (sciezka zakupu AI, ~linia 45840: `wantsPurchase`, `shouldAIPurchaseUnit`, `aiPurchaseReserveInputs`) i nowej reguly kolejnosci zakupu. Propozycja: osobna runda z jedna regula "garnizon pustego miasta wojennego ma pierwszenstwo przed reszta zakupu" (bez nowej kwoty).
+2. TECHNICZNA: wariant (b) wymaga projektu filtra nadwyzki, ktory nie psuje ai-war-defend-home (V1–V3). Propozycja: nadwyzka tylko z miasta, ktore po ruchu zostaje z garnizonem i nie jest celem obrony domu; do zaprojektowania i zmierzenia.
+3. POMIAR: Faza 1 nie wykonana.
+4. ASERCJE: scattered-merge S1/S3 i replacement S3 przy regule "1 zostaje" — decyzja wlasciciela (DODATEK 2 pkt c). Na 3967f73f6 scattered-merge przechodzi (33/0) — najpierw wyjasnic rozbieznosc z Evaluatorem.
+
+## RUNDY
+3/5 zuzyta (Operator, Haiku 5.5). Status: BLOCK (brak zmiany kodu gry; zmiana tylko testu i raport).
+
+## NASTEPNY KROK
+Orkiestrator: (a) decyzja BLOKADY 1 — jesli TAK, osobny temat z regula priorytetu zakupu (main.ts) i testem; (b) BLOKADA 2 — osobny temat projektowy z pomiarem Fazy 1 przed kodem; (c) ponowny run scattered-merge u Evaluatora na tym SHA.
+
+## UWAGI-DLA-ORKIESTRATORA
+- Dispatch i dodatek czytane z galezi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (origin/main nie ma katalogu runs tego tematu).
+- Zadanie wlasciciela "zmeczenie wojna 100% => pokoj" (temat #463) jest poza zakresem tego tematu; nie wykonywane.
+- `gra/node_modules` z `npm ci` (71 pakietow) na potrzeby testow; usuwane po zakonczeniu.
+
+## DEPLOY/PUSH
+NIE WYKONANO (brak integracji, brak push na main, brak deployu — zgodnie z zakazami dispatchu).
