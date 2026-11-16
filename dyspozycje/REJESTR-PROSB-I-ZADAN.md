@@ -10541,3 +10541,6 @@ Właściciel: podać okresy i etapy wojny (zrobione w odpowiedzi czatu: 20 tur d
 
 ### FALA 780 (2026-11-17, noc) — DROGA BRUKOWANA: OD ZERA ALBO ULEPSZENIE (PAVED) — WDROŻONE NA ROBOCZĄ
 FC PASS-WITH-NOTES (FC 162e95664). main = 98abccdfc, ROBOCZA MD5 f06ba9ebe1a1777d0b09c469505a1bce (raw = manifest), 3 sidecary audio zgodne. Droga brukowana: budowa od zera na heksie bez drogi (koszt Droga+Brukowana = 40 pracy — ZAŁOŻENIE do potwierdzenia przez właściciela) albo ulepszenie istniejącej Drogi (25 jak dotąd); tooltip i HUD budowy pokazują oba koszty; AI i auto-ulepszenia bez zmian decyzji. NIE ZMIERZONO: żywy Chromium, test kolejki/anulowania/zapisu brukowanej od zera, wiki bundle niezsynchronizowany. Dług bazowy: `map-improvement-qualify-test`, `auto-fort-claim-test`. Dług Rust: kwalifikator i koszt. Test `road-paved-direct-build-test.cjs` do listy deployu.
+
+### Zgłoszenie 2026-11-17 (noc): panel TEMPO + minimapa w bitwie — oprawa graficzna zgodna z nowym brandbookiem
+Właściciel (zrzut): panel w bitwie mógłby być atrakcyjniejszy graficznie i zgodny z nowym brandbookiem. STATUS: **OTWARTE** — dispatch `R-WEB-UI-BATTLE-TEMPO-MINIMAP-PANEL-BRANDBOOK-Q1` (Haiku r1; zrzuty PRZED/PO; start gdy zwolni się slot).
