@@ -148,6 +148,12 @@ console.log('== 5. Wyzwalacz: tylko wróg w wojnie, przy wejściu NA heks');
   const rOwn = M.resolveAmbushTrigger(swój, 5, 5, 0, WAR);
   ok(rOwn.triggered === false, 'własny ruch nie uruchamia zasadzki');
   ok(swój.every(u => u.ambush === true), 'brak wyzwolenia = brak mutacji');
+
+  // Mutant „bez sprawdzenia ownerId != moverOwnerId": isAtWar zawsze true, a ruch jest WŁASNY.
+  const swój2 = mk();
+  const rOwn2 = M.resolveAmbushTrigger(swój2, 5, 5, 0, () => true);
+  ok(rOwn2.triggered === false, 'własny ruch NIE uruchamia zasadzki nawet gdy isAtWar zawsze true');
+  ok(swój2.every(u => u.ambush === true), 'własny ruch przy isAtWar=true: brak mutacji');
 }
 
 console.log('== 6. Odrzucone wejścia i wiele zasadzek (pod warunkiem, że nie ma wyzwalacza)');

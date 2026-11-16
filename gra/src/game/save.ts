@@ -73,6 +73,7 @@
  */
 
 import type { RuntimeUnit } from '../units/setup';
+import { normalizeAmbushField } from './ambush';
 import type { City } from './cities';
 import type { TradeRoute } from './trade-routes';
 import type { LedgerHistorySave } from './resource-ledger';
@@ -723,6 +724,13 @@ export function deserializeGame(json: string): SaveGame {
   // downstream code never crashes on a malformed but version-valid payload.
   const obj = parsed as Partial<SaveGame> & { wersja: number };
   const obj2 = parsed as any;
+  // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: pole `ambush` inne niż `true` (śmieci, `null`) = brak zasadzki.
+  // Normalizacja na ścieżce WCZYTANIA (deserializeGame jest wejściem wszystkich ścieżek wczytania).
+  if (Array.isArray(obj.units)) {
+    for (const u of obj.units) {
+      if (u !== null && typeof u === 'object') normalizeAmbushField(u as { ambush?: unknown });
+    }
+  }
   const save: SaveGame = {
     wersja: ver,
     tura: typeof obj.tura === 'number' ? obj.tura : 1,

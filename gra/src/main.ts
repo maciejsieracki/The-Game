@@ -56,7 +56,7 @@ window.addEventListener('unhandledrejection', (e) => {
 import { humanizeId, nazwaCywilizacji, nazwaWyswietlana } from './game/text-names';
 import { TEREN_LABEL_PL } from './map/terrain-names';
 import { normalizeDetDigestStackGroups } from './game/det-digest-normalize';
-import { AMBUSH_BLOCK_MESSAGES, canSetAmbush, cancelAmbush, isStackAmbushed, setAmbush } from './game/ambush';
+import { AMBUSH_BLOCK_MESSAGES, canSetAmbush, cancelAmbush, isStackAmbushed, isUnitVisibleToViewer, setAmbush } from './game/ambush';
 import * as THREE from 'three';
 import { loadGameData } from './data/loader';
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from './map/generator';
@@ -15332,7 +15332,8 @@ async function boot(): Promise<void> {
       // zero podwójnego tokenu w momencie odsłonięcia.
       // Logika SAMEGO odroczenia (kiedy ID wchodzi do zbioru i kiedy z niego wychodzi)
       // pozostaje nietknięta — zmienia się wyłącznie to, CO widać w tym oknie.
-      const src = rawSrc;
+      // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: zasadzka wroga NIE jest rysowana (widok = ME()).
+      const src = rawSrc.filter(u => isUnitVisibleToViewer(u, ME()));
       // R-ZETON-PASKI (Maciej 2026-07-29): razem z widocznością stosu licz od
       // razu wartości CAŁEJ armii na tabliczkę nad żetonem (min ruchu / pula HP /
       // Moc pola M / maksima odznak). Grupowanie stosów i tak już tu jest, więc
