@@ -10520,3 +10520,6 @@ Właściciel: brukowana ma się dać zbudować samodzielnie (na heksie bez drogi
 
 ### Zgłoszenie 2026-11-16 (noc): AI w wojnie — ≥1 jednostka wojskowa w każdym mieście, reszta do generała
 Właściciel opisał pożądane zachowanie AI w wojnie: w każdym mieście zostaje przynajmniej jedna jednostka wojskowa (wydłuża oblężenie), cała reszta idzie do generała/wodza i dopiero atakuje. STATUS: **OTWARTE** — dispatch `R-WEB-AI-WAR-CITY-GARRISON-ONE-REST-TO-GENERAL-Q1` (Haiku r1; najpierw audyt: część mechanizmów mogła już powstać w FALACH 499/550). Bez zmian balansu/parametrów bez decyzji.
+
+### Zgłoszenie 2026-11-16 (noc): Łucznik → Procarz w „Zastąp”
+Właściciel: łucznik powinien móc awansować na procarza (w kodzie/danych nie ma takiej zamiany: Łucznik i Procarz mają `Zastąp specjalnie: —`). Zmienia wcześniejszą decyzję 2026-11-09 („luki zamienników Procarz: nie ruszać”). STATUS: **OTWARTE** — dispatch `R-WEB-DATA-REPLACE-ARCHER-TO-SLINGER-Q1` (Haiku r1; wpływ na AI do pomiaru, bez nowych kosztów).
