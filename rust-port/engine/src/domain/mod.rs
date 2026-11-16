@@ -105,6 +105,7 @@ pub mod siege_no_breach;
 pub mod siege_sortie;
 pub mod siege_starvation;
 pub mod siege_surrender;
+pub mod siege_tactics_actions;
 pub mod siege_tactics_activate;
 pub mod siege_tactics_approach;
 pub mod siege_tactics_autobatch;
