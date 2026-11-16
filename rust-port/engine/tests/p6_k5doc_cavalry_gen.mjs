@@ -272,6 +272,23 @@ const named = [
     tgt: 0,
     want: [6, 5],
   },
+  {
+    // (f) kara spearAdj w galezi szarzy jazdy (pin 17753-17757, `(spearAdj ? 0 : 4)`), bez BFS: attack_from pusty
+    // (BFS nie znajduje kafelka), cel (7,7), dNow=4. Dwaj sasiedzi-kandydaci maja dTgt=3 (zysk 12-3=9):
+    // E=(6,5) przylega do wlocznika (7,5) -> +0 -> 9; S=(5,6) bez wlocznika -> +4 -> 13. Iteracja N,E,S,W:
+    // E przed S, wiec przy remisie (mutant +0/+0) wygrywa E; mutant zamiany galezi tez daje E. Oczekiwane (5,6).
+    name: 'f_szarza_kara_spearAdj_bez_bfs', pin: 'battleScene.ts:17736-17775 (spearAdj +0/+4, mounted)', kind: 'charge',
+    input: base({
+      enemies: [
+        { q: 7, r: 7, facing: 0, mounted: false, primary_ranged: false, anti_cav_spear: false, hp: 10 },
+        { q: 7, r: 5, facing: 0, mounted: false, primary_ranged: false, anti_cav_spear: true, hp: 10 },
+      ],
+      occupied: [[5, 5], [7, 7], [7, 5]],
+      attack_from: [],
+    }),
+    tgt: 0,
+    want: [5, 6],
+  },
 ];
 
 // --- Losowe sceny (ziarno deterministyczne; mulberry32). ---

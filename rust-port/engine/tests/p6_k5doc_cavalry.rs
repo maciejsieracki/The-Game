@@ -243,6 +243,15 @@ fn e_szarza_bfs_pin_17736() {
     assert_eq!(run(&case), serde_json::json!([6, 5]));
 }
 
+/// (f) kara `spearAdj` w szarzy jazdy (pin `:17753-17757`, `(spearAdj ? 0 : 4)`) bez BFS: E=(6,5) przylega do
+/// wlocznika -> 9; S=(5,6) bez wlocznika -> 13. Mutant `CHARGE_NO_SPEAR_BONUS` = 0 albo zamiana galezi daje (6,5).
+#[test]
+fn f_kara_spear_adj_szarza_pin_17757() {
+    let case = named("f_szarza_kara_spearAdj_bez_bfs");
+    assert_eq!(run(&case), serde_json::json!([5, 6]));
+    assert_eq!(run(&case), case.expect);
+}
+
 /// Dwa rozne kierunki natarcia daja rozne wyniki na tej samej geometrii (czulosc na luk flank/rear).
 #[test]
 fn bok_i_tyl_daja_rozne_ciosy() {

@@ -450,6 +450,13 @@ pub fn cavalry_action_decide(
     }
 
     // 4) Ostatnia szansa: krok szarzy (pojedynczy ruch, koniec tury).
+    // NIEOSIAGALNE NA PINIE (dowod, K5DOC-T6 obrona): do tego miejsca dochodzi tylko, gdy `cav_maneuver_step` zwrocil
+    // `None` przy `moves > 0`, a ten wynik oznacza brak wolnego, przejezdnego sasiada (ten sam filtr zajetosci
+    // i przejezdnosci co w `cav_maneuver_step`; kazdy taki sasiad dostaje skonczony wynik, wiec `None` = brak
+    // kandydata). `best_charge_step` (BFS, `step_toward_local` i galaz jezdna) wymaga tez wolnego sasiada jako
+    // pierwszego kroku, wiec zwraca `None` zawsze w tym miejscu. Krok zostaje 1:1 z pinem (`_cavalryAction`),
+    // ale nie ma wektora, ktory by go uruchomil przez cala sekwencje; `best_charge_step` testuje sie wprost
+    // (wektor e i f) - to odstepstwo od brzmienia dispatchu (wektor e "ostatnia szansa z _cavalryAction").
     if moves > 0 {
         if let Some(s) = best_charge_step(&me, enemies, tgt, &occ, t) {
             apply_move(&mut me, &mut occ, &mut moves, &mut out, s);

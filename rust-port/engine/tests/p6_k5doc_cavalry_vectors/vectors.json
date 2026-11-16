@@ -444,6 +444,65 @@
    ]
   },
   {
+   "name": "f_szarza_kara_spearAdj_bez_bfs",
+   "pin": "battleScene.ts:17736-17775 (spearAdj +0/+4, mounted)",
+   "kind": "charge",
+   "tgt": 0,
+   "me": {
+    "q": 5,
+    "r": 5,
+    "facing": 0,
+    "mounted": true,
+    "primary_ranged": false,
+    "anti_cav_spear": false,
+    "attack_direction": "front",
+    "hp": 20,
+    "moves_left": 1
+   },
+   "enemies": [
+    {
+     "q": 7,
+     "r": 7,
+     "facing": 0,
+     "mounted": false,
+     "primary_ranged": false,
+     "anti_cav_spear": false,
+     "hp": 10
+    },
+    {
+     "q": 7,
+     "r": 5,
+     "facing": 0,
+     "mounted": false,
+     "primary_ranged": false,
+     "anti_cav_spear": true,
+     "hp": 10
+    }
+   ],
+   "occupied": [
+    [
+     5,
+     5
+    ],
+    [
+     7,
+     7
+    ],
+    [
+     7,
+     5
+    ]
+   ],
+   "impassable": [],
+   "ford": [],
+   "strike": [],
+   "attack_from": [],
+   "expect": [
+    5,
+    6
+   ]
+  },
+  {
    "name": "losowy_action_000",
    "pin": "battleScene.ts:6372-6412",
    "kind": "action",
