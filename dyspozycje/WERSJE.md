@@ -1,3 +1,9 @@
+## ROBOCZA f619cd31 -- 2026-11-14 -- FALA 766: Podpowiedz Zakoncz ture przy otwartej audiencji dyplomatycznej (testowa)
+
+- podpowiedz przy zablokowanym Zakoncz ture mowi o otwartej audiencji dyplomatycznej, panelu laczenia armii lub karcie odkrycia technologii zamiast mylacego Zakoncz ekran bitwy; blokada bez zmian
+- Weryfikacja: tsc 0, 5 bram. ref. zielone, test tematu 16/0 + mutacja, end-turn-block-event 35/0, endturn-battle-deadlock 38/0, koniec-tury-f1-f4 39/0
+- Limity: render w Chromium NIE ZMIERZONO; modal pierwszy takze przy innej przyczynie blokady; exec-test 42/7 = dlug bazowy
+
 ## ROBOCZA 3af9f170 -- 2026-11-14 -- FALA 765: Wczytanie zapisu nie dopisuje domyslnej listy priorytetow budowy (testowa)
 
 - wczytanie zapisu nie dopisuje miastom zrownowazonym domyslnej listy budowaPriorytetTypow (stan po wczytaniu jak w zywej grze); zapisana lista zachowana

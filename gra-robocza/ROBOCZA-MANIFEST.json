@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "3af9f1706c180061625341b13b40e5f7",
-  "bundleSha256": "37383e7eeb08e28998d7d6f5e44c5a6eae6f812f6d9f6342599acfcc6273271b",
-  "bundleBytes": 14804811,
+  "bundleMd5": "f619cd31d70d2f3a11a6f249787ff972",
+  "bundleSha256": "3d87536e7e5efcc4620d359b7b622d6f426df13e308b1abd2b16ba8e506b6dab",
+  "bundleBytes": 14805103,
   "sourceSnapshot": {
-    "source": "FC ca4d3ca2d (NO-DEFAULT-BUILD-PRIORITY-ON-LOAD-Q1) na origin/main FALA 764",
+    "source": "FC 6968ff1c1 (END-TURN-HINT-DIPLO-AUDIENCE-TEXT-Q1 r2) na origin/main FALA 765",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 765: wczytanie zapisu nie dopisuje miastom zrownowazonym domyslnej listy budowaPriorytetTypow (stan po wczytaniu jak w zywej grze); zapisana lista zachowana"
+    "FALA 766: podpowiedz przy zablokowanym Zakoncz ture mowi o otwartej audiencji dyplomatycznej, panelu laczenia armii lub karcie odkrycia technologii zamiast mylacego Zakoncz ekran bitwy; blokada bez zmian"
   ],
   "verification": [
-    "tsc 0, 5 bram. ref. zielone, test regresji 6/0 + mutacja czerwona, load-game-regression 34/0, drift-test dynamiczny 4242 i 777 po 10/10 tur bez pola w whiteliscie"
+    "tsc 0, 5 bram. ref. zielone, test tematu 16/0 + mutacja, end-turn-block-event 35/0, endturn-battle-deadlock 38/0, koniec-tury-f1-f4 39/0"
   ],
   "limits": [
-    "stare zapisy z juz dopisana lista zachowuja ja; legacy migracja onlyZrownowazone bez zmian; README harnessu l.105 nieaktualne"
+    "render w Chromium NIE ZMIERZONO; modal pierwszy takze przy innej przyczynie blokady; exec-test 42/7 = dlug bazowy"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES SAVE-LOAD-NO-DEFAULT-BUILD-PRIORITY-ON-LOAD-Q1 (kandydat ca4d3ca2d, raport ed394f617): wczytanie zapisu nie dopisuje domyslnej listy budowaPriorytetTypow miastom zrownowazonym (jak w zywej grze); zapisana lista zachowana; konsumenci obsluguja undefined; pole usuniete z whitelisty hash. Test regresji 6/0 + mutacja czerwona; drift-test dynamiczny --turns 16 bez tego pola w whiteliscie: ziarno 4242 10/10, 777 10/10. Noty: README ai-economy-measure l.105 nieaktualne; legacy migracja onlyZrownowazone dalej daje liste DEFAULT (zgodnie z dispatchem)."
+    "notes": "FC PASS-WITH-NOTES END-TURN-HINT-DIPLO-AUDIENCE-TEXT-Q1 r2 (kandydat 6f27b5f28, FC 6968ff1c1): podpowiedz blokady Zakoncz ture pokazuje komunikat otwartego modala (audiencja dyplomatyczna / panel laczenia armii / karta odkrycia technologii) przed Zakoncz ekran bitwy; logika blokady bez zmian. tsc 0, 5 bramek zielonych, test tematu 16/0 z mutacja, endturn-battle-deadlock-exec 42/7 = baza. Noty: modal pierwszy takze gdy blokuje inna przyczyna (zgodnie z dispatchem); render w Chromium NIE ZMIERZONO."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T09:58:07",
+  "hubGeneratedAt": "2026-11-16T12:37:33",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "3af9f1706c180061625341b13b40e5f7",
-      "sizeBytes": 14804811
+      "md5": "f619cd31d70d2f3a11a6f249787ff972",
+      "sizeBytes": 14805103
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "3af9f1706c180061625341b13b40e5f7",
-      "sizeBytes": 14804811
+      "md5": "f619cd31d70d2f3a11a6f249787ff972",
+      "sizeBytes": 14805103
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "3af9f1706c180061625341b13b40e5f7",
-      "sizeBytes": 14804811
+      "md5": "f619cd31d70d2f3a11a6f249787ff972",
+      "sizeBytes": 14805103
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "3af9f1706c180061625341b13b40e5f7",
-      "sizeBytes": 14804811
+      "md5": "f619cd31d70d2f3a11a6f249787ff972",
+      "sizeBytes": 14805103
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "3af9f1706c180061625341b13b40e5f7",
-      "sizeBytes": 14804811
+      "md5": "f619cd31d70d2f3a11a6f249787ff972",
+      "sizeBytes": 14805103
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "3af9f1706c180061625341b13b40e5f7",
-      "sizeBytes": 14804811
+      "md5": "f619cd31d70d2f3a11a6f249787ff972",
+      "sizeBytes": 14805103
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "3af9f1706c180061625341b13b40e5f7",
-      "sizeBytes": 14804811
+      "md5": "f619cd31d70d2f3a11a6f249787ff972",
+      "sizeBytes": 14805103
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "3af9f1706c180061625341b13b40e5f7",
-      "sizeBytes": 14804811
+      "md5": "f619cd31d70d2f3a11a6f249787ff972",
+      "sizeBytes": 14805103
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "3af9f1706c180061625341b13b40e5f7",
-      "sizeBytes": 14804811
+      "md5": "f619cd31d70d2f3a11a6f249787ff972",
+      "sizeBytes": 14805103
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "3af9f1706c180061625341b13b40e5f7",
-      "sizeBytes": 14804811
+      "md5": "f619cd31d70d2f3a11a6f249787ff972",
+      "sizeBytes": 14805103
     }
   ],
-  "md5": "3af9f1706c180061625341b13b40e5f7",
+  "md5": "f619cd31d70d2f3a11a6f249787ff972",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
