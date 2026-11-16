@@ -10261,3 +10261,9 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 - Dane częściowe (opisowo, 1 przebieg na ziarno, NIE wniosek): wojsko AI w ON niższe we wszystkich 5 porównaniach od t50 (np. 4242 t70: 458 vs 551; 777 t80: 648 vs 722); skarbce bez spójnego kierunku (±3%); liczba AI spada 41→14–16 do t50 w OBU flagach (błąd selekcji).
 - NOWY DEFEKT (gra, poza zakresem): po wczytaniu zapisu `playerEverOwnedCityByOwner` nie jest odtwarzana → gdy gracz harnessu ma 0 miast, `isAwaitingFirstPlayerCity` blokuje „Zakończ turę” (main.ts ~13660). Temat po #424 (zapis/wczytanie).
 - Runda 2: DODATEK 1 zapisany; start po wdrożeniu naprawy runnera (audiencja), przebiegi ciągłe w tle bez `timeout`. Flaga zostaje OFF; decyzja o włączeniu = ABC właściciela.
+
+### FALA 758 — R-WEB-HARNESS-CLOSE-DIPLO-AUDIENCE-Q1 — WDROŻONE NA ROBOCZĄ (2026-11-16)
+- main cb29ce7af, ROBOCZA MD5 b2864c14 (Raw = manifest; sidecary zgodne). FC PASS-WITH-NOTES (kandydat 4da22e712, raport ecc275cb2; runda 1/5, Haiku). Refs `refs/keep/R-WEB-HARNESS-AUD-r1-{op,eval,obrona,fc}`. Bramki: tsc 0, logic 213/213, 5 referencyjnych, hook-test 16/16 + mutacje czerwone, vite OK.
+- Dostarczono (tylko `gra/tools`): runner `ai-economy-measure-run.cjs` zamyka audiencję dyplomatyczną / panel łączenia armii / kartę odkrycia przed „Zakończ turę”; liczniki `diploAudienceClosed/armyMergeClosed/techNoticeClosed` liczone PO zniknięciu blokady (3 próby bez skutku = zrzut DOM); state.json po każdej turze. Live seed 4242 do t60 przez t51 (10 s) i t57 (15 s).
+- NIE ZMIERZONO: czy bazowy runner na seed 4242 w ogóle się zawiesza w tym przebiegu (dowód „przechodzi”, nie „naprawia”); panel armii i karta tech na żywo (tylko atrapy DOM); niezerowy stuckQueueHeals. Hash ścieżki gry po zamknięciu audiencji („Wróć”) nieporównywalny z wcześniejszymi przebiegami pomiarowymi.
+- Następny krok: #415 runda 2 (cand = main cb29ce7af).
