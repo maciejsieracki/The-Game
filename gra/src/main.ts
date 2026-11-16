@@ -955,6 +955,8 @@ import type { CombatUnit, TerrainEntry } from './game/combat';
 import terrainCombatData from '../data/terrain-combat.json';
 import miastoParams from '../data/miasto-params.json';
 import aiParamsRaw from '../data/ai-params.json';
+import aiUpkeepParamsRaw from '../data/ai-upkeep-params.json';
+import { aiUpkeepRunwayAllowsRecruit } from './game/ai-upkeep-runway';
 // R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2: P3/P4/P6/P7 — wszystko za flagą isDiploTickWarBrakeEnabled().
 import diplomacyTickParams from '../data/diplomacy-tick-params.json';
 import {
@@ -10835,6 +10837,9 @@ async function boot(): Promise<void> {
      *  aiPurchaseReserveInputs. Brak wpisu (tura 1, po wczytaniu zapisu) = reguła rezerwy
      *  nieaktywna, dawna bramka (cena + Manpower). Nie zapisywana w save. */
     const aiGoldIncomeByOwner = new Map<number, number>();
+    /** R-WEB-AI-ARMY-UPKEEP-Q2: suma zywnoscNetto miast owner'a z OSTATNIEGO ticku (przed zużyciem armii).
+     *  Baza bramki zapasu (aiUpkeepRunwayAllows). Brak wpisu = bramka nieaktywna dla tej tury. Nie zapisywana w save. */
+    const aiFoodTickNetByOwner = new Map<number, number>();
     const aiTargetMemoryByOwner: AiTargetMemoryByOwner = new Map();
     /** R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): licznik zakupów jednostek za złoto
      *  (rush) TEGO ownera W TEJ turze -- zerowany na wejściu w sekcję ownera w runAiPhase
@@ -11525,6 +11530,7 @@ async function boot(): Promise<void> {
       rejectedOfferCooldowns = [];
       aiSkarbiecByOwner.clear();
       aiGoldIncomeByOwner.clear();
+      aiFoodTickNetByOwner.clear();
       aiPracaPoolByOwner.clear();
       aiNaukaPoolByOwner.clear();
       aiBadanaByOwner.clear();
@@ -37358,6 +37364,48 @@ async function boot(): Promise<void> {
       };
     }
 
+    /**
+     * R-WEB-AI-ARMY-UPKEEP-Q2: bramka ZAPASU przy rekrutacji AI (flaga wlaczone w
+     * data/ai-upkeep-params.json; OFF = true, brak wpływu). Złoto i żywność liczone jak
+     * w aiPurchaseReserveInputs (ten sam preview utrzymania); żywność: netto miast z ticku
+     * minus zużycie armii (militaryFoodConsumptionWithSpichlerz). Brak danych z ticku
+     * (tura 1 / po wczytaniu zapisu) = bramka nieaktywna (true), jak dawna reguła rezerwy.
+     */
+    function aiUpkeepRunwayAllows(ownerId: number, unitTypeId: string, goldCost: number): boolean {
+      const cfg = aiUpkeepParamsRaw.AI_UPKEEP_RUNWAY_GATE;
+      if (!cfg.wlaczone) return true;
+      const income = aiGoldIncomeByOwner.get(ownerId);
+      const foodTick = aiFoodTickNetByOwner.get(ownerId);
+      if (income === undefined || foodTick === undefined) return true;
+      const toEcon = (list: ReadonlyArray<{ typeId: string }>): EconUnit[] => list.map(u => ({
+        ownerId, typeId: u.typeId, camping: false, onOwnTerritory: true,
+      }));
+      const own = units.filter(u => u.ownerId === ownerId);
+      const withNew = toEcon([...own, { typeId: unitTypeId }]);
+      const ownEcon = toEcon(own);
+      const upkeepP = loadUpkeepParams(data.econParams, _menuDifficulty);
+      const preview = (list: EconUnit[]) => previewOwnerUpkeep(
+        ownerId, cities, data, effectiveGameDifficultyForOwner(ownerId), cityBuilt, list,
+        empireEpochForOwner(ownerId), aiResearchDone.get(ownerId) ?? new Set<string>(),
+        empireEpochForOwner, unlockedTechSetForOwner,
+        stateAdmByOwner,
+      );
+      const before = preview(ownEcon);
+      const after = preview(withNew);
+      const milBefore = militaryFoodConsumptionWithSpichlerz(ownEcon, ownerId, upkeepP, unitFoodTbl);
+      const milAfter = militaryFoodConsumptionWithSpichlerz(withNew, ownerId, upkeepP, unitFoodTbl);
+      const allowed = aiUpkeepRunwayAllowsRecruit({
+        goldStock: ownerTreasury(ownerId),
+        goldCost,
+        goldNetPerTurn: income - before.utrzymanieRazem,
+        unitGoldUpkeep: Math.max(0, after.utrzymanieRazem - before.utrzymanieRazem),
+        foodStock: ownerResourceStockAll(cities, ownerId).zywnosc ?? 0,
+        foodNetPerTurn: foodTick - milBefore,
+        unitFoodUpkeep: Math.max(0, milAfter - milBefore),
+      }, { runwayTurns: cfg.runwayTurns, margin: cfg.margin });
+      return allowed;
+    }
+
     function ownerTreasury(ownerId: number): number {
       return isHuman(ownerId) ? playerStateByHuman.get(ownerId)!.skarbiec : (aiSkarbiecByOwner.get(ownerId) ?? 0);
     }
@@ -41705,6 +41753,9 @@ async function boot(): Promise<void> {
             for (const oid of aiOwnerIds) {
               const aiEcon = sumEconomyForOwner(econ, oid);
               aiGoldIncomeByOwner.set(oid, aiEcon.pieniadz);
+              aiFoodTickNetByOwner.set(oid, econ.perCity.reduce(
+                (s, t) => (t.ownerId === oid ? s + (Number.isFinite(t.zywnoscNetto) ? t.zywnoscNetto : 0) : s), 0,
+              ));
               let aiSkarb = (aiSkarbiecByOwner.get(oid) ?? 0) + aiEcon.pieniadz;
               const aiBalance = econ.upkeepByOwner.get(oid);
               if (aiBalance && aiBalance.utrzymanieRazem > 0) {
@@ -45710,7 +45761,9 @@ async function boot(): Promise<void> {
                     // tę samą bramkę skarbca/Manpower co zakup gracza.
                     // C2 (R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1): AI z ujemnym skarbcem/spichlerzem po ticku
                     // nie zaczyna zakupów w tej turze (dźwignia „wstrzymanie”).
-                    const wantsPurchase = !aiNnsHoldOwners.has(ownerId) && shouldAIPurchaseUnit({
+                    const wantsPurchase = !aiNnsHoldOwners.has(ownerId)
+                      && aiUpkeepRunwayAllows(ownerId, candId, item.koszt)
+                      && shouldAIPurchaseUnit({
                       treasury: ownerTreasury(ownerId),
                       goldCost: item.koszt,
                       hasManpower: canAffordUnitManpowerEmpire(
@@ -47899,6 +47952,7 @@ async function boot(): Promise<void> {
       rejectedOfferCooldowns = [];
       aiSkarbiecByOwner.clear();
       aiGoldIncomeByOwner.clear();
+      aiFoodTickNetByOwner.clear();
       aiPracaPoolByOwner.clear();
       aiNaukaPoolByOwner.clear();
       aiBadanaByOwner.clear();
@@ -50067,6 +50121,7 @@ async function boot(): Promise<void> {
       // zerowal sie po kazdym wczytaniu zapisu.
       aiSkarbiecByOwner.clear();
       aiGoldIncomeByOwner.clear();
+      aiFoodTickNetByOwner.clear();
       const savedAiSkarbiec = saved.meta?.aiSkarbiecByOwner as Array<[number, number]> | undefined;
       if (savedAiSkarbiec?.length) {
         for (const [oid, v] of savedAiSkarbiec) aiSkarbiecByOwner.set(oid, v);
