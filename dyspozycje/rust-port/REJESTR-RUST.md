@@ -2783,3 +2783,11 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **T4a (#312, `wf_cf05e21c-412`):** Operator r1 dał BLOCK nie z powodu kodu, tylko z powodu miejsca na dysku (8,9 GB → 6,0 GB w trakcie kompilacji testów, zatrzymano własne procesy). Commit `8d9eacf77` (`pathstep.rs`, 12 testów zielonych, mutacje (a)(b)(c) dają FAIL, fmt i clippy zielone). Zabezpieczony `refs/keep/T4a-op-8d9eacf77`. Runda 2 (bramka, potem Evaluator i FC) uruchomiona przy 17 GB wolnego.
 - **Q5 (PRIO-3D-1) i R1 (żetony), `wf_fff1cacf-ac8`:** Operator (OPUS) w toku, worktree aktywne, nie ruszane.
 - **Sloty:** 3 workflowy aktywne (T4a runda 2, Q5, R1). Jeden wolny.
+
+### Przebieg — 4 workery stale aktywne, czwarty to ciężki Opus 3D (R3), 2026-11-16 ~20:40 UTC
+
+- **Czwarty slot:** R3 kontraktu P4-1, wstęgi rzek w rendererze 3D (`R-RUSTPORT-P4-1-R3-RIVER-RIBBONS`, dispatch `714de738c`, baza `0e04a75c6`). Workflow `wf_e624be51-b6c`, OPUS we wszystkich rolach. Wybór: DTO `river_render_paths` i `rzeka_krawedzie` już istnieje w engine, a renderer nie ma budowniczego wstęg. Nie dotyka plików Q5 ani R1.
+- **Sloty: 4 z 4 aktywne:** T4a (`wf_cf05e21c-412`, HAIKU, runda 2), Q5 (`wf_fff1cacf-ac8`, OPUS), R1 (`wf_fff1cacf-ac8`, OPUS), R3 (`wf_e624be51-b6c`, OPUS).
+- **Integracja NaN/Inf (#137):** merge `dd9a1b4e7` na `0e04a75c6` (czysty `merge-tree`), bramka fmt OK, clippy i test w toku. FF dopiero po zielonej bramce.
+- **Cargo.lock:** wygenerowany przez cargo w worktree integracji, nieśledzony. Dodany lokalnie do `.git/info/exclude` (nie commitowany, zgodnie z regułą projektu).
+- **Pozostałe kandydaty (R2, R4–R6, #107, #257):** nie startowane w tym slocie; kolejne do wzięcia po zwolnieniu slotu.
