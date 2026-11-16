@@ -10493,3 +10493,6 @@ FC PASS-WITH-NOTES (FC e61b23d3b, kandydat 68dd4666a). main = 327e5104d, ROBOCZA
 
 ### Zgłoszenie 2026-11-16 (wieczór): skróty „zaznacz wszystkich <typ>” przy zaznaczaniu pojedynczych jednostek armii
 Właściciel: u góry listy zaznaczania pojedynczych jednostek ma być wybór typu (np. wszyscy łucznicy / wszyscy procarze), żeby nie klikać 50 jednostek przy zamianie na inny typ. STATUS: **OTWARTE** — dispatch `R-WEB-UI-ARMY-PICK-SELECT-ALL-BY-TYPE-Q1` zapisany; start po ARMYSPLIT i wolnym slocie. Panele z listą: split, merge-pick, ewentualnie zamiana (NIE ZMIERZONO).
+
+### FALA 774 (2026-11-16, wieczór) — EKRAN PORAŻKI: LICZNIKI STRAT + BRAK AUTOZAPISU PO PORAŻCE (DEFEATCNT) — WDROŻONE NA ROBOCZĄ
+FC PASS-WITH-NOTES (FC a9003952d, r1 + obrona). main = 08d42ad72, ROBOCZA MD5 c8b6031daade4b865ed9317db8337b8b (raw = manifest), 3 sidecary audio zgodne. Straty: „Utracone miasta N / Utracone jednostki M” (brak danych = myślnik; stary zapis 0/0); autozapis i Ctrl+S po porażce nie zapisują, lista „Wczytaj grę” ma tylko zapis sprzed porażki; ręczny nazwany zapis nie blokowany. Żywy Chromium 51/0. NIE ZMIERZONO: polegli w żywej bitwie, round-trip licznika >0 przez save.ts. Dług Rust: REPIN meta.lossCounters + bramka porażki w autozapisie. Do dodania do listy testów deployu: loss-counters-test.cjs.
