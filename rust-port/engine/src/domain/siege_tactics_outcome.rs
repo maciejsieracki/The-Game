@@ -11,8 +11,10 @@
 //! | E3 `_ffRoundCapResult` | `:9485-9497` | `cap.winner` (bez remisu) | `export(zwycięzca)` |
 //! | E4 `_skipInstantFallback` | `:3715-3748` | `result.winner` | `result.survivors` |
 //!
-//! E4 („Pomiń”) jest tu wariantem z danymi podanymi z zewnątrz: agregacja `computeInstantResult`
-//! (`:20389-20593`) to temat `R-RUSTPORT-P4-1I1B-BATTLE-INSTANT` (#245) i NIE jest tu portowana.
+//! E4 („Pomiń”) jest tu wariantem z danymi podanymi z zewnątrz ([`InstantSkipData`]). Agregację
+//! `computeInstantResult` (`:20389-20593`) portuje `siege_tactics_instant` (`R-RUSTPORT-P4-1I1B-BATTLE-INSTANT`, #245);
+//! wejście E4 z tego portu: [`InstantSkipData::from_skip`] i [`build_battle_outcome_instant`] (ten drugi wpisuje też
+//! `result.log`, `:3744`).
 //!
 //! Pola wspólne (`:10721-10728`):
 //! - `winner: this._endWinner ?? winner`, gdzie `winner` = argument `_showEndScreen`, który utworzył domknięcie
@@ -21,7 +23,7 @@
 //!   (`units/battleRoster.ts:26-39`): `[...new Set(units.map(u => String(u.id)))]` per strona;
 //! - `wallBreached` tylko gdy `siegeWallCol >= 0`;
 //! - `log` = `this.log`: NIE_ZMIERZONO — brak producenta tekstów logu (temat P4-1I3, #247); producent zwraca pustą
-//!   listę.
+//!   listę. Wyjątek: E4 przez [`build_battle_outcome_instant`] wpisuje `result.log` z portu „Pomiń” (`:3744`).
 //!
 //! Statystyki końca `_sideEndStats` (`:10257-10269`) liczone są w `_showEndScreen` (`:10677-10678`). Producent
 //! liczy je z tej samej migawki rosterów co resztę wyniku (po zakończeniu bitwy pętla nie zmienia już `hp`,
@@ -50,6 +52,7 @@ use crate::domain::js_math::js_max0;
 use crate::domain::siege_no_breach::RoundCapVerdict;
 use crate::domain::siege_tactics_end::BattleSide;
 use crate::domain::siege_tactics_endcheck::EndCheckOutcome;
+use crate::domain::siege_tactics_instant::InstantSkipOutcome;
 use crate::domain::siege_tactics_turnseq::SeqUnit;
 
 /// Jednostka rosteru bitwy w chwili końca (web `RuntimeBattleUnit`: `u.bu.id`, `u.bu.hp`, `u.bu.maxHp`,
@@ -99,6 +102,18 @@ pub struct InstantSkipData {
     pub survivors: Vec<(u64, f64)>,
     /// Web `this.atk.some(u => !u.dead && isSiegeUnit(u.bu))` (`:3720`), liczone przez wywołującego.
     pub attacker_has_live_siege_unit: bool,
+}
+
+impl InstantSkipData {
+    /// Dane E4 z wyniku `_skipInstantFallback` (`siege_tactics_instant::skip_instant_fallback`): `result.winner`
+    /// (`:3745`), `result.survivors` (`:3746`) i flaga żywej machiny (`:3720`).
+    pub fn from_skip(skip: &InstantSkipOutcome) -> Self {
+        Self {
+            winner: skip.result.winner,
+            survivors: skip.result.survivors.clone(),
+            attacker_has_live_siege_unit: skip.attacker_has_live_siege_unit,
+        }
+    }
 }
 
 /// Ścieżka końca bitwy, która jako OSTATNIA ustawiła `_endWinner` / `_endSurvivors`.
@@ -328,4 +343,34 @@ pub fn build_battle_outcome(input: &OutcomeInput<'_>) -> Result<BattleOutcomeDto
             def: side_end_stats(input.def)?,
         },
     })
+}
+
+/// Producent `BattleOutcomeDto` dla ścieżki E4 z portu „Pomiń” (`_skipInstantFallback`, `:3715-3748`, potem `onFinish`
+/// `:10720-10729`).
+///
+/// `atk`/`def` = rostery w chwili `onFinish` (E4 nie zmienia `bu.hp`, `dead` ani `routed` jednostek:
+/// `computeInstantResult` liczy na lokalnym stanie, `:20423-20424`); `wall_ever_breached` = `this.wallEverBreached`
+/// PRZED „Pomiń” (regułę machiny `:3720-3722` stosuje [`build_battle_outcome`] z
+/// [`InstantSkipData::attacker_has_live_siege_unit`]). `log` = `result.log` (`:3744`); wcześniejsza treść
+/// `this.log` sprzed „Pomiń” pozostaje NIE_ZMIERZONA do P4-1I3 (#247), tak jak w E1–E3.
+///
+/// # Errors
+/// Jak [`build_battle_outcome`].
+pub fn build_battle_outcome_instant(
+    atk: &[OutcomeUnit],
+    def: &[OutcomeUnit],
+    siege_wall_col: i64,
+    wall_ever_breached: bool,
+    skip: &InstantSkipOutcome,
+) -> Result<BattleOutcomeDto, OutcomeError> {
+    let input = OutcomeInput::single(
+        atk,
+        def,
+        siege_wall_col,
+        wall_ever_breached,
+        EndPath::InstantSkip(InstantSkipData::from_skip(skip)),
+    );
+    let mut dto = build_battle_outcome(&input)?;
+    dto.log = skip.result.log.clone();
+    Ok(dto)
 }

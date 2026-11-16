@@ -1,0 +1,109 @@
+[
+ {"name": "atk_przewaga_pole_brod_brzeg_fortyfikacja",
+  "scene": {"terrain": "Plaskie (rownina/laka)", "map": {"cols": 6, "rows": 4, "isMountain": false,
+     "tiles": [0,0,1,0,0,0, 0,4,0,2,0,0, 0,0,0,0,1,0, 0,0,0,0,0,0]},
+   "atkCiv": ["atkSide"], "defCiv": ["defSide"], "wallProc": 0, "cityDefense": false, "hungerMult": 0.75,
+   "atkDiff": 1, "defDiff": 1.05, "goldMult": 0.75, "atkOwn": false, "defOwn": true, "shallowSea": false,
+   "siegeWallCol": -1, "wallEverBreached": false},
+  "atk": [
+   {"id": 101, "kategoria": "piechota", "hp": 60, "q": 1, "r": 1, "facing": 1, "stats": {"Jednostka": "Hoplita", "meleeAttack": 30, "meleeDefence": 10}},
+   {"id": 102, "kategoria": "piechota", "hp": 50, "q": 0, "r": 2, "facing": 1, "stats": {"Jednostka": "Wlocznik", "meleeAttack": 25, "meleeDefence": 8},
+    "civ": ["atkUnit"], "diff": 1.1, "pancerz": 0.1, "parametry": 0.05, "hungry": true, "gold": true},
+   {"id": 103, "kategoria": "machina", "hp": 40, "q": 0, "r": 0, "facing": 1, "dead": true, "stats": {"Jednostka": "Taran", "Typ": "Siege", "meleeAttack": 50, "meleeDefence": 2}},
+   {"id": 104, "kategoria": "jazda", "hp": 40, "q": 5, "r": 3, "facing": 3, "stats": {"Jednostka": "Jezdziec", "meleeAttack": 20, "meleeDefence": 6}}
+  ],
+  "def": [
+   {"id": 201, "kategoria": "piechota", "hp": 50, "q": 2, "r": 1, "facing": 1, "fortified": true, "stats": {"Jednostka": "Strażnik", "meleeAttack": 12, "meleeDefence": 10}},
+   {"id": 202, "kategoria": "piechota", "hp": 45, "q": 3, "r": 1, "facing": 3, "civ": [], "diff": 0.9, "stats": {"Jednostka": "Procarz", "meleeAttack": 10, "meleeDefence": 12}}
+  ]},
+ {"name": "def_przewaga_miasto_mur_wzgorze",
+  "scene": {"terrain": "Wzgorza", "map": {"cols": 8, "rows": 3, "isMountain": false,
+     "tiles": [0,0,0,6,0,2,0,0, 0,0,0,6,0,2,0,0, 0,0,1,6,0,0,0,0]},
+   "atkCiv": [], "defCiv": ["defCity"], "wallProc": 200, "cityDefense": true, "hungerMult": 0.75,
+   "atkDiff": 1, "defDiff": 1, "goldMult": 0.75, "atkOwn": false, "defOwn": true, "shallowSea": false,
+   "siegeWallCol": 3, "wallEverBreached": false},
+  "atk": [
+   {"id": 301, "kategoria": "piechota", "hp": 40, "q": 1, "r": 1, "facing": 1, "stats": {"Jednostka": "Piechur", "meleeAttack": 15, "meleeDefence": 5}},
+   {"id": 302, "kategoria": "piechota", "hp": 30, "q": 1, "r": 2, "facing": 1, "stats": {"Jednostka": "Lucznik", "meleeAttack": 12, "meleeDefence": 4}}
+  ],
+  "def": [
+   {"id": 401, "kategoria": "piechota", "hp": 50, "q": 3, "r": 1, "facing": 3, "onWall": true, "stats": {"Jednostka": "Obronca muru", "meleeAttack": 14, "meleeDefence": 8}},
+   {"id": 402, "kategoria": "piechota", "hp": 45, "q": 5, "r": 1, "facing": 3, "stats": {"Jednostka": "Garnizon", "meleeAttack": 13, "meleeDefence": 7}},
+   {"id": 403, "kategoria": "piechota", "hp": 35, "q": 2, "r": 2, "facing": 0, "stats": {"Jednostka": "Wycieczka", "meleeAttack": 11, "meleeDefence": 6}}
+  ]},
+ {"name": "mur_machina_wylom",
+  "scene": {"terrain": "Plaskie (rownina/laka)", "map": {"cols": 6, "rows": 2, "isMountain": false,
+     "tiles": [0,0,0,6,0,0, 0,0,0,6,0,0]},
+   "atkCiv": [], "defCiv": [], "wallProc": 300, "cityDefense": true, "hungerMult": 0.75,
+   "atkDiff": 1, "defDiff": 1, "goldMult": 0.75, "atkOwn": false, "defOwn": true, "shallowSea": false,
+   "siegeWallCol": 3, "wallEverBreached": false},
+  "atk": [
+   {"id": 501, "kategoria": "machina", "hp": 80, "q": 2, "r": 0, "facing": 1, "stats": {"Jednostka": "Taran", "Typ": "Siege", "meleeAttack": 60, "meleeDefence": 2}},
+   {"id": 502, "kategoria": "piechota", "hp": 70, "q": 2, "r": 1, "facing": 1, "stats": {"Jednostka": "Legionista", "meleeAttack": 45, "meleeDefence": 12}}
+  ],
+  "def": [
+   {"id": 601, "kategoria": "piechota", "hp": 40, "q": 3, "r": 0, "facing": 3, "onWall": true, "stats": {"Jednostka": "Obronca muru", "meleeAttack": 10, "meleeDefence": 5}},
+   {"id": 602, "kategoria": "piechota", "hp": 30, "q": 4, "r": 1, "facing": 3, "stats": {"Jednostka": "Garnizon", "meleeAttack": 9, "meleeDefence": 4}}
+  ]},
+ {"name": "mur_machina_martwa_bez_wylomu",
+  "scene": {"terrain": "Plaskie (rownina/laka)", "map": {"cols": 6, "rows": 2, "isMountain": false,
+     "tiles": [0,0,0,6,0,0, 0,0,0,6,0,0]},
+   "atkCiv": [], "defCiv": [], "wallProc": 300, "cityDefense": true, "hungerMult": 0.75,
+   "atkDiff": 1, "defDiff": 1, "goldMult": 0.75, "atkOwn": false, "defOwn": true, "shallowSea": false,
+   "siegeWallCol": 3, "wallEverBreached": false},
+  "atk": [
+   {"id": 501, "kategoria": "machina", "hp": 80, "q": 2, "r": 0, "facing": 1, "dead": true, "stats": {"Jednostka": "Taran", "Typ": "Siege", "meleeAttack": 60, "meleeDefence": 2}},
+   {"id": 502, "kategoria": "piechota", "hp": 70, "q": 2, "r": 1, "facing": 1, "stats": {"Jednostka": "Legionista", "meleeAttack": 45, "meleeDefence": 12}}
+  ],
+  "def": [
+   {"id": 601, "kategoria": "piechota", "hp": 40, "q": 3, "r": 0, "facing": 3, "onWall": true, "stats": {"Jednostka": "Obronca muru", "meleeAttack": 10, "meleeDefence": 5}}
+  ]},
+ {"name": "bez_muru_machina_po_nazwie",
+  "scene": {"terrain": "Plaskie (rownina/laka)", "map": {"cols": 4, "rows": 2, "isMountain": true,
+     "tiles": [0,2,0,0, 0,0,2,0]},
+   "atkCiv": [], "defCiv": [], "wallProc": 0, "cityDefense": false, "hungerMult": 0.75,
+   "atkDiff": 1, "defDiff": 1, "goldMult": 0.75, "atkOwn": true, "defOwn": false, "shallowSea": true,
+   "siegeWallCol": -1, "wallEverBreached": false},
+  "atk": [
+   {"id": 701, "kategoria": "machina", "nazwa": "Katapulta", "hp": 50, "q": 0, "r": 0, "facing": 1, "stats": {"meleeAttack": 35, "meleeDefence": 3}}
+  ],
+  "def": [
+   {"id": 801, "kategoria": "piechota", "hp": 30, "q": 1, "r": 0, "facing": 0, "stats": {"Jednostka": "Gorale", "meleeAttack": 8, "meleeDefence": 6}},
+   {"id": 802, "kategoria": "piechota", "hp": 25, "q": 2, "r": 1, "facing": 2, "stats": {"Jednostka": "Gorale", "meleeAttack": 8, "meleeDefence": 6}}
+  ]},
+ {"name": "remis_hp_atakujacy_wygrywa",
+  "scene": {"terrain": "Plaskie (rownina/laka)", "map": {"cols": 4, "rows": 2, "isMountain": false,
+     "tiles": [0,0,0,0, 0,0,0,0]},
+   "atkCiv": [], "defCiv": [], "wallProc": 0, "cityDefense": false, "hungerMult": 0.75,
+   "atkDiff": 1, "defDiff": 1, "goldMult": 0.75, "atkOwn": false, "defOwn": false, "shallowSea": false,
+   "siegeWallCol": -1, "wallEverBreached": false},
+  "atk": [
+   {"id": 901, "kategoria": "piechota", "hp": 30, "q": 0, "r": 0, "facing": 1, "stats": {"Jednostka": "Pacyfista", "meleeAttack": 0, "meleeDefence": 5}},
+   {"id": 902, "kategoria": "piechota", "hp": 20, "q": 0, "r": 1, "facing": 1, "stats": {"Jednostka": "Pacyfista", "meleeAttack": 0, "meleeDefence": 5}}
+  ],
+  "def": [
+   {"id": 911, "kategoria": "piechota", "hp": 50, "q": 3, "r": 0, "facing": 3, "stats": {"Jednostka": "Pacyfista", "meleeAttack": 0, "meleeDefence": 5}}
+  ]},
+ {"name": "brak_mapy_obie_strony_puste",
+  "scene": {"terrain": "Las", "map": null,
+   "atkCiv": [], "defCiv": [], "wallProc": 0, "cityDefense": false, "hungerMult": 0.75,
+   "atkDiff": 1, "defDiff": 1, "goldMult": 0.75, "atkOwn": false, "defOwn": false, "shallowSea": false,
+   "siegeWallCol": -1, "wallEverBreached": true},
+  "atk": [
+   {"id": 1001, "kategoria": "piechota", "hp": 0, "q": 0, "r": 0, "facing": 1, "stats": {"Jednostka": "Ranny", "meleeAttack": 5, "meleeDefence": 5}}
+  ],
+  "def": [
+   {"id": 1011, "kategoria": "piechota", "hp": 20, "q": 3, "r": 0, "facing": 3, "dead": true, "stats": {"Jednostka": "Polegly", "meleeAttack": 5, "meleeDefence": 5}}
+  ]},
+ {"name": "brak_mapy_obronca_flanka_las",
+  "scene": {"terrain": "Las", "map": null,
+   "atkCiv": ["atkSide"], "defCiv": ["defSide"], "wallProc": 0, "cityDefense": false, "hungerMult": 0.75,
+   "atkDiff": 0.95, "defDiff": 1.05, "goldMult": 0.5, "atkOwn": false, "defOwn": true, "shallowSea": false,
+   "siegeWallCol": -1, "wallEverBreached": false},
+  "atk": [
+   {"id": 1101, "kategoria": "piechota", "hp": 30, "q": 2, "r": 0, "facing": 2, "stats": {"Jednostka": "Zwiadowca", "meleeAttack": 9, "meleeDefence": 3}}
+  ],
+  "def": [
+   {"id": 1111, "kategoria": "piechota", "hp": 60, "q": 2, "r": 1, "facing": 1, "fortified": true, "stats": {"Jednostka": "Weteran", "meleeAttack": 18, "meleeDefence": 9}}
+  ]}
+]

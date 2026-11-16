@@ -1,0 +1,5220 @@
+[
+ {
+  "name": "atk_przewaga_pole_brod_brzeg_fortyfikacja",
+  "input": {
+   "name": "atk_przewaga_pole_brod_brzeg_fortyfikacja",
+   "scene": {
+    "terrain": "Plaskie (rownina/laka)",
+    "map": {
+     "cols": 6,
+     "rows": 4,
+     "isMountain": false,
+     "tiles": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      4,
+      0,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    "atkCiv": [
+     "atkSide"
+    ],
+    "defCiv": [
+     "defSide"
+    ],
+    "wallProc": 0,
+    "cityDefense": false,
+    "hungerMult": 0.75,
+    "atkDiff": 1,
+    "defDiff": 1.05,
+    "goldMult": 0.75,
+    "atkOwn": false,
+    "defOwn": true,
+    "shallowSea": false,
+    "siegeWallCol": -1,
+    "wallEverBreached": false
+   },
+   "atk": [
+    {
+     "id": 101,
+     "kategoria": "piechota",
+     "hp": 60,
+     "q": 1,
+     "r": 1,
+     "facing": 1,
+     "stats": {
+      "Jednostka": "Hoplita",
+      "meleeAttack": 30,
+      "meleeDefence": 10
+     }
+    },
+    {
+     "id": 102,
+     "kategoria": "piechota",
+     "hp": 50,
+     "q": 0,
+     "r": 2,
+     "facing": 1,
+     "stats": {
+      "Jednostka": "Wlocznik",
+      "meleeAttack": 25,
+      "meleeDefence": 8
+     },
+     "civ": [
+      "atkUnit"
+     ],
+     "diff": 1.1,
+     "pancerz": 0.1,
+     "parametry": 0.05,
+     "hungry": true,
+     "gold": true
+    },
+    {
+     "id": 103,
+     "kategoria": "machina",
+     "hp": 40,
+     "q": 0,
+     "r": 0,
+     "facing": 1,
+     "dead": true,
+     "stats": {
+      "Jednostka": "Taran",
+      "Typ": "Siege",
+      "meleeAttack": 50,
+      "meleeDefence": 2
+     }
+    },
+    {
+     "id": 104,
+     "kategoria": "jazda",
+     "hp": 40,
+     "q": 5,
+     "r": 3,
+     "facing": 3,
+     "stats": {
+      "Jednostka": "Jezdziec",
+      "meleeAttack": 20,
+      "meleeDefence": 6
+     }
+    }
+   ],
+   "def": [
+    {
+     "id": 201,
+     "kategoria": "piechota",
+     "hp": 50,
+     "q": 2,
+     "r": 1,
+     "facing": 1,
+     "fortified": true,
+     "stats": {
+      "Jednostka": "Strażnik",
+      "meleeAttack": 12,
+      "meleeDefence": 10
+     }
+    },
+    {
+     "id": 202,
+     "kategoria": "piechota",
+     "hp": 45,
+     "q": 3,
+     "r": 1,
+     "facing": 3,
+     "civ": [],
+     "diff": 0.9,
+     "stats": {
+      "Jednostka": "Procarz",
+      "meleeAttack": 10,
+      "meleeDefence": 12
+     }
+    }
+   ]
+  },
+  "expect": {
+   "winner": "atakujacy",
+   "shown": "atakujacy",
+   "survivors": [
+    [
+     101,
+     "26"
+    ],
+    [
+     102,
+     "24"
+    ],
+    [
+     104,
+     "20"
+    ]
+   ],
+   "log": [
+    "P Hoplita>Strażnik Plaskie (rownina/laka) rear 0 A48 D15",
+    "P Wlocznik>Procarz Wzgorza front 0 A37 D24",
+    "P Jezdziec>Strażnik Plaskie (rownina/laka) front 0 A20 D2",
+    "P Hoplita>Strażnik Plaskie (rownina/laka) rear 0 A36 D0",
+    "P Wlocznik>Procarz Wzgorza front 0 A24 D3",
+    "P Hoplita>Procarz Wzgorza front 0 A26 D0",
+    "=== Natychmiastowy wynik: ATAKUJACY wygrywa ==="
+   ],
+   "wallEverBreached": false,
+   "defBonus": [
+    [
+     2,
+     1,
+     false,
+     "0"
+    ],
+    [
+     3,
+     1,
+     false,
+     "0"
+    ],
+    [
+     2,
+     1,
+     false,
+     "0"
+    ],
+    [
+     2,
+     1,
+     false,
+     "0"
+    ],
+    [
+     3,
+     1,
+     false,
+     "0"
+    ],
+    [
+     3,
+     1,
+     false,
+     "0"
+    ]
+   ],
+   "calls": [
+    {
+     "a": "Hoplita",
+     "d": "Strażnik",
+     "aAtk": "30",
+     "aDef": "10",
+     "aHp": "60",
+     "dAtk": "12",
+     "dDef": "17.25",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "rear",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [
+      "atkSide"
+     ],
+     "defCiv": [
+      "defSide"
+     ],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1.05",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Wlocznik",
+     "d": "Procarz",
+     "aAtk": "25",
+     "aDef": "8",
+     "aHp": "50",
+     "dAtk": "10",
+     "dDef": "12",
+     "dHp": "45",
+     "maxRounds": 30,
+     "defenderTerrain": "Wzgorza",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [
+      "atkUnit"
+     ],
+     "defCiv": [],
+     "atkBld": [
+      "0.1",
+      "0.05"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": true,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": true,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1.1",
+     "defDiff": "0.9",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Jezdziec",
+     "d": "Strażnik",
+     "aAtk": "20",
+     "aDef": "6",
+     "aHp": "40",
+     "dAtk": "12",
+     "dDef": "15",
+     "dHp": "15",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [
+      "atkSide"
+     ],
+     "defCiv": [
+      "defSide"
+     ],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1.05",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Hoplita",
+     "d": "Strażnik",
+     "aAtk": "30",
+     "aDef": "10",
+     "aHp": "48",
+     "dAtk": "12",
+     "dDef": "17.25",
+     "dHp": "2",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "rear",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [
+      "atkSide"
+     ],
+     "defCiv": [
+      "defSide"
+     ],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1.05",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Wlocznik",
+     "d": "Procarz",
+     "aAtk": "25",
+     "aDef": "8",
+     "aHp": "37",
+     "dAtk": "10",
+     "dDef": "12",
+     "dHp": "24",
+     "maxRounds": 30,
+     "defenderTerrain": "Wzgorza",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [
+      "atkUnit"
+     ],
+     "defCiv": [],
+     "atkBld": [
+      "0.1",
+      "0.05"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": true,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": true,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1.1",
+     "defDiff": "0.9",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Hoplita",
+     "d": "Procarz",
+     "aAtk": "30",
+     "aDef": "10",
+     "aHp": "36",
+     "dAtk": "10",
+     "dDef": "12",
+     "dHp": "3",
+     "maxRounds": 30,
+     "defenderTerrain": "Wzgorza",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [
+      "atkSide"
+     ],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "0.9",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    }
+   ],
+   "tcu": [
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    }
+   ]
+  }
+ },
+ {
+  "name": "def_przewaga_miasto_mur_wzgorze",
+  "input": {
+   "name": "def_przewaga_miasto_mur_wzgorze",
+   "scene": {
+    "terrain": "Wzgorza",
+    "map": {
+     "cols": 8,
+     "rows": 3,
+     "isMountain": false,
+     "tiles": [
+      0,
+      0,
+      0,
+      6,
+      0,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      6,
+      0,
+      2,
+      0,
+      0,
+      0,
+      0,
+      1,
+      6,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    "atkCiv": [],
+    "defCiv": [
+     "defCity"
+    ],
+    "wallProc": 200,
+    "cityDefense": true,
+    "hungerMult": 0.75,
+    "atkDiff": 1,
+    "defDiff": 1,
+    "goldMult": 0.75,
+    "atkOwn": false,
+    "defOwn": true,
+    "shallowSea": false,
+    "siegeWallCol": 3,
+    "wallEverBreached": false
+   },
+   "atk": [
+    {
+     "id": 301,
+     "kategoria": "piechota",
+     "hp": 40,
+     "q": 1,
+     "r": 1,
+     "facing": 1,
+     "stats": {
+      "Jednostka": "Piechur",
+      "meleeAttack": 15,
+      "meleeDefence": 5
+     }
+    },
+    {
+     "id": 302,
+     "kategoria": "piechota",
+     "hp": 30,
+     "q": 1,
+     "r": 2,
+     "facing": 1,
+     "stats": {
+      "Jednostka": "Lucznik",
+      "meleeAttack": 12,
+      "meleeDefence": 4
+     }
+    }
+   ],
+   "def": [
+    {
+     "id": 401,
+     "kategoria": "piechota",
+     "hp": 50,
+     "q": 3,
+     "r": 1,
+     "facing": 3,
+     "onWall": true,
+     "stats": {
+      "Jednostka": "Obronca muru",
+      "meleeAttack": 14,
+      "meleeDefence": 8
+     }
+    },
+    {
+     "id": 402,
+     "kategoria": "piechota",
+     "hp": 45,
+     "q": 5,
+     "r": 1,
+     "facing": 3,
+     "stats": {
+      "Jednostka": "Garnizon",
+      "meleeAttack": 13,
+      "meleeDefence": 7
+     }
+    },
+    {
+     "id": 403,
+     "kategoria": "piechota",
+     "hp": 35,
+     "q": 2,
+     "r": 2,
+     "facing": 0,
+     "stats": {
+      "Jednostka": "Wycieczka",
+      "meleeAttack": 11,
+      "meleeDefence": 6
+     }
+    }
+   ]
+  },
+  "expect": {
+   "winner": "obronca",
+   "shown": "obronca",
+   "survivors": [
+    [
+     401,
+     "45"
+    ],
+    [
+     402,
+     "40"
+    ]
+   ],
+   "log": [
+    "P Piechur>Obronca muru Plaskie (rownina/laka) front 250 A12 D45",
+    "P Lucznik>Garnizon Wzgorza front 250 A0 D40",
+    "P Piechur>Wycieczka Las flank 0 A0 D0",
+    "=== Natychmiastowy wynik: OBRONCA wygrywa ==="
+   ],
+   "wallEverBreached": false,
+   "defBonus": [
+    [
+     3,
+     1,
+     true,
+     "200"
+    ],
+    [
+     5,
+     1,
+     false,
+     "200"
+    ],
+    [
+     2,
+     2,
+     false,
+     "0"
+    ]
+   ],
+   "calls": [
+    {
+     "a": "Piechur",
+     "d": "Obronca muru",
+     "aAtk": "15",
+     "aDef": "5",
+     "aHp": "40",
+     "dAtk": "14",
+     "dDef": "8",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "250",
+     "defenderOnWallWalkway": true,
+     "override": "1",
+     "atkCiv": [],
+     "defCiv": [
+      "defCity"
+     ],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Lucznik",
+     "d": "Garnizon",
+     "aAtk": "12",
+     "aDef": "4",
+     "aHp": "30",
+     "dAtk": "13",
+     "dDef": "7",
+     "dHp": "45",
+     "maxRounds": 30,
+     "defenderTerrain": "Wzgorza",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "250",
+     "defenderOnWallWalkway": false,
+     "override": "1",
+     "atkCiv": [],
+     "defCiv": [
+      "defCity"
+     ],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Piechur",
+     "d": "Wycieczka",
+     "aAtk": "15",
+     "aDef": "5",
+     "aHp": "12",
+     "dAtk": "11",
+     "dDef": "6",
+     "dHp": "35",
+     "maxRounds": 30,
+     "defenderTerrain": "Las",
+     "attackerPosition": "flank",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": "1",
+     "atkCiv": [],
+     "defCiv": [
+      "defCity"
+     ],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    }
+   ],
+   "tcu": [
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    }
+   ]
+  }
+ },
+ {
+  "name": "mur_machina_wylom",
+  "input": {
+   "name": "mur_machina_wylom",
+   "scene": {
+    "terrain": "Plaskie (rownina/laka)",
+    "map": {
+     "cols": 6,
+     "rows": 2,
+     "isMountain": false,
+     "tiles": [
+      0,
+      0,
+      0,
+      6,
+      0,
+      0,
+      0,
+      0,
+      0,
+      6,
+      0,
+      0
+     ]
+    },
+    "atkCiv": [],
+    "defCiv": [],
+    "wallProc": 300,
+    "cityDefense": true,
+    "hungerMult": 0.75,
+    "atkDiff": 1,
+    "defDiff": 1,
+    "goldMult": 0.75,
+    "atkOwn": false,
+    "defOwn": true,
+    "shallowSea": false,
+    "siegeWallCol": 3,
+    "wallEverBreached": false
+   },
+   "atk": [
+    {
+     "id": 501,
+     "kategoria": "machina",
+     "hp": 80,
+     "q": 2,
+     "r": 0,
+     "facing": 1,
+     "stats": {
+      "Jednostka": "Taran",
+      "Typ": "Siege",
+      "meleeAttack": 60,
+      "meleeDefence": 2
+     }
+    },
+    {
+     "id": 502,
+     "kategoria": "piechota",
+     "hp": 70,
+     "q": 2,
+     "r": 1,
+     "facing": 1,
+     "stats": {
+      "Jednostka": "Legionista",
+      "meleeAttack": 45,
+      "meleeDefence": 12
+     }
+    }
+   ],
+   "def": [
+    {
+     "id": 601,
+     "kategoria": "piechota",
+     "hp": 40,
+     "q": 3,
+     "r": 0,
+     "facing": 3,
+     "onWall": true,
+     "stats": {
+      "Jednostka": "Obronca muru",
+      "meleeAttack": 10,
+      "meleeDefence": 5
+     }
+    },
+    {
+     "id": 602,
+     "kategoria": "piechota",
+     "hp": 30,
+     "q": 4,
+     "r": 1,
+     "facing": 3,
+     "stats": {
+      "Jednostka": "Garnizon",
+      "meleeAttack": 9,
+      "meleeDefence": 4
+     }
+    }
+   ]
+  },
+  "expect": {
+   "winner": "atakujacy",
+   "shown": "atakujacy",
+   "survivors": [
+    [
+     502,
+     "54"
+    ]
+   ],
+   "log": [
+    "P Taran>Obronca muru Plaskie (rownina/laka) front 300 A30 D10",
+    "P Legionista>Garnizon Plaskie (rownina/laka) front 300 A62 D2",
+    "P Taran>Obronca muru Plaskie (rownina/laka) front 300 A0 D0",
+    "P Legionista>Garnizon Plaskie (rownina/laka) front 300 A54 D0",
+    "=== Natychmiastowy wynik: ATAKUJACY wygrywa ==="
+   ],
+   "wallEverBreached": true,
+   "defBonus": [
+    [
+     3,
+     0,
+     true,
+     "300"
+    ],
+    [
+     4,
+     1,
+     false,
+     "300"
+    ],
+    [
+     3,
+     0,
+     true,
+     "300"
+    ],
+    [
+     4,
+     1,
+     false,
+     "300"
+    ]
+   ],
+   "calls": [
+    {
+     "a": "Taran",
+     "d": "Obronca muru",
+     "aAtk": "60",
+     "aDef": "2",
+     "aHp": "80",
+     "dAtk": "10",
+     "dDef": "5",
+     "dHp": "40",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "300",
+     "defenderOnWallWalkway": true,
+     "override": "1",
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Legionista",
+     "d": "Garnizon",
+     "aAtk": "45",
+     "aDef": "12",
+     "aHp": "70",
+     "dAtk": "9",
+     "dDef": "4",
+     "dHp": "30",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "300",
+     "defenderOnWallWalkway": false,
+     "override": "1",
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Taran",
+     "d": "Obronca muru",
+     "aAtk": "60",
+     "aDef": "2",
+     "aHp": "30",
+     "dAtk": "10",
+     "dDef": "5",
+     "dHp": "10",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "300",
+     "defenderOnWallWalkway": true,
+     "override": "1",
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Legionista",
+     "d": "Garnizon",
+     "aAtk": "45",
+     "aDef": "12",
+     "aHp": "62",
+     "dAtk": "9",
+     "dDef": "4",
+     "dHp": "2",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "300",
+     "defenderOnWallWalkway": false,
+     "override": "1",
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    }
+   ],
+   "tcu": [
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    }
+   ]
+  }
+ },
+ {
+  "name": "mur_machina_martwa_bez_wylomu",
+  "input": {
+   "name": "mur_machina_martwa_bez_wylomu",
+   "scene": {
+    "terrain": "Plaskie (rownina/laka)",
+    "map": {
+     "cols": 6,
+     "rows": 2,
+     "isMountain": false,
+     "tiles": [
+      0,
+      0,
+      0,
+      6,
+      0,
+      0,
+      0,
+      0,
+      0,
+      6,
+      0,
+      0
+     ]
+    },
+    "atkCiv": [],
+    "defCiv": [],
+    "wallProc": 300,
+    "cityDefense": true,
+    "hungerMult": 0.75,
+    "atkDiff": 1,
+    "defDiff": 1,
+    "goldMult": 0.75,
+    "atkOwn": false,
+    "defOwn": true,
+    "shallowSea": false,
+    "siegeWallCol": 3,
+    "wallEverBreached": false
+   },
+   "atk": [
+    {
+     "id": 501,
+     "kategoria": "machina",
+     "hp": 80,
+     "q": 2,
+     "r": 0,
+     "facing": 1,
+     "dead": true,
+     "stats": {
+      "Jednostka": "Taran",
+      "Typ": "Siege",
+      "meleeAttack": 60,
+      "meleeDefence": 2
+     }
+    },
+    {
+     "id": 502,
+     "kategoria": "piechota",
+     "hp": 70,
+     "q": 2,
+     "r": 1,
+     "facing": 1,
+     "stats": {
+      "Jednostka": "Legionista",
+      "meleeAttack": 45,
+      "meleeDefence": 12
+     }
+    }
+   ],
+   "def": [
+    {
+     "id": 601,
+     "kategoria": "piechota",
+     "hp": 40,
+     "q": 3,
+     "r": 0,
+     "facing": 3,
+     "onWall": true,
+     "stats": {
+      "Jednostka": "Obronca muru",
+      "meleeAttack": 10,
+      "meleeDefence": 5
+     }
+    }
+   ]
+  },
+  "expect": {
+   "winner": "atakujacy",
+   "shown": "atakujacy",
+   "survivors": [
+    [
+     502,
+     "54"
+    ]
+   ],
+   "log": [
+    "P Legionista>Obronca muru Plaskie (rownina/laka) front 300 A62 D17",
+    "P Legionista>Obronca muru Plaskie (rownina/laka) front 300 A54 D0",
+    "=== Natychmiastowy wynik: ATAKUJACY wygrywa ==="
+   ],
+   "wallEverBreached": false,
+   "defBonus": [
+    [
+     3,
+     0,
+     true,
+     "300"
+    ],
+    [
+     3,
+     0,
+     true,
+     "300"
+    ]
+   ],
+   "calls": [
+    {
+     "a": "Legionista",
+     "d": "Obronca muru",
+     "aAtk": "45",
+     "aDef": "12",
+     "aHp": "70",
+     "dAtk": "10",
+     "dDef": "5",
+     "dHp": "40",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "300",
+     "defenderOnWallWalkway": true,
+     "override": "1",
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Legionista",
+     "d": "Obronca muru",
+     "aAtk": "45",
+     "aDef": "12",
+     "aHp": "62",
+     "dAtk": "10",
+     "dDef": "5",
+     "dHp": "17",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "300",
+     "defenderOnWallWalkway": true,
+     "override": "1",
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    }
+   ],
+   "tcu": [
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    }
+   ]
+  }
+ },
+ {
+  "name": "bez_muru_machina_po_nazwie",
+  "input": {
+   "name": "bez_muru_machina_po_nazwie",
+   "scene": {
+    "terrain": "Plaskie (rownina/laka)",
+    "map": {
+     "cols": 4,
+     "rows": 2,
+     "isMountain": true,
+     "tiles": [
+      0,
+      2,
+      0,
+      0,
+      0,
+      0,
+      2,
+      0
+     ]
+    },
+    "atkCiv": [],
+    "defCiv": [],
+    "wallProc": 0,
+    "cityDefense": false,
+    "hungerMult": 0.75,
+    "atkDiff": 1,
+    "defDiff": 1,
+    "goldMult": 0.75,
+    "atkOwn": true,
+    "defOwn": false,
+    "shallowSea": true,
+    "siegeWallCol": -1,
+    "wallEverBreached": false
+   },
+   "atk": [
+    {
+     "id": 701,
+     "kategoria": "machina",
+     "nazwa": "Katapulta",
+     "hp": 50,
+     "q": 0,
+     "r": 0,
+     "facing": 1,
+     "stats": {
+      "meleeAttack": 35,
+      "meleeDefence": 3
+     }
+    }
+   ],
+   "def": [
+    {
+     "id": 801,
+     "kategoria": "piechota",
+     "hp": 30,
+     "q": 1,
+     "r": 0,
+     "facing": 0,
+     "stats": {
+      "Jednostka": "Gorale",
+      "meleeAttack": 8,
+      "meleeDefence": 6
+     }
+    },
+    {
+     "id": 802,
+     "kategoria": "piechota",
+     "hp": 25,
+     "q": 2,
+     "r": 1,
+     "facing": 2,
+     "stats": {
+      "Jednostka": "Gorale",
+      "meleeAttack": 8,
+      "meleeDefence": 6
+     }
+    }
+   ]
+  },
+  "expect": {
+   "winner": "atakujacy",
+   "shown": "atakujacy",
+   "survivors": [],
+   "log": [
+    "P machina>Gorale Gory flank 0 A23 D0",
+    "P machina>Gorale Gory flank 0 A0 D0",
+    "=== Natychmiastowy wynik: ATAKUJACY wygrywa ==="
+   ],
+   "wallEverBreached": false,
+   "defBonus": [
+    [
+     1,
+     0,
+     false,
+     "0"
+    ],
+    [
+     2,
+     1,
+     false,
+     "0"
+    ]
+   ],
+   "calls": [
+    {
+     "a": "machina",
+     "d": "Gorale",
+     "aAtk": "35",
+     "aDef": "3",
+     "aHp": "50",
+     "dAtk": "8",
+     "dDef": "6",
+     "dHp": "30",
+     "maxRounds": 30,
+     "defenderTerrain": "Gory",
+     "attackerPosition": "flank",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": true,
+     "defOwn": false,
+     "shallowSea": true,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "machina",
+     "d": "Gorale",
+     "aAtk": "35",
+     "aDef": "3",
+     "aHp": "23",
+     "dAtk": "8",
+     "dDef": "6",
+     "dHp": "25",
+     "maxRounds": 30,
+     "defenderTerrain": "Gory",
+     "attackerPosition": "flank",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": true,
+     "defOwn": false,
+     "shallowSea": true,
+     "terrainDataSame": true,
+     "countersSame": true
+    }
+   ],
+   "tcu": [
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    }
+   ]
+  }
+ },
+ {
+  "name": "remis_hp_atakujacy_wygrywa",
+  "input": {
+   "name": "remis_hp_atakujacy_wygrywa",
+   "scene": {
+    "terrain": "Plaskie (rownina/laka)",
+    "map": {
+     "cols": 4,
+     "rows": 2,
+     "isMountain": false,
+     "tiles": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    },
+    "atkCiv": [],
+    "defCiv": [],
+    "wallProc": 0,
+    "cityDefense": false,
+    "hungerMult": 0.75,
+    "atkDiff": 1,
+    "defDiff": 1,
+    "goldMult": 0.75,
+    "atkOwn": false,
+    "defOwn": false,
+    "shallowSea": false,
+    "siegeWallCol": -1,
+    "wallEverBreached": false
+   },
+   "atk": [
+    {
+     "id": 901,
+     "kategoria": "piechota",
+     "hp": 30,
+     "q": 0,
+     "r": 0,
+     "facing": 1,
+     "stats": {
+      "Jednostka": "Pacyfista",
+      "meleeAttack": 0,
+      "meleeDefence": 5
+     }
+    },
+    {
+     "id": 902,
+     "kategoria": "piechota",
+     "hp": 20,
+     "q": 0,
+     "r": 1,
+     "facing": 1,
+     "stats": {
+      "Jednostka": "Pacyfista",
+      "meleeAttack": 0,
+      "meleeDefence": 5
+     }
+    }
+   ],
+   "def": [
+    {
+     "id": 911,
+     "kategoria": "piechota",
+     "hp": 50,
+     "q": 3,
+     "r": 0,
+     "facing": 3,
+     "stats": {
+      "Jednostka": "Pacyfista",
+      "meleeAttack": 0,
+      "meleeDefence": 5
+     }
+    }
+   ]
+  },
+  "expect": {
+   "winner": "atakujacy",
+   "shown": "atakujacy",
+   "survivors": [
+    [
+     901,
+     "30"
+    ],
+    [
+     902,
+     "20"
+    ]
+   ],
+   "log": [
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A30 D50",
+    "P Pacyfista>Pacyfista Plaskie (rownina/laka) front 0 A20 D50",
+    "=== Natychmiastowy wynik: ATAKUJACY wygrywa ==="
+   ],
+   "wallEverBreached": false,
+   "defBonus": [
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ],
+    [
+     3,
+     0,
+     false,
+     "0"
+    ]
+   ],
+   "calls": [
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "30",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    },
+    {
+     "a": "Pacyfista",
+     "d": "Pacyfista",
+     "aAtk": "0",
+     "aDef": "5",
+     "aHp": "20",
+     "dAtk": "0",
+     "dDef": "5",
+     "dHp": "50",
+     "maxRounds": 30,
+     "defenderTerrain": "Plaskie (rownina/laka)",
+     "attackerPosition": "front",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [],
+     "defCiv": [],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.75",
+     "atkDiff": "1",
+     "defDiff": "1",
+     "atkOwn": false,
+     "defOwn": false,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    }
+   ],
+   "tcu": [
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.75,
+     "skipGold": true
+    }
+   ]
+  }
+ },
+ {
+  "name": "brak_mapy_obie_strony_puste",
+  "input": {
+   "name": "brak_mapy_obie_strony_puste",
+   "scene": {
+    "terrain": "Las",
+    "map": null,
+    "atkCiv": [],
+    "defCiv": [],
+    "wallProc": 0,
+    "cityDefense": false,
+    "hungerMult": 0.75,
+    "atkDiff": 1,
+    "defDiff": 1,
+    "goldMult": 0.75,
+    "atkOwn": false,
+    "defOwn": false,
+    "shallowSea": false,
+    "siegeWallCol": -1,
+    "wallEverBreached": true
+   },
+   "atk": [
+    {
+     "id": 1001,
+     "kategoria": "piechota",
+     "hp": 0,
+     "q": 0,
+     "r": 0,
+     "facing": 1,
+     "stats": {
+      "Jednostka": "Ranny",
+      "meleeAttack": 5,
+      "meleeDefence": 5
+     }
+    }
+   ],
+   "def": [
+    {
+     "id": 1011,
+     "kategoria": "piechota",
+     "hp": 20,
+     "q": 3,
+     "r": 0,
+     "facing": 3,
+     "dead": true,
+     "stats": {
+      "Jednostka": "Polegly",
+      "meleeAttack": 5,
+      "meleeDefence": 5
+     }
+    }
+   ]
+  },
+  "expect": {
+   "winner": "atakujacy",
+   "shown": "atakujacy",
+   "survivors": [],
+   "log": [
+    "=== Natychmiastowy wynik: ATAKUJACY wygrywa ==="
+   ],
+   "wallEverBreached": true,
+   "defBonus": [],
+   "calls": [],
+   "tcu": []
+  }
+ },
+ {
+  "name": "brak_mapy_obronca_flanka_las",
+  "input": {
+   "name": "brak_mapy_obronca_flanka_las",
+   "scene": {
+    "terrain": "Las",
+    "map": null,
+    "atkCiv": [
+     "atkSide"
+    ],
+    "defCiv": [
+     "defSide"
+    ],
+    "wallProc": 0,
+    "cityDefense": false,
+    "hungerMult": 0.75,
+    "atkDiff": 0.95,
+    "defDiff": 1.05,
+    "goldMult": 0.5,
+    "atkOwn": false,
+    "defOwn": true,
+    "shallowSea": false,
+    "siegeWallCol": -1,
+    "wallEverBreached": false
+   },
+   "atk": [
+    {
+     "id": 1101,
+     "kategoria": "piechota",
+     "hp": 30,
+     "q": 2,
+     "r": 0,
+     "facing": 2,
+     "stats": {
+      "Jednostka": "Zwiadowca",
+      "meleeAttack": 9,
+      "meleeDefence": 3
+     }
+    }
+   ],
+   "def": [
+    {
+     "id": 1111,
+     "kategoria": "piechota",
+     "hp": 60,
+     "q": 2,
+     "r": 1,
+     "facing": 1,
+     "fortified": true,
+     "stats": {
+      "Jednostka": "Weteran",
+      "meleeAttack": 18,
+      "meleeDefence": 9
+     }
+    }
+   ]
+  },
+  "expect": {
+   "winner": "obronca",
+   "shown": "obronca",
+   "survivors": [
+    [
+     1111,
+     "50"
+    ]
+   ],
+   "log": [
+    "P Zwiadowca>Weteran Las flank 0 A0 D50",
+    "=== Natychmiastowy wynik: OBRONCA wygrywa ==="
+   ],
+   "wallEverBreached": false,
+   "defBonus": [
+    [
+     2,
+     1,
+     false,
+     "0"
+    ]
+   ],
+   "calls": [
+    {
+     "a": "Zwiadowca",
+     "d": "Weteran",
+     "aAtk": "9",
+     "aDef": "3",
+     "aHp": "30",
+     "dAtk": "18",
+     "dDef": "13.5",
+     "dHp": "60",
+     "maxRounds": 30,
+     "defenderTerrain": "Las",
+     "attackerPosition": "flank",
+     "structureDefBonusPct": "0",
+     "defenderOnWallWalkway": false,
+     "override": null,
+     "atkCiv": [
+      "atkSide"
+     ],
+     "defCiv": [
+      "defSide"
+     ],
+     "atkBld": [
+      "0",
+      "0"
+     ],
+     "defBld": [
+      "0",
+      "0"
+     ],
+     "atkHungry": false,
+     "defHungry": false,
+     "hungerMult": "0.75",
+     "atkGold": false,
+     "defGold": false,
+     "goldMult": "0.5",
+     "atkDiff": "0.95",
+     "defDiff": "1.05",
+     "atkOwn": false,
+     "defOwn": true,
+     "shallowSea": false,
+     "terrainDataSame": true,
+     "countersSame": true
+    }
+   ],
+   "tcu": [
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.5,
+     "skipGold": true
+    },
+    {
+     "hunger": 0.75,
+     "skipHunger": true,
+     "gold": 0.5,
+     "skipGold": true
+    }
+   ]
+  }
+ }
+]
