@@ -309,6 +309,11 @@ export function administratorChangeAudienceOwnerId(ch: AdministratorChange): num
   return ch.city.ownerId;
 }
 
+/** Bramka wpisu w wydarzeniach gracza (użyta w `noteAdministratorChange` w main.ts): `isPlayer` = czy id to gracz. */
+export function administratorChangeNotifiesPlayer(ch: AdministratorChange, isPlayer: (ownerId: number) => boolean): boolean {
+  return isPlayer(administratorChangeAudienceOwnerId(ch));
+}
+
 /**
  * Odśwież stan administratorów (wołać na starcie tury ekonomii, po zatrudnieniu/zwolnieniu,
  * po wczytaniu zapisu i przed podglądem HUD):

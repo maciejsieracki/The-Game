@@ -29,8 +29,8 @@ const M = require(bundle);
 
 const HUMAN = 0, AI_A = 1, AI_B = 2;
 const isHuman = (id) => id === HUMAN;
-// Gate z main.ts (noteAdministratorChange): zwraca true, gdy wpis trafia do wydarzeń gracza.
-const notifiesPlayer = (ch) => isHuman(M.administratorChangeAudienceOwnerId(ch));
+// Ta sama eksportowana bramka, której używa noteAdministratorChange w main.ts (nie kopia w teście).
+const notifiesPlayer = (ch) => M.administratorChangeNotifiesPlayer(ch, isHuman);
 const bld = 'pretorium';
 const run = (cities, built, treasury) => M.refreshAdministratorState(cities, new Map(built), treasury ?? (() => 100));
 
