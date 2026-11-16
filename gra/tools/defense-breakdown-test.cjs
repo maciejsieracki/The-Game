@@ -443,12 +443,18 @@ console.log('\n--- F. bonusChipTexts (regresja -- uzywane przez ui/preBattle.ts)
 // ===========================================================================
 console.log('\n--- G. Bonus obrony wymagajacy lasu -- gating przez teren (runda 4) ---');
 
+// R-WEB-TEST-DEBT-BASELINE-Q3 (r3 Obrona): bonusApplies() od czasu wpisow matrix-only
+// (civ-bonuses.ts isKnownMatrixCombatEntry) przyjmuje tylko wpisy z matrixParamId ze
+// specyfikacji MATRIX_COMBAT_ENTRY_SPECS. Stary fikcyjny wpis bez matrixParamId nigdy nie
+// pasowal (0 linii) -- fixture przepieta na realny wpis walka_obrona_piechota_teren_las
+// (typ bonus_obrona, cel piechota, zgodny z data/civ-matrix.json i gatingiem `_teren_las`).
 const fikcyjnyBonusLesny = {
   typ: 'bonus_obrona',
   cel: 'piechota',
   wartosc: 0.15,
   opis: 'Zasadzka w lesie: +15% obrony piechoty',
   realizuje: 'walka',
+  matrixParamId: 'walka_obrona_piechota_teren_las',
 };
 
 {
@@ -472,7 +478,9 @@ const fikcyjnyBonusLesny = {
   // Bez terenu wcale (main.ts nie zna terenu -- teoretyczny brzeg) -- traktowane
   // jak teren pusty w bonusApplies(), bonus lesny NIE dopasowany (konserwatywnie).
   const linesNoTerrain = defenderCivBonusBreakdown(rosterAllInfantry, [fikcyjnyBonusLesny]);
-  assert(linesNoTerrain.length === 1, 'Bonus lesny BEZ przekazanego terrain (main.ts brzeg): dziala jak bonusApplies (terrain="" -> gating lesny nie odpala, cel="piechota" nadal dopasowany)');
+  // Zgodnie z komentarzem powyzej i gatingiem `_teren_las` (terrainIsForestOrJungle('') = false):
+  // brak terenu = bonus lesny NIE pasuje -> 0 linii (wczesniej asercja === 1 sprzeczna z komentarzem).
+  assert(linesNoTerrain.length === 0, 'Bonus lesny BEZ przekazanego terrain (main.ts brzeg): konserwatywnie NIE dopasowany (terrain="" -> gating lesny nie odpala) -- 0 linii');
 
   // Falanga (grecka, bez warunku lesnego) na tym samym rosterze na terenie
   // NIE-lesnym -- MUSI dzialac normalnie (regresja: gating lesny nie dotyka
