@@ -1374,7 +1374,9 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     horseStockAvailable,
     tradeRouteKonUnlocked: false,
   };
-  const qualifies = buildImprovementQualifier(state);
+  // R-WEB-ROAD-PAVED-DIRECT-BUILD-OR-UPGRADE-Q1: auto-ulepszenia NIE stawiają brukowanej od zera
+  // (ich koszt to 25, a od zera gracz płaci 40) — zostaje dotychczasowa reguła „najpierw droga”.
+  const qualifies = buildImprovementQualifier(state, { direktBruk: false });
 
   // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 2): heksy z rzeką NA heksie — priorytet przy
   // wyborze NASTĘPNEGO heksu w pętli „heks po heksie" niżej. Ta sama definicja co
