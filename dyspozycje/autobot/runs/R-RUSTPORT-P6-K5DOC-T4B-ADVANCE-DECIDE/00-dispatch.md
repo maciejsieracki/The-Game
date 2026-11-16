@@ -47,3 +47,13 @@ ROZPOZNANIE: `git show origin/claude/rust-sivvrn:dyspozycje/rust-port/p6/K5DOC-T
   6. Commit jawnym `git add` tylko zmienionych plików (bez `Cargo.lock`, bez `-A`), BEZ nazwy modelu w treści i trailerach.
 - Zakres allowlisty bez zmian. Nie zmieniaj `siege_tactics_loop.rs`, `ProdBody`, `gra/`.
 - Dysk: przed bramkami `df -h /`; < 8 GB = BLOCK z liczbą GB.
+
+## DODATEK r3 — RUNDA INTEGRACYJNA (po FC PASS-WITH-NOTES rundy 2; BAZA NADPISANA)
+
+- Runda 2: kod `d1dfff126` (rodzic `57907d39e`, baza `68b2a6633`). Operator, Evaluator i FC PASS / PASS-WITH-NOTES; bramki EXIT 0, pełny test 3778 passed, mutacje FAIL.
+- BAZA (jedyna obowiązująca): `origin/rust-port/parity-v2` = `32c84d6a9` (zawiera T4a i R4). Worktree detached na `32c84d6a9`.
+- Zadanie: WYŁĄCZNIE integracja i bramka, bez zmian w kodzie:
+  1. `git merge --no-ff --no-edit d1dfff126` (merge-tree czysty). Commit merge zostaw lokalnie.
+  2. `git diff --stat 32c84d6a9 <merge>` musi pokazać tylko pliki T4b (siege_tactics_advance.rs, mod.rs +1 linia, p6_k5doc_t4b*, vectors.json, mutacje.py, raport). Inaczej BLOCK.
+  3. Bramka na drzewie merge, `df -h /` ≥ 8 GB: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --all-targets --no-fail-fast` — EXIT 0, z liczbami.
+  4. Raport `03-integracja-r3.md` w run dir, commit tylko raportu (`git add` jawny, bez `Cargo.lock`, bez nazwy modelu). NIE pushuj do parity.
