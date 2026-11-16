@@ -64,7 +64,7 @@ assert(/unitReplaceEligible/.test(forSel), 'grupy tylko z kwalifikujacych sie je
 const groupSrc = extractFn(main, 'openUnitReplaceGroupPicker');
 assert(/count: n/.test(groupSrc) && /affordableCount/.test(groupSrc) && /totalMoneyCost/.test(groupSrc), 'picker dostaje liczbe, ile stac, koszt zbiorczy');
 assert(/performUnitReplace\(gu\.id, newTypeId, true\)/.test(groupSrc), 'zbiorcza zamiana wola performUnitReplace per jednostka (ruch/koszt/limity jak dotad)');
-assert(/index \+ 1 < groups\.length/.test(groupSrc), 'kolejne grupy typow -> kolejne okna wyboru');
+assert(/openUnitReplaceGroupPicker\(chain, index \+ 1\)/.test(groupSrc), 'kolejne grupy typow -> kolejne okna wyboru (lancuch chain, index+1)');
 const performSrc = extractFn(main, 'performUnitReplace');
 assert(/quiet = false\): boolean/.test(performSrc) && /unit\.ruchLeft = 0/.test(fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'unit-replace-execute.ts'), 'utf8')) && /replaceUsedThisTurn = true/.test(fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'unit-replace-execute.ts'), 'utf8')), 'performUnitReplace: zwraca boolean, zuzywa ruch i flage tury');
 assert(!/isGeneral\s*=/.test(performSrc), 'zamiana nie rusza isGeneral -> wodz zachowuje role');
@@ -121,7 +121,7 @@ assert(/Zastąp — ' \+ esc\(opts\.unitName\)/.test(picker), 'tytul okna z nazw
 assert(/groupLabel/.test(picker) && /opts\.groupLabel \?/.test(picker), 'podpis "grupa i/n" w podtytule (nie w tytule)');
 assert(/opts\.note \?/.test(picker), 'uwaga o pominietych zaznaczonych jednostkach renderowana w oknie');
 assert(!/unitName: label,[\s\S]{0,80}\(grupa/.test(main), 'w tytule nie ma "(grupa i/n)"');
-assert(/pominięto ' \+ skipped/.test(forSel), 'brak kwalifikujacych sie z zaznaczenia -> licznik pominietych w oknie');
+assert(/unitReplaceSkipNote\(chain\)/.test(groupSrc) && /otherSkipped\+\+/.test(forSel), 'brak kwalifikujacych sie z zaznaczenia -> licznik pominietych w oknie (unitReplaceSkipNote)');
 
 console.log(`\n[unit-replace-army-multi-select-test] ${failed === 0 ? 'WSZYSTKIE TESTY ZIELONE' : 'BLEDY'} (${passed}/${passed + failed})`);
 console.log('Chromium/live panel: NIE_ZMIERZONO (brak playwright/jsdom w piaskownicy; test pokrywa logike i okablowanie).');
