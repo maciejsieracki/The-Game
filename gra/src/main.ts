@@ -39956,6 +39956,15 @@ async function boot(): Promise<void> {
           // przywraca je na starcie nastepnego rownowazenia). Bez zapisu wczytana gra zostawala na
           // racjach 0 (AI glodzilo miasta, inna trajektoria niz przebieg ciagly). Tylko gdy niepusta:
           // brak pola = pusta mapa (stary zapis wczytuje sie jak dotad).
+          // R-WEB-SAVE-LOAD-ROUNDTRIP-STATE-DRIFT-Q1 (r3): mnozniki Porzadku wyliczone w KONCOWCE
+          // poprzedniej tury (pass Porzadku po ticku ekonomii) i CZYTANE przez tick NASTEPNEJ tury
+          // (orderMultMap -> applyOrderYieldMults, growthMultMap -> wzrost ludnosci, orderValueMap ->
+          // wybor celu migracji). Nie byly zapisywane: pierwszy tick po wczytaniu liczyl z mnoznikami
+          // 1.0 zamiast -15% (kara Porzadku) -> inny Pieniadz/Luksus/Zamoznosc niz w przebiegu ciaglym.
+          // Pola dopisywane tylko gdy mapy niepuste; stary zapis bez pol = puste mapy (jak dotad).
+          ...(orderMultMap.size > 0 ? { orderMultByCity: Array.from(orderMultMap.entries()) } : {}),
+          ...(growthMultMap.size > 0 ? { orderGrowthMultByCity: Array.from(growthMultMap.entries()) } : {}),
+          ...(orderValueMap.size > 0 ? { orderValueByCity: Array.from(orderValueMap.entries()) } : {}),
           ...(nnsAiOverrides.size > 0 ? {
             nnsAiOverrides: Array.from(nnsAiOverrides.entries()).map(([oid, ov]) => [oid, {
               ...(ov.split ? { split: ov.split } : {}),
@@ -49415,6 +49424,15 @@ async function boot(): Promise<void> {
       }
       // R-WEB-SAVE-LOAD-ROUNDTRIP-STATE-DRIFT-Q1 (r3): odtworz nadpisania NNS (patrz zapis wyzej).
       // `clear()` bezwarunkowo; stary zapis bez pola = pusta mapa (jak dotad).
+      orderMultMap.clear();
+      growthMultMap.clear();
+      orderValueMap.clear();
+      const savedOrderMult = saved.meta?.orderMultByCity as Array<[string, OrderYieldMults]> | undefined;
+      if (Array.isArray(savedOrderMult)) for (const [cid, m] of savedOrderMult) orderMultMap.set(cid, m);
+      const savedGrowthMult = saved.meta?.orderGrowthMultByCity as Array<[string, number]> | undefined;
+      if (Array.isArray(savedGrowthMult)) for (const [cid, g] of savedGrowthMult) growthMultMap.set(cid, g);
+      const savedOrderValue = saved.meta?.orderValueByCity as Array<[string, number]> | undefined;
+      if (Array.isArray(savedOrderValue)) for (const [cid, v] of savedOrderValue) orderValueMap.set(cid, v);
       nnsAiOverrides.clear();
       const savedNnsOverrides = saved.meta?.nnsAiOverrides as
         | Array<[number, {
