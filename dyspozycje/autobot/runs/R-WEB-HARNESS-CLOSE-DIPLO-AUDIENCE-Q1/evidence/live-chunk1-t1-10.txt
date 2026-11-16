@@ -1,0 +1,2 @@
+[econ] seed=4242 tura=6 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=2/0/0 czas=14s
+[econ] PODSUMOWANIE {"seed":4242,"startTurn":1,"endTurn":10,"stop":null,"counters":{"gateActiveTurns":1,"bypassApplied":1,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":2,"armyMergeClosed":0,"techNoticeClosed":0},"wallSec":24,"resumed":false}

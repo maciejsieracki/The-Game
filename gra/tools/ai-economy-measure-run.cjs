@@ -7,13 +7,24 @@
  * za ?civTest=1). Obejscie bramki NNS GRACZA (nie AI) przez DODATNIE dosypki `grantPlayerGold/grantPlayerFood`
  * z haka `__aiTradeWiringTestDebug` -- kazde takie dosypienie jest liczone i zapisane w wyniku.
  *
+ * Blokady modalne konca tury (R-WEB-HARNESS-CLOSE-DIPLO-AUDIENCE-Q1): runner zamyka TRZY blokady, ktore gra
+ * wlicza do `isOtherEndTurnModalOpen` (main.ts), przyciskiem jak gracz, PRZED kazdym „Zakoncz ture” i w petli
+ * leczenia kolejki bitew oraz w czasie oczekiwania na koniec tury:
+ *   - audiencja dyplomatyczna (`.civ-diplo-aud`, przycisk `.civ-diplo-aud-back`)   -> licznik `diploAudienceClosed`
+ *   - panel laczenia armii (`#civ-amp-title`, przycisk `.civ-amp-btn-sep`)           -> licznik `armyMergeClosed`
+ *   - karta odkrycia technologii (`#civ-tech-discovery-notice-host`, `[data-act=close]`) -> licznik `techNoticeClosed`
+ * Liczniki sa jawne (w kazdym rekordzie tury jako `modalClosedThisTurn`, w summary.json i state.json); NIE sa ukryte.
+ * Gdy blokada zostaje otwarta mimo zamkniecia, przebieg zatrzymuje sie z powodem i zrzutem DOM (`why.modal`).
+ *
  * Wynik (w --out):
  *   seed<S>.jsonl       -- jedna linia na ture: tura po zakonczeniu, metryki per owner, bramka NNS przed endTurn,
- *                          dosypki, opcjonalny skrot stanu (--hash 1).
- *   seed<S>.state.json  -- stan wznowienia: ostatnia tura, slot zapisu, liczniki, powod zatrzymania.
- *   seed<S>.summary.json-- podsumowanie przebiegu (tabela: ziarno | tura koncowa | tury z aktywna bramka | czas).
+ *                          dosypki, zamkniete blokady modalne, opcjonalny skrot stanu (--hash 1).
+ *   seed<S>.state.json  -- stan wznowienia: ostatnia tura, slot zapisu, liczniki (aktualizowane po KAZDEJ turze),
+ *                          liczniki zapisane w slocie (`slotCounters`), powod zatrzymania.
+ *   seed<S>.summary.json-- podsumowanie przebiegu (liczniki, tura koncowa, czas).
  * Zapis stanu: quickSave (realna sciezka gry: persistSaveToSlot) co --every tur do trwalego profilu (--profile).
- * Wznowienie: ponowne wywolanie z tym samym --out i --profile laduje slot (loadSlot) i kontynuuje od zapisanej tury.
+ * Wznowienie: ponowne wywolanie z tym samym --out i --profile laduje slot (loadSlot) i kontynuuje od tury slotu;
+ * liczniki startuja od wartosci z chwili zapisu slotu (`slotCounters`), wiec zlicza sie raz.
  *
  * Uzycie (z gra/, bundle budowany POZA repo):
  *   node tools/ai-economy-measure-run.cjs --dist <abs-dist> --profile <abs-profil> --out <abs-katalog> --seed 4242 --turns 100
@@ -23,7 +34,7 @@
  *   save-at+1..K; porownuje skroty stanu (hash) i raportuje zgodnosc. --mutant 1 dodaje po wznowieniu dosypke
  *   1 zlota (zmiana stanu) -- oczekiwane: czerwone porownanie.
  *
- * Limity: pojedyncze polecenie Bash < 590 s, dlatego przebieg uruchamiac w tle (setsid nohup ... &) i odpytywac log.
+ * Limity: pojedyncze polecenie Bash < 590 s; przebieg dzielimy na kilka wywolan --stop-at (zapis slotu co --every tur).
  */
 const fs = require('fs');
 const os = require('os');
@@ -60,8 +71,70 @@ const TURN_TIMEOUT_MS = 300000;
 /** Prefiks zrzutow migawek (diagnostyka, tylko przy SNAP_DUMP); w wznowieniu 'res'. */
 let SNAP_PREFIX = process.env.SNAP_DUMP || '';
 
+/** Liczniki przebiegu (zapisywane w state.json po KAZDEJ turze i w summary.json). */
+const COUNTER_KEYS = ['gateActiveTurns', 'bypassApplied', 'stuckQueueHeals', 'battlesAuto',
+  'diploAudienceClosed', 'armyMergeClosed', 'techNoticeClosed'];
+/** Klucze blokad modalnych (= liczniki zamkniec). */
+const MODAL_KEYS = ['diploAudienceClosed', 'armyMergeClosed', 'techNoticeClosed'];
+
+function newCtx(src) {
+  const c = {};
+  for (const k of COUNTER_KEYS) c[k] = (src && typeof src[k] === 'number') ? src[k] : 0;
+  return c;
+}
+function countersOf(c) {
+  const o = {};
+  for (const k of COUNTER_KEYS) o[k] = c[k];
+  return o;
+}
+
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const sha = s => crypto.createHash('sha256').update(s).digest('hex').slice(0, 16);
+
+/**
+ * Zamyka otwarte blokady modalne konca tury (uruchamiane w PRZEGLADARCE). Zwraca liste kluczy zamknietych w tym
+ * wywolaniu. Klik na przycisk zamkniecia = to, co zrobilby gracz. Blokada bez przycisku nie jest zamykana (zostaje
+ * w zrzucie DOM przy zatrzymaniu).
+ */
+function closeModalsInPage() {
+  const closed = [];
+  const aud = document.querySelector('.civ-diplo-aud');
+  if (aud && aud.style.display !== 'none') {
+    const b = aud.querySelector('.civ-diplo-aud-back');
+    if (b) { b.click(); closed.push('diploAudienceClosed'); }
+  }
+  if (document.getElementById('civ-amp-title')) {
+    const b = document.querySelector('.civ-amp-btn-sep');
+    if (b) { b.click(); closed.push('armyMergeClosed'); }
+  }
+  const tn = document.getElementById('civ-tech-discovery-notice-host');
+  if (tn) {
+    const b = tn.querySelector('[data-act="close"]');
+    if (b) { b.click(); closed.push('techNoticeClosed'); }
+  }
+  return closed;
+}
+
+/** Stan blokad (w przegladarce): czy otwarte + fragment DOM otwartej blokady (diagnostyka zatrzymania). */
+function blockerDumpInPage() {
+  const aud = document.querySelector('.civ-diplo-aud');
+  const amp = document.getElementById('civ-amp-title');
+  const tn = document.getElementById('civ-tech-discovery-notice-host');
+  const out = { diploAudience: !!aud && aud.style.display !== 'none', armyMerge: !!amp, techNotice: !!tn, dom: null };
+  const el = out.diploAudience ? aud : (out.armyMerge ? amp : (out.techNotice ? tn : null));
+  if (el) out.dom = String(el.outerHTML).slice(0, 400);
+  return out;
+}
+
+/** Zamyka blokady modalne az do skutku (max 20 kursow), liczac kazde zamkniecie w ctx. */
+async function closeEndTurnModals(page, ctx) {
+  for (let k = 0; k < 20; k++) {
+    const closed = await page.evaluate(closeModalsInPage);
+    if (closed.length === 0) return;
+    for (const key of closed) ctx[key]++;
+    await wait(300);
+  }
+}
 
 function ensureBuild() {
   if (arg('build', '0') !== '1' && fs.existsSync(path.join(DIST, 'index.html'))) return;
@@ -130,13 +203,15 @@ async function turnOf(page) {
 /**
  * Okna bitwy blokuja koniec tury (preBattleOpen / odlozona auto-bitwa). Rozstrzygniecie jak gracz (przycisk „Auto”
  * albo flush odlozonej bitwy, zamkniecie podsumowania), powtarzane az canEnd(). Liczone jawnie (battlesAuto).
+ * Przed kazda iteracja zamykane sa blokady modalne (closeEndTurnModals).
  */
-async function clearBattles(page) {
+async function clearBattles(page, ctxState) {
   let n = 0;
   // r3: przy ~41 wlascicielach w turze bywa wiele odlozonych bitew (kazda = flush + „Auto” + podsumowanie), a 12 iteracji
   // konczylo przebieg w t51 (seed 4242, pendingAuto=true). Petla trwa do 400 iteracji (~2 min); stop dopiero gdy czysto 2x z rzedu.
   let clean = 0;
   for (let k = 0; k < 400; k++) {
+    await closeEndTurnModals(page, ctxState);
     const bs = await page.evaluate(() => window.__aiTradeWiringTestDebug.battleState());
     if (!bs.preBattleOpen && !bs.pendingAuto && !bs.sceneOpen && !bs.summaryOpen && !bs.resolving) { if (++clean >= 2) break; await wait(150); continue; }
     clean = 0;
@@ -154,10 +229,23 @@ async function clearBattles(page) {
   return n;
 }
 
+/** Diagnostyka zatrzymania: stan bitew/kolejki + blokady modalne z DOM. */
+async function stopDump(page, extra) {
+  try {
+    const modal = await page.evaluate(blockerDumpInPage);
+    return Object.assign({ modal }, extra);
+  } catch (e) {
+    return Object.assign({ modal: 'niedostepne: ' + String(e && e.message).slice(0, 120) }, extra);
+  }
+}
+
 /** Jedna tura: bramka NNS gracza (opcjonalnie dosypka), koniec tury, pomiar. Zwraca rekord albo {stop: powod}. */
 async function playOneTurn(page, ctxState) {
   const t0 = Date.now();
   const before = await turnOf(page);
+  const modalBefore = {};
+  for (const k of MODAL_KEYS) modalBefore[k] = ctxState[k];
+  const modalDelta = () => { const d = {}; for (const k of MODAL_KEYS) d[k] = ctxState[k] - modalBefore[k]; return d; };
   const blocked = await page.evaluate(() => window.__aiTradeWiringTestDebug.nnsGateBlocked());
   const bypass = { gold: 0, food: 0, applied: false };
   if (blocked) {
@@ -173,7 +261,9 @@ async function playOneTurn(page, ctxState) {
       return { stop: 'gate-blocked (bypass wylaczony)', tura: before };
     }
   }
-  const battlesAuto = await clearBattles(page);
+  // Blokady modalne (audiencja, panel armii, karta technologii) zamykane jak gracz PRZED bitwami i przed endTurn.
+  await closeEndTurnModals(page, ctxState);
+  const battlesAuto = await clearBattles(page, ctxState);
   ctxState.battlesAuto = (ctxState.battlesAuto || 0) + battlesAuto;
   let canEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
   // r3: odlozona auto-bitwa potrafi zalegac w kolejce (pendingAuto=true, nic nie otwarte; seed 4242 t51). Gra leczy to
@@ -183,10 +273,12 @@ async function playOneTurn(page, ctxState) {
     const bs = await page.evaluate(() => window.__aiTradeWiringTestDebug.battleState());
     if (!bs.pendingAuto || bs.preBattleOpen || bs.sceneOpen || bs.summaryOpen) break;
     await wait(9000);
+    await closeEndTurnModals(page, ctxState);
     await page.evaluate(() => window.__aiTradeWiringTestDebug.endTurn());
     await wait(1500);
+    await closeEndTurnModals(page, ctxState);
     ctxState.stuckQueueHeals = (ctxState.stuckQueueHeals || 0) + 1;
-    ctxState.battlesAuto += await clearBattles(page);
+    ctxState.battlesAuto += await clearBattles(page, ctxState);
     canEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
     if ((await turnOf(page)) > before) canEnd = false;
   }
@@ -195,27 +287,38 @@ async function playOneTurn(page, ctxState) {
     const afterH = await turnOf(page);
     const mH = await page.evaluate(() => window.__aiEconomyMeasure.metrics());
     const recH = { seed: SEED, turn: afterH, gateBlockedBeforeEnd: blocked, bypass, battlesAuto, stuckQueueHealEndedTurn: true,
+      modalClosedThisTurn: modalDelta(),
       owners: mH.owners, diag: mH.diag, niezmierzone: mH.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10 };
     if (HASH) recH.stateHash = await stateHash(page, null);
     return { rec: recH };
   }
   if (!canEnd) {
     const why = await page.evaluate(() => ({ battle: window.__aiTradeWiringTestDebug.battleState(), pending: window.__aiTradeWiringTestDebug.state().pending.length }));
-    return { stop: 'cannot-end', tura: before, why };
+    return { stop: 'cannot-end', tura: before, why: await stopDump(page, { gra: why }) };
   }
+  await closeEndTurnModals(page, ctxState);
   await page.evaluate(() => window.__aiTradeWiringTestDebug.endTurn());
-  try {
-    await page.waitForFunction(t => window.__aiTradeWiringTestDebug.state().turn > t && !window.__aiTradeWiringTestDebug.isEndTurnInProgress(),
-      before, { timeout: TURN_TIMEOUT_MS, polling: 250 });
-  } catch (_) {
+  // Czekanie na koniec tury z zamykaniem blokad, ktore gra otworzy w trakcie tury (audiencja, panel armii, karta techn.).
+  const deadline = Date.now() + TURN_TIMEOUT_MS;
+  let advanced = false;
+  let turnErr = null;
+  while (!advanced && Date.now() < deadline) {
+    try {
+      advanced = await page.evaluate(t => window.__aiTradeWiringTestDebug.state().turn > t && !window.__aiTradeWiringTestDebug.isEndTurnInProgress(), before);
+      if (!advanced) await closeEndTurnModals(page, ctxState);
+    } catch (e) { turnErr = e; break; }
+    if (!advanced) await wait(250);
+  }
+  if (!advanced) {
     let why = null;
     try { why = await page.evaluate(() => ({ turn: window.__aiTradeWiringTestDebug.state().turn, inProgress: window.__aiTradeWiringTestDebug.isEndTurnInProgress(), battle: window.__aiTradeWiringTestDebug.battleState(), canEnd: window.__aiTradeWiringTestDebug.canEnd() })); } catch (e) { why = 'strona niedostepna: ' + String(e && e.message).slice(0, 160); }
-    return { stop: 'endturn-timeout', tura: before, why };
+    if (turnErr) why = Object.assign({ blad: String(turnErr && turnErr.message).slice(0, 160) }, typeof why === 'object' ? why : { opis: why });
+    return { stop: 'endturn-timeout', tura: before, why: await stopDump(page, { gra: why }) };
   }
   const after = await turnOf(page);
   const m = await page.evaluate(() => window.__aiEconomyMeasure.metrics());
   const rec = {
-    seed: SEED, turn: after, gateBlockedBeforeEnd: blocked, bypass, battlesAuto,
+    seed: SEED, turn: after, gateBlockedBeforeEnd: blocked, bypass, battlesAuto, modalClosedThisTurn: modalDelta(),
     owners: m.owners, diag: m.diag, niezmierzone: m.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
   };
   if (HASH) rec.stateHash = await stateHash(page, SNAP_PREFIX ? path.join(OUT, `${SNAP_PREFIX}-t${after}.json`) : null);
@@ -234,13 +337,17 @@ function readState() {
 }
 function writeState(s) { fs.writeFileSync(path.join(OUT, `seed${SEED}.state.json`), JSON.stringify(s, null, 2)); }
 
-/** Przebieg od biezacej tury (lub od zapisu) do `stopAt`. Zapis co EVERY tur. Zwraca podsumowanie. */
-async function runSeries(ctx, { resumeFromSlot, stopAt, hashFrom }) {
+/** Przebieg od biezacej tury (lub od zapisu) do `stopAt`. Zapis slotu co EVERY tur; stan (w tym liczniki) po KAZDEJ turze. */
+async function runSeries(ctx, { resumeFromSlot, stopAt }) {
   const page = await openGame(ctx, { fresh: !resumeFromSlot });
+  // Liczniki startuja od wartosci ZAPISANYCH w slocie (nie z ostatniej tury), zeby wznowienie nie liczylo podwojnie.
+  const st = resumeFromSlot ? (readState() || {}) : {};
+  const ctxState = newCtx(st.slotCounters || null);
   if (resumeFromSlot) { await page.evaluate(slot => window.__aiTradeWiringTestDebug.loadSlot(slot), SLOT); await suppressVictory(page); }
-  const st = readState() || { seed: SEED, gateActiveTurns: 0, bypassApplied: 0, lastTurn: 0 };
-  const ctxState = { gateActiveTurns: st.gateActiveTurns || 0, bypassApplied: st.bypassApplied || 0, stuckQueueHeals: st.stuckQueueHeals || 0, battlesAuto: st.battlesAuto || 0 };
   const startTurn = await turnOf(page);
+  let slotOk = !!resumeFromSlot;
+  let slotTurn = startTurn;
+  let slotCounters = countersOf(ctxState);
   // Obcina JSONL do tury startowej (wznowienie nie dubluje wierszy).
   const jsonlPath = path.join(OUT, `seed${SEED}.jsonl`);
   if (!resumeFromSlot) { try { fs.unlinkSync(jsonlPath); } catch (_) {} }
@@ -248,6 +355,7 @@ async function runSeries(ctx, { resumeFromSlot, stopAt, hashFrom }) {
     const keep = fs.readFileSync(jsonlPath, 'utf8').split('\n').filter(l => l.trim() && JSON.parse(l).turn <= startTurn);
     fs.writeFileSync(jsonlPath, keep.map(l => l + '\n').join(''));
   }
+  const stateOf = (extra) => Object.assign({ seed: SEED, slot: SLOT, saved: slotOk, slotTurn, slotCounters }, countersOf(ctxState), extra);
   const t0 = Date.now();
   let stop = null;
   let turn = startTurn;
@@ -257,16 +365,18 @@ async function runSeries(ctx, { resumeFromSlot, stopAt, hashFrom }) {
     if (r.stop) { stop = { reason: r.stop, tura: r.tura, why: r.why || null }; break; }
     turn = r.rec.turn;
     fs.appendFileSync(jsonlPath, JSON.stringify(r.rec) + '\n');
-    rows.push({ turn, gate: r.rec.gateBlockedBeforeEnd, sec: r.rec.sec });
+    rows.push({ turn, gate: r.rec.gateBlockedBeforeEnd, sec: r.rec.sec, modal: r.rec.modalClosedThisTurn });
     if (turn % EVERY === 0) {
       const ok = await page.evaluate(slot => window.__aiTradeWiringTestDebug.quickSave(slot), SLOT);
-      writeState({ seed: SEED, lastTurn: turn, slot: SLOT, saved: ok, gateActiveTurns: ctxState.gateActiveTurns, bypassApplied: ctxState.bypassApplied, stuckQueueHeals: ctxState.stuckQueueHeals, battlesAuto: ctxState.battlesAuto });
+      if (ok) { slotOk = true; slotTurn = turn; slotCounters = countersOf(ctxState); }
     }
-    if (rows.length % 5 === 0) console.log(`[econ] seed=${SEED} tura=${turn} gateAktywna=${ctxState.gateActiveTurns} dosypki=${ctxState.bypassApplied} czas=${Math.round((Date.now() - t0) / 1000)}s`);
+    // Stan po KAZDEJ turze (liczniki i ostatnia tura), nie tylko przy zapisie slotu.
+    writeState(stateOf({ lastTurn: turn, stop: null }));
+    if (rows.length % 5 === 0) console.log(`[econ] seed=${SEED} tura=${turn} gateAktywna=${ctxState.gateActiveTurns} dosypki=${ctxState.bypassApplied} zamkniete(aud/armia/techn)=${ctxState.diploAudienceClosed}/${ctxState.armyMergeClosed}/${ctxState.techNoticeClosed} czas=${Math.round((Date.now() - t0) / 1000)}s`);
   }
   const endTurnNo = turn;
-  writeState({ seed: SEED, lastTurn: endTurnNo, slot: SLOT, gateActiveTurns: ctxState.gateActiveTurns, bypassApplied: ctxState.bypassApplied, stuckQueueHeals: ctxState.stuckQueueHeals, battlesAuto: ctxState.battlesAuto, stop });
-  return { startTurn, endTurn: endTurnNo, stop, gateActiveTurns: ctxState.gateActiveTurns, bypassApplied: ctxState.bypassApplied, stuckQueueHeals: ctxState.stuckQueueHeals, battlesAuto: ctxState.battlesAuto, wallSec: Math.round((Date.now() - t0) / 1000), page };
+  writeState(stateOf({ lastTurn: endTurnNo, stop }));
+  return { startTurn, endTurn: endTurnNo, stop, counters: countersOf(ctxState), wallSec: Math.round((Date.now() - t0) / 1000), page };
 }
 
 async function main() {
@@ -284,18 +394,18 @@ async function main() {
     for (const f of [jsonlRef, path.join(OUT, `seed${SEED}.jsonl`)]) { try { fs.unlinkSync(f); } catch (_) {} }
     try { fs.unlinkSync(path.join(OUT, `seed${SEED}.state.json`)); } catch (_) {}
     const ctxRef = await launch(chromium, path.join(PROFILE, 'ref'));
-    const ref = await runSeries(ctxRef, { resumeFromSlot: false, stopAt: TURNS, hashFrom: 1 });
+    const ref = await runSeries(ctxRef, { resumeFromSlot: false, stopAt: TURNS });
     await ctxRef.close();
     fs.renameSync(path.join(OUT, `seed${SEED}.jsonl`), jsonlRef);
     try { fs.unlinkSync(path.join(OUT, `seed${SEED}.state.json`)); } catch (_) {}
     const ctxCut = await launch(chromium, path.join(PROFILE, 'cut'));
-    const cut = await runSeries(ctxCut, { resumeFromSlot: false, stopAt: SAVE_AT, hashFrom: 1 });
+    const cut = await runSeries(ctxCut, { resumeFromSlot: false, stopAt: SAVE_AT });
     await ctxCut.close();
     const ctxRes = await launch(chromium, path.join(PROFILE, 'cut'));
     const resumed = await resumeCheck(ctxRes, SAVE_AT, TURNS);
     await ctxRes.close();
     const cmp = compareHashes(jsonlRef, SAVE_AT, TURNS, resumed);
-    const summary = { seed: SEED, mode: 'resume-test', ref: { endTurn: ref.endTurn, stop: ref.stop, gateActiveTurns: ref.gateActiveTurns, bypassApplied: ref.bypassApplied, wallSec: ref.wallSec }, cut: { endTurn: cut.endTurn, stop: cut.stop }, resumeTest: cmp };
+    const summary = { seed: SEED, mode: 'resume-test', ref: { endTurn: ref.endTurn, stop: ref.stop, counters: ref.counters, wallSec: ref.wallSec }, cut: { endTurn: cut.endTurn, stop: cut.stop }, resumeTest: cmp };
     fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
     console.log('[econ] WZNOWIENIE ' + JSON.stringify({ saveAt: cmp.saveAt, turns: cmp.turns, compared: cmp.compared, allEqual: cmp.allEqual, mutant: MUTANT }));
     return;
@@ -303,10 +413,11 @@ async function main() {
 
   const ctx = await launch(chromium, PROFILE);
   const st = readState();
-  const resume = !!(st && st.lastTurn > 0 && st.saved !== false && st.slot);
+  // Wznowienie tylko gdy zapis slotu istnieje (saved === true); inaczej przebieg startuje od nowej gry.
+  const resume = !!(st && st.lastTurn > 0 && st.saved === true && st.slot);
   const res = await runSeries(ctx, { resumeFromSlot: resume, stopAt: STOP_AT });
   await ctx.close();
-  const summary = { seed: SEED, startTurn: res.startTurn, endTurn: res.endTurn, stop: res.stop, gateActiveTurns: res.gateActiveTurns, bypassApplied: res.bypassApplied, stuckQueueHeals: res.stuckQueueHeals, battlesAuto: res.battlesAuto, wallSec: res.wallSec, resumed: resume };
+  const summary = { seed: SEED, startTurn: res.startTurn, endTurn: res.endTurn, stop: res.stop, counters: res.counters, wallSec: res.wallSec, resumed: resume };
   fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
   console.log('[econ] PODSUMOWANIE ' + JSON.stringify(summary));
 }
@@ -320,8 +431,9 @@ async function resumeCheck(ctx, saveAt, turns) {
   const out = [];
   if (MUTANT) await page.evaluate(([g]) => window.__aiTradeWiringTestDebug.grantPlayerGold(g), [1]);
   if (SNAP_PREFIX) SNAP_PREFIX = 'res';
+  const ctxState = newCtx(null);
   while (turn < turns) {
-    const r = await playOneTurn(page, { gateActiveTurns: 0, bypassApplied: 0, stuckQueueHeals: 0, battlesAuto: 0 });
+    const r = await playOneTurn(page, ctxState);
     if (r.stop) { out.push({ stop: r.stop, tura: r.tura }); break; }
     turn = r.rec.turn;
     out.push({ turn, hash: await stateHash(page) });
@@ -344,4 +456,8 @@ function compareHashes(jsonlPath, saveAt, turns, resumed) {
   return { saveAt, turns, compared: pairs.length, allEqual: ok && pairs.length === turns - saveAt, mutant: MUTANT, pairs };
 }
 
-main().catch(e => { console.error('[econ] BLAD: ' + (e && e.stack || e)); process.exit(1); });
+module.exports = { closeModalsInPage, blockerDumpInPage, closeEndTurnModals, newCtx, countersOf, COUNTER_KEYS, MODAL_KEYS };
+
+if (require.main === module) {
+  main().catch(e => { console.error('[econ] BLAD: ' + (e && e.stack || e)); process.exit(1); });
+}

@@ -58,8 +58,10 @@ Start zajmuje ok. 2 min (generacja świata z 41 właścicielami).
 - Wynik: `<out>/seed4242.jsonl` (wiersz na turę: metryki każdego właściciela, `diag`, bramka przed endTurn,
   dosypki, automatyczne bitwy), `<out>/seed4242.state.json`, `<out>/seed4242.summary.json`, `seed4242.events.log`.
 - Zapis co `--every` tur (quickSave przez realną ścieżkę gry) w trwałym profilu. Ponowne wywołanie z tym samym
-  `--out` i `--profile` wznawia od zapisanej tury (JSONL jest obcinany do tury slotu). Limit Bash 590 s —
-  przebieg uruchamiaj w tle (`setsid nohup … > log 2>&1 < /dev/null & disown`) i odpytuj ogon logu.
+  `--out` i `--profile` wznawia od zapisanej tury slotu (JSONL jest obcinany do tury slotu; wznowienie tylko gdy
+  `saved === true`). Limit Bash 590 s: przebieg dzielimy na kolejne wywołania `--stop-at` o wielokrotności `--every`
+  (np. 10, 30, 60) — każde wywołanie wznawia z ostatniego slotu, bez zgubienia tur (wariant bez tła; r1 tematu
+  R-WEB-HARNESS-CLOSE-DIPLO-AUDIENCE-Q1).
 - Bramka NNS gracza: przed endTurn, jeśli `nnsGateBlocked()`, runner dosypuje `--gold` / `--food` (domyślnie
   200/200) przez `grantPlayerGold/grantPlayerFood` i zapisuje to w wierszu (`bypass`, `gateBlockedBeforeEnd`).
   `--bypass 0` wyłącza dosypki (przebieg zatrzymuje się z powodem `gate-blocked`). Dosypki dotyczą WYŁĄCZNIE gracza;
@@ -126,3 +128,26 @@ Pomiar r3 (8 prób `endTurn`, seed 4242): licznik tury w jednym `endTurn` pokaza
 a od k=3 bramka NNS blokuje i tura stoi na 2 (dosypka tylko raz). Przyczyna skoku NIE ZMIERZONA (nie badano kodu scenariusza
 playtest); wniosek praktyczny: scenariusz playtest nie nadaje się do pomiaru ekonomii AI — runner używa `--start newgame`.
 `--start playtest` zostaje w runnerze wyłącznie jako ścieżka diagnostyczna.
+
+## Blokady modalne końca tury i liczniki (R-WEB-HARNESS-CLOSE-DIPLO-AUDIENCE-Q1, runda 1)
+
+Runner zamyka trzy blokady, które gra wlicza do `isOtherEndTurnModalOpen` (main.ts), przyciskiem jak gracz,
+przed każdym „Zakończ turę”, w pętli leczenia kolejki bitew i podczas czekania na koniec tury:
+
+| Blokada | Wykrycie w DOM | Przycisk zamknięcia | Licznik (state/summary/jsonl) |
+|---|---|---|---|
+| audiencja dyplomatyczna | `.civ-diplo-aud` z `style.display !== 'none'` | `.civ-diplo-aud-back` („Wróć”/„Wyjście”) | `diploAudienceClosed` |
+| panel łączenia armii | `#civ-amp-title` | `.civ-amp-btn-sep` („Zostaw osobno”) | `armyMergeClosed` |
+| karta odkrycia technologii | `#civ-tech-discovery-notice-host` | `[data-act="close"]` (✕) | `techNoticeClosed` |
+
+- Każde zamknięcie jest liczone osobno. Rekord tury zawiera `modalClosedThisTurn` (przyrost w tej turze); summary i
+  state zawierają sumy. Blokada bez przycisku zamknięcia nie jest liczona i zostaje w zrzucie DOM (`why.modal`).
+- `state.json` jest zapisywany po KAŻDEJ turze (nie tylko przy zapisie slotu). Liczniki wznowienia startują od
+  `slotCounters` (wartości z chwili zapisu slotu), więc tury po slocie nie są liczone dwa razy.
+- Test haka: asercja 0 (`blokady: …`) działa na atrapach DOM bez gry: `node tools/ai-economy-measure-hook-test.cjs
+  --modal-only 1` (5 asercji). Mutacja na kopii runnera (usunięte kliknięcie audiencji) MUSI dać czerwone
+  (`--runner <kopia>`): zmierzone 3/5 zielone, exit 1.
+- Dowód live (seed 4242, od t1, trzy wywołania `--stop-at` 10/30/60, zapis co 10 tur): 59 wierszy, tury 2–60,
+  bez duplikatów; zamknięcia audiencji w t2 (2×) i t13 (1×); t51 i t57 przeszły bez zatrzymania; stuckQueueHeals 0.
+  Zatrzymanie w t51 z poprzedniej rundy NIE wystąpiło w tym przebiegu, więc przyczynowo nie potwierdzono, że to
+  zamknięcie je usuwa; potwierdzono, że ścieżka zamykania działa w żywej grze.
