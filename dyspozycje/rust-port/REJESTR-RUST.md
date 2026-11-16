@@ -2723,3 +2723,21 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Sprzątanie:** dysk spadł do 6,8 GB, poniżej progu bramki. Usunięto worktree zakończonego workflowu wektorów NaN/Inf, targety `target-nan`, `target-v2v7`, `tgt`, `tgt-fc` i logi/skrypty z katalogu scratch poprzednich przebiegów. Commity bez odpowiednika na parity zostały w referencjach `keep` (`3fd4d9677`, `095e6d036`, `70c0bbcd6`, `39888d3fa`, `2aa1992d3`). Dysk 15 GB wolnego.
 - **Uwaga o sprzątaniu:** wzorzec usuwał też pliki robocze (logi i skrypty) z katalogu scratch, nie tylko targety. Nie były to commity ani zatwierdzone raporty, ale wynik był szerszy niż zamierzony.
 - **Trwa:** integracja V2/V7 (`wf_0a773a2f-c9c`), OUTCOME r4 (#109) i rozpoznanie T4 (#258). Wynik RUCH-FACING (#123): BLOCK, port ruchu jest warunkiem.
+
+### Przebieg — rozpoznanie ruchu pieszego (#258 K5DOC-T4) gotowe, 2026-11-16 ~19:25 UTC
+
+- **Wynik:** `wf_7fdf1cf6-fb3` (Operator i Evaluator, tylko odczyt, bez kodu): PASS-WITH-NOTES. Dokument `dyspozycje/rust-port/p6/K5DOC-T4-RUCH-PIESZY-ROZPOZNANIE.md`, commit `ee38abed9` (baza `0fccd8dbf`), przeniesiony na `claude/rust-sivvrn` jako `217e71e8a` (cherry-pick, readback `refs/heads/claude/rust-sivvrn` = `217e71e8a`). Bez push do parity.
+- **Ustalenia:** brak konsumenta `AdvanceStep` w `ProdBody` (`siege_tactics_loop.rs` ~1476; zdarzenie trafia do `skipped` ~1056); brak BFS `_firstStepAlongPathToAttack` i `_stepToward`; brak efektów `_doMove` (occByKey, koszt terenu, facing). `siege_tactics_tower.rs:47` `move_cost` to atrapa harnessu, nie do reużycia w T4c. `TowerWalk::passable_free` opiera się na zbiorach zajętych i blokowanych, nie na terenie.
+- **Korekty Evaluatora (dokument jeszcze niepoprawiony; uwzględnić PRZED dispatchem T4a):**
+  1. Reguła muru (`wallCol-1`) w `_firstStepAlongPathToAttack` jest w pinie tylko komentarzem (8595–8604). Działają `occByKey` (8594) i `_passableForUnit` (8605); mur obsługuje się przez nieprzechodnie ciało muru i `_canAttackFrom`. T4a nie może zlecać osobnej reguły muru.
+  2. Numery linii: `_firstStepTowardMelee` zaczyna się w 8634 (nie ~8625); `_makeCanAttackFromTest` w 8454; gałąź planowania `_doMove` 8694–8712; przeniesienie occByKey w ścieżce animowanej ~8719–8722. Rozjazd do 15 linii.
+  3. `_passableForUnit` ma odpowiednik w Rust: metodę traitu `AutoBatchEnv::passable_for_unit` (`siege_tactics_autobatch.rs:268`). Bez implementacji produkcyjnej (werdykt BRAK się utrzymuje), ale T4c nie może go zdublować.
+  4. Asymetria `allowFirstStep` (pin 8593): filtr kompaktu i anty-cofania dotyczy tylko pierwszego kroku BFS. Port musi ją zachować.
+- **NIE_ZMIERZONO:** czy `pathfinding.rs:1590` `move_cost_fn_for` odpowiada `terrainMap.moveCost` dla bitwy; czy `BROD_RUCH_MULT` (pin 983) to `ruch_mult` w `data/units_combat.rs:229`; pełne ciała 8600–8617 i 8625–8680 (czytane częściowo).
+- **Podział zamiast jednego #258:** T4a helpery ścieżki (BFS pierwszego kroku, `_stepToward`) → T4b decyzja `_advanceStep` (kroki 1–10, zapis `lastAutoMoveFrom`) → T4c efekty `_doMove` (occByKey, koszt terenu, facing) → T4e wpięcie w `ProdBody` (odblokowuje #123). Najpierw sprawdzić terenowy odpowiednik `_moveCostForUnit`/`_passableForUnit`.
+- **Zależności:** #284 (kontrakt ActivateOps), #107 (facing; `_nearestEnemy` w ProdOps zwraca None), #109 (`target_in_range`), #261 (falanga → `_advanceStep`, pin 6556), #260 (wspólny `_firstStepTowardMelee`), #264 (`doctrine_step` zwraca false).
+- **Stan slotów w chwili zapisu:**
+  - `wf_0a773a2f-c9c` (INTEG V2/V7): merge `0e04a75c6` w worktree, `cargo test` w toku (log `test2.log`, od ~19:14). **Nie FF**: parity pozostaje `0fccd8dbf`, dopóki bramka nie będzie zielona.
+  - `wf_43129880-afd` (OUTCOME r4 #109, RUCH-FACING #123): RUCH-FACING BLOCK (Operator, Evaluator, FC). OUTCOME r4 bez wyniku w dzienniku (ostatni zapis 19:16). NIE_ZMIERZONO, czy jeszcze biegnie.
+  - Wolne sloty: 2 z 4.
+- **Dysk:** 13 GB wolnego.
