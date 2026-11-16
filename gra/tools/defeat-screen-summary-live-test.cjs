@@ -161,10 +161,80 @@ async function main() {
     assert('L1 dokładnie dwa przyciski: Wczytaj grę, Rozpocznij od nowa',
       btnTexts.length === 2 && btnTexts[0] === 'Wczytaj grę' && btnTexts[1] === 'Rozpocznij od nowa',
       btnTexts);
-    await page.screenshot({ path: path.join(EVIDENCE, 'defeat-summary-L1-ekran-porazki.png') });
+    // Nazwa cywilizacji dla gracza (nie surowy klucz civType): pierwsza litera wielka, brak „—”.
+    const civCard = await page.locator(`${OVERLAY_LOSE} .vsc-card-accent .vsc-card-val`).evaluate((n) => (n.textContent || '').trim());
+    assert('L1 karta Cywilizacja pokazuje nazwę wyświetlaną (wielka litera, nie klucz)',
+      civCard.length > 0 && civCard !== '—' && civCard[0] === civCard[0].toUpperCase() && civCard[0] !== civCard[0].toLowerCase(),
+      civCard);
+    const flavorText = await page.locator(`${OVERLAY_LOSE} .vsc-flavor`).evaluate((n) => (n.textContent || '').trim());
+    assert('L1 podtytuł/flavor nie zaczyna się małą literą (surowe ID)', /^[A-ZĄĆĘŁŃÓŚŹŻ]/.test(flavorText), flavorText);
 
+    // Widoczność przycisków w oknie: 1400x900, potem 1280x720 (bez przewijania; nie zasłonięte; poza stopką).
+    const checkBtns = async (label) => {
+      const info = await page.evaluate(() => {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const fEl = document.querySelector('#__victory_screen__ .vsc-footer');
+        const fr = fEl ? fEl.getBoundingClientRect() : null;
+        return {
+          vw,
+          vh,
+          btns: ['vsc-load-game', 'vsc-new-game'].map((id) => {
+            const b = document.getElementById(id);
+            if (!b) return { id, missing: true };
+            const r = b.getBoundingClientRect();
+            const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+            return {
+              id,
+              top: Math.round(r.top), bottom: Math.round(r.bottom),
+              inViewport: r.top >= 0 && r.bottom <= vh && r.left >= 0 && r.right <= vw,
+              hitIsButton: !!hit && (hit === b || b.contains(hit)),
+              overlapsFooter: fr ? !(r.bottom <= fr.top || r.top >= fr.bottom) : false,
+            };
+          }),
+        };
+      });
+      for (const b of info.btns) {
+        assert(`${label} ${b.id} w oknie ${info.vw}x${info.vh}`, !b.missing && b.inViewport, b);
+        assert(`${label} ${b.id} klikalny (nie zasłonięty)`, !!b.hitIsButton, b);
+        assert(`${label} ${b.id} nie nachodzi na stopkę`, !b.overlapsFooter, b);
+      }
+    };
+    await checkBtns('L1 1400x900');
+    await page.screenshot({ path: path.join(EVIDENCE, 'defeat-summary-L1-ekran-porazki.png') });
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await wait(400);
+    await checkBtns('L1 1280x720');
+    await page.screenshot({ path: path.join(EVIDENCE, 'defeat-summary-L1-ekran-porazki-1280x720.png') });
+
+    // Odłożona/otwarta bitwa z tury porażki nie może przykrywać ekranu ani dialogu wczytania (main.ts pokazEkranPorazki).
+    const pbCount = () => page.locator('.pb-overlay').count();
+    assert('L1 pod ekranem porażki nie ma stale otwartej bitwy (pb-overlay)', (await pbCount()) === 0, await pbCount());
+    // Pod ekranem porażki gra stoi: klawisz N (zakończ turę) i Spacja nie zmieniają tury ani stanu.
+    const blkBefore = await page.evaluate(() => ({
+      turn: window.__eraTestDebug.getWorldState().turn,
+      gameOver: window.__defeatTestDebug.isGameOver(),
+    }));
+    await page.keyboard.press('n');
+    await wait(800);
+    await page.keyboard.press('Space');
+    await wait(800);
+    const blkAfter = await page.evaluate(() => ({
+      turn: window.__eraTestDebug.getWorldState().turn,
+      gameOver: window.__defeatTestDebug.isGameOver(),
+    }));
+    assert('L1 klawisze N i Spacja pod ekranem porażki nie zmieniają tury',
+      blkAfter.turn === blkBefore.turn && blkAfter.gameOver === true, { blkBefore, blkAfter });
+    assert('L1 ekran porażki nadal otwarty po klawiszach', (await page.locator(OVERLAY_LOSE).count()) === 1);
+    const mapUnderOverlay = await page.evaluate(() => {
+      const el = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
+      return !!el && !!el.closest('#__victory_screen__');
+    });
+    assert('L1 środek ekranu (mapa pod spodem) zasłonięty przez ekran porażki', mapUnderOverlay === true);
     await page.locator(OVERLAY_LOSE).locator('#vsc-load-game').click();
     await page.waitForSelector('.civ-sl', { timeout: 20000 });
+    await wait(1500);
+    assert('L1 dialog wczytania nie jest przykryty bitwą (pb-overlay)', (await pbCount()) === 0, await pbCount());
     assert('L1 klik Wczytaj grę otwiera dialog wczytania', (await page.locator('.civ-sl').count()) === 1);
     assert('L1 ekran porażki schowany pod dialogiem wyboru', (await page.locator(OVERLAY_LOSE).count()) === 0);
     await page.screenshot({ path: path.join(EVIDENCE, 'defeat-summary-L1-dialog-wczytania.png') });
@@ -215,6 +285,14 @@ async function main() {
     assert('L2 Anuluj przywraca ekran porażki', (await p2.locator(OVERLAY_LOSE).count()) === 1);
     assert('L2 gameOver nadal true (bez wczytania gra zakończona)', (await p2.evaluate(() => window.__defeatTestDebug.isGameOver())) === true);
     await p2.screenshot({ path: path.join(EVIDENCE, 'defeat-summary-L2-po-anuluj.png') });
+
+    // L2b: ta sama porażka, ścieżka Esc w dialogu wczytania (zamiast „Anuluj”) też przywraca ekran.
+    await p2.locator(OVERLAY_LOSE).locator('#vsc-load-game').click();
+    await p2.waitForSelector('.civ-sl', { timeout: 20000 });
+    await p2.keyboard.press('Escape');
+    await wait(800);
+    assert('L2b Esc w dialogu wczytania przywraca ekran porażki', (await p2.locator(OVERLAY_LOSE).count()) === 1);
+    assert('L2b Esc: dialog wczytania zamknięty', (await p2.locator('.civ-sl').count()) === 0);
 
     assert('C. zero pageerror / console.error', errors.length === 0, errors.slice(0, 5));
     await p2.close();

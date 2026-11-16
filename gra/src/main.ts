@@ -36480,6 +36480,11 @@ async function boot(): Promise<void> {
      *  po wyborze zapisu; „Anuluj” w dialogu albo nieudane wczytanie przywraca ekran porażki
      *  (gameOver nie zostaje na ślepo ustawione bez ekranu). „Rozpocznij od nowa” = nowa gra (reload). */
     function pokazEkranPorazki(screenData: VictoryScreenData): void {
+      // DEFEATSCR obrona r1 (zarzut 4 / zachowanie live): odłożone i otwarte „Broni się” z tury
+      // porażki nie mogą wypłynąć POD dialog „Wczytaj grę” (live: pb-overlay przykrywał przycisk
+      // „Wczytaj” w dialogu). Koniec gry = bitwy już się nie rozstrzygną.
+      try { clearDeferredAutoPreBattleQueue(); } catch { /* best-effort */ }
+      try { if (isPreBattleOpen()) hidePreBattle(); } catch { /* best-effort */ }
       showVictoryScreen(screenData, () => location.reload(), () => {
         hideVictoryScreen();
         void (async () => {
@@ -36514,7 +36519,8 @@ async function boot(): Promise<void> {
       pokazEkranPorazki(buildVictoryScreenData(defeat, {
         turn,
         eraLabel: eraLabelsDefeat[player.era] ?? ('Epoka ' + player.era),
-        civLabel: player.civType,
+        // DEFEATSCR obrona r1 (zarzut 2): nazwa wyświetlana zamiast surowego klucza civType.
+        civLabel: civDisplayNameForKey(String(player.civType ?? '')),
         technologieZbadane: player.zbadane.size,
       }));
       console.log('[Victory] ' + formatVictoryTitle(defeat.rodzaj, turn) + ' gracz=0 rodzaj=' + defeat.rodzaj + ' (po bitwie)');
@@ -46372,7 +46378,8 @@ async function boot(): Promise<void> {
                   ? powerShare(objectivePowerForOwner(0), potegiWszystkich)
                   : undefined,
                 eraLabel: eraLabels[player.era] ?? ('Epoka ' + player.era),
-                civLabel: player.civType,
+                // DEFEATSCR obrona r1 (zarzut 2): ta sama nazwa wyświetlana także dla zwycięstw (wspólne pole).
+                civLabel: civDisplayNameForKey(String(player.civType ?? '')),
                 technologieZbadane: player.zbadane.size,
               });
               if (vResult.rodzaj === 'przegrana') {
