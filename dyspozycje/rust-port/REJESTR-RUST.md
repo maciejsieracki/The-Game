@@ -2424,3 +2424,15 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **T2 CELE** (`wf_1c92bca8-2d5`): FC PASS-WITH-NOTES `03dfa64c2`, integracja czeka na ≥8 GB (pełny test).
 - **Wolne sloty (2):** DOC-T5a, DOC-T4 i DOC-T6 mogą mieć bazę `03dfa64c2` (zgodnie z regułą heartbeatu), ale start kodu Rust wymaga 8 GB (CLAUDE.md, zasada 5). Dysk 7,3 GB — wstrzymane.
 - **Parity:** `585bb48e0`.
+
+## Priorytety 3D (Opus) — przegląd stanu i kolejka (09:50 UTC)
+
+**Zrobione na Opusie i zintegrowane na parity (wg rejestru):** P4-1 RENDER-DTO-CONTRACT (#186), P4-0 RENDERER-ARCHITECTURE (#187), P4-15 GPU-SPIKE-PREP (#188), P4-36 MOD14 BATTLE-3D Q3–Q5 (#189, #202, #203), P4-17 MOD03 TERRAIN-DECOR (#190), P4-31 ATLAS-CACHE (#200, #201), P4-10 PICKING-CPU (#204), P4-1A VIEW-TYPES (#205), P4-34 ANCHORS-DOM (#206), P4-22 MOD13 MISC (#207), P4-29 TEXT-FONTS (#208), P4-1B MAP-VIEW Q1–Q3 (#211), P4-1D STACK-REPIN / UNIT-VIEW (#213), P4-1E CITY-VIEW (#214, #222), P4-1F1 OVERLAY-TYPES (#238), P4-1G Q1–Q4 ADAPTER (#216 Q1–Q3, #235 Q4), P4-1H Q2–Q6 (#217, #250–#252), P4-1I1 BATTLE-OUTCOME (#244), P4-1I1B BATTLE-INSTANT (#245), P4-1J PLANNED-MARCH-STATE (#209), M01-R2 MAPHEX (#210), RENDERER-ORDERS-CYTATY (poza listą P4, Opus).
+
+**Do zrobienia — startowalne od ręki (blokady zamknięte):** PRIO-3D-1 Q5 overlays (#269, #236); PRIO-3D-2 Q6 units (#270, #237); PRIO-3D-3 F3 siege/wonder (#271, #240); PRIO-3D-4 F4 trade/workers/okolica (#272, #241); PRIO-3D-5 F5 reach/path (#273, #242); PRIO-3D-6 F6 build selection (#274, #243); PRIO-3D-7 I2 battle frame (#275, #246).
+
+**Następnie:** PRIO-3D-8 I3 battle actions (#276, #247), PRIO-3D-9 I4 battle consumer — renderer animacje (#277, #248).
+
+**Zablokowane:** PRIO-3D-10 F2 territory ranges (#278, #239) i PRIO-3D-11 L1/L2 (#279, #254) — decyzja mgły dla fotela ≠ 0 (#253, rekomendacja C). PRIO-3D-12 I5 akcje oblężnicze (#280, #249) — pętla K5LOOP #107/#109/#112/#113.
+
+**Uwaga:** start Opusa na kodzie Rust wymaga ≥8 GB wolnego miejsca (CLAUDE.md, zasada 5). Dysk 7,3 GB — pierwsze starty po zwolnieniu miejsca lub po zakończeniu T1/T3.
