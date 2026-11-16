@@ -746,6 +746,10 @@ export function deserializeGame(json: string): SaveGame {
     recruitGeneralNoticeShown: obj2.recruitGeneralNoticeShown === true ? true : undefined,
     rallyPoints: obj2.rallyPoints,
     tradeRoutes: Array.isArray(obj2.tradeRoutes) ? obj2.tradeRoutes : undefined,
+    // R-WEB-SAVE-LOAD-LEDGER-HISTORY-LOST-AFTER-LOAD-Q1: deserializeGame buduje obiekt z jawnej listy pól;
+    // bez tej linii dziennik „Skąd zapasy” (resourceLedgerHistory) ginie przy KAŻDYM wczytaniu z magazynu
+    // (loadFromLocal -> deserializeGame), choć jest w zapisie. Stary zapis bez pola = undefined = pusty dziennik.
+    resourceLedgerHistory: Array.isArray(obj2.resourceLedgerHistory) ? obj2.resourceLedgerHistory : undefined,
     meta: obj.meta,
     mapQuality: obj2.mapQuality,
     renderQuality: obj2.renderQuality,
