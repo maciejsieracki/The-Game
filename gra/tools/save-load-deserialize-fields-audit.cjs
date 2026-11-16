@@ -9,10 +9,14 @@
  *      OK                 -- pole jest i zwrócone bez zmian
  *      ZMIENIONE          -- pole zwrócone, ale znormalizowane (informacyjne)
  *      DOMYSLNE           -- pole zwrócone, nieobecne w zapisie (wartość domyślna, informacyjne)
+ *      OK_PUSTA           -- jak OK, ale wartość to pusta tablica (NIE dowodzi, że pole jest odtwarzane: pusta
+ *                            i zgubiona tablica dają ten sam wynik; liczone osobno, informacyjne)
+ *      NIEPRZETESTOWANE_BRAK_W_PROBCE -- klucz najwyższego poziomu zwracany przez deserializeGame, którego
+ *                            w zapisie A nie ma (pole warunkowe, np. autoMarch/rallyPoints); ta próbka go NIE testuje
  *  (b) deserializeGame(raw A)  vs  raw B (NOWA strona: loadSlot -> restoreGameFromSave -> serializeGame -> magazyn)
  *      NIE_PRZYWROCONE    -- deserializeGame zwraca pole, runtime po wczytaniu go nie zapisuje (NIEZALICZONE, exit 1)
  *      GUBIONE_PO_RESTORE -- pole było w raw A, po restore zniknęło z zapisu (NIEZALICZONE, exit 1)
- *      OK / ZMIENIONE_PO_RESTORE / EFEMERYCZNE (savedAt) -- informacyjne
+ *      OK / OK_PUSTA / ZMIENIONE_PO_RESTORE / EFEMERYCZNE (savedAt) -- informacyjne
  *
  * Pola z `JUSTIFIED` (niżej) są raportowane jako UZASADNIONE i nie wywracają wyniku -- lista jest celowo pusta;
  * każdy wpis wymaga pisemnego powodu w raporcie orkiestratora.
@@ -80,6 +84,8 @@ const canon = (v) => {
 };
 const eq = (a, b) => canon(a) === canon(b);
 const lastSeg = (p) => p.slice(p.lastIndexOf('.') + 1);
+/** Werdykt dla wartości zgodnej: pusta tablica osobno (nie dowodzi odtworzenia pola). */
+const okVerdict = (v) => (Array.isArray(v) && v.length === 0 ? 'OK_PUSTA' : 'OK');
 
 /** Ładuje deserializeGame z gra/src przez esbuild (bundle w katalogu roboczym poza repo). */
 function loadDeserializer(srcDir, tag) {
@@ -99,8 +105,10 @@ function makeMutantSrc(field) {
   fs.cpSync(SRC, dst, { recursive: true });
   const f = path.join(dst, 'game', 'save.ts');
   const txt = fs.readFileSync(f, 'utf8');
-  const re = new RegExp('^.*\\b' + field + ': Array\\.isArray\\(obj2\\.' + field + '\\).*\\n', 'm');
-  if (!re.test(txt)) throw new Error('mutacja: nie znaleziono linii przypisania pola ' + field + ' w save.ts');
+  // Linia przypisania w deserializeGame: `<pole>: <cokolwiek z obj2.<pole>>` (Array.isArray(...), obj2.x, typeof...).
+  // Pola złożone wieloliniowo (np. recruitGeneralId) nie są mutowalne tym wzorcem -- błąd składni = exit 1.
+  const re = new RegExp('^[ \\t]*' + field + ': [^\\n]*obj2\\.' + field + '\\b[^\\n]*\\n', 'm');
+  if (!re.test(txt)) throw new Error('mutacja: nie znaleziono jednoliniowego przypisania pola ' + field + ' w save.ts');
   fs.writeFileSync(f, txt.replace(re, ''));
   return dst;
 }
@@ -123,7 +131,7 @@ function compare(rawAText, rawBText, deserialize) {
     const inR = p in fRawA; const inD = p in fDes;
     if (inR && !inD) add('a', p, JUSTIFIED[p] ? 'UZASADNIONE' : 'GUBIONE', { wZapisie: true, poDeserializacji: false, uwaga: justified(p) });
     else if (!inR && inD) add('a', p, 'DOMYSLNE', { wZapisie: false, poDeserializacji: true });
-    else if (eq(fRawA[p], fDes[p])) add('a', p, 'OK', { wZapisie: true, poDeserializacji: true });
+    else if (eq(fRawA[p], fDes[p])) add('a', p, okVerdict(fRawA[p]), { wZapisie: true, poDeserializacji: true });
     else add('a', p, 'ZMIENIONE', { wZapisie: true, poDeserializacji: true });
   }
 
@@ -135,8 +143,15 @@ function compare(rawAText, rawBText, deserialize) {
     if (inD && !inB) add('b', p, JUSTIFIED[p] ? 'UZASADNIONE' : 'NIE_PRZYWROCONE', { poDeserializacji: true, poRestore: false, uwaga: justified(p) });
     else if (inA && !inB) add('b', p, JUSTIFIED[p] ? 'UZASADNIONE' : 'GUBIONE_PO_RESTORE', { poDeserializacji: inD, poRestore: false, uwaga: justified(p) });
     else if (!inD && inB) add('b', p, 'DODANE_PRZY_RESTORE', { poDeserializacji: false, poRestore: true });
-    else if (eq(fDes[p], fRawB[p])) add('b', p, 'OK', { poDeserializacji: true, poRestore: true });
+    else if (eq(fDes[p], fRawB[p])) add('b', p, okVerdict(fDes[p]), { poDeserializacji: true, poRestore: true });
     else add('b', p, 'ZMIENIONE_PO_RESTORE', { poDeserializacji: true, poRestore: true });
+  }
+
+  // (c) klucze najwyższego poziomu zwracane przez deserializeGame, których w zapisie A nie ma
+  // (np. pola warunkowe: autoMarch, plannedMarches, recruitGeneralId, rallyPoints). Ta próbka ich NIE testuje.
+  for (const k of Object.keys(des)) {
+    const present = Object.keys(fRawA).some((p) => p === k || p.startsWith(k + '.'));
+    if (!present) add('a', k, 'NIEPRZETESTOWANE_BRAK_W_PROBCE', { wZapisie: false, poDeserializacji: des[k] !== undefined });
   }
 
   const counts = {};
@@ -269,8 +284,10 @@ async function main() {
     const mDeser = loadDeserializer(mSrc, 'mut');
     mut = compare(rawAText, rawBText, mDeser.deserializeGame);
     report('MUTANT (usunieta linia ' + MUTATE + ')', mut);
-    const detected = mut.failing.some((r) => r.pole === MUTATE);
-    const observable = real.rawALedgerEntries !== null || rawAText.includes('"' + MUTATE + '"');
+    // Pole obiektowe (np. cityProd) ma w tabeli ścieżki podrzędne: cityProd.<...>; liczy się każda z nich.
+    const detected = mut.failing.some((r) => r.pole === MUTATE || r.pole.startsWith(MUTATE + '.'));
+    // Pole musi być w zapisie A, inaczej kontrola czułości nie ma czego wykryć (wcześniej: prawie zawsze true).
+    const observable = rawAText.includes('"' + MUTATE + '"');
     log('kontrola czulosci: pole ' + MUTATE + ' wykryte na mutancie=' + detected + ', obecne w zapisie A=' + rawAText.includes('"' + MUTATE + '"'));
     verdictOk = verdictOk && detected && observable;
   }
