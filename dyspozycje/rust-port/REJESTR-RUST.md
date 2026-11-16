@@ -2256,3 +2256,14 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Kandydaci z kolejki bez startu:** #135/#167 (wejścia zwarcia) — czeka na decyzję właściciela o kolejności względem RESOLVE-PAIR; #106 R7K7C-WIRING — decyzja pkt 4; #115 ZDOBYCIE-MIASTA-WIRING i #120 CRED-HAK — decyzje A/B; K5-AUTO-EXEC (port `_executeUnitsImmediate`) — wymaga dispatchu i decyzji o zmianie kontraktu `ActivateOps` (rekomendacja: zmiana); V15/V16 — po EXEC.
 - **Parity:** `7d8993c42` (bez zmian w tym ticku).
 - **Dysk:** 18 GB wolnego.
+
+## Przebieg (05:10 UTC — integracja RENDERER-ORDERS-CYTATY-Q1 na parity)
+
+- **Wynik workflow `wf_59b7fc97-124`:** Operator `1d766e1da` PASS-WITH-NOTES → Evaluator `dbbae6d35` PASS-WITH-NOTES (3 uwagi, nie blokują) → Obrona `ee1bce231` (przyjęła 2 z 3: hashe spoza pinu usunięte z nagłówka, komentarze >100 znaków zawinięte; zarzut o zakresie `:5979-5993` odrzucony — zgodny z tabelą 02a) → **FC PASS `59746d373`**.
+- **Ancestry i zakres:** `7d8993c42` jest przodkiem `59746d373`; merge-tree czysty; diff vs parity = `orders.rs` (35 linii, 0 linii niekomentarzowych) + dokumenty runu.
+- **Bramki na integracji (worktree w `59746d373`):** `cargo fmt --check` EXIT 0; `cargo clippy --all-targets -- -D warnings` EXIT 0; `cargo test --all-targets --no-fail-fast` **TEST_EXIT=0, 550 passed, 0 failed, 0 ignored** (renderer).
+- **FF:** `rust-port/parity-v2` = `59746d373` (readback `git ls-remote` zgodny). Ref: `refs/keep/R-RUSTPORT-P6-RENDERER-ORDERS-CYTATY-Q1-fc`.
+- **Uwaga:** dokument `02-evaluator.md` (`dbbae6d35`) nie wszedł do FC — jest na lokalnej gałęzi `rust-port-wip/…-eval-r1`. Uwagi Evaluatora przyjęte w części przez Obronę.
+- **NIE_ZMIERZONO:** skąd pochodzą pierwotne numery linii (sprzed poprawki) — poza zakresem tego tematu.
+- **Sprzątanie:** worktree `wf_59b7fc97-124-1..4` i worktree integracji usunięte; `target-integ-renderer-Q1` usunięty. Gałęzie lokalne `rust-port-wip/R-RUSTPORT-P6-RENDERER-ORDERS-CYTATY-Q1-*` zostawione (nie wypychane na zdalny). `scratchpad/target` niezidentyfikowany — nie ruszany.
+- **Sloty:** 1 z 4 — K5-BLOW-ENV-WEKTORY-Q1 (`wf_6ab179f1-525`, Operator, Haiku).
