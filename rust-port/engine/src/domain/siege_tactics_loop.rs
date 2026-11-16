@@ -38,6 +38,7 @@ use crate::domain::siege_tactics_blow_full::{
     FullBlowInput, FullBlowOutput,
 };
 use crate::domain::siege_tactics_clock::{ScheduleOutcome, VirtualClock};
+use crate::domain::siege_tactics_doctrine_state::ProdDoctrineState;
 use crate::domain::siege_tactics_end::BattleSide;
 use crate::domain::siege_tactics_endcheck::EndCheckOutcome;
 use crate::domain::siege_tactics_fastforward::{
@@ -881,6 +882,12 @@ pub struct ProdBody<R: RollSource> {
     pub is_army_commander: [Vec<bool>; 2],
     /// `ru.screenLostApplied` (`_checkMeleeScreenLost`, jednorazowe -50% morale strzelców).
     screen_lost_applied: [Vec<bool>; 2],
+    /// Stan doktryny każdej jednostki (K5DOC-PROD-UNIT-STAN): `unitDoctrine`, `groupId`, `rangedKite`, `shootingEnabled`,
+    /// `lastAutoMoveFrom`, `antiCavSpear`, `unitTargetPriorities`. `dryCol`, `heldAfterFallback`, `mounted` są w
+    /// `ProdUnit::activate` (ActivateUnit, K5H), jedynym źródle prawdy tych pól.
+    /// Tylko stan (wartości domyślne z pinu, patrz [`ProdDoctrineState`]); nic w tym ciele go jeszcze nie czyta.
+    /// Trzymany w ciele, a nie w [`ProdUnit`], bo literał `ProdUnit` jest też w `p6_k5loop_outcome_pin.rs` (poza allowlistą).
+    pub doctrine: [Vec<ProdDoctrineState>; 2],
 }
 
 impl<R: RollSource> ProdBody<R> {
@@ -907,6 +914,10 @@ impl<R: RollSource> ProdBody<R> {
         ];
         let is_army_commander = [vec![false; units[0].len()], vec![false; units[1].len()]];
         let screen_lost_applied = [vec![false; units[0].len()], vec![false; units[1].len()]];
+        let doctrine = [
+            vec![ProdDoctrineState::default(); units[0].len()],
+            vec![ProdDoctrineState::default(); units[1].len()],
+        ];
         Self {
             units,
             scene,
@@ -923,6 +934,7 @@ impl<R: RollSource> ProdBody<R> {
             morale_max,
             is_army_commander,
             screen_lost_applied,
+            doctrine,
         }
     }
 
@@ -934,6 +946,11 @@ impl<R: RollSource> ProdBody<R> {
     /// Aktualny `facing` jednostki (`ru.facing` w pinie).
     pub fn facing(&self, unit: UnitRef) -> f64 {
         self.facing[side_ix(unit.side)][unit.idx]
+    }
+
+    /// Stan doktryny jednostki (K5DOC-PROD-UNIT-STAN): tylko odczyt, wartości domyślne z pinu.
+    pub fn doctrine(&self, unit: UnitRef) -> &ProdDoctrineState {
+        &self.doctrine[side_ix(unit.side)][unit.idx]
     }
 
     /// `_updateFacing` (battleScene.ts:8334-8341): zwrot ku NAJBLIŻSZEMU żywemu wrogowi (`_nearestEnemy`, Manhattan,
