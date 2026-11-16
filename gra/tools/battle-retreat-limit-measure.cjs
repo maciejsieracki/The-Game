@@ -2,6 +2,10 @@
 // R-WEB-LIVE-VERIFY-ARMY-RETREAT-LIMIT-CAMPAIGN-Q1 (POMIAR, tylko odczyt; zero zmian w gra/src, gra/data):
 // prawdziwa bitwa 3D (BattleScene, Skip) + prawdziwy applyPostBattleMap w Chromium, na wejsciu entry
 // battle-retreat-limit-browser-entry.html (licznik odwrotow ?retreat=N, ziarno ?seed=S).
+// ZAKRES (r2, poprawka po zarzutach Evaluatora): tylko poziom bitwy. Wiersze retreat=0/2 NIE dowodza odwrotu:
+// w kazdym przebiegu loserSurvivorsExported=0 i loserRetreatDistances=[] (rosterSizes 28/28, przegrany ginie w calosci).
+// Parametry atkhp/defhp (URL entry) nie zmieniaja tego wyniku (probe r2: 1.0/0.35 i 0.35/1.0 -> loserDead=28).
+// Sklad armii jest stały w entry (battle-retreat-limit-browser-entry.ts, poza allowlista tego tematu).
 // UWAGA: to pomiar poziomu bitwy, NIE pelnej kampanii (brak hooka wymuszajacego kolejne przegrane bitwy
 // w zywej turze gry) -- raport zapisuje pomiar kampanii jako NIE ZMIERZONO.
 // Wynik: jedna linia JSON na przebieg + linia zbiorcza na koncu.
@@ -42,6 +46,8 @@ const retreats = argOf('retreats', '0,2,3').split(',').map(Number);
         seed, retreatN: retreat, timedOut, pageErrors: errors.length,
         winner: r ? r.winner : null, loserDead: r ? r.loserDead : null, loserOnMap: r ? r.loserOnMap : null,
         loserRetreatDistances: r ? r.loserRetreatDistances : null,
+        loserSurvivorsExported: r ? r.loserSurvivorsExported : null, loserDeadStillOnMap: r ? r.loserDeadStillOnMap : null,
+        atkOnMap: r ? r.atkOnMap : null, defOnMap: r ? r.defOnMap : null,
         defAnnihilated: r ? r.defAnnihilated : null, atkAnnihilated: r ? r.atkAnnihilated : null,
         defBudgetExhausted: r ? r.defBudgetExhausted : null, atkBudgetExhausted: r ? r.atkBudgetExhausted : null,
       };
