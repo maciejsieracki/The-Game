@@ -2497,3 +2497,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Czwarty slot wstrzymany:** dysk 7,8 GB; reguła 5 (CLAUDE.md) wymaga ≥ 8 GB dla tematów z kodem Rust.
 - **Integracje:** F6 zintegrowany (FF parity `0f3483e57`, wpis wyżej). Pozostają: I2 (merge `0e3c149fa` do powtórzenia na `0f3483e57`), FC 1F4 (po Obronie), FC 1F3 (`48ef28025`/`92dce8414`, po opłaceniu subskrypcji — wcześniej blokada płatności).
 - **Rozbieżność z harmonogramem:** prompt heartbeatu wymaga Haiku/Sonnet; reguła właściciela dla 3D to Opus we wszystkich rolach (zachowana).
+
+### Przebieg — heartbeat Rust, 2026-11-16 14:48 UTC
+
+- **Sloty: 3 z 4 aktywne.** P4-1I3 BATTLE-ACTIONS (Evaluator PASS-WITH-NOTES → Obrona), P4-1F5 REACH-PATH-VIEW (Evaluator → Obrona → FC, FC w toku), P4-1F4 TRADE-WORKERS-OKOLICA (recenzja: Evaluator PASS-WITH-NOTES → Obrona → FC w toku).
+- **Czwarty slot wstrzymany:** dysk 5,3 GB (reguła 5 wymaga ≥ 8 GB dla tematów z kodem Rust).
+- **Integracje:** brak nowych FC PASS do scalenia w tym przebiegu. Parity `0f3483e57` (F6). Do zrobienia: merge I2 (`0e3c149fa`) na `0f3483e57` z pełnym testem engine; FC 1F3 (po opłaceniu subskrypcji).
+- **Rozbieżność z harmonogramem:** prompt heartbeatu wymaga Haiku/Sonnet; reguła właściciela dla 3D to Opus we wszystkich rolach (zachowana).
