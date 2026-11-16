@@ -2887,3 +2887,15 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Runda integracyjna (`wf_3180bfbf-196`, Haiku Operator, Sonnet Evaluator/FC):** BAZA `87829df94`, DODATEK r2 w dispatchu `89833dac8`. Zadanie: pełna bramka `cargo test --all-targets --no-fail-fast` przy dysku ≥ 8 GB, bez zmian w kodzie. FF `parity-v2` dopiero po EXIT 0.
 - **Sprzątanie:** usunięte 5 worktree (T6 r1 `-1..-4` i recon). Dysk 9,7 GB przed startem rundy.
 - **Reguła:** Operatorzy Haiku; Evaluator i FC Sonnet. Decyzje gameplay poza tym przebiegiem.
+
+### Przebieg — heartbeat (2026-11-16 ~23:20 UTC): 4/4 slotów, dysk 7,1 GB
+
+- **Aktywne Workflow (4/4):**
+  - K5DOC-T4b `_advanceStep`, runda integracyjna (`wf_18327ef5-a0e`), Haiku; etap Evaluator. Baza: parity `32c84d6a9`, merge `d1dfff126`.
+  - K5DOC-T5a strzelec-kite, runda 2 (`wf_f88b947e-171`), Haiku; etap Obrona.
+  - K5DOC-T6 jazda, runda integracyjna (`wf_3180bfbf-196`), Haiku; etap Evaluator. Baza: `87829df94`.
+  - Rozpoznanie K5DOC-T7 falanga (`wf_925e25ab-958`), Haiku, tylko odczyt, bez cargo (dysk < 8 GB).
+- **Krok 2:** brak FC PASS bez integracji. T4b i T6 w integracji; po EXIT 0 pełnej bramki FF `parity-v2`.
+- **Krok 3:** worktree 9; zakończone usunięte w poprzednich przebiegach.
+- **Dysk:** 7,1 GB wolnego. Nowe tematy z kodem Rust nie startują poniżej 8 GB. Rozpoznanie nie kompiluje i nie zużywa targetu.
+- **Reguła:** Operatorzy Haiku; Evaluator i FC Sonnet. Decyzje gameplay poza tym przebiegiem (#358).
