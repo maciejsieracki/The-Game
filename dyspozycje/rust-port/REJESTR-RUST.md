@@ -2669,3 +2669,14 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Zamknięte:** #311. Mutacja (d) daje teraz FAIL; mutacje (a)(b)(c) dalej FAIL.
 - **W toku:** wektory AUTO V2 i V7 (#296, `wf_5fee88d9-4fc`, baza `d66aaa3a7`).
 - **Dysk:** 19 GB wolnego. **Otwarte:** push referencji `keep` odrzucany przez proxy; trailer commitu `463fb2636` z nazwą modelu (decyzja #289).
+
+### Przebieg — uzupełnienie slotów po uwadze właściciela, 2026-11-16 ~19:20 UTC
+
+- **Parity:** `0fccd8dbf`, bez zmian.
+- **Sloty: 3 z 4 aktywne:**
+  - Wektory AUTO V2 i V7 (#296, HAIKU Operator, SONNET Evaluator i FC, `wf_5fee88d9-4fc`, baza `d66aaa3a7`).
+  - Wektory NaN/Inf/ułamków amunicji i maxRounds (#137, V-A1, V-A2, V-A3, V-K2, V-K3; test-only, `wf_a2bf4706-6d5`, dispatch `3049a42c2`, baza `0fccd8dbf`). Reguła konwersji z §4 rozpoznania przyjęta jako decyzja techniczna orkiestratora; V-K1 i V-M3 poza zakresem.
+  - Rozpoznanie wpięcia złóż (#300, tylko odczyt, ten sam workflow `wf_a2bf4706-6d5`).
+- **Czwarty slot wolny:** kandydaci czekają na decyzje (#308, #97, #282, #100, #115/#120, #135, #310 D1–D6) albo zależą od niezintegrowanego kodu (#304, #165, #298 po #282, #297 po #253).
+- **Dysk:** 19 GB wolnego.
+- **Otwarte:** push referencji `keep` odrzucany przez proxy; trailer `463fb2636` z nazwą modelu (decyzja #289).
