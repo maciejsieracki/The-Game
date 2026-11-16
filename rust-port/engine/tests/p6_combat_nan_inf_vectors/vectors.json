@@ -1,0 +1,2041 @@
+{
+ "source": {
+  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "files": [
+   "gra/src/game/combat.ts",
+   "gra/src/game/unit-power.ts",
+   "gra/data/units.json"
+  ],
+  "fragmentSha256": "700d16235700836e4c5eb9e49d697556e9e1bbe21331c98dd1d535a314bd7837",
+  "auxSha256": "799b1a9ad9f4e158fa723b33578f824f77990c1b23102d2ffefac0a7db7eec67",
+  "paramsFile": "gra/data/combat-params.json",
+  "paramsSha256": "5cc90d60c76da67039a1330261a00584933216c8ec80bff3db5183b05c07326e"
+ },
+ "ranged_damage_mult": {
+  "_opis": "R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1 (decyzja wlasciciela 2026-11-09): mnoznik obrazen POCISKU (finalnie, po pancerzu i kontrach, przed zaokragleniem do int, podloga 1). slinger = jednostki Typ 'Slinger' (Procarz, Procarz (Huaracoc)) x3. lucznik_piesi = piesi lucznicy: Typ 'Distance' o nazwie zaczynajacej sie od 'Lucznik' (Lucznik + warianty cywilizacyjne) x2. Oszczepnicy (Typ Distance, nazwa Oszczepnik) i strzelcy konni (Typ Mount) BEZ zmian. Jedna implementacja: game/unit-power.ts rangedDamageMultFor() (uzywana przez combat.ts rangedShotDamage i battleScene.ts _singleBlow, oraz fieldPower/armyFieldPower).",
+  "slinger": 3,
+  "lucznik_piesi": 2
+ },
+ "tw_v3": {
+  "hit_base": 40,
+  "hit_min": 15,
+  "hit_max": 75,
+  "max_rounds": 200
+ },
+ "counts": {
+  "cases": 18,
+  "rustApplicable": 16,
+  "rustNotMeasured": 2,
+  "byGroup": {
+   "V-A1": 8,
+   "V-A2": 1,
+   "V-A3": 1,
+   "V-K2": 8
+  },
+  "shotsPin": 18
+ },
+ "cases": [
+  {
+   "id": "V-A1-NaN",
+   "group": "V-A1",
+   "desc": "ammoAtk = NaN (override), obronca bez dystansu, maxRounds = 5",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Łucznik (test)",
+      "counterTyp": "Distance",
+      "typNazwa": "Łucznik",
+      "unbreakable": false,
+      "missileAttack": 3
+     },
+     "defender": {
+      "unitName": "Włócznik (test)",
+      "counterTyp": "Spearman",
+      "typNazwa": "Włócznik",
+      "unbreakable": false,
+      "missileAttack": 0
+     },
+     "atkIsRanged": true,
+     "defIsRanged": false,
+     "ammoAtk": "NaN",
+     "ammoDef": 0,
+     "ammoAtkOverride": "NaN",
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": "NaN",
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   },
+   "rust": {
+    "applicable": true,
+    "proxy": "NaN -> 0",
+    "ammoAtk": 0,
+    "ammoDef": 0,
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   }
+  },
+  {
+   "id": "V-A1-+Inf",
+   "group": "V-A1",
+   "desc": "ammoAtk = +Inf (override), obronca bez dystansu, maxRounds = 5",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Łucznik (test)",
+      "counterTyp": "Distance",
+      "typNazwa": "Łucznik",
+      "unbreakable": false,
+      "missileAttack": 3
+     },
+     "defender": {
+      "unitName": "Włócznik (test)",
+      "counterTyp": "Spearman",
+      "typNazwa": "Włócznik",
+      "unbreakable": false,
+      "missileAttack": 0
+     },
+     "atkIsRanged": true,
+     "defIsRanged": false,
+     "ammoAtk": "Infinity",
+     "ammoDef": 0,
+     "ammoAtkOverride": "Infinity",
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 40,
+     "ammoAtk": "Infinity",
+     "ammoDef": 0,
+     "rounds": 6,
+     "routed": [],
+     "shots": [
+      {
+       "round": 1,
+       "side": "attacker",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 70
+      },
+      {
+       "round": 2,
+       "side": "attacker",
+       "hit": false,
+       "hitPct": 50,
+       "damage": 0,
+       "targetHp": null
+      },
+      {
+       "round": 3,
+       "side": "attacker",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 40
+      },
+      {
+       "round": 4,
+       "side": "attacker",
+       "hit": false,
+       "hitPct": 50,
+       "damage": 0,
+       "targetHp": null
+      },
+      {
+       "round": 5,
+       "side": "attacker",
+       "hit": false,
+       "hitPct": 50,
+       "damage": 0,
+       "targetHp": null
+      }
+     ],
+     "hasHeader": true,
+     "hasLimit": true,
+     "drawsUsed": 5
+    }
+   },
+   "rust": {
+    "applicable": true,
+    "proxy": "+Inf -> 1000000",
+    "ammoAtk": 1000000,
+    "ammoDef": 0,
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 40,
+     "ammoAtk": 999995,
+     "ammoDef": 0,
+     "rounds": 6,
+     "routed": [],
+     "shots": [
+      {
+       "round": 1,
+       "side": "attacker",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 70
+      },
+      {
+       "round": 2,
+       "side": "attacker",
+       "hit": false,
+       "hitPct": 50,
+       "damage": 0,
+       "targetHp": null
+      },
+      {
+       "round": 3,
+       "side": "attacker",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 40
+      },
+      {
+       "round": 4,
+       "side": "attacker",
+       "hit": false,
+       "hitPct": 50,
+       "damage": 0,
+       "targetHp": null
+      },
+      {
+       "round": 5,
+       "side": "attacker",
+       "hit": false,
+       "hitPct": 50,
+       "damage": 0,
+       "targetHp": null
+      }
+     ],
+     "hasHeader": true,
+     "hasLimit": true,
+     "drawsUsed": 5
+    }
+   }
+  },
+  {
+   "id": "V-A1--Inf",
+   "group": "V-A1",
+   "desc": "ammoAtk = -Inf (override), obronca bez dystansu, maxRounds = 5",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Łucznik (test)",
+      "counterTyp": "Distance",
+      "typNazwa": "Łucznik",
+      "unbreakable": false,
+      "missileAttack": 3
+     },
+     "defender": {
+      "unitName": "Włócznik (test)",
+      "counterTyp": "Spearman",
+      "typNazwa": "Włócznik",
+      "unbreakable": false,
+      "missileAttack": 0
+     },
+     "atkIsRanged": true,
+     "defIsRanged": false,
+     "ammoAtk": "-Infinity",
+     "ammoDef": 0,
+     "ammoAtkOverride": "-Infinity",
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": "-Infinity",
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   },
+   "rust": {
+    "applicable": true,
+    "proxy": "-Inf -> -1000000",
+    "ammoAtk": -1000000,
+    "ammoDef": 0,
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": -1000000,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   }
+  },
+  {
+   "id": "V-A1--0",
+   "group": "V-A1",
+   "desc": "ammoAtk = -0 (override), obronca bez dystansu, maxRounds = 5",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Łucznik (test)",
+      "counterTyp": "Distance",
+      "typNazwa": "Łucznik",
+      "unbreakable": false,
+      "missileAttack": 3
+     },
+     "defender": {
+      "unitName": "Włócznik (test)",
+      "counterTyp": "Spearman",
+      "typNazwa": "Włócznik",
+      "unbreakable": false,
+      "missileAttack": 0
+     },
+     "atkIsRanged": true,
+     "defIsRanged": false,
+     "ammoAtk": "-0",
+     "ammoDef": 0,
+     "ammoAtkOverride": "-0",
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": "-0",
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   },
+   "rust": {
+    "applicable": true,
+    "proxy": "-0 -> 0 (ammo: i64, znak zera bez znaczenia dla ammo > 0)",
+    "ammoAtk": 0,
+    "ammoDef": 0,
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   }
+  },
+  {
+   "id": "V-A1-0",
+   "group": "V-A1",
+   "desc": "ammoAtk = 0 (override), obronca bez dystansu, maxRounds = 5",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Łucznik (test)",
+      "counterTyp": "Distance",
+      "typNazwa": "Łucznik",
+      "unbreakable": false,
+      "missileAttack": 3
+     },
+     "defender": {
+      "unitName": "Włócznik (test)",
+      "counterTyp": "Spearman",
+      "typNazwa": "Włócznik",
+      "unbreakable": false,
+      "missileAttack": 0
+     },
+     "atkIsRanged": true,
+     "defIsRanged": false,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "ammoAtkOverride": 0,
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   },
+   "rust": {
+    "applicable": true,
+    "proxy": null,
+    "ammoAtk": 0,
+    "ammoDef": 0,
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   }
+  },
+  {
+   "id": "V-A1-0.5",
+   "group": "V-A1",
+   "desc": "ammoAtk = 0.5 (override), obronca bez dystansu, maxRounds = 5",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Łucznik (test)",
+      "counterTyp": "Distance",
+      "typNazwa": "Łucznik",
+      "unbreakable": false,
+      "missileAttack": 3
+     },
+     "defender": {
+      "unitName": "Włócznik (test)",
+      "counterTyp": "Spearman",
+      "typNazwa": "Włócznik",
+      "unbreakable": false,
+      "missileAttack": 0
+     },
+     "atkIsRanged": true,
+     "defIsRanged": false,
+     "ammoAtk": "0.5",
+     "ammoDef": 0,
+     "ammoAtkOverride": "0.5",
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 70,
+     "ammoAtk": "-0.5",
+     "ammoDef": 0,
+     "rounds": 1,
+     "routed": [],
+     "shots": [
+      {
+       "round": 1,
+       "side": "attacker",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 70
+      }
+     ],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 1
+    }
+   },
+   "rust": {
+    "applicable": false,
+    "skip": "ammo ulamkowe (0.5 / 2.5): i64 nie przenosi ulamka, a zaokraglenie to niewdrozona decyzja (recon §4); pin-only"
+   }
+  },
+  {
+   "id": "V-A1-1",
+   "group": "V-A1",
+   "desc": "ammoAtk = 1 (override), obronca bez dystansu, maxRounds = 5",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Łucznik (test)",
+      "counterTyp": "Distance",
+      "typNazwa": "Łucznik",
+      "unbreakable": false,
+      "missileAttack": 3
+     },
+     "defender": {
+      "unitName": "Włócznik (test)",
+      "counterTyp": "Spearman",
+      "typNazwa": "Włócznik",
+      "unbreakable": false,
+      "missileAttack": 0
+     },
+     "atkIsRanged": true,
+     "defIsRanged": false,
+     "ammoAtk": 1,
+     "ammoDef": 0,
+     "ammoAtkOverride": 1,
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 70,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 1,
+     "routed": [],
+     "shots": [
+      {
+       "round": 1,
+       "side": "attacker",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 70
+      }
+     ],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 1
+    }
+   },
+   "rust": {
+    "applicable": true,
+    "proxy": null,
+    "ammoAtk": 1,
+    "ammoDef": 0,
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 70,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 1,
+     "routed": [],
+     "shots": [
+      {
+       "round": 1,
+       "side": "attacker",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 70
+      }
+     ],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 1
+    }
+   }
+  },
+  {
+   "id": "V-A1-2.5",
+   "group": "V-A1",
+   "desc": "ammoAtk = 2.5 (override), obronca bez dystansu, maxRounds = 5",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Łucznik (test)",
+      "counterTyp": "Distance",
+      "typNazwa": "Łucznik",
+      "unbreakable": false,
+      "missileAttack": 3
+     },
+     "defender": {
+      "unitName": "Włócznik (test)",
+      "counterTyp": "Spearman",
+      "typNazwa": "Włócznik",
+      "unbreakable": false,
+      "missileAttack": 0
+     },
+     "atkIsRanged": true,
+     "defIsRanged": false,
+     "ammoAtk": "2.5",
+     "ammoDef": 0,
+     "ammoAtkOverride": "2.5",
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 40,
+     "ammoAtk": "-0.5",
+     "ammoDef": 0,
+     "rounds": 3,
+     "routed": [],
+     "shots": [
+      {
+       "round": 1,
+       "side": "attacker",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 70
+      },
+      {
+       "round": 2,
+       "side": "attacker",
+       "hit": false,
+       "hitPct": 50,
+       "damage": 0,
+       "targetHp": null
+      },
+      {
+       "round": 3,
+       "side": "attacker",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 40
+      }
+     ],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 3
+    }
+   },
+   "rust": {
+    "applicable": false,
+    "skip": "ammo ulamkowe (0.5 / 2.5): i64 nie przenosi ulamka, a zaokraglenie to niewdrozona decyzja (recon §4); pin-only"
+   }
+  },
+  {
+   "id": "V-A2-NaN-vs-3",
+   "group": "V-A2",
+   "desc": "ammoAtk = NaN, ammoDef = 3, obaj dystansowi, maxRounds = 5",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Łucznik (test)",
+      "counterTyp": "Distance",
+      "typNazwa": "Łucznik",
+      "unbreakable": false,
+      "missileAttack": 3
+     },
+     "defender": {
+      "unitName": "Łucznik (test)",
+      "counterTyp": "Distance",
+      "typNazwa": "Łucznik",
+      "unbreakable": false,
+      "missileAttack": 3
+     },
+     "atkIsRanged": true,
+     "defIsRanged": true,
+     "ammoAtk": "NaN",
+     "ammoDef": 3,
+     "ammoAtkOverride": "NaN",
+     "ammoDefOverride": 3,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 40,
+     "hpDef": 100,
+     "ammoAtk": "NaN",
+     "ammoDef": 0,
+     "rounds": 3,
+     "routed": [],
+     "shots": [
+      {
+       "round": 1,
+       "side": "defender",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 70
+      },
+      {
+       "round": 2,
+       "side": "defender",
+       "hit": false,
+       "hitPct": 50,
+       "damage": 0,
+       "targetHp": null
+      },
+      {
+       "round": 3,
+       "side": "defender",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 40
+      }
+     ],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 3
+    }
+   },
+   "rust": {
+    "applicable": true,
+    "proxy": "NaN -> 0",
+    "ammoAtk": 0,
+    "ammoDef": 3,
+    "expected": {
+     "hpAtk": 40,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 3,
+     "routed": [],
+     "shots": [
+      {
+       "round": 1,
+       "side": "defender",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 70
+      },
+      {
+       "round": 2,
+       "side": "defender",
+       "hit": false,
+       "hitPct": 50,
+       "damage": 0,
+       "targetHp": null
+      },
+      {
+       "round": 3,
+       "side": "defender",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 40
+      }
+     ],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 3
+    }
+   }
+  },
+  {
+   "id": "V-A3-Inf-max5",
+   "group": "V-A3",
+   "desc": "ammoAtk = +Infinity, obronca bez dystansu, maxRounds = 5 (oczekiwany log limitu)",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Łucznik (test)",
+      "counterTyp": "Distance",
+      "typNazwa": "Łucznik",
+      "unbreakable": false,
+      "missileAttack": 3
+     },
+     "defender": {
+      "unitName": "Włócznik (test)",
+      "counterTyp": "Spearman",
+      "typNazwa": "Włócznik",
+      "unbreakable": false,
+      "missileAttack": 0
+     },
+     "atkIsRanged": true,
+     "defIsRanged": false,
+     "ammoAtk": "Infinity",
+     "ammoDef": 0,
+     "ammoAtkOverride": "Infinity",
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 40,
+     "ammoAtk": "Infinity",
+     "ammoDef": 0,
+     "rounds": 6,
+     "routed": [],
+     "shots": [
+      {
+       "round": 1,
+       "side": "attacker",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 70
+      },
+      {
+       "round": 2,
+       "side": "attacker",
+       "hit": false,
+       "hitPct": 50,
+       "damage": 0,
+       "targetHp": null
+      },
+      {
+       "round": 3,
+       "side": "attacker",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 40
+      },
+      {
+       "round": 4,
+       "side": "attacker",
+       "hit": false,
+       "hitPct": 50,
+       "damage": 0,
+       "targetHp": null
+      },
+      {
+       "round": 5,
+       "side": "attacker",
+       "hit": false,
+       "hitPct": 50,
+       "damage": 0,
+       "targetHp": null
+      }
+     ],
+     "hasHeader": true,
+     "hasLimit": true,
+     "drawsUsed": 5
+    }
+   },
+   "rust": {
+    "applicable": true,
+    "proxy": "+Inf -> 1000000",
+    "ammoAtk": 1000000,
+    "ammoDef": 0,
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 40,
+     "ammoAtk": 999995,
+     "ammoDef": 0,
+     "rounds": 6,
+     "routed": [],
+     "shots": [
+      {
+       "round": 1,
+       "side": "attacker",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 70
+      },
+      {
+       "round": 2,
+       "side": "attacker",
+       "hit": false,
+       "hitPct": 50,
+       "damage": 0,
+       "targetHp": null
+      },
+      {
+       "round": 3,
+       "side": "attacker",
+       "hit": true,
+       "hitPct": 50,
+       "damage": 30,
+       "targetHp": 40
+      },
+      {
+       "round": 4,
+       "side": "attacker",
+       "hit": false,
+       "hitPct": 50,
+       "damage": 0,
+       "targetHp": null
+      },
+      {
+       "round": 5,
+       "side": "attacker",
+       "hit": false,
+       "hitPct": 50,
+       "damage": 0,
+       "targetHp": null
+      }
+     ],
+     "hasHeader": true,
+     "hasLimit": true,
+     "drawsUsed": 5
+    }
+   }
+  },
+  {
+   "id": "V-K2-Drużynnik-vs-Wlocznik",
+   "group": "V-K2",
+   "desc": "Drużynnik: missileAttack=7, ammo '—' (-> 0); obronca bez dystansu",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Drużynnik",
+      "counterTyp": "Swordsman",
+      "typNazwa": "Drużynnik",
+      "unbreakable": false,
+      "missileAttack": 7
+     },
+     "defender": {
+      "unitName": "Włócznik (test)",
+      "counterTyp": "Spearman",
+      "typNazwa": "Włócznik",
+      "unbreakable": false,
+      "missileAttack": 0
+     },
+     "atkIsRanged": true,
+     "defIsRanged": false,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "ammoAtkOverride": null,
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   },
+   "rust": {
+    "applicable": true,
+    "proxy": null,
+    "ammoAtk": 0,
+    "ammoDef": 0,
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   }
+  },
+  {
+   "id": "V-K2-Drużynnik-vs-self",
+   "group": "V-K2",
+   "desc": "Drużynnik vs Drużynnik: oba dystansowe z ammo '—' (-> 0)",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Drużynnik",
+      "counterTyp": "Swordsman",
+      "typNazwa": "Drużynnik",
+      "unbreakable": false,
+      "missileAttack": 7
+     },
+     "defender": {
+      "unitName": "Drużynnik",
+      "counterTyp": "Swordsman",
+      "typNazwa": "Drużynnik",
+      "unbreakable": false,
+      "missileAttack": 7
+     },
+     "atkIsRanged": true,
+     "defIsRanged": true,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "ammoAtkOverride": null,
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   },
+   "rust": {
+    "applicable": true,
+    "proxy": null,
+    "ammoAtk": 0,
+    "ammoDef": 0,
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   }
+  },
+  {
+   "id": "V-K2-Thorakites-vs-Wlocznik",
+   "group": "V-K2",
+   "desc": "Thorakites: missileAttack=6, ammo '—' (-> 0); obronca bez dystansu",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Thorakites",
+      "counterTyp": "Spearman",
+      "typNazwa": "Thorakites",
+      "unbreakable": false,
+      "missileAttack": 6
+     },
+     "defender": {
+      "unitName": "Włócznik (test)",
+      "counterTyp": "Spearman",
+      "typNazwa": "Włócznik",
+      "unbreakable": false,
+      "missileAttack": 0
+     },
+     "atkIsRanged": true,
+     "defIsRanged": false,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "ammoAtkOverride": null,
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   },
+   "rust": {
+    "applicable": true,
+    "proxy": null,
+    "ammoAtk": 0,
+    "ammoDef": 0,
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   }
+  },
+  {
+   "id": "V-K2-Thorakites-vs-self",
+   "group": "V-K2",
+   "desc": "Thorakites vs Thorakites: oba dystansowe z ammo '—' (-> 0)",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Thorakites",
+      "counterTyp": "Spearman",
+      "typNazwa": "Thorakites",
+      "unbreakable": false,
+      "missileAttack": 6
+     },
+     "defender": {
+      "unitName": "Thorakites",
+      "counterTyp": "Spearman",
+      "typNazwa": "Thorakites",
+      "unbreakable": false,
+      "missileAttack": 6
+     },
+     "atkIsRanged": true,
+     "defIsRanged": true,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "ammoAtkOverride": null,
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   },
+   "rust": {
+    "applicable": true,
+    "proxy": null,
+    "ammoAtk": 0,
+    "ammoDef": 0,
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   }
+  },
+  {
+   "id": "V-K2-Evocati-vs-Wlocznik",
+   "group": "V-K2",
+   "desc": "Evocati: missileAttack=6, ammo '—' (-> 0); obronca bez dystansu",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Evocati",
+      "counterTyp": "Swordsman",
+      "typNazwa": "Evocati",
+      "unbreakable": false,
+      "missileAttack": 6
+     },
+     "defender": {
+      "unitName": "Włócznik (test)",
+      "counterTyp": "Spearman",
+      "typNazwa": "Włócznik",
+      "unbreakable": false,
+      "missileAttack": 0
+     },
+     "atkIsRanged": true,
+     "defIsRanged": false,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "ammoAtkOverride": null,
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   },
+   "rust": {
+    "applicable": true,
+    "proxy": null,
+    "ammoAtk": 0,
+    "ammoDef": 0,
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   }
+  },
+  {
+   "id": "V-K2-Evocati-vs-self",
+   "group": "V-K2",
+   "desc": "Evocati vs Evocati: oba dystansowe z ammo '—' (-> 0)",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Evocati",
+      "counterTyp": "Swordsman",
+      "typNazwa": "Evocati",
+      "unbreakable": false,
+      "missileAttack": 6
+     },
+     "defender": {
+      "unitName": "Evocati",
+      "counterTyp": "Swordsman",
+      "typNazwa": "Evocati",
+      "unbreakable": false,
+      "missileAttack": 6
+     },
+     "atkIsRanged": true,
+     "defIsRanged": true,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "ammoAtkOverride": null,
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   },
+   "rust": {
+    "applicable": true,
+    "proxy": null,
+    "ammoAtk": 0,
+    "ammoDef": 0,
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   }
+  },
+  {
+   "id": "V-K2-Gwardzista z champi-vs-Wlocznik",
+   "group": "V-K2",
+   "desc": "Gwardzista z champi: missileAttack=5, ammo '—' (-> 0); obronca bez dystansu",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Gwardzista z champi",
+      "counterTyp": "Offensive",
+      "typNazwa": "Gwardzista z champi",
+      "unbreakable": false,
+      "missileAttack": 5
+     },
+     "defender": {
+      "unitName": "Włócznik (test)",
+      "counterTyp": "Spearman",
+      "typNazwa": "Włócznik",
+      "unbreakable": false,
+      "missileAttack": 0
+     },
+     "atkIsRanged": true,
+     "defIsRanged": false,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "ammoAtkOverride": null,
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   },
+   "rust": {
+    "applicable": true,
+    "proxy": null,
+    "ammoAtk": 0,
+    "ammoDef": 0,
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   }
+  },
+  {
+   "id": "V-K2-Gwardzista z champi-vs-self",
+   "group": "V-K2",
+   "desc": "Gwardzista z champi vs Gwardzista z champi: oba dystansowe z ammo '—' (-> 0)",
+   "draws": [
+    "0.3",
+    "0.9",
+    "0.1",
+    "0.5",
+    "0.7",
+    "0.2",
+    "0.95",
+    "0.05",
+    "0.6",
+    "0.4",
+    "0.8",
+    "0.15",
+    "0.35",
+    "0.65",
+    "0.25",
+    "0.85",
+    "0.45",
+    "0.55",
+    "0.75",
+    "0.5"
+   ],
+   "pin": {
+    "input": {
+     "attacker": {
+      "unitName": "Gwardzista z champi",
+      "counterTyp": "Offensive",
+      "typNazwa": "Gwardzista z champi",
+      "unbreakable": false,
+      "missileAttack": 5
+     },
+     "defender": {
+      "unitName": "Gwardzista z champi",
+      "counterTyp": "Offensive",
+      "typNazwa": "Gwardzista z champi",
+      "unbreakable": false,
+      "missileAttack": 5
+     },
+     "atkIsRanged": true,
+     "defIsRanged": true,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "ammoAtkOverride": null,
+     "ammoDefOverride": null,
+     "hpAtk": 100,
+     "hpDef": 100,
+     "totalRounds": 0,
+     "maxRounds": 5,
+     "atkMelee0": 10,
+     "atkMissile0": 20,
+     "atkObrona0": 10,
+     "atkPanc0": 5,
+     "defMelee0": 10,
+     "defMissile0": 20,
+     "defPanc0": 5,
+     "defFinalObrona": 10,
+     "terrRiverMult": 1,
+     "ctrAtkVsDef": 1,
+     "ctrDefVsAtk": 1,
+     "routAtk": 0,
+     "routDef": 0
+    },
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   },
+   "rust": {
+    "applicable": true,
+    "proxy": null,
+    "ammoAtk": 0,
+    "ammoDef": 0,
+    "expected": {
+     "hpAtk": 100,
+     "hpDef": 100,
+     "ammoAtk": 0,
+     "ammoDef": 0,
+     "rounds": 0,
+     "routed": [],
+     "shots": [],
+     "hasHeader": true,
+     "hasLimit": false,
+     "drawsUsed": 0
+    }
+   }
+  }
+ ]
+}
