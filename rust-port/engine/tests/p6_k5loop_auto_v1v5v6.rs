@@ -21,17 +21,17 @@ use serde_json::{json, Value};
 const VECTORS: &str = include_str!("p6_k5loop_auto_vectors/vectors.json");
 
 /// Srodowisko wstrzykniete: bez RNG; koniec bitwy i zasieg ciosu sterowane z wektora.
+/// `planned` zapisuje, w kolejnosci wywolan, `unit_id` kazdej jednostki przekazanej do planowania fali
+/// (`snapshot_auto_batch_intents`, czyli lista `units` z `begin_auto_batch_phase`) -- zrodlo `begin_phase_calls.ids`,
+/// a nie `st.resolutions`, zgodnie z pinem (`gen.mjs` zapisuje ids z argumentu `units`).
 struct VecEnv {
     end: bool,
+    planned: Vec<String>,
 }
 
 impl AutoBatchEnv for VecEnv {
-    fn plan_unit(
-        &mut self,
-        _board: &mut BatchBoard,
-        _unit_id: &str,
-        _intent: &mut AutoBatchIntent,
-    ) {
+    fn plan_unit(&mut self, _board: &mut BatchBoard, unit_id: &str, _intent: &mut AutoBatchIntent) {
+        self.planned.push(unit_id.to_string());
     }
     fn check_end(&mut self, st: &mut BatchState) -> bool {
         if self.end {
@@ -162,6 +162,7 @@ fn run_vector(setup: &Value) -> Value {
     let mut st = build_state(setup);
     let mut env = VecEnv {
         end: flag(setup, "check_end"),
+        planned: Vec::new(),
     };
     let mut out: Vec<BatchEvent> = Vec::new();
     let mut scanned = 0usize;
@@ -252,13 +253,15 @@ fn run_vector(setup: &Value) -> Value {
             _ => {}
         }
     }
-    // Kazde wywolanie fazy emituje dokladnie jeden baner; w wektorach jest co najwyzej jedno takie wywolanie.
+    // Kazde wywolanie fazy emituje dokladnie jeden baner; w wektorach jest co najwyzej jedno takie wywolanie
+    // (straznik generatora pinu). `ids` = jednostki przekazane do planowania (`env.planned`), nie `st.resolutions`:
+    // filtr obroncow w `finish_auto_batch_phase` (pin :5964) jest obserwowalny dopiero po tej liście.
     let begin_phase_calls: Vec<Value> = if banners.is_empty() {
         Vec::new()
     } else {
         vec![json!({
             "side": phase_value(&st.phase).as_str().unwrap(),
-            "ids": st.resolutions.iter().map(|r| r.unit_id.clone()).collect::<Vec<String>>(),
+            "ids": env.planned.clone(),
         })]
     };
 
