@@ -32426,6 +32426,11 @@ async function boot(): Promise<void> {
       // (tylko ?civTest=1; bez tego hak nie istnieje). Zero zapisu do stanu gry.
       (window as any).__aiEconomyMeasure = {
         schemaVersion: 1,
+        /** R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 (tylko odczyt, ?civTest=1): rozmiar dziennika w pamieci (wszyscy wlasciciele). */
+        ledgerStats: (): { entries: number; bytes: number } => {
+          const h = ledgerHistoryToSave();
+          return { entries: Array.isArray(h) ? h.length : -1, bytes: JSON.stringify(h).length };
+        },
         /** Metryki wszystkich nie-barbarzyńskich właścicieli (gracz + AI + państwa-miasta) na bieżącą turę. */
         metrics: () => {
           const r2 = (x: number): number => Math.round(x * 100) / 100;

@@ -63,6 +63,14 @@ function shapeProblems(metrics, requiredKeys) {
   return problems;
 }
 
+/** R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 (DODATEK 2 Z4): ksztalt ledgerStats = {entries: liczba>=0, bytes: liczba>=2 ("[]")}. */
+function ledgerShapeProblems(ls) {
+  const problems = [];
+  if (!ls || typeof ls.entries !== 'number' || !(ls.entries >= 0)) problems.push('entries nie jest liczba >=0');
+  if (!ls || typeof ls.bytes !== 'number' || !(ls.bytes >= 2)) problems.push('bytes nie jest liczba >=2');
+  return problems;
+}
+
 async function openNewGame(browser, distDir) {
   const page = await browser.newPage();
   await page.goto('file://' + path.join(distDir, 'index.html') + '?civTest=1&civSeed=' + SEED, { waitUntil: 'load', timeout: 180000 });
@@ -171,6 +179,9 @@ async function fullChecks(browser) {
     'owners=' + metrics.owners.length + ' bezWiersza=' + JSON.stringify(metrics.diag.aiStartOwnersBezWiersza));
   check('po starcie AI maja miasta: liczba wlascicieli z miastem > 1 (gracz + AI)', metrics.owners.filter(o => o.miasta > 0).length > 1, 'z miastem=' + metrics.owners.filter(o => o.miasta > 0).length);
   check('niezmierzone wymienia przychod/utrate (nie udajemy pomiaru)', Array.isArray(metrics.niezmierzone) && metrics.niezmierzone.includes('przychodNaTure'));
+  const ls0 = await page.evaluate(() => window.__aiEconomyMeasure.ledgerStats());
+  const lsProbs = ledgerShapeProblems(ls0);
+  check('ksztalt ledgerStats: {entries, bytes} liczbowe (rozmiar ksiegi N=10, hak civTest)', lsProbs.length === 0, lsProbs.join('; ') || JSON.stringify(ls0));
 
   // 3) obejscie bramki NNS gracza (tura 1).
   const blockedDefault = await page.evaluate(() => window.__aiTradeWiringTestDebug.nnsGateBlocked());
@@ -228,6 +239,9 @@ async function fullChecks(browser) {
     const mm = await mpage.evaluate(() => window.__aiEconomyMeasure.metrics());
     const mutantProbs = shapeProblems(mm, OWNER_KEYS);
     check('mutacja realna (zepsuty hak w bundle) jest CZERWONA', mutantProbs.length > 0, mutantProbs.slice(0, 3).join('; ') || 'brak problemow -- test slepy');
+    const mls = await mpage.evaluate(() => window.__aiEconomyMeasure.ledgerStats());
+    const mlsProbs = ledgerShapeProblems(mls);
+    check('mutacja realna ledgerStats (zepsuty hak w bundle) jest CZERWONA', mlsProbs.length > 0, mlsProbs.join('; ') || 'brak problemow -- test slepy (ledgerStats=' + JSON.stringify(mls) + ')');
     await mpage.close();
   }
 }

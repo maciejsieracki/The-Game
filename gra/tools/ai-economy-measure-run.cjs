@@ -59,6 +59,7 @@ const BYPASS = arg('bypass', '1') !== '0';
 const RESUME_TEST = arg('resume-test', '0') === '1';
 const HASH = arg('hash', '0') === '1' || RESUME_TEST;
 const FAST = arg('fast', '1') !== '0';
+const LEDGER_OFF = arg('ledger-off', '0') === '1';
 const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'ai-economy-dist')));
 const PROFILE = path.resolve(arg('profile', path.join(os.tmpdir(), 'ai-economy-profile')));
 const OUT = path.resolve(arg('out', path.join(GRA_DIR, 'ai-economy-out')));
@@ -71,6 +72,8 @@ const CHROME = process.env.CHROME_PATH || '/usr/bin/chromium';
 const TURN_TIMEOUT_MS = 300000;
 /** Prefiks zrzutow migawek (diagnostyka, tylko przy SNAP_DUMP); w wznowieniu 'res'. */
 let SNAP_PREFIX = process.env.SNAP_DUMP || '';
+/** Tura startowa biezacego segmentu (po wczytaniu slotu); pierwsza tura po niej = rozgrzewka (odrzucana w analizie). */
+let RUN_START_TURN = 0;
 
 /** Liczniki przebiegu (zapisywane w state.json po KAZDEJ turze i w summary.json). */
 const COUNTER_KEYS = ['gateActiveTurns', 'bypassApplied', 'stuckQueueHeals', 'battlesAuto',
@@ -221,6 +224,13 @@ async function openGame(ctx, { fresh }) {
   }
   await suppressVictory(page);
   if (FAST) await page.evaluate(() => window.__aiTradeWiringTestDebug.setFastMode(true));
+  // R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1: wariant OFF = zapis do ksiegi zrodel wylaczony przez
+  // __ledgerTestDebug.setRecording(false) (stan gry nietkniety, tylko zapis do ksiegi). Wariant ON = domyslnie.
+  if (LEDGER_OFF) {
+    const rec = await page.evaluate(() => { try { return window.__ledgerTestDebug.setRecording(false); } catch (e) { return 'ERR:' + String(e); } });
+    try { fs.appendFileSync(path.join(OUT, `seed${SEED}.events.log`), `${new Date().toISOString()} ledger-mode off recording=${rec}\n`); } catch (_) {}
+    if (rec !== false) throw new Error('ledger-off: setRecording(false) nie ustawil trybu (wynik=' + rec + ')');
+  }
   return page;
 }
 
@@ -348,7 +358,13 @@ async function playOneTurn(page, ctxState) {
   const rec = {
     seed: SEED, turn: after, gateBlockedBeforeEnd: blocked, bypass, battlesAuto, modalClosedThisTurn: modalDelta(),
     owners: m.owners, diag: m.diag, niezmierzone: m.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
+    load1: Math.round(os.loadavg()[0] * 100) / 100,
+    ledgerRecording: LEDGER_OFF ? 'off' : 'on',
   };
+  // R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1: rozmiar dziennika w pamieci (co 10 tur, tura koncowa i pierwsza tura po starcie segmentu; poza pomiarem tury).
+  if (after % 10 === 0 || after === TURNS || after === RUN_START_TURN + 1) {
+    try { rec.ledgerStats = await page.evaluate(() => window.__aiEconomyMeasure.ledgerStats()); } catch (e) { rec.ledgerStats = 'ERR:' + String(e); }
+  }
   if (HASH) rec.stateHash = await stateHash(page, SNAP_PREFIX ? path.join(OUT, `${SNAP_PREFIX}-t${after}.json`) : null);
   return { rec };
 }
@@ -393,6 +409,7 @@ async function runSeries(ctx, { resumeFromSlot, stopAt }) {
   const ctxState = newCtx(st.slotCounters || null);
   if (resumeFromSlot) { await page.evaluate(slot => window.__aiTradeWiringTestDebug.loadSlot(slot), SLOT); await suppressVictory(page); }
   const startTurn = await turnOf(page);
+  RUN_START_TURN = startTurn;
   let slotOk = !!resumeFromSlot;
   let slotTurn = startTurn;
   let slotCounters = countersOf(ctxState);
