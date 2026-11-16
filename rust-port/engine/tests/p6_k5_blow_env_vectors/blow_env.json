@@ -1,0 +1,1636 @@
+{
+  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "riverAttackMult": 0.75,
+  "snippetSha256": {
+    "gra/src/game/combat.ts": "1de2bc6f1ceb86f116e3ea650b34939acca04eaad8f78e218ffc464facb20bce",
+    "gra/data/combat-params.json": "5cc90d60c76da67039a1330261a00584933216c8ec80bff3db5183b05c07326e",
+    "gra/data/terrain-combat.json": "b5f0f9c5c25a65273bc674d1ae1121ab09d93141085eb0c1a9b1bc911798f9bf"
+  },
+  "fragments": {
+    "normTerrain": "gra/src/game/combat.ts:620-624",
+    "terrainRiverAttackMultiplier": "gra/src/game/combat.ts:677-687",
+    "combatParamsRaw": "gra/data/combat-params.json",
+    "terrainData": "gra/data/terrain-combat.json"
+  },
+  "cases": [
+    {
+      "name": "atk-rzeka-wiersz",
+      "atkTerrain": "Rzeka",
+      "defTerrain": "Plaskie (rownina/laka)",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 0.75,
+      "expAtkIsRiver": true,
+      "expRowExists": true
+    },
+    {
+      "name": "obrona-rzeka-atak-plaski",
+      "atkTerrain": "Plaskie (rownina/laka)",
+      "defTerrain": "Rzeka",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": true
+    },
+    {
+      "name": "oba-na-rzece",
+      "atkTerrain": "Rzeka",
+      "defTerrain": "Rzeka",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 0.75,
+      "expAtkIsRiver": true,
+      "expRowExists": true
+    },
+    {
+      "name": "brak-rzeki-las-wzgorza",
+      "atkTerrain": "Las",
+      "defTerrain": "Wzgorza",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": true
+    },
+    {
+      "name": "flaga-bez-wiersza-rzeki",
+      "atkTerrain": "Rzeka",
+      "defTerrain": "Plaskie (rownina/laka)",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": true,
+      "expRowExists": false
+    },
+    {
+      "name": "atk-rzeka-dane-puste",
+      "atkTerrain": "Rzeka",
+      "defTerrain": "Rzeka",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": true,
+      "expRowExists": false
+    },
+    {
+      "name": "atk-wzgorza-obrona-rzeka",
+      "atkTerrain": "Wzgorza",
+      "defTerrain": "Rzeka",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": true
+    },
+    {
+      "name": "atk-las-obrona-rzeka-bez-wiersza",
+      "atkTerrain": "Las",
+      "defTerrain": "Rzeka",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Plaskie (rownina/laka)|Plaskie (rownina/laka)|pelne",
+      "atkTerrain": "Plaskie (rownina/laka)",
+      "defTerrain": "Plaskie (rownina/laka)",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": true
+    },
+    {
+      "name": "siatka-Plaskie (rownina/laka)|Plaskie (rownina/laka)|bez-wiersza-rzeki",
+      "atkTerrain": "Plaskie (rownina/laka)",
+      "defTerrain": "Plaskie (rownina/laka)",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Plaskie (rownina/laka)|Plaskie (rownina/laka)|puste",
+      "atkTerrain": "Plaskie (rownina/laka)",
+      "defTerrain": "Plaskie (rownina/laka)",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Plaskie (rownina/laka)|Las|pelne",
+      "atkTerrain": "Plaskie (rownina/laka)",
+      "defTerrain": "Las",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": true
+    },
+    {
+      "name": "siatka-Plaskie (rownina/laka)|Las|bez-wiersza-rzeki",
+      "atkTerrain": "Plaskie (rownina/laka)",
+      "defTerrain": "Las",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Plaskie (rownina/laka)|Las|puste",
+      "atkTerrain": "Plaskie (rownina/laka)",
+      "defTerrain": "Las",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Plaskie (rownina/laka)|Wzgorza|pelne",
+      "atkTerrain": "Plaskie (rownina/laka)",
+      "defTerrain": "Wzgorza",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": true
+    },
+    {
+      "name": "siatka-Plaskie (rownina/laka)|Wzgorza|bez-wiersza-rzeki",
+      "atkTerrain": "Plaskie (rownina/laka)",
+      "defTerrain": "Wzgorza",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Plaskie (rownina/laka)|Wzgorza|puste",
+      "atkTerrain": "Plaskie (rownina/laka)",
+      "defTerrain": "Wzgorza",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Plaskie (rownina/laka)|Rzeka|pelne",
+      "atkTerrain": "Plaskie (rownina/laka)",
+      "defTerrain": "Rzeka",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": true
+    },
+    {
+      "name": "siatka-Plaskie (rownina/laka)|Rzeka|bez-wiersza-rzeki",
+      "atkTerrain": "Plaskie (rownina/laka)",
+      "defTerrain": "Rzeka",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Plaskie (rownina/laka)|Rzeka|puste",
+      "atkTerrain": "Plaskie (rownina/laka)",
+      "defTerrain": "Rzeka",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Las|Plaskie (rownina/laka)|pelne",
+      "atkTerrain": "Las",
+      "defTerrain": "Plaskie (rownina/laka)",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": true
+    },
+    {
+      "name": "siatka-Las|Plaskie (rownina/laka)|bez-wiersza-rzeki",
+      "atkTerrain": "Las",
+      "defTerrain": "Plaskie (rownina/laka)",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Las|Plaskie (rownina/laka)|puste",
+      "atkTerrain": "Las",
+      "defTerrain": "Plaskie (rownina/laka)",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Las|Las|pelne",
+      "atkTerrain": "Las",
+      "defTerrain": "Las",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": true
+    },
+    {
+      "name": "siatka-Las|Las|bez-wiersza-rzeki",
+      "atkTerrain": "Las",
+      "defTerrain": "Las",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Las|Las|puste",
+      "atkTerrain": "Las",
+      "defTerrain": "Las",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Las|Wzgorza|pelne",
+      "atkTerrain": "Las",
+      "defTerrain": "Wzgorza",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": true
+    },
+    {
+      "name": "siatka-Las|Wzgorza|bez-wiersza-rzeki",
+      "atkTerrain": "Las",
+      "defTerrain": "Wzgorza",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Las|Wzgorza|puste",
+      "atkTerrain": "Las",
+      "defTerrain": "Wzgorza",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Las|Rzeka|pelne",
+      "atkTerrain": "Las",
+      "defTerrain": "Rzeka",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": true
+    },
+    {
+      "name": "siatka-Las|Rzeka|bez-wiersza-rzeki",
+      "atkTerrain": "Las",
+      "defTerrain": "Rzeka",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Las|Rzeka|puste",
+      "atkTerrain": "Las",
+      "defTerrain": "Rzeka",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Wzgorza|Plaskie (rownina/laka)|pelne",
+      "atkTerrain": "Wzgorza",
+      "defTerrain": "Plaskie (rownina/laka)",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": true
+    },
+    {
+      "name": "siatka-Wzgorza|Plaskie (rownina/laka)|bez-wiersza-rzeki",
+      "atkTerrain": "Wzgorza",
+      "defTerrain": "Plaskie (rownina/laka)",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Wzgorza|Plaskie (rownina/laka)|puste",
+      "atkTerrain": "Wzgorza",
+      "defTerrain": "Plaskie (rownina/laka)",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Wzgorza|Las|pelne",
+      "atkTerrain": "Wzgorza",
+      "defTerrain": "Las",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": true
+    },
+    {
+      "name": "siatka-Wzgorza|Las|bez-wiersza-rzeki",
+      "atkTerrain": "Wzgorza",
+      "defTerrain": "Las",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Wzgorza|Las|puste",
+      "atkTerrain": "Wzgorza",
+      "defTerrain": "Las",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Wzgorza|Wzgorza|pelne",
+      "atkTerrain": "Wzgorza",
+      "defTerrain": "Wzgorza",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": true
+    },
+    {
+      "name": "siatka-Wzgorza|Wzgorza|bez-wiersza-rzeki",
+      "atkTerrain": "Wzgorza",
+      "defTerrain": "Wzgorza",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Wzgorza|Wzgorza|puste",
+      "atkTerrain": "Wzgorza",
+      "defTerrain": "Wzgorza",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Wzgorza|Rzeka|pelne",
+      "atkTerrain": "Wzgorza",
+      "defTerrain": "Rzeka",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": true
+    },
+    {
+      "name": "siatka-Wzgorza|Rzeka|bez-wiersza-rzeki",
+      "atkTerrain": "Wzgorza",
+      "defTerrain": "Rzeka",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Wzgorza|Rzeka|puste",
+      "atkTerrain": "Wzgorza",
+      "defTerrain": "Rzeka",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": false,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Rzeka|Plaskie (rownina/laka)|pelne",
+      "atkTerrain": "Rzeka",
+      "defTerrain": "Plaskie (rownina/laka)",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 0.75,
+      "expAtkIsRiver": true,
+      "expRowExists": true
+    },
+    {
+      "name": "siatka-Rzeka|Plaskie (rownina/laka)|bez-wiersza-rzeki",
+      "atkTerrain": "Rzeka",
+      "defTerrain": "Plaskie (rownina/laka)",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": true,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Rzeka|Plaskie (rownina/laka)|puste",
+      "atkTerrain": "Rzeka",
+      "defTerrain": "Plaskie (rownina/laka)",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": true,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Rzeka|Las|pelne",
+      "atkTerrain": "Rzeka",
+      "defTerrain": "Las",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 0.75,
+      "expAtkIsRiver": true,
+      "expRowExists": true
+    },
+    {
+      "name": "siatka-Rzeka|Las|bez-wiersza-rzeki",
+      "atkTerrain": "Rzeka",
+      "defTerrain": "Las",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": true,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Rzeka|Las|puste",
+      "atkTerrain": "Rzeka",
+      "defTerrain": "Las",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": true,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Rzeka|Wzgorza|pelne",
+      "atkTerrain": "Rzeka",
+      "defTerrain": "Wzgorza",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 0.75,
+      "expAtkIsRiver": true,
+      "expRowExists": true
+    },
+    {
+      "name": "siatka-Rzeka|Wzgorza|bez-wiersza-rzeki",
+      "atkTerrain": "Rzeka",
+      "defTerrain": "Wzgorza",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": true,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Rzeka|Wzgorza|puste",
+      "atkTerrain": "Rzeka",
+      "defTerrain": "Wzgorza",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": true,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Rzeka|Rzeka|pelne",
+      "atkTerrain": "Rzeka",
+      "defTerrain": "Rzeka",
+      "rowSet": "pelne",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Rzeka",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 0.75,
+      "expAtkIsRiver": true,
+      "expRowExists": true
+    },
+    {
+      "name": "siatka-Rzeka|Rzeka|bez-wiersza-rzeki",
+      "atkTerrain": "Rzeka",
+      "defTerrain": "Rzeka",
+      "rowSet": "bez-wiersza-rzeki",
+      "terrainData": [
+        {
+          "Teren": "Płaskie (równina/łąka)",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Las",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Wzgórza",
+          "Bonus Obrona": "+50%"
+        },
+        {
+          "Teren": "Góry",
+          "Bonus Obrona": "+75%"
+        },
+        {
+          "Teren": "Pustynia",
+          "Bonus Obrona": "+0%"
+        },
+        {
+          "Teren": "Wybrzeże / Morze",
+          "Bonus Obrona": "+0%"
+        }
+      ],
+      "expMult": 1,
+      "expAtkIsRiver": true,
+      "expRowExists": false
+    },
+    {
+      "name": "siatka-Rzeka|Rzeka|puste",
+      "atkTerrain": "Rzeka",
+      "defTerrain": "Rzeka",
+      "rowSet": "puste",
+      "terrainData": [],
+      "expMult": 1,
+      "expAtkIsRiver": true,
+      "expRowExists": false
+    }
+  ]
+}
