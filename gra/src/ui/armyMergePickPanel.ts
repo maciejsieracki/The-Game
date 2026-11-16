@@ -6,6 +6,13 @@ import type { ArmyMergeUnitRow } from './armyMergePanel';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { unitIconSvg } from './icons/brandAssets';
 import { armyStackCardLabel, sortArmyStackGeneralsFirst } from './armyStackLabel';
+import {
+  ARMY_TYPE_CHIP_CSS,
+  armyTypeChipButtonHtml,
+  armyTypeChipRowHtml,
+  groupUnitsByType,
+  toggleArmyTypeChip,
+} from './armyTypeChips';
 
 export interface MergeTargetOption {
   q: number;
@@ -28,7 +35,7 @@ const STYLE_ID = 'civ-army-merge-pick-css-v1';
 
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
-  const css = `
+  const css = `${ARMY_TYPE_CHIP_CSS}
 .civ-ampk-overlay{
   position:fixed;inset:0;z-index:526;display:flex;align-items:center;justify-content:center;
   background:rgba(4,8,18,0.58);backdrop-filter:blur(3px);
@@ -111,6 +118,21 @@ export function showArmyMergePickPanel(opts: ArmyMergePickPanelOpts): void {
   box.className = 'civ-ampk';
 
   function renderInner(): void {
+    // Skróty „zaznacz wszystkich <typ>” (typ po typeId; generał liczy się do swojego typu).
+    const typeGroups = groupUnitsByType(
+      opts.sourceUnits.map(u => ({ id: u.id, typeId: u.typeId ?? u.name, name: u.name, label: u.typeLabel, isGeneral: u.commanderTitle !== undefined })),
+      { includeGenerals: true },
+    );
+    const chipsHtml = armyTypeChipRowHtml(
+      typeGroups.map(g => armyTypeChipButtonHtml(g, selected, {
+        className: 'civ-atc',
+        attrs: 'data-chip-type="' + esc(g.typeId) + '"',
+        esc,
+      })).join(''),
+      'Zaznacz wszystkie jednostki danego typu',
+      'civ-atc-row',
+      esc,
+    );
     let uHtml = '';
     for (const u of sortArmyStackGeneralsFirst(opts.sourceUnits)) {
       const on = selected.has(u.id);
@@ -136,6 +158,7 @@ export function showArmyMergePickPanel(opts: ArmyMergePickPanelOpts): void {
       + '</div>'
       + '<div class="civ-ampk-body">'
         + '<div class="civ-ampk-lbl">Jednostki do przeniesienia</div>'
+        + chipsHtml
         + '<div class="civ-ampk-units">' + uHtml + '</div>'
         + '<div class="civ-ampk-lbl">Docelowy stos (s\u0105siad)</div>'
         + '<div class="civ-ampk-targets">' + tHtml + '</div>'
@@ -152,6 +175,15 @@ export function showArmyMergePickPanel(opts: ArmyMergePickPanelOpts): void {
         if (!id) return;
         if ((inp as HTMLInputElement).checked) selected.add(id);
         else selected.delete(id);
+        renderInner();
+      });
+    });
+    box.querySelectorAll<HTMLElement>('[data-chip-type]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const typeId = btn.getAttribute('data-chip-type');
+        const group = typeGroups.find(g => g.typeId === typeId);
+        if (!group) return;
+        toggleArmyTypeChip(selected, group);
         renderInner();
       });
     });

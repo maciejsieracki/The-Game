@@ -809,6 +809,7 @@ import {
   type DiploPlayerSummary,
 } from './ui/diploListHud';
 import { armyStackCardIdentity, type ArmyStackHudState } from './ui/armyStackHud';
+import { togglePickTypeOnStackState } from './ui/armyTypeChips';
 import { sortArmyStackGeneralsFirst } from './ui/armyStackLabel';
 import { formatArmiaLabel, formatJednostkiCount, formatMiastaCount, formatTurCountAcc, pluralPl } from './ui/formatPl';
 import type {
@@ -15528,10 +15529,13 @@ async function boot(): Promise<void> {
       if (canvas.style.cursor !== cursor) canvas.style.cursor = cursor;
     }
 
-    function mergeUnitRow(u: RuntimeUnit): { id: string; name: string; icon: string; ruchLeft: number; ruchMax: number; commanderTitle?: 'Wódz' | 'Generał' } {
+    function mergeUnitRow(u: RuntimeUnit): { id: string; typeId: string; typeLabel: string; name: string; icon: string; ruchLeft: number; ruchMax: number; commanderTitle?: 'Wódz' | 'Generał' } {
       const def = lookupUnitDef(u.typeId);
       return {
         id: u.id,
+        typeId: u.typeId,
+        // Nazwa wyświetlana typu dla chipów „zaznacz wszystkich” (name zostaje surowym typeId jak dotąd).
+        typeLabel: String(def?.nazwa ?? def?.Nazwa ?? u.typeId),
         name: u.typeId,
         icon: unitIconSvg(def, u.typeId),
         ruchLeft: u.ruchLeft,
@@ -26932,6 +26936,15 @@ async function boot(): Promise<void> {
       };
     }
 
+    /**
+     * Skrót „zaznacz wszystkich <typ>” (R-WEB-UI-ARMY-PICK-SELECT-ALL-BY-TYPE-Q1): grupa = jednostki
+     * tego typeId w stosie BEZ generała/wodza (jak „Zaznacz wszystko”). Klik: nie wszystkie zaznaczone
+     * → dodaje wszystkie tego typu; wszystkie zaznaczone → odznacza je. Inne typy bez zmian.
+     */
+    function togglePickUnitTypeOnStack(active: RuntimeUnit, typeId: string): void {
+      stackPickState = togglePickTypeOnStackState(stackPickState, armyPickKey(active), playerStackAt(active), typeId);
+    }
+
     function clearUnitPicks(): void {
       stackPickState = { key: '', ids: new Set<string>() };
     }
@@ -26984,6 +26997,7 @@ async function boot(): Promise<void> {
         );
         return {
           id: u.id,
+          typeId: u.typeId,
           ...cardIdentity,
           icon: unitIconSvg(udef, u.typeId),
           hp: u.hp ?? hpMax,
@@ -27307,6 +27321,9 @@ async function boot(): Promise<void> {
         refreshD1bHud();
       } else if (actionId.startsWith('pick:')) {
         togglePickUnit(u, actionId.slice('pick:'.length));
+        refreshD1bHud();
+      } else if (actionId.startsWith('pick-type:')) {
+        togglePickUnitTypeOnStack(u, actionId.slice('pick-type:'.length));
         refreshD1bHud();
       } else if (actionId === 'pick-all') {
         pickAllNonGeneralsOnStack(u, stack);
