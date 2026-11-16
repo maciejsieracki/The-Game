@@ -2566,3 +2566,16 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Slot 3 i 4 wstrzymane:** kolejka #96–#119 bez czystych tematów (decyzje: #97 zakres ręcznego, #106 pkt 4, #115/#120 A/B, #135 kolejność; #109/#113 zależą od OUTCOME).
 - **Parity:** `75de326bc` (bez zmian w tym przebiegu). **Dysk:** 16 GB.
 - **Otwarte:** `refs/keep/R-RUSTPORT-P4-1I4-fc` (`54fa4c704`) nadal odrzucany przez proxy; zostaje lokalnie.
+
+### Przebieg — heartbeat Rust „twardy bit”, 2026-11-16 17:18 UTC
+
+- **Parity:** `rust-port/parity-v2` = `9a71caf8a` (FF z `3a8f068f6` po integracji 1F3, bramki: 3735 passed, 0 failed, 1 ignored pre-existing). 1F3 wszedł z konfliktem add/add w `overlays_view.rs` rozstrzygniętym przez zachowanie wszystkich funkcji i typów obu stron.
+- **Sloty: 4 z 4 aktywne:**
+  - Integracja I4 BATTLE-CONSUMER (`54fa4c704` na `9a71caf8a`, merge-tree czysty), OPUS, `wf_ae87176a-2f8`, dispatch `f136730bb`.
+  - K5-LOOP-AUTO V1/V5/V6 (#118), HAIKU/SONNET, `wf_55097f16-9ad`.
+  - Wektory pętli dystansu (#100, chain A, `wf_a01f4cfa-dd0`): Operator w toku.
+  - Audyt parytetu (#302, dokument, HAIKU/SONNET), `wf_84cdb3a2-d6f`, dispatch `1dd6f5c0b`.
+- **Rozpoznanie NaN/Inf (#137) — PASS-WITH-NOTES** (`R-RUSTPORT-P6-NAN-INF-AMUNICJA-ROZP-Q1`, cherry-pick `b0fb11faf`): tylko odczyt, bez pina i cargo (NIE_ZMIERZONO). Wynik: produkcja nie podaje NaN/Inf; w `resolveAmmo` brak walidacji override; `maxRounds` 30 lub 200 zależnie od trybu. Implementacja osobnym tematem po decyzji o zachowaniu przy NaN.
+- **R7K7C-STATUS (#176) — PASS:** `apply_dipl_deltas_to_state` nie jest wpięte w `advance_turn`; wektorów ≥150 brak. Wpięcie (#298) czeka na decyzję #282.
+- **Dysk:** 15 GB.
+- **Otwarte:** `refs/keep` I4 (`54fa4c704`) odrzucany przez proxy; log `p6_8i_pick` do weryfikacji.
