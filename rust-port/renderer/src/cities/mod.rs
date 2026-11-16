@@ -2,3 +2,6 @@
 //! overlays drawn for cities — see [`overlay`].
 
 pub mod overlay;
+pub mod sync;
+
+pub use sync::{CityStatChips, StatChipUiState};
