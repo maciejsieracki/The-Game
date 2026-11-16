@@ -85,7 +85,8 @@ async function checkTooltipText() {
     const tip = await server.ssrLoadModule('/src/ui/hexContextTooltip.ts');
     const expectations = [
       { name: 'Procarz', mult: 3, power: 16 },
-      { name: 'Łucznik asyryjski', mult: 2, power: 19 },
+      // R-WEB-DATA-ARCHERS-HEALTH-20-DIST-EGYPT-6-Q1: zdrowie lucznika asyryjskiego 20 (bylo 16/19 mocy).
+      { name: 'Łucznik asyryjski', mult: 2, power: 21 },
     ];
     for (const { name, mult, power } of expectations) {
       const unit = unitByName.get(name);
