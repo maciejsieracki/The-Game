@@ -2453,3 +2453,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Do integracji po EXEC-T1:** K5DOC-T3 GEOMETRIA (FC PASS-WITH-NOTES, FC `efa3b7642`, kod `85befb9ff`) — task #290. Notatki FC: C7/C8 martwe w pinie, mutacja (c) NIE_DOTYCZY dla C9.
 - **Rozbieżność z harmonogramem:** prompt heartbeatu wymaga Operatora Haiku; reguła właściciela dla tematów 3D (seria P4-1) to OPUS we wszystkich rolach. Tematy 1F3 i 1I2 działają na Opus zgodnie z regułą właściciela.
 - **Nie ruszane:** `Cargo.lock` (nieśledzony, zgodnie z regułą), cache `fc_k5t3_target` (3,2 GB, do usunięcia po T3, task #287), `ev9f1` (decyzja właściciela).
+
+### Przebieg — heartbeat Rust, 2026-11-16 10:48 UTC
+
+- **Sloty Opus (4/4 działają):** P4-1F3 (Operator), P4-1F4 (Operator), P4-1F5 (Operator), P4-1I2 (Obrona). Start nowych tematów wstrzymany: dysk 2,4 GB wolnego (reguła 5 wymaga ≥ 8 GB).
+- **P4-1I2 BATTLE-FRAME — NIE zintegrowany.** Operator: BLOCK (brak pełnego `cargo test --all-targets` engine, bo dysk 6,6 GB < 8 GB; commit `d303607bf`, lokalnie). Evaluator: FAIL (2 blokery: brak testu ramki po KAŻDYM `fire` — mutacje M1/M2 przechodzą; brak bramki pełnej). Obrona w toku. Kolejna runda tego samego ID musi uruchomić bramkę i dopisać test ramki po kroku.
+- **EXEC-T1 (K5EXEC-T1) — zintegrowany** na `parity-v2` = `05b872fc5` (FF po zielonych bramkach: fmt, clippy, `cargo test` 3653 passed / 0 failed).
+- **Sprzątanie:** usunięte worktree EXEC-T1 (r1, `wf_487c53ff`), T3 (`wf_7d52ae9a`), integracji EXEC-T1 oraz cache `fc_k5t3_target`. Stary worktree `wf_acc61d3f` (EXEC-T1 r1, zastąpiony przez r2) — usuwany tylko jeśli czysty.
+- **Do zrobienia po zwolnieniu dysku:** integracja K5DOC-T3 GEOMETRIA (FC `efa3b7642`, wip `…-integracja`) — scalić z `05b872fc5`, pełne bramki.
+- **Rozbieżność:** harmonogram heartbeatu wymaga Operatora Haiku; reguła właściciela dla tematów 3D to Opus we wszystkich rolach (zachowana).
