@@ -10,6 +10,10 @@
  *  (b) gałąź „Zakończ ekran bitwy…" zostaje, z tym samym tekstem, i nie jest wcześniejsza niż modale;
  *  (c) w treściach komunikatów nie ma surowych ID ani angielskich słów;
  *  (d) mutacja na KOPII źródła (usunięcie gałęzi audiencji) MUSI dać błąd — dowód, że test łapie regresję.
+ *  (e) WYKONANIE: ciało hintEndTurnBlocked uruchomione (new Function) z podstawionym stanem; każdy
+ *      wariant (audiencja / panel armii / karta techu / ekran bitwy / bitwa w kolejce / pierwszeństwo modala)
+ *      daje oczekiwany komunikat; brak zmiennej wolnej = błąd = FAIL.
+ *  (f) mutacje WYKONAWCZE (usunięcie gałęzi audiencji, przestawienie kolejności) muszą zmienić wynik.
  *
  * Run: node tools/end-turn-hint-diplo-audience-test.cjs
  */
@@ -98,6 +102,71 @@ const battleBlock = "if (isPreBattleOpen() || hasPendingAutoPreBattle()) {\n    
 ok(src.includes(audBlock) && src.includes(battleBlock), 'mutacja kolejności: wzorce nie trafiły');
 const mutOrder = src.replace(audBlock, '').replace(battleBlock, battleBlock + audBlock);
 ok(check(mutOrder).length > 0, 'mutacja kolejności (modal po bitwie) NIE wykryta');
+
+// (e) WYKONANIE: ciało hintEndTurnBlocked uruchamiane z podstawionym stanem (bez przeglądarki).
+// Każda zmienna wolna jest podawana jawnie; brak jednej = ReferenceError = FAIL (nie cicha luka).
+const HINT_DEPS = {
+  playtestWalkaActive: false,
+  isAwaitingFirstPlayerCity: () => false,
+  nnsGateForPlayer: () => ({ blokada: false, komunikat: '' }),
+  noteEndTurnBlockedByNns: () => {},
+  isDiplomacyAudienceOpen: () => false,
+  isArmyMergePanelOpen: () => false,
+  isTechDiscoveryNoticeOpen: () => false,
+  isPreBattleOpen: () => false,
+  hasPendingAutoPreBattle: () => false,
+  hasBlockingAiTradeOfferForPlayer: () => false,
+  gameOver: false,
+  endTurnInProgress: false,
+  aiTurnAwaitingBattle: false,
+  aiCmdResume: null,
+};
+
+// Zwraca { err, last } – ostatni komunikat podpowiedzi albo błąd wykonania.
+function runHint(body, state) {
+  const shown = [];
+  const depNames = Object.keys(HINT_DEPS);
+  const code = body.replace('function hintEndTurnBlocked(): void {', 'function hintEndTurnBlocked() {')
+    + '\nreturn hintEndTurnBlocked;';
+  let fn;
+  try {
+    const make = new Function(...depNames, 'showHintMessage', code);
+    const env = Object.assign({}, HINT_DEPS, state);
+    fn = make(...depNames.map((n) => env[n]), (m) => shown.push(m));
+  } catch (e) {
+    return { err: 'kompilacja: ' + e.message, last: undefined };
+  }
+  try { fn(); } catch (e) { return { err: e.message, last: undefined }; }
+  return { err: null, last: shown[shown.length - 1] };
+}
+
+const yes = () => true;
+const AUD = MODAL_MSGS.isDiplomacyAudienceOpen;
+const ARM = MODAL_MSGS.isArmyMergePanelOpen;
+const TECH = MODAL_MSGS.isTechDiscoveryNoticeOpen;
+const cases = [
+  ['audiencja otwarta', { isDiplomacyAudienceOpen: yes }, AUD],
+  ['panel łączenia armii otwarty', { isArmyMergePanelOpen: yes }, ARM],
+  ['karta odkrycia techu otwarta', { isTechDiscoveryNoticeOpen: yes }, TECH],
+  ['ekran bitwy otwarty', { isPreBattleOpen: yes }, BATTLE_MSG],
+  ['bitwa czeka w kolejce (bez modala)', { hasPendingAutoPreBattle: yes }, BATTLE_MSG],
+  ['audiencja + ekran bitwy: modal pierwszy', { isDiplomacyAudienceOpen: yes, isPreBattleOpen: yes }, AUD],
+  ['karta techu + bitwa w kolejce: modal pierwszy', { isTechDiscoveryNoticeOpen: yes, hasPendingAutoPreBattle: yes }, TECH],
+];
+const bodyNow = bodyOf(src);
+for (const [label, state, want] of cases) {
+  const r = runHint(bodyNow, state);
+  ok(r.err === null && r.last === want,
+    `wykonanie (${label}): oczekiwano „${want}”, jest „${r.last}”${r.err ? ' błąd: ' + r.err : ''}`);
+}
+
+// (f) mutacje WYKONAWCZE: zmutowane ciało MUSI dać inny wynik niż prawdziwe.
+ok(bodyNow.includes(audBlock) && bodyNow.includes(battleBlock), 'mutacja wykonawcza: wzorce nie trafiły');
+const rMutAud = runHint(bodyNow.replace(audBlock, ''), { isDiplomacyAudienceOpen: yes });
+ok(rMutAud.last !== AUD, 'mutacja wykonawcza (bez gałęzi audiencji) NIE wykryta');
+const rMutOrd = runHint(bodyNow.replace(audBlock, '').replace(battleBlock, battleBlock + audBlock),
+  { isDiplomacyAudienceOpen: yes, isPreBattleOpen: yes });
+ok(rMutOrd.last !== AUD, 'mutacja wykonawcza (modal po bitwie) NIE wykryta');
 
 console.log(`end-turn-hint-diplo-audience-test: passed=${passed} failed=${failed}`);
 process.exit(failed === 0 ? 0 : 1);
