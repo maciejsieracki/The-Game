@@ -2090,3 +2090,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Otwarte (z FC, bez zmian w tej integracji):** `validate.rs`/`lib.rs` poza allowlistą (brak reeksportów; kontrola `hp>0` przez istniejący `ViewError::OutOfRange`); `build_battle_outcome` nie ma jeszcze produkcyjnego wołającego (wpięcie w #113/#246); erratum `FortDto` None → INFINITY (patrz wpis Q4 wyżej) obowiązuje też P4-1I.
 - **Incydent dysku:** workflow `wf_e8d80c7c-629` (R7K7C PARITY-MISSING0) przerwany na etapie Obrony (`WorktreeIsolationError`, `unable to write file`, dysk 964 MB przy 98%). Operator i Evaluator zakończone; wznowienie po zwolnieniu dysku (9,8 GB po sprzątaniu).
 - **Dysk:** 9,8 GB (75%) po sprzątaniu.
+
+## Przebieg (00:5x UTC — heartbeat slotów: start P4-1I1B BATTLE-INSTANT)
+
+- **Start:** `R-RUSTPORT-P4-1I1B-BATTLE-INSTANT` (#245, OPUS we wszystkich rolach — seria P4-1), dispatch `7502825c4` na `claude/rust-sivvrn`, baza `05e4df502`. Workflow `wf_aafc5812-7e5`. Zależność I1 zintegrowana (`05e4df502`).
+- **Sloty:** 3 z 4 — R7K7C PARITY-MISSING0 (`wf_e8d80c7c-629`, Obrona, HAIKU, wznowiony), P4-1H Q4 MOVE-MODEL (`wf_312e0180-927`, Obrona, HAIKU), P4-1I1B (`wf_aafc5812-7e5`, operator, OPUS).
+- **Nie wystartowano (czwarty slot):** #239 P4-1F2 — wymaga producenta mgły widza (`P4-1C`, #212/#253), a decyzja o fogu dla fotela ≠ 0 czeka na właściciela. #236/#237 i #242 — po F2–F6. Nie startuję tematów „dla zapełnienia” (zasada 2 CLAUDE.md).
+- **Otwarte:** stray zaplanowane zadanie `trig_01Jayj6xoGAPtDWiKamgDwGH` („Placeholder: ignore”) do usunięcia przez właściciela (usunięcie odrzucone przez klasyfikator). `KOLEJKA-RUST.md` nieaktualna (migawka 15.11) — do odświeżenia (#154).
+- **Dysk:** ok. 8,8 GB (78%) przed startem.
