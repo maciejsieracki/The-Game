@@ -2490,3 +2490,10 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Konflikt do rozstrzygnięcia:** `overlays_view.rs` powstał w F6 (na bazie go nie było) i jest też tworzony przez 1F3, 1F4, 1F5. Przy ich integracji będzie konflikt.
 - **Do zrobienia:** 1I2 (`0e3c149fa`) był scalony z poprzednim parity — trzeba powtórzyć merge na `0f3483e57` i pełny cargo test engine przy ≥ 8 GB.
 - **Dysk:** sprzątanie zakończonych cache i worktree; działające tematy (I3, 1F5, recenzja 1F4) nie są ruszane.
+
+### Przebieg — heartbeat Rust, 2026-11-16 14:23 UTC
+
+- **Sloty: 3 z 4 aktywne.** P4-1I3 BATTLE-ACTIONS (Operator, od 13:37), P4-1F5 REACH-PATH-VIEW (Operator r2 PASS-WITH-NOTES → Evaluator), P4-1F4 recenzja (Evaluator PASS-WITH-NOTES → Obrona).
+- **Czwarty slot wstrzymany:** dysk 7,8 GB; reguła 5 (CLAUDE.md) wymaga ≥ 8 GB dla tematów z kodem Rust.
+- **Integracje:** F6 zintegrowany (FF parity `0f3483e57`, wpis wyżej). Pozostają: I2 (merge `0e3c149fa` do powtórzenia na `0f3483e57`), FC 1F4 (po Obronie), FC 1F3 (`48ef28025`/`92dce8414`, po opłaceniu subskrypcji — wcześniej blokada płatności).
+- **Rozbieżność z harmonogramem:** prompt heartbeatu wymaga Haiku/Sonnet; reguła właściciela dla 3D to Opus we wszystkich rolach (zachowana).
