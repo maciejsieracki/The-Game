@@ -40,6 +40,11 @@ fs.writeFileSync(entry, `
  export { launchFieldBattleFromMap } from ${JSON.stringify(path.join(root, 'src/battle/mapFieldBattle'))};
  export { resolveCombat } from ${JSON.stringify(path.join(root, 'src/game/combat'))};
  export function makeOwnerResolver(player, aiOwnerCivMap, data) {
+   // Closure state of main.ts (createGame scope) supplied by the harness, mirroring
+   // _menuCivIdByOwner / playerCivTypeByHuman primary entries (HUMAN_OWNER_PRIMARY = 0).
+   const HUMAN_OWNER_PRIMARY = 0;
+   const _menuCivIdByOwner = new Map([[HUMAN_OWNER_PRIMARY, player.civType]]);
+   const playerCivTypeByHuman = new Map([[HUMAN_OWNER_PRIMARY, player.civType]]);
    ${keyResolver}
    ${bonusResolver}
    return { civKeyForOwnerId, civBonusyForOwnerId };

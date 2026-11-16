@@ -138,6 +138,14 @@ const context = {
 };
 
 executeDeclaration(mainSource, findFunction(mainSource, 'purchaseRecruitmentUnit'), 'purchaseRecruitmentUnit', context);
+// main.ts imports isCityUnderSiege from game/city-siege-state.ts; execute the real declaration.
+const siegeStatePath = path.join(__dirname, '../src/game/city-siege-state.ts');
+const siegeStateSource = ts.createSourceFile(siegeStatePath, fs.readFileSync(siegeStatePath, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+executeDeclaration(siegeStateSource, findFunction(siegeStateSource, 'isCityUnderSiege'), 'isCityUnderSiege', context);
+// Same for army-stack-limit.ts:hexHasRoomFor (imported by main.ts, used by the recruit path).
+const stackLimitPath = path.join(__dirname, '../src/game/army-stack-limit.ts');
+const stackLimitSource = ts.createSourceFile(stackLimitPath, fs.readFileSync(stackLimitPath, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+executeDeclaration(stackLimitSource, findFunction(stackLimitSource, 'hexHasRoomFor'), 'hexHasRoomFor', context);
 executeDeclaration(mainSource, findFunction(mainSource, 'cancelRecruitmentPurchase'), 'cancelRecruitmentPurchase', context);
 executeDeclaration(productionSource, findFunction(productionSource, 'enqueueRecruitment'), 'enqueueRecruitment', context);
 executeDeclaration(productionSource, findFunction(productionSource, 'dequeueRecruitment'), 'dequeueRecruitment', context);
