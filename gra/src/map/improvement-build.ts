@@ -122,6 +122,11 @@ export interface ImprovementTypeInfo {
   techUnlocked: boolean;
   techLabel: string | null;
   lockHint: string | null;
+  /**
+   * R-WEB-ROAD-PAVED-DIRECT-BUILD-OR-UPGRADE-Q1: koszt Pracy budowy OD ZERA (tylko droga_brukowana:
+   * Droga + Droga brukowana). Gdy brak — koszt `kosztPraca` jest pełny dla każdego heksu.
+   */
+  kosztOdZera?: number;
 }
 
 export interface ImprovementBuildRequest {
@@ -1705,6 +1710,7 @@ export function createImprovementBuildApi(
         key,
         label: meta?.nazwa ?? label,
         kosztPraca: koszt,
+        ...(key === 'droga_brukowana' ? { kosztOdZera: getWorkCost('droga') + koszt } : {}),
         epoka,
         typ,
         techId,
@@ -1748,7 +1754,7 @@ export function createImprovementBuildApi(
         q,
         r,
         hexKey,
-        kosztPraca: meta?.kosztPraca ?? readWorkCost(key),
+        kosztPraca: workCostAt(key, q, r),
         action: meta?.typ ?? 'ulepszenie',
       };
       mode.onSelect?.(req);

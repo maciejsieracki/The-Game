@@ -97,6 +97,10 @@ function runAssertions(M, label) {
   const noTech = M.createImprovementBuildApi(buildFixture(M, ['Koło']));
   ok(noTech.createBuildRequest('droga_brukowana', 2, 0) === null,
     `${label}(a') bez techu 'Drogi brukowane' brak żądania budowy`);
+  // (a'-hint) brak techu -> HUD pokazuje powód po polsku (lockHint)
+  const noTechInfo = noTech.listTypes().find(t => t.key === 'droga_brukowana');
+  ok(!!noTechInfo && typeof noTechInfo.lockHint === 'string' && noTechInfo.lockHint.indexOf('Technolog') >= 0,
+    `${label}(a'-hint) bez techu lockHint po polsku: "${noTechInfo && noTechInfo.lockHint}"`);
 
   // (c) koszt
   const api = M.createImprovementBuildApi(state);
@@ -109,6 +113,10 @@ function runAssertions(M, label) {
   ok(!!reqUp && reqUp.kosztPraca === costBruk,
     `${label}(c) ulepszenie Drogi = sama brukowana (${reqUp && reqUp.kosztPraca} vs ${costBruk})`);
   ok(costDroga > 0 && costBruk > 0, `${label}(c) koszty z danych są dodatnie`);
+  // (c-HUD) lista budowy (HUD): brukowana ma koszt z Drogą (ulepszenie) i koszt od zera
+  const bukInfo = api.listTypes().find(t => t.key === 'droga_brukowana');
+  ok(!!bukInfo && bukInfo.kosztPraca === costBruk && bukInfo.kosztOdZera === costDroga + costBruk,
+    `${label}(c-HUD) listTypes brukowanej: ${bukInfo && bukInfo.kosztPraca} z Drogą / ${bukInfo && bukInfo.kosztOdZera} od zera (oczekiwano ${costBruk} / ${costDroga + costBruk})`);
 
   // (b) stan po budowie od zera: warstwy = ['droga_brukowana'] bez zwykłej drogi
   const hexDirect = { ...state.map.hexes['2,0'], ulepszenia: ['droga_brukowana'] };
