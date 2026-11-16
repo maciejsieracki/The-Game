@@ -50,3 +50,11 @@ Mutacje (MUSZĄ dać FAIL, wyniki w raporcie): (a) `ruin = era >= absolut`; (b) 
 - Baza kodu tematu: `585bb48e0` (ocena względem niej, NIE względem parity, które ma już F6).
 - Bez ponownego Operatora. Każdy zarzut Evaluatora i Obrony: NAPRAW / ODDAL / DO DECYZJI CZŁOWIEKA; jeden NAPRAW = FAIL.
 - Wynik: `03-final-control.md` w katalogu runu.
+
+## DODATEK r2 — integracja FC 1F3 na parity (BAZA: origin/rust-port/parity-v2 = 3a8f068f6)
+- FC 1F3 = `25fdeb11a` (bramki fmt/clippy/test PASS na tym SHA; zero NAPRAW). Chroniony `refs/keep/cleanup-25fdeb11a`.
+- Parity zawiera już nakładki 1F5 + 1F4 (`3a8f068f6`). Merge-tree 1F3 -> parity: KONFLIKT add/add w `rust-port/engine/src/domain/overlays_view.rs` (plik tworzony przez F6, 1F5, 1F4 i 1F3). `mod.rs` scala się automatycznie.
+- Zadanie: `git merge --no-ff 25fdeb11a` na świeżym worktree z 3a8f068f6. Konflikt rozwiąż przez ZACHOWANIE WSZYSTKICH funkcji, typów, importów i testów obu stron (1F3 dodaje: oblegane, siegeMachines.ready, placedWorldWonders). Nie zmieniaj semantyki żadnej funkcji. `#![forbid(unsafe_code)]` i `OwnerRef`: zostają jak w parity (vm::OwnerRef dla 1F4).
+- Obserwacja z FC 1F3 (do zapisania, NIE naprawiać w tym temacie): `SelectionUi` czyta zaznaczenie z UI, a 1F5 czyta `state.selected_unit_id` — ujednolicenie przy agregatorze (P4-1G Q6).
+- Bramki (rust-port/engine): `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` w scratchpadzie; `cargo fmt --check`; `cargo clippy --all-targets -- -D warnings`; PEŁNY `cargo test --all-targets --no-fail-fast` w tle (setsid nohup). df >= 8 GB przed bramką.
+- Model: OPUS (temat 3D). NIE pushuj do parity; nie commituj Cargo.lock; nie używaj git add -A. Zwróć SHA merge, wyniki bramek, listę decyzji przy konflikcie.
