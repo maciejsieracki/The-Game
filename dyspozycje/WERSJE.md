@@ -1,3 +1,15 @@
+## ROBOCZA 62f493be -- 2026-11-16 -- FALA 785: Gwiazdka generala w bitwie we wszystkich sciezkach, takze po Reset rozstawienia (testowa)
+
+- Jasna gwiazdka nad generalem w bitwie w 4 sciezkach budowy grupy jednostki (start, replay/wczytanie, obrona oblezonego, rozstawienie z Reset)
+- Weryfikacja: tsc 0, logic 213/213, battle-commander-star 17/0, battle-commander-star-reset 10/0 (sekwencja + mutacja), garrison 20/0, forced-peace-wiring 13/0, load-game-regression 34/0
+- Limity: NIE ZMIERZONO: zywy Chromium po Reset; 4 timeouty battle-* na wydluzonym limicie (dlug bazowy); manualBattle.ts:756 martwy kod; REPIN Rust znacznika generala
+
+## ROBOCZA 4cdc5adc -- 2026-11-16 -- FALA 784: AI pilnuje pustych miast w wojnie: rekrutacja garnizonu (testowa)
+
+- AI w wojnie lub zagrozeniu rekrutuje Wojownika w kazdym miescie bez jednostki wojskowej (istniejaca sciezka zakupu, bramki bez zmian); garnizon nie jest wyprowadzany przez muster; pomiar Node: puste miasta w wojnie 62,5/58,3/55,1/39,3 -> 0 procent
+- Weryfikacja: tsc 0, logic 213/213, ai-war-city-garrison 20/0, defend-home 30/0, scattered-merge 33/0, muster 26/0, war-gate 24/0, general-war-campaign 51/0, forced-peace-wiring 13/0, load-game-regression 34/0
+- Limity: NIE ZMIERZONO: zywa gra (bramki manpower/surowcow/epoki w main.ts), dostepnosc Wojownika we wszystkich epokach i civ, zdobyte miasta (0,33 przed i po); dlug bazowy replacement-concentration atrybucja; REPIN Rust
+
 ## ROBOCZA 53a9463a -- 2026-11-16 -- FALA 783: Zmeczenie wojna 40 tur, pokoj wymuszony przy 100 procent (testowa)
 
 - Zmeczenie wojna pelne po 40 turach; 80% = oferta przegrywajacego; 100% = pokoj wymuszony z miastami przegrywajacego (gracz tez: okno + Wazne); panel dyplomacji: etapy 50/80/100% i za ile tur; migracja szczytu starych zapisow; Civpedia

@@ -85,6 +85,7 @@ import {
 } from './battleTerrainTooltip';
 import type { CivBonusEntry } from '../game/civ-bonuses';
 import { battleUnitCivBonusy, battleUnitDifficultyCombatMult } from './battle-unit-context';
+import { attachBattleCommanderStar } from './battleCommanderStar';
 import {
   applyMultiplier,
   civCombatStatMultipliers,
@@ -1089,6 +1090,10 @@ const BAR_OUTLINE_PAD = HPBAR_H * 0.5;
 // Frame sits this far BEHIND the bar backgrounds (more negative local Z) so the
 // bars always render in front of their coloured rim.
 const BAR_OUTLINE_Z   = -0.004;
+// Wysokość środka jasnej gwiazdki generała nad punktem stania jednostki (układ
+// grupy jednostki): nad słupkiem z flagą (mast + flaga w makeUnitBars: szczyt
+// = AMMOBAR_Y + BAR_OUTLINE_PAD + 0,22), z zapasem 0,16. Patrz battleCommanderStar.ts.
+const BATTLE_COMMANDER_STAR_Y = HPBAR_Y + AMMOBAR_Y + BAR_OUTLINE_PAD + 0.22 + 0.16;
 
 // ---------------------------------------------------------------------------
 // BATTLE LOG -- how many of the most recent clashes the on-screen panel keeps
@@ -4572,6 +4577,7 @@ export class BattleScene {
       group.position.set(x, topY, z);
       group.rotation.y = dirYaw(faceDir);
       this.scene.add(group);
+      this._attachCommanderStar(group, bu);
 
       const mats:         THREE.Material[]       = (group.userData['mats']         as THREE.Material[]      ) ?? [];
       const perTokenGeos: THREE.BufferGeometry[] = (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? [];
@@ -4741,6 +4747,7 @@ export class BattleScene {
       group.position.set(x, topY, z);
       group.rotation.y = dirYaw(Dir.W); // face attacker
       this.scene.add(group);
+      this._attachCommanderStar(group, bu);
 
       const mats:         THREE.Material[]       = (group.userData['mats']         as THREE.Material[]      ) ?? [];
       const perTokenGeos: THREE.BufferGeometry[] = (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? [];
@@ -5478,6 +5485,7 @@ export class BattleScene {
         const facing = faceDir;
         group.rotation.y = dirYaw(facing);
         this.scene.add(group);
+        this._attachCommanderStar(group, bu);
 
         const mats:         THREE.Material[]       = (group.userData['mats']         as THREE.Material[]      ) ?? [];
         const perTokenGeos: THREE.BufferGeometry[] = (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? [];
@@ -6004,6 +6012,17 @@ export class BattleScene {
       this.routedUnits.length = originalRoutedLength;
     }
     return intents;
+  }
+
+  /**
+   * Jasna gwiazdka generała (wodza armii) nad jednostką -- po obu stronach.
+   * Znacznik jest dzieckiem grupy jednostki (podąża za nią, znika z grupą);
+   * logika kryterium w battleCommanderStar.ts. Materiał rejestrowany do
+   * zwolnienia razem z zasobami sceny.
+   */
+  private _attachCommanderStar(group: THREE.Group, bu: BattleUnit): void {
+    const star = attachBattleCommanderStar(group, bu, BATTLE_COMMANDER_STAR_Y);
+    if (star) this.ownedMats.push(star.material as THREE.Material);
   }
 
   /** Clone only state read by AUTO planning; never share live render resources. */
@@ -17883,6 +17902,7 @@ export class BattleScene {
       group.position.set(x, topY, z);
       group.rotation.y = dirYaw(faceDir);
       this.scene.add(group);
+      this._attachCommanderStar(group, bu);
 
       const mats: THREE.Material[] = (group.userData['mats'] as THREE.Material[]) ?? [];
       const perTokenGeos: THREE.BufferGeometry[] = (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? [];
