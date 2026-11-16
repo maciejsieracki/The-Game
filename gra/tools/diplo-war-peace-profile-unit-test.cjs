@@ -100,8 +100,8 @@ eq('sygnał b: miasto utracone i rw<=0.5', M.aiPeaceSignals({ rw: 0.45, turnsAtW
 eq('sygnał b NIE: bez utraty miasta', M.aiPeaceSignals({ rw: 0.45, turnsAtWar: 3, lostCitiesInWar: 0 }, rzym).reasons.includes('b'), false);
 eq('sygnał d: pat 15 tur bez zmiany miast 10 tur', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 15, lostCitiesInWar: 0, turnsSinceCityChange: 10 }, rzym).reasons.includes('d'), true);
 eq('sygnał d NIE: pat 14 tur', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 14, lostCitiesInWar: 0, turnsSinceCityChange: 14 }, rzym).reasons.includes('d'), false);
-eq('sygnał e: zmęczenie >= 0.4 (Zulusi 8/20)', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 8, lostCitiesInWar: 0 }, zulusi).reasons.includes('e'), true);
-eq('sygnał e NIE: Zulusi 7/20', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 7, lostCitiesInWar: 0 }, zulusi).wantsPeace, false);
+eq('sygnał e: zmęczenie >= 0.4 (Zulusi 16/40 tur = 0,40; skala 40 tur)', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 16, lostCitiesInWar: 0 }, zulusi).reasons.includes('e'), true);
+eq('sygnał e NIE: Zulusi 15/40 tur (0,375 < 0,4)', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 15, lostCitiesInWar: 0 }, zulusi).reasons.includes('e'), false);
 
 // ---- R10: klucz ai-params dyplomacja_zdrowie_armii_pokój = baza progZdrowia (podłączony) ----
 near('R10: baza zdrowia z ai-params = 0.40', M.zdrowieBazaZAiParams(), 0.4);

@@ -102,7 +102,8 @@ eq(M.aiPickMiastoDoZadania([{ cityId: 'k', cityPn: 9999, zakazane: true }]), nul
 // r4: domyślne 10 tur wojny = powyżej minTurWojny (≤ 8, R5a) — bramka czasu nie gasi testów progów.
 // R-TEST-DEBT-BASE-RED-MAIN-Q2 (klasa A): oddanie miasta (N1a) i żądanie (N1b) bramkuje POZYCJA SIŁY MILITARNEJ
 // (peacePosMil: 'slabsza' = AI oddaje; brak danych = 'pasmo' = brak oddania), a rw nie bramkuje (ai.ts ~7070, ~7107).
-// Zmęczenie ≥0,8 (tura 16) wyprzedza oba bloki bezwarunkowym pokojem (ai.ts ~7050).
+// R-WEB-DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: skala 40 tur (2,5%/turę). Zmęczenie ≥0,8 (tura 32) NIE
+// kończy już wojny bezwarunkowo — AI tylko proponuje pokój z miastami (ai.ts, war-weariness.ts).
 const SIŁA = {
   slabsza:    { ai: { sila: 100, armiaPkt: 100 }, partner: { sila: 1000, armiaPkt: 1000 } },
   silniejsza: { ai: { sila: 1000, armiaPkt: 1000 }, partner: { sila: 100, armiaPkt: 100 } },
@@ -148,8 +149,9 @@ ok(cession(runAI({ rw: 0.10, pozycja: 'pasmo', miastaAI: CITIES_OK })) === undef
 ok(cession(runAI({ rw: 0.10, agr: 10, pozycja: SL, miastaAI: CITIES_OK })) !== undefined, 'oddanie: agr=10 nie zmienia bramki (słabsza) → oddaje');
 ok(cession(runAI({ rw: 0.10, agr: 1, pozycja: SL, miastaAI: CITIES_OK })) !== undefined, 'oddanie: agr=1 nie zmienia bramki (słabsza) → oddaje');
 // ≥3 miasta
-// Klasa A: zmęczenie wojną (tura 10 = poziom 0,5, isWarWeary) + desperacja obniża minimum miast AI do minMiastAi=2 (ai.ts ~7077).
-ok(cession(runAI({ rw: 0.10, pozycja: SL, miastaAI: CITIES_OK.slice(0, 2) })) !== undefined, 'oddanie: 2 miasta przy zmęczeniu (desperacja, minMiastAi=2) → oddaje');
+// Klasa A: zmęczenie wojną (tura 20 = poziom 0,5 na skali 40 tur, isWarWeary) + desperacja obniża minimum miast AI do minMiastAi=2 (ai.ts ~7077).
+// Dawniej 10 tur = 0,5 na skali 20 tur; na skali 40 tur 10 tur = 0,25 (poniżej progChetnosci), więc test podaje 20 tur.
+ok(cession(runAI({ rw: 0.10, turnsAtWar: 20, pozycja: SL, miastaAI: CITIES_OK.slice(0, 2) })) !== undefined, 'oddanie: 2 miasta przy zmęczeniu 0,5 (20 tur, desperacja, minMiastAi=2) → oddaje');
 ok(cession(runAI({ rw: 0.10, pozycja: SL, miastaAI: CITIES_OK.slice(0, 1) })) === undefined, 'oddanie: 1 miasto → NIE (N-1 nawet przy desperacji)');
 ok(cession(runAI({ rw: 0.10, pozycja: SL, miastaAI: CITIES_OK })) !== undefined, 'oddanie: 3 miasta → oddaje (N)');
 // Pokój nie w wojnie → brak oddania
@@ -165,15 +167,15 @@ eq(cmdOddaj?.cityWeight, 1.8, 'komenda oddania: cityWeight z ekspansywności (ek
 eq(cmdOddaj?.targetId, '0', 'komenda oddania: targetId = gracz');
 
 // Żądanie (N1b): rw >= 0.7 AND (tury wojny >= 20 LUB zdobyte miasto gracza > 0) i miasto gracza >= C.
-// Klasa A: tury >= 16 → zmęczenie ≥0,8 → pokój bezwarunkowy wyprzedza żądanie (ai.ts ~7050), więc progi rw/C
-// testujemy przy 10 turach + 1 zdobytym mieście (zmęczenie 0,6 < 0,8). Warunek „20 tur” jest martwy (DECISION_REQUIRED).
+// Skala 40 tur: żądanie testujemy przy 10 turach + 1 zdobytym mieście (zmęczenie 0,25 + 0,1 = 0,35 < 0,8, progi rw/C bez zmian).
 const GRACZ_OK = [{ cityId: 'g1', cityPn: 700, zakazane: false }, { cityId: 'k', cityPn: 9999, zakazane: true }];
 const DEM = { turnsAtWar: 10, zdobyte: 1 };
 ok(demand(runAI({ ...DEM, rw: 0.69, miastaPartnera: GRACZ_OK })) === undefined, 'żądanie: rw 0.69 (N-1) → NIE');
 ok(demand(runAI({ ...DEM, rw: 0.70, miastaPartnera: GRACZ_OK })) !== undefined, 'żądanie: rw 0.70 (N) → żąda');
 ok(demand(runAI({ ...DEM, rw: 0.71, miastaPartnera: GRACZ_OK })) !== undefined, 'żądanie: rw 0.71 (N+1) → żąda');
 ok(demand(runAI({ rw: 0.80, turnsAtWar: 15, zdobyte: 0, miastaPartnera: GRACZ_OK })) === undefined, 'żądanie: tury 15, brak zdobyczy → NIE (poniżej 20)');
-ok(demand(runAI({ rw: 0.80, turnsAtWar: 20, zdobyte: 0, miastaPartnera: GRACZ_OK })) === undefined, 'żądanie: tury 20 bez zdobyczy → NIE (zmęczenie ≥0,8 wyprzedza; klasa A)');
+// Warunek „tury >= 20” jest żywy na skali 40 tur (20 tur = 0,5 < 0,8, bez bezwarunkowego końca) → żąda.
+ok(demand(runAI({ rw: 0.80, turnsAtWar: 20, zdobyte: 0, miastaPartnera: GRACZ_OK })) !== undefined, 'żądanie: tury 20 (zmęczenie 0,5) bez zdobyczy → żąda (warunek 20 tur, skala 40)');
 ok(demand(runAI({ rw: 0.80, turnsAtWar: 10, zdobyte: 1, miastaPartnera: GRACZ_OK })) !== undefined, 'żądanie: zdobyte miasto gracza (1), 10 tur → żąda');
 // r4 (zarzut 4 Evaluatora): bramka czasu wojny R5a obowiązuje także żądanie i oddanie miasta.
 ok(demand(runAI({ rw: 0.80, turnsAtWar: 0, zdobyte: 1, miastaPartnera: GRACZ_OK })) === undefined, 'żądanie r4: zdobyte miasto, 0 tur wojny → NIE (R5a)');

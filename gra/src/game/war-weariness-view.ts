@@ -149,3 +149,48 @@ export function warWearinessSideView(
   if (view.bId === ownId) return { own: view.b, rival: view.a };
   throw new Error(`warWearinessSideView: brak strony o id ${ownId}`);
 }
+
+/**
+ * Etapy zmęczenia wojną do wyświetlenia w panelu dyplomacji — wyłącznie z parametrów (bez zahardkodowanych progów):
+ * 50% = chęć pokoju, 80% = AI proponuje pokój z miastami, 100% = pokój wymuszony (DIPLO-WAR-WEARINESS-40-TURNS-…-Q1).
+ */
+export interface WarWearinessStagePl {
+  /** Próg w procentach (z parametru × 100, zaokrąglony). */
+  procent: number;
+  /** Opis etapu po polsku. */
+  opis: string;
+}
+
+export function warWearinessStagesPl(P: WarWearinessParams = WAR_WEARINESS_PARAMS): WarWearinessStagePl[] {
+  return [
+    { procent: Math.round(P.zmeczenie.progChetnosci * 100), opis: 'chęć pokoju' },
+    { procent: Math.round(P.zmeczenie.progKoncaZmeczenia * 100), opis: 'AI proponuje pokój z miastami' },
+    { procent: Math.round(P.zmeczenie.progWymuszonyPokoj * 100), opis: 'pokój wymuszony' },
+  ];
+}
+
+/**
+ * Liczba tur, po których poziom zmęczenia (0..1) osiągnie `target`. Zmęczenie rośnie o 1/pelneTur na turę
+ * (plus zmienione miasta), więc tury = ceil((target − level) × pelneTur). Już osiągnięty próg → 0.
+ */
+export function warWearinessTurnsToLevel(
+  level: number,
+  target: number,
+  P: WarWearinessParams = WAR_WEARINESS_PARAMS,
+): number {
+  const gap = clamp01(target) - clamp01(level);
+  if (gap <= 0) return 0;
+  return Math.ceil(gap * P.zmeczenie.pelneTur - 1e-9);
+}
+
+/** Podpowiedź „za ile tur” dla następnego etapu (przy 100% — pokój wymuszony). Czysta funkcja z parametrów. */
+export function warWearinessNextStagePl(
+  level: number,
+  P: WarWearinessParams = WAR_WEARINESS_PARAMS,
+): string {
+  const lvl = clamp01(level);
+  const next = warWearinessStagesPl(P).find((s) => lvl < s.procent / 100 - 1e-9);
+  if (next === undefined) return 'Pokój wymuszony (100%).';
+  const turns = warWearinessTurnsToLevel(lvl, next.procent / 100, P);
+  return `Za ${turns} tur: ${next.procent}% — ${next.opis}. Przy 100% pokój wymuszony.`;
+}
