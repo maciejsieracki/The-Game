@@ -1,72 +1,91 @@
-STATUS: BLOCK
-DOMAIN: GAME (tylko triage testow i harnessu; kod gry nietkniety)
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (tylko testy; gra/src, gra/data, WERSJE.md, manifest nietkniete)
 TEMAT: R-WEB-TEST-DEBT-BASELINE-Q3
-GOAL: triage czerwonych testow bazowych (runda 2/5, baza 12f6435e8 = kandydat r1 + Obrona R2, potomek origin/main 459354a12): pomiar, klasyfikacja A/B/C, poprawki klasy A z mutacja na kopii, tabela przed/po, lista kandydatow B
-ZMIANY-COMMIT: BRAK COMMITA tej rundy. Zmiany w worktree NIE sa zacommitowane (Bash zablokowany przez klasyfikator w trakcie rundy). Zmienione pliki (allowlista OK, tylko gra/tools):
-  - gra/tools/pr141-combat-defense-owner-route-test.cjs: w owijce harnessu dopisano stan domkniecia main.ts (HUMAN_OWNER_PRIMARY=0, _menuCivIdByOwner, playerCivTypeByHuman) - naprawia ReferenceError; test trafia teraz w realna asercje (patrz nizej)
-  - gra/tools/pr141-hotseat-production-owner-routing-test.cjs: vm-harness dostaje prawdziwe deklaracje isCityUnderSiege (game/city-siege-state.ts) i hexHasRoomFor (game/army-stack-limit.ts) - naprawia czesc ReferenceError; PO TEJ ZMIANIE NIEZMIERZONE (ostatni run zablokowany)
-  Nic nie zmieniono w gra/src, gra/data, WERSJE.md, manifest. Brak mutacji (zadnej poprawki asercji klasy A w tej rundzie).
-BAZA: 12f6435e8fb887503a4af84d09d4083d8552f999 (detach, potomek 459354a12). npm ci w gra/ wykonany (71 pakietow, 13 s).
+GOAL: triage czerwonych testow bazowych (runda 3/5). Pomiar na bazie 25aac7b93, klasyfikacja A/B/C, poprawka klasy A (okolica-load-reconcile), tabela przed/po, lista kandydatow B.
+ZMIANY-COMMIT: gra/tools/okolica-load-reconcile-test.cjs (klasa A: kotwice tekstowe wskazywaly linie `playerEverOwnedCity = cities.some(...)` usunieta przez FALE/#433; zastapione przez `playerEverOwnedCityByOwner.clear()`, mutacja 2.4 przepisana na aktualne wywolanie `reconcileAllWorkedTiles` po `healInconsistentUnits('wczytanie zapisu', ...)`). Dowod mutacji: wbudowana asercja 2.4 (usuniecie call site przestaje dopasowywac wzorzec) przechodzi. Reszta bez zmian.
+BAZA: 25aac7b932a746be75ed5876a98eea8742c9b3e9 (= refs/keep/R-WEB-TESTDEBT-Q3-r2-op). Ancestry: `git merge-base --is-ancestor 25aac7b93 origin/main` -> NIE (origin/main = ef6e8ea1e, FALA 767). Dispatch nazywa baze „origin/main”; zastosowano SHA z dispatchu i DODATKU 2. npm ci w gra/ wykonany (71 pakietow).
 
-## 1. Pomiar 17 testow pr141-* (lista wybrana przez Operatora; zmierzone surowe exit code, pierwsza linia bledu)
+TESTY (ZMIERZONO, surowe wyjscie, baza 25aac7b93, poza wpisem „PO” ponizej):
 
-ZMIERZONO (przed zmianami harnessu, baza 12f6435e8):
-| test | exit | wynik / pierwsza linia bledu |
+## 1. pr141-* (17 testow z tabeli r2)
+| test | przed: exit / wynik | klasa / przyczyna (cytat) |
 |---|---|---|
-| pr141-ai-production-behavior | 0 | PASS |
-| pr141-ai-strategy-behavior | 1 | RESULT: 17 passed, 2 failed; "FAIL: high conquest profile declares war in same relation; got []"; "FAIL: risk 8 crosses war threshold at unchanged relation; got []" |
-| pr141-combat-defense-behavior | 0 | PASS |
-| pr141-combat-defense-owner-route | 1 | ReferenceError: _menuCivIdByOwner is not defined (harness) |
-| pr141-combat-offense-behavior | 0 | PASS |
-| pr141-dip-activation | 1 | AssertionError: "missing/non-major row preserves caller fallback" |
-| pr141-hotseat-diplomacy-owner | 1 | TOTAL 5/10; "diploBrakeBonusFlags is not defined" (harness: zagniezdzona funkcja main.ts:12309 nieobecna w vm) |
-| pr141-hotseat-production-owner-routing | 1 | ReferenceError: isCityUnderSiege is not defined (harness) |
-| pr141-matrix-only-ai | 1 | "38 passed, 2 failed"; "FAIL: recognized Greek matrix row remains active when explicitly supplied"; "FAIL: recognized Roman partner remains available when explicitly supplied" |
-| pr141-matrix-only-combat | 0 | PASS |
-| pr141-matrix-only-data-wiki | 0 | PASS |
-| pr141-matrix-only-economy | 1 | AssertionError "grecy: gross trade uses only matrix, not poison civ multiplier" (diff 'simple') |
-| pr141-matrix-only-owner-ui | 1 | AssertionError "expected owner civKey in availability contexts, found 4" |
-| pr141-matrix-only-production | 0 | PASS |
-| pr141-population-behavior | 0 | PASS |
-| pr141-population-main-happiness-hookup | 0 | PASS |
-| pr141-runtime-ordinary-scope | 1 | "FAIL 8/19"; ENOENT lstat dyspozycje/autobot/runs/R-PR141-CODEX-RUNTIME-ORDINARY-PREP-20261019 (katalog runu nieobecny w worktree = zaleznosc srodowiskowa, klasa C) |
+| pr141-ai-production-behavior | 0 / 23 pass | zielony |
+| pr141-ai-strategy-behavior | 1 / 17 pass, 2 FAIL | "high conquest profile declares war in same relation; got []"; "risk 8 crosses war threshold at unchanged relation; got []". NIE ROZSTRZYGNIETE (A lub B: prog wojny AI) |
+| pr141-combat-defense-behavior | 0 | zielony |
+| pr141-combat-defense-owner-route | 1 | "walka_obrona_morska: real owner-id battle setup yields defender HP 80 vs foreign 80". NIE ROZSTRZYGNIETE; hipoteza B (morska obrona nie wplywa na HP obroncy przy counterTyp Naval, civ-bonuses.ts:241) NIEPOTWIERDZONA w kodzie |
+| pr141-combat-offense-behavior | 0 / 75 pass | zielony |
+| pr141-dip-activation | 1 | AssertionError "missing/non-major row preserves caller fallback". NIE ZMIERZONO (brak analizy) |
+| pr141-hotseat-diplomacy-owner | 1 / TOTAL 5/10 | "diploBrakeBonusFlags is not defined" (harness, zagniezdzona funkcja main.ts nieobecna w vm). Klasa C/harness, NIE NAPRAWIONE |
+| pr141-hotseat-production-owner-routing | 1 | "ReferenceError: units is not defined" (harness; r2 zapisal „hexHasRoomFor” – inny blad na tej bazie). Harness, NIE NAPRAWIONE |
+| pr141-matrix-only-ai | 1 / 38 pass, 2 FAIL | "recognized Greek matrix row remains active when explicitly supplied"; "recognized Roman partner remains available when explicitly supplied". NIE ROZSTRZYGNIETE |
+| pr141-matrix-only-combat | 0 / 36 pass | zielony |
+| pr141-matrix-only-data-wiki | 0 / 15 civ rows, 9 CivPedia | zielony |
+| pr141-matrix-only-economy | 1 | "grecy: gross trade uses only matrix, not poison civ multiplier" (diff 'simple'). NIE ROZSTRZYGNIETE |
+| pr141-matrix-only-owner-ui | 1 | "expected owner civKey in availability contexts, found 4". NIE ROZSTRZYGNIETE |
+| pr141-matrix-only-production | 0 / 96 pass | zielony |
+| pr141-population-behavior | 0 / 24 pass | zielony |
+| pr141-population-main-happiness-hookup | 0 / 7 pass | zielony |
+| pr141-runtime-ordinary-scope | 1 / FAIL 8/19 | ENOENT lstat `dyspozycje/autobot/runs/R-PR141-CODEX-RUNTIME-ORDINARY-PREP-20261019` (katalog runu nieobecny w worktree). Klasa C (srodowisko) |
+Podsumowanie pr141: 8 zielonych, 9 czerwonych (przed) -> 9 czerwonych (po; bez zmian w pr141). Pozycje z zaleznosciami spoza dispatchu (f04-*, ledgery v1/v3/v4, evidence-ledger-behavior) — NIE ZMIERZONO.
 
-Uwaga: to nie jest pelny zbior "17 pr141-*" z dispatchu FC (zbior FC nie zostal wymieniony nazwami). Pozostale pr141-* (f04-*, g1-*, ledgery v1/v3/v4, evidence-ledger-behavior, dip-activation-zaleznosci) NIE ZMIERZONO w tej rundzie.
+## 2. okolica-load-reconcile-test
+- przed: 21/23, FAIL P-MILET-ATENY-OKOLICA-RECZNE-PRZY-PRZEJECIU-LOAD (kotwica `playerEverOwnedCity = cities.some`) i "punkt mutacji zlokalizowany dokladnie".
+- klasa A (test przestarzaly wzgledem R-WEB-SAVE-LOAD-PLAYER-OWNED-CITY (#433)). Zachowanie zachowane: reconcileAllWorkedTiles w restoreGameFromSave (main.ts:49239) przed przeliczeniem playerEverOwnedCityByOwner (main.ts:49243).
+- PO: 23/23 OK (ZMIERZONO, exit 0).
 
-PO ZMIANACH HARNESSU (zmierzone tylko dla owner-route):
-- pr141-combat-defense-owner-route: exit 1, pierwsza asercja realna: "walka_obrona_morska: real owner-id battle setup yields defender HP 80 vs foreign 80". Matrix: grecy walka_obrona_morska=0.5, rzymianie=0. Oczekiwano HP obrońcy (grecki owner) > HP przy obcym ownerze; rzeczywiście równo. Klasa: NIEROZSTRZYGNIĘTE (A czy B). Nie ustalono, czy resolveCombat/launchFieldBattleFromMap nie stosuje bonus_obrona/morska do jednostki o rola Morska przy counterTyp Naval (civ-bonuses.ts:241 mapuje na kategorie 'morska'; test podaje Typ Galera/Naval) — hipoteza B do potwierdzenia, bez cytatu kodu w tej rundzie.
-- pr141-hotseat-production-owner-routing: po dopisaniu isCityUnderSiege nastepna brakujaca zaleznosc: "ReferenceError: hexHasRoomFor is not defined". Dopisanie hexHasRoomFor (army-stack-limit.ts:70) wykonane w pliku testu, ale NIEZMIERZONE (klasyfikator zablokowal kolejne Bash). Pozostaje do sprawdzenia, czy kolejne zaleznosci (nie ma gwarancji) sie nie kaskaduja.
-- pr141-hotseat-diplomacy-owner: NIE RUSZONE w tej rundzie (wymaga wstrzykniecia diploBrakeBonusFlags + getDiploPairMeta/isDiploTickWarBrakeEnabled z main.ts; NIE ZMIERZONO po zmianie).
+## 3. defense-breakdown-test
+- przed = PO: 23 pass / 10 FAIL (ZMIERZONO, exit 1). Brak TypeError (usuniety w r1).
+- Dane z wlasnego debugowania (kopia testu usunieta po pomiarze): roster sama kawaleria/rydwany zwraca 1 linie "Walka · punkty zdrowia · rydwanów — 1 z 2 jednostek" (test oczekuje 0); roster mieszany zwraca 3 linie (Falanga obrona 2/4, Falanga punkty zdrowia 2/4, rydwany HP 1/4), test oczekuje 1; roster cala piechota: 2 linie po 4/4 (test oczekuje 1). cityDefenseBreakdownLines: 5 linii zamiast 4.
+- Klasyfikacja: NIE ROZSTRZYGNIETE (A: test oczekuje modelu sprzed rozdzielenia linii obrony/HP i bez linii rydwanow; B: civ-matrix celowo emituje linie HP i rydwanow, co wymaga decyzji). NIE ZMIENIANO asercji (wymaga decyzji owner/Evaluator).
 
-NIE ZMIERZONO w tej rundzie (jawnie):
-- okolica-load-reconcile-test 21/23 (zadanie 4 DODATKU) — brak pomiaru tej rundy; wynik r1 bez zmian.
-- defense-breakdown-test 10 FAIL (zadanie 5) — brak pomiaru tej rundy; wynik r1 (23 pass / 10 fail) bez zmian.
-- Pozostale pozycje dispatchu (diplo weaker-seeks/main-guard/gate G/truce-r1/r4, map-snapshot-load timeout) — nie uruchamiane w tej rundzie.
-- Mutacje na kopii: brak (brak poprawek klasy A w tej rundzie).
-- Bramki: tsc --noEmit, 5 referencyjnych (logic-test, tech-tree-test, research-test, unit-replace-test, combat-test), git diff --check — NIE ZMIERZONO w tej rundzie po zmianach harnessu.
-
-## 2. Klasyfikacja pozycji pr141 (wstepna, z surowego wyjscia; bez poprawek)
-- C (srodowisko): pr141-runtime-ordinary-scope (brak katalogu runu R-PR141-CODEX-RUNTIME-ORDINARY-PREP-20261019 w worktree).
-- Harness (test-infra, ReferenceError z braku domkniecia main.ts): pr141-combat-defense-owner-route (naprawione, przeszlo do asercji), pr141-hotseat-production-owner-routing (w toku), pr141-hotseat-diplomacy-owner (do naprawy).
-- A/B/NIEROZSTRZYGNIETE (wymaga zbadania asercji, bez cytatu w tej rundzie): pr141-ai-strategy-behavior (2 asercje "got []"), pr141-dip-activation, pr141-matrix-only-ai (2 asercje "recognized ... row remains active/available when explicitly supplied"), pr141-matrix-only-economy ("gross trade uses only matrix"), pr141-matrix-only-owner-ui ("found 4" zamiast oczekiwanego), pr141-combat-defense-owner-route (HP 80 vs 80).
-
-## 3. Tabela przed/po (czerwone -> czerwone)
-| zakres | przed (baza 12f6435e8) | po (ta runda) |
+## 4. Pozostale pozycje dispatchu (ZMIERZONO)
+| test | wynik | klasa |
 |---|---|---|
-| 17 pr141 z listy Operatora | 9 czerwonych / 8 zielonych | NIE ZMIERZONO ponownie dla wszystkich; owner-route nadal czerwony (z ReferenceError na asercje) |
-| defense-breakdown-test | 10 FAIL | NIE ZMIERZONO |
-| okolica-load-reconcile-test | 21/23 | NIE ZMIERZONO |
+| budynek-civ-bonus-u17-test | exit 0, 6 pass / 0 fail | zielony (r1 naprawa trzyma) |
+| diplo-peace-weaker-seeks-city-only-test | exit 0, 35 / 0 | zielony na bazie (h2/h4/h5 nie czerwone) |
+| diplo-war-peace-main-guard-test | exit 0, 35 / 0 | zielony |
+| war-rules-multiwar-main-guard-test | exit 0, 21 / 0 | zielony |
+| war-epoch-player-first-main-guard-test | exit 1, 33 pass / 2 FAIL | "[baza]: main.ts: bramka R1/R2 po stronie AI dla pary gracza (targetIsPlayer: true)"; "bypass R3 usunięty (brak waveActorBypassR3) + licznik per cywilizacja". NIE ROZSTRZYGNIETE (kandydat B lub A), NIE ZMIENIANO |
+| diplo-war-peace-gate-test | exit 0, 24 / 0 | zielony (pozycja „gate G” z dispatchu nie zidentyfikowana jednoznacznie – przyjeto ten plik) |
+| diplo-truce-r1-test | exit 0, 31 / 0 | zielony |
+| diplo-truce-r4-ai-test | exit 0, 24 / 0 | zielony |
+| diplomacy-sensible-deals-main-guard-test | exit 0, 22 / 0 | zielony |
+| map-snapshot-load-test | exit 0, 169 s, 58 pass / 0 fail / 1 KNOWN-FAIL (poza exit code) | znany otwarty bloker: budzet agregatowy rotacji autozapisu 14,364 MB UTF-16 > ~5 MB origin (decyzja ABC wlasciciela, nie test) |
 
-## 4. Kandydaci B (bez potwierdzenia w kodzie)
-- Kandydat B: walka obrony morskiej — grecy walka_obrona_morska=0.5 nie zmienia HP obroncy w resolveCombat/launchFieldBattleFromMap (pr141-combat-defense-owner-route, HP 80 = 80). Do potwierdzenia przez Evaluator/FC.
-- Kandydat B z r1 (nadal bez potwierdzenia): roznica plonu kamienia 50 vs 55; linie 0% w defenderCivBonusBreakdown dla zerowych wpisow civ-matrix.
+## 5. Bramki (ZMIERZONO)
+- tsc --noEmit: exit 0.
+- logic-test: exit 0, LOGIC OK (213/213).
+- tech-tree-test: exit 0, 20 pass / 0 fail.
+- research-test: exit 0, PASSED 33 / FAILED 0.
+- unit-replace-test: exit 0 (koncowy wynik: wszystkie [OK]; nie liczono sumy).
+- combat-test: exit 0, "All sanity checks passed."
+- git diff --check: OK.
 
-## 5. Dlaczego BLOCK
-Runda nie domknela zadania: brak commita z praca, brak mutacji, brak pomiaru 2 z 3 wskazanych grup (okolica, defense-breakdown) i brak bramek po zmianach. Zgodnie z kontraktem raport bez commita = BLOCK. Zmiany harnessu pozostaja w worktree do zacommitowania przez nastepna runde lub orkiestratora.
+## 6. Tabela przed/po (czerwone -> czerwone)
+| zakres | przed (25aac7b93) | po (ta runda) |
+|---|---|---|
+| okolica-load-reconcile-test | 21/23 (2 FAIL) | 23/23 (0 FAIL) |
+| defense-breakdown-test | 23/10 | 23/10 (bez zmian, NIE ROZSTRZYGNIETE) |
+| pr141-* (17) | 9 czerwonych | 9 czerwonych (klasyfikacja ponizej, bez poprawek asercji) |
+| war-epoch-player-first-main-guard | 2 FAIL | 2 FAIL (bez zmian) |
+| budynek-civ-bonus-u17, weaker-seeks, main-guard (diplo/war), truce-r1/r4 | zielone | zielone |
+| map-snapshot-load-test | exit 0 (1 known-fail) | exit 0 (bez zmian) |
 
-RUNDY: 2/5 (Operator HAIKU, runda 2 — pierwsza nieudana runda Haiku tego tematu jest r1; Sonnet na Operatorze wymaga dwoch nieudanych rund, wiec nie uzasadniony w tej rundzie).
-NASTEPNY KROK: (1) zacommitowac dwie zmiany harnessu (git add <dwie sciezki>, nie -A); (2) zmierzyc pr141-hotseat-production-owner-routing i pr141-combat-defense-owner-route ponownie; (3) pomierzyc okolica-load-reconcile i defense-breakdown (zadania 4 i 5 DODATKU); (4) klasyfikacja A/B z cytatami asercji; (5) mutacje na kopii dla kazdej poprawki A; (6) bramki tsc 0 + 5 referencyjnych + git diff --check.
+## 7. Kandydaci B (NIE naprawiono; do ABC/Evaluator)
+- B1: morska obrona nie wplywa na HP obroncy (pr141-combat-defense-owner-route; HP 80 = 80). Hipoteza, nie potwierdzona w kodzie.
+- B2: linie HP i rydwanow w defenderCivBonusBreakdown (defense-breakdown, 10 FAIL) – czy zamierzone (wtedy test = A).
+- B3: prog wojny AI (pr141-ai-strategy-behavior, "got []") – czy prog zmieniony decyzja.
+- B4: war-epoch-player-first-main-guard: bramka R1/R2 po stronie AI dla pary gracza; brak waveActorBypassR3.
+- Plonu kamienia 50 vs 55 i linii 0% z r1 — bez potwierdzenia (NIE ZMIERZONO w tej rundzie).
+
+## 8. NIE ZMIERZONO / jawnie
+- pr141: dip-activation, matrix-only-ai/economy/owner-ui, ai-strategy – tylko wyjscie pierwszej asercji, bez analizy zrodla (klasyfikacja nierozstrzygnieta).
+- hotseat-diplomacy-owner i hotseat-production-owner-routing: harness nieprzerobiony (ReferenceError), bez pomiaru po ewentualnej naprawie.
+- pr141-f04-*, ledgery v1/v3/v4, evidence-ledger-behavior: NIE ZMIERZONO.
+- Brak mutacji klasy A poza okolica (mutacja wbudowana w test 2.4).
+
+RUNDY: 3/5 (Operator HAIKU; r1 FC FAIL, r2 INFRA/BLOCK bez commita; r3 = ta runda; Sonnet nieuzasadniony – brak drugiej nieudanej rundy merytorycznej).
+NASTEPNY KROK: (1) Evaluator sprawdza okolica-load-reconcile (23/23, mutacja 2.4) i diff jednego pliku; (2) ABC wlasciciela: defense-breakdown (A vs B: linie HP/rydwanow); prog wojny AI (pr141-ai-strategy); bramka R1/R2 (war-epoch); morska obrona (pr141-combat-defense-owner-route); (3) osobny temat harnessu dla pr141 hotseat-* i runtime-ordinary-scope (brak katalogu runu).
 DEPLOY/PUSH: NIE WYKONANO
-UWAGI-DLA-ORKIESTRATORA:
-- Klasyfikator bezpieczenstwa Bash zwracal brak werdyktu (blad przejsciowy) w trakcie rundy; stad brak commita. Prosze o ponowne uruchomienie tej rundy po stabilizacji.
-- Nie utworzono zadnych sesji, zadan ani harmonogramow.
+UWAGI-DLA-ORKIESTRATORA: dispatch nazywa baze „origin/main”, ale 25aac7b93 nie jest przodkiem origin/main (ef6e8ea1e). Uzyto SHA 25aac7b93 zgodnie z dispatchem i DODATKIEM 2. Nie utworzono zadnych sesji, zadan ani harmonogramow. Tymczasowa kopia defense-breakdown do debugu usunieta przed commitem.
