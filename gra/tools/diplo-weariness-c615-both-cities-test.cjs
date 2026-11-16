@@ -134,7 +134,9 @@ ok(tickMatchesTable, '(d2) tick AI<->AI = warWearinessLevel(lostCitiesForWearine
 // (e) Z z funkcji dla tur 10..16 bez strat (C=615)
 const expectZ = [0, 17, 68, 154, 273, 427, 615];
 const gotZ = [];
-for (let t = 10; t <= 16; t++) gotZ.push(W.wearinessPeaceItemPw(C, W.warWearinessLevel({ turnsAtWar: t, lostCitiesTotal: 0 }, P), P));
+// DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: skala 40 tur — te same poziomy 0,50..0,80 co dawniej przy turach 10..16 (20 tur),
+// czyli tury 20..32 (przeskalowanie 2×; wartości Z bez zmian).
+for (let t = 10; t <= 16; t++) gotZ.push(W.wearinessPeaceItemPw(C, W.warWearinessLevel({ turnsAtWar: 2 * t, lostCitiesTotal: 0 }, P), P));
 ok(JSON.stringify(gotZ) === JSON.stringify(expectZ), `(e) Z(615) tury 10..16 = ${JSON.stringify(expectZ)} (got ${JSON.stringify(gotZ)})`);
 
 // (f) wiazanie w kodzie
