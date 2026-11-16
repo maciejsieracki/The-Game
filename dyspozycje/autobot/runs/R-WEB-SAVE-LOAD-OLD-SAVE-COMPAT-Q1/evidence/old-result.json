@@ -1,0 +1,26 @@
+{
+  "phase": "old",
+  "strip": false,
+  "results": [
+    {
+      "status": "PASS",
+      "label": "OLD zakłada stolicę gracza",
+      "extra": true
+    },
+    {
+      "status": "FAIL",
+      "label": "OLD tura 1 nie przechodzi (timeout)",
+      "extra": null
+    },
+    {
+      "status": "FAIL",
+      "label": "OLD autozapis w OPFS powstał",
+      "extra": null
+    },
+    {
+      "status": "PASS",
+      "label": "OLD brak pageerror",
+      "extra": []
+    }
+  ]
+}
