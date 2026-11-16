@@ -2315,3 +2315,14 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dlaczego bez nowych startów:** dysk **7,1 GB** wolnego — poniżej progu 8 GB dla tematów z kodem Rust (CLAUDE.md, zasada 5). Pełny `cargo test` przy integracji też tego wymaga. Tematy bez cargo (dokumentacja/rozpoznanie) są dozwolone, ale kandydaci z kolejki bez kodu pokrywają się z T4 (#123) albo czekają na decyzje (ZŁOŻA, COMBAT-WEJSCIA, R7K7C, ZDOBYCIE, kontrakt `ActivateOps`).
 - **Zakaz startu kodu** do czasu zwolnienia miejsca (patrz tick wcześniej: `scratchpad/target` 3,1 GB, dirty worktree `wf_f3b76b65-261-3` i `wf_5a965001-591-4`, `/tmp/claude-0/ev9f1` — decyzje właściciela).
 - **Parity:** `1a4982574` (bez zmian).
+
+## Przebieg (06:51 UTC — integracja K5-BLOW-ENV-WEKTORY-Q1 na parity)
+
+- **Wynik workflow `wf_6ab179f1-525`:** Operator `1c82ab4b6` PASS-WITH-NOTES → Obrona `453aed4c4` (poprawki: przypadki kodów 4–7 i notatki) → Evaluator PASS-WITH-NOTES (mutacja atk→def w `siege_tactics_blow_env.rs:215` daje FAIL, zweryfikowane) → **FC PASS-WITH-NOTES `453aed4c4`**.
+- **Ancestry i zakres:** baza `7d8993c42` jest przodkiem FC; merge-tree czysty; diff vs parity = 5 plików (testy `p6_k5_blow_env*`, `gen.mjs`, `blow_env.json`, dokumentacja runu), **zero zmian w `src/`**, 2094 linie, same dodania.
+- **Integracja:** merge `--no-ff` `453aed4c4` na parity `1a4982574` → `316ded4b7`. Bramki na merge'u: `fmt --check` EXIT 0; `clippy --all-targets -D warnings` EXIT 0; **`cargo test --all-targets --no-fail-fast` TEST_EXIT=0, 3627 passed, 0 failed, 1 ignored** (ignorowany istniał wcześniej, `p6_order_lane.rs`).
+- **FF:** `rust-port/parity-v2` = `316ded4b7` (readback `git ls-remote` zgodny). Refy: `refs/keep/R-RUSTPORT-P6-K5-BLOW-ENV-WEKTORY-Q1-fc` (`453aed4c4`), `…-integ` (`316ded4b7`).
+- **Sprzątanie:** worktree `wf_6ab179f1-525-1..4` i worktree integracji usunięte po zabezpieczeniu HEAD w `refs/keep/cleanup-K5BLOW-wt1..4`. Jedyny brud w nich to niezacommitowany `Cargo.lock` (zgodnie z regułą nie commitowany). Cache integracji usunięty.
+- **Uwaga NIE_ZMIERZONO:** źródło `ctx.river_attack_mult` w produkcji nie jest weryfikowane tym tematem (Evaluator zarzut 2).
+- **Dysk:** 14 GB wolnego po sprzątaniu (było 7,1 GB).
+- **Sloty:** 1 z 4 — K5DOC-PROD-UNIT-STAN-T0 (`wf_a3de76ac-91a`, Evaluator, Sonnet). Fala 1 (T2', T6, T5a, T4) czeka na integrację T0 (zależność z §5 rozpoznania).
