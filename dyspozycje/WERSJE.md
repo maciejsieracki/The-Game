@@ -1,3 +1,9 @@
+## ROBOCZA 662cbc20 -- 2026-11-16 -- FALA 768: Panel Rozbicie obrony bez wpisow zerowych + narzedzia pomiarowe i wycofane testy (testowa)
+
+- Panel Rozbicie obrony pomija wpisy zerowe (defenderCivBonusBreakdown); 5 testow pr141 oznaczonych jako wycofane; hak ledgerStats za ?civTest=1 oraz narzedzia pomiarowe (ledger, odwrot, zgodnosc starych zapisow) bez zmiany zachowania gry
+- Weryfikacja: tsc 0; logic-test 213/213; defense-breakdown 49/0; okolica-load-reconcile, budynek-civ-bonus-u17 7/0, war-epoch-player-first-main-guard 35/0, load-game-regression 34/0; FC PASS-WITH-NOTES (Q4 bac531c58)
+- Limity: Render panelu Rozbicie obrony w Chromium NIE ZMIERZONO; prog 10% ledgera i kampania limitu odwrotu NIE ROZSTRZYGNIETE
+
 ## ROBOCZA 8e83eab3 -- 2026-11-14 -- FALA 767: Bitwa reczna: arbitraz kolizji takze dla jednostek niewybranych (testowa)
 
 - w bitwie recznej pola sporne miedzy jednostkami niewybranymi przez gracza rozstrzygane jak w AUTO (piechota pierwsza, lucznik ustepuje, ten sam typ mniejsze ID); rozkazy wybranych jednostek bez zmian
