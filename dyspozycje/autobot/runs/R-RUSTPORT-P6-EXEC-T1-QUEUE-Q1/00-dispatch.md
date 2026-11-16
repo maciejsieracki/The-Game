@@ -37,3 +37,8 @@ Przepisać `_executeUnitsImmediate` (pin `battleScene.ts:18578-18614`) jako pęt
 3. Brak `#[ignore]`, brak osłabionych asercji. Zero zmian poza allowlistą.
 4. Commit jawnym `git add` (nigdy `-A`). NIE commituj `Cargo.lock`. Bez push do parity.
 5. `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` poza repo i unikalny; usuń po bramkach.
+
+## DODATEK r2 (orkiestrator, po FC FAIL 9b8ef8560 — INFRA, Bash niedostępny)
+- BAZA r2: wip `3e370995e` (gałąź `wip/R-RUSTPORT-P6-EXEC-T1-QUEUE-Q1-obrona-r1`) = operator `9b8ef8560` + wektory obrony (acted/dead/routed przed busy, planowanie x2) + `02a-obrona.md`. Worktree z tego SHA.
+- Do zrobienia: (1) mutacje (a1-dead) i (a1-routed) MUSZĄ dać FAIL — zapisać wyniki; (2) fmt, clippy -D warnings, `cargo test --all-targets --no-fail-fast` EXIT 0; (3) commit jawnym git add (generator, vectors, `player_order_queue.rs` jeśli zmieniony, raport); (4) bez push do parity.
+- Nie zmieniaj logiki `player_order_queue.rs` poza przywróceniem stanu po mutacjach (`git checkout`).
