@@ -2462,3 +2462,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sprzątanie:** usunięte worktree EXEC-T1 (r1, `wf_487c53ff`), T3 (`wf_7d52ae9a`), integracji EXEC-T1 oraz cache `fc_k5t3_target`. Stary worktree `wf_acc61d3f` (EXEC-T1 r1, zastąpiony przez r2) — usuwany tylko jeśli czysty.
 - **Do zrobienia po zwolnieniu dysku:** integracja K5DOC-T3 GEOMETRIA (FC `efa3b7642`, wip `…-integracja`) — scalić z `05b872fc5`, pełne bramki.
 - **Rozbieżność:** harmonogram heartbeatu wymaga Operatora Haiku; reguła właściciela dla tematów 3D to Opus we wszystkich rolach (zachowana).
+
+### Przebieg — wznowienie po restarcie sesji, 2026-11-16 ~12:40 UTC
+
+- **BLOKADA SUBSKRYPCJI (poza kodem):** Evaluator i Final Control wszystkich trzech tematów Opus padły z błędem „Claude Code can't use your Claude subscription … payment is past due”. Dotyczy: P4-1F3 (Evaluator był PASS-WITH-NOTES, FC padł), P4-1F4 (Operator PASS, Evaluator i FC padły), P4-1F5 (Operator padł, brak kodu). Wymaga opłacenia subskrypcji; do tego czasu nie ma FC dla 1F3/1F4.
+- **P4-1I2 BATTLE-FRAME — FC PASS-WITH-NOTES `43709ed0a`** (po rundzie Obrony r2: test ramki po każdym `fire`, pełna bramka). Commit FC przypięty `refs/keep/P4-1I2-fc` i na `wip/R-RUSTPORT-P4-1I2-BATTLE-FRAME-integracja`. Integracja: merge `0e3c149fa` na `parity-v2 05b872fc5` (czysty). Bramki: view-model fmt/clippy/test zielone; engine fmt/clippy zielone; pełny `cargo test` engine w toku. FF dopiero po zielonym wyniku.
+- **Zachowane na WIP (bez FC):** 1F3 `999083029` / ev `48ef28025` / obrona `92dce8414` (`wip/R-RUSTPORT-P4-1F3-SIEGE-WONDER-VIEW-*`); 1F4 `c1d829320` (`wip/…1F4…-op-r1`) + poprawka niezacommitowana (`wip/…1F4…-poprawka`, `aaaeef96`); 1F5 niedokończony (`wip/…1F5…-niedokonczony`, `587cfa79`).
+- **Sprzątanie:** usunięte worktree 1I2 (`-1..4`), 1F3 `-4`, 1F4 `-2`, 1F5. Pozostają: 1F3 `-1..3` (branche wip zachowane), `wf_acc61d3f` (stary EXEC-T1 r1), `ev9f1` (decyzja właściciela).
+- **Do zrobienia:** (1) po zielonym teście engine — FF `parity-v2` na `0e3c149fa` i wpis wyniku; (2) po opłaceniu subskrypcji — Evaluator/FC dla 1F3 (`48ef28025`) i 1F4 (`c1d829320`); 1F5 — nowa runda Operatora; (3) integracja K5DOC-T3 GEOMETRIA (`efa3b7642`).
+- **Rozbieżność z harmonogramem:** prompty heartbeatu wymagają Operatora/Obrony Haiku i Evaluatora/FC Sonnet; reguła właściciela dla 3D to Opus we wszystkich rolach (zachowana).
