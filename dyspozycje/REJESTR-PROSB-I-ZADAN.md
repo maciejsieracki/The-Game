@@ -10553,3 +10553,6 @@ Kandydat 35db7c8fc niekompletny (gracz bez pokoju wymuszonego i okna, 11 czerwon
 
 ### FALA 782 (2026-11-17) — WDROŻONE na ROBOCZĄ: wydarzenia bez wpisu o zwolnieniu zarządcy OBCEJ cywilizacji
 EVENTS (FC 18eb1a384, PASS-WITH-NOTES): po zajęciu miasta gracz nie dostaje wpisu o zwolnieniu obcego zarządcy (bramka wg poprzedniego właściciela). ROBOCZA 2cb84db4, main fadf21af9, raw MD5 = manifest, 3 sidecary OK. ZAŁOŻENIE do potwierdzenia: utrata WŁASNEGO miasta z zarządcą nadal daje wpis. NIE ZMIERZONO: żywy Chromium. Dług Rust: REPIN noteAdministratorChange.
+
+### GARRISON r2 → FC FAIL (2026-11-17 noc) — runda 3 (Operator SONNET po 2 nieudanych rundach Haiku)
+r2 (Haiku): BLOCK bez kodu — puste miasta AI nadal nie uzupełniane, Faza 1 niezmierzona. Uzasadnienie Sonneta (ZASADA MODELI): dwie nieudane rundy Haiku tego samego tematu; r3 ma obowiązkową rekrutację garnizonu (main.ts punktowo) + pomiar Fazy 1 w Node. Baza `235ad7b4d`.
