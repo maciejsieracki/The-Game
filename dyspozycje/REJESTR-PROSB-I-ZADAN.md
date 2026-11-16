@@ -10532,3 +10532,6 @@ FC PASS-WITH-NOTES (FC c79a65654). main = 0c80544ee, ROBOCZA MD5 a33381a56e681a5
 
 ### Zgłoszenie 2026-11-16 (noc): ZASADZKA armii (nowa mechanika) — decyzje ABC właściciela
 Właściciel: nowa opcja armii „zasadzka” (jak fortyfikacja): armia dla wroga znika (AI traktuje heks jak pusty), wróg wpada w pułapkę; w bitwie zastawiający może rozstawić wojsko także na polu wroga, a zaskoczeni rozstawiają się w długiej linii max 3 szerokości. ODPOWIEDZI ABC: wyzwalacz = wejście wroga na heks (A); koszt = cały ruch armii, dowolny teren poza miastem, bez limitu czasu (A); rozstawienie wg opisu, bez premii liczbowych (A); zasadzki zastawiają gracz i AI (C). STATUS: **OTWARTE** — dispatch `R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1` (rdzeń + gracz, Haiku r1, wiele rund); decyzja AI „kiedy zastawić” → osobny temat `R-WEB-AI-AMBUSH-USE-Q1` po rdzeniu.
+
+### Zgłoszenie 2026-11-16 (noc): wydarzenia — bez informacji, że obca cywilizacja utraciła zarządcę
+Właściciel: po zajęciu miasta obcej cywilizacji nie pokazywać wpisu o zwolnieniu jej zarządcy (wystarczy „zająłem miasto”); wpis o własnym zarządcy po utracie własnego miasta może zostać. STATUS: **OTWARTE** — dispatch `R-WEB-UI-EVENTS-NO-FOREIGN-ADMINISTRATOR-DISMISSED-Q1` (Haiku r1; start gdy zwolni się slot).
