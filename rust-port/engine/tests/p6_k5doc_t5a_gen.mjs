@@ -145,6 +145,34 @@ const named = [
     want: [0, 4], notWant: [-1, 5],
   },
   {
+    // Granica planszy nc < 0 (DODATEK r3): W (-1,5) to jedyny kandydat poza plansza (N/S zajete, E odpada na gap 3 <= 4).
+    // Pin odrzuca W -> brak kroku. Bez granicy W dalby 550 (movedBackAxis) i wygralby.
+    name: 'granica_nc_ujemne_w_poza_plansza_jedyny', kind: 'best_kite', pin: 'battleScene.ts:6971',
+    unit: U(0, 5, 'atk', { range: 5 }), others: [U(4, 5, 'def')], threat: [4, 5],
+    occupied: [[0, 4], [0, 6]], want: null,
+  },
+  {
+    // Granica planszy nc >= BF_COLS (BF_COLS = 68, battleScene.ts:661): origin w kolumnie 67, E = (68,5) poza plansza.
+    // Bez granicy E dalby 450 (movedBackAxis) i wygralby; pin odrzuca E, wybor pada na N (400, pierwszy w DIRS4).
+    name: 'granica_nc_ge_bf_cols_e_poza_plansza', kind: 'best_kite', pin: 'battleScene.ts:6971',
+    unit: U(67, 5, 'def', { range: 4 }), others: [U(64, 5, 'atk')], threat: [64, 5],
+    want: [67, 4], notWant: [68, 5],
+  },
+  {
+    // Granica planszy nr >= BF_ROWS (BF_ROWS = 156, battleScene.ts:662): origin w wierszu 155, S = (30,156) poza plansza.
+    // E/W zajete, N odpada na gap; jedyny kandydat to S poza plansza -> pin zwraca null.
+    name: 'granica_nr_ge_bf_rows_s_poza_plansza', kind: 'best_kite', pin: 'battleScene.ts:6971',
+    unit: U(30, 155, 'atk', { range: 4 }), others: [U(30, 152, 'def')], threat: [30, 152],
+    occupied: [[29, 155], [31, 155]], want: null,
+  },
+  {
+    // Granica planszy nr < 0 (dolna granica wiersza = 0, battleScene.ts:6971): origin w wierszu 0, N = (30,-1) poza plansza.
+    // E/W zajete, S odpada na gap; jedyny kandydat to N poza plansza -> pin zwraca null.
+    name: 'granica_nr_ujemne_n_poza_plansza', kind: 'best_kite', pin: 'battleScene.ts:6971',
+    unit: U(30, 0, 'atk', { range: 4 }), others: [U(30, 3, 'def')], threat: [30, 3],
+    occupied: [[29, 0], [31, 0]], want: null,
+  },
+  {
     // occByKey: N zajety, wiec wybor pada na S (ten sam wynik gap/lateral).
     name: 'zajety_kafelek_occByKey_odrzucony', kind: 'best_kite', pin: 'battleScene.ts:6973',
     unit: U(0, 5, 'atk', { range: 5 }), others: [U(4, 5, 'def')], threat: [4, 5],

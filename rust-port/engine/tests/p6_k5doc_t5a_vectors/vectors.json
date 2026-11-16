@@ -83,6 +83,180 @@
    ]
   },
   {
+   "name": "granica_nc_ujemne_w_poza_plansza_jedyny",
+   "kind": "best_kite",
+   "pin": "battleScene.ts:6971",
+   "unit": {
+    "q": 0,
+    "r": 5,
+    "side": "atk",
+    "range": 5,
+    "primaryRanged": false,
+    "rangedKite": true,
+    "dead": false,
+    "fadingOut": false,
+    "routed": false
+   },
+   "others": [
+    {
+     "q": 4,
+     "r": 5,
+     "side": "def",
+     "range": 2,
+     "primaryRanged": false,
+     "rangedKite": true,
+     "dead": false,
+     "fadingOut": false,
+     "routed": false
+    }
+   ],
+   "threat": [
+    4,
+    5
+   ],
+   "occupied": [
+    [
+     0,
+     4
+    ],
+    [
+     0,
+     6
+    ]
+   ],
+   "impassable": [],
+   "expect": null
+  },
+  {
+   "name": "granica_nc_ge_bf_cols_e_poza_plansza",
+   "kind": "best_kite",
+   "pin": "battleScene.ts:6971",
+   "unit": {
+    "q": 67,
+    "r": 5,
+    "side": "def",
+    "range": 4,
+    "primaryRanged": false,
+    "rangedKite": true,
+    "dead": false,
+    "fadingOut": false,
+    "routed": false
+   },
+   "others": [
+    {
+     "q": 64,
+     "r": 5,
+     "side": "atk",
+     "range": 2,
+     "primaryRanged": false,
+     "rangedKite": true,
+     "dead": false,
+     "fadingOut": false,
+     "routed": false
+    }
+   ],
+   "threat": [
+    64,
+    5
+   ],
+   "occupied": [],
+   "impassable": [],
+   "expect": [
+    67,
+    4
+   ]
+  },
+  {
+   "name": "granica_nr_ge_bf_rows_s_poza_plansza",
+   "kind": "best_kite",
+   "pin": "battleScene.ts:6971",
+   "unit": {
+    "q": 30,
+    "r": 155,
+    "side": "atk",
+    "range": 4,
+    "primaryRanged": false,
+    "rangedKite": true,
+    "dead": false,
+    "fadingOut": false,
+    "routed": false
+   },
+   "others": [
+    {
+     "q": 30,
+     "r": 152,
+     "side": "def",
+     "range": 2,
+     "primaryRanged": false,
+     "rangedKite": true,
+     "dead": false,
+     "fadingOut": false,
+     "routed": false
+    }
+   ],
+   "threat": [
+    30,
+    152
+   ],
+   "occupied": [
+    [
+     29,
+     155
+    ],
+    [
+     31,
+     155
+    ]
+   ],
+   "impassable": [],
+   "expect": null
+  },
+  {
+   "name": "granica_nr_ujemne_n_poza_plansza",
+   "kind": "best_kite",
+   "pin": "battleScene.ts:6971",
+   "unit": {
+    "q": 30,
+    "r": 0,
+    "side": "atk",
+    "range": 4,
+    "primaryRanged": false,
+    "rangedKite": true,
+    "dead": false,
+    "fadingOut": false,
+    "routed": false
+   },
+   "others": [
+    {
+     "q": 30,
+     "r": 3,
+     "side": "def",
+     "range": 2,
+     "primaryRanged": false,
+     "rangedKite": true,
+     "dead": false,
+     "fadingOut": false,
+     "routed": false
+    }
+   ],
+   "threat": [
+    30,
+    3
+   ],
+   "occupied": [
+    [
+     29,
+     0
+    ],
+    [
+     31,
+     0
+    ]
+   ],
+   "impassable": [],
+   "expect": null
+  },
+  {
    "name": "zajety_kafelek_occByKey_odrzucony",
    "kind": "best_kite",
    "pin": "battleScene.ts:6973",

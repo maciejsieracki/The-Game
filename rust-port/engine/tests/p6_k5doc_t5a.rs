@@ -9,6 +9,8 @@
 //! (transpilacja TypeScript). Stubowane sa tylko `occByKey` (tu: predykat `occupied`) i `_passableForUnit`
 //! (tu: predykat `passable`), oba jawnie opisane w wektorze.
 
+use civ_engine::domain::siege_tactics_approach::BF_ROWS;
+use civ_engine::domain::siege_tactics_autobatch::BF_COLS;
 use civ_engine::domain::siege_tactics_end::BattleSide;
 use civ_engine::domain::siege_tactics_kite::{
     best_kite_shot_step, enemies_of_kite, kite_branch_applies, nearest_enemy_melee, KiteUnit,
@@ -143,6 +145,60 @@ fn best_granica_planszy_odrzuca_nc_ujemne() {
     let me = u(0.0, 5.0, ATK, 5.0);
     let units = [me, u(4.0, 5.0, DEF, 2.0)];
     assert_eq!(best(me, (4.0, 5.0), &units, &[], &[]), Some((0.0, 4.0)));
+}
+
+/// Pin `:6971` (`nc < 0`, DODATEK r3): W (-1,5) jedynym kandydatem poza plansza (N/S zajete, E odpada na gap); brak kroku.
+#[test]
+fn best_granica_nc_ujemne_w_jedyny_odrzucony() {
+    let me = u(0.0, 5.0, ATK, 5.0);
+    let units = [me, u(4.0, 5.0, DEF, 2.0)];
+    assert_eq!(
+        best(me, (4.0, 5.0), &units, &[(0.0, 4.0), (0.0, 6.0)], &[]),
+        None
+    );
+}
+
+/// Pin `:6971` (`nc >= BF_COLS`, BF_COLS = 68, `:661`, DODATEK r3): E (68,5) z kolumny 67 poza plansza.
+/// Bez granicy E (450, movedBackAxis) wygralby; pin wybiera N (67,4) (400, pierwszy w DIRS4).
+#[test]
+fn best_granica_nc_ge_bf_cols_odrzuca_e() {
+    let me = u(BF_COLS - 1.0, 5.0, DEF, 4.0);
+    let units = [me, u(BF_COLS - 4.0, 5.0, ATK, 2.0)];
+    assert_eq!(
+        best(me, (BF_COLS - 4.0, 5.0), &units, &[], &[]),
+        Some((BF_COLS - 1.0, 4.0))
+    );
+}
+
+/// Pin `:6971` (`nr >= BF_ROWS`, BF_ROWS = 156, `:662`, DODATEK r3): S (30,156) z wiersza 155 poza plansza.
+/// E/W zajete, N odpada na gap; jedyny kandydat to S poza plansza -> brak kroku.
+#[test]
+fn best_granica_nr_ge_bf_rows_odrzuca_s() {
+    let last_row = (BF_ROWS - 1) as f64;
+    let me = u(30.0, last_row, ATK, 4.0);
+    let units = [me, u(30.0, last_row - 3.0, DEF, 2.0)];
+    assert_eq!(
+        best(
+            me,
+            (30.0, last_row - 3.0),
+            &units,
+            &[(29.0, last_row), (31.0, last_row)],
+            &[]
+        ),
+        None
+    );
+}
+
+/// Pin `:6971` (`nr < 0`, dolna granica wiersza = 0, DODATEK r3): N (30,-1) z wiersza 0 poza plansza.
+/// E/W zajete, S odpada na gap; jedyny kandydat to N poza plansza -> brak kroku.
+#[test]
+fn best_granica_nr_ujemne_odrzuca_n() {
+    let me = u(30.0, 0.0, ATK, 4.0);
+    let units = [me, u(30.0, 3.0, DEF, 2.0)];
+    assert_eq!(
+        best(me, (30.0, 3.0), &units, &[(29.0, 0.0), (31.0, 0.0)], &[]),
+        None
+    );
 }
 
 /// Pin `:6973` (`occByKey.has(nk)`): zajety N odrzucony, wybor pada na S.
