@@ -2212,3 +2212,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Start (ROZP, odczyt):** `R-RUSTPORT-P6-TERRAIN-MULT-PRODUKCJA-ROZP-Q1` (`wf_7d64cefe-7a1`) — która kopia `terrain_river_attack_multiplier` jest na ścieżce produkcyjnej (`siege_tactics_blow_full.rs:245`) i czy różni się od pina; `R-RUSTPORT-P6-RENDERER-PIN-ZGODNOSC-ROZP-Q1` (`wf_d9201240-c60`) — czy `renderer/src/battle/orders.rs` cytuje pin `edb8fb56` zamiast `07d2fbd72`. Dispatche `13d72ec5f` na `claude/rust-sivvrn`, baza `de88d9d55`.
 - **Sloty:** 3 z 4 — P4-1H MOVE-Q6 (`wf_b1e51033-24c`, obrona, Opus), dwa rozpoznania (Haiku/Sonnet). Czwarty wolny — brak odblokowanego tematu kodu bez decyzji (kontrakt `ActivateOps`, łączenie #135 z RESOLVE-PAIR — do decyzji orkiestratora).
 - **Dysk:** 14 GB.
+
+## Przebieg (04:4x UTC — wynik rozpoznania zgodności pinu w renderer/orders.rs)
+
+- **RENDERER-PIN-ZGODNOSC-ROZP-Q1:** FC PASS-WITH-NOTES `b151636e8` (operator `72711a1b1`, obrona `971832633`). **Wynik: 0 z 7 cytatów w `rust-port/renderer/src/battle/orders.rs` zgadza się z pinem `07d2fbd72`** (również z `edb8fb56`, `origin/main`, `601fc3baf`, `96d088b4d`). Źródło numerów: NIE_ZMIERZONO. Obrona podała tabelę docelowych numerów (np. `_activateNext` 5979–6031, konsumpcja kolejki 5994/6013, filtr 5993, `_issueBattleAttackMove` 18682, `_cancelAttackMoveSelected` 18704, `_onKeyManual` 17406, Escape 17410, drugie wywołanie 19095 „Anuluj marsz”). Wpis dokumentacji na parity (merge docs-only, `dyspozycje/`).
+- **Zalecenie (nowy temat, nie w tym ticku):** poprawka numerów linii w `renderer/src/battle/orders.rs` do pina `07d2fbd72` (tylko komentarze, zmiana kodu zerowa) oraz zbadanie, skąd wzięły się numery z `edb8fb56` — 850 plików w `dyspozycje/` i 501 w `rust-port/` cytuje ten commit (zmierzone, rozłączne z pinem). **Ryzyko:** każdy port oparty na tych cytatach jest niewiarygodny, dopóki nie zostanie poprawiony.
+- **Otwarte z ewaluacji:** pełne pokrycie 171 plików `battleScene` i 27 plików `siege_*` — NIE_ZMIERZONO; nie zmierzono, czy treść funkcji w pinie jest identyczna z `601fc3baf`/`96d088b4d`.
+- **Refy:** `refs/keep/RENDERER-PIN-ZGODNOSC-ROZP-{FC,OB,OP}`. **Sprzątanie:** worktree `wf_d9201240-c60-1..4`.
+- **Sloty:** 2 z 4 — P4-1H MOVE-Q6 (`wf_b1e51033-24c`, obrona, Opus), ROZP terminu rzeki w produkcji (`wf_7d64cefe-7a1`, Haiku/Sonnet). Dwa wolne.
+- **Dysk:** 12 GB.
