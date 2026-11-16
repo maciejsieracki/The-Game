@@ -1479,6 +1479,7 @@ import {
   administratorUpkeepForCity,
   type AdministratorChange,
   type CityAdministrator,
+  administratorChangeNotifiesPlayer,
   aiRequiresImprovementAdministrator,
   ownerHasStateImprovementAdministrator,
   ownerHasWorkingStateImprovementAdministrator,
@@ -10708,7 +10709,9 @@ async function boot(): Promise<void> {
     let improvementAdministratorNoticeShown = true;
     /** R-WEB-CITY-ADMINISTRATOR-Q1: wpis w „Ważne” o zmianie stanu administratora (tylko gracz). */
     function noteAdministratorChange(ch: AdministratorChange): void {
-      if (!isHuman(ch.city.ownerId)) return;
+      // R-WEB-UI-EVENTS-NO-FOREIGN-ADMINISTRATOR-DISMISSED-Q1: zdobycie miasta obcej cywilizacji (zmiana
+      // właściciela) nie generuje wpisu o zwolnieniu ich zarządcy — liczy się poprzedni właściciel.
+      if (!administratorChangeNotifiesPlayer(ch, isHuman)) return;
       const evId = `city-admin-${ch.role}-${ch.kind}-${ch.city.id}-${turn}`;
       if (warEventLog.some(e => e.id === evId)) return;
       const text: Record<AdministratorChange['kind'], [string, string]> = {
