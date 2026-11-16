@@ -2548,3 +2548,12 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Dysk:** 15 GB wolnego. Sprzątanie w tej turze: zabity osierocony bieg FC 1F3, usunięte `fc1f3_target`, `integ-i23-target`, worktree `ev9f1` i worktree FC 1F3 (branch `fc/…1F3…` z `25fdeb11a` zostaje).
 - **Otwarte, nieprzeprowadzone:** `refs/keep/R-RUSTPORT-P4-1I4-fc` = `54fa4c704` (I4 FC PASS-WITH-NOTES) — push na remote odrzucany przez proxy (`remote end hung up`), zostaje lokalnie. Proces `p6_8i_pick` z usuniętego targetu do weryfikacji w logu.
 - **Rozbieżność z harmonogramem:** prompt heartbeatu wymaga Haiku na Operatorze i Sonnet na Evaluatorze/FC; reguła właściciela dla tematów 3D to Opus we wszystkich rolach (zachowana dla 1F3/1F4/1F5). Integracja T2/T3 na Haiku zgodnie z regułą integracji.
+
+### Przebieg — integracja K5DOC-T2 CELE + T3 GEOMETRIA na parity, 2026-11-16 ~16:45 UTC
+
+- **Parity:** `rust-port/parity-v2` = `75de326bc` (FF z `9f7c55499`, readback zgodny). Merge `a43be8147` (T2 `03dfa64c2`), potem `75de326bc` (T3 `efa3b7642`). Oba commity są przodkami parity.
+- **Bramki (Haiku, worktree z `9f7c55499`):** fmt EXIT 0, clippy `-D warnings` EXIT 0, pełny `cargo test --all-targets`: 3696 passed, 0 failed, 1 ignored (`e2e::dump_tick1_econ_for_web_generator`, pre-existing w `9f7c55499`, `p6_order_lane.rs:1530`).
+- **Konflikty:** brak; `mod.rs` z obiema liniami `pub mod` (`siege_tactics_doctrine_geometry`, `siege_tactics_doctrine_target`).
+- **Dispatch:** `2a0967eaa` (`dyspozycje/autobot/runs/R-RUSTPORT-P6-INTEG-K5DOC-T2-T3/`).
+- **Do zrobienia:** wątek nakładek (`wf_4b0573bb-d8f`, integracja 1F5+1F4) był zbudowany na `9f7c55499` — jego FF na parity nie będzie fast-forward. Trzeba zrobić re-merge na `75de326bc` i powtórzyć pełną bramkę przed FF. Tak samo FC 1F3 (`25fdeb11a`, bramki PASS) wymaga rundy integracyjnej po nakładkach.
+- **Dysk:** 20 GB wolnego po sprzątaniu.
