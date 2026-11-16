@@ -1,3 +1,9 @@
+## ROBOCZA 42f135a6 -- 2026-11-16 -- FALA 778: Drogi automatu dochodza do heksu miasta (AI i administrator ulepszen) (testowa)
+
+- Plan drog automatycznych (auto-ulepszenia gracza z administratorem i AI) dodaje heks miasta, do ktorego prowadzi droga; wczesniej droga konczyla sie na heksie sasiednim (od FALI 521), bo plan pomijal heksy miast. Reczna budowa gracza dzialala bez zmian.
+- Weryfikacja: tsc 0, roads-reach-city-hex-test 24/0 (baza 6/18), roads-city-links-only 57/0, road-connectivity 99/0, road-build-player-parity 17/0, load-game-regression 34/0, 5 bramek referencyjnych, autoimprove-stages-q1 299/0
+- Limity: NIE ZMIERZONO: zywy Chromium, rust-port (dlug REPIN planRoadNetwork), wplyw na balans (ok. +1 heks drogi na miasto), stare zapisy (heks miasta dostanie droge w kolejnych turach)
+
 ## ROBOCZA ad43bd51 -- 2026-11-16 -- FALA 777: Skroty zaznacz wszystkich danego typu przy zaznaczaniu jednostek armii (testowa)
 
 - Nad listami jednostek w panelu podzialu armii, panelu scalania i pasku zaznaczenia stosu (Zastap/Rozwiaz) pojawiaja sie chipy po jednym na typ jednostki (nazwa i liczba); klik zaznacza lub odznacza wszystkie jednostki danego typu, stan chipa: brak/czesc/wszystkie; w panelu podzialu rzad chipow zostaje u gory przy przewijaniu.
