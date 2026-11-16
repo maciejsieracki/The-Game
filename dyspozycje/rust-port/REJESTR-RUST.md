@@ -2691,3 +2691,16 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Sloty: 2 z 4 aktywne** (V2/V7 i NaN/Inf po FC-stage). Czwarty slot: brak czystego tematu; kandydaci czekają na decyzje (#308, #97, #282, #100, #115/#120, #135, #310 D1–D6) albo na niezintegrowany kod (#304, #165, #298, #297).
 - **Sprzątanie:** usunięto worktree `wf_d6ab4ac2-b7f-1` (integracja #311 zrobiona) i `wf_5fee88d9-4fc-1` (zachowano `refs/keep/cleanup-2aa1992d3`), usunięto target `target-d6ab`. Dysk 19 GB wolnego.
 - **Otwarte:** push referencji `keep` odrzucany przez proxy; trailer `463fb2636` z nazwą modelu (decyzja #289).
+
+### Przebieg — uzupełnienie slotów (uwaga właściciela o dwóch operatorach), 2026-11-16 ~19:40 UTC
+
+- **Parity:** `0fccd8dbf`, bez zmian.
+- **Zamknięte na podstawie dowodu:** #107 (facing: kod `923540b65` jest już na parity), #121 i #122 (weryfikacja i integracja facingu w tym samym merge).
+- **Sloty: 4 z 4 zajęte** (łącznie z wcześniejszymi dwoma):
+  - Wektory AUTO V2 i V7 (#296, `wf_5fee88d9-4fc`). Operator zrobił PASS-WITH-NOTES, commit `2aa1992d3`, Evaluator i FC w toku.
+  - Wektory NaN/Inf amunicji i maxRounds (#137, `wf_a2bf4706-6d5`). Operator PASS-WITH-NOTES, commit `3fd4d9677`, Evaluator i FC w toku.
+  - Efekty po ciosie: morale, rout i engaged (#109, runda 4, baza `0fccd8dbf`, dispatch DODATEK r4 w `R-RUSTPORT-P6-K5LOOP-OUTCOME-Q1`, `wf_43129880-afd`). HAIKU Operator, SONNET Evaluator i FC.
+  - Facing po krokach ruchu (#123, `R-RUSTPORT-P6-K5LOOP-RUCH-FACING-Q1`, dispatch `eee418031`, baza `0fccd8dbf`, `wf_43129880-afd`). HAIKU Operator, SONNET Evaluator i FC.
+- **Konflikt do zapamiętania:** #109 i #123 dotykają `siege_tactics_loop.rs`. Integracja sekwencyjnie: najpierw jeden, potem drugi, z pełną bramką.
+- **Dysk:** do sprawdzenia przed startem; worktree zakończonych tematów do usunięcia po zabezpieczeniu referencjami `keep`.
+- **Otwarte:** push referencji `keep` odrzucany przez proxy; trailer `463fb2636` z nazwą modelu (decyzja #289).
