@@ -2662,3 +2662,10 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Wolne sloty — brak czystych tematów:** V8 (#148), V9–V13 (#109/#107), V14 (#97), #100 (decyzja o scaleniu), #308, #282, #115/#120, #135, #310 (decyzje D1–D6), #304/#165 (zależą od niezintegrowanego kodu).
 - **Dysk:** 19 GB wolnego. Sprzątanie w tym przebiegu nie było potrzebne.
 - **Otwarte:** push referencji `keep` odrzucany przez proxy; trailer commitu `463fb2636` z nazwą modelu (decyzja #289).
+
+### Przebieg — FF #311 na parity, 2026-11-16 ~19:05 UTC
+
+- **Parity:** `rust-port/parity-v2` = `0fccd8dbf` (FF z `d66aaa3a7`). Integracja #311: commit FC `597bdcd8a` (test czułości filtra obrońców, jeden plik testowy). Bramki na merge: fmt i clippy `-D warnings` EXIT 0, pełny test 3751 passed, 0 failed, 1 ignored (pre-existing). Readback zgodny.
+- **Zamknięte:** #311. Mutacja (d) daje teraz FAIL; mutacje (a)(b)(c) dalej FAIL.
+- **W toku:** wektory AUTO V2 i V7 (#296, `wf_5fee88d9-4fc`, baza `d66aaa3a7`).
+- **Dysk:** 19 GB wolnego. **Otwarte:** push referencji `keep` odrzucany przez proxy; trailer commitu `463fb2636` z nazwą modelu (decyzja #289).
