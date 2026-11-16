@@ -42,7 +42,6 @@ import {
   splitIntoWarArmies,
   warArmyCount,
 } from './army-consolidation';
-import { unitsVisibleToViewer } from './ambush';
 import { hexDistance, computePath, computeReachable, keyOf, isCivilianUnit, terrainMoveCost, buildMoveOccupancy, endBlockedKeys, MoveOccupancy } from '../units/setup';
 import { type AiMarchGuard, firstBlockedOwnerOnPath, isDetourSignificant } from './ai-march-guard';
 import { farthestStepWithinBudget } from './ai-move-range';
@@ -3498,8 +3497,10 @@ export function decideAITurn(
 ): AICommand[] {
   // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: zasadzki WROGA sa dla AI niewidoczne -- planista widzi heks jak
   // pusty (pathfinding, "sily wroga w zasiegu", cele). Brak zasadzek = ta sama tablica (zero kosztu).
-  if (units.some(u => u.ambush === true && u.ownerId !== playerId)) {
-    units = unitsVisibleToViewer(units, playerId);
+  // (obrona r3, zarzut 8): ukrywamy zasadzki tylko tych właścicieli, z którymi AI może walczyć
+  // (ta sama bramka co executor: aiCanEngageOwner); sojusznik/pokój widzi swój heks jako zajęty.
+  if (units.some(u => u.ambush === true && u.ownerId !== playerId && aiCanEngageOwner(opts, u.ownerId))) {
+    units = units.filter(u => !(u.ambush === true && u.ownerId !== playerId && aiCanEngageOwner(opts, u.ownerId)));
   }
   const prevGuard = activeMarchGuard;
   activeMarchGuard = opts.marchGuard ?? null;

@@ -130,8 +130,9 @@ function clearAmbushState(u: RuntimeUnit): boolean {
  * Cykl zycia zasadzki (pkt 4) -- JEDNO miejsce, wolane z synchronizacji jednostek po kazdej zmianie stanu.
  * Zdejmuje zasadzke jednostce, ktora: zmienila heks lub wlasciciela (ruch, odwrot po bitwie, relokacja,
  * podzial stosu -- czesc, ktora odeszla), stoi w miescie, w garnizonie, czuwa (sentry), jest ufortyfikowana w
- * polu albo oblega. Dodatkowo spojnosc grupy: stos (wlasciciel + heks + stackGroupId) jest ALBO caly w zasadzce,
- * ALBO wcale -- dolaczenie widocznej jednostki (scalenie) ujawnia caly stos; reszta po PODZIALE zostaje.
+ * polu albo oblega. Polityka scalenia/podzialu (DODATEK 1 pkt 4, „reszta zostaje"): zasadzka zostaje na
+ * jednostkach, ktore nie zmienily heksu; dolaczenie widocznej jednostki do stosu w zasadzce NIE ujawnia reszty
+ * (dolaczona jednostka nie ma stanu, reszta go zachowuje); czesc, ktora odeszla, traci zasadzke (pieczec heksu).
  * `hasCityAt(q, r)` = czy heks ma miasto. Zwraca liczbe jednostek, ktorym zdjeto stan.
  */
 export function reconcileAmbush(
@@ -151,20 +152,6 @@ export function reconcileAmbush(
       || (typeof u.oblegaCityId === 'string' && u.oblegaCityId.length > 0)
       || hasCityAt(u.q, u.r);
     if (bad && clearAmbushState(u)) n++;
-  }
-  // Spojnosc grupy (stos = wlasciciel + heks + stackGroupId).
-  const groups = new Map<string, RuntimeUnit[]>();
-  for (const u of units) {
-    if (u.inGarnizon === true) continue;
-    const k = u.ownerId + '|' + u.q + ',' + u.r + '|' + (u.stackGroupId ?? '');
-    const g = groups.get(k);
-    if (g === undefined) groups.set(k, [u]); else g.push(u);
-  }
-  for (const g of groups.values()) {
-    if (g.length < 2) continue;
-    const amb = g.filter(u => u.ambush === true).length;
-    if (amb === 0 || amb === g.length) continue;
-    for (const u of g) if (clearAmbushState(u)) n++;
   }
   return n;
 }

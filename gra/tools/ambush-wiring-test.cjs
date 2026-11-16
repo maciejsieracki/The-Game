@@ -41,7 +41,7 @@ export { serializeGame, deserializeGame } from ${JSON.stringify(path.join(SRC, '
       b.onLoad({ filter: /game[\\/]ai\.ts$/ }, (args) => {
         let text = fs.readFileSync(args.path, 'utf8');
         if (mutateAi) {
-          const gate = 'if (units.some(u => u.ambush === true && u.ownerId !== playerId)) {';
+          const gate = 'if (units.some(u => u.ambush === true && u.ownerId !== playerId && aiCanEngageOwner(opts, u.ownerId))) {';
           if (text.split(gate).length !== 2) throw new Error('mutacja: brak dokladnie jednego filtra w ai.ts');
           text = text.replace(gate, 'if (false) {');
         }
@@ -175,10 +175,12 @@ const unit = (over) => Object.assign({
       assert.equal(B.reconcileAmbush(us, noCity), 1, JSON.stringify(over));
     }
   });
-  check('C6 scalenie: dolaczenie widocznej jednostki do stosu w zasadzce ujawnia caly stos', () => {
+  check('C6 scalenie: dolaczenie widocznej jednostki do stosu w zasadzce NIE ujawnia reszty (reszta zostaje)', () => {
     const us = [stamp(unit({ id: 'a', stackGroupId: 'g1' })), stamp(unit({ id: 'b', stackGroupId: 'g1' })), unit({ id: 'n', stackGroupId: 'g1' })];
-    assert.equal(B.reconcileAmbush(us, noCity), 2);
-    assert.ok(us.every(u => u.ambush === undefined));
+    assert.equal(B.reconcileAmbush(us, noCity), 0);
+    assert.equal(us[0].ambush, true);
+    assert.equal(us[1].ambush, true);
+    assert.equal(us[2].ambush, undefined);
   });
   check('C7 podzial: czesc, ktora odeszla, traci zasadzke; reszta zostaje', () => {
     const us = [stamp(unit({ id: 'a', stackGroupId: 'g1' })), stamp(unit({ id: 'b', stackGroupId: 'g1' }))];
@@ -245,6 +247,16 @@ const unit = (over) => Object.assign({
     assert.ok(mainSrc.includes('buildMoveOccupancy(units, moverOwnerId, exceptIds, areEnemyOwners)'), 'occupiedForMove');
     assert.ok(mainSrc.includes('reconcileAmbush(units,'), 'cykl zycia w syncUnitsRender');
     assert.ok(mainSrc.includes("'Wpadłeś w zasadzkę!'") && mainSrc.includes("'Zasadzka się powiodła'"), 'komunikaty');
+  });
+  // (obrona r3, zarzut 1) mutacje przeżywające w E1 -- sprawdzamy KONKRETNE linie wpięcia (nie samą obecność symbolu).
+  check('E2 wpiecie punktowe: cancelAmbush w startAnimatedMove, reconcile z realnym hasCity, guard !launchAttack, filtr renderu', () => {
+    const mainSrc = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
+    const startFn = mainSrc.slice(mainSrc.indexOf('function startAnimatedMove('), mainSrc.indexOf('function startAnimatedMove(') + 4000);
+    assert.ok(/const stack = playerStackAt\(u\);\s*\n\s*\/\/[^\n]*\n\s*cancelAmbush\(stack\);/.test(startFn)
+      || /cancelAmbush\(stack\);/.test(startFn), 'M2: cancelAmbush(stack) w startAnimatedMove');
+    assert.ok(mainSrc.includes('reconcileAmbush(units, (q, r) => cities.some(c => c.q === q && c.r === r));'), 'M3: reconcile z realnym hasCity');
+    assert.ok(mainSrc.includes('if (!launchAttack) return false; // bez prawa otwarcia bitwy zasadzka zostaje nietknieta'), 'M4: guard !launchAttack');
+    assert.ok(mainSrc.includes('const src = rawSrc.filter(u => isUnitVisibleToViewer(u, ME()));'), 'M9: filtr renderu');
   });
 
   // ---- (F) zapis ----

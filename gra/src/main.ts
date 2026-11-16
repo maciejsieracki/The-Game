@@ -14233,9 +14233,12 @@ async function boot(): Promise<void> {
       if (sleepers.length === 0) return;
       for (const su of sleepers) {
         const sight = unitSight(su);
+        // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (obrona r3, zarzut 5): wróg w zasadzce NIE budzi czuwającego
+        // (nie wolno ujawnić zasadzki komunikatem „wróg w polu widzenia").
         const enemyNear = units.some(v =>
           v.id !== su.id
           && areEnemyOwners(su.ownerId, v.ownerId)
+          && isUnitVisibleToViewer(v, su.ownerId)
           && hexDistance(su.q, su.r, v.q, v.r) <= sight,
         );
         if (enemyNear) {
