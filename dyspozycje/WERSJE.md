@@ -1,3 +1,9 @@
+## ROBOCZA f24457ae -- 2026-11-16 -- FALA 769: Wczytany stary zapis nie czeka na pierwsze miasto (testowa)
+
+- Stary zapis (bez flagi playerEverOwnedCityByOwner) z tura>1 dostaje flage dla foteli ludzkich: po wczytaniu Zakoncz ture nie wraca do stanu oczekiwania na pierwsze miasto; nowa gra i tura 1 bez zmian
+- Weryfikacja: tsc 0; logic-test 213/213; save-load-player-owned-city-test PASS (3 mutacje); load-game-regression 34/0; test zywy: awaiting=false, mutacja zywa czerwona; FC PASS-WITH-NOTES (eeeb518b5)
+- Limity: Zapis z 0 miast konczy sie porazka po pierwszym Zakoncz ture (regula R-WEB-DEFEAT-LAST-CITY); roundtrip seed 777, ekonomia po wczytaniu zapisu 0 miast i MP/hotseat NIE ZMIERZONO
+
 ## ROBOCZA 662cbc20 -- 2026-11-16 -- FALA 768: Panel Rozbicie obrony bez wpisow zerowych + narzedzia pomiarowe i wycofane testy (testowa)
 
 - Panel Rozbicie obrony pomija wpisy zerowe (defenderCivBonusBreakdown); 5 testow pr141 oznaczonych jako wycofane; hak ledgerStats za ?civTest=1 oraz narzedzia pomiarowe (ledger, odwrot, zgodnosc starych zapisow) bez zmiany zachowania gry

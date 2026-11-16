@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "662cbc20804fa54ced02ff39eb4b16f5",
-  "bundleSha256": "708fbca51014a4b6bf3ad0e38be0a4a2853f661ff7ea4925d9959cde1a182962",
-  "bundleBytes": 14806622,
+  "bundleMd5": "f24457ae9cabdb0f0f03a6d8e1280dbd",
+  "bundleSha256": "edf6542bb462db19195c23c26876ae6899d93bf3a5338747a4c68d81f30bb992",
+  "bundleBytes": 14806712,
   "sourceSnapshot": {
-    "source": "FALA 768: FC 0961a7fa1 3678bad7c 62305f155 a63d8a1fa scalone w main, build Vite poza repo",
+    "source": "FALA 769: FC 666d58ef9 scalone w main, build Vite poza repo",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 768: Panel Rozbicie obrony pomija wpisy zerowe (defenderCivBonusBreakdown); 5 testow pr141 oznaczonych jako wycofane; hak ledgerStats za ?civTest=1 oraz narzedzia pomiarowe (ledger, odwrot, zgodnosc starych zapisow) bez zmiany zachowania gry"
+    "FALA 769: Stary zapis (bez flagi playerEverOwnedCityByOwner) z tura>1 dostaje flage dla foteli ludzkich: po wczytaniu Zakoncz ture nie wraca do stanu oczekiwania na pierwsze miasto; nowa gra i tura 1 bez zmian"
   ],
   "verification": [
-    "tsc 0; logic-test 213/213; defense-breakdown 49/0; okolica-load-reconcile, budynek-civ-bonus-u17 7/0, war-epoch-player-first-main-guard 35/0, load-game-regression 34/0; FC PASS-WITH-NOTES (Q4 bac531c58)"
+    "tsc 0; logic-test 213/213; save-load-player-owned-city-test PASS (3 mutacje); load-game-regression 34/0; test zywy: awaiting=false, mutacja zywa czerwona; FC PASS-WITH-NOTES (eeeb518b5)"
   ],
   "limits": [
-    "Render panelu Rozbicie obrony w Chromium NIE ZMIERZONO; prog 10% ledgera i kampania limitu odwrotu NIE ROZSTRZYGNIETE"
+    "Zapis z 0 miast konczy sie porazka po pierwszym Zakoncz ture (regula R-WEB-DEFEAT-LAST-CITY); roundtrip seed 777, ekonomia po wczytaniu zapisu 0 miast i MP/hotseat NIE ZMIERZONO"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES TEST-DEBT-BASELINE-Q4 r1 (kandydat bac531c58): defenderCivBonusBreakdown pomija wpisy wartosc===0 w panelu Rozbicie obrony (decyzja wlasciciela); 5 testow pr141 oznaczonych jako wycofane (README-WYCOFANE-TESTY-pr141.md); dolaczone: hak ledgerStats za ?civTest=1 + narzedzia pomiarowe (LEDGER r5, RETREAT, OLDSAVE compat) bez zmiany zachowania gry. Noty: render panelu w Chromium NIE ZMIERZONO; prog 10% ledgera i kampania limitu odwrotu NIE ROZSTRZYGNIETE."
+    "notes": "FC PASS-WITH-NOTES SAVE-LOAD-OLD-SAVE-ZERO-CITIES-NO-AWAIT-FIRST-CITY-Q1 r1 (kandydat eeeb518b5, kod operatora 8111fb3bf, FC 666d58ef9): stary zapis bez playerEverOwnedCityByOwner z tura>1 dostaje flage dla foteli ludzkich, wiec po wczytaniu nigdy nie czeka na pierwsze miasto. tsc 0, save-load-player-owned-city-test PASS (3 mutacje), load-game-regression 34/0, 5 bramek zielonych, test zywy: awaiting=false, mutacja zywa czerwona. Zapis z 0 miast: pierwszy Zakoncz ture dziala, potem porazka wg istniejacej reguly R-WEB-DEFEAT-LAST-CITY (nie blad kodu). NIE ZMIERZONO: roundtrip seed 777, ekonomia po wczytaniu zapisu 0 miast, MP/hotseat."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T14:31:16",
+  "hubGeneratedAt": "2026-11-16T14:38:43",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "662cbc20804fa54ced02ff39eb4b16f5",
-      "sizeBytes": 14806622
+      "md5": "f24457ae9cabdb0f0f03a6d8e1280dbd",
+      "sizeBytes": 14806712
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "662cbc20804fa54ced02ff39eb4b16f5",
-      "sizeBytes": 14806622
+      "md5": "f24457ae9cabdb0f0f03a6d8e1280dbd",
+      "sizeBytes": 14806712
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "662cbc20804fa54ced02ff39eb4b16f5",
-      "sizeBytes": 14806622
+      "md5": "f24457ae9cabdb0f0f03a6d8e1280dbd",
+      "sizeBytes": 14806712
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "662cbc20804fa54ced02ff39eb4b16f5",
-      "sizeBytes": 14806622
+      "md5": "f24457ae9cabdb0f0f03a6d8e1280dbd",
+      "sizeBytes": 14806712
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "662cbc20804fa54ced02ff39eb4b16f5",
-      "sizeBytes": 14806622
+      "md5": "f24457ae9cabdb0f0f03a6d8e1280dbd",
+      "sizeBytes": 14806712
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "662cbc20804fa54ced02ff39eb4b16f5",
-      "sizeBytes": 14806622
+      "md5": "f24457ae9cabdb0f0f03a6d8e1280dbd",
+      "sizeBytes": 14806712
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "662cbc20804fa54ced02ff39eb4b16f5",
-      "sizeBytes": 14806622
+      "md5": "f24457ae9cabdb0f0f03a6d8e1280dbd",
+      "sizeBytes": 14806712
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "662cbc20804fa54ced02ff39eb4b16f5",
-      "sizeBytes": 14806622
+      "md5": "f24457ae9cabdb0f0f03a6d8e1280dbd",
+      "sizeBytes": 14806712
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "662cbc20804fa54ced02ff39eb4b16f5",
-      "sizeBytes": 14806622
+      "md5": "f24457ae9cabdb0f0f03a6d8e1280dbd",
+      "sizeBytes": 14806712
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "662cbc20804fa54ced02ff39eb4b16f5",
-      "sizeBytes": 14806622
+      "md5": "f24457ae9cabdb0f0f03a6d8e1280dbd",
+      "sizeBytes": 14806712
     }
   ],
-  "md5": "662cbc20804fa54ced02ff39eb4b16f5",
+  "md5": "f24457ae9cabdb0f0f03a6d8e1280dbd",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
