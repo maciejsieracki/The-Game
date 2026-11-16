@@ -10477,3 +10477,7 @@ FALA 746 (main 0e03e9165, ROBOCZA MD5 25a4f1f4fb3895be5188bc52dd2f53c4, Raw MD5 
 
 ### 2026-11-16 ~19:20 UTC — DECYZJA WŁAŚCICIELA (balans łuczników, po porównaniu parametrów)
 - Zdrowie WSZYSTKICH pieszych łuczników = 20 (w całej grze); atak dystansowy: Łucznik 5, egipski 6 (było 5), nubijski 7 (bez zmian). Pozostałe parametry bez zmian. Temat R-WEB-DATA-ARCHERS-HEALTH-20-DIST-EGYPT-6-Q1 (Haiku r1; zmiana danych; dług Rust: REPIN danych jednostek).
+
+### 2026-11-16 ~19:10 UTC — DECYZJA WŁAŚCICIELA: jedno pole zdrowia jednostki (koniec duplikatu Health/health)
+- Powód (z rozmowy o łucznikach): w `units.json` każda z 75 jednostek ma dwa pola: `Health` (stare, np. Wojownik 60, Rydwan 400) i `health` (TW v3, np. 22 / 96); u 49 jednostek różne. Walka czyta małe `health`, a karty/oblężenie/AI/część kodu — wielkie `Health`. Właściciel: „skoro są dwa to trzeba usunąć … albo ujednolicić wszystko … bo później to rodzi zamieszanie”.
+- Temat R-WEB-DATA-UNITS-HEALTH-SINGLE-FIELD-Q1 (Haiku; faza 1 = audyt czytelników, faza 2 = usunięcie `Health` tylko bez zmiany zachowania gry; inaczej DECISION_REQUIRED). START po wdrożeniu ARCHERS (ten sam plik). Dług Rust: REPIN danych jednostek.
