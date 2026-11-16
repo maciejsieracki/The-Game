@@ -10571,3 +10571,6 @@ GARRISON (FC ed8c91142, integracja 3fdcab34b, PASS-WITH-NOTES): AI w wojnie lub 
 
 ### Temat 2026-11-17: R-WEB-AI-UPKEEP-ONOFF-TOOLS-PORT-Q1 (dług #443)
 Przeniesienie narzędzi pomiarowych UPKEEP-ONOFF r3 (FC 6af3003f9) na aktualny main — tylko gra/tools + raport; Haiku r1. STATUS: **OTWARTE** (uruchomiony).
+
+### FALA 785 (2026-11-17) — WDROŻONE na ROBOCZĄ: gwiazdka generała w bitwie we wszystkich ścieżkach (także po Reset rozstawienia)
+GENSTAR (FC 5b275ed46, integracja 3c96d46ca, PASS-WITH-NOTES): jasna gwiazdka nad generałem w 4 ścieżkach budowy grupy jednostki (start, replay/wczytanie, obrona oblężonego, rozstawienie z Reset). ROBOCZA 62f493be, main 6d474b826, raw MD5 = manifest, 3 sidecary OK. NIE ZMIERZONO: żywy Chromium po Reset; 4 timeouty battle-* na dłuższym limicie (dług bazowy). Dług Rust: REPIN znacznika generała. Następny: panel TEMPO + minimapa (#462).
