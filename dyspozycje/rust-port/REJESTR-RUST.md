@@ -2579,3 +2579,14 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **R7K7C-STATUS (#176) — PASS:** `apply_dipl_deltas_to_state` nie jest wpięte w `advance_turn`; wektorów ≥150 brak. Wpięcie (#298) czeka na decyzję #282.
 - **Dysk:** 15 GB.
 - **Otwarte:** `refs/keep` I4 (`54fa4c704`) odrzucany przez proxy; log `p6_8i_pick` do weryfikacji.
+
+### Przebieg — AUDYT parytetu 9a71caf8a (#302), 2026-11-16 ~17:40 UTC
+
+- **Dokument:** `dyspozycje/rust-port/p6/AUDYT-PARYTET-9a71caf8a.md` (commit `8a0beec86`), PASS-WITH-NOTES (Operator Haiku, Evaluator Sonnet). Tylko odczyt, bez kodu, bez cargo.
+- **Wynik:** z 206 modułów `engine/src/domain/` 82 są osiągalne z `bridge.rs`, 80 tylko z nieosiągalnego kodu, 44 bez wołającego produkcyjnego.
+- **Najważniejsze luki:**
+  - `advance_turn` (`playable.rs` ~1400) woła produkcyjnie `run_war_turn`, a także fazę zwycięstwa. Ekonomia tury, eliminacja, zdobycie miasta, pętla oblężnicza i `combat::resolve` nie są wołane z tury.
+  - Cały klaster `siege_tactics_*` (~35 modułów) jest nieosiągalny z `bridge.rs`. `EngineCommand` nie ma komendy ataku ani oblężenia, a `DeclareWar` jest odrzucany.
+- **Korekta do rejestru:** część wpisów oznaczonych „ZINTEGROWANE” dotyczy funkcji wołanych wyłącznie z testów (`apply_dipl_deltas_to_state`, `eliminate_owner`, `run_economy_tick_for_game`). Zadanie #309 zajmie się korektą bez zmiany historii commitów.
+- **Zadania z audytu:** #114 (eliminacja, krok 1), #298/#299 (R7K7C), #304 (ekonomia; rozpoznanie faz w toku), #305 (DeclareWar), #306 (oblężenie i dystans), #307 (zdobycie miasta), #308 (DECYZJA ABC: droga DTO do renderera).
+- **Uwaga do audytu:** Evaluator zwrócił, że sformułowanie „advance_turn woła tylko wojnę” jest zbyt mocne, bo występuje też faza zwycięstwa (`evaluate_victory`). Dokument wymaga tej poprawki przy użyciu w dispatchach.
