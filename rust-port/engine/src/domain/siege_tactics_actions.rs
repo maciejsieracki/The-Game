@@ -368,6 +368,10 @@ pub enum ActionError {
     Facing(f64),
     /// Lista nie spełnia [`validate_actions`].
     Invalid(ViewError),
+    /// P4-1I3 (obrona r1, zarzut 6): to samo id w rosterze pętli dwa razy (obie strony razem). Akcje adresują
+    /// jednostki samym [`UnitId`] (bez strony), więc id muszą być unikalne w bitwie, jak w ramce
+    /// (`BattleFrameDto::validate`, `units (unique id)`).
+    DuplicateId(u64),
 }
 
 impl From<IdOutOfRange> for ActionError {
@@ -414,6 +418,14 @@ pub fn actions_to_dto(
     actions: &[TimedAction],
     st: &TurnSeqState,
 ) -> Result<Vec<BattleActionDto>, ActionError> {
+    // P4-1I3 (obrona r1, zarzut 6): walidacja `Melee` attacker != target i adresowanie akcji po [`UnitId`] zakładają
+    // id unikalne w bitwie (oba rostery razem).
+    let mut seen = std::collections::BTreeSet::new();
+    for su in st.atk.iter().chain(st.def.iter()) {
+        if !seen.insert(su.id) {
+            return Err(ActionError::DuplicateId(su.id));
+        }
+    }
     let mut out = Vec::with_capacity(actions.len());
     for a in actions {
         let action = match &a.action {

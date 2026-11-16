@@ -22,8 +22,8 @@ use std::collections::BTreeSet;
 
 use civ_engine::domain::siege_no_breach::round_cap_verdict;
 use civ_engine::domain::siege_tactics_actions::{
-    check_end_logs, ff_round_cap_logs, js_num, Actor, BattleAction, EndLogInput, TimedAction,
-    BLOW_HIT_T,
+    check_end_logs, ff_round_cap_logs, js_num, ActionError, Actor, BattleAction, EndLogInput,
+    TimedAction, BLOW_HIT_T,
 };
 use civ_engine::domain::siege_tactics_activate::{ActivateScene, ActivateUnit};
 use civ_engine::domain::siege_tactics_blow::{ClashTag, DefenderState, HitArc, SequenceRolls};
@@ -319,8 +319,8 @@ fn prod_unit(u: &Value, body_ms: f64) -> ProdUnit {
     }
 }
 
-/// Sekwencja ciosów: ciało jak w pętli, akcje po każdej aktywacji.
-fn run_melee_seq(seq: &Value) -> Vec<(f64, Vec<String>)> {
+/// Sekwencja ciosów: ciało jak w pętli, akcje po każdej aktywacji. `ff` = web `_ffActive` (obrona r1, zarzut 1).
+fn run_melee_seq(seq: &Value, ff: bool) -> Vec<(f64, Vec<String>)> {
     let units = seq["units"].as_array().expect("units");
     let mut pus: [Vec<ProdUnit>; 2] = [Vec::new(), Vec::new()];
     let mut st = empty_state(-1);
@@ -358,6 +358,7 @@ fn run_melee_seq(seq: &Value) -> Vec<(f64, Vec<String>)> {
         siege_machine_range: 0.0,
     };
     let mut body = ProdBody::new(pus, scene, SequenceRolls::new(rolls));
+    body.set_ff_active(ff);
     for (k, u) in units.iter().enumerate() {
         let (ix, i) = if k < n_atk { (0, k) } else { (1, k - n_atk) };
         body.morale_max[ix][i] = num(&u["moraleMax"]);
@@ -418,7 +419,7 @@ fn zgodnosc_akcji_ciosu_i_kontrataku_z_pinem() {
     let mut cov = [0usize; 10];
     for seq in seqs {
         let id = seq["id"].as_u64().expect("id");
-        let got = run_melee_seq(seq);
+        let got = run_melee_seq(seq, false);
         let expect = seq["expect"].as_array().expect("expect");
         assert_eq!(got.len(), expect.len());
         for (k, ((t, g), e)) in got.iter().zip(expect.iter()).enumerate() {
@@ -500,7 +501,47 @@ fn wektory_zawieraja_kontrataki_po_ciosie() {
     assert!(both >= 100, "za mało kontrataków: {both}");
 }
 
-fn tower_loop(tw: &Value, wall_col: i64) -> SiegeLoop<ProdBody<SequenceRolls>> {
+/// Ciało testowe pętli wieży: [`ProdBody`] z przełącznikiem, czy sterownik może włączyć tryb przewijania
+/// (`honour_ff = false` modeluje sterownik bez przewijania, web `_ffActive = false`; jedynym sterownikiem czasu
+/// [`SiegeLoop`] jest dziś przewijanie, więc tylko tak da się porównać wektory bez FF przez pełną pętlę).
+struct TowerBody {
+    inner: ProdBody<SequenceRolls>,
+    honour_ff: bool,
+}
+
+impl LoopBody for TowerBody {
+    fn start(&mut self, unit: UnitRef, st: &TurnSeqState) -> f64 {
+        self.inner.start(unit, st)
+    }
+    fn complete(&mut self, unit: UnitRef, st: &mut TurnSeqState) {
+        self.inner.complete(unit, st);
+    }
+    fn unit_cell(&self, unit: UnitRef) -> Option<(i64, i64)> {
+        self.inner.unit_cell(unit)
+    }
+    fn tower_blow(&mut self, tmpl: &FullBlowInput, target: usize, st: &mut TurnSeqState) {
+        self.inner.tower_blow(tmpl, target, st);
+    }
+    fn set_now(&mut self, v_now: f64) {
+        self.inner.set_now(v_now);
+    }
+    fn set_tower_row(&mut self, row: i64) {
+        self.inner.set_tower_row(row);
+    }
+    fn set_ff_active(&mut self, ff_active: bool) {
+        if self.honour_ff {
+            self.inner.set_ff_active(ff_active);
+        }
+    }
+    fn take_actions(&mut self) -> Vec<TimedAction> {
+        self.inner.take_actions()
+    }
+    fn unit_name(&self, unit: UnitRef) -> String {
+        self.inner.unit_name(unit)
+    }
+}
+
+fn tower_loop(tw: &Value, wall_col: i64, honour_ff: bool) -> SiegeLoop<TowerBody> {
     let units = tw["units"].as_array().expect("units");
     let mut pus: [Vec<ProdUnit>; 2] = [Vec::new(), Vec::new()];
     let mut st = empty_state(wall_col);
@@ -563,7 +604,10 @@ fn tower_loop(tw: &Value, wall_col: i64) -> SiegeLoop<ProdBody<SequenceRolls>> {
     };
     let n = units.len();
     let env = SiegeEnv {
-        body,
+        body: TowerBody {
+            inner: body,
+            honour_ff,
+        },
         tower_rows: vec![row],
         pending_tower_shots: Vec::new(),
         tower_range: num(&tw["range"]),
@@ -580,22 +624,38 @@ fn tower_loop(tw: &Value, wall_col: i64) -> SiegeLoop<ProdBody<SequenceRolls>> {
 /// (2) Strzał wieży przez pełną pętlę (`_fireOneTower` `:4223-4270`: log `:4247`, pocisk `:4250-4261`, trafienie
 /// `_singleBlow(shooter, target, true)` po `RANGED_FLY_MS` `:4262-4266`, `_pushClash` z `'wieza:' + row`): akcje od logu
 /// wystrzału do lądowania pocisku; czas względny (wektor: wystrzał w 500 ms).
+///
+/// Obrona r1 (zarzut 1): dwa tryby. Przewijanie ([`SiegeLoop::resume`] włącza `_ffActive`) porównywane z `actionsFf`
+/// (generator: `_ffActive = true`, `_spawnDamageLabel` kończy się na `:9943`, brak `damage`); sterownik bez
+/// przewijania ([`TowerBody`] z `honour_ff = false`) porównywany z `actions` (z `damage` po trafieniu, `:4265`).
 #[test]
 fn zgodnosc_akcji_strzalu_wiezy_z_pinem() {
+    for ff in [false, true] {
+        tower_case(ff);
+    }
+}
+
+fn tower_case(ff: bool) {
     let v = load();
     let wall_col = v["wallCol"].as_i64().expect("wallCol");
     let towers = v["towers"].as_array().expect("towers");
     assert!(towers.len() >= 150, "za mało scenariuszy wieży");
     let mut failures = Vec::new();
-    let (mut shots, mut kills, mut misses) = (0, 0, 0);
+    let (mut shots, mut kills, mut misses, mut damages) = (0, 0, 0, 0);
     for tw in towers {
         let id = tw["id"].as_u64().expect("id");
-        let mut lp = tower_loop(tw, wall_col);
+        let mut lp = tower_loop(tw, wall_col, ff);
+        assert!(!lp.env.body.inner.ff_active());
         let mut clock = VirtualClock::<LoopTimer>::new();
         lp.start(&mut clock);
         let _ = lp.resume(&mut clock, 60);
+        assert_eq!(
+            lp.env.body.inner.ff_active(),
+            ff,
+            "resume włącza przewijanie"
+        );
         let acts = lp.actions().to_vec();
-        let want = strs(&tw["actions"]);
+        let want = strs(&tw[if ff { "actionsFf" } else { "actions" }]);
         let start = acts.iter().position(|a| {
             matches!(&a.action, BattleAction::Log { text } if text.starts_with("Wieza strzelnicza"))
         });
@@ -648,10 +708,11 @@ fn zgodnosc_akcji_strzalu_wiezy_z_pinem() {
         shots += want.iter().filter(|s| s.contains(" towerShot ")).count();
         kills += want.iter().filter(|s| s.contains(" kill ")).count();
         misses += want.iter().filter(|s| s.contains(" chybia w ")).count();
+        damages += want.iter().filter(|s| s.contains(" damage ")).count();
     }
     assert!(
         failures.is_empty(),
-        "{} rozbieżności, pierwsze: {:#?}",
+        "ff={ff}: {} rozbieżności, pierwsze: {:#?}",
         failures.len(),
         &failures[..failures.len().min(8)]
     );
@@ -659,6 +720,60 @@ fn zgodnosc_akcji_strzalu_wiezy_z_pinem() {
         shots >= 80 && kills >= 5 && misses >= 20,
         "pokrycie wieży: {shots}/{kills}/{misses}"
     );
+    if ff {
+        assert_eq!(damages, 0, "FF: `_spawnDamageLabel` kończy się na `:9943`");
+    } else {
+        assert!(damages >= 20, "pokrycie damage wieży bez FF: {damages}");
+    }
+}
+
+/// Obrona r1 (zarzut 1): `_spawnDamageLabel` (`battleScene.ts:9940-9943`) w trybie przewijania (`_ffActive`) nie tworzy
+/// etykiety. Wektory `expectFf`: te same sekwencje ciosu/kontrataku wygenerowane z `_ffActive = true` (tekst linii
+/// `:9943` wykonywany w generatorze). [`ProdBody`] z `set_ff_active(true)` daje dokładnie tę sekwencję (bez `Damage`,
+/// reszta bez zmian); bez FF te same sekwencje mają `Damage` (czułość filtra).
+#[test]
+fn zgodnosc_akcji_ciosu_w_trybie_ff_z_pinem() {
+    let v = load();
+    let seqs: Vec<&Value> = v["melee"]
+        .as_array()
+        .expect("melee")
+        .iter()
+        .filter(|s| s.get("expectFf").is_some())
+        .collect();
+    assert!(seqs.len() >= 90, "za mało sekwencji FF: {}", seqs.len());
+    let mut failures = Vec::new();
+    let (mut melee, mut damage_no_ff) = (0usize, 0usize);
+    for seq in &seqs {
+        let id = seq["id"].as_u64().expect("id");
+        let got = run_melee_seq(seq, true);
+        let expect = seq["expectFf"].as_array().expect("expectFf");
+        assert_eq!(got.len(), expect.len());
+        for (k, ((t, g), e)) in got.iter().zip(expect.iter()).enumerate() {
+            assert_eq!(*t, e["t"].as_f64().expect("t"));
+            let want = strs(&e["actions"]);
+            assert!(
+                want.iter().all(|a| !a.contains(" damage ")),
+                "#{id}: damage w FF"
+            );
+            melee += want.iter().filter(|a| a.contains(" melee ")).count();
+            if *g != want {
+                failures.push(format!("#{id} act{k} (FF): {}", first_diff(g, &want)));
+            }
+        }
+        damage_no_ff += run_melee_seq(seq, false)
+            .iter()
+            .flat_map(|(_, a)| a.iter())
+            .filter(|a| a.contains(" damage "))
+            .count();
+    }
+    assert!(
+        failures.is_empty(),
+        "{} rozbieżności, pierwsze: {:#?}",
+        failures.len(),
+        &failures[..failures.len().min(8)]
+    );
+    assert!(melee >= 100, "pokrycie ciosów FF: {melee}");
+    assert!(damage_no_ff >= 50, "czułość: damage bez FF: {damage_no_ff}");
 }
 
 /// (3) Koniec: `_checkEnd` (`:10153-10239`; linie `:10179`, `:10185`, `:10190`, `:10194`, `:10200-10203`, `:10229`),
@@ -809,10 +924,15 @@ fn petla_emituje_ture_wieze_i_koniec_jako_dto() {
                 && t["units"].as_array().map(|u| u.len()) == Some(1)
         })
         .expect("scenariusz: jedyny atakujący ginie od wieży");
-    let mut lp = tower_loop(tw, wall_col);
+    let mut lp = tower_loop(tw, wall_col, true);
     let mut clock = VirtualClock::<LoopTimer>::new();
     lp.start(&mut clock);
     let _ = lp.resume(&mut clock, 200);
+    // Obrona r1 (zarzut 1): przewijanie = brak `Damage` w strumieniu (`:9943`).
+    assert!(!lp
+        .actions()
+        .iter()
+        .any(|a| matches!(a.action, BattleAction::Damage { .. })));
     assert_eq!(lp.winner, Some(LoopWinner::Defender), "atakujący zginął");
     let dto = lp.actions_dto().expect("akcje jako DTO");
     assert!(matches!(
@@ -837,4 +957,95 @@ fn petla_emituje_ture_wieze_i_koniec_jako_dto() {
     let taken = lp.take_actions();
     assert_eq!(taken.len(), dto.len());
     assert!(lp.actions().is_empty());
+}
+
+/// Obrona r1 (zarzut 3): podpięcie [`SiegeLoop`] → `end_logs` (ponowny `end_check_snapshot` przy obsłudze `EndCheck`)
+/// w pełnej pętli dla OBU stron załamania morale armii (`_checkEnd` `:10186-10195`, linia końca `:10229`). Teksty
+/// oczekiwane pochodzą z wektorów pinu (`ends`, generator wykonuje `_checkEnd`), nie z kodu Rust.
+#[test]
+fn petla_logi_konca_morale_obu_stron_z_wektorow_pinu() {
+    let v = load();
+    let wall_col = v["wallCol"].as_i64().expect("wallCol");
+    let pin_lines: Vec<String> = v["ends"]
+        .as_array()
+        .expect("ends")
+        .iter()
+        .flat_map(|e| strs(&e["actions"]))
+        .map(|s| {
+            s.split_once(" log ")
+                .map(|(_, t)| t.to_string())
+                .unwrap_or_default()
+        })
+        .collect();
+    let pin_has = |text: &str| pin_lines.iter().any(|l| l == text);
+    let tw = v["towers"]
+        .as_array()
+        .expect("towers")
+        .iter()
+        .find(|t| {
+            t["units"].as_array().is_some_and(|us| {
+                us.iter()
+                    .all(|u| !b(&u["dead"]) && !b(&u["fadingOut"]) && !b(&u["routed"]))
+            })
+        })
+        .expect("scenariusz: wszyscy atakujący w polu");
+    for atk_breaks in [true, false] {
+        let mut lp = tower_loop(tw, wall_col, true);
+        // Morale 10/100 na stronie łamanej (ratio 0.1 < 0.25, `ARMY_MORALE_LOSS_THRESHOLD` `:1157`).
+        let side = if atk_breaks {
+            &mut lp.st.atk
+        } else {
+            &mut lp.st.def
+        };
+        for u in side.iter_mut() {
+            u.c.morale = 10.0;
+        }
+        let mut clock = VirtualClock::<LoopTimer>::new();
+        lp.start(&mut clock);
+        let _ = lp.resume(&mut clock, 50);
+        let (who, win, winner) = if atk_breaks {
+            ("ATAKUJACEGO", "OBRONCY", LoopWinner::Defender)
+        } else {
+            ("OBRONCY", "ATAKUJACEGO", LoopWinner::Attacker)
+        };
+        assert_eq!(lp.winner, Some(winner), "zwycięzca po załamaniu {who}");
+        let logs: Vec<String> = lp
+            .actions()
+            .iter()
+            .filter_map(|a| match &a.action {
+                BattleAction::Log { text } if text.starts_with("===") => Some(text.clone()),
+                _ => None,
+            })
+            .collect();
+        let morale =
+            format!("=== Morale armii {who} zalamane (10% < 25%) -- armia w rozsypce! ===");
+        let end = format!("=== Koniec bitwy: zwyciestwo {win} ===");
+        assert!(pin_has(&morale), "wektory pinu nie zawierają: {morale}");
+        assert!(pin_has(&end), "wektory pinu nie zawierają: {end}");
+        assert_eq!(logs, vec![morale, end], "logi końca pętli ({who})");
+        assert!(matches!(
+            lp.actions().last().map(|a| &a.action),
+            Some(BattleAction::End { winner: w }) if *w == winner
+        ));
+    }
+}
+
+/// Obrona r1 (zarzut 6): akcje adresują jednostki samym `UnitId` (bez strony), a walidacja `Melee` porównuje
+/// `attacker != target` po id; zdublowane id w rosterze pętli (atakujący i obrońca z tym samym id) jest więc błędem
+/// producenta [`ActionError::DuplicateId`], jak `units (unique id)` w `BattleFrameDto::validate`.
+#[test]
+fn akcje_dto_wymagaja_unikalnych_id_w_bitwie() {
+    let v = load();
+    let wall_col = v["wallCol"].as_i64().expect("wallCol");
+    let tw = &v["towers"][0];
+    let mut lp = tower_loop(tw, wall_col, true);
+    let mut clock = VirtualClock::<LoopTimer>::new();
+    lp.start(&mut clock);
+    assert!(
+        lp.actions_dto().is_ok(),
+        "unikalne id: konwersja przechodzi"
+    );
+    let dup = lp.st.atk[0].id;
+    lp.st.def[0].id = dup;
+    assert!(matches!(lp.actions_dto(), Err(ActionError::DuplicateId(id)) if id == dup));
 }

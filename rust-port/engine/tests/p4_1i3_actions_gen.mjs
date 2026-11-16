@@ -348,6 +348,13 @@ expectLine(SCENE, 9467, 'private _finishDraw(reason: string, cap: number): void 
 expectLine(SCENE, 9485, 'private _ffRoundCapResult(): void {');
 expectLine(SCENE, 9550, 'private _pushClash(');
 expectLine(SCENE, 10153, 'private _checkEnd(): boolean {');
+// P4-1I3 r1 obrona (zarzut 1): `_spawnDamageLabel` (`:9940`) konczy sie od razu w trybie FF (`:9943`). Straznik
+// sygnatury i linii pierwszej instrukcji; TEKST linii `:9943` jest wykonywany w stubie `_spawnDamageLabel` przed zapisem
+// akcji damage (reszta metody to DOM etykiety, poza zakresem akcji).
+expectLine(SCENE, 9940, 'private _spawnDamageLabel(ru: RuntimeBattleUnit, dmg: number): void {');
+expectLine(SCENE, 9943, 'if (this._ffActive) return;');
+if (lines[SCENE][9942].trim() !== 'if (this._ffActive) return;') throw new Error('pin battleScene.ts:9943 != straznik FF');
+const DAMAGE_FF_GUARD = lines[SCENE][9942].trim();
 expectLine(SCENE, 20716, 'function lerp(');
 expectLine(SCENE, 20718, 'function easeIn(');
 const actParts = {
@@ -490,7 +497,7 @@ const classSrc = [
   '  _sfxDeath() {}',
   '  _sfxMelee() {}',
   '  _sfxShot() {}',
-  '  _spawnDamageLabel(ru, dmg) { this.__act({ k: "damage", target: ru.__key, dmg }); }',
+  `  _spawnDamageLabel(ru, dmg) { ${DAMAGE_FF_GUARD} this.__act({ k: "damage", target: ru.__key, dmg }); }`,
   '  _pushClash(a, d, dmg, tag) { this.__clash = [a, d, dmg, tag]; return this._pushClashPin(a, d, dmg, tag); }',
   '  _renderClashLog() { const [a, d, dmg, tag] = this.__clash; this.__act({ k: "clash", attacker: a.__key ?? a.bu.id, target: d.__key, dmg, tag, text: this.clashLogEntries[0] }); }',
   '  _shakeAlliesOnLoss(fallen) {}',
@@ -754,8 +761,11 @@ function genSeq(id) {
   return { id, atk, def, acts };
 }
 
-function runSeq(seq) {
+function runSeq(seq, ff = false) {
+  S.rollIdx = 0;
   const h = new Harness();
+  // `_ffActive` (`:2573`): tryb przewijania (`skip()` `:3696`); w FF `_spawnDamageLabel` nie tworzy etykiety (`:9943`).
+  h._ffActive = ff;
   h.atk = seq.atk.map((u) => runtimeOf(h, u));
   h.def = seq.def.map((u) => runtimeOf(h, u));
   const expect = [];
@@ -791,11 +801,19 @@ const encUnit = (u) => ({
 });
 
 const N_MELEE = 320;
+const N_MELEE_FF = 96;
 const melee = [];
 for (let i = 0; i < N_MELEE; i++) {
   const seq = genSeq(i);
   const expect = runSeq(seq);
-  melee.push({ id: i, units: [...seq.atk, ...seq.def].map(encUnit), nAtk: seq.atk.length, acts: seq.acts, rolls: S.rolls.map(n2s), expect });
+  const entry = { id: i, units: [...seq.atk, ...seq.def].map(encUnit), nAtk: seq.atk.length, acts: seq.acts, rolls: S.rolls.map(n2s), expect };
+  // P4-1I3 r1 obrona (zarzut 1): te same sekwencje w trybie FF (`_ffActive = true`) dla pierwszych N_MELEE_FF.
+  // Kontrola czystosci: ponowne uruchomienie bez FF daje identyczna sekwencje (runSeq nie zmienia danych wejscia).
+  if (i < N_MELEE_FF) {
+    entry.expectFf = runSeq(seq, true);
+    if (JSON.stringify(runSeq(seq, false)) !== JSON.stringify(expect)) throw new Error(`runSeq niedeterministyczny #${i}`);
+  }
+  melee.push(entry);
 }
 
 // ==================================================================================================================
@@ -832,14 +850,24 @@ for (let i = 0; i < N_TOWER; i++) {
   const shooterBu = { id: shooterId, nazwa: `Wieza (${nazwa})`, kategoria: String(shooterRow['Typ'] ?? 'Distance'), ownerColor: 0xc84040, stats: shooterRow, hp, maxHp: hp };
   const shooterU = { q: WALL_COL, r: row, mods: ZERO_MODS, diff: 1, mounted: false };
   S.rolls.push(pick([0, 0.9999999999, 0.05, 0.95, 0.5, rnd(), rnd()]));
-  const h = new Harness();
-  h.atk = atk.map((u) => runtimeOf(h, u));
-  h.siegeWallCol = WALL_COL;
-  h.towerRange = range;
   const T0 = 500;
-  h.__now = T0;
-  h._fireOneTower({ row, mesh: null, destroyed: false }, shooterRow, nazwa, hp);
-  for (const s of h.__sched) { h.__now = s.at; s.fn(); }
+  // P4-1I3 r1 obrona (zarzut 1): ten sam wystrzal bez FF (`actions`) i w FF (`actionsFf`, `_ffActive = true`, `:9943`).
+  const runTower = (ff) => {
+    S.rollIdx = 0;
+    const h = new Harness();
+    h._ffActive = ff;
+    h.atk = atk.map((u) => runtimeOf(h, u));
+    h.siegeWallCol = WALL_COL;
+    h.towerRange = range;
+    h.__now = T0;
+    h._fireOneTower({ row, mesh: null, destroyed: false }, shooterRow, nazwa, hp);
+    for (const s of h.__sched) { h.__now = s.at; s.fn(); }
+    return h.__acts;
+  };
+  const acts = runTower(false);
+  const actsFf = runTower(true);
+  if (JSON.stringify(runTower(false)) !== JSON.stringify(acts)) throw new Error(`wieza niedeterministyczna #${i}`);
+  const h = { __acts: acts };
   const shot = h.__acts.find((a) => a.k === 'towerShot');
   const targetIdx = shot ? atk.findIndex((u) => unitName(u) === shot.target) : -1;
   let tmpl = null;
@@ -850,7 +878,7 @@ for (let i = 0; i < N_TOWER; i++) {
   }
   towers.push({
     id: i, units: atk.map(encUnit), row, range: n2s(range), nazwa, rolls: S.rolls.map(n2s), t0: n2s(T0),
-    target: targetIdx < 0 ? null : targetIdx, tmpl, actions: h.__acts.map(enc),
+    target: targetIdx < 0 ? null : targetIdx, tmpl, actions: h.__acts.map(enc), actionsFf: actsFf.map(enc),
   });
 }
 
@@ -913,6 +941,11 @@ const cov = {
   clashPadl: cnt(allMelee, / clash \S+ \S+ \S+ padl /),
   clashRout: cnt(allMelee, / clash \S+ \S+ \S+ rout /),
   damage: cnt(allMelee, / damage /),
+  meleeFfSequences: melee.filter((q) => q.expectFf).length,
+  meleeFfDamage: cnt(melee.flatMap((q) => (q.expectFf ?? []).flatMap((e) => e.actions)), / damage /),
+  meleeFfMelee: cnt(melee.flatMap((q) => (q.expectFf ?? []).flatMap((e) => e.actions)), / melee /),
+  towerDamage: cnt(towerActs, / damage /),
+  towerFfDamage: cnt(towers.flatMap((t) => t.actionsFf), / damage /),
   updateFacing: melee.reduce((s, q) => s + q.expect.filter((e) => e.actions.some((a) => / facing /.test(a)) && !e.actions.some((a) => / melee /.test(a))).length, 0),
   towerSequences: towers.length,
   towerShots: cnt(towerActs, / towerShot /),

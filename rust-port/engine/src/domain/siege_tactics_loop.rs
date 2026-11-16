@@ -83,6 +83,11 @@ pub trait LoopBody {
     /// P4-1I3: wiersz wieży, której pocisk trafia w najbliższym [`LoopBody::tower_blow`] (web `'wieza:' + t.row`).
     /// Domyślnie bez efektu.
     fn set_tower_row(&mut self, _row: i64) {}
+    /// P4-1I3 (obrona r1, zarzut 1): web `this._ffActive` (`battleScene.ts:2573`). W trybie przewijania
+    /// `_spawnDamageLabel` kończy się od razu (`:9943`), więc ciało nie emituje wtedy [`BattleAction::Damage`].
+    /// Sterownik ustawia `true` w [`SiegeLoop::resume`] (jedyny sterownik czasu to [`run_fast_forward`], web
+    /// `_runFastForward`, wołane tylko przy `_ffActive`, `:9267`). Domyślnie bez efektu.
+    fn set_ff_active(&mut self, _ff_active: bool) {}
     /// P4-1I3: akcje sceny zebrane od ostatniego odbioru, w kolejności wywołań (sterownik odbiera je po każdym
     /// wywołaniu ciała). Domyślnie brak akcji.
     fn take_actions(&mut self) -> Vec<TimedAction> {
@@ -646,6 +651,9 @@ impl<B: LoopBody> SiegeLoop<B> {
     /// Wynik zależy tylko od sumy wykonanych iteracji, nie od podziału na wywołania: kolejne wywołania z małym
     /// `max_steps` dają ten sam stan i ślad co jedno wywołanie z dużym limitem.
     pub fn resume(&mut self, clock: &mut VirtualClock<LoopTimer>, max_steps: u32) -> FfStop {
+        // P4-1I3 (obrona r1, zarzut 1): przewijanie = web `_ffActive = true` (`skip()` `:3696`, pętla `:9267`);
+        // etykiety obrażeń są wtedy pomijane (`_spawnDamageLabel` `:9943`).
+        self.env.body.set_ff_active(true);
         let mut ff = std::mem::take(&mut self.ff);
         let stop = run_fast_forward(clock, &mut ff, self, max_steps);
         self.ff = ff;
@@ -1131,6 +1139,9 @@ pub struct ProdBody<R: RollSource> {
     tower_row: i64,
     /// P4-1I3: akcje sceny od ostatniego odbioru ([`LoopBody::take_actions`]).
     actions: Vec<TimedAction>,
+    /// P4-1I3 (obrona r1): web `_ffActive` ([`LoopBody::set_ff_active`]); `true` = bez [`BattleAction::Damage`]
+    /// (`_spawnDamageLabel` `:9943`). Domyślnie `false` (ciało wołane poza przewijaniem).
+    ff_active: bool,
 }
 
 impl<R: RollSource> ProdBody<R> {
@@ -1187,6 +1198,7 @@ impl<R: RollSource> ProdBody<R> {
             now: 0.0,
             tower_row: 0,
             actions: Vec::new(),
+            ff_active: false,
         }
     }
 
@@ -1196,10 +1208,20 @@ impl<R: RollSource> ProdBody<R> {
     }
 
     fn emit(&mut self, action: BattleAction) {
+        // P4-1I3 (obrona r1, zarzut 1): `_spawnDamageLabel` (`:9940-9943`): `if (this._ffActive) return;`, jedyne
+        // miejsce filtra (trzy wywołania: cios `:9125`, kontratak `:9142`, wieża `:4265`).
+        if self.ff_active && matches!(action, BattleAction::Damage { .. }) {
+            return;
+        }
         self.actions.push(TimedAction {
             t0: self.now,
             action,
         });
+    }
+
+    /// P4-1I3 (obrona r1): bieżący tryb przewijania ciała (web `_ffActive`).
+    pub fn ff_active(&self) -> bool {
+        self.ff_active
     }
 
     /// `bu.nazwa` jednostki ([`Self::names`]; poza listą: znacznik strony i indeksu).
@@ -1353,6 +1375,9 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
     }
     fn set_tower_row(&mut self, row: i64) {
         self.tower_row = row;
+    }
+    fn set_ff_active(&mut self, ff_active: bool) {
+        self.ff_active = ff_active;
     }
     fn take_actions(&mut self) -> Vec<TimedAction> {
         std::mem::take(&mut self.actions)
