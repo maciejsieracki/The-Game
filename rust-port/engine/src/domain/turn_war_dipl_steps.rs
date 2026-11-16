@@ -170,7 +170,7 @@ pub struct TributeDeal {
     pub until: Option<f64>,
 }
 
-/// Skarbiec jako adapter (web `TreasuryAdapter`); blad = brak producenta dla wlasciciela.
+/// Skarbiec jako adapter (web `TreasuryAdapter`); brak wpisu wlasciciela = 0 (pin `?? 0`, wariant B).
 pub trait Treasury {
     fn balance(&self, owner: i64) -> Result<f64, WarTurnError>;
     fn add(&mut self, owner: i64, delta: f64) -> Result<(), WarTurnError>;
@@ -340,22 +340,16 @@ impl<'a> Ledger<'a> {
             .sum())
     }
 
+    /// Pin `ownerPracaPool` (`main.ts:34876-34878`): brak wpisu = 0 (`?? 0`), bez bledu (wariant B).
     fn praca_of(&self, owner: i64) -> Result<f64, WarTurnError> {
-        self.praca.get(&owner).copied().ok_or_else(|| {
-            err(format!(
-                "brak producenta puli Pracy wlasciciela {owner} (web ownerPracaPool)"
-            ))
-        })
+        Ok(self.praca.get(&owner).copied().unwrap_or(0.0))
     }
 }
 
 impl Treasury for Ledger<'_> {
+    /// Pin `ownerTreasury` (`main.ts:34864-34866`): brak wpisu = 0 (`?? 0`), bez bledu (wariant B).
     fn balance(&self, owner: i64) -> Result<f64, WarTurnError> {
-        self.treasury.get(&owner).copied().ok_or_else(|| {
-            err(format!(
-                "brak producenta skarbca wlasciciela {owner} (web ownerTreasury)"
-            ))
-        })
+        Ok(self.treasury.get(&owner).copied().unwrap_or(0.0))
     }
 
     fn add(&mut self, owner: i64, delta: f64) -> Result<(), WarTurnError> {
@@ -1035,9 +1029,8 @@ fn owner_key(owner: i64) -> Result<u64, WarTurnError> {
 /// do `PlayableState`. Czysta funkcja nad stanem: kazda nowa wartosc jest liczona i walidowana (skonczona)
 /// PRZED zapisem, wiec blad = zadnej zmiany (atomowosc).
 /// Skarbiec gracza ludzkiego idzie do `economy.treasury`; pozostali wlasciciele do `ai_treasury_by_owner`.
-/// Brak wpisu wlasciciela, ktorego delta dotyczy, daje `WarTurnError::DiplStep` (nigdy nie tworzy zera).
-/// Odchylenie swiadome i OTWARTE (DECISION_REQUIRED, nie zmieniane tu): pin czyta brak wpisu jako 0
-/// (`aiSkarbiecByOwner.get(id) ?? 0`), Rust zwraca blad. Patrz 02a-obrona.md, zarzut 1.
+/// Brak wpisu wlasciciela (skarbiec AI / pula Pracy) = 0 (wariant B, parytet 1:1 z pinem: `?? 0`,
+/// `main.ts:34865`, `:34877`); zapis tworzy wpis (jak `add` w pinie, `main.ts:22642`). Nie zwraca bledu.
 pub fn apply_dipl_deltas_to_state(
     state: &mut PlayableState,
     treasury_deltas: &BTreeMap<i64, f64>,
@@ -1064,15 +1057,13 @@ pub fn apply_dipl_deltas_to_state(
             new_human_treasury = Some(value);
         } else {
             let key = owner_key(owner)?;
-            let cur = *state
+            // Pin `?? 0` (main.ts:34865): brak wpisu = 0.
+            let cur = state
                 .economy
                 .ai_treasury_by_owner
                 .get(&key)
-                .ok_or_else(|| {
-                    err(format!(
-                        "brak producenta skarbca wlasciciela {owner} (web ownerTreasury)"
-                    ))
-                })?;
+                .copied()
+                .unwrap_or(0.0);
             let value = cur + delta;
             if !value.is_finite() {
                 return Err(err(format!("skarbiec wlasciciela {owner} nieskonczony")));
@@ -1086,11 +1077,13 @@ pub fn apply_dipl_deltas_to_state(
         if !delta.is_finite() {
             return Err(err(format!("delta Pracy wlasciciela {owner} nieskonczona")));
         }
-        let cur = *state.economy.praca_pool_by_owner.get(&key).ok_or_else(|| {
-            err(format!(
-                "brak producenta puli Pracy wlasciciela {owner} (web ownerPracaPool)"
-            ))
-        })?;
+        // Pin `?? 0` (main.ts:34877): brak wpisu = 0.
+        let cur = state
+            .economy
+            .praca_pool_by_owner
+            .get(&key)
+            .copied()
+            .unwrap_or(0.0);
         let value = cur + delta;
         if !value.is_finite() {
             return Err(err(format!("pula Pracy wlasciciela {owner} nieskonczona")));

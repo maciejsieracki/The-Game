@@ -606,24 +606,33 @@ fn flag_off_ticks_good_will_and_missing_inputs_are_explicit_errors() {
     let mut war = WarTurnState::default();
     war.diplomacy.add_deal(tribute_deal());
     let snapshot = war.clone();
-    let err = run_turn(&mut war, 1.0, &inputs, &cfg).expect_err("brak skarbca");
+    // Parytet (pin ownerTreasury `?? 0`, main.ts:34865): brak wpisu skarbca = 0 -> 0 < kwota,
+    // danina zrywana ("Trybut zerwany" w komunikatach), bez bledu.
+    let rep = run_turn(&mut war, 1.0, &inputs, &cfg).expect("parytet: brak wpisu = 0");
+    assert_eq!(rep.dipl.payments.broken, vec!["danina".to_owned()]);
     assert!(
-        matches!(&err, WarTurnError::DiplStep(m) if m.contains("skarbca") && m.contains('3')),
-        "{err}"
+        rep.dipl
+            .payments
+            .messages
+            .iter()
+            .any(|m| m.starts_with("Trybut zerwany") && m.contains("danina")),
+        "{:?}",
+        rep.dipl.payments.messages
     );
-    assert_eq!(war, snapshot, "blad = brak zmian stanu");
+    assert_ne!(war, snapshot, "zerwanie danin zmienia stan (deal usuniety)");
 
-    // Brak puli Pracy przy platnosci Praca = jawny blad.
+    // Brak puli Pracy przy platnosci Praca = parytet (pin ownerPracaPool `?? 0`, main.ts:34877):
+    // saldo 0 < kwota, wiec handel cykliczny nie dochodzi do skutku, bez bledu.
     let mut inputs = world_inputs();
     inputs.dipl.praca_pool.clear();
     let mut d = cyclic_deal();
     d.cyclic_resource_transfers[0].payment = Some(PaymentKind::Work);
     let mut war = WarTurnState::default();
     war.diplomacy.add_deal(d);
-    let err = run_turn(&mut war, 1.0, &inputs, &cfg).expect_err("brak Pracy");
+    let rep = run_turn(&mut war, 1.0, &inputs, &cfg).expect("parytet: brak Pracy = 0");
     assert!(
-        matches!(&err, WarTurnError::DiplStep(m) if m.contains("Pracy")),
-        "{err}"
+        !rep.dipl.cyclic[0].delivered,
+        "bez puli Pracy (0 < kwota) dostawa nie dochodzi do skutku"
     );
 
     // Brak zapasow miast przy handlu cyklicznym = jawny blad.

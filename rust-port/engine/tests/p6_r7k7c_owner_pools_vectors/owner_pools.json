@@ -1,0 +1,4639 @@
+{
+  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "snippetSha256": {
+    "ownerTreasury": "03fcfdbc9f629943c962ac1cbdefa1e48e7bf09cf94803028ef789e734d1d7ca",
+    "buildDiploTreasury": "b581f8267ceefc4126170b487c23f3fe18ad125fd6d8dbad31c82ba38fa541d4",
+    "ownerPracaPool": "dfe2fc108cde86af3dfc2ddb163538e92e5be56acde6d8e1f543379b9a417178"
+  },
+  "cases": [
+    {
+      "name": "brzeg-praca-podloga",
+      "aiTreasury": {},
+      "aiPraca": {
+        "2": 3
+      },
+      "treasuryDeltas": {},
+      "pracaDeltas": {
+        "2": -7
+      },
+      "expTreasury": {},
+      "expPraca": {
+        "2": 0
+      }
+    },
+    {
+      "name": "brzeg-dlug-ai-trwa",
+      "aiTreasury": {
+        "2": -30
+      },
+      "aiPraca": {},
+      "treasuryDeltas": {
+        "2": 10
+      },
+      "pracaDeltas": {},
+      "expTreasury": {
+        "2": -20
+      },
+      "expPraca": {}
+    },
+    {
+      "name": "brzeg-zero-delta-brak",
+      "aiTreasury": {},
+      "aiPraca": {},
+      "treasuryDeltas": {
+        "4": 0
+      },
+      "pracaDeltas": {
+        "5": 0
+      },
+      "expTreasury": {
+        "4": 0
+      },
+      "expPraca": {
+        "5": 0
+      }
+    },
+    {
+      "name": "brzeg-brak-praca-ujemna",
+      "aiTreasury": {},
+      "aiPraca": {},
+      "treasuryDeltas": {},
+      "pracaDeltas": {
+        "3": -4
+      },
+      "expTreasury": {},
+      "expPraca": {
+        "3": 0
+      }
+    },
+    {
+      "name": "brzeg-brak-skarbca-ujemna",
+      "aiTreasury": {},
+      "aiPraca": {},
+      "treasuryDeltas": {
+        "2": -5
+      },
+      "pracaDeltas": {},
+      "expTreasury": {
+        "2": -5
+      },
+      "expPraca": {}
+    },
+    {
+      "name": "brzeg-brak-skarbca-dodatnia",
+      "aiTreasury": {},
+      "aiPraca": {},
+      "treasuryDeltas": {
+        "2": 5
+      },
+      "pracaDeltas": {},
+      "expTreasury": {
+        "2": 5
+      },
+      "expPraca": {}
+    },
+    {
+      "name": "brzeg-pusto",
+      "aiTreasury": {},
+      "aiPraca": {},
+      "treasuryDeltas": {},
+      "pracaDeltas": {},
+      "expTreasury": {},
+      "expPraca": {}
+    },
+    {
+      "name": "brak-wpisu-0",
+      "aiTreasury": {
+        "2": 6,
+        "4": 32
+      },
+      "aiPraca": {
+        "2": 11
+      },
+      "treasuryDeltas": {
+        "4": -32
+      },
+      "pracaDeltas": {
+        "2": 6,
+        "4": -31,
+        "5": -10
+      },
+      "expTreasury": {
+        "2": 6,
+        "4": 0
+      },
+      "expPraca": {
+        "2": 17,
+        "4": 0,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-1",
+      "aiTreasury": {
+        "2": 38,
+        "3": 26,
+        "4": 11,
+        "5": 37
+      },
+      "aiPraca": {
+        "2": 9
+      },
+      "treasuryDeltas": {},
+      "pracaDeltas": {
+        "2": -25,
+        "3": -17
+      },
+      "expTreasury": {
+        "2": 38,
+        "3": 26,
+        "4": 11,
+        "5": 37
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-2",
+      "aiTreasury": {
+        "2": 40,
+        "4": 59,
+        "5": 49
+      },
+      "aiPraca": {
+        "2": 11,
+        "4": 23
+      },
+      "treasuryDeltas": {
+        "2": 0,
+        "3": 14
+      },
+      "pracaDeltas": {
+        "2": -21,
+        "3": 19,
+        "5": -12
+      },
+      "expTreasury": {
+        "2": 40,
+        "3": 14,
+        "4": 59,
+        "5": 49
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 19,
+        "4": 23,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-3",
+      "aiTreasury": {
+        "3": 23
+      },
+      "aiPraca": {
+        "2": 30,
+        "4": 3
+      },
+      "treasuryDeltas": {
+        "2": -8,
+        "3": -36
+      },
+      "pracaDeltas": {
+        "3": -31,
+        "4": -12,
+        "5": -6
+      },
+      "expTreasury": {
+        "2": -8,
+        "3": -13
+      },
+      "expPraca": {
+        "2": 30,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-4",
+      "aiTreasury": {},
+      "aiPraca": {
+        "4": 20
+      },
+      "treasuryDeltas": {
+        "2": -4,
+        "3": -14,
+        "4": 27,
+        "5": -8
+      },
+      "pracaDeltas": {},
+      "expTreasury": {
+        "2": -4,
+        "3": -14,
+        "4": 27,
+        "5": -8
+      },
+      "expPraca": {
+        "4": 20
+      }
+    },
+    {
+      "name": "brak-wpisu-5",
+      "aiTreasury": {
+        "3": 52
+      },
+      "aiPraca": {
+        "2": 8,
+        "5": 2
+      },
+      "treasuryDeltas": {
+        "2": 27,
+        "4": -4
+      },
+      "pracaDeltas": {
+        "5": 8
+      },
+      "expTreasury": {
+        "2": 27,
+        "3": 52,
+        "4": -4
+      },
+      "expPraca": {
+        "2": 8,
+        "5": 10
+      }
+    },
+    {
+      "name": "brak-wpisu-6",
+      "aiTreasury": {},
+      "aiPraca": {
+        "2": 21,
+        "3": 11,
+        "4": 28,
+        "5": 20
+      },
+      "treasuryDeltas": {
+        "2": -9,
+        "3": -6,
+        "4": -34,
+        "5": 40
+      },
+      "pracaDeltas": {
+        "2": 19,
+        "3": 14
+      },
+      "expTreasury": {
+        "2": -9,
+        "3": -6,
+        "4": -34,
+        "5": 40
+      },
+      "expPraca": {
+        "2": 40,
+        "3": 25,
+        "4": 28,
+        "5": 20
+      }
+    },
+    {
+      "name": "brak-wpisu-7",
+      "aiTreasury": {
+        "2": 43
+      },
+      "aiPraca": {},
+      "treasuryDeltas": {
+        "2": -17,
+        "4": -19,
+        "5": 21
+      },
+      "pracaDeltas": {
+        "3": 22
+      },
+      "expTreasury": {
+        "2": 26,
+        "4": -19,
+        "5": 21
+      },
+      "expPraca": {
+        "3": 22
+      }
+    },
+    {
+      "name": "brak-wpisu-8",
+      "aiTreasury": {
+        "2": 35,
+        "5": 24
+      },
+      "aiPraca": {
+        "4": 27,
+        "5": 4
+      },
+      "treasuryDeltas": {
+        "2": 36,
+        "4": 21
+      },
+      "pracaDeltas": {
+        "2": -30,
+        "5": -34
+      },
+      "expTreasury": {
+        "2": 71,
+        "4": 21,
+        "5": 24
+      },
+      "expPraca": {
+        "2": 0,
+        "4": 27,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-9",
+      "aiTreasury": {
+        "2": 52,
+        "3": 3,
+        "4": 37
+      },
+      "aiPraca": {
+        "3": 24,
+        "5": 25
+      },
+      "treasuryDeltas": {
+        "3": 40
+      },
+      "pracaDeltas": {
+        "2": 18,
+        "4": 13
+      },
+      "expTreasury": {
+        "2": 52,
+        "3": 43,
+        "4": 37
+      },
+      "expPraca": {
+        "2": 18,
+        "3": 24,
+        "4": 13,
+        "5": 25
+      }
+    },
+    {
+      "name": "brak-wpisu-10",
+      "aiTreasury": {
+        "3": 5
+      },
+      "aiPraca": {
+        "4": 15
+      },
+      "treasuryDeltas": {
+        "2": 25
+      },
+      "pracaDeltas": {
+        "3": -1,
+        "4": -15
+      },
+      "expTreasury": {
+        "2": 25,
+        "3": 5
+      },
+      "expPraca": {
+        "3": 0,
+        "4": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-11",
+      "aiTreasury": {
+        "3": 60,
+        "5": 60
+      },
+      "aiPraca": {
+        "2": 22,
+        "3": 14,
+        "4": 0
+      },
+      "treasuryDeltas": {
+        "2": 6,
+        "3": 15,
+        "5": 13
+      },
+      "pracaDeltas": {
+        "3": -14,
+        "5": 20
+      },
+      "expTreasury": {
+        "2": 6,
+        "3": 75,
+        "5": 73
+      },
+      "expPraca": {
+        "2": 22,
+        "3": 0,
+        "4": 0,
+        "5": 20
+      }
+    },
+    {
+      "name": "brak-wpisu-12",
+      "aiTreasury": {
+        "2": 29,
+        "5": 42
+      },
+      "aiPraca": {
+        "4": 18
+      },
+      "treasuryDeltas": {
+        "2": -39,
+        "3": -17,
+        "5": -20
+      },
+      "pracaDeltas": {
+        "5": 14
+      },
+      "expTreasury": {
+        "2": -10,
+        "3": -17,
+        "5": 22
+      },
+      "expPraca": {
+        "4": 18,
+        "5": 14
+      }
+    },
+    {
+      "name": "brak-wpisu-13",
+      "aiTreasury": {
+        "3": 51,
+        "4": 38
+      },
+      "aiPraca": {
+        "3": 19,
+        "4": 23,
+        "5": 24
+      },
+      "treasuryDeltas": {
+        "3": -16,
+        "4": 28,
+        "5": -15
+      },
+      "pracaDeltas": {},
+      "expTreasury": {
+        "3": 35,
+        "4": 66,
+        "5": -15
+      },
+      "expPraca": {
+        "3": 19,
+        "4": 23,
+        "5": 24
+      }
+    },
+    {
+      "name": "brak-wpisu-14",
+      "aiTreasury": {
+        "2": 60,
+        "3": 16
+      },
+      "aiPraca": {
+        "2": 16,
+        "3": 8
+      },
+      "treasuryDeltas": {
+        "3": 20
+      },
+      "pracaDeltas": {
+        "2": -7,
+        "3": -10,
+        "5": -4
+      },
+      "expTreasury": {
+        "2": 60,
+        "3": 36
+      },
+      "expPraca": {
+        "2": 9,
+        "3": 0,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-15",
+      "aiTreasury": {
+        "4": 22,
+        "5": 10
+      },
+      "aiPraca": {
+        "2": 16,
+        "3": 16,
+        "4": 10
+      },
+      "treasuryDeltas": {
+        "3": -14,
+        "4": 40,
+        "5": -17
+      },
+      "pracaDeltas": {
+        "2": 22,
+        "3": 5
+      },
+      "expTreasury": {
+        "3": -14,
+        "4": 62,
+        "5": -7
+      },
+      "expPraca": {
+        "2": 38,
+        "3": 21,
+        "4": 10
+      }
+    },
+    {
+      "name": "brak-wpisu-16",
+      "aiTreasury": {
+        "2": 10
+      },
+      "aiPraca": {
+        "2": 9,
+        "4": 21,
+        "5": 1
+      },
+      "treasuryDeltas": {
+        "2": -31,
+        "3": -17,
+        "4": 33,
+        "5": -37
+      },
+      "pracaDeltas": {
+        "2": -6,
+        "5": 22
+      },
+      "expTreasury": {
+        "2": -21,
+        "3": -17,
+        "4": 33,
+        "5": -37
+      },
+      "expPraca": {
+        "2": 3,
+        "4": 21,
+        "5": 23
+      }
+    },
+    {
+      "name": "brak-wpisu-17",
+      "aiTreasury": {
+        "3": 14,
+        "4": 5,
+        "5": 23
+      },
+      "aiPraca": {
+        "3": 5
+      },
+      "treasuryDeltas": {
+        "4": -17,
+        "5": -4
+      },
+      "pracaDeltas": {
+        "5": 14
+      },
+      "expTreasury": {
+        "3": 14,
+        "4": -12,
+        "5": 19
+      },
+      "expPraca": {
+        "3": 5,
+        "5": 14
+      }
+    },
+    {
+      "name": "brak-wpisu-18",
+      "aiTreasury": {
+        "2": 60,
+        "3": 56,
+        "4": 52,
+        "5": 36
+      },
+      "aiPraca": {},
+      "treasuryDeltas": {
+        "3": 12,
+        "5": -25
+      },
+      "pracaDeltas": {
+        "2": -28,
+        "4": 4,
+        "5": -23
+      },
+      "expTreasury": {
+        "2": 60,
+        "3": 68,
+        "4": 52,
+        "5": 11
+      },
+      "expPraca": {
+        "2": 0,
+        "4": 4,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-19",
+      "aiTreasury": {
+        "3": 23,
+        "5": 59
+      },
+      "aiPraca": {
+        "2": 11,
+        "4": 11,
+        "5": 14
+      },
+      "treasuryDeltas": {
+        "2": -14
+      },
+      "pracaDeltas": {
+        "2": 9,
+        "4": -15,
+        "5": -34
+      },
+      "expTreasury": {
+        "2": -14,
+        "3": 23,
+        "5": 59
+      },
+      "expPraca": {
+        "2": 20,
+        "4": 0,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-20",
+      "aiTreasury": {
+        "2": 8
+      },
+      "aiPraca": {
+        "4": 7
+      },
+      "treasuryDeltas": {
+        "5": 4
+      },
+      "pracaDeltas": {
+        "3": -4
+      },
+      "expTreasury": {
+        "2": 8,
+        "5": 4
+      },
+      "expPraca": {
+        "3": 0,
+        "4": 7
+      }
+    },
+    {
+      "name": "brak-wpisu-21",
+      "aiTreasury": {
+        "4": 6,
+        "5": 55
+      },
+      "aiPraca": {
+        "2": 23,
+        "3": 22,
+        "4": 11,
+        "5": 19
+      },
+      "treasuryDeltas": {
+        "2": 33
+      },
+      "pracaDeltas": {
+        "2": -11,
+        "4": 10
+      },
+      "expTreasury": {
+        "2": 33,
+        "4": 6,
+        "5": 55
+      },
+      "expPraca": {
+        "2": 12,
+        "3": 22,
+        "4": 21,
+        "5": 19
+      }
+    },
+    {
+      "name": "brak-wpisu-22",
+      "aiTreasury": {
+        "4": 59,
+        "5": 43
+      },
+      "aiPraca": {
+        "2": 0,
+        "5": 28
+      },
+      "treasuryDeltas": {
+        "2": -17,
+        "4": 35,
+        "5": 40
+      },
+      "pracaDeltas": {
+        "2": -10,
+        "4": -11,
+        "5": -14
+      },
+      "expTreasury": {
+        "2": -17,
+        "4": 94,
+        "5": 83
+      },
+      "expPraca": {
+        "2": 0,
+        "4": 0,
+        "5": 14
+      }
+    },
+    {
+      "name": "brak-wpisu-23",
+      "aiTreasury": {
+        "2": 49,
+        "3": 56,
+        "4": 46,
+        "5": 5
+      },
+      "aiPraca": {
+        "3": 7
+      },
+      "treasuryDeltas": {
+        "4": -8
+      },
+      "pracaDeltas": {
+        "3": 2
+      },
+      "expTreasury": {
+        "2": 49,
+        "3": 56,
+        "4": 38,
+        "5": 5
+      },
+      "expPraca": {
+        "3": 9
+      }
+    },
+    {
+      "name": "brak-wpisu-24",
+      "aiTreasury": {
+        "3": 14,
+        "4": 51,
+        "5": 2
+      },
+      "aiPraca": {
+        "2": 11,
+        "3": 28
+      },
+      "treasuryDeltas": {
+        "2": -2,
+        "4": 19
+      },
+      "pracaDeltas": {
+        "3": -26,
+        "5": -5
+      },
+      "expTreasury": {
+        "2": -2,
+        "3": 14,
+        "4": 70,
+        "5": 2
+      },
+      "expPraca": {
+        "2": 11,
+        "3": 2,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-25",
+      "aiTreasury": {
+        "2": 8,
+        "3": 36,
+        "4": 38,
+        "5": 55
+      },
+      "aiPraca": {
+        "4": 4,
+        "5": 3
+      },
+      "treasuryDeltas": {
+        "2": 9
+      },
+      "pracaDeltas": {
+        "3": 15,
+        "5": 25
+      },
+      "expTreasury": {
+        "2": 17,
+        "3": 36,
+        "4": 38,
+        "5": 55
+      },
+      "expPraca": {
+        "3": 15,
+        "4": 4,
+        "5": 28
+      }
+    },
+    {
+      "name": "brak-wpisu-26",
+      "aiTreasury": {
+        "4": 46
+      },
+      "aiPraca": {
+        "3": 21,
+        "4": 29,
+        "5": 7
+      },
+      "treasuryDeltas": {
+        "3": 5
+      },
+      "pracaDeltas": {
+        "2": -21,
+        "3": 11,
+        "5": -27
+      },
+      "expTreasury": {
+        "3": 5,
+        "4": 46
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 32,
+        "4": 29,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-27",
+      "aiTreasury": {
+        "2": 43,
+        "3": 4
+      },
+      "aiPraca": {
+        "2": 18,
+        "4": 25
+      },
+      "treasuryDeltas": {
+        "3": 15,
+        "4": -10,
+        "5": -37
+      },
+      "pracaDeltas": {
+        "3": 3,
+        "4": -9,
+        "5": -1
+      },
+      "expTreasury": {
+        "2": 43,
+        "3": 19,
+        "4": -10,
+        "5": -37
+      },
+      "expPraca": {
+        "2": 18,
+        "3": 3,
+        "4": 16,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-28",
+      "aiTreasury": {
+        "2": 19,
+        "5": 45
+      },
+      "aiPraca": {
+        "2": 29,
+        "5": 25
+      },
+      "treasuryDeltas": {
+        "2": -25,
+        "3": -26
+      },
+      "pracaDeltas": {
+        "2": 2,
+        "4": 15,
+        "5": -26
+      },
+      "expTreasury": {
+        "2": -6,
+        "3": -26,
+        "5": 45
+      },
+      "expPraca": {
+        "2": 31,
+        "4": 15,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-29",
+      "aiTreasury": {
+        "5": 33
+      },
+      "aiPraca": {
+        "2": 21,
+        "4": 9,
+        "5": 24
+      },
+      "treasuryDeltas": {},
+      "pracaDeltas": {
+        "3": 2,
+        "4": 18
+      },
+      "expTreasury": {
+        "5": 33
+      },
+      "expPraca": {
+        "2": 21,
+        "3": 2,
+        "4": 27,
+        "5": 24
+      }
+    },
+    {
+      "name": "brak-wpisu-30",
+      "aiTreasury": {
+        "2": 42,
+        "3": 11,
+        "4": 25
+      },
+      "aiPraca": {
+        "2": 21,
+        "5": 19
+      },
+      "treasuryDeltas": {
+        "2": -6,
+        "4": 33
+      },
+      "pracaDeltas": {
+        "3": -18
+      },
+      "expTreasury": {
+        "2": 36,
+        "3": 11,
+        "4": 58
+      },
+      "expPraca": {
+        "2": 21,
+        "3": 0,
+        "5": 19
+      }
+    },
+    {
+      "name": "brak-wpisu-31",
+      "aiTreasury": {
+        "4": 50,
+        "5": 51
+      },
+      "aiPraca": {
+        "2": 24,
+        "3": 8
+      },
+      "treasuryDeltas": {},
+      "pracaDeltas": {
+        "2": 21,
+        "5": -6
+      },
+      "expTreasury": {
+        "4": 50,
+        "5": 51
+      },
+      "expPraca": {
+        "2": 45,
+        "3": 8,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-32",
+      "aiTreasury": {
+        "2": 3,
+        "4": 8
+      },
+      "aiPraca": {
+        "2": 5,
+        "3": 3,
+        "5": 13
+      },
+      "treasuryDeltas": {
+        "3": 5,
+        "4": -10,
+        "5": -16
+      },
+      "pracaDeltas": {
+        "2": -27,
+        "3": 23,
+        "5": 4
+      },
+      "expTreasury": {
+        "2": 3,
+        "3": 5,
+        "4": -2,
+        "5": -16
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 26,
+        "5": 17
+      }
+    },
+    {
+      "name": "brak-wpisu-33",
+      "aiTreasury": {
+        "4": 7,
+        "5": 11
+      },
+      "aiPraca": {
+        "2": 30,
+        "4": 24
+      },
+      "treasuryDeltas": {
+        "2": 28,
+        "3": -37
+      },
+      "pracaDeltas": {
+        "4": 11,
+        "5": 6
+      },
+      "expTreasury": {
+        "2": 28,
+        "3": -37,
+        "4": 7,
+        "5": 11
+      },
+      "expPraca": {
+        "2": 30,
+        "4": 35,
+        "5": 6
+      }
+    },
+    {
+      "name": "brak-wpisu-34",
+      "aiTreasury": {
+        "2": 47,
+        "4": 48,
+        "5": 11
+      },
+      "aiPraca": {
+        "3": 7
+      },
+      "treasuryDeltas": {
+        "2": -35,
+        "3": 25
+      },
+      "pracaDeltas": {
+        "2": 4,
+        "3": -8,
+        "4": 24
+      },
+      "expTreasury": {
+        "2": 12,
+        "3": 25,
+        "4": 48,
+        "5": 11
+      },
+      "expPraca": {
+        "2": 4,
+        "3": 0,
+        "4": 24
+      }
+    },
+    {
+      "name": "brak-wpisu-35",
+      "aiTreasury": {
+        "4": 56
+      },
+      "aiPraca": {
+        "2": 19,
+        "3": 18,
+        "5": 11
+      },
+      "treasuryDeltas": {
+        "2": 30,
+        "4": 29
+      },
+      "pracaDeltas": {
+        "2": 0,
+        "5": -22
+      },
+      "expTreasury": {
+        "2": 30,
+        "4": 85
+      },
+      "expPraca": {
+        "2": 19,
+        "3": 18,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-36",
+      "aiTreasury": {
+        "2": 31,
+        "4": 34,
+        "5": 46
+      },
+      "aiPraca": {
+        "5": 15
+      },
+      "treasuryDeltas": {
+        "3": -22
+      },
+      "pracaDeltas": {
+        "3": -14,
+        "4": 10
+      },
+      "expTreasury": {
+        "2": 31,
+        "3": -22,
+        "4": 34,
+        "5": 46
+      },
+      "expPraca": {
+        "3": 0,
+        "4": 10,
+        "5": 15
+      }
+    },
+    {
+      "name": "brak-wpisu-37",
+      "aiTreasury": {
+        "2": 6,
+        "3": 27,
+        "4": 18
+      },
+      "aiPraca": {
+        "3": 20,
+        "5": 9
+      },
+      "treasuryDeltas": {
+        "5": 17
+      },
+      "pracaDeltas": {
+        "2": -9
+      },
+      "expTreasury": {
+        "2": 6,
+        "3": 27,
+        "4": 18,
+        "5": 17
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 20,
+        "5": 9
+      }
+    },
+    {
+      "name": "brak-wpisu-38",
+      "aiTreasury": {
+        "2": 55
+      },
+      "aiPraca": {
+        "4": 3,
+        "5": 16
+      },
+      "treasuryDeltas": {
+        "3": -28,
+        "4": -10
+      },
+      "pracaDeltas": {
+        "4": -2
+      },
+      "expTreasury": {
+        "2": 55,
+        "3": -28,
+        "4": -10
+      },
+      "expPraca": {
+        "4": 1,
+        "5": 16
+      }
+    },
+    {
+      "name": "brak-wpisu-39",
+      "aiTreasury": {
+        "2": 40
+      },
+      "aiPraca": {
+        "2": 29,
+        "3": 23,
+        "4": 19
+      },
+      "treasuryDeltas": {
+        "2": 37,
+        "3": 10
+      },
+      "pracaDeltas": {
+        "2": -8
+      },
+      "expTreasury": {
+        "2": 77,
+        "3": 10
+      },
+      "expPraca": {
+        "2": 21,
+        "3": 23,
+        "4": 19
+      }
+    },
+    {
+      "name": "brak-wpisu-40",
+      "aiTreasury": {
+        "2": 58
+      },
+      "aiPraca": {
+        "2": 16
+      },
+      "treasuryDeltas": {
+        "5": -32
+      },
+      "pracaDeltas": {},
+      "expTreasury": {
+        "2": 58,
+        "5": -32
+      },
+      "expPraca": {
+        "2": 16
+      }
+    },
+    {
+      "name": "brak-wpisu-41",
+      "aiTreasury": {
+        "3": 43
+      },
+      "aiPraca": {
+        "2": 29,
+        "4": 4
+      },
+      "treasuryDeltas": {
+        "2": -22,
+        "3": -27,
+        "5": -19
+      },
+      "pracaDeltas": {
+        "2": 1,
+        "3": 21,
+        "5": -1
+      },
+      "expTreasury": {
+        "2": -22,
+        "3": 16,
+        "5": -19
+      },
+      "expPraca": {
+        "2": 30,
+        "3": 21,
+        "4": 4,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-42",
+      "aiTreasury": {
+        "2": 60,
+        "3": 21,
+        "5": 57
+      },
+      "aiPraca": {
+        "3": 25
+      },
+      "treasuryDeltas": {
+        "2": -25,
+        "3": 27,
+        "4": -11
+      },
+      "pracaDeltas": {
+        "5": -8
+      },
+      "expTreasury": {
+        "2": 35,
+        "3": 48,
+        "4": -11,
+        "5": 57
+      },
+      "expPraca": {
+        "3": 25,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-43",
+      "aiTreasury": {
+        "2": 55
+      },
+      "aiPraca": {
+        "2": 3
+      },
+      "treasuryDeltas": {
+        "2": -8,
+        "3": 27,
+        "4": -17
+      },
+      "pracaDeltas": {},
+      "expTreasury": {
+        "2": 47,
+        "3": 27,
+        "4": -17
+      },
+      "expPraca": {
+        "2": 3
+      }
+    },
+    {
+      "name": "brak-wpisu-44",
+      "aiTreasury": {
+        "3": 3,
+        "4": 32
+      },
+      "aiPraca": {
+        "2": 7,
+        "3": 5,
+        "4": 30,
+        "5": 2
+      },
+      "treasuryDeltas": {
+        "5": 6
+      },
+      "pracaDeltas": {
+        "2": 15,
+        "3": 8,
+        "4": -24,
+        "5": -20
+      },
+      "expTreasury": {
+        "3": 3,
+        "4": 32,
+        "5": 6
+      },
+      "expPraca": {
+        "2": 22,
+        "3": 13,
+        "4": 6,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-45",
+      "aiTreasury": {
+        "3": 16
+      },
+      "aiPraca": {
+        "2": 7,
+        "3": 6
+      },
+      "treasuryDeltas": {
+        "2": -8,
+        "3": 26,
+        "5": -3
+      },
+      "pracaDeltas": {
+        "2": 5,
+        "3": 10,
+        "4": 4
+      },
+      "expTreasury": {
+        "2": -8,
+        "3": 42,
+        "5": -3
+      },
+      "expPraca": {
+        "2": 12,
+        "3": 16,
+        "4": 4
+      }
+    },
+    {
+      "name": "brak-wpisu-46",
+      "aiTreasury": {
+        "2": 53,
+        "4": 47
+      },
+      "aiPraca": {
+        "2": 8,
+        "3": 14,
+        "4": 13,
+        "5": 20
+      },
+      "treasuryDeltas": {
+        "2": 6,
+        "4": 40,
+        "5": 23
+      },
+      "pracaDeltas": {
+        "2": 22,
+        "3": 8,
+        "5": 4
+      },
+      "expTreasury": {
+        "2": 59,
+        "4": 87,
+        "5": 23
+      },
+      "expPraca": {
+        "2": 30,
+        "3": 22,
+        "4": 13,
+        "5": 24
+      }
+    },
+    {
+      "name": "brak-wpisu-47",
+      "aiTreasury": {
+        "2": 8
+      },
+      "aiPraca": {
+        "4": 17,
+        "5": 13
+      },
+      "treasuryDeltas": {
+        "3": -19,
+        "4": -14,
+        "5": 11
+      },
+      "pracaDeltas": {
+        "2": -15,
+        "3": -23,
+        "5": 24
+      },
+      "expTreasury": {
+        "2": 8,
+        "3": -19,
+        "4": -14,
+        "5": 11
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 0,
+        "4": 17,
+        "5": 37
+      }
+    },
+    {
+      "name": "brak-wpisu-48",
+      "aiTreasury": {},
+      "aiPraca": {
+        "3": 26,
+        "4": 30,
+        "5": 27
+      },
+      "treasuryDeltas": {
+        "2": -36,
+        "3": 5,
+        "4": -22
+      },
+      "pracaDeltas": {
+        "2": 5,
+        "3": -15,
+        "4": -20,
+        "5": -13
+      },
+      "expTreasury": {
+        "2": -36,
+        "3": 5,
+        "4": -22
+      },
+      "expPraca": {
+        "2": 5,
+        "3": 11,
+        "4": 10,
+        "5": 14
+      }
+    },
+    {
+      "name": "brak-wpisu-49",
+      "aiTreasury": {
+        "4": 19
+      },
+      "aiPraca": {},
+      "treasuryDeltas": {
+        "3": -23
+      },
+      "pracaDeltas": {
+        "2": -10,
+        "3": -20,
+        "4": -13
+      },
+      "expTreasury": {
+        "3": -23,
+        "4": 19
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 0,
+        "4": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-50",
+      "aiTreasury": {},
+      "aiPraca": {},
+      "treasuryDeltas": {
+        "5": -13
+      },
+      "pracaDeltas": {
+        "4": -19
+      },
+      "expTreasury": {
+        "5": -13
+      },
+      "expPraca": {
+        "4": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-51",
+      "aiTreasury": {
+        "5": 35
+      },
+      "aiPraca": {
+        "2": 5,
+        "4": 20
+      },
+      "treasuryDeltas": {
+        "3": 32,
+        "4": -30
+      },
+      "pracaDeltas": {
+        "3": -22,
+        "4": 23
+      },
+      "expTreasury": {
+        "3": 32,
+        "4": -30,
+        "5": 35
+      },
+      "expPraca": {
+        "2": 5,
+        "3": 0,
+        "4": 43
+      }
+    },
+    {
+      "name": "brak-wpisu-52",
+      "aiTreasury": {
+        "5": 52
+      },
+      "aiPraca": {
+        "2": 9,
+        "3": 19,
+        "4": 9,
+        "5": 1
+      },
+      "treasuryDeltas": {
+        "2": -40,
+        "4": 0
+      },
+      "pracaDeltas": {
+        "5": -29
+      },
+      "expTreasury": {
+        "2": -40,
+        "4": 0,
+        "5": 52
+      },
+      "expPraca": {
+        "2": 9,
+        "3": 19,
+        "4": 9,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-53",
+      "aiTreasury": {
+        "3": 17
+      },
+      "aiPraca": {
+        "4": 11
+      },
+      "treasuryDeltas": {
+        "2": 4,
+        "3": 10,
+        "4": 17
+      },
+      "pracaDeltas": {
+        "2": -5
+      },
+      "expTreasury": {
+        "2": 4,
+        "3": 27,
+        "4": 17
+      },
+      "expPraca": {
+        "2": 0,
+        "4": 11
+      }
+    },
+    {
+      "name": "brak-wpisu-54",
+      "aiTreasury": {
+        "2": 33,
+        "3": 37,
+        "4": 25,
+        "5": 16
+      },
+      "aiPraca": {
+        "2": 25,
+        "3": 21,
+        "5": 15
+      },
+      "treasuryDeltas": {
+        "3": -10,
+        "4": -35,
+        "5": -6
+      },
+      "pracaDeltas": {
+        "5": -30
+      },
+      "expTreasury": {
+        "2": 33,
+        "3": 27,
+        "4": -10,
+        "5": 10
+      },
+      "expPraca": {
+        "2": 25,
+        "3": 21,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-55",
+      "aiTreasury": {
+        "4": 22
+      },
+      "aiPraca": {
+        "2": 14,
+        "3": 11,
+        "4": 0,
+        "5": 14
+      },
+      "treasuryDeltas": {},
+      "pracaDeltas": {
+        "3": 6
+      },
+      "expTreasury": {
+        "4": 22
+      },
+      "expPraca": {
+        "2": 14,
+        "3": 17,
+        "4": 0,
+        "5": 14
+      }
+    },
+    {
+      "name": "brak-wpisu-56",
+      "aiTreasury": {
+        "2": 19,
+        "5": 9
+      },
+      "aiPraca": {
+        "2": 12
+      },
+      "treasuryDeltas": {
+        "3": 10,
+        "4": -27
+      },
+      "pracaDeltas": {
+        "3": 3,
+        "4": -33,
+        "5": -14
+      },
+      "expTreasury": {
+        "2": 19,
+        "3": 10,
+        "4": -27,
+        "5": 9
+      },
+      "expPraca": {
+        "2": 12,
+        "3": 3,
+        "4": 0,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-57",
+      "aiTreasury": {
+        "3": 41,
+        "4": 32
+      },
+      "aiPraca": {
+        "5": 22
+      },
+      "treasuryDeltas": {
+        "2": -19,
+        "3": -37
+      },
+      "pracaDeltas": {
+        "2": -7,
+        "3": -12
+      },
+      "expTreasury": {
+        "2": -19,
+        "3": 4,
+        "4": 32
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 0,
+        "5": 22
+      }
+    },
+    {
+      "name": "brak-wpisu-58",
+      "aiTreasury": {
+        "3": 49,
+        "4": 24
+      },
+      "aiPraca": {
+        "2": 1,
+        "3": 28,
+        "4": 3,
+        "5": 27
+      },
+      "treasuryDeltas": {
+        "2": -1,
+        "3": -15,
+        "4": -12
+      },
+      "pracaDeltas": {
+        "5": -24
+      },
+      "expTreasury": {
+        "2": -1,
+        "3": 34,
+        "4": 12
+      },
+      "expPraca": {
+        "2": 1,
+        "3": 28,
+        "4": 3,
+        "5": 3
+      }
+    },
+    {
+      "name": "brak-wpisu-59",
+      "aiTreasury": {
+        "2": 33
+      },
+      "aiPraca": {
+        "2": 3,
+        "5": 4
+      },
+      "treasuryDeltas": {
+        "3": -9
+      },
+      "pracaDeltas": {
+        "3": -14
+      },
+      "expTreasury": {
+        "2": 33,
+        "3": -9
+      },
+      "expPraca": {
+        "2": 3,
+        "3": 0,
+        "5": 4
+      }
+    },
+    {
+      "name": "brak-wpisu-60",
+      "aiTreasury": {
+        "2": 14,
+        "5": 38
+      },
+      "aiPraca": {
+        "4": 4
+      },
+      "treasuryDeltas": {},
+      "pracaDeltas": {},
+      "expTreasury": {
+        "2": 14,
+        "5": 38
+      },
+      "expPraca": {
+        "4": 4
+      }
+    },
+    {
+      "name": "brak-wpisu-61",
+      "aiTreasury": {
+        "2": 37,
+        "3": 4,
+        "4": 13,
+        "5": 0
+      },
+      "aiPraca": {
+        "2": 4,
+        "4": 23
+      },
+      "treasuryDeltas": {
+        "2": 21,
+        "3": 4,
+        "4": 5
+      },
+      "pracaDeltas": {
+        "2": 23,
+        "5": 9
+      },
+      "expTreasury": {
+        "2": 58,
+        "3": 8,
+        "4": 18,
+        "5": 0
+      },
+      "expPraca": {
+        "2": 27,
+        "4": 23,
+        "5": 9
+      }
+    },
+    {
+      "name": "brak-wpisu-62",
+      "aiTreasury": {
+        "2": 3,
+        "4": 1,
+        "5": 41
+      },
+      "aiPraca": {
+        "2": 7,
+        "3": 23,
+        "4": 28,
+        "5": 6
+      },
+      "treasuryDeltas": {
+        "2": -31,
+        "3": -36
+      },
+      "pracaDeltas": {
+        "2": -31,
+        "3": -29,
+        "4": 15
+      },
+      "expTreasury": {
+        "2": -28,
+        "3": -36,
+        "4": 1,
+        "5": 41
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 0,
+        "4": 43,
+        "5": 6
+      }
+    },
+    {
+      "name": "brak-wpisu-63",
+      "aiTreasury": {
+        "5": 49
+      },
+      "aiPraca": {
+        "3": 27
+      },
+      "treasuryDeltas": {
+        "4": -29,
+        "5": 13
+      },
+      "pracaDeltas": {},
+      "expTreasury": {
+        "4": -29,
+        "5": 62
+      },
+      "expPraca": {
+        "3": 27
+      }
+    },
+    {
+      "name": "brak-wpisu-64",
+      "aiTreasury": {
+        "2": 40,
+        "3": 17,
+        "4": 58
+      },
+      "aiPraca": {},
+      "treasuryDeltas": {
+        "2": -19,
+        "4": 14,
+        "5": -29
+      },
+      "pracaDeltas": {
+        "2": 15,
+        "3": -12,
+        "5": 6
+      },
+      "expTreasury": {
+        "2": 21,
+        "3": 17,
+        "4": 72,
+        "5": -29
+      },
+      "expPraca": {
+        "2": 15,
+        "3": 0,
+        "5": 6
+      }
+    },
+    {
+      "name": "brak-wpisu-65",
+      "aiTreasury": {
+        "2": 24,
+        "3": 48,
+        "5": 31
+      },
+      "aiPraca": {
+        "2": 26,
+        "3": 12,
+        "4": 15,
+        "5": 25
+      },
+      "treasuryDeltas": {
+        "4": -34
+      },
+      "pracaDeltas": {
+        "3": -19,
+        "4": 18,
+        "5": -20
+      },
+      "expTreasury": {
+        "2": 24,
+        "3": 48,
+        "4": -34,
+        "5": 31
+      },
+      "expPraca": {
+        "2": 26,
+        "3": 0,
+        "4": 33,
+        "5": 5
+      }
+    },
+    {
+      "name": "brak-wpisu-66",
+      "aiTreasury": {
+        "2": 0,
+        "5": 57
+      },
+      "aiPraca": {
+        "4": 6
+      },
+      "treasuryDeltas": {
+        "5": -29
+      },
+      "pracaDeltas": {
+        "3": 14,
+        "5": -21
+      },
+      "expTreasury": {
+        "2": 0,
+        "5": 28
+      },
+      "expPraca": {
+        "3": 14,
+        "4": 6,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-67",
+      "aiTreasury": {
+        "2": 39,
+        "4": 17,
+        "5": 15
+      },
+      "aiPraca": {
+        "3": 28,
+        "4": 22,
+        "5": 23
+      },
+      "treasuryDeltas": {
+        "4": 6,
+        "5": -34
+      },
+      "pracaDeltas": {
+        "2": -2,
+        "4": -9
+      },
+      "expTreasury": {
+        "2": 39,
+        "4": 23,
+        "5": -19
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 28,
+        "4": 13,
+        "5": 23
+      }
+    },
+    {
+      "name": "brak-wpisu-68",
+      "aiTreasury": {
+        "2": 8,
+        "4": 60,
+        "5": 13
+      },
+      "aiPraca": {
+        "5": 29
+      },
+      "treasuryDeltas": {
+        "2": 12,
+        "5": 40
+      },
+      "pracaDeltas": {},
+      "expTreasury": {
+        "2": 20,
+        "4": 60,
+        "5": 53
+      },
+      "expPraca": {
+        "5": 29
+      }
+    },
+    {
+      "name": "brak-wpisu-69",
+      "aiTreasury": {
+        "2": 24,
+        "4": 21
+      },
+      "aiPraca": {
+        "2": 15,
+        "4": 16,
+        "5": 23
+      },
+      "treasuryDeltas": {
+        "2": -33,
+        "3": -27,
+        "5": 38
+      },
+      "pracaDeltas": {
+        "2": 8,
+        "3": -30,
+        "4": -21,
+        "5": -33
+      },
+      "expTreasury": {
+        "2": -9,
+        "3": -27,
+        "4": 21,
+        "5": 38
+      },
+      "expPraca": {
+        "2": 23,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-70",
+      "aiTreasury": {
+        "2": 38
+      },
+      "aiPraca": {
+        "2": 30,
+        "3": 29,
+        "4": 12,
+        "5": 10
+      },
+      "treasuryDeltas": {
+        "5": -40
+      },
+      "pracaDeltas": {
+        "2": 7,
+        "3": -24,
+        "5": 8
+      },
+      "expTreasury": {
+        "2": 38,
+        "5": -40
+      },
+      "expPraca": {
+        "2": 37,
+        "3": 5,
+        "4": 12,
+        "5": 18
+      }
+    },
+    {
+      "name": "brak-wpisu-71",
+      "aiTreasury": {
+        "3": 20,
+        "4": 34
+      },
+      "aiPraca": {
+        "2": 18,
+        "3": 16,
+        "4": 4,
+        "5": 28
+      },
+      "treasuryDeltas": {
+        "3": 14,
+        "5": -31
+      },
+      "pracaDeltas": {
+        "5": 7
+      },
+      "expTreasury": {
+        "3": 34,
+        "4": 34,
+        "5": -31
+      },
+      "expPraca": {
+        "2": 18,
+        "3": 16,
+        "4": 4,
+        "5": 35
+      }
+    },
+    {
+      "name": "brak-wpisu-72",
+      "aiTreasury": {
+        "2": 29,
+        "3": 12,
+        "5": 46
+      },
+      "aiPraca": {
+        "3": 3
+      },
+      "treasuryDeltas": {
+        "2": -6,
+        "5": 29
+      },
+      "pracaDeltas": {
+        "2": -33,
+        "3": 13,
+        "4": 24
+      },
+      "expTreasury": {
+        "2": 23,
+        "3": 12,
+        "5": 75
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 16,
+        "4": 24
+      }
+    },
+    {
+      "name": "brak-wpisu-73",
+      "aiTreasury": {
+        "2": 23
+      },
+      "aiPraca": {
+        "3": 21,
+        "4": 8,
+        "5": 19
+      },
+      "treasuryDeltas": {
+        "2": -23,
+        "3": 21,
+        "5": -5
+      },
+      "pracaDeltas": {
+        "3": -11,
+        "4": -2,
+        "5": 24
+      },
+      "expTreasury": {
+        "2": 0,
+        "3": 21,
+        "5": -5
+      },
+      "expPraca": {
+        "3": 10,
+        "4": 6,
+        "5": 43
+      }
+    },
+    {
+      "name": "brak-wpisu-74",
+      "aiTreasury": {
+        "4": 55,
+        "5": 16
+      },
+      "aiPraca": {
+        "3": 12,
+        "4": 8
+      },
+      "treasuryDeltas": {
+        "2": 26
+      },
+      "pracaDeltas": {
+        "2": -14,
+        "3": -28
+      },
+      "expTreasury": {
+        "2": 26,
+        "4": 55,
+        "5": 16
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 0,
+        "4": 8
+      }
+    },
+    {
+      "name": "brak-wpisu-75",
+      "aiTreasury": {
+        "2": 38,
+        "3": 28,
+        "5": 25
+      },
+      "aiPraca": {
+        "2": 12,
+        "3": 0
+      },
+      "treasuryDeltas": {
+        "5": -20
+      },
+      "pracaDeltas": {
+        "2": -11,
+        "3": -23,
+        "5": -33
+      },
+      "expTreasury": {
+        "2": 38,
+        "3": 28,
+        "5": 5
+      },
+      "expPraca": {
+        "2": 1,
+        "3": 0,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-76",
+      "aiTreasury": {
+        "3": 59
+      },
+      "aiPraca": {
+        "2": 3,
+        "3": 11
+      },
+      "treasuryDeltas": {
+        "4": -13
+      },
+      "pracaDeltas": {
+        "4": -19,
+        "5": 2
+      },
+      "expTreasury": {
+        "3": 59,
+        "4": -13
+      },
+      "expPraca": {
+        "2": 3,
+        "3": 11,
+        "4": 0,
+        "5": 2
+      }
+    },
+    {
+      "name": "brak-wpisu-77",
+      "aiTreasury": {
+        "2": 20,
+        "3": 21
+      },
+      "aiPraca": {
+        "2": 16
+      },
+      "treasuryDeltas": {
+        "3": 30,
+        "4": -39
+      },
+      "pracaDeltas": {
+        "2": -13
+      },
+      "expTreasury": {
+        "2": 20,
+        "3": 51,
+        "4": -39
+      },
+      "expPraca": {
+        "2": 3
+      }
+    },
+    {
+      "name": "brak-wpisu-78",
+      "aiTreasury": {},
+      "aiPraca": {
+        "4": 24,
+        "5": 26
+      },
+      "treasuryDeltas": {
+        "3": -2,
+        "4": -11
+      },
+      "pracaDeltas": {
+        "2": -10
+      },
+      "expTreasury": {
+        "3": -2,
+        "4": -11
+      },
+      "expPraca": {
+        "2": 0,
+        "4": 24,
+        "5": 26
+      }
+    },
+    {
+      "name": "brak-wpisu-79",
+      "aiTreasury": {},
+      "aiPraca": {
+        "3": 22,
+        "5": 7
+      },
+      "treasuryDeltas": {
+        "3": 0,
+        "4": -5,
+        "5": -2
+      },
+      "pracaDeltas": {
+        "2": -33,
+        "3": 20,
+        "4": -26,
+        "5": -29
+      },
+      "expTreasury": {
+        "3": 0,
+        "4": -5,
+        "5": -2
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 42,
+        "4": 0,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-80",
+      "aiTreasury": {},
+      "aiPraca": {
+        "2": 8,
+        "3": 24
+      },
+      "treasuryDeltas": {
+        "4": 34,
+        "5": -16
+      },
+      "pracaDeltas": {
+        "2": -17,
+        "4": -7,
+        "5": 24
+      },
+      "expTreasury": {
+        "4": 34,
+        "5": -16
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 24,
+        "4": 0,
+        "5": 24
+      }
+    },
+    {
+      "name": "brak-wpisu-81",
+      "aiTreasury": {
+        "2": 40,
+        "4": 1
+      },
+      "aiPraca": {
+        "2": 5,
+        "4": 5
+      },
+      "treasuryDeltas": {
+        "3": -4,
+        "5": -15
+      },
+      "pracaDeltas": {
+        "2": -15,
+        "3": -21,
+        "4": 1
+      },
+      "expTreasury": {
+        "2": 40,
+        "3": -4,
+        "4": 1,
+        "5": -15
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 0,
+        "4": 6
+      }
+    },
+    {
+      "name": "brak-wpisu-82",
+      "aiTreasury": {
+        "4": 11
+      },
+      "aiPraca": {
+        "2": 7
+      },
+      "treasuryDeltas": {
+        "3": -34,
+        "4": 4,
+        "5": -11
+      },
+      "pracaDeltas": {
+        "2": 24,
+        "5": -16
+      },
+      "expTreasury": {
+        "3": -34,
+        "4": 15,
+        "5": -11
+      },
+      "expPraca": {
+        "2": 31,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-83",
+      "aiTreasury": {},
+      "aiPraca": {
+        "3": 1,
+        "5": 23
+      },
+      "treasuryDeltas": {
+        "2": -3,
+        "3": 23,
+        "4": 13,
+        "5": -2
+      },
+      "pracaDeltas": {
+        "3": 4
+      },
+      "expTreasury": {
+        "2": -3,
+        "3": 23,
+        "4": 13,
+        "5": -2
+      },
+      "expPraca": {
+        "3": 5,
+        "5": 23
+      }
+    },
+    {
+      "name": "brak-wpisu-84",
+      "aiTreasury": {
+        "3": 12,
+        "4": 10
+      },
+      "aiPraca": {
+        "5": 17
+      },
+      "treasuryDeltas": {},
+      "pracaDeltas": {
+        "3": 23,
+        "4": 3
+      },
+      "expTreasury": {
+        "3": 12,
+        "4": 10
+      },
+      "expPraca": {
+        "3": 23,
+        "4": 3,
+        "5": 17
+      }
+    },
+    {
+      "name": "brak-wpisu-85",
+      "aiTreasury": {
+        "4": 49,
+        "5": 15
+      },
+      "aiPraca": {
+        "4": 16
+      },
+      "treasuryDeltas": {
+        "2": -6,
+        "5": -7
+      },
+      "pracaDeltas": {
+        "2": 24,
+        "3": -19,
+        "5": 7
+      },
+      "expTreasury": {
+        "2": -6,
+        "4": 49,
+        "5": 8
+      },
+      "expPraca": {
+        "2": 24,
+        "3": 0,
+        "4": 16,
+        "5": 7
+      }
+    },
+    {
+      "name": "brak-wpisu-86",
+      "aiTreasury": {
+        "3": 5,
+        "4": 9
+      },
+      "aiPraca": {
+        "2": 12,
+        "4": 16
+      },
+      "treasuryDeltas": {
+        "4": 0
+      },
+      "pracaDeltas": {
+        "3": -30
+      },
+      "expTreasury": {
+        "3": 5,
+        "4": 9
+      },
+      "expPraca": {
+        "2": 12,
+        "3": 0,
+        "4": 16
+      }
+    },
+    {
+      "name": "brak-wpisu-87",
+      "aiTreasury": {
+        "4": 52,
+        "5": 34
+      },
+      "aiPraca": {
+        "3": 6,
+        "5": 13
+      },
+      "treasuryDeltas": {
+        "4": 34
+      },
+      "pracaDeltas": {
+        "3": -1,
+        "4": 24
+      },
+      "expTreasury": {
+        "4": 86,
+        "5": 34
+      },
+      "expPraca": {
+        "3": 5,
+        "4": 24,
+        "5": 13
+      }
+    },
+    {
+      "name": "brak-wpisu-88",
+      "aiTreasury": {
+        "2": 22,
+        "3": 26,
+        "4": 3,
+        "5": 13
+      },
+      "aiPraca": {
+        "3": 22,
+        "5": 8
+      },
+      "treasuryDeltas": {},
+      "pracaDeltas": {
+        "3": -11,
+        "5": -4
+      },
+      "expTreasury": {
+        "2": 22,
+        "3": 26,
+        "4": 3,
+        "5": 13
+      },
+      "expPraca": {
+        "3": 11,
+        "5": 4
+      }
+    },
+    {
+      "name": "brak-wpisu-89",
+      "aiTreasury": {
+        "2": 15,
+        "3": 39,
+        "5": 0
+      },
+      "aiPraca": {
+        "2": 7,
+        "3": 1
+      },
+      "treasuryDeltas": {
+        "3": 27
+      },
+      "pracaDeltas": {
+        "2": -9,
+        "3": -20,
+        "5": -21
+      },
+      "expTreasury": {
+        "2": 15,
+        "3": 66,
+        "5": 0
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 0,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-90",
+      "aiTreasury": {
+        "4": 23
+      },
+      "aiPraca": {
+        "4": 23,
+        "5": 11
+      },
+      "treasuryDeltas": {
+        "4": -14
+      },
+      "pracaDeltas": {
+        "2": 12,
+        "3": -32,
+        "5": 21
+      },
+      "expTreasury": {
+        "4": 9
+      },
+      "expPraca": {
+        "2": 12,
+        "3": 0,
+        "4": 23,
+        "5": 32
+      }
+    },
+    {
+      "name": "brak-wpisu-91",
+      "aiTreasury": {},
+      "aiPraca": {
+        "2": 2,
+        "3": 2,
+        "4": 19
+      },
+      "treasuryDeltas": {
+        "3": -14,
+        "5": -12
+      },
+      "pracaDeltas": {},
+      "expTreasury": {
+        "3": -14,
+        "5": -12
+      },
+      "expPraca": {
+        "2": 2,
+        "3": 2,
+        "4": 19
+      }
+    },
+    {
+      "name": "brak-wpisu-92",
+      "aiTreasury": {
+        "4": 6,
+        "5": 21
+      },
+      "aiPraca": {
+        "2": 20,
+        "4": 14,
+        "5": 3
+      },
+      "treasuryDeltas": {
+        "2": -33
+      },
+      "pracaDeltas": {
+        "4": -28,
+        "5": 12
+      },
+      "expTreasury": {
+        "2": -33,
+        "4": 6,
+        "5": 21
+      },
+      "expPraca": {
+        "2": 20,
+        "4": 0,
+        "5": 15
+      }
+    },
+    {
+      "name": "brak-wpisu-93",
+      "aiTreasury": {
+        "4": 32
+      },
+      "aiPraca": {
+        "5": 30
+      },
+      "treasuryDeltas": {
+        "2": -21
+      },
+      "pracaDeltas": {
+        "5": -26
+      },
+      "expTreasury": {
+        "2": -21,
+        "4": 32
+      },
+      "expPraca": {
+        "5": 4
+      }
+    },
+    {
+      "name": "brak-wpisu-94",
+      "aiTreasury": {
+        "2": 48,
+        "4": 5,
+        "5": 5
+      },
+      "aiPraca": {
+        "2": 21,
+        "3": 15
+      },
+      "treasuryDeltas": {
+        "2": -8,
+        "4": 2
+      },
+      "pracaDeltas": {
+        "2": -8
+      },
+      "expTreasury": {
+        "2": 40,
+        "4": 7,
+        "5": 5
+      },
+      "expPraca": {
+        "2": 13,
+        "3": 15
+      }
+    },
+    {
+      "name": "brak-wpisu-95",
+      "aiTreasury": {
+        "4": 42
+      },
+      "aiPraca": {
+        "2": 28,
+        "3": 5
+      },
+      "treasuryDeltas": {
+        "2": 16,
+        "3": -19,
+        "5": -35
+      },
+      "pracaDeltas": {
+        "2": 0,
+        "3": 21,
+        "5": -11
+      },
+      "expTreasury": {
+        "2": 16,
+        "3": -19,
+        "4": 42,
+        "5": -35
+      },
+      "expPraca": {
+        "2": 28,
+        "3": 26,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-96",
+      "aiTreasury": {
+        "2": 24,
+        "4": 24,
+        "5": 47
+      },
+      "aiPraca": {
+        "3": 30,
+        "4": 18
+      },
+      "treasuryDeltas": {
+        "2": 32,
+        "4": -16,
+        "5": -1
+      },
+      "pracaDeltas": {
+        "2": 11,
+        "5": 19
+      },
+      "expTreasury": {
+        "2": 56,
+        "4": 8,
+        "5": 46
+      },
+      "expPraca": {
+        "2": 11,
+        "3": 30,
+        "4": 18,
+        "5": 19
+      }
+    },
+    {
+      "name": "brak-wpisu-97",
+      "aiTreasury": {
+        "2": 41,
+        "3": 28
+      },
+      "aiPraca": {
+        "3": 5,
+        "5": 5
+      },
+      "treasuryDeltas": {
+        "2": 26
+      },
+      "pracaDeltas": {
+        "2": 13,
+        "3": 12,
+        "4": -30,
+        "5": 24
+      },
+      "expTreasury": {
+        "2": 67,
+        "3": 28
+      },
+      "expPraca": {
+        "2": 13,
+        "3": 17,
+        "4": 0,
+        "5": 29
+      }
+    },
+    {
+      "name": "brak-wpisu-98",
+      "aiTreasury": {
+        "4": 31
+      },
+      "aiPraca": {
+        "3": 7,
+        "5": 3
+      },
+      "treasuryDeltas": {
+        "3": 9,
+        "5": 2
+      },
+      "pracaDeltas": {
+        "3": -6,
+        "4": -17,
+        "5": -22
+      },
+      "expTreasury": {
+        "3": 9,
+        "4": 31,
+        "5": 2
+      },
+      "expPraca": {
+        "3": 1,
+        "4": 0,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-99",
+      "aiTreasury": {
+        "2": 37,
+        "4": 21,
+        "5": 49
+      },
+      "aiPraca": {
+        "2": 23,
+        "4": 15
+      },
+      "treasuryDeltas": {
+        "4": 1,
+        "5": 6
+      },
+      "pracaDeltas": {
+        "5": 15
+      },
+      "expTreasury": {
+        "2": 37,
+        "4": 22,
+        "5": 55
+      },
+      "expPraca": {
+        "2": 23,
+        "4": 15,
+        "5": 15
+      }
+    },
+    {
+      "name": "brak-wpisu-100",
+      "aiTreasury": {
+        "2": 29,
+        "3": 34,
+        "4": 7,
+        "5": 16
+      },
+      "aiPraca": {
+        "2": 1,
+        "3": 28,
+        "5": 30
+      },
+      "treasuryDeltas": {
+        "3": -35,
+        "4": -32,
+        "5": 37
+      },
+      "pracaDeltas": {
+        "3": -4,
+        "4": -30,
+        "5": 23
+      },
+      "expTreasury": {
+        "2": 29,
+        "3": -1,
+        "4": -25,
+        "5": 53
+      },
+      "expPraca": {
+        "2": 1,
+        "3": 24,
+        "4": 0,
+        "5": 53
+      }
+    },
+    {
+      "name": "brak-wpisu-101",
+      "aiTreasury": {
+        "2": 39,
+        "5": 9
+      },
+      "aiPraca": {
+        "4": 28,
+        "5": 30
+      },
+      "treasuryDeltas": {
+        "4": -36
+      },
+      "pracaDeltas": {},
+      "expTreasury": {
+        "2": 39,
+        "4": -36,
+        "5": 9
+      },
+      "expPraca": {
+        "4": 28,
+        "5": 30
+      }
+    },
+    {
+      "name": "brak-wpisu-102",
+      "aiTreasury": {
+        "2": 39,
+        "3": 5
+      },
+      "aiPraca": {
+        "3": 19
+      },
+      "treasuryDeltas": {
+        "2": 10,
+        "3": 1,
+        "5": -35
+      },
+      "pracaDeltas": {
+        "4": -20
+      },
+      "expTreasury": {
+        "2": 49,
+        "3": 6,
+        "5": -35
+      },
+      "expPraca": {
+        "3": 19,
+        "4": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-103",
+      "aiTreasury": {
+        "2": 11,
+        "4": 40,
+        "5": 59
+      },
+      "aiPraca": {
+        "2": 18,
+        "4": 26,
+        "5": 29
+      },
+      "treasuryDeltas": {
+        "5": -22
+      },
+      "pracaDeltas": {
+        "2": -14,
+        "4": 3,
+        "5": -29
+      },
+      "expTreasury": {
+        "2": 11,
+        "4": 40,
+        "5": 37
+      },
+      "expPraca": {
+        "2": 4,
+        "4": 29,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-104",
+      "aiTreasury": {
+        "2": 46,
+        "3": 53,
+        "5": 24
+      },
+      "aiPraca": {
+        "4": 23
+      },
+      "treasuryDeltas": {
+        "2": -9,
+        "5": -28
+      },
+      "pracaDeltas": {
+        "3": 1,
+        "4": -5
+      },
+      "expTreasury": {
+        "2": 37,
+        "3": 53,
+        "5": -4
+      },
+      "expPraca": {
+        "3": 1,
+        "4": 18
+      }
+    },
+    {
+      "name": "brak-wpisu-105",
+      "aiTreasury": {
+        "2": 49,
+        "3": 44,
+        "5": 48
+      },
+      "aiPraca": {
+        "4": 29
+      },
+      "treasuryDeltas": {
+        "2": 4,
+        "4": -3,
+        "5": -6
+      },
+      "pracaDeltas": {
+        "2": -31,
+        "3": 23,
+        "4": 25,
+        "5": -20
+      },
+      "expTreasury": {
+        "2": 53,
+        "3": 44,
+        "4": -3,
+        "5": 42
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 23,
+        "4": 54,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-106",
+      "aiTreasury": {
+        "2": 12,
+        "3": 21,
+        "4": 9
+      },
+      "aiPraca": {
+        "4": 8
+      },
+      "treasuryDeltas": {
+        "2": -40,
+        "3": -20,
+        "4": -37,
+        "5": 12
+      },
+      "pracaDeltas": {
+        "4": -22
+      },
+      "expTreasury": {
+        "2": -28,
+        "3": 1,
+        "4": -28,
+        "5": 12
+      },
+      "expPraca": {
+        "4": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-107",
+      "aiTreasury": {
+        "4": 18,
+        "5": 40
+      },
+      "aiPraca": {
+        "4": 9
+      },
+      "treasuryDeltas": {
+        "3": 25,
+        "5": -20
+      },
+      "pracaDeltas": {
+        "2": -30,
+        "4": 5
+      },
+      "expTreasury": {
+        "3": 25,
+        "4": 18,
+        "5": 20
+      },
+      "expPraca": {
+        "2": 0,
+        "4": 14
+      }
+    },
+    {
+      "name": "brak-wpisu-108",
+      "aiTreasury": {},
+      "aiPraca": {
+        "2": 22,
+        "5": 25
+      },
+      "treasuryDeltas": {
+        "3": -27,
+        "4": -19,
+        "5": -4
+      },
+      "pracaDeltas": {
+        "2": -33,
+        "4": 17
+      },
+      "expTreasury": {
+        "3": -27,
+        "4": -19,
+        "5": -4
+      },
+      "expPraca": {
+        "2": 0,
+        "4": 17,
+        "5": 25
+      }
+    },
+    {
+      "name": "brak-wpisu-109",
+      "aiTreasury": {
+        "4": 45
+      },
+      "aiPraca": {
+        "2": 7,
+        "3": 18
+      },
+      "treasuryDeltas": {},
+      "pracaDeltas": {
+        "2": 25,
+        "5": -30
+      },
+      "expTreasury": {
+        "4": 45
+      },
+      "expPraca": {
+        "2": 32,
+        "3": 18,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-110",
+      "aiTreasury": {
+        "2": 50,
+        "4": 21,
+        "5": 38
+      },
+      "aiPraca": {
+        "2": 17,
+        "3": 11,
+        "4": 0,
+        "5": 6
+      },
+      "treasuryDeltas": {},
+      "pracaDeltas": {},
+      "expTreasury": {
+        "2": 50,
+        "4": 21,
+        "5": 38
+      },
+      "expPraca": {
+        "2": 17,
+        "3": 11,
+        "4": 0,
+        "5": 6
+      }
+    },
+    {
+      "name": "brak-wpisu-111",
+      "aiTreasury": {
+        "3": 54,
+        "4": 57,
+        "5": 47
+      },
+      "aiPraca": {},
+      "treasuryDeltas": {},
+      "pracaDeltas": {
+        "2": -5,
+        "3": -4,
+        "4": -18
+      },
+      "expTreasury": {
+        "3": 54,
+        "4": 57,
+        "5": 47
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 0,
+        "4": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-112",
+      "aiTreasury": {
+        "2": 18,
+        "5": 20
+      },
+      "aiPraca": {},
+      "treasuryDeltas": {
+        "3": 0,
+        "4": -2,
+        "5": -7
+      },
+      "pracaDeltas": {
+        "3": -11,
+        "4": 15
+      },
+      "expTreasury": {
+        "2": 18,
+        "3": 0,
+        "4": -2,
+        "5": 13
+      },
+      "expPraca": {
+        "3": 0,
+        "4": 15
+      }
+    },
+    {
+      "name": "brak-wpisu-113",
+      "aiTreasury": {
+        "3": 23
+      },
+      "aiPraca": {
+        "5": 13
+      },
+      "treasuryDeltas": {
+        "2": 23,
+        "5": 1
+      },
+      "pracaDeltas": {
+        "3": -11
+      },
+      "expTreasury": {
+        "2": 23,
+        "3": 23,
+        "5": 1
+      },
+      "expPraca": {
+        "3": 0,
+        "5": 13
+      }
+    },
+    {
+      "name": "brak-wpisu-114",
+      "aiTreasury": {
+        "2": 29,
+        "3": 27,
+        "4": 15
+      },
+      "aiPraca": {
+        "3": 11,
+        "5": 20
+      },
+      "treasuryDeltas": {
+        "4": -27,
+        "5": 24
+      },
+      "pracaDeltas": {
+        "5": 11
+      },
+      "expTreasury": {
+        "2": 29,
+        "3": 27,
+        "4": -12,
+        "5": 24
+      },
+      "expPraca": {
+        "3": 11,
+        "5": 31
+      }
+    },
+    {
+      "name": "brak-wpisu-115",
+      "aiTreasury": {
+        "4": 53
+      },
+      "aiPraca": {
+        "2": 18,
+        "3": 12
+      },
+      "treasuryDeltas": {
+        "2": -39,
+        "3": -10
+      },
+      "pracaDeltas": {
+        "4": -23,
+        "5": -14
+      },
+      "expTreasury": {
+        "2": -39,
+        "3": -10,
+        "4": 53
+      },
+      "expPraca": {
+        "2": 18,
+        "3": 12,
+        "4": 0,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-116",
+      "aiTreasury": {
+        "4": 32
+      },
+      "aiPraca": {},
+      "treasuryDeltas": {
+        "3": -27,
+        "5": -25
+      },
+      "pracaDeltas": {
+        "3": -2,
+        "4": -13
+      },
+      "expTreasury": {
+        "3": -27,
+        "4": 32,
+        "5": -25
+      },
+      "expPraca": {
+        "3": 0,
+        "4": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-117",
+      "aiTreasury": {
+        "2": 60
+      },
+      "aiPraca": {
+        "3": 11,
+        "5": 16
+      },
+      "treasuryDeltas": {
+        "2": 22
+      },
+      "pracaDeltas": {
+        "3": -4,
+        "4": 2,
+        "5": 8
+      },
+      "expTreasury": {
+        "2": 82
+      },
+      "expPraca": {
+        "3": 7,
+        "4": 2,
+        "5": 24
+      }
+    },
+    {
+      "name": "brak-wpisu-118",
+      "aiTreasury": {
+        "2": 25,
+        "3": 29,
+        "4": 40
+      },
+      "aiPraca": {},
+      "treasuryDeltas": {},
+      "pracaDeltas": {
+        "2": -24,
+        "3": -16,
+        "4": 13
+      },
+      "expTreasury": {
+        "2": 25,
+        "3": 29,
+        "4": 40
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 0,
+        "4": 13
+      }
+    },
+    {
+      "name": "brak-wpisu-119",
+      "aiTreasury": {
+        "2": 29,
+        "3": 50,
+        "4": 20
+      },
+      "aiPraca": {
+        "5": 4
+      },
+      "treasuryDeltas": {
+        "3": 18,
+        "5": -9
+      },
+      "pracaDeltas": {
+        "3": -16,
+        "5": -32
+      },
+      "expTreasury": {
+        "2": 29,
+        "3": 68,
+        "4": 20,
+        "5": -9
+      },
+      "expPraca": {
+        "3": 0,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-120",
+      "aiTreasury": {
+        "4": 18
+      },
+      "aiPraca": {
+        "2": 0,
+        "4": 12,
+        "5": 5
+      },
+      "treasuryDeltas": {
+        "2": 34
+      },
+      "pracaDeltas": {
+        "2": 8,
+        "3": -35,
+        "5": 13
+      },
+      "expTreasury": {
+        "2": 34,
+        "4": 18
+      },
+      "expPraca": {
+        "2": 8,
+        "3": 0,
+        "4": 12,
+        "5": 18
+      }
+    },
+    {
+      "name": "brak-wpisu-121",
+      "aiTreasury": {
+        "2": 49,
+        "3": 2,
+        "4": 21
+      },
+      "aiPraca": {
+        "3": 17,
+        "5": 18
+      },
+      "treasuryDeltas": {
+        "5": 26
+      },
+      "pracaDeltas": {},
+      "expTreasury": {
+        "2": 49,
+        "3": 2,
+        "4": 21,
+        "5": 26
+      },
+      "expPraca": {
+        "3": 17,
+        "5": 18
+      }
+    },
+    {
+      "name": "brak-wpisu-122",
+      "aiTreasury": {
+        "2": 54,
+        "5": 51
+      },
+      "aiPraca": {
+        "2": 15,
+        "3": 27,
+        "5": 25
+      },
+      "treasuryDeltas": {
+        "3": 36,
+        "4": -7,
+        "5": 26
+      },
+      "pracaDeltas": {
+        "2": -27,
+        "4": -25
+      },
+      "expTreasury": {
+        "2": 54,
+        "3": 36,
+        "4": -7,
+        "5": 77
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 27,
+        "4": 0,
+        "5": 25
+      }
+    },
+    {
+      "name": "brak-wpisu-123",
+      "aiTreasury": {
+        "3": 4
+      },
+      "aiPraca": {
+        "3": 3,
+        "4": 26,
+        "5": 3
+      },
+      "treasuryDeltas": {
+        "3": -17,
+        "5": 3
+      },
+      "pracaDeltas": {},
+      "expTreasury": {
+        "3": -13,
+        "5": 3
+      },
+      "expPraca": {
+        "3": 3,
+        "4": 26,
+        "5": 3
+      }
+    },
+    {
+      "name": "brak-wpisu-124",
+      "aiTreasury": {
+        "3": 28,
+        "4": 26,
+        "5": 37
+      },
+      "aiPraca": {
+        "2": 0,
+        "3": 24,
+        "4": 12
+      },
+      "treasuryDeltas": {
+        "5": -10
+      },
+      "pracaDeltas": {
+        "5": -20
+      },
+      "expTreasury": {
+        "3": 28,
+        "4": 26,
+        "5": 27
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 24,
+        "4": 12,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-125",
+      "aiTreasury": {
+        "3": 18,
+        "4": 42,
+        "5": 25
+      },
+      "aiPraca": {},
+      "treasuryDeltas": {
+        "4": -3,
+        "5": -15
+      },
+      "pracaDeltas": {
+        "2": -30,
+        "5": 16
+      },
+      "expTreasury": {
+        "3": 18,
+        "4": 39,
+        "5": 10
+      },
+      "expPraca": {
+        "2": 0,
+        "5": 16
+      }
+    },
+    {
+      "name": "brak-wpisu-126",
+      "aiTreasury": {
+        "5": 19
+      },
+      "aiPraca": {
+        "5": 11
+      },
+      "treasuryDeltas": {
+        "2": -17,
+        "3": 14,
+        "4": 11
+      },
+      "pracaDeltas": {
+        "2": -17,
+        "3": -22,
+        "4": -10
+      },
+      "expTreasury": {
+        "2": -17,
+        "3": 14,
+        "4": 11,
+        "5": 19
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 11
+      }
+    },
+    {
+      "name": "brak-wpisu-127",
+      "aiTreasury": {
+        "4": 15
+      },
+      "aiPraca": {
+        "3": 15,
+        "4": 18,
+        "5": 19
+      },
+      "treasuryDeltas": {
+        "5": 13
+      },
+      "pracaDeltas": {
+        "2": -7,
+        "3": -29
+      },
+      "expTreasury": {
+        "4": 15,
+        "5": 13
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 0,
+        "4": 18,
+        "5": 19
+      }
+    },
+    {
+      "name": "brak-wpisu-128",
+      "aiTreasury": {
+        "3": 35,
+        "5": 59
+      },
+      "aiPraca": {
+        "4": 11
+      },
+      "treasuryDeltas": {
+        "2": -34,
+        "5": -22
+      },
+      "pracaDeltas": {
+        "2": 11,
+        "4": -31
+      },
+      "expTreasury": {
+        "2": -34,
+        "3": 35,
+        "5": 37
+      },
+      "expPraca": {
+        "2": 11,
+        "4": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-129",
+      "aiTreasury": {
+        "3": 26,
+        "5": 56
+      },
+      "aiPraca": {
+        "2": 12,
+        "3": 24
+      },
+      "treasuryDeltas": {
+        "2": -17,
+        "3": 12
+      },
+      "pracaDeltas": {
+        "2": -18,
+        "3": -23,
+        "5": -32
+      },
+      "expTreasury": {
+        "2": -17,
+        "3": 38,
+        "5": 56
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 1,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-130",
+      "aiTreasury": {
+        "3": 38,
+        "4": 46
+      },
+      "aiPraca": {
+        "2": 23,
+        "4": 8
+      },
+      "treasuryDeltas": {},
+      "pracaDeltas": {
+        "4": 12,
+        "5": 5
+      },
+      "expTreasury": {
+        "3": 38,
+        "4": 46
+      },
+      "expPraca": {
+        "2": 23,
+        "4": 20,
+        "5": 5
+      }
+    },
+    {
+      "name": "brak-wpisu-131",
+      "aiTreasury": {
+        "2": 35,
+        "3": 31
+      },
+      "aiPraca": {
+        "3": 3,
+        "4": 28,
+        "5": 8
+      },
+      "treasuryDeltas": {
+        "4": -29,
+        "5": -34
+      },
+      "pracaDeltas": {
+        "2": -13,
+        "3": -14,
+        "4": -33
+      },
+      "expTreasury": {
+        "2": 35,
+        "3": 31,
+        "4": -29,
+        "5": -34
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 8
+      }
+    },
+    {
+      "name": "brak-wpisu-132",
+      "aiTreasury": {
+        "2": 39
+      },
+      "aiPraca": {
+        "5": 26
+      },
+      "treasuryDeltas": {
+        "2": 29
+      },
+      "pracaDeltas": {
+        "3": -25,
+        "5": 23
+      },
+      "expTreasury": {
+        "2": 68
+      },
+      "expPraca": {
+        "3": 0,
+        "5": 49
+      }
+    },
+    {
+      "name": "brak-wpisu-133",
+      "aiTreasury": {
+        "3": 18
+      },
+      "aiPraca": {
+        "2": 24,
+        "3": 7,
+        "4": 7,
+        "5": 23
+      },
+      "treasuryDeltas": {
+        "2": 24,
+        "3": -4,
+        "4": -8
+      },
+      "pracaDeltas": {
+        "3": -12,
+        "4": -15
+      },
+      "expTreasury": {
+        "2": 24,
+        "3": 14,
+        "4": -8
+      },
+      "expPraca": {
+        "2": 24,
+        "3": 0,
+        "4": 0,
+        "5": 23
+      }
+    },
+    {
+      "name": "brak-wpisu-134",
+      "aiTreasury": {
+        "4": 47,
+        "5": 27
+      },
+      "aiPraca": {
+        "3": 14,
+        "4": 7,
+        "5": 14
+      },
+      "treasuryDeltas": {
+        "4": 37
+      },
+      "pracaDeltas": {
+        "2": -24,
+        "3": 13,
+        "5": -35
+      },
+      "expTreasury": {
+        "4": 84,
+        "5": 27
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 27,
+        "4": 7,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-135",
+      "aiTreasury": {},
+      "aiPraca": {
+        "2": 14,
+        "3": 18
+      },
+      "treasuryDeltas": {
+        "3": -23,
+        "4": 23,
+        "5": 1
+      },
+      "pracaDeltas": {
+        "3": 4
+      },
+      "expTreasury": {
+        "3": -23,
+        "4": 23,
+        "5": 1
+      },
+      "expPraca": {
+        "2": 14,
+        "3": 22
+      }
+    },
+    {
+      "name": "brak-wpisu-136",
+      "aiTreasury": {
+        "4": 33,
+        "5": 55
+      },
+      "aiPraca": {
+        "2": 19
+      },
+      "treasuryDeltas": {
+        "4": 23
+      },
+      "pracaDeltas": {
+        "4": -2,
+        "5": 18
+      },
+      "expTreasury": {
+        "4": 56,
+        "5": 55
+      },
+      "expPraca": {
+        "2": 19,
+        "4": 0,
+        "5": 18
+      }
+    },
+    {
+      "name": "brak-wpisu-137",
+      "aiTreasury": {
+        "2": 36,
+        "3": 3,
+        "4": 40,
+        "5": 55
+      },
+      "aiPraca": {},
+      "treasuryDeltas": {
+        "4": -15,
+        "5": -17
+      },
+      "pracaDeltas": {
+        "2": -5,
+        "3": 13,
+        "5": 18
+      },
+      "expTreasury": {
+        "2": 36,
+        "3": 3,
+        "4": 25,
+        "5": 38
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 13,
+        "5": 18
+      }
+    },
+    {
+      "name": "brak-wpisu-138",
+      "aiTreasury": {
+        "2": 56,
+        "3": 9,
+        "4": 46,
+        "5": 58
+      },
+      "aiPraca": {
+        "2": 1,
+        "3": 19,
+        "5": 16
+      },
+      "treasuryDeltas": {
+        "2": -26,
+        "3": -37,
+        "4": 3
+      },
+      "pracaDeltas": {
+        "3": 25,
+        "4": 4,
+        "5": -11
+      },
+      "expTreasury": {
+        "2": 30,
+        "3": -28,
+        "4": 49,
+        "5": 58
+      },
+      "expPraca": {
+        "2": 1,
+        "3": 44,
+        "4": 4,
+        "5": 5
+      }
+    },
+    {
+      "name": "brak-wpisu-139",
+      "aiTreasury": {
+        "2": 29,
+        "4": 6,
+        "5": 54
+      },
+      "aiPraca": {
+        "5": 25
+      },
+      "treasuryDeltas": {
+        "4": 12
+      },
+      "pracaDeltas": {
+        "2": -6,
+        "4": -6,
+        "5": -21
+      },
+      "expTreasury": {
+        "2": 29,
+        "4": 18,
+        "5": 54
+      },
+      "expPraca": {
+        "2": 0,
+        "4": 0,
+        "5": 4
+      }
+    },
+    {
+      "name": "brak-wpisu-140",
+      "aiTreasury": {
+        "3": 42,
+        "4": 35,
+        "5": 2
+      },
+      "aiPraca": {
+        "4": 9,
+        "5": 22
+      },
+      "treasuryDeltas": {
+        "4": -38,
+        "5": -27
+      },
+      "pracaDeltas": {
+        "2": -11,
+        "4": 21,
+        "5": 16
+      },
+      "expTreasury": {
+        "3": 42,
+        "4": -3,
+        "5": -25
+      },
+      "expPraca": {
+        "2": 0,
+        "4": 30,
+        "5": 38
+      }
+    },
+    {
+      "name": "brak-wpisu-141",
+      "aiTreasury": {
+        "3": 28,
+        "4": 26
+      },
+      "aiPraca": {
+        "2": 10
+      },
+      "treasuryDeltas": {
+        "5": 34
+      },
+      "pracaDeltas": {
+        "2": 24
+      },
+      "expTreasury": {
+        "3": 28,
+        "4": 26,
+        "5": 34
+      },
+      "expPraca": {
+        "2": 34
+      }
+    },
+    {
+      "name": "brak-wpisu-142",
+      "aiTreasury": {
+        "3": 6
+      },
+      "aiPraca": {
+        "2": 8,
+        "3": 3,
+        "4": 30
+      },
+      "treasuryDeltas": {
+        "3": 35,
+        "4": -25,
+        "5": 22
+      },
+      "pracaDeltas": {
+        "2": 12,
+        "3": -9,
+        "5": -35
+      },
+      "expTreasury": {
+        "3": 41,
+        "4": -25,
+        "5": 22
+      },
+      "expPraca": {
+        "2": 20,
+        "3": 0,
+        "4": 30,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-143",
+      "aiTreasury": {
+        "3": 33
+      },
+      "aiPraca": {
+        "2": 22,
+        "3": 26
+      },
+      "treasuryDeltas": {
+        "5": -2
+      },
+      "pracaDeltas": {
+        "2": -7,
+        "5": 16
+      },
+      "expTreasury": {
+        "3": 33,
+        "5": -2
+      },
+      "expPraca": {
+        "2": 15,
+        "3": 26,
+        "5": 16
+      }
+    },
+    {
+      "name": "brak-wpisu-144",
+      "aiTreasury": {
+        "2": 31,
+        "4": 26,
+        "5": 24
+      },
+      "aiPraca": {
+        "2": 13,
+        "3": 17,
+        "5": 30
+      },
+      "treasuryDeltas": {
+        "2": -23,
+        "4": 13
+      },
+      "pracaDeltas": {
+        "4": -3
+      },
+      "expTreasury": {
+        "2": 8,
+        "4": 39,
+        "5": 24
+      },
+      "expPraca": {
+        "2": 13,
+        "3": 17,
+        "4": 0,
+        "5": 30
+      }
+    },
+    {
+      "name": "brak-wpisu-145",
+      "aiTreasury": {
+        "2": 56,
+        "5": 33
+      },
+      "aiPraca": {
+        "3": 29
+      },
+      "treasuryDeltas": {
+        "3": -16,
+        "4": 1,
+        "5": -35
+      },
+      "pracaDeltas": {
+        "3": -5
+      },
+      "expTreasury": {
+        "2": 56,
+        "3": -16,
+        "4": 1,
+        "5": -2
+      },
+      "expPraca": {
+        "3": 24
+      }
+    },
+    {
+      "name": "brak-wpisu-146",
+      "aiTreasury": {
+        "4": 12
+      },
+      "aiPraca": {
+        "2": 18
+      },
+      "treasuryDeltas": {
+        "2": 13
+      },
+      "pracaDeltas": {
+        "3": 6,
+        "4": -22
+      },
+      "expTreasury": {
+        "2": 13,
+        "4": 12
+      },
+      "expPraca": {
+        "2": 18,
+        "3": 6,
+        "4": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-147",
+      "aiTreasury": {
+        "3": 56
+      },
+      "aiPraca": {
+        "2": 3,
+        "3": 24,
+        "5": 22
+      },
+      "treasuryDeltas": {
+        "3": 33
+      },
+      "pracaDeltas": {
+        "2": 17,
+        "3": 21,
+        "4": -25,
+        "5": 14
+      },
+      "expTreasury": {
+        "3": 89
+      },
+      "expPraca": {
+        "2": 20,
+        "3": 45,
+        "4": 0,
+        "5": 36
+      }
+    },
+    {
+      "name": "brak-wpisu-148",
+      "aiTreasury": {
+        "2": 47,
+        "4": 48
+      },
+      "aiPraca": {
+        "2": 9,
+        "3": 6,
+        "4": 21,
+        "5": 16
+      },
+      "treasuryDeltas": {
+        "2": 20,
+        "5": -21
+      },
+      "pracaDeltas": {},
+      "expTreasury": {
+        "2": 67,
+        "4": 48,
+        "5": -21
+      },
+      "expPraca": {
+        "2": 9,
+        "3": 6,
+        "4": 21,
+        "5": 16
+      }
+    },
+    {
+      "name": "brak-wpisu-149",
+      "aiTreasury": {
+        "3": 41,
+        "4": 46
+      },
+      "aiPraca": {
+        "3": 3,
+        "4": 3,
+        "5": 24
+      },
+      "treasuryDeltas": {
+        "2": 18
+      },
+      "pracaDeltas": {
+        "3": -18,
+        "5": -13
+      },
+      "expTreasury": {
+        "2": 18,
+        "3": 41,
+        "4": 46
+      },
+      "expPraca": {
+        "3": 0,
+        "4": 3,
+        "5": 11
+      }
+    },
+    {
+      "name": "brak-wpisu-150",
+      "aiTreasury": {
+        "3": 25
+      },
+      "aiPraca": {
+        "2": 22,
+        "4": 16
+      },
+      "treasuryDeltas": {
+        "2": -31,
+        "3": 9,
+        "5": -7
+      },
+      "pracaDeltas": {
+        "2": -30,
+        "4": -13
+      },
+      "expTreasury": {
+        "2": -31,
+        "3": 34,
+        "5": -7
+      },
+      "expPraca": {
+        "2": 0,
+        "4": 3
+      }
+    },
+    {
+      "name": "brak-wpisu-151",
+      "aiTreasury": {
+        "2": 16,
+        "3": 49,
+        "4": 48,
+        "5": 54
+      },
+      "aiPraca": {
+        "4": 11
+      },
+      "treasuryDeltas": {
+        "3": 27,
+        "4": 34
+      },
+      "pracaDeltas": {
+        "2": -27,
+        "3": -17
+      },
+      "expTreasury": {
+        "2": 16,
+        "3": 76,
+        "4": 82,
+        "5": 54
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 0,
+        "4": 11
+      }
+    },
+    {
+      "name": "brak-wpisu-152",
+      "aiTreasury": {
+        "2": 26
+      },
+      "aiPraca": {
+        "3": 6,
+        "4": 9
+      },
+      "treasuryDeltas": {
+        "3": 14,
+        "5": -15
+      },
+      "pracaDeltas": {
+        "4": 4,
+        "5": 12
+      },
+      "expTreasury": {
+        "2": 26,
+        "3": 14,
+        "5": -15
+      },
+      "expPraca": {
+        "3": 6,
+        "4": 13,
+        "5": 12
+      }
+    },
+    {
+      "name": "brak-wpisu-153",
+      "aiTreasury": {
+        "3": 31,
+        "5": 14
+      },
+      "aiPraca": {
+        "2": 27,
+        "3": 0,
+        "4": 14
+      },
+      "treasuryDeltas": {
+        "4": -16,
+        "5": 36
+      },
+      "pracaDeltas": {
+        "2": 23,
+        "3": 1,
+        "5": -22
+      },
+      "expTreasury": {
+        "3": 31,
+        "4": -16,
+        "5": 50
+      },
+      "expPraca": {
+        "2": 50,
+        "3": 1,
+        "4": 14,
+        "5": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-154",
+      "aiTreasury": {
+        "2": 38,
+        "4": 44
+      },
+      "aiPraca": {
+        "2": 6,
+        "4": 3,
+        "5": 5
+      },
+      "treasuryDeltas": {
+        "3": 11,
+        "5": 31
+      },
+      "pracaDeltas": {
+        "2": -33,
+        "3": -5,
+        "4": 14,
+        "5": 22
+      },
+      "expTreasury": {
+        "2": 38,
+        "3": 11,
+        "4": 44,
+        "5": 31
+      },
+      "expPraca": {
+        "2": 0,
+        "3": 0,
+        "4": 17,
+        "5": 27
+      }
+    },
+    {
+      "name": "brak-wpisu-155",
+      "aiTreasury": {},
+      "aiPraca": {
+        "2": 6,
+        "3": 8
+      },
+      "treasuryDeltas": {
+        "4": 11
+      },
+      "pracaDeltas": {
+        "3": -19,
+        "4": 23
+      },
+      "expTreasury": {
+        "4": 11
+      },
+      "expPraca": {
+        "2": 6,
+        "3": 0,
+        "4": 23
+      }
+    },
+    {
+      "name": "brak-wpisu-156",
+      "aiTreasury": {
+        "3": 56,
+        "4": 55
+      },
+      "aiPraca": {
+        "2": 5,
+        "5": 18
+      },
+      "treasuryDeltas": {
+        "4": -3
+      },
+      "pracaDeltas": {
+        "4": 20,
+        "5": 19
+      },
+      "expTreasury": {
+        "3": 56,
+        "4": 52
+      },
+      "expPraca": {
+        "2": 5,
+        "4": 20,
+        "5": 37
+      }
+    },
+    {
+      "name": "brak-wpisu-157",
+      "aiTreasury": {
+        "2": 33,
+        "4": 23,
+        "5": 20
+      },
+      "aiPraca": {
+        "3": 25,
+        "4": 7
+      },
+      "treasuryDeltas": {},
+      "pracaDeltas": {
+        "2": 13,
+        "3": -28,
+        "4": -34
+      },
+      "expTreasury": {
+        "2": 33,
+        "4": 23,
+        "5": 20
+      },
+      "expPraca": {
+        "2": 13,
+        "3": 0,
+        "4": 0
+      }
+    },
+    {
+      "name": "brak-wpisu-158",
+      "aiTreasury": {
+        "3": 60,
+        "4": 15,
+        "5": 24
+      },
+      "aiPraca": {
+        "2": 12,
+        "5": 28
+      },
+      "treasuryDeltas": {
+        "2": -38
+      },
+      "pracaDeltas": {
+        "4": -14,
+        "5": 16
+      },
+      "expTreasury": {
+        "2": -38,
+        "3": 60,
+        "4": 15,
+        "5": 24
+      },
+      "expPraca": {
+        "2": 12,
+        "4": 0,
+        "5": 44
+      }
+    },
+    {
+      "name": "brak-wpisu-159",
+      "aiTreasury": {
+        "2": 21,
+        "4": 36
+      },
+      "aiPraca": {
+        "2": 10,
+        "4": 25
+      },
+      "treasuryDeltas": {
+        "5": -23
+      },
+      "pracaDeltas": {},
+      "expTreasury": {
+        "2": 21,
+        "4": 36,
+        "5": -23
+      },
+      "expPraca": {
+        "2": 10,
+        "4": 25
+      }
+    }
+  ]
+}
