@@ -1,3 +1,9 @@
+## ROBOCZA c0173fc1 -- 2026-11-14 -- FALA 764: Bitwa reczna: rozkaz gracza = pelny ruch, cios na koncu ruchu (testowa)
+
+- rozkaz reczny marszu i ataku daje pelny ruch w jednej aktywacji (jak AUTO), cios na koncu ruchu, max 1 cios na jednostke na ture; AUTO i Pomin bez zmian
+- Weryfikacja: tsc 0, 5 bram. ref. zielone, test tematu + mutacja czerwona, routing/attack-move zielone, live Chromium Hastati 6v6 1,00->1,65-1,92 hex/aktywacje
+- Limity: pelny przebieg bitwy do konca i AUTO ziarno 3 NIE ZMIERZONO; niewykorzystany ruch 13-18 proc.; arbitraz kolizji niewybranych osobnym tematem
+
 ## ROBOCZA 6b8fa405 -- 2026-11-14 -- FALA 763: audyt pol zapisu: deserializeGame nie gubi pol (narzedzie) (testowa)
 
 - Narzedzie save-load-deserialize-fields-audit.cjs: audyt live seed 4242, 282 klucze, deserializeGame nie gubi zadnego pola (poza naprawionym w FALI 762 resourceLedgerHistory); mutacja czerwona. Bez zmian gra/src.
