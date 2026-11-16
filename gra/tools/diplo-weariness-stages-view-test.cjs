@@ -22,7 +22,7 @@ function check(name, cond, detail) {
 }
 
 const ENTRY_SRC = [
-  "export { warWearinessStagesPl, warWearinessTurnsToLevel, warWearinessNextStagePl } from './game/war-weariness-view';",
+  "export { warWearinessStagesPl, warWearinessTurnsToLevel, warWearinessNextStagePl, warWearinessStagesSummaryPl, forcedPeaceModalTextPl } from './game/war-weariness-view';",
   "export { warWearinessLabelPl } from './game/diplomacy-display';",
   "export { WAR_WEARINESS_PARAMS } from './game/war-weariness';",
   '',
@@ -43,7 +43,8 @@ async function main() {
     });
     const mod = require(BUNDLE);
     const { warWearinessStagesPl: stages, warWearinessTurnsToLevel: turns, warWearinessNextStagePl: next,
-      warWearinessLabelPl: label, WAR_WEARINESS_PARAMS: P } = mod;
+      warWearinessLabelPl: label, WAR_WEARINESS_PARAMS: P, warWearinessStagesSummaryPl: summary,
+      forcedPeaceModalTextPl: modalText } = mod;
 
     // (1) Etapy z parametrów: 50 / 80 / 100 % (wartości zgodne z JSON, nie z kodu).
     const st = stages(P);
@@ -71,6 +72,31 @@ async function main() {
     check('lb1 etykieta zmęczenia zawiera „za ile tur” z widoku', lab && lab.label === 'Zmęczenie wojną 20%' && lab.tooltip.includes('Za 12 tur: 50%'), lab);
     const lab100 = label({ zmeczenie: 1 });
     check('lb2 przy 100% podpowiedź mówi o pokoju wymuszonym', lab100 && lab100.tooltip.includes('Pokój wymuszony (100%).'), lab100);
+
+    // (5) Odmiana „tur” po liczebniku (biernik po „Za”): 1 turę / 2 tury / 5 tur / 12 tur.
+    const g1 = next(0.975, P);
+    check('gr1 1 tura → „Za 1 turę” (nie „Za 1 tur”)', g1.startsWith('Za 1 turę: 100%'), g1);
+    const g2 = next(0.95, P);
+    check('gr2 2 tury → „Za 2 tury”', g2.startsWith('Za 2 tury: 100%'), g2);
+    const g5 = next(0.875, P);
+    check('gr3 5 tur → „Za 5 tur”', g5.startsWith('Za 5 tur: 100%'), g5);
+    check('gr4 12 tur → „Za 12 tur” (wyjątek 12–14)', n20.startsWith('Za 12 tur: 50%'), n20);
+
+    // (6) Pełna lista etapów do panelu (tooltip zmęczenia).
+    check('sm1 lista etapów: 50/80/100 % z parametrów',
+      summary(P) === 'Etapy: 50% — chęć pokoju; 80% — AI proponuje pokój z miastami; 100% — pokój wymuszony.', summary(P));
+    check('lb3 tooltip zmęczenia zawiera pełną listę etapów', lab.tooltip.includes(summary(P)), lab.tooltip);
+
+    // (7) Tekst okna „pokój wymuszony” (czysta funkcja; okno DOM tylko wyświetla).
+    const mLoser = modalText({ otherName: 'Egipt', humanIsLoser: true, cityNames: ['Memfis', 'Teby'] });
+    check('mt1 gracz przegrywa: lead + „Oddajesz: Memfis, Teby.”',
+      mLoser.title === 'Pokój wymuszony'
+      && mLoser.lead === 'Wojna z Egipt osiągnęła 100% zmęczenia — pokój wymuszony.'
+      && mLoser.terms === 'Oddajesz: Memfis, Teby.', mLoser);
+    const mWinner = modalText({ otherName: 'Egipt', humanIsLoser: false, cityNames: ['Memfis'] });
+    check('mt2 gracz wygrywa: „Otrzymujesz: Memfis.”', mWinner.terms === 'Otrzymujesz: Memfis.', mWinner);
+    const mNone = modalText({ otherName: 'Egipt', humanIsLoser: true, cityNames: [] });
+    check('mt3 bez miast: „Pokój bez wymiany miast.”', mNone.terms === 'Pokój bez wymiany miast.', mNone);
 
     console.log('');
     console.log('diplo-weariness-stages-view-test: ' + pass + ' pass / ' + fail + ' fail');

@@ -172,20 +172,22 @@ async function main() {
     check('h6 słabsza AI, 80% zmęczenia (32 tury): oferta miasta za pokój, bez pokoju bezwarunkowego',
       weakEndWeary.length === 1 && weakEndWeary[0].type === 'oferuj_miasto_za_pokoj' && weakEndWeary[0].rodzaj === 'pokoj'
       && !weakEndWeary.some(c => c.bezwarunkowy === true), weakEndWeary);
-    // h6b (100% = 40 tur): także na pełnym zmęczeniu słabsza AI nie składa pokoju bezwarunkowego — pokój wymuszony
-    // jest wyłącznie efektem tyku dyplomacji (test wiringu gracza/AI osobno), a nie propozycji AI.
+    // h6b (100% = 40 tur): słabsza AI nadal OFERUJE miasto za pokój (pozytywnie, jak h6) i nie składa pokoju
+    // bezwarunkowego. Pokój wymuszony to efekt tyku dyplomacji (test wiringu osobno), nie propozycja AI.
     const weakFullWeary = aiDecide(40, 0, 6, 100, 200);
-    check('h6b słabsza AI, 100% zmęczenia (40 tur): brak zaproponuj_pokoj bezwarunkowego',
-      !weakFullWeary.some(c => c.bezwarunkowy === true), weakFullWeary);
+    check('h6b słabsza AI, 100% zmęczenia (40 tur): dokładnie oferuj_miasto_za_pokoj (rodzaj pokoj), bez bezwarunkowego',
+      weakFullWeary.length === 1 && weakFullWeary[0].type === 'oferuj_miasto_za_pokoj' && weakFullWeary[0].rodzaj === 'pokoj'
+      && !weakFullWeary.some(c => c.bezwarunkowy === true), weakFullWeary);
     // h5: silniejsza AI przed końcem zmęczenia (14 tur) nie składa żadnej oferty pokoju/rozejmu ani miasta.
     const strongAi = aiDecide(14, 5000, 6, 200, 100);
     check('h5 silniejsza AI przed końcem zmęczenia (14 tur) nie składa oferty pokoju/rozejmu ani miasta wobec gracza',
       !strongAi.some(c => PEACE_CMDS.has(c.type)), strongAi);
-    // h5b: silniejsza AI na 80% zmęczenia (32 tury) — nie składa pokoju bezwarunkowego ani oferty miasta (wygrywająca).
+    // h5b: silniejsza AI (wygrywająca) na 80% zmęczenia (32 tury) — wynik MUSI być pusty (zero ofert, także pokoju
+    // bezwarunkowego). Czułość: ta sama konfiguracja dla słabszej AI daje pozytywną ofertę miasta (h6, 32 tury),
+    // więc pusta lista dla silniejszej nie jest wynikiem martwego kodu — mutacja „AI zawsze pusta” łamie h6/h6b.
     const strongEndWeary = aiDecide(32, 5000, 6, 200, 100);
-    check('h5b silniejsza AI, 80% zmęczenia (32 tury): brak pokoju bezwarunkowego i brak oferty miasta',
-      !strongEndWeary.some(c => c.bezwarunkowy === true) && !strongEndWeary.some(c => c.type === 'oferuj_miasto_za_pokoj'),
-      strongEndWeary);
+    check('h5b silniejsza AI, 80% zmęczenia (32 tury): pusty wynik (brak pokoju bezwarunkowego i brak oferty miasta)',
+      strongEndWeary.length === 0, strongEndWeary);
 
     console.log('');
     console.log('diplo-peace-weaker-seeks-city-only-test: ' + pass + ' pass / ' + fail + ' fail');

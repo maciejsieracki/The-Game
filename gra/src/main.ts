@@ -38676,7 +38676,10 @@ async function boot(): Promise<void> {
       for (const o of outcomes) {
         if (o.action !== 'forced_peace') continue;
         if (o.winner !== humanOwner && o.loser !== humanOwner) continue;
-        const given = o.plan?.histogram.miasto ?? 0;
+        const cityNames = (o.plan?.items ?? [])
+          .filter(i => i.kind === 'miasto')
+          .map(i => cities.find(c => c.id === i.id)?.name ?? i.id);
+        const given = cityNames.length;
         const humanIsLoser = o.loser === humanOwner;
         const other = humanIsLoser ? o.winner! : o.loser!;
         const who = ownerDiploLabel(other);
@@ -38693,7 +38696,7 @@ async function boot(): Promise<void> {
           trimWarEventLog();
           refreshD1bHud();
         }
-        showForcedPeaceModal({ otherName: who, humanIsLoser, cities: given });
+        showForcedPeaceModal({ otherName: who, humanIsLoser, cityNames });
       }
     }
 

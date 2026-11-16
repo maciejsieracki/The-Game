@@ -54,6 +54,7 @@ import {
   RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON,
 } from '../game/diplomacy-proposals';
 import type { ProposalPayload } from '../game/diplomacy-proposals';
+import { forcedPeaceModalTextPl, type ForcedPeaceTextInput } from '../game/war-weariness-view';
 import {
   audienceActionStatusNote,
   uiActionAllowsMultipleOwnOnTable,
@@ -1211,35 +1212,23 @@ export function showAllianceObligationModal(opts: AllianceObligationModalOptions
   modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) close(); });
 }
 
-export interface ForcedPeaceModalOptions {
-  /** Nazwa drugiej strony pokoju (AI). */
-  otherName: string;
-  /** true = gracz oddaje miasta (przegrywający); false = gracz otrzymuje miasta. */
-  humanIsLoser: boolean;
-  /** Liczba miast przeniesionych w pokoju wymuszonym (0 = pokój bez miast). */
-  cities: number;
-}
+export type ForcedPeaceModalOptions = ForcedPeaceTextInput;
 
 /**
  * DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1 (zarzut Evaluatora 1+2): natywne okno po pokoju wymuszonym
- * (100% zmęczenia wojną z główną AI; dotyczy gracza jako przegrywającego i wygrywającego).
+ * (100% zmęczenia wojną z główną AI; dotyczy gracza jako przegrywającego i wygrywającego). Tekst: forcedPeaceModalTextPl.
  */
 export function showForcedPeaceModal(opts: ForcedPeaceModalOptions): void {
   ensureStyles();
   if (modalOverlay !== null) modalOverlay.remove();
   modalOverlay = document.createElement('div');
   modalOverlay.className = 'civ-diplo-modal-overlay';
-  const cityWord = opts.cities === 1 ? 'miasto' : 'miasta';
-  const terms = opts.cities > 0
-    ? (opts.humanIsLoser
-      ? 'Oddajesz: ' + opts.cities + ' ' + cityWord + '.'
-      : 'Otrzymujesz: ' + opts.cities + ' ' + cityWord + '.')
-    : 'Pokój bez wymiany miast.';
+  const text = forcedPeaceModalTextPl(opts);
   modalOverlay.innerHTML =
     '<div class="civ-diplo-modal cd-war-consent-modal" role="dialog" aria-modal="true">' +
-      '<h3>Pokój wymuszony</h3>' +
-      '<p class="cd-war-lead">Wojna z <strong>' + esc(opts.otherName) + '</strong> osiągnęła 100% zmęczenia.</p>' +
-      '<p>' + esc(terms) + '</p>' +
+      '<h3>' + esc(text.title) + '</h3>' +
+      '<p class="cd-war-lead">' + esc(text.lead) + '</p>' +
+      '<p>' + esc(text.terms) + '</p>' +
       '<div class="cd-modal-btns cd-war-consent-btns">' +
         '<button type="button" class="dip-gold-btn cd-forced-peace-ok">Rozumiem</button>' +
       '</div></div>';
