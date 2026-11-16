@@ -126,10 +126,33 @@ const movesOf = (cmds, id) => cmds.filter(c => c.type === 'move' && c.unitId ===
   {
     const { s, cmds } = runOn(GOOD);
     ok(movesOf(cmds, s.bGarrison.id).length === 0, 'T1: jedyna jednostka w miescie B zostaje garnizonem (brak rozkazu ruchu)');
-    const cMoves = [s.cOne, s.cTwo].map(u => movesOf(cmds, u.id).length);
-    ok(cMoves.filter(n => n === 0).length >= 1,
-      `T2: w miescie C przynajmniej jedna jednostka zostaje garnizonem (liczba rozkazow: ${cMoves.join(',')})`);
+    // T2 (miasto z dwoma ruchliwymi jednostkami): patrz blok T2 nizej (osobny swiat, miasto A).
     ok(movesOf(cmds, s.generalB.id).length >= 1, 'T4: wodz w miescie B nie jest garnizonem (rozkaz ruchu wydany)');
+  }
+
+  // ---- T2: miasto A z DWIEMA ruchliwymi jednostkami -- dokladnie jedna zostaje garnizonem,
+  // druga wychodzi (na bazie obie dostawaly rozkaz ruchu). Wynik: liczba rozkazow per jednostka.
+  {
+    nextUid = 700;
+    const u1 = mk(CITY_A.q, CITY_A.r);
+    const u2 = mk(CITY_A.q, CITY_A.r);
+    const cmds = decide(GOOD, [u1, u2]);
+    const n = [u1, u2].map(u => movesOf(cmds, u.id).length);
+    ok(n.filter(x => x === 0).length === 1 && n.filter(x => x >= 1).length === 1,
+      `T2: w miescie z dwiema jednostkami dokladnie jedna zostaje garnizonem, druga idzie (rozkazow: ${n.join(',')})`);
+  }
+
+  // ---- T6: miasto z jednostka bez ruchu (ruchLeft 0) juz ma garnizon -- obie ruchliwe jednostki
+  // z tego miasta wychodza (na bazie jedna z nich by zostala zatrzymana bez potrzeby).
+  {
+    nextUid = 900;
+    const immobile = mk(CITY_A.q, CITY_A.r, { ruchLeft: 0 });
+    const m1 = mk(CITY_A.q, CITY_A.r);
+    const m2 = mk(CITY_A.q, CITY_A.r);
+    const cmds = decide(GOOD, [immobile, m1, m2]);
+    const n = [m1, m2].map(u => movesOf(cmds, u.id).length);
+    ok(n.every(x => x >= 1),
+      `T6: ruchliwe jednostki w miescie z unieruchomionym obroncą wychodza obie (rozkazow: ${n.join(',')})`);
   }
 
   // ---- T5 determinizm: dwa swieze bundle (osobny stan modulu) daja identyczne komendy ----

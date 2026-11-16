@@ -4714,9 +4714,12 @@ function applyWarAllInCapitalToCommands(
   for (const city of cities.filter(c => c.ownerId === playerId).sort(
     (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
   )) {
-    const stayers = eligible
-      .filter(u => u.q === city.q && u.r === city.r && !keep.has(u.id) && u.isGeneral !== true)
-      .sort(compareIds);
+    const atCity = myUnits.filter(u => u.q === city.q && u.r === city.r && !keep.has(u.id)
+      && !isCivilianUnit(u) && !isScoutUnit(u) && u.isGeneral !== true && u.embarked !== true);
+    // Jednostka bojowa bez pozostalego ruchu (ruchLeft <= 0) i tak zostaje w miescie -- ono juz
+    // ma garnizon; druga jednostka nie jest zatrzymywana bez potrzeby.
+    if (atCity.some(u => u.ruchLeft <= 0)) continue;
+    const stayers = atCity.filter(u => eligibleIds.has(u.id)).sort(compareIds);
     if (stayers.length > 0) garrisonIds.add(stayers[0]!.id);
   }
   let planned = eligible.filter(u => !keep.has(u.id) && !garrisonIds.has(u.id));
