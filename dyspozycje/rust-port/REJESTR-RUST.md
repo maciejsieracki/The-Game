@@ -2854,3 +2854,14 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Krok 3 (sprzątanie):** brak zakończonych tematów od ostatniego sprzątania. Worktree: 9 (integ-r2, integ-rend, wf_8919…-1 zablokowany przez T4b r2, pozostałe trzy aktywne).
 - **Reguła modeli:** Operatorzy Haiku, z wyjątkiem R4 (Opus, 3D). Evaluator i FC Sonnet. Decyzje gameplay zostają w czacie (pytania ABC #358).
 - **Zadania:** 31 zadań dodanych w nocy (#328–#358), najcięższe Opus na początku. Zablokowane: #334, #335, #336, #337 (mgła #253, pętla K5LOOP), #349, #350 (decyzje formatu i wariantu A/B).
+
+### Przebieg — FF parity-v2 R4 (ulepszenia, zasoby, wioski, runda 2), 2026-11-16 ~22:45 UTC
+
+- **FF `parity-v2`: `2edc808d7` → `32c84d6a9`** (kod R4 `aa9d36ac4` z rundy 1, raport Operatora r2 `4d968529b`, raport FC `32c84d6a9`). Ancestry OK. `git diff --stat 2edc808d7..32c84d6a9`: 10 plików, +2125/−0, wszystkie w allowliście. W `lib.rs` jedna linia `pub mod improvements;`. `git diff --check` czysty. Readback `ls-remote`: `32c84d6a91b8`.
+- **Bramka renderera** (drzewo `4d968529b`; `32c84d6a9` dokłada tylko raport): fmt EXIT 0, clippy `-D warnings` EXIT 0, `cargo test --all-targets --no-fail-fast` EXIT 0 (70 zestawów, 577 passed, 0 failed, 0 ignored), `improvements_sync_r4` 12/12. Potwierdzili Operator r2, Evaluator i FC niezależnie.
+- **Werdykty:** Operator PASS (r2), Evaluator PASS-WITH-NOTES, FC PASS-WITH-NOTES.
+- **Mutacje:** a1, a2, b1, b2, b3, c1, c4 dają FAIL. Mutanty równoważne: (c2) usunięcie sprawdzenia `""` i (c3) wyłączenie bramki `!has_nakladka && shown.is_none()`. Zachowanie identyczne z pinem (`zasoby.rs:584-595`, `main.ts:3212-3214`), testy ich nie wymuszają. Akceptacja orkiestratora.
+- **Luki w NIE_ZMIERZONO:** obozy barbarzyńców (DTO nie ma pola). G5 (normalizacja kluczy ulepszeń, fallback `hex.ulepszenie`) przeniesiona do zadania #332. `improvement_key` przenoszony, ale nieczytany w pinie (zweryfikowane `git grep`).
+- **Dysk:** podczas oceny 5,9–6,6 GB; po FF i sprzątaniu 14 GB. Próg 8 GB przed nowymi startami Rust obowiązuje.
+- **Sprzątanie:** usunięte worktree R4 r2 (`wf_92cfa6de-fdf-1`, `-3`; `-2` już nie istniało). Refy keep: `P4-1-R4-fc-32c84d6a9`, `P4-1-R4-op-4d968529b`. Usunięcie targetów w scratchpadzie pominięte: nie zweryfikowano ścieżek, a polecenie `rm` z rozwinięciem zmiennej zostało zablokowane przez zabezpieczenie.
+- **Zadania:** #322 i #329 zamknięte. Kolejna bramka integracyjna renderera (#330) wymaga zmergowania R4 do `integ-rend` (konflikt tylko w `lib.rs`, jedna linia).
