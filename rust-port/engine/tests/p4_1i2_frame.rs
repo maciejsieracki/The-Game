@@ -317,6 +317,13 @@ fn niespojne_wejscie_adaptera_odrzucone() {
         battle_frame(&lp, 0.0, &input(&[4])),
         Err(FrameError::TileHpMissing(2))
     );
+    // Nadmiarowy wiersz u adaptera (kafel 2 zburzony w pętli, adapter nadal ma HP): błąd, nie cicho pominięty.
+    let mut lp_b = new_loop(&[2, 4], &[2, 4], true);
+    lp_b.breach_wall_row(2);
+    assert_eq!(
+        battle_frame(&lp_b, 0.0, &input(&[2, 4])),
+        Err(FrameError::TileHpStale(2))
+    );
     // Id ponad 2^53 - 1.
     let mut lp2 = new_loop(&[2, 4], &[2, 4], true);
     lp2.st.atk[0].id = 1_u64 << 53;

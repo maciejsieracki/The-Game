@@ -56,7 +56,8 @@ pub struct FrameInput {
     /// Pozy jednostek: `[0]` atakujący (równolegle do `st.atk`), `[1]` obrońcy (równolegle do `st.def`).
     pub poses: [Vec<FrameUnitPose>; 2],
     /// Stan muru adaptera: HP kafli (`wallTileHp`), `gateHp`, `gateOpen`. Zbiór żywych wierszy i
-    /// `wallEverBreached` bierze producent z pętli.
+    /// `wallEverBreached` bierze producent z pętli; klucze `wall_tile_hp` muszą być równe temu zbiorowi
+    /// ([`FrameError::TileHpMissing`], [`FrameError::TileHpStale`]).
     pub wall: WallState,
 }
 
@@ -78,6 +79,10 @@ pub enum FrameError {
     Row(i64),
     /// Żywy kafel pętli bez HP w stanie muru adaptera.
     TileHpMissing(i64),
+    /// HP kafla u adaptera dla wiersza, którego pętla nie ma wśród żywych kafli (np. kafel zburzony w pętli przez
+    /// [`SiegeLoop::breach_wall_row`], a adapter nie wykonał `wallTileHp.delete`, pin `:7646`). Stanem nadrzędnym
+    /// dla zbioru żywych kafli jest pętla; niezgodność zbiorów jest błędem, nie jest pomijana.
+    TileHpStale(i32),
     /// Ramka nie spełnia [`BattleFrameDto::validate`] (np. `NaN`, `-Infinity` w amunicji).
     Invalid(ViewError),
 }
@@ -150,6 +155,16 @@ pub fn battle_frame<B: LoopBody>(
             .ok_or(FrameError::TileHpMissing(row))?;
         tile_hp.push(BattleWallTileHpDto { row: r, hp });
     }
+    // Zbiór żywych kafli: nadrzędna jest pętla (`wall_tile_rows`), adapter podaje tylko HP. Nadmiarowy wiersz u
+    // adaptera = niezgodność stanu (zarzut 4 Evaluatora r1), a nie cicho pominięty kafel.
+    if let Some(&stale) = input
+        .wall
+        .wall_tile_hp
+        .keys()
+        .find(|&&r| !tile_hp.iter().any(|t| t.row == r))
+    {
+        return Err(FrameError::TileHpStale(stale));
+    }
     let towers_destroyed = lp
         .towers_destroyed_rows()
         .into_iter()
@@ -185,9 +200,11 @@ where
 {
     let log: FrameLog = Rc::new(RefCell::new(Vec::new()));
     let sink = Rc::clone(&log);
-    lp.set_fire_observer(Some(Box::new(move |lp: &SiegeLoop<B>, v_now: f64| {
-        let input = input_of(lp);
-        sink.borrow_mut().push(battle_frame(lp, v_now, &input));
-    })));
+    lp.set_fire_observer(Some(Box::new(
+        move |lp: &SiegeLoop<B>, v_now: f64, _timer| {
+            let input = input_of(lp);
+            sink.borrow_mut().push(battle_frame(lp, v_now, &input));
+        },
+    )));
     log
 }

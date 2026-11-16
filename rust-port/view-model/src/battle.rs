@@ -425,6 +425,9 @@ impl BattleFrameDto {
             if v >= 0.0 {
                 return Ok(());
             }
+            // `floor`, not `trunc`: for a finite `v < 0`, `floor(v) <= -1 < min`, so the reported
+            // `value` itself lies outside `min..=max` (`trunc(-0.5)` = 0 would look in range). Same
+            // convention as `survivors[i].hp` above (`ceil` for the `min = 1` bound).
             #[allow(clippy::cast_possible_truncation)]
             let value = v.floor() as i64;
             Err(ViewError::OutOfRange {
@@ -434,6 +437,9 @@ impl BattleFrameDto {
                 max: i64::MAX,
             })
         }
+        // Duplicates are reported as `LengthMismatch { expected: distinct, actual: len }` with a
+        // `(unique …)` field, the convention already used by `BattleOutcomeDto::validate`
+        // (`attackerUnitIds (unique)`); `ViewError` lives in `validate.rs`, outside this topic.
         fn unique(field: &str, distinct: usize, actual: usize) -> Result<(), ViewError> {
             if distinct == actual {
                 return Ok(());

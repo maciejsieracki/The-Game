@@ -482,8 +482,16 @@ pub struct SiegeLoop<B: LoopBody> {
     fire_observer: Option<FireObserver<B>>,
 }
 
-/// Obserwator odpaleń zegara pętli (P4-1I2): dostaje stan pętli (tylko odczyt) i `vNow` po kroku.
-pub type FireObserver<B> = Box<dyn FnMut(&SiegeLoop<B>, f64)>;
+/// Obserwator odpaleń zegara pętli (P4-1I2): dostaje stan pętli PO kroku (tylko odczyt), `vNow` i odpalony
+/// klocek. Wołany dokładnie raz na każde odpalenie: z kolejki (`_drainTimers`) i synchroniczne
+/// ([`ScheduleOutcome::RunNow`], planowanie AUTO).
+///
+/// Kolejność przy zagnieżdżeniu: odpalenie `RunNow` wykonuje się wewnątrz `apply` odpalenia zewnętrznego
+/// (web: callback `_schedule` wołany synchronicznie, `battleScene.ts:9595-9606`), a obserwator odpalenia
+/// zewnętrznego jest wołany po zakończeniu jego `apply`. Ramka zagnieżdżonego odpalenia poprzedza więc ramkę
+/// odpalenia zewnętrznego (to samo `vNow`); ramka zewnętrzna pokazuje stan po obu krokach. Pokryte testem
+/// `p4_1i2_frame::ramka_po_kazdym_odpaleniu_stan_po_kroku`.
+pub type FireObserver<B> = Box<dyn FnMut(&SiegeLoop<B>, f64, LoopTimer)>;
 
 impl<B: LoopBody> SiegeLoop<B> {
     pub fn new(st: TurnSeqState, env: SiegeEnv<B>) -> Self {
@@ -540,6 +548,12 @@ impl<B: LoopBody> SiegeLoop<B> {
     /// `wallTileHp.delete(wallRow)` (`:7646`, tu: usunięcie wiersza z [`SiegeEnv::wall_tile_rows`]),
     /// `wallEverBreached = true` (`:7647`) i `_destroyTowerAtRow(wallRow)` (`:7648`). Kafel terenu, etykieta,
     /// gruz, odwrót obrońców i morale (`:7643-7645`, `:7649-7750`) są poza tym sterownikiem (recon L3).
+    ///
+    /// Wymóg dla wpięcia produkcyjnego (#113 K5LOOP-WIRING): (1) każdy wyłom w bitwie musi iść przez tę metodę
+    /// w chwili wyłomu — inaczej flaga wieży (`:7648`) powstanie dopiero przy kolejnym `_fireSiegeTowers`
+    /// (`:4216`), z opóźnieniem względem pinu; (2) strażnik `if (!tiles) return;` (`:7639-7640`, brak mapy
+    /// terenu bitwy) należy do wołającego: gdy mapy terenu nie ma, metody nie wolno wołać (web nie usuwa wtedy
+    /// kafla, nie ustawia `wallEverBreached` i nie burzy wieży). Pętla nie ma mapy terenu, więc strażnika tu nie ma.
     pub fn breach_wall_row(&mut self, row: i64) {
         self.env.wall_tile_rows.retain(|&r| r != row);
         self.env.wall_ever_breached = true;
@@ -697,8 +711,9 @@ impl<B: LoopBody> SiegeLoop<B> {
         }
         self.apply(clock, out);
         // P4-1I2: ramka po każdym odpaleniu (tylko odczyt). `take` pozwala przekazać `&self` obserwatorowi.
+        // Kolejność przy zagnieżdżonym `RunNow`: zob. [`FireObserver`].
         if let Some(mut obs) = self.fire_observer.take() {
-            obs(self, clock.v_now);
+            obs(self, clock.v_now, timer);
             self.fire_observer = Some(obs);
         }
     }
