@@ -56,3 +56,14 @@ WZÓR: moduł T4a — `rust-port/engine/src/domain/siege_tactics_pathstep.rs` i 
   4. **Pełne bramki** w `rust-port/engine`: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --all-targets --no-fail-fast`, każda EXIT 0 (zapisz kody). Sprawdź `df -h /` przed bramkami (≥ 8 GB).
   5. **Mutacje** (a) nierównoważny, (b), (c): wszystkie FAIL, z wynikami.
   6. Raport `01-operator-r2.md` w run dir. Commit jawnym `git add` (bez `Cargo.lock`, bez `-A`, bez nazwy modelu w trailerach). Bez push do parity.
+
+## DODATEK r3 — POPRAWKA POKRYCIA GRANIC (po FAIL Ewaluatora rundy 2; BAZA NADPISANA)
+
+- Runda 2 (Operator PASS-WITH-NOTES, pełny test 3788 passed na `761768677`), Ewaluator FAIL, zarzut 1 [BLOKUJĄCY]: granice planszy w `best_kite_shot_step` nie mają pokrycia. Mutanty `in_bounds` (kolumny `0..BF_COLS+1`, wiersze `0..BF_ROWS+1`, dolna granica wiersza `0`→`-1`) przechodzą wszystkie testy.
+- BAZA (jedyna obowiązująca): `761768677` (commit Operatora rundy 2; ref keep `refs/keep/T5a-r2-op-761768677`, gałąź `rust-port-wip/R-RUSTPORT-P6-K5DOC-T5A-KITE-r2`). Kodu NIE przepisuj.
+- Zadanie:
+  1. Dodaj nazwane wektory w generatorze i teście dla: `nc < 0`, `nc >= BF_COLS` (kafelek w kolumnie 67), `nr >= BF_ROWS` (wiersz `BF_ROWS-1`), `nr < 0` (wiersz 0). W każdym wektorze kandydat poza planszą ma być jedynym lub najlepszym krokiem; wyniki oczekiwane z pinu (`battleScene.ts`, `_bestKiteShotStep`, ok. 6959–7002, granice 661–662).
+  2. Mutanty G (`BF_COLS`→`BF_COLS+1`), H (`BF_ROWS`→`BF_ROWS+1`), I (`0`→`-1` dla wiersza) muszą dać FAIL. Wyniki w raporcie.
+  3. Bramki: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --all-targets --no-fail-fast` — EXIT 0 z liczbami. `df -h /` ≥ 8 GB.
+  4. Raport `02-operator-r3.md`, commit (jawny `git add`, bez `Cargo.lock`, bez nazwy modelu). NIE pushuj do parity.
+  5. Notatka 2 Ewaluatora (duplikaty helperów `doctrine_*`) — nie blokuje, odnotuj w raporcie.

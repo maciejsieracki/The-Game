@@ -59,3 +59,10 @@ WZÓR: moduł T4a/T5a — `rust-port/engine/src/domain/siege_tactics_pathstep.rs
   3. `cargo test --all-targets --no-fail-fast` — PEŁNY test, EXIT 0, z liczbami (suites, passed, failed, ignored). Limit czasu 2 h; jeśli zawiesi się na `p6_8i_pick`, zapisz dokładny przebieg i czas, nie omijaj.
   4. `cargo test --test p6_k5doc_cavalry` — 10/10.
 - Raport `02-operator-r2.md` w run dir z kodami wyjścia. Commit tylko raportu (jawny `git add`, bez `Cargo.lock`, bez nazwy modelu). Nic nie pushuj do parity; nie dotykaj kodu.
+
+## DODATEK r3 — TYLKO PEŁNA BRAMKA (po restarcie kontenera; BAZA NADPISANA)
+
+- Poprzednia runda integracyjna została przerwana restartem. Zrobiono fmt, clippy i `p6_k5doc_cavalry` 10/10 na `87829df94`; pełny test nie zakończył się.
+- BAZA (jedyna obowiązująca): `87829df94`. Worktree detached. Kodu NIE zmieniaj.
+- Zadanie: `cargo test --all-targets --no-fail-fast` w `rust-port/engine` — pełny, EXIT 0 z liczbami (suites, passed, failed, ignored). `df -h /` ≥ 8 GB przed bramką. Limit czasu 2 h.
+- Raport `02-operator-r3.md`, commit tylko raportu (jawny `git add`, bez `Cargo.lock`, bez nazwy modelu). NIE pushuj do parity.

@@ -57,3 +57,9 @@ ROZPOZNANIE: `git show origin/claude/rust-sivvrn:dyspozycje/rust-port/p6/K5DOC-T
   2. `git diff --stat 32c84d6a9 <merge>` musi pokazać tylko pliki T4b (siege_tactics_advance.rs, mod.rs +1 linia, p6_k5doc_t4b*, vectors.json, mutacje.py, raport). Inaczej BLOCK.
   3. Bramka na drzewie merge, `df -h /` ≥ 8 GB: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --all-targets --no-fail-fast` — EXIT 0, z liczbami.
   4. Raport `03-integracja-r3.md` w run dir, commit tylko raportu (`git add` jawny, bez `Cargo.lock`, bez nazwy modelu). NIE pushuj do parity.
+
+## DODATEK r4 — BRAMKA NA MERGE (po restarcie kontenera; BAZA NADPISANA)
+
+- Merge `3d016a5ae` (= `32c84d6a9` + `d1dfff126`) już istnieje; rodzice sprawdzone. Worktree detached na `3d016a5ae`.
+- Zadanie: WYŁĄCZNIE bramka na tym drzewie, bez zmian w kodzie i bez nowego merge: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --all-targets --no-fail-fast` w `rust-port/engine` — EXIT 0 z liczbami. `df -h /` ≥ 8 GB przed bramką.
+- Raport `03-integracja-r4.md` w run dir, commit tylko raportu (jawny `git add`, bez `Cargo.lock`, bez nazwy modelu). NIE pushuj do parity.
