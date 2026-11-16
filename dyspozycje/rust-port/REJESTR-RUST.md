@@ -2354,3 +2354,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 - **Sloty: 3 z 4.** K5DOC-T0 (`wf_a3de76ac-91a`, Obrona), EXEC-T1-QUEUE (`wf_acc61d3f-1fa`), EXEC-T2-MOVE-GATE (`wf_479bcc22-c55`). Czwarty slot wolny: kolejne tematy portu zależą od T0 (T2', T5a, T6, T4), od EXEC-T2 (DOC-T4), od #179/#148 (H2) lub są do decyzji właściciela (ZŁOŻA #104, R7K7C #106, ZDOBYCIE #115, CRED #120). Nie dokładam tematu bez zależności.
 - **Taski:** #265 zamknięty; #255, #266, #267 w toku.
 - **Dysk:** 14 GB wolnego.
+
+## Przebieg (07:21 UTC — heartbeat: sprzątanie dysku 2,8 → 6,7 GB; 3/4 slotów)
+
+- **Sloty 3/4:** K5DOC-T0 (`wf_a3de76ac-91a`, FC w toku — run 3 wyników, Sonnet), EXEC-T1-QUEUE (`wf_acc61d3f-1fa`, Operator, Haiku), EXEC-T2-MOVE-GATE (`wf_479bcc22-c55`, Operator, Haiku). Brak FC PASS do integracji w tym ticku.
+- **Dysk krytyczny (2,8 GB < próg 4 GB):** usunięto cztery czyste worktree zakończonego rozpoznania H (`wf_d8a3e31a-461-1..4`, ok. 2 GB). HEAD-y zabezpieczone: `refs/keep/cleanup-H-MANUAL-wt1..4` (`3589700dd`, `70f75431f`, `326c88889`, `5c900cdf9`). **Dysk: 6,7 GB.**
+- **Nie usuwane (aktywne cache cargo):** `scratchpad/tgt-exec-t1` (3,2 GB, EXEC-T1), `scratchpad/tgt-t2` (3,2 GB, EXEC-T2), `/tmp/claude-0/fc-t0-target` (3,2 GB, T0). Po FC T0 i zakończeniu EXEC-T1/T2 — usunąć (kandydaci do sprzątania w następnym ticku).
+- **Nie usuwane (decyzja właściciela):** `/tmp/claude-0/ev9f1` (1,2 GB).
+- **Parity:** `f38675a8` (docs-only H). Gałąź `claude/rust-sivvrn`.
