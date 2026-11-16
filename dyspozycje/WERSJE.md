@@ -1,3 +1,9 @@
+## ROBOCZA bbbecbee -- 2026-11-14 -- FALA 761: wczytanie zapisu odtwarza flage pierwszego miasta gracza (Zakoncz ture przy 0 miast) (testowa)
+
+- main.ts +19: playerEverOwnedCityByOwner zapisywane w meta (gdy niepuste) i odtwarzane po wczytaniu; test live Chromium: po wczytaniu przy 0 miast Zakoncz ture dziala (baza: timeout); test save-load-player-owned-city z mutacjami; #432 zmierzone live (dziennik Skad zapasy 3->0 po wczytaniu w nowej stronie) - defekt trwalosci, niezlatany.
+- Weryfikacja: FC PASS-WITH-NOTES 6e38f9388; tsc 0, logic 213/213, player-owned-city PASS, load-game-regression 34/0, ledger-save-history 15/0, vite OK, MD5 Raw
+- Limity: #432 przyczyna niezmierzona (osobny temat); test live #433 nie jest bramka package.json
+
 ## ROBOCZA 838d10eb -- 2026-11-14 -- FALA 760: zapis i wczytanie daja ten sam stan co przebieg ciagly (dryf stanu) (testowa)
 
 - Poprawka main.ts +47: zapisywane i odtwarzane nnsAiOverrides oraz mnozniki Porzadku (orderMult/growthMult/orderValue); resume-test 10/10 (seedy 4242, 777, 31337) zamiast 0/3; test regresji save-load-roundtrip-state-drift-test + mutacje; runner normalizuje stackGroupId.
