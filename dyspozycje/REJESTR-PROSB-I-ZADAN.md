@@ -10556,3 +10556,6 @@ EVENTS (FC 18eb1a384, PASS-WITH-NOTES): po zajęciu miasta gracz nie dostaje wpi
 
 ### GARRISON r2 → FC FAIL (2026-11-17 noc) — runda 3 (Operator SONNET po 2 nieudanych rundach Haiku)
 r2 (Haiku): BLOCK bez kodu — puste miasta AI nadal nie uzupełniane, Faza 1 niezmierzona. Uzasadnienie Sonneta (ZASADA MODELI): dwie nieudane rundy Haiku tego samego tematu; r3 ma obowiązkową rekrutację garnizonu (main.ts punktowo) + pomiar Fazy 1 w Node. Baza `235ad7b4d`.
+
+### FALA 783 (2026-11-17) — WDROŻONE na ROBOCZĄ: zmęczenie wojną 40 tur + pokój wymuszony przy 100%
+WEARY40 (FC b23fc3ad3, PASS-WITH-NOTES): pełne zmęczenie po 40 turach, 80% = oferta, 100% = pokój wymuszony z miastami przegrywającego (gracz też: okno + „Ważne”), panel dyplomacji z etapami 50/80/100% i „za ile tur”, migracja zapisów, Civpedia. ROBOCZA 53a9463a, main 64069b1a2, raw MD5 = manifest, 3 sidecary OK. NIE ZMIERZONO: symulacja ≥3 ziarna × 150 tur, żywy Chromium, test wiringu gracza w main.ts. **CZEKA NA RANO:** waga miasta 10% przy 40 turach, „nigdy stolica / min. 3 miasta”, pokój AI↔AI przy cenie 0. Dług Rust: REPIN (pelneTur 40, progWymuszonyPokoj, forced_peace). Następny temat pomiarowy: R-WEB-DIPLO-WEARY40-SIM-MEASURE (Node, ≥3×150 tur).
