@@ -74,6 +74,7 @@ pub mod mapgen;
 pub mod okolica;
 pub mod order_effects_culture;
 pub mod order_effects_lane;
+pub mod overlays_view;
 pub mod pathfinding;
 pub mod playable;
 pub mod playable_movement;

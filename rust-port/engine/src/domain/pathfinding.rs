@@ -1269,6 +1269,90 @@ pub mod ruch_jednostek {
         trim_end_off_pass_through(segment.to_vec(), full_length, &occ.pass_through)
     }
 
+    /// Web `computeReachable(unit, map, occ, costFn)` z `MoveOccupancy` @07d2fbd72
+    /// (`setup.ts:840-975`, `computeReachableImpl`), R-RUSTPORT-P4-1F5: jak [`compute_reachable`],
+    /// a dodatkowo:
+    /// - heks z `occ.pass_through` (WLASNA jednostka) jest przechodni: Dijkstra przez niego idzie
+    ///   (`heapPush`), ale NIE trafia do zasiegu (`setup.ts:948-949`: `if (!passThroughKeys.has(nKey))
+    ///   reachable.add(nKey)`), takze w regule MIN-MOVE (`setup.ts:965`);
+    /// - `siege` = web `siegeBlocksEntry(unit, nq, nr)` (`setup.ts:939`, `:965`); `None` = brak
+    ///   blokera (web `siegeEntryBlocker === null`).
+    ///
+    /// Blokada wejscia = `occ.blocked` (web `occupied.has`, `setup.ts:936`). Kolejnosc wyniku =
+    /// kolejnosc wstawiania web `Set`.
+    pub fn compute_reachable_occ(
+        unit: &RuchJednostka,
+        map: &RuchMapa,
+        occ: &MoveOccupancy,
+        siege: Option<&SiegeEntryFn<'_>>,
+        cost_fn: Option<&CostFn<'_>>,
+    ) -> OrderedHexSet {
+        let mut reachable = OrderedHexSet::new();
+        let start = (unit.q, unit.r);
+        let budget = unit.ruch_left;
+        let blocks_entry = |q: i32, r: i32| siege.is_some_and(|f| f(unit, q, r));
+        let mut dist: HashMap<Klucz, f64> = HashMap::new();
+        dist.insert(start, 0.0);
+        let mut heap: Vec<Entry> = vec![(0.0, unit.q, unit.r)];
+
+        while let Some((cost, cq, cr)) = heap_pop(&mut heap) {
+            if let Some(best) = dist.get(&(cq, cr)) {
+                if cost > *best {
+                    continue;
+                }
+            }
+            for (dq, dr) in neighbours() {
+                let (nq, nr) = (cq + dq, cr + dr);
+                let Some(hex) = map.get((nq, nr)) else {
+                    continue;
+                };
+                let mov_cost = cost_of(cost_fn, hex);
+                if mov_cost == f64::INFINITY {
+                    continue;
+                }
+                if occ.blocked.contains(&(nq, nr)) {
+                    continue;
+                }
+                if blocks_entry(nq, nr) {
+                    continue;
+                }
+                let new_cost = cost + mov_cost;
+                if new_cost <= budget {
+                    let better = match dist.get(&(nq, nr)) {
+                        None => true,
+                        Some(prev) => new_cost < *prev,
+                    };
+                    if better {
+                        dist.insert((nq, nr), new_cost);
+                        if !occ.pass_through.contains(&(nq, nr)) {
+                            reachable.insert((nq, nr));
+                        }
+                        heap_push(&mut heap, (new_cost, nq, nr));
+                    }
+                }
+            }
+        }
+
+        if budget >= ruch_jednostek_params().marsz.min_budzet_kroku {
+            for (dq, dr) in neighbours() {
+                let key = (unit.q + dq, unit.r + dr);
+                let Some(hex) = map.get(key) else {
+                    continue;
+                };
+                let mov_cost = cost_of(cost_fn, hex);
+                if mov_cost != f64::INFINITY
+                    && !occ.blocked.contains(&key)
+                    && !occ.pass_through.contains(&key)
+                    && !blocks_entry(key.0, key.1)
+                {
+                    reachable.insert(key);
+                }
+            }
+        }
+        reachable.remove(start);
+        reachable
+    }
+
     /// Web `computePath` (`setup.ts:884`): trasa PO starcie, konczaca sie na celu; `[]` gdy cel
     /// = start lub nieosiagalny. Cel nieprzejezdny / zajety jest dozwolony jako ostatni krok.
     /// Bez blokady oblezenia (web `siegeEntryBlocker === null`); z blokada:
