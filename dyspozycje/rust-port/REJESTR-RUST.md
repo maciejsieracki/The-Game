@@ -2206,3 +2206,9 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
   - **Proponowana kolejność (obrona):** T1 EXEC-QUEUE, T2 MOVE-GATE, T3 ATTACK-PRIMITIVES, T4 MOVE-ORDER, T5 ATTACK-ORDER, T6 SIEGE-MANUAL, T7 DOCTRINE, T8 WIRING. Uwaga: gałąź `move` `_performPlayerOrder` woła `_adjacentEnemy` i `_doAttack` → T3/T4 przed T5, zgodnie z tą kolejnością. **Do decyzji orkiestratora** (zmiana kontraktu `ActivateOps` dotyka `siege_tactics_activate.rs`).
 - **Sloty:** operator `P4-1H MOVE-Q6` (`wf_b1e51033-24c`, Opus) — jedyny aktywny. Dwa rozpoznania zakończone.
 - **Dysk:** 16 GB.
+
+## Przebieg (04:2x UTC — heartbeat slotów: 3 z 4 — start dwóch rozpoznań tylko do odczytu)
+
+- **Start (ROZP, odczyt):** `R-RUSTPORT-P6-TERRAIN-MULT-PRODUKCJA-ROZP-Q1` (`wf_7d64cefe-7a1`) — która kopia `terrain_river_attack_multiplier` jest na ścieżce produkcyjnej (`siege_tactics_blow_full.rs:245`) i czy różni się od pina; `R-RUSTPORT-P6-RENDERER-PIN-ZGODNOSC-ROZP-Q1` (`wf_d9201240-c60`) — czy `renderer/src/battle/orders.rs` cytuje pin `edb8fb56` zamiast `07d2fbd72`. Dispatche `13d72ec5f` na `claude/rust-sivvrn`, baza `de88d9d55`.
+- **Sloty:** 3 z 4 — P4-1H MOVE-Q6 (`wf_b1e51033-24c`, obrona, Opus), dwa rozpoznania (Haiku/Sonnet). Czwarty wolny — brak odblokowanego tematu kodu bez decyzji (kontrakt `ActivateOps`, łączenie #135 z RESOLVE-PAIR — do decyzji orkiestratora).
+- **Dysk:** 14 GB.
