@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "f619cd31d70d2f3a11a6f249787ff972",
-  "bundleSha256": "3d87536e7e5efcc4620d359b7b622d6f426df13e308b1abd2b16ba8e506b6dab",
-  "bundleBytes": 14805103,
+  "bundleMd5": "8e83eab3cc32218e501aced0870462e8",
+  "bundleSha256": "78e74ef7240b3226e3a26f0c6e89c7e25df8423413b529560ed0abeb1568cfc4",
+  "bundleBytes": 14806500,
   "sourceSnapshot": {
-    "source": "FC 6968ff1c1 (END-TURN-HINT-DIPLO-AUDIENCE-TEXT-Q1 r2) na origin/main FALA 765",
+    "source": "FC fe5df28d1 (BATTLE-COLLISION-ARBITRATION-MANUAL-UNSELECTED-Q1 r1) na origin/main FALA 766",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 766: podpowiedz przy zablokowanym Zakoncz ture mowi o otwartej audiencji dyplomatycznej, panelu laczenia armii lub karcie odkrycia technologii zamiast mylacego Zakoncz ekran bitwy; blokada bez zmian"
+    "FALA 767: w bitwie recznej pola sporne miedzy jednostkami niewybranymi przez gracza rozstrzygane jak w AUTO (piechota pierwsza, lucznik ustepuje, ten sam typ mniejsze ID); rozkazy wybranych jednostek bez zmian"
   ],
   "verification": [
-    "tsc 0, 5 bram. ref. zielone, test tematu 16/0 + mutacja, end-turn-block-event 35/0, endturn-battle-deadlock 38/0, koniec-tury-f1-f4 39/0"
+    "tsc 0, test tematu + mutacja czerwona, testy FALI 764 zielone, AUTO bit-w-bit ziarna 1-3 (male armie), 5 bram. ref. zielone, Chromium 3 przebiegi 0 bledow"
   ],
   "limits": [
-    "render w Chromium NIE ZMIERZONO; modal pierwszy takze przy innej przyczynie blokady; exec-test 42/7 = dlug bazowy"
+    "pelne armie 8 vs 12 oraz zywa kolizja z ustapieniem lucznika NIE ZMIERZONO; ustapienie udowodnione testem scenowym"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES END-TURN-HINT-DIPLO-AUDIENCE-TEXT-Q1 r2 (kandydat 6f27b5f28, FC 6968ff1c1): podpowiedz blokady Zakoncz ture pokazuje komunikat otwartego modala (audiencja dyplomatyczna / panel laczenia armii / karta odkrycia technologii) przed Zakoncz ekran bitwy; logika blokady bez zmian. tsc 0, 5 bramek zielonych, test tematu 16/0 z mutacja, endturn-battle-deadlock-exec 42/7 = baza. Noty: modal pierwszy takze gdy blokuje inna przyczyna (zgodnie z dispatchem); render w Chromium NIE ZMIERZONO."
+    "notes": "FC PASS-WITH-NOTES BATTLE-COLLISION-ARBITRATION-MANUAL-UNSELECTED-Q1 r1 (kandydat 76e1c5cfe, FC fe5df28d1): w bitwie recznej pola sporne miedzy jednostkami NIEWYBRANYMI przez gracza rozstrzyga ta sama regula co w AUTO (piechota pierwsza, lucznik ustepuje, ten sam typ mniejsze ID); rozkazy wybranych bez zmian. tsc 0, test tematu passed + mutacja czerwona, testy FALI 764 passed, AUTO bit-w-bit baza==kandydat na ziarnach 1-3 (male armie 2+2), 5 bramek zielonych, Chromium 3 przebiegi 0 bledow. Noty: pelne armie 8 vs 12 NIE ZMIERZONO (timeout), realnej kolizji z ustapieniem lucznika w zywej scenie NIE ZMIERZONO (ustapienie udowodnione testem scenowym S1)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T12:37:33",
+  "hubGeneratedAt": "2026-11-16T12:40:05",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "f619cd31d70d2f3a11a6f249787ff972",
-      "sizeBytes": 14805103
+      "md5": "8e83eab3cc32218e501aced0870462e8",
+      "sizeBytes": 14806500
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "f619cd31d70d2f3a11a6f249787ff972",
-      "sizeBytes": 14805103
+      "md5": "8e83eab3cc32218e501aced0870462e8",
+      "sizeBytes": 14806500
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "f619cd31d70d2f3a11a6f249787ff972",
-      "sizeBytes": 14805103
+      "md5": "8e83eab3cc32218e501aced0870462e8",
+      "sizeBytes": 14806500
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "f619cd31d70d2f3a11a6f249787ff972",
-      "sizeBytes": 14805103
+      "md5": "8e83eab3cc32218e501aced0870462e8",
+      "sizeBytes": 14806500
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "f619cd31d70d2f3a11a6f249787ff972",
-      "sizeBytes": 14805103
+      "md5": "8e83eab3cc32218e501aced0870462e8",
+      "sizeBytes": 14806500
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "f619cd31d70d2f3a11a6f249787ff972",
-      "sizeBytes": 14805103
+      "md5": "8e83eab3cc32218e501aced0870462e8",
+      "sizeBytes": 14806500
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "f619cd31d70d2f3a11a6f249787ff972",
-      "sizeBytes": 14805103
+      "md5": "8e83eab3cc32218e501aced0870462e8",
+      "sizeBytes": 14806500
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "f619cd31d70d2f3a11a6f249787ff972",
-      "sizeBytes": 14805103
+      "md5": "8e83eab3cc32218e501aced0870462e8",
+      "sizeBytes": 14806500
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "f619cd31d70d2f3a11a6f249787ff972",
-      "sizeBytes": 14805103
+      "md5": "8e83eab3cc32218e501aced0870462e8",
+      "sizeBytes": 14806500
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "f619cd31d70d2f3a11a6f249787ff972",
-      "sizeBytes": 14805103
+      "md5": "8e83eab3cc32218e501aced0870462e8",
+      "sizeBytes": 14806500
     }
   ],
-  "md5": "f619cd31d70d2f3a11a6f249787ff972",
+  "md5": "8e83eab3cc32218e501aced0870462e8",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

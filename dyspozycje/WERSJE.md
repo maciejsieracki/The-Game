@@ -1,3 +1,9 @@
+## ROBOCZA 8e83eab3 -- 2026-11-14 -- FALA 767: Bitwa reczna: arbitraz kolizji takze dla jednostek niewybranych (testowa)
+
+- w bitwie recznej pola sporne miedzy jednostkami niewybranymi przez gracza rozstrzygane jak w AUTO (piechota pierwsza, lucznik ustepuje, ten sam typ mniejsze ID); rozkazy wybranych jednostek bez zmian
+- Weryfikacja: tsc 0, test tematu + mutacja czerwona, testy FALI 764 zielone, AUTO bit-w-bit ziarna 1-3 (male armie), 5 bram. ref. zielone, Chromium 3 przebiegi 0 bledow
+- Limity: pelne armie 8 vs 12 oraz zywa kolizja z ustapieniem lucznika NIE ZMIERZONO; ustapienie udowodnione testem scenowym
+
 ## ROBOCZA f619cd31 -- 2026-11-14 -- FALA 766: Podpowiedz Zakoncz ture przy otwartej audiencji dyplomatycznej (testowa)
 
 - podpowiedz przy zablokowanym Zakoncz ture mowi o otwartej audiencji dyplomatycznej, panelu laczenia armii lub karcie odkrycia technologii zamiast mylacego Zakoncz ekran bitwy; blokada bez zmian
