@@ -2436,3 +2436,11 @@ Do czasu odpowiedzi klocki R7-K1/K2/K3/K4/K5/K6 NIE startują; klocki niezależn
 **Zablokowane:** PRIO-3D-10 F2 territory ranges (#278, #239) i PRIO-3D-11 L1/L2 (#279, #254) — decyzja mgły dla fotela ≠ 0 (#253, rekomendacja C). PRIO-3D-12 I5 akcje oblężnicze (#280, #249) — pętla K5LOOP #107/#109/#112/#113.
 
 **Uwaga:** start Opusa na kodzie Rust wymaga ≥8 GB wolnego miejsca (CLAUDE.md, zasada 5). Dysk 7,3 GB — pierwsze starty po zwolnieniu miejsca lub po zakończeniu T1/T3.
+
+### Przebieg — start dwóch tematów 3D (Opus), 2026-11-16
+
+- **P4-1F3 SIEGE-WONDER-VIEW (#271/#240)** — start Workflow `wf_e659c069-e97`; dispatch `bd476dbdb` (`dyspozycje/autobot/runs/R-RUSTPORT-P4-1F3-SIEGE-WONDER-VIEW/00-dispatch.md`); baza parity `585bb48e0` (zawiera 1F1 `8ecf01c2c`). Etap: Operator. Model: OPUS we wszystkich rolach.
+- **P4-1I2 BATTLE-FRAME (#275/#246)** — start Workflow `wf_9ebab86f-5b4`; dispatch `bd476dbdb` (`dyspozycje/autobot/runs/R-RUSTPORT-P4-1I2-BATTLE-FRAME/00-dispatch.md`); baza parity `585bb48e0` (zawiera I1 `05e4df502` i I1B `474487792`). Etap: Operator. Model: OPUS we wszystkich rolach.
+- **Sprzątanie dysku:** worktree T2 `wf_1c92bca8-2d5-4` (HEAD `03dfa64c2`, FC PASS-WITH-NOTES, brudny tylko `Cargo.lock`) usunięty; HEAD zabezpieczony lokalnie jako `refs/keep/cleanup-T2-wt4`. **Push tego refa nieudany** (HTTP 403 z proxy przy wysyłce ~91 tys. obiektów; zgodnie z dokumentacją proxy nie obchodzę polityki). Commit `03dfa64c2` istnieje tylko lokalnie — do ponowienia przy dostępnym transferze.
+- Wolne miejsce na `/`: 12 GB przed startem (próg 8 GB dla tematów Rust spełniony).
+- Zablokowane bez zmian: P4-1F2 (#278) i P4-1 L1/L2 (#279) — decyzja mgły #253; P4-1I5 (#280) — pętla oblężnicza K5LOOP.
