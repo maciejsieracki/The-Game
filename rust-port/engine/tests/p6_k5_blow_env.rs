@@ -152,3 +152,80 @@ fn blow_env_river_vectors_cover_required_cases() {
     }
     assert!(n_mult >= 2, "przypadki z mnoznikiem 0.75: {n_mult} < 2");
 }
+
+/// Kody `BTerrain` 4..7 (battle-terrain.ts:42-46) i ich nazwy kombatowe z `COMBAT_NAME`
+/// (battle-terrain.ts:150-159): Ford(4) -> "Rzeka" (linia 155), Rocks(5) / Wall(6) / Gate(7) -> plaskie.
+/// Brod nie ma osobnego wektora pinu (nazwa jak kafel Rzeka), wiec jego flagi i mnoznik sa sprawdzane tu.
+#[test]
+fn blow_env_kody_4_7_nazwy_jak_w_pinie() {
+    const PLAINS: &str = "Plaskie (rownina/laka)";
+    let v = load();
+    let river_mult_pin = v["riverAttackMult"].as_f64().expect("riverAttackMult");
+    let case = v["cases"]
+        .as_array()
+        .expect("cases")
+        .iter()
+        .find(|c| c["name"] == "atk-rzeka-wiersz")
+        .expect("przypadek atk-rzeka-wiersz");
+    let rows: Vec<TerrainRow> = case["terrainData"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|r| TerrainRow {
+            teren: r["Teren"].as_str().unwrap().to_string(),
+            bonus_obrona: r["Bonus Obrona"].as_str().map(str::to_string),
+        })
+        .collect();
+    // (kod BTerrain atakujacego, oczekiwana nazwa kombatowa, oczekiwana flaga rzeki atakujacego)
+    let expected = [
+        (4u8, "Rzeka", true),
+        (5u8, PLAINS, false),
+        (6u8, PLAINS, false),
+        (7u8, PLAINS, false),
+    ];
+    for (code, name, is_river) in expected {
+        let map = TileMap::new(3, 1, vec![code, 0, 0], false).expect("mapa 3x1");
+        let ctx = BlowSceneCtx {
+            map,
+            terrain_data: rows.clone(),
+            is_city_defense_battle: false,
+            wall_defense_total_proc: 0.0,
+            siege_wall_col: -1.0,
+            city_terrain: "Wzgorza".to_string(),
+            river_attack_mult: river_mult_pin,
+            brod_kara_obrona: 0.25,
+            brod_bonus_brzegu: 0.15,
+            fortify_obrona_proc: 50.0,
+        };
+        let p = BlowPlacement {
+            attacker: (0, 0),
+            defender: (1, 0),
+            defender_facing: 0,
+            defender_on_wall: false,
+            defender_side_def: true,
+            atk_rola: "Piechota".to_string(),
+        };
+        assert_eq!(ctx.map.name(0, 0), name, "kod {code}: nazwa kombatowa");
+        let env = blow_env_for(&ctx, &p);
+        assert_eq!(
+            env.atk_tile_is_river, is_river,
+            "kod {code}: atk_tile_is_river"
+        );
+        assert!(env.river_row_exists, "kod {code}: wiersz rzeki w danych");
+        let exp_mult = if is_river { river_mult_pin } else { 1.0 };
+        assert_eq!(
+            terrain_river_attack_multiplier(
+                env.atk_tile_is_river,
+                env.river_row_exists,
+                env.river_attack_mult
+            ),
+            exp_mult,
+            "kod {code}: mnoznik rzeki"
+        );
+        assert_eq!(
+            attacker_river_mult_by_name(&ctx, &p),
+            exp_mult,
+            "kod {code}: mnoznik po nazwie"
+        );
+    }
+}

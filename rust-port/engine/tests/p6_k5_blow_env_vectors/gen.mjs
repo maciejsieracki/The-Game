@@ -64,6 +64,18 @@ const fragPath = join(workDir, 'pin_fragments.mts');
 writeFileSync(fragPath, prelude + fragNorm + '\n' + fragRiver + '\n');
 const W = await import(pathToFileURL(fragPath).href);
 
+// Flagi liczone WYCIETYM wyrazeniem z pinu, nie przepisanym recznie:
+//   combat.ts:680 `const isRiver = <expr>;`  (ewaluowane na nazwie kafla atakujacego)
+//   combat.ts:683 `find((t) => normTerrain(t['Teren']).includes('rzek'))` (wiersz rzeki).
+const mIsRiver = fragRiver.match(/const isRiver = ([^;]+);/);
+const mRowHit = fragRiver.match(/normTerrain\(t\['Teren'\]\)\.includes\('[^']*'\)/);
+if (!mIsRiver || !mRowHit) {
+  console.error('STRAZNIK: wyrazenia flag (isRiver / wiersz rzeki) nie pasuja do pinu');
+  process.exit(4);
+}
+const evalIsRiver = new Function('terrNorm', `return (${mIsRiver[1]});`);
+const evalRowHit = new Function('normTerrain', 't', `return ${mRowHit[0]};`);
+
 // Zestawy danych terenu (kolumna "Teren" z pinu): pelne, bez wiersza "Rzeka", puste.
 const fullRows = terrainRows.map((r) => ({ Teren: r.Teren, 'Bonus Obrona': r['Bonus Obrona'] }));
 const noRiverRows = fullRows.filter((r) => !r.Teren.includes('Rzeka'));
@@ -81,8 +93,8 @@ const addCase = (name, atk, def, setName) => {
   const rows = rowSets[setName];
   const expMult = W.terrainRiverAttackMultiplier(atk, rows);
   const nAtk = W.normTerrain(atk);
-  const expAtkIsRiver = nAtk.includes('rzek') || nAtk.includes('river');
-  const expRowExists = rows.some((t) => W.normTerrain(t.Teren).includes('rzek'));
+  const expAtkIsRiver = Boolean(evalIsRiver(nAtk));
+  const expRowExists = rows.some((t) => Boolean(evalRowHit(W.normTerrain, t)));
   cases.push({
     name,
     atkTerrain: atk,
