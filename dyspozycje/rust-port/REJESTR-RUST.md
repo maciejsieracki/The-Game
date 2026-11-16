@@ -2908,3 +2908,13 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
   - **T7b (nowy):** `_fallBackStep` i `_bestFallBackStep` (pin ~7186). Zależy od T4c (#314, `_doMove`). Przypisanie `_bestFallBackStep` do T7b, nie T5a, bo wywołuje go tylko falanga.
 - **Zależności:** T7a i T7b nie startują przed T4b/T4c na parity. Nie zmieniam kontraktu `ActivateOps`; wpięcie zostaje na T8 / #113.
 - **Zabezpieczenie:** commit rozpoznania `7ae1e3e58` ma ref `refs/keep/T7-recon-7ae1e3e58`.
+
+### Przebieg — dysk krytyczny 755 MB → sprzątanie (2026-11-16 ~23:35 UTC)
+
+- **Dysk:** spadł do 755 MB (99%) przez równoległe targety czterech workflow. Nowe starty wstrzymane.
+- **Sprzątanie (tylko zakończone, z refami keep):**
+  - `wf_925e25ab-958-1` (rozpoznanie T7 `7ae1e3e58`, ref `refs/keep/T7-recon-7ae1e3e58`): usunięty.
+  - `integ-r2` (merge R2 `11d7e4763`, ref `refs/keep/P4-1-R2-merge2-11d7e4763`): usunięty. Bramka R2 nadal do wykonania na nowym merge.
+  - `integ-rend` (`70d6fbb62`, nowy ref `refs/keep/integ-rend-70d6fbb62`): usuwanie w tle, po zakończeniu sprawdzić.
+- **Nie ruszane (aktywne):** worktree T4b integracji (`wf_18327ef5-a0e-2`), T6 integracji (`wf_3180bfbf-196-1/2`), T5a r2 (`wf_f88b947e-171-1/2/3`).
+- **Reguła:** nowe tematy z kodem Rust nie startują poniżej 8 GB. Bramka renderera (#330) wymaga ≥12 GB i braku budujących workerów.
