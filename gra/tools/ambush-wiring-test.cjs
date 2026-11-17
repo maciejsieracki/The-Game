@@ -242,7 +242,7 @@ const unit = (over) => Object.assign({
     assert.ok(mainSrc.includes('planPlayerAmbushMove(units, movePath, u.ownerId, areEnemyOwners, true)'), 'startAnimatedMove');
     assert.ok(mainSrc.includes('planPlayerAmbushMove(units, result.movePath, u.ownerId, areEnemyOwners, launchAttack)'), 'applyMarchSegmentInstant');
     assert.ok(mainSrc.includes('resolveAmbushAfterMove(units, u, aiAmbushCutter.hit(), areEnemyOwners)'), 'executor AI');
-    assert.ok(mainSrc.includes('resolveAmbushAfterMove(units, bu, barbAmbushHit, areEnemyOwners)'), 'petla barbarzyncow');
+    assert.ok(mainSrc.includes('buildBarbarianAmbushAttack(units, bu, barbAmbushHit, areEnemyOwners)'), 'petla barbarzyncow');
     assert.ok(mainSrc.includes("type: 'attack', unitId: u.id, targetUnitId: ambDef.id, ambush: true"), 'AI atak');
     assert.ok(mainSrc.includes('buildMoveOccupancy(units, moverOwnerId, exceptIds, areEnemyOwners)'), 'occupiedForMove');
     assert.ok(mainSrc.includes('reconcileAmbushInWorld(units, cities)'), 'cykl zycia w syncUnitsRender');
@@ -257,8 +257,10 @@ const unit = (over) => Object.assign({
   const occ = (s) => mainSrc.split(s).length - 1;
   check('E2 wpiecie punktowe (liczby wywolan): release x3 (rozkaz ruchu, start animacji, marsz instant), planPlayer x3 (gracz, marsz, barbarzyncy), resolveAfterMove x2 (AI, barbarzyncy), AI cutter z realnym ownerId', () => {
     assert.strictEqual(occ('releaseAmbushOnMoveOrder('), 3, 'releaseAmbushOnMoveOrder w main.ts: M2 (playerStackAt) / MB (rozkaz ruchu) usuwaja jedno wystapienie');
-    assert.strictEqual(occ('planPlayerAmbushMove('), 3, 'planPlayerAmbushMove w main.ts: M6 (barbarzyncy zastapieni {kind:clear}) usuwa jedno wystapienie');
-    assert.strictEqual(occ('resolveAmbushAfterMove('), 2, 'resolveAmbushAfterMove w main.ts: AI i barbarzyncy');
+    assert.strictEqual(occ('planPlayerAmbushMove('), 2, 'planPlayerAmbushMove w main.ts: gracz animowany i marsz (barbarzyncy: planBarbarianAmbushMove)');
+    assert.strictEqual(occ('planBarbarianAmbushMove('), 1, 'planBarbarianAmbushMove w main.ts: petla barbarzyncow');
+    assert.strictEqual(occ('resolveAmbushAfterMove('), 1, 'resolveAmbushAfterMove w main.ts: AI (barbarzyncy: buildBarbarianAmbushAttack)');
+    assert.strictEqual(occ('buildBarbarianAmbushAttack('), 1, 'buildBarbarianAmbushAttack w main.ts: petla barbarzyncow');
     assert.ok(mainSrc.includes('makeAmbushPathCutter(units, ownerId, areEnemyOwners)'), 'MD: executor AI musi dostac realna liste zasadzek (nie [])');
     assert.ok(!mainSrc.includes('makeAmbushPathCutter([]'), 'MD: brak pustej listy zasadzek dla wykonawcy');
     const amSrc = fs.readFileSync(path.join(SRC, 'game', 'ambushMove.ts'), 'utf8');

@@ -1,3 +1,75 @@
+# R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 — raport Operatora, RUNDA 5/5 (OSTATNIA; sekcja r5; r4, r3, r2 i r1 poniżej)
+
+STATUS: PASS-WITH-NOTES (N1, E, A domknięte kodem i testami; pozycja 8 AI→gracz w Chromium NIE ZMIERZONO — jawna luka, patrz BLOKADY; akceptowalne do deployu na ROBOCZĄ z opisanym ryzykiem)
+DOMAIN: GAME
+TEMAT: R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1
+GOAL: wyzwalacz zasadzki w ruchu gracza, AI i barbarzyńców + niewidoczność + cykl życia + znacznik + testy realnego kroku ruchu; r5: naprawa regresji bramki mgla-sciezka-inwariant, wyodrębnienie planu barbarzyńcy z testem dynamicznym, domknięcie audytu widoczności.
+BAZA: `b14e91e1fa862b41ddcfe69ad05e6217b228f2b1` (kandydat r4; `git checkout --detach` wykonane; `origin/main` = `6d474b826` jest przodkiem kandydata, merge zbędny).
+
+## N1 — regresja `mgla-sciezka-inwariant`
+Przyczyna: pętla barbarzyńców zapisywała `bu.q = barbToQ; bu.r = barbToR;` (niesklasyfikowane), a dwa wpisy whitelisty (`bu.q = bcmd.toQ;` #2, `bu.r = bcmd.toR;` #2) stały się martwe.
+Naprawa (ECHO właściciela: wolno rozszerzyć whitelistę dla zapisu tej samej klasy): w `gra/tools/mgla-sciezka-inwariant-test.cjs` wpisy `move` przeklasyfikowane na `bu.q = barbToQ;` / `bu.r = barbToR;` (nr 1, klasa BEZ-MGLY-GRACZA — barbarzyńca nie odkrywa mgły gracza, ruch jak dotąd, tylko przycięty przed zasadzką), wpisy `raid` przenumerowane z #2 na #1 (`bu.q = bcmd.toQ;` występuje już raz). Kod gry w zapisie pozycji nie zmieniony.
+Wynik: `node tools/mgla-sciezka-inwariant-test.cjs` → **42 pass, 0 fail** (kandydat r4: 40/2; baza 42/0).
+
+## E — plan ruchu barbarzyńcy wyodrębniony
+`gra/src/game/ambushMove.ts`: `planBarbarianAmbushMove(units, barb, destQ, destR, fullPath|null, isAtWar)` (przycięcie trasy przed zasadzką, `stays`, `ambushHex`) i `buildBarbarianAmbushAttack(units, barb, ambushHex, isAtWar)` (ujawnienie zasadzki + komenda `attack` do wstrzyknięcia). `main.ts` (pętla barbarzyńców) wywołuje wyłącznie te funkcje (`computePath` zostaje w main, bo wymaga mapy; `claimHexForMove`, zapis pozycji, `barbCmds.splice` bez zmian zachowania).
+Testy dynamiczne (`gra/tools/ambush-realstep-test.cjs`, S21–S23, realny `buildMoveOccupancy`/`computePath`/`resolveAmbushTrigger`, bez `String.includes`): trasa przez zasadzkę gracza przycięta na (7,5), zasadzka ujawniona, atak `b1→p1`; zasadzka tuż przy starcie ⇒ `stays`; brak zasadzek/brak wojny ⇒ trasa bez zmian i brak ataku. Mutanty: **M18** (plan nie przycina) czerwony: S21,S22; **M19** (brak ataku) czerwony: S21,S22,S23.
+`ambush-wiring-test.cjs` zaktualizowany pod nowe wywołania (planPlayerAmbushMove x2, planBarbarianAmbushMove x1, resolveAmbushAfterMove x1, buildBarbarianAmbushAttack x1).
+
+## A — audyt widoczności: dopisane czytelniki
+| Miejsce | Decyzja | Dlaczego / test |
+|---|---|---|
+| `openSplitPanelForSelected` (`findSplitDestHexes`, flaga `available`) | FILTROWAĆ (już r4: `unitsForViewer`; tekst powodu przez `isUnitVisibleToViewer`) | ukryta zasadzka wroga nie daje „Cel niedostępny”/„Heks zajęty” |
+| pasek stosu `stackHudMergeSplitActions` (main ~27262) i dostępność rozdzielenia w panelu jednostki (`onSplit`, ~28387) | **NOWE r5: FILTROWAĆ** (`findSplitDestHexes(unitsForViewer(units, ME()), …)`) | przycisk „Rozdziel” zmieniał stan (disabled), gdy wszystkie sąsiednie heksy zajmowała ukryta zasadzka — wyciek flagi; test S24 (realny `findSplitDestHexes`+`unitsForViewer`: 6 wolnych vs 0 bez filtra), mutant M9 czerwony także na S24 |
+| wykonanie rozdzielenia (`onSplit` w panelu) | **NOWE r5: blokada „Heks zajęty.”** gdy na celu stoi ukryta zasadzka wroga | ZAŁOŻENIE: po odfiltrowaniu panel mógłby posadzić pod-stos na heksie z cudzą zasadzką (nakładanie jednostek dwóch stron); ruch NIE wyzwala zasadzki (wyzwala ją krok ruchu), zasadzka zostaje nietknięta |
+| planowanie marszu gracza (`attackTarget`, ~33830) | FILTROWAĆ (już r4: `unitsForViewer(...).find`) — bez zmian | cel ataku = tylko widoczna jednostka; marsz na heks z ukrytą zasadzką planuje się jak na pusty i wyzwala w kroku ruchu |
+| `evictForeignUnitsFromCityHexes` (`findAdjacentEmptyHexes`, main ~15565) | NIE FILTROWAĆ | naprawa stanu świata (AI/barbarzyńcy), nie widok gracza; nakładanie jednostek jest tu błędem krytycznym |
+| Ranking mocy (Power) | NIE (świadomie, bez zmian — decyzja produktowa do właściciela) | agregat |
+Reszta tabeli z r4 bez zmian.
+
+## (8) AI→gracz w Chromium — NIE ZMIERZONO (jawnie)
+Próba r5: `ambush-live-test.cjs --only B` z korytarzem ≥8 heksów od WSZYSTKICH miast (promień 8–16, wschodni koniec korytarza otwarty). Wynik: B0, B1, B4, B7 PASS; B2, B3, B5 FAIL — jednostki AI (2 szt. w stosie) w ogóle się nie poruszyły przez 4 tury (stałe q=17,r=25): AI nie ma celu marszu poza zasięgiem miast (harness syntetyczny, jednostki AI bez armii z planem). To brak czynnika po stronie harnessu, nie dowód błędu gry; bez zmian kodu gry nie da się wymusić celu AI. Harness przywrócony do stanu z r4 (`git checkout`), zrzutów z tej próby nie dołączam. Ścieżka AI→gracz pokryta testami na realnych funkcjach (`executeAiCityMove`, `makeAmbushPathCutter`, `resolveAmbushAfterMove`: S8, S9 + M13) i ścieżką barbarzyńców (S21–S23), ale NIE zmierzona w żywej grze po stronie AI-armii (przerwanie ruchu AI, `aiCmdResume`, brak nakładania). Do sprawdzenia przez właściciela w grze: zasadzka na szlaku marszu AI w wojnie → przerwanie + bitwa + wznowienie tury AI.
+Zrzut samego chipu „W zasadzce”: bez nowego zrzutu w r5; obowiązuje zrzut r4 `zrzuty/A-znacznik-panel-mapa-1280x720.png`; osobnego zbliżenia chipu NIE wykonano.
+
+## ZMIANY/COMMIT
+`gra/src/game/ambushMove.ts` (+2 funkcje), `gra/src/main.ts` (pętla barbarzyńców → rdzeń; split: `unitsForViewer` x2 + blokada „Heks zajęty.” przy zasadzce wroga na celu), `gra/tools/ambush-realstep-test.cjs` (S21–S24, M18, M19), `gra/tools/ambush-wiring-test.cjs` (liczniki wywołań), `gra/tools/mgla-sciezka-inwariant-test.cjs` (whitelista), ten raport. NIE zmieniano: WERSJE.md, rust-port, battle/*, save.ts.
+
+## TESTY (surowe wyniki z tego worktree, `npm ci --ignore-scripts`)
+- `npx tsc --noEmit` (gra/) → exit 0 (przed i po ostatniej zmianie main.ts).
+- 5 bramek: `logic-test` LOGIC OK (213/213); `tech-tree-test` 20 pass, 0 fail; `research-test` PASSED 33 / FAILED 0 / TOTAL 33; `unit-replace-test` WSZYSTKIE ZIELONE (21/21); `combat-test` 6/6 pass.
+- `mgla-sciezka-inwariant-test` → 42 pass, 0 fail.
+- `load-game-regression-test` → 34 PASS / 0 FAIL.
+- Determinizm: `determinism-same-seed-test` → WYNIK: PASS; `determinism-digest-stackgroup-test` → ZIELONY (5/5).
+- `ambush-realstep-test` → Wynik: 16 OK, 0 FAIL („PASS: wszystkie scenariusze kroku ruchu”); mutanty czerwone: M2 (S6), M3 (S7), M4 (S3), M7 (S5), M9 (S12,S15,S24), M10 (S11), M11 (S13), M12 (S14), M13 (S9), M14 (S16,S17), M15 (S18), M16 (S19), M17 (S20), M18 (S21,S22), M19 (S21,S22,S23).
+- `ambush-wiring-test` → 28 OK, 0 FAIL; `ambush-core-test` → 40 OK, 0 FAIL; `ambush-ui-reason-test` → 5 OK, 0 FAIL; `ambush-save-roundtrip-test` → 5 OK, 0 FAIL.
+- `army-merge-*` (11 plików): besieger-only-move 8/0; bounce 4/0; colocated 4/0; dismiss-bounce 16/0; panel-list-visibility 104/0; panel-production-mount 9/0; panel-scroll-real-render 27/0; separate-return-mainguard 73/0; separate-return 16/0; split-direction-icons PASS; stackgroupid 11045 pass / 0 fail.
+- Chromium: A (gracz→AI) — wynik r4 (13 PASS / 0 FAIL) nie powtarzany (zmiany r5 nie dotykają kroku ruchu gracza); B — NIE ZMIERZONO (wyżej).
+
+## BLOKADY
+1. NIE ZMIERZONO: AI→gracz w żywej grze (przyczyna wyżej). Wymaga celu marszu AI w harnessie (np. armia AI z planem na miasto gracza przez korytarz) — poza zakresem „bez zmian kodu gry”.
+2. Ranking mocy (Power) nie filtrowany — decyzja produktowa (ABC do właściciela).
+
+## RUNDY
+5/5 (LIMIT wyczerpany; ostatni werdykt FC r4 FAIL wyłącznie z powodu N1 — naprawione w r5).
+
+## NASTĘPNY KROK
+Evaluator r5 → Final Control → integracja orkiestratora. Jeśli FC zaakceptuje PASS-WITH-NOTES z jawną luką (8) — deploy na ROBOCZĄ; w przeciwnym razie LIMIT-5-EXCEEDED i decyzja właściciela. Rozstawienie w bitwie/szyk ≤3 = osobny temat AMBUSH-DEPLOY.
+
+DEPLOY/PUSH: NIE WYKONANO
+
+## Lista testów do deployu
+`tsc --noEmit`; 5 bramek (logic, tech-tree, research, unit-replace, combat); `mgla-sciezka-inwariant-test` (42/0); `load-game-regression-test`; `determinism-same-seed-test`; `determinism-digest-stackgroup-test`; `ambush-realstep-test`, `ambush-wiring-test`, `ambush-core-test`, `ambush-ui-reason-test`, `ambush-save-roundtrip-test`; `army-merge-*`; ręcznie: zasadzka na szlaku marszu AI w wojnie (przerwanie, bitwa, wznowienie tury).
+
+## Dług Rust (REPIN po deployu) — pełna lista
+Jak w r4 plus: `planBarbarianAmbushMove` / `buildBarbarianAmbushAttack` (nowe funkcje rdzenia, fixtury S21–S23); reguła rozdzielania armii: lista celów liczona na widocznych jednostkach (`unitsForViewer`) i blokada „Heks zajęty.” przy ukrytej zasadzce wroga na celu (fixtura S24); whitelista mgła-ścieżka (zapis `barbToQ/barbToR`).
+
+## UWAGI-DLA-ORKIESTRATORA
+- Ostatnia runda; decyzja o deployu z jawną luką (8) należy do orkiestratora/właściciela.
+- Decyzja produktowa (ABC): czy ranking mocy ma ukrywać zasadzki wroga.
+- Sprzątanie: `gra/node_modules` w worktree; dist harnessu w /tmp usunięty.
+
+---
+
 # R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 — raport Operatora, RUNDA 4/5 (sekcja r4; r3, r2 i r1 poniżej)
 
 STATUS: PASS-WITH-NOTES (pozycje 1, 5, 6, 7 z FC r3 domknięte kodem i testami na realnych funkcjach, mutanty czerwone; pozycja 8: gracz→AI ZMIERZONE w Chromium, AI→gracz NIE ZMIERZONO — AI w żywej grze zaatakowało miasto zamiast wejść w zasadzkę, patrz BLOKADY; PASS niemożliwy, bo pomiar 8 jest niepełny)

@@ -33,6 +33,8 @@ global.Node = dom.window.Node;
 /** Mutacje: plik (regex sciezki) + dokladny fragment -> zamiennik. */
 const MUTANTS = {
   M2: { file: /game[\\/]ambushMove\.ts$/, from: 'export function releaseAmbushOnMoveOrder(stack: RuntimeUnit[]): void {\n  cancelAmbush(stack);', to: 'export function releaseAmbushOnMoveOrder(stack: RuntimeUnit[]): void {' },
+  M18: { file: /game[\\/]ambushMove\.ts$/, from: "if (plan.kind !== 'clear') {\n      ambushHex = plan.ambushHex;", to: "if (false) {\n      ambushHex = plan.ambushHex;" },
+  M19: { file: /game[\\/]ambushMove\.ts$/, from: "  const order = resolveAmbushAfterMove(units, barb, ambushHex, isAtWar);\n  if (order === undefined) return undefined;\n  return { cmd:", to: "  const order = resolveAmbushAfterMove(units, barb, ambushHex, isAtWar);\n  if (order !== undefined) return undefined;\n  return { cmd:" },
   M3: { file: /game[\\/]ambushMove\.ts$/, from: '(q, r) => cities.some(c => c.q === q && c.r === r)', to: '() => false' },
   M4: { file: /game[\\/]ambushMove\.ts$/, from: "if (!launchAttack) return { kind: 'blocked', path: [], ambushHex: cut.ambushHex };", to: '' },
   M7: { file: /game[\\/]ambush\.ts$/, from: 'u => u.q === q && u.r === r && isUnitAmbushed(u)\n      && u.ownerId !== moverOwnerId && isAtWar(moverOwnerId, u.ownerId),', to: 'u => u.q === q && u.r === r && isUnitAmbushed(u)\n      && isAtWar(moverOwnerId, u.ownerId),' },
@@ -56,6 +58,7 @@ export * from ${JSON.stringify(path.join(SRC, 'game/ambushMove.ts'))};
 export { buildMoveOccupancy, computePath, keyOf } from ${JSON.stringify(path.join(SRC, 'units/setup.ts'))};
 export { executeAiCityMove } from ${JSON.stringify(path.join(SRC, 'game/ai-city-capture-executor.ts'))};
 export { decideBarbarianMoves, FALLBACK_BARB_PARAMS } from ${JSON.stringify(path.join(SRC, 'game/barbarians.ts'))};
+export { findSplitDestHexes } from ${JSON.stringify(path.join(SRC, 'game/armyMerge.ts'))};
 export { unitsVisibleOnMap } from ${JSON.stringify(path.join(SRC, 'game/visibility.ts'))};
 export { computeDiplomaticContacts } from ${JSON.stringify(path.join(SRC, 'game/diplomacy-layers.ts'))};
 export { armyStatusBadge } from ${JSON.stringify(path.join(SRC, 'ui/sideListHud.css.ts'))};
@@ -235,6 +238,56 @@ function runScenarios(B) {
     const order = B.resolveAmbushAfterMove(units, b, plan.ambushHex, () => true);
     assert.ok(order && order.defender.id === 'p1');
     assert.equal(p.ambush, undefined);
+  });
+
+  // ---- plan ruchu barbarzyncy (planBarbarianAmbushMove / buildBarbarianAmbushAttack z ambushMove.ts) ----
+  check('S21 M18 M19 plan barbarzyncy: trasa przez zasadzke gracza przycieta przed nia, zasadzka ujawniona, atak wstrzykniety', () => {
+    const b = barb('b1', 5, 5);
+    const p = ambushed({ id: 'p1', ownerId: 0, q: 8, r: 5 });
+    const units = [b, p];
+    const occ = B.buildMoveOccupancy(units, BARB, ['b1'], () => true);
+    const full = B.computePath(b, map, 11, 5, occ);
+    assert.ok(full.some(h => h.q === 8 && h.r === 5), 'trasa wiedzie przez heks zasadzki (dla barbarzyncy pusty)');
+    const plan = B.planBarbarianAmbushMove(units, b, 11, 5, full, () => true);
+    assert.deepEqual({ q: plan.toQ, r: plan.toR }, { q: 7, r: 5 });
+    assert.equal(plan.stays, false);
+    assert.deepEqual(plan.ambushHex, { q: 8, r: 5 });
+    b.q = plan.toQ; b.r = plan.toR;
+    const atk = B.buildBarbarianAmbushAttack(units, b, plan.ambushHex, () => true);
+    assert.ok(atk, 'bitwa z zasadzki');
+    assert.deepEqual(atk.cmd, { type: 'attack', unitId: 'b1', targetUnitId: 'p1' });
+    assert.equal(atk.defender.id, 'p1');
+    assert.equal(p.ambush, undefined, 'zasadzka ujawniona');
+  });
+  check('S22 M18 plan barbarzyncy: zasadzka tuz przy starcie => barbarzynca stoi (stays), bitwa od razu', () => {
+    const b = barb('b1', 10, 5);
+    const p = ambushed({ id: 'p1', ownerId: 0, q: 11, r: 5 });
+    const units = [b, p];
+    const plan = B.planBarbarianAmbushMove(units, b, 13, 5, [{ q: 11, r: 5 }, { q: 12, r: 5 }, { q: 13, r: 5 }], () => true);
+    assert.equal(plan.stays, true);
+    assert.deepEqual({ q: plan.toQ, r: plan.toR }, { q: 10, r: 5 });
+    assert.ok(B.buildBarbarianAmbushAttack(units, b, plan.ambushHex, () => true));
+  });
+  check('S23 M18 plan barbarzyncy: brak zasadzek / brak wojny => trasa bez zmian i brak ataku', () => {
+    const b = barb('b1', 5, 5);
+    const none = B.planBarbarianAmbushMove([b], b, 9, 5, null, () => true);
+    assert.deepEqual({ q: none.toQ, r: none.toR, stays: none.stays, h: none.ambushHex }, { q: 9, r: 5, stays: false, h: undefined });
+    const p = ambushed({ id: 'p1', ownerId: 0, q: 7, r: 5 });
+    const peace = B.planBarbarianAmbushMove([b, p], b, 9, 5, line(6, 9), NO_WAR);
+    assert.deepEqual({ q: peace.toQ, r: peace.toR, h: peace.ambushHex }, { q: 9, r: 5, h: undefined });
+    assert.equal(B.buildBarbarianAmbushAttack([b, p], b, { q: 7, r: 5 }, NO_WAR), undefined);
+  });
+
+  check('S24 M9 panel rozdzielania: flaga dostepnosci liczona na widocznych jednostkach (ukryta zasadzka wroga nie zajmuje heksu)', () => {
+    const me = unit({ id: 'p1', ownerId: 0, q: 5, r: 5 });
+    const ring = [[6, 5], [6, 4], [5, 4], [4, 5], [4, 6], [5, 6]];
+    // kazdy sasiedni heks zajety ukryta zasadzka wroga => dla gracza wszystkie wolne
+    const hidden = ring.map(([q, r], i) => ambushed({ id: 'e' + i, ownerId: 1, q, r }));
+    const all = [me, ...hidden];
+    const viaViewer = B.findSplitDestHexes(B.unitsForViewer(all, 0), 5, 5, () => true, false);
+    assert.equal(viaViewer.length, 6, 'ukryta zasadzka nie blokuje celu rozdzielenia w UI');
+    const raw = B.findSplitDestHexes(all, 5, 5, () => true, false);
+    assert.equal(raw.length, 0, 'kontrola: bez filtra heksy sa zajete (wyciek flagi dostepnosci)');
   });
 
   // ---- widocznosc / wycieki ----

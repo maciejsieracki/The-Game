@@ -57,7 +57,7 @@ import { humanizeId, nazwaCywilizacji, nazwaWyswietlana } from './game/text-name
 import { TEREN_LABEL_PL } from './map/terrain-names';
 import { normalizeDetDigestStackGroups } from './game/det-digest-normalize';
 import { AMBUSH_BLOCK_MESSAGES, canSetAmbush, cancelAmbush, isStackAmbushed, isUnitVisibleToViewer, resolveAmbushTrigger, setAmbush, truncatePathAtAmbush } from './game/ambush';
-import { makeAmbushPathCutter, planPlayerAmbushMove, reconcileAmbushInWorld, releaseAmbushOnMoveOrder, resolveAmbushAfterMove, unitsForPlanner, unitsForViewer } from './game/ambushMove';
+import { buildBarbarianAmbushAttack, makeAmbushPathCutter, planBarbarianAmbushMove, planPlayerAmbushMove, reconcileAmbushInWorld, releaseAmbushOnMoveOrder, resolveAmbushAfterMove, unitsForPlanner, unitsForViewer } from './game/ambushMove';
 import * as THREE from 'three';
 import { loadGameData } from './data/loader';
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from './map/generator';
@@ -16011,6 +16011,12 @@ async function boot(): Promise<void> {
             showHintMessage('Nie można rozdzielić armii na obce miasto.', 3500);
             return;
           }
+          // r5: panel liczy wolne heksy na widocznych jednostkach; ukryta zasadzka wroga na celu = heks zajety
+          // (brak nakladania jednostek obu stron; zasadzka zostaje nietknieta, wyzwala ja dopiero ruch).
+          if (units.some(x => x.q === destQ && x.r === destR && x.ambush === true && x.ownerId !== active.ownerId)) {
+            showHintMessage('Heks zajęty.', 3500);
+            return;
+          }
           const splitArrivals = ids
             .map(id => units.find(x => x.id === id))
             .filter((su): su is RuntimeUnit => su != null);
@@ -27260,7 +27266,7 @@ async function boot(): Promise<void> {
         actions.push({ id: 'replace', label: 'Zast\u0105p', disabled: replaceDisabled });
       }
       const splitDests = findSplitDestHexes(
-        units,
+        unitsForViewer(units, ME()), // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 r5: ukryta zasadzka wroga nie zmienia flagi dostepnosci
         active.q,
         active.r,
         splitTargetPassable(isHexPassableForUnit, active.ownerId, cities),
@@ -28385,7 +28391,7 @@ async function boot(): Promise<void> {
             const stack = visibleStackOnHex(units, u.q, u.r, u.ownerId, stackGroupIdOf(u));
             if (stack.length < 2) return false;
             return findSplitDestHexes(
-              units,
+              unitsForViewer(units, ME()), // r5: j.w. (flaga dostepnosci rozdzielenia nie ujawnia zasadzki)
               u.q,
               u.r,
               splitTargetPassable(isHexPassableForUnit, u.ownerId, cities),
@@ -46605,28 +46611,17 @@ async function boot(): Promise<void> {
                   // (w tym barbarzynce ruszajacego wczesniej w tej turze).
                   // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4, zarzut 6): trasa barbarzyncy przez zasadzke gracza/AI
                   // (dla barbarzyncy heks pusty) konczy sie PRZED nia; po ruchu ujawniamy zasadzke i wstrzykujemy atak.
-                  let barbToQ = bcmd.toQ;
-                  let barbToR = bcmd.toR;
-                  let barbAmbushHit: { q: number; r: number } | undefined;
-                  if (units.some(x => x.ambush === true)) {
-                    const barbPathFull = computePath(
+                  const barbPathFull = units.some(x => x.ambush === true)
+                    ? computePath(
                       bu, map, bcmd.toQ, bcmd.toR,
                       buildMoveOccupancy(units, bu.ownerId, [bu.id], areEnemyOwners), moveCostFnForUnit(bu),
-                    );
-                    const barbPlan = planPlayerAmbushMove(units, barbPathFull, bu.ownerId, areEnemyOwners, true);
-                    if (barbPlan.kind !== 'clear') {
-                      barbAmbushHit = barbPlan.ambushHex;
-                      if (barbPlan.path.length === 0) {
-                        barbToQ = bu.q;
-                        barbToR = bu.r;
-                      } else {
-                        const barbLast = barbPlan.path[barbPlan.path.length - 1]!;
-                        barbToQ = barbLast.q;
-                        barbToR = barbLast.r;
-                      }
-                    }
-                  }
-                  const barbStays = barbToQ === bu.q && barbToR === bu.r;
+                    )
+                    : null;
+                  const barbMove = planBarbarianAmbushMove(units, bu, bcmd.toQ, bcmd.toR, barbPathFull, areEnemyOwners);
+                  const barbToQ = barbMove.toQ;
+                  const barbToR = barbMove.toR;
+                  const barbAmbushHit = barbMove.ambushHex;
+                  const barbStays = barbMove.stays;
                   if (!barbStays
                       && !claimHexForMove(barbOcc, keyOf(bu.q, bu.r), keyOf(barbToQ, barbToR))) continue;
                   if (!barbStays) {
@@ -46651,12 +46646,10 @@ async function boot(): Promise<void> {
                   }
                   }
                   {
-                    const barbAmbOrder = resolveAmbushAfterMove(units, bu, barbAmbushHit, areEnemyOwners);
-                    if (barbAmbOrder !== undefined) {
-                      if (isMe(barbAmbOrder.defender.ownerId)) showHintMessage('Zasadzka się powiodła', 4500);
-                      barbCmds.splice(barbCmds.indexOf(bcmd) + 1, 0, {
-                        type: 'attack', unitId: bu.id, targetUnitId: barbAmbOrder.defender.id,
-                      });
+                    const barbAmb = buildBarbarianAmbushAttack(units, bu, barbAmbushHit, areEnemyOwners);
+                    if (barbAmb !== undefined) {
+                      if (isMe(barbAmb.defender.ownerId)) showHintMessage('Zasadzka się powiodła', 4500);
+                      barbCmds.splice(barbCmds.indexOf(bcmd) + 1, 0, barbAmb.cmd);
                       syncUnitsRender();
                     }
                   }

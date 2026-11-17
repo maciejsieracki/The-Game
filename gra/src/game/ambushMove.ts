@@ -135,3 +135,61 @@ export function unitsForPlanner<T extends Pick<RuntimeUnit, 'ownerId' | 'ambush'
 export function stackIsAmbushed(stack: ReadonlyArray<Pick<RuntimeUnit, 'ambush'>>): boolean {
   return isStackAmbushed(stack);
 }
+
+/** Plan ruchu `move` barbarzyncy wobec zasadzki (czysty; wydzielony z petli barbarzyncow main.ts). */
+export interface BarbarianMovePlan {
+  /** Heks docelowy po przycieciu trasy przed zasadzka (= zadany cel, gdy trasa czysta). */
+  toQ: number;
+  toR: number;
+  /** Barbarzynca zostaje w miejscu (zasadzka tuz przy starcie). */
+  stays: boolean;
+  /** Heks zasadzki, ktora przycela trase (undefined = trasa czysta). */
+  ambushHex?: { q: number; r: number };
+}
+
+/**
+ * Trasa barbarzyncy przez zasadzke gracza/AI (dla niego heks pusty) konczy sie PRZED nia.
+ * `fullPath` = trasa do celu liczona pathfindingiem BEZ widocznosci zasadzki; `null` = brak zasadzek, bez zmian.
+ */
+export function planBarbarianAmbushMove<T extends { q: number; r: number }>(
+  units: ReadonlyArray<Pick<RuntimeUnit, 'ownerId' | 'ambush' | 'q' | 'r'>>,
+  barb: Pick<RuntimeUnit, 'q' | 'r' | 'ownerId'>,
+  destQ: number,
+  destR: number,
+  fullPath: ReadonlyArray<T> | null,
+  isAtWar: AmbushWarPredicate,
+): BarbarianMovePlan {
+  let toQ = destQ;
+  let toR = destR;
+  let ambushHex: { q: number; r: number } | undefined;
+  if (fullPath !== null) {
+    const plan = planPlayerAmbushMove(units, fullPath, barb.ownerId, isAtWar, true);
+    if (plan.kind !== 'clear') {
+      ambushHex = plan.ambushHex;
+      if (plan.path.length === 0) {
+        toQ = barb.q;
+        toR = barb.r;
+      } else {
+        const last = plan.path[plan.path.length - 1]!;
+        toQ = last.q;
+        toR = last.r;
+      }
+    }
+  }
+  return { toQ, toR, stays: toQ === barb.q && toR === barb.r, ambushHex };
+}
+
+/**
+ * Po ruchu barbarzyncy: ujawnia zasadzke (jesli stoi tuz przy niej) i zwraca komende `attack` do wstrzykniecia
+ * oraz obronce (do komunikatu dla wlasciciela zasadzki). Brak zasadzki w zasiegu = undefined.
+ */
+export function buildBarbarianAmbushAttack(
+  units: RuntimeUnit[],
+  barb: Pick<RuntimeUnit, 'id' | 'q' | 'r' | 'ownerId'>,
+  ambushHex: { q: number; r: number } | undefined,
+  isAtWar: AmbushWarPredicate,
+): { cmd: { type: 'attack'; unitId: string; targetUnitId: string }; defender: RuntimeUnit } | undefined {
+  const order = resolveAmbushAfterMove(units, barb, ambushHex, isAtWar);
+  if (order === undefined) return undefined;
+  return { cmd: { type: 'attack', unitId: barb.id, targetUnitId: order.defender.id }, defender: order.defender };
+}
