@@ -3371,3 +3371,9 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Noty do rejestru (R7K7C):** (1) płatność Praca jest podłogowana, a bramka `buyer_ok` sprawdza saldo (pin `main.ts:24155`, Rust `turn_war_dipl_steps.rs:545`) — odstępstwo z DODATKU r2 (`saldo płatnika`) NIE jest odstępstwem od pinu; (2) kolejność faz `advance_turn` względem pinu bez testu — dług; (3) wartości testu wiringu wyprowadzone z formuł pinu, nie z generatora — dług; (4) pokrycie apply przez agregaty (D3 generator 220 wektorów zamiast sekwencji w apply.json) — akceptowane przez FC.
 - **Integracja R7K7C:** merge `--no-ff` `e5e1979f3` → `2e64878b0` w tymczasowym worktree `r7-int` na `parity-v2` `2b4bf8fde`. merge-tree czysty (exit 0), zmiany w `rust-port/engine` i w katalogu raportów, bez `Cargo.lock`/`gra/`. **Pełna bramka w toku** (fmt, clippy, p6_r7k7c, `--all-targets`), po niej FF.
 - **Sloty:** 1/4 (R7K7C integracja). Następnie T1 (#263; `13fc99862`, FC PASS-WITH-NOTES `020b3b7c9`, pełny test + FF) i T4e r4 (dispatch do napisania, baza `760be5187`).
+
+### Przebieg — heartbeat Rust 10:47 UTC: 0 aktywnych workflow, integracja R7K7C w bramce (wstrzymanie startów)
+
+- **Aktywne Workflow: 0.** R7K7C (#106) r2 zakończony FC PASS-WITH-NOTES; T7b zintegrowany. Brak żywych workerów w kolejce, ale bramka integracyjna R7K7C buduje (`fmt` EXIT 0, `clippy -D warnings` EXIT 0, test `p6_r7k7c` w toku). Dysk 8,5 GB.
+- **Wstrzymane świadomie:** nowe starty (T1 integracja z pełnym testem, T4e r4) — po zielonej bramce R7K7C. Powód: jeden build naraz i dysk ok. 8 GB; równoległe buildy już kilka razy zatrzymały tematy przez dysk.
+- **Następnie:** FF `parity-v2` po R7K7C (`2e64878b0`); potem T1 (pełny test + FF); potem T4e r4 (dispatch do napisania, baza `760be5187`→ po T1 parity).
