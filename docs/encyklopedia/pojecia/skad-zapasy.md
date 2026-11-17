@@ -55,7 +55,7 @@ Kierunek (przyrost lub ubytek) wynika z tego, czy surowiec wpłynął do magazyn
 
 ### Ile tur
 
-Sekcja obejmuje **ostatnie 10 tur** (parametr `ksiega_zasobow_tury` w `econ-params.json`, taki sam dla każdego poziomu trudności). Starsze tury nie są pamiętane.
+Sekcja obejmuje **ostatnie 10 tur** (długość dziennika zasobów w ustawieniach ekonomii miasta, taka sama dla każdego poziomu trudności). Starsze tury nie są pamiętane.
 
 ### Jak czytać
 

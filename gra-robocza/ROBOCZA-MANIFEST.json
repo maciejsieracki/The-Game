@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "1d2c6ca9d70f479e3ad4cab06f991909",
-  "bundleSha256": "9102883e6d194f79fe421b2652d625ef87eba13974c367244421bca8d4e66286",
-  "bundleBytes": 14848101,
+  "bundleMd5": "e03ced2dde0731a7d23b134563a1f2ba",
+  "bundleSha256": "6aae7c7040cb47dd8aa910d8188f04e9a2129679743ec0f7e1c1da970cd445b2",
+  "bundleBytes": 14848111,
   "sourceSnapshot": {
-    "source": "main f0afe94cd + merge FC a06e25414",
+    "source": "main ac0904f34 + merge FC de02176bb",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 788: R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1 (r2, FC PASS-WITH-NOTES a06e25414): w bitwie z zasadzki zastawiajacy rozstawia sie takze na polu wroga (cale pole, bez mgly), zaskoczeni stoja w dlugiej linii max 3 w szeregu (konnica/rydwany w linii); zwykla bitwa bez zmian (1776 pozycji identyczne z baza); strefa graficzna = logika; bez generala rozstawienie z komunikatem PL i bitwa AUTO; bez premii liczbowych"
+    "FALA 789: R-WEB-DOCS-IDS-LEAK-WIKI-SKAD-ZAPASY-ZAUFANIE-Q1 (r1, FC PASS de02176bb): hasla wiki Skad zapasow i Zaufanie opisuja slownie dlugosc dziennika zasobow (10 tur) i czas dobrej woli (3 tury) zamiast surowych kluczy ksiega_zasobow_tury i dobra_wola_tur; wartosci i mechanika bez zmian; regeneracja wikiBundle tylko dla tych dwoch hasel"
   ],
   "verification": [
-    "tsc 0; 5 bramek zielonych; ambush-deploy geometry 20/0, scene 26/0, line-width 240, zone-visual 11/0, wiring 15/0, identity 1776 pozycji; mgla-sciezka 42/0; json-descriptions-sync 19/0; ambush-core 40/0, save-roundtrip 5/0"
+    "tsc 0; logic 213/213; ids-leak-audit 1725 ok/0 FAIL (bylo 1723/2); json-descriptions-sync 19/0; ui-text-leftovers zielone; wiarygodnosc 270/0; mutacja (przywrocony klucz) czerwona; 5 bramek zielone wg FC"
   ],
   "limits": [
-    "NIE ZMIERZONO: faza rozstawiania zasadzki w zywym Chromium (ambush-live 18 PASS/3 FAIL identycznie na bazie; harnessy battle-* nie buduja sie przez brandTokenVars ?raw = dlug bazowy); autozapis w trakcie rozstawiania (zablokowany isSaveBlockedByBattle); kolejnosc rozstawiania stron AI na scenerii z przeszkodami. CZEKA NA RANO: rozstawienie bez generala = AUTO z komunikatem; AUTO na mapie ignoruje zasadzke. Dlug Rust: REPIN"
+    "NIE ZMIERZONO: Chromium/wizualnie (zmiana tylko tekstu wiki); pelny zbior ~190 testow wiki/diplo. Wiersz json_ref w skad-zapasy.md zostaje jako metadana poza widokiem gracza"
   ],
-  "finalControl": "R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1 r2 FC PASS-WITH-NOTES a06e25414",
+  "finalControl": "R-WEB-DOCS-IDS-LEAK-WIKI-SKAD-ZAPASY-ZAUFANIE-Q1 r1 FC PASS de02176bb",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T02:30:12",
+  "hubGeneratedAt": "2026-11-17T05:48:48",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
-      "sizeBytes": 14848101
+      "md5": "e03ced2dde0731a7d23b134563a1f2ba",
+      "sizeBytes": 14848111
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
-      "sizeBytes": 14848101
+      "md5": "e03ced2dde0731a7d23b134563a1f2ba",
+      "sizeBytes": 14848111
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
-      "sizeBytes": 14848101
+      "md5": "e03ced2dde0731a7d23b134563a1f2ba",
+      "sizeBytes": 14848111
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
-      "sizeBytes": 14848101
+      "md5": "e03ced2dde0731a7d23b134563a1f2ba",
+      "sizeBytes": 14848111
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
-      "sizeBytes": 14848101
+      "md5": "e03ced2dde0731a7d23b134563a1f2ba",
+      "sizeBytes": 14848111
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
-      "sizeBytes": 14848101
+      "md5": "e03ced2dde0731a7d23b134563a1f2ba",
+      "sizeBytes": 14848111
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
-      "sizeBytes": 14848101
+      "md5": "e03ced2dde0731a7d23b134563a1f2ba",
+      "sizeBytes": 14848111
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
-      "sizeBytes": 14848101
+      "md5": "e03ced2dde0731a7d23b134563a1f2ba",
+      "sizeBytes": 14848111
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
-      "sizeBytes": 14848101
+      "md5": "e03ced2dde0731a7d23b134563a1f2ba",
+      "sizeBytes": 14848111
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
-      "sizeBytes": 14848101
+      "md5": "e03ced2dde0731a7d23b134563a1f2ba",
+      "sizeBytes": 14848111
     }
   ],
-  "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
+  "md5": "e03ced2dde0731a7d23b134563a1f2ba",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
