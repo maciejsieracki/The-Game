@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "7e31b446d320117abc829a9384d3634d",
-  "bundleSha256": "f3e6a1dcd02fc5286f0b83134d7204edcdfef7b1962ceec8d4ef714d2b73b142",
+  "bundleMd5": "99946b6daaade51f3448f0eb63475cdd",
+  "bundleSha256": "378453b53db91c8a7ea9bc057418dd45456c1911953b6de1209b8b602e63dcb1",
   "bundleBytes": 14849553,
   "sourceSnapshot": {
-    "source": "merge FC d024ea7fe na origin/main ef46937bf",
+    "source": "merge FC eaef99682 na origin/main 1dc018474",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 795: Zasadzke moze zastawic tylko armia z generalem (przycisk zablokowany z powodem 'Zasadzke moze zastawic tylko armia z generalem.', ta sama regula w canSetAmbush dla gracza); utrata generala wygasza zasadzke stosu (reconcileAmbush); Civpedia i wikiBundle zaktualizowane; AI w tej wersji nie zastawia zasadzek, ale przyszla sciezka AI musi wolac canSetAmbush (d024ea7fe)"
+    "FALA 796: Obrazenia i straty przeciwnika w bitwie sa niebieskie (#8fb6e0; etykiety, kafel Straty wroga na ekranie wyniku, obwodka zniszczonej jednostki przeciwnika w podsumowaniu), jednostek gracza czerwone (#ff7070); minimapa bez zmian; zolty pas atakujacego 3D (kolor cywilizacji gracza) bez zmian (eaef99682, merge z origin/main 1dc018474)"
   ],
   "verification": [
-    "ambush-core 48/0, save-roundtrip 7/0, ui-reason 10/0, wiring 28/0, realstep 16/0, deploy-* i mgla-sciezka 42/0, logic 213/213, tsc 0, vite build OK; zywy Chromium 23 PASS/3 FAIL (B3,B5,B6 czerwone tez na bazie); zrzut elementu przycisku zablokowanego bez generala wykonany"
+    "battle-damage-colors-test 28/0, zywy Chromium 1440x900 i 1024x640: 7 PASS/0 FAIL (kolory rgb(143,182,224) przeciwnik, rgb(255,112,112) gracz), battle-hp-display 7/7, battle-tempo-minimap-brand OK, tsc 0, logic 213/213, build OK; NIE ZMIERZONO: ekran wyniku i podsumowanie w Chromium, kontrast niebieskiego na jasnej trawie liczbowo (1,47:1), minimapa, Rust REPIN"
   ],
   "limits": [
-    "Dlug bazowy ambush-live B3/B5/B6 (scenariusz AI wpada w zasadzke gracza bez zielonego dowodu zywego); sciezka rozstawienia bez generala->AUTO zostaje dla zaskoczonego gracza"
+    "Zolty pas atakujacego w 3D (0xffd54a = kolor cywilizacji gracza) wymaga decyzji ABC; nakladanie sie etykiet (np. -18 na -6) to zachowanie sprzed tematu; baner bitwy w 1024x640 zaslania WYCOFAJ SIE (osobny temat UI)"
   ],
-  "finalControl": "R-WEB-ARMY-AMBUSH-REQUIRES-GENERAL-Q1 r1 FC PASS-WITH-NOTES d024ea7fe",
+  "finalControl": "R-WEB-UI-BATTLE-DAMAGE-COLORS-BLUE-RED-Q1 r2 FC PASS-WITH-NOTES eaef99682",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T10:10:33",
+  "hubGeneratedAt": "2026-11-17T12:28:00",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "7e31b446d320117abc829a9384d3634d",
+      "md5": "99946b6daaade51f3448f0eb63475cdd",
       "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "7e31b446d320117abc829a9384d3634d",
+      "md5": "99946b6daaade51f3448f0eb63475cdd",
       "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "7e31b446d320117abc829a9384d3634d",
+      "md5": "99946b6daaade51f3448f0eb63475cdd",
       "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "7e31b446d320117abc829a9384d3634d",
+      "md5": "99946b6daaade51f3448f0eb63475cdd",
       "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "7e31b446d320117abc829a9384d3634d",
+      "md5": "99946b6daaade51f3448f0eb63475cdd",
       "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "7e31b446d320117abc829a9384d3634d",
+      "md5": "99946b6daaade51f3448f0eb63475cdd",
       "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "7e31b446d320117abc829a9384d3634d",
+      "md5": "99946b6daaade51f3448f0eb63475cdd",
       "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "7e31b446d320117abc829a9384d3634d",
+      "md5": "99946b6daaade51f3448f0eb63475cdd",
       "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "7e31b446d320117abc829a9384d3634d",
+      "md5": "99946b6daaade51f3448f0eb63475cdd",
       "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "7e31b446d320117abc829a9384d3634d",
+      "md5": "99946b6daaade51f3448f0eb63475cdd",
       "sizeBytes": 14849553
     }
   ],
-  "md5": "7e31b446d320117abc829a9384d3634d",
+  "md5": "99946b6daaade51f3448f0eb63475cdd",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

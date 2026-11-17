@@ -1,3 +1,9 @@
+## ROBOCZA 99946b6d -- 2026-11-17 -- FALA 796: Kolory obrazen w bitwie: przeciwnik niebieski, gracz czerwony (DMGCOLORS) (testowa)
+
+- Obrazenia i straty przeciwnika w bitwie sa niebieskie (#8fb6e0; etykiety, kafel Straty wroga na ekranie wyniku, obwodka zniszczonej jednostki przeciwnika w podsumowaniu), jednostek gracza czerwone (#ff7070); minimapa bez zmian; zolty pas atakujacego 3D (kolor cywilizacji gracza) bez zmian (eaef99682, merge z origin/main 1dc018474)
+- Weryfikacja: battle-damage-colors-test 28/0, zywy Chromium 1440x900 i 1024x640: 7 PASS/0 FAIL (kolory rgb(143,182,224) przeciwnik, rgb(255,112,112) gracz), battle-hp-display 7/7, battle-tempo-minimap-brand OK, tsc 0, logic 213/213, build OK; NIE ZMIERZONO: ekran wyniku i podsumowanie w Chromium, kontrast niebieskiego na jasnej trawie liczbowo (1,47:1), minimapa, Rust REPIN
+- Limity: Zolty pas atakujacego w 3D (0xffd54a = kolor cywilizacji gracza) wymaga decyzji ABC; nakladanie sie etykiet (np. -18 na -6) to zachowanie sprzed tematu; baner bitwy w 1024x640 zaslania WYCOFAJ SIE (osobny temat UI)
+
 ## ROBOCZA 7e31b446 -- 2026-11-17 -- FALA 795: Zasadzka tylko z generalem (AMBGEN) (testowa)
 
 - Zasadzke moze zastawic tylko armia z generalem (przycisk zablokowany z powodem 'Zasadzke moze zastawic tylko armia z generalem.', ta sama regula w canSetAmbush dla gracza); utrata generala wygasza zasadzke stosu (reconcileAmbush); Civpedia i wikiBundle zaktualizowane; AI w tej wersji nie zastawia zasadzek, ale przyszla sciezka AI musi wolac canSetAmbush (d024ea7fe)
