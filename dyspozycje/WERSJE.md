@@ -1,3 +1,9 @@
+## ROBOCZA e03ced2d -- 2026-11-16 -- FALA 789: wiki bez surowych kluczy technicznych (testowa)
+
+- R-WEB-DOCS-IDS-LEAK-WIKI-SKAD-ZAPASY-ZAUFANIE-Q1 (r1, FC PASS de02176bb): hasla wiki Skad zapasow i Zaufanie opisuja slownie dlugosc dziennika zasobow (10 tur) i czas dobrej woli (3 tury) zamiast surowych kluczy ksiega_zasobow_tury i dobra_wola_tur; wartosci i mechanika bez zmian; regeneracja wikiBundle tylko dla tych dwoch hasel
+- Weryfikacja: tsc 0; logic 213/213; ids-leak-audit 1725 ok/0 FAIL (bylo 1723/2); json-descriptions-sync 19/0; ui-text-leftovers zielone; wiarygodnosc 270/0; mutacja (przywrocony klucz) czerwona; 5 bramek zielone wg FC
+- Limity: NIE ZMIERZONO: Chromium/wizualnie (zmiana tylko tekstu wiki); pelny zbior ~190 testow wiki/diplo. Wiersz json_ref w skad-zapasy.md zostaje jako metadana poza widokiem gracza
+
 ## ROBOCZA 1d2c6ca9 -- 2026-11-16 -- FALA 788: rozstawienie w bitwie z zasadzki (testowa)
 
 - R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1 (r2, FC PASS-WITH-NOTES a06e25414): w bitwie z zasadzki zastawiajacy rozstawia sie takze na polu wroga (cale pole, bez mgly), zaskoczeni stoja w dlugiej linii max 3 w szeregu (konnica/rydwany w linii); zwykla bitwa bez zmian (1776 pozycji identyczne z baza); strefa graficzna = logika; bez generala rozstawienie z komunikatem PL i bitwa AUTO; bez premii liczbowych
