@@ -3392,3 +3392,19 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 
 - **Powód braku startów:** kolejka czystych tematów z kodem Rust wymaga najpierw dispatchu. Najbliższy to T4e r4 (#315): DODATEK r4 do napisania, baza `760be5187` → rebase na `984df1cc0`. Pozostałe kandydaci (K5LOOP-FACING, ZLOZA, CRED-HAK, R7K7C-WIRING-IMPL) mają blokady: decyzje ABC lub kontrakt. Nie wymyślam tematów. Start T4e r4 w następnym ticku, po zapisaniu dispatchu i wypchnięciu.
 - **Następnie:** DODATEK r4 dla T4e (#315), potem start przy wolnych ≥ 8 GB; odblokowanie K5LOOP-FACING (#107) i R7K7C-WIRING (#298/#351), gdy kontrakt pozwoli.
+
+### Przebieg — integracja renderera Q5+R1+R3+R2 na parity-v2 (ba7f3734a) i start R5 (2026-11-17, po poleceniu właściciela)
+
+- **Zintegrowane (merge --no-ff na `984df1cc0`, kolejno):** Q5 `922300020` → `62d565e67`; R1 `3dec6ac5d` → `811d42092`; R3 `963148a78` → `9e003bd47`; R2 `11d7e4763` → `ba7f3734a`. Zakres: 29 plików, wyłącznie `rust-port/renderer/*` i dyspozycje. Każdy krok bez konfliktów (merge-tree potwierdzony przed).
+- **Bramka renderera:** `fmt --check` EXIT 0; `clippy --all-targets -D warnings` EXIT 0; `cargo test --all-targets --no-fail-fast` EXIT 0 (75 wyników `test result: ok`, 0 FAILED/panicked). FF `parity-v2`: `984df1cc0..ba7f3734a`, readback OK.
+- **R5 CITY-CHIPS (`56c84ea45`) NIE w parity:** konflikt w `rust-port/renderer/src/cities/mod.rs` (deklaracje modułów R5 vs R6 `2edc808d7`). Rozstrzygnięcie orkiestratora: unia obu stron. Nie rozwiązywane ręcznie (zasada 1). Dispatch `R-RUSTPORT-P4-1-R5-INTEG-R1/00-dispatch.md` wypchnięty (commit `aa138bb27`).
+- **Workflow w toku:** R-RUSTPORT-P4-1-R5-INTEG-R1 (`wf_a010fedf-071`), Operator HAIKU → Evaluator SONNET → FC SONNET. Start: 2026-11-17 ~11:3x UTC.
+- **Sprzątanie:** worktree `rend-int` i `t1-int` usunięte; w scratchpadzie usunięto `t7b-int-target` (3,3 GB) i `tgt-r3` (3,7 GB) — brak żywych procesów cargo na tych ścieżkach. Dysk: 17 GB wolne.
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| R5 CITY-CHIPS — integracja (konflikt cities/mod.rs) | 1/3 Operator | HAIKU 5.5 | 11:3x UTC |
+
+**Sloty: 1/4.** Pozostałe trzy nie mają czystego tematu z dispatchem: K5DOC-T4e (#315) wymaga DODATKU r4 (baza `ba7f3734a`); K5LOOP-FACING (#107), ZLOZA (#104/#172), CRED-HAK (#120/#286), R7K7C-WIRING-IMPL (#298/#351) mają blokady (decyzje ABC lub kontrakt). Nie wymyślam tematów dla zapełnienia.
+
+**Do decyzji właściciela (pytania ABC zadam w czacie):** mgła fotela (#253 → blokuje #278/#279/#334/#335/#337), wariant CRED-HAK (#286), AI trzyma jednostkę w mieście podczas wojny (#327).
