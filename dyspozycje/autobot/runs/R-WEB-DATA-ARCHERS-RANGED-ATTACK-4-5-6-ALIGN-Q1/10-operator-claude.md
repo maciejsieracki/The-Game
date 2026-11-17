@@ -68,3 +68,60 @@ DŁUG RUST: REPIN units.json (łucznicy): Łucznik 4/4, egipski 5/5, nubijski 6/
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (Sonnet): weryfikacja diffu (tylko gra/data/units.json i gra/tools/archers-health-dist-data-test.cjs oraz raport), potem Final Control.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+## RUNDA 2/5 (Operator, Haiku 5.5) — naprawa zarzutu FC r1 w `gra/tools/city-wall-towers-test.cjs`
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (test, bez zmian w `gra/src` i danych)
+TEMAT: R-WEB-DATA-ARCHERS-RANGED-ATTACK-4-5-6-ALIGN-Q1
+GOAL: usunąć czerwień city-wall-towers-test (56 OK / 3 FAIL na kandydacie) przez aktualizację trzech przestarzałych asercji do zachowania wynikającego z decyzji 2026-11-17 (Łucznik 4 / egipski 5 / nubijski 6); bez zmian logiki wyboru wieżyczki.
+BAZA: merge `origin/main` (6ddb8c2d2) do kandydata 2cd4044104f11aa7ee59c6840a6c69266e24e105 (`git merge-base --is-ancestor origin/main` przed merge: NIE; po merge czysty). Worktree odłączony (`git checkout --detach`).
+
+ZMIANY/COMMIT:
+- `gra/tools/city-wall-towers-test.cjs` (3 asercje + komunikaty; NIC więcej):
+  - linia ~79: `k1 === 'Oszczepnik'` → `'Łucznik'` (missileAttack 4 = remis z Oszczepnikiem 4; remis rozstrzyga zasięg 3 > 2); komunikat cytuje decyzję 2026-11-17.
+  - linia ~84: moc `Łucznik egipski` 6 → 5 (decyzja 2026-11-17).
+  - linia ~95: `towerRangeFor(k1)` 2 → 3 (zasięg wieżyczki Kamienia generycznej cywilizacji 2 → 3 jako skutek wyboru Łucznika).
+- Nie zmieniono: `gra/src/**`, `gra/data/**`, `gra/tools/*` poza tym jednym plikiem.
+- Bramka `git status`: po testach przywrócono artefakty PNG/JSON nadpisane przez testy (`git checkout --` jawnymi ścieżkami); w commicie tylko plik testu i ten raport.
+
+SKUTEK ROZGRYWKOWY (dla właściciela, nie zmieniany w tym temacie): w Kamieniu wieżyczka murów generycznej cywilizacji strzela Łucznikiem (zasięg 3) zamiast Oszczepnikiem (zasięg 2). Zasięg wieżyczki +1 w tej epoce.
+
+MUTACJA (dowód czerwieni): w kopii `gra/data/units.json` podstawiono dane z bazy `6ddb8c2d2` (silnik Łucznik 3 / egipski 6 / nubijski 6) → `WYNIK: 56 OK, 3 FAIL`, czerwone dokładnie trzy zaktualizowane asercje (Łucznik, egipski moc 5, zasięg 3). Po mutacji `git checkout -- gra/data/units.json`.
+
+TESTY (surowe wyniki, Node v22.22.0; `npm ci` w `gra/`, 71 pakietów; node_modules ignorowany przez git):
+- `node tools/city-wall-towers-test.cjs` → `WYNIK: 59 OK, 0 FAIL`, exit 0 (kandydat przed poprawką: 56 OK / 3 FAIL, exit 1).
+- `node tools/json-descriptions-sync-test.cjs` → `19 pass / 0 fail`, exit 0.
+- `node tools/archers-health-dist-data-test.cjs` → `WYNIK: 10 pass, 0 fail`, exit 0.
+- `node tools/ranged-damage-mult-test.cjs` → exit 0; `node tools/unit-card-ranged-mult-test.cjs` → exit 0.
+- `npx tsc --noEmit` → exit 0.
+- Bramki: `logic-test.cjs` → `LOGIC OK (213/213)`, exit 0; `tech-tree-test.cjs` → exit 0; `research-test.cjs` → `PASSED: 33 / FAILED: 0 / TOTAL: 33`, exit 0; `unit-replace-test.cjs` → exit 0; `combat-test.cjs` → `All sanity checks passed.`, exit 0.
+- Wszystkie testy `gra/tools` wymieniające łuczników (grep -il `Łucznik|Lucznik|lucznik|archer`, 118 plików): uruchomiono 87 (`node`, timeout 90 s), 32 pominięto jako wymagające Chromium albo będące pomiarem/symulacją (NIE URUCHOMIONO; lista w `/tmp/wf47-res-cand.tsv` i `/tmp/wf47-res-base.tsv`).
+
+TABELA test | baza (6ddb8c2d2) | kandydat (merge + poprawka testu), dla 87 uruchomionych:
+- Bez zmiany wyniku (exit 0 na obu): 76 testów.
+- Czerwone na obu (ten sam exit, brak nowej czerwieni): `ambush-deploy-identity-test` (exit 2), `atak-adiacencja-wymagana-test` (1), `battle-collision-arbitration-test` (124 timeout), `battle-full-move-strike-test` (124), `battle-pursuit-move-behavior-test` (124), `battle-ranged-approach-regression-test` (124), `civ-matrix-greece-test` (1), `drewno-gate-test` (1), `fortify-pole-test` (1), `rekrutacja-skarbiec-only-test` (1), `wall-defenders-bonus-range-test` (124).
+- Czerwone na bazie, zielone na kandydacie: `battle-large-mixed-doctrine-matrix-test` (1 → 0), `pr141-matrix-only-data-wiki-test` (1 → 0).
+- NOWA CZERWIEŃ względem bazy: BRAK.
+- `city-wall-towers-test`: baza zielona (59/0), kandydat przed poprawką 56/3, po poprawce 59/0 — poprawka jest konieczna tylko dlatego, że merge z danymi ARCH456 przestawił wybór wieżyczki.
+
+PUNKT (2) — inne mechaniki wybierające „najsilniejszą dystansową” z remisem na `missileAttack` (opis, bez zmian):
+- Wieżyczki murów: `src/game/city-towers.ts` `strongestRangedUnitForEra` — remis mocy rozstrzygany zasięgiem (to jest mechanizm z punktu wyżej).
+- `src/battle/battleScene.ts:7885` — czyta `missileAttack` dla zasięgu/strzału jednostki, NIE wybiera najmocniejszej.
+- `src/game/combat.ts:478` — `max(meleeAttack, missileAttack)` (celność, nie wybór jednostki).
+- Zakup AI / doktryny: NIE ZMIERZONO dokładnie (grep po `missileAttack` w `src` nie znalazł osobnego selektora; nie prześledzono każdej ścieżki AI).
+
+BALANS (pojedynek 20 vs 20 Łucznik vs Wojownik): NIE ZMIERZONO — brak harnessu walki 20 vs 20 w repo; nie uruchamiano Chromium.
+
+BLOKADY: brak blokad technicznych. Zaległe, NIE związane z tematem (pre-existing, czerwone też na bazie): 11 testów z tabeli wyżej.
+
+UWAGI-DLA-ORKIESTRATORA:
+- Pytanie właściciela w relayu („jaką siłę uderzenia ma bojownik”, „uczników”) nie jest zadaniem tego tematu; nie odpowiadano na nie, zgodnie z dispatchem.
+- Lokalnie utworzono `gra/node_modules` (npm ci) w worktree tematu; usunięcie przy sprzątaniu worktree. Dangling symlink wcześniej istniejący przeniesiono `mv` do `/tmp/wf47-dangling-link-node_modules` (bez rm).
+- Dług Rust z rundy 1 bez zmian: REPIN units.json (łucznicy 4/4, egipski 5/5, nubijski 6/6).
+
+RUNDY: 2/5
+NASTĘPNY KROK: Evaluator (Sonnet): weryfikacja diffu `gra/tools/city-wall-towers-test.cjs` (3 asercje + komunikaty) i tabeli test | baza | kandydat; potem Final Control.
+DEPLOY/PUSH: NIE WYKONANO
