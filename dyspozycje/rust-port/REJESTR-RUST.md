@@ -3306,3 +3306,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **T7b odwrót (#342), r4:** Operator PASS-WITH-NOTES (bramki zielone), Evaluator w toku; po FC PASS integracja FF, po FAIL r5.
 - **Sloty: 4/4 aktywne** (T7b r4 + 3 nowe). Dysk ~12 GB przed startem; bramka renderera nie jest w kolejce.
 - **Nadal bez dispatchu:** #322 R4 (Opus, renderer, bramka 12 GB bez równoległych buildów), #332 zamknięty, #320/#321 bez rozpisanego dispatchu.
+
+### Przebieg — T4e (#315) r1 BLOCK → decyzje orkiestratora D1–D4 → r2 (2026-11-17 ~10:0x UTC)
+
+- **r1 (`wf_306624ba-d7a`):** Operator BLOCK bez zmian w kodzie (dane terenu w ProdBody, czas kroku, occByKey, zakres generatora); Evaluator FAIL; Obrona BLOCK potwierdzony; FC FAIL (dysk 4,9 GB). Commity zabezpieczone: `rust-port-wip/p6-k5doc-t4e-r1-{op,ob,ev,fc}`.
+- **Decyzje orkiestratora (DODATEK r2 `80027b328`):** D1 trait `MoveTerrain` + pole `terrain: Option<Box<dyn MoveTerrain>>`, brak → jawny błąd `MissingTerrain`; D2 czas kroku liczy adapter (STEP_GAP_MS=70, pin `battleScene.ts:1011`), `do_move_effects` bez czasu; D3 `occ_by_key` jako pole ProdBody; D4 podział na T4e-0 (typy + wiring + wektory passable/occ) i T4e-1 (pełne `_advanceStep` 1–10, kawaleria, brody).
+- **Baza r2:** `parity-v2` = `760be5187` (worktree przełączony; r1 zostawiła `d44d5b982`).
+- **Sprzątanie:** usunięte 4 worktrees r1 (zakończone, niezablokowane). Dysk 9,3 GB.
+- **r2 uruchomiony** (`wf_da078251-322`, Haiku/Sonnet, skrypt wf_89e542b7).
+- **Pozostałe w tym samym oknie:** T7b r4 (Evaluator), T1 (#263, `wf_2261fa9c-ded`), R7K7C (#106, `wf_f6310912-6d1`).
