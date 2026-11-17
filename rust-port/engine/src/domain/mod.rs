@@ -134,6 +134,7 @@ pub mod siege_tactics_inputs_unit;
 pub mod siege_tactics_inputs_wall;
 pub mod siege_tactics_instant;
 pub mod siege_tactics_kite;
+pub mod siege_tactics_ranged_forward;
 pub mod siege_tactics_loop;
 pub mod siege_tactics_outcome;
 pub mod siege_tactics_pathstep;
