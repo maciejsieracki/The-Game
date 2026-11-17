@@ -10710,3 +10710,9 @@ Właściciel: koszt pokoju znacząco podwyższyć tak, by na starcie wojny zwyci
 - **Skutek rozgrywkowy (zamierzony, decyzja A):** AI liczyła maxHP jednostek z pola `Health` (np. Wojownik 60), a walka z `health` (22) — AI zaniżała ułamek zdrowia pełnego Wojownika (ok. 0,37). Po zmianie AI i walka liczą to samo; ocena sił jednostek w AI/podziale armii dla 44 z 75 jednostek zmienia się. NIE ZMIERZONO: symulacja siły AI przed/po (≥3×150 tur) ani Chromium — do obserwacji w grze.
 - Testy: units-health-single-field ZIELONY, combat 6/6, unit-info-card 23/0, archers-health-dist 10/0, logic 213/213, tsc 0, build OK.
 - UWAGA: `gra/tools/roster6-units-patch.cjs` NADPISUJE units.json — nie uruchamiać bez decyzji.
+
+### FALA 795 — AMBGEN (2026-11-17)
+- Wdrożone na ROBOCZĄ: **R-WEB-ARMY-AMBUSH-REQUIRES-GENERAL-Q1** (r1 FC PASS-WITH-NOTES d024ea7fe). Zasadzkę może zastawić tylko armia z generałem: przycisk zablokowany z powodem „Zasadzkę może zastawić tylko armia z generałem.”, ta sama reguła w `canSetAmbush` (gracz); utrata generała wygasza zasadzkę stosu (`reconcileAmbush`); Civpedia + wikiBundle zaktualizowane.
+- main 1dc018474, ROBOCZA MD5 7e31b446 (GitHub Raw = manifest), sidecary audio 3/3 zgodne.
+- Testy: ambush-core 48/0, save-roundtrip 7/0, ui-reason 10/0, wiring 28/0, realstep 16/0, deploy-* i mgla-sciezka 42/0, logic 213/213, tsc 0, build OK; żywy Chromium 23 PASS / 3 FAIL (B3, B5, B6 — czerwone także na bazie, dług sprzed tematu); zrzut zablokowanego przycisku bez generała wykonany.
+- Uwagi: **AI w tej wersji nie zastawia zasadzek** (ścieżka tylko z UI gracza) — przyszła ścieżka AI musi wołać `canSetAmbush`; decyzja właściciela „zasadzka tylko z generałem (gracz i AI)” spełniona regułą w jednej funkcji. Ścieżka „rozstawienie bez generała → AUTO” zostaje dla zaskoczonego gracza bez generała. Dług: B3/B5/B6 (scenariusz AI wpada w zasadzkę gracza bez zielonego dowodu żywego).
