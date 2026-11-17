@@ -1,3 +1,9 @@
+## ROBOCZA e2ba27c6 -- 2026-11-17 -- FALA 792: Lucznicy: atak dystansowy 4/5/6, silnik = karty (ARCH456) (testowa)
+
+- Atak dystansowy (missileAttack i karta) Lucznik 4 / egipski 5 / nubijski 6, silnik i karty identyczne; zdrowie lucznikow bez zmian; skutek uboczny: wiezyczka murow generycznej cywilizacji w Kamieniu strzela Lucznikiem (zasieg 3) zamiast Oszczepnikiem (remis sily 4) (0bf2244ef, merge 45068fc34)
+- Weryfikacja: archers-health-dist-data-test 10/0, city-wall-towers-test 59/0, ranged-damage-mult PASS, logic 213/213, tsc 0, vite build OK; NIE ZMIERZONO zywa gra ani symulacja walk
+- Limity: Dane lucznikow z decyzji wlasciciela; inni lucznicy (sumeryjski 4, akadyjski 6/5, asyryjski 6/4, Konnica lucznicza 12/12, Procarz 4/4) bez zmian — raport dla wlasciciela w dispatchu
+
 ## ROBOCZA 2bff7522 -- 2026-11-17 -- FALA 791: Lista ulepszen terenu w kolejnosci po typach (IMPORDER) (testowa)
 
 - Lista ulepszen terenu (panel budowy + podpowiedz hexa) w stalej kolejnosci po 7 typach (22 pozycje: Rolnictwo, Hodowla, Drewno, Kamien/glina/sol, Kopalnie, Komunikacja, Obrona), dostepne zawsze u gory; tylko prezentacja (d7fca1736, merge d6ff0cc23)

@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "2bff752225c7aa0de99c3bf96e1b372a",
-  "bundleSha256": "e09bc86f18a8e56472aedc0015a4d5a93ae4490d05faca5c99db32cc6220b79b",
+  "bundleMd5": "e2ba27c691f8699fbc2c40f5bcedeba1",
+  "bundleSha256": "26f4bbef8416eb4e56c7087a267f0f94b9a76e35da23c629b468ecb3fd1087f2",
   "bundleBytes": 14849105,
   "sourceSnapshot": {
-    "source": "merge FC d7fca1736 na origin/main 31a93eb9c",
+    "source": "merge FC 0bf2244ef na origin/main d44d5b982",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 791: Lista ulepszen terenu (panel budowy + podpowiedz hexa) w stalej kolejnosci po 7 typach (22 pozycje: Rolnictwo, Hodowla, Drewno, Kamien/glina/sol, Kopalnie, Komunikacja, Obrona), dostepne zawsze u gory; tylko prezentacja (d7fca1736, merge d6ff0cc23)"
+    "FALA 792: Atak dystansowy (missileAttack i karta) Lucznik 4 / egipski 5 / nubijski 6, silnik i karty identyczne; zdrowie lucznikow bez zmian; skutek uboczny: wiezyczka murow generycznej cywilizacji w Kamieniu strzela Lucznikiem (zasieg 3) zamiast Oszczepnikiem (remis sily 4) (0bf2244ef, merge 45068fc34)"
   ],
   "verification": [
-    "improvements-list-order-test 11/11 (mutacja RED), logic 213/213, tsc 0 nowych bledow, vite build OK; NIE ZMIERZONO w zywym Chromium"
+    "archers-health-dist-data-test 10/0, city-wall-towers-test 59/0, ranged-damage-mult PASS, logic 213/213, tsc 0, vite build OK; NIE ZMIERZONO zywa gra ani symulacja walk"
   ],
   "limits": [
-    "Brak weryfikacji Chromium; kolejnosc zalezy od dostepnosci (tech/teren) wg istniejacej logiki"
+    "Dane lucznikow z decyzji wlasciciela; inni lucznicy (sumeryjski 4, akadyjski 6/5, asyryjski 6/4, Konnica lucznicza 12/12, Procarz 4/4) bez zmian — raport dla wlasciciela w dispatchu"
   ],
-  "finalControl": "R-WEB-UI-IMPROVEMENTS-LIST-ORDER-BY-TYPE-Q1 r1 FC PASS-WITH-NOTES d7fca1736",
+  "finalControl": "R-WEB-DATA-ARCHERS-RANGED-ATTACK-4-5-6-ALIGN-Q1 r2 FC PASS-WITH-NOTES 0bf2244ef",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T07:02:58",
+  "hubGeneratedAt": "2026-11-17T09:20:23",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "2bff752225c7aa0de99c3bf96e1b372a",
+      "md5": "e2ba27c691f8699fbc2c40f5bcedeba1",
       "sizeBytes": 14849105
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "2bff752225c7aa0de99c3bf96e1b372a",
+      "md5": "e2ba27c691f8699fbc2c40f5bcedeba1",
       "sizeBytes": 14849105
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "2bff752225c7aa0de99c3bf96e1b372a",
+      "md5": "e2ba27c691f8699fbc2c40f5bcedeba1",
       "sizeBytes": 14849105
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "2bff752225c7aa0de99c3bf96e1b372a",
+      "md5": "e2ba27c691f8699fbc2c40f5bcedeba1",
       "sizeBytes": 14849105
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "2bff752225c7aa0de99c3bf96e1b372a",
+      "md5": "e2ba27c691f8699fbc2c40f5bcedeba1",
       "sizeBytes": 14849105
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "2bff752225c7aa0de99c3bf96e1b372a",
+      "md5": "e2ba27c691f8699fbc2c40f5bcedeba1",
       "sizeBytes": 14849105
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "2bff752225c7aa0de99c3bf96e1b372a",
+      "md5": "e2ba27c691f8699fbc2c40f5bcedeba1",
       "sizeBytes": 14849105
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "2bff752225c7aa0de99c3bf96e1b372a",
+      "md5": "e2ba27c691f8699fbc2c40f5bcedeba1",
       "sizeBytes": 14849105
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "2bff752225c7aa0de99c3bf96e1b372a",
+      "md5": "e2ba27c691f8699fbc2c40f5bcedeba1",
       "sizeBytes": 14849105
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "2bff752225c7aa0de99c3bf96e1b372a",
+      "md5": "e2ba27c691f8699fbc2c40f5bcedeba1",
       "sizeBytes": 14849105
     }
   ],
-  "md5": "2bff752225c7aa0de99c3bf96e1b372a",
+  "md5": "e2ba27c691f8699fbc2c40f5bcedeba1",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
