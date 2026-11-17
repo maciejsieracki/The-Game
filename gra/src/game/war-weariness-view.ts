@@ -9,10 +9,10 @@
 // Wejścia podaje main.ts (stan gry: tury wojny, utracone miasta, siła militarna). Ten plik tylko je układa.
 // Dwa tryby zgodności z ticiem (WarWearinessReference):
 //  - 'tick' — para AI↔AI, jak runWarWearinessTick: poziom = szczyt pary, udział przycięty do udzialWyraznie;
-//  - 'ai'   — para gracz↔AI, jak ai.ts: poziom = bieżący, udział nieprzycięty, desperacja tylko przy isWarWeary.
+//  - 'ai'   — para gracz↔AI (panel): poziom = bieżący, udział nieprzycięty, desperacja = loserDespair BEZ bramki
+//             isWarWeary (R-WEB-DIPLO-DESPAIR-SHOW-FORMULA-IMPL-Q1: panel pokazuje wynik wzoru; ai.ts desperacji nie liczy).
 
 import {
-  isWarWeary,
   loserDespair,
   warWearinessLevel,
   WAR_WEARINESS_PARAMS,
@@ -25,7 +25,7 @@ import { formatTurCountAcc } from '../ui/formatPl';
 /** Rola strony w wojnie wg siły militarnej (remis = w progu parytetu). */
 export type WarWearinessRole = 'wygrywa' | 'przegrywa' | 'rowny';
 
-/** Który tick odwzorowujemy: 'tick' = AI↔AI (runWarWearinessTick), 'ai' = gracz↔AI (ai.ts). */
+/** Który tick odwzorowujemy: 'tick' = AI↔AI (runWarWearinessTick), 'ai' = gracz↔AI (panel). */
 export type WarWearinessReference = 'tick' | 'ai';
 
 /** Dane jednej strony pary. `id` służy wyłącznie do rozstrzygnięcia remisu siły (jak w compareMilitaryStrength). */
@@ -49,7 +49,7 @@ export interface WarWearinessPairInput {
   /**
    * Szczyt zmęczenia pary = `warWearinessByPairKey.get(key).peak` (stepPairState), tylko dla wojny bieżącej
    * (peakForCurrentWar). Używany w trybie 'tick' — runWarWearinessTick bierze szczyt do decyzji i loserDespair.
-   * Tryb 'ai' ignoruje go (ai.ts liczy z bieżącego poziomu).
+   * Tryb 'ai' ignoruje go (panel gracz↔AI liczy z bieżącego poziomu).
    */
   peak?: number;
   /** Domyślnie 'tick'. */
@@ -89,7 +89,7 @@ export function warWearinessPairView(
     },
     P,
   ));
-  // Tick AI↔AI: lvl = st.peak (szczyt, gdy podany). ai.ts (gracz↔AI): zawsze bieżący poziom.
+  // Tick AI↔AI: lvl = st.peak (szczyt, gdy podany). Panel gracz↔AI: zawsze bieżący poziom.
   const level = ref === 'tick' && inp.peak !== undefined ? clamp01(inp.peak) : current;
 
   const sideA: MilitarySide = { id: inp.a.id, sila: inp.a.sila, armiaPkt: inp.a.armiaPkt };
@@ -109,10 +109,8 @@ export function warWearinessPairView(
   const loserShare = aWins ? 1 - shareA : shareA;
   let despair: number;
   if (ref === 'ai') {
-    // ai.ts: wearyShare nieprzycięty; desperacja liczona tylko gdy isWarWeary(wearyLevel), inaczej 0.
-    despair = isWarWeary(level, P)
-      ? loserDespair({ level, share: loserShare, lostCities: loser.lostCities }, P)
-      : 0;
+    // Panel gracz↔AI: wynik wzoru loserDespair bez bramki zmęczenia (udział nieprzycięty; udział > udzialWyraznie → 0 we wzorze).
+    despair = loserDespair({ level, share: loserShare, lostCities: loser.lostCities }, P);
   } else {
     // runWarWearinessTick: udział przycięty do „wyraźnie" (remis nie wypada z desperacji).
     const shareForDespair = Math.min(loserShare, P.przegrywajacy.udzialWyraznie);

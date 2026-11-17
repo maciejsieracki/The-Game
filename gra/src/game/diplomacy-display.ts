@@ -22,6 +22,7 @@ import { nazwaWyswietlana } from './text-names';
 import { isTruceActive } from './diplomacy-peace-lock';
 import { formatTurCountAcc } from '../ui/formatPl';
 import { warWearinessNextStagePl, warWearinessStagesSummaryPl } from './war-weariness-view';
+import wearyParamsRaw from '../../data/war-weariness-params.json';
 
 const MATRIX = loadCivMatrix();
 
@@ -379,6 +380,19 @@ export function warWearinessPercentPl(value: number): string {
   return Math.round(v * 100) + '%';
 }
 
+/**
+ * Podpowiedź „Desperacja”: opisuje stronę przegrywającą; liczby (udział, wagi, utraty) z war-weariness-params.json.
+ * Wynik 0% oznacza, że strona nie jest wyraźnie słabsza (jej udział siły > udzialWyraznie).
+ */
+function warDespairTooltipPl(): string {
+  const L = wearyParamsRaw.przegrywajacy;
+  const pct = (v: number): string => Math.round(v * 100) + '%';
+  return 'Desperacja przegrywającej strony (0–100%) rośnie ze zmęczeniem wojną (' + pct(L.wagaZmeczenia)
+    + '), słabością siły (' + pct(L.wagaSily) + ') i utratą miast (' + pct(L.wagaStrat)
+    + ' przy nasyceniu ' + L.stratyNasycenie + ' miast); wysoka oznacza gotowość oddania miast za pokój. '
+    + '0%, gdy strona nie jest wyraźnie słabsza (udział jej siły powyżej ' + pct(L.udzialWyraznie) + ').';
+}
+
 /** Etykieta i podpowiedź (jedno zdanie) dla zmęczenia wojną („wygrywa"/„rowny") albo desperacji („przegrywa"). */
 export function warWearinessLabelPl(view: {
   zmeczenie?: number;
@@ -387,7 +401,7 @@ export function warWearinessLabelPl(view: {
   if (view.desperacja !== undefined) {
     return {
       label: 'Desperacja ' + warWearinessPercentPl(view.desperacja),
-      tooltip: 'Desperacja przegrywającego rośnie ze zmęczeniem wojną, słabością militarną i utratą miast; wysoka oznacza gotowość oddania miast za pokój.',
+      tooltip: warDespairTooltipPl(),
     };
   }
   if (view.zmeczenie !== undefined) {
