@@ -141,6 +141,9 @@ const cases = [
   ...aliases.map(([a]) => H(`alias_list_dup_${a}`, `${TI}:32-34,119,375`, 'brak', [a, aliases.find((x) => x[0] === a)[1]])),
   // Duplicates keep the first position, :375.
   H('dup_first_position', `${TI}:375`, 'brak', ['droga', 'farma', 'droga']),
+  // Name kept from DODATEK r2 (mutation (b') references it). "skipped" means only in
+  // improvementKeysForHex (:118); merged still holds '' and 'brak' as placed layers
+  // (main.ts:3132-3135, DECYZJA 2), expected [farma, droga, '', brak].
   H('brak_and_empty_skipped', `${TI}:118`, 'brak', ['', 'farma', 'brak', 'droga']),
   // Unknown key dropped by normalisation, re-added as placed layer (main.ts:3132-3135).
   H('unknown_dropped_then_placed', `${TI}:120-122; main.ts:3132-3135`, 'brak', ['nieznane', 'farma']),
