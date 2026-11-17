@@ -41,6 +41,17 @@ export interface AiEraPromotionDeps<U extends AiEraPromotableUnit> {
   category(target: AiEraPromotionTarget): string;
 }
 
+/** Narodowi łucznicy Brązu -> Procarz (Brąz Standardowa): jedyne przejścia Zastąp bez wzrostu epoki. */
+export const SAME_EPOCH_ARCHER_DOWNGRADE_SOURCES: ReadonlySet<string> = new Set([
+  'Łucznik nubijski',
+  'Łucznik akadyjski',
+  'Łucznik asyryjski',
+]);
+
+export function isSameEpochArcherDowngrade(sourceName: string, targetName: string): boolean {
+  return SAME_EPOCH_ARCHER_DOWNGRADE_SOURCES.has(sourceName) && targetName === 'Procarz';
+}
+
 /**
  * Promote one AI unit to the newest currently eligible same-role unit.
  * Availability and costs are supplied by the live-game callers. Cost = FULL recruitment cost of the
@@ -57,7 +68,15 @@ export function promoteAiUnitForEra<U extends AiEraPromotableUnit>(
   const oldDefinition = deps.oldDefinition(unit);
   if (!oldDefinition || !String(oldDefinition.Typ ?? '').trim()) return false;
   const target = deps.newestSameRole(unit, deps.candidates(unit));
-  if (!target || deps.epochNumber(target.Epoka) <= deps.epochNumber(oldDefinition.Epoka)) return false;
+  if (!target) return false;
+  const higherEpoch = deps.epochNumber(target.Epoka) > deps.epochNumber(oldDefinition.Epoka);
+  // R-WEB-UNIT-REPLACE-INCA-AND-NATIONAL-ARCHERS-TO-SLINGER-Q1 r3: jedyny wyjątek bez wzrostu epoki
+  // (narodowy łucznik Brązu -> Procarz, ta sama epoka, niższa klasa), zgodnie z tabelą w units.json.
+  const sameEpochArcherOk = isSameEpochArcherDowngrade(
+    String(oldDefinition.Jednostka).trim(),
+    String(target.Jednostka).trim(),
+  );
+  if (!higherEpoch && !sameEpochArcherOk) return false;
 
   const result = executeUnitReplace(unit, target.Jednostka, {
     gateReason: (u, newTypeId) => deps.gateReason?.(u, newTypeId) ?? null,

@@ -9,7 +9,8 @@
  *   1. cel istnieje w units.json (dokładna nazwa Jednostka, bez fuzzy matchingu);
  *   2. cel != źródło;
  *   3. cel jest wyżej: wyższa epoka LUB ta sama epoka i wyższa klasa
- *      (Standardowa < Specjalna < Super);
+ *      (Standardowa < Specjalna < Super); wyjątek: narodowi łucznicy Brązu -> Procarz
+ *      (SAME_EPOCH_ARCHER_DOWNGRADE, decyzja właściciela 2026-11-17);
  *   4. nacja: jeśli źródło i cel mają nację, muszą być równe (cel bez nacji
  *      jest dostępny dla każdej nacji; cel narodowy bez nacji źródła -- gating
  *      nacji robi availableReplacementsFor);
@@ -36,9 +37,24 @@ const BLANK = new Set(['', '-', '—']);
 // zasady "tylko piechota" -- Lucznik (Typ=Distance) -> Procarz (Typ=Slinger, standard) i
 // Procarz (Huaracoc) (Inkowie, nacja gatowana przez availableReplacementsFor). Kierunek wylacznie
 // Lucznik -> Procarz. Kazdy inny wpis poza piechota nadal jest bledem.
+// R-WEB-UNIT-REPLACE-INCA-AND-NATIONAL-ARCHERS-TO-SLINGER-Q1: narodowi łucznicy Kamienia (egipski,
+// sumeryjski) -> Procarz (ten sam kierunek co Łucznik, bez wariantu Huaracoc: cel narodowy innej
+// nacji jest odrzucany przez punkt 4).
+// R-WEB-UNIT-REPLACE-INCA-AND-NATIONAL-ARCHERS-TO-SLINGER-Q1 r2 (odpowiedź właściciela 2026-11-17: "Wszyscy
+// łucznicy finalnie przechodzą na procarze"): narodowi łucznicy Brązu (nubijski, akadyjski, asyryjski) ->
+// Procarz (Brąz Standardowa) -- ta sama epoka, niższa klasa (Specjalna -> Standardowa). To JEDYNE wejścia,
+// które nie są awansem epoki/klasy; obsługiwane przez SAME_EPOCH_ARCHER_DOWNGRADE (punkt 3 niżej).
+// Oszczepnik (Estólica) (Inkowie, Kamień, Distance) = dystansowa jednostka Inków -> Procarz/Procarz (Huaracoc).
 const ARCHER_EXCEPTIONS = {
   'Łucznik': ['Procarz', 'Procarz (Huaracoc)'],
+  'Łucznik egipski': ['Procarz'],
+  'Łucznik sumeryjski': ['Procarz'],
+  'Łucznik nubijski': ['Procarz'],
+  'Łucznik akadyjski': ['Procarz'],
+  'Łucznik asyryjski': ['Procarz'],
+  'Oszczepnik (Estólica)': ['Procarz', 'Procarz (Huaracoc)'],
 };
+const SAME_EPOCH_ARCHER_DOWNGRADE = new Set(['Łucznik nubijski', 'Łucznik akadyjski', 'Łucznik asyryjski']);
 const exceptionTargets = new Set(Object.values(ARCHER_EXCEPTIONS).flat());
 
 const byName = new Map(units.map(u => [String(u.Jednostka).trim(), u]));
@@ -81,7 +97,9 @@ for (const src of units) {
 
     const rs = rank(src), rt = rank(tgt);
     const higher = rt.epoch > rs.epoch || (rt.epoch === rs.epoch && rt.cls > rs.cls);
-    if (!higher) fail(`${srcName} -> ${tName}: cel nie jest wyższy (epoka/klasa ${rs.epoch}/${rs.cls} -> ${rt.epoch}/${rt.cls})`);
+    // Jedyny dozwolony wyjątek: narodowy łucznik Brązu -> Procarz (ta sama epoka, niższa klasa), decyzja właściciela 2026-11-17.
+    const sameEpochArcherOk = SAME_EPOCH_ARCHER_DOWNGRADE.has(srcName) && tName === 'Procarz';
+    if (!higher && !sameEpochArcherOk) fail(`${srcName} -> ${tName}: cel nie jest wyższy (epoka/klasa ${rs.epoch}/${rs.cls} -> ${rt.epoch}/${rt.cls})`);
 
     const sn = String(src.Nacja ?? '').trim(), tn = String(tgt.Nacja ?? '').trim();
     if (sn && tn && sn !== tn) fail(`${srcName} (${sn}) -> ${tName} (${tn}): różne nacje`);
@@ -163,7 +181,13 @@ const EXPECTED_TABLE = {
     "Wojownik fenicki": "Tyrski miecznik/Gwardia Tyreńska",
     "Thorakites": "Hieros Lochos (Święty Zastęp)",
     "Gwardzista z champi": "Królewska Gwardia",
-    "Łucznik": "Procarz/Procarz (Huaracoc)"
+    "Łucznik": "Procarz/Procarz (Huaracoc)",
+    "Łucznik egipski": "Procarz",
+    "Łucznik sumeryjski": "Procarz",
+    "Łucznik nubijski": "Procarz",
+    "Łucznik akadyjski": "Procarz",
+    "Łucznik asyryjski": "Procarz",
+    "Oszczepnik (Estólica)": "Procarz/Procarz (Huaracoc)"
   };
 {
   const actual = {};
