@@ -2,13 +2,13 @@
   "grecy": {
     "rys_historyczny": "Grecy zamieszkiwali żyzne doliny i wybrzeża Morza Egejskiego, a górzysty teren sprzyjał powstawaniu niezależnych miast-państw. Najgroźniejszą siłą w polu była falanga ciężkozbrojnych hoplitów, którzy walczyli ramię w ramię w zwartym szyku. Wierzono, że nad światem czuwają bogowie z Olimpu, a świątynie i święte gaje stały w centrum życia wspólnoty. Z tej kultury wyrosły także teatr, filozofia i igrzyska, które przetrwały w pamięci kolejnych pokoleń.",
     "powitanie_przyjazne": [
-      "Witaj w naszych stronach, przybyszu. Niech bogowie Olimpu czuwają nad twoją drogą i nad waszym przyjazdem.",
+      "Witaj w naszych stronach, przybyszu. Niech bogowie Olimpu czuwają nad twoją drogą i nad twoim przyjazdem.",
       "Cieszę się, że przybyłeś do Hellady. Zasiądź z nami przy stole, a porozmawiamy o tym, co może nas połączyć.",
       "Nasi hoplici strzegą pokoju, ale dziś widzę w tobie gościa. Mów śmiało, a wysłuchamy cię z szacunkiem."
     ],
     "powitanie_nieprzyjazne": [
       "Nie spodziewałem się twojego przybycia i nie ufam obcym, którzy wchodzą na naszą ziemię bez zapowiedzi.",
-      "Mów krótko, bo mój czas jest cenny, a moi hoplici wciąż trzymają włócznie w pogotowiu.",
+      "Mów krótko, bo mój czas jest cenny, a zaufanie trzeba mi dopiero udowodnić.",
       "Przybyłeś do Hellady z własnej woli, więc pamiętaj, że każdy twój krok będziemy uważnie obserwować."
     ]
   },
@@ -22,7 +22,7 @@
     "powitanie_nieprzyjazne": [
       "Rzym nie prosi o przyjaźń, lecz zapamiętuje tych, którzy jej nie okazują. Mów, z czym przybywasz, i nie trać mojego czasu.",
       "Znam dobrze takie zapewnienia, dlatego każde słowo ważę na szali. Nie oczekuj ode mnie ustępstw bez dowodu dobrej woli.",
-      "Stoisz przed senatem wielkiego państwa, więc zachowuj się tak, jakbyś czuł ciężar naszych legionów za plecami."
+      "Stoisz przed senatem wielkiego państwa, więc mów z należytym szacunkiem i wykaż uczciwe zamiary."
     ]
   },
   "chinczycy": {
@@ -35,7 +35,7 @@
     "powitanie_nieprzyjazne": [
       "Twoje słowa brzmią pięknie, lecz czyny oceniam uważniej niż wygląd. Dopiero zobaczymy, czy jesteś godzien naszej uwagi.",
       "Nie mamy zwyczaju przyjmować cudzoziemców bez wyraźnego celu. Powiedz, czego szukasz w naszych granicach, a potem zdecyduję.",
-      "Nad naszą ziemią zbierają się groźne chmury, a ty przybywasz w niespokojnym czasie. Strzeż się fałszywych obietnic, bo nasze szeregi są czujne."
+      "Nad naszą ziemią zbierają się trudne czasy, a ty przybywasz w niespokojnym okresie. Pamiętaj, że fałszywe obietnice szybko wychodzą na jaw."
     ]
   },
   "inkowie": {
@@ -54,7 +54,7 @@
   "zulusi": {
     "rys_historyczny": "Zulusi zamieszkiwali żyzne wyżyny południowo-wschodniej Afryki, gdzie hodowali bydło i uprawiali zboża. Społeczność porządkowały grupy wiekowe i wodzowie, a liczba posiadanego bydła była miarą pozycji rodu. Wojownicy tworzyli zwarte oddziały zwane impi, które szybko przemieszczały się po polu bitwy, zachowując dyscyplinę. Wiara w przodków i szacunek dla duchów opiekunów spajały wspólnotę i wyznaczały zasady życia codziennego.",
     "powitanie_przyjazne": [
-      "Witaj, przybyszu, w zielonych dolinach naszego ludu. Niech twoje kroki będą pewne, a przodkowie czuwają nad naszą rozmową.",
+      "Witaj, przybyszu, w zielonych dolinach naszego ludu. Niech twoje kroki będą pewne, a przodkowie niech czuwają nad naszą rozmową.",
       "W naszej wiosce gość jest jak dar od przodków. Usiądź przy ognisku i opowiedz, co sprowadziło cię w nasze strony.",
       "Jesteśmy ludem wojowników, lecz znamy też wartość zgody. Jeśli chcesz nam pomóc, nasze bramy staną przed tobą otworem."
     ],
@@ -69,11 +69,11 @@
     "powitanie_przyjazne": [
       "Witaj w ziemi nad Nilem, przybyszu. Niech Ra oświetla twoją drogę, a nasze pola przyniosą dobrobyt obu stronom.",
       "Cieszę się z twojej obecności na naszym dworze. Usiądź w cieniu i powiedz, w czym mogę ci pomóc z łaski bogów.",
-      "Mądrość przodków uczy, że przymierze zawarte w zgodzie jest silniejsze od każdej armii. Mówmy więc o pokoju."
+      "Bogowie cenią przymierza zawarte w zgodzie, bo są silniejsze od każdej armii. Mówmy więc o pokoju."
     ],
     "powitanie_nieprzyjazne": [
       "Nie przyjmuję przybyszów, których intencji nie znam. Mów krótko, bo mój dwór ma wiele pilniejszych spraw.",
-      "Rydwany moich wojsk stoją gotowe na granicy, więc dobrze zastanów się, zanim wypowiesz kolejne słowo.",
+      "Na moim dworze każde słowo ma wagę, więc dobrze zastanów się, zanim wypowiesz kolejne.",
       "Bogowie nie lubią kłamstwa, a ja również. Pokaż, że twoje zamiary są uczciwe, zanim usłyszysz coś więcej."
     ]
   },
@@ -99,7 +99,7 @@
     ],
     "powitanie_nieprzyjazne": [
       "Nie wpuszczamy obcych na nasze ziemie bez powodu. Twoja obecność budzi pytania, na które oczekuję szczerych odpowiedzi.",
-      "Nasi wojownicy są gotowi do szarży, więc dobrze zastanów się, zanim przekroczysz granicę naszego plemienia. Mów, czego chcesz.",
+      "Nasi wojownicy czuwają przy granicy plemienia, więc mów otwarcie, czego od nas chcesz.",
       "Druidzi przyjrzeli się twojemu przybyciu i nie są zadowoleni. Nie licz na łatwe zaufanie z mojej strony."
     ]
   },
@@ -117,7 +117,7 @@
     ]
   },
   "harappa": {
-    "rys_historyczny": "Cywilizacja doliny Indusu budowała miasta o regularnym planie, z prostymi ulicami i systemem odprowadzania wody z domostw. Mieszkańcy handlowali wewnątrz swojego obszaru, a rzemieślnicy wytwarzali ceramikę, pieczęcie i wyroby z koralików. Miasta otaczały mury obronne, które chroniły przed najazdami i kaprysami rzek. Wiara i obrzędy są znane głównie z pieczęci i figurek, a ich znaczenie wciąż bywa przedmiotem badań.",
+    "rys_historyczny": "Cywilizacja doliny Indusu budowała miasta o regularnym planie, z prostymi ulicami i systemem odprowadzania wody z domostw. Mieszkańcy handlowali w swoim obszarze i z odległymi krainami, a rzemieślnicy wytwarzali ceramikę, pieczęcie i wyroby z koralików. Miasta otaczały mury obronne, które chroniły przed najazdami. Wiara i obrzędy są znane głównie z pieczęci i figurek, a ich znaczenie wciąż bywa przedmiotem badań.",
     "powitanie_przyjazne": [
       "Witaj w naszych miastach o szerokich ulicach, przybyszu. Niech handel między nami przynosi dobro obu stronom, jak woda w naszych kanałach.",
       "Cieszę się z twojego przybycia i z gotowości do wymiany. Pokażę ci nasze targi i warsztaty, a potem usiądziemy do rozmowy.",
@@ -138,7 +138,7 @@
     ],
     "powitanie_nieprzyjazne": [
       "Góry chronią nasze państwo, a my nie ufamy obcym, którzy zbliżają się do stolicy bez zapowiedzi. Mów, czego chcesz.",
-      "Nasze fortyfikacje są wysokie, a rydwany gotowe do wymarszu. Zastanów się, zanim złożysz obietnicę, której nie dotrzymasz.",
+      "Nasze fortyfikacje są wysokie, a pamięć o dawnych zdradach jest długa. Zastanów się, zanim złożysz obietnicę, której nie dotrzymasz.",
       "Nie przywykliśmy do pochopnych układów z nieznajomymi. Dopiero po twoim czynie ocenię, czy warto z tobą rozmawiać."
     ]
   },
@@ -156,7 +156,7 @@
     ]
   },
   "babilonia": {
-    "rys_historyczny": "Babilonia leżała w południowej Mezopotamii nad Eufratem i stała się znana z prawa spisanego na kamiennej stelii, zwanego kodeksem Hammurabiego. Miasto słynęło z uczonych kapłanów, którzy obserwowali niebo i prowadzili rachunki astronomiczne. Świątynie oraz ziggurat boga Marduka wznosiły się w centrum miasta, a jego kult był ważny dla państwa. Handel, dyplomacja i rzemiosło przynosiły bogactwo, a mury obronne chroniły przed najeźdźcami.",
+    "rys_historyczny": "Babilonia leżała w południowej Mezopotamii nad Eufratem i stała się znana z prawa spisanego na kamiennej steli, zwanego kodeksem Hammurabiego. Miasto słynęło z uczonych kapłanów, którzy obserwowali niebo i prowadzili rachunki astronomiczne. Świątynie oraz ziggurat boga Marduka wznosiły się w centrum miasta, a jego kult był ważny dla państwa. Handel, dyplomacja i rzemiosło przynosiły bogactwo, a mury obronne chroniły przed najeźdźcami.",
     "powitanie_przyjazne": [
       "Witaj w Babilonie, przybyszu, mieście mądrości i praw. Niech Marduk prowadzi cię bezpieczną drogą, a nasze ulice przyjmą cię z szacunkiem.",
       "Cieszę się, że przybyłeś z zamiarem rozmowy zamiast miecza. W naszych księgach zapisano wiele przymierzy, a z tobą chętnie dopiszę kolejne.",

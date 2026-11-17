@@ -12,14 +12,14 @@ Grecy zamieszkiwali żyzne doliny i wybrzeża Morza Egejskiego, a górzysty tere
 
 **Powitanie przyjazne**
 
-1. Witaj w naszych stronach, przybyszu. Niech bogowie Olimpu czuwają nad twoją drogą i nad waszym przyjazdem.
+1. Witaj w naszych stronach, przybyszu. Niech bogowie Olimpu czuwają nad twoją drogą i nad twoim przyjazdem.
 2. Cieszę się, że przybyłeś do Hellady. Zasiądź z nami przy stole, a porozmawiamy o tym, co może nas połączyć.
 3. Nasi hoplici strzegą pokoju, ale dziś widzę w tobie gościa. Mów śmiało, a wysłuchamy cię z szacunkiem.
 
 **Powitanie nieprzyjazne**
 
 1. Nie spodziewałem się twojego przybycia i nie ufam obcym, którzy wchodzą na naszą ziemię bez zapowiedzi.
-2. Mów krótko, bo mój czas jest cenny, a moi hoplici wciąż trzymają włócznie w pogotowiu.
+2. Mów krótko, bo mój czas jest cenny, a zaufanie trzeba mi dopiero udowodnić.
 3. Przybyłeś do Hellady z własnej woli, więc pamiętaj, że każdy twój krok będziemy uważnie obserwować.
 
 ## Rzymianie (`rzymianie`)
@@ -38,7 +38,7 @@ Rzymianie wyrośli z osady nad Tybrem w Lacjum i stopniowo podporządkowali sobi
 
 1. Rzym nie prosi o przyjaźń, lecz zapamiętuje tych, którzy jej nie okazują. Mów, z czym przybywasz, i nie trać mojego czasu.
 2. Znam dobrze takie zapewnienia, dlatego każde słowo ważę na szali. Nie oczekuj ode mnie ustępstw bez dowodu dobrej woli.
-3. Stoisz przed senatem wielkiego państwa, więc zachowuj się tak, jakbyś czuł ciężar naszych legionów za plecami.
+3. Stoisz przed senatem wielkiego państwa, więc mów z należytym szacunkiem i wykaż uczciwe zamiary.
 
 ## Chińczycy (`chinczycy`)
 
@@ -56,7 +56,7 @@ Chińskie państwa rozwijały się wzdłuż Żółtej Rzeki i Jangcy, gdzie upra
 
 1. Twoje słowa brzmią pięknie, lecz czyny oceniam uważniej niż wygląd. Dopiero zobaczymy, czy jesteś godzien naszej uwagi.
 2. Nie mamy zwyczaju przyjmować cudzoziemców bez wyraźnego celu. Powiedz, czego szukasz w naszych granicach, a potem zdecyduję.
-3. Nad naszą ziemią zbierają się groźne chmury, a ty przybywasz w niespokojnym czasie. Strzeż się fałszywych obietnic, bo nasze szeregi są czujne.
+3. Nad naszą ziemią zbierają się trudne czasy, a ty przybywasz w niespokojnym okresie. Pamiętaj, że fałszywe obietnice szybko wychodzą na jaw.
 
 ## Inkowie (`inkowie`)
 
@@ -84,7 +84,7 @@ Zulusi zamieszkiwali żyzne wyżyny południowo-wschodniej Afryki, gdzie hodowal
 
 **Powitanie przyjazne**
 
-1. Witaj, przybyszu, w zielonych dolinach naszego ludu. Niech twoje kroki będą pewne, a przodkowie czuwają nad naszą rozmową.
+1. Witaj, przybyszu, w zielonych dolinach naszego ludu. Niech twoje kroki będą pewne, a przodkowie niech czuwają nad naszą rozmową.
 2. W naszej wiosce gość jest jak dar od przodków. Usiądź przy ognisku i opowiedz, co sprowadziło cię w nasze strony.
 3. Jesteśmy ludem wojowników, lecz znamy też wartość zgody. Jeśli chcesz nam pomóc, nasze bramy staną przed tobą otworem.
 
@@ -104,12 +104,12 @@ Egipt wykorzystywał Nil, którego coroczne wylewy użyźniały pola i wyznacza�
 
 1. Witaj w ziemi nad Nilem, przybyszu. Niech Ra oświetla twoją drogę, a nasze pola przyniosą dobrobyt obu stronom.
 2. Cieszę się z twojej obecności na naszym dworze. Usiądź w cieniu i powiedz, w czym mogę ci pomóc z łaski bogów.
-3. Mądrość przodków uczy, że przymierze zawarte w zgodzie jest silniejsze od każdej armii. Mówmy więc o pokoju.
+3. Bogowie cenią przymierza zawarte w zgodzie, bo są silniejsze od każdej armii. Mówmy więc o pokoju.
 
 **Powitanie nieprzyjazne**
 
 1. Nie przyjmuję przybyszów, których intencji nie znam. Mów krótko, bo mój dwór ma wiele pilniejszych spraw.
-2. Rydwany moich wojsk stoją gotowe na granicy, więc dobrze zastanów się, zanim wypowiesz kolejne słowo.
+2. Na moim dworze każde słowo ma wagę, więc dobrze zastanów się, zanim wypowiesz kolejne.
 3. Bogowie nie lubią kłamstwa, a ja również. Pokaż, że twoje zamiary są uczciwe, zanim usłyszysz coś więcej.
 
 ## Sumerowie (`sumer`)
@@ -145,7 +145,7 @@ Celtowie zamieszkiwali rozległe obszary Europy Środkowej i Zachodniej, a ich p
 **Powitanie nieprzyjazne**
 
 1. Nie wpuszczamy obcych na nasze ziemie bez powodu. Twoja obecność budzi pytania, na które oczekuję szczerych odpowiedzi.
-2. Nasi wojownicy są gotowi do szarży, więc dobrze zastanów się, zanim przekroczysz granicę naszego plemienia. Mów, czego chcesz.
+2. Nasi wojownicy czuwają przy granicy plemienia, więc mów otwarcie, czego od nas chcesz.
 3. Druidzi przyjrzeli się twojemu przybyciu i nie są zadowoleni. Nie licz na łatwe zaufanie z mojej strony.
 
 ## Germanie (`germanie`)
@@ -170,7 +170,7 @@ Germanie zamieszkiwali lasy i równiny na północ i wschód od granic Imperium 
 
 **Rys historyczny**
 
-Cywilizacja doliny Indusu budowała miasta o regularnym planie, z prostymi ulicami i systemem odprowadzania wody z domostw. Mieszkańcy handlowali wewnątrz swojego obszaru, a rzemieślnicy wytwarzali ceramikę, pieczęcie i wyroby z koralików. Miasta otaczały mury obronne, które chroniły przed najazdami i kaprysami rzek. Wiara i obrzędy są znane głównie z pieczęci i figurek, a ich znaczenie wciąż bywa przedmiotem badań.
+Cywilizacja doliny Indusu budowała miasta o regularnym planie, z prostymi ulicami i systemem odprowadzania wody z domostw. Mieszkańcy handlowali w swoim obszarze i z odległymi krainami, a rzemieślnicy wytwarzali ceramikę, pieczęcie i wyroby z koralików. Miasta otaczały mury obronne, które chroniły przed najazdami. Wiara i obrzędy są znane głównie z pieczęci i figurek, a ich znaczenie wciąż bywa przedmiotem badań.
 
 **Powitanie przyjazne**
 
@@ -199,7 +199,7 @@ Hetyci tworzyli państwo na płaskowyżu Anatolii, otoczonym górami, ze stolic�
 **Powitanie nieprzyjazne**
 
 1. Góry chronią nasze państwo, a my nie ufamy obcym, którzy zbliżają się do stolicy bez zapowiedzi. Mów, czego chcesz.
-2. Nasze fortyfikacje są wysokie, a rydwany gotowe do wymarszu. Zastanów się, zanim złożysz obietnicę, której nie dotrzymasz.
+2. Nasze fortyfikacje są wysokie, a pamięć o dawnych zdradach jest długa. Zastanów się, zanim złożysz obietnicę, której nie dotrzymasz.
 3. Nie przywykliśmy do pochopnych układów z nieznajomymi. Dopiero po twoim czynie ocenię, czy warto z tobą rozmawiać.
 
 ## Słowianie (`slowianie`)
@@ -224,7 +224,7 @@ Słowianie zamieszkiwali obszary między Bałtykiem, Karpatami i Dnieprem, gdzie
 
 **Rys historyczny**
 
-Babilonia leżała w południowej Mezopotamii nad Eufratem i stała się znana z prawa spisanego na kamiennej stelii, zwanego kodeksem Hammurabiego. Miasto słynęło z uczonych kapłanów, którzy obserwowali niebo i prowadzili rachunki astronomiczne. Świątynie oraz ziggurat boga Marduka wznosiły się w centrum miasta, a jego kult był ważny dla państwa. Handel, dyplomacja i rzemiosło przynosiły bogactwo, a mury obronne chroniły przed najeźdźcami.
+Babilonia leżała w południowej Mezopotamii nad Eufratem i stała się znana z prawa spisanego na kamiennej steli, zwanego kodeksem Hammurabiego. Miasto słynęło z uczonych kapłanów, którzy obserwowali niebo i prowadzili rachunki astronomiczne. Świątynie oraz ziggurat boga Marduka wznosiły się w centrum miasta, a jego kult był ważny dla państwa. Handel, dyplomacja i rzemiosło przynosiły bogactwo, a mury obronne chroniły przed najeźdźcami.
 
 **Powitanie przyjazne**
 

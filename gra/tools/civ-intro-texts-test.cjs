@@ -12,6 +12,11 @@ let failures = 0;
 const fail = (msg) => { failures++; console.error('FAIL: ' + msg); };
 const ok = (cond, msg) => { if (!cond) fail(msg); };
 
+// Ton nieprzyjazny: bez gróźb wojny z góry (dispatch) — bez słów militarnych wskazujących na atak.
+const WAR_WORDS = ['rydwan', 'szarż', 'wymarsz', 'legion', 'włóczn', 'pogotowi', 'przekrocz'];
+// Surowe ID / identyfikatory kodowe w tekście dla gracza: snake_case, camelCase, ikonaId jako samodzielne słowo.
+const RAW_ID_RE = /_|[a-z][A-Z]/;
+
 function sentenceCount(text) {
   const parts = text.trim().split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0);
   return parts.length;
@@ -55,6 +60,7 @@ for (const id of civIds) {
     ok(endsWithPunct(rys), id + ': rys nie konczy sie znakiem konca zdania');
     ok(!/'/.test(rys), id + ': rys zawiera apostrof');
     ok(!/  /.test(rys), id + ': rys zawiera podwojna spacje');
+    ok(!RAW_ID_RE.test(rys), id + ': rys zawiera surowy identyfikator');
   }
 
   for (const field of ['powitanie_przyjazne', 'powitanie_nieprzyjazne']) {
@@ -73,8 +79,17 @@ for (const id of civIds) {
       ok(!/'/.test(g), id + ': powitanie zawiera apostrof: ' + g);
       ok(!/  /.test(g), id + ': powitanie zawiera podwojna spacje: ' + g);
       ok(!/\d/.test(g), id + ': powitanie zawiera liczbe: ' + g);
+      ok(!RAW_ID_RE.test(g), id + ': powitanie zawiera surowy identyfikator: ' + g);
+      for (const rid of civIds) {
+        ok(!new RegExp('\\b' + rid + '\\b').test(g), id + ': powitanie zawiera surowe ID "' + rid + '": ' + g);
+      }
       for (const name of rulerNames) {
         ok(!g.includes(name), id + ': powitanie zawiera imie wladcy "' + name + '": ' + g);
+      }
+      if (field === 'powitanie_nieprzyjazne') {
+        for (const w of WAR_WORDS) {
+          ok(!g.toLowerCase().includes(w), id + ': nieprzyjazne powitanie zawiera slowo militarne "' + w + '": ' + g);
+        }
       }
       allGreetings.push(g);
     }
