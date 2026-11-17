@@ -31,7 +31,7 @@ async function loadBattleScene() {
     format: 'cjs',
     target: 'es2020',
     alias: { three: path.join(__dirname, '..', 'node_modules', 'three', 'build', 'three.cjs') },
-    plugins: [{
+    plugins: [require(path.join(__dirname, 'lib', 'esbuild-raw-plugin.cjs')), {
       name: 'stub-battle-browser-services',
       setup(build) {
         build.onResolve({ filter: /brandAssets/ }, () => ({ path: 'brand-assets-stub', namespace: 'brand-stub' }));
@@ -148,8 +148,10 @@ async function main() {
     'line pacing applies to Attack doctrine while Charge retains the prior movement path');
   assert.strictEqual((scene.match(/initialBattleSlots\(formation,/g) || []).length, 2,
     'the same role-based initial slot layout is used for battle setup and deploy reset');
-  assert.strictEqual((scene.match(/const mountedWing = initialBattleRoleOf\(bu\) === 'mounted';/g) || []).length, 2,
-    'terrain/collision fallback keeps mounted units inside wing bands in setup and deploy reset');
+  // R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1 (e57f1466e): the guard gained `&& !lineSide`, so mounted units
+  // on an ambush line side stay in the line band; the wing-band fallback still applies to every other side.
+  assert.strictEqual((scene.match(/const mountedWing = initialBattleRoleOf\(bu\) === 'mounted' && !lineSide;/g) || []).length, 2,
+    'terrain/collision fallback keeps mounted units inside wing bands in setup and deploy reset (ambush line sides excluded)');
 
   const BattleScene = await loadBattleScene();
   const fakeScene = Object.create(BattleScene.prototype);
