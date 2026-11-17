@@ -170,6 +170,30 @@ const SCENARIOS = [
     visible: subset(MAP_A, 41, 500), explored: subset(MAP_A, 43, 100),
   },
   {
+    name: 'pop_fraction_floor',
+    hexes: MAP_A,
+    // Math.floor, not round (Evaluator r1, zarzut 1): 0.5 -> floor 0 -> radius 0
+    // (round would give 1 -> 5); 7.6 -> floor 7 (round 8); 5.5 -> 5 (round 6).
+    nodes: [city(3, 4, 0, 0.5), city(12, 8, 1, 7.6), city(20, 4, 2, 5.5)],
+    me: 0, fogOn: false, visible: [], explored: [],
+  },
+  {
+    name: 'fort_order_seq_tie',
+    hexes: MAP_A,
+    // Equal `turn` AND equal `seq` (Evaluator r1, zarzut 2): `o.seq < b.seq` is
+    // false, so the FIRST node in the array keeps the contested hex; same for
+    // outposts and for a fort vs an outpost.
+    nodes: [
+      fort(6, 6, 0, { turn: 3, seq: 1 }),
+      fort(10, 6, 1, { turn: 3, seq: 1 }),
+      outpost(17, 3, 2, { turn: 5, seq: 0 }),
+      outpost(20, 3, 3, { turn: 5, seq: 0 }),
+      outpost(9, 13, 3, { turn: 7, seq: 2 }),
+      fort(13, 13, 2, { turn: 7, seq: 2 }),
+    ],
+    me: 0, fogOn: false, visible: [], explored: [],
+  },
+  {
     name: 'forts_outposts_order_lt12',
     hexes: MAP_A,
     nodes: [
