@@ -88,7 +88,7 @@ import {
 import type { CivBonusEntry } from '../game/civ-bonuses';
 import { battleUnitCivBonusy, battleUnitDifficultyCombatMult } from './battle-unit-context';
 import { attachBattleCommanderStar } from './battleCommanderStar';
-import { damageLabelStackOffset } from './damageLabelStack';
+import { damageLabelStackY, damageLabelStackStepWorld } from './damageLabelStack';
 import {
   applyMultiplier,
   civCombatStatMultipliers,
@@ -10580,12 +10580,26 @@ export class BattleScene {
     const wpTopY = tileTopY(this.terrainMap, ru.q, ru.r);
     // R-WEB-UI-BATTLE-DAMAGE-LABELS-NO-OVERLAP-Q1: kolejne etykiety tej samej jednostki
     // startuja wyzej niz te, ktore nadal sa widoczne (zamiast nakladac sie na siebie).
-    const activeOnUnit = this.floatLabels.reduce((n, fl) => n + (fl.owner === ru ? 1 : 0), 0);
+    // Aktualne Y aktywnych etykiet tej jednostki (ta sama formula co w _tickFloatLabels).
+    const nowWall = this.vLastWall;
+    const activeYs: number[] = [];
+    for (const fl of this.floatLabels) {
+      if (fl.owner !== ru) continue;
+      const age = nowWall - fl.startTime;
+      if (age >= fl.duration) continue;
+      activeYs.push(fl.worldPos.y + age * fl.riseRate);
+    }
+    // Krok w jednostkach swiata z biezacej skali kamery (20 px na ekranie).
+    const stackBaseY = wpTopY + HPBAR_Y + 0.20;
+    const pA = worldToScreen(new THREE.Vector3(wp.x, stackBaseY, wp.z), this.camera, this.canvas);
+    const pB = worldToScreen(new THREE.Vector3(wp.x, stackBaseY + 1, wp.z), this.camera, this.canvas);
+    const pxPerUnit = pA && pB ? Math.abs(pB.y - pA.y) : 0;
+    const stackY = damageLabelStackY(stackBaseY, activeYs, damageLabelStackStepWorld(pxPerUnit));
     this.floatLabels.push({
       elem:      el,
       startTime: this.vLastWall,
       duration:  2000,
-      worldPos:  new THREE.Vector3(wp.x, wpTopY + HPBAR_Y + 0.20 + damageLabelStackOffset(activeOnUnit), wp.z),
+      worldPos:  new THREE.Vector3(wp.x, stackY, wp.z),
       riseRate:  0.00012,
       owner:     ru,
     });
