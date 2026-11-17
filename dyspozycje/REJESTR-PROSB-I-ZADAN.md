@@ -10731,3 +10731,8 @@ Właściciel: koszt pokoju znacząco podwyższyć tak, by na starcie wojny zwyci
 ### 2026-11-17 — nowe tematy uruchomione (po pytaniu właściciela o wolne sloty)
 - **BANNER** R-WEB-UI-BATTLE-BANNER-OVERLAPS-RETREAT-1024X640-Q1 (baner bitwy zasłania „WYCOFAJ SIĘ” przy 1024×640; błąd z DMGCOLORS) i **AMBLIVE** R-WEB-TEST-DEBT-AMBUSH-LIVE-B3-B5-B6-Q1 (dług testowy zasadzek), oba Haiku r1, cand = origin/main 87eeecbde.
 - LIVEOBS r3 (Sonnet po 2 nieudanych rundach Haiku, uzasadnienie w DODATKU 2) i HOOKAI w toku.
+
+### FALA 797 — HOOKAI (2026-11-17)
+- Wdrożone na ROBOCZĄ: **R-WEB-TEST-HOOK-AI-TRUCE-REFUSAL-Q1** (r1 FC PASS-WITH-NOTES 9c8b13cb7). Hak testowy widoczny tylko przy `?civtest` (`forceAiTruceDecisionForTest`, `playerProposeTruceForTest`, `resolveAiAwaitingForTest` w `main.ts`, +33 linie) pozwala wymusić decyzję AI na propozycję rozejmu gracza; domyślne zachowanie AI bez zmian; `diplo-truce-live-test.cjs` ma asercje L4 odmowy AI (zamyka lukę „L2b-odmowa NIE_ZMIERZONO”). Dla graczy nic się nie zmienia (w produkcji hak = undefined).
+- main d9d29aece, ROBOCZA MD5 1b3aa52f (GitHub Raw = manifest), sidecary audio 3/3 zgodne.
+- Testy: diplo-truce r1 31/0, r4-ai 24/0, until-turn 15/0, impl 94/0, żywy Chromium diplo-truce-live 40/0; mutacje (hak ignorowany; reject→accept) czerwienieją; logic 213/213; tsc 0; build OK. NIE ZMIERZONO: Chromium bez `?civtest` (dowód produkcji tylko statyczny), live na bazie.
