@@ -3608,3 +3608,14 @@ Konsekwencje dla kolejki:
 | P4-1F2 TERRITORY-RANGES (#362) | Operator | OPUS 5.5 | ok. 16:25 UTC |
 | P4-1 L1/L2 REVEAL (#363) | czeka na slot renderera | OPUS 5.5 | — |
 | P4-1 STATCHIP-SYNC (#361) | czeka na slot renderera i ≥12 GB | OPUS 5.5 | — |
+
+### Przebieg — heartbeat slotów (2026-11-17 ~16:48 UTC): brak nowych startów
+- **Aktywne Workflow:** 1 — F2 TERRITORY-RANGES (#362), etap Final Control, OPUS 5.5 (wf_3732fdd4-844). Operator PASS (`0f683d9cc`), Evaluator PASS-WITH-NOTES, Obrona przyjęła 3 zarzuty, odrzuciła 3 z dowodem (`d3fda2f1f`, baza `82db9b370`). Nic nie wypchnięto ani nie zintegrowano.
+- **Dlaczego bez nowych startów:** dzisiejsza instrukcja właściciela: tylko 3D na Opusie, bez Haiku. Routine żąda operatorów Haiku i rundy integracyjnej Haiku; to pominięto. L1/L2 (#363) i STATCHIP (#361) czekają na slot renderera (jeden build renderera naraz, bramka ≥12 GB). Slot zajmuje cargo FC F2.
+- **Dysk:** 12 GB wolne.
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| P4-1F2 TERRITORY-RANGES (#362) | Final Control | OPUS 5.5 | ok. 16:25 UTC |
+| P4-1 L1/L2 REVEAL (#363) | czeka na slot renderera | OPUS 5.5 | — |
+| P4-1 STATCHIP-SYNC (#361) | czeka na slot renderera i ≥12 GB | OPUS 5.5 | — |
