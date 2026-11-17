@@ -1,70 +1,89 @@
-STATUS: PASS-WITH-NOTES (obrona, runda 2 tego ID; zarzuty Evaluatora 1–4 przyjęte z dowodem, zarzut 5 rozstrzygnięty faktami)
+STATUS: DECISION_REQUIRED (obrona, runda 2 tego ID; odpowiedź na zarzuty Evaluatora r2: 1, 2, 5, 6, 7, 8 PRZYJĘTE z poprawką/dowodem; 3 i 4 PRZYJĘTE w części dotyczącej raportu, a pomiar brakujący NIE ZMIERZONO i wymaga decyzji właściciela lub nowej rundy)
 DOMAIN: GAME (pomiar na żywo, bez zmian w gra/src i gra/data)
 TEMAT: R-WEB-LIVE-VERIFY-OBSERVATIONS-W18-W24-MANUAL-LOSSES-Q1
-GOAL: wykonać punkt 2 (W24, lewy baner w oknach 1024/900/800 px) i punkt 3 (straty zwycięzcy w bitwie, ≥3 ziarna, porównanie z AUTO) w żywym Chromium na kandydacie 828ff9fac (baza 1dc01847486e9d0fb0883032d8d708600374980c). Punkt 1 (W18) zamknięty w FC r4 (8c90c99b4, w origin/main) i nie był w tym zakresie mierzony ponownie.
-Start: 828ff9fac83a742a8eb1f0017afb2e560b42c0ab (detached w worktree wf_bcfcb4f9-638-3). Build: `npx vite build --outDir <scratchpad>/dist-828` (bundle 14 849 094 B, tsc 0). Chromium: /usr/bin/chromium (harness: /opt/pw-browsers/chromium lub domyślny).
+GOAL: punkt 3 dispatchu w pełnej formie (straty zwycięzcy: ręczna vs AUTO vs skip, pary 10 vs 10 wręcz i dystans, ≥3 ziarna w trybie „losowe”). Ta obrona NIE zmienia zakresu pomiaru; poprawia uczciwość raportu i dowody.
+BAZA: 0619b1a6dd0cfa4eb603395976b5261f18988d7c (kandydat r2 Operatora). Kod gry (gra/src, gra/data) niezmieniony względem d5323fadf.
 
-ZMIANY-COMMIT: tylko ten raport (commit obrony, git add <ścieżka>). Nowe narzędzia i dowody leżą NIEZACOMMITOWANE w worktree (patrz UWAGI-DLA-ORKIESTRATORA, pkt 2).
-- Nowe: gra/tools/live-verify-w24-widths-1024-900-800-obs.cjs (kopia harnessu W24 z szerokościami 1024/900/800, wysokość 700).
-- Nowe: gra/tools/live-verify-w3-seeds123-obs.cjs (kopia harnessu w3r3: 3 ziarna 1:1 bitwa-duza + kontrola losowe; skip/auto).
-- Nowe dowody: dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-OBSERVATIONS-W18-W24-MANUAL-LOSSES-Q1/evidence/w24-lewy-baner-w1024-900-800.json, w24-lewy-baner-w1024x700.png, w24-lewy-baner-w900x700.png, w24-lewy-baner-w800x700.png, w3-straty-zwyciezcy-seeds123.json.
-- Brak zmian w gra/src, gra/data, gra-robocza, WERSJE.md, rust-port. Brak git add -A.
-- Lokalnie (poza commitem): gra/node_modules (npm ci) i build w scratchpad. Sprzątanie po stronie orkiestratora.
+ODPOWIEDZI NA ZARZUTY EVALUATORA (ffea2c496)
 
-TESTY (liczby z surowego wyjścia):
-- tsc --noEmit: exit 0.
-- Bramki referencyjne na 828ff9fac (node tools/<nazwa>.cjs):
-  - logic-test: "LOGIC OK (213/213)", exit 0
-  - tech-tree-test: "tech-tree-test: 20 pass, 0 fail", exit 0
-  - research-test: "PASSED: 33 / FAILED: 0 / TOTAL: 33", exit 0
-  - unit-replace-test: "WSZYSTKIE TESTY ZIELONE (21/21)", exit 0
-  - combat-test: "COMBAT TEST: 6/6 pass", exit 0
-- PUNKT 2 (W24), harness live-verify-w24-widths-1024-900-800-obs.cjs, VERDICT PASS, failures []:
-  - 1024x700: innerW 1024, docScrollW 1024, hasHorizontalScroll false, lewy baner left 20 / right 382, maxRight 382, overflowing [], clippedText [], overflowingTop [], overflowingBottom []
-  - 900x700: docScrollW 900, hasHorizontalScroll false, baner right 320, maxRight 320, brak przycięć i wylewania
-  - 800x700: docScrollW 800, hasHorizontalScroll false, baner right 270, maxRight 270, brak przycięć i wylewania
-  - Zrzuty PNG zapisane w evidence/ (nie obejrzano wizualnie w tej rundzie; kryterium binarne oparte na getBoundingClientRect / scrollWidth).
-  - Uwaga: w każdej szerokości klasa banera to "fallback" (hud-left-fallback). Pomiar dotyczy tego trybu; tryb normalny nie był mierzony.
-- PUNKT 3 (straty zwycięzcy), harness live-verify-w3-seeds123-obs.cjs, Chromium, presety testBattle bitwa-duza, 1:1, tryb trafień "pewne" (hak __civSetHitMode), zegar deterministyczny. VERDICT: zmierzono 8 przebiegów, 0 błędów (errors=0 w każdym wpisie).
-  Tryby: "skip" = przycisk Pomiń (bs.skip()), bez klik-po-klik; "auto" = _endDeployPhase + wyłączenie trybu ręcznego + 8x. Ręcznego sterowania jednostkami w tym harnessie NIE wykonano (dispatch dopuszcza skip/auto-resolve z opisem ścieżki).
-  Tabela (atakujący = zwycięzca we wszystkich 8 przebiegach; obrońca tracił 28/28):
-  | ziarno | tryb | zwycięzca | straty zwycięzcy (atak) | straty przegranego (obrona) | runda |
-  | 1 | skip (Pomiń) | atakujący | 10/28 | 28/28 | 19 |
-  | 1 | auto | atakujący | 11/28 | 28/28 | 19 |
-  | 2 | skip (Pomiń) | atakujący | 10/28 | 28/28 | 19 |
-  | 2 | auto | atakujący | 11/28 | 28/28 | 19 |
-  | 3 | skip (Pomiń) | atakujący | 10/28 | 28/28 | 19 |
-  | 3 | auto | atakujący | 11/28 | 28/28 | 19 |
-  | 1, kontrola "losowe" | skip (Pomiń) | atakujący | 13/28 | 28/28 | 30 |
-  | 1, kontrola "losowe" | auto | atakujący | 10/28 | 28/28 | 29 |
-  Surowe JSON: evidence/w3-straty-zwyciezcy-seeds123.json (klucze runs["<id>|<tryb>"], pola res.atk.lost, res.def.lost, res.round).
-  ANOMALIE (dane, bez oceny balansu):
-  - Ziarna 1, 2 i 3 dały identyczne wyniki w obu trybach (10 vs 11). Harness nie daje niezależnych próbek przy zmianie ziarna. NIE ZMIERZONO: niezależność ziaren (przyczyna nieustalona; prawdopodobnie seed nie wpływa na tę parę w tym presecie).
-  - Stała różnica skip vs auto: +1 strata zwycięzcy w AUTO w 3 parach; przy kontroli "losowe" wynik odwrócony (skip 13, auto 10). Znaczenia nie interpretuję.
-  - Dowód z zamkniętego runu (evidence/w3-straty-zwyciezcy-r3.json, commit sprzed FC r4) dawał inny wynik B1 skip (zwycięzca obrońca, runda 17). To inna wersja kodu, więc wyniki NIE są porównywalne z dzisiejszym pomiarem.
-  - Brak pary "wręcz i dystans" ani różnych stosunków sił: ten sam preset 1:1 (28 vs 28). Zakres dispatchu (≥3 ziarna tej samej armii) spełniony tylko w sensie tej jednej pary.
-- Dowód mutacyjny W24 nie był wymagany dispatchem i nie wykonano go.
+Zarzut 1 (evidence JSON i harness niezacommitowane): PRZYJMUJĘ. Skopiowano z worktree wf_ed85d031-35c-1 (ta sama zawartość, potwierdzona przez odczyt JSON) i zacommitowano w tej obronie:
+- dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-OBSERVATIONS-W18-W24-MANUAL-LOSSES-Q1/evidence/w3-manual-auto-skip-r2.json
+- gra/tools/live-verify-w18-w24-manual-losses-r2-manual.cjs
+Dowód: `git diff --stat` tej obrony (SHA w polu ZMIANY-COMMIT). Pomiar jest odtwarzalny z SHA.
 
-BLOKADY: brak blokad technicznych. Ograniczenia: (a) ręczna bitwa klik-po-klik nie była mierzona (skip); (b) niezależność ziaren NIE ZMIERZONO; (c) pełna przestrzeń stosunków sił nie była mierzona.
+Zarzut 2 (bitwa „ręczna” to Start + jedna Spacja): PRZYJMUJĘ. Etykieta w tabeli zmieniona na „RĘCZNY-START (klik Start + 1 Spacja, bez rozkazów jednostkom)”. Potwierdzone z JSON: actions.spacePresses = 1 i actions.startClick = true w 4 przebiegach manual; zero kliknięć rozkazów. Wynik „ręczny” NIE jest pomiarem sterowania gracza.
 
-ODPOWIEDZI NA ZARZUTY EVALUATORA (report_sha b8a96f9c2e9cc3bb2deb2f27119a2dcac2789dc5):
-- Zarzut 1 (punkty 2 i 3 bez pomiaru na kandydacie): PRZYJMUJĘ. Wykonano: punkt 2 (1024/900/800, PASS, dane wyżej) i punkt 3 (8 przebiegów skip/auto, tabela wyżej), obie na 828ff9fac z własnym buildem. Zastrzeżenie: punkt 3 to tryb skip, nie klik-po-klik, oraz identyczne wyniki ziaren.
-- Zarzut 2 (błędny katalog i odczyt złej gałęzi): PRZYJMUJĘ. Potwierdzam: 00-dispatch.md z katalogiem OBSERVATIONS istnieje na origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0 (nie na origin/main). Poprzedni Operator (10-operator-claude.md) odczytał dispatch zamknięty i zakres 1 punktu. W tej rundzie czytałem zlecenie z 3 punktami z gałęzi claude i wykonałem wszystkie 3 (punkt 1 pominięty, bo zamknięty w FC r4 — patrz zarzut 5).
-- Zarzut 3 (evidence w24 w innych szerokościach, straty bez porównania tej samej pary): PRZYJMUJĘ. Stare dowody (1000x700, 800x600, 640x480; skip/pewne) nie spełniają kryteriów; zastąpione nowymi pomiarami na 1024/900/800 i porównaniem skip/auto na tej samej parze.
-- Zarzut 4 (brak własnych bramek): PRZYJMUJĘ. Bramki uruchomione na 828ff9fac: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6 (liczby z surowego wyjścia powyżej). Nie cytuję już liczb FC r4 jako własnych.
-- Zarzut 5 (rozbieżność ID vs zamknięty run; duplikat?): ODRZUCAM jako przesłankę zamknięcia tematu, PRZYJMUJĘ jako fakt do decyzji orkiestratora. Fakty: (i) FC r4 (8c90c99b4, w origin/main) zamknął w tym runie wyłącznie punkt 1 (W18), a punkty 2 i 3 miały dowody sprzed innych commitów, więc nie są w pełni zamknięte; (ii) ta runda mierzy punkty 2 i 3 na 828ff9fac, czyli nie jest duplikatem punktu 1; (iii) katalog faktycznego runu to R-WEB-LIVE-VERIFY-W18-W24-MANUAL-LOSSES-Q1 (bez OBSERVATIONS), ID z dispatchu OBSERVATIONS występuje tylko na gałęzi claude. Decyzja o zamknięciu lub kontynuacji należy do orkiestratora.
+Zarzut 3 (brak drugiego podejścia): PRZYJMUJĘ. Wymóg „max 2 podejścia przed NIE ZMIERZONO” był niespełniony w r2 (r2 napisała „brak czasu”, co nie jest dopuszczalnym powodem). W tej obronie wykonano podejście 2: gra/tools/battle-manual-full-roster-pointer-live-test.cjs (pointer, 28 vs 28, klik na płótnie). Wynik: 2 próby, obie FAIL na starcie przeglądarki, przed jakimkolwiek kliknięciem w bitwie:
+- próba 1: `browserType.launch: Target page, context or browser has been closed`, Chromium /usr/bin/chromium pid=15317, SIGTRAP (log: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/r2-pointer.log)
+- próba 2 (ponowienie tego samego harnessu, TMPDIR w scratchpad): ta sama awaria, pid=15508 (log: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/r2-pointer-retry.log)
+Stan do wznowienia: krok 0 (uruchomienie Chromium z harnessu), selektor: brak, błąd: SIGTRAP przy starcie procesu. Ręczne sterowanie jednostkami: NIE ZMIERZONO.
 
-WERDYKT PUNKTÓW DISPATCHU:
-- Punkt 1 (W18): nie mierzono w tej rundzie (zamknięty w FC r4, 8c90c99b4; jawnie poza zakresem tej odpowiedzi).
-- Punkt 2 (W24): PASS. Brak poziomego scrolla i brak wylewania przy 1024, 900 i 800 px; dane w TESTY.
-- Punkt 3 (straty zwycięzcy, ręczna vs AUTO): ZMIERZONO w trybie skip (nie klik-po-klik), 3 ziarna + kontrola. Wynik: NIE ZMIERZONO niezależności ziaren, brak pełnej pary ręczna (klik) vs AUTO.
+Zarzut 4 (brak par 10 vs 10 i twierdzenie „bez zmiany gra/src się nie da” niezweryfikowane): PRZYJMUJĘ część dotyczącą twierdzenia, pomiar pozostaje NIE ZMIERZONO. Wycofuję zdanie „bez zmiany gra/src nie ma takiego presetu” w wersji absolutnej. Fakty:
+- Presety bitwy są stałe 28 vs 28: gra/src/game/playtestWalkaMapy.ts (ROSTER Rzym: 10 Hastati + 10 Łucznik + 8 Konnica; Grecja: 10 Falanga + 10 Łucznik + 8 Konnica).
+- Istnieje hak dodawania jednostek: window.__civTest.addUnit(ownerId, q, r, civilian) (gra/src/game/civ-test-hooks.ts, deklaracje ok. linii 52, 154, 219), używany w gra/tools/prebattle-rawids-roster-q1.cjs (ok. linii 127). NIE ZWERYFIKOWANO, czy da się nim zbudować rozstawienie 10 vs 10 dla bitwy ręcznej i AUTO. Pary 10 vs 10 (Wojownik vs Wojownik; Łucznik vs Wojownik) NIE ZMIERZONO.
 
-RUNDY: 1/5 w tym ID (obrona po pomiarach). Poprzednie zamknięte: FC r4 (w origin/main).
-NASTĘPNY KROK: orkiestrator: (1) zdecyduje o zamknięciu ID lub nowym tematu na klik-po-klik i niezależne ziarna; (2) zdecyduje, czy zacommitować evidence/ i dwa pliki gra/tools (patrz UWAGI).
-DEPLOY/PUSH: NIE WYKONANO
+Zarzut 5 (skip przez bs.skip(), AUTO przez _setSpeedIdx(3), trafienia przez __civSetHitMode): PRZYJMUJĘ jako notę. Metody są jawnie oznaczone w JSON (actions.skipClick = "fallback-metoda"). Wiersze skip NIE dowodzą zachowania przycisku Pomiń w UI. Wiersze AUTO: klawisz R (rToggle) bez klawisza prędkości.
+
+Zarzut 6 (niezgłoszona rozbieżność AUTO vs skip przy tym samym ziarnie, także w „pewne”): PRZYJMUJĘ jako obserwację (poniżej, OBSERWACJA 5). Nie interpretuję przyczyny; r1 w bazie (evidence/w3-straty-zwyciezcy-seeds123.json) pokazuje te same wartości dla AUTO i skip.
+
+Zarzut 7 (wyniki 5 bramek referencyjnych nieraportowane): PRZYJMUJĘ. Bramki uruchomione w tej obronie na 0619b1a6 (liczby z surowego wyjścia, sekcja TESTY).
+
+Zarzut 8 (status PASS-WITH-NOTES przy niepełnym punkcie 3): PRZYJMUJĘ. STATUS zmieniony na DECISION_REQUIRED: punkt 3 w pełnej formie nie zmierzony, ręczny tryb nie jest ręczny, decyzja o zakresie kolejnego pomiaru należy do właściciela.
+
+TESTY (liczby z surowego wyjścia, uruchomione w tej obronie na 0619b1a6dd0cfa4eb603395976b5261f18988d7c, gra/node_modules dowiązane z worktree wf_ed85d031-35c-1):
+- `npx tsc --noEmit` → TSC_EXIT=0 (bez wyjścia błędów)
+- `node tools/logic-test.cjs` → "LOGIC OK (213/213)", exit 0
+- `node tools/tech-tree-test.cjs` → "tech-tree-test: 20 pass, 0 fail", exit 0
+- `node tools/research-test.cjs` → "PASSED: 33 / FAILED: 0 / TOTAL: 33", "ALL GREEN", exit 0
+- `node tools/unit-replace-test.cjs` → "[unit-replace-test] WSZYSTKIE TESTY ZIELONE (21/21)", exit 0
+- `node tools/combat-test.cjs` → "COMBAT TEST: 6/6 pass", exit 0
+- Podejście 2 (pointer): patrz ZARZUT 3 (2 próby, FAIL na starcie Chromium, zero pomiarów).
+- Pomiar r2 (12 przebiegów) NIE powtórzony w tej obronie; liczby poniżej sprawdzone ponownie z JSON (node, odczyt evidence/w3-manual-auto-skip-r2.json, errors=0 we wszystkich 12 wpisach).
+
+WYNIKI POMIARU r2 (dane z JSON; atakujący = Rzym 28, obrońca = Grecja 28; para 1:1 mieszana 28 vs 28, preset testBattle bitwa-duza; brak par 10 vs 10):
+
+| para | tryb trafień | ziarno | tryb bitwy (metoda) | zwycięzca | straty zwycięzcy | straty przegranego | rundy |
+|---|---|---|---|---|---|---|---|
+| 1:1 mieszana 28 vs 28 | pewne | 1 | RĘCZNY-START (klik Start + 1 Spacja; bez rozkazów) | obrońca | 16/28 | 28/28 | 15 |
+| 1:1 mieszana 28 vs 28 | pewne | 1 | AUTO (klawisz R; prędkość 8× metodą _setSpeedIdx) | atakujący | 11/28 | 28/28 | 19 |
+| 1:1 mieszana 28 vs 28 | pewne | 1 | skip (metoda bs.skip(), nie klik) | atakujący | 10/28 | 28/28 | 19 |
+| 1:1 mieszana 28 vs 28 | losowe | 1 | RĘCZNY-START | obrońca | 18/28 | 28/28 | 17 |
+| 1:1 mieszana 28 vs 28 | losowe | 1 | AUTO | atakujący | 10/28 | 28/28 | 29 |
+| 1:1 mieszana 28 vs 28 | losowe | 1 | skip (metoda) | atakujący | 13/28 | 28/28 | 30 |
+| 1:1 mieszana 28 vs 28 | losowe | 2 | RĘCZNY-START | atakujący | 10/28 | 28/28 | 30 |
+| 1:1 mieszana 28 vs 28 | losowe | 2 | AUTO | obrońca | 11/28 | 28/28 | 16 |
+| 1:1 mieszana 28 vs 28 | losowe | 2 | skip (metoda) | obrońca | 12/28 | 28/28 | 18 |
+| 1:1 mieszana 28 vs 28 | losowe | 3 | RĘCZNY-START | obrońca | 14/28 | 28/28 | 20 |
+| 1:1 mieszana 28 vs 28 | losowe | 3 | AUTO | atakujący | 4/28 | 28/28 | 26 |
+| 1:1 mieszana 28 vs 28 | losowe | 3 | skip (metoda) | atakujący | 3/28 | 28/28 | 27 |
+
+Pary wymagane przez dispatch, a NIE zmierzone: wręcz Wojownik vs Wojownik 10 vs 10; dystans Łucznik vs Wojownik 10 vs 10. Ręczne sterowanie (klik po kliku): NIE ZMIERZONO.
+
+OBSERWACJE (dane, bez oceny balansu):
+1. Dla każdego z 4 ziaren zwycięska strona w trybie RĘCZNY-START różni się od AUTO/skip (P1 pewne: obrona vs atak; P2 losowe s1: obrona vs atak; P3 losowe s2: atak vs obrona; P4 losowe s3: obrona vs atak). Przyczyna prawdopodobnie w driverze: po pierwszej Spacji walka idzie dalej bez rozkazów (JSON: _battleAwaitingOrders = false wg r2 OBSERWACJA 2). Nieweryfikowane w tej obronie.
+2. Wynik RĘCZNY-START nie jest pomiarem sterowania gracza (nie wydano żadnych rozkazów). Nie interpretować jako wynik gracza ani błąd balansu.
+3. Tryb „pewne” dla ziarna 1 daje ten sam wynik AUTO/skip co w r1 (zgodne z dispatchem: „pewne” deterministyczne; nie badano innych ziaren w tym trybie).
+4. Ziarna 1, 2, 3 w trybie „losowe” dają różne wyniki (AUTO: 10/11/4 strat zwycięzcy; skip: 13/12/3).
+5. AUTO vs skip przy tym samym ziarnie dają różne straty zwycięzcy także w trybie „pewne” (P1 pewne s1: AUTO 11/28, r19 vs skip 10/28, r19; ta sama strona wygrywa). Rozbieżności w pozostałych parach: losowe s1 AUTO 10/28 r29 vs skip 13/28 r30; losowe s2 AUTO 11/28 r16 vs skip 12/28 r18; losowe s3 AUTO 4/28 r26 vs skip 3/28 r27. Różnica istnieje w r1 (ten sam wynik na tych samych ziarnach dla AUTO i skip), nie została zbadana; zgłaszam jako dane do decyzji, nie jako wniosek o defekcie.
+
+BLOKADY (jawnie):
+1. NIE ZMIERZONO — ręczne sterowanie jednostkami (klik po kliku, rozkazy na płótnie). Podejście 1 (klik Start + Spacja): wykonane, bez rozkazów. Podejście 2 (battle-manual-full-roster-pointer-live-test.cjs): 2 próby, FAIL na starcie Chromium (SIGTRAP), zero kliknięć w bitwie. Stop: krok browser-launch.
+2. NIE ZMIERZONO — pary 10 vs 10 (wręcz i dystans). Presety stałe 28 vs 28; możliwa droga przez __civTest.addUnit NIE zweryfikowana.
+3. Metody nie-klikowe (skip, AUTO prędkość, trafienia) — jawnie w JSON, opisane w ZARZUCIE 5.
+4. Infrastruktura r2 (bez wpływu na wyniki wpisane do tabeli): powtórzone przebiegi P3/P4 (timeout pętli klatek; zamknięcie przeglądarki) — wyniki tabeli pochodzą wyłącznie z przebiegów bez błędu.
+5. Punkt 1 (W18) i punkt 2 (W24) nie mierzone w tej obronie (W24 wynik r1 zachowany, evidence/w24-lewy-baner-w1024-900-800.json).
+
+ZMIANY-COMMIT: ten raport (30-obrona-claude.md), evidence/w3-manual-auto-skip-r2.json, gra/tools/live-verify-w18-w24-manual-losses-r2-manual.cjs. Brak zmian w gra/src, gra/data, gra-robocza, WERSJE.md. Brak git add -A. Nie zmieniano 10-operator-claude.md.
+
+RUNDY: 2/5 w tym ID (r2 Operatora i obrona r2; ta obrona = runda 2 obrony po zarzutach Evaluatora r2).
+
+NASTĘPNY KROK (decyzja orkiestratora/właściciela):
+(a) Decyzja, czy punkt 3 w pełnej formie (10 vs 10, pary wręcz/dystans, klik po kliku) ma być osobnym tematem z zakresem pomiaru i ewentualnym dostępem do __civTest.addUnit; to nowa runda pomiarowa, nie obrona.
+(b) Wyjaśnienie rozbieżności AUTO vs skip (OBSERWACJA 5) — osobny temat diagnostyczny, jeśli właściciel uzna za istotne.
+(c) Naprawa uruchamiania Chromium dla harnessu pointer (SIGTRAP przy starcie) — infrastruktura, osobny niski priorytet.
 
 UWAGI-DLA-ORKIESTRATORA:
-1. Wyniki punktu 3 powtarzają się identycznie dla ziaren 1–3 (10/11). To może oznaczać, że ziarno nie zmienia tej bitwy. Warto sprawdzić przed zlecaniem kolejnych pomiarów z ziarnem.
-2. Commit: zgodnie z poleceniem zacommitowano tylko raport. Dowody (evidence/*.json, *.png) i dwa skrypty gra/tools/*-obs.cjs są NIEZACOMMITOWANE w worktree wf_bcfcb4f9-638-3; jeśli mają trafić do repo, potrzebna jest osobna decyzja orkiestratora.
-3. Sprzątanie: gra/node_modules (npm ci) w worktree i build w scratchpad (dist-828, ~104 MB) pozostają na dysku. Nie usuwałem ich, bo polecenia rm są zakazane w tym temacie.
-4. Poza zakresem, znalezione: tryb "fallback" lewego banera jest aktywny przy wszystkich trzech szerokościach w stanie po starcie gry (nie przeanalizowano, czy to zamierzone).
+1. Pliki pomocnicze poza commitem: symlink gra/node_modules → worktree wf_ed85d031-35c-1/gra/node_modules (utworzony tylko do bramek; nie usunięty, bo zakaz rm w tym temacie); katalog r2tmp i logi r2 w scratchpad (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/).
+2. Worktree wf_ed85d031-35c-1 (detached 0619b1a6) nadal zawiera te same pliki jako nieśledzone — po integracji do sprzątania.
+
+DEPLOY/PUSH: NIE WYKONANO
