@@ -39,14 +39,14 @@
 - **Próg różnicy siły w grze wynosi 0**: każda różnica decyduje. Wartość w `diplomacy-war-peace-params.json:progRozniceSilyPokoj` można zmienić bez kodu (np. 20 = różnica ±20% nie wymusza odrzucenia).
 - **Miasto jako jedyny słodzik.** Ceny pokoju są płacone wyłącznie miastami. Złoto i surowce nie wchodzą w ofertę pokoju.
 - **Minimalny czas wojny** zależy od profilu cywilizacji: od 1 do 8 tur (domyślnie 5). Przed tym czasem AI odrzuca pokój zawsze (`diplomacy-war-peace-params.json:minTurWojny`). Niezależnie od profilu obowiązuje wspólna blokada: pierwsze 10 pełnych tur wojny nie przyjmuje żadnej propozycji pokoju ani rozejmu, także od AI (`PEACE_PROPOSAL_MIN_WAR_TURNS = 10`, `diplomacy-peace-proposal-timing.ts`). Obie bramki obowiązują jednocześnie.
-- **Mnożnik ceny cywilizacji**: po **20** turach wojny (`cenaPokoju.turyBezOgraniczenAi`) mnożnik ceny jest ograniczony do **1,0**.
+- **Cena pokoju jest stała: 615 PW** (`diplomacy-acceptance-points.json:traktaty.pokoj.punkty`). Bez mnożnika cywilizacji i bez zależności od tury wojny (ABC 2026-11-14, R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615). Mnożnik ceny w ocenie AI = 1.
 
 ### Zmęczenie wojną a pokój
 
 Licznik zmęczenia (5% na turę od startu wojny, +10% za każde zmienione miasto, patrz hasło **Zmęczenie wojną**) zmienia zasady pokoju:
 - **50%** — silniejsza strona obniża cenę pokoju, słabsza szuka pokoju;
-- **80%** — silniejsza strona sama proponuje pokój bezwarunkowy (cena 0 = bez miasta);
-- **100%** — bez osobnego skutku: kod nie wygasza wojny przy 100%; koniec zmęczenia to próg **80%** (patrz wyżej).
+- **80%** — AI proponuje pokój z miastami przegrywającego (bez pokoju bezwarunkowego);
+- **100%** — **pokój wymuszony**: wyraźnie przegrywający oddaje miasta do zrównoważenia ceny (min. 3 miasta zostają, stolica nigdy); przy remisie sił albo cenie 0 pokój bez miast (patrz hasło **Zmęczenie wojną**).
 
 Pierwsze propozycje pokoju AI pojawiają się od tury 10 wojny.
 
@@ -98,7 +98,7 @@ Wojna trwa 12 tur. Gracz proponuje rozejm na 10 tur. Po 10 turach pojawia się p
 | 0 | `diplomacy-war-peace-params.json:pokojAiAi.minBilansPW` |
 | 40 | `war-weariness-params.json:przegrywajacy.karencjaPoPokojuTur` |
 | 100 | `war-weariness-params.json:przegrywajacy.karencjaChronionegoTur` |
-| 20 | `diplomacy-war-peace-params.json:cenaPokoju.turyBezOgraniczenAi` |
+| 20 | `diplomacy-war-peace-params.json:cenaPokoju.turyBezOgraniczenAi` (nieużywany od C=615; zostaje w JSON do sprzątania) |
 | 5 | `diplomacy-war-peace-params.json:minTurWojny.baza` |
 | 1 | `diplomacy-war-peace-params.json:minTurWojny.min` |
 | 8 | `diplomacy-war-peace-params.json:minTurWojny.max` |

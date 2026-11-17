@@ -131,8 +131,9 @@ function weariness({ winnerGap, loserGap, gold = 1000, cities = 4, base = 100 })
     assets: () => (gold > 0 ? [{ kind: 'miasto', id: 'm1', amount: 1, pn: gold }] : []),
     cityCessionOk: () => true,
     battlePending: false,
-    // R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: asercje o starych regulach (ochrona, bilans) przed koncem zmeczenia.
-    params: (() => { const pj = JSON.parse(require('fs').readFileSync(require('path').resolve(__dirname, '..', 'data', 'war-weariness-params.json'), 'utf8')); pj.zmeczenie.progKoncaZmeczenia = 2; return pj; })(),
+    // DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: asercje W1–W4 dotycza regul OFERT (ochrona, bilans, jedno miasto);
+    // pokoj wymuszony (100%) wylaczony tutaj (progWymuszonyPokoj = 2), testowany w diplo-weariness-forced-peace-test.cjs.
+    params: (() => { const pj = JSON.parse(require('fs').readFileSync(require('path').resolve(__dirname, '..', 'data', 'war-weariness-params.json'), 'utf8')); pj.zmeczenie.progWymuszonyPokoj = 2; return pj; })(),
     pay: () => {},
     finalize: (l, w) => { finalized = { l, w }; },
   });

@@ -6,6 +6,7 @@
 import type { City, CityPodzialHandlu } from './cities';
 import {
   DEFAULT_PODZIAL_HANDLU,
+  LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14,
   normalizePodzialHandlu,
 } from './cities';
 
@@ -50,13 +51,14 @@ export function migrateHandelSplitOnLoad(
       if (!ownerDefaults.has(city.ownerId)) {
         ownerDefaults.set(
           city.ownerId,
-          normalizePodzialHandlu(city.podzialHandlu ?? DEFAULT_PODZIAL_HANDLU),
+          // Stary zapis bez podziału miasta: dawny domyślny podział (20/60/20), nie nowy domyślny gracza.
+          normalizePodzialHandlu(city.podzialHandlu ?? LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14),
         );
       }
     }
     for (const city of cities) {
       if (city.podzialHandluOverride !== undefined) continue;
-      const def = ownerDefaults.get(city.ownerId) ?? DEFAULT_PODZIAL_HANDLU;
+      const def = ownerDefaults.get(city.ownerId) ?? LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14;
       if (!city.podzialHandlu) {
         city.podzialHandluOverride = false;
         continue;
@@ -71,7 +73,9 @@ export function migrateHandelSplitOnLoad(
 
   for (const city of cities) {
     if (!ownerDefaults.has(city.ownerId)) {
-      ownerDefaults.set(city.ownerId, { ...DEFAULT_PODZIAL_HANDLU });
+      // Zapis wczytany ze starszej wersji: właściciel bez zapisanego podziału dostaje dawny
+      // podział (20/60/20), nie nowy domyślny gracza, żeby wczytanie nie zmieniało zachowania.
+      ownerDefaults.set(city.ownerId, { ...LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14 });
     }
     if (city.podzialHandluOverride && city.podzialHandlu) {
       city.podzialHandlu = normalizePodzialHandlu(city.podzialHandlu);

@@ -1,0 +1,24 @@
+[econ] seed=4242 tura=6 gateAktywna=1 dosypki=1 czas=3s
+[econ] seed=4242 tura=11 gateAktywna=1 dosypki=1 czas=6s
+[econ] seed=4242 tura=16 gateAktywna=1 dosypki=1 czas=9s
+[econ] seed=4242 tura=21 gateAktywna=1 dosypki=1 czas=12s
+[econ] seed=4242 tura=26 gateAktywna=1 dosypki=1 czas=15s
+[econ] seed=4242 tura=31 gateAktywna=1 dosypki=1 czas=19s
+[econ] seed=4242 tura=36 gateAktywna=1 dosypki=1 czas=23s
+[econ] seed=4242 tura=41 gateAktywna=1 dosypki=1 czas=26s
+[econ] seed=4242 tura=46 gateAktywna=1 dosypki=1 czas=30s
+[econ] seed=4242 tura=51 gateAktywna=1 dosypki=1 czas=33s
+[econ] seed=4242 tura=56 gateAktywna=1 dosypki=1 czas=37s
+[econ] seed=4242 tura=61 gateAktywna=1 dosypki=1 czas=40s
+[econ] seed=4242 tura=66 gateAktywna=1 dosypki=1 czas=45s
+[econ] seed=4242 tura=71 gateAktywna=1 dosypki=1 czas=48s
+[econ] seed=4242 tura=76 gateAktywna=1 dosypki=1 czas=51s
+[econ] seed=4242 tura=81 gateAktywna=1 dosypki=1 czas=55s
+[econ] seed=4242 tura=86 gateAktywna=1 dosypki=1 czas=58s
+[econ] seed=4242 tura=91 gateAktywna=1 dosypki=1 czas=64s
+[econ] seed=4242 tura=96 gateAktywna=1 dosypki=1 czas=67s
+[econ] PODSUMOWANIE {"seed":4242,"startTurn":1,"endTurn":100,"stop":null,"gateActiveTurns":1,"bypassApplied":1,"wallSec":69,"resumed":false}
+
+real	1m16.379s
+user	0m3.199s
+sys	0m0.723s

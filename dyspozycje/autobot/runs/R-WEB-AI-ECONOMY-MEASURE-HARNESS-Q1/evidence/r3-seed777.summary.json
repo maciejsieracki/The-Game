@@ -1,0 +1,12 @@
+{
+  "seed": 777,
+  "startTurn": 80,
+  "endTurn": 100,
+  "stop": null,
+  "gateActiveTurns": 1,
+  "bypassApplied": 1,
+  "stuckQueueHeals": 0,
+  "battlesAuto": 0,
+  "wallSec": 1058,
+  "resumed": true
+}

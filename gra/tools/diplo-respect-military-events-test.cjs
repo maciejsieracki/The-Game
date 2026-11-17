@@ -11,7 +11,7 @@
  *  B. silnik: w wojnie wynik zgodny z clampRelationForWar (Zaufanie do 0, Respekt nietknięty)
  *  C. wiring (main.ts): applyMilitaryWinRespectEvent wołane w applyMapBattleOutcome,
  *     helper zawiera gate „wygrał gracz” i wywołanie applyDiploEventTracked(...,'wygrana_bitwa')
- *  D. wiring: przewaga_militarna / slabszy_militarnie NIE są podpinane (poza zakresem, DECISION_REQUIRED)
+ *  D. wiring: przewaga_militarna / slabszy_militarnie podpięte w turze (R-WEB-DIPLO-RESPECT-MILITARY-EVENTS-WIRING-Q1)
  *
  * Mutacja: usunięcie linii wywołania w applyMapBattleOutcome czerwieni sekcję C.
  *
@@ -116,10 +116,23 @@ async function main() {
   ok(militaryWinRespectPair('atakujacy', 1, 1, isH, isB) === null, 'ta sama własność → brak zdarzenia');
   ok(militaryWinRespectPair('atakujacy', undefined, 2, isH, isB) === null, 'brak właściciela atakującego → brak zdarzenia');
 
-  // ---- D. zakres ----
-  console.log('D. zakres: przewaga/słabszy nie podpięte (DECISION_REQUIRED)');
-  ok(!/applyDiploEventTracked\([^)]*'przewaga_militarna'/.test(mainSrc), "brak wywołania 'przewaga_militarna' w main.ts");
-  ok(!/applyDiploEventTracked\([^)]*'slabszy_militarnie'/.test(mainSrc), "brak wywołania 'slabszy_militarnie' w main.ts");
+  // ---- D. wiring: przewaga/słabszy podpięte (ABC 2026-11-14, próg 50%) ----
+  console.log('D. wiring: przewaga_militarna / slabszy_militarnie podpięte w turze (applyMilitaryRespektEdgeTick)');
+  const edgeIdx = mainSrc.indexOf('function applyMilitaryRespektEdgeTick(');
+  ok(edgeIdx > 0, 'helper applyMilitaryRespektEdgeTick zdefiniowany w main.ts');
+  const edgeBody = edgeIdx > 0 ? mainSrc.slice(edgeIdx, edgeIdx + 2000) : '';
+  ok(edgeBody.includes("'przewaga_militarna' : 'slabszy_militarnie'"), "helper: wybór zdarzenia 'przewaga_militarna' / 'slabszy_militarnie'");
+  ok(edgeBody.includes('respektMilitaryCrossing('), 'helper: decyzja przez respektMilitaryCrossing (testowana w diplo-respect-military-edge-test.cjs)');
+  ok(edgeBody.includes('respektPrzewagaStan'), 'helper: stan przejścia zapisany w DiploPairMeta.respektPrzewagaStan');
+  const tickIdx = mainSrc.indexOf('function runDiplomacyTurnTick(');
+  const tickEnd = tickIdx > 0 ? mainSrc.indexOf('\n    function ', tickIdx + 10) : -1;
+  const tickBody = tickIdx > 0 && tickEnd > 0 ? mainSrc.slice(tickIdx, tickEnd) : '';
+  ok(tickBody.includes('applyMilitaryRespektEdgeTick();'), 'runDiplomacyTurnTick wywołuje applyMilitaryRespektEdgeTick');
+  ok(mainSrc.includes('applyDiploEventTracked(gracz, o, cur, ev)'), 'zdarzenie idzie przez applyDiploEventTracked (zaufanie tempo + factors)');
+  ok(edgeBody.includes('respektMilOffset'), 'helper: korekta militarna zapisana w DiploPairMeta.respektMilOffset (obrona r1, zarzut 3)');
+  const aiIdx = mainSrc.indexOf('const respektAI = respektZKorektaMilitarna(');
+  const aiBody = aiIdx > 0 ? mainSrc.slice(aiIdx, aiIdx + 200) : '';
+  ok(aiBody.includes('computeRespekt(potAI, potPlr)') && aiBody.includes('respektMilOffset'), 'pętla AI: Respekt = computeRespekt + respektMilOffset (korekta przeżywa przeliczenie z Mocy)');
 
   console.log(`\nWynik: ${pass} OK, ${fail} FAIL`);
   try { fs.unlinkSync(BUNDLE); fs.unlinkSync(entryFile); } catch { /* ignore */ }

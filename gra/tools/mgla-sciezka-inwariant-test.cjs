@@ -248,6 +248,15 @@ const KLASYFIKACJA = [
   { plik: 'src/battle/manualBattle.ts', tekst: 'ru.q = q; ru.r = r;', nr: 1, klasa: 'POZA-MAPA-SWIATA', uzasadnienie: 'ruch w bitwie recznej, siatka bitwy' },
 
   // --- AI: mgla gracza nie zalezy od pozycji jednostek AI ---
+  // R-WEB-TEST-DEBT-BASE-RED-FALA741-Q1 (klasa A, dowod: commit a95d6589e R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1,
+  // dodany PO ostatniej inwentaryzacji tego testu): zapisy w ai.ts ponizej dotycza WYLACZNIE KOPII pozycji
+  // (`sim` = new Map(units.map(u => ({ ...u }))) w applyArmySeeksEnemyArmy oraz `pos` = new Map(... {q,r}) w
+  // orderMovesToUnblock). Symulacja kolejnosci marszu kolumny; nie zmienia RuntimeUnit gry ani nie jest czytana
+  // przez mgle (widocznosc liczy sie z pozycji rzeczywistych po wykonaniu komend).
+  { plik: 'src/game/ai.ts', tekst: 'if (d !== undefined && su !== undefined) { su.q = d.q; su.r = d.r; }', nr: 1, klasa: 'SYMULACJA-KOPIA', uzasadnienie: 'applyCoreDest — zapis do KOPII sim (kolejnosc marszu kolumny), nie do jednostki gry' },
+  { plik: 'src/game/ai.ts', tekst: 'simUnit.q = step.q;', nr: 1, klasa: 'SYMULACJA-KOPIA', uzasadnienie: 'applyArmySeeksEnemyArmy — krok na KOPII simUnit (sim), zeby kolejne ruchy widzialy zajete heksy' },
+  { plik: 'src/game/ai.ts', tekst: 'simUnit.r = step.r;', nr: 1, klasa: 'SYMULACJA-KOPIA', uzasadnienie: 'j.w.' },
+  { plik: 'src/game/ai.ts', tekst: 'if (me !== undefined) { me.q = c.toQ; me.r = c.toR; }', nr: 1, klasa: 'SYMULACJA-KOPIA', uzasadnienie: 'orderMovesToUnblock — zapis do KOPII pos (Map {q,r}), nie do RuntimeUnit' },
   { plik: 'src/game/ai-city-capture-executor.ts', tekst: 'unit.q = last.q;', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'executeAiCityMove — jednostka AI (main.ts: petla komend AI); wieloheksowa, ale explored gracza liczy sie z ownerId===0' },
   { plik: 'src/game/ai-city-capture-executor.ts', tekst: 'unit.r = last.r;', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'j.w.' },
 
@@ -289,10 +298,10 @@ const KLASYFIKACJA = [
   { plik: MAIN_TS, tekst: 'u.r = best.r;', nr: 1, klasa: 'DEBUG-TEST-HOOK', uzasadnienie: 'j.w.' },
   { plik: MAIN_TS, tekst: 'su.q = anim.destQ;', nr: 1, klasa: 'WIELOHEKS-ODKRYWA', uzasadnienie: 'koniec tury podczas animacji marszu (anim.pathHexes); MIEJSCE 2 z 3' },
   { plik: MAIN_TS, tekst: 'su.r = anim.destR;', nr: 1, klasa: 'WIELOHEKS-ODKRYWA', uzasadnienie: 'j.w.' },
-  { plik: MAIN_TS, tekst: 'bu.q = bcmd.toQ;', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'komenda `move` barbarzyncy' },
+  { plik: MAIN_TS, tekst: 'bu.q = barbToQ;', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'komenda `move` barbarzyncy (cel po przycieciu trasy przed zasadzka, planBarbarianAmbushMove; zapis tej samej klasy co wczesniej `bu.q = bcmd.toQ` -- barbarzynca nie odslania mgly gracza)' },
+  { plik: MAIN_TS, tekst: 'bu.r = barbToR;', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'j.w.' },
+  { plik: MAIN_TS, tekst: 'bu.q = bcmd.toQ;', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'komenda `raid` barbarzyncy' },
   { plik: MAIN_TS, tekst: 'bu.r = bcmd.toR;', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'j.w.' },
-  { plik: MAIN_TS, tekst: 'bu.q = bcmd.toQ;', nr: 2, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'komenda `raid` barbarzyncy' },
-  { plik: MAIN_TS, tekst: 'bu.r = bcmd.toR;', nr: 2, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'j.w.' },
   // --- R-WEB-TEST-DEBT-B-DIAG-Q1 r1: klasyfikacja miejsc dodanych PO R-PROC-... (4 sklasyfikowane
   //     z weryfikacja kodu; zadne nie jest marszem wieloheksowym bez odkrycia) ---
   { plik: 'src/battle/battleScene.ts', tekst: 'ru.q = col;', nr: 1, klasa: 'POZA-MAPA-SWIATA', uzasadnienie: '_doMove (tryb _autoBatchPlanning) — ruch jednostki na siatce bitwy (col/row); dawniej jedna linia `ru.q = col; ru.r = row;`, rozbita na dwie' },

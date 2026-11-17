@@ -290,7 +290,29 @@ export function dismissAdministrator(city: City): boolean {
 export type AdministratorChangeKind = 'ended_no_building' | 'ended_owner_changed' | 'stopped_no_funds' | 'resumed';
 /** `role`: 'miasto' = administrator miasta, 'ulepszenia' = administrator ulepszeń (R-WEB-IMPROVEMENT-ADMINISTRATOR-Q1). */
 export type AdministratorRole = 'miasto' | 'ulepszenia';
-export interface AdministratorChange { city: City; kind: AdministratorChangeKind; role: AdministratorRole }
+export interface AdministratorChange {
+  city: City;
+  kind: AdministratorChangeKind;
+  role: AdministratorRole;
+  /** Tylko dla `ended_owner_changed`: właściciel, którego administrator służył PRZED zmianą właściciela miasta. */
+  prevOwnerId?: number;
+}
+
+/**
+ * Czyj wpis w wydarzeniach to jest (R-WEB-UI-EVENTS-NO-FOREIGN-ADMINISTRATOR-DISMISSED-Q1):
+ * koniec służby przez zmianę właściciela miasta → właściciel PRZED zmianą (gracz dostaje wpis tylko, gdy
+ * traci SWOJEGO zarządcę; zdobycie miasta obcej cywilizacji z zarządcą nie daje wpisu o zwolnieniu);
+ * pozostałe zmiany → właściciel miasta (jak dotąd).
+ */
+export function administratorChangeAudienceOwnerId(ch: AdministratorChange): number {
+  if (ch.kind === 'ended_owner_changed' && ch.prevOwnerId !== undefined) return ch.prevOwnerId;
+  return ch.city.ownerId;
+}
+
+/** Bramka wpisu w wydarzeniach gracza (użyta w `noteAdministratorChange` w main.ts): `isPlayer` = czy id to gracz. */
+export function administratorChangeNotifiesPlayer(ch: AdministratorChange, isPlayer: (ownerId: number) => boolean): boolean {
+  return isPlayer(administratorChangeAudienceOwnerId(ch));
+}
 
 /**
  * Odśwież stan administratorów (wołać na starcie tury ekonomii, po zatrudnieniu/zwolnieniu,
@@ -322,7 +344,7 @@ export function refreshAdministratorState(
     const builtIds = builtByCity.get(city.id) ?? [];
     if (adm.ownerId !== city.ownerId) {
       delete city.administrator;
-      changes.push({ city, kind: 'ended_owner_changed', role: 'miasto' });
+      changes.push({ city, kind: 'ended_owner_changed', role: 'miasto', prevOwnerId: adm.ownerId });
       continue;
     }
     const tier = administrativeBuildingTier(builtIds);
@@ -348,7 +370,7 @@ export function refreshAdministratorState(
     const firstCity = cities.find(c => c.ownerId === ownerId);
     if (adm.ownerId !== ownerId) {
       stateAdmByOwner.delete(ownerId);
-      if (firstCity) changes.push({ city: firstCity, kind: 'ended_owner_changed', role: 'ulepszenia' });
+      if (firstCity) changes.push({ city: firstCity, kind: 'ended_owner_changed', role: 'ulepszenia', prevOwnerId: adm.ownerId });
       continue;
     }
     const funded = fundOwnerImprovementAdministrator(adm, ownerId, budgetOf(ownerId));

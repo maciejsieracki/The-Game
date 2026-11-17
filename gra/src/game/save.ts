@@ -73,8 +73,10 @@
  */
 
 import type { RuntimeUnit } from '../units/setup';
+import { normalizeAmbushField } from './ambush';
 import type { City } from './cities';
 import type { TradeRoute } from './trade-routes';
+import type { LedgerHistorySave } from './resource-ledger';
 import { isValidMapSnapshot, type SerializedMapData } from '../map/mapSnapshot';
 import { Nakladka, Ulepszenie } from '../types/hex';
 import { idbGetItem, idbSetItem, idbRemoveItem, idbListKeys, idbIsAvailable } from './idb-storage';
@@ -345,6 +347,12 @@ export interface SaveGame {
    * it should always be present so the map can be regenerated on load.
    */
   seed?: number;
+
+  /**
+   * R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 3b): pamięć ostatnich N tur księgi „Skąd zapasy”.
+   * OPCJONALNE — stary zapis bez pola = pusty dziennik (bez błędu). Brak wpływu na stan gry.
+   */
+  resourceLedgerHistory?: LedgerHistorySave;
 
   /** All units on the map (the live `units: RuntimeUnit[]`). */
   units: RuntimeUnit[];
@@ -716,6 +724,13 @@ export function deserializeGame(json: string): SaveGame {
   // downstream code never crashes on a malformed but version-valid payload.
   const obj = parsed as Partial<SaveGame> & { wersja: number };
   const obj2 = parsed as any;
+  // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: pole `ambush` inne niż `true` (śmieci, `null`) = brak zasadzki.
+  // Normalizacja na ścieżce WCZYTANIA (deserializeGame jest wejściem wszystkich ścieżek wczytania).
+  if (Array.isArray(obj.units)) {
+    for (const u of obj.units) {
+      if (u !== null && typeof u === 'object') normalizeAmbushField(u as { ambush?: unknown });
+    }
+  }
   const save: SaveGame = {
     wersja: ver,
     tura: typeof obj.tura === 'number' ? obj.tura : 1,
@@ -739,6 +754,10 @@ export function deserializeGame(json: string): SaveGame {
     recruitGeneralNoticeShown: obj2.recruitGeneralNoticeShown === true ? true : undefined,
     rallyPoints: obj2.rallyPoints,
     tradeRoutes: Array.isArray(obj2.tradeRoutes) ? obj2.tradeRoutes : undefined,
+    // R-WEB-SAVE-LOAD-LEDGER-HISTORY-LOST-AFTER-LOAD-Q1: deserializeGame buduje obiekt z jawnej listy pól;
+    // bez tej linii dziennik „Skąd zapasy” (resourceLedgerHistory) ginie przy KAŻDYM wczytaniu z magazynu
+    // (loadFromLocal -> deserializeGame), choć jest w zapisie. Stary zapis bez pola = undefined = pusty dziennik.
+    resourceLedgerHistory: Array.isArray(obj2.resourceLedgerHistory) ? obj2.resourceLedgerHistory : undefined,
     meta: obj.meta,
     mapQuality: obj2.mapQuality,
     renderQuality: obj2.renderQuality,

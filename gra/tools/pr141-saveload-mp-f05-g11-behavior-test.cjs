@@ -213,7 +213,9 @@ try {
   assert(unitStart > restoreFn.start && unitEnd > unitStart && unitEnd <= restoreFn.end, 'bounded actual unit restore statements found');
   const unitSnippet = source.slice(unitStart, source.indexOf(unitEndMarker, unitStart));
   const restoredUnits = [{ id: 'stale', ownerId: 3 }];
-  new Function('units', 'saved', unitSnippet)(restoredUnits, decoded);
+  // Snippet dotyka tez stanu panelu Rekrutacja (R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: recruitGeneralId + jednorazowy hint) -- lokalne stuby, nie globale.
+  new Function('units', 'saved', 'showHintMessage',
+    'let recruitFollowGeneralDefault, recruitGeneralId, recruitGeneralNoticeShown;\n' + unitSnippet)(restoredUnits, decoded, () => {});
   check('actual restore unit statements replace stale runtime unit state', () => {
     assert.equal(restoredUnits.length, 1);
     assert.equal(restoredUnits[0].ownerId, 7);

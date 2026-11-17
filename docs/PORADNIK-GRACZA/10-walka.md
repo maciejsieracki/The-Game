@@ -80,7 +80,7 @@ Przy słabej obronie miasto może paść szybciej; przy silnej — preBattle lub
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 60% skarbiec · 20% nauka · 20% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 30% skarbiec · 60% nauka · 10% zamożność.
 
 ### Strategia gracza
 
@@ -151,6 +151,8 @@ HUD przeszedł pełne przeprojektowanie na makietę **POLE-BITWY-TW-v5** (3 fazy
 
 Nazewnictwo dokładnych etykiet może się nieznacznie różnić w buildzie — szukaj wg **funkcji z tabeli**, nie dosłownego tekstu.
 
+**Zakres rozkazów w rozstawieniu (Formacja, Konnica, Kierunek natarcia).** Rozkaz działa na **dokładnie zaznaczone** żywe jednostki, także mieszane (piechota + konnica) i z różnych grup. Nic nie zaznaczone = **cała armia**. Dzięki temu można np. zaznaczyć samą konnicę i ustawić **Tył**, a piechota zostanie na **Froncie**. Komunikat po rozkazie mówi, czego dotyczył: „zaznaczenie (N)”, „cała grupa (N)” (wszystkie żywe jednostki jednej grupy) albo „cała armia”. Chip kierunku natarcia pokazuje „Natarcie: różne”, gdy zaznaczone jednostki mają różne kierunki. Kierunek natarcia wpływa na **auto-odgrywanie** bitwy (manewr konnicy na tyły/flankę), a nie na układ jednostek w strefie rozstawienia.
+
 ### 60.2. Sterowanie
 
 - **Mysz** — zaznaczanie, ruch, atak.
@@ -162,6 +164,12 @@ Nazewnictwo dokładnych etykiet może się nieznacznie różnić w buildzie — 
 ### 60.3. Efekty i wizualia (2026-07-23)
 
 Scena 3D ma dziś: **plansze wg terenu hexa** (§63.0), tonację ACES + światło + mgła, kępy trawy i dekor z bliska, banery stron nad oddziałami, mur oblężniczy z wieżyczkami. Odróżnienie łuku i miecza, **linie rozkazów**, uproszczone trafienia (bez pełnej fizyki).
+
+### 60.5. Ruch i cios w bitwie
+
+Jednostka wykorzystuje **cały ruch**. Do **pierwszego zderzenia wręcz** szereg wchodzi równo (strzały dystansowe tego nie zmieniają). Od zderzenia: jednostka dochodzi do wroga, **uderza**, a jeśli zostały jej punkty ruchu, **idzie dalej ku następnemu wrogowi**. W jednej turze jednostka uderza **tylko raz** — po ciosie może jedynie dojść do kolejnego wroga. Gdy po ciosie nie ma dokąd się ruszyć (okrążenie, blokada), **reszta ruchu przepada**. Hasło: [Ruch i cios w bitwie](../encyklopedia/pojecia/ruch-i-cios-w-bitwie.md).
+
+**Wyjątki od reguły pełnego ruchu:** doktryny Obrona i Ostrzał (jednostka po ciosie lub strzale nie maszeruje), ręczne rozkazy gracza w trybie ręcznym, uciekający oraz oblężenie muru.
 
 ### 60.4. Wynik strategiczny — ekrany Koniec bitwy i Szczegóły
 

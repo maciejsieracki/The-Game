@@ -1,0 +1,6 @@
+SNAPSHOT DIFF tura 41: ref-t41 (przebieg ciagly) vs res-t41 (po wznowieniu z zapisu w turze 40), seed 4242
+4 roznic
+/cities/0/wealthState/pula : ref=1.8209999999999997 | res=1.2599999999999993
+/cities/0/podzialPracy missing in ref (res={"procentBudynki":70})
+/gracze/0/1/skarbiec : ref=251 | res=254
+/gracze/0/1/nauka : ref=112 | res=112.5

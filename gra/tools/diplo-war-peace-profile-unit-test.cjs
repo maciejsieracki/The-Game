@@ -100,8 +100,8 @@ eq('sygnał b: miasto utracone i rw<=0.5', M.aiPeaceSignals({ rw: 0.45, turnsAtW
 eq('sygnał b NIE: bez utraty miasta', M.aiPeaceSignals({ rw: 0.45, turnsAtWar: 3, lostCitiesInWar: 0 }, rzym).reasons.includes('b'), false);
 eq('sygnał d: pat 15 tur bez zmiany miast 10 tur', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 15, lostCitiesInWar: 0, turnsSinceCityChange: 10 }, rzym).reasons.includes('d'), true);
 eq('sygnał d NIE: pat 14 tur', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 14, lostCitiesInWar: 0, turnsSinceCityChange: 14 }, rzym).reasons.includes('d'), false);
-eq('sygnał e: zmęczenie >= 0.4 (Zulusi 8/20)', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 8, lostCitiesInWar: 0 }, zulusi).reasons.includes('e'), true);
-eq('sygnał e NIE: Zulusi 7/20', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 7, lostCitiesInWar: 0 }, zulusi).wantsPeace, false);
+eq('sygnał e: zmęczenie >= 0.4 (Zulusi 16/40 tur = 0,40; skala 40 tur)', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 16, lostCitiesInWar: 0 }, zulusi).reasons.includes('e'), true);
+eq('sygnał e NIE: Zulusi 15/40 tur (0,375 < 0,4)', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 15, lostCitiesInWar: 0 }, zulusi).reasons.includes('e'), false);
 
 // ---- R10: klucz ai-params dyplomacja_zdrowie_armii_pokój = baza progZdrowia (podłączony) ----
 near('R10: baza zdrowia z ai-params = 0.40', M.zdrowieBazaZAiParams(), 0.4);
@@ -125,7 +125,8 @@ near('R5d: zulusi mnożnik cywilizacji 1.32', M.peaceCivPriceMultiplier(zulusi),
 near('R5d: chinczycy 1+0.05*-3+0.04*-1=0.81', M.peaceCivPriceMultiplier(chin), 0.81);
 const gz = M.evaluatePeaceAiGate({ rw: 0.8, turnsAtWar: 12, lostCitiesInWar: 0 }, zulusi);
 // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: mnożnik ceny od siły usunięty — zostaje mnożnik cywilizacji.
-near('R5 cena: zulusi rw0.8 = 1.32 (bez mnożnika siły)', gz.priceMultiplier, 1.32);
+// R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615-BOTH-CITIES-Q1 (ABC 2026-11-14): cena pokoju STALA C=615, mnoznik ceny = 1.
+near('R5 cena: zulusi rw0.8 = 1 (stala cena C=615, bez mnoznika cywilizacji)', gz.priceMultiplier, 1);
 
 // ---- R3(c): zdrowie armii ----
 eq('sygnał c: zdrowie armii 0.1 < progZdrowia (zulusi 0.40 -> prog ok.)', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 3, lostCitiesInWar: 0, armyHealthShare: 0.1 }, zulusi).reasons.includes('c'), true);

@@ -38,7 +38,7 @@ Efekt to **lokalna produkcja miasta** na suwakach Daniny — **nie** „mnożnik
 - **Wymaganie:** wybudowana **Biblioteka w tym mieście**
 
 ### Strategia gracza
-Miasto naukowe: Biblioteka → Akademia, suwak Daniny więcej na **naukę (20%)**, suwak pracy **70% budynki**.
+Miasto naukowe: Biblioteka → Akademia, suwak Daniny więcej na **naukę (20%)**, suwak pracy **50% budynki**.
 
 ### Typowe błędy
 - Budowa bez Biblioteki w mieście.

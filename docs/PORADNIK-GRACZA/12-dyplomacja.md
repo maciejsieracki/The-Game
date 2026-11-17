@@ -5,7 +5,7 @@
 
 Dyplomacja to relacje z **odkrytymi** nacjami: zaufanie, szacunek i wynikowa **relacja** decydują, czy możesz handlować, podpisać pakt czy wypowiedzieć wojnę. Handel używa **punktów wartości (PN)**. Ten rozdział opisuje model relacji, audiencję króla, progi akcji i przemarsz — minimum v1.0 plus roadmap v1.1.
 
-**Hasła encyklopedii (Civpedia) z pełnymi parametrami i plusami/minusami** (stan 2026-11-13): [Zaufanie](../encyklopedia/pojecia/zaufanie.md) · [Respekt](../encyklopedia/pojecia/respekt.md) · [Relacja](../encyklopedia/pojecia/relacja.md) · [Moc — wojskowy i gospodarczy](../encyklopedia/pojecia/moc-podzial.md) · [Wypowiadanie wojny](../encyklopedia/pojecia/wypowiedzenie-wojny.md) · [Rozejm i pokój](../encyklopedia/pojecia/rozejm-pokoj.md) · [Zmęczenie wojną](../encyklopedia/pojecia/zmeczenie-wojna.md) · [Wiarygodność](../encyklopedia/pojecia/wiarygodnosc.md). Sekcje oznaczone „DECYZJA WŁAŚCICIELA 2026-11-13, wdrożenie w toku” opisują zasady jeszcze niewdrożone — nie obecny stan gry.
+**Hasła encyklopedii (Civpedia) z pełnymi parametrami i plusami/minusami** (stan 2026-11-13): [Zaufanie](../encyklopedia/pojecia/zaufanie.md) · [Respekt](../encyklopedia/pojecia/respekt.md) · [Relacja](../encyklopedia/pojecia/relacja.md) · [Moc — wojskowy i gospodarczy](../encyklopedia/pojecia/moc-podzial.md) · [Wypowiadanie wojny](../encyklopedia/pojecia/wypowiedzenie-wojny.md) · [Rozejm i pokój](../encyklopedia/pojecia/rozejm-pokoj.md) · [Zmęczenie wojną](../encyklopedia/pojecia/zmeczenie-wojna.md) · [Wiarygodność](../encyklopedia/pojecia/wiarygodnosc.md). Sekcje oznaczone „DECYZJA WŁAŚCICIELA 2026-11-13” opisują zasady wdrożone w kodzie (stan zweryfikowany 2026-11-14). Jedyny wyjątek: zdarzenia Respektu „Przewaga militarna” (+15) i „Słabszy militarnie” (−10) są w kodzie, ale gra ich nie wywołuje — do potwierdzenia przez właściciela, patrz hasło [Respekt](../encyklopedia/pojecia/respekt.md).
 
 ---
 
@@ -19,6 +19,8 @@ Dyplomacja to relacje z **odkrytymi** nacjami: zaufanie, szacunek i wynikowa **r
 | **Zaufanie** | 0…100 | Historia **z tą nacją**: handel, dary, łamanie traktatów |
 | **Szacunek (Respekt)** | 0…100 | Siła państwa — jak bardzo cię „boją/szanują" |
 | **Relacja** | 0…200 | **Zaufanie + Respekt** — wynik używany do progów akcji dyplomatycznych |
+
+**Przewaga militarna (Respekt):** gdy twoja **siła wojskowa** (armia + rekruci + wygrane bitwy) jest co najmniej **1,5×** siły partnera (próg **50%**), Respekt w relacji z tym partnerem rośnie o **+15** — **jednorazowo**, na przejściu progu. Gdy to ty jesteś słabszy o 50%, Respekt w tej relacji spada o **−10** jednorazowo. Ponowne naliczenie dopiero po spadku poniżej progu i ponownym przekroczeniu. Korekta widoczna na pasku Respektu trwa, dopóki utrzymuje się stan progu: po powrocie w pasmo neutralne pasek wraca do wartości bez korekty, a wpis w rejestrze zostaje jako historia. Wpis widzisz w rejestrze Respektu w panelu dyplomacji ("Przewaga militarna" / "Słabszy militarnie"). Próg 50% dotyczy wyłącznie Respektu; próg wojny (20%) jest osobny.
 
 **Model (FALA 206):** Wiarygodność wpływa na **tempo** wzrostu Zaufania (im wyższa W, tym szybciej budujesz zaufanie u wszystkich). Relacja to suma osi per para — nie mylić z W.
 
@@ -107,7 +109,7 @@ Wysyłaj **prezenty** przed prośbą o pakt — relacja **+20** taniej niż wojn
 
 ### 76.1. Panel audiencji — layout dwustronny
 
-Ekran rozmowy jest dziś **dwustronny**, nie jedna kolumna: **karta gracza** (twój medalion + imię władcy, Moc, potencjał sojuszniczy, Skarbiec, twoje dobra) naprzeciw **karty rozmówcy** (relacje — Zaufanie/Szacunek/Relacja pokazane **tylko po jego stronie** — i nastawienie). Poniżej **baner statusu formalnego**, jeśli obowiązuje traktat (nazwa traktatu + „od X tur" + informacja o karze zerwania), oraz **stół negocjacji w 3 kolumnach**: Możliwe / Aktywne / Żądania-Oferty.
+Ekran rozmowy jest dziś **dwustronny**, nie jedna kolumna: **karta gracza** (twój medalion + imię władcy, Moc, potencjał sojuszniczy, Skarbiec, twoje dobra) naprzeciw **karty rozmówcy** (relacje — Zaufanie/Szacunek/Relacja pokazane **tylko po jego stronie** — i nastawienie). Poniżej **baner statusu formalnego** z etykietą **„Stan: POKÓJ / WOJNA / …”** (pod nią: „obowiązuje od X tur”, przy rozejmie „Rozejm do tury N”, a przy traktacie informacja „zerwanie: …”; podpowiedź banera mówi wprost: „To nie jest propozycja”), oraz **stół negocjacji w 3 kolumnach**: Możliwe / Aktywne / Żądania-Oferty.
 
 ### 76.2. Portrety i imiona władców
 
@@ -374,3 +376,14 @@ Wysyłaj **prezenty** przed prośbą o pakt — relacja **+20** taniej niż wojn
 ---
 
 *Poradnik‑L · Część XII · rev. G · 2026-08-04 (§74: Wiarygodność, bramki NAP W≥−40 / sojusz W≥0, flat +5 Zauf./turę, wchłonięcie MP v1; Wpływ Relacji na deal) · rev. G 2026-07-24 · rev. F 2026-07-23 · pierwotnie rev. E 2026-07-03 · dane: `diplomacy.json`, `diplomacy-credibility.ts`, `diplomacy-proposals.ts`*
+
+
+**Epoka handlu surowcami (blok ilości).** Liczba PN za blok surowca nie zmienia się między epokami, rośnie za to ilość: w Kamieniu 10 sztuk = 1 PN, w Brązie 50 szt. = 1 PN, w Żelazie 100 szt. = 1 PN. Epoka umowy to wyższa z epok dwóch stron, więc oferta AI w Brązie ma ilości w blokach po 50 szt. Szczegóły: encyklopedia, hasło „Handel surowcami".
+
+| Epoka umowy | Blok (szt. za ten sam PN) | Przykład: drewno (1 PN za blok) | Przykład: kamień (3 PN za blok) |
+|-------------|---------------------------|----------------------------------|----------------------------------|
+| Kamień | 10 | 10 szt. = 1 PN | 10 szt. = 3 PN |
+| Brąz | 50 | 50 szt. = 1 PN | 50 szt. = 3 PN |
+| Żelazo | 100 | 100 szt. = 1 PN | 100 szt. = 3 PN |
+
+Okno wymiany, „Szybka umowa", oferty AI i ocena partnera liczą w tej samej epoce umowy (wyższej z epok obu stron), więc podgląd bilansu zgadza się z decyzją AI. Ilość mniejsza niż jeden blok nie jest wyceniana; stare oferty z zapisu są obcinane w dół do pełnego bloku (minimum jeden). AI oferuje najmniej jeden pełny blok epoki umowy.

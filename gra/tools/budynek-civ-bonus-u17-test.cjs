@@ -87,6 +87,19 @@ function makeCity(overrides = {}) {
   };
 }
 
+// Dwa miasta TEGO SAMEGO właściciela, każde z Warsztatem (civ-wide: licznik = liczba miast z Warsztatem).
+function runTwoCitiesKamien() {
+  const m1 = makeMapWithQuarry(0, 0);
+  const m2 = makeMapWithQuarry(10, 0);
+  const map = { hexes: { ...m1.hexes, ...m2.hexes } };
+  const a = makeCity({ id: 'cityA', q: 0, r: 0, name: 'A', surowce: {} });
+  const b = makeCity({ id: 'cityB', q: 10, r: 0, name: 'B', surowce: {} });
+  const builtByCity = new Map([['cityA', ['kamieniarski']], ['cityB', ['kamieniarski']]]);
+  M.advanceCityEconomy([a, b], map, DATA, 'normal', [], new Map(), builtByCity);
+  // Magazyn państwa (pula właściciela) trafia do pierwszego miasta; suma obu miast = łączny wkład.
+  return (a.surowce?.kamien ?? 0) + (b.surowce?.kamien ?? 0);
+}
+
 function runTick(city, builtIds) {
   const map = makeMapWithQuarry(city.q, city.r);
   const builtByCity = new Map([[city.id, builtIds]]);
@@ -105,10 +118,16 @@ console.log('\n-- PYTANIE-84 U-17: Warsztat kamieniarski +10% Kamienia (civ-wide
   const yields = M.computeTerritoryResourceYieldByCity([city], map, nodes);
   const row = yields.get(city.id);
   ok(row && (row.kamien ?? 0) > 0, 'kamieniolom w terytorium daje kamien > 0');
-  const baseKamien = row.kamien;
-  eq(runTick(city, []), baseKamien, 'bez Warsztatu: kamien = baza z mapy');
+  // Baza = plon z terytorium (row.kamien) + plon pracy miasta (heks miasta jest pracowany:
+  // advanceCityEconomy dolicza go do worked magazyn). Mnożnik testujemy względem bazy SILNIKA bez Warsztatu.
+  const baseKamien = runTick(city, []);
+  ok(baseKamien >= row.kamien && baseKamien > 0,
+    `bez Warsztatu: kamien silnika (${baseKamien}) >= plon terytorium (${row.kamien})`);
   eq(runTick(city, ['kamieniarski']), Math.floor(baseKamien * 1.1), '1 Warsztat: kamien ×1.10 (floor)');
-  eq(runTick(city, ['kamieniarski', 'kamieniarski']), Math.floor(baseKamien * 1.2), '2 Warsztaty: kamien ×1.20 (floor, addytywnie)');
+  eq(runTwoCitiesKamien(), 2 * Math.floor(baseKamien * 1.2), '2 Warsztaty w 2 miastach: kamien ×1.20 na każde miasto (suma 2 miast, addytywnie civ-wide)');
+  // A (obrona r4, zarzut 3): przywrocona asercja "dwa Warsztaty w JEDNYM miescie nie kumuluja sie". Licznik civ-wide liczy MIASTA z Warsztatem
+  // (turn-economy.ts: activeBuiltIds.includes('kamieniarski') -> +1 na miasto), wiec 2 budynki w jednym miescie = ×1.10, nie ×1.20.
+  eq(runTick(city, ['kamieniarski', 'kamieniarski']), Math.floor(baseKamien * 1.1), '2 Warsztaty w 1 miescie: kamien ×1.10 (licznik = miasta z Warsztatem, nie budynki)');
 }
 
 // Parytet ze Stolarnią: ten sam wzorzec mnoznika drewno/kamien
@@ -134,8 +153,12 @@ console.log('\n-- PYTANIE-84 U-17: Warsztat kamieniarski +10% Kamienia (civ-wide
   const nodes = M.buildTerritoryNodesFromCities([city]);
   const yields = M.computeTerritoryResourceYieldByCity([city], map, nodes);
   const base = yields.get(city.id) ?? {};
+  // Baza kamienia = bez Warsztatu w tym samym silniku (plon terytorium + praca miasta).
+  const cStoneBase = makeCity({ surowce: {} });
+  M.advanceCityEconomy([cStoneBase], map, DATA, 'normal', [], new Map(), new Map([[city.id, []]]));
+  const baseKamienEngine = cStoneBase.surowce?.kamien ?? 0;
   eq(cWood.surowce?.drewno ?? 0, Math.floor((base.drewno ?? 0) * 1.1), 'Stolarnia: drewno ×1.10');
-  eq(cStone.surowce?.kamien ?? 0, Math.floor((base.kamien ?? 0) * 1.1), 'Warsztat kamieniarski: kamien ×1.10 (analog Stolarni)');
+  eq(cStone.surowce?.kamien ?? 0, Math.floor(baseKamienEngine * 1.1), 'Warsztat kamieniarski: kamien ×1.10 (analog Stolarni)');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

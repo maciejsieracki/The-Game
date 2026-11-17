@@ -86,6 +86,8 @@ export interface UnitCardStatusInput extends UnitSufferingStatusFields {
   veteranPanelExplanation?: string;
   inGarnizon?: boolean;
   sentry?: boolean;
+  /** R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4): armia w zasadzce (tylko dla wlasciciela). */
+  ambush?: boolean;
   ufortyfikowanyWPolu?: boolean;
   oblegaCityName?: string;
   /** R-WEB-MARCH-RESUME-NEXT-TURN-Q1: powód wstrzymania zaplanowanej trasy (wskaźnik „trasa wstrzymana”). */
@@ -293,6 +295,9 @@ export function buildUnitExtraStatusLinesHtml(input: UnitCardStatusInput): strin
   }
   if (input.sentry) {
     lines.push(`<div class="uc-extra-status">Status: czuwa (nie budzi się na ruch wroga)</div>`);
+  }
+  if (input.ambush) {
+    lines.push(`<div class="uc-extra-status uc-ambush-status">Status: W zasadzce (niewidoczna dla wrogów; wejście wroga uruchamia bitwę)</div>`);
   }
   if (input.ufortyfikowanyWPolu) {
     lines.push(`<div class="uc-extra-status">Status: ufortyfikowana w polu (+50% Obrony)</div>`);

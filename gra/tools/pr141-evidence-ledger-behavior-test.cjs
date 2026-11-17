@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 'use strict';
+// WYCOFANY: dowód historyczny (R-WEB-TEST-DEBT-BASELINE-Q4, decyzja właściciela 2026-11-16, wariant: wczesne wyjście z kodem 0).
+// Powód: wymaga zewnętrznego pliku /workspace/pr141-review/current-consumers.json (poza repo, ENOENT); dane NIE są regenerowane.
+console.log('WYCOFANY: dowód historyczny -- pr141-evidence-ledger-behavior-test');
+process.exit(0);
 
 // Read-only structural and provenance ledger for PR141. This validates source
 // coverage and makes missing evidence explicit; it does not classify gameplay.

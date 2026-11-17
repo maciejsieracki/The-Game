@@ -25,8 +25,9 @@ function check(name, ok, detail) {
 
 async function main() {
   fs.writeFileSync(ENTRY, [
-    "import { toggleEmpireRecruitPanel, resetEmpireRecruitPanelSession } from '../src/ui/empireRecruitPanel.ts';",
-    'window.__api = { toggleEmpireRecruitPanel, resetEmpireRecruitPanelSession };',
+    "import { mountEmpireRecruitSection, configureEmpireRecruitPanel, resetEmpireRecruitPanelSession } from '../src/ui/empireRecruitPanel.ts';",
+    'window.__openErp = function (cfg) { var h = document.getElementById("civ-empire-recruit-panel"); if (!h) { h = document.createElement("div"); h.id = "civ-empire-recruit-panel"; h.setAttribute("data-erp-root", ""); document.body.appendChild(h); } configureEmpireRecruitPanel(cfg); mountEmpireRecruitSection(h); };',
+    'window.__api = { resetEmpireRecruitPanelSession };',
     '',
   ].join('\n'), 'utf8');
   await esbuild.build({ entryPoints: [ENTRY], bundle: true, platform: 'browser', format: 'iife', target: 'es2020',
@@ -47,7 +48,7 @@ async function main() {
         { id: 'g1', label: 'Wódz 1 — Wojownik (3,4)' },
         { id: 'g2', label: 'Wódz 2 — Łucznik (9,1)' },
       ];
-      window.__api.toggleEmpireRecruitPanel({
+      window.__openErp({
         getRows: () => [{ id: 'Wojownik', label: 'Wojownik', koszt: 20, capableCities: 2, totalCities: 2, queued: 0 }],
         onOrder: (id, q) => { window.__orders.push([id, q, window.__sel]); return { message: 'Zamówiono ' + q, changed: true, accepted: q }; },
         getGenerals: () => window.__gens,

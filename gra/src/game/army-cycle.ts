@@ -35,7 +35,8 @@ export function isUnitActiveForCycle(u: RuntimeUnit): boolean {
   return u.sentry !== true
     && u.autoExplore !== true
     && u.inGarnizon !== true
-    && u.ufortyfikowanyWPolu !== true;
+    && u.ufortyfikowanyWPolu !== true
+    && u.ambush !== true; // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (obrona r3, zarzut 2)
 }
 
 /**

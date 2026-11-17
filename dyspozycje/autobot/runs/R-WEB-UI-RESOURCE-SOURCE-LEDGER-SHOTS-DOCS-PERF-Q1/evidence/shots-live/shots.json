@@ -1,0 +1,312 @@
+{
+  "seed": 4242,
+  "turns": 3,
+  "dist": "dist-shot",
+  "at": "2026-11-15T13:07:52.745Z",
+  "negativeControl": {
+    "ledgerTestDebug": "undefined",
+    "nnsMeasureDebug": "undefined"
+  },
+  "hookPresentWithFlag": "function",
+  "info": {
+    "me": 0,
+    "ai": 10,
+    "turn": 1,
+    "myCities": 1,
+    "aiCities": 1,
+    "aiOwners": [
+      10,
+      11,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "pricedKeys": [
+      "drewno",
+      "glina",
+      "kamien",
+      "ruda",
+      "ruda_zelaza",
+      "ruda_cyny",
+      "cegla",
+      "sol",
+      "kon",
+      "ceramika",
+      "braz",
+      "zelazo",
+      "stal",
+      "zloto",
+      "wegiel"
+    ],
+    "pack": 10
+  },
+  "scenarioMe": {
+    "cityId": "city0",
+    "warzelniaHex": "53,37"
+  },
+  "spawnedAiCity": "city1",
+  "scenarioAi": {
+    "cityId": "city1",
+    "warzelniaHex": "49,36"
+  },
+  "turnsLog": [
+    {
+      "before": 1,
+      "after": 2,
+      "attempts": 1,
+      "consoleBlocked": [
+        "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+        "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+        "[EndTurn] blocked: endTurnInProgress",
+        "[EndTurn] blocked: endTurnInProgress"
+      ]
+    },
+    {
+      "before": 2,
+      "after": 3,
+      "attempts": 1,
+      "consoleBlocked": [
+        "[EndTurn] blocked: endTurnInProgress",
+        "[EndTurn] blocked: endTurnInProgress",
+        "[EndTurn] blocked: endTurnInProgress",
+        "[EndTurn] blocked: endTurnInProgress"
+      ]
+    },
+    {
+      "before": 3,
+      "after": 4,
+      "attempts": 1,
+      "consoleBlocked": [
+        "[EndTurn] blocked: endTurnInProgress",
+        "[EndTurn] blocked: endTurnInProgress",
+        "[EndTurn] blocked: endTurnInProgress",
+        "[EndTurn] blocked: endTurnInProgress"
+      ]
+    }
+  ],
+  "trades": [
+    {
+      "turn": 1,
+      "sol": {
+        "from": 0,
+        "to": 80
+      },
+      "ceramika": {
+        "from": 100,
+        "to": 300
+      },
+      "pendingKeys": [
+        "0",
+        "10"
+      ]
+    },
+    {
+      "turn": 2,
+      "sol": {
+        "from": 0,
+        "to": 230
+      },
+      "ceramika": {
+        "from": 39,
+        "to": 439
+      },
+      "pendingKeys": [
+        "0",
+        "10"
+      ]
+    },
+    {
+      "turn": 3,
+      "sol": {
+        "from": 0,
+        "to": 380
+      },
+      "ceramika": {
+        "from": 0,
+        "to": 556
+      },
+      "pendingKeys": [
+        "0",
+        "10"
+      ]
+    }
+  ],
+  "snapshot": {
+    "turn": 4,
+    "stockMe": {
+      "sol": 455,
+      "ceramika": 595
+    },
+    "tickMeSol": {
+      "warzelnia|53,37": {
+        "kind": "warzelnia",
+        "label": "Warzelnia (Rzym)",
+        "amount": 75
+      },
+      "umowa-wymiany|in|10": {
+        "kind": "umowa_wymiany",
+        "label": "Umowa wymiany z Ostia · Rzymianie · miasto-państwo",
+        "amount": 75
+      }
+    },
+    "tickMeCer": {
+      "konwersja|city0|garncarnia": {
+        "kind": "konwersja",
+        "label": "Garncarnia (Rzym)",
+        "amount": 50
+      },
+      "spichlerz|0": {
+        "kind": "spichlerz",
+        "label": "Spichlerz (zużycie zapasów)",
+        "amount": -10
+      },
+      "umowa-wymiany|in|10": {
+        "kind": "umowa_wymiany",
+        "label": "Umowa wymiany z Ostia · Rzymianie · miasto-państwo",
+        "amount": 78
+      },
+      "obywatele|0": {
+        "kind": "obywatele",
+        "label": "Obywatele",
+        "amount": -1
+      }
+    }
+  },
+  "fastModeOff": false,
+  "sizes": {
+    "1280": {
+      "viewport": {
+        "w": 1280,
+        "h": 800
+      },
+      "cards": {
+        "sol": {
+          "found": true,
+          "open": true,
+          "rows": [
+            {
+              "cls": "civ-emp-res-skad-row gain",
+              "text": "+225 Warzelnia (Rzym)",
+              "valueColor": "rgb(143, 214, 148)"
+            },
+            {
+              "cls": "civ-emp-res-skad-row gain",
+              "text": "+190 Umowa wymiany z Ostia · Rzymianie · miasto-państwo",
+              "valueColor": "rgb(143, 214, 148)"
+            }
+          ],
+          "cardWidth": 182,
+          "cardHeight": 416,
+          "cardLeft": 893,
+          "cardTop": 632,
+          "nameText": "Sól"
+        },
+        "ceramika": {
+          "found": true,
+          "open": true,
+          "rows": [
+            {
+              "cls": "civ-emp-res-skad-row gain",
+              "text": "+278 Umowa wymiany z Ostia · Rzymianie · miasto-państwo",
+              "valueColor": "rgb(143, 214, 148)"
+            },
+            {
+              "cls": "civ-emp-res-skad-row gain",
+              "text": "+150 Garncarnia (Rzym)",
+              "valueColor": "rgb(143, 214, 148)"
+            },
+            {
+              "cls": "civ-emp-res-skad-row loss",
+              "text": "−30 Spichlerz (zużycie zapasów)",
+              "valueColor": "rgb(224, 122, 122)"
+            },
+            {
+              "cls": "civ-emp-res-skad-row loss",
+              "text": "−3 Obywatele",
+              "valueColor": "rgb(224, 122, 122)"
+            }
+          ],
+          "cardWidth": 182,
+          "cardHeight": 416,
+          "cardLeft": 1083,
+          "cardTop": 384,
+          "nameText": "Ceramika"
+        }
+      },
+      "panelBody": {
+        "w": 403,
+        "h": 735
+      }
+    },
+    "1920": {
+      "viewport": {
+        "w": 1920,
+        "h": 1080
+      },
+      "cards": {
+        "sol": {
+          "found": true,
+          "open": true,
+          "rows": [
+            {
+              "cls": "civ-emp-res-skad-row gain",
+              "text": "+225 Warzelnia (Rzym)",
+              "valueColor": "rgb(143, 214, 148)"
+            },
+            {
+              "cls": "civ-emp-res-skad-row gain",
+              "text": "+190 Umowa wymiany z Ostia · Rzymianie · miasto-państwo",
+              "valueColor": "rgb(143, 214, 148)"
+            }
+          ],
+          "cardWidth": 182,
+          "cardHeight": 416,
+          "cardLeft": 1533,
+          "cardTop": 632,
+          "nameText": "Sól"
+        },
+        "ceramika": {
+          "found": true,
+          "open": true,
+          "rows": [
+            {
+              "cls": "civ-emp-res-skad-row gain",
+              "text": "+278 Umowa wymiany z Ostia · Rzymianie · miasto-państwo",
+              "valueColor": "rgb(143, 214, 148)"
+            },
+            {
+              "cls": "civ-emp-res-skad-row gain",
+              "text": "+150 Garncarnia (Rzym)",
+              "valueColor": "rgb(143, 214, 148)"
+            },
+            {
+              "cls": "civ-emp-res-skad-row loss",
+              "text": "−30 Spichlerz (zużycie zapasów)",
+              "valueColor": "rgb(224, 122, 122)"
+            },
+            {
+              "cls": "civ-emp-res-skad-row loss",
+              "text": "−3 Obywatele",
+              "valueColor": "rgb(224, 122, 122)"
+            }
+          ],
+          "cardWidth": 182,
+          "cardHeight": 416,
+          "cardLeft": 1723,
+          "cardTop": 632,
+          "nameText": "Ceramika"
+        }
+      },
+      "panelBody": {
+        "w": 403,
+        "h": 1015
+      }
+    }
+  }
+}

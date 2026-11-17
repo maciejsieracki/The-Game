@@ -1,0 +1,43 @@
+=== TABELA 3: straty zwyciezcy vs przegranego, tryb RECZNY (klik-po-klik) vs AUTO, ten sam sklad i ziarno ===
+sklad | ziarno | tryb | zwyciezca | rundy | ZWYCIEZCA: zabici/utraceni(+uciekli)/HP utracone (% HP) | PRZEGRANY: zabici/utraceni/HP utracone (% HP) | akcje UI (chip/Shift+klik enemy/Spacja)
+C1 piechota 14 vs 10 | s1 | manual-march | atakujacy | 22 | 2/6/100 (32%) | 1/6/75 (34%) | 2/2/1
+C1 piechota 14 vs 10 | s1 | manual-focus | obronca | 25 | 0/6/71 (32%) | 2/14/130 (42%) | 1/1/1
+C1 piechota 14 vs 10 | s1 | auto | atakujacy | 17 | 0/6/72 (23%) | 5/10/163 (74%) | n/d
+C2 mieszany: piechota+strzelcy+konnica 18 vs 16 | s1 | manual-focus | obronca | 10 | 1/2/59 (14%) | 17/18/478 (96%) | 1/1/1
+C2 mieszany: piechota+strzelcy+konnica 18 vs 16 | s1 | auto | atakujacy | 14 | 2/5/122 (25%) | 15/16/409 (96%) | n/d
+C1 piechota 14 vs 10 | s2 | manual-march | obronca | 22 | 0/5/71 (32%) | 3/14/166 (54%) | 2/2/1
+C1 piechota 14 vs 10 | s2 | manual-focus | obronca | 21 | 0/1/30 (14%) | 5/14/242 (79%) | 1/1/1
+C1 piechota 14 vs 10 | s2 | auto | atakujacy | 15 | 0/1/23 (7%) | 3/10/157 (71%) | n/d
+C1 piechota 14 vs 10 | s3 | manual-march | atakujacy | 21 | 0/9/89 (29%) | 1/10/76 (35%) | 2/2/1
+C1 piechota 14 vs 10 | s3 | manual-focus | obronca | 21 | 0/2/41 (19%) | 6/14/198 (64%) | 1/1/1
+C1 piechota 14 vs 10 | s3 | auto | atakujacy | 14 | 0/0/22 (7%) | 7/10/200 (91%) | n/d
+C2 mieszany: piechota+strzelcy+konnica 18 vs 16 | s1 | manual-march | obronca | 16 | 1/7/140 (33%) | 10/18/347 (70%) | 5/5/1 (proby: 3)
+C2 mieszany: piechota+strzelcy+konnica 18 vs 16 | s2 | manual-march | obronca | 17 | 2/7/147 (35%) | 8/18/312 (63%) | 2/2/1 (proby: 2)
+C2 mieszany: piechota+strzelcy+konnica 18 vs 16 | s2 | manual-focus | obronca | 12 | 0/2/37 (9%) | 15/18/442 (89%) | 1/1/1
+C2 mieszany: piechota+strzelcy+konnica 18 vs 16 | s2 | auto | atakujacy | 14 | 0/1/28 (6%) | 16/16/424 (100%) | n/d
+C2 mieszany: piechota+strzelcy+konnica 18 vs 16 | s3 | manual-focus | obronca | 15 | 1/2/62 (15%) | 12/18/408 (82%) | 1/1/1
+C2 mieszany: piechota+strzelcy+konnica 18 vs 16 | s3 | auto | obronca | 16 | 2/8/142 (33%) | 14/18/436 (88%) | n/d
+C2 mieszany: piechota+strzelcy+konnica 18 vs 16 | s3 | manual-march | atakujacy | 16 | 1/5/123 (25%) | 15/16/410 (97%) | 1/1/1
+
+=== ROZBIEZNOSC reczny vs AUTO (kandydat R-WEB-*, gdy straty zwyciezcy roznia sie o > 25% albo zwyciezca inny) ===
+sklad | ziarno | zwyciezca reczny/AUTO | HP utracone zwyciezcy reczny | AUTO | roznica % (wzgl. AUTO) | jednostki utracone zwyciezcy reczny/AUTO | werdykt
+C1 piechota 14 vs 10 | s1 manual-march | atakujacy/atakujacy | 100 | 72 | 38.9 | 6/6 | KANDYDAT
+C1 piechota 14 vs 10 | s1 manual-focus | obronca/atakujacy | 71 | 72 | 1.4 | 6/6 | KANDYDAT (inny zwyciezca)
+C2 mieszany: piechota+strzelcy+konnica 18 vs 16 | s1 manual-march | obronca/atakujacy | 140 | 122 | 14.8 | 7/5 | KANDYDAT (inny zwyciezca)
+C2 mieszany: piechota+strzelcy+konnica 18 vs 16 | s1 manual-focus | obronca/atakujacy | 59 | 122 | 51.6 | 2/5 | KANDYDAT (inny zwyciezca)
+C1 piechota 14 vs 10 | s2 manual-march | obronca/atakujacy | 71 | 23 | 208.7 | 5/1 | KANDYDAT (inny zwyciezca)
+C1 piechota 14 vs 10 | s2 manual-focus | obronca/atakujacy | 30 | 23 | 30.4 | 1/1 | KANDYDAT (inny zwyciezca)
+C1 piechota 14 vs 10 | s3 manual-march | atakujacy/atakujacy | 89 | 22 | 304.5 | 9/0 | KANDYDAT
+C1 piechota 14 vs 10 | s3 manual-focus | obronca/atakujacy | 41 | 22 | 86.4 | 2/0 | KANDYDAT (inny zwyciezca)
+C2 mieszany: piechota+strzelcy+konnica 18 vs 16 | s2 manual-march | obronca/atakujacy | 147 | 28 | 425 | 7/1 | KANDYDAT (inny zwyciezca)
+C2 mieszany: piechota+strzelcy+konnica 18 vs 16 | s2 manual-focus | obronca/atakujacy | 37 | 28 | 32.1 | 2/1 | KANDYDAT (inny zwyciezca)
+C2 mieszany: piechota+strzelcy+konnica 18 vs 16 | s3 manual-march | atakujacy/obronca | 123 | 142 | 13.4 | 5/8 | KANDYDAT (inny zwyciezca)
+C2 mieszany: piechota+strzelcy+konnica 18 vs 16 | s3 manual-focus | obronca/obronca | 62 | 142 | 56.3 | 2/8 | KANDYDAT
+
+=== DIAGNOSTYKA ruchu i ciosow strony gracza (atakujacy; w AUTO ta sama strona) -- skad rozbieznosc ===
+tryb | obserwacji (jedn. x runda, bez sasiedztwa wroga, po rundzie 1) | sredni ruch heks/runde | odsetek obs. z pelnym ruchem (>= dostepny zapas) | ciosy strony atk / def (suma na bitwe, srednio)
+manual-march | 347 | 0.85 | 5% | 33 / 76
+manual-focus | 216 | 0.92 | 2% | 7 / 125
+auto | 112 | 1.87 | 17% | 106 / 37
+
+=== manual-driver: 18 bitew, 0 z naruszeniem integralnosci pomiaru, kandydatow na rozbieznosc: 12 (prog 25%) ===

@@ -1,0 +1,644 @@
+{
+ "info": {
+  "me": 0,
+  "ai": 1,
+  "turn": 1,
+  "myCities": 1,
+  "aiCities": 1,
+  "aiOwners": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "pricedKeys": [
+   "drewno",
+   "glina",
+   "kamien",
+   "ruda",
+   "ruda_zelaza",
+   "ruda_cyny",
+   "cegla",
+   "sol",
+   "kon",
+   "ceramika",
+   "braz",
+   "zelazo",
+   "stal",
+   "zloto",
+   "wegiel"
+  ],
+  "pack": 10
+ },
+ "stocksSetup": {
+  "aiGive": 400,
+  "aiRecv": 0,
+  "plGive": 0,
+  "plRecv": 400
+ },
+ "probe": {
+  "giveKey": "cegla",
+  "giveQty": 200,
+  "receiveKey": "zelazo",
+  "receiveQty": 50
+ },
+ "probeMs": 604,
+ "popSetup": 20,
+ "eraSetup": 2,
+ "afterFirstEot": {
+  "turn": 2,
+  "barterCooldown": [
+   [
+    1,
+    2
+   ]
+  ],
+  "rejectCooldowns": [],
+  "pending": [
+   {
+    "id": "negot-handel-0-1-t2-1",
+    "proposer": 1,
+    "responder": 0,
+    "actionId": "handel",
+    "payload": {
+     "giveItems": [
+      {
+       "typ": "surowiec_ilosc",
+       "id": "cegla",
+       "ilosc": 70
+      }
+     ],
+     "receiveItems": [
+      {
+       "typ": "surowiec_ilosc",
+       "id": "drewno",
+       "ilosc": 350
+      }
+     ],
+     "resourceTradeMode": "per_turn",
+     "turns": 10,
+     "exchangeDurationTurns": 10
+    },
+    "createdTurn": 2
+   }
+  ],
+  "tableLen": 1,
+  "relAtDecision": null,
+  "playerCities": 1,
+  "relTotalAi": 50.5886,
+  "digest": {
+   "units": {
+    "0": 3,
+    "1": 1,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0
+   },
+   "treasury": {
+    "0": 4909,
+    "1": 323,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0
+   },
+   "stock": {
+    "0": {
+     "drewno": 309,
+     "glina": 80,
+     "kamien": 0,
+     "zelazo": 340
+    },
+    "1": {
+     "cegla": 415,
+     "glina": 100,
+     "kamien": 0
+    },
+    "2": {},
+    "3": {},
+    "4": {},
+    "5": {},
+    "6": {}
+   }
+  },
+  "entries": [
+   {
+    "id": "negot-handel-0-1-t2-1",
+    "actionId": "handel",
+    "cyclic": true,
+    "proposer": 1,
+    "responder": 0
+   }
+  ],
+  "cyclicDeals": []
+ },
+ "offerKeys": {
+  "curGive": "cegla",
+  "curRecv": "drewno",
+  "probeGive": "cegla",
+  "probeRecv": "zelazo"
+ },
+ "offer": {
+  "give": 70,
+  "recv": 350,
+  "probeGive": 200,
+  "probeRecv": 50
+ },
+ "diagOffer": {
+  "givePn": 350,
+  "receivePn": 350,
+  "fairBlock": null,
+  "playerOk": true,
+  "accepted": true,
+  "reason": "Umowa handlowa (surowiec co turę) na 10 tur",
+  "relTotal": 32.5886
+ },
+ "pricing": {
+  "givePn": 350,
+  "receivePn": 350,
+  "fairBlock": null,
+  "playerOk": true,
+  "accepted": true,
+  "reason": "Umowa handlowa (surowiec co turę) na 10 tur",
+  "relTotal": 32.5886
+ },
+ "audienceUi": {
+  "buttons": [
+   {
+    "act": "edit",
+    "text": "Edytuj",
+    "disabled": false,
+    "visible": true
+   },
+   {
+    "act": "remove",
+    "text": "Usuń",
+    "disabled": false,
+    "visible": true
+   },
+   {
+    "act": "edit",
+    "text": "Edytuj",
+    "disabled": false,
+    "visible": true
+   },
+   {
+    "act": "remove",
+    "text": "Usuń",
+    "disabled": false,
+    "visible": true
+   },
+   {
+    "act": "accept-package",
+    "text": "Przyjmij",
+    "disabled": false,
+    "visible": true
+   },
+   {
+    "act": "reject-package",
+    "text": "Odrzuć",
+    "disabled": false,
+    "visible": true
+   }
+  ]
+ },
+ "grid": [
+  {
+   "give": "cegla",
+   "recv": "zelazo",
+   "n": 400,
+   "aiGateA1": 5,
+   "playerOk": 360,
+   "both": 5,
+   "bothNotEqual": 0,
+   "examples": [
+    {
+     "giveQty": 40,
+     "recvQty": 10,
+     "givePn": 200,
+     "receivePn": 200
+    },
+    {
+     "giveQty": 80,
+     "recvQty": 20,
+     "givePn": 400,
+     "receivePn": 400
+    },
+    {
+     "giveQty": 120,
+     "recvQty": 30,
+     "givePn": 600,
+     "receivePn": 600
+    }
+   ]
+  },
+  {
+   "give": "zelazo",
+   "recv": "cegla",
+   "n": 400,
+   "aiGateA1": 5,
+   "playerOk": 45,
+   "both": 5,
+   "bothNotEqual": 0,
+   "examples": [
+    {
+     "giveQty": 10,
+     "recvQty": 40,
+     "givePn": 200,
+     "receivePn": 200
+    },
+    {
+     "giveQty": 20,
+     "recvQty": 80,
+     "givePn": 400,
+     "receivePn": 400
+    },
+    {
+     "giveQty": 30,
+     "recvQty": 120,
+     "givePn": 600,
+     "receivePn": 600
+    }
+   ]
+  },
+  {
+   "give": "drewno",
+   "recv": "kamien",
+   "n": 400,
+   "aiGateA1": 6,
+   "playerOk": 343,
+   "both": 6,
+   "bothNotEqual": 0,
+   "examples": [
+    {
+     "giveQty": 30,
+     "recvQty": 10,
+     "givePn": 30,
+     "receivePn": 30
+    },
+    {
+     "giveQty": 60,
+     "recvQty": 20,
+     "givePn": 60,
+     "receivePn": 60
+    },
+    {
+     "giveQty": 90,
+     "recvQty": 30,
+     "givePn": 90,
+     "receivePn": 90
+    }
+   ]
+  },
+  {
+   "give": "kamien",
+   "recv": "drewno",
+   "n": 400,
+   "aiGateA1": 6,
+   "playerOk": 63,
+   "both": 6,
+   "bothNotEqual": 0,
+   "examples": [
+    {
+     "giveQty": 10,
+     "recvQty": 30,
+     "givePn": 30,
+     "receivePn": 30
+    },
+    {
+     "giveQty": 20,
+     "recvQty": 60,
+     "givePn": 60,
+     "receivePn": 60
+    },
+    {
+     "giveQty": 30,
+     "recvQty": 90,
+     "givePn": 90,
+     "receivePn": 90
+    }
+   ]
+  },
+  {
+   "give": "zelazo",
+   "recv": "kamien",
+   "n": 400,
+   "aiGateA1": 1,
+   "playerOk": 22,
+   "both": 1,
+   "bothNotEqual": 0,
+   "examples": [
+    {
+     "giveQty": 30,
+     "recvQty": 200,
+     "givePn": 600,
+     "receivePn": 600
+    }
+   ]
+  },
+  {
+   "give": "drewno",
+   "recv": "cegla",
+   "n": 400,
+   "aiGateA1": 4,
+   "playerOk": 370,
+   "both": 4,
+   "bothNotEqual": 0,
+   "examples": [
+    {
+     "giveQty": 50,
+     "recvQty": 10,
+     "givePn": 50,
+     "receivePn": 50
+    },
+    {
+     "giveQty": 100,
+     "recvQty": 20,
+     "givePn": 100,
+     "receivePn": 100
+    },
+    {
+     "giveQty": 150,
+     "recvQty": 30,
+     "givePn": 150,
+     "receivePn": 150
+    }
+   ]
+  }
+ ],
+ "canEndWithPendingOffer": true,
+ "afterLoadPending": {
+  "turn": 3,
+  "barterCooldown": [
+   [
+    1,
+    2
+   ]
+  ],
+  "rejectCooldowns": [],
+  "pending": [
+   {
+    "id": "negot-handel-0-1-t2-1",
+    "proposer": 1,
+    "responder": 0,
+    "actionId": "handel",
+    "payload": {
+     "giveItems": [
+      {
+       "typ": "surowiec_ilosc",
+       "id": "cegla",
+       "ilosc": 70
+      }
+     ],
+     "receiveItems": [
+      {
+       "typ": "surowiec_ilosc",
+       "id": "drewno",
+       "ilosc": 350
+      }
+     ],
+     "resourceTradeMode": "per_turn",
+     "turns": 10,
+     "exchangeDurationTurns": 10
+    },
+    "createdTurn": 2
+   }
+  ],
+  "tableLen": 1,
+  "relAtDecision": null,
+  "playerCities": 1,
+  "relTotalAi": 32.58948509375,
+  "digest": {
+   "units": {
+    "0": 3,
+    "1": 1,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0
+   },
+   "treasury": {
+    "0": 4805,
+    "1": 411,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0
+   },
+   "stock": {
+    "0": {
+     "drewno": 662,
+     "glina": 156,
+     "kamien": 0,
+     "zelazo": 280
+    },
+    "1": {
+     "cegla": 640,
+     "drewno": 0,
+     "glina": 67,
+     "kamien": 0
+    },
+    "2": {},
+    "3": {},
+    "4": {},
+    "5": {},
+    "6": {}
+   }
+  },
+  "entries": [
+   {
+    "id": "negot-handel-0-1-t2-1",
+    "actionId": "handel",
+    "cyclic": true,
+    "proposer": 1,
+    "responder": 0
+   }
+  ],
+  "cyclicDeals": []
+ },
+ "controlNoDeal": {
+  "ctlB": {
+   "plGive": 70,
+   "aiRecv": 350,
+   "aiGive": 640
+  },
+  "ctlA": {
+   "plGive": 27,
+   "aiRecv": 300,
+   "aiGive": 865
+  },
+  "ctlLossGive": 43,
+  "ctlLossRecv": 50,
+  "ctlSellerDelta": 225
+ },
+ "previewAccept": {
+  "accepted": true,
+  "reason": null,
+  "awaitingMe": true
+ },
+ "acceptedViaButton": true,
+ "afterAccept": {
+  "turn": 3,
+  "barterCooldown": [
+   [
+    1,
+    2
+   ]
+  ],
+  "rejectCooldowns": [],
+  "pending": [],
+  "tableLen": 0,
+  "relAtDecision": null,
+  "playerCities": 1,
+  "relTotalAi": 32.58948509375,
+  "digest": {
+   "units": {
+    "0": 3,
+    "1": 1,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0
+   },
+   "treasury": {
+    "0": 4805,
+    "1": 411,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0
+   },
+   "stock": {
+    "0": {
+     "drewno": 662,
+     "glina": 156,
+     "kamien": 0,
+     "zelazo": 280
+    },
+    "1": {
+     "cegla": 640,
+     "drewno": 0,
+     "glina": 67,
+     "kamien": 0
+    },
+    "2": {},
+    "3": {},
+    "4": {},
+    "5": {},
+    "6": {}
+   }
+  },
+  "entries": [],
+  "cyclicDeals": [
+   {
+    "id": "umowa_wymiany-0-1-t3",
+    "items": [
+     {
+      "surowiecKey": "cegla",
+      "pakietyPerTura": 70,
+      "sellerOwnerId": 1,
+      "buyerOwnerId": 0
+     },
+     {
+      "surowiecKey": "drewno",
+      "pakietyPerTura": 350,
+      "sellerOwnerId": 0,
+      "buyerOwnerId": 1
+     }
+    ]
+   }
+  ]
+ },
+ "stocksBefore": {
+  "aiGive": 640,
+  "aiRecv": 0,
+  "plGive": 0,
+  "plRecv": 662
+ },
+ "stocksAfterTick1": {
+  "aiGive": 795,
+  "aiRecv": 300,
+  "plGive": 27,
+  "plRecv": 665
+ },
+ "deliveredGive": 27,
+ "deliveredRecv": 300,
+ "postLoadDelivery": {
+  "bL": {
+   "plGive": 27,
+   "aiGive": 795
+  },
+  "aL": {
+   "plGive": 54,
+   "aiGive": 950
+  }
+ },
+ "afterLegacyLoad": {
+  "turn": 3,
+  "barterCooldown": [],
+  "rejectCooldowns": [],
+  "pending": [],
+  "tableLen": 1,
+  "relAtDecision": null,
+  "playerCities": 1,
+  "relTotalAi": 32.58948509375,
+  "digest": {
+   "units": {
+    "0": 3,
+    "1": 1,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0
+   },
+   "treasury": {
+    "0": 4805,
+    "1": 411,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0
+   },
+   "stock": {
+    "0": {
+     "drewno": 662,
+     "glina": 156,
+     "kamien": 0,
+     "zelazo": 280
+    },
+    "1": {
+     "cegla": 640,
+     "drewno": 0,
+     "glina": 67,
+     "kamien": 0
+    },
+    "2": {},
+    "3": {},
+    "4": {},
+    "5": {},
+    "6": {}
+   }
+  },
+  "entries": [
+   {
+    "id": "negot-handel-0-1-t2-1",
+    "actionId": "handel",
+    "cyclic": false,
+    "proposer": 1,
+    "responder": 0
+   }
+  ],
+  "cyclicDeals": []
+ }
+}

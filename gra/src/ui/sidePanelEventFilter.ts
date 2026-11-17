@@ -5,7 +5,7 @@
  * „🌍 Inne cyw.”. Wydzielony z sidePanelHud.ts, bo ten plik ma zero importów niebundlowalnych
  * w czystym esbuild (testy UI bundlują samą logikę, bez stubowania ikon).
  */
-import type { SidePanelEvent } from './sidePanelHud';
+import type { SidePanelEvent, SidePanelEventButton } from './sidePanelHud';
 import { defaultSidePanelTab, eventTabOf, type SidePanelTab } from './sidePanelEventTabs';
 // Uwaga: ten plik NIE importuje sidePanelHud (tylko typ) — bundlowalny w czystym esbuild.
 
@@ -111,5 +111,66 @@ export function sidePanelTabModelOf(
     infoEvents,
     relevantInfo,
     orderedEvents: [...blockingEvents, ...infoEvents],
+  };
+}
+
+/**
+ * R-WEB-UI-END-TURN-BLOCK-EVENT-Q1 — wydarzenie-blokada „Nie można zakończyć tury” (zakładka Ważne).
+ * Powstaje TYLKO po próbie zakończenia tury, którą bramka NNS zablokowała (`attemptTurn` = tura
+ * próby). Id zawiera numer tury: jedno wydarzenie na turę, ponowne próby go nie duplikują, a ✕
+ * ukrywa je tylko do końca tury. Gdy blokada ustąpi (`blokada:false`), wydarzenie znika.
+ * `subtitle` = pełny komunikat bramki (ten sam tekst co tooltip) bez powtórzonego prefiksu.
+ * EN: end-turn block card; created only after a blocked attempt in that turn, one per turn.
+ */
+export const END_TURN_BLOCK_EVENT_TITLE = 'Nie można zakończyć tury';
+/** Akcja przycisku: podniesienie podatku do proponowanej wartości (przez istniejącą zmianę podziału). */
+export const END_TURN_BLOCK_ACT_TAX_RAISE = 'tax-raise';
+/** Akcja przycisku: otwarcie panelu imperium w sekcji skarbca (podatki). */
+export const END_TURN_BLOCK_ACT_OPEN_TAX = 'open-tax';
+/** Akcja przycisku: otwarcie panelu imperium w sekcji żywności (racja). */
+export const END_TURN_BLOCK_ACT_OPEN_FOOD = 'open-food';
+
+export interface EndTurnBlockEventInput {
+  /** Bramka NNS blokuje teraz zakończenie tury (nnsGateForPlayer().blokada). */
+  blokada: boolean;
+  /** Pełny komunikat bramki (komunikatBramki). */
+  komunikat: string;
+  /** Bieżąca tura gracza. */
+  turn: number;
+  /** Tura, w której gracz próbował zakończyć turę przy blokadzie (null = nie próbował). */
+  attemptTurn: number | null;
+  /** Zasób blokady (`skarbiec` / `spichlerz`); null = brak. */
+  zasob: string | null;
+  /** Propozycja podatku z bramki (ile punktów % dodać); null = brak propozycji. */
+  propozycjaPunkty: number | null;
+  /** Obecny udział podatku (procent Pieniądza) — baza proponowanej wartości. */
+  podatekTeraz: number;
+}
+
+export function endTurnBlockEventOf(input: EndTurnBlockEventInput): SidePanelEvent | null {
+  if (!input.blokada || input.attemptTurn === null || input.attemptTurn !== input.turn) return null;
+  const szczegoly = input.komunikat.replace(/^Nie można zakończyć tury:\s*/, '');
+  const buttons: SidePanelEventButton[] = [];
+  if (input.zasob === 'skarbiec') {
+    if (input.propozycjaPunkty !== null && input.propozycjaPunkty > 0) {
+      buttons.push({
+        label: `Zwiększ podatek do ${input.podatekTeraz + input.propozycjaPunkty}%`,
+        act: END_TURN_BLOCK_ACT_TAX_RAISE,
+      });
+    }
+    buttons.push({ label: 'Zmienię sam', act: END_TURN_BLOCK_ACT_OPEN_TAX });
+  } else if (input.zasob === 'spichlerz') {
+    buttons.push({ label: 'Otwórz racje', act: END_TURN_BLOCK_ACT_OPEN_FOOD });
+  }
+  return {
+    id: 'end-turn-block-' + input.turn,
+    icon: '⛔',
+    title: END_TURN_BLOCK_EVENT_TITLE,
+    subtitle: szczegoly,
+    kind: 'info',
+    important: true,
+    negative: true,
+    turnCreated: input.turn,
+    buttons,
   };
 }

@@ -89,6 +89,14 @@ const context = {
   turn: 10,
   buildRelationBreakdown: (_log, flags) => flags,
   activeDeals: [],
+  // main.ts:12309 (P4) jest funkcja zagniezdzona poza zakresem vm; wylaczona flaga = false/false (zachowanie testu: tozsamosc wlascicieli, nie flagi dobrej woli).
+  isDiploTickWarBrakeEnabled: () => false,
+  isPeaceLockedBetween: () => false,
+  isTruceActive: () => false,
+  getDiploPairMeta: () => ({ truceUntilTurn: 0 }),
+  sharedBorderPenaltyForEpochs: () => 0,
+  empireEpochForOwner: () => 1,
+  diploBrakeBonusFlags: () => ({ dobraWolaAktywna: false, wspolnyWrog: false }),
 };
 executeFunction('civKeyForOwnerId', context);
 executeFunction('civKeyForOwner', context);
@@ -113,11 +121,16 @@ check('shared presentation helper routes all known owners canonically and retain
   assert.equal(context.civKeyForOwner(123), 'oid-123');
 });
 
-check('actual shared diplomacy tick context resolves the nonzero human seat culture and religion', () => {
+// A (obrona r4, zarzut 4): tytul sprawdzal wczesniej dodatnia flage religii; po decyzji #342 (religia bez wplywu na Zaufanie, params
+// wspolnaReligia_zaufanie_perTura=0) test pilnuje NIEOBECNOSCI flagi w TickCtx (regresja: ponowne wprowadzenie wplywu religii zaczerwieni test).
+// Routing kultury wlasciciela (roznicaKulturowa) nadal sprawdza check nizej. Uwaga: main.ts:44101 nadal buduje wspolnaReligia w glownym ticku
+// pary gracz-AI (bez efektu na Zaufanie) -- pozostalosc poza zakresem tego testu, zgloszona w UWAGI-DLA-ORKIESTRATORA.
+check('actual shared diplomacy tick context does not carry religion flag (decyzja #342: religia bez wplywu na Zaufanie)', () => {
   const contextForSecondary = context.buildDiplomacyTickCtxForPair(7, 99);
-  assert.equal(contextForSecondary.wspolnaReligia, true);
+// A (R-WEB-DIPLO-TRUST-NUMBERS-Q1 / decyzja wlasciciela "usunac wplyw religii na zaufanie"): TickCtx i relationBreakdown nie niosa juz flagi wspolnaReligia.
+  assert.equal(contextForSecondary.wspolnaReligia, undefined, 'religia nie wchodzi do TickCtx (decyzja: bez wplywu religii na zaufanie)');
   const unknownContext = context.buildDiplomacyTickCtxForPair(123, 99);
-  assert.equal(unknownContext.wspolnaReligia, false);
+  assert.equal(unknownContext.wspolnaReligia, undefined);
 });
 
 const sameCultureNodes = propertyInitializers('wspolnaReligia', text =>
@@ -151,8 +164,9 @@ check('actual AI-to-AI partner type uses its own validated owner key', () => {
 check('actual relation breakdown resolves owner-specific type and culture in both argument orders', () => {
   const forward = context.getRelationBreakdown(7, 99);
   const reverse = context.getRelationBreakdown(99, 7);
-  assert.equal(forward.wspolnaReligia, true);
-  assert.equal(reverse.wspolnaReligia, true);
+// A (R-WEB-DIPLO-TRUST-NUMBERS-Q1 / decyzja wlasciciela "usunac wplyw religii na zaufanie"): TickCtx i relationBreakdown nie niosa juz flagi wspolnaReligia.
+  assert.equal(forward.wspolnaReligia, undefined);
+  assert.equal(reverse.wspolnaReligia, undefined);
   assert.equal(forward.rywalizacjaTenSamTyp, false);
   assert.equal(reverse.rywalizacjaTenSamTyp, false);
   assert.equal(forward.roznicaKulturowa, false);
@@ -180,7 +194,7 @@ check('actual relation breakdown keeps the different-culture penalty for known o
 check('actual relation breakdown treats unknown civ as neutral, not same-type primary fallback', () => {
   const flags = context.getRelationBreakdown(7, 123);
   assert.equal(flags.rywalizacjaTenSamTyp, false);
-  assert.equal(flags.wspolnaReligia, false);
+  assert.equal(flags.wspolnaReligia, undefined);
   assert.equal(flags.roznicaKulturowa, false);
   const bothUnknown = context.getRelationBreakdown(123, 124);
   assert.equal(bothUnknown.rywalizacjaTenSamTyp, false);

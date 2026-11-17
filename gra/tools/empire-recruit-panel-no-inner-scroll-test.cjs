@@ -51,8 +51,9 @@ function check(name, ok, detail) {
 
 async function main() {
   fs.writeFileSync(ENTRY, [
-    "import { toggleEmpireRecruitPanel, resetEmpireRecruitPanelSession, getEmpireRecruitDraft } from '../src/ui/empireRecruitPanel.ts';",
-    'window.__api = { toggleEmpireRecruitPanel, resetEmpireRecruitPanelSession, getEmpireRecruitDraft };',
+    "import { mountEmpireRecruitSection, configureEmpireRecruitPanel, resetEmpireRecruitPanelSession, getEmpireRecruitDraft } from '../src/ui/empireRecruitPanel.ts';",
+    'window.__openErp = function (cfg) { var h = document.getElementById("civ-empire-recruit-panel"); if (!h) { h = document.createElement("div"); h.id = "civ-empire-recruit-panel"; h.setAttribute("data-erp-root", ""); document.body.appendChild(h); } configureEmpireRecruitPanel(cfg); mountEmpireRecruitSection(h); };',
+    'window.__api = { resetEmpireRecruitPanelSession, getEmpireRecruitDraft };',
     '',
   ].join('\n'), 'utf8');
   await esbuild.build({
@@ -69,8 +70,13 @@ async function main() {
       await page.setContent('<body style="background:#223;margin:0"></body>');
       await page.addScriptTag({ content: fs.readFileSync(OUTFILE, 'utf8') });
       await page.evaluate((n) => {
+        // R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: sekcja siedzi w panelu armii (.civ-emp-body = zewnętrzny scroll)
+        const outer = document.createElement('div'); outer.id = 'outer-army';
+        outer.style.cssText = 'max-height:calc(100vh - 40px);overflow-y:auto;width:100%;box-sizing:border-box;';
+        const host = document.createElement('div'); host.id = 'civ-empire-recruit-panel'; host.setAttribute('data-erp-root', '');
+        outer.appendChild(host); document.body.appendChild(outer);
         const types = Array.from({ length: n }, (_, i) => ({ id: 'U' + i, label: 'Jednostka testowa ' + (i + 1) + (i % 4 === 0 ? ' z bardzo długą nazwą, która musi się zawinąć w wąskim panelu' : ''), koszt: 10 + i }));
-        window.__api.toggleEmpireRecruitPanel({
+        window.__openErp({
           getRows: () => types.map((t, i) => ({ id: t.id, label: t.label, koszt: t.koszt, capableCities: i % 7 === 6 ? 0 : 2, totalCities: 3, queued: i % 3, blockedReason: 'Brak miasta' })),
           onOrder: (id, qty) => ({ message: 'Zamówiono ' + qty, changed: true, accepted: qty }),
         });
@@ -82,12 +88,15 @@ async function main() {
     let page = await open({ width: 900, height: 560 });
     const metrics = () => page.evaluate(() => {
       const root = document.getElementById('civ-empire-recruit-panel');
+      const outer = document.getElementById('outer-army');
       const list = root.querySelector('.erp-list');
       const rows = [...list.querySelectorAll('[data-unit]')];
       const lr = list.getBoundingClientRect();
       const last = rows[rows.length - 1].getBoundingClientRect();
       return {
         rootOverflowY: getComputedStyle(root).overflowY,
+        outerOverflowY: getComputedStyle(outer).overflowY,
+        outerScrollH: outer.scrollHeight, outerClientH: outer.clientHeight,
         listOverflowY: getComputedStyle(list).overflowY,
         listScrollH: list.scrollHeight, listClientH: list.clientHeight,
         listRowsH: rows.reduce((s, r) => s + r.getBoundingClientRect().height, 0),
@@ -103,21 +112,23 @@ async function main() {
     check('lista: scrollHeight == clientHeight (brak suwaka listy)', m.listScrollH <= m.listClientH + 1, { s: m.listScrollH, c: m.listClientH });
     check('lista: wysokość listy >= suma wysokości wierszy (pełna lista)', m.listH >= m.listRowsH - 1, { listH: m.listH, rows: m.listRowsH });
     check(`lista: wszystkie ${N_TYPES} pozycji w DOM`, m.rowCount === N_TYPES, m.rowCount);
-    check('zewnętrzny panel przewijalny (overflow-y auto)', m.rootOverflowY === 'auto', m.rootOverflowY);
-    check('zewnętrzny panel: treść wyższa niż okno (jest co przewijać)', m.rootScrollH > m.rootClientH + 50, { s: m.rootScrollH, c: m.rootClientH });
+    check('sekcja nie ma własnego przewijania (overflow visible)', m.rootOverflowY === 'visible', m.rootOverflowY);
+    check('zewnętrzny panel armii przewijalny (overflow-y auto)', m.outerOverflowY === 'auto', m.outerOverflowY);
+    check('zewnętrzny panel: treść wyższa niż okno (jest co przewijać)', m.outerScrollH > m.outerClientH + 50, { s: m.outerScrollH, c: m.outerClientH });
     check('brak poziomego przewijania panelu (szerokie okno)', m.rootScrollW <= m.rootClientW + 1, { s: m.rootScrollW, c: m.rootClientW });
 
     // przewijanie całego panelu do końca: ostatnia pozycja widoczna, przycisk „Rekrutuj wszystkie” u góry nadal widoczny
-    await page.evaluate(() => { document.getElementById('civ-empire-recruit-panel').scrollTop = 1e6; });
+    await page.evaluate(() => { document.getElementById('outer-army').scrollTop = 1e6; });
     const endState = await page.evaluate(() => {
+      const outer = document.getElementById('outer-army');
+      const rr = outer.getBoundingClientRect();
       const root = document.getElementById('civ-empire-recruit-panel');
-      const rr = root.getBoundingClientRect();
       const lastRow = [...root.querySelectorAll('[data-unit]')].pop().getBoundingClientRect();
-      const topBtn = root.querySelector('.erp-stick [data-erp="go-all"]').getBoundingClientRect();
-      return { lastVisible: lastRow.top >= rr.top && lastRow.bottom <= rr.bottom + 1, topBtnVisible: topBtn.top >= rr.top - 1 && topBtn.bottom <= rr.bottom + 1, scrollTop: root.scrollTop };
+      const topBtn = root.querySelector('.erp-all [data-erp="go-all"]');
+      return { lastVisible: lastRow.top >= rr.top && lastRow.bottom <= rr.bottom + 1, topBtnExists: !!topBtn, scrollTop: outer.scrollTop };
     });
-    check('po przewinięciu panelu: ostatnia pozycja widoczna', endState.lastVisible, endState);
-    check('po przewinięciu panelu: „Rekrutuj wszystkie” (góra) nadal widoczne (sticky)', endState.topBtnVisible, endState);
+    check('po przewinięciu panelu armii: ostatnia pozycja widoczna', endState.lastVisible, endState);
+    check('„Rekrutuj wszystkie” nadal w sekcji rekrutacji (bez sticky)', endState.topBtnExists, endState);
 
     // „+” na ostatniej pozycji po przewinięciu działa; liczniki domyślnie 0 przed kliknięciem
     const lastId = 'U' + (N_TYPES - 1);
@@ -139,7 +150,7 @@ async function main() {
     // ---- zamknięcie i reset (bez zmian zachowania) ----
     page = await open({ width: 900, height: 560 });
     await page.evaluate(() => window.__api.resetEmpireRecruitPanelSession());
-    check('reset sesji zamyka panel', await page.evaluate(() => !document.getElementById('civ-empire-recruit-panel')));
+    check('reset sesji opróżnia sekcję', await page.evaluate(() => !document.getElementById('civ-empire-recruit-panel').innerHTML));
     await page.close();
 
     check('brak błędów konsoli/strony', errors.length === 0, errors);

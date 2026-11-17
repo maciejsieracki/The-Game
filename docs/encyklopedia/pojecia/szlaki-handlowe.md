@@ -28,7 +28,7 @@ Dochód trasy = funkcja dystansu (`tradeRouteDistanceIncome`, `econ-params.json`
 
 ### Dostęp do surowców przez trasę (Temat #4, „Handel E3b")
 
-Jeśli masz aktywną trasę z cywilizacją, która ma dostęp do **brązu**, **żelaza** lub **konia**, a Ty własnego złoża/budynku nie masz — dostajesz ten dostęp **przez trasę** (civ-wide, nie per miasto). W panelu miasta źródło takiego dostępu jest podpisane „szlak handlowy z **[nazwa cywilizacji]**". Warunki bazowe (np. Piec hutniczy dla brązu) nadal obowiązują — trasa daje surowiec, nie sam budynek.
+Jeśli masz aktywną trasę z cywilizacją, która ma dostęp do **brązu**, **żelaza** lub **konia**, a Ty własnego złoża/budynku nie masz — dostajesz ten dostęp **przez trasę** (civ-wide, nie per miasto). W panelu miasta źródło takiego dostępu jest podpisane „szlak handlowy z **[nazwa cywilizacji]**". Warunki bazowe (np. Piec hutniczy dla brązu) nadal obowiązują — trasa daje surowiec, nie sam budynek. **Szlak nie przesuwa zapasów:** żadna ze stron nie oddaje ani nie dostaje surowca magazynowego przez trasę (usunięty przepływ ilościowy, decyzja #311); trasa daje dochód i dostęp, a zapasy zmieniają wyłącznie produkcja, budowa i zużycie.
 
 ### Umowa Handlowa (traktat, nowość 2026-07-23)
 

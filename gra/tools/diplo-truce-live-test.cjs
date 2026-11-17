@@ -11,8 +11,31 @@
  *  L1. Akceptacja rozejmu (REALNA ścieżka applyProposalOutcome): status pary 'pokoj',
  *      truceUntilTurn = tura + 5, peaceUntilTurn = null (rozejm nie zakłada blokady DOW).
  *  L2. Okno rozejmu: w turach przed wygaśnięciem status nadal 'pokoj'; w turze wygaśnięcia
- *      status wraca do 'wojna', truceUntilTurn czyszczony, BEZ flagi agresora i BEZ kary
- *      (brak 'zlamanie_paktu_nap' w zdarzeniach Wiarygodności gracza).
+ *      (R-WEB-TEST-DEBT-BASE-RED-FALA741-Q1, decyzja #169): w scenariuszu L2b inicjatorem rozejmu jest AI
+ *      (acceptTruceForTest(AI,…)), więc adresatem pokoju stałego jest GRACZ. Mechanizm (diplomacy-peace-lock.ts
+ *      truceEndTickPair, gałąź `ports.isHuman(target)`): po wygaśnięciu powstaje OFERTA W SKRZYNCE GRACZA
+ *      (`truceEndOffer`, bez natychmiastowej decyzji AI); status zostaje 'pokoj', truceUntilTurn czyszczony,
+ *      peaceUntilTurn pozostaje null (pokój stały NIE zawarty), BEZ flagi agresora i BEZ kary
+ *      (brak 'zlamanie_paktu_nap' w zdarzeniach Wiarygodności gracza). Asercja L2b sprawdza status 'pokoj',
+ *      brak peaceUntilTurn (wariant „AI akceptuje od razu” zawarłby pokój stały i ustawił peaceUntilTurn)
+ *      oraz brak wojny. Obecności wpisu w skrzynce nie widać z poziomu testu (brak haka odczytu skrzynki
+ *      w main.ts, poza allowlistą) — rozróżnienie opiera się na peaceUntilTurn.
+ *  L2f–L2h. Brak odpowiedzi gracza na ofertę pokoju stałego (timeout) = wojna bez kary (ten sam wariant
+ *      oferty w skrzynce, inicjator AI; kolejna tura bez odpowiedzi = truceEndToWarCore).
+ *
+ * POKRYCIE (stan na tę rundę):
+ *  - POKRYTE: rozejm 5 tur z UI i z akceptacji AI (L1, U1); okno rozejmu (L2a); wygaśnięcie rozejmu z ofertą
+ *    pokoju stałego w skrzynce gracza, bez wojny i bez kary (L2b, L2g); brak odpowiedzi gracza = wojna bez kary
+ *    (L2h); złamanie rozejmu w oknie = kara + flaga (L3).
+ *  - NIE POKRYTE (1): odmowa AI wobec propozycji GRACZA — wymaga haka odpowiedzi AI w gra/src/main.ts (poza
+ *    allowlistą tego tematu). Minimalny hak testowy (PROPOZYCJA, NIE zaimplementowana): w `__truceTestDebug`
+ *    funkcja `respondPlayerPeaceProposalForTest(aiId, accept)` wołająca TĘ SAMĄ ścieżkę co odpowiedź AI na stole
+ *    (resolvePlayerAcceptsAiPending / evaluateProposal) dla propozycji gracza, plus odczyt `truceEndOffer` z meta.
+ *  - NIE POKRYTE (2): wariant „AI akceptuje od razu po wygaśnięciu” (inicjator = GRACZ, adresat = AI) — ta
+ *    gałąź truceEndTickPair (`truceEndAiAccepts`) nie ma scenariusza, bo acceptTruceForTest zawsze ustawia AI
+ *    jako proponującego. Zamknięcie wymaga haka z inicjatorem-graczem (propozycja proposal-level), NIE
+ *    implementowane tutaj.
+ *  - NIE POKRYTE (3): jawna akceptacja lub odrzucenie oferty pokoju przez GRACZA w UI (tylko timeout).
  *  L3. Złamanie: rozejm 5 tur, wypowiedzenie wojny w oknie (REALNE ownerDeclareWarOn) →
  *      kara 'zlamanie_paktu_nap' w Wiarygodności gracza + flaga agresora dla pary,
  *      truceUntilTurn czyszczony.
@@ -30,9 +53,16 @@ const { execSync } = require('child_process');
 const GRA_DIR = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(GRA_DIR, '..');
 const SCRATCH = process.argv[2] || path.join(os.tmpdir(), 'civ-truce-live-' + process.pid);
+// R-TEST-DEBT-BASE-RED-MAIN-Q2 (obrona r1, zarzut 3): domyślny katalog bundle (os.tmpdir) jest sprzątany po teście;
+// podany ręcznie przez argv[2] zostaje (użytkownik może go ponownie użyć z SKIP_BUILD=1).
+if (!process.argv[2]) process.on('exit', () => { try { fs.rmSync(SCRATCH, { recursive: true, force: true }); } catch (_) { /* best-effort */ } });
 const EVIDENCE = process.argv[3]
   || path.join(REPO_ROOT, 'dyspozycje', 'autobot', 'runs', 'R-WEB-TRUCE-Q1', 'evidence');
-const OUT_HTML = 'file://' + path.join(SCRATCH, 'index.html') + '?playtest=mapa';
+// R-TEST-DEBT-BASE-RED-MAIN-Q2 (klasa A, dowód z przebiegu: log „[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)”
+// i tekst gry „Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 46”): bramka NNS
+// (R-WEB-ECON-NO-NEGATIVE-STOCKS, decyzje #365/#368) blokuje endTurn od tury 2, bo scenariusz nie ma bufora żywności.
+// Hak bufora (__nnsMeasureDebug.setPlayerGranary) jest tylko przy ?civTest=1, więc URL dopina civTest=1 (bez zmiany logiki gry).
+const OUT_HTML = 'file://' + path.join(SCRATCH, 'index.html') + '?playtest=mapa&civTest=1';
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
 const PLAYER = 0;
@@ -92,7 +122,7 @@ async function gotoPlaytestMapa(page) {
 
 /** Kończy tury (nie miejsca): endTurn przesuwa miejsce, pełna tura wymaga kilku wywołań. */
 async function endUntilTurn(page, target) {
-  for (let i = 0; i < 400; i++) {
+  for (let i = 0; i < 40; i++) {
     const cur = await page.evaluate(() => window.__truceTestDebug.turn());
     if (cur >= target) return cur;
     if (process.env.TRUCE_DEBUG === '1') {
@@ -101,16 +131,33 @@ async function endUntilTurn(page, target) {
     }
     await endOneTurn(page);
   }
-  throw new Error('endUntilTurn: nie osiągnięto tury ' + target);
+  // Diagnostyka stanu przy przerwaniu (klasyfikacja: tura nie rusza = blokada endTurn, a nie limit czasu).
+  const st = await page.evaluate(() => ({
+    turn: window.__truceTestDebug.turn(),
+    inProgress: window.__eraTestDebug.isEndTurnInProgress(),
+    overlays: document.querySelectorAll('.civ-diplo-basket-overlay, .civ-diplo-audience, [role=dialog]').length,
+    gateText: (document.body.innerText.match(/Zakończ turę[^\n]{0,120}/) || [''])[0],
+    overlayHtml: Array.from(document.querySelectorAll('.civ-diplo-basket-overlay, .civ-diplo-audience, [role=dialog]')).map(n => n.className + ' :: ' + (n.innerText || '').slice(0, 160)),
+    nnsText: (document.body.innerText.match(/[^\n]{0,80}(skarb|spichlerz|Spichlerz|Skarb)[^\n]{0,120}/g) || []).slice(0, 4),
+  })).catch((e) => ({ err: String(e) }));
+  throw new Error('endUntilTurn: nie osiągnięto tury ' + target + ' stan=' + JSON.stringify(st));
 }
 
 async function pairState(page) {
   return page.evaluate(([a, b]) => window.__truceTestDebug.pairState(a, b), [PLAYER, AI]);
 }
 
+// R-TEST-DEBT-BASE-RED-MAIN-Q2 (klasa D, niestabilność czasowa): endTurn jest asynchroniczny (przetwarzanie tury AI).
+// Wywołanie w trakcie przetwarzania jest ignorowane, a stałe 150 ms + limit 400 prób nie nadążały. Czekamy więc na
+// stan gry (isEndTurnInProgress) zamiast na czas. Hak __eraTestDebug.isEndTurnInProgress już istnieje (main.ts).
+async function waitEndTurnIdle(page) {
+  await page.waitForFunction(() => !window.__eraTestDebug.isEndTurnInProgress(), undefined, { timeout: 180000 });
+}
 async function endOneTurn(page) {
+  await waitEndTurnIdle(page);
   await page.evaluate(() => window.__eraTestDebug.endTurn());
-  await wait(150);
+  await waitEndTurnIdle(page);
+  await wait(100);
 }
 
 async function main() {
@@ -134,6 +181,9 @@ async function main() {
     await gotoPlaytestMapa(page);
     await page.evaluate(([ai]) => window.__truceTestDebug.setWarAge(ai, 30), [AI]);
     await page.evaluate(() => window.__truceTestDebug.suppressVictoryForTest());
+    // SETUP (nie tematu testu): bufor spichlerza gracza, by bramka NNS nie blokowała endTurn w pętli tur (patrz OUT_HTML).
+    // setPlayerGranary zwraca void; skuteczność potwierdza przejście pętli tur w L2 (endUntilTurn bez wyjątku).
+    await page.evaluate(() => window.__nnsMeasureDebug.setPlayerGranary(999));
 
     // --- U1: UI modal rozejmu ---
     console.log('U1 UI: modal pokoj/rozejm');
@@ -158,7 +208,11 @@ async function main() {
     const submitDisabled = await page.locator('.cdb-submit').first().isDisabled().catch(() => true);
     assert('U1f przycisk wyślij aktywny', !submitDisabled);
     if (!submitDisabled) {
-      await page.locator('.cdb-submit').first().click({ timeout: 10000 });
+      // R-TEST-DEBT-BASE-RED-MAIN-Q2 (klasa D): Playwright click czekał 10 s na stabilność przycisku, który po re-renderze
+      // modala bywa odtwarzany (sonda: przycisk widoczny, włączony, nieprzykryty). Klik DOM po potwierdzeniu stanu
+      // (U1f: aktywny) wywołuje tę samą obsługę zdarzenia.
+      await page.waitForFunction(() => { const b = document.querySelector('.cdb-submit'); return !!b && !b.disabled; }, undefined, { timeout: 10000 });
+      await page.evaluate(() => document.querySelector('.cdb-submit').click());
       await wait(300);
       const entries = await page.evaluate(() => window.__truceTestDebug.negotiationEntries());
       const truceEntry = entries.find(e => e.actionId === 'rozejm' && e.turns === 5);
@@ -184,12 +238,27 @@ async function main() {
     // --- L2: okno i wygaśnięcie bez kary ---
     console.log('L2 okno rozejmu i wygaśnięcie');
     const credBefore = await page.evaluate(([p]) => window.__truceTestDebug.credibilityEvents(p).length, [PLAYER]);
+    // R-TEST-DEBT-BASE-RED-MAIN-Q2 (klasa D, harness): po L1 zostaje otwarte okno audiencji/koszyka (overlay), a otwarty
+    // modal blokuje endTurn (bramka z U1h). Sonda: tura 2 zamiast 5, bez przetwarzania, 1 overlay. Zamykamy audiencję
+    // przed pętlą tur i czekamy na brak overlay (stan, nie czas).
+    await page.evaluate(() => window.__truceTestDebug.closeAudience());
+    // Bez połykania błędu: jeśli okno koszyka/audiencji zostaje, test pada z jawnym powodem (nie maskuje przyczyny).
+    const overlayClosed = await page.waitForFunction(() => document.querySelectorAll('.civ-diplo-basket-overlay, .civ-diplo-audience').length === 0, undefined, { timeout: 15000 }).then(() => true, () => false);
+    assert('L2-pre okno koszyka/audiencji zamknięte przed pętlą tur', overlayClosed);
     await endUntilTurn(page, t0 + 4);
     const sWin = await pairState(page);
     assert('L2a w oknie (tura < until) status nadal pokoj', sWin.turn < t0 + 5 && sWin.status === 'pokoj' && sWin.truceUntilTurn === t0 + 5, sWin);
     await endUntilTurn(page, t0 + 5);
     const sExp = await pairState(page);
-    assert('L2b w turze wygaśnięcia wojna wraca', sExp.turn === t0 + 5 && sExp.status === 'wojna', sExp);
+    // L2b (R-WEB-TEST-DEBT-BASE-RED-FALA741-Q1, klasa A; mechanizm: diplomacy-peace-lock.ts truceEndTickPair, decyzja #169):
+    // inicjatorem rozejmu jest AI, więc adresatem propozycji pokoju stałego po wygaśnięciu jest GRACZ. Wygaśnięcie
+    // tworzy OFERTĘ W SKRZYNCE GRACZA (truceEndOffer), a nie natychmiastową decyzję AI. Dlatego asercja L2b wymaga:
+    // status 'pokoj' (brak wojny), truceUntilTurn wyczyszczony (L2c), ORAZ peaceUntilTurn === null — pokój stały nie
+    // został zawarty w tej turze. Wariant „AI akceptuje od razu” zawarłby pokój stały przez finalizePeace (ustawia
+    // peaceUntilTurn), więc ten warunek go odróżnia. Wariant „AI odrzuca od razu” daje status 'wojna' (też czerwone).
+    // Brak wpisu w skrzynce nie jest widoczny z testu (brak haka odczytu), stąd rozróżnienie po peaceUntilTurn.
+    assert('L2b w turze wygaśnięcia rozejmu: status pokoj, bez wojny (oferta pokoju stałego dla gracza, nie decyzja AI)', sExp.turn === t0 + 5 && sExp.status === 'pokoj', sExp);
+    assert('L2b2 oferta czeka na gracza: pokój stały NIE zawarty w turze wygaśnięcia (peaceUntilTurn null)', sExp.peaceUntilTurn === null, sExp);
     assert('L2c truceUntilTurn wyczyszczony', sExp.truceUntilTurn === null, sExp);
     const flags = await page.evaluate(() => window.__truceTestDebug.aggressorFlags());
     assert('L2d brak flagi agresora po wygaśnięciu', Object.keys(flags).length === 0, flags);
@@ -198,6 +267,8 @@ async function main() {
     // Kara za złamanie rozejmu to WYŁĄCZNIE 'zlamanie_paktu_nap'. Inne zdarzenia (np. przemarsz
     // jednostek na terytorium AI, nalicza się też przy pokoju) nie są karą za rozejm.
     assert('L2e brak kary zlamanie_paktu_nap po wygaśnięciu', !credTyp.includes('zlamanie_paktu_nap'), { credBefore, credAfter, credTyp: credTyp.slice(0, 400) });
+    // Odmowa AI wobec propozycji GRACZA — JAWNIE NIE_ZMIERZONO: wymaga haka odpowiedzi AI w main.ts (poza allowlistą).
+    console.log('L2b-odmowa (AI odmawia wobec propozycji GRACZA, inicjator gracz): NIE_ZMIERZONO — brak haka odpowiedzi AI w main.ts (poza allowlistą); patrz POKRYCIE w nagłówku');
 
     // --- L3: złamanie w oknie ---
     console.log('L3 złamanie rozejmu');
@@ -217,6 +288,32 @@ async function main() {
     assert('L3d flaga agresora dla złamania rozejmu (mimo casus belli)', Object.keys(flagsBr).length > 0, flagsBr);
     const credCount = await page.evaluate(([p]) => window.__truceTestDebug.credibilityEvents(p).length, [PLAYER]);
     assert('L3e zdarzenia Wiarygodności przybyły po złamaniu', credCount > credBreach0, { credBreach0, credCount });
+
+    // --- L2f–L2h: BRAK ODPOWIEDZI GRACZA (timeout oferty; R-WEB-TEST-DEBT-BASE-RED-FALA741-Q1 / DIPLO-TRUCE-IMPL, truceEndTickPair) ---
+    // Inicjatorem rozejmu jest AI (acceptTruceForTest(AI,…)), więc adresatem pokoju stałego po wygaśnięciu jest GRACZ:
+    // w turze wygaśnięcia powstaje oferta w skrzynce (status nadal 'pokoj'); brak odpowiedzi do kolejnej tury = timeout
+    // = wojna BEZ kary (truceEndToWarCore). Ta gałąź jest odrębna od L2b (zgoda AI, rozstrzygana natychmiast).
+    // Pokrycie: WYŁĄCZNIE brak odpowiedzi gracza (timeout oferty przez zwykłe tury, bez UI odpowiedzi), NIE jawna
+    // odmowa gracza. Odmowa AI wobec propozycji gracza (hak w main.ts poza allowlistą) pozostaje JAWNIE NIE_ZMIERZONO.
+    console.log('L2f–L2h brak odpowiedzi gracza na ofertę pokoju stałego (timeout): wojna bez kary');
+    const tD0 = (await pairState(page)).turn;
+    const accD = await page.evaluate(([ai]) => window.__truceTestDebug.acceptTruceForTest(ai, 5), [AI]);
+    assert('L2f0 ponowne zawarcie rozejmu z AI (startowy stan odmowy)', accD.accepted === true, accD);
+    const sD0 = await pairState(page);
+    assert('L2f0b po rozejmie status pokoj, truceUntilTurn = tura + 5', sD0.status === 'pokoj' && sD0.truceUntilTurn === tD0 + 5, { tD0, sD0 });
+    const credDenialBefore = await page.evaluate(([p]) => window.__truceTestDebug.credibilityEvents(p).filter(e => JSON.stringify(e).includes('zlamanie_paktu_nap')).length, [PLAYER]);
+    const flagsDenialBefore = JSON.stringify(await page.evaluate(() => window.__truceTestDebug.aggressorFlags()));
+    await endUntilTurn(page, tD0 + 5);
+    const sOffer = await pairState(page);
+    assert('L2g w turze wygaśnięcia oferta dla gracza: status nadal pokoj, bez natychmiastowej wojny', sOffer.turn === tD0 + 5 && sOffer.status === 'pokoj' && sOffer.truceUntilTurn === null, sOffer);
+    assert('L2g2 oferta dla gracza: pokój stały NIE zawarty w turze wygaśnięcia (peaceUntilTurn null)', sOffer.peaceUntilTurn === null, sOffer);
+    await endUntilTurn(page, tD0 + 6);
+    const sRefuse = await pairState(page);
+    assert('L2h brak odpowiedzi na ofertę do kolejnej tury = wojna po wygaśnięciu oferty', sRefuse.turn === tD0 + 6 && sRefuse.status === 'wojna' && sRefuse.truceUntilTurn === null, sRefuse);
+    const credDenialAfter = await page.evaluate(([p]) => window.__truceTestDebug.credibilityEvents(p).filter(e => JSON.stringify(e).includes('zlamanie_paktu_nap')).length, [PLAYER]);
+    assert('L2h bez nowej kary zlamanie_paktu_nap za odmowę/timeout', credDenialAfter === credDenialBefore, { credDenialBefore, credDenialAfter });
+    const flagsDenialAfter = JSON.stringify(await page.evaluate(() => window.__truceTestDebug.aggressorFlags()));
+    assert('L2h bez nowej flagi agresora za odmowę/timeout', flagsDenialAfter === flagsDenialBefore, { flagsDenialBefore, flagsDenialAfter });
   } catch (e) {
     fail++;
     console.error(' FAIL wyjątek:', e && e.stack ? e.stack.split('\n').slice(0, 4).join(' | ') : e);

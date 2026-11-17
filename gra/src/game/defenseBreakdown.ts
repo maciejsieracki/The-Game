@@ -37,6 +37,7 @@
 
 import { isCombatModifierBonus, bonusApplies, type CivBonusUnitShape, type CivCombatContext } from './civ-bonuses';
 import type { CivBonusLite } from './production';
+import { civBonusOpisPl } from './civ-matrix-semantic';
 
 // ---------------------------------------------------------------------------
 // Chip texts (przeniesione z ui/preBattle.ts — była to jedyna implementacja,
@@ -56,7 +57,7 @@ export function bonusChipTexts(
   const out: string[] = [];
   for (const b of bonusy) {
     if (!filter(b)) continue;
-    const text = (b.opis ?? '').trim();
+    const text = civBonusOpisPl((b.opis ?? '').trim());
     if (!text) continue;
     out.push(text);
   }
@@ -235,7 +236,10 @@ export function defenderCivBonusBreakdown(
   const out: RosterBonusBreakdown[] = [];
   for (const b of bonusy) {
     if (!isDefenseOnlyCivBonus(b)) continue;
-    const text = (b.opis ?? '').trim();
+    // Decyzja właściciela (2026-11-16, A): wpisy o wartości 0 nie są pokazywane w panelu.
+    // Dane (civ-matrix) pozostają bez zmian -- filtr tylko w prezentacji.
+    if (b.wartosc === 0) continue;
+    const text = civBonusOpisPl((b.opis ?? '').trim());
     if (!text) continue;
     const affected = roster.filter(u => bonusApplies(b, u.celShape, ctx)).length;
     if (affected === 0) continue;

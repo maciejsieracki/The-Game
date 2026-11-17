@@ -14,6 +14,9 @@ import { formatObywateleLabel, formatManpowerCompact } from '../game/manpower';
 import { stockResourceLabel } from '../game/building-stock-cost';
 import { CITIZEN_UPKEEP_RATE_PER_CITIZEN } from '../game/citizen-resource-upkeep';
 import { resourceUsageTotal } from '../game/resource-usage-breakdown';
+import { resourceGrossNetPerTurn } from '../game/resource-gross-net';
+import { ledgerHistoryForOwner, ledgerSourceLinesForResource } from '../game/resource-ledger';
+import { resourceSourceLedgerDetailsHtml } from './resourceSourceLedgerHtml';
 import { taxForWorkAmount } from '../game/work-tax';
 import {
   MIASTA_TABLE_COLUMNS,
@@ -46,6 +49,7 @@ import {
 } from '../game/cities';
 import {
   WYZYWIENIE_MIN, WYZYWIENIE_MAX, WYZYWIENIE_STEP, formatWyzwienieLabel,
+  DEFAULT_POZIOM_RACJI,
   type PoziomRacji,
 } from '../game/population-growth-v85';
 import { formatCivBrandLine } from './civBrandDisplay';
@@ -58,6 +62,7 @@ import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { administratorUpkeepValueHtml } from './icons/administratorIcon';
 import { stateAdministratorStatusHtml } from './stateAdministratorRow';
 import { getArmyRecruitDraftTotal, submitArmyRecruitmentDrafts, clearArmyRecruitDraftsOnPanelClose } from './cityPanel';
+import { resetEmpireRecruitDrafts } from './empireRecruitPanel';
 export type { EmpireDetailSnap } from './empireDetailTypes';
 export { empireSectionFromHudAct, empirePanelBlockForSection } from './empirePanelSectionMap';
 
@@ -78,6 +83,11 @@ export interface EmpireMassRecruitmentUiConfig {
   mountCityRecruitment?: (cityId: string, host: HTMLElement) => boolean;
   /** Mount the capital-only commander card above the per-city Army recruitment catalog. */
   mountGeneralRecruitment?: (host: HTMLElement) => boolean;
+  /**
+   * R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: montuje sekcję „Rekrutacja — cała cywilizacja”
+   * w hoście `[data-erp-root]` na samej górze części Rekrutacja (nad wodzem).
+   */
+  mountEmpireRecruit?: (host: HTMLElement | null) => void;
   getRecruitFollowGeneralDefault?: () => boolean;
   onRecruitFollowGeneralDefaultChange?: (enabled: boolean) => void;
 }
@@ -129,7 +139,7 @@ function renderDefaultHandelSplitSection(): string {
   // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: `ownerId` aktywnego fotela — dawniej zaszyty `0`
   // literał czytał/pisał WYŁĄCZNIE default fotela 0 niezależnie od tego, kto jest aktywny.
   const ownerId = handelSplitUi.getActiveOwnerId?.() ?? 0;
-  const split = normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
+  const split = normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 30, procentNauka: 60, procentLuksus: 10 });
   const daninaLbl = handelSplitUi.getDaninaLabel?.() ?? 'Podatek';
   const id = 'emp-handel-split';
   let h = `<div class="civ-emp-sect" data-section="ekonomia-handel-split" id="${id}">`
@@ -219,7 +229,7 @@ function renderDefaultPoziomRacjiSection(): string {
   if (!getDef || !onChange) return '';
   // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
   const ownerId = empireGlobalDefaultsUi.getActiveOwnerId?.() ?? 0;
-  const poziom = getDef(ownerId) ?? 4;
+  const poziom = getDef(ownerId) ?? DEFAULT_POZIOM_RACJI;
   const id = 'emp-zywnosc-racje';
   const steps = poziom / WYZYWIENIE_STEP;
   const minSteps = WYZYWIENIE_MIN / WYZYWIENIE_STEP;
@@ -524,22 +534,6 @@ ${RESOURCE_CHIP_CSS}
 .civ-emp-res-ic svg{width:100%;height:100%;display:block;}
 .civ-emp-res-nm{flex:1;min-width:0;}
 .civ-emp-res-nm .nm{font-size:12.5px;font-weight:600;color:#e2e6ec;}
-.civ-emp-res-rate{font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums;
-  padding:2px 6px;border-radius:999px;white-space:nowrap;flex:none;}
-.civ-emp-res-rate-stack{display:flex;flex-direction:column;align-items:flex-end;gap:1px;
-  padding:3px 6px;border-radius:8px;background:rgba(15,20,28,.55);flex:none;}
-.civ-emp-res-rate-line{font-size:9.5px;font-weight:700;font-variant-numeric:tabular-nums;
-  line-height:1.2;white-space:nowrap;}
-.civ-emp-res-rate-line.prod{color:#78c95a;}
-.civ-emp-res-rate-line.diplo-out{color:#e07a7a;}
-.civ-emp-res-rate-line.diplo-in{color:#8ec5ff;}
-.civ-emp-res-rate-line.net{margin-top:1px;padding-top:2px;border-top:1px solid rgba(255,255,255,.1);}
-.civ-emp-res-rate-line.net.good{color:#78c95a;}
-.civ-emp-res-rate-line.net.warn{color:#d9a441;}
-.civ-emp-res-rate-line.net.bad{color:#e07a7a;}
-.civ-emp-res-rate.good{color:#78c95a;background:rgba(120,201,90,.14);}
-.civ-emp-res-rate.warn{color:#d9a441;background:rgba(217,164,65,.14);}
-.civ-emp-res-rate.bad{color:#e07a7a;background:rgba(224,122,122,.14);}
 .civ-emp-res-amt{display:flex;align-items:baseline;gap:5px;font-variant-numeric:tabular-nums;}
 .civ-emp-res-amt .cur{font-size:15px;font-weight:700;color:#e8ebf0;}
 .civ-emp-res-amt .cap{font-size:11px;color:#7d8798;}
@@ -579,10 +573,29 @@ ${RESOURCE_CHIP_CSS}
 .civ-emp-res-usage-row{display:flex;justify-content:space-between;gap:8px;font-size:11px;
   font-variant-numeric:tabular-nums;color:#b8c4d8;}
 .civ-emp-res-usage-row .v{color:#e07a7a;font-weight:600;}
+/* — R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 4): „Skąd zapasy” na karcie surowca — */
+.civ-emp-res-skad{margin-top:4px;}
+.civ-emp-res-skad>summary{list-style:none;cursor:pointer;font-size:10.5px;color:#8ec5ff;font-weight:600;user-select:none;}
+.civ-emp-res-skad>summary::-webkit-details-marker{display:none;}
+.civ-emp-res-skad>summary::before{content:'▸ ';}
+.civ-emp-res-skad[open]>summary::before{content:'▾ ';}
+.civ-emp-res-skad-body{margin-top:6px;padding:8px 9px;border-radius:6px;background:rgba(15,20,28,.55);
+  display:flex;flex-direction:column;gap:3px;}
+.civ-emp-res-skad-row{display:flex;justify-content:flex-start;gap:8px;font-size:11px;
+  font-variant-numeric:tabular-nums;color:#b8c4d8;}
+.civ-emp-res-skad-row .v{font-weight:600;min-width:44px;text-align:right;}
+.civ-emp-res-skad-row.gain .v{color:#8fd694;}
+.civ-emp-res-skad-row.loss .v{color:#e07a7a;}
+.civ-emp-res-skad-note{font-size:10px;color:#8f9bb0;margin-top:2px;}
 .civ-emp-res-usage-row.total{margin-top:2px;padding-top:4px;border-top:1px solid rgba(255,255,255,.1);
   font-weight:700;color:#cfd5de;}
 .civ-emp-res-usage-row.total .v{color:#e07a7a;}
 .civ-emp-res-usage-note{margin-top:5px;font-size:10px;line-height:1.4;color:#7d8798;}
+.civ-emp-res-gn{margin-top:3px;font-size:11px;line-height:1.3;color:#9aa4b5;}
+.civ-emp-res-gn b{font-weight:700;}
+.civ-emp-res-gn.good b.net{color:#78c95a;}
+.civ-emp-res-gn.warn b.net{color:#d9a441;}
+.civ-emp-res-gn.bad b.net{color:#e07a7a;}
 .civ-emp-res-usage-note b{color:#78c95a;}
 .civ-emp-res-foodnote{margin:14px 0 4px;padding:10px 12px;border-radius:8px;border:1px dashed #2b3543;
   background:rgba(142,197,255,.05);font-size:12px;color:#b8c4d8;display:flex;gap:9px;
@@ -1256,7 +1269,7 @@ function renderSkarbiecTaxSplitSection(baseAmount: number): string {
   if (!getDef || !onChange) return '';
   // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
   const ownerId = handelSplitUi.getActiveOwnerId?.() ?? 0;
-  const split = normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
+  const split = normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 30, procentNauka: 60, procentLuksus: 10 });
   const daninaLbl = handelSplitUi.getDaninaLabel?.() ?? 'Podatek';
   const id = 'emp-skarbiec-tax-split';
   const rows: { key: keyof CityPodzialHandlu; label: string; cls: string; from: string; to: string }[] = [
@@ -1660,16 +1673,33 @@ function renderEmpirePracaBudgetSplitSection(): string {
  * FINANSOWANIA" niżej, który tylko WSKAZUJE suwak, nie duplikuje go).
  */
 /**
- * R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: wspolna linia „brutto -> netto" w nagłówkach zakładek
- * (Nauka/Spichlerz/Surowce/Handel) — te same liczby co komórki HUD (HudState), bez 2. kalkulacji.
- * Netto ujemne = klasa `neg` (czerwone), dodatnie/zero = `pos`.
+ * R-WEB-UI-RESOURCE-CARD-NUMBERS-ONLY-DETAILS-COLLAPSED-Q1 (Maciej 2026-11-15): nagłówek Surowce
+ * pokazuje SAME liczby „+brutto → +netto” (bez słów i bez „szt. / turę”). Opis (brutto = produkcja
+ * przed zużyciem, netto = po zużyciu obywateli, budynków i wojska) idzie do `title` tooltipu.
+ * R-WEB-UI-GROSS-NET-NUMBERS-ONLY-UNIFY-AND-WIKI-Q1 (Maciej 2026-11-15, decyzja A): ta sama
+ * konwencja dla Nauki, Żywności i Handlu; dawna `grossNetSub` (słowa „Brutto/netto / turę”) usunięta.
+ * Jednostka (PN, 🍞, złota) i dawny opis trafiają do `title` tooltipu.
+ * / EN: header line with numbers only; the explanation and unit live in the tooltip.
  */
-function grossNetSub(brutto: number | undefined, netto: number | undefined, unit: string, note = ''): string {
+export function grossNetNumbersSub(brutto: number | undefined, netto: number | undefined, tooltip: string): string {
   if (brutto === undefined || netto === undefined) return '';
   const b = Math.round(brutto);
   const n = Math.round(netto);
   const cls = n < 0 ? 'neg' : 'pos';
-  return `<div class="civ-emp-hero-sub civ-emp-grossnet">Brutto <b>${signedPl(b)}</b> → netto <b class="${cls}">${signedPl(n)}</b> ${unit} / turę${note}</div>`;
+  return `<div class="civ-emp-hero-sub civ-emp-grossnet" title="${esc(tooltip)}">`
+    + `<b>${signedPl(b)}</b> → <b class="${cls}">${signedPl(n)}</b></div>`;
+}
+
+/**
+ * R-WEB-UI-GROSS-NET-NUMBERS-ONLY-UNIFY-AND-WIKI-Q1 (decyzja A, wariant jednej liczby): gdy brutto = netto
+ * (Nauka, Handel), pokazuje JEDNĄ liczbę bez strzałki „→”. Opis i jednostka idą do `title` tooltipu.
+ */
+export function singleNumberSub(value: number | undefined, tooltip: string): string {
+  if (value === undefined) return '';
+  const v = Math.round(value);
+  const cls = v < 0 ? 'neg' : 'pos';
+  return `<div class="civ-emp-hero-sub civ-emp-grossnet" title="${esc(tooltip)}">`
+    + `<b class="${cls}">${signedPl(v)}</b></div>`;
 }
 
 function renderNaukaSection(
@@ -1682,14 +1712,14 @@ function renderNaukaSection(
   const getDef = handelSplitUi.getOwnerDefault;
   // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
   const ownerId = handelSplitUi.getActiveOwnerId?.() ?? 0;
-  const split = getDef ? normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 }) : null;
+  const split = getDef ? normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 30, procentNauka: 60, procentLuksus: 10 }) : null;
   const procentNauka = split ? split.procentNauka : 20;
   const heroCls = rate < 0 ? 'neg' : 'pos';
 
   let h = '<div class="civ-emp-sect" data-section="nauka">'
     + '<div class="civ-emp-eyebrow">NAUKA IMPERIUM</div>'
     + `<div class="civ-emp-hero ${heroCls}">${signedPl(rate)} PN / turę</div>`
-    + grossNetSub(rate, rate, 'PN', ' (Nauka nie ma dziś kosztów — brutto = netto)');
+    + singleNumberSub(rate, 'Nauka nie ma dziś kosztów — brutto = netto. Jednostka: PN na turę.');
 
   if (rows.length === 0) {
     h += `<div class="civ-emp-hero-sub">Bank badań <b>${bank}</b> PN</div>`
@@ -2993,6 +3023,10 @@ export function renderMassRecruitmentSection(
   let h = `<div class="civ-emp-mass" data-mass-recruitment>`
     + `<div class="civ-emp-mass-hd"><span class="civ-emp-mass-title">Rekrutacja</span>`
     + `<span class="civ-emp-mass-sub">jednostki pogrupowane według miasta</span></div>`
+    // R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: rekrutacja całej cywilizacji na samej górze, nad wodzem.
+    + `<div id="civ-empire-recruit-panel" data-erp-root class="civ-emp-erp-host"></div>`
+    + `<div class="civ-emp-mass-leader"><div class="civ-emp-mass-leader-title">Wódz / Generał — rekrutacja w stolicy</div>`
+    + `<div data-general-recruitment-card></div></div>`
     + `<div class="civ-emp-mass-counters">`
     + `<div class="civ-emp-mass-counter"><div class="k">W KOLEJCE</div>`
     + `<div class="v" data-mass-recruitment-queued>${state.queuedCount}</div></div>`
@@ -3004,9 +3038,7 @@ export function renderMassRecruitmentSection(
     + `<div class="civ-emp-mass-pool">Skarbiec: <b>${formatRawCount(state.treasury)} złota</b>`
     + ` · Manpower: <b>${formatRawCount(state.manpower)}</b>`
     + `${stock ? ` · Magazyn: <b>${stock}</b>` : ''}</div>`
-    + `<div class="civ-emp-mass-batch"><button type="button" data-army-recruit-all${getArmyRecruitDraftTotal() <= 0 ? ' disabled' : ''}>Rekrutuj wszystko</button></div>`
-    + `<div class="civ-emp-mass-leader"><div class="civ-emp-mass-leader-title">Wódz / Generał — rekrutacja w stolicy</div>`
-    + `<div data-general-recruitment-card></div></div>`;
+    + `<div class="civ-emp-mass-batch"><button type="button" data-army-recruit-all${getArmyRecruitDraftTotal() <= 0 ? ' disabled' : ''}>Rekrutuj wszystko</button></div>`;
 
   if (rows.length === 0) {
     return h + '<div class="civ-emp-mass-empty">Brak miast gracza do rekrutacji.</div>'
@@ -3049,6 +3081,7 @@ export function mountMassRecruitmentControls(
   mountCityRecruitment: EmpireMassRecruitmentUiConfig['mountCityRecruitment'] = massRecruitmentUi.mountCityRecruitment,
   mountGeneralRecruitment: EmpireMassRecruitmentUiConfig['mountGeneralRecruitment'] = massRecruitmentUi.mountGeneralRecruitment,
 ): void {
+  massRecruitmentUi.mountEmpireRecruit?.(host.querySelector<HTMLElement>('[data-erp-root]'));
   const batchBtns = Array.from(host.querySelectorAll<HTMLButtonElement>('[data-army-recruit-all]'));
   const syncBatchButtons = (): void => {
     const disabled = getArmyRecruitDraftTotal() <= 0;
@@ -3231,7 +3264,7 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap, economy?: EmpireD
     + (food.maxCap > 0 ? `<span class="cap">/ ${food.maxCap}</span>` : '')
     + `<span class="ic" aria-hidden="true">${brandIconSvg('res-food', 16)}</span></div>`
     + renderSpichlerzHeroSub(food, pct, alarm, hasDeficit)
-    + (economy ? grossNetSub(economy.zywnoscWplywMiast ?? economy.zywnoscRate, economy.zywnoscRate, '🍞', ' (brutto = nadwyżka miast → centrala; netto = po deficytach miast i armii)') : '');
+    + (economy ? grossNetNumbersSub(economy.zywnoscWplywMiast ?? economy.zywnoscRate, economy.zywnoscRate, 'Brutto = nadwyżka miast → centrala; netto = po deficytach miast i armii. Jednostka: 🍞 żywność na turę.') : '');
   if (food.maxCap > 0) {
     h += `<div class="civ-emp-bar civ-emp-sp-bar"><div class="${barCls}" style="width:${pct}%"></div></div>`;
   }
@@ -3403,6 +3436,14 @@ function resTooltipHtml(r: EmpireResourceRow): string {
   } else {
     parts.push(prod === 0 ? 'Produkcja: brak zmiany w tej turze' : `Produkcja: ${signedTxt(prod)} / turę`);
   }
+  if (!r.placeholder) {
+    const gn = resourceGrossNetPerTurn(r);
+    if (gn.brutto !== 0 || gn.zuzycie !== 0) {
+      parts.push(`Brutto (produkcja łącznie): ${gn.brutto === 0 ? '0' : signedPl(gn.brutto)} / turę`);
+      if (gn.zuzycie > 0) parts.push(`Zużycie: −${gn.zuzycie} / turę (obywatele, budynki, wojsko — rozbicie: „Zobacz szczegóły zużycia”)`);
+      parts.push(`Netto po zużyciu: ${gn.netto === 0 ? '0' : signedPl(gn.netto)} / turę (jak w nagłówku)`);
+    }
+  }
   // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): reguła pokrycia = magazyn centralny
   // ZASPOKAJA CAŁĄ populację imperium tego ownera (stawka per epoka citizenUpkeepRateForEra szt.
   // surowca/obywatela/turę — kanon: citizen-resource-upkeep.ts), NIE starsza binarna
@@ -3414,27 +3455,6 @@ function resTooltipHtml(r: EmpireResourceRow): string {
       : 'Obywatele: NIEDOBÓR w magazynie (poniżej zapotrzebowania całego imperium) — kara −1 Szczęście, −1% Rozwój w KAŻDYM mieście');
   }
   return esc(parts.join(' · '));
-}
-
-/** Pill lub stos: produkcja ± dyplomacja = netto (gdy aktywny handel cykliczny). */
-function resRateHtml(r: EmpireResourceRow, state: 'bad' | 'warn' | 'good'): string {
-  const prod = r.rateProductionPerTurn ?? r.ratePerTurn;
-  const diploOut = r.rateDiploOutPerTurn ?? 0;
-  const diploIn = r.rateDiploInPerTurn ?? 0;
-  const hasDiplo = diploOut > 0 || diploIn > 0;
-  if (!hasDiplo) {
-    const rateTxt = prod === 0 ? '—' : signedTxt(prod);
-    return `<span class="civ-emp-res-rate ${state}">${esc(rateTxt)}</span>`;
-  }
-  const net = r.ratePerTurn;
-  const netState = net < 0 ? 'bad' : (net === 0 ? 'warn' : 'good');
-  let html = `<div class="civ-emp-res-rate-stack">`;
-  html += `<span class="civ-emp-res-rate-line prod">${esc(signedTxt(prod))}</span>`;
-  if (diploOut > 0) html += `<span class="civ-emp-res-rate-line diplo-out">−${diploOut} dypl.</span>`;
-  if (diploIn > 0) html += `<span class="civ-emp-res-rate-line diplo-in">+${diploIn} dypl.</span>`;
-  html += `<span class="civ-emp-res-rate-line net ${netState}">=${esc(signedTxt(net))}</span>`;
-  html += `</div>`;
-  return html;
 }
 
 /**
@@ -3519,8 +3539,28 @@ function resPlaceholderCardHtml(r: EmpireResourceRow): string {
     + `</div>`;
 }
 
+/**
+ * R-WEB-UI-RESOURCE-CARDS-GROSS-AND-NET-Q1 (Maciej 2026-11-14): wiersz „Brutto +X · netto +Y / turę"
+ * na karcie surowca. Liczby z `resourceGrossNetPerTurn` (gra/src/game/resource-gross-net.ts) — te
+ * same co nagłówek „Brutto … → netto …”, więc suma kart = nagłówek. Netto = po zużyciu obywateli,
+ * budynków i wojska. Osobnej plakietki produkcji na karcie nie ma (produkcja ± dyplomacja jest w brutto).
+ * Brak produkcji i brak zużycia → '' (karta jak dziś, „—").
+ * / EN: per-card gross/net line; same numbers as the header (single source in game/resource-gross-net).
+ */
+export function resGrossNetLineHtml(r: EmpireResourceRow): string {
+  if (r.placeholder) return '';
+  const gn = resourceGrossNetPerTurn(r);
+  if (gn.brutto === 0 && gn.zuzycie === 0) return '';
+  const netState = gn.netto < 0 ? 'bad' : (gn.netto === 0 ? 'warn' : 'good');
+  const fmt = (n: number): string => (n === 0 ? '0' : signedPl(n));
+  const tip = 'Brutto = produkcja przed zużyciem, na turę. Netto = po zużyciu obywateli, budynków i wojska, na turę.';
+  return `<div class="civ-emp-res-gn ${netState}" title="${esc(tip)}">`
+    + `<b>${esc(fmt(gn.brutto))}</b> · <b class="net">${esc(fmt(gn.netto))}</b>`
+    + `</div>`;
+}
+
 /** Karta pojedynczego surowca magazynowanego (pasek zapełnienia stock/cap). */
-function resCardHtml(r: EmpireResourceRow): string {
+export function resCardHtml(r: EmpireResourceRow): string {
   if (r.placeholder) return resPlaceholderCardHtml(r);
   const cap = r.cap ?? 0;
   const pct = cap > 0 ? Math.max(0, Math.min(100, Math.round((r.stock / cap) * 100))) : 0;
@@ -3538,15 +3578,34 @@ function resCardHtml(r: EmpireResourceRow): string {
   return `<div class="civ-emp-res-card ${state}" data-section="econ-surowiec-${esc(r.id)}" title="${resTooltipHtml(r)}">`
     + `<div class="civ-emp-res-top"><span class="civ-emp-res-ic">${resIconHtml(r.label)}</span>`
     + `<div class="civ-emp-res-nm"><div class="nm">${esc(r.label)}</div></div>`
-    + resRateHtml(r, state) + `</div>`
+    + `</div>`
     + `<div class="civ-emp-res-amt"><span class="cur">${r.stock}</span><span class="cap">/ ${cap}</span>`
     + (flagPill ? `<span class="civ-emp-res-flag-pill ${state}">${esc(flagPill)}</span>` : '')
     + `</div>`
     + `<div class="civ-emp-res-bar ${state}"><span style="width:${pct}%"></span></div>`
+    + resGrossNetLineHtml(r)
     + (flagNote ? `<div class="civ-emp-res-flag-note ${state}">${esc(flagNote)}</div>` : '')
     + resCitizenBadgeHtml(r)
     + resUsageDetailsHtml(r)
+    + resSkadZapasyHtml(r.id, r.ownerId ?? 0)
     + `</div>`;
+}
+
+/**
+ * R-WEB-UI-RESOURCE-SOURCE-LEDGER-UI-AND-REST-Q1 (partia 4): „Skąd zapasy” na karcie surowca —
+ * lista źródeł przyrostu i ubytku z ostatnich N tur (dziennik `resource-ledger.ts`, gracz = właściciel 0).
+ * Jedna linia na źródło: „+12 Warzelnia (Rzym)”, „−20 Obywatele”. Sól i ceramika otwarte domyślnie
+ * (priorytet właściciela), pozostałe surowce zwinięte. Brak danych w dzienniku → '' (karta jak dziś).
+ * Pure poza odczytem dziennika: liczby z `ledgerSourceLinesForResource`, zero przeliczeń tutaj.
+ * / EN: "Where the stock came from" block on a resource card: one line per source over the last N turns.
+ * Sol and ceramika are open by default; empty ledger → ''.
+ */
+export function resSkadZapasyHtml(resourceKey: string, ownerId = 0): string {
+  const turns = ledgerHistoryForOwner(ownerId);
+  const lines = ledgerSourceLinesForResource(turns, resourceKey);
+  if (lines.length === 0) return '';
+  // R-WEB-UI-RESOURCE-CARD-NUMBERS-ONLY-DETAILS-COLLAPSED-Q1: zawsze zwinięte (także sól/ceramika).
+  return resourceSourceLedgerDetailsHtml(lines, turns.length, false, resourceKey);
 }
 
 /** Tooltip nagłówka magazynu państwa — pojemność, formuła, reguła nadmiaru (Maciej UI). */
@@ -3675,7 +3734,8 @@ function renderSurowceSection(rows: EmpireResourceRow[], economy?: EmpireDetailS
   }
   sur += `<div class="civ-emp-hero-sub civ-emp-res-sub">${subParts.join(' · ')}</div>`;
   if (economy) {
-    sur += grossNetSub(economy.surowceBrutto, economy.surowceNetto, 'szt.', ' (suma po surowcach; netto po zużyciu obywateli, budynków i wojska)');
+    sur += grossNetNumbersSub(economy.surowceBrutto, economy.surowceNetto,
+      'Brutto = produkcja surowców przed zużyciem (suma po surowcach), na turę. Netto = po zużyciu obywateli, budynków i wojska, na turę.');
   }
 
   if (stored.length > 0) {
@@ -3739,7 +3799,7 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     + `<div class="civ-emp-res-hdr-row"><span class="civ-emp-res-hdr-ic" aria-hidden="true">${brandIconSvg('cp-trade', 14)}</span>`
     + `<span class="civ-emp-eyebrow">HANDEL — SZLAKI HANDLOWE</span></div>`
     + `<div class="civ-emp-hero ${heroCls}">${signedPl(t.totalIncome)} złota / turę</div>`
-    + grossNetSub(t.totalIncome, t.totalIncome, 'złota', ' (trasy nie mają kosztów; dochód jest już wliczony we wpływy Skarbca)')
+    + singleNumberSub(t.totalIncome, 'Trasy nie mają kosztów; dochód jest już wliczony we wpływy Skarbca. Jednostka: złota na turę.')
     + `<div class="civ-emp-hero-sub"><b>${t.routes.length}</b> ${routeCountWord(t.routes.length)} · `
     + `<b>${t.activeDeals.length}</b> ${dealCountWord(t.activeDeals.length)}</div>`;
 
@@ -4594,7 +4654,10 @@ export function hideEmpireDetailPanel(): void {
   popOverlay('empire-detail-panel');
   // R-WEB-UI-RECRUIT-PANEL-COUNTERS-RESET-ON-CLOSE-Q1: każda ścieżka zamknięcia (Zamknij, Esc, tło) zeruje szkice,
   // ale TYLKO gdy panel był faktycznie otwarty (dismissToolbarSidePanels/closeAll wołają to bezwarunkowo).
-  if (open) clearArmyRecruitDraftsOnPanelClose();
+  if (open) {
+    clearArmyRecruitDraftsOnPanelClose();
+    resetEmpireRecruitDrafts(); // R-WEB-UI-RECRUIT-PANEL-COUNTERS-RESET-ON-CLOSE-Q1: zamknięcie panelu armii = zera
+  }
   open = false;
   pendingScrollSection = null;
   root?.classList.remove('open');

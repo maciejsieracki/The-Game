@@ -3,7 +3,7 @@
  */
 
 import type { PostBattleSummaryData, BattleSummaryUnitCard, BattleSummarySide } from '../game/battle-summary';
-import { buildPostBattleSummary } from '../game/battle-summary';
+import { buildPostBattleSummary, formatAnnihilationLine } from '../game/battle-summary';
 import {
   PB_SVG,
   BATTLE_GOLD,
@@ -449,6 +449,20 @@ function buildCenterPanel(data: PostBattleSummaryData, statusHeading?: string): 
     ? 'Straty \u0142\u0105cznie: ' + losses + ' jednostek zniszczonych.'
     : 'Brak zniszczonych jednostek \u2014 tylko obra\u017Cenia.';
   body.appendChild(summary);
+
+  if (data.annihilation) {
+    // LINIA-UNICESTWIENIE: osobna linia (nie miesza się ze stratami) — czwarty odwrót w turze.
+    const annLine = el('div');
+    css(annLine, {
+      marginTop: '10px',
+      fontSize: '12px',
+      color: BATTLE_ENEMY_TEXT,
+      lineHeight: '1.5',
+    });
+    annLine.setAttribute('data-annihilation', data.annihilation.side);
+    annLine.textContent = formatAnnihilationLine(data.annihilation);
+    body.appendChild(annLine);
+  }
 
   if (data.lootNote) {
     const lootLine = el('div');

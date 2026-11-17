@@ -230,9 +230,10 @@ function simulate(state, o) {
         atWarWithCiv: state.cities.some(c => c.ownerId !== owner && c.ownerId !== E.BARBARIAN_OWNER_ID && atWar(owner, c.ownerId)),
       };
       const d0 = process.hrtime.bigint();
-      const cmds = E.decideAITurn(owner, state.units, state.cities, state.map, DATA, opts);
+      const cmds = E.decideAITurn(owner, state.units, state.cities, state.map, o.data || DATA, o.onOptions ? o.onOptions(opts, owner, turn, state) : opts);
       dec += process.hrtime.bigint() - d0;
       applyCmds(cmds, owner, turn);
+      if (o.onCommands) o.onCommands(cmds, owner, turn, state);
     }
     stats.decisionMs += Number(dec) / 1e6;
     stats.perTurnMs.push(Number(process.hrtime.bigint() - t0) / 1e6);

@@ -55,7 +55,7 @@ ok(W.isWarWeary(W.warWearinessLevel({ turnsAtWar: 200, lostCitiesTotal: 0 })), '
 ok(!W.isWarWeary(W.warWearinessLevel({ turnsAtWar: 4, lostCitiesTotal: 0, turnsSinceCityChange: 0 })), '4 tury => brak checi (nie rozbija balansu krotkich wojen)');
 ok(W.warWearinessLevel({ turnsAtWar: 3, lostCitiesTotal: 4 }) > W.warWearinessLevel({ turnsAtWar: 3, lostCitiesTotal: 0 }), 'straty miast przyspieszaja zmeczenie');
 eq(W.warWearinessLevel({ turnsAtWar: 8, lostCitiesTotal: 0, turnsSinceCityChange: 120 }), W.warWearinessLevel({ turnsAtWar: 8, lostCitiesTotal: 0, turnsSinceCityChange: 10 }), 'R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: zastoj usuniety, poziom niezalezny od turnsSinceCityChange');
-eq(W.WAR_WEARINESS_PARAMS.zmeczenie.pelneTur, 20, 'parametr pelneTur z JSON (20 tur do 100%)');
+eq(W.WAR_WEARINESS_PARAMS.zmeczenie.pelneTur, 40, 'parametr pelneTur z JSON (40 tur do 100%; DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1)');
 eq(W.WAR_WEARINESS_PARAMS.przegrywajacy.progiStopni.length, 3, 'progi stopni z JSON');
 
 // ---- 2. stan pary: szczyt monotoniczny, reset przy nowej wojnie, round-trip save ----
@@ -86,12 +86,13 @@ ok(p2.histogram.miasto >= 1 && p2.histogram.miasto <= 2 && p2.full, 'miasta dopi
 ok(!p2.items.some(i => i.id === 'cap'), 'stolica/zakazane nigdy nie oddawane');
 
 // ---- 4. tick AI-AI ----
-// R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: asercje ponizej dotycza STARYCH regul (oferty miast, cooldown, mnozniki)
-// przed koncem zmeczenia. Koniec zmeczenia (progKoncaZmeczenia, domyslnie 0,8) jest testowany z parametrami produkcyjnymi
-// w tools/diplo-weariness-unconditional-end-test.cjs; tutaj wylaczamy go (2 = nieosiagalny), by nie maskowac tych regul.
+// DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: asercje ponizej dotycza regul OFERT (miasta, cooldown, mnozniki)
+// przed pokojem wymuszonym. Pokoj wymuszony (progWymuszonyPokoj, 100%) jest testowany z parametrami produkcyjnymi w
+// tools/diplo-weariness-forced-peace-test.cjs; tutaj wylaczamy go (2 = nieosiagalny), by nie maskowac tych regul.
+// (Przed zmiana na 40 tur ta sama izolacja dotyczyla progKoncaZmeczenia; ten prog jest od 40-tur tylko skala krzywej PW.)
 const PRE_END_PARAMS = (() => {
   const pj = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'data', 'war-weariness-params.json'), 'utf8'));
-  pj.zmeczenie.progKoncaZmeczenia = 2;
+  pj.zmeczenie.progWymuszonyPokoj = 2;
   return pj;
 })();
 function mkDeps(o) {
@@ -246,12 +247,14 @@ function mkDeps(o) {
   eq(M.requesterShare(300, 700), rwScale, '4i: requesterShare = potAI/(potAI+potPlr) (ta sama skala co respektWzgledny)');
   eq(W.loserDespair({ level: 0.7, share: M.requesterShare(300, 700), lostCities: 2 }), W.loserDespair({ level: 0.7, share: rwScale, lostCities: 2 }), '4i: desperacja identyczna dla obu zrodel udzialu');
 }
-// 4j. cena pokoju zadana od gracza maleje z zmeczeniem (zarzut 3)
+// 4j. R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: zmeczenie = pozycja PW Z=round(C*x^2) (rabat 60% usuniety)
 {
-  eq(W.wearinessPeacePriceFactor(0), 1, '4j: brak zmeczenia => pelna cena');
-  eq(W.wearinessPeacePriceFactor(0.5), 1, '4j: na progu chetnosci => pelna cena');
-  ok(W.wearinessPeacePriceFactor(0.8) < 1 && W.wearinessPeacePriceFactor(0.8) > W.wearinessPeacePriceFactor(1), '4j: rabat rosnie monotonicznie');
-  ok(Math.abs(W.wearinessPeacePriceFactor(1) - (1 - W.WAR_WEARINESS_PARAMS.czlowiek.rabatCenyPokojuMax)) < 1e-9, '4j: przy pelnym zmeczeniu rabat = rabatCenyPokojuMax');
+  eq(W.wearinessPeaceItemPw(500, 0), 0, '4j: brak zmeczenia => Z=0');
+  eq(W.wearinessPeaceItemPw(500, 0.5), 0, '4j: na progu chetnosci => Z=0');
+  eq(W.wearinessPeaceItemPw(500, 0.8), 500, '4j: przy progu konca zmeczenia => Z=C (R=0)');
+  eq(W.wearinessPeaceItemPw(500, 1), 500, '4j: pelne zmeczenie => Z=C');
+  ok(W.wearinessPeaceItemPw(500, 0.7) > W.wearinessPeaceItemPw(500, 0.6), '4j: Z rosnie z zmeczeniem');
+  ok(W.WAR_WEARINESS_PARAMS.czlowiek.rabatCenyPokojuMax === undefined, '4j: pole rabatCenyPokojuMax usuniete z parametrow');
 }
 
 // ---- 5. AI przegrywajace z graczem: eskalacja oferty miasta ----
@@ -271,19 +274,21 @@ const cession = (cmds) => cmds.find(c => c.type === 'oferuj_miasto_za_pokoj');
 ok(cession(runAI({ rw: 0.30, turnsAtWar: 5, miastaAI: CITIES })) === undefined, 'krotka wojna (5 tur) rw 0.30: bez oddania miasta (balans nietkniety)');
 ok(cession(runAI({ rw: 0.12, turnsAtWar: 5, miastaAI: CITIES })) === undefined, 'bazowo <3 miasta => brak oddania w krotkiej wojnie (5 tur)');
 // R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: przed koncem zmeczenia (90 tur + 2 straty = poziom ~0,75) AI nadal oddaje miasto (eskalacja).
-ok(cession(runAI({ rw: 0.12, turnsAtWar: 11, lost: 1, miastaAI: CITIES })) !== undefined, '11 tur + straty po 1 z kazdej strony (suma 2 => poziom 0,75 < 0,8, przed koncem zmeczenia): AI oddaje miasto (eskalacja)');
-// Koniec zmeczenia (200 tur + straty, poziom 1): AI sama proponuje pokoj BEZWARUNKOWY (bez miasta i ceny).
+// DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1 (skala 40 tur): 20 tur + straty po 1 z kazdej strony = poziom
+// 0,5 + 0,2 = 0,70 (przedzial [0,5; 0,8): przed progiem 80%, oferta z miastami). Dawne 11 tur dawalo 0,475 < 0,5.
+ok(cession(runAI({ rw: 0.12, turnsAtWar: 20, lost: 1, miastaAI: CITIES })) !== undefined, '20 tur + straty po 1 z kazdej strony (suma 2 => poziom 0,70, przed 80%): AI oddaje miasto (eskalacja)');
+// 80%+ zmeczenia (200 tur + straty, poziom 1) NIE daje pokoju BEZWARUNKOWEGO: ai.ts nie ma galezi „koniec zmeczenia”
+// (80% = oferta z miastami, 100% = pokoj wymuszony w tick AI<->AI / main.ts).
 {
   const cmds = runAI({ rw: 0.12, turnsAtWar: 200, lost: 3, miastaAI: CITIES });
-  const pk = cmds.find(c => c.type === 'zaproponuj_pokoj' && /koniec zmeczenia/.test(c.powod || ''));
-  ok(cession(cmds) === undefined && !!pk && pk.cityId === undefined && pk.cityPn === undefined,
-    '200 tur + straty (koniec zmeczenia): AI proponuje pokoj bezwarunkowy, bez oddania miasta');
+  ok(!cmds.some(c => c.type === 'zaproponuj_pokoj' && c.cityId === undefined && c.cityPn === undefined),
+    '200 tur + straty (80%+): AI NIE proponuje pokoju bezwarunkowego (brak galezi koniec zmeczenia)');
 }
 ok(cession(runAI({ rw: 0.12, turnsAtWar: 200, lost: 3, miastaAI: CITIES.slice(0, 1) })) === undefined, 'jedno miasto => nigdy nie oddaje');
 
 // ---- 6. straznik okablowania main.ts ----
 const propTs = fs.readFileSync(path.join(SRC, 'game/diplomacy-proposals.ts'), 'utf8');
-ok(/wearinessPeacePriceFactor\(warWearinessLevel\(/.test(propTs), 'diplomacy-proposals: rabat ceny pokoju z zmeczenia podpiety do bramki R5');
+ok(/wearinessPeaceItemPw\(/.test(propTs) && !/wearinessPeacePriceFactor/.test(propTs), 'diplomacy-proposals: pozycja PW zmeczenia podpieta do bramki R5 (bez rabatu)');
 
 const mainTs = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
 ok(/runWarWearinessTick\(/.test(mainTs) && /tickAiAiWarWeariness\(aiTurnAwaitingBattle\)/.test(mainTs), 'main.ts: tick zmeczenia wywolany po fazie AI');

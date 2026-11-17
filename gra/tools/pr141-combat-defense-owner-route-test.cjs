@@ -37,9 +37,16 @@ const stubAudio = path.join(root, 'tools/.stubs/map-field-battle-muzyka-stub.ts'
 fs.writeFileSync(entry, `
  import { civBonusyForCivKey } from ${JSON.stringify(path.join(root, 'src/game/economy'))};
  import { civMatrixBonusyForCivKey } from ${JSON.stringify(path.join(root, 'src/game/civ-bonuses'))};
+ import { loadCivMatrix } from ${JSON.stringify(path.join(root, 'src/game/civ-matrix'))};
+ import { civProductionCostBonusyForCivKey } from ${JSON.stringify(path.join(root, 'src/game/production'))};
  export { launchFieldBattleFromMap } from ${JSON.stringify(path.join(root, 'src/battle/mapFieldBattle'))};
  export { resolveCombat } from ${JSON.stringify(path.join(root, 'src/game/combat'))};
  export function makeOwnerResolver(player, aiOwnerCivMap, data) {
+   // Closure state of main.ts (createGame scope) supplied by the harness, mirroring
+   // _menuCivIdByOwner / playerCivTypeByHuman primary entries (HUMAN_OWNER_PRIMARY = 0).
+   const HUMAN_OWNER_PRIMARY = 0;
+   const _menuCivIdByOwner = new Map([[HUMAN_OWNER_PRIMARY, player.civType]]);
+   const playerCivTypeByHuman = new Map([[HUMAN_OWNER_PRIMARY, player.civType]]);
    ${keyResolver}
    ${bonusResolver}
    return { civKeyForOwnerId, civBonusyForOwnerId };
@@ -58,11 +65,13 @@ try {
 const G = require(bundle);
 
 const matrix = JSON.parse(fs.readFileSync(path.join(root, 'data/civ-matrix.json'), 'utf8'));
+// A: grecy ma teraz ogolny bonus obrony piechoty +20% (matrix walka_obrona_piechota), wiec nie jest juz neutralnym ownerem dla przypadkow las/terytorium/mur;
+// neutralny owner = rzymianie (zero we wszystkich walka_obrona_*).
 const cases = [
   { id: 'walka_obrona_morska', civ: 'grecy', foreign: 'rzymianie', def: { typNazwa: 'Galera', rola: 'Morska', counterTyp: 'Naval' } },
-  { id: 'walka_obrona_piechota_teren_las', civ: 'slowianie', foreign: 'grecy', terrain: 'las' },
-  { id: 'walka_obrona_piechota_terytorium_wlasne', civ: 'harappa', foreign: 'grecy', own: true },
-  { id: 'walka_obrona_piechota_w_murze', civ: 'hetyci', foreign: 'grecy', wall: true },
+  { id: 'walka_obrona_piechota_teren_las', civ: 'slowianie', foreign: 'rzymianie', terrain: 'las' },
+  { id: 'walka_obrona_piechota_terytorium_wlasne', civ: 'harappa', foreign: 'rzymianie', own: true },
+  { id: 'walka_obrona_piechota_w_murze', civ: 'hetyci', foreign: 'rzymianie', wall: true },
   { id: 'walka_obrona_piechota_teren_plytkie_morze', civ: 'grecy', foreign: 'rzymianie', terrain: 'plytkie_morze', shallow: true },
 ];
 const attackerStats = { typNazwa: 'Wojownik', rola: 'Wrecz', counterTyp: 'Piechota', meleeAttack: 30, meleeDefence: 20, weaponDamage: 20, armor: 0, piercing: 0, chargeBonus: 0, health: 100, 'Prog dezercji (% health)': 0 };
@@ -73,7 +82,8 @@ let checks = 0;
 function battleOptsForOwner(defOwnerId, defCivKey, terrain, playerCivKey = 'rzymianie') {
   const player = { civType: playerCivKey, civBonusy: [] };
   const aiOwnerCivMap = new Map([[defOwnerId, defCivKey]]);
-  const resolver = G.makeOwnerResolver(player, aiOwnerCivMap, { civs: { cywilizacje: [] } });
+  // A: civKeyForOwnerId (main.ts) wymaga teraz realnego wiersza civs.json + wiersza macierzy (nieznany owner = '' = brak bonusow); pusta lista civs dawala [] dla KAZDEGO ownera.
+  const resolver = G.makeOwnerResolver(player, aiOwnerCivMap, { civs: require('../data/civs.json') });
   const city = { id: 'city-' + defOwnerId, ownerId: defOwnerId, q: 6, r: 0, name: 'Field City', maMur: false, population: 10, garnizon: 0 };
   const anchor = { id: 'attacker-' + defOwnerId, ownerId: 0, typeId: 'Wojownik', category: 'miecznik', q: 5, r: 0, ruch: 2, ruchLeft: 2 };
   const defender = { id: 'defender-' + defOwnerId, ownerId: defOwnerId, typeId: 'Wojownik', category: 'miecznik', q: 6, r: 0, ruch: 2, ruchLeft: 2 };
@@ -117,8 +127,14 @@ for (let index = 0; index < cases.length; index++) {
   };
   const active = G.resolveCombat(attackerStats, defender, { ...baseCombat, ...context, ...activeOpts });
   const foreign = G.resolveCombat(attackerStats, defender, { ...baseCombat, ...context, ...foreignOpts });
-  assert.ok(active.defenderHpLeft > foreign.defenderHpLeft,
-    `${c.id}: real owner-id battle setup yields defender HP ${active.defenderHpLeft} vs foreign ${foreign.defenderHpLeft}`); checks++;
+  // A: staly rzut 0.497 byl dostrojony do dawnej szansy trafienia (~50%); po zmianach statow (Grecy/Falanga, mnozniki) baza to 54,5%,
+  // wiec +20% obrony (-4 pp) nie przekracza rzutu i HP wychodzi rowne. Mierzymy wprost szanse trafienia atakujacego z logu walki
+  // (ta sama formula hitChanceTw, bez zaleznosci od progu rzutu) + zostawiamy HP jako dodatkowy dowod, gdy rzut rozdziela.
+  const atkPct = r => Number(/ATK (?:trafia|chybia) \([\d.]+(?:<|>=)([\d.]+)%\)/.exec(r.log.join('\n'))?.[1]);
+  const activePct = atkPct(active), foreignPct = atkPct(foreign);
+  assert.ok(Number.isFinite(activePct) && Number.isFinite(foreignPct), `${c.id}: attacker hit chance parsed from combat log`); checks++;
+  assert.ok(activePct < foreignPct && active.defenderHpLeft >= foreign.defenderHpLeft,
+    `${c.id}: real owner-id battle setup lowers attacker hit chance ${activePct}% vs foreign ${foreignPct}% (defender HP ${active.defenderHpLeft} vs ${foreign.defenderHpLeft})`); checks++;
 
   // The actual setup gives the attacker the target civ too. Its defense trait must not
   // protect the attacker when the same resolver evaluates that unit on side=attacker.

@@ -28,6 +28,8 @@ import type { ArmyCommanderTitle } from './armyStackLabel';
 
 export interface ArmyStackCard {
   id: string;
+  /** Identyfikator typu jednostki (skróty „zaznacz wszystkich <typ>”). */
+  typeId?: string;
   name: string;
   /** Leader role shown in the map roster; `name` remains its real unit type. */
   commanderTitle?: ArmyCommanderTitle;
@@ -82,6 +84,9 @@ export interface ArmyStackHudState extends UnitSufferingStatusFields {
   marchPausedReason?: string;
   buildingBonusLabel?: string;
   actions: UnitPanelAction[];
+  /** R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (runda 2): stos stoi w zasadzce — znacznik widoczny TYLKO
+   *  dla właściciela (wróg go nie widzi, więc ten HUD go nie dotyczy). */
+  ambushed?: boolean;
 }
 
 export interface ArmyStackHudConfig {
@@ -132,6 +137,8 @@ ${MAP_UNIT_1E_SHARED_CSS}
 .civ-army-stack .ash-meta{font-family:var(--civ-font-ui,'Segoe UI',Tahoma,sans-serif);
   font-size:0.68em;color:var(--civ-text-muted,#8a8070);margin-top:2px;font-weight:400;
   letter-spacing:.06em;text-transform:uppercase;}
+.civ-army-stack .ash-ambush-mark{display:inline-block;color:#7fd08a;font-weight:700;letter-spacing:.06em;
+  border:1px solid rgba(127,208,138,.55);border-radius:4px;padding:0 6px;background:rgba(127,208,138,.12);}
 .civ-army-stack .ash-hdr-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
 .civ-army-stack .ash-cards{display:flex;gap:8px;padding:10px 14px;overflow-x:auto;scrollbar-width:thin;}
 .civ-army-stack .ash-cards::-webkit-scrollbar{height:4px;}
@@ -239,6 +246,11 @@ const ASH_ACTION_ICONS: Partial<Record<string, string>> = {
     '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none">'
     + '<path d="M20.7 14.9A9 9 0 1 1 9.4 3.3a7.2 7.2 0 0 0 11.3 11.6z"/>'
     + '</svg>',
+  // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: „Zasadzka" -- krzyż celowniczy (ukryte zastawienie).
+  ambush:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    + '<circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>'
+    + '</svg>',
   'scout-explore':
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
     + '<circle cx="12" cy="12" r="9"/>'
@@ -283,7 +295,9 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
       + '<div class="ash-title-wrap">'
       + armyIc
       + '<div><div class="ash-title">Armia · ' + esc(st.hexLabel) + '</div>'
-      + '<div class="ash-meta">' + formatJednostkiCount(st.unitCount) + ' na heksie</div></div></div>'
+      + '<div class="ash-meta">' + formatJednostkiCount(st.unitCount) + ' na heksie'
+      + (st.ambushed === true ? ' · <span class="ash-ambush-mark" title="Zasadzka: wróg Cię nie widzi, dopóki na nią nie wejdzie">W zasadzce</span>' : '')
+      + '</div></div></div>'
       + '<button type="button" class="ash-nav-arr" data-cycle="1"' + cycleDis
       + ' title="Następna jednostka (dowolna, niezależnie od ruchu) — Spacja: następna AKTYWNA jednostka">▶</button>'
       + '<div class="ash-hdr-actions">';
@@ -379,7 +393,7 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
         ? ' aria-pressed="' + (a.active ? 'true' : 'false') + '"'
         : '';
       html += '<button type="button" class="' + cls + '" data-act="' + esc(a.id) + '"'
-        + ' title="' + esc(a.label) + '" aria-label="' + esc(a.label) + '"' + ariaPressed
+        + ' title="' + esc(a.disabled && a.disabledReason ? a.disabledReason : a.label) + '" aria-label="' + esc(a.label) + '"' + ariaPressed
         + (a.disabled ? ' disabled' : '') + '>' + body + '</button>';
     }
     html += '</div></div>';

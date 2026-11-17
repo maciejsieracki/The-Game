@@ -30,17 +30,21 @@ Dane wejściowe: tylko istniejące parametry, żadna nowa liczba.
 7. Propozycja AI: AI proponuje pokój tylko wtedy, gdy bilans tabeli po doliczeniu Z jest ≥ 0 dla niej. Znika „pokój na minusie bez wyjaśnienia".
 8. Dolna granica: przed `minTurWojny` (10 tur) bez zmian — „za wcześnie na pokój", pokój nie jest oferowany.
 
-## Tabela dla C = 500 PW (mnożnik 1,0), bez utraconych miast
+## Tabela dla C = 615 PW (stała, bez mnożnika cywilizacji i bez zależności od tury), bez utraconych miast
 
-| Tura wojny | L | x | Z liniowo | Z kwadratowo (rekomendacja) | R do dopłaty (kw.) |
+Aktualizacja R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615-BOTH-CITIES-Q1 (ABC 2026-11-14, wariant C). Wartości liczone z funkcji
+`wearinessPeaceItemPw(615, warWearinessLevel(...))` (test `gra/tools/diplo-weariness-c615-both-cities-test.cjs`, punkt e),
+zaokrąglenie jak w kodzie (Math.round). Poprzednia tabela (C=500) miała pozycje 14/56 dla tur 11/12; przy C=615 kod daje 17/68.
+
+| Tura wojny | L | x | Z liniowo (informacyjnie) | Z kwadratowo (wdrożone) | R do dopłaty (kw.) |
 |---|---|---|---|---|---|
-| 10 | 0,50 | 0% | 0 | 0 | 500 |
-| 11 | 0,55 | 17% | 83 | 14 | 486 |
-| 12 | 0,60 | 33% | 167 | 56 | 444 |
-| 13 | 0,65 | 50% | 250 | 125 | 375 |
-| 14 | 0,70 | 67% | 333 | 222 | 278 |
-| 15 | 0,75 | 83% | 417 | 347 | 153 |
-| 16 | 0,80 | 100% | 500 | 500 | 0 |
+| 10 | 0,50 | 0% | 0 | 0 | 615 |
+| 11 | 0,55 | 17% | 103 | 17 | 598 |
+| 12 | 0,60 | 33% | 205 | 68 | 547 |
+| 13 | 0,65 | 50% | 308 | 154 | 461 |
+| 14 | 0,70 | 67% | 410 | 273 | 342 |
+| 15 | 0,75 | 83% | 513 | 427 | 188 |
+| 16 | 0,80 | 100% | 615 | 615 | 0 |
 
 Każde zmienione miasto (+0,1 L) przesuwa tabelę o 2 tury do przodu.
 

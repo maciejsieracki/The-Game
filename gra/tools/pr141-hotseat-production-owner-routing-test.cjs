@@ -133,11 +133,38 @@ const context = {
   refreshCityPanelIfOpen: () => {},
   cityHasCoastOrRiverAccess: () => true,
   showHintMessage: () => {},
+  // Nowe zaleznosci purchaseRecruitmentUnit (limit stosu #R-WEB-ARMY-STACK-LIMIT, Super-jednostka): puste jednostki, brak naruszen.
+  units: [],
+  armyStackLimit: () => 120,
+  isMe: () => false,
+  effectiveGameDifficultyForOwner: () => 'normalny',
+  pendingLedgerSink: () => undefined,
+  recruitRallyStamp: () => ({}),
+  recruitFollowGeneralForOrder: () => false,
+  recruitFollowGeneralDefault: false,
+  armyLeaderTitle: () => 'General',
+  empireBuiltIdsForOwner: () => [],
+  stockResourceLabel: key => key,
+  // ksiega zrodel zapasow (R-WEB-UI-RESOURCE-SOURCE-LEDGER...) nie jest przedmiotem tego testu (routing wlasciciela).
+  snapshotOwnersStock: () => null,
+  recordOwnersStockDeltaToPending: () => {},
+  stackLimitBlockMessage: () => '',
+  superUnitLimitViolation: () => null,
+  reservedUnitTypeNamesForOwner: () => new Set(),
   console: { log: () => {}, warn: () => {} },
   Number,
 };
 
 executeDeclaration(mainSource, findFunction(mainSource, 'purchaseRecruitmentUnit'), 'purchaseRecruitmentUnit', context);
+// main.ts imports isCityUnderSiege from game/city-siege-state.ts; execute the real declaration.
+const siegeStatePath = path.join(__dirname, '../src/game/city-siege-state.ts');
+const siegeStateSource = ts.createSourceFile(siegeStatePath, fs.readFileSync(siegeStatePath, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+executeDeclaration(siegeStateSource, findFunction(siegeStateSource, 'isCityUnderSiege'), 'isCityUnderSiege', context);
+// Same for army-stack-limit.ts:hexHasRoomFor (imported by main.ts, used by the recruit path).
+const stackLimitPath = path.join(__dirname, '../src/game/army-stack-limit.ts');
+const stackLimitSource = ts.createSourceFile(stackLimitPath, fs.readFileSync(stackLimitPath, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+executeDeclaration(stackLimitSource, findFunction(stackLimitSource, 'ownUnitCountAt'), 'ownUnitCountAt', context);
+executeDeclaration(stackLimitSource, findFunction(stackLimitSource, 'hexHasRoomFor'), 'hexHasRoomFor', context);
 executeDeclaration(mainSource, findFunction(mainSource, 'cancelRecruitmentPurchase'), 'cancelRecruitmentPurchase', context);
 executeDeclaration(productionSource, findFunction(productionSource, 'enqueueRecruitment'), 'enqueueRecruitment', context);
 executeDeclaration(productionSource, findFunction(productionSource, 'dequeueRecruitment'), 'dequeueRecruitment', context);

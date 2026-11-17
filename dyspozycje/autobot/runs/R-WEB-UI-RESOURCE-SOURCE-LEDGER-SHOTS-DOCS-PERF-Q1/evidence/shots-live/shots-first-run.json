@@ -1,0 +1,208 @@
+{
+  "seed": 4242,
+  "turns": 3,
+  "dist": "dist-shot",
+  "at": "2026-11-15T12:36:04.805Z",
+  "negativeControl": {
+    "ledgerTestDebug": "undefined",
+    "nnsMeasureDebug": "undefined"
+  },
+  "hookPresentWithFlag": "function",
+  "info": {
+    "me": 0,
+    "ai": 1,
+    "turn": 1,
+    "myCities": 1,
+    "aiCities": 0,
+    "aiOwners": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "pricedKeys": [
+      "drewno",
+      "glina",
+      "kamien",
+      "ruda",
+      "ruda_zelaza",
+      "ruda_cyny",
+      "cegla",
+      "sol",
+      "kon",
+      "ceramika",
+      "braz",
+      "zelazo",
+      "stal",
+      "zloto",
+      "wegiel"
+    ],
+    "pack": 10
+  },
+  "scenarioMe": {
+    "cityId": "city0",
+    "warzelniaHex": "12,15"
+  },
+  "spawnedAiCity": "city1",
+  "scenarioAi": {
+    "cityId": "city1",
+    "warzelniaHex": "4,22"
+  },
+  "turnsLog": [
+    {
+      "before": 1,
+      "after": 2
+    },
+    {
+      "before": 2,
+      "after": 3
+    },
+    {
+      "before": 3,
+      "after": 4
+    }
+  ],
+  "snapshot": {
+    "turn": 4,
+    "stockMe": {
+      "sol": 265,
+      "ceramika": 317
+    },
+    "tickMeSol": {
+      "warzelnia|12,15": {
+        "kind": "warzelnia",
+        "label": "Warzelnia (Rzym)",
+        "amount": 75
+      }
+    },
+    "tickMeCer": {
+      "konwersja|city0|garncarnia": {
+        "kind": "konwersja",
+        "label": "Garncarnia (Rzym)",
+        "amount": 50
+      },
+      "spichlerz|0": {
+        "kind": "spichlerz",
+        "label": "Spichlerz (zużycie zapasów)",
+        "amount": -10
+      },
+      "obywatele|0": {
+        "kind": "obywatele",
+        "label": "Obywatele",
+        "amount": -1
+      }
+    }
+  },
+  "sizes": {
+    "1280": {
+      "viewport": {
+        "w": 1280,
+        "h": 800
+      },
+      "cards": {
+        "sol": {
+          "found": true,
+          "open": true,
+          "rows": [
+            {
+              "cls": "civ-emp-res-skad-row gain",
+              "text": "+225 Warzelnia (Rzym)",
+              "valueColor": "rgb(143, 214, 148)"
+            }
+          ],
+          "cardWidth": 182,
+          "cardHeight": 349,
+          "cardLeft": 893,
+          "cardTop": 614,
+          "nameText": "Sól"
+        },
+        "ceramika": {
+          "found": true,
+          "open": true,
+          "rows": [
+            {
+              "cls": "civ-emp-res-skad-row gain",
+              "text": "+150 Garncarnia (Rzym)",
+              "valueColor": "rgb(143, 214, 148)"
+            },
+            {
+              "cls": "civ-emp-res-skad-row loss",
+              "text": "−30 Spichlerz (zużycie zapasów)",
+              "valueColor": "rgb(224, 122, 122)"
+            },
+            {
+              "cls": "civ-emp-res-skad-row loss",
+              "text": "−3 Obywatele",
+              "valueColor": "rgb(224, 122, 122)"
+            }
+          ],
+          "cardWidth": 182,
+          "cardHeight": 349,
+          "cardLeft": 1083,
+          "cardTop": 451,
+          "nameText": "Ceramika"
+        }
+      },
+      "panelBody": {
+        "w": 403,
+        "h": 735
+      }
+    },
+    "1920": {
+      "viewport": {
+        "w": 1920,
+        "h": 1080
+      },
+      "cards": {
+        "sol": {
+          "found": true,
+          "open": true,
+          "rows": [
+            {
+              "cls": "civ-emp-res-skad-row gain",
+              "text": "+225 Warzelnia (Rzym)",
+              "valueColor": "rgb(143, 214, 148)"
+            }
+          ],
+          "cardWidth": 182,
+          "cardHeight": 349,
+          "cardLeft": 1533,
+          "cardTop": 451,
+          "nameText": "Sól"
+        },
+        "ceramika": {
+          "found": true,
+          "open": true,
+          "rows": [
+            {
+              "cls": "civ-emp-res-skad-row gain",
+              "text": "+150 Garncarnia (Rzym)",
+              "valueColor": "rgb(143, 214, 148)"
+            },
+            {
+              "cls": "civ-emp-res-skad-row loss",
+              "text": "−30 Spichlerz (zużycie zapasów)",
+              "valueColor": "rgb(224, 122, 122)"
+            },
+            {
+              "cls": "civ-emp-res-skad-row loss",
+              "text": "−3 Obywatele",
+              "valueColor": "rgb(224, 122, 122)"
+            }
+          ],
+          "cardWidth": 182,
+          "cardHeight": 349,
+          "cardLeft": 1723,
+          "cardTop": 451,
+          "nameText": "Ceramika"
+        }
+      },
+      "panelBody": {
+        "w": 403,
+        "h": 1015
+      }
+    }
+  }
+}

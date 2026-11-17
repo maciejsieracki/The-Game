@@ -144,8 +144,24 @@ if (warCur && dipCur) {
       check('a1: ' + rel + ' — wersja bazowa ' + BASE + ' dostępna przez git show', false, String(e && e.message));
       continue;
     }
-    check('a1: ' + rel + ' — wartości bez prefiksu _ równe wersji bazowej ' + BASE,
-      sameJson(stripUnderscore(cur), stripUnderscore(base)));
+    // R-WEB-DIPLO-TRUST-WAR-N6-CLEANUP-Q1: martwe pole p6.kryzysTurDoWojny usunięte celowo (N z profilu wojny).
+    // Jedyny dozwolony ubytek wobec wersji bazowej; reszta wartości musi być identyczna.
+    if (rel === DIP_JSON && base && base.p6 && 'kryzysTurDoWojny' in base.p6) delete base.p6.kryzysTurDoWojny;
+    // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (ABC 2026-11-14): rabat ceny pokoju (rabatCenyPokojuMax, _rabat) USUNIĘTY
+    // celowo — zmęczenie wojną jest pozycją PW (wearinessPeaceItemPw). Jedyny dozwolony ubytek w war-weariness-params.json.
+    if (rel === WAR_JSON && base && base.czlowiek && 'rabatCenyPokojuMax' in base.czlowiek) {
+      delete base.czlowiek.rabatCenyPokojuMax;
+    }
+    // DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1 (ABC właściciela 2026-11-16): celowe zmiany wobec bazy —
+    // pełne zmęczenie po 40 turach (było 20) i nowy próg pokoju wymuszonego progWymuszonyPokoj=1,0. Reszta bez zmian.
+    let curCmp = cur;
+    if (rel === WAR_JSON && base && base.zmeczenie) {
+      base.zmeczenie.pelneTur = 40;
+      curCmp = JSON.parse(JSON.stringify(cur));
+      if (curCmp.zmeczenie) delete curCmp.zmeczenie.progWymuszonyPokoj;
+    }
+    check('a1: ' + rel + ' — wartości bez prefiksu _ równe wersji bazowej ' + BASE + ' (+ celowe: pelneTur 40, progWymuszonyPokoj)',
+      sameJson(stripUnderscore(curCmp), stripUnderscore(base)));
   }
 }
 
@@ -182,8 +198,11 @@ const brakeSrc = readRepoText('gra/src/game/diplomacy-tick-war-brake.ts');
 const mainSrc = readRepoText('gra/src/main.ts');
 const srcDir = path.join(REPO, 'gra', 'src');
 
-check('c1: progKoncaZmeczenia czytane przez wearinessUnconditionalEndDue (war-weariness.ts)',
-  wwSrc.includes('return level >= P.zmeczenie.progKoncaZmeczenia;'));
+// R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: jedna funkcja konca zmeczenia — progKoncaZmeczenia czyta wearinessPeaceX,
+// a wearinessUnconditionalEndDue = wearinessPeaceX(...) >= 1 (dawna forma `level >= P.zmeczenie.progKoncaZmeczenia` nieaktualna).
+check('c1: progKoncaZmeczenia czytane przez wearinessPeaceX (skala PW); pokój wymuszony = wearinessForcedPeaceDue (progWymuszonyPokoj, war-weariness.ts)',
+  wwSrc.includes('P.zmeczenie.progKoncaZmeczenia') && wwSrc.includes('return level >= P.zmeczenie.progWymuszonyPokoj;')
+  && !wwSrc.includes('wearinessUnconditionalEndDue'));
 check('c2: progWzajemnyPokoj czytane w warunku wyjścia awaryjnego (war-weariness.ts)',
   wwSrc.includes('lvl >= P.zmeczenie.progWzajemnyPokoj'));
 check('c3: wyjście awaryjne wymaga odrzuceniaDoKapitulacji (war-weariness.ts)',
@@ -209,8 +228,9 @@ let flagaRead = false;
 check('c8: pole flagaDomyslna nie jest czytane przez kod gra/src', !flagaRead);
 
 if (dipCur) {
-  check('c9: diplomacy-tick-params.json ma _uwagaFlagaDomyslna i p6._uwagaKryzysTurDoWojny',
-    typeof dipCur._uwagaFlagaDomyslna === 'string' && typeof dipCur.p6._uwagaKryzysTurDoWojny === 'string');
+  // R-WEB-DIPLO-TRUST-WAR-N6-CLEANUP-Q1: pole p6.kryzysTurDoWojny i jego _uwaga usunięte z JSON (N z profilu wojny).
+  check('c9: diplomacy-tick-params.json ma _uwagaFlagaDomyslna, a p6 nie ma kryzysTurDoWojny ani _uwagaKryzysTurDoWojny',
+    typeof dipCur._uwagaFlagaDomyslna === 'string' && !('kryzysTurDoWojny' in dipCur.p6) && !('_uwagaKryzysTurDoWojny' in dipCur.p6));
 }
 
 // c10: zakres N hamulca wojny z civ-matrix.json (ten sam wzór co diplomacy-war-peace-profile.ts:188) i N=6 dla profilu bez wiersza
@@ -225,11 +245,12 @@ if (dipCur) {
     .map(clampN);
   const nMin = Math.min(...ns);
   const nMax = Math.max(...ns);
-  const noteKryzys = dipCur.p6._uwagaKryzysTurDoWojny;
-  check('c10: N profilu bez wiersza macierzy = 6 (wzór z diplomacy-war-peace-profile.ts:143) i opis go podaje',
-    clampN(5) === 6 && noteKryzys.includes('= 6'));
-  check('c10: opis _uwagaKryzysTurDoWojny podaje zakres N z civ-matrix.json (' + nMin + '-' + nMax + ')',
-    ns.length > 0 && noteKryzys.includes(nMin + '-' + nMax));
+  // Zakres N z profilu zapisany w Civpedii (docs/encyklopedia/pojecia/wypowiedzenie-wojny.md), nie w JSON.
+  const civWojna = readRepoText('docs/encyklopedia/pojecia/wypowiedzenie-wojny.md');
+  check('c10: N profilu bez wiersza macierzy = 6 (wzór z diplomacy-war-peace-profile.ts:143)',
+    clampN(5) === 6);
+  check('c10: Civpedia podaje zakres N od ' + brakeP.minN + ' do ' + brakeP.maxN + ' tur (granice hamulecRelacji)',
+    ns.length > 0 && civWojna.includes('od ' + brakeP.minN + ' do ' + brakeP.maxN + ' tur'));
 }
 
 console.log('');

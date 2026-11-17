@@ -1,0 +1,21 @@
+[econ] seed=4242 tura=6 gateAktywna=1 dosypki=1 czas=4s
+[econ] seed=4242 tura=11 gateAktywna=1 dosypki=1 czas=7s
+[econ] seed=4242 tura=16 gateAktywna=1 dosypki=1 czas=12s
+[econ] seed=4242 tura=21 gateAktywna=1 dosypki=1 czas=16s
+[econ] seed=4242 tura=26 gateAktywna=1 dosypki=1 czas=21s
+[econ] seed=4242 tura=31 gateAktywna=1 dosypki=1 czas=25s
+[econ] seed=4242 tura=36 gateAktywna=1 dosypki=1 czas=28s
+[econ] seed=4242 tura=41 gateAktywna=1 dosypki=1 czas=32s
+[econ] seed=4242 tura=46 gateAktywna=1 dosypki=1 czas=37s
+[econ] seed=4242 tura=6 gateAktywna=1 dosypki=1 czas=2s
+[econ] seed=4242 tura=11 gateAktywna=1 dosypki=1 czas=5s
+[econ] seed=4242 tura=16 gateAktywna=1 dosypki=1 czas=7s
+[econ] seed=4242 tura=21 gateAktywna=1 dosypki=1 czas=9s
+[econ] seed=4242 tura=26 gateAktywna=1 dosypki=1 czas=11s
+[econ] seed=4242 tura=31 gateAktywna=1 dosypki=1 czas=13s
+[econ] seed=4242 tura=36 gateAktywna=1 dosypki=1 czas=15s
+[econ] WZNOWIENIE {"saveAt":40,"turns":50,"compared":10,"allEqual":false,"mutant":false}
+
+real	1m15.764s
+user	0m4.296s
+sys	0m1.450s

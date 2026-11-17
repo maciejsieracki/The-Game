@@ -39,10 +39,12 @@ function extractBattleMovementMethod(civMovementMultiplier) {
   visit(source);
   assert(method?.body, 'actual BattleScene._movementPointsFor method body is present for bounded execution');
   const body = method.body.getText(source);
-  return new Function('movementPoints', 'civMovementMultiplier', 'civUnitShapeForBattleUnit', `return function(bu) ${body}`)(
+  // battleUnitCivBonusy (src/battle/battle-unit-context.ts): `unit.civBonusy ?? sideFallback` -- jednostki testowe nie niosa civBonusy, wiec to wybor strony.
+  return new Function('movementPoints', 'civMovementMultiplier', 'civUnitShapeForBattleUnit', 'battleUnitCivBonusy', `return function(bu) ${body}`)(
     bu => bu.baseMovement,
     civMovementMultiplier,
     bu => ({ typNazwa: bu.type, rola: bu.role }),
+    (unit, sideFallback) => unit.civBonusy ?? sideFallback,
   );
 }
 

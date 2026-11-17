@@ -416,7 +416,7 @@ export function trimResourcePaymentTradeForZeroBalance(
     const idx0 = resSide0 === 'give' ? resGiveIdx0 : resRecvIdx0;
     const arr0 = resSide0 === 'give' ? giveItems : receiveItems;
     const item0 = arr0[idx0]!;
-    const krok0 = diplomacyHandelSurowiecKrok(item0.id);
+    const krok0 = diplomacyHandelSurowiecKrok(item0.id, pnOpts?.tradeEra);
     const floored0 = Math.floor((item0.ilosc ?? 0) / krok0) * krok0;
     if (floored0 < krok0) {
       // Nawet 1 blok (krok) się nie mieści w podanej ilości — nie ma czego wyrównywać,
@@ -455,7 +455,7 @@ export function trimResourcePaymentTradeForZeroBalance(
   // faktycznym transferze i tak floruje do zera — pozycja zostawała w koszyku z pozorną
   // (nie realną) ilością zamiast zostać wycofana. Szukanie w krokach eliminuje tę lukę
   // u źródła: każdy `mid` jest już z definicji wielokrotnością kroku.
-  const krok = diplomacyHandelSurowiecKrok(resItem.id);
+  const krok = diplomacyHandelSurowiecKrok(resItem.id, pnOpts?.tradeEra);
   const hiSteps = Math.floor(currentPkts / krok);
 
   let lo = 1;
@@ -590,10 +590,12 @@ export function peaceOfferAiRequestPn(
 export function peaceOfferAiRequestBasket(
   neededPn: number,
   theirQuantityResourceOptions: readonly { id: string; label: string; maxQty: number }[],
+  /** R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: jawna epoka umowy; brak = globalna epoka handlu. */
+  tradeEra?: number,
 ): BasketItem[] {
   if (neededPn <= 0) return [];
   const priced = theirQuantityResourceOptions
-    .map(o => ({ ...o, pnPerBlok: diplomacyHandelSurowiecCenaZaBlok(o.id) ?? 0, krok: diplomacyHandelSurowiecKrok(o.id) }))
+    .map(o => ({ ...o, pnPerBlok: diplomacyHandelSurowiecCenaZaBlok(o.id, tradeEra) ?? 0, krok: diplomacyHandelSurowiecKrok(o.id, tradeEra) }))
     .filter(o => o.pnPerBlok > 0 && o.krok > 0 && o.maxQty >= o.krok)
     .sort((a, b) => a.pnPerBlok - b.pnPerBlok);
   if (priced.length > 0) {
@@ -644,6 +646,8 @@ export function trimQuickDealGiveToTolerance(
   receivePn: number,
   relTotal: number,
   difficulty: GameDifficulty = 'normal',
+  /** R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: jawna epoka umowy; brak = globalna epoka handlu. */
+  tradeEra?: number,
 ): BasketItem[] {
   if (!aiOfferTargetsZeroBalance(difficulty) || receivePn <= 0 || !giveItems.length) {
     return giveItems;
@@ -657,7 +661,7 @@ export function trimQuickDealGiveToTolerance(
     if (item.typ === 'zloto') giveSum += diplomacyPnZloto(item.ilosc ?? 0);
     else if (item.typ === 'praca') giveSum += diplomacyPnPraca(item.ilosc ?? 0);
     else if (item.typ === 'surowiec_ilosc') {
-      giveSum += diplomacyPnSurowiecIlosc(item.id, item.ilosc ?? 1) ?? 0;
+      giveSum += diplomacyPnSurowiecIlosc(item.id, item.ilosc ?? 1, tradeEra) ?? 0;
     }
   }
   if (giveSum <= capPn) return giveItems;

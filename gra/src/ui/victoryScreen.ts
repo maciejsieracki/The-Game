@@ -19,11 +19,29 @@ export interface VictoryScreenStats {
   eraLabel?: string;
   /** Nazwa cywilizacji gracza. */
   civLabel?: string;
+  /** Liczba zbadanych technologii gracza (przegrana: sekcja osiągnięć). Opcjonalne. */
+  technologieZbadane?: number;
+  /** LOSS-COUNTERS: miasta utracone przez gracza w całej grze (przegrana: sekcja strat). Opcjonalne. */
+  utraconeMiasta?: number;
+  /** LOSS-COUNTERS: jednostki wojskowe gracza, które poległy w bitwach (przegrana: sekcja strat). Opcjonalne. */
+  utraconeJednostki?: number;
 }
 
 export interface VictoryScreenData {
   rodzaj: VictoryRodzaj;
   stats: VictoryScreenStats;
+}
+
+export interface VictoryScreenStatCard {
+  value: string;
+  label: string;
+  accent?: boolean;
+}
+
+/** Podsumowanie porażki: co gracz osiągnął i co stracił (testowalne bez DOM). */
+export interface DefeatSummary {
+  osiagniecia: VictoryScreenStatCard[];
+  straty: VictoryScreenStatCard[];
 }
 
 const OVERLAY_ID = '__victory_screen__';
@@ -174,6 +192,32 @@ function ensureStyles(): void {
     '.vsc-footer{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);',
     'font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#5a564c;pointer-events:none;}',
     '.vsc-overlay.lose .vsc-footer{color:#5a4a4a;}',
+    '.vsc-overlay.lose{overflow-y:auto;}',
+    '.vsc-overlay.lose .vsc-stage{position:relative;top:auto;height:auto;min-height:100%;box-sizing:border-box;padding-bottom:5rem;}',
+    '.vsc-summary{width:100%;}',
+    '.vsc-group{width:100%;}',
+    '.vsc-section-title{margin:34px 0 0;font-size:13px;font-weight:400;letter-spacing:.3em;text-transform:uppercase;color:#8a7070;}',
+    '.vsc-overlay.lose .vsc-group:first-child .vsc-cards{margin-top:14px;}',
+    // R-WEB-DEFEAT-SCREEN-SUMMARY-LOAD-OR-NEW-Q1 (obrona r1, zarzut 1): ekran porażki ma się
+    // mieścić w oknie 1280x720 bez przewijania, żeby oba przyciski były widoczne od razu.
+    '.vsc-overlay.lose .vsc-emblem-svg{width:48px;height:48px;}',
+    '.vsc-overlay.lose .vsc-emblem{margin-bottom:4px;}',
+    '.vsc-overlay.lose .vsc-kind{margin-bottom:6px;font-size:12px;}',
+    '.vsc-overlay.lose .vsc-headline{font-size:clamp(2rem,5vw,3.4rem);}',
+    '.vsc-overlay.lose .vsc-divider{margin:12px 0 4px;}',
+    '.vsc-overlay.lose .vsc-flavor{font-size:1.05rem;}',
+    '.vsc-overlay.lose .vsc-section-title{margin-top:16px;}',
+    '.vsc-overlay.lose .vsc-cards{margin-top:8px;gap:12px;}',
+    '.vsc-overlay.lose .vsc-card{flex:0 1 180px;min-width:150px;padding:12px 14px;}',
+    '.vsc-overlay.lose .vsc-card-val{font-size:1.5rem;}',
+    '.vsc-overlay.lose .vsc-actions{margin-top:24px;}',
+    '.vsc-overlay.lose .vsc-btn-primary,.vsc-overlay.lose .vsc-btn-secondary{height:52px;}',
+    '.vsc-overlay.lose .vsc-footer{bottom:12px;}',
+    '.vsc-btn-secondary{display:inline-flex;align-items:center;justify-content:center;height:60px;padding:0 36px;',
+    'border-radius:8px;cursor:pointer;font-family:var(--civ-font-ui,"Segoe UI",Tahoma,sans-serif);',
+    'font-size:16px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;',
+    'border:1px solid rgba(200,64,64,.55);color:#e8c8c8;background:rgba(40,20,20,.85);}',
+    '.vsc-btn-secondary:hover{filter:brightness(1.15);}',
   ].join('');
   document.head.appendChild(s);
 }
@@ -227,28 +271,36 @@ function displayDividerMark(win: boolean): string {
   return win ? '&#9670;' : '&#10005;';
 }
 
-interface StatCard {
-  value: string;
-  label: string;
-  accent?: boolean;
+type StatCard = VictoryScreenStatCard;
+
+/** Podsumowanie porażki: osiągnięcia (tury, epoka, technologie, cywilizacja) i straty
+ *  (liczniki: utracone miasta i utracone jednostki wojskowe). Testowalne bez DOM. */
+export function buildDefeatSummary(stats: VictoryScreenStats): DefeatSummary {
+  const osiagniecia: StatCard[] = [
+    { value: String(stats.turn), label: 'Tur przetrwanych' },
+  ];
+  if (stats.eraLabel) {
+    osiagniecia.push({ value: stats.eraLabel, label: 'Ostatnia epoka' });
+  }
+  if (stats.technologieZbadane != null) {
+    osiagniecia.push({ value: String(stats.technologieZbadane), label: 'Zbadane technologie' });
+  }
+  osiagniecia.push({
+    value: stats.civLabel?.trim() || '—',
+    label: 'Cywilizacja',
+    accent: true,
+  });
+  // LOSS-COUNTERS: liczniki strat z gry (brak pola = stary zapis / brak danych -> myślnik, bez zgadywania).
+  const straty: StatCard[] = [
+    { value: stats.utraconeMiasta != null ? String(stats.utraconeMiasta) : '—', label: 'Utracone miasta' },
+    { value: stats.utraconeJednostki != null ? String(stats.utraconeJednostki) : '—', label: 'Utracone jednostki' },
+  ];
+  return { osiagniecia, straty };
 }
 
 function buildStatCards(data: VictoryScreenData): StatCard[] {
   const { rodzaj, stats } = data;
   const cards: StatCard[] = [];
-
-  if (rodzaj === 'przegrana') {
-    cards.push({ value: String(stats.turn), label: 'Tur przetrwanych' });
-    if (stats.eraLabel) {
-      cards.push({ value: stats.eraLabel, label: 'Ostatnia epoka' });
-    }
-    cards.push({
-      value: stats.civLabel?.trim() || '—',
-      label: 'Cywilizacja',
-      accent: true,
-    });
-    return cards;
-  }
 
   cards.push({ value: String(stats.turn), label: 'Tur' });
   if (stats.eraLabel) {
@@ -283,10 +335,42 @@ function renderStatCards(data: VictoryScreenData): string {
 }
 
 function primaryButtonLabel(rodzaj: VictoryRodzaj): string {
-  return rodzaj === 'przegrana' ? 'Spróbuj ponownie' : 'Nowa gra';
+  return rodzaj === 'przegrana' ? 'Rozpocznij od nowa' : 'Nowa gra';
 }
 
-function buildOverlay(data: VictoryScreenData, onNewGame: () => void): HTMLDivElement {
+function renderCardGroup(title: string, cards: StatCard[]): string {
+  const cardsHtml = cards.map((card) => {
+    const cls = 'vsc-card' + (card.accent ? ' vsc-card-accent' : '');
+    return [
+      `<div class="${cls}">`,
+      `<div class="vsc-card-val">${esc(card.value)}</div>`,
+      `<div class="vsc-card-label">${esc(card.label)}</div>`,
+      '</div>',
+    ].join('');
+  }).join('');
+  return [
+    '<section class="vsc-group">',
+    `<h2 class="vsc-section-title">${esc(title)}</h2>`,
+    `<div class="vsc-cards">${cardsHtml}</div>`,
+    '</section>',
+  ].join('');
+}
+
+function renderDefeatBody(stats: VictoryScreenStats): string {
+  const summary = buildDefeatSummary(stats);
+  return [
+    '<div class="vsc-summary">',
+    renderCardGroup('Osiągnięcia', summary.osiagniecia),
+    renderCardGroup('Straty', summary.straty),
+    '</div>',
+  ].join('');
+}
+
+function buildOverlay(
+  data: VictoryScreenData,
+  onNewGame: () => void,
+  onLoadGame?: () => void,
+): HTMLDivElement {
   ensureStyles();
   const win = isVictoryRodzaj(data.rodzaj);
   const el = document.createElement('div');
@@ -312,8 +396,11 @@ function buildOverlay(data: VictoryScreenData, onNewGame: () => void): HTMLDivEl
     '<span class="vsc-divider-line right"></span>',
     '</div>',
     `<p class="vsc-flavor">${esc(displayFlavorLine(data))}</p>`,
-    `<div class="vsc-cards">${renderStatCards(data)}</div>`,
+    win ? `<div class="vsc-cards">${renderStatCards(data)}</div>` : renderDefeatBody(data.stats),
     '<div class="vsc-actions">',
+    (!win && onLoadGame)
+      ? '<button type="button" class="vsc-btn-secondary" id="vsc-load-game">Wczytaj grę</button>'
+      : '',
     `<button type="button" class="vsc-btn-primary" id="vsc-new-game">${esc(primaryButtonLabel(data.rodzaj))}</button>`,
     '</div>',
     '</div>',
@@ -324,14 +411,22 @@ function buildOverlay(data: VictoryScreenData, onNewGame: () => void): HTMLDivEl
     hideVictoryScreen();
     onNewGame();
   });
+  // Wczytanie: ekran znika dopiero po wybraniu zapisu (wywołujący chowa overlay i pokazuje dialog).
+  el.querySelector('#vsc-load-game')?.addEventListener('click', () => {
+    onLoadGame?.();
+  });
 
   return el;
 }
 
-/** Pełnoekranowy ekran końca gry. */
-export function showVictoryScreen(data: VictoryScreenData, onNewGame: () => void): void {
+/** Pełnoekranowy ekran końca gry. Dla przegranej `onLoadGame` dodaje przycisk „Wczytaj grę”. */
+export function showVictoryScreen(
+  data: VictoryScreenData,
+  onNewGame: () => void,
+  onLoadGame?: () => void,
+): void {
   hideVictoryScreen();
-  overlayEl = buildOverlay(data, onNewGame);
+  overlayEl = buildOverlay(data, onNewGame, onLoadGame);
   document.body.appendChild(overlayEl);
 }
 

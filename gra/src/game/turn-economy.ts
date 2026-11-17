@@ -42,6 +42,12 @@ import {
   getPopulationGrowthThresholdMultiplier,
   type GameDifficulty,
 } from './difficulty-cost';
+import {
+  createLedgerTurn,
+  recordLedgerFlow,
+  recordStockDeltaToTurn,
+  type ResourceLedgerTurn,
+} from './resource-ledger';
 import type { Hex } from '../types/hex';
 import type { GameMap } from '../types/map';
 import { Nakladka, TerenBazowy } from '../types/hex';
@@ -340,8 +346,7 @@ export function buildEconParams(data: GameData, difficulty: Difficulty = 'normal
     suwaakHandelNaukaDefault:       num(em, 'suwak_handel_nauka_domyslnie', 60),
     suwaakHandelPieniadz:           num(em, 'suwak_handel_pieniadz_domyslnie', 30),
     suwaakHandelLuksus:             num(em, 'suwak_handel_luksus_domyslnie', 10),
-    suwaakPracaBudynki:             num(em, 'suwak_praca_budynki_domyslnie', 70),
-    suwaakPracaTeren:               num(em, 'suwak_praca_teren_domyslnie', 30),
+    suwaakPracaBudynki:             num(em, 'suwak_praca_budynki_domyslnie', 50),
   };
 }
 
@@ -797,6 +802,11 @@ export function computeTerritoryResourceYieldByCity(
   map: GameMap,
   territoryNodes: readonly TerritoryNode[],
   resolveOwnerEra: OwnerEraResolver = () => 1,
+  /**
+   * R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (runda 5): opcjonalnie sól rozbita PER ULEPSZENIE
+   * (heks Warzelni) per miasto -- tylko do dziennika, bez wpływu na stan gry (ta sama suma co `sol`).
+   */
+  solBreakdownOut?: Map<string, Array<{ hexKey: string; amount: number }>>,
 ): TerritoryResourceYieldByCity {
   const out = new Map<string, Partial<Record<TerritoryResourceKey, number>>>();
   if (!cities.length) return out;
@@ -830,6 +840,11 @@ export function computeTerritoryResourceYieldByCity(
       const rec = out.get(cityId) ?? {};
       rec[yieldRow.resourceKey] = (rec[yieldRow.resourceKey] ?? 0) + yieldRow.amount;
       out.set(cityId, rec);
+      if (solBreakdownOut && yieldRow.resourceKey === 'sol') {
+        const parts = solBreakdownOut.get(cityId) ?? [];
+        parts.push({ hexKey: `${q},${r}`, amount: yieldRow.amount });
+        solBreakdownOut.set(cityId, parts);
+      }
     }
   }
 
@@ -1180,6 +1195,12 @@ export interface EconomyTickResult {
   upkeepByOwner:  Map<number, UpkeepBalance>;
   /** Per-owner building resource upkeep (1/turę per koszt_surowce type). Keyed by ownerId. */
   resourceUpkeepByOwner: Map<number, Record<string, number>>;
+  /**
+   * R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 1): dziennik źródeł zmian magazynu
+   * państwa z tej tury, per owner (mapa z pipeline: teren, konwersja, wejścia, drain Spichlerza).
+   * Tylko zapis -- nie wpływa na stan gry. Pusty dla productionForecastOnly.
+   */
+  resourceLedgerByOwner: Map<number, ResourceLedgerTurn>;
   /**
    * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (Maciej 2026-08-12): rozbicie `resourceUpkeepByOwner`
    * na dwa źródła, TĘ SAMĄ wartość, zanim zostaną scalone `addResourceCosts` — panel Surowców
@@ -1779,7 +1800,21 @@ function runtimeActiveBuiltIdsForCity(
  *
  * HANDOFF main.ts: wołający advanceCityEconomy bez zmian — pipeline wewnątrz ticku.
  */
-function tickEmpireResourcePipeline(
+/** Rekord tury księgi dla ownera (tworzy przy pierwszym zapisie). Brak mapy = null (bez księgi). */
+function ledgerTurnFor(
+  ledgerOut: Map<number, ResourceLedgerTurn> | undefined,
+  ownerId: number,
+): ResourceLedgerTurn | null {
+  if (!ledgerOut) return null;
+  let turn = ledgerOut.get(ownerId);
+  if (!turn) {
+    turn = createLedgerTurn();
+    ledgerOut.set(ownerId, turn);
+  }
+  return turn;
+}
+
+export function tickEmpireResourcePipeline(
   cities: City[],
   builtByCity: ReadonlyMap<string, readonly string[]>,
   territoryResourceByCity: TerritoryResourceYieldByCity,
@@ -1811,8 +1846,18 @@ function tickEmpireResourcePipeline(
   stopAfterProduction?: boolean,
   /** R-WEB-UI-RESOURCE-BUILDING-UTILIZATION-PERCENT-Q1: cityId -> buildingId -> wykorzystanie mocy konwertera w tym ticku. */
   utilizationOut?: Map<string, Record<string, ConverterBuildingUtilization>>,
+  /**
+   * R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1: dziennik źródeł (tylko zapis, bez wpływu na stan).
+   * Suma przepływów per surowiec = zmiana magazynu państwa tej tury (test: resource-ledger-test.cjs).
+   */
+  ledgerOut?: Map<number, ResourceLedgerTurn>,
+  /** Etykieta budynku po polsku do dziennika (fallback: identyfikator). */
+  buildingLabelOf?: (buildingId: string) => string,
+  /** R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (runda 5): sól per Warzelnia (heks) per miasto -- tylko dziennik. */
+  solBreakdownByCity?: Map<string, Array<{ hexKey: string; amount: number }>>,
 ): Map<string, SpichlerzCityBonusState> {
   const ownerIds = new Set(cities.map(c => c.ownerId));
+  const labelOf = (id: string): string => buildingLabelOf?.(id) ?? id;
 
   // Faza 1 (R2): wpływ z mapy do magazynu państwa — przed konwerterami.
   for (const city of cities) {
@@ -1822,10 +1867,54 @@ function tickEmpireResourcePipeline(
     const cap = ownerResourceCapFor(ownerId);
     const stolarniaCount = stolarniaCountByOwner.get(ownerId) ?? 0;
     const kamienMult = 1 + kamieniarskiBonusKamieniaCiv * (kamieniarskiCountByOwner.get(ownerId) ?? 0);
+    const ledgerTurn = ledgerTurnFor(ledgerOut, ownerId);
+    const recordTerrain = (resourceKey: string, got: number): void => {
+      if (ledgerTurn) {
+        // Sól pochodzi WYŁĄCZNIE z Warzelni soli (territoryResourceYieldForImprovement) —
+        // osobne źródło „Warzelnia (<miasto>)” zamiast ogólnego „Teren i plony z mapy”.
+        if (resourceKey === 'sol') {
+          // Rozbicie PER BUDYNEK (heks Warzelni): `got` (po capie) przydzielane kolejno do
+          // ulepszeń miasta; suma = got, więc księga nadal zgodna z magazynem.
+          const parts = solBreakdownByCity?.get(city.id) ?? [];
+          let remaining = got;
+          for (let i = 0; i < parts.length && remaining > 0; i++) {
+            const part = parts[i];
+            if (!part) break;
+            const take = i === parts.length - 1 ? remaining : Math.min(part.amount, remaining);
+            recordLedgerFlow(
+              ledgerTurn,
+              resourceKey,
+              `warzelnia|${part.hexKey}`,
+              { kind: 'warzelnia', label: `Warzelnia (${city.name})` },
+              take,
+            );
+            remaining -= take;
+          }
+          if (remaining > 0) {
+            recordLedgerFlow(
+              ledgerTurn,
+              resourceKey,
+              `warzelnia|${city.id}`,
+              { kind: 'warzelnia', label: `Warzelnia (${city.name})` },
+              remaining,
+            );
+          }
+          return;
+        }
+        recordLedgerFlow(
+          ledgerTurn,
+          resourceKey,
+          `teren|${city.id}`,
+          { kind: 'teren', label: `Teren i plony z mapy (${city.name})` },
+          got,
+        );
+      }
+    };
 
     const creditTerritory = (key: TerritoryResourceKey, raw: number | undefined, mult = 1): void => {
       if (raw == null || !(raw > 0)) return;
       const got = creditOwnerResourceStock(cities, ownerId, key, Math.floor(raw * mult), cap);
+      recordTerrain(key, got);
       if (inflowOut && key === 'kamien') {
         const acc = inflowOut.get(ownerId) ?? {};
         acc.kamien = (acc.kamien ?? 0) + got;
@@ -1842,6 +1931,20 @@ function tickEmpireResourcePipeline(
     );
     if (drewnoCredit > 0) {
       const got = creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit, cap);
+      // Część ponad bazę mapy = bonus Stolarni (dziennik: osobne źródło). Przy ucięciu capem
+      // bonus liczony jest pierwszy; reszta to plon terenu. Suma nadal = got (księga zgodna).
+      const stolarniaBonusPart = Math.max(0, drewnoCredit - drewnoMapBase);
+      const stolarniaGot = Math.min(got, stolarniaBonusPart);
+      recordTerrain('drewno', got - stolarniaGot);
+      if (stolarniaGot > 0 && ledgerTurn) {
+        recordLedgerFlow(
+          ledgerTurn,
+          'drewno',
+          `stolarnia|${city.id}`,
+          { kind: 'stolarnia', label: `Stolarnia (${city.name})` },
+          stolarniaGot,
+        );
+      }
       if (inflowOut) {
         const acc = inflowOut.get(ownerId) ?? {};
         acc.drewno = (acc.drewno ?? 0) + got;
@@ -1917,6 +2020,31 @@ function tickEmpireResourcePipeline(
         }
         producedOut.set(ownerId, acc);
       }
+      // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1: wyjście (+) i wejście (−) każdej receptury.
+      const ledgerTurn = ledgerTurnFor(ledgerOut, ownerId);
+      if (ledgerTurn) {
+        for (const recipe of activeRecipes) {
+          const r = convResult.perBuilding[recipe.id];
+          if (!r) continue;
+          const bName = `${labelOf(converterBuildingIdForRecipe(recipe))} (${city.name})`;
+          recordLedgerFlow(
+            ledgerTurn,
+            recipe.output,
+            `konwersja|${city.id}|${recipe.id}`,
+            { kind: 'konwersja', label: bName },
+            r.produced,
+          );
+          for (const inKey of Object.keys(r.consumed)) {
+            recordLedgerFlow(
+              ledgerTurn,
+              inKey,
+              `wejscie|${city.id}|${recipe.id}`,
+              { kind: 'wejscie', label: `${bName} — zużyte wejście` },
+              -(r.consumed[inKey] ?? 0),
+            );
+          }
+        }
+      }
     }
     if (producedOut && !producedOut.has(ownerId)) producedOut.set(ownerId, {});
 
@@ -1929,6 +2057,11 @@ function tickEmpireResourcePipeline(
   const spichlerzByCity = new Map<string, SpichlerzCityBonusState>();
   _spichlerzSolArmyByOwner.clear();
   _spichlerzSolCityIdsByOwner.clear();
+  // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1: migawka puli przed drainem (zapis do księgi tylko).
+  const drainSnapshot = new Map<number, Record<string, number>>();
+  if (ledgerOut) {
+    for (const ownerId of ownerIds) drainSnapshot.set(ownerId, { ...ownerResourceStockAll(cities, ownerId) });
+  }
   for (const city of cities) {
     const builtIds = builtByCity.get(city.id) ?? [];
     const drain = paySpichlerzDrainForCity(cities, city.ownerId, builtIds, false, spichlerzDrainParams);
@@ -1939,6 +2072,25 @@ function tickEmpireResourcePipeline(
       const prev = new Set(_spichlerzSolCityIdsByOwner.get(city.ownerId) ?? []);
       prev.add(city.id);
       _spichlerzSolCityIdsByOwner.set(city.ownerId, prev);
+    }
+  }
+  if (ledgerOut) {
+    for (const ownerId of ownerIds) {
+      const before = drainSnapshot.get(ownerId) ?? {};
+      const after = ownerResourceStockAll(cities, ownerId);
+      const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
+      const ledgerTurn = ledgerTurnFor(ledgerOut, ownerId);
+      if (!ledgerTurn) continue;
+      for (const key of keys) {
+        const delta = (after[key] ?? 0) - (before[key] ?? 0);
+        recordLedgerFlow(
+          ledgerTurn,
+          key,
+          `spichlerz|${ownerId}`,
+          { kind: 'spichlerz', label: 'Spichlerz (zużycie zapasów)' },
+          delta,
+        );
+      }
     }
   }
   return spichlerzByCity;
@@ -2509,11 +2661,13 @@ export function advanceCityEconomy(
 
   // SUROW-TERYT-01 (Maciej 2026-07-23): surowce logistyczne per ulepszenie w
   // terytorium, niezaleznie od workedTiles -- liczone RAZ dla calej tury (nie per-city).
+  const solBreakdownByCity = new Map<string, Array<{ hexKey: string; amount: number }>>();
   const territoryResourceByCity = computeTerritoryResourceYieldByCity(
     cities,
     map,
     territoryNodes,
     resolveOwnerEra ?? ((ownerId: number) => legacyEraForOwner(ownerId, playerEra)),
+    solBreakdownByCity,
   );
 
   // R-KOSZTY-EPOKOWE-ULEPSZENIA-Q1: upkeep Pracy civ-wide za trwałe ulepszenia terenu
@@ -2696,6 +2850,7 @@ export function advanceCityEconomy(
     converterProducedByOwner,
     rawInflowByOwner,
     resourceUpkeepUnitsByOwner: new Map(),
+    resourceLedgerByOwner: new Map(),
     pracaUpkeepByOwner,
   };
 
@@ -2711,6 +2866,11 @@ export function advanceCityEconomy(
   const spichlerzDrainParams = loadSpichlerzDrainParams(
     data.econParams as unknown as RawConverterParamsJson,
     difficulty,
+  );
+  // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1: księga tylko poza prognozą (prognoza wyrzuca wynik).
+  const ledgerEnabled = options?.productionForecastOnly !== true;
+  const buildingNameById = new Map<string, string>(
+    (data.buildings ?? []).map(b => [b.id, String(b.nazwa ?? b.id)] as const),
   );
   const spichlerzByCity = tickEmpireResourcePipeline(
     cities,
@@ -2730,6 +2890,9 @@ export function advanceCityEconomy(
     rawInflowByOwner,
     options?.productionForecastOnly === true,
     options?.utilizationOut,
+    ledgerEnabled ? result.resourceLedgerByOwner : undefined,
+    (id: string) => buildingNameById.get(id) ?? id,
+    solBreakdownByCity,
   );
   if (options?.productionForecastOnly === true) return result;
 
@@ -3066,6 +3229,12 @@ export function advanceCityEconomy(
     result.totalPracaPula  += doPuli;
   }
 
+  // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 3a): migawki magazynu państwa wokół
+  // Mennicy i ścięcia capu -- tylko do zapisu w dzienniku (różnica po − przed), bez wpływu na stan.
+  const ledgerBeforeMennica = ledgerEnabled
+    ? new Map([...new Set(cities.map(c => c.ownerId))].map(oid => [oid, { ...ownerResourceStockAll(cities, oid) }]))
+    : undefined;
+
   // PYTANIE-84-U-13: drain Mennicy po plonach (łaska = efekt bez pobrania Złota).
   applyMennicaZlotoDrainForOwners(
     cities,
@@ -3074,9 +3243,34 @@ export function advanceCityEconomy(
     playerZbadane,
     resolveOwnerZlotoAccess,
   );
+  if (ledgerBeforeMennica) {
+    for (const [oid, before] of ledgerBeforeMennica) {
+      recordStockDeltaToTurn(
+        ledgerTurnFor(result.resourceLedgerByOwner, oid),
+        before,
+        ownerResourceStockAll(cities, oid),
+        `mennica|${oid}`,
+        { kind: 'mennica', label: 'Mennica (złoto)' },
+      );
+    }
+  }
 
   // SUROW-CIV-01: klamruj sumę city.surowce po pipeline (teren + konwertery + drain Spichlerza).
+  const ledgerBeforeCap = ledgerEnabled
+    ? new Map([...new Set(cities.map(c => c.ownerId))].map(oid => [oid, { ...ownerResourceStockAll(cities, oid) }]))
+    : undefined;
   reconcileOwnerResourceCaps(cities, ownerResourceCapFor);
+  if (ledgerBeforeCap) {
+    for (const [oid, before] of ledgerBeforeCap) {
+      recordStockDeltaToTurn(
+        ledgerTurnFor(result.resourceLedgerByOwner, oid),
+        before,
+        ownerResourceStockAll(cities, oid),
+        `limit-magazynu|${oid}`,
+        { kind: 'limit_magazynu', label: 'Ścięcie nadwyżki ponad limit magazynu' },
+      );
+    }
+  }
 
   // --- Compute upkeep balance per owner (s.6.4 / s.8.4) ---
   // Collect all unique owner IDs across cities + units.

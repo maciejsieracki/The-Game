@@ -1,0 +1,24 @@
+[econ] seed=777 tura=6 gateAktywna=1 dosypki=1 czas=4s
+[econ] seed=777 tura=11 gateAktywna=1 dosypki=1 czas=8s
+[econ] seed=777 tura=16 gateAktywna=1 dosypki=1 czas=13s
+[econ] seed=777 tura=21 gateAktywna=1 dosypki=1 czas=16s
+[econ] seed=777 tura=26 gateAktywna=1 dosypki=1 czas=19s
+[econ] seed=777 tura=31 gateAktywna=1 dosypki=1 czas=23s
+[econ] seed=777 tura=36 gateAktywna=1 dosypki=1 czas=26s
+[econ] seed=777 tura=41 gateAktywna=1 dosypki=1 czas=30s
+[econ] seed=777 tura=46 gateAktywna=1 dosypki=1 czas=34s
+[econ] seed=777 tura=51 gateAktywna=1 dosypki=1 czas=39s
+[econ] seed=777 tura=56 gateAktywna=1 dosypki=1 czas=44s
+[econ] seed=777 tura=61 gateAktywna=1 dosypki=1 czas=47s
+[econ] seed=777 tura=66 gateAktywna=1 dosypki=1 czas=50s
+[econ] seed=777 tura=71 gateAktywna=1 dosypki=1 czas=54s
+[econ] seed=777 tura=76 gateAktywna=1 dosypki=1 czas=57s
+[econ] seed=777 tura=81 gateAktywna=1 dosypki=1 czas=59s
+[econ] seed=777 tura=86 gateAktywna=1 dosypki=1 czas=62s
+[econ] seed=777 tura=91 gateAktywna=1 dosypki=1 czas=66s
+[econ] seed=777 tura=96 gateAktywna=1 dosypki=1 czas=70s
+[econ] PODSUMOWANIE {"seed":777,"startTurn":1,"endTurn":100,"stop":null,"gateActiveTurns":1,"bypassApplied":1,"wallSec":73,"resumed":false}
+
+real	1m18.843s
+user	0m3.129s
+sys	0m0.719s

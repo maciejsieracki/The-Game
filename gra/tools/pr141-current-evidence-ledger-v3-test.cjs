@@ -1,4 +1,8 @@
 'use strict';
+// WYCOFANY: dowód historyczny (R-WEB-TEST-DEBT-BASELINE-Q4, decyzja właściciela 2026-11-16, wariant: wczesne wyjście z kodem 0).
+// Powód: asercja „current per-cell status differs from semantic API prod_szybkosc_jednostki_proc/grecy” -- ledger v3 nieaktualny; dane NIE są regenerowane.
+console.log('WYCOFANY: dowód historyczny -- pr141-current-evidence-ledger-v3-test');
+process.exit(0);
 
 const fs = require('node:fs');
 const path = require('node:path');

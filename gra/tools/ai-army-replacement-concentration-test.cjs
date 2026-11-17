@@ -222,8 +222,10 @@ function scenarioReplacementAfterLoss(B) {
     B.resetReplacementRallyState();
     const solo = [mk(nearT.q, nearT.r)];
     const st = play(B, solo, 20);
-    ok(st.launchedTurn !== null && st.launchedTurn <= B.WAR_REPLACEMENT_RALLY_MAX_WAIT_TURNS + 2,
-      `S3: jedyna jednostka w miescie zbiorki czeka najwyzej ${B.WAR_REPLACEMENT_RALLY_MAX_WAIT_TURNS} tur i rusza (t=${st.launchedTurn})`);
+    // R-WEB-AI-WAR-CITY-GARRISON-ONE-REST-TO-GENERAL-Q1: jedyna jednostka w swoim mieście jest garnizonem
+    // wojny -- miasto nie zostaje puste, więc NIE rusza (zamierzona zmiana; dawniej rusza po max czekaniu).
+    ok(st.launchedTurn === null,
+      `S3: jedyna jednostka w miescie zbiorki jest garnizonem wojny i nie rusza (t=${st.launchedTurn})`);
     B.resetReplacementRallyState();
     const pair = [mk(nearT.q, nearT.r), mk(nearT.q, nearT.r)];
     const st2 = play(B, pair, 20);

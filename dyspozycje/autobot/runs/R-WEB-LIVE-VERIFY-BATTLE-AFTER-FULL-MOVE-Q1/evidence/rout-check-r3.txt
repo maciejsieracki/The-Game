@@ -1,0 +1,18 @@
+PASS wrecz 12v12 seed=1 | A k/f/s=0/12/0 D k/f/s=0/0/12 | fledAtEdge=12 fledNotEdge=0 atkOnRouted=4 killedRouted=0 collapseRnd=10
+PASS wrecz 12v12 seed=2 | A k/f/s=0/12/0 D k/f/s=1/1/10 | fledAtEdge=13 fledNotEdge=0 atkOnRouted=9 killedRouted=0 collapseRnd=10
+PASS wrecz 12v12 seed=3 | A k/f/s=0/12/0 D k/f/s=0/2/10 | fledAtEdge=14 fledNotEdge=0 atkOnRouted=3 killedRouted=0 collapseRnd=10
+PASS strzelcy+wrecz vs wrecz seed=1 | A k/f/s=2/12/0 D k/f/s=0/0/12 | fledAtEdge=12 fledNotEdge=0 atkOnRouted=16 killedRouted=0 collapseRnd=5
+PASS strzelcy+wrecz vs wrecz seed=2 | A k/f/s=3/11/0 D k/f/s=0/0/12 | fledAtEdge=11 fledNotEdge=0 atkOnRouted=14 killedRouted=0 collapseRnd=5
+PASS strzelcy+wrecz vs wrecz seed=3 | A k/f/s=5/9/0 D k/f/s=0/0/12 | fledAtEdge=9 fledNotEdge=0 atkOnRouted=11 killedRouted=1 collapseRnd=6
+PASS konnica vs piechota seed=1 | A k/f/s=0/0/8 D k/f/s=14/0/0 | fledAtEdge=0 fledNotEdge=0 atkOnRouted=12 killedRouted=10 collapseRnd=2
+PASS konnica vs piechota seed=2 | A k/f/s=0/0/8 D k/f/s=14/0/0 | fledAtEdge=0 fledNotEdge=0 atkOnRouted=21 killedRouted=10 collapseRnd=2
+PASS konnica vs piechota seed=3 | A k/f/s=0/0/8 D k/f/s=14/0/0 | fledAtEdge=0 fledNotEdge=0 atkOnRouted=18 killedRouted=10 collapseRnd=2
+PASS przewaga 2:1 seed=1 | A k/f/s=0/0/20 D k/f/s=2/8/0 | fledAtEdge=8 fledNotEdge=0 atkOnRouted=51 killedRouted=2 collapseRnd=9
+PASS przewaga 2:1 seed=2 | A k/f/s=0/0/20 D k/f/s=2/8/0 | fledAtEdge=8 fledNotEdge=0 atkOnRouted=41 killedRouted=2 collapseRnd=9
+PASS przewaga 2:1 seed=3 | A k/f/s=0/0/20 D k/f/s=3/7/0 | fledAtEdge=7 fledNotEdge=0 atkOnRouted=44 killedRouted=3 collapseRnd=8
+INFO tryb instant (NIE oceniany K1-K5; bitwa nie jest rozgrywana): 12 wierszy, fled=0
+NIE_ZMIERZONO (runner nie eksportuje): cios na jednostke/ture; kto dobija uciekinierow (konnica); ruch uciekinierow 50%.
+INFO K6 (nie kryterium; limit odwrotu armii dotyczy kampanii, patrz naglowek): max rozbic w turze/stronie=9
+INFO wierszy bez events (K7 pominiete)=0; zdarzen neverRout w pliku=0
+NIE_ZMIERZONO K7: 0 zdarzen rozbicia jednostki neverRout w pliku -> K7 nie dowodzi braku regresji NEVERROUT-HOLD-FIGHT (kryterium niespelnione)
+=== rout-check: 12 wierszy skip, 9 z ucieczka+pogonia, 0 FAIL, K7 NIE_ZMIERZONO=1 ===

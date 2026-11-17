@@ -1,6 +1,7 @@
 'use strict';
 /**
- * notif-empty-queue-buildable-test.cjs -- R-WEB-NOTIF-EMPTY-QUEUE-ONLY-BUILDABLE-Q1 (runda 3).
+ * notif-empty-queue-buildable-test.cjs -- R-WEB-NOTIF-EMPTY-QUEUE-ONLY-BUILDABLE-Q1 (runda 3)
+ * + R-WEB-NOTIF-EMPTY-QUEUE-NO-BUILDING-AVAILABLE-Q2 (bramka bez rekrutacji jednostek, treść „wybierz budynek”).
  * Reguła: powiadomienie „Produkcja: <miasto> — Kolejka pusta" tylko gdy gracz realnie może coś
  * wybudować teraz. Bramka budynków/ulepszeń i odcisk (main.ts) używają TEGO SAMEGO predykatu co
  * panel produkcji: buildingCanBuildNow (cityPanel.ts), czyli wszystkich chipów wymagań.
@@ -34,7 +35,7 @@ function fnBody(src, sig) {
   const end = src.indexOf('\n    }\n', start);
   return end < 0 ? null : src.slice(start, end);
 }
-const GATE_SIG = 'function cityHasAffordableUnitRecruitment(';
+const GATE_SIG = 'function cityHasActionableProduction(';
 const FP_SIG = 'function productionOptionsFingerprint(';
 const ENQ_SIG = 'function cityHasAffordableBuildingEnqueue(';
 const UPG_SIG = 'function cityHasAffordableLevelUpgrade(';
@@ -48,8 +49,11 @@ function structural(src) {
   const enq = fnBody(src, ENQ_SIG);
   const upg = fnBody(src, UPG_SIG);
   return {
-    gateGuard: !!gate && GUARD.test(gate),
-    fpGuard: !!fp && GUARD.test(fp),
+    // R-WEB-NOTIF-EMPTY-QUEUE-NO-BUILDING-AVAILABLE-Q2: bramka „Kolejka pusta” NIE liczy rekrutacji jednostek.
+    gateNoUnits: !!gate && !/purchasableUnits|cityHasAffordableUnitRecruitment|canAffordUnitRecruitFull/.test(gate),
+    gateHasBuildings: !!gate && gate.includes('cityHasAffordableBuildingEnqueue(city, ctx)'),
+    fpNoUnits: !!fp && !/purchasableUnits|canAffordUnitRecruitFull/.test(fp),
+    subtitleBuildingOnly: src.includes("subtitle: 'Kolejka pusta — wybierz budynek',") && !src.includes('wybierz budynek lub jednostkę'),
     enqPred: !!enq && enq.includes(PRED_LINE) && !LEGACY.test(enq),
     upgPred: !!upg && upg.includes(PRED_LINE) && !LEGACY.test(upg),
     fpPred: !!fp && fp.includes(PRED_LINE),
@@ -83,8 +87,10 @@ console.log('A. JEDNOSTKOWA (realne isCityUnderSiege)');
 console.log('B. STRUKTURALNA src/main.ts (predykat panelu + guard oblężenia)');
 {
   const s = structural(mainSrc);
-  ok(s.gateGuard, 'bramka cityHasAffordableUnitRecruitment ma guard isCityUnderSiege([city], city)');
-  ok(s.fpGuard, 'productionOptionsFingerprint ma guard isCityUnderSiege([city], city)');
+  ok(s.gateNoUnits, 'bramka cityHasActionableProduction nie liczy rekrutacji jednostek (brak purchasableUnits)');
+  ok(s.gateHasBuildings, 'bramka cityHasActionableProduction opiera się na cityHasAffordableBuildingEnqueue');
+  ok(s.fpNoUnits, 'productionOptionsFingerprint nie zawiera odcisku rekrutacji jednostek');
+  ok(s.subtitleBuildingOnly, 'treść wydarzenia prod-empty: „Kolejka pusta — wybierz budynek” (bez „lub jednostkę”)');
   ok(s.enqPred, 'cityHasAffordableBuildingEnqueue używa buildingCanBuildNow (predykat panelu)');
   ok(s.upgPred, 'cityHasAffordableLevelUpgrade używa buildingCanBuildNow (predykat panelu)');
   ok(s.fpPred, 'productionOptionsFingerprint używa buildingCanBuildNow (spójność z bramką)');
@@ -96,7 +102,9 @@ console.log('B2. MUTACJE main.ts w pamięci (test musi je wykryć)');
     ['enqueue: predykat z || true', mutateBody(mainSrc, ENQ_SIG, PRED_LINE, 'if (!(buildingCanBuildNow(def, city, data, ctx, techs) || true)) continue;'), s => !s.enqPred],
     ['enqueue: cofnięcie do canAffordBuildingStock', mutateBody(mainSrc, ENQ_SIG, PRED_LINE, 'if (!canAffordBuildingStock(pool, buildingStockCost(def))) continue;'), s => !s.enqPred],
     ['ulepszenia: cofnięcie do canAffordBuildingStock', mutateBody(mainSrc, UPG_SIG, PRED_LINE, 'if (!canAffordBuildingStock(pool, buildingStockCost(def))) continue;'), s => !s.upgPred],
-    ['odcisk: zdjęty guard oblężenia', mutateBody(mainSrc, FP_SIG, 'city.ownerId === 0 && !isCityUnderSiege([city], city)', 'city.ownerId === 0'), s => !s.fpGuard],
+    ['bramka: przywrócona rekrutacja jednostek (purchasableUnits)', mutateBody(mainSrc, GATE_SIG, 'if (cityHasAffordableBuildingEnqueue(city, ctx)) return true;', 'if (cityHasAffordableBuildingEnqueue(city, ctx)) return true;\n      if (purchasableUnits(city, data, unlockedTechsForOwner(city.ownerId), ctx).length > 0) return true;'), s => !s.gateNoUnits],
+    ['odcisk: przywrócony wpis rekrutacji jednostek', mutateBody(mainSrc, FP_SIG, "const ups = cityHasAffordableLevelUpgrade(city, ctx) ? 1 : 0;", "const ups = cityHasAffordableLevelUpgrade(city, ctx) ? 1 : 0;\n      affordIds.push(...purchasableUnits(city, data, techs, ctx).map(i => i.id));"), s => !s.fpNoUnits],
+    ['treść: z powrotem „lub jednostkę”', mainSrc.replace("subtitle: 'Kolejka pusta — wybierz budynek',", "subtitle: 'Kolejka pusta — wybierz budynek lub jednostkę',"), s => !s.subtitleBuildingOnly],
   ];
   for (const [name, mutSrc, detected] of cases) {
     ok(detected(structural(mutSrc)), 'mutacja wykryta: ' + name);

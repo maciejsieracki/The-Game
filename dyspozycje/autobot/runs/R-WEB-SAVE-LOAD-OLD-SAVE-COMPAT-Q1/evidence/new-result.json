@@ -1,0 +1,86 @@
+{
+  "phase": "new",
+  "strip": false,
+  "seed": 4242,
+  "results": [
+    {
+      "status": "PASS",
+      "label": "NEW zapis wejsciowy jest STARY: brak 5 pol meta FAL 760-761",
+      "extra": {
+        "obecne": [],
+        "resourceLedgerHistoryWZapisie": 6
+      }
+    },
+    {
+      "status": "PASS",
+      "label": "NEW dziennik „Skad zapasy\" po wczytaniu = wpisy zapisu",
+      "extra": {
+        "got": 6,
+        "want": 6
+      }
+    },
+    {
+      "status": "PASS",
+      "label": "NEW liczba miast (wszyscy wlasciciele) po wczytaniu = zapis",
+      "extra": {
+        "got": 42,
+        "want": 42
+      }
+    },
+    {
+      "status": "PASS",
+      "label": "NEW liczba jednostek (wszyscy wlasciciele) po wczytaniu = zapis",
+      "extra": {
+        "got": 61,
+        "want": 61
+      }
+    },
+    {
+      "status": "PASS",
+      "label": "NEW miasta gracza = metryki zapisu",
+      "extra": {
+        "got": 1,
+        "want": 1
+      }
+    },
+    {
+      "status": "PASS",
+      "label": "NEW ekonomia gracza po wczytaniu = metryki w chwili zapisu (skarbiec, spichlerz, miasta, ludnosc, wojsko)",
+      "extra": []
+    },
+    {
+      "status": "PASS",
+      "label": "NEW isAwaitingFirstPlayerCity()=false przy miastach gracza",
+      "extra": false
+    },
+    {
+      "status": "NIE_ZMIERZONO",
+      "label": "NEW dryf ekonomii przy niepustych mapach zamowien",
+      "extra": "w tym zapisie puste: orderMultByCity, orderGrowthMultByCity, orderValueByCity (niepuste mapy NIE ZMIERZONE)"
+    },
+    {
+      "status": "PASS",
+      "label": "NEW „Zakoncz ture\" dziala 3 razy (tura rosnie o 1)",
+      "extra": [
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "status": "PASS",
+      "label": "NEW dziennik „Skad zapasy\" rosnie po tickach (lub limit)",
+      "extra": {
+        "przed": 6,
+        "po": 9,
+        "limit": 10
+      }
+    },
+    {
+      "status": "PASS",
+      "label": "NEW brak pageerror i bledow konsoli",
+      "extra": []
+    }
+  ]
+}

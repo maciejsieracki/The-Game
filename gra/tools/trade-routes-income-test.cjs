@@ -525,7 +525,7 @@ function makeCtx(premiaTras) {
 const gTiles = Array(40).fill({ terenBazowy: 'rownina', nakladka: 'brak', maRzeke: false });
 const pParamsForG = { budynekTargowiskoBonusHandlu: 0.5, budynekBibliotekaBonusNauki: 0.5,
   suwaakHandelNaukaDefault: 60, suwaakHandelPieniadz: 30, suwaakHandelLuksus: 10,
-  suwaakPracaBudynki: 70, suwaakPracaTeren: 30, budynekMlynMnoznikPracy: 2, budynekMlynBonusPracy: 2,
+  suwaakPracaBudynki: 70, budynekMlynMnoznikPracy: 2, budynekMlynBonusPracy: 2,
   budynekCegielniBonusPracy: 0.25, budynekMennicaMnoznik: 1, mennicaMnoznikPoWalucie: 1.5,
   walutaMnoznik: 2, targowiskoPracaMnoznik: 2, progWzrostuWspolczynnik: 16,
   spichlerzZachowaniePoPrzroscie: 0.5, akweduktProgLudnosci: 5, akweduktMaxLudnosci: 15,

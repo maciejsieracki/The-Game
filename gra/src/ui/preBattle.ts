@@ -12,7 +12,10 @@
 
 import type { CivBonusLite } from '../game/production';
 import { civCombatUnitShapeFromCategory, effectiveCombatBonusChipTexts } from '../game/civ-bonuses';
+import { weakenedNoteText, type WeakenedNote } from './battle-weakened-note';
 import { terrainIconSvg, civIconSvg, brandIconSvg } from './icons/brandAssets';
+import { TEREN_LABEL_PL } from '../map/terrain-names';
+import { nazwaWyswietlana } from '../game/text-names';
 import { PB_SVG } from '../battle/battleHudTheme';
 import { leaderPortraitUrl, leaderName } from './leaderPortraits';
 import { startPreBattleMusic, stopPreBattleMusic } from '../audio/muzyka-antyczna';
@@ -74,6 +77,12 @@ export interface PreBattleSide {
    * Ma pierwszenstwo przed isCityState (wzajemnie wykluczajace sie w praktyce).
    */
   isBarbarian?: boolean;
+  /**
+   * R-WEB-BATTLE-WEAKENED-HUNGER-DEFICIT-WARNING-Q1: aktywna kara głodu wojska / deficytu Złota
+   * tej strony (mnożniki z econ-params przez buildWeakenedNote). Brak = brak ostrzeżenia.
+   * Tylko wyświetlanie -- silnik nakłada karę niezależnie (combat.ts).
+   */
+  oslabienie?: WeakenedNote;
   units: PreBattleUnit[];
 }
 
@@ -464,6 +473,7 @@ function ensureStyles(): void {
 .pb-cmd.pb-foe .pb-cnt{color:var(--pb-foe-txt)}
 .pb-bonuses{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
 .pb-cmd.pb-r .pb-bonuses{justify-content:flex-end}
+.pb-weak{margin-top:4px;font-size:10px;font-weight:600;color:var(--pb-gold);line-height:1.3}
 .pb-bchip{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;color:var(--pb-text);white-space:nowrap;
   border:1px solid var(--pb-border-soft);border-radius:999px;padding:2px 8px;background:rgba(0,0,0,.35)}
 .pb-bchip svg{width:9px;height:9px;color:var(--pb-gold);flex:none}
@@ -665,6 +675,11 @@ const PB_ICON_NO_RETREAT =
 const PB_ICON_DOT =
   '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4"/></svg>';
 
+/** Etykieta terenu dla gracza (R-WEB-UI-PREBATTLE-RAW-IDS-AND-ROSTER-OVERLAP-Q1): id z info.teren -> polska nazwa, nigdy surowe id. */
+function terenLabelPl(teren: string): string {
+  return (TEREN_LABEL_PL as Readonly<Record<string, string>>)[teren] ?? nazwaWyswietlana(teren);
+}
+
 function unitRowHtml(unit: PreBattleUnit): string {
   const kind = unitKind(unit.kategoria);
   const qty = unit.ilosc ?? 1;
@@ -726,6 +741,12 @@ function commanderHtml(
   const chipTexts = effectiveCombatBonusChipTexts(bonusy, combatRoster, {
     side: role === 'atk' ? 'attacker' : 'defender', terrain, isChargeRound: false,
   });
+  // R-WEB-BATTLE-WEAKENED-HUNGER-DEFICIT-WARNING-Q1: ostrzeżenie o osłabieniu (głód/deficyt)
+  // -- tylko gdy strona faktycznie ma karę (oslabienie ustawione przez main.ts).
+  const weakenedText = weakenedNoteText(side.oslabienie);
+  const weakenedHtml = weakenedText
+    ? '<div class="pb-weak">\u25BC ' + esc(weakenedText) + '</div>'
+    : '';
   const chipsHtml = chipTexts.length
     ? '<div class="pb-bonuses">' +
       chipTexts.map(t => '<span class="pb-bchip">' + PB_ICON_DOT + esc(t) + '</span>').join('') +
@@ -763,6 +784,7 @@ function commanderHtml(
     leaderHtml +
     '<div class="pb-who">' + who + '</div>' +
     '<div class="pb-cnt">' + String(total) + ' oddziałów</div>' +
+    weakenedHtml +
     chipsHtml +
     '</div>' +
     '</div>'
@@ -809,7 +831,7 @@ function metaHtml(info: PreBattleInfo): string {
   // segment "Region: X" z makiety pominiety (brak zrodla danych). Teren jest OBOWIAZKOWY.
   const parts: string[] = [];
   parts.push(
-    '<span class="pb-ter">' + terrainIconSvg(info.teren, 13) + 'Teren: ' + esc(info.teren) + '</span>',
+    '<span class="pb-ter">' + terrainIconSvg(info.teren, 13) + 'Teren: ' + esc(terenLabelPl(info.teren)) + '</span>',
   );
   if (info.tura !== undefined) {
     parts.push('<span>Tura <b>' + String(info.tura) + '</b></span>');
@@ -833,7 +855,7 @@ function buildDeployPanel(
   // still render, greyed out (disabled), not disappear like the garrison lock does.
   // Separate state from showRetreat (which drives the active button).
   const retreatExhausted = !showRetreat && info.retreatExhaustedThisTurn === true;
-  const place = info.miejsce ?? info.lokacja ?? info.teren;
+  const place = info.miejsce ?? info.lokacja ?? terenLabelPl(info.teren);
   const kicker = canRetreat ? 'ROZSTAWIENIE BITWY' : 'WRÓG ATAKUJE';
   const title = (canRetreat ? 'Atakujesz: ' : 'Broni się: ') + esc(place);
 
@@ -862,7 +884,7 @@ function buildDeployPanel(
         : '')
     : retreatExhausted
       ? '<div class="pb-noretreat">' + PB_ICON_NO_RETREAT +
-        'Wycofanie niedostępne — ta jednostka wycofała się już w tej turze, rozstrzygnij bitwę</div>'
+        'Wycofanie niedostępne — wyczerpano trzy odwroty w tej turze, rozstrzygnij bitwę (przegrana = unicestwienie armii)</div>'
       : '<div class="pb-noretreat">' + PB_ICON_NO_RETREAT +
         'Wycofanie niedostępne — to wróg wybrał bitwę (obrońca nie może uciec)</div>';
 

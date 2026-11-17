@@ -207,6 +207,7 @@ function sim({ actor, world, seed }) {
   // nie ma odnog donikad (kazdy koniec drogi dotyka miasta), wiec deadEnds musi byc 0.
   let deadEnds = 0;
   for (const k of roadHexes) {
+    if (cityKeys.has(k)) continue; // R-WEB-ROADS-REACH-CITY-HEX-REGRESSION-Q2: heks miasta z droga to koniec sieci przy miescie (nie slepy koniec)
     const [q, r] = k.split(',').map(Number);
     if (NB.filter(([a, b]) => nodes.has(K(q + a, r + b))).length <= 1) deadEnds++;
   }
@@ -223,6 +224,7 @@ function sim({ actor, world, seed }) {
   return {
     actor, world, seed, cities: cities.length, roadHexes: roadHexes.length, perCity: roadByCity,
     onPlanClean: roadHexes.length - offClean, offPlanClean: offClean, offPlanNow: offNow, planSize: planNow.size,
+    roadHexesNoCity: roadHexes.filter(k => !cityKeys.has(k)).length,
     componentsCities: citiesPerComp, planDisconnectedPairs: reachable, triangles: topo.triangles, cells: topo.cells, denseHexes, deadEnds,
     aiMsPerTurn: aiCalls ? +(aiMs / aiCalls).toFixed(3) : null,
   };
@@ -252,7 +254,7 @@ for (const actor of ACTORS) for (const [world, seed] of CASES) {
   ok(r.triangles <= r.cities - 2, `${tag}: brak siatki trojkatow — tylko wezly skrzyzowan (${r.triangles} <= ${r.cities - 2})`);
   ok(r.cells <= r.cities - 2 && r.denseHexes <= 2 * (r.cities - 1), `${tag}: brak komorek siatki: heksy z >=4 sasiadami=${r.cells}, z >=3 sasiadami=${r.denseHexes} (limit ${2 * (r.cities - 1)})`);
   ok(r.componentsCities.length === 1 && r.planDisconnectedPairs === 0, `${tag}: wszystkie miasta zasiegalne ladem polaczone jedna siecia (komponenty=${JSON.stringify(r.componentsCities)})`);
-  ok(r.roadHexes <= r.planSize, `${tag}: liczba heksow drog (${r.roadHexes}) <= rozmiar planu (${r.planSize})`);
+  ok(r.roadHexesNoCity <= r.planSize, `${tag}: liczba heksow drog poza miastami (${r.roadHexesNoCity}) <= rozmiar planu (${r.planSize})`);
 }
 console.log(`\n${passed} OK, ${failed} FAIL`);
 process.exit(failed ? 1 : 0);

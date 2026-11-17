@@ -1,0 +1,29 @@
+BAZA live: exit=0 (oczekiwane 0)
+BAZA manual: exit=0 (oczekiwane 0)
+OK (czerwieni) | A1 rozrzut frontu (+7 kolumn jednej jednostki piechoty) | exit=1 | wzorzec /A1 rozrzut frontu/ znaleziony
+OK (czerwieni) | A1 brak zderzenia wrecz (adj=0 wszedzie) -> NIE_ZMIERZONO | exit=1 | wzorzec /A1 brak zderzenia/ znaleziony
+OK (czerwieni) | A2 2 ciosy jednej jednostki w turze | exit=1 | wzorzec /A2 ciosy na jednostke/ znaleziony
+OK (czerwieni) | A3 piechota z niewykorzystanym ruchem w kazdej turze | exit=1 | wzorzec /A3 infantry: niewykorzystany ruch/ znaleziony
+OK (czerwieni) | B1 neverRout w zdarzeniach rozbicia | exit=1 | wzorzec /B1 neverRout .* rozbity/ znaleziony
+OK (czerwieni) | B1 neverRout uciekl (los=fled) | exit=1 | wzorzec /B1 neverRout .* los=fled/ znaleziony
+OK (czerwieni) | B1 zbior neverRout pusty = NIE_ZMIERZONO (nie PASS) | exit=1 | wzorzec /zbior pusty = NIE_ZMIERZONO/ znaleziony
+OK (czerwieni) | B1 neverRout przezyl bez ciosow po 1. rozbiciu | exit=1 | wzorzec /nie zadal ani jednego ciosu/ znaleziony
+OK (czerwieni) | B2 uciekinier wykonuje 5 krokow w turze (limit 2) | exit=1 | wzorzec /krokow > limit ucieczki/ znaleziony
+OK (czerwieni) | B2 krok ucieczki w strone wroga | exit=1 | wzorzec /w strone WROGA/ znaleziony
+OK (czerwieni) | B2 fleeMove == pelny ruch (brak 50%) | exit=1 | wzorzec /fleeMove=/ znaleziony
+OK (czerwieni) | B3 byli rozbici, brak poscigu | exit=1 | wzorzec /B3 byli rozbici/ znaleziony
+OK (czerwieni) | B3 zwyciezca ma konnice, a konnica nie zadala ciosu uciekinierowi | exit=1 | wzorzec /konnica nie zadala ciosu/ znaleziony
+OK (czerwieni) | K2 uciekinier usuniety poza krawedzia | exit=1 | wzorzec /K2 fledNotAtEdge=1/ znaleziony
+OK (czerwieni) | K3 rozbity zostal na polu | exit=1 | wzorzec /K3 routedLeft/ znaleziony
+OK (czerwieni) | K5 bilans jednostek | exit=1 | wzorzec /K5 def bilans/ znaleziony
+OK (czerwieni) | K1 timeout | exit=1 | wzorzec /K1 timeout/ znaleziony
+OK (czerwieni) | K1 pageerror | exit=1 | wzorzec /K1 pageerror/ znaleziony
+OK (czerwieni) | MAN timeout/niezakonczona | exit=1 | wzorzec /TIMEOUT\/niezakonczona/ znaleziony
+OK (czerwieni) | MAN driver nie wydal rozkazu z UI | exit=1 | wzorzec /driver nie wydal zadnego rozkazu/ znaleziony
+OK (czerwieni) | MAN scena nie w trybie recznym | exit=1 | wzorzec /nie byla w trybie recznym/ znaleziony
+OK (czerwieni) | MAN tryb reczny wylaczony w trakcie | exit=1 | wzorzec /wylaczony w trakcie/ znaleziony
+OK (czerwieni) | MAN bilans jednostek | exit=1 | wzorzec /bilans atk/ znaleziony
+OK (czerwieni) | MAN pageerror | exit=1 | wzorzec /pageerror/ znaleziony
+OK (czerwieni) | MAN brak wyniku | exit=1 | wzorzec /brak wyniku/ znaleziony
+OK (czerwieni) | MAN --strict-discrepancy wlaczone na prawdziwych danych (12 kandydatow) | exit=1
+MUTACJE: 28 sprawdzen, 0 niezgodnych

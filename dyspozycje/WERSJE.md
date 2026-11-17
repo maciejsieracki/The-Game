@@ -1,3 +1,489 @@
+## ROBOCZA 1d2c6ca9 -- 2026-11-16 -- FALA 788: rozstawienie w bitwie z zasadzki (testowa)
+
+- R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1 (r2, FC PASS-WITH-NOTES a06e25414): w bitwie z zasadzki zastawiajacy rozstawia sie takze na polu wroga (cale pole, bez mgly), zaskoczeni stoja w dlugiej linii max 3 w szeregu (konnica/rydwany w linii); zwykla bitwa bez zmian (1776 pozycji identyczne z baza); strefa graficzna = logika; bez generala rozstawienie z komunikatem PL i bitwa AUTO; bez premii liczbowych
+- Weryfikacja: tsc 0; 5 bramek zielonych; ambush-deploy geometry 20/0, scene 26/0, line-width 240, zone-visual 11/0, wiring 15/0, identity 1776 pozycji; mgla-sciezka 42/0; json-descriptions-sync 19/0; ambush-core 40/0, save-roundtrip 5/0
+- Limity: NIE ZMIERZONO: faza rozstawiania zasadzki w zywym Chromium (ambush-live 18 PASS/3 FAIL identycznie na bazie; harnessy battle-* nie buduja sie przez brandTokenVars ?raw = dlug bazowy); autozapis w trakcie rozstawiania (zablokowany isSaveBlockedByBattle); kolejnosc rozstawiania stron AI na scenerii z przeszkodami. CZEKA NA RANO: rozstawienie bez generala = AUTO z komunikatem; AUTO na mapie ignoruje zasadzke. Dlug Rust: REPIN
+
+## ROBOCZA 5b27e1cc -- 2026-11-16 -- FALA 787: Panel TEMPO i minimapa w bitwie w oprawie brandbooka (testowa)
+
+- Panel TEMPO i minimapa w bitwie w oprawie tokenow marki: przyciski tempa z hover/focus/aktywny, odczyt tempa, aria-label; minimapa z tlem tokenu, wyciszonymi odcieniami wody i zlota ramka widoku; logika bez zmian; plus narzedzia pomiarowe WEARY40-SIM
+- Weryfikacja: tsc 0, logic 213/213, battle-tempo-minimap-brand OK, minimap-viewport-rect-follow 12/0, damage-colors 27/0, hp-display 7/7, mgla-sciezka-inwariant 42/0, load-game-regression 34/0; live Chromium 84 OK/0 FAIL w 4 wariantach ekranu, 5 mutacji zrodlowych czerwonych
+- Limity: NIE ZMIERZONO: pikselowy diff PRZED/PO, start bitwy bez wstrzyknietych tokenow; znaczniki stron minimapy gracz niebieski/przeciwnik czerwony (stan istniejacy) do decyzji; REPIN Rust
+
+## ROBOCZA 2d690a91 -- 2026-11-16 -- FALA 786: Zasadzka: nowa akcja armii (niewidoczna dla wroga, wejscie wroga otwiera bitwe) (testowa)
+
+- Zasadzka armii: niewidoczna dla wroga (render, pathfinding i planowanie AI); wejscie wroga w wojnie na jej heks przerywa ruch i otwiera bitwe (gracz, AI, barbarzyncy); komunikaty Wpadles w zasadzke / Zasadzka sie powiodla; znacznik W zasadzce dla wlasciciela; cykl zycia stosu; Civpedia; plus narzedzia pomiarowe UPKEEP-TOOLS
+- Weryfikacja: tsc 0, logic 213/213, ambush-core 40/0, ui-reason 5/0, save-roundtrip 5/0, wiring 28/0, realstep 16/0, split-barb z mutantami, mgla-sciezka-inwariant 42/0, army-merge-colocated 4/0, load-game-regression 34/0
+- Limity: NIE ZMIERZONO: zywy Chromium AI->gracz, rozdzielenie na ukryta zasadzke w Chromium; standardowe rozstawienie bitwy (AMBUSH-DEPLOY osobno); ranking mocy nie filtruje zasadzek; REPIN Rust
+
+## ROBOCZA 62f493be -- 2026-11-16 -- FALA 785: Gwiazdka generala w bitwie we wszystkich sciezkach, takze po Reset rozstawienia (testowa)
+
+- Jasna gwiazdka nad generalem w bitwie w 4 sciezkach budowy grupy jednostki (start, replay/wczytanie, obrona oblezonego, rozstawienie z Reset)
+- Weryfikacja: tsc 0, logic 213/213, battle-commander-star 17/0, battle-commander-star-reset 10/0 (sekwencja + mutacja), garrison 20/0, forced-peace-wiring 13/0, load-game-regression 34/0
+- Limity: NIE ZMIERZONO: zywy Chromium po Reset; 4 timeouty battle-* na wydluzonym limicie (dlug bazowy); manualBattle.ts:756 martwy kod; REPIN Rust znacznika generala
+
+## ROBOCZA 4cdc5adc -- 2026-11-16 -- FALA 784: AI pilnuje pustych miast w wojnie: rekrutacja garnizonu (testowa)
+
+- AI w wojnie lub zagrozeniu rekrutuje Wojownika w kazdym miescie bez jednostki wojskowej (istniejaca sciezka zakupu, bramki bez zmian); garnizon nie jest wyprowadzany przez muster; pomiar Node: puste miasta w wojnie 62,5/58,3/55,1/39,3 -> 0 procent
+- Weryfikacja: tsc 0, logic 213/213, ai-war-city-garrison 20/0, defend-home 30/0, scattered-merge 33/0, muster 26/0, war-gate 24/0, general-war-campaign 51/0, forced-peace-wiring 13/0, load-game-regression 34/0
+- Limity: NIE ZMIERZONO: zywa gra (bramki manpower/surowcow/epoki w main.ts), dostepnosc Wojownika we wszystkich epokach i civ, zdobyte miasta (0,33 przed i po); dlug bazowy replacement-concentration atrybucja; REPIN Rust
+
+## ROBOCZA 53a9463a -- 2026-11-16 -- FALA 783: Zmeczenie wojna 40 tur, pokoj wymuszony przy 100 procent (testowa)
+
+- Zmeczenie wojna pelne po 40 turach; 80% = oferta przegrywajacego; 100% = pokoj wymuszony z miastami przegrywajacego (gracz tez: okno + Wazne); panel dyplomacji: etapy 50/80/100% i za ile tur; migracja szczytu starych zapisow; Civpedia
+- Weryfikacja: tsc 0, logic 213/213, 12 testow tematu zielonych (forced-peace 14/0 z mutantem, wiring 13/0, stages-view 22/0, migration-peak 7/0, weaker-seeks 35/0, city-cession-r3 72/0, 20-turns 31/0, pw-behavior 147/0, ai-war-weariness-peace 101/0, nonnegative 21/0, balance-accept 32/0), load-game-regression 34/0
+- Limity: NIE ZMIERZONO: symulacja >=3 ziarna x 150 tur, zywy Chromium, test wiringu main.ts gracza; unit-replace-full-cost 39/1 dlug bazowy; REPIN Rust
+
+## ROBOCZA 2cb84db4 -- 2026-11-16 -- FALA 782: Wydarzenia bez wpisu o zwolnieniu zarzadcy obcej cywilizacji (testowa)
+
+- Po zajeciu miasta gracz nie dostaje wpisu o zwolnieniu zarzadcy OBCEJ cywilizacji (bramka wg poprzedniego wlasciciela); utrata wlasnego miasta z zarzadca nadal daje wpis
+- Weryfikacja: tsc 0, logic 213/213, foreign-administrator-dismissed 12/0 (mutacja czerwona), city-administrator 119/0, improvement-administrator 59/0, load-game-regression 34/0
+- Limity: Chromium live NIE ZMIERZONO; dlug bazowy events-defer-to-turn-start C3 1 FAIL; REPIN Rust noteAdministratorChange
+
+## ROBOCZA df6c91bf -- 2026-11-16 -- FALA 781: Zastap: przejscie przez wszystkie typy jednostek w armii (testowa)
+
+- Zastap po zaznaczeniu roznych typow w armii przechodzi kolejno przez kazdy typ z zamiennikiem (modal na typ, grupa k/n), przycisk Pomin ten typ, Zakoncz konczy lancuch, komunikat o niezalatwionych typach
+- Weryfikacja: tsc 0, logic 213/213, multitype-walk 25/0 (mutacja czerwona), army-multi-select 36/36, unit-replace 21/21, archer-slinger 15/0, load-game-regression 34/0
+- Limity: Chromium live NIE ZMIERZONO; dlug bazowy unit-replace-full-cost 1 FAIL; komunikat gdy wszystkie typy bez zamiennika nie nazywa typow
+
+## ROBOCZA f06ba9eb -- 2026-11-16 -- FALA 780: Droga brukowana: budowa od zera albo ulepszenie zwyklej drogi (testowa)
+
+- Droga brukowana moze byc zbudowana od zera na heksie bez drogi (koszt Droga + Brukowana = 40 pracy; zalozenie do potwierdzenia) albo jako ulepszenie istniejacej Drogi (25 jak dotad); tooltip heksa i HUD budowy pokazuja oba koszty; AI i auto-ulepszenia bez zmian decyzji.
+- Weryfikacja: tsc 0, road-paved-direct-build-test 15/0, roads-* testy zielone, map-road-movement 27/0, hex-tooltip 63/0, auto-improvements 46/0, load-game-regression 34/0, 5 bramek referencyjnych
+- Limity: NIE ZMIERZONO: zywy Chromium tooltip i panel, test kolejki/anulowania/zapisu brukowanej od zera, wiki bundle; dlug bazowy map-improvement-qualify i auto-fort-claim
+
+## ROBOCZA a33381a5 -- 2026-11-16 -- FALA 779: Lucznik moze awansowac na Procarza w Zastap (testowa)
+
+- Lucznik (standardowy) ma w danych Zastap specjalnie = Procarz / Procarz (Huaracoc); Zastap (gracz i AI, te same reguly, pelny koszt rekrutacji, limit 10% armii na ture) pozwala go awansowac na Procarza (Brąz, wymaga Koszar); kierunek tylko Lucznik -> Procarz.
+- Weryfikacja: tsc 0, unit-replace-archer-slinger-test 15/0, promotion-table PASS, unit-replace 21/21, ai-era-unit-promotion 17/0, ai-unit-replace-same-rules 45/0, load-game-regression 34/0, 5 bramek referencyjnych
+- Limity: NIE ZMIERZONO: zrzut pickera w Chromium, ilosciowy wplyw na AI; ABC: Inkowie widza oba warianty Procarza, narodowi lucznicy bez przejscia; dlug bazowy unit-replace-full-cost 39/1
+
+## ROBOCZA 42f135a6 -- 2026-11-16 -- FALA 778: Drogi automatu dochodza do heksu miasta (AI i administrator ulepszen) (testowa)
+
+- Plan drog automatycznych (auto-ulepszenia gracza z administratorem i AI) dodaje heks miasta, do ktorego prowadzi droga; wczesniej droga konczyla sie na heksie sasiednim (od FALI 521), bo plan pomijal heksy miast. Reczna budowa gracza dzialala bez zmian.
+- Weryfikacja: tsc 0, roads-reach-city-hex-test 24/0 (baza 6/18), roads-city-links-only 57/0, road-connectivity 99/0, road-build-player-parity 17/0, load-game-regression 34/0, 5 bramek referencyjnych, autoimprove-stages-q1 299/0
+- Limity: NIE ZMIERZONO: zywy Chromium, rust-port (dlug REPIN planRoadNetwork), wplyw na balans (ok. +1 heks drogi na miasto), stare zapisy (heks miasta dostanie droge w kolejnych turach)
+
+## ROBOCZA ad43bd51 -- 2026-11-16 -- FALA 777: Skroty zaznacz wszystkich danego typu przy zaznaczaniu jednostek armii (testowa)
+
+- Nad listami jednostek w panelu podzialu armii, panelu scalania i pasku zaznaczenia stosu (Zastap/Rozwiaz) pojawiaja sie chipy po jednym na typ jednostki (nazwa i liczba); klik zaznacza lub odznacza wszystkie jednostki danego typu, stan chipa: brak/czesc/wszystkie; w panelu podzialu rzad chipow zostaje u gory przy przewijaniu.
+- Weryfikacja: tsc 0, army-type-chips-test 50/0 (mutacja 28/22), 5 bramek referencyjnych, load-game-regression 34/0, 15 testow army-split i army-merge zielonych, Chromium: panel podzialu 50 lucznikow, pasek stosu 1280x720 i 360x640
+- Limity: NIE ZMIERZONO: pasek stosu i klik w pelnej grze, merge-pick w Chromium; odstepstwo od allowlisty (hexContextTooltip, armyStackHud, armyMergePanel, main.ts) zatwierdzone przez FC; army-split-panel-scroll-grid 16/2 dlug bazowy
+
+## ROBOCZA cb305af1 -- 2026-11-16 -- FALA 776: Laczenie z jednostka oblegajaca: koniec bledu BOOT ERROR typeId (testowa)
+
+- Strażnik w obsludze laczenia (promptMergeIfCoLocated): gdy po ruchu nie ma jednostek przybywajacych (np. oblegajaca jednostka wchodzi na heks innej), gra nie wywala sie bledem typeId, tylko loguje ostrzezenie i wraca.
+- Weryfikacja: tsc 0, army-merge-besieger-only-move-test 8/0 (mutant 5/3), siege-nearby-lock-join 23/0, army-split-besieging 21/0, load-game-regression 34/0, 5 bramek referencyjnych; zywy Chromium: blad odtworzony na bazie, zniknal po poprawce
+- Limity: NIE ZMIERZONO: dokladna sciezka Polacz->applyMerge ze zrzutu wlasciciela, Idz do wodza, odroczony prompt, wczytany zapis; jesli BOOT ERROR wroci - potrzebny zapis gry sprzed kliku
+
+## ROBOCZA cc014eb0 -- 2026-11-16 -- FALA 775: Rozdzielanie armii oblegajacej: wydzielone jednostki bez oblezenia i z pelnym ruchem (testowa)
+
+- Jednostki wydzielone przez Rozdziel z armii oblegajacej miasto traca oblezenie (oblegaCityId) i fortyfikacje w polu, maja pelny ruch i nie licza sie do grup oblezenia; reszta armii nadal oblega, a gdy nikt nie zostaje przy murze oblezenie jest zdjete.
+- Weryfikacja: tsc 0, army-split-besieging-no-siege-lock-test 21/0, siege-nearby-lock-join 23/0, load-game-regression 34/0, army-merge-* zielone, 5 bramek referencyjnych
+- Limity: NIE ZMIERZONO: zywy Chromium, commit regresu; wydzielona jednostka dostaje pelna pule ruchu (decyzja produktowa); army-split-panel-scroll-grid 16/2 dlug bazowy
+
+## ROBOCZA c8b6031d -- 2026-11-16 -- FALA 774: Ekran porazki: liczniki utraconych miast i jednostek, brak autozapisu po porazce (testowa)
+
+- Ekran porazki w sekcji Straty pokazuje Utracone miasta i Utracone jednostki (brak danych = myslnik, stary zapis 0/0). Po porazce autozapis i Ctrl+S nie zapisuja; lista Wczytaj gre zawiera tylko zapis sprzed porazki; reczny nazwany zapis nie jest blokowany.
+- Weryfikacja: tsc 0, loss-counters-test 35/0, defeat-screen-summary-test 25/0, victory 12/0, victory-screen 11/0, load-game-regression 34/0, 5 bramek referencyjnych, zywy Chromium 51/0
+- Limity: NIE ZMIERZONO: polegle jednostki w zywej bitwie; round-trip licznika >0 przez save.ts; gracz = wlasciciel 0 (hotseat drugi fotel nie liczony)
+
+## ROBOCZA a35723b4 -- 2026-11-16 -- FALA 773: Lucznicy: zdrowie 20 dla wszystkich pieszych, atak dystansowy 5/6/7 (pole) (testowa)
+
+- Zdrowie wszystkich pieszych lucznikow = 20 w obu polach danych (Health i health); pole Atak dystansowy: zwykly 5, egipski 6, nubijski 7. Silnik walki czyta missileAttack - decyzja osobno.
+- Weryfikacja: tsc 0, archers-health-dist-data-test, ranged-damage-mult-test, unit-card-ranged-mult-test, load-game-regression 34/0, 5 bramek referencyjnych
+- Limity: Realny atak dystansowy w walce (missileAttack) bez zmian; NIE ZMIERZONO w zywej grze
+
+## ROBOCZA 3a328cd0 -- 2026-11-16 -- FALA 772: Ekran porazki: osiagniecia i straty, Wczytaj gre albo Rozpocznij od nowa (testowa)
+
+- Porazka gracza (utrata ostatniego miasta) pokazuje pelny ekran konca gry: sekcje Osiagniecia (tury, epoka, zbadane technologie, cywilizacja) i Straty (utracone miasta), przyciski Wczytaj gre (otwiera dialog wczytania) i Rozpocznij od nowa; ekrany zwyciestwa bez zmian
+- Weryfikacja: tsc 0; logic-test 213/213; defeat-screen-summary-test 23/0; victory-test 12/0; load-game-regression 34/0; test zywy Chromium 45/0 (kandydat a470f0327); FC PASS-WITH-NOTES
+- Limity: Tura po wczytaniu z ekranu porazki (blokada NNS), autozapis po porazce na liscie wczytania i uszkodzony zapis NIE ZMIERZONO; Straty bez licznikow utraconych miast i jednostek
+
+## ROBOCZA fbafced0 -- 2026-11-16 -- FALA 771: Kolejka pusta tylko gdy jest co wybudowac (testowa)
+
+- Powiadomienie Produkcja: <miasto> Kolejka pusta pojawia sie tylko gdy w miescie jest dostepny i osiagalny budynek lub ulepszenie a kolejka jest pusta; sama mozliwosc rekrutacji jednostek go nie wywoluje; tekst: wybierz budynek
+- Weryfikacja: tsc 0; logic-test 213/213; notif-empty-queue-buildable 20/0; notif-empty-queue-gate-behaviour 11/0; load-game-regression 34/0; FC PASS-WITH-NOTES (b0f4356b9)
+- Limity: Zywy bieg w Chromium (stan ze zrzutu wlasciciela) i galaz Ulepsz NIE ZMIERZONO; weryfikacja na zywo po deployu
+
+## ROBOCZA 4676942d -- 2026-11-16 -- FALA 770: Bramka utrzymania armii AI wlaczona (testowa)
+
+- Bramka rekrutacji AI oparta na zapasie (zloto/zywnosc) WLACZONA: AI nie kupuje jednostek, gdy zapas nie pokrywa utrzymania na 15 tur (margines 0,1); dotyczy tylko AI, nie gracza
+- Weryfikacja: tsc 0; logic-test 213/213; ai-upkeep-runway-test 17/0; ai-upkeep-wiring-test 4/0; load-game-regression 34/0; FC PASS-WITH-NOTES (7f1e9f274)
+- Limity: Smoke w Chromium na koncowym SHA, hash przy wlaczone=false, wplyw na tempo rekrutacji i balans AI oraz wiki/Civpedia NIE ZMIERZONO
+
+## ROBOCZA f24457ae -- 2026-11-16 -- FALA 769: Wczytany stary zapis nie czeka na pierwsze miasto (testowa)
+
+- Stary zapis (bez flagi playerEverOwnedCityByOwner) z tura>1 dostaje flage dla foteli ludzkich: po wczytaniu Zakoncz ture nie wraca do stanu oczekiwania na pierwsze miasto; nowa gra i tura 1 bez zmian
+- Weryfikacja: tsc 0; logic-test 213/213; save-load-player-owned-city-test PASS (3 mutacje); load-game-regression 34/0; test zywy: awaiting=false, mutacja zywa czerwona; FC PASS-WITH-NOTES (eeeb518b5)
+- Limity: Zapis z 0 miast konczy sie porazka po pierwszym Zakoncz ture (regula R-WEB-DEFEAT-LAST-CITY); roundtrip seed 777, ekonomia po wczytaniu zapisu 0 miast i MP/hotseat NIE ZMIERZONO
+
+## ROBOCZA 662cbc20 -- 2026-11-16 -- FALA 768: Panel Rozbicie obrony bez wpisow zerowych + narzedzia pomiarowe i wycofane testy (testowa)
+
+- Panel Rozbicie obrony pomija wpisy zerowe (defenderCivBonusBreakdown); 5 testow pr141 oznaczonych jako wycofane; hak ledgerStats za ?civTest=1 oraz narzedzia pomiarowe (ledger, odwrot, zgodnosc starych zapisow) bez zmiany zachowania gry
+- Weryfikacja: tsc 0; logic-test 213/213; defense-breakdown 49/0; okolica-load-reconcile, budynek-civ-bonus-u17 7/0, war-epoch-player-first-main-guard 35/0, load-game-regression 34/0; FC PASS-WITH-NOTES (Q4 bac531c58)
+- Limity: Render panelu Rozbicie obrony w Chromium NIE ZMIERZONO; prog 10% ledgera i kampania limitu odwrotu NIE ROZSTRZYGNIETE
+
+## ROBOCZA 8e83eab3 -- 2026-11-14 -- FALA 767: Bitwa reczna: arbitraz kolizji takze dla jednostek niewybranych (testowa)
+
+- w bitwie recznej pola sporne miedzy jednostkami niewybranymi przez gracza rozstrzygane jak w AUTO (piechota pierwsza, lucznik ustepuje, ten sam typ mniejsze ID); rozkazy wybranych jednostek bez zmian
+- Weryfikacja: tsc 0, test tematu + mutacja czerwona, testy FALI 764 zielone, AUTO bit-w-bit ziarna 1-3 (male armie), 5 bram. ref. zielone, Chromium 3 przebiegi 0 bledow
+- Limity: pelne armie 8 vs 12 oraz zywa kolizja z ustapieniem lucznika NIE ZMIERZONO; ustapienie udowodnione testem scenowym
+
+## ROBOCZA f619cd31 -- 2026-11-14 -- FALA 766: Podpowiedz Zakoncz ture przy otwartej audiencji dyplomatycznej (testowa)
+
+- podpowiedz przy zablokowanym Zakoncz ture mowi o otwartej audiencji dyplomatycznej, panelu laczenia armii lub karcie odkrycia technologii zamiast mylacego Zakoncz ekran bitwy; blokada bez zmian
+- Weryfikacja: tsc 0, 5 bram. ref. zielone, test tematu 16/0 + mutacja, end-turn-block-event 35/0, endturn-battle-deadlock 38/0, koniec-tury-f1-f4 39/0
+- Limity: render w Chromium NIE ZMIERZONO; modal pierwszy takze przy innej przyczynie blokady; exec-test 42/7 = dlug bazowy
+
+## ROBOCZA 3af9f170 -- 2026-11-14 -- FALA 765: Wczytanie zapisu nie dopisuje domyslnej listy priorytetow budowy (testowa)
+
+- wczytanie zapisu nie dopisuje miastom zrownowazonym domyslnej listy budowaPriorytetTypow (stan po wczytaniu jak w zywej grze); zapisana lista zachowana
+- Weryfikacja: tsc 0, 5 bram. ref. zielone, test regresji 6/0 + mutacja czerwona, load-game-regression 34/0, drift-test dynamiczny 4242 i 777 po 10/10 tur bez pola w whiteliscie
+- Limity: stare zapisy z juz dopisana lista zachowuja ja; legacy migracja onlyZrownowazone bez zmian; README harnessu l.105 nieaktualne
+
+## ROBOCZA c0173fc1 -- 2026-11-14 -- FALA 764: Bitwa reczna: rozkaz gracza = pelny ruch, cios na koncu ruchu (testowa)
+
+- rozkaz reczny marszu i ataku daje pelny ruch w jednej aktywacji (jak AUTO), cios na koncu ruchu, max 1 cios na jednostke na ture; AUTO i Pomin bez zmian
+- Weryfikacja: tsc 0, 5 bram. ref. zielone, test tematu + mutacja czerwona, routing/attack-move zielone, live Chromium Hastati 6v6 1,00->1,65-1,92 hex/aktywacje
+- Limity: pelny przebieg bitwy do konca i AUTO ziarno 3 NIE ZMIERZONO; niewykorzystany ruch 13-18 proc.; arbitraz kolizji niewybranych osobnym tematem
+
+## ROBOCZA 6b8fa405 -- 2026-11-14 -- FALA 763: audyt pol zapisu: deserializeGame nie gubi pol (narzedzie) (testowa)
+
+- Narzedzie save-load-deserialize-fields-audit.cjs: audyt live seed 4242, 282 klucze, deserializeGame nie gubi zadnego pola (poza naprawionym w FALI 762 resourceLedgerHistory); mutacja czerwona. Bez zmian gra/src.
+- Weryfikacja: FC PASS-WITH-NOTES 71def8b3e; logic 213/213, vite OK, MD5 Raw
+- Limity: jedna probka; tablice cities/units/mapSnapshot jako liscie; faza b proxy; scenariusz 0 miast NIE ZMIERZONO
+
+## ROBOCZA 2143e042 -- 2026-11-14 -- FALA 762: dziennik Skad zapasy wraca po wczytaniu zapisu (deserializeGame) (testowa)
+
+- save.ts: deserializeGame przepisuje resourceLedgerHistory (jawna lista pol je gubila); test save-load-ledger-history-test 4/0 + mutant; live Chromium: baza 0 wpisow przed tickiem, kandydat 2 (jak w zapisie), po ticku 3.
+- Weryfikacja: FC PASS-WITH-NOTES f6c5c8820; tsc 0, logic 213/213, ledger-history 4/0, resource-ledger-save-history 15/0, load-game-regression 34/0, player-owned-city PASS, vite OK, MD5 Raw
+- Limity: inne pola SaveGame moga byc gubione przez jawna liste (audyt osobno); test live nie jest czescia testu node
+
+## ROBOCZA bbbecbee -- 2026-11-14 -- FALA 761: wczytanie zapisu odtwarza flage pierwszego miasta gracza (Zakoncz ture przy 0 miast) (testowa)
+
+- main.ts +19: playerEverOwnedCityByOwner zapisywane w meta (gdy niepuste) i odtwarzane po wczytaniu; test live Chromium: po wczytaniu przy 0 miast Zakoncz ture dziala (baza: timeout); test save-load-player-owned-city z mutacjami; #432 zmierzone live (dziennik Skad zapasy 3->0 po wczytaniu w nowej stronie) - defekt trwalosci, niezlatany.
+- Weryfikacja: FC PASS-WITH-NOTES 6e38f9388; tsc 0, logic 213/213, player-owned-city PASS, load-game-regression 34/0, ledger-save-history 15/0, vite OK, MD5 Raw
+- Limity: #432 przyczyna niezmierzona (osobny temat); test live #433 nie jest bramka package.json
+
+## ROBOCZA 838d10eb -- 2026-11-14 -- FALA 760: zapis i wczytanie daja ten sam stan co przebieg ciagly (dryf stanu) (testowa)
+
+- Poprawka main.ts +47: zapisywane i odtwarzane nnsAiOverrides oraz mnozniki Porzadku (orderMult/growthMult/orderValue); resume-test 10/10 (seedy 4242, 777, 31337) zamiast 0/3; test regresji save-load-roundtrip-state-drift-test + mutacje; runner normalizuje stackGroupId.
+- Weryfikacja: FC PASS-WITH-NOTES 8a91ed421; tsc 0, logic 213/213, load-game-regression 34/0, ledger-save-history 15/0, vite OK, MD5 Raw
+- Limity: stary zapis w przegladarce, horyzont 40-50 tur, map-snapshot-load-test NIE ZMIERZONO; budowaPriorytetTypow = ABC; resourceLedgerHistory = #432
+
+## ROBOCZA b3e02480 -- 2026-11-14 -- FALA 759: pomiar na zywo mieszanej armii po FALACH 750-758 (narzedzie) (testowa)
+
+- Pomiar live 80 bitew (seedy 11-18): ciosy/jedn./ture max 1, niewykorzystany ruch max 2,9%; rozrzut frontu M1 max 2, M2 max 1, M3 max 3 (A1 zlamany dla skladu asymetrycznego). Narzedzie +2 linie (sklad M3). Bez zmian gra/src.
+- Weryfikacja: FC PASS-WITH-NOTES f2e2e910d; logic 213/213, vite OK, MD5 Raw
+- Limity: prog A1 dla skladow asymetrycznych = ABC; kandydat R-WEB-BATTLE-FRONT-SPREAD-ASYM-Q1 nienaprawiany
+
+## ROBOCZA b2864c14 -- 2026-11-14 -- FALA 758: runner pomiarowy zamyka modale konca tury (narzedzie) (testowa)
+
+- Runner gra/tools/ai-economy-measure-run.cjs zamyka audiencje dyplomatyczna, panel laczenia armii i karte odkrycia przed Zakoncz ture; liczniki po zniknieciu blokady; state.json po kazdej turze; test hooka 16/16. Bez zmian gra/src.
+- Weryfikacja: FC PASS-WITH-NOTES ecc275cb2; logic 213/213, vite OK, MD5 Raw
+- Limity: baza seed 4242 niezmierzona; panel armii i karta tech tylko na atrapach DOM
+
+## ROBOCZA b1559163 -- 2026-11-14 -- FALA 757: diagnoza zawieszenia Zakoncz ture t51 (narzedzie) (testowa)
+
+- Narzedzie endturn-t57-repro.cjs + evidence: t51 seed 4242 = otwarta audiencja dyplomatyczna wstrzymuje kolejke odlozonych bitew (zamierzone + dlug harnessu). Bez zmian gra/src.
+- Weryfikacja: FC PASS-WITH-NOTES 2cd7911fb; logic 213/213, vite OK, MD5 Raw
+- Limity: t57, t89 seed 777, tabela 5 ziaren NIE ZMIERZONO
+
+## ROBOCZA 6550bf16 -- 2026-11-14 -- FALA 756: sonda rozkazow recznych a pelny ruch (narzedzie) (testowa)
+
+- Narzedzie pomiarowe battle-manual-orders-full-move-repro (gra/tools): marsz reczny 1,00 heksa na aktywacje (zgodne z decyzja A); ruch+cios w rundzie AUTO 5/60, reczne 0/60; przepadek ok. 2 MP nierozstrzygniety (ABC). Bez zmian gra/src.
+- Weryfikacja: FC PASS-WITH-NOTES 6972825ae; logic 213/213, vite OK, MD5 Raw
+- Limity: tylko Hastati MP 3, jedna scena, sonda omija doktryne obroncy; live NIE ZMIERZONO
+
+## ROBOCZA dc001e95 -- 2026-11-14 -- FALA 755: pomiar luk pelnego ruchu (narzedzie) (testowa)
+
+- Narzedzie pomiarowe battle-full-move-gaps-measure.cjs: luki pelnego ruchu (strzelcy 47,4% niewykorzystanego ruchu, 11,9% niewyjasnione; Obrona/Ostrzal/ucieczka 0 po ciosie). Bez zmian gra/src.
+- Weryfikacja: FC PASS-WITH-NOTES df37617c5; logic 213/213, build vite OK, MD5 Raw
+- Limity: rozkaz reczny i mur oblezniczy NIE ZMIERZONO; prog niewyjasnionego ruchu = ABC wlasciciela
+
+## ROBOCZA 70828a6b -- 2026-11-14 -- FALA 754: Harness pomiarowy ekonomii AI: hak civTest, runner wznawialny, skrypt ON/OFF bramki utrzymania armii AI (testowa)
+
+- Blok __aiEconomyMeasure w main.ts za civTest (bez wplywu na gre), runner ai-economy-measure-run.cjs wznawialny z AI z miastami (41), obejscie bramki NNS gracza, test haka 10/10, skrypt ai-economy-measure-upkeep-onoff.cjs; kod gry w trybie normalnym bez zmian
+- Weryfikacja: tsc 0; logic 213/213; 5 bramek zielone; resource-ledger-hook-gate 6/0; test haka 10/10 i 11/11 z mutantem; 100 tur x2 ziarna do t100; vite build OK
+- Limity: NIE ZMIERZONO: test wznowienia 0/10 (zakres #424); pomiar #415 ON/OFF na 100 turach; przebiegi ciagle zatrzymane w t51 i t89 (kolejka odlozonych bitew); przychod i utrata na ture
+
+## ROBOCZA 8204f171 -- 2026-11-14 -- FALA 753: Test rozejmu: przeetykietowanie L2b i asercje wariantu oferty w skrzynce (tylko narzedzie) (testowa)
+
+- diplo-truce-live-test: L2b opisuje mechanizm oferty w skrzynce gracza, nowe asercje L2b2 i L2g2 wykrywaja wariant AI akceptuje od razu, sekcja POKRYCIE; kod gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; 5 bramek zielone; live truce 32/0; mutacja czerwieni L2b2 i L2h; vite build OK
+- Limity: NIE ZMIERZONO: odmowa AI wobec propozycji gracza (wymaga haka w main.ts); osobna mutacja wariantu AI odrzuca od razu
+
+## ROBOCZA 88256d5a -- 2026-11-14 -- FALA 752: Panele Nauka Zywnosc Handel: same liczby brutto i netto; wiki; test resource-usage-breakdown znow sie buduje (testowa)
+
+- Nauka i Handel pokazuja jedna liczbe, Zywnosc +brutto → +netto, opis i jednostka w tooltipie, grossNetSub usunieta; wiki 53.1a i wikiBundle przez generator; test resource-usage-breakdown buduje sie i przechodzi 100/0 (tylko narzedzie testowe)
+- Weryfikacja: tsc 0; logic 213/213; gross-net-unify 35/0; resource-card-numbers-only 14/0; resource-cards-gross-net 24/0; hud-gross-net-rest 820/0; resource-usage-breakdown 100/0; mutacje czerwone; vite build OK
+- Limity: NIE ZMIERZONO: zrzut pelnego panelu imperium z zywej gry (Nauka Zywnosc Handel); stuby DOM glob w tescie moga maskowac efekty DOM; test kruchy wobec refaktorow tekstu zrodla
+
+## ROBOCZA 33fe7440 -- 2026-11-14 -- FALA 751: Narzedzia weryfikacji bitwy na zywo po pelnym ruchu (tylko gra/tools) (testowa)
+
+- Nowe narzedzia pomiarowe: mieszana armia na zywo, ucieczka poscig neverRout, driver bitwy recznej vs AUTO, checker; kod gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; 5 bramek zielone; mutacje 28/28; mieszana armia 6 bitew 0 naruszen; ucieczka poscig 21 bitew 0 naruszen; FC live ziarno 4: 9 bitew 0 naruszen; vite build OK
+- Limity: NIE ZMIERZONO: limit odwrotu armii po bitwie (kampania); zrzuty tylko ilustracja; tryb reczny vs AUTO rozbieznosc 12/12 par - hipoteza niezweryfikowana; powtorzyc N2 po FALI 750
+
+## ROBOCZA 38fa0673 -- 2026-11-14 -- FALA 750: Bitwa: arbitraz kolizji o pole - piechota przed lucznikiem (AUTO i SKIP) (testowa)
+
+- Gdy lucznik i piechota walcza o to samo pole, piechota je dostaje a lucznik zatrzymuje sie pole wczesniej i faza liczy sie od nowa; ten sam typ - wygrywa mniejsze ID; konnica rydwany i machiny bez zmian; tryb reczny pomija arbitraz
+- Weryfikacja: tsc 0; logic 213/213; arbitraz test 30/0 (zywa bitwa 17 kolizji bez ustapienia piechoty); full-move-strike 8/8 mutacje 4/4; pace-latch 5/5; pursuit-move 13/13; pace-equal-line 23/0; vite build OK
+- Limity: NIE ZMIERZONO: zrzut okna UI w AUTO; doctrine-live r4 po FALI 749; large-mixed-doctrine-matrix; arbitraz w bitwie recznej (pytanie do wlasciciela); dlug Rust REPIN logiki bitewnej
+
+## ROBOCZA c97f5ece -- 2026-11-14 -- FALA 749: Testy live bitwy i rozejmu: naprawa serwera sidecarow i galaz L2f-L2h (tylko narzedzia) (testowa)
+
+- Naprawa routingu serwera testowego w battle-doctrine-live r3 r4 i line-advance (HTML zamiast sidecarow); diplo-truce-live z galezia brak odpowiedzi gracza na oferte pokoju stalego = wojna bez kary; kod gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; 5 bramek zielone; diplo-truce-live 30/0; r4 5/5; mutacja czerwieni L2h; vite build OK
+- Limity: NIE ZMIERZONO: odmowa AI wobec propozycji gracza; stabilnosc r3 r4 przy wielu przebiegach; scena before w line-advance; etykieta L2b do przeetykietowania
+
+## ROBOCZA ead39d06 -- 2026-11-14 -- FALA 748: Karta surowca: same liczby brutto i netto, szczegoly zawsze zwiniete (testowa)
+
+- Karta surowca pokazuje +brutto · +netto zamiast Brutto/netto / ture; naglowek zakladki Surowce +brutto → +netto z opisem w tooltipie; Zobacz szczegoly zuzycia i Skad zapasy zawsze zwiniete po kazdym przerysowaniu (zgloszenie wlasciciela 2026-11-15)
+- Weryfikacja: tsc 0; logic 213/213; resource-card-numbers-only 14/0 (mutanty); gross-net 24/0; plusx-badge 31/0; skad-dom 13/0; zrzut zywego Chromium obejrzany; vite build OK
+- Limity: NIE ZMIERZONO: zwijanie Skad zapasy na zywej grze przy niezerowych zapasach; hud-topbar czesc B z --dist (dlug harnessu endTurn); wiki 53.1a i linie brutto/netto w Nauce Zywnosci Handlu bez zmian
+
+## ROBOCZA 5340ea32 -- 2026-11-14 -- FALA 747: Bitwa: strzelcy po zderzeniu uzywaja pelnego ruchu (reszta reguly pelnego ruchu) (testowa)
+
+- Strzelec po pierwszym zderzeniu wrecz nie konczy aktywacji z niewykorzystanym ruchem gdy istnieje sciezka do pozycji strzalu: filtr reguly linii plus fallback BFS omijajacy slad aktywacji bez ping-ponga; przed zderzeniem bez zmian; test T5 zielony
+- Weryfikacja: tsc 0; logic 213/213; battle-full-move-strike 8/8 mutacje 4/4; pace-latch 5/5; line-advance-uniform bez FAIL; pursuit-move 13/13 (FC); pace-equal-line-live 23/0 (FC); vite build OK
+- Limity: NIE ZMIERZONO: strzelcy bez dozwolonego kroku w innych ziarnach, wyjatek doktryn Obrona/Ostrzal osobno; jedna trojka determinizmu w pierwszym przebiegu FC dala inny hash (ponowienie 14/15 i 7/7 identyczne); dlug Rust REPIN ruchu strzelcow
+
+## ROBOCZA 25a4f1f4 -- 2026-11-14 -- FALA 746: Skad zapasy czesc B: stan details karty, hak civTest, dokumentacja i pomiar wydajnosci ksiegi (testowa)
+
+- Stan details karty Skad zapasy zachowany przy przerysowaniu; hak openEmpirePanel za civTest; dokumentacja hasla i poradnika, wikiBundle; pomiar wydajnosci ksiegi 5 par sekwencyjnych mediana -2,15 proc; zrzuty kart soli i ceramiki; diagnoza endTurn: bramka NNS w turze 1
+- Weryfikacja: tsc 0; logic 213/213; resource-ledger 1030/0; skad-ui 18/0; skad-dom 13/0; hook-gate 6/0; vite build OK
+- Limity: NIE ZMIERZONO: przyczyna timeoutu endTurn t57; pomiar wydajnosci w konfiguracji domyslnej (po harnessie 417); pochodzenie buildu dist w pomiarze
+
+## ROBOCZA 4e90b36a -- 2026-11-14 -- FALA 745: Bitwa: pelny ruch, cios przy dojsciu, ruch dalej (jeden cios na ture) + narzedzia testowe dlugu bazowego (testowa)
+
+- Od pierwszego zderzenia wrecz jednostka uzywa pelnego ruchu, uderza przy dojsciu, rusza ku nastepnemu wrogowi, jeden cios na ture, reszta ruchu przepada gdy brak dokad isc; rowne wejscie szeregu do pierwszego zderzenia bez zmian; wyjatki doktryny Obrona/Ostrzal, reczny rozkaz, uciekajacy, oblezenie muru; dokumentacja i wikiBundle; narzedzia: city-cession-r3, json-descriptions, truce-r1/live, stol-pw-sum, trade-route-live
+- Weryfikacja: tsc 0; logic 213/213; battle-full-move-strike 8/8 mutacje 4/4; pace-latch 5/5; city-cession-r3 72/0; json-descriptions 19/0; truce-r1 31/0; stol-pw-sum 168/0; vite build OK
+- Limity: ZNANA POZOSTALOSC: T5 piechota 2/80 aktywacji (temat RESIDUAL-INFANTRY-Q2); NIE ZMIERZONO: animowany AUTO, doktryny w realnej bitwie, oblezenie muru, tryb reczny; dlug bazowy doctrine-live r3, line-advance-browser; dlug Rust REPIN
+
+## ROBOCZA a070d9a3 -- 2026-11-14 -- FALA 744: Okno przed bitwa: polskie nazwy zamiast surowych ID i lista wojsk nie zaslonieta (testowa)
+
+- Etykiety matrix i terenu w oknie rozstawienia po polsku (bez Matrix:walka_*, plytkie_morze, atak_piechota, pancerz_piechota); lista wojsk 12 jednostek w 1024x640 w viewport; testy prebattle-labels i live
+- Weryfikacja: tsc 0; logic 213/213; prebattle-labels 297/0; civ-bonusy 56/0; civ-matrix-semantic-labels 490/0; population-civ-matrix-wiring 122/0; live Chromium 3 rozdzielczosci ASSERT OK; vite build OK
+- Limity: NIE ZMIERZONO: gestosc listy przy 640 px, wartosci premii w chipach (decyzja wlasciciela); dlug bazowy defense-breakdown-test; dlug Rust REPIN
+
+## ROBOCZA a8c8c83c -- 2026-11-14 -- FALA 743: Oferta handlowa AI przy malej potrzebie: najmniej jeden pelny blok epoki (testowa)
+
+- Podloga bloku liczona z surowej potrzeby: oferta AI przy malej potrzebie = 1 blok (Kamien 10 / Braz 50 / Zelazo 100) zamiast 3; duza potrzeba bez zmian; dokumentacja i wikiBundle
+- Weryfikacja: tsc 0; logic 213/213; test min-one-block 12/0; qty-cap 18/0; trade-era 185/14/14/51; need-from-surplus 12; oneshot-overpay 10; to-player 25; ai-offer-balance 29; vite build OK; mutacja czerwona 8/4
+- Limity: NIE ZMIERZONO: zywa gra i czestosc ofert AI po zmianie; dlug Rust REPIN
+
+## ROBOCZA c02e7c50 -- 2026-11-14 -- FALA 742: Handel surowcami: blok zalezny od epoki umowy (10/50/100 szt. za ten sam PN) + narzedzie weryfikacji ostrzezenia przed bitwa (testowa)
+
+- Okno wymiany, ocena propozycji, bramka uczciwosci, oferty AI, Szybka umowa i walidacja liczone w jednej epoce umowy (wyzsza z epok stron); umowy cykliczne zamrazaja epoke; migracja zapisu; dokumentacja i wikiBundle; narzedzie live-verify ostrzezenia przed bitwa (bez zmian gry)
+- Weryfikacja: tsc 0; logic 213/213; testy trade-era table 185 ai 14 deal 14 explicit 51; value-catalog 82; acceptance-points 304; ai-offer-balance 29; ai-trade 25/12/10; DOM Chromium 58/0; mutacje czerwone; vite build OK
+- Limity: NIE ZMIERZONO: tick umowy cyklicznej w pelnej grze, saveload-live; dlug Rust: pn_per_szt -> pn_per_blok, REPIN
+
+## ROBOCZA 64a33004 -- 2026-11-14 -- FALA 741: Oferty handlowe AI do gracza maksymalnie 3x potrzeby AI (testowa)
+
+- Ilosc odbioru AI w ofercie handlowej do gracza wynosi min(nadwyzka gracza, 3 x potrzeba AI) z parametrem w ai-params.json (mnoznik 3 i staly sufit iteracji pętli 64); uczciwosc wyceny, cooldown 15 i limit 1 oferty na AI bez zmian; naprawiony dlug testowy 379
+- Weryfikacja: tsc 0; logic 213/213; qty-cap 18/0; need-from-surplus 12/0; oneshot-overpay 10 OK; proposal-branch 10/0; proposal-to-player 25 OK; 5 bramek zielone; mutacje czerwone; real wycena 60/60 bez pominiec
+- Limity: Okno estymaty oddania (+-3 kroki) do zmierzenia na wycenie blokowej epok po wdrozeniu 416; e2e live Chromium wiring NIE ZMIERZONO przez FC (operator 46/0); mgla-sciezka-inwariant 41/1 i json-descriptions-sync 17/2 dlug bazowy; brak aktualizacji Civpedii
+
+## ROBOCZA 744e4039 -- 2026-11-14 -- FALA 740: Skad zapasy zrodla zasobow w panelu surowca (testowa)
+
+- Karta surowca w panelu imperium pokazuje liste zrodel przyrostu i zuzycia z ostatnich 10 tur (Warzelnia, umowa wymiany, obywatele, lup z bitwy, zwroty, zdobycie miasta, dary i inne); dziennik zrodel zapisuje sie w zapisie gry (tylko wlasciciele-ludzie)
+- Weryfikacja: tsc 0; logic 213/213; ledger 1030/0 engine 20/0 consume 30/0 trade 27/0 owner-delta 8/0 save-history 15/0 skad-ui 18/0; gross-net 22/0 plusx 31/0; FC: Chromium realpath sources 45/0 save 8/0 wycinka 5/0, mutacje 17/18, hash ON=OFF zgodny
+- Limity: Brak pomiaru rozmiaru dziennika po 60 turach i zrzutow Chromium soli i ceramiki (czesc B); endTurn timeout w turze ok. 31 w scenie testowej niezbadany (czesc B); bunt w petli tury bez mutacji (m17); dziennik AI nie przezywa zapisu; martwa sonda ledgerAuditE3c do sprzatniecia; dokumentacja Civpedii czesc B
+
+## ROBOCZA 83dc9914 -- 2026-11-14 -- FALA 739: Linia Unicestwienie w podsumowaniu bitwy (testowa)
+
+- Gdy czwarty odwrot w turze niszczy armie podsumowanie bitwy pokazuje osobna linie Unicestwienie ze strona, liczba jednostek i powodem po polsku; bez unicestwienia linii nie ma
+- Weryfikacja: tsc 0; logic 213/213; annihilation 20/0 (mutacje M1-M5 czerwone); retreat-limit 43/0; post-battle-map 32/0; Chromium: linia dla obrony i atakujacego, brak bez unicestwienia
+- Limity: Linia tylko w podsumowaniu mapowym po bitwie (nie na ekranie konca bitwy recznej w scenie); licznik = jednostki zywe w chwili unicestwienia (podzbior strat); nie testowano pelnego boot gry z prawdziwa bitwa; main.ts i battle-summary.ts poza litera allowlisty
+
+## ROBOCZA 9e372ec7 -- 2026-11-14 -- FALA 738: Zetony widoku miasta czytelne min 12 px (testowa)
+
+- Zetony w gornej linii widoku miasta maja min 12 px: jedna linia w skali co najmniej 12 px, a gdy to nie wystarcza zawijanie do 2 linii przy waskim oknie; szerokie okna bez zmian
+- Weryfikacja: tsc 0; logic 213/213; city-view-layout 168/0 (mutanty czerwone); city-side-panels 61/0; left-banner-overflow 74/0; zrzut 1366x768 duze liczby obejrzany
+- Limity: Przy zwyklych wartosciach w oknach 1280 i 1366 zetony zostaja w jednej linii 15,0 i 16,2 px (decyzja wlasciciela otwarta: zawijac takze wtedy); weryfikacja w fixture esbuild nie w pelnej grze; build-panel-ulepszenia-scroll G2b 1 FAIL dlug bazowy
+
+## ROBOCZA d61d8e2a -- 2026-11-14 -- FALA 737: Szlak handlowy tylko premia bez przenoszenia zapasow (testowa)
+
+- Aktywny szlak handlowy nie przenosi juz zapasow miedzy cywilizacjami (usuniety blok Handel E3c i martwy kod przeplywu), zostaje dochod Pieniadza ze szlaku, bonusy i grant dostepu do jednostek; teksty gracza i dokumentacja poprawione
+- Weryfikacja: tsc 0; logic 213/213; trade-ilosc 23/0 zloto-szlak 48/0 trade-grant 62/0 routes 96/0 income 134/0 limit 76/0 ownership 18/0 contact-only 36/0 ledger-trade 27/0; live Chromium 12/0 (6 tur, zapasy bez zmian, dochod 6/tura); mutacja czerwona
+- Limity: Sonda ledgerAuditE3c w main.ts zostaje (martwa, do sprzatniecia); grant dostepu w realnej turze NIE ZMIERZONO (pokryty trade-grant-test); surow-civ-storage sekcja G 4 FAIL i zloto-test 7 FAIL to dlug bazowy; hooki civTest poza litera allowlisty
+
+## ROBOCZA 152543dc -- 2026-11-14 -- FALA 736: Panel rekrutacji w panelu armii i usuniecie plakietki plus X (testowa)
+
+- Panel Rekrutacja cala cywilizacja jest sekcja panelu armii na samej gorze nad wodzem, przycisk REKRUTACJA usuniety z gornego paska; na kartach surowcow usunieta plakietka plus X obok Brutto netto
+- Weryfikacja: tsc 0; logic 213/213; recruit testy 13/0 29/0 17/0 31/0 18/0 11/0; plusx 31/0 (DOM Chromium); gross-net 22/0; live recruit 29/0 17/0
+- Limity: map-controls-behind-panels wiersz rekrutacja-imperium N/A po przeniesieniu; Civpedia/poradnik recruit niesprawdzone; zrzut plus X z zywej gry NIE ZMIERZONO; martwy wiersz w map-controls do usuniecia
+
+## ROBOCZA 763744a1 -- 2026-11-14 -- FALA 735: Respekt: zdarzenia przewagi militarnej w pasku (testowa)
+
+- Zdarzenia Respektu Przewaga militarna +15 i Slabszy militarnie -10 wpiete w pasek Respektu w trzech miejscach, korekta zastepowana przy kazdym progu, teksty Civpedii i poradnika
+- Weryfikacja: tsc 0; logic 213/213; offset 12/0 events 30/0 edge 12/0; Chromium 40/0; mutacja czerwona; dlug bazowy city-cession-r3 stol-pw-sum diplo-truce-live
+- Limity: Pelny zapis slotu IndexedDB z polami respektu NIE ZMIERZONO; clamp przy bazie >=86 NIE ZMIERZONO; Z1 Z2 Z4 DO POTWIERDZENIA
+
+## ROBOCZA 61b50b89 -- 2026-11-14 -- FALA 734: Blokada Zakoncz ture jako wydarzenie w panelu Wazne (testowa)
+
+- Blokada Zakoncz ture pokazywana jako karta Nie mozna zakonczyc tury w zakladce Wazne z pelnym komunikatem bramki i przyciskami Zwieksz podatek do X, Zmienie sam, Otworz racje; karta znika po ustapieniu blokady
+- Weryfikacja: tsc 0; logic 213/213; end-turn-block-event 35/0; end-turn-gate-projection-only 49/0; Chromium 25/0 pageerrors 0; mutacje czerwone
+- Limity: Klik w suwaki podatku i racji w DOM nie mierzony; hud.ts poza allowlista (3 linie, zaakceptowane)
+
+## ROBOCZA 46c6683b -- 2026-11-14 -- FALA 733: Skad zapasy: ksiega zrodel zapasow (backend, partia 2) (testowa)
+
+- Ksiega zrodel i zuzycia surowcow panstwa (teren, Warzelnia, wycinka lasu, konwersje, utrzymanie, obywatele, budowa, rekrutacja, Umowa wymiany z civ, Mennica, limit magazynu); zmiana magazynu rowna sumie ksiegi dla 9 surowcow w zywej grze; bez widoku UI (partia 4)
+- Weryfikacja: tsc 0; logic 213/213; ledger 1030/0; consume 30/0; engine 20/0; trade 27/0; zywy Chromium 2 ziarna x 30 tur roznica 0 hash 30/30; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: seed 99991, E3c z aktywnymi trasami, czas tury (+9,5% w jednym pomiarze); ABC: szlak E3c vs decyzja 311; brak UI i zrodel lup/zwroty/zdobycie/dary (osobny temat); dlug Rust REPIN
+
+## ROBOCZA 07c5147b -- 2026-11-14 -- FALA 732: Odwroty: do 3 na ture, czwarty unicestwia armie (testowa)
+
+- Armia moze sie wycofac do trzech razy na ture; po wyczerpaniu limitu kolejna przegrana w polu oznacza unicestwienie ocalalych (obrona i atak, gracz i AI); licznik zeruje sie w nastepnej turze; przycisk Wycofaj wyszarzony i komunikat Armia unicestwiona
+- Weryfikacja: tsc 0; logic 213/213; retreat-limit 43/0; pre-battle-retreat-exhausted 37/0; Chromium PASS; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: toast i zrzut pelnej gry; brak wpisu w podsumowaniu bitwy; dlug Rust REPIN licznika odwrotow
+
+## ROBOCZA 34f8fb43 -- 2026-11-14 -- FALA 731: Zwyciezka armia w AUTO: pelny ruch w poscigu (testowa)
+
+- W bitwie AUTO i SKIP zwyciezcy nie tracą ruchu po zerwaniu kontaktu z wrogiem: sufit tempa nie wraca (zatrzask wzwarcia), ucięte ścieżki są przeplanowywane, konnica nie robi ping-pongu; konnica z wolna droga wykorzystuje pule ruchu (test behawioralny)
+- Weryfikacja: tsc 0; logic 213/213; pace-latch 5/5; pursuit-move-behavior 3/3 (mutacje 2/2); skip=auto 42/0; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: pelna macierz s1-s3 w Chromium; do decyzji wlasciciela: regula ciosu konnicy i arbitraz kolizji piechoty/lucznikow; dlug Rust REPIN
+
+## ROBOCZA 1771231a -- 2026-11-14 -- FALA 730: Oferty handlowe AI: ilosc odbioru z nadwyzki gracza (testowa)
+
+- Ilosc, o ktora prosi AI w ofercie handlowej do gracza, wynika z nadwyzki gracza zamiast sztywnego kroku 10 (jedno miasto, 20 obywateli: 70 cegly za 350 drewna, 350 PW = 350 PW); uczciwosc wyceny, cooldown 15 i limit 1 oferty na AI bez zmian
+- Weryfikacja: tsc 0; logic 213/213; need-from-surplus 12/0; wiring-e2e-live 47/0 (Kamien i Braz); proposal-branch 10/0; proposal-to-player 25 OK; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: czestosc ofert (harness zawiesza sie w turze 10); do decyzji wlasciciela: limit odbioru A/B/C i limit wydajnosciowy petli; dlug bazowy ai-trade-oneshot-overpay-limit-test #379; dlug Rust REPIN
+
+## ROBOCZA f074e0f1 -- 2026-11-14 -- FALA 729: Brutto i netto na kartach surowcow (testowa)
+
+- Przy kazdym surowcu w panelu surowcow widac Brutto i netto na ture (netto po zuzyciu obywateli, budynkow i wojska); suma kart rowna sie naglowkowi
+- Weryfikacja: tsc 0; logic 213/213; resource-cards-gross-net 22/0; hud-gross-net-rest 820/0; zywy Chromium brutto 52 / netto -13; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: hotseat; plakietka +X obok Brutto/netto redundantna - do decyzji wlasciciela; 4 testy czerwone bazowe; dlug Rust REPIN nie dotyczy (UI)
+
+## ROBOCZA 9ba327d6 -- 2026-11-14 -- FALA 728: Widok miasta: zetony w jednej linii, boczne panele wyzej (testowa)
+
+- W widoku miasta zetony lewego i prawego bannera (Praca, Zywnosc, Skarbiec / Nauka, Kultura, Religia) ukladaja sie w jednej linii bez zawijania, skala dopasowuje sie do szerokosci okna; boczne panele zaczynaja sie tuz pod bannerami
+- Weryfikacja: tsc 0; logic 213/213; city-view-layout 120/0; side-panels-below-topbanners 61/0; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: dluga Produkcja/kolejka, realna gra; czytelnosc zetonow ok. 11 px w oknach 1280-1366 px przy 6-7 cyfrach do decyzji wlasciciela; dlug testowy recruitment-panel-compact-row 7 FAIL
+
+## ROBOCZA a2585e07 -- 2026-11-14 -- FALA 727: Kolejnosc badan: Obrobka drewna, Rolnictwo, Oswojenie zwierzat, Lowiectwo (testowa)
+
+- W panelu Mozesz wybrac cztery badania startowe wyswietlaja sie w kolejnosci Obrobka drewna, Rolnictwo, Oswojenie zwierzat, Lowiectwo (tylko kolejnosc listy gracza; AI i drzewko bez zmian)
+- Weryfikacja: tsc 0; logic 213/213; tech-choice-order 9/0; science-hub 7/0; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: pelna gra nowa gra -> panel badan; brak REPIN Rust (tylko UI)
+
+## ROBOCZA f2b31b16 -- 2026-11-14 -- FALA 726: Porzadek po wdrozeniach: hotseat, martwe pole pracy, rada 50, poradnik (testowa)
+
+- Test hotseat zielony; usuniete martwe pole suwak_praca_teren_domyslnie (bez zmiany zachowania); rada 50% zamiast 70% w poradniku i encyklopedii; poradnik: kara x0,75 za glod i deficyt, opis banera Stan; nowy test pilnujacy hasla oslabienie-glod-deficyt
+- Weryfikacja: tsc 0; logic 213/213; hotseat 16/0; guard 7/0; growthmult 24/0; FC PASS-WITH-NOTES
+- Limity: Dlug bazowy budynki-koszt-pracy-50-test 141/42; NIE ZMIERZONO determinism-save-load-resume; dlug Rust REPIN
+
+## ROBOCZA 4f75c30b -- 2026-11-14 -- FALA 725: Ceramika obywateli w Kamieniu, kierunek natarcia dla zaznaczonych jednostek (testowa)
+
+- Obywatele zuzywaja 1 ceramiki na obywatela na ture juz w epoce Kamienia (kara -2 Szczescia / -1% rozwoju do czasu Garncarni); w rozstawieniu bitwy Kierunek natarcia, Formacja i Konnica dzialaja tylko na zaznaczone jednostki (bez zaznaczenia cala armia)
+- Weryfikacja: tsc 0; logic 213/213; citizen-upkeep-era-mult 681/0; attack-dir 32 OK; FC PASS-WITH-NOTES x2
+- Limity: NIE ZMIERZONO: reczny pomiar kierunku natarcia w Chromium; dlug bazowy citizen-resource-upkeep 2 czerwone; dlug Rust REPIN
+
+## ROBOCZA 9a88937d -- 2026-11-14 -- FALA 724: Garncarnia 30-110, zmeczenie PW C=615 (obie strony), bramka Zakoncz ture (testowa)
+
+- Garncarnia produkuje 30/50/70/90/110 ceramiki na ture w epokach 1-5 (gracz i AI); cena pokoju stale 615 PW i licznik zmeczenia z miast obu stron; bramka Zakoncz ture liczy prognoze po turze od tury 1 (bez blokady przy braku recznych dzwigni)
+- Weryfikacja: tsc 0; logic 213/213; garncarnia 28/0; c615 11/0; end-turn-gate-projection 49/0; drain-keys 56/0; FC PASS-WITH-NOTES x3
+- Limity: NIE ZMIERZONO: zrzut Chromium karty Garncarni; dlug testowy bazowy bez zmian; dlug Rust REPIN
+
+## ROBOCZA 942060c9 -- 2026-11-14 -- FALA 723: Ceramika Spichlerza: Spichlerz I 10, Spichlerz Krolewski 20, bez utrzymania 2 ceramiki (testowa)
+
+- zuzycie ceramiki Spichlerza I 25->10, Spichlerza Krolewskiego 25->20 na miasto na ture; sol II 25 bez zmian; usuniete utrzymanie surowcowe 2 ceramiki ze Spichlerza II; karty, Civpedia, poradnik zaktualizowane
+- Weryfikacja: tsc 0; logic 213/213; building-upkeep-ceramics 645/0; spichlerz-drain-keys 56/0; spichlerz-drain-pipeline 33/0; mutacja czerwona; build Vite zielony
+- Limity: NIE ZMIERZONO: zrzut Chromium karty Spichlerza I/II; dlug bazowy building-upkeep-resources D10 i card-resource-purpose B/W; dlug Rust REPIN parametrow drain
+
+## ROBOCZA e40f5456 -- 2026-11-14 -- FALA 722: Domyslna racja 6 i zmeczenie wojna jako pozycja PW przy pokoju (testowa)
+
+- domyslna racja nowej gry gracza 6 (AI 4, stare zapisy 4); zmeczenie wojna jako pozycja PW Z = C x x^2 po stronie nie proponujacego (rabat 60 proc usuniety; AI i gracz; jedna funkcja dla tabeli i decyzji AI)
+- Weryfikacja: tsc 0; logic 213/213; default-food-ration 26/0; diplo-weariness-pw-behavior 87/0; weariness-as-pw-peace-item 76/0; zrzuty z gry t11 +13 PW i t15 +330 PW; build Vite zielony
+- Limity: NIE ZMIERZONO: Chromium panelu racji 6; stan silniejszej AI w pelnej grze; hotseat czerwony na bazie; do decyzji: C dla AI->gracz bez mnoznika cywilizacji, C 615 vs 500 zalezne od tury, lostCities tick vs tabela; dlug Rust REPIN
+
+## ROBOCZA a0956cb5 -- 2026-11-14 -- FALA 721: Ucieczka w bitwie z 50 procent ruchu (testowa)
+
+- uciekajace jednostki w bitwie poruszaja sie z 50 proc normalnego zasiegu: max(1, floor(zasieg x 0,5)); mnoznik w combat-params.json ucieczka.mnoznik_ruchu; zwykle jednostki bez zmian
+- Weryfikacja: tsc 0; logic 213/213; battle-flee-move-half Chromium 43/0 (czerwony na bazie, mutacja czerwona); pursued-destroyed 30/0; neverrout 58/0; build Vite zielony
+- Limity: NIE ZMIERZONO: tryb AUTO sceniczny, zlamanie w trakcie fali, tryb Pomin (instant); dlug bazowy mgla-sciezka-inwariant 41/1; dlug Rust REPIN
+
+## ROBOCZA 04833503 -- 2026-11-14 -- FALA 720: Baner statusu w audiencji dyplomatycznej: Stan, nie propozycja (testowa)
+
+- baner formalnego statusu w audiencji ma prefiks Stan: i podpowiedz To nie jest propozycja; tony i podpis bez zmian
+- Weryfikacja: tsc 0; logic 213/213; banner-test 14/0; real-render Chromium 3 stany 14/0 (czerwony na bazie 8 pass 6 fail)
+- Limity: NIE ZMIERZONO: zapis Sumerow (czy status wojny jest poprawny na zywo); poradnik 12-dyplomacja.md l.110 nie zawiera prefiksu; brak banera Propozycja AI
+
+## ROBOCZA ebc457ed -- 2026-11-14 -- FALA 719: Wyzszy mur zastepuje nizszy na liscie budowy (testowa)
+
+- nowa budowa palisady znika po odblokowaniu Murow kamiennych, Mury kamienne znikaja po odblokowaniu Murow ceglanych; ulepszenie stojacego muru zostaje; Cytadela i baszta bez zmian
+- Weryfikacja: tsc 0; logic 213/213; fortifications-superseded-build 38/0; stack-repro 49/0; upgrade-chain-ai 13/0; upgrade-chain-ui Chromium 17/0; build Vite zielony
+- Limity: NIE ZMIERZONO: test sciezki administratora; palisada juz w kolejce zostaje po odblokowaniu Murarstwa (do decyzji); dlug Rust REPIN reguly muru
+
+## ROBOCZA c84bae63 -- 2026-11-14 -- FALA 718: Mury kamienne bez kosztu cegly (testowa)
+
+- Mury kamienne (mury_kamienne): koszt 80 drewna + 80 kamienia bez cegly (karta 160/160), Mury ceglane zachowuja cegle; hasla Civpedii i katalog budynkow poprawione
+- Weryfikacja: tsc 0; logic 213/213; stone-walls-no-brick-cost 11/0; fortifications-stack-repro 49/0; koszty-surowcowe 161/0; Chromium: karta kosztu obu Murow
+- Limity: NIE ZMIERZONO: pelna budowa przy 0 cegly w grze; entity-card-contract-test (brak WebGL); utrzymanie surowcowe Murow kamiennych bez cegly (skutek jednego zrodla kosztu); dlug Rust REPIN danych
+
+## ROBOCZA 57aec16c -- 2026-11-14 -- FALA 717: Domyslne podatki 30/60/10 i podzial pracy 50/50 (testowa)
+
+- domyslny podzial podatkow nowej gry Skarb 30 / Nauka 60 / Zamoznosc 10 (AI i stare zapisy 20/60/20); domyslny podzial pracy Ulepszenia pula 50 / Budynki 50
+- Weryfikacja: tsc 0; logic 213/213; default-tax-split 28/0; default-labor-split 16/0; praca-jeden-podzial-kontrakt 634/0; build Vite zielony
+- Limity: NIE ZMIERZONO: zrzut panelu 30/60/10 w Chromium i wplyw 10 proc Zamoznosci na Szczescie; hotseat-ustawienia-kopiowane czerwony na bazie; dlug Rust REPIN
+
+## ROBOCZA bfecf63e -- 2026-11-14 -- FALA 716: FALA 716 - czestsze oferty handlowe AI: parytet wyceny (testowa)
+
+- Oferta handlowa AI do gracza: wycena przy wejsciu na stol liczona jak przy wyborze pary (mnoznik tur i tempo gry); pomiar 0,22 do 0,89 oferty na 100 tur; uczciwosc bez zmian
+- Weryfikacja: tsc 0; logic 213/213; ai-trade-offer-frequency-up 28/0; proposal-branch 10/0; proposal-to-player 25; vite build OK
+- Limity: Cel 3-6 ofert na 100 tur nieosiagniety (0,89); wymagana decyzja wlasciciela A/B/C/D; limit 1 oferty na AI na zywo NIE ZMIERZONO
+
+## ROBOCZA 31c3b98b -- 2026-11-14 -- FALA 715: FALA 715 - Civpedia: oslabienie przez glod i deficyt, poprawione teksty (testowa)
+
+- Nowe haslo Civpedii o oslabieniu jednostek przez glod wojska i deficyt zlota (gracz i AI, bez barbarzyncow); poprawione nieaktualne teksty niewdrozone; wikiBundle
+- Weryfikacja: tsc 0; logic 213/213; ui-text-leftovers zielone; diplo-civpedia-values 129; vite build OK
+- Limity: Tylko tresc Civpedii; zdarzenia Respektu przewaga militarna i slabszy militarnie niepodpiete w kodzie (osobny temat)
+
+## ROBOCZA 052dc9aa -- 2026-11-14 -- FALA 714: FALA 714 - ostrzezenie o oslabieniu w oknie przed bitwa (testowa)
+
+- Okno przed bitwa pokazuje ostrzezenie, gdy jednostki gracza sa oslabione przez glod wojska lub deficyt zlota (kara bez zmian; wyswietlanie)
+- Weryfikacja: tsc 0; logic 213/213; prebattle-weakened-warning 22/0; vite build OK; zrzuty Chromium okna z kara i bez
+- Limity: Civpedia (zdanie o karze) nie dodana; sciezka live kampania-bitwa NIE ZMIERZONO
+
+## ROBOCZA 1394800a -- 2026-11-14 -- FALA 713: FALA 713 - AI nie ma ujemnego skarbca od tury 1 (testowa)
+
+- Skarbiec AI nie konczy tury ponizej zera od tury 1 (klamra dlugu AI bez pokrycia do 0, decyzja wlasciciela A); gracz bez zmian
+- Weryfikacja: tsc 0; logic 213/213; NNS ai-t2 11/0, c2 44/0, ai-from-turn1 27/0; T1-30 x3 ziarna: bez oslabienia AI; vite build OK
+- Limity: REPIN Rust po zmianie logiki AI; zywa gra przez Vite NIE ZMIERZONO
+
+## ROBOCZA 7ee44c0f -- 2026-11-14 -- FALA 712: FALA 712 - teksty: zwolnienie administratora, Civpedia (testowa)
+
+- Potwierdzenie zwolnienia administratora (spojny tekst 'panstwa'); Civpedia: zaufanie.md naglowek wdrozone; wikiBundle zregenerowany
+- Weryfikacja: tsc 0; logic-test 213/213; ui-text-leftovers-test i admin-dismiss-confirm-test zielone; vite build OK
+- Limity: Poradnik: czesc tekstow jeszcze niewdrozone (poza allowlista); zywa gra przez Vite NIE ZMIERZONO
+
+## ROBOCZA dc4ce140 -- 2026-11-14 -- FALA 711: Okno eliminacji ze stala maksymalna wysokoscia i przewijaniem (testowa)
+
+- Okno eliminacji i zdobycia miasta ma stala maksymalna wysokosc (wysokosc widoku minus margines) i przewija sie wewnatrz, naglowek nie jest przyciety; tylko CSS
+- Weryfikacja: tsc 0, logic-test 213/213, elimination-spectacle 84/0, full-spoils 114/0, toast-merge 56/0, nowy test okna 88/0 (4 rozmiary x 4 warianty), mutacja bazy czerwona
+- Limity: NIE ZMIERZONO: dokladny przypadek ze zrzutu wlasciciela nie odtworzony na bazie (wariant z widowiskiem mial juz max-height); zywa gra przez Vite. Jesli problem nadal wystepuje - prosze o rozmiar okna przegladarki i zrzut
+
+## ROBOCZA 7c4eb83b -- 2026-11-14 -- FALA 710: AI rownowazy skarbiec i spichlerz od tury 1 (testowa)
+
+- AI od pierwszej tury pilnuje, by skarbiec i spichlerz nie spadaly ponizej zera (dotad od tury 11); gracz ma nadal wyjatek tur 1-10
+- Weryfikacja: tsc 0, logic-test 213/213, nowy test 27/0 (czerwony na bazie), c2 44/0, ai 8/0; pomiar seed 11 T1-30: naruszenia AI T1-10 70 -> 0, miasta i jednostki AI T30 bez zmian
+- Limity: NIE ZMIERZONO: ziarna 22 i 33, live Chromium 10 tur, test integracji main.ts T1-10. Dlug Rust: REPIN progu rownowazenia AI.
+
+## ROBOCZA f166f88b -- 2026-11-14 -- FALA 709: Zaufanie w wojnie: martwe pole usuniete, opis w Civpedii (testowa)
+
+- Usuniete martwe pole kryzysTurDoWojny=5 z danych dyplomacji (licznik tur do wojny zalezy od profilu pary 3-7); Civpedia opisuje zaufanie 0 w wojnie i brak stalej N=6
+- Weryfikacja: tsc 0, logic-test 213/213, nowy test 17/0, json-descriptions-sync 19/0, war-brake-unit 69/0, regeneracja wikiBundle bez roznic
+- Limity: NIE ZMIERZONO: weryfikacja w przegladarce. Zachowanie gry bez zmian.
+
+## ROBOCZA 7ef7779d -- 2026-11-14 -- FALA 708: Karty jednostek ze statystykami z silnika walki (testowa)
+
+- Karty jednostek (miasto, panel jednostki, karta w wiadomosci) pokazuja atak/obrone/zdrowie/pancerz/obrazenia tak jak liczy je silnik walki; wspolny modul unitEngineStats
+- Weryfikacja: tsc 0, logic-test 213/213, unit-card-stats-engine-canon-test PASS, unit-detail-card-entitycard-migration 40/0, vite build
+- Limity: NIE ZMIERZONO: zrzut Chromium karty Wojownika, wikiBundle/Civpedia, Bonus szarzy. Dla 67/75 jednostek zmieniaja sie widoczne liczby.
+
 ## ROBOCZA ab171a4c -- 2026-11-14 -- FALA 707: Rzeki szybciej + panel oblezenia zwezony (testowa)
 
 - Generacja swiata: pamiec srodka ladu w etapie Rzeki-uzupelnianie (BFS ziarna 22 Maly 4745 -> 1, ta sama suma kontrolna; mapy Maly 1-10 i Standardowy 22 bez zmian) oraz panel oblezenia: zwarty blok machin w 2 kolumnach (R-WEB-MAPGEN-RIVERS-FILL-CENTROID-PERF-Q1, R-WEB-UI-SIEGE-PANEL-NARROW-MACHINES-BLOCK-Q1)

@@ -17,6 +17,7 @@ import type { Hex }     from '../types/hex';
 import { Nakladka }     from '../types/hex';
 import type { GameData, BuildingDef } from '../data/loader';
 import aiParamsRaw from '../../data/ai-params.json';
+import diplomacyAcceptanceRaw from '../../data/diplomacy-acceptance-points.json';
 import type { RuntimeUnit } from '../units/setup';
 import { isWarAllInCapitalEnabled, planWarAllInCapital, type WarAllInContext } from './warAllInCapital';
 import {
@@ -49,7 +50,7 @@ import {
   type DifficultyLevel,
 } from './city-state-difficulty';
 import type { City, CityPodzialHandlu } from './cities';
-import { canFoundCity, MAX_PROCENT_NAUKA, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA, DEFAULT_PODZIAL_HANDLU, isCityLostOf }    from './cities';
+import { canFoundCity, MAX_PROCENT_NAUKA, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA, LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14, isCityLostOf }    from './cities';
 import { evaluateFoundCityAffordance } from './city-founding';
 import {
   aiBypassClusterConsolidation,
@@ -1932,6 +1933,38 @@ function applyArmyCompositionProgram(
   return kept;
 }
 
+/** Najtansza jednostka bojowa (units.json: Wojownik, 5 Pieniadza) -- baza zawsze dostepna; garnizon pustego miasta. */
+export const EMPTY_CITY_GARRISON_UNIT_ID = 'Wojownik';
+
+/**
+ * R-WEB-AI-WAR-CITY-GARRISON-ONE-REST-TO-GENERAL-Q1 (r3): ktore miasta AI maja dostac rekrutowany garnizon.
+ * Warunek: AI w wojnie z cywilizacja (atWarWithCiv / cele wojny) ALBO wrog (aiCanEngageOwner) w zasiegu
+ * `ekspansja_zagroz_zasieg` od miasta, ORAZ brak w miescie jakiejkolwiek jednostki wojskowej (cywile,
+ * zwiadowcy, wodz i zaokretowani sie nie licza). Maks. 1 na miasto na ture. W pokoju bez zagrozenia: zero.
+ * Czysta funkcja (determinizm: kolejnosc myCities).
+ */
+export function emptyCityGarrisonRecruitIds(
+  myCities: readonly AICity[],
+  myUnits: readonly RuntimeUnit[],
+  enemyUnitsAll: readonly RuntimeUnit[],
+  opts: AITurnOpts,
+  data: GameData,
+): Set<string> {
+  const out = new Set<string>();
+  const atWar = opts.atWarWithCiv === true
+    || (opts.warAllIn !== undefined && opts.warAllIn.targets.length > 0);
+  const threatRange = getAiParam(data, 'ekspansja_zagroz_zasieg', AI_THREAT_RANGE_DEFAULT);
+  const hostile = enemyUnitsAll.filter(u => aiCanEngageOwner(opts, u.ownerId));
+  for (const city of myCities) {
+    const hasMilitary = myUnits.some(u => u.q === city.q && u.r === city.r
+      && !isCivilianUnit(u) && !isScoutUnit(u) && u.isGeneral !== true && u.embarked !== true);
+    if (hasMilitary) continue;
+    const threatened = hostile.some(eu => hexDistance(city.q, city.r, eu.q, eu.r) <= threatRange);
+    if (atWar || threatened) out.add(city.id);
+  }
+  return out;
+}
+
 /**
  * Returns the id of the building or unit this city should build next.
  * Priority based on Spec-AI §4 and archetype modifiers.
@@ -3494,6 +3527,13 @@ export function decideAITurn(
   data: GameData,
   opts: AITurnOpts = {},
 ): AICommand[] {
+  // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: zasadzki WROGA sa dla AI niewidoczne -- planista widzi heks jak
+  // pusty (pathfinding, "sily wroga w zasiegu", cele). Brak zasadzek = ta sama tablica (zero kosztu).
+  // (obrona r3, zarzut 8): ukrywamy zasadzki tylko tych właścicieli, z którymi AI może walczyć
+  // (ta sama bramka co executor: aiCanEngageOwner); sojusznik/pokój widzi swój heks jako zajęty.
+  if (units.some(u => u.ambush === true && u.ownerId !== playerId && aiCanEngageOwner(opts, u.ownerId))) {
+    units = units.filter(u => !(u.ambush === true && u.ownerId !== playerId && aiCanEngageOwner(opts, u.ownerId)));
+  }
   const prevGuard = activeMarchGuard;
   activeMarchGuard = opts.marchGuard ?? null;
   try {
@@ -3902,10 +3942,27 @@ function decideAITurnCore(
   // Step 2: PRODUCTION -- one build command per city
   // -------------------------------------------------------------------------
   opts.armyCompositionPending = [];
+  // R-WEB-AI-WAR-CITY-GARRISON-ONE-REST-TO-GENERAL-Q1 (r3): puste miasta AI w wojnie/zagrozeniu
+  // dostaja garnizon z priorytetem (polecenia 'build' najtanszej jednostki PRZED reszta produkcji).
+  const garrisonRecruitCityIds = emptyCityGarrisonRecruitIds(
+    myCities, myUnits, enemyAllUnitsRegardlessOfVisibility, opts, data,
+  );
+  const garrisonCmds: AICmdBuild[] = [];
   for (const city of myCities) {
     const buildId = chooseCityProduction(
       city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, difficultyParams,
     );
+    const isGarrisonCity = garrisonRecruitCityIds.has(city.id);
+    if (isGarrisonCity) {
+      const rest = buildId === null ? [] : [buildId, ...(opts.lastProductionFallbackIds ?? [])];
+      garrisonCmds.push({
+        type: 'build', cityId: city.id, buildingId: EMPTY_CITY_GARRISON_UNIT_ID,
+        fallbackIds: rest.filter(id => id !== EMPTY_CITY_GARRISON_UNIT_ID),
+      });
+      // Gdy wybrana produkcja to jednostka bojowa, garnizon ja zastepuje (jeden zakup wojska na miasto).
+      if (buildId === null || buildId === EMPTY_CITY_GARRISON_UNIT_ID
+        || data.units.some(u => u.Jednostka === buildId && armyClassOfUnit(u) !== null)) continue;
+    }
     if (buildId !== null) {
       // R-WEB-AI-ARMY-COMPOSITION-PER-CIV-Q1: kolejne miasta tej tury widzą już wybraną jednostkę.
       if (data.units.some(u => u.Jednostka === buildId && armyClassOfUnit(u) !== null)) {
@@ -3920,6 +3977,12 @@ function decideAITurnCore(
         fallbackIds: opts.lastProductionFallbackIds ?? [],
       });
     }
+  }
+  if (garrisonCmds.length > 0) {
+    // Priorytet: garnizony pustych miast przed pozostalymi zakupami tej tury (kolejnosc polecen = kolejnosc egzekucji).
+    const firstBuildIdx = commands.findIndex(c => c.type === 'build');
+    const insertAt = firstBuildIdx === -1 ? commands.length : firstBuildIdx;
+    commands.splice(insertAt, 0, ...garrisonCmds);
   }
 
   // -------------------------------------------------------------------------
@@ -4702,13 +4765,32 @@ function applyWarAllInCapitalToCommands(
       keep.add(cmd.unitId);
     }
   }
-  let planned = eligible.filter(u => !keep.has(u.id));
-  if (planned.length === 0) return;
+  // R-WEB-AI-WAR-CITY-GARRISON-ONE-REST-TO-GENERAL-Q1: w wojnie kazde miasto AI, ktore ma na
+  // swoim heksie jednostke bojowa, zatrzymuje JEDNA z nich jako garnizon (nie wychodzi do marszu
+  // ani zbiorki, nawet gdy general jest daleko). Wodz (isGeneral) nie jest garnizonem. Reszta
+  // jednostek idzie do marszu/zbiorki jak dotad. Miasta puste NIE sa tu uzupelniane (proba
+  // przesuniecia najblizszej jednostki ustawiala ja poza obroncy domu -- ai-war-defend-home-test
+  // gubil miasto; patrz runda 1 raportu). Rekrutacja NIE jest zmieniana.
+  const compareIds = (a: RuntimeUnit, b: RuntimeUnit): number => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  const garrisonIds = new Set<string>();
+  for (const city of cities.filter(c => c.ownerId === playerId).sort(
+    (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+  )) {
+    const atCity = myUnits.filter(u => u.q === city.q && u.r === city.r && !keep.has(u.id)
+      && !isCivilianUnit(u) && !isScoutUnit(u) && u.isGeneral !== true && u.embarked !== true);
+    // Jednostka bojowa bez pozostalego ruchu (ruchLeft <= 0) i tak zostaje w miescie -- ono juz
+    // ma garnizon; druga jednostka nie jest zatrzymywana bez potrzeby.
+    if (atCity.some(u => u.ruchLeft <= 0)) continue;
+    const stayers = atCity.filter(u => eligibleIds.has(u.id)).sort(compareIds);
+    if (stayers.length > 0) garrisonIds.add(stayers[0]!.id);
+  }
+  let planned = eligible.filter(u => !keep.has(u.id) && !garrisonIds.has(u.id));
   const plannedIds = new Set(planned.map(u => u.id));
   for (let i = commands.length - 1; i >= 0; i--) {
     const cmd = commands[i]!;
-    if (cmd.type === 'move' && plannedIds.has(cmd.unitId)) commands.splice(i, 1);
+    if (cmd.type === 'move' && (plannedIds.has(cmd.unitId) || garrisonIds.has(cmd.unitId))) commands.splice(i, 1);
   }
+  if (planned.length === 0) return;
   // R-WEB-AI-ARMY-CONCENTRATION-REPLACEMENT-Q1 (flaga ARMY_CONSOLIDATION ON): jednostki spoza
   // skupiska >= ARMY_CONCENTRATION_MIN_UNITS (np. armia zastepcza po stracie glownej) nie
   // maszeruja na cel pojedynczo -- zbieraja sie w jednym miescie zbiorki; gdy prog zebrany,
@@ -6196,7 +6278,7 @@ import type { GameDifficulty } from './difficulty-cost';
 import { TypCywilizacji } from '../types/player';
 import {
   WAR_WEARINESS_PARAMS, warWearinessLevel, isWarWeary, loserDespair, despairStage, offerMultiplier,
-  wearyMilitaryShare, wearinessUnconditionalEndDue,
+  wearyMilitaryShare,
 } from './war-weariness';
 import {
   AI_TRADE_GOLD_MAX,
@@ -6532,10 +6614,10 @@ export const AI_MIASTO_ZADANIE_RW = 0.7;
 /** Tury wojny, po których silne AI żąda miasta (alternatywnie: zdobycie miasta gracza). */
 export const AI_MIASTO_ZADANIE_TURY_WOJNY = 20;
 /**
- * Cena bazowa pokoju w PW = traktaty.pokoj.punkty z diplomacy-acceptance-points.json (500).
- * Stała lustrzana — test r3 pilnuje zgodności z `treatyBasePnFromConfig('pokoj')`.
+ * Cena bazowa pokoju w PW = traktaty.pokoj.punkty z diplomacy-acceptance-points.json (615, stała C; R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615).
+ * Jedna prawda: czytane z JSON (nie lustro); test r3 pilnuje zgodności z `treatyBasePnFromConfig('pokoj')`.
  */
-export const AI_MIASTO_CENA_POKOJU_PN = 500;
+export const AI_MIASTO_CENA_POKOJU_PN: number = (diplomacyAcceptanceRaw as unknown as { traktaty: { pokoj: { punkty: number } } }).traktaty.pokoj.punkty;
 
 /** Próg rw oddania miasta: 0.15 − 0.01·(agresywność − 5); brak danych = agresywność 5. */
 export function aiMiastoPrzekazRwProg(agresywnoscRaw?: number): number {
@@ -6600,7 +6682,7 @@ export type AIDiplomacyCommand =
    */
   | { type: 'zada_miasto_za_pokoj';  targetId: string; powod: string; cityId: string; cityPn: number }
   /** R-WEB-TRUCE-Q1 r4 (N4): 'rozejm' gdy wojna < AI_ROZEJM_DO_TUR; brak pola = pokój (dawne zachowanie). */
-  | { type: 'zaproponuj_pokoj';      targetId: string; powod: string; rodzaj?: 'pokoj' | 'rozejm'; bezwarunkowy?: boolean }
+  | { type: 'zaproponuj_pokoj';      targetId: string; powod: string; rodzaj?: 'pokoj' | 'rozejm' }
   | { type: 'zadaj_trybut';          targetId: string; powod: string }
   | { type: 'oferuj_trybut_za_pokoj'; targetId: string; powod: string; goldOnce?: number }
   | { type: 'zaproponuj_sojusz'; targetId: string; powod: string; allianceKind?: 'defensywny' | 'pelny' }
@@ -7044,24 +7126,9 @@ export function decideAIDiplomacy(
     const wearyStage = despairStage(wearyDespair);
     const wearyCityBonus = wearyStage >= 2 ? WAR_WEARINESS_PARAMS.czlowiek.rwProgBonusMax * wearyDespair : 0;
     const wearyOfferMult = wearyStage >= 2 ? offerMultiplier(wearyStage, 0) : 1;
-    // R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: na końcu zmęczenia AI (także silniejsza) sama proponuje pokój
-    // BEZWARUNKOWY (bez miasta i zapłaty); gracz decyduje sam. Przed tym progiem obowiązują reguły miasta za pokój.
-    if (
-      rel.stanWojny
-      && rel.partnerId === '0'
-      && aiPeaceTimeOk
-      && wearinessUnconditionalEndDue(wearyLevel)
-    ) {
-      komendy.push({
-        type:     'zaproponuj_pokoj',
-        targetId: rel.partnerId,
-        rodzaj:   'pokoj',
-        // Flaga dla main.ts (enqueueNegotiationFromAiCmd): bez żądania płatności i bez wymogu oddania miasta.
-        bezwarunkowy: true,
-        powod:    `koniec zmeczenia wojna (zmeczenie ${wearyLevel.toFixed(2)}, tury wojny=${turnsAtWarRel}): pokoj bezwarunkowy (bez miasta i zaplaty)`,
-      });
-      continue;
-    }
+    // DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: przy 80% zmęczenia AI NIE składa pokoju bezwarunkowego —
+    // obowiązuje istniejąca eskalacja (pokój/rozejm z miastem poniżej). Pokój przy 100% jest wymuszony (tick AI↔AI,
+    // war-weariness.ts: runWarWearinessTick; wojny z graczem: patrz temat — gracz nie jest jeszcze objęty wymuszeniem).
     if (
       rel.stanWojny
       && rel.partnerId === '0'
@@ -7710,7 +7777,8 @@ type RawAiRushRow = Record<string, number | string | undefined>;
  */
 export function aiSeedPodzialHandlu(): CityPodzialHandlu {
   const procentNauka = Math.min(AI_FIXED_PROCENT_NAUKA, 100);
-  const procentLuksus = Math.min(DEFAULT_PODZIAL_HANDLU.procentLuksus, 100 - procentNauka);
+  // Zamożność seeda AI = 20% (podział sprzed 2026-11-14), NIE nowy domyślny podział gracza 10%.
+  const procentLuksus = Math.min(LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14.procentLuksus, 100 - procentNauka);
   return {
     procentNauka,
     procentLuksus,
@@ -7808,7 +7876,7 @@ export function decideAIEconomySliders(
   // pierwszym seedowaniem). ZASADA 3 (przekierowanie nadwyżki, main.ts ok. 29679-29719)
   // to ODRĘBNY mechanizm, poza tą funkcją — nie ruszany tutaj, nadal przywraca do tej
   // samej stałej po ustaniu nadwyżki (main.ts ok. 29705-29707, fallback DEFAULT_PODZIAL_
-  // PRACY.procentBudynki=70 tam NIE jest już osiągalny dla AI, bo aiSliderStateByOwner
+  // PRACY.procentBudynki=50 tam NIE jest już osiągalny dla AI, bo aiSliderStateByOwner
   // trzyma zawsze 50 od pierwszego wywołania tej funkcji).
   if (procentBudynki !== AI_FIXED_PROCENT_BUDYNKI) {
     procentBudynki = AI_FIXED_PROCENT_BUDYNKI;

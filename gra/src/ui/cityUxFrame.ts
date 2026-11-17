@@ -26,6 +26,20 @@ let frameRoot: HTMLDivElement | null = null;
 let mounts: CityPanelUxMounts | null = null;
 
 const TOP_H = 96;
+/** Szerokość całego górnego paska miasta (lewy baner + nazwa + prawy baner). Wcześniej 1480 px — ucinało wolne miejsce na żetony. */
+const TOP_STACK_MAX_PX = 1880;
+/** Skala żetonów górnego paska (`--civ-top-chip-scale` na `.civ-ux-top`): kolejne kroki, aż wszystkie żetony mieszczą się w jednej linii swojego banera. */
+const TOP_CHIP_SCALE_VAR = '--civ-top-chip-scale';
+const TOP_CHIP_SCALE_STEPS = [1, 0.94, 0.88, 0.82, 0.76, 0.7, 0.65, 0.6, 0.55, 0.5, 0.46, 0.44];
+/** R-WEB-UI-CITY-VIEW-CHIPS-READABLE-MIN-12PX-Q1: żeton nigdy poniżej 12 px (czytelność); ponad tę granicę nie wolno się kurczyć. */
+const TOP_CHIP_MIN_PX = 12;
+/** Gdy żetony nie mieszczą się w jednej linii w czytelnej skali, zawijają się — najwyżej do dwóch linii w jednym banerze. */
+const TOP_CHIP_MAX_ROWS = 2;
+/** Klasa na `.civ-ux-top`: włącza zawijanie żetonów (flank) — ustawiana tylko na etapie 2, bez niej układ jak dotąd (jedna linia). */
+const TOP_CHIP_WRAP_CLASS = 'civ-ux-top-wrap';
+/** Skala plakietki miasta (`--civ-top-city-scale`, zoom): używana dopiero, gdy żetony nie mieszczą się przy najmniejszej skali żetonów. */
+const TOP_CITY_SCALE_VAR = '--civ-top-city-scale';
+const TOP_CITY_SCALE_STEPS = [1, 0.9, 0.8, 0.7];
 const ICON_BAR_H = 0;
 const LEFT_W = CITY_LEFT_PANEL_W_PX;
 /** Lewy panel danych (produkcja) + rail produkcji po jego prawej krawędzi. */
@@ -70,8 +84,9 @@ function ensureFrameStyles(): void {
 .civ-ux-top{position:fixed;top:0;left:0;right:0;height:auto;min-height:${TOP_H}px;z-index:403;pointer-events:none;overflow:visible;
   display:flex;align-items:flex-start;justify-content:center;padding:5px 12px 4px 12px;}
 .civ-ux-top .civ-ux-panel-scope{height:auto;width:100%;display:flex;flex-direction:column;align-items:center;pointer-events:none;}
-.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack{width:fit-content;max-width:min(98vw,1480px);box-sizing:border-box;pointer-events:none;}
+.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack{width:fit-content;max-width:min(98vw,${TOP_STACK_MAX_PX}px);box-sizing:border-box;pointer-events:none;}
 .civ-ux-top .civ-ux-panel-scope .civ-v-top-stack .civ-v-w3-chips-flank{pointer-events:none;}
+.civ-ux-top.${TOP_CHIP_WRAP_CLASS} .civ-v-w3-chips-flank{flex-wrap:wrap;}
 .civ-ux-top .civ-ux-panel-scope .civ-v-top-stack button,
 .civ-ux-top .civ-ux-panel-scope .civ-v-top-stack .hover-detail-anchor,
 .civ-ux-top .civ-ux-panel-scope .civ-v-top-stack [data-res-stat]{pointer-events:auto;}
@@ -176,8 +191,60 @@ function queueSideTopFit(): void {
 }
 
 /** Mierzy dolną krawędź banerów górnych (lewy/prawy żeton + plakietka miasta) i ustawia `--civ-city-side-top`. */
+/**
+ * Żetony lewego i prawego banera: najpierw JEDNA linia pozioma (zmniejszanie skali tylko do czytelnej granicy
+ * TOP_CHIP_MIN_PX), a gdy i to nie wystarcza — zawijanie do najwyżej TOP_CHIP_MAX_ROWS linii w największej
+ * czytelnej skali. Dopiero gdy nie mieszczą się nawet tak, zmniejszana jest plakietka miasta (zoom).
+ * Żetony nigdy nie schodzą poniżej TOP_CHIP_MIN_PX (wąskie okno: drugi wiersz zamiast ~11 px).
+ */
+function fitCityTopChipScale(): void {
+  if (frameRoot === null) return;
+  const top = frameRoot.querySelector<HTMLElement>('.civ-ux-top');
+  if (!top) return;
+  // Etap 1 zawsze bez zawijania (jak dotąd: jedna linia); zawijanie włącza dopiero etap 2.
+  top.classList.remove(TOP_CHIP_WRAP_CLASS);
+  // Rozmiar bazowy żetonu (skala 1) → zestaw kroków skali, przy których żeton ma co najmniej TOP_CHIP_MIN_PX.
+  top.style.setProperty(TOP_CHIP_SCALE_VAR, '1');
+  const firstChip = top.querySelector<HTMLElement>('.civ-v-w3-chip');
+  const basePx = firstChip ? parseFloat(getComputedStyle(firstChip).fontSize) : 0;
+  const legible = basePx > 0
+    ? TOP_CHIP_SCALE_STEPS.filter((s) => s * basePx >= TOP_CHIP_MIN_PX - 0.01)
+    : TOP_CHIP_SCALE_STEPS;
+  const steps = legible.length > 0 ? legible : [1];
+  const fitsRows = (maxRows: number): boolean => Array.from(top.querySelectorAll<HTMLElement>('.civ-v-w3-chips-flank')).every((flank) => {
+    const fr = flank.getBoundingClientRect();
+    const chips = Array.from(flank.querySelectorAll<HTMLElement>('.civ-v-w3-chip'));
+    if (chips.length === 0 || fr.width === 0) return true;
+    const rows = new Set(chips.map((c) => Math.round(c.getBoundingClientRect().top))).size;
+    return rows <= maxRows && chips.every((c) => {
+      const cr = c.getBoundingClientRect();
+      return cr.left >= fr.left - 0.5 && cr.right <= fr.right + 0.5;
+    });
+  });
+  const set = (city: number, chip: number): void => {
+    top.style.setProperty(TOP_CITY_SCALE_VAR, String(city));
+    top.style.setProperty(TOP_CHIP_SCALE_VAR, String(chip));
+  };
+  // Etap 1: jedna linia w czytelnej skali (plakietka bez zoomu).
+  for (const s of steps) {
+    set(1, s);
+    if (fitsRows(1)) return;
+  }
+  // Etap 2: najwyżej dwie linie, w największej czytelnej skali.
+  top.classList.add(TOP_CHIP_WRAP_CLASS);
+  for (const c of TOP_CITY_SCALE_STEPS) {
+    for (const s of steps) {
+      set(c, s);
+      if (fitsRows(TOP_CHIP_MAX_ROWS)) return;
+    }
+  }
+  // Brak dopasowania: najmniejsza czytelna skala żetonów i najmniejsza plakietka.
+  set(TOP_CITY_SCALE_STEPS[TOP_CITY_SCALE_STEPS.length - 1] ?? 1, steps[steps.length - 1] ?? 1);
+}
+
 export function fitCitySideTop(): void {
   if (frameRoot === null) return;
+  fitCityTopChipScale();
   const els = Array.from(frameRoot.querySelectorAll<HTMLElement>(
     '.civ-ux-top .civ-v-w3-chips-flank, .civ-ux-top .civ-v-w3-city-badge',
   ));

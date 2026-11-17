@@ -886,7 +886,13 @@ function roadPlanHexes(
     isTraversable: (q, r) => reach.has(`${q},${r}`),
     extraRoadKeys: roadKeys,
   });
-  memo.plan = new Set(plan.hexes);
+  // R-WEB-ROADS-REACH-CITY-HEX-REGRESSION-Q2 (zgloszenie wlasciciela 2026-11-16): plan `planRoadNetwork` nie zawiera heksow miast
+  // (miasto = wezel), wiec droga konczyla sie na heksie SASIADUJACYM z miastem — bez `droga` na heksie miasta renderer nie rysuje
+  // ramienia do centrum (maska drogi, road-network.ts). Miasto z krawedzia w planie dostaje heks miasta jako element sieci
+  // (ten sam kandydat co kazdy heks planu, reguly kosztu/limitow bez zmian). Miasto bez krawedzi (wyspa, brak sciezki) — bez zmian.
+  const linked = new Set(plan.edges.flatMap(e => [e.a, e.b]));
+  const cityHexes = own.filter(c => linked.has(c.id)).map(c => `${c.q},${c.r}`);
+  memo.plan = new Set([...plan.hexes, ...cityHexes]);
   perMap.set(ownerId, { sig, plan: memo.plan });
   return memo.plan;
 }
@@ -1368,7 +1374,9 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     horseStockAvailable,
     tradeRouteKonUnlocked: false,
   };
-  const qualifies = buildImprovementQualifier(state);
+  // R-WEB-ROAD-PAVED-DIRECT-BUILD-OR-UPGRADE-Q1: auto-ulepszenia NIE stawiają brukowanej od zera
+  // (ich koszt to 25, a od zera gracz płaci 40) — zostaje dotychczasowa reguła „najpierw droga”.
+  const qualifies = buildImprovementQualifier(state, { direktBruk: false });
 
   // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 2): heksy z rzeką NA heksie — priorytet przy
   // wyborze NASTĘPNEGO heksu w pętli „heks po heksie" niżej. Ta sama definicja co

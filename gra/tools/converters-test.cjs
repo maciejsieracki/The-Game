@@ -41,7 +41,7 @@ const garncarnia = C.DEFAULT_CONVERTER_RECIPES.find(r => r.id === 'garncarnia');
 assert(!!garncarnia, 'PYTANIE-84 U-14: garncarnia→ceramika w katalogu');
 assert(!Object.prototype.hasOwnProperty.call(garncarnia.inputs, 'ceramika'),
   'U-14: Garncarnia NIE zużywa Ceramiki (tylko glina+drewno)');
-eq(garncarnia.throughputFallback, 50, 'R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): przepustowość Garncarnia fallback 50/t (było 10/t, P-KONWERTERY-PRZEPUSTOWOSC-Q1 2026-08-12, przed tym 6/t PYTANIE-84-B5)');
+eq(garncarnia.throughputFallback, 30, 'R-WEB-DATA-GARNCARNIA-THROUGHPUT-30-PLUS-20-PER-ERA-Q1: przepustowość Garncarnia baza (era 1) 30/t (była 50/t +10%/epokę)');
 assert(!C.DEFAULT_CONVERTER_RECIPES.some(r => r.id === 'mielerz'), 'Zadanie 1 (2026-07-23): Mielerz usuniety calkowicie');
 assert(!C.DEFAULT_CONVERTER_RECIPES.some(r => r.id === 'wielka_kuznia'), 'Maciej 2026-07-27: brak wielka_kuznia→stal (tylko pancerz)');
 assert(

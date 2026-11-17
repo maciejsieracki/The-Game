@@ -1,4 +1,8 @@
 'use strict';
+// WYCOFANY: dowód historyczny (R-WEB-TEST-DEBT-BASELINE-Q4, decyzja właściciela 2026-11-16, wariant: wczesne wyjście z kodem 0).
+// Powód: asercja „raw value differs from matrix meta_mnoznik_waluta/asyria” -- dane ledgera pr141 nieaktualne wobec macierzy; dane NIE są regenerowane.
+console.log('WYCOFANY: dowód historyczny -- pr141-current-evidence-ledger-test (v1)');
+process.exit(0);
 const fs=require('fs');const path=require('path');const crypto=require('crypto');
 const G=require('./pr141-current-evidence-ledger-generate.cjs');
 const ROOT=path.resolve(__dirname,'..','..');

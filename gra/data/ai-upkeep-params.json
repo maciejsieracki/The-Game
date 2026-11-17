@@ -1,0 +1,8 @@
+{
+  "AI_UPKEEP_RUNWAY_GATE": {
+    "wlaczone": true,
+    "runwayTurns": 15,
+    "margin": 0.1,
+    "opis": "R-WEB-AI-ARMY-UPKEEP-Q2 (dispatch Q1 DOPRECYZOWANIE 2026-10-25): bramka rekrutacji AI oparta na ZAPASIE (skarbiec złota, spichlerz żywności). wlaczone=true = WŁĄCZONA decyzją właściciela 2026-11-16 (R-WEB-AI-UPKEEP-RUNWAY-GATE-ENABLE-Q1, „B: włączyć teraz”); wlaczone=false = brak wpływu (hash jak baza). runwayTurns = minimalna liczba tur utrzymania, którą zapas musi pokryć po zakupie (PLACEHOLDER do strojenia po pomiarze). margin = margines bezpieczeństwa na zapas (0..0,99). Czytane w main.ts (aiUpkeepRunwayAllows)."
+  }
+}

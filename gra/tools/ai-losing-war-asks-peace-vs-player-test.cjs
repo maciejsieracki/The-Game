@@ -80,18 +80,18 @@ async function main() {
     let everyStateHasOneCmd = true;
     const gaps = [];
     // R-WEB-TEST-DEBT-DIPLO-WAR-PEACE-SIM-Q1 r3: t 3 → 10, t 8 → 11 (+ 12 zamiast zdublowanego 10); AI proponuje pokój dopiero od tury 10 wojny (t=8 też łamało bramkę).
-    for (const t of [10, 11, 12, 15, 16, 20, 60]) {
+    for (const t of [20, 22, 24, 30, 32, 40, 80]) {
       for (const gold of [0, 500]) {
         for (const nc of [2, 6]) {
           const cmds = decide(t, gold, nc).filter(c => c.targetId === '0');
           const peace = cmds.filter(c => PEACE_TYPES.has(c.type));
           peace.forEach(c => seenTypes.add(c.type));
           // R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: zaproponuj_pokoj (koniec zmeczenia, poziom >= 0,8) dopiero od tury 16.
-          if (t < 16 && peace.some(c => c.type === 'zaproponuj_pokoj')) { everyStateHasOneCmd = false; gaps.push({ t, gold, nc, zaproponuj: true }); }
+          if (t < 32 && peace.some(c => c.type === 'zaproponuj_pokoj')) { everyStateHasOneCmd = false; gaps.push({ t, gold, nc, zaproponuj: true }); }
           // D2/Z5 (R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1): 6 miast -> dokladnie 1 komenda (miasto);
           // 2 miasta (< minimum 3 miast do oddania) -> brak komendy pokojowej, zloto jej nie tworzy.
           // R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: od t=10 (poziom >= 0,5, progChetnosci) zmęczenie obniża minimum miast (wearyMinMiast) -> 2 miasta wystarczają.
-          const want = (nc === 6 || t >= 10) ? 1 : 0;
+          const want = (nc === 6 || t >= 20) ? 1 : 0;
           if (peace.length !== want) { everyStateHasOneCmd = false; gaps.push({ t, gold, nc, n: peace.length }); }
         }
       }

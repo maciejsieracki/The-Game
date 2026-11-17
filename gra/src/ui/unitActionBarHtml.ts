@@ -42,6 +42,11 @@ const ACTION_ICONS: Partial<Record<string, string>> = {
     '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none">'
     + '<path d="M20.7 14.9A9 9 0 1 1 9.4 3.3a7.2 7.2 0 0 0 11.3 11.6z"/>'
     + '</svg>',
+  // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: „Zasadzka" -- krzyż celowniczy (ukryte zastawienie).
+  ambush:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    + '<circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>'
+    + '</svg>',
   'scout-explore':
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
     + '<circle cx="12" cy="12" r="9"/>'
@@ -66,7 +71,7 @@ const ACTION_ICONS: Partial<Record<string, string>> = {
  * label is static (unlike 'march-stop'), so — like 'fortify' — it renders as an icon from
  * this list, not a dedicated text block. Placed right after 'fortify' as its group
  * counterpart (whole garrisoned army instead of a single unit). */
-const COMPACT_ACTION_ORDER = ['fortify', 'unfortify-all', 'sentry', 'scout-explore', 'split', 'merge', 'replace', 'skip'] as const;
+const COMPACT_ACTION_ORDER = ['fortify', 'unfortify-all', 'sentry', 'ambush', 'scout-explore', 'split', 'merge', 'replace', 'skip'] as const;
 
 export function buildUnitActionBarHtml(actions: readonly UnitPanelAction[]): string {
   const byId = new Map(actions.map(a => [a.id, a]));
@@ -82,7 +87,7 @@ export function buildUnitActionBarHtml(actions: readonly UnitPanelAction[]): str
       ? ` aria-pressed="${a.active ? 'true' : 'false'}"`
       : '';
     html += `<button type="button" class="uc-act-btn${onCls}" data-act="${esc(id)}"`
-      + ` title="${esc(a.label)}" aria-label="${esc(a.label)}"${ariaPressed}`
+      + ` title="${esc(a.disabled && a.disabledReason ? a.disabledReason : a.label)}" aria-label="${esc(a.label)}"${ariaPressed}`
       + (a.disabled ? ' disabled' : '')
       + `><span class="uc-act-ic">${icon}</span></button>`;
   }

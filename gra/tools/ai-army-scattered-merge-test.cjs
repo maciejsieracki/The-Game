@@ -175,7 +175,9 @@ const cloud = (n, q0, r0, step) => { const u = []; const side = Math.ceil(Math.s
   ok(s1.armies[0] >= 8, `S1: start -- chmura (armii po t1: ${s1.armies[0]})`);
   ok(s1.armies[s1.armies.length - 1] <= 1, `S1: po 18 turach JEDNA armia (armii: ${s1.armies[s1.armies.length - 1]}, rozmiary ${s1.sizes[s1.sizes.length - 1].join('/')})`);
   ok(s1.minDist[0] < 30, `S1: stos faktycznie rusza na cel (min. odleglosc ${s1.minDist[0]}, start ~40)`);
-  ok(s1.sizes[s1.sizes.length - 1][0] === 16, 'S1: cala chmura 16 jednostek w jednym stosie');
+  // R-WEB-AI-WAR-CITY-GARRISON-ONE-REST-TO-GENERAL-Q1: stos w mieście zostawia JEDNĄ jednostkę jako
+  // garnizon (miasto nie pozostaje puste); reszta 15 maszeruje jako jedna armia (nie 16 -- zamierzona zmiana).
+  ok(s1.sizes[s1.sizes.length - 1][0] === 15, 'S1: chmura 16 w miescie: 15 w jednym stosie, 1 zostaje garnizonem (reguła garnizonu wojny)');
   ok(Math.max(...s1.singles.slice(13)) <= 0, `S1: po 14 turach brak samotnych jednostek (max ${Math.max(...s1.singles.slice(13))})`);
 
   // ---- Scenariusz 2: kolumna 16 jednostek po linii (marsz kolumna po jednej jednostce) ----
@@ -184,7 +186,8 @@ const cloud = (n, q0, r0, step) => { const u = []; const side = Math.ceil(Math.s
 
   // ---- Scenariusz 3: regresja -- istniejacy stos 16 nie rozpada sie w marszu ----
   const s3 = (() => { reset(B); const u = []; for (let i = 0; i < 16; i++) u.push(mk(10, 10)); return play(B, u, 10, { enemies: [ENEMY1] }); })();
-  ok(Math.max(...s3.armies) === 1 && s3.sizes.every(s => s[0] === 16), 'S3: stos 16 maszeruje jako JEDNA armia przez 10 tur (bez rozpadu)');
+  // garnizon wojny: z 16 w miescie jedna zostaje, 15 maszeruje jako JEDNA armia przez 10 tur (bez rozpadu)
+  ok(Math.max(...s3.armies) === 1 && s3.sizes.every(s => s[0] === 15), 'S3: stos 16 w miescie: 15 maszeruje jako JEDNA armia przez 10 tur (1 garnizon zostaje, bez rozpadu)');
 
   // ---- Scenariusz 4: dwie wojny, 20 jednostek-chmura => nie wiecej niz liczba wojen + 1 ----
   const s4 = (() => { reset(B); return play(B, cloud(20, 8, 4, 2), 40, { enemies: [ENEMY1, ENEMY2] }); })();

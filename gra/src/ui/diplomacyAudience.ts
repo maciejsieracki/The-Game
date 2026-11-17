@@ -54,6 +54,7 @@ import {
   RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON,
 } from '../game/diplomacy-proposals';
 import type { ProposalPayload } from '../game/diplomacy-proposals';
+import { forcedPeaceModalTextPl, type ForcedPeaceTextInput } from '../game/war-weariness-view';
 import {
   audienceActionStatusNote,
   uiActionAllowsMultipleOwnOnTable,
@@ -322,7 +323,7 @@ export interface PendingNegotiationRow {
    * samej bramki co `accepted`/`reason` (patrz diplomacy-proposals.ts ProposalEvalResult) —
    * `undefined` gdy akcja nie ma numerycznej bramki PW (np. nap/sojusz/wasal).
    */
-  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number };
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: { turnsAtWar: number; lostCities: number; level: number } };
   /** incoming: Przyjmij dostępne tylko gdy warunki spełnione (i brak legacy access). */
   canAccept?: boolean;
   /** own: czekamy na odpowiedź AI — akcja Przyjmij w panelu PN. */
@@ -1211,6 +1212,34 @@ export function showAllianceObligationModal(opts: AllianceObligationModalOptions
   modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) close(); });
 }
 
+export type ForcedPeaceModalOptions = ForcedPeaceTextInput;
+
+/**
+ * DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1 (zarzut Evaluatora 1+2): natywne okno po pokoju wymuszonym
+ * (100% zmęczenia wojną z główną AI; dotyczy gracza jako przegrywającego i wygrywającego). Tekst: forcedPeaceModalTextPl.
+ */
+export function showForcedPeaceModal(opts: ForcedPeaceModalOptions): void {
+  ensureStyles();
+  if (modalOverlay !== null) modalOverlay.remove();
+  modalOverlay = document.createElement('div');
+  modalOverlay.className = 'civ-diplo-modal-overlay';
+  const text = forcedPeaceModalTextPl(opts);
+  modalOverlay.innerHTML =
+    '<div class="civ-diplo-modal cd-war-consent-modal" role="dialog" aria-modal="true">' +
+      '<h3>' + esc(text.title) + '</h3>' +
+      '<p class="cd-war-lead">' + esc(text.lead) + '</p>' +
+      '<p>' + esc(text.terms) + '</p>' +
+      '<div class="cd-modal-btns cd-war-consent-btns">' +
+        '<button type="button" class="dip-gold-btn cd-forced-peace-ok">Rozumiem</button>' +
+      '</div></div>';
+  document.body.appendChild(modalOverlay);
+  const close = (): void => {
+    if (modalOverlay !== null) { modalOverlay.remove(); modalOverlay = null; }
+  };
+  modalOverlay.querySelector('.cd-forced-peace-ok')?.addEventListener('click', close);
+  modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) close(); });
+}
+
 /** @deprecated Użyj showWarConsentModal — zostawione dla kompatybilności (2 przyciski). */
 export function showWarConfirmModal(
   civName: string,
@@ -1272,7 +1301,7 @@ export function showBreakTreatyConfirmModal(
 }
 
 /** FAZA 2 pkt 2 — baner statusu formalnego (odrębny od nastawienia). */
-function formalBannerHtml(st: DiplomacyAudienceState): string {
+export function formalBannerHtml(st: DiplomacyAudienceState): string {
   if (!st.formalStatus) return '';
   const iconByKind: Record<FormalDiplomaticKind, string> = {
     wojna: 'dip-war', sojusz: 'dip-alliance', pakt: 'dip-pact', handel: 'cp-trade', pokoj: 'dip-peace', brak: 'dip-peace',
@@ -1291,8 +1320,8 @@ function formalBannerHtml(st: DiplomacyAudienceState): string {
     : '';
   return (
     '<div class="da-banner da-tone-' + st.formalStatus.kind + '"' +
-    ' title="Formalny stan umów — odrębny od nastawienia (Zaufanie/Respekt)">' +
-    icon + '<span class="da-b-lbl">' + esc(st.formalStatus.label.toUpperCase()) + '</span>' + sub +
+    ' title="Aktualny formalny stan umów między wami. To nie jest propozycja.">' +
+    icon + '<span class="da-b-lbl">' + esc('Stan: ' + st.formalStatus.label.toUpperCase()) + '</span>' + sub +
     '</div>'
   );
 }
