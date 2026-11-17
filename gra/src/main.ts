@@ -27155,6 +27155,8 @@ async function boot(): Promise<void> {
         ...status,
         // R-WEB-MARCH-RESUME-NEXT-TURN-Q1 r3: wskaźnik „trasa wstrzymana” (tylko gdy plan istnieje).
         marchPausedReason: plannedMarches.has(active.id) ? marchStopDetail.get(active.id) : undefined,
+        // R-WEB-MARCH-OWN-UNIT-STOP-LOSES-MP-AND-INDICATOR-Q1: znacznik „marsz ruszy na koniec tury” (plan aktywny, bez pauzy).
+        marchQueuedEndTurn: plannedMarches.has(active.id) && !marchStopDetail.has(active.id),
       };
       if (isAwaitingFirstPlayerCity()) {
         return {
@@ -34430,15 +34432,18 @@ async function boot(): Promise<void> {
       // (`startAnimatedMove`), ktorego koniec (odjecie ruchu, mgla, hint) dopalal sie w `renderLoop` juz
       // PO resecie ruchu i w trakcie fazy AI. Teraz kazdy segment idzie przez `applyMarchSegmentInstant`.
       syncGeneralMarchTargets(true);
+      // R-WEB-MARCH-OWN-UNIT-STOP-LOSES-MP-AND-INDICATOR-Q1 (S6): jednostka ruszona przez gracza w tej
+      // turze z AKTYWNYM planem i pozostalym ruchem (ruchLeft>0) tez wykorzystuje ten ruch na koniec tury
+      // (wczesniej pomijana -> MP przepadal po cichu). Plan bez MP i jednostki bez planu pomijane jak dotad.
       for (const u of units) {
         if (u.ownerId !== humanOwnerId || !plannedMarches.has(u.id)) continue;
-        if (movedByPlayerThisTurn.has(u.id) || opts.skipUnitIds?.has(u.id)) continue;
+        if (opts.skipUnitIds?.has(u.id)) continue;
         if (planningStackRuchLeft(playerStackAt(u)) <= 0) continue;
         if (!marchExecQueue.includes(u.id)) marchExecQueue.push(u.id);
       }
       while (marchExecQueue.length > 0) {
         const id = marchExecQueue.shift()!;
-        if (!plannedMarches.has(id) || opts.skipUnitIds?.has(id) || movedByPlayerThisTurn.has(id)) continue;
+        if (!plannedMarches.has(id) || opts.skipUnitIds?.has(id)) continue;
         if (!applyMarchSegmentInstant(id, humanOwnerId, opts.launchAttacks !== false)) continue;
       }
       syncUnitsRender();
