@@ -3511,3 +3511,21 @@ Konsekwencje dla kolejki:
 |---|---|---|---|
 | P4-1C FOG-VIEW (#253/#335) | Operator | OPUS 5.5 | ok. 13:41 UTC |
 | P4-1G Q6 UNITS (#270/#328) | Operator | OPUS 5.5 | ok. 13:44 UTC |
+
+### Przebieg — FOG-VIEW (#253/#335): FC FAIL wyłącznie INFRA; kod bez zmian, runda r3 = bramka pełna (2026-11-17 ~14:5x UTC)
+
+- **Workflow R-RUSTPORT-P4-1C-FOG-VIEW-R1 (`wf_adaaa3fa-712`, Opus):** Operator BLOCK INFRA (bramka pełna nieuruchomiona: dysk 5,7–6,2 GB przy progu 8 GB). Kod `a17f28d42`, raport `ae209859c`; wektory z pinu 07d2fbd72 (7 przypadków, generator `gen.mjs --check` OK), testy `p4_1c_fog_view` 5/5, mutacje (a)(b)(c) FAIL. Evaluator FAIL (INFRA: brak bramki cargo; rustfmt i generator OK). Obrona: przyjęte; FC FAIL (`3aa60773f`) — tylko INFRA, bez zarzutów do kodu.
+- **Decyzje techniczne (orkiestrator):**
+  - **Z-FOG-1:** `ME()`, `exploredByHuman`, `fogOn`, `revealAllLand`, hex startu i promień podaje wołający. Nie dodaję pól do `PlayableState`.
+  - **Z-FOG-2:** render czyta eksplorację aktywnego fotela (`exploredByHuman.get(ME())`). Pin ma jeden fotel, więc test per fotel jest zachowaniem Rust, nie zmierzonym parytetem.
+  - **Z-FOG-3:** AI to gracze z `is_human == false`. Kultura miasta z `PlayableCity.culture`.
+  - **Z-FOG-4:** producent w `state.rs` jako `visibility::fog_view`.
+- **Dług (osobny temat FOG-WIRE):** producent `fog_view_dto`/`refresh_fog` nie ma wołającego produkcyjnego (droga DTO → renderer, L6/#308, `fog_active` w ViewerDto). Odblokuje PRIO-3D-10 (#278) i PRIO-3D-11 (#279).
+- **Kolejna runda:** DODATEK r3 (`f51f30994`) — tylko bramka pełna na `a17f28d42`, kod bez zmian. Start przy dysku ≥ 8 GB i po zakończeniu Q6 (budowanie równoległe).
+- **Zabezpieczenia:** `refs/keep/FOG-VIEW-R1-code` = `a17f28d42`; `refs/keep/FOG-VIEW-R1-fc` = `3aa60773f`; gałąź `rust-port-wip/R-RUSTPORT-P4-1C-FOG-VIEW-R1-impl` = `a17f28d42`.
+- **Sprzątanie:** worktrees `wf_adaaa3fa-712-1,3,4` usunięte; brak żywych procesów cargo. Dysk: 8,6 GB.
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| P4-1G Q6 UNITS (#270/#328) | Operator | OPUS 5.5 | ok. 13:44 UTC |
+| P4-1C FOG-VIEW, runda r3 (bramka pełna) | oczekuje na dysk ≥8 GB | OPUS 5.5 | — |
