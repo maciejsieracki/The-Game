@@ -1,12 +1,12 @@
 'use strict';
 // R-WEB-TEST-DEBT-AMBUSH-DEPLOY-LINESIDE-GUARD-BEHAVIOR-Q1: test behawioralny guarda `&& !lineSide`
-// (battleScene.ts: wyliczenie mountedWing w rozstawieniu startowym ~l.5430 i w Resecie ~l.18014).
+// (battleScene.ts: wyliczenie mountedWing w rozstawieniu startowym _placeUnits i w Resecie _placeUnitsOneSide).
 // Zaskoczona strona w dlugiej linii: konnica/rydwany zostaja W LINII (wiersze linii, <=3 w szeregu),
 // a nie na skrzydlach. Bez guarda mountedWing=true dla zaskoczonej strony: kolumny konnicy tylko
 // do przodu i nagroda terenu jak dla skrzydla (+6 pole zwykle zamiast +40), wiec konnica wchodzi
 // w las. Test sprawdza to na realnej BattleScene (produkcyjne _placeUnits i _placeUnitsOneSide).
 // Strona NIE zaskoczona (zwykla bitwa) nadal ma konnice na skrzydlach poza pasmem piechoty.
-// Uwaga: mutacja tylko w Resecie (~l.18014) jest zachowaniowo rownowazna (rowLo/rowHi
+// Uwaga: mutacja tylko w Resecie (_placeUnitsOneSide) jest zachowaniowo rownowazna (rowLo/rowHi
 // rozstrzyga najpierw lineSide, a kolumny Resetu nie czytaja mountedWing) -- patrz raport.
 const assert = require('node:assert/strict');
 const path = require('node:path');
@@ -76,8 +76,9 @@ function roster(n, prefix) {
 
 const SIZES = [5, 12, 30, 60];
 const SEEDS = 20;
-// Prog udzialu konnicy/rydwanow zaskoczonej linii stojacych w lesie (setup, ziarna 1..SEEDS). Zmierzono na ziarnach 1..40:
-// baza 0 / 0 / 1,8 % (N=12/30/60), mutacja bez guarda 0 / 4,0 % / 12,8 % (N=12/30/60).
+// Prog udzialu konnicy/rydwanow zaskoczonej linii stojacych w lesie (setup, ziarna 1..SEEDS). Zmierzono na ziarnach 1..20:
+// N=60: baza 13/800 = 1,63 %, mutacja bez guarda w setupie 102/800 = 12,75 %. Prog 3 % lezy w srodku przedzialu.
+// N=12 i N=30 nie sa progowane: na bazie 0 %, a mutacja w setupie daje przy N=30 tylko 3,50 % (zbyt cienki margines).
 const FOREST_MOUNTED_SHARE_MAX = 0.03;
 let checks = 0;
 const ok = (cond, msg) => { assert.ok(cond, msg); checks++; };
@@ -129,9 +130,9 @@ function unitsOf(scene, side) { return scene[side]; }
     }
   }
 
-  // (2) Dlugosc linii a las: konnica/rydwany zaskoczonej linii nie stoja w lesie ponad prog (setup, ziarna 1..SEEDS).
+  // (2) Dlugosc linii a las: konnica/rydwany zaskoczonej linii nie stoja w lesie ponad prog (setup, N=60, ziarna 1..SEEDS).
   // Mutacja bez guarda: mountedWing=true -> brak premii terenu linii, konnica wchodzi w las.
-  for (const N of [12, 30, 60]) {
+  for (const N of [60]) {
     let mountedTotal = 0, mountedForest = 0;
     for (let seed = 1; seed <= SEEDS; seed++) {
       const terrain = makeTerrain('scattered', seed);
