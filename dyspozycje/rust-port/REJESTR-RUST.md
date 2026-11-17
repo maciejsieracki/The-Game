@@ -3295,3 +3295,14 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Evaluator (Sonnet) w toku** (ponowne uruchomienie `p6_k5doc_t7b`). Po nim Obrona (Haiku, tylko przy zarzutach) i FC (Sonnet).
 - **Po FC PASS:** integracja FF `parity-v2` (baza parity = `760be5187`, więc trzeba sprawdzić ancestry; kod T7b z `61ffc110f` ma zmiany tylko w engine i nie kolidował z G5) i refs/keep. Po FAIL: r5 tego samego ID.
 - **Sloty:** 1/4; kandydaci K5DOC-T4e (#315) i K5DOC-T1 (#263) nadal wymagają dispatchu (pin nie przeczytany).
+
+### Przebieg — uzupełnienie slotów 1→4 (2026-11-17 ~09:4x UTC, polecenie właściciela „masz wolne workery”)
+
+- **Inwentarz:** journal `wf_f88b947e-171` (K5DOC-T5a) martwy od poprzedniego dnia (ostatnie zdarzenie `started` w Obronie, bez wyniku); temat #257 zakończony w liście zadań — nie wznawiam. Procesy `rustc` z innych tematów nie były już aktywne.
+- **Nowe Workflow (3 tematy silnika, bazy = `parity-v2` `760be5187`, bramka dysku ≥ 8 GB):**
+  - #315 K5DOC-T4e wpięcie ruchu pieszego w ProdBody (odblokowuje #123) — dispatch `R-RUSTPORT-P6-K5DOC-T4E-PIESZY-WIRING` (`1e5ee487b`), `wf_306624ba-d7a`. Decyzja: koszt ruchu per jednostka (`mounted`).
+  - #263 K5DOC-T1 MODEL-UI (model doktryny grupy, bez UI; odblokowuje #264) — dispatch `R-RUSTPORT-P6-K5DOC-T1-MODEL-UI`, `wf_2261fa9c-ded`.
+  - #106 R7K7C-WIRING apply_dipl_deltas_to_state w advance_turn + „brak wpisu = 0” + wektory ≥150 — dispatch `R-RUSTPORT-P6-R7K7C-WIRING`, `wf_f6310912-6d1`. Rozjazd pin/Rust = DECISION_REQUIRED, nie wybór.
+- **T7b odwrót (#342), r4:** Operator PASS-WITH-NOTES (bramki zielone), Evaluator w toku; po FC PASS integracja FF, po FAIL r5.
+- **Sloty: 4/4 aktywne** (T7b r4 + 3 nowe). Dysk ~12 GB przed startem; bramka renderera nie jest w kolejce.
+- **Nadal bez dispatchu:** #322 R4 (Opus, renderer, bramka 12 GB bez równoległych buildów), #332 zamknięty, #320/#321 bez rozpisanego dispatchu.
