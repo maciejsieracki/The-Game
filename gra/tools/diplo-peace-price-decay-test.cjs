@@ -12,7 +12,7 @@
  *        czerwienic: zmiana progu wymaga osobnej decyzji ABC, NIE jest zmiana kodu);
  *   (P7) statyczna straznica: sciezka wymuszenia nie odejmuje minMiastPoOddaniu (stary prog 3 miast);
  *   (P8) mutacja: stala cena (return 6000) czerwieni P2/P4;
- *   (P9) mutacja: powrot do progu 3 miast w sciezce wymuszenia czerwieni P7.
+ *   (P9) BEHAWIORALNA mutacja: powrot do progu 3 miast w sciezce wymuszenia (P9a: realny kod oddaje >=2 miasta; P9b: mutant nie zapada pokoju).
  *
  *   node tools/diplo-peace-price-decay-test.cjs   # exit 0 = wszystko zielone i mutanty wykryte
  */
@@ -89,11 +89,41 @@ function runChecks(W, src) {
       chk('P8: mutant (stala cena 6000) czerwieni P2/P3b', red, { c1: WM.wearinessPeaceCashPn(1), c05: WM.wearinessPeaceCashPn(0.5) });
     }
   }
-  // P9 — mutacja: powrot do progu 3 miast w sciezce wymuszenia.
+  // P9 — BEHAWIORALNA mutacja: powrot do progu 3 miast w sciezce wymuszenia. Zachowanie (nie tekst) porownujemy:
+  // ten sam scenariusz wymuszenia (4 miasta przegrywajacego, stolica zakazana, cena > 0) na kodzie realnym i na mutancie.
+  // Kod realny: pokoj wymuszony z oddaniem >= 2 miast. Mutant (cap = ownCities - 3 = 1): cena niepokryta -> wojna trwa.
   {
-    const mut = src.replace(FORCED_CAP_LINE, 'const cityCap = d.battlePending ? 0 : Math.max(0, ownCities - P.przegrywajacy.minMiastPoOddaniu);');
+    const mut = src.replace(FORCED_CAP_LINE, 'const cityCap = d.battlePending ? 0 : Math.max(0, ownCities - 3);');
     if (mut === src) chk('P9: mutacja: wzorzec cityCap nie znaleziony w source', false, 'brak wzorca');
-    else chk('P9: mutant (prog 3 miast w wymuszeniu) czerwieni P7', !(mut.includes(FORCED_CAP_LINE)), 'mutant wykryty');
+    else {
+      const WM = loadW(mut);
+      const lvl = W.warWearinessLevel({ turnsAtWar: 30, lostCitiesTotal: 0, turnsSinceCityChange: 0 });
+      const forced = (WX) => {
+        const P = JSON.parse(JSON.stringify(PJ));
+        P.zmeczenie.progWymuszonyPokoj = lvl; // wymuszenie dokladnie na biezacym poziomie
+        // Cena wymuszenia = round(start*(1-lvl)) ustawiona na ~2500 PN: pokrywa 2 miasta po 1840 PN, nie jedno.
+        P.cenaPokoju.cenaStartPn = Math.round(2500 / (1 - lvl));
+        const store = new Map();
+        const mutAssets = [0, 1, 2, 3].map(i => ({ kind: 'miasto', id: `m${i}`, amount: 1, pn: 1840, forbidden: i === 0 }));
+        const outs = WX.runWarWearinessTick({
+          store, turn: 100, pairs: [{ a: 1, b: 2 }], pairKey: (a, b) => `${a}_${b}`,
+          warInfo: () => ({ warStart: 1, turnsAtWar: 30, lostA: 0, lostB: 0, turnsSinceCityChange: 0 }),
+          shareOf: () => 0.2, weakerOf: () => 1, cityCountOf: () => 4,
+          price: () => ({ requiredPn: 0, balanceFor: () => 0, tolerancePn: 0 }),
+          assets: (loser, winner, skip) => mutAssets.filter(x => !skip.has(x.id)),
+          cityCessionOk: () => true, battlePending: false,
+          pay: () => {}, finalize: () => {}, params: P,
+        });
+        return outs.find(o => o.action !== 'none') || outs[0];
+      };
+      const real = forced(W);
+      const mutRes = forced(WM);
+      const realGiven = real.plan ? real.plan.histogram.miasto : 0;
+      chk('P9a: kod realny: wymuszenie oddaje >= 2 miasta (stolica zostaje)', real.action === 'forced_peace' && realGiven >= 2,
+        { action: real.action, given: realGiven, lvl });
+      chk('P9b: mutant (prog 3 miast) zmienia zachowanie (wojna trwa, brak pokoju)', mutRes.action === 'none',
+        { action: mutRes.action, lvl });
+    }
   }
   return res;
 }

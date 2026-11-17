@@ -20,6 +20,7 @@ function playerPeace(t: number, pos: 'slabsza' | 'silniejsza') {
 }
 
 const SCENARIOS = [
+  { id: 't1', label: 'Wojna: tura 1 (start) — obserwacja ceny i bramki (nie asercja)', t: 1, pos: 'slabsza' as const },
   { id: 't11', label: 'Wojna: tura 11 (pierwsza po 10-turowej bramce pokoju) — AI slabsza, pokoj od gracza', t: 11, pos: 'slabsza' as const },
   { id: 't20', label: 'Wojna: tura 20 — cena nizsza', t: 20, pos: 'slabsza' as const },
   { id: 't30', label: 'Wojna: tura 30 — cena jeszcze nizsza', t: 30, pos: 'slabsza' as const },

@@ -55,7 +55,7 @@ Po odrzuceniu oferty przegrywający czeka 3 tury, zanim złoży kolejną (cena s
 
 ### Ochrona przegrywającego
 
-Przegrywający z małą liczbą miast (do 3) albo po wielu stratach (co najmniej 3 utraty w tej wojnie) jest **chroniony**: zwycięzca musi przyjąć jego ofertę pokoju, bez dalszych żądań miast (co najmniej 3 miasta muszą zostać po oddaniu). Chroniony dostaje dłuższą karencję.
+Przegrywający z małą liczbą miast (do 3) albo po wielu stratach (co najmniej 3 utraty w tej wojnie) jest **chroniony**: zwycięzca musi przyjąć jego ofertę pokoju, bez dalszych żądań miast. Przy pokoju wymuszonym przegrywający oddaje tyle miast, ile równoważy cenę; **chroniona jest wyłącznie stolica** (nigdy nie oddawana). Próg „co najmniej 3 miasta po oddaniu" został usunięty (kod: `cityCap = ownCities`, decyzja 2026-11-17 — brak minimum 3 miast). Chroniony dostaje dłuższą karencję.
 
 ### Plusy i minusy
 
