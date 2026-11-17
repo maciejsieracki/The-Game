@@ -3148,3 +3148,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Krok 3 (sprzątanie):** brak zakończonych worktree. Nic nie usuwam.
 - **Wolne sloty (3 z 4): powód.** Pozostałe kandydaci z listy są zablokowani decyzją właściciela (#253, #285, #286, #358), zależnościami (#261 na #314, #304 na #310, #113 na #107/#109/#112) lub wymagają rozpoznania bez gotowego dispatchu.
 - **Otwarte decyzje ABC (w czacie):** #327, #358.
+
+### Przebieg — heartbeat (2026-11-17 ~04:47 UTC): 1/4 aktywne, dysk 8,5 GB
+
+- **Aktywne Workflow (1/4):** K5DOC-T4c efekty `_doMove` (#314), runda 1 (`wf_ca9bf0be-2b1`). Operator Haiku PASS-WITH-NOTES, commit `f85622878` (rust-port-wip). Bramki Operatora: generator 314 przypadków (odmowa 44, planowanie 150), fmt EXIT 0, clippy EXIT 0, pełny test EXIT 0 (3841 passed, 0 failed). Etap: Ewaluator (Sonnet) — uruchomiony, cargo test w toku.
+- **Krok 2:** brak FC PASS bez integracji. Parity `417091872` bez zmian.
+- **Krok 3 (sprzątanie):** nic zakończonego do usunięcia. Worktree `wf_ca9bf0be-2b1-1/-2` zostają do końca rundy.
+- **Dysk:** 8,5 GB — tuż nad progiem 8 GB dla nowych startów z kodem Rust. Dlatego nie startuję kolejnego tematu w tym przebiegu.
+- **Wolne sloty (3 z 4): powód.** Bez zmian wobec poprzednich przebiegów: brak czystego tematu z listy (zablokowane decyzjami właściciela lub zależnościami; patrz przebieg 04:2x).
+- **Otwarte decyzje ABC (w czacie):** #327, #358.
