@@ -1,0 +1,2 @@
+# DODATEK 0 (orkiestrator, 2026-11-17 02:50 UTC) — runda 1
+Temat zakłada się z heartbeatu :47 (kolejka pusta, realna praca bez decyzji produktowej). Zakres wyłącznie `gra/tools`; wynik ma odblokować dowód uruchomieniowy dla AMBUSH-DEPLOY (FALA 788), GENSTAR (785) i CAVFLANK. Jeśli po naprawie budowania któryś test FAILuje na asercjach — nie ruszaj `src`, podaj numery asercji i pierwszy czerwony komunikat. Wywołanie: `cand` = pełne SHA `origin/main`.
