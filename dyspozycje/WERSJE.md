@@ -1,3 +1,9 @@
+## ROBOCZA 1d2c6ca9 -- 2026-11-16 -- FALA 788: rozstawienie w bitwie z zasadzki (testowa)
+
+- R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1 (r2, FC PASS-WITH-NOTES a06e25414): w bitwie z zasadzki zastawiajacy rozstawia sie takze na polu wroga (cale pole, bez mgly), zaskoczeni stoja w dlugiej linii max 3 w szeregu (konnica/rydwany w linii); zwykla bitwa bez zmian (1776 pozycji identyczne z baza); strefa graficzna = logika; bez generala rozstawienie z komunikatem PL i bitwa AUTO; bez premii liczbowych
+- Weryfikacja: tsc 0; 5 bramek zielonych; ambush-deploy geometry 20/0, scene 26/0, line-width 240, zone-visual 11/0, wiring 15/0, identity 1776 pozycji; mgla-sciezka 42/0; json-descriptions-sync 19/0; ambush-core 40/0, save-roundtrip 5/0
+- Limity: NIE ZMIERZONO: faza rozstawiania zasadzki w zywym Chromium (ambush-live 18 PASS/3 FAIL identycznie na bazie; harnessy battle-* nie buduja sie przez brandTokenVars ?raw = dlug bazowy); autozapis w trakcie rozstawiania (zablokowany isSaveBlockedByBattle); kolejnosc rozstawiania stron AI na scenerii z przeszkodami. CZEKA NA RANO: rozstawienie bez generala = AUTO z komunikatem; AUTO na mapie ignoruje zasadzke. Dlug Rust: REPIN
+
 ## ROBOCZA 5b27e1cc -- 2026-11-16 -- FALA 787: Panel TEMPO i minimapa w bitwie w oprawie brandbooka (testowa)
 
 - Panel TEMPO i minimapa w bitwie w oprawie tokenow marki: przyciski tempa z hover/focus/aktywny, odczyt tempa, aria-label; minimapa z tlem tokenu, wyciszonymi odcieniami wody i zlota ramka widoku; logika bez zmian; plus narzedzia pomiarowe WEARY40-SIM

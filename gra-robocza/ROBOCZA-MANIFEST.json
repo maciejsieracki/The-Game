@@ -1,101 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "5b27e1ccdc3d036a9229b6dd0f2bad0c",
-  "bundleSha256": "702592cca8b56fa3b2573b8ea28c74ffaba4421c680a047adb7093d8af5a9586",
-  "bundleBytes": 14843019,
+  "bundleMd5": "1d2c6ca9d70f479e3ad4cab06f991909",
+  "bundleSha256": "9102883e6d194f79fe421b2652d625ef87eba13974c367244421bca8d4e66286",
+  "bundleBytes": 14848101,
   "sourceSnapshot": {
-    "source": "FC TEMPO r2 43075b0cf (raport 4fa509815) + WEARYSIM d1b1ef140, main 1c452ec35",
+    "source": "main f0afe94cd + merge FC a06e25414",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 787: Panel TEMPO i minimapa w bitwie w oprawie tokenow marki: przyciski tempa z hover/focus/aktywny, odczyt tempa, aria-label; minimapa z tlem tokenu, wyciszonymi odcieniami wody i zlota ramka widoku; logika bez zmian; plus narzedzia pomiarowe WEARY40-SIM"
+    "FALA 788: R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1 (r2, FC PASS-WITH-NOTES a06e25414): w bitwie z zasadzki zastawiajacy rozstawia sie takze na polu wroga (cale pole, bez mgly), zaskoczeni stoja w dlugiej linii max 3 w szeregu (konnica/rydwany w linii); zwykla bitwa bez zmian (1776 pozycji identyczne z baza); strefa graficzna = logika; bez generala rozstawienie z komunikatem PL i bitwa AUTO; bez premii liczbowych"
   ],
   "verification": [
-    "tsc 0, logic 213/213, battle-tempo-minimap-brand OK, minimap-viewport-rect-follow 12/0, damage-colors 27/0, hp-display 7/7, mgla-sciezka-inwariant 42/0, load-game-regression 34/0; live Chromium 84 OK/0 FAIL w 4 wariantach ekranu, 5 mutacji zrodlowych czerwonych"
+    "tsc 0; 5 bramek zielonych; ambush-deploy geometry 20/0, scene 26/0, line-width 240, zone-visual 11/0, wiring 15/0, identity 1776 pozycji; mgla-sciezka 42/0; json-descriptions-sync 19/0; ambush-core 40/0, save-roundtrip 5/0"
   ],
   "limits": [
-    "NIE ZMIERZONO: pikselowy diff PRZED/PO, start bitwy bez wstrzyknietych tokenow; znaczniki stron minimapy gracz niebieski/przeciwnik czerwony (stan istniejacy) do decyzji; REPIN Rust"
+    "NIE ZMIERZONO: faza rozstawiania zasadzki w zywym Chromium (ambush-live 18 PASS/3 FAIL identycznie na bazie; harnessy battle-* nie buduja sie przez brandTokenVars ?raw = dlug bazowy); autozapis w trakcie rozstawiania (zablokowany isSaveBlockedByBattle); kolejnosc rozstawiania stron AI na scenerii z przeszkodami. CZEKA NA RANO: rozstawienie bez generala = AUTO z komunikatem; AUTO na mapie ignoruje zasadzke. Dlug Rust: REPIN"
   ],
-  "finalControl": {
-    "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES TEMPO r2 (kandydat 43075b0cf, raport FC 4fa509815; plus narzedzia WEARY40-SIM d1b1ef140): panel TEMPO i minimapa w bitwie w oprawie tokenow marki (tla, obwodki, przyciski tempa z hover/focus/aktywny, odczyt tempa x1..x512, aria-label; minimapa: tlo canvasu = token bg-deep, wyciszone odcienie wody/rzeki/brodu, ramka widoku w zlocie marki; logika tempa i minimapy bez zmian; wymiary panelu 240x166 bez zmian). tsc 0, 5 bramek zielonych, battle-tempo-minimap-brand OK, minimap-viewport-rect-follow 12/0, damage-colors 27/0, hp-display 7/7, load-game-regression 34/0; live Chromium 84 OK / 0 FAIL w 4 wariantach ekranu (1024x640, 1280x720, 1400x900, 1280x720@2) z 5 mutacjami zrodlowymi czerwonymi. NIE ZMIERZONO: pikselowy diff PRZED/PO, sciezka startu bitwy bez wstrzyknietych tokenow, 14 PNG nieogladane. Uwaga: znaczniki stron minimapy to stan istniejacy (gracz niebieski, przeciwnik czerwony) — konwencja damage-colors (gracz czerwony, przeciwnik zolty) dotyczy liczb obrazen; CZEKA NA RANO. Dlug Rust: REPIN panelu TEMPO i palety minimapy."
-  },
+  "finalControl": "R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1 r2 FC PASS-WITH-NOTES a06e25414",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T01:57:46",
+  "hubGeneratedAt": "2026-11-17T02:30:12",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "5b27e1ccdc3d036a9229b6dd0f2bad0c",
-      "sizeBytes": 14843019
+      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
+      "sizeBytes": 14848101
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "5b27e1ccdc3d036a9229b6dd0f2bad0c",
-      "sizeBytes": 14843019
+      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
+      "sizeBytes": 14848101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "5b27e1ccdc3d036a9229b6dd0f2bad0c",
-      "sizeBytes": 14843019
+      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
+      "sizeBytes": 14848101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "5b27e1ccdc3d036a9229b6dd0f2bad0c",
-      "sizeBytes": 14843019
+      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
+      "sizeBytes": 14848101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "5b27e1ccdc3d036a9229b6dd0f2bad0c",
-      "sizeBytes": 14843019
+      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
+      "sizeBytes": 14848101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "5b27e1ccdc3d036a9229b6dd0f2bad0c",
-      "sizeBytes": 14843019
+      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
+      "sizeBytes": 14848101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "5b27e1ccdc3d036a9229b6dd0f2bad0c",
-      "sizeBytes": 14843019
+      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
+      "sizeBytes": 14848101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "5b27e1ccdc3d036a9229b6dd0f2bad0c",
-      "sizeBytes": 14843019
+      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
+      "sizeBytes": 14848101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "5b27e1ccdc3d036a9229b6dd0f2bad0c",
-      "sizeBytes": 14843019
+      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
+      "sizeBytes": 14848101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "5b27e1ccdc3d036a9229b6dd0f2bad0c",
-      "sizeBytes": 14843019
+      "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
+      "sizeBytes": 14848101
     }
   ],
-  "md5": "5b27e1ccdc3d036a9229b6dd0f2bad0c",
+  "md5": "1d2c6ca9d70f479e3ad4cab06f991909",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
