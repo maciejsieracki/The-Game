@@ -5,3 +5,7 @@ pub mod overlay;
 pub mod revolt;
 
 pub use revolt::{RevoltCityInput, RevoltInputs, RevoltRenderer, RevoltSprite};
+
+pub mod sync;
+
+pub use sync::{CityStatChips, StatChipUiState};
