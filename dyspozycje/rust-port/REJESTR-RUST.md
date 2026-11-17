@@ -2940,3 +2940,14 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Krok 2:** brak FC PASS bez integracji. T4b i T6 czekają na zielone bramki na merge/na tree przed FF.
 - **Krok 3 (sprzątanie):** nie usuwam worktree ani targetów działających. Zakończone już usunięte w poprzednim przebiegu.
 - **Ryzyko:** dwie kompilacje naraz zajmują ~5 GB. Przy spadku poniżej ~1 GB należy zatrzymać jeden z workflow (najpóźniej wstrzymać T4b bramkę) i zwolnić jego target. Decyzja o zatrzymaniu pozostaje w czacie.
+
+### Przebieg — K5DOC-T5a runda 3 zakończona, integracja czeka na dysk (2026-11-17 ~00:30 UTC)
+
+- **Wynik rundy 3 (`wf_4f8fcb4a-b7c`):** Operator PASS-WITH-NOTES na `048f7eede` (5 nazwanych przypadków granicznych: `nc<0`, `nc>=BF_COLS`, `nr>=BF_ROWS`, `nr<0`, wariant `nc<0`; generator 722 przypadki). Pełny `cargo test --all-targets --no-fail-fast`: EXIT 0, 3792 passed, 0 failed (p6_8i_pick 5 passed, 232 s). Mutanty G/H/I/(a)/(b)/(c) FAIL.
+- **Evaluator PASS-WITH-NOTES, FC PASS-WITH-NOTES** na `270e5711b` (Obrona: tylko spacje w raporcie). Evaluator i FC nie mogły powtórzyć pełnej bramki (dysk ~1–3 GB). Równoważne mutanty K2/L2 wyjaśnione w raporcie.
+- **Duplikaty helperów** (`DIRS4`, `manhattan`, `advance_dir`, `in_bounds`, `enemies_of`) z `siege_tactics_pathstep.rs` i `siege_tactics_doctrine_*` — notatka, osobny temat konsolidacji (poza allowlistą).
+- **Zabezpieczenie:** refy keep `T5a-r3-op-048f7eede`, `T5a-r3-fc-270e5711b`, `T5a-r3-eval-95fd914cc`, `T5a-r3-fc-worktree-f0a830228`; gałąź `rust-port-wip/R-RUSTPORT-P6-K5DOC-T5A-KITE-r3` (`270e5711b`).
+- **Raport FC** przeniesiony do `dyspozycje/autobot/runs/R-RUSTPORT-P6-K5DOC-T5A-KITE/03-final-control.md`.
+- **Merge z parity:** `merge-tree` `32c84d6a9` ↔ `270e5711b` czysty (exit 0). Integracja = merge `--no-ff` na parity + pełna bramka na merge (runda integracyjna Haiku) + FF. Start dopiero gdy dysk ≥ 8 GB i bramka T4b (`wf_a6a0b1b3-74a`) zakończona.
+- **Sprzątanie:** usunięte worktree T5a `-1..-4` i target `t5a-r3-target` (3,3 GB). Dysk 1,2 → 5,6 GB.
+- **Uwaga:** T4b bramka (`wf_a6a0b1b3-74a`) w toku, worktree `wf_a6a0b1b3-74a-1/-2` — nie ruszane.
