@@ -15945,8 +15945,10 @@ async function boot(): Promise<void> {
       if (stack.length < 2) return;
       // R-WEB-ARMY-STACK-LIMIT-Q1: sasiedni heks z pelnym stosem (np. wlasne miasto z garnizonem
       // na limicie) nie jest celem rozdzielenia -- garnizon nie liczy sie jako "wolny" heks.
+      // (obrona r4, zarzut 3a) zasadzka wroga nie zajmuje heksu z perspektywy gracza:
+      // liczymy wolne heksy na widocznych jednostkach (ukryta zasadzka nie daje „Cel niedostepny").
       const dests = findSplitDestHexes(
-        units,
+        unitsForViewer(units, ME()),
         active.q,
         active.r,
         splitTargetPassable(isHexPassableForUnit, active.ownerId, cities),
@@ -33829,7 +33831,9 @@ async function boot(): Promise<void> {
 
       const attackTarget = attackUnitId
         ? units.find(x => x.id === attackUnitId)
-        : units.find(
+        // (obrona r4, zarzut 3b) ukryta zasadzka wroga nie jest celem ataku ani źródłem
+        // komunikatu „Cel niewidoczny (mgła)": ruch wpada w nią w kroku ruchu (wyzwalacz).
+        : unitsForViewer(units, ME()).find(
           x => x.q === destQ && x.r === destR && !isMe(x.ownerId) && x.ownerId !== u.ownerId,
         );
       if (attackTarget && !currentVisible().has(keyOf(attackTarget.q, attackTarget.r))) {

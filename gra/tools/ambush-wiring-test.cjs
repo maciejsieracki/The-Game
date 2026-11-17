@@ -252,6 +252,23 @@ const unit = (over) => Object.assign({
     // brak lokalnych kopii regul (mutacja guardu w main.ts nie omija testu jadra)
     assert.ok(!mainSrc.includes('truncatePathAtAmbush(units, result.movePath'), 'brak inline truncatePathAtAmbush w marszu');
   });
+  // (obrona r4, zarzuty 1+2) WARIANT LICZBOWY: mutacje USUWAJACE wywolania wpiecia (M2, MB, MD, M6)
+  // musza czerwienic. Liczymy realne wystapienia w main.ts, nie samo istnienie tekstu.
+  const occ = (s) => mainSrc.split(s).length - 1;
+  check('E2 wpiecie punktowe (liczby wywolan): release x3 (rozkaz ruchu, start animacji, marsz instant), planPlayer x3 (gracz, marsz, barbarzyncy), resolveAfterMove x2 (AI, barbarzyncy), AI cutter z realnym ownerId', () => {
+    assert.strictEqual(occ('releaseAmbushOnMoveOrder('), 3, 'releaseAmbushOnMoveOrder w main.ts: M2 (playerStackAt) / MB (rozkaz ruchu) usuwaja jedno wystapienie');
+    assert.strictEqual(occ('planPlayerAmbushMove('), 3, 'planPlayerAmbushMove w main.ts: M6 (barbarzyncy zastapieni {kind:clear}) usuwa jedno wystapienie');
+    assert.strictEqual(occ('resolveAmbushAfterMove('), 2, 'resolveAmbushAfterMove w main.ts: AI i barbarzyncy');
+    assert.ok(mainSrc.includes('makeAmbushPathCutter(units, ownerId, areEnemyOwners)'), 'MD: executor AI musi dostac realna liste zasadzek (nie [])');
+    assert.ok(!mainSrc.includes('makeAmbushPathCutter([]'), 'MD: brak pustej listy zasadzek dla wykonawcy');
+    const amSrc = fs.readFileSync(path.join(SRC, 'game', 'ambushMove.ts'), 'utf8');
+    assert.ok(amSrc.includes("if (!launchAttack) return { kind: 'blocked', path: [], ambushHex: cut.ambushHex };") || amSrc.includes("if (!launchAttack) return { kind: 'blocked'"), 'M4: guard !launchAttack w ambushMove.ts');
+    assert.ok(mainSrc.includes('planPlayerAmbushMove(units, result.movePath, u.ownerId, areEnemyOwners, launchAttack)'), 'M4b: applyMarchSegmentInstant przekazuje launchAttack');
+    // (obrona r4, zarzut 3) wyciek widoczności: panel rozdzielenia i cel marszu na widocznych jednostkach
+    assert.ok(mainSrc.includes('const dests = findSplitDestHexes(\n        unitsForViewer(units, ME()),'), 'V1: panel rozdzielenia liczy wolne heksy na widocznych jednostkach');
+    assert.ok(mainSrc.includes('unitsForViewer(units, ME()).find(\n          x => x.q === destQ'), 'V2: cel marszu bez ukrytej zasadzki wroga');
+    assert.ok(mainSrc.includes('const src = rawSrc.filter(u => isUnitVisibleToViewer(u, ME()));') || mainSrc.includes('unitsForViewer(rawSrc, ME())'), 'M9: filtr renderu');
+  });
 
   // ---- (F) zapis ----
   const makeSave = (units) => ({ wersja: 3, tura: 12, seed: 7, units, cities: [], exploredByHuman: [], gracze: [], humanOwnerIds: [0], activeHumanOwnerId: 0, meta: {} });
