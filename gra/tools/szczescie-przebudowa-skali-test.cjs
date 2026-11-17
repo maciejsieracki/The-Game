@@ -120,6 +120,10 @@ const NIE = [
   'mury', 'mennica', 'cegielnia', 'odlewnia_brazu', 'magazyn', 'kuznia', 'koszary',
   'pretorium', 'baszta', 'fort', 'odlewnia_zelaza', 'kuznia_zelaza', 'akademia_wojskowa',
   'warsztat_oblezniczy', 'wielka_kuznia', 'wielka_odlewnia',
+  // Trzy budynki dodane po 04660f9d1 (katalog 41 -> 44); wszystkie z dajeSzczescie=false w buildings.json:
+  //   garnizon (918e59933, R-BUDYNEK-GARNIZON-NOWY-Q1, epoka 1), mury_kamienne (0bf194d76, lancuch murow,
+  //   epoka 1), emporion (c80f39cf0, R-WEB-BUILDING-EMPORION-Q1, epoka 2) -> zaliczone do grupy NIE (zero szczescia).
+  'garnizon', 'mury_kamienne', 'emporion',
 ];
 const byId = new Map(buildings.map(b => [b.id, b]));
 
@@ -128,8 +132,9 @@ const byId = new Map(buildings.map(b => [b.id, b]));
 // ===========================================================================
 section('2a. per budynek: 19 szczesciodajnych, 22 z zerem (G1)');
 eq(TAK.length, 19, 'lista TAK ma 19 pozycji');
-eq(NIE.length, 22, 'lista NIE ma 22 pozycje');
-eq(buildings.length, 41, 'katalog budynkow ma 41 pozycji (19 + 22)');
+eq(NIE.length, 25, 'lista NIE ma 25 pozycji (22 + garnizon, mury_kamienne, emporion)');
+// Stan z 04660f9d1 = 41 (19 + 22). Późniejsze wpisy: +garnizon (918e59933), +mury_kamienne (0bf194d76), +emporion (c80f39cf0) = 44.
+eq(buildings.length, 44, 'katalog budynkow ma 44 pozycje (19 + 25; stan 41 z 04660f9d1 + 3 nowe)');
 eq(TAK.filter(id => NIE.includes(id)).length, 0, 'listy TAK i NIE sa rozlaczne');
 
 for (const id of TAK) {
