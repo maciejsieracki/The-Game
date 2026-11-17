@@ -3100,3 +3100,11 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **DODATEK r4** (`a55923e05` na `claude/rust-sivvrn`): baza `7778e66af`, merge już zrobiony — runda odtwarza tylko bramki, bez zmian w kodzie.
 - **Aktywne Workflow:** `wf_122fbedc-719` (T5b integracja, bramki r4, Operator Haiku). Start po zapisie DODATEK r4.
 - **FF `parity-v2`:** dopiero po FC PASS. Bieżący `parity-v2` = `83777efa9`.
+
+### Przebieg — heartbeat (druga połowa godziny, 2026-11-17 ~02:48 UTC): 1/4 aktywne, dysk 13 GB
+
+- **Aktywne Workflow (1/4):** K5DOC-T5b strzelec-marsz, integracja r4, bramki na `7778e66af` (`wf_122fbedc-719`). Operator Haiku w trakcie `cargo test --all-targets` (proces działa, dysk 13 GB, ≥ 8 GB).
+- **Krok 2:** brak FC PASS bez integracji. T5b czeka na werdykt r4 (Ewaluator, FC), potem FF `parity-v2` `83777efa9` → `7778e66af`.
+- **Krok 3 (sprzątanie):** nic do usunięcia. Worktree `wf_122fbedc-719-1` (rund trwa) nietknięte.
+- **Wolne sloty (3 z 4): powód.** Brak czystego tematu z kodem Rust. Kandydaci z listy (#97, #100, #104, #106, #113, #115, #120, #135, #172, #253, #257, #259 (już zintegrowany jako T6), #260 (w integracji), #261, #263, #264, #268, #285, #286, #304–#310, #314, #315) są zablokowani decyzją właściciela (#253, #285, #286), zależnościami (#261 na #314; #304 na #310; #113 na #107/#109/#112) lub niezintegrowanym renderem (#316–#322). Rozpoznanie tylko do odczytu nie jest jeszcze zlecone: nie ma kandydata, którego wynik zmieniłby decyzję.
+- **Otwarte decyzje ABC (w czacie):** #327, #358.
