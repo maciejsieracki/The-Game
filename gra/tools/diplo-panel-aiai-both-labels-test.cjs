@@ -169,7 +169,8 @@ async function main() {
       },
     }), []);
     ok(html.includes('Zmęczenie wojną 40%') && html.includes('Desperacja 65%'), '[A6] wojna gracz↔AI: oba wiersze obecne');
-    ok(html.includes('<span>Ty</span>') && html.includes('<span>Grecja</span>'), '[A6] wiersze podpisane „Ty” i nazwą rozmówcy');
+    ok(html.includes('<span>Rzym</span>') && html.includes('<span>Grecja</span>') && !html.includes('<span>Ty</span>'),
+      '[A6] wiersze podpisane nazwą cywilizacji gracza (Rzym) i rozmówcy (Grecja) — R-WEB-DIPLO-DESPAIR-SHOW-FORMULA-IMPL-Q1 zmiana celowa');
   }
   {
     // A7: pusta nazwa rozmówcy — znacznik bez prefiksu „: …” (brak ślepego „: Desperacja”).

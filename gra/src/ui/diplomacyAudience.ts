@@ -1555,7 +1555,7 @@ export function otherCardHtml(st: DiplomacyAudienceState): string {
         progressBarHtml('Zaufanie', relScores.zaufanie, 100, undefined, 'trust', st.zaufanieDeltaPerTurn) +
         progressBarHtml('Respekt', relScores.respekt, 100, RESPEKT_TOOLTIP_PL, 'respect') +
         relacjaTotalHtml(st) +
-        warWearinessRowsHtml(st.warWeariness, st.otherCivName) +
+        warWearinessRowsHtml(st.warWeariness, st.playerCivName, st.otherCivName) +
       '</div>' +
       '<div>' +
         '<div class="da-sec-title">Dobra handlowe</div>' +
@@ -1617,9 +1617,9 @@ function warWearinessRowHtml(who: string, view: AudienceWarWearinessView): strin
 }
 
 /** Wiersze zmęczenia/desperacji w wojnie GRACZ↔rozmówca (karta rozmówcy, sekcja „Relacje z Tobą"). */
-function warWearinessRowsHtml(pair: AudienceWarWearinessPair | undefined, otherName: string): string {
+function warWearinessRowsHtml(pair: AudienceWarWearinessPair | undefined, playerName: string, otherName: string): string {
   if (!pair) return '';
-  return warWearinessRowHtml('Ty', pair.player) + warWearinessRowHtml(otherName, pair.other);
+  return warWearinessRowHtml(playerName, pair.player) + warWearinessRowHtml(otherName, pair.other);
 }
 
 /**
