@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "1ddbed4be23c47b7c7bed410cdc960c8",
-  "bundleSha256": "880bafde2d1bcbe0806e81cba4f23f44b8bf039db15b1c7560e1112ab44aa49a",
-  "bundleBytes": 14852312,
+  "bundleMd5": "36609bb7902f991fb47552ebff0f58aa",
+  "bundleSha256": "830af9403db736b22a1c9914e4decc0cdff68a69c9a41aa67f589a961a4d99c3",
+  "bundleBytes": 14852322,
   "sourceSnapshot": {
-    "source": "build Vite z merge FC d7ca26075 (raport 09101aa03) na main bc4d62365",
+    "source": "build Vite z merge FC f3bf2cc67 (raport b2f17e5b8) na main cc3c80b17",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 802: tabela zamian (units.json): Oszczepnik i Oszczepnik Zulu (Izijula) -> Lucznik; wyjatek AI w ai-era-unit-promotion.ts; testy promotion-table i archer-slinger"
+    "FALA 803: main.ts: markCityStateDirty() po dodaniu miast presetu w doStartPlaytestMapaSwiata (tylko sciezka testowa playtest=mapa); test statyczny obu presetow"
   ],
   "verification": [
-    "tsc 0; logic 213/213; promotion-table PASS bez cykli; archer-slinger 51/0; ai-era-unit-promotion 17/0; ai-unit-replace-same-rules 45/0; unit-replace 21/21; combat 6/6; mutacje czerwone (Evaluator i FC)"
+    "tsc 0; logic 213/213; playtest-mapa-dirty-forecast 10/0 + mutacje czerwone; unit-replace 21/21; combat 6/6; zywy Chromium: kandydat ma prognoze w t1, wariant bez poprawki forecast=null (2 z 2 przebiegow)"
   ],
   "limits": [
-    "NIE ZMIERZONO: zywy Chromium okna Zastap; Estolica Inkow nadal -> Procarz (decyzja A: tylko Lucznik, w temacie RANGEDHEALTH); unit-replace-full-cost 39/1 = dlug bazowy; dlug Rust REPIN tabeli zamian"
+    "dotyczy tylko presetu testowego playtest=mapa, nie normalnej gry; test jest tekstowy (trafilby tez w komentarz); NIE ZMIERZONO live dla playtest=miasto"
   ],
-  "finalControl": "R-WEB-UNIT-REPLACE-JAVELIN-TO-ARCHER-CHAIN-Q1 r1 FC PASS-WITH-NOTES 09101aa03 (kod d7ca26075)",
+  "finalControl": "R-WEB-TEST-HOOK-PLAYTEST-MAPA-DIRTY-FORECAST-Q1 r2 FC PASS b2f17e5b8 (kod f3bf2cc67)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T17:28:06",
+  "hubGeneratedAt": "2026-11-17T17:41:49",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "1ddbed4be23c47b7c7bed410cdc960c8",
-      "sizeBytes": 14852312
+      "md5": "36609bb7902f991fb47552ebff0f58aa",
+      "sizeBytes": 14852322
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "1ddbed4be23c47b7c7bed410cdc960c8",
-      "sizeBytes": 14852312
+      "md5": "36609bb7902f991fb47552ebff0f58aa",
+      "sizeBytes": 14852322
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "1ddbed4be23c47b7c7bed410cdc960c8",
-      "sizeBytes": 14852312
+      "md5": "36609bb7902f991fb47552ebff0f58aa",
+      "sizeBytes": 14852322
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "1ddbed4be23c47b7c7bed410cdc960c8",
-      "sizeBytes": 14852312
+      "md5": "36609bb7902f991fb47552ebff0f58aa",
+      "sizeBytes": 14852322
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "1ddbed4be23c47b7c7bed410cdc960c8",
-      "sizeBytes": 14852312
+      "md5": "36609bb7902f991fb47552ebff0f58aa",
+      "sizeBytes": 14852322
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "1ddbed4be23c47b7c7bed410cdc960c8",
-      "sizeBytes": 14852312
+      "md5": "36609bb7902f991fb47552ebff0f58aa",
+      "sizeBytes": 14852322
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "1ddbed4be23c47b7c7bed410cdc960c8",
-      "sizeBytes": 14852312
+      "md5": "36609bb7902f991fb47552ebff0f58aa",
+      "sizeBytes": 14852322
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "1ddbed4be23c47b7c7bed410cdc960c8",
-      "sizeBytes": 14852312
+      "md5": "36609bb7902f991fb47552ebff0f58aa",
+      "sizeBytes": 14852322
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "1ddbed4be23c47b7c7bed410cdc960c8",
-      "sizeBytes": 14852312
+      "md5": "36609bb7902f991fb47552ebff0f58aa",
+      "sizeBytes": 14852322
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "1ddbed4be23c47b7c7bed410cdc960c8",
-      "sizeBytes": 14852312
+      "md5": "36609bb7902f991fb47552ebff0f58aa",
+      "sizeBytes": 14852322
     }
   ],
-  "md5": "1ddbed4be23c47b7c7bed410cdc960c8",
+  "md5": "36609bb7902f991fb47552ebff0f58aa",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

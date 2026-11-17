@@ -1,3 +1,9 @@
+## ROBOCZA 36609bb7 -- 2026-11-17 -- FALA 803: Preset playtest=mapa: prognoza Zakoncz ture od tury 1 (markCityStateDirty) (testowa)
+
+- main.ts: markCityStateDirty() po dodaniu miast presetu w doStartPlaytestMapaSwiata (tylko sciezka testowa playtest=mapa); test statyczny obu presetow
+- Weryfikacja: tsc 0; logic 213/213; playtest-mapa-dirty-forecast 10/0 + mutacje czerwone; unit-replace 21/21; combat 6/6; zywy Chromium: kandydat ma prognoze w t1, wariant bez poprawki forecast=null (2 z 2 przebiegow)
+- Limity: dotyczy tylko presetu testowego playtest=mapa, nie normalnej gry; test jest tekstowy (trafilby tez w komentarz); NIE ZMIERZONO live dla playtest=miasto
+
 ## ROBOCZA 1ddbed4b -- 2026-11-17 -- FALA 802: Zastap: Oszczepnik i Oszczepnik Zulu przechodza do Lucznika (lancuch oszczepnik-lucznik-procarz) (testowa)
 
 - tabela zamian (units.json): Oszczepnik i Oszczepnik Zulu (Izijula) -> Lucznik; wyjatek AI w ai-era-unit-promotion.ts; testy promotion-table i archer-slinger
