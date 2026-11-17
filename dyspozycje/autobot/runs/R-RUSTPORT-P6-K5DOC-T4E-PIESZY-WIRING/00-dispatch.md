@@ -53,3 +53,13 @@ Rozstrzygnięcia orkiestratora na pytania z Obrony/FC r2 (reguła 8). Wykonawca 
 - MUTACJE (MUSZĄ dać FAIL): (a) pominięcie `occ_mut` update; (b) brak błędu `MissingTerrain` (domyślna wartość); (c) odwrócenie kolejności occ/facing; (d) `mounted` ignorowane (koszt piechoty dla jazdy).
 - DYSK: ≥ 8 GB przed startem i przed każdą mutacją (`df -h /`). Przy < 8 GB: BLOCK INFRA z liczbą GB.
 - Trailery commitów: BEZ nazwy modelu (#289). Raport `03-operator-r3.md`; commit jawnym `git add`, bez `Cargo.lock`, bez push do parity.
+
+## DODATEK r4 (orkiestrator, 2026-11-17: baza przesunięta; r3 nie został uruchomiony)
+Rozstrzygnięcia D1–D4 z DODATKU r2 i r3 OBOWIĄZUJĄ BEZ ZMIAN (wykonawca NIE wybiera). Zmienia się wyłącznie baza.
+- BAZA r4: `origin/rust-port/parity-v2` = `c120f2373` (zawiera K5DOC-T1, T3, T4a–c, R6, renderer). Worktree detached na `c120f2373`.
+- PATCH: nie stosować ślepo `wip-r2-nieskompilowane.patch` z `a60791ba2`. Przepisać zmiany ręcznie na nowej bazie wg D1–D4 i r3 (MoveTerrain, pola `terrain`/`occ_by_key`, wiring jednego kroku w `move_step`, `mounted` w `ProdMoveWorld`).
+- ZAKRES: wyłącznie T4e-0 (jak w r3). Pełny `_advanceStep` 1–10 zostaje w T4e-1.
+- ALLOWLISTA: jak w r3 (`siege_tactics_move_effects.rs` tylko dla traitu `MoveTerrain`; `siege_tactics_loop.rs` — ProdBody; testy `p6_k5doc_t4e*`; generator `p6_k5doc_t4e_gen.mjs`; katalog runs).
+- BRAMKI i MUTACJE: jak w r3 (fmt, clippy `-D warnings`, `p6_k5doc_t4e`, `--all-targets --no-fail-fast`; mutacje a/b/c/d z DODATKU r3 MUSZĄ dać FAIL).
+- DYSK: ≥ 8 GB przed startem i przed każdą mutacją (`df -h /`). Przy < 8 GB: BLOCK INFRA z liczbą GB.
+- Trailery commitów: BEZ nazwy modelu (#289). Raport `04-operator-r4.md`; commit jawnym `git add`, bez `Cargo.lock`, bez push do parity.
