@@ -34,6 +34,11 @@ export interface StackDisplayInfo {
    */
   goldDeficitRepIds?: Set<string>;
   /**
+   * R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4, zarzut 7): rep token ids stosow WLASNYCH w zasadzce -- znacznik
+   * (oko) na zetonie. Wypelniany tylko dla wlasciciela widoku; cudze zasadzki nie sa w ogole rysowane.
+   */
+  ambushRepIds?: Set<string>;
+  /**
    * R-ZETON-PASKI (Maciej 2026-07-29): rep unit id → wartości CAŁEGO stosu
    * pokazywane na tabliczce nad żetonem (Ruch / pula HP / Moc pola M).
    * Wypełniane tylko wtedy, gdy `computeStackDisplay` dostanie `vitalsDeps`

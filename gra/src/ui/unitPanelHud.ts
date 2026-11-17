@@ -52,6 +52,8 @@ export interface UnitPanelState extends UnitSufferingStatusFields {
   veteranPanelExplanation?: string;
   inGarnizon?: boolean;
   sentry?: boolean;
+  /** R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4): armia w zasadzce (znacznik dla wlasciciela). */
+  ambush?: boolean;
   ufortyfikowanyWPolu?: boolean;
   oblegaCityName?: string;
 }
@@ -134,6 +136,7 @@ export function createUnitPanelHud(config: UnitPanelHudConfig): UnitPanelHudApi 
       veteranPanelExplanation: u.veteranPanelExplanation,
       inGarnizon: u.inGarnizon,
       sentry: u.sentry,
+      ambush: u.ambush,
       ufortyfikowanyWPolu: u.ufortyfikowanyWPolu,
       oblegaCityName: u.oblegaCityName,
       // R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: głód wojska + deficyt Złota.

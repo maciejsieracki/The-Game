@@ -331,6 +331,8 @@ export function unitsVisibleOnMap(
 ): RuntimeUnit[] {
   return units.filter(u => {
     if (u.inGarnizon === true) return u.ownerId === playerOwnerId;
+    // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4): cudza zasadzka NIGDY nie jest widoczna na mapie (nawet w zasiegu).
+    if (u.ambush === true && u.ownerId !== playerOwnerId) return false;
     return u.ownerId === playerOwnerId || visibleHexes.has(keyOf(u.q, u.r));
   });
 }

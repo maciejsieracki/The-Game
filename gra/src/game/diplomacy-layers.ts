@@ -253,7 +253,7 @@ export function barbarianWarRelation(): Relation {
 export function computeDiplomaticContacts(
   visible: ReadonlySet<string>,
   cities: ReadonlyArray<{ ownerId: number; q: number; r: number }>,
-  units: ReadonlyArray<{ ownerId: number; q: number; r: number }>,
+  units: ReadonlyArray<{ ownerId: number; q: number; r: number; ambush?: boolean }>,
   playerOwnerId = 0,
 ): Set<number> {
   const contacted = new Set<number>();
@@ -263,6 +263,9 @@ export function computeDiplomaticContacts(
   }
   for (const u of units) {
     if (u.ownerId === playerOwnerId || isBarbarian(u.ownerId)) continue;
+    // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4, zarzut 5): jednostka w zasadzce jest niewidoczna -- nie otwiera kontaktu
+    // dyplomatycznego (nie ujawnia istnienia cywilizacji zastawiajacej).
+    if (u.ambush === true) continue;
     if (visible.has(hexKey(u.q, u.r))) contacted.add(u.ownerId);
   }
   return contacted;

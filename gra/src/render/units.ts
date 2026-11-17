@@ -5840,6 +5840,8 @@ export class UnitRenderer {
   private stackStarvingSprites: Map<string, THREE.Sprite> = new Map();
   /** R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: ikona DEFICYTU ZŁOTA (moneta) na reprezentancie stosu. */
   private stackGoldDeficitSprites: Map<string, THREE.Sprite> = new Map();
+  /** R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4): znacznik „w zasadzce” (oko) na zetonie stosu WLASNEGO. */
+  private stackAmbushSprites: Map<string, THREE.Sprite> = new Map();
   /** Etykieta „X tur” przy podglądzie trasy (A3 Shift). */
   private pathTurnLabelSprite: THREE.Sprite | null = null;
 
@@ -6304,6 +6306,63 @@ export class UnitRenderer {
     }
 
     this._applySufferingIcons(stackDisplay);
+    this._applyAmbushMarks(stackDisplay?.ambushRepIds);
+  }
+
+  /** Znacznik zasadzki: ciemna tarcza z zielonym obrysem i okiem, po lewej stronie zetonu (przeciwnie do x N). */
+  private _applyAmbushMarks(desired: ReadonlySet<string> | undefined): void {
+    for (const [id, sprite] of this.stackAmbushSprites) {
+      const obj = this.tokens.get(id);
+      if (desired?.has(id) && obj?.visible && sprite.parent === obj) continue;
+      this._disposeOverlaySprite(sprite);
+      this.stackAmbushSprites.delete(id);
+    }
+    if (!desired?.size) return;
+    for (const id of desired) {
+      const obj = this.tokens.get(id);
+      if (!obj || !obj.visible) continue;
+      const existing = this.stackAmbushSprites.get(id);
+      if (existing?.parent === obj) continue;
+      if (existing) this._disposeOverlaySprite(existing);
+      const sprite = this._makeAmbushMarkSprite();
+      sprite.position.set(-0.30 * HEX_R, 0.55 * HEX_R, 0.15 * HEX_R);
+      sprite.userData['ambushMark'] = true;
+      obj.add(sprite);
+      this.stackAmbushSprites.set(id, sprite);
+    }
+  }
+
+  private _makeAmbushMarkSprite(): THREE.Sprite {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = 'rgba(12,18,32,0.94)';
+    ctx.beginPath();
+    ctx.arc(32, 32, 28, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#7fd08a';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    // Oko: migdal + zrenica.
+    ctx.strokeStyle = '#e8d88a';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(14, 32);
+    ctx.quadraticCurveTo(32, 14, 50, 32);
+    ctx.quadraticCurveTo(32, 50, 14, 32);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fillStyle = '#e8d88a';
+    ctx.beginPath();
+    ctx.arc(32, 32, 6, 0, Math.PI * 2);
+    ctx.fill();
+    const tex = new THREE.CanvasTexture(canvas);
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+    const sp = new THREE.Sprite(mat);
+    sp.scale.set(0.36, 0.36, 1);
+    sp.renderOrder = 10;
+    return sp;
   }
 
   /**

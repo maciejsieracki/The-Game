@@ -48,6 +48,8 @@ export interface ArmyListEntry {
   ufortyfikowanyWPolu?: boolean;
   /** Jednostka w trybie czuwania (uśpiona do wykrycia wroga). */
   sentry?: boolean;
+  /** R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4): armia w zasadzce (tylko wlasna lista, wiec zawsze dla wlasciciela). */
+  ambush?: boolean;
   /** Zwiadowca w auto-eksploracji (ruch wykonywany automatycznie na koniec tury). */
   autoExplore?: boolean;
 }
@@ -167,6 +169,8 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
         row.tabIndex = 0;
         row.title = a.inGarnizon
           ? 'Zaznacz ' + a.name + ' — w garnizonie; rozkaz ruchu ją odfortyfikuje i obudzi'
+          : a.ambush
+            ? 'Zaznacz ' + a.name + ' — w zasadzce; wróg jej nie widzi, rozkaz ruchu ją odwoła'
           : a.sentry
             ? 'Zaznacz ' + a.name + ' — uśpiona; rozkaz ruchu ją obudzi'
             : a.ufortyfikowanyWPolu

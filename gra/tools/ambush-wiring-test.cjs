@@ -235,28 +235,22 @@ const unit = (over) => Object.assign({
     assert.ok(cmds.some(c => c.targetUnitId === 'en1'), 'bez filtra AI powinno atakowac ukryta jednostke: ' + JSON.stringify(cmds));
   });
 
-  // ---- (E) strukturalnie: wpiecie w main.ts ----
+  // ---- (E) strukturalnie: main.ts WOLA wyodrebnione jadro (reguly sa w game/ambushMove.ts i testuje je ambush-realstep-test.cjs) ----
   const mainSrc = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
-  check('E1 wpiecie w main.ts: gracz animowany + koniec tury + AI + occupiedForMove + cykl zycia + komunikaty', () => {
-    const calls = mainSrc.split('fireAmbushOnHex(').length - 1;
-    assert.ok(calls >= 5, 'oczekiwano >=5 wystapien (def + wolania), jest ' + calls);
-    assert.ok(mainSrc.includes('truncatePathAtAmbush(units, movePath, u.ownerId, areEnemyOwners)'), 'startAnimatedMove');
-    assert.ok(mainSrc.includes('truncatePathAtAmbush(units, result.movePath, u.ownerId, areEnemyOwners)'), 'applyMarchSegmentInstant');
-    assert.ok(mainSrc.includes('truncatePathAtAmbush(units, fullPathIn, ownerId, areEnemyOwners)'), 'executor AI');
+  check('E1 main.ts wola jadro ambushMove na wszystkich sciezkach ruchu (gracz animowany, koniec tury, AI, barbarzyncy, render, cykl zycia)', () => {
+    assert.ok(mainSrc.includes("from './game/ambushMove'"), 'import ambushMove');
+    assert.ok(mainSrc.includes('planPlayerAmbushMove(units, movePath, u.ownerId, areEnemyOwners, true)'), 'startAnimatedMove');
+    assert.ok(mainSrc.includes('planPlayerAmbushMove(units, result.movePath, u.ownerId, areEnemyOwners, launchAttack)'), 'applyMarchSegmentInstant');
+    assert.ok(mainSrc.includes('resolveAmbushAfterMove(units, u, aiAmbushCutter.hit(), areEnemyOwners)'), 'executor AI');
+    assert.ok(mainSrc.includes('resolveAmbushAfterMove(units, bu, barbAmbushHit, areEnemyOwners)'), 'petla barbarzyncow');
     assert.ok(mainSrc.includes("type: 'attack', unitId: u.id, targetUnitId: ambDef.id, ambush: true"), 'AI atak');
     assert.ok(mainSrc.includes('buildMoveOccupancy(units, moverOwnerId, exceptIds, areEnemyOwners)'), 'occupiedForMove');
-    assert.ok(mainSrc.includes('reconcileAmbush(units,'), 'cykl zycia w syncUnitsRender');
+    assert.ok(mainSrc.includes('reconcileAmbushInWorld(units, cities)'), 'cykl zycia w syncUnitsRender');
+    assert.ok(mainSrc.includes('releaseAmbushOnMoveOrder(stack)'), 'zdjecie zasadzki przy rozkazie ruchu');
+    assert.ok(mainSrc.includes('unitsForViewer(rawSrc, ME())'), 'filtr renderu');
     assert.ok(mainSrc.includes("'Wpadłeś w zasadzkę!'") && mainSrc.includes("'Zasadzka się powiodła'"), 'komunikaty');
-  });
-  // (obrona r3, zarzut 1) mutacje przeżywające w E1 -- sprawdzamy KONKRETNE linie wpięcia (nie samą obecność symbolu).
-  check('E2 wpiecie punktowe: cancelAmbush w startAnimatedMove, reconcile z realnym hasCity, guard !launchAttack, filtr renderu', () => {
-    const mainSrc = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
-    const startFn = mainSrc.slice(mainSrc.indexOf('function startAnimatedMove('), mainSrc.indexOf('function startAnimatedMove(') + 4000);
-    assert.ok(/const stack = playerStackAt\(u\);\s*\n\s*\/\/[^\n]*\n\s*cancelAmbush\(stack\);/.test(startFn)
-      || /cancelAmbush\(stack\);/.test(startFn), 'M2: cancelAmbush(stack) w startAnimatedMove');
-    assert.ok(mainSrc.includes('reconcileAmbush(units, (q, r) => cities.some(c => c.q === q && c.r === r));'), 'M3: reconcile z realnym hasCity');
-    assert.ok(mainSrc.includes('if (!launchAttack) return false; // bez prawa otwarcia bitwy zasadzka zostaje nietknieta'), 'M4: guard !launchAttack');
-    assert.ok(mainSrc.includes('const src = rawSrc.filter(u => isUnitVisibleToViewer(u, ME()));'), 'M9: filtr renderu');
+    // brak lokalnych kopii regul (mutacja guardu w main.ts nie omija testu jadra)
+    assert.ok(!mainSrc.includes('truncatePathAtAmbush(units, result.movePath'), 'brak inline truncatePathAtAmbush w marszu');
   });
 
   // ---- (F) zapis ----

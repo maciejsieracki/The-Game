@@ -137,6 +137,8 @@ ${MAP_UNIT_1E_SHARED_CSS}
 .civ-army-stack .ash-meta{font-family:var(--civ-font-ui,'Segoe UI',Tahoma,sans-serif);
   font-size:0.68em;color:var(--civ-text-muted,#8a8070);margin-top:2px;font-weight:400;
   letter-spacing:.06em;text-transform:uppercase;}
+.civ-army-stack .ash-ambush-mark{display:inline-block;color:#7fd08a;font-weight:700;letter-spacing:.06em;
+  border:1px solid rgba(127,208,138,.55);border-radius:4px;padding:0 6px;background:rgba(127,208,138,.12);}
 .civ-army-stack .ash-hdr-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
 .civ-army-stack .ash-cards{display:flex;gap:8px;padding:10px 14px;overflow-x:auto;scrollbar-width:thin;}
 .civ-army-stack .ash-cards::-webkit-scrollbar{height:4px;}
@@ -294,7 +296,7 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
       + armyIc
       + '<div><div class="ash-title">Armia · ' + esc(st.hexLabel) + '</div>'
       + '<div class="ash-meta">' + formatJednostkiCount(st.unitCount) + ' na heksie'
-      + (st.ambushed === true ? ' · <span class="ash-ambush-mark" title="Zasadzka: wróg Cię nie widzi, dopóki na nią nie wejdzie">w zasadzce</span>' : '')
+      + (st.ambushed === true ? ' · <span class="ash-ambush-mark" title="Zasadzka: wróg Cię nie widzi, dopóki na nią nie wejdzie">W zasadzce</span>' : '')
       + '</div></div></div>'
       + '<button type="button" class="ash-nav-arr" data-cycle="1"' + cycleDis
       + ' title="Następna jednostka (dowolna, niezależnie od ruchu) — Spacja: następna AKTYWNA jednostka">▶</button>'

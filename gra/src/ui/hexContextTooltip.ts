@@ -667,6 +667,8 @@ export interface UnitContextTooltipInput extends UnitSufferingStatusFields {
   /** Linia doświadczenia bojowego (veteranExperienceLine). */
   veteranExperienceLine?: string;
   sentry?: boolean;
+  /** R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4): w zasadzce (tylko wlasciciel). */
+  ambush?: boolean;
   ufortyfikowanyWPolu?: boolean;
   oblegaCityName?: string;
   /** Zasięg ataku (z definicji jednostki). */
@@ -712,6 +714,7 @@ function unitCardStatusFromTooltip(u: UnitContextTooltipInput): UnitCardStatusIn
     veteranPanelExplanation: u.veteranPanelExplanation,
     inGarnizon: u.inGarnizon,
     sentry: u.sentry,
+    ambush: u.ambush,
     ufortyfikowanyWPolu: u.ufortyfikowanyWPolu,
     oblegaCityName: u.oblegaCityName,
     // R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: głód wojska + deficyt Złota.
@@ -733,8 +736,12 @@ function buildUnitHeadHtml(u: UnitContextTooltipInput): string {
   const emblem = u.ownerEmblemHtml
     ? `<span class="uc-owner-emblem">${u.ownerEmblemHtml}</span>`
     : '';
+  // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4, zarzut 7): wyrazna odznaka „W zasadzce” (tylko wlasciciel; wrog nie widzi tej karty).
+  const ambushChip = u.ambush === true
+    ? '<span class="uc-ambush-chip" title="Zasadzka: wróg Cię nie widzi, dopóki na nią nie wejdzie">W zasadzce</span>'
+    : '';
   return `<div class="uc-unit-head cp-unit-head">${emblem}`
-    + `<div class="uc-unit-head-info"><b>${u.esc(u.displayName)}</b>${metaHtml}${subHtml}</div></div>`;
+    + `<div class="uc-unit-head-info"><b>${u.esc(u.displayName)}</b>${ambushChip}${metaHtml}${subHtml}</div></div>`;
 }
 
 function buildUnitExpandButtonHtml(expanded: boolean): string {
@@ -962,6 +969,8 @@ ${UNIT_CARD_STATUS_CSS}
 .sp-unit-pick.on{background:var(--civ-gold-primary,#e8d88a);border-color:var(--civ-gold-primary,#e8d88a);}
 .sp-unit-pick.on::after{content:'';position:absolute;left:4px;top:0;width:4px;height:8px;
   border:solid #2e2708;border-width:0 2px 2px 0;transform:rotate(45deg);}
+.uc-ambush-chip{display:inline-block;margin-left:8px;padding:0 6px;border-radius:4px;font-size:10px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:#7fd08a;border:1px solid rgba(127,208,138,.55);background:rgba(127,208,138,.12);}
 .uc-unit-head-meta{font-size:10px;color:var(--civ-text-muted,#a09880);margin-top:3px;font-weight:400;}
 ${UNIT_ACTION_BAR_CSS}
 .sp-unit-card-body{display:flex;flex-direction:column;gap:0;}
