@@ -1,78 +1,76 @@
-# R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1 — Operator, runda 2/5
+# R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1 — Operator, runda 3 (tego ID = r4 wg FC)
 
-STATUS: PASS-WITH-NOTES (pomiar wykonany; zakres pomiaru i ograniczenia opisane niżej)
-DOMAIN: GAME (tylko hak testowy `?civTest` i narzędzie pomiarowe)
+STATUS: BLOCK (częściowy pomiar: AUTO i skip zmierzone na ścieżce mapowej; tryb ręczny z rozkazami ZABLOKOWANY przez bramkę sceny; zamiana stron NIE ZMIERZONO)
+DOMAIN: GAME (tylko narzędzie pomiarowe w `gra/tools/`; `gra/src` bez zmian)
 TEMAT: R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1
-GOAL: (1) hak `__civTest.addUnit(owner,q,r,civilian,typeId)` z typem jednostki (r1, już w bazie 57748caa); (2) pomiar live Wojownik vs Wojownik 10 vs 10 w trybie ręcznym z rozkazami, AUTO i skip, ≥3 ziarna.
-BAZA: 57748caaf79c633202be8d36ed8d199b87811688 (origin/main), detached worktree. Dispatch i DODATEK czytane z `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`.
+GOAL: pomiar Wojownik vs Wojownik 10 vs 10 ŚCIEŻKĄ MAPOWĄ (`?playtest=mapa&civTest=1` + `__civTest.addUnit(...,'Wojownik')` x10 po obu stronach), bez presetu, bez przepisywania statystyk, z dowodem haka w runtime.
+BAZA: c6f28ce7e1524df26352f93afd8709f1e1e0a355 (origin/main, detached worktree). Dispatch i DODATEK 2 czytane z `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`.
+DECYZJA ZA ZAŁOŻENIEM: hak z r1 bez zmian (`gra/src/main.ts`, `addUnit` z typeId); `gra/src` nie dotykany.
 
-## ZMIANY-COMMIT
-- NOWY `gra/tools/live-verify-wojownik-r2.cjs` — driver pomiarowy (kopia r3 + przepisanie na Wojownika, probe haka addUnit).
-- NOWY `dyspozycje/autobot/runs/R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1/evidence-wojownik-r2.json` — surowe wyniki 9 uruchomień (3 ziarna × 3 tryby).
-- ZAKTUALIZOWANY ten raport (poprzednia wersja r1 zachowana w historii gita, commit 57748caa).
-- `gra/src/` bez zmian w tej rundzie (`git diff -- gra/src` puste; hak z r1 pozostaje jak był).
-- Build i node_modules poza repo: `gra/node_modules` (ignorowane przez git) i bundle w `/tmp/ad1/dist` (poza repo).
+## Co zrobiono
 
-## POMIAR — Wojownik vs Wojownik 10 vs 10 (ZMIERZONO, Chromium headless + xvfb-run, `?playtest=bitwa-duza&civTest=1`, hit=losowe)
+1. `npm ci --ignore-scripts` w `gra/`, build vite poza repo: `node ./node_modules/vite/bin/vite.js build --outDir /tmp/ad2/dist --emptyOutDir` (19–20 s, EXIT 0). TMPDIR Chromium: `/tmp/ad2/tmp`.
+2. Nowy driver `gra/tools/live-verify-wojownik-map-q1.cjs` (ścieżka mapowa): gracz (ME=0) i barbarzyńcy (-1) po 10 x `__civTest.addUnit(owner,q,r,false,'Wojownik')` na sąsiednich heksach; wojna przez `setWar`; klik na heks gracza (zaznaczenie), klik na heks wroga (atak z mapy); okno przed bitwą `.pb-overlay`; scena bitwy startuje od razu (bez paska `#deploy-toolbar-start`).
+3. Dwie próby techniczne przed wnioskiem o BLOCK: (a) pierwsze uruchomienie zawieszało się w pętli czekania na pasek wdrożenia — diagnoza: scena startuje w AUTO bez etapu wdrożenia; (b) pętla klatek przy renderowanym mapie trwała ~1,5 s/klatkę — usunięto callbacki renderowania mapy z kolejki na czas bitwy (ten sam zabieg logiki co wyłączenie `renderer.render` w r3); po tym ~7 s na bitwę.
+4. Zmierzono 3 ziarna (`1,2,3`) x tryby `auto`, `skip`, `manual` dla strony atakującej (gracz = atakujący).
 
-Źródło liczb: surowy JSON `evidence-wojownik-r2.json` (pola `res`, `actions`, `trimInfo`).
-Kolumny: zwycięzca (silnik), runda końca, straty atakującego (z 10), straty obrońcy (z 10), liczba rozkazów wydanych ręcznie.
+## Dowód haka w runtime (probe)
 
-| ziarno | tryb | zwycięzca | runda | straty atk | straty obr | pozostało obr | rozkazy ręczne |
-|---|---|---|---|---|---|---|---|
-| 1 | manual (rozkazy) | obrońca | 29 | 10/10 | 0/10 | 10 | 117 |
-| 1 | AUTO (klawisz R) | obrońca | 18 | 10/10 | 1/10 | 9 | 0 |
-| 1 | skip (Pomiń) | obrońca | 18 | 10/10 | 1/10 | 9 | 0 |
-| 2 | manual (rozkazy) | obrońca | 28 | 10/10 | 0/10 | 10 | 120 |
-| 2 | AUTO | obrońca | 23 | 10/10 | 3/10 | 7 | 0 |
-| 2 | skip | obrońca | 22 | 10/10 | 3/10 | 7 | 0 |
-| 3 | manual (rozkazy) | obrońca | 31 | 7/10 | 1/10 | 9 | 208 |
-| 3 | AUTO | obrońca | 37 | 10/10 | 1/10 | 9 | 0 |
-| 3 | skip | obrońca | 19 | 10/10 | 0/10 | 10 | 0 |
+Odczyt z rosteru sceny bitwy (nie `typeof`): `atkNames={"Wojownik":10}`, `defNames={"Wojownik":10}`; próbka: `nazwa:"Wojownik"`, `kategoria:"miecznik"`, `hp:22/22` po obu stronach. Hak działa: wstawione jednostki są typu Wojownik z units.json (realne statystyki z mechanizmu gry, bez przepisywania). Pole `typeId` w `bu` nie istnieje w scenie (`null`) — typ identyfikuje `nazwa`.
 
-Podsumowanie (9 pomiarów, wszystkie `errors` puste, `hookProbe.ok` = true):
-- Zwycięzca: obrońca we wszystkich 9 uruchomieniach. Atakujący w 8/9 przegrał całą armię (10/10); w manual s3 zostało 3 jednostki atakującego przy zwycięstwie obrońcy wg silnika (nie zbadano dlaczego).
-- Straty zwycięzcy (obrońca): manual 0,0,1 (średnia 0,3); AUTO 1,3,1 (średnia 1,7); skip 1,3,0 (średnia 1,3).
-- Rundy: manual 29/28/31; AUTO 18/23/37; skip 18/22/19.
-- Ucieczki (rout): NIE ZMIERZONO — driver nie zapisuje liczby uciekinierów; w JSON jest tylko flaga `routed` dla żywych jednostek atakującego.
+## Tabela pomiarowa (strona atakująca = gracz; seed 1, 2, 3; wszystkie 10 vs 10)
 
-## OGRANICZENIA POMIARU (uczciwie)
-1. Hak `addUnit` z typeId NIE wstawia Wojownika do sceny bitwy. Preset `bitwa-duza` buduje roster z bloków (`playtestWalkaMapy.ts`, `buildBitwaDuzaPreset`) przed startem sceny; `addUnit` zmienia tylko mapowe `units` (to ZMIERZONO tylko pośrednio: probe zwrócił id dla `Wojownik` i null dla nieistniejącego typu; wpływu na scenę NIE zmierzono bezpośrednio). Dlatego driver przepisuje 10 jednostek atakującego (slot Hastati) i 10 obrońcy (slot Phalanx = Falanga) na Wojownika w scenie: `bu.nazwa`, `bu.stats` (wiersz Wojownik z `data/units.json`), `bu.hp = bu.maxHp = 22`. Walka czyta `bu.stats` przy każdym ataku (`toCombatUnit`), więc statystyki są realne; wizualnie jednostki zostają jako Hastati/Falanga (modele 3D nie zmieniono).
-2. Pomiar jest na jednym presecie mapy (`bitwa-duza`, układ 10 vs 10 z bloków presetu), nie na prawdziwej mapie kampanii.
-3. Przewaga obrońcy 9/9 nie została wyjaśniona (układ pozycji, flanka/tyły, kolejność tur — NIE ZBADANO). Nie należy z tego wnioskować o balansie Wojownika bez dalszej analizy.
-4. Trzy ziarna, jeden tryb trafień (`losowe`). Tryb `pewne` nie był mierzony.
-5. Haki i hit mode: `__civSetHitMode` ustawiany przez driver jak w r3.
+| Tryb | Zwycięzca | Straty zwycięzcy (wyeliminowani / uciekinierzy / pozostali) | Straty przegranego | Rundy | Ucieczki | Status |
+|---|---|---|---|---|---|---|
+| AUTO (start sceny, bez rozkazów) | gracz (atakujący) | 5 / 0 / 5 | 10 / 0 / 0 | 18 | 0 | ZMIERZONO |
+| skip (metoda `scene.skip()`, patrz uwaga) | gracz (atakujący) | 5 / 0 / 5 | 10 / 0 / 0 | 18 | 0 | ZMIERZONO |
+| ręczny z rozkazami (ATAK per jednostka + Spacja) | — | — | — | — | — | BLOCK (patrz niżej) |
 
-## WALIDACJA HAKA (ZMIERZONO w live)
-- Probe w Chromium: `__civTest.addUnit(0,0,0,false,'Wojownik')` → `civtest-0-0-0-0` (string), `addUnit(...,'NIE-ISTNIEJE-XYZ')` → `null`. Obie wartości zgodne z kryterium (a).
-- Statyczny test `gra/tools/civtest-addunit-typeid-test.cjs`: 10/10.
+Wynik jest IDENTYCZNY dla ziaren 1, 2 i 3 (ten sam przebieg logu: "Wojownik trafia Wojownik [FLANKA -15% obrony] za 3 (HP 5/22)", koniec: "zwyciestwo ATAKUJACEGO"). Ziarno (`Math.random`) nie zmienia wyniku tej bitwy — bitwa jest deterministyczna przy tym samym stanie mapy. Trzy ziarna dają więc JEDEN niezależny wynik (n_efektywne = 1); nie wolno z tego wyciągać rozrzutu.
 
-## BRAMKI (surowe wyniki tej rundy)
-- `cd gra && npx tsc --noEmit` → exit 0 (bez komunikatów).
-- `node tools/logic-test.cjs` → `LOGIC OK (213/213)`, exit 0.
-- `node tools/tech-tree-test.cjs` → `tech-tree-test: 20 pass, 0 fail`, exit 0.
-- `node tools/research-test.cjs` → `PASSED: 33 / FAILED: 0 / TOTAL: 33`, exit 0.
-- `node tools/unit-replace-test.cjs` → `WSZYSTKIE TESTY ZIELONE (21/21)`, exit 0.
-- `node tools/combat-test.cjs` → `All sanity checks passed.`, exit 0.
-- `node tools/civtest-addunit-typeid-test.cjs` → `ADDUNIT-TYPEID STATIC: 10/10`, exit 0.
-- Build (dozwolony przez DODATEK, poza repo): `node ./node_modules/vite/bin/vite.js build --outDir /tmp/ad1/dist --emptyOutDir` → `built in 17.92s`, exit 0.
-- `npm ci --ignore-scripts` w `gra/` → exit 0.
-- `git diff -- gra/src` → puste (brak zmian w src w tej rundzie).
+Uwagi do tabeli:
+- "skip": przycisk Pomiń nie został znaleziony po tekście (`skipClick: "fallback-metoda"`), użyto `window.__lastBattleScene.skip()`. To nie jest klik w UI; wynik zgodny z AUTO.
+- "AUTO": scena w ścieżce mapowej startuje już w AUTO (`manual:false`, `manualCommanderGate:true`, `playerHasCommander:false`); klawisz R nie był wciskany.
+- Ucieczki = jednostki `routed && !dead` po zakończeniu; wyeliminowani = `dead`. W tej bitwie: 0 uciekinierów po obu stronach.
 
-## BLOKADY
-- Brak blokad technicznych. Ograniczenia pomiaru opisane wyżej (nie są blokadami).
-- Decyzja dla orkiestratora: czy akceptujemy mechanizm "przepisanie jednostek w scenie" jako wystarczający dowód dla Wojownika (alternatywa: osobny hak wstawiający typ do roster bitwy — to już zmiana src poza allowlistą).
+## BLOCK: tryb ręczny z rozkazami na ścieżce mapowej
 
-## RUNDY
-2/5 (r1 BLOCK: brak pomiaru; r2 PASS-WITH-NOTES: pomiar 9/9 uruchomień, bramki zielone).
+Scena bitwy po wejściu z mapy ma `_manualCommanderGate=true`, a gracz nie ma dowódcy armii (`isArmyCommander`; `isGeneral` ustawia się tylko przy zakupie generała, a hak `addUnit` z typeId tworzy `isGeneral:false`). Bramka sceny zatem ustawia `_manualMode=false` i bitwa idzie AUTO (zob. komentarz w `battleScene.ts` ~3662: "bez generała ... bitwa idzie AUTO"). Driver ręczny (r3) wymaga `_battleAwaitingOrders` — w tej ścieżce nigdy nie nastąpi. Logi trzech ziaren: `manual=false, bramka=true, dowodca gracza=false` (zob. `evidence-wojownik-map-r4.json`, pole `error` dla `|manual`).
 
-## UWAGI-DLA-ORKIESTRATORA
-- DODATEK wskazywał `dyspozycje/.../00-dispatch-DODATEK-claude.md` jako istniejący w gałęzi — jest; nie zmieniano go.
-- Nie tworzono sesji, zadań, tasków ani kart Suggested task (zakaz respektowany). Nie użyto run_in_background poza automatycznym przeniesieniem jednego długiego polecenia (pomiar), które zakończyło się kodem 0 i zostało odczytane z pliku wyników.
-- Pliki tymczasowe poza repo: `/tmp/ad1/` (bundle, logi, wyniki surowe). Do sprzątania przez orkiestratora.
-- Wskazanie na przewagę obrońcy 9/9 do decyzji: czy temat balansu Wojownika ma być osobny.
+Dwa podejścia (wymóg DODATKU 2 przed BLOCK):
+- Podejście 1: stosy Wojownik na mapie bez dowódcy — AUTO, bramka blokuje ręczny.
+- Podejście 2: obejście przez hak — niemożliwe bez zmiany `gra/src` (hak nie tworzy generała Wojownika; `__frozenTestDebug.spawn` klonuje szablon gracza, nie typ Wojownika). Dodanie generała do stosu zmieniłoby też skład 10 vs 10 (11 jednostek). Nie wykonano przepisywania `_manualMode` w scenie — to byłby stan, którego produkt nie osiąga.
 
-## NASTĘPNY KROK
-Evaluator (SONNET): zweryfikować JSON `evidence-wojownik-r2.json` względem tabeli, sprawdzić bramki i zakres diffu (tylko `gra/tools/live-verify-wojownik-r2.cjs` i pliki raportu/evidence); ocenić, czy przepisanie w scenie spełnia kryterium (b).
+Wniosek: manual z rozkazami przy 10 vs 10 wymaga dowódcy po stronie gracza albo zmiany bramki w produkcji — decyzja właściciela/orkiestratora, nie zakres tego tematu.
 
+## NIE ZMIERZONO: kontrola zamiany stron (gracz jako obrońca)
+
+Próba: barbarzyńcy (-1) z 10 Wojownikami obok stosu gracza, `__civTest.endTurn()` i czekanie na atak AI. Wynik: okno przed bitwą pojawiło się, ale w innej bitwie świata (rola "RZYMIANIE · OBROŃCA — TY" vs "GRECY · ATAKUJĄCY"; po stronie obrony Hastati 1, atak Łucznik 1). Zdarzenie AI Grecy–Rzymianie, nie nasze stosy. Atak barbarzyńców na nasz stos nie jest sterowalny z UI/haków. Zapis: `evidence-wojownik-map-r4-def-negatywny.json`. Kontrola zamiany stron NIE ZMIERZONO.
+
+## Zastrzeżenia do narzędzia
+
+- W `gra/tools/live-verify-wojownik-map-q1.cjs` pętla ręczna (`if (false) { ... }`) jest nieosiągalna — zostawiona celowo jako ślad; manual kończy się wcześniej blokadą.
+- Brak pomiaru ręcznego i brak kontroli obrony = wynik niekompletny względem celu tematu.
+
+## Bramki
+
+- `tsc --noEmit` w `gra/`: EXIT 0.
+- Pięć bramek referencyjnych (logic-test, tech-tree-test, research-test, unit-replace-test, combat-test): NIE URUCHOMIONO — `gra/src` nie zmienione (`git diff --stat -- gra/src` puste), więc wynik bramek jest taki jak na bazie c6f28ce7.
+- `git diff --stat -- gra/src`: pusty (zakaz allowlisty spełniony).
+
+## Pliki
+
+- `gra/tools/live-verify-wojownik-map-q1.cjs` (nowy, driver ścieżki mapowej)
+- `dyspozycje/autobot/runs/R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1/evidence-wojownik-map-r4.json` (wyniki 3 ziaren x auto/skip/manual, błędy BLOCK)
+- `dyspozycje/autobot/runs/R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1/evidence-wojownik-map-r4-def-negatywny.json` (próba obrony, negatywna)
+
+## Ograniczenia pomiaru (jawnie)
+
+- n_efektywne = 1 (ziarna nie zmieniają wyniku); nie ma rozrzutu do raportowania.
+- Strona atakująca tylko; obrona nie zmierzona.
+- Ręczny nie zmierzony (bramka dowódcy).
+- Pomiar w Chromium headless (`/usr/bin/chromium`), swiftshader; renderowanie mapy i sceny bitwy wyłączone na czas pomiaru (jak r3).
+
+RUNDY: 3/5 (ten dispatch: r4 wg FC; poprzednie: r1 FAIL brak tabeli, r2 FAIL pomiar przez przepisanie statystyk)
+NASTĘPNY KROK: orkiestrator decyduje: (a) dowódca gracza w stosie pomiarowym (osobny temat, dotyka mechaniki generałów) albo (b) zgoda na zmianę bramki ręcznej dla testu (poza zakresem tego tematu) — oraz (c) ewentualnie pomiar obrony innym sposobem (poza zakresem haka).
 DEPLOY/PUSH: NIE WYKONANO

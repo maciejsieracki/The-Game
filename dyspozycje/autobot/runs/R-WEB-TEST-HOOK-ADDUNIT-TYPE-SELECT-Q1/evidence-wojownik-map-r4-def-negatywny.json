@@ -1,0 +1,216 @@
+{
+  "runs": {
+    "def-s1|auto": {
+      "cfg": {
+        "id": "def-s1",
+        "role": "def",
+        "seed": 1
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 47,
+          "r": 10
+        },
+        "hexEnemy": {
+          "q": 48,
+          "r": 10
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectionMethod": "brak-klikniecia (obrona)",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · OBROŃCA — TY | Kamillus",
+        "foeRole": "GRECY · ATAKUJĄCY — WRÓG | Perykles",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 1,
+            "more": null
+          },
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 1,
+            "more": null
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 0,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 1,
+        "def": 1,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 1,
+        "defCount": 1,
+        "atkNames": {
+          "Łucznik": 1
+        },
+        "defNames": {
+          "Hastati": 1
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Łucznik",
+            "hp": 20,
+            "maxHp": 20,
+            "kategoria": "lucznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Hastati",
+            "hp": 38,
+            "maxHp": 38,
+            "kategoria": "legionista",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 1,
+        "defTotal": 1,
+        "atkHp": 20,
+        "defHp": 38,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 28,
+        "atk": {
+          "total": 1,
+          "eliminated": 1,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 1,
+          "eliminated": 0,
+          "fled": 0,
+          "remaining": 1
+        },
+        "endLogTail": [
+          "  -> Łucznik ZALAMUJE MORALE i ucieka z pola!",
+          "=== POSCIG: armia przegrana ucieka -- zwyciezca dobija uciekinierow ===",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ]
+      }
+    }
+  },
+  "meta": {
+    "chromium": "/usr/bin/chromium",
+    "dist": "/tmp/ad2/dist",
+    "runda": 4,
+    "path": "playtest=mapa + __civTest.addUnit(typeId=Wojownik) x10 vs x10, bez presetu i bez przepisywania statystyk"
+  }
+}
