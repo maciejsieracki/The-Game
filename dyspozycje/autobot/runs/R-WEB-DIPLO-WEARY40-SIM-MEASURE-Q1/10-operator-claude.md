@@ -11,7 +11,7 @@ BAZA: origin/main 64069b1a2 (FALA 783, ROBOCZA MD5 53a9463a). Dispatch i DODATEK
 
 Wykonane kroki z DODATKU 1:
 - (1) Weryfikacja narzędzia i liczb: smoke `node tools/weary40-sim-measure.cjs --turns 30 --seeds 1 --variant both` → exit 0, 5,6 s (limit 60 s). Pełny przebieg `--turns 150 --seeds 3 --variant both` (K=3) → exit 0, 19,7 s; wynik porównany z `raw-K3-N3-T150.jsonl` po usunięciu pola `avgTurnMs`: `cmp` IDENTYCZNY (12 wierszy = 12 wierszy). Wnioski z raw K=6 i K=3 zweryfikowane skryptowo (liczby w §4 poniżej są zgodne z raw).
-- Środowisko: `gra/node_modules` nie istniało w worktree; esbuild@0.28.2 i three@^0.169.0 (zgodnie z gra/package.json) zainstalowane poza repo i podpięte symlinkiem; symlink usunięty przed commitem (patrz ZMIANY-COMMIT).
+- Środowisko: `gra/node_modules` nie istniało w worktree; esbuild@0.28.2 i three@^0.169.0 (zgodnie z gra/package.json) zainstalowane poza repo i podpięte symlinkiem; symlink nie jest w commicie (untracked, sprzątanie orkiestratora).
 - (3) Werdykt RYZYKO §3 zweryfikowany w kodzie: `gra/src/game/war-weariness.ts:302-311` — `cityCap = battlePending ? 0 : max(0, ownCities − minMiastPoOddaniu)`, a warunek oddania miast to `clearLoser && price.requiredPn > 0 && cityCap > 0`; komentarz `war-weariness.ts:265` i `gra/data/war-weariness-params.json` (`_opis`, `_progi`) twierdzą, że pokój wymuszony jest ZAWSZE płatny miastami. Stan faktyczny: przy cityCap = 0 pokój wymuszony zapada bez miast. Liczby z raw (potwierdzone): K=3 PO — 17 wymuszonych pokojów (ziarno 1: 6, ziarno 2: 11, ziarno 3: 0), wszystkie przy 0 miastach; K=6 PO — 2 wymuszone (ziarno 1: 1, ziarno 2: 1), oba przy 0 miastach. PRZED: 0 wymuszonych (parametr 2,0 wyłącza). Warianty A/B do decyzji właściciela — bez zmian kodu.
 - (4) Smoke-test do listy deployu: NIE ZNALEZIONO w repo pliku „listy deployu” obejmującego narzędzia `gra/tools` (przeszukano `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`, `docs/`, `dyspozycje/*.md`, `.cursor/rules/`, `finalize`/`deploy` w ls-files). Smoke zapisany w tym raporcie jako wymagany wpis do dopisania przez orkiestratora: `cd gra && node tools/weary40-sim-measure.cjs --turns 30 --seeds 1 --variant both` (exit 0, ok. 6 s, wymaga gra/node_modules z esbuild i three).
 - (2) Luki: ograniczenia modelu i „PRZED” = proxy parametrowe (nie bit-w-bit 774fd0eec), pętle wojen i czas tury AI — patrz §5–§6 poniżej; czas tury w §2e to pomiar silnika zastępczego, NIE realnej tury gry.
@@ -24,7 +24,7 @@ STATUS r1-wznowienie: PASS-WITH-NOTES (narzędzie deterministyczne, liczby potwi
 - Smoke `node tools/weary40-sim-measure.cjs --turns 30 --seeds 1 --variant both` → exit 0, 5,9 s (limit 60 s). Do uruchomienia dołączono `gra/node_modules` jako dowiązanie symboliczne do esbuild/three zainstalowanych poza repo (katalog scratchpad); dowiązanie nie jest częścią commita.
 - Sprawdzenie raw (skryptem na surowych wierszach JSONL, nie z pamięci): liczby wojen startowych (31 w K=3 i K=6), zakończonych pokojem PO/PRZED (31/23 K=3; 31/30 K=6), trwających na t150 (PO 0; PRZED 8 K=3, 1 K=6), eliminacji (PO 0; PRZED 2 K=3, 1 K=6), wymuszonych (PO 17 K=3, 2 K=6; PRZED 0), ofert <80% i ≥80%, miast oddanych (PO 0 K=3, 10 K=6), max udziału (PO 0,25 K=3 / 0,30 K=6; PRZED 0,40 / 0,25) i cen zerowych (PO 14 K=3 / 19 K=6, wszystkie przy remisie i 0 miastach, PRZED 23 / 23) — zgodne z tabelami §2a–§2c.
 - Korekta: wymuszony pokój w turze 32 (K=3, ziarno 2) — dopisana w §2a/§3 (wcześniej napisano „wszystkie w turze 40").
-- NIE ZWERYFIKOWANO z raw: „Śr. czas wojny (tury)" (raw nie zawiera pola czasu trwania wojny; liczby z §2a/§2b pochodzą z wcześniejszego wyjścia i są NIE POTWIERDZONE w tej rundzie) oraz czas tury z §2e (raw zawiera tylko avgTurnMs, nie porównywano z tabelą ręcznie).
+- ZWERYFIKOWANO w r1c (zarzut 1 Evaluatora): raw nie miał pola czasu wojny, więc narzędzie dostało pole `warTurns` przy każdym zdarzeniu pokoju oraz `avgWarTurns`/`maxWarTurns` w podsumowaniu (definicja: tura pokoju − tura startu wojny; wojny startowe = tura 1). Po ponownym przebiegu: K=3 PO 30,77/39, PRZED 10,43/27; K=6 PO 20,16/39, PRZED 10,30/33 — zgodne z tabelami §2a/§2b. Czas tury z §2e: NIE porównywano ręcznie z tabelą (raw zawiera tylko avgTurnMs; §2e to zakresy z tego samego raw).
 - Smoke-test z §0 wpisywany do listy deployu: nadal NIE ZNALEZIONO pliku listy w repo (bez zmian).
 
 ## 1. Co zrobiono
@@ -88,11 +88,15 @@ Fakt z kodu (`gra/src/game/war-weariness.ts`, gałąź `wearinessForcedPeaceDue`
 
 Dowód z pomiaru: PO K=3 — 17 wymuszonych pokojów, każdy z 0 miastami; PO K=6 — 2, każdy z 0 miastami. Komentarz w war-weariness.ts ("pokój wymuszony jest ZAWSZE płatny miastami przegrywającego ... nigdy bezwarunkowy") jest w tym przypadku nieprawdziwy.
 
+Dowód przyczyny (r1c, pola `ownCitiesBefore` / `loserShareBefore` z ponownego przebiegu): wszystkie 17 wymuszonych pokojów K=3 i obydwa K=6 mają przegrywającego z 3 miastami = minMiastPoOddaniu, czyli cityCap = 3 − 3 = 0. Udział przegrywającego 0,083–0,20 (poniżej udzialWyraznie = 0,45), `priceZero` = false we wszystkich. Zatem przyczyną jest wyłącznie cityCap = 0; przypadków „cena 0” i „brak wyraźnej przewagi” w pomiarze nie było (0 zdarzeń).
+
+Sprzeczność jest wewnątrz dokumentacji: war-weariness.ts:265 (JSDoc) i `_progi` w gra/data/war-weariness-params.json:10 mówią „ZAWSZE płatny miastami”; war-weariness.ts:302 (komentarz inline „0 miast, gdy battlePending”, „brak wyraźnie przegrywającego albo cena 0 → pokój BEZ miast”) i `_wzor` (json:14, limit = miasta − minMiastPoOddaniu) mówią, że przy limicie 0 pokój idzie bez miast.
+
 Dwa warianty do decyzji właściciela (BEZ zmian kodu w tym temacie):
-- A) Zachować wojnę do skutku, gdy nie ma miasta do oddania (pokój wymuszony tylko gdy cityCap > 0), i poprawić komentarz. Skutek: wojny z ≤3 miastami dłużej trwają (w K=3 większość pokojów przeszłaby na odroczenie), ryzyko przeciągania wojny bez końca przy braku pokoju.
+- A) Zachować wojnę do skutku, gdy nie ma miasta do oddania (pokój wymuszony tylko gdy cityCap > 0), i poprawić komentarz. Skutek: wojny z ≤3 miastami dłużej trwają. NIE ZMIERZONO: ile z 17 wymuszonych pokojów K=3 przeszłoby na odroczenie (narzędzie nie ma wariantu bez wymuszonego pokoju przy cityCap=0) i czy wojna przy braku pokoju przeciągnęłaby się bez końca (model nie ma mechanizmu odroczenia poza battlePending).
 - B) Zachować pokój bez zapłaty przy ≤3 miastach jako świadomą decyzję, ale wpisać to do Civpedii/komentarza jako wyjątek od „zawsze płatny”. Skutek: zgodność z obecnym zachowaniem, bez zmian gry.
 
-Rekomendacja Operatora: B z jawnym wpisem w dokumentacji, albo A jeśli właściciel chce, by pokój wymuszony zawsze kosztował miasto. Decyzja produktowa — nie wybieram.
+Rekomendacji nie podaję (dispatch: dwa warianty do decyzji właściciela). Niezależnie od wyboru komentarze war-weariness.ts:265/302 i `_progi`/`_wzor` w params trzeba ujednolicić.
 
 ## 4. Odpowiedzi na kryteria dispatchu
 
@@ -110,6 +114,8 @@ Rekomendacja Operatora: B z jawnym wpisem w dokumentacji, albo A jeśli właści
 - Pętli „wojna→pokój→wojna” w grze: model nie deklaruje wojen po pokoju.
 - Miast zdobytych przez wojnę przy realnej walce (walka zastępcza jest uproszczona; w K=3 prawie nie zmienia właścicieli).
 - Porównania z commitem 774fd0eec (zastąpione proxy parametrowym).
+- Częstości wymuszonych pokojów w realnej grze: NIE ZMIERZONO. W K=3 cityCap = 0 wynika z konstrukcji scenariusza (każda cywilizacja ma dokładnie 3 miasta = minMiastPoOddaniu), więc 17 z 31 wojen to skutek ustawienia scenariusza, nie prognoza.
+- Wariant A z §3 (pokój wymuszony tylko przy cityCap > 0): NIE ZMIERZONO, narzędzie nie ma przełącznika wariantu.
 
 ## 6. Ograniczenia narzędzia (do wiedzy przy czytaniu wyników)
 
@@ -122,9 +128,9 @@ Rekomendacja Operatora: B z jawnym wpisem w dokumentacji, albo A jeśli właści
 - Decyzja właściciela: wariant A lub B z §3 (RYZYKO). Bez decyzji kod pozostaje bez zmian.
 - Opcjonalnie: kolejny temat, który doda w silniku zastępczym deklaracje wojen po karencji i realną siłę militarną (osobna decyzja, nie w tym temacie).
 
-ZMIANY-COMMIT: `gra/tools/weary40-sim-measure.cjs` (nowy), `dyspozycje/autobot/runs/R-WEB-DIPLO-WEARY40-SIM-MEASURE-Q1/10-operator-claude.md`, `raw-K3-N3-T150.jsonl`, `raw-K6-N3-T150.jsonl` — commit z tą ścieżką (bez `git add -A`).
-TESTY: smoke `--turns 30 --seeds 1 --variant both` exit 0 (5,7 s); pełny przebieg K=3 i K=6 (3 ziarna × 150 tur × 2 warianty) exit 0; deterministyczność potwierdzona cmp po usunięciu avgTurnMs. Bramki gry (`npm run build/dev`) nie uruchamiane — zgodnie z allowlistą.
-BLOKADY: brak. Lokalnie zainstalowany esbuild@0.28.2 i three@^0.169.0 w katalogu skryptowym poza repo (symlink gra/node_modules usunięty po pracy).
+ZMIANY-COMMIT (r1c): `gra/tools/weary40-sim-measure.cjs` (nowy; r1c dodał `warTurns`, `ownCitiesBefore`, `loserShareBefore`, `avgWarTurns`, `maxWarTurns`), `dyspozycje/autobot/runs/R-WEB-DIPLO-WEARY40-SIM-MEASURE-Q1/10-operator-claude.md`, `raw-K3-N3-T150.jsonl`, `raw-K6-N3-T150.jsonl` — commit z tą ścieżką (bez `git add -A`).
+TESTY (r1c): smoke `--turns 30 --seeds 1 --variant both` exit 0 (5,7 s); ponowny pełny przebieg K=3 i K=6 (150×3×2) exit 0 (22,7 s / 22,7 s); porównanie z raw po usunięciu avgTurnMs i nowych pól: 12 wierszy = 12 wierszy, IDENTYCZNE; tabele §2a/§2b zgodne z nowymi polami; `git diff --check` — patrz 30-obrona. Poprzednio: pełny przebieg K=3 i K=6 (3 ziarna × 150 tur × 2 warianty) exit 0; deterministyczność potwierdzona cmp po usunięciu avgTurnMs. Bramki gry (`npm run build/dev`) nie uruchamiane — zgodnie z allowlistą.
+BLOKADY: brak. Lokalnie zainstalowany esbuild@0.28.2 i three@^0.169.0 w katalogu skryptowym poza repo (symlink gra/node_modules zostaje w worktree jako untracked, poza commitem; sprzątanie orkiestratora).
 RUNDY: 1/5
 NASTĘPNY KROK: werdykt orkiestratora i decyzja właściciela w sprawie §3 (A/B). Brak integracji w tym temacie.
 DEPLOY/PUSH: NIE WYKONANO

@@ -186,6 +186,10 @@ function runOne(seed, variant, E) {
     deps.pairs = pairs;
     // 3) tick pokoju (prawdziwa funkcja gry).
     const before = new Map(st.cities.map(c => [c.id, c.ownerId]));
+    // Migawka PRZED tickiem: liczba miast i udzial przegrywajacego oraz start wojny (finalize kasuje warStart w tickiem).
+    const ownSnap = new Map(owners.map(o => [o, cityCount(o)]));
+    const totalSnap = st.cities.length;
+    const startSnap = new Map(warStart);
     priceByPair.clear();
     const outs = pairs.length ? require(RUNTIME).runWarWearinessTick({ ...deps, turn }) : [];
     ticks++;
@@ -198,7 +202,9 @@ function runOne(seed, variant, E) {
             : o.level >= P.zmeczenie.progWzajemnyPokoj ? 'oferta(>=80%)' : 'oferta(<80%)';
         const pr = priceByPair.get(o.pairKey) || {};
         events.push({ turn, pair: o.pairKey, kind, level: +o.level.toFixed(3), stage: o.stage, cities: give,
-          loser, winner, priceZero: pr.required === 0, remis: Math.abs((pr.share ?? 0.5) - 0.5) < 1e-9 });
+          loser, winner, priceZero: pr.required === 0, remis: Math.abs((pr.share ?? 0.5) - 0.5) < 1e-9,
+          ownCitiesBefore: ownSnap.get(loser) ?? 0, loserShareBefore: +((ownSnap.get(loser) ?? 0) / Math.max(1, totalSnap)).toFixed(3),
+          warTurns: turn - (startSnap.get(o.pairKey) ?? 1) });
         if (pr.required === 0 || give === 1 || Math.abs((pr.share ?? 0.5) - 0.5) < 1e-9) {
           priceLog.push({ turn, pair: o.pairKey, kind, cena0: pr.required === 0, miasta: give, remis: Math.abs((pr.share ?? 0.5) - 0.5) < 1e-9 });
         }
@@ -226,7 +232,9 @@ function runOne(seed, variant, E) {
   const elim = owners.filter(o => cityCount(o) === 0).length;
   const endCounts = owners.map(o => cityCount(o));
   const maxShareEnd = Math.max(...owners.map(o => cityCount(o) / state.cities.length));
-  const durations = events.map(e => e.turn);
+  const durations = events.map(e => e.warTurns);
+  const avgDur = durations.length ? +(durations.reduce((a, b) => a + b, 0) / durations.length).toFixed(2) : 0;
+  const maxDur = durations.length ? Math.max(...durations) : 0;
   return {
     seed, variant, n: owners.length, turns: TURNS,
     warsStartedInitial: scenario(seed).wars.size,
@@ -235,6 +243,7 @@ function runOne(seed, variant, E) {
     cityTransfers: cityLog.reduce((a, c) => a + c.miasta, 0),
     cityTransfersByKind: cityLog.reduce((a, c) => { a[c.kind] = (a[c.kind] || 0) + c.miasta; return a; }, {}),
     warsRunningAtEnd: endWars.length,
+    avgWarTurns: avgDur, maxWarTurns: maxDur,
     eliminated: elim,
     endCityCounts: endCounts,
     snowball: { t1: +(snow.t1 || 0).toFixed(3), t50: +snow.t50.toFixed(3), t100: +snow.t100.toFixed(3), t150: +snow.t150.toFixed(3), maxShareEnd: +maxShareEnd.toFixed(3) },
