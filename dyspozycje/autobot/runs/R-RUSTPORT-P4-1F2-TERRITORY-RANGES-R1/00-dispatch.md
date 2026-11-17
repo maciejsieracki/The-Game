@@ -1,8 +1,8 @@
 # R-RUSTPORT-P4-1F2-TERRITORY-RANGES-R1 — zasięgi terytorium w nakładkach (PRIO-3D-10, #278/#334)
 
 STATUS: dispatch orkiestratora. Opus (3D). Operator/Obrona Opus; Evaluator/FC Sonnet.
-ZALEŻNOŚĆ: START DOPIERO po integracji FOG-VIEW (`R-RUSTPORT-P4-1C-FOG-VIEW-R1`, gałąź `rust-port-wip/R-RUSTPORT-P4-1C-FOG-VIEW-R1`). Bez tego zasięgi nie mają poprawnej mgły.
-BAZA: `origin/rust-port/parity-v2` = `c120f2373` (po integracji FOG-VIEW: nowy SHA parity, wpisać przed startem).
+ZALEŻNOŚĆ: SPEŁNIONA. FOG-VIEW (`R-RUSTPORT-P4-1C-FOG-VIEW-R1`, FC `af03b7e98`) zintegrowany na `parity-v2` przez merge `82db9b370` (FF, 2026-11-17).
+BAZA: `origin/rust-port/parity-v2` = `82db9b370` (DODATEK r1, 2026-11-17). Przed startem: `git fetch origin && git checkout -B <gałąź> 82db9b370`.
 
 ## GOAL
 Dodać w adapterze nakładek zasięgi terytorium (`TerritoryRangesDto`), zgodne z webem.
