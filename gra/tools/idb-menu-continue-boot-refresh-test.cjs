@@ -155,7 +155,7 @@ console.log('--- A. main.ts: przebudowa naprawy F1 (boot -> cache -> menu) ---')
   const hasAnySaveSlotStart = mainSrc.indexOf(hasAnySaveSlotFnMarker);
   ok(hasAnySaveSlotStart >= 0, 'znaleziono function hasAnySaveSlot(): boolean {');
   const hasAnySaveSlotEnd = hasAnySaveSlotStart >= 0
-    ? mainSrc.indexOf('}', mainSrc.indexOf('return cachedHasAnySaveSlot;', hasAnySaveSlotStart))
+    ? mainSrc.indexOf('}', mainSrc.indexOf('return savePresence.get();', hasAnySaveSlotStart))
     : -1;
   const hasAnySaveSlotBody = hasAnySaveSlotStart >= 0 && hasAnySaveSlotEnd > hasAnySaveSlotStart
     ? stripLineComments(mainSrc.slice(hasAnySaveSlotStart, hasAnySaveSlotEnd + 1))

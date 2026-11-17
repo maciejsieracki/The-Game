@@ -446,7 +446,8 @@ for (const [label, builtIds, terrain, expStructPct, expRazemPct] of GRID) {
   // Taktyczna/Pomin licza NAPRAWDE ta sama liczbe, nie tylko ten sam procent.
   const defUnit = toCombatUnit(defenderRow);
   const atkUnit = toCombatUnit(attackerRow);
-  const expectedHit = hitChanceTw(atkUnit.meleeAttack, defUnit.meleeDefence * (1 + tacticalResult.combinedPct / 100));
+  // C-COMBAT (17be3f180): celnosc pocisku = max(wrecz, dystansowy) -- jak rangedShotAccuracy w combat.ts.
+  const expectedHit = hitChanceTw(Math.max(atkUnit.meleeAttack, atkUnit.missileAttack ?? 0), defUnit.meleeDefence * (1 + tacticalResult.combinedPct / 100));
   assert(
     expectedHit === tacticalResult.atkHitPct,
     'KONTROLA (b): hitChanceTw(atak, Obrona*(1+Razem/100)) (' + expectedHit + '%) == resolveCombat z override (' + tacticalResult.atkHitPct + '%)',
