@@ -3443,7 +3443,7 @@ export class BattleScene {
     // pasek + pionowe słupki boczne i prawy rail 56px — USUNIĘTE (TW v5 §2/3,
     // sprzątnięcie FAZA 3): pola zawsze były `null`, siege-hud/layout rosteru
     // mają teraz stałe fallbacki zamiast opcjonalnego pola.
-    requestAnimationFrame(() => this._syncRosterColumnLayout());
+    requestAnimationFrame(() => { this._syncRosterColumnLayout(); this._syncCommanderPanelLayout(); });
     this._setSpeedIdx(this.speedIdx);
     this._refreshAudioBtns();
     this._syncManualRailHighlight();
@@ -13113,7 +13113,7 @@ export class BattleScene {
     this._pointerDownPos = null;
   };
 
-  private readonly _onResize = (): void => { this._syncRendererSize(); };
+  private readonly _onResize = (): void => { this._syncRendererSize(); this._syncCommanderPanelLayout(); };
 
   // -------------------------------------------------------------------------
   // FAZA ROZSTAWIANIA — metody pomocnicze
@@ -15183,6 +15183,57 @@ export class BattleScene {
     this._syncSiegeHudLayout();
   }
 
+  /**
+   * Baner dowodcow (commanderPanel) nie moze zaslaniac blokow gornego paska (lewy: tura/predkosc/pauza;
+   * prawy: zebatka/Pomin do wyniku/Wycofaj sie) ani lewej kolumny rostera. Szerokosc i pozycja liczone
+   * z realnych rectow: gdy w gornym wierszu baner da sie wycentrowac przy skali >= 0,7 naturalnej szerokosci
+   * (transform: scale, max 760 px), zostaje w gornym wierszu; w przeciwnym razie schodzi pod pasek i zajmuje
+   * wolna przestrzen od prawej krawedzi rostera do prawej krawedzi okna (skala dopasowana do tej szerokosci).
+   */
+  private _syncCommanderPanelLayout(): void {
+    const panel = this._commanderPanel;
+    const bar = this._topBar;
+    if (!panel || !bar || !panel.isConnected) return;
+    const GAP = 12;
+    const MARGIN = 16;
+    const TOP_ROW_MAX = 760;
+    const TOP_ROW_MIN_SCALE = 0.7;
+    const vw = window.innerWidth;
+    const cx = vw / 2;
+    const barRect = bar.getBoundingClientRect();
+    const leftBlock = bar.children[0] as HTMLElement | undefined;
+    const rightBlock = bar.children[bar.children.length - 1] as HTMLElement | undefined;
+    const leftEdge = leftBlock ? leftBlock.getBoundingClientRect().right : 0;
+    const rightEdge = rightBlock ? rightBlock.getBoundingClientRect().left : vw;
+    const halfTop = Math.min(cx - leftEdge, rightEdge - cx) - GAP;
+    // Tresc banera (dwie karty dowodcow + zegar) ma naturalna szerokosc. Gdy nie miesci sie w wolnym
+    // miejscu, skalowany jest CALY baner (transform: scale), a nie tylko ramka: inaczej karta wychodzi
+    // poza baner i zaslania zebatke / Pomin / Wycofaj sie.
+    panel.style.transform = 'none';
+    panel.style.maxWidth = 'none';
+    const natural = panel.getBoundingClientRect().width;
+    if (natural <= 0) return;
+    const topScale = Math.min(1, Math.min(TOP_ROW_MAX, 2 * halfTop) / natural);
+    if (topScale >= TOP_ROW_MIN_SCALE) {
+      panel.style.top = '12px';
+      panel.style.left = '50%';
+      panel.style.transformOrigin = 'center top';
+      panel.style.transform = `translateX(-50%) scale(${Math.floor(topScale * 100) / 100})`;
+      return;
+    }
+    let left = MARGIN;
+    const roster = this._rosterBar;
+    if (roster && roster.isConnected) {
+      const rr = roster.getBoundingClientRect();
+      if (rr.width > 0 && rr.bottom > barRect.bottom) left = rr.right + GAP;
+    }
+    const belowAvail = Math.max(240, vw - left - MARGIN);
+    panel.style.top = Math.round(barRect.bottom + GAP / 2) + 'px';
+    panel.style.left = Math.round(left) + 'px';
+    panel.style.transformOrigin = 'left top';
+    panel.style.transform = `scale(${Math.floor(Math.min(1, belowAvail / natural) * 100) / 100})`;
+  }
+
   /** Układ kart wewnątrz bloku grupy — stałe 6 kolumn, scroll w pionie. */
   private _syncRosterGroupLayouts(deploy: boolean, availH = 0, availW = 0): number {
     const blocks = deploy ? this._deployGroupBlocks : this._battleGroupBlocks;
@@ -15247,6 +15298,7 @@ export class BattleScene {
     }
     this._syncMinimapPosition();
     this._syncRosterColumnLayout();
+    this._syncCommanderPanelLayout();
   }
 
   /** Po teardown deploy — odswiez referencje do chipow i popupow (DOM zostaje). */
