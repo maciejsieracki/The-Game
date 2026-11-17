@@ -7133,6 +7133,10 @@ async function boot(): Promise<void> {
         ambush: status.ambush,
         ufortyfikowanyWPolu: status.ufortyfikowanyWPolu,
         oblegaCityName: status.oblegaCityName,
+        // R-WEB-MARCH-OWN-UNIT-STOP-LOSES-MP-AND-INDICATOR-Q1 (S8): wskaźnik marszu w żywym panelu jednostki
+        // (ten builder zasila panel boczny; armyStackHud nie jest montowany: buildArmyStackHudState -> null).
+        marchPausedReason: plannedMarches.has(u.id) ? marchStopDetail.get(u.id) : undefined,
+        marchQueuedEndTurn: plannedMarches.has(u.id) && !marchStopDetail.has(u.id),
         // R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: wiersze „głód wojska” / „deficyt Złota”.
         poziomTrudnosciLabel: status.poziomTrudnosciLabel,
         glodWojska: status.glodWojska,
@@ -33669,7 +33673,10 @@ async function boot(): Promise<void> {
     const marchStopDetail = new Map<string, string>();
     /**
      * Jednostki gracza, które w bieżącej turze dostały nowy rozkaz ruchu / zmianę celu.
-     * Czyścimy przy odnowieniu MP — EOT kontynuuje marsz tylko gdy jednostki tu NIE ma.
+     * Czyścimy przy odnowieniu MP. Od R-WEB-MARCH-OWN-UNIT-STOP-LOSES-MP-AND-INDICATOR-Q1 flaga NIE blokuje
+     * wykonania marszu na koniec tury gracza (EOT wykorzystuje pozostały ruch także ruszonej jednostki).
+     * Zbiór nie steruje już wykonaniem marszu (żaden kod ścieżki marszu go nie czyta); zostaje tylko jako
+     * licznik w diagnostyce (`movedByPlayerThisTurn: size`).
      */
     const movedByPlayerThisTurn = new Set<string>();
     /** Cel ataku po dotarciu marszem (unitId → enemyUnitId). */
@@ -34226,7 +34233,11 @@ async function boot(): Promise<void> {
       );
 
       if (!result.ok || result.movePath.length === 0) {
-        showHintMessage('Marsz przerwany: ' + (result.stopDetail ?? 'brak ruchu'), 3500);
+        // R-WEB-MARCH-OWN-UNIT-STOP-LOSES-MP-AND-INDICATOR-Q1 (kryt. 3): ten sam powód przerwania nie
+        // pokazuje dymka przy każdym końcu tury — jedno powiadomienie na epizod (jak wpis w „Ważne").
+        if (marchStopNotified.get(unitId) !== result.stopReason) {
+          showHintMessage('Marsz przerwany: ' + (result.stopDetail ?? 'brak ruchu'), 3500);
+        }
         noteMarchStop(unitId, result.stopReason, result.stopDetail);
         return false;
       }
@@ -34279,7 +34290,6 @@ async function boot(): Promise<void> {
       syncGeneralMarchTargets();
       const ids = units
         .filter(u => u.ownerId === humanOwnerId && plannedMarches.has(u.id)
-          && !movedByPlayerThisTurn.has(u.id)
           && planningStackRuchLeft(playerStackAt(u)) > 0)
         .map(u => u.id);
       enqueueMarchSegments(ids);

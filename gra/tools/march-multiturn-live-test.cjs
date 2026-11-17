@@ -110,6 +110,12 @@ async function indicatorOf(page) {
   });
 }
 
+// S8: rozwija panel wybranej jednostki (linie statusu) i czyta wskaźnik z DOM.
+async function indicatorNow(page, uid) {
+  await page.evaluate(id => window.__mr.expand(id), uid).catch(() => null);
+  return indicatorOf(page);
+}
+
 async function runScenario(browser, name, port) {
   const sc = SCEN[name];
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
@@ -155,13 +161,13 @@ async function runScenario(browser, name, port) {
     await settle(page);
     res.target = [tgt.q, tgt.r];
     res.ruch = ruch;
-    res.rows.push({ label: 'after-plan', ...(await unitState(page, uid)), indicator: await indicatorOf(page), dom: await page.evaluate(() => window.__mr.dom()) });
+    res.rows.push({ label: 'after-plan', ...(await unitState(page, uid)), indicator: await indicatorNow(page, uid), dom: await page.evaluate(() => window.__mr.dom()) });
     let arrivedAt = null;
     for (let i = 1; i <= MAX_CLICKS && arrivedAt === null; i++) {
       if (sc.reload && i === 2) await page.evaluate(() => window.__mr.reloadSave());
       const ok = await clickEndTurn(page);
       const st = await unitState(page, uid);
-      res.rows.push({ label: 'endturn#' + i, advanced: ok, ...st, indicator: await indicatorOf(page) });
+      res.rows.push({ label: 'endturn#' + i, advanced: ok, ...st, indicator: await indicatorNow(page, uid) });
       if (st.planned === false && st.dest === null && st.pos && st.pos[0] === tgt.q && st.pos[1] === tgt.r) arrivedAt = i;
     }
     res.arrivedAtClick = arrivedAt;
@@ -171,6 +177,14 @@ async function runScenario(browser, name, port) {
     if (name === 'S6' && res.rows.length >= 2 && res.rows[0].ruchLeft > 0) {
       const moved = res.rows[1].pos && res.rows[0].pos && (res.rows[1].pos[0] !== res.rows[0].pos[0] || res.rows[1].pos[1] !== res.rows[0].pos[1]);
       if (!moved) { res.ok = false; res.error = (res.error || '') + ' S6: pozostaly ruch przepadl na koniec tury 1'; }
+    }
+    // S8: po wyznaczeniu celu wskaznik „marsz ruszy na koniec tury” MUSI byc w DOM; po dojsciu znika.
+    const lastRow = res.rows[res.rows.length - 1];
+    if (!(res.rows[0] && res.rows[0].indicator && res.rows[0].indicator.cls === 'queued')) {
+      res.ok = false; res.error = (res.error || '') + ' S8: brak wskaznika marszu po planie';
+    }
+    if (arrivedAt !== null && lastRow.indicator !== null) {
+      res.ok = false; res.error = (res.error || '') + ' S8: wskaznik nie zniknal po dojsciu';
     }
     res.errs = errs.slice(0, 5);
   } catch (e) {

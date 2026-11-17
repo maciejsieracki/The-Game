@@ -56,6 +56,8 @@ const probe = `
         return planMarchTo(q, r) ? 'ok' : 'refused';
       },
       move: (uid: string, q: number, r: number) => { selectPlayerUnit(uid); return beginMoveSelectedUnitTo(q, r); },
+      // S8: rozwinięty panel jednostki (tu są linie statusu, w tym wskaźnik marszu), bez zmiany stanu gry.
+      expand: (uid: string) => { unitSideDetailExpanded = true; selectPlayerUnit(uid, true, true); return 'ok'; },
       endTurn: () => { triggerPlayerEndTurn(); return turn; },
       reloadSave: () => { const snap = buildSaveGameSnapshot('mm-live-reload'); restoreGameFromSave(snap); reapplyCityHexDecorHides(); return 'ok'; },
       blockers: () => ({
