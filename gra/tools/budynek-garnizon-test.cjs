@@ -154,7 +154,14 @@ function makeStubPlugin(stubs) {
         if (!/function buildBuildingDetailCard\(/.test(src) || !/function renderBuildList\(/.test(src)) {
           throw new Error('kotwica buildBuildingDetailCard/renderBuildList nie znaleziona w cityPanel.ts');
         }
-        src += '\nexport { buildBuildingDetailCard, renderBuildList };\n';
+        // Dopisujemy TYLKO eksporty, których produkcyjny cityPanel.ts jeszcze nie
+        // ma (renderBuildList jest już `export function` — ponowny `export {}`
+        // dawał esbuild: „Multiple exports with the same name renderBuildList").
+        const wymagane = ['buildBuildingDetailCard', 'renderBuildList'];
+        const brakujace = wymagane.filter((n) => !new RegExp(`export\\s+(async\\s+)?function\\s+${n}\\b`).test(src));
+        if (brakujace.length > 0) {
+          src += `\nexport { ${brakujace.join(', ')} };\n`;
+        }
         return { contents: src, loader: 'ts' };
       });
     },
