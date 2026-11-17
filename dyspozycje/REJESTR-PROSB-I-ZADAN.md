@@ -10673,3 +10673,9 @@ Właściciel: koszt pokoju znacząco podwyższyć tak, by na starcie wojny zwyci
 - **Tryb trafień (HITMODE):** pytanie właściciela „czy usunęliśmy szanse trafienia?” — odpowiedź orkiestratora (z kodu, NIE ZMIERZONO w grze): szanse trafienia NIE zostały usunięte; `combat.ts` używa `certainHits ? 100 : hitChanceTw(...)`, a `hit-mode.ts`/`newGameFlow.ts` ustawiają domyślnie `hitMode: 'pewne'` dla NOWYCH gier (decyzja właściciela 2026-10-31, #285/#289); stare zapisy i brak pola = 'losowe'. Decyzja właściciela: **A — zostaje domyślnie „pewne”**. Zadanie #488 HITMODE: audyt spójności ścieżek + symulacja 20 vs 20 w obu trybach (bez zmian reguł).
 - **Zdrowie jednostek (UNITSHP):** zmierzone grepem: `units.json` — 44 z 75 jednostek ma `Health` ≠ `health`; silnik walki (`combat.ts:203`) i `unit-power.ts` liczą `health` (Wojownik 22), `ai.ts:3459` i `battleScene.ts:4308` czytają `Health` (60). Wymóg właściciela: jedno źródło prawdy. DODATEK w dispatchu UNITSHP (561ffea12).
 - **IMPORDER** FC PASS-WITH-NOTES (d7fca1736); wdrażany jako FALA 791.
+
+### FALA 791 — IMPORDER (2026-11-17)
+- Wdrożone na ROBOCZĄ: **R-WEB-UI-IMPROVEMENTS-LIST-ORDER-BY-TYPE-Q1** (FC PASS-WITH-NOTES d7fca1736, r1). Lista ulepszeń terenu (panel budowy + podpowiedź hexa) w stałej kolejności po 7 typach (22 pozycje); dostępne zawsze u góry, niedostępne po kanonie; tylko prezentacja (koszty/bonusy/AI bez zmian).
+- main d44d5b982, ROBOCZA MD5 2bff7522 (GitHub Raw = manifest), sidecary audio 3/3 zgodne.
+- Testy: improvements-list-order 11/11 (mutacja farma↔irygacja → FAIL), logic 213/213, tsc bez nowych błędów (180 bazowych), build OK. NIE ZMIERZONO: żywy Chromium (zrzut kolejności listy).
+- Do właściciela: sprawdzić w grze kolejność listy ulepszeń (panel budowy i podpowiedź hexa).
