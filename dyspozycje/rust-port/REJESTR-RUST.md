@@ -3244,3 +3244,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Zasada startów (decyzja właściciela):** dopóki bramka renderera wymaga 12 GB, po G5 r3 startuje tylko jeden worker naraz; po jego zakończeniu T7b r4.
 - **Sprzątanie:** usunięte worktrees rund G5 r2, T7a r2 (×3), T7b r3 (×4). Pozostał worktree T7a r3 (locked, żywy).
 - **Do zrobienia:** decyzje G5 D1/D2/b′ (już w DODATKU r2) — formalny wpis w sekcji decyzji rejestru; push `refs/keep/*` nadal odrzucany (4 próby), zabezpieczenia są tylko lokalnie i na gałęziach `rust-port-wip/*`.
+
+### Przebieg — heartbeat Rust 07:18 UTC: sloty świadomie 1/4 (polecenie właściciela)
+
+- **Zasada slotów (polecenie właściciela, wiążące przy bramce renderera):** bramka renderera (G5 r3, #332) wymaga ≥12 GB i braku cudzych buildów cargo, więc w tym oknie działa JEDEN workerem, aż skończy pracę — nie cztery. Ten heartbeat nie uzupełnia slotów do czterech.
+- **Aktywne Workflow: 1/4** — T7a falanga (#261), runda r3 (`wf_de3b72ff-45d`, Operator Haiku, baza `c39d97add`, DODATEK r3 `1121a3ffc`). Brak żywych procesów cargo na tym ticku; worktree zablokowany = workflow nadal trwa.
+- **T7b odwrót (#342), r3:** FC PASS-WITH-NOTES NIE przyjęty do integracji — Operator bez commitu, pełny test i `p6_8i_pick` niezmierzone, Evaluator FAIL, Obrona BLOCK. Kod: `rust-port-wip/p6-k5doc-t7b-r3-wip` = `61ffc110f`. Następna runda r4 po G5 r3 (baza `61ffc110f`).
+- **G5 normalizacja (#332), r3:** dispatch gotowy (`814a24102`). Dysk: 13 GB po usunięciu zakończonego targetu `scratchpad/t7b-r1-target` (3,3 GB, własny, bez procesów). Startuje, gdy T7a r3 się zakończy i nie będzie cudzego cargo.
+- **Zachowany:** `scratchpad/t7a-target` (3,3 GB) — należy do żywego T7a r3, nie ruszam.
+- **Brak integracji w tym ticku:** nic nie przeszło FC PASS na parity-v2.
