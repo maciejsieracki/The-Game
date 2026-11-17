@@ -1,101 +1,101 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "62f493bed411431d0f2c9ac538e66aa8",
-  "bundleSha256": "e1f13de495132dcf853190e8e5c0af621e0574fae591363306456e148d5c90b0",
-  "bundleBytes": 14826821,
+  "bundleMd5": "2d690a91da74b9f90f266f3ac37a85d4",
+  "bundleSha256": "de4579ca89c51171ecf648a8775d4a100ba7b51548f586b61638a470026ff867",
+  "bundleBytes": 14841911,
   "sourceSnapshot": {
-    "source": "FC 5b275ed46 integracja 3c96d46ca, main 8bc385dee",
+    "source": "FC AMBUSH r5 ab317b6cf + UPKEEP-TOOLS 154b2fd13, main 6d474b826",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 785: Jasna gwiazdka nad generalem w bitwie w 4 sciezkach budowy grupy jednostki (start, replay/wczytanie, obrona oblezonego, rozstawienie z Reset)"
+    "FALA 786: Zasadzka armii: niewidoczna dla wroga (render, pathfinding i planowanie AI); wejscie wroga w wojnie na jej heks przerywa ruch i otwiera bitwe (gracz, AI, barbarzyncy); komunikaty Wpadles w zasadzke / Zasadzka sie powiodla; znacznik W zasadzce dla wlasciciela; cykl zycia stosu; Civpedia; plus narzedzia pomiarowe UPKEEP-TOOLS"
   ],
   "verification": [
-    "tsc 0, logic 213/213, battle-commander-star 17/0, battle-commander-star-reset 10/0 (sekwencja + mutacja), garrison 20/0, forced-peace-wiring 13/0, load-game-regression 34/0"
+    "tsc 0, logic 213/213, ambush-core 40/0, ui-reason 5/0, save-roundtrip 5/0, wiring 28/0, realstep 16/0, split-barb z mutantami, mgla-sciezka-inwariant 42/0, army-merge-colocated 4/0, load-game-regression 34/0"
   ],
   "limits": [
-    "NIE ZMIERZONO: zywy Chromium po Reset; 4 timeouty battle-* na wydluzonym limicie (dlug bazowy); manualBattle.ts:756 martwy kod; REPIN Rust znacznika generala"
+    "NIE ZMIERZONO: zywy Chromium AI->gracz, rozdzielenie na ukryta zasadzke w Chromium; standardowe rozstawienie bitwy (AMBUSH-DEPLOY osobno); ranking mocy nie filtruje zasadzek; REPIN Rust"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "FC PASS-WITH-NOTES GENSTAR r2 (kandydat 5b275ed46, integracja 3c96d46ca): w bitwie general ma jasna gwiazdke nad jednostka we WSZYSTKICH czterech sciezkach budowy grupy jednostki (start, replay/wczytanie, obrona oblezonego, rozstawienie z Reset). tsc 0, battle-commander-star 17/0, battle-commander-star-reset 10/0 (sekwencja rozstaw-Reset-ruch-Reset, mutacja czerwona), logic 213/213, tech-tree 20/0, research zielony, unit-replace 21/21, combat OK. NIE ZMIERZONO: zywy Chromium po Reset (zrzuty 1280x720/1400x900 tylko z r1), 4 timeouty battle-* na wydluzonym limicie (identyczne na bazie = dlug). manualBattle.ts:756 bez gwiazdki (modul nieimportowany). Dlug Rust: REPIN znacznika generala."
+    "notes": "FC PASS-WITH-NOTES AMBUSH-CORE r5 (kandydat a42586f84, integracja ab317b6cf; plus narzedzia UPKEEP-TOOLS 154b2fd13): nowa akcja armii Zasadzka — zastawiona zasadzka jest niewidoczna dla wroga (render, pathfinding i planowanie AI), wejscie wroga w wojnie na jej heks przerywa jego ruch i otwiera bitwe (gracz i AI i barbarzyncy), komunikaty Wpadles w zasadzke / Zasadzka sie powiodla, znacznik W zasadzce dla wlasciciela, cykl zycia (odwrot, relokacja, scalenie, podzial, wejscie do miasta, zapis/wczytanie), hasla Civpedii. tsc 0, 5 bramek zielonych, mgla-sciezka-inwariant 42/0, load-game-regression 34/0, determinism PASS, ambush-core 40/0, realstep 16/0, wiring 28/0, save-roundtrip 5/0, ui-reason 5/0, split-barb z mutantami, army-merge-* 11 plikow 0 FAIL. Chromium gracz->AI 13/0 (r4). NIE ZMIERZONO: zywy Chromium AI->gracz (wznowienie fazy AI aiCmdResume), rozdzielenie na ukryta zasadzke w Chromium, zblizenie samego chipu. ROZSTAWIENIE w bitwie na polu wroga i szyk do 3 szerokosci = osobny temat AMBUSH-DEPLOY (w tej wersji bitwa ze standardowym rozstawieniem). Ranking mocy nie filtruje zasadzek (decyzja produktowa). Dlug Rust: REPIN calej mechaniki zasadzki."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-16T23:22:02",
+  "hubGeneratedAt": "2026-11-17T01:27:24",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "62f493bed411431d0f2c9ac538e66aa8",
-      "sizeBytes": 14826821
+      "md5": "2d690a91da74b9f90f266f3ac37a85d4",
+      "sizeBytes": 14841911
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "62f493bed411431d0f2c9ac538e66aa8",
-      "sizeBytes": 14826821
+      "md5": "2d690a91da74b9f90f266f3ac37a85d4",
+      "sizeBytes": 14841911
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "62f493bed411431d0f2c9ac538e66aa8",
-      "sizeBytes": 14826821
+      "md5": "2d690a91da74b9f90f266f3ac37a85d4",
+      "sizeBytes": 14841911
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "62f493bed411431d0f2c9ac538e66aa8",
-      "sizeBytes": 14826821
+      "md5": "2d690a91da74b9f90f266f3ac37a85d4",
+      "sizeBytes": 14841911
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "62f493bed411431d0f2c9ac538e66aa8",
-      "sizeBytes": 14826821
+      "md5": "2d690a91da74b9f90f266f3ac37a85d4",
+      "sizeBytes": 14841911
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "62f493bed411431d0f2c9ac538e66aa8",
-      "sizeBytes": 14826821
+      "md5": "2d690a91da74b9f90f266f3ac37a85d4",
+      "sizeBytes": 14841911
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "62f493bed411431d0f2c9ac538e66aa8",
-      "sizeBytes": 14826821
+      "md5": "2d690a91da74b9f90f266f3ac37a85d4",
+      "sizeBytes": 14841911
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "62f493bed411431d0f2c9ac538e66aa8",
-      "sizeBytes": 14826821
+      "md5": "2d690a91da74b9f90f266f3ac37a85d4",
+      "sizeBytes": 14841911
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "62f493bed411431d0f2c9ac538e66aa8",
-      "sizeBytes": 14826821
+      "md5": "2d690a91da74b9f90f266f3ac37a85d4",
+      "sizeBytes": 14841911
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "62f493bed411431d0f2c9ac538e66aa8",
-      "sizeBytes": 14826821
+      "md5": "2d690a91da74b9f90f266f3ac37a85d4",
+      "sizeBytes": 14841911
     }
   ],
-  "md5": "62f493bed411431d0f2c9ac538e66aa8",
+  "md5": "2d690a91da74b9f90f266f3ac37a85d4",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

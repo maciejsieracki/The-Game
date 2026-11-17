@@ -1,3 +1,9 @@
+## ROBOCZA 2d690a91 -- 2026-11-16 -- FALA 786: Zasadzka: nowa akcja armii (niewidoczna dla wroga, wejscie wroga otwiera bitwe) (testowa)
+
+- Zasadzka armii: niewidoczna dla wroga (render, pathfinding i planowanie AI); wejscie wroga w wojnie na jej heks przerywa ruch i otwiera bitwe (gracz, AI, barbarzyncy); komunikaty Wpadles w zasadzke / Zasadzka sie powiodla; znacznik W zasadzce dla wlasciciela; cykl zycia stosu; Civpedia; plus narzedzia pomiarowe UPKEEP-TOOLS
+- Weryfikacja: tsc 0, logic 213/213, ambush-core 40/0, ui-reason 5/0, save-roundtrip 5/0, wiring 28/0, realstep 16/0, split-barb z mutantami, mgla-sciezka-inwariant 42/0, army-merge-colocated 4/0, load-game-regression 34/0
+- Limity: NIE ZMIERZONO: zywy Chromium AI->gracz, rozdzielenie na ukryta zasadzke w Chromium; standardowe rozstawienie bitwy (AMBUSH-DEPLOY osobno); ranking mocy nie filtruje zasadzek; REPIN Rust
+
 ## ROBOCZA 62f493be -- 2026-11-16 -- FALA 785: Gwiazdka generala w bitwie we wszystkich sciezkach, takze po Reset rozstawienia (testowa)
 
 - Jasna gwiazdka nad generalem w bitwie w 4 sciezkach budowy grupy jednostki (start, replay/wczytanie, obrona oblezonego, rozstawienie z Reset)
