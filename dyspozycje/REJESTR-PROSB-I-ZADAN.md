@@ -10780,3 +10780,19 @@ Właściciel: koszt pokoju znacząco podwyższyć tak, by na starcie wojny zwyci
 ### 2026-11-17 — REGUŁA WŁAŚCICIELA: gracz zawsze niebieski (kolor = gracz/przeciwnik, nie atakujący/obrońca)
 - Dosłownie: „nieważne czy gracz jest obrońcą czy atakującym, zawsze powinien mieć niebieski kolor… strona (lewo/prawo) zależy od roli, ale kolor jest przypisany do gracza i przeciwnika”. Właściciel widział przypadki, gdy to nie działa (po FALI 799 mogły zostać inne ścieżki/elementy: BattleScene domyślnie 'atk' tam, gdzie rola gracza nie jest przekazana).
 - Nowy temat: **R-WEB-UI-BATTLE-PLAYER-ALWAYS-BLUE-ALL-PATHS-Q1** (inwentarz WSZYSTKICH ścieżek bitwy × rola × element, macierz z żywego Chromium, naprawa rozbieżności). Start po MINIMAP, ADDUNIT i AMBUSH-TOAST (te same pliki battleScene.ts/main.ts). Dispatch zapisany.
+
+### FALA 800 — UNIT-REPLACE-INCA (2026-11-17)
+- Wdrożone na ROBOCZĄ: **R-WEB-UNIT-REPLACE-INCA-AND-NATIONAL-ARCHERS-TO-SLINGER-Q1** (r2 FC PASS-WITH-NOTES, kandydat 68a9e2cd2). „Zastąp”: Łucznik egipski, sumeryjski, nubijski, akadyjski, asyryjski i Oszczepnik (Estólica) Inków → Procarz (pełny koszt, gracz); AI też (wąski wyjątek same-epoch w `ai-era-unit-promotion.ts`). Egipski/sumeryjski w Brązie: degradacja klasy Specjalna→Standardowa zaakceptowana przez właściciela. ABC: Procarz końcem łańcucha (brak jednostki Żelaza w danych).
+- main 6476789, ROBOCZA MD5 1ce44d20 (GitHub Raw = manifest), sidecary audio 3/3 zgodne. Testy: tsc 0; logic 213/213; archer-slinger 43/0; promotion-table PASS 30/62; unit-replace 21/21; ai-era-unit-promotion 17/0; ai-unit-replace-same-rules 45/0.
+- NIE ZMIERZONO: okno Zastąp w żywym Chromium; czysty tsc u FC. Dług: `unit-replace-full-cost` 39/1 identycznie na bazie; REPIN Rust tabeli zamian. **Decyzja właściciela po wdrożeniu:** łańcuch Oszczepnik → Łucznik → Procarz (temat JAVELIN-CHAIN).
+
+### FALA 801 — PLAYERBLUE + MINIMAP (2026-11-17)
+- Wdrożone na ROBOCZĄ: **R-WEB-UI-BATTLE-PLAYER-ALWAYS-BLUE-ALL-PATHS-Q1** (r1 FC PASS-WITH-NOTES, abca05c45) + **R-WEB-UI-BATTLE-MINIMAP-SIDE-COLORS-BLUE-RED-Q1** (5a26c74bb; bez zmiany zachowania — minimapa już kolorowała wg gracza, doszedł helper `minimapUnitColor` i test). Reguła właściciela: kolor = gracz/przeciwnik, nie atakujący/obrońca. Poprawione: Szczegóły bitwy (endDetails1E), panel Obrona muru (siegeHud1E), werdykt w podsumowaniu (postBattleSummary — traci zieleń, niebieski/czerwony wg gracza), preset playtest i oblężenie z rolą gracza.
+- main bc4d623, ROBOCZA MD5 0295087e, sidecary audio 3/3 zgodne. Testy: tsc 0; 8 testów battle-*/minimap zielonych; żywy Chromium 12/12 (2 rozdzielczości × 2 role).
+- NIE ZMIERZONO na żywo: werdykt po bitwie, endDetails1E/siegeHud1E dla obrońcy-gracza, okno przed bitwą. Dług Rust: REPIN palety stron.
+
+### 2026-11-17 — PEACEDECAY r4 FC PASS-WITH-NOTES (NIE WDROŻONE — czeka decyzja)
+- Kandydat 3363756d3 (`refs/keep/PEACEDECAY-r4-fc`): jedna cena pokoju 6000×(1−L) wszędzie; brak stałych 185/554/615 w src. RYZYKO BALANSU (weary40-sim, realny kod, 3 ziarna × 150 tur): max udział miast jednej civ PRZED 22–27%, PO 72–75%; eliminacje 0, wojny ~30 tur. **CZEKA NA RANO / odpowiedź właściciela:** zostawić / limit miast na pokój / przeskalować wycenę miasta.
+
+### 2026-11-17 — pytania i obserwacje do właściciela (otwarte)
+- Dane jednostek dystansowych (zapytanie właściciela): rozjazdy karta↔silnik (akadyjski 5 vs 6, asyryjski 4 vs 6, Jeździec z oszczepami 14 vs 4, Rydwan egipski 10 vs 8, Katapulta 4 vs 8) oraz cztery jednostki piechoty (Drużynnik, Thorakites, Evocati, Gwardzista z champi) z `missileAttack`>0 i brakiem zasięgu — silnik (attackRange) traktuje je jako strzelców zasięgu 2 z amunicją „—” (nieograniczoną). Z czytania kodu; NIE ZMIERZONO w grze. Propozycja tematu pomiarowego czeka na zgodę.
