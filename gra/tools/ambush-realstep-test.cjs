@@ -103,7 +103,7 @@ const makeMap = (w, h) => {
   return { szerokoscQ: w, wysokoscR: h, hexes, seed: 1, riverPaths: [] };
 };
 const unit = (over) => Object.assign({
-  id: 'u', typeId: 'Wojownik', category: 'miecznik', ownerId: 0, q: 5, r: 5, hp: 10, ruch: 6, ruchLeft: 6,
+  id: 'u', typeId: 'Wojownik', category: 'miecznik', ownerId: 0, q: 5, r: 5, hp: 10, ruch: 6, ruchLeft: 6, isGeneral: true,
 }, over);
 const ambushed = (over) => {
   const u = unit(over);

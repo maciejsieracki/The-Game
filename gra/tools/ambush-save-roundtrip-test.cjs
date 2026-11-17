@@ -34,7 +34,7 @@ esbuild.buildSync({
 const { serializeGame, deserializeGame } = require(BUNDLE);
 
 const unit = (over) => Object.assign({
-  id: 'u1', typeId: 'Piechota', ownerId: 0, q: 3, r: 4, hp: 10, ruchLeft: 2,
+  id: 'u1', typeId: 'Piechota', ownerId: 0, q: 3, r: 4, hp: 10, ruchLeft: 2, isGeneral: true,
 }, over);
 const makeSave = (units) => ({
   wersja: 3, tura: 12, seed: 7, units, cities: [], exploredByHuman: [], gracze: [],

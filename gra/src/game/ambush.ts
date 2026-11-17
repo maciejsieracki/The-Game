@@ -31,6 +31,7 @@ export const AMBUSH_FORMATION_MAX_WIDTH = 3;
 
 export type AmbushBlockReason =
   | 'empty'
+  | 'no-general'
   | 'in-city'
   | 'besieging'
   | 'no-movement'
@@ -47,6 +48,7 @@ export interface AmbushSetContext {
 /** Polskie komunikaty powodów blokady (wyświetlane w tooltipie przycisku). */
 export const AMBUSH_BLOCK_MESSAGES: Readonly<Record<AmbushBlockReason, string>> = {
   'empty': 'Brak jednostek do zasadzki.',
+  'no-general': 'Zasadzkę może zastawić tylko armia z generałem.',
   'in-city': 'Armia w mieście nie może zastawić zasadzki.',
   'besieging': 'Oblegająca armia nie może zastawić zasadzki.',
   'no-movement': 'Armia nie ma ruchu do zużycia na zasadzkę.',
@@ -68,6 +70,14 @@ export function isStackAmbushed(stack: ReadonlyArray<Pick<RuntimeUnit, 'ambush'>
   return stack.some(isUnitAmbushed);
 }
 
+/**
+ * Czy stos ma generała (`isGeneral`). Zasadzka wymaga generała (decyzja właściciela 2026-11-17):
+ * ta sama funkcja dla gracza (UI) i AI, żeby reguła nie była powielona.
+ */
+export function stackHasGeneral(stack: ReadonlyArray<Pick<RuntimeUnit, 'isGeneral'>>): boolean {
+  return stack.some(u => u.isGeneral === true);
+}
+
 /** Łączny ruch stosu (minimum z jednostek -- tak jak w resztę akcji stosu). */
 function stackMovementLeft(stack: ReadonlyArray<Pick<RuntimeUnit, 'ruchLeft'>>): number {
   if (stack.length === 0) return 0;
@@ -76,7 +86,7 @@ function stackMovementLeft(stack: ReadonlyArray<Pick<RuntimeUnit, 'ruchLeft'>>):
 
 /**
  * Sprawdza, czy stos może zastawić zasadzkę. Kolejność powodów: pusty stos,
- * bitwa, miasto na heksie, oblężenie, już w zasadzce, brak ruchu.
+ * brak generała, bitwa, miasto na heksie, oblężenie, już w zasadzce, brak ruchu.
  */
 export function canSetAmbush(
   stack: ReadonlyArray<RuntimeUnit>,
@@ -85,6 +95,7 @@ export function canSetAmbush(
   const fail = (reason: AmbushBlockReason): AmbushCheck =>
     ({ ok: false, reason, message: AMBUSH_BLOCK_MESSAGES[reason] });
   if (stack.length === 0) return fail('empty');
+  if (!stackHasGeneral(stack)) return fail('no-general');
   if (ctx.inBattle) return fail('in-battle');
   if (ctx.cityOnHex) return fail('in-city');
   if (stack.some(u => typeof u.oblegaCityId === 'string' && u.oblegaCityId.length > 0)) {
@@ -128,6 +139,8 @@ function clearAmbushState(u: RuntimeUnit): boolean {
 
 /**
  * Cykl zycia zasadzki (pkt 4) -- JEDNO miejsce, wolane z synchronizacji jednostek po kazdej zmianie stanu.
+ * Zasadzka wymaga generala (2026-11-17): gdy w zastawionym stosie (ta sama pieczec heksu) nie ma juz zadnej
+ * jednostki z `isGeneral`, zasadzka wygasa dla calego stosu (zalozenie: utrata generala = koniec zasadzki).
  * Zdejmuje zasadzke jednostce, ktora: zmienila heks lub wlasciciela (ruch, odwrot po bitwie, relokacja,
  * podzial stosu -- czesc, ktora odeszla), stoi w miescie, w garnizonie, czuwa (sentry), jest ufortyfikowana w
  * polu albo oblega. Polityka scalenia/podzialu (DODATEK 1 pkt 4, „reszta zostaje"): zasadzka zostaje na
@@ -140,12 +153,18 @@ export function reconcileAmbush(
   hasCityAt: (q: number, r: number) => boolean,
 ): number {
   if (!units.some(u => u.ambush !== undefined || u.ambushAt !== undefined)) return 0;
+  // Pieczecie stosow, w ktorych zostal generał (zasadzka wymaga generala).
+  const stampsWithGeneral = new Set<string>();
+  for (const u of units) {
+    if (u.ambush === true && u.isGeneral === true) stampsWithGeneral.add(u.ambushAt ?? ambushStamp(u));
+  }
   let n = 0;
   for (const u of units) {
     if (u.ambush === undefined && u.ambushAt === undefined) continue;
     if (u.ambush !== true) { if (clearAmbushState(u)) n++; continue; }
     if (u.ambushAt === undefined) { u.ambushAt = ambushStamp(u); }
     const bad = u.ambushAt !== ambushStamp(u)
+      || !stampsWithGeneral.has(u.ambushAt)
       || u.inGarnizon === true
       || u.sentry === true
       || u.ufortyfikowanyWPolu === true
