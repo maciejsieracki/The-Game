@@ -127,6 +127,7 @@ pub mod siege_tactics_doctrine_state;
 pub mod siege_tactics_doctrine_target;
 pub mod siege_tactics_end;
 pub mod siege_tactics_endcheck;
+pub mod siege_tactics_fallback;
 pub mod siege_tactics_fastforward;
 pub mod siege_tactics_frame;
 pub mod siege_tactics_inputs_pos;
