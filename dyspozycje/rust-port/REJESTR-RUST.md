@@ -3009,3 +3009,15 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Krok 3:** sprzątanie — nic zakończonego do usunięcia poza wpisami martwymi (bez worktree). T6 worktree `wf_6d014d2a-144-1/-2` (1,2 GB każdy) nietknięte, bo T6 w toku.
 - **Otwarte decyzje ABC (w czacie, nie w rejestrze):** #327 (garnizon w czasie wojny), #358 (mgła #253, wariant CRED-HAK #286). Nie zamykam ich sam.
 - **Zarządzanie harmonogramem:** brak ScheduleWakeup (sesja nie jest pętlą /loop); heartbeat obsługuje harmonogram zdalny.
+
+### Przebieg — DOC-323 zintegrowany (2026-11-17 ~01:4x UTC): 2/4 aktywne, dysk 7,1 GB
+
+- **FC PASS-WITH-NOTES** `79b53ee73` (Operator `048ea8092`, Evaluator `d31a2124b`, obrona `ddc45798d`), temat #323, dispatch `R-RUSTPORT-P6-DOC-323-RZEKA-KRAWEDZIE`.
+- **Dowód pinu (FC, `render/scene.ts`):** linia 1264 — `hex.rzeka.krawedzie zostaje dla logiki gry; render idzie po pełnej ścieżce` (jedyne „krawedzie” w render/battle). `battleScene.ts` nie zawiera `rzeka_krawedzie` ani `river_render_paths`.
+- **Zmiana:** 4 linie w `P4-1G-ADAPTER-ROZPOZNANIE.md` (wiersz §3 nr 60 — kolumna pinu; wiersz §4 R3, ~linia 172) + raporty run dir.
+- **Integracja — odstępstwo od FF na parity:** dokument nie istnieje na `parity-v2` (`625624d97`); FC commit dodaje cały plik (251 linii). Zamiast tego przeniesiono WYŁĄCZNIE zmiany (`git checkout 79b53ee73 -- <5 plików>`) na `claude/rust-sivvrn`, bo tam leży dokument. Commit `098910d01`, readback zgodny. `parity-v2` bez zmian (`625624d97`).
+- **Keep ref:** `refs/keep/R-RUSTPORT-P6-DOC-323-fc` → `79b53ee73`.
+- **Sprzątanie:** usunięte 4 worktree `wf_7304b042-01d-1..4`. Dysk 7,1 GB.
+- **Otwarte uwagi FC:** Evaluator zauważył, że wpis R3 w §4 wiąże `river_render_paths` z `rivers[]`; `landRiverRenderPath`/`mediumRiverRenderPath` czytają też `map.hexes` (`scene.ts:1317-1318`). Obrona: nie czyta `rzeka.obecna`, bo funkcje są w `gen-helpers.ts` (nie w render). Do przeglądu przy integracji renderera (#319/#330).
+- **Aktywne Workflow (2/4):** K5DOC-T6 jazda, Evaluator (Sonnet), `wf_6d014d2a-144`; K5DOC-T5b strzelec-marsz, Operator (Haiku), `wf_5291e068-ccd`.
+- **Krok 1 (sloty):** 2/4. Wstrzymane: dysk 7,1 GB < 8 GB (nowy temat z kodem Rust). Brak czystego tematu docs-only (#325 to komentarze w kodzie Rust, #326/#357 to procesowe).
