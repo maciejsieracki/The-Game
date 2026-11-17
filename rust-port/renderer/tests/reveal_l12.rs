@@ -115,6 +115,15 @@ fn reveal_matches_pinned_web_vectors() {
         let fog_dto: vm::FogViewDto = serde_json::from_value(s["dto"]["fog"].clone()).unwrap();
         let fog_active = s["dto"]["fogActive"].as_bool().unwrap();
         let reveal_dto: FogRevealDto = serde_json::from_value(s["dto"]["reveal"].clone()).unwrap();
+        // Fog off: `setFog(ALL_KEYS, ALL_KEYS)` without options
+        // (`main.ts:13506`), `startRevealKeysForRiverFog()` is not called, so
+        // the producer sends `null` (R-RUSTPORT-P4-1-L12-FOGOFF-VEC-R1).
+        if !fog_active {
+            assert_eq!(
+                reveal_dto.river_reveal_keys, None,
+                "{name}: riverRevealKeys with the fog off"
+            );
+        }
         let fog = FogSets::from_dto(&map, &fog_dto, fog_active).unwrap();
         let reveal =
             FogReveal::from_dto(&map, &fog, &reveal_dto).unwrap_or_else(|e| panic!("{name}: {e}"));

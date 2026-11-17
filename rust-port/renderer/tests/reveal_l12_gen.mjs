@@ -26,7 +26,12 @@
 // `exploredForRender`, `0` otherwise; all `2` when `!useFogRender`),
 // `fogActive` = `useFogRender`, `reveal.revealAllLand` = `revealAllLand`,
 // `reveal.riverRevealKeys` = `startRevealKeysForRiverFog()` (sorted `r`-major,
-// `q`-minor; `null` for `undefined`). `exploredCopyState` is the same fog with
+// `q`-minor; `null` for `undefined`) only when `useFogRender`: with the fog
+// off the pin calls `setFog(ALL_KEYS, ALL_KEYS)` WITHOUT options
+// (`main.ts:13506`), `startRevealKeysForRiverFog()` is not called and the
+// scene reads `lastRiverRevealKeys = opts?.riverRevealKeys ?? null`
+// (`scene.ts:3531`), so the DTO carries `null` there
+// (R-RUSTPORT-P4-1-L12-FOGOFF-VEC-R1). `exploredCopyState` is the same fog with
 // the raw `explored` instead of `exploredForRender` (mutation (c) of the
 // dispatch, as a producer bug the adapter must reject).
 //
@@ -298,7 +303,9 @@ for (const s of SCENARIOS) {
       fogActive: useFogRender,
       reveal: {
         revealAllLand: s.revealAllLand,
-        riverRevealKeys: r.startReveal === undefined ? null : sortKeys(r.startReveal).map(([q, rr]) => ({ q, r: rr })),
+        riverRevealKeys: !useFogRender || r.startReveal === undefined
+          ? null
+          : sortKeys(r.startReveal).map(([q, rr]) => ({ q, r: rr })),
       },
     },
     exploredCopyState: fogCodes(s.hexes, useFogRender, vis, r.explored),
