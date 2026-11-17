@@ -3596,3 +3596,15 @@ Konsekwencje dla kolejki:
 | P4-1F2 TERRITORY-RANGES (#362) | Operator | OPUS 5.5 | ok. 16:25 UTC |
 | P4-1 L1/L2 REVEAL (#363) | czeka na slot renderera | OPUS 5.5 | — |
 | P4-1 STATCHIP-SYNC (#361) | czeka na slot renderera i ≥12 GB | OPUS 5.5 | — |
+
+### Przebieg — heartbeat slotów (2026-11-17 ~16:19 UTC): brak nowych startów, powód zapisany
+- **Aktywne Workflow:** 1 — F2 TERRITORY-RANGES (#362), etap Operator, OPUS 5.5 (wf_3732fdd4-844). Pozostałe z listy mają wynik końcowy (zakończone).
+- **Dlaczego nie uzupełniono do 4:** stała instrukcja właściciela — dziś tylko tematy 3D na Opusie. Routine żąda operatorów Haiku, Obrony Haiku i rundy integracyjnej Haiku; to pominięto. Tematy poza 3D (kolejka #96–#119) nie startują dziś.
+- **Dlaczego nie ma drugiego tematu 3D:** L1/L2 REVEAL (#363) i STATCHIP-SYNC (#361) wymagają slotu renderera (jeden build renderera naraz, bramka ≥12 GB). Slot zajęty przez F2.
+- **Dysk:** 17 GB wolne.
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| P4-1F2 TERRITORY-RANGES (#362) | Operator | OPUS 5.5 | ok. 16:25 UTC |
+| P4-1 L1/L2 REVEAL (#363) | czeka na slot renderera | OPUS 5.5 | — |
+| P4-1 STATCHIP-SYNC (#361) | czeka na slot renderera i ≥12 GB | OPUS 5.5 | — |
