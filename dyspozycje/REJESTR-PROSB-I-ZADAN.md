@@ -10808,3 +10808,8 @@ Właściciel: koszt pokoju znacząco podwyższyć tak, by na starcie wojny zwyci
 - FC PASS-WITH-NOTES (kod d7ca26075, raport 09101aa03; `refs/keep/JAVELIN-fc`). Zmiana: `units.json` („Zastąp specjalnie” Oszczepnika i Zulu = Łucznik), wyjątek AI w `ai-era-unit-promotion.ts` (Zulu/Oszczepnik jako niższa klasa), testy promotion-table i archer-slinger.
 - main cc3c80b17, ROBOCZA MD5 1ddbed4b, GitHub Raw MD5 zgodne, sidecary audio 3/3 zgodne. Testy: tsc 0; logic 213/213; promotion-table bez cykli; archer-slinger 51/0; ai-era 17/0; same-rules 45/0; unit-replace 21/21; combat 6/6; mutacje czerwone.
 - NIE ZMIERZONO: żywy Chromium okna Zastąp; wiki bez zmian. Estólica nadal → Procarz (ABC A: tylko Łucznik → temat RANGEDHEALTH). Dług Rust: REPIN tabeli zamian.
+
+### 2026-11-17 — FALA 803: preset playtest=mapa — prognoza „Zakończ turę” od tury 1 (PLAYTEST-MAPA)
+- r2 FC PASS (kod f3bf2cc67, raport b2f17e5b8; `refs/keep/PLAYMAPA2-fc`). r1 FC FAIL: poprawka w złej funkcji (doStartPlaytestMiastoEkonomia zamiast doStartPlaytestMapaSwiata). Zmiana: `main.ts` +3 linie (markCityStateDirty po dodaniu miast presetu), test obu presetów z mutacjami.
+- main 525da354, ROBOCZA MD5 36609bb7, GitHub Raw MD5 zgodne, sidecary audio 3/3 zgodne. Testy: tsc 0; logic 213/213; playtest-mapa-dirty-forecast 10/0; unit-replace 21/21; combat 6/6; żywy Chromium (kandydat ma prognozę w t1, bez poprawki forecast=null, 2/2).
+- Dotyczy tylko presetu testowego; test tekstowy; NIE ZMIERZONO live dla playtest=miasto. Dług Rust: brak (preset testowy).
