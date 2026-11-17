@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
-  "bundleSha256": "2883b6bc40a62089f3ca7493d2fce41b911816956c997647edc8b8cc72455cf8",
-  "bundleBytes": 14851262,
+  "bundleMd5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+  "bundleSha256": "0ed326fdfecc076ec3f8693e7ee77a0176070a1d07b8ac274254b9aaaa9f6a1c",
+  "bundleBytes": 14851529,
   "sourceSnapshot": {
-    "source": "merge FC 67984086e na origin/main d9d29aece",
+    "source": "R-WEB-UI-BATTLE-3D-SIDE-COLORS-BLUE-RED-Q1 r1 bc2f5fe6f, main 76a1739fd",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 798: Baner dowodcy w bitwie jest pozycjonowany z prawdziwych rectow gornego paska i rostera (_syncCommanderPanelLayout): zostaje w srodku gornego rzedu gdy skala >=0,7, inaczej schodzi pod pasek; przy 1024x640, 1280x720 i 1440x900 nie przecina WYCOFAJ SIE, Ustawien ani Pomin (67984086e)"
+    "FALA 799: Modele i awatary jednostek w bitwie 3D malowane wg strony: gracz niebieski (#3a6ad0), przeciwnik czerwony (#c84040), w roli atakujacego i broniacego, takze w bitwie polowej z mapy (broniacy sie gracz dostaje faze rozstawienia i bramke dowodcy jak w pozostalych sciezkach); pierscienie grupy zostaja zlote"
   ],
   "verification": [
-    "battle-banner-retreat-overlap-live-test 6/6 w 1024x640, 1280x720, 1440x900 (przed poprawka FAIL; mutant 4/2 RED), battle-tempo-minimap-brand OK, hp-display 7/7, damage-colors 28/0, ambush-ui-reason 10/0, logic 213/213, tsc 0, build OK; NIE ZMIERZONO: tryb AUTO i faza rozstawiania, zmiana tresci banera lub rozmiaru okna w trakcie bitwy"
+    "tsc 0; logic 213/213; battle-side-colors-3d (A-D) OK; battle-tempo-minimap-brand OK; hp-display 7/7; damage-colors 28/0; map-field-battle 24/0; zywy Chromium xvfb 5 przypadkow, 118 niebieskich / 118 czerwonych / 0 zlotych; mutacje czerwienia test; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "Przy 1024x640 baner pod paskiem zaslania gorny fragment pola bitwy (y 82-157); przy 1280 i 1440 baner zachodzi na pusta ramke rostera (ok. 42x9 px i 41x29 px)"
+    "NIE ZMIERZONO: porownanie z bazowym commitem, mgla-sciezka-inwariant; test statyczny sekcje A-C to regex po zrodle; dlug Rust: REPIN palety stron 3D"
   ],
-  "finalControl": "R-WEB-UI-BATTLE-BANNER-OVERLAPS-RETREAT-1024X640-Q1 r1 FC PASS-WITH-NOTES 67984086e",
+  "finalControl": "R-WEB-UI-BATTLE-3D-SIDE-COLORS-BLUE-RED-Q1 r1 FC PASS-WITH-NOTES bc2f5fe6f",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T13:45:55",
+  "hubGeneratedAt": "2026-11-17T15:49:23",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
-      "sizeBytes": 14851262
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
-      "sizeBytes": 14851262
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
-      "sizeBytes": 14851262
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
-      "sizeBytes": 14851262
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
-      "sizeBytes": 14851262
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
-      "sizeBytes": 14851262
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
-      "sizeBytes": 14851262
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
-      "sizeBytes": 14851262
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
-      "sizeBytes": 14851262
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
-      "sizeBytes": 14851262
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     }
   ],
-  "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
+  "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

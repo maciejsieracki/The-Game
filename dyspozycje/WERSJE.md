@@ -1,3 +1,9 @@
+## ROBOCZA a7f0ad69 -- 2026-11-17 -- FALA 799: Kolory stron w widoku 3D bitwy: gracz niebieski, przeciwnik czerwony (SIDE3D) (testowa)
+
+- Modele i awatary jednostek w bitwie 3D malowane wg strony: gracz niebieski (#3a6ad0), przeciwnik czerwony (#c84040), w roli atakujacego i broniacego, takze w bitwie polowej z mapy (broniacy sie gracz dostaje faze rozstawienia i bramke dowodcy jak w pozostalych sciezkach); pierscienie grupy zostaja zlote
+- Weryfikacja: tsc 0; logic 213/213; battle-side-colors-3d (A-D) OK; battle-tempo-minimap-brand OK; hp-display 7/7; damage-colors 28/0; map-field-battle 24/0; zywy Chromium xvfb 5 przypadkow, 118 niebieskich / 118 czerwonych / 0 zlotych; mutacje czerwienia test; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: porownanie z bazowym commitem, mgla-sciezka-inwariant; test statyczny sekcje A-C to regex po zrodle; dlug Rust: REPIN palety stron 3D
+
 ## ROBOCZA b0cbbd36 -- 2026-11-17 -- FALA 798: Baner bitwy nie zaslania przyciskow (WYCOFAJ SIE) przy 1024x640 (BANNER) (testowa)
 
 - Baner dowodcy w bitwie jest pozycjonowany z prawdziwych rectow gornego paska i rostera (_syncCommanderPanelLayout): zostaje w srodku gornego rzedu gdy skala >=0,7, inaczej schodzi pod pasek; przy 1024x640, 1280x720 i 1440x900 nie przecina WYCOFAJ SIE, Ustawien ani Pomin (67984086e)
