@@ -84,6 +84,12 @@ check('damageTw wręcz bez zmian (5-2+2=5)', combat.damageTw(5, 2, 2, 0, false),
 // 9. Podloga 1 po kontrze
 check('Procarz vs pancerz 8 kontra 0.1 -> min 1', combat.rangedShotDamage(procarz, 4, 8, 0.1), 1);
 
+// 10. Scena bitwy (battleScene.ts, galaz ranged) uzywa tej samej funkcji co auto-walka.
+// Guard zrodlowy: bez tego cofniecie poprawki w scenie nie czerwienieje zadnego testu.
+const sceneSrc = fs.readFileSync(path.join(GRA_DIR, 'src/battle/battleScene.ts'), 'utf8');
+check('battleScene ranged wola rangedShotBase(cuA, atkMissile, defArmor)', sceneSrc.includes('rangedShotBase(cuA, atkMissile, defArmor)'), true);
+check('battleScene bez starego rangeDamage(atkMissile, defArmor)', sceneSrc.includes('rangeDamage(atkMissile'), false);
+
 if (failed > 0) {
   console.log(`\nFAILED: ${failed}`);
   process.exit(1);

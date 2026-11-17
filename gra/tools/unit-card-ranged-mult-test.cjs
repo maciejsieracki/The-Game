@@ -61,14 +61,7 @@ async function main() {
       }).total;
       assert(card.rangedDamageMult === rangedDamageMultFor(unit), `${unit.Jednostka} card exposes ×${card.rangedDamageMult} projectile damage`);
       assert(cardPower === armyFieldPower(unit), `${unit.Jednostka} card field power ${cardPower} matches armyFieldPower`);
-      // PROCARZ-PIERCING: cache fieldPower w units.json (12) zostal sprzed przebicia 2;
-      // runtime = 14. Regeneracja cache to osobny krok integracji (poza allowlista tematu).
-      const cacheStale = unit.Typ === 'Slinger' && Number(unit.piercing) > 0;
-      if (cacheStale) {
-        assert(cardPower === unit.fieldPower + Number(unit.piercing), `${unit.Jednostka} runtime fieldPower ${cardPower} = cache ${unit.fieldPower} + piercing ${unit.piercing} (PROCARZ-PIERCING, cache do regeneracji)`);
-      } else {
-        assert(unit.fieldPower === cardPower, `${unit.Jednostka} units.json fieldPower ${unit.fieldPower} matches runtime`);
-      }
+      assert(unit.fieldPower === cardPower, `${unit.Jednostka} units.json fieldPower ${unit.fieldPower} matches runtime`);
     }
 
     for (const name of ['Oszczepnik']) {
@@ -115,6 +108,10 @@ async function checkTooltipText() {
       const powerMatch = compact.match(/Moc pola<\/span><span class="sp-unit-forces-v">([^<]*)<\/span>/);
       assert(powerMatch && powerMatch[1].endsWith(`Razem ${power}`), `${name} tooltip "Moc pola" shows Razem ${power}`);
       assert(expanded.includes(`×${mult} obrażeń pocisku`), `${name} expanded card renders "×${mult} obrażeń pocisku"`);
+      if (name === 'Procarz') {
+        // PROCARZ-PIERCING: karta opisuje, że strzał z przebiciem liczy się jak cios wręcz.
+        assert(expanded.includes('przebicie 2: strzał liczy się jak cios wręcz'), 'Procarz expanded card describes piercing shot as melee-like');
+      }
     }
     const oszczepnik = unitByName.get('Oszczepnik');
     const plainCombat = stats.unitCardCombatDisplay({
