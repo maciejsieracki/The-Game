@@ -158,7 +158,6 @@ import {
   FILTER_GENERAL_SVG,
   FILTER_KIND_SVG,
   applyGroupBadge1E,
-  applyMinimap1E,
   applyModeHint1E,
   applyRailBtn1E,
   applyRosterFilterBar1E,
@@ -220,6 +219,7 @@ import {
   applyTempoMinimapOuterPanel1E,
   applyTempoRow1E,
   applyTempoBtn1E,
+  applyTempoMinimapFrame1E,
   TEMPO_SVG,
   PB_SVG,
   type RosterGridMetrics,
@@ -252,6 +252,7 @@ import {
   battleLossTextColor,
 } from './battleHudTheme';
 import { civIconSvg, brandIconSvg } from '../ui/icons/brandAssets';
+import { ensureBrandRootTokens } from '../ui/brandTokenVars';
 import { leaderPortraitUrl, leaderName, civIconIdFromCivLabel } from '../ui/leaderPortraits';
 import { showEndScreen1E } from './endScreen1E';
 import { markBattleSceneOpen, markBattleSceneClosed } from './battleSceneOpen';
@@ -2432,6 +2433,7 @@ export class BattleScene {
   private _tempoMinusBtn: HTMLButtonElement | null = null;
   private _tempoPlusBtn: HTMLButtonElement | null = null;
   private _tempoAutoBtn: HTMLButtonElement | null = null;
+  private _tempoSpeedLbl: HTMLSpanElement | null = null;
   /** Nagłówek „Minimapa · rozstawianie" (deploy, BEZ tempa) — makieta TW v5 §3/klatka 3. */
   private _minimapDeployHeaderRow: HTMLDivElement | null = null;
   /** Rząd Tempo (pauza/−/+/AUTO) — widoczny TYLKO w walce, nie w deployu. */
@@ -12445,6 +12447,9 @@ export class BattleScene {
    */
   private _buildMinimapOverlay(): void {
     const TEMPO_ROW_H = 42;
+    // Tokeny marki (var(--tg-*)) muszą być wstrzyknięte przed budową panelu Tempo,
+    // także gdy scena startuje bez menu/wiki (R-WEB-UI-BATTLE-TEMPO-MINIMAP-PANEL-BRANDBOOK-Q1).
+    ensureBrandRootTokens();
     const wrap = document.createElement('div');
     Object.assign(wrap.style, {
       // Zadanie #17: prawy dolny rog — patrz _syncMinimapPosition (wywolane
@@ -12488,6 +12493,7 @@ export class BattleScene {
       const b = document.createElement('button');
       applyTempoBtn1E(b);
       b.title = title;
+      b.setAttribute('aria-label', title);
       b.innerHTML = svg;
       b.onclick = onClick;
       tempoRow.appendChild(b);
@@ -12496,6 +12502,14 @@ export class BattleScene {
     this._tempoPauseBtn = mkTempoBtn(TEMPO_SVG.pause, 'Pauza / Wznów (P)', () => { this._togglePause(); this._syncTempoPanelHighlight(); });
     // ± po pelnej drabinie SPEED_STEPS (clamp, bez zawijania); V nadal cyklicznie.
     this._tempoMinusBtn = mkTempoBtn(TEMPO_SVG.minus, 'Zwolnij', () => { this._adjustSpeedIdx(-1); });
+    const tempoSpeedLbl = document.createElement('span');
+    Object.assign(tempoSpeedLbl.style, {
+      font: '700 11px ' + BATTLE_FONT, color: BATTLE_GOLD, minWidth: '26px',
+      textAlign: 'center', flexShrink: '0', letterSpacing: '0.04em',
+    });
+    tempoSpeedLbl.setAttribute('aria-live', 'polite');
+    tempoRow.appendChild(tempoSpeedLbl);
+    this._tempoSpeedLbl = tempoSpeedLbl;
     this._tempoPlusBtn = mkTempoBtn(TEMPO_SVG.plus, 'Przyspiesz', () => { this._adjustSpeedIdx(1); });
     const tempoSpacer = document.createElement('span');
     tempoSpacer.style.flex = '1';
@@ -12511,9 +12525,7 @@ export class BattleScene {
     Object.assign(canvasBox.style, {
       position: 'relative', flex: '1', cursor: 'crosshair', borderTop: 'none',
     });
-    applyMinimap1E(canvasBox);
-    canvasBox.style.borderTop = 'none';
-    canvasBox.style.borderRadius = '0';
+    applyTempoMinimapFrame1E(canvasBox);
     const canvas = document.createElement('canvas');
     canvas.width = MINIMAP_W;
     canvas.height = MINIMAP_H;
@@ -12591,6 +12603,7 @@ export class BattleScene {
       applyTempoBtn1E(this._tempoAutoBtn, { active: !this._manualMode, auto: true });
       this._tempoAutoBtn.style.opacity = '1';
     }
+    if (this._tempoSpeedLbl) this._tempoSpeedLbl.textContent = speedTag;
   }
 
   /**
