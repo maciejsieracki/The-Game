@@ -19,6 +19,14 @@ Wykonane kroki z DODATKU 1:
 
 STATUS r1-wznowienie: PASS-WITH-NOTES (narzędzie deterministyczne, liczby potwierdzone; werdykt RYZYKO wymaga decyzji właściciela).
 
+## 0b. Weryfikacja Operatora r1b (DODATEK 2, baza bbaa74fd8; bez pełnych przebiegów)
+
+- Smoke `node tools/weary40-sim-measure.cjs --turns 30 --seeds 1 --variant both` → exit 0, 5,9 s (limit 60 s). Do uruchomienia dołączono `gra/node_modules` jako dowiązanie symboliczne do esbuild/three zainstalowanych poza repo (katalog scratchpad); dowiązanie nie jest częścią commita.
+- Sprawdzenie raw (skryptem na surowych wierszach JSONL, nie z pamięci): liczby wojen startowych (31 w K=3 i K=6), zakończonych pokojem PO/PRZED (31/23 K=3; 31/30 K=6), trwających na t150 (PO 0; PRZED 8 K=3, 1 K=6), eliminacji (PO 0; PRZED 2 K=3, 1 K=6), wymuszonych (PO 17 K=3, 2 K=6; PRZED 0), ofert <80% i ≥80%, miast oddanych (PO 0 K=3, 10 K=6), max udziału (PO 0,25 K=3 / 0,30 K=6; PRZED 0,40 / 0,25) i cen zerowych (PO 14 K=3 / 19 K=6, wszystkie przy remisie i 0 miastach, PRZED 23 / 23) — zgodne z tabelami §2a–§2c.
+- Korekta: wymuszony pokój w turze 32 (K=3, ziarno 2) — dopisana w §2a/§3 (wcześniej napisano „wszystkie w turze 40").
+- NIE ZWERYFIKOWANO z raw: „Śr. czas wojny (tury)" (raw nie zawiera pola czasu trwania wojny; liczby z §2a/§2b pochodzą z wcześniejszego wyjścia i są NIE POTWIERDZONE w tej rundzie) oraz czas tury z §2e (raw zawiera tylko avgTurnMs, nie porównywano z tabelą ręcznie).
+- Smoke-test z §0 wpisywany do listy deployu: nadal NIE ZNALEZIONO pliku listy w repo (bez zmian).
+
 ## 1. Co zrobiono
 
 - Dodano `gra/tools/weary40-sim-measure.cjs` (jedyna zmiana w repo; allowlista `gra/tools/**`).
@@ -45,7 +53,7 @@ Polecenia z gra/ (bez Chromium, bez `npm run build/dev`):
 
 Szczegóły PO wg ziarna (zakończone pokojem / wymuszone):
 - ziarno 1 (n=5): 10 / 6; ziarno 2 (n=6): 15 / 11; ziarno 3 (n=4): 6 / 0.
-- Wszystkie wymuszone pokoje PO wypadły w turze 40; przy 3 miastach ochrona minMiastPoOddaniu=3 nie pozwala oddać żadnego miasta (cityCap=0), więc każdy wymuszony pokój odbył się BEZ zapłaty (patrz §3).
+- Wymuszone pokoje PO wypadły w turze 40 (16 z 17) oraz w turze 32 (1 z 17, ziarno 2; korekta r1b wg raw); przy 3 miastach ochrona minMiastPoOddaniu=3 nie pozwala oddać żadnego miasta (cityCap=0), więc każdy wymuszony pokój odbył się BEZ zapłaty (patrz §3).
 
 ### 2b. Wariant stresowy K=6 (6 miast na cywilizację)
 
