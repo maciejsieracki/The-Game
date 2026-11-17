@@ -435,10 +435,15 @@ async function main() {
       console.log(`\n[${w.label}] ${JSON.stringify(summary[w.label])}`);
       check(`(${w.label}) panel ma oczekiwaną szerokość z cityUxFrame (±2 px)`,
         Math.abs(m.panelWidth - w.expect) <= 2, { panelWidth: m.panelWidth, expect: w.expect });
-      // Current Iron-era Mycenae fixture exposes twelve legal production cards.
-      // The former thirteen-card threshold was a stale roster assumption and
-      // rejected the valid live catalog after the unit availability changes.
-      check(`(${w.label}) lista ma wszystkie 12 oczekiwanych wierszy`, m.rowCount >= 12, m.rowCount);
+      // Fixture = Grecja (grecy), epoka Żelazo. Legalnych kart produkcji jest 12, ale 3 ogólne
+      // jednostki są ukryte BY DESIGN, bo grecka jednostka narodowa je zastępuje (units.json
+      // „W zamian za”): Włócznik ← Falanga, Wojownik z mieczem i tarczą ← Wojownik mykeński,
+      // Rydwan konny ← Rydwan mykeński (production.ts civHasReplacementFor). Widocznych = 9.
+      // Dawny próg 12 był nieaktualny po wdrożeniu zastąpień narodowych (dowód: lista 9 wierszy
+      // = nazwy Konnica, Hieros Lochos, Falanga, Thorakites, Rydwan mykeński, Wojownik mykeński,
+      // Galera, Procarz, Zwiadowca).
+      check(`(${w.label}) lista ma wszystkie 9 widocznych wierszy (12 legalnych − 3 zastąpione narodowo)`,
+        m.rowCount >= 9, m.rowCount);
       check(`(${w.label}) K1: wysokość każdego wiersza <= 36 px`, m.maxRowHeight <= 36,
         m.rows.map((r) => Math.round(r.height)));
       check(`(${w.label}) K4: brak poziomego przewijania; wiersze w liście, lista w panelu`,
@@ -458,8 +463,8 @@ async function main() {
           && r.statusSummaryText && !r.statusIsMissing && r.missingText === null),
         m.rows.filter((r) => !r.statusVisible).map((r) => r.name));
       if (w.label === '340') {
-        check('(340) K2: >= 12 z 13 pierwszych wierszy widocznych w całości pod blokiem Produkcji',
-          m.first13Visible >= 12, { first13Visible: m.first13Visible, list: m.list });
+        check('(340) K2: >= min(12, wierszy) z 13 pierwszych wierszy widocznych w całości pod blokiem Produkcji',
+          m.first13Visible >= Math.min(12, m.rowCount), { first13Visible: m.first13Visible, rowCount: m.rowCount, list: m.list });
         check('(340) K3: ucięte nazwy <= 2 z 13', m.first13Truncated.length <= 2, m.first13Truncated);
       }
       check(`(${w.label}) zero pageerror/console.error`, full.errors.length === 0, full.errors);
@@ -479,7 +484,7 @@ async function main() {
       const shortRows = s.rows.filter((r) => r.statusData && Number(r.statusData.r) > 1000);
       const okRows = s.rows.filter((r) => r.statusData && Number(r.statusData.r) <= 1000);
       check(`(${w.label}) K5: przy puli 1 tys. każdy wiersz z niedoborem pokazuje widoczny, czerwony „brak N”`,
-        s.rowCount >= 12 && shortRows.length >= s.rowCount - 1 && shortRows.every((r) => r.statusVisible && r.statusIsMissing
+        s.rowCount >= 9 && shortRows.length >= s.rowCount - 1 && shortRows.every((r) => r.statusVisible && r.statusIsMissing
           && r.missingVisible && /^brak \S+/.test(r.missingText || '') && r.missingColor === 'rgb(232, 138, 122)'
           && /^Rekruci: dostępne 1 tys\. \/ potrzebne \S+.* — brakuje \S+/.test(r.statusTitle || '')
           && Number(r.statusData.m) === Number(r.statusData.r) - 1000),
