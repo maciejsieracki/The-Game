@@ -1,0 +1,105 @@
+{
+  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "digests": {
+    "groupDoctrineType": "f42a37f60af119c9259d3644af26a43db3556a79c5377334ee33bcc51a13e113",
+    "ensureGroupMeta": "2f9c979041dc8056bd2bd530a24bc859bac2aa08c6fb78dbbfb6e33dcef35d6a",
+    "setGroupDoctrine": "a25f61e82bdb2852a06b60aacbc5de6beceb2071510ffd460c8e7196afd47ebf"
+  },
+  "pins": {
+    "groupDoctrineType": "battleScene.ts:1938",
+    "ensureGroupMeta": "battleScene.ts:17586-17593",
+    "setGroupDoctrine": "battleScene.ts:17864-17929"
+  },
+  "variants": [
+    {
+      "pin": "battleScene.ts:1938",
+      "value": "defensive"
+    },
+    {
+      "pin": "battleScene.ts:1938",
+      "value": "steady"
+    },
+    {
+      "pin": "battleScene.ts:1938",
+      "value": "aggressive"
+    },
+    {
+      "pin": "battleScene.ts:1938",
+      "value": "skirmish"
+    },
+    {
+      "pin": "battleScene.ts:1938",
+      "value": "manual"
+    }
+  ],
+  "ensure_default": {
+    "doctrine": "steady",
+    "autoPlay": true,
+    "size": 1
+  },
+  "ensure_idempotent": {
+    "after_first_mutation": {
+      "doctrine": "aggressive",
+      "autoPlay": false
+    },
+    "second": {
+      "doctrine": "aggressive",
+      "autoPlay": false
+    },
+    "size": 1
+  },
+  "set_cases": [
+    {
+      "input": "defensive",
+      "doctrine": "defensive",
+      "autoPlay": true,
+      "size": 1
+    },
+    {
+      "input": "steady",
+      "doctrine": "steady",
+      "autoPlay": true,
+      "size": 1
+    },
+    {
+      "input": "aggressive",
+      "doctrine": "aggressive",
+      "autoPlay": true,
+      "size": 1
+    },
+    {
+      "input": "skirmish",
+      "doctrine": "skirmish",
+      "autoPlay": true,
+      "size": 1
+    },
+    {
+      "input": "manual",
+      "doctrine": "manual",
+      "autoPlay": false,
+      "size": 1
+    }
+  ],
+  "set_sequence": [
+    {
+      "input": "manual",
+      "doctrine": "manual",
+      "autoPlay": false
+    },
+    {
+      "input": "steady",
+      "doctrine": "steady",
+      "autoPlay": true
+    },
+    {
+      "input": "manual",
+      "doctrine": "manual",
+      "autoPlay": false
+    },
+    {
+      "input": "skirmish",
+      "doctrine": "skirmish",
+      "autoPlay": true
+    }
+  ]
+}
