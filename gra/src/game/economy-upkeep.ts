@@ -637,11 +637,27 @@ export interface BuildingInstanceLike {
  * is true -- so a building explicitly costing 0 (Stela) is never mistaken for
  * "no entry" and never falls back to the flat default. Level clamped to >= 1.
  */
-export function buildingUpkeep(
+export interface BuildingUpkeepBreakdown {
+  /** Baza po zaokrągleniu do całości, przed mnożnikami (np. 2 dla Garnizonu). */
+  base: number;
+  /** R_STAWKI_FALA2_MULT — wspólny mnożnik FALA2 (stawki utrzymania). */
+  fala2Mult: number;
+  /** buildingEraCostMultiplier(epokaWejscia) — mnożnik ery wejścia budynku. */
+  eraMult: number;
+  /** Wynik końcowy = buildingUpkeep(...) (ten sam zapis co silnik). */
+  total: number;
+}
+
+/**
+ * Rozbicie utrzymania budynku na bazę i mnożniki — ŹRÓDŁO PRAWDY dla wyjaśnień w UI
+ * (R-WEB-UI-GARRISON-UPKEEP-TOOLTIP-EXPLAIN-Q1). `buildingUpkeep` deleguje tutaj,
+ * więc liczby w podpowiedzi są zawsze te same, co w silniku.
+ */
+export function buildingUpkeepBreakdown(
   building: BuildingRecord,
   level: number,
   flatOverride?: number,
-): number {
+): BuildingUpkeepBreakdown {
   const lvl = level >= 1 ? level : 1;
   let raw: number;
   if (!Number.isFinite(building.utrzymanie)) {
@@ -655,7 +671,32 @@ export function buildingUpkeep(
   // Zachowujemy dotychczasowe FALA2 zaokrąglenie, następnie stosujemy wspólny
   // mnożnik ery dokładnie raz (włącznie dla flatOverride).
   const fala2Upkeep = Math.floor(raw * R_STAWKI_FALA2_MULT);
-  return Math.floor(fala2Upkeep * buildingEraCostMultiplier(building.epokaWejscia));
+  const eraMult = buildingEraCostMultiplier(building.epokaWejscia);
+  return {
+    base: raw,
+    fala2Mult: R_STAWKI_FALA2_MULT,
+    eraMult,
+    total: Math.floor(fala2Upkeep * eraMult),
+  };
+}
+
+export function buildingUpkeep(
+  building: BuildingRecord,
+  level: number,
+  flatOverride?: number,
+): number {
+  return buildingUpkeepBreakdown(building, level, flatOverride).total;
+}
+
+/**
+ * Podpowiedź „baza X × mnożnik silnika Y = Z" dla utrzymania ze złotem, gdy wyświetlana
+ * wartość Z różni się od bazy X. Y = FALA2 × mnożnik ery (te same stałe co silnik).
+ * Mnożniki są całkowite, więc X × Y = Z dokładnie. Brak różnicy → null (bez wyjaśnienia).
+ */
+export function buildingUpkeepExplanation(b: BuildingUpkeepBreakdown): string | null {
+  if (b.total === b.base) return null;
+  const mult = b.fala2Mult * b.eraMult;
+  return `Utrzymanie: baza ${b.base} × mnożnik silnika ${mult} = ${b.total} Pieniądza/turę`;
 }
 
 /** Total gold building upkeep for a set of building instances (Spec s.6.1). */

@@ -222,6 +222,8 @@ import { tileYield } from '../game/economy';
 import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../game/unit-building-bonuses';
 import {
   buildingUpkeep,
+  buildingUpkeepBreakdown,
+  buildingUpkeepExplanation,
   buildingResourceUpkeep,
   readBuildingResourceUpkeepRatio,
   addResourceCosts,
@@ -9761,6 +9763,11 @@ function appendOwnedBuildingRow(
       : buildingUpkeepDisplay(def, level);
     const upSpan = el('span', 'bld-owned-upkeep' + (upkeepDisplay.gold === 0 && Object.keys(upkeepDisplay.resources).length === 0 ? ' muted' : ''));
     upSpan.innerHTML = formatBuildingUpkeepRowHtml(upkeepDisplay, compact);
+    if (!toggledOff) {
+      // R-WEB-UI-GARRISON-UPKEEP-TOOLTIP-EXPLAIN-Q1: „baza × mnożnik silnika = wynik” z tego samego rozbicia co silnik.
+      const upHint = buildingUpkeepExplanation(buildingUpkeepBreakdown(def as unknown as BuildingRecord, level));
+      if (upHint) upSpan.title = upHint;
+    }
     tail.appendChild(upSpan);
     const bonusHtml = buildingOwnedBonusCompactHtml(def, level, data.buildings, { compact });
     if (bonusHtml) {
