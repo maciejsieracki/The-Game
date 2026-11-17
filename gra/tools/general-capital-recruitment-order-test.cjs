@@ -187,7 +187,7 @@ async function loadRealSources() {
   }
 }
 
-function makeHarness() {
+function makeHarness(stubOverrides = {}) {
   const city = { id: 'capital', ownerId: 0, name: 'Ateny', q: 0, r: 0, population: 10, manpower: 1_000_000, surowce: { drewno: 40 } };
   const cities = [city];
   const units = [];
@@ -277,7 +277,7 @@ function makeHarness() {
     recruitRallyStamp: REAL.recruitGeneralMod.recruitRallyStamp,
     pendingLedgerSink: REAL.resourceLedgerMod.pendingLedgerSink,
   };
-  const productionPurchase = extractBackend(deps);
+  const productionPurchase = extractBackend({ ...deps, ...stubOverrides });
   return {
     city, cities, data, offer, cityProd,
     purchase: (...args) => productionPurchase(...args),
@@ -308,6 +308,46 @@ const BRAND_STUB = {
     });
   },
 };
+
+/**
+ * Mechanical proof for the remaining stubs (criterion b): the backend scenarios below are re-run with each
+ * stub replaced by a different value. If the recorded outcomes differ from the baseline, the stub influences
+ * the recruitment order and the check fails; identical outcomes show the value does not reach the verdict.
+ */
+const SENSITIVITY_VARIANTS = [
+  ['cityHasCoastOrRiverAccess=false', { cityHasCoastOrRiverAccess: () => false }],
+  ['civBonusyForOwnerId=[probe]', { civBonusyForOwnerId: () => ['__stub_probe__'] }],
+  ['empireBuiltIdsForOwner=barracks+academy', { empireBuiltIdsForOwner: () => new Set(['koszary', 'akademia']) }],
+  ['capitalCityIdForOwner=capital for every owner', { capitalCityIdForOwner: () => 'capital' }],
+];
+
+function backendOutcomes(harnessFactory) {
+  const outcomes = [];
+  const run = (label, build) => {
+    const h = harnessFactory();
+    const returned = build(h);
+    outcomes.push({ label, returned, state: h.snapshot() });
+  };
+  run('plain purchase', h => h.purchase('capital', 'Wojownik', 5, 0, 1, { isGeneral: true }));
+  run('non-capital', h => h.purchase('other-city', 'Wojownik', 5, 0, 1, { isGeneral: true }));
+  run('era limit', h => { h.addLivingGeneral(); return h.purchase('capital', 'Wojownik', 5, 0, 1, { isGeneral: true }); });
+  run('next era', h => { h.addLivingGeneral(); h.setEra(2); return h.purchase('capital', 'Wojownik', 5, 0, 1, { isGeneral: true }); });
+  run('siege', h => { h.city.oblegane = true; return h.purchase('capital', 'Wojownik', 5, 0, 1, { isGeneral: true }); });
+  return JSON.stringify(outcomes);
+}
+
+async function runStubSensitivity() {
+  const baseline = backendOutcomes(() => makeHarness());
+  for (const [name, overrides] of SENSITIVITY_VARIANTS) {
+    let variant;
+    try {
+      variant = backendOutcomes(() => makeHarness(overrides));
+    } catch (error) {
+      variant = `threw: ${error && error.message}`;
+    }
+    check(`stub sensitivity: ${name} leaves all backend recruitment outcomes unchanged`, variant === baseline, variant === baseline ? undefined : { baseline, variant });
+  }
+}
 
 async function browserCardTransaction(harness) {
   const entry = path.join(tmp, 'entry.ts');
@@ -365,6 +405,7 @@ async function browserCardTransaction(harness) {
   try {
     sourceChecks();
     await loadRealSources();
+    await runStubSensitivity();
     const h = makeHarness();
     const uiManpowerCost = await browserCardTransaction(h);
     const state = h.snapshot();
