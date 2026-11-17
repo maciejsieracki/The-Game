@@ -3052,3 +3052,13 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Krok 2 (zakończone FC PASS bez integracji):** brak.
 - **Krok 3 (sprzątanie):** usunięte t4b-eval-target. Pozostałe: `ev_t6_target` (183 MB, T6 w toku), `tgt-t5a-eval` (358 MB, do usunięcia po zakończeniu Ewaluatora T6).
 - **Otwarte decyzje ABC (w czacie):** #327, #358.
+
+### Przebieg — heartbeat (2026-11-17 ~02:20 UTC): 2/4 aktywne, dysk 7,9 → ok. 11 GB po sprzątaniu
+
+- **Aktywne Workflow (2/4):**
+  - K5DOC-T6 jazda, integracja r6 (`wf_bb4e6b3c-994`): Operator r6 BLOCK (pełny test przerwany dyskiem; wynik `bdc625b4e`). Ewaluator PASS-WITH-NOTES: zarzut, że krok 4 `_cavalryAction` (`best_charge_step`) jest w Rust nieosiągalny przez `cavalry_action_decide` — dowód w komentarzu kodu, kod 1:1 z pinem. Obrona w toku, potem FC (Sonnet).
+  - K5DOC-T5b strzelec-marsz, runda 2 (`wf_3446ab83-759`): Operator r2 PASS-WITH-NOTES, commit `85f0c997f` (baza `6a2ded8bb`, bez push). Ewaluator w toku (bramki cargo). Po werdykcie Ewaluatora obrona/FC.
+- **Krok 2 (zakończone FC PASS bez integracji):** brak. T6 czeka na FC, T5b na Ewaluatora.
+- **Krok 3 (sprzątanie):** usunięte `/tmp/claude-0/t5a-r3-target` (częściowo usunięty w poprzednim przebiegu) i `/tmp/claude-0/tgt-t5a-eval` — sprawdzone: żaden proces ich nie używa, T5a zintegrowany. Zostają targety w użyciu: `t6obr/target` (T6 Obrona) i `ev_t5b_tgt` (T5b Ewaluator), `ev_t6_target` (T6, do usunięcia po FC).
+- **Wolne sloty (2 z 4): powód.** Brak czystego tematu z kodem Rust, który nie wymaga decyzji właściciela lub niezintegrowanych zależności. Kandydaci z listy są zablokowani: #253/#278/#279/#281/#335/#337 (mgła, decyzja właściciela), #286/#350 (CRED-HAK, wariant A/B), #349 (ZLOZA, format zapisu), #285/#354 (ZDOBYCIE, opcja B), #106/#298/#299/#351 (R7K7C, decyzja fotela), #113/#353 (K5LOOP, wymaga #107/#109/#112 i decyzji o pętli), #304–#310 (ekonomia/dyplomacja — po zintegrowaniu renderera i wiringu), #314 (T4c `_doMove`, wymaga rozpoznania), #261/#342 (T7, zależne od T4c). Rozpoznanie tylko do odczytu nie uruchamiałem — w tej chwili nie ma kandydata, który wymaga wyłącznie rozpoznania. Start po zakończeniu T6/T5b.
+- **Otwarte decyzje ABC (w czacie):** #327, #358.
