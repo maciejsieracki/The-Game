@@ -21,3 +21,7 @@ Env: `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`,
 
 ## KRYTERIA KOŃCA
 Zielone bramki, 11/11 testów R5 bez zmiany asercji, commit jawnym `git add`, bez `Cargo.lock`, trailer bez nazwy modelu (#289). Raport `01-operator-r1.md`. Nie pushować do parity.
+
+## DODATEK r2 (orkiestrator, 2026-11-17 14:0x): BAZA przesunięta
+- BAZA r2: `origin/rust-port/parity-v2` = `2760b4f0c` (T4e-0 `732ef51a0` zintegrowany). Worktree detached na `2760b4f0c`.
+- Zakres bez zmian. Bramka renderera (≥12 GB, bez równoległych buildów renderera) obowiązuje przy bramce pełnej; start Operatora dozwolony przy ≥8 GB.

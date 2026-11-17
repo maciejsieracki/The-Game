@@ -41,3 +41,7 @@ Nie ruszać `cities/mod.rs` ani `revolt`. Nie ruszać `gra/`.
 ## KRYTERIA KOŃCA
 Zielone bramki, mutacje FAIL, commit jawnym `git add` (nigdy `-A`), bez `Cargo.lock`, trailer bez nazwy modelu (#289).
 Raport `01-operator-r1.md`. Nie pushować do `rust-port/parity-v2`.
+
+## DODATEK r2 (orkiestrator, 2026-11-17 14:0x): BAZA przesunięta
+- BAZA r2: `origin/rust-port/parity-v2` = `2760b4f0c` (T4e-0 `732ef51a0` zintegrowany). Worktree detached na `2760b4f0c`.
+- Zakres bez zmian. Bramka renderera (≥12 GB, bez równoległych buildów renderera) obowiązuje przy bramce pełnej; start Operatora dozwolony przy ≥8 GB.
