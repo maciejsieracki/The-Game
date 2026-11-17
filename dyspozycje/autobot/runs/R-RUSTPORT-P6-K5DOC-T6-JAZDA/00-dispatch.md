@@ -66,3 +66,13 @@ WZÓR: moduł T4a/T5a — `rust-port/engine/src/domain/siege_tactics_pathstep.rs
 - BAZA (jedyna obowiązująca): `87829df94`. Worktree detached. Kodu NIE zmieniaj.
 - Zadanie: `cargo test --all-targets --no-fail-fast` w `rust-port/engine` — pełny, EXIT 0 z liczbami (suites, passed, failed, ignored). `df -h /` ≥ 8 GB przed bramką. Limit czasu 2 h.
 - Raport `02-operator-r3.md`, commit tylko raportu (jawny `git add`, bez `Cargo.lock`, bez nazwy modelu). NIE pushuj do parity.
+
+## DODATEK r5 — RUNDA INTEGRACYJNA NA AKTUALNYM PARITY (BAZA NADPISANA)
+
+- Kod T6 `87829df94` (FC PASS-WITH-NOTES, rodzic `2edc808d7`). Parity przesunięte: `origin/rust-port/parity-v2` = `625624d97` (zawiera T4b i T5a). Pełny test z rundy r3 nie został dokończony — trzeba go zrobić na merge.
+- BAZA (jedyna obowiązująca): `625624d97`. Worktree detached.
+- Zadanie:
+  1. `git merge --no-ff --no-edit 87829df94` (merge-tree czysty, exit 0). Commit merge zostaw lokalnie.
+  2. `git diff --stat 625624d97 <merge>` musi pokazać tylko pliki T6 (siege_tactics_cavalry.rs, mod.rs +1 linia, p6_k5doc_cavalry*, vectors.json, raport). Inaczej BLOCK.
+  3. Bramka na drzewie merge, `df -h /` ≥ 8 GB: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --all-targets --no-fail-fast` w `rust-port/engine` — EXIT 0 z liczbami. Dla `p6_k5doc_cavalry` 10/10.
+  4. Raport `03-integracja-r5.md` w run dir, commit tylko raportu (jawny `git add`, bez `Cargo.lock`, bez nazwy modelu). NIE pushuj do parity.
