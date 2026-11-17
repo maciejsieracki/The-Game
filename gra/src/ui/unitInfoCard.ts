@@ -32,6 +32,7 @@ import { categoryOf } from '../units/setup';
 import { unitInfographicLabel, unitInfographicMedallionHtml } from './unitInfographic';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
 import { unitEngineStats } from './unitEngineStats';
+import { isPiercingShotShooter } from '../game/combat';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 export const UNIT_3D_RENDER_HOOK = 'buildUnitModel';
@@ -299,6 +300,10 @@ function _legacyBuildUnitInfoCard(
   appendRow(combat, 'Atak dystansowy', es.atakDystansowy > 0 ? es.atakDystansowy : null, true);
   appendRow(combat, 'Pancerz', es.pancerz);
   appendRow(combat, 'Przebicie', es.przebicie);
+  // PROCARZ-PIERCING: strzał z przebiciem liczy się jak cios wręcz.
+  if (isPiercingShotShooter({ counterTyp: String(unit.Typ ?? '') }) && es.przebicie > 0) {
+    appendRow(combat, 'Strzał', `przebicie ${es.przebicie}: liczy się jak cios wręcz`);
+  }
   commitSection(card, combat);
 
   const economy = appendSection('Koszty i utrzymanie');

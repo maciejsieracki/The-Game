@@ -85,7 +85,8 @@ async function checkTooltipText() {
     const tip = await server.ssrLoadModule('/src/ui/hexContextTooltip.ts');
     const expectations = [
       // RANGEDHEALTH 2026-11-17: zdrowie Procarza 8 (moc 12); zdrowie lucznika asyryjskiego 10, dystans 4 (moc 16).
-      { name: 'Procarz', mult: 3, power: 12 },
+      // PROCARZ-PIERCING: moc pola 12 + przebicie 2 = 14 (runtime, fieldPower zawiera piercing).
+      { name: 'Procarz', mult: 3, power: 14 },
       { name: 'Łucznik asyryjski', mult: 2, power: 16 },
     ];
     for (const { name, mult, power } of expectations) {
@@ -107,6 +108,10 @@ async function checkTooltipText() {
       const powerMatch = compact.match(/Moc pola<\/span><span class="sp-unit-forces-v">([^<]*)<\/span>/);
       assert(powerMatch && powerMatch[1].endsWith(`Razem ${power}`), `${name} tooltip "Moc pola" shows Razem ${power}`);
       assert(expanded.includes(`×${mult} obrażeń pocisku`), `${name} expanded card renders "×${mult} obrażeń pocisku"`);
+      if (name === 'Procarz') {
+        // PROCARZ-PIERCING: karta opisuje, że strzał z przebiciem liczy się jak cios wręcz.
+        assert(expanded.includes('przebicie 2: strzał liczy się jak cios wręcz'), 'Procarz expanded card describes piercing shot as melee-like');
+      }
     }
     const oszczepnik = unitByName.get('Oszczepnik');
     const plainCombat = stats.unitCardCombatDisplay({
