@@ -50,7 +50,7 @@
  */
 
 import * as THREE from 'three';
-import { ambushLineIdeal, ambushFlankCells } from './ambushDeploy';
+import { ambushLineIdeal, ambushFlankCells, ambushDeployFeedbackText } from './ambushDeploy';
 import { AMBUSH_FORMATION_MAX_WIDTH } from '../game/ambush';
 import {
   resolveCombat,
@@ -3571,9 +3571,14 @@ export class BattleScene {
       this._initDeployUI();
       // R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: powod ukladu po polsku (zaskoczony / zastawiajacy).
       if (this._ambushSurprisedSide != null) {
-        this._showDeployFeedback(this._isAmbushAmbusherPlayer()
-          ? 'Zasadzka — możesz rozstawić jednostki także na polu wroga.'
-          : 'Wpadłeś w zasadzkę — jednostki w długiej linii (max 3 w szeregu).');
+        // R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1 (pkt 12): bez generala (brak dowodcy przy bramce reczna) bitwa idzie AUTO.
+        const playerSide = this._deployPlayerSideOpt;
+        const playerHasCommander = (playerSide === 'atk' ? this.atk : this.def)
+          .some(u => u.isArmyCommander && !u.dead && !u.routed);
+        this._showDeployFeedback(ambushDeployFeedbackText({
+          ambusher: this._isAmbushAmbusherPlayer(),
+          noGeneralManualBlocked: this._manualCommanderGate && !playerHasCommander,
+        }));
       }
       this._syncBattleToolbarMode();
       this._updateArmyMoraleBars();
@@ -13276,8 +13281,17 @@ export class BattleScene {
     const boundaryX = midCol * TILE_S - TILE_S * 0.5;
     const zoneZ    = midRow * TILE_S;
     const playerIsAtk = this._playerControlSide() === 'atk';
-    const playerCol0 = playerIsAtk ? PLAY_COL0 : DEPLOY_DEF_MIN_COL;
-    const playerColEnd = playerIsAtk ? midCol : PLAY_COL1 + 1;
+    // R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1 (pkt 9): strefa graficzna = strefa logiczna (_inDeployPlayerZone).
+    // Zastawiajacy-gracz: cale pole (takze polowa wroga), bez zaslony mgly na polowie wroga.
+    // Zaskoczony-gracz: zwykla polowa kolumn, tylko pasmo linii (wiersze). Zwykla bitwa: bez zmian.
+    const ambusherPlayer = this._isAmbushAmbusherPlayer();
+    const surprisedPlayer = this._isAmbushSurprisedPlayer();
+    const ambushVis = ambusherPlayer || surprisedPlayer;
+    const [zoneRowLo, zoneRowHi] = ambusherPlayer
+      ? [DEPLOY_MIN_ROW, DEPLOY_MAX_ROW]
+      : surprisedPlayer ? this._ambushLineRowBand() : [PLAY_ROW0, PLAY_ROW1];
+    const playerCol0 = ambusherPlayer ? PLAY_COL0 : (playerIsAtk ? PLAY_COL0 : DEPLOY_DEF_MIN_COL);
+    const playerColEnd = ambusherPlayer ? PLAY_COL1 + 1 : (playerIsAtk ? midCol : PLAY_COL1 + 1);
     const enemyCol0 = playerIsAtk ? midCol : PLAY_COL0;
     const enemyColEnd = playerIsAtk ? PLAY_COL1 + 1 : midCol;
     const playerCols = playerColEnd - playerCol0;
@@ -13286,11 +13300,13 @@ export class BattleScene {
     const enemyW = enemyCols * TILE_S;
     const playerCenterX = playerCol0 * TILE_S + playerW * 0.5 - TILE_S * 0.5;
     const enemyCenterX = enemyCol0 * TILE_S + enemyW * 0.5 - TILE_S * 0.5;
+    const playerZoneZ = ambushVis ? ((zoneRowLo + zoneRowHi) * 0.5) * TILE_S : zoneZ;
+    const playerZoneH = ambushVis ? (zoneRowHi - zoneRowLo + 1) * TILE_S : worldH;
 
     const group = new THREE.Group();
     group.name = 'deployVisuals';
 
-    const brightGeo = new THREE.PlaneGeometry(playerW, worldH);
+    const brightGeo = new THREE.PlaneGeometry(playerW, playerZoneH);
     brightGeo.rotateX(-Math.PI / 2);
     this.ownedGeos.push(brightGeo);
     const brightMat = new THREE.MeshBasicMaterial({
@@ -13301,7 +13317,7 @@ export class BattleScene {
     });
     this.ownedMats.push(brightMat);
     const bright = new THREE.Mesh(brightGeo, brightMat);
-    bright.position.set(playerCenterX, 0.035, zoneZ);
+    bright.position.set(playerCenterX, 0.035, playerZoneZ);
     group.add(bright);
     this._deployZoneMeshes.push(bright);
 
@@ -13309,8 +13325,9 @@ export class BattleScene {
     tileGeo.rotateX(-Math.PI / 2);
     this.ownedGeos.push(tileGeo);
     for (let col = playerCol0; col < playerColEnd; col++) {
-      for (let row = PLAY_ROW0; row <= PLAY_ROW1; row++) {
+      for (let row = zoneRowLo; row <= zoneRowHi; row++) {
         if (!this.terrainMap.passable(col, row)) continue;
+        if (ambushVis && !this._inDeployPlayerZone(col, row)) continue;
         const mat = new THREE.MeshBasicMaterial({
           color: 0x44bbff,
           transparent: true,
@@ -13338,8 +13355,11 @@ export class BattleScene {
     this.ownedMats.push(fogMat);
     const fog = new THREE.Mesh(fogGeo, fogMat);
     fog.position.set(enemyCenterX, 0.055, zoneZ);
-    group.add(fog);
-    this._deployZoneMeshes.push(fog);
+    // Zastawiajacy-gracz: polowa wroga jest w jego strefie -- bez zaslony mgly.
+    if (!ambusherPlayer) {
+      group.add(fog);
+      this._deployZoneMeshes.push(fog);
+    }
 
     const fog2Mat = new THREE.MeshBasicMaterial({
       color: 0x606878,
@@ -13350,8 +13370,10 @@ export class BattleScene {
     this.ownedMats.push(fog2Mat);
     const fog2 = new THREE.Mesh(fogGeo, fog2Mat);
     fog2.position.set(fog.position.x, 0.06, fog.position.z);
-    group.add(fog2);
-    this._deployZoneMeshes.push(fog2);
+    if (!ambusherPlayer) {
+      group.add(fog2);
+      this._deployZoneMeshes.push(fog2);
+    }
 
     const lineGeo = new THREE.BoxGeometry(0.10, 0.18, worldH * 0.98);
     this.ownedGeos.push(lineGeo);

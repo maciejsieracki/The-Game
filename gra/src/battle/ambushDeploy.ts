@@ -120,3 +120,17 @@ export function ambushFlankCells(
     (b.score - a.score) || (a.row - b.row) || (a.col - b.col));
   return scored.slice(0, n).map(s => ({ col: s.col, row: s.row }));
 }
+
+/**
+ * R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1 (r2, pkt 12): komunikat po polsku na starcie rozstawienia z zasadzki.
+ * Bez generala rozstawienie dziala (deploy = zasadzka), a sama bitwa idzie AUTO (zasada istniejaca:
+ * reczne sterowanie bitwa wymaga generala, manualControlAllowed = isGeneral).
+ */
+export function ambushDeployFeedbackText(opts: { ambusher: boolean; noGeneralManualBlocked: boolean }): string {
+  const base = opts.ambusher
+    ? 'Zasadzka — możesz rozstawić jednostki także na polu wroga.'
+    : 'Wpadłeś w zasadzkę — jednostki w długiej linii (max 3 w szeregu).';
+  return opts.noGeneralManualBlocked
+    ? base + ' Bez generała bitwa potoczy się automatycznie (AUTO).'
+    : base;
+}
