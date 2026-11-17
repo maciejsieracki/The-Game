@@ -33,7 +33,7 @@ module.exports = { ...L, BATTLE_MAX_PER_SIDE, planSurrenderEntry: S.planSurrende
     },
     bundle: true, platform: 'node', format: 'cjs', target: 'es2020',
     alias: { three: path.join(ROOT, 'node_modules', 'three', 'build', 'three.cjs') },
-    plugins: [{
+    plugins: [require('./lib/esbuild-raw-plugin.cjs'), {
       name: 'stubs',
       setup(build) {
         const stubs = [

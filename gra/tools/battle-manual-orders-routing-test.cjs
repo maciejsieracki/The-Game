@@ -9,7 +9,7 @@ async function loadBattleScene() {
   const result = await esbuild.build({
     stdin: { contents: "import { BattleScene } from './src/battle/battleScene.ts'; module.exports = { BattleScene };", resolveDir: ROOT, sourcefile: 'battle-manual-orders-routing-entry.ts' },
     bundle: true, platform: 'node', format: 'cjs', target: 'es2020', alias: { three: path.join(ROOT, 'node_modules/three/build/three.cjs') },
-    plugins: [{ name: 'stub-browser-services', setup(build) {
+    plugins: [require('./lib/esbuild-raw-plugin.cjs'), { name: 'stub-browser-services', setup(build) {
       for (const [filter, namespace, contents] of [
         [/brandAssets/, 'brand', 'export const civIconSvg=()=>""; export const brandIconSvg=()=>"";'],
         [/leaderPortraits/, 'leader', 'export const leaderPortraitUrl=()=>""; export const leaderName=()=>""; export const civIconIdFromCivLabel=()=>"";'],

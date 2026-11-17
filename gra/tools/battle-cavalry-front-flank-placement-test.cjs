@@ -24,7 +24,7 @@ async function loadBattleScene(mutateSource) {
     format: 'cjs',
     target: 'es2020',
     alias: { three: path.join(GRA, 'node_modules', 'three', 'build', 'three.cjs') },
-    plugins: [{
+    plugins: [require('./lib/esbuild-raw-plugin.cjs'), {
       name: 'test-battle-scene-imports',
       setup(build) {
         build.onLoad({ filter: /brandAssets/ }, () => ({

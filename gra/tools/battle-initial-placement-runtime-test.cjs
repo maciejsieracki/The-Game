@@ -15,7 +15,7 @@ async function loadBattleScene({ restoreWideFallback = false } = {}) {
     },
     bundle: true, platform: 'node', format: 'cjs', target: 'es2020',
     alias: { three: path.join(__dirname, '..', 'node_modules', 'three', 'build', 'three.cjs') },
-    plugins: [{
+    plugins: [require('./lib/esbuild-raw-plugin.cjs'), {
       name: 'stub-render-only-unit-models',
       setup(build) {
         build.onResolve({ filter: /render\/units/ }, () => ({ path: 'unit-model-stub', namespace: 'unit-model-stub' }));
