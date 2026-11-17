@@ -3661,7 +3661,7 @@ Konsekwencje dla kolejki:
 | Brak aktywnych workflow 3D | — | — | — |
 | Następny: DTO-BRIDGE (#364) z ID wpięć L12/F2/FOG | do rozpisania dispatch | OPUS 5.5 | — |
 
-### Przebieg — start DTO-BRIDGE r1 (#364, część 1), OPUS (2026-11-17 ~18:30 UTC)
+### Przebieg — start DTO-BRIDGE r1 (#364, część 1), OPUS (2026-11-17 ~17:35 UTC; poprawka czasu: wcześniejszy wpis 18:30 był błędny)
 - **Dispatch:** `R-RUSTPORT-P4-364-DTO-BRIDGE-R1`, baza `e2a2c4e2f` (parity), commit na `claude/rust-sivvrn` (`57a1f6f8d`).
 - **Zakres r1:** nowy moduł `engine/src/domain/dto_bridge.rs` (producenci mgły, `FogRevealDto` z `startRevealKeysForRiverFog`, `TerritoryRangesDto` z `PlayableState`), test `p4_364_dto_bridge`, mutacje (a)(b)(c). Bez zmian w `EngineCommand`/`BridgeResult` i w rendererze.
 - **Decyzje do zapisu przy integracji:** D-364-1 (producenci w engine, view-model zostaje na serde), D-364-2 (kontrakt JSON mostu = osobna decyzja r2 po zgodzie właściciela), D-364-3 (`RenderLayersDto` bez nowych pól w r1).
@@ -3670,4 +3670,4 @@ Konsekwencje dla kolejki:
 
 | Temat | Etap | Model | Od kiedy |
 |---|---|---|---|
-| P4-364 DTO-BRIDGE r1 (#364) | Operator | OPUS 5.5 | ok. 18:30 UTC |
+| P4-364 DTO-BRIDGE r1 (#364) | Operator | OPUS 5.5 | ok. 17:35 UTC |
