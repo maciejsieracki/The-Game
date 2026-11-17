@@ -18217,10 +18217,13 @@ async function boot(): Promise<void> {
       // R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: komunikat tuz przed bitwa musi byc ponad
       // pelnoekranowa scena bitwy (.overlay z-index 9999), inaczej jest niewidoczny.
       aboveBattle: boolean = false,
+      // R-WEB-UI-AMBUSH-SUCCESS-TOAST-IMMEDIATE-IN-AI-PHASE-Q1: komunikat zasadzki gracza ujawnionej
+      // w fazie AI ma ZARAZEM trafic do kolejki odroczonej (wpis „Ważne” zostaje) i pokazac sie od razu.
+      showNowDuringEot: boolean = false,
     ): void {
       if (shouldDeferEotEvents(endTurnInProgress)) {
         deferredEotHints.push({ msg, durationMs, ...ctx });
-        return;
+        if (!showNowDuringEot) return;
       }
       if (hintOverrideTimer !== null) {
         clearTimeout(hintOverrideTimer);
@@ -45794,7 +45797,7 @@ async function boot(): Promise<void> {
                     const ambOrder = resolveAmbushAfterMove(units, u, aiAmbushCutter.hit(), areEnemyOwners);
                     if (ambOrder !== undefined) {
                       const ambDef = ambOrder.defender;
-                      if (isMe(ambDef.ownerId)) showHintMessage('Zasadzka się powiodła', 4500);
+                      if (isMe(ambDef.ownerId)) showHintMessage('Zasadzka się powiodła', 4500, undefined, false, true);
                       commands.splice(ci + 1, 0, {
                         type: 'attack', unitId: u.id, targetUnitId: ambDef.id, ambush: true,
                       } as AICommand);
@@ -46692,7 +46695,7 @@ async function boot(): Promise<void> {
                   {
                     const barbAmb = buildBarbarianAmbushAttack(units, bu, barbAmbushHit, areEnemyOwners);
                     if (barbAmb !== undefined) {
-                      if (isMe(barbAmb.defender.ownerId)) showHintMessage('Zasadzka się powiodła', 4500);
+                      if (isMe(barbAmb.defender.ownerId)) showHintMessage('Zasadzka się powiodła', 4500, undefined, false, true);
                       barbCmds.splice(barbCmds.indexOf(bcmd) + 1, 0, barbAmb.cmd);
                       syncUnitsRender();
                     }
