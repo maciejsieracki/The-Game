@@ -3377,3 +3377,18 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Aktywne Workflow: 0.** R7K7C (#106) r2 zakończony FC PASS-WITH-NOTES; T7b zintegrowany. Brak żywych workerów w kolejce, ale bramka integracyjna R7K7C buduje (`fmt` EXIT 0, `clippy -D warnings` EXIT 0, test `p6_r7k7c` w toku). Dysk 8,5 GB.
 - **Wstrzymane świadomie:** nowe starty (T1 integracja z pełnym testem, T4e r4) — po zielonej bramce R7K7C. Powód: jeden build naraz i dysk ok. 8 GB; równoległe buildy już kilka razy zatrzymały tematy przez dysk.
 - **Następnie:** FF `parity-v2` po R7K7C (`2e64878b0`); potem T1 (pełny test + FF); potem T4e r4 (dispatch do napisania, baza `760be5187`→ po T1 parity).
+
+### Przebieg — integracje R7K7C (#106) i T1 MODEL-UI (#263) na parity-v2 (2026-11-17)
+
+- **Integracja R7K7C-WIRING (#106):** merge `2e64878b0` (e5e1979f3 = FC PASS-WITH-NOTES r2) na `2b4bf8fde`. Bramka: `fmt` EXIT 0, `clippy -D warnings` EXIT 0, `p6_r7k7c` 7/7 (wiring + apply), `cargo test --all-targets --no-fail-fast` EXIT 0 (520 wyników `ok`, 0 FAILED/panicked). Zakres: wyłącznie `rust-port/engine/*` i dyspozycje R7K7C. FF `parity-v2`: `2b4bf8fde..2e64878b0`, readback OK.
+- **Integracja T1 MODEL-UI (#263):** merge `984df1cc0` (13fc99862, FC PASS-WITH-NOTES `020b3b7c9`) na `2e64878b0`. Zakres: 6 plików (`siege_tactics_doctrine_model.rs`, `mod.rs` +1, `p6_k5doc_t1.rs` 13/13, generator `.mjs`, vectors, operator-r1). Bramka: `fmt` EXIT 0, `clippy` EXIT 0, `p6_k5doc_t1` EXIT 0, pełny `cargo test --all-targets` EXIT 0 (521 wyników `ok`, 0 FAILED). FF `parity-v2`: `2e64878b0..984df1cc0`, readback OK.
+- **Uwaga procesowa:** obie bramki integracyjne uruchomił orkiestrator bezpośrednio (nie runda Operatora Haiku z workflow). Decyzja: zmiana była deterministyczna (merge-tree czysty, zakres zweryfikowany), a dispatch integracyjny wymagałby osobnej rundy bez nowej pracy merytorycznej. Odnotowane jawnie.
+- **Sprzątanie:** worktree `r7-int` i `t1-int` usunięte, targety w scratchpadzie usunięte, brak żywych procesów cargo na ich ścieżkach. Dysk: 9,7 GB wolne.
+- **Tabela stanu (heartbeat):**
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| brak aktywnych Workflow | — | — | — |
+
+- **Powód braku startów:** kolejka czystych tematów z kodem Rust wymaga najpierw dispatchu. Najbliższy to T4e r4 (#315): DODATEK r4 do napisania, baza `760be5187` → rebase na `984df1cc0`. Pozostałe kandydaci (K5LOOP-FACING, ZLOZA, CRED-HAK, R7K7C-WIRING-IMPL) mają blokady: decyzje ABC lub kontrakt. Nie wymyślam tematów. Start T4e r4 w następnym ticku, po zapisaniu dispatchu i wypchnięciu.
+- **Następnie:** DODATEK r4 dla T4e (#315), potem start przy wolnych ≥ 8 GB; odblokowanie K5LOOP-FACING (#107) i R7K7C-WIRING (#298/#351), gdy kontrakt pozwoli.
