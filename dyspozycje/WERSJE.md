@@ -1,3 +1,9 @@
+## ROBOCZA 1ce44d20 -- 2026-11-17 -- FALA 800: Zastap: wszyscy lucznicy narodowi (egipski, sumeryjski, nubijski, akadyjski, asyryjski) i Oszczepnik Estolica Inkow przechodza na Procarza; AI tez (UNIT-REPLACE-INCA) (testowa)
+
+- W oknie Zastap lucznicy narodowi (egipski, sumeryjski, nubijski, akadyjski, asyryjski) oraz Oszczepnik (Estolica) Inkow maja przejscie do Procarza za pelny koszt (gracz). AI awansuje nubijskiego, akadyjskiego i asyryjskiego na Procarza takze w tej samej epoce (waski wyjatek w ai-era-unit-promotion.ts). Egipski i sumeryjski: degradacja klasy Specjalna->Standardowa w Brazie zaakceptowana przez wlasciciela
+- Weryfikacja: tsc 0; logic 213/213; unit-replace-archer-slinger 43/0; promotion-table PASS 30 wpisow/62 krawedzie; unit-replace 21/21; ai-era-unit-promotion 17/0; ai-unit-replace-same-rules 45/0; mutacje czerwienia; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: okno Zastap w zywym Chromium; czysty tsc u FC (177 bledow srodowiskowych). Dlug: unit-replace-full-cost 39/1 identycznie na bazie; REPIN Rust tabeli zamian. OTWARTE (ABC): brak jednostki Zelaza do celu Procarza; generyczny Oszczepnik i Oszczepnik Zulu bez przejscia
+
 ## ROBOCZA a7f0ad69 -- 2026-11-17 -- FALA 799: Kolory stron w widoku 3D bitwy: gracz niebieski, przeciwnik czerwony (SIDE3D) (testowa)
 
 - Modele i awatary jednostek w bitwie 3D malowane wg strony: gracz niebieski (#3a6ad0), przeciwnik czerwony (#c84040), w roli atakujacego i broniacego, takze w bitwie polowej z mapy (broniacy sie gracz dostaje faze rozstawienia i bramke dowodcy jak w pozostalych sciezkach); pierscienie grupy zostaja zlote

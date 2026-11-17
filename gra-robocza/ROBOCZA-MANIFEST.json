@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "a7f0ad697cdb71eb30fede53f51fb6ee",
-  "bundleSha256": "0ed326fdfecc076ec3f8693e7ee77a0176070a1d07b8ac274254b9aaaa9f6a1c",
-  "bundleBytes": 14851529,
+  "bundleMd5": "1ce44d201ffc35d73721b1eaadfbeda3",
+  "bundleSha256": "5e5e5c4429b39a8784637a272bf07588964c343c08018b1d2942b97ff0fcc52c",
+  "bundleBytes": 14851786,
   "sourceSnapshot": {
-    "source": "R-WEB-UI-BATTLE-3D-SIDE-COLORS-BLUE-RED-Q1 r1 bc2f5fe6f, main 76a1739fd",
+    "source": "R-WEB-UNIT-REPLACE-INCA-AND-NATIONAL-ARCHERS-TO-SLINGER-Q1 r2 68a9e2cd2, main 9bc85fef1",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 799: Modele i awatary jednostek w bitwie 3D malowane wg strony: gracz niebieski (#3a6ad0), przeciwnik czerwony (#c84040), w roli atakujacego i broniacego, takze w bitwie polowej z mapy (broniacy sie gracz dostaje faze rozstawienia i bramke dowodcy jak w pozostalych sciezkach); pierscienie grupy zostaja zlote"
+    "FALA 800: W oknie Zastap lucznicy narodowi (egipski, sumeryjski, nubijski, akadyjski, asyryjski) oraz Oszczepnik (Estolica) Inkow maja przejscie do Procarza za pelny koszt (gracz). AI awansuje nubijskiego, akadyjskiego i asyryjskiego na Procarza takze w tej samej epoce (waski wyjatek w ai-era-unit-promotion.ts). Egipski i sumeryjski: degradacja klasy Specjalna->Standardowa w Brazie zaakceptowana przez wlasciciela"
   ],
   "verification": [
-    "tsc 0; logic 213/213; battle-side-colors-3d (A-D) OK; battle-tempo-minimap-brand OK; hp-display 7/7; damage-colors 28/0; map-field-battle 24/0; zywy Chromium xvfb 5 przypadkow, 118 niebieskich / 118 czerwonych / 0 zlotych; mutacje czerwienia test; FC PASS-WITH-NOTES"
+    "tsc 0; logic 213/213; unit-replace-archer-slinger 43/0; promotion-table PASS 30 wpisow/62 krawedzie; unit-replace 21/21; ai-era-unit-promotion 17/0; ai-unit-replace-same-rules 45/0; mutacje czerwienia; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "NIE ZMIERZONO: porownanie z bazowym commitem, mgla-sciezka-inwariant; test statyczny sekcje A-C to regex po zrodle; dlug Rust: REPIN palety stron 3D"
+    "NIE ZMIERZONO: okno Zastap w zywym Chromium; czysty tsc u FC (177 bledow srodowiskowych). Dlug: unit-replace-full-cost 39/1 identycznie na bazie; REPIN Rust tabeli zamian. OTWARTE (ABC): brak jednostki Zelaza do celu Procarza; generyczny Oszczepnik i Oszczepnik Zulu bez przejscia"
   ],
-  "finalControl": "R-WEB-UI-BATTLE-3D-SIDE-COLORS-BLUE-RED-Q1 r1 FC PASS-WITH-NOTES bc2f5fe6f",
+  "finalControl": "R-WEB-UNIT-REPLACE-INCA-AND-NATIONAL-ARCHERS-TO-SLINGER-Q1 r2 FC PASS-WITH-NOTES 68a9e2cd2",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T15:49:23",
+  "hubGeneratedAt": "2026-11-17T16:22:00",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
-      "sizeBytes": 14851529
+      "md5": "1ce44d201ffc35d73721b1eaadfbeda3",
+      "sizeBytes": 14851786
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
-      "sizeBytes": 14851529
+      "md5": "1ce44d201ffc35d73721b1eaadfbeda3",
+      "sizeBytes": 14851786
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
-      "sizeBytes": 14851529
+      "md5": "1ce44d201ffc35d73721b1eaadfbeda3",
+      "sizeBytes": 14851786
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
-      "sizeBytes": 14851529
+      "md5": "1ce44d201ffc35d73721b1eaadfbeda3",
+      "sizeBytes": 14851786
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
-      "sizeBytes": 14851529
+      "md5": "1ce44d201ffc35d73721b1eaadfbeda3",
+      "sizeBytes": 14851786
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
-      "sizeBytes": 14851529
+      "md5": "1ce44d201ffc35d73721b1eaadfbeda3",
+      "sizeBytes": 14851786
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
-      "sizeBytes": 14851529
+      "md5": "1ce44d201ffc35d73721b1eaadfbeda3",
+      "sizeBytes": 14851786
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
-      "sizeBytes": 14851529
+      "md5": "1ce44d201ffc35d73721b1eaadfbeda3",
+      "sizeBytes": 14851786
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
-      "sizeBytes": 14851529
+      "md5": "1ce44d201ffc35d73721b1eaadfbeda3",
+      "sizeBytes": 14851786
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
-      "sizeBytes": 14851529
+      "md5": "1ce44d201ffc35d73721b1eaadfbeda3",
+      "sizeBytes": 14851786
     }
   ],
-  "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+  "md5": "1ce44d201ffc35d73721b1eaadfbeda3",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
