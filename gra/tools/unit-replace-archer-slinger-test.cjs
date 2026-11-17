@@ -172,6 +172,23 @@ console.log('9. Narodowi łucznicy Kamienia (egipski, sumeryjski) -> Procarz (R-
   check(!nub.includes('Procarz'), 'Łucznik nubijski (Brąz): brak Procarza (Brąz->Brąz nie jest awansem; DECISION_REQUIRED)', JSON.stringify(nub));
 }
 
+console.log('10. Ścieżka AI dla narodowych łuczników Kamienia (egipski, sumeryjski): te same reguły co gracz');
+{
+  const ctxEgi = { ...baseCtx(2, 'Egipt'), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } };
+  const rEgi = aiPromote('Łucznik egipski', ctxEgi, 100);
+  check(rEgi.ok && rEgi.typeId === 'Procarz', 'AI w Brązie: Łucznik egipski -> Procarz (promoteAiUnitForEra zwraca ok)', JSON.stringify(rEgi));
+  check(rEgi.ok && rEgi.treasury === 96, 'AI płaci pełny Pieniądz Procarza przy zamianie egipskiego (100 - 4 = 96)', String(rEgi.treasury));
+  check(rEgi.ok && rEgi.drewno === 75, 'AI płaci pełny surowiec Procarza przy zamianie egipskiego (drewno 100 - 25 = 75)', String(rEgi.drewno));
+  const rEgiKam = aiPromote('Łucznik egipski', { ...baseCtx(1, 'Egipt'), empireResourceStock: { Drewno: 100, drewno: 100 } }, 100);
+  check(!rEgiKam.ok && rEgiKam.typeId === 'Łucznik egipski', 'AI w Kamieniu: brak awansu Łucznika egipskiego na Procarza (epoka)', JSON.stringify(rEgiKam));
+  const ctxSum = { ...baseCtx(2, 'Sumer'), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } };
+  const rSum = aiPromote('Łucznik sumeryjski', ctxSum, 100);
+  check(rSum.ok && rSum.typeId === 'Procarz', 'AI w Brązie: Łucznik sumeryjski -> Procarz (promoteAiUnitForEra zwraca ok)', JSON.stringify(rSum));
+  check(rSum.ok && rSum.treasury === 96 && rSum.drewno === 75, 'AI płaci pełny koszt Procarza przy zamianie sumeryjskiego (Pieniądz 96, drewno 75)', JSON.stringify(rSum));
+  const rSumKam = aiPromote('Łucznik sumeryjski', { ...baseCtx(1, 'Sumer'), empireResourceStock: { Drewno: 100, drewno: 100 } }, 100);
+  check(!rSumKam.ok && rSumKam.typeId === 'Łucznik sumeryjski', 'AI w Kamieniu: brak awansu Łucznika sumeryjskiego na Procarza', JSON.stringify(rSumKam));
+}
+
 console.log(`\n[unit-replace-archer-slinger-test] ${passed} OK, ${failed} FAIL`);
 try { fs.unlinkSync(ENTRY_FILE); fs.unlinkSync(BUNDLE_FILE); } catch (e) { /* ignore */ }
 process.exit(failed ? 1 : 0);
