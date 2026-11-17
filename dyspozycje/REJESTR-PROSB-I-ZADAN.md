@@ -10736,3 +10736,9 @@ Właściciel: koszt pokoju znacząco podwyższyć tak, by na starcie wojny zwyci
 - Wdrożone na ROBOCZĄ: **R-WEB-TEST-HOOK-AI-TRUCE-REFUSAL-Q1** (r1 FC PASS-WITH-NOTES 9c8b13cb7). Hak testowy widoczny tylko przy `?civtest` (`forceAiTruceDecisionForTest`, `playerProposeTruceForTest`, `resolveAiAwaitingForTest` w `main.ts`, +33 linie) pozwala wymusić decyzję AI na propozycję rozejmu gracza; domyślne zachowanie AI bez zmian; `diplo-truce-live-test.cjs` ma asercje L4 odmowy AI (zamyka lukę „L2b-odmowa NIE_ZMIERZONO”). Dla graczy nic się nie zmienia (w produkcji hak = undefined).
 - main d9d29aece, ROBOCZA MD5 1b3aa52f (GitHub Raw = manifest), sidecary audio 3/3 zgodne.
 - Testy: diplo-truce r1 31/0, r4-ai 24/0, until-turn 15/0, impl 94/0, żywy Chromium diplo-truce-live 40/0; mutacje (hak ignorowany; reject→accept) czerwienieją; logic 213/213; tsc 0; build OK. NIE ZMIERZONO: Chromium bez `?civtest` (dowód produkcji tylko statyczny), live na bazie.
+
+### FALA 798 — BANNER (2026-11-17)
+- Wdrożone na ROBOCZĄ: **R-WEB-UI-BATTLE-BANNER-OVERLAPS-RETREAT-1024X640-Q1** (r1 FC PASS-WITH-NOTES 67984086e). Baner bitwy nie zasłania już przycisków (WYCOFAJ SIĘ) przy oknie 1024×640 (`battleScene.ts` `_syncCommanderPanelLayout()`).
+- main ae7d9e3d5, ROBOCZA MD5 b0cbbd36 (GitHub Raw = manifest), sidecary audio 3/3 zgodne.
+- Testy: tsc 0; battle-tempo-minimap-brand OK; hp-display 7/7; damage-colors 28/0; ambush-ui-reason 10/0; vite OK. Dowody Chromium 1024×640 z zrzutami w runie.
+- NIE ZMIERZONO: tryb AUTO, faza rozstawienia, zmiana rozmiaru okna w trakcie bitwy. Uwagi FC: przy 1024×640 baner pod paskiem zasłania górę pola bitwy (y 82–157); przy 1280/1440 nakłada się na pustą ramkę rosteru (~42×9 i 41×29 px). Dług Rust: REPIN układu panelu dowódcy.
