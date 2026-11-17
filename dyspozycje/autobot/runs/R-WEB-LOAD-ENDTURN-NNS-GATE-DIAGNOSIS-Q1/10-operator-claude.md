@@ -1,74 +1,83 @@
-# R-WEB-LOAD-ENDTURN-NNS-GATE-DIAGNOSIS-Q1 — raport Operatora (runda 1/5)
+# R-WEB-LOAD-ENDTURN-NNS-GATE-DIAGNOSIS-Q1 — raport Operatora (runda 2/5, po FC FAIL r1)
 
-STATUS: PASS-WITH-NOTES
-DOMAIN: GAME (bramka „Zakończ turę” NNS po wczytaniu zapisu) — tylko diagnoza, bez zmian reguł i bez zmian w `gra/src`, `gra/data`
+STATUS: PASS-WITH-NOTES (pomiar wykonany w Chromium; wiersz C nie zmierzony; decyzje K1–K4 dla właściciela)
+DOMAIN: GAME (bramka „Zakończ turę” NNS po wczytaniu zapisu; TYLKO diagnoza, zero zmian w gra/src, gra/data)
 TEMAT: R-WEB-LOAD-ENDTURN-NNS-GATE-DIAGNOSIS-Q1
-BAZA: `origin/main` = `439b1e1ae0a6dbec769495941dff30867aa8857e` (ancestor-check OK; worktree przełączony na ten SHA)
-GOAL: ustalić, kiedy i dlaczego bramka NNS blokuje „Zakończ turę” po wczytaniu zapisu; czy to realny defekt wczytania; rekomendacja (bez implementacji).
+GOAL: ustalić przyczynę braku prognozy NNS w świeżej turze 1 (zarzut 2 Evaluatora r1), zmierzyć wiersze B i C tabeli (zarzut 3), zachować narzędzie i dowody r1.
+BAZA: `85e190d125b528f364c0762e9e1e61651d5f66ac` (origin/main + obrona r1). Ta runda: commit z raportem i narzędziami nad bazą.
+ŚRODOWISKO: `npm ci` w worktree (gra/), bundle `vite build --outDir` poza repo (scratchpad), Chromium `/usr/bin/chromium` (playwright). Load średnio 5,45 na starcie (dispatch wymaga < 3) — NIE ZMIERZONO wpływu na czasy, wyniki logiczne bez zmian.
 
 ## ZMIANY/COMMIT
-- `gra/tools/nns-stale-forecast-after-load-repro.cjs` — minimalne repro w żywym Chromium (vite build poza repo, `CHROME_PATH=/usr/bin/chromium`).
-- `dyspozycje/autobot/runs/R-WEB-LOAD-ENDTURN-NNS-GATE-DIAGNOSIS-Q1/10-operator-claude.md` — ten raport.
-- `dyspozycje/autobot/runs/R-WEB-LOAD-ENDTURN-NNS-GATE-DIAGNOSIS-Q1/evidence/` — surowe JSON/logi i skrypty probe (użyte do pomiarów).
-- `gra/src`, `gra/data`: zero zmian (`git status`: tylko powyższe ścieżki, untracked). Commit tylko tych ścieżek (`git add <ścieżka>`).
+- Allowlista: `gra/tools/nns-gate-r2-measure.cjs` (nowy, pomiar B/C), `gra/tools/nns-gate-r2-h2-probe.cjs` (nowy, test H2), `runs/R-WEB-LOAD-ENDTURN-NNS-GATE-DIAGNOSIS-Q1/10-operator-claude.md` i `evidence/r2-*`. Narzędzie r1 `gra/tools/nns-gate-after-load-repro.cjs` bez zmian (użyte ponownie jako wiersz A).
+- `git diff --name-only 85e190d..HEAD` dotyczy wyłącznie allowlisty; zero zmian w `gra/src`, `gra/data`, WERSJE.md, manifeście.
+- Haka civTest w src NIE dodawano (zgodnie z dispatchem); test H2 wykonano istniejącym hakiem `__nnsMeasureDebug.forceGateRecompute()` (markCityStateDirty + updateHud).
 
-## POMIARY (liczby z surowego wyjścia; Chromium headless, `?playtest=mapa&civTest=1`)
+## TESTY (surowe liczby)
+- `tsc --noEmit -p .` → exit 0, wyjście puste (`evidence/r2-tsc.out`, 0 linii).
+- Bramki referencyjne (exit 0): logic-test `LOGIC OK (213/213)`; tech-tree-test `20 pass, 0 fail`; research-test `PASSED: 33 / FAILED: 0 / TOTAL: 33`; unit-replace-test `WSZYSTKIE TESTY ZIELONE (21/21)`; combat-test `COMBAT TEST: 6/6 pass`.
+- Dowód mutacyjny: NIE DOTYCZY (brak zmiany kodu gry).
 
-Odczyt: `window.__aiTradeWiringTestDebug.nnsDiag()`. Uwaga pomiarowa: `forecast` w odczycie jest cache sprzed tego odczytu (nnsDiag czyta cache przed `nnsGateForPlayer()`, które może go przeliczyć), więc raport używa dwóch kolejnych odczytów.
+## 1. PRZYCZYNA BRAKU PROGNOZY W ŚWIEŻEJ TURZE 1 (zarzut 2) — ustalona dla scenariusza playtest
+**Pomiar (H2, `evidence/r2-H2-playtest-forceGateRecompute.json`):** świeża gra `?playtest=mapa`, tura 1: odczyt bramki (dwa wywołania) → `prognoza: null`, `bramkaBlokuje: false`. Po `__nnsMeasureDebug.forceGateRecompute()` (= `markCityStateDirty()` + `updateHud()`, bez nowego haka): `prognoza: {tura: 1, spichlerzPo: -48, skarbiecPo: 4907}`, `bramkaBlokuje: true`, komunikat „Spichlerz państwa: zabraknie 46”. Ta wartość jest identyczna z wartością po `loadSlot` (r2-A, E1/E2b). Wniosek: cache nie był przeliczony, a nie że wczytanie zmienia prognozę.
+
+**Mechanizm (kod, `gra/src/main.ts`):**
+- `refreshLiveEmpireRates` (~23068–23080): zwraca od razu, gdy `empireEconDirty` = false; w przeciwnym razie zeruje flagę PRZED `refreshLiveEmpireRatesUnsafe`.
+- `refreshLiveEmpireRatesUnsafe` (~23085–23090): przy 0 miastach gracza ustawia `_nnsHumanForecast = null` i wraca bez przeliczenia.
+- Scenariusz `playtest=mapa` dokłada miasto gracza przez `cities.push(c)` (~48994) i w tym oknie (48980–49060) NIE ma żadnego `markCityStateDirty()` ani `updateHud()`. Flaga została więc wyzerowana wcześniej (przez wywołanie przy zerze miast), a po dodaniu miasta cache dalej jest null do pierwszego realnego triggera (koniec tury, `markCityStateDirty` ~46825).
+- Które wcześniejsze wywołanie wyzerowało flagę: NIE USTALONO (nie prześledzono wszystkich wywołań podczas inicjalizacji sceny).
+
+**Kontrola ścieżki normalnej (newgame, bez wczytania, `evidence/r2-B-newgame-play-do-tury20.json` → `t1_start` oraz KONTROLA w H2):** `startGame` + `foundFirstCity` → w tej samej turze 1 prognoza JEST: `spichlerzPo: -4`, `skarbiecPo: -2`, `bramkaBlokuje: true` („Skarbiec: zabraknie 2”). Zakładanie miasta przez `foundCityAt` przechodzi przez `markCityStateDirty()` (~17118), więc cache jest liczony od razu. Anomalia null w t1 dotyczy więc tylko scenariusza playtest, nie normalnego startu.
+
+**Wniosek przyczynowy:** w scenariuszu playtest prognoza tury 1 nie jest liczona przy założeniu miasta (brak dirty po `cities.push`). Blokada „Zakończ turę” pojawia się dopiero po pierwszym triggerze (wczytanie albo koniec tury). To NIE jest defekt wczytania. Defekt (brak przeliczenia po dodaniu miasta) dotyczy wyłącznie ścieżki testowej playtest.
+
+## 2. TABELA ZAPISÓW (zarzut 3)
+Odczyt bramki = `nnsDiag()` dwukrotnie (pierwsze wywołanie przelicza cache, drugie czyta wynik). Liczby z JSON-ów w `evidence/`.
 
 | Zapis | Tura | „Zakończ turę” po wczytaniu | Warunek blokady i liczby | To samo bez wczytania |
 |---|---|---|---|---|
-| A (quickSave tury 1) wczytany w ŚWIEŻEJ stronie | 1 | DZIAŁA: endTurn 1→2, `bramkaBlokuje=false`, cache `null` | — | świeża gra tura 1: DZIAŁA (identycznie) |
-| A wczytany w TEJ SAMEJ stronie (po endTurn do tury 2 tej samej gry) | 1 | NIE DZIAŁA: `bramkaBlokuje=true`, endTurn 1→1 (nie przechodzi) | cache po przeliczeniu: `spichlerzObecny=0`, `spichlerzPo=-48`, `turaPrognozy=1`; komunikat „po zakończeniu tury zabraknie 46 … podatek +28 złota” | ta sama tura 1 w świeżej grze: bramka wolna, endTurn przechodzi |
-| Gra świeża, endTurn 1→2 (bez wczytania) | 2 | NIE DZIAŁA (blokada w turze 2 niezależna od wczytania) | `spichlerzObecny=0`, `spichlerzPo=-48`; komunikat „zabraknie 46” | — (to jest stan bez wczytania) |
-| B (zapis tura ≥20, kilka miast) | — | NIE ZMIERZONO | scenariusz mapa blokuje już turę 2 (patrz niżej); interwencja harnessu odblokowała jedną turę, nie dociągnięto do tury 20 | NIE ZMIERZONO |
-| C (kampania / większa gra) | — | NIE ZMIERZONO | nie uruchomiono w tej rundzie | NIE ZMIERZONO |
+| A — playtest=mapa, wczytany w TEJ SAMEJ stronie (`r2-A`, E1) | 1 | NIE (endTurn 1→1, `przeszedl: false`) | `bramkaBlokuje: true`; `spichlerzObecny 0`, `spichlerzPo -48`, `skarbiecPo 4907` | świeża strona przed wczytaniem (E0/E2a): gate false, prognoza **null** (artefakt cache). Po wymuszeniu przeliczenia (H2): gate true, `spichlerzPo -48` = ta sama wartość co po wczytaniu |
+| A — wczytany w NOWEJ stronie tego samego kontekstu (`r2-A`, E2b) | 1 | NIE (1→1) | identycznie: `spichlerzPo -48` | jw. |
+| B — newgame seed 4242, tura 20, 1 miasto gracza (`r2-B-newgame-play`, `r2-B-newgame-load`) | 20 | TAK (20→21, `r2-B-newgame-load` `po_wczytaniu_endTurn`) | po wczytaniu: `bramkaBlokuje: false`, `skarbiecPo 174`, `spichlerzObecny 219`, `spichlerzPo 221` | sesja ciągła do t20 (bez wczytania): `bramkaBlokuje: false`, `skarbiecPo 174`, `spichlerzPo 221` — IDENTYCZNIE |
+| C — kampania / większa gra (≥2 miasta gracza) | — | NIE ZMIERZONO | — | — |
 
-Dodatkowe pomiary:
-- Świeża gra, tura 1: `forecast=null`, `bramka=false`, endTurn przechodzi (2 odczyty, także po `setPlayerEraForTest(1)`). Brak błędów `[NNS]` w konsoli.
-- Wczytanie A w świeżej stronie (bez wcześniejszej gry): tura 1, endTurn 1→2, potem `spichlerzPo=-48` (zgodnie z grą źródłową).
-- Interwencja harnessu: `setSpichlerzPanstwa(0, 400)` przy tura 2 → `bramkaBlokuje=false` (odczyt po ustawieniu: `sp=400`). Pełnego przebiegu tury 2 po interwencji nie zweryfikowano.
+Uwagi do wiersza B:
+- Przebieg: harness `ai-economy-measure-run.cjs` (start `newgame`, seed 4242) do t10 (zapis slotu), wznowienie do t20 (zapis `ai-econ-s4242`); to ten zapis sprzed pomiaru „po wczytaniu” był użyty do `r2-B-newgame-load`. Ciągła sesja `nns-gate-r2-measure.cjs play` (własny zapis `nns-r2-s4242-t20`) dała tę samą prognozę w t20 (liczby jak w tabeli).
+- Interwencja harnessu: w t1 bramka blokowała (`skarbiec 0`, prognoza −2/−4) → dosypka 200 złota + 200 żywności; od t2 bramka nieaktywna (zaznaczone w `log`). Brak dosypek po t1.
+- Wiersz B osiągnął tylko 1 miasto gracza (nie „kilka”). Pomiar wykonany, ale nie spełnia opisu „kilka miast”.
+- `r2-B-newgame-play` w t2 raportuje `przeszedl: true` tylko po czekaniu na `isEndTurnInProgress() == false` (poprawka w narzędziu: wcześniej endTurn wywoływany w trakcie przetwarzania tury był odrzucany jako `endTurnInProgress`).
 
-## WNIOSEK
+**Wiersz C: NIE ZMIERZONO.** Powód: seed 4242 daje 1 miasto gracza w t20; brak w `civTest` haka do założenia drugiego miasta gracza (`foundFirstCity` działa tylko dla pierwszego). Nie zgadywano wyniku dla kampanii.
 
-1. **Blokada w turze 2 (świeża gra, scenariusz mapa) NIE jest artefaktem wczytania.** Realna prognoza po turze wynosi `spichlerzPo=-48` przy zapasie spichlerza 0 (bez wczytania). Jest to zgodne z obecną logiką bramki (prawdziwa prognoza < 0). Pytanie projektowe dla właściciela: czy taki start (zapas 0, deficyt 48) ma być zablokowany w turze 2 w scenariuszu testowym — NIE ZMIERZONO w prawdziwej nowej grze (nie sprawdzano domyślnego startu spichlerza).
-2. **Wczytanie w tej samej stronie daje INNĄ prognozę niż wczytanie w świeżej stronie.** Ta sama tura 1 i ten sam zapis: świeża strona → bramka wolna; ta sama strona po grze → bramka blokuje z `spichlerzPo=-48`. To jest realna różnica zachowania po wczytaniu i uzasadnia nazwanie tego defektem wczytania w tym scenariuszu.
-3. **Hipoteza H1 z dispatchu (cache nieprzeliczony po wczytaniu) w swojej prostej formie NIE potwierdza się.** Po wczytaniu `turaPrognozy` zmienia się z 2 na 1, czyli przeliczenie po wczytaniu zachodzi (dirty-gate zadziałał). Problem leży więc w danych wejściowych przeliczenia, nie w samym fladze: przeliczenie w stanie wczytanym daje −48, a w świeżej stronie daje brak prognozy (`null`). Co dokładnie różni te dwa wejścia (np. stan miast/`ME()`, `empireFoodStates`, mapy utrzymania jednostek lub `cityBuilt`, które mogą nie być odtworzone/wyczyszczone przy wczytaniu w tej samej stronie) — **NIE ZMIERZONO**; to jest najbliższy następny pomiar.
-4. Odpowiedź na pytanie dispatchu: **realny defekt wczytania: TAK w scenariuszu „wczytaj w tej samej stronie po grze” (zmierzone, A, tura 1); NIE ZMIERZONO dla zapisów ze środka rozgrywki (B) i kampanii (C); w świeżej stronie po wczytaniu brak defektu (zmierzone).**
+**Zarzut 3 (jakość odczytu):** w `r1` wiersz `E3b` (t2 bez wczytania) miał `bramkaBlokuje: true` przy `prognozaCache: null` (`evidence/r2-A-repro-playtest-tura1.json`, `E3b_P3_t2_bez_wczytania`), a komunikat gry podaje „zabraknie 46”. Przyczynę niespójności odczytu (pole `forecast` jest czytane przed przeliczeniem w `nnsDiag`, `main.ts` ~31187) NIE USTALONO do końca; blokada w t2 jest realna (komunikat), wartość pola `forecast` w tym wierszu nie jest wiarygodna.
 
-## REPRO (minimalne, `gra/tools/nns-stale-forecast-after-load-repro.cjs`)
+## 3. KLASYFIKACJA ZJAWISK
+- **Realny defekt wczytania (wczytany zapis daje inną prognozę niż świeża gra w tym samym stanie): NIE** — zmierzone: A (wczytanie = wymuszone przeliczenie, −48), B (wczytanie = ciągła sesja, 221/174). NIE ZMIERZONO dla C.
+- **Artefakt testowy:** null cache w świeżej t1 `playtest=mapa` (brak dirty po `cities.push`), ujawniany dopiero przez wczytanie lub koniec tury. Zmierzone.
+- **Realny warunek blokady w normalnej nowej grze:** tura 1 przy zerowym skarbcu i spichlerzu daje prognozę −2/−4 i blokadę „Zakończ turę” już na starcie (KONTROLA, bez wczytania). To jest pytanie produktowe (K4), nie defekt kodu.
 
-Kroki: świeża gra → quickSave tura 1 → endTurn (tura 2, blokada −48) → `loadSlot` tej samej tury 1 w tej samej stronie → odczyt (blokada) → endTurn (nie przechodzi). Kontrola: świeża strona → `loadSlot` tury 1 → odczyt (wolne) → endTurn (przechodzi). Wynik surowy: `evidence/repro-stale-forecast-after-load.json`. Błędy strony: 0.
+## 4. KANDYDACI NAPRAWY (BEZ IMPLEMENTACJI; decyzja właściciela)
+- **K1 (test/scenariusz, najmniejsze ryzyko):** w ścieżce startu playtest po `cities.push` (~48994; podobne dodanie w ~48743 do potwierdzenia przy implementacji) dopisać `markCityStateDirty()` — usuwa null w świeżej t1 playtest. Nie zmienia reguł gry; zmienia tylko scenariusz testowy.
+- **K2 (defensywnie):** po `loadSlot`/`doLoadGame` i po `startGame` wywołać `markCityStateDirty()` — zapewnia przeliczenie cache, niezależnie od ścieżki. Nie zmienia wyniku zmierzonego w B (już przeliczony).
+- **K3 (ochrona kolejności):** w `refreshLiveEmpireRates` zerować `empireEconDirty` dopiero po udanym `refreshLiveEmpireRatesUnsafe` (dziś flaga jest zerowana przed wywołaniem; przy 0 miastach funkcja nie ustawia dirty). Zmiana zachowania ograniczona do przypadku zerowych miast.
+- **K4 (decyzja produktowa, blokuje właściwe zachowanie):** czy tura 1 nowej gry ma blokować „Zakończ turę” przy prognozie −2 skarbca / −4 spichlerza (stan startowy zerowy)? Dziś TAK w normalnym starcie, a w playtest ujawnia się dopiero po wymuszeniu/wczytaniu. Bez decyzji właściciela nie zmieniać reguł.
+- Higiena narzędzi testowych: `nnsDiag` powinien czytać `forecast` po przeliczeniu (poprawka w hakach civTest, nie w logice gry) — dotyczy odczytów testowych, nie graczy.
 
-Uwaga o narzędziu: wcześniejsza wersja diagnostyczna (A/B/W2/W3 w jednym pliku) została usunięta z repo, bo ścieżka „wczytaj w stronie z własną grą” w niej nie była wiarygodna (w jednym przebiegu wczytanie nie zmieniło tury w czasie 120 s; nie ustalono przyczyny). Surowy wynik tej wersji zostawiono w `evidence/run1-A-B-diag-timeline-raw.json` tylko jako zapis przebiegu.
-
-## KANDYDACI NA NAPRAWĘ (bez implementacji; decyzja właściciela)
-- K1 (diagnostyczny, najpierw): porównać wejścia `projectEmpireFoodAfterTick` / `previewCityEconomy` po wczytaniu w tej samej stronie i w świeżej stronie (różnice map: `empireFoodStates`, `playerEconUnitsForUpkeep`, `cityBuilt`, `_lastPlayerCityEcon`, `ME()`). Dopiero wtedy wybrać poprawkę.
-- K2 (prawdopodobna poprawka po K1): w ścieżce wczytania (`restoreGameFromSave`, ok. src/main.ts:49576) zresetować lub odtworzyć wszystkie mapy wejściowe prognozy NNS przed `markCityStateDirty()`, tak by przeliczenie po wczytaniu operowało wyłącznie na stanie zapisu.
-- K3 (ochrona, bez znajomości przyczyny): unieważnić `_nnsHumanForecast` przy wczytaniu (ustawić `null`) i wymusić przeliczenie przed pierwszą oceną bramki. Nie usuwa przyczyny (przeliczenie i tak dało −48), więc nie wystarcza samo.
-- K4 (decyzja projektowa, niezależna): czy tura 2 w scenariuszu mapa (zapas 0, deficyt −48) ma być blokowana bramką NNS — sprawdzić domyślny start spichlerza w prawdziwej nowej grze (NIE ZMIERZONO).
-
-## TESTY
-- `npx tsc --noEmit -p .` w `gra/`: exit 0 (`TSC_EXIT=0`, bez komunikatów).
-- Repro w Chromium: wynik JSON powyżej, `bledyStrony=[]`.
-- 5 bramek referencyjnych: NIE URUCHAMIANO (rozliczenie: brak zmian kodu gry; diagnoza nie wymaga bramek, a pełny zestaw nie został uruchomiony w tej rundzie).
-
-## BLOKADY / NIE ZMIERZONO
-- B (tura ≥20, kilka miast) i C (kampania): nie zmierzono (budżet rundy, blokada w turze 2 scenariusza mapa).
-- Przyczyna różnicy wejść po wczytaniu (punkt 3 wniosku): nie ustalono.
-- Domyślny start spichlerza w prawdziwej nowej grze: nie sprawdzono.
-- Dlaczego świeża strona w turze 1 zwraca `forecast=null` (czy to brak miast gracza na tym etapie, czy inna ścieżka): nie ustalono; w konsoli brak błędów `[NNS]`.
-- Część trafień `awaitingFirstPlayerCity` w konsoli przy świeżej grze przed `setPlayerEraForTest`: nie analizowano.
-
-## RUNDY
-1/5 (runda 1 tego dispatchu; poprzednie wyniki wg dopisku orkiestratora nie dotarły do repo).
-
-## NASTĘPNY KROK
-Orkiestrator decyduje o kolejnej rundzie: K1 (porównanie wejść prognozy po wczytaniu w tej samej stronie i w świeżej stronie) jako osobny pomiar, następnie decyzja właściciela (K2 vs K4) przed implementacją.
+**Rekomendacja Operatora:** nie zmieniać reguł bramki. Jeśli właściciel zatwierdzi: K1 + K2 (naprawa śladu testowego i pewności cache po wczytaniu). Decyzja K4 do właściciela przed jakąkolwiek zmianą wartości startowej.
 
 ## UWAGI-DLA-ORKIESTRATORA
-- Nie zakładano sesji, zadań ani harmonogramów (zakaz z dispatchu zachowany).
-- Mapa `playtest=mapa` blokuje turę 2 już w świeżej grze; ma to wpływ na każdy przyszły pomiar „tura ≥20” w tym scenariuszu — trzeba użyć innego startu albo jawnej interwencji harnessu (użyto `setSpichlerzPanstwa`, opisane wyżej).
-- Narzędzie `nnsDiag` (hak civTest, `src/main.ts` ~31186) zwraca `forecast` przed przeliczeniem; przy przyszłych pomiarach trzeba brać kolejny odczyt, albo poprawić kolejność w haku (zmiana w src — poza tym tematem).
+- Narzędzia: `gra/tools/nns-gate-r2-measure.cjs` (tryby `play` i `load`, wznawialny slot) i `gra/tools/nns-gate-r2-h2-probe.cjs` (test H2 + kontrola newgame). Obie z `node --check` OK; uruchomienia wykonane w tej rundzie.
+- Nie zakładano sesji, zadań, harmonogramów; nie wysyłano wiadomości do innych agentów.
+- Build vite i `node_modules` tylko w worktree/scratchpad; po pracy usunięte (patrz sekcja sprzątania w raporcie końcowym).
+
+## BLOKADY
+- Wiersz C NIE ZMIERZONO (brak narzędzia do ≥2 miast gracza w civTest).
+- Przyczyna wcześniejszego wyzerowania flagi `empireEconDirty` w scenariuszu playtest: NIE USTALONO (nie prześledzono wszystkich wywołań przy inicjalizacji).
+- Niespójność odczytu `forecast` w E3b (r1): NIE USTALONO.
+
+## RUNDY
+Operator, runda 2/5 (dispatch DODATEK 3: zadania 1–3).
+
+## NASTĘPNY KROK
+Final Control: ocena zgodności z kryteriami (tabela ≥3 zapisów: A, B mierzone; C NIE ZMIERZONO z uzasadnieniem; wniosek TAK/NIE: defekt wczytania NIE). Decyzje właściciela: K4 (produktowa) oraz zgoda na K1/K2 jako osobny temat.
 
 DEPLOY/PUSH: NIE WYKONANO
