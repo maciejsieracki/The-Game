@@ -211,3 +211,43 @@ pub struct FogViewDto {
     /// Parallel to `map.hexes`.
     pub state: Vec<FogState>,
 }
+
+/// Render-only reveal of the fog of the viewer (gaps L1/L2 of
+/// `P4-1G-ADAPTER-ROZPOZNANIE.md` §5; topic
+/// `R-RUSTPORT-P4-1-L12-REVEAL-R1`): the two `setFog` options of `refreshFog`
+/// that [`FogViewDto`] does not carry.
+///
+/// Pin `07d2fbd72`:
+/// - `revealAllLand` (`gra/src/main.ts:12804`, dev/test toggle `M`,
+///   `:13592-13596`): `exploredForRender = exploredSetForRender(explored,
+///   ALL_LAND_KEYS, revealAllLand)` (`:12864-12866`,
+///   `game/visibility.ts:241-251`) is already applied to
+///   [`FogViewDto::state`] by the producer (`>= 1` for every non-`Morze` hex,
+///   `allRevealLandKeys`, `visibility.ts:215-226`), and `useFogRender = fogOn
+///   || revealAllLand` (`main.ts:13485`) is `ViewerDto.fog_active`; what is
+///   left is the `setFog(…, { landReveal: revealAllLand })` option
+///   (`:13491-13492`), which shows the ocean backdrop (`render/scene.ts:3532`,
+///   `:3548`) and turns the river fog off (`lastAnyHidden = anyHiddenFinal &&
+///   !landReveal`, `:3654`).
+/// - `riverRevealKeys` (`main.ts:13493`): `startRevealKeysForRiverFog()`
+///   (`:13074-13080`) — the hexes of the lit start circle
+///   (`computeVisibleAt(start.q, start.r, map, startRevealRadius)`,
+///   `visibility.ts:64-79`) while the active seat `ME()` has no city yet
+///   (`isAwaitingFirstPlayerCity()`), else `undefined`. River ribbons ignore
+///   the fog on these hexes (`scene.ts:3432-3433`,
+///   `render/riverLod.ts:359-377`). The keys are NOT derived from
+///   [`HexStaticDto::rzeka_krawedzie`]: the pin keeps `hex.rzeka.krawedzie`
+///   for game logic only, the river render follows the full river path
+///   (`scene.ts:1263-1264`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct FogRevealDto {
+    /// `revealAllLand` (`main.ts:12804`).
+    pub reveal_all_land: bool,
+    /// `startRevealKeysForRiverFog()` (`main.ts:13074-13080`): `None` for
+    /// `undefined`, otherwise the hexes of the start circle in contract order
+    /// (`r`-major, `q`-minor, §1.4), each a hex of `map.hexes`. `Some(vec![])`
+    /// is a distinct value (an empty JS `Set` is truthy and takes the reveal
+    /// branch of `mergedRiverVisibleInFog`).
+    pub river_reveal_keys: Option<Vec<HexCoord>>,
+}

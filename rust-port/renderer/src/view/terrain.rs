@@ -23,9 +23,11 @@
 //! - L5: wonder build sites (`wonderBuildSites`, `hideDecorAtHex` at
 //!   `main.ts:5264`) — not in the DTO, so they do not hide solids here
 //!   (NIE_ZMIERZONO);
-//! - L1/L2: `revealAllLand` and `riverRevealKeys` — [`apply_terrain_fog`]
-//!   takes `land_reveal` as an explicit argument without a default, and has
-//!   no river keys (the Rust `set_fog` has none either);
+//! - L1/L2: `revealAllLand` and `riverRevealKeys` are carried by
+//!   `FogRevealDto` and translated by [`super::fog::FogReveal`];
+//!   [`apply_terrain_fog`] still takes `land_reveal` as an explicit argument
+//!   (pass `FogReveal::land_reveal`); the river keys go to the river ribbons
+//!   (`FogReveal::river_reveal_keys`), not to `set_fog`;
 //! - `HexDynDto.nakladka`: the pin hides decor for the forest only on
 //!   *events* (forest cut: `main.ts:16801`, `:17014`, `:42967`; food
 //!   improvement on forest: `syncImprovementDecorForHex`, `main.ts:16877-16946`).
@@ -275,12 +277,14 @@ pub const fn tile_yield(y: &vm::TileYieldDto) -> TileYield {
 ///   already all keys; no hex is hidden, so `showOceanBackdrop = !anyHidden ||
 ///   landReveal` is `true` whatever `land_reveal` is (`scene.ts:3532-3548`).
 ///
-/// `land_reveal` is `revealAllLand`, which the DTO does not carry (gap L1):
+/// `land_reveal` is `FogReveal::land_reveal` (gap L1, from `FogRevealDto`):
 /// the caller states it explicitly, there is no default. With
 /// `revealAllLand` on and `fogOn` off the pin takes the fog branch
-/// (`useFogRender = fogOn || revealAllLand`, `main.ts:13485`), which
-/// `ViewerDto.fog_active` alone cannot express (L1, NIE_ZMIERZONO).
-/// `riverRevealKeys` (gap L2) has no counterpart. Returns
+/// (`useFogRender = fogOn || revealAllLand`, `main.ts:13485`); the producer
+/// sets `ViewerDto.fog_active = fogOn || revealAllLand`, and
+/// `FogReveal::from_dto` rejects `revealAllLand` without active fog.
+/// `riverRevealKeys` (gap L2) is not a `setFog` input of the prisms: it goes
+/// to the river ribbons (`FogReveal::river_reveal_keys`). Returns
 /// `showOceanBackdrop` of [`TerrainScene::set_fog`].
 pub fn apply_terrain_fog(scene: &mut TerrainScene, fog: &FogSets, land_reveal: bool) -> bool {
     scene.set_fog(&fog.visible, &fog.explored, land_reveal)
