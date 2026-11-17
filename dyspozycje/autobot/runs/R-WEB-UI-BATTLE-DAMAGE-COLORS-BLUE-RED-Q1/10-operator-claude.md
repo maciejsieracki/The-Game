@@ -15,7 +15,7 @@ TESTY:
   - npm ci --ignore-scripts w gra/ (71 pakietów; bez build/dev); node_modules/.bin/tsc --noEmit -p tsconfig.json -> exit 0, 0 błędów (ZMIERZONE)
   - Bramki referencyjne (ZMIERZONE, surowe wyniki): logic-test LOGIC OK (213/213); tech-tree-test 20 pass, 0 fail; research-test PASSED 33 / FAILED 0; unit-replace-test WSZYSTKIE TESTY ZIELONE (21/21); combat-test COMBAT TEST: 6/6 pass
   - HUD: battle-tempo-minimap-brand-test OK; battle-hp-display-test PASS 7/7; minimap-viewport-rect-follow-test OK 12 testów (ZMIERZONE)
-  - Chromium (r-bitwa-etykieta-tozsamosc-strony-live-atak-test.cjs pod xvfb-run): uruchomiony, w chwili pisania jeszcze trwał (ZMIERZONE tylko częściowo: sandbox i klik ataku wykonane). Ten test nie generuje zrzutów liczb obrażeń, więc kryterium (b) (min. 4 zrzuty z liczbami obu kolorów) NIE ZOSTAŁO SPEŁNIONE.
+  - Chromium (r-bitwa-etykieta-tozsamosc-strony-live-atak-test.cjs pod xvfb-run): uruchomiony; zatrzymał się na kroku „START WALKI: false” (bitwa nie wystartowała, brak walki), proces ubity ręcznie po ~3 min (ZMIERZONE: build vite OK, sandbox i klik ataku wykonane; bitwa NIE dotarła do liczb obrażeń). Ten test nie generuje zrzutów liczb obrażeń, więc kryterium (b) (min. 4 zrzuty z liczbami obu kolorów) NIE ZOSTAŁO SPEŁNIONE.
   - Kontrast WCAG (test B): #8fb6e0 i #ff7070 >= 4,5:1 na tłach HUD (ZMIERZONE testem).
 BLOKADY: brak wizualnej weryfikacji liczb obrażeń w żywej grze (kryterium b); HP bar (zielony/żółty/czerwony wg ilości HP) i pasek „Pauza” nie oznaczają stron – nie zmieniane; TEMPO/minimapa – statyczny grep nie wykrył żółtego oznaczającego strony, zmiana nie wykonana.
 RUNDY: 1/5
