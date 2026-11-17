@@ -3330,3 +3330,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Rozstrzygnięcia (DODATEK r2 `6cc0c4878`):** rozjazd wg pinu (`main.ts:34879-34882`), allowlista rozszerzona o `turn_war_dipl_steps.rs` (ledger D3, tylko podłoga); rollback z ekonomią + test; wektory D3 ≥150 i apply ≥150 z generatora, sekwencje przepływów; mutant (c) MUSI dać FAIL po poprawce podłogi (nie uznawany za równoważny). Wielu ludzi (is_human, #282) — poza zakresem.
 - **Sprzątanie:** usunięte 4 worktrees r1 (zakończone). Dysk 7,4 GB — **poniżej progu 8 GB, r2 NIE uruchomiony**. Start po zwolnieniu dysku.
 - **Nadal aktywne:** T4e r3 (`wf_f0bd9aa4-589`), T1 (`wf_2261fa9c-ded`), T7b r4 (`wf_38d93827-c1b`) — stan do sprawdzenia w następnym tiku.
+
+### Przebieg — dysk jako wąskie gardło: T4e r3 BLOCK INFRA, T1 i T7b r4 w toku (2026-11-17 ~11:0x UTC)
+
+- **T4e (#315) r3 (`wf_f0bd9aa4-589`):** BLOCK INFRA (dysk 6,9 GB), kod nieskompilowany; Evaluator FAIL; Obrona BLOCK; FC FAIL. To trzecia runda T4e zatrzymana dyskiem. Commity zabezpieczone: `rust-port-wip/p6-k5doc-t4e-r3-{op,ob,fc}`. Worktrees r3 usunięte (zakończone).
+- **Przyczyna:** każdy worktree trzyma własny target (~1,0–1,2 GB). Trzy równoległe tematy (T1, T7b r4, T4e r3) plus worktrees zakończonych rund wyczerpują dysk w kilka minut, zanim bramka ruszy.
+- **T1 (#263) r1:** Operator BLOCK INFRA (pełny test niewykonany, dysk 7,7 GB), kod gotowy `13fc99862`; Evaluator PASS-WITH-NOTES; Obrona PASS-WITH-NOTES (`0c83487ea`). FC w toku — worktrees zostają.
+- **T7b (#342) r4:** Operator PASS-WITH-NOTES (bramki zielone, pełny test 3843 passed), Evaluator PASS-WITH-NOTES (przeżyty mutant `d_min <= 1`), Obrona PASS-WITH-NOTES (`92bcf9ffd`, wektor dodany). FC w toku — worktrees zostają.
+- **R7K7C (#106) r2:** DODATEK r2 gotowy (`6cc0c4878`), NIE uruchomiony — dysk poniżej 8 GB. Start po zakończeniu T1 i T7b.
+- **Decyzja (orkiestrator):** nie uruchamiać więcej niż jednego tematu z buildami naraz, dopóki dysk nie wróci powyżej 8 GB w spokojnym oknie. Kolejność: T7b FC → T1 FC → R7K7C r2 → T4e r4 (DODATEK r4 do napisania, baza `760be5187`, detached).
