@@ -161,7 +161,7 @@ function adaptUnit(raw) {
     armor        : num(raw.armor, num(raw['Pancerz'], 0)),
     piercing     : num(raw.piercing, num(raw['Przebicie'], 0)),
     chargeBonus  : num(raw.chargeBonus, num(raw['Uderzenie'], 0)),
-    health       : num(raw.health, num(raw['Health'], 30)),
+    health       : num(raw.health, num(raw['health'], 30)),
     'Prog dezercji (% health)' : raw['Próg dezercji (% health)'],
     missileAttack              : num(raw.missileAttack, num(raw['Atak dystansowy'], 0)),
     'Zasieg ataku (hex)'       : zasieg,

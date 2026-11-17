@@ -77,7 +77,7 @@ function adaptUnit(raw) {
     Uderzenie: raw['Uderzenie'],
     Pancerz: raw['Pancerz'],
     Przebicie: raw['Przebicie'],
-    Health: raw['Health'],
+    Health: raw['health'],
     'Prog dezercji (% health)': raw['Próg dezercji (% health)'],
     'Atak dystansowy': raw['Atak dystansowy'] || 0,
     'Ilosc pociskow': raw['Ilość pocisków'] || '—',

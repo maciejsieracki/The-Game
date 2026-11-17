@@ -3453,10 +3453,10 @@ function isFlankingUnit(unit: RuntimeUnit, data: GameData): boolean {
   return String(def?.['Rola (linia)'] ?? '').toLowerCase().includes('flanka');
 }
 
-/** Max health from data.units (TW health, fallback Health), default 30. */
+/** Max health from data.units (kanoniczne pole `health`, skala bojowa = ta sama co silnik walki), default 30. */
 function _unitMaxHealth(unit: RuntimeUnit, data: GameData): number {
   const def = data.units.find(u => u.Jednostka === unit.typeId);
-  const h = def?.Health ?? null;
+  const h = def?.health ?? null;
   return (h !== null && h !== undefined && Number(h) > 0) ? Number(h) : 30;
 }
 

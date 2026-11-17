@@ -35772,7 +35772,7 @@ async function boot(): Promise<void> {
 
     /** Return max HP from a unit def (TW v3 `health`). */
     function unitHealth(def: any): number {
-      return normFieldVal(def['health'] ?? def['Health'], 30);
+      return normFieldVal(def['health'], 30);
     }
 
     /**

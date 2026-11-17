@@ -50,8 +50,8 @@ const UNCHANGED_DIST = {
 // Jednostki spoza zakresu: zdrowie zastane (nie moga sie zmienic).
 const UNCHANGED_HEALTH = {
   'Konnica łucznicza asyryjska': 60,
-  'Oszczepnik': 20,
-  'Procarz': 20,
+  'Oszczepnik': 16,
+  'Procarz': 16,
 };
 
 let failures = 0;
@@ -76,7 +76,7 @@ function checkUnits(units) {
   if (archers.length !== 6) errs.push(`oczekiwano 6 pieszych lucznikow, jest ${archers.length}`);
   for (const u of archers) {
     const name = u['Jednostka'];
-    if (u['Health'] !== ARCHER_HEALTH) errs.push(`${name}: Health=${u['Health']} (oczekiwano ${ARCHER_HEALTH})`);
+    if ('Health' in u) errs.push(`${name}: pole Health nie moze istniec (jedno pole: health)`);
     if (u['health'] !== ARCHER_HEALTH) errs.push(`${name}: health=${u['health']} (oczekiwano ${ARCHER_HEALTH})`);
     if (name in EXPECTED_MISSILE) {
       const want = EXPECTED_MISSILE[name];
@@ -93,7 +93,7 @@ function checkUnits(units) {
     const rows = findByName(units, name);
     if (rows.length === 0) { errs.push(`brak wpisu ${name}`); continue; }
     for (const r of rows) {
-      if (r['Health'] !== want) errs.push(`${name}: Health=${r['Health']} (oczekiwano ${want}, bez zmian)`);
+      if (r['health'] !== want) errs.push(`${name}: health=${r['health']} (oczekiwano ${want}, bez zmian)`);
     }
   }
   return errs;
@@ -129,8 +129,8 @@ function main() {
   console.log('[e] mutacja na kopii (musi dac czerwony)');
   const copy = JSON.parse(JSON.stringify(units));
   const egypt = findByName(copy, 'Łucznik egipski')[0];
-  egypt['Health'] = 40;
-  assert(checkUnits(copy).length > 0, 'mutacja Health egipskiego=40 wykryta');
+  egypt['health'] = 40;
+  assert(checkUnits(copy).length > 0, 'mutacja health egipskiego=40 wykryta');
   const copy2 = JSON.parse(JSON.stringify(units));
   findByName(copy2, 'Łucznik egipski')[0]['Atak dystansowy'] = 6;
   assert(checkUnits(copy2).length > 0, 'mutacja dystansu egipskiego=6 (stara wartosc) wykryta');

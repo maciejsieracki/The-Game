@@ -35,7 +35,7 @@ function boot(): void {
 
   if (typeof console !== 'undefined' && console.info) {
     const sample = data.units.find((u: { Jednostka?: string }) => u.Jednostka === 'Hastati') as Record<string, unknown> | undefined;
-    const hp = sample?.health ?? sample?.Health ?? '?';
+    const hp = sample?.health ?? '?';
     const ap = sample?.meleeAttack ?? sample?.Atak ?? '?';
     console.info(
       `[POLE-BITWY] units.json z bundla (Hastati HP=${hp}, AP=${ap}). `

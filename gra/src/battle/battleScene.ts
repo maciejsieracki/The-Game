@@ -1118,9 +1118,9 @@ function sideTag(side: 'atk' | 'def'): string {
 // ---------------------------------------------------------------------------
 // MORALE + ROUT model (scene-side bookkeeping; resolveCombat untouched).
 //
-// units.json has no explicit "Morale" stat (its keys are Atak/Obrona/Health/
+// units.json has no explicit "Morale" stat (its keys are Atak/Obrona/health/
 // "Prog dezercji (% health)"/...), and the codebase convention (src/types/unit.ts)
-// is: morale is a 0..100 pool referenced to max Health, and a unit ROUTS when it
+// is: morale is a 0..100 pool referenced to max health, and a unit ROUTS when it
 // breaks. We therefore start every unit at MORALE_START (full) and lower the
 // CURRENT pool as it takes damage and as nearby allies die; when it drops below
 // ROUT_MORALE_THRESHOLD of its start the unit routs (flees + counts as OUT).
@@ -4305,7 +4305,7 @@ export class BattleScene {
     if (this.finished || this.siegeTowers.length === 0 || !this.towerShooterRow) return;
     const shooterRow = this.towerShooterRow;
     const nazwa = String(shooterRow['Jednostka'] ?? 'Strzelec');
-    const hp = Number(shooterRow['Health'] ?? shooterRow['health'] ?? 1) || 1;
+    const hp = Number(shooterRow['health'] ?? 1) || 1;
     let stagger = 0;
     for (const t of this.siegeTowers) {
       if (t.destroyed) continue;

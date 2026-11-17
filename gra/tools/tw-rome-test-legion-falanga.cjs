@@ -39,7 +39,7 @@ function unitRow(u) {
     Przebicie: u['Przebicie'],
     Pancerz: u['Pancerz'],
     Szarża: u['Uderzenie'],
-    Zdrowie: u['Health'],
+    Zdrowie: u['health'],
     AtakDyst: u['Atak dystansowy'] || 0,
     Pociski: u['Ilość pocisków'] || 0,
   };

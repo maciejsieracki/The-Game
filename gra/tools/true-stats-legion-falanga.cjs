@@ -14,7 +14,7 @@ function trueStats(raw) {
     Przebicie: raw['Przebicie'] / 10,
     Pancerz: raw['Pancerz'] / 10,
     Szarza: raw['Uderzenie'] / 10,
-    Zdrowie: raw['Health'],
+    Zdrowie: raw['health'],
     AtakDyst: (raw['Atak dystansowy'] || 0) / 10,
   };
 }
