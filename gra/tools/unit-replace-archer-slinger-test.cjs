@@ -16,8 +16,11 @@
  *   7. Brąz BEZ Koszar: Procarz niedostępny (bramka budynku).
  *   8. Ścieżka AI: promoteAiUnitForEra (ta sama tabela, te same bramki co gracz) awansuje
  *      Łucznika na Procarza w Brązie z pełnym kosztem; w Kamieniu nie; klasa armii zachowana.
- *   9. Narodowi łucznicy Kamienia (egipski, sumeryjski) -> Procarz w Brązie (wpis w units.json);
- *      nubijski (Brąz) nadal bez Procarza -- DECISION_REQUIRED (brak awansu Brąz->Brąz).
+ *   9. Narodowi łucznicy Kamienia (egipski, sumeryjski) -> Procarz w Brązie (wpis w units.json).
+ *  10. Ścieżka AI dla egipskiego i sumeryjskiego (te same reguły co gracz).
+ *  11. R-WEB-UNIT-REPLACE-INCA-AND-NATIONAL-ARCHERS-TO-SLINGER-Q1 r2: nubijski, akadyjski, asyryjski
+ *      (Brąz) i Oszczepnik (Estólica) (Inkowie) -> Procarz; mutacja kopii; AI nubijskiego (Brąz->Brąz)
+ *      zapisany jako DECISION_REQUIRED (obecna reguła AI wymaga wzrostu epoki).
  */
 
 const fs = require('fs');
@@ -168,8 +171,42 @@ console.log('9. Narodowi łucznicy Kamienia (egipski, sumeryjski) -> Procarz (R-
   const mutated = unitsJson.map(u => (u.Jednostka === 'Łucznik egipski' ? { ...u, 'Zastąp specjalnie': '—' } : u));
   const egiMut = idsOf({ buildings: [], units: mutated }, 'Łucznik egipski', baseCtx(2, 'Egipt'));
   check(!egiMut.includes('Procarz'), 'mutacja kopii (pole Łucznika egipskiego cofnięte do "—") -> Procarz znika');
+}
+
+console.log('11. Narodowi łucznicy Brązu (nubijski, akadyjski, asyryjski) i Oszczepnik (Estólica) -> Procarz (odpowiedź właściciela 2026-11-17)');
+{
   const nub = idsOf(DATA, 'Łucznik nubijski', baseCtx(2, 'Egipt'));
-  check(!nub.includes('Procarz'), 'Łucznik nubijski (Brąz): brak Procarza (Brąz->Brąz nie jest awansem; DECISION_REQUIRED)', JSON.stringify(nub));
+  check(nub.includes('Procarz'), 'Łucznik nubijski w Brązie: Procarz jest na liście zamienników', JSON.stringify(nub));
+  const akad = idsOf(DATA, 'Łucznik akadyjski', baseCtx(2, 'Sumer'));
+  check(akad.includes('Procarz'), 'Łucznik akadyjski w Brązie: Procarz jest na liście zamienników', JSON.stringify(akad));
+  const asyr = idsOf(DATA, 'Łucznik asyryjski', baseCtx(2, 'Asyria'));
+  check(asyr.includes('Procarz'), 'Łucznik asyryjski w Brązie: Procarz jest na liście zamienników', JSON.stringify(asyr));
+  const nubCost = availableReplacementsFor('Łucznik nubijski', DATA, TECHS, baseCtx(2, 'Egipt')).find(i => i.id === 'Procarz');
+  check(!!nubCost && nubCost.koszt > 0, 'Łucznik nubijski -> Procarz: pełny koszt > 0', JSON.stringify(nubCost));
+  const nubNoKoszary = idsOf(DATA, 'Łucznik nubijski', { ...baseCtx(2, 'Egipt'), builtBuildingIds: [] });
+  check(!nubNoKoszary.includes('Procarz'), 'Łucznik nubijski bez Koszar: Procarz niedostępny (bramka budynku)');
+  const mutNub = unitsJson.map(u => (u.Jednostka === 'Łucznik nubijski' ? { ...u, 'Zastąp specjalnie': '—' } : u));
+  check(!idsOf({ buildings: [], units: mutNub }, 'Łucznik nubijski', baseCtx(2, 'Egipt')).includes('Procarz'),
+    'mutacja kopii (pole Łucznika nubijskiego cofnięte do "—") -> Procarz znika');
+  // Oszczepnik (Estólica) = dystansowa jednostka Inków (Kamień, Specjalna): Procarz standard + Huaracoc (Inkowie)
+  const est = idsOf(DATA, 'Oszczepnik (Estólica)', baseCtx(2, 'Inkowie'));
+  check(est.includes('Procarz') && est.includes('Procarz (Huaracoc)'),
+    'Oszczepnik (Estólica) w Brązie (Inkowie): Procarz i Procarz (Huaracoc) na liście', JSON.stringify(est));
+  const estKam = idsOf(DATA, 'Oszczepnik (Estólica)', baseCtx(1, 'Inkowie'));
+  check(!estKam.includes('Procarz'), 'Oszczepnik (Estólica) w Kamieniu: Procarz niedostępny epoką', JSON.stringify(estKam));
+  const estRome = idsOf(DATA, 'Oszczepnik (Estólica)', baseCtx(2, 'Rzym'));
+  check(estRome.includes('Procarz') && !estRome.includes('Procarz (Huaracoc)'),
+    'Oszczepnik (Estólica) w Rzymie: Procarz tak, Procarz (Huaracoc) nie (nacja Inkowie)', JSON.stringify(estRome));
+  // Procarz (Huaracoc) nie jest zamiennikiem Estólicy poza Inkami (gating nacji)
+  check(!estRome.includes('Procarz (Huaracoc)'), 'Huaracoc nie wchodzi do listy dla nacji spoza Inków');
+  // AI (DECISION_REQUIRED): promoteAiUnitForEra wymaga WZROSTU epoki; Brąz->Brąz nie awansuje AI.
+  // Stan obecny zapisany tu jawnie; po decyzji właściciela (AI same-epoch) zmienić asercję.
+  const aiNub = aiPromote('Łucznik nubijski', { ...baseCtx(2, 'Egipt'), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } }, 100);
+  check(!aiNub.ok && aiNub.typeId === 'Łucznik nubijski',
+    'DECISION_REQUIRED (AI same-epoch): AI nubijski w Brązie NIE awansuje wg obecnej reguły epoki (promoteAiUnitForEra)', JSON.stringify(aiNub));
+  // AI dla Estólicy (Kamień -> Brąz): wzrost epoki, awans dozwolony
+  const aiEst = aiPromote('Oszczepnik (Estólica)', { ...baseCtx(2, 'Inkowie'), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } }, 100);
+  check(aiEst.ok, 'AI Oszczepnik (Estólica) Kamień -> Brąz: awans dozwolony (wzrost epoki)', JSON.stringify(aiEst));
 }
 
 console.log('10. Ścieżka AI dla narodowych łuczników Kamienia (egipski, sumeryjski): te same reguły co gracz');
