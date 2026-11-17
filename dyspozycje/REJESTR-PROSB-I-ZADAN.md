@@ -10649,3 +10649,11 @@ R-WEB-UI-TECH-DISCOVERY-BADGE-ELLIPSE-OVERLAP-Q1 (r1/5, Haiku, FC PASS-WITH-NOTE
 3. **Test „łucznik za piechotą”** — A: zostaje obecne zachowanie planera, aktualizacja asercji → R-WEB-TEST-DEBT-DECISIONS-ARCHERBEHIND-SZCZESCIE-Q1.
 4. **Szczęście** — zostaje komplet 12/24/32 (mury_kamienne, emporion w katalogu), aktualizacja testu (to samo zlecenie).
 **Nadal czeka na właściciela:** UNITSHP (jedno pole health, #455), NNSDIAG, kolor znaczników stron minimapy, rozstawienie bez generała / AUTO a zasadzka, utrzymanie Garnizonu 4 vs 2 (karta), koszt drogi brukowanej od zera 15+25.
+
+### DECYZJE WŁAŚCICIELA 2026-11-17 (część 2, odpowiedzi ABC na żywo)
+5. **UNITSHP** — A: przepiąć czytelników (`ai.ts`:3427, `battleScene.ts`:4279) na jedno pole `health`, usunąć duplikat Health/health (75 jednostek, 49 z różnymi wartościami; zmiana balansu AI/wieży akceptowana) → R-WEB-DATA-UNITS-HEALTH-SINGLE-FIELD-Q1; START DOPIERO PO wdrożeniu ARCHERS-4-5-6 (ten sam units.json).
+6. **NNSDIAG** — A: zbadać przyczynę (świeża tura 1 bez prognozy „Zakończ turę” vs po wczytaniu −48), diagnoza bez zmiany reguł; potem propozycja naprawy do decyzji właściciela → R-WEB-LOAD-ENDTURN-NNS-GATE-DIAGNOSIS-Q1.
+7. **Zasadzka bez generała** — B: zasadzka TYLKO z generałem (gracz i AI; przycisk/akcja zablokowane z komunikatem po polsku; w bitwie nie ma już ścieżki „rozstawienie bez generała → AUTO”) → R-WEB-ARMY-AMBUSH-REQUIRES-GENERAL-Q1 (battleScene.ts/main.ts/ambush*.ts).
+8. **Utrzymanie Garnizonu na karcie (4 vs 2 w danych)** — A: zostaje (karta pokazuje realny koszt po mnożnikach silnika); dane bez zmian; dopisać wyjaśnienie w podpowiedzi karty (niski priorytet, osobny drobny temat opcjonalny).
+9. **Kolory minimapy / obrażeń** — „Zmienimy wszystko na niebieski i czerwony”: znaczniki stron na minimapie zostają niebieski (gracz) / czerwony (przeciwnik); liczby obrażeń zadanych przez gracza NA PRZECIWNIKU = niebieskie, obrażenia NA JEDNOSTKACH GRACZA = czerwone (zastępuje konwencję „gracz czerwony / przeciwnik żółty” z R-WEB-BATTLE-DAMAGE-COLORS-PLAYER-RED-ENEMY-YELLOW-Q1) → R-WEB-UI-BATTLE-DAMAGE-COLORS-BLUE-RED-Q1 (battleScene.ts + damage-colors; sekwencyjnie po AMBUSH-REQUIRES-GENERAL, ten sam plik).
+10. **Droga brukowana** — A: zatwierdzone 15+25 od zera / 25 ulepszenie; już WDROŻONE (FALA 780, założenie potwierdzone), brak dalszych zmian.
