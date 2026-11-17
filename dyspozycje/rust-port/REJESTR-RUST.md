@@ -3091,3 +3091,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **T5b jazda — runda integracyjna r3 (`wf_ff355a62-ed0`):** FC PASS-WITH-NOTES `366e6ff8d` (r2). `merge-tree` na `83777efa9` czysty (exit 0). Operator r3: merge `--no-ff` + pełne bramki; FF wykona orkiestrator po werdykcie FC. Zabezpieczenie: `refs/keep/R-RUSTPORT-P6-K5DOC-T5B-FC-r2`, `rust-port-wip/R-RUSTPORT-P6-K5DOC-T5B-MARSZ-r2`.
 - **Aktywne Workflow:** 1 (T5b integracja r3). Wolne sloty: 3. Powód: brak czystego tematu Rust (lista jak w poprzednich przebiegach); dysk 8,1 GB — start Rust dopiero po zakończeniu bramek T5b.
 - **Otwarte decyzje ABC (w czacie):** #327, #358.
+
+### Przebieg — T5b integracja r3: BLOCK INFRA, sprzątanie, bramki r4 (2026-11-17 ~05:xx UTC)
+
+- **Runda r3 (`wf_ff355a62-ed0`):** Operator BLOCK INFRA (dysk 6,9 GB, bramki nieuruchomione), Ewaluator FAIL (infra, bez bramek), FC FAIL (infra). Merge `c97cd4542` i raport `7778e66af` zrobione lokalnie, bez push i FF.
+- **Zabezpieczenie:** `refs/keep/R-RUSTPORT-P6-K5DOC-T5B-INT-r3-merge` = `c97cd4542`, `…-INT-r3-report` = `7778e66af`; gałąź `rust-port-wip/R-RUSTPORT-P6-K5DOC-T5B-INT-r3` = `7778e66af` (readback zgodny).
+- **Sprzątanie (zakończone rundy):** usunięte worktree `wf_3446ab83-759-1..4` (T5b r2), `wf_bb4e6b3c-994-1..4` (T6 r6), `wf_ff355a62-ed0-1..3` (T5b r3). Każdy SHA zabezpieczony refem `refs/keep/R-SWEEP-r3-<sha9>`. Dysk z 4,8 GB do ok. 18 GB.
+- **DODATEK r4** (`a55923e05` na `claude/rust-sivvrn`): baza `7778e66af`, merge już zrobiony — runda odtwarza tylko bramki, bez zmian w kodzie.
+- **Aktywne Workflow:** `wf_122fbedc-719` (T5b integracja, bramki r4, Operator Haiku). Start po zapisie DODATEK r4.
+- **FF `parity-v2`:** dopiero po FC PASS. Bieżący `parity-v2` = `83777efa9`.
