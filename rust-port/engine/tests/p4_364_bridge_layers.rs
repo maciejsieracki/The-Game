@@ -431,3 +431,51 @@ fn mock_adapter_odrzuca_zapytanie_warstw() {
         .expect_err("most z mockiem odrzuca");
     assert_eq!(err.code, BridgeErrorCode::EngineRejected);
 }
+
+// bezposrednia sciezka portu (poza EngineBridge::handle) ---------------------------------------------
+
+#[test]
+fn execute_get_render_layers_bezposrednio_kumuluje_i_zwraca_niezmieniony_stan() {
+    let mut adapter = CivEngineAdapter::default();
+    adapter
+        .execute(EngineCommand::CreateSession {
+            params: StartGameParams::default(),
+        })
+        .expect("sesja startuje");
+    let seat = PlayerId::new(HUMAN);
+    let state_before = serde_json::to_value(adapter.state()).expect("stan");
+    assert!(adapter.fog_session().explored_by_human[&seat].is_empty());
+
+    let returned = adapter
+        .execute(layers_cmd(None))
+        .expect("execute(GetRenderLayers) przez port");
+    assert_eq!(
+        serde_json::to_value(&returned).expect("zwrocony stan"),
+        state_before,
+        "execute zwraca niezmieniony EngineState"
+    );
+    assert_eq!(
+        serde_json::to_value(adapter.state()).expect("stan"),
+        state_before,
+        "EngineState bez zmian"
+    );
+    let explored = adapter.fog_session().explored_by_human[&seat].clone();
+    assert!(
+        !explored.is_empty(),
+        "execute(GetRenderLayers) kumuluje eksploracje jak render_layers"
+    );
+
+    // Ta sama sciezka co render_layers: kolejne zapytanie przez port widzi te sama eksploracje.
+    let via_port = adapter.render_layers(None).expect("render_layers");
+    let expected = expected_layers(adapter.state(), HUMAN, &{
+        let mut m = civ_engine::domain::terrain::visibility::fog_view::ExploredByHuman::new();
+        m.insert(seat, explored.clone());
+        m
+    });
+    assert_eq!(via_port, expected);
+
+    let err = adapter
+        .execute(layers_cmd(Some(999)))
+        .expect_err("nieznany fotel odrzucony takze przez execute");
+    assert_eq!(err.code, BridgeErrorCode::EngineRejected);
+}
