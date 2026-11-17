@@ -3157,3 +3157,15 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Dysk:** 8,5 GB — tuż nad progiem 8 GB dla nowych startów z kodem Rust. Dlatego nie startuję kolejnego tematu w tym przebiegu.
 - **Wolne sloty (3 z 4): powód.** Bez zmian wobec poprzednich przebiegów: brak czystego tematu z listy (zablokowane decyzjami właściciela lub zależnościami; patrz przebieg 04:2x).
 - **Otwarte decyzje ABC (w czacie):** #327, #358.
+
+### Przebieg — T4c (#314) zintegrowany FF na parity-v2 (2026-11-17 ~04:5x UTC)
+
+- **FC PASS-WITH-NOTES `f85622878`** (Operator PASS-WITH-NOTES, Ewaluator PASS-WITH-NOTES). Bramki na tym samym kodzie: generator 314 przypadków (odmowa 44, planowanie 150), fmt EXIT 0, clippy EXIT 0, pełny `cargo test` EXIT 0 (3841 passed, 0 failed), `p6_k5doc_t4c` 14/14. Mutacje (a) brod, (b) clamp, (c) occByKey — FAIL.
+- **Weryfikacja przed FF:** ancestry `417091872` OK; diff względem parity to 5 plików T4c (allowlista) i `mod.rs` +1 linia.
+- **FF `rust-port/parity-v2`:** `417091872` → `f85622878` (readback zgodny). Zabezpieczenie: `refs/keep/R-RUSTPORT-P6-K5DOC-T4C-FC-r1`, gałąź `rust-port-wip/R-RUSTPORT-P6-K5DOC-T4C-DOMOVE-FC-r1`.
+- **Decyzja techniczna (orkiestrator, dla T4e #315):** `MoveWorld::move_cost(col,row)` w T4c nie przyjmuje jednostki. Web `_moveCostForUnit` zależy od `ru.mounted` (pin 7436–7445). Wpięcie T4e musi dostarczyć koszt per jednostka (świat per jednostka). Wektor dla jednostki konnej — do dodania w T4e.
+- **Uwaga do dispatchu (nie kod):** koniec `_doMove` to linia 8776 w pinie (dispatch podawał 8779 — błąd dispatchu; kod poprawny).
+- **Nota nieblokująca (z Ewaluatora):** mutacja `!= Attack` → `== Hold` przeszła, równoważna (rodzaje intencji: Hold/Move/Attack).
+- **Sprzątanie:** usunięte worktree `wf_ca9bf0be-2b1-1..4`, SHA zabezpieczone `refs/keep/R-SWEEP-T4C-*`. Dysk 15 GB.
+- **Aktywne Workflow:** 0. Wolne sloty: 4. Powód: brak czystego tematu Rust (kandydaci zablokowani: #253, #285, #286, #358 — decyzje właściciela; #261 czeka na #314 (już zintegrowany — do sprawdzenia w następnym przebiegu); #304 na #310; #113 na #107/#109/#112).
+- **Otwarte decyzje ABC (w czacie):** #327, #358.
