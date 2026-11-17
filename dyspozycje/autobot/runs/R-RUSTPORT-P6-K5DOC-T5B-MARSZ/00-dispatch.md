@@ -73,3 +73,11 @@ WZÓR: moduł T5a — `rust-port/engine/src/domain/siege_tactics_kite.rs` oraz g
   4. Bramki EXIT 0 w `rust-port/engine`: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --test p6_k5doc_t5b`, `cargo test --all-targets --no-fail-fast`. **Przed każdą bramką `df -h /`; przy < 8 GB BLOCK z liczbą GB.**
   5. Raport `03-integracja-r3.md`, commit merge jawnym `git add` (bez `-A`, `Cargo.lock`, nazwy modelu w trailerach). **Bez push, bez FF** — FF wykona orkiestrator po werdykcie FC.
 - Ewaluator i FC: odtworzyć bramki sam, sprawdzić diff merge względem `83777efa9` (allowlista T5b, mod.rs bez utraconych linii T6).
+
+## DODATEK r4 — BRAMKI RUNDY INTEGRACYJNEJ (po BLOCK INFRA Operatora r3, FAIL Ewaluatora/FC r3 — dysk 6,9 GB; BAZA NADPISANA)
+
+- Runda r3: merge `c97cd4542` (`--no-ff` 366e6ff8d na 83777efa9, merge-tree czysty) i raport `7778e66af` są już zrobione. Zabezpieczone: `refs/keep/R-RUSTPORT-P6-K5DOC-T5B-INT-r3-merge`, `…-INT-r3-report`, gałąź `rust-port-wip/R-RUSTPORT-P6-K5DOC-T5B-INT-r3` = `7778e66af`.
+- Dysk ma teraz ok. 18 GB (zwolnione worktree zakończonych rund).
+- **NOWA BAZA (jedyna obowiązująca): `7778e66af`.** Worktree detached. **Nie rób nowego merge, nie zmieniaj kodu.**
+- Zadanie r4 (Operator, Haiku): (1) ancestry `83777efa9` i `366e6ff8d` w `7778e66af`; (2) diff `83777efa9..7778e66af` tylko allowlista T5b (mod.rs +1 linia) i raporty; (3) bramki EXIT 0 w `rust-port/engine`: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --test p6_k5doc_t5b`, `cargo test --all-targets --no-fail-fast`. **Przed każdą bramką `df -h /`; przy < 8 GB BLOCK z liczbą GB.** (4) Raport `04-integracja-r4.md`, commit jawnym `git add`. Bez push, bez FF.
+- Ewaluator i FC: odtworzyć bramki sam (EXIT 0), sprawdzić diff względem `83777efa9`. Mutacje a/b/d były w r2 na tym samym kodzie (`366e6ff8d` = kod T5b) — nie powtarzać.
