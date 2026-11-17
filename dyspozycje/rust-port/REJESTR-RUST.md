@@ -3169,3 +3169,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Sprzątanie:** usunięte worktree `wf_ca9bf0be-2b1-1..4`, SHA zabezpieczone `refs/keep/R-SWEEP-T4C-*`. Dysk 15 GB.
 - **Aktywne Workflow:** 0. Wolne sloty: 4. Powód: brak czystego tematu Rust (kandydaci zablokowani: #253, #285, #286, #358 — decyzje właściciela; #261 czeka na #314 (już zintegrowany — do sprawdzenia w następnym przebiegu); #304 na #310; #113 na #107/#109/#112).
 - **Otwarte decyzje ABC (w czacie):** #327, #358.
+
+### Przebieg — heartbeat (2026-11-17 ~05:18 UTC): 0 Workflow aktywnych, 1 rozpoznanie w tle, dysk 15 GB
+
+- **Aktywne Workflow:** 0. Parity `rust-port/parity-v2` = `f85622878` (T4c zintegrowany, FF).
+- **Rozpoznanie w tle (nie Workflow, tylko odczyt, Haiku):** K5DOC-T7 FALANGA-COFANIE (#261), dispatch `R-RUSTPORT-P6-K5DOC-T7-FALANGA-ROZPOZNANIE`, DODATEK r2 z bazą `f85622878` (`51c1745cc`). Wynik: `01-rozpoznanie.md` (STATUS, mapa pina, podział T7a/T7b, allowlista, wektory). Odbiór i commit przez orkiestratora po powiadomieniu.
+- **Krok 2:** brak FC PASS bez integracji.
+- **Krok 3:** nic do usunięcia (brak worktree).
+- **Wolne sloty (4 z 4): powód.** Kandydaci zablokowani: #253, #285, #286, #358 (decyzje właściciela), #304 (czeka na #310), #113 (na #107/#109/#112), #107/#123 (facing, blokowany przez #113), #315 (T4e: wymaga decyzji o koszcie per jednostka, odnotowanej w poprzednim przebiegu, oraz wpięcia w ProdBody). T7 (#261) czeka na wynik rozpoznania — T7a/T7b wejdą jako dispatch po odbiorze.
+- **Otwarte decyzje ABC (w czacie):** #327, #358.
