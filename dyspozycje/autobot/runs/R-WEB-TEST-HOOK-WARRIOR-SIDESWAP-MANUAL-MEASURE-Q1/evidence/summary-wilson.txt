@@ -1,0 +1,9 @@
+hit role mode n errs atkWins atk% W95lo W95hi meanRounds meanAtkLoss meanDefLoss
+losowe atk auto 20 0 10 50.0 29.9 70.1 20.8 7.15 6.55
+losowe atk manual 20 0 11 55.0 34.2 74.2 23.6 6.8 7.15
+losowe swap auto 20 0 8 40.0 21.9 61.3 20.3 7.35 6.2
+losowe swap manual 20 0 6 30.0 14.5 51.9 24.1 7.95 6.2
+pewne atk auto 20 0 6 30.0 14.5 51.9 14.4 8.1 4.7
+pewne atk manual 20 0 4 20.0 8.1 41.6 18.6 9.2 5.45
+pewne swap auto 20 0 6 30.0 14.5 51.9 14.8 8.1 4.7
+pewne swap manual 20 0 11 55.0 34.2 74.2 15.5 5.75 7.65

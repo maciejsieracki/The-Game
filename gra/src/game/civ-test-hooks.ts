@@ -52,6 +52,10 @@ export interface CivTestDeps {
   /** R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1: opcjonalny typeId (klon wg units.json); bez niego jak dotąd. */
   addUnit: (ownerId: number, q: number, r: number, civilian: boolean, typeId?: string) => string | null;
   setWar: (a: number, b: number) => void;
+  /** R-WEB-TEST-HOOK-WARRIOR-SIDESWAP-MANUAL-MEASURE-Q1: ustawia isGeneral na jednostce wlasciciela na heksie (bramka trybu recznego). */
+  setGeneral: (ownerId: number, q: number, r: number) => boolean;
+  /** R-WEB-TEST-HOOK-WARRIOR-SIDESWAP-MANUAL-MEASURE-Q1: zamiana stron sceny bitwy przy nastepnym wejsciu na pole (tylko ?civTest=1). */
+  setSwapSides: (v: boolean) => void;
   /** Koniec tury gracza — w nim uruchamia sie automat ulepszen (REALNY `triggerPlayerEndTurn`). */
   endTurn: () => void;
   meOwnerId: () => number;
@@ -154,6 +158,9 @@ export interface CivTestApi {
   foundCity: (q: number, r: number) => boolean;
   addUnit: (ownerId: number, q: number, r: number, civilian?: boolean, typeId?: string) => string | null;
   setWar: (a: number, b: number) => void;
+  /** R-WEB-TEST-HOOK-WARRIOR-SIDESWAP-MANUAL-MEASURE-Q1 */
+  setGeneral: (ownerId: number, q: number, r: number) => boolean;
+  setSwapSides: (v: boolean) => void;
   /** Wlacza log decyzji pickera (zbierany do bufora); zwraca nic. */
   debugOn: () => void;
   debugOff: () => void;
@@ -219,6 +226,8 @@ export function installCivTestHooks(win: Record<string, unknown>, search: string
     foundCity: (q, r) => deps.foundPlayerCity(q, r),
     addUnit: (ownerId, q, r, civilian = false, typeId) => deps.addUnit(ownerId, q, r, civilian, typeId),
     setWar: (a, b) => deps.setWar(a, b),
+    setGeneral: (ownerId, q, r) => deps.setGeneral(ownerId, q, r),
+    setSwapSides: v => deps.setSwapSides(v),
     debugOn: () => { win.__civAutoImproveDebug = (e: unknown) => { buffer.push(e); }; },
     debugOff: () => { delete win.__civAutoImproveDebug; },
     drainDecisions: () => buffer.splice(0, buffer.length),
