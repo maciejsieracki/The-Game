@@ -50,6 +50,7 @@
  */
 
 import * as THREE from 'three';
+import { ambushLineIdeal, ambushFlankCells } from './ambushDeploy';
 import {
   resolveCombat,
   hitChanceTw,
@@ -522,6 +523,12 @@ export interface BattleOpts {
   deploy?: boolean;
   /** Ktora strone gracz rozstawia/recznie prowadzi (domyslnie atakujacy). */
   deployPlayerSide?: 'atk' | 'def';
+  /**
+   * R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: bitwa z zasadzki. `surprisedSide` = strona, ktora
+   * wpadla w zasadzke (rozstawia sie w dlugiej linii, max AMBUSH_FORMATION_MAX_WIDTH w szeregu);
+   * druga strona = zastawiajacy (strefa obejmuje takze pole wroga). Omit = zwykla bitwa.
+   */
+  ambush?: { surprisedSide: 'atk' | 'def' };
   /** RDY-01 / D4-Q3: bonusy cyw armii atakujacej (civs.json bonusy[]). */
   attackerCivBonusy?: readonly CivBonusEntry[];
   /** RDY-01 / D4-Q3: bonusy cyw armii broniacej. */
@@ -2190,6 +2197,8 @@ export class BattleScene {
   private _deployMode = false;
   /** Strona gracza w deploy / trybie recznym (atak lub obrona). */
   private _deployPlayerSideOpt: 'atk' | 'def' = 'atk';
+  /** R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: strona zaskoczona zasadzka (null = zwykla bitwa). */
+  private _ambushSurprisedSide: 'atk' | 'def' | null = null;
   /** Tryb rozstawiania: gracz przesuwa jednostki przed walka. */
   private deployPhase = false;
   /** Zaznaczona jednostka atakujaca do przeniesienia. */
@@ -3548,6 +3557,7 @@ export class BattleScene {
     }
     this._deployMode = opts.deploy === true;
     this._deployPlayerSideOpt = opts.deployPlayerSide ?? 'atk';
+    this._ambushSurprisedSide = opts.ambush?.surprisedSide ?? null;
     this._placeUnits(opts.attacker, opts.defender, opts.siege != null);
 
     // Inicjuj faze rozstawiania jesli opts.deploy === true
@@ -3556,6 +3566,12 @@ export class BattleScene {
       this._buildDeployZone();
       this._buildDeployToolbar();
       this._initDeployUI();
+      // R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: powod ukladu po polsku (zaskoczony / zastawiajacy).
+      if (this._ambushSurprisedSide !== null) {
+        this._showDeployFeedback(this._isAmbushAmbusherPlayer()
+          ? 'Zasadzka — możesz rozstawić jednostki także na polu wroga.'
+          : 'Wpadłeś w zasadzkę — jednostki w długiej linii (max 3 w szeregu).');
+      }
       this._syncBattleToolbarMode();
       this._updateArmyMoraleBars();
       this._syncMinimapPhaseChrome();
@@ -5386,6 +5402,8 @@ export class BattleScene {
         idealRow[index] = clampRow(slot.row);
         idealCol[index] = clampCol(frontCol + slot.rank * rankStep);
       });
+      // R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: bitwa z zasadzki nadpisuje idealne pozycje.
+      this._applyAmbushDeployIdeal(side, units, idealRow, idealCol, frontCol, rankStep);
       // Row span of the non-mounted body: wing horse must stay OUTSIDE it.
       const mountedSet = new Set<BattleUnit>(formation.mounted);
       let bodyMinRow = Infinity, bodyMaxRow = -Infinity;
@@ -13130,13 +13148,67 @@ export class BattleScene {
     return this.atk;
   }
 
+  /** R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: gracz jest stroną zastawiającą zasadzkę (strefa = całe pole). */
+  private _isAmbushAmbusherPlayer(): boolean {
+    return this._ambushSurprisedSide !== null
+      && this._playerControlSide() !== this._ambushSurprisedSide;
+  }
+
+  /**
+   * R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: nadpisuje idealne pozycje strony w bitwie z zasadzki.
+   * - zaskoczeni: długa linia, max AMBUSH_FORMATION_MAX_WIDTH jednostek w szeregu;
+   * - zastawiający AI: skrzydła i tyły linii zaskoczonych (w całym polu);
+   * - zastawiający gracz: bez zmian (rozstawia ręcznie w pełnej strefie).
+   * Kolizje/przeszkody dalej rozstrzyga istniejący fallback w _placeUnits.
+   */
+  private _applyAmbushDeployIdeal(
+    side: 'atk' | 'def',
+    units: BattleUnit[],
+    idealRow: number[],
+    idealCol: number[],
+    frontCol: number,
+    rankStep: number,
+  ): void {
+    const surprised = this._ambushSurprisedSide;
+    if (surprised === null) return;
+    if (side === surprised) {
+      const ideal = ambushLineIdeal(units.length, frontCol, rankStep, PLAY_MID_ROW);
+      ideal.forEach((cell, i) => {
+        idealCol[i] = Math.max(PLAY_COL0, Math.min(PLAY_COL1, cell.col));
+        idealRow[i] = Math.max(PLAY_ROW0, Math.min(PLAY_ROW1, cell.row));
+      });
+      return;
+    }
+    if (side === this._playerControlSide()) return;
+    const surprisedFront = surprised === 'atk' ? ATK_FRONT_COL : DEF_FRONT_COL;
+    const cells = ambushFlankCells(
+      units.length,
+      { col0: PLAY_COL0, col1: PLAY_COL1, row0: PLAY_ROW0, row1: PLAY_ROW1 },
+      (c, r) => !this.occByKey.has(cellKey(c, r)) && this.terrainMap.passable(c, r),
+      PLAY_MID_ROW,
+      surprisedFront,
+    );
+    if (cells === null) return;
+    cells.forEach((cell, i) => {
+      idealCol[i] = cell.col;
+      idealRow[i] = cell.row;
+    });
+  }
+
   private _inDeployPlayerZone(col: number, row: number): boolean {
+    if (this._isAmbushAmbusherPlayer()) {
+      return col >= PLAY_COL0 && col <= PLAY_COL1
+        && row >= DEPLOY_MIN_ROW && row <= DEPLOY_MAX_ROW;
+    }
     return this._playerControlSide() === 'atk'
       ? inDeployAtkZone(col, row)
       : inDeployDefZone(col, row);
   }
 
   private _clampDeployPlayerCol(col: number): number {
+    if (this._isAmbushAmbusherPlayer()) {
+      return Math.max(PLAY_COL0, Math.min(PLAY_COL1, col));
+    }
     if (this._playerControlSide() === 'atk') {
       return Math.max(DEPLOY_MIN_COL, Math.min(DEPLOY_MAX_COL, col));
     }
@@ -17848,6 +17920,8 @@ export class BattleScene {
       idealRow[index] = clampRow(slot.row);
       idealCol[index] = clampCol(frontCol + slot.rank * rankStep);
     });
+    // R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: reset rozstawienia bitwy z zasadzki.
+    this._applyAmbushDeployIdeal(side, units, idealRow, idealCol, frontCol, rankStep);
     const mountedSet = new Set<BattleUnit>(formation.mounted);
     let bodyMinRow = Infinity, bodyMaxRow = -Infinity;
     for (const slot of slots) {
