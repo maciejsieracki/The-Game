@@ -3544,3 +3544,22 @@ Konsekwencje dla kolejki:
 | P4-1-STATCHIP-SYNC: bramka pełna przed FF | oczekuje na dysk ≥12 GB | OPUS 5.5 | — |
 
 **Dług do osobnych tematów:** DTO-BRIDGE (#308, wołający produkcyjny P4) i FOG-WIRE (producent mgły → renderer).
+
+### Przebieg — Q6 UNITS (#270/#328): FC PASS-WITH-NOTES, zintegrowany na parity-v2 (667fe72e2); start FOG-VIEW r3 (2026-11-17 ~15:xx UTC)
+
+- **Workflow R-RUSTPORT-P4-1G-Q6-UNITS-R1 (`wf_9e8c5301-e81` i `wwb3dwhhc`, Opus):** Operator BLOCK INFRA (kod celowany zielony). Evaluator FAIL (INFRA + GOAL). Obrona: przyjęte częściowo, kod `7932b4891`. FC PASS-WITH-NOTES na `667fe72e2`, ancestry z bazą `2760b4f0c` potwierdzona, zakres w allowliście (odstępstwo: producent w `engine/src/domain/overlays_view.rs`, bo `view-model/src/overlays_view.rs` nie istnieje).
+- **Bramki (FC, renderer przy 13 GB, bez równoległych buildów):** `fmt` EXIT 0; `clippy --all-targets -D warnings` EXIT 0 (engine i renderer); `overlays_units_q6` 6/6; engine `--all-targets` 2167+1725 passed, 0 failed; renderer `--all-targets` 78 binarek, 672 passed, 0 failed. Mutacje (a)(b)(c) FAIL.
+- **Integracja:** FF `parity-v2`: `2760b4f0c..667fe72e2`; readback `667fe72e24d2`. Zabezpieczenia: `refs/keep/Q6-UNITS-R1-fc`, gałąź `rust-port-wip/Q6-UNITS-R1-fc-impl`.
+- **Decyzje techniczne (orkiestrator):**
+  - **Q6-1:** zaznaczenie z `state.selected_unit_id`. Rozbieżność z komentarzem `SelectionUi` (D-CMD-12) do wyjaśnienia w tematach DTO.
+  - **Q6-2 — ZNANA ROZBIEŻNOŚĆ OD WEBU (dług):** aktywny tryb budowy z pustym zbiorem heksów. Web (`main.ts:16351-16395`) czyści podświetlenie (`setHighlight(pusty Set)` przy `foundCityMode`/`activeWonderId`, `clearHighlight` przy trybie kopalni). Rust pokazuje zasięg ruchu. Naprawa: `Option<BuildHighlightDto>` albo jawny pusty stan. Osobny temat **BUILD-HIGHLIGHT-PARITY**. Do czasu naprawy: rozbieżność widoczna dla gracza przy zakładaniu miasta bez dopuszczalnego heksu.
+  - **Q6-3:** panel oblężenia czyści tylko zasięg, warstwa budowy zostaje (zgodnie z pinem).
+- **Dług DTO-BRIDGE (#308):** `unit_overlays_view` nie ma wołającego produkcyjnego. Adapter gotowy, nie wołany w grze.
+- **Sprzątanie:** worktrees `wf_9e8c5301-e81-1..4` usunięte; commity zabezpieczone; brak żywych procesów cargo. Dysk: 14 GB.
+- **Start:** FOG-VIEW r3 (#253/#335), Opus, dispatch DODATEK r3 (`f51f30994`), gate-only na `a17f28d42`. Workflow `wf_33315773-a09`.
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| P4-1C FOG-VIEW r3: bramka pełna (#253/#335) | Operator | OPUS 5.5 | ~15:xx UTC |
+| P4-1-STATCHIP-SYNC: bramka pełna przed FF (#324/#333) | oczekuje na dysk ≥12 GB | OPUS 5.5 | — |
+| BUILD-HIGHLIGHT-PARITY (Q6-2) | do rozpisania | OPUS 5.5 | — |
