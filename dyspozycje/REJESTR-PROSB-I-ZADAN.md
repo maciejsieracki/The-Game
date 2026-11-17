@@ -10703,3 +10703,10 @@ Właściciel: koszt pokoju znacząco podwyższyć tak, by na starcie wojny zwyci
 ### LEFTOVERS — FC PASS-WITH-NOTES (2026-11-17), w main bez wdrożenia ROBOCZEJ (tylko test + docs)
 - R-WEB-TEST-DOC-DEBT-GENCAP-SZCZESCIE-LEFTOVERS-Q1 (1b599022b): 7 nowych asercji GENCAP-LIMITS (limit stosu stolicy i limit Super-jednostki, czytane z kodu/danych; mutacje czerwienieją), `BALANS-SZCZESCIE-SKALOWANIE-EPOK.md` 11/23/31 → 12/24/32 (katalog 44). Po merge na aktualny main powtórzone: GENCAP PASS, szczęście 535/0 i 148/0.
 - Uwaga: `civpediaOpenGate.ts:36` z dispatchu NIE istnieje w drzewie; historyczne wzmianki 11/23/31 (REJESTR, komentarz testu, parametr scenariusza) zostawione celowo.
+
+### FALA 794 — UNITSHP (2026-11-17)
+- Wdrożone na ROBOCZĄ: **R-WEB-DATA-UNITS-HEALTH-SINGLE-FIELD-Q1** (r2 FC PASS-WITH-NOTES f761d6c73; r1 Operator błędnie zwrócił DECISION_REQUIRED mimo decyzji A — Evaluator FAIL → Obrona wdrożyła A). `units.json`: usunięte 75 wpisów `Health`, zostaje jedno pole `health`; czytelnicy definicji przepięci na `health` (ai.ts `_unitMaxHealth`, HP wieżyczki w battleScene, combat/testBattle/main/oblezenie/loader/unitEngineStats, siegeDefenders). Nowy test-strażnik `units-health-single-field-test.cjs` (dane + skan src + wykryta mutacja).
+- main ef46937bf, ROBOCZA MD5 3823de2e (GitHub Raw = manifest), sidecary audio 3/3 zgodne.
+- **Skutek rozgrywkowy (zamierzony, decyzja A):** AI liczyła maxHP jednostek z pola `Health` (np. Wojownik 60), a walka z `health` (22) — AI zaniżała ułamek zdrowia pełnego Wojownika (ok. 0,37). Po zmianie AI i walka liczą to samo; ocena sił jednostek w AI/podziale armii dla 44 z 75 jednostek zmienia się. NIE ZMIERZONO: symulacja siły AI przed/po (≥3×150 tur) ani Chromium — do obserwacji w grze.
+- Testy: units-health-single-field ZIELONY, combat 6/6, unit-info-card 23/0, archers-health-dist 10/0, logic 213/213, tsc 0, build OK.
+- UWAGA: `gra/tools/roster6-units-patch.cjs` NADPISUJE units.json — nie uruchamiać bez decyzji.
