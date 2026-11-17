@@ -3640,3 +3640,23 @@ Konsekwencje dla kolejki:
 |---|---|---|---|
 | P4-1 L1/L2 REVEAL (#363) | Operator | OPUS 5.5 | ok. 17:10 UTC |
 | P4-1 STATCHIP-SYNC (#361) | czeka na slot renderera i ≥12 GB | OPUS 5.5 | — |
+
+### Przebieg — L1/L2 REVEAL (#363): FC PASS-WITH-NOTES, zintegrowany na parity-v2 (2026-11-17 ~17:55 UTC)
+- **Łańcuch:** Operator `52571418e` PASS-WITH-NOTES (kod `06f3b6ce1`) → Evaluator `b900a3764` PASS-WITH-NOTES (7 zarzutów) → Obrona `2916510a7` → FC `e38562547` PASS-WITH-NOTES.
+- **Zakres:** 6 plików `rust-port/` (view-model `map.rs`, renderer `fog.rs`, `terrain.rs` tylko komentarze, test, generator, wektory). Bez trailera z nazwą modelu.
+- **Bramki:** view-model i renderer fmt/clippy/testy EXIT 0; `reveal_l12` 7/7; renderer 80 binarek, 687 zaliczonych; generator 28 scenariuszy zgodny z pinem.
+- **Integracja:** FF `parity-v2` `1db08c170` → `e385625`. Zabezpieczenia: `refs/keep/L12-REVEAL-R1-fc`, gałęzie `…-R1-fc` i `…-R1-op`.
+- **Decyzja orkiestratora (rozbieżność dispatch/pin):** `riverRevealKeys` = `startRevealKeysForRiverFog()` (`main.ts:13074-13080`), nie `rzeka_krawedzie` (`scene.ts:1263-1264` to JSDoc logiki gry). Dispatch do korekty.
+- **Dług (przyjęty):** producent `FogRevealDto` w engine (`fog_view`) i wpięcie w `RenderLayersDto` są poza allowlistą → ID `R-RUSTPORT-P4-1-L12-REVEAL-WIRE`, w ramach #364 DTO-BRIDGE. Nie oznaczać jako wpiętego w grę.
+
+### Przebieg — STATCHIP-SYNC (#361): integracja na parity-v2 po bramce renderera (2026-11-17 ~18:05 UTC)
+- **Źródło:** FC `cab8505ce` PASS-WITH-NOTES (kod `f9f42ce23`, baza `2760b4f0c`). Merge z bieżącym parity `e385625`: `merge-tree` czysty; wynik `e2a2c4e2f`.
+- **Zakres:** 7 plików renderera (`cities/`, `view/cities.rs`, `view/overlays.rs`, 2 testy). `StatChipUiState` usunięty, zastąpiony przez `MapUiState::hide_stat_chips`.
+- **Bramka renderera na merge:** fmt EXIT 0; clippy `-D warnings` EXIT 0; `cargo test --all-targets --no-fail-fast` EXIT 0 (80 binarek, 687 zaliczonych, 0 nieudanych).
+- **FF:** `parity-v2` `e385625` → `e2a2c4e2f`, readback zgodny. Zabezpieczenie: `refs/keep/STATCHIP-SYNC-R1-integ`, gałąź `rust-port-wip/R-RUSTPORT-P4-1-STATCHIP-SYNC-R1-integ`.
+- **Notatka:** `pin` linii w komentarzach (#325/#355) nadal do poprawy osobnym tematem dokumentacyjnym.
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| Brak aktywnych workflow 3D | — | — | — |
+| Następny: DTO-BRIDGE (#364) z ID wpięć L12/F2/FOG | do rozpisania dispatch | OPUS 5.5 | — |
