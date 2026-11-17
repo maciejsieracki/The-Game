@@ -114,3 +114,88 @@ DEPLOY/PUSH: NIE WYKONANO (push tylko przez orkiestratora po Final Control; Oper
 - Testy na żywo (`diplomacy-city-cession-live-test.cjs`, uruchomione przypadkiem w pętli) zmodyfikowały pliki PNG w `dyspozycje/autobot/runs/R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1/evidence/` i `R-WEB-PEACE-CITY-CESSION-Q1/evidence/` — przywrócone `git checkout`, nie commitowane.
 - Czas wykonania harnessów: `diplo-peace-gate-mutation-run` ~minuty; nie puszczać w pętli z innymi.
 - W `/tmp` zostały logi (`/tmp/wf84-*.log`, `/tmp/peace-price-table-a`), do sprzątania przez orkiestratora.
+
+---
+
+## Obrona — runda po ocenie Evaluatora (kandydat 638ff517c, baza 5bafaa3c3)
+
+Kod wynikowy tej rundy: `d9aa131dc` (commit: P9 behawioralny, poprawka dokumentacji zmeczenie-wojna.md + wikiBundle, stan t1 w fixturze Chromium). Raport przed commitem tej rundy nie zmienia zachowania gry.
+
+### Odpowiedzi na zarzuty Evaluatora
+
+**Zarzut 1 (brak żywego Chromium) — PRZYJMUJĘ CZĘŚCIOWO.**
+- Uruchomiłem `gra/tools/pw-weary-table-browser-test.cjs` (Playwright, headless, `/usr/bin/chromium`, Vite dev server). Wynik: `BROWSER PASS`, exit 0.
+- Panel w Chromium pokazuje cenę z realnego `evaluateProposal`: t11 = 4350 PN, t20 = 3000 PN, t30 = 1500 PN, t40 = 0 PN (zmęczenie 28/50/75/100%). Brak starego wiersza Z.
+- Dodałem stan t1 do fixtury (`gra/tools/pw-weary-table-browser-entry.ts`). Chromium pokazuje dla t1 powód: „Pokój i rozejm dostępne po 10 pełnych turach wojny". Czyli cena ~5850–6000 w t1 NIE jest widoczna gracza z powodu istniejącej bramki 10 tur. To jest obserwacja, nie błąd kodu.
+- Ograniczenie: to fixture (stan składany w stronie), a nie pełna partia od startu. Żywa gra od t1 do t40 w Chromium: NIE ZMIERZONO.
+- Dowód: `$S/chromium-run2.log` (`$S` = scratchpad), linia z `"id":"t1"` i `BROWSER PASS`.
+
+**Zarzut 2 (pomiar weary40-sim: PRZED to proxy, nie realna baza; PRZED wymaga /tmp/basegra) — PRZYJMUJĘ CZĘŚCIOWO (ujawnienie + powtarzalność), ODRZUCAM żądanie realnej ceny bazowej w tej rundzie.**
+- Ujawnienie: wariant PRZED w `weary40-sim-measure.cjs` nadal używa `deps.price` = proxy `round(100*(udział-0,5)*2)` (linia ~139). To NIE jest realna cena bazy (w bazie cena siedziała w callerach `main.ts` / `diplomacy-*.ts`, nie w `war-weariness.ts`). Wynik PRZED jest MODELEM, nie pomiarem bazy. NIE ZMIERZONO realnej ceny bazowej.
+- Powtarzalność: baza wyeksportowana z `git archive 5bafaa3c335fc1e00a3ab5c68128e98c14808144 gra/src gra/data` do scratchpadu (bez /tmp/basegra), uruchomienie z `--basesrc <scratchpad>/base/gra`.
+- Odrzucam wymóg podpięcia realnej ceny bazowej w tej rundzie: wymagałoby zbundlowania logiki callerów bazy (main.ts, diplomacy-proposals.ts) — poza zakresem tego tematu i ryzykowne dla odbioru. Zostawiam jako dług do osobnego tematu.
+- Pomiar (zmierzony, `--turns 150 --seeds 3 --variant both`, 17 s):
+
+| ziarno | wariant | elim | wojny@koniec | śr. tur wojny | maxShareEnd (najsilniejsza civ, udział miast) |
+|---|---|---|---|---|---|
+| 1 | PO | 0 | 0 | 30,4 | 0,733 |
+| 2 | PO | 0 | 0 | 31,93 | 0,722 |
+| 3 | PO | 0 | 0 | 29 | 0,75 |
+| 1 | PRZED (proxy) | 0 | 0 | 25,5 | 0,267 |
+| 2 | PRZED (proxy) | 0 | 0 | 25,07 | 0,222 |
+| 3 | PRZED (proxy) | 0 | 0 | 19 | 0,25 |
+
+- Wniosek balansowy (NIE zmieniam parametrów): w wariancie PO najsilniejsza civ kończy z 72–75% miast przy eliminacjach 0, a wojny trwają ~30 tur (2–2,5× PRZED-proxy). To zamierzony skutek decyzji właściciela („im dalej w las, tym koszt niższy"), ale koncentracja miast to ryzyko do decyzji właściciela.
+- Dowód: `$S/weary40-both-150x3.jsonl`.
+
+**Zarzut 3 (dokumentacja l.58 i wikiBundle: „co najmniej 3 miasta muszą zostać") — PRZYJMUJĘ.**
+- Poprawiono `docs/encyklopedia/pojecia/zmeczenie-wojna.md` l.58: usunięto zdanie o progu 3 miast; podano, że chroniona jest wyłącznie stolica, a próg 3 miast został usunięty (kod: `cityCap = ownCities`).
+- Regeneracja: `node tools/bundle-wiki-for-game.cjs` → `wikiBundle.json: 22 rozdz. + 185 haseł`. Jedyne trafienie frazy w bundle to nowy tekst, który mówi, że próg został usunięty.
+
+**Zarzut 4 (P9 w diplo-peace-price-decay-test.cjs jest tautologią) — PRZYJMUJĘ.**
+- P9 przepisany na test BEHAWIORALNY (`gra/tools/diplo-peace-price-decay-test.cjs`): mutant z `cityCap = ownCities - 3` jest bundlowany i uruchamiany przez `runWarWearinessTick`.
+- Scenariusz: 4 miasta przegrywającego (stolica zakazana, miasta po 1840 PN), zmęczenie 0,75 (`warWearinessLevel` z tur 30, strat 0), próg wymuszenia = 0,75, cena ustawiona na ~2500 PN (tak, by pokrywały ją 2 miasta).
+- P9a (kod realny): `forced_peace`, oddane ≥2 miasta, stolica zostaje — PASS.
+- P9b (mutant): `none` (wojna trwa, brak pokoju) — PASS.
+- Uwaga: przy bieżących parametrach (progWymuszonyPokoj = 1,0) gałąź ceny > 0 w wymuszeniu jest nieosiągalna, więc test musi ustawić próg/cenę w swoim parametrze (`P` klonowane z JSON, nie zmienia pliku danych).
+- `node tools/diplo-peace-price-decay-test.cjs` → PASS=13 FAIL=0, exit 0.
+
+**Zarzut 5 (martwe parametry: `czlowiek.*` w war-weariness-params.json, `cenaPokoju.turyBezOgraniczenAi`) — ODRZUCAM usuwanie; zostawiam jako jawnie oznaczony dług.**
+- Dowód: `czlowiek` jest w typie `WarWearinessParams` (`war-weariness.ts:49`) i w JSON; `_opis` oraz `_pozycjaPW` mówią wprost „nieużywane w kodzie". Usunięcie zmienia schemat danych, a `json-descriptions-sync-test` (19/0) i wiki opisują te pola. Zakres tematu tego nie obejmuje.
+- Dowód niezgodności nie ma: `docs/encyklopedia/pojecia/rozejm-pokoj.md` l.101 też oznacza `turyBezOgraniczenAi` jako nieużywany.
+
+### Testy tej rundy (surowe wyniki)
+- `node ./node_modules/typescript/bin/tsc --noEmit` → exit 0 (po `npm ci --ignore-scripts`).
+- `node tools/diplo-peace-price-decay-test.cjs` → PASS=13 FAIL=0, exit 0.
+- `node tools/diplo-peace-price-wiring-test.cjs` → PASS=14 FAIL=0, exit 0.
+- `node tools/json-descriptions-sync-test.cjs` → 19 pass / 0 fail, exit 0.
+- `node tools/pw-weary-table-browser-test.cjs <scratchpad>` → BROWSER PASS, exit 0 (Chromium headless).
+- `node tools/weary40-sim-measure.cjs --turns 150 --seeds 3 --variant both --basesrc <scratchpad>/base/gra` → tabela powyżej.
+- NIE uruchamiałem ponownie: pełnego zestawu logic/tech-tree/research/unit-replace/combat z poprzedniej rundy (kod gry nie zmienił się w tej rundzie poza testami, dokumentacją i fixturą tool).
+
+### Zmiany tej rundy (allowlista)
+- `docs/encyklopedia/pojecia/zmeczenie-wojna.md` (l.58)
+- `gra/src/data/wikiBundle.json` (regeneracja)
+- `gra/tools/diplo-peace-price-decay-test.cjs` (P9 behawioralny)
+- `gra/tools/pw-weary-table-browser-entry.ts` (stan t1 w fixturze, tylko narzędzie)
+- `dyspozycje/autobot/runs/R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1/30-obrona-claude.md` (ten raport)
+
+### Blokady (jawnie)
+- NIE ZMIERZONO: żywa pełna gra od t1 w Chromium (tylko fixture).
+- NIE ZMIERZONO: realna cena bazowa w wariancie PRZED (proxy; dług do osobnego tematu).
+- DECYZJA WŁAŚCICIELA: koncentracja miast 72–75% w PO (balans), nie zmieniam sam.
+
+### Uwagi dla orkiestratora
+- Ścieżka `/tmp` nie była używana do wyników; scratchpad to `/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad`.
+- Brak nowych sesji, zadań ani harmonogramów (zakaz z dispatchu zachowany).
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1
+GOAL: jedna cena pokoju cenaStartPn×(1−L) na wszystkich ścieżkach; wymuszony pokój bez progu 3 miast; dokumentacja i testy zgodne z kodem
+ZMIANY-COMMIT: d9aa131dc (docs zmeczenie-wojna.md, wikiBundle.json, diplo-peace-price-decay-test.cjs P9, pw-weary-table-browser-entry.ts t1); raport 30-obrona-claude.md (commit osobny)
+TESTY: tsc 0; price-decay 13/0; price-wiring 14/0; json-sync 19/0; Chromium BROWSER PASS; weary40 150×3 PO maxShareEnd 0,733/0,722/0,75 elim 0; PRZED (proxy) 0,267/0,222/0,25 elim 0
+BLOKADY: NIE ZMIERZONO żywa gra w Chromium od t1; NIE ZMIERZONO realna cena bazowa PRZED; balans 72–75% w PO do decyzji właściciela
+RUNDY: obrona po ocenie Evaluatora (kandydat 638ff517c), ten sam temat
+NASTĘPNY KROK: ponowna ocena Evaluatora na d9aa131dc; decyzja właściciela o koncentracji miast w PO i o realnej bazie PRZED
+DEPLOY/PUSH: NIE WYKONANO
