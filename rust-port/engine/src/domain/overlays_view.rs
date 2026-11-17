@@ -463,6 +463,9 @@ pub struct UnitOverlaysInput<'a, 'b> {
     pub build_ui: BuildHighlightUi<'a>,
     /// Zrodla silnika dla [`build_highlight`].
     pub build_sources: &'b BuildHighlightSources<'a>,
+    /// Stan UI zaznaczenia dla [`selection`], podawany przez wolajacego (kontrakt D-CMD-12 bez
+    /// zmian, obrona r1 zarzut 4): `PlayableState.selected_unit_id` NIE jest tu czytany.
+    pub selection_ui: SelectionUi,
 }
 
 /// Pola jednostkowe `OverlaysViewDto` jednego snapshotu: `reachable`, `buildHighlight`,
@@ -492,23 +495,20 @@ impl UnitOverlaysView {
 /// Producent pol jednostkowych nakladek (Q6): JEDYNY wolajacy [`reachable_overlay`],
 /// [`path_route_overlay`], [`selection`] i [`build_highlight`] po stronie silnika.
 ///
-/// Decyzja techniczna Q6-1: jedno zrodlo `selectedId` na snapshot = `state.selected_unit_id`
-/// (web: jedna zmienna `selectedId`, `main.ts:7116`); to samo pole czytaja juz
-/// [`reachable_overlay`] i [`path_route_overlay`], wiec `selection` dostaje
-/// `SelectionUi { selected_unit_id: state.selected_unit_id }` - zaznaczenie, zasieg i trasa nie
-/// moga sie rozjechac miedzy soba.
+/// Zaznaczenie (`selection`) bierze [`UnitOverlaysInput::selection_ui`] od wolajacego, zgodnie z
+/// kontraktem [`SelectionUi`] (D-CMD-12). [`reachable_overlay`] i [`path_route_overlay`] czytaja
+/// `state.selected_unit_id` (ich istniejacy kontrakt F5). W webie to jedna zmienna `selectedId`
+/// (`main.ts:7116`), wiec wolajacy (most DTO, #308) MUSI podac te sama wartosc w obu miejscach;
+/// ujednolicenie zrodla to decyzja orkiestratora (dawna propozycja Q6-1, wycofana w obronie r1).
 #[must_use]
 pub fn unit_overlays_view(
     state: &PlayableState,
     input: &UnitOverlaysInput<'_, '_>,
 ) -> UnitOverlaysView {
-    let sel_ui = SelectionUi {
-        selected_unit_id: state.selected_unit_id,
-    };
     UnitOverlaysView {
         reachable: reachable_overlay(state),
         build_highlight: build_highlight(&input.build_ui, input.build_sources),
-        selection: selection(&sel_ui, &state.units),
+        selection: selection(&input.selection_ui, &state.units),
         path_route: path_route_overlay(state, input.hover),
     }
 }
@@ -1048,6 +1048,10 @@ mod q6_unit_overlays_tests {
                 hover: None,
                 build_ui: ui,
                 build_sources: &src,
+                // Wolajacy podaje ten sam `selectedId` co stan (web: jedna zmienna, `main.ts:7116`).
+                selection_ui: SelectionUi {
+                    selected_unit_id: state.selected_unit_id,
+                },
             },
         )
     }
@@ -1165,5 +1169,51 @@ mod q6_unit_overlays_tests {
         );
         assert_eq!(farm.build_highlight.kind, BuildHighlightKind::Improvement);
         assert_eq!(farm.build_highlight.hexes, hs(&[1, 2]));
+        // Kopalnia zloza (`isMineImprovementKey`, `main.ts:16386-16390`): ten sam zbior heksow,
+        // rodzaj `Mine` (obrona r1, zarzut 6).
+        let mine = view(
+            &state,
+            BuildHighlightUi {
+                build_mode_open: true,
+                active_improvement_key: Some("kopalnia_miedzi"),
+                ..NO_BUILD
+            },
+        );
+        assert_eq!(mine.build_highlight.kind, BuildHighlightKind::Mine);
+        assert_eq!(mine.build_highlight.hexes, hs(&[1, 2]));
+    }
+
+    /// D-CMD-12 (obrona r1, zarzut 4): `selection` idzie z `UnitOverlaysInput::selection_ui`, nie
+    /// z `state.selected_unit_id`.
+    #[test]
+    fn q6_selection_z_wejscia_ui_nie_ze_stanu() {
+        let mut state = corridor(6, 3);
+        state.units.push(unit(901, HUMAN, 1, 3));
+        let map_hexes = [(0, 0)];
+        let undo = HashSet::new();
+        let src = BuildHighlightSources {
+            map_hexes: &map_hexes,
+            is_in_start_reveal: &|_, _| true,
+            can_found_player_city_at: &|_, _| true,
+            qualifying_wonder_hexes: &Vec::new,
+            qualifying_hexes: &|_| Vec::new(),
+            pending_undo_keys: &undo,
+        };
+        let with_ui = |selected: Option<u64>| {
+            unit_overlays_view(
+                &state,
+                &UnitOverlaysInput {
+                    hover: None,
+                    build_ui: NO_BUILD,
+                    build_sources: &src,
+                    selection_ui: SelectionUi {
+                        selected_unit_id: selected,
+                    },
+                },
+            )
+            .selection
+        };
+        assert_eq!(with_ui(Some(901)).map(|s| s.hex), Some(HexCoord::new(1, 0)));
+        assert_eq!(with_ui(None), None);
     }
 }

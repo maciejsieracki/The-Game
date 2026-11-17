@@ -211,6 +211,10 @@ fn q6_apply_matches_pin_calls_on_the_unit_renderer() {
     assert_eq!(got.highlight(), want.highlight());
     assert_eq!(got.path_route(), want.path_route());
     assert_eq!(got.highlight().unwrap().disc_count(), 3);
+    // Absolute values, independent of the reference calls above (defence r1,
+    // objection 5): the R1 hexes in DTO order and the pin default opacity.
+    assert_eq!(got.highlight().unwrap().hexes, vec![h(2), h(3), h(1)]);
+    assert_eq!(got.highlight().unwrap().opacity, HIGHLIGHT_OPACITY);
     let labels: Vec<&str> = got
         .path_route()
         .unwrap()

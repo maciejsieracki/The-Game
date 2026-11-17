@@ -31,6 +31,18 @@
 //! `build_highlight.hexes` means "no build layer" (contract §3.7, producer
 //! `no_layer`) and the reachable range is shown.
 //!
+//! KNOWN DIVERGENCE of Q6-2 (defence r1, objection 3; to be entered in
+//! `REJESTR-RUST.md` by the orchestrator): when a build mode is ACTIVE but
+//! its hex set is EMPTY, the pin clears the reachable discs
+//! (`setHighlight(new Set())` for found city / wonder, `main.ts:16359`,
+//! `:16366`; `clearHighlight()` for the deposit mine, `:16387`; an empty
+//! `setHighlight` for other improvements, `:16391-16394`), while this
+//! adapter shows `reachable` (e.g. a settler in found-city mode with no
+//! legal hex). The DTO cannot tell "mode active, no hex" from "no mode"
+//! (empty `hexes` = no layer, producer `no_layer` with `kind = Improvement`),
+//! so the fix is a contract change (e.g. `Option<BuildHighlightDto>`) in a
+//! separate topic, not in this adapter.
+//!
 //! No game rules here: only the order of the pin calls and the conversions.
 
 use civ_view_model as vm;
