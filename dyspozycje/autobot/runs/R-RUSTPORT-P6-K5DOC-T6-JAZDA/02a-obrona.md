@@ -1,41 +1,60 @@
-STATUS: PASS-WITH-NOTES
-DOMAIN: GAME
-TEMAT: R-RUSTPORT-P6-K5DOC-T6-JAZDA
-GOAL: Obrona Operatora r1 na zarzuty Evaluatora (02-evaluator.md): luka pokrycia kary spearAdj w szarzy, brak pelnej bramki, uwagi 3 i 4.
-ZMIANY/COMMIT: 30c1e1392 (kod operatora dfc851c4c). Allowlista zachowana: siege_tactics_cavalry.rs (komentarz kroku 4), p6_k5doc_cavalry.rs, p6_k5doc_cavalry_gen.mjs, p6_k5doc_cavalry_vectors/vectors.json. Bez Cargo.lock, bez zmian poza allowlista. Brak push.
-TESTY: (patrz nizej, zarzut 1 i 2)
-BLOKADY: pelny `cargo test --all-targets --no-fail-fast` NIE uruchomiony (BLOCK dysku: 4,90 GB wolnych na `/` w chwili bramki, wymagane >= 8 GB).
-RUNDY: 1/5 (obrona r1)
-NASTĘPNY KROK: po zwolnieniu dysku do >= 8 GB uruchomic pelna bramke w rust-port/engine (fmt --check, clippy --all-targets -D warnings, test --all-targets --no-fail-fast) i podac kody wyjscia.
+STATUS: BLOCK
+DOMAIN: INFRA
+BLOKADA_GŁÓWNA: pełna bramka `cargo test --all-targets --no-fail-fast` nie zakończona: wolne miejsce spadło do 6,0 GB (próg 8 GB). Zarzuty merytoryczne przyjęte bez zmiany kodu (sekcja niżej).
+TEMAT: R-RUSTPORT-P6-K5DOC-T6-JAZDA (#259) — obrona Operatora r6 na zarzuty Evaluatora r6
+GOAL: Odpowiedź na 6 zarzutów Evaluatora (kod na `1af81a8c3`, integracja r5/r6), z dowodem; ewentualna naprawa wyłącznie w zakresie allowlisty.
+BAZA: `bdc625b4e` (HEAD worktree; kod identyczny z `1af81a8c3` — `git diff 1af81a8c3 HEAD` = tylko `04-integracja-r6.md`).
+ZMIANY/COMMIT: brak zmian kodu w tej obronie. Commit tej obrony = raport `02a-obrona.md` (SHA w sekcji DEPLOY/PUSH niżej). Brak push, brak FF na parity.
+TESTY: patrz sekcja „Bramka pełna w obronie” niżej.
+BLOKADY: brak blokad kodu. Kryterium procesu „df >= 8 GB przez cały przebieg” nie zostało spełnione w przebiegu Ewaluatora (zarzut 5) — pełna bramka w tej obronie została uruchomiona ponownie, wynik i minimum wolnego miejsca w sekcji niżej.
+RUNDY: r6 obrona (Operator r6). Poprzednie obrony: 02a-obrona.md w historii gita (r1).
+NASTĘPNY KROK: Ewaluator r6 (ponowna weryfikacja z własnym EXIT) i Final Control na SHA raportu obrony; orkiestrator decyduje o FF na parity po FC PASS.
 DEPLOY/PUSH: NIE WYKONANO
 
 ## Odpowiedzi na zarzuty
 
-### 1. Luka pokrycia kary spearAdj w best_charge_step: PRZYJMUJE
-- Dodano nazwany wektor `f_szarza_kara_spearAdj_bez_bfs` (generator `p6_k5doc_cavalry_gen.mjs`, pin `battleScene.ts:17736-17775`, galaz `(spearAdj ? 0 : 4)` z linii 17757): attack_from pusty (BFS nie znajduje kafelka), mounted, cel (7,7), wlocznik (7,5). Kandydaci E=(6,5) (przy wlozni, +0 -> 9) i S=(5,6) (bez wlocznika, +4 -> 13). Oczekiwane (5,6). Generator wykonuje tekst pina i guard `want` potwierdza wynik pina [5,6].
-- Asercja w `p6_k5doc_cavalry.rs`: `f_kara_spear_adj_szarza_pin_17757` (assert [5,6]).
-- Mutanty (przywrocono plik po kazdym, `git diff` zrodla = 0 poza komentarzem kroku 4):
-  - M1: `CHARGE_NO_SPEAR_BONUS` 4.0 -> 0.0: FAIL (`f_kara_spear_adj_szarza_pin_17757` i `wektory_zgodne_z_wykonaniem_pina`, 8 passed / 2 failed).
-  - M2: zamiana galezi `spear_adj` w `best_charge_step` (+4 przy wlozni, 0 bez): FAIL (te same 2 testy, 8 passed / 2 failed).
-- Wynik: `cargo test --test p6_k5doc_cavalry` = 10/10 OK, EXIT 0 (po zmianie komentarza, ponownie).
-- Wektory: 707 -> 708 przypadkow (losowe przypadki bez zmian, generator nie zuzywa RNG dla nazwanych).
+### 1. Krok 4 `_cavalryAction` (`best_charge_step` po forsowanym ataku) nieosiągalny: PRZYJMUJĘ (fakt), ODRZUCAM konieczność poprawki
+- Zweryfikowane w kodzie (`rust-port/engine/src/domain/siege_tactics_cavalry.rs`):
+  - `cav_maneuver_step` (linie 268–310) zwraca `None` tylko wtedy, gdy żaden sąsiad nie przechodzi filtra (`occupied`, `passable`, `in_bounds`); każdy przechodzący sąsiad dostaje skończony wynik, a porównanie `score > best_score` startuje od `NEG_INFINITY`, więc `None` = brak kandydata.
+  - `best_charge_step` (linie 313–359): gałąź BFS (`bfs_first_step`, linie 169–190) i gałąź `mounted` używają tego samego filtra sąsiedztwa; ostatni fallback `step_toward_local` (linie 227–245) też. Każde `Some` wymaga więc wolnego, przejezdnego sąsiada.
+  - Wniosek: krok 4 w `cavalry_action_decide` jest martwy, bo do niego dochodzi się tylko przy `cav_maneuver_step == None` i `moves > 0`. Krok zostaje 1:1 z pinem (`_cavalryAction`, `battleScene.ts:6372–6428`) i jest opisany w komentarzu kodu.
+- Decyzja: bez zmiany kodu (dispatch r6: „Kodu NIE zmieniaj”; Evaluator sam stwierdził „nie wymaga poprawki”). Wektor (e) testuje `best_charge_step` wprost, co dispatch przewidział dla (e) (`szarża best_charge_step_key jako ostatnia szansa`).
+- Zastrzeżenie: dowód po stronie pina (`_firstStepAlongPathToAttack` i `_stepToward` na `07d2fbd72` też wymagają wolnego sąsiada) nie był sprawdzony linia po linii w tej obronie; dowód dotyczy implementacji Rust.
 
-### 2. Brak pelnej bramki (cargo test --all-targets) i brak fmt/clippy calego crate: PRZYJMUJE CZESCIOWO (BLOCK dysku)
-- Zmierzone kody wyjscia (ostatni stan kodu, commit 30c1e1392):
-  - `cargo fmt --check` (crate rust-port/engine): EXIT 0.
+### 2. `_doMove` emulowany minimalnie (zajętość, pozycja, moveLeft): PRZYJMUJĘ jako ograniczenie zakresu
+- Zgadza się: `apply_move` (linia ~361) robi wyłącznie przesunięcie kafelka, zajętość i `moves_left -= 1`. Koszt terenu i facing `_doMove` nie są w T6.
+- Wektory T6 nie dowodzą pełnego parytetu `_doMove`. To świadome: pełny `_doMove` to T4c (#314), poza zakresem T6 (dispatch: „wpięcie do T8 / #113”).
+- Decyzja: bez zmiany kodu w T6. Wymóg dla T8 / #113: wektory end-to-end z pełnym `_doMove` przed wpięciem. Zapis do `REJESTR-RUST.md` po stronie orkiestratora.
+
+### 3. Dispatch mówi o 7 plikach T6, diff ma 5 kodu/testów + raporty: PRZYJMUJĘ jako rozbieżność opisową
+- Faktyczny `git diff --stat 625624d97 HEAD` (9 plików, 402 204 wstawień):
+  - kod i testy (5): `rust-port/engine/src/domain/mod.rs` (+1), `siege_tactics_cavalry.rs` (+466), `tests/p6_k5doc_cavalry.rs` (+276), `tests/p6_k5doc_cavalry_gen.mjs` (+411), `tests/p6_k5doc_cavalry_vectors/vectors.json` (+400876);
+  - raporty w katalogu run (4): `01-operator-r1.md`, `02a-obrona.md`, `03-integracja-r5.md`, `04-integracja-r6.md`.
+- Wszystkie w allowliście T6. Brak `Cargo.lock`, brak zmian w `gra/`, `view-model/`, `renderer/`, brak zmian `siege_tactics_activate.rs`.
+
+### 4. Poprzedni BLOCK Operatora r6 dotyczył wyłącznie progu dysku, nie kodu: PRZYJMUJĘ (fakt)
+- Potwierdzone: `04-integracja-r6.md` (BLOCK: „pełna bramka nie mogła się zakończyć przy dysku spadającym poniżej 8 GB”), a kod nie zmieniał się (`git diff 1af81a8c3 bdc625b4e` = tylko raport).
+- Wynik pełnej bramki na tym samym kodzie pochodzi z r5 (`03-integracja-r5.md`: fmt EXIT 0, clippy EXIT 0, `p6_k5doc_cavalry` 10/10, pełny `cargo test --all-targets --no-fail-fast` EXIT 0, passed=3810, failed=0, ignored=1 — pre-existing, `p6_order_lane.rs:1530`). Start r5 przy 9,8 GB; minimum wolnego w trakcie r5 NIE_ZMIERZONO.
+
+### 5. Wolne miejsce spadło do 7,1 GB w trakcie pełnego testu Ewaluatora: PRZYJMUJĘ (kryterium procesu nie spełnione)
+- Kryterium dispatchu r6 („df >= 8 GB przez cały przebieg”) nie zostało spełnione w przebiegu Ewaluatora. Zielony wynik nie zamienia się więc automatycznie w spełnione kryterium procesu.
+- Naprawa: ponowny pełny przebieg w tej obronie (patrz „Bramka pełna w obronie”), z monitorowaniem `df -k /` co 20 s i zapisem minimum. Pełny test nie był uruchamiany przy 4,9 GB ani przy innych ograniczeniach.
+
+### 6. Mutacje (a)–(e): FAIL, przywrócono do HEAD, drzewo czyste: BEZ ZARZUTU (fakt przyjęty, nieweryfikowany w tej obronie)
+- Zarzut dotyczy wyniku Ewaluatora, nie Operatora. Stan drzewa tej obrony: `git status --short` puste na `bdc625b4e` przed zapisem raportu. Wyników mutantów nie powtarzałem (poza zakresem obrony; wymagają osobnego przebiegu i czasu).
+
+## Bramka pełna w obronie
+- Uruchomiona na `bdc625b4e` (kod = `1af81a8c3`), `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` w scratchpadzie tej obrony (usunięty po zakończeniu).
+- Start: `df -k /` = 9 641 960 KB (9,2 GiB). Monitorowanie co 20 s w `obrona-t6/watch.log`.
+- Wynik (log: `obrona-t6/gate.log`, scratchpad tej obrony):
+  - `cargo fmt --check` (rust-port/engine): EXIT 0.
   - `cargo clippy --all-targets -- -D warnings`: EXIT 0.
-  - `cargo test --test p6_k5doc_cavalry`: EXIT 0, 10 passed.
-- NIE wykonane: `cargo test --all-targets --no-fail-fast` (pelny). Powod: `df -B1 /` = 4 902 641 664 B (4,90 GB) w chwili bramki; wymagane >= 8 GB (dispatch, kryterium 2). Na poczatku obrony bylo 8 493 883 392 B (7,9 GiB), ale w czasie obrony wolne miejsce spadlo; zuzycie dysku rosnie poza moimi targetami (moj CARGO_TARGET_DIR = ok. 300 MB, poza repo, do usuniecia po tej rundzie). NIE_ZMIERZONO dla pelnego testu.
-- Nie uruchamialem pelnego testu przy 4,9 GB, zeby nie zapelnic dysku i nie zatrzymac innych sesji.
-
-### 3. Krok 4 w cavalry_action_decide nieosiagalny: PRZYJMUJE
-- Dowod (zapisany w komentarzu kodu przy kroku 4 w `siege_tactics_cavalry.rs`): do kroku 4 dochodzi tylko, gdy `cav_maneuver_step` zwrocil `None` przy `moves > 0`. Ten wynik oznacza brak wolnego, przejezdnego sasiada (ten sam filtr zajetosci i przejezdnosci co w BFS i w `step_toward_local`), bo kazdy wolny sasiad dostaje skonczony wynik i `score > NEG_INFINITY` zawsze go wybiera. `best_charge_step` wymaga tez wolnego sasiada jako pierwszego kroku, wiec zwraca `None`. Krok 4 zostaje 1:1 z pinem.
-- Nie mierzylem mutanta `if false` wokol kroku 4 (uwaga Evaluatora dotyczy wylacznie jego rownowaznosci behawioralnej, ktora wynika z powyzszego dowodu).
-
-### 4. Odstepstwo od brzmienia dispatchu dla wektora (e): PRZYJMUJE
-- Dispatch opisuje (e) jako "ostatnia szansa z `_cavalryAction`". Z powodu nieosiagalnosci kroku 4 (pkt 3) wektor (e) i nowy (f) testuja `best_charge_step` wprost (wywolanie bezposrednie), a nie przez cala sekwencje `cavalry_action_decide`. To odstepstwo jest opisane w komentarzu kodu i w tym raporcie; zamiast niego nie dodano wektora przez `cavalry_action_decide`, bo sciezka jest nieosiagalna.
+  - `cargo test --all-targets --no-fail-fast`: NIE ZAKOŃCZONO. Przerwane przeze mnie (kill) przy wolnym miejscu na `/` = 6 249 316 KB (6,0 GB, poniżej progu 8 GB; minimum w przebiegu = 6,0 GB; start 9,2 GB). W częściowym wyjściu (1347 linii `... ok`) nie znaleziono `FAILED` ani `panicked`; liczby passed/failed/ignored dla całości: NIE_ZMIERZONO. Test `pick_auto_improvements_matches_pinned_web_vectors` trwał >60 s (zgłoszony już jako #291); nie diagnozowano go w tej obronie.
+  - Po przerwaniu: procesy tej bramki zabite, `target` w scratchpadzie usunięty, dysk 9,2 GB wolnego.
+- Wniosek: kryterium „df >= 8 GB przez cały przebieg” nie zostało spełnione także w ponowionym przebiegu obrony (zarzut 5 potwierdzony). Pełna bramka na `1af81a8c3` pozostaje BLOCK INFRA (dysk) do czasu przebiegu przy df >= 8 GB przez cały czas. Wolne miejsce spada w trakcie współbieżnych cargo innych worktree, nie tylko przez ten temat.
 
 ## Wynik obrony
-- Zarzuty 1, 3, 4: przyjete i naprawione (dowod w commicie 30c1e1392).
-- Zarzut 2: przyjety jako otwarty; kryterium konca 2 nadal NIE spelnione do czasu pelnej bramki po zwolnieniu dysku >= 8 GB.
-- Temat NIE moze byc uznany za zamkniety (`PASS`) przed pelna bramka; status PASS-WITH-NOTES dotyczy tylko zarzutow merytorycznych.
+- Zarzuty 1, 2, 3, 4, 6: przyjęte jako fakty/ograniczenia, bez zmiany kodu (dowody wyżej).
+- Zarzut 5: przyjęty. Naprawa = pełny przebieg z dyskiem >= 8 GB przez cały czas (wynik w sekcji „Bramka pełna w obronie”).
+- Status BLOCK (INFRA): zarzuty merytoryczne przyjęte; temat nie może przejść do FC bez pełnej bramki przy df >= 8 GB przez cały przebieg. Uwagi 1 i 2 (zakres T8) są zapisem do rejestru, nie blokadą tej rundy.
+- Do wznowienia: jeden przebieg `cargo test --all-targets --no-fail-fast` w `rust-port/engine` na `1af81a8c3` (drzewo kodu identyczne z `bdc625b4e` minus raport), z df >= 8 GB przez cały czas; przy spadku poniżej 8 GB przerwać i zapisać BLOCK z liczbą GB.
