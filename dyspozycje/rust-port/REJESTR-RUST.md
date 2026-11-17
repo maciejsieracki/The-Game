@@ -2969,3 +2969,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Sprzątanie:** usunięte 4 worktree bramki T4b (`wf_a6a0b1b3-74a-1..4`). Dysk 6,5 → 12 GB.
 - **T5a r4 (integracja):** merge `270e5711b` na `3d016a5ae` — `merge-tree` czysty (exit 0). Uruchomiona runda integracyjna `wf_1ed3e436-684` (Haiku Operator): pełna bramka na merge, FF dopiero po EXIT 0.
 - **Otwarte:** T6 pełny test na `87829df94` (do zrobienia po T5a); FC T4b zakończone PASS-WITH-NOTES, wymóg `front` dla T4e w notatkach.
+
+### Przebieg — heartbeat (2026-11-17 ~00:50 UTC): 1/4 aktywne, dysk 6,8 GB — bez nowego startu
+
+- **Aktywne Workflow (1/4):** K5DOC-T5a strzelec-kite, integracja na parity (`wf_1ed3e436-684`), Haiku; etap Operator, kompilacja w toku (`wf_1ed3e436-684-1`). Baza `3d016a5ae`, merge `270e5711b`.
+- **Krok 1 (sloty):** 1/4. Brak czystego tematu z gotowym dispatchem: T6 wymaga bramki 8 GB i nie może działać równolegle z kompilacją T5a; T7a/T7b czekają na T4c (bez dispatchu); reszta zablokowana decyzjami (#253, #286, #349, #350) lub zależnościami.
+- **Krok 2:** brak FC PASS bez integracji. T5a w integracji; po EXIT 0 pełnej bramki FF.
+- **Krok 3:** worktree 2 (główne + T5a integracja). Nie ruszane.
+- **Dysk:** 6,8 GB — poniżej progu 8 GB dla nowych tematów z kodem Rust. Start nie zostanie wykonany, dopóki T5a się nie skończy i miejsce nie wzrośnie.
+- **Wakeup:** nie planuję ScheduleWakeup. Ten tryb służy pętli `/loop`, a tej sesji nie uruchomiłem jako pętli.
