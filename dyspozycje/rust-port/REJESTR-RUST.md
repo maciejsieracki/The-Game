@@ -3032,3 +3032,13 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **DODATEK r2:** `a68da9f14` na `claude/rust-sivvrn`. Nowa baza `6a2ded8bb` (kod r1 + komentarze obrony). Zakres: bramki cargo z kontrolą dysku przed każdą, mutacje (a), (b), (d) na Rust, (c) z dowodem równoważności.
 - **Start r2: WSTRZYMANY.** Dysk 8,2 GB, ale Ewaluator T6 (`wf_6d014d2a-144`, worktree `-144-2`) nadal działa i buduje; poprzednie odczyty spadały do 2,7 GB. Start r2 po zakończeniu T6 i jego sprzątaniu.
 - **Aktywne Workflow:** 1/4 (T6, Ewaluator, Sonnet). Wolne sloty: 3 — dysk poniżej progu startów z kodem Rust, plus brak czystych tematów docs-only (patrz wpis DOC-323).
+
+### Przebieg — restart kontenera: T6 integracja wznowiona jako DODATEK r6 (2026-11-17 ~02:xx UTC)
+
+- **Utracone przez restart:** Ewaluator T6 r5 (`wf_6d014d2a-144`, zadanie `wig21l901`), zadania mutacji w tle (`blupe38zi`, `boja3p3g7`, `b8lmlep28`). Nie odtwarzam zadań mutacji; mutacje T5b są w dispatchu r2.
+- **Pozostałość po przerwanym mutation runie:** nieskomitowany mutant (`if me.mounted` → `if false`) w `rust-port/engine/src/domain/siege_tactics_cavalry.rs` w worktree `-2`. Przywrócony do HEAD przed usunięciem worktree; kod T6 w repo nietknięty.
+- **Zabezpieczenie:** `refs/keep/R-RUSTPORT-P6-K5DOC-T6-MERGE-R5` = `57ee8fc7d`, `refs/keep/R-RUSTPORT-P6-K5DOC-T6-OP-R5-int` = `1af81a8c3`; gałąź zdalna `rust-port-wip/R-RUSTPORT-P6-K5DOC-T6-JAZDA-INT` = `1af81a8c3`.
+- **Sprzątanie:** usunięte worktree `wf_6d014d2a-144-1` i `-2` (ok. 2,4 GB). Dysk 11 GB.
+- **DODATEK r6** (`014e38d5f` na `claude/rust-sivvrn`): nowa baza `1af81a8c3`. Operator weryfikuje ancestry, diff (tylko 7 plików T6), bramki EXIT 0. Nie pushuje, nie FF.
+- **Aktywne Workflow:** `wf_bb4e6b3c-994` (T6 integracja r6, Operator Haiku). Start po zapisie DODATEK r6.
+- **#260 T5b r2:** dispatch gotowy (`a68da9f14`), start wstrzymany do zakończenia bramek T6 — dwa równoległe rozruchy cargo przy progu 8 GB ryzykują kolejny BLOCK INFRA.
