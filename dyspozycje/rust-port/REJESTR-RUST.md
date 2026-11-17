@@ -3178,3 +3178,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Krok 3:** nic do usunięcia (brak worktree).
 - **Wolne sloty (4 z 4): powód.** Kandydaci zablokowani: #253, #285, #286, #358 (decyzje właściciela), #304 (czeka na #310), #113 (na #107/#109/#112), #107/#123 (facing, blokowany przez #113), #315 (T4e: wymaga decyzji o koszcie per jednostka, odnotowanej w poprzednim przebiegu, oraz wpięcia w ProdBody). T7 (#261) czeka na wynik rozpoznania — T7a/T7b wejdą jako dispatch po odbiorze.
 - **Otwarte decyzje ABC (w czacie):** #327, #358.
+
+### Przebieg — rozpoznanie T7 zakończone, T7b uruchomiony (2026-11-17 ~05:2x UTC): 1/4 aktywne, dysk ok. 14 GB
+
+- **Rozpoznanie T7 (`01-rozpoznanie.md`, STATUS PASS):** podział na **T7a** (falanga: `_phalanxAction` / `_phalanxLineFront` / `_phalanxStep`) i **T7b** (odwrót: `_bestFallBackStep` / `_fallBackStep`). T7b nie zależy od T7a. Obie wymagają zintegrowanych T4b i T4c (są w `f85622878`).
+- **Ustalenie krytyczne dla T7a (blokuje start T7a):** w web `_phalanxAction` (pin 6290) jest wołana tylko poza blokiem doktryny (6093–6098). W trybie auto z domyślną doktryną falanga idzie przez `_executeGroupDoctrineStep` → `_advanceStep` (18043–18048) i omija linię falangi. Wektory muszą pokryć obie ścieżki. Przed startem T7a potrzebna weryfikacja `_manualMode` w normalnej grze (domyślnie `true`, pin 2286) i doktryn `defensive`/`skirmish`.
+- **T7b (`wf_c345eac0-607`, zadanie `wdme72mo2`):** dispatch `72c16c710` na `claude/rust-sivvrn`, baza `f85622878`. Zakres: `best_fall_back_step`, `fall_back_step_decide`, `fall_back_after_move`; scheduling jako `AfterStep::Schedule` (nie wykonywany); wiring do `ActivateUnit` poza zakresem; stała `FALLBACK_TILES` już istnieje (`siege_tactics_activate.rs:43`).
+- **Otwarte w rozpoznaniu:** dwa typy stałych `BF_COLS` (i64 w `siege_tactics_approach.rs:210`, f64 w innych) — Operator wybiera jeden typ i zapisuje wybór.
+- **Wolne sloty (3 z 4): powód.** T7a wstrzymany (weryfikacja ścieżki auto). Pozostałe kandydaci zablokowane jak w przebiegu 05:18 (#253, #285, #286, #358, #304→#310, #113→#107/#109/#112, #315 decyzja kosztu per jednostka).
+- **Otwarte decyzje ABC (w czacie):** #327, #358.
