@@ -23,6 +23,8 @@ async function loadBattleScene({ restoreWideFallback = false } = {}) {
           contents: "import * as THREE from 'three'; export const buildUnitModel = () => new THREE.Group();",
           loader: 'js',
         }));
+        build.onResolve({ filter: /tokens\.css\?raw$/ }, () => ({ path: 'css-stub', namespace: 'css-stub' })); // brandTokenVars.ts: ...css?raw (Vite-only)
+        build.onLoad({ filter: /.*/, namespace: 'css-stub' }, () => ({ contents: 'export default "";', loader: 'js' }));
         build.onResolve({ filter: /brandAssets/ }, () => ({ path: 'brand-stub', namespace: 'brand-stub' }));
         build.onLoad({ filter: /.*/, namespace: 'brand-stub' }, () => ({
           contents: 'export const civIconSvg = () => ""; export const brandIconSvg = () => "";', loader: 'js',

@@ -11,6 +11,7 @@ async function load() {
     alias: { three: path.join(__dirname, '..', 'node_modules', 'three', 'build', 'three.cjs') },
     plugins: [{ name: 's', setup(b) {
       const st = (f, c) => { const ns = 'ns' + f.source; b.onResolve({ filter: f }, () => ({ path: ns, namespace: ns })); b.onLoad({ filter: /.*/, namespace: ns }, () => ({ contents: c, loader: 'js' })); };
+      st(/tokens\.css\?raw$/, 'export default "";'); // brandTokenVars.ts: import ...css?raw (Vite-only)
       st(/render\/units/, "import * as THREE from 'three'; export const buildUnitModel = () => new THREE.Group();");
       st(/brandAssets/, 'export const civIconSvg = () => ""; export const brandIconSvg = () => "";');
       st(/leaderPortraits/, 'export const leaderPortraitUrl = () => ""; export const leaderName = () => ""; export const civIconIdFromCivLabel = () => "";');
