@@ -1,0 +1,1642 @@
+{
+  "generator": "p6_k5doc_t7a_gen.mjs",
+  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "digests": {
+    "isPhalanx": "17d1bc63d43b79f4d207d00b91faa4e602f59e49abb5f4d86d55c88b7c58e2bb",
+    "normName": "5e6afbb3c3acef3d73927505d25479719198c4d1f95a5f89c5339a234e4d62b2",
+    "leadTol": "8030bd79897450f71f92ac8d5262a6dfa6489ac958f8859785a894eb96b79f66",
+    "dirDelta": "14f68b8eb53b9ee7d0834c738deb7518ca0b4fb7b7b7e12bd8ebbfac6b7d569c",
+    "dirs4": "5d69dd54ac24140703a55c2e0f471bd05917b9d3b64f011a5074cc8f35195b21",
+    "bfDims": "99c16ff24af323de57d4d3b833a8a30e70a956007a18df2d2e2116b2c18baeee",
+    "cellKey": "66540ecf2fcc2639a6a187c9c36025077e79c9e1abe7a9230244ce9f90ab4c74",
+    "manhattan": "c53bc27f67db4171b80b582028454fd5cfdd3074120c7bf2437da788dc75b2f3",
+    "lineFront": "f1509fa30fe598d598a8e722497eb64628f7f64c45ba4aa0be31dfb4c4cf84ca",
+    "advanceCoord": "122410683831b45a90bd4264269cbc0cdbaa34f14244973d88fa381da82f4b2f",
+    "phalanxAdvanceOf": "6a5493b2d11e6f12a9a2a891dd438fccdb8a8e0b11a8b64051771d312072b820",
+    "phalanxAction": "d344184b38200b5fee25e9e5bf6aebfa8a893559fb0a5c4b65fb76a1bbcdec71",
+    "phalanxStep": "ef0eec997dddcda1c30dae7a7febbf5ca5ffcd9c1fc4b0ffb353c508cb8957eb"
+  },
+  "constants": {
+    "PHALANX_LEAD_TOLERANCE": 2,
+    "BF_COLS": 68,
+    "BF_ROWS": 156,
+    "DIRS4": [
+      [
+        0,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -1,
+        0
+      ]
+    ]
+  },
+  "normName_probe": [
+    {
+      "in": "Falangą",
+      "out": "falanga"
+    },
+    {
+      "in": "Hoplita",
+      "out": "hoplita"
+    },
+    {
+      "in": "łódź",
+      "out": "lodz"
+    }
+  ],
+  "is_phalanx": [
+    {
+      "name": "kategoria_falanga_wprost",
+      "pin": "battleScene.ts:1541",
+      "input": {
+        "kategoria": "falanga",
+        "stats": null,
+        "nazwa": "Cokolwiek"
+      },
+      "expect": true
+    },
+    {
+      "name": "kategoria_falanga_wielka_litera",
+      "pin": "battleScene.ts:1541 (normName)",
+      "input": {
+        "kategoria": "Falanga",
+        "stats": null,
+        "nazwa": "x"
+      },
+      "expect": true
+    },
+    {
+      "name": "kategoria_falanga_diakrytyk",
+      "pin": "battleScene.ts:1541 (normName NFD)",
+      "input": {
+        "kategoria": "Falangą",
+        "stats": null,
+        "nazwa": "x"
+      },
+      "expect": true
+    },
+    {
+      "name": "kategoria_falanga_z_sufiksem_negatyw",
+      "pin": "battleScene.ts:1541 (cat === falanga, nie includes)",
+      "input": {
+        "kategoria": "falanga-ciezka",
+        "stats": null,
+        "nazwa": "Zolnierz"
+      },
+      "expect": false
+    },
+    {
+      "name": "kategoria_wlocznik_nazwa_falang_fallback",
+      "pin": "battleScene.ts:1543",
+      "input": {
+        "kategoria": "Wlocznik",
+        "stats": null,
+        "nazwa": "Falangita"
+      },
+      "expect": true
+    },
+    {
+      "name": "nazwa_hoplit_fallback",
+      "pin": "battleScene.ts:1543",
+      "input": {
+        "kategoria": "Wlocznik",
+        "stats": null,
+        "nazwa": "Hoplita"
+      },
+      "expect": true
+    },
+    {
+      "name": "nazwa_sarissa_wielkie_litery",
+      "pin": "battleScene.ts:1543",
+      "input": {
+        "kategoria": "Piechota",
+        "stats": null,
+        "nazwa": "SARISSA"
+      },
+      "expect": true
+    },
+    {
+      "name": "nazwa_phalanx_angielska",
+      "pin": "battleScene.ts:1543",
+      "input": {
+        "kategoria": null,
+        "stats": null,
+        "nazwa": "Phalanx"
+      },
+      "expect": true
+    },
+    {
+      "name": "jednostka_phalanx_w_stats",
+      "pin": "battleScene.ts:1543 (stats.Jednostka)",
+      "input": {
+        "kategoria": "Piechota",
+        "stats": {
+          "Jednostka": "Phalanx"
+        },
+        "nazwa": "Cokolwiek"
+      },
+      "expect": true
+    },
+    {
+      "name": "jednostka_niepusta_przesloni_nazwe",
+      "pin": "battleScene.ts:1543 (?? nie wpada w nazwe)",
+      "input": {
+        "kategoria": "Piechota",
+        "stats": {
+          "Jednostka": "Pikinier"
+        },
+        "nazwa": "Falanga"
+      },
+      "expect": false
+    },
+    {
+      "name": "jednostka_null_wpada_w_nazwe",
+      "pin": "battleScene.ts:1543 (null ?? nazwa)",
+      "input": {
+        "kategoria": "Piechota",
+        "stats": {
+          "Jednostka": null
+        },
+        "nazwa": "Hoplit"
+      },
+      "expect": true
+    },
+    {
+      "name": "stats_brak_nazwa_falang",
+      "pin": "battleScene.ts:1543 (stats undefined)",
+      "input": {
+        "kategoria": "Piechota",
+        "stats": null,
+        "nazwa": "falanga"
+      },
+      "expect": true
+    },
+    {
+      "name": "wlocznik_nie_jest_falanga",
+      "pin": "battleScene.ts:1541-1543 (negatyw)",
+      "input": {
+        "kategoria": "Wlocznik",
+        "stats": null,
+        "nazwa": "Wlocznik"
+      },
+      "expect": false
+    },
+    {
+      "name": "lucznik_nie_jest_falanga",
+      "pin": "battleScene.ts:1541-1543 (negatyw)",
+      "input": {
+        "kategoria": "Lucznik",
+        "stats": null,
+        "nazwa": "Lucznik"
+      },
+      "expect": false
+    },
+    {
+      "name": "brak_wszystkiego_negatyw",
+      "pin": "battleScene.ts:1541-1543 (negatyw)",
+      "input": {
+        "kategoria": null,
+        "stats": null,
+        "nazwa": null
+      },
+      "expect": false
+    }
+  ],
+  "line_front": [
+    {
+      "name": "pusta_lista_null",
+      "pin": "battleScene.ts:6526 (group.length<=1)",
+      "unit_id": null,
+      "side": "atk",
+      "units": [],
+      "expect": null
+    },
+    {
+      "name": "lone_falanga_null",
+      "pin": "battleScene.ts:6526-6527",
+      "unit_id": "a",
+      "side": "atk",
+      "units": [
+        {
+          "id": "a",
+          "q": 4,
+          "r": 5,
+          "side": "atk",
+          "dead": false,
+          "fading_out": false,
+          "routed": false,
+          "phalanx": true
+        }
+      ],
+      "expect": null
+    },
+    {
+      "name": "dwie_falangi_atk_min",
+      "pin": "battleScene.ts:6524-6527",
+      "unit_id": "a",
+      "side": "atk",
+      "units": [
+        {
+          "id": "a",
+          "q": 5,
+          "r": 5,
+          "side": "atk",
+          "dead": false,
+          "fading_out": false,
+          "routed": false,
+          "phalanx": true
+        },
+        {
+          "id": "b",
+          "q": 9,
+          "r": 5,
+          "side": "atk",
+          "dead": false,
+          "fading_out": false,
+          "routed": false,
+          "phalanx": true
+        }
+      ],
+      "expect": 5
+    },
+    {
+      "name": "trzy_falangi_atk_min_srodek",
+      "pin": "battleScene.ts:6526",
+      "unit_id": "b",
+      "side": "atk",
+      "units": [
+        {
+          "id": "a",
+          "q": 8,
+          "r": 5,
+          "side": "atk",
+          "dead": false,
+          "fading_out": false,
+          "routed": false,
+          "phalanx": true
+        },
+        {
+          "id": "b",
+          "q": 3,
+          "r": 5,
+          "side": "atk",
+          "dead": false,
+          "fading_out": false,
+          "routed": false,
+          "phalanx": true
+        },
+        {
+          "id": "c",
+          "q": 6,
+          "r": 5,
+          "side": "atk",
+          "dead": false,
+          "fading_out": false,
+          "routed": false,
+          "phalanx": true
+        }
+      ],
+      "expect": 3
+    },
+    {
+      "name": "def_advance_minus_q",
+      "pin": "battleScene.ts:6537-6538 (def: -q)",
+      "unit_id": "a",
+      "side": "def",
+      "units": [
+        {
+          "id": "a",
+          "q": 4,
+          "r": 5,
+          "side": "def",
+          "dead": false,
+          "fading_out": false,
+          "routed": false,
+          "phalanx": true
+        },
+        {
+          "id": "b",
+          "q": 6,
+          "r": 5,
+          "side": "def",
+          "dead": false,
+          "fading_out": false,
+          "routed": false,
+          "phalanx": true
+        }
+      ],
+      "expect": -6
+    },
+    {
+      "name": "wykluczenie_dead_routed_fading",
+      "pin": "battleScene.ts:6523 (filter)",
+      "unit_id": "a",
+      "side": "atk",
+      "units": [
+        {
+          "id": "a",
+          "q": 3,
+          "r": 5,
+          "side": "atk",
+          "dead": false,
+          "fading_out": false,
+          "routed": false,
+          "phalanx": true
+        },
+        {
+          "id": "b",
+          "q": 9,
+          "r": 5,
+          "side": "atk",
+          "dead": true,
+          "fading_out": false,
+          "routed": false,
+          "phalanx": true
+        },
+        {
+          "id": "c",
+          "q": 1,
+          "r": 5,
+          "side": "atk",
+          "dead": false,
+          "fading_out": false,
+          "routed": true,
+          "phalanx": true
+        },
+        {
+          "id": "d",
+          "q": 0,
+          "r": 5,
+          "side": "atk",
+          "dead": false,
+          "fading_out": true,
+          "routed": false,
+          "phalanx": true
+        }
+      ],
+      "expect": null
+    },
+    {
+      "name": "wykluczenie_nie_falanga",
+      "pin": "battleScene.ts:6520 (u.phalanx)",
+      "unit_id": "a",
+      "side": "atk",
+      "units": [
+        {
+          "id": "a",
+          "q": 3,
+          "r": 5,
+          "side": "atk",
+          "dead": false,
+          "fading_out": false,
+          "routed": false,
+          "phalanx": true
+        },
+        {
+          "id": "x",
+          "q": 0,
+          "r": 5,
+          "side": "atk",
+          "dead": false,
+          "fading_out": false,
+          "routed": false,
+          "phalanx": false
+        }
+      ],
+      "expect": null
+    },
+    {
+      "name": "wykluczenie_zostaje_jeden_null",
+      "pin": "battleScene.ts:6526 (po filtrze <=1)",
+      "unit_id": "a",
+      "side": "atk",
+      "units": [
+        {
+          "id": "a",
+          "q": 3,
+          "r": 5,
+          "side": "atk",
+          "dead": false,
+          "fading_out": false,
+          "routed": false,
+          "phalanx": true
+        },
+        {
+          "id": "b",
+          "q": 9,
+          "r": 5,
+          "side": "atk",
+          "dead": true,
+          "fading_out": false,
+          "routed": false,
+          "phalanx": true
+        }
+      ],
+      "expect": null
+    }
+  ],
+  "action": [
+    {
+      "name": "finished_done",
+      "pin": "battleScene.ts:6547",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": true,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "a",
+            "q": 5,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": {
+          "id": "x",
+          "q": 7,
+          "r": 11
+        },
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "done"
+      }
+    },
+    {
+      "name": "dead_done",
+      "pin": "battleScene.ts:6548",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": true,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "a",
+            "q": 5,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": {
+          "id": "x",
+          "q": 7,
+          "r": 11
+        },
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "done"
+      }
+    },
+    {
+      "name": "fading_out_done",
+      "pin": "battleScene.ts:6548",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": true,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "a",
+            "q": 5,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": {
+          "id": "x",
+          "q": 7,
+          "r": 11
+        },
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "done"
+      }
+    },
+    {
+      "name": "atak_sasiad_przed_linia",
+      "pin": "battleScene.ts:6551",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "a",
+            "q": 5,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": {
+          "id": "x",
+          "q": 7,
+          "r": 11
+        },
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "attack",
+        "target": "x"
+      }
+    },
+    {
+      "name": "atak_sasiad_przy_move_left_zero",
+      "pin": "battleScene.ts:6551 (przed moveLeft)",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 0,
+        "side_units": [
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "a",
+            "q": 5,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": {
+          "id": "x",
+          "q": 7,
+          "r": 11
+        },
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "attack",
+        "target": "x"
+      }
+    },
+    {
+      "name": "lone_falanga_advance_step",
+      "pin": "battleScene.ts:6555-6556",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "advance_step"
+      }
+    },
+    {
+      "name": "tolerancja_dokladnie_2_wykonuje_krok",
+      "pin": "battleScene.ts:6563 (myAdv > lineFront+TOL, rowne 2 = nie wstrzymuje)",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "a",
+            "q": 5,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "move",
+        "col": 7,
+        "row": 9
+      }
+    },
+    {
+      "name": "tolerancja_3_wstrzymuje",
+      "pin": "battleScene.ts:6563-6566 (roznica 3 > TOL=2: hold)",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "a",
+            "q": 5,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "ru",
+            "q": 8,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "done"
+      }
+    },
+    {
+      "name": "tolerancja_1_wykonuje_krok",
+      "pin": "battleScene.ts:6563",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "a",
+            "q": 6,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "move",
+        "col": 7,
+        "row": 9
+      }
+    },
+    {
+      "name": "krok_granica_stepAdv_rowna_front_plus_2",
+      "pin": "battleScene.ts:6625 (stepAdv > lineFront+TOL, rowne = dozwolone)",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "a",
+            "q": 5,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "move",
+        "col": 7,
+        "row": 9
+      }
+    },
+    {
+      "name": "krok_zablokowany_tolerancja_3_hold",
+      "pin": "battleScene.ts:6563",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "a",
+            "q": 5,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "ru",
+            "q": 8,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "done"
+      }
+    },
+    {
+      "name": "primary_ranged_pominiety",
+      "pin": "battleScene.ts:6597-6599",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "a",
+            "q": 7,
+            "r": 0,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "r",
+            "q": 7,
+            "r": 11,
+            "primary_ranged": true
+          },
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [
+          [
+            7,
+            11
+          ]
+        ],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "move",
+        "col": 7,
+        "row": 9
+      }
+    },
+    {
+      "name": "tylko_primary_ranged_done",
+      "pin": "battleScene.ts:6599-6600",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "a",
+            "q": 7,
+            "r": 0,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "r",
+            "q": 7,
+            "r": 11,
+            "primary_ranged": true
+          }
+        ],
+        "adjacent": null,
+        "occupied": [
+          [
+            7,
+            11
+          ]
+        ],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "done"
+      }
+    },
+    {
+      "name": "brak_wroga_done",
+      "pin": "battleScene.ts:6600-6601",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "a",
+            "q": 5,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [],
+        "adjacent": null,
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "done"
+      }
+    },
+    {
+      "name": "move_left_zero_done",
+      "pin": "battleScene.ts:6588-6590",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 0,
+        "side_units": [
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "a",
+            "q": 5,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "done"
+      }
+    },
+    {
+      "name": "move_left_ujemny_done",
+      "pin": "battleScene.ts:6589 (<=0)",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": -1,
+        "side_units": [
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "a",
+            "q": 5,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "done"
+      }
+    },
+    {
+      "name": "krok_standard_N",
+      "pin": "battleScene.ts:6605-6635",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "a",
+            "q": 7,
+            "r": 0,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "move",
+        "col": 7,
+        "row": 9
+      }
+    },
+    {
+      "name": "krok_zajety_occupied_przesuwa_wybor",
+      "pin": "battleScene.ts:6609 (occByKey)",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "a",
+            "q": 7,
+            "r": 0,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [
+          [
+            7,
+            9
+          ]
+        ],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "move",
+        "col": 8,
+        "row": 10
+      }
+    },
+    {
+      "name": "krok_nieprzejezdny_odrzucony",
+      "pin": "battleScene.ts:6610 (_passableForUnit)",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "a",
+            "q": 7,
+            "r": 0,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [],
+        "impassable": [
+          [
+            7,
+            9
+          ]
+        ]
+      },
+      "expect": {
+        "kind": "move",
+        "col": 8,
+        "row": 10
+      }
+    },
+    {
+      "name": "brak_zgodnego_kroku_hold",
+      "pin": "battleScene.ts:6632",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "a",
+            "q": 7,
+            "r": 0,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [
+          [
+            7,
+            9
+          ],
+          [
+            8,
+            10
+          ]
+        ],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "done"
+      }
+    },
+    {
+      "name": "hold_roznica_4_wyklucza_krok",
+      "pin": "battleScene.ts:6563-6566",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "a",
+            "q": 4,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "done"
+      }
+    },
+    {
+      "name": "krok_w_strone_wroga_S_gdy_brak_N",
+      "pin": "battleScene.ts:6615 (dEnemy < dNow, kierunek S)",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "a",
+            "q": 7,
+            "r": 0,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 7,
+            "r": 14,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "move",
+        "col": 7,
+        "row": 11
+      }
+    },
+    {
+      "name": "remis_wynik_kolejnosc_DIRS4_E_przed_S",
+      "pin": "battleScene.ts:6632-6633 (strict >)",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "a",
+            "q": 7,
+            "r": 9,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "atk",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 12,
+            "r": 12,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [
+          [
+            7,
+            9
+          ]
+        ],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "move",
+        "col": 8,
+        "row": 10
+      }
+    },
+    {
+      "name": "def_strona_krok_kierunek_lewy",
+      "pin": "battleScene.ts:6625 (def: stepAdv=-nc)",
+      "input": {
+        "name": "",
+        "pin": "",
+        "finished": false,
+        "unit_id": "ru",
+        "move_left": 2,
+        "side_units": [
+          {
+            "id": "ru",
+            "q": 7,
+            "r": 10,
+            "side": "def",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          },
+          {
+            "id": "a",
+            "q": 9,
+            "r": 10,
+            "side": "def",
+            "dead": false,
+            "fading_out": false,
+            "routed": false,
+            "phalanx": true
+          }
+        ],
+        "enemies": [
+          {
+            "id": "e",
+            "q": 2,
+            "r": 8,
+            "primary_ranged": false
+          }
+        ],
+        "adjacent": null,
+        "occupied": [],
+        "impassable": []
+      },
+      "expect": {
+        "kind": "move",
+        "col": 7,
+        "row": 9
+      }
+    }
+  ]
+}
