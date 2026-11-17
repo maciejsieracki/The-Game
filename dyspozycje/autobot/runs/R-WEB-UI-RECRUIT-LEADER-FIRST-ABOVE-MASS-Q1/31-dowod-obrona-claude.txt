@@ -1,0 +1,40 @@
+DOWOD OBRONY R1 (Operator HAIKU, runda obrony po zarzutach Evaluatora 1bd7d396b)
+Kandydat: 666834a28d4fbf6fdd3078eb9b957e4893604f48 (rodzic e2852102844cf82e1dca09e2fd79c14cb1554a0b)
+Srodowisko: worktree wf_8fe2ec7c-b46-3, detached HEAD = 666834a28, gra/node_modules = symlink do wf_8fe2ec7c-b46-2 (nie kopiowane)
+Build: vite (node ./node_modules/vite/bin/vite.js build), dist poza repo w /tmp/civ-obrona-tmp/
+Przegladarka: /usr/bin/chromium (Playwright), TMPDIR=/tmp/civ-obrona-tmp (krotki, bez TMPDIR scratchpad - SIGTRAP przy launch)
+
+[1] tsc --noEmit (gra/): exit 0, 18,7 s
+
+[2] tools/empire-recruit-leader-first-order-test.cjs (kandydat): 2/2 PASS, exit 0
+    PASS bez miast: wodz(10) < Idz do wodza(12) < erp(15) < reszta(30)
+    PASS z miastami: wodz(10) < Idz do wodza(12) < erp(15) < reszta(31)
+
+[3] tools/empire-recruit-in-army-panel-test.cjs (kandydat, Chromium, build wlasny): 14 passed, 0 failed, exit 0
+    L3 wodz zaraz pod naglowkiem: PASS; L4 Idz do wodza PO wodzu: PASS; L4b erp DOPIERO po Idz do wodza: PASS
+    L13 zero pageerror: PASS
+
+[4] MUTACJA W CHROMIUM (stara kolejnosc: erp przed wodzem; zmiana tylko w kopii zrodla, potem przywrocona z kopii):
+    tools/empire-recruit-in-army-panel-test.cjs --no-build (dist = mut-dist): 12 passed, 2 failed, exit 1
+    FAIL L3 wodz zaraz pod naglowkiem: {"leaderFirst":false,"followAfterLeader":true,"erpAfterFollow":false,...}
+    FAIL L4b erp DOPIERO po Idz do wodza: {"erpAfterFollow":false,"erpRightAfterFollow":false,...}
+    Przywrocenie: cp z kopii empireDetailPanel.KANDYDAT.ts; git diff -- gra/src/ui/empireDetailPanel.ts = 0 linii.
+
+[5] POMIAR POZYCJI DOM (getBoundingClientRect().top, kandydat): tools: measure-positions.cjs (w tym katalogu runs)
+    naglowek Rekrutacja 569 | wodz (blok) 588 | wodz (karta) 607 | Idz do wodza 666 | erp host 733
+    liczniki 1650 | pula Skarbiec 1710 | pierwsze miasto 1774
+    kolejnoscRosnaca = true. Dane w pomiar-pozycji-kandydat.json; zrzut leader-first-wodz-gora.png
+
+[6] Testy zywe (empire-recruit-live-test, empire-recruit-all-live-test, army-auto-recruit-general-live-test)
+    empire-recruit-live-test (kandydat): 23 passed, 0 failed, exit 0
+    empire-recruit-all-live-test (kandydat): 27 passed, 2 failed (L20 0 jednostek po endTurn; L23 qBefore=qAfter=[3,3,3]), exit 1
+    empire-recruit-all-live-test (BAZA e2852102, ten sam test): 27 passed, 2 failed (L20, L23 identyczne) -> DLUG PRZED ZMIANA
+    army-auto-recruit-general-live-test (kandydat): 13 passed, 4 failed (L7, L9, L14, L15)
+    army-auto-recruit-general-live-test (BAZA e2852102): 13 passed, 4 failed (L7, L9, L14, L15 identyczne) -> DLUG PRZED ZMIANA
+    Obie czerwienie: endTurn blokowany bramka zywnosci "Nie mozna zakonczyc tury" (zabraknie 46 zywnosci) / brak jednostek po turze.
+    Kandydat ich nie pogarsza (ta sama lista asercji, ten sam wynik).
+
+[7] HIGIENA: testy w [3]/[4]/[6] nadpisuja sledzone PNG w dyspozycje/autobot/runs/R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1/
+    (armia-rekrutacja-na-gorze.png, armia-rekrutacja-wasko-1024x640.png, gorny-pasek-bez-rekrutacji.png).
+    Przywrocone git checkout -- (tylko w tym katalogu, nie w commicie). git status przed commitem: czysto poza nowymi plikami R-WEB-UI-RECRUIT-LEADER-FIRST-ABOVE-MASS-Q1.
+    Nieslidzony gra/tools/.empire-recruit-all-bundle.js: w tym worktree po testach NIE powstal.
