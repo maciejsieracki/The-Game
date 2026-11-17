@@ -1,0 +1,1 @@
+# DODATEK 0 (orkiestrator, 2026-11-17 04:05 UTC) — runda 1. cand = pełne SHA origin/main (370fe8c7128825dc4d4d95cc9a2082cbcd73587b). Równolegle: R-WEB-TEST-DEBT-BATTLE-HARNESS-REMAINDER-Q1 (inne pliki gra/tools; nie ruszaj ich).
