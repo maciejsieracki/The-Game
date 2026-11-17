@@ -10583,3 +10583,6 @@ r4: wpięcie wyzwalacza (gracz→AI w Chromium 13/0), barbarzyńcy, znacznik UI,
 
 ### FALA 786 (2026-11-17) — WDROŻONE na ROBOCZĄ: Zasadzka armii (rdzeń) + narzędzia pomiarowe UPKEEP
 AMBUSH-CORE (FC a42586f84, integracja ab317b6cf, PASS-WITH-NOTES, runda 5/5) + UPKEEP-TOOLS (154b2fd13, tylko gra/tools). Zasadzka: niewidoczna dla wroga (render, pathfinding, planowanie AI), wejście wroga w wojnie przerywa ruch i otwiera bitwę (gracz/AI/barbarzyńcy), komunikaty, znacznik dla właściciela, cykl życia, Civpedia. ROBOCZA 2d690a91, main 1c452ec35, raw MD5 = manifest, 3 sidecary OK. NIE ZMIERZONO: Chromium AI→gracz (aiCmdResume), rozdzielenie na ukrytą zasadzkę w Chromium, zbliżenie chipu. Bitwa z zasadzki ma standardowe rozstawienie → osobny temat R-WEB-ARMY-AMBUSH-DEPLOY-Q1 (pole wroga, szyk ≤3). **CZEKA NA RANO:** ranking mocy (Power) nie filtruje zasadzek. Dług Rust: REPIN całej mechaniki zasadzki.
+
+### Temat 2026-11-17: R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1 (ciąg dalszy zasadzki, FALA 786)
+Rozstawienie w bitwie z zasadzki: zastawiający także na polu wroga; zaskoczeni w długiej linii ≤3 szerokości (decyzje ABC właściciela A/A/A/C). Haiku r1. STATUS: **OTWARTE** (uruchomiony).
