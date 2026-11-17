@@ -1,0 +1,72 @@
+{
+  "sizes": {
+    "1024x700": {
+      "innerW": 1024,
+      "innerH": 700,
+      "docScrollW": 1024,
+      "docClientW": 1024,
+      "bodyScrollW": 1024,
+      "hasHorizontalScroll": false,
+      "leftBannerFound": true,
+      "leftBannerRect": {
+        "left": 20,
+        "right": 382,
+        "width": 362,
+        "top": 16,
+        "bottom": 72
+      },
+      "maxRight": 382,
+      "overflowing": [],
+      "fallbackClass": "fallback",
+      "overflowingTop": [],
+      "overflowingBottom": [],
+      "clippedText": []
+    },
+    "900x700": {
+      "innerW": 900,
+      "innerH": 700,
+      "docScrollW": 900,
+      "docClientW": 900,
+      "bodyScrollW": 900,
+      "hasHorizontalScroll": false,
+      "leftBannerFound": true,
+      "leftBannerRect": {
+        "left": 20,
+        "right": 320,
+        "width": 300,
+        "top": 16,
+        "bottom": 104
+      },
+      "maxRight": 320,
+      "overflowing": [],
+      "fallbackClass": "fallback",
+      "overflowingTop": [],
+      "overflowingBottom": [],
+      "clippedText": []
+    },
+    "800x700": {
+      "innerW": 800,
+      "innerH": 700,
+      "docScrollW": 800,
+      "docClientW": 800,
+      "bodyScrollW": 800,
+      "hasHorizontalScroll": false,
+      "leftBannerFound": true,
+      "leftBannerRect": {
+        "left": 20,
+        "right": 270,
+        "width": 250,
+        "top": 16,
+        "bottom": 104
+      },
+      "maxRight": 270,
+      "overflowing": [],
+      "fallbackClass": "fallback",
+      "overflowingTop": [],
+      "overflowingBottom": [],
+      "clippedText": []
+    }
+  },
+  "failures": [],
+  "verdict": "PASS"
+}
