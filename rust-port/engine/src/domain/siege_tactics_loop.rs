@@ -26,7 +26,12 @@ use std::collections::HashMap;
 
 use crate::domain::army_leadership::{army_morale_ratio_without_commander, ArmyLeaderCombatant};
 use crate::domain::city_towers::{strongest_ranged_unit_for_era, tower_range_for, UnitRow};
+use crate::domain::formation_rules::CompactSide;
 use crate::domain::js_math::js_max0;
+use crate::domain::player_order_move_gate::{
+    compact_attack_allows_step, should_avoid_auto_backtrack, BacktrackUnit, CompactStepUnit,
+    GroupDoctrine as GateDoctrine, GroupMeta, LineMember,
+};
 use crate::domain::siege_no_breach::RoundCapVerdict;
 use crate::domain::siege_tactics_actions::{
     actions_to_dto, arc_tag, check_end_logs, clash_line, eliminated_log, ff_round_cap_logs,
@@ -36,7 +41,12 @@ use crate::domain::siege_tactics_actions::{
 use crate::domain::siege_tactics_activate::{
     activate_unit, ActivateEvent, ActivateOps, ActivateScene, ActivateUnit, EnemyRef,
 };
-use crate::domain::siege_tactics_autobatch::{cell_key, CellKey};
+use crate::domain::siege_tactics_advance::{
+    advance_after_move, advance_step_decide, AdvanceDecision, AdvanceUnit, AdvanceWorld, AfterStep,
+};
+use crate::domain::siege_tactics_autobatch::{
+    cell_key, AutoBatchEnv, BatchBoard, BatchState, CellKey,
+};
 use crate::domain::siege_tactics_autophase::AutoBatchIntent;
 use crate::domain::siege_tactics_blow::{
     js_max, js_min, ClashTag, DefenderState, HitArc, Outcome, RollSource, SceneEffect, Side,
@@ -47,7 +57,7 @@ use crate::domain::siege_tactics_blow_full::{
     FullBlowInput, FullBlowOutput,
 };
 use crate::domain::siege_tactics_clock::{ScheduleOutcome, VirtualClock};
-use crate::domain::siege_tactics_doctrine_state::ProdDoctrineState;
+use crate::domain::siege_tactics_doctrine_state::{GroupDoctrine, ProdDoctrineState};
 use crate::domain::siege_tactics_end::BattleSide;
 use crate::domain::siege_tactics_endcheck::EndCheckOutcome;
 use crate::domain::siege_tactics_fastforward::{
@@ -970,10 +980,12 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
 // FACING (r4, K5LOOP-FACING): ciało trzyma `facing` każdej jednostki. `_updateFacing` (zdarzenie `UpdateFacing` na
 // początku aktywacji, `_nearestEnemy` + `facingToward`) i przypisanie `attacker.facing` w `_doMeleeAttack` (przed ciosem)
 // aktualizują stan; łuk ciosu liczy [`relative_hit`] z AKTUALNEGO facing obrońcy i pozycji (nie z szablonu).
-// ZAKRES CZĘŚCIOWY (patrz raport 01-operator-r2.md, sekcja NIE_ZMIERZONO). Ciało wykonuje tylko gałąź ciosu w zwarciu
+// ZAKRES CZĘŚCIOWY (patrz raport 01-operator-r2.md, sekcja NIE_ZMIERZONO). Ciało wykonuje gałąź ciosu w zwarciu
 // dla jednostki AUTO bez oblężenia, bez strzelca i bez doktryny: [`activate_unit`] (K5H) decyduje, a dla zdarzenia
-// `Attack` wykonuje [`single_blow_full`] (K5I) na celu podanym przez adapter. Każda inna gałąź `_activateUnit`
-// (ucieczka, doktryna, wieże, machiny, strzelec, marsz, tryb ręczny) NIE jest wykonywana: jednostka nic nie robi,
+// `Attack` wykonuje [`single_blow_full`] (K5I) na celu podanym przez adapter. K5LOOP-CLOSE r1: zdarzenie `AdvanceStep`
+// (`_advanceStep`, `battleScene.ts:8198-8285`) jest WYKONYWANE ([`ProdBody::advance_step`]: T4b + T4c + `_updateFacing`
+// po każdym kroku), wektory `tests/p6_k5loop_close*`. Pozostałe gałęzie `_activateUnit` (ucieczka, doktryna, wieże,
+// machiny, strzelec, kawaleria, falanga, tryb ręczny) NIE są wykonywane: jednostka nic nie robi,
 // a ścieżka trafia do [`ProdBody::unported`]. Wybór celu (`_targetInRange`) zależy od `facing`/`attackDirection`,
 // których ten klocek nie niesie, więc cel jest wejściem adaptera ([`ProdUnit::melee_target`]).
 // ---------------------------------------------------------------------------------------------------------------
@@ -1005,6 +1017,8 @@ struct ProdPending {
     start_rout: bool,
     surround_applied: bool,
     attack: Option<usize>,
+    /// K5LOOP-CLOSE: `ru.moveLeft` po krokach `_advanceStep` (`None` = brak ruchu, stan bez zmian).
+    move_left: Option<f64>,
 }
 
 /// Zapytania maszyny K5H dla [`ProdBody`] (bez skutków ubocznych).
@@ -1155,6 +1169,13 @@ pub struct ProdBody<R: RollSource> {
     /// K5DOC-T4e-0 (D3): web `occByKey` (klucz kafelka -> identyfikator jednostki zajmującej pole). Seedowane z
     /// pozycji jednostek w [`ProdBody::new`]; aktualizowane przez [`ProdBody::move_step`].
     occ_by_key: HashMap<CellKey, String>,
+    /// K5LOOP-CLOSE (D-K5C-4): `ru.formationRank` (`battleScene.ts:2039`, pole opcjonalne; czyta je
+    /// `_compactAttackAllowsStep` jako `?? 0`, `:8141`, `:8156`). Domyślnie `None` (brak pola); spawn szyku ustawia je
+    /// adapterem (`:5452`, `:17229`).
+    pub formation_rank: [Vec<Option<f64>>; 2],
+    /// K5LOOP-CLOSE (D-K5C-4): `this._groupMeta` (mapa `groupId -> { doctrine, autoPlay }`), czytana przez
+    /// `_getEffectiveDoctrine` (`:17612`) i `_shouldAvoidAutoBacktrack` (`:8191`). Pin: pusta mapa na starcie bitwy.
+    pub group_meta: HashMap<String, GroupMeta>,
 }
 
 /// K5DOC-T4e-0 (D1): brak danych terenu przy wymaganym kroku ruchu. Jawny błąd, nie wartość domyślna.
@@ -1187,12 +1208,38 @@ fn seed_occupancy(units: &[Vec<ProdUnit>; 2]) -> HashMap<CellKey, String> {
     occ
 }
 
+/// Web `_moveCostForUnit` (`battleScene.ts:7436-7443`): nieprzejezdne = `Infinity`; piechota = koszt bazowy;
+/// kawaleria = koszt bazowy * mnożnik terenu, a niedostępny dla kawalerii mnożnik = `Infinity`.
+fn unit_move_cost(terrain: &dyn MoveTerrain, mounted: bool, col: f64, row: f64) -> f64 {
+    if !terrain.passable(col, row) {
+        return f64::INFINITY;
+    }
+    let base = terrain.move_cost(col, row);
+    if !mounted {
+        return base;
+    }
+    let mult = terrain.cavalry_multiplier(col, row);
+    if !mult.is_finite() {
+        return f64::INFINITY;
+    }
+    base * mult
+}
+
+/// Web `MOVE_STEP_MS` (`battleScene.ts:1010`): czas animacji jednego kroku `_doMove` (`_raf(step)` do `p >= 1`).
+/// Czas kroku w ciele jest nominalny (jak `BLOW_HIT_T` w [`ProdUnit::body_ms`]); kwantyzacja klatkami rAF/FF to
+/// wejście sterownika (NIE_ZMIERZONO w tym klocku).
+pub const MOVE_STEP_MS: f64 = 240.0;
+
 /// Adapter [`MoveWorld`] jednej jednostki w [`ProdBody::move_step`]: zajętość z ciała, teren z [`MoveTerrain`],
-/// `mounted` z `ActivateUnit` (koszt per jednostka). `update_facing`: no-op (znany dług #107, decyzja r4).
+/// `mounted` z `ActivateUnit` (koszt per jednostka). `update_facing` (K5LOOP-CLOSE, D-K5C-1): pin wywołuje
+/// `_updateFacing(ru)` jako OSTATNI efekt stanu `_doMove` (`battleScene.ts:8704` planowanie, `:8756` bezpośrednio),
+/// po `ru.q/ru.r` i `moveLeft`. Adapter zapisuje żądanie, a ciało wykonuje `ProdBody::update_facing` zaraz po
+/// [`do_move_effects`] z NOWEJ pozycji (nic między nimi nie zmienia stanu, więc kolejność jest ta sama co w pinie).
 struct ProdMoveWorld<'a> {
     occ: &'a mut HashMap<CellKey, String>,
     terrain: &'a dyn MoveTerrain,
     mounted: bool,
+    facing_requested: bool,
 }
 
 impl MoveWorld for ProdMoveWorld<'_> {
@@ -1200,21 +1247,8 @@ impl MoveWorld for ProdMoveWorld<'_> {
         &mut *self.occ
     }
 
-    /// Web `_moveCostForUnit` (`battleScene.ts:7436-7443`): nieprzejezdne = `Infinity`; piechota = koszt bazowy;
-    /// kawaleria = koszt bazowy * mnożnik terenu, a niedostępny dla kawalerii mnożnik = `Infinity`.
     fn move_cost(&self, col: f64, row: f64) -> f64 {
-        if !self.terrain.passable(col, row) {
-            return f64::INFINITY;
-        }
-        let base = self.terrain.move_cost(col, row);
-        if !self.mounted {
-            return base;
-        }
-        let mult = self.terrain.cavalry_multiplier(col, row);
-        if !mult.is_finite() {
-            return f64::INFINITY;
-        }
-        base * mult
+        unit_move_cost(self.terrain, self.mounted, col, row)
     }
 
     fn is_ford(&self, col: f64, row: f64) -> bool {
@@ -1222,7 +1256,238 @@ impl MoveWorld for ProdMoveWorld<'_> {
     }
 
     fn update_facing(&mut self, _unit_id: &str) {
-        // #107 zablokowany (decyzja orkiestratora r4): `_updateFacing` nie jest wykonywany w tym kroku.
+        self.facing_requested = true;
+    }
+}
+
+/// Web `_passableForUnit(ru, col, row)` (`battleScene.ts:7446-7448`: `Number.isFinite(_moveCostForUnit(...))`) dla
+/// helperów ścieżki T4a (`first_step_along_path_to_attack`, `step_toward`), które z [`AutoBatchEnv`] czytają
+/// WYŁĄCZNIE `passable_for_unit`. Brak terenu: `missing = true` i `false` (ciało zapisuje jawny tag, D1 K5DOC-T4e-0).
+struct ProdPathEnv<'a> {
+    terrain: Option<&'a dyn MoveTerrain>,
+    mounted: bool,
+    missing: bool,
+}
+
+impl AutoBatchEnv for ProdPathEnv<'_> {
+    fn plan_unit(
+        &mut self,
+        _board: &mut BatchBoard,
+        _unit_id: &str,
+        _intent: &mut AutoBatchIntent,
+    ) {
+        unreachable!("ProdPathEnv: helpery sciezki T4a nie planuja (AUTO-batch poza ProdBody)")
+    }
+    fn check_end(&mut self, _st: &mut BatchState) -> bool {
+        unreachable!("ProdPathEnv: helpery sciezki T4a nie wolaja _checkEnd")
+    }
+    fn passable_for_unit(&mut self, _st: &BatchState, _unit_id: &str, col: f64, row: f64) -> bool {
+        match self.terrain {
+            Some(t) => unit_move_cost(t, self.mounted, col, row).is_finite(),
+            None => {
+                self.missing = true;
+                false
+            }
+        }
+    }
+    fn do_move(&mut self, _st: &mut BatchState, _unit_id: &str, _col: f64, _row: f64) {
+        unreachable!("ProdPathEnv: ruch wykonuje ProdBody::move_step_core")
+    }
+    fn apply_terrain_range(&mut self, _st: &mut BatchState, _unit_id: &str) {
+        unreachable!("ProdPathEnv: helpery sciezki T4a nie wolaja _applyTerrainRange")
+    }
+    fn do_attack(&mut self, _st: &mut BatchState, _attacker_id: &str, _target_id: &str) {
+        unreachable!("ProdPathEnv: helpery sciezki T4a nie atakuja")
+    }
+    fn flee_step(&mut self, _st: &mut BatchState, _unit_id: &str) {
+        unreachable!("ProdPathEnv: helpery sciezki T4a nie wolaja _fleeStep")
+    }
+    fn remove_unit_from_scene(&mut self, _st: &mut BatchState, _unit_id: &str) {
+        unreachable!("ProdPathEnv: helpery sciezki T4a nie usuwaja jednostek")
+    }
+    fn shake_allies_on_loss(&mut self, _st: &mut BatchState, _unit_id: &str) {
+        unreachable!("ProdPathEnv: helpery sciezki T4a nie wolaja _shakeAlliesOnLoss")
+    }
+    fn can_strike_target_from(
+        &mut self,
+        _st: &BatchState,
+        _attacker_id: &str,
+        _col: f64,
+        _row: f64,
+        _target_id: &str,
+    ) -> bool {
+        unreachable!(
+            "ProdPathEnv: C-FLANK (_canStrikeTargetFrom) poza zakresem _advanceStep 'front'"
+        )
+    }
+}
+
+/// Doktryna z `siege_tactics_doctrine_state` w typie bramek ruchu (`player_order_move_gate`); te same wartości pinu
+/// (`battleScene.ts:1938`).
+fn gate_doctrine(d: GroupDoctrine) -> GateDoctrine {
+    match d {
+        GroupDoctrine::Defensive => GateDoctrine::Defensive,
+        GroupDoctrine::Steady => GateDoctrine::Steady,
+        GroupDoctrine::Aggressive => GateDoctrine::Aggressive,
+        GroupDoctrine::Skirmish => GateDoctrine::Skirmish,
+        GroupDoctrine::Manual => GateDoctrine::Manual,
+    }
+}
+
+/// Odczyty sceny `_advanceStep` (K5DOC-T4b [`AdvanceWorld`]) dla jednostki ciała. Zakres ciała wyklucza strzelca
+/// (`canShoot` = `false`, strażnik `strzelec`) i mur (`siegeWallCol < 0`, strażnik `oblezenie`), więc `reach = 1` i
+/// `_meleeBlockedByWall` = `false` (`battleScene.ts:8361-8362`).
+struct ProdAdvanceWorld<'a> {
+    unit: UnitRef,
+    /// Pozycje i flagi `ProdUnit::activate` stron `[atk, def]`.
+    units: &'a [Vec<ProdUnit>; 2],
+    st: &'a TurnSeqState,
+    doctrine: &'a [Vec<ProdDoctrineState>; 2],
+    group_meta: &'a HashMap<String, GroupMeta>,
+    formation_rank: &'a [Vec<Option<f64>>; 2],
+}
+
+impl ProdAdvanceWorld<'_> {
+    /// Web `_enemiesOf(ru)` (`battleScene.ts:8291-8294`): żywi, nieznikający, nieuciekający wrogowie w kolejności listy.
+    fn live_enemies(&self) -> impl Iterator<Item = (usize, i64, i64)> + '_ {
+        let other = opposite(self.unit.side);
+        self.units[side_ix(other)]
+            .iter()
+            .enumerate()
+            .filter_map(move |(i, pu)| {
+                let c = self
+                    .st
+                    .unit(UnitRef {
+                        side: other,
+                        idx: i,
+                    })
+                    .c;
+                (!c.dead && !c.fading_out && !c.routed).then_some((i, pu.activate.q, pu.activate.r))
+            })
+    }
+
+    fn group_meta_of(&self, ds: &ProdDoctrineState) -> Option<GroupMeta> {
+        // Web `ru.groupId ? this._groupMeta.get(ru.groupId) : undefined` (pusty napis = falsy).
+        ds.group_id
+            .as_deref()
+            .filter(|g| !g.is_empty())
+            .and_then(|g| self.group_meta.get(g).copied())
+    }
+
+    /// Web `_getEffectiveDoctrine(ru)` (`battleScene.ts:17612-17619`) = `_effectiveMetaForUnit(ru).doctrine` (`:17634`).
+    fn effective_doctrine(&self) -> GateDoctrine {
+        let ds = &self.doctrine[side_ix(self.unit.side)][self.unit.idx];
+        if let Some(d) = ds.unit_doctrine {
+            return gate_doctrine(d);
+        }
+        self.group_meta_of(ds)
+            .map(|m| m.doctrine)
+            .unwrap_or(GateDoctrine::Steady)
+    }
+}
+
+impl AdvanceWorld for ProdAdvanceWorld<'_> {
+    /// Web `_canAttackFrom(ru, col, row)` (`battleScene.ts:8436-8444`) / `_makeCanAttackFromTest` (`:8454`).
+    fn can_attack_from(&self, _unit_id: &str, col: f64, row: f64) -> bool {
+        self.live_enemies().any(|(_, q, r)| {
+            let dd = (col - q as f64).abs() + (row - r as f64).abs();
+            dd == 1.0
+        })
+    }
+
+    /// Web `_pickAdjacentTargetByPriority(ru)`: w ciele NIEOSIĄGALNE dla `_advanceStep` wołanego z `_activateUnit`
+    /// (dowód przy `ProdBody::advance_step`); zwraca pierwszego sąsiada wyłącznie po to, by gałąź `Attack` była
+    /// jawnie oznaczona tagiem (bez ciosu), a nie po cichu zamieniona na `done()`.
+    fn pick_adjacent_target(&self, _unit_id: &str) -> Option<String> {
+        let me = &self.units[side_ix(self.unit.side)][self.unit.idx].activate;
+        let (mq, mr) = (me.q, me.r);
+        let other = opposite(self.unit.side);
+        self.live_enemies()
+            .find(|(_, q, r)| (mq - q).abs() + (mr - r).abs() == 1)
+            .map(|(i, _, _)| {
+                unit_tag(UnitRef {
+                    side: other,
+                    idx: i,
+                })
+            })
+    }
+
+    /// Web `_nearestEnemy(ru)` (`battleScene.ts:8296-8304`): pierwszy ściśle najbliższy (Manhattan).
+    fn nearest_enemy(&self, _unit_id: &str) -> Option<(String, (f64, f64))> {
+        let me = &self.units[side_ix(self.unit.side)][self.unit.idx].activate;
+        let other = opposite(self.unit.side);
+        let mut best: Option<(usize, i64, i64)> = None;
+        let mut best_d = f64::INFINITY;
+        for (i, q, r) in self.live_enemies() {
+            let dd = ((me.q - q).abs() + (me.r - r).abs()) as f64;
+            if dd < best_d {
+                best_d = dd;
+                best = Some((i, q, r));
+            }
+        }
+        best.map(|(i, q, r)| {
+            (
+                unit_tag(UnitRef {
+                    side: other,
+                    idx: i,
+                }),
+                (q as f64, r as f64),
+            )
+        })
+    }
+
+    /// Web `_shouldAvoidAutoBacktrack(ru)` (`battleScene.ts:8191-8196`) przez [`should_avoid_auto_backtrack`].
+    fn avoid_auto_backtrack(&self, _unit_id: &str) -> bool {
+        let ds = &self.doctrine[side_ix(self.unit.side)][self.unit.idx];
+        should_avoid_auto_backtrack(BacktrackUnit {
+            unit_doctrine: ds.unit_doctrine.map(gate_doctrine),
+            has_group_id: ds.group_id.as_deref().is_some_and(|g| !g.is_empty()),
+            group_meta: self.group_meta_of(ds),
+        })
+    }
+
+    /// Web `_compactAttackAllowsStep(ru, col)` (`battleScene.ts:8139-8172`) przez [`compact_attack_allows_step`].
+    fn compact_attack_allows_step(&self, _unit_id: &str, col: f64) -> bool {
+        let six = side_ix(self.unit.side);
+        let me = &self.units[six][self.unit.idx].activate;
+        let side = match self.unit.side {
+            BattleSide::Attacker => CompactSide::Atk,
+            BattleSide::Defender => CompactSide::Def,
+        };
+        let line: Vec<LineMember> = self.units[six]
+            .iter()
+            .enumerate()
+            .map(|(i, pu)| {
+                let c = self
+                    .st
+                    .unit(UnitRef {
+                        side: self.unit.side,
+                        idx: i,
+                    })
+                    .c;
+                LineMember {
+                    q: pu.activate.q as f64,
+                    r: pu.activate.r as f64,
+                    formation_rank: self.formation_rank[six][i],
+                    mounted: pu.activate.mounted,
+                    siege: pu.activate.is_siege_unit,
+                    in_play: !c.dead && !c.fading_out && !c.removed && !c.routed,
+                }
+            })
+            .collect();
+        compact_attack_allows_step(
+            CompactStepUnit {
+                side,
+                doctrine: self.effective_doctrine(),
+                mounted: me.mounted,
+                siege: me.is_siege_unit,
+                formation_rank: self.formation_rank[six][self.unit.idx],
+                q: me.q as f64,
+                r: me.r as f64,
+            },
+            col,
+            &line,
+        )
     }
 }
 
@@ -1258,8 +1523,11 @@ impl<R: RollSource> ProdBody<R> {
             (0..units[0].len()).map(|i| format!("atk{i}")).collect(),
             (0..units[1].len()).map(|i| format!("def{i}")).collect(),
         ];
+        let formation_rank = [vec![None; units[0].len()], vec![None; units[1].len()]];
         Self {
             occ_by_key: seed_occupancy(&units),
+            formation_rank,
+            group_meta: HashMap::new(),
             terrain: None,
             units,
             scene,
@@ -1425,6 +1693,36 @@ impl<R: RollSource> ProdBody<R> {
         move_left: f64,
         autobatch: Option<&mut AutoBatchIntent>,
     ) -> Result<MoveStepResult, MissingTerrain> {
+        // API bez `TurnSeqState`: flagi wrogów dla `_updateFacing` (`_enemiesOf`) z `ProdUnit::activate`. Ścieżka
+        // produkcyjna (`start` -> [`Self::advance_step`]) woła [`Self::move_step_core`] z flagami z `TurnSeqState`.
+        let other = opposite(unit.side);
+        let enemies: Vec<EnemyRef> = self.units[side_ix(other)]
+            .iter()
+            .map(|pu| EnemyRef {
+                q: pu.activate.q,
+                r: pu.activate.r,
+                dead: pu.activate.dead,
+                fading_out: pu.activate.fading_out,
+                routed: pu.activate.routed,
+                is_catapult: pu.activate.is_catapult,
+            })
+            .collect();
+        self.move_step_core(unit, col, row, refused, move_left, autobatch, &enemies)
+    }
+
+    /// Rdzeń [`Self::move_step`]: `do_move_effects` + `_updateFacing` z NOWEJ pozycji (K5LOOP-CLOSE, D-K5C-1:
+    /// `battleScene.ts:8704`/`:8756`) wobec `enemies` (lista strony przeciwnej, flagi jak w `_enemiesOf`).
+    #[allow(clippy::too_many_arguments)]
+    fn move_step_core(
+        &mut self,
+        unit: UnitRef,
+        col: i64,
+        row: i64,
+        refused: bool,
+        move_left: f64,
+        autobatch: Option<&mut AutoBatchIntent>,
+        enemies: &[EnemyRef],
+    ) -> Result<MoveStepResult, MissingTerrain> {
         let ix = side_ix(unit.side);
         let (old_q, old_r, mounted) = {
             let pu = &self.units[ix][unit.idx];
@@ -1451,20 +1749,162 @@ impl<R: RollSource> ProdBody<R> {
             occ: &mut self.occ_by_key,
             terrain,
             mounted,
+            facing_requested: false,
         };
         let outcome = do_move_effects(
             &mut world, &mut mu, col as f64, row as f64, refused, autobatch,
         );
+        let facing_requested = world.facing_requested;
         // Pozycja jednostki po kroku (`ru.q`, `ru.r`). Odmowa (`refused`) nie zmienia pozycji (web :8689-8692).
         if !refused {
             let pu = &mut self.units[ix][unit.idx];
             pu.activate.q = col;
             pu.activate.r = row;
         }
+        // `_updateFacing(ru)` (`:8704`/`:8756`): ostatni efekt stanu `_doMove`, z nowej pozycji.
+        if facing_requested {
+            self.update_facing(unit, enemies);
+        }
         Ok(MoveStepResult {
             move_left: mu.move_left,
             outcome,
         })
+    }
+
+    /// Web: `occByKey` zwalnia pole jednostki przy `_startRout` (`battleScene.ts:9812`) i `_removeUnitFromScene`
+    /// (`:9915`). Odtwarza ten stan dla jednostek, które już są `routed` albo `removed` w `st` (np. wejście ze stanu
+    /// zapisanego albo test startujący w środku bitwy). Ciało robi to samo na bieżąco w `start_rout`/`start_fade`.
+    pub fn sync_occupancy(&mut self, st: &TurnSeqState) {
+        for (ix, side) in [BattleSide::Attacker, BattleSide::Defender]
+            .into_iter()
+            .enumerate()
+        {
+            for idx in 0..self.units[ix].len() {
+                let c = st.unit(UnitRef { side, idx }).c;
+                if c.routed || c.removed {
+                    let pu = &self.units[ix][idx].activate;
+                    let key = cell_key(pu.q as f64, pu.r as f64);
+                    let tag = unit_tag(UnitRef { side, idx });
+                    if self.occ_by_key.get(&key) == Some(&tag) {
+                        self.occ_by_key.remove(&key);
+                    }
+                }
+            }
+        }
+    }
+
+    /// K5LOOP-CLOSE: wykonanie `_advanceStep(ru, done)` (`battleScene.ts:8198-8285`) dla zdarzenia
+    /// [`ActivateEvent::AdvanceStep`]: decyzja K5DOC-T4b ([`advance_step_decide`]) -> krok `_doMove` przez
+    /// [`Self::move_step_core`] (efekty T4c + `_updateFacing`) -> callback ([`advance_after_move`]); `Schedule`
+    /// (`_schedule(STEP_GAP_MS, ...)`) = kolejna iteracja tej samej pętli. Zwraca czas trwania (ms):
+    /// `MOVE_STEP_MS` na każdy krok + `STEP_GAP_MS` na każdy `_schedule` (nominalnie, patrz [`MOVE_STEP_MS`]).
+    ///
+    /// Gałęzie jawnie oznaczone (bez cichego pominięcia):
+    /// * `krok-naprzod-brak-terenu`: decyzja wymaga `_passableForUnit`, a ciało nie ma [`MoveTerrain`] (D1).
+    /// * `krok-naprzod-atak`: `Attack` z `_advanceStep` (`:8241-8244`). W pinie NIEOSIĄGALNE z `_activateUnit`: dla
+    ///   melee bez muru `_targetInRange` (`:8373-8392`, `dd === 1 || dd === 0`) zwraca cel zawsze, gdy
+    ///   `_canAttackFrom` (`:8436-8444`, `dd === 1`) jest prawdą, więc `_activateUnit` wybiera `_doAttack` (`:6293-6297`)
+    ///   przed `_advanceStep` (`:6298`); kolejne wywołania z `_schedule` następują tylko, gdy callback `_doMove` sprawdził
+    ///   `!_canAttackFrom` z nowej pozycji (`:8277`), a w turze sekwencyjnej nic innego nie zmienia stanu przed nimi. W
+    ///   ciele osiągalne tylko przy niespójnym wejściu adaptera ([`ProdUnit::melee_target`] = `None` przy sąsiedzie).
+    fn advance_step(&mut self, unit: UnitRef, st: &TurnSeqState) -> (f64, Option<f64>) {
+        let ix = side_ix(unit.side);
+        let mounted = self.units[ix][unit.idx].activate.mounted;
+        let mut move_left = st.unit(unit).c.move_left;
+        let mut moved = false;
+        let now0 = self.now;
+        let mut elapsed = 0.0;
+        let enemies = self.enemies_of(unit.side, st);
+        let board_state = |occ: &HashMap<CellKey, String>| {
+            BatchState::new(BatchBoard {
+                atk: Vec::new(),
+                def: Vec::new(),
+                occ: occ.clone(),
+            })
+        };
+        loop {
+            let au = self.advance_unit(unit, move_left);
+            let bst = board_state(&self.occ_by_key);
+            let (decision, missing) = {
+                let world = self.advance_world(unit, st);
+                let mut env = ProdPathEnv {
+                    terrain: self.terrain.as_deref(),
+                    mounted,
+                    missing: false,
+                };
+                let d = advance_step_decide(&world, &mut env, &bst, &au);
+                (d, env.missing)
+            };
+            if missing {
+                self.unported.push((unit, "krok-naprzod-brak-terenu"));
+                break;
+            }
+            match decision {
+                AdvanceDecision::Done => break,
+                AdvanceDecision::Attack { .. } => {
+                    self.unported.push((unit, "krok-naprzod-atak"));
+                    break;
+                }
+                AdvanceDecision::Move { col, row, then } => {
+                    self.now = now0 + elapsed;
+                    let res = self.move_step_core(
+                        unit, col as i64, row as i64, false, move_left, None, &enemies,
+                    );
+                    let Ok(res) = res else {
+                        // Teren był czytany w decyzji (passable), więc brak terenu tu nie występuje.
+                        self.unported.push((unit, "krok-naprzod-brak-terenu"));
+                        break;
+                    };
+                    move_left = res.move_left;
+                    moved = true;
+                    elapsed += MOVE_STEP_MS;
+                    // Callback `_doMove` (`:8273-8284`): najpierw `lastAutoMoveFrom = previousPosition`.
+                    if let Some((q, r)) = then {
+                        self.doctrine[ix][unit.idx].last_auto_move_from =
+                            Some((q as i64, r as i64));
+                    }
+                    let after = {
+                        let au2 = self.advance_unit(unit, move_left);
+                        let bst2 = board_state(&self.occ_by_key);
+                        let world = self.advance_world(unit, st);
+                        advance_after_move(&world, &bst2, &au2)
+                    };
+                    match after {
+                        AfterStep::Done => break,
+                        AfterStep::Schedule { ms } => elapsed += f64::from(ms),
+                    }
+                }
+            }
+        }
+        self.now = now0;
+        (elapsed, moved.then_some(move_left))
+    }
+
+    fn advance_unit(&self, unit: UnitRef, move_left: f64) -> AdvanceUnit {
+        let ix = side_ix(unit.side);
+        let pu = &self.units[ix][unit.idx].activate;
+        AdvanceUnit {
+            id: unit_tag(unit),
+            q: pu.q as f64,
+            r: pu.r as f64,
+            dead: false,
+            fading_out: false,
+            move_left,
+            last_auto_move_from: self.doctrine[ix][unit.idx]
+                .last_auto_move_from
+                .map(|(q, r)| (q as f64, r as f64)),
+        }
+    }
+
+    fn advance_world<'a>(&'a self, unit: UnitRef, st: &'a TurnSeqState) -> ProdAdvanceWorld<'a> {
+        ProdAdvanceWorld {
+            unit,
+            units: &self.units,
+            st,
+            doctrine: &self.doctrine,
+            group_meta: &self.group_meta,
+            formation_rank: &self.formation_rank,
+        }
     }
 }
 
@@ -1610,8 +2050,10 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             start_rout: res.events.contains(&ActivateEvent::StartRout),
             surround_applied: au.surround_applied,
             attack: None,
+            move_left: None,
         };
         let mut skipped: Vec<&'static str> = Vec::new();
+        let mut advance = false;
         for ev in res.events.iter().copied() {
             match ev {
                 ActivateEvent::Done
@@ -1627,6 +2069,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 | ActivateEvent::InfantryToTower
                 | ActivateEvent::RamTowerStep => {}
                 ActivateEvent::Attack { target } => pend.attack = Some(target),
+                // K5LOOP-CLOSE: `_advanceStep(ru, done)` (`battleScene.ts:6298`, cialo `:8198-8285`).
+                ActivateEvent::AdvanceStep => advance = true,
                 other => skipped.push(prod_tag(other)),
             }
         }
@@ -1638,6 +2082,13 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             pend.attack = None;
             self.pending[ix][unit.idx] = Some(pend);
             return 0.0;
+        }
+        // `_advanceStep` i `_doAttack` wykluczaja sie w `_activateUnit` (kazda galaz konczy sie `return`).
+        if advance {
+            let (dur, move_left) = self.advance_step(unit, st);
+            pend.move_left = move_left;
+            self.pending[ix][unit.idx] = Some(pend);
+            return dur;
         }
         if let Some(target) = pend.attack {
             if pu.melee_target != Some(target) || pu.blow.is_none() {
@@ -1687,6 +2138,9 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         {
             let c = unit_cu_mut(st, unit);
             c.morale = pend.morale;
+            if let Some(ml) = pend.move_left {
+                c.move_left = ml;
+            }
         }
         // `_startRout` z aktywacji (okrążenie): ten sam kod co rout po ciosie (boost wrogów, oslona, facing).
         if pend.start_rout {
@@ -1979,6 +2433,8 @@ impl<R: RollSource> ProdBody<R> {
             c.routed = true;
             c.acted = true;
         }
+        // `this.occByKey.delete(cellKey(ru.q, ru.r))` (`battleScene.ts:9812`).
+        self.release_tile(unit);
         // P4-1I3: `_sfxRout()` (`:9801`) = początek rozbicia, przed kaskadą osłony wręcz.
         self.emit(BattleAction::Rout { unit });
         if self.is_army_commander[ix][unit.idx] {
@@ -2027,6 +2483,14 @@ impl<R: RollSource> ProdBody<R> {
         }
     }
 
+    /// `occByKey.delete(cellKey(ru.q, ru.r))`: zwolnienie pola jednostki (rout `:9812`, usuniecie `:9915`). Web usuwa
+    /// klucz bez sprawdzania wlasciciela; tu tak samo.
+    fn release_tile(&mut self, unit: UnitRef) {
+        let pu = &self.units[side_ix(unit.side)][unit.idx].activate;
+        let key = cell_key(pu.q as f64, pu.r as f64);
+        self.occ_by_key.remove(&key);
+    }
+
     /// `_startFade` -> `_removeUnitFromScene` (`battleScene.ts:9910-9937`): jednostka zabita znika z pola
     /// (`removed`, `dead`, `fadingOut = false`). Efekty dowódcy są nieportowane (tag `dowodca-fade`).
     fn start_fade(&mut self, st: &mut TurnSeqState, unit: UnitRef) {
@@ -2037,6 +2501,8 @@ impl<R: RollSource> ProdBody<R> {
         c.removed = true;
         c.dead = true;
         c.fading_out = false;
+        // `_removeUnitFromScene`: `this.occByKey.delete(cellKey(ru.q, ru.r))` (`battleScene.ts:9915`).
+        self.release_tile(unit);
         if self.is_army_commander[side_ix(unit.side)][unit.idx] {
             self.unported.push((unit, "dowodca-fade"));
         }
