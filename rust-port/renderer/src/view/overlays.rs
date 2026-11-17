@@ -74,9 +74,12 @@ use crate::models::misc::range::{
 use crate::models::misc::siege::{
     machines_by_camp_hex, SiegeMachineKind, SiegeMarkerRenderer, SiegeMarkerSyncOptions,
 };
+use crate::models::misc::territory::{
+    border_vertex_key, collect_territory_boundary_edges, hex_corner_world, BorderEdge,
+};
 use crate::models::misc::trade::{build_trade_routes_overlay_group, TradeRouteOverlayInput};
 use crate::models::misc::{HexKey, HexKeySet, OverlayGroup, OverlayMap};
-use crate::pick::hex::HexCoord;
+use crate::pick::hex::{axial_to_world, HexCoord, HEX_R};
 use crate::pick::terrain::TerrainPickScene;
 use crate::raster::RasterError;
 
@@ -124,6 +127,15 @@ pub enum OverlayAdapterError {
     },
     /// The label raster of the surroundings overlay failed.
     Raster(RasterError),
+    /// `TerritoryRangesDto.borders` does not list the owners of `by_owner`
+    /// in the same order (P4-1F2).
+    TerritoryBorderOwners,
+    /// The border edges of an owner differ from the outer sides of its hexes
+    /// (`collectTerritoryBoundaryEdges`, P4-1F2).
+    TerritoryBorderMismatch {
+        /// Legacy owner number.
+        owner: i64,
+    },
 }
 
 impl std::fmt::Display for OverlayAdapterError {
@@ -138,6 +150,15 @@ impl std::fmt::Display for OverlayAdapterError {
             Self::MissingYield { q, r } => write!(f, "okolica: no yield for hex {q},{r}"),
             Self::DuplicateYield { q, r } => write!(f, "okolica: hex {q},{r} yielded twice"),
             Self::Raster(e) => write!(f, "okolica label raster: {e:?}"),
+            Self::TerritoryBorderOwners => {
+                write!(
+                    f,
+                    "territory ranges: borders[] owners differ from by_owner[]"
+                )
+            }
+            Self::TerritoryBorderMismatch { owner } => {
+                write!(f, "territory ranges: owner {owner} border edges differ")
+            }
         }
     }
 }
@@ -369,6 +390,104 @@ pub fn territory_border_group(
         },
         Some(&relation),
     )))
+}
+
+// ------------------------------------------------------------ territory ranges (P4-1F2)
+
+/// `TerritoryRangesDto.by_owner` → the `hexKeysByOwner` `Map` (as
+/// [`territory_by_owner`]).
+#[must_use]
+pub fn territory_ranges_by_owner(ranges: &vm::TerritoryRangesDto) -> Vec<(i64, HexKeySet)> {
+    territory_by_owner(&ranges.territory_view())
+}
+
+fn territory_hex_center(q: i32, r: i32) -> Option<(f64, f64)> {
+    Some(axial_to_world(HexCoord { q, r }, HEX_R))
+}
+
+/// `TerritoryRangesDto.borders` → the renderer [`BorderEdge`]s of every
+/// owner (`collectTerritoryBoundaryEdges(set, makeAxialHexCenterFn())`,
+/// `map/territory-border.ts:76-111`, `:236-238`): edge `dir` of a hex runs
+/// from corner `(dir + 1) % 6` to `(dir + 2) % 6`.
+///
+/// The DTO edges are checked against the renderer's own rule on the same
+/// hexes (a side is a border iff its neighbour is not in the set); a
+/// producer that disagrees is reported, not drawn.
+///
+/// # Errors
+///
+/// [`OverlayAdapterError::TerritoryBorderOwners`],
+/// [`OverlayAdapterError::TerritoryBorderMismatch`].
+pub fn territory_ranges_border_edges(
+    ranges: &vm::TerritoryRangesDto,
+) -> Result<Vec<(i64, Vec<BorderEdge>)>, OverlayAdapterError> {
+    if ranges.borders.len() != ranges.by_owner.len()
+        || ranges
+            .borders
+            .iter()
+            .zip(&ranges.by_owner)
+            .any(|(b, o)| b.owner_id != o.owner_id)
+    {
+        return Err(OverlayAdapterError::TerritoryBorderOwners);
+    }
+    let mut out = Vec::with_capacity(ranges.borders.len());
+    for (border, owner) in ranges.borders.iter().zip(&ranges.by_owner) {
+        let owner_id = owner_i64(owner.owner_id);
+        let mut edges = Vec::with_capacity(border.edges.len());
+        for (id, e) in border.edges.iter().enumerate() {
+            let dir = u32::from(e.dir);
+            if dir >= 6 {
+                return Err(OverlayAdapterError::TerritoryBorderMismatch { owner: owner_id });
+            }
+            let (cx, cz) = axial_to_world(
+                HexCoord {
+                    q: e.hex.q,
+                    r: e.hex.r,
+                },
+                HEX_R,
+            );
+            let v0 = hex_corner_world(cx, cz, (dir + 1) % 6);
+            let v1 = hex_corner_world(cx, cz, (dir + 2) % 6);
+            edges.push(BorderEdge {
+                id,
+                v0_key: border_vertex_key(v0.x, v0.z),
+                v1_key: border_vertex_key(v1.x, v1.z),
+                v0,
+                v1,
+            });
+        }
+        let expected = collect_territory_boundary_edges(
+            &range_hex_key_set(&owner.hexes),
+            &territory_hex_center,
+        );
+        if edges != expected {
+            return Err(OverlayAdapterError::TerritoryBorderMismatch { owner: owner_id });
+        }
+        out.push((owner_id, edges));
+    }
+    Ok(out)
+}
+
+/// [`territory_border_group`] fed from a [`vm::TerritoryRangesDto`]: same UI
+/// gate (`main.ts:15583`), then the borders are checked
+/// ([`territory_ranges_border_edges`]) and the group is built from
+/// `by_owner` (`main.ts:15607-15614`).
+///
+/// # Errors
+///
+/// As [`territory_ranges_border_edges`] and [`territory_colors`].
+pub fn territory_ranges_border_group(
+    map: &OverlayMap,
+    ranges: &vm::TerritoryRangesDto,
+    owners: &[vm::OwnerViewDto],
+    viewer: &vm::ViewerDto,
+    ui: &MapUiState,
+) -> Result<Option<OverlayGroup>, OverlayAdapterError> {
+    if !(ui.territory_border_visible || ui.is_city_panel_open) {
+        return Ok(None);
+    }
+    territory_ranges_border_edges(ranges)?;
+    territory_border_group(map, &ranges.territory_view(), owners, viewer, ui)
 }
 
 // ------------------------------------------------------------ ranges

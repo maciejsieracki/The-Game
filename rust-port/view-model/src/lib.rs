@@ -34,6 +34,7 @@ pub mod map;
 pub mod overlays;
 pub mod owners;
 pub mod root;
+pub mod territory_ranges_view;
 pub mod units;
 pub mod validate;
 
@@ -59,5 +60,9 @@ pub use owners::{
     ViewerDto, WallKind,
 };
 pub use root::{RenderLayersDto, RenderViewDto, CONTRACT_VERSION};
+pub use territory_ranges_view::{
+    territory_ranges_dto, BorderEdgeDto, OwnerBorderEdgesDto, TerritoryFogFilter,
+    TerritoryNodeInput, TerritoryNodeOrder, TerritoryRangesDto,
+};
 pub use units::{StackViewDto, StackVitalsDto, UnitViewDto};
 pub use validate::{validate_map, ViewError};
