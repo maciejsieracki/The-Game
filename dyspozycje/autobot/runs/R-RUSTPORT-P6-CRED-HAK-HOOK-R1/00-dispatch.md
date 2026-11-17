@@ -39,3 +39,7 @@ testy `p6_cred_hak_*`, generator `.mjs`, katalog runs. NIC więcej. Nie ruszać 
 ## KRYTERIA KOŃCA
 Zielone bramki, mutacje FAIL, stub `bridge.rs` usunięty, commit jawnym `git add`, bez `Cargo.lock`, trailer bez nazwy modelu (#289).
 Raport `01-operator-r1.md`. Nie pushować do `rust-port/parity-v2`.
+
+## DODATEK r2 (orkiestrator, 2026-11-17 14:1x): BAZA przesunięta
+- BAZA r2: `origin/rust-port/parity-v2` = `2760b4f0c` (T4e-0 `732ef51a0` zintegrowany). Worktree detached na `2760b4f0c`.
+- Zakres bez zmian. Konflikt z T4e nieprzewidziany: T4e dotyka `siege_tactics_loop.rs`/`siege_tactics_move_effects.rs`; CRED-HAK dotyka `bridge.rs`/`diplomacy_aggressor.rs`.
