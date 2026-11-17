@@ -3488,3 +3488,11 @@ Konsekwencje dla kolejki:
 | P4-1C FOG-VIEW: producent FogViewDto dla ME() (#253/#335) | 1/4 Operator | OPUS 5.5 | ~13:5x UTC |
 
 **Sloty: 1 z 4.** Gotowe, czekają na zasoby (na GitHubie): Q6 UNITS (#270/#328, bramka renderera ≥12 GB), CRED-HAK-HOOK (#120/#286/#350/#305, engine, Haiku), F2 TERRITORY-RANGES (#278/#334, po FOG), L1/L2 REVEAL (#279/#337, po FOG), STATCHIP-SYNC (#324/#333, #325/#355).
+
+### Przebieg — wstrzymanie Haiku, start 3D na Opusie (2026-11-17 ~14:1x UTC)
+
+- **Polecenie właściciela:** tematy 3D uruchamiać na Opusie; tematy Haiku wstrzymać.
+- **Wstrzymany:** CRED-HAK-HOOK-R1 (`wf_91eaf71e-486`, Operator Haiku) przerwany TaskStop. Dispatch zostaje na GitHubie (`rust-port-wip/R-RUSTPORT-P6-CRED-HAK-HOOK-R1`, DODATEK r2, baza `2760b4f0c`). Wznowienie: nowy start Workflow tym samym ID.
+- **Działają (Opus):** P4-1C FOG-VIEW (`wf_adaaa3fa-712`), P4-1G Q6 UNITS (`wf_9e8c5301-e81`), P4-1-STATCHIP-SYNC (`wf_ea12c32f-7b0`).
+- **Czekają (zależą od FOG-VIEW lub bramki renderera):** F2 TERRITORY-RANGES (#278/#334), L1/L2 REVEAL (#279/#337).
+- **Dysk:** 9,4 GB, bez żywych buildów.
