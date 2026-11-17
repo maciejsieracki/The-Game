@@ -3139,3 +3139,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Parity po integracji:** T6 (#259) i T5b (#260) zintegrowane na `417091872`.
 - **Aktywne Workflow:** 0. Wolne sloty: 4. Powód: brak czystego tematu z kodem Rust. Kandydaci z listy są zablokowani decyzjami właściciela (#253, #285, #286, #358), zależnościami (np. #261 na #314, #304 na #310, #113 na #107/#109/#112) lub renderem (#316–#322, wymaga ≥12 GB i bramki renderera).
 - **Otwarte decyzje ABC (w czacie):** #327, #358.
+
+### Przebieg — heartbeat (2026-11-17 ~04:2x UTC): 1/4 aktywne, dysk 15 GB
+
+- **Aktywne Workflow (1/4):** K5DOC-T4c efekty `_doMove` (#314), runda 1, Operator Haiku (`wf_ca9bf0be-2b1`). Baza `417091872` (zawiera T4b `3d016a5ae`). Dispatch `76f7aeefc` na `claude/rust-sivvrn`.
+- **Zakres T4c:** pure function efektów stanu `_doMove` (zajętość, koszt terenu z clampem, brod ×0,5, `moveLeft`, krok planowania). Facing jako wejście (#107 zablokowany), animacja i `busy` poza zakresem.
+- **Krok 2:** brak FC PASS bez integracji. T5b zintegrowany (`417091872`), T6 zintegrowany (`83777efa9`).
+- **Krok 3 (sprzątanie):** brak zakończonych worktree. Nic nie usuwam.
+- **Wolne sloty (3 z 4): powód.** Pozostałe kandydaci z listy są zablokowani decyzją właściciela (#253, #285, #286, #358), zależnościami (#261 na #314, #304 na #310, #113 na #107/#109/#112) lub wymagają rozpoznania bez gotowego dispatchu.
+- **Otwarte decyzje ABC (w czacie):** #327, #358.
