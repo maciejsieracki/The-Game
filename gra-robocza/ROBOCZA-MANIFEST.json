@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "3823de2e400e4f54c2d8a1ca333140cd",
-  "bundleSha256": "4d89f62f8d2a5a11f6c5aa8045d7708d247befdd7fa2c185854267f9058ebe8f",
-  "bundleBytes": 14848660,
+  "bundleMd5": "7e31b446d320117abc829a9384d3634d",
+  "bundleSha256": "f3e6a1dcd02fc5286f0b83134d7204edcdfef7b1962ceec8d4ef714d2b73b142",
+  "bundleBytes": 14849553,
   "sourceSnapshot": {
-    "source": "merge FC f761d6c73 na origin/main 065e73fd8",
+    "source": "merge FC d024ea7fe na origin/main ef46937bf",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 794: units.json: usuniete 75 wpisow Health, zostaje jedno pole health; czytelnicy definicji przepieci na health (AI ai.ts _unitMaxHealth, HP wiezyczki oblezniczej battleScene, combat/testBattle/main/oblezenie/loader); skutek zamierzony: AI oceniala sile jednostek z maxHP z pola Health (np. Wojownik 60) a walka liczy health (22) — po zmianie AI i walka licza to samo (f761d6c73)"
+    "FALA 795: Zasadzke moze zastawic tylko armia z generalem (przycisk zablokowany z powodem 'Zasadzke moze zastawic tylko armia z generalem.', ta sama regula w canSetAmbush dla gracza); utrata generala wygasza zasadzke stosu (reconcileAmbush); Civpedia i wikiBundle zaktualizowane; AI w tej wersji nie zastawia zasadzek, ale przyszla sciezka AI musi wolac canSetAmbush (d024ea7fe)"
   ],
   "verification": [
-    "units-health-single-field-test ZIELONY (w tym wykryte mutacje), combat-test 6/6, unit-info-card-contract 23/0, archers-health-dist 10/0, logic 213/213, tsc 0, vite build OK; NIE ZMIERZONO symulacja sily AI przed/po (>=3x150 tur) ani Chromium"
+    "ambush-core 48/0, save-roundtrip 7/0, ui-reason 10/0, wiring 28/0, realstep 16/0, deploy-* i mgla-sciezka 42/0, logic 213/213, tsc 0, vite build OK; zywy Chromium 23 PASS/3 FAIL (B3,B5,B6 czerwone tez na bazie); zrzut elementu przycisku zablokowanego bez generala wykonany"
   ],
   "limits": [
-    "Zmiana oceny sily jednostek w AI (maxHP 60->22 dla 44 jednostek) jest zamierzona wg decyzji wlasciciela A; tools/roster6-units-patch.cjs nadpisuje units.json — nie uruchamiac bez decyzji"
+    "Dlug bazowy ambush-live B3/B5/B6 (scenariusz AI wpada w zasadzke gracza bez zielonego dowodu zywego); sciezka rozstawienia bez generala->AUTO zostaje dla zaskoczonego gracza"
   ],
-  "finalControl": "R-WEB-DATA-UNITS-HEALTH-SINGLE-FIELD-Q1 r2 FC PASS-WITH-NOTES f761d6c73",
+  "finalControl": "R-WEB-ARMY-AMBUSH-REQUIRES-GENERAL-Q1 r1 FC PASS-WITH-NOTES d024ea7fe",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T09:52:48",
+  "hubGeneratedAt": "2026-11-17T10:10:33",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "3823de2e400e4f54c2d8a1ca333140cd",
-      "sizeBytes": 14848660
+      "md5": "7e31b446d320117abc829a9384d3634d",
+      "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "3823de2e400e4f54c2d8a1ca333140cd",
-      "sizeBytes": 14848660
+      "md5": "7e31b446d320117abc829a9384d3634d",
+      "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "3823de2e400e4f54c2d8a1ca333140cd",
-      "sizeBytes": 14848660
+      "md5": "7e31b446d320117abc829a9384d3634d",
+      "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "3823de2e400e4f54c2d8a1ca333140cd",
-      "sizeBytes": 14848660
+      "md5": "7e31b446d320117abc829a9384d3634d",
+      "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "3823de2e400e4f54c2d8a1ca333140cd",
-      "sizeBytes": 14848660
+      "md5": "7e31b446d320117abc829a9384d3634d",
+      "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "3823de2e400e4f54c2d8a1ca333140cd",
-      "sizeBytes": 14848660
+      "md5": "7e31b446d320117abc829a9384d3634d",
+      "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "3823de2e400e4f54c2d8a1ca333140cd",
-      "sizeBytes": 14848660
+      "md5": "7e31b446d320117abc829a9384d3634d",
+      "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "3823de2e400e4f54c2d8a1ca333140cd",
-      "sizeBytes": 14848660
+      "md5": "7e31b446d320117abc829a9384d3634d",
+      "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "3823de2e400e4f54c2d8a1ca333140cd",
-      "sizeBytes": 14848660
+      "md5": "7e31b446d320117abc829a9384d3634d",
+      "sizeBytes": 14849553
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "3823de2e400e4f54c2d8a1ca333140cd",
-      "sizeBytes": 14848660
+      "md5": "7e31b446d320117abc829a9384d3634d",
+      "sizeBytes": 14849553
     }
   ],
-  "md5": "3823de2e400e4f54c2d8a1ca333140cd",
+  "md5": "7e31b446d320117abc829a9384d3634d",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

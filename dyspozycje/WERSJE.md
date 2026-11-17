@@ -1,3 +1,9 @@
+## ROBOCZA 7e31b446 -- 2026-11-17 -- FALA 795: Zasadzka tylko z generalem (AMBGEN) (testowa)
+
+- Zasadzke moze zastawic tylko armia z generalem (przycisk zablokowany z powodem 'Zasadzke moze zastawic tylko armia z generalem.', ta sama regula w canSetAmbush dla gracza); utrata generala wygasza zasadzke stosu (reconcileAmbush); Civpedia i wikiBundle zaktualizowane; AI w tej wersji nie zastawia zasadzek, ale przyszla sciezka AI musi wolac canSetAmbush (d024ea7fe)
+- Weryfikacja: ambush-core 48/0, save-roundtrip 7/0, ui-reason 10/0, wiring 28/0, realstep 16/0, deploy-* i mgla-sciezka 42/0, logic 213/213, tsc 0, vite build OK; zywy Chromium 23 PASS/3 FAIL (B3,B5,B6 czerwone tez na bazie); zrzut elementu przycisku zablokowanego bez generala wykonany
+- Limity: Dlug bazowy ambush-live B3/B5/B6 (scenariusz AI wpada w zasadzke gracza bez zielonego dowodu zywego); sciezka rozstawienia bez generala->AUTO zostaje dla zaskoczonego gracza
+
 ## ROBOCZA 3823de2e -- 2026-11-17 -- FALA 794: Jedno pole zdrowia jednostek: health (UNITSHP) (testowa)
 
 - units.json: usuniete 75 wpisow Health, zostaje jedno pole health; czytelnicy definicji przepieci na health (AI ai.ts _unitMaxHealth, HP wiezyczki oblezniczej battleScene, combat/testBattle/main/oblezenie/loader); skutek zamierzony: AI oceniala sile jednostek z maxHP z pola Health (np. Wojownik 60) a walka liczy health (22) — po zmianie AI i walka licza to samo (f761d6c73)
