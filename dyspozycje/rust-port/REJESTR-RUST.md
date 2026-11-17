@@ -3529,3 +3529,18 @@ Konsekwencje dla kolejki:
 |---|---|---|---|
 | P4-1G Q6 UNITS (#270/#328) | Operator | OPUS 5.5 | ok. 13:44 UTC |
 | P4-1C FOG-VIEW, runda r3 (bramka pełna) | oczekuje na dysk ≥8 GB | OPUS 5.5 | — |
+
+### Przebieg — Q6 UNITS (#270/#328): FAIL (INFRA + GOAL), decyzja orkiestratora, runda r2 (2026-11-17 ~15:0x UTC)
+
+- **Workflow R-RUSTPORT-P4-1G-Q6-UNITS-R1 (`wf_9e8c5301-e81`, Opus):** Operator BLOCK INFRA (bramka pełna nieuruchomiona przy 4,1 GB). Evaluator FAIL: (1) INFRA — bramki kompilacji nieodtworzone (3,0 GB przy równoległych buildach); (2) GOAL — nowy kod nie ma wołającego w produkcji (`unit_overlays_view`, `UnitOverlayInputs::apply`, `sync_units`, `overlay_layers` tylko z testów).
+- **Decyzja techniczna (orkiestrator):** wołający produkcyjny NIE wchodzi do Q6. Zależy od drogi DTO engine → renderer (#308, audyt L6), czyli wspólnego tematu **DTO-BRIDGE**. Q6 kończy się na adapterze i testach. To samo dotyczy FOG-VIEW (producent bez wołającego, osobno: FOG-WIRE). Dispatch Q6 dostał DODATEK r2 (commit `6d4f935a5`).
+- **Runda r2:** pełna bramka na tym samym kodzie, przy dysku ≥12 GB (reguła renderera). Baza `2760b4f0c`.
+- **Stan dysku:** 10 GB. Dwa workery Opus nadal budują (Q6 w Obronie, FOG czeka na r3).
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| P4-1G Q6 UNITS: runda r2 (bramka pełna) | oczekuje na dysk ≥12 GB | OPUS 5.5 | — |
+| P4-1C FOG-VIEW: runda r3 (bramka pełna) | oczekuje na dysk ≥8 GB | OPUS 5.5 | — |
+| P4-1-STATCHIP-SYNC: bramka pełna przed FF | oczekuje na dysk ≥12 GB | OPUS 5.5 | — |
+
+**Dług do osobnych tematów:** DTO-BRIDGE (#308, wołający produkcyjny P4) i FOG-WIRE (producent mgły → renderer).
