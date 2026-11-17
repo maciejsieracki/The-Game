@@ -168,7 +168,7 @@ async function runOne(browser, base, cfg, mode) {
     if (t && typeof t.suppressVictoryForTest === 'function') { t.suppressVictoryForTest(); return true; }
     return false;
   });
-  await page.evaluate(() => window.__civSetHitMode('losowe'));
+  await page.evaluate((h) => window.__civSetHitMode(h), process.env.W_HIT || 'losowe');
   await page.evaluate(([me, b]) => window.__civTest.setWar(me, b), [ME, BARB]);
   log('mapa gotowa');
   const st = await setupStacks(page, cfg);
