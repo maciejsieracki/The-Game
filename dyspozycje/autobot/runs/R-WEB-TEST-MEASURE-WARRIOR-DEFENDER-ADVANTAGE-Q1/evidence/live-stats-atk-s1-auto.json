@@ -1,0 +1,603 @@
+{
+  "runs": {
+    "atk-s1|auto": {
+      "cfg": {
+        "id": "atk-s1",
+        "role": "atk",
+        "seed": 1
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 27,
+          "r": 12
+        },
+        "hexEnemy": {
+          "q": 28,
+          "r": 12
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-27-12-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "statsAtk": [
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          }
+        ],
+        "statsDef": [
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          },
+          {
+            "Jednostka": "Wojownik",
+            "health": 22,
+            "meleeAttack": 4,
+            "meleeDefence": 4,
+            "weaponDamage": 4,
+            "piercing": 1,
+            "armor": 2,
+            "Atak": 6,
+            "Obrona": 6,
+            "Uderzenie": 4,
+            "Pancerz": 4,
+            "Przebicie": 0,
+            "Morale bazowe": 50,
+            "Morale ucieczki": 22,
+            "Próg dezercji (% health)": 0.4,
+            "Ruch w bitwie (heksy)": 4,
+            "Rola (linia)": "Wręcz"
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 26,
+        "atk": {
+          "total": 10,
+          "eliminated": 6,
+          "fled": 0,
+          "remaining": 4
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 7,
+          "fled": 0,
+          "remaining": 3
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (49>=38%).",
+          "=== PAT: brak postepu w walce -- rozstrzygniecie po morale armii ===",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    }
+  },
+  "meta": {
+    "chromium": "/usr/bin/chromium",
+    "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/wojdist",
+    "runda": 4,
+    "path": "playtest=mapa + __civTest.addUnit(typeId=Wojownik) x10 vs x10, bez presetu i bez przepisywania statystyk"
+  }
+}
