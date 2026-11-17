@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "99946b6daaade51f3448f0eb63475cdd",
-  "bundleSha256": "378453b53db91c8a7ea9bc057418dd45456c1911953b6de1209b8b602e63dcb1",
-  "bundleBytes": 14849553,
+  "bundleMd5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
+  "bundleSha256": "28909d3a94b87b27fddb5fc2f0dd597527136034a31fad66d5cbaf1725115559",
+  "bundleBytes": 14850192,
   "sourceSnapshot": {
-    "source": "merge FC eaef99682 na origin/main 1dc018474",
+    "source": "merge FC 9c8b13cb7 na origin/main 87eeecbde",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 796: Obrazenia i straty przeciwnika w bitwie sa niebieskie (#8fb6e0; etykiety, kafel Straty wroga na ekranie wyniku, obwodka zniszczonej jednostki przeciwnika w podsumowaniu), jednostek gracza czerwone (#ff7070); minimapa bez zmian; zolty pas atakujacego 3D (kolor cywilizacji gracza) bez zmian (eaef99682, merge z origin/main 1dc018474)"
+    "FALA 797: Hak testowy widoczny tylko przy ?civtest (forceAiTruceDecisionForTest, playerProposeTruceForTest, resolveAiAwaitingForTest) pozwala wymusic decyzje AI na propozycje rozejmu gracza; domyslne zachowanie AI bez zmian; diplo-truce-live-test ma asercje L4 odmowy AI (9c8b13cb7); zero zmian w rozgrywce produkcyjnej"
   ],
   "verification": [
-    "battle-damage-colors-test 28/0, zywy Chromium 1440x900 i 1024x640: 7 PASS/0 FAIL (kolory rgb(143,182,224) przeciwnik, rgb(255,112,112) gracz), battle-hp-display 7/7, battle-tempo-minimap-brand OK, tsc 0, logic 213/213, build OK; NIE ZMIERZONO: ekran wyniku i podsumowanie w Chromium, kontrast niebieskiego na jasnej trawie liczbowo (1,47:1), minimapa, Rust REPIN"
+    "diplo-truce r1 31/0, r4-ai 24/0, until-turn 15/0, impl 94/0, zywy Chromium diplo-truce-live 40/0, mutacje hak-ignorowany i reject->accept czerwienieja, logic 213/213, tsc 0, build OK; NIE ZMIERZONO: Chromium bez ?civtest (dowod produkcji tylko statyczny), live na bazie"
   ],
   "limits": [
-    "Zolty pas atakujacego w 3D (0xffd54a = kolor cywilizacji gracza) wymaga decyzji ABC; nakladanie sie etykiet (np. -18 na -6) to zachowanie sprzed tematu; baner bitwy w 1024x640 zaslania WYCOFAJ SIE (osobny temat UI)"
+    "Zmiana tylko w gra/src/main.ts pod isCivTestEnabled (+33 linie); w produkcji hak = undefined"
   ],
-  "finalControl": "R-WEB-UI-BATTLE-DAMAGE-COLORS-BLUE-RED-Q1 r2 FC PASS-WITH-NOTES eaef99682",
+  "finalControl": "R-WEB-TEST-HOOK-AI-TRUCE-REFUSAL-Q1 r1 FC PASS-WITH-NOTES 9c8b13cb7",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T12:28:00",
+  "hubGeneratedAt": "2026-11-17T12:55:33",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "99946b6daaade51f3448f0eb63475cdd",
-      "sizeBytes": 14849553
+      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
+      "sizeBytes": 14850192
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "99946b6daaade51f3448f0eb63475cdd",
-      "sizeBytes": 14849553
+      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
+      "sizeBytes": 14850192
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "99946b6daaade51f3448f0eb63475cdd",
-      "sizeBytes": 14849553
+      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
+      "sizeBytes": 14850192
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "99946b6daaade51f3448f0eb63475cdd",
-      "sizeBytes": 14849553
+      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
+      "sizeBytes": 14850192
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "99946b6daaade51f3448f0eb63475cdd",
-      "sizeBytes": 14849553
+      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
+      "sizeBytes": 14850192
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "99946b6daaade51f3448f0eb63475cdd",
-      "sizeBytes": 14849553
+      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
+      "sizeBytes": 14850192
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "99946b6daaade51f3448f0eb63475cdd",
-      "sizeBytes": 14849553
+      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
+      "sizeBytes": 14850192
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "99946b6daaade51f3448f0eb63475cdd",
-      "sizeBytes": 14849553
+      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
+      "sizeBytes": 14850192
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "99946b6daaade51f3448f0eb63475cdd",
-      "sizeBytes": 14849553
+      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
+      "sizeBytes": 14850192
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "99946b6daaade51f3448f0eb63475cdd",
-      "sizeBytes": 14849553
+      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
+      "sizeBytes": 14850192
     }
   ],
-  "md5": "99946b6daaade51f3448f0eb63475cdd",
+  "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

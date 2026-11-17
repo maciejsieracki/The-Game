@@ -1,3 +1,9 @@
+## ROBOCZA 1b3aa52f -- 2026-11-17 -- FALA 797: Hak testowy odmowy AI wobec rozejmu gracza (HOOKAI) (testowa)
+
+- Hak testowy widoczny tylko przy ?civtest (forceAiTruceDecisionForTest, playerProposeTruceForTest, resolveAiAwaitingForTest) pozwala wymusic decyzje AI na propozycje rozejmu gracza; domyslne zachowanie AI bez zmian; diplo-truce-live-test ma asercje L4 odmowy AI (9c8b13cb7); zero zmian w rozgrywce produkcyjnej
+- Weryfikacja: diplo-truce r1 31/0, r4-ai 24/0, until-turn 15/0, impl 94/0, zywy Chromium diplo-truce-live 40/0, mutacje hak-ignorowany i reject->accept czerwienieja, logic 213/213, tsc 0, build OK; NIE ZMIERZONO: Chromium bez ?civtest (dowod produkcji tylko statyczny), live na bazie
+- Limity: Zmiana tylko w gra/src/main.ts pod isCivTestEnabled (+33 linie); w produkcji hak = undefined
+
 ## ROBOCZA 99946b6d -- 2026-11-17 -- FALA 796: Kolory obrazen w bitwie: przeciwnik niebieski, gracz czerwony (DMGCOLORS) (testowa)
 
 - Obrazenia i straty przeciwnika w bitwie sa niebieskie (#8fb6e0; etykiety, kafel Straty wroga na ekranie wyniku, obwodka zniszczonej jednostki przeciwnika w podsumowaniu), jednostek gracza czerwone (#ff7070); minimapa bez zmian; zolty pas atakujacego 3D (kolor cywilizacji gracza) bez zmian (eaef99682, merge z origin/main 1dc018474)
