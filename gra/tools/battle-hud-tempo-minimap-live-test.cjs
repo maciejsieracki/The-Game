@@ -102,6 +102,31 @@ async function runViewport(browser, server, vp, behaviour) {
   check(`D[${tag}]`, 'panel w prawym dolnym rogu (<=20 px od krawedzi)', metric.panel.right <= 20 && metric.panel.bottom <= 20, metric.panel);
   check(`D[${tag}]`, 'szerokosc panelu <= 236*1.10 px', metric.panel.w <= 236 * 1.10, metric.panel.w);
 
+  // (P) paleta minimapy = tokeny marki (R-WEB r3): porownanie PIKSELI canvasu, nie tekstu zrodla.
+  // Oczekiwane kolory liczy przegladarka z var(--tg-*) i color-mix; mutacja palety (np. stary #1a3878) ⇒ FAIL.
+  const pal = await page.evaluate(() => {
+    const probeCss = expr => { const p = document.createElement('span'); p.style.color = expr; document.body.appendChild(p); const c = getComputedStyle(p).color; p.remove(); return c; };
+    const cx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    const px = css => { cx.fillStyle = '#010203'; cx.fillStyle = css; if (cx.fillStyle === '#010203' && css.trim().toLowerCase() !== '#010203') return null; cx.clearRect(0, 0, 1, 1); cx.fillStyle = css; cx.fillRect(0, 0, 1, 1); return Array.from(cx.getImageData(0, 0, 1, 1).data); };
+    const P = window.__tempo.palette;
+    const exp = {
+      bg: 'var(--tg-bg-deep)',
+      river: 'color-mix(in srgb, var(--tg-science-blue) 45%, var(--tg-panel-bg))',
+      ford: 'color-mix(in srgb, var(--tg-science-blue) 60%, var(--tg-panel-bg))',
+      viewFrame: 'color-mix(in srgb, var(--tg-gold-primary) 95%, transparent)',
+    };
+    const out = {};
+    for (const k of Object.keys(exp)) out[k] = { have: px(P[k]), want: px(probeCss(exp[k])) };
+    out.fnRiver = px(P.riverFn); out.fnFord = px(P.fordFn); out.constRiver = px(P.river); out.constFord = px(P.ford);
+    return out;
+  });
+  const near = (a, b, tol) => !!a && !!b && a.every((v, i) => Math.abs(v - b[i]) <= tol);
+  for (const k of ['bg', 'river', 'ford', 'viewFrame']) {
+    const tol = k === 'viewFrame' ? 3 : 1;
+    check(`P[${tag}]`, `paleta ${k} = token marki (piksel canvasu)`, near(pal[k].have, pal[k].want, tol), { have: pal[k].have, want: pal[k].want });
+  }
+  check(`P[${tag}]`, 'terrainMinimapColor(3)/(4) (rzeka/bród) = stałe palety', near(pal.fnRiver, pal.constRiver, 0) && near(pal.fnFord, pal.constFord, 0), { fnRiver: pal.fnRiver, fnFord: pal.fnFord });
+
   if (SHOT_LABEL) {
     fs.mkdirSync(evidence, { recursive: true });
     const file = path.join(evidence, `${SHOT_LABEL}-${tag}.png`);
@@ -125,6 +150,13 @@ async function runViewport(browser, server, vp, behaviour) {
     check('C', 'hover zmienia kolor przycisku Przyspiesz', hovered !== before, { before, hovered });
     metric.hover = { before, hovered };
     await page.mouse.move(0, 0);
+
+    // kolor przycisku tempa (nieaktywny) = token --tg-gold-primary; 4 przyciski maja aria-label
+    const goldWant = await page.evaluate(() => { const p = document.createElement('span'); p.style.color = 'var(--tg-gold-primary)'; document.body.appendChild(p); const c = getComputedStyle(p).color; p.remove(); return c; });
+    const colorNow = await page.evaluate(() => getComputedStyle(document.querySelector('button[aria-label="Przyspiesz"]')).color);
+    check('C', 'kolor nieaktywnego przycisku tempa = token --tg-gold-primary', colorNow === goldWant, { got: colorNow, want: goldWant });
+    const labels = await page.evaluate(() => ['Zwolnij', 'Przyspiesz', 'Pauza / Wznów (P)', 'AUTO-rozegranie bitwy (R)'].map(l => !!document.querySelector(`button[aria-label="${l}"]`)));
+    check('C', 'cztery przyciski tempa maja aria-label', labels.every(Boolean), labels);
 
     // fokus klawiatura: Tab az do przycisku Przyspiesz
     await page.evaluate(() => { document.activeElement && document.activeElement.blur && document.activeElement.blur(); });

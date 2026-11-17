@@ -22,6 +22,101 @@
       "detail": 240
     },
     {
+      "group": "P[1024x640]",
+      "name": "paleta bg = token marki (piksel canvasu)",
+      "ok": true,
+      "detail": {
+        "have": [
+          8,
+          10,
+          18,
+          255
+        ],
+        "want": [
+          8,
+          10,
+          18,
+          255
+        ]
+      }
+    },
+    {
+      "group": "P[1024x640]",
+      "name": "paleta river = token marki (piksel canvasu)",
+      "ok": true,
+      "detail": {
+        "have": [
+          50,
+          83,
+          113,
+          255
+        ],
+        "want": [
+          50,
+          83,
+          113,
+          255
+        ]
+      }
+    },
+    {
+      "group": "P[1024x640]",
+      "name": "paleta ford = token marki (piksel canvasu)",
+      "ok": true,
+      "detail": {
+        "have": [
+          61,
+          103,
+          140,
+          255
+        ],
+        "want": [
+          61,
+          103,
+          140,
+          255
+        ]
+      }
+    },
+    {
+      "group": "P[1024x640]",
+      "name": "paleta viewFrame = token marki (piksel canvasu)",
+      "ok": true,
+      "detail": {
+        "have": [
+          232,
+          216,
+          138,
+          242
+        ],
+        "want": [
+          232,
+          216,
+          138,
+          242
+        ]
+      }
+    },
+    {
+      "group": "P[1024x640]",
+      "name": "terrainMinimapColor(3)/(4) (rzeka/bród) = stałe palety",
+      "ok": true,
+      "detail": {
+        "fnRiver": [
+          50,
+          83,
+          113,
+          255
+        ],
+        "fnFord": [
+          61,
+          103,
+          140,
+          255
+        ]
+      }
+    },
+    {
       "group": "C",
       "name": "hover zmienia kolor przycisku Przyspiesz",
       "ok": true,
@@ -29,6 +124,26 @@
         "before": "rgb(232, 216, 138)",
         "hovered": "rgb(244, 230, 168)"
       }
+    },
+    {
+      "group": "C",
+      "name": "kolor nieaktywnego przycisku tempa = token --tg-gold-primary",
+      "ok": true,
+      "detail": {
+        "got": "rgb(232, 216, 138)",
+        "want": "rgb(232, 216, 138)"
+      }
+    },
+    {
+      "group": "C",
+      "name": "cztery przyciski tempa maja aria-label",
+      "ok": true,
+      "detail": [
+        true,
+        true,
+        true,
+        true
+      ]
     },
     {
       "group": "C",
@@ -157,6 +272,101 @@
       "detail": 240
     },
     {
+      "group": "P[1280x720]",
+      "name": "paleta bg = token marki (piksel canvasu)",
+      "ok": true,
+      "detail": {
+        "have": [
+          8,
+          10,
+          18,
+          255
+        ],
+        "want": [
+          8,
+          10,
+          18,
+          255
+        ]
+      }
+    },
+    {
+      "group": "P[1280x720]",
+      "name": "paleta river = token marki (piksel canvasu)",
+      "ok": true,
+      "detail": {
+        "have": [
+          50,
+          83,
+          113,
+          255
+        ],
+        "want": [
+          50,
+          83,
+          113,
+          255
+        ]
+      }
+    },
+    {
+      "group": "P[1280x720]",
+      "name": "paleta ford = token marki (piksel canvasu)",
+      "ok": true,
+      "detail": {
+        "have": [
+          61,
+          103,
+          140,
+          255
+        ],
+        "want": [
+          61,
+          103,
+          140,
+          255
+        ]
+      }
+    },
+    {
+      "group": "P[1280x720]",
+      "name": "paleta viewFrame = token marki (piksel canvasu)",
+      "ok": true,
+      "detail": {
+        "have": [
+          232,
+          216,
+          138,
+          242
+        ],
+        "want": [
+          232,
+          216,
+          138,
+          242
+        ]
+      }
+    },
+    {
+      "group": "P[1280x720]",
+      "name": "terrainMinimapColor(3)/(4) (rzeka/bród) = stałe palety",
+      "ok": true,
+      "detail": {
+        "fnRiver": [
+          50,
+          83,
+          113,
+          255
+        ],
+        "fnFord": [
+          61,
+          103,
+          140,
+          255
+        ]
+      }
+    },
+    {
       "group": "C",
       "name": "hover zmienia kolor przycisku Przyspiesz",
       "ok": true,
@@ -164,6 +374,26 @@
         "before": "rgb(232, 216, 138)",
         "hovered": "rgb(244, 230, 168)"
       }
+    },
+    {
+      "group": "C",
+      "name": "kolor nieaktywnego przycisku tempa = token --tg-gold-primary",
+      "ok": true,
+      "detail": {
+        "got": "rgb(232, 216, 138)",
+        "want": "rgb(232, 216, 138)"
+      }
+    },
+    {
+      "group": "C",
+      "name": "cztery przyciski tempa maja aria-label",
+      "ok": true,
+      "detail": [
+        true,
+        true,
+        true,
+        true
+      ]
     },
     {
       "group": "C",
@@ -292,6 +522,101 @@
       "detail": 240
     },
     {
+      "group": "P[1400x900]",
+      "name": "paleta bg = token marki (piksel canvasu)",
+      "ok": true,
+      "detail": {
+        "have": [
+          8,
+          10,
+          18,
+          255
+        ],
+        "want": [
+          8,
+          10,
+          18,
+          255
+        ]
+      }
+    },
+    {
+      "group": "P[1400x900]",
+      "name": "paleta river = token marki (piksel canvasu)",
+      "ok": true,
+      "detail": {
+        "have": [
+          50,
+          83,
+          113,
+          255
+        ],
+        "want": [
+          50,
+          83,
+          113,
+          255
+        ]
+      }
+    },
+    {
+      "group": "P[1400x900]",
+      "name": "paleta ford = token marki (piksel canvasu)",
+      "ok": true,
+      "detail": {
+        "have": [
+          61,
+          103,
+          140,
+          255
+        ],
+        "want": [
+          61,
+          103,
+          140,
+          255
+        ]
+      }
+    },
+    {
+      "group": "P[1400x900]",
+      "name": "paleta viewFrame = token marki (piksel canvasu)",
+      "ok": true,
+      "detail": {
+        "have": [
+          232,
+          216,
+          138,
+          242
+        ],
+        "want": [
+          232,
+          216,
+          138,
+          242
+        ]
+      }
+    },
+    {
+      "group": "P[1400x900]",
+      "name": "terrainMinimapColor(3)/(4) (rzeka/bród) = stałe palety",
+      "ok": true,
+      "detail": {
+        "fnRiver": [
+          50,
+          83,
+          113,
+          255
+        ],
+        "fnFord": [
+          61,
+          103,
+          140,
+          255
+        ]
+      }
+    },
+    {
       "group": "C",
       "name": "hover zmienia kolor przycisku Przyspiesz",
       "ok": true,
@@ -299,6 +624,26 @@
         "before": "rgb(232, 216, 138)",
         "hovered": "rgb(244, 230, 168)"
       }
+    },
+    {
+      "group": "C",
+      "name": "kolor nieaktywnego przycisku tempa = token --tg-gold-primary",
+      "ok": true,
+      "detail": {
+        "got": "rgb(232, 216, 138)",
+        "want": "rgb(232, 216, 138)"
+      }
+    },
+    {
+      "group": "C",
+      "name": "cztery przyciski tempa maja aria-label",
+      "ok": true,
+      "detail": [
+        true,
+        true,
+        true,
+        true
+      ]
     },
     {
       "group": "C",
@@ -427,6 +772,101 @@
       "detail": 240
     },
     {
+      "group": "P[1280x720@2]",
+      "name": "paleta bg = token marki (piksel canvasu)",
+      "ok": true,
+      "detail": {
+        "have": [
+          8,
+          10,
+          18,
+          255
+        ],
+        "want": [
+          8,
+          10,
+          18,
+          255
+        ]
+      }
+    },
+    {
+      "group": "P[1280x720@2]",
+      "name": "paleta river = token marki (piksel canvasu)",
+      "ok": true,
+      "detail": {
+        "have": [
+          50,
+          83,
+          113,
+          255
+        ],
+        "want": [
+          50,
+          83,
+          113,
+          255
+        ]
+      }
+    },
+    {
+      "group": "P[1280x720@2]",
+      "name": "paleta ford = token marki (piksel canvasu)",
+      "ok": true,
+      "detail": {
+        "have": [
+          61,
+          103,
+          140,
+          255
+        ],
+        "want": [
+          61,
+          103,
+          140,
+          255
+        ]
+      }
+    },
+    {
+      "group": "P[1280x720@2]",
+      "name": "paleta viewFrame = token marki (piksel canvasu)",
+      "ok": true,
+      "detail": {
+        "have": [
+          232,
+          216,
+          138,
+          242
+        ],
+        "want": [
+          232,
+          216,
+          138,
+          242
+        ]
+      }
+    },
+    {
+      "group": "P[1280x720@2]",
+      "name": "terrainMinimapColor(3)/(4) (rzeka/bród) = stałe palety",
+      "ok": true,
+      "detail": {
+        "fnRiver": [
+          50,
+          83,
+          113,
+          255
+        ],
+        "fnFord": [
+          61,
+          103,
+          140,
+          255
+        ]
+      }
+    },
+    {
       "group": "C",
       "name": "hover zmienia kolor przycisku Przyspiesz",
       "ok": true,
@@ -434,6 +874,26 @@
         "before": "rgb(232, 216, 138)",
         "hovered": "rgb(244, 230, 168)"
       }
+    },
+    {
+      "group": "C",
+      "name": "kolor nieaktywnego przycisku tempa = token --tg-gold-primary",
+      "ok": true,
+      "detail": {
+        "got": "rgb(232, 216, 138)",
+        "want": "rgb(232, 216, 138)"
+      }
+    },
+    {
+      "group": "C",
+      "name": "cztery przyciski tempa maja aria-label",
+      "ok": true,
+      "detail": [
+        true,
+        true,
+        true,
+        true
+      ]
     },
     {
       "group": "C",
@@ -558,7 +1018,6 @@
       "btnBg": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
       "tag": "1024x640",
       "deploy": false,
-      "shot": "/home/user/The-Game/.claude/worktrees/wf_b100750d-100-1/dyspozycje/autobot/runs/R-WEB-UI-BATTLE-TEMPO-MINIMAP-PANEL-BRANDBOOK-Q1/evidence/PO-r2-1024x640.png",
       "hover": {
         "before": "rgb(232, 216, 138)",
         "hovered": "rgb(244, 230, 168)"
@@ -601,7 +1060,6 @@
       "btnBg": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
       "tag": "1280x720",
       "deploy": false,
-      "shot": "/home/user/The-Game/.claude/worktrees/wf_b100750d-100-1/dyspozycje/autobot/runs/R-WEB-UI-BATTLE-TEMPO-MINIMAP-PANEL-BRANDBOOK-Q1/evidence/PO-r2-1280x720.png",
       "hover": {
         "before": "rgb(232, 216, 138)",
         "hovered": "rgb(244, 230, 168)"
@@ -644,7 +1102,6 @@
       "btnBg": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
       "tag": "1400x900",
       "deploy": false,
-      "shot": "/home/user/The-Game/.claude/worktrees/wf_b100750d-100-1/dyspozycje/autobot/runs/R-WEB-UI-BATTLE-TEMPO-MINIMAP-PANEL-BRANDBOOK-Q1/evidence/PO-r2-1400x900.png",
       "hover": {
         "before": "rgb(232, 216, 138)",
         "hovered": "rgb(244, 230, 168)"
@@ -687,7 +1144,6 @@
       "btnBg": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
       "tag": "1280x720@2",
       "deploy": false,
-      "shot": "/home/user/The-Game/.claude/worktrees/wf_b100750d-100-1/dyspozycje/autobot/runs/R-WEB-UI-BATTLE-TEMPO-MINIMAP-PANEL-BRANDBOOK-Q1/evidence/PO-r2-1280x720@2.png",
       "hover": {
         "before": "rgb(232, 216, 138)",
         "hovered": "rgb(244, 230, 168)"

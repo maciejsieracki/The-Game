@@ -39,10 +39,10 @@ export const MINIMAP_H = 120;
  *   ramka widoku  = --tg-gold-primary (#e8d88a)
  * Lad (las/gory/mury/bramy/nizina) bez zmian — czytelnosc woda/lad/gory zachowana.
  */
-const MINIMAP_BG = '#080a12';
-const MINIMAP_RIVER = '#325371';
-const MINIMAP_FORD = '#3d678c';
-const MINIMAP_VIEW_FRAME = 'rgba(232,216,138,0.95)';
+export const MINIMAP_BG = '#080a12';
+export const MINIMAP_RIVER = '#325371';
+export const MINIMAP_FORD = '#3d678c';
+export const MINIMAP_VIEW_FRAME = 'rgba(232,216,138,0.95)';
 
 /** Simplified terrain tint for the minimap canvas. */
 export function terrainMinimapColor(t: number): string {
