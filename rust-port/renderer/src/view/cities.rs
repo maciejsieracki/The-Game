@@ -20,8 +20,12 @@
 //!
 //! Not carried by the DTO, so not handled here (no invented field): the
 //! `revealAllLand` mode (gap L1), wonder build sites `wonderBuildSites`
-//! (gap L5), the UI part of `isVisible` (`cityPanelViewCityId`, gap L4),
-//! `getRevolt` / `getUnitCountOnHex` (no renderer consumer, R6).
+//! (gap L5), the UI part of `isVisible` (`cityPanelViewCityId`, gap L4).
+//!
+//! `getRevolt` / `getUnitCountOnHex` (R6) are carried as [`RevoltInputs`]
+//! and fed to [`RevoltRenderer::sync`] by [`CityInputs::sync_revolt`], the
+//! `_syncRevolt` / `_removeRevolt` calls of `CityRenderer.sync`
+//! (`render/cities.ts:541`, `:551`, `:586`, `:597-599`).
 //!
 //! No game rules: every value is the producer's; the adapter only looks them
 //! up by owner / city id.
@@ -35,6 +39,7 @@ use super::convert::{
     city_id_string, city_wall_kind, map_outline_kind, owner_i32, pick_hex, terrain,
 };
 use super::{FogSets, ViewAdapterError};
+use crate::cities::revolt::{RevoltInputs, RevoltRenderer};
 use crate::core::bronze::BronzeCiv;
 use crate::models::cities::outline::CityMapOutlineKind;
 use crate::models::cities::renderer::{City, CityRenderOptions, CityRenderer, CityWallKind};
@@ -232,6 +237,8 @@ pub struct CityInputs {
     pub cities: Vec<City>,
     owners: HashMap<i32, OwnerRenderEntry>,
     by_city: HashMap<String, CityRenderEntry>,
+    /// `getRevolt` / `getUnitCountOnHex` of the same `cities[]` (R6).
+    revolt: RevoltInputs,
 }
 
 impl CityInputs {
@@ -252,6 +259,7 @@ impl CityInputs {
             cities: Vec::with_capacity(cities.len()),
             owners,
             by_city: HashMap::with_capacity(cities.len()),
+            revolt: RevoltInputs::from_dto(cities),
         };
         for c in cities {
             let owner_id = owner_i32(c.owner_id)?;
@@ -347,6 +355,23 @@ impl CityInputs {
     /// `cityRenderer.sync(cities, _cityRenderOpts())`.
     pub fn sync(&self, renderer: &mut CityRenderer) {
         self.with_render_options(|o| renderer.sync(&self.cities, o));
+    }
+
+    /// The revolt calls of `cityRenderer.sync(cities, _cityRenderOpts())`
+    /// (`render/cities.ts:541`, `:551`, `:586`, `:597-599`): the same
+    /// `cities[]` as [`Self::sync`], as [`RevoltInputs`], given to
+    /// [`RevoltRenderer::sync`]. Call it after [`Self::sync`] on the same
+    /// [`CityRenderer`]: in the web `_syncRevolt` runs inside `sync`, on the
+    /// group that `sync` has just kept or built.
+    pub fn sync_revolt(&self, renderer: &mut RevoltRenderer, cities: &CityRenderer) {
+        renderer.sync(&self.revolt, cities);
+    }
+
+    /// The R6 inputs of `cities[]` (`cities[].revolt`,
+    /// `cities[].unit_count_on_hex`), in `cities[]` order.
+    #[must_use]
+    pub fn revolt_inputs(&self) -> &RevoltInputs {
+        &self.revolt
     }
 
     /// `cityRenderer.syncMapOutlines(cities, _cityRenderOpts())`
