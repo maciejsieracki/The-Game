@@ -324,6 +324,7 @@ fn ui_all_off() -> MapUiState {
         city_panel_view_city_id: None,
         force_visible_unit_id: None,
         hide_stat_chips: false,
+        hover_stat_chip_city_id: None,
     }
 }
 

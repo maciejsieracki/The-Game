@@ -31,12 +31,14 @@
 //!   (`cityPanelViewCityId`, UI state, gap L4) or else the fog part
 //!   `cityFogVisible` = DTO `cities[].fog_visible` (producer);
 //! - `hideStatChips: isCityPanelOpen()` (`main.ts:2977`, UI state);
-//! - `hoverStatChipCityId: statChipHoverCityId` (`main.ts:2938`, `:2988`, UI
-//!   state) → `hoverExpanded` (`:888`);
+//! - `hoverStatChipCityId: statChipHoverCityId` (`main.ts:2938`, `:2987`, UI
+//!   state) → `hoverExpanded` (`:889`);
 //! - `grp.visible` of the city group (`syncStatChips`, `:652`), which
 //!   `applyFogVisibility` also sets ([`CityRenderer::apply_fog_visibility`]).
 //!
-//! The UI part is [`StatChipUiState`]; nothing is guessed.
+//! The UI part is the one map UI state [`MapUiState`] (`view/overlays.rs`,
+//! gap L4 of the document §5, contract D-CMD-12: selection and switches are
+//! UI, not engine DTO); nothing is guessed.
 
 use std::collections::HashSet;
 
@@ -51,41 +53,14 @@ use crate::models::cities::renderer::{CityRenderer, RenderedCity};
 use crate::raster::atlas::keys::city_badge_lod_suffix;
 use crate::raster::atlas::scale::badge_canvas_px;
 use crate::raster::RasterError;
-use crate::view::{city_badge_input, city_id_string};
-
-/// The UI state the badges read (gap L4 of the document §5, contract
-/// D-CMD-12: selection and switches are UI, not engine DTO). Same field
-/// names and types as the Q5 `MapUiState` (`view/overlays.rs`), plus the
-/// hovered badge.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct StatChipUiState {
-    /// `cityPanelViewCityId` (`main.ts:6575`; read by `isVisible`,
-    /// `main.ts:2974`): while set, only that city counts as visible.
-    pub city_panel_view_city_id: Option<vm::CityId>,
-    /// `isCityPanelOpen()` = `hideStatChips` (`main.ts:2977`).
-    pub is_city_panel_open: bool,
-    /// `statChipHoverCityId` = `hoverStatChipCityId` (`main.ts:2938`,
-    /// `:2988`; set on hover, `main.ts:32264`, cleared `:32268`, `:32347`).
-    pub hover_stat_chip_city_id: Option<vm::CityId>,
-}
-
-impl StatChipUiState {
-    /// The start values of the pin: no city panel (`cityPanelViewCityId =
-    /// null`, `main.ts:6575`, so `isCityPanelOpen()` is `false`) and no
-    /// hovered badge (`statChipHoverCityId = null`, `main.ts:2938`).
-    pub const WEB_INITIAL: Self = Self {
-        city_panel_view_city_id: None,
-        is_city_panel_open: false,
-        hover_stat_chip_city_id: None,
-    };
-}
+use crate::view::{city_badge_input, city_id_string, MapUiState};
 
 /// `options.isVisible(city)` of `_cityRenderOpts` (`main.ts:2973-2976`):
 /// `cityPanelViewCityId !== null ? city.id === cityPanelViewCityId :
 /// cityFogVisible(city) ?? true`, the fog part being the producer's
 /// `fog_visible`.
 #[must_use]
-pub fn stat_chip_city_visible(city: &vm::CityViewDto, ui: &StatChipUiState) -> bool {
+pub fn stat_chip_city_visible(city: &vm::CityViewDto, ui: &MapUiState) -> bool {
     match ui.city_panel_view_city_id {
         Some(panel) => city.id == panel,
         None => city.fog_visible,
@@ -227,7 +202,7 @@ impl CityStatChips {
         &mut self,
         cities: &[vm::CityViewDto],
         models: &CityRenderer,
-        ui: &StatChipUiState,
+        ui: &MapUiState,
     ) -> Result<(), StatChipSyncError> {
         for city in cities {
             let id = city_id_string(city.id);
@@ -263,7 +238,7 @@ impl CityStatChips {
         &mut self,
         cities: &[vm::CityViewDto],
         models: &CityRenderer,
-        ui: &StatChipUiState,
+        ui: &MapUiState,
     ) -> Result<(), StatChipSyncError> {
         for city in cities {
             let id = city_id_string(city.id);
@@ -315,7 +290,7 @@ impl CityStatChips {
         city_id: String,
         grp: &RenderedCity,
         show: bool,
-        ui: &StatChipUiState,
+        ui: &MapUiState,
     ) -> Result<(), StatChipSyncError> {
         // The sprite was a child of a group `CityRenderer.sync` replaced:
         // it left the scene with that group (`_removeStatChip`, `:552`).
@@ -329,8 +304,8 @@ impl CityStatChips {
             self.remove_stat_chip(&city_id);
             return Ok(());
         }
-        // `hoverExpanded = options.hoverStatChipCityId === city.id` (`:888`),
-        // `lodLevel: this.badgeLodLevel` (`:928`).
+        // `hoverExpanded = options.hoverStatChipCityId === city.id` (`:889`),
+        // `lodLevel: this.badgeLodLevel` (`:929`).
         let hover = ui.hover_stat_chip_city_id == Some(city.id);
         let badge = city_badge_input(&city.badge, hover, Some(self.lod_f64()));
         let key = city_map_badge_key(&badge);

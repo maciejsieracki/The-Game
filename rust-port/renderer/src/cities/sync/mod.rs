@@ -21,5 +21,4 @@ pub mod stat_chips;
 
 pub use stat_chips::{
     stat_chip_city_visible, BadgeTextureEntry, CityStatChips, StatChip, StatChipSyncError,
-    StatChipUiState,
 };

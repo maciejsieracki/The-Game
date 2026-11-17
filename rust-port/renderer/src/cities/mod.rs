@@ -8,4 +8,4 @@ pub use revolt::{RevoltCityInput, RevoltInputs, RevoltRenderer, RevoltSprite};
 
 pub mod sync;
 
-pub use sync::{CityStatChips, StatChipUiState};
+pub use sync::CityStatChips;

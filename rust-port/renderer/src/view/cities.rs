@@ -499,8 +499,8 @@ pub const fn production_kind(k: vm::ProductionKind) -> &'static str {
 
 /// `CityBadgeDto` → `CityMapBadgeInput` (`render/cities.ts:905-929`), all 17
 /// DTO fields. The two renderer/UI fields are parameters, never defaults:
-/// `hoverExpanded = options.hoverStatChipCityId === city.id` (`:888`) and
-/// `lodLevel = this.badgeLodLevel` (`:928`).
+/// `hoverExpanded = options.hoverStatChipCityId === city.id` (`:889`) and
+/// `lodLevel = this.badgeLodLevel` (`:929`).
 ///
 /// No integrator: `CityRenderer.syncStatChips` is not ported yet (R5).
 #[must_use]
