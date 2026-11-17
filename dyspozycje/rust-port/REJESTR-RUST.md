@@ -3496,3 +3496,18 @@ Konsekwencje dla kolejki:
 - **Działają (Opus):** P4-1C FOG-VIEW (`wf_adaaa3fa-712`), P4-1G Q6 UNITS (`wf_9e8c5301-e81`), P4-1-STATCHIP-SYNC (`wf_ea12c32f-7b0`).
 - **Czekają (zależą od FOG-VIEW lub bramki renderera):** F2 TERRITORY-RANGES (#278/#334), L1/L2 REVEAL (#279/#337).
 - **Dysk:** 9,4 GB, bez żywych buildów.
+
+### Przebieg — STATCHIP-SYNC (#324/#333, #325/#355): FC PASS-WITH-NOTES, integracja WSTRZYMANA na bramce pełnej (2026-11-17 ~14:2x UTC)
+
+- **Workflow R-RUSTPORT-P4-1-STATCHIP-SYNC-R1 (`wf_ea12c32f-7b0`, Opus):** Operator BLOCK (INFRA, tylko bramka pełna `cargo test --all-targets` renderera: dysk 8,1 GB przy wymaganych ≥12 GB). Kod gotowy: `ef1276936`. Evaluator PASS-WITH-NOTES. Obrona: usunięte pole `hide_stat_chips`, zastąpione metodą `hide_stat_chips()` = `is_city_panel_open` (pochodna pinu `main.ts:2977`), dodana asercja `hover_stat_chip_city_id == None`; kod `f9f42ce23`. FC PASS-WITH-NOTES na `cab8505ce`. Zarzuty z FC oddalone; dwie poprawki numerów linii poza allowlistą (`models/cities/renderer.rs:591/640`, `tests/view_adapter_cities.rs:399`) to osobny temat dokumentacyjny.
+- **Bramki odtworzone (renderer):** `fmt --check` EXIT 0; `clippy --all-targets -D warnings` EXIT 0; `cities_sync_stat_chips` 11/11; `view_adapter_overlays` 24/24; `view_adapter_cities` 17/17; `--lib` 111/111. **NIE_ZMIERZONO:** `cargo test --all-targets --no-fail-fast` renderera (wymaga ≥12 GB).
+- **Ancestry:** `2760b4f0c` → `cab8505ce` potwierdzona (FF możliwy po bramce pełnej). Zakres: 7 plików kodu + runs. Brak Cargo.lock.
+- **Zabezpieczenia:** `refs/keep/STATCHIP-SYNC-R1-fc` = `cab8505ce`; gałąź `rust-port-wip/R-RUSTPORT-P4-1-STATCHIP-SYNC-R1-impl` = `cab8505ce`. Gałąź `…-R1` (bez `-impl`) zawiera dispatch `22fa92fb1` — nie nadpisywana.
+- **Sprzątanie:** worktrees `wf_ea12c32f-7b0-1..4` usunięte (zakończony workflow, brak żywych procesów). Dysk: 7,4 GB.
+- **Do rozstrzygnięcia przez orkiestratora:** (a) bramka pełna przed FF przy ≥12 GB; (b) dług komentarzy poza allowlistą (#325/#355).
+- **Haiku wstrzymane** (polecenie właściciela); CRED-HAK zatrzymany (dispatch na GitHubie).
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| P4-1C FOG-VIEW (#253/#335) | Operator | OPUS 5.5 | ok. 13:41 UTC |
+| P4-1G Q6 UNITS (#270/#328) | Operator | OPUS 5.5 | ok. 13:44 UTC |
