@@ -143,6 +143,7 @@ import type { BronzeCiv } from '../render/bronzeCity';
 import {
   drawBattleMinimap,
   minimapPixelToTile,
+  minimapUnitColor,
   MINIMAP_H,
   MINIMAP_W,
   type BattleMinimapData,
@@ -12662,7 +12663,7 @@ export class BattleScene {
       units.push({
         q: ru.q,
         r: ru.r,
-        color: this._isPlayerSide(ru.side) ? BATTLE_PLAYER : BATTLE_ENEMY,
+        color: minimapUnitColor(ru.side, this._playerControlSide(), BATTLE_PLAYER, BATTLE_ENEMY),
       });
     }
     return {
