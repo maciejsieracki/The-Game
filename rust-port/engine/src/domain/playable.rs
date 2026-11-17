@@ -1407,6 +1407,9 @@ impl PlayableGame {
         // Migawka przed przejsciem tury: blad fazy wojny cofa kolejke i stan wojny (brak polowicznego zuzycia).
         let queue_before = self.phase_queue.clone();
         let war_before = self.state.war.clone();
+        // P6-WIRE-R7K7C (zarzut obrony r1): migawka ekonomii cofa przyrosty skarbcow/pul Pracy zastosowane przez
+        // faze Diplomacy, gdy tura nie zostanie zaliczona (kolejka niekompletna).
+        let economy_before = self.state.economy.clone();
         // Migawka pol zwyciestwa: niekompletna kolejka faz (blad przejscia tury) cofa tez koniec gry i flage.
         // Sam blad sprawdzenia zwyciestwa nie cofa tury (semantyka pina, zob. faza Victory nizej).
         let koniec_before = self.state.koniec_gry;
@@ -1424,6 +1427,7 @@ impl PlayableGame {
                 if let Err(error) = self.run_diplomacy_war_phase() {
                     self.phase_queue = queue_before;
                     self.state.war = war_before;
+                    self.state.economy = economy_before;
                     return Err(error);
                 }
             }
@@ -1453,6 +1457,7 @@ impl PlayableGame {
         if phases.len() != PHASE_COUNT {
             self.state.koniec_gry = koniec_before;
             self.state.gracz_kiedys_mial_miasto = flag_before;
+            self.state.economy = economy_before;
             return Err(PlayableError::TurnPhaseQueueIncomplete {
                 expected: PHASE_COUNT,
                 actual: phases.len(),
