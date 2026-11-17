@@ -10796,3 +10796,8 @@ Właściciel: koszt pokoju znacząco podwyższyć tak, by na starcie wojny zwyci
 
 ### 2026-11-17 — pytania i obserwacje do właściciela (otwarte)
 - Dane jednostek dystansowych (zapytanie właściciela): rozjazdy karta↔silnik (akadyjski 5 vs 6, asyryjski 4 vs 6, Jeździec z oszczepami 14 vs 4, Rydwan egipski 10 vs 8, Katapulta 4 vs 8) oraz cztery jednostki piechoty (Drużynnik, Thorakites, Evocati, Gwardzista z champi) z `missileAttack`>0 i brakiem zasięgu — silnik (attackRange) traktuje je jako strzelców zasięgu 2 z amunicją „—” (nieograniczoną). Z czytania kodu; NIE ZMIERZONO w grze. Propozycja tematu pomiarowego czeka na zgodę.
+
+### 2026-11-17 — DECYZJA WŁAŚCICELA: zdrowie dystansowych −50%, Oszczepnik Zulu/Estólica atak 5, karty = silnik
+- Zdrowie ×0,5: Oszczepnik 8, Zulu 10, Łucznicy (uniw./egipski/nubijski/sumeryjski/akadyjski/asyryjski) 10, Procarz i Huaracoc 8. Wyjątki bez zmian: Hastati, Wojownik germański, Medżaj, konni i rydwany; Katapulta 250 — NIE ODPOWIEDZIANO, nie ruszana. Oszczepnik Zulu atak dyst. 5 (zdrowie 10); Oszczepnik (Estólica) atak dyst. 5, zdrowie 10. Atak pozostałych bez zmian.
+- Karty: poprawić KARTY do wartości silnika (akadyjski 5, asyryjski 4, Jeździec 14, Rydwan egipski 10, Katapulta 4, Hastati 4; Drużynnik/Thorakites/Evocati/Gwardzista z champi: atak z `missileAttack`, zasięg 2). „W kodzie jest dobrze.”
+- Temat: R-WEB-DATA-RANGED-HEALTH-HALF-AND-CARDS-ALIGN-Q1 (dispatch zapisany; Haiku; START PO wdrożeniu JAVELIN-CHAIN — ten sam units.json). Dług Rust: REPIN units.json. NIE ZMIERZONO wpływu na balans bitew (pomiar 10 vs 10 w kryteriach tematu).
