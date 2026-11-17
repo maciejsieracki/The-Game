@@ -213,7 +213,8 @@ async function main() {
     }), []);
     ok(html.includes('Zmęczenie wojną 40%'), '[C1] wiersz zmęczenia wygrywającego gracza (40%)');
     ok(html.includes('Desperacja 65%'), '[C1] wiersz desperacji przegrywającego rozmówcy (65%)');
-    ok(html.includes('<span>Ty</span>') && html.includes('<span>Grecja</span>'), '[C1] wiersze podpisane „Ty” i nazwą rozmówcy');
+    ok(html.includes('<span>Rzym</span>') && html.includes('<span>Grecja</span>') && !html.includes('<span>Ty</span>'),
+      '[C1] wiersze podpisane nazwą cywilizacji gracza (Rzym) i rozmówcy (Grecja), bez samego „Ty”');
     ok(html.includes('war-weariness'), '[C1] wiersze mają klasę war-weariness');
   }
   {
@@ -340,7 +341,7 @@ async function main() {
       const expTick = V.loserDespair({ level: lvl, share: P.przegrywajacy.udzialWyraznie, lostCities: 3 }, P);
       ok(Math.abs(tick.b.desperacja - expTick) < 1e-9 && tick.b.desperacja > 0,
         '[E3a] tick: desperacja z udziałem przyciętym do udzialWyraznie (> 0)');
-      ok(ai.b.desperacja === 0, '[E3b] ai: udział powyżej udzialWyraznie → desperacja 0 (jak ai.ts, bez przycięcia)');
+      ok(ai.b.desperacja === 0, '[E3b] ai: udział powyżej udzialWyraznie → desperacja 0 (wzór, bez przycięcia)');
     }
 
     // E4: tryb ai — desperacja tylko przy isWarWeary(poziom); tick — bez bramki.
@@ -352,10 +353,45 @@ async function main() {
     ok(V.warWearinessLevel({ turnsAtWar: 0, lostCitiesTotal: 2 }) < P.zmeczenie.progChetnosci,
       '[E4-pre] precondycja: poziom poniżej progChetnosci');
     const lowAi = V.warWearinessPairView({ ...lowInput, reference: 'ai' });
-    ok(lowAi.b.rola === 'przegrywa' && lowAi.b.desperacja === 0,
-      '[E4a] ai: poniżej progChetnosci desperacja = 0 (bramka isWarWeary, jak ai.ts)');
+    // R-WEB-DIPLO-DESPAIR-SHOW-FORMULA-IMPL-Q1 (decyzja właściciela, wariant A): panel gracz↔AI pokazuje wynik
+    // wzoru loserDespair BEZ bramki progChetnosci. Zmiana celowa — poprzednia asercja (desperacja = 0 poniżej 50%)
+    // opierała się na nieprawdziwym założeniu „jak ai.ts" (ai.ts nie liczy desperacji).
+    const lowLevel = V.warWearinessLevel({ turnsAtWar: 0, lostCitiesTotal: 2 });
+    const lowShare = 1 - V.wearinessMilitaryShare(1000, 300);
+    const lowExpect = V.loserDespair({ level: lowLevel, share: lowShare, lostCities: 2 }, P);
+    ok(lowAi.b.rola === 'przegrywa' && lowExpect > 0 && Math.abs(lowAi.b.desperacja - lowExpect) < 1e-9,
+      '[E4a] ai: poniżej progChetnosci desperacja = loserDespair (bez bramki 50%, zmiana celowa)');
     const lowTick = V.warWearinessPairView({ ...lowInput, reference: 'tick' });
     ok(lowTick.b.desperacja > 0, '[E4b] tick: bez bramki desperacja > 0 (zgodnie z tickiem AI↔AI)');
+
+    // E5: tabela parytetu panel gracz↔AI ↔ loserDespair (udział przegrywającego × zmęczenie × utracone miasta).
+    // Udział 0,6 nie jest udziałem przegrywającego (strona o udziale > 0,5 wygrywa) — w tabeli tylko 0,27 i 0,45.
+    // Dla każdej kombinacji: oczekiwana wartość = loserDespair (te same wejścia); remis wg progu → brak desperacji.
+    let parityRows = 0, parityOk = 0;
+    for (const share of [0.27, 0.45]) {
+      const loseSila = Math.round(share * 1000 / (1 - share));
+      for (const turns of [0, 11, 20, 40]) {
+        for (const lost of [0, 1, 3]) {
+          const view = V.warWearinessPairView({
+            turnsAtWar: turns,
+            a: { id: 'w', sila: 1000, armiaPkt: 500, lostCities: 0 },
+            b: { id: 'l', sila: loseSila, armiaPkt: 300, lostCities: lost },
+            reference: 'ai',
+          });
+          const lvl = V.warWearinessLevel({ turnsAtWar: turns, lostCitiesTotal: lost });
+          const realShare = 1 - V.wearinessMilitaryShare(1000, loseSila);
+          const exp = V.loserDespair({ level: lvl, share: realShare, lostCities: lost }, P);
+          parityRows++;
+          // Przegrywający: panel = loserDespair. Remis (brak przewagi wg progu): obie strony „rowny", bez desperacji.
+          const good = view.b.rola === 'przegrywa'
+            ? Math.abs(view.b.desperacja - exp) < 1e-9
+            : view.a.rola === 'rowny' && view.b.rola === 'rowny';
+          if (good) parityOk++;
+          else console.error('    parity mismatch: share', share, 'turns', turns, 'lost', lost, 'rola', view.b.rola, 'panel', view.b.desperacja, 'exp', exp);
+        }
+      }
+    }
+    ok(parityRows === 24 && parityOk === parityRows, '[E5] parytet panel↔loserDespair: ' + parityOk + '/' + parityRows + ' zgodnych');
   }
 
   // Sprzątanie plików pomocniczych testu (nie do repo — dopisane do .gitignore nie są; kasowane po teście).
