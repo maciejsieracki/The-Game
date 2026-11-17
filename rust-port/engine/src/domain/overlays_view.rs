@@ -454,6 +454,65 @@ pub fn path_route_overlay(
     preview_path(state, UnitId::new(selected), hover)
 }
 
+/// Wejscie UI pol jednostkowych `OverlaysViewDto` (Q6, `R-RUSTPORT-P4-1G-Q6-UNITS-R1`): kursor
+/// (`refreshHoverPathPreview`) i tryb budowy (`refreshBuildHighlight`) ze zrodlami silnika.
+pub struct UnitOverlaysInput<'a, 'b> {
+    /// Heks pod kursorem (`hitQ/hitR` `refreshHoverPathPreview`, `main.ts:31181`); `None` = brak.
+    pub hover: Option<PositionDto>,
+    /// Stan trybu budowy ([`build_highlight`]).
+    pub build_ui: BuildHighlightUi<'a>,
+    /// Zrodla silnika dla [`build_highlight`].
+    pub build_sources: &'b BuildHighlightSources<'a>,
+}
+
+/// Pola jednostkowe `OverlaysViewDto` jednego snapshotu: `reachable`, `buildHighlight`,
+/// `selection`, `pathRoute` (kontrakt §3.7, ksztalt typow bez zmian).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UnitOverlaysView {
+    /// [`reachable_overlay`].
+    pub reachable: Vec<HexCoord>,
+    /// [`build_highlight`].
+    pub build_highlight: BuildHighlightDto,
+    /// [`selection`].
+    pub selection: Option<SelectionDto>,
+    /// [`path_route_overlay`].
+    pub path_route: Option<PathRouteDto>,
+}
+
+impl UnitOverlaysView {
+    /// Wpisuje cztery pola do `OverlaysViewDto` (pozostale pola bez zmian).
+    pub fn write_into(self, dto: &mut vm::OverlaysViewDto) {
+        dto.reachable = self.reachable;
+        dto.build_highlight = self.build_highlight;
+        dto.selection = self.selection;
+        dto.path_route = self.path_route;
+    }
+}
+
+/// Producent pol jednostkowych nakladek (Q6): JEDYNY wolajacy [`reachable_overlay`],
+/// [`path_route_overlay`], [`selection`] i [`build_highlight`] po stronie silnika.
+///
+/// Decyzja techniczna Q6-1: jedno zrodlo `selectedId` na snapshot = `state.selected_unit_id`
+/// (web: jedna zmienna `selectedId`, `main.ts:7116`); to samo pole czytaja juz
+/// [`reachable_overlay`] i [`path_route_overlay`], wiec `selection` dostaje
+/// `SelectionUi { selected_unit_id: state.selected_unit_id }` - zaznaczenie, zasieg i trasa nie
+/// moga sie rozjechac miedzy soba.
+#[must_use]
+pub fn unit_overlays_view(
+    state: &PlayableState,
+    input: &UnitOverlaysInput<'_, '_>,
+) -> UnitOverlaysView {
+    let sel_ui = SelectionUi {
+        selected_unit_id: state.selected_unit_id,
+    };
+    UnitOverlaysView {
+        reachable: reachable_overlay(state),
+        build_highlight: build_highlight(&input.build_ui, input.build_sources),
+        selection: selection(&sel_ui, &state.units),
+        path_route: path_route_overlay(state, input.hover),
+    }
+}
+
 /// Swiat czytany przez producenta (web: domkniecia `cities`, `map`, `buildAllTerritoryNodes()`,
 /// `empireEpochForOwner`). Tylko odczyt.
 #[derive(Clone, Copy)]
@@ -912,4 +971,199 @@ pub fn wonder_views(state: &PlayableState) -> Result<Vec<PlacedWonderDto>, Overl
     wonder_views_with_era(state, &wonders, |owner| {
         Ok(empire_epoch_for_owner(owner_i64(owner), &facts, start)?.0)
     })
+}
+
+#[cfg(test)]
+mod q6_unit_overlays_tests {
+    //! Q6 (`R-RUSTPORT-P4-1G-Q6-UNITS-R1`): `unit_overlays_view` wola producentow F5/F6. Wektory
+    //! zasiegu i trasy z `tests/view_overlays_reach_path.rs` (R1, P1), policzone recznie z pinu
+    //! `07d2fbd72` (`main.ts:14706-14731`, `planned-march.ts:241-268`).
+
+    use super::*;
+    use crate::domain::playable::{
+        MovementPoints, PlayableGame, PlayableMap, PlayablePlannedMarch, PlayableTerrain,
+        PlayableTile, PlayableUnitKind,
+    };
+    use crate::StartGameParams;
+
+    const HUMAN: u64 = 1;
+    const MOVER: u64 = 900;
+
+    fn unit(id: u64, owner: u64, x: u16, movement: u8) -> PlayableUnit {
+        PlayableUnit {
+            id: UnitId::new(id),
+            owner_id: PlayerId::new(owner),
+            kind: PlayableUnitKind::Warrior,
+            position: PositionDto::new(x, 0),
+            movement: MovementPoints::from(movement),
+            movement_max: MovementPoints::from(movement),
+            selected: false,
+        }
+    }
+
+    fn corridor(n: u16, movement: u8) -> PlayableState {
+        let mut state = PlayableGame::new(StartGameParams::default())
+            .expect("scenariusz startowy")
+            .state()
+            .clone();
+        state.map = PlayableMap {
+            width: n,
+            height: 1,
+            tiles: (0..n)
+                .map(|x| PlayableTile {
+                    position: PositionDto::new(x, 0),
+                    terrain: PlayableTerrain::Plains,
+                    passable: true,
+                })
+                .collect(),
+            improvements: Vec::new(),
+        };
+        state.cities.clear();
+        state.units = vec![unit(MOVER, HUMAN, 0, movement)];
+        state.planned_marches.clear();
+        state.economy = Default::default();
+        state.selected_unit_id = Some(MOVER);
+        state.gracz_kiedys_mial_miasto = true;
+        state
+    }
+
+    fn hs(qs: &[i32]) -> Vec<HexCoord> {
+        qs.iter().map(|&q| HexCoord::new(q, 0)).collect()
+    }
+
+    fn view(state: &PlayableState, ui: BuildHighlightUi<'_>) -> UnitOverlaysView {
+        let map_hexes = [(0, 0), (1, 0), (2, 0)];
+        let undo = HashSet::new();
+        let src = BuildHighlightSources {
+            map_hexes: &map_hexes,
+            is_in_start_reveal: &|_, _| true,
+            can_found_player_city_at: &|q, _| q != 1,
+            qualifying_wonder_hexes: &|| vec![(2, 0)],
+            qualifying_hexes: &|_| vec![(1, 0), (2, 0)],
+            pending_undo_keys: &undo,
+        };
+        unit_overlays_view(
+            state,
+            &UnitOverlaysInput {
+                hover: None,
+                build_ui: ui,
+                build_sources: &src,
+            },
+        )
+    }
+
+    const NO_BUILD: BuildHighlightUi<'static> = BuildHighlightUi {
+        found_city_mode: false,
+        wonder_active: false,
+        build_mode_open: false,
+        active_improvement_key: None,
+    };
+
+    /// R1 + P1: zasieg [(2,0),(3,0),(1,0)] (wlasny stos 901 na (1,0), ruch 3), trasa planu do
+    /// (5,0) z `turnStops`, zaznaczenie na (0,0) gracza 1, brak trybu budowy = brak warstwy.
+    #[test]
+    fn q6_agregator_wola_zasieg_trase_zaznaczenie_i_budowe() {
+        let mut state = corridor(6, 3);
+        state.units.push(unit(901, HUMAN, 1, 3));
+        state.planned_marches.push(PlayablePlannedMarch {
+            unit_id: UnitId::new(MOVER),
+            dest_q: 5,
+            dest_r: 0,
+            attack_unit_id: None,
+            general_target_id: None,
+        });
+        let v = view(&state, NO_BUILD);
+        assert_eq!(v.reachable, hs(&[2, 3, 1]));
+        let route = v.path_route.clone().expect("trasa planu");
+        assert_eq!(route.hexes, hs(&[0, 1, 2, 3, 4, 5]));
+        // `planPathTurns` (`planned-march.ts:241-268`), perTurn = max(1, 3) = 3: i0..i2 acc 1..3;
+        // i3 (4,0): 3 + 1 > 3 -> push (3,0) t1, acc 1; i4 acc 2; koniec (5,0) != (3,0) -> (5,0) t2.
+        assert_eq!(
+            route.turn_stops,
+            vec![
+                vm::overlays::PathTurnStopDto {
+                    hex: HexCoord::new(3, 0),
+                    turn: 1
+                },
+                vm::overlays::PathTurnStopDto {
+                    hex: HexCoord::new(5, 0),
+                    turn: 2
+                },
+            ]
+        );
+        assert_eq!(Some(route), path_route_overlay(&state, None));
+        assert_eq!(
+            v.selection,
+            Some(SelectionDto {
+                hex: HexCoord::new(0, 0),
+                owner_id: vm::OwnerRef::Player(vm::PlayerId::try_new(HUMAN).unwrap()),
+            })
+        );
+        assert!(v.build_highlight.hexes.is_empty());
+
+        let mut dto = vm::OverlaysViewDto {
+            culture_range: None,
+            religion_range: None,
+            trade_routes: Vec::new(),
+            okolica: None,
+            worker_fields: Vec::new(),
+            reachable: Vec::new(),
+            build_highlight: BuildHighlightDto {
+                kind: BuildHighlightKind::Mine,
+                hexes: hs(&[9]),
+            },
+            selection: None,
+            path_route: None,
+        };
+        v.clone().write_into(&mut dto);
+        assert_eq!(dto.reachable, v.reachable);
+        assert_eq!(dto.build_highlight, v.build_highlight);
+        assert_eq!(dto.selection, v.selection);
+        assert_eq!(dto.path_route, v.path_route);
+    }
+
+    /// Brak zaznaczenia: pusty zasieg, brak trasy i markera (`main.ts:7116`, `:31148-31150`).
+    #[test]
+    fn q6_brak_zaznaczenia_bez_pol_jednostki() {
+        let mut state = corridor(6, 3);
+        state.selected_unit_id = None;
+        let v = view(&state, NO_BUILD);
+        assert!(v.reachable.is_empty());
+        assert_eq!(v.path_route, None);
+        assert_eq!(v.selection, None);
+    }
+
+    /// Tryby `refreshBuildHighlight` przez agregator (`main.ts:16351-16395`).
+    #[test]
+    fn q6_tryby_budowy_przez_agregator() {
+        let state = corridor(6, 3);
+        let found = view(
+            &state,
+            BuildHighlightUi {
+                found_city_mode: true,
+                ..NO_BUILD
+            },
+        );
+        assert_eq!(found.build_highlight.kind, BuildHighlightKind::FoundCity);
+        assert_eq!(found.build_highlight.hexes, hs(&[0, 2]));
+        let wonder = view(
+            &state,
+            BuildHighlightUi {
+                wonder_active: true,
+                ..NO_BUILD
+            },
+        );
+        assert_eq!(wonder.build_highlight.kind, BuildHighlightKind::Wonder);
+        assert_eq!(wonder.build_highlight.hexes, hs(&[2]));
+        let farm = view(
+            &state,
+            BuildHighlightUi {
+                build_mode_open: true,
+                active_improvement_key: Some("farma"),
+                ..NO_BUILD
+            },
+        );
+        assert_eq!(farm.build_highlight.kind, BuildHighlightKind::Improvement);
+        assert_eq!(farm.build_highlight.hexes, hs(&[1, 2]));
+    }
 }

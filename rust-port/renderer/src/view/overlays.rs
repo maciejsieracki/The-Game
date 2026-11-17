@@ -56,6 +56,7 @@ use civ_view_model as vm;
 use super::convert::{city_id_string, hex_f64, hex_key, hex_key_string, owner_f64, owner_i64};
 use super::convert::{siege_machine_kind, trade_medium};
 use super::terrain::tile_yield;
+use super::units::UnitOverlayInputs;
 use super::FogSets;
 use crate::cities::overlay::okolica::{
     build_city_okolica_overlay, collect_range_keys, CityOkolicaOverlay, CityOkolicaOverlayParams,
@@ -802,6 +803,12 @@ pub struct OverlayLayers {
     pub mine_eligible: Option<OverlayGroup>,
     /// [`siege_inputs`] (no UI gate in the pin).
     pub sieges: SiegeInputs,
+    /// Q6: `reachable`, `build_highlight` (non-mine kinds), `selection` and
+    /// `path_route` as [`crate::map_units::MapUnitRenderer`] calls
+    /// ([`UnitOverlayInputs::from_overlays`]; no [`MapUiState`] gate in the
+    /// pin, the siege map panel is applied by
+    /// [`UnitOverlayInputs::with_siege_map_panel_open`]).
+    pub units: UnitOverlayInputs,
 }
 
 /// All overlays of one snapshot, the single entry point of the
@@ -831,5 +838,6 @@ pub fn overlay_layers(
         okolica: okolica_overlay(input.map, input.overlays.okolica.as_ref(), ui)?,
         mine_eligible: mine_eligible_group(map, &input.overlays.build_highlight),
         sieges: siege_inputs(input.sieges, input.owners)?,
+        units: UnitOverlayInputs::from_overlays(input.overlays),
     })
 }

@@ -13,7 +13,8 @@
 //! - Q1 `R-RUSTPORT-P4-1G-Q1-ADAPTER-CORE` (this): the shared conversions
 //!   ([`convert`]) and the fog sets ([`fog`]), see
 //!   `dyspozycje/rust-port/p4/P4-1G-ADAPTER-ROZPOZNANIE.md` §2, §3.3;
-//! - Q2–Q6: terrain, cities, battle, overlays, units (same document, §7).
+//! - Q2–Q6: terrain, cities, battle, overlays, units (same document, §7);
+//!   Q6 = [`units`] (`R-RUSTPORT-P4-1G-Q6-UNITS-R1`).
 
 pub mod battle;
 pub mod cities;
@@ -21,6 +22,7 @@ pub mod convert;
 pub mod fog;
 pub mod overlays;
 pub mod terrain;
+pub mod units;
 
 pub use battle::{
     ammo, battle_fort, battle_inputs, battle_view_inputs, deploy_side, terrain_grid, unit_spawn,
@@ -49,6 +51,10 @@ pub use overlays::{
 pub use terrain::{
     apply_terrain_fog, map_hexes, okolica_map, overlay_map, solid_hidden_hexes, terrain_data,
     terrain_scene_options, tile_yield, TerrainData,
+};
+pub use units::{
+    path_route_input, selection_input, sync_units, unit_highlight, HighlightSource, UnitHighlight,
+    UnitOverlayInputs,
 };
 
 /// A DTO value the renderer input cannot represent. The adapter reports it
