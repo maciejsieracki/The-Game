@@ -81,6 +81,12 @@ export interface RuntimeUnit {
    *  tury, ownerId-agnostyczne). Trwałe między turami poza tym — nic innego nie
    *  czyści tego pola automatycznie. */
   sentry?: boolean;
+  /** R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: jednostka stoi w zasadzce (game/ambush.ts).
+   *  Wroga niewidoczna, nie zajmuje heksu dla wroga; zdejmowane przy ruchu, odwołaniu
+   *  lub wyzwoleniu przez wrogą armię w wojnie. Brak pola = brak zasadzki (stare zapisy). */
+  ambush?: boolean;
+  /** Pieczec miejsca zasadzki "q,r,ownerId" (game/ambush.ts reconcileAmbush): zmiana = zasadzka wygasa. */
+  ambushAt?: string;
   /** P-SCOUT-EXPLORE-Q1=A: auto-zwiedzanie mapy — domyślnie wyłączone (undefined/false).
    *  Po włączeniu zużywa ruch od razu + kontynuuje na EOT (Q2=A założenie). */
   autoExplore?: boolean;
@@ -768,15 +774,24 @@ export class MoveOccupancy extends Set<string> {
  * armii (nie blokuja same siebie).
  */
 export function buildMoveOccupancy(
-  units: readonly { id: string; ownerId: number; q: number; r: number }[],
+  units: readonly { id: string; ownerId: number; q: number; r: number; ambush?: boolean }[],
   moverOwnerId: number,
   excludeIds: Iterable<string> = [],
+  /**
+   * R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: (mover, wlasciciel) -> true gdy sa w wojnie. Gdy podany,
+   * stos w ZASADZCE wroga NIE blokuje heksu (dla wroga jest niewidoczny -- ruch wpada w pulapke).
+   * Brak predykatu = zasadzka liczy sie jak zwykla jednostka (zachowanie sprzed zasadzki).
+   */
+  isAtWar?: (moverOwnerId: number, otherOwnerId: number) => boolean,
 ): MoveOccupancy {
   const skip = new Set(excludeIds);
   const occ = new MoveOccupancy();
   for (const u of units) {
     if (skip.has(u.id)) continue;
-    if (u.ownerId !== moverOwnerId) occ.add(keyOf(u.q, u.r));
+    if (u.ownerId !== moverOwnerId) {
+      if (isAtWar !== undefined && u.ambush === true && isAtWar(moverOwnerId, u.ownerId)) continue;
+      occ.add(keyOf(u.q, u.r));
+    }
   }
   for (const u of units) {
     if (skip.has(u.id) || u.ownerId !== moverOwnerId) continue;

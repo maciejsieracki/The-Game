@@ -56,6 +56,8 @@ window.addEventListener('unhandledrejection', (e) => {
 import { humanizeId, nazwaCywilizacji, nazwaWyswietlana } from './game/text-names';
 import { TEREN_LABEL_PL } from './map/terrain-names';
 import { normalizeDetDigestStackGroups } from './game/det-digest-normalize';
+import { AMBUSH_BLOCK_MESSAGES, canSetAmbush, cancelAmbush, isStackAmbushed, isUnitVisibleToViewer, resolveAmbushTrigger, setAmbush, truncatePathAtAmbush } from './game/ambush';
+import { buildBarbarianAmbushAttack, makeAmbushPathCutter, planBarbarianStep, planPlayerAmbushMove, planSplitAgainstHiddenAmbush, reconcileAmbushInWorld, releaseAmbushOnMoveOrder, resolveAmbushAfterMove, unitsForPlanner, unitsForViewer } from './game/ambushMove';
 import * as THREE from 'three';
 import { loadGameData } from './data/loader';
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from './map/generator';
@@ -2150,6 +2152,8 @@ async function boot(): Promise<void> {
       pathHexes: { q: number; r: number }[];
       seg: number;
       t: number;
+      /** R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: heks zasadzki wroga, w ktora wpada ten ruch (po animacji -> bitwa). */
+      ambushHex?: { q: number; r: number };
     }
     let anim: AnimState | null = null;
     let isAnimating = false;
@@ -7075,6 +7079,8 @@ async function boot(): Promise<void> {
         veteranPanelExplanation: vetEdu?.veteranPanelExplanation,
         inGarnizon: u.inGarnizon === true,
         sentry: u.sentry === true,
+        // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4, zarzut 7): status „w zasadzce” tylko dla wlasciciela.
+        ambush: u.ambush === true && isMe(u.ownerId),
         autoExplore: u.autoExplore === true,
         ufortyfikowanyWPolu: u.ufortyfikowanyWPolu === true,
         oblegaCityName: siegeCity?.name,
@@ -7122,6 +7128,7 @@ async function boot(): Promise<void> {
         veteranExperienceLine: status.veteranExperienceLine,
         veteranPanelExplanation: status.veteranPanelExplanation,
         sentry: status.sentry,
+        ambush: status.ambush,
         ufortyfikowanyWPolu: status.ufortyfikowanyWPolu,
         oblegaCityName: status.oblegaCityName,
         // R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: wiersze „głód wojska” / „deficyt Złota”.
@@ -8764,6 +8771,7 @@ async function boot(): Promise<void> {
         const inGarnizon = group.some(u => u.inGarnizon === true);
         const ufortyfikowanyWPolu = group.some(u => u.ufortyfikowanyWPolu === true);
         const sentry = group.some(u => u.sentry === true);
+        const ambush = group.some(u => u.ambush === true);
         const autoExplore = group.some(u => u.autoExplore === true);
         const types = [...new Set(group.map(u => u.typeId))];
         const baseName = group.length === 1
@@ -8809,6 +8817,7 @@ async function boot(): Promise<void> {
           inGarnizon,
           ufortyfikowanyWPolu,
           sentry,
+          ambush,
           autoExplore,
         });
       }
@@ -14230,9 +14239,12 @@ async function boot(): Promise<void> {
       if (sleepers.length === 0) return;
       for (const su of sleepers) {
         const sight = unitSight(su);
+        // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (obrona r3, zarzut 5): wróg w zasadzce NIE budzi czuwającego
+        // (nie wolno ujawnić zasadzki komunikatem „wróg w polu widzenia").
         const enemyNear = units.some(v =>
           v.id !== su.id
           && areEnemyOwners(su.ownerId, v.ownerId)
+          && isUnitVisibleToViewer(v, su.ownerId)
           && hexDistance(su.q, su.r, v.q, v.r) <= sight,
         );
         if (enemyNear) {
@@ -15309,6 +15321,8 @@ async function boot(): Promise<void> {
 
     /** Sync tokenów: 1 reprezentant/heks (najmocniejszy) + badge ×N. */
     function syncUnitsRender(list?: RuntimeUnit[]): void {
+      // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (pkt 4): cykl zycia zasadzki (ruch/odwrot/miasto/scalenie/podzial/wlasciciel).
+      reconcileAmbushInWorld(units, cities);
       // Keep the persisted cache canonical before any map/panel consumer reads
       // it. This also migrates old saves that omitted hpMax or stored raw base
       // HP from before persistent unit bonuses were added.
@@ -15332,7 +15346,8 @@ async function boot(): Promise<void> {
       // zero podwójnego tokenu w momencie odsłonięcia.
       // Logika SAMEGO odroczenia (kiedy ID wchodzi do zbioru i kiedy z niego wychodzi)
       // pozostaje nietknięta — zmienia się wyłącznie to, CO widać w tym oknie.
-      const src = rawSrc;
+      // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: zasadzka wroga NIE jest rysowana (widok = ME()).
+      const src = unitsForViewer(rawSrc, ME());
       // R-ZETON-PASKI (Maciej 2026-07-29): razem z widocznością stosu licz od
       // razu wartości CAŁEJ armii na tabliczkę nad żetonem (min ruchu / pula HP /
       // Moc pola M / maksima odznak). Grupowanie stosów i tak już tu jest, więc
@@ -15417,6 +15432,20 @@ async function boot(): Promise<void> {
           display.goldDeficitRepIds.add(repId);
         }
       }
+      // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4, zarzut 7): znacznik „w zasadzce” na zetonie WLASNEGO stosu
+      // (cudze zasadzki sa wyfiltrowane z `src`, wiec nie maja zetonu w ogole).
+      {
+        const ownAmbushHexes = new Set<string>();
+        for (const u of units) if (u.ambush === true && isMe(u.ownerId)) ownAmbushHexes.add(keyOf(u.q, u.r));
+        if (ownAmbushHexes.size > 0) {
+          for (const repId of display.visibleIds) {
+            const rep = unitById.get(repId);
+            if (!rep || !isMe(rep.ownerId) || !ownAmbushHexes.has(keyOf(rep.q, rep.r))) continue;
+            if (!display.ambushRepIds) display.ambushRepIds = new Set();
+            display.ambushRepIds.add(repId);
+          }
+        }
+      }
       unitRenderer.setForceVisibleUnitId(forceVisibleUnitId);
       unitRenderer.setCityHexKeys(new Set(cities.map(c => keyOf(c.q, c.r))));
       // 3. argument: ID w oknie odroczenia → żeton przyciemniony zamiast usuniętego.
@@ -15446,7 +15475,8 @@ async function boot(): Promise<void> {
      * nie przejsc, a laczenie jest proponowane tylko gdy ruch KONCZY sie na wlasnej jednostce.
      */
     function occupiedForMove(moverOwnerId: number, ...exceptIds: string[]): MoveOccupancy {
-      const occ = buildMoveOccupancy(units, moverOwnerId, exceptIds);
+      // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: zasadzka WROGA (w wojnie) jest niewidoczna -- heks liczy sie jak pusty.
+      const occ = buildMoveOccupancy(units, moverOwnerId, exceptIds, areEnemyOwners);
       for (const k of foreignCityHexKeys(moverOwnerId, cities)) {
         occ.add(k);
         occ.passThrough.delete(k);
@@ -15915,8 +15945,10 @@ async function boot(): Promise<void> {
       if (stack.length < 2) return;
       // R-WEB-ARMY-STACK-LIMIT-Q1: sasiedni heks z pelnym stosem (np. wlasne miasto z garnizonem
       // na limicie) nie jest celem rozdzielenia -- garnizon nie liczy sie jako "wolny" heks.
+      // (obrona r4, zarzut 3a) zasadzka wroga nie zajmuje heksu z perspektywy gracza:
+      // liczymy wolne heksy na widocznych jednostkach (ukryta zasadzka nie daje „Cel niedostepny").
       const dests = findSplitDestHexes(
-        units,
+        unitsForViewer(units, ME()),
         active.q,
         active.r,
         splitTargetPassable(isHexPassableForUnit, active.ownerId, cities),
@@ -15951,7 +15983,7 @@ async function boot(): Promise<void> {
         if (!hex) reason = 'Poza mapą';
         else if (!isHexPassableForUnit(q, r)) reason = 'Teren nieprzejezdny';
         else if (!canUnitOccupyCityHex(active.ownerId, q, r, cities)) reason = 'Miasto przeciwnika';
-        else if (units.some(u => u.q === q && u.r === r && u.inGarnizon !== true)) reason = 'Heks zajęty';
+        else if (units.some(u => u.q === q && u.r === r && u.inGarnizon !== true && isUnitVisibleToViewer(u, active.ownerId))) reason = 'Heks zajęty';
         else if (stackFreeSlots(units, active.ownerId, q, r, armyStackLimit()) < 1) reason = 'Limit stosu osiągnięty';
         const terrain = !hex ? 'Poza mapą' : !visible ? 'Nieodkryty heks' : (terrainNames[String(hex.terenBazowy)] ?? String(hex.terenBazowy));
         const overlay = visible && hex?.nakladka && String(hex.nakladka) !== 'brak'
@@ -15977,6 +16009,15 @@ async function boot(): Promise<void> {
           // przed wywołaniem z panelu z nieaktualnym celem.
           if (!canUnitOccupyCityHex(active.ownerId, destQ, destR, cities)) {
             showHintMessage('Nie można rozdzielić armii na obce miasto.', 3500);
+            return;
+          }
+          // r5: panel liczy wolne heksy na widocznych jednostkach; ukryta zasadzka wroga na celu = heks zajety
+          // (brak nakladania jednostek obu stron; zasadzka zostaje nietknieta, wyzwala ja dopiero ruch).
+          // r5 (zarzut 1): ukryta zasadzka na celu = WEJSCIE w zasadzke (bitwa z lidera stosu), nie komunikat o zajetym heksie.
+          const splitAmbush = planSplitAgainstHiddenAmbush(units, destQ, destR, active.ownerId, areEnemyOwners);
+          if (splitAmbush.kind === 'ambush') {
+            const splitLeader = units.find(x => x.id === ids[0]);
+            if (splitLeader !== undefined) fireAmbushOnHex(splitLeader, destQ, destR);
             return;
           }
           const splitArrivals = ids
@@ -27196,6 +27237,18 @@ async function boot(): Promise<void> {
           disabled: unitSentryActionDisabled(active, stackRuch),
           active: active.sentry === true,
         });
+        // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: "Zasadzka" -- zużywa całą pulę ruchu stosu,
+        // poza miastem; odwołanie bez kosztu. Blokada z powodem -- patrz game/ambush.ts.
+        const ambushActive = isStackAmbushed(stack);
+        const ambushCheck = canSetAmbush(stack, { cityOnHex: cityAtUnit(active) !== undefined, inBattle: isSaveBlockedByBattle() });
+        actions.push({
+          id: 'ambush',
+          label: ambushActive ? 'Odwołaj zasadzkę' : 'Zasadzka',
+          disabled: ambushActive ? false : !ambushCheck.ok,
+          // Powód blokady w tooltipie przycisku (disabled nie wywołuje handlera).
+          disabledReason: !ambushActive && !ambushCheck.ok ? ambushCheck.message : undefined,
+          active: ambushActive,
+        });
         // P-SCOUT-EXPLORE-Q1=A: przycisk Zwiedzaj — tylko zwiadowca, domyślnie OFF.
         if (isScoutUnit(active)) {
           const exploring = active.autoExplore === true;
@@ -27216,7 +27269,7 @@ async function boot(): Promise<void> {
         actions.push({ id: 'replace', label: 'Zast\u0105p', disabled: replaceDisabled });
       }
       const splitDests = findSplitDestHexes(
-        units,
+        unitsForViewer(units, ME()), // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 r5: ukryta zasadzka wroga nie zmienia flagi dostepnosci
         active.q,
         active.r,
         splitTargetPassable(isHexPassableForUnit, active.ownerId, cities),
@@ -27261,6 +27314,7 @@ async function boot(): Promise<void> {
         rng: normFieldVal(def['Zasi\u0119g'] ?? def['Zasieg'], 0),
         hp: active.hp ?? combat.hpMaxEffective,
         actions,
+        ambushed: isStackAmbushed(stack),
       };
     }
 
@@ -27388,6 +27442,8 @@ async function boot(): Promise<void> {
           );
           clearPlayerUnitSelection();
         } else {
+          // Fortyfikacja w polu wy\u0142\u0105cza zasadzk\u0119 (wzajemne wykluczanie; runda 2).
+          cancelAmbush(stack);
           for (const su of stack) enterFieldFortify(su);
           showHintMessage(u.typeId + ' ufortyfikowany w polu (ruch zu\u017cyty)', 2500);
         }
@@ -27421,12 +27477,38 @@ async function boot(): Promise<void> {
           // supersedes any previous march plan.
           clearPlannedMarch(u.id, true);
           syncStackRuchLeft(stack, 0);
+          // Czuwanie wyłącza zasadzkę (wzajemne wykluczanie; runda 2).
+          cancelAmbush(stack);
           for (const su of stack) su.sentry = true;
           showHintMessage(u.typeId + ' czuwa (obudź ręcznie)', 2500);
           clearPlayerUnitSelection();
         } else {
           for (const su of stack) su.sentry = false;
           showHintMessage('Obudzono: ' + u.typeId, 2000);
+        }
+        refreshD1bHud();
+      } else if (actionId === 'ambush') {
+        // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: zastawienie / odwołanie zasadzki na całym stosie.
+        if (isStackAmbushed(stack)) {
+          cancelAmbush(stack);
+          showHintMessage('Zasadzka odwołana', 2000);
+          syncUnitsRender(); // zdejmuje znacznik z zetonu
+        } else {
+          const check = canSetAmbush(stack, { cityOnHex: cityAtUnit(u) !== undefined, inBattle: isSaveBlockedByBattle() });
+          if (!check.ok) {
+            showHintMessage(AMBUSH_BLOCK_MESSAGES[check.reason], 3000);
+            return;
+          }
+          clearPlannedMarch(u.id, true);
+          // Zasadzka wyłącza czuwanie i fortyfikację w polu (decyzja runda 2: wzajemne wykluczanie).
+          for (const su of stack) {
+            su.sentry = false;
+            exitFieldFortify(su);
+          }
+          setAmbush(stack);
+          showHintMessage('Zasadzka zastawiona', 2500);
+          clearPlayerUnitSelection();
+          syncUnitsRender(); // rysuje znacznik „w zasadzce” na zetonie wlasnego stosu
         }
         refreshD1bHud();
       } else if (actionId === 'scout-explore') {
@@ -28312,7 +28394,7 @@ async function boot(): Promise<void> {
             const stack = visibleStackOnHex(units, u.q, u.r, u.ownerId, stackGroupIdOf(u));
             if (stack.length < 2) return false;
             return findSplitDestHexes(
-              units,
+              unitsForViewer(units, ME()), // r5: j.w. (flaga dostepnosci rozdzielenia nie ujawnia zasadzki)
               u.q,
               u.r,
               splitTargetPassable(isHexPassableForUnit, u.ownerId, cities),
@@ -33758,7 +33840,9 @@ async function boot(): Promise<void> {
 
       const attackTarget = attackUnitId
         ? units.find(x => x.id === attackUnitId)
-        : units.find(
+        // (obrona r4, zarzut 3b) ukryta zasadzka wroga nie jest celem ataku ani źródłem
+        // komunikatu „Cel niewidoczny (mgła)": ruch wpada w nią w kroku ruchu (wyzwalacz).
+        : unitsForViewer(units, ME()).find(
           x => x.q === destQ && x.r === destR && !isMe(x.ownerId) && x.ownerId !== u.ownerId,
         );
       if (attackTarget && !currentVisible().has(keyOf(attackTarget.q, attackTarget.r))) {
@@ -33886,6 +33970,33 @@ async function boot(): Promise<void> {
       }
     }
 
+    /**
+     * R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (pkt 1): wyzwolenie zasadzki. `mover` stoi na heksie SASIEDNIM wzgledem
+     * heksu zasadzki (q,r). Zdejmuje stan zasadzki (resolveAmbushTrigger), przerywa zaplanowany marsz i otwiera
+     * bitwe: poruszajacy = atakujacy, zastawiajacy = obronca, STANDARDOWE rozstawienie (specjalne rozstawienie i
+     * szyk <= AMBUSH_FORMATION_MAX_WIDTH = R3, punkt wpiecia: tu, przed otwarciem bitwy).
+     * Ruch gracza (czlowiek-poruszajacy) otwiera preBattle; ruch AI idzie wlasna sciezka (komenda 'attack' + wznowienie).
+     */
+    function fireAmbushOnHex(mover: RuntimeUnit, q: number, r: number): boolean {
+      const res = resolveAmbushTrigger(units, q, r, mover.ownerId, areEnemyOwners);
+      if (!res.triggered || res.revealed.length === 0) return false;
+      const defender = res.revealed[0]!;
+      for (const su of units) {
+        if (su.ownerId === mover.ownerId && su.q === mover.q && su.r === mover.r) {
+          plannedMarches.delete(su.id);
+          marchAttackTargets.delete(su.id);
+        }
+      }
+      syncUnitsRender();
+      if (isMe(mover.ownerId)) {
+        showHintMessage('Wpadłeś w zasadzkę!', 4500);
+        openPlayerMapUnitAttackCore(mover, defender);
+      } else if (isMe(defender.ownerId)) {
+        showHintMessage('Zasadzka się powiodła', 4500);
+      }
+      return true;
+    }
+
     function startAnimatedMove(
       u: RuntimeUnit,
       movePath: { q: number; r: number }[],
@@ -33893,6 +34004,30 @@ async function boot(): Promise<void> {
       moveDestR: number,
       cost: number,
     ): void {
+      // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (pkt 1): ruch na heks z zasadzka WROGA (w wojnie) ZATRZYMUJE sie na
+      // ostatnim heksie PRZED nia (zadnych dwoch jednostek na jednym heksie); po animacji otwiera sie bitwa o
+      // heks zasadzki. Pusta trasa = zasadzka tuz przy starcie: bitwa od razu, bez animacji.
+      let ambushHexHit: { q: number; r: number } | undefined;
+      {
+        const plan = planPlayerAmbushMove(units, movePath, u.ownerId, areEnemyOwners, true);
+        if (plan.kind !== 'clear') {
+          ambushHexHit = plan.ambushHex;
+          movePath = plan.path;
+          if (movePath.length > 0) {
+            const lastCut = movePath[movePath.length - 1]!;
+            moveDestQ = lastCut.q;
+            moveDestR = lastCut.r;
+            cost = pathCost(movePath, map, moveCostFnForUnit(u));
+          } else {
+            releaseAmbushOnMoveOrder(playerStackAt(u));
+            pendingMarchHint = null;
+            clearPlannedMarch(u.id, true);
+            fireAmbushOnHex(u, ambushHexHit.q, ambushHexHit.r);
+            return;
+          }
+          if (pendingMarchHint && pendingMarchHint.unitId === u.id) pendingMarchHint.arrived = false;
+        }
+      }
       // C-GARN-Q1 rozszerzenie (Maciej 2026-07-26): rozkaz ruchu wydany
       // jednostce ufortyfikowanej (z listy armii w lewym menu, gdzie taka
       // jednostka jest teraz widoczna i zaznaczalna — patrz playerStackAt)
@@ -33901,6 +34036,8 @@ async function boot(): Promise<void> {
       // zamiast zostać "ukrytym" duchem na nowym heksie.
       const garnizonCity = u.inGarnizon === true ? cityAtUnit(u) : undefined;
       const stack = playerStackAt(u);
+      // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: rozkaz ruchu zdejmuje zasadzkę (armia się rusza).
+      releaseAmbushOnMoveOrder(stack);
       if (wakeStackForMoveOrder(stack)) {
         if (garnizonCity) syncGarnizonForCity(garnizonCity);
       }
@@ -33927,6 +34064,7 @@ async function boot(): Promise<void> {
         pathHexes: movePath.map(h => ({ q: h.q, r: h.r })),
         seg: 0,
         t: 0,
+        ...(ambushHexHit !== undefined ? { ambushHex: ambushHexHit } : {}),
       };
       isAnimating = true;
       forceVisibleUnitId = u.id;
@@ -34132,6 +34270,24 @@ async function boot(): Promise<void> {
         result.arrived = false;
       }
 
+      // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (pkt 1): koniec tury -- marsz zatrzymuje sie przed zasadzka wroga.
+      let instantAmbushHex: { q: number; r: number } | undefined;
+      {
+        const planA = planPlayerAmbushMove(units, result.movePath, u.ownerId, areEnemyOwners, launchAttack);
+        if (planA.kind === 'blocked') return false; // bez prawa otwarcia bitwy zasadzka zostaje nietknieta
+        if (planA.kind === 'fire-now') {
+          releaseAmbushOnMoveOrder(stack);
+          plannedMarches.delete(unitId);
+          marchAttackTargets.delete(unitId);
+          return fireAmbushOnHex(u, planA.ambushHex.q, planA.ambushHex.r);
+        }
+        if (planA.kind === 'cut') {
+          instantAmbushHex = planA.ambushHex;
+          result.movePath = planA.path;
+          result.cost = pathCost(planA.path, map, moveCostFnForUnit(u));
+          result.arrived = false;
+        }
+      }
       const fromQ = u.q;
       const fromR = u.r;
       const last = result.movePath[result.movePath.length - 1]!;
@@ -34174,6 +34330,13 @@ async function boot(): Promise<void> {
       validateActiveSieges();
       promptMergeIfCoLocated(stack.map(s => s.id), fromQ, fromR, result.cost, deductedRuchMarch);
 
+      if (instantAmbushHex !== undefined) {
+        plannedMarches.delete(unitId);
+        marchAttackTargets.delete(unitId);
+        syncGeneralMarchTargets(true);
+        fireAmbushOnHex(u, instantAmbushHex.q, instantAmbushHex.r);
+        return true;
+      }
       const attackTargetId = marchAttackTargets.get(unitId);
       phaseMark('PLAYER_MARCH_RESULT', unitId + ' arrived=' + result.arrived + ' stop=' + (result.stopReason ?? '') + ' atk=' + (attackTargetId ?? '') + ' launch=' + launchAttack);
       if (launchAttack && attackTargetId && tryLaunchMarchAttack(u, attackTargetId)) {
@@ -35185,7 +35348,8 @@ async function boot(): Promise<void> {
       // R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1: osierocony garnizon (poza wlasnym
       // miastem) jest niewidoczny dla unitAtRepresentative -> wyprowadz go PRZED hit-testem.
       healInconsistentUnits('klik mapy');
-      const cu = unitAtRepresentative(hit.q, hit.r, units, unitAttackScore);
+      // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4, zarzut 5): hit-test klikniecia nie widzi cudzych zasadzek.
+      const cu = unitAtRepresentative(hit.q, hit.r, unitsForViewer(units, ME()), unitAttackScore);
 
       if (cu && isMe(cu.ownerId)) {
         const sel = selectedId !== null ? units.find(x => x.id === selectedId) : null;
@@ -37849,7 +38013,9 @@ async function boot(): Promise<void> {
       const myOtherCities = cities.filter(c => c.ownerId === ownerId && c.id !== capCity.id);
       if (myOtherCities.length === 0) return; // nie ma dokąd przenieść
 
-      const enemyUnits = units.filter(u => u.ownerId !== ownerId);
+      // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4, zarzut 5): AI nie widzi zasadzek wojujacych z nim wlascicieli.
+      const enemyUnits = unitsForPlanner(units, ownerId, (oid) => areEnemyOwners(ownerId, oid))
+        .filter(u => u.ownerId !== ownerId);
       if (enemyUnits.length === 0) return;
 
       let nearestToCapital = Infinity;
@@ -45537,6 +45703,9 @@ async function boot(): Promise<void> {
                     blockedKeys.delete(keyOf(cmd.toQ, cmd.toR));
                     blockedKeys.passThrough.delete(keyOf(cmd.toQ, cmd.toR));
                   }
+                  // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (pkt 1+2): trasa AI przez zasadzke WROGA (heks dla AI pusty)
+                  // konczy sie przed nia; po ruchu wstrzykujemy rozkaz ataku na ujawniona zasadzke.
+                  const aiAmbushCutter = makeAmbushPathCutter(units, ownerId, areEnemyOwners);
                   const moveResult = executeAiCityMove({
                     command: cmd,
                     unit: u,
@@ -45562,14 +45731,17 @@ async function boot(): Promise<void> {
                     // R-WEB-ARMY-STACK-LIMIT-Q1: trasa AI nie moze konczyc sie na stosie, do ktorego jednostka
                     // sie nie zmiesci (limit bitwy) -- przycinamy; pusta trasa = AI nie wykonuje takiego ruchu
                     // (zostaje i szuka innego heksu w kolejnej decyzji).
-                    truncatePath: (fullPath) => trimPathToStackRoom(
-                      units,
-                      [u],
-                      u.ruchLeft > 0
-                        ? truncatePathWithinBudget(fullPath, u.ruchLeft, map, moveCostFnForUnit(u))
-                        : fullPath,
-                      armyStackLimit(),
-                    ),
+                    truncatePath: (fullPathIn) => {
+                      const fullPath = aiAmbushCutter.cut(fullPathIn);
+                      return trimPathToStackRoom(
+                        units,
+                        [u],
+                        u.ruchLeft > 0
+                          ? truncatePathWithinBudget(fullPath, u.ruchLeft, map, moveCostFnForUnit(u))
+                          : fullPath,
+                        armyStackLimit(),
+                      );
+                    },
                     // TEMAT #15: AI z Żeglugą też się (dez)okrętowuje wg terenu.
                     onMoved: () => applyEmbarkStateAfterMove([u], map),
                     onCapture: (city) => tryAutoCaptureEmptyCityAt(
@@ -45578,6 +45750,18 @@ async function boot(): Promise<void> {
                       [u],
                     ),
                   });
+                  {
+                    // Zasadzka wroga na trasie: ujawnij ja i zakolejkuj atak AI (bitwa przez standardowa sciezke 'attack').
+                    const ambOrder = resolveAmbushAfterMove(units, u, aiAmbushCutter.hit(), areEnemyOwners);
+                    if (ambOrder !== undefined) {
+                      const ambDef = ambOrder.defender;
+                      if (isMe(ambDef.ownerId)) showHintMessage('Zasadzka się powiodła', 4500);
+                      commands.splice(ci + 1, 0, {
+                        type: 'attack', unitId: u.id, targetUnitId: ambDef.id, ambush: true,
+                      } as AICommand);
+                      syncUnitsRender();
+                    }
+                  }
                   if (moveResult.moved) {
                     const path = moveResult.path;
                     const last = path[path.length - 1]!;
@@ -45701,7 +45885,8 @@ async function boot(): Promise<void> {
                     && cities.some(lc => lc.ownerId === defender.ownerId && isCityLostOf(lc, ownerId)
                       && hexDistance(defender.q, defender.r, lc.q, lc.r)
                         <= cityTerritoryRadius({ q: lc.q, r: lc.r, pop: lc.population, level: 1 }));
-                  if (!targetOnOwnTerritory && !targetNearLostCity && !aiTargetVisibleForAction(
+                  if ((cmd as { ambush?: boolean }).ambush !== true
+                    && !targetOnOwnTerritory && !targetNearLostCity && !aiTargetVisibleForAction(
                     currentVisibleForOwner(ownerId), fogOn, defender.q, defender.r, keyOf,
                   )) {
                     console.warn(`[AI ${ownerId}] Atak na niewidoczny cel — pominięto`);
@@ -46335,7 +46520,13 @@ async function boot(): Promise<void> {
             const barbUnitsAfterSpawn = units.filter(u => isBarbarian(u.ownerId)) as BarbUnit[];
             const landBarbs = barbUnitsAfterSpawn.filter(u => u.seaRaider !== true && u.embarked !== true);
             const seaBarbs = barbUnitsAfterSpawn.filter(u => u.seaRaider === true || u.embarked === true);
-            const playerUnitsForBarbs = units.filter(u => !isBarbarian(u.ownerId));
+            // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4, zarzut 6): barbarzyncy NIE widza zasadzek wojujacych z nimi
+            // wlascicieli (heks jak pusty, brak celu); wejscie na zasadzke = bitwa (patrz petla `move` nizej).
+            const playerUnitsForBarbs = unitsForPlanner(
+              units.filter(u => !isBarbarian(u.ownerId)),
+              BARBARIAN_OWNER_ID,
+              (oid) => getDiploRelation(BARBARIAN_OWNER_ID, oid).status === 'wojna',
+            );
             // C-BARB-Q1/Q2 (Maciej 2026-07-26): atak barbarzyńców przez tę samą
             // bramkę stanu wojny co reszta silnika (aiCanEngageOwner w ai.ts),
             // zamiast bezwarunkowego "!isBarbarian". Barbarzyńcy są zawsze w
@@ -46421,9 +46612,23 @@ async function boot(): Promise<void> {
                       && !canUnitOccupyCityHex(bu.ownerId, bcmd.toQ, bcmd.toR, cities)) continue;
                   // R-WEB-AI-MOVE-RANGE-Q1 r5: nie wchodz na heks zajety przez inna jednostke
                   // (w tym barbarzynce ruszajacego wczesniej w tej turze).
-                  if (!claimHexForMove(barbOcc, keyOf(bu.q, bu.r), keyOf(bcmd.toQ, bcmd.toR))) continue;
-                  bu.q = bcmd.toQ;
-                  bu.r = bcmd.toR;
+                  // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4, zarzut 6): trasa barbarzyncy przez zasadzke gracza/AI
+                  // (dla barbarzyncy heks pusty) konczy sie PRZED nia; po ruchu ujawniamy zasadzke i wstrzykujemy atak.
+                  const barbMove = planBarbarianStep(units, bu, bcmd.toQ, bcmd.toR,
+                    () => computePath(
+                      bu, map, bcmd.toQ, bcmd.toR,
+                      buildMoveOccupancy(units, bu.ownerId, [bu.id], areEnemyOwners), moveCostFnForUnit(bu),
+                    ),
+                    areEnemyOwners);
+                  const barbToQ = barbMove.toQ;
+                  const barbToR = barbMove.toR;
+                  const barbAmbushHit = barbMove.ambushHex;
+                  const barbStays = barbMove.stays;
+                  if (!barbStays
+                      && !claimHexForMove(barbOcc, keyOf(bu.q, bu.r), keyOf(barbToQ, barbToR))) continue;
+                  if (!barbStays) {
+                  bu.q = barbToQ;
+                  bu.r = barbToR;
                   bu.ruchLeft = 0;
                   // TEMAT #15: woda -> zaokrętowanie, ląd -> desant.
                   applyEmbarkStateAfterMove([bu], map);
@@ -46440,6 +46645,15 @@ async function boot(): Promise<void> {
                   if (applyCityVisitBonusesAtHex(bu, bcmd.toQ, bcmd.toR, false)) syncUnitsRender();
                   if (sfxUnitsEnabled && (barbVisNow === null || barbVisNow.has(keyOf(bcmd.toQ, bcmd.toR)))) {
                     playMarchAccent(1);
+                  }
+                  }
+                  {
+                    const barbAmb = buildBarbarianAmbushAttack(units, bu, barbAmbushHit, areEnemyOwners);
+                    if (barbAmb !== undefined) {
+                      if (isMe(barbAmb.defender.ownerId)) showHintMessage('Zasadzka się powiodła', 4500);
+                      barbCmds.splice(barbCmds.indexOf(bcmd) + 1, 0, barbAmb.cmd);
+                      syncUnitsRender();
+                    }
                   }
                 } else if (bcmd.type === 'raid') {
                   // TEMAT #15: rajd Ludów Morza — wejście + zniszczenie ulepszenia.
@@ -47188,6 +47402,7 @@ async function boot(): Promise<void> {
           const moveCost = anim.cost;
           const movedStackIds = anim.movingStackIds;
           const pathHexes = anim.pathHexes;
+          const ambushHexAtFinish = anim.ambushHex;
           const u = units.find(x => x.id === finishedId);
           const stack = movedStackIds
             .map(sid => units.find(x => x.id === sid))
@@ -47290,6 +47505,11 @@ async function boot(): Promise<void> {
           }
           updateHud();
           refreshD1bHud();
+          // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (pkt 1): ruch zatrzymany przed zasadzka wroga -> bitwa.
+          if (u && ambushHexAtFinish !== undefined) {
+            pendingMarchHint = null;
+            fireAmbushOnHex(u, ambushHexAtFinish.q, ambushHexAtFinish.r);
+          }
           // C: auto-cykl „bęben" — jednostka gracza wyczerpała ruch (bez marszu
           // wieloturowego w toku) → przejdź do następnej armii, która wciąż ma dostępny ruch
           // (te same semantyki co Spacja — R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA).

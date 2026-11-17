@@ -117,9 +117,12 @@ export function armyStatusBadge(entry: {
   ufortyfikowanyWPolu?: boolean;
   sentry?: boolean;
   autoExplore?: boolean;
+  ambush?: boolean;
 }): { text: string; variant: SideListBadgeVariant } | null {
   if (entry.inGarnizon) return { text: 'w garnizonie', variant: 'gold' };
   if (entry.ufortyfikowanyWPolu) return { text: 'ufortyfikowana w polu', variant: 'gold' };
+  // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4, zarzut 7): wyrazny znacznik na liscie armii.
+  if (entry.ambush) return { text: 'w zasadzce', variant: 'green' };
   if (entry.sentry) return { text: 'uśpiona', variant: 'neutral' };
   if (entry.autoExplore) return { text: 'auto-eksploracja', variant: 'blue' };
   return null;

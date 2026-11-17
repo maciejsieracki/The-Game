@@ -3527,6 +3527,13 @@ export function decideAITurn(
   data: GameData,
   opts: AITurnOpts = {},
 ): AICommand[] {
+  // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1: zasadzki WROGA sa dla AI niewidoczne -- planista widzi heks jak
+  // pusty (pathfinding, "sily wroga w zasiegu", cele). Brak zasadzek = ta sama tablica (zero kosztu).
+  // (obrona r3, zarzut 8): ukrywamy zasadzki tylko tych właścicieli, z którymi AI może walczyć
+  // (ta sama bramka co executor: aiCanEngageOwner); sojusznik/pokój widzi swój heks jako zajęty.
+  if (units.some(u => u.ambush === true && u.ownerId !== playerId && aiCanEngageOwner(opts, u.ownerId))) {
+    units = units.filter(u => !(u.ambush === true && u.ownerId !== playerId && aiCanEngageOwner(opts, u.ownerId)));
+  }
   const prevGuard = activeMarchGuard;
   activeMarchGuard = opts.marchGuard ?? null;
   try {

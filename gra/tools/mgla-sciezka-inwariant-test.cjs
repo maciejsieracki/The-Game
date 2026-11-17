@@ -298,10 +298,10 @@ const KLASYFIKACJA = [
   { plik: MAIN_TS, tekst: 'u.r = best.r;', nr: 1, klasa: 'DEBUG-TEST-HOOK', uzasadnienie: 'j.w.' },
   { plik: MAIN_TS, tekst: 'su.q = anim.destQ;', nr: 1, klasa: 'WIELOHEKS-ODKRYWA', uzasadnienie: 'koniec tury podczas animacji marszu (anim.pathHexes); MIEJSCE 2 z 3' },
   { plik: MAIN_TS, tekst: 'su.r = anim.destR;', nr: 1, klasa: 'WIELOHEKS-ODKRYWA', uzasadnienie: 'j.w.' },
-  { plik: MAIN_TS, tekst: 'bu.q = bcmd.toQ;', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'komenda `move` barbarzyncy' },
+  { plik: MAIN_TS, tekst: 'bu.q = barbToQ;', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'komenda `move` barbarzyncy (cel po przycieciu trasy przed zasadzka, planBarbarianAmbushMove; zapis tej samej klasy co wczesniej `bu.q = bcmd.toQ` -- barbarzynca nie odslania mgly gracza)' },
+  { plik: MAIN_TS, tekst: 'bu.r = barbToR;', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'j.w.' },
+  { plik: MAIN_TS, tekst: 'bu.q = bcmd.toQ;', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'komenda `raid` barbarzyncy' },
   { plik: MAIN_TS, tekst: 'bu.r = bcmd.toR;', nr: 1, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'j.w.' },
-  { plik: MAIN_TS, tekst: 'bu.q = bcmd.toQ;', nr: 2, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'komenda `raid` barbarzyncy' },
-  { plik: MAIN_TS, tekst: 'bu.r = bcmd.toR;', nr: 2, klasa: 'BEZ-MGLY-GRACZA', uzasadnienie: 'j.w.' },
   // --- R-WEB-TEST-DEBT-B-DIAG-Q1 r1: klasyfikacja miejsc dodanych PO R-PROC-... (4 sklasyfikowane
   //     z weryfikacja kodu; zadne nie jest marszem wieloheksowym bez odkrycia) ---
   { plik: 'src/battle/battleScene.ts', tekst: 'ru.q = col;', nr: 1, klasa: 'POZA-MAPA-SWIATA', uzasadnienie: '_doMove (tryb _autoBatchPlanning) — ruch jednostki na siatce bitwy (col/row); dawniej jedna linia `ru.q = col; ru.r = row;`, rozbita na dwie' },

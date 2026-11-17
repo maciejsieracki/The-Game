@@ -27,7 +27,8 @@ export interface NextActiveUnitCtx {
 
 /** Jednostka bez rozkazu automatycznego/postojowego (kryteria wspólne z army-cycle, bez garnizonu). */
 function hasNoStandingOrder(u: RuntimeUnit): boolean {
-  return u.sentry !== true && u.autoExplore !== true && u.ufortyfikowanyWPolu !== true;
+  // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (obrona r3, zarzut 2): zasadzka wyłączona z cyklu Spacja.
+  return u.sentry !== true && u.autoExplore !== true && u.ufortyfikowanyWPolu !== true && u.ambush !== true;
 }
 
 /** Oblegająca (miasto oblegane) albo oblegana (własne miasto oblegane). */
