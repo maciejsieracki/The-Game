@@ -88,6 +88,7 @@ import {
 import type { CivBonusEntry } from '../game/civ-bonuses';
 import { battleUnitCivBonusy, battleUnitDifficultyCombatMult } from './battle-unit-context';
 import { attachBattleCommanderStar } from './battleCommanderStar';
+import { damageLabelStackOffset } from './damageLabelStack';
 import {
   applyMultiplier,
   civCombatStatMultipliers,
@@ -2142,6 +2143,8 @@ interface FloatLabel {
   duration:  number;
   worldPos:  THREE.Vector3;
   riseRate:  number;
+  /** Jednostka, nad ktora unosi sie etykieta obrazen (R-WEB-UI-BATTLE-DAMAGE-LABELS-NO-OVERLAP-Q1). */
+  owner?:    RuntimeBattleUnit;
 }
 
 // ---------------------------------------------------------------------------
@@ -10575,12 +10578,16 @@ export class BattleScene {
     // Float the damage number above the unit's HP bar, lifted by its tile-top so
     // it sits over the head even when the unit stands on a raised hill.
     const wpTopY = tileTopY(this.terrainMap, ru.q, ru.r);
+    // R-WEB-UI-BATTLE-DAMAGE-LABELS-NO-OVERLAP-Q1: kolejne etykiety tej samej jednostki
+    // startuja wyzej niz te, ktore nadal sa widoczne (zamiast nakladac sie na siebie).
+    const activeOnUnit = this.floatLabels.reduce((n, fl) => n + (fl.owner === ru ? 1 : 0), 0);
     this.floatLabels.push({
       elem:      el,
       startTime: this.vLastWall,
       duration:  2000,
-      worldPos:  new THREE.Vector3(wp.x, wpTopY + HPBAR_Y + 0.20, wp.z),
+      worldPos:  new THREE.Vector3(wp.x, wpTopY + HPBAR_Y + 0.20 + damageLabelStackOffset(activeOnUnit), wp.z),
       riseRate:  0.00012,
+      owner:     ru,
     });
   }
 
