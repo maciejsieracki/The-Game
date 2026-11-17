@@ -16,6 +16,7 @@ use super::playable_movement::{
     occupied_for_move, plan_march_to, stack_limit_block_message, PlayableMoveModel,
     MARCH_FOREIGN_CITY_HINT, MARCH_NO_ROUTE_HINT,
 };
+use super::player::is_awaiting_first_player_city;
 use super::turn_war_dipl_steps::apply_dipl_deltas_to_state;
 use super::turn_war_inputs::{
     build_war_inputs, power_raw_for_owner, production_config, start_epoch_number,
@@ -30,7 +31,7 @@ use super::victory::{
     check_victory, VictoryInput, VictoryMode, VictoryResult, OSTATNIA_EPOKA_GRY_V1,
 };
 use super::war_turn_state::WarTurnState;
-use super::{events::*, CityId, PlayerId, PositionDto, UnitId};
+use super::{events::*, CityId, OwnerRef, PlayerId, PositionDto, UnitId};
 
 pub const PLAYABLE_STATE_VERSION: u16 = 1;
 const DEFAULT_SEED: u32 = 42;
@@ -620,6 +621,18 @@ pub struct PlayableState {
     /// co odpowiada odtworzeniu ze miast z pinu (main.ts:46368-46370).
     #[serde(skip)]
     pub gracz_kiedys_mial_miasto: bool,
+    /// R-RUSTPORT-P4-364-AWAITING-SEAT-R1 (D-AS-1): web `playerEverOwnedCityByOwner` (pin
+    /// `main.ts:3042`, `Set<number>` per fotel) dla wlascicieli INNYCH niz fotel glowny
+    /// `HUMAN_PLAYER_ID` (web `HUMAN_OWNER_PRIMARY`). Wpis fotela glownego to
+    /// [`Self::gracz_kiedys_mial_miasto`] (pin czyta go jako `playerEverOwnedCityByOwner.has(
+    /// HUMAN_OWNER_PRIMARY)`, `main.ts:34022`, `:43472`), wiec jeden fakt nie ma dwoch zrodel (D-AS-2,
+    /// raport `01-operator-r1.md`). Odczyt i zapis wylacznie przez [`Self::ever_owned_city`] /
+    /// [`Self::record_ever_owned_city`]; pelny zbior pinu: [`Self::player_ever_owned_city_by_owner`].
+    /// Pin NIE zapisuje zbioru (odtwarza go przy wczytaniu ze miast, `main.ts:46368-46370`), wiec pole nie
+    /// jest serializowane (`skip_serializing`: JSON stanu i zapisu bez zmian), a `default` laduje zapisy i
+    /// stany sprzed zmiany.
+    #[serde(default, skip_serializing)]
+    pub player_ever_owned_city: BTreeSet<PlayerId>,
     /// P6-ZWYCIESTWO-WIRING: wynik konca gry (pin `gameOver`). `#[serde(skip)]`: pin nie zapisuje
     /// `gameOver` i resetuje go do `false` przy wczytaniu (main.ts:47333), wiec po wczytaniu gra trwa.
     #[serde(skip)]
@@ -765,6 +778,66 @@ impl PlayableState {
                 .cities
                 .iter()
                 .any(|city| city.owner_id == HUMAN_PLAYER_ID);
+        // R-RUSTPORT-P4-364-AWAITING-SEAT-R1: pozostale fotele ludzkie z zapisu (pin `saved.humanOwnerIds`,
+        // `main.ts:46369-46370`).
+        let seats: Vec<PlayerId> = self
+            .players
+            .iter()
+            .filter(|p| p.is_human && p.id != HUMAN_PLAYER_ID)
+            .map(|p| p.id)
+            .collect();
+        for seat in seats {
+            if self.cities.iter().any(|city| city.owner_id == seat) {
+                self.record_ever_owned_city(seat);
+            }
+        }
+    }
+
+    /// R-RUSTPORT-P4-364-AWAITING-SEAT-R1: web `playerEverOwnedCityByOwner.has(owner)` (`main.ts:12883`).
+    /// Fotel glowny czyta [`Self::gracz_kiedys_mial_miasto`], pozostali wlasciciele
+    /// [`Self::player_ever_owned_city`] (D-AS-2).
+    #[must_use]
+    pub fn ever_owned_city(&self, owner: PlayerId) -> bool {
+        if owner == HUMAN_PLAYER_ID {
+            self.gracz_kiedys_mial_miasto
+        } else {
+            self.player_ever_owned_city.contains(&owner)
+        }
+    }
+
+    /// R-RUSTPORT-P4-364-AWAITING-SEAT-R1: web `playerEverOwnedCityByOwner.add(owner)` (miejsca zapisu
+    /// pinu: zalozenie `main.ts:16508`, kapitulacja `:17816`, zdobycie `:36218`, nowa gra `:45646`).
+    pub fn record_ever_owned_city(&mut self, owner: PlayerId) {
+        if owner == HUMAN_PLAYER_ID {
+            self.gracz_kiedys_mial_miasto = true;
+        } else {
+            self.player_ever_owned_city.insert(owner);
+        }
+    }
+
+    /// R-RUSTPORT-P4-364-AWAITING-SEAT-R1: caly zbior pinu `playerEverOwnedCityByOwner` (fotel glowny z
+    /// flagi + pozostali), np. jako argument `dto_bridge::*` (D-BR-1).
+    #[must_use]
+    pub fn player_ever_owned_city_by_owner(&self) -> BTreeSet<PlayerId> {
+        let mut all = self.player_ever_owned_city.clone();
+        if self.gracz_kiedys_mial_miasto {
+            all.insert(HUMAN_PLAYER_ID);
+        }
+        all
+    }
+
+    /// R-RUSTPORT-P4-364-AWAITING-SEAT-R1: web `isAwaitingFirstPlayerCity(ownerId)` (`main.ts:12882-12884`,
+    /// `first-player-city.ts:14-20`) dla DOWOLNEGO fotela: `!playerEverOwnedCityByOwner.has(ownerId)` i
+    /// zadne miasto stanu nie nalezy do `ownerId`.
+    #[must_use]
+    pub fn is_awaiting_first_city(&self, owner: PlayerId) -> bool {
+        is_awaiting_first_player_city(
+            self.ever_owned_city(owner),
+            self.cities
+                .iter()
+                .map(|city| OwnerRef::Player(city.owner_id)),
+            owner,
+        )
     }
 
     /// Adapter zdarzenia "wygrana bitwy" dla akumulatora mocy (R-RUSTPORT-P6-POWER-AKUMULATORY-WIRING-Q1).
@@ -873,6 +946,7 @@ impl PlayableState {
             economy: PlayableReplaceEconomy::default(),
             forts: Vec::new(),
             gracz_kiedys_mial_miasto: false,
+            player_ever_owned_city: BTreeSet::new(),
             koniec_gry: None,
             planned_marches: Vec::new(),
             march_attack_targets: BTreeMap::new(),
@@ -1045,6 +1119,8 @@ impl PlayableGame {
                 economy: PlayableReplaceEconomy::default(),
                 forts: Vec::new(),
                 gracz_kiedys_mial_miasto,
+                // Pin `main.ts:45645-45646`: `clear()` + fotel glowny (wpis fotela glownego = flaga wyzej).
+                player_ever_owned_city: BTreeSet::new(),
                 koniec_gry: None,
                 planned_marches: Vec::new(),
                 march_attack_targets: BTreeMap::new(),
@@ -1414,6 +1490,7 @@ impl PlayableGame {
         // Sam blad sprawdzenia zwyciestwa nie cofa tury (semantyka pina, zob. faza Victory nizej).
         let koniec_before = self.state.koniec_gry;
         let flag_before = self.state.gracz_kiedys_mial_miasto;
+        let ever_owned_before = self.state.player_ever_owned_city.clone();
         let mut phases = Vec::with_capacity(PHASE_COUNT);
         while let Some(entry) = self.phase_queue.peek_next() {
             if entry.turn() != current_turn {
@@ -1438,6 +1515,14 @@ impl PlayableGame {
                 match self.evaluate_victory() {
                     Ok((flag, result)) => {
                         self.state.gracz_kiedys_mial_miasto = flag;
+                        // R-RUSTPORT-P4-364-AWAITING-SEAT-R1: ten sam punkt synchronizacji co flaga dla
+                        // pozostalych wlascicieli (pin dopisuje przy zalozeniu/zdobyciu miasta; Rust nie ma
+                        // produkcyjnej sciezki zalozenia, wiec wpis = wlasciciel ma miasto na koniec tury).
+                        let owners: Vec<PlayerId> =
+                            self.state.cities.iter().map(|c| c.owner_id).collect();
+                        for owner in owners {
+                            self.state.record_ever_owned_city(owner);
+                        }
                         if self.state.koniec_gry.is_none() {
                             self.state.koniec_gry = result;
                         }
@@ -1457,6 +1542,7 @@ impl PlayableGame {
         if phases.len() != PHASE_COUNT {
             self.state.koniec_gry = koniec_before;
             self.state.gracz_kiedys_mial_miasto = flag_before;
+            self.state.player_ever_owned_city = ever_owned_before;
             self.state.economy = economy_before;
             return Err(PlayableError::TurnPhaseQueueIncomplete {
                 expected: PHASE_COUNT,
