@@ -3253,3 +3253,11 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **G5 normalizacja (#332), r3:** dispatch gotowy (`814a24102`). Dysk: 13 GB po usunięciu zakończonego targetu `scratchpad/t7b-r1-target` (3,3 GB, własny, bez procesów). Startuje, gdy T7a r3 się zakończy i nie będzie cudzego cargo.
 - **Zachowany:** `scratchpad/t7a-target` (3,3 GB) — należy do żywego T7a r3, nie ruszam.
 - **Brak integracji w tym ticku:** nic nie przeszło FC PASS na parity-v2.
+
+### Przebieg — heartbeat Rust 07:47 UTC: sloty 1/4 (polecenie właściciela, bramka renderera)
+
+- **Aktywne Workflow: 1/4** — T7a falanga (#261), runda r3 (`wf_de3b72ff-45d`, Operator Haiku). Żywy `cargo test --test p6_k5doc_t7a` (start ok. 07:46 UTC); worktree zablokowany, wyniku brak.
+- **Nie uzupełniam do czterech:** polecenie właściciela — przy bramce renderera (G5 r3, 12 GB, bez cudzych buildów) działa jeden worker, aż skończy. Dysk 14 GB.
+- **G5 normalizacja (#332), r3:** dispatch gotowy (`814a24102`), czeka na zakończenie T7a r3.
+- **T7b (#342), r4:** po G5 r3, baza `61ffc110f` (wip, nie PASS).
+- **Brak integracji i brak sprzątania w tym ticku** (worktree T7a r3 żywy, nie ruszam).
