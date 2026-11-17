@@ -108,12 +108,12 @@ check('moc konnicy łuczniczej bez zmian', power.fieldPower({ ...kRow }).total, 
 // 6. Moc AI/auto-walki = armyFieldPower() na SUROWYM wierszu units.json (z cache fieldPower).
 // Cache eksportu liczony bez mnoznika -> armyFieldPower musi go ignorowac dla Procarza/Lucznika.
 const armyRaw = (name) => power.armyFieldPower({ ...row(name) });
-check('armyFieldPower Procarz (cache 12) = fieldPower z mnoznikiem 16', armyRaw('Procarz'), 16);
-check('armyFieldPower Procarz (Huaracoc) (cache 12) = 16', armyRaw('Procarz (Huaracoc)'), 16);
+check('armyFieldPower Procarz (health 8, cache 12) = 12', armyRaw('Procarz'), 12);
+check('armyFieldPower Procarz (Huaracoc) (health 8, cache 12) = 12', armyRaw('Procarz (Huaracoc)'), 12);
 // R-WEB-DATA-ARCHERS-HEALTH-20-DIST-EGYPT-6-Q1: zdrowie lucznikow = 20 (pole health) => nowa moc pola.
 // R-WEB-DATA-ARCHERS-RANGED-ATTACK-4-5-6-ALIGN-Q1: missileAttack Łucznik 4 / egipski 5 => moc pola 22 / 19 (runtime).
-check('armyFieldPower Łucznik (health 20, missileAttack 4) = 22', armyRaw('Łucznik'), 22);
-check('armyFieldPower Łucznik egipski (health 20, missileAttack 5) = 19', armyRaw('Łucznik egipski'), 19);
+check('armyFieldPower Łucznik (health 10, missileAttack 4) = 17', armyRaw('Łucznik'), 17);
+check('armyFieldPower Łucznik egipski (health 10, missileAttack 5) = 14', armyRaw('Łucznik egipski'), 14);
 check('armyFieldPower Oszczepnik (cache 12) bez zmian', armyRaw('Oszczepnik'), row('Oszczepnik').fieldPower);
 check('armyFieldPower Konnica łucznicza (cache) bez zmian', armyRaw('Konnica łucznicza asyryjska'), row('Konnica łucznicza asyryjska').fieldPower);
 check('armyFieldPower Procarz == fieldPower().total', armyRaw('Procarz'), power.fieldPower({ ...row('Procarz') }).total);

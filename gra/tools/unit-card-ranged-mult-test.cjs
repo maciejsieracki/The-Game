@@ -84,9 +84,9 @@ async function checkTooltipText() {
     const stats = await server.ssrLoadModule('/src/game/unit-card-stats.ts');
     const tip = await server.ssrLoadModule('/src/ui/hexContextTooltip.ts');
     const expectations = [
-      { name: 'Procarz', mult: 3, power: 16 },
-      // R-WEB-DATA-ARCHERS-HEALTH-20-DIST-EGYPT-6-Q1: zdrowie lucznika asyryjskiego 20 (bylo 16/19 mocy).
-      { name: 'Łucznik asyryjski', mult: 2, power: 21 },
+      // RANGEDHEALTH 2026-11-17: zdrowie Procarza 8 (moc 12); zdrowie lucznika asyryjskiego 10, dystans 4 (moc 16).
+      { name: 'Procarz', mult: 3, power: 12 },
+      { name: 'Łucznik asyryjski', mult: 2, power: 16 },
     ];
     for (const { name, mult, power } of expectations) {
       const unit = unitByName.get(name);
