@@ -22,9 +22,10 @@
 //!   [`refresh_fog`] dla fotela `ME()` (gra wola filtr po `refreshFog`, na tym samym stanie).
 //!
 //! Decyzje techniczne (raport `01-operator-r1.md`):
-//! * D-BR-1: `playerEverOwnedCityByOwner` (`main.ts:3042`, zbior per fotel) nie jest w
-//!   `PlayableState` (jest tylko `gracz_kiedys_mial_miasto` - jedna flaga), wiec podaje go wolajacy
-//!   (jak Z-FOG-1 dla `exploredByHuman`).
+//! * D-BR-1: `playerEverOwnedCityByOwner` (`main.ts:3042`, zbior per fotel) podaje wolajacy
+//!   (jak Z-FOG-1 dla `exploredByHuman`). Od R-RUSTPORT-P4-364-AWAITING-SEAT-R1 stan per fotel jest w
+//!   `PlayableState` (`gracz_kiedys_mial_miasto` dla fotela glownego + `player_ever_owned_city`), a
+//!   pelny zbior zwraca [`PlayableState::player_ever_owned_city_by_owner`]; API warstwy bez zmian.
 //! * D-BR-2: filtr terytorium czyta `fogOn` (`:15597`), NIE `useFogRender`: przy `fogOn = false` i
 //!   `revealAllLand = true` pin nie filtruje terytorium, choc `fog_active = true`. Dlatego
 //!   [`build_territory_layers`] bierze `fog_on`, a nie `fog_active` (odstepstwo od sygnatury w

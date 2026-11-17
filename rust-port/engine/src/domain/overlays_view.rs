@@ -133,7 +133,7 @@ use crate::domain::playable_movement::{
     occupied_for_move, player_stack_at, preview_path, unit_with_planning_stack_ruch,
     PlayableMoveModel,
 };
-use crate::domain::player::{is_awaiting_first_player_city, HumanSeats};
+use crate::domain::player::HumanSeats;
 use crate::domain::save_migrations::ARMY_STACK_LIMIT;
 use crate::domain::terrain::city_founding::p6_6b::cities::City;
 use crate::domain::terrain::{axial_distance, city_range_for_population};
@@ -411,18 +411,12 @@ fn is_me(state: &PlayableState, owner: PlayerId) -> bool {
     human_seats(state).is_some_and(|seats| seats.is_active_human(OwnerRef::Player(owner)))
 }
 
-/// Web `isAwaitingFirstPlayerCity(ownerId = ME())` (`main.ts:12882-12884`): flaga
-/// `graczKiedysMialMiasto` + miasta stanu (`player::is_awaiting_first_player_city`). Wolane po
+/// Web `isAwaitingFirstPlayerCity(ownerId = ME())` (`main.ts:12882-12884`): wpis fotela `owner` w
+/// `playerEverOwnedCityByOwner` + miasta stanu ([`PlayableState::is_awaiting_first_city`],
+/// R-RUSTPORT-P4-364-AWAITING-SEAT-R1: stan per fotel, nie jedna flaga fotela glownego). Wolane po
 /// bramce `isMe(u.ownerId)`, wiec `u.ownerId` == `ME()` - argument domyslny pinu.
 fn awaiting_first_city(state: &PlayableState, owner: PlayerId) -> bool {
-    is_awaiting_first_player_city(
-        state.gracz_kiedys_mial_miasto,
-        state
-            .cities
-            .iter()
-            .map(|city| OwnerRef::Player(city.owner_id)),
-        owner,
-    )
+    state.is_awaiting_first_city(owner)
 }
 
 /// Pole `overlays.reachable` dla zaznaczonej jednostki: web `syncPlayerUnitSelectionOnMap`
