@@ -1,3 +1,9 @@
+## ROBOCZA 0295087e -- 2026-11-17 -- FALA 801: Gracz zawsze niebieski, przeciwnik czerwony w KAZDEJ sciezce i roli bitwy (PLAYERBLUE) + minimapa bitwy wg strony gracza (MINIMAP) (testowa)
+
+- Kolor jest przypisany do gracza i przeciwnika, nie do atakujacego i broniacego: Szczegoly bitwy (endDetails1E), panel Obrona muru/garnizon (siegeHud1E), werdykt w podsumowaniu po bitwie (postBattleSummary), preset playtest i oblezenie z rola gracza; minimapa bitwy zbiera kolor przez helper minimapUnitColor (zachowanie bez zmian). Werdykt po bitwie traci zielen, jest niebieski/czerwony wg gracza
+- Weryfikacja: tsc 0; testy battle-player-always-blue, battle-minimap-side-colors, battle-side-colors-3d, tempo-minimap-brand, hp-display, damage-colors, map-field-battle, minimap-viewport-rect-follow zielone; zywy Chromium xvfb 12/12 w 2 rozdzielczosciach (1024x640, 1280x720) i 2 rolach; mutacje czerwienia; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO na zywo: werdykt po bitwie, endDetails1E i siegeHud1E dla obroncy-gracza, okno przed bitwa, zrzuty t0. Dlug Rust: REPIN palety stron. Pliki poza literalna allowlista (postBattleSummary.ts, oblezenie/main.ts) zaakceptowane
+
 ## ROBOCZA 1ce44d20 -- 2026-11-17 -- FALA 800: Zastap: wszyscy lucznicy narodowi (egipski, sumeryjski, nubijski, akadyjski, asyryjski) i Oszczepnik Estolica Inkow przechodza na Procarza; AI tez (UNIT-REPLACE-INCA) (testowa)
 
 - W oknie Zastap lucznicy narodowi (egipski, sumeryjski, nubijski, akadyjski, asyryjski) oraz Oszczepnik (Estolica) Inkow maja przejscie do Procarza za pelny koszt (gracz). AI awansuje nubijskiego, akadyjskiego i asyryjskiego na Procarza takze w tej samej epoce (waski wyjatek w ai-era-unit-promotion.ts). Egipski i sumeryjski: degradacja klasy Specjalna->Standardowa w Brazie zaakceptowana przez wlasciciela

@@ -4,7 +4,7 @@
  * do czasu podpięcia pod prawdziwą logikę auto-oblężenia.
  */
 import {
-  BATTLE_ENEMY_TEXT, BATTLE_FONT, BATTLE_FONT_TITLE, BATTLE_GOLD, BATTLE_PANEL_BG,
+  BATTLE_ENEMY_TEXT, BATTLE_FONT, BATTLE_FONT_TITLE, BATTLE_GOLD, BATTLE_PANEL_BG, BATTLE_PLAYER_TEXT,
   BATTLE_PANEL_BORDER, BATTLE_TEXT_DIM,
 } from './battleHudTheme';
 
@@ -21,6 +21,8 @@ export interface SiegeHudState {
   infantry: number;
   garrison: number;
   gateOpen: boolean;
+  /** true = gracz broni miasta (mur, garnizon = kolor gracza, niebieski). */
+  defenderIsPlayer?: boolean;
 }
 
 export interface SiegeHudCallbacks {
@@ -132,6 +134,9 @@ export function updateSiegeHud1E(state: SiegeHudState): void {
 function renderSiegeHud1E(st: SiegeHudState): void {
   if (!root) return;
   const isStorm = phase === 'storm';
+  // Kolor = gracz/przeciwnik, nie rola: obrońca-gracz = niebieski, obrońca-AI = czerwony.
+  const defColor = st.defenderIsPlayer ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT;
+  const defBarGrad = st.defenderIsPlayer ? 'linear-gradient(90deg,#2a4a8a,#3a6ad0)' : 'linear-gradient(90deg,#8a3a3a,#c05050)';
 
   const leftTitle = isStorm ? 'Punkty szturmu' : 'Integralno\u015B\u0107 mur\u00F3w';
   const leftBody = isStorm
@@ -142,25 +147,27 @@ function renderSiegeHud1E(st: SiegeHudState): void {
         Drabiny (wsch.) \u00B7 Wie\u017Ca obl\u0119\u017Cnicza
       </div>`
     : `<div style="padding:16px;">
-        <div style="font-family:${BATTLE_FONT_TITLE};font-size:36px;color:${BATTLE_ENEMY_TEXT};margin-bottom:14px;">${st.wallIntegrityPct}%</div>
+        <div style="font-family:${BATTLE_FONT_TITLE};font-size:36px;color:${defColor};margin-bottom:14px;">${st.wallIntegrityPct}%</div>
         <div style="height:12px;border-radius:6px;background:rgba(255,255,255,0.08);overflow:hidden;">
-          <div style="width:${Math.max(0, Math.min(100, st.wallIntegrityPct))}%;height:100%;background:linear-gradient(90deg,#8a3a3a,#c05050);"></div>
+          <div style="width:${Math.max(0, Math.min(100, st.wallIntegrityPct))}%;height:100%;background:${defBarGrad};"></div>
         </div>
         <div style="font-size:12px;color:${BATTLE_TEXT_DIM};margin-top:10px;line-height:1.6;">${esc(st.breachLabel)}${st.catapults <= 0 && !isStorm ? '<br>Mur nie niszczy si\u0119 sam — potrzebne katapulty.' : (st.wallDeltaPerTurn ? `<br>\u2212${st.wallDeltaPerTurn}% / tur\u0119` : '')}</div>
       </div>`;
 
   const rightTitle = isStorm ? 'Obrona muru' : 'Si\u0142y obl\u0119\u017Cnicze';
-  const rightBorder = isStorm ? 'rgba(200,64,64,0.35)' : BATTLE_PANEL_BORDER;
+  const rightBorder = isStorm
+    ? (st.defenderIsPlayer ? 'rgba(58,106,208,0.35)' : 'rgba(200,64,64,0.35)')
+    : BATTLE_PANEL_BORDER;
   const rightBody = isStorm
     ? `<div style="padding:16px;font-size:12px;color:${BATTLE_TEXT_DIM};line-height:1.8;">
-        <div style="display:flex;justify-content:space-between;"><span>Obro\u0144cy na murach</span><span style="color:${BATTLE_ENEMY_TEXT};">${oddzialyCountLabel(st.garrison)}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span>Obro\u0144cy na murach</span><span style="color:${defColor};">${oddzialyCountLabel(st.garrison)}</span></div>
         <div style="margin-top:10px;font-size:11px;border-top:1px solid rgba(255,255,255,0.06);padding-top:10px;">Szturm przez wy\u0142om omija bonus muru.</div>
       </div>`
     : `<div style="padding:14px 16px;font-size:13px;line-height:1.7;">
         <div>Katapulty \u00B7 <b style="color:${BATTLE_GOLD};">\u00D7${st.catapults}</b></div>
         <div>Tarany \u00B7 <b style="color:${BATTLE_GOLD};">\u00D7${st.rams}</b></div>
         <div>Piechota \u00B7 <b style="color:${BATTLE_GOLD};">\u00D7${st.infantry}</b></div>
-        <div style="margin-top:8px;font-size:12px;color:${BATTLE_ENEMY_TEXT};">Garnizon: ${st.garrison}</div>
+        <div style="margin-top:8px;font-size:12px;color:${defColor};">Garnizon: ${st.garrison}</div>
       </div>`;
 
   const panelBase =
@@ -173,7 +180,7 @@ function renderSiegeHud1E(st: SiegeHudState): void {
       ${leftBody}
     </div>
     <div data-siege-panel="right" style="position:absolute;width:236px;${panelBase}border:2px solid ${rightBorder};">
-      <div style="padding:12px 16px;border-bottom:1px solid rgba(200,64,64,0.15);font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:${isStorm ? BATTLE_ENEMY_TEXT : BATTLE_GOLD};">${rightTitle}</div>
+      <div style="padding:12px 16px;border-bottom:1px solid rgba(200,64,64,0.15);font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:${isStorm ? defColor : BATTLE_GOLD};">${rightTitle}</div>
       ${rightBody}
     </div>`;
   root.style.display = chromeVisible ? 'block' : 'none';
