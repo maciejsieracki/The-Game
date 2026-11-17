@@ -19,8 +19,8 @@
  *   9. Narodowi łucznicy Kamienia (egipski, sumeryjski) -> Procarz w Brązie (wpis w units.json).
  *  10. Ścieżka AI dla egipskiego i sumeryjskiego (te same reguły co gracz).
  *  11. R-WEB-UNIT-REPLACE-INCA-AND-NATIONAL-ARCHERS-TO-SLINGER-Q1 r2: nubijski, akadyjski, asyryjski
- *      (Brąz) i Oszczepnik (Estólica) (Inkowie) -> Procarz; mutacja kopii; AI nubijskiego (Brąz->Brąz)
- *      zapisany jako DECISION_REQUIRED (obecna reguła AI wymaga wzrostu epoki).
+ *      (Brąz) i Oszczepnik (Estólica) (Inkowie) -> Procarz; mutacja kopii; AI nubijskiego, akadyjskiego,
+ *      asyryjskiego (Brąz->Brąz) awansuje z pełnym kosztem (wyjątek same-epoch w ai-era-unit-promotion.ts).
  */
 
 const fs = require('fs');
@@ -199,11 +199,39 @@ console.log('11. Narodowi łucznicy Brązu (nubijski, akadyjski, asyryjski) i Os
     'Oszczepnik (Estólica) w Rzymie: Procarz tak, Procarz (Huaracoc) nie (nacja Inkowie)', JSON.stringify(estRome));
   // Procarz (Huaracoc) nie jest zamiennikiem Estólicy poza Inkami (gating nacji)
   check(!estRome.includes('Procarz (Huaracoc)'), 'Huaracoc nie wchodzi do listy dla nacji spoza Inków');
-  // AI (DECISION_REQUIRED): promoteAiUnitForEra wymaga WZROSTU epoki; Brąz->Brąz nie awansuje AI.
-  // Stan obecny zapisany tu jawnie; po decyzji właściciela (AI same-epoch) zmienić asercję.
+  // AI: wyjątek same-epoch dla narodowych łuczników Brązu -> Procarz (ai-era-unit-promotion.ts,
+  // odpowiedź właściciela 2026-11-17). Brąz->Brąz awansuje AI z pełnym kosztem; mutacja kopii -> brak.
   const aiNub = aiPromote('Łucznik nubijski', { ...baseCtx(2, 'Egipt'), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } }, 100);
-  check(!aiNub.ok && aiNub.typeId === 'Łucznik nubijski',
-    'DECISION_REQUIRED (AI same-epoch): AI nubijski w Brązie NIE awansuje wg obecnej reguły epoki (promoteAiUnitForEra)', JSON.stringify(aiNub));
+  check(aiNub.ok && aiNub.typeId === 'Procarz' && aiNub.treasury === 96 && aiNub.drewno === 75,
+    'AI nubijski w Brązie: Łucznik nubijski -> Procarz (same-epoch, pełny koszt 96/75)', JSON.stringify(aiNub));
+  const aiAkad = aiPromote('Łucznik akadyjski', { ...baseCtx(2, 'Sumer'), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } }, 100);
+  check(aiAkad.ok && aiAkad.typeId === 'Procarz' && aiAkad.treasury === 96 && aiAkad.drewno === 75,
+    'AI akadyjski w Brązie: Łucznik akadyjski -> Procarz (same-epoch, pełny koszt 96/75)', JSON.stringify(aiAkad));
+  const aiAsyr = aiPromote('Łucznik asyryjski', { ...baseCtx(2, 'Asyria'), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } }, 100);
+  check(aiAsyr.ok && aiAsyr.typeId === 'Procarz' && aiAsyr.treasury === 96 && aiAsyr.drewno === 75,
+    'AI asyryjski w Brązie: Łucznik asyryjski -> Procarz (same-epoch, pełny koszt 96/75)', JSON.stringify(aiAsyr));
+  const aiNubNoKoszary = aiPromote('Łucznik nubijski', { ...baseCtx(2, 'Egipt'), builtBuildingIds: [], empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } }, 100);
+  check(!aiNubNoKoszary.ok && aiNubNoKoszary.typeId === 'Łucznik nubijski',
+    'AI nubijski bez Koszar: brak zamiany (bramka budynku także dla AI)', JSON.stringify(aiNubNoKoszary));
+  const aiNubNoDrewno = aiPromote('Łucznik nubijski', { ...baseCtx(2, 'Egipt', 0), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 0, drewno: 0 } }, 100);
+  check(!aiNubNoDrewno.ok && aiNubNoDrewno.typeId === 'Łucznik nubijski' && aiNubNoDrewno.treasury === 100,
+    'AI nubijski bez drewna: brak zamiany, skarbiec nietknięty (bramka surowca)', JSON.stringify(aiNubNoDrewno));
+  {
+    const mutNubAi = unitsJson.map(u => (u.Jednostka === 'Łucznik nubijski' ? { ...u, 'Zastąp specjalnie': '—' } : u));
+    const defMut = id => mutNubAi.find(u => u.Jednostka === id);
+    const ctxM = { ...baseCtx(2, 'Egipt'), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } };
+    const unitM = { typeId: 'Łucznik nubijski', category: 'Standardowa', hp: 20, hpMax: 20, ruchLeft: 2, replaceUsedThisTurn: false };
+    const okM = promoteAiUnitForEra(unitM, {
+      oldDefinition: u => defMut(u.typeId),
+      candidates: u => availableReplacementsFor(u.typeId, { buildings: [], units: mutNubAi }, TECHS, ctxM).map(i => defMut(i.id)).filter(Boolean),
+      newestSameRole: (u, cands) => cands[0] || null,
+      epochNumber: e => EPOCH_NUM[e] ?? 0,
+      unitCost: () => 4, stockCost: () => ({ Drewno: 25 }), canPayStock: () => true, payStock: () => {},
+      currentTreasury: () => 100, setTreasury: () => {},
+      oldMaxHp: () => 20, newMaxHp: () => 20, category: () => 'Standardowa',
+    });
+    check(!okM && unitM.typeId === 'Łucznik nubijski', 'mutacja kopii (AI nubijski cofnięty do "—") -> AI nie awansuje');
+  }
   // AI dla Estólicy (Kamień -> Brąz): wzrost epoki, awans dozwolony
   const aiEst = aiPromote('Oszczepnik (Estólica)', { ...baseCtx(2, 'Inkowie'), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } }, 100);
   check(aiEst.ok, 'AI Oszczepnik (Estólica) Kamień -> Brąz: awans dozwolony (wzrost epoki)', JSON.stringify(aiEst));
