@@ -1,0 +1,8370 @@
+{
+  "runs": {
+    "atk-s1|auto": {
+      "cfg": {
+        "id": "atk-s1",
+        "role": "atk",
+        "seed": 1
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 27,
+          "r": 12
+        },
+        "hexEnemy": {
+          "q": 28,
+          "r": 12
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-27-12-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 26,
+        "atk": {
+          "total": 10,
+          "eliminated": 6,
+          "fled": 0,
+          "remaining": 4
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 7,
+          "fled": 0,
+          "remaining": 3
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (49>=38%).",
+          "=== PAT: brak postepu w walce -- rozstrzygniecie po morale armii ===",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s1|skip": {
+      "cfg": {
+        "id": "atk-s1",
+        "role": "atk",
+        "seed": 1
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 27,
+          "r": 12
+        },
+        "hexEnemy": {
+          "q": 28,
+          "r": 12
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-27-12-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 26,
+        "atk": {
+          "total": 10,
+          "eliminated": 6,
+          "fled": 0,
+          "remaining": 4
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 7,
+          "fled": 0,
+          "remaining": 3
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (49>=38%).",
+          "=== PAT: brak postepu w walce -- rozstrzygniecie po morale armii ===",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s2|auto": {
+      "cfg": {
+        "id": "atk-s2",
+        "role": "atk",
+        "seed": 2
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 22,
+          "r": 10
+        },
+        "hexEnemy": {
+          "q": 23,
+          "r": 10
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-22-10-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 20,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 4,
+          "fled": 0,
+          "remaining": 6
+        },
+        "endLogTail": [
+          "Wojownik trafia Wojownik za 3 (HP 10/22).",
+          "Wojownik chybia w Wojownik (74>=40%).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s2|skip": {
+      "cfg": {
+        "id": "atk-s2",
+        "role": "atk",
+        "seed": 2
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 22,
+          "r": 10
+        },
+        "hexEnemy": {
+          "q": 23,
+          "r": 10
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-22-10-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 20,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 4,
+          "fled": 0,
+          "remaining": 6
+        },
+        "endLogTail": [
+          "Wojownik trafia Wojownik za 3 (HP 10/22).",
+          "Wojownik chybia w Wojownik (74>=40%).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s3|auto": {
+      "cfg": {
+        "id": "atk-s3",
+        "role": "atk",
+        "seed": 3
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 29,
+          "r": 11
+        },
+        "hexEnemy": {
+          "q": 30,
+          "r": 11
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-29-11-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 18,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 1,
+          "fled": 0,
+          "remaining": 9
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (67>=42%).",
+          "Wojownik chybia w Wojownik (61>=40%).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s3|skip": {
+      "cfg": {
+        "id": "atk-s3",
+        "role": "atk",
+        "seed": 3
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 29,
+          "r": 11
+        },
+        "hexEnemy": {
+          "q": 30,
+          "r": 11
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-29-11-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 18,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 1,
+          "fled": 0,
+          "remaining": 9
+        },
+        "endLogTail": [
+          "Wojownik trafia Wojownik za 3 (HP 13/22).",
+          "Wojownik chybia w Wojownik (67>=42%).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s4|auto": {
+      "cfg": {
+        "id": "atk-s4",
+        "role": "atk",
+        "seed": 4
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 22,
+          "r": 11
+        },
+        "hexEnemy": {
+          "q": 23,
+          "r": 11
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-22-11-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 21,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 1,
+          "fled": 0,
+          "remaining": 9
+        },
+        "endLogTail": [
+          "Wojownik trafia Wojownik za 3 (HP 0/22).",
+          "  -> Wojownik wyeliminowany",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s4|skip": {
+      "cfg": {
+        "id": "atk-s4",
+        "role": "atk",
+        "seed": 4
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 22,
+          "r": 11
+        },
+        "hexEnemy": {
+          "q": 23,
+          "r": 11
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-22-11-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 22,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 1,
+          "fled": 0,
+          "remaining": 9
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (51>=40%).",
+          "Wojownik trafia Wojownik za 3 (HP 1/22).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s5|auto": {
+      "cfg": {
+        "id": "atk-s5",
+        "role": "atk",
+        "seed": 5
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 31,
+          "r": 10
+        },
+        "hexEnemy": {
+          "q": 32,
+          "r": 10
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-31-10-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 7,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "  -> Wojownik uciekl z pola bitwy",
+          "  -> Wojownik uciekl z pola bitwy",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 20,
+        "logPursued": 0
+      }
+    },
+    "atk-s5|skip": {
+      "cfg": {
+        "id": "atk-s5",
+        "role": "atk",
+        "seed": 5
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 31,
+          "r": 10
+        },
+        "hexEnemy": {
+          "q": 32,
+          "r": 10
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-31-10-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 7,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "  -> Wojownik uciekl z pola bitwy",
+          "  -> Wojownik uciekl z pola bitwy",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 20,
+        "logPursued": 0
+      }
+    },
+    "atk-s6|auto": {
+      "cfg": {
+        "id": "atk-s6",
+        "role": "atk",
+        "seed": 6
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 12,
+          "r": 11
+        },
+        "hexEnemy": {
+          "q": 13,
+          "r": 11
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-12-11-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 18,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 4,
+          "fled": 0,
+          "remaining": 6
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (56>=40%).",
+          "Wojownik chybia w Wojownik (44>=40%).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s6|skip": {
+      "cfg": {
+        "id": "atk-s6",
+        "role": "atk",
+        "seed": 6
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 12,
+          "r": 11
+        },
+        "hexEnemy": {
+          "q": 13,
+          "r": 11
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-12-11-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 18,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 4,
+          "fled": 0,
+          "remaining": 6
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (56>=40%).",
+          "Wojownik chybia w Wojownik (44>=40%).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s7|auto": {
+      "cfg": {
+        "id": "atk-s7",
+        "role": "atk",
+        "seed": 7
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 28,
+          "r": 10
+        },
+        "hexEnemy": {
+          "q": 29,
+          "r": 10
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-28-10-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 17,
+        "atk": {
+          "total": 10,
+          "eliminated": 1,
+          "fled": 0,
+          "remaining": 9
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "  -> Wojownik wyeliminowany",
+          "  -> Wojownik uciekl z pola bitwy",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 1,
+        "logPursued": 0
+      }
+    },
+    "atk-s7|skip": {
+      "cfg": {
+        "id": "atk-s7",
+        "role": "atk",
+        "seed": 7
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 28,
+          "r": 10
+        },
+        "hexEnemy": {
+          "q": 29,
+          "r": 10
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-28-10-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 17,
+        "atk": {
+          "total": 10,
+          "eliminated": 1,
+          "fled": 0,
+          "remaining": 9
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "Wojownik trafia Wojownik [FLANKA -15% obrony] za 3 (HP 13/22).",
+          "  -> Wojownik uciekl z pola bitwy",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 1,
+        "logPursued": 0
+      }
+    },
+    "atk-s8|auto": {
+      "cfg": {
+        "id": "atk-s8",
+        "role": "atk",
+        "seed": 8
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 41,
+          "r": 11
+        },
+        "hexEnemy": {
+          "q": 42,
+          "r": 11
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-41-11-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 20,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 1,
+          "fled": 0,
+          "remaining": 9
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (43>=38%).",
+          "Wojownik chybia w Wojownik (89>=38.9%).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s8|skip": {
+      "cfg": {
+        "id": "atk-s8",
+        "role": "atk",
+        "seed": 8
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 41,
+          "r": 11
+        },
+        "hexEnemy": {
+          "q": 42,
+          "r": 11
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-41-11-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 20,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 1,
+          "fled": 0,
+          "remaining": 9
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (43>=38%).",
+          "Wojownik chybia w Wojownik (89>=38.9%).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s9|auto": {
+      "cfg": {
+        "id": "atk-s9",
+        "role": "atk",
+        "seed": 9
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 14,
+          "r": 11
+        },
+        "hexEnemy": {
+          "q": 15,
+          "r": 11
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-14-11-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 29,
+        "atk": {
+          "total": 10,
+          "eliminated": 5,
+          "fled": 0,
+          "remaining": 5
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 7,
+          "fled": 0,
+          "remaining": 3
+        },
+        "endLogTail": [
+          "Wojownik trafia Wojownik za 3 (HP 2/22).",
+          "=== PAT: brak postepu w walce -- rozstrzygniecie po morale armii ===",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s9|skip": {
+      "cfg": {
+        "id": "atk-s9",
+        "role": "atk",
+        "seed": 9
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 14,
+          "r": 11
+        },
+        "hexEnemy": {
+          "q": 15,
+          "r": 11
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-14-11-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 29,
+        "atk": {
+          "total": 10,
+          "eliminated": 5,
+          "fled": 0,
+          "remaining": 5
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 7,
+          "fled": 0,
+          "remaining": 3
+        },
+        "endLogTail": [
+          "  -> Wojownik wyeliminowany",
+          "=== PAT: brak postepu w walce -- rozstrzygniecie po morale armii ===",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s10|auto": {
+      "cfg": {
+        "id": "atk-s10",
+        "role": "atk",
+        "seed": 10
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 23,
+          "r": 11
+        },
+        "hexEnemy": {
+          "q": 24,
+          "r": 11
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-23-11-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 26,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 4,
+          "fled": 0,
+          "remaining": 6
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (90>=38%).",
+          "Wojownik chybia w Wojownik (69>=38.9%).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s10|skip": {
+      "cfg": {
+        "id": "atk-s10",
+        "role": "atk",
+        "seed": 10
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 23,
+          "r": 11
+        },
+        "hexEnemy": {
+          "q": 24,
+          "r": 11
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-23-11-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 28,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 5,
+          "fled": 0,
+          "remaining": 5
+        },
+        "endLogTail": [
+          "Wojownik trafia Wojownik [FLANKA -15% obrony] za 3 (HP 0/22).",
+          "  -> Wojownik wyeliminowany",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s11|auto": {
+      "cfg": {
+        "id": "atk-s11",
+        "role": "atk",
+        "seed": 11
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 18,
+          "r": 7
+        },
+        "hexEnemy": {
+          "q": 19,
+          "r": 7
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-18-7-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 18,
+        "atk": {
+          "total": 10,
+          "eliminated": 1,
+          "fled": 0,
+          "remaining": 9
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (54>=42.6%).",
+          "Wojownik chybia w Wojownik (70>=41.2%).",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s11|skip": {
+      "cfg": {
+        "id": "atk-s11",
+        "role": "atk",
+        "seed": 11
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 18,
+          "r": 7
+        },
+        "hexEnemy": {
+          "q": 19,
+          "r": 7
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-18-7-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 18,
+        "atk": {
+          "total": 10,
+          "eliminated": 1,
+          "fled": 0,
+          "remaining": 9
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "  -> Wojownik wyeliminowany",
+          "Wojownik chybia w Wojownik (92>=41.2%).",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s12|auto": {
+      "cfg": {
+        "id": "atk-s12",
+        "role": "atk",
+        "seed": 12
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 25,
+          "r": 10
+        },
+        "hexEnemy": {
+          "q": 26,
+          "r": 10
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-25-10-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 22,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 5,
+          "fled": 0,
+          "remaining": 5
+        },
+        "endLogTail": [
+          "  -> Wojownik wyeliminowany",
+          "Wojownik chybia w Wojownik (39>=37%).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s12|skip": {
+      "cfg": {
+        "id": "atk-s12",
+        "role": "atk",
+        "seed": 12
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 25,
+          "r": 10
+        },
+        "hexEnemy": {
+          "q": 26,
+          "r": 10
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-25-10-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 22,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 5,
+          "fled": 0,
+          "remaining": 5
+        },
+        "endLogTail": [
+          "  -> Wojownik wyeliminowany",
+          "Wojownik chybia w Wojownik (39>=37%).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s13|auto": {
+      "cfg": {
+        "id": "atk-s13",
+        "role": "atk",
+        "seed": 13
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 16,
+          "r": 13
+        },
+        "hexEnemy": {
+          "q": 17,
+          "r": 13
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-16-13-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 20,
+        "atk": {
+          "total": 10,
+          "eliminated": 5,
+          "fled": 0,
+          "remaining": 5
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (54>=40.6%).",
+          "  -> Wojownik uciekl z pola bitwy",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 1,
+        "logPursued": 0
+      }
+    },
+    "atk-s13|skip": {
+      "cfg": {
+        "id": "atk-s13",
+        "role": "atk",
+        "seed": 13
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 16,
+          "r": 13
+        },
+        "hexEnemy": {
+          "q": 17,
+          "r": 13
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-16-13-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 20,
+        "atk": {
+          "total": 10,
+          "eliminated": 5,
+          "fled": 0,
+          "remaining": 5
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (54>=40.6%).",
+          "  -> Wojownik uciekl z pola bitwy",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 1,
+        "logPursued": 0
+      }
+    },
+    "atk-s14|auto": {
+      "cfg": {
+        "id": "atk-s14",
+        "role": "atk",
+        "seed": 14
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 19,
+          "r": 12
+        },
+        "hexEnemy": {
+          "q": 20,
+          "r": 12
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-19-12-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 20,
+        "atk": {
+          "total": 10,
+          "eliminated": 4,
+          "fled": 0,
+          "remaining": 6
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "  -> Wojownik uciekl z pola bitwy",
+          "  -> Wojownik uciekl z pola bitwy",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 2,
+        "logPursued": 0
+      }
+    },
+    "atk-s14|skip": {
+      "cfg": {
+        "id": "atk-s14",
+        "role": "atk",
+        "seed": 14
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 19,
+          "r": 12
+        },
+        "hexEnemy": {
+          "q": 20,
+          "r": 12
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-19-12-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 20,
+        "atk": {
+          "total": 10,
+          "eliminated": 4,
+          "fled": 0,
+          "remaining": 6
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "  -> Wojownik uciekl z pola bitwy",
+          "  -> Wojownik uciekl z pola bitwy",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 2,
+        "logPursued": 0
+      }
+    },
+    "atk-s15|auto": {
+      "cfg": {
+        "id": "atk-s15",
+        "role": "atk",
+        "seed": 15
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 28,
+          "r": 9
+        },
+        "hexEnemy": {
+          "q": 29,
+          "r": 9
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-28-9-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 20,
+        "atk": {
+          "total": 10,
+          "eliminated": 6,
+          "fled": 0,
+          "remaining": 4
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (61>=42.6%).",
+          "Wojownik chybia w Wojownik (80>=42.6%).",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s15|skip": {
+      "cfg": {
+        "id": "atk-s15",
+        "role": "atk",
+        "seed": 15
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 28,
+          "r": 9
+        },
+        "hexEnemy": {
+          "q": 29,
+          "r": 9
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-28-9-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 20,
+        "atk": {
+          "total": 10,
+          "eliminated": 6,
+          "fled": 0,
+          "remaining": 4
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (61>=42.6%).",
+          "Wojownik chybia w Wojownik (80>=42.6%).",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s16|auto": {
+      "cfg": {
+        "id": "atk-s16",
+        "role": "atk",
+        "seed": 16
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 13,
+          "r": 11
+        },
+        "hexEnemy": {
+          "q": 14,
+          "r": 11
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-13-11-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 22,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 4,
+          "fled": 0,
+          "remaining": 6
+        },
+        "endLogTail": [
+          "  -> Wojownik wyeliminowany",
+          "Wojownik trafia Wojownik za 3 (HP 2/22).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s16|skip": {
+      "cfg": {
+        "id": "atk-s16",
+        "role": "atk",
+        "seed": 16
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 13,
+          "r": 11
+        },
+        "hexEnemy": {
+          "q": 14,
+          "r": 11
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-13-11-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 22,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 4,
+          "fled": 0,
+          "remaining": 6
+        },
+        "endLogTail": [
+          "Wojownik trafia Wojownik za 3 (HP 0/22).",
+          "  -> Wojownik wyeliminowany",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s17|auto": {
+      "cfg": {
+        "id": "atk-s17",
+        "role": "atk",
+        "seed": 17
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 18,
+          "r": 10
+        },
+        "hexEnemy": {
+          "q": 19,
+          "r": 10
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-18-10-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 23,
+        "atk": {
+          "total": 10,
+          "eliminated": 4,
+          "fled": 0,
+          "remaining": 6
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (60>=41.2%).",
+          "  -> Wojownik uciekl z pola bitwy",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 1,
+        "logPursued": 0
+      }
+    },
+    "atk-s17|skip": {
+      "cfg": {
+        "id": "atk-s17",
+        "role": "atk",
+        "seed": 17
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 18,
+          "r": 10
+        },
+        "hexEnemy": {
+          "q": 19,
+          "r": 10
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-18-10-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 23,
+        "atk": {
+          "total": 10,
+          "eliminated": 4,
+          "fled": 0,
+          "remaining": 6
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (60>=41.2%).",
+          "  -> Wojownik uciekl z pola bitwy",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 1,
+        "logPursued": 0
+      }
+    },
+    "atk-s18|auto": {
+      "cfg": {
+        "id": "atk-s18",
+        "role": "atk",
+        "seed": 18
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 27,
+          "r": 13
+        },
+        "hexEnemy": {
+          "q": 28,
+          "r": 13
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-27-13-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 28,
+        "atk": {
+          "total": 10,
+          "eliminated": 6,
+          "fled": 0,
+          "remaining": 4
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "Wojownik trafia Wojownik za 3 (HP 8/22).",
+          "Wojownik chybia w Wojownik (76>=43.2%).",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s18|skip": {
+      "cfg": {
+        "id": "atk-s18",
+        "role": "atk",
+        "seed": 18
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 27,
+          "r": 13
+        },
+        "hexEnemy": {
+          "q": 28,
+          "r": 13
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-27-13-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 28,
+        "atk": {
+          "total": 10,
+          "eliminated": 6,
+          "fled": 0,
+          "remaining": 4
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "Wojownik trafia Wojownik za 3 (HP 8/22).",
+          "Wojownik chybia w Wojownik (76>=43.2%).",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s19|auto": {
+      "cfg": {
+        "id": "atk-s19",
+        "role": "atk",
+        "seed": 19
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 20,
+          "r": 10
+        },
+        "hexEnemy": {
+          "q": 21,
+          "r": 10
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-20-10-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 18,
+        "atk": {
+          "total": 10,
+          "eliminated": 5,
+          "fled": 0,
+          "remaining": 5
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "  -> Wojownik uciekl z pola bitwy",
+          "  -> Wojownik uciekl z pola bitwy",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 2,
+        "logPursued": 0
+      }
+    },
+    "atk-s19|skip": {
+      "cfg": {
+        "id": "atk-s19",
+        "role": "atk",
+        "seed": 19
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 20,
+          "r": 10
+        },
+        "hexEnemy": {
+          "q": 21,
+          "r": 10
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-20-10-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 18,
+        "atk": {
+          "total": 10,
+          "eliminated": 5,
+          "fled": 0,
+          "remaining": 5
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "endLogTail": [
+          "  -> Wojownik uciekl z pola bitwy",
+          "  -> Wojownik uciekl z pola bitwy",
+          "=== Koniec bitwy: zwyciestwo ATAKUJACEGO ==="
+        ],
+        "logRouted": 2,
+        "logPursued": 0
+      }
+    },
+    "atk-s20|auto": {
+      "cfg": {
+        "id": "atk-s20",
+        "role": "atk",
+        "seed": 20
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 17,
+          "r": 13
+        },
+        "hexEnemy": {
+          "q": 18,
+          "r": 13
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-17-13-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 23,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 3,
+          "fled": 0,
+          "remaining": 7
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (66>=40%).",
+          "Wojownik trafia Wojownik za 3 (HP 2/22).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    },
+    "atk-s20|skip": {
+      "cfg": {
+        "id": "atk-s20",
+        "role": "atk",
+        "seed": 20
+      },
+      "mode": "skip",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 17,
+          "r": 13
+        },
+        "hexEnemy": {
+          "q": 18,
+          "r": 13
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectedByClick": "civtest-0-17-13-14",
+      "selectionMethod": "klik",
+      "preBattle": {
+        "open": true,
+        "youRole": "RZYMIANIE · ATAKUJĄCY — TY | Kamillus",
+        "foeRole": "BARBARZYŃCY · OBROŃCA | Skład (10)",
+        "playerIsAtk": false,
+        "rosterShown": [
+          {
+            "cls": "pb-roster pb-you pb-l",
+            "shown": 8,
+            "more": "+2 więcej…"
+          },
+          {
+            "cls": "pb-roster pb-foe pb-r",
+            "shown": 8,
+            "more": "+2 więcej…"
+          }
+        ],
+        "deployBtn": true
+      },
+      "mapCallbacksDropped": 1,
+      "afterDeployClick": {
+        "deployMode": false,
+        "deployPhase": false,
+        "manual": false,
+        "manualCommanderGate": true,
+        "awaitingOrders": false,
+        "roundNo": 1,
+        "toolbarStart": false,
+        "atk": 10,
+        "def": 10,
+        "playerHasCommander": false
+      },
+      "probe": {
+        "atkCount": 10,
+        "defCount": 10,
+        "atkNames": {
+          "Wojownik": 10
+        },
+        "defNames": {
+          "Wojownik": 10
+        },
+        "sampleAtk": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ],
+        "sampleDef": [
+          {
+            "nazwa": "Wojownik",
+            "hp": 22,
+            "maxHp": 22,
+            "kategoria": "miecznik",
+            "typeId": null
+          }
+        ]
+      },
+      "toolbarFound": false,
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 220,
+        "defHp": 220,
+        "deployPhase": false
+      },
+      "actions": {
+        "startClick": false,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "klik-ui",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 23,
+        "atk": {
+          "total": 10,
+          "eliminated": 10,
+          "fled": 0,
+          "remaining": 0
+        },
+        "def": {
+          "total": 10,
+          "eliminated": 3,
+          "fled": 0,
+          "remaining": 7
+        },
+        "endLogTail": [
+          "Wojownik chybia w Wojownik (66>=40%).",
+          "Wojownik trafia Wojownik za 3 (HP 2/22).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "logRouted": 0,
+        "logPursued": 0
+      }
+    }
+  },
+  "meta": {
+    "chromium": "/usr/bin/chromium",
+    "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/wojdist",
+    "runda": 4,
+    "path": "playtest=mapa + __civTest.addUnit(typeId=Wojownik) x10 vs x10, bez presetu i bez przepisywania statystyk"
+  }
+}
