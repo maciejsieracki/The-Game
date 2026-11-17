@@ -48,7 +48,7 @@ Zaufanie jest liczone w zakresie **0–100** dla każdego składnika zdarzenia.
 | Pakt o nieagresji | +2 | jeden z dwóch wyłącznych tierów pokojowych (z sojuszem) |
 | Sojusz | +3 | wyłączny z paktem (jeden tier); nie wyklucza handlu, który dodaje się osobno |
 | Wspólny wróg | +1 | |
-| Dobra wola po wymianie | +1 | przez 3 tury (`dobra_wola_tur`); patrz rozbieżność w Historii |
+| Dobra wola po wymianie | +1 | przez 3 tury; patrz rozbieżność w Historii |
 | Sąsiedztwo granicą, Kamień | −3 | wspólna granica lądowa; wstrzymane w karencji po pokoju lub rozejmie |
 | Sąsiedztwo granicą, Brąz | −4 | wyższa epoka pary; wstrzymane w karencji po pokoju lub rozejmie |
 | Sąsiedztwo granicą, Żelazo | −5 | wyższa epoka pary; wstrzymane w karencji po pokoju lub rozejmie |
@@ -156,4 +156,4 @@ Runda 2 (orkiestrator, DECYZJA WŁAŚCICIELA 2026-11-13, wdrożona w kodzie w 47
 
 Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Runda 2 (obrona Operatora, zarzuty 1–3): usunięto z opisu martwe źródła (handel +2, dar +6, aktywny pakt +1) i poprawiono zdanie o sumowaniu tierów; kod: `diplomacy.ts` case 'handel' i 'dar' (dZ = 0), `computeTickZaufanieDelta` (switch tieru: sojusz/nap). Sekcja „Zasady z decyzji właściciela 2026-11-13 (wdrożone)” wynika z DECYZJI WŁAŚCICIELA 2026-11-13.
 
-Rozbieżność do wyjaśnienia: dodatek podawał czas dobrej woli 5 tur, a `diplomacy.json` (`dobra_wola_tur`) ma 3. Hasło podaje 3 (wartość z kodu).
+Rozbieżność do wyjaśnienia: dodatek podawał czas dobrej woli 5 tur, dane dyplomacji (czas trwania dobrej woli) mają 3. Hasło podaje 3 (wartość z kodu).
