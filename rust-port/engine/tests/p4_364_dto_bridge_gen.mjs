@@ -432,5 +432,7 @@ function buildScenarios() {
     { name: 'me1_reveal_awaiting', ...common, me: 1, cities: onlyMe0, fogOn: true, revealAllLand: true, everOwned: [0] },
     { name: 'mgla_wylaczona_reveal', ...common, me: 0, cities: bothCities, fogOn: false, revealAllLand: true, everOwned: [0, 1] },
     { name: 'mgla_wylaczona_awaiting', ...common, me: 1, cities: onlyMe0, fogOn: false, revealAllLand: false, everOwned: [0] },
+    // Obrona r1 (zarzut 7b): fogOn=false + revealAllLand=true + awaiting -> mgla renderu aktywna, klucze rzek obecne, terytorium bez filtra (`:15597`).
+    { name: 'mgla_wylaczona_reveal_awaiting', ...common, me: 1, cities: onlyMe0, fogOn: false, revealAllLand: true, everOwned: [0] },
   ];
 }

@@ -424,7 +424,7 @@ fn assert_ports_agree(
 #[test]
 fn p4_364_vectors_match_pinned_web() {
     let all = cases();
-    assert_eq!(all.len(), 11, "liczba przypadkow wektorow");
+    assert_eq!(all.len(), 12, "liczba przypadkow wektorow");
     for case in &all {
         let name = case["name"].as_str().expect("name");
         let sc = scenario(&case["scenario"]);
@@ -522,6 +522,18 @@ fn p4_364_vectors_cover_required_branches() {
     assert_eq!(by_name("mgla_wylaczona_awaiting")["fogActive"], false);
     assert_eq!(by_name("mgla_wylaczona_awaiting")["setFogArgs"], 2);
     assert!(by_name("mgla_wylaczona_awaiting")["riverRevealKeys"].is_null());
+    // Obrona r1 (zarzut 7b): mgla gry wylaczona, revealAllLand wlaczone, fotel czeka na miasto.
+    let w = by_name("mgla_wylaczona_reveal_awaiting");
+    assert_eq!(w["fogActive"], true);
+    assert_eq!(w["landReveal"], true);
+    assert_eq!(w["awaiting"], true);
+    assert!(w["riverRevealKeys"]
+        .as_array()
+        .is_some_and(|a| !a.is_empty()));
+    assert_eq!(
+        w["riverRevealKeys"],
+        by_name("me1_rzeki_awaiting")["riverRevealKeys"]
+    );
     assert_ne!(
         by_name("me0_mgla_on")["territory"],
         by_name("me1_mgla_on")["territory"]
