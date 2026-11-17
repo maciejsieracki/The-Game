@@ -90,7 +90,7 @@ async function runBattle(BattleScene, { n, gap, manual, maxRounds = 6, switchToA
     _counterBudget: { beginTurn() {}, canCounter() { return true; }, spend() {}, consume() {} },
     _generalSettings: { blockadeActive: false, blockadeCol: null },
     _groupMeta: new Map(), _groups: new Map(), _selectedUnits: new Set(),
-    _queuedOrderUnitIds: new Set(), log: [], vTimers: [], engaged: new Set(), routedUnits: [],
+    _queuedOrderUnitIds: new Set(), _manualArbOwner: new Map(), log: [], vTimers: [], engaged: new Set(), routedUnits: [],
     _autoBatchResolutions: [], _autoBatchPending: 0, _autoBatchToken: 0, _autoBatchPhase: null,
     occByKey: new Map([...atk, ...def].map(u => [`${u.q},${u.r}`, u])),
     terrainMap: { passable: () => true, moveCost: () => 1, at: () => 0 },

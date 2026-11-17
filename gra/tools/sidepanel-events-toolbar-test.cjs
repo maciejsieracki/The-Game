@@ -92,7 +92,7 @@ fs.writeFileSync(
 const stubBrandAssetsPlugin = {
   name: 'stub-brand-assets',
   setup(build) {
-    build.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: STUB_FILE }));
+    build.onResolve({ filter: /brandAssets$/ }, () => ({ path: STUB_FILE }));
   },
 };
 
