@@ -76,12 +76,12 @@ function partA(T, label) {
   const maxP = list => Math.max(...list.map(power));
   const k1 = T.strongestRangedUnitForEra(ul, 1, null);
   assert(k1 && power(k1) === maxP(inEra(gen, 'Kamień')), `${label}era Kamien (generyczna): najmocniejszy = ${k1 && k1.Jednostka} (moc ${k1 && power(k1)})`);
-  assert(k1.Jednostka === 'Oszczepnik', `${label}era Kamien: Oszczepnik (missileAttack 4; Lucznik 3)`);
+  assert(k1.Jednostka === 'Łucznik', `${label}era Kamien: Łucznik (missileAttack 4 = remis z Oszczepnikiem 4; remis rozstrzyga zasieg 3 > 2) -- decyzja wlasciciela 2026-11-17: Łucznik 4 / egipski 5 / nubijski 6, dane silnika i kart identyczne`);
   const b2 = T.strongestRangedUnitForEra(ul, 2, null);
   assert(b2 && power(b2) === maxP(inEra(gen, 'Brąz')), `${label}era Braz (generyczna): najmocniejszy = ${b2 && b2.Jednostka}`);
   assert(b2.Jednostka === 'Procarz', `${label}era Braz: remis mocy 4 rozstrzyga zasieg => Procarz (zasieg 4)`);
   const eg1 = T.strongestRangedUnitForEra(ul, 1, 'egipt');
-  assert(eg1.Jednostka === 'Łucznik egipski' && power(eg1) === 6, `${label}Egipt, Kamien: Lucznik egipski (moc 6) -- jednostka narodowa tylko dla swojej nacji`);
+  assert(eg1.Jednostka === 'Łucznik egipski' && power(eg1) === 5, `${label}Egipt, Kamien: Lucznik egipski (moc 5) -- decyzja wlasciciela 2026-11-17 (Łucznik 4 / egipski 5 / nubijski 6); jednostka narodowa tylko dla swojej nacji`);
   const sum1 = T.strongestRangedUnitForEra(ul, 1, 'sumer');
   assert(sum1.Jednostka === 'Łucznik sumeryjski', `${label}Sumer, Kamien: remis mocy 4 z Oszczepnikiem rozstrzyga zasieg (Lucznik sumeryjski, zasieg 4)`);
   const eg3 = T.strongestRangedUnitForEra(ul, 3, 'egipt');
@@ -92,7 +92,7 @@ function partA(T, label) {
   assert(!dyst.includes(byName('Katapulta')) && T.strongestRangedUnitForEra(noOther, 2, null) === null, `${label}machiny oblezenicze/jazda/piechota nie sa strzelcem wiezyczki`);
 
   // --- zasieg i cel ---
-  assert(T.towerRangeFor(k1, minR) === 2, `${label}zasieg wiezyczki (Oszczepnik, zasieg 2) = 2`);
+  assert(T.towerRangeFor(k1, minR) === 3, `${label}zasieg wiezyczki (Łucznik, zasieg 3 -- wybrany przez remis mocy 4) = 3`);
   assert(T.towerRangeFor(b2, minR) === 4, `${label}zasieg wiezyczki (Procarz, zasieg 4) = 4`);
   assert(T.towerRangeFor({ 'Zasięg ataku (hex)': 1 }, minR) === 2 && T.towerRangeFor(null, minR) === 2, `${label}zasieg nie mniejszy niz 2`);
   const tw = { q: 40, r: 86 };
