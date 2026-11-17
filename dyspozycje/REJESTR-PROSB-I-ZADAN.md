@@ -10679,3 +10679,11 @@ Właściciel: koszt pokoju znacząco podwyższyć tak, by na starcie wojny zwyci
 - main d44d5b982, ROBOCZA MD5 2bff7522 (GitHub Raw = manifest), sidecary audio 3/3 zgodne.
 - Testy: improvements-list-order 11/11 (mutacja farma↔irygacja → FAIL), logic 213/213, tsc bez nowych błędów (180 bazowych), build OK. NIE ZMIERZONO: żywy Chromium (zrzut kolejności listy).
 - Do właściciela: sprawdzić w grze kolejność listy ulepszeń (panel budowy i podpowiedź hexa).
+
+### FALA 792 — ARCH456 (2026-11-17)
+- Wdrożone na ROBOCZĄ: **R-WEB-DATA-ARCHERS-RANGED-ATTACK-4-5-6-ALIGN-Q1** (r2 FC PASS-WITH-NOTES 0bf2244ef). Atak dystansowy (silnik `missileAttack` i karta „Atak dystansowy”): Łucznik 4 / egipski 5 / nubijski 6, dane silnika = karty.
+- main 3b1b123f2, ROBOCZA MD5 e2ba27c6 (GitHub Raw = manifest), sidecary audio 3/3 zgodne.
+- Testy: archers-health-dist-data 10/0, city-wall-towers 59/0 (r2 naprawa), ranged-damage-mult PASS, logic 213/213, tsc 0, build OK. NIE ZMIERZONO: symulacja walk łuczników, żywa gra.
+- Skutek uboczny (pytanie 3 do właściciela, CZEKA NA ODPOWIEDŹ A/B): w Kamieniu wieżyczka murów generycznej cywilizacji strzela Łucznikiem (zasięg 3) zamiast Oszczepnikiem (zasięg 2) — remis siły 4, remis rozstrzyga zasięg.
+- Pozostali łucznicy do raportu właścicielowi (bez zmian): sumeryjski 4/4, akadyjski 6/5, asyryjski 6/4, Konnica łucznicza asyryjska 12/12, Procarz 4/4, Oszczepnik 4/4.
+- PEACEDECAY r1 FC FAIL (bc67097a9) i NNSDIAG r1 FC FAIL (85e190d12) — CZEKAJĄ NA ODPOWIEDŹ ABC właściciela (pytania 1 i 4 w czacie), potem runda 2.
