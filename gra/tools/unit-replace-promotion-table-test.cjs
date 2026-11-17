@@ -45,7 +45,13 @@ const BLANK = new Set(['', '-', '—']);
 // Procarz (Brąz Standardowa) -- ta sama epoka, niższa klasa (Specjalna -> Standardowa). To JEDYNE wejścia,
 // które nie są awansem epoki/klasy; obsługiwane przez SAME_EPOCH_ARCHER_DOWNGRADE (punkt 3 niżej).
 // Oszczepnik (Estólica) (Inkowie, Kamień, Distance) = dystansowa jednostka Inków -> Procarz/Procarz (Huaracoc).
+// Oszczepnik (generyczny) i Oszczepnik Zulu (Izijula) -> Łucznik: decyzja właściciela 2026-11-17
+// (łańcuch Oszczepnik -> Łucznik -> Procarz; oszczepnik NIE idzie bezpośrednio do procarza).
+// Krawędź leży w tej samej epoce (Kamień) i, dla Zulu, w niższej klasie (Specjalna -> Standardowa):
+// dopuszczona wyłącznie przez JAVELIN_TO_ARCHER_SOURCES (punkt 3).
 const ARCHER_EXCEPTIONS = {
+  'Oszczepnik': ['Łucznik'],
+  'Oszczepnik Zulu (Izijula)': ['Łucznik'],
   'Łucznik': ['Procarz', 'Procarz (Huaracoc)'],
   'Łucznik egipski': ['Procarz'],
   'Łucznik sumeryjski': ['Procarz'],
@@ -55,6 +61,7 @@ const ARCHER_EXCEPTIONS = {
   'Oszczepnik (Estólica)': ['Procarz', 'Procarz (Huaracoc)'],
 };
 const SAME_EPOCH_ARCHER_DOWNGRADE = new Set(['Łucznik nubijski', 'Łucznik akadyjski', 'Łucznik asyryjski']);
+const JAVELIN_TO_ARCHER_SOURCES = new Set(['Oszczepnik', 'Oszczepnik Zulu (Izijula)']);
 const exceptionTargets = new Set(Object.values(ARCHER_EXCEPTIONS).flat());
 
 const byName = new Map(units.map(u => [String(u.Jednostka).trim(), u]));
@@ -99,7 +106,8 @@ for (const src of units) {
     const higher = rt.epoch > rs.epoch || (rt.epoch === rs.epoch && rt.cls > rs.cls);
     // Jedyny dozwolony wyjątek: narodowy łucznik Brązu -> Procarz (ta sama epoka, niższa klasa), decyzja właściciela 2026-11-17.
     const sameEpochArcherOk = SAME_EPOCH_ARCHER_DOWNGRADE.has(srcName) && tName === 'Procarz';
-    if (!higher && !sameEpochArcherOk) fail(`${srcName} -> ${tName}: cel nie jest wyższy (epoka/klasa ${rs.epoch}/${rs.cls} -> ${rt.epoch}/${rt.cls})`);
+    const javelinToArcher = JAVELIN_TO_ARCHER_SOURCES.has(srcName) && tName === 'Łucznik';
+    if (!higher && !sameEpochArcherOk && !javelinToArcher) fail(`${srcName} -> ${tName}: cel nie jest wyższy (epoka/klasa ${rs.epoch}/${rs.cls} -> ${rt.epoch}/${rt.cls})`);
 
     const sn = String(src.Nacja ?? '').trim(), tn = String(tgt.Nacja ?? '').trim();
     if (sn && tn && sn !== tn) fail(`${srcName} (${sn}) -> ${tName} (${tn}): różne nacje`);
@@ -187,7 +195,9 @@ const EXPECTED_TABLE = {
     "Łucznik nubijski": "Procarz",
     "Łucznik akadyjski": "Procarz",
     "Łucznik asyryjski": "Procarz",
-    "Oszczepnik (Estólica)": "Procarz/Procarz (Huaracoc)"
+    "Oszczepnik (Estólica)": "Procarz/Procarz (Huaracoc)",
+  "Oszczepnik": "Łucznik",
+  "Oszczepnik Zulu (Izijula)": "Łucznik"
   };
 {
   const actual = {};

@@ -237,6 +237,17 @@ console.log('11. Narodowi łucznicy Brązu (nubijski, akadyjski, asyryjski) i Os
   check(aiEst.ok, 'AI Oszczepnik (Estólica) Kamień -> Brąz: awans dozwolony (wzrost epoki)', JSON.stringify(aiEst));
 }
 
+console.log('12. Oszczepnik i Oszczepnik Zulu -> Łucznik (decyzja właściciela 2026-11-17)');
+{
+  const ozg = idsOf(DATA, 'Oszczepnik', baseCtx(1, 'Rzym'));
+  check(ozg.includes('Łucznik'), 'Oszczepnik w Kamieniu: Łucznik jest na liście zamienników', JSON.stringify(ozg));
+  check(!ozg.includes('Procarz'), 'Oszczepnik w Kamieniu: Procarz niedostępny (brak bezpośredniego skoku do procarza)', JSON.stringify(ozg));
+  const ozu = idsOf(DATA, 'Oszczepnik Zulu (Izijula)', baseCtx(1, 'Zulu'));
+  check(ozu.includes('Łucznik'), 'Oszczepnik Zulu w Kamieniu: Łucznik jest na liście zamienników', JSON.stringify(ozu));
+  const aiOzg = aiPromote('Oszczepnik', { ...baseCtx(1, 'Rzym'), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } }, 100);
+  check(aiOzg.ok && aiOzg.typeId === 'Łucznik', 'AI Oszczepnik (Kamień) -> Łucznik: wyjątek same-epoch dozwolony', JSON.stringify(aiOzg));
+}
+
 console.log('10. Ścieżka AI dla narodowych łuczników Kamienia (egipski, sumeryjski): te same reguły co gracz');
 {
   const ctxEgi = { ...baseCtx(2, 'Egipt'), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } };
