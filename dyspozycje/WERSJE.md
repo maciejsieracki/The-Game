@@ -1,3 +1,9 @@
+## ROBOCZA 5b27e1cc -- 2026-11-16 -- FALA 787: Panel TEMPO i minimapa w bitwie w oprawie brandbooka (testowa)
+
+- Panel TEMPO i minimapa w bitwie w oprawie tokenow marki: przyciski tempa z hover/focus/aktywny, odczyt tempa, aria-label; minimapa z tlem tokenu, wyciszonymi odcieniami wody i zlota ramka widoku; logika bez zmian; plus narzedzia pomiarowe WEARY40-SIM
+- Weryfikacja: tsc 0, logic 213/213, battle-tempo-minimap-brand OK, minimap-viewport-rect-follow 12/0, damage-colors 27/0, hp-display 7/7, mgla-sciezka-inwariant 42/0, load-game-regression 34/0; live Chromium 84 OK/0 FAIL w 4 wariantach ekranu, 5 mutacji zrodlowych czerwonych
+- Limity: NIE ZMIERZONO: pikselowy diff PRZED/PO, start bitwy bez wstrzyknietych tokenow; znaczniki stron minimapy gracz niebieski/przeciwnik czerwony (stan istniejacy) do decyzji; REPIN Rust
+
 ## ROBOCZA 2d690a91 -- 2026-11-16 -- FALA 786: Zasadzka: nowa akcja armii (niewidoczna dla wroga, wejscie wroga otwiera bitwe) (testowa)
 
 - Zasadzka armii: niewidoczna dla wroga (render, pathfinding i planowanie AI); wejscie wroga w wojnie na jej heks przerywa ruch i otwiera bitwe (gracz, AI, barbarzyncy); komunikaty Wpadles w zasadzke / Zasadzka sie powiodla; znacznik W zasadzce dla wlasciciela; cykl zycia stosu; Civpedia; plus narzedzia pomiarowe UPKEEP-TOOLS
