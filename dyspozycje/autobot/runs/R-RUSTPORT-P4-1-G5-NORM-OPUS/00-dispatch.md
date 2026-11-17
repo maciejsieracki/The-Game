@@ -50,3 +50,14 @@ WZÓR: moduły grafiki T4a/T4b NIE dotyczą; wzoruj się na istniejących testac
 - BRAMKA: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --test improvements_sync_g5`, `cargo test --all-targets --no-fail-fast` (crate renderer). Wymaga ≥12 GB wolnego i braku równoległych buildów. Przed bramką `df -h /`. Przy <12 GB: BLOCK INFRA z liczbą GB, kod i wektory zacommitowane.
 - ZAKRES r2: dodatkowo komentarz `rust-port/renderer/src/improvements/sync/mod.rs:39,46` (opis G5 jako luki) jest POZA allowlistą r1 — NIE zmieniaj go w tej rundzie; odnotuj jako dług.
 - Commit jawnym `git add`, bez `Cargo.lock`, bez push do parity, bez nazwy modelu w trailerach. Raport `02-operator-r2.md`.
+
+## DODATEK r3 (orkiestrator, po czterech BLOCK INFRA: r1, r2 z bramkami nieuruchomionymi)
+- BAZA r3: `02b07a83e` (FC r2; zawiera kod r1 `0671e292d`, Operatora r2 `d43c203a4`, Obronę r2 `72ededb4c`, raport FC r2). Nie zaczynaj od zera.
+- URUCHOMIENIE: ten temat startuje WYŁĄCZNIE w oknie bez równoległych buildów cargo (orkiestrator sprawdza `ps` przed startem: brak `cargo`/`rustc` z innych worktrees). Dysk `df -h /` musi być ≥ 12 GB przed bramką.
+- Jeśli w trakcie bramki pojawi się cudzy build albo dysk spadnie < 12 GB: BLOCK INFRA z liczbą GB i momentem, nie uruchamiaj na pół.
+- BRAMKI (wszystkie, z kodami wyjścia w raporcie): `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --test improvements_sync_g5` (11 testów), `cargo test --all-targets --no-fail-fast`, crate `renderer`. `CARGO_TARGET_DIR` poza repo.
+- Mutacje (MUSZĄ dać FAIL, wyniki w raporcie): (a) usunięcie wpisu aliasu z `LEGACY_KEY_ALIASES`; (b′) pominięcie filtru `''`/`'brak'` przy dokładaniu warstw postawionych w `build.rs:230-232`; (c) odwrócenie kolejności fallbacku. Każdą przywróć z kopii, potwierdź zerowy diff.
+- DECYZJE OBOWIĄZUJĄCE (z DODATKU r2, wpisane do REJESTR-RUST): D1 — fallback do `ulepszenie` tylko przy pustym `ulepszenia`; D2 — `''` i `'brak'` zostają w warstwach postawionych; mutacja (b) zastąpiona przez (b′).
+- Komentarz `rust-port/renderer/src/improvements/sync/mod.rs:39,46` (opis G5 jako luki) jest POZA allowlistą — nie zmieniaj, zostaje jako dług.
+- Trailery commitów: BEZ nazwy modelu (decyzja #289 dla workerów).
+- Commit jawnym `git add`, bez `Cargo.lock`, bez push do parity. Raport `03-operator-r3.md`.
