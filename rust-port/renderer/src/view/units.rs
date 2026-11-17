@@ -31,17 +31,24 @@
 //! `build_highlight.hexes` means "no build layer" (contract §3.7, producer
 //! `no_layer`) and the reachable range is shown.
 //!
-//! KNOWN DIVERGENCE of Q6-2 (defence r1, objection 3; to be entered in
-//! `REJESTR-RUST.md` by the orchestrator): when a build mode is ACTIVE but
-//! its hex set is EMPTY, the pin clears the reachable discs
-//! (`setHighlight(new Set())` for found city / wonder, `main.ts:16359`,
-//! `:16366`; `clearHighlight()` for the deposit mine, `:16387`; an empty
-//! `setHighlight` for other improvements, `:16391-16394`), while this
-//! adapter shows `reachable` (e.g. a settler in found-city mode with no
-//! legal hex). The DTO cannot tell "mode active, no hex" from "no mode"
-//! (empty `hexes` = no layer, producer `no_layer` with `kind = Improvement`),
-//! so the fix is a contract change (e.g. `Option<BuildHighlightDto>`) in a
-//! separate topic, not in this adapter.
+//! Former divergence of Q6-2, now CLOSED (defence r1, objection 3; closed by
+//! R-RUSTPORT-P4-1Q6-2, `f263ad77a`). What it was: when a build mode is
+//! ACTIVE but its hex set is EMPTY, the pin clears the reachable discs
+//! (`refreshBuildHighlight`, `main.ts:16351-16396`: `setHighlight(new
+//! Set())` for found city / wonder, `:16360`, `:16366`; `clearHighlight()`
+//! for the deposit mine, `:16387`; an empty `setHighlight` for other
+//! improvements, `:16392-16395`), while the snapshot still carried
+//! `reachable` (e.g. a settler in found-city mode with no legal hex), so this
+//! adapter showed the range. What it is now: the producer
+//! (`engine/src/domain/overlays_view.rs`, `unit_overlays_view`) leaves
+//! `reachable` EMPTY whenever `build_highlight_mode_active` is true, also for
+//! an empty hex set, so "mode active, no hex" reaches this adapter as no
+//! layer at all and the pin result (no discs) follows without a contract
+//! change. Test: `engine/tests/p4_1q6_2_build_highlight.rs`. Caller contract:
+//! opening the build panel without an improvement key is not a build mode
+//! (`build_highlight_mode_active` is false, the reachable branch stays), so
+//! the caller must clear the unit selection itself, as `onOpenBuild` does
+//! with `clearPlayerUnitSelection()` (`main.ts:26702-26703`).
 //!
 //! No game rules here: only the order of the pin calls and the conversions.
 

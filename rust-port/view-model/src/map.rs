@@ -248,6 +248,11 @@ pub struct FogRevealDto {
     /// `undefined`, otherwise the hexes of the start circle in contract order
     /// (`r`-major, `q`-minor, §1.4), each a hex of `map.hexes`. `Some(vec![])`
     /// is a distinct value (an empty JS `Set` is truthy and takes the reveal
-    /// branch of `mergedRiverVisibleInFog`).
+    /// branch of `mergedRiverVisibleInFog`). With the fog OFF the value is
+    /// always `None`: the pin calls `setFog(ALL_KEYS, ALL_KEYS)` without
+    /// options (`main.ts:13506`), so `lastRiverRevealKeys = opts?.riverRevealKeys
+    /// ?? null` (`render/scene.ts:3531`), and the engine producer
+    /// (`engine/src/domain/dto_bridge.rs`, `build_fog_layers`) returns `None`
+    /// in that case.
     pub river_reveal_keys: Option<Vec<HexCoord>>,
 }
