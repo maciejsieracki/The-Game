@@ -2114,3 +2114,74 @@ mod cancel_planned_march_game_tests {
         }
     }
 }
+
+#[cfg(test)]
+mod r7k7c_rollback_tests {
+    //! P6-WIRE-R7K7C (zarzut 6, runda 2): cofniecie salda skarbca po bledzie kolejki faz.
+    //! Faza Diplomacy zdazy zastosowac przyrost (danina AI 2 -> gracz 1), a potem kolejka okazuje sie
+    //! niekompletna (`phases.len() != PHASE_COUNT`). Migawka `economy_before` musi cofnac skarbiec i skarbiec AI.
+    use super::*;
+    use crate::domain::diplomacy::{ActiveDeal, TreatyEconomy, TreatyKind};
+    use crate::domain::events::EventQueue;
+    use crate::domain::PlayerId;
+
+    fn tribute_game() -> PlayableGame {
+        let mut game = PlayableGame::new(StartGameParams {
+            seed: 11,
+            ..StartGameParams::default()
+        })
+        .expect("scenario");
+        game.add_player(2, "AI".to_owned()).expect("ai");
+        let mut deal = ActiveDeal::new(
+            TreatyKind::Vassalization,
+            PlayerId::new(2),
+            PlayerId::new(1),
+            1,
+            None,
+        );
+        deal.id = "danina".to_owned();
+        deal.economy = Some(TreatyEconomy {
+            payer_owner_id: PlayerId::new(2),
+            receiver_owner_id: PlayerId::new(1),
+            money_per_turn: 40.0,
+        });
+        let mut state = game.state().clone();
+        state.economy.treasury = 10.0;
+        state.economy.ai_treasury_by_owner.insert(2, 100.0);
+        state.war.diplomacy.add_deal(deal);
+        PlayableGame::from_state(state)
+    }
+
+    #[test]
+    fn niekompletna_kolejka_cofa_przyrost_skarbca_z_fazy_dyplomacji() {
+        let mut game = tribute_game();
+        let turn = game.state().turn;
+        // Kolejka bez fazy AI: Diplomacy zastosuje platnosc, a `advance_turn` odrzuci niekompletna kolejke.
+        game.phase_queue = EventQueue::new();
+        for phase in TurnPhase::all() {
+            if *phase != TurnPhase::Ai {
+                game.phase_queue
+                    .enqueue(turn, *phase, event_for_phase(turn, *phase));
+            }
+        }
+        let err = game
+            .advance_turn()
+            .expect_err("niekompletna kolejka -> blad");
+        assert!(
+            matches!(err, PlayableError::TurnPhaseQueueIncomplete { .. }),
+            "{err:?}"
+        );
+        // Bez cofniecia byloby 50 (gracz) i 60 (AI): przyrost z Diplomacy musi zostac cofniety.
+        assert_eq!(
+            game.state().economy.treasury,
+            10.0,
+            "skarbiec gracza cofniety"
+        );
+        assert_eq!(
+            game.state().economy.ai_treasury_by_owner.get(&2).copied(),
+            Some(100.0),
+            "skarbiec AI cofniety"
+        );
+        assert_eq!(game.state().turn, turn, "tura sie nie zwieksza");
+    }
+}
