@@ -1152,6 +1152,23 @@ export function countsTowardCityFoundingLimit(city: Pick<City, 'foundedByOwner'>
 }
 
 /**
+ * Jedno źródło prawdy limitu zakładania miast (używane przez `canFoundCity` i przez UI panelu budowy).
+ * Limit = baza + (era-1)*5 (era >= 1); liczone są miasta właściciela z `countsTowardCityFoundingLimit`.
+ * / EN: single source of truth for the city founding limit (used by canFoundCity and the build panel UI).
+ */
+export function cityFoundingLimitState(
+  cities: ReadonlyArray<Pick<City, 'ownerId' | 'foundedByOwner'>>,
+  ownerId: number,
+  ownerEra: number,
+  cityLimitBase: number,
+): { count: number; limit: number; exhausted: boolean } {
+  const era = Math.max(1, ownerEra);
+  const limit = cityLimitBase + (era - 1) * 5;
+  const count = cities.filter(c => c.ownerId === ownerId && countsTowardCityFoundingLimit(c)).length;
+  return { count, limit, exhausted: count >= limit };
+}
+
+/**
  * R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1: twórca (założyciel) miasta albo `undefined`, gdy nieznany.
  * `foundedBy` jeśli zapisane; stary zapis bez pola: bieżący właściciel (miasto, którego nikt nie
  * zdobył, ma `foundedByOwner !== false`), a przy `foundedByOwner === false` twórca jest nieznany.
@@ -1344,14 +1361,13 @@ export function canFoundCity(
   // R-MIASTA-LIMIT-PER-EPOKA-Q1: limit liczby miast per epokę
   // / EN: city count limit per era
   if (opts?.ownerId !== undefined && opts?.ownerEra !== undefined && opts?.gameConfig) {
-    const base = opts.gameConfig.cityLimitBase ?? 10;
-    const era = Math.max(1, opts.ownerEra);
-    // Limit: baza + (era-1)*5 (E0=baza, E1=baza+5, E2=baza+10, itd.)
-    const limit = base + (era - 1) * 5;
-    const ownersCities = cities.filter(
-      c => c.ownerId === opts.ownerId && countsTowardCityFoundingLimit(c),
-    ).length;
-    if (ownersCities >= limit) {
+    const limitState = cityFoundingLimitState(
+      cities,
+      opts.ownerId,
+      opts.ownerEra,
+      opts.gameConfig.cityLimitBase ?? 10,
+    );
+    if (limitState.exhausted) {
       return { ok: false, reason: 'limit miast na tej epoce' };
     }
   }

@@ -193,6 +193,7 @@ import {
 import { startRevealRadiusForDifficulty } from './map/startScoring';
 import {
   canFoundCity,
+  cityFoundingLimitState,
   foundCity,
   foundCityAt,
   ensureCitySaveDefaults,
@@ -28214,7 +28215,17 @@ async function boot(): Promise<void> {
           },
           getFoundCityCostLabel: () =>
             foundCityCostLabel(!isSubsequentFoundCity(cities.filter(c => isMe(c.ownerId)), ME())),
+          // R-WEB-UI-CITY-FOUNDING-LIMIT-GREYED-OUT-Q1: limit miast ma pierwszeństwo nad brakiem zasobów
+          // (nie da się go naprawić zasobami); pierwsze miasto nigdy nie jest blokowane limitem.
+          getFoundCityLimitState: () => {
+            if (isAwaitingFirstPlayerCity()) return null;
+            return cityFoundingLimitState(cities, ME(), player.era ?? 1, _menuCityLimitBase);
+          },
           getFoundCityLockHint: () => {
+            if (!isAwaitingFirstPlayerCity()) {
+              const lim = cityFoundingLimitState(cities, ME(), player.era ?? 1, _menuCityLimitBase);
+              if (lim.exhausted) return `Osiągnięto limit miast (${lim.count}/${lim.limit} w tej epoce)`;
+            }
             const pc = cities.filter(c => isMe(c.ownerId));
             if (pc.length === 0) return null;
             const aff = evaluateFoundCityAffordance(playerPracaPool, pc, 0);
