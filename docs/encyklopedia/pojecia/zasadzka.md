@@ -12,14 +12,14 @@
 
 ## Wiki‑S
 
-**Zasadzka** to akcja armii poza miastem: zużywa **cały ruch** armii, a sama armia staje się **niewidoczna dla wrogów**. Wróg w wojnie z tobą, który wejdzie na jej heks, **zatrzymuje się** i wpada w bitwę. Poruszenie armii, odwołanie lub wyzwolenie kończy zasadzkę.
+**Zasadzka** to akcja armii poza miastem, **tylko z generałem** (bez generała w armii nie da się jej zastawić): zużywa **cały ruch** armii, a sama armia staje się **niewidoczna dla wrogów**. Wróg w wojnie z tobą, który wejdzie na jej heks, **zatrzymuje się** i wpada w bitwę. Poruszenie armii, odwołanie lub wyzwolenie kończy zasadzkę.
 
 ---
 
 ## Wiki‑M
 
 ### Jak zastawić
-Wybierz armię i użyj akcji **Zasadzka** (obok „Czuwaj"). Akcja jest zablokowana — z powodem w podpowiedzi — gdy armia: jest w mieście, oblega, nie ma ruchu, jest w bitwie albo już stoi w zasadzce. Zastawienie zużywa całą pulę ruchu armii; odwołanie („Odwołaj zasadzkę") nic nie kosztuje.
+Wybierz armię i użyj akcji **Zasadzka** (obok „Czuwaj"). Akcja jest zablokowana — z powodem w podpowiedzi — gdy armia: **nie ma generała** („Zasadzkę może zastawić tylko armia z generałem”), jest w mieście, oblega, nie ma ruchu, jest w bitwie albo już stoi w zasadzce. Ta sama reguła dotyczy AI. Zastawienie zużywa całą pulę ruchu armii; odwołanie („Odwołaj zasadzkę") nic nie kosztuje.
 
 ### Co widzi wróg
 - Armia w zasadzce **nie jest rysowana** wrogom i **nie zajmuje heksu** dla ich ruchu — AI i trasy wroga traktują heks jak pusty.
@@ -38,7 +38,7 @@ Bitwa z zasadzki otwiera się z własnym rozstawieniem (bez premii liczbowych �
 - Zwykła bitwa (bez zasadzki) rozstawia się jak dotąd.
 
 ### Kiedy zasadzka wygasa
-Ruch armii, odwrót po bitwie, relokacja, wejście do miasta, zmiana właściciela, **Czuwaj** lub **Ufortyfikuj** (zasadzka i czuwanie/fortyfikacja wykluczają się). **Podział** armii: część, która odeszła, traci zasadzkę, reszta zostaje. **Scalenie** z widoczną jednostką nie ujawnia reszty stosu: dołączona jednostka nie ma zasadzki, pozostałe ją zachowują.
+Ruch armii, odwrót po bitwie, relokacja, wejście do miasta, zmiana właściciela, **utrata generała** (gdy w zastawionym stosie nie zostaje żaden generał, zasadzka wygasa dla całego stosu), **Czuwaj** lub **Ufortyfikuj** (zasadzka i czuwanie/fortyfikacja wykluczają się). **Podział** armii: część, która odeszła, traci zasadzkę, reszta zostaje. **Scalenie** z widoczną jednostką nie ujawnia reszty stosu: dołączona jednostka nie ma zasadzki, pozostałe ją zachowują.
 
 ### Strategia
 Zastawiaj zasadzkę na przesmykach i drogach marszu wroga; pamiętaj, że po zastawieniu armia nie ma już ruchu w tej turze.
