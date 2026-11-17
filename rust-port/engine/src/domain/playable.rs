@@ -16,6 +16,7 @@ use super::playable_movement::{
     occupied_for_move, plan_march_to, stack_limit_block_message, PlayableMoveModel,
     MARCH_FOREIGN_CITY_HINT, MARCH_NO_ROUTE_HINT,
 };
+use super::turn_war_dipl_steps::apply_dipl_deltas_to_state;
 use super::turn_war_inputs::{
     build_war_inputs, power_raw_for_owner, production_config, start_epoch_number,
 };
@@ -1488,7 +1489,17 @@ impl PlayableGame {
             inputs: &inputs,
             config: &config,
         };
-        run_war_turn(&mut ctx).map_err(|error| PlayableError::WarTurn(error.to_string()))?;
+        let report =
+            run_war_turn(&mut ctx).map_err(|error| PlayableError::WarTurn(error.to_string()))?;
+        // P6-WIRE-R7K7C (#106): przyrosty skarbcow i pul Pracy z krokow D1-D7 (raport `dipl`) stosowane do
+        // stanu gry, jak web `ownerTreasury`/`setOwnerPracaPool` w pinie. Blad = zero zmian w ekonomii
+        // (walidacja przed zapisem); migawka wojny cofa `advance_turn` przy bledzie tej fazy.
+        apply_dipl_deltas_to_state(
+            &mut self.state,
+            &report.dipl.treasury_deltas,
+            &report.dipl.praca_deltas,
+        )
+        .map_err(|error| PlayableError::WarTurn(error.to_string()))?;
         Ok(())
     }
 
