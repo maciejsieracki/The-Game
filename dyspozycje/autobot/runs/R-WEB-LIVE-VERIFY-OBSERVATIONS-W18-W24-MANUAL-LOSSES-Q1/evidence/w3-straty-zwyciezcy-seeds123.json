@@ -1,0 +1,353 @@
+{
+  "runs": {
+    "B1-rowne-bitwa-duza-s1|skip": {
+      "cfg": {
+        "id": "B1-rowne-bitwa-duza-s1",
+        "pt": "bitwa-duza",
+        "rams": 0,
+        "chariots": 0,
+        "seed": 1,
+        "hit": "pewne",
+        "ratioLabel": "1:1 (preset bitwa-duza)"
+      },
+      "mode": "skip",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 19,
+        "wallBreached": false,
+        "siegeWallCol": -1,
+        "atk": {
+          "total": 28,
+          "lost": 10,
+          "remaining": 18,
+          "hp": 512,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    },
+    "B1-rowne-bitwa-duza-s1|auto": {
+      "cfg": {
+        "id": "B1-rowne-bitwa-duza-s1",
+        "pt": "bitwa-duza",
+        "rams": 0,
+        "chariots": 0,
+        "seed": 1,
+        "hit": "pewne",
+        "ratioLabel": "1:1 (preset bitwa-duza)"
+      },
+      "mode": "auto",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 19,
+        "wallBreached": false,
+        "siegeWallCol": -1,
+        "atk": {
+          "total": 28,
+          "lost": 11,
+          "remaining": 17,
+          "hp": 472,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    },
+    "B2-rowne-bitwa-duza-s2|skip": {
+      "cfg": {
+        "id": "B2-rowne-bitwa-duza-s2",
+        "pt": "bitwa-duza",
+        "rams": 0,
+        "chariots": 0,
+        "seed": 2,
+        "hit": "pewne",
+        "ratioLabel": "1:1 (preset bitwa-duza)"
+      },
+      "mode": "skip",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 19,
+        "wallBreached": false,
+        "siegeWallCol": -1,
+        "atk": {
+          "total": 28,
+          "lost": 10,
+          "remaining": 18,
+          "hp": 512,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    },
+    "B2-rowne-bitwa-duza-s2|auto": {
+      "cfg": {
+        "id": "B2-rowne-bitwa-duza-s2",
+        "pt": "bitwa-duza",
+        "rams": 0,
+        "chariots": 0,
+        "seed": 2,
+        "hit": "pewne",
+        "ratioLabel": "1:1 (preset bitwa-duza)"
+      },
+      "mode": "auto",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 19,
+        "wallBreached": false,
+        "siegeWallCol": -1,
+        "atk": {
+          "total": 28,
+          "lost": 11,
+          "remaining": 17,
+          "hp": 472,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    },
+    "B7-rowne-bitwa-duza-s3|skip": {
+      "cfg": {
+        "id": "B7-rowne-bitwa-duza-s3",
+        "pt": "bitwa-duza",
+        "rams": 0,
+        "chariots": 0,
+        "seed": 3,
+        "hit": "pewne",
+        "ratioLabel": "1:1 (preset bitwa-duza)"
+      },
+      "mode": "skip",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 19,
+        "wallBreached": false,
+        "siegeWallCol": -1,
+        "atk": {
+          "total": 28,
+          "lost": 10,
+          "remaining": 18,
+          "hp": 512,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    },
+    "B7-rowne-bitwa-duza-s3|auto": {
+      "cfg": {
+        "id": "B7-rowne-bitwa-duza-s3",
+        "pt": "bitwa-duza",
+        "rams": 0,
+        "chariots": 0,
+        "seed": 3,
+        "hit": "pewne",
+        "ratioLabel": "1:1 (preset bitwa-duza)"
+      },
+      "mode": "auto",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 19,
+        "wallBreached": false,
+        "siegeWallCol": -1,
+        "atk": {
+          "total": 28,
+          "lost": 11,
+          "remaining": 17,
+          "hp": 472,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    },
+    "K1-kontrola-losowe-bitwa-duza-s1|skip": {
+      "cfg": {
+        "id": "K1-kontrola-losowe-bitwa-duza-s1",
+        "pt": "bitwa-duza",
+        "rams": 0,
+        "chariots": 0,
+        "seed": 1,
+        "hit": "losowe",
+        "ratioLabel": "kontrola trybu: losowe (1:1)"
+      },
+      "mode": "skip",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 30,
+        "wallBreached": false,
+        "siegeWallCol": -1,
+        "atk": {
+          "total": 28,
+          "lost": 13,
+          "remaining": 15,
+          "hp": 472,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    },
+    "K1-kontrola-losowe-bitwa-duza-s1|auto": {
+      "cfg": {
+        "id": "K1-kontrola-losowe-bitwa-duza-s1",
+        "pt": "bitwa-duza",
+        "rams": 0,
+        "chariots": 0,
+        "seed": 1,
+        "hit": "losowe",
+        "ratioLabel": "kontrola trybu: losowe (1:1)"
+      },
+      "mode": "auto",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 29,
+        "wallBreached": false,
+        "siegeWallCol": -1,
+        "atk": {
+          "total": 28,
+          "lost": 10,
+          "remaining": 18,
+          "hp": 486,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    }
+  },
+  "meta": {
+    "chromium": "/usr/bin/chromium",
+    "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-828",
+    "runda": 3
+  }
+}
