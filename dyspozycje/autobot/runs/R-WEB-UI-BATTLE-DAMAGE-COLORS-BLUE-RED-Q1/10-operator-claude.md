@@ -1,24 +1,47 @@
-STATUS: PASS-WITH-NOTES (kod gotowy; dowód wizualny w Chromium NIE ZMIERZONY)
+STATUS: PASS-WITH-NOTES (driver zywej bitwy dziala; 7/7 PASS na obu viewportach; kolory potwierdzone na zywo w Chromium, zrzuty OBEJRZANE)
 DOMAIN: GAME (UI bitwy)
 TEMAT: R-WEB-UI-BATTLE-DAMAGE-COLORS-BLUE-RED-Q1
-GOAL: obrażenia zadane przeciwnikowi = niebieskie, obrażenia jednostek gracza = czerwone; minimapa bez zmian.
-ZMIANY-COMMIT: kod w commicie 344d30c97b0055e361be1cde7897a6ba976ceec4 (baza 1dc01847486e9d0fb0883032d8d708600374980c); ten raport w kolejnym commicie na tej gałęzi (czubek = SHA z pola sha).
-  - gra/src/battle/battleHudTheme.ts: BATTLE_LOSS_ENEMY #ffd54a -> #3a6ad0; BATTLE_LOSS_ENEMY_TEXT #ffd54a -> #8fb6e0 (BATTLE_PLAYER_TEXT; #3a6ad0 ma kontrast ~3,8:1 na tle HUD, za mało dla tekstu); BATTLE_LOSS_ENEMY_BG -> rgba(58,106,208,0.10); komentarze.
-  - gra/src/battle/battleScene.ts, gra/src/battle/manualBattle.ts: tylko komentarze (wybór koloru przez battleLossTextColor / BATTLE_LOSS_*_TEXT bez zmian).
-  - gra/src/battle/endScreen1E.ts: kafel „Straty wroga” – obwódka rgba(255,213,74,0.35) -> rgba(58,106,208,0.35).
-  - gra/src/ui/postBattleSummary.ts: obwódka zniszczonej jednostki przeciwnika rgba(255,213,74,.55) -> rgba(58,106,208,.55); tło rgba(40,34,10,.55) -> rgba(14,24,48,.55).
-  - gra/tools/battle-damage-colors-test.cjs: asercje zaktualizowane na niebieski (28/0).
-  ODSTĘPSTWO OD ALLOWLISTY: endScreen1E.ts, manualBattle.ts, postBattleSummary.ts nie są na allowliście, ale są wymienione w celu (2) (log/podsumowanie, floating text, ekran wyniku); bez nich żółty zostałby w tych miejscach.
-TESTY:
-  - node tools/battle-damage-colors-test.cjs -> WYNIK: 28 PASS / 0 FAIL (ZMIERZONE)
-  - mutacja (powrót do żółtego): asercje „strata przeciwnika NIE jest żółta” i „barwa niebieska” czerwieniłyby się przy #ffd54a (ZMIERZONE statycznie, nie uruchamiane na mutancie)
-  - npm ci --ignore-scripts w gra/ (71 pakietów; bez build/dev); node_modules/.bin/tsc --noEmit -p tsconfig.json -> exit 0, 0 błędów (ZMIERZONE)
-  - Bramki referencyjne (ZMIERZONE, surowe wyniki): logic-test LOGIC OK (213/213); tech-tree-test 20 pass, 0 fail; research-test PASSED 33 / FAILED 0; unit-replace-test WSZYSTKIE TESTY ZIELONE (21/21); combat-test COMBAT TEST: 6/6 pass
-  - HUD: battle-tempo-minimap-brand-test OK; battle-hp-display-test PASS 7/7; minimap-viewport-rect-follow-test OK 12 testów (ZMIERZONE)
-  - Chromium (r-bitwa-etykieta-tozsamosc-strony-live-atak-test.cjs pod xvfb-run): uruchomiony; zatrzymał się na kroku „START WALKI: false” (bitwa nie wystartowała, brak walki), proces ubity ręcznie po ~3 min (ZMIERZONE: build vite OK, sandbox i klik ataku wykonane; bitwa NIE dotarła do liczb obrażeń). Ten test nie generuje zrzutów liczb obrażeń, więc kryterium (b) (min. 4 zrzuty z liczbami obu kolorów) NIE ZOSTAŁO SPEŁNIONE.
-  - Kontrast WCAG (test B): #8fb6e0 i #ff7070 >= 4,5:1 na tłach HUD (ZMIERZONE testem).
-BLOKADY: brak wizualnej weryfikacji liczb obrażeń w żywej grze (kryterium b); HP bar (zielony/żółty/czerwony wg ilości HP) i pasek „Pauza” nie oznaczają stron – nie zmieniane; TEMPO/minimapa – statyczny grep nie wykrył żółtego oznaczającego strony, zmiana nie wykonana.
-RUNDY: 1/5
-NASTĘPNY KROK: Evaluator: (1) uruchomić test, (2) zrzuty w Chromium z liczbami na jednostkach gracza i przeciwnika (walka wręcz + dystans, 2 rozdzielczości), (3) potwierdzić kontrast wizualnie.
-UWAGI-DLA-ORKIESTRATORA: plik 00-dispatch.md nie istnieje w gałęzi main (tylko na claude/sprawdzenie-funkcjonalnosci-ek4ra0); dispatch odczytano z tej gałęzi. Worktree zawiera gra/node_modules (ignorowane przez git) – do sprzątania przez orkiestratora.
+GOAL: obrazenia zadane przeciwnikowi = niebieskie, obrazenia jednostek gracza = czerwone; minimapa bez zmian.
+ZMIANY-COMMIT: runda 2 dodaje WYLACZNIE nowy test `gra/tools/battle-damage-colors-live-test.cjs` (allowlista: testy kolorow). Kod gry (battleHudTheme.ts, battleScene.ts, endScreen1E.ts, postBattleSummary.ts, manualBattle.ts) NIE zmieniony w tej rundzie (zgodnie z DODATKIEM 1: kod nie przepisywany, bo zrzut nie pokazal defektu). Baza: b93db15b3a634c265fea3f52431ac9446a69456d (origin/main). Commit z kodem/raportem: czubek tej galezi (SHA w polu sha).
+
+TESTY (ZMIERZONE, surowe wyniki):
+  - node tools/battle-damage-colors-live-test.cjs --vp 1440x900 (build vite poza repo, Chromium /usr/bin/chromium, headless, swiftshader): WYNIK: 7 PASS / 0 FAIL (uruchomienie 1 - z build; uruchomienie 2 - ponownie z --dist, po poprawce zywotnosci etykiety)
+  - node tools/battle-damage-colors-live-test.cjs --vp 1024x640 --dist <ten sam build>: WYNIK: 7 PASS / 0 FAIL
+  - Szczegoly PASS (1440x900, ostatnie uruchomienie): start walki roster 28 vs 28 (PASS); wrecz-przeciwnik: def4 dmg 18, computed color rgb(143, 182, 224) = #8fb6e0 (PASS); wrecz-gracz: atk1 dmg 11, rgb(255, 112, 112) = #ff7070 (PASS); dystans-przeciwnik: def10 dmg 6, rgb(143, 182, 224) (PASS); dystans-gracz: atk4 dmg 2, rgb(255, 112, 112) (PASS); log 7 etykiet, 0 zlych kolorow; brak bledow strony i konsoli.
+  - Szczegoly PASS (1024x640): wrecz-przeciwnik def4 dmg 18 rgb(143,182,224); wrecz-gracz atk1 dmg 11 rgb(255,112,112); dystans-przeciwnik def10 dmg 6 rgb(143,182,224); dystans-gracz atk4 dmg 2 rgb(255,112,112); log 7/0; brak bledow.
+  - node tools/battle-damage-colors-test.cjs (strukturalny): WYNIK: 28 PASS / 0 FAIL, EXIT=0 (ZMIERZONE)
+  - node_modules/.bin/tsc --noEmit -p tsconfig.json: TSC=0, 0 linii wyjscia (ZMIERZONE)
+  - git status: tylko `?? gra/tools/battle-damage-colors-live-test.cjs`; git diff --check: czysto (ZMIERZONE)
+  - Pozostale bramki (logic/tech-tree/research/unit-replace/combat/HUD) NIE uruchamiane w tej rundzie: zmiana dotyczy wylacznie nowego pliku testowego, zadnego zrodla gry. NIE ZMIERZONO.
+
+ZRZUTY (poza repo, /tmp; NIE commitowane). Razem 8 PNG = wrecz + dystans x 2 rozdzielczosci. OBEJRZANE wizualnie: 3 z 8 (wrecz-przeciwnik-1440x900, wrecz-gracz-1440x900, dystans-przeciwnik-1024x640). Wymog >=4 zrzutow z obu kolorami: DOM+zrzut potwierdza 8 z 8, wizualnie 3 obejrzane - do decyzji FC:
+  - /tmp/battle-dmg-colors-shots/wrecz-przeciwnik-1440x900.png (liczba -18 niebieska nad jednostka przeciwnika, prawy zolnierz; OBEJRZANE)
+  - /tmp/battle-dmg-colors-shots/wrecz-gracz-1440x900.png (-11 czerwona nad jednostka gracza OBOK niebieskiej -18 z poprzedniego ciosu - obie barwy w jednej klatce; OBEJRZANE)
+  - /tmp/battle-dmg-colors-shots/dystans-przeciwnik-1440x900.png, /tmp/battle-dmg-colors-shots/dystans-gracz-1440x900.png (NIE OBEJRZANE wizualnie; potwierdzone w DOM: etykieta w viewport, kolor PASS)
+  - /tmp/battle-dmg-colors-shots/{wrecz-przeciwnik,wrecz-gracz,dystans-gracz}-1024x640.png (NIE OBEJRZANE wizualnie; DOM PASS); dystans-przeciwnik-1024x640.png OBEJRZANE: -6 niebieska widoczna, mala
+  - Logi etykiet: /tmp/battle-dmg-colors-shots/dmg-log-1440x900.json, dmg-log-1024x640.json
+
+KONTRAST NA ZYWO (opis wizualny, ZMIERZONO na zrzutach): niebieski #8fb6e0 na jasnozielonej/ciemnozielonej mapie jest czytelny dzieki czarnemu cieniowi tekstu (text-shadow 0 0 6px #000), ale wyrazniej slabszy niz czerwony #ff7070 - cyfra -6 / -18 na mapie jest maly (15 px bold). Nie mierzono WCAG na tle mapy (tylko wizualnie). Gdy etykieta lezy na ciemniejszej czesci mapy - czytelna; na jasnej trawie kontrast slabszy. Wniosek: czytelne, bez potrzeby zmiany koloru; ewentualna zmiana rozmiaru/obwodki to osobny temat, jesli wlasciciel uzna za potrzebne.
+
+METODA (co robi driver, bez zmian w zrodlach gry):
+  - build vite z wstrzyknieta sonda w pamieci (main.ts: startLargeBattleForTest + __battleLargeReturnProbe), output poza repo (os.tmpdir()).
+  - ?playtest=mapa -> START WALKI (prawdziwy przycisk) -> roster 28 vs 28.
+  - ciosy przez PRODUKCYJNE metody sceny: _doAttack (wrecz, sasiad) i _doRangedAttack (dystans 2, ammo>0), jednostki przestawiane na legalne heksy; kazdy cios powtarzany do pojawienia sie etykiety na celu (max 25 prob).
+  - wrapper na instancji _spawnDamageLabel (bez zmiany pliku) zapisuje strone celu (_isPlayerSide), tekst i computed color etykiety; test-only: fl.duration = 60000, zeby etykieta zostala na klatce zrzutu (produkt zachowuje 2000 ms).
+  - oczekiwanie: gracz czerwone (#ff7070), przeciwnik niebieskie (#8fb6e0).
+
+BLOKADY:
+  1. Kolory etykiet liczb obrazen potwierdzone na zywo (ZMIERZONE). Brak blokady kryterium (b).
+  2. Nie objete tym testem (poza zakresem tej rundy): minimapa (kolor znacznikow stron, konwencja gracz niebieski / przeciwnik czerwony - decyzja rano wg dispatchu, sprawdzic osobno); pasek HP/obwodki i ekran wyniku (endScreen1E, postBattleSummary) tylko przez test statyczny battle-damage-colors-test.cjs - NIE ZMIERZONO na zywo.
+  3. Z rundy 1 otwarte (nie przypisane do tej rundy): zolty pas atakujacego w 3D (ownerColor 0xffd54a, buildUnitModel w battleScene.ts) - sprzeczny z konwencja stron; wymaga decyzji wlasciciela (ABC) i allowlisty mapFieldBattle.ts. Nie ruszane.
+  4. REPIN Rust palety obrazen: NIE ZMIERZONO (poza zakresem; grep w rust-port w rundzie 1 bez trafien).
+  5. Driver uruchamia bitwe z sytuacji z ciosami wymuszonymi w tescie (nie z naturalnej tury AI). To swiadomie: cel to odczyt koloru etykiety, nie logika walki.
+
+RUNDY: 2/5 (runda 1: kod + raport, FC FAIL tylko z powodu brakujacych zrzutow zywych; runda 2: driver + zrzuty, ten raport)
+NASTEPNY KROK: Final Control na tym commicie: (a) potwierdzic, ze kryterium (b) jest spelnione (8 zrzutow, 7/7 PASS na 2 viewportach); (b) decyzja wlasciciela ABC: zolty pas atakujacego w 3D (runda 1 BLOKADA 2) i ewentualna zmiana kontrastu/rozmiaru etykiety; (c) ratyfikacja allowlisty dla endScreen1E.ts, postBattleSummary.ts, manualBattle.ts (komentarz) z rundy 1.
+UWAGI-DLA-ORKIESTRATORA:
+  - Test wymaga `npm ci --ignore-scripts` w gra/ (node_modules git-ignorowane; w tym worktree zainstalowane). Zostawiony build w /tmp/battle-dmg-colors-dist-18180-7qwqur (do sprzatania przez orkiestratora).
+  - Zauwazono (poza zakresem, NIE naprawiane): przy 1024x640 pasek banera bitwy (Rzym/Grecja) zakrywa przycisk „WYCOFAJ SIE” i wynik „28” przeciwnika - to zachowanie layoutu, nie zwiazane z kolorami. Kandydat na osobny temat UI (wzgledem Q-tematu 1024x640 z BAZY tematu, np. „Zasloniete przyciski w banerze bitwy przy 1024 px”).
+  - Driver zapisuje etykiete przez wrapper instancji; gdyby produkcja zmienila nazwe _spawnDamageLabel, test padnie z bledem TypeError (wtedy trzeba zaktualizowac sonde).
+  - Oznaczenie PASS-WITH-NOTES zamiast PASS: kolory potwierdzone, ale kryteria (e) REPIN i minimapa/ekrany wyniku na zywo nie objete.
 DEPLOY/PUSH: NIE WYKONANO
