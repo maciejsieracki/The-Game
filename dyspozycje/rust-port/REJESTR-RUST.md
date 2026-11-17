@@ -3563,3 +3563,16 @@ Konsekwencje dla kolejki:
 | P4-1C FOG-VIEW r3: bramka pełna (#253/#335) | Operator | OPUS 5.5 | ~15:xx UTC |
 | P4-1-STATCHIP-SYNC: bramka pełna przed FF (#324/#333) | oczekuje na dysk ≥12 GB | OPUS 5.5 | — |
 | BUILD-HIGHLIGHT-PARITY (Q6-2) | do rozpisania | OPUS 5.5 | — |
+
+### Przebieg — HEARTBEAT SLOTY (2026-11-17 ~15:48 UTC): brak startu, powód zapisany
+- **Aktywne Workflow:** 1 (FOG-VIEW r3 #359, etap Final Control, SONNET). Brak FC PASS, więc brak czego integrować.
+- **Dlaczego nie uzupełniono slotów:** (a) stała instrukcja właściciela z dzisiaj: tylko ciężkie tematy 3D na Opus, zero tematów Haiku i lekkich; routinowy heartbeat żądający operatorów Haiku (także runda integracyjna Haiku) jest ignorowany; (b) kolejne tematy 3D są zablokowane: F2 TERRITORY-RANGES (#362) i L1/L2 REVEAL (#363) czekają na integrację FOG-VIEW; STATCHIP-SYNC (#361) wymaga bramki renderera ≥12 GB; (c) na tematy z kodem Rust poza 3D nie wolno startować dziś.
+- **Dysk:** 9,1 GB wolne (po sprzątaniu worktree rund FOG-VIEW r3 `wf_33315773-a09-1/2/3`; commity zabezpieczone jako `refs/keep/FOG-VIEW-R3-*` i gałęzie `rust-port-wip/p4-1c-fog-view-r3`, `-eval`, `-obrona` na origin). Worktree `-4` i jego target zostają: używa ich żywy FC (cargo PID 22189).
+- **Następny krok:** po FC PASS FOG-VIEW r3 — integracja na `parity-v2` (ancestry, zakres, FF, readback), potem start F2 i L1/L2 na Opus. STATCHIP po ≥12 GB.
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| P4-1C FOG-VIEW r3 (#359) | Final Control r3 | SONNET 5.5 | ok. 15:30 UTC |
+| P4-1F2 TERRITORY-RANGES (#362) | czeka na integrację FOG | OPUS 5.5 | — |
+| P4-1 L1/L2 REVEAL (#363) | czeka na integrację FOG | OPUS 5.5 | — |
+| P4-1 STATCHIP-SYNC (#361) | czeka na dysk ≥12 GB | OPUS 5.5 | — |
