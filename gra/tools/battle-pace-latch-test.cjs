@@ -25,7 +25,7 @@ async function loadBattleScene(mutate) {
     },
     bundle: true, platform: 'node', format: 'cjs', target: 'es2020',
     alias: { three: path.join(ROOT, 'node_modules/three/build/three.cjs') },
-    plugins: [{ name: 'stubs-and-mutation', setup(build) {
+    plugins: [require('./lib/esbuild-raw-plugin.cjs'), { name: 'stubs-and-mutation', setup(build) {
       const stubs = [
         [/brandAssets/, 'brand', 'export const civIconSvg=()=>""; export const brandIconSvg=()=>"";'],
         [/leaderPortraits/, 'leader', 'export const leaderPortraitUrl=()=>""; export const leaderName=()=>""; export const civIconIdFromCivLabel=()=>"";'],

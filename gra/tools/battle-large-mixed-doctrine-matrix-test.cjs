@@ -25,7 +25,7 @@ async function loadBattleScene() {
     },
     bundle: true, platform: 'node', format: 'cjs', target: 'es2020',
     alias: { three: path.join(ROOT, 'node_modules/three/build/three.cjs') },
-    plugins: [{ name: 'stub-browser-services', setup(build) {
+    plugins: [require('./lib/esbuild-raw-plugin.cjs'), { name: 'stub-browser-services', setup(build) {
       const entries = [
         [/brandAssets/, 'brand', 'export const civIconSvg=()=>""; export const brandIconSvg=()=>"";'],
         [/leaderPortraits/, 'leader', 'export const leaderPortraitUrl=()=>""; export const leaderName=()=>""; export const civIconIdFromCivLabel=()=>"";'],

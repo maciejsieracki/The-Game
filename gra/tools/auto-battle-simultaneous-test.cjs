@@ -42,7 +42,7 @@ async function loadSceneClass() {
     format: 'cjs',
     target: 'es2020',
     alias: { three: path.join(MODULE_ROOT, 'three', 'build', 'three.cjs') },
-    plugins: [{
+    plugins: [require('./lib/esbuild-raw-plugin.cjs'), {
       name: 'stub-battle-assets',
       setup(build) {
         build.onResolve({ filter: /[\\/]ui[\\/]icons[\\/]brandAssets$/ }, args => ({

@@ -9,9 +9,8 @@ async function load() {
     stdin: { contents: "import { BattleScene } from './src/battle/battleScene.ts'; module.exports = { BattleScene };", resolveDir: path.join(__dirname, '..'), sourcefile: 'p.ts' },
     bundle: true, platform: 'node', format: 'cjs', target: 'es2020',
     alias: { three: path.join(__dirname, '..', 'node_modules', 'three', 'build', 'three.cjs') },
-    plugins: [{ name: 's', setup(b) {
+    plugins: [require('./lib/esbuild-raw-plugin.cjs'), { name: 's', setup(b) {
       const st = (f, c) => { const ns = 'ns' + f.source; b.onResolve({ filter: f }, () => ({ path: ns, namespace: ns })); b.onLoad({ filter: /.*/, namespace: ns }, () => ({ contents: c, loader: 'js' })); };
-      st(/tokens\.css\?raw$/, 'export default "";'); // brandTokenVars.ts: import ...css?raw (Vite-only), esbuild tego nie czyta
       st(/render\/units/, "import * as THREE from 'three'; export const buildUnitModel = () => new THREE.Group();");
       st(/brandAssets/, 'export const civIconSvg = () => ""; export const brandIconSvg = () => "";');
       st(/leaderPortraits/, 'export const leaderPortraitUrl = () => ""; export const leaderName = () => ""; export const civIconIdFromCivLabel = () => "";');

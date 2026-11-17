@@ -21,11 +21,10 @@ async function loadBattleScene() {
     },
     bundle: true, platform: 'node', format: 'cjs', target: 'es2020',
     alias: { three: path.join(ROOT, 'node_modules/three/build/three.cjs') },
-    plugins: [{ name: 'stub-nonlogic-battle-assets', setup(build) {
+    plugins: [require('./lib/esbuild-raw-plugin.cjs'), { name: 'stub-nonlogic-battle-assets', setup(build) {
       const stubs = [
         [/brandAssets/, 'brand', 'export const civIconSvg=()=>""; export const brandIconSvg=()=>"";'],
         [/leaderPortraits/, 'leader', 'export const leaderPortraitUrl=()=>""; export const leaderName=()=>""; export const civIconIdFromCivLabel=()=>"";'],
-        [/tokens\.css\?raw$/, 'css', 'export default "";'], // brandTokenVars.ts: import ...css?raw (Vite-only)
         [/muzyka-antyczna/, 'audio', 'export const startVictoryMusic=()=>{}; export const startDefeatMusic=()=>{}; export const startBattleMusic=()=>{};'],
       ];
       for (const [filter, namespace, contents] of stubs) {
