@@ -2987,3 +2987,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Keep refs:** `T5a-r4-merge-1c7eb22fd`, `T5a-r4-report-625624d97`, `T5a-r4-fc-a194f45af`.
 - **Sprzątanie:** usunięte worktree rundy integracyjnej T5a (`wf_1ed3e436-684-*`). Dysk 6,2 GB.
 - **Otwarte:** T6 pełny test na `87829df94` (bramka do zrobienia po zwolnieniu dysku ≥ 8 GB); T4e wymaga zagwarantowania `attackDirection = front` (C-FLANK pominięty w T4b).
+
+### Przebieg — T5a w parity, T6 w integracji (2026-11-17 ~01:15 UTC): 1/4 aktywne, dysk 11 GB
+
+- **Aktywne Workflow (1/4):** K5DOC-T6 jazda, integracja na parity (`wf_6d014d2a-144`), Haiku Operator. Baza `625624d97`, merge `87829df94`. Merge-tree czysty (exit 0).
+- **Zintegrowane w tym przebiegu:** T5a — `parity-v2` `3d016a5ae` → `625624d97` (opis w poprzednim wpisie).
+- **Krok 1 (sloty):** 1/4. Brak czystego tematu z gotowym dispatchem: T7a/T7b czekają na T4c (bez dispatchu); reszta zablokowana decyzjami (#253, #286, #349, #350) lub zależnościami. Nie uzupełniam slotów tematami „dla zapełnienia".
+- **Krok 2:** brak FC PASS bez integracji poza T6 (w integracji).
+- **Krok 3:** worktree T5a usunięte, dysk 11 GB. Worktree T6 integracji nie ruszane.
+- **Reguła:** dla T6 bramka na merge z pełnym testem, FF dopiero po EXIT 0.
