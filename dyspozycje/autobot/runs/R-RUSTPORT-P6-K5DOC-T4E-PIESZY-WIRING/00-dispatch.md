@@ -40,3 +40,16 @@ Decyzje podejmuje orkiestrator (reguła 8). Wykonawca NIE wybiera.
 - DYSK: ≥ 8 GB przed startem (`df -h /`). Przy < 8 GB: BLOCK INFRA z liczbą GB.
 - Trailery commitów: BEZ nazwy modelu (#289).
 - Raport `02-operator-r2.md`; commit jawnym `git add`, bez `Cargo.lock`, bez push do parity.
+
+## DODATEK r3 (orkiestrator, po BLOCK INFRA r2: patch nieskompilowany, bramki i mutacje nie wykonane)
+Rozstrzygnięcia orkiestratora na pytania z Obrony/FC r2 (reguła 8). Wykonawca NIE wybiera.
+- BAZA r3: `origin/rust-port/parity-v2` = `760be5187`. Worktree przełączony detached na tę bazę.
+- PATCH: zastosuj `wip-r2-nieskompilowane.patch` z commita `a60791ba2` (gałąź `rust-port-wip/p6-k5doc-t4e-r2-op`) przez `git apply`; jeśli nie nakłada się, przepisz zmiany ręcznie na bazie. Nie kopiuj kodu z worktree r1/r2.
+- ALLOWLISTA (rozszerzona jednorazowo): `rust-port/engine/src/domain/siege_tactics_move_effects.rs` — WYŁĄCZNIE dodanie traitu `MoveTerrain` (D1). Żadnych innych zmian w tym pliku.
+- GRANICA T4e-0 / T4e-1 (rozstrzygnięcie): wiring jednego kroku ruchu (`krok → do_move_effects`) w `move_step` WCHODZI do T4e-0 (zgodnie z D4). Pełny `_advanceStep` 1–10 zostaje w T4e-1.
+- KOSZT PER JEDNOSTKA (rozstrzygnięcie): pole `mounted` w `ProdMoveWorld`; `move_cost` używa `cavalryTerrainMultiplier` dla jazdy zgodnie z pinem `battleScene.ts:7436-7443`. WCHODZI do T4e-0. Test rozróżniający jazdę od piechoty jest wymagany.
+- update_facing w adapterze: no-op akceptowany jako znany dług (#107); odnotuj w raporcie, nie naprawiaj.
+- WEKTORY: MUSZĄ pochodzić z generatora `rust-port/engine/tests/p6_k5doc_t4e_gen.mjs` (wykonanie tekstu pina `battleScene.ts` `_doMove` ok. 8685–8776 przez TypeScript), zapisanego do `p6_k5doc_t4e_vectors/vectors.json`. Ręcznie wpisane wartości NIE są dopuszczone. Każdy wektor z `plik:linia` pinu.
+- MUTACJE (MUSZĄ dać FAIL): (a) pominięcie `occ_mut` update; (b) brak błędu `MissingTerrain` (domyślna wartość); (c) odwrócenie kolejności occ/facing; (d) `mounted` ignorowane (koszt piechoty dla jazdy).
+- DYSK: ≥ 8 GB przed startem i przed każdą mutacją (`df -h /`). Przy < 8 GB: BLOCK INFRA z liczbą GB.
+- Trailery commitów: BEZ nazwy modelu (#289). Raport `03-operator-r3.md`; commit jawnym `git add`, bez `Cargo.lock`, bez push do parity.
