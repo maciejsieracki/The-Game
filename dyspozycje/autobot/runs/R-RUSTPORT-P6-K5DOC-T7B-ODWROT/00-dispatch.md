@@ -60,3 +60,12 @@ WZÓR: T4b — `rust-port/engine/src/domain/siege_tactics_advance.rs` (wzorzec `
 - Dysk po sprzątaniu: ok. 13 GB. Przed każdą bramką `df -h /`; poniżej 8 GB → BLOCK z liczbą GB.
 - Zadanie jak w r2 (pkt 1–5): ancestry, bramki fmt/clippy/`p6_k5doc_t7b`, pełny `cargo test` z OSOBNYM `timeout 900 cargo test --test p6_8i_pick`, raport `02-integracja-r3.md`, commit tylko raportu, bez push, bez FF.
 - Noty FC do uwzględnienia i zapisania w REJESTR (nie blokują): (a) `nearest == None` przy niepustej liście wrogów jest nieosiągalne w produkcji (ten sam filtr `_enemiesOf`) — zależność producenta W8/ProdBody; (b) wektory nie zapisują pola `nearest` z pina — dodać do vectors.json przy kolejnej zmianie generatora; (c) filtr `routed` z `_enemiesOf` nieobjęty wektorami — jawna zależność.
+
+## DODATEK r4 (orkiestrator, po r3: Operator bez commitu, pełny test przerwany, FC PASS-WITH-NOTES nieprzyjęty)
+- BAZA r4: `61ffc110f` (wip, zabezpieczony kod T7b: `siege_tactics_fallback.rs`, `mod.rs` +1, `p6_k5doc_t7b*`). Gałąź: `rust-port-wip/p6-k5doc-t7b-r3-wip`. Nie zaczynaj od zera; zweryfikuj `git diff f85622878 61ffc110f --stat` (allowlista) i zacommituj ewentualne poprawki.
+- BRAMKI (wszystkie, z EXIT w raporcie): `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --test p6_k5doc_t7b`, `cargo test --all-targets --no-fail-fast` w `rust-port/engine`, `CARGO_TARGET_DIR` poza repo. Pełny test uruchom w tle z `timeout 1800`, a wynik zapisuj do pliku; nie kończ sesji bez wyniku.
+- ZAWIESZENIE: r3 wskazało `p6_m07b4_q4` (cap_quotas_hand_cases) albo `p6_8i_pick`. Ustal, który test wisi, osobnym przebiegiem z `timeout 900 cargo test --test <nazwa>`, i wpisz wynik do raportu. Nie zmieniaj testów, żeby je ominąć.
+- Mutacje (MUSZĄ dać FAIL): (a) `d_min < d_now` → `<=`; (b) `score > best_score` → `>=`; (c) odwrócony znak `homeBias`. Każdą przywróć z kopii, potwierdź zerowy diff.
+- Trailery commitów: BEZ nazwy modelu (decyzja #289 dla workerów).
+- Commit jawnym `git add`, bez `Cargo.lock`, bez push do parity. Raport `03-operator-r4.md`.
+- Bramka: dysk ≥ 8 GB przed startem; przy spadku poniżej 8 GB BLOCK INFRA z liczbą GB.
