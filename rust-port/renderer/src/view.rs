@@ -19,6 +19,7 @@ pub mod battle;
 pub mod cities;
 pub mod convert;
 pub mod fog;
+pub mod overlays;
 pub mod terrain;
 
 pub use battle::{
@@ -36,6 +37,15 @@ pub use convert::{
     seed_i32, siege_machine_kind, terrain, tower_material, trade_medium, unit_id_string,
 };
 pub use fog::FogSets;
+pub use overlays::{
+    culture_range_group, mine_eligible_group, okolica_inputs, okolica_overlay, overlay_layers,
+    range_hex_key_set, relation_border_color, relation_color, religion_range_group, siege_inputs,
+    siege_top_y, territory_border_group, territory_by_owner, territory_colors, trade_route_input,
+    trade_routes_group, worked_by_owner, worker_field_overlay, MapUiState, OkolicaInputs,
+    OverlayAdapterError, OverlayLayers, OverlayLayersInput, SiegeInputs, TerritoryColors,
+    MINE_LAYER_STYLE, RELATION_BORDER_COLOR_NEUTRALNY, RELATION_BORDER_COLOR_SOJUSZ,
+    RELATION_BORDER_COLOR_WOJNA,
+};
 pub use terrain::{
     apply_terrain_fog, map_hexes, okolica_map, overlay_map, solid_hidden_hexes, terrain_data,
     terrain_scene_options, tile_yield, TerrainData,
