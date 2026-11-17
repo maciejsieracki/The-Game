@@ -3080,3 +3080,14 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Zabezpieczenie:** `refs/keep/R-RUSTPORT-P6-K5DOC-T5B-FC-r2` = `366e6ff8d`; gałąź zdalna `rust-port-wip/R-RUSTPORT-P6-K5DOC-T5B-MARSZ-r2` = `366e6ff8d`.
 - **Integracja: WSTRZYMANA.** Dysk 6,0 GB < 8 GB (próg bramki). Runda integracyjna Operatora z pełnym `cargo test` na `366e6ff8d` do zrobienia po zwolnieniu dysku, i po zakończeniu T6 r6 (ten sam plik `mod.rs` — po FF T6 konieczny ponowny merge-tree).
 - **Aktywne Workflow:** T6 r6 (Obrona, `wf_bb4e6b3c-994`).
+
+### Przebieg — T6 zintegrowany (FF parity-v2), T5b runda integracyjna r3 (2026-11-17 ~04:xx UTC)
+
+- **T6 jazda — FC PASS-WITH-NOTES `83777efa9`** (r6: Operator BLOCK dysk, Ewaluator PASS-WITH-NOTES, Obrona BLOCK INFRA bez zmian kodu, FC PASS-WITH-NOTES). Kod `83777efa9` = kod `1af81a8c3` (diff `rust-port` pusty); różnią się tylko raporty run dir.
+- **Decyzja orkiestratora (dowód zastępczy):** FC zapytał, czy przyjąć dowód zastępczy zamiast pełnego `cargo test` na `6e209d0ff`. Przyjęte: pełny test na identycznym kodzie zielony (Ewaluator r6: passed 3810, failed 0, ignored 1; Operator r5). Decyzja techniczna orkiestratora, nie właściciela.
+- **FF `rust-port/parity-v2`:** `625624d97` → `83777efa9` (readback zgodny). Zabezpieczenie: `refs/keep/R-RUSTPORT-P6-K5DOC-T6-FC-r6`, gałąź `rust-port-wip/R-RUSTPORT-P6-K5DOC-T6-JAZDA-FC-r6`.
+- **Zakres diffu T6 względem poprzedniego parity:** 5 plików kodu i testów + `mod.rs` +1 linia (allowlista T6).
+- **Uwagi FC do REJESTR (nie blokują):** krok 4 `_cavalryAction` nieosiągalny w Rust (1:1 z pinem, dowód w komentarzu kodu); `_doMove` emulowany minimalnie — pełny wymaga T4c (#314); przy wpięciu (T8/#113) wektory end-to-end.
+- **T5b jazda — runda integracyjna r3 (`wf_ff355a62-ed0`):** FC PASS-WITH-NOTES `366e6ff8d` (r2). `merge-tree` na `83777efa9` czysty (exit 0). Operator r3: merge `--no-ff` + pełne bramki; FF wykona orkiestrator po werdykcie FC. Zabezpieczenie: `refs/keep/R-RUSTPORT-P6-K5DOC-T5B-FC-r2`, `rust-port-wip/R-RUSTPORT-P6-K5DOC-T5B-MARSZ-r2`.
+- **Aktywne Workflow:** 1 (T5b integracja r3). Wolne sloty: 3. Powód: brak czystego tematu Rust (lista jak w poprzednich przebiegach); dysk 8,1 GB — start Rust dopiero po zakończeniu bramek T5b.
+- **Otwarte decyzje ABC (w czacie):** #327, #358.
