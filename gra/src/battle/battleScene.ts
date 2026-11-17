@@ -51,6 +51,7 @@
 
 import * as THREE from 'three';
 import { ambushLineIdeal, ambushFlankCells } from './ambushDeploy';
+import { AMBUSH_FORMATION_MAX_WIDTH } from '../game/ambush';
 import {
   resolveCombat,
   hitChanceTw,
@@ -5419,7 +5420,10 @@ export class BattleScene {
         // Resolve collisions / impassable: prefer PLAINS (konnica nie startuje w lesie).
         let col = idealCol[idx]!;
         let row = idealRow[idx]!;
-        const mountedWing = initialBattleRoleOf(bu) === 'mounted';
+        // R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: zaskoczeni w dlugiej linii -- konnica/rydwany w linii, nie na skrzydlach.
+        const lineSide = this._isAmbushLineSide(side);
+        const mountedWing = initialBattleRoleOf(bu) === 'mounted' && !lineSide;
+        const lineBand = this._ambushLineRowBand();
         const tileScore = (c: number, r: number): number => {
           if (!freeOk(c, r)) return -1;
           let s = 100 - Math.abs(r - idealRow[idx]!) * 3 - Math.abs(c - idealCol[idx]!) * 2;
@@ -5450,10 +5454,10 @@ export class BattleScene {
         const wingRowHi = topWing
           ? Math.min(bodyMinRow === Infinity ? PLAY_MID_ROW - 1 : bodyMinRow - 1, idealRow[idx]! + 3)
           : Math.min(PLAY_ROW1 - 1, idealRow[idx]! + 6, bodyMaxRow === -Infinity ? PLAY_ROW1 - 1 : bodyMaxRow + 5);
-        const rowLo = mountedWing ? wingRowLo : playerDeploy
+        const rowLo = lineSide ? lineBand[0] : mountedWing ? wingRowLo : playerDeploy
           ? Math.max(DEPLOY_MIN_ROW, idealRow[idx]! - 8)
           : PLAY_ROW0;
-        const rowHi = mountedWing ? wingRowHi : playerDeploy
+        const rowHi = lineSide ? lineBand[1] : mountedWing ? wingRowHi : playerDeploy
           ? Math.min(DEPLOY_MAX_ROW, idealRow[idx]! + 8)
           : PLAY_ROW1;
         for (let extra = 0; extra < 10; extra++) {
@@ -12960,7 +12964,7 @@ export class BattleScene {
       const tile = this._pickGroundTile(e.clientX, e.clientY);
       if (tile) {
         this._deployDrag.curCol = this._clampDeployPlayerCol(tile.col);
-        this._deployDrag.curRow = Math.max(DEPLOY_MIN_ROW, Math.min(DEPLOY_MAX_ROW, tile.row));
+        this._deployDrag.curRow = this._clampDeployPlayerRow(tile.row);
         this._refreshDeployGhosts();
       }
       return;
@@ -13208,14 +13212,45 @@ export class BattleScene {
     });
   }
 
+  /** R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: gracz jest stroną zaskoczoną (wpadł w zasadzkę). */
+  private _isAmbushSurprisedPlayer(): boolean {
+    return this._ambushSurprisedSide != null
+      && this._playerControlSide() === this._ambushSurprisedSide;
+  }
+
+  /** Strona zaskoczona w bitwie z zasadzki (szyk w długiej linii) -- dotyczy obu sterowań. */
+  private _isAmbushLineSide(side: 'atk' | 'def'): boolean {
+    return this._ambushSurprisedSide != null && side === this._ambushSurprisedSide;
+  }
+
+  /** Wiersze długiej linii zaskoczonych: AMBUSH_FORMATION_MAX_WIDTH w poprzek pola (wokół PLAY_MID_ROW). */
+  private _ambushLineRowBand(): [number, number] {
+    const half = Math.floor(AMBUSH_FORMATION_MAX_WIDTH / 2);
+    return [PLAY_MID_ROW - half, PLAY_MID_ROW + half];
+  }
+
   private _inDeployPlayerZone(col: number, row: number): boolean {
     if (this._isAmbushAmbusherPlayer()) {
       return col >= PLAY_COL0 && col <= PLAY_COL1
         && row >= DEPLOY_MIN_ROW && row <= DEPLOY_MAX_ROW;
     }
-    return this._playerControlSide() === 'atk'
+    const inNormalZone = this._playerControlSide() === 'atk'
       ? inDeployAtkZone(col, row)
       : inDeployDefZone(col, row);
+    if (this._isAmbushSurprisedPlayer()) {
+      // Zaskoczony gracz nie postawi jednostki poza długą linią (max szerokość w poprzek).
+      const [lo, hi] = this._ambushLineRowBand();
+      return inNormalZone && row >= lo && row <= hi;
+    }
+    return inNormalZone;
+  }
+
+  private _clampDeployPlayerRow(row: number): number {
+    if (this._isAmbushSurprisedPlayer()) {
+      const [lo, hi] = this._ambushLineRowBand();
+      return Math.max(lo, Math.min(hi, row));
+    }
+    return Math.max(DEPLOY_MIN_ROW, Math.min(DEPLOY_MAX_ROW, row));
   }
 
   private _clampDeployPlayerCol(col: number): number {
@@ -17952,7 +17987,10 @@ export class BattleScene {
       if (!freeOk(col, row)) {
         let found = false;
         const baseCol = col;
-        const mountedWing = initialBattleRoleOf(bu) === 'mounted';
+        // R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: zaskoczeni w dlugiej linii -- konnica w linii, nie na skrzydlach.
+        const lineSide = this._isAmbushLineSide(side);
+        const mountedWing = initialBattleRoleOf(bu) === 'mounted' && !lineSide;
+        const lineBand = this._ambushLineRowBand();
         const topWing = idealRow[idx]! < PLAY_MID_ROW;
         const wingRowLo = topWing
           ? Math.max(PLAY_ROW0 + 1, idealRow[idx]! - 6, bodyMinRow === Infinity ? 0 : bodyMinRow - 5)
@@ -17960,10 +17998,10 @@ export class BattleScene {
         const wingRowHi = topWing
           ? Math.min(bodyMinRow === Infinity ? PLAY_MID_ROW - 1 : bodyMinRow - 1, idealRow[idx]! + 3)
           : Math.min(PLAY_ROW1 - 1, idealRow[idx]! + 6, bodyMaxRow === -Infinity ? PLAY_ROW1 - 1 : bodyMaxRow + 5);
-        const rowLo = mountedWing ? wingRowLo : this.deployPhase && side === playerSide
+        const rowLo = lineSide ? lineBand[0] : mountedWing ? wingRowLo : this.deployPhase && side === playerSide
           ? Math.max(DEPLOY_MIN_ROW, idealRow[idx]! - 8)
           : 0;
-        const rowHi = mountedWing ? wingRowHi : this.deployPhase && side === playerSide
+        const rowHi = lineSide ? lineBand[1] : mountedWing ? wingRowHi : this.deployPhase && side === playerSide
           ? Math.min(DEPLOY_MAX_ROW, idealRow[idx]! + 8)
           : BF_ROWS - 1;
         for (let rr = rowLo; rr <= rowHi && !found; rr++) {

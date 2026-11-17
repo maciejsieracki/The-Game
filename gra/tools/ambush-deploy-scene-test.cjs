@@ -29,6 +29,7 @@ async function loadBattleScene() {
         stub(/brandAssets/, 'export const civIconSvg = () => ""; export const brandIconSvg = () => "";');
         stub(/leaderPortraits/, 'export const leaderPortraitUrl = () => ""; export const leaderName = () => ""; export const civIconIdFromCivLabel = () => "";');
         stub(/muzyka-antyczna/, 'export const startVictoryMusic = () => {}; export const startDefeatMusic = () => {}; export const startBattleMusic = () => {};');
+        stub(/brandTokenVars/, 'export const CIV_BRAND_SCOPE_VARS = {}; export const ensureBrandRootTokens = () => {};');
       },
     }],
     write: false, logLevel: 'silent',
@@ -94,10 +95,23 @@ async function main() {
   const surprisedPlayer = makeScene(BattleScene, { control: 'atk', surprised: 'atk' });
   ok(surprisedPlayer._isAmbushAmbusherPlayer() === false, 'zaskoczony-gracz: nie jest zastawiajacym');
   const normalAtk = makeScene(BattleScene, { control: 'atk', surprised: null });
+  // R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1 (pkt 8): zaskoczony gracz stawia tylko w dlugiej linii (wiersze
+  // midRow +- AMBUSH_FORMATION_MAX_WIDTH/2) i tylko w zwyklej strefie kolumn; poza linia -- zabronione.
+  const [bandLo, bandHi] = surprisedPlayer._ambushLineRowBand();
+  const lineRow = bandLo + 1; // srodek linii (PLAY_MID_ROW)
+  ok(bandHi - bandLo === 2, 'linia zaskoczonych: 3 wiersze (AMBUSH_FORMATION_MAX_WIDTH)');
   for (const c of [colMin, colMax]) {
-    ok(surprisedPlayer._inDeployPlayerZone(c, midRow) === normalAtk._inDeployPlayerZone(c, midRow),
-      `zaskoczony-gracz: strefa w kolumnie ${c} taka sama jak w zwyklej bitwie`);
+    const inNormal = normalAtk._inDeployPlayerZone(c, lineRow);
+    ok(surprisedPlayer._inDeployPlayerZone(c, lineRow) === inNormal,
+      `zaskoczony-gracz: wiersz linii (${lineRow}), kolumna ${c}: ta sama kolumnowa strefa co w zwyklej bitwie`);
+    ok(surprisedPlayer._inDeployPlayerZone(c, lineRow + 2) === false,
+      `zaskoczony-gracz: kolumna ${c}, wiersz ${lineRow + 2} poza linia -> zabronione`);
+    ok(surprisedPlayer._inDeployPlayerZone(c, lineRow - 2) === false,
+      `zaskoczony-gracz: kolumna ${c}, wiersz ${lineRow - 2} poza linia -> zabronione`);
   }
+  ok(surprisedPlayer._clampDeployPlayerRow(lineRow + 40) === lineRow + 1
+    && surprisedPlayer._clampDeployPlayerRow(lineRow - 40) === lineRow - 1,
+    'zaskoczony-gracz: przeciaganie wiersza ograniczone do linii (lineRow +- 1)');
 
   // (4) Brak nakladania i brak jednostek poza mapa: AI-zastawiajacy (surprised = atk, AI = def).
   const n = 12;
