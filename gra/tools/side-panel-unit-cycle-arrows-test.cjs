@@ -64,7 +64,7 @@ fs.writeFileSync(
 const stubPlugin = {
   name: 'stub-side-panel-unit-cycle',
   setup(build) {
-    build.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: STUB_BRAND_ASSETS }));
+    build.onResolve({ filter: /brandAssets$/ }, () => ({ path: STUB_BRAND_ASSETS }));
     build.onResolve({ filter: /brandTokenVars$/ }, () => ({ path: STUB_BRAND_TOKENS }));
   },
 };

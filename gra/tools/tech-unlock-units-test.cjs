@@ -192,6 +192,8 @@ const stubViteOnlyDeps = {
         export function buildingIconSvg() { return ''; }
         export function unitIconSvg() { return ''; }
         export function improvementIconSvg() { return ''; }
+        export function brandIconSvg() { return ''; }
+        export function mapResourceIconSvg() { return ''; }
       `,
       loader: 'js',
     }));

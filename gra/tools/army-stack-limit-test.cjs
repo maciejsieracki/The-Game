@@ -276,7 +276,7 @@ function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 10139
     ok(count(/trimPathToStackRoom\(units, stack, result\.movePath, armyStackLimit\(\)\)/g) === 2
       && /roomPathInstant/.test(mainSrc), 'F6 segmenty marszu (animowany i natychmiastowy) przycinaja trase do miejsca w stosie');
     ok(/if \(!canJoinStackAt\(units, stack, u\.q, u\.r, armyStackLimit\(\)\)\) continue;/.test(mainSrc), 'F7 pelny stos nie jest celem scalenia (reachableWithMergeTargets)');
-    ok(/truncatePath: \(fullPath\) => trimPathToStackRoom\(\s*units,\s*\[u\],/.test(mainSrc), 'F8 trasa ruchu AI jest przycinana do miejsca w stosie (pelny stos = brak ruchu)');
+    ok(/truncatePath: \(\w+\) => \{[\s\S]{0,400}?trimPathToStackRoom\(\s*units,\s*\[u\],[\s\S]{0,400}?armyStackLimit\(\)/.test(mainSrc), 'F8 trasa ruchu AI jest przycinana do miejsca w stosie (pelny stos = brak ruchu)');
     ok(/enforceArmyStackLimit\('wczytanie zapisu'\)/.test(mainSrc), 'F9 migracja przy wczytaniu zapisu');
     ok(/enforceArmyStackLimit\('start tury'\)/.test(mainSrc), 'F10 siatka bezpieczenstwa na starcie tury');
     ok(/ownUnitCountAt\(units, active\.ownerId, destQ, destR, new Set\(ids\)\) \+ splitArrivals\.length > armyStackLimit\(\)/.test(mainSrc), 'F12 rozdzielenie armii (onSplit) nie przepelnia stosu docelowego');
