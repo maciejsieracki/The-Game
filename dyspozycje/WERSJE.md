@@ -1,3 +1,9 @@
+## ROBOCZA b0cbbd36 -- 2026-11-17 -- FALA 798: Baner bitwy nie zaslania przyciskow (WYCOFAJ SIE) przy 1024x640 (BANNER) (testowa)
+
+- Baner dowodcy w bitwie jest pozycjonowany z prawdziwych rectow gornego paska i rostera (_syncCommanderPanelLayout): zostaje w srodku gornego rzedu gdy skala >=0,7, inaczej schodzi pod pasek; przy 1024x640, 1280x720 i 1440x900 nie przecina WYCOFAJ SIE, Ustawien ani Pomin (67984086e)
+- Weryfikacja: battle-banner-retreat-overlap-live-test 6/6 w 1024x640, 1280x720, 1440x900 (przed poprawka FAIL; mutant 4/2 RED), battle-tempo-minimap-brand OK, hp-display 7/7, damage-colors 28/0, ambush-ui-reason 10/0, logic 213/213, tsc 0, build OK; NIE ZMIERZONO: tryb AUTO i faza rozstawiania, zmiana tresci banera lub rozmiaru okna w trakcie bitwy
+- Limity: Przy 1024x640 baner pod paskiem zaslania gorny fragment pola bitwy (y 82-157); przy 1280 i 1440 baner zachodzi na pusta ramke rostera (ok. 42x9 px i 41x29 px)
+
 ## ROBOCZA 1b3aa52f -- 2026-11-17 -- FALA 797: Hak testowy odmowy AI wobec rozejmu gracza (HOOKAI) (testowa)
 
 - Hak testowy widoczny tylko przy ?civtest (forceAiTruceDecisionForTest, playerProposeTruceForTest, resolveAiAwaitingForTest) pozwala wymusic decyzje AI na propozycje rozejmu gracza; domyslne zachowanie AI bez zmian; diplo-truce-live-test ma asercje L4 odmowy AI (9c8b13cb7); zero zmian w rozgrywce produkcyjnej

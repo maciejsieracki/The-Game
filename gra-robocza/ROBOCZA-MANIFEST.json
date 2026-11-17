@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
-  "bundleSha256": "28909d3a94b87b27fddb5fc2f0dd597527136034a31fad66d5cbaf1725115559",
-  "bundleBytes": 14850192,
+  "bundleMd5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
+  "bundleSha256": "2883b6bc40a62089f3ca7493d2fce41b911816956c997647edc8b8cc72455cf8",
+  "bundleBytes": 14851262,
   "sourceSnapshot": {
-    "source": "merge FC 9c8b13cb7 na origin/main 87eeecbde",
+    "source": "merge FC 67984086e na origin/main d9d29aece",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 797: Hak testowy widoczny tylko przy ?civtest (forceAiTruceDecisionForTest, playerProposeTruceForTest, resolveAiAwaitingForTest) pozwala wymusic decyzje AI na propozycje rozejmu gracza; domyslne zachowanie AI bez zmian; diplo-truce-live-test ma asercje L4 odmowy AI (9c8b13cb7); zero zmian w rozgrywce produkcyjnej"
+    "FALA 798: Baner dowodcy w bitwie jest pozycjonowany z prawdziwych rectow gornego paska i rostera (_syncCommanderPanelLayout): zostaje w srodku gornego rzedu gdy skala >=0,7, inaczej schodzi pod pasek; przy 1024x640, 1280x720 i 1440x900 nie przecina WYCOFAJ SIE, Ustawien ani Pomin (67984086e)"
   ],
   "verification": [
-    "diplo-truce r1 31/0, r4-ai 24/0, until-turn 15/0, impl 94/0, zywy Chromium diplo-truce-live 40/0, mutacje hak-ignorowany i reject->accept czerwienieja, logic 213/213, tsc 0, build OK; NIE ZMIERZONO: Chromium bez ?civtest (dowod produkcji tylko statyczny), live na bazie"
+    "battle-banner-retreat-overlap-live-test 6/6 w 1024x640, 1280x720, 1440x900 (przed poprawka FAIL; mutant 4/2 RED), battle-tempo-minimap-brand OK, hp-display 7/7, damage-colors 28/0, ambush-ui-reason 10/0, logic 213/213, tsc 0, build OK; NIE ZMIERZONO: tryb AUTO i faza rozstawiania, zmiana tresci banera lub rozmiaru okna w trakcie bitwy"
   ],
   "limits": [
-    "Zmiana tylko w gra/src/main.ts pod isCivTestEnabled (+33 linie); w produkcji hak = undefined"
+    "Przy 1024x640 baner pod paskiem zaslania gorny fragment pola bitwy (y 82-157); przy 1280 i 1440 baner zachodzi na pusta ramke rostera (ok. 42x9 px i 41x29 px)"
   ],
-  "finalControl": "R-WEB-TEST-HOOK-AI-TRUCE-REFUSAL-Q1 r1 FC PASS-WITH-NOTES 9c8b13cb7",
+  "finalControl": "R-WEB-UI-BATTLE-BANNER-OVERLAPS-RETREAT-1024X640-Q1 r1 FC PASS-WITH-NOTES 67984086e",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T12:55:33",
+  "hubGeneratedAt": "2026-11-17T13:45:55",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
-      "sizeBytes": 14850192
+      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
+      "sizeBytes": 14851262
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
-      "sizeBytes": 14850192
+      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
+      "sizeBytes": 14851262
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
-      "sizeBytes": 14850192
+      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
+      "sizeBytes": 14851262
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
-      "sizeBytes": 14850192
+      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
+      "sizeBytes": 14851262
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
-      "sizeBytes": 14850192
+      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
+      "sizeBytes": 14851262
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
-      "sizeBytes": 14850192
+      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
+      "sizeBytes": 14851262
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
-      "sizeBytes": 14850192
+      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
+      "sizeBytes": 14851262
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
-      "sizeBytes": 14850192
+      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
+      "sizeBytes": 14851262
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
-      "sizeBytes": 14850192
+      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
+      "sizeBytes": 14851262
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
-      "sizeBytes": 14850192
+      "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
+      "sizeBytes": 14851262
     }
   ],
-  "md5": "1b3aa52f4bb9badf8b4d14c6ffbe7c99",
+  "md5": "b0cbbd36ac25bd40ed85abdf021dd3b0",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
