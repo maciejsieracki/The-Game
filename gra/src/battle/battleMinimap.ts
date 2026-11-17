@@ -44,6 +44,20 @@ export const MINIMAP_RIVER = '#325371';
 export const MINIMAP_FORD = '#3d678c';
 export const MINIMAP_VIEW_FRAME = 'rgba(232,216,138,0.95)';
 
+/**
+ * Kolor znacznika jednostki na minimapie wg STRONY GRACZA (nie wg atk/def ani
+ * koloru cywilizacji). Gracz = playerSide; wszyscy pozostali = przeciwnik.
+ * Kolory przekazuje wywolujacy (tokeny BATTLE_PLAYER / BATTLE_ENEMY z battleHudTheme).
+ */
+export function minimapUnitColor(
+  side: 'atk' | 'def',
+  playerSide: 'atk' | 'def',
+  playerColor: string,
+  enemyColor: string,
+): string {
+  return side === playerSide ? playerColor : enemyColor;
+}
+
 /** Simplified terrain tint for the minimap canvas. */
 export function terrainMinimapColor(t: number): string {
   switch (t) {

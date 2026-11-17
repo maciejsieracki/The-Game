@@ -163,10 +163,11 @@ function sectionHtml(fate: EndDetailsUnitFate, units: readonly EndDetailsUnitRow
 }
 
 /** Kolumna ATK/OBR: nagłówek dowódcy (medalion + civ + rola + suma ludzi) + sekcje. */
-function buildSideColumn(side: 'atk' | 'def', data: EndDetailsSideData, isWinner: boolean): HTMLDivElement {
+// Kolor = gracz/przeciwnik (isPlayer), NIE rola atakujący/obrońca: gracz zawsze niebieski.
+function buildSideColumn(side: 'atk' | 'def', data: EndDetailsSideData, isWinner: boolean, isPlayer: boolean): HTMLDivElement {
   const isAtk = side === 'atk';
-  const sideColor = isAtk ? BATTLE_PLAYER : BATTLE_ENEMY;
-  const sideTextColor = isAtk ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT;
+  const sideColor = isPlayer ? BATTLE_PLAYER : BATTLE_ENEMY;
+  const sideTextColor = isPlayer ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT;
 
   const col = document.createElement('div');
   Object.assign(col.style, {
@@ -185,18 +186,18 @@ function buildSideColumn(side: 'atk' | 'def', data: EndDetailsSideData, isWinner
     padding: '14px 24px',
     borderBottom: '1px solid rgba(232,216,138,0.16)',
     flexShrink: '0',
-    background: isAtk
+    background: isPlayer
       ? 'linear-gradient(90deg,rgba(58,106,208,0.12),transparent)'
       : 'linear-gradient(-90deg,rgba(200,64,64,0.12),transparent)',
   });
   const afterColor = isWinner ? '#7ad0a0' : '#ff7b7b';
   hdr.innerHTML =
     '<span style="width:40px;height:40px;border-radius:50%;flex-shrink:0;' +
-    'background:' + (isAtk ? 'radial-gradient(circle at 38% 30%,#22314c,#0c1626)' : 'radial-gradient(circle at 38% 30%,#3a1c1c,#160a0a)') + ';' +
+    'background:' + (isPlayer ? 'radial-gradient(circle at 38% 30%,#22314c,#0c1626)' : 'radial-gradient(circle at 38% 30%,#3a1c1c,#160a0a)') + ';' +
     'border:2px solid ' + sideColor + ';display:flex;align-items:center;justify-content:center;' +
     'color:' + sideTextColor + ';line-height:0;">' + resizeSvg(PB_SVG.commander, 20) + '</span>' +
     '<div style="flex:1;min-width:0;">' +
-    '<div style="font-family:' + BATTLE_FONT_TITLE + ';font-size:16px;color:' + (isAtk ? '#cfe0f4' : '#f0c8c8') + ';' +
+    '<div style="font-family:' + BATTLE_FONT_TITLE + ';font-size:16px;color:' + (isPlayer ? '#cfe0f4' : '#f0c8c8') + ';' +
     'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(data.civLabel) + '</div>' +
     '<div style="font-size:10px;color:' + BATTLE_TEXT_DIM + ';letter-spacing:0.06em;text-transform:uppercase;">' +
     esc(data.roleLabel) + '</div></div>' +
@@ -327,8 +328,8 @@ export function showEndDetails1E(
     minHeight: '0',
   });
   const playerSide = p.playerSide ?? 'atk';
-  body.appendChild(buildSideColumn('atk', p.atk, playerSide === 'atk' ? p.playerWon : !p.playerWon));
-  body.appendChild(buildSideColumn('def', p.def, playerSide === 'def' ? p.playerWon : !p.playerWon));
+  body.appendChild(buildSideColumn('atk', p.atk, playerSide === 'atk' ? p.playerWon : !p.playerWon, playerSide === 'atk'));
+  body.appendChild(buildSideColumn('def', p.def, playerSide === 'def' ? p.playerWon : !p.playerWon, playerSide === 'def'));
   panel.appendChild(body);
 
   back.appendChild(panel);

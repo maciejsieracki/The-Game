@@ -49,6 +49,7 @@ function boot(): void {
     teren: armies.teren,
     data,
     deploy: deployOn,
+    deployPlayerSide: 'atk', // R-WEB-UI-BATTLE-PLAYER-ALWAYS-BLUE: podgląd oblężenia = gracz atakuje (jawnie)
     siege: siegeOn ? { civ: 'rzym', defCiv: 'grecja' } : undefined,
     attackerCivLabel: armies.attackerCivLabel,
     defenderCivLabel: armies.defenderCivLabel,

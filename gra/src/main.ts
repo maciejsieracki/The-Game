@@ -40079,6 +40079,7 @@ async function boot(): Promise<void> {
         teren: armies.teren,
         data,
         deploy: true,
+        deployPlayerSide: 'atk', // R-WEB-UI-BATTLE-PLAYER-ALWAYS-BLUE: preset playtest = gracz atakuje (jawnie, nie domyślne)
         attackerCivLabel: 'Rzym',
         defenderCivLabel: 'Grecja',
         attackerCivBonusy: civBonusyForOwnerId(0),

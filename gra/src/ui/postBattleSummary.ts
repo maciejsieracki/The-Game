@@ -366,10 +366,12 @@ function buildRosterColumn(
   return col;
 }
 
+/** Kolor werdyktu wg strony GRACZA (nie roli): zwycięzca-gracz = niebieski, zwycięzca-przeciwnik = czerwony. */
 function winnerColor(data: PostBattleSummaryData): string {
   if (data.winner === 'remis') return '#a08030';
-  if (data.winner === 'atakujacy') return '#7ad0a0';
-  return BATTLE_ENEMY_TEXT;
+  const winnerRole: 'atk' | 'def' = data.winner === 'atakujacy' ? 'atk' : 'def';
+  const playerSide = data.playerSide ?? 'atk';
+  return winnerRole === playerSide ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT;
 }
 
 function buildCenterPanel(data: PostBattleSummaryData, statusHeading?: string): HTMLElement {
