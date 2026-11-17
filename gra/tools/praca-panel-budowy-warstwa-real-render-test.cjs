@@ -558,11 +558,15 @@ async function main() {
     }
 
     // M3: ponowne wstawienie bloku WARSTWY (a) do panelu trybu budowy.
+    // R-WEB-SETTINGS-AUTOBUILD-TOGGLE-Q1 (dbfc45311) dodal galaz „automatyzacja wylaczona” z tym
+    // samym napisem; kotwica musi trafiac w galaz WLACZONA (ta, ktora renderuje profile/suwaki).
+    const m3Anchor = "        html += '<div class=\"civ-build-auto\">';\n"
+      + "        html += '<div class=\"lbl\">Automatyzacja ulepszeń terenu</div>';";
     const m3 = hudSrc.replace(
-      "        html += '<div class=\"lbl\">Automatyzacja ulepszeń terenu</div>';",
-      "        html += '<div class=\"civ-build-global-split\" data-praca-split-scope=\"empire\">'\n"
-      + "          + '<input type=\"range\" data-praca-empire-split value=\"25\" />' + '</div>';\n"
-      + "        html += '<div class=\"lbl\">Automatyzacja ulepszeń terenu</div>';");
+      m3Anchor,
+      m3Anchor + "\n"
+      + "        html += '<div class=\"civ-build-global-split\" data-praca-split-scope=\"empire\">'\n"
+      + "          + '<input type=\"range\" data-praca-empire-split value=\"25\" />' + '</div>';");
     if (m3 === hudSrc) { check('(F/M3) mutacja przygotowana', false, 'kotwica M3 nie trafila'); }
     else {
       const b = await buildBrowserBundle({ [HUD_TS]: m3 }, 'm3');
@@ -578,7 +582,8 @@ async function main() {
 
     // M4: zepsucie zapisu warstwy (a) w panelu imperium — asercja (C) musi paść.
     const empSrc = fs.readFileSync(EMP_TS, 'utf8');
-    const m4 = empSrc.replace('      onChange(0, podzialPracyZProcentuPuli(pctU));\n', '');
+    // ea03c3cb7 (hotseat: ustawienia imperium per fotel) zmienil onChange(0, …) na onChange(ownerId, …).
+    const m4 = empSrc.replace('      onChange(ownerId, podzialPracyZProcentuPuli(pctU));\n', '');
     if (m4 === empSrc) { check('(F/M4) mutacja przygotowana', false, 'kotwica M4 nie trafila'); }
     else {
       const b = await buildBrowserBundle({ [EMP_TS]: m4 }, 'm4');

@@ -329,7 +329,9 @@ console.log('    (kontekst: atk hitPct bez muru=' + runNoMur.atkHitPct + '% z mu
 // (dowod, ze structMult trafia w OBRONA, nie w inny parametr).
 const atkUnit = toCombatUnit(attackerRow);
 const defUnit = toCombatUnit(defenderRow);
-const expectedHitMur = hitChanceTw(atkUnit.meleeAttack, defUnit.meleeDefence * 3);
+// R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1 (17be3f180): celnosc strzalu = max(wreczny, dystansowy)
+// (combat.ts rangedShotAccuracy), wiec wzor oczekiwany bierze max, nie sam meleeAttack.
+const expectedHitMur = hitChanceTw(Math.max(atkUnit.meleeAttack, atkUnit.missileAttack), defUnit.meleeDefence * 3);
 assert(
   expectedHitMur === runMur.atkHitPct,
   'hitChanceTw(atak, Obrona*3) == hitPct z resolveCombat(structureDefBonusPct=200) (' + expectedHitMur + '% == ' + runMur.atkHitPct + '%)',

@@ -577,7 +577,9 @@ async function main() {
         { cwd: GRA, stdio: 'ignore' });
       dist = path.join(outDir, 'index.html');
     }
-    const built = fs.readFileSync(dist, 'utf8');
+    // Bundle vite/esbuild zapisuje polskie litery jako sekwencje \uXXXX (ASCII-escape w JS).
+    // Dekodujemy je przed porownaniem tekstu, inaczej (H2)/(H3) nie trafiaja w literal.
+    const built = fs.readFileSync(dist, 'utf8').replace(/\\u([0-9a-fA-F]{4})/g, (_m, h) => String.fromCharCode(parseInt(h, 16)));
     check('(H1) artefakt vite build niesie klasę paska kolejki (civ-emp-q-bar)', built.includes('civ-emp-q-bar'));
     check('(H2) artefakt vite build niesie nową stopkę o znaczeniu paska',
       built.includes('Pasek = UKOŃCZENIE pozycji na froncie'));

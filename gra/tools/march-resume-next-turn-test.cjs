@@ -211,7 +211,12 @@ function wall(q) {
   const seg = fnBody('function applyMarchSegmentInstant(');
   ok(seg.length > 0, 'G1 applyMarchSegmentInstant istnieje');
   const deletes = (seg.match(/plannedMarches\.delete\(/g) || []).length;
-  ok(deletes === 1, 'G2 applyMarchSegmentInstant kasuje plan tylko przy przycieciu stosu (got ' + deletes + ')');
+  // Zasadzki (R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1, 21af749bb i 23906617c) dodaly zamierzone punkty
+  // kasowania planu: (1) przy przycieciu stosu, (2) przy odpaleniu zasadzki (gałąź fire-now),
+  // (3) przy odcięciu marszu przez zasadzkę (instantAmbushHex). Plan jest kasowany tylko w tych trzech miejscach.
+  ok(deletes === 3, 'G2 applyMarchSegmentInstant kasuje plan tylko przy przycieciu stosu lub przy zasadzce (got ' + deletes + ')');
+  ok(/planA\.kind === 'fire-now'[\s\S]{0,200}plannedMarches\.delete\(/.test(seg), 'G2b kasowanie w galezi fire-now zasadzki');
+  ok(/instantAmbushHex !== undefined\)\s*\{\s*plannedMarches\.delete\(/.test(seg), 'G2c kasowanie przy odcieciu marszu zasadzka (instantAmbushHex)');
   const run = fnBody('function runPlannedMarchesAtPlayerEndTurn(');
   ok(/movedByPlayerThisTurn\.has\(id\)/.test(run), 'G3 koniec tury pomija jednostki ruszone recznie');
   const noteBody = fnBody('function noteMarchStop(');

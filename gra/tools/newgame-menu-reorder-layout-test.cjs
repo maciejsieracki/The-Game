@@ -191,8 +191,8 @@ async function main() {
         await page.waitForSelector('.civ-newgame .adv-overlay.open');
         await page.screenshot({ path: path.join(EVIDENCE, `zaawansowane-${tag}.png`) });
         const advCount = await page.locator('.civ-newgame .adv-modal .adv-row').count();
-        assert.strictEqual(advCount, 13, `${tag}: advanced window has 13 rows`);
-        console.log(`  OK  ${tag}: advanced window 13 rows, screenshot saved`);
+        assert.strictEqual(advCount, 14, `${tag}: advanced window has 14 rows`);
+        console.log(`  OK  ${tag}: advanced window 14 rows, screenshot saved`);
       }
       await ctx.close();
     }
