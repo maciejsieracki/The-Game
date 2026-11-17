@@ -1,0 +1,735 @@
+{
+ "topic": "R-RUSTPORT-P4-1-G5-NORM-OPUS",
+ "pin": "07d2fbd72",
+ "generator": "rust-port/renderer/tests/improvements_sync_g5_gen.mjs",
+ "sources": {
+  "gra/data/terrain-improvements.json": "4146751698371020b38039df974ef665200d1c71c69f27626901b9c31c523b4f",
+  "gra/src/types/hex.ts:30-39 Nakladka": "9716f7843849eb4dddd2f48831ddb74b749e84a92f39ef1f7c1b83ecd414b039",
+  "gra/src/game/terrain-improvements.ts:32-34 LEGACY_KEY_ALIASES": "2d5e26b53096d94d09c3b1c40fa608a81369b7d05567f16747e65e8d43f16d78",
+  "gra/src/game/terrain-improvements.ts:117-123 normalizeImprovementKey": "a286098cf2d3564637a68c4a5b5affa51225a70502c4e7cb53cc3aab7b623860",
+  "gra/src/game/terrain-improvements.ts:349-353 foodLayerFromAnimalDeposit": "8efccd1bf60b0a6f120da99b66e5320f12d6542c65bd376f9ae2d6eb2c8b775d",
+  "gra/src/game/terrain-improvements.ts:358-380 improvementKeysForHex": "95acf0bebc86f899d420f4fa7ec311e5f6e78db9f77a739fe1b64a43cc87777a",
+  "gra/src/main.ts:3126-3137 mergedImprovementLayers": "235fe3e85168e71987fe78fcedf5598f2883f4630b900dece285bab5ab12386d"
+ },
+ "aliases": {
+  "pin": "game/terrain-improvements.ts:32-34",
+  "entries": [
+   [
+    "pastwisko",
+    "bydlo"
+   ]
+  ]
+ },
+ "tableKeys": {
+  "pin": "game/terrain-improvements.ts:29 (gra/data/terrain-improvements.json)",
+  "keys": [
+   "_meta",
+   "farma",
+   "irygacja",
+   "bydlo",
+   "owce",
+   "lama",
+   "stadnina",
+   "glinianka",
+   "kamieniolom",
+   "oboz_lowiecki",
+   "wyrab",
+   "tartak",
+   "tarasy",
+   "lodzie_rybackie",
+   "warzelnia_soli",
+   "fort",
+   "droga",
+   "droga_brukowana",
+   "kopalnia_miedzi",
+   "kopalnia_zelaza",
+   "kopalnia_cyny",
+   "kopalnia_zlota",
+   "posterunek",
+   "_miasto_zasieg_ref"
+  ]
+ },
+ "prototypeKeys": {
+  "pin": "game/terrain-improvements.ts:29,117-123 (Object.prototype, Node 22.23.4)",
+  "keys": [
+   "constructor",
+   "__defineGetter__",
+   "__defineSetter__",
+   "hasOwnProperty",
+   "__lookupGetter__",
+   "__lookupSetter__",
+   "isPrototypeOf",
+   "propertyIsEnumerable",
+   "toString",
+   "valueOf",
+   "__proto__",
+   "toLocaleString"
+  ]
+ },
+ "normalize": {
+  "pin": "game/terrain-improvements.ts:117-123",
+  "cases": [
+   {
+    "raw": "",
+    "out": null
+   },
+   {
+    "raw": "brak",
+    "out": null
+   },
+   {
+    "raw": "nieznane",
+    "out": null
+   },
+   {
+    "raw": "kopalnia",
+    "out": null
+   },
+   {
+    "raw": "Farma",
+    "out": null
+   },
+   {
+    "raw": " farma",
+    "out": null
+   },
+   {
+    "raw": "bydlo ",
+    "out": null
+   },
+   {
+    "raw": "pastwisko",
+    "out": "bydlo"
+   },
+   {
+    "raw": "bydlo",
+    "out": "bydlo"
+   },
+   {
+    "raw": "_meta",
+    "out": "_meta"
+   },
+   {
+    "raw": "farma",
+    "out": "farma"
+   },
+   {
+    "raw": "irygacja",
+    "out": "irygacja"
+   },
+   {
+    "raw": "owce",
+    "out": "owce"
+   },
+   {
+    "raw": "lama",
+    "out": "lama"
+   },
+   {
+    "raw": "stadnina",
+    "out": "stadnina"
+   },
+   {
+    "raw": "glinianka",
+    "out": "glinianka"
+   },
+   {
+    "raw": "kamieniolom",
+    "out": "kamieniolom"
+   },
+   {
+    "raw": "oboz_lowiecki",
+    "out": "oboz_lowiecki"
+   },
+   {
+    "raw": "wyrab",
+    "out": "wyrab"
+   },
+   {
+    "raw": "tartak",
+    "out": "tartak"
+   },
+   {
+    "raw": "tarasy",
+    "out": "tarasy"
+   },
+   {
+    "raw": "lodzie_rybackie",
+    "out": "lodzie_rybackie"
+   },
+   {
+    "raw": "warzelnia_soli",
+    "out": "warzelnia_soli"
+   },
+   {
+    "raw": "fort",
+    "out": "fort"
+   },
+   {
+    "raw": "droga",
+    "out": "droga"
+   },
+   {
+    "raw": "droga_brukowana",
+    "out": "droga_brukowana"
+   },
+   {
+    "raw": "kopalnia_miedzi",
+    "out": "kopalnia_miedzi"
+   },
+   {
+    "raw": "kopalnia_zelaza",
+    "out": "kopalnia_zelaza"
+   },
+   {
+    "raw": "kopalnia_cyny",
+    "out": "kopalnia_cyny"
+   },
+   {
+    "raw": "kopalnia_zlota",
+    "out": "kopalnia_zlota"
+   },
+   {
+    "raw": "posterunek",
+    "out": "posterunek"
+   },
+   {
+    "raw": "_miasto_zasieg_ref",
+    "out": "_miasto_zasieg_ref"
+   },
+   {
+    "raw": "constructor",
+    "out": "constructor"
+   },
+   {
+    "raw": "__defineGetter__",
+    "out": "__defineGetter__"
+   },
+   {
+    "raw": "__defineSetter__",
+    "out": "__defineSetter__"
+   },
+   {
+    "raw": "hasOwnProperty",
+    "out": "hasOwnProperty"
+   },
+   {
+    "raw": "__lookupGetter__",
+    "out": "__lookupGetter__"
+   },
+   {
+    "raw": "__lookupSetter__",
+    "out": "__lookupSetter__"
+   },
+   {
+    "raw": "isPrototypeOf",
+    "out": "isPrototypeOf"
+   },
+   {
+    "raw": "propertyIsEnumerable",
+    "out": "propertyIsEnumerable"
+   },
+   {
+    "raw": "toString",
+    "out": "toString"
+   },
+   {
+    "raw": "valueOf",
+    "out": "valueOf"
+   },
+   {
+    "raw": "__proto__",
+    "out": "__proto__"
+   },
+   {
+    "raw": "toLocaleString",
+    "out": "toLocaleString"
+   }
+  ]
+ },
+ "hexes": [
+  {
+   "name": "fallback_absent_brak",
+   "pin": "game/terrain-improvements.ts:365-370,377-379",
+   "ulepszenie": "brak",
+   "ulepszenia": null,
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [],
+   "merged": []
+  },
+  {
+   "name": "fallback_absent_farma",
+   "pin": "game/terrain-improvements.ts:365-370,377-379",
+   "ulepszenie": "farma",
+   "ulepszenia": null,
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "farma"
+   ],
+   "merged": [
+    "farma"
+   ]
+  },
+  {
+   "name": "fallback_absent_irygacja",
+   "pin": "game/terrain-improvements.ts:365-370,377-379",
+   "ulepszenie": "irygacja",
+   "ulepszenia": null,
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "irygacja"
+   ],
+   "merged": [
+    "irygacja"
+   ]
+  },
+  {
+   "name": "fallback_absent_kopalnia",
+   "pin": "game/terrain-improvements.ts:365-370,377-379",
+   "ulepszenie": "kopalnia",
+   "ulepszenia": null,
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [],
+   "merged": []
+  },
+  {
+   "name": "fallback_absent_droga",
+   "pin": "game/terrain-improvements.ts:365-370,377-379",
+   "ulepszenie": "droga",
+   "ulepszenia": null,
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "droga"
+   ],
+   "merged": [
+    "droga"
+   ]
+  },
+  {
+   "name": "fallback_absent_droga_brukowana",
+   "pin": "game/terrain-improvements.ts:365-370,377-379",
+   "ulepszenie": "droga_brukowana",
+   "ulepszenia": null,
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "droga_brukowana"
+   ],
+   "merged": [
+    "droga_brukowana"
+   ]
+  },
+  {
+   "name": "fallback_absent_pastwisko",
+   "pin": "game/terrain-improvements.ts:365-370,377-379",
+   "ulepszenie": "pastwisko",
+   "ulepszenia": null,
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "bydlo"
+   ],
+   "merged": [
+    "bydlo"
+   ]
+  },
+  {
+   "name": "fallback_absent_tartak",
+   "pin": "game/terrain-improvements.ts:365-370,377-379",
+   "ulepszenie": "tartak",
+   "ulepszenia": null,
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "tartak"
+   ],
+   "merged": [
+    "tartak"
+   ]
+  },
+  {
+   "name": "fallback_empty_brak",
+   "pin": "game/terrain-improvements.ts:365-370,377-379",
+   "ulepszenie": "brak",
+   "ulepszenia": [],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [],
+   "merged": []
+  },
+  {
+   "name": "fallback_empty_farma",
+   "pin": "game/terrain-improvements.ts:365-370,377-379",
+   "ulepszenie": "farma",
+   "ulepszenia": [],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "farma"
+   ],
+   "merged": [
+    "farma"
+   ]
+  },
+  {
+   "name": "fallback_empty_irygacja",
+   "pin": "game/terrain-improvements.ts:365-370,377-379",
+   "ulepszenie": "irygacja",
+   "ulepszenia": [],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "irygacja"
+   ],
+   "merged": [
+    "irygacja"
+   ]
+  },
+  {
+   "name": "fallback_empty_kopalnia",
+   "pin": "game/terrain-improvements.ts:365-370,377-379",
+   "ulepszenie": "kopalnia",
+   "ulepszenia": [],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [],
+   "merged": []
+  },
+  {
+   "name": "fallback_empty_droga",
+   "pin": "game/terrain-improvements.ts:365-370,377-379",
+   "ulepszenie": "droga",
+   "ulepszenia": [],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "droga"
+   ],
+   "merged": [
+    "droga"
+   ]
+  },
+  {
+   "name": "fallback_empty_droga_brukowana",
+   "pin": "game/terrain-improvements.ts:365-370,377-379",
+   "ulepszenie": "droga_brukowana",
+   "ulepszenia": [],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "droga_brukowana"
+   ],
+   "merged": [
+    "droga_brukowana"
+   ]
+  },
+  {
+   "name": "fallback_empty_pastwisko",
+   "pin": "game/terrain-improvements.ts:365-370,377-379",
+   "ulepszenie": "pastwisko",
+   "ulepszenia": [],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "bydlo"
+   ],
+   "merged": [
+    "bydlo"
+   ]
+  },
+  {
+   "name": "fallback_empty_tartak",
+   "pin": "game/terrain-improvements.ts:365-370,377-379",
+   "ulepszenie": "tartak",
+   "ulepszenia": [],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "tartak"
+   ],
+   "merged": [
+    "tartak"
+   ]
+  },
+  {
+   "name": "ulepszenia_over_ulepszenie",
+   "pin": "game/terrain-improvements.ts:371-376",
+   "ulepszenie": "farma",
+   "ulepszenia": [
+    "tartak"
+   ],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "tartak"
+   ],
+   "merged": [
+    "tartak"
+   ]
+  },
+  {
+   "name": "ulepszenia_all_unknown_no_fallback",
+   "pin": "game/terrain-improvements.ts:371-376",
+   "ulepszenie": "farma",
+   "ulepszenia": [
+    "kopalnia"
+   ],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [],
+   "merged": [
+    "kopalnia"
+   ]
+  },
+  {
+   "name": "ulepszenia_brak_no_fallback",
+   "pin": "game/terrain-improvements.ts:371-376",
+   "ulepszenie": "tartak",
+   "ulepszenia": [
+    "brak"
+   ],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [],
+   "merged": [
+    "brak"
+   ]
+  },
+  {
+   "name": "ulepszenia_empty_key_no_fallback",
+   "pin": "game/terrain-improvements.ts:371-376",
+   "ulepszenie": "tartak",
+   "ulepszenia": [
+    ""
+   ],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [],
+   "merged": [
+    ""
+   ]
+  },
+  {
+   "name": "alias_list_pastwisko",
+   "pin": "game/terrain-improvements.ts:32-34,119",
+   "ulepszenie": "brak",
+   "ulepszenia": [
+    "pastwisko"
+   ],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "bydlo"
+   ],
+   "merged": [
+    "bydlo",
+    "pastwisko"
+   ]
+  },
+  {
+   "name": "alias_list_dup_pastwisko",
+   "pin": "game/terrain-improvements.ts:32-34,119,375",
+   "ulepszenie": "brak",
+   "ulepszenia": [
+    "pastwisko",
+    "bydlo"
+   ],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "bydlo"
+   ],
+   "merged": [
+    "bydlo",
+    "pastwisko"
+   ]
+  },
+  {
+   "name": "dup_first_position",
+   "pin": "game/terrain-improvements.ts:375",
+   "ulepszenie": "brak",
+   "ulepszenia": [
+    "droga",
+    "farma",
+    "droga"
+   ],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "droga",
+    "farma"
+   ],
+   "merged": [
+    "droga",
+    "farma"
+   ]
+  },
+  {
+   "name": "brak_and_empty_skipped",
+   "pin": "game/terrain-improvements.ts:118",
+   "ulepszenie": "brak",
+   "ulepszenia": [
+    "",
+    "farma",
+    "brak",
+    "droga"
+   ],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "farma",
+    "droga"
+   ],
+   "merged": [
+    "farma",
+    "droga",
+    "",
+    "brak"
+   ]
+  },
+  {
+   "name": "unknown_dropped_then_placed",
+   "pin": "game/terrain-improvements.ts:120-122; main.ts:3132-3135",
+   "ulepszenie": "brak",
+   "ulepszenia": [
+    "nieznane",
+    "farma"
+   ],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "farma"
+   ],
+   "merged": [
+    "farma",
+    "nieznane"
+   ]
+  },
+  {
+   "name": "legacy_kopalnia",
+   "pin": "game/terrain-improvements.ts:120-122; main.ts:3132-3135",
+   "ulepszenie": "kopalnia",
+   "ulepszenia": [
+    "kopalnia"
+   ],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [],
+   "merged": [
+    "kopalnia"
+   ]
+  },
+  {
+   "name": "prototype_key",
+   "pin": "game/terrain-improvements.ts:120-122",
+   "ulepszenie": "brak",
+   "ulepszenia": [
+    "constructor",
+    "toString"
+   ],
+   "nakladka": "brak",
+   "improvementKey": null,
+   "keysForHex": [
+    "constructor",
+    "toString"
+   ],
+   "merged": [
+    "constructor",
+    "toString"
+   ]
+  },
+  {
+   "name": "deposit_bydla_with_alias",
+   "pin": "main.ts:3129-3135",
+   "ulepszenie": "brak",
+   "ulepszenia": [
+    "pastwisko"
+   ],
+   "nakladka": "zloze_bydla",
+   "improvementKey": null,
+   "keysForHex": [
+    "bydlo"
+   ],
+   "merged": [
+    "bydlo",
+    "pastwisko"
+   ]
+  },
+  {
+   "name": "deposit_owiec_fallback",
+   "pin": "main.ts:3129-3135",
+   "ulepszenie": "pastwisko",
+   "ulepszenia": null,
+   "nakladka": "zloze_owiec",
+   "improvementKey": null,
+   "keysForHex": [
+    "bydlo"
+   ],
+   "merged": [
+    "bydlo",
+    "owce"
+   ]
+  },
+  {
+   "name": "deposit_bydla_fallback_pastwisko",
+   "pin": "main.ts:3129-3135",
+   "ulepszenie": "pastwisko",
+   "ulepszenia": null,
+   "nakladka": "zloze_bydla",
+   "improvementKey": null,
+   "keysForHex": [
+    "bydlo"
+   ],
+   "merged": [
+    "bydlo"
+   ]
+  },
+  {
+   "name": "deposit_only",
+   "pin": "main.ts:3129-3131",
+   "ulepszenie": "brak",
+   "ulepszenia": null,
+   "nakladka": "zloze_owiec",
+   "improvementKey": null,
+   "keysForHex": [],
+   "merged": [
+    "owce"
+   ]
+  },
+  {
+   "name": "improvement_key_not_read",
+   "pin": "game/terrain-improvements.ts:358-380",
+   "ulepszenie": "farma",
+   "ulepszenia": null,
+   "nakladka": "brak",
+   "improvementKey": "tartak",
+   "keysForHex": [
+    "farma"
+   ],
+   "merged": [
+    "farma"
+   ]
+  },
+  {
+   "name": "improvement_key_alias_not_read",
+   "pin": "game/terrain-improvements.ts:358-380",
+   "ulepszenie": "brak",
+   "ulepszenia": [
+    "droga"
+   ],
+   "nakladka": "brak",
+   "improvementKey": "pastwisko",
+   "keysForHex": [
+    "droga"
+   ],
+   "merged": [
+    "droga"
+   ]
+  }
+ ]
+}

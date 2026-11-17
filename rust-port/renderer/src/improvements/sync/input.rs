@@ -26,8 +26,10 @@ pub struct HexObjectsInput {
     /// pin keeps it equal to `placedImprovements.get(hexKey)`
     /// (`syncHexUlepszenieFields`, `main.ts:16275-16289`).
     pub ulepszenia: Option<Vec<String>>,
-    /// `hex.ulepszenie` (`HexDynDto.ulepszenie`). Carried, not read by
-    /// this module (see module docs of [`super`], gap G5).
+    /// `hex.ulepszenie` (`HexDynDto.ulepszenie`). Read only as the fallback
+    /// of `improvementKeysForHex` when `ulepszenia` is absent or empty
+    /// (`game/terrain-improvements.ts:365-370`, `:377-379`;
+    /// [`super::build::improvement_keys_for_hex`]).
     pub ulepszenie: vm::Ulepszenie,
     /// `HexExt.improvementKey` (`HexDynDto.improvement_key`). Carried, read
     /// by no pin render path (`git grep improvementKey` in `gra/src/render`

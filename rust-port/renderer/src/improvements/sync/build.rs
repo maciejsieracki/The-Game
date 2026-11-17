@@ -4,6 +4,8 @@
 
 use std::sync::Arc;
 
+use civ_view_model as vm;
+
 use super::input::{ExternalInputs, HexObjectsInput};
 use crate::core::fog_dim::{apply_fog_dim, fog_brightness_for_hex};
 use crate::core::merge_decor::{collapse_to_merged_mesh, count_meshes_in_group};
@@ -66,32 +68,167 @@ pub const fn food_layer_from_animal_deposit(n: Nakladka) -> Option<&'static str>
     }
 }
 
+/// `LEGACY_KEY_ALIASES` (`game/terrain-improvements.ts:32-34`): legacy
+/// keys from before the food + livestock canon (save / old enum), as
+/// `(old, new)` pairs in pin order. The one table of the renderer; the
+/// G5 vectors (`tests/improvements_sync_g5_vectors/vectors.json`) carry
+/// the table read by executing the pin text and the test compares it.
+pub const LEGACY_KEY_ALIASES: [(&str, &str); 1] = [("pastwisko", "bydlo")];
+
+/// Own keys of `IMPROVEMENTS` (`game/terrain-improvements.ts:29`, the
+/// object of `gra/data/terrain-improvements.json` at the pin), in file
+/// order, `_`-prefixed rows included: `IMPROVEMENTS[k]` is truthy for each
+/// of them, so `normalizeImprovementKey` keeps them (`:119-122`).
+pub const IMPROVEMENT_TABLE_KEYS: [&str; 24] = [
+    "_meta",
+    "farma",
+    "irygacja",
+    "bydlo",
+    "owce",
+    "lama",
+    "stadnina",
+    "glinianka",
+    "kamieniolom",
+    "oboz_lowiecki",
+    "wyrab",
+    "tartak",
+    "tarasy",
+    "lodzie_rybackie",
+    "warzelnia_soli",
+    "fort",
+    "droga",
+    "droga_brukowana",
+    "kopalnia_miedzi",
+    "kopalnia_zelaza",
+    "kopalnia_cyny",
+    "kopalnia_zlota",
+    "posterunek",
+    "_miasto_zasieg_ref",
+];
+
+/// `Object.getOwnPropertyNames(Object.prototype)` (Node 22). `IMPROVEMENTS`
+/// and `LEGACY_KEY_ALIASES` are plain JS objects, so `IMPROVEMENTS[k]` is
+/// truthy for these names too and `normalizeImprovementKey` returns them
+/// unchanged (`:119-122`: the alias lookup yields a non-string whose
+/// `IMPROVEMENTS[…]` is `undefined`, so the `raw` branch answers). Same
+/// list as `klucze_prototypu_js` of `engine/data/derived/ulepszenia-reguly.json`.
+pub const JS_OBJECT_PROTOTYPE_KEYS: [&str; 12] = [
+    "constructor",
+    "__defineGetter__",
+    "__defineSetter__",
+    "hasOwnProperty",
+    "__lookupGetter__",
+    "__lookupSetter__",
+    "isPrototypeOf",
+    "propertyIsEnumerable",
+    "toString",
+    "valueOf",
+    "__proto__",
+    "toLocaleString",
+];
+
+/// `!!IMPROVEMENTS[k]` (`game/terrain-improvements.ts:120-122`).
+fn improvement_row_truthy(k: &str) -> bool {
+    IMPROVEMENT_TABLE_KEYS.contains(&k) || JS_OBJECT_PROTOTYPE_KEYS.contains(&k)
+}
+
+/// `LEGACY_KEY_ALIASES[raw] ?? raw` (`game/terrain-improvements.ts:119`).
+/// For a prototype name the pin gets a non-string here; keeping `raw`
+/// gives the same result of [`normalize_improvement_key`] (both branches
+/// then test `IMPROVEMENTS[raw]`).
+fn legacy_alias(raw: &str) -> &str {
+    LEGACY_KEY_ALIASES
+        .iter()
+        .find(|(old, _)| *old == raw)
+        .map_or(raw, |(_, new)| *new)
+}
+
+/// `normalizeImprovementKey(raw)` (`game/terrain-improvements.ts:117-123`):
+/// `None` for an empty key and `'brak'` (`:118`); the alias target when it
+/// is a table row; else `raw` when `raw` is a table row; else `None`
+/// (unknown key, e.g. the legacy `kopalnia`).
+#[must_use]
+pub fn normalize_improvement_key(raw: &str) -> Option<&str> {
+    if raw.is_empty() || raw == "brak" {
+        return None;
+    }
+    let key = legacy_alias(raw);
+    if improvement_row_truthy(key) {
+        Some(key)
+    } else if improvement_row_truthy(raw) {
+        Some(raw)
+    } else {
+        None
+    }
+}
+
+/// `hex.ulepszenie` (`types/hex.ts:45-54`, enum `Ulepszenie`) as the web
+/// string. Exhaustive, no wildcard.
+#[must_use]
+pub const fn ulepszenie_web(u: vm::Ulepszenie) -> &'static str {
+    match u {
+        vm::Ulepszenie::Brak => "brak",
+        vm::Ulepszenie::Farma => "farma",
+        vm::Ulepszenie::Irygacja => "irygacja",
+        vm::Ulepszenie::Kopalnia => "kopalnia",
+        vm::Ulepszenie::Droga => "droga",
+        vm::Ulepszenie::DrogaBrukowana => "droga_brukowana",
+        vm::Ulepszenie::Pastwisko => "pastwisko",
+        vm::Ulepszenie::Tartak => "tartak",
+    }
+}
+
+/// `improvementKeysForHex(hex)` (`game/terrain-improvements.ts:358-380`):
+/// a non-empty `ulepszenia` decides alone (each key normalised, unknown
+/// ones dropped, `new Set` keeps the first position, `:371-376`); only an
+/// absent or empty `ulepszenia` falls back to `hex.ulepszenie`
+/// (`:365-370`, `:377-379`). `HexDynDto.improvement_key` is not read: no
+/// pin render path reads `improvementKey` (see [`HexObjectsInput`]).
+#[must_use]
+pub fn improvement_keys_for_hex(hex: &HexObjectsInput) -> Vec<String> {
+    let mut keys: Vec<String> = Vec::new();
+    match hex.ulepszenia.as_deref() {
+        Some(list) if !list.is_empty() => {
+            for k in list.iter().filter_map(|k| normalize_improvement_key(k)) {
+                if !keys.iter().any(|x| x == k) {
+                    keys.push(k.to_owned());
+                }
+            }
+        }
+        _ => {
+            if let Some(k) = normalize_improvement_key(ulepszenie_web(hex.ulepszenie)) {
+                keys.push(k.to_owned());
+            }
+        }
+    }
+    keys
+}
+
 /// `mergedImprovementLayers(hexKey)` (`main.ts:3126-3137`): a `Set` of
-/// `improvementKeysForHex(hex)`, then the animal deposit layer, then the
-/// placed layers, in insertion order.
+/// `improvementKeysForHex(hex)` ([`improvement_keys_for_hex`]), then the
+/// animal deposit layer, then the placed layers, in insertion order.
 ///
-/// `improvementKeysForHex` is taken from `HexDynDto.ulepszenia` as the
-/// producer sends it: empty keys and `'brak'` are skipped (what
-/// `normalizeImprovementKey` returns `undefined` for, `:117-118`),
-/// duplicates keep the first position. The placed layers are the same list
-/// (`syncHexUlepszenieFields`, `main.ts:16280`), so adding them again
-/// changes nothing. Key normalisation (`LEGACY_KEY_ALIASES`, unknown keys)
-/// and the fallback to `hex.ulepszenie` are not done here (gap G5).
+/// The placed layers (`placedImprovements.get(hexKey)`, `:3132-3135`) are
+/// added as stored, not normalised. The pin keeps `hex.ulepszenia` equal
+/// to them (`syncHexUlepszenieFields`, `main.ts:16275-16289`; the save
+/// load `:17104-17119` applies only `migrateImprovementLayers`, which
+/// rewrites `kopalnia` alone), so they are taken from
+/// `HexDynDto.ulepszenia` as sent. A legacy or unknown key among them thus
+/// stays a layer after the normalised keys (e.g. `['pastwisko']` →
+/// `['bydlo', 'pastwisko']`), as in the pin.
 #[must_use]
 pub fn merged_improvement_layers(hex: &HexObjectsInput) -> Vec<String> {
-    let mut keys: Vec<String> = Vec::new();
+    let mut keys = improvement_keys_for_hex(hex);
     let mut add = |k: &str| {
         if !keys.iter().any(|x| x == k) {
             keys.push(k.to_owned());
         }
     };
-    for k in hex.ulepszenia.iter().flatten() {
-        if !k.is_empty() && k != "brak" {
-            add(k);
-        }
-    }
     if let Some(d) = food_layer_from_animal_deposit(hex.nakladka) {
         add(d);
+    }
+    for k in hex.ulepszenia.iter().flatten() {
+        add(k);
     }
     keys
 }
