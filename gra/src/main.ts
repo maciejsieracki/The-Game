@@ -33990,7 +33990,7 @@ async function boot(): Promise<void> {
       syncUnitsRender();
       if (isMe(mover.ownerId)) {
         showHintMessage('Wpadłeś w zasadzkę!', 4500);
-        openPlayerMapUnitAttackCore(mover, defender);
+        openPlayerMapUnitAttackCore(mover, defender, true);
       } else if (isMe(defender.ownerId)) {
         showHintMessage('Zasadzka się powiodła', 4500);
       }
@@ -36103,7 +36103,9 @@ async function boot(): Promise<void> {
       openPlayerMapUnitAttackCore(atkUnit, defUnit);
     }
 
-    function openPlayerMapUnitAttackCore(atkUnitIn: RuntimeUnit, defUnit: RuntimeUnit): void {
+    // R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: ambushSurprised = true gdy atakujacy (gracz) wpadl w zasadzke
+    // defUnit -- wtedy atakujacy rozstawia sie w dlugiej linii, obrona (zastawiajaca) ma strefe calego pola.
+    function openPlayerMapUnitAttackCore(atkUnitIn: RuntimeUnit, defUnit: RuntimeUnit, ambushSurprised: boolean = false): void {
       // R-WEB-ARMY-SCOUT-NOT-LEADER-Q1: zwiadowca/cywil w armii nigdy nie jest kotwicą ataku.
       const atkUnit = combatAnchorFor(
         atkUnitIn, units, unitAttackScore,
@@ -36279,8 +36281,9 @@ async function boot(): Promise<void> {
             teren: dTeren4,
             worldTerrain: worldTerrainFromHex(dHex4),
             data,
-            deploy: atkRosterRef.some(u => u.isGeneral === true),
+            deploy: atkRosterRef.some(u => u.isGeneral === true) || ambushSurprised,
             deployPlayerSide: 'atk',
+            ...(ambushSurprised ? { ambush: { surprisedSide: 'atk' as const } } : {}),
             manualControlAllowed: atkRosterRef.some(u => u.isGeneral === true),
             attackerCivBonusy: civBonusyForOwnerId(atkLead.ownerId),
             defenderCivBonusy: civBonusyForOwnerId(defLead.ownerId),
@@ -36807,6 +36810,9 @@ async function boot(): Promise<void> {
        *  attack on the player's city (hard) passes this; the AI-vs-player caller omits
        *  it -> undefined -> unchanged for that path. */
       allowCityCapture?: boolean,
+      /** R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: bitwa z zasadzki (AI-atakujacy wpada w zasadzke gracza).
+       *  Wtedy strona zaskoczona = 'atk' (dluga linia), gracz (def) rozstawia sie na calym polu. */
+      ambushSurprisedSide?: 'atk' | 'def',
     ): void {
       const atkRosterRef = atkRoster.slice();
       const defRosterRef = defRoster.slice();
@@ -37056,8 +37062,9 @@ async function boot(): Promise<void> {
             teren: terrain,
             worldTerrain,
             data,
-            deploy: defRosterRef.some(u => u.isGeneral === true),
+            deploy: defRosterRef.some(u => u.isGeneral === true) || ambushSurprisedSide !== undefined,
             deployPlayerSide: 'def',
+            ...(ambushSurprisedSide !== undefined ? { ambush: { surprisedSide: ambushSurprisedSide } } : {}),
             manualControlAllowed: defRosterRef.some(u => u.isGeneral === true),
             attackerCivBonusy: civBonusyForOwnerId(atkLead.ownerId),
             defenderCivBonusy: civBonusyForOwnerId(defLead.ownerId),
@@ -45927,6 +45934,9 @@ async function boot(): Promise<void> {
                         );
                       },
                       worldTerrainFromHex(hexObj),
+                      undefined,
+                      // R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: AI wpadl w zasadzke gracza (cmd.ambush) -> atk zaskoczony.
+                      (cmd as { ambush?: boolean }).ambush === true ? 'atk' : undefined,
                     );
                     break ownerLoop;
                   }
