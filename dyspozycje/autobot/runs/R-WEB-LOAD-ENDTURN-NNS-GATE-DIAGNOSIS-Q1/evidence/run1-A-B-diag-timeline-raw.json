@@ -1,0 +1,150 @@
+{
+  "turyMax": 24,
+  "timeline": [
+    {
+      "krok": 0,
+      "turaPrzed": 1,
+      "turaPo": 2,
+      "advanced": true,
+      "gatePrzedEndTurn": false,
+      "komunikatPrzed": "",
+      "skarbiecPo": null,
+      "spichlerzPo": null,
+      "interwencja": null
+    },
+    {
+      "krok": 1,
+      "turaPrzed": 2,
+      "turaPo": 2,
+      "advanced": false,
+      "gatePrzedEndTurn": true,
+      "komunikatPrzed": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 46. Pomogą: podatek złota: +23 złota/turę; obniżka racji żywności: +56 żywn",
+      "skarbiecPo": 4810,
+      "spichlerzPo": -48,
+      "interwencja": {
+        "spichlerzPrzed": 0,
+        "dosypano": 400
+      }
+    }
+  ],
+  "zapisy": {
+    "A": {
+      "tura": 1,
+      "quickSave": true
+    },
+    "B": null
+  },
+  "pomiary": {
+    "P1_tura1_przed_zapisem": {
+      "turn": 1,
+      "gate": false,
+      "komunikat": "",
+      "treasury": 5000,
+      "spichlerz": 0,
+      "forecast": null
+    },
+    "P1_A_diag_przed_zapisem": {
+      "turn": 1,
+      "gate": false,
+      "komunikat": "",
+      "treasury": 5000,
+      "spichlerz": 0,
+      "forecast": null
+    },
+    "P1_koniec_gry_zrodlowej": {
+      "turn": 2,
+      "gate": false,
+      "komunikat": "",
+      "treasury": 4907,
+      "spichlerz": 400,
+      "forecast": {
+        "turn": 2,
+        "skarbiecObecny": 4907,
+        "skarbiecPo": 4810,
+        "spichlerzObecny": 0,
+        "spichlerzPo": -48
+      }
+    },
+    "P1_B_diag_przed_zapisem": null,
+    "W3_A_swieza_strona": {
+      "afterLoad": {
+        "turn": 1,
+        "gate": false,
+        "komunikat": "",
+        "treasury": 5000,
+        "spichlerz": 0,
+        "forecast": null
+      },
+      "endTurn": {
+        "turnBefore": 1,
+        "turnAfter": 2,
+        "advanced": true
+      },
+      "afterEndTurn": {
+        "turn": 2,
+        "gate": true,
+        "komunikat": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 46. Pomogą: podatek złota: +23 złota/turę; obniżka racji żywności: +56 żywn",
+        "treasury": 4907,
+        "spichlerz": 0,
+        "forecast": {
+          "turn": 2,
+          "skarbiecObecny": 4907,
+          "skarbiecPo": 4810,
+          "spichlerzObecny": 0,
+          "spichlerzPo": -48
+        }
+      }
+    },
+    "W2_przed_wczytaniem_A": {
+      "turn": 2,
+      "gate": true,
+      "komunikat": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 46. Pomogą: podatek złota: +23 złota/turę; obniżka racji żywności: +56 żywn",
+      "treasury": 4907,
+      "spichlerz": 0,
+      "forecast": {
+        "turn": 2,
+        "skarbiecObecny": 4907,
+        "skarbiecPo": 4810,
+        "spichlerzObecny": 0,
+        "spichlerzPo": -48
+      }
+    },
+    "W2_A_wczytaj_po_endturn_w_tej_stronie": {
+      "afterLoad": {
+        "turn": 2,
+        "gate": true,
+        "komunikat": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 46. Pomogą: podatek złota: +23 złota/turę; obniżka racji żywności: +56 żywn",
+        "treasury": 4907,
+        "spichlerz": 0,
+        "forecast": {
+          "turn": 2,
+          "skarbiecObecny": 4907,
+          "skarbiecPo": 4810,
+          "spichlerzObecny": 0,
+          "spichlerzPo": -48
+        }
+      },
+      "endTurn": {
+        "turnBefore": 2,
+        "turnAfter": 2,
+        "advanced": false
+      },
+      "afterEndTurn": {
+        "turn": 2,
+        "gate": true,
+        "komunikat": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 46. Pomogą: podatek złota: +23 złota/turę; obniżka racji żywności: +56 żywn",
+        "treasury": 4907,
+        "spichlerz": 0,
+        "forecast": {
+          "turn": 2,
+          "skarbiecObecny": 4907,
+          "skarbiecPo": 4810,
+          "spichlerzObecny": 0,
+          "spichlerzPo": -48
+        }
+      }
+    }
+  },
+  "interwencjeHarnessu": 1,
+  "bledyStrony": []
+}
