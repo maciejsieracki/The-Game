@@ -4,6 +4,7 @@
 //! owns the map, entities, movement rules, and turn phase queue; the frontend
 //! never maintains a second game state machine.
 
+pub use civ_engine::domain::dto_bridge::RenderLayersPayload;
 pub use civ_engine::StartGameParams;
 use civ_engine::{PlayableGame, PlayablePlayer, PlayableState, PositionDto};
 use serde::{Deserialize, Serialize};
@@ -55,6 +56,16 @@ pub enum EngineCommand {
     /// Player `declarer` declares war on `target` (web `playerDeclareWarOnOwner`). Contract-only in this
     /// topic: the adapters reject it until the diplomacy state is wired into the session.
     DeclareWar { declarer: u64, target: u64 },
+    /// R-RUSTPORT-P4-364-BRIDGE-LAYERS-R2 (D-364-2): query the renderer layers (fog, fog reveal, territory
+    /// ranges) of seat `seat`; absent `seat` = the active human seat (web `ME()`). Answered with
+    /// [`BridgeResult::RenderLayers`] and NO [`BridgeEvent::StateChanged`]. It never changes
+    /// [`EngineState`], but - like web `refreshFog()` (`main.ts:13475-13513`) - it accumulates the seat's
+    /// exploration (`exploredByHuman`) inside the session, outside the state DTO, save and replay.
+    /// Additive: the JSON of every other command is unchanged and `CONTRACT_VERSION` stays 1.
+    GetRenderLayers {
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        seat: Option<u64>,
+    },
 }
 
 /// JSON request envelope sent by the frontend through Tauri `invoke`.
@@ -93,10 +104,21 @@ pub type EngineState = PlayableState;
 pub type EnginePlayer = PlayablePlayer;
 
 /// Successful command result.
+// R-RUSTPORT-P4-364-BRIDGE-LAYERS-R2: `State` carries the full state DTO by value; boxing it would
+// change the `BridgeResult::State { state }` pattern used by the bridge consumers (root
+// `tests/bridge_contract.rs`, outside this topic's allowlist), so the size lint is accepted here as for
+// `EngineCommand`.
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum BridgeResult {
-    State { state: EngineState },
+    State {
+        state: EngineState,
+    },
+    /// R-RUSTPORT-P4-364-BRIDGE-LAYERS-R2: answer to [`EngineCommand::GetRenderLayers`].
+    RenderLayers {
+        layers: RenderLayersPayload,
+    },
 }
 
 /// JSON response returned by the Tauri command.
@@ -197,6 +219,15 @@ impl std::error::Error for BridgeError {}
 /// Adapter seam used by the versioned dispatcher.
 pub trait EnginePort {
     fn execute(&mut self, command: EngineCommand) -> Result<EngineState, BridgeError>;
+
+    /// R-RUSTPORT-P4-364-BRIDGE-LAYERS-R2: renderer layers of seat `seat` (`None` = active human seat).
+    /// Adapters without a session fog state reject the query.
+    fn render_layers(&mut self, seat: Option<u64>) -> Result<RenderLayersPayload, BridgeError> {
+        let _ = seat;
+        Err(BridgeError::engine_rejected(
+            "get_render_layers: this adapter does not provide renderer layers",
+        ))
+    }
 }
 
 /// Result of dispatching one request, including events the Tauri shell emits.
@@ -231,6 +262,19 @@ where
         request.validate()?;
         let request_id = request.request_id;
         let command = request.command;
+        if let EngineCommand::GetRenderLayers { seat } = command {
+            // Read-only query: no `StateChanged` event (the session exploration it accumulates is not
+            // part of `EngineState`).
+            let layers = self.adapter.render_layers(seat)?;
+            return Ok(BridgeDispatch {
+                response: BridgeResponse {
+                    contract_version: CONTRACT_VERSION,
+                    request_id,
+                    result: BridgeResult::RenderLayers { layers },
+                },
+                events: Vec::new(),
+            });
+        }
         let state = self.adapter.execute(command.clone())?;
         let response = BridgeResponse {
             contract_version: CONTRACT_VERSION,
@@ -272,6 +316,11 @@ impl CivEngineAdapter {
     pub fn state(&self) -> &PlayableState {
         self.game.state()
     }
+
+    /// R-RUSTPORT-P4-364-BRIDGE-LAYERS-R2: session fog state (exploration per seat), outside `EngineState`.
+    pub fn fog_session(&self) -> &civ_engine::domain::playable::PlayableFogSession {
+        self.game.fog_session()
+    }
 }
 
 impl EnginePort for CivEngineAdapter {
@@ -306,6 +355,9 @@ impl EnginePort for CivEngineAdapter {
                 .advance_turn()
                 .map_err(|error| BridgeError::engine_rejected(error.to_string()))?,
             EngineCommand::GetState => {}
+            EngineCommand::GetRenderLayers { seat } => {
+                self.render_layers(seat)?;
+            }
             EngineCommand::DeclareWar { .. } => {
                 return Err(BridgeError::engine_rejected(
                     "declare_war: wiring stanu dyplomacji poza zakresem tematu CRED-HAK-WYPOWIEDZENIE-IMPL-Q1",
@@ -314,6 +366,11 @@ impl EnginePort for CivEngineAdapter {
         }
 
         Ok(self.game.state().clone())
+    }
+
+    fn render_layers(&mut self, seat: Option<u64>) -> Result<RenderLayersPayload, BridgeError> {
+        civ_engine::domain::dto_bridge::session_render_layers(&mut self.game, seat)
+            .map_err(|error| BridgeError::engine_rejected(error.to_string()))
     }
 }
 
@@ -429,6 +486,9 @@ impl EnginePort for MockEngineAdapter {
                 return Err(BridgeError::engine_rejected(
                     "declare_war: wiring stanu dyplomacji poza zakresem tematu CRED-HAK-WYPOWIEDZENIE-IMPL-Q1",
                 ));
+            }
+            EngineCommand::GetRenderLayers { seat } => {
+                return self.render_layers(seat).map(|_| self.state.clone());
             }
         }
 

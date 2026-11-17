@@ -11,12 +11,15 @@ use std::{error::Error, fmt};
 
 use super::brake_power::{objective_power_for_owner, ObjectivePowerRaw};
 use super::building_costs::p6_7b::StockRecord;
+use super::mapgen::cluster_mass::{start_reveal_radius_for_difficulty, StartDifficulty};
+use super::pathfinding::ruch_jednostek::Klucz;
 use super::pathfinding::ruch_jednostek::MoveOccupancy;
 use super::playable_movement::{
-    occupied_for_move, plan_march_to, stack_limit_block_message, PlayableMoveModel,
+    klucz_of, occupied_for_move, plan_march_to, stack_limit_block_message, PlayableMoveModel,
     MARCH_FOREIGN_CITY_HINT, MARCH_NO_ROUTE_HINT,
 };
 use super::player::is_awaiting_first_player_city;
+use super::terrain::visibility::fog_view::ExploredByHuman;
 use super::turn_war_dipl_steps::apply_dipl_deltas_to_state;
 use super::turn_war_inputs::{
     build_war_inputs, power_raw_for_owner, production_config, start_epoch_number,
@@ -1057,11 +1060,70 @@ impl fmt::Display for PlayableError {
 
 impl Error for PlayableError {}
 
+/// R-RUSTPORT-P4-364-BRIDGE-LAYERS-R2 (D-364-2): stan mgly SESJI - wejscia `refreshFog`
+/// (`main.ts:13475-13513`), ktorych [`PlayableState`] nie niesie (Z-FOG-1). Zyje w [`PlayableGame`],
+/// NIE w `PlayableState`: nie wchodzi do DTO stanu, zapisu, snapshotu ani replay (determinizm tury
+/// bez zmian). Inicjalizacja przy `CreateSession` = web nowa gra (`seedStartingFog`, `main.ts:12868-12873`).
+#[derive(Debug, Clone, PartialEq)]
+pub struct PlayableFogSession {
+    /// Web `ME()` = `humanSeats.activeHumanOwnerId` (`main.ts:13729-13731`); bez hot-seat = fotel glowny
+    /// `HUMAN_OWNER_PRIMARY` (tu `HUMAN_PLAYER_ID`).
+    pub active_seat: PlayerId,
+    /// Web `fogOn` (`main.ts:12801`, `seedStartingFog` `:12870`): `true`. Przelacznik F to dev-UI.
+    pub fog_on: bool,
+    /// Web `revealAllLand` (`main.ts:12803`, `:12871`): `false`. Przelacznik M to dev-UI.
+    pub reveal_all_land: bool,
+    /// Web `playerStartHexByOwner` (`main.ts:3025-3027`): fotel glowny -> heks startu. Pionowy wycinek
+    /// zaklada stolice gracza przy starcie, wiec heks startu = pozycja stolicy fotela glownego (jak
+    /// `cluster_compute` `player_start_hex: cap_pos`); brak stolicy = brak wpisu (web `null`).
+    pub player_start_hex_by_owner: BTreeMap<PlayerId, Klucz>,
+    /// Web `startRevealRadius = startRevealRadiusForDifficulty(diff)` (`main.ts:3033`, `:44370-44381`,
+    /// `startScoring.ts:17-23`); nieznana etykieta trudnosci -> `'normal'` (web `?? 'normal'`).
+    pub start_reveal_radius: f64,
+    /// Web `exploredByHuman` (`main.ts:13759`): po nowej grze wpis fotela glownego = pusty zbior
+    /// (`explored.clear()`, `:12872`). Kumulowany przez kazde zapytanie warstw (`refreshFog` -> `addExplored`).
+    pub explored_by_human: ExploredByHuman,
+}
+
+impl PlayableFogSession {
+    /// Stan mgly nowej sesji dla `state` (web `seedStartingFog` + `startRevealRadius` z trudnosci).
+    #[must_use]
+    pub fn for_new_game(state: &PlayableState) -> Self {
+        let diff = match state.params.difficulty.as_str() {
+            "Łatwy" | "easy" => StartDifficulty::Easy,
+            "Trudny" | "hard" => StartDifficulty::Hard,
+            _ => StartDifficulty::Normal,
+        };
+        // Promien to mala liczba calkowita z danych (5 / 8 / 10) - JS `number`.
+        #[allow(clippy::cast_precision_loss)]
+        let start_reveal_radius = start_reveal_radius_for_difficulty(diff) as f64;
+        let player_start_hex_by_owner = state
+            .cities
+            .iter()
+            .find(|c| c.owner_id == HUMAN_PLAYER_ID && c.is_capital)
+            .map(|c| (HUMAN_PLAYER_ID, klucz_of(c.position)))
+            .into_iter()
+            .collect();
+        let mut explored_by_human = ExploredByHuman::new();
+        explored_by_human.insert(HUMAN_PLAYER_ID, BTreeSet::new());
+        Self {
+            active_seat: HUMAN_PLAYER_ID,
+            fog_on: true,
+            reveal_all_land: false,
+            player_start_hex_by_owner,
+            start_reveal_radius,
+            explored_by_human,
+        }
+    }
+}
+
 /// Mutable first-slice game with a deterministic phase queue.
 #[derive(Debug, Clone)]
 pub struct PlayableGame {
     state: PlayableState,
     phase_queue: EventQueue<TurnEvent>,
+    /// R-RUSTPORT-P4-364-BRIDGE-LAYERS-R2: stan mgly sesji (poza `PlayableState`).
+    fog: PlayableFogSession,
 }
 
 impl PlayableGame {
@@ -1100,38 +1162,42 @@ impl PlayableGame {
             "Sesja {} · {} · mapa {}. Wybierz jednostkę.",
             params.civ_name, params.epoch, params.map_size
         );
+        let state = PlayableState {
+            state_version: PLAYABLE_STATE_VERSION,
+            session_id: format!("{}-{}", params.civ_id, params.seed),
+            params,
+            map,
+            players,
+            cities,
+            units,
+            selected_unit_id: None,
+            turn: 1,
+            phase: TurnPhase::PlayerActions,
+            last_advanced_phases: Vec::new(),
+            status,
+            war: WarTurnState::default(),
+            stores: PlayableStores::default(),
+            economy: PlayableReplaceEconomy::default(),
+            forts: Vec::new(),
+            gracz_kiedys_mial_miasto,
+            // Pin `main.ts:45645-45646`: `clear()` + fotel glowny (wpis fotela glownego = flaga wyzej).
+            player_ever_owned_city: BTreeSet::new(),
+            koniec_gry: None,
+            planned_marches: Vec::new(),
+            march_attack_targets: BTreeMap::new(),
+            march_stop_notified: BTreeMap::new(),
+            march_stop_detail: BTreeMap::new(),
+            moved_by_player_this_turn: BTreeSet::new(),
+            oblegane: BTreeSet::new(),
+            siege_machines_ready: BTreeMap::new(),
+            placed_world_wonders: Vec::new(),
+        };
+        // R-RUSTPORT-P4-364-BRIDGE-LAYERS-R2: nowa gra = swieza mgla sesji (`seedStartingFog`).
+        let fog = PlayableFogSession::for_new_game(&state);
         let mut game = Self {
-            state: PlayableState {
-                state_version: PLAYABLE_STATE_VERSION,
-                session_id: format!("{}-{}", params.civ_id, params.seed),
-                params,
-                map,
-                players,
-                cities,
-                units,
-                selected_unit_id: None,
-                turn: 1,
-                phase: TurnPhase::PlayerActions,
-                last_advanced_phases: Vec::new(),
-                status,
-                war: WarTurnState::default(),
-                stores: PlayableStores::default(),
-                economy: PlayableReplaceEconomy::default(),
-                forts: Vec::new(),
-                gracz_kiedys_mial_miasto,
-                // Pin `main.ts:45645-45646`: `clear()` + fotel glowny (wpis fotela glownego = flaga wyzej).
-                player_ever_owned_city: BTreeSet::new(),
-                koniec_gry: None,
-                planned_marches: Vec::new(),
-                march_attack_targets: BTreeMap::new(),
-                march_stop_notified: BTreeMap::new(),
-                march_stop_detail: BTreeMap::new(),
-                moved_by_player_this_turn: BTreeSet::new(),
-                oblegane: BTreeSet::new(),
-                siege_machines_ready: BTreeMap::new(),
-                placed_world_wonders: Vec::new(),
-            },
+            state,
             phase_queue: EventQueue::new(),
+            fog,
         };
         game.enqueue_turn_phases(1);
         Ok(game)
@@ -1142,9 +1208,11 @@ impl PlayableGame {
     /// (`enqueue_turn_phases(state.turn)`), tak jak po `new` i po `advance_turn`.
     pub fn from_state(state: PlayableState) -> Self {
         let turn = state.turn;
+        let fog = PlayableFogSession::for_new_game(&state);
         let mut game = Self {
             state,
             phase_queue: EventQueue::new(),
+            fog,
         };
         game.enqueue_turn_phases(turn);
         game
@@ -1152,6 +1220,17 @@ impl PlayableGame {
 
     pub fn state(&self) -> &PlayableState {
         &self.state
+    }
+
+    /// R-RUSTPORT-P4-364-BRIDGE-LAYERS-R2: stan mgly sesji (odczyt).
+    pub fn fog_session(&self) -> &PlayableFogSession {
+        &self.fog
+    }
+
+    /// R-RUSTPORT-P4-364-BRIDGE-LAYERS-R2: stan gry (odczyt) i stan mgly sesji (zapis) naraz - zapytanie
+    /// warstw renderera dopisuje eksploracje (`refreshFog`), nie zmieniajac `PlayableState`.
+    pub fn fog_session_parts(&mut self) -> (&PlayableState, &mut PlayableFogSession) {
+        (&self.state, &mut self.fog)
     }
 
     pub fn pending_phase_count(&self) -> usize {
@@ -2144,6 +2223,7 @@ mod unit_replace_error_tests {
         let mut resumed = PlayableGame {
             state: loaded,
             phase_queue: game.phase_queue.clone(),
+            fog: game.fog.clone(),
         };
         resumed.advance_turn().expect("tura po wczytaniu");
         let result = resumed.state.koniec_gry.expect("przegrana po wczytaniu");

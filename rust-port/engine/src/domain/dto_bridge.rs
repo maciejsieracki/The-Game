@@ -35,6 +35,10 @@
 //! * D-BR-4: `MissingStartHex` jest w [`DtoBridgeError`] (dispatch), ale producent go NIE zwraca: brak
 //!   heksu startu w pinie daje `undefined` (`:13078`), czyli `river_reveal_keys = None`.
 //! * D-BR-5: kontrakt mostu JSON (`EngineCommand`/`BridgeResult`) i pola `RenderLayersDto` bez zmian.
+//!
+//! R-RUSTPORT-P4-364-BRIDGE-LAYERS-R2 (#364, czesc 2; decyzja orkiestratora D-364-2): wolajacy
+//! produkcyjny warstw = komenda mostu `GetRenderLayers` przez [`session_render_layers`] na stanie
+//! sesji ([`PlayableGame`] + [`PlayableFogSession`]). Ksztalt odpowiedzi: [`RenderLayersPayload`].
 
 use std::collections::{BTreeSet, HashSet};
 use std::fmt;
@@ -47,7 +51,9 @@ use civ_view_model::{
 
 use crate::domain::fort_territory::{fort_territory_nodes, OrderedFortNode};
 use crate::domain::pathfinding::ruch_jednostek::Klucz;
-use crate::domain::playable::{PlayableFortKind, PlayableState};
+use serde::{Deserialize, Serialize};
+
+use crate::domain::playable::{PlayableFogSession, PlayableFortKind, PlayableGame, PlayableState};
 use crate::domain::playable_movement::{klucz_of, ruch_mapa_from_state};
 use crate::domain::player::is_awaiting_first_player_city;
 use crate::domain::terrain::visibility::compute_visible_at;
@@ -68,6 +74,8 @@ pub enum DtoBridgeError {
     MissingStartHex(u64),
     /// Id gracza poza zakresem id DTO (`MAX_SAFE_ID`).
     IdOutOfRange(u64),
+    /// Zapytanie warstw o fotel, ktorego nie ma w `state.players` (web `ME()` jest zawsze fotelem gry).
+    UnknownSeat(u64),
 }
 
 impl fmt::Display for DtoBridgeError {
@@ -78,6 +86,7 @@ impl fmt::Display for DtoBridgeError {
             }
             Self::MissingStartHex(seat) => write!(f, "fotel {seat} nie ma heksu startu"),
             Self::IdOutOfRange(id) => write!(f, "id gracza {id} poza zakresem DTO"),
+            Self::UnknownSeat(seat) => write!(f, "fotel {seat} nie istnieje w sesji"),
         }
     }
 }
@@ -330,4 +339,84 @@ pub fn build_view_layers(
         &fog.explored_for_render,
     )?;
     Ok(DtoBridgeLayers { fog, territory })
+}
+
+/// R-RUSTPORT-P4-364-BRIDGE-LAYERS-R2 (D-364-2): odpowiedz komendy mostu `GetRenderLayers` - warstwy
+/// renderera aktywnego fotela policzone na jednym stanie ([`build_view_layers`]). Pola camelCase jak
+/// reszta kontraktu mostu: `fog`, `fogActive`, `reveal`, `territory`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RenderLayersPayload {
+    /// `FogViewDto` rownolegle do `map.hexes`.
+    pub fog: FogViewDto,
+    /// `ViewerDto.fog_active` (`useFogRender = fogOn || revealAllLand`, `main.ts:13485`).
+    pub fog_active: bool,
+    /// Opcje `setFog` (L1/L2): `revealAllLand`, `riverRevealKeys`.
+    pub reveal: FogRevealDto,
+    /// Zasiegi terytorium widziane przez fotel (`refreshTerritoryBorderOverlay`, `:15593-15601`).
+    pub territory: TerritoryRangesDto,
+}
+
+impl From<DtoBridgeLayers> for RenderLayersPayload {
+    fn from(layers: DtoBridgeLayers) -> Self {
+        Self {
+            fog: layers.fog.fog,
+            fog_active: layers.fog.fog_active,
+            reveal: layers.fog.reveal,
+            territory: layers.territory,
+        }
+    }
+}
+
+/// Wejscia `refreshFog` z [`PlayableFogSession`] dla fotela `active_seat`.
+#[must_use]
+pub fn fog_inputs_of(session: &PlayableFogSession, active_seat: PlayerId) -> FogViewInputs<'_> {
+    FogViewInputs {
+        active_seat,
+        fog_on: session.fog_on,
+        reveal_all_land: session.reveal_all_land,
+        player_start_hex_by_owner: &session.player_start_hex_by_owner,
+        start_reveal_radius: session.start_reveal_radius,
+    }
+}
+
+/// R-RUSTPORT-P4-364-BRIDGE-LAYERS-R2: warstwy renderera sesji `game` dla fotela `seat` (`None` = aktywny
+/// fotel czlowieka, web `ME()`).
+///
+/// Zapytanie jest tylko-do-odczytu wzgledem [`PlayableState`] (nie zmienia stanu gry, zapisu ani replay),
+/// ale - jak web `refreshFog()` (`main.ts:13475-13513`, `addExplored(exploredByHuman.get(ME())!, vis)`) -
+/// KUMULUJE eksploracje fotela w [`PlayableFogSession::explored_by_human`]: kazde wywolanie dopisuje
+/// biezaco widoczne heksy, eksploracja nigdy sie nie cofa. Fotel bez wpisu eksploracji dostaje pusty
+/// zbior przed `refreshFog` (web `switchActiveHuman` KROK 0, `main.ts:13902`). Wybor fotela dotyczy tylko
+/// tego zapytania: [`PlayableFogSession::active_seat`] sie nie zmienia.
+///
+/// # Errors
+///
+/// [`DtoBridgeError::UnknownSeat`] dla fotela spoza `state.players`; dalej jak [`build_view_layers`].
+pub fn session_render_layers(
+    game: &mut PlayableGame,
+    seat: Option<u64>,
+) -> Result<RenderLayersPayload, DtoBridgeError> {
+    let (state, fog) = game.fog_session_parts();
+    let active_seat = match seat {
+        None => fog.active_seat,
+        Some(raw) => {
+            let id = PlayerId::new(raw);
+            if !state.players.iter().any(|p| p.id == id) {
+                return Err(DtoBridgeError::UnknownSeat(raw));
+            }
+            id
+        }
+    };
+    let mut explored = std::mem::take(&mut fog.explored_by_human);
+    explored.entry(active_seat).or_default();
+    let ever = state.player_ever_owned_city_by_owner();
+    let result = build_view_layers(
+        state,
+        &fog_inputs_of(fog, active_seat),
+        &ever,
+        &mut explored,
+    );
+    fog.explored_by_human = explored;
+    Ok(result?.into())
 }
