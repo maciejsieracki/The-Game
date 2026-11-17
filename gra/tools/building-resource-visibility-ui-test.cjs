@@ -158,9 +158,9 @@ async function main() {
       unitName: 'Wojownik',
       skarb: 100,
       options: [
-        { id: 'Oszczepnik', name: 'Oszczepnik', icon: '', surcharge: 0, atk: 1, def: 1, hpMax: 10,
+        { id: 'Oszczepnik', name: 'Oszczepnik', icon: '', surcharge: 0, moneyCost: 0, atk: 1, def: 1, hpMax: 10,
           blockedReason: 'Brak w magazynie państwa: Drewno' },
-        { id: 'Łucznik', name: 'Łucznik', icon: '', surcharge: 0, atk: 2, def: 1, hpMax: 10 },
+        { id: 'Łucznik', name: 'Łucznik', icon: '', surcharge: 0, moneyCost: 0, atk: 2, def: 1, hpMax: 10 },
       ],
       onPick: id => window.__picked.push(id),
     });

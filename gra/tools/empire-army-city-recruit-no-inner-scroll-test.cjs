@@ -111,6 +111,7 @@ async function main() {
           getTreasury: () => st.treasury,
           getCities: () => st.cities,
           getEpoch: () => 3,
+          getCivKey: () => 'egipt',
           getUnlockedTechs: () => [...new Set(A.units.map(u => u.Tech).filter(Boolean))],
           getEmpireRekruciTotal: () => 4000,
           getBuiltBuildingIds: () => A.buildings.map(b => b.id),

@@ -260,6 +260,10 @@ async function main() {
             left: Math.round(r.left), top: Math.round(r.top),
             width: Math.round(r.width), height: Math.round(r.height),
             right: Math.round(r.right), bottom: Math.round(r.bottom),
+            // R-ENTITYCARD-ROZWINIETE-SEKCJE-SCROLLBAR-Q1 (fb10a248a): dialog ma trwały pasek
+            // przewijania (scrollbar-gutter:stable), który poszerza prostokąt dialogu. Szerokość
+            // KARTY (.entity-card) mierzona osobno -- to ona ma 660px.
+            cardWidth: Math.round((b.querySelector('.entity-card') || d).getBoundingClientRect().width),
             backdropBg: getComputedStyle(b).backgroundColor,
           };
         }));
@@ -332,7 +336,7 @@ async function main() {
        Istota asercji: przesuniecie NIE zmienilo rozmiaru (B == A co do piksela). */
     check('(K1) ROZMIAR karty wierzchniej NIETKNIETY: B == A co do piksela, szerokosc 660 (+0..2px obramowania), wysokosc min(80vh,100vh-32) == 720 przy 1280x900',
       rB.width === rA.width && rB.height === rA.height
-      && rA.width >= 660 && rA.width <= 662 && rA.height === 720, { rA, rB });
+      && rA.cardWidth >= 660 && rA.cardWidth <= 662 && rA.height === 720, { rA, rB });
     const dxMeasured = rB.left - rA.left;
     const dyMeasured = rB.top - rA.top;
     check('(K1) karta B jest PRZESUNIETA wzgledem A w prawo i w dol — zmierzone przesuniecie, nie zalozone',
@@ -519,7 +523,7 @@ async function main() {
       const row = {
         vp: vp.w + 'x' + vp.h,
         cards: st.count,
-        topW: rs.length ? rs[rs.length - 1].width : NaN,
+        topW: rs.length ? rs[rs.length - 1].cardWidth : NaN,
         topH: rs.length ? rs[rs.length - 1].height : NaN,
         expectW, expectH,
         dx: rs.length === 2 ? rs[1].left - rs[0].left : NaN,

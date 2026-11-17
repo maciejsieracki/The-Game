@@ -72,6 +72,28 @@ function sourceChecks() {
       && /return attemptGeneralPurchase\(/.test(mainSource));
 }
 
+// R-WEB-TEST-DEBT-BASELINE-Q3 (jak recruitment-batch-contract-test.cjs): purchaseRecruitmentUnit
+// (main.ts) wola hexHasRoomFor (limit stosu armii) i superUnitLimitViolation (limit Super-jednostki).
+// Oba wycinane z prawdziwych źródeł (army-stack-limit.ts, production.ts), nie kopiowane.
+function sliceFunction(source, signature, nextMarker) {
+  const start = source.indexOf(signature);
+  if (start < 0) throw new Error(`brak sygnatury: ${signature}`);
+  const end = source.indexOf(nextMarker, start);
+  if (end < 0) throw new Error(`brak końca funkcji: ${signature}`);
+  return source.slice(start, end);
+}
+const STACK_LIMIT_SRC = fs.readFileSync(path.resolve(GRA, 'src', 'game', 'army-stack-limit.ts'), 'utf8');
+const stackLimitJs = esbuild.transformSync(STACK_LIMIT_SRC.replace(/^export\s+/gm, ''), { loader: 'ts', target: 'es2020' }).code;
+const { hexHasRoomFor } = new Function(`${stackLimitJs}\nreturn { hexHasRoomFor };`)();
+const PRODUCTION_SRC = fs.readFileSync(path.resolve(GRA, 'src', 'game', 'production.ts'), 'utf8');
+const superBlockMatch = PRODUCTION_SRC.match(/export const SUPER_UNIT_LIMIT_BLOCK_PL =\n\s*('[^']*');/);
+if (!superBlockMatch) throw new Error('brak SUPER_UNIT_LIMIT_BLOCK_PL w production.ts');
+const superFnSrc = sliceFunction(PRODUCTION_SRC, 'export function superUnitLimitViolation(', '\n}\n') + '\n}\n';
+const superSrc = `${superBlockMatch[0].replace('export const', 'const')}\n${superFnSrc.replace('export function', 'function')}`;
+const { superUnitLimitViolation, SUPER_UNIT_LIMIT_BLOCK_PL } = new Function(
+  `${esbuild.transformSync(superSrc, { loader: 'ts', target: 'es2020' }).code}\nreturn { superUnitLimitViolation, SUPER_UNIT_LIMIT_BLOCK_PL };`,
+)();
+
 // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: purchaseRecruitmentUnit wola produkcyjny predykat
 // oblężenia. Ładujemy PRAWDZIWĄ funkcję z game/city-siege-state.ts (czysty moduł), nie kopię.
 function loadCitySiegeModule() {
@@ -108,6 +130,8 @@ function extractBackend() {
     'refreshCityPanelIfOpen', 'refundManpowerToEmpire', 'creditOwnerResourceStock',
     'bestGeneralUnitForOwner', 'units', 'capitalCityIdForOwner', 'armyLeaderTitle',
     'empireBuiltIdsForOwner', 'isCityUnderSiege', 'CITY_SIEGE_RECRUIT_BLOCK_PL',
+  'armyStackLimit', 'hexHasRoomFor', 'superUnitLimitViolation',
+  'reservedUnitTypeNamesForOwner', 'SUPER_UNIT_LIMIT_BLOCK_PL',
   ];
   // eslint-disable-next-line no-new-func
   return new Function(...names, `${transformed}\nreturn purchaseRecruitmentUnit;`);
@@ -186,6 +210,11 @@ function makeHarness() {
     () => [],
     loadCitySiegeModule().isCityUnderSiege,
     loadCitySiegeModule().CITY_SIEGE_RECRUIT_BLOCK_PL,
+    () => 120,
+    hexHasRoomFor,
+    superUnitLimitViolation,
+    () => new Set(),
+    SUPER_UNIT_LIMIT_BLOCK_PL,
   );
   return {
     city, cities, data, offer, cityProd,
