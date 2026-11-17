@@ -3457,3 +3457,19 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 | K5DOC-T4e wpięcie ruchu pieszego w ProdBody (#315, r4) | 1/4 Operator | HAIKU 5.5 | ~12:2x UTC |
 
 **Sloty: 1/4.**
+
+### Rozstrzygnięcia z webu (pin 07d2fbd72) i decyzja ABC — 2026-11-17, bez blokowania prac
+
+Przed zadawaniem pytań sprawdzono web. Trzy pytania, które były oznaczone jako blokada, mają odpowiedź:
+
+| Temat | Rozstrzygnięcie | Dowód (pin 07d2fbd72) |
+|---|---|---|
+| **#253 mgła fotela ≠ 0** | **Web rozstrzyga:** widoczność liczona dla aktywnego fotela `ME()` (plus unia widoczności sojuszników). Eksploracja per fotel: `exploredByHuman.get(ME())`. Wdrożyć wg webu, bez pytania. | `main.ts:12995-13015` (`currentVisible` → `ownPlayerVisibleHexes()`), `main.ts:13475-13492` (`refreshFog`) |
+| **#286 / #120 CRED-HAK, wariant A/B** | **Web rozstrzyga:** `zarejestrujWypowiedzenie` jest wołane w KAŻDEJ ścieżce wypowiedzenia — z przyczyną jawną albo wyliczoną przez `przyczynaWypowiedzenia(zlamanieRozejmu, casusBelliAktywny)`. Hak w produkcji musi objąć wszystkie cztery ścieżki: hamulec, gracz, `ownerDeclareWarOn` (AI i inne), wymuszona_inna. | `diplomacy.ts:2022`, `main.ts:11713`, `13177`, `13221`, `23816` |
+| **#327 garnizon AI podczas wojny** | **Decyzja właściciela (ABC): JAK WEB.** Web nie ma stałego garnizonu na wojnie. Obrona miast tylko przy zagrożeniu (`ai-war-home-defense.ts`), drugi wódz zbiera w mieście (`ai.ts:5299`). Bez odstępstwa. | pytanie ABC 2026-11-17; `ai-war-home-defense.ts`, `ai.ts:5299` |
+
+Konsekwencje dla kolejki:
+- #281 (fog fotela) i #335/#334/#337 (P4-1C, F2, L1/L2 mapa) — **odblokowane**: wdrożenie wg webu, bez decyzji.
+- #286 / #120 / #350 (CRED-HAK) — **odblokowane**: wariant wg webu, bez decyzji.
+- #327 — **zamknięte** decyzją właściciela (jak web).
+- Nie wymyślam nowych odstępstw od webu: każdy temat z tych trzech musi cytować pin.
