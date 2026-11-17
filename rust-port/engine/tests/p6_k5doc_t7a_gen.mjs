@@ -213,6 +213,17 @@ const actionCases = [
   { name: 'krok_w_strone_wroga_S_gdy_brak_N', pin: 'battleScene.ts:6615 (dEnemy < dNow, kierunek S)', input: act({ side_units: [ALLY_A({ q: 7, r: 0 }), A()], enemies: [{ id: 'e', q: 7, r: 14, primary_ranged: false }], occupied: [] }) },
   { name: 'remis_wynik_kolejnosc_DIRS4_E_przed_S', pin: 'battleScene.ts:6632-6633 (strict >)', input: act({ side_units: [ALLY_A({ q: 7, r: 9 }), A({ q: 7, r: 10 })], enemies: [{ id: 'e', q: 12, r: 12, primary_ranged: false }], occupied: [[7, 9]] }) },
   { name: 'def_strona_krok_kierunek_lewy', pin: 'battleScene.ts:6625 (def: stepAdv=-nc)', input: act({ side_units: [A({ side: 'def', q: 7 }), ALLY_A({ id: 'a', q: 9, side: 'def' })], enemies: [{ id: 'e', q: 2, r: 8, primary_ranged: false }] }) },
+  // Remis dwoch krokow o tym samym zysku (E i N, oba zbliżaja o 1). N jest pierwszy w kolejnosci N,E,S,W i NIE ma
+  // sasiada falangi (ally 8,11 nie stoi przy 7,9). E (8,10) stoi przy ally (8,11): +6 => E wygrywa. Mutant bez +6 => N.
+  // Wektor rozstrzyga premie sasiada w remisie (battleScene.ts:6627-6633).
+  { name: 'remis_E_z_sasiadem_wygrywa_nad_N_bez_sasiada', pin: 'battleScene.ts:6627-6633 (+6 rozstrzyga remis N vs E)', input: act({ side_units: [A({ q: 7, r: 10 }), ALLY_A({ q: 8, r: 11 })], enemies: [{ id: 'e', q: 12, r: 8, primary_ranged: false }] }) },
+  // Granice pola (BF_COLS=68, BF_ROWS=156; battleScene.ts:661-662, 6608). Wrog poza polem w kierunku kroku sprawia,
+  // ze krok poza pole bylby zblizajacy; pin musi go odrzucic (Done, bo zaden inny krok nie zbliza).
+  { name: 'granica_N_row0_krok_poza_pole_odrzucony', pin: 'battleScene.ts:6608 (nr < 0)', input: act({ side_units: [A({ q: 7, r: 0 }), ALLY_A({ q: 5, r: 0 })], enemies: [{ id: 'e', q: 7, r: -2, primary_ranged: false }] }) },
+  { name: 'granica_W_col0_krok_poza_pole_odrzucony', pin: 'battleScene.ts:6608 (nc < 0)', input: act({ side_units: [A({ q: 0, r: 7 }), ALLY_A({ q: 0, r: 5 })], enemies: [{ id: 'e', q: -2, r: 7, primary_ranged: false }] }) },
+  { name: 'granica_S_rowBF_ROWS-1_krok_poza_pole_odrzucony', pin: 'battleScene.ts:6608 (nr >= BF_ROWS, nr = BF_ROWS)', input: act({ side_units: [A({ q: 7, r: 155 }), ALLY_A({ q: 5, r: 155 })], enemies: [{ id: 'e', q: 7, r: 157, primary_ranged: false }] }) },
+  { name: 'granica_E_colBF_COLS-1_krok_poza_pole_odrzucony', pin: 'battleScene.ts:6608 (nc >= BF_COLS, nc = BF_COLS)', input: act({ side_units: [A({ q: 67, r: 7 }), ALLY_A({ q: 67, r: 5 })], enemies: [{ id: 'e', q: 69, r: 7, primary_ranged: false }] }) },
+  { name: 'granica_S_row_BF_ROWS-2_krok_w_polu_dozwolony', pin: 'battleScene.ts:6608 (nr = BF_ROWS-1 jest w polu)', input: act({ side_units: [A({ q: 7, r: 154 }), ALLY_A({ q: 5, r: 154 })], enemies: [{ id: 'e', q: 7, r: 157, primary_ranged: false }] }) },
 ];
 
 // --- Wykonanie predykatu / linii przez pin ---
