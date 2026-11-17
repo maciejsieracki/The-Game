@@ -49265,6 +49265,9 @@ async function boot(): Promise<void> {
         ensureCitySaveDefaults(c);
         cities.push(c);
       }
+      // R-WEB-TEST-HOOK-PLAYTEST-MAPA-DIRTY-FORECAST-Q1 (K1, mapa): dołożenie miast presetu
+      // bez inwalidacji = brak prognozy bramki „Zakończ turę” w t1. Tylko ścieżka presetu.
+      markCityStateDirty();
       reapplyCityHexDecorHides();
       syncWonderRender();
 
