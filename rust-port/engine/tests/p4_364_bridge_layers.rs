@@ -54,7 +54,7 @@ fn query(bridge: &mut EngineBridge<CivEngineAdapter>, seat: Option<u64>) -> Rend
     assert_eq!(dispatch.response.contract_version, CONTRACT_VERSION);
     match dispatch.response.result {
         BridgeResult::RenderLayers { layers } => layers,
-        BridgeResult::State { .. } => panic!("GetRenderLayers musi zwrocic RenderLayers"),
+        _ => panic!("GetRenderLayers musi zwrocic RenderLayers"),
     }
 }
 

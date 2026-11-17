@@ -1,0 +1,6 @@
+a1-pomija-cities: exit=101 FAIL (oczekiwane); FAILED: h_pola_ramki_scenariusza_startowego
+a2-pomija-units: exit=101 FAIL (oczekiwane); FAILED: d_fotel_2_daje_inny_viewer_i_inna_mgle, h_stosy_i_filtr_mgly_jednostek, h_pola_ramki_scenariusza_startowego
+b-ignoruje-seat: exit=101 FAIL (oczekiwane); FAILED: d_nieznany_fotel_odrzucony, d_fotel_2_daje_inny_viewer_i_inna_mgle
+c-ignoruje-buildMode: exit=101 FAIL (oczekiwane); FAILED: c_tryb_budowy_czysci_zaznaczenie_zasieg_i_trase
+d-emituje-StateChanged: exit=101 FAIL (oczekiwane); FAILED: b_hex_state_i_fog_rownolegle_do_map_hexes, c_brak_ui_to_brak_zaznaczenia, c_tryb_budowy_czysci_zaznaczenie_zasieg_i_trase, c_bez_trybu_budowy_nakladki_jednostki_zgodne_z_overlays_view, d_fotel_2_daje_inny_viewer_i_inna_mgle, e_dwa_wywolania_daja_identyczny_json, f_ramka_i_mapa_nie_zmieniaja_engine_state, h_pola_ramki_scenariusza_startowego
+e-CONTRACT_VERSION: exit=101 FAIL (oczekiwane); FAILED: g_json_komend_i_odpowiedzi

@@ -5,6 +5,7 @@
 //! never maintains a second game state machine.
 
 pub use civ_engine::domain::dto_bridge::RenderLayersPayload;
+pub use civ_engine::domain::render_frame::{RenderFramePayload, RenderMapPayload, RenderUiParams};
 pub use civ_engine::StartGameParams;
 use civ_engine::{PlayableGame, PlayablePlayer, PlayableState, PositionDto};
 use serde::{Deserialize, Serialize};
@@ -66,6 +67,20 @@ pub enum EngineCommand {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         seat: Option<u64>,
     },
+    /// R-RUSTPORT-P4-364-RENDER-FRAME-R1 (D-R3-1): static renderer map (`MapViewDto`, once per game).
+    /// Answered with [`BridgeResult::RenderMap`] and NO [`BridgeEvent::StateChanged`]; read-only.
+    GetRenderMap,
+    /// R-RUSTPORT-P4-364-RENDER-FRAME-R1 (D-R3-1): full dynamic renderer frame (`RenderLayersDto`) of seat
+    /// `seat` (absent = active human seat, web `ME()`) with the client UI state `ui` (D-R3-2; absent = no
+    /// selection, no build mode). Answered with [`BridgeResult::RenderFrame`] and NO
+    /// [`BridgeEvent::StateChanged`]; like [`EngineCommand::GetRenderLayers`] it accumulates the seat
+    /// exploration in the session only. Additive: `CONTRACT_VERSION` stays 1.
+    GetRenderFrame {
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        seat: Option<u64>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        ui: Option<RenderUiParams>,
+    },
 }
 
 /// JSON request envelope sent by the frontend through Tauri `invoke`.
@@ -118,6 +133,14 @@ pub enum BridgeResult {
     /// R-RUSTPORT-P4-364-BRIDGE-LAYERS-R2: answer to [`EngineCommand::GetRenderLayers`].
     RenderLayers {
         layers: RenderLayersPayload,
+    },
+    /// R-RUSTPORT-P4-364-RENDER-FRAME-R1: answer to [`EngineCommand::GetRenderMap`].
+    RenderMap {
+        map: RenderMapPayload,
+    },
+    /// R-RUSTPORT-P4-364-RENDER-FRAME-R1: answer to [`EngineCommand::GetRenderFrame`].
+    RenderFrame {
+        frame: RenderFramePayload,
     },
 }
 
@@ -228,6 +251,26 @@ pub trait EnginePort {
             "get_render_layers: this adapter does not provide renderer layers",
         ))
     }
+
+    /// R-RUSTPORT-P4-364-RENDER-FRAME-R1: static renderer map. Adapters without a session reject it.
+    fn render_map(&mut self) -> Result<RenderMapPayload, BridgeError> {
+        Err(BridgeError::engine_rejected(
+            "get_render_map: this adapter does not provide the renderer map",
+        ))
+    }
+
+    /// R-RUSTPORT-P4-364-RENDER-FRAME-R1: full renderer frame of seat `seat` (`None` = active human seat)
+    /// with the UI state `ui`. Adapters without a session reject it.
+    fn render_frame(
+        &mut self,
+        seat: Option<u64>,
+        ui: Option<RenderUiParams>,
+    ) -> Result<RenderFramePayload, BridgeError> {
+        let _ = (seat, ui);
+        Err(BridgeError::engine_rejected(
+            "get_render_frame: this adapter does not provide the renderer frame",
+        ))
+    }
 }
 
 /// Result of dispatching one request, including events the Tauri shell emits.
@@ -271,6 +314,30 @@ where
                     contract_version: CONTRACT_VERSION,
                     request_id,
                     result: BridgeResult::RenderLayers { layers },
+                },
+                events: Vec::new(),
+            });
+        }
+        if matches!(command, EngineCommand::GetRenderMap) {
+            // Read-only query: no `StateChanged` event.
+            let map = self.adapter.render_map()?;
+            return Ok(BridgeDispatch {
+                response: BridgeResponse {
+                    contract_version: CONTRACT_VERSION,
+                    request_id,
+                    result: BridgeResult::RenderMap { map },
+                },
+                events: Vec::new(),
+            });
+        }
+        if let EngineCommand::GetRenderFrame { seat, ui } = command {
+            // Read-only query: no `StateChanged` event (the exploration it accumulates is session-only).
+            let frame = self.adapter.render_frame(seat, ui)?;
+            return Ok(BridgeDispatch {
+                response: BridgeResponse {
+                    contract_version: CONTRACT_VERSION,
+                    request_id,
+                    result: BridgeResult::RenderFrame { frame },
                 },
                 events: Vec::new(),
             });
@@ -358,6 +425,12 @@ impl EnginePort for CivEngineAdapter {
             EngineCommand::GetRenderLayers { seat } => {
                 self.render_layers(seat)?;
             }
+            EngineCommand::GetRenderMap => {
+                self.render_map()?;
+            }
+            EngineCommand::GetRenderFrame { seat, ui } => {
+                self.render_frame(seat, ui)?;
+            }
             EngineCommand::DeclareWar { .. } => {
                 return Err(BridgeError::engine_rejected(
                     "declare_war: wiring stanu dyplomacji poza zakresem tematu CRED-HAK-WYPOWIEDZENIE-IMPL-Q1",
@@ -370,6 +443,23 @@ impl EnginePort for CivEngineAdapter {
 
     fn render_layers(&mut self, seat: Option<u64>) -> Result<RenderLayersPayload, BridgeError> {
         civ_engine::domain::dto_bridge::session_render_layers(&mut self.game, seat)
+            .map_err(|error| BridgeError::engine_rejected(error.to_string()))
+    }
+
+    fn render_map(&mut self) -> Result<RenderMapPayload, BridgeError> {
+        civ_engine::domain::render_frame::render_map(self.game.state())
+            .map(RenderMapPayload)
+            .map_err(|error| BridgeError::engine_rejected(error.to_string()))
+    }
+
+    fn render_frame(
+        &mut self,
+        seat: Option<u64>,
+        ui: Option<RenderUiParams>,
+    ) -> Result<RenderFramePayload, BridgeError> {
+        let ui = ui.unwrap_or_default();
+        civ_engine::domain::render_frame::session_render_frame(&mut self.game, seat, &ui)
+            .map(RenderFramePayload)
             .map_err(|error| BridgeError::engine_rejected(error.to_string()))
     }
 }
@@ -489,6 +579,12 @@ impl EnginePort for MockEngineAdapter {
             }
             EngineCommand::GetRenderLayers { seat } => {
                 return self.render_layers(seat).map(|_| self.state.clone());
+            }
+            EngineCommand::GetRenderMap => {
+                return self.render_map().map(|_| self.state.clone());
+            }
+            EngineCommand::GetRenderFrame { seat, ui } => {
+                return self.render_frame(seat, ui).map(|_| self.state.clone());
             }
         }
 
