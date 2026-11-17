@@ -3433,3 +3433,14 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 **Sloty: 1/4.** Brak kolejnych czystych tematów z dispatchem:
 - K5DOC-T4e (#315) wymaga dispatchu r4 na `26e3666bd` (do napisania, następny tick).
 - Pozostałe z kolejki są zablokowane decyzją ABC albo kontraktem: #253/#278/#279/#334/#335/#337 (mgła), #286/#350 (CRED-HAK), #327 (garnizon AI), #107/#113 (K5LOOP-FACING/WIRING), #104/#172 (ZŁOŻA), #298/#351 (R7K7C-WIRING-IMPL). Nie wymyślam tematów dla zapełnienia.
+
+### Przebieg — R6 WIRING (#331) zintegrowany na parity-v2 (c120f2373), 2026-11-17 ~12:1x UTC
+
+- **Workflow R-RUSTPORT-P4-1-R6-WIRING-R1 (`wf_c2556b0f-9ea`, Opus):** Operator PASS-WITH-NOTES (`d5a495640`); Evaluator PASS-WITH-NOTES; Obrona przyjęła zarzut o braku wołającego w adapterze i kolejności (dodano `CityInputs::sync_with_revolt`, który woła `sync` i `sync_revolt` w kolejności webu), usunęła zbędny getter, dodała test przebudowy grupy (`sprite_reattached_when_group_rebuilt`); FC **PASS-WITH-NOTES** na `c120f2373`.
+- **Bramka (na drzewie FC):** `fmt --check` EXIT 0; `clippy --all-targets -D warnings` EXIT 0; `revolt_wiring_r6` 7/7; `cargo test --all-targets --no-fail-fast` EXIT 0 (77 wyników ok, 666 passed, 0 failed, 0 ignored). Dysk 13 GB przed bramką.
+- **Zakres:** `view/cities.rs`, `tests/revolt_wiring_r6.rs` + raporty runs. Bez `Cargo.lock`, bez `gra/`.
+- **Integracja:** ancestry `26e3666bd` → `c120f2373` potwierdzona; FF `parity-v2`: `26e3666bd..c120f2373`; readback `c120f2373987`. Zabezpieczenia: `refs/keep/R6-WIRING-R1-fc`, `rust-port-wip/R-RUSTPORT-P4-1-R6-WIRING-R1`.
+- **Notatka do rejestru (#308):** R6 jest wpięte **w adapterze**, nie wołane w grze. Produkcyjne wywołanie zależy od drogi DTO engine → renderer (audyt L6, decyzja #308).
+- **Renderer zbiorczo (#330):** Q5, R1, R3, R5, R2, R6 — wszystko na `parity-v2`.
+- **Sprzątanie:** worktrees `wf_c2556b0f-9ea-*` (4 sztuki) usunięte, brak żywych procesów. Dysk 17 GB.
+- **Sloty: 0 aktywnych workflow.** Następny kandydat: K5DOC-T4e (#315) — dispatch r4 na `c120f2373` do napisania (następny tick). Pozostałe zablokowane decyzjami ABC/kontraktem.
