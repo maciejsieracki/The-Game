@@ -3315,3 +3315,11 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Sprzątanie:** usunięte 4 worktrees r1 (zakończone, niezablokowane). Dysk 9,3 GB.
 - **r2 uruchomiony** (`wf_da078251-322`, Haiku/Sonnet, skrypt wf_89e542b7).
 - **Pozostałe w tym samym oknie:** T7b r4 (Evaluator), T1 (#263, `wf_2261fa9c-ded`), R7K7C (#106, `wf_f6310912-6d1`).
+
+### Przebieg — T4e (#315) r2 BLOCK INFRA → DODATEK r3 (rozstrzygnięcia) → r3 uruchomiony (2026-11-17 ~10:3x UTC)
+
+- **r2 (`wf_da078251-322`):** Operator BLOCK INFRA (dysk 7,77 GB), patch `wip-r2-nieskompilowane.patch` niezkompilowany; Evaluator FAIL; Obrona BLOCK; FC FAIL. Commity zabezpieczone: `rust-port-wip/p6-k5doc-t4e-r2-{op,ob,ev,fc}`.
+- **Rozstrzygnięcia orkiestratora (DODATEK r3 `de2fcd97f`):** allowlista rozszerzona WYŁĄCZNIE o trait `MoveTerrain` w `siege_tactics_move_effects.rs`; wiring kroku (`krok → do_move_effects`) i koszt per jednostka (`mounted`, `cavalryTerrainMultiplier`, pin `battleScene.ts:7436-7443`) wchodzą do T4e-0; update_facing no-op = znany dług #107; wektory wyłącznie z generatora (pin → TypeScript), nie ręcznie.
+- **Sprzątanie:** usunięte 4 worktrees r2 (zakończone, niezablokowane). Dysk 8,3 GB.
+- **r3 uruchomiony** (`wf_f0bd9aa4-589`, baza `760be5187`).
+- **Dysk jest wąskim gardłem** — w trakcie działają buildy innych tematów (T1 / R7K7C / T7b). Wymóg dispatchu: ≥ 8 GB przed startem i przed każdą mutacją.
