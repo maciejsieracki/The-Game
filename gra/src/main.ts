@@ -13609,6 +13609,9 @@ async function boot(): Promise<void> {
     let gameOver = false;
     /** R-WEB-TRUCE-Q1 (r5): wyłącznie hak live `__truceTestDebug.suppressVictoryForTest` — mapa testowa ma 2 miasta i kończy grę zwycięstwem przy pierwszym EOT. Domyślnie false. */
     let truceTestSuppressVictory = false;
+    /** R-WEB-TEST-HOOK-AI-TRUCE-REFUSAL-Q1: wyłącznie hak live `__truceTestDebug.forceAiTruceDecisionForTest` — jednorazowe
+     *  wymuszenie decyzji AI na rozejm, którego autorem jest GRACZ (wpis stołu). Domyślnie null = zero wpływu na grę. */
+    let truceTestForcedAiDecision: 'accept' | 'reject' | null = null;
     let endTurnInProgress = false;
     /** R-WEB-PLAYER-MOVES-BEFORE-AI-TURN-Q1: znacznik fazy konca tury (dowod kolejnosci). No-op bez
      *  `window.__civPhaseLog` (tablica ustawiana wylacznie przez test/Chromium) -- zero wplywu na gre. */
@@ -21517,7 +21520,19 @@ async function boot(): Promise<void> {
       }
       const sibling = siblingOverride ?? livePackageSiblingFor(entry);
       const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId, sibling);
-      const outcome = resolveNegotiationAsResponder(entry, ctx, turn);
+      let outcome = resolveNegotiationAsResponder(entry, ctx, turn);
+      // R-WEB-TEST-HOOK-AI-TRUCE-REFUSAL-Q1: hak testowy (civTest) — jednorazowe wymuszenie decyzji AI na rozejm gracza.
+      // Gdy hak nieustawiony (produkcja, gra zwykła) warunek jest fałszywy i ścieżka bez zmian.
+      if (truceTestForcedAiDecision !== null && entry.actionId === 'rozejm' && isMe(entry.authorOwnerId) && !isMe(awaitingId)) {
+        const forcedDecision = truceTestForcedAiDecision;
+        truceTestForcedAiDecision = null;
+        outcome = forcedDecision === 'accept'
+          ? {
+            kind: 'accepted',
+            result: resolvePlayerAcceptsAiPending(negotiationToLegacyPending(entry), turn, undefined, { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId) }),
+          }
+          : { kind: 'rejected', reason: 'test: AI odmawia' };
+      }
       if (outcome.kind === 'countered') {
         const clampedPayload = clampNegotiationPayloadToRealResources(
           outcome.entry.proposerOwnerId,
@@ -30568,6 +30583,22 @@ async function boot(): Promise<void> {
       /** SETUP testu: mapa playtest kończy grę zwycięstwem w pierwszym EOT; hak wyłącza tylko ten warunek. */
       suppressVictoryForTest: (): void => { truceTestSuppressVictory = true; },
     };
+    // R-WEB-TEST-HOOK-AI-TRUCE-REFUSAL-Q1 (HOOKAI): dwie metody WYŁĄCZNIE pod ?civTest=1 (w produkcji nie istnieją).
+    // forceAiTruceDecisionForTest — jednorazowe wymuszenie decyzji AI na wpis rozejmu, którego autorem jest gracz
+    // (ścieżka resolveNegotiationEntryAt); bez wywołania AI decyduje normalnie.
+    // playerProposeTruceForTest — propozycja rozejmu GRACZA do AI tą samą ścieżką co stół (handleNegotiatedProposal).
+    if (isCivTestEnabled(window.location.search)) {
+      (window as any).__truceTestDebug.forceAiTruceDecisionForTest = (decision: 'accept' | 'reject'): void => { truceTestForcedAiDecision = decision; };
+      // Rozstrzygnięcie wpisów stołu czekających na AI (ta sama siatka co w turze AI: resolvePendingNegotiationsForOwner),
+      // wołane BEZ kończenia tury — test nie dostaje autonomicznej propozycji pokoju AI z tej samej tury.
+      (window as any).__truceTestDebug.resolveAiAwaitingForTest = (aiId: number): void => { resolvePendingNegotiationsForOwner(aiId); };
+      (window as any).__truceTestDebug.playerProposeTruceForTest = (aiId: number, turns: number): { queued: boolean; reason: string | null } => {
+        // Ładunek jak z UI (akcja '10' + rodzaj 'rozejm', patrz proposalActionIdFromPayload → 'rozejm').
+        const before = negotiationTable.length;
+        handleNegotiatedProposal(aiId, { actionId: '10', rodzaj: 'rozejm', turns });
+        return { queued: negotiationTable.length > before, reason: negotiationTable.length > before ? null : 'odrzucone przez bramki propozycji' };
+      };
+    }
 
     /**
      * R-WEB-AI-TRADE-OFFER-NEED-FROM-PLAYER-SURPLUS-Q1 (r4, zarzut 1 FC r3): fixture epoki WYŁĄCZNIE dla testu live.

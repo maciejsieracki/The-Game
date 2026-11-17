@@ -27,10 +27,9 @@
  *  - POKRYTE: rozejm 5 tur z UI i z akceptacji AI (L1, U1); okno rozejmu (L2a); wygaśnięcie rozejmu z ofertą
  *    pokoju stałego w skrzynce gracza, bez wojny i bez kary (L2b, L2g); brak odpowiedzi gracza = wojna bez kary
  *    (L2h); złamanie rozejmu w oknie = kara + flaga (L3).
- *  - NIE POKRYTE (1): odmowa AI wobec propozycji GRACZA — wymaga haka odpowiedzi AI w gra/src/main.ts (poza
- *    allowlistą tego tematu). Minimalny hak testowy (PROPOZYCJA, NIE zaimplementowana): w `__truceTestDebug`
- *    funkcja `respondPlayerPeaceProposalForTest(aiId, accept)` wołająca TĘ SAMĄ ścieżkę co odpowiedź AI na stole
- *    (resolvePlayerAcceptsAiPending / evaluateProposal) dla propozycji gracza, plus odczyt `truceEndOffer` z meta.
+ *  - L4 (R-WEB-TEST-HOOK-AI-TRUCE-REFUSAL-Q1, HOOKAI): odmowa AI wobec propozycji rozejmu GRACZA — hak civTest
+ *    `forceAiTruceDecisionForTest('reject')` + `playerProposeTruceForTest(ai, 5)` w `__truceTestDebug` (widoczny tylko
+ *    przy ?civTest=1). Asercje: wojna trwa, brak rozejmu/pokoju stałego, brak kary zlamanie_paktu_nap i flagi agresora.
  *  - NIE POKRYTE (2): wariant „AI akceptuje od razu po wygaśnięciu” (inicjator = GRACZ, adresat = AI) — ta
  *    gałąź truceEndTickPair (`truceEndAiAccepts`) nie ma scenariusza, bo acceptTruceForTest zawsze ustawia AI
  *    jako proponującego. Zamknięcie wymaga haka z inicjatorem-graczem (propozycja proposal-level), NIE
@@ -267,8 +266,7 @@ async function main() {
     // Kara za złamanie rozejmu to WYŁĄCZNIE 'zlamanie_paktu_nap'. Inne zdarzenia (np. przemarsz
     // jednostek na terytorium AI, nalicza się też przy pokoju) nie są karą za rozejm.
     assert('L2e brak kary zlamanie_paktu_nap po wygaśnięciu', !credTyp.includes('zlamanie_paktu_nap'), { credBefore, credAfter, credTyp: credTyp.slice(0, 400) });
-    // Odmowa AI wobec propozycji GRACZA — JAWNIE NIE_ZMIERZONO: wymaga haka odpowiedzi AI w main.ts (poza allowlistą).
-    console.log('L2b-odmowa (AI odmawia wobec propozycji GRACZA, inicjator gracz): NIE_ZMIERZONO — brak haka odpowiedzi AI w main.ts (poza allowlistą); patrz POKRYCIE w nagłówku');
+    // Odmowa AI wobec propozycji GRACZA (L2b-odmowa) — pokryta blokiem L4 niżej (hak civTest HOOKAI, po wojnie).
 
     // --- L3: złamanie w oknie ---
     console.log('L3 złamanie rozejmu');
@@ -314,6 +312,43 @@ async function main() {
     assert('L2h bez nowej kary zlamanie_paktu_nap za odmowę/timeout', credDenialAfter === credDenialBefore, { credDenialBefore, credDenialAfter });
     const flagsDenialAfter = JSON.stringify(await page.evaluate(() => window.__truceTestDebug.aggressorFlags()));
     assert('L2h bez nowej flagi agresora za odmowę/timeout', flagsDenialAfter === flagsDenialBefore, { flagsDenialBefore, flagsDenialAfter });
+
+    // --- L4 (R-WEB-TEST-HOOK-AI-TRUCE-REFUSAL-Q1, HOOKAI): ODMOWA AI wobec propozycji rozejmu GRACZA ---
+    // Hak civTest: forceAiTruceDecisionForTest('reject') wymusza decyzję AI na wpis stołu, którego autorem jest gracz
+    // (ścieżka resolveNegotiationEntryAt). Bez haka AI decyduje normalnie (evaluateProposal). Odmowa: wojna trwa,
+    // brak rozejmu/pokoju stałego, wpis zdjęty ze stołu, BEZ nowej kary zlamanie_paktu_nap i BEZ flagi agresora.
+    console.log('L4 odmowa AI wobec propozycji rozejmu gracza (hak civTest)');
+    // Wiek wojny 25 (≥ PEACE_PROPOSAL_MIN_WAR_TURNS = 10): propozycja gracza jest dopuszczona. Rozstrzygnięcie idzie
+    // bez kończenia tury (resolveAiAwaitingForTest), więc AI nie składa własnej propozycji pokoju w tej samej turze.
+    // Naturalna decyzja AI przy tym wieku to ODMOWA (zmierzone w mutacji hak-ignorowany: L4b–L4e zielone, L4f2 czerwony).
+    // Dlatego L4b–L4e potwierdzają zachowanie odmowy, a skuteczność haka dowodzi wyłącznie kontrola L4f2 (wymuszona akceptacja).
+    await page.evaluate(([ai]) => window.__truceTestDebug.setWarAge(ai, 25), [AI]);
+    const sWar4 = await pairState(page);
+    assert('L4-pre para w wojnie przed propozycją gracza', sWar4.status === 'wojna', sWar4);
+    const credRef0 = await page.evaluate(([p]) => window.__truceTestDebug.credibilityEvents(p).filter(e => JSON.stringify(e).includes('zlamanie_paktu_nap')).length, [PLAYER]);
+    const flagsRef0 = JSON.stringify(await page.evaluate(() => window.__truceTestDebug.aggressorFlags()));
+    await page.evaluate(() => window.__truceTestDebug.forceAiTruceDecisionForTest('reject'));
+    const prop4 = await page.evaluate(([ai]) => window.__truceTestDebug.playerProposeTruceForTest(ai, 5), [AI]);
+    assert('L4a propozycja rozejmu gracza trafia na stół', prop4.queued === true, prop4);
+    // Rozstrzygnięcie wpisu czekającego na AI bez kończenia tury (ta sama siatka co w turze AI): inaczej w EOT
+    // AI składa WŁASNĄ propozycję pokoju i pokój zawiera się niezależnie od odmowy (zmierzone: ten sam wynik bez propozycji gracza).
+    await page.evaluate(([ai]) => window.__truceTestDebug.resolveAiAwaitingForTest(ai), [AI]);
+    const sRef4 = await pairState(page);
+    assert('L4b odmowa AI: wojna trwa, bez rozejmu i pokoju stałego', sRef4.status === 'wojna' && sRef4.truceUntilTurn === null && sRef4.peaceUntilTurn === null, sRef4);
+    const entries4 = await page.evaluate(() => window.__truceTestDebug.negotiationEntries());
+    assert('L4c wpis propozycji gracza zdjęty ze stołu po odmowie AI', !entries4.some(e => e.actionId === 'rozejm' && e.proposerOwnerId === PLAYER), entries4);
+    const credRef1 = await page.evaluate(([p]) => window.__truceTestDebug.credibilityEvents(p).filter(e => JSON.stringify(e).includes('zlamanie_paktu_nap')).length, [PLAYER]);
+    assert('L4d bez kary zlamanie_paktu_nap za odmowę AI', credRef1 === credRef0, { credRef0, credRef1 });
+    const flagsRef1 = JSON.stringify(await page.evaluate(() => window.__truceTestDebug.aggressorFlags()));
+    assert('L4e bez flagi agresora za odmowę AI', flagsRef1 === flagsRef0, { flagsRef0, flagsRef1 });
+    // L4f: dowód skuteczności haka (mutacja „hak ignorowany” musi zaczerwienić ten punkt): ta sama propozycja z wymuszoną
+    // AKCEPTACJĄ zawiera rozejm. Naturalna decyzja AI w tym stanie to odmowa (zmierzone), więc bez haka wynik byłby czerwony.
+    await page.evaluate(() => window.__truceTestDebug.forceAiTruceDecisionForTest('accept'));
+    const prop5 = await page.evaluate(([ai]) => window.__truceTestDebug.playerProposeTruceForTest(ai, 5), [AI]);
+    assert('L4f1 druga propozycja rozejmu gracza trafia na stół', prop5.queued === true, prop5);
+    await page.evaluate(([ai]) => window.__truceTestDebug.resolveAiAwaitingForTest(ai), [AI]);
+    const sAcc4 = await pairState(page);
+    assert('L4f2 wymuszona akceptacja AI: rozejm zawarty (pokoj, truceUntilTurn = tura + 5)', sAcc4.status === 'pokoj' && sAcc4.truceUntilTurn === sAcc4.turn + 5, sAcc4);
   } catch (e) {
     fail++;
     console.error(' FAIL wyjątek:', e && e.stack ? e.stack.split('\n').slice(0, 4).join(' | ') : e);
