@@ -57,3 +57,12 @@ PUNKTY W PINIE (ZWERYFIKUJ przed każdym wektorem: `git show 07d2fbd72:gra/src/b
 - Znany dług, NIE w zakresie tej rundy: `norm_name` pokrywa NFD tylko dla U+00C0..U+017F. Odnotuj, nie naprawiaj.
 - Trailery commitów: BEZ nazwy modelu (decyzja #289 dla workerów; harness ma pierwszeństwo tylko dla commitów orkiestratora). Konflikt zgłoś w raporcie.
 - Commit jawnym `git add`, bez `Cargo.lock`, bez push do parity. Raport `02-operator-r2.md`.
+
+## DODATEK r3 (orkiestrator, po BLOCK INFRA Operatora r2 / FC FAIL r2 — wyłącznie dysk)
+- BAZA r3: `c39d97add` (FC r2; zawiera kod z `409477d73`/`1120f110c`, raporty Operatora i Obrony r2). Nie zaczynaj od zera; kod i wektory są już w gałęzi.
+- Od r2 bramki nie były mierzone (dysk 3–7 GB). Dysk jest teraz ≥ 8 GB (11 GB po sprzątaniu rund G5 r2 i T7a r2). Wykonaj bramki NA STARCIE, zanim cokolwiek zmienisz.
+- BRAMKI (jedyne brakujące): `cargo clippy --all-targets -- -D warnings` i `cargo test --all-targets --no-fail-fast` w `rust-port/engine`, `CARGO_TARGET_DIR` poza repo. Przed każdą: `df -h /`. Przy < 8 GB: BLOCK INFRA z liczbą GB, nie uruchamiaj na pół.
+- Mutacje (MUSZĄ dać FAIL): (a) `PHALANX_LEAD_TOLERANCE` 2→3; (b) pominięty filtr `primary_ranged`; (c) negacja gałęzi kategorii falanga w `is_phalanx`; (d) usunięcie premii +6 za sąsiada falangi; (e) `nr >= BF_ROWS` → `nr > BF_ROWS`. Każdą przywróć z kopii i potwierdź zerowy diff.
+- Trailery commitów: BEZ nazwy modelu (decyzja #289 dla workerów). Konflikt zgłoś w raporcie.
+- Znany dług NFD w `norm_name` — odnotuj, nie naprawiaj.
+- Commit jawnym `git add`, bez `Cargo.lock`, bez push do parity. Raport `03-operator-r3.md`.
