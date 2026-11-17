@@ -3619,3 +3619,24 @@ Konsekwencje dla kolejki:
 | P4-1F2 TERRITORY-RANGES (#362) | Final Control | OPUS 5.5 | ok. 16:25 UTC |
 | P4-1 L1/L2 REVEAL (#363) | czeka na slot renderera | OPUS 5.5 | — |
 | P4-1 STATCHIP-SYNC (#361) | czeka na slot renderera i ≥12 GB | OPUS 5.5 | — |
+
+### Przebieg — F2 TERRITORY-RANGES (#362): FC PASS-WITH-NOTES, zintegrowany na parity-v2 (2026-11-17 ~17:10 UTC)
+- **Łańcuch:** Operator `0f683d9cc` PASS → Evaluator `51e58037d` PASS-WITH-NOTES (6 zarzutów) → Obrona `d3fda2f1f` (przyjęte 1, 2, 5 częściowo; odrzucone 3, 4, 6 z dowodem) → FC `0d1c34a5a` PASS-WITH-NOTES.
+- **Zakres:** 6 plików, wszystkie w allowliście lub jawnie zaakceptowane (`vectors.json` jako wynik generatora, precedens G5; `view-model/src/lib.rs` re-export).
+- **Bramki:** fmt EXIT 0 i clippy EXIT 0 (view-model, renderer); `territory_ranges_f2` 8/8; pełny view-model EXIT 0; pełny renderer EXIT 0 (79 binarek, 680 zaliczonych); generator `--check` zgodny z pinem; 6 mutantów FAIL.
+- **Integracja:** FF `parity-v2` `82db9b370` → `1db08c170`. Ten sam zestaw zmian co `0d1c34a5a` z jednym wyjątkiem: usunięta linia `Co-Authored-By` z nazwą modelu w 4 commitach (drzewa identyczne, zweryfikowane `rev-parse ^{tree}`). Oryginalny FC zachowany jako `refs/keep/F2-TERRITORY-RANGES-R1-fc-orig`.
+- **Zabezpieczenie:** gałęzie `rust-port-wip/p4-1f2-territory-ranges-r1`, `-eval`, `-obrona`, `-fc` na origin.
+- **Dług (przyjęty):** `territory_ranges_dto` nie ma wołającego produkcyjnego. Wpięcie z PlayableState należy do DTO-BRIDGE (#364) lub FOG-WIRE, razem z testem równoważności z `engine::domain::territory::territory_owner_at`. Nie oznaczać jako wpiętego w grę.
+- **Dług (przyjęty):** trzecia kopia `territoryOwnerAt`/`collectTerritoryHexKeysByOwner` w view-model; engine ma swoje porty z BTreeMap (kolejność sortowana). D-F2-4: kopia view-model jest źródłem prawdy dla nakładki (wektory pinu), engine dla reguł gry.
+- **Procesowy dług:** trailer z nazwą modelu usunięty w 4 commitach F2; FOG-VIEW `f56b2b796` (sprzed tej rundy) nadal ma trailer — historia nie przepisywana.
+
+### Przebieg — start L1/L2 REVEAL (#363), OPUS (2026-11-17 ~17:10 UTC)
+- **Dispatch:** `R-RUSTPORT-P4-1-L12-REVEAL-R1`, DODATEK r1 (baza `1db08c170`, zależność spełniona), commit `c0a3a7199` na `claude/rust-sivvrn`.
+- **Skrypt:** `topic-L12-opus-3d.js` — wszystkie etapy Opus, wf `wf_0b72412a-f9d`.
+- **Równoległość:** jeden renderer naraz; STATCHIP-SYNC (#361) czeka na kolejny slot.
+- **Dysk:** 18 GB przed startem.
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| P4-1 L1/L2 REVEAL (#363) | Operator | OPUS 5.5 | ok. 17:10 UTC |
+| P4-1 STATCHIP-SYNC (#361) | czeka na slot renderera i ≥12 GB | OPUS 5.5 | — |
