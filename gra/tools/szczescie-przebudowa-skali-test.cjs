@@ -174,8 +174,11 @@ section('2b. suma z budynkow 14 / 25 / 42 (lancuchy ulepszen zwiniete)');
 /**
  * Komplet budynkow stojacych w miescie w epoce `era`. Ulepszenie USUWA poprzednika
  * (`building-resource-gate.ts:357`), wiec kazdy budynek, ktory jest `upgradeFrom`
- * innego DOSTEPNEGO juz budynku, znika z listy. Miasto z kompletem ma 11 / 23 / 31
- * budynkow, NIE 11 / 26 / 39.
+ * innego DOSTEPNEGO juz budynku, znika z listy. Miasto z kompletem ma 12 / 24 / 32
+ * budynkow (katalog 44), NIE 13 / 29 / 42 (bez zwiniecia lancuchow).
+ * Historia wartosci: 04660f9d1 (katalog 41) = 11 / 23 / 31; 918e59933 (+garnizon, katalog 42)
+ * = 12 / 24 / 32; stan HEAD (katalog 44) = 12 / 24 / 32. Wartosci zweryfikowane skryptem na
+ * buildings.json z kazdego z tych commitow (R-WEB-TEST-DEBT-DECISIONS-ARCHERBEHIND-SZCZESCIE-Q1).
  */
 function builtIdsForEra(era) {
   const dostepne = buildings.filter(b => b.epokaWejscia <= era).map(b => b.id);
@@ -184,9 +187,9 @@ function builtIdsForEra(era) {
   );
   return dostepne.filter(id => !zastapione.has(id));
 }
-eq(builtIdsForEra(1).length, 11, '2b: epoka 1 — komplet to 11 budynkow');
-eq(builtIdsForEra(2).length, 23, '2b: epoka 2 — komplet to 23 budynki (nie 26)');
-eq(builtIdsForEra(3).length, 31, '2b: epoka 3 — komplet to 31 budynkow (nie 39)');
+eq(builtIdsForEra(1).length, 12, '2b: epoka 1 — komplet to 12 budynkow (garnizon w katalogu)');
+eq(builtIdsForEra(2).length, 24, '2b: epoka 2 — komplet to 24 budynki (nie 29)');
+eq(builtIdsForEra(3).length, 32, '2b: epoka 3 — komplet to 32 budynki (nie 42)');
 
 // Poziom 1 = wartosci BAZOWE z buildings.json. To jest odniesienie wlasciciela: BUD(e)
 // w BALANS-SZCZESCIE-SKALOWANIE-EPOK.md to suma bazowego szczescia budynkow stojacych
