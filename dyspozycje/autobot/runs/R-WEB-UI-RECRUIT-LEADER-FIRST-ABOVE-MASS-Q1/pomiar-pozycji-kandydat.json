@@ -1,0 +1,44 @@
+{
+  "kolejnosc": [
+    "wodzBlok",
+    "idzDoWodza",
+    "erpHost",
+    "liczniki",
+    "pierwszeMiasto"
+  ],
+  "kolejnoscRosnaca": true,
+  "pozycje": {
+    "naglowekRekrutacja": {
+      "top": 569,
+      "bottom": 588
+    },
+    "wodzBlok": {
+      "top": 588,
+      "bottom": 656
+    },
+    "wodzKarta": {
+      "top": 607,
+      "bottom": 656
+    },
+    "idzDoWodza": {
+      "top": 666,
+      "bottom": 723
+    },
+    "erpHost": {
+      "top": 733,
+      "bottom": 1640
+    },
+    "liczniki": {
+      "top": 1650,
+      "bottom": 1702
+    },
+    "pulaSkarbiec": {
+      "top": 1710,
+      "bottom": 1725
+    },
+    "pierwszeMiasto": {
+      "top": 1774,
+      "bottom": 2243
+    }
+  }
+}

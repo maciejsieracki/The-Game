@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "545b861626bee5bf9d176aa39de5c3ea",
-  "bundleSha256": "9427e1531e69ae4c26c4122557ba4c8bf35248adc55d67d5323347efa7ed4a00",
+  "bundleMd5": "c74dc4bd550b739ddb8a2750a305fbc5",
+  "bundleSha256": "36b5e193f8c4d4a0f3952b54cc7de1069587b1c124e6058f0c8dd20fa037d254",
   "bundleBytes": 14858583,
   "sourceSnapshot": {
-    "source": "FALA 811 cb4290ce1 na main 61c7b64cb",
+    "source": "FALA 812 afe1b6a66 na main 862eaae4a",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 811: Panel dyplomacji (gracz-AI i AI-AI): wiersz Desperacja pokazuje wynik loserDespair bez bramki 50% zmeczenia; tooltip czyta progi z war-weariness-params.json; wiersze podpisane nazwami cywilizacji; komentarze poprawione (diplomacy-display.ts, war-weariness-view.ts, diplomacyAudience.ts)"
+    "FALA 812: Panel Rekrutacja w zakladce Armia: kolejnosc od gory - blok Wodz/General, pole Idz do wodza, dopiero masowa rekrutacja (erp), liczniki, pula, miasta; czysta zmiana kolejnosci HTML i komentarzy (empireDetailPanel.ts, empireRecruitPanel.ts)"
   ],
   "verification": [
-    "tsc 0; logic-test 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplo-weariness-display 54/0; diplo-panel-aiai-both-labels 17/0; mutacja (przywrocona bramka isWarWeary) czerwona"
+    "tsc 0; logic-test 213/213; tech-tree; research; unit-replace; combat; empire-recruit-in-army-panel (Chromium) 14/0; empire-recruit-leader-first-order 2/2; pomiar pozycji DOM wodz < Idz do wodza < erp; mutacja starej kolejnosci czerwona"
   ],
   "limits": [
-    "NIE ZMIERZONO w zywej grze (Chromium) panelu Zmeczenie/Desperacja i tooltipu; dlug Rust REPIN war-weariness-view"
+    "Zachowanie funkcjonalne bez zmian; NIE ZMIERZONO ukladu przy waskim oknie"
   ],
-  "finalControl": "R-WEB-DIPLO-DESPAIR-SHOW-FORMULA-IMPL-Q1 r1 FC PASS-WITH-NOTES 375e9aa9f (kod cb4290ce1)",
+  "finalControl": "R-WEB-UI-RECRUIT-LEADER-FIRST-ABOVE-MASS-Q1 r1 FC PASS-WITH-NOTES 9fa51bfbb (kod 666834a28, kandydat afe1b6a66)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T22:21:41",
+  "hubGeneratedAt": "2026-11-17T22:32:42",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "545b861626bee5bf9d176aa39de5c3ea",
+      "md5": "c74dc4bd550b739ddb8a2750a305fbc5",
       "sizeBytes": 14858583
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "545b861626bee5bf9d176aa39de5c3ea",
+      "md5": "c74dc4bd550b739ddb8a2750a305fbc5",
       "sizeBytes": 14858583
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "545b861626bee5bf9d176aa39de5c3ea",
+      "md5": "c74dc4bd550b739ddb8a2750a305fbc5",
       "sizeBytes": 14858583
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "545b861626bee5bf9d176aa39de5c3ea",
+      "md5": "c74dc4bd550b739ddb8a2750a305fbc5",
       "sizeBytes": 14858583
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "545b861626bee5bf9d176aa39de5c3ea",
+      "md5": "c74dc4bd550b739ddb8a2750a305fbc5",
       "sizeBytes": 14858583
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "545b861626bee5bf9d176aa39de5c3ea",
+      "md5": "c74dc4bd550b739ddb8a2750a305fbc5",
       "sizeBytes": 14858583
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "545b861626bee5bf9d176aa39de5c3ea",
+      "md5": "c74dc4bd550b739ddb8a2750a305fbc5",
       "sizeBytes": 14858583
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "545b861626bee5bf9d176aa39de5c3ea",
+      "md5": "c74dc4bd550b739ddb8a2750a305fbc5",
       "sizeBytes": 14858583
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "545b861626bee5bf9d176aa39de5c3ea",
+      "md5": "c74dc4bd550b739ddb8a2750a305fbc5",
       "sizeBytes": 14858583
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "545b861626bee5bf9d176aa39de5c3ea",
+      "md5": "c74dc4bd550b739ddb8a2750a305fbc5",
       "sizeBytes": 14858583
     }
   ],
-  "md5": "545b861626bee5bf9d176aa39de5c3ea",
+  "md5": "c74dc4bd550b739ddb8a2750a305fbc5",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

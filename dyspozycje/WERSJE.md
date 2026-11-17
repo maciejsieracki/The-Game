@@ -1,3 +1,9 @@
+## ROBOCZA c74dc4bd -- 2026-11-17 -- FALA 812: LEADERFIRST: panel Rekrutacja - wodz i Idz do wodza na gorze (testowa)
+
+- Panel Rekrutacja w zakladce Armia: kolejnosc od gory - blok Wodz/General, pole Idz do wodza, dopiero masowa rekrutacja (erp), liczniki, pula, miasta; czysta zmiana kolejnosci HTML i komentarzy (empireDetailPanel.ts, empireRecruitPanel.ts)
+- Weryfikacja: tsc 0; logic-test 213/213; tech-tree; research; unit-replace; combat; empire-recruit-in-army-panel (Chromium) 14/0; empire-recruit-leader-first-order 2/2; pomiar pozycji DOM wodz < Idz do wodza < erp; mutacja starej kolejnosci czerwona
+- Limity: Zachowanie funkcjonalne bez zmian; NIE ZMIERZONO ukladu przy waskim oknie
+
 ## ROBOCZA 545b8616 -- 2026-11-17 -- FALA 811: DESPAIRIMPL: panel dyplomacji pokazuje desperacje wg wzoru (testowa)
 
 - Panel dyplomacji (gracz-AI i AI-AI): wiersz Desperacja pokazuje wynik loserDespair bez bramki 50% zmeczenia; tooltip czyta progi z war-weariness-params.json; wiersze podpisane nazwami cywilizacji; komentarze poprawione (diplomacy-display.ts, war-weariness-view.ts, diplomacyAudience.ts)
