@@ -8220,6 +8220,7 @@ export class BattleScene {
       infantry,
       garrison,
       gateOpen: this.gateOpen,
+      defenderIsPlayer: this._playerControlSide() === 'def',
     });
     this._syncSiegeHudChromeVisibility();
     requestAnimationFrame(() => this._syncSiegeHudLayout());
