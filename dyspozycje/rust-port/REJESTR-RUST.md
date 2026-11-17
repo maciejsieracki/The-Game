@@ -3116,3 +3116,13 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Krok 3 (sprzątanie):** worktree `wf_122fbedc-719-1` (Ewaluator) do usunięcia po FC; `-2` (locked, merge `7778e66af`) — po zakończeniu rundy. Nic nie usuwam, dopóki FC pracuje.
 - **Aktywne Workflow (1/4):** T5b integracja r4 (FC). Wolne sloty (3): powód jak w poprzednim przebiegu — brak czystego tematu Rust.
 - **Otwarte decyzje ABC (w czacie):** #327, #358.
+
+### Przebieg — heartbeat (2026-11-17 ~03:48 UTC): T5b r4 — Ewaluator PASS-WITH-NOTES, Obrona przyjęła notę, FC w toku; 1/4 aktywne; dysk 7,4 GB
+
+- **Aktywne Workflow (1/4):** K5DOC-T5b, integracja r4 (`wf_122fbedc-719`), etap FC (Sonnet). FC uruchamia `cargo test --all-targets --no-fail-fast` (proces działa).
+- **Ewaluator r4:** PASS-WITH-NOTES, bramki EXIT 0 (fmt, clippy, `p6_k5doc_t5b` 17/17, pełny test 3827 passed, 0 failed, 1 ignored istniejący poza T5b). Nota: w drugiej pętli `best_forward_step` (pin `battleScene.ts` 6865–6866) pięć mutantów filtra koperty sojuszniczej przeżywa — brak wektora zmieniającego `min_row/max_row`. Nieblokująca; zalecenie na kolejną rundę (wektor na flagę).
+- **Obrona r4:** przyjęła notę jako nieblokującą, bez zmian kodu.
+- **Krok 2:** FF `parity-v2` `83777efa9` → `7778e66af` dopiero po werdykcie FC PASS.
+- **Krok 3 (sprzątanie):** nie usuwam worktree, dopóki FC pracuje (`wf_122fbedc-719-1/-2/-4`).
+- **Wolne sloty (3 z 4):** powód jak wcześniej — brak czystego tematu Rust.
+- **Otwarte decyzje ABC (w czacie):** #327, #358.
