@@ -1,3 +1,9 @@
+## ROBOCZA 5b889546 -- 2026-11-17 -- FALA 810: Zaloz miasto wyszarzone przy limicie miast (testowa)
+
+- gdy cywilizacja osiagnela limit miast swojej epoki, przycisk Zaloz miasto w panelu budowy jest wyszarzony i nieklikalny, z komunikatem Osiagnieto limit miast (X/Y w tej epoce) i malym napisem; brak surowcow pozostaje osobnym stanem
+- Weryfikacja: tsc 0; city-founding-limit-greyed-test 19/0; test pelnej gry w Chromium 10/0; mutacje czerwone; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: odswiezanie przycisku przy awansie epoki/utracie miasta w trakcie tury (odswieza sie po ponownym otwarciu panelu)
+
 ## ROBOCZA 988636d5 -- 2026-11-17 -- FALA 809: Etykiety obrazen w bitwie nie nakladaja sie (testowa)
 
 - kolejne etykiety obrazen nad ta sama jednostka sa przesuniete w pionie o ok. 20 px ekranu (krok skalowany kamera, stos wg wysokosci aktywnych etykiet); kolory bez zmian
