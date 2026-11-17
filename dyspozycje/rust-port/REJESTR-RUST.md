@@ -3473,3 +3473,18 @@ Konsekwencje dla kolejki:
 - #286 / #120 / #350 (CRED-HAK) — **odblokowane**: wariant wg webu, bez decyzji.
 - #327 — **zamknięte** decyzją właściciela (jak web).
 - Nie wymyślam nowych odstępstw od webu: każdy temat z tych trzech musi cytować pin.
+
+### Przebieg — T4e (#315) zintegrowany na parity-v2 (2760b4f0c); start FOG-VIEW (2026-11-17 ~13:5x UTC)
+
+- **Workflow R-RUSTPORT-P6-K5DOC-T4E-PIESZY-WIRING (`wf_ce0d4740-311`, r4):** Operator HAIKU PASS-WITH-NOTES (`732ef51a0`, baza `c120f2373`, `p6_k5doc_t4e` 6/6, pełny `cargo test` exit 0, 3887 passed/0 failed, mutacje a/b/c/d FAIL); Evaluator SONNET PASS-WITH-NOTES; Obrona HAIKU: przyjęto poprawkę Z5 (`refused` nie wymaga terenu, `253a9de46`/`278e16c45`), odrzucono Z2/Z4; FC SONNET PASS-WITH-NOTES (`2760b4f0c`, kod `278e16c45`).
+- **Zakres:** `siege_tactics_loop.rs`, `siege_tactics_move_effects.rs` (tylko `MoveTerrain`), `p6_k5doc_t4e*`, runs. Ancestry `c120f2373` → `2760b4f0c` potwierdzona.
+- **Integracja:** FF `parity-v2`: `c120f2373..2760b4f0c`; readback `2760b4f0c0f7`. Zabezpieczenia: `refs/keep/T4E-r4-fc`, gałąź `rust-port-wip/R-RUSTPORT-P6-K5DOC-T4E-PIESZY-WIRING`.
+- **NIE_ZMIERZONO / długi z FC (do rejestru):** (1) realny mnożnik kawalerii `combat.ts:756` nie wykonany z pina, stub CAV_TABLE; (2) `occ_by_key` nie usuwa wpisów przy śmierci/ucieczce (web: pin :7709, :7726, :9812, :9915, :10498) — blokada dla T4e-1/#113, DECYZJA TECHNICZNA orkiestratora; (3) `update_facing` no-op (#107); (4) `move_step` bez produkcyjnego wołającego (wpięcie w SiegeLoop = #113).
+- **Sprzątanie:** worktrees `wf_ce0d4740-311-1..4` usunięte, `tgt-obrona` (3,3 GB) usunięty; brak żywych procesów cargo. Dysk: 14 GB.
+- **Start:** FOG-VIEW (#253/#335), Opus, dispatch `R-RUSTPORT-P4-1C-FOG-VIEW-R1` (DODATEK r2, baza `2760b4f0c`, commit `c3c8ef62f`). Workflow `wf_adaaa3fa-712`.
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| P4-1C FOG-VIEW: producent FogViewDto dla ME() (#253/#335) | 1/4 Operator | OPUS 5.5 | ~13:5x UTC |
+
+**Sloty: 1 z 4.** Gotowe, czekają na zasoby (na GitHubie): Q6 UNITS (#270/#328, bramka renderera ≥12 GB), CRED-HAK-HOOK (#120/#286/#350/#305, engine, Haiku), F2 TERRITORY-RANGES (#278/#334, po FOG), L1/L2 REVEAL (#279/#337, po FOG), STATCHIP-SYNC (#324/#333, #325/#355).
