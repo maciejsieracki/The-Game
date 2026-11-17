@@ -52,6 +52,17 @@ export function isSameEpochArcherDowngrade(sourceName: string, targetName: strin
   return SAME_EPOCH_ARCHER_DOWNGRADE_SOURCES.has(sourceName) && targetName === 'Procarz';
 }
 
+/** Oszczepnik (generyczny) i Oszczepnik Zulu -> Łucznik (decyzja właściciela 2026-11-17): ta sama
+ *  epoka Kamień; dla Zulu także niższa klasa (Specjalna -> Standardowa). Jedyne wejścia poza awansem. */
+export const JAVELIN_TO_ARCHER_SOURCES: ReadonlySet<string> = new Set([
+  'Oszczepnik',
+  'Oszczepnik Zulu (Izijula)',
+]);
+
+export function isJavelinToArcher(sourceName: string, targetName: string): boolean {
+  return JAVELIN_TO_ARCHER_SOURCES.has(sourceName) && targetName === 'Łucznik';
+}
+
 /**
  * Promote one AI unit to the newest currently eligible same-role unit.
  * Availability and costs are supplied by the live-game callers. Cost = FULL recruitment cost of the
@@ -76,7 +87,11 @@ export function promoteAiUnitForEra<U extends AiEraPromotableUnit>(
     String(oldDefinition.Jednostka).trim(),
     String(target.Jednostka).trim(),
   );
-  if (!higherEpoch && !sameEpochArcherOk) return false;
+  const javelinToArcherOk = isJavelinToArcher(
+    String(oldDefinition.Jednostka).trim(),
+    String(target.Jednostka).trim(),
+  );
+  if (!higherEpoch && !sameEpochArcherOk && !javelinToArcherOk) return false;
 
   const result = executeUnitReplace(unit, target.Jednostka, {
     gateReason: (u, newTypeId) => deps.gateReason?.(u, newTypeId) ?? null,
