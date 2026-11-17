@@ -1,8 +1,8 @@
 # R-RUSTPORT-P4-1-L12-REVEAL-R1 — revealAllLand i riverRevealKeys w DTO mapy (PRIO-3D-11, #279/#337)
 
 STATUS: dispatch orkiestratora. Opus (3D). Operator/Obrona Opus; Evaluator/FC Sonnet.
-ZALEŻNOŚĆ: START DOPIERO po integracji FOG-VIEW (`R-RUSTPORT-P4-1C-FOG-VIEW-R1`).
-BAZA: `origin/rust-port/parity-v2` = `c120f2373` (przed startem: SHA parity po FOG-VIEW).
+ZALEŻNOŚĆ: SPEŁNIONA. FOG-VIEW zintegrowany na `parity-v2` (`82db9b370`, FF 2026-11-17); F2 TERRITORY-RANGES zintegrowany (`1db08c170`).
+BAZA: `origin/rust-port/parity-v2` = `1db08c170` (DODATEK r1, 2026-11-17). Przed startem: `git fetch origin && git checkout -B <gałąź> 1db08c170`.
 
 ## GOAL
 Dodać do DTO mapy pola `revealAllLand` i `riverRevealKeys` (dziś brak w `MapViewDto`/`FogViewDto` jako producenta).
@@ -26,4 +26,5 @@ Stan Rust: `engine/src/domain/state.rs:1028-1034` ma już `reveal_all_land` w `e
 Env: `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` poza repo, usuń po bramkach. DYSK ≥ 12 GB przed bramką pełną.
 
 ## KRYTERIA KOŃCA
+DODATEK r1: commity bez linii `Co-Authored-By` z nazwą modelu (orkiestrator usunął je w F2; reguła #289 i zasady sesji). Jeżeli narzędzie dołączy trailer, usuń go przed commitem.
 Zielone bramki, mutacje FAIL, commit jawnym `git add`, bez `Cargo.lock`, trailer bez nazwy modelu (#289). Raport `01-operator-r1.md`. Nie pushować do parity.
