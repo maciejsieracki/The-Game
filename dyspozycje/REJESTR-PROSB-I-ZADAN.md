@@ -10813,3 +10813,8 @@ Właściciel: koszt pokoju znacząco podwyższyć tak, by na starcie wojny zwyci
 - r2 FC PASS (kod f3bf2cc67, raport b2f17e5b8; `refs/keep/PLAYMAPA2-fc`). r1 FC FAIL: poprawka w złej funkcji (doStartPlaytestMiastoEkonomia zamiast doStartPlaytestMapaSwiata). Zmiana: `main.ts` +3 linie (markCityStateDirty po dodaniu miast presetu), test obu presetów z mutacjami.
 - main 525da354, ROBOCZA MD5 36609bb7, GitHub Raw MD5 zgodne, sidecary audio 3/3 zgodne. Testy: tsc 0; logic 213/213; playtest-mapa-dirty-forecast 10/0; unit-replace 21/21; combat 6/6; żywy Chromium (kandydat ma prognozę w t1, bez poprawki forecast=null, 2/2).
 - Dotyczy tylko presetu testowego; test tekstowy; NIE ZMIERZONO live dla playtest=miasto. Dług Rust: brak (preset testowy).
+
+### 2026-11-17 — FALA 804: toast „Zasadzka się powiodła” od razu także z fazy AI (AMBUSH-TOAST)
+- r1 FC PASS (kod 5b38b2cf4, raport 3e09e6ce2; `refs/keep/AMBTOAST-fc`). `main.ts` +6/−3: showHintMessage z flagą showNowDuringEot (AI→gracz i barbarzyńca→gracz), wpis w „Ważne” zostaje; test ambush-live przeniesiony z kandydata AMBLIVE (bez bloku INFO diag).
+- main 1ff04368, ROBOCZA MD5 39da9ed2, GitHub Raw MD5 zgodne, sidecary 3/3. Testy: tsc 0; ambush core 48/0, ui-reason 10/0, wiring 28/0, realstep 16/0; ambush-live Chromium 26/0 (B5 zielony), mutacja czerwona; logic 213/213; unit-replace 21/21; combat 6/6.
+- NIE ZMIERZONO: widoczność toastu pod nakładką przejścia tury (test sprawdza DOM). Do właściciela: sprawdzić w grze, czy toast jest widoczny w fazie AI.
