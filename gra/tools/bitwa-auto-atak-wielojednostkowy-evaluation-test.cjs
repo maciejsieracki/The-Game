@@ -127,9 +127,12 @@ function commitResolution(scene, units, resolutions) {
   const BattleScene = await loadBattleScene();
   assert(typeof BattleScene === 'function', 'current candidate BattleScene prototype bundles');
 
-  // Atak line: infantry occupies the front tile; archers are one tile behind,
-  // with matching row and formation offsets. The archer's first step collides
-  // with the currently occupied infantry tile and must wait instead of sidestep.
+  // Atak line: infantry occupies the front tile (3,3); the archer starts one tile
+  // behind it in the same lane (2,3). Successor behaviour of the planner
+  // (9dc324bb9 "Fix ranged approach in attack doctrine"): the archer does NOT wait
+  // (no hold) and does NOT overtake; its first move is the planner's single lateral
+  // step (2,3) -> (2,2). Exact-match checks below make any forward push (e.g. into
+  // (3,3) or (3,2)) or any hold a failure (mutation: planner holds/pushes archer ahead).
   const infantry = unit('infantry', 'atk', 3, 3, 'melee', 'front', { dc: 0, dr: 0 });
   infantry.formationRank = 0;
   const archer = unit('archer', 'atk', 2, 3, 'archer', 'front', { dc: -1, dr: 0 });
@@ -146,23 +149,23 @@ function commitResolution(scene, units, resolutions) {
   assert(attackRound1.find(i => i.unitId === 'infantry')?.kind === 'move'
     && attackRound1.find(i => i.unitId === 'infantry')?.steps[0]?.col === 4,
   'Atak moves the front infantry one forward tile');
-  assert(attackRound1.find(i => i.unitId === 'archer')?.kind === 'hold',
-    'Atak keeps the archer behind infantry when the front tile is occupied');
-  assert(attackRound1.find(i => i.unitId === 'archer')?.steps.length === 0,
-    'Blocked Atak archer does not take a lateral detour or overtake');
+  const archerRound1 = attackRound1.find(i => i.unitId === 'archer');
+  assert(archerRound1?.kind === 'move'
+    && archerRound1.steps.length === 1
+    && archerRound1.steps[0].col === 2 && archerRound1.steps[0].row === 2,
+  'Atak archer behind infantry takes exactly the planner lateral step (2,3)->(2,2): not a hold, not a forward step');
   commitResolution(attack, attack.atk, attackRound1);
-  assert(infantry.q === 4 && archer.q === 2 && infantry.r === archer.r,
-    'After first attack step, infantry leads and archer remains behind in same lane');
+  assert(infantry.q === 4 && infantry.r === 3 && archer.q === 2 && archer.r === 2,
+    'After first Atak step infantry leads at (4,3); archer sits at (2,2), never on or ahead of infantry');
 
   attack.testIntents.length = 0;
   attack._beginAutoBatchPhase('atk', attack.atk);
   const attackRound2 = [...attack.testIntents];
-  assert(attackRound2.find(i => i.unitId === 'archer')?.kind === 'move'
-    && attackRound2.find(i => i.unitId === 'archer')?.steps[0]?.col === 3,
-  'Atak advances the archer into the tile vacated by the infantry on the next step');
   commitResolution(attack, attack.atk, attackRound2);
-  assert(infantry.q === 4 && archer.q === 3 && infantry.r === archer.r,
-    'Second attack step preserves infantry lead and ranged rear rank without sideways movement');
+  // Exact-state check (not a relative one): any round-2 push of the archer into
+  // (3,2)/(3,3)/(4,x) or any displacement of the infantry from (4,3) fails here.
+  assert(infantry.q === 4 && infantry.r === 3 && archer.q === 2 && archer.r === 2,
+    'Second Atak round: exact formation kept (infantry (4,3), archer (2,2)); no archer push ahead, no infantry displacement');
 
   // Defense with a non-adjacent enemy.
   const defender = unit('defender', 'atk', 4, 5, 'melee', 'def', { dc: 0, dr: 0 });
