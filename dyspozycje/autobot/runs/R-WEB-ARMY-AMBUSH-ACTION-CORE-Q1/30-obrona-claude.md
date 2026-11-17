@@ -1,70 +1,98 @@
-# R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 — obrona Operatora, RUNDA 4 (odpowiedź na zarzuty Evaluatora r4)
+# R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 — obrona Operatora, RUNDA 5 (odpowiedź na zarzuty Evaluatora r5)
 
-STATUS: PASS-WITH-NOTES (obrona r4 częściowa: zarzuty 1, 2, 3 — poprawione punktowo z dowodem; zarzuty 4 i 5 — OTWARTE, NIE ZMIERZONO; kandydat NIE nadaje się do deployu bez pomiaru AI→gracz w Chromium i znacznika na mapie)
+STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1
-GOAL: domknąć zarzuty Evaluatora r4 (`3d8a14544`): test wpięcia odporny na mutacje M2/MB/MD/M6, przywrócenie usuniętego testu E2, ukrycie zasadzki wroga w panelu rozdzielenia i celu marszu; resztę uczciwie oznaczyć.
-BAZA: kandydat r4 `21af749bb0318c2bed3f53073feb73c351fae540` (potomek `2e45abdf3`, sprawdzone `git merge-base --is-ancestor 2e45abdf3 HEAD` = TAK). Kod obrony: commit `1dfa1022f9ebd37be6ec3d6cab5d4028b332dbb8` (na detached HEAD worktree wf_ddfca171-e87-3, bez gałęzi).
-UWAGA BAZY: `origin/main` nie był ruszany w tej rundzie (obrona na bazie kandydata r4, bez merge). Integracja z aktualnym `main` — do orkiestratora.
+GOAL: zamknąć trzy zarzuty Evaluatora z r5 (wyciek zasadzki przez komunikat „Heks zajęty.”, brak testu guardu, niepokryte wpięcie pętli barbarzyńców), bez zmiany zachowania poza tymi trzema punktami; wszystkie bramki zielone z surowym wynikiem.
+BAZA: `fbf9482b82147d7903f22d6ee68e8dadb353bf00` (potomek `b14e91e1f`, sprawdzone `git merge-base --is-ancestor b14e91e1f fbf9482b8` = TAK).
+KOD OBRONY: `cc719cef025dd61beefaf8913e9d8c68b919f9e0` (detached HEAD worktree wf_89c527b6-f28-3). Raport: commit następny po kodzie.
+UWAGA BAZY: `origin/main` nie był ruszany w tej rundzie (brak merge). Ostatnio znany `origin/main` z dispatchu r4 to `6d474b826`; integracja z aktualnym main — do orkiestratora.
 
 ## Odpowiedzi na zarzuty Evaluatora (nr jak w zarzutach)
 
-1. PRZYJMUJĘ CZĘŚCIOWO. Dodany warunek liczbowy w bloku E2 `gra/tools/ambush-wiring-test.cjs`: liczba realnych wywołań w `gra/src/main.ts` — `releaseAmbushOnMoveOrder(` = 3, `planPlayerAmbushMove(` = 3, `resolveAmbushAfterMove(` = 2, `makeAmbushPathCutter(units, ownerId, areEnemyOwners)` obecne i bez `makeAmbushPathCutter([]`, guard `if (!launchAttack) return { kind: 'blocked'…}` w `gra/src/game/ambushMove.ts`.
-   - DOWÓD MUTACJI (każda na `main.ts`, przywracany po teście; surowy wynik ostatniej linii testu):
-     - M2 (usunięte `releaseAmbushOnMoveOrder(playerStackAt(u))`): `Wynik: 27 OK, 1 FAIL` — FAIL: E2.
-     - MB (usunięte `releaseAmbushOnMoveOrder(stack)` przy rozkazie ruchu): `Wynik: 27 OK, 1 FAIL` — FAIL: E2.
-     - MD (`makeAmbushPathCutter([], …)` dla wykonawcy AI): `Wynik: 27 OK, 1 FAIL` — FAIL: E2.
-     - M6 (`planPlayerAmbushMove` barbarzyńców zastąpione `{kind:"clear"}`): `Wynik: 27 OK, 1 FAIL` — FAIL: E2.
-     - Baza po poprawce: `Wynik: 28 OK, 0 FAIL` (przed dopisaniem asercji widoczności E2 = 28/0 też).
-   - ZASTRZEŻENIE: to nadal test strukturalny (liczenie wystąpień w źródle), a nie wykonanie realnego kroku ruchu z `main.ts`. Test dynamiczny wpięcia w `main.ts` (fixture + wywołanie `startAnimatedMove`/`applyMarchSegmentInstant`) NIE został zrobiony — OTWARTE. Dynamiczna część jądra (`ambushMove.ts`) pokryta przez `ambush-realstep-test.cjs` 14/0.
+1. PRZYJMUJĘ — poprawka + dowód. Stary guard w `onSplit` (`main.ts`, ~16014) zwracał „Heks zajęty.” dokładnie wtedy, gdy na celu stała ukryta zasadzka wroga, a panel pokazywał ten heks jako wolny. To była wyrocznia. Nowe zachowanie: funkcja `planSplitAgainstHiddenAmbush` (`gra/src/game/ambushMove.ts`) zwraca `kind: 'ambush'` dla ukrytej zasadzki wroga w wojnie na celu; `onSplit` wtedy wywołuje `fireAmbushOnHex(lider stosu, destQ, destR)` i kończy bez nakładania jednostek. Komunikat „Heks zajęty.” usunięty z `main.ts` (wiring: `occ('Heks zajęty.') === 0`).
+   - Zastrzeżenie: w bitwie z zasadzki walczy LIDER stosu (ta sama ścieżka co `startAnimatedMove`); pozostała część rozdzielanego stosu zostaje na heksie źródłowym. Czy wszystkie jednostki rozdzielanego stosu powinny dołączyć do bitwy — NIE ZMIERZONO w przeglądarce (decyzja do orkiestratora / osobny temat).
 
-2. PRZYJMUJĘ — poprawka. Usunięty w r4 blok E2 (`cancelAmbush` / `reconcileAmbush` z realnym `hasCity` / guard `!launchAttack` / filtr renderu) został przywrócony jako E2 w wariancie liczbowym (patrz pkt 1). Literalnej asercji `reconcileAmbush(units, (q, r) => cities.some(...))` NIE przywracam: r4 przeniósł tę logikę do `reconcileAmbushInWorld(units, cities)` (wiring E1 sprawdza to wywołanie). Mutacja M3 (zmiana `hasCity` w reconcile) NIE była puszczona w tej rundzie — NIE ZMIERZONO, OTWARTE.
-   - Test C6 (scalenie) pozostaje w wersji r4 (zgodnej z polityką „reszta zostaje”): `Wynik` wiring E2 zielony.
+2. PRZYJMUJĘ — poprawka + dowód. Guard z zarzutu 1 został zastąpiony funkcją czystą `planSplitAgainstHiddenAmbush` i ma test dynamiczny: `gra/tools/ambush-split-barb-test.cjs` wywołuje prawdziwy kod `ambushMove.ts` (bundle esbuild). Asercje: ukryta zasadzka w wojnie → `ambush`; pokój → `split`; heks pusty → `split`; własna zasadzka → `split`; zwykła jednostka wroga → `split`.
+   - Mutacje na `ambushMove.ts` (każda przez podmianę fragmentu w pamięci; wszystkie FAIL, surowy wynik):
+     - S1 (planner wyłączony, zawsze `split`): `FAIL` — „ukryta zasadzka wroga w wojnie na celu = wejscie w zasadzke”.
+     - S2 (ignorowanie właściciela i wojny: `u.ambush === true`): `FAIL` — „pokoj: brak wyzwolenia”.
+   - Wpięcie w `main.ts` (galąź `if (splitAmbush.kind === 'ambush') {` i wywołanie `fireAmbushOnHex(splitLeader, destQ, destR);`, każde dokładnie 1×) sprawdza `ambush-wiring-test.cjs` (strukturalnie). Usunięcie galęzi = FAIL wiringu.
+   - ZASTRZEŻENIE: ciało `onSplit` to domknięcie w `main.ts` bez harnessu DOM; runtime-owa gałąź nie ma testu dynamicznego (tylko strukturalny). NIE ZMIERZONO w Chromium.
 
-3. PRZYJMUJĘ CZĘŚCIOWO — poprawka + dowód dla dwóch miejsc z zarzutu:
-   - (a) Panel rozdzielenia: `gra/src/main.ts` `openSplitPanelForSelected` — `findSplitDestHexes(unitsForViewer(units, ME()), …)` zamiast surowego `units`. Heks z ukrytą zasadzką wroga nie daje już „Cel niedostępny"; ruch na taki heks wejdzie w zasadzkę w kroku ruchu (wyzwalacz).
-   - (b) Cel marszu: `gra/src/main.ts` (blok `attackTarget`, ok. l. 33830) — szukanie przez `unitsForViewer(units, ME()).find(…)` w gałęzi bez `attackUnitId`. Ukryta zasadzka nie generuje „Cel niewidoczny (mgła).” ani planu ataku; ruch idzie normalną ścieżką i wyzwalacz działa w `planPlayerAmbushMove`.
-   - Dowód: asercje V1/V2 w `gra/tools/ambush-wiring-test.cjs` (E2) — zielone. Mutacji na V1/V2 NIE puszczono — NIE ZMIERZONO dynamicznie.
-   - AUDYT pozostałych czytelników (tabela wymagana przez DODATEK 3 pkt 5) — NIE ZROBIONE w tej rundzie. OTWARTE: `computeDiplomaticContacts` (audiencja pierwszego kontaktu), `wakeSentryUnitsOnEnemyContact` (r4 już filtruje), tooltipy heksu, minimapa, wybór jednostki/klik, HUD „siły wroga”, zasięg widzenia/mgła. Nie deklaruję ich jako zamkniętych.
-   - Barbarzyńcy: zarzut 6 z r3 nie jest w liście r4 — bez zmian, nadal `buildHexOccupancy` widzi zasadzkę jak zwykłą jednostkę (wyzwolenie przez barbarzyńcę — OTWARTE, decyzja orkiestratora).
+3. PRZYJMUJĘ — poprawka + dowód. Pełna trasa barbarzyńcy (`computePath` z mapą zajętości) została przeniesiona do wywołania `planBarbarianStep(units, barb, destQ, destR, computeFullPath, isAtWar)` w `ambushMove.ts`. Funkcja wywołuje `computeFullPath` TYLKO gdy na planszy jest zasadzka (inaczej `null`, bez zmian zachowania). Test dynamiczny (`ambush-split-barb-test.cjs`):
+   - przy zasadzce na trasie: `computeFullPath` wołane dokładnie raz, trasa przycięta przed zasadzką (q=1 zamiast celu q=3), `ambushHex = (2,0)`;
+   - bez zasadzki: `computeFullPath` NIE wołane, cel zadany bez zmian.
+   - Mutacje (surowy wynik):
+     - B1 (`computeFullPath` nigdy nie wołane, `const fullPath = null;`): `FAIL` — „przy zasadzce na planszy pelna trasa liczona dokladnie raz”.
+     - B2 (`computeFullPath` zawsze wołane): `FAIL` — „bez zasadzki na planszy pathfinding z zasadzkami nie jest wolany”.
+   - Wiring `main.ts`: `planBarbarianStep(` = 1, `planBarbarianAmbushMove(` = 0 w `main.ts`; regex `planBarbarianStep\(units, bu, bcmd\.toQ, bcmd\.toR,\s*\(\) => computePath\(` musi trafić (mutacja `() => null` = FAIL wiringu). Stary test `occ('planBarbarianAmbushMove(') === 1` zaktualizowany do 0 (wywołanie przez `planBarbarianStep`).
+   - ZASTRZEŻENIE: sam pathfinding (`computePath`) nie jest testowany w tym pliku; test używa wstrzykniętej trasy.
 
-4. PRZYJMUJĘ — NIE ZMIERZONO. W tej rundzie nie uruchomiono żywego Chromium: brak pomiaru AI→gracz (przerwanie ruchu AI, wznowienie fazy AI `aiCmdResume`, brak dwóch jednostek na jednym heksie, zrzut). Zrzut `B-bitwa-AI-wpadlo-1280x720.png` z r4 pokazuje atak AI na miasto (obrona miasta Rzym), NIE wejście w zasadzkę — nie jest dowodem kryterium (b). Kryterium e (Chromium AI→gracz) OTWARTE; PASS niemożliwy.
+## Wyniki bramek (surowe wyjścia, własne, na `cc719cef0`)
 
-5. PRZYJMUJĘ — OTWARTE, NIE ZROBIONE w tej rundzie. Znacznik „W zasadzce” nadal tylko jako tekst w nagłówku panelu armii (`gra/src/ui/armyStackHud.ts`); brak ikony/obrysu na żetonie stosu na mapie, w liście armii i w karcie jednostki. Nie zmieniano renderu żetonów. Kryterium DODATKU 3 pkt 7 niespełnione.
+Środowisko: worktree nie miał `gra/node_modules`; wykonano `npm ci --no-audit --no-fund --ignore-scripts` w `gra/` (71 pakietów). Brak `npm run build`/`dev`.
 
-## ZMIANY-COMMIT
-- Kod + test: commit `1dfa1022f9ebd37be6ec3d6cab5d4028b332dbb8` (2 pliki: `gra/src/main.ts` — 8 linii zmienionych; `gra/tools/ambush-wiring-test.cjs` — +17 linii). Allowlista bez zmian w stosunku do r4 (żadnych nowych plików). `git diff --check` czysty.
-- Raport: osobny commit po tym pliku (SHA w polu `sha` odpowiedzi orkiestratora).
-- NIE zmieniano: `gra/src/data/wikiBundle.json`, `docs/`, `save.ts`, `armyMerge.ts`, `setup.ts`, `ai.ts`, `ambush.ts`, `ambushMove.ts`.
+- `./node_modules/.bin/tsc --noEmit -p .` → exit 0, bez wyjścia.
+- `node tools/logic-test.cjs` → `LOGIC OK (213/213)`, exit 0.
+- `node tools/tech-tree-test.cjs` → `tech-tree-test: 20 pass, 0 fail`.
+- `node tools/research-test.cjs` → `PASSED: 33 / FAILED: 0 / TOTAL: 33`.
+- `node tools/unit-replace-test.cjs` → `WSZYSTKIE TESTY ZIELONE (21/21)`.
+- `node tools/combat-test.cjs` → `COMBAT TEST: 6/6 pass`.
+- `node tools/mgla-sciezka-inwariant-test.cjs` → `42 pass, 0 fail` (N1 z r4 pozostaje naprawione).
+- `node tools/load-game-regression-test.cjs` → `load-game-regression: 34 PASS / 0 FAIL`.
+- `node tools/determinism-same-seed-test.cjs` → exit 0.
+- `node tools/determinism-save-load-resume-test.cjs` → `WYNIK: PASS`.
+- `node tools/ambush-core-test.cjs` → `Wynik: 40 OK, 0 FAIL`.
+- `node tools/ambush-realstep-test.cjs` → `Wynik: 16 OK, 0 FAIL`.
+- `node tools/ambush-save-roundtrip-test.cjs` → `Wynik: 5 OK, 0 FAIL`.
+- `node tools/ambush-ui-reason-test.cjs` → `Wynik: 5 OK, 0 FAIL`.
+- `node tools/ambush-wiring-test.cjs` → `Wynik: 28 OK, 0 FAIL` (po dodaniu asercji r5: galąź split, wywołanie `fireAmbushOnHex`, regex barbarzyńcy; wszystkie przechodzą).
+- `node tools/ambush-split-barb-test.cjs` (NOWY) → `PASS base` + 4× `FAIL` mutantów + `OK ... wszystkie mutanty czerwone`, exit 0.
+- army-merge (11 plików, surowe ostatnie linie):
+  - besieger-only-move: `WYNIK: 8 OK / 0 FAIL`
+  - bounce: `4 pass, 0 fail`
+  - colocated: `4 pass, 0 fail`
+  - dismiss-bounce: `16 pass, 0 fail`
+  - panel-list-visibility: `104 pass, 0 fail`
+  - panel-production-mount: `9 pass, 0 fail`
+  - panel-scroll-real-render: `27 pass, 0 fail` (test NADPISUJE trackowany PNG `R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1/06-production-robocza-150-percent.png`; przywrócone `git checkout --`, poza commitem)
+  - separate-return-mainguard: `73 pass, 0 fail`
+  - separate-return: `16 pass, 0 fail`
+  - split-direction-icons: `PASS`
+  - stackgroupid: `11045 pass, 0 fail`
+- Determinizm: `determinism-same-seed-test` exit 0 + `determinism-save-load-resume-test` PASS (jak wyżej).
 
-## TESTY (surowe wyniki, worktree `wf_ddfca171-e87-3` na `1dfa1022f`, `npm ci --ignore-scripts` wykonane)
-- `npx tsc --noEmit` → exit 0 (brak wyjścia).
-- `node tools/ambush-wiring-test.cjs` → `Wynik: 28 OK, 0 FAIL`, exit 0.
-- Mutanty na `main.ts` (przywracane po każdym): M2 → `Wynik: 27 OK, 1 FAIL`; MB → `27 OK, 1 FAIL`; MD → `27 OK, 1 FAIL`; M6 → `27 OK, 1 FAIL` (FAIL: E2 we wszystkich czterech).
-- `node tools/ambush-realstep-test.cjs` → `Wynik: 14 OK, 0 FAIL`, exit 0.
-- `node tools/ambush-core-test.cjs` → `Wynik: 40 OK, 0 FAIL`, exit 0.
-- `node tools/ambush-ui-reason-test.cjs` → `Wynik: 5 OK, 0 FAIL`, exit 0.
-- `node tools/ambush-save-roundtrip-test.cjs` → `Wynik: 5 OK, 0 FAIL`, exit 0.
-- `node tools/load-game-regression-test.cjs` → `load-game-regression: 34 PASS / 0 FAIL`, exit 0.
-- `node tools/determinism-same-seed-test.cjs` → `WYNIK: PASS`, exit 0.
-- NIE ZMIERZONO w tej rundzie: pozostałe bramki referencyjne (logic 213, tech-tree 20, research 33, unit-replace 21, combat 6), `army-merge-*`, `determinism-digest-stackgroup`, Chromium (zarzut 4, 5), mutacje M3 i V1/V2.
+## Pliki zmienione w kodzie obrony (`cc719cef0`)
 
-## BLOKADY
-1. Zarzut 4: pomiar AI→gracz w żywym Chromium — NIE ZMIERZONO. Blokuje PASS.
-2. Zarzut 5: znacznik „W zasadzce” na mapie/liście/karcie — OTWARTE.
-3. Zarzut 1: dynamiczny test wpięcia w `main.ts` na realnym kroku ruchu — OTWARTE (w tej rundzie tylko test liczbowy).
-4. Zarzut 3: audyt pozostałych czytelników `units` wroga (tabela) — OTWARTE; tooltipy/minimapa/HUD nieobjęte.
-5. Barbarzyńcy wyzwalający zasadzkę — decyzja orkiestratora (poza listą r4).
-6. Baza: kandydat nie jest na aktualnym `origin/main` — integracja do orkiestratora.
+- `gra/src/game/ambushMove.ts` (+ `planSplitAgainstHiddenAmbush`, `planBarbarianStep`)
+- `gra/src/main.ts` (onSplit: wejście w zasadzkę zamiast „Heks zajęty.”; pętla barbarzyńców: `planBarbarianStep`; import)
+- `gra/tools/ambush-split-barb-test.cjs` (NOWY: test dynamiczny + mutacje S1/S2/B1/B2)
+- `gra/tools/ambush-wiring-test.cjs` (asercje strukturalne r5; `planBarbarianAmbushMove(` 1 → 0)
 
-## RUNDY
-4/5 (obrona). Obrona prowadzona na Haiku (rola Operator (obrona)).
+## Lista testów do deployu (ten temat)
 
-## UWAGI-DLA-ORKIESTRATORA
-- Lista testów do deployu (nowe/zmienione): `gra/tools/ambush-wiring-test.cjs` (zmieniony), `gra/tools/ambush-realstep-test.cjs`, `gra/tools/ambush-core-test.cjs`, `gra/tools/ambush-ui-reason-test.cjs`, `gra/tools/ambush-save-roundtrip-test.cjs`.
-- `gra/node_modules` zainstalowane w worktree (`npm ci --ignore-scripts`) — do sprzątania po tym temacie.
-- Dług do osobnego tematu: test wpięcia dynamiczny (fixture kroku ruchu w `main.ts`); audyt widoczności (tabela); barbarzyńcy; znacznik UI na mapie; pomiar AI→gracz w Chromium.
-- Nie puszczałem nowych sesji ani zadań; nie pushowałem; nie integrowałem na main.
+`gra/tools/ambush-core-test.cjs`, `ambush-realstep-test.cjs`, `ambush-wiring-test.cjs`, `ambush-save-roundtrip-test.cjs`, `ambush-ui-reason-test.cjs`, `ambush-split-barb-test.cjs` (NOWY), oraz `mgla-sciezka-inwariant-test.cjs`, `load-game-regression-test.cjs`, `army-merge-*` (11), `determinism-*` (jak wyżej).
 
-NASTĘPNY KROK: Evaluator r5 na `1dfa1022f`. Przed kolejną rundą orkiestrator decyduje: (a) czy dynamiczny test wpięcia i audyt widoczności wchodzą w tę gałąź, czy osobny temat; (b) barbarzyńcy wyzwalają zasadzkę?; (c) zakres Chromium AI→gracz i znacznika UI.
+## Otwarte (NIE ZMIERZONO / poza zakresem tej rundy)
+
+- Chromium AI→gracz (z korytarzem zasadzki ≥8 heksów od miast; przerwanie ruchu, bitwa, `aiCmdResume`, brak dwóch jednostek na heksie) — NIE ZMIERZONO w tej rundzie (Operator r5 nie uruchamiał przeglądarki; zarzuty Evaluatora nie wymagały).
+- Który zakres stosu dołącza do bitwy po wejściu w zasadzkę przy rozdzielaniu — NIE ZMIERZONO w przeglądarce.
+- Audyt czytelników `units` wroga bez filtra (`computeDiplomaticContacts`, tooltipy, minimapa, HUD „siły wroga”): poza tymi trzema zarzutami — zostaje jak w r4 (OTWARTE, do tabeli w rundzie kolejnej lub w temacie AMBUSH-DEPLOY).
+- Rozstawienie w bitwie na polu wroga i szyk ≤3 — poza zakresem (AMBUSH-DEPLOY).
+- Dług Rust (REPIN): pełna lista do wpisu w `REJESTR` — do orkiestratora (dotyczy `ambushMove.ts` nowych funkcji i zmian `onSplit`/pętli barbarzyńców).
+
+## Uwagi dla orkiestratora
+
+- Operator r5 nie miał w worktree `gra/node_modules`; zainstalowano je przez `npm ci --ignore-scripts` w `gra/` (katalog ignorowany przez git). Do sprzątania po temacie.
+- Test `army-merge-panel-scroll-real-render-test.cjs` nadpisuje trackowany PNG w `R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1/`; przy każdym uruchomieniu trzeba przywrócić go przez `git checkout --`.
+
+## Podsumowanie
+
+STATUS: PASS-WITH-NOTES
+ZMIANY-COMMIT: `cc719cef0` (kod + testy); raport w osobnym commicie po nim.
+TESTY: jak wyżej; wszystkie bramki zielone; nowe mutacje S1/S2/B1/B2 czerwone.
+BLOKADY: brak blokady technicznej; Chromium NIE ZMIERZONO (poza zarzutami).
+RUNDY: 5/5 (ostatnia runda tematu) — po Evaluatorze r5 wymagana decyzja właściciela (LIMIT-5), chyba że orkiestrator zdecyduje inaczej.
+NASTĘPNY KROK: Evaluator r5 (zweryfikować poprawki 1-3 i mutacje); potem Final Control; integracja orkiestratora z aktualnym `origin/main`.
 DEPLOY/PUSH: NIE WYKONANO
