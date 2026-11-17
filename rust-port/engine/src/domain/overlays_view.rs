@@ -214,6 +214,23 @@ fn no_layer() -> BuildHighlightDto {
     }
 }
 
+/// Czy `refreshBuildHighlight()` wchodzi w galaz trybu budowy (`main.ts:16351-16396` @ `07d2fbd72`):
+/// zalozenie miasta (`foundCityMode`, `:16352`), cud (`activeWonderId`, `:16363`) albo ulepszenie /
+/// kopalnia zloza (`buildModeOpen && activeImprovementKey && buildApi`, zaprzeczenie `:16369`).
+/// `false` = galaz „brak trybu budowy” (`:16369-16373`; [`build_highlight`] zwraca brak warstwy).
+///
+/// R-RUSTPORT-P4-1Q6-2 (dlug Q6-2): w aktywnym trybie budowy JEDNA warstwa `setHighlight` pinu
+/// nalezy do trybu budowy rowniez przy PUSTYM zbiorze heksow (`setHighlight(new Set())` `:16359`,
+/// `:16366`, `:16392-16395`; `clearHighlight()` przy kopalni `:16387`), wiec zasieg ruchu znika.
+/// Kontrakt DTO nie odroznia „tryb aktywny, brak heksow” od „brak trybu” (puste `hexes` = brak
+/// warstwy), dlatego [`unit_overlays_view`] wygasza `reachable`, gdy ta funkcja zwraca `true`.
+#[must_use]
+pub fn build_highlight_mode_active(ui: &BuildHighlightUi<'_>) -> bool {
+    ui.found_city_mode
+        || ui.wonder_active
+        || (ui.build_mode_open && ui.active_improvement_key.is_some_and(|k| !k.is_empty()))
+}
+
 /// `refreshBuildHighlight()` (`main.ts:16351-16395` @ `07d2fbd72`) jako DTO.
 ///
 /// Kolejnosc galezi jak w pinie: zalozenie miasta (`:16352-16361`), cud (`:16363-16367`), brak
@@ -242,12 +259,11 @@ pub fn build_highlight(
             hexes: dedup_set_order((src.qualifying_wonder_hexes)()),
         };
     }
-    let Some(key) = ui.active_improvement_key.filter(|k| !k.is_empty()) else {
-        return no_layer();
+    // Galaz „brak trybu budowy” (`:16369-16373`): jeden warunek z [`build_highlight_mode_active`].
+    let key = match ui.active_improvement_key {
+        Some(key) if build_highlight_mode_active(ui) => key,
+        _ => return no_layer(),
     };
-    if !ui.build_mode_open {
-        return no_layer();
-    }
     let hexes =
         filter_build_highlight_hexes(key, &(src.qualifying_hexes)(key), src.pending_undo_keys);
     let kind = if is_mine_improvement_key(Some(key)) {
@@ -472,7 +488,8 @@ pub struct UnitOverlaysInput<'a, 'b> {
 /// `selection`, `pathRoute` (kontrakt §3.7, ksztalt typow bez zmian).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UnitOverlaysView {
-    /// [`reachable_overlay`].
+    /// [`reachable_overlay`]; pusty, gdy [`build_highlight_mode_active`] (dlug Q6-2: aktywny tryb
+    /// budowy przejmuje warstwe podswietlenia pinu, takze przy pustym zbiorze heksow).
     pub reachable: Vec<HexCoord>,
     /// [`build_highlight`].
     pub build_highlight: BuildHighlightDto,
@@ -505,8 +522,16 @@ pub fn unit_overlays_view(
     state: &PlayableState,
     input: &UnitOverlaysInput<'_, '_>,
 ) -> UnitOverlaysView {
+    // Q6-2 (R-RUSTPORT-P4-1Q6-2): aktywny tryb budowy przejmuje jedyna warstwe `setHighlight` pinu
+    // (`main.ts:16351-16396`), takze przy pustym zbiorze heksow: zasieg ruchu nie jest widoczny.
+    // Zwykly tryb ruchu (galaz `:16369-16373`) zostawia `reachable` (`main.ts:7123-7125`).
+    let reachable = if build_highlight_mode_active(&input.build_ui) {
+        Vec::new()
+    } else {
+        reachable_overlay(state)
+    };
     UnitOverlaysView {
-        reachable: reachable_overlay(state),
+        reachable,
         build_highlight: build_highlight(&input.build_ui, input.build_sources),
         selection: selection(&input.selection_ui, &state.units),
         path_route: path_route_overlay(state, input.hover),

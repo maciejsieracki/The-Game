@@ -1,0 +1,921 @@
+{
+  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+  "fragmentsSha256": "b2ccd939fb790da379300974d5efa30909f025051523b80a9c855e1cb100899b",
+  "vectors": [
+    {
+      "name": "ruch_bez_trybu_budowy",
+      "ui": {
+        "foundCityMode": false,
+        "wonderActive": false,
+        "buildModeOpen": false,
+        "activeImprovementKey": null
+      },
+      "mapHexes": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "startReveal": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "canFound": [],
+      "wonderHexes": [],
+      "qualifying": [],
+      "undoKeys": [],
+      "reachable": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "expected": {
+        "highlight": {
+          "hexes": [
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              3,
+              0
+            ]
+          ],
+          "opacity": "HIGHLIGHT_OPACITY"
+        },
+        "mineEligible": null
+      }
+    },
+    {
+      "name": "zalozenie_miasta_pusty",
+      "ui": {
+        "foundCityMode": true,
+        "wonderActive": false,
+        "buildModeOpen": false,
+        "activeImprovementKey": null
+      },
+      "mapHexes": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "startReveal": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "canFound": [],
+      "wonderHexes": [],
+      "qualifying": [],
+      "undoKeys": [],
+      "reachable": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "expected": {
+        "highlight": null,
+        "mineEligible": null
+      }
+    },
+    {
+      "name": "zalozenie_miasta_poza_odkryciem",
+      "ui": {
+        "foundCityMode": true,
+        "wonderActive": false,
+        "buildModeOpen": false,
+        "activeImprovementKey": null
+      },
+      "mapHexes": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "startReveal": [
+        [
+          0,
+          0
+        ]
+      ],
+      "canFound": [
+        [
+          2,
+          0
+        ]
+      ],
+      "wonderHexes": [],
+      "qualifying": [],
+      "undoKeys": [],
+      "reachable": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "expected": {
+        "highlight": null,
+        "mineEligible": null
+      }
+    },
+    {
+      "name": "zalozenie_miasta_niepusty",
+      "ui": {
+        "foundCityMode": true,
+        "wonderActive": false,
+        "buildModeOpen": true,
+        "activeImprovementKey": null
+      },
+      "mapHexes": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "startReveal": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "canFound": [
+        [
+          2,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "wonderHexes": [],
+      "qualifying": [],
+      "undoKeys": [],
+      "reachable": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "expected": {
+        "highlight": {
+          "hexes": [
+            [
+              0,
+              0
+            ],
+            [
+              2,
+              0
+            ]
+          ],
+          "opacity": "HIGHLIGHT_OPACITY"
+        },
+        "mineEligible": null
+      }
+    },
+    {
+      "name": "cud_pusty",
+      "ui": {
+        "foundCityMode": false,
+        "wonderActive": true,
+        "buildModeOpen": false,
+        "activeImprovementKey": null
+      },
+      "mapHexes": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "startReveal": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "canFound": [],
+      "wonderHexes": [],
+      "qualifying": [],
+      "undoKeys": [],
+      "reachable": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "expected": {
+        "highlight": null,
+        "mineEligible": null
+      }
+    },
+    {
+      "name": "cud_niepusty",
+      "ui": {
+        "foundCityMode": false,
+        "wonderActive": true,
+        "buildModeOpen": true,
+        "activeImprovementKey": null
+      },
+      "mapHexes": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "startReveal": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "canFound": [],
+      "wonderHexes": [
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "qualifying": [],
+      "undoKeys": [],
+      "reachable": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "expected": {
+        "highlight": {
+          "hexes": [
+            [
+              3,
+              0
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "opacity": "HIGHLIGHT_OPACITY"
+        },
+        "mineEligible": null
+      }
+    },
+    {
+      "name": "kopalnia_pusta",
+      "ui": {
+        "foundCityMode": false,
+        "wonderActive": false,
+        "buildModeOpen": true,
+        "activeImprovementKey": "kopalnia_miedzi"
+      },
+      "mapHexes": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "startReveal": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "canFound": [],
+      "wonderHexes": [],
+      "qualifying": [],
+      "undoKeys": [],
+      "reachable": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "expected": {
+        "highlight": null,
+        "mineEligible": null
+      }
+    },
+    {
+      "name": "kopalnia_niepusta",
+      "ui": {
+        "foundCityMode": false,
+        "wonderActive": false,
+        "buildModeOpen": true,
+        "activeImprovementKey": "kopalnia_zelaza"
+      },
+      "mapHexes": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "startReveal": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "canFound": [],
+      "wonderHexes": [],
+      "qualifying": [
+        [
+          2,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "undoKeys": [],
+      "reachable": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "expected": {
+        "highlight": null,
+        "mineEligible": [
+          [
+            2,
+            0
+          ],
+          [
+            1,
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "name": "kopalnia_cofniete_w_turze",
+      "ui": {
+        "foundCityMode": false,
+        "wonderActive": false,
+        "buildModeOpen": true,
+        "activeImprovementKey": "kopalnia_zlota"
+      },
+      "mapHexes": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "startReveal": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "canFound": [],
+      "wonderHexes": [],
+      "qualifying": [
+        [
+          2,
+          0
+        ]
+      ],
+      "undoKeys": [
+        "2,0:kopalnia_zlota"
+      ],
+      "reachable": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "expected": {
+        "highlight": null,
+        "mineEligible": null
+      }
+    },
+    {
+      "name": "ulepszenie_puste",
+      "ui": {
+        "foundCityMode": false,
+        "wonderActive": false,
+        "buildModeOpen": true,
+        "activeImprovementKey": "farma"
+      },
+      "mapHexes": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "startReveal": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "canFound": [],
+      "wonderHexes": [],
+      "qualifying": [],
+      "undoKeys": [],
+      "reachable": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "expected": {
+        "highlight": null,
+        "mineEligible": null
+      }
+    },
+    {
+      "name": "ulepszenie_cofniete_w_turze",
+      "ui": {
+        "foundCityMode": false,
+        "wonderActive": false,
+        "buildModeOpen": true,
+        "activeImprovementKey": "farma"
+      },
+      "mapHexes": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "startReveal": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "canFound": [],
+      "wonderHexes": [],
+      "qualifying": [
+        [
+          1,
+          0
+        ]
+      ],
+      "undoKeys": [
+        "1,0:farma",
+        "2,0:kopalnia_zlota"
+      ],
+      "reachable": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "expected": {
+        "highlight": null,
+        "mineEligible": null
+      }
+    },
+    {
+      "name": "ulepszenie_niepuste",
+      "ui": {
+        "foundCityMode": false,
+        "wonderActive": false,
+        "buildModeOpen": true,
+        "activeImprovementKey": "farma"
+      },
+      "mapHexes": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "startReveal": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "canFound": [],
+      "wonderHexes": [],
+      "qualifying": [
+        [
+          3,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "undoKeys": [
+        "1,0:kamieniolom"
+      ],
+      "reachable": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "expected": {
+        "highlight": {
+          "hexes": [
+            [
+              3,
+              0
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "opacity": "IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY"
+        },
+        "mineEligible": null
+      }
+    }
+  ]
+}
