@@ -74,4 +74,16 @@ assert.equal(fallbackCalls.length, 4, 'oczekiwano 4 awatarów zastępczych z sid
 // (C) identyfikacja strony obrońcy po ownerColor w mechanice pozostaje bez zmian
 assert.equal((scene.match(/bu\.ownerColor === 0xc84040/g) || []).length, 2, 'kontrakt roli obrońcy (0xc84040) w danych musi pozostać');
 
-console.log('battle-side-colors-3d-test: OK (A: tokeny i sideColor dla atk/def, B: 4 modele + 4 awatary z kolorem strony, C: kontrakt roli)');
+// (D) ścieżka pola bitwy z mapy (mapFieldBattle.ts) przekazuje rolę gracza do sceny 3D:
+// gdy gracz broni, deployPlayerSide = 'def' (inaczej domyślne 'atk' malowałoby gracza na czerwono).
+const mfb = read('src/battle/mapFieldBattle.ts');
+assert.match(
+  mfb,
+  /deployPlayerSide:\s*defLead\.ownerId === 0 && atkLead\.ownerId !== 0 \? 'def' : 'atk',/,
+  'mapFieldBattle.ts musi przekazać deployPlayerSide (rola gracza w scenie 3D)',
+);
+// i ta sama ścieżka nie może zostawić wywołania BattleScene bez tej opcji
+const mfbCall = mfb.match(/createBattleScene\(\{[\s\S]*?\n\s*\}\);/);
+assert.ok(mfbCall && /deployPlayerSide:/.test(mfbCall[0]), 'wywołanie createBattleScene w mapFieldBattle.ts bez deployPlayerSide');
+
+console.log('battle-side-colors-3d-test: OK (A: tokeny i sideColor dla atk/def, B: 4 modele + 4 awatary z kolorem strony, C: kontrakt roli, D: mapFieldBattle przekazuje rolę gracza)');
