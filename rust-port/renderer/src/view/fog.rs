@@ -158,7 +158,10 @@ impl std::error::Error for FogRevealError {}
 /// - fog off: `setFog(ALL_KEYS, ALL_KEYS)` without options (`main.ts:13506`),
 ///   so `landReveal = opts?.landReveal ?? false` and `lastRiverRevealKeys =
 ///   opts?.riverRevealKeys ?? null`: always `false`/`None`, the DTO keys are
-///   ignored (and `reveal_all_land` with fog off is rejected).
+///   ignored (and `reveal_all_land` with fog off is rejected). A producer
+///   that follows the pin sends `riverRevealKeys: null` there, since
+///   `startRevealKeysForRiverFog()` is only called in the fog branch
+///   (`main.ts:13489-13494`); tolerating keys keeps the adapter total.
 ///
 /// Deliberately has no `Default`, like [`FogSets`]: the only constructor is
 /// [`FogReveal::from_dto`].
