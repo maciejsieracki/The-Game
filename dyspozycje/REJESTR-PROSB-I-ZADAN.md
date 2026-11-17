@@ -10835,3 +10835,9 @@ Właściciel: koszt pokoju znacząco podwyższyć tak, by na starcie wojny zwyci
 - Procarz: przebicie tylko dla Procarza; wartość **4** jako **redukcja pancerza** w strzale (wariant A; uzasadnienie: standardowe przebicie piechoty żelaza = 4, 14 z 20; historycznie proca niszczy pancerną piechotę). → temat R-WEB-UNIT-PROCARZ-PIERCING-ARMOR-REDUCTION-Q1 (start po FALI 807). Łucznik i Oszczepnik bez przebicia w strzale.
 - Katapulta: **A — zostaje 250**. „Zastąp” Łucznik → Procarz: **A — zostawić** (Procarz = koniec łańcucha; osłabienie zdrowia/ataku zaakceptowane).
 - Nadal otwarte: pomiar Wojownika (generał w stosie, wymuszenie ataku AI) — jako osobne pytanie.
+- Procarz — KOREKTA 2026-11-17 (właściciel): „Atak z dystansu ma mieć z przebiciem taki sam efekt jak atak ręczny, z tym że jest sprowadzony z dystansu” → wzór strzału Procarza jak wręcz: (max(0, atak − pancerz) + przebicie) × ×3, min. 1; zastępuje wybór „redukcja pancerza”. Wartość przebicia: **2** (ABC B; 18 / 9 / 6 / 6 przy pancerzu 0 / 3 / 6 / 8; dziś 12 / 3 / 3 / 3). Dispatch zaktualizowany.
+
+### 2026-11-17 — FALA 807: cena pokoju 6000 PN malejąca ze zmęczeniem (PEACEDECAY, decyzja A: zostawić)
+- r4 FC PASS-WITH-NOTES (kod 3363756d3; `refs/keep/PEACEDECAY-r4-fc`). Jedna cena pokoju 6000×(1−zmęczenie) we wszystkich ścieżkach, bez stałych 185/554/615; testy diplo-weariness/city-cession zaktualizowane.
+- main 32c13e63, ROBOCZA MD5 ad458fdd, GitHub Raw MD5 zgodne, sidecary 3/3. Testy: tsc 0; logic 213/213; diplo-weariness 39/0, 26/0, 14/0, 147/0; json-descriptions-sync 19/0; city-cession-r3 79/0; unit-replace 21/21; combat 6/6.
+- RYZYKO BALANSU zaakceptowane (A): najsilniejsza civ trzyma 72–75% miast; NIE ZMIERZONO w żywej grze. Dług Rust REPIN ceny pokoju.
