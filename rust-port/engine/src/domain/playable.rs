@@ -1864,6 +1864,71 @@ mod war_pipeline_advance_tests {
 }
 
 #[cfg(test)]
+mod awaiting_seat_rollback_tests {
+    //! R-RUSTPORT-P4-364-AWAITING-SEAT-R1 (obrona r1, zarzut N3 Evaluatora): niekompletna kolejka faz
+    //! (`TurnPhaseQueueIncomplete`) cofa wpisy `player_ever_owned_city` dopisane w fazie Victory, tak jak
+    //! cofa flage `gracz_kiedys_mial_miasto` (migawka `ever_owned_before`).
+    use super::*;
+    use crate::domain::events::EventQueue;
+
+    fn game_with_owner2_city() -> PlayableGame {
+        let mut game = PlayableGame::new(StartGameParams {
+            seed: 11,
+            ..StartGameParams::default()
+        })
+        .expect("scenario");
+        game.add_player(2, "AI".to_owned()).expect("wlasciciel 2");
+        game.state.cities.push(PlayableCity {
+            id: CityId::new(900),
+            owner_id: PlayerId::new(2),
+            name: "miasto-2".to_owned(),
+            position: PositionDto::new(5, 5),
+            is_capital: true,
+            population: FOUNDING_CITY_POPULATION,
+            culture: 0,
+        });
+        game
+    }
+
+    #[test]
+    fn pelna_kolejka_zapisuje_wpis_wlasciciela_2() {
+        // Kontrola pozytywna: ta sama gra z pelna kolejka dopisuje wpis w fazie Victory.
+        let mut game = game_with_owner2_city();
+        assert!(!game.state().ever_owned_city(PlayerId::new(2)));
+        game.advance_turn().expect("koniec tury");
+        assert!(game.state().ever_owned_city(PlayerId::new(2)));
+    }
+
+    #[test]
+    fn niekompletna_kolejka_cofa_wpis_zbioru_z_fazy_victory() {
+        let mut game = game_with_owner2_city();
+        let turn = game.state().turn;
+        // Kolejka bez fazy AI: Victory (ostatnia) wykona sie i dopisze wlasciciela 2, a potem
+        // `advance_turn` odrzuci niekompletna kolejke i musi cofnac zbior.
+        game.phase_queue = EventQueue::new();
+        for phase in TurnPhase::all() {
+            if *phase != TurnPhase::Ai {
+                game.phase_queue
+                    .enqueue(turn, *phase, event_for_phase(turn, *phase));
+            }
+        }
+        let err = game
+            .advance_turn()
+            .expect_err("niekompletna kolejka -> blad");
+        assert!(
+            matches!(err, PlayableError::TurnPhaseQueueIncomplete { .. }),
+            "{err:?}"
+        );
+        assert!(
+            game.state().player_ever_owned_city.is_empty(),
+            "wpis z fazy Victory cofniety: {:?}",
+            game.state().player_ever_owned_city
+        );
+        assert_eq!(game.state().turn, turn, "tura sie nie zwieksza");
+    }
+}
+
+#[cfg(test)]
 mod replace_difficulty_label_tests {
     use super::*;
 
