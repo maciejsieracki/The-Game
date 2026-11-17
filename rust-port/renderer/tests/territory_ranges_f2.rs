@@ -141,7 +141,7 @@ fn produce(s: &Scenario) -> vm::TerritoryRangesDto {
 #[test]
 fn vectors_cover_the_cases() {
     let all = scenarios();
-    assert_eq!(all.len(), 8);
+    assert_eq!(all.len(), 10);
     assert!(all.iter().all(|s| !s.by_owner.is_empty()));
     assert!(all.iter().any(|s| s.nodes.len() >= 12));
     assert!(all.iter().filter(|s| s.by_owner.len() >= 2).count() >= 6);

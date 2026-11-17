@@ -26,6 +26,18 @@
 //! (`hex_order`, engine `domain/state.rs`, FOG-VIEW), the territory nodes
 //! (`buildAllTerritoryNodes`, `main.ts:5667-5678`) and the fog sets of the
 //! active seat (`current_visible` / explored, FOG-VIEW).
+//!
+//! Other ports of the same pin rules (Evaluator r1, zarzut 5): engine
+//! `domain/territory.rs` (`territory_owner_at`, `order` as `i64`;
+//! `collect_territory_hex_keys_by_owner` on `BTreeMap`/`BTreeSet`, sorted
+//! order instead of the web insertion order), `domain/terrain.rs`
+//! (`city_range_for_population`) and `domain/trade.rs` (private
+//! `territory_owner_at`). The owner rule of this module is checked against
+//! the pin itself (vectors executed from `07d2fbd72`). When the engine wires
+//! this producer (DTO-BRIDGE / FOG-WIRE), the wiring must add an equivalence
+//! test of the engine `territory_owner_at` against [`territory_owner_at`] on
+//! these vectors; which copy is the source of truth is an orchestrator entry
+//! in `REJESTR-RUST.md` (proposal D-F2-4).
 
 use std::collections::{HashMap, HashSet};
 
