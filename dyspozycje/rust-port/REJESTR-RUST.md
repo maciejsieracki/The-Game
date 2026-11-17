@@ -3685,3 +3685,15 @@ Konsekwencje dla kolejki:
 |---|---|---|---|
 | Brak aktywnych workflow 3D | — | — | — |
 | Do decyzji: r2 DTO-BRIDGE (kontrakt JSON mostu) i #253 (mgła fotela) | czeka na właściciela | — | — |
+
+### Przebieg — audyt Opus i start dwóch tematów (2026-11-17 ~19:40 UTC)
+- **Audyt (na zlecenie właściciela, czy zostały tematy gry wymagające Opus):** zostały trzy: (1) Q6-2 BUILD-HIGHLIGHT-PARITY (engine `overlays_view.rs`, dług Q6); (2) AWAITING-SEAT (engine, dług DTO-BRIDGE zarzut 5); (3) L1/L2-FOGOFF-VEC (korekta wektora w rendererze, wymaga bramki renderera — nie startuje dziś). #218 BATTLE-EVENTS zamknięty jako pokryty przez I1–I4 (linia 2763). #280/#336 I5 czeka na K5LOOP (logika Haiku/Sonnet, zakaz Haiku dziś). DTO-BRIDGE r2 czeka na decyzję właściciela o kontrakcie JSON.
+- **Dispatche:** `R-RUSTPORT-P4-1Q6-2-BUILD-HIGHLIGHT-PARITY-R1` i `R-RUSTPORT-P4-364-AWAITING-SEAT-R1`, baza `326fd5545`, commit `7399f7da7` na `claude/rust-sivvrn`.
+- **Skrypty:** wszystkie etapy Opus, wf `wf_414119d0-497` (Q6-2) i `wf_1dce648f-896` (AWAITING-SEAT). Oba engine-only; renderer nie jest zmieniany, więc bramka renderera nie jest potrzebna.
+- **Dysk:** 18 GB wolne po sprzątaniu skryptów skanu, indeksów i kopii z zakończonych tematów.
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| P4-1Q6-2 BUILD-HIGHLIGHT-PARITY | Operator | OPUS 5.5 | ok. 19:40 UTC |
+| P4-364 AWAITING-SEAT | Operator | OPUS 5.5 | ok. 19:40 UTC |
+| P4-1 L1/L2-FOGOFF-VEC | czeka na slot renderera | OPUS 5.5 | — |
