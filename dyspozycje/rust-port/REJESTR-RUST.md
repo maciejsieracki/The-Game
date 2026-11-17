@@ -3108,3 +3108,11 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Krok 3 (sprzątanie):** nic do usunięcia. Worktree `wf_122fbedc-719-1` (rund trwa) nietknięte.
 - **Wolne sloty (3 z 4): powód.** Brak czystego tematu z kodem Rust. Kandydaci z listy (#97, #100, #104, #106, #113, #115, #120, #135, #172, #253, #257, #259 (już zintegrowany jako T6), #260 (w integracji), #261, #263, #264, #268, #285, #286, #304–#310, #314, #315) są zablokowani decyzją właściciela (#253, #285, #286), zależnościami (#261 na #314; #304 na #310; #113 na #107/#109/#112) lub niezintegrowanym renderem (#316–#322). Rozpoznanie tylko do odczytu nie jest jeszcze zlecone: nie ma kandydata, którego wynik zmieniłby decyzję.
 - **Otwarte decyzje ABC (w czacie):** #327, #358.
+
+### Przebieg — heartbeat (2026-11-17 ~03:18 UTC): T5b integracja r4 — Ewaluator PASS-WITH-NOTES, FC w toku; 1/4 aktywne; dysk 12 GB
+
+- **Ewaluator r4 (`wf_122fbedc-719`): PASS-WITH-NOTES.** Baza `7778e66af` (ancestry `83777efa9` i `366e6ff8d` OK). Diff `83777efa9..7778e66af`: 5 plików rust-port, 0 usunięć, allowlista T5b, `mod.rs` +1 linia, T6 nietknięty. Bramki EXIT 0: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --test p6_k5doc_t5b` (17/17), `cargo test --all-targets --no-fail-fast` (3827 passed, 0 failed, 1 ignored — `e2e::dump_tick1_econ_for_web_generator`, istniejący poza T5b). Raport `04-integracja-r4.md` (commit `4f88004fd`, tylko raport).
+- **Krok 2:** T5b po werdykcie Ewaluatora czeka na FC (Sonnet). FF `parity-v2` `83777efa9` → `7778e66af` dopiero po FC PASS.
+- **Krok 3 (sprzątanie):** worktree `wf_122fbedc-719-1` (Ewaluator) do usunięcia po FC; `-2` (locked, merge `7778e66af`) — po zakończeniu rundy. Nic nie usuwam, dopóki FC pracuje.
+- **Aktywne Workflow (1/4):** T5b integracja r4 (FC). Wolne sloty (3): powód jak w poprzednim przebiegu — brak czystego tematu Rust.
+- **Otwarte decyzje ABC (w czacie):** #327, #358.
