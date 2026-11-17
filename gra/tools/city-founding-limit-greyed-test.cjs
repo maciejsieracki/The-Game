@@ -9,7 +9,7 @@
  *   B  pierwsze miasto (0 miast) nigdy nie jest „exhausted” przy bazie > 0
  *   C  UI statycznie: buildModeHud renderuje stan limitu (klasa `limit`, aria-disabled, data-found-city-limit, tekst)
  *   D  UI statycznie: kliknięcie „Załóż miasto” przy limicie nie wchodzi w tryb (return przed onSelectFoundCity)
- *   E  main.ts: podpina `getFoundCityLimitState`; komunikat limitu ma pierwszeństwo nad brakiem zasobów
+ *   E  main.ts: podpina `getFoundCityLimitState` i `resolveFoundCityLockHint` (priorytet limitu testowany w B2)
  *
  * Run z gra/:  node tools/city-founding-limit-greyed-test.cjs
  * Mutacje:     CITY_LIMIT_SRC_DIR=<kopia gra/src z mutacja> node tools/city-founding-limit-greyed-test.cjs
@@ -25,7 +25,7 @@ const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'city-limit-'));
 const entry = path.join(temp, 'entry.ts');
 const bundle = path.join(temp, 'bundle.cjs');
 fs.writeFileSync(entry, [
-  `export { canFoundCity, cityFoundingLimitState } from ${JSON.stringify(SRC + '/game/cities')};`,
+  `export { canFoundCity, cityFoundingLimitState, resolveFoundCityLockHint } from ${JSON.stringify(SRC + '/game/cities')};`,
 ].join('\n') + '\n');
 esbuild.buildSync({
   entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
@@ -100,6 +100,21 @@ const readSrc = (rel) => fs.readFileSync(path.join(SRC, rel), 'utf8');
 const hud = readSrc('ui/buildModeHud.ts');
 const main = readSrc('main.ts');
 
+console.log('B2: priorytet podpowiedzi blokady (resolveFoundCityLockHint) — behawioralnie');
+{
+  const ex = { count: 10, limit: 10, exhausted: true };
+  const ok_ = { count: 9, limit: 10, exhausted: false };
+  const AFF = 'Za mało Pracy: brakuje 20 P';
+  let aff1 = 0;
+  const affFn = () => { aff1++; return AFF; };
+  ok(M.resolveFoundCityLockHint(ex, affFn) === 'Osiągnięto limit miast (10/10 w tej epoce)', 'limit + brak zasobów -> komunikat o limicie');
+  ok(aff1 === 0, 'limit osiągnięty -> sprawdzanie zasobów nie jest wykonywane (limit wygrywa)');
+  ok(M.resolveFoundCityLockHint(ok_, affFn) === AFF, 'poniżej limitu + brak zasobów -> stary komunikat o Pracy');
+  ok(M.resolveFoundCityLockHint(ok_, () => null) === null, 'poniżej limitu + zasoby OK -> brak podpowiedzi');
+  ok(M.resolveFoundCityLockHint(null, () => AFF) === AFF, 'limit=null (pierwsze miasto) -> wynik zasobów bez zmian');
+  ok(M.resolveFoundCityLockHint(null, () => null) === null, 'limit=null + zasoby OK -> brak podpowiedzi');
+}
+
 console.log('C: panel budowy renderuje stan limitu');
 {
   ok(/getFoundCityLimitState\?:\s*\(\)\s*=>/.test(hud), 'interfejs HUD deklaruje getFoundCityLimitState');
@@ -118,15 +133,14 @@ console.log('D: kliknięcie przy limicie nie wchodzi w tryb zakładania');
   ok(i >= 0 && hintReturn > 0 && selectCall > hintReturn, 'handler kliknięcia: przy niepustym getFoundCityLockHint → return PRZED onSelectFoundCity');
 }
 
-console.log('E: main.ts — limit ma pierwszeństwo, pierwsze miasto wyłączone');
+console.log('E: main.ts — wiring: podpowiedź blokady przez resolveFoundCityLockHint, pierwsze miasto poza limitem');
 {
   ok(main.includes('getFoundCityLimitState: () => {'), 'main.ts podpina getFoundCityLimitState');
-  const hintIdx = main.indexOf('getFoundCityLockHint: () => {');
-  const limIdx = main.indexOf('Osiągnięto limit miast (${lim.count}', hintIdx);
+  const m = main.match(/getFoundCityLockHint: \(\) => resolveFoundCityLockHint\(\s*isAwaitingFirstPlayerCity\(\) \? null : cityFoundingLimitState\(cities, ME\(\), player\.era \?\? 1, _menuCityLimitBase\),/);
+  ok(!!m, 'getFoundCityLockHint: limit = cityFoundingLimitState(...) z pominięciem dla isAwaitingFirstPlayerCity');
+  const hintIdx = main.indexOf('getFoundCityLockHint: () => resolveFoundCityLockHint(');
   const affIdx = main.indexOf('evaluateFoundCityAffordance(playerPracaPool, pc, 0)', hintIdx);
-  ok(hintIdx > 0 && limIdx > hintIdx, 'w getFoundCityLockHint jest komunikat „Osiągnięto limit miast (X/Y w tej epoce)”');
-  ok(limIdx > 0 && affIdx > limIdx, 'w getFoundCityLockHint limit sprawdzany PRZED brakiem zasobów');
-  ok(/if \(!isAwaitingFirstPlayerCity\(\)\) \{\s*const lim = cityFoundingLimitState/.test(main), 'pierwsze miasto (isAwaitingFirstPlayerCity) pomija sprawdzenie limitu');
+  ok(hintIdx > 0 && affIdx > hintIdx, 'zasoby (evaluateFoundCityAffordance) jako argument fallback po limicie');
 }
 
 console.log(`\nWynik: ${passed} OK, ${failed} FAIL`);

@@ -1169,6 +1169,22 @@ export function cityFoundingLimitState(
 }
 
 /**
+ * R-WEB-UI-CITY-FOUNDING-LIMIT-GREYED-OUT-Q1: podpowiedź blokady przycisku „Załóż miasto”.
+ * Limit miast ma pierwszeństwo nad brakiem zasobów (limitu nie da się naprawić zasobami);
+ * gdy limit nie jest osiągnięty, zwraca wynik `affordanceReason` bez zmian.
+ * / EN: lock hint for the „Found city” button; the city limit takes precedence over affordance.
+ */
+export function resolveFoundCityLockHint(
+  limit: { count: number; limit: number; exhausted: boolean } | null,
+  affordanceReason: () => string | null,
+): string | null {
+  if (limit !== null && limit.exhausted) {
+    return `Osiągnięto limit miast (${limit.count}/${limit.limit} w tej epoce)`;
+  }
+  return affordanceReason();
+}
+
+/**
  * R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1: twórca (założyciel) miasta albo `undefined`, gdy nieznany.
  * `foundedBy` jeśli zapisane; stary zapis bez pola: bieżący właściciel (miasto, którego nikt nie
  * zdobył, ma `foundedByOwner !== false`), a przy `foundedByOwner === false` twórca jest nieznany.
