@@ -3567,7 +3567,7 @@ export class BattleScene {
       this._buildDeployToolbar();
       this._initDeployUI();
       // R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: powod ukladu po polsku (zaskoczony / zastawiajacy).
-      if (this._ambushSurprisedSide !== null) {
+      if (this._ambushSurprisedSide != null) {
         this._showDeployFeedback(this._isAmbushAmbusherPlayer()
           ? 'Zasadzka — możesz rozstawić jednostki także na polu wroga.'
           : 'Wpadłeś w zasadzkę — jednostki w długiej linii (max 3 w szeregu).');
@@ -13150,7 +13150,7 @@ export class BattleScene {
 
   /** R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: gracz jest stroną zastawiającą zasadzkę (strefa = całe pole). */
   private _isAmbushAmbusherPlayer(): boolean {
-    return this._ambushSurprisedSide !== null
+    return this._ambushSurprisedSide != null
       && this._playerControlSide() !== this._ambushSurprisedSide;
   }
 
@@ -13170,7 +13170,7 @@ export class BattleScene {
     rankStep: number,
   ): void {
     const surprised = this._ambushSurprisedSide;
-    if (surprised === null) return;
+    if (surprised == null) return;
     if (side === surprised) {
       const ideal = ambushLineIdeal(units.length, frontCol, rankStep, PLAY_MID_ROW);
       ideal.forEach((cell, i) => {

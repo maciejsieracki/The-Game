@@ -36810,6 +36810,9 @@ async function boot(): Promise<void> {
        *  attack on the player's city (hard) passes this; the AI-vs-player caller omits
        *  it -> undefined -> unchanged for that path. */
       allowCityCapture?: boolean,
+      /** R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: bitwa z zasadzki (AI-atakujacy wpada w zasadzke gracza).
+       *  Wtedy strona zaskoczona = 'atk' (dluga linia), gracz (def) rozstawia sie na calym polu. */
+      ambushSurprisedSide?: 'atk' | 'def',
     ): void {
       const atkRosterRef = atkRoster.slice();
       const defRosterRef = defRoster.slice();
@@ -37059,8 +37062,9 @@ async function boot(): Promise<void> {
             teren: terrain,
             worldTerrain,
             data,
-            deploy: defRosterRef.some(u => u.isGeneral === true),
+            deploy: defRosterRef.some(u => u.isGeneral === true) || ambushSurprisedSide !== undefined,
             deployPlayerSide: 'def',
+            ...(ambushSurprisedSide !== undefined ? { ambush: { surprisedSide: ambushSurprisedSide } } : {}),
             manualControlAllowed: defRosterRef.some(u => u.isGeneral === true),
             attackerCivBonusy: civBonusyForOwnerId(atkLead.ownerId),
             defenderCivBonusy: civBonusyForOwnerId(defLead.ownerId),
@@ -45930,6 +45934,9 @@ async function boot(): Promise<void> {
                         );
                       },
                       worldTerrainFromHex(hexObj),
+                      undefined,
+                      // R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1: AI wpadl w zasadzke gracza (cmd.ambush) -> atk zaskoczony.
+                      (cmd as { ambush?: boolean }).ambush === true ? 'atk' : undefined,
                     );
                     break ownerLoop;
                   }
