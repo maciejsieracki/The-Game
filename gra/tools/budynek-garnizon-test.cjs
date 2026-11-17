@@ -330,26 +330,71 @@ function partA() {
 // w tej samej funkcji i nadal go NIE widzą. Szczegóły w raporcie rundy 2.
 // ===========================================================================
 function partAI() {
-  console.log('\n--- [AI] lista budów AI (ai.ts::infraOrder) ---');
+  console.log('\n--- [AI] następca dawnego infraOrder: ZACHOWANIE wyboru budowy AI ---');
+  // [AI1] Dawna lista `const infraOrder = [ ... ]` była ŚWIADOMIE USUNIĘTA
+  // (commit 25c44acde, R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1, kryterium 1: zero
+  // zaszytych id jako źródła kandydatów). Test nie może już wymagać jej obecności.
+  // Następca: grupowe punktowanie (collectAvailableBuildingCandidates) + bramka
+  // „miasto-państwo: poza grupą 'Wojsko i obrona' dopiero po dopełnieniu garnizonu"
+  // (ai.ts, blok `if (opts.defensiveCopy && !csGarrisonMet)`). Sprawdzamy ZACHOWANIE.
   const src = fs.readFileSync(AI_TS, 'utf8');
-  const m = src.match(/const infraOrder = \[([\s\S]*?)\];/);
-  check('[AI1] kotwica: ai.ts nadal zawiera listę `const infraOrder = [ ... ];`', !!m);
-  if (!m) return;
-  const items = m[1]
-    .split('\n')
-    .map((l) => l.trim())
-    .map((l) => {
-      const q = l.match(/^'([^']+)'/);          // 'studnia',
-      if (q) return q[1];
-      const ident = l.match(/^([A-Za-z_$][\w$]*)\s*,/); // adminBuilding,
-      return ident ? ident[1] : null;
-    })
-    .filter(Boolean);
-  check('[AI2] sanity: parser wyłuskał REALNĄ listę, nie pustkę (studnia + adminBuilding + >=6 pozycji)',
-    items.includes('studnia') && items.includes('adminBuilding') && items.length >= 6, items);
-  check('[AI3] `garnizon` JEST na liście budowy PAŃSTW-MIAST (`infraOrder`, gałąź `if (opts.defensiveCopy)`, ai.ts:1455) — asercja NIE mówi nic o cywilizacjach AI, te mają osobne listy i Garnizonu nadal nie widzą',
-    items.includes('garnizon'), items);
-  console.log(`[info] infraOrder = [${items.join(', ')}]`);
+  check('[AI1] ai.ts nie zawiera zaszytej listy `const infraOrder = [ ... ]` (usunięta przez 25c44acde)',
+    !/const\s+infraOrder\s*=\s*\[/.test(src));
+
+  const AI_ENTRY = path.resolve(__dirname, '.budynek-garnizon-ai-entry.ts');
+  const AI_BUNDLE = path.resolve(__dirname, '.budynek-garnizon-ai-bundle.cjs');
+  fs.writeFileSync(AI_ENTRY,
+    `export { chooseCityProduction, loadDifficultyParams } from ${JSON.stringify(AI_TS)};\n`, 'utf8');
+  esbuild.buildSync({
+    entryPoints: [AI_ENTRY], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
+    loader: { '.ts': 'ts', '.json': 'json' }, outfile: AI_BUNDLE, absWorkingDir: GRA, logLevel: 'silent',
+  });
+  const ai = require(AI_BUNDLE);
+  const readJ = (f) => JSON.parse(fs.readFileSync(path.join(GRA, 'data', f), 'utf8'));
+  const unitsRaw = readJ('units.json');
+  const unitsArr = Array.isArray(unitsRaw) ? unitsRaw : unitsRaw.units;
+  const unitNames = new Set(unitsArr.map((u) => u.Jednostka));
+  const dataAI = { buildings, units: unitsArr, terrainYields: readJ('terrain-yields.json'), aiParams: readJ('ai-params.json') };
+  const diffAI = ai.loadDifficultyParams(dataAI, 2);
+  const hexes = {};
+  for (let q = 0; q < 20; q++) for (let r = 0; r < 20; r++) {
+    hexes[`${q},${r}`] = { coords: { q, r }, terenBazowy: 'laka', nakladka: 'brak', ulepszenie: 'brak',
+      wlasciciel: null, wioska: { istnieje: false, ludnosc: 0 }, widocznosc: {}, rzeka: { obecna: false, krawedzie: [] } };
+  }
+  const mapAI = { szerokoscQ: 20, wysokoscR: 20, hexes, seed: 1, riverPaths: [] };
+  const ZERO = { wojsko: 0, nauka: 0, ekonomia: 0, obrona: 0 };
+  // Symulacja jak w ai-produkcja-pokrycie-katalogu-test: AI wybiera najlepiej punktowany
+  // jeszcze niezbudowany budynek; jednostki odrzucane przez canAfford.
+  const visitedFor = (cities, guards) => {
+    const built = [];
+    const visited = new Set();
+    for (let i = 0; i < buildings.length + 15; i++) {
+      const pick = ai.chooseCityProduction(cities[0].id, cities, guards, cities[0].ownerId, dataAI, ZERO,
+        { defensiveCopy: true, cityStateDifficultyVsPlayer: 'normal',
+          cityBuildings: { [cities[0].id]: built }, canAfford: (_c, id) => !unitNames.has(id) },
+        mapAI, diffAI);
+      if (pick === null || unitNames.has(pick) || built.includes(pick)) break;
+      built.push(pick);
+      visited.add(pick);
+    }
+    return visited;
+  };
+  const csCity = { id: 'cs1', ownerId: 4, q: 3, r: 3, population: 3, name: 'CS' };
+  const csGuards = [
+    { id: 'g1', ownerId: 4, q: 3, r: 3, typeId: 'miecznik', category: 'miecznik', ruch: 2, ruchLeft: 2 },
+    { id: 'g2', ownerId: 4, q: 3, r: 3, typeId: 'miecznik', category: 'miecznik', ruch: 2, ruchLeft: 2 },
+  ];
+  const withGarrison = visitedFor([csCity], csGuards);
+  const noGarrison = visitedFor([csCity], []);
+  // [AI2] następca: miasto-państwo z dopełnionym garnizonem WYBIERA garnizon (dawny infraOrder
+  // dodawał go właśnie wtedy: „gated on garrisonMet").
+  check('[AI2] miasto-państwo z garnizonem: AI wybiera `garnizon` (zachowanie następcy infraOrder)',
+    withGarrison.has('garnizon'), [...withGarrison].slice(0, 12));
+  // [AI3] następca bramki: miasto-państwo BEZ dopełnionego garnizonu NIE dostaje budynków spoza
+  // grupy 'Wojsko i obrona' (ai.ts ~2189) -- garnizon (grupa 'Prawo i administracja') zostaje stłumiony.
+  check('[AI3] miasto-państwo bez garnizonu: `garnizon` stłumiony (priorytet obrony, ai.ts ~2189)',
+    !noGarrison.has('garnizon'), [...noGarrison].slice(0, 12));
+  console.log(`[info] CS z garnizonem: ${withGarrison.size} budynków; CS bez garnizonu: ${noGarrison.size} budynków`);
 }
 
 // ===========================================================================
@@ -584,7 +629,9 @@ async function partC(wikiEntry) {
       txt,
       hasNazwa: /Garnizon/.test(txt),
       hasKoszt: /Koszt budowy/.test(txt),
-      hasUtrzymanie: /Utrzymanie/.test(txt),
+      // Następca dawnego wiersza „Utrzymanie": sekcja „Koszt utrzymania" z wierszem „Co turę"
+      // i wartością w Pieniądzu (buildingAdapter.ts, sekcja 'cost-upkeep').
+      hasUtrzymanie: /Koszt utrzymania\s*Co turę\s*\d+\s*Pieniądz/.test(txt),
       hasHistoria: dock.querySelector('.entity-card-historia') !== null,
       historiaTxt: (dock.querySelector('.entity-card-historia') || { textContent: '' }).textContent.trim(),
       medalionSvg,
@@ -594,7 +641,7 @@ async function partC(wikiEntry) {
   check('[E1] buildBuildingDetailCard („Garnizon") wykonał się bez wyjątku', karta.err === null, karta.err);
   check('[E2] karta zawiera nazwę „Garnizon"', karta.hasNazwa === true);
   check('[E3] karta zawiera wiersz kosztu budowy', karta.hasKoszt === true, karta.txt.slice(0, 300));
-  check('[E4] karta zawiera wiersz utrzymania', karta.hasUtrzymanie === true, karta.txt.slice(0, 300));
+  check('[E4] karta zawiera sekcję „Koszt utrzymania" z wierszem „Co turę" (Pieniądz)', karta.hasUtrzymanie === true, karta.txt.slice(0, 300));
   check('[E5] karta zawiera sekcję „Rys historyczny" z treścią z buildings.json',
     karta.hasHistoria === true && karta.historiaTxt.includes(String(G.historia).slice(0, 60)),
     karta.historiaTxt.slice(0, 120));
