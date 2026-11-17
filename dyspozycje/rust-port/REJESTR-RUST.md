@@ -2978,3 +2978,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Krok 3:** worktree 2 (główne + T5a integracja). Nie ruszane.
 - **Dysk:** 6,8 GB — poniżej progu 8 GB dla nowych tematów z kodem Rust. Start nie zostanie wykonany, dopóki T5a się nie skończy i miejsce nie wzrośnie.
 - **Wakeup:** nie planuję ScheduleWakeup. Ten tryb służy pętli `/loop`, a tej sesji nie uruchomiłem jako pętli.
+
+### Przebieg — FF parity-v2 T5a (strzelec-kite, `3d016a5ae` → `625624d97`), 2026-11-17 ~01:05 UTC
+
+- **FF `parity-v2`: `3d016a5ae` → `625624d97`** (merge T5a `1c7eb22fd` = `3d016a5ae` + `270e5711b`; raport Operatora r4 `625624d97`). Ancestry OK; kod T5a w historii. `git diff --stat 3d016a5ae..625624d97`: 9 plików, +59064/−0, wszystkie w allowliście T5a. W `mod.rs` jedna linia `pub mod siege_tactics_kite;`. `git diff --check` czysty. Readback: `625624d97205`.
+- **Bramka na merge (`wf_1ed3e436-684`, Haiku Operator, Sonnet Ewaluator/FC):** fmt EXIT 0, clippy `-D warnings` EXIT 0, pełny `cargo test --all-targets --no-fail-fast` EXIT 0 (3800 passed, 0 failed, 1 ignored — `e2e::dump_tick1_econ_for_web_generator`, sprzed T5a). `p6_k5doc_t5a` 22/22. Werdykty: Operator PASS, Ewaluator PASS-WITH-NOTES, FC PASS-WITH-NOTES. Obrona bez zmian w kodzie.
+- **Notatki:** (1) generator `p6_k5doc_t5a_gen.mjs` odtworzony przez Obronę (TypeScript z `TYPESCRIPT_JS`), 722 przypadki bajt-w-bajt; (2) mutanty równoważne `gap < dNow` i `dd >= 0` przyjęte z dowodem; (3) `best_kite_shot_step` i `kite_branch_applies` bez wołającego produkcyjnego — zamierzone, wpięcie w T8 / #113; (4) duplikaty helperów `manhattan`, `advance_dir`, `enemies_of`, `in_bounds` — osobny temat konsolidacji.
+- **Keep refs:** `T5a-r4-merge-1c7eb22fd`, `T5a-r4-report-625624d97`, `T5a-r4-fc-a194f45af`.
+- **Sprzątanie:** usunięte worktree rundy integracyjnej T5a (`wf_1ed3e436-684-*`). Dysk 6,2 GB.
+- **Otwarte:** T6 pełny test na `87829df94` (bramka do zrobienia po zwolnieniu dysku ≥ 8 GB); T4e wymaga zagwarantowania `attackDirection = front` (C-FLANK pominięty w T4b).
