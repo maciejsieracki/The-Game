@@ -34,7 +34,7 @@ Punkt 3 (numery linii R5/STATCHIP) — JUŻ POPRAWIONE na bazie, bez zmian w all
 - Sprawdzone przykładowo w `view/cities.rs`: `cities.ts:875` (`_buildBadgeInput`), `main.ts:13503-13504`,
   `:13512-13513` (`applyFogVisibility`), `main.ts:2939` (`_cityRenderOpts`) — zgodne z pinem.
 
-Commit: patrz sekcja SHA niżej (commit kodu i raportu jednym commitem na gałęzi roboczej).
+Commit kodu i raportu: `52676fc7a0c7d1d74381f5b48152b7998854bbe9` (gałąź `rust-port-wip/R-RUSTPORT-P4-1-DOC-DEBTS-R1`); ten wpis SHA dodany commitem następnym.
 
 ## Dowód: diff tylko komentarze
 Skrypt: `git diff -U0 | grep -E '^[+-][^+-]' | grep -vcE '^[+-]\s*//'` → `0`
