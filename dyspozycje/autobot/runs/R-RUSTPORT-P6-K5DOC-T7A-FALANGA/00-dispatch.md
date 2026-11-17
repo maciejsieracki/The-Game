@@ -48,3 +48,12 @@ PUNKTY W PINIE (ZWERYFIKUJ przed każdym wektorem: `git show 07d2fbd72:gra/src/b
 3. Brak `#[ignore]`, brak osłabionych asercji, zero zmian poza allowlistą.
 4. Commit jawnym `git add` (nigdy `-A`), BEZ `Cargo.lock`, BEZ nazwy modelu w trailerach. Bez push do parity. Raport `01-operator-r1.md` w run dir.
 5. `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` poza repo, unikalny; usuń po bramkach.
+
+## DODATEK r2 (orkiestrator, po FAIL FC r1 — jedyny powód: bramki niezmierzone z powodu dysku)
+- BAZA r2: `750c100063` (FC r1; zawiera kod `0964e67a1`, wektory remisu i granic `409477d73`, poprawki Obrony `1120f110c`, raport FC). Nie zaczynaj od zera; kod i wektory są już w gałęzi.
+- Zostają zarzuty Evaluatora przyjęte przez Obronę i oddalone przez FC: mutant bez premii +6 za sąsiada falangi (wektor remisu w `409477d73`) i mutant `nr >= BF_ROWS` (wektory krawędzi). Zweryfikuj, że mutanty dają FAIL, i wpisz wyniki do raportu.
+- BRAMKI (jedyne, których brakuje): `cargo clippy --all-targets -- -D warnings` oraz `cargo test --all-targets --no-fail-fast` w `rust-port/engine`. Wymagają ≥ 8 GB wolnego na `/`. Przed bramką `df -h /`. Przy < 8 GB: BLOCK INFRA z liczbą GB, bez uruchamiania na pół.
+- Mutacje (MUSZĄ dać FAIL, wyniki w raporcie): (a) `PHALANX_LEAD_TOLERANCE` 2→3; (b) pominięty filtr `primary_ranged`; (c) negacja gałęzi kategorii falanga w `is_phalanx`; (d) usunięcie premii +6 za sąsiada falangi; (e) `nr >= BF_ROWS` → `nr > BF_ROWS`. Każdą mutację przywróć z kopii i potwierdź zerowy diff.
+- Znany dług, NIE w zakresie tej rundy: `norm_name` pokrywa NFD tylko dla U+00C0..U+017F. Odnotuj, nie naprawiaj.
+- Trailery commitów: BEZ nazwy modelu (decyzja #289 dla workerów; harness ma pierwszeństwo tylko dla commitów orkiestratora). Konflikt zgłoś w raporcie.
+- Commit jawnym `git add`, bez `Cargo.lock`, bez push do parity. Raport `02-operator-r2.md`.
