@@ -1,3 +1,9 @@
+## ROBOCZA 777228ed -- 2026-11-17 -- FALA 793: Podpowiedz utrzymania budynkow: baza x mnoznik = wynik (GARNTIP) (testowa)
+
+- W podpowiedziach utrzymania budynkow (lista miasta, karta encji, stopka i wiersz szczegolowy karty) pokazane wyjasnienie baza x mnoznik silnika = wynik, np. Garnizon 2 x 2 = 4; wartosci z funkcji silnika (economy-upkeep: buildingUpkeepBreakdown); dane i koszty bez zmian (64c7ff130)
+- Weryfikacja: garrison-upkeep-tooltip-explain 28/0, upkeep-test 91/0, budynek-garnizon 83/0, ceramics 645/0, logic 213/213, tsc 0, vite build OK; NIE ZMIERZONO tooltip w Chromium; dlug bazowy D10 building-upkeep-resources i 2 kotwice citizen-resource-upkeep (czerwone takze na bazie)
+- Limity: Wyjasnienie pojawia sie dla kazdego budynku z baza != wynik; refaktor buildingUpkeep w economy-upkeep.ts (wynik bez zmian); title bez ikon
+
 ## ROBOCZA e2ba27c6 -- 2026-11-17 -- FALA 792: Lucznicy: atak dystansowy 4/5/6, silnik = karty (ARCH456) (testowa)
 
 - Atak dystansowy (missileAttack i karta) Lucznik 4 / egipski 5 / nubijski 6, silnik i karty identyczne; zdrowie lucznikow bez zmian; skutek uboczny: wiezyczka murow generycznej cywilizacji w Kamieniu strzela Lucznikiem (zasieg 3) zamiast Oszczepnikiem (remis sily 4) (0bf2244ef, merge 45068fc34)
