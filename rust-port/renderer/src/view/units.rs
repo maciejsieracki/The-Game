@@ -13,9 +13,9 @@
 //!   default opacity (`syncPlayerUnitSelectionOnMap`, `main.ts:7123-7125`);
 //!   the siege map panel clears it (`:7120-7122`);
 //! - `overlays.build_highlight` → the branches of `refreshBuildHighlight`
-//!   (`main.ts:16351-16395`): `FoundCity` / `Wonder` → `setHighlight(hexes)`
-//!   (default opacity, `:16359`, `:16366`); `Improvement` →
-//!   `setHighlight(hexes, IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY)` (`:16391-16394`);
+//!   (`main.ts:16351-16396`): `FoundCity` / `Wonder` → `setHighlight(hexes)`
+//!   (default opacity, `:16360`, `:16366`); `Improvement` →
+//!   `setHighlight(hexes, IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY)` (`:16392-16395`);
 //!   `Mine` → `clearHighlight()` (`:16387`; the mine layer itself is
 //!   [`super::mine_eligible_group`], Q5);
 //! - `overlays.selection` → `setSelectionHex(q, r, ownerId)` (`main.ts:7119`);
@@ -66,7 +66,7 @@ use crate::pick::hex::HexCoord;
 pub enum HighlightSource {
     /// `overlays.reachable` (`main.ts:7125`).
     Reachable,
-    /// `overlays.build_highlight` of the given kind (`main.ts:16351-16395`).
+    /// `overlays.build_highlight` of the given kind (`main.ts:16351-16396`).
     Build(vm::BuildHighlightKind),
 }
 
@@ -96,9 +96,9 @@ fn build_highlight_call(dto: &vm::BuildHighlightDto) -> Option<UnitHighlight> {
         // `unitRenderer.clearHighlight(); refreshMineEligibleOverlay(hexes)`
         // (`main.ts:16386-16390`).
         vm::BuildHighlightKind::Mine => return Some(UnitHighlight::Clear),
-        // `setHighlight(qual)` / `setHighlight(new Set(...))` (`:16359`, `:16366`).
+        // `setHighlight(qual)` / `setHighlight(new Set(...))` (`:16360`, `:16366`).
         vm::BuildHighlightKind::FoundCity | vm::BuildHighlightKind::Wonder => HIGHLIGHT_OPACITY,
-        // `setHighlight(..., IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY)` (`:16391-16394`).
+        // `setHighlight(..., IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY)` (`:16392-16395`).
         vm::BuildHighlightKind::Improvement => IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY,
     };
     Some(UnitHighlight::Set {
