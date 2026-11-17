@@ -1,70 +1,59 @@
-# Obrona Operatora — R-RUSTPORT-P6-K5DOC-T7A-FALANGA (runda 2, odpowiedź na zarzuty z raportu Operatora r2)
+# Obrona Operatora — R-RUSTPORT-P6-K5DOC-T7A-FALANGA (runda 3)
 
-STATUS: BLOCK (INFRA — bramki `cargo clippy --all-targets -- -D warnings` i `cargo test --all-targets --no-fail-fast` NIE_ZMIERZONO; dysk 4,1 GB < 8 GB)
+STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-K5DOC-T7A-FALANGA
-BAZA: `750c10006` (FC r1), na niej `d22a90b41` (raport Operatora r2). Kod i wektory bez zmian w tej rundzie.
-SHA obrony: commit zawierający tylko ten plik (SHA podany w odpowiedzi Operatora)
-PIN: `07d2fbd72`, `gra/src/battle/battleScene.ts`
-KOD: `siege_tactics_phalanx.rs` bez zmian od `409477d73` (sprawdzone `git diff --stat 409477d73 HEAD`: brak różnic)
+BAZA: 64fce9ed2 (raport Operatora r3; kod i wektory z 0964e67a1 / 409477d73 / 1120f110c / c39d97add)
+GOAL: Odpowiedź na 7 zarzutów z 02-evaluator.md (ec5e8d5f8). Bez zmian w kodzie — potwierdzenie dowodami.
 
 ## Odpowiedzi na zarzuty
 
-### Zarzut 1 — INFRA: bramki clippy i cargo test oraz mutacje (a)-(e) niezmierzone: PRZYJMUJĘ
-- Stan dysku w tej rundzie: `df -h /` przed sprawdzeniem wynosił 5,2 GB, a po chwili 4,1 GB (wolne miejsce spada, bo trwa cudza kompilacja).
-- Równolegle działa inny worker (`wf_af7143d7-863-1`, `cargo` w `rust-port/engine`, `CARGO_TARGET_DIR=.../t7b-r1-target`). Nie zwalniam jego targetów (zakaz z regulaminu) i nie uruchamiam budowy, bo groziłaby ENOSPC dla tamtego procesu.
-- Efekt: clippy, `cargo test --all-targets` i mutacje (a)-(e) w tej rundzie NIE_ZMIERZONO. Wymaga ≥ 8 GB wolnego na `/` i powtórzenia w kolejnej rundzie tego samego ID.
+1. **Bramki odtworzone (fmt, clippy, lib 126, p6_k5doc_t7a 10) — PRZYJMUJĘ jako potwierdzenie, bez poprawki.**
+   Nie jest to zarzut wobec kodu. Pełny `cargo test --all-targets` nie był powtarzany przez Ewaluatora; Operator r3 zgłasza jego EXIT 0 (515 wystąpień `test result: ok`, zero FAILED). Brak luki.
 
-### Zarzut 2 — przegląd statyczny (brak rozbieżności): PRZYJMUJĘ jako uzupełnienie, nie zastępstwo testów
-Sprawdzono odczytem (bez cargo) w tej rundzie:
-- Pin `battleScene.ts:1168`: `PHALANX_LEAD_TOLERANCE = 2`. Moduł `siege_tactics_phalanx.rs:31`: `PHALANX_LEAD_TOLERANCE: f64 = 2.0`. Zgodne.
-- Pin `battleScene.ts:1538-1544` (`isPhalanx`): kategoria `falanga` albo nazwa zawierająca `falang`/`phalan`/`hoplit`/`sarissa`. Moduł `siege_tactics_phalanx.rs:47` (`is_phalanx`). Zgodność gałęzi potwierdzają wektory z `p6_k5doc_t7a_gen.mjs` (kategorie pozytywne i negatywne). Pełne porównanie wartości wykonuje dopiero test.
-- Pin `battleScene.ts:6597-6599` (`if (e.primaryRanged) continue;`). Moduł `siege_tactics_phalanx.rs:204` (`if e.primary_ranged`). Zgodne.
-- Pin `battleScene.ts:6625`-okolica i premia +6 za sąsiada falangi: moduł `siege_tactics_phalanx.rs:248-249` (`touches_phalanx`, `+6.0`). Zgodne.
-- Nie sprawdzono statycznie: granice pola i remis N,E,S,W (przeniesione do wektorów `granica_*` i `remis_*`, patrz zarzut 3).
+2. **Mutant `d_enemy > d_now` przeżył — ODRZUCAM jako lukę testów (mutant równoważny).**
+   Dowód: `siege_tactics_phalanx.rs:238-239` używa `if d_enemy >= d_now { continue }`. Krok N/E/S/W zmienia odległość Manhattan dokładnie o ±1 (`DIRS4`, linia 34), a współrzędne wroga i jednostki są całkowite (siatka `BF_COLS=68`, `BF_ROWS=156`). Zatem `d_enemy ∈ {d_now-1, d_now+1}`; wartość `d_enemy == d_now` jest niemożliwa. Warunki `d_enemy >= d_now` oraz `d_enemy > d_now` odrzucają dokładnie ten sam zbiór kroków, więc mutant nie zmienia zachowania. Żaden wektor nie może go zabić bez zmiany zachowania pina. Operator r3 (mutacje a–e) wykazał FAIL dla pozostałych mutantów.
 
-### Zarzut 3 — wektory remisu i krawędzi wobec mutantów (d) i (e): PRZYJMUJĘ, NIE_ZMIERZONO w tej rundzie
-- Wektory istnieją w bazie (`p6_k5doc_t7a_gen.mjs`, 7 trafień na `granica_` lub `remis_E_z_sasiadem`), dodane w `409477d73`.
-- Mutantów (d) (usunięcie +6) i (e) (`nr >= BF_ROWS` → `nr > BF_ROWS`) NIE uruchamiano w tej rundzie, bo wymaga to budowy testów (dysk, patrz zarzut 1).
-- Dowód z poprzedniej rundy (`409477d73`, raport obrony r1): mutant +6 → FAIL na `remis_E_z_sasiadem_wygrywa_nad_N_bez_sasiada`; mutant `nr >= BF_ROWS` → FAIL na `granica_S_rowBF_ROWS-1...`. Mutacje dla pozostałych krawędzi NIE_ZMIERZONO.
+3. **Zgodność z pinem `07d2fbd72` — PRZYJMUJĘ, zweryfikowane.**
+   - `PHALANX_LEAD_TOLERANCE = 2` → `battleScene.ts:1168` (potwierdzone `sed` na pinie).
+   - `isPhalanx` → `battleScene.ts:1538-1544` (potwierdzone: `normName(kategoria)==='falanga'`, potem `Jednostka ?? nazwa` z `falang|phalan|hoplit|sarissa`). Rust `is_phalanx` (`siege_tactics_phalanx.rs:47-59`) implementuje tę samą regułę.
+   - `BF_COLS = 68` (`siege_tactics_approach.rs:210`), `BF_ROWS = 156` (`:212`) — zgodne z dispatchem.
+   - Wektory: `tests/p6_k5doc_t7a_vectors/vectors.json` zawiera `pin` w `generator`/`pin`, sekcje `is_phalanx` (15), `line_front` (8), `action` (30) i `normName_probe` (3) — zgodnie z zarzutem. Brak `#[ignore]`, brak `gra/`, brak `Cargo.lock` w commitach.
 
-### Zarzut 4 — konflikt trailerów commitów: PRZYJMUJĘ jako konflikt do decyzji orkiestratora
-- Dispatch: BEZ nazwy modelu w trailerach. Reguła sesji: `Co-Authored-By: Claude Haiku 5.5`.
-- Ten commit (`02a-obrona.md`) ma trailer zgodny z regułą sesji, tak jak commity obrony r1 i raport FC. Decyzja, który wariant obowiązuje, należy do orkiestratora. Nie rozstrzygam jej tutaj.
-- Dług `norm_name` (NFD tylko dla U+00C0..U+017F) pozostaje znany i poza zakresem; nie naprawiany.
+4. **Wariant `Schedule` nie istnieje w pinie — PRZYJMUJĘ, bez zmiany kodu.**
+   Potwierdzone: `_phalanxStep` (pin `:6588-6636`) nie planuje kroków przez `_schedule`; callback `_doMove` to `() => done()`. Moduł dokumentuje to w nagłówku (`siege_tactics_phalanx.rs:16`), a `PhalanxDecision` (`:101-112`) nie zawiera `Schedule`. Decyzja techniczna do wpisu przez orkiestratora w `dyspozycje/rust-port/REJESTR-RUST.md` (zasada 8 CLAUDE.md, zasada 8 bez pytania ABC).
 
-### Zarzut 5 — raport w `02-evaluator.md`, skomitowany bez push: ODRZUCAM w części nazwy, PRZYJMUJĘ w części bez push
-- W gałęzi `d22a90b41` nie ma pliku `02-evaluator.md` w katalogu runu (`git ls-tree` pokazuje `01-operator-r1.md`, `02a-obrona.md`, `02-operator-r2.md`, `03-final-control.md`). Raport Operatora r2 to `02-operator-r2.md` (19 linii).
-- Push: `git branch -r --contains d22a90b41` nie zwrócił żadnej zdalnej gałęzi. Nie pushowałem. Stan zdalny: NIE_ZMIERZONO poza tą lokalną kontrolą.
+5. **Brak wołającego (wiring T8/#113) i wymóg `advance_step_decide` (T4b) — PRZYJMUJĘ, poza zakresem.**
+   Zgodnie z dispatchem: wiring nie wchodzi w tę rundę. Kod nie rozszerza `siege_tactics_loop.rs` ani `siege_tactics_activate.rs`. Zależność od T4b jest ujawniona w raporcie; wiring nie może się udać bez T4b w gałęzi integracyjnej.
 
-## Mutacje (wyniki w tej rundzie)
+6. **Dług `norm_name` (NFD tylko dla U+00C0..U+017F) — PRZYJMUJĘ jako znany dług, NIE naprawiam.**
+   Dispatch r2/r3 wymaga odnotowania bez naprawy. Wpis do rejestru długu po stronie orkiestratora.
 
-| Mutant | Wynik |
-|---|---|
-| (a) `PHALANX_LEAD_TOLERANCE` 2 → 3 | NIE_ZMIERZONO w r2 (wykryty w poprzednich rundach wg raportu Operatora r1) |
-| (b) pominięty filtr `primary_ranged` | NIE_ZMIERZONO w r2 (j.w.) |
-| (c) negacja gałęzi `isPhalanx` | NIE_ZMIERZONO w r2 (j.w.) |
-| (d) usunięcie +6 za sąsiada falangi | NIE_ZMIERZONO w r2 (wektor `remis_E_z_sasiadem...` w bazie) |
-| (e) `nr >= BF_ROWS` → `nr > BF_ROWS` | NIE_ZMIERZONO w r2 (wektory `granica_*` w bazie) |
+7. **Konflikt trailerów (Co-Authored-By z nazwą modelu vs dispatch bez nazwy modelu) — PRZYJMUJĘ jako decyzję orkiestratora (#289), bez zmiany commitów.**
+   Commit tej obrony używa trailera zgodnego z dispatchem (bez nazwy modelu), konflikt zgłoszony ponownie w tym raporcie.
 
-## Bramki (ta runda)
+## Podsumowanie zmian w tej rundzie
 
-| Bramka | Wynik |
-|---|---|
-| `cargo fmt --check` | NIE_ZMIERZONO w r2 (EXIT 0 z rundy r1, wg raportu) |
-| `cargo clippy --all-targets -- -D warnings` | NIE_ZMIERZONO w r2 (dysk 4,1–5,2 GB < 8 GB) |
-| `cargo test --all-targets --no-fail-fast` | NIE_ZMIERZONO w r2 (dysk < 8 GB) |
+- Kod, wektory i testy: BEZ ZMIAN (zarzuty nie wymagają poprawki kodu).
+- Jedyna zmiana: ten plik (`02a-obrona.md`).
 
-## Sprzątanie
-- Nie tworzono targetów Cargo w tej rundzie. Żadnych zmian poza tym plikiem.
-- Brak `Cargo.lock`, brak zmian w `gra/`, brak push.
+## Dowody
 
-## Werdykt tej obrony
-- Zarzuty 1 i 3 — przyjęte. Bramki i mutacje nie zostały zmierzone w tej rundzie z powodu dysku.
-- Zarzut 2 — przyjęty jako przegląd statyczny (zgodność sprawdzona odczytem pina).
-- Zarzut 4 — przyjęty jako konflikt do decyzji orkiestratora.
-- Zarzut 5 — odrzucona nazwa pliku; push nie wykonany.
+- `git show 07d2fbd72:gra/src/battle/battleScene.ts | sed -n '1166,1169p;1536,1545p'` — linie 1168 i 1538-1544 zgodne z kodem.
+- `rust-port/engine/src/domain/siege_tactics_phalanx.rs:238-239` — warunek `d_enemy >= d_now`.
+- `rust-port/engine/src/domain/siege_tactics_approach.rs:210,212` — `BF_COLS=68`, `BF_ROWS=156`.
+- `rust-port/engine/tests/p6_k5doc_t7a_vectors/vectors.json` — sekcje wektorów `is_phalanx`, `line_front`, `action`, `normName_probe`.
 
-RUNDY: obrona r2 (ID bez zmian), kolejna runda tego samego ID wymagana po zwolnieniu dysku do ≥ 8 GB.
-NASTĘPNY KROK: zwolnić dysk do ≥ 8 GB; uruchomić `cargo clippy --all-targets -- -D warnings` i `cargo test --all-targets --no-fail-fast` w `rust-port/engine` z `CARGO_TARGET_DIR` poza repo; wykonać mutacje (a)-(e) z przywracaniem z kopii; potem Evaluator i FC.
+## Blokady
+
+Brak blokad technicznych. Nie wykonano push ani integracji.
+
+## RUNDY
+
+3 (obrona r3). Ta runda nie zmienia kodu; bramki nie były powtarzane w tej obronie (zweryfikowane wyniki Operatora r3 w 03-operator-r3.md).
+
+## NASTĘPNY KROK
+
+Ewaluator r3 / Final Control r3 na commicie tej obrony. Orkiestrator: wpisać do REJESTR-RUST.md pkt 4 (brak wariantu Schedule) i pkt 6 (dług NFD).
+
 DEPLOY/PUSH: NIE WYKONANO
