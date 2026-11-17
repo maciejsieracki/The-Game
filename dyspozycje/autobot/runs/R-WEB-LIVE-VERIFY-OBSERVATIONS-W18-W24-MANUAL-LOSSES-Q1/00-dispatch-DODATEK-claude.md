@@ -14,3 +14,16 @@ ZADANIE rundy 2 (jedno): punkt 3 z `00-dispatch.md` w pełnej formie:
 - Tabela: para | tryb trafień | ziarno | tryb bitwy (ręczna/AUTO/skip) | straty zwycięzcy | straty przegranego | rundy.
 - To POMIAR do decyzji właściciela; bez oceny „błąd/OK” poza oczywistą rozbieżnością z dowodem.
 Zakazy bez zmian (m.in. `rm/rmdir/unlink` w komendach, `git add -A`, bez zmian w `gra/src`/`gra/data`, PNG nie do repo — commituj tylko JSON/skrypty). Model Operatora: HAIKU (r2).
+
+## DODATEK 2 (runda 3, 2026-11-17) — BAZA = bf3f65f045bd0580a73199226db5d554108b08d3 (kandydat r2: raport + evidence JSON + harness `live-verify-w18-w24-manual-losses-r2-manual.cjs` zacommitowane)
+
+**Uzasadnienie Operatora SONNET (zasada „po DWÓCH nieudanych rundach Haiku TEGO SAMEGO tematu”):** r1 Haiku FC FAIL, r2 Haiku FC FAIL — obie na punkcie 3 (ręczna bitwa nie jest ręczna; brak par 10 vs 10; harness pointer startował z SIGTRAP). Temat wymaga zbudowania sterownika bitwy ręcznej i rosteru testowego — praca wieloźródłowa; Sonnet na Operatorze TYLKO w tej rundzie.
+
+Final Control r2 — trzy NAPRAW (reszta oddalona; evidence/harness już w bazie; W18 zamknięty, W24 PASS):
+1. **Bitwa „ręczna” = prawdziwie ręczna.** Dziś: klik Start + 1 Spacja, bez rozkazów. Wymóg: sterownik, który po starcie walki wydaje rozkazy jednostkom (zaznacz → atakuj/ruch) przez wzorzec z działających harnessów (`gra/tools/battle-manual-control-multicycle-live-test.cjs`, `battle-doctrine-live-r4-test.cjs`, `ambush-live-test.cjs`, driver z `battle-damage-colors-live-test.cjs` — dochodzi do trafień obu stron w Chromium, zielony w FALI 796) aż do końca bitwy. Brak rozkazów = NIE jest „ręczna”.
+2. **Start Chromium (SIGTRAP) w harnessie `battle-manual-full-roster-pointer-live-test.cjs`:** przyczyna nie zdiagnozowana (ten sam Chromium z tymi samymi argumentami startuje w osobnym skrypcie). Zdiagnozuj różnicę (argumenty launch, `executablePath` — `CHROMIUM_PATH` wg wzorca z `battle-damage-colors-live-test.cjs`, xvfb) albo użyj sterownika z pkt 1 zamiast niego; podaj wynik.
+3. **Pary 10 vs 10:** wręcz (Wojownik vs Wojownik) i dystans (Łucznik vs Wojownik), po 10 jednostek. Sprawdź `__civTest.addUnit` (hak testowy istnieje — NIE zakładaj, że niemożliwe bez zmiany `gra/src`; wybór składu przez hak/stan gry/presety). Jeśli roster 10 vs 10 jest nieosiągalny po 2 różnych podejściach — jawnie „NIE ZMIERZONO” z miejscem zatrzymania i najbliższy zastępnik (28 vs 28) oznaczony jako zastępnik.
+4. Obserwacja do opisania (nie naprawiać): AUTO i skip dają różne straty zwycięzcy przy tym samym ziarnie, także w „pewne” (np. P1 11 vs 10; P2 10 vs 13) — dopisz do raportu jako obserwację z liczbami i hipotezą (np. skip pomija animacje/kolejność tur), bez wyroku „błąd”.
+
+Tabela końcowa: para | tryb trafień | ziarno | tryb bitwy (ręczna z rozkazami / AUTO / skip) | straty zwycięzcy | straty przegranego | rundy. „pewne” = 1 przebieg (deterministyczne), „losowe” = ≥3 niezależne ziarna.
+Zakazy bez zmian: `rm/rmdir/unlink` w komendach, `git add -A`, bez zmian w `gra/src`/`gra/data`, PNG nie do repo (commituj JSON/skrypty), nie wypychaj. Commituj evidence i harness (FC wykluczył niezacommitowane dowody już dwa razy).
