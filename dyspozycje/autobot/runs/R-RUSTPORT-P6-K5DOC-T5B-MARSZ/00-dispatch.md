@@ -40,3 +40,24 @@ WZÓR: moduł T5a — `rust-port/engine/src/domain/siege_tactics_kite.rs` oraz g
 4. Commit jawnym `git add` (nigdy `-A`), BEZ `Cargo.lock`, BEZ nazwy modelu w treści i trailerach. Bez push do parity. Raport w `dyspozycje/autobot/runs/R-RUSTPORT-P6-K5DOC-T5B-MARSZ/01-operator-r1.md`.
 5. `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` poza repo i unikalny; usuń po bramkach.
 6. Każdy wektor ma wartość z pina policzoną przez generator (TypeScript), nie wpisaną ręcznie.
+
+## DODATEK r2 (po BLOCK INFRA Operatora i FAIL Ewaluatora/FC rundy 1; BAZA NADPISANA)
+
+- Runda 1: Operator `2701a2065` (kod + wektory), obrona `6a2ded8bb` (komentarze, blok MOC TESTU), Ewaluator `83e67bad6`, FC `412eefb81`. Zachowane refy: `refs/keep/R-RUSTPORT-P6-K5DOC-T5B-{OP_R1,OB_R1,EV_R1,FC_R1}`, gałąź `rust-port-wip/R-RUSTPORT-P6-K5DOC-T5B-MARSZ` = `412eefb81`.
+- Przyczyny FAIL r1: (1) BLOCK INFRA — dysk poniżej 8 GB, cargo nie uruchomione; (2) mutacje (a), (b), (d) wykonane tylko na transkrypcji JS, nie na module Rust; (3) lektura APPROACH i `_siegeMachineRange` zrobiona dopiero w obronie (wynik w `02a-obrona.md`: gałąź APPROACH = wołanie `_rangedForwardStep` w `_rangedAction` (pin 6738); `_rangedApproachStep` (7257) martwa dla strzelca; `_siegeMachineRange` (7530) czyta stan gry, wołana tylko z 6200 — NIE portowana).
+- **NOWA BAZA (jedyna obowiązująca):** `6a2ded8bb`. Worktree detached. Nie resetuj do `625624d97` — kod r1 i komentarze obrony są w bazie.
+
+### Zadanie rundy 2
+1. **Bramki Rust EXIT 0** w `rust-port/engine`: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --test p6_k5doc_t5b`, `cargo test --all-targets --no-fail-fast`. Zapisz kody wyjścia. **Przed KAŻDĄ bramką `df -h /`; przy < 8 GB nie uruchamiaj bramki — zgłoś BLOCK z liczbą GB** (nie czyść cudzych targetów; nie ruszaj `wf_6d014d2a-144-*`).
+2. **Mutacje na module Rust** (nie na JS), każda `cargo test --test p6_k5doc_t5b` musi dać FAIL, potem przywrócenie i zielony wynik:
+   - (a) warunek postępu `forwardGain` ostro → nieostro (`>` na `>=`, lub odpowiednik zgodny z pinem),
+   - (b) `nc >= BF_COLS` → `nc > BF_COLS`,
+   - (d) kolejność BFS odwrócona.
+   - Mutanta (c) (odwrócone DIRS4) zostaw z dowodem równoważności z r1 — nie mierz go, opisz.
+3. Lektura `_siegeMachineRange` (7530) i gałęzi APPROACH już jest w `02a-obrona.md` r1; przepisz zwięźle do raportu r2 (bez ponownej dyskusji).
+4. Raport `01-operator-r2.md` w run dir, commit jawnym `git add` (bez `Cargo.lock`, bez `-A`, bez nazwy modelu w trailerach). **Bez push.**
+
+### KRYTERIA KOŃCA (r2)
+- Wszystkie 4 bramki EXIT 0 z kodami w raporcie, albo BLOCK z podaniem GB.
+- Mutacje (a), (b), (d) FAIL na Rust z wynikami; (c) z dowodem.
+- Zero zmian poza allowlistą z r1; brak `#[ignore]`.
