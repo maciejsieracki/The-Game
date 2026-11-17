@@ -3354,3 +3354,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Wstrzymane świadomie:** R7K7C (#106) r2 (dispatch `6cc0c4878`) i T4e (#315) r4 — start po zakończeniu FC T7b. Powód: trzy kolejne rundy padły przez dysk przy równoległych buildach; drugi build naraz przy 9 GB ryzykuje kolejne BLOCK INFRA.
 - **Zakończone bez integracji:** T1 (#263) r1 — FC PASS-WITH-NOTES (`020b3b7c9`), brak pełnego `cargo test`; integracja po teście (kolejność: T7b FF → T1 pełny test → FF). R7K7C (#106) r1 — FC FAIL, r2 gotowy.
 - **Następnie (kolejność):** (1) T7b FC → FF na parity po ancestry; (2) T1 integracja z pełnym testem (Operator Haiku, 1 build); (3) R7K7C r2 (dysk ≥ 8 GB); (4) T4e r4 (DODATEK r4, baza `760be5187`, detached).
+
+### Przebieg — T7b odwrót (#342) r4: FC PASS; integracja przygotowana (merge `2b4bf8fde`), czeka na pełny test (2026-11-17 ~10:1x UTC)
+
+- **Wynik r4:** Operator PASS-WITH-NOTES (bramki zielone: fmt, clippy, `p6_k5doc_t7b` 2, pełny `cargo test --all-targets` 3843 passed, `p6_8i_pick` 5 passed w 298,6 s). Evaluator PASS-WITH-NOTES (przeżyte mutanty `dMin <= 1` i galąź `finished` po ruchu — obie dodane w Obronie). Obrona PASS-WITH-NOTES (`92bcf9ffd`: wektory `dmin_le_1_…` i `finished_after`). **FC PASS** (`86fdf4a34`).
+- **Noty do rejestru (nieblokujące):** `nearest==None` przy niepustych wrogach — niedostępne w produkcji (zależność producenta W8/ProdBody, pin `8290-8304`); brak wektorów pola `nearest`; filtr `routed` z `_enemiesOf` nie objęty wektorami; wiring do ActivateUnit poza zakresem.
+- **Integracja:** `parity-v2` = `760be5187`. Merge `--no-ff` `92bcf9ffd` → `2b4bf8fde` w tymczasowym worktree `t7b-int`: merge-tree czysty (exit 0), diff 5 plików w allowliście, bez `Cargo.lock` i `gra/`. Commity zabezpieczone: `rust-port-wip/p6-k5doc-t7b-r4-{92bcf9ffd,86fdf4a34}`, `refs/keep/…-r4-kod`.
+- **Brakuje przed FF:** pełny `cargo test --all-targets --no-fail-fast` na drzewie `2b4bf8fde` (integracja: jeden build naraz). Start po zakończeniu R7K7C r2.
+- **Trailer:** obrona i FC T7b mają `Co-Authored-By` z nazwą modelu (reguła harnessu); dispatch #289 mówi inaczej — decyzja orkiestratora, nie wpływa na kod. Decyzja: harness ma pierwszeństwo dla commitów orkiestratora; dla integracji pozostawiamy commity workerów bez zmian (historia nie jest przepisywana).
+- **Sloty:** R7K7C (#106) r2 uruchomiony (`wf_67f377c8-202`) — jedyny build, dysk 12 GB.
