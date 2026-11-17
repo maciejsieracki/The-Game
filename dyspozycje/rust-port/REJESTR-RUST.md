@@ -3072,3 +3072,11 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
   - T5b r2: `wf_3446ab83-759` (wznowiona; Ewaluator i dalsze od nowa).
 - **Dysk:** 9,2 GB przed wznowieniem.
 - **Otwarte:** zarzut Ewaluatora T6 (krok 4 `_cavalryAction` nieosiągalny) — obrona musi rozstrzygnąć.
+
+### Przebieg — T5b r2: FC PASS-WITH-NOTES, integracja wstrzymana (2026-11-17 ~03:xx UTC)
+
+- **FC PASS-WITH-NOTES** `366e6ff8d` (Operator r2 `85f0c997f`, obrona `4f8c5cb8d`). Bramki Operatora r2: fmt EXIT 0 (po poprawce kolejności `mod`), clippy EXIT 0, `p6_k5doc_t5b` 17/17, pełny `cargo test` EXIT 0 (3817 passed, 0 failed, 1 ignored spoza T5b). Mutacje na Rust: (a) FAIL 4 testy, (b) FAIL 2, (d) FAIL 2; (c) równoważna (dowód r1). Ewaluator zgłosił tylko noty: brak `lineAllowsRangedStep`/`_doMove` w kluczu kroku (zależność od T8/#113), `_siegeMachineRange` nieportowana (zgodnie z dispatchem).
+- **Ancestry:** `366e6ff8d` ⊃ `6a2ded8bb` ⊃ `625624d97` = `parity-v2`. **FF możliwy bez merge.** Zakres diffu względem parity: 9 plików, allowlista T5b (moduł, test, generator, `vectors.json`, `mod.rs` +1) + raporty. Diff FC względem `85f0c997f`: tylko raporty run dir.
+- **Zabezpieczenie:** `refs/keep/R-RUSTPORT-P6-K5DOC-T5B-FC-r2` = `366e6ff8d`; gałąź zdalna `rust-port-wip/R-RUSTPORT-P6-K5DOC-T5B-MARSZ-r2` = `366e6ff8d`.
+- **Integracja: WSTRZYMANA.** Dysk 6,0 GB < 8 GB (próg bramki). Runda integracyjna Operatora z pełnym `cargo test` na `366e6ff8d` do zrobienia po zwolnieniu dysku, i po zakończeniu T6 r6 (ten sam plik `mod.rs` — po FF T6 konieczny ponowny merge-tree).
+- **Aktywne Workflow:** T6 r6 (Obrona, `wf_bb4e6b3c-994`).
