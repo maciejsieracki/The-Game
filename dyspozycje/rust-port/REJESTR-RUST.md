@@ -3126,3 +3126,16 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Krok 3 (sprzątanie):** nie usuwam worktree, dopóki FC pracuje (`wf_122fbedc-719-1/-2/-4`).
 - **Wolne sloty (3 z 4):** powód jak wcześniej — brak czystego tematu Rust.
 - **Otwarte decyzje ABC (w czacie):** #327, #358.
+
+### Przebieg — T5b zintegrowany (FF parity-v2), 2026-11-17 ~04:xx UTC
+
+- **FC PASS-WITH-NOTES `417091872`** (integracja r4: Operator `4f88004fd` PASS-WITH-NOTES, Ewaluator PASS-WITH-NOTES, Obrona przyjęła notę, FC PASS-WITH-NOTES).
+- **Bramki (Operator i Ewaluator, EXIT 0):** fmt, clippy `-D warnings`, `p6_k5doc_t5b` 17/17, pełny `cargo test` 3827 passed, 0 failed, 1 ignored (istniejący, poza T5b).
+- **Weryfikacja przed FF (orkiestrator):** `83777efa9` i `7778e66af` są przodkami `417091872`; `rust-port` między `7778e66af` a `417091872` bez zmian; diff względem parity to 5 plików rust-port (allowlista T5b, `mod.rs` +1) i raporty.
+- **FF `rust-port/parity-v2`:** `83777efa9` → `417091872` (readback zgodny). Zabezpieczenie: `refs/keep/R-RUSTPORT-P6-K5DOC-T5B-FC-r4`, gałąź `rust-port-wip/R-RUSTPORT-P6-K5DOC-T5B-MARSZ-FC-r4`.
+- **Nota do rejestru (nieblokująca, z FC):** w drugiej pętli `best_forward_step` (pin `battleScene.ts` 6865–6866) pięć mutantów filtra koperty sojuszniczej przeżywa. Brak wektora na tę flagę. Do kolejnej rundy T5b/T8: po jednym wektorze na flagę w generatorze TS.
+- **Nota (zakres):** `ranged_forward_step_key` pomija bramkę `lineAllowsRangedStep` i `_doMove`; brak wołającego poza testami. Wpięcie T8/#113.
+- **Sprzątanie:** usunięte worktree rundy r4 (`wf_122fbedc-719-1, -2, -4`), SHA zabezpieczone refami `refs/keep/R-SWEEP-r4-*`. Dysk 15 GB.
+- **Parity po integracji:** T6 (#259) i T5b (#260) zintegrowane na `417091872`.
+- **Aktywne Workflow:** 0. Wolne sloty: 4. Powód: brak czystego tematu z kodem Rust. Kandydaci z listy są zablokowani decyzjami właściciela (#253, #285, #286, #358), zależnościami (np. #261 na #314, #304 na #310, #113 na #107/#109/#112) lub renderem (#316–#322, wymaga ≥12 GB i bramki renderera).
+- **Otwarte decyzje ABC (w czacie):** #327, #358.
