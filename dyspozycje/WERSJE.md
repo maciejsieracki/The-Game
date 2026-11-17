@@ -1,3 +1,9 @@
+## ROBOCZA 545b8616 -- 2026-11-17 -- FALA 811: DESPAIRIMPL: panel dyplomacji pokazuje desperacje wg wzoru (testowa)
+
+- Panel dyplomacji (gracz-AI i AI-AI): wiersz Desperacja pokazuje wynik loserDespair bez bramki 50% zmeczenia; tooltip czyta progi z war-weariness-params.json; wiersze podpisane nazwami cywilizacji; komentarze poprawione (diplomacy-display.ts, war-weariness-view.ts, diplomacyAudience.ts)
+- Weryfikacja: tsc 0; logic-test 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplo-weariness-display 54/0; diplo-panel-aiai-both-labels 17/0; mutacja (przywrocona bramka isWarWeary) czerwona
+- Limity: NIE ZMIERZONO w zywej grze (Chromium) panelu Zmeczenie/Desperacja i tooltipu; dlug Rust REPIN war-weariness-view
+
 ## ROBOCZA 5b889546 -- 2026-11-17 -- FALA 810: Zaloz miasto wyszarzone przy limicie miast (testowa)
 
 - gdy cywilizacja osiagnela limit miast swojej epoki, przycisk Zaloz miasto w panelu budowy jest wyszarzony i nieklikalny, z komunikatem Osiagnieto limit miast (X/Y w tej epoce) i malym napisem; brak surowcow pozostaje osobnym stanem
