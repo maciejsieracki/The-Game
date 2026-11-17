@@ -3271,3 +3271,11 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Sprzątanie:** usunięte 3 worktrees rundy T7a r3 (`-2`, `-3`, `-4`) i `-1` (locked, po zakończeniu). Dysk 18 GB.
 - **Okno dla G5 r3:** brak aktywnych workflow i `cargo` przed startem; dysk ≥ 12 GB. **G5 r3 (#332) uruchomiony** jako jedyny worker (`wf_4f452094-b88`, skrypt Opus, baza zgodna z DODATKIEM r3 `02b07a83e`).
 - **Następnie:** T7b r4 (baza `61ffc110f`) dopiero po G5 r3.
+
+### Przebieg — heartbeat Rust 08:18 UTC: G5 r3 w toku (1/4, jedyny worker przy bramce renderera)
+
+- **Aktywne Workflow: 1/4** — #332 G5 normalizacja kluczy, runda r3 (`wf_4f452094-b88`, Opus). Operator r3 PASS (commit `074b25afb`, lokalnie w `rust-port-wip/p4-1-g5-norm-opus-op-r3`). Evaluator (Sonnet) PASS-WITH-NOTES z pomiarami na dysku 16 GB bez cudzych buildów: `cargo fmt --check` EXIT 0; `clippy --all-targets -D warnings` EXIT 0; `cargo test --lib` 109 ok; `--test improvements_sync_g5` 11/11; `--all-targets --no-fail-fast` EXIT 0 (588 przeszło, 0 nieudanych). Obrona (Haiku) w toku, potem FC (Sonnet).
+- **Nie uzupełniam do czterech** — polecenie właściciela: przy bramce renderera działa jeden worker, aż skończy.
+- **Po FC PASS:** refs/keep + push `rust-port-wip/*`, integracja FF na `parity-v2` (baza `f85622878`, parity jest na `7fcef940b` po T7a — sprawdzić ancestry przed FF).
+- **Kolejka po G5:** T7b r4 (baza `61ffc110f`, wip, nie PASS).
+- **Sprzątanie:** worktrees G5 r3 `-1..-3` zostają do zakończenia rundy; dysk 14 GB.
