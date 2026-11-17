@@ -16,8 +16,8 @@
  *   7. Brąz BEZ Koszar: Procarz niedostępny (bramka budynku).
  *   8. Ścieżka AI: promoteAiUnitForEra (ta sama tabela, te same bramki co gracz) awansuje
  *      Łucznika na Procarza w Brązie z pełnym kosztem; w Kamieniu nie; klasa armii zachowana.
- *   9. Zakres narodowy (stan zgodny z dispatchem, decyzja ABC otwarta): Łucznik egipski
- *      w Brązie NIE ma Procarza jako zamiennika (wpis tylko dla Łucznika standardowego).
+ *   9. Narodowi łucznicy Kamienia (egipski, sumeryjski) -> Procarz w Brązie (wpis w units.json);
+ *      nubijski (Brąz) nadal bez Procarza -- DECISION_REQUIRED (brak awansu Brąz->Brąz).
  */
 
 const fs = require('fs');
@@ -155,10 +155,21 @@ console.log('8. Ścieżka AI: promoteAiUnitForEra awansuje Łucznika na Procarza
     'klasa armii: Łucznik (Distance) -> Procarz (Slinger) zachowuje klasę „dystans”');
 }
 
-console.log('9. Zakres narodowy: Łucznik egipski w Brązie NIE ma Procarza (stan zgodny z dispatchem; ABC otwarte)');
+console.log('9. Narodowi łucznicy Kamienia (egipski, sumeryjski) -> Procarz (R-WEB-UNIT-REPLACE-INCA-AND-NATIONAL-ARCHERS-TO-SLINGER-Q1)');
 {
-  const ids = idsOf(DATA, 'Łucznik egipski', baseCtx(2, 'Egipt'));
-  check(!ids.includes('Procarz'), 'Łucznik egipski: brak Procarza na liście (decyzja otwarta w ABC)', JSON.stringify(ids));
+  const egi = idsOf(DATA, 'Łucznik egipski', baseCtx(2, 'Egipt'));
+  check(egi.includes('Procarz'), 'Łucznik egipski w Brązie: Procarz jest na liście zamienników', JSON.stringify(egi));
+  const egiKam = idsOf(DATA, 'Łucznik egipski', baseCtx(1, 'Egipt'));
+  check(!egiKam.includes('Procarz'), 'Łucznik egipski w Kamieniu: Procarz niedostępny epoką', JSON.stringify(egiKam));
+  const sum = idsOf(DATA, 'Łucznik sumeryjski', baseCtx(2, 'Sumer'));
+  check(sum.includes('Procarz'), 'Łucznik sumeryjski w Brązie: Procarz jest na liście zamienników', JSON.stringify(sum));
+  const egiCost = availableReplacementsFor('Łucznik egipski', DATA, TECHS, baseCtx(2, 'Egipt')).find(i => i.id === 'Procarz');
+  check(!!egiCost && egiCost.koszt > 0, 'Łucznik egipski -> Procarz: pełny koszt > 0', JSON.stringify(egiCost));
+  const mutated = unitsJson.map(u => (u.Jednostka === 'Łucznik egipski' ? { ...u, 'Zastąp specjalnie': '—' } : u));
+  const egiMut = idsOf({ buildings: [], units: mutated }, 'Łucznik egipski', baseCtx(2, 'Egipt'));
+  check(!egiMut.includes('Procarz'), 'mutacja kopii (pole Łucznika egipskiego cofnięte do "—") -> Procarz znika');
+  const nub = idsOf(DATA, 'Łucznik nubijski', baseCtx(2, 'Egipt'));
+  check(!nub.includes('Procarz'), 'Łucznik nubijski (Brąz): brak Procarza (Brąz->Brąz nie jest awansem; DECISION_REQUIRED)', JSON.stringify(nub));
 }
 
 console.log(`\n[unit-replace-archer-slinger-test] ${passed} OK, ${failed} FAIL`);

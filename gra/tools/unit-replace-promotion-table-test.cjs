@@ -36,8 +36,14 @@ const BLANK = new Set(['', '-', '—']);
 // zasady "tylko piechota" -- Lucznik (Typ=Distance) -> Procarz (Typ=Slinger, standard) i
 // Procarz (Huaracoc) (Inkowie, nacja gatowana przez availableReplacementsFor). Kierunek wylacznie
 // Lucznik -> Procarz. Kazdy inny wpis poza piechota nadal jest bledem.
+// R-WEB-UNIT-REPLACE-INCA-AND-NATIONAL-ARCHERS-TO-SLINGER-Q1: narodowi łucznicy Kamienia (egipski,
+// sumeryjski) -> Procarz (ten sam kierunek co Łucznik, bez wariantu Huaracoc: cel narodowy innej
+// nacji jest odrzucany przez punkt 4). Narodowi łucznicy Brązu (nubijski, akadyjski, asyryjski)
+// NIE mają awansu na Procarza (Procarz = Brąz Standardowa, niższa klasa niż Specjalna) -- DECISION_REQUIRED.
 const ARCHER_EXCEPTIONS = {
   'Łucznik': ['Procarz', 'Procarz (Huaracoc)'],
+  'Łucznik egipski': ['Procarz'],
+  'Łucznik sumeryjski': ['Procarz'],
 };
 const exceptionTargets = new Set(Object.values(ARCHER_EXCEPTIONS).flat());
 
@@ -163,7 +169,9 @@ const EXPECTED_TABLE = {
     "Wojownik fenicki": "Tyrski miecznik/Gwardia Tyreńska",
     "Thorakites": "Hieros Lochos (Święty Zastęp)",
     "Gwardzista z champi": "Królewska Gwardia",
-    "Łucznik": "Procarz/Procarz (Huaracoc)"
+    "Łucznik": "Procarz/Procarz (Huaracoc)",
+    "Łucznik egipski": "Procarz",
+    "Łucznik sumeryjski": "Procarz"
   };
 {
   const actual = {};
