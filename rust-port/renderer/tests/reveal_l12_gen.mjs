@@ -31,7 +31,8 @@
 // dispatch, as a producer bug the adapter must reject).
 //
 // TypeScript is stripped with the TypeScript compiler (`transpileModule`),
-// path from TYPESCRIPT_JS (default /opt/node22/lib/node_modules/typescript/lib/typescript.js).
+// path from TYPESCRIPT_JS; otherwise a `typescript` package resolvable from
+// this file, otherwise the global one (`npm root -g`/typescript).
 //
 // Usage (from any directory in the repo):
 //   node rust-port/renderer/tests/reveal_l12_gen.mjs          -> writes vectors.json
@@ -49,8 +50,17 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = join(HERE, 'reveal_l12_vectors');
 const OUT = join(OUT_DIR, 'vectors.json');
 const CHECK = process.argv.includes('--check');
-const TS_PATH = process.env.TYPESCRIPT_JS ?? '/opt/node22/lib/node_modules/typescript/lib/typescript.js';
-const ts = createRequire(import.meta.url)(TS_PATH);
+const requireHere = createRequire(import.meta.url);
+function typescriptPath() {
+  if (process.env.TYPESCRIPT_JS) return process.env.TYPESCRIPT_JS;
+  try {
+    return requireHere.resolve('typescript');
+  } catch {
+    const globalRoot = execFileSync('npm', ['root', '-g'], { encoding: 'utf8' }).trim();
+    return join(globalRoot, 'typescript', 'lib', 'typescript.js');
+  }
+}
+const ts = requireHere(typescriptPath());
 
 const show = (path) => execFileSync('git', ['show', `${PIN}:${path}`], { cwd: HERE, encoding: 'utf8', maxBuffer: 64 << 20 });
 const sha256 = (text) => createHash('sha256').update(text).digest('hex');

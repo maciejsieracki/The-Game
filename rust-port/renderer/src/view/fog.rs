@@ -155,9 +155,10 @@ impl std::error::Error for FogRevealError {}
 /// reads them (`scene.ts:3531-3532`), from [`FogRevealDto`]:
 /// - fog on: `setFog(vis, exploredForRender, { landReveal: revealAllLand,
 ///   riverRevealKeys: startRevealKeysForRiverFog() })`;
-/// - fog off: `setFog(ALL_KEYS, ALL_KEYS)` without options, so
-///   `landReveal = opts?.landReveal ?? false` and `lastRiverRevealKeys =
-///   opts?.riverRevealKeys ?? null` — whatever the DTO carries.
+/// - fog off: `setFog(ALL_KEYS, ALL_KEYS)` without options (`main.ts:13506`),
+///   so `landReveal = opts?.landReveal ?? false` and `lastRiverRevealKeys =
+///   opts?.riverRevealKeys ?? null`: always `false`/`None`, the DTO keys are
+///   ignored (and `reveal_all_land` with fog off is rejected).
 ///
 /// Deliberately has no `Default`, like [`FogSets`]: the only constructor is
 /// [`FogReveal::from_dto`].
