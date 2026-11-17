@@ -2959,3 +2959,13 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Krok 2:** brak FC PASS bez integracji. T5a r3 (`270e5711b`) czeka na bramkę na merge z parity `32c84d6a9` (merge-tree czysty) po zwolnieniu miejsca i zakończeniu T4b.
 - **Krok 3:** worktree T4b-gate i kopie robocze w użyciu, nie ruszane.
 - **Wakeup:** nie planuję ScheduleWakeup. Ten tryb służy pętli `/loop`, a tej sesji nie uruchomiłem jako pętli.
+
+### Przebieg — FF parity-v2 T4b (`32c84d6a9` → `3d016a5ae`), T5a w integracji (2026-11-17 ~00:40 UTC)
+
+- **FF `parity-v2`: `32c84d6a9` → `3d016a5ae`** (T4b: `_advanceStep`, merge `d1dfff126`). Ancestry OK. `git diff --stat 32c84d6a9..3d016a5ae`: 7 plików, +54249/−0, wszystkie T4b w allowliście. `git diff --check` czysty. Readback `ls-remote`: `3d016a5aeed1`.
+- **Bramka (runda `wf_a6a0b1b3-74a`, Haiku Operator, Sonnet Ewaluator/Obrona/FC):** fmt EXIT 0, clippy `-D warnings` EXIT 0, pełny `cargo test --all-targets --no-fail-fast` EXIT 0 (3778 passed, 0 failed, 1 ignored — `p6_order_lane.rs` `#[ignore]` z parity, nie z T4b). `p6_k5doc_t4b` 8/8. Werdykty: Operator PASS, Ewaluator PASS-WITH-NOTES, FC PASS-WITH-NOTES. Obrona przyjęta bez zmian kodu.
+- **Notatki do zapisania:** (1) `advance_step_decide` nie sprawdza `attackDirection = front` (C-FLANK pominięty); T4e musi zagwarantować `front` przed wpięciem. (2) Wektory T4b pochodzą z wykonania pina z odczytami sceny jako stubami; zgodność odczytów zależy od ich portów (T2/T4c). (3) Dysk przed bramką 4,5 GB przy wymaganym 8 GB — uwaga procesowa.
+- **Keep refs:** `T4b-gate-pass-3d016a5ae`, `T4b-fc-5f3f53f91`, `T4b-r4-02ee10e7f`, `T4b-r4-7c3d6d429`, `T4b-r4-9ab04bfe4`.
+- **Sprzątanie:** usunięte 4 worktree bramki T4b (`wf_a6a0b1b3-74a-1..4`). Dysk 6,5 → 12 GB.
+- **T5a r4 (integracja):** merge `270e5711b` na `3d016a5ae` — `merge-tree` czysty (exit 0). Uruchomiona runda integracyjna `wf_1ed3e436-684` (Haiku Operator): pełna bramka na merge, FF dopiero po EXIT 0.
+- **Otwarte:** T6 pełny test na `87829df94` (do zrobienia po T5a); FC T4b zakończone PASS-WITH-NOTES, wymóg `front` dla T4e w notatkach.
