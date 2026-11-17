@@ -3,18 +3,24 @@
  * R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1 -- runda 4 (pomiar Wojownik vs Wojownik 10 vs 10 ŚCIEŻKĄ MAPOWĄ).
  *
  * Nie używa presetu bitwy (?playtest=bitwa-duza) ani przycinania sceny ani przepisywania statystyk.
- * Realna sciezka: ?playtest=mapa&civTest=1 -> __civTest.addUnit(owner,q,r,false,'Wojownik') x10 po obu stronach
- * (atakujacy: gracz ME=0, obronca: barbarzynca -1) -> klik na heks gracza (zaznaczenie) -> klik na heks wroga
- * (atak z mapy = okno przed bitwa .pb-overlay) -> przycisk "Wejdz na pole" (data-act=deploy) -> scena bitwy
- * -> "Start walki" (#deploy-toolbar-start) -> tryb: manual (rozkazy ATAK per jednostka + Spacja, jak r3),
- * AUTO (klawisz R), skip (przycisk Pomin).
+ * Realna sciezka: ?playtest=mapa&civTest=1&civSeed=<N> -> __civTest.addUnit(owner,q,r,false,'Wojownik') x10 po obu
+ * stronach (atakujacy: gracz ME=0, obronca: barbarzynca -1) -> klik na heks gracza (zaznaczenie) -> klik na heks wroga
+ * (atak z mapy = okno przed bitwa .pb-overlay) -> przycisk "Wejdz na pole" (data-act=deploy) -> scena bitwy.
+ * Scena startuje sama (AUTO, bez paska wdrozenia). Tryb:
+ *   - auto: naturalny start sceny, bez zadnego klikniecia (klawisz R nie jest uzywany);
+ *   - skip: klik w przycisk "Pomin do wyniku" (button[title="Pomin do wyniku"], battleScene.ts ~3411);
+ *   - manual: wymaga generala gracza (bramka _manualCommanderGate, battleScene.ts ~3662). Na tej sciezce
+ *     stos Wojownikow nie ma generala -> scena zostaje w AUTO; driver zapisuje to jako BLOCK (bez petli rozkazow).
  *
- * Kontrola zamiany stron: rola 'def' = gracz jest OBRONCA. Barbarzynca (AI) z 10 Wojownikami stoi obok
- * stosu gracza; zamiast klikniecia gracza wykonujemy konczenie tury (__civTest.endTurn) i czekamy, az
- * barbarzynca sam zaatakuje (okno przed bitwa z rola "Obrońca -- Ty"). Jesli to sie nie wydarzy -> NIE ZMIERZONO.
+ * Ziarno: `civSeed` (URL, tylko przy civTest=1) ustawia _gameSeed -> gameStreamRng dla walki (main.ts battleCombatRng).
+ * Math.random (initDet) NIE steruje walka taktyczna; initDet zostaje dla zegara/animacji.
  *
- * Dowod haka w runtime: probe odczytuje z rosteru sceny (bu.nazwa, bu.kategoria/typ, statystyki) typ jednostek
- * wstawionych hakiem; zapisywany w polu probe.
+ * Kontrola zamiany stron (rola 'def'): barbarzynca (AI) z 10 Wojownikami obok stosu gracza; zamiast klikniecia
+ * wykonujemy __civTest.endTurn i czekamy na atak AI (okno z rola "Obrońca -- Ty"). Jesli AI zaatakuje inna bitwe
+ * albo nie zaatakuje -> NIE ZMIERZONO (zapis w error).
+ *
+ * Dowod haka w runtime: probe odczytuje z rosteru sceny (bu.nazwa, bu.hp, bu.maxHp) typ wstawionych jednostek.
+ * Pole typeId nie istnieje w obiekcie sceny (zapisywane jako null); typ identyfikuje nazwa z units.json.
  *
  * Usage (z gra/): node tools/live-verify-wojownik-map-q1.cjs <dist-dir> <out.json> [limitSekund]
  * Zmienne: W_ROLES=atk,def  W3_MODES=manual,auto,skip  W_SEEDS=1,2,3  W3_CHROMIUM=/usr/bin/chromium
@@ -144,7 +150,7 @@ async function runOne(browser, base, cfg, mode) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.addInitScript(initDet, cfg.seed);
-  await page.goto(base + '/?playtest=mapa&civTest=1', { waitUntil: 'load', timeout: 180000 });
+  await page.goto(base + '/?playtest=mapa&civTest=1&civSeed=' + cfg.seed, { waitUntil: 'load', timeout: 180000 });
   // Ladowanie mapy idzie przez requestAnimationFrame, ktore initDet kolejkuje: pompujemy klatki w petli.
   let loaded = false;
   for (let i = 0; i < 2400 && !loaded; i++) {
@@ -224,6 +230,11 @@ async function runOne(browser, base, cfg, mode) {
     return { atkCount: bs.atk.length, defCount: bs.def.length, atkNames: cnt(bs.atk), defNames: cnt(bs.def), sampleAtk: bs.atk.slice(0, 1).map(pick), sampleDef: bs.def.slice(0, 1).map(pick) };
   });
   log('probe ' + JSON.stringify(steps.probe).slice(0, 300));
+  // Kontrola zamiany stron: AI moglo zaatakowac INNA pare (np. Grecy-Rzymianie). Bez stosow Wojownik wynik NIE jest pomiarem.
+  if (cfg.role === 'def' && !(steps.probe.atkNames.Wojownik && steps.probe.defNames.Wojownik)) {
+    await page.close();
+    return { ...steps, error: 'NIE ZMIERZONO (zamiana stron): okno przed bitwa to inna para, nie stos Wojownikow; atk=' + JSON.stringify(steps.probe.atkNames) + ' def=' + JSON.stringify(steps.probe.defNames) };
+  }
   steps.toolbarFound = steps.afterDeployClick ? steps.afterDeployClick.toolbarStart : false;
   if (mode === 'manual' && !(steps.afterDeployClick && steps.afterDeployClick.manual)) {
     // BLOCK (udokumentowany): tryb reczny z rozkazami niedostepny na sciezce mapowej bez dowodcy armii (bramka sceny).
@@ -240,50 +251,16 @@ async function runOne(browser, base, cfg, mode) {
   const actions = { startClick: false, spacePresses: 0, rToggle: false, skipClick: false, ordersIssued: 0, orderRounds: 0, perRound: [] };
   if (mode === 'skip') {
     await page.evaluate(() => window.__pumpFrames(10));
-    const skipBtn = page.locator('button', { hasText: /Pomi/ }).first();
-    if (await skipBtn.count()) { await skipBtn.click({ timeout: 30000 }).catch(() => {}); actions.skipClick = true; }
-    else { await page.evaluate(() => window.__lastBattleScene.skip()); actions.skipClick = 'fallback-metoda'; }
+    // Klik w realny przycisk UI (title="Pomin do wyniku", battleScene.ts ~3411). Brak przycisku = jawny fallback.
+    const skipBtn = page.locator('button[title="Pomin do wyniku"]').first();
+    if (await skipBtn.count()) { await skipBtn.click({ timeout: 30000 }); actions.skipClick = 'klik-ui'; }
+    else { await page.evaluate(() => window.__lastBattleScene.skip()); actions.skipClick = 'fallback-metoda (BRAK przycisku UI)'; }
   } else {
     await page.evaluate(() => window.__lastBattleScene._setSpeedIdx(3, { clamp: true }));
   }
   const t0 = Date.now();
   let fin = false;
   while (!fin) {
-    if (false) {
-      const st2 = await page.evaluate((lastRound) => {
-        const bs = window.__lastBattleScene;
-        for (let i = 0; i < 40 && !bs.finished; i++) {
-          if (bs._battleAwaitingOrders || bs.roundNo !== lastRound) break;
-          window.__pumpFrames(1);
-        }
-        return { aw: !!bs._battleAwaitingOrders, round: bs.roundNo, fin: !!bs.finished };
-      }, actions.lastRound ?? -1);
-      if (st2.fin) { fin = true; }
-      else if (st2.aw || st2.round !== (actions.lastRound ?? -1)) {
-        const pr = await page.evaluate(() => {
-          const bs = window.__lastBattleScene; let k = 0; let alive = 0; let eligible = 0;
-          for (const u of bs._playerRoster()) {
-            if (u.dead || u.removed || u.routed || u.fadingOut) continue;
-            alive++;
-            if (u.acted) continue;
-            const e = bs._nearestEnemy(u);
-            if (!e) continue;
-            eligible++;
-            bs._selectedUnits = new Set([u.bu.id]);
-            bs._issueBattleAttack(e.bu.id, true);
-            k++;
-          }
-          bs._selectedUnits = new Set();
-          return { alive, eligible, issued: k };
-        });
-        actions.perRound.push({ round: st2.round, ...pr });
-        actions.ordersIssued += pr.issued; actions.orderRounds++; actions.lastRound = st2.round;
-        await page.keyboard.press('Space'); actions.spacePresses++;
-        fin = await page.evaluate(() => { window.__pumpFrames(2); return !!window.__lastBattleScene.finished; });
-      } else fin = false;
-      if (Date.now() - t0 > 420000) throw new Error('timeout bitwy manual');
-      continue;
-    }
     const tp = Date.now();
     fin = await page.evaluate(() => window.__pumpFrames(60));
     const pinfo = await page.evaluate(() => ({ fr: window.__framesRun, round: window.__lastBattleScene.roundNo, rafQ: window.__rafQ.length, aw: !!window.__lastBattleScene._battleAwaitingOrders }));
@@ -303,6 +280,9 @@ async function runOne(browser, base, cfg, mode) {
       winner: bs._endWinner ?? null, round: bs.roundNo,
       atk: side(bs.atk), def: side(bs.def),
       endLogTail: (bs.log || []).slice(-3).map((x) => String(typeof x === 'string' ? x : JSON.stringify(x)).slice(0, 160)),
+      // Ucieczki i pościgi z PELNEGO logu (log nie rozróżnia stron; liczby dla obu stron razem).
+      logRouted: (bs.log || []).filter((x) => String(typeof x === 'string' ? x : JSON.stringify(x)).includes('uciekl z pola bitwy')).length,
+      logPursued: (bs.log || []).filter((x) => String(typeof x === 'string' ? x : JSON.stringify(x)).includes('dogoniony i zniszczony')).length,
     };
   });
   await page.close();

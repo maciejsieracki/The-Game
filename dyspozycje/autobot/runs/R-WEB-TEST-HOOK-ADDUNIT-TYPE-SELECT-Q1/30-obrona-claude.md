@@ -1,3 +1,93 @@
+# R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1 — Obrona, runda 4 (odpowiedzi na zarzuty Evaluatora z kandydata 81ac0eba4)
+
+STATUS: BLOCK (częściowy pomiar: AUTO i skip zmierzone na ścieżce mapowej, 3 ziarna, atakujący; tryb ręczny z rozkazami ZABLOKOWANY na ścieżce mapowej przez bramkę generała, potwierdzone po drugim podejściu; kontrola zamiany stron NIE ZMIERZONA)
+DOMAIN: GAME (narzędzie pomiarowe w `gra/tools/`; `gra/src` bez zmian)
+TEMAT: R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1
+GOAL: pomiar Wojownik vs Wojownik 10 vs 10 ścieżką mapową (`?playtest=mapa&civTest=1` + `__civTest.addUnit(...,'Wojownik')` x10 po obu stronach), bez presetu, bez przepisywania statystyk, z dowodem haka w runtime.
+BAZA: 81ac0eba4154583f228fd01e7cf6cbf0ba35468e (kandydat operatora, detached worktree). Dispatch i DODATEK 2 z `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`.
+Build: `node ./node_modules/vite/bin/vite.js build --outDir /tmp/ad2/dist4 --emptyOutDir` (17,9 s, EXIT 0). `npm ci --ignore-scripts` w `gra/` (EXIT 0, 71 pakietów). Chromium: `/usr/bin/chromium`, TMPDIR `/tmp/ad2/tmp`.
+
+## ZMIANY-COMMIT (runda 4)
+- `gra/tools/live-verify-wojownik-map-q1.cjs` — (a) nagłówek przepisany: opisuje tylko to, co kod wykonuje; (b) usunięta martwa pętla ręczna (`if (false)`, -49 linii); (c) skip = klik w realny przycisk UI `button[title="Pomin do wyniku"]` (battleScene.ts ~3411), fallback `scene.skip()` oznaczony jawnie jako "BRAK przycisku UI"; (d) ziarno = `?civSeed=<N>` (civ-test-hooks.ts `civTestSeedOverride`), zamiast samego `Math.random`; (e) kontrola obrony: wynik bez stosów Wojownik zapisywany jako NIE ZMIERZONO; (f) `res.logRouted` / `res.logPursued` = liczba wpisów ucieczki i pościgu w pełnym logu bitwy.
+- `dyspozycje/autobot/runs/R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1/evidence-wojownik-map-r5.json` — surowe wyniki tej rundy (18 przebiegów: atk/def x manual/auto/skip, ziarna 1,2,3).
+- Ten raport (sekcja runda 4 na górze; poprzednie rundy zachowane niżej).
+- `gra/src/` bez zmian (zero linii diff). Nie zmieniano `civ-test-hooks.ts`, `gra-robocza/`, `WERSJE.md`, `gra/data`. Nie pushowano.
+
+## TESTY (surowe wyniki)
+- `node tools/civtest-addunit-typeid-test.cjs` → `ADDUNIT-TYPEID STATIC: 10/10`, EXIT 0.
+- `node ./node_modules/typescript/bin/tsc --noEmit -p .` (w `gra/`) → EXIT 0.
+- Driver: `W_ROLES=atk,def W3_MODES=manual,auto,skip ... evidence-wojownik-map-r5.json 420`, uruchamiany wielokrotnie z wznawianiem z pliku. Ostatnie uruchomienie atk auto/skip z logiem: `LEFT 0`. Wiersze def: 9 x NIE ZMIERZONO; atk manual: 3 x BLOCK.
+
+## ODPOWIEDZI NA ZARZUTY EVALUATORA
+
+Zarzut 1 (tryb ręczny NIE ZMIERZONO; podejście 2 z DODATKU 2 nie zostało wykonane): PRZYJMUJĘ. Wykonano podejście 2; wynik BLOCK potwierdzony.
+  Sprawdzone ścieżki generała bez zmiany `gra/src`:
+  (a) `addUnit` z typeId tworzy `isGeneral: false` (gra/src/main.ts ~31125–31140).
+  (b) `addUnit` bez typeId klonuje szablon gracza (`{...tpl}`), więc kopiuje flagi szablonu, ale daje typ szablonu, nie Wojownika. Nie spełnia wymogu typu.
+  (c) Lista metod `civTest` (gra/src/game/civ-test-hooks.ts, interfejs ~40–160): brak metody ustawiającej `isGeneral` ani rekrutującej generała.
+  Bramka: `manualControlAllowed: atkRosterRef.some(u => u.isGeneral === true)` (main.ts ~36333) → `_manualCommanderGate` (battleScene.ts ~2794) → `_manualMode = hasCommander` (battleScene.ts ~3662).
+  Dowód runtime (evidence-wojownik-map-r5.json, `atk-s1|manual`, `atk-s2|manual`, `atk-s3|manual`): `afterDeployClick` = `manual:false, manualCommanderGate:true, playerHasCommander:false`; błąd "BLOCK: tryb reczny niedostepny".
+  Wniosek: tryb ręczny z rozkazami nie da się zmierzyć ścieżką mapową bez nowego haka w `gra/src` (ustawienie generała w stosie pomiarowym) albo zmiany bramki. To decyzja orkiestratora (poza allowlistą tego tematu). NIE ZMIERZONO.
+
+Zarzut 2 (kontrola zamiany stron NIE ZMIERZONA; próba złapała inną bitwę): PRZYJMUJĘ; nadal NIE ZMIERZONO.
+  Nowa próba: 9 przebiegów `def-s1..s3` x manual/auto/skip. We wszystkich okno przed bitwą to inna para AI: atk={"Łucznik":1}, def={"Hastati":1}. Driver teraz zapisuje to jako błąd "NIE ZMIERZONO (zamiana stron)", zamiast wyniku.
+  Atak barbarzyńców na stos gracza nie jest sterowalny z UI ani z haków (endTurn uruchamia tury AI, nie wybór celu).
+
+Zarzut 3 (skip = scene.skip(), nie klik w UI): PRZYJMUJĘ, NAPRAWIONE.
+  Driver klika `button[title="Pomin do wyniku"]` (battleScene.ts ~3411). Wszystkie 6 przebiegów skip mają `actions.skipClick = "klik-ui"`.
+  Wynik skip = wynik auto dla każdego ziarna (tabela poniżej). To zgodność dwóch dróg startu, nie niezależne potwierdzenie logiki.
+
+Zarzut 4 (ziarna nie dają rozrzutu; initDet nie steruje walką): PRZYJMUJĘ, NAPRAWIONE.
+  Przyczyna: initDet ustawia `Math.random`, a walka taktyczna nie używa `Math.random`. Walka korzysta z `battleCombatRng()` (main.ts ~2067–2070) = `gameStreamRng(_gameSeed, turn, 'battle-combat:N')`. `_gameSeed` pochodzi z `?civSeed=` (main.ts ~2048, `civTestSeedOverride`, civ-test-hooks.ts ~111).
+  Naprawa: driver przekazuje `civSeed=<ziarno>`. Wyniki różnią się między ziarnami (poniżej). Wcześniejsza uwaga "identyczny wynik dla ziaren 1, 2, 3" dotyczyła tylko `Math.random` i była artefaktem; nowe przebiegi dają inne wyniki.
+
+Zarzut 5 (higiena: nagłówek opisuje niewykonane ścieżki; martwy kod; probe bez typeId; test statyczny; main.ts +16/-1): PRZYJMUJĘ z uwagami.
+  - Nagłówek przepisany (zrobione); martwa pętla `if (false)` usunięta (zrobione).
+  - Probe: pole `typeId` nie istnieje w obiekcie sceny (zapisywane jako null). Typ identyfikuje `nazwa` z rosteru sceny (`Wojownik`, `kategoria` = `miecznik`, hp 22/22 po obu stronach). Statystyki NIE porównano z `data/units.json` w tej rundzie (NIE ZWERYFIKOWANE).
+  - Test statyczny (regex, 10/10) nie zawiera testu behawioralnego w runtime. Dowód runtime to probe z rosteru (6/6 przebiegów atakujących: `atkNames={"Wojownik":10}`, `defNames={"Wojownik":10}`).
+  - main.ts +16/-1: ODRZUCAM wymóg usunięcia w tej rundzie. Zmiana src nie była w tej rundzie wykonywana. Liczba 16/1 zgodna z zarzutem; odstępstwo 3 linii w civ-test-hooks.ts zaakceptowane przez orkiestratora w DODATKU 1.
+
+## POMIAR (ścieżka mapowa, atakujący = gracz; hit mode `losowe`; 10 Wojownik vs 10 Wojownik; wartości z evidence-wojownik-map-r5.json)
+
+| ziarno | tryb | zwycięzca | rundy | straty atakującego (wyeliminowani / pozostali) | straty obrońcy (wyeliminowani / pozostali) | ucieczki (stan końcowy / log) | pościgi (log) | klik skip |
+|---|---|---|---|---|---|---|---|---|
+| 1 | auto | atakujący | 26 | 6 / 4 | 7 / 3 | 0 / 0 | 0 | — |
+| 1 | skip | atakujący | 26 | 6 / 4 | 7 / 3 | 0 / 0 | 0 | klik-ui |
+| 2 | auto | obrońca | 20 | 10 / 0 | 4 / 6 | 0 / 0 | 0 | — |
+| 2 | skip | obrońca | 20 | 10 / 0 | 4 / 6 | 0 / 0 | 0 | klik-ui |
+| 3 | auto | obrońca | 18 | 10 / 0 | 1 / 9 | 0 / 0 | 0 | — |
+| 3 | skip | obrońca | 18 | 10 / 0 | 1 / 9 | 0 / 0 | 0 | klik-ui |
+| 1,2,3 | manual | — | — | — | — | — | — | BLOCK (bramka generała) |
+| zamiana stron (gracz = obrońca) | auto/skip/manual | — | — | — | — | — | — | NIE ZMIERZONO (inna para AI) |
+
+Uwagi do tabeli (jawnie):
+- Ziarno 1: atakujący wygrywa przez rozstrzygnięcie PAT ("brak postępu w walce — rozstrzygnięcie po morale armii"), nie przez eliminację.
+- Ucieczki: stan końcowy `routed && !dead` = 0 we wszystkich przebiegach; wpisy `uciekl z pola bitwy` i `dogoniony i zniszczony` w pełnym logu = 0 (log nie rozróżnia stron; 0 dla obu).
+- Trzy ziarna dają trzy różne przebiegi (1 wygrana atakującego, 2 wygrane obrońcy). Jeden preset mapy, jeden tryb trafień (`losowe`). Tryb `pewne` NIE mierzony.
+- Obrońca wygrywa 2/3 ziaren przy symetrycznych statystykach (Wojownik vs Wojownik). Przewaga obrońcy NIE jest zweryfikowana jako własność mechaniki: 3 przebiegi, 1 preset. Bez dalszego pomiaru nie wyciągać wniosku o balansie.
+- Probe (hak w runtime): 6/6 przebiegów atakujących `atkNames={"Wojownik":10}`, `defNames={"Wojownik":10}`, hp 22/22.
+
+## NIE ZMIERZONO (jawna lista)
+1. Tryb ręczny z rozkazami (BLOCK: bramka generała, patrz zarzut 1).
+2. Kontrola zamiany stron (AI nie atakuje stosu gracza na żądanie; patrz zarzut 2).
+3. Tryb trafień `pewne`.
+4. Liczby ucieczek rozdzielone po stronach (log nie rozróżnia stron).
+5. Statystyki Wojownika porównane z `data/units.json` (probe pokazuje nazwę i HP, nie porównano z danymi).
+
+## RUNDY
+4/5 (r1 BLOCK: brak pomiaru; r2 PASS-WITH-NOTES z przepisaniem; r3 odpowiedzi + kontrola natywna (FAIL r3 wg FC: artefakt presetu); r4 ta runda: ścieżka mapowa, AUTO/skip zmierzone, manual BLOCK po drugim podejściu, obrona NIE ZMIERZONO).
+
+## UWAGI-DLA-ORKIESTRATORA
+- Decyzja do podjęcia: tryb ręczny na ścieżce mapowej wymaga (a) nowego haka w `gra/src` ustawiającego `isGeneral` dla jednego Wojownika w stosie pomiarowym (zmiana składu albo flagi, osobny temat), albo (b) zgody na zmianę bramki w produkcji (poza zakresem tego tematu).
+- Kontrola obrony: nie ma sterowalnego ataku AI na stos gracza. Jeśli wymagana, potrzebny osobny hak (np. wymuszenie ataku AI), również poza zakresem.
+- Przewaga obrońcy 2/3: osobny temat balansu/pomiaru (kilka presetów, więcej ziaren), nie zakładać bez tego.
+- Pliki tymczasowe poza repo: `/tmp/ad2/dist4` (bundle), `/tmp/ad2/tmp` (TMPDIR Chromium), `/tmp/ad2/*.log`. Do sprzątania przez orkiestratora.
+- Nie tworzono sesji, zadań ani kart Suggested task. Nie użyto run_in_background.
+
+DEPLOY/PUSH: NIE WYKONANO
+
+---
+
 # R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1 — Obrona, runda 3 (odpowiedzi na zarzuty Evaluatora z kandydata 2c2cb5160)
 
 STATUS: PASS-WITH-NOTES (pomiar wykonany ponownie; kryterium (b) "natywny Wojownik vs Wojownik" NIE SPELNIONE — patrz zarzut 1; decyzja o przyjęciu należy do orkiestratora)
