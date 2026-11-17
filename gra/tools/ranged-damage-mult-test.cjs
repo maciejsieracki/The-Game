@@ -108,13 +108,19 @@ check('moc konnicy łuczniczej bez zmian', power.fieldPower({ ...kRow }).total, 
 // 6. Moc AI/auto-walki = armyFieldPower() na SUROWYM wierszu units.json (z cache fieldPower).
 // Cache eksportu liczony bez mnoznika -> armyFieldPower musi go ignorowac dla Procarza/Lucznika.
 const armyRaw = (name) => power.armyFieldPower({ ...row(name) });
-check('armyFieldPower Procarz (cache 12) = fieldPower z mnoznikiem 16', armyRaw('Procarz'), 16);
-check('armyFieldPower Procarz (Huaracoc) (cache 12) = 16', armyRaw('Procarz (Huaracoc)'), 16);
+check('armyFieldPower Procarz (health 8, cache 12) = 12', armyRaw('Procarz'), 12);
+check('armyFieldPower Procarz (Huaracoc) (health 8, cache 12) = 12', armyRaw('Procarz (Huaracoc)'), 12);
 // R-WEB-DATA-ARCHERS-HEALTH-20-DIST-EGYPT-6-Q1: zdrowie lucznikow = 20 (pole health) => nowa moc pola.
 // R-WEB-DATA-ARCHERS-RANGED-ATTACK-4-5-6-ALIGN-Q1: missileAttack Łucznik 4 / egipski 5 => moc pola 22 / 19 (runtime).
-check('armyFieldPower Łucznik (health 20, missileAttack 4) = 22', armyRaw('Łucznik'), 22);
-check('armyFieldPower Łucznik egipski (health 20, missileAttack 5) = 19', armyRaw('Łucznik egipski'), 19);
-check('armyFieldPower Oszczepnik (cache 12) bez zmian', armyRaw('Oszczepnik'), row('Oszczepnik').fieldPower);
+check('armyFieldPower Łucznik (health 10, missileAttack 4) = 17', armyRaw('Łucznik'), 17);
+check('armyFieldPower Łucznik egipski (health 10, missileAttack 5) = 14', armyRaw('Łucznik egipski'), 14);
+// Oszczepnik (health 8) i oszczepnicy Zulu/Estólica: cache musi odpowiadać fieldPower() z nowych statów.
+check('armyFieldPower Oszczepnik (health 8, cache 8) = 8', armyRaw('Oszczepnik'), 8);
+check('armyFieldPower Oszczepnik Zulu (health 10, missile 5, cache 11.5) = 11.5', armyRaw('Oszczepnik Zulu (Izijula)'), 11.5);
+check('armyFieldPower Oszczepnik (Estólica) (health 10, missile 5, cache 9.5) = 9.5', armyRaw('Oszczepnik (Estólica)'), 9.5);
+check('cache Oszczepnik == fieldPower().total', row('Oszczepnik').fieldPower, power.fieldPower({ ...row('Oszczepnik') }).total);
+check('cache Oszczepnik Zulu == fieldPower().total', row('Oszczepnik Zulu (Izijula)').fieldPower, power.fieldPower({ ...row('Oszczepnik Zulu (Izijula)') }).total);
+check('cache Oszczepnik (Estólica) == fieldPower().total', row('Oszczepnik (Estólica)').fieldPower, power.fieldPower({ ...row('Oszczepnik (Estólica)') }).total);
 check('armyFieldPower Konnica łucznicza (cache) bez zmian', armyRaw('Konnica łucznicza asyryjska'), row('Konnica łucznicza asyryjska').fieldPower);
 check('armyFieldPower Procarz == fieldPower().total', armyRaw('Procarz'), power.fieldPower({ ...row('Procarz') }).total);
 

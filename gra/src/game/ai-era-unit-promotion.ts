@@ -52,11 +52,13 @@ export function isSameEpochArcherDowngrade(sourceName: string, targetName: strin
   return SAME_EPOCH_ARCHER_DOWNGRADE_SOURCES.has(sourceName) && targetName === 'Procarz';
 }
 
-/** Oszczepnik (generyczny) i Oszczepnik Zulu -> Łucznik (decyzja właściciela 2026-11-17): ta sama
- *  epoka Kamień; dla Zulu także niższa klasa (Specjalna -> Standardowa). Jedyne wejścia poza awansem. */
+/** Oszczepnik (generyczny), Oszczepnik Zulu i Oszczepnik (Estólica) -> Łucznik (decyzja właściciela
+ *  2026-11-17): ta sama epoka Kamień; dla Zulu i Estólicy także niższa klasa (Specjalna -> Standardowa).
+ *  Jedyne wejścia poza awansem. */
 export const JAVELIN_TO_ARCHER_SOURCES: ReadonlySet<string> = new Set([
   'Oszczepnik',
   'Oszczepnik Zulu (Izijula)',
+  'Oszczepnik (Estólica)',
 ]);
 
 export function isJavelinToArcher(sourceName: string, targetName: string): boolean {

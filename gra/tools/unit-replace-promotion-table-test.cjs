@@ -58,10 +58,10 @@ const ARCHER_EXCEPTIONS = {
   'Łucznik nubijski': ['Procarz'],
   'Łucznik akadyjski': ['Procarz'],
   'Łucznik asyryjski': ['Procarz'],
-  'Oszczepnik (Estólica)': ['Procarz', 'Procarz (Huaracoc)'],
+  'Oszczepnik (Estólica)': ['Łucznik'],
 };
 const SAME_EPOCH_ARCHER_DOWNGRADE = new Set(['Łucznik nubijski', 'Łucznik akadyjski', 'Łucznik asyryjski']);
-const JAVELIN_TO_ARCHER_SOURCES = new Set(['Oszczepnik', 'Oszczepnik Zulu (Izijula)']);
+const JAVELIN_TO_ARCHER_SOURCES = new Set(['Oszczepnik', 'Oszczepnik Zulu (Izijula)', 'Oszczepnik (Estólica)']);
 const exceptionTargets = new Set(Object.values(ARCHER_EXCEPTIONS).flat());
 
 const byName = new Map(units.map(u => [String(u.Jednostka).trim(), u]));
@@ -195,7 +195,7 @@ const EXPECTED_TABLE = {
     "Łucznik nubijski": "Procarz",
     "Łucznik akadyjski": "Procarz",
     "Łucznik asyryjski": "Procarz",
-    "Oszczepnik (Estólica)": "Procarz/Procarz (Huaracoc)",
+    "Oszczepnik (Estólica)": "Łucznik",
   "Oszczepnik": "Łucznik",
   "Oszczepnik Zulu (Izijula)": "Łucznik"
   };

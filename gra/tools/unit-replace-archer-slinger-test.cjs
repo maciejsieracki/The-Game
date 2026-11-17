@@ -188,15 +188,16 @@ console.log('11. Narodowi łucznicy Brązu (nubijski, akadyjski, asyryjski) i Os
   const mutNub = unitsJson.map(u => (u.Jednostka === 'Łucznik nubijski' ? { ...u, 'Zastąp specjalnie': '—' } : u));
   check(!idsOf({ buildings: [], units: mutNub }, 'Łucznik nubijski', baseCtx(2, 'Egipt')).includes('Procarz'),
     'mutacja kopii (pole Łucznika nubijskiego cofnięte do "—") -> Procarz znika');
-  // Oszczepnik (Estólica) = dystansowa jednostka Inków (Kamień, Specjalna): Procarz standard + Huaracoc (Inkowie)
+  // Oszczepnik (Estólica) = dystansowa jednostka Inków (Kamień, Specjalna): „Zastąp" = TYLKO Łucznik
+  // (decyzja właściciela 2026-11-17, wariant A); Procarz i Procarz (Huaracoc) NIE są zamiennikami.
   const est = idsOf(DATA, 'Oszczepnik (Estólica)', baseCtx(2, 'Inkowie'));
-  check(est.includes('Procarz') && est.includes('Procarz (Huaracoc)'),
-    'Oszczepnik (Estólica) w Brązie (Inkowie): Procarz i Procarz (Huaracoc) na liście', JSON.stringify(est));
+  check(est.includes('Łucznik') && !est.includes('Procarz') && !est.includes('Procarz (Huaracoc)'),
+    'Oszczepnik (Estólica) w Brązie (Inkowie): Łucznik na liście, Procarz i Huaracoc nie', JSON.stringify(est));
   const estKam = idsOf(DATA, 'Oszczepnik (Estólica)', baseCtx(1, 'Inkowie'));
-  check(!estKam.includes('Procarz'), 'Oszczepnik (Estólica) w Kamieniu: Procarz niedostępny epoką', JSON.stringify(estKam));
+  check(estKam.includes('Łucznik') && !estKam.includes('Procarz'), 'Oszczepnik (Estólica) w Kamieniu: Łucznik tak, Procarz nie', JSON.stringify(estKam));
   const estRome = idsOf(DATA, 'Oszczepnik (Estólica)', baseCtx(2, 'Rzym'));
-  check(estRome.includes('Procarz') && !estRome.includes('Procarz (Huaracoc)'),
-    'Oszczepnik (Estólica) w Rzymie: Procarz tak, Procarz (Huaracoc) nie (nacja Inkowie)', JSON.stringify(estRome));
+  check(estRome.includes('Łucznik') && !estRome.includes('Procarz') && !estRome.includes('Procarz (Huaracoc)'),
+    'Oszczepnik (Estólica) w Rzymie: Łucznik tak, Procarz i Huaracoc nie', JSON.stringify(estRome));
   // Procarz (Huaracoc) nie jest zamiennikiem Estólicy poza Inkami (gating nacji)
   check(!estRome.includes('Procarz (Huaracoc)'), 'Huaracoc nie wchodzi do listy dla nacji spoza Inków');
   // AI: wyjątek same-epoch dla narodowych łuczników Brązu -> Procarz (ai-era-unit-promotion.ts,
@@ -234,7 +235,7 @@ console.log('11. Narodowi łucznicy Brązu (nubijski, akadyjski, asyryjski) i Os
   }
   // AI dla Estólicy (Kamień -> Brąz): wzrost epoki, awans dozwolony
   const aiEst = aiPromote('Oszczepnik (Estólica)', { ...baseCtx(2, 'Inkowie'), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } }, 100);
-  check(aiEst.ok, 'AI Oszczepnik (Estólica) Kamień -> Brąz: awans dozwolony (wzrost epoki)', JSON.stringify(aiEst));
+  check(aiEst.ok && aiEst.typeId === 'Łucznik', 'AI Oszczepnik (Estólica) -> Łucznik (Zastąp, jedyny cel): awans dozwolony', JSON.stringify(aiEst));
 }
 
 console.log('12. Oszczepnik i Oszczepnik Zulu -> Łucznik (decyzja właściciela 2026-11-17)');

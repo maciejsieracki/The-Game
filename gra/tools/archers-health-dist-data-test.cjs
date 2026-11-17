@@ -34,24 +34,25 @@ const ESBUILD_BIN = path.join(GRA_DIR, 'node_modules/.bin/esbuild');
 // Pieszy lucznik = wpis, ktorego pole `Jednostka` zaczyna sie od "Łucznik"
 // (ta sama klasa co ranged_damage_mult.lucznik_piesi). Konnica lucznicza
 // ("Konnica łucznicza asyryjska") NIE jest pieszym lucznikiem.
-const ARCHER_HEALTH = 20;
+// Zaktualizowane 2026-11-17 (RANGEDHEALTH, zdrowie dystansowych x0,5): piesi lucznicy = 10.
+const ARCHER_HEALTH = 10;
 // Decyzja wlasciciela 2026-11-17: 4 / 5 / 6, karta (`Atak dystansowy`) i silnik (`missileAttack`) identyczne.
 const EXPECTED_MISSILE = {
   'Łucznik': 4,
   'Łucznik egipski': 5,
   'Łucznik nubijski': 6,
 };
-// Pozostale pieszy-lucznicze warianty: dystans bez zmian (wartosci zastane).
+// Pozostale pieszy-lucznicze warianty: karta = silnik (RANGEDHEALTH 2026-11-17: akadyjski 6->5, asyryjski 6->4).
 const UNCHANGED_DIST = {
   'Łucznik sumeryjski': 4,
-  'Łucznik akadyjski': 6,
-  'Łucznik asyryjski': 6,
+  'Łucznik akadyjski': 5,
+  'Łucznik asyryjski': 4,
 };
-// Jednostki spoza zakresu: zdrowie zastane (nie moga sie zmienic).
+// Jednostki spoza zakresu piesze-dystansowe: zdrowie x0,5 (RANGEDHEALTH); konnica lucznicza bez zmian.
 const UNCHANGED_HEALTH = {
   'Konnica łucznicza asyryjska': 60,
-  'Oszczepnik': 16,
-  'Procarz': 16,
+  'Oszczepnik': 8,
+  'Procarz': 8,
 };
 
 let failures = 0;
