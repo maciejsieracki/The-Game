@@ -121,6 +121,11 @@ function makeTurnFixture(BattleScene, manualMode) {
     _battleAwaitingOrders: false,
     _manualMode: manualMode,
     _queuedOrderUnitIds: new Set(),
+    _manualArbOwner: new Map(),
+    log: [],
+    vTimers: [],
+    routedUnits: [],
+    occByKey: new Map([...atk, ...def].map(u => [`${u.q},${u.r}`, u])),
     _refreshQueuedOrderVisuals() {},
     _autoBattleSuspended: false,
     siegeWallCol: -1,
@@ -136,6 +141,9 @@ function makeTurnFixture(BattleScene, manualMode) {
     _updateBattlePhaseBanner() {},
     _schedule(ms, cb) { scheduled.push({ ms, cb }); },
     _activateUnit(ru, done) {
+      // Planner (_snapshotAutoBatchIntents -> _autoBatchPlanning) may call _activateUnit on clones;
+      // those planning calls are not live activations and must not enter the activation record.
+      if (this._autoBatchPlanning) { done(); return; }
       activated.push(ru.bu.id);
       done();
     },

@@ -248,7 +248,9 @@ console.log('\n-- B. main.ts buildEmpireDetailSnap() + empireDetailTypes.ts -- w
   const returnBlockEnd = mainSrc.indexOf('\n      };', returnBlockIdx);
   const returnBlock = returnBlockIdx > -1 && returnBlockEnd > returnBlockIdx
     ? mainSrc.slice(returnBlockIdx, returnBlockEnd) : '';
-  assert(/\n\s*armiaProdukcja,\s*$/.test(returnBlock),
+  // Kotwica bez `$`: armiaProdukcja nie jest ostatnim polem zwracanego obiektu (po nim idą
+  // producers, ...; main.ts ~20657), wiec `\s*$` zawsze dawal FALSE mimo poprawnej implementacji.
+  assert(/\n\s*armiaProdukcja,/.test(returnBlock),
     'B10: zwracany obiekt EmpireDetailSnap zawiera armiaProdukcja (pole faktycznie wystawione, nie tylko policzone i porzucone)');
 }
 
@@ -276,13 +278,27 @@ export { renderArmiaProdukcjaMini } from '../src/ui/empireDetailPanel';
   const STUB_BRAND_ASSETS_PLUGIN = {
     name: 'stub-brand-assets-armia-produkcja',
     setup(build) {
-      build.onResolve({ filter: /icons\/brandAssets$/ }, (args) => (
+      build.onResolve({ filter: /brandAssets$/ }, (args) => (
         { path: args.path, namespace: 'stub-brand-assets-armia-produkcja' }
       ));
       build.onLoad({ filter: /.*/, namespace: 'stub-brand-assets-armia-produkcja' }, () => ({
         contents:
           'export function brandIconSvg(id, size) { return String(id); }\n'
-          + 'export function mapResourceIconSvg(label, size) { return String(label); }\n',
+          + 'export function mapResourceIconSvg(label, size) { return String(label); }\n'
+          + 'export function unitIconSvg(def, id) { return String(id); }\n'
+          + 'export function improvementIconSvg(id, size) { return String(id); }\n'
+          + 'export function buildingIconSvg(id, size) { return String(id); }\n'
+          + 'export function terrainIconSvg(...a) { return ""; }\n'
+          + 'export function epochIconSvg(...a) { return ""; }\n'
+          + 'export function settingIconSvg(...a) { return ""; }\n'
+          + 'export function menuIconSvg(...a) { return ""; }\n'
+          + 'export function civIconSvg(...a) { return ""; }\n'
+          + 'export function brandMenuEmblemSvg(...a) { return ""; }\n'
+          + 'export function newGameIntroEmblemSvg(...a) { return ""; }\n'
+          + 'export function svgThumbHtml(...a) { return ""; }\n'
+          + 'export const brandMenuComponentsCss = "";\n'
+          + 'export const brandMotionCss = "";\n'
+          + 'export const brandMenuBackgroundCss = "";\n',
         loader: 'js',
       }));
     },
@@ -296,7 +312,7 @@ export { renderArmiaProdukcjaMini } from '../src/ui/empireDetailPanel';
       format: 'cjs',
       target: 'node18',
       loader: { '.ts': 'ts', '.json': 'json' },
-      plugins: [STUB_BRAND_ASSETS_PLUGIN],
+      plugins: [require('./lib/esbuild-raw-plugin.cjs'), STUB_BRAND_ASSETS_PLUGIN],
       outfile: BUNDLE,
       absWorkingDir: GRA,
       logLevel: 'silent',
