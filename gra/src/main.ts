@@ -22118,6 +22118,9 @@ async function boot(): Promise<void> {
         const validity = negotiationStillValid(entry, {
           turn,
           isAtWar,
+          // DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1 (Z6, wiring): lista audiencji też odrzuca martwe
+          // oferty pokoju/rozejmu po zawarciu pokoju (bez tego pole isAtPeace = undefined i reguła nie działa).
+          isAtPeace: isPairAtStablePeace(ME(), ownerId),
           proposerEliminated: eliminatedOwners.has(entry.proposerOwnerId),
           responderEliminated: eliminatedOwners.has(entry.responderOwnerId),
         });
@@ -25935,6 +25938,18 @@ async function boot(): Promise<void> {
       }
     }
 
+    /** DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1 (Z7): trwały wpis „Ważne" o zawarciu pokoju/rozejmu z udziałem gracza (dedup: tura + para). */
+    function logPeaceVazne(a: number, b: number, titlePrefix: string, subtitle: string): void {
+      if (a !== ME() && b !== ME()) return;
+      const other = a === ME() ? b : a;
+      const evId = `peace-vazne-${turn}-${diploPairKey(a, b)}`;
+      if (warEventLog.some(e => e.id === evId)) return;
+      warEventLog.unshift({
+        id: evId, icon: '⚔', title: titlePrefix + ownerDiploLabel(other), subtitle, kind: 'enemy', turnCreated: turn,
+      });
+      trimWarEventLog();
+    }
+
     function applyProposalOutcome(...args: Parameters<typeof applyProposalOutcomeImpl>): ReturnType<typeof applyProposalOutcomeImpl> {
       // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2 (FC r2 zarzut 2): ocena w epoce UMOWY (wyższa z epok stron).
       return withDiplomacyTradeEra(dealTradeEraForOwners(args[0], args[1]), () => applyProposalOutcomeImpl(...args));
@@ -26129,6 +26144,9 @@ async function boot(): Promise<void> {
           setDiploRelation(proposerId, responderId, applyDiploEventTracked(proposerId, responderId, cur, 'trybut_oferta_przyjeta'));
         } else if (cywAction === 'pokoj') {
           finalizePeaceTreatyBetween(proposerId, responderId);
+          // DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1 (Z7): akceptacja pokoju przez AI (propozycja ze stołu)
+          // zostaje też w „Ważne" — sam toast znika po 4 s.
+          logPeaceVazne(proposerId, responderId, 'Pokój zawarty: ', 'Propozycja pokoju przyjęta przez stronę (wpis stołu)');
           showHintMessage('\u{1F54A} Pokój zawarty', 4000);
         } else if (cywAction === 'rozejm') {
           // R-WEB-TRUCE-Q1 r3 (N1): długość z payloadu (5/10/15, domyślnie TRUCE_DEFAULT_TURNS).
@@ -26138,6 +26156,7 @@ async function boot(): Promise<void> {
             showHintMessage('Rozejm odrzucony: dozwolone długości to 5, 10 lub 15 tur', 4000);
           } else {
             finalizePeaceTreatyBetween(proposerId, responderId, undefined, truceLen);
+            logPeaceVazne(proposerId, responderId, 'Rozejm zawarty: ', 'Rozejm na ' + truceLen + ' tur (propozycja ze stołu)');
             showHintMessage('\u{1F54A} Rozejm zawarty na ' + truceLen + ' tur', 4000);
           }
         }

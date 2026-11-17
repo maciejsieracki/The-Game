@@ -2847,9 +2847,10 @@ export interface NegotiationWorldCtx {
   /**
    * DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1: true = para jest w pokoju STAŁYM (status pokoj/sojusz, bez
    * aktywnego rozejmu). Wpisy zależne od wojny (pokoj / rozejm - także z miastami AI jako "ceną") są wtedy martwe.
-   * Pole opcjonalne: brak = reguła nie działa (zachowanie sprzed zmiany, testy czystych funkcji bez ctx pokoju).
+   * Pole WYMAGANE (tsc wymusza je we wszystkich wywołaniach — brak pola = reguła po cichu nie działała;
+   * wiring w main.ts: buildNegotiationWorldCtx, handleNegotiationAccept, buildPendingNegotiationRows).
    */
-  isAtPeace?: boolean;
+  isAtPeace: boolean;
   proposerEliminated: boolean;
   responderEliminated: boolean;
   /** Gdy któraś strona to miasto-państwo — trybut niedostępny. */
