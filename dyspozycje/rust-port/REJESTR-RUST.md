@@ -3288,3 +3288,10 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Zabezpieczone (wip):** `rust-port-wip/p4-1-g5-norm-opus-{op,ob,ev,fc}-r3`. Push `refs/keep` nadal odrzucany.
 - **Sprzątanie:** usunięte worktrees G5 r3 i tymczasowy worktree integracji; usunięty target `g5-int-target`.
 - **Okno renderera zamknięte.** Następne w kolejności: T7b r4 (baza `61ffc110f`, wip, nie PASS) — po dispatchu. Heartbeat chce czterech slotów; od teraz wolno uruchamiać workerów równolegle, bo bramka 12 GB już nie wisi.
+
+### Przebieg — heartbeat Rust 09:18 UTC: T7b odwrót runda r4 — Operator PASS-WITH-NOTES, czeka na Evaluatora i FC (1/4)
+
+- **Aktywne Workflow: 1/4** — #342 T7b odwrót, runda r4 (`wf_38d93827-c1b`, baza `61ffc110f`). Operator (Haiku) PASS-WITH-NOTES: `fmt` EXIT 0; `clippy -D warnings` EXIT 0; `p6_k5doc_t7b` 2 passed; pełny `cargo test --all-targets --no-fail-fast` 3843 passed, 0 failed; `p6_8i_pick` (timeout 900) 5 passed. Commit raportu `4d9fc8917` (tylko `03-operator-r4.md`, kod bez zmian względem `61ffc110f`); zabezpieczony `rust-port-wip/p6-k5doc-t7b-r4-op`.
+- **Evaluator (Sonnet) w toku** (ponowne uruchomienie `p6_k5doc_t7b`). Po nim Obrona (Haiku, tylko przy zarzutach) i FC (Sonnet).
+- **Po FC PASS:** integracja FF `parity-v2` (baza parity = `760be5187`, więc trzeba sprawdzić ancestry; kod T7b z `61ffc110f` ma zmiany tylko w engine i nie kolidował z G5) i refs/keep. Po FAIL: r5 tego samego ID.
+- **Sloty:** 1/4; kandydaci K5DOC-T4e (#315) i K5DOC-T1 (#263) nadal wymagają dispatchu (pin nie przeczytany).
