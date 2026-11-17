@@ -365,12 +365,15 @@ async function main() {
     ok(lowTick.b.desperacja > 0, '[E4b] tick: bez bramki desperacja > 0 (zgodnie z tickiem AI↔AI)');
 
     // E5: tabela parytetu panel gracz↔AI ↔ loserDespair (udział przegrywającego × zmęczenie × utracone miasta).
-    // Udział 0,6 nie jest udziałem przegrywającego (strona o udziale > 0,5 wygrywa) — w tabeli tylko 0,27 i 0,45.
+    // Zmęczenie = turns/pelneTur + 0,1·miasta: tury 0 / 11,2 / 20 / 40 daje poziomy 0 / 0,28 / 0,5 / 1 (pelneTur = 40).
+    // Udziały: 0,27 i 0,45 (przegrywający wyraźnie słabszy), 0,46 (przegrywa wg progu przewagi, udział > 0,45 → 0),
+    // 0,5 (remis wg progu przewagi → obie strony „rowny”, bez desperacji; wartość zmęczenia sprawdzana).
+    // Udział 0,6 nie jest udziałem przegrywającego (strona o udziale > 0,5 wygrywa) — pominięty, pokryty przez E3b.
     // Dla każdej kombinacji: oczekiwana wartość = loserDespair (te same wejścia); remis wg progu → brak desperacji.
     let parityRows = 0, parityOk = 0;
-    for (const share of [0.27, 0.45]) {
+    for (const share of [0.27, 0.45, 0.46, 0.5]) {
       const loseSila = Math.round(share * 1000 / (1 - share));
-      for (const turns of [0, 11, 20, 40]) {
+      for (const turns of [0, 11.2, 20, 40]) {
         for (const lost of [0, 1, 3]) {
           const view = V.warWearinessPairView({
             turnsAtWar: turns,
@@ -385,13 +388,26 @@ async function main() {
           // Przegrywający: panel = loserDespair. Remis (brak przewagi wg progu): obie strony „rowny", bez desperacji.
           const good = view.b.rola === 'przegrywa'
             ? Math.abs(view.b.desperacja - exp) < 1e-9
-            : view.a.rola === 'rowny' && view.b.rola === 'rowny';
+            : view.a.rola === 'rowny' && view.b.rola === 'rowny'
+              && Math.abs(view.b.zmeczenie - lvl) < 1e-9 && Math.abs(view.a.zmeczenie - lvl) < 1e-9
+              && view.b.desperacja === undefined;
           if (good) parityOk++;
           else console.error('    parity mismatch: share', share, 'turns', turns, 'lost', lost, 'rola', view.b.rola, 'panel', view.b.desperacja, 'exp', exp);
         }
       }
     }
-    ok(parityRows === 24 && parityOk === parityRows, '[E5] parytet panel↔loserDespair: ' + parityOk + '/' + parityRows + ' zgodnych');
+    ok(parityRows === 48 && parityOk === parityRows, '[E5] parytet panel↔loserDespair: ' + parityOk + '/' + parityRows + ' zgodnych');
+    const rownyRows = [];
+    for (const turns of [0, 11.2, 20, 40]) {
+      const v = V.warWearinessPairView({
+        turnsAtWar: turns,
+        a: { id: 'w', sila: 1000, armiaPkt: 500, lostCities: 0 },
+        b: { id: 'l', sila: 1000, armiaPkt: 500, lostCities: 3 },
+        reference: 'ai',
+      });
+      rownyRows.push(v.a.rola === 'rowny' && v.b.rola === 'rowny' && v.b.desperacja === undefined);
+    }
+    ok(rownyRows.every(Boolean), '[E5b] remis sił (udział 0,5) → obie strony „rowny”, bez desperacji, dla 4 poziomów zmęczenia');
   }
 
   // Sprzątanie plików pomocniczych testu (nie do repo — dopisane do .gitignore nie są; kasowane po teście).
