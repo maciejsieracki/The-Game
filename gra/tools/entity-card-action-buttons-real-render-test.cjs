@@ -342,6 +342,9 @@ async function main() {
       local.click();
       const host = document.getElementById('civ-tech-discovery-notice-host');
       const live = host.querySelector('.entity-card-actions button.entity-card-action-primary');
+      // Karta ma overflow:auto (świadomie, patrz techDiscoveryNotice.ts: treść przewija się WEWNĄTRZ
+      // karty), więc przycisk akcji bywa poniżej viewportu. Hit-test wymaga, by był w viewport.
+      live.scrollIntoView({ block: 'center' });
       const r = live.getBoundingClientRect();
       const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
       return {
