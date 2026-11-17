@@ -1,3 +1,9 @@
+## ROBOCZA 4a8ee091 -- 2026-11-17 -- FALA 806: Hak testowy __civTest.addUnit z typem jednostki (typeId) + narzedzie pomiaru Wojownik vs Wojownik (testowa)
+
+- main.ts i civ-test-hooks.ts: hak testowy addUnit z wyborem typu jednostki (bez zmian zasad gry); gra/tools: live-verify-wojownik-map-q1.cjs i test civtest-addunit-typeid
+- Weryfikacja: tsc 0; logic 213/213; civtest-addunit-typeid 10/10 (mutacja 9/10); unit-replace 21/21; combat 6/6; pomiar Wojownik 10 vs 10 na sciezce mapowej w Chromium (3 ziarna x auto/skip): atakujacy wygrywa w ziarnie 1, obronca w 2 i 3
+- Limity: tylko narzedzie testowe; NIE ZMIERZONO: tryb reczny z rozkazami (brak generala w stosie), zamiana stron, zgodnosc statystyk z units.json; n=3 ziarna
+
 ## ROBOCZA 680859c8 -- 2026-11-17 -- FALA 805: Dystansowi: zdrowie x0,5, Oszczepnik Zulu i Estolica atak 5, karty zgodne z silnikiem, Zastap Estolica tylko Lucznik (testowa)
 
 - units.json: health Oszczepnik 8, Zulu 10, Estolica 10, Lucznicy (uniw., egipski, nubijski, sumeryjski, akadyjski, asyryjski) 10, Procarz i Huaracoc 8; missileAttack Zulu i Estolica 5; karta Atak dystansowy i Zasieg = silnik dla 75 jednostek (Druzynnik, Thorakites, Evocati, Gwardzista z champi: zasieg 2); Estolica Zastap tylko Lucznik; wyjatki bez zmian: Hastati, Wojownik germanski, Medzaj, konni, rydwany, Katapulta; fieldPower oszczepnikow odswiezone; ai-era-unit-promotion.ts wyjatek Estolica

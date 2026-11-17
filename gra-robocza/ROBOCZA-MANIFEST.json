@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "680859c8510250153f1e353f016d47c8",
-  "bundleSha256": "730703d2ce8267ce36a24e2fe9d5d2821f353fe2dc9e144d6eceb6ba60c6b56c",
-  "bundleBytes": 14852339,
+  "bundleMd5": "4a8ee091b0b39b97c9b34e67112ea092",
+  "bundleSha256": "120089043d06a62786e61e4fcb17cf87ad5dfeed58d07897a263f102e02a4a4d",
+  "bundleBytes": 14852740,
   "sourceSnapshot": {
-    "source": "build Vite z merge FC 009cb5c69 (raport f0f5cd08c) na main 1ff04368",
+    "source": "build Vite z merge FC 6df5de757 (raport 4bd8d9c07) na main 59fd3a9d",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 805: units.json: health Oszczepnik 8, Zulu 10, Estolica 10, Lucznicy (uniw., egipski, nubijski, sumeryjski, akadyjski, asyryjski) 10, Procarz i Huaracoc 8; missileAttack Zulu i Estolica 5; karta Atak dystansowy i Zasieg = silnik dla 75 jednostek (Druzynnik, Thorakites, Evocati, Gwardzista z champi: zasieg 2); Estolica Zastap tylko Lucznik; wyjatki bez zmian: Hastati, Wojownik germanski, Medzaj, konni, rydwany, Katapulta; fieldPower oszczepnikow odswiezone; ai-era-unit-promotion.ts wyjatek Estolica"
+    "FALA 806: main.ts i civ-test-hooks.ts: hak testowy addUnit z wyborem typu jednostki (bez zmian zasad gry); gra/tools: live-verify-wojownik-map-q1.cjs i test civtest-addunit-typeid"
   ],
   "verification": [
-    "tsc 0; logic 213/213; ranged-health-card-align 5/0 (+mutacje); ranged-damage-mult PASS; archers-health 10/0; units-health-single-field PASS; unit-power 6/0; archer-slinger 51/0; promotion-table PASS bez cykli; ai-era 17/0; unit-replace 21/21; combat 6/6"
+    "tsc 0; logic 213/213; civtest-addunit-typeid 10/10 (mutacja 9/10); unit-replace 21/21; combat 6/6; pomiar Wojownik 10 vs 10 na sciezce mapowej w Chromium (3 ziarna x auto/skip): atakujacy wygrywa w ziarnie 1, obronca w 2 i 3"
   ],
   "limits": [
-    "NIE ZMIERZONO: zywy Chromium (karty), skutek balansowy zdrowia x0,5 na wynik bitew; unit-replace-full-cost 39/1, unit-epoch-cost 56/1, fortify-pole 39/2 = dlug bazowy; Zastap Lucznik 10 -> Procarz 8 (nizsze zdrowie i atak) do wiadomosci wlasciciela; dlug Rust REPIN units.json i tabeli zamian"
+    "tylko narzedzie testowe; NIE ZMIERZONO: tryb reczny z rozkazami (brak generala w stosie), zamiana stron, zgodnosc statystyk z units.json; n=3 ziarna"
   ],
-  "finalControl": "R-WEB-DATA-RANGED-HEALTH-HALF-AND-CARDS-ALIGN-Q1 r1 FC PASS-WITH-NOTES f0f5cd08c (kod 009cb5c69)",
+  "finalControl": "R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1 r4 FC PASS-WITH-NOTES 4bd8d9c07 (kod 6df5de757)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T17:52:25",
+  "hubGeneratedAt": "2026-11-17T18:23:47",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "680859c8510250153f1e353f016d47c8",
-      "sizeBytes": 14852339
+      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
+      "sizeBytes": 14852740
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "680859c8510250153f1e353f016d47c8",
-      "sizeBytes": 14852339
+      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
+      "sizeBytes": 14852740
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "680859c8510250153f1e353f016d47c8",
-      "sizeBytes": 14852339
+      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
+      "sizeBytes": 14852740
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "680859c8510250153f1e353f016d47c8",
-      "sizeBytes": 14852339
+      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
+      "sizeBytes": 14852740
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "680859c8510250153f1e353f016d47c8",
-      "sizeBytes": 14852339
+      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
+      "sizeBytes": 14852740
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "680859c8510250153f1e353f016d47c8",
-      "sizeBytes": 14852339
+      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
+      "sizeBytes": 14852740
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "680859c8510250153f1e353f016d47c8",
-      "sizeBytes": 14852339
+      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
+      "sizeBytes": 14852740
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "680859c8510250153f1e353f016d47c8",
-      "sizeBytes": 14852339
+      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
+      "sizeBytes": 14852740
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "680859c8510250153f1e353f016d47c8",
-      "sizeBytes": 14852339
+      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
+      "sizeBytes": 14852740
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "680859c8510250153f1e353f016d47c8",
-      "sizeBytes": 14852339
+      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
+      "sizeBytes": 14852740
     }
   ],
-  "md5": "680859c8510250153f1e353f016d47c8",
+  "md5": "4a8ee091b0b39b97c9b34e67112ea092",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
