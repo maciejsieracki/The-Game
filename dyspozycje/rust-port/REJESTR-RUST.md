@@ -3042,3 +3042,13 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **DODATEK r6** (`014e38d5f` na `claude/rust-sivvrn`): nowa baza `1af81a8c3`. Operator weryfikuje ancestry, diff (tylko 7 plików T6), bramki EXIT 0. Nie pushuje, nie FF.
 - **Aktywne Workflow:** `wf_bb4e6b3c-994` (T6 integracja r6, Operator Haiku). Start po zapisie DODATEK r6.
 - **#260 T5b r2:** dispatch gotowy (`a68da9f14`), start wstrzymany do zakończenia bramek T6 — dwa równoległe rozruchy cargo przy progu 8 GB ryzykują kolejny BLOCK INFRA.
+
+### Przebieg — heartbeat sloty (druga połowa godziny, 2026-11-17 ~01:50 UTC): 2/4 aktywne, dysk 15 GB
+
+- **Aktywne Workflow:**
+  - K5DOC-T6 jazda, integracja r6 (`wf_bb4e6b3c-994`): Operator r6 **BLOCK** — ancestry OK, fmt/clippy/`p6_k5doc_cavalry` EXIT 0, pełny `cargo test` nie zakończony (dysk spadł 9,3 → 7,4 GB w trakcie kompilacji). Raport `bdc625b4e`. Etap: Ewaluator (Sonnet) — uruchomiony, buduje w `t5a-r3-target` (patrz incydent niżej).
+  - K5DOC-T5b strzelec-marsz, runda 2 (`wf_3446ab83-759`, zadanie `w77n8i5xq`): Operator, Haiku, baza `6a2ded8bb`, DODATEK r2 `a68da9f14`. Start po zwolnieniu dysku (15 GB).
+- **Incydent (sprzątanie):** usunięto `/tmp/claude-0/t4b-eval-target` (3,3 GB, temat T4b zintegrowany `3d016a5ae` ⊂ `625624d97`). Próba usunięcia `/tmp/claude-0/t5a-r3-target` (T5a zintegrowany) trafiła w **aktywny target** Ewaluatora T6 (`cargo clippy` działał z `CARGO_TARGET_DIR=…/t5a-r3-target`) — katalog został częściowo usunięty (`Directory not empty`). Łańcuch `&&` zatrzymał się przed `tgt-t5a-eval`. Ewaluator może zgłosić błąd kompilacji z powodu brakujących artefaktów; wtedy skutek to fałszywy BLOCK, a nie błąd kodu. Zasada na przyszłość: przed `rm` targetu sprawdzać `/proc/*/environ` (CARGO_TARGET_DIR) i `ps` dla cargo/rustc — sama lista procesów ze zmiennymi nie wystarcza.
+- **Krok 2 (zakończone FC PASS bez integracji):** brak.
+- **Krok 3 (sprzątanie):** usunięte t4b-eval-target. Pozostałe: `ev_t6_target` (183 MB, T6 w toku), `tgt-t5a-eval` (358 MB, do usunięcia po zakończeniu Ewaluatora T6).
+- **Otwarte decyzje ABC (w czacie):** #327, #358.
