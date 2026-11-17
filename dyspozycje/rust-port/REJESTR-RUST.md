@@ -2996,3 +2996,16 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Krok 2:** brak FC PASS bez integracji poza T6 (w integracji).
 - **Krok 3:** worktree T5a usunięte, dysk 11 GB. Worktree T6 integracji nie ruszane.
 - **Reguła:** dla T6 bramka na merge z pełnym testem, FF dopiero po EXIT 0.
+
+### Przebieg — heartbeat 01:20 UTC (2026-11-17): 3/4 aktywne, dysk 7,3 GB
+
+- **Aktywne Workflow (3/4):**
+  - K5DOC-T6 jazda, integracja na parity (`wf_6d014d2a-144`): Operator r5 PASS (merge `87829df94` → `57ee8fc7d` lokalnie, bramki fmt/clippy/full test EXIT 0, passed 3810, failed 0, ignored 1 pre-existing). Etap: Evaluator (Sonnet). Brak push — FF dopiero po werdykcie.
+  - K5DOC-T5b strzelec-marsz (#260), Operator Haiku, baza `625624d97`, dispatch `R-RUSTPORT-P6-K5DOC-T5B-MARSZ` (wf `wf_5291e068-ccd`). Start 01:2x UTC.
+  - DOC-323 poprawka dokumentu P4-1G (#323), docs-only, Operator Haiku, dispatch `R-RUSTPORT-P6-DOC-323-RZEKA-KRAWEDZIE` (wf `wf_7304b042-01d`). Start 01:2x UTC.
+- **Martwe wpisy (nie liczone jako aktywne):** `wf_f88b947e-171` (T5a r2), `wf_18327ef5-a0e` (T4b), `wf_3180bfbf-196` (T6 stary Operator) — brak `result` w journalu od restartu kontenera; ich worktree już nie istnieją; wyniki zintegrowane wcześniej (T5a `625624d97`, T4b `3d016a5ae`).
+- **Krok 1 (sloty 4):** dopełniono do 3. Slot 4 wstrzymany: dysk 7,3 GB < 8 GB (reguła: brak nowego tematu z kodem Rust poniżej 8 GB). Brak czystego tematu docs-only poza #323 — nie wymyślam.
+- **Krok 2:** brak FC PASS bez integracji poza T6 (w toku).
+- **Krok 3:** sprzątanie — nic zakończonego do usunięcia poza wpisami martwymi (bez worktree). T6 worktree `wf_6d014d2a-144-1/-2` (1,2 GB każdy) nietknięte, bo T6 w toku.
+- **Otwarte decyzje ABC (w czacie, nie w rejestrze):** #327 (garnizon w czasie wojny), #358 (mgła #253, wariant CRED-HAK #286). Nie zamykam ich sam.
+- **Zarządzanie harmonogramem:** brak ScheduleWakeup (sesja nie jest pętlą /loop); heartbeat obsługuje harmonogram zdalny.
