@@ -173,10 +173,6 @@ pub struct MapUiState {
     /// `forceVisibleUnitId` (`main.ts:13644`; `setForceVisibleUnitId`,
     /// `:14550`, Q6).
     pub force_visible_unit_id: Option<vm::UnitId>,
-    /// `hideStatChips` of `_cityRenderOpts` (`main.ts:2977`, Q3/R5). The pin
-    /// sets it to `isCityPanelOpen()`; the R5 badge sync reads
-    /// [`Self::is_city_panel_open`] for it.
-    pub hide_stat_chips: bool,
     /// `statChipHoverCityId` = `hoverStatChipCityId` of `_cityRenderOpts`
     /// (`main.ts:2938`, `:2987`; set on hover, `main.ts:32264`, cleared
     /// `:32268`, `:32347`), R5.
@@ -187,7 +183,7 @@ impl MapUiState {
     /// The start values of the pin: borders, trade routes and worker icons
     /// on (`main.ts:15338`, `:15358`, `:15419`), no city panel
     /// (`cityPanelViewCityId = null`, `:6575`), no forced unit (`:13644`),
-    /// `hideStatChips = isCityPanelOpen() = false` (`:2977`), no hovered
+    /// `hideStatChips = isCityPanelOpen() = false` (`:2977`, derived), no hovered
     /// badge (`statChipHoverCityId = null`, `:2938`).
     pub const WEB_INITIAL: Self = Self {
         territory_border_visible: true,
@@ -196,9 +192,16 @@ impl MapUiState {
         is_city_panel_open: false,
         city_panel_view_city_id: None,
         force_visible_unit_id: None,
-        hide_stat_chips: false,
         hover_stat_chip_city_id: None,
     };
+
+    /// `hideStatChips` of `_cityRenderOpts` (`main.ts:2977`, Q3/R5): the pin
+    /// sets it to `isCityPanelOpen()`, so it is derived from
+    /// [`Self::is_city_panel_open`] and not stored a second time.
+    #[must_use]
+    pub const fn hide_stat_chips(&self) -> bool {
+        self.is_city_panel_open
+    }
 }
 
 // ------------------------------------------------------------ owners

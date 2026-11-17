@@ -210,7 +210,7 @@ impl CityStatChips {
                 continue;
             };
             let visible = stat_chip_city_visible(city, ui);
-            let show = visible && grp.visible() && !ui.is_city_panel_open;
+            let show = visible && grp.visible() && !ui.hide_stat_chips();
             self.sync_stat_chip(city, id, grp, show, ui)?;
         }
         if self.lod_purge_pending {
@@ -246,7 +246,7 @@ impl CityStatChips {
                 continue;
             };
             let visible = stat_chip_city_visible(city, ui);
-            let show = visible && !ui.is_city_panel_open;
+            let show = visible && !ui.hide_stat_chips();
             self.sync_stat_chip(city, id, grp, show, ui)?;
         }
         self.chips.retain(|c| models.city(&c.city_id).is_some());
