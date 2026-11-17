@@ -1,13 +1,13 @@
 'use strict';
 /**
  * battle-damage-colors-test.cjs
- * R-WEB-BATTLE-DAMAGE-COLORS-PLAYER-RED-ENEMY-YELLOW-Q1
+ * R-WEB-BATTLE-DAMAGE-COLORS-PLAYER-RED-ENEMY-YELLOW-Q1 (zaktualizowany: R-WEB-UI-BATTLE-DAMAGE-COLORS-BLUE-RED-Q1)
  *
- * Strukturalny test (bez przeglądarki): straty GRACZA = czerwone, straty PRZECIWNIKA = żółte.
+ * Strukturalny test (bez przeglądarki): straty GRACZA = czerwone, straty PRZECIWNIKA = niebieskie.
  *   A -- tokeny w battleHudTheme.ts (jedno miejsce), funkcja battleLossTextColor(isPlayer).
  *   B -- kontrast WCAG (AA, tekst normalny >= 4.5:1) tokenów strat na tle HUD/karty (ciemne).
  *   C -- pływające liczby obrażeń: battleScene.ts (_spawnDamageLabel) i manualBattle.ts wg strony jednostki.
- *   D -- ekran wyniku: endScreen1E.ts („Twoje straty" = czerwone, „Straty wroga" = żółte).
+ *   D -- ekran wyniku: endScreen1E.ts („Twoje straty" = czerwone, „Straty wroga" = niebieskie).
  *   E -- szczegóły bitwy: postBattleSummary.ts (zniszczone/straty wg strony), brak surowych #hex strat w tych miejscach.
  *   F -- brak pozostałości starego koloru #ff4444 w znacznikach obrażeń.
  *
@@ -56,15 +56,16 @@ check('BATTLE_LOSS_PLAYER_TEXT zdefiniowany (hex)', !!pText, pText);
 check('BATTLE_LOSS_ENEMY_TEXT zdefiniowany (hex)', !!eText, eText);
 check('funkcja battleLossTextColor(isPlayerUnit) eksportowana',
   /export function battleLossTextColor\(isPlayerUnit: boolean\): string/.test(theme));
-check('battleLossTextColor: gracz -> czerwony token, przeciwnik -> żółty token',
+check('battleLossTextColor: gracz -> czerwony token, przeciwnik -> niebieski token',
   /return isPlayerUnit \? BATTLE_LOSS_PLAYER_TEXT : BATTLE_LOSS_ENEMY_TEXT;/.test(theme));
 
-// czerwony: R dominuje; żółty: R i G wysokie, B niskie
+// czerwony: R dominuje
 if (pText && eText) {
   const [pr, pg, pb] = hexToRgb(pText);
   const [er, eg, eb] = hexToRgb(eText);
   check('strata gracza ma barwę czerwoną (R > 2*G, R > B)', pr > 2 * pg && pr > pb, pText);
-  check('strata przeciwnika ma barwę żółtą (R i G > 2*B, |R-G| < 60)', er > 2 * eb && eg > 2 * eb && Math.abs(er - eg) < 60, eText);
+  check('strata przeciwnika ma barwę niebieską (B > R i B > G)', eb > er && eb > eg, eText);
+  check('mutacja: strata przeciwnika NIE jest żółta (#ffd54a)', eText.toLowerCase() !== '#ffd54a', eText);
 }
 
 console.log('B. Kontrast WCAG na ciemnym tle');
@@ -74,10 +75,10 @@ if (pText && eText) {
     const cp = contrast(hexToRgb(pText), bg);
     const ce = contrast(hexToRgb(eText), bg);
     check('kontrast czerwony (gracz) na ' + label + ' >= 4.5 (' + cp.toFixed(2) + ')', cp >= 4.5);
-    check('kontrast żółty (przeciwnik) na ' + label + ' >= 4.5 (' + ce.toFixed(2) + ')', ce >= 4.5);
+    check('kontrast niebieski (przeciwnik) na ' + label + ' >= 4.5 (' + ce.toFixed(2) + ')', ce >= 4.5);
   }
 }
-check('tła strat (BG) zdefiniowane', /BATTLE_LOSS_PLAYER_BG = 'rgba\(229,72,77/.test(theme) && /BATTLE_LOSS_ENEMY_BG = 'rgba\(255,213,74/.test(theme));
+check('tła strat (BG) zdefiniowane', /BATTLE_LOSS_PLAYER_BG = 'rgba\(229,72,77/.test(theme) && /BATTLE_LOSS_ENEMY_BG = 'rgba\(58,106,208/.test(theme));
 
 console.log('C. Pływające liczby obrażeń (bitwa polowa i ręczna)');
 const spawnScene = (scene.match(/private _spawnDamageLabel\(ru: RuntimeBattleUnit[\s\S]*?\n  \}\n/) || [''])[0];
@@ -94,7 +95,7 @@ check('manualBattle: import tokenów strat', /import \{ BATTLE_LOSS_PLAYER_TEXT,
 console.log('D. Ekran wyniku bitwy (endScreen1E)');
 check('„Twoje straty" używa BATTLE_LOSS_PLAYER_TEXT (czerwony)',
   /statTileHtml\('−' \+ playerLost, 'Twoje straty', BATTLE_LOSS_PLAYER_TEXT,/.test(endScreen));
-check('„Straty wroga" używa BATTLE_LOSS_ENEMY_TEXT (żółty)',
+check('„Straty wroga" używa BATTLE_LOSS_ENEMY_TEXT (niebieski)',
   /statTileHtml\('−' \+ enemyLost, 'Straty wroga', BATTLE_LOSS_ENEMY_TEXT,/.test(endScreen));
 check('endScreen1E: brak starego koloru strat gracza (BATTLE_PLAYER_TEXT) w kaflach',
   !/'Twoje straty', BATTLE_PLAYER_TEXT/.test(endScreen));
@@ -103,8 +104,8 @@ console.log('E. Szczegóły bitwy (postBattleSummary)');
 check('postBattleSummary: import battleLossTextColor', /\n  battleLossTextColor,\n/.test(summary));
 check('postBattleSummary: tekst strat wg strony (battleLossTextColor(isPlayer))',
   summary.includes('battleLossTextColor(isPlayer)'));
-check('postBattleSummary: zniszczona jednostka gracza ma obwódkę czerwoną (rgba(229,72,77',
-  summary.includes("(isPlayer ? 'rgba(229,72,77,.55)' : 'rgba(255,213,74,.55)')"));
+check('postBattleSummary: zniszczona jednostka gracza ma obwódkę czerwoną, przeciwnika niebieską',
+  summary.includes("(isPlayer ? 'rgba(229,72,77,.55)' : 'rgba(58,106,208,.55)')"));
 
 console.log('F. Brak starego koloru strat w znacznikach obrażeń');
 check('battleScene: brak literału #ff4444 w _spawnDamageLabel', !/#ff4444/.test(spawnScene));

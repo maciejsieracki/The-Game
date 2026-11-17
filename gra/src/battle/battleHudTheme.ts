@@ -24,20 +24,22 @@ export const BATTLE_ENEMY_TEXT = '#e08a8a';
 export const BATTLE_ENEMY_BG = 'rgba(200,64,64,0.08)';
 
 /**
- * Straty w bitwie (R-WEB-BATTLE-DAMAGE-COLORS-PLAYER-RED-ENEMY-YELLOW-Q1).
- * Kolor strat zależy od tego, czyja jednostka traci HP — NIE od strony na mapie:
- * straty GRACZA = czerwone, straty PRZECIWNIKA = żółte. Jedyne źródło tych kolorów
+ * Straty w bitwie (R-WEB-UI-BATTLE-DAMAGE-COLORS-BLUE-RED-Q1, decyzja właściciela 2026-11-17).
+ * Kolor liczby zależy od tego, czyja jednostka traci HP — NIE od strony na mapie:
+ * obrażenia na jednostkach GRACZA = czerwone, obrażenia zadane PRZECIWNIKOWI = niebieskie
+ * (spójnie z „Ty = niebieski, wróg = czerwony” w reszcie HUD). Jedyne źródło tych kolorów
  * dla liczb obrażeń, kafli ekranu wyniku i znaczników strat w podsumowaniu.
- * Teksty na ciemnym tle (WCAG AA dla tekstu normalnego), żółty = #ffd54a (jak ROUTED).
+ * Teksty na ciemnym tle (WCAG AA dla tekstu normalnego). Niebieski tekst = #8fb6e0
+ * (BATTLE_PLAYER_TEXT; #3a6ad0 ma kontrast ~3,8:1 na tle HUD, czyli za mało dla tekstu).
  */
 export const BATTLE_LOSS_PLAYER = '#e5484d';        // obwódka/ikona strat gracza
 export const BATTLE_LOSS_PLAYER_TEXT = '#ff7070';   // liczba/etykieta strat gracza
 export const BATTLE_LOSS_PLAYER_BG = 'rgba(229,72,77,0.08)';
-export const BATTLE_LOSS_ENEMY = '#ffd54a';         // obwódka/ikona strat przeciwnika
-export const BATTLE_LOSS_ENEMY_TEXT = '#ffd54a';    // liczba/etykieta strat przeciwnika
-export const BATTLE_LOSS_ENEMY_BG = 'rgba(255,213,74,0.08)';
+export const BATTLE_LOSS_ENEMY = '#3a6ad0';         // obwódka/ikona strat przeciwnika (= BATTLE_PLAYER)
+export const BATTLE_LOSS_ENEMY_TEXT = '#8fb6e0';    // liczba/etykieta strat przeciwnika (= BATTLE_PLAYER_TEXT)
+export const BATTLE_LOSS_ENEMY_BG = 'rgba(58,106,208,0.10)';
 
-/** Kolor tekstu liczby strat dla jednostki: gracz = czerwony, przeciwnik = żółty. */
+/** Kolor tekstu liczby strat dla jednostki: gracz = czerwony, przeciwnik = niebieski. */
 export function battleLossTextColor(isPlayerUnit: boolean): string {
   return isPlayerUnit ? BATTLE_LOSS_PLAYER_TEXT : BATTLE_LOSS_ENEMY_TEXT;
 }

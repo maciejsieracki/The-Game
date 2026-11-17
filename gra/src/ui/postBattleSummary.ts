@@ -206,13 +206,13 @@ function buildUnitRow(
     flexDirection: 'column',
     gap: '6px',
     padding: '9px 11px',
-    // R-WEB-BATTLE-DAMAGE-COLORS: zniszczona jednostka gracza = czerwona, przeciwnika = żółta.
+    // R-WEB-UI-BATTLE-DAMAGE-COLORS-BLUE-RED-Q1: zniszczona jednostka gracza = czerwona, przeciwnika = niebieska (jak liczba strat).
     border: '1px solid ' + (u.dead
-      ? (isPlayer ? 'rgba(229,72,77,.55)' : 'rgba(255,213,74,.55)')
+      ? (isPlayer ? 'rgba(229,72,77,.55)' : 'rgba(58,106,208,.55)')
       : isPlayer ? 'rgba(90,155,212,.4)' : 'rgba(200,64,64,.4)'),
     borderRadius: '8px',
     background: u.dead
-      ? (isPlayer ? 'rgba(40,12,12,.55)' : 'rgba(40,34,10,.55)')
+      ? (isPlayer ? 'rgba(40,12,12,.55)' : 'rgba(14,24,48,.55)')
       : isPlayer ? 'rgba(18,30,44,.5)' : 'rgba(30,14,14,.5)',
   });
 
