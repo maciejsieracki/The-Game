@@ -113,10 +113,16 @@ for (const mnoznik of [0.7, 1.0, 1.5]) {
       const prev = tableBalance(t - 1);
       check(`(b2) ${label} tura ${t}: bilans rosnie wzgledem tury ${t - 1} (Z=${Z})`, bal > prev, { t, bal, prev });
     }
-    // (b3) silniejsza AI: odrzucenie podaje wymagane C w tej turze (zmeczenie nie obniza ceny)
+    // (b3) R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (DR-1 ABC 2026-11-17): cena pokoju = 6000 x (1 - L), L = t/40.
+    // Przy cenie > 0 silniejsza AI odrzuca i podaje wymagane cene; przy L = 1 (cena 0) pokoj zapada bez miast.
+    const cashExp = Math.round(6000 * (1 - Math.min(1, t / 40)));
     const rs = playerPeace({ t, pos: 'silniejsza' });
-    check(`(b3) ${label} tura ${t}: silniejsza AI odrzuca i podaje wymagane C=${C} PN`,
-      rs.accepted === false && typeof rs.reason === 'string' && rs.reason.includes(`wymagane ${C} PN`), rs);
+    if (cashExp > 0) {
+      check(`(b3) ${label} tura ${t}: silniejsza AI odrzuca i podaje wymagane ${cashExp} PN`,
+        rs.accepted === false && typeof rs.reason === 'string' && rs.reason.includes(`wymagane ${cashExp} PN`), rs);
+    } else {
+      check(`(b3) ${label} tura ${t}: cena 0 (L=1) => pokoj bez miast (accepted)`, rs.accepted === true, rs);
+    }
   }
 }
 PRICE.mnoznikCywMin = savedMin;

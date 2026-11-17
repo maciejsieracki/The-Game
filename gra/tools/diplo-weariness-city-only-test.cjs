@@ -133,13 +133,18 @@ function behaviour(W) {
   {
     const { deps, log } = mk({ turn: 160, turnsAtWar: 20, since: 3, share1: 0.1, weaker: 1, lostA: 1, cityCount: (o) => (o === 1 ? 3 : 6), winnerNeed: 0, assets: CITY_ASSETS });
     const r = W.runWarWearinessTick(deps)[0];
-    chk('e1b: chroniony z 3 miastami (poziom 0,6) nie oddaje miasta ponizej minMiastPoOddaniu', r.action !== 'offer_accepted' && !log.some((x) => x.ev === 'peace'));
+    // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (2026-11-17): stały próg min. 3 miast (minMiastPoOddaniu) odpada (decyzja właściciela).
+    // Limit oferty = stageCityLimit (<= maxMiastNaPokoj = 2) => z 3 miast oddaje co najwyżej 2, pokój zawarty.
+    const miastoE1b = r.plan ? r.plan.histogram.miasto : -1;
+    chk('e1b: chroniony z 3 miastami (poziom 0,6) oddaje <= 2 miasta (limit oferty, bez progu 3) i pokoj zawarty',
+      r.action === 'offer_accepted' && miastoE1b >= 1 && miastoE1b <= 2 && log.some((x) => x.ev === 'peace'), miastoE1b);
   }
   // (e2) ochrona bez miasta do oddania (3 miasta = minMiastPoOddaniu) -> brak pokoju mimo ochrony
   {
     const { deps, log } = mk({ turn: 140, turnsAtWar: 20, since: 5, share1: 0.2, weaker: 1, lostA: 1, cityCount: (o) => (o === 1 ? 3 : 6), winnerNeed: 0, assets: CITY_ASSETS });
     const r = W.runWarWearinessTick(deps)[0];
-    chk('e2: chroniony bez miasta do oddania nie kupuje pokoju', r.action === 'offer_rejected' && !log.some((x) => x.ev === 'peace'));
+    // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: bez progu 3 miast przy 3 miastach jest co oddać (1-2) => pokoj kupiony.
+    chk('e2: chroniony z 3 miastami (bez progu min. 3) kupuje pokoj miastem', r.action === 'offer_accepted' && log.some((x) => x.ev === 'peace'));
   }
   // (f) karencja z war-weariness-params.json: zwykly 40, chroniony 100
   {

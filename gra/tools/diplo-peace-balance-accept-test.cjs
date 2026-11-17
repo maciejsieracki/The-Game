@@ -155,7 +155,8 @@ function playerPeace(warState, actionId = 'pokoj', payload = {}) {
   const strong = playerPeace({ turnsAtWar: 30, lostCitiesResponder: 0, responderRw: rwOf(125, 100), responderPozycjaMilitarna: 'silniejsza' });
   check('C1: evaluateProposal: AI silniejsza militarnie, bez miasta => accepted=false z powodem militarnym', strong.accepted === false && /silni|miast/.test(strong.reason || ''), strong);
   const weary = playerPeace({ turnsAtWar: 120, lostCitiesResponder: 0, responderRw: rwOf(125, 100), responderPozycjaMilitarna: 'silniejsza' });
-  check('C2: evaluateProposal: silniejsza AI przy 120 turach (zmęczenie) => nadal odrzucone', weary.accepted === false, weary);
+  // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (DR-1 ABC 2026-11-17): przy L = 1 cena = 0 => pokoj bez miast (zamiast odrzucenia).
+  check('C2: evaluateProposal: silniejsza AI przy 120 turach (zmęczenie, cena 0) => pokoj bez miast', weary.accepted === true, weary);
   const weak = playerPeace({ turnsAtWar: 30, lostCitiesResponder: 0, responderRw: rwOf(75, 100), responderPozycjaMilitarna: 'slabsza' });
   check('C3: evaluateProposal: AI słabsza militarnie => brak odrzucenia z powodu siły', !/silni|miast w ofercie/.test(weak.reason || ''), weak);
 }

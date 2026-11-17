@@ -31,7 +31,7 @@ import { czyAgresorAktywny, deltaRelacjiSojusz } from './diplomacy';
 import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';
 import type { PeaceMilitaryPosition } from './diplomacy-military-strength';
 import { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS } from './diplomacy-peace-proposal-timing';
-import { warWearinessLevel, wearinessPeaceItemPw } from './war-weariness';
+import { warWearinessLevel, wearinessPeaceItemPw, wearinessPeaceCashPn } from './war-weariness';
 import type { Player } from '../types/player';
 import { TypCywilizacji } from '../types/player';
 import {
@@ -1458,22 +1458,22 @@ function evaluateProposalImpl(
         if (r5Gate.verdict === 'too_early') {
           return { accepted: false, reason: r5Gate.reason ?? 'AI odrzuca pokój' };
         }
-        // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (ABC 2026-11-14: krzywa kwadratowa, rabat 60% usunięty):
-        // zmęczenie wojną to POZYCJA PW Z = round(C × x²), a NIE rabat ceny. Z pojawia się w tabeli po stronie
-        // oceniającego AI („Zmęczenie wojną (AI)”); wymagana reszta R = C − Z pokrywana wyłącznie miastem.
-        const cenaPokojuPn = Math.round(basePnCfg * r5Gate.priceMultiplier);
+        // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: JEDNA cena pokoju = wearinessPeaceCashPn(L) (malejaca z
+        // zmeczeniem pary; 0 przy L = 1). Pozycja Z (krzywa kwadratowa) i stala cena relacyjna odpadaja: cala cena
+        // pokrywana miastami (stolica nigdy). Bramka relacji: cena 0, gdy wycena bazowa daje 0 (r5Gate.priceMultiplier).
         const wearyLevel = warWearinessLevel({
           turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
           lostCitiesTotal: Math.max(0, ctx.warState.lostCitiesResponder),
           turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
         });
-        wearyPwItem = wearinessPeaceItemPw(cenaPokojuPn, wearyLevel);
+        const cenaPokojuPn = basePnCfg * r5Gate.priceMultiplier > 0 ? wearinessPeaceCashPn(wearyLevel) : 0;
+        wearyPwItem = undefined;
         wearyInfo = {
           turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
           lostCities: Math.max(0, ctx.warState.lostCitiesResponder),
           level: wearyLevel,
         };
-        basePn = Math.max(0, cenaPokojuPn - wearyPwItem);
+        basePn = cenaPokojuPn;
         // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (zarzut 5 / wymóg 4): złoto i surowce NIE są
         // słodzikiem pokoju ani rozejmu — w każdej pozycji (słabsza i silniejsza AI) oferta z nimi jest
         // odrzucana. Słodzikiem jest wyłącznie miasto (poniżej, dla 'stronger').

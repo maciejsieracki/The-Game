@@ -71,8 +71,8 @@ ok(!/"rabatCenyPokojuMax"\s*:/.test(paramsSrc) && !/rabatCenyPokojuMax\s*:/.test
 
 // (e) wiazanie w diplomacy-proposals.ts i ai.ts
 const propSrc = fs.readFileSync(path.join(SRC, 'game/diplomacy-proposals.ts'), 'utf8');
-ok(/wearinessPeaceItemPw\(cenaPokojuPn, wearyLevel\)/.test(propSrc), '(e) bramka R5 liczy Z przez wearinessPeaceItemPw');
-ok(/basePn = Math\.max\(0, cenaPokojuPn - wearyPwItem\)/.test(propSrc), '(e) wymagana cena = C - Z (reszta do miasta)');
+ok(/const cenaPokojuPn = basePnCfg \* r5Gate\.priceMultiplier > 0 \? wearinessPeaceCashPn\(wearyLevel\) : 0;/.test(propSrc), '(e) bramka R5 liczy cene przez wearinessPeaceCashPn (R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: Z odpada)');
+ok(/basePn = cenaPokojuPn;/.test(propSrc) && !/wearinessPeaceItemPw\(cenaPokojuPn/.test(propSrc), '(e) wymagana cena = cena pokoju (bez odejmowania Z)');
 const aiSrc = fs.readFileSync(path.join(SRC, 'game/ai.ts'), 'utf8');
 ok(!/wearinessUnconditionalEndDue/.test(aiSrc) && !/wearinessUnconditionalEndDue/.test(wwSrc), '(b) ai.ts: brak pokoju bezwarunkowego przy 80% (funkcja wearinessUnconditionalEndDue usunieta)');
 ok(/wearinessForcedPeaceDue/.test(wwSrc) && /return level >= P\.zmeczenie\.progWymuszonyPokoj;/.test(wwSrc), '(b) war-weariness.ts: pokoj wymuszony = level >= progWymuszonyPokoj (100%)');

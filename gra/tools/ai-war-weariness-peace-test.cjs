@@ -331,9 +331,11 @@ ok(/warWearinessByPairKey\.delete\(diploPairKey\(proposerId, responderId\)\)/.te
       'offer_rejected', '7c-NN: ochrona NIE wymusza pokoju przy ujemnym bilansie zwyciezcy');
     // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1 (zmiana 4): ochrona wymaga MIASTA w ofercie; przy 3 miastach (= minMiastPoOddaniu)
     // nie ma czego oddać => brak pokoju mimo ochrony (skutek: wojna trwa do decyzji silniejszej strony).
-    eq(r.action, 'offer_rejected', '7c: chroniony przegrywajacy z 3 miast nie kupuje pokoju (brak miasta do oddania)');
-    eq(r.plan.histogram.miasto, 0, '7c: z 3 miast (= minMiastPoOddaniu) nie oddaje zadnego');
-    ok(!log.some(x => x.ev === 'peace'), '7c: pokoj NIE sfinalizowany');
+    // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (2026-11-17): prog min. 3 miast (minMiastPoOddaniu) odpada
+    // (decyzja wlasciciela „bez progu min. 3 miast”). Limit oferty = stageCityLimit (<= maxMiastNaPokoj = 2).
+    eq(r.action, 'offer_accepted', '7c: chroniony przegrywajacy z 3 miast kupuje pokoj miastem (bez progu 3)');
+    eq(r.plan.histogram.miasto, 2, '7c: z 3 miast oddaje 2 (limit oferty = maxMiastNaPokoj), nie wiecej');
+    ok(log.some(x => x.ev === 'peace'), '7c: pokoj sfinalizowany');
   }
   // 7d. ochrona po >= ochronaUtratyWojny utratach, nawet z duza liczba miast; oddaje co najwyzej tyle, by zostalo >= minMiastPoOddaniu
   {

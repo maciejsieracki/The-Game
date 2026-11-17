@@ -37,7 +37,7 @@ Najwyższy osiągnięty poziom nie maleje (zapamiętany szczyt).
 | Chęć pokoju | 0,5 | od tego poziomu strony są skłonne do pokoju |
 | Wyjście awaryjne (wzajemny pokój) | 0,8 | gdy przegrywający odrzucił co najmniej 3 oferty (`przegrywajacy.odrzuceniaDoKapitulacji`), zwycięzca przyjmuje to, co przegrywający realnie może zapłacić (`war-weariness.ts`, warunek `exhausted`) |
 | Oferta z miastami (80%) | 0,8 | od tego poziomu AI proponuje pokój z miastami przegrywającego. Pokój bezwarunkowy przy 80% NIE istnieje (usunięty). Skala krzywej PW: `zmeczenie.progKoncaZmeczenia` |
-| Pokój wymuszony (100%) | 1,0 | wojna kończy się pokojem WYMUSZONYM (`zmeczenie.progWymuszonyPokoj`, `wearinessForcedPeaceDue`): wyraźnie przegrywający oddaje tyle miast, ile trzeba do zrównoważenia ceny pokoju; min. 3 miasta zostają, stolica nigdy nie jest oddawana |
+| Pokój wymuszony (100%) | 1,0 | wojna kończy się pokojem WYMUSZONYM (`zmeczenie.progWymuszonyPokoj`, `wearinessForcedPeaceDue`): wyraźnie przegrywający oddaje tyle miast, ile trzeba do pokrycia ceny pokoju (cena przy 100% = 0, więc pokój zapada bez miast); stolica nigdy nie jest oddawana; brak progu min. 3 miast (R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1) |
 
 Przy 100% bez wyraźnie przegrywającego (remis sił) albo przy cenie pokoju 0 pokój zostaje zawarty bez oddania miast. Gdy trwa bitwa (`battlePending`), pokój wymuszony zostaje odroczony na następną turę. Pokój wymuszony dotyczy AI↔AI oraz gracza (para gracz↔AI w wojnie). Gracz dostaje natywne okno „Pokój wymuszony” oraz wpis w „Ważne”.
 
@@ -119,7 +119,7 @@ Wojna trwa 20 tur (20/40 = 0,5), utracono 2 miasta (2 × 0,10 = 0,2). Poziom = 0
 | 0.45 | `war-weariness-params.json:przegrywajacy.progiStopni.1` |
 | 0.65 | `war-weariness-params.json:przegrywajacy.progiStopni.2` |
 | 2 | `war-weariness-params.json:przegrywajacy.maxMiastNaPokoj` |
-| 3 | `war-weariness-params.json:przegrywajacy.minMiastPoOddaniu` |
+| 3 | `war-weariness-params.json:przegrywajacy.minMiastPoOddaniu` (martwy parametr od R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1; nie steruje ofertami) |
 | 0.2 | `war-weariness-params.json:przegrywajacy.mnoznikNaOdrzucenie` |
 | 3 | `war-weariness-params.json:przegrywajacy.cooldownOfertTur` |
 | 3 | `war-weariness-params.json:przegrywajacy.ochronaMaxMiast` |

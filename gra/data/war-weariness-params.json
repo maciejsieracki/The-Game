@@ -7,11 +7,11 @@
     "progChetnosci": 0.5,
     "progWzajemnyPokoj": 0.8,
     "progKoncaZmeczenia": 0.8,
-    "_progi": "progChetnosci=0,5 (chec pokoju); progWzajemnyPokoj=0,8 (wyjscie awaryjne po odrzuceniach); progKoncaZmeczenia=0,8 - WYLACZNIE skala krzywej PW (wearinessPeaceX: x=0 przy progChetnosci, x=1 przy progKoncaZmeczenia); progWymuszonyPokoj=1,0 (100%) - jedyny prog pokoju wymuszonego (wearinessForcedPeaceDue). Pokoj wymuszony jest zawsze platny miastami przegrywajacego (przy wyraznie przegrywajacym), nigdy bezwarunkowy.",
+    "_progi": "progChetnosci=0,5 (chec pokoju); progWzajemnyPokoj=0,8 (wyjscie awaryjne po odrzuceniach); progKoncaZmeczenia=0,8 - WYLACZNIE skala krzywej PW (wearinessPeaceX: x=0 przy progChetnosci, x=1 przy progKoncaZmeczenia); progWymuszonyPokoj=1,0 (100%) - jedyny prog pokoju wymuszonego (wearinessForcedPeaceDue). Pokoj wymuszony (R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1): cena = sekcja cenaPokoju (cenaStartPn*(1-L)); przy L=1 cena 0 = pokoj bez miast; cena>0 bez oddawalnego miasta = wojna trwa (galaz nieosiagalna przy progWymuszonyPokoj=1,0 — zmiana progu wymaga decyzji ABC). Nigdy bezwarunkowy przy progu chęci/80%.",
     "progWymuszonyPokoj": 1.0
   },
   "przegrywajacy": {
-    "_wzor": "desperacja = clamp(wagaZmeczenia*poziom + wagaSily*max(0,(udzialWyraznie-udzialSily)/udzialWyraznie) + wagaStrat*min(1,utraty/stratyNasycenie), 0, 1); stopien = liczba progow <= desperacja (progiStopni=0,25 / 0,45 / 0,65; stopnie 0..3). W ofercie tylko MIASTA (planEscalatedPeacePayment; zloto i surowce nie wchodza w oferte zmeczenia). Limit miast (stageCityLimit, war-weariness.ts:113-117): stopien 1 = 1 miasto; stopien 2 = nadal 1 miasto, wyzszy mnoznik oferty (mnozniStopni); stopien 3 = do maxMiastNaPokoj=2 miast. Limit efektywny = min(limit stopnia, miasta przegrywajacego - minMiastPoOddaniu), a 0 miast, gdy battlePending (war-weariness.ts:292-294).",
+    "_wzor": "desperacja = clamp(wagaZmeczenia*poziom + wagaSily*max(0,(udzialWyraznie-udzialSily)/udzialWyraznie) + wagaStrat*min(1,utraty/stratyNasycenie), 0, 1); stopien = liczba progow <= desperacja (progiStopni=0,25 / 0,45 / 0,65; stopnie 0..3). W ofercie tylko MIASTA (planEscalatedPeacePayment; zloto i surowce nie wchodza w oferte zmeczenia). Limit miast (stageCityLimit, war-weariness.ts:113-117): stopien 1 = 1 miasto; stopien 2 = nadal 1 miasto, wyzszy mnoznik oferty (mnozniStopni); stopien 3 = do maxMiastNaPokoj=2 miast. Limit efektywny = min(limit stopnia, miasta przegrywajacego) (R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: stały prog min. 3 miast odpadl), a 0 miast, gdy battlePending (war-weariness.ts:292-294).",
     "udzialWyraznie": 0.45,
     "wagaZmeczenia": 0.5,
     "wagaSily": 0.5,
@@ -30,6 +30,7 @@
     ],
     "mnoznikNaOdrzucenie": 0.2,
     "maxMiastNaPokoj": 2,
+    "_minMiastPoOddaniu": "NIEUZYWANY w kodzie od R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (decyzja wlasciciela 2026-11-17: prog min. 3 miast odpada). Pole zostaje jako martwy parametr do osobnego sprzatania (interfejs war-weariness.ts, testy).",
     "minMiastPoOddaniu": 3,
     "cooldownOfertTur": 3,
     "_wyczerpanie": "Wyjscie awaryjne (zarzut 2): gdy szczyt zmeczenia >= progWzajemnyPokoj i odrzucono >= odrzuceniaDoKapitulacji ofert, wygrywajacy (rowniez wyczerpany) przyjmuje to, co przegrywajacy realnie moze zaplacic (nawet czesciowo) - pokoj nie jest blokowany niedoborem majatku.",
@@ -43,6 +44,10 @@
     "tolerancjaZmeczenia": 0.5,
     "karencjaPoPokojuTur": 40,
     "karencjaChronionegoTur": 100
+  },
+  "cenaPokoju": {
+    "_opis": "R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (decyzja właściciela 2026-11-17): cena pokoju po wojnie = cenaStartPn × (1 − L), L = poziom zmęczenia wojną pary (0..1). Na starcie wojny ok. 3 miasta przegrywającego (≈ 6000 PN); przy L = 1 cena 0 (pokój bez oddania miasta). Funkcja: war-weariness.ts wearinessPeaceCashPn.",
+    "cenaStartPn": 6000
   },
   "czlowiek": {
     "_opis": "AI przegrywajace z graczem: oferuj_miasto_za_pokoj - prog rw rosnie o rwProgBonusMax*desperacja, min. miast AI spada do minMiastAi (gracz decyduje o przyjeciu).",
