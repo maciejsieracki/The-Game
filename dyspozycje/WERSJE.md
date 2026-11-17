@@ -1,3 +1,9 @@
+## ROBOCZA 39da9ed2 -- 2026-11-17 -- FALA 804: Toast Zasadzka sie powiodla od razu takze z fazy AI (testowa)
+
+- main.ts: showHintMessage z flaga showNowDuringEot - toast zasadzki (AI->gracz i barbarzynca->gracz) pokazuje sie od razu, wpis w Wazne zostaje; test ambush-live (Chromium) w repo
+- Weryfikacja: tsc 0; ambush-core 48/0, ui-reason 10/0, wiring 28/0, realstep 16/0; ambush-live Chromium 26/0 (B5 zielony), mutacja czerwona; logic 213/213; unit-replace 21/21; combat 6/6
+- Limity: NIE ZMIERZONO: widocznosc wizualna toastu pod nakladka przejscia tury (test sprawdza DOM); merge z main cc3c80b17 bez konfliktu
+
 ## ROBOCZA 36609bb7 -- 2026-11-17 -- FALA 803: Preset playtest=mapa: prognoza Zakoncz ture od tury 1 (markCityStateDirty) (testowa)
 
 - main.ts: markCityStateDirty() po dodaniu miast presetu w doStartPlaytestMapaSwiata (tylko sciezka testowa playtest=mapa); test statyczny obu presetow
