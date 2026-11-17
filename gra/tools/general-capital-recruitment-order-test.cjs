@@ -187,6 +187,14 @@ async function loadRealSources() {
   }
 }
 
+/** Definicja pierwszej Super-jednostki z REALNYCH danych (data/units.json), nie wpisana na sztywno. */
+function firstSuperUnitDef() {
+  const list = JSON.parse(fs.readFileSync(path.resolve(GRA, 'data', 'units.json'), 'utf8'));
+  const def = (Array.isArray(list) ? list : []).find(u => u['Super-jednostka'] === 'TAK');
+  if (!def) throw new Error('data/units.json: brak definicji Super-jednostki');
+  return def;
+}
+
 function makeHarness(stubOverrides = {}) {
   const city = { id: 'capital', ownerId: 0, name: 'Ateny', q: 0, r: 0, population: 10, manpower: 1_000_000, surowce: { drewno: 40 } };
   const cities = [city];
@@ -279,12 +287,14 @@ function makeHarness(stubOverrides = {}) {
   };
   const productionPurchase = extractBackend({ ...deps, ...stubOverrides });
   return {
-    city, cities, data, offer, cityProd,
+    city, cities, data, offer, cityProd, units,
     purchase: (...args) => productionPurchase(...args),
     setManpowerCost: value => { manpowerCost = value; },
     setEra: value => { era = value; },
     // A living commander standing on the capital hex (real position/type, so it counts for the stack limit).
     addLivingGeneral: () => { units.push({ id: `general-${units.length + 1}`, typeId: 'Wojownik', ownerId: 0, isGeneral: true, q: city.q, r: city.r }); },
+    // Own non-General unit standing on the capital hex (counts for the stack limit; not a General).
+    addUnit: typeId => { units.push({ id: `unit-${units.length + 1}`, typeId, ownerId: 0, isGeneral: false, q: city.q, r: city.r }); },
     snapshot: () => ({
       treasury,
       manpower: city.manpower,
@@ -443,6 +453,39 @@ async function browserCardTransaction(harness) {
     check('besieged capital rejects a General purchase without any resource or queue change',
       siegeRejected === false && afterSiege.queue.length === 0 && afterSiege.transactions === 0
         && afterSiege.treasury === 100, afterSiege);
+    // GENCAP-LIMITS: limit stosu i limit Super-jednostki. Liczby czytane z kodu: REAL.MAX_PER_SIDE (battleScene.ts),
+    // definicja Super-jednostki z data/units.json. Nie są wpisane na sztywno.
+    check('stack limit constant read from battleScene.ts is a usable integer', Number.isInteger(REAL.MAX_PER_SIDE) && REAL.MAX_PER_SIDE > 1, REAL.MAX_PER_SIDE);
+    const stackLimit = REAL.MAX_PER_SIDE;
+    const belowLimit = makeHarness();
+    for (let i = 0; i < stackLimit - 1; i++) belowLimit.addUnit('Wojownik');
+    const belowAccepted = belowLimit.purchase('capital', 'Wojownik', 5, 0, 1);
+    check('stack limit: a purchase is accepted while the capital hex holds limit-1 own units',
+      belowAccepted === true && belowLimit.snapshot().queue.length === 1, belowLimit.snapshot());
+    const fullStack = makeHarness();
+    for (let i = 0; i < stackLimit; i++) fullStack.addUnit('Wojownik');
+    const fullRejected = fullStack.purchase('capital', 'Wojownik', 5, 0, 1);
+    const afterFullStack = fullStack.snapshot();
+    check('stack limit: a purchase is rejected when the capital hex is at the limit, without resource or queue change',
+      fullRejected === false && afterFullStack.treasury === 100 && afterFullStack.manpower === 1_000_000
+        && afterFullStack.wood === 40 && afterFullStack.queue.length === 0 && afterFullStack.transactions === 0, afterFullStack);
+    const superDef = firstSuperUnitDef();
+    const superFree = makeHarness({ data: { units: [superDef] } });
+    const superFreeAccepted = superFree.purchase('capital', superDef['Jednostka'], 5, 0, 1);
+    check('super-unit: the first copy of a Super-jednostka is accepted when none is alive or queued',
+      superFreeAccepted === true && superFree.snapshot().queue.length === 1, superFree.snapshot());
+    const superAlive = makeHarness({ data: { units: [superDef] } });
+    superAlive.addUnit(superDef['Jednostka']);
+    const aliveRejected = superAlive.purchase('capital', superDef['Jednostka'], 5, 0, 1);
+    const afterAlive = superAlive.snapshot();
+    check('super-unit: a second copy is rejected while one is alive, without resource or queue change',
+      aliveRejected === false && afterAlive.treasury === 100 && afterAlive.manpower === 1_000_000
+        && afterAlive.wood === 40 && afterAlive.queue.length === 0 && afterAlive.transactions === 0, afterAlive);
+    const superBatch = makeHarness({ data: { units: [superDef] } });
+    const batchRejected = superBatch.purchase('capital', superDef['Jednostka'], 5, 0, 2);
+    const afterBatch = superBatch.snapshot();
+    check('super-unit: a batch of two copies is rejected by the one-per-civilization limit',
+      batchRejected === false && afterBatch.treasury === 100 && afterBatch.queue.length === 0 && afterBatch.transactions === 0, afterBatch);
     console.log(`\ngeneral-capital-recruitment-order-test: ${failures === 0 ? 'PASS' : 'FAIL'} (${failures} failures)`);
     process.exitCode = failures ? 1 : 0;
   } catch (error) {

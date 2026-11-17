@@ -1,0 +1,43 @@
+{
+  "kroki": {
+    "H2_E0_playtest_t1_przed": {
+      "bramkaBlokuje": false,
+      "komunikat": "",
+      "skarbiec": 5000,
+      "spichlerzZywy": 0,
+      "prognoza": null
+    },
+    "H2_hak_forceGateRecompute_dostepny": true,
+    "H2_E1_playtest_t1_po_forceGateRecompute": {
+      "bramkaBlokuje": true,
+      "komunikat": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 46. Pomogą: podatek złota: +28 złot",
+      "skarbiec": 5000,
+      "spichlerzZywy": 0,
+      "prognoza": {
+        "tura": 1,
+        "spichlerzPo": -48,
+        "skarbiecPo": 4907
+      }
+    },
+    "H2_tura_przed_endTurn": 1,
+    "KONTROLA_newgame_po_foundFirstCity": {
+      "found": true,
+      "bramkaBlokuje": true,
+      "komunikat": "Nie można zakończyć tury. Skarbiec (złoto): po zakończeniu tury zabraknie 2. Pomogą: podatek złota: +6 złota/turę; obniż",
+      "skarbiec": 0,
+      "spichlerzZywy": 0,
+      "prognoza": {
+        "tura": 1,
+        "spichlerzPo": -4,
+        "skarbiecPo": -2
+      }
+    }
+  },
+  "bledy": [],
+  "konsola": [
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)"
+  ]
+}

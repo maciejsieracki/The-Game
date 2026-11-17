@@ -1,0 +1,59 @@
+{
+  "mode": "Bplay",
+  "kroki": {
+    "resume_od_tury": 2,
+    "log": [
+      {
+        "przed": 2,
+        "po": 3,
+        "przeszedl": true,
+        "blokadaPrzed": "nie",
+        "spichlerzUstawiony": null,
+        "miastaGracza": 1
+      },
+      {
+        "przed": 3,
+        "po": 3,
+        "przeszedl": false,
+        "blokadaPrzed": "nie",
+        "spichlerzUstawiony": null,
+        "miastaGracza": 1
+      },
+      {
+        "przed": 3,
+        "po": 3,
+        "przeszedl": false,
+        "blokadaPrzed": "nie",
+        "spichlerzUstawiony": null,
+        "miastaGracza": 1
+      },
+      {
+        "przed": 3,
+        "po": 3,
+        "przeszedl": false,
+        "blokadaPrzed": "nie",
+        "spichlerzUstawiony": null,
+        "miastaGracza": 1
+      }
+    ],
+    "przed_zapisem_tura": 3,
+    "przed_zapisem_stan": {
+      "tura": 3,
+      "miastaGracza": 1,
+      "bramkaBlokuje": false,
+      "komunikat": "",
+      "skarbiec": 4810,
+      "spichlerzZywy": 338,
+      "prognozaCache": {
+        "tura": 3,
+        "spichlerzObecny": 338,
+        "spichlerzPo": 292,
+        "skarbiecPo": 4713
+      },
+      "ja": 0
+    }
+  },
+  "bledy": [],
+  "walidacja": {},
+  "konsolaNns": []
+}

@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "a07725de362849c3d214c05e1dbebed4",
-  "bundleSha256": "78a2a58a6625a156259fda07e643636e2a0d9af59e4f621dc7d666391b909d70",
-  "bundleBytes": 14848111,
+  "bundleMd5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+  "bundleSha256": "0ed326fdfecc076ec3f8693e7ee77a0176070a1d07b8ac274254b9aaaa9f6a1c",
+  "bundleBytes": 14851529,
   "sourceSnapshot": {
-    "source": "main bbaa3b27c + merge FC b4768c224",
+    "source": "R-WEB-UI-BATTLE-3D-SIDE-COLORS-BLUE-RED-Q1 r1 bc2f5fe6f, main 76a1739fd",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 790: R-WEB-UI-TECH-DISCOVERY-BADGE-ELLIPSE-OVERLAP-Q1 (r1, FC PASS-WITH-NOTES b4768c224): w oknie odkrycia technologii elipsa gruntu diorama przesunieta (bottom 63px -> 70px, jedna linia CSS), odznaki Ukonczona/Podglad nie nachodza na medalion ani elipse (przed: 120x7 i 58x7 px, po: 0); tresc, kolory i rozmiary bez zmian"
+    "FALA 799: Modele i awatary jednostek w bitwie 3D malowane wg strony: gracz niebieski (#3a6ad0), przeciwnik czerwony (#c84040), w roli atakujacego i broniacego, takze w bitwie polowej z mapy (broniacy sie gracz dostaje faze rozstawienia i bramke dowodcy jak w pozostalych sciezkach); pierscienie grupy zostaja zlote"
   ],
   "verification": [
-    "tsc 0; tech-discovery-badge-diorama 63 PASS/0 FAIL (baza 62/1); 5 bramek zielone; entity-card-diorama 45/0, technology-discovery-card-visual 48/0, tech-discovery-card-click 13/0, real-click 12/0, resource-chips 6/0, civpedia-karty-spojnosc 24/0; Chromium: 24 zrzuty przed/po (2 rozdzielczosci, 3 technologie), obejrzane (FC: 1 zrzut po obejrzany osobno); mutacja (cofniecie do 63px) czerwona"
+    "tsc 0; logic 213/213; battle-side-colors-3d (A-D) OK; battle-tempo-minimap-brand OK; hp-display 7/7; damage-colors 28/0; map-field-battle 24/0; zywy Chromium xvfb 5 przypadkow, 118 niebieskich / 118 czerwonych / 0 zlotych; mutacje czerwienia test; FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "NIE ZMIERZONO: pozostale ok. 29 technologii poza lista TECHS testu; bisekt sprawcy 57d1c7d3b. Przedistniejace czerwone na bazie: wydarzenia-zbadano-karta-tech-real-render, era-change-toast-live, ai-economy-measure-hook"
+    "NIE ZMIERZONO: porownanie z bazowym commitem, mgla-sciezka-inwariant; test statyczny sekcje A-C to regex po zrodle; dlug Rust: REPIN palety stron 3D"
   ],
-  "finalControl": "R-WEB-UI-TECH-DISCOVERY-BADGE-ELLIPSE-OVERLAP-Q1 r1 FC PASS-WITH-NOTES b4768c224",
+  "finalControl": "R-WEB-UI-BATTLE-3D-SIDE-COLORS-BLUE-RED-Q1 r1 FC PASS-WITH-NOTES bc2f5fe6f",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T06:32:19",
+  "hubGeneratedAt": "2026-11-17T15:49:23",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "a07725de362849c3d214c05e1dbebed4",
-      "sizeBytes": 14848111
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "a07725de362849c3d214c05e1dbebed4",
-      "sizeBytes": 14848111
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "a07725de362849c3d214c05e1dbebed4",
-      "sizeBytes": 14848111
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "a07725de362849c3d214c05e1dbebed4",
-      "sizeBytes": 14848111
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "a07725de362849c3d214c05e1dbebed4",
-      "sizeBytes": 14848111
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "a07725de362849c3d214c05e1dbebed4",
-      "sizeBytes": 14848111
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "a07725de362849c3d214c05e1dbebed4",
-      "sizeBytes": 14848111
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "a07725de362849c3d214c05e1dbebed4",
-      "sizeBytes": 14848111
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "a07725de362849c3d214c05e1dbebed4",
-      "sizeBytes": 14848111
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "a07725de362849c3d214c05e1dbebed4",
-      "sizeBytes": 14848111
+      "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
+      "sizeBytes": 14851529
     }
   ],
-  "md5": "a07725de362849c3d214c05e1dbebed4",
+  "md5": "a7f0ad697cdb71eb30fede53f51fb6ee",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

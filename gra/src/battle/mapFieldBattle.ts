@@ -545,6 +545,10 @@ export function launchFieldBattleFromMap(
         teren: plan.terrain,
         data: deps.battleData,
         deploy: true,
+        // R-WEB-UI-BATTLE-3D-SIDE-COLORS-BLUE-RED-Q1: rola gracza w scenie 3D (kolor niebieski = gracz).
+        // Gdy gracz broni (defLead.ownerId === 0), scena musi dostać 'def'; inaczej domyślne 'atk'
+        // malowałoby gracza na czerwono. Brak gracza w obu rolach -> 'atk' (jak dotąd).
+        deployPlayerSide: defLead.ownerId === 0 && atkLead.ownerId !== 0 ? 'def' : 'atk',
         // C-COMBAT-Q2 (Maciej 2026-07-26): to ZAWSZE obrona miasta BEZ MURU
         // (validateOpenCityFieldBattle odrzuca city.maMur) -- battleScene.ts
         // gate'uje bonus terenu (Wzgorza/Gory) na obrone miasta wylacznie gdy

@@ -22,7 +22,7 @@ function fromGame(raw) {
     Przebicie: raw['Przebicie'] / 10,
     Pancerz: raw['Pancerz'] / 10,
     Szarza: raw['Uderzenie'] / 10,
-    Zdrowie: raw['Health'],
+    Zdrowie: raw['health'],
     AtakDyst: (raw['Atak dystansowy'] || 0) / 10,
     Pociski: raw['Ilość pocisków'] || 0,
   };
@@ -190,7 +190,7 @@ function adaptUnit(raw) {
     Uderzenie: raw['Uderzenie'],
     Pancerz: raw['Pancerz'],
     Przebicie: raw['Przebicie'],
-    Health: raw['Health'],
+    Health: raw['health'],
     'Prog dezercji (% health)': raw['Próg dezercji (% health)'],
     'Atak dystansowy': raw['Atak dystansowy'] || 0,
     'Ilosc pociskow': raw['Ilość pocisków'] || '—',

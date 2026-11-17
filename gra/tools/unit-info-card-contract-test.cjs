@@ -29,7 +29,7 @@ function ok(condition, message) {
 const hastati = units.find(u => u.Jednostka === 'Hastati');
 ok(!!hastati, 'Hastati istnieje w units.json');
 const required = [
-  'Jednostka', 'Epoka', 'Tech', 'Typ', 'Atak', 'Obrona', 'Health', 'Ruch',
+  'Jednostka', 'Epoka', 'Tech', 'Typ', 'Atak', 'Obrona', 'health', 'Ruch',
   'Zasięg ataku (hex)', 'Pieniądz (koszt)', 'Utrzymanie (Pieniądz/turę)',
   'Surowiec', 'Surowiec (ilość)', 'Utrzymanie surowiec',
   'Utrzymanie surowiec (ilość)',

@@ -1,0 +1,586 @@
+{
+  "runs": {
+    "P1-rowne-pewne-s1|manual": {
+      "cfg": {
+        "id": "P1-rowne-pewne-s1",
+        "pt": "bitwa-duza",
+        "seed": 1,
+        "hit": "pewne",
+        "ratioLabel": "1:1 (28 vs 28, mieszana)"
+      },
+      "mode": "manual",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 1,
+        "rToggle": false,
+        "skipClick": false
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 15,
+        "manualAtEnd": true,
+        "wallBreached": false,
+        "atk": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 16,
+          "remaining": 12,
+          "hp": 381,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "P1-rowne-pewne-s1|auto": {
+      "cfg": {
+        "id": "P1-rowne-pewne-s1",
+        "pt": "bitwa-duza",
+        "seed": 1,
+        "hit": "pewne",
+        "ratioLabel": "1:1 (28 vs 28, mieszana)"
+      },
+      "mode": "auto",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 0,
+        "rToggle": true,
+        "skipClick": false
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 19,
+        "manualAtEnd": false,
+        "wallBreached": false,
+        "atk": {
+          "total": 28,
+          "lost": 11,
+          "remaining": 17,
+          "hp": 472,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    },
+    "P1-rowne-pewne-s1|skip": {
+      "cfg": {
+        "id": "P1-rowne-pewne-s1",
+        "pt": "bitwa-duza",
+        "seed": 1,
+        "hit": "pewne",
+        "ratioLabel": "1:1 (28 vs 28, mieszana)"
+      },
+      "mode": "skip",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "fallback-metoda"
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 19,
+        "manualAtEnd": false,
+        "wallBreached": false,
+        "atk": {
+          "total": 28,
+          "lost": 10,
+          "remaining": 18,
+          "hp": 512,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    },
+    "P2-rowne-losowe-s1|manual": {
+      "cfg": {
+        "id": "P2-rowne-losowe-s1",
+        "pt": "bitwa-duza",
+        "seed": 1,
+        "hit": "losowe",
+        "ratioLabel": "1:1 (28 vs 28, mieszana)"
+      },
+      "mode": "manual",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 1,
+        "rToggle": false,
+        "skipClick": false
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 17,
+        "manualAtEnd": true,
+        "wallBreached": false,
+        "atk": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 18,
+          "remaining": 10,
+          "hp": 346,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "P2-rowne-losowe-s1|auto": {
+      "cfg": {
+        "id": "P2-rowne-losowe-s1",
+        "pt": "bitwa-duza",
+        "seed": 1,
+        "hit": "losowe",
+        "ratioLabel": "1:1 (28 vs 28, mieszana)"
+      },
+      "mode": "auto",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 0,
+        "rToggle": true,
+        "skipClick": false
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 29,
+        "manualAtEnd": false,
+        "wallBreached": false,
+        "atk": {
+          "total": 28,
+          "lost": 10,
+          "remaining": 18,
+          "hp": 486,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    },
+    "P2-rowne-losowe-s1|skip": {
+      "cfg": {
+        "id": "P2-rowne-losowe-s1",
+        "pt": "bitwa-duza",
+        "seed": 1,
+        "hit": "losowe",
+        "ratioLabel": "1:1 (28 vs 28, mieszana)"
+      },
+      "mode": "skip",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "fallback-metoda"
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 30,
+        "manualAtEnd": false,
+        "wallBreached": false,
+        "atk": {
+          "total": 28,
+          "lost": 13,
+          "remaining": 15,
+          "hp": 472,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    },
+    "P3-rowne-losowe-s2|manual": {
+      "cfg": {
+        "id": "P3-rowne-losowe-s2",
+        "pt": "bitwa-duza",
+        "seed": 2,
+        "hit": "losowe",
+        "ratioLabel": "1:1 (28 vs 28, mieszana)"
+      },
+      "mode": "manual",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 1,
+        "rToggle": false,
+        "skipClick": false
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 30,
+        "manualAtEnd": true,
+        "wallBreached": false,
+        "atk": {
+          "total": 28,
+          "lost": 10,
+          "remaining": 18,
+          "hp": 537,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    },
+    "P3-rowne-losowe-s2|auto": {
+      "cfg": {
+        "id": "P3-rowne-losowe-s2",
+        "pt": "bitwa-duza",
+        "seed": 2,
+        "hit": "losowe",
+        "ratioLabel": "1:1 (28 vs 28, mieszana)"
+      },
+      "mode": "auto",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 0,
+        "rToggle": true,
+        "skipClick": false
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 16,
+        "manualAtEnd": false,
+        "wallBreached": false,
+        "atk": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 11,
+          "remaining": 17,
+          "hp": 639,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "P3-rowne-losowe-s2|skip": {
+      "cfg": {
+        "id": "P3-rowne-losowe-s2",
+        "pt": "bitwa-duza",
+        "seed": 2,
+        "hit": "losowe",
+        "ratioLabel": "1:1 (28 vs 28, mieszana)"
+      },
+      "mode": "skip",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "fallback-metoda"
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 18,
+        "manualAtEnd": false,
+        "wallBreached": false,
+        "atk": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 12,
+          "remaining": 16,
+          "hp": 522,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "P4-rowne-losowe-s3|manual": {
+      "cfg": {
+        "id": "P4-rowne-losowe-s3",
+        "pt": "bitwa-duza",
+        "seed": 3,
+        "hit": "losowe",
+        "ratioLabel": "1:1 (28 vs 28, mieszana)"
+      },
+      "mode": "manual",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 1,
+        "rToggle": false,
+        "skipClick": false
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 20,
+        "manualAtEnd": true,
+        "wallBreached": false,
+        "atk": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 14,
+          "remaining": 14,
+          "hp": 477,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "P4-rowne-losowe-s3|auto": {
+      "cfg": {
+        "id": "P4-rowne-losowe-s3",
+        "pt": "bitwa-duza",
+        "seed": 3,
+        "hit": "losowe",
+        "ratioLabel": "1:1 (28 vs 28, mieszana)"
+      },
+      "mode": "auto",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 0,
+        "rToggle": true,
+        "skipClick": false
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 26,
+        "manualAtEnd": false,
+        "wallBreached": false,
+        "atk": {
+          "total": 28,
+          "lost": 4,
+          "remaining": 24,
+          "hp": 769,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    },
+    "P4-rowne-losowe-s3|skip": {
+      "cfg": {
+        "id": "P4-rowne-losowe-s3",
+        "pt": "bitwa-duza",
+        "seed": 3,
+        "hit": "losowe",
+        "ratioLabel": "1:1 (28 vs 28, mieszana)"
+      },
+      "mode": "skip",
+      "start": {
+        "atkTotal": 28,
+        "defTotal": 28,
+        "atkHp": 1028,
+        "defHp": 1048,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "fallback-metoda"
+      },
+      "res": {
+        "winner": "atakujacy",
+        "round": 27,
+        "manualAtEnd": false,
+        "wallBreached": false,
+        "atk": {
+          "total": 28,
+          "lost": 3,
+          "remaining": 25,
+          "hp": 829,
+          "hpMax": 1028
+        },
+        "def": {
+          "total": 28,
+          "lost": 28,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 1048
+        },
+        "endText": [
+          "Zwycięstwo"
+        ]
+      },
+      "errors": []
+    }
+  },
+  "meta": {
+    "chromium": "/usr/bin/chromium",
+    "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-r2",
+    "runda": 2,
+    "note": "driver reczny = klik Start walki + Space; AUTO = klawisz R; skip = przycisk Pomin"
+  }
+}

@@ -309,9 +309,9 @@ function num(v: unknown, fallback: number): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
-/** Max HP from units.json row (TW `health`, fallback legacy `Health`), min 1. */
+/** Max HP from units.json row (jedyne pole zdrowia: `health`), min 1. */
 function rowHealth(row: any): number {
-  return Math.max(1, Math.round(num(row?.health ?? row?.['Health'], 10)));
+  return Math.max(1, Math.round(num(row?.health, 10)));
 }
 
 // ---------------------------------------------------------------------------

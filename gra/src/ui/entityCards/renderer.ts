@@ -182,6 +182,7 @@ function buildGridRowEl(row: EntityCardData['sections'][number]['rows'][number])
   }
   const valIsLink = row.linkTo != null && !anchorOnLabel;
   const val = el(valIsLink ? 'button' : 'span', 'entity-card-row-value');
+  if (row.hint) val.title = row.hint;
   if (row.valueParts && row.valueParts.length > 0) {
     // Proza z surowcami: tekst jako text node, surowiec jako ikona (chip bez liczby).
     for (const part of row.valueParts) {

@@ -1,0 +1,80 @@
+{
+  "mode": "chain",
+  "seed": 4242,
+  "turns": 2,
+  "extra": 1,
+  "slot": "nns-r3-s4242-t2-x1",
+  "kroki": {
+    "t1_przed_zdarzeniem": {
+      "tura": 1,
+      "miastaGracza": 1,
+      "bramkaBlokuje": false,
+      "komunikat": "",
+      "skarbiec": 5000,
+      "spichlerzZywy": 0,
+      "prognoza": null
+    },
+    "extra_miasta_ids": [
+      "city2"
+    ],
+    "t1_po_zalozeniu_miasta": {
+      "tura": 1,
+      "miastaGracza": 2,
+      "bramkaBlokuje": true,
+      "komunikat": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 35. Pomogą: podatek złota: +31 złota/turę; obniżka racji żywności: +67 żywn",
+      "skarbiec": 5000,
+      "spichlerzZywy": 0,
+      "prognoza": {
+        "tura": 1,
+        "skarbiecPo": 4909,
+        "spichlerzObecny": 0,
+        "spichlerzPo": -48
+      }
+    },
+    "t1_przed_endTurn": {
+      "tura": 1,
+      "miastaGracza": 2,
+      "bramkaBlokuje": true,
+      "komunikat": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 35. Pomogą: podatek złota: +31 złota/turę; obniżka racji żywności: +67 żywn",
+      "skarbiec": 5000,
+      "spichlerzZywy": 0,
+      "prognoza": {
+        "tura": 1,
+        "skarbiecPo": 4909,
+        "spichlerzObecny": 0,
+        "spichlerzPo": -48
+      }
+    },
+    "endTurn_po": {
+      "przed": 1,
+      "po": 1,
+      "przeszedl": false,
+      "canEndPrzed": false,
+      "modaleZamkniete": []
+    },
+    "t2_po_endTurn": {
+      "tura": 1,
+      "miastaGracza": 2,
+      "bramkaBlokuje": true,
+      "komunikat": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 35. Pomogą: podatek złota: +31 złota/turę; obniżka racji żywności: +67 żywn",
+      "skarbiec": 5000,
+      "spichlerzZywy": 0,
+      "prognoza": {
+        "tura": 1,
+        "skarbiecPo": 4909,
+        "spichlerzObecny": 0,
+        "spichlerzPo": -48
+      }
+    }
+  },
+  "log": [],
+  "bledy": [],
+  "konsolaNns": [
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)"
+  ]
+}

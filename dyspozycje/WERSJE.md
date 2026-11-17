@@ -1,3 +1,57 @@
+## ROBOCZA a7f0ad69 -- 2026-11-17 -- FALA 799: Kolory stron w widoku 3D bitwy: gracz niebieski, przeciwnik czerwony (SIDE3D) (testowa)
+
+- Modele i awatary jednostek w bitwie 3D malowane wg strony: gracz niebieski (#3a6ad0), przeciwnik czerwony (#c84040), w roli atakujacego i broniacego, takze w bitwie polowej z mapy (broniacy sie gracz dostaje faze rozstawienia i bramke dowodcy jak w pozostalych sciezkach); pierscienie grupy zostaja zlote
+- Weryfikacja: tsc 0; logic 213/213; battle-side-colors-3d (A-D) OK; battle-tempo-minimap-brand OK; hp-display 7/7; damage-colors 28/0; map-field-battle 24/0; zywy Chromium xvfb 5 przypadkow, 118 niebieskich / 118 czerwonych / 0 zlotych; mutacje czerwienia test; FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: porownanie z bazowym commitem, mgla-sciezka-inwariant; test statyczny sekcje A-C to regex po zrodle; dlug Rust: REPIN palety stron 3D
+
+## ROBOCZA b0cbbd36 -- 2026-11-17 -- FALA 798: Baner bitwy nie zaslania przyciskow (WYCOFAJ SIE) przy 1024x640 (BANNER) (testowa)
+
+- Baner dowodcy w bitwie jest pozycjonowany z prawdziwych rectow gornego paska i rostera (_syncCommanderPanelLayout): zostaje w srodku gornego rzedu gdy skala >=0,7, inaczej schodzi pod pasek; przy 1024x640, 1280x720 i 1440x900 nie przecina WYCOFAJ SIE, Ustawien ani Pomin (67984086e)
+- Weryfikacja: battle-banner-retreat-overlap-live-test 6/6 w 1024x640, 1280x720, 1440x900 (przed poprawka FAIL; mutant 4/2 RED), battle-tempo-minimap-brand OK, hp-display 7/7, damage-colors 28/0, ambush-ui-reason 10/0, logic 213/213, tsc 0, build OK; NIE ZMIERZONO: tryb AUTO i faza rozstawiania, zmiana tresci banera lub rozmiaru okna w trakcie bitwy
+- Limity: Przy 1024x640 baner pod paskiem zaslania gorny fragment pola bitwy (y 82-157); przy 1280 i 1440 baner zachodzi na pusta ramke rostera (ok. 42x9 px i 41x29 px)
+
+## ROBOCZA 1b3aa52f -- 2026-11-17 -- FALA 797: Hak testowy odmowy AI wobec rozejmu gracza (HOOKAI) (testowa)
+
+- Hak testowy widoczny tylko przy ?civtest (forceAiTruceDecisionForTest, playerProposeTruceForTest, resolveAiAwaitingForTest) pozwala wymusic decyzje AI na propozycje rozejmu gracza; domyslne zachowanie AI bez zmian; diplo-truce-live-test ma asercje L4 odmowy AI (9c8b13cb7); zero zmian w rozgrywce produkcyjnej
+- Weryfikacja: diplo-truce r1 31/0, r4-ai 24/0, until-turn 15/0, impl 94/0, zywy Chromium diplo-truce-live 40/0, mutacje hak-ignorowany i reject->accept czerwienieja, logic 213/213, tsc 0, build OK; NIE ZMIERZONO: Chromium bez ?civtest (dowod produkcji tylko statyczny), live na bazie
+- Limity: Zmiana tylko w gra/src/main.ts pod isCivTestEnabled (+33 linie); w produkcji hak = undefined
+
+## ROBOCZA 99946b6d -- 2026-11-17 -- FALA 796: Kolory obrazen w bitwie: przeciwnik niebieski, gracz czerwony (DMGCOLORS) (testowa)
+
+- Obrazenia i straty przeciwnika w bitwie sa niebieskie (#8fb6e0; etykiety, kafel Straty wroga na ekranie wyniku, obwodka zniszczonej jednostki przeciwnika w podsumowaniu), jednostek gracza czerwone (#ff7070); minimapa bez zmian; zolty pas atakujacego 3D (kolor cywilizacji gracza) bez zmian (eaef99682, merge z origin/main 1dc018474)
+- Weryfikacja: battle-damage-colors-test 28/0, zywy Chromium 1440x900 i 1024x640: 7 PASS/0 FAIL (kolory rgb(143,182,224) przeciwnik, rgb(255,112,112) gracz), battle-hp-display 7/7, battle-tempo-minimap-brand OK, tsc 0, logic 213/213, build OK; NIE ZMIERZONO: ekran wyniku i podsumowanie w Chromium, kontrast niebieskiego na jasnej trawie liczbowo (1,47:1), minimapa, Rust REPIN
+- Limity: Zolty pas atakujacego w 3D (0xffd54a = kolor cywilizacji gracza) wymaga decyzji ABC; nakladanie sie etykiet (np. -18 na -6) to zachowanie sprzed tematu; baner bitwy w 1024x640 zaslania WYCOFAJ SIE (osobny temat UI)
+
+## ROBOCZA 7e31b446 -- 2026-11-17 -- FALA 795: Zasadzka tylko z generalem (AMBGEN) (testowa)
+
+- Zasadzke moze zastawic tylko armia z generalem (przycisk zablokowany z powodem 'Zasadzke moze zastawic tylko armia z generalem.', ta sama regula w canSetAmbush dla gracza); utrata generala wygasza zasadzke stosu (reconcileAmbush); Civpedia i wikiBundle zaktualizowane; AI w tej wersji nie zastawia zasadzek, ale przyszla sciezka AI musi wolac canSetAmbush (d024ea7fe)
+- Weryfikacja: ambush-core 48/0, save-roundtrip 7/0, ui-reason 10/0, wiring 28/0, realstep 16/0, deploy-* i mgla-sciezka 42/0, logic 213/213, tsc 0, vite build OK; zywy Chromium 23 PASS/3 FAIL (B3,B5,B6 czerwone tez na bazie); zrzut elementu przycisku zablokowanego bez generala wykonany
+- Limity: Dlug bazowy ambush-live B3/B5/B6 (scenariusz AI wpada w zasadzke gracza bez zielonego dowodu zywego); sciezka rozstawienia bez generala->AUTO zostaje dla zaskoczonego gracza
+
+## ROBOCZA 3823de2e -- 2026-11-17 -- FALA 794: Jedno pole zdrowia jednostek: health (UNITSHP) (testowa)
+
+- units.json: usuniete 75 wpisow Health, zostaje jedno pole health; czytelnicy definicji przepieci na health (AI ai.ts _unitMaxHealth, HP wiezyczki oblezniczej battleScene, combat/testBattle/main/oblezenie/loader); skutek zamierzony: AI oceniala sile jednostek z maxHP z pola Health (np. Wojownik 60) a walka liczy health (22) — po zmianie AI i walka licza to samo (f761d6c73)
+- Weryfikacja: units-health-single-field-test ZIELONY (w tym wykryte mutacje), combat-test 6/6, unit-info-card-contract 23/0, archers-health-dist 10/0, logic 213/213, tsc 0, vite build OK; NIE ZMIERZONO symulacja sily AI przed/po (>=3x150 tur) ani Chromium
+- Limity: Zmiana oceny sily jednostek w AI (maxHP 60->22 dla 44 jednostek) jest zamierzona wg decyzji wlasciciela A; tools/roster6-units-patch.cjs nadpisuje units.json — nie uruchamiac bez decyzji
+
+## ROBOCZA 777228ed -- 2026-11-17 -- FALA 793: Podpowiedz utrzymania budynkow: baza x mnoznik = wynik (GARNTIP) (testowa)
+
+- W podpowiedziach utrzymania budynkow (lista miasta, karta encji, stopka i wiersz szczegolowy karty) pokazane wyjasnienie baza x mnoznik silnika = wynik, np. Garnizon 2 x 2 = 4; wartosci z funkcji silnika (economy-upkeep: buildingUpkeepBreakdown); dane i koszty bez zmian (64c7ff130)
+- Weryfikacja: garrison-upkeep-tooltip-explain 28/0, upkeep-test 91/0, budynek-garnizon 83/0, ceramics 645/0, logic 213/213, tsc 0, vite build OK; NIE ZMIERZONO tooltip w Chromium; dlug bazowy D10 building-upkeep-resources i 2 kotwice citizen-resource-upkeep (czerwone takze na bazie)
+- Limity: Wyjasnienie pojawia sie dla kazdego budynku z baza != wynik; refaktor buildingUpkeep w economy-upkeep.ts (wynik bez zmian); title bez ikon
+
+## ROBOCZA e2ba27c6 -- 2026-11-17 -- FALA 792: Lucznicy: atak dystansowy 4/5/6, silnik = karty (ARCH456) (testowa)
+
+- Atak dystansowy (missileAttack i karta) Lucznik 4 / egipski 5 / nubijski 6, silnik i karty identyczne; zdrowie lucznikow bez zmian; skutek uboczny: wiezyczka murow generycznej cywilizacji w Kamieniu strzela Lucznikiem (zasieg 3) zamiast Oszczepnikiem (remis sily 4) (0bf2244ef, merge 45068fc34)
+- Weryfikacja: archers-health-dist-data-test 10/0, city-wall-towers-test 59/0, ranged-damage-mult PASS, logic 213/213, tsc 0, vite build OK; NIE ZMIERZONO zywa gra ani symulacja walk
+- Limity: Dane lucznikow z decyzji wlasciciela; inni lucznicy (sumeryjski 4, akadyjski 6/5, asyryjski 6/4, Konnica lucznicza 12/12, Procarz 4/4) bez zmian — raport dla wlasciciela w dispatchu
+
+## ROBOCZA 2bff7522 -- 2026-11-17 -- FALA 791: Lista ulepszen terenu w kolejnosci po typach (IMPORDER) (testowa)
+
+- Lista ulepszen terenu (panel budowy + podpowiedz hexa) w stalej kolejnosci po 7 typach (22 pozycje: Rolnictwo, Hodowla, Drewno, Kamien/glina/sol, Kopalnie, Komunikacja, Obrona), dostepne zawsze u gory; tylko prezentacja (d7fca1736, merge d6ff0cc23)
+- Weryfikacja: improvements-list-order-test 11/11 (mutacja RED), logic 213/213, tsc 0 nowych bledow, vite build OK; NIE ZMIERZONO w zywym Chromium
+- Limity: Brak weryfikacji Chromium; kolejnosc zalezy od dostepnosci (tech/teren) wg istniejacej logiki
+
 ## ROBOCZA a07725de -- 2026-11-16 -- FALA 790: odznaki w oknie odkrycia technologii nie nachodza na elipse gruntu (testowa)
 
 - R-WEB-UI-TECH-DISCOVERY-BADGE-ELLIPSE-OVERLAP-Q1 (r1, FC PASS-WITH-NOTES b4768c224): w oknie odkrycia technologii elipsa gruntu diorama przesunieta (bottom 63px -> 70px, jedna linia CSS), odznaki Ukonczona/Podglad nie nachodza na medalion ani elipse (przed: 120x7 i 58x7 px, po: 0); tresc, kolory i rozmiary bez zmian

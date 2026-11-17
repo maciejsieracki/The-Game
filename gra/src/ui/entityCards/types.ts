@@ -56,6 +56,8 @@ export interface EntityCardRow {
   /** Zwykły tekst po chipach surowców (np. „/ turę", „— z magazynu państwa"). */
   resourcesSuffix?: string;
   emphasize?: boolean;
+  /** Podpowiedź (tooltip `title`) na wartości wiersza — np. wyjaśnienie „baza × mnożnik = wynik”. */
+  hint?: string;
   /** Jeśli podane — wiersz jest klikalny i otwiera kartę innej encji (T10). */
   linkTo?: { kind: EntityKind; id: string };
   /** P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1 — KTÓRY tekst wiersza NAZYWA encję z `linkTo`,

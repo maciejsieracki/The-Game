@@ -22,6 +22,7 @@ fs.writeFileSync(
   isHexOccupiedForViewer,
   resolveAmbushTrigger,
   normalizeAmbushField,
+  reconcileAmbush,
 } from '../src/game/ambush';`,
   'utf8',
 );
@@ -50,7 +51,7 @@ function ok(cond, msg) {
 function unit(over) {
   return Object.assign({
     id: 'u', ownerId: 0, typeId: 'Piechota', category: 'piechota',
-    q: 3, r: 4, ruch: 4, ruchLeft: 4,
+    q: 3, r: 4, ruch: 4, ruchLeft: 4, isGeneral: true,
   }, over);
 }
 
@@ -97,6 +98,28 @@ console.log('== 2. canSetAmbush — powody blokad po polsku');
   // Kolejność: miasto ma pierwszeństwo przed brakiem ruchu (komunikat trafny).
   const both = M.canSetAmbush([unit({ ruchLeft: 0 })], { cityOnHex: true, inBattle: false });
   ok(both.ok === false && both.reason === 'in-city', 'kolejność powodów: miasto przed brakiem ruchu');
+}
+
+console.log('== 2b. Zasadzka wymaga generała (decyzja właściciela 2026-11-17)');
+{
+  const noGen = M.canSetAmbush([unit({ isGeneral: false })], NO_CTX);
+  ok(noGen.ok === false && noGen.reason === 'no-general', 'armia BEZ generała: blokada no-general');
+  ok(noGen.message === 'Zasadzkę może zastawić tylko armia z generałem.', 'komunikat PL: „Zasadzkę może zastawić tylko armia z generałem.”');
+  const undefGen = M.canSetAmbush([unit({ isGeneral: undefined })], NO_CTX);
+  ok(undefGen.ok === false && undefGen.reason === 'no-general', 'brak pola isGeneral = nie generał (blokada)');
+  const withGen = M.canSetAmbush([unit({ isGeneral: false }), unit({ id: 'g', isGeneral: true })], NO_CTX);
+  ok(withGen.ok === true, 'stos z generałem (jednym z wielu) może zastawić');
+  const genAlone = M.canSetAmbush([unit({ isGeneral: true })], NO_CTX);
+  ok(genAlone.ok === true, 'sam generał może zastawić');
+  const noGenCity = M.canSetAmbush([unit({ isGeneral: false })], { cityOnHex: true, inBattle: false });
+  ok(noGenCity.reason === 'no-general', 'kolejność: brak generała ma pierwszeństwo przed miastem');
+  // Cykl zycia: generał zniknął z zastawionego stosu -> zasadzka wygasa dla calego stosu.
+  const gone = [unit({ id: 'k', isGeneral: false, ambush: true, ambushAt: '3,4,0' })];
+  const cleared = M.reconcileAmbush(gone, () => false);
+  ok(cleared === 1 && gone[0].ambush === undefined, 'generał odszedł, zostały tylko zwykłe jednostki: zasadzka zdjęta');
+  const keep = [unit({ id: 'g', isGeneral: true, ambush: true, ambushAt: '3,4,0' }), unit({ id: 'k', isGeneral: false, ambush: true, ambushAt: '3,4,0' })];
+  M.reconcileAmbush(keep, () => false);
+  ok(keep.every(x => x.ambush === true), 'generał obecny w zastawionym stosie: zasadzka trwa dla całego stosu');
 }
 
 console.log('== 3. Widoczność: wróg nie widzi, właściciel widzi');

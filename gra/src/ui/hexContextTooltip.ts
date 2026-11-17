@@ -7,6 +7,7 @@ import type { GameMap } from '../types/map';
 import { tileYield, type TileYield } from '../game/economy';
 import {
   IMPROVEMENT_KEYS,
+  sortTerrainImprovementsCanonical,
   improvementKeysForHex,
   improvementDisplayName,
   improvementBonusForKey,
@@ -414,7 +415,8 @@ function listTerrainPossibleImprovements(
   const nakladka = hex.nakladka;
   const zloze = (hex as { zloze?: string }).zloze;
   const out: string[] = [];
-  for (const key of IMPROVEMENT_KEYS) {
+  // R-WEB-UI-IMPROVEMENTS-LIST-ORDER-BY-TYPE-Q1: kolejność kanoniczna (7 typów), nie JSON.
+  for (const key of sortTerrainImprovementsCanonical(IMPROVEMENT_KEYS, k => k)) {
     if (active.has(key)) continue;
     if (!isImprovementAllowedForCiv(key, playerCivType)) continue;
     if (!galleryTerrainEligible(key as ImprovementKey, teren)) continue;

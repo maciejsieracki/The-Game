@@ -1090,8 +1090,12 @@ const AMMOBAR_COLOR = 0x2f7adf;         // BLUE ammo bar
 // exactly like the bars.
 //
 // Stała semantyka UI: kolor opisuje właściciela, nie rolę w walce.
+// Tokeny z battleHudTheme (BATTLE_PLAYER / BATTLE_ENEMY) -- jedno źródło prawdy
+// dla kolorów stron w HUD i w 3D: gracz niebieski, przeciwnik czerwony.
+const SIDE_COLOR_PLAYER = parseInt(BATTLE_PLAYER.slice(1), 16);
+const SIDE_COLOR_ENEMY  = parseInt(BATTLE_ENEMY.slice(1), 16);
 function sideColor(side: 'atk' | 'def', playerSide: 'atk' | 'def'): number {
-  return side === playerSide ? 0x3a6ad0 : 0xc84040;
+  return side === playerSide ? SIDE_COLOR_PLAYER : SIDE_COLOR_ENEMY;
 }
 // The coloured frame extends this far (world units) beyond the bar cluster on
 // every edge, so only a thin rim of colour is visible around the slim bars.
@@ -1118,9 +1122,9 @@ function sideTag(side: 'atk' | 'def'): string {
 // ---------------------------------------------------------------------------
 // MORALE + ROUT model (scene-side bookkeeping; resolveCombat untouched).
 //
-// units.json has no explicit "Morale" stat (its keys are Atak/Obrona/Health/
+// units.json has no explicit "Morale" stat (its keys are Atak/Obrona/health/
 // "Prog dezercji (% health)"/...), and the codebase convention (src/types/unit.ts)
-// is: morale is a 0..100 pool referenced to max Health, and a unit ROUTS when it
+// is: morale is a 0..100 pool referenced to max health, and a unit ROUTS when it
 // breaks. We therefore start every unit at MORALE_START (full) and lower the
 // CURRENT pool as it takes damage and as nearby allies die; when it drops below
 // ROUT_MORALE_THRESHOLD of its start the unit routs (flees + counts as OUT).
@@ -3443,7 +3447,7 @@ export class BattleScene {
     // pasek + pionowe słupki boczne i prawy rail 56px — USUNIĘTE (TW v5 §2/3,
     // sprzątnięcie FAZA 3): pola zawsze były `null`, siege-hud/layout rosteru
     // mają teraz stałe fallbacki zamiast opcjonalnego pola.
-    requestAnimationFrame(() => this._syncRosterColumnLayout());
+    requestAnimationFrame(() => { this._syncRosterColumnLayout(); this._syncCommanderPanelLayout(); });
     this._setSpeedIdx(this.speedIdx);
     this._refreshAudioBtns();
     this._syncManualRailHighlight();
@@ -4305,7 +4309,7 @@ export class BattleScene {
     if (this.finished || this.siegeTowers.length === 0 || !this.towerShooterRow) return;
     const shooterRow = this.towerShooterRow;
     const nazwa = String(shooterRow['Jednostka'] ?? 'Strzelec');
-    const hp = Number(shooterRow['Health'] ?? shooterRow['health'] ?? 1) || 1;
+    const hp = Number(shooterRow['health'] ?? 1) || 1;
     let stagger = 0;
     for (const t of this.siegeTowers) {
       if (t.destroyed) continue;
@@ -4594,9 +4598,9 @@ export class BattleScene {
       let group: THREE.Group;
       try {
         const modelName = String((bu.stats as any)?.['Jednostka'] ?? bu.nazwa);
-        group = buildUnitModel(bu.kategoria, bu.ownerColor, modelName);
+        group = buildUnitModel(bu.kategoria, sideColor(side, this._playerControlSide()), modelName);
       } catch (_) {
-        group = makeFallbackAvatar(bu.ownerColor);
+        group = makeFallbackAvatar(sideColor(side, this._playerControlSide()));
       }
       group.position.set(x, topY, z);
       group.rotation.y = dirYaw(faceDir);
@@ -4764,9 +4768,9 @@ export class BattleScene {
       let group: THREE.Group;
       try {
         const modelName = String((bu.stats as any)?.['Jednostka'] ?? bu.nazwa);
-        group = buildUnitModel(bu.kategoria, bu.ownerColor, modelName);
+        group = buildUnitModel(bu.kategoria, sideColor('def', this._playerControlSide()), modelName);
       } catch (_) {
-        group = makeFallbackAvatar(bu.ownerColor);
+        group = makeFallbackAvatar(sideColor('def', this._playerControlSide()));
       }
       group.position.set(x, topY, z);
       group.rotation.y = dirYaw(Dir.W); // face attacker
@@ -5501,9 +5505,9 @@ export class BattleScene {
           // key the renderer/buildNamedUnit match on); bu.nazwa now holds the
           // ENGLISH display name, so use stats['Jednostka'] for dispatch.
           const modelName = String((bu.stats as any)?.['Jednostka'] ?? bu.nazwa);
-          group = buildUnitModel(bu.kategoria, bu.ownerColor, modelName);
+          group = buildUnitModel(bu.kategoria, sideColor(side, this._playerControlSide()), modelName);
         } catch (_) {
-          group = makeFallbackAvatar(bu.ownerColor);
+          group = makeFallbackAvatar(sideColor(side, this._playerControlSide()));
         }
         // Stand on the VISIBLE top of this tile (hill summit if on a hill) so
         // the figure rests ON the terrain instead of sinking into a raised bump.
@@ -10554,7 +10558,7 @@ export class BattleScene {
     Object.assign(el.style, {
       position:      'absolute',
       pointerEvents: 'none',
-      // R-WEB-BATTLE-DAMAGE-COLORS: straty gracza czerwone, przeciwnika żółte.
+      // R-WEB-UI-BATTLE-DAMAGE-COLORS-BLUE-RED-Q1: straty gracza czerwone, przeciwnika niebieskie.
       color:         battleLossTextColor(this._isPlayerSide(ru.side)),
       fontFamily:    'sans-serif',
       fontSize:      '15px',
@@ -13113,7 +13117,7 @@ export class BattleScene {
     this._pointerDownPos = null;
   };
 
-  private readonly _onResize = (): void => { this._syncRendererSize(); };
+  private readonly _onResize = (): void => { this._syncRendererSize(); this._syncCommanderPanelLayout(); };
 
   // -------------------------------------------------------------------------
   // FAZA ROZSTAWIANIA — metody pomocnicze
@@ -15183,6 +15187,57 @@ export class BattleScene {
     this._syncSiegeHudLayout();
   }
 
+  /**
+   * Baner dowodcow (commanderPanel) nie moze zaslaniac blokow gornego paska (lewy: tura/predkosc/pauza;
+   * prawy: zebatka/Pomin do wyniku/Wycofaj sie) ani lewej kolumny rostera. Szerokosc i pozycja liczone
+   * z realnych rectow: gdy w gornym wierszu baner da sie wycentrowac przy skali >= 0,7 naturalnej szerokosci
+   * (transform: scale, max 760 px), zostaje w gornym wierszu; w przeciwnym razie schodzi pod pasek i zajmuje
+   * wolna przestrzen od prawej krawedzi rostera do prawej krawedzi okna (skala dopasowana do tej szerokosci).
+   */
+  private _syncCommanderPanelLayout(): void {
+    const panel = this._commanderPanel;
+    const bar = this._topBar;
+    if (!panel || !bar || !panel.isConnected) return;
+    const GAP = 12;
+    const MARGIN = 16;
+    const TOP_ROW_MAX = 760;
+    const TOP_ROW_MIN_SCALE = 0.7;
+    const vw = window.innerWidth;
+    const cx = vw / 2;
+    const barRect = bar.getBoundingClientRect();
+    const leftBlock = bar.children[0] as HTMLElement | undefined;
+    const rightBlock = bar.children[bar.children.length - 1] as HTMLElement | undefined;
+    const leftEdge = leftBlock ? leftBlock.getBoundingClientRect().right : 0;
+    const rightEdge = rightBlock ? rightBlock.getBoundingClientRect().left : vw;
+    const halfTop = Math.min(cx - leftEdge, rightEdge - cx) - GAP;
+    // Tresc banera (dwie karty dowodcow + zegar) ma naturalna szerokosc. Gdy nie miesci sie w wolnym
+    // miejscu, skalowany jest CALY baner (transform: scale), a nie tylko ramka: inaczej karta wychodzi
+    // poza baner i zaslania zebatke / Pomin / Wycofaj sie.
+    panel.style.transform = 'none';
+    panel.style.maxWidth = 'none';
+    const natural = panel.getBoundingClientRect().width;
+    if (natural <= 0) return;
+    const topScale = Math.min(1, Math.min(TOP_ROW_MAX, 2 * halfTop) / natural);
+    if (topScale >= TOP_ROW_MIN_SCALE) {
+      panel.style.top = '12px';
+      panel.style.left = '50%';
+      panel.style.transformOrigin = 'center top';
+      panel.style.transform = `translateX(-50%) scale(${Math.floor(topScale * 100) / 100})`;
+      return;
+    }
+    let left = MARGIN;
+    const roster = this._rosterBar;
+    if (roster && roster.isConnected) {
+      const rr = roster.getBoundingClientRect();
+      if (rr.width > 0 && rr.bottom > barRect.bottom) left = rr.right + GAP;
+    }
+    const belowAvail = Math.max(240, vw - left - MARGIN);
+    panel.style.top = Math.round(barRect.bottom + GAP / 2) + 'px';
+    panel.style.left = Math.round(left) + 'px';
+    panel.style.transformOrigin = 'left top';
+    panel.style.transform = `scale(${Math.floor(Math.min(1, belowAvail / natural) * 100) / 100})`;
+  }
+
   /** Układ kart wewnątrz bloku grupy — stałe 6 kolumn, scroll w pionie. */
   private _syncRosterGroupLayouts(deploy: boolean, availH = 0, availW = 0): number {
     const blocks = deploy ? this._deployGroupBlocks : this._battleGroupBlocks;
@@ -15247,6 +15302,7 @@ export class BattleScene {
     }
     this._syncMinimapPosition();
     this._syncRosterColumnLayout();
+    this._syncCommanderPanelLayout();
   }
 
   /** Po teardown deploy — odswiez referencje do chipow i popupow (DOM zostaje). */
@@ -18042,9 +18098,9 @@ export class BattleScene {
       let group: THREE.Group;
       try {
         const modelName = String((bu.stats as any)?.['Jednostka'] ?? bu.nazwa);
-        group = buildUnitModel(bu.kategoria, bu.ownerColor, modelName);
+        group = buildUnitModel(bu.kategoria, sideColor(side, this._playerControlSide()), modelName);
       } catch (_) {
-        group = makeFallbackAvatar(bu.ownerColor);
+        group = makeFallbackAvatar(sideColor(side, this._playerControlSide()));
       }
       group.position.set(x, topY, z);
       group.rotation.y = dirYaw(faceDir);

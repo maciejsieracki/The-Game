@@ -18,8 +18,9 @@ do zatwierdzenia. Operator AutoBota **nie stroi tych wartości samodzielnie**.
 | `NSUR(e)` | liczba surowców wymaganych w epoce e | `citizen-resource-upkeep.json → epoki[].surowce` |
 
 **UWAGA na łańcuchy ulepszeń.** Ulepszenie **usuwa** poprzednika z `builtIds`
-(`building-resource-gate.ts:357`). Miasto z kompletem ma **11 / 23 / 31** budynków, nie
-11 / 26 / 39. Liczenie poprzedników razem z ulepszeniami zawyża `BUD` i psuje całą kalibrację.
+(`building-resource-gate.ts:357`). Miasto z kompletem ma **12 / 24 / 32** budynków (katalog 44), nie
+13 / 29 / 42. Liczenie poprzedników razem z ulepszeniami zawyża `BUD` i psuje całą kalibrację.
+(Stan zweryfikowany 2026-11-17 na `gra/data/buildings.json`: zwinięte 12/24/32, bez zwijania 13/29/42.)
 
 Wartości historyczne: `BUD` = **14 / 25 / 42**, `NSUR` = **2 / 4 / 5**.
 

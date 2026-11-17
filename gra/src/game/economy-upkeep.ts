@@ -621,6 +621,49 @@ export interface BuildingInstanceLike {
   level:  number;
 }
 
+export interface BuildingUpkeepBreakdown {
+  /** Baza po zaokrągleniu do całości, przed mnożnikami (np. 2 dla Garnizonu). */
+  base: number;
+  /** R_STAWKI_FALA2_MULT — wspólny mnożnik FALA2 (stawki utrzymania). */
+  fala2Mult: number;
+  /** buildingEraCostMultiplier(epokaWejscia) — mnożnik ery wejścia budynku. */
+  eraMult: number;
+  /** Wynik końcowy = buildingUpkeep(...) (ten sam zapis co silnik). */
+  total: number;
+}
+
+/**
+ * Rozbicie utrzymania budynku na bazę i mnożniki — ŹRÓDŁO PRAWDY dla wyjaśnień w UI
+ * (R-WEB-UI-GARRISON-UPKEEP-TOOLTIP-EXPLAIN-Q1). `buildingUpkeep` deleguje tutaj,
+ * więc liczby w podpowiedzi są zawsze te same, co w silniku.
+ */
+export function buildingUpkeepBreakdown(
+  building: BuildingRecord,
+  level: number,
+  flatOverride?: number,
+): BuildingUpkeepBreakdown {
+  const lvl = level >= 1 ? level : 1;
+  let raw: number;
+  if (!Number.isFinite(building.utrzymanie)) {
+    // No per-building value in data -> flat value is a DEFAULT, not an override.
+    raw = (typeof flatOverride === 'number' && Number.isFinite(flatOverride)) ? flatOverride : 0;
+  } else {
+    const base   = building.utrzymanie;
+    const wzrost = Number.isFinite(building.przyrostUtrzymania) ? building.przyrostUtrzymania : 0;
+    raw = Math.floor(buildingEffectAtLevel(base, wzrost, lvl));
+  }
+  // Zachowujemy dotychczasowe FALA2 zaokrąglenie, następnie stosujemy wspólny
+  // mnożnik ery dokładnie raz (włącznie dla flatOverride).
+  const fala2Upkeep = Math.floor(raw * R_STAWKI_FALA2_MULT);
+  const eraMult = buildingEraCostMultiplier(building.epokaWejscia);
+  return {
+    base: raw,
+    fala2Mult: R_STAWKI_FALA2_MULT,
+    eraMult,
+    total: Math.floor(fala2Upkeep * eraMult),
+  };
+}
+
 /**
  * Gold upkeep for one building at a level (Spec s.6.1; R-UTRZYMANIE-ZROZNICOWANE
  * 2026-07-25, decyzja wlasciciela 19=A: "zadnej plaskiej stawki, kazdy budynek
@@ -642,20 +685,18 @@ export function buildingUpkeep(
   level: number,
   flatOverride?: number,
 ): number {
-  const lvl = level >= 1 ? level : 1;
-  let raw: number;
-  if (!Number.isFinite(building.utrzymanie)) {
-    // No per-building value in data -> flat value is a DEFAULT, not an override.
-    raw = (typeof flatOverride === 'number' && Number.isFinite(flatOverride)) ? flatOverride : 0;
-  } else {
-    const base   = building.utrzymanie;
-    const wzrost = Number.isFinite(building.przyrostUtrzymania) ? building.przyrostUtrzymania : 0;
-    raw = Math.floor(buildingEffectAtLevel(base, wzrost, lvl));
-  }
-  // Zachowujemy dotychczasowe FALA2 zaokrąglenie, następnie stosujemy wspólny
-  // mnożnik ery dokładnie raz (włącznie dla flatOverride).
-  const fala2Upkeep = Math.floor(raw * R_STAWKI_FALA2_MULT);
-  return Math.floor(fala2Upkeep * buildingEraCostMultiplier(building.epokaWejscia));
+  return buildingUpkeepBreakdown(building, level, flatOverride).total;
+}
+
+/**
+ * Podpowiedź „baza X × mnożnik silnika Y = Z" dla utrzymania ze złotem, gdy wyświetlana
+ * wartość Z różni się od bazy X. Y = FALA2 × mnożnik ery (te same stałe co silnik).
+ * Mnożniki są całkowite, więc X × Y = Z dokładnie. Brak różnicy → null (bez wyjaśnienia).
+ */
+export function buildingUpkeepExplanation(b: BuildingUpkeepBreakdown): string | null {
+  if (b.total === b.base) return null;
+  const mult = b.fala2Mult * b.eraMult;
+  return `Utrzymanie: baza ${b.base} × mnożnik silnika ${mult} = ${b.total} Pieniądza/turę`;
 }
 
 /** Total gold building upkeep for a set of building instances (Spec s.6.1). */

@@ -645,7 +645,8 @@ for (const name of TARGET_NAMES) {
   check(Boolean(after), `${name}: brak wpisu w units.json`);
   if (!after) continue;
 
-  for (const field of FIELDS_TO_DOUBLE) {
+  check(!hasOwn(after, "Health"), `${name}.Health: pole wycofane (jedno pole: health) — nie moze istniec`);
+  for (const field of FIELDS_TO_DOUBLE.filter((f) => f !== "Health")) {
     if (!hasOwn(before, field)) {
       check(!hasOwn(after, field), `${name}.${field}: pole nieobecne przed zmiana nie powinno zostac dodane`);
       continue;

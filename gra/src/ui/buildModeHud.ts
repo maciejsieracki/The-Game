@@ -15,6 +15,7 @@ import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
 import { openEntityCard } from './entityCards/renderer';
 import { AUTO_BUILD_DISABLED_HINT, AUTO_IMPROVE_NEEDS_ADMINISTRATOR_HINT } from '../game/auto-build-gate';
+import { sortTerrainImprovementsCanonical } from '../game/terrain-improvements';
 import { administratorIconHtml, ADMINISTRATOR_ICON_CSS } from './icons/administratorIcon';
 import { openAdministratorPanel, isAdministratorPanelOpen, type AdministratorPanelModel } from './administratorPanel';
 import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPracaPercent, UlepszeniaEmpirePolicy } from '../game/cities';
@@ -816,8 +817,15 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       const insufficientPraca = !techLocked && t.kosztPraca > pracaPool;
       const locked = techLocked || insufficientPraca;
       return { t, techLocked, insufficientPraca, locked };
-    }).sort((x, y) => Number(x.locked) - Number(y.locked));
-    for (const { t, techLocked, insufficientPraca, locked } of typesWithLock) {
+    });
+    // R-WEB-UI-IMPROVEMENTS-LIST-ORDER-BY-TYPE-Q1: dostępne na górze, w każdej grupie kolejność
+    // kanoniczna po 7 typach (terrain-improvements.ts) — zamiast samego podziału locked.
+    const typesWithLockSorted = sortTerrainImprovementsCanonical(
+      typesWithLock,
+      x => x.t.key,
+      x => x.locked,
+    );
+    for (const { t, techLocked, insufficientPraca, locked } of typesWithLockSorted) {
       const sel = t.key === active ? ' sel' : '';
       const ic = impIconHtml(t.key);
       // R-WEB-ROAD-PAVED-DIRECT-BUILD-OR-UPGRADE-Q1: brukowana pokazuje oba koszty (ulepszenie / od zera).

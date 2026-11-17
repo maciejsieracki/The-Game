@@ -1,0 +1,57 @@
+{
+  "kroki": {
+    "1_swieza_gra_tura1_przed_zapisem": {
+      "tura": 1,
+      "bramkaBlokuje": false,
+      "komunikat": "",
+      "spichlerzZywy": 0,
+      "prognozaCache": null
+    },
+    "1_quickSave_tura1": true,
+    "2_endTurn_do_tury2": {
+      "przed": 1,
+      "po": 2,
+      "przeszedl": true
+    },
+    "2_stan_tura2_po_endTurn": {
+      "tura": 2,
+      "bramkaBlokuje": true,
+      "komunikat": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 46. Pomogą: podatek złota: +23 złot",
+      "spichlerzZywy": 0,
+      "prognozaCache": {
+        "spichlerzObecny": 0,
+        "spichlerzPo": -48,
+        "turaPrognozy": 2
+      }
+    },
+    "3_po_wczytaniu_zapisu_tura1_TA_SAMA_STRONA": {
+      "tura": 1,
+      "bramkaBlokuje": true,
+      "komunikat": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 46. Pomogą: podatek złota: +28 złot",
+      "spichlerzZywy": 0,
+      "prognozaCache": {
+        "spichlerzObecny": 0,
+        "spichlerzPo": -48,
+        "turaPrognozy": 1
+      }
+    },
+    "3_endTurn_po_wczytaniu_TA_SAMA_STRONA": {
+      "przed": 1,
+      "po": 1,
+      "przeszedl": false
+    },
+    "4_kontrola_swieza_strona_po_wczytaniu_tura1": {
+      "tura": 1,
+      "bramkaBlokuje": false,
+      "komunikat": "",
+      "spichlerzZywy": 0,
+      "prognozaCache": null
+    },
+    "4_kontrola_endTurn": {
+      "przed": 1,
+      "po": 2,
+      "przeszedl": true
+    }
+  },
+  "bledyStrony": []
+}

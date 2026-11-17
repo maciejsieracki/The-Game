@@ -1,0 +1,110 @@
+{
+  "mode": "A",
+  "kroki": {
+    "E0_P1_swieza_gra_t1": {
+      "tura": 1,
+      "miastaGracza": 1,
+      "bramkaBlokuje": false,
+      "komunikat": "",
+      "skarbiec": 5000,
+      "spichlerzZywy": 0,
+      "prognozaCache": null,
+      "ja": 0
+    },
+    "E0q_quickSave_t1": true,
+    "E1_P1_po_loadSlot_ta_sama_strona_t1": {
+      "tura": 1,
+      "miastaGracza": 1,
+      "bramkaBlokuje": true,
+      "komunikat": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 46. Pomogą: podatek złota: +28 złota/turę; obniżka racji żywności: +56 żywn",
+      "skarbiec": 5000,
+      "spichlerzZywy": 0,
+      "prognozaCache": {
+        "tura": 1,
+        "spichlerzObecny": 0,
+        "spichlerzPo": -48,
+        "skarbiecPo": 4907
+      },
+      "ja": 0
+    },
+    "E1_endTurn": {
+      "przed": 1,
+      "po": 1,
+      "przeszedl": false
+    },
+    "E2a_P2_swieza_strona_przed_load": {
+      "tura": 1,
+      "miastaGracza": 1,
+      "bramkaBlokuje": false,
+      "komunikat": "",
+      "skarbiec": 5000,
+      "spichlerzZywy": 0,
+      "prognozaCache": null,
+      "ja": 0
+    },
+    "E2b_P2_po_loadSlot_nowa_strona_t1": {
+      "tura": 1,
+      "miastaGracza": 1,
+      "bramkaBlokuje": true,
+      "komunikat": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 46. Pomogą: podatek złota: +28 złota/turę; obniżka racji żywności: +56 żywn",
+      "skarbiec": 5000,
+      "spichlerzZywy": 0,
+      "prognozaCache": {
+        "tura": 1,
+        "spichlerzObecny": 0,
+        "spichlerzPo": -48,
+        "skarbiecPo": 4907
+      },
+      "ja": 0
+    },
+    "E2b_endTurn": {
+      "przed": 1,
+      "po": 1,
+      "przeszedl": false
+    },
+    "E3a_P3_swieza_t1": {
+      "tura": 1,
+      "miastaGracza": 1,
+      "bramkaBlokuje": false,
+      "komunikat": "",
+      "skarbiec": 5000,
+      "spichlerzZywy": 0,
+      "prognozaCache": null,
+      "ja": 0
+    },
+    "E3_endTurn_t1_do_t2": {
+      "przed": 1,
+      "po": 2,
+      "przeszedl": true
+    },
+    "E3b_P3_t2_bez_wczytania": {
+      "tura": 2,
+      "miastaGracza": 1,
+      "bramkaBlokuje": true,
+      "komunikat": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 46. Pomogą: podatek złota: +23 złota/turę; obniżka racji żywności: +56 żywn",
+      "skarbiec": 4907,
+      "spichlerzZywy": 0,
+      "prognozaCache": null,
+      "ja": 0
+    }
+  },
+  "bledy": [],
+  "walidacja": {
+    "wczytanieDziala_P2": true,
+    "E2a_bramkaWolna": true,
+    "uwaga": "walidacja = po wczytaniu w nowej stronie cache prognozy != null (kontrola cross-context bez wczytania daje null)"
+  },
+  "konsolaNns": [
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[NNS-AI 1] tura 2: po ticku skarbiec=1 spichlerz=-4 -> 1/26; akcje=racje"
+  ]
+}

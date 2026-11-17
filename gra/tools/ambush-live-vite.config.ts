@@ -61,10 +61,11 @@ const probe = `
               s = c; break;
             }
             if (!s) continue;
-            units.push(mk('amb-m', 0, p0q, p0r));
-            units.push(mk('amb-s1', 0, s.q, s.r));
+            // Zasadzka wymaga generała (2026-11-17): generał w stosie gracza i w zasadzce AI.
+            units.push({ ...mk('amb-m', 0, p0q, p0r), isGeneral: true } as any);
+            units.push({ ...mk('amb-s1', 0, s.q, s.r), isGeneral: true } as any);
             units.push(mk('amb-s2', 0, s.q, s.r));
-            units.push(mk('amb-e1', 1, e.q, e.r));
+            units.push({ ...mk('amb-e1', 1, e.q, e.r), isGeneral: true } as any);
             units.push(mk('amb-e2', 1, e.q, e.r));
             setDiploRelation(0, 1, { zaufanie: 0, respekt: 0, status: 'wojna' } as any);
             setAmbush(units.filter(u => u.id === 'amb-e1' || u.id === 'amb-e2'));
@@ -73,6 +74,15 @@ const probe = `
           }
         }
         return { error: 'no-layout' };
+      },
+      // R-WEB-ARMY-AMBUSH-REQUIRES-GENERAL-Q1 (zarzut 1 Evaluatora): zdejmuje generała z jednostki gracza
+      // (stos bez generała -> przycisk Zasadzka ma być zablokowany z powodem po polsku).
+      noGeneral: (id: string) => {
+        const u = units.find(x => x.id === id);
+        if (!u) return false;
+        u.isGeneral = false;
+        syncUnitsRender();
+        return true;
       },
       // Uklad AI->gracz: korytarz (reszta sasiadow = gory), zasadzka GRACZA w srodku, AI z jednej strony, widoczny cel gracza z drugiej.
       setupAi: () => {
@@ -104,7 +114,7 @@ const probe = `
           for (const k of wall) (map.hexes[k] as any).terenBazowy = TerenBazowy.Gory;
           units.push(mk('aiamb-e1', 1, line[0]!.q, line[0]!.r, 8));
           units.push(mk('aiamb-e2', 1, line[0]!.q, line[0]!.r, 8));
-          units.push(mk('aiamb-s1', 0, line[3]!.q, line[3]!.r, 8));
+          units.push({ ...mk('aiamb-s1', 0, line[3]!.q, line[3]!.r, 8), isGeneral: true } as any);
           units.push(mk('aiamb-s2', 0, line[3]!.q, line[3]!.r, 8));
           units.push(mk('aiamb-t1', 0, line[5]!.q, line[5]!.r, 8));
           units.push(mk('aiamb-t2', 0, line[5]!.q, line[5]!.r, 8));

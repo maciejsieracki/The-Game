@@ -1,0 +1,86 @@
+{
+  "mode": "load",
+  "seed": 4242,
+  "turns": 20,
+  "slot": "nns-r2-s4242-t20",
+  "kroki": {
+    "przed_wczytaniem": {
+      "tura": 1,
+      "miastaGracza": 0,
+      "bramkaBlokuje": false,
+      "komunikat": "",
+      "skarbiec": 0,
+      "spichlerzZywy": 0,
+      "prognoza": null
+    },
+    "po_wczytaniu": {
+      "tura": 20,
+      "miastaGracza": 1,
+      "bramkaBlokuje": false,
+      "komunikat": "",
+      "skarbiec": 174,
+      "spichlerzZywy": 218.5,
+      "prognoza": {
+        "tura": 20,
+        "skarbiecPo": 174,
+        "spichlerzObecny": 219,
+        "spichlerzPo": 221
+      }
+    },
+    "po_wczytaniu_endTurn": {
+      "przed": 20,
+      "po": 21,
+      "przeszedl": true,
+      "canEndPrzed": true,
+      "modaleZamkniete": []
+    },
+    "po_endTurn": {
+      "tura": 21,
+      "miastaGracza": 1,
+      "bramkaBlokuje": false,
+      "komunikat": "",
+      "skarbiec": 174,
+      "spichlerzZywy": 220.5,
+      "prognoza": {
+        "tura": 21,
+        "skarbiecPo": 174,
+        "spichlerzObecny": 221,
+        "spichlerzPo": 223
+      }
+    }
+  },
+  "log": [],
+  "bledy": [],
+  "konsolaNns": [
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] triggerPlayerEndTurn: START tura 20",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[NNS-AI 40] tura 21: po ticku skarbiec=23 spichlerz=-2 -> 23/34; akcje=racje",
+    "[NNS-AI 5] tura 21: po ticku skarbiec=12 spichlerz=-4 -> 12/25; akcje=racje",
+    "[NNS-AI 11] tura 21: po ticku skarbiec=-2 spichlerz=4 -> 2/4; akcje=podatek",
+    "[NNS-AI 15] tura 21: po ticku skarbiec=-5 spichlerz=4 -> 1/4; akcje=podatek",
+    "[NNS-AI 18] tura 21: po ticku skarbiec=-2 spichlerz=4 -> 2/4; akcje=podatek",
+    "[NNS-AI 20] tura 21: po ticku skarbiec=10 spichlerz=-3 -> 10/15; akcje=racje",
+    "[NNS-AI 21] tura 21: po ticku skarbiec=-1 spichlerz=4 -> 3/4; akcje=podatek",
+    "[NNS-AI 22] tura 21: po ticku skarbiec=-3 spichlerz=-7 -> 32/38; akcje=podatek,racje",
+    "[NNS-AI 24] tura 21: po ticku skarbiec=-3 spichlerz=4 -> 1/4; akcje=podatek",
+    "[NNS-AI 25] tura 21: po ticku skarbiec=76 spichlerz=-7 -> 76/34; akcje=racje",
+    "[NNS-AI 26] tura 21: po ticku skarbiec=4 spichlerz=-4 -> 4/10; akcje=racje",
+    "[NNS-AI 32] tura 21: po ticku skarbiec=12 spichlerz=-2 -> 12/16; akcje=racje",
+    "[NNS-AI 35] tura 21: po ticku skarbiec=22 spichlerz=-2 -> 22/16; akcje=racje",
+    "[NNS-AI 36] tura 21: po ticku skarbiec=-7 spichlerz=4 -> 2/4; akcje=podatek",
+    "[NNS-AI 39] tura 21: po ticku skarbiec=34 spichlerz=-4 -> 34/34; akcje=racje",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 21"
+  ]
+}
