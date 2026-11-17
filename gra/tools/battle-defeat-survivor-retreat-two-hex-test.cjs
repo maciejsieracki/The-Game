@@ -19,7 +19,7 @@ async function bundle(contents, name, extra) {
     stdin: { contents, resolveDir: ROOT, sourcefile: name },
     bundle: true, platform: 'node', format: 'cjs', target: 'es2020',
     alias: { three: path.join(ROOT, 'node_modules/three/build/three.cjs') },
-    plugins: extra ? [extra] : [], write: false, logLevel: 'silent',
+    plugins: [require('./lib/esbuild-raw-plugin.cjs'), ...(extra ? [extra] : [])], write: false, logLevel: 'silent',
   });
   const module = { exports: {} };
   vm.runInNewContext(r.outputFiles[0].text, { module, exports: module.exports, require, console, process, globalThis, setTimeout, clearTimeout }, { filename: name });

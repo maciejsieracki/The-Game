@@ -7,7 +7,7 @@ const esbuild = require(path.join(__dirname, '..', 'node_modules', 'esbuild'));
 const ROOT = path.resolve(__dirname, '..');
 
 async function loadScene() {
-  const result = await esbuild.build({ stdin: { contents: "import { BattleScene } from './src/battle/battleScene.ts'; module.exports = { BattleScene };", resolveDir: ROOT, sourcefile: 'attack-move-test.ts' }, bundle: true, platform: 'node', format: 'cjs', target: 'es2020', alias: { three: path.join(ROOT, 'node_modules/three/build/three.cjs') }, write: false, logLevel: 'silent', plugins: [{ name: 'browser-stubs', setup(build) {
+  const result = await esbuild.build({ stdin: { contents: "import { BattleScene } from './src/battle/battleScene.ts'; module.exports = { BattleScene };", resolveDir: ROOT, sourcefile: 'attack-move-test.ts' }, bundle: true, platform: 'node', format: 'cjs', target: 'es2020', alias: { three: path.join(ROOT, 'node_modules/three/build/three.cjs') }, write: false, logLevel: 'silent', plugins: [require('./lib/esbuild-raw-plugin.cjs'), { name: 'browser-stubs', setup(build) {
     for (const [filter, namespace, contents] of [[/brandAssets/, 'brand', 'export const civIconSvg=()=>""; export const brandIconSvg=()=>"";'], [/leaderPortraits/, 'leader', 'export const leaderPortraitUrl=()=>""; export const leaderName=()=>""; export const civIconIdFromCivLabel=()=>"";'], [/muzyka-antyczna/, 'audio', 'export const startVictoryMusic=()=>{}; export const startDefeatMusic=()=>{}; export const startBattleMusic=()=>{};']]) { build.onResolve({ filter }, args => ({ path: args.path, namespace })); build.onLoad({ filter: /.*/, namespace }, () => ({ contents, loader: 'js' })); }
   } }] });
   const mod = { exports: {} };

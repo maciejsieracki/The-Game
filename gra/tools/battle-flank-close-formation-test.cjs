@@ -23,7 +23,7 @@ async function loadBattleScene() {
     },
     bundle: true, platform: 'node', format: 'cjs', target: 'es2020',
     alias: { three: path.join(__dirname, '..', 'node_modules', 'three', 'build', 'three.cjs') },
-    plugins: [{
+    plugins: [require('./lib/esbuild-raw-plugin.cjs'), {
       name: 'stub-battle-browser-services',
       setup(build) {
         const stubs = [

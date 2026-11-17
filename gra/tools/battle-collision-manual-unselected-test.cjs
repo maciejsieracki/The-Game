@@ -31,7 +31,7 @@ async function loadScene() {
   const result = await esbuild.build({
     stdin: { contents: "import { BattleScene } from './src/battle/battleScene.ts'; module.exports = { BattleScene };", resolveDir: ROOT, sourcefile: 'manual-unselected-entry.ts' },
     bundle: true, platform: 'node', format: 'cjs', target: 'es2020', alias: { three: path.join(ROOT, 'node_modules/three/build/three.cjs') }, write: false, logLevel: 'silent',
-    plugins: [{ name: 'manual-unselected', setup(build) {
+    plugins: [require('./lib/esbuild-raw-plugin.cjs'), { name: 'manual-unselected', setup(build) {
       build.onLoad({ filter: /battleScene\.ts$/ }, () => ({ contents: source, loader: 'ts' }));
       for (const [filter, namespace, contents] of [[/brandAssets/, 'brand', 'export const civIconSvg=()=>""; export const brandIconSvg=()=>"";'], [/leaderPortraits/, 'leader', 'export const leaderPortraitUrl=()=>""; export const leaderName=()=>""; export const civIconIdFromCivLabel=()=>"";'], [/muzyka-antyczna/, 'audio', 'export const startVictoryMusic=()=>{}; export const startDefeatMusic=()=>{}; export const startBattleMusic=()=>{};']]) {
         build.onResolve({ filter }, args => ({ path: args.path, namespace }));
