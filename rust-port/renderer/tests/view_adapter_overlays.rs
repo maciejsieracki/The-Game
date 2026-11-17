@@ -323,7 +323,7 @@ fn ui_all_off() -> MapUiState {
         is_city_panel_open: false,
         city_panel_view_city_id: None,
         force_visible_unit_id: None,
-        hide_stat_chips: false,
+        hover_stat_chip_city_id: None,
     }
 }
 
@@ -341,7 +341,8 @@ fn keys(list: &[(i32, i32)]) -> HexKeySet {
 /// = true` (`main.ts:15338`), `showTradeRoutesOverlay = true` (`:15358`),
 /// `showWorkerOverlay = true` (`:15419`), `cityPanelViewCityId = null`
 /// (`:6575`), `forceVisibleUnitId = null` (`:13644`), `hideStatChips =
-/// isCityPanelOpen() = false` (`:2977`).
+/// isCityPanelOpen() = false` (`:2977`), `statChipHoverCityId = null`
+/// (`:2938`).
 #[test]
 fn ui_web_initial_matches_pin() {
     let ui = MapUiState::WEB_INITIAL;
@@ -351,7 +352,8 @@ fn ui_web_initial_matches_pin() {
     assert!(!ui.is_city_panel_open);
     assert_eq!(ui.city_panel_view_city_id, None);
     assert_eq!(ui.force_visible_unit_id, None);
-    assert!(!ui.hide_stat_chips);
+    assert!(!ui.hide_stat_chips());
+    assert_eq!(ui.hover_stat_chip_city_id, None);
 }
 
 // ------------------------------------------------------------ territory

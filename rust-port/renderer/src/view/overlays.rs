@@ -174,7 +174,8 @@ impl std::error::Error for OverlayAdapterError {}
 ///
 /// Q5 reads `territory_border_visible`, `show_trade_routes_overlay`,
 /// `show_worker_overlay` and `is_city_panel_open`; the other fields belong to
-/// the same L4 list and are read by the cities (Q3) and unit (Q6) parts.
+/// the same L4 list and are read by the cities (Q3), city badge (R5,
+/// [`crate::cities::sync::CityStatChips`]) and unit (Q6) parts.
 ///
 /// No `Default`: an all-`false` value is not the web start state; use
 /// [`MapUiState::WEB_INITIAL`].
@@ -194,15 +195,18 @@ pub struct MapUiState {
     /// `forceVisibleUnitId` (`main.ts:13644`; `setForceVisibleUnitId`,
     /// `:14550`, Q6).
     pub force_visible_unit_id: Option<vm::UnitId>,
-    /// `hideStatChips` of `_cityRenderOpts` (`main.ts:2977`, Q3/R5).
-    pub hide_stat_chips: bool,
+    /// `statChipHoverCityId` = `hoverStatChipCityId` of `_cityRenderOpts`
+    /// (`main.ts:2938`, `:2987`; set on hover, `main.ts:32264`, cleared
+    /// `:32268`, `:32347`), R5.
+    pub hover_stat_chip_city_id: Option<vm::CityId>,
 }
 
 impl MapUiState {
     /// The start values of the pin: borders, trade routes and worker icons
     /// on (`main.ts:15338`, `:15358`, `:15419`), no city panel
     /// (`cityPanelViewCityId = null`, `:6575`), no forced unit (`:13644`),
-    /// `hideStatChips = isCityPanelOpen() = false` (`:2977`).
+    /// `hideStatChips = isCityPanelOpen() = false` (`:2977`, derived), no hovered
+    /// badge (`statChipHoverCityId = null`, `:2938`).
     pub const WEB_INITIAL: Self = Self {
         territory_border_visible: true,
         show_trade_routes_overlay: true,
@@ -210,8 +214,16 @@ impl MapUiState {
         is_city_panel_open: false,
         city_panel_view_city_id: None,
         force_visible_unit_id: None,
-        hide_stat_chips: false,
+        hover_stat_chip_city_id: None,
     };
+
+    /// `hideStatChips` of `_cityRenderOpts` (`main.ts:2977`, Q3/R5): the pin
+    /// sets it to `isCityPanelOpen()`, so it is derived from
+    /// [`Self::is_city_panel_open`] and not stored a second time.
+    #[must_use]
+    pub const fn hide_stat_chips(&self) -> bool {
+        self.is_city_panel_open
+    }
 }
 
 // ------------------------------------------------------------ owners

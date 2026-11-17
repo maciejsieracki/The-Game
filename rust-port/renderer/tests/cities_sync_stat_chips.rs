@@ -16,11 +16,11 @@ use civ_renderer::cities::overlay::stat_chip::{
     BADGE_WORLD_H,
 };
 use civ_renderer::cities::overlay::TextureRef;
-use civ_renderer::cities::sync::{stat_chip_city_visible, CityStatChips, StatChipUiState};
+use civ_renderer::cities::sync::{stat_chip_city_visible, CityStatChips};
 use civ_renderer::core::zoom_lod::CityBadgeLodLevel;
 use civ_renderer::models::cities::renderer::CityRenderer;
 use civ_renderer::raster::atlas::scale::badge_canvas_px;
-use civ_renderer::view::{self, CityInputs};
+use civ_renderer::view::{self, CityInputs, MapUiState};
 use civ_view_model as vm;
 
 // ------------------------------------------------------------ fixture
@@ -105,7 +105,7 @@ fn initial() -> (
     sync_models(&mut r, &owners, &cities);
     let mut chips = CityStatChips::new(Some(1.0));
     chips
-        .sync_after_city_models(&cities, &r, &StatChipUiState::WEB_INITIAL)
+        .sync_after_city_models(&cities, &r, &MapUiState::WEB_INITIAL)
         .expect("sync");
     (owners, cities, r, chips)
 }
@@ -154,7 +154,7 @@ fn keys_are_city_map_badge_key_of_the_dto_badge() {
 #[test]
 fn changed_key_moves_the_badge_to_the_end_like_a_js_map() {
     let (_, mut cities, r, mut chips) = initial();
-    let ui = StatChipUiState::WEB_INITIAL;
+    let ui = MapUiState::WEB_INITIAL;
     chips.sync_stat_chips(&cities, &r, &ui).expect("sync");
     assert_eq!(ids(&chips), ["7", "3", "12"]);
 
@@ -184,12 +184,12 @@ fn changed_key_moves_the_badge_to_the_end_like_a_js_map() {
 
 /// Fog: the producer's `fog_visible` (`cityFogVisible`, `main.ts:2975`) and
 /// the group visibility `grp.visible` (`cities.ts:652`), which
-/// `applyFogVisibility(vis, fogOn, ME())` sets (`cities.ts:657-680`,
+/// `applyFogVisibility(vis, fogOn, ME())` sets (`cities.ts:740-763`,
 /// `main.ts:13503`). Mutation (a) fails here.
 #[test]
 fn fog_hides_foreign_badges() {
     let (_, mut cities, mut r, mut chips) = initial();
-    let ui = StatChipUiState::WEB_INITIAL;
+    let ui = MapUiState::WEB_INITIAL;
     assert!(!stat_chip_city_visible(&cities[3], &ui));
 
     // `applyFogVisibility`: only (0,0) and (3,2) are visible. Own cities stay
@@ -219,10 +219,11 @@ fn fog_hides_foreign_badges() {
 #[test]
 fn city_panel_view_and_hide_stat_chips() {
     let (_, cities, r, mut chips) = initial();
-    let panel_only = StatChipUiState {
+    let panel_only = MapUiState {
         city_panel_view_city_id: Some(city_id(12)),
         is_city_panel_open: false,
         hover_stat_chip_city_id: None,
+        ..MapUiState::WEB_INITIAL
     };
     chips
         .sync_stat_chips(&cities, &r, &panel_only)
@@ -232,7 +233,7 @@ fn city_panel_view_and_hide_stat_chips() {
 
     // Panel on Memfis: `isVisible` is true, but `syncStatChips` also needs
     // `grp.visible` (`cities.ts:652`), still false from the last `sync`.
-    let memfis_panel = StatChipUiState {
+    let memfis_panel = MapUiState {
         city_panel_view_city_id: Some(city_id(15)),
         ..panel_only
     };
@@ -242,7 +243,7 @@ fn city_panel_view_and_hide_stat_chips() {
         .expect("sync");
     assert!(chips.chips().is_empty());
 
-    let open = StatChipUiState {
+    let open = MapUiState {
         is_city_panel_open: true,
         ..panel_only
     };
@@ -259,15 +260,15 @@ fn city_panel_view_and_hide_stat_chips() {
 }
 
 /// `hoverExpanded = options.hoverStatChipCityId === city.id`
-/// (`cities.ts:888`): `h1` in the key and, with hover detail, the hover row
+/// (`cities.ts:889`): `h1` in the key and, with hover detail, the hover row
 /// (`cityMapStatChip.ts:834-837`) makes the texture taller.
 #[test]
 fn hover_expands_one_badge() {
     let (_, cities, r, mut chips) = initial();
     let before = chips.chip("7").unwrap().sprite.clone();
-    let ui = StatChipUiState {
+    let ui = MapUiState {
         hover_stat_chip_city_id: Some(city_id(7)),
-        ..StatChipUiState::WEB_INITIAL
+        ..MapUiState::WEB_INITIAL
     };
     chips.sync_stat_chips(&cities, &r, &ui).expect("sync");
     let roma = chips.chip("7").unwrap();
@@ -324,7 +325,7 @@ fn sprite_follows_make_city_map_badge_sprite() {
 #[test]
 fn lod_change_rekeys_badges_and_purges_other_lod_textures() {
     let (_, cities, r, mut chips) = initial();
-    let ui = StatChipUiState::WEB_INITIAL;
+    let ui = MapUiState::WEB_INITIAL;
     // 20 ≥ CITY_BADGE_LOD_MID_DIST (11): level 0, unchanged.
     assert!(!chips.set_badge_zoom_lod(20.0));
     assert!(!chips.lod_purge_pending());
@@ -366,7 +367,7 @@ fn lod_change_rekeys_badges_and_purges_other_lod_textures() {
 #[test]
 fn sync_removes_stale_badges_and_rebuilds_with_the_group() {
     let (owners, mut cities, mut r, mut chips) = initial();
-    let ui = StatChipUiState::WEB_INITIAL;
+    let ui = MapUiState::WEB_INITIAL;
 
     // Ostia leaves the list.
     cities.remove(1);
@@ -409,7 +410,7 @@ fn city_without_a_group_is_skipped() {
     sync_models(&mut r, &owners, &cities[..1]);
     let mut chips = CityStatChips::new(Some(1.0));
     chips
-        .sync_stat_chips(&cities, &r, &StatChipUiState::WEB_INITIAL)
+        .sync_stat_chips(&cities, &r, &MapUiState::WEB_INITIAL)
         .expect("sync");
     assert_eq!(ids(&chips), ["7"]);
 }
