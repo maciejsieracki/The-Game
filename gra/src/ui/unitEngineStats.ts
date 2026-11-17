@@ -4,7 +4,7 @@
  * DECYZJA WŁAŚCICIELA (2026-11-14, ABC nr 8 = A): statystyki SILNIKA są kanoniczne.
  * Karta/tooltip pokazują dokładnie to, czym liczy walka. Źródłem jest ten sam odczyt co
  * silnik: `combatUnitFromDef` (game/combat.ts) — NIE duplikujemy mapowania ani domyślnych.
- * Kolumny PL w units.json (`Atak`, `Obrona`, `Health`, `Pancerz`, ...) są tylko etykietami
+ * Kolumny PL w units.json (`Atak`, `Obrona`, `health`, `Pancerz`, ...) są tylko etykietami
  * legacy i NIE są źródłem wartości na karcie.
  */
 import { combatUnitFromDef } from '../game/combat';

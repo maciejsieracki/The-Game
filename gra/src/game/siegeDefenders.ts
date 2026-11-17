@@ -186,7 +186,7 @@ export interface CityDefRosterResult {
 
 const MELEE_SCALED_KEYS = [
   'meleeAttack', 'meleeDefence', 'weaponDamage', 'chargeBonus', 'armor', 'piercing', 'health',
-  'Atak', 'Obrona', 'Uderzenie', 'Pancerz', 'Przebicie', 'Health',
+  'Atak', 'Obrona', 'Uderzenie', 'Pancerz', 'Przebicie',
 ] as const;
 
 const UNIT_ROWS = unitsRaw as unknown as readonly Record<string, unknown>[];

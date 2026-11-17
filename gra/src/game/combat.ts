@@ -200,7 +200,7 @@ export function combatUnitFromDef(
   const prog = progRaw === null || progRaw === undefined
     ? null
     : combatNormField(progRaw, 0.25);
-  const maxHp = combatNormField(def['health'] ?? def['Health'], 30);
+  const maxHp = combatNormField(def['health'], 30);
   const canonicalEffectiveMaxHp = combatNormField(def['__canonicalEffectiveMaxHp'], NaN);
   const canonicalCurrentHp = combatNormField(def['__canonicalCurrentHp'], NaN);
   return {

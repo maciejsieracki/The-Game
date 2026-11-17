@@ -54,7 +54,8 @@ export interface UnitDef {
   Obrona: number | null;
   Ruch: number | null;
   'Ruch w bitwie (heksy)': number | null;
-  Health: number | null;
+  /** Jedyne pole zdrowia jednostki (skala bojowa; czyta silnik walki i AI). */
+  health: number | null;
   'Próg dezercji (% health)': number | null;
   'Widok pola': number | null;
   'Atak dystansowy': number | null;
