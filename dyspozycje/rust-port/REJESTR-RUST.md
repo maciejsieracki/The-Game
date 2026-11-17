@@ -3206,3 +3206,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Krok 3:** usunięte cache po zintegrowanych tematach: `ev_t6_target`, `t5b-ev-target`. Nie ruszane: `tgt-t7b` (T7b w użyciu).
 - **Wolne sloty (2 z 4): powód.** Renderer (Opus) wymaga bramki przy ≥12 GB bez równoległych buildów; dysk 11 GB z działającym cargo T7b. Wariant skryptu Workflow z Operatorem na Opus wymaga zgody (zasady: Opus tylko dla grafiki). Pozostali kandydaci zablokowani jak wcześniej.
 - **Otwarte decyzje ABC (w czacie):** #327, #358.
+
+### Przebieg — T7b FC PASS-WITH-NOTES, integracja r2; uruchomione 3 nowe Workflow (2026-11-17 ~07:xx UTC): 4/4 aktywne
+
+- **T7b odwrót — FC PASS-WITH-NOTES `7def6d636`** (Operator `5141e9471`, Ewaluator, Obrona `9b5a31f15`). Notes: mutant `d_min <= 1` → `<` (naprawiony wektorem, rund 2); pełny `cargo test` nie zamknął się: binarium `p6_8i_pick` wisiało ponad 45 min (zadanie #291), proces został przy workerze (nie zabijałem cudzych procesów). Dispatch DODATEK r2 `aff7aeb65`: integracja z osobnym przebiegiem `p6_8i_pick` z `timeout 900`. Decyzja o ewentualnym wykluczeniu tego binarium z pełnego przebiegu — orkiestrator, po wyniku r2.
+- **#332 R4 G5 — Opus** (`wf_c2dda485-691`, skrypt `r-rustport-opus-grafika-wf.js`, Operator/Obrona/Ewaluator/FC na Opus): normalizacja kluczy (`LEGACY_KEY_ALIASES` z pina) i fallback do `hex.ulepszenie`. Dispatch `0059a4f2a`, baza `f85622878`. Odstępstwo: producenta `improvement_key` nie znaleziono w `view-model`/`engine` — normalizacja w konsumencie `sync/build.rs` (do potwierdzenia przez Operatora). Bramka renderera wymaga ≥ 12 GB; przy mniej — BLOCK z liczbą GB.
+- **#356 audyt statusów ZINTEGROWANE** (`wf_e58137b5-6a6`, Haiku, doc-only): dispatch `R-RUSTPORT-P6-AUDIT-ZINTEGROWANE/00-dispatch.md`. Wynik: tabela modułów z wołającymi produkcyjnymi — do przeglądu, bez zmian w rejestrze.
+- **T7a falanga** (`wf_30e2308d-50d`) — w Operatorze.
+- **Sloty: 4/4.** Dysk ~8 GB — bramki renderera i pełnego testu mogą czekać.
+- **Otwarte decyzje ABC (w czacie):** #327, #358.
