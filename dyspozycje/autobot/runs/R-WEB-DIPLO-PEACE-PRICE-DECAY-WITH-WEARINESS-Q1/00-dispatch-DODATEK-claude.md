@@ -1,0 +1,1 @@
+# DODATEK 0 (orkiestrator, 06:53 UTC) — runda 1. cand = pełne SHA aktualnego origin/main (31a93eb9c8209bc8e2b261dbe0810327a36a89f2). Zmiana gry → po FC PASS wdrożenie jako FALA. Dług Rust: REPIN ceny pokoju/zmęczenia.
