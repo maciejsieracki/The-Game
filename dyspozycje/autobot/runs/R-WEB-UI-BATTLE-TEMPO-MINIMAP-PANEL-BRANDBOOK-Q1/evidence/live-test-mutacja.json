@@ -1,0 +1,716 @@
+{
+  "exe": "/usr/bin/chromium",
+  "mutate": true,
+  "checks": [
+    {
+      "group": "D[1024x640]",
+      "name": "panel w prawym dolnym rogu (<=20 px od krawedzi)",
+      "ok": true,
+      "detail": {
+        "x": 768,
+        "y": 458,
+        "w": 240,
+        "h": 166,
+        "right": 16,
+        "bottom": 16
+      }
+    },
+    {
+      "group": "D[1024x640]",
+      "name": "szerokosc panelu <= 236*1.10 px",
+      "ok": true,
+      "detail": 240
+    },
+    {
+      "group": "C",
+      "name": "hover zmienia kolor przycisku Przyspiesz",
+      "ok": true,
+      "detail": {
+        "before": "rgb(232, 216, 138)",
+        "hovered": "rgb(244, 230, 168)"
+      }
+    },
+    {
+      "group": "C",
+      "name": "focus-visible (klawiatura) daje obrys 2px na Przyspiesz",
+      "ok": true,
+      "detail": {
+        "w": "2px",
+        "st": "solid"
+      }
+    },
+    {
+      "group": "C",
+      "name": "AUTO: aktywne tlo rozne od nieaktywnego",
+      "ok": true,
+      "detail": {
+        "a0": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
+        "a1": "linear-gradient(rgb(240, 220, 136), rgb(185, 154, 40))"
+      }
+    },
+    {
+      "group": "C",
+      "name": "AUTO: powrot do stanu poczatkowego po dwoch klikach",
+      "ok": true,
+      "detail": {
+        "a0": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
+        "a2": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))"
+      }
+    },
+    {
+      "group": "A",
+      "name": "Przyspiesz zwieksza speedIdx o 1",
+      "ok": true,
+      "detail": {
+        "from": 0,
+        "to": 1
+      }
+    },
+    {
+      "group": "A",
+      "name": "odczyt ×N zgodny z speedMul po Przyspiesz",
+      "ok": true,
+      "detail": {
+        "lbl": "×2",
+        "mul": 2
+      }
+    },
+    {
+      "group": "A",
+      "name": "Zwolnij cofa speedIdx (powrot do poczatku)",
+      "ok": false,
+      "detail": {
+        "start": 0,
+        "after": 1
+      }
+    },
+    {
+      "group": "A",
+      "name": "Pauza przelacza scene.paused",
+      "ok": true,
+      "detail": {
+        "before": false,
+        "after": true
+      }
+    },
+    {
+      "group": "A",
+      "name": "Pauza wraca do stanu poczatkowego",
+      "ok": true,
+      "detail": {
+        "paused": false
+      }
+    },
+    {
+      "group": "B",
+      "name": "klik w lewa czesc minimapy przesuwa kamere (x maleje wzgledem prawej)",
+      "ok": true,
+      "detail": {
+        "left": {
+          "x": 6,
+          "z": 78
+        },
+        "right": {
+          "x": 61,
+          "z": 78
+        }
+      }
+    },
+    {
+      "group": "B",
+      "name": "ten sam punkt minimapy -> ta sama pozycja kamery (deterministycznie)",
+      "ok": true,
+      "detail": {
+        "first": {
+          "x": 6,
+          "z": 78
+        },
+        "again": {
+          "x": 6,
+          "z": 78
+        }
+      }
+    },
+    {
+      "group": "E[1024x640]",
+      "name": "brak pageerror w konsoli",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "group": "D[1280x720]",
+      "name": "panel w prawym dolnym rogu (<=20 px od krawedzi)",
+      "ok": true,
+      "detail": {
+        "x": 1024,
+        "y": 538,
+        "w": 240,
+        "h": 166,
+        "right": 16,
+        "bottom": 16
+      }
+    },
+    {
+      "group": "D[1280x720]",
+      "name": "szerokosc panelu <= 236*1.10 px",
+      "ok": true,
+      "detail": 240
+    },
+    {
+      "group": "C",
+      "name": "hover zmienia kolor przycisku Przyspiesz",
+      "ok": true,
+      "detail": {
+        "before": "rgb(232, 216, 138)",
+        "hovered": "rgb(244, 230, 168)"
+      }
+    },
+    {
+      "group": "C",
+      "name": "focus-visible (klawiatura) daje obrys 2px na Przyspiesz",
+      "ok": true,
+      "detail": {
+        "w": "2px",
+        "st": "solid"
+      }
+    },
+    {
+      "group": "C",
+      "name": "AUTO: aktywne tlo rozne od nieaktywnego",
+      "ok": true,
+      "detail": {
+        "a0": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
+        "a1": "linear-gradient(rgb(240, 220, 136), rgb(185, 154, 40))"
+      }
+    },
+    {
+      "group": "C",
+      "name": "AUTO: powrot do stanu poczatkowego po dwoch klikach",
+      "ok": true,
+      "detail": {
+        "a0": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
+        "a2": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))"
+      }
+    },
+    {
+      "group": "A",
+      "name": "Przyspiesz zwieksza speedIdx o 1",
+      "ok": true,
+      "detail": {
+        "from": 0,
+        "to": 1
+      }
+    },
+    {
+      "group": "A",
+      "name": "odczyt ×N zgodny z speedMul po Przyspiesz",
+      "ok": true,
+      "detail": {
+        "lbl": "×2",
+        "mul": 2
+      }
+    },
+    {
+      "group": "A",
+      "name": "Zwolnij cofa speedIdx (powrot do poczatku)",
+      "ok": false,
+      "detail": {
+        "start": 0,
+        "after": 1
+      }
+    },
+    {
+      "group": "A",
+      "name": "Pauza przelacza scene.paused",
+      "ok": true,
+      "detail": {
+        "before": false,
+        "after": true
+      }
+    },
+    {
+      "group": "A",
+      "name": "Pauza wraca do stanu poczatkowego",
+      "ok": true,
+      "detail": {
+        "paused": false
+      }
+    },
+    {
+      "group": "B",
+      "name": "klik w lewa czesc minimapy przesuwa kamere (x maleje wzgledem prawej)",
+      "ok": true,
+      "detail": {
+        "left": {
+          "x": 6,
+          "z": 78
+        },
+        "right": {
+          "x": 61,
+          "z": 78
+        }
+      }
+    },
+    {
+      "group": "B",
+      "name": "ten sam punkt minimapy -> ta sama pozycja kamery (deterministycznie)",
+      "ok": true,
+      "detail": {
+        "first": {
+          "x": 6,
+          "z": 78
+        },
+        "again": {
+          "x": 6,
+          "z": 78
+        }
+      }
+    },
+    {
+      "group": "E[1280x720]",
+      "name": "brak pageerror w konsoli",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "group": "D[1400x900]",
+      "name": "panel w prawym dolnym rogu (<=20 px od krawedzi)",
+      "ok": true,
+      "detail": {
+        "x": 1144,
+        "y": 718,
+        "w": 240,
+        "h": 166,
+        "right": 16,
+        "bottom": 16
+      }
+    },
+    {
+      "group": "D[1400x900]",
+      "name": "szerokosc panelu <= 236*1.10 px",
+      "ok": true,
+      "detail": 240
+    },
+    {
+      "group": "C",
+      "name": "hover zmienia kolor przycisku Przyspiesz",
+      "ok": true,
+      "detail": {
+        "before": "rgb(232, 216, 138)",
+        "hovered": "rgb(244, 230, 168)"
+      }
+    },
+    {
+      "group": "C",
+      "name": "focus-visible (klawiatura) daje obrys 2px na Przyspiesz",
+      "ok": true,
+      "detail": {
+        "w": "2px",
+        "st": "solid"
+      }
+    },
+    {
+      "group": "C",
+      "name": "AUTO: aktywne tlo rozne od nieaktywnego",
+      "ok": true,
+      "detail": {
+        "a0": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
+        "a1": "linear-gradient(rgb(240, 220, 136), rgb(185, 154, 40))"
+      }
+    },
+    {
+      "group": "C",
+      "name": "AUTO: powrot do stanu poczatkowego po dwoch klikach",
+      "ok": true,
+      "detail": {
+        "a0": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
+        "a2": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))"
+      }
+    },
+    {
+      "group": "A",
+      "name": "Przyspiesz zwieksza speedIdx o 1",
+      "ok": true,
+      "detail": {
+        "from": 0,
+        "to": 1
+      }
+    },
+    {
+      "group": "A",
+      "name": "odczyt ×N zgodny z speedMul po Przyspiesz",
+      "ok": true,
+      "detail": {
+        "lbl": "×2",
+        "mul": 2
+      }
+    },
+    {
+      "group": "A",
+      "name": "Zwolnij cofa speedIdx (powrot do poczatku)",
+      "ok": false,
+      "detail": {
+        "start": 0,
+        "after": 1
+      }
+    },
+    {
+      "group": "A",
+      "name": "Pauza przelacza scene.paused",
+      "ok": true,
+      "detail": {
+        "before": false,
+        "after": true
+      }
+    },
+    {
+      "group": "A",
+      "name": "Pauza wraca do stanu poczatkowego",
+      "ok": true,
+      "detail": {
+        "paused": false
+      }
+    },
+    {
+      "group": "B",
+      "name": "klik w lewa czesc minimapy przesuwa kamere (x maleje wzgledem prawej)",
+      "ok": true,
+      "detail": {
+        "left": {
+          "x": 6,
+          "z": 78
+        },
+        "right": {
+          "x": 61,
+          "z": 78
+        }
+      }
+    },
+    {
+      "group": "B",
+      "name": "ten sam punkt minimapy -> ta sama pozycja kamery (deterministycznie)",
+      "ok": true,
+      "detail": {
+        "first": {
+          "x": 6,
+          "z": 78
+        },
+        "again": {
+          "x": 6,
+          "z": 78
+        }
+      }
+    },
+    {
+      "group": "E[1400x900]",
+      "name": "brak pageerror w konsoli",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "group": "D[1280x720@2]",
+      "name": "panel w prawym dolnym rogu (<=20 px od krawedzi)",
+      "ok": true,
+      "detail": {
+        "x": 1024,
+        "y": 538,
+        "w": 240,
+        "h": 166,
+        "right": 16,
+        "bottom": 16
+      }
+    },
+    {
+      "group": "D[1280x720@2]",
+      "name": "szerokosc panelu <= 236*1.10 px",
+      "ok": true,
+      "detail": 240
+    },
+    {
+      "group": "C",
+      "name": "hover zmienia kolor przycisku Przyspiesz",
+      "ok": true,
+      "detail": {
+        "before": "rgb(232, 216, 138)",
+        "hovered": "rgb(244, 230, 168)"
+      }
+    },
+    {
+      "group": "C",
+      "name": "focus-visible (klawiatura) daje obrys 2px na Przyspiesz",
+      "ok": true,
+      "detail": {
+        "w": "2px",
+        "st": "solid"
+      }
+    },
+    {
+      "group": "C",
+      "name": "AUTO: aktywne tlo rozne od nieaktywnego",
+      "ok": true,
+      "detail": {
+        "a0": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
+        "a1": "linear-gradient(rgb(240, 220, 136), rgb(185, 154, 40))"
+      }
+    },
+    {
+      "group": "C",
+      "name": "AUTO: powrot do stanu poczatkowego po dwoch klikach",
+      "ok": true,
+      "detail": {
+        "a0": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
+        "a2": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))"
+      }
+    },
+    {
+      "group": "A",
+      "name": "Przyspiesz zwieksza speedIdx o 1",
+      "ok": true,
+      "detail": {
+        "from": 0,
+        "to": 1
+      }
+    },
+    {
+      "group": "A",
+      "name": "odczyt ×N zgodny z speedMul po Przyspiesz",
+      "ok": true,
+      "detail": {
+        "lbl": "×2",
+        "mul": 2
+      }
+    },
+    {
+      "group": "A",
+      "name": "Zwolnij cofa speedIdx (powrot do poczatku)",
+      "ok": false,
+      "detail": {
+        "start": 0,
+        "after": 1
+      }
+    },
+    {
+      "group": "A",
+      "name": "Pauza przelacza scene.paused",
+      "ok": true,
+      "detail": {
+        "before": false,
+        "after": true
+      }
+    },
+    {
+      "group": "A",
+      "name": "Pauza wraca do stanu poczatkowego",
+      "ok": true,
+      "detail": {
+        "paused": false
+      }
+    },
+    {
+      "group": "B",
+      "name": "klik w lewa czesc minimapy przesuwa kamere (x maleje wzgledem prawej)",
+      "ok": true,
+      "detail": {
+        "left": {
+          "x": 6,
+          "z": 78
+        },
+        "right": {
+          "x": 61,
+          "z": 78
+        }
+      }
+    },
+    {
+      "group": "B",
+      "name": "ten sam punkt minimapy -> ta sama pozycja kamery (deterministycznie)",
+      "ok": true,
+      "detail": {
+        "first": {
+          "x": 6,
+          "z": 78
+        },
+        "again": {
+          "x": 6,
+          "z": 78
+        }
+      }
+    },
+    {
+      "group": "E[1280x720@2]",
+      "name": "brak pageerror w konsoli",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "metrics": [
+    {
+      "panel": {
+        "x": 768,
+        "y": 458,
+        "w": 240,
+        "h": 166,
+        "right": 16,
+        "bottom": 16
+      },
+      "btnBorder": "rgba(232, 216, 138, 0.4)",
+      "btnColor": "rgb(232, 216, 138)",
+      "btnBg": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
+      "tag": "1024x640",
+      "deploy": false,
+      "hover": {
+        "before": "rgb(232, 216, 138)",
+        "hovered": "rgb(244, 230, 168)"
+      },
+      "focus": {
+        "w": "2px",
+        "st": "solid"
+      },
+      "auto": {
+        "off": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
+        "on": "linear-gradient(rgb(240, 220, 136), rgb(185, 154, 40))"
+      },
+      "tempo": {
+        "start": 0,
+        "plus": 1,
+        "minusBack": 1
+      },
+      "minimap": {
+        "left": {
+          "x": 6,
+          "z": 78
+        },
+        "right": {
+          "x": 61,
+          "z": 78
+        }
+      }
+    },
+    {
+      "panel": {
+        "x": 1024,
+        "y": 538,
+        "w": 240,
+        "h": 166,
+        "right": 16,
+        "bottom": 16
+      },
+      "btnBorder": "rgba(232, 216, 138, 0.4)",
+      "btnColor": "rgb(232, 216, 138)",
+      "btnBg": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
+      "tag": "1280x720",
+      "deploy": false,
+      "hover": {
+        "before": "rgb(232, 216, 138)",
+        "hovered": "rgb(244, 230, 168)"
+      },
+      "focus": {
+        "w": "2px",
+        "st": "solid"
+      },
+      "auto": {
+        "off": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
+        "on": "linear-gradient(rgb(240, 220, 136), rgb(185, 154, 40))"
+      },
+      "tempo": {
+        "start": 0,
+        "plus": 1,
+        "minusBack": 1
+      },
+      "minimap": {
+        "left": {
+          "x": 6,
+          "z": 78
+        },
+        "right": {
+          "x": 61,
+          "z": 78
+        }
+      }
+    },
+    {
+      "panel": {
+        "x": 1144,
+        "y": 718,
+        "w": 240,
+        "h": 166,
+        "right": 16,
+        "bottom": 16
+      },
+      "btnBorder": "rgba(232, 216, 138, 0.4)",
+      "btnColor": "rgb(232, 216, 138)",
+      "btnBg": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
+      "tag": "1400x900",
+      "deploy": false,
+      "hover": {
+        "before": "rgb(232, 216, 138)",
+        "hovered": "rgb(244, 230, 168)"
+      },
+      "focus": {
+        "w": "2px",
+        "st": "solid"
+      },
+      "auto": {
+        "off": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
+        "on": "linear-gradient(rgb(240, 220, 136), rgb(185, 154, 40))"
+      },
+      "tempo": {
+        "start": 0,
+        "plus": 1,
+        "minusBack": 1
+      },
+      "minimap": {
+        "left": {
+          "x": 6,
+          "z": 78
+        },
+        "right": {
+          "x": 61,
+          "z": 78
+        }
+      }
+    },
+    {
+      "panel": {
+        "x": 1024,
+        "y": 538,
+        "w": 240,
+        "h": 166,
+        "right": 16,
+        "bottom": 16
+      },
+      "btnBorder": "rgba(232, 216, 138, 0.4)",
+      "btnColor": "rgb(232, 216, 138)",
+      "btnBg": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
+      "tag": "1280x720@2",
+      "deploy": false,
+      "hover": {
+        "before": "rgb(232, 216, 138)",
+        "hovered": "rgb(244, 230, 168)"
+      },
+      "focus": {
+        "w": "2px",
+        "st": "solid"
+      },
+      "auto": {
+        "off": "linear-gradient(rgba(18, 24, 32, 0.96), rgba(8, 10, 16, 0.96))",
+        "on": "linear-gradient(rgb(240, 220, 136), rgb(185, 154, 40))"
+      },
+      "tempo": {
+        "start": 0,
+        "plus": 1,
+        "minusBack": 1
+      },
+      "minimap": {
+        "left": {
+          "x": 6,
+          "z": 78
+        },
+        "right": {
+          "x": 61,
+          "z": 78
+        }
+      }
+    }
+  ]
+}

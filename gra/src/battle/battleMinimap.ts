@@ -30,13 +30,27 @@ export interface BattleMinimapData {
 export const MINIMAP_W = 180;
 export const MINIMAP_H = 120;
 
+/*
+ * Paleta minimapy wg tokenow marki (gra/src/ui/icons/brand/tokens.css), R-WEB-UI-BATTLE-TEMPO-MINIMAP-PANEL-BRANDBOOK-Q1 r2.
+ * Canvas nie czyta zmiennych CSS, wiec wartosci sa zapisane jako stale odpowiadajace tokenom:
+ *   tlo canvasu   = --tg-bg-deep (#080a12)
+ *   woda/rzeka    = --tg-science-blue (#5a9bd4) stonowany w strone --tg-panel-bg (#121820), ~45%
+ *   bród          = --tg-science-blue stonowany ~60% (jasniejszy niz rzeka, zachowuje rozroznienie)
+ *   ramka widoku  = --tg-gold-primary (#e8d88a)
+ * Lad (las/gory/mury/bramy/nizina) bez zmian — czytelnosc woda/lad/gory zachowana.
+ */
+const MINIMAP_BG = '#080a12';
+const MINIMAP_RIVER = '#325371';
+const MINIMAP_FORD = '#3d678c';
+const MINIMAP_VIEW_FRAME = 'rgba(232,216,138,0.95)';
+
 /** Simplified terrain tint for the minimap canvas. */
 export function terrainMinimapColor(t: number): string {
   switch (t) {
     case 1: return '#1a4a28'; // forest
     case 2: return '#6a5a40'; // hills
-    case 3: return '#1a3878'; // river
-    case 4: return '#2a5098'; // ford
+    case 3: return MINIMAP_RIVER; // river (token-derived, nie jaskrawy niebieski)
+    case 4: return MINIMAP_FORD; // ford
     case 5: return '#505050'; // rocks
     case 6: return '#888888'; // wall
     case 7: return '#a07030'; // gate
@@ -55,7 +69,7 @@ export function drawBattleMinimap(
   if (cols <= 0 || rows <= 0) return;
 
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = 'rgba(12,18,35,0.92)';
+  ctx.fillStyle = MINIMAP_BG;
   ctx.fillRect(0, 0, w, h);
 
   const cellW = w / cols;
@@ -84,7 +98,7 @@ export function drawBattleMinimap(
   const vy0 = Math.max(0, viewport.rowMin) * cellH;
   const vx1 = Math.min(cols, viewport.colMax + 1) * cellW;
   const vy1 = Math.min(rows, viewport.rowMax + 1) * cellH;
-  ctx.strokeStyle = 'rgba(255,255,255,0.88)';
+  ctx.strokeStyle = MINIMAP_VIEW_FRAME;
   ctx.lineWidth = 1.5;
   ctx.strokeRect(vx0 + 0.5, vy0 + 0.5, vx1 - vx0 - 1, vy1 - vy0 - 1);
 
