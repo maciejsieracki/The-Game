@@ -320,7 +320,8 @@ async function main() {
     console.log('L4 odmowa AI wobec propozycji rozejmu gracza (hak civTest)');
     // Wiek wojny 25 (≥ PEACE_PROPOSAL_MIN_WAR_TURNS = 10): propozycja gracza jest dopuszczona. Rozstrzygnięcie idzie
     // bez kończenia tury (resolveAiAwaitingForTest), więc AI nie składa własnej propozycji pokoju w tej samej turze.
-    // Wybór wieku ma dyskryminować hak: naturalna decyzja AI przy tym wieku to przyjęcie (zmierzone w mutacji haka).
+    // Naturalna decyzja AI przy tym wieku to ODMOWA (zmierzone w mutacji hak-ignorowany: L4b–L4e zielone, L4f2 czerwony).
+    // Dlatego L4b–L4e potwierdzają zachowanie odmowy, a skuteczność haka dowodzi wyłącznie kontrola L4f2 (wymuszona akceptacja).
     await page.evaluate(([ai]) => window.__truceTestDebug.setWarAge(ai, 25), [AI]);
     const sWar4 = await pairState(page);
     assert('L4-pre para w wojnie przed propozycją gracza', sWar4.status === 'wojna', sWar4);
