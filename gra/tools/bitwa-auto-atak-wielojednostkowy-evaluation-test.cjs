@@ -162,8 +162,10 @@ function commitResolution(scene, units, resolutions) {
   attack._beginAutoBatchPhase('atk', attack.atk);
   const attackRound2 = [...attack.testIntents];
   commitResolution(attack, attack.atk, attackRound2);
-  assert(archer.q < infantry.q && infantry.q === 4 && infantry.r === 3,
-    'Second Atak round: archer still never overtakes infantry and infantry is not pushed back (stays at (4,3))');
+  // Exact-state check (not a relative one): any round-2 push of the archer into
+  // (3,2)/(3,3)/(4,x) or any displacement of the infantry from (4,3) fails here.
+  assert(infantry.q === 4 && infantry.r === 3 && archer.q === 2 && archer.r === 2,
+    'Second Atak round: exact formation kept (infantry (4,3), archer (2,2)); no archer push ahead, no infantry displacement');
 
   // Defense with a non-adjacent enemy.
   const defender = unit('defender', 'atk', 4, 5, 'melee', 'def', { dc: 0, dr: 0 });

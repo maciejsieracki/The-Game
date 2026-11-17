@@ -128,9 +128,9 @@ const NIE = [
 const byId = new Map(buildings.map(b => [b.id, b]));
 
 // ===========================================================================
-// 2a. ASERCJA PER BUDYNEK — 19 daje szczescie, 22 daje DOKLADNIE 0
+// 2a. ASERCJA PER BUDYNEK — 19 daje szczescie, 25 daje DOKLADNIE 0 (22 + garnizon, mury_kamienne, emporion)
 // ===========================================================================
-section('2a. per budynek: 19 szczesciodajnych, 22 z zerem (G1)');
+section('2a. per budynek: 19 szczesciodajnych, 25 z zerem (G1)');
 eq(TAK.length, 19, 'lista TAK ma 19 pozycji');
 eq(NIE.length, 25, 'lista NIE ma 25 pozycji (22 + garnizon, mury_kamienne, emporion)');
 // Stan z 04660f9d1 = 41 (19 + 22). Późniejsze wpisy: +garnizon (918e59933), +mury_kamienne (0bf194d76), +emporion (c80f39cf0) = 44.
