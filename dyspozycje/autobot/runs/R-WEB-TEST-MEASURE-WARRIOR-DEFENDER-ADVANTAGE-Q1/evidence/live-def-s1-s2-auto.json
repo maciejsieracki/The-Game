@@ -1,0 +1,234 @@
+{
+  "runs": {
+    "def-s1|auto": {
+      "cfg": {
+        "id": "def-s1",
+        "role": "def",
+        "seed": 1
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 27,
+          "r": 12
+        },
+        "hexEnemy": {
+          "q": 28,
+          "r": 12
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectionMethod": "brak-klikniecia (obrona)",
+      "preBattle": {
+        "open": false
+      },
+      "error": "brak okna przed bitwa (AI nie zaatakowal)"
+    },
+    "def-s2|auto": {
+      "cfg": {
+        "id": "def-s2",
+        "role": "def",
+        "seed": 2
+      },
+      "mode": "auto",
+      "errors": [],
+      "suppressVictory": true,
+      "stacks": {
+        "hexPlayer": {
+          "q": 22,
+          "r": 10
+        },
+        "hexEnemy": {
+          "q": 23,
+          "r": 10
+        },
+        "playerIds": 10,
+        "enemyIds": 10,
+        "spawnErrors": [],
+        "unitsAtPlayerHex": 10,
+        "unitsAtEnemyHex": 10
+      },
+      "probeMapUnits": [
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": 0,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        },
+        {
+          "owner": -1,
+          "inGarnizon": false
+        }
+      ],
+      "selectionMethod": "brak-klikniecia (obrona)",
+      "preBattle": {
+        "open": false
+      },
+      "error": "brak okna przed bitwa (AI nie zaatakowal)"
+    }
+  },
+  "meta": {
+    "chromium": "/usr/bin/chromium",
+    "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/wojdist",
+    "runda": 4,
+    "path": "playtest=mapa + __civTest.addUnit(typeId=Wojownik) x10 vs x10, bez presetu i bez przepisywania statystyk"
+  }
+}

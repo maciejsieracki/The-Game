@@ -227,7 +227,10 @@ async function runOne(browser, base, cfg, mode) {
     const bs = window.__lastBattleScene;
     const pick = (u) => ({ nazwa: u.bu.nazwa, hp: u.bu.hp, maxHp: u.bu.maxHp, kategoria: u.bu.kategoria ?? u.bu.category ?? null, typeId: u.bu.typeId ?? null });
     const cnt = (arr) => arr.reduce((m, u) => { m[u.bu.nazwa] = (m[u.bu.nazwa] || 0) + 1; return m; }, {});
-    return { atkCount: bs.atk.length, defCount: bs.def.length, atkNames: cnt(bs.atk), defNames: cnt(bs.def), sampleAtk: bs.atk.slice(0, 1).map(pick), sampleDef: bs.def.slice(0, 1).map(pick) };
+    // Statystyki polem po polu (zarzut Evaluatora #3): bu.stats z units.json dla KAZDEJ jednostki obu stron.
+    const FIELDS = ['Jednostka', 'health', 'meleeAttack', 'meleeDefence', 'weaponDamage', 'piercing', 'armor', 'Atak', 'Obrona', 'Uderzenie', 'Pancerz', 'Przebicie', 'Morale bazowe', 'Morale ucieczki', 'Próg dezercji (% health)', 'Ruch w bitwie (heksy)', 'Rola (linia)'];
+    const st = (u) => { const s = (u.bu && u.bu.stats) || {}; const o = {}; for (const f of FIELDS) o[f] = s[f] === undefined ? null : s[f]; return o; };
+    return { atkCount: bs.atk.length, defCount: bs.def.length, atkNames: cnt(bs.atk), defNames: cnt(bs.def), sampleAtk: bs.atk.slice(0, 1).map(pick), sampleDef: bs.def.slice(0, 1).map(pick), statsAtk: bs.atk.map(st), statsDef: bs.def.map(st) };
   });
   log('probe ' + JSON.stringify(steps.probe).slice(0, 300));
   // Kontrola zamiany stron: AI moglo zaatakowac INNA pare (np. Grecy-Rzymianie). Bez stosow Wojownik wynik NIE jest pomiarem.
