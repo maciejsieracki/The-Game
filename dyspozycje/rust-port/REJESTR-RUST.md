@@ -3279,3 +3279,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Po FC PASS:** refs/keep + push `rust-port-wip/*`, integracja FF na `parity-v2` (baza `f85622878`, parity jest na `7fcef940b` po T7a — sprawdzić ancestry przed FF).
 - **Kolejka po G5:** T7b r4 (baza `61ffc110f`, wip, nie PASS).
 - **Sprzątanie:** worktrees G5 r3 `-1..-3` zostają do zakończenia rundy; dysk 14 GB.
+
+### Przebieg — G5 normalizacja kluczy (#332) zintegrowany FF parity-v2 = 760be5187 (2026-11-17 ~08:50 UTC)
+
+- **#332 G5, runda r3 (Opus), wszystkie etapy zamknięte:** Operator PASS (`074b25afb`); Evaluator PASS-WITH-NOTES; Obrona PASS-WITH-NOTES (`e76b8963f`); FC PASS-WITH-NOTES (`31b546619`). Dług: komentarz `renderer/src/improvements/sync/mod.rs:39,46` poza allowlistą; kopia tabeli aliasów w `engine/src/domain/improvements.rs:696` (dług: producent DTO powinien wyliczać warstwy).
+- **Bramki na połączonym drzewie** (merge `760be5187` = parity `7fcef940b` + G5, crate renderer, dysk 16 GB, bez cudzych buildów): `cargo fmt --check` EXIT 0; `clippy --all-targets -D warnings` EXIT 0; `cargo test --test improvements_sync_g5` EXIT 0; `cargo test --all-targets --no-fail-fast` EXIT 0. Cargo.lock wygenerowany przez build przywrócony do stanu z commita (nie commitowany).
+- **Integracja:** merge `--no-ff` w tymczasowym worktree; zakres diffu w allowliście (renderer `build.rs`, `input.rs`, testy G5, raporty); `Cargo.lock` i `gra/` nietknięte. Fast-forward `parity-v2` `7fcef940b` → `760be5187` (readback zgodny).
+- **Zabezpieczone (wip):** `rust-port-wip/p4-1-g5-norm-opus-{op,ob,ev,fc}-r3`. Push `refs/keep` nadal odrzucany.
+- **Sprzątanie:** usunięte worktrees G5 r3 i tymczasowy worktree integracji; usunięty target `g5-int-target`.
+- **Okno renderera zamknięte.** Następne w kolejności: T7b r4 (baza `61ffc110f`, wip, nie PASS) — po dispatchu. Heartbeat chce czterech slotów; od teraz wolno uruchamiać workerów równolegle, bo bramka 12 GB już nie wisi.
