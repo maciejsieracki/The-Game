@@ -3671,3 +3671,17 @@ Konsekwencje dla kolejki:
 | Temat | Etap | Model | Od kiedy |
 |---|---|---|---|
 | P4-364 DTO-BRIDGE r1 (#364) | Operator | OPUS 5.5 | ok. 17:35 UTC |
+
+### Przebieg — DTO-BRIDGE r1 (#364, część 1): FC PASS-WITH-NOTES, zintegrowany na parity-v2 (2026-11-17 ~18:40 UTC)
+- **Łańcuch:** Operator `13ed6c880` PASS-WITH-NOTES → Evaluator `c329f329d` PASS-WITH-NOTES (bramki odtworzone, mutacje FAIL) → Obrona `38faba89a` (zarzut 7b naprawiony: przypadek fogOn=false + revealAllLand + awaiting, 12 przypadków) → FC `326fd5545` PASS-WITH-NOTES.
+- **Zakres:** `engine/src/domain/dto_bridge.rs` (nowy), `domain/mod.rs` (1 linia), test `p4_364_dto_bridge` (5/5), generator `.mjs` i wektory. Bez zmian w `EngineCommand`, `BridgeResult`, view-model i rendererze.
+- **Bramki (FC na commicie integrowanym):** fmt EXIT 0; clippy `-D warnings` EXIT 0; `p4_364_dto_bridge` 5/5; pełny engine `--all-targets --no-fail-fast` EXIT 0 (523 binarki, 3902 zaliczonych, 0 nieudanych, 1 ignorowany sprzed tematu).
+- **FF:** `parity-v2` `e2a2c4e2f` → `326fd5545` (ancestry OK, bez trailera z nazwą modelu). Zabezpieczenia: `refs/keep/DTO-BRIDGE-R1-fc`, gałęzie `rust-port-wip/364-dto-bridge-r1{,-eval,-obrona,-fc}` na origin.
+- **Decyzje orkiestratora (do zapisu w rejestrze):** D-364-1 (producenci w engine, view-model na serde), D-364-2 (kontrakt JSON mostu = osobna decyzja r2 po zgodzie właściciela), D-364-3 (`RenderLayersDto` bez nowych pól w r1). Odstępstwa Operatora zaakceptowane: D-BR-1 (zbiór `player_ever_owned_city_by_owner` jako parametr, bo `PlayableState` trzyma jedną flagę bool), D-BR-2 (`fog_on` + `visible` zamiast `fog_active`, wg pinu `main.ts:15597`), D-BR-3, D-BR-4 (`MissingStartHex` martwy, decyzja w r2), D-BR-5 (przy mgle wyłączonej `river_reveal_keys = None`, wg pinu `main.ts:13506`).
+- **Długi do nadania ID:** (1) `overlays_view::awaiting_first_city` używa flagi bool — działa tylko dla fotela 0, poza allowlistą (pokrewny #253); (2) wektor L1/L2 `fog_off_no_reveal_awaiting` podaje klucze rzek przy mgle wyłączonej — korekta wektora (L1/L2-FOGOFF-VEC); (3) brak wołającego produkcyjnego — wpięcie do mostu = r2 po decyzji o kontrakcie JSON.
+- **Sprzątanie:** worktree `wf_23e2b89d-eb1-1..4` usunięte; target `scratchpad/target364` usunięty.
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| Brak aktywnych workflow 3D | — | — | — |
+| Do decyzji: r2 DTO-BRIDGE (kontrakt JSON mostu) i #253 (mgła fotela) | czeka na właściciela | — | — |
