@@ -18,7 +18,7 @@ const http = require('http');
 const DIST = process.argv[2];
 const OUT = process.argv[3];
 const LIMIT_S = Number(process.argv[4] || 1500);
-if (!DIST || !OUT) throw new Error('usage: node live-verify-w18-w24-manual-losses-r2-manual.cjs <dist-dir> <out.json> [limitSekund]');
+if (!DIST || !OUT) throw new Error('usage: node live-verify-w3-manual-orders-r3.cjs <dist-dir> <out.json> [limitSekund]');
 const CHROME = process.env.W3_CHROMIUM || '/usr/bin/chromium';
 const { chromium } = require('playwright');
 
@@ -115,7 +115,7 @@ async function runOne(browser, base, cfg, mode) {
     bs.def.length = 0; nd.forEach((u) => bs.def.push(u));
     try { bs._syncGroupRegistry && bs._syncGroupRegistry(); } catch (e) {}
     const cnt = (arr) => arr.reduce((m, u) => { m[u.bu.nazwa] = (m[u.bu.nazwa] || 0) + 1; return m; }, {});
-    return { before: { atk: cnt(bs.atk.length ? [] : []), raw: before }, atkAfter: cnt(bs.atk), defAfter: cnt(bs.def) };
+    return { before: { atk: cnt(before.atk.map((n) => ({ bu: { nazwa: n } }))), def: cnt(before.def.map((n) => ({ bu: { nazwa: n } }))) }, atkAfter: cnt(bs.atk), defAfter: cnt(bs.def) };
   }, cfg);
   if (process.env.R3_TRACE) console.log('TRIM', JSON.stringify(trimInfo));
   const start = await page.evaluate(() => {
@@ -123,7 +123,7 @@ async function runOne(browser, base, cfg, mode) {
     const a = bs._sideEndStats('atk'); const d = bs._sideEndStats('def');
     return { atkTotal: a.total, defTotal: d.total, atkHp: Math.round(a.hp), defHp: Math.round(d.hp), deployPhase: !!bs.deployPhase, manualAtStart: !!bs._manualMode };
   });
-  const actions = { startClick: false, spacePresses: 0, rToggle: false, skipClick: false, ordersIssued: 0, orderRounds: 0 };
+  const actions = { startClick: false, spacePresses: 0, rToggle: false, skipClick: false, ordersIssued: 0, orderRounds: 0, perRound: [] };
   // Pelne klikniecia/klawisze przez Playwright (wejscie uzytkownika), nie przez metody sceny.
   await page.waitForSelector('#deploy-toolbar-start', { timeout: 60000 }).catch(() => {});
   if (mode === 'skip') {
@@ -147,7 +147,7 @@ async function runOne(browser, base, cfg, mode) {
   let fin = false;
   let stuckLoops = 0;
   while (!fin) {
-    if (mode === 'manual') {
+    if (mode === 'manual' || mode === 'manual-null') {
       // Faza 1 (runda 1): scena czeka na rozkazy (_battleAwaitingOrders). Kolejne rundy: po zmianie roundNo
       // driver ponownie wydaje rozkazy ATAK wszystkim zywym jednostkom i Spacja wykonuje kolejke.
       const st = await page.evaluate((lastRound) => {
@@ -160,19 +160,26 @@ async function runOne(browser, base, cfg, mode) {
       }, actions.lastRound ?? -1);
       if (st.fin) { fin = true; }
       else if (st.aw || st.round !== (actions.lastRound ?? -1)) {
-        const n = await page.evaluate(() => {
-          const bs = window.__lastBattleScene; let k = 0;
+        // Licznik per runda: alive = zywe jednostki gracza; eligible = zywe, nie acted, z celem; issued = wydane rozkazy.
+        // Tryb manual-null: BEZ rozkazow (tylko Spacja) - kontrola negatywna (nietautologicznosc sterownika).
+        const pr = mode === 'manual-null' ? { alive: null, eligible: 0, issued: 0 } : await page.evaluate(() => {
+          const bs = window.__lastBattleScene; let k = 0; let alive = 0; let eligible = 0;
           for (const u of bs._playerRoster()) {
-            if (u.dead || u.removed || u.routed || u.fadingOut || u.acted) continue;
+            if (u.dead || u.removed || u.routed || u.fadingOut) continue;
+            alive++;
+            if (u.acted) continue;
             const e = bs._nearestEnemy(u);
             if (!e) continue;
+            eligible++;
             bs._selectedUnits = new Set([u.bu.id]);
             bs._issueBattleAttack(e.bu.id, true);
             k++;
           }
           bs._selectedUnits = new Set();
-          return k;
+          return { alive, eligible, issued: k };
         });
+        const n = pr.issued;
+        actions.perRound.push({ round: st.round, ...pr });
         actions.ordersIssued += n; actions.orderRounds++; actions.lastRound = st.round;
         await page.keyboard.press('Space'); actions.spacePresses++;
         fin = await page.evaluate(() => { window.__pumpFrames(2); return !!window.__lastBattleScene.finished; });
@@ -201,7 +208,7 @@ async function runOne(browser, base, cfg, mode) {
     };
   });
   await page.close();
-  return { trimInfo: { atkAfter: trimInfo.atkAfter, defAfter: trimInfo.defAfter }, start, actions, res, errors };
+  return { trimInfo, start, actions, res, errors };
 }
 
 (async () => {
