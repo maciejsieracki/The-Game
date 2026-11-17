@@ -33,3 +33,17 @@ Wpiąć `apply_dipl_deltas_to_state` w `advance_turn` w kolejności zgodnej z pi
 ## KRYTERIA KOŃCA
 1. Wiring w `advance_turn`, wektory ≥150 zielone, mutacje FAIL, bramki EXIT 0.
 2. Commit jawnym `git add`, bez `Cargo.lock`, bez push do parity. Raport `01-operator-r1.md`.
+
+## DODATEK r2 (orkiestrator, po BLOCK INFRA r1 + FC FAIL: bramki nieuruchomione, brak wektorów D3, rozjazd parytetu, mutant (c))
+Rozstrzygnięcia orkiestratora (reguła 8/9: parytet z pinem, decyzje techniczne podejmuje orkiestrator).
+- BAZA r2: `f0eb32ab8` (wip r1 Obrony; zawiera wiring w `advance_turn` i poprawkę rollbacku ekonomii). Sprawdź `git merge-base --is-ancestor origin/rust-port/parity-v2 f0eb32ab8`; jeśli parity się przesunęło — zrób rebase na parity i zapisz SHA.
+- ZARZUT 5 (rozjazd Ledger D3 vs pula Pracy): ROZSTRZYGNIĘTE — zgodnie z pinem. Pin podłogowuje pulę przy KAŻDYM zapisie (`setOwnerPracaPool`, `gra/src/main.ts:34879-34882`, wołania `main.ts:24015-24016`, `12588-12589`). Zmień `rust-port/engine/src/domain/turn_war_dipl_steps.rs` (ledger D3, ok. 399–412): podłoga po każdym zapisie, saldo płatnika sprawdzane. ALLOWLISTA rozszerzona jednorazowo o ten plik — tylko zmiana ledgera D3, nic więcej.
+- ZARZUT 6 (rollback): zostaje poprawka Obrony w `playable.rs` (`economy_before`, przywracanie w obu ścieżkach błędu). Dodaj test dowodzący przywrócenia salda skarbca po błędzie `phases.len() != PHASE_COUNT`.
+- ZARZUT 4 (wektory D3, #299): WYMAGANE ≥ 150 wektorów dla D3 ORAZ ≥ 150 dla apply. Wektory muszą pochodzić z generatora (wykonanie tekstu pina przez TypeScript), nie ręcznie. Wektory apply muszą obejmować SEKWENCJE przepływów w jednej turze dla tego samego właściciela (nie jedną zagregowaną operację), bo pin wywołuje `setOwnerPracaPool` wielokrotnie.
+- ZARZUT 3 (test wiringu): wartości z generatora, nie policzone ręcznie; co najmniej dwa scenariusze (w tym Work/praca i handel cykliczny zasobami).
+- ZARZUT 7 (mutant c, zamiana kolejności apply): ROZSTRZYGNIĘTE — po poprawce podłogi (zarzut 5) kolejność przepływów ma obserwowalny efekt; mutant (c) MUSI dać FAIL. Jeśli nadal przeżywa — zgłoś DECISION_REQUIRED, nie uznawaj za równoważny.
+- ZARZUT 8 (wielu ludzi, is_human): poza zakresem (#282). Nie ruszaj.
+- MUTACJE (MUSZĄ dać FAIL): (a) usunięcie wywołania z `run_diplomacy_war_phase`; (b) brak wpisu traktowany jako błąd; (c) zamiana kolejności przepływów (po poprawce podłogi); (d) usunięcie podłogi po zapisie (ledger D3); (e) rollback bez economy.
+- BRAMKI: `cargo fmt --check -p civ-engine`; `cargo clippy --all-targets -- -D warnings`; `cargo test --test p6_r7k7c`; `cargo test --all-targets --no-fail-fast` (w tle, `timeout 1800`). Kody wyjścia w raporcie.
+- DYSK: ≥ 8 GB przed startem i przed każdą mutacją (`df -h /`). Przy < 8 GB: BLOCK INFRA z liczbą GB.
+- Trailery commitów: BEZ nazwy modelu (#289). Raport `02-operator-r2.md`. Commit jawnym `git add`, bez `Cargo.lock`, bez push do parity.
