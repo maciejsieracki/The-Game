@@ -54,7 +54,7 @@ ODRZUCAM jako bez znaczenia dla bramki (dowód: `git show -s 732ef51a0`): linia 
 - clippy -D warnings (civ-engine, all-targets): exit 0.
 - p6_k5doc_t4e: 7/7 ok.
 - generator: 313 przypadków, vectors.json bez zmian.
-- pełny `cargo test -p civ-engine --all-targets --no-fail-fast`: patrz wynik w commit/raporcie orkiestratora (uruchomiony, log w scratchpadzie tematu).
+- pełny `cargo test -p civ-engine --all-targets --no-fail-fast` (exit 0): 521 binarek, 3888 passed, 0 failed, 1 ignored (ignorowany test poza plikami tematu; w plikach tematu brak `#[ignore]`).
 - NIE_ZMIERZONO: mutacje a/b/c/d NIE zostały ponownie uruchomione po zmianie Z5. Zmiana dotyczy wyłącznie gałęzi odmowy; mutacja (b) (brak MissingTerrain) jest nadal łapana przez `missing_terrain_is_explicit_error_without_mutation` (ruch bez odmowy).
 
 ## BLOKADY / DŁUGI
