@@ -1,3 +1,79 @@
+# R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1 — obrona Operatora (runda 2, odpowiedź na zarzuty Evaluatora r2 5fbee78cb)
+
+STATUS: PASS-WITH-NOTES (runda 2/5; zarzuty 1, 3, 5, 7 przyjęte — 1 i 3 poprawione w kodzie i testach; 2, 4, 8 odrzucone z dowodem (część); 6 przyjęte częściowo — Chromium NIE ZMIERZONO)
+DOMAIN: GAME (bitwa / rozstawienie)
+TEMAT: R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1
+GOAL: rozstawienie w bitwie z zasadzki (zastawiający także na polu wroga, zaskoczeni w długiej linii max 3 w szeregu), zwykła bitwa bez zmian, bez premii liczbowych.
+BAZA: 8db0f6833 (start rundy 2, fast-forward worktree; zawiera r2 Operatora 10-operator-claude.md i 5fbee78cb-zarzuty).
+ZMIANY-COMMIT: 014173a8c — gra/src/battle/battleScene.ts (_buildDeployZone: strefa graficzna = _inDeployPlayerZone; zastawiający bez mgły na polowie wroga; zaskoczony tylko w paśmie linii; komunikat bez generała w deploy init), gra/src/battle/ambushDeploy.ts (ambushDeployFeedbackText), gra/tools/ambush-deploy-zone-visual-test.cjs (NOWY), gra/tools/ambush-deploy-wiring-test.cjs (NOWY). Ten raport = osobny commit po 014173a8c.
+COMMIT: SHA końcowy = patrz pole `sha` w StructuredOutput.
+
+## Zarzuty r2 — odpowiedzi
+
+### Zarzut 1 (pkt 9: strefa graficzna rozjechana z logiką) — PRZYJMUJĘ, poprawione
+- Poprawka: _buildDeployZone używa _isAmbushAmbusherPlayer / _isAmbushSurprisedPlayer; zastawiający: kolumny PLAY_COL0..PLAY_COL1, wiersze DEPLOY_MIN..DEPLOY_MAX, bez fog (fog dodawany tylko gdy !ambusherPlayer); zaskoczony: kolumny zwykłej strefy, wiersze = _ambushLineRowBand(); kafle tylko gdy _inDeployPlayerZone. Zwykła bitwa: ścieżka bez zmian (ambushVis=false).
+- Dowód: gra/tools/ambush-deploy-zone-visual-test.cjs — WYNIK: 11 OK / 0 FAIL. Zastawiający: kafle graficzne (5280) = strefa logiczna (5280), siegają polowy wroga, brak mgły. Zaskoczony: kafle (69) = strefa logiczna (69), wszystkie w wierszach 76..78, mgła zostaje. Zwykła bitwa: mgła i kafle w zwykłej polowie.
+- Mutacja M1 (usunięto filtr _inDeployPlayerZone ORAZ wiersze pętli ustawiono na PLAY_ROW0..PLAY_ROW1): test FAIL „zaskoczony: kafle graficzne (2530) = strefa logiczna (69)” — złapane.
+- Mutacja M2 (usunięto tylko filtr; pętla nadal po paśmie): PASS 11/0 — to mutacja równoważna (pętla już ogranicza wiersze do pasma), nie luka testu.
+- Chromium (zrzut 1280×720): NIE ZMIERZONO — patrz zarzut 6.
+
+### Zarzut 2 (pkt 10: AUTO i „pomiń do wyniku”) — ODRZUCAM część „doMapAutoResolve”, PRZYJMUJĘ część sceny
+- doMapAutoResolve (main.ts ~36204) rozstrzyga bitwę wzorem siły (resolveAutoBattleByPower, rosterFieldPowerM); nie ma fazy rozstawienia i nie czyta pozycji jednostek. Rozstawienie zasadzki nie ma tam zastosowania; premii liczbowej też nie dodano (zgodnie z dispatchem).
+- skip() w scenie (battleScene.ts ~3765): przy deployPhase wywołuje _endDeployPhase() i NIE przestawia jednostek — zostają pozycje z _placeUnits lub ręczne gracza.
+- AUTO startowe i Reset korzystają z tych samych funkcji co rozstawienie: _placeUnits (wywołanie _applyAmbushDeployIdeal ~5409, linia zaskoczonych ~5424-5426) oraz _placeUnitsOneSide (~17991-17993: lineSide, lineBand). Pokryte przez ambush-deploy-line-width-test (240 checks; realne _placeUnits i _placeUnitsOneSide, N=5/12/30/60, plains i scattered).
+- Luka (NIE ZMIERZONO): brak osobnego testu samego przycisku „pomiń” w fazie rozstawienia.
+- UWAGA-DLA-ORKIESTRATORA: AUTO na mapie (doMapAutoResolve) ignoruje zasadzkę — to decyzja produktowa, nie błąd kodu; do ABC właściciela.
+
+### Zarzut 3 (pkt 12: manualControlAllowed bez generała) — PRZYJMUJĘ jako decyzję, poprawione tekstem i testem
+- Stan kodu: deploy = generał LUB zasadzka (main.ts 36284, 37065); manualControlAllowed = generał (zasada istniejąca). Rozstawienie zasadzki zatem działa bez generała, a bitwa idzie AUTO po rozstawieniu (_manualMode=false, _kickoffBattleTurn).
+- Poprawka: komunikat PL na starcie rozstawienia dopisuje „Bez generała bitwa potoczy się automatycznie (AUTO).” (ambushDeployFeedbackText; battleScene deploy init, bramka _manualCommanderGate && !playerHasCommander).
+- Dowód: gra/tools/ambush-deploy-wiring-test.cjs — (b) strefa rozstawienia identyczna przy manualMode on/off dla control=def/atk; klamp identyczny; komunikat bez generała zawiera „Bez generała” i „AUTO”; komunikaty z generałem bez dopisku. WYNIK: 15 OK / 0 FAIL (razem z (a) i (c)).
+- ZAŁOŻENIE (do potwierdzenia przez ABC właściciela): rozstawienie bez generała = tak, z AUTO po rozstawieniu. Alternatywa „brak rozstawienia bez generała” nie została wdrożona.
+
+### Zarzut 4 (pkt 11: zapis/wczytanie i replay flagi zasadzki) — ODRZUCAM żądanie testu realnej ścieżki zapisu
+- Zapis w trakcie bitwy jest zablokowany: main.ts ~40478 `isSaveBlockedByBattle() = isBattleSceneOpen() || isPostBattleSummaryOpen()`; komunikat „Zapis niedostępny w trakcie bitwy” (~40482; reguła W27). Stan fazy rozstawienia nie może więc trafić do zapisu; BattleOpts.ambush nie jest serializowana i nie musi być.
+- Test statyczny: ambush-deploy-wiring-test (c) — 2 asercje na te linie.
+- NIE ZMIERZONO: autozapis w bitwie (czy też blokowany) i realny zapis/wczytanie przez serializeGame/deserializeGame. Brak środowiska do uruchomienia gry (patrz zarzut 6).
+
+### Zarzut 5 (brak testu okablowania main.ts) — PRZYJMUJĘ, dodano
+- ambush-deploy-wiring-test (a): 6 asercji na realne linie main.ts: openPlayerMapUnitAttackCore(mover, defender, true) (~33993); deploy/ambush atakującego (~36284-36286); deploy/ambush obrony (~37065-37067); AI→gracz cmd.ambush → 'atk' (~45938-45939). WYNIK: w zestawie 15 OK / 0 FAIL.
+- Granica: test czyta tekst źródła (nie wykonuje ścieżki na mapie). NIE ZMIERZONO wykonanie w przeglądarce.
+
+### Zarzut 6 (Chromium i harnessy battle-*) — PRZYJMUJĘ część
+- Dowód na poziomie sceny to 11/0 (zarzut 1) i 15/0 (zarzut 5), nie zrzut.
+- Chromium: NIE ZMIERZONO. /usr/bin/chromium istnieje, ale uruchomienie gry wymaga serwera dev/build w gra/, a to jest zakazane w tym temacie (R-PROC-AUTOBOT §9 / zasady gra/: zakaz npm run build/dev). Brak dozwolonej ścieżki do zrzutu 1280×720.
+- Harnessy battle-*: reprodukcja w tej rundzie — battle-commander-star-reset-test.cjs: "Build failed ... src/ui/brandTokenVars.ts:7:27: Cannot import tokens.css?raw" — dług bazowy po FALI 787 (nie regresja tej zmiany). Nie uruchomiono ich jako bramek.
+
+### Zarzut 7 (mutacja mountedWing redundantna) — PRZYJMUJĘ (dług testowy), bez zmiany kodu
+- mountedWing = mounted AND !lineSide wpływa na punktację kafli (plains +40 dla piechoty w linii vs +6 dla konnicy-skrzydła), a nie na granice szyku (te wymusza pasmo wierszy). Mutacja B przeżywa, bo ambush-deploy-line-width-test sprawdza granice, liczbę na kolumnę i obecność konnicy, a nie wybór kolumny konnicy.
+- Nie dodano testu wyboru kolumny konnicy w tej rundzie. NIE ZMIERZONO wpływ na konkretne ustawienie konnicy w grze.
+
+### Zarzut 8 (AI-zastawiający: kolejność stron i przeszkody) — CZĘŚCIOWO ODRZUCAM
+- Brak nakładania obu stron na terenie plains i scattered: pokryte przez ambush-deploy-line-width-test (240 checks, 3 przypadki: AI zaskoczony def, gracz zaskoczony atk, gracz zaskoczony def) — asercja „brak nakładania” jest w tym teście.
+- Kolejność rozstawiania stron (atk przed def) i przeszkody dla obu stron jednocześnie: NIE ZMIERZONO (brak testu kolejności).
+
+## Testy (surowe wyniki, worktree, gra/node_modules z npm ci)
+- npx tsc --noEmit (gra/): exit 0, 0 linii wyjścia.
+- ambush-deploy-geometry-test.cjs: WYNIK: 20 OK / 0 FAIL
+- ambush-deploy-scene-test.cjs: WYNIK: 26 OK / 0 FAIL
+- ambush-deploy-line-width-test.cjs: PASS: zaskoczeni w dlugiej linii (max 3 w szeregu, konnica w linii) dla N=5/12/30/60 (240 checks)
+- ambush-deploy-identity-test.cjs (AMBUSH_BASE_GRA = git archive 1c452ec35 gra/src gra/tools gra/data): PASS: zwykla bitwa rozstawienie identyczne z baza 1c452ec35 (start + Reset) (1776 porownanych pozycji)
+- ambush-deploy-zone-visual-test.cjs (NOWY): WYNIK: 11 OK / 0 FAIL
+- ambush-deploy-wiring-test.cjs (NOWY): WYNIK: 15 OK / 0 FAIL
+- mgla-sciezka-inwariant-test.cjs: 42 pass, 0 fail
+- json-descriptions-sync-test.cjs: 19 pass / 0 fail
+- battle-commander-star-reset-test.cjs: NIE URUCHOMIONO jako bramka — Build failed (brandTokenVars ?raw), dług bazowy
+- Pozostałe 5 bramek referencyjnych, load-game-regression, determinizm-same-seed: NIE ZMIERZONO w tej rundzie (czas/limit; brak zmian poza bitwą z zasadzki — zwykła bitwa potwierdzona identity-testem 1776/1776).
+- git diff --check: czysto.
+
+## Ustalenia do ABC właściciela / uwagi dla orkiestratora
+- AUTO na mapie (doMapAutoResolve) ignoruje zasadzkę (zarzut 2).
+- Bez generała: rozstawienie tak, potem AUTO (zarzut 3, ZAŁOŻENIE).
+- Dług: 4 harnessy battle-* (brandTokenVars ?raw) — osobny temat HARNESS-BRANDTOKENS-STUB (już zgłoszony w r1).
+- Chromium 1280×720 dla rozstawienia z zasadzki — NIE ZMIERZONO (wymaga dopuszczenia uruchomienia gry).
+
+---
+
 # R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1 — obrona Operatora (runda 1, odpowiedź na zarzuty Evaluatora)
 
 STATUS: PASS-WITH-NOTES (zarzuty 1, 2, 7 przyjęte i poprawione w kodzie/testach; 3, 4, 5, 6, 8, 9, 10, 11, 12 przyjęte jako otwarte — NIE ZROBIONE w tej rundzie)
