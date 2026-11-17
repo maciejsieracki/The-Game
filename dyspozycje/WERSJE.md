@@ -1,3 +1,9 @@
+## ROBOCZA 2bff7522 -- 2026-11-17 -- FALA 791: Lista ulepszen terenu w kolejnosci po typach (IMPORDER) (testowa)
+
+- Lista ulepszen terenu (panel budowy + podpowiedz hexa) w stalej kolejnosci po 7 typach (22 pozycje: Rolnictwo, Hodowla, Drewno, Kamien/glina/sol, Kopalnie, Komunikacja, Obrona), dostepne zawsze u gory; tylko prezentacja (d7fca1736, merge d6ff0cc23)
+- Weryfikacja: improvements-list-order-test 11/11 (mutacja RED), logic 213/213, tsc 0 nowych bledow, vite build OK; NIE ZMIERZONO w zywym Chromium
+- Limity: Brak weryfikacji Chromium; kolejnosc zalezy od dostepnosci (tech/teren) wg istniejacej logiki
+
 ## ROBOCZA a07725de -- 2026-11-16 -- FALA 790: odznaki w oknie odkrycia technologii nie nachodza na elipse gruntu (testowa)
 
 - R-WEB-UI-TECH-DISCOVERY-BADGE-ELLIPSE-OVERLAP-Q1 (r1, FC PASS-WITH-NOTES b4768c224): w oknie odkrycia technologii elipsa gruntu diorama przesunieta (bottom 63px -> 70px, jedna linia CSS), odznaki Ukonczona/Podglad nie nachodza na medalion ani elipse (przed: 120x7 i 58x7 px, po: 0); tresc, kolory i rozmiary bez zmian
