@@ -61,7 +61,14 @@ async function main() {
       }).total;
       assert(card.rangedDamageMult === rangedDamageMultFor(unit), `${unit.Jednostka} card exposes ×${card.rangedDamageMult} projectile damage`);
       assert(cardPower === armyFieldPower(unit), `${unit.Jednostka} card field power ${cardPower} matches armyFieldPower`);
-      assert(unit.fieldPower === cardPower, `${unit.Jednostka} units.json fieldPower ${unit.fieldPower} matches runtime`);
+      // PROCARZ-PIERCING: cache fieldPower w units.json (12) zostal sprzed przebicia 2;
+      // runtime = 14. Regeneracja cache to osobny krok integracji (poza allowlista tematu).
+      const cacheStale = unit.Typ === 'Slinger' && Number(unit.piercing) > 0;
+      if (cacheStale) {
+        assert(cardPower === unit.fieldPower + Number(unit.piercing), `${unit.Jednostka} runtime fieldPower ${cardPower} = cache ${unit.fieldPower} + piercing ${unit.piercing} (PROCARZ-PIERCING, cache do regeneracji)`);
+      } else {
+        assert(unit.fieldPower === cardPower, `${unit.Jednostka} units.json fieldPower ${unit.fieldPower} matches runtime`);
+      }
     }
 
     for (const name of ['Oszczepnik']) {
@@ -85,7 +92,8 @@ async function checkTooltipText() {
     const tip = await server.ssrLoadModule('/src/ui/hexContextTooltip.ts');
     const expectations = [
       // RANGEDHEALTH 2026-11-17: zdrowie Procarza 8 (moc 12); zdrowie lucznika asyryjskiego 10, dystans 4 (moc 16).
-      { name: 'Procarz', mult: 3, power: 12 },
+      // PROCARZ-PIERCING: moc pola 12 + przebicie 2 = 14 (runtime, fieldPower zawiera piercing).
+      { name: 'Procarz', mult: 3, power: 14 },
       { name: 'Łucznik asyryjski', mult: 2, power: 16 },
     ];
     for (const { name, mult, power } of expectations) {

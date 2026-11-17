@@ -484,12 +484,12 @@ export function rangedShotAccuracy(meleeAttack: number, missileAttack: number): 
  * zaokragleniem do int; podloga 1.
  */
 export function rangedShotDamage(
-  shooter: Pick<CombatUnit, 'counterTyp' | 'typNazwa'>,
+  shooter: Pick<CombatUnit, 'counterTyp' | 'typNazwa' | 'piercing'>,
   missileAttack: number,
   armor: number,
   counterMult: number,
 ): number {
-  const raw = rangeDamageTw(missileAttack, armor) * counterMult * rangedDamageMultFor({
+  const raw = rangedShotBase(shooter, missileAttack, armor) * counterMult * rangedDamageMultFor({
     Typ: shooter.counterTyp,
     Jednostka: shooter.typNazwa,
   });
@@ -514,6 +514,30 @@ export function baseDamage(
 
 /** @deprecated macierz v2 usunieta — alias do rangeDamageTw. */
 export function rangeDamage(missileAttack: number, armor: number): number {
+  return rangeDamageTw(missileAttack, armor);
+}
+
+/**
+ * PROCARZ-PIERCING (decyzja właściciela 2026-11-17): strzał procarza (Typ Slinger,
+ * w tym Procarz (Huaracoc)) liczy się wzorem ciosu wręcz:
+ *   max(0, atak dystansowy − pancerz) + przebicie
+ * Pozostałe jednostki dystansowe (Łucznik, Oszczepnik, …) — bez zmian, bez przebicia
+ * w strzale: max(1, atak dystansowy − pancerz).
+ * Jedna implementacja dla auto-walki (rangedShotDamage) i bitwy ręcznej (battleScene).
+ */
+export function isPiercingShotShooter(shooter: Pick<CombatUnit, 'counterTyp'>): boolean {
+  return String(shooter.counterTyp ?? '').trim() === 'Slinger';
+}
+
+/** Podstawowe obrażenie strzału przed kontrą i mnożnikiem klasy (≥0). */
+export function rangedShotBase(
+  shooter: Pick<CombatUnit, 'counterTyp' | 'piercing'>,
+  missileAttack: number,
+  armor: number,
+): number {
+  if (isPiercingShotShooter(shooter)) {
+    return damageTw(missileAttack, armor, Math.max(0, shooter.piercing ?? 0), 0, false);
+  }
   return rangeDamageTw(missileAttack, armor);
 }
 

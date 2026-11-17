@@ -80,13 +80,14 @@ const dmgOszcz = combat.rangedShotDamage(oszczepnik, oszczepnik.missileAttack, f
 const baseProcarz = combat.rangeDamageTw(procarz.missileAttack, falanga.armor);
 const baseLucznik = combat.rangeDamageTw(lucznik.missileAttack, falanga.armor);
 console.log(`info: Falanga armor=${falanga.armor}; Procarz missile=${procarz.missileAttack} base=${baseProcarz}; Łucznik missile=${lucznik.missileAttack} base=${baseLucznik}`);
-check('Procarz vs Falanga dmg (base x3)', dmgProcarz, Math.max(1, Math.round(baseProcarz * 3)));
+// PROCARZ-PIERCING: strzal procarza = max(0, atak - pancerz) + przebicie 2, x3 (wzor wreczny).
+check('Procarz vs Falanga dmg (wzor wreczny x3)', dmgProcarz, Math.max(1, Math.round((Math.max(0, procarz.missileAttack - falanga.armor) + procarz.piercing) * 3)));
 check('Łucznik vs Falanga dmg (base x2)', dmgLucznik, Math.max(1, Math.round(baseLucznik * 2)));
 check('Oszczepnik vs Falanga dmg (bez zmian)', dmgOszcz, Math.max(1, Math.round(combat.rangeDamageTw(oszczepnik.missileAttack, falanga.armor))));
 // Kontra mnozona przed zaokragleniem, podloga 1
 check('dmg floor 1 (oszczepnik, shot 1 vs armor 9)', combat.rangedShotDamage(oszczepnik, 1, 9, 1), 1);
-check('dmg floor 1 (procarz x3, shot 1 vs armor 9 -> 3)', combat.rangedShotDamage(procarz, 1, 9, 1), 3);
-check('kontra x1.5 + procarz x3 (missile 4, armor 0)', combat.rangedShotDamage(procarz, 4, 0, 1.5), 18);
+check('dmg (procarz x3 wzor wreczny, shot 1 vs armor 9 -> (0+2)*3 = 6)', combat.rangedShotDamage(procarz, 1, 9, 1), 6);
+check('kontra x1.5 + procarz x3 (missile 4, armor 0 -> (4+2)*3*1.5 = 27)', combat.rangedShotDamage(procarz, 4, 0, 1.5), 27);
 
 // 4. Celnosc = max(wrecz, dystansowy)
 check('rangedShotAccuracy(wrecz 1, dyst 4)', combat.rangedShotAccuracy(1, 4), 4);
@@ -108,8 +109,9 @@ check('moc konnicy łuczniczej bez zmian', power.fieldPower({ ...kRow }).total, 
 // 6. Moc AI/auto-walki = armyFieldPower() na SUROWYM wierszu units.json (z cache fieldPower).
 // Cache eksportu liczony bez mnoznika -> armyFieldPower musi go ignorowac dla Procarza/Lucznika.
 const armyRaw = (name) => power.armyFieldPower({ ...row(name) });
-check('armyFieldPower Procarz (health 8, cache 12) = 12', armyRaw('Procarz'), 12);
-check('armyFieldPower Procarz (Huaracoc) (health 8, cache 12) = 12', armyRaw('Procarz (Huaracoc)'), 12);
+// PROCARZ-PIERCING: fieldPower zawiera piercing (num(u.piercing)) -> 12 + 2 = 14 na zywo.
+check('armyFieldPower Procarz (health 8, cache 12 + piercing 2) = 14', armyRaw('Procarz'), 14);
+check('armyFieldPower Procarz (Huaracoc) (health 8, cache 12 + piercing 2) = 14', armyRaw('Procarz (Huaracoc)'), 14);
 // R-WEB-DATA-ARCHERS-HEALTH-20-DIST-EGYPT-6-Q1: zdrowie lucznikow = 20 (pole health) => nowa moc pola.
 // R-WEB-DATA-ARCHERS-RANGED-ATTACK-4-5-6-ALIGN-Q1: missileAttack Łucznik 4 / egipski 5 => moc pola 22 / 19 (runtime).
 check('armyFieldPower Łucznik (health 10, missileAttack 4) = 17', armyRaw('Łucznik'), 17);
