@@ -116,6 +116,9 @@ assert(/hint\?:\s*string/.test(types), 'types.ts: EntityCardRow.hint');
 assert(/if \(row\.hint\) val\.title = row\.hint;/.test(renderer), 'renderer: hint -> title wartosci wiersza');
 assert(/upSpan\.title = upHint/.test(cityPanel), 'cityPanel: lista budynkow miasta ustawia title utrzymania');
 assert(/buildingUpkeepExplanation\(buildingUpkeepBreakdown\(/.test(cityPanel), 'cityPanel: wyjasnienie liczone z tego samego rozbicia co silnik');
+assert(/up\.title = buildingUpkeepExplanation\(buildingUpkeepBreakdown\(/.test(cityPanel), 'cityPanel: stopka karty budynku (bld-infocard-upkeep) niesie wyjasnienie');
+assert(/function gridDetailRow\(grid: HTMLElement, label: string, val: string \| null \| undefined, hint\?: string\)/.test(cityPanel) && /if \(hint\) vEl\.title = hint;/.test(cityPanel), 'cityPanel: gridDetailRow przyjmuje hint -> title wartosci');
+assert(/'Utrzymanie \(co turę\)',[\s\S]{0,200}buildingUpkeepExplanation\(buildingUpkeepBreakdown\(/.test(cityPanel), 'cityPanel: wiersz „Utrzymanie (co turę)” karty szczegolowej niesie wyjasnienie');
 
 // ---------- cleanup ----------
 try { fs.unlinkSync(ENTRY_FILE); } catch (_) {}

@@ -621,22 +621,6 @@ export interface BuildingInstanceLike {
   level:  number;
 }
 
-/**
- * Gold upkeep for one building at a level (Spec s.6.1; R-UTRZYMANIE-ZROZNICOWANE
- * 2026-07-25, decyzja wlasciciela 19=A: "zadnej plaskiej stawki, kazdy budynek
- * musi miec wartosc swojego utrzymania").
- *
- *   building.utrzymanie is a finite number (INCLUDING 0, e.g. Stela/Pomnik --
- *   decyzja 45=B, "pomnik nie wymaga obslugi")
- *     -> floor(utrzymanie + przyrostUtrzymania * (level-1))  [per-building, liniowy]
- *        × existing FALA2 × buildingEraCostMultiplier(epokaWejscia)
- *   building.utrzymanie missing / not finite (no entry in buildings.json)
- *     -> flatOverride if given, else 0  [DEFAULT ONLY, never an override of real data]
- *
- * `0` is a valid, finite per-building value in JavaScript -- Number.isFinite(0)
- * is true -- so a building explicitly costing 0 (Stela) is never mistaken for
- * "no entry" and never falls back to the flat default. Level clamped to >= 1.
- */
 export interface BuildingUpkeepBreakdown {
   /** Baza po zaokrągleniu do całości, przed mnożnikami (np. 2 dla Garnizonu). */
   base: number;
@@ -680,6 +664,22 @@ export function buildingUpkeepBreakdown(
   };
 }
 
+/**
+ * Gold upkeep for one building at a level (Spec s.6.1; R-UTRZYMANIE-ZROZNICOWANE
+ * 2026-07-25, decyzja wlasciciela 19=A: "zadnej plaskiej stawki, kazdy budynek
+ * musi miec wartosc swojego utrzymania").
+ *
+ *   building.utrzymanie is a finite number (INCLUDING 0, e.g. Stela/Pomnik --
+ *   decyzja 45=B, "pomnik nie wymaga obslugi")
+ *     -> floor(utrzymanie + przyrostUtrzymania * (level-1))  [per-building, liniowy]
+ *        × existing FALA2 × buildingEraCostMultiplier(epokaWejscia)
+ *   building.utrzymanie missing / not finite (no entry in buildings.json)
+ *     -> flatOverride if given, else 0  [DEFAULT ONLY, never an override of real data]
+ *
+ * `0` is a valid, finite per-building value in JavaScript -- Number.isFinite(0)
+ * is true -- so a building explicitly costing 0 (Stela) is never mistaken for
+ * "no entry" and never falls back to the flat default. Level clamped to >= 1.
+ */
 export function buildingUpkeep(
   building: BuildingRecord,
   level: number,
