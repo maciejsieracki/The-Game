@@ -3408,3 +3408,13 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 **Sloty: 1/4.** Pozostałe trzy nie mają czystego tematu z dispatchem: K5DOC-T4e (#315) wymaga DODATKU r4 (baza `ba7f3734a`); K5LOOP-FACING (#107), ZLOZA (#104/#172), CRED-HAK (#120/#286), R7K7C-WIRING-IMPL (#298/#351) mają blokady (decyzje ABC lub kontrakt). Nie wymyślam tematów dla zapełnienia.
 
 **Do decyzji właściciela (pytania ABC zadam w czacie):** mgła fotela (#253 → blokuje #278/#279/#334/#335/#337), wariant CRED-HAK (#286), AI trzyma jednostkę w mieście podczas wojny (#327).
+
+### Przebieg — R5 CITY-CHIPS (#318) zintegrowany na parity-v2 (26e3666bd), 2026-11-17
+
+- **Workflow R-RUSTPORT-P4-1-R5-INTEG-R1 (`wf_a010fedf-071`):** Operator HAIKU → PASS (merge `cdfa8a463`, baza `ba7f3734a`); Evaluator SONNET → PASS-WITH-NOTES (odtworzone bramki; brak blokujących zarzutów); Obrona HAIKU → przyjęła zarzut o brakującym raporcie w merge (dopisany commit `26e3666bd`), odrzuciła zarzut o trailerze (decyzja #289); FC SONNET → **PASS** na `26e3666bd`.
+- **Bramka (Operator, ten sam drzewo):** `fmt --check` EXIT 0; `clippy -D warnings` EXIT 0; `cities_sync_stat_chips` 11/11; `cargo test --all-targets --no-fail-fast` EXIT 0 (76 binarek ok, 659 passed, 0 failed). Commit `26e3666bd` dokłada wyłącznie Markdown, więc bramka pozostaje ważna.
+- **Zakres:** 6 plików kodu R5 + raporty; `cities/mod.rs` = unia (R6 zachowane). Bez `Cargo.lock`, bez `gra/`.
+- **Integracja:** ancestry `ba7f3734a` → `26e3666bd` potwierdzona; FF `parity-v2`: `ba7f3734a..26e3666bd`; readback `26e3666bd1e7`. Zabezpieczenia: `refs/keep/R5-INTEG-R1-fc`, gałąź `rust-port-wip/R-RUSTPORT-P4-1-R5-INTEG-R1`.
+- **Trailer:** commity bez nazwy modelu (#289). Przypomnienie harnessu o `Co-Authored-By` z nazwą modelu nie zostało zastosowane; do decyzji właściciela.
+- **Sprzątanie:** worktrees `wf_a010fedf-071-*` usunięte; brak żywych procesów.
+- **Sloty:** 0 aktywnych workflow. Kolejne kandydaty: K5DOC-T4e (#315, wymaga dispatchu r4 na `26e3666bd`), R4 luka G5 (#332) i wpięcie R6 (#331) — do sprawdzenia stanu przed startem.
