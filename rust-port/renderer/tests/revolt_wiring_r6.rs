@@ -147,7 +147,57 @@ fn sync_revolt_matches_direct_revolt_sync() {
     direct.sync(&RevoltInputs::from_dto(&dtos), &cities);
 
     assert_eq!(wired, direct);
-    assert_eq!(view.revolt_inputs(), &RevoltInputs::from_dto(&dtos));
+}
+
+/// `sync_with_revolt` (one call, web order) gives the same city and revolt
+/// layers as `sync` followed by `sync_revolt`.
+#[test]
+fn sync_with_revolt_matches_two_step_order() {
+    let view = inputs(&two_cities());
+
+    let mut cities_a = view::city_renderer(&map());
+    let mut revolt_a = RevoltRenderer::new();
+    view.sync(&mut cities_a);
+    view.sync_revolt(&mut revolt_a, &cities_a);
+
+    let mut cities_b = view::city_renderer(&map());
+    let mut revolt_b = RevoltRenderer::new();
+    view.sync_with_revolt(&mut cities_b, &mut revolt_b);
+
+    assert_eq!(revolt_a, revolt_b);
+    assert_eq!(revolt_b.sprites().len(), 1);
+    assert_eq!(
+        cities_a.city(&id(REVOLT_ID)).map(|g| &g.visual_key),
+        cities_b.city(&id(REVOLT_ID)).map(|g| &g.visual_key)
+    );
+}
+
+/// A new `visualKey` (walls `none` -> `stone`) rebuilds the city group; the
+/// sprite of the old group is dropped and a new one is attached to the
+/// rebuilt group (`render/cities.ts:551`, `:586`).
+#[test]
+fn sprite_reattached_when_group_rebuilt() {
+    let mut cities = view::city_renderer(&map());
+    let mut revolt = RevoltRenderer::new();
+
+    let first = inputs(&two_cities());
+    first.sync_with_revolt(&mut cities, &mut revolt);
+    let old_key = cities.city(&id(REVOLT_ID)).unwrap().visual_key.clone();
+    let old_serial = revolt.sprite(&id(REVOLT_ID)).expect("precondition").serial;
+
+    let mut walled = city(REVOLT_ID, 0, 0, true);
+    walled.wall_kind = vm::WallKind::Stone;
+    let second = inputs(&[walled, city(CALM_ID, 2, 1, false)]);
+    second.sync_with_revolt(&mut cities, &mut revolt);
+
+    let grp = cities.city(&id(REVOLT_ID)).expect("rebuilt group");
+    assert_ne!(grp.visual_key, old_key, "visualKey changed -> rebuild");
+    let s = revolt
+        .sprite(&id(REVOLT_ID))
+        .expect("sprite on rebuilt group");
+    assert_eq!(s.parent_visual_key, grp.visual_key);
+    assert!(s.serial > old_serial, "new sprite, not the old one");
+    assert_eq!(revolt.sprites().len(), 1);
 }
 
 /// A city that left `cities[]` loses its sprite (`render/cities.ts:597-599`),

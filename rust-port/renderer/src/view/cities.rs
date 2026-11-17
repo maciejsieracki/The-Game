@@ -362,16 +362,22 @@ impl CityInputs {
     /// `cities[]` as [`Self::sync`], as [`RevoltInputs`], given to
     /// [`RevoltRenderer::sync`]. Call it after [`Self::sync`] on the same
     /// [`CityRenderer`]: in the web `_syncRevolt` runs inside `sync`, on the
-    /// group that `sync` has just kept or built.
+    /// group that `sync` has just kept or built. Called before [`Self::sync`]
+    /// it finds no group for a new city and makes no sprite in that frame;
+    /// [`Self::sync_with_revolt`] runs both in the web order.
+    ///
+    /// Wired at the adapter level only: no app / bridge caller yet, it
+    /// depends on the engine -> renderer DTO path (audit L6).
     pub fn sync_revolt(&self, renderer: &mut RevoltRenderer, cities: &CityRenderer) {
         renderer.sync(&self.revolt, cities);
     }
 
-    /// The R6 inputs of `cities[]` (`cities[].revolt`,
-    /// `cities[].unit_count_on_hex`), in `cities[]` order.
-    #[must_use]
-    pub fn revolt_inputs(&self) -> &RevoltInputs {
-        &self.revolt
+    /// `cityRenderer.sync(cities, _cityRenderOpts())` with its revolt calls,
+    /// as the one web call: [`Self::sync`] then [`Self::sync_revolt`] on the
+    /// same [`CityRenderer`], so the order cannot be swapped.
+    pub fn sync_with_revolt(&self, cities: &mut CityRenderer, revolt: &mut RevoltRenderer) {
+        self.sync(cities);
+        self.sync_revolt(revolt, cities);
     }
 
     /// `cityRenderer.syncMapOutlines(cities, _cityRenderOpts())`
