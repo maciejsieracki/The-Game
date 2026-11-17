@@ -45,3 +45,11 @@ Raport `01-operator-r1.md`. Nie pushować do `rust-port/parity-v2`.
 ## DODATEK r2 (orkiestrator, 2026-11-17 14:0x): BAZA przesunięta
 - BAZA r2: `origin/rust-port/parity-v2` = `2760b4f0c` (T4e-0 `732ef51a0` zintegrowany). Worktree detached na `2760b4f0c`.
 - Zakres bez zmian. Bramka renderera (≥12 GB, bez równoległych buildów renderera) obowiązuje przy bramce pełnej; start Operatora dozwolony przy ≥8 GB.
+
+## DODATEK r2 (orkiestrator, po FAIL FC: INFRA + GOAL): zakres i bramka
+- DECYZJA (orkiestrator, techniczna): wołający produkcyjny (`unit_overlays_view`, `UnitOverlayInputs::apply`, `sync_units`) NIE wchodzi w ten temat. Podpięcie zależy od drogi DTO engine → renderer (#308, audyt L6), która jest osobnym tematem DTO-BRIDGE. Ten temat kończy się na adapterze i testach. Cel „podpiąć w produkcji” w tym temacie zostaje przeniesiony do DTO-BRIDGE.
+- KOD: bez zmian względem zatwierdzonego wcześniej (zabezpieczenie w commitach roboczych Operatora r1, gałąź `rust-port-wip/P4-1G-Q6-UNITS-r1`). Nie przepisywać.
+- BRAMKA (INFRA): odtworzyć pełną bramkę na tym samym kodzie: `cargo fmt --check` i `cargo clippy --all-targets -- -D warnings` w engine i renderer; `cargo test --test overlays_units_q6`; `cargo test --lib`; `cargo test --all-targets --no-fail-fast` w obu crate'ach. Zero FAILED/panicked.
+- DYSK: ≥ 12 GB przed bramką renderera (reguła renderera). Przy mniejszym: BLOCK INFRA z liczbą GB, bez zmian w kodzie.
+- BAZA r2: `2760b4f0c`.
+- Trailery commitów: bez nazwy modelu (#289). Raport `02-operator-r2.md`. Nie pushować do parity.
