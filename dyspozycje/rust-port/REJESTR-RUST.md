@@ -3062,3 +3062,13 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Krok 3 (sprzątanie):** usunięte `/tmp/claude-0/t5a-r3-target` (częściowo usunięty w poprzednim przebiegu) i `/tmp/claude-0/tgt-t5a-eval` — sprawdzone: żaden proces ich nie używa, T5a zintegrowany. Zostają targety w użyciu: `t6obr/target` (T6 Obrona) i `ev_t5b_tgt` (T5b Ewaluator), `ev_t6_target` (T6, do usunięcia po FC).
 - **Wolne sloty (2 z 4): powód.** Brak czystego tematu z kodem Rust, który nie wymaga decyzji właściciela lub niezintegrowanych zależności. Kandydaci z listy są zablokowani: #253/#278/#279/#281/#335/#337 (mgła, decyzja właściciela), #286/#350 (CRED-HAK, wariant A/B), #349 (ZLOZA, format zapisu), #285/#354 (ZDOBYCIE, opcja B), #106/#298/#299/#351 (R7K7C, decyzja fotela), #113/#353 (K5LOOP, wymaga #107/#109/#112 i decyzji o pętli), #304–#310 (ekonomia/dyplomacja — po zintegrowaniu renderera i wiringu), #314 (T4c `_doMove`, wymaga rozpoznania), #261/#342 (T7, zależne od T4c). Rozpoznanie tylko do odczytu nie uruchamiałem — w tej chwili nie ma kandydata, który wymaga wyłącznie rozpoznania. Start po zakończeniu T6/T5b.
 - **Otwarte decyzje ABC (w czacie):** #327, #358.
+
+### Przebieg — kolejny restart kontenera: wznowienie T6 r6 i T5b r2 z cache (2026-11-17 ~02:4x UTC)
+
+- **Utracone przez restart:** `wjl1tbu90` (T6 r6, etap Obrona) i `w77n8i5xq` (T5b r2, etap Ewaluator).
+- **Zachowane w dziennikach:** T6 r6 — Operator BLOCK (`bdc625b4e`), Ewaluator PASS-WITH-NOTES. T5b r2 — Operator PASS-WITH-NOTES (`85f0c997f`).
+- **Wznowienie:** `resumeFromRunId` — zakończone etapy z cache, nie uruchamiane drugi raz:
+  - T6 r6: `wf_bb4e6b3c-994` (wznowiona; Obrona i FC od nowa).
+  - T5b r2: `wf_3446ab83-759` (wznowiona; Ewaluator i dalsze od nowa).
+- **Dysk:** 9,2 GB przed wznowieniem.
+- **Otwarte:** zarzut Ewaluatora T6 (krok 4 `_cavalryAction` nieosiągalny) — obrona musi rozstrzygnąć.
