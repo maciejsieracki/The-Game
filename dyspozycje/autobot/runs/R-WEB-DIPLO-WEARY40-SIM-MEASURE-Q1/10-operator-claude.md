@@ -7,6 +7,18 @@ GOAL: zmierzyć w Node zmęczenie wojną (40 tur) i pokój wymuszony przy 100% (
 WERDYKT (pomiar): RYZYKO na jednym punkcie (pokój wymuszony bez zapłaty, gdy przegrywający ma ≤3 miasta — patrz §3); brak eliminacji i snowballa w PO; pętli wojen nie da się zmierzyć w tym modelu (NIE ZMIERZONO, patrz §5).
 BAZA: origin/main 64069b1a2 (FALA 783, ROBOCZA MD5 53a9463a). Dispatch i DODATEK czytane z gałęzi claude/sprawdzenie-funkcjonalnosci-ek4ra0 (w origin/main ich nie ma).
 
+## 0. Runda 1/5 — WZNOWIENIE (Operator Haiku, 2026-11-17; baza = 035f313c2, wykonana praca poprzedniego Operatora)
+
+Wykonane kroki z DODATKU 1:
+- (1) Weryfikacja narzędzia i liczb: smoke `node tools/weary40-sim-measure.cjs --turns 30 --seeds 1 --variant both` → exit 0, 5,6 s (limit 60 s). Pełny przebieg `--turns 150 --seeds 3 --variant both` (K=3) → exit 0, 19,7 s; wynik porównany z `raw-K3-N3-T150.jsonl` po usunięciu pola `avgTurnMs`: `cmp` IDENTYCZNY (12 wierszy = 12 wierszy). Wnioski z raw K=6 i K=3 zweryfikowane skryptowo (liczby w §4 poniżej są zgodne z raw).
+- Środowisko: `gra/node_modules` nie istniało w worktree; esbuild@0.28.2 i three@^0.169.0 (zgodnie z gra/package.json) zainstalowane poza repo i podpięte symlinkiem; symlink usunięty przed commitem (patrz ZMIANY-COMMIT).
+- (3) Werdykt RYZYKO §3 zweryfikowany w kodzie: `gra/src/game/war-weariness.ts:302-311` — `cityCap = battlePending ? 0 : max(0, ownCities − minMiastPoOddaniu)`, a warunek oddania miast to `clearLoser && price.requiredPn > 0 && cityCap > 0`; komentarz `war-weariness.ts:265` i `gra/data/war-weariness-params.json` (`_opis`, `_progi`) twierdzą, że pokój wymuszony jest ZAWSZE płatny miastami. Stan faktyczny: przy cityCap = 0 pokój wymuszony zapada bez miast. Liczby z raw (potwierdzone): K=3 PO — 17 wymuszonych pokojów (ziarno 1: 6, ziarno 2: 11, ziarno 3: 0), wszystkie przy 0 miastach; K=6 PO — 2 wymuszone (ziarno 1: 1, ziarno 2: 1), oba przy 0 miastach. PRZED: 0 wymuszonych (parametr 2,0 wyłącza). Warianty A/B do decyzji właściciela — bez zmian kodu.
+- (4) Smoke-test do listy deployu: NIE ZNALEZIONO w repo pliku „listy deployu” obejmującego narzędzia `gra/tools` (przeszukano `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`, `docs/`, `dyspozycje/*.md`, `.cursor/rules/`, `finalize`/`deploy` w ls-files). Smoke zapisany w tym raporcie jako wymagany wpis do dopisania przez orkiestratora: `cd gra && node tools/weary40-sim-measure.cjs --turns 30 --seeds 1 --variant both` (exit 0, ok. 6 s, wymaga gra/node_modules z esbuild i three).
+- (2) Luki: ograniczenia modelu i „PRZED” = proxy parametrowe (nie bit-w-bit 774fd0eec), pętle wojen i czas tury AI — patrz §5–§6 poniżej; czas tury w §2e to pomiar silnika zastępczego, NIE realnej tury gry.
+- Kontrola zakresu: zmiany tylko w `gra/tools/weary40-sim-measure.cjs` (już w bazie) i w `runs/R-WEB-DIPLO-WEARY40-SIM-MEASURE-Q1/`; zero zmian w `gra/src` i `gra/data`.
+
+STATUS r1-wznowienie: PASS-WITH-NOTES (narzędzie deterministyczne, liczby potwierdzone; werdykt RYZYKO wymaga decyzji właściciela).
+
 ## 1. Co zrobiono
 
 - Dodano `gra/tools/weary40-sim-measure.cjs` (jedyna zmiana w repo; allowlista `gra/tools/**`).
