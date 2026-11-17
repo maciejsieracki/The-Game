@@ -132,7 +132,8 @@ async function runOne(browser, base, cfg, mode) {
     const na = keep(bs.atk, c.atkType, 10); const nd = keep(bs.def, c.defType, 10);
     // Przepisanie na Wojownika (patrz naglowek): nazwa + statystyki z units.json + HP.
     const woj = c.wojRow;
-    for (const u of na.concat(nd)) {
+    // R2_NORETYPE=1 = KONTROLA NATYWNA (bez przepisania): Hastati vs Falanga z własnymi statystykami.
+    if (!c.noRetype) for (const u of na.concat(nd)) {
       u.bu.nazwa = c.newType;
       u.bu.stats = JSON.parse(JSON.stringify(woj));
       u.bu.hp = Number(woj.health);
@@ -143,7 +144,7 @@ async function runOne(browser, base, cfg, mode) {
     try { bs._syncGroupRegistry && bs._syncGroupRegistry(); } catch (e) {}
     const cnt = (arr) => arr.reduce((m, u) => { m[u.bu.nazwa] = (m[u.bu.nazwa] || 0) + 1; return m; }, {});
     return { before: { atk: cnt(before.atk.map((n) => ({ bu: { nazwa: n } }))), def: cnt(before.def.map((n) => ({ bu: { nazwa: n } }))) }, atkAfter: cnt(bs.atk), defAfter: cnt(bs.def) };
-  }, { ...cfg, wojRow: WOJ_ROW, newType: 'Wojownik' });
+  }, { ...cfg, wojRow: WOJ_ROW, newType: 'Wojownik', noRetype: !!process.env.R2_NORETYPE });
   if (process.env.R3_TRACE) console.log('TRIM', JSON.stringify(trimInfo));
   const start = await page.evaluate(() => {
     const bs = window.__lastBattleScene;
@@ -230,6 +231,10 @@ async function runOne(browser, base, cfg, mode) {
       atk: { total: a.total, lost: a.lost, remaining: a.remaining, hp: Math.round(a.hp), hpMax: Math.round(a.hpMax) },
       def: { total: d.total, lost: d.lost, remaining: d.remaining, hp: Math.round(d.hp), hpMax: Math.round(d.hpMax) },
       survivors: { atk: bs.atk.filter((u) => !u.dead && !u.routed).map((u) => ({ n: u.bu.nazwa, hp: Math.round(u.bu.hp), routed: !!u.routed, ammo: u.ammoLeft ?? null })), def: bs.def.filter((u) => !u.dead && !u.routed).length },
+      // Ucieczki i pościgi liczone z PELNEGO logu (nie z ogona): '-> X uciekl z pola bitwy' / 'dogoniony i zniszczony'.
+      escapes: (bs.log || []).filter((x) => String(x).includes('uciekl z pola bitwy')).length,
+      chased: (bs.log || []).filter((x) => String(x).includes('dogoniony i zniszczony')).length,
+      routCountA: bs._routCountA ?? null, routCountD: bs._routCountD ?? null,
       endLogTail: (bs.log || []).slice(-4).map((x) => String(typeof x === 'string' ? x : JSON.stringify(x)).slice(0, 160)),
       endText: (document.body.innerText.match(/Koniec bitwy|Zwyci[ęe]stwo|Pora[żz]ka|Remis/g) || []).slice(0, 3),
     };
@@ -241,7 +246,7 @@ async function runOne(browser, base, cfg, mode) {
 (async () => {
   const srv = await serve();
   const base = 'http://127.0.0.1:' + srv.address().port;
-  const out = fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, 'utf8')) : { runs: {}, meta: { chromium: CHROME, dist: DIST, runda: 'R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1 r2', woj: 'Wojownik vs Wojownik 10 vs 10 (retyp bu w scenie)', note: 'reczna = rozkazy ATAK per jednostka (_issueBattleAttack queue) + Space; AUTO = klawisz R; skip = Pomin; roster przyciety do 10 vs 10' } };
+  const out = fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, 'utf8')) : { runs: {}, meta: { chromium: CHROME, dist: DIST, runda: 'R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1 r2', woj: 'Wojownik vs Wojownik 10 vs 10 (retyp bu w scenie)', note: (process.env.R2_NORETYPE ? 'KONTROLA NATYWNA (R2_NORETYPE=1): bez przepisania, Hastati vs Falanga' : 'PRZEPISANIE: slot Hastati/Falanga z wierszem statystyk Wojownika (NIE natywny Wojownik)') + ' ; reczna = rozkazy ATAK per jednostka (_issueBattleAttack queue) + Space; AUTO = klawisz R; skip = Pomin; roster przyciety do 10 vs 10' } };
   const browser = await chromium.launch({ headless: true, executablePath: CHROME, args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
   const t0 = Date.now();
   try {
