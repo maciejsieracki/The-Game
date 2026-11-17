@@ -1,0 +1,11 @@
+STATUS: BLOCK
+DOMAIN: INFRA
+TEMAT: R-RUSTPORT-P6-K5DOC-T5B-MARSZ (runda integracyjna r3)
+GOAL: Merge FC `366e6ff8d` (T5b, PASS-WITH-NOTES) na bazę `83777efa9` (parity-v2 po T6), bez FF i bez push; bramki Rust EXIT 0.
+ZMIANY/COMMIT: merge `c97cd4542` (--no-ff, parents `83777efa9` + `366e6ff8d`). Merge czysty (merge-tree exit 0, bez konfliktu, także w `mod.rs`: dodana tylko linia `pub mod siege_tactics_ranged_forward;` na pozycji 141). Diff `83777efa9..HEAD`: 9 plików, +80275 linii, 0 usunięć, wszystkie w allowliście T5b: `rust-port/engine/src/domain/mod.rs` (+1), `rust-port/engine/src/domain/siege_tactics_ranged_forward.rs`, `rust-port/engine/tests/p6_k5doc_t5b.rs`, `rust-port/engine/tests/p6_k5doc_t5b_gen.mjs`, `rust-port/engine/tests/p6_k5doc_t5b_vectors/vectors.json`, oraz raporty `dyspozycje/autobot/runs/R-RUSTPORT-P6-K5DOC-T5B-MARSZ/{01-operator-r1,01-operator-r2,02a-obrona,03-final-control}.md`. Brak Cargo.lock. Utracone linie T6 nie wystąpiły (diff względem bazy nie zawiera usunięć). `git diff --check` czysty.
+BAZA DISPATCHU: worktree był przy `e4a3e6eb7` (niezwiązany); przełączony `git checkout --detach 83777efa9` (worktree czysty przed przełączeniem).
+TESTY: BLOCK INFRA, bramki NIE uruchomione. `df -h /` przed bramkami: 6.9G wolnego (wymagane ≥ 8 GB). Zgodnie z dispatchem nie uruchamiano `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --test p6_k5doc_t5b`, `cargo test --all-targets --no-fail-fast`. Brak kodów wyjścia (NIE_ZMIERZONO). Nie czyszczono cudzych targetów.
+BLOKADY: (1) dysk 6.9 GB < 8 GB — bramki Rust zablokowane; (2) brak wyniku bramek r3 — merge nie jest zweryfikowany kompilacją ani testami; Ewaluator i FC muszą odtworzyć bramki po odblokowaniu dysku.
+RUNDY: 3/5 (integracja r3); po BLOCK INFRA nie zużyto rundy kodowej.
+NASTĘPNY KROK: zwolnić dysk do ≥ 8 GB (orkiestrator, sprzątanie worktree zakończonych tematów), potem ponowić rundę integracyjną r3: bramki `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --test p6_k5doc_t5b`, `cargo test --all-targets --no-fail-fast` w `rust-port/engine` z `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`.
+DEPLOY/PUSH: NIE WYKONANO (brak push, brak FF do parity-v2 — zgodnie z dispatchem).
