@@ -3339,3 +3339,11 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **T7b (#342) r4:** Operator PASS-WITH-NOTES (bramki zielone, pełny test 3843 passed), Evaluator PASS-WITH-NOTES (przeżyty mutant `d_min <= 1`), Obrona PASS-WITH-NOTES (`92bcf9ffd`, wektor dodany). FC w toku — worktrees zostają.
 - **R7K7C (#106) r2:** DODATEK r2 gotowy (`6cc0c4878`), NIE uruchomiony — dysk poniżej 8 GB. Start po zakończeniu T1 i T7b.
 - **Decyzja (orkiestrator):** nie uruchamiać więcej niż jednego tematu z buildami naraz, dopóki dysk nie wróci powyżej 8 GB w spokojnym oknie. Kolejność: T7b FC → T1 FC → R7K7C r2 → T4e r4 (DODATEK r4 do napisania, baza `760be5187`, detached).
+
+### Przebieg — T1 MODEL-UI (#263) r1 zakończony: FC PASS-WITH-NOTES, integracja czeka na pełny test (2026-11-17 ~11:1x UTC)
+
+- **Wynik:** Operator BLOCK INFRA (pełny `cargo test --all-targets` niewykonany, dysk 7,7 GB); Evaluator PASS-WITH-NOTES; Obrona PASS-WITH-NOTES; **FC PASS-WITH-NOTES** (`020b3b7c9`). Bramki celowane zielone: `fmt` EXIT 0, `clippy -D warnings` EXIT 0, `p6_k5doc_t1` 13/13, `--lib` 126/126 (Evaluator), mutacje (a)(b)(c) FAIL.
+- **Kod:** `13fc99862` (baza 760be5187). Commity zabezpieczone: `rust-port-wip/p6-k5doc-t1-r1-{op,ob,fc,ev}`. Worktrees T1 usunięte.
+- **Notatki do rejestru (decyzje techniczne):** walidacja `UnknownDoctrine` i `set_group_doctrine` napisowy to dodatek Rust (bez odpowiednika w pinie); `_setGroupDoctrine` (formacja, rally, kolejka, `17870-17929`) poza T1 — #264/K5EXEC; moduł NIEPODPIĘTY do #264; wiele kopii `GroupDoctrine` w repo (dług ujednolicenia).
+- **Brakuje przed FF:** pełny `cargo test --all-targets --no-fail-fast` na bazie `760be5187` + T1 (integracja: runda Operatora z pełnym testem, gdy dysk ≥ 8 GB i bez równoległych buildów).
+- **Dysk:** 13 GB. Trwa `cargo test --all-targets` (pid 6576), prawdopodobnie FC T7b r4 — czekamy.
