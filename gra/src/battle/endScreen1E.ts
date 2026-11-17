@@ -170,9 +170,9 @@ export function showEndScreen1E(
       `<div class="tnum" style="font-size:12px;color:${BATTLE_TEXT_DIM};margin-top:5px;">${p.battleTitle}</div>` +
     `</div>` +
     `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 30px 20px;">` +
-      // R-WEB-BATTLE-DAMAGE-COLORS: straty gracza czerwone, straty wroga żółte.
+      // R-WEB-UI-BATTLE-DAMAGE-COLORS-BLUE-RED-Q1: straty gracza czerwone, straty wroga niebieskie.
       statTileHtml('−' + playerLost, 'Twoje straty', BATTLE_LOSS_PLAYER_TEXT, 'rgba(229,72,77,0.35)', BATTLE_LOSS_PLAYER_BG) +
-      statTileHtml('−' + enemyLost, 'Straty wroga', BATTLE_LOSS_ENEMY_TEXT, 'rgba(255,213,74,0.35)', BATTLE_LOSS_ENEMY_BG) +
+      statTileHtml('−' + enemyLost, 'Straty wroga', BATTLE_LOSS_ENEMY_TEXT, 'rgba(58,106,208,0.35)', BATTLE_LOSS_ENEMY_BG) +
       statTileHtml(
         loot > 0 ? '+' + formatEndLoss(loot) : '0',
         loot > 0 ? (p.lootNote ?? 'Łupy · złoto') : 'Łupy',

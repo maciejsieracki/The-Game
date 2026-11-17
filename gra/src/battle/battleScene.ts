@@ -10554,7 +10554,7 @@ export class BattleScene {
     Object.assign(el.style, {
       position:      'absolute',
       pointerEvents: 'none',
-      // R-WEB-BATTLE-DAMAGE-COLORS: straty gracza czerwone, przeciwnika żółte.
+      // R-WEB-UI-BATTLE-DAMAGE-COLORS-BLUE-RED-Q1: straty gracza czerwone, przeciwnika niebieskie.
       color:         battleLossTextColor(this._isPlayerSide(ru.side)),
       fontFamily:    'sans-serif',
       fontSize:      '15px',

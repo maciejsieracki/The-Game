@@ -1190,7 +1190,7 @@ export class ManualBattle {
     const el = document.createElement('div');
     el.textContent = '-' + dmg;
     Object.assign(el.style, {
-      // R-WEB-BATTLE-DAMAGE-COLORS: straty gracza czerwone, przeciwnika żółte.
+      // R-WEB-UI-BATTLE-DAMAGE-COLORS-BLUE-RED-Q1: straty gracza czerwone, przeciwnika niebieskie.
       position: 'absolute', pointerEvents: 'none',
       color: ru.side === 'player' ? BATTLE_LOSS_PLAYER_TEXT : BATTLE_LOSS_ENEMY_TEXT,
       fontFamily: 'sans-serif', fontSize: '15px', fontWeight: 'bold',
