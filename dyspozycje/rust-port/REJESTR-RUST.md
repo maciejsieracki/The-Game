@@ -3576,3 +3576,23 @@ Konsekwencje dla kolejki:
 | P4-1F2 TERRITORY-RANGES (#362) | czeka na integrację FOG | OPUS 5.5 | — |
 | P4-1 L1/L2 REVEAL (#363) | czeka na integrację FOG | OPUS 5.5 | — |
 | P4-1 STATCHIP-SYNC (#361) | czeka na dysk ≥12 GB | OPUS 5.5 | — |
+
+### Przebieg — FOG-VIEW (#253/#335/#359): FC PASS-WITH-NOTES, zintegrowany na parity-v2 (2026-11-17 ~16:20 UTC)
+- **FC:** `af03b7e98` PASS-WITH-NOTES (bramka pełna odtworzona, mutacje a/b/c FAIL). Zabezpieczenie: `refs/keep/FOG-VIEW-R3-fc`, gałąź `rust-port-wip/p4-1c-fog-view-r3-fc`.
+- **Integracja:** parity `667fe72e2` nie był przodkiem FC (FOG na starszej bazie), więc zrobiono merge `82db9b370` (rodzice: parity + FC). Merge-tree bez konfliktów; różnica względem parity: tylko `state.rs` (+335), test `p4_1c_fog_view.rs`, generator i wektory. Pliki Q6 zachowane.
+- **Bramka silnika na `82db9b370`:** fmt EXIT 0; clippy `-D warnings` EXIT 0; `cargo test --all-targets --no-fail-fast` EXIT 0 (522 binarki, 3897 zaliczonych, 0 nieudanych). Pierwsze przebiegi testu padły z przerwania procesu w tle, drugi przebieg odłączony (`setsid`) zakończył się czysto.
+- **FF:** `parity-v2` `667fe72e2` → `82db9b370`, readback zgodny. Gałąź `rust-port-wip/p4-1c-fog-view-r3-integ` = `82db9b370`.
+- **Dług (bez zmian):** FOG-WIRE (#308) — `refresh_fog` i `fog_view_dto` nie mają wołającego produkcyjnego. Nie oznaczać jako wpiętego w grę.
+- **Dług procesowy:** commit `f56b2b796` (obrona r1) ma trailer z nazwą modelu; historii nie przepisywano.
+
+### Przebieg — Start F2 TERRITORY-RANGES (#362), OPUS (2026-11-17 ~16:25 UTC)
+- **Dispatch:** `R-RUSTPORT-P4-1F2-TERRITORY-RANGES-R1`, DODATEK r1 (baza `82db9b370`, zależność FOG spełniona), commit `8d9436559` na `claude/rust-sivvrn`.
+- **Skrypt:** `topic-F2-opus-3d.js` — wszystkie etapy Opus (Operator, Evaluator, Obrona, FC), zgodnie z regułą 3D.
+- **Dysk:** 18 GB wolne przed startem (po sprzątaniu: stare targety T4e i R7K7C, worktree FC FOG, target bramki).
+- **Równoległość:** jeden worker renderera naraz (bramka rendera ≥12 GB). L1/L2 REVEAL (#363) i STATCHIP-SYNC (#361) czekają na zwolnienie slotu.
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| P4-1F2 TERRITORY-RANGES (#362) | Operator | OPUS 5.5 | ok. 16:25 UTC |
+| P4-1 L1/L2 REVEAL (#363) | czeka na slot renderera | OPUS 5.5 | — |
+| P4-1 STATCHIP-SYNC (#361) | czeka na slot renderera i ≥12 GB | OPUS 5.5 | — |
