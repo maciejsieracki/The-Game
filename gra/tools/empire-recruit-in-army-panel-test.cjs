@@ -4,7 +4,8 @@
  *
  * Dowód w REALNEJ grze (vite build -> Chromium, ?playtest=mapa&civTest=1):
  *  - przycisk „Rekrutacja” w górnym pasku HUD jest USUNIĘTY (brak data-act="empire-recruit" i napisu w .hud-right);
- *  - sekcja „Rekrutacja — cała cywilizacja” siedzi w panelu armii (Rekrutacja), PRZED sekcją wodza/generała;
+ *  - sekcja „Rekrutacja — cała cywilizacja” siedzi w panelu armii (Rekrutacja), PO sekcji wodza i „Idź do wodza”
+ *    (R-WEB-UI-RECRUIT-LEADER-FIRST-ABOVE-MASS-Q1);
  *  - liczniki −/+ i pole działają w nowym miejscu; zamknięcie panelu armii zeruje liczniki;
  *  - szeroki i wąski (1024×640) układ: bez poziomego przewijania dokumentu, zewnętrzny panel przewijalny.
  * Zrzuty: dyspozycje/autobot/runs/R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1/.
@@ -50,16 +51,22 @@ const ok = (c, n, d) => { if (c) { pass++; console.log('PASS: ' + n); } else { f
       const sec = document.getElementById('civ-empire-recruit-panel');
       const leader = document.querySelector('.civ-emp-mass-leader');
       const mass = document.querySelector('[data-mass-recruitment]');
+      const follow = document.querySelector('[data-recruit-follow-general]');
+      const followLabel = follow ? follow.closest('label') : null;
       return {
         inArmy: !!(sec && mass && mass.contains(sec)),
-        beforeLeader: !!(sec && leader && (sec.compareDocumentPosition(leader) & Node.DOCUMENT_POSITION_FOLLOWING)),
-        firstChildOfMass: !!(sec && mass && sec.previousElementSibling && sec.previousElementSibling.classList.contains('civ-emp-mass-hd')),
+        // R-WEB-UI-RECRUIT-LEADER-FIRST-ABOVE-MASS-Q1: wódz → „Idź do wodza” → erp
+        leaderFirst: !!(sec && leader && mass && leader.previousElementSibling && leader.previousElementSibling.classList.contains('civ-emp-mass-hd')),
+        followAfterLeader: !!(leader && followLabel && (leader.compareDocumentPosition(followLabel) & Node.DOCUMENT_POSITION_FOLLOWING)),
+        erpAfterFollow: !!(sec && followLabel && (followLabel.compareDocumentPosition(sec) & Node.DOCUMENT_POSITION_FOLLOWING)),
+        erpRightAfterFollow: !!(sec && followLabel && sec.previousElementSibling === followLabel),
         rows: document.querySelectorAll('#civ-empire-recruit-panel [data-unit]').length,
       };
     });
     ok(order.inArmy, 'L2 sekcja rekrutacji całej cywilizacji jest w części Rekrutacja panelu armii', order);
-    ok(order.beforeLeader, 'L3 sekcja rekrutacji stoi PRZED sekcją wodza/generała', order);
-    ok(order.firstChildOfMass, 'L4 sekcja zaraz pod nagłówkiem Rekrutacja (samą górę)', order);
+    ok(order.leaderFirst, 'L3 wódz/generał zaraz pod nagłówkiem Rekrutacja (samą górę)', order);
+    ok(order.followAfterLeader, 'L4 „Idź do wodza” stoi PO sekcji wodza', order);
+    ok(order.erpAfterFollow && order.erpRightAfterFollow, 'L4b rekrutacja całej cywilizacji stoi DOPIERO po „Idź do wodza”', order);
     ok(order.rows > 0, 'L5 lista typów jednostek niepusta', order);
 
     // L6: liczniki w nowym miejscu
