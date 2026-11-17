@@ -1,0 +1,493 @@
+diff --git a/rust-port/engine/src/domain/siege_tactics_loop.rs b/rust-port/engine/src/domain/siege_tactics_loop.rs
+index 65b029f6d..393c208ee 100644
+--- a/rust-port/engine/src/domain/siege_tactics_loop.rs
++++ b/rust-port/engine/src/domain/siege_tactics_loop.rs
+@@ -34,6 +34,7 @@ use crate::domain::siege_tactics_actions::{
+ use crate::domain::siege_tactics_activate::{
+     activate_unit, ActivateEvent, ActivateOps, ActivateScene, ActivateUnit, EnemyRef,
+ };
++use crate::domain::siege_tactics_autobatch::{cell_key, CellKey};
+ use crate::domain::siege_tactics_blow::{
+     js_max, js_min, ClashTag, DefenderState, HitArc, Outcome, RollSource, SceneEffect, Side,
+     MORALE_HIT_LOSS_SCALE,
+@@ -53,6 +54,9 @@ use crate::domain::siege_tactics_inputs_pos::{facing_toward, relative_hit, JsVal
+ use crate::domain::siege_tactics_inputs_unit::{
+     to_combat_unit, BattleUnitIn, StatRow, ToCombatUnitOpts, UVal,
+ };
++use crate::domain::siege_tactics_move_effects::{
++    do_move_effects, MoveOutcome, MoveTerrain, MoveUnit, MoveWorld,
++};
+ use crate::domain::siege_tactics_roundcap::RoundCapState;
+ use crate::domain::siege_tactics_tower::{pick_tower_target, TowerTarget};
+ use crate::domain::siege_tactics_turnseq::{
+@@ -62,6 +66,7 @@ use crate::domain::siege_tactics_turnseq::{
+ use crate::domain::siege_tactics_unit::{
+     effective_flee_threshold, should_rout, side_alive_end, CombatUnit,
+ };
++use std::collections::HashMap;
+ 
+ /// Wejście ciała jednostki (web `_activateUnit`): czas trwania i zakończenie.
+ pub trait LoopBody {
+@@ -1142,10 +1147,54 @@ pub struct ProdBody<R: RollSource> {
+     /// P4-1I3 (obrona r1): web `_ffActive` ([`LoopBody::set_ff_active`]); `true` = bez [`BattleAction::Damage`]
+     /// (`_spawnDamageLabel` `:9943`). Domyślnie `false` (ciało wołane poza przewijaniem).
+     ff_active: bool,
++    /// K5DOC-T4e (decyzja D1): dane terenu dla ruchu pieszego. `None` = brak danych; ruch wymagający terenu zwraca
++    /// [`ProdMoveError::MissingTerrain`] (bez domyślnej wartości).
++    terrain: Option<Box<dyn MoveTerrain>>,
++    /// K5DOC-T4e (decyzja D3): web `occByKey` (kafelek -> id jednostki). Inicjalizowana z pozycji jednostek w
++    /// konstruktorze; aktualizowana przez [`ProdBody::move_step`] (`do_move_effects` -> `MoveWorld::occ_mut`).
++    occ_by_key: HashMap<CellKey, String>,
++}
++
++/// Błędy wejścia ruchu pieszego w [`ProdBody::move_step`].
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub enum ProdMoveError {
++    /// Ruch wymaga danych terenu, a [`ProdBody`] nie ma ich (`terrain == None`). Brak domyślnej wartości.
++    MissingTerrain,
++}
++
++/// Adapter [`MoveWorld`] nad polami [`ProdBody`] (rozdzielone pola, bez pożyczania całego ciała).
++struct ProdMoveWorld<'a> {
++    occ: &'a mut HashMap<CellKey, String>,
++    terrain: &'a dyn MoveTerrain,
++}
++
++impl MoveWorld for ProdMoveWorld<'_> {
++    fn occ_mut(&mut self) -> &mut HashMap<CellKey, String> {
++        self.occ
++    }
++    fn move_cost(&self, col: f64, row: f64) -> f64 {
++        self.terrain.move_cost(col, row)
++    }
++    fn is_ford(&self, col: f64, row: f64) -> bool {
++        self.terrain.is_ford(col, row)
++    }
++    fn update_facing(&mut self, _unit_id: &str) {
++        // Wejście bez logiki w tym porcie (#107 zablokowany): `_updateFacing` nie jest jeszcze portowany.
++    }
+ }
+ 
+ impl<R: RollSource> ProdBody<R> {
+     pub fn new(units: [Vec<ProdUnit>; 2], scene: ActivateScene, rolls: R) -> Self {
++        let mut occ_by_key = HashMap::new();
++        for (ix, side) in [BattleSide::Attacker, BattleSide::Defender]
++            .into_iter()
++            .enumerate()
++        {
++            for (idx, pu) in units[ix].iter().enumerate() {
++                let tag = unit_tag(UnitRef { side, idx });
++                occ_by_key.insert(cell_key(pu.activate.q as f64, pu.activate.r as f64), tag);
++            }
++        }
+         let surround = [
+             units[0]
+                 .iter()
+@@ -1199,9 +1248,68 @@ impl<R: RollSource> ProdBody<R> {
+             tower_row: 0,
+             actions: Vec::new(),
+             ff_active: false,
++            terrain: None,
++            occ_by_key,
+         }
+     }
+ 
++    /// K5DOC-T4e: podpina dane terenu dla ruchu pieszego (D1). Adapter sceny albo test.
++    pub fn set_terrain(&mut self, terrain: Box<dyn MoveTerrain>) {
++        self.terrain = Some(terrain);
++    }
++
++    /// K5DOC-T4e: web `occByKey` (tylko odczyt).
++    pub fn occ_by_key(&self) -> &HashMap<CellKey, String> {
++        &self.occ_by_key
++    }
++
++    /// K5DOC-T4e: jedyna ścieżka ProdBody do `do_move_effects` (krok pieszego -> efekty ruchu).
++    /// Pozycja w `activate` i `move_left` w stanie sekwencji są aktualizowane z wyniku efektów. `refused` = wynik
++    /// `_siegeMoveRefused` podany przez wołającego (gdy `true`, dane terenu nie są potrzebne).
++    /// Brak terenu przy ruchu wymaganym = `Err(MissingTerrain)` bez zmian stanu.
++    pub fn move_step(
++        &mut self,
++        st: &mut TurnSeqState,
++        unit: UnitRef,
++        col: f64,
++        row: f64,
++        refused: bool,
++    ) -> Result<MoveOutcome, ProdMoveError> {
++        let ix = side_ix(unit.side);
++        let (cur_q, cur_r) = self.cell_of(unit);
++        let mut mu = MoveUnit {
++            id: unit_tag(unit),
++            q: cur_q as f64,
++            r: cur_r as f64,
++            move_left: st.unit(unit).c.move_left,
++        };
++        if refused {
++            // Web `_doMove` :8689-8692: odmowa = `moveLeft = 0`, bez zmiany zajętości, pozycji i facing; nie czyta terenu.
++            unit_cu_mut(st, unit).move_left = 0.0;
++            return Ok(MoveOutcome { done: true });
++        }
++        // Ruch wymaga danych terenu: brak = jawny błąd, bez domyślnej wartości i bez zmiany stanu.
++        let Some(terrain) = self.terrain.as_deref() else {
++            return Err(ProdMoveError::MissingTerrain);
++        };
++        let outcome = do_move_effects(
++            &mut ProdMoveWorld {
++                occ: &mut self.occ_by_key,
++                terrain,
++            },
++            &mut mu,
++            col,
++            row,
++            false,
++            None,
++        );
++        let pu = &mut self.units[ix][unit.idx].activate;
++        pu.q = mu.q as i64;
++        pu.r = mu.r as i64;
++        unit_cu_mut(st, unit).move_left = mu.move_left;
++        Ok(outcome)
++    }
++
+     /// P4-1I3: akcje sceny zebrane od ostatniego odbioru (tylko odczyt).
+     pub fn pending_actions(&self) -> &[TimedAction] {
+         &self.actions
+diff --git a/rust-port/engine/src/domain/siege_tactics_move_effects.rs b/rust-port/engine/src/domain/siege_tactics_move_effects.rs
+index 3c0f3300e..15324cab5 100644
+--- a/rust-port/engine/src/domain/siege_tactics_move_effects.rs
++++ b/rust-port/engine/src/domain/siege_tactics_move_effects.rs
+@@ -49,6 +49,22 @@ pub trait MoveWorld {
+     fn update_facing(&mut self, unit_id: &str);
+ }
+ 
++/// Dane terenu potrzebne ruchowi pieszego (decyzja orkiestratora D1, dispatch T4e r2). Dostarcza je adapter sceny
++/// albo test; BRAK implementacji = jawny blad po stronie wolajacego (ProdBody), nigdy domyslna wartosc.
++///
++/// * `passable`: web `_passable(col, row)` (wejscie adaptera, bez logiki w tym pliku).
++/// * `move_cost`: web `_moveCostForUnit` przed clampem (`Infinity` dozwolone).
++/// * `is_ford`: web `isFordTile` (`battleScene.ts:1897`).
++/// * `combat_terrain_name`: web `combatTerrainName` (wejscie adaptera dla `relativeHit`/terenu).
++/// * `cavalry_mult`: mnoznik kosztu dla kawalerii (wejscie adaptera; `1.0` = brak modyfikacji).
++pub trait MoveTerrain {
++    fn passable(&self, col: f64, row: f64) -> bool;
++    fn move_cost(&self, col: f64, row: f64) -> f64;
++    fn is_ford(&self, col: f64, row: f64) -> bool;
++    fn combat_terrain_name(&self, col: f64, row: f64) -> String;
++    fn cavalry_mult(&self) -> f64;
++}
++
+ /// Wynik efektow ruchu.
+ #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+ pub struct MoveOutcome {
+diff --git a/rust-port/engine/tests/p6_k5doc_t4e.rs b/rust-port/engine/tests/p6_k5doc_t4e.rs
+new file mode 100644
+index 000000000..f8b990d4c
+--- /dev/null
++++ b/rust-port/engine/tests/p6_k5doc_t4e.rs
+@@ -0,0 +1,306 @@
++//! P6 SIEGE-TAKTYKA K5DOC-T4e-0 (dispatch R-RUSTPORT-P6-K5DOC-T4E-PIESZY-WIRING, runda 2, DODATEK D1-D4): wpięcie
++//! ruchu pieszego w `ProdBody` przez `ProdBody::move_step` -> `do_move_effects`.
++//!
++//! Zakres T4e-0 (D4): typ `MoveTerrain`, pola `terrain` i `occ_by_key` w `ProdBody`, jedna ścieżka ruchu
++//! (krok -> `do_move_effects`), brak terenu = `MissingTerrain` (bez domyślnej wartości).
++//! POZA zakresem (T4e-1): pełne `_advanceStep` 1-10, kawaleria, brody jako decyzja kroku.
++//!
++//! Oczekiwania wyprowadzone z pina `07d2fbd72` (`gra/src/battle/battleScene.ts`):
++//! * `_doMove` `:8685-8776`: zajętość (`occByKey`), pozycja, koszt kroku z clampem `[1, 99]`, brod `/ 0.5`,
++//!   `moveLeft = max(0, moveLeft - stepCost)`, facing jako wejście.
++//! * `_doMove` `:8689-8692`: odmowa -> `moveLeft = 0`, bez zmiany zajętości i pozycji.
++//! * `_advanceStep` `:8198` / `_doMove` kolejność: `occByKey` przed facing (`:8694-8704`).
++//! Wektory są wpisane w kod testu (nie generowane przez `*_gen.mjs`); to jawnie NIE jest wykonanie tekstu pina.
++
++use std::collections::{BTreeSet, HashMap};
++
++use civ_engine::domain::siege_tactics_activate::{ActivateScene, ActivateUnit};
++use civ_engine::domain::siege_tactics_autobatch::{cell_key, CellKey};
++use civ_engine::domain::siege_tactics_blow::SequenceRolls;
++use civ_engine::domain::siege_tactics_end::BattleSide;
++use civ_engine::domain::siege_tactics_loop::{LoopBody, ProdBody, ProdMoveError, ProdUnit};
++use civ_engine::domain::siege_tactics_move_effects::{
++    do_move_effects, MoveOutcome, MoveTerrain, MoveUnit, MoveWorld,
++};
++use civ_engine::domain::siege_tactics_turnseq::{SeqUnit, TurnSeqState, UnitRef};
++use civ_engine::domain::siege_tactics_unit::CombatUnit;
++
++/// Teren testowy: stały koszt, opcjonalny brod na jednym kafelku, zapis wywołań `passable`.
++struct TestTerrain {
++    cost: f64,
++    ford: Option<(f64, f64)>,
++}
++
++impl MoveTerrain for TestTerrain {
++    fn passable(&self, _col: f64, _row: f64) -> bool {
++        true
++    }
++    fn move_cost(&self, _col: f64, _row: f64) -> f64 {
++        self.cost
++    }
++    fn is_ford(&self, col: f64, row: f64) -> bool {
++        self.ford == Some((col, row))
++    }
++    fn combat_terrain_name(&self, _col: f64, _row: f64) -> String {
++        "Równina".to_string()
++    }
++    fn cavalry_mult(&self) -> f64 {
++        1.0
++    }
++}
++
++fn cu(move_left: f64) -> CombatUnit {
++    CombatUnit {
++        hp: 100.0,
++        morale: 100.0,
++        flee_morale: 0.0,
++        move_left,
++        never_rout: false,
++        dead: false,
++        fading_out: false,
++        routed: false,
++        removed: false,
++        acted: false,
++    }
++}
++
++fn act(q: i64, r: i64, side_atk: bool) -> ActivateUnit {
++    ActivateUnit {
++        side_atk,
++        q,
++        r,
++        dead: false,
++        fading_out: false,
++        routed: false,
++        never_rout: false,
++        surround_applied: false,
++        morale: 100.0,
++        flee_morale: 0.0,
++        terrain_defence_mult: 1.0,
++        range: 1.0,
++        on_wall_walkway: false,
++        primary_ranged: false,
++        mounted: false,
++        phalanx: false,
++        shooting_disabled: false,
++        dry_col: 0.0,
++        held_after_fallback: false,
++        player_order_none: true,
++        can_shoot: false,
++        is_siege_unit: false,
++        is_siege_tower: false,
++        is_ram: false,
++        is_catapult: false,
++        doctrine_auto: false,
++        doctrine_manual: false,
++    }
++}
++
++fn scene() -> ActivateScene {
++    ActivateScene {
++        finished: false,
++        manual_mode: false,
++        is_player_side: false,
++        wall_col: -1,
++        gate_open: false,
++        wall_tile_hp: Vec::new(),
++        siege_machine_range: 0.0,
++    }
++}
++
++fn pu(q: i64, r: i64, side_atk: bool) -> ProdUnit {
++    ProdUnit {
++        activate: act(q, r, side_atk),
++        melee_target: None,
++        blow: None,
++        counter_blows: Vec::new(),
++        body_ms: 0.0,
++        facing: 0.0,
++    }
++}
++
++/// Atakujący `atk0` na (0,0) z `move_left`, obrońca `def0` daleko na (5,5).
++fn body_and_state(move_left: f64) -> (ProdBody<SequenceRolls>, TurnSeqState) {
++    let body = ProdBody::new(
++        [vec![pu(0, 0, true)], vec![pu(5, 5, false)]],
++        scene(),
++        SequenceRolls::new(Vec::new()),
++    );
++    let st = TurnSeqState {
++        atk: vec![SeqUnit {
++            id: 1,
++            c: cu(move_left),
++        }],
++        def: vec![SeqUnit { id: 2, c: cu(0.0) }],
++        turn_order: Vec::new(),
++        turn_idx: 0,
++        round_no: 1,
++        siege_wall_col: -1,
++        manual_mode: false,
++        player_side: BattleSide::Attacker,
++        finished: false,
++        awaiting_orders: false,
++        auto_battle_suspended: false,
++        busy: false,
++        auto_batch_planning: false,
++        queued_order_ids: BTreeSet::new(),
++    };
++    (body, st)
++}
++
++fn atk0() -> UnitRef {
++    UnitRef {
++        side: BattleSide::Attacker,
++        idx: 0,
++    }
++}
++
++fn flat(cost: f64) -> Box<dyn MoveTerrain> {
++    Box::new(TestTerrain { cost, ford: None })
++}
++
++/// Wektor zajętości: dokładnie te pary (klucz kafelka, id), bez innych wpisów.
++fn occ_expect(pairs: &[(f64, f64, &str)]) -> HashMap<CellKey, String> {
++    pairs
++        .iter()
++        .map(|(c, r, id)| (cell_key(*c, *r), id.to_string()))
++        .collect()
++}
++
++// ---- Zajętość startowa (konstruktor) ----------------------------------------------------------------------------
++
++#[test]
++fn konstruktor_inicjalizuje_occ_z_pozycji_jednostek() {
++    let (body, _st) = body_and_state(10.0);
++    assert_eq!(
++        body.occ_by_key(),
++        &occ_expect(&[(0.0, 0.0, "atk0"), (5.0, 5.0, "def0")])
++    );
++}
++
++// ---- Ruch jedną ścieżką: zajętość, pozycja, koszt (pin `_doMove` :8694-8703) -------------------------------------
++
++#[test]
++fn ruch_zwykly_aktualizuje_occ_pozycje_i_move_left() {
++    let (mut body, mut st) = body_and_state(10.0);
++    body.set_terrain(flat(2.0));
++    let out = body.move_step(&mut st, atk0(), 1.0, 0.0, false);
++    // Pin: enterCost = max(1, min(2, 99)) = 2, brak brodu, moveLeft = max(0, 10 - 2) = 8.
++    assert_eq!(out, Ok(MoveOutcome { done: false }));
++    assert_eq!(st.unit(atk0()).c.move_left, 8.0);
++    assert_eq!(
++        body.occ_by_key(),
++        &occ_expect(&[(1.0, 0.0, "atk0"), (5.0, 5.0, "def0")])
++    );
++    assert_eq!(body.unit_cell(atk0()), Some((1, 0)));
++}
++
++#[test]
++fn ruch_clamp_kosztu_infinity_daje_99_i_zero_move_left() {
++    // Pin: `Infinity` -> clamp do 99 (`js_min`), `moveLeft = max(0, 10 - 99) = 0`.
++    let (mut body, mut st) = body_and_state(10.0);
++    body.set_terrain(flat(f64::INFINITY));
++    body.move_step(&mut st, atk0(), 1.0, 0.0, false).unwrap();
++    assert_eq!(st.unit(atk0()).c.move_left, 0.0);
++}
++
++#[test]
++fn ruch_brod_na_celu_dzieli_koszt_przez_0_5() {
++    // Pin `:8701-8702`: brod na celu -> stepCost = enterCost / 0.5 = 4; moveLeft = 10 - 4 = 6.
++    let (mut body, mut st) = body_and_state(10.0);
++    body.set_terrain(Box::new(TestTerrain {
++        cost: 2.0,
++        ford: Some((1.0, 0.0)),
++    }));
++    body.move_step(&mut st, atk0(), 1.0, 0.0, false).unwrap();
++    assert_eq!(st.unit(atk0()).c.move_left, 6.0);
++}
++
++// ---- Brak terenu: jawny blad, bez domyslnej wartosci i bez zmiany stanu (D1) -----------------------------------
++
++#[test]
++fn brak_terenu_przy_ruchu_zwraca_missing_terrain_bez_zmiany_stanu() {
++    let (mut body, mut st) = body_and_state(10.0);
++    let out = body.move_step(&mut st, atk0(), 1.0, 0.0, false);
++    assert_eq!(out, Err(ProdMoveError::MissingTerrain));
++    assert_eq!(st.unit(atk0()).c.move_left, 10.0, "move_left bez zmian");
++    assert_eq!(
++        body.occ_by_key(),
++        &occ_expect(&[(0.0, 0.0, "atk0"), (5.0, 5.0, "def0")])
++    );
++    assert_eq!(body.unit_cell(atk0()), Some((0, 0)));
++}
++
++#[test]
++fn odmowa_nie_wymaga_terenu_i_zeruje_move_left() {
++    // Pin `_doMove` :8689-8692: odmowa -> moveLeft = 0, zajętość i pozycja bez zmian, bez terenu.
++    let (mut body, mut st) = body_and_state(10.0);
++    let out = body.move_step(&mut st, atk0(), 1.0, 0.0, true);
++    assert_eq!(out, Ok(MoveOutcome { done: true }));
++    assert_eq!(st.unit(atk0()).c.move_left, 0.0);
++    assert_eq!(
++        body.occ_by_key(),
++        &occ_expect(&[(0.0, 0.0, "atk0"), (5.0, 5.0, "def0")])
++    );
++    assert_eq!(body.unit_cell(atk0()), Some((0, 0)));
++}
++
++// ---- Kolejnosc efektow (D4 mutacja c): occByKey przed facing, w jednym rejestrze wywolan -----------------------
++
++struct RecWorld {
++    log: Vec<&'static str>,
++    occ: HashMap<CellKey, String>,
++}
++
++impl MoveWorld for RecWorld {
++    fn occ_mut(&mut self) -> &mut HashMap<CellKey, String> {
++        self.log.push("occ");
++        &mut self.occ
++    }
++    fn move_cost(&self, _col: f64, _row: f64) -> f64 {
++        2.0
++    }
++    fn is_ford(&self, _col: f64, _row: f64) -> bool {
++        false
++    }
++    fn update_facing(&mut self, _unit_id: &str) {
++        self.log.push("facing");
++    }
++}
++
++#[test]
++fn kolejnosc_occ_przed_facing() {
++    let mut w = RecWorld {
++        log: Vec::new(),
++        occ: occ_expect(&[(0.0, 0.0, "atk0")]),
++    };
++    let mut mu = MoveUnit {
++        id: "atk0".to_string(),
++        q: 0.0,
++        r: 0.0,
++        move_left: 10.0,
++    };
++    do_move_effects(&mut w, &mut mu, 1.0, 0.0, false, None);
++    let first_facing = w.log.iter().position(|e| *e == "facing").unwrap();
++    let last_occ = w.log.iter().rposition(|e| *e == "occ").unwrap();
++    assert!(
++        last_occ < first_facing,
++        "occByKey musi być zapisane przed facing, log={:?}",
++        w.log
++    );
++}
++
++// ---- Cykl: dwa kroki pod rzad aktualizuja zajetosc bez pozostawania starego klucza --------------------------
++
++#[test]
++fn dwa_kroki_nie_zostawiaja_starego_klucza() {
++    let (mut body, mut st) = body_and_state(10.0);
++    body.set_terrain(flat(1.0));
++    body.move_step(&mut st, atk0(), 1.0, 0.0, false).unwrap();
++    body.move_step(&mut st, atk0(), 2.0, 0.0, false).unwrap();
++    assert_eq!(
++        body.occ_by_key(),
++        &occ_expect(&[(2.0, 0.0, "atk0"), (5.0, 5.0, "def0")])
++    );
++    assert_eq!(st.unit(atk0()).c.move_left, 8.0);
++}
