@@ -1,3 +1,9 @@
+## ROBOCZA 3823de2e -- 2026-11-17 -- FALA 794: Jedno pole zdrowia jednostek: health (UNITSHP) (testowa)
+
+- units.json: usuniete 75 wpisow Health, zostaje jedno pole health; czytelnicy definicji przepieci na health (AI ai.ts _unitMaxHealth, HP wiezyczki oblezniczej battleScene, combat/testBattle/main/oblezenie/loader); skutek zamierzony: AI oceniala sile jednostek z maxHP z pola Health (np. Wojownik 60) a walka liczy health (22) — po zmianie AI i walka licza to samo (f761d6c73)
+- Weryfikacja: units-health-single-field-test ZIELONY (w tym wykryte mutacje), combat-test 6/6, unit-info-card-contract 23/0, archers-health-dist 10/0, logic 213/213, tsc 0, vite build OK; NIE ZMIERZONO symulacja sily AI przed/po (>=3x150 tur) ani Chromium
+- Limity: Zmiana oceny sily jednostek w AI (maxHP 60->22 dla 44 jednostek) jest zamierzona wg decyzji wlasciciela A; tools/roster6-units-patch.cjs nadpisuje units.json — nie uruchamiac bez decyzji
+
 ## ROBOCZA 777228ed -- 2026-11-17 -- FALA 793: Podpowiedz utrzymania budynkow: baza x mnoznik = wynik (GARNTIP) (testowa)
 
 - W podpowiedziach utrzymania budynkow (lista miasta, karta encji, stopka i wiersz szczegolowy karty) pokazane wyjasnienie baza x mnoznik silnika = wynik, np. Garnizon 2 x 2 = 4; wartosci z funkcji silnika (economy-upkeep: buildingUpkeepBreakdown); dane i koszty bez zmian (64c7ff130)
