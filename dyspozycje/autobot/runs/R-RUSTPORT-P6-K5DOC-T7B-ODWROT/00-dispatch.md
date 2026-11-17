@@ -47,3 +47,9 @@ WZÓR: T4b — `rust-port/engine/src/domain/siege_tactics_advance.rs` (wzorzec `
 3. Brak `#[ignore]`, brak osłabionych asercji, zero zmian poza allowlistą.
 4. Commit jawnym `git add` (nigdy `-A`), BEZ `Cargo.lock`, BEZ nazwy modelu w trailerach. Bez push do parity. Raport `01-operator-r1.md` w run dir.
 5. `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` poza repo, unikalny; usuń po bramkach.
+
+## DODATEK r2 — RUNDA INTEGRACYJNA (po FC PASS-WITH-NOTES `7def6d636`; BAZA NADPISANA)
+
+- Baza: **`7def6d636`** (FC rundy 1; zawiera kod `9b5a31f15` i raporty). Parity `origin/rust-port/parity-v2` = `f85622878` (ancestor). FF dopiero po werdykcie FC rundy integracyjnej.
+- Zadanie (Operator, Haiku): (1) ancestry `f85622878` ⊂ `7def6d636`; `git diff --stat f85622878 7def6d636 -- rust-port` tylko allowlista T7b (`mod.rs` +1 linia, `siege_tactics_fallback.rs`, `p6_k5doc_t7b*`); (2) bramki EXIT 0 w `rust-port/engine`: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --test p6_k5doc_t7b`; (3) pełny `cargo test --all-targets --no-fail-fast` z OSOBNYM przebiegiem `p6_8i_pick` z limitem: `timeout 900 cargo test --test p6_8i_pick` — NIE uruchamiaj tego binarium w pełnym przebiegu bez timeoutu (zawisł > 45 min w rundzie 1, zadanie #291). Jeśli `p6_8i_pick` nie kończy się w 900 s → zapisz BLOCK dla tego binarium z dowodem (czas, stan procesu), reszta bramek zostaje zmierzona; NIE zabijaj cudzych procesów; (4) `df -h /` przed każdą bramką, przy < 8 GB BLOCK z liczbą GB; (5) raport `02-integracja-r2.md`, commit tylko raportu (jawny `git add`), bez push, bez FF.
+- Ewaluator i FC: odtworzyć bramki sam; przy BLOCK binarium `p6_8i_pick` — orkiestrator zdecyduje (pełny test bez tego binarium + osobny werdykt o nim); to decyzja techniczna, do rejestru.
