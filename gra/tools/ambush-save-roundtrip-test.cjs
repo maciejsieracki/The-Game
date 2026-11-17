@@ -77,5 +77,41 @@ check('zasadzka stosu (dwie jednostki) przetrwa razem przez realny zapis', () =>
   assert.deepEqual(back.units.map(u => u.ambush === true), [true, true, false]);
 });
 
+// R-WEB-ARMY-AMBUSH-REQUIRES-GENERAL-Q1 (zarzut Evaluatora 4): stary zapis z zasadzka stosu BEZ generala
+// przechodzi przez PRAWDZIWE deserializeGame, a potem przez reconcileAmbushInWorld (ten sam krok, co main.ts:15325)
+// i zasadzka wygasa dla calego stosu; stos z generalem zostaje zastawiony.
+const AMB_BUNDLE = path.resolve(__dirname, '.ambush-save-roundtrip-ambush-bundle.cjs');
+esbuild.buildSync({
+  entryPoints: [path.join(GRA, 'src/game/ambushMove.ts')],
+  bundle: true,
+  platform: 'node',
+  format: 'cjs',
+  outfile: AMB_BUNDLE,
+  absWorkingDir: GRA,
+  logLevel: 'silent',
+});
+const { reconcileAmbushInWorld } = require(AMB_BUNDLE);
+
+check('stary zapis: stos z zasadzka bez generala wygasa przy reconcile po wczytaniu', () => {
+  const back = deserializeGame(JSON.stringify(makeSave([
+    unit({ id: 'a', ambush: true, ambushAt: '3,4,0', ruchLeft: 0, isGeneral: false }),
+    unit({ id: 'b', ambush: true, ambushAt: '3,4,0', ruchLeft: 0, isGeneral: false }),
+  ])));
+  const cleared = reconcileAmbushInWorld(back.units, []);
+  assert.equal(cleared, 2);
+  assert.deepEqual(back.units.map(u => u.ambush), [undefined, undefined]);
+  assert.deepEqual(back.units.map(u => 'ambushAt' in u), [false, false]);
+});
+
+check('stary zapis: stos z zasadzka Z generalem zostaje zastawiony po reconcile', () => {
+  const back = deserializeGame(JSON.stringify(makeSave([
+    unit({ id: 'g', ambush: true, ambushAt: '3,4,0', ruchLeft: 0, isGeneral: true }),
+    unit({ id: 'p', ambush: true, ambushAt: '3,4,0', ruchLeft: 0, isGeneral: false }),
+  ])));
+  const cleared = reconcileAmbushInWorld(back.units, []);
+  assert.equal(cleared, 0);
+  assert.deepEqual(back.units.map(u => u.ambush), [true, true]);
+});
+
 console.log('Wynik: ' + pass + ' OK, ' + fail + ' FAIL');
 if (fail > 0) process.exit(1);

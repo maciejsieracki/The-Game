@@ -75,6 +75,15 @@ const probe = `
         }
         return { error: 'no-layout' };
       },
+      // R-WEB-ARMY-AMBUSH-REQUIRES-GENERAL-Q1 (zarzut 1 Evaluatora): zdejmuje generała z jednostki gracza
+      // (stos bez generała -> przycisk Zasadzka ma być zablokowany z powodem po polsku).
+      noGeneral: (id: string) => {
+        const u = units.find(x => x.id === id);
+        if (!u) return false;
+        u.isGeneral = false;
+        syncUnitsRender();
+        return true;
+      },
       // Uklad AI->gracz: korytarz (reszta sasiadow = gory), zasadzka GRACZA w srodku, AI z jednej strony, widoczny cel gracza z drugiej.
       setupAi: () => {
         const mk = (window as any).__amb.mk;

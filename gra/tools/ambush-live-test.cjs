@@ -144,6 +144,34 @@ const closeAudience = (page) => page.evaluate(() => { const b = Array.from(docum
       await page.close();
     }
 
+    // ================= N) armia BEZ generała: zasadzka zablokowana z powodem =================
+    // R-WEB-ARMY-AMBUSH-REQUIRES-GENERAL-Q1 (zarzut 1 Evaluatora, kryterium f): zrzut przycisku dla stosu bez generała.
+    if (ONLY !== 'B') {
+      const { page, errs } = await newPage(browser);
+      const lay = await page.evaluate(() => window.__amb.setup());
+      if (lay.error) throw new Error('layout N');
+      const noGen = await page.evaluate(() => window.__amb.noGeneral('amb-s1'));
+      ck('N0 generał zdjęty z jednostki gracza (stos bez generała)', noGen === true, noGen);
+      await page.evaluate(() => window.__amb.select('amb-s1'));
+      await page.waitForTimeout(500);
+      await page.evaluate(() => window.__amb.setRuch(['amb-s1', 'amb-s2'], 3));
+      await page.waitForTimeout(400);
+      const nb = page.locator('[data-act="ambush"]').first();
+      const nTitle = await nb.getAttribute('title');
+      ck('N1 przycisk Zasadzka zablokowany dla armii bez generała', (await nb.isDisabled()) === true, nTitle);
+      ck('N2 powód po polsku w title przycisku', nTitle === 'Zasadzkę może zastawić tylko armia z generałem.', nTitle);
+      await nb.screenshot({ path: path.join(shotsDir, 'N-przycisk-zasadzka-zablokowany-bez-generala.png') });
+      await page.evaluate(() => { const b = document.querySelector('[data-act="ambush"]'); if (b) b.click(); });
+      await page.waitForTimeout(400);
+      const infoN = await page.evaluate(() => window.__amb.info());
+      ck('N3 kliknięcie zablokowanego przycisku nie zastawia zasadzki', !(infoN.s1 && infoN.s1.ambush === true), infoN.s1);
+      await page.evaluate(([q, r]) => window.__amb.focus(q, r), [lay.s.q, lay.s.r]);
+      await page.waitForTimeout(700);
+      await page.screenshot({ path: path.join(shotsDir, 'N-zasadzka-bez-generala-zablokowana-1280x720.png') });
+      ck('N4 brak bledow strony', errs.length === 0, errs.slice(0, 2));
+      await page.close();
+    }
+
     // ================= B) AI -> gracz =================
     if (ONLY !== 'A') {
       const { page, errs } = await newPage(browser, '?civTest=1');
