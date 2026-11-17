@@ -1,3 +1,86 @@
+# OBRONA r2 (Operator HAIKU 5.5) — odpowiedź na zarzuty Evaluatora r2 (kandydat 703aaacad)
+
+STATUS: PASS-WITH-NOTES (zarzuty 1, 2, 4 przyjęte i naprawione z dowodem; zarzut 3 odrzucony z dowodem i przekazany jako DECISION; zarzut 5 częściowo: (d) odrzucony, (e) przyjęty jako dług)
+DOMAIN: GAME (UI bitwy / brandbook)
+TEMAT: R-WEB-UI-BATTLE-TEMPO-MINIMAP-PANEL-BRANDBOOK-Q1
+GOAL: panel TEMPO + minimapa w oprawie tokenów marki, bez zmiany logiki tempa, minimapy i dostępności.
+BAZA: 703aaacad52f4708b745b0dadceebd066faed52e (kandydat r2; origin/main 6d474b826 jest jego przodkiem).
+KOD OBRONY r2: 5b973ca12 (commit na 703aaacad; 4 pliki: battleMinimap.ts, entry.ts, live-test.cjs, evidence/live-test.json).
+RUNDY: 2/5 (obrona r2); Evaluator r2 wykonany na 703aaacad.
+
+ZMIANY/COMMIT (allowlista DODATEK 2 + pliki testowe):
+- gra/src/battle/battleMinimap.ts: TYLKO eksport czterech stałych palety (MINIMAP_BG, MINIMAP_RIVER, MINIMAP_FORD, MINIMAP_VIEW_FRAME). Wartości i logika bez zmian (diff 0 w treści funkcji).
+- gra/tools/battle-hud-tempo-minimap-entry.ts: window.__tempo.palette (stałe + terrainMinimapColor(3/4)). Plik spoza literalnej allowlisty, ale to wejście testu (helper).
+- gra/tools/battle-hud-tempo-minimap-live-test.cjs: nowe sprawdzenia (P) i (C) — patrz TESTY. Plik testowy spoza literalnej allowlisty (helper testu).
+- evidence/live-test.json: wynik ostatniego pozytywnego przebiegu (84 OK / 0 FAIL).
+- Brak zmian: handlerów tempa, kliku minimapy, kamery, battleScene.ts (committed), battleHudTheme.ts (committed), tokens.css, WERSJE.md, manifest, rust-port, gra-robocza.
+- Mapowanie palety stare→nowe (zgodne z DODATKIEM 2): tło canvasu rgba(12,18,35,.92) → #080a12 (= --tg-bg-deep); rzeka #1a3878 → #325371 (= color-mix(science-blue 45%, panel-bg)); bród #2a5098 → #3d678c (= color-mix(science-blue 60%, panel-bg)); ramka widoku rgba(255,255,255,.88) → rgba(232,216,138,.95) (= gold-primary 95%). Las/góry/mury/bramy/nizina bez zmian. Czytelność woda/ląd/góry: rzeka i bród ciemniejsze od lądu, różne tony między sobą.
+
+ODPOWIEDZI NA ZARZUTY EVALUATORA r2:
+
+Zarzut 1 (brak dowodu mutacyjnego dla palety minimapy): PRZYJMUJĘ — NAPRAWIONE.
+- Dodano (P): piksel canvasu (getImageData 1x1) dla bg/river/ford/viewFrame porównany z kolorem wyliczonym przez przeglądarkę z var(--tg-*) i color-mix; plus terrainMinimapColor(3/4) = stałe palety.
+- Dowód pozytywny: 84 OK / 0 FAIL (4 warianty ekranu × 21 sprawdzeń).
+- Dowód mutacyjny: patrz M5 niżej (powrót do #1a3878 ⇒ 4 FAIL w P).
+
+Zarzut 2 (kontrola negatywna słaba: MUTATE=1 tylko DOM; brak mutacji kliku i twardego koloru): PRZYJMUJĘ — NAPRAWIONE.
+- Dodano (C): kolor nieaktywnego przycisku Przyspiesz = computed --tg-gold-primary (porównanie z probe-elementem) oraz obecność 4 aria-label.
+- Mutacje ŹRÓDŁOWE na czystym commicie 5b973ca12 (każda: zmiana pliku → live test → git checkout przywrócenie; wynik surowy z logu):
+  - M1 twardy kolor w rzędzie tempa (battleHudTheme.ts: color nieaktywnego → #ff00ff): exit 1, "Wynik: 80 OK, 4 FAIL" — FAIL: "C kolor nieaktywnego przycisku tempa = token --tg-gold-primary" got rgb(255,0,255) want rgb(232,216,138) (x4 wariantów).
+  - M2 usunięcie aria-label (battleScene.ts mkTempoBtn: setAttribute('aria-label') → 'data-mut'): exit 1; test pada na waitForFunction aria-label "Przyspiesz" (timeout 60 s, linia 81) — CZERWONO, ale nie jako nazwany check; uczciwie: to FAIL przez wyjątek, nie przez asercję.
+  - M3 odłączenie handlera „Zwolnij” w źródle (onclick → pusta funkcja): exit 1, "Wynik: 80 OK, 4 FAIL" — FAIL: "A Zwolnij cofa speedIdx" start 0 after 1 (x4).
+  - M4 odłączenie kliku minimapy w źródle (if (dx²+dy² < 36) → if (false)): exit 1, "Wynik: 80 OK, 4 FAIL" — FAIL: "B klik w lewa czesc minimapy przesuwa kamere" left=right=(33,77) (x4).
+  - M5 cofnięcie palety rzeki do #1a3878 (battleMinimap.ts): exit 1, "Wynik: 80 OK, 4 FAIL" — FAIL: "P paleta river" have [26,56,120] want [50,83,113] (x4).
+- Kontrola DOM (MUTATE=1, onclick=null w przeglądarce) zostaje jako dodatkowa, ale już nie jest jedynym dowodem.
+
+Zarzut 3 (konwencja znaczników gracz/przeciwnik): ODRZUCAM w zakresie zmiany kodu; przekazuję jako DECISION.
+- Dowód stanu repo (703aaacad): gra/src/battle/battleHudTheme.ts:17 BATTLE_PLAYER = '#3a6ad0' (niebieski), :22 BATTLE_ENEMY = '#c84040' (czerwony). Tak są rysowane znaczniki i panel bitwy; zrzuty PO-r2 pokazują to samo.
+- DODATEK 2 pkt (2) zakłada, że konwencja „gracz czerwony, przeciwnik żółty wg BATTLE-DAMAGE-COLORS” JUŻ obowiązuje („zachowuje konwencję”). W repo tej konwencji nie ma: w battleHudTheme.ts brak żółtego przeciwnika, a osobny temat R-WEB-BATTLE-DAMAGE-COLORS-PLAYER-RED-ENEMY-YELLOW-Q1 (zgłoszenie właściciela 2026-11-09) nie zmienił znaczników w tym kodzie (NIE ZMIERZONO, czy wdrożono w main po 703aaacad — poza zakresem tej gałęzi).
+- Zmiana kolorów znaczników stron na minimapie samodzielnie rozjechałaby minimapę z panelem bitwy i z resztą HUD. Decyzja (zmiana konwencji stron vs zachowanie niebieski/czerwony) należy do orkiestratora. NIE zmieniono.
+- Uwaga o wodzie: po zmianie palety woda to ściszony granat (#325371 / #3d678c), nie jaskrawa tafla; nowy zrzut PO nie był wykonywany (paleta identyczna z kandydatem r2, którego zrzuty PO-r2 istnieją w evidence/). NIE ZMIERZONO ponownie.
+
+Zarzut 4 (fallbacki var(--tg-*) i wstrzyknięcie tokenów): PRZYJĘTE w r1 (52627837e), ponownie potwierdzone: applyTempoBtn1E ma fallbacki (battleHudTheme.ts:401-404), ensureBrandRootTokens() wołane w _buildMinimapOverlay (battleScene.ts:12452). Brak nowej zmiany. Ścieżka startu bitwy bez wstrzyknięcia tokenów: NIE ZMIERZONO poza ścieżką _buildMinimapOverlay (test live odpala pełną scenę i daje 84 OK).
+
+Zarzut 5 (d/e, uwagi proceduralne):
+- (d) wpis testu na liście deployu — ODRZUCAM w zakresie Operatora (lista deployu i rejestry = orkiestrator, CLAUDE.md p.1 i p.4). Nazwy plików testowych do wpisu: gra/tools/battle-tempo-minimap-brand-test.cjs, gra/tools/battle-hud-tempo-minimap-live-test.cjs (+ entry .ts/.html).
+- (e) dług Rust — PRZYJMUJĘ jako dług do rejestru: w tej gałęzi `grep -ril tempo --include=*.rs rust-port` = 0 trafień; REPIN panelu TEMPO i palety minimapy w Rust NIE ZBADANY głębiej (NIE ZMIERZONO).
+- pozostałe uwagi: evidence/live-test.json jest nadpisywany przez każdy przebieg testu — zostawiono wynik pozytywny (84 OK) w commicie; mutacje przywracane przez git checkout. PRZED/PO zrzuty nie były ponawiane (paleta r3 == paleta r2).
+
+TESTY (surowe wyjścia, commit 5b973ca12):
+- tsc --noEmit (gra/): exit 0 (brak błędów). node_modules: symlink do gra/node_modules sibling worktree (wf_b100750d-100-2), w .gitignore — do usunięcia przy sprzątaniu.
+- Live Chromium `node tools/battle-hud-tempo-minimap-live-test.cjs`: "Wynik: 84 OK, 0 FAIL", exit 0 (4 warianty: 1024x640@1, 1280x720@1, 1400x900@1, 1280x720@2).
+- Mutacje M1–M5 (powyżej): każda exit 1 i FAIL. Log: scratchpad (mut1..mut5 *.log).
+- battle-tempo-minimap-brand-test.cjs: "battle-tempo-minimap-brand-test: OK (A: 3 grupy stylu, B: 9 tokenów, C: wiązanie sceny)", exit 0.
+- minimap-viewport-rect-follow-test.cjs: "OK: 12 testów minimap-viewport-rect-follow", exit 0.
+- battle-damage-colors-test.cjs: "WYNIK: 27 PASS / 0 FAIL", exit 0.
+- battle-hp-display-test.cjs: "PASS — 7 / 7", exit 0.
+- logic-test.cjs: "LOGIC OK (213/213)", exit 0.
+- tech-tree-test.cjs: "tech-tree-test: 20 pass, 0 fail", exit 0.
+- research-test.cjs: "PASSED: 33 / FAILED: 0 / TOTAL: 33", exit 0.
+- unit-replace-test.cjs: 21 linii [OK], 0 [FAIL], exit 0.
+- combat-test.cjs: "All sanity checks passed.", exit 0.
+- NIE PONOWIONO: load-game-regression (Evaluator: 34/0), hud-topbar/minimap pozostałe testy — poza zakresem zarzutów r2 i nie dotyczą zmienionych plików (palety i testy). Zostają do listy bramek FC.
+
+BLOKADY / NIE ZMIERZONO:
+- Kolor znaczników stron (zarzut 3) — decyzja orkiestratora (DECISION_REQUIRED).
+- Rust REPIN panelu TEMPO i palety minimapy — dług, nie zbadany.
+- Nowe zrzuty PRZED/PO dla r3 — nie wykonane (paleta bez zmian względem r2).
+- Ścieżka startu bitwy bez wstrzyknięcia tokenów poza _buildMinimapOverlay — NIE ZMIERZONO.
+
+RUNDY: Operator: r1 (e580a9f1), r2 (703aaacad), obrona r1 (52627837e), obrona r2 (5b973ca12 + raport). Limit 5 nieosiągnięty.
+
+NASTĘPNY KROK: (1) decyzja orkiestratora: kolor znaczników stron (zarzut 3); (2) Evaluator r3 / Final Control na commicie raportu; (3) ewentualny temat R-WEB-BATTLE-TEMPO-CLICK-BEHAVIOR-BROWSER-Q1 NIE jest już potrzebny dla kryterium (a) — test zachowania jest w live teście.
+DEPLOY/PUSH: NIE WYKONANO
+
+UWAGI-DLA-ORKIESTRATORA:
+- Wpis na listę deployu: gra/tools/battle-tempo-minimap-brand-test.cjs i gra/tools/battle-hud-tempo-minimap-live-test.cjs (+ entry .ts/.html) — po stronie orkiestratora.
+- Sprzątanie: gra/node_modules to symlink do worktree wf_b100750d-100-2 (ignorowane przez git); usunąć symlink (nie katalog docelowy) przy sprzątaniu.
+- Rozbieżność DODATKU 2 (pkt 2 „zachowuje konwencję gracz czerwony / przeciwnik żółty”) ze stanem repo (BATTLE_PLAYER niebieski, BATTLE_ENEMY czerwony) — do rozstrzygnięcia.
+
+---
+
+# HISTORIA: obrona r1 (poprzedni raport)
+
 STATUS: DECISION_REQUIRED (zarzuty 1 i 2 otwarte: kryterium (a) i GOAL 2 niespełnione; wymagają decyzji orkiestratora, patrz niżej)
 DOMAIN: GAME (UI bitwy / brandbook)
 TEMAT: R-WEB-UI-BATTLE-TEMPO-MINIMAP-PANEL-BRANDBOOK-Q1
