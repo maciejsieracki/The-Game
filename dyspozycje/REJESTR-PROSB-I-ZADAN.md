@@ -10763,3 +10763,16 @@ Właściciel: koszt pokoju znacząco podwyższyć tak, by na starcie wojny zwyci
 - **Kara za brak ceramiki obywateli w Kamieniu:** właściciel: „już jest w kodzie jakaś kara, niech zostanie tak jak jest” (bez zmian).
 - **„Zastąp” dla Inków (oba warianty) i narodowych łuczników → Procarz:** B (dodaj przejście) → R-WEB-UNIT-REPLACE-INCA-AND-NATIONAL-ARCHERS-TO-SLINGER-Q1.
 - Uruchomione 2026-11-17 ok. 14:15 UTC (baza main 76a1739fd): PEACEDECAY r3, ADDUNIT, SIDE3D (+ AMBLIVE r2 w toku). Kolejka dispatchów gotowych: MINIMAP (po SIDE3D), PLAYTEST-MAPA (po ADDUNIT), UNIT-REPLACE-INCA, DOC-CIVPEDIA (po PEACEDECAY, wikiBundle).
+
+### FALA 799 — SIDE3D (2026-11-17)
+- Wdrożone na ROBOCZĄ: **R-WEB-UI-BATTLE-3D-SIDE-COLORS-BLUE-RED-Q1** (r1 FC PASS-WITH-NOTES, kandydat bc2f5fe6f, raport 2698b2ff1). W widoku 3D bitwy modele i awatary jednostek są malowane wg STRONY: gracz niebieski (#3a6ad0), przeciwnik czerwony (#c84040), w roli atakującego i broniącego. Znaleziono i naprawiono błąd: w bitwie polowej z mapy (`mapFieldBattle.ts`) scena nie dostawała roli obrońcy-gracza (malowała go na czerwono). Pierścienie grupy 0xffd700 zostają złote (ABC właściciela: A).
+- **ABC właściciela 2026-11-17:** naprawa włącza dla broniącego się gracza w bitwie polowej fazę rozstawienia i bramkę dowódcy (jak w pozostałych ścieżkach) — decyzja A (zostaje).
+- main 9bc85fef1, ROBOCZA MD5 a7f0ad69 (GitHub Raw = manifest), sidecary audio 3/3 zgodne.
+- Testy: tsc 0; logic 213/213; battle-side-colors-3d (A–D) OK; tempo-minimap-brand OK; hp-display 7/7; damage-colors 28/0; map-field-battle 24/0; żywy Chromium (xvfb) 5 przypadków: 118 niebieskich / 118 czerwonych / 0 złotych, brak błędów strony.
+- NIE ZMIERZONO: porównanie z bazą, mgla-sciezka-inwariant; test statyczny sekcje A–C to regex po źródle. Dług Rust: REPIN palety stron 3D. Odblokowuje MINIMAP (battleScene.ts).
+
+### 2026-11-17 — stan tematów po decyzjach ABC (część 5, ciąg dalszy)
+- **AMBLIVE** r4/5: B3 i B6 zielone, B5 czerwone z przyczyny produktowej (komunikat „Zasadzka się powiodła” z fazy AI trafia do „Ważne”, nie toast). ABC właściciela: **B — toast od razu** → nowy temat R-WEB-UI-AMBUSH-SUCCESS-TOAST-IMMEDIATE-IN-AI-PHASE-Q1 (po ADDUNIT, main.ts); kandydat testu `refs/keep/AMBLIVE-r2-fc` (42734f99c, 25/26) integrować przy tym temacie.
+- **ADDUNIT** r1 FC FAIL (brak tabeli pomiarowej Wojownik vs Wojownik; kod haka OK); r2 w toku z DODATKIEM 1 (build vite poza repo dozwolony, odstępstwo civ-test-hooks.ts zaakceptowane). Baza 57748caaf.
+- **PEACEDECAY** r3 FC FAIL (dwa modele ceny zostały; ai.ts nietknięty); r4 w toku na SONNECIE (3 nieudane rundy Haiku) z DODATKIEM 3; ai.ts + panel + weary40-sim + testy behawioralne w zakresie. Wyjaśnienia właściciela: cena>0 bez pełnego pokrycia = wojna trwa także w ofertach dobrowolnych (wg wcześniejszej decyzji „nie więcej, nie mniej”); dłuższe wojny ~2–2,5× = zamierzony skutek („im dalej w las, tym koszt niższy”).
+- **UNIT-REPLACE-INCA** r1 FC PASS-WITH-NOTES (kandydat 4183b8617, `refs/keep/REPLINCA-fc`): 2 linie `units.json` (Łucznik egipski i sumeryjski → Procarz) + testy; Inkowie i łucznicy nubijski/akadyjski/asyryjski NIE (brak jednoznacznego celu / degradacja Brąz→Brąz) → ABC do właściciela. Dług: `unit-replace-full-cost-test` 39/1 identycznie na bazie. Deploy po ABC.
