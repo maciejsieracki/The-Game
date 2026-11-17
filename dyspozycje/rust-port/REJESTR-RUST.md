@@ -3697,3 +3697,11 @@ Konsekwencje dla kolejki:
 | P4-1Q6-2 BUILD-HIGHLIGHT-PARITY | Operator | OPUS 5.5 | ok. 19:40 UTC |
 | P4-364 AWAITING-SEAT | Operator | OPUS 5.5 | ok. 19:40 UTC |
 | P4-1 L1/L2-FOGOFF-VEC | czeka na slot renderera | OPUS 5.5 | — |
+
+### Przebieg — Q6-2, AWAITING-SEAT i L1/L2-FOGOFF-VEC zintegrowane (automat, 2026-11-17 21:21 UTC)
+- **Q6-2 BUILD-HIGHLIGHT-PARITY:** FC `f263ad77a` PASS-WITH-NOTES, FF parity-v2 `326fd5545` -> `f263ad77a`.
+- **AWAITING-SEAT:** FC `027219cb4` PASS-WITH-NOTES. Merge z parity `8812dddfe178067cf642e0335143539ded0874b3`. Bramka engine na merge: fmt EXIT 0, clippy EXIT 0, pelny test EXIT 0 (525 binarek, 3915 zaliczonych, 0 nieudanych). FF parity-v2 -> `8812dddfe178067cf642e0335143539ded0874b3`. Zabezpieczenia: `refs/keep/AWAITING-SEAT-R1-integ`, gałęzie `rust-port-wip/p4-364-awaiting-seat-r1{,-eval,-def,-fc,-integ}`.
+- **L1/L2-FOGOFF-VEC:** FC `9605d7050` PASS-WITH-NOTES. Merge z parity `1508eda34d0262ac5a3f75b3bc419f2fa8211988`. Bramka renderera na merge: fmt EXIT 0, clippy EXIT 0, pelny test EXIT 0 (80 binarek, 687 zaliczonych, 0 nieudanych). FF parity-v2 -> `1508eda34d0262ac5a3f75b3bc419f2fa8211988`. Zabezpieczenia: `refs/keep/L12-FOGOFF-VEC-R1-integ`, gałąź `rust-port-wip/R-RUSTPORT-P4-1-L12-FOGOFF-VEC-R1-integ`.
+- **Decyzje orkiestratora:** D-AS-2 (pole `player_ever_owned_city` trzyma fotele poza głównym; fotel główny w fladze `gracz_kiedys_mial_miasto`, zgodnie z pinem) zatwierdzona; D-AS-3 (`skip_serializing`, bez zmiany formatu zapisu) zatwierdzona. Próg dysku 12 GB dla bramki renderera zachowany (zmierzony target renderera bez feature gpu to ok. 200 MB, ale pelna bramka --all-targets nie byla mierzona).
+- **Długi:** wpis miasta zapisuje się w fazie Victory; założenie/zdobycie miasta wymaga wpięcia (#115/#354, `record_ever_owned_city`). Komentarz `renderer/src/view/units.rs` ("KNOWN DIVERGENCE of Q6-2") nieaktualny — osobny temat dokumentacyjny. Komentarz `view-model/src/map.rs:232-252` (`river_reveal_keys` None przy mgle wyłączonej) — osobny temat dokumentacyjny. Kontrakt `view_overlays` Q6-2: wołający DTO-BRIDGE musi czyścić zaznaczenie przy otwarciu panelu budowy (`onOpenBuild`, `main.ts:26702-26703`).
+- **Stan:** wszystkie tematy 3D na Opus z dzisiejszej listy wypchnięte na parity-v2. Pozostaje decyzja właściciela: DTO-BRIDGE r2 (kontrakt JSON mostu).
