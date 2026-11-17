@@ -165,6 +165,24 @@ async function modalCheck(browser) {
   check('blokady: klik bez skutku (blokada zostaje) nie podbija licznika i jest zglaszany jako niezamkniety',
     ctxF.techNoticeClosed === 0 && stuckF.includes('techNoticeClosed'), 'licznik=' + ctxF.techNoticeClosed + ' niezamkniete=' + JSON.stringify(stuckF));
   await page.evaluate(() => document.getElementById('civ-tech-discovery-notice-host') && document.getElementById('civ-tech-discovery-notice-host').remove());
+
+  // 0g) wojny per tura (R-WEB-AI-UPKEEP-ONOFF-TOOLS-PORT-Q1): warsInPage zlicza pary o statusie 'wojna' z
+  // `__truceTestDebug.pairState` (atrapa: wojny 0-3, 2-3, 1-2; reszta pokoj/neutralni); gracz = owner 0.
+  await page.evaluate(() => {
+    const war = new Set(['0-3', '2-3', '1-2']);
+    window.__truceTestDebug = { pairState: (a, b) => ({ status: war.has(Math.min(a, b) + '-' + Math.max(a, b)) ? 'wojna' : (a + b === 5 ? 'pokoj' : 'neutralni') }) };
+  });
+  const w = await page.evaluate(runner.warsInPage, [0, 1, 2, 3]);
+  check('wojny: warsInPage zlicza dokladnie pary o statusie wojna (3 z 6), w tym z graczem (1) i AI-AI (2)',
+    !!w && w.active === 3 && w.withPlayer === 1 && w.aiAi === 2 && JSON.stringify(w.pairs) === JSON.stringify([[0, 3], [1, 2], [2, 3]]), JSON.stringify(w));
+  await page.evaluate(() => { delete window.__truceTestDebug; });
+  const wNone = await page.evaluate(runner.warsInPage, [0, 1, 2]);
+  check('wojny: brak haka __truceTestDebug -> null (NIE ZMIERZONO, nie zero)', wNone === null, JSON.stringify(wNone));
+  const gd = runner.gateDelta({ calls: 10, blocked: 3 }, { calls: 14, blocked: 5, flagOff: 0, noTickData: 1, allowed: 8 });
+  const gdReset = runner.gateDelta({ calls: 50, blocked: 9 }, { calls: 2, blocked: 1 });
+  check('bramka utrzymania: gateDelta = po - przed; po resecie licznika (nowa sesja) = po; brak licznika -> null',
+    gd.calls === 4 && gd.blocked === 2 && gdReset.calls === 2 && gdReset.blocked === 1 && runner.gateDelta(null, null) === null,
+    JSON.stringify([gd, gdReset]));
   await page.close();
 }
 

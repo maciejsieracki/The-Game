@@ -5,7 +5,7 @@
  *
  * Flaga to `AI_UPKEEP_RUNWAY_GATE.wlaczone` w `gra/data/ai-upkeep-params.json`. Kod bramki NIE jest w main; zyje w
  * `refs/keep/R-WEB-AI-UPKEEP-Q2-r2-fc` (3 pliki: ai-upkeep-params.json, ai-upkeep-runway.ts, fragmenty main.ts;
- * baza = merge-base z main). Skrypt NIC nie zmienia w repo: tworzy tymczasowy worktree z biezacego HEAD, naklada na
+ * baza = merge-base z main). Od R-WEB-AI-UPKEEP-ONOFF-TOOLS-PORT-Q1 kod bramki jest w HEAD: patch kandydata jest pomijany. Skrypt NIC nie zmienia w repo: tworzy tymczasowy worktree z biezacego HEAD, naklada na
  * niego diff kandydata (git apply), buduje DWA bundle (wlaczone=true / false) POZA repo, uruchamia runner
  * `ai-economy-measure-run.cjs` na obu i drukuje porownanie (srednie po wlascicielach AI, tury 10/50/100).
  *
@@ -36,10 +36,17 @@ function main() {
   const wt = path.join(WORK, 'wt');
   sh(`git worktree add --detach ${JSON.stringify(wt)} HEAD`);
   try {
-    const mb = sh(`git merge-base ${CAND} HEAD`);
-    const patch = path.join(WORK, 'candidate.patch');
-    fs.writeFileSync(patch, execSync(`git diff ${mb} ${CAND} -- gra/src gra/data`, { cwd: REPO, maxBuffer: 1 << 28 }));
-    sh(`git apply ${JSON.stringify(patch)}`, wt);
+    // R-WEB-AI-UPKEEP-ONOFF-TOOLS-PORT-Q1: kod bramki (ai-upkeep-runway.ts, main.ts, ai-upkeep-params.json) jest juz
+    // w bazie HEAD (FALA 784+). Gdy plik bramki istnieje w wt, NIE nakladamy patcha kandydata (bylby zdublowany);
+    // flaga wlaczone przelaczana jest w gra/data/ai-upkeep-params.json kopii roboczej jak dotad.
+    if (fs.existsSync(path.join(wt, 'gra', 'src', 'game', 'ai-upkeep-runway.ts'))) {
+      console.log('[onoff] kod bramki w bazie HEAD -> pomijam naklejanie kandydata ' + CAND);
+    } else {
+      const mb = sh(`git merge-base ${CAND} HEAD`);
+      const patch = path.join(WORK, 'candidate.patch');
+      fs.writeFileSync(patch, execSync(`git diff ${mb} ${CAND} -- gra/src gra/data`, { cwd: REPO, maxBuffer: 1 << 28 }));
+      sh(`git apply ${JSON.stringify(patch)}`, wt);
+    }
     fs.symlinkSync(path.join(GRA, 'node_modules'), path.join(wt, 'gra', 'node_modules'), 'dir');
     const flagFile = path.join(wt, 'gra', 'data', 'ai-upkeep-params.json');
     const results = {};
