@@ -10699,3 +10699,7 @@ Właściciel: koszt pokoju znacząco podwyższyć tak, by na starcie wojny zwyci
 - main fe270b518, ROBOCZA MD5 777228ed (GitHub Raw = manifest), sidecary audio 3/3 zgodne.
 - Testy: garrison-upkeep-tooltip-explain 28/0, upkeep-test 91/0, budynek-garnizon 83/0, building-upkeep-ceramics 645/0, logic 213/213, tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6, tsc 0. NIE ZMIERZONO: tooltip w żywym Chromium. Dług bazowy (czerwone także na bazie): building-upkeep-resources-test D10 i 2 kotwice citizen-resource-upkeep-test.
 - Uwaga: wyjaśnienie pojawia się dla każdego budynku z bazą ≠ wynik (m.in. wszystkie z mnożnikiem FALA2 ×2); refaktor `buildingUpkeep` w silniku bez zmiany wyniku.
+
+### LEFTOVERS — FC PASS-WITH-NOTES (2026-11-17), w main bez wdrożenia ROBOCZEJ (tylko test + docs)
+- R-WEB-TEST-DOC-DEBT-GENCAP-SZCZESCIE-LEFTOVERS-Q1 (1b599022b): 7 nowych asercji GENCAP-LIMITS (limit stosu stolicy i limit Super-jednostki, czytane z kodu/danych; mutacje czerwienieją), `BALANS-SZCZESCIE-SKALOWANIE-EPOK.md` 11/23/31 → 12/24/32 (katalog 44). Po merge na aktualny main powtórzone: GENCAP PASS, szczęście 535/0 i 148/0.
+- Uwaga: `civpediaOpenGate.ts:36` z dispatchu NIE istnieje w drzewie; historyczne wzmianki 11/23/31 (REJESTR, komentarz testu, parametr scenariusza) zostawione celowo.
