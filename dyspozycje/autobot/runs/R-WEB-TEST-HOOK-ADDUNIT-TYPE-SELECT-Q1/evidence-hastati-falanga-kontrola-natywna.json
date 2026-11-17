@@ -1,0 +1,1769 @@
+{
+  "runs": {
+    "wojownik-losowe-s1|manual": {
+      "cfg": {
+        "id": "wojownik-losowe-s1",
+        "pt": "bitwa-duza",
+        "seed": 1,
+        "hit": "losowe",
+        "pair": "wojownik",
+        "atkType": "Hastati",
+        "defType": "Phalanx",
+        "newType": "Wojownik",
+        "ratioLabel": "Wojownik 10 vs Wojownik 10 (atak: slot Hastati, obrona: slot Phalanx=Falanga)"
+      },
+      "mode": "manual",
+      "hookProbe": {
+        "ok": true,
+        "okId": "civtest-0-0-0-0",
+        "badId": null
+      },
+      "trimInfo": {
+        "before": {
+          "atk": {
+            "Hastati": 10,
+            "Archer": 10,
+            "Horseman": 8
+          },
+          "def": {
+            "Phalanx": 10,
+            "Archer": 10,
+            "Horseman": 8
+          }
+        },
+        "atkAfter": {
+          "Hastati": 10
+        },
+        "defAfter": {
+          "Phalanx": 10
+        }
+      },
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 380,
+        "defHp": 400,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 41,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 132,
+        "orderRounds": 41,
+        "perRound": [
+          {
+            "round": 0,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 1,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 2,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 3,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 4,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 5,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 6,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 7,
+            "alive": 9,
+            "eligible": 9,
+            "issued": 9
+          },
+          {
+            "round": 8,
+            "alive": 9,
+            "eligible": 9,
+            "issued": 9
+          },
+          {
+            "round": 9,
+            "alive": 8,
+            "eligible": 7,
+            "issued": 7
+          },
+          {
+            "round": 10,
+            "alive": 8,
+            "eligible": 7,
+            "issued": 7
+          },
+          {
+            "round": 11,
+            "alive": 7,
+            "eligible": 6,
+            "issued": 6
+          },
+          {
+            "round": 12,
+            "alive": 7,
+            "eligible": 6,
+            "issued": 6
+          },
+          {
+            "round": 13,
+            "alive": 5,
+            "eligible": 4,
+            "issued": 4
+          },
+          {
+            "round": 14,
+            "alive": 5,
+            "eligible": 4,
+            "issued": 4
+          },
+          {
+            "round": 15,
+            "alive": 5,
+            "eligible": 4,
+            "issued": 4
+          },
+          {
+            "round": 16,
+            "alive": 4,
+            "eligible": 3,
+            "issued": 3
+          },
+          {
+            "round": 17,
+            "alive": 4,
+            "eligible": 3,
+            "issued": 3
+          },
+          {
+            "round": 18,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 19,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 20,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 21,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 22,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 23,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 24,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 25,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 26,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 27,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 28,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 29,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 30,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 31,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 32,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 33,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 34,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 35,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 36,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 37,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 38,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 39,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 40,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          }
+        ],
+        "lastRound": 40
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 40,
+        "manualAtEnd": true,
+        "wallBreached": false,
+        "atk": {
+          "total": 10,
+          "lost": 10,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 380
+        },
+        "def": {
+          "total": 10,
+          "lost": 0,
+          "remaining": 10,
+          "hp": 373,
+          "hpMax": 400
+        },
+        "survivors": {
+          "atk": [],
+          "def": 10
+        },
+        "escapes": 0,
+        "chased": 0,
+        "routCountA": 0,
+        "routCountD": 0,
+        "endLogTail": [
+          "Phalanx chybia w Hastati (75>=41.4%).",
+          "Phalanx trafia Hastati [FLANKA -15% obrony] za 4 (HP 0/38).",
+          "  -> Hastati wyeliminowany",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "wojownik-losowe-s1|auto": {
+      "cfg": {
+        "id": "wojownik-losowe-s1",
+        "pt": "bitwa-duza",
+        "seed": 1,
+        "hit": "losowe",
+        "pair": "wojownik",
+        "atkType": "Hastati",
+        "defType": "Phalanx",
+        "newType": "Wojownik",
+        "ratioLabel": "Wojownik 10 vs Wojownik 10 (atak: slot Hastati, obrona: slot Phalanx=Falanga)"
+      },
+      "mode": "auto",
+      "hookProbe": {
+        "ok": true,
+        "okId": "civtest-0-0-0-0",
+        "badId": null
+      },
+      "trimInfo": {
+        "before": {
+          "atk": {
+            "Hastati": 10,
+            "Archer": 10,
+            "Horseman": 8
+          },
+          "def": {
+            "Phalanx": 10,
+            "Archer": 10,
+            "Horseman": 8
+          }
+        },
+        "atkAfter": {
+          "Hastati": 10
+        },
+        "defAfter": {
+          "Phalanx": 10
+        }
+      },
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 380,
+        "defHp": 400,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 0,
+        "rToggle": true,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 25,
+        "manualAtEnd": false,
+        "wallBreached": false,
+        "atk": {
+          "total": 10,
+          "lost": 10,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 380
+        },
+        "def": {
+          "total": 10,
+          "lost": 1,
+          "remaining": 9,
+          "hp": 323,
+          "hpMax": 400
+        },
+        "survivors": {
+          "atk": [],
+          "def": 9
+        },
+        "escapes": 1,
+        "chased": 0,
+        "routCountA": 0,
+        "routCountD": 0,
+        "endLogTail": [
+          "Phalanx trafia Hastati za 4 (HP 0/38).",
+          "  -> Hastati wyeliminowany",
+          "  -> Phalanx uciekl z pola bitwy",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "wojownik-losowe-s1|skip": {
+      "cfg": {
+        "id": "wojownik-losowe-s1",
+        "pt": "bitwa-duza",
+        "seed": 1,
+        "hit": "losowe",
+        "pair": "wojownik",
+        "atkType": "Hastati",
+        "defType": "Phalanx",
+        "newType": "Wojownik",
+        "ratioLabel": "Wojownik 10 vs Wojownik 10 (atak: slot Hastati, obrona: slot Phalanx=Falanga)"
+      },
+      "mode": "skip",
+      "hookProbe": {
+        "ok": true,
+        "okId": "civtest-0-0-0-0",
+        "badId": null
+      },
+      "trimInfo": {
+        "before": {
+          "atk": {
+            "Hastati": 10,
+            "Archer": 10,
+            "Horseman": 8
+          },
+          "def": {
+            "Phalanx": 10,
+            "Archer": 10,
+            "Horseman": 8
+          }
+        },
+        "atkAfter": {
+          "Hastati": 10
+        },
+        "defAfter": {
+          "Phalanx": 10
+        }
+      },
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 380,
+        "defHp": 400,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "fallback-metoda",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 22,
+        "manualAtEnd": false,
+        "wallBreached": false,
+        "atk": {
+          "total": 10,
+          "lost": 10,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 380
+        },
+        "def": {
+          "total": 10,
+          "lost": 1,
+          "remaining": 9,
+          "hp": 323,
+          "hpMax": 400
+        },
+        "survivors": {
+          "atk": [],
+          "def": 9
+        },
+        "escapes": 1,
+        "chased": 0,
+        "routCountA": 0,
+        "routCountD": 0,
+        "endLogTail": [
+          "Phalanx trafia Hastati [FLANKA -15% obrony] za 4 (HP 0/38).",
+          "  -> Hastati wyeliminowany",
+          "  -> Phalanx uciekl z pola bitwy",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "wojownik-losowe-s2|manual": {
+      "cfg": {
+        "id": "wojownik-losowe-s2",
+        "pt": "bitwa-duza",
+        "seed": 2,
+        "hit": "losowe",
+        "pair": "wojownik",
+        "atkType": "Hastati",
+        "defType": "Phalanx",
+        "newType": "Wojownik",
+        "ratioLabel": "Wojownik 10 vs Wojownik 10 (atak: slot Hastati, obrona: slot Phalanx=Falanga)"
+      },
+      "mode": "manual",
+      "hookProbe": {
+        "ok": true,
+        "okId": "civtest-0-0-0-0",
+        "badId": null
+      },
+      "trimInfo": {
+        "before": {
+          "atk": {
+            "Hastati": 10,
+            "Archer": 10,
+            "Horseman": 8
+          },
+          "def": {
+            "Phalanx": 10,
+            "Archer": 10,
+            "Horseman": 8
+          }
+        },
+        "atkAfter": {
+          "Hastati": 10
+        },
+        "defAfter": {
+          "Phalanx": 10
+        }
+      },
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 380,
+        "defHp": 400,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 55,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 205,
+        "orderRounds": 55,
+        "perRound": [
+          {
+            "round": 0,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 1,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 2,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 3,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 4,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 5,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 6,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 7,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 8,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 9,
+            "alive": 9,
+            "eligible": 9,
+            "issued": 9
+          },
+          {
+            "round": 10,
+            "alive": 9,
+            "eligible": 9,
+            "issued": 9
+          },
+          {
+            "round": 11,
+            "alive": 9,
+            "eligible": 9,
+            "issued": 9
+          },
+          {
+            "round": 12,
+            "alive": 8,
+            "eligible": 8,
+            "issued": 8
+          },
+          {
+            "round": 13,
+            "alive": 8,
+            "eligible": 8,
+            "issued": 8
+          },
+          {
+            "round": 14,
+            "alive": 8,
+            "eligible": 8,
+            "issued": 8
+          },
+          {
+            "round": 15,
+            "alive": 7,
+            "eligible": 7,
+            "issued": 7
+          },
+          {
+            "round": 16,
+            "alive": 7,
+            "eligible": 7,
+            "issued": 7
+          },
+          {
+            "round": 17,
+            "alive": 7,
+            "eligible": 7,
+            "issued": 7
+          },
+          {
+            "round": 18,
+            "alive": 6,
+            "eligible": 6,
+            "issued": 6
+          },
+          {
+            "round": 19,
+            "alive": 6,
+            "eligible": 6,
+            "issued": 6
+          },
+          {
+            "round": 20,
+            "alive": 6,
+            "eligible": 6,
+            "issued": 6
+          },
+          {
+            "round": 21,
+            "alive": 6,
+            "eligible": 6,
+            "issued": 6
+          },
+          {
+            "round": 22,
+            "alive": 6,
+            "eligible": 6,
+            "issued": 6
+          },
+          {
+            "round": 23,
+            "alive": 5,
+            "eligible": 5,
+            "issued": 5
+          },
+          {
+            "round": 24,
+            "alive": 4,
+            "eligible": 4,
+            "issued": 4
+          },
+          {
+            "round": 25,
+            "alive": 4,
+            "eligible": 4,
+            "issued": 4
+          },
+          {
+            "round": 26,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 27,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 28,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 29,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 30,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 31,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 32,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 33,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 34,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 35,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 36,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 37,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 38,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 39,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 40,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 41,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 42,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 43,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 44,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 45,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 46,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 47,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 48,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 49,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 50,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 51,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 52,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 53,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 54,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          }
+        ],
+        "lastRound": 54
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 54,
+        "manualAtEnd": true,
+        "wallBreached": false,
+        "atk": {
+          "total": 10,
+          "lost": 10,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 380
+        },
+        "def": {
+          "total": 10,
+          "lost": 0,
+          "remaining": 10,
+          "hp": 367,
+          "hpMax": 400
+        },
+        "survivors": {
+          "atk": [],
+          "def": 10
+        },
+        "escapes": 0,
+        "chased": 0,
+        "routCountA": 0,
+        "routCountD": 0,
+        "endLogTail": [
+          "  -> Hastati ZALAMUJE MORALE i ucieka z pola!",
+          "=== POSCIG: armia przegrana ucieka -- zwyciezca dobija uciekinierow ===",
+          "Phalanx chybia w Hastati (92>=40%).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "wojownik-losowe-s2|auto": {
+      "cfg": {
+        "id": "wojownik-losowe-s2",
+        "pt": "bitwa-duza",
+        "seed": 2,
+        "hit": "losowe",
+        "pair": "wojownik",
+        "atkType": "Hastati",
+        "defType": "Phalanx",
+        "newType": "Wojownik",
+        "ratioLabel": "Wojownik 10 vs Wojownik 10 (atak: slot Hastati, obrona: slot Phalanx=Falanga)"
+      },
+      "mode": "auto",
+      "hookProbe": {
+        "ok": true,
+        "okId": "civtest-0-0-0-0",
+        "badId": null
+      },
+      "trimInfo": {
+        "before": {
+          "atk": {
+            "Hastati": 10,
+            "Archer": 10,
+            "Horseman": 8
+          },
+          "def": {
+            "Phalanx": 10,
+            "Archer": 10,
+            "Horseman": 8
+          }
+        },
+        "atkAfter": {
+          "Hastati": 10
+        },
+        "defAfter": {
+          "Phalanx": 10
+        }
+      },
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 380,
+        "defHp": 400,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 0,
+        "rToggle": true,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 26,
+        "manualAtEnd": false,
+        "wallBreached": false,
+        "atk": {
+          "total": 10,
+          "lost": 10,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 380
+        },
+        "def": {
+          "total": 10,
+          "lost": 0,
+          "remaining": 10,
+          "hp": 358,
+          "hpMax": 400
+        },
+        "survivors": {
+          "atk": [],
+          "def": 10
+        },
+        "escapes": 0,
+        "chased": 0,
+        "routCountA": 0,
+        "routCountD": 0,
+        "endLogTail": [
+          "Phalanx trafia Hastati [FLANKA -15% obrony] za 4 (HP 0/38).",
+          "  -> Hastati wyeliminowany",
+          "Phalanx trafia Hastati za 11 (HP 5/38).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "wojownik-losowe-s2|skip": {
+      "cfg": {
+        "id": "wojownik-losowe-s2",
+        "pt": "bitwa-duza",
+        "seed": 2,
+        "hit": "losowe",
+        "pair": "wojownik",
+        "atkType": "Hastati",
+        "defType": "Phalanx",
+        "newType": "Wojownik",
+        "ratioLabel": "Wojownik 10 vs Wojownik 10 (atak: slot Hastati, obrona: slot Phalanx=Falanga)"
+      },
+      "mode": "skip",
+      "hookProbe": {
+        "ok": true,
+        "okId": "civtest-0-0-0-0",
+        "badId": null
+      },
+      "trimInfo": {
+        "before": {
+          "atk": {
+            "Hastati": 10,
+            "Archer": 10,
+            "Horseman": 8
+          },
+          "def": {
+            "Phalanx": 10,
+            "Archer": 10,
+            "Horseman": 8
+          }
+        },
+        "atkAfter": {
+          "Hastati": 10
+        },
+        "defAfter": {
+          "Phalanx": 10
+        }
+      },
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 380,
+        "defHp": 400,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "fallback-metoda",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 26,
+        "manualAtEnd": false,
+        "wallBreached": false,
+        "atk": {
+          "total": 10,
+          "lost": 10,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 380
+        },
+        "def": {
+          "total": 10,
+          "lost": 0,
+          "remaining": 10,
+          "hp": 358,
+          "hpMax": 400
+        },
+        "survivors": {
+          "atk": [],
+          "def": 10
+        },
+        "escapes": 0,
+        "chased": 0,
+        "routCountA": 0,
+        "routCountD": 0,
+        "endLogTail": [
+          "Phalanx trafia Hastati [FLANKA -15% obrony] za 4 (HP 0/38).",
+          "  -> Hastati wyeliminowany",
+          "Phalanx trafia Hastati za 11 (HP 5/38).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "wojownik-losowe-s3|manual": {
+      "cfg": {
+        "id": "wojownik-losowe-s3",
+        "pt": "bitwa-duza",
+        "seed": 3,
+        "hit": "losowe",
+        "pair": "wojownik",
+        "atkType": "Hastati",
+        "defType": "Phalanx",
+        "newType": "Wojownik",
+        "ratioLabel": "Wojownik 10 vs Wojownik 10 (atak: slot Hastati, obrona: slot Phalanx=Falanga)"
+      },
+      "mode": "manual",
+      "hookProbe": {
+        "ok": true,
+        "okId": "civtest-0-0-0-0",
+        "badId": null
+      },
+      "trimInfo": {
+        "before": {
+          "atk": {
+            "Hastati": 10,
+            "Archer": 10,
+            "Horseman": 8
+          },
+          "def": {
+            "Phalanx": 10,
+            "Archer": 10,
+            "Horseman": 8
+          }
+        },
+        "atkAfter": {
+          "Hastati": 10
+        },
+        "defAfter": {
+          "Phalanx": 10
+        }
+      },
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 380,
+        "defHp": 400,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 55,
+        "rToggle": false,
+        "skipClick": false,
+        "ordersIssued": 220,
+        "orderRounds": 55,
+        "perRound": [
+          {
+            "round": 0,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 1,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 2,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 3,
+            "alive": 10,
+            "eligible": 10,
+            "issued": 10
+          },
+          {
+            "round": 4,
+            "alive": 9,
+            "eligible": 9,
+            "issued": 9
+          },
+          {
+            "round": 5,
+            "alive": 9,
+            "eligible": 9,
+            "issued": 9
+          },
+          {
+            "round": 6,
+            "alive": 9,
+            "eligible": 9,
+            "issued": 9
+          },
+          {
+            "round": 7,
+            "alive": 9,
+            "eligible": 9,
+            "issued": 9
+          },
+          {
+            "round": 8,
+            "alive": 9,
+            "eligible": 9,
+            "issued": 9
+          },
+          {
+            "round": 9,
+            "alive": 9,
+            "eligible": 9,
+            "issued": 9
+          },
+          {
+            "round": 10,
+            "alive": 9,
+            "eligible": 9,
+            "issued": 9
+          },
+          {
+            "round": 11,
+            "alive": 9,
+            "eligible": 9,
+            "issued": 9
+          },
+          {
+            "round": 12,
+            "alive": 9,
+            "eligible": 9,
+            "issued": 9
+          },
+          {
+            "round": 13,
+            "alive": 9,
+            "eligible": 9,
+            "issued": 9
+          },
+          {
+            "round": 14,
+            "alive": 9,
+            "eligible": 9,
+            "issued": 9
+          },
+          {
+            "round": 15,
+            "alive": 8,
+            "eligible": 8,
+            "issued": 8
+          },
+          {
+            "round": 16,
+            "alive": 8,
+            "eligible": 8,
+            "issued": 8
+          },
+          {
+            "round": 17,
+            "alive": 8,
+            "eligible": 8,
+            "issued": 8
+          },
+          {
+            "round": 18,
+            "alive": 7,
+            "eligible": 7,
+            "issued": 7
+          },
+          {
+            "round": 19,
+            "alive": 7,
+            "eligible": 7,
+            "issued": 7
+          },
+          {
+            "round": 20,
+            "alive": 6,
+            "eligible": 6,
+            "issued": 6
+          },
+          {
+            "round": 21,
+            "alive": 6,
+            "eligible": 6,
+            "issued": 6
+          },
+          {
+            "round": 22,
+            "alive": 6,
+            "eligible": 6,
+            "issued": 6
+          },
+          {
+            "round": 23,
+            "alive": 5,
+            "eligible": 5,
+            "issued": 5
+          },
+          {
+            "round": 24,
+            "alive": 5,
+            "eligible": 5,
+            "issued": 5
+          },
+          {
+            "round": 25,
+            "alive": 5,
+            "eligible": 5,
+            "issued": 5
+          },
+          {
+            "round": 26,
+            "alive": 5,
+            "eligible": 5,
+            "issued": 5
+          },
+          {
+            "round": 27,
+            "alive": 5,
+            "eligible": 5,
+            "issued": 5
+          },
+          {
+            "round": 28,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 29,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 30,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 31,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 32,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 33,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 34,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 35,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 36,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 37,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 38,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 39,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 40,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 41,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 42,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 43,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 44,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 45,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 46,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 47,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 48,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 49,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 50,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 51,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 52,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 53,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          },
+          {
+            "round": 54,
+            "alive": 0,
+            "eligible": 0,
+            "issued": 0
+          }
+        ],
+        "lastRound": 54
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 54,
+        "manualAtEnd": true,
+        "wallBreached": false,
+        "atk": {
+          "total": 10,
+          "lost": 10,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 380
+        },
+        "def": {
+          "total": 10,
+          "lost": 0,
+          "remaining": 10,
+          "hp": 355,
+          "hpMax": 400
+        },
+        "survivors": {
+          "atk": [],
+          "def": 10
+        },
+        "escapes": 0,
+        "chased": 0,
+        "routCountA": 0,
+        "routCountD": 0,
+        "endLogTail": [
+          "=== POSCIG: armia przegrana ucieka -- zwyciezca dobija uciekinierow ===",
+          "Phalanx trafia Hastati za 4 (HP 8/38).",
+          "Phalanx trafia Hastati za 4 (HP 4/38).",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "wojownik-losowe-s3|auto": {
+      "cfg": {
+        "id": "wojownik-losowe-s3",
+        "pt": "bitwa-duza",
+        "seed": 3,
+        "hit": "losowe",
+        "pair": "wojownik",
+        "atkType": "Hastati",
+        "defType": "Phalanx",
+        "newType": "Wojownik",
+        "ratioLabel": "Wojownik 10 vs Wojownik 10 (atak: slot Hastati, obrona: slot Phalanx=Falanga)"
+      },
+      "mode": "auto",
+      "hookProbe": {
+        "ok": true,
+        "okId": "civtest-0-0-0-0",
+        "badId": null
+      },
+      "trimInfo": {
+        "before": {
+          "atk": {
+            "Hastati": 10,
+            "Archer": 10,
+            "Horseman": 8
+          },
+          "def": {
+            "Phalanx": 10,
+            "Archer": 10,
+            "Horseman": 8
+          }
+        },
+        "atkAfter": {
+          "Hastati": 10
+        },
+        "defAfter": {
+          "Phalanx": 10
+        }
+      },
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 380,
+        "defHp": 400,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 0,
+        "rToggle": true,
+        "skipClick": false,
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 32,
+        "manualAtEnd": false,
+        "wallBreached": false,
+        "atk": {
+          "total": 10,
+          "lost": 10,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 380
+        },
+        "def": {
+          "total": 10,
+          "lost": 2,
+          "remaining": 8,
+          "hp": 285,
+          "hpMax": 400
+        },
+        "survivors": {
+          "atk": [],
+          "def": 8
+        },
+        "escapes": 2,
+        "chased": 0,
+        "routCountA": 0,
+        "routCountD": 0,
+        "endLogTail": [
+          "Phalanx trafia Hastati za 4 (HP 7/38).",
+          "  -> Phalanx uciekl z pola bitwy",
+          "  -> Phalanx uciekl z pola bitwy",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    },
+    "wojownik-losowe-s3|skip": {
+      "cfg": {
+        "id": "wojownik-losowe-s3",
+        "pt": "bitwa-duza",
+        "seed": 3,
+        "hit": "losowe",
+        "pair": "wojownik",
+        "atkType": "Hastati",
+        "defType": "Phalanx",
+        "newType": "Wojownik",
+        "ratioLabel": "Wojownik 10 vs Wojownik 10 (atak: slot Hastati, obrona: slot Phalanx=Falanga)"
+      },
+      "mode": "skip",
+      "hookProbe": {
+        "ok": true,
+        "okId": "civtest-0-0-0-0",
+        "badId": null
+      },
+      "trimInfo": {
+        "before": {
+          "atk": {
+            "Hastati": 10,
+            "Archer": 10,
+            "Horseman": 8
+          },
+          "def": {
+            "Phalanx": 10,
+            "Archer": 10,
+            "Horseman": 8
+          }
+        },
+        "atkAfter": {
+          "Hastati": 10
+        },
+        "defAfter": {
+          "Phalanx": 10
+        }
+      },
+      "start": {
+        "atkTotal": 10,
+        "defTotal": 10,
+        "atkHp": 380,
+        "defHp": 400,
+        "deployPhase": true,
+        "manualAtStart": true
+      },
+      "actions": {
+        "startClick": true,
+        "spacePresses": 0,
+        "rToggle": false,
+        "skipClick": "fallback-metoda",
+        "ordersIssued": 0,
+        "orderRounds": 0,
+        "perRound": []
+      },
+      "res": {
+        "winner": "obronca",
+        "round": 32,
+        "manualAtEnd": false,
+        "wallBreached": false,
+        "atk": {
+          "total": 10,
+          "lost": 10,
+          "remaining": 0,
+          "hp": 0,
+          "hpMax": 380
+        },
+        "def": {
+          "total": 10,
+          "lost": 2,
+          "remaining": 8,
+          "hp": 285,
+          "hpMax": 400
+        },
+        "survivors": {
+          "atk": [],
+          "def": 8
+        },
+        "escapes": 2,
+        "chased": 0,
+        "routCountA": 0,
+        "routCountD": 0,
+        "endLogTail": [
+          "Phalanx trafia Hastati za 4 (HP 7/38).",
+          "  -> Phalanx uciekl z pola bitwy",
+          "  -> Phalanx uciekl z pola bitwy",
+          "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+        ],
+        "endText": [
+          "Porażka"
+        ]
+      },
+      "errors": []
+    }
+  },
+  "meta": {
+    "chromium": "/usr/bin/chromium",
+    "dist": "/tmp/ad1/dist",
+    "runda": "R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1 r2",
+    "woj": "Wojownik vs Wojownik 10 vs 10 (retyp bu w scenie)",
+    "note": "KONTROLA NATYWNA (R2_NORETYPE=1): bez przepisania, Hastati vs Falanga ; reczna = rozkazy ATAK per jednostka (_issueBattleAttack queue) + Space; AUTO = klawisz R; skip = Pomin; roster przyciety do 10 vs 10"
+  }
+}

@@ -31125,7 +31125,22 @@ async function boot(): Promise<void> {
         for (const c of cities) if (c.ownerId === ME()) c.population = Math.max(c.population, 10);
         return tryFoundPlayerCityAt(q, r);
       },
-      addUnit: (ownerId, q, r, civilian) => {
+      addUnit: (ownerId, q, r, civilian, typeId) => {
+        if (typeId !== undefined) {
+          // R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1 (tylko ?civTest=1): klon wg units.json; nieznany typ -> null.
+          const typeDef = (data.units as any[]).find((u: any) => u['Jednostka'] === typeId);
+          if (!typeDef) return null;
+          const ruchT = applyRuchSwiataPace(normFieldVal(typeDef['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
+          const idT = `civtest-${ownerId}-${q}-${r}-${units.length}`;
+          units.push({
+            id: idT, ownerId, typeId, isGeneral: false,
+            category: categoryOf(typeId, String(typeDef['Rola'] ?? typeDef['Rola (linia)'] ?? ''), typeDef['Super-jednostka'] === 'TAK', typeDef['Typ']),
+            q, r, ruch: ruchT, ruchLeft: ruchT, inGarnizon: false,
+            ...bestBuildingProgressAfterCityVisit(undefined, undefined, data.buildings), // bez wizyty w mieście: 0 bonusów narodzin
+          } as RuntimeUnit);
+          syncUnitsRender();
+          return idT;
+        }
         const tpl = units.find(u => u.ownerId === ownerId && isCivilianUnit(u) === civilian)
           ?? units.find(u => isCivilianUnit(u) === civilian);
         if (!tpl) return null;
