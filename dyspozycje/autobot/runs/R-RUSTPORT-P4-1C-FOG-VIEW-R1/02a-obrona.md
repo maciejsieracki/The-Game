@@ -1,4 +1,58 @@
-# R-RUSTPORT-P4-1C-FOG-VIEW-R1 — obrona Operatora r1 (odpowiedź na 02-evaluator.md)
+# R-RUSTPORT-P4-1C-FOG-VIEW-R1 — obrona Operatora r3 (odpowiedź na 02-evaluator.md, sekcja r3)
+
+STATUS: PASS (żaden zarzut nie wymaga zmiany kodu; zarzuty 0, 1, 3, 4 przyjęte bez poprawek kodu, zarzut 2 odrzucony z dowodem)
+DOMAIN: GAME (widok/DTO mgły) + PROCESS (zarzuty 1, 3, 4)
+TEMAT: R-RUSTPORT-P4-1C-FOG-VIEW-R1
+GOAL: producent `FogViewDto` dla aktywnego fotela `ME()` w parytecie z pinem `07d2fbd72`
+ZMIANY/COMMIT: tylko ten plik. Kod bez zmian: `a17f28d42` (`git diff --stat a17f28d42 HEAD -- rust-port` pusty).
+  Rodzic: `e894fd007` (Evaluator r3). Gałąź lokalna `rust-port-wip/p4-1c-fog-view-r3-obrona`, bez push.
+TESTY: bez ponownego uruchamiania cargo (brak zmian kodu; bramki odtworzone niezależnie przez Evaluatora r3:
+  engine 3893 passed / 0 failed / 1 ignored sprzed tematu, renderer 666 passed, fmt/clippy EXIT 0, mutacje 7/7 FAIL).
+  Weryfikacja zarzutu 2: `git show`/`git grep` na pinie `07d2fbd72` (cytaty niżej). Dysk: 11 GB wolnego.
+BLOKADY: brak
+RUNDY: 3/5 (obrona po Evaluatorze r3)
+NASTĘPNY KROK: Final Control r3, potem integracja orkiestratora (bez oznaczania tematu jako wpiętego w grę, patrz zarzut 1)
+DEPLOY/PUSH: NIE WYKONANO
+
+## Zarzut 0 (podsumowanie Evaluatora: bramki odtworzone, mutacje 7/7 FAIL) — PRZYJMUJĘ
+Brak zarzutu do odparcia. Wynik zgodny z raportem Operatora r3 (`03-operator-r3.md`, commit `b48cff1a6`):
+te same liczby (522 binaria / 3893 passed engine, 77 binariów / 666 passed renderer). Evaluator dołożył
+mutacje (d)–(g) ponad wymagane (a)–(c); wszystkie dają FAIL, co wzmacnia dowód czułości testu.
+
+## Zarzut 1 (nieblokujący) — brak wołającego produkcyjnego `refresh_fog` / `fog_view_dto` — PRZYJMUJĘ (bez zmiany kodu)
+Fakt prawdziwy: `fog_view_dto` (state.rs:1414) i `refresh_fog` (state.rs:1441) są wołane tylko z testu
+`p4_1c_fog_view`. Poprawka w tej rundzie naruszałaby dispatch: DODATEK r3 jawnie wyłącza wołającego
+produkcyjnego z zakresu („POZA ZAKRESEM … wołający produkcyjny producenta … Zapis w rejestrze jako FOG-WIRE”),
+a allowlista nie obejmuje bridge ani pętli renderera. Zależność jest jawna w dispatchu i w rejestrze
+(FOG-WIRE, L6/#308). Zalecenie dla integracji: status „PRODUCENT GOTOWY, NIEWPIĘTY (FOG-WIRE)”, nie „wpięty w grę”.
+
+## Zarzut 2 (teoretyczny) — web `ownPlayerVisibleHexes` nie pomija fortu z `radius <= 0`, Rust pomija — ODRZUCAM
+Dowód, że rozbieżność jest nieobserwowalna (wynik identyczny dla każdego osiągalnego stanu):
+1. Źródła fortu w webie pochodzą wyłącznie z `fortSightSources` (pin `gra/src/game/fort-territory.ts:390-400`):
+   `radius: cityTerritoryRadius(fortNodeAsCityNode(f))`.
+2. `cityTerritoryRadius` (pin `gra/src/map/territory.ts:89-93`): fort → `FORT_TERRITORY_RADIUS = 5` (`:75`),
+   posterunek → `OUTPOST_TERRITORY_RADIUS = 3` (`:77`), w pozostałych przypadkach `cityRangeForPopulation(pop)`
+   (komentarz `:87`: `max(5, pop)`). Promień jest zawsze ≥ 3, więc `radius <= 0` nie zachodzi ani w webie, ani w Rust.
+3. Rust (`state.rs:1100-1104`, `if s.radius <= 0.0 { continue; }`) odpowiada kanonicznej pętli w pinie
+   (`gra/src/game/visibility.ts:304`: `if (s.radius <= 0) continue;`), czyli funkcji
+   `computePlayerVisibility`, którą dispatch wskazuje jako źródło. Usunięcie strażnika rozjechałoby Rust
+   z `visibility.ts` i nie zmieniłoby żadnego obserwowalnego zachowania `main.ts`.
+Wniosek: nie ma odstępstwa od webu, a zmiana kodu nie ma uzasadnienia (DODATEK r3: „Nie zmieniać kodu”).
+
+## Zarzut 3 (proces) — trailer z nazwą modelu w commicie r1 `f56b2b796` — PRZYJMUJĘ (bez przepisywania historii)
+Fakt potwierdzony (`git show -s f56b2b796`: trailer `Co-Authored-By: Claude Opus 5.5`). Operator nie przepisuje
+historii gałęzi innej rundy ani refs/keep (to poza rolą Operatora). Commit tej obrony ma trailer bez nazwy
+modelu (#289). Poprawka po stronie orkiestratora przy integracji, zgodnie z uwagą Evaluatora. Kod `a17f28d42`
+tego nie dotyczy.
+
+## Zarzut 4 (informacja) — pełny cargo test engine > 590 s; `renderer/Cargo.lock` przywrócony — PRZYJMUJĘ
+Zgodne z raportem Operatora r3 (pierwsza próba EXIT 124 = timeout, powtórka w tle EXIT 0). `Cargo.lock`
+nie występuje w żadnym commicie tematu (`git diff --stat 2760b4f0c HEAD -- '*Cargo.lock'` pusty).
+Zalecenie procesowe dla orkiestratora: w dispatchach z pełną bramką engine przewidzieć uruchomienie w tle z zapisem EXIT.
+
+---
+
+# R-RUSTPORT-P4-1C-FOG-VIEW-R1 — obrona Operatora r1 (historia; odpowiedź na 02-evaluator.md r1)
 
 STATUS: BLOCK (INFRA, tylko pełna bramka; zarzuty 2 i 3 przyjęte dokumentacyjnie)
 DOMAIN: INFRA (bramka) + PROCESS (zarzuty 2 i 3)
