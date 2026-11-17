@@ -10748,3 +10748,18 @@ Właściciel: koszt pokoju znacząco podwyższyć tak, by na starcie wojny zwyci
 - Zmierzone (żywy Chromium, 10 vs 10, 32 przebiegi, 0 błędów): bitwa ręczna z prawdziwymi rozkazami (ATAK dla każdej żywej jednostki + Spacja) różni się od AUTO/skip. Wręcz (Hastati vs Falanga): zwycięzca ręcznie traci 0, AUTO/skip 0–2; ręczna trwa 1,5–2× dłużej. Dystans (Łucznik vs Falanga): AUTO/skip łucznicy giną 10/10, ręcznie 4–5 ginie, 5–6 UCIEKA z pola z pełnym HP (20) i amunicją 11–12. Obrońca (Falanga) wygrywa 8/8. Kontrola negatywna (tylko Spacja) daje inne wyniki niż z rozkazami.
 - NIE ZMIERZONO: Wojownik vs Wojownik (preset go nie zawiera, `__civTest.addUnit` nie wybiera typu — wymagałoby zmiany src); rozkazy wydawane wywołaniem metody sceny, nie klikiem w płótno; przyczyna ucieczek łuczników z pełnym HP i działanie flagi `acted` niezdiagnozowane.
 - **CZEKA NA RANO (ABC):** (a) czy ucieczka łuczników w bitwie ręcznej z pełnym HP jest zamierzona (morale/amunicja) — jeśli nie, temat diagnozy; (b) hak testowy wyboru typu jednostki w `__civTest.addUnit` (zmiana w src, test-only) do pomiaru Wojownik vs Wojownik; (c) balans: obrońca wygrywa we wszystkich trybach.
+
+### 2026-11-17 — ODPOWIEDZI ABC właściciela (część 5; potwierdzone w czacie, AskUserQuestion)
+- **Cena pokoju przy 100% zmęczenia = 0:** A (jak zaprojektowano; pokój wymuszony przy cenie 0 bez oddania miasta). Odblokowuje PEACEDECAY r3 (DODATEK 2 w dispatchu). DR-2: jedna funkcja ceny 6000×(1−L) wszędzie, bramka relacji ≤90 → 0 zostaje.
+- **siege.ts a tryb trafień:** A (bez zmian — martwa ścieżka w produkcji).
+- **Ucieczka łuczników w bitwie ręcznej z pełnym HP:** A (zamierzone, zostaje; notatka w Civpedii → temat DOC).
+- **Hak `__civTest.addUnit` z wyborem typu:** A (tak) → R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1, potem pomiar Wojownik vs Wojownik.
+- **Minimalne obrażenia wręcz:** C (tylko notatka w Civpedii, reguła bez zmian) → R-WEB-DOC-CIVPEDIA-MELEE-ZERO-DAMAGE-AND-ARCHER-FLEE-NOTES-Q1.
+- **Wieża muru w epoce kamienia (Łucznik, zasięg 3):** A (akceptacja).
+- **Żółty znacznik strony w 3D bitwy:** B (kolory stron: gracz niebieski / przeciwnik czerwony) → R-WEB-UI-BATTLE-3D-SIDE-COLORS-BLUE-RED-Q1.
+- **Balans łucznicy vs Wojownik:** A (bez zmian).
+- **Preset `playtest=mapa` (prognoza od t1):** A (napraw, test-only) → R-WEB-TEST-HOOK-PLAYTEST-MAPA-DIRTY-FORECAST-Q1 (po ADDUNIT, ten sam main.ts).
+- **Minimapa bitwy — kolory stron:** A (gracz niebieski, przeciwnik czerwony) → R-WEB-UI-BATTLE-MINIMAP-SIDE-COLORS-BLUE-RED-Q1 (po SIDE3D, ten sam battleScene.ts).
+- **Kara za brak ceramiki obywateli w Kamieniu:** właściciel: „już jest w kodzie jakaś kara, niech zostanie tak jak jest” (bez zmian).
+- **„Zastąp” dla Inków (oba warianty) i narodowych łuczników → Procarz:** B (dodaj przejście) → R-WEB-UNIT-REPLACE-INCA-AND-NATIONAL-ARCHERS-TO-SLINGER-Q1.
+- Uruchomione 2026-11-17 ok. 14:15 UTC (baza main 76a1739fd): PEACEDECAY r3, ADDUNIT, SIDE3D (+ AMBLIVE r2 w toku). Kolejka dispatchów gotowych: MINIMAP (po SIDE3D), PLAYTEST-MAPA (po ADDUNIT), UNIT-REPLACE-INCA, DOC-CIVPEDIA (po PEACEDECAY, wikiBundle).

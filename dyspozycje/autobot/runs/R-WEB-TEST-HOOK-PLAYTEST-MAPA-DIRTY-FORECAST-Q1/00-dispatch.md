@@ -1,0 +1,6 @@
+# R-WEB-TEST-HOOK-PLAYTEST-MAPA-DIRTY-FORECAST-Q1 — preset testowy playtest=mapa: prognoza "Zakończ turę" od t1 (test-only)
+DOMAIN: GAME/test | Operator HAIKU 5.5 | START PO ADDUNIT (ten sam plik main.ts) | dispatch z gałęzi claude/sprawdzenie-funkcjonalnosci-ek4ra0.
+DECYZJA WŁAŚCICIELA 2026-11-17 (ABC): napraw preset (test-only, bardzo niski priorytet).
+KONTEKST: raport NNSDIAG (dyspozycje/autobot/runs/R-WEB-LOAD-ENDTURN-NNS-GATE-DIAGNOSIS-Q1/): w presecie playtest=mapa miasta dokładane cities.push bez markCityStateDirty (main.ts ~48994, doStartPlaytestMiasto) → brak prognozy w t1; w normalnej grze prognoza jest. K1 = markCityStateDirty po dołożeniu miast w doStartPlaytestMiasto. K2 (kolejność zerowania empireEconDirty) NIE jest objęte — nie ruszaj.
+GOAL: po starcie presetu playtest=mapa prognoza bramki "Zakończ turę" jest dostępna w t1 tak jak w normalnej grze; tylko ścieżka presetu (isCivTestEnabled/playtest), produkcja bez zmian.
+KRYTERIA: (a) test: preset t1 → prognoza obecna; mutacja (usunięcie markCityStateDirty) → czerwony; (b) tsc 0, 5 bramek; (c) git diff w gra/src = tylko main.ts (kilka linii), dowód że ścieżka tylko dla presetu. ALLOWLISTA: gra/src/main.ts (doStartPlaytestMiasto), testy w gra/tools. ZAKAZ: gra-robocza, WERSJE.md, innych plików src, rm/rmdir/unlink, npm run build/dev.
