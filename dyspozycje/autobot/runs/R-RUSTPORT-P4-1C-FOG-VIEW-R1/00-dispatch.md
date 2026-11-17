@@ -43,3 +43,7 @@ Dodać producenta `FogViewDto` z stanu silnika, tak jak web:
 ## NIE WOLNO
 - Nie pushować do `rust-port/parity-v2`. Nie dotykać `gra/`. Nie wyłączać testów.
 - Nie dodawać odstępstw od webu. Każde odstępstwo = pytanie ABC do orkiestratora (nie do właściciela, jeśli web rozstrzyga).
+
+## DODATEK r2 (orkiestrator, 2026-11-17 13:5x): BAZA przesunięta
+- BAZA r2: `origin/rust-port/parity-v2` = `2760b4f0c` (zawiera T4e-0 `732ef51a0`, R6 `c120f2373`, renderer zbiorczo). Worktree detached na `2760b4f0c`.
+- Zakres bez zmian. Konflikty z T4e nieprzewidziane: T4e dotyka `siege_tactics_loop.rs`, `siege_tactics_move_effects.rs`; FOG dotyka `state.rs`/view-model.
