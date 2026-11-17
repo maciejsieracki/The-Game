@@ -81,6 +81,10 @@ assert.match(bs, /defenderIsPlayer: this\._playerControlSide\(\) === 'def',/, 'C
 const main = read('src/main.ts');
 assert.match(main, /deployPlayerSide: 'atk',/, 'D1: main.ts przekazuje deployPlayerSide atk');
 assert.match(main, /deployPlayerSide: 'def',/, 'D2: main.ts przekazuje deployPlayerSide def (obrona gracza)');
+const ob = read('src/oblezenie/main.ts');
+assert.equal((main.match(/deployPlayerSide: 'atk', \/\/ R-WEB-UI-BATTLE-PLAYER-ALWAYS-BLUE/g) || []).length, 1,
+  'D4: preset playtest (main.ts bOpts) jawnie deployPlayerSide atk');
+assert.match(ob, /deployPlayerSide: 'atk', \/\/ R-WEB-UI-BATTLE-PLAYER-ALWAYS-BLUE/, 'D5: podglad oblezenia (oblezenie/main.ts) jawnie deployPlayerSide atk');
 const mfb = read('src/battle/mapFieldBattle.ts');
 assert.match(mfb, /deployPlayerSide: defLead\.ownerId === 0 && atkLead\.ownerId !== 0 \? 'def' : 'atk'/, 'D3: mapFieldBattle przekazuje role gracza');
 
@@ -89,4 +93,11 @@ const sideFn = bs.match(/function sideColor\(side: 'atk' \| 'def', playerSide: '
 assert.ok(sideFn, 'E0: brak sideColor');
 assert.match(sideFn[1], /side === playerSide \? SIDE_COLOR_PLAYER : SIDE_COLOR_ENEMY/, 'E1: sideColor po playerSide');
 
-console.log('battle-player-always-blue-test: OK (A minimap 4/4, B end-details, C siege HUD, D deployPlayerSide, E sideColor)');
+// (F) werdykt po bitwie (postBattleSummary.ts): kolor wg gracza, nie roli
+const pbs = read('src/ui/postBattleSummary.ts');
+const wcFn = pbs.match(/function winnerColor\(data: PostBattleSummaryData\): string \{[\s\S]*?\n\}\n/);
+assert.ok(wcFn, 'F0: brak winnerColor');
+assert.match(wcFn[0], /winnerRole === playerSide \? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT/, 'F1: werdykt wg gracza (zwyciezca-gracz = niebieski)');
+assert.doesNotMatch(wcFn[0], /#7ad0a0/, 'F2: brak zielonego koloru wg roli atakujacego');
+
+console.log('battle-player-always-blue-test: OK (A minimap 4/4, B end-details, C siege HUD, D deployPlayerSide, E sideColor, F verdict)');
