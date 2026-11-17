@@ -61,3 +61,15 @@ WZÓR: moduł T5a — `rust-port/engine/src/domain/siege_tactics_kite.rs` oraz g
 - Wszystkie 4 bramki EXIT 0 z kodami w raporcie, albo BLOCK z podaniem GB.
 - Mutacje (a), (b), (d) FAIL na Rust z wynikami; (c) z dowodem.
 - Zero zmian poza allowlistą z r1; brak `#[ignore]`.
+
+## DODATEK r3 — RUNDA INTEGRACYJNA (po FC PASS-WITH-NOTES rundy 2; BAZA NADPISANA)
+
+- Runda 2: Operator `85f0c997f` (PASS-WITH-NOTES), obrona `4f8c5cb8d`, Ewaluator PASS-WITH-NOTES, FC **`366e6ff8d`** PASS-WITH-NOTES (zabezpieczony: `refs/keep/R-RUSTPORT-P6-K5DOC-T5B-FC-r2`, gałąź `rust-port-wip/R-RUSTPORT-P6-K5DOC-T5B-MARSZ-r2`).
+- Parity `rust-port/parity-v2` przesunięte przez T6 na **`83777efa9`** (T6 zintegrowany, FF). **NOWA BAZA (jedyna obowiązująca): `83777efa9`.**
+- Zadanie integracyjne (Operator, Haiku):
+  1. `git merge-tree --write-tree 83777efa9 366e6ff8d` — musi być czysty (sprawdzone przez orkiestratora: exit 0).
+  2. Merge w worktree: `git merge --no-ff 366e6ff8d` na bazie `83777efa9`. Konflikt tylko w `rust-port/engine/src/domain/mod.rs` (obie gałęzie dodają `pub mod`) — rozwiąż przez zachowanie obu linii w porządku alfabetycznym, zgodnie z `cargo fmt`.
+  3. Diff merge względem `83777efa9`: tylko pliki T5b (allowlista) i raporty.
+  4. Bramki EXIT 0 w `rust-port/engine`: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --test p6_k5doc_t5b`, `cargo test --all-targets --no-fail-fast`. **Przed każdą bramką `df -h /`; przy < 8 GB BLOCK z liczbą GB.**
+  5. Raport `03-integracja-r3.md`, commit merge jawnym `git add` (bez `-A`, `Cargo.lock`, nazwy modelu w trailerach). **Bez push, bez FF** — FF wykona orkiestrator po werdykcie FC.
+- Ewaluator i FC: odtworzyć bramki sam, sprawdzić diff merge względem `83777efa9` (allowlista T5b, mod.rs bez utraconych linii T6).
