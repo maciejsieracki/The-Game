@@ -41,3 +41,12 @@ WZÓR: moduły grafiki T4a/T4b NIE dotyczą; wzoruj się na istniejących testac
 ## KRYTERIA KOŃCA
 1. Punkty zakresu zrealizowane; wektory zielone; mutacje FAIL (wyniki w raporcie) — albo BLOCK infra z GB.
 2. Commit jawnym `git add`, BEZ `Cargo.lock`, bez push do parity. Raport `01-operator-r1.md`.
+
+## DODATEK r2 (orkiestrator, po FAIL Evaluatora i BLOCK obrony r1)
+- BAZA r2: `origin/rust-port/parity-v2` = `f85622878` (bez zmian). Kod r1 (`0671e292d`, gałąź `rust-port-wip/p4-1-g5-norm-opus-op-r1`) jest punktem wyjścia: przenieś go, nie pisz od zera.
+- DECYZJA 1 (fallback): fallback do `ulepszenie` działa TYLKO gdy `ulepszenia` jest puste, a NIE gdy `improvement_key` jest pusty. Powód: pin `gra/src/game/terrain-improvements.ts:365-377` nie czyta `improvementKey` na ścieżce renderu (testy `improvement_key_is_not_read`, `fallback_only_without_ulepszenia`). Odchylenie od r1 dispatchu, wpisane do REJESTR-RUST.
+- DECYZJA 2 (`''` i `'brak'`): zostają jako warstwy, jeśli są w `ulepszenia` (pin `main.ts:3132-3135` dokłada warstwy bez filtrowania). Wektor `brak_and_empty_skipped` ma dawać `[farma, droga, '', brak]` zgodnie z pinem.
+- MUTACJE r2: (a) usunięcie wpisu aliasu → FAIL; (b′) pominięcie filtru `''`/`'brak'` przy dokładaniu warstw postawionych w `build.rs:230-232` → FAIL na wektorach `ulepszenia_brak_no_fallback`, `ulepszenia_empty_key_no_fallback`, `brak_and_empty_skipped`; (c) odwrócenie kolejności fallbacku → FAIL. Mutacja (b) z r1 jest równoważna i NIE jest wymagana.
+- BRAMKA: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --test improvements_sync_g5`, `cargo test --all-targets --no-fail-fast` (crate renderer). Wymaga ≥12 GB wolnego i braku równoległych buildów. Przed bramką `df -h /`. Przy <12 GB: BLOCK INFRA z liczbą GB, kod i wektory zacommitowane.
+- ZAKRES r2: dodatkowo komentarz `rust-port/renderer/src/improvements/sync/mod.rs:39,46` (opis G5 jako luki) jest POZA allowlistą r1 — NIE zmieniaj go w tej rundzie; odnotuj jako dług.
+- Commit jawnym `git add`, bez `Cargo.lock`, bez push do parity, bez nazwy modelu w trailerach. Raport `02-operator-r2.md`.
