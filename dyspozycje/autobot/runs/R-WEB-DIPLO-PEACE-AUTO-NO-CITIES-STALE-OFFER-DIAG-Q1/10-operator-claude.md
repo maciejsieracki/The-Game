@@ -1,0 +1,13 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1
+GOAL: pokoj z graczem automatycznie tylko przy 100% zmeczenia (okno + "Wazne"); po pokoju brak martwych ofert pokoju/rozejmu; diagnoza sciezek.
+ZMIANY-COMMIT: baza 61c7b64cb + c306578e0 (praca poprzednika, przejrzana i uruchomiona od nowa). Kod: war-weariness.ts (`isPlayerPair`), diplomacy-proposals.ts (`WAR_DEPENDENT_ACTIONS`, `isAtPeace` w negotiationStillValid), main.ts (isPlayerPair w ticku, `purgeWarDependentNegotiations` w finalizePeaceTreatyBetween, petla po ID zamiast indeksow - Z5, wpis "Wazne" po rozejmie->pokoj - Z7, hooki civTest). Testy: gra/tools/diplo-peace-auto-stale-offer-test.cjs, ...-live-test.cjs. Dowody: 60-dowody-tabela.md, evidence/.
+TESTY (surowe wyjscie): tsc --noEmit exit 0; test statyczny PASS=6 FAIL=0; test ZYWY (Chromium+xvfb, build poza repo) PASS=12 FAIL=0 (S1 wojna 12 tur 30% bez pokoju, S2 100% pokoj+okno+Wazne, S3 prune, S4 2xpokoj+rozejm z miastem czyszczone, S5 brak TypeError, zero pageerror). Mutacje na main.ts (live): M1 bez purge 10/2 czerwone; M2 bez isAtPeace w buildNegotiationWorldCtx 10/2 czerwone; M3 stara petla indeksowa TypeError; M4 bez isPlayerPair czerwony. Regresje exit 0: price-decay 13/0, ai-war-weariness-peace 96/0, truce-until-turn 15/0, truce-impl 94/0, negotiation-table 62/62, proposal 200/200, war-peace-sim exit 0.
+DIAGNOZA: tabela sciezek w 60-dowody-tabela.md. Przyczyna "pokoju bez miast": tick zmeczenia (offer_accepted, cena 0 po bramce relacji) obejmowal pary z graczem po 10. turze wojny i finalizowal pokoj bez okna. Naprawa: `isPlayerPair` - pokoj z graczem tylko przy 100% (korekta 3a). "Oferowane miasta" = oferta rozejm/pokoj zostawiona na stole po pokoju (nie czyszczona) - naprawione.
+BLOKADY / NIE ZMIERZONO: (1) ktora sciezka dala pokoj w grze wlasciciela - nie rozstrzygniete jednoznacznie. (2) Koniec rozejmu -> pokoj z wpisem "Wazne": tylko odczyt kodu. (3) `isAtPeace` w handleNegotiationAccept (~21718) bez osobnego testu. (4) Dar o actionId innym niz pokoj/rozejm nie jest czyszczony. (5) Dokladny blockReason wyszarzonego "Przyjmij" (zrzut 1e) nie ustalony - poza zakresem (DIPLO-4/5).
+DECISION_REQUIRED: cena pokoju 0 przy zmeczeniu <100% (bramka relacji zeruje cene w war-weariness.ts) vs PEACEDECAY (6000 x (1-L)). A) zostawic, B) cena zawsze wg wzoru, C) zero tylko przy 100%. Rekomendacja B. Nie zmieniono (decyzja liczbowa).
+UWAGI-DLA-ORKIESTRATORA: gra/node_modules zainstalowane (npm ci) - do usuniecia; buildy w /tmp/pa3*. Poza zakresem r3: 1b-1c (DIPLO-4), nawarstwianie ofert (DIPLO-5).
+RUNDY: 3/5
+NASTEPNY KROK: Evaluator r3
+DEPLOY/PUSH: NIE WYKONANO

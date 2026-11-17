@@ -2370,6 +2370,9 @@ export function evaluatePendingFromAI(
  * wojny/napięcia, więc jej wybuch ich nie gasi (odwrotnie — to ich kontekst).
  * 'namow_wojne' też poza zbiorem — nie wymaga pokoju między proponentem/respondentem.
  */
+/** Akcje sensowne WYŁĄCZNIE w trakcie wojny pary (po pokoju martwe): propozycja pokoju / rozejmu (też z miastami). */
+export const WAR_DEPENDENT_ACTIONS: ReadonlySet<ProposalActionId> = new Set<ProposalActionId>(['pokoj', 'rozejm']);
+
 const NEGOTIATION_PEACE_REQUIRED: ReadonlySet<ProposalActionId> = new Set([
   'nap', 'sojusz_defensywny', 'sojusz_pelny', 'handel',
   'umowa_handlowa' as ProposalActionId, 'umowa_szlakow', 'granice', 'tech', 'wasal', 'wchloniecie', 'trybut_zadanie',
@@ -2841,6 +2844,13 @@ export function applyOwnProposalEdit(
 export interface NegotiationWorldCtx {
   turn: number;
   isAtWar: boolean;
+  /**
+   * DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1: true = para jest w pokoju STAŁYM (status pokoj/sojusz, bez
+   * aktywnego rozejmu). Wpisy zależne od wojny (pokoj / rozejm - także z miastami AI jako "ceną") są wtedy martwe.
+   * Pole WYMAGANE (tsc wymusza je we wszystkich wywołaniach — brak pola = reguła po cichu nie działała;
+   * wiring w main.ts: buildNegotiationWorldCtx, handleNegotiationAccept, buildPendingNegotiationRows).
+   */
+  isAtPeace: boolean;
   proposerEliminated: boolean;
   responderEliminated: boolean;
   /** Gdy któraś strona to miasto-państwo — trybut niedostępny. */
@@ -2887,6 +2897,9 @@ export function negotiationStillValid(
     && (world.proposerIsCityState || world.responderIsCityState)
   ) {
     return { valid: false, reason: CITY_STATE_TRIBUTE_BLOCK_REASON };
+  }
+  if (world.isAtPeace === true && !world.isAtWar && WAR_DEPENDENT_ACTIONS.has(entry.actionId)) {
+    return { valid: false, reason: 'Wojna już się zakończyła — oferta pokoju/miast straciła aktualność' };
   }
   if (world.isAtWar && NEGOTIATION_PEACE_REQUIRED.has(entry.actionId)) {
     return { valid: false, reason: 'Wybuchła wojna — warunki straciły aktualność' };
