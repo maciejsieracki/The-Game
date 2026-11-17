@@ -50,6 +50,7 @@ pub mod diplomacy_truce_flow;
 pub mod diplomacy_war_gates;
 pub mod diplomacy_war_peace_profile;
 pub mod diplomacy_war_weariness_tick;
+pub mod dto_bridge;
 pub mod economy_city_fns;
 pub mod economy_city_params;
 pub mod economy_city_terrain;
