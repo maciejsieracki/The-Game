@@ -67,3 +67,13 @@ WZÓR: moduł T4a — `rust-port/engine/src/domain/siege_tactics_pathstep.rs` i 
   3. Bramki: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --all-targets --no-fail-fast` — EXIT 0 z liczbami. `df -h /` ≥ 8 GB.
   4. Raport `02-operator-r3.md`, commit (jawny `git add`, bez `Cargo.lock`, bez nazwy modelu). NIE pushuj do parity.
   5. Notatka 2 Ewaluatora (duplikaty helperów `doctrine_*`) — nie blokuje, odnotuj w raporcie.
+
+## DODATEK r4 — RUNDA INTEGRACYJNA NA PARITY (po FC PASS-WITH-NOTES rundy 3; BAZA NADPISANA)
+
+- Runda 3: kod `270e5711b` (rodzic `761768677`, baza `7de3417e8`). Operator PASS-WITH-NOTES (pełny test 3792 passed na `048f7eede`, ten sam kod), Ewaluator PASS-WITH-NOTES, FC PASS-WITH-NOTES. Pełnej bramki na `270e5711b` NIE powtórzono w rundzie 3 (dysk).
+- BAZA (jedyna obowiązująca): `origin/rust-port/parity-v2` = `3d016a5ae` (zawiera T4b i R4). Worktree detached na `3d016a5ae`.
+- Zadanie: WYŁĄCZNIE integracja i bramka, bez zmian w kodzie:
+  1. `git merge --no-ff --no-edit 270e5711b` (merge-tree czysty, exit 0). Commit merge zostaw lokalnie.
+  2. `git diff --stat 3d016a5ae <merge>` musi pokazać tylko pliki T5a (siege_tactics_kite.rs, mod.rs +1 linia, p6_k5doc_t5a*, vectors.json, raport). Inaczej BLOCK.
+  3. Bramka na drzewie merge, `df -h /` ≥ 8 GB przed każdą komendą: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --all-targets --no-fail-fast` w `rust-port/engine` — EXIT 0 z liczbami.
+  4. Raport `03-integracja-r4.md` w run dir, commit tylko raportu (jawny `git add`, bez `Cargo.lock`, bez nazwy modelu). NIE pushuj do parity.
