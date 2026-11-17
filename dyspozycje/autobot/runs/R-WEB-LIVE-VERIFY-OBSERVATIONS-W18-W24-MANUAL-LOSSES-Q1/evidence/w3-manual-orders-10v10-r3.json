@@ -1,0 +1,1550 @@
+{
+ "runs": {
+  "melee-pewne-s1|auto": {
+   "cfg": {
+    "id": "melee-pewne-s1",
+    "pt": "bitwa-duza",
+    "seed": 1,
+    "hit": "pewne",
+    "pair": "melee",
+    "atkType": "Hastati",
+    "defType": "Phalanx",
+    "ratioLabel": "wrecz: Hastati 10 vs Falanga 10"
+   },
+   "mode": "auto",
+   "trimInfo": {
+    "atkAfter": {
+     "Hastati": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 380,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 0,
+    "rToggle": true,
+    "skipClick": false,
+    "ordersIssued": 0,
+    "orderRounds": 0
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 13,
+    "manualAtEnd": false,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 380
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 351,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "melee-pewne-s1|skip": {
+   "cfg": {
+    "id": "melee-pewne-s1",
+    "pt": "bitwa-duza",
+    "seed": 1,
+    "hit": "pewne",
+    "pair": "melee",
+    "atkType": "Hastati",
+    "defType": "Phalanx",
+    "ratioLabel": "wrecz: Hastati 10 vs Falanga 10"
+   },
+   "mode": "skip",
+   "trimInfo": {
+    "atkAfter": {
+     "Hastati": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 380,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 0,
+    "rToggle": false,
+    "skipClick": "fallback-metoda",
+    "ordersIssued": 0,
+    "orderRounds": 0
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 12,
+    "manualAtEnd": false,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 380
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 351,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "melee-losowe-s1|auto": {
+   "cfg": {
+    "id": "melee-losowe-s1",
+    "pt": "bitwa-duza",
+    "seed": 1,
+    "hit": "losowe",
+    "pair": "melee",
+    "atkType": "Hastati",
+    "defType": "Phalanx",
+    "ratioLabel": "wrecz: Hastati 10 vs Falanga 10"
+   },
+   "mode": "auto",
+   "trimInfo": {
+    "atkAfter": {
+     "Hastati": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 380,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 0,
+    "rToggle": true,
+    "skipClick": false,
+    "ordersIssued": 0,
+    "orderRounds": 0
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 25,
+    "manualAtEnd": false,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 380
+    },
+    "def": {
+     "total": 10,
+     "lost": 1,
+     "remaining": 9,
+     "hp": 323,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "melee-losowe-s1|skip": {
+   "cfg": {
+    "id": "melee-losowe-s1",
+    "pt": "bitwa-duza",
+    "seed": 1,
+    "hit": "losowe",
+    "pair": "melee",
+    "atkType": "Hastati",
+    "defType": "Phalanx",
+    "ratioLabel": "wrecz: Hastati 10 vs Falanga 10"
+   },
+   "mode": "skip",
+   "trimInfo": {
+    "atkAfter": {
+     "Hastati": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 380,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 0,
+    "rToggle": false,
+    "skipClick": "fallback-metoda",
+    "ordersIssued": 0,
+    "orderRounds": 0
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 22,
+    "manualAtEnd": false,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 380
+    },
+    "def": {
+     "total": 10,
+     "lost": 1,
+     "remaining": 9,
+     "hp": 323,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "melee-losowe-s2|auto": {
+   "cfg": {
+    "id": "melee-losowe-s2",
+    "pt": "bitwa-duza",
+    "seed": 2,
+    "hit": "losowe",
+    "pair": "melee",
+    "atkType": "Hastati",
+    "defType": "Phalanx",
+    "ratioLabel": "wrecz: Hastati 10 vs Falanga 10"
+   },
+   "mode": "auto",
+   "trimInfo": {
+    "atkAfter": {
+     "Hastati": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 380,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 0,
+    "rToggle": true,
+    "skipClick": false,
+    "ordersIssued": 0,
+    "orderRounds": 0
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 26,
+    "manualAtEnd": false,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 380
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 358,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "melee-losowe-s2|skip": {
+   "cfg": {
+    "id": "melee-losowe-s2",
+    "pt": "bitwa-duza",
+    "seed": 2,
+    "hit": "losowe",
+    "pair": "melee",
+    "atkType": "Hastati",
+    "defType": "Phalanx",
+    "ratioLabel": "wrecz: Hastati 10 vs Falanga 10"
+   },
+   "mode": "skip",
+   "trimInfo": {
+    "atkAfter": {
+     "Hastati": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 380,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 0,
+    "rToggle": false,
+    "skipClick": "fallback-metoda",
+    "ordersIssued": 0,
+    "orderRounds": 0
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 26,
+    "manualAtEnd": false,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 380
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 358,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "melee-losowe-s3|auto": {
+   "cfg": {
+    "id": "melee-losowe-s3",
+    "pt": "bitwa-duza",
+    "seed": 3,
+    "hit": "losowe",
+    "pair": "melee",
+    "atkType": "Hastati",
+    "defType": "Phalanx",
+    "ratioLabel": "wrecz: Hastati 10 vs Falanga 10"
+   },
+   "mode": "auto",
+   "trimInfo": {
+    "atkAfter": {
+     "Hastati": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 380,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 0,
+    "rToggle": true,
+    "skipClick": false,
+    "ordersIssued": 0,
+    "orderRounds": 0
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 32,
+    "manualAtEnd": false,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 380
+    },
+    "def": {
+     "total": 10,
+     "lost": 2,
+     "remaining": 8,
+     "hp": 285,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "melee-losowe-s3|skip": {
+   "cfg": {
+    "id": "melee-losowe-s3",
+    "pt": "bitwa-duza",
+    "seed": 3,
+    "hit": "losowe",
+    "pair": "melee",
+    "atkType": "Hastati",
+    "defType": "Phalanx",
+    "ratioLabel": "wrecz: Hastati 10 vs Falanga 10"
+   },
+   "mode": "skip",
+   "trimInfo": {
+    "atkAfter": {
+     "Hastati": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 380,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 0,
+    "rToggle": false,
+    "skipClick": "fallback-metoda",
+    "ordersIssued": 0,
+    "orderRounds": 0
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 32,
+    "manualAtEnd": false,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 380
+    },
+    "def": {
+     "total": 10,
+     "lost": 2,
+     "remaining": 8,
+     "hp": 285,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "dystans-pewne-s1|auto": {
+   "cfg": {
+    "id": "dystans-pewne-s1",
+    "pt": "bitwa-duza",
+    "seed": 1,
+    "hit": "pewne",
+    "pair": "dystans",
+    "atkType": "Archer",
+    "defType": "Phalanx",
+    "ratioLabel": "dystans: Lucznik 10 vs Falanga 10"
+   },
+   "mode": "auto",
+   "trimInfo": {
+    "atkAfter": {
+     "Archer": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 200,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 0,
+    "rToggle": true,
+    "skipClick": false,
+    "ordersIssued": 0,
+    "orderRounds": 0
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 8,
+    "manualAtEnd": false,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 200
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 382,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "dystans-pewne-s1|skip": {
+   "cfg": {
+    "id": "dystans-pewne-s1",
+    "pt": "bitwa-duza",
+    "seed": 1,
+    "hit": "pewne",
+    "pair": "dystans",
+    "atkType": "Archer",
+    "defType": "Phalanx",
+    "ratioLabel": "dystans: Lucznik 10 vs Falanga 10"
+   },
+   "mode": "skip",
+   "trimInfo": {
+    "atkAfter": {
+     "Archer": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 200,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 0,
+    "rToggle": false,
+    "skipClick": "fallback-metoda",
+    "ordersIssued": 0,
+    "orderRounds": 0
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 8,
+    "manualAtEnd": false,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 200
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 382,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "dystans-losowe-s1|auto": {
+   "cfg": {
+    "id": "dystans-losowe-s1",
+    "pt": "bitwa-duza",
+    "seed": 1,
+    "hit": "losowe",
+    "pair": "dystans",
+    "atkType": "Archer",
+    "defType": "Phalanx",
+    "ratioLabel": "dystans: Lucznik 10 vs Falanga 10"
+   },
+   "mode": "auto",
+   "trimInfo": {
+    "atkAfter": {
+     "Archer": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 200,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 0,
+    "rToggle": true,
+    "skipClick": false,
+    "ordersIssued": 0,
+    "orderRounds": 0
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 9,
+    "manualAtEnd": false,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 200
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 396,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "dystans-losowe-s1|skip": {
+   "cfg": {
+    "id": "dystans-losowe-s1",
+    "pt": "bitwa-duza",
+    "seed": 1,
+    "hit": "losowe",
+    "pair": "dystans",
+    "atkType": "Archer",
+    "defType": "Phalanx",
+    "ratioLabel": "dystans: Lucznik 10 vs Falanga 10"
+   },
+   "mode": "skip",
+   "trimInfo": {
+    "atkAfter": {
+     "Archer": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 200,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 0,
+    "rToggle": false,
+    "skipClick": "fallback-metoda",
+    "ordersIssued": 0,
+    "orderRounds": 0
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 33,
+    "manualAtEnd": false,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 200
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 396,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "dystans-losowe-s2|auto": {
+   "cfg": {
+    "id": "dystans-losowe-s2",
+    "pt": "bitwa-duza",
+    "seed": 2,
+    "hit": "losowe",
+    "pair": "dystans",
+    "atkType": "Archer",
+    "defType": "Phalanx",
+    "ratioLabel": "dystans: Lucznik 10 vs Falanga 10"
+   },
+   "mode": "auto",
+   "trimInfo": {
+    "atkAfter": {
+     "Archer": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 200,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 0,
+    "rToggle": true,
+    "skipClick": false,
+    "ordersIssued": 0,
+    "orderRounds": 0
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 12,
+    "manualAtEnd": false,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 200
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 390,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "dystans-losowe-s2|skip": {
+   "cfg": {
+    "id": "dystans-losowe-s2",
+    "pt": "bitwa-duza",
+    "seed": 2,
+    "hit": "losowe",
+    "pair": "dystans",
+    "atkType": "Archer",
+    "defType": "Phalanx",
+    "ratioLabel": "dystans: Lucznik 10 vs Falanga 10"
+   },
+   "mode": "skip",
+   "trimInfo": {
+    "atkAfter": {
+     "Archer": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 200,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 0,
+    "rToggle": false,
+    "skipClick": "fallback-metoda",
+    "ordersIssued": 0,
+    "orderRounds": 0
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 35,
+    "manualAtEnd": false,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 200
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 394,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "dystans-losowe-s3|auto": {
+   "cfg": {
+    "id": "dystans-losowe-s3",
+    "pt": "bitwa-duza",
+    "seed": 3,
+    "hit": "losowe",
+    "pair": "dystans",
+    "atkType": "Archer",
+    "defType": "Phalanx",
+    "ratioLabel": "dystans: Lucznik 10 vs Falanga 10"
+   },
+   "mode": "auto",
+   "trimInfo": {
+    "atkAfter": {
+     "Archer": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 200,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 0,
+    "rToggle": true,
+    "skipClick": false,
+    "ordersIssued": 0,
+    "orderRounds": 0
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 35,
+    "manualAtEnd": false,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 200
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 390,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "dystans-losowe-s3|skip": {
+   "cfg": {
+    "id": "dystans-losowe-s3",
+    "pt": "bitwa-duza",
+    "seed": 3,
+    "hit": "losowe",
+    "pair": "dystans",
+    "atkType": "Archer",
+    "defType": "Phalanx",
+    "ratioLabel": "dystans: Lucznik 10 vs Falanga 10"
+   },
+   "mode": "skip",
+   "trimInfo": {
+    "atkAfter": {
+     "Archer": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 200,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 0,
+    "rToggle": false,
+    "skipClick": "fallback-metoda",
+    "ordersIssued": 0,
+    "orderRounds": 0
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 12,
+    "manualAtEnd": false,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 200
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 390,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "melee-pewne-s1|manual": {
+   "cfg": {
+    "id": "melee-pewne-s1",
+    "pt": "bitwa-duza",
+    "seed": 1,
+    "hit": "pewne",
+    "pair": "melee",
+    "atkType": "Hastati",
+    "defType": "Phalanx",
+    "ratioLabel": "wrecz: Hastati 10 vs Falanga 10"
+   },
+   "mode": "manual",
+   "trimInfo": {
+    "atkAfter": {
+     "Hastati": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 380,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 34,
+    "rToggle": false,
+    "skipClick": false,
+    "ordersIssued": 74,
+    "orderRounds": 34,
+    "lastRound": 33
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 33,
+    "manualAtEnd": true,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 380
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 361,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "melee-losowe-s1|manual": {
+   "cfg": {
+    "id": "melee-losowe-s1",
+    "pt": "bitwa-duza",
+    "seed": 1,
+    "hit": "losowe",
+    "pair": "melee",
+    "atkType": "Hastati",
+    "defType": "Phalanx",
+    "ratioLabel": "wrecz: Hastati 10 vs Falanga 10"
+   },
+   "mode": "manual",
+   "trimInfo": {
+    "atkAfter": {
+     "Hastati": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 380,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 41,
+    "rToggle": false,
+    "skipClick": false,
+    "ordersIssued": 132,
+    "orderRounds": 41,
+    "lastRound": 40
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 40,
+    "manualAtEnd": true,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 380
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 373,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "melee-losowe-s2|manual": {
+   "cfg": {
+    "id": "melee-losowe-s2",
+    "pt": "bitwa-duza",
+    "seed": 2,
+    "hit": "losowe",
+    "pair": "melee",
+    "atkType": "Hastati",
+    "defType": "Phalanx",
+    "ratioLabel": "wrecz: Hastati 10 vs Falanga 10"
+   },
+   "mode": "manual",
+   "trimInfo": {
+    "atkAfter": {
+     "Hastati": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 380,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 55,
+    "rToggle": false,
+    "skipClick": false,
+    "ordersIssued": 205,
+    "orderRounds": 55,
+    "lastRound": 54
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 54,
+    "manualAtEnd": true,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 380
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 367,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "melee-losowe-s3|manual": {
+   "cfg": {
+    "id": "melee-losowe-s3",
+    "pt": "bitwa-duza",
+    "seed": 3,
+    "hit": "losowe",
+    "pair": "melee",
+    "atkType": "Hastati",
+    "defType": "Phalanx",
+    "ratioLabel": "wrecz: Hastati 10 vs Falanga 10"
+   },
+   "mode": "manual",
+   "trimInfo": {
+    "atkAfter": {
+     "Hastati": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 380,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 55,
+    "rToggle": false,
+    "skipClick": false,
+    "ordersIssued": 220,
+    "orderRounds": 55,
+    "lastRound": 54
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 54,
+    "manualAtEnd": true,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 10,
+     "remaining": 0,
+     "hp": 0,
+     "hpMax": 380
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 355,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "dystans-pewne-s1|manual": {
+   "cfg": {
+    "id": "dystans-pewne-s1",
+    "pt": "bitwa-duza",
+    "seed": 1,
+    "hit": "pewne",
+    "pair": "dystans",
+    "atkType": "Archer",
+    "defType": "Phalanx",
+    "ratioLabel": "dystans: Lucznik 10 vs Falanga 10"
+   },
+   "mode": "manual",
+   "trimInfo": {
+    "atkAfter": {
+     "Archer": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 200,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 28,
+    "rToggle": false,
+    "skipClick": false,
+    "ordersIssued": 168,
+    "orderRounds": 28,
+    "lastRound": 27
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 27,
+    "manualAtEnd": true,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 5,
+     "remaining": 5,
+     "hp": 100,
+     "hpMax": 200
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 398,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": [],
+   "diag_survivors_rerun": {
+    "res": {
+     "winner": "obronca",
+     "round": 27,
+     "manualAtEnd": true,
+     "wallBreached": false,
+     "atk": {
+      "total": 10,
+      "lost": 5,
+      "remaining": 5,
+      "hp": 100,
+      "hpMax": 200
+     },
+     "def": {
+      "total": 10,
+      "lost": 0,
+      "remaining": 10,
+      "hp": 398,
+      "hpMax": 400
+     },
+     "survivors": {
+      "atk": [
+       {
+        "n": "Archer",
+        "hp": 20,
+        "routed": false,
+        "ammo": 12
+       },
+       {
+        "n": "Archer",
+        "hp": 20,
+        "routed": false,
+        "ammo": 12
+       },
+       {
+        "n": "Archer",
+        "hp": 20,
+        "routed": false,
+        "ammo": 11
+       },
+       {
+        "n": "Archer",
+        "hp": 20,
+        "routed": false,
+        "ammo": 12
+       },
+       {
+        "n": "Archer",
+        "hp": 20,
+        "routed": false,
+        "ammo": 12
+       }
+      ],
+      "def": 10
+     },
+     "endLogTail": [
+      "  -> Archer uciekl z pola bitwy",
+      "  -> Archer uciekl z pola bitwy",
+      "  -> Archer uciekl z pola bitwy",
+      "=== Koniec bitwy: zwyciestwo OBRONCY ==="
+     ],
+     "endText": [
+      "Pora\u017cka"
+     ]
+    },
+    "note": "powtorka tej samej konfiguracji z polami survivors/endLogTail (wynik identyczny: 5 strat, runda 27)"
+   }
+  },
+  "dystans-losowe-s1|manual": {
+   "cfg": {
+    "id": "dystans-losowe-s1",
+    "pt": "bitwa-duza",
+    "seed": 1,
+    "hit": "losowe",
+    "pair": "dystans",
+    "atkType": "Archer",
+    "defType": "Phalanx",
+    "ratioLabel": "dystans: Lucznik 10 vs Falanga 10"
+   },
+   "mode": "manual",
+   "trimInfo": {
+    "atkAfter": {
+     "Archer": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 200,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 30,
+    "rToggle": false,
+    "skipClick": false,
+    "ordersIssued": 185,
+    "orderRounds": 30,
+    "lastRound": 29
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 29,
+    "manualAtEnd": true,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 5,
+     "remaining": 5,
+     "hp": 100,
+     "hpMax": 200
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 400,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "dystans-losowe-s2|manual": {
+   "cfg": {
+    "id": "dystans-losowe-s2",
+    "pt": "bitwa-duza",
+    "seed": 2,
+    "hit": "losowe",
+    "pair": "dystans",
+    "atkType": "Archer",
+    "defType": "Phalanx",
+    "ratioLabel": "dystans: Lucznik 10 vs Falanga 10"
+   },
+   "mode": "manual",
+   "trimInfo": {
+    "atkAfter": {
+     "Archer": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 200,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 28,
+    "rToggle": false,
+    "skipClick": false,
+    "ordersIssued": 176,
+    "orderRounds": 28,
+    "lastRound": 27
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 27,
+    "manualAtEnd": true,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 5,
+     "remaining": 5,
+     "hp": 100,
+     "hpMax": 200
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 400,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  },
+  "dystans-losowe-s3|manual": {
+   "cfg": {
+    "id": "dystans-losowe-s3",
+    "pt": "bitwa-duza",
+    "seed": 3,
+    "hit": "losowe",
+    "pair": "dystans",
+    "atkType": "Archer",
+    "defType": "Phalanx",
+    "ratioLabel": "dystans: Lucznik 10 vs Falanga 10"
+   },
+   "mode": "manual",
+   "trimInfo": {
+    "atkAfter": {
+     "Archer": 10
+    },
+    "defAfter": {
+     "Phalanx": 10
+    }
+   },
+   "start": {
+    "atkTotal": 10,
+    "defTotal": 10,
+    "atkHp": 200,
+    "defHp": 400,
+    "deployPhase": true,
+    "manualAtStart": true
+   },
+   "actions": {
+    "startClick": true,
+    "spacePresses": 29,
+    "rToggle": false,
+    "skipClick": false,
+    "ordersIssued": 197,
+    "orderRounds": 29,
+    "lastRound": 28
+   },
+   "res": {
+    "winner": "obronca",
+    "round": 28,
+    "manualAtEnd": true,
+    "wallBreached": false,
+    "atk": {
+     "total": 10,
+     "lost": 4,
+     "remaining": 6,
+     "hp": 120,
+     "hpMax": 200
+    },
+    "def": {
+     "total": 10,
+     "lost": 0,
+     "remaining": 10,
+     "hp": 400,
+     "hpMax": 400
+    },
+    "endText": [
+     "Pora\u017cka"
+    ]
+   },
+   "errors": []
+  }
+ },
+ "meta": {
+  "chromium": "/usr/bin/chromium",
+  "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-r2",
+  "runda": 3,
+  "note": "reczna = rozkazy ATAK per jednostka (_issueBattleAttack queue) + Space; AUTO = klawisz R; skip = Pomin; roster przyciety do 10 vs 10",
+  "dist_src": "bf3f65f04 (src/data identyczne z d5323fadf; build dist-r2 z r2)"
+ }
+}
