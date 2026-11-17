@@ -10829,3 +10829,9 @@ Właściciel: koszt pokoju znacząco podwyższyć tak, by na starcie wojny zwyci
 - main cc7ba086, ROBOCZA MD5 4a8ee091, GitHub Raw MD5 zgodne, sidecary 3/3. Testy: tsc 0; logic 213/213; unit-replace 21/21; combat 6/6.
 - Pomiar Wojownik 10 vs 10 na ścieżce mapowej (Chromium, ziarna 1–3, auto = skip, tryb trafień „losowe”): ziarno 1 wygrywa atakujący (26 rund, PAT po morale, 6/4 vs 7/3), ziarna 2 i 3 wygrywa obrońca (20 i 18 rund; 10/0 vs 4/6 oraz 10/0 vs 1/9). Ucieczki 0. Obserwacja n=3, możliwy związek z #286 — NIE wnioskować bez dalszego pomiaru.
 - NIE ZMIERZONO: tryb ręczny z rozkazami (brak generała w stosie, bramka battleScene.ts ~3662), zamiana stron (AI nie da się zmusić do ataku), zgodność statystyk Wojownika z units.json, tryb trafień „pewne”. Do właściciela: czy dopracować pomiar (generał w stosie / wymuszenie ataku AI) jako osobny temat.
+
+### 2026-11-17 — ODPOWIEDZI WŁAŚCICIELA na pytania ABC (z opisem sytuacji, wadami i zaletami)
+- PEACEDECAY: **A — zostawić jak jest** (cena pokoju 6000×(1−zmęczenie); koncentracja miast najsilniejszej civ 72–75% zaakceptowana) → wdrożenie jako FALA 807 (kod 3363756d3; zmiana ryzyka balansu świadomie przyjęta; skutek poza symulacją NIE ZMIERZONO).
+- Procarz: przebicie tylko dla Procarza; wartość **4** jako **redukcja pancerza** w strzale (wariant A; uzasadnienie: standardowe przebicie piechoty żelaza = 4, 14 z 20; historycznie proca niszczy pancerną piechotę). → temat R-WEB-UNIT-PROCARZ-PIERCING-ARMOR-REDUCTION-Q1 (start po FALI 807). Łucznik i Oszczepnik bez przebicia w strzale.
+- Katapulta: **A — zostaje 250**. „Zastąp” Łucznik → Procarz: **A — zostawić** (Procarz = koniec łańcucha; osłabienie zdrowia/ataku zaakceptowane).
+- Nadal otwarte: pomiar Wojownika (generał w stosie, wymuszenie ataku AI) — jako osobne pytanie.
