@@ -76,8 +76,13 @@ export interface BuildModeHudConfig {
   onSelectFoundCity?: () => void;
   /** Etykieta kosztu założenia miasta (np. „20 P · 1 👤"). */
   getFoundCityCostLabel?: () => string;
-  /** Podpowiedź gdy założenie zablokowane (za mało P / ludności). */
+  /** Podpowiedź gdy założenie zablokowane (za mało P / ludności; przy limicie miast — komunikat o limicie). */
   getFoundCityLockHint?: () => string | null;
+  /**
+   * R-WEB-UI-CITY-FOUNDING-LIMIT-GREYED-OUT-Q1: stan limitu miast gracza w jego epoce (jedno źródło prawdy:
+   * cityFoundingLimitState). `null` = nie dotyczy (np. pierwsze miasto). `exhausted` → przycisk wyszarzony.
+   */
+  getFoundCityLimitState?: () => { count: number; limit: number; exhausted: boolean } | null;
   /** R-PIERWSZE-MIASTO: tylko przycisk Załóż miasto (bez ulepszeń/cudów). */
   isFoundCityOnly?: () => boolean;
   /**
@@ -334,6 +339,10 @@ html.civ-ui-zoom-active .civ-build-panel{right:${HUD_ZOOM_EDGE_PX}px;
 .civ-build-item .meta{font-size:9px;color:#7a7055;margin-left:auto;}
 .civ-build-item.disabled{opacity:.38;pointer-events:none;filter:grayscale(.85);}
 .civ-build-item.locked{opacity:.48;cursor:help;}
+/* R-WEB-UI-CITY-FOUNDING-LIMIT-GREYED-OUT-Q1: limit miast epoki wyszarza „Załóż miasto” (nieklikalne, bez trybu zakładania). */
+.civ-build-item.limit{opacity:.36;filter:grayscale(.85);cursor:not-allowed;}
+.civ-build-item.limit:hover{background:none;border-color:transparent;}
+.civ-build-limit-note{font-size:8px;color:#c9a060;text-transform:none;letter-spacing:0;margin-left:4px;}
 .civ-build-item.locked:hover{background:rgba(232,176,74,.08);border-color:rgba(232,176,74,.35);}
 .civ-build-item.locked .meta{color:#c9a060;font-size:8px;max-width:95px;text-align:right;line-height:1.2;}
 /* box-sizing jawnie w regule (nie tylko z globalnego gwiazdkowego resetu w index.html) —
@@ -626,12 +635,20 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
     if (showFound) {
       const fcLabel = config.getFoundCityCostLabel?.() ?? '';
       const fcHint = config.getFoundCityLockHint?.() ?? null;
-      html += '<div class="lbl">Miasto</div>';
-      html += '<div class="civ-build-item' + (foundActive ? ' sel' : '') + (fcHint ? ' locked' : '') + '" data-found-city="1"'
+      const fcLimit = config.getFoundCityLimitState?.() ?? null;
+      const fcLimitHit = fcLimit?.exhausted === true;
+      html += '<div class="lbl">Miasto'
+        + (fcLimitHit ? ' <span class="civ-build-limit-note" data-found-city-limit-note="1">osiągnięto limit</span>' : '')
+        + '</div>';
+      html += '<div class="civ-build-item' + (foundActive ? ' sel' : '') + (fcHint ? ' locked' : '')
+        + (fcLimitHit ? ' limit' : '') + '" data-found-city="1"'
+        + (fcLimitHit ? ' aria-disabled="true" data-found-city-limit="1"' : '')
         + (fcHint ? ' data-lock-hint="' + fcHint.replace(/"/g, '&quot;') + '"' : '')
         + ' title="' + (fcHint ? fcHint : 'Załóż nowe miasto') + '">'
         + '<span class="ic">🏛️</span><span>Załóż miasto</span>'
-        + (fcLabel ? '<span class="meta">' + fcLabel + '</span>' : '')
+        + (fcLimitHit
+          ? '<span class="meta">limit ' + fcLimit!.count + '/' + fcLimit!.limit + '</span>'
+          : (fcLabel ? '<span class="meta">' + fcLabel + '</span>' : ''))
         + '</div>';
     }
     if (!foundCityOnly) {
