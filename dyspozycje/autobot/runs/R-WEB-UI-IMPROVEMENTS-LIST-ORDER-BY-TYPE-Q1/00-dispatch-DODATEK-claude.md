@@ -1,0 +1,1 @@
+# DODATEK 0 (orkiestrator, 06:41 UTC) — runda 1. cand = pełne SHA aktualnego origin/main. START gdy zwolni się slot (4/4 zajęte). Zmiana gry → po FC PASS wdrożenie jako FALA. Dług Rust: REPIN kolejności ulepszeń.
