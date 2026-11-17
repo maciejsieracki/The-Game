@@ -1,0 +1,29 @@
+turn after load 2 dialogs []
+gate {"gate":false,"msg":"","sp":400}
+t+ 5 turn 3
+t+ 10 turn 3
+t+ 15 turn 3
+t+ 20 turn 3
+t+ 25 turn 3
+t+ 30 turn 3
+info: [civ-perf] === Civ — raport czasów ładowania mapy ===
+Data: 17.11.2026, 07:28:05
+rozmiar: Maly · kształt: Kontynenty
+7992 heksów · nakładek 59
+
+GENERATOR (ms):
+
+log: [Load] slot=nns-B-cur tura=2
+log: [Diag:load] OK tura=2 miasta=2 seed=271828
+warning: [EndTurn] triggerPlayerEndTurn: START tura 2
+warning: [EndTurn] blocked: endTurnInProgress
+warning: [EndTurn] blocked: endTurnInProgress
+log: [Ekonomia] Tura 3: gracz(1 os.) ¤=11 N=24 Praca=17 | mapa(2 os.) ¤=15 N=40 Praca=24 wzrost=0 głód=0
+log: [Nauka] Tura 3: <span style="display:inline-flex;width:16px;height:16px;vertical-align:-3px;margin-right:5px;color:#e8d88a"><svg height="16" width="16" aria-hid
+log: [Religia] Tura 3 Testpolis: szerzenie -> 1 miast
+log: [Porzadek] Tura 3 Testpolis: tier=unrest porPct=27.0 szPct=30.6
+log: [Religia] Tura 3 Ateny: szerzenie -> 1 miast
+log: [Autosave] rotacyjny slot=autosave-2 tura=3
+warning: [EndTurn] blocked: preBattleOpen {pending: false}
+warning: [EndTurn] blocked: preBattleOpen {pending: false}
+warning: [EndTurn] triggerPlayerEndTurn: DONE tura 3

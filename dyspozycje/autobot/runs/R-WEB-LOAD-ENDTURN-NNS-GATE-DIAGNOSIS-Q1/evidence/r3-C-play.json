@@ -1,0 +1,278 @@
+{
+  "mode": "play",
+  "seed": 777,
+  "turns": 20,
+  "extra": 2,
+  "slot": "nns-r3-s777-t20-x2",
+  "kroki": {
+    "extra_miasta_ids": [
+      "city42",
+      "city43"
+    ],
+    "t1_start": {
+      "tura": 1,
+      "miastaGracza": 3,
+      "bramkaBlokuje": false,
+      "komunikat": "",
+      "skarbiec": 0,
+      "spichlerzZywy": 0,
+      "prognoza": {
+        "tura": 1,
+        "skarbiecPo": 1,
+        "spichlerzObecny": 0,
+        "spichlerzPo": -4
+      }
+    },
+    "bez_wczytania_koniec": {
+      "tura": 20,
+      "miastaGracza": 3,
+      "bramkaBlokuje": false,
+      "komunikat": "",
+      "skarbiec": 167,
+      "spichlerzZywy": 45,
+      "prognoza": {
+        "tura": 20,
+        "skarbiecPo": 179,
+        "spichlerzObecny": 45,
+        "spichlerzPo": 50
+      }
+    },
+    "quickSave_slot": "nns-r3-s777-t20-x2"
+  },
+  "log": [
+    {
+      "przed": 1,
+      "po": 2,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 3
+    },
+    {
+      "przed": 2,
+      "po": 3,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 5
+    },
+    {
+      "przed": 3,
+      "po": 4,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 6
+    },
+    {
+      "przed": 4,
+      "po": 5,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 8
+    },
+    {
+      "przed": 5,
+      "po": 6,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 9
+    },
+    {
+      "przed": 6,
+      "po": 7,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 11
+    },
+    {
+      "przed": 7,
+      "po": 8,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 12
+    },
+    {
+      "przed": 8,
+      "po": 9,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 14
+    },
+    {
+      "przed": 9,
+      "po": 10,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 15
+    },
+    {
+      "przed": 10,
+      "po": 11,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 15
+    },
+    {
+      "przed": 11,
+      "po": 12,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 15
+    },
+    {
+      "przed": 12,
+      "po": 13,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 15
+    },
+    {
+      "przed": 13,
+      "po": 14,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 17
+    },
+    {
+      "przed": 14,
+      "po": 15,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 25
+    },
+    {
+      "przed": 15,
+      "po": 16,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 30
+    },
+    {
+      "przed": 16,
+      "po": 17,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 35
+    },
+    {
+      "przed": 17,
+      "po": 18,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 40
+    },
+    {
+      "przed": 18,
+      "po": 19,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 45
+    },
+    {
+      "przed": 19,
+      "po": 20,
+      "przeszedl": true,
+      "blokadaPrzed": false,
+      "interwencja": null,
+      "miastaGracza": 3,
+      "prognozaSpichlerzPo": 50
+    }
+  ],
+  "bledy": [],
+  "konsolaNns": [
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: awaitingFirstPlayerCity",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)",
+    "[EndTurn] triggerPlayerEndTurn: START tura 1",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[NNS-AI 40] tura 2: po ticku skarbiec=-4 spichlerz=-4 -> -1/1; akcje=podatek,racje; WYJĄTEK: brak dostępnych dźwigni: pozostało skarbiec=-1 spichlerz=1 (obecny skarbiec=0 spichlerz=0; po jednym obrońcy na miasto, wodzowi",
+    "[NNS-AI 41] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/7; akcje=podatek,racje",
+    "[NNS-AI 1] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/8; akcje=podatek,racje",
+    "[NNS-AI 2] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 2/6; akcje=podatek,racje",
+    "[NNS-AI 3] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 1/5; akcje=podatek,racje",
+    "[NNS-AI 4] tura 2: po ticku skarbiec=-2 spichlerz=-4 -> 4/8; akcje=podatek,racje",
+    "[NNS-AI 5] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/6; akcje=podatek,racje",
+    "[NNS-AI 6] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 2/2; akcje=podatek,racje",
+    "[NNS-AI 7] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/8; akcje=podatek,racje",
+    "[NNS-AI 8] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/7; akcje=podatek,racje",
+    "[NNS-AI 9] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/5; akcje=podatek,racje",
+    "[NNS-AI 10] tura 2: po ticku skarbiec=-2 spichlerz=-4 -> 8/4; akcje=podatek,racje",
+    "[NNS-AI 11] tura 2: po ticku skarbiec=-2 spichlerz=-4 -> 9/8; akcje=podatek,racje",
+    "[NNS-AI 12] tura 2: po ticku skarbiec=-2 spichlerz=-4 -> 9/8; akcje=podatek,racje",
+    "[NNS-AI 13] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/8; akcje=podatek,racje",
+    "[NNS-AI 14] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/8; akcje=podatek,racje",
+    "[NNS-AI 15] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 1/5; akcje=podatek,racje",
+    "[NNS-AI 16] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/8; akcje=podatek,racje",
+    "[NNS-AI 17] tura 2: po ticku skarbiec=-4 spichlerz=-4 -> -1/3; akcje=podatek,racje; WYJĄTEK: brak dostępnych dźwigni: pozostało skarbiec=-1 spichlerz=3 (obecny skarbiec=0 spichlerz=0; po jednym obrońcy na miasto, wodzowi",
+    "[NNS-AI 18] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 1/5; akcje=podatek,racje",
+    "[NNS-AI 19] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 1/4; akcje=podatek,racje",
+    "[NNS-AI 20] tura 2: po ticku skarbiec=-2 spichlerz=-4 -> 6/8; akcje=podatek,racje",
+    "[NNS-AI 21] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 2/5; akcje=podatek,racje",
+    "[NNS-AI 22] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/8; akcje=podatek,racje",
+    "[NNS-AI 23] tura 2: po ticku skarbiec=-4 spichlerz=-4 -> -1/3; akcje=podatek,racje; WYJĄTEK: brak dostępnych dźwigni: pozostało skarbiec=-1 spichlerz=3 (obecny skarbiec=0 spichlerz=0; po jednym obrońcy na miasto, wodzowi",
+    "[NNS-AI 24] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/8; akcje=podatek,racje",
+    "[NNS-AI 25] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/8; akcje=podatek,racje",
+    "[NNS-AI 26] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/8; akcje=podatek,racje",
+    "[NNS-AI 27] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 1/5; akcje=podatek,racje",
+    "[NNS-AI 28] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/7; akcje=podatek,racje",
+    "[NNS-AI 29] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 2/3; akcje=podatek,racje",
+    "[NNS-AI 30] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/7; akcje=podatek,racje",
+    "[NNS-AI 31] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/8; akcje=podatek,racje",
+    "[NNS-AI 32] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/8; akcje=podatek,racje",
+    "[NNS-AI 33] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 1/5; akcje=podatek,racje",
+    "[NNS-AI 34] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 1/5; akcje=podatek,racje",
+    "[NNS-AI 35] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 1/5; akcje=podatek,racje",
+    "[NNS-AI 36] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 1/5; akcje=podatek,racje",
+    "[NNS-AI 37] tura 2: po ticku skarbiec=-2 spichlerz=-4 -> 5/7; akcje=podatek,racje",
+    "[NNS-AI 38] tura 2: po ticku skarbiec=-2 spichlerz=-4 -> 5/7; akcje=podatek,racje",
+    "[NNS-AI 39] tura 2: po ticku skarbiec=-2 spichlerz=-4 -> 7/7; akcje=podatek,racje",
+    "[EndTurn] blocked: endTurnInProgress"
+  ]
+}
