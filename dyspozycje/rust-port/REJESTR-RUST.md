@@ -3187,3 +3187,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Otwarte w rozpoznaniu:** dwa typy stałych `BF_COLS` (i64 w `siege_tactics_approach.rs:210`, f64 w innych) — Operator wybiera jeden typ i zapisuje wybór.
 - **Wolne sloty (3 z 4): powód.** T7a wstrzymany (weryfikacja ścieżki auto). Pozostałe kandydaci zablokowane jak w przebiegu 05:18 (#253, #285, #286, #358, #304→#310, #113→#107/#109/#112, #315 decyzja kosztu per jednostka).
 - **Otwarte decyzje ABC (w czacie):** #327, #358.
+
+### Przebieg — heartbeat (2026-11-17 ~05:48 UTC): 1/4 aktywne, dysk 9,7 GB
+
+- **Aktywne Workflow (1/4):** K5DOC-T7b odwrót (`_bestFallBackStep`, `_fallBackStep`), runda 1, Operator Haiku (`wf_c345eac0-607`). Worktree `wf_c345eac0-607-1` w toku. Brak wyniku Operatora w dzienniku.
+- **Krok 2:** brak FC PASS bez integracji. Parity `f85622878` bez zmian.
+- **Krok 3:** nic do usunięcia.
+- **Dysk:** 9,7 GB — powyżej progu 8 GB dla bramek.
+- **Wolne sloty (3 z 4): powód.** T7a (falanga) wstrzymany do potwierdzenia ścieżki auto (patrz przebieg 05:2x). Pozostali kandydaci zablokowani jak w poprzednich przebiegach (#253, #285, #286, #358, #304→#310, #113→#107/#109/#112, #315 decyzja kosztu per jednostka).
+- **Otwarte decyzje ABC (w czacie):** #327, #358.
