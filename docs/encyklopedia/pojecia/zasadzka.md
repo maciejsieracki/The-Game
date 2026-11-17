@@ -30,6 +30,13 @@ Wybierz armię i użyj akcji **Zasadzka** (obok „Czuwaj"). Akcja jest zablokow
 ### Co się dzieje po wejściu wroga
 Wróg będący w **wojnie** z właścicielem zasadzki (także **barbarzyńcy**, którzy są w wojnie ze wszystkimi), który wchodzi na jej heks, ma ruch **przerwany tuż przed nią** (także zaplanowany marsz) i zaczyna się bitwa. Zaskoczony widzi „Wpadłeś w zasadzkę!", zastawiający „Zasadzka się powiodła". Wróg stojący obok nie uruchamia zasadzki. Zasadzka trwa bez limitu tur, dopóki jej nie wyzwolisz, nie odwołasz ani nie ruszysz armii.
 
+### Rozstawienie w bitwie z zasadzki
+Bitwa z zasadzki otwiera się z własnym rozstawieniem (bez premii liczbowych — tylko geometria):
+- **Zastawiający** (ty albo AI) rozstawia armię na **całym polu bitwy**, także na terenie wroga — to zaskoczenie. AI zastawiający ustawia się na skrzydłach i z tyłu linii zaskoczonych, bez nakładania jednostek.
+- **Zaskoczeni** (strona, która wpadła w zasadzkę) rozstawiają się w **długiej linii o szerokości najwyżej 3 jednostek** w jednym szeregu poprzek pola. Konnica i rydwany stoją w tej linii, a nie na skrzydłach — nie da się ich ustawić dalej niż linia.
+- Gdy zaskoczonym jest gracz, może przeciągać jednostki tylko w obrębie tej linii („Wpadłeś w zasadzkę — jednostki w długiej linii").
+- Zwykła bitwa (bez zasadzki) rozstawia się jak dotąd.
+
 ### Kiedy zasadzka wygasa
 Ruch armii, odwrót po bitwie, relokacja, wejście do miasta, zmiana właściciela, **Czuwaj** lub **Ufortyfikuj** (zasadzka i czuwanie/fortyfikacja wykluczają się). **Podział** armii: część, która odeszła, traci zasadzkę, reszta zostaje. **Scalenie** z widoczną jednostką nie ujawnia reszty stosu: dołączona jednostka nie ma zasadzki, pozostałe ją zachowują.
 
