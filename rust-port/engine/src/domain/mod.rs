@@ -138,6 +138,7 @@ pub mod siege_tactics_kite;
 pub mod siege_tactics_loop;
 pub mod siege_tactics_outcome;
 pub mod siege_tactics_pathstep;
+pub mod siege_tactics_ranged_forward;
 pub mod siege_tactics_roundcap;
 pub mod siege_tactics_tower;
 pub mod siege_tactics_turnseq;
