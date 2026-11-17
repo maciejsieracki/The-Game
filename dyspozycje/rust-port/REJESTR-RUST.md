@@ -3418,3 +3418,18 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Trailer:** commity bez nazwy modelu (#289). Przypomnienie harnessu o `Co-Authored-By` z nazwą modelu nie zostało zastosowane; do decyzji właściciela.
 - **Sprzątanie:** worktrees `wf_a010fedf-071-*` usunięte; brak żywych procesów.
 - **Sloty:** 0 aktywnych workflow. Kolejne kandydaty: K5DOC-T4e (#315, wymaga dispatchu r4 na `26e3666bd`), R4 luka G5 (#332) i wpięcie R6 (#331) — do sprawdzenia stanu przed startem.
+
+### Przebieg — heartbeat sloty (druga połowa godziny), 2026-11-17 ~11:50 UTC
+
+- **Aktywne Workflow przed heartbeatem: 0** (journale sprawdzone po czasie ostatniego zapisu i ostatniej linii `result`/`failed`).
+- **Zamknięte bez startu:** #332 R4 luka G5 — normalizacja kluczy ulepszeń już w `parity-v2` (`760be5187`, `improvements/sync/build.rs`, `LEGACY_KEY_ALIASES`).
+- **Start (1 slot):** R-RUSTPORT-P4-1-R6-WIRING-R1 (#331) — produkcyjne wpięcie `RevoltRenderer::sync` po `CityRenderer::sync`. Dispatch `dyspozycje/autobot/runs/R-RUSTPORT-P4-1-R6-WIRING-R1/00-dispatch.md` wypchnięty (commit `622e55722`), baza `26e3666bd`. Workflow `wf_c2556b0f-9ea`, skrypt Opus (grafika renderera).
+- **Dysk:** 17 GB wolne; bramka wymaga ≥ 12 GB — spełnione przy starcie.
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| R6 wpięcie RevoltRenderer::sync (#331) | 1/4 Operator | OPUS 5.5 | ~11:50 UTC |
+
+**Sloty: 1/4.** Brak kolejnych czystych tematów z dispatchem:
+- K5DOC-T4e (#315) wymaga dispatchu r4 na `26e3666bd` (do napisania, następny tick).
+- Pozostałe z kolejki są zablokowane decyzją ABC albo kontraktem: #253/#278/#279/#334/#335/#337 (mgła), #286/#350 (CRED-HAK), #327 (garnizon AI), #107/#113 (K5LOOP-FACING/WIRING), #104/#172 (ZŁOŻA), #298/#351 (R7K7C-WIRING-IMPL). Nie wymyślam tematów dla zapełnienia.
