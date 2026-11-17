@@ -1,0 +1,1 @@
+# DODATEK 0 (orkiestrator, 2026-11-17 03:55 UTC) — runda 1. cand = pełne SHA origin/main (604a4f873b878a37d45010ba6d39dc5110e6b697). Równolegle idzie R-WEB-BATTLE-FORMATION-RULES-WING-BANDS-FALLBACK-DIAG-Q1 (battleScene.ts + battle-formation-rules-test.cjs — NIE ruszaj tych plików).
