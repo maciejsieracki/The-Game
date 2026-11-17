@@ -67,11 +67,11 @@ const classSrc = [
   pinRange(1797, 1797),
   pinRange(1917, 1919),
   'class P {',
-  'constructor() { this.occByKey = new Map(); this.finished = false; this.enemyList = []; this.nearestStub = null; this.impassable = new Set(); this.moveLeftAfter = 0; this.moves = []; this.scheduled = []; }',
+  'constructor() { this.occByKey = new Map(); this.finished = false; this.enemyList = []; this.nearestStub = null; this.impassable = new Set(); this.moveLeftAfter = 0; this.finishedAfter = false; this.moves = []; this.scheduled = []; }',
   '_enemiesOf(ru) { return this.enemyList; }',
   '_nearestEnemy(ru) { return this.nearestStub; }',
   '_passableForUnit(ru, col, row) { return !this.impassable.has(cellKey(col, row)); }',
-  '_doMove(ru, nc, nr, cb) { this.moves.push([nc, nr]); ru.moveLeft = this.moveLeftAfter; cb(); }',
+  '_doMove(ru, nc, nr, cb) { this.moves.push([nc, nr]); ru.moveLeft = this.moveLeftAfter; this.finished = this.finishedAfter; cb(); }',
   '_schedule(ms, cb) { this.scheduled.push(ms); }',
   pinRange(7186, 7219),
   pinRange(7228, 7244),
@@ -96,6 +96,7 @@ const makeInst = (inp) => {
   inst.occByKey = new Map(inp.occupied.map(([c, r]) => [keyOf(c, r), 'x']));
   inst.impassable = new Set(inp.impassable.map(([c, r]) => keyOf(c, r)));
   inst.moveLeftAfter = inp.move_left_after;
+  inst.finishedAfter = inp.finished_after;
   return inst;
 };
 const makeUnit = (u) => ({
@@ -136,6 +137,7 @@ const base = (over) => ({
   occupied: [],
   impassable: [],
   move_left_after: 0,
+  finished_after: false,
   ...over,
 });
 
@@ -169,6 +171,14 @@ pushCase('nieprzejezdne_odrzucone', base({
 
 pushCase('dmin_le_1_odrzucone', base({
   enemies: [[10, 12]], nearest: [10, 12],
+}), { best: [9, 10], step: { moves: [[9, 10]], scheduled_ms: null, done_calls: 1 } });
+
+// dMin == 1 przy sasiedztwie wroga (dNow == 1). Kandydat N (10,9) ma dMin = 1 (wrog (10,8)); E i S zajete.
+// Pin: `dMin <= 1` odrzuca N. Mutant `< 1`: N przechodzi, a score N (nc=10) bije W (nc=9) przy homeBias def.
+pushCase('dmin_le_1_przy_sasiedztwie_wroga', base({
+  unit: U(10, 10, { is_atk: false }),
+  enemies: [[10, 11], [10, 8]], nearest: [10, 11],
+  occupied: [[11, 10], [10, 11]],
 }), { best: [9, 10], step: { moves: [[9, 10]], scheduled_ms: null, done_calls: 1 } });
 
 pushCase('dmin_mniejsze_niz_dnow_odrzucone', base({
@@ -233,6 +243,11 @@ pushCase('zaklinowany_pojedynczy', base({
 pushCase('krok_z_zaplanowaniem', base({
   move_left_after: 5,
 }), { best: [10, 9], step: { moves: [[10, 9]], scheduled_ms: 70, done_calls: 0 } });
+
+// Callback `_doMove` (:7239): finished ustawione przez ruch -> done, nie schedule (mutant bez tego guardu zaplanowalby krok).
+pushCase('finished_po_ruchu_done_bez_schedule', base({
+  finished_after: true, move_left_after: 5,
+}), { best: [10, 9], step: { moves: [[10, 9]], scheduled_ms: null, done_calls: 1 } });
 
 pushCase('krok_koniec_ruchu', base({
   move_left_after: 0,
@@ -314,6 +329,7 @@ for (let i = 0; i < NR; i++) {
     occupied,
     impassable,
     move_left_after: ri(-1, 6),
+    finished_after: false,
   };
   pushCase(`losowy_${i}`, input);
 }

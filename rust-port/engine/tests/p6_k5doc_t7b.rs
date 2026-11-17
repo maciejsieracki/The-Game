@@ -41,6 +41,9 @@ struct Input {
     occupied: Vec<[f64; 2]>,
     impassable: Vec<[f64; 2]>,
     move_left_after: f64,
+    /// Web `this.finished` PO ruchu (callback `_doMove`); domyslnie false.
+    #[serde(default)]
+    finished_after: bool,
 }
 
 #[derive(Deserialize)]
@@ -158,7 +161,7 @@ fn wektory_pina_sa_zgodne_z_best_i_krokiem() {
                     },
                     "krok: {ctx}"
                 );
-                let after = fall_back_after_move(c.input.finished, c.input.move_left_after);
+                let after = fall_back_after_move(c.input.finished_after, c.input.move_left_after);
                 match c.expect.step.scheduled_ms {
                     Some(ms) => {
                         assert_eq!(
@@ -196,6 +199,8 @@ fn pokrycie_wektorow_obejmuje_zaklinowanie_remis_i_schedule() {
         "zajete_pole_odrzucone",
         "nieprzejezdne_odrzucone",
         "dmin_le_1_odrzucone",
+        "dmin_le_1_przy_sasiedztwie_wroga",
+        "finished_po_ruchu_done_bez_schedule",
         "dmin_mniejsze_niz_dnow_odrzucone",
         "mutacja_a_dmin_rowne_dnow_przyjety",
         "mutacja_b_remis_pierwszy_w_dirs4",
