@@ -1,92 +1,72 @@
-# R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 — raport Operatora, runda 3/5
+# R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 — raport Operatora, runda 4/5
 
-STATUS: FAIL (samoocena Operatora: zakres R3 tylko częściowo zrealizowany; patrz BLOKADY)
+STATUS: PASS-WITH-NOTES (kod i testy gotowe; RYZYKO balansu z pomiaru weary40-sim wymaga decyzji właściciela, patrz UWAGI; pełna gra w Chromium NIE ZMIERZONO, zmierzono panel z prawdziwym silnikiem)
 DOMAIN: GAME (dyplomacja, balans)
 TEMAT: R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1
-GOAL: cena pokoju = cenaStartPn × (1 − L), cenaStartPn = 6000, L = poziom zmęczenia pary; jedna funkcja ceny dla panelu, AI (dobrowolne, AI↔AI) i pokoju wymuszonego; bez progu min. 3 miast; stolica nigdy; wiki/UI zgodne.
-BAZA: 76a1739fddb415edc2204c404e9aab43e6cf5b30 (origin/main), checkout --detach, bez merge kandydata bc67097a9.
-ZMIANY-COMMIT: patrz sekcja „Commit” na końcu (SHA podany w polu sha odpowiedzi).
+GOAL: cena pokoju = cenaStartPn (6000) × (1 − L), L = poziom zmęczenia pary; ta sama jedna cena na WSZYSTKICH ścieżkach (panel/audiencja, AI→gracz, AI↔AI dobrowolne, prośby AI↔AI, pokój wymuszony); miasta oddane = minimum pokrywające cenę; stolica nigdy; cena > 0 bez pełnego pokrycia = wojna trwa; cena 0 (L=1) = pokój bez miast (DR-1=A); brak stałych 615/185/554 jako ceny i brak progu min. 3 miast; wiki/Civpedia/komentarze spójne.
+BAZA: 5bafaa3c335fc1e00a3ab5c68128e98c14808144 (kandydat r3).
+ZMIANY/COMMIT: allowlista poniżej; SHA w polu `sha` odpowiedzi (jeden commit, jawne `git add` ścieżek).
+RUNDY: 4/5
+DEPLOY/PUSH: NIE WYKONANO
 
-## Decyzje właściciela użyte w tej rundzie (DODATEK 2, ABC 2026-11-17)
-- DR-1 = A: cena przy L=1 wynosi 0 i zostaje 0; pokój wymuszony przy cenie 0 zapada bez oddania miasta. Nie dodano minimum ceny.
-- DR-2 = zgodnie z GOAL: jedna funkcja ceny używana wszędzie; bramka relacji daje cenę 0 jak dotąd.
-- Pkt 6 FC (guard cashPn>0 && given==0 w remisie): zostawione jak w r2 (remis z ceną > 0 nie kończy wojny); w tej rundzie zmieniono warunek na „brak pełnego pokrycia” (patrz niżej).
+## Co zmieniono (gra/, kod)
+- `src/game/war-weariness.ts`: `wearinessPeaceCashPn(level)` = round(6000×(1−clamp(L,0,1))) jedyną funkcją ceny. Usunięto `wearinessPeaceItemPw`, `wearinessPeaceX`, `stageCityLimit`, `offerMultiplier`, `wearyMilitaryShare` i pola `minMiastPoOddaniu`, `mnozniStopni`, `mnoznikNaOdrzucenie`, `maxMiastNaPokoj`. Oferta dobrowolna: `required = price.requiredPn`, `maxCities = ownCities` (0 gdy bitwa w toku), akceptacja wymaga `priceCovered = priceZero || plan.full`. Pokój wymuszony: `cityCap = ownCities`, przy cenie > 0 bez `forcedPlan.full` → brak pokoju. `planEscalatedPeacePayment` zostaje jako alias `planCityPeacePayment`.
+- `src/game/diplomacy-ai-forced-peace.ts`: `planCityPeacePayment` (zachłannie: najtańsze miasto pokrywające resztę, w przeciwnym razie największe; pomija zakazane/stolicę; zwraca items/coveredPn/shortfallPn/full). Tick AI↔AI i `decideAiPeaceRequest` (kind 'pokoj') zwracają 'wait' bez pełnego pokrycia także po limicie tur.
+- `src/game/ai.ts`: usunięto `AI_MIASTO_CENA_POKOJU_PN` (615), `AI_MIASTO_PRZEKAZ_MIN_MIAST`, `aiPickMiastoDoOddania`, blok desperacji/mnożnika. Nowe `aiPlanMiastaDoOddania(miasta, eks, cenaPn)` (minimum miast pokrywających cenę, `full`) i `aiPickMiastoDoZadania(miastaPartnera, cenaPn)` (null przy cenie 0). Oferta AI→gracz używa `wearinessPeaceCashPn(poziom pary)`; komenda niesie `dodatkoweMiasta` gdy trzeba kilku miast.
+- `src/game/diplomacy-proposals.ts`: R5 (gracz→AI): `cenaWymaganaPn = actionId === 'pokoj' ? cenaPokojuPn : basePnCfg × mnożnik` (rozejm ma własną bazę i NIE podlega malejącej cenie pokoju); silniejsza AI wymaga miasta o wartości ≥ ceny (komunikat: „cena pokoju maleje ze zmęczeniem wojną”). Gałąź AI→gracz: `basePn = aiToPlayerCenaPn` tylko dla pokoju; pomocnik `aiOfferedCityItems`. Komentarze poprawione.
+- `src/ui/diplomacyAcceptanceBalance.ts`: nowy `peacePriceRowHtml` („Cena pokoju: N PN (zmęczenie X%) — maleje z turami wojny” albo „0 PN … pokój bez oddawania miast”); stare wiersze Z usunięte. `diplomacyAudience.ts`, `main.ts`: rozszerzony typ `wearinessInfo.cenaPokojuPn?`; prośby AI↔AI i tick z ceną `wearinessPeaceCashPn`.
+- `src/game/diplomacy-war-peace-profile.ts`: komentarze 615 (615 zostaje wyłącznie jako bramka relacji).
+- `data/war-weariness-params.json`: sekcja `cenaPokoju.cenaStartPn = 6000`; usunięte parametry `mnozniStopni`, `mnoznikNaOdrzucenie`, `maxMiastNaPokoj`, `minMiastPoOddaniu`; przepisane opisy `_progi`, `_wyczerpanie`, `_LIVE_AUDIT_Q1`, `_pozycjaPW`.
+- Dokumentacja: `docs/encyklopedia/pojecia/zmeczenie-wojna.md`, `rozejm-pokoj.md`; `src/data/wikiBundle.json` zregenerowany (`node tools/bundle-wiki-for-game.cjs`).
 
-## Zrealizowane (w kodzie, commit)
-1. `gra/data/war-weariness-params.json`: sekcja `cenaPokoju.cenaStartPn = 6000`. Pole `przegrywajacy.minMiastPoOddaniu = 3` zostaje w JSON jako martwy parametr (opisany `_minMiastPoOddaniu`); nie steruje już żadną ofertą ani wymuszeniem.
-2. `gra/src/game/war-weariness.ts`:
-   - `wearinessPeaceCashPn(level)` = round(6000 × (1 − clamp(level, 0, 1))) — jedyne miejsce liczenia ceny.
-   - `WearinessTickDeps.price(winner, loser, level)` dostaje poziom pary; tick przekazuje `lvl`.
-   - Pokój wymuszony: cena z `wearinessPeaceCashPn(lvl)`, `cityCap = ownCities` (bez − 3); pokój zapada tylko gdy cena = 0 albo plan pokrywa cenę w całości (`forcedPlan.full`). Gdy cena > 0 i brak pełnego pokrycia (np. tylko stolica) → wojna trwa.
-   - Oferta przegrywającego: `maxCities = min(limit stopnia, ownCities)` (bez − 3).
-3. `gra/src/main.ts`:
-   - Prośby AI↔AI (`tickAiAiPeaceRequests`, kind 'pokoj'): cena = `wearinessPeaceCashPn(poziom pary)`, gdy bramka relacji otwarta (dotychczasowe `aiAiPeaceRequiredPn(...) > 0`); rozejm bez zmian.
-   - Tick zmęczenia AI↔AI (`tickAiAiWarWeariness`, w tym gracz↔AI): `requiredPn = relBasedPn > 0 ? wearinessPeaceCashPn(level) : 0`. Stałe 185/554 i minimum bilansu `aiAiPeaceRequiredPn` jako podłoga ceny odpadają w tych ścieżkach (bilans nadal sprawdza `isAiAiPeaceBalanceAllowed` przy akceptacji dobrowolnej).
-   - Helper `aiAiPairWearinessLevel(a, b)`.
-4. `gra/src/game/diplomacy-proposals.ts` (sciezka R5: gracz autor → AI respondent): `cenaPokojuPn = basePnCfg × priceMultiplier > 0 ? wearinessPeaceCashPn(wearyLevel) : 0`; pozycja Z (`wearinessPeaceItemPw`) nie jest liczona; `basePn = cenaPokojuPn` (cała cena miastami).
-5. Dokumentacja: `docs/encyklopedia/pojecia/rozejm-pokoj.md` (cena maleje ze zmęczeniem, 615 PW usunięte z opisu, brak progu 3 miast), `docs/encyklopedia/pojecia/zmeczenie-wojna.md` (wiersz „Pokój wymuszony”, adnotacja martwego parametru). `gra/src/data/wikiBundle.json` zregenerowany przez `gra/tools/bundle-wiki-for-game.cjs` (wynik: „22 rozdz. + 185 haseł (~1318 KB)”).
+## Decyzje właściciela użyte
+- DR-1 = A: przy L=1 cena = 0, pokój bez miasta; bez minimum ceny.
+- DR-2: jedna cena wszędzie; bramka relacji (basePnCfg×mnożnik > 0) daje cenę 0 jak dotąd.
 
-## Tabela (a) z uruchomienia kodu
-Źródło: `wearinessPeaceCashPn` i `planEscalatedPeacePayment` z `gra/src/game/war-weariness.ts` (skrypt pomocniczy poza repo, wejście: miasta po 1840 PN = wycena bez zmian, stolica oznaczona jako zakazana, `maxCities` = liczba miast przegrywającego). Kolumny: poziom L | miasta | cena PN | oddane miasta | pokryte PN | nadpłata PN | pełne pokrycie.
-
-| L | miasta | cena PN | oddane | pokryte PN | nadpłata PN | pełne |
+## Tabela (a) — z uruchomienia kodu (`node tools/diplo-peace-price-table-a.cjs`; miasto = 1840 PN, stolica zakazana, bez progu 3 miast)
+| L | cena PN | N=1 | N=2 | N=3 | N=5 | N=8 |
 |---|---|---|---|---|---|---|
-| 0,00 | 1 | 6000 | 1 | 1840 | 0 | nie |
-| 0,00 | 2 | 6000 | 2 | 3680 | 0 | nie |
-| 0,00 | 3 | 6000 | 3 | 5520 | 0 | nie |
-| 0,00 | 5 | 6000 | 4 | 7360 | 1360 | tak |
-| 0,00 | 8 | 6000 | 4 | 7360 | 1360 | tak |
-| 0,25 | 1 | 4500 | 1 | 1840 | 0 | nie |
-| 0,25 | 2 | 4500 | 2 | 3680 | 0 | nie |
-| 0,25 | 3 | 4500 | 3 | 5520 | 1020 | tak |
-| 0,25 | 5 | 4500 | 3 | 5520 | 1020 | tak |
-| 0,25 | 8 | 4500 | 3 | 5520 | 1020 | tak |
-| 0,50 | 1 | 3000 | 1 | 1840 | 0 | nie |
-| 0,50 | 2 | 3000 | 2 | 3680 | 680 | tak |
-| 0,50 | 3 | 3000 | 2 | 3680 | 680 | tak |
-| 0,50 | 5 | 3000 | 2 | 3680 | 680 | tak |
-| 0,50 | 8 | 3000 | 2 | 3680 | 680 | tak |
-| 0,75 | 1 | 1500 | 1 | 1840 | 340 | tak |
-| 0,75 | 2 | 1500 | 1 | 1840 | 340 | tak |
-| 0,75 | 3 | 1500 | 1 | 1840 | 340 | tak |
-| 0,75 | 5 | 1500 | 1 | 1840 | 340 | tak |
-| 0,75 | 8 | 1500 | 1 | 1840 | 340 | tak |
-| 1,00 | 1–8 | 0 | 0 | 0 | 0 | tak |
+| 0 | 6000 | 0 oddane (brak pokrycia → wojna) | 1 (1840, brak pokrycia → wojna) | 2 (3680, brak pokrycia → wojna) | 4 (7360, nadpłata 1360) | 4 (7360, nadpłata 1360) |
+| 0,25 | 4500 | 0 | 1 (1840, wojna) | 2 (3680, wojna) | 3 (5520, nadpłata 1020) | 3 |
+| 0,5 | 3000 | 0 | 1 (1840, wojna) | 2 (3680, nadpłata 680) | 2 | 2 |
+| 0,75 | 1500 | 0 | 1 (nadpłata 340) | 1 | 1 | 1 |
+| 1 | 0 | 0 (pokój bez miast) | 0 | 0 | 0 | 0 |
+Uwaga: „oddane” liczy miasta w planie; pokój zapada tylko gdy pokrycie ≥ cena (lub cena 0). Przy małej liczbie miast i wysokiej cenie wojna trwa (zgodnie z GOAL).
 
-Uwaga do tabeli: przy L = 0 i 1–3 miastach pełnego pokrycia nie ma (pokój nie zapadnie w wymuszeniu; w ofercie dobrowolnej zależy od stopnia i bilansu). Nadpłata przepada (wariant B z FPBAL, bez reszty).
+## Testy (wszystko uruchomione na końcowym stanie, poza wskazanymi)
+- `tsc --noEmit`: exit 0.
+- Nowy `tools/diplo-peace-price-production-paths-test.cjs`: PASS=15 FAIL=0 — 4 scenariusze produkcyjne (A panel/R5, B AI→gracz, C prośby AI↔AI, D tick dobrowolny i wymuszony) wywołują prawdziwy kod (esbuild), plus 11 mutantów (M1–M11) wszystkie wykryte.
+- Rodzina testów dyplomacji/zmęczenia (37 plików): zielone, m.in. ai-war-weariness-peace 96/0, diplo-weariness-pw-behavior 147/0, diplo-peace-price-decay 12/0, diplo-peace-price-wiring 14/0, as-pw-peace-item 39/0, truce-r1 31/0, city-cession-r3 79/0, json-descriptions-sync 19/0. Testy `*-live-test` (diplo-truce-live, diplo-truce-ai-table-live, diplo-truce-saveload-live, diplo-war-peace-live, diplomacy-city-cession-live) przekroczyły limit 120 s w tym środowisku: NIE ZMIERZONO (nie porównano z bazą).
+- 5 bramek referencyjnych: logic-test 213/213, tech-tree-test 20/20, research-test 33/33, unit-replace-test 21/21, combat-test 6/6.
+- Chromium (xvfb, vite + prawdziwy evaluateProposal i renderer): `node tools/pw-weary-table-browser-test.cjs` PASS — ceny z silnika po 11/20/30/40 turach wojny: 4350 / 3000 / 1500 / 0, wiersz „Cena pokoju …” widoczny w DOM, brak starego wiersza Z; zrzuty w /tmp/peace-shots (poza repo). NIE ZMIERZONO: pełna gra z żywą wojną w przeglądarce. Cena „≈6000 w turze 1” NIE jest widoczna w panelu gracza, bo istniejąca reguła blokuje pokój/rozejm przez pierwsze 10 pełnych tur wojny („Pokój i rozejm dostępne po 10 pełnych turach wojny”); pierwsza widoczna cena to 4350 (tura 11, L=0,275).
+- Baza dla porównań: kopia `git archive 5bafaa3c3` w /tmp/basegra (poza repo).
 
-## Testy (surowe wyniki, uruchomione na tym commicie przed commitem)
-- `node_modules/.bin/tsc --noEmit` → exit 0.
-- Pięć bramek referencyjnych: `tools/logic-test.cjs` → „LOGIC OK (213/213)”; `tools/tech-tree-test.cjs` → „20 pass, 0 fail”; `tools/research-test.cjs` → „ALL GREEN”; `tools/unit-replace-test.cjs` → „WSZYSTKIE TESTY ZIELONE (21/21)”; `tools/combat-test.cjs` → „All sanity checks passed.” (wszystkie exit 0).
-- Testy zmęczenia/pokoju (exit 0): `diplo-peace-price-decay-test` PASS=12 FAIL=0 (z candidate bc67097a9, bez zmian w treści); `diplo-peace-price-wiring-test` PASS=14 FAIL=0 (NOWY); `diplo-weariness-forced-peace-test` PASS=14; `diplo-weariness-forced-peace-wiring-test` 13/0; `diplo-weariness-city-only-test` PASS=30; `ai-war-weariness-peace-test` PASS=101; `diplo-weariness-as-pw-peace-item-test` PASS=194 FAIL=0 (zaktualizowane asercje (e) do nowego modelu); `diplo-weariness-pw-behavior-test` 147/0 (zaktualizowane (b3): cena 6000·(1−t/40) z odrzuceniem przy cenie > 0, pokój bez miast przy cenie 0); `diplo-weariness-20-turns-test` PASS=31; `diplo-weariness-migration-peak-test` PASS=7; `diplo-peace-ai-ai-nonnegative-test` 21/0; `diplo-peace-balance-accept-test` 32/0 (zaktualizowane C2: przy 120 turach cena 0 → pokój bez miast); `diplo-peace-stance-wiring-test` 10/0; `diplo-weariness-c615-both-cities-test` PASS=11; `diplo-weariness-display-test` ALL PASSED; `diplo-weariness-stages-view-test` 22/0; `diplo-weariness-pw-row-ui-test` 10/0.
-- Zmiany w starych testach są zmianami oczekiwań wynikających z DR-1 i nowego modelu (nie osłabieniem sprawdzeń); każda ma komentarz z odwołaniem do decyzji.
+## Pomiar weary40-sim (E) — PRAWDZIWA funkcja ceny gry
+`node tools/weary40-sim-measure.cjs --turns 150 --seeds 3 --variant both`. PO = kandydat, `wearinessPeaceCashPn(L)` + miasto 1840 PN + stolica zakazana; PRZED = kod i parametry bazy 5bafaa3c3 z proxy ceny udziałowej i miastem 15 PN. Model uproszczony (patrz nagłówek skryptu: wszystkie wojny od tury 1, siła = liczba jednostek, brak ekonomii). Parametrów gry nie zmieniano.
+| ziarno | wariant | avgWarTurns | cityTransfers | eliminated | warsRunningAtEnd | miasta na koniec | maxShare |
+|---|---|---|---|---|---|---|---|
+| 1 | PO | 30,4 | 8 | 0 | 0 | 11/1/1/1/1 | 0,733 |
+| 1 | PRZED | 25,5 | 4 | 0 | 0 | 4/4/2/1/4 | 0,267 |
+| 2 | PO | 31,93 | 10 | 0 | 0 | 1/1/13/1/1/1 | 0,722 |
+| 2 | PRZED | 25,07 | 4 | 0 | 0 | 1/2/4/4/4/3 | 0,222 |
+| 3 | PO | 29 | 6 | 0 | 0 | 9/1/1/1 | 0,75 |
+| 3 | PRZED | 19 | 0 | 0 | 0 | 3/3/3/3 | 0,25 |
+Wniosek: wszystkie wojny kończą się pokojem (0 trwających na koniec), brak eliminacji (stolica chroniona), wojny trwają ~30 tur (PRZED ~19–25). ALE RYZYKO snowballa: w PO najsilniejsza cywilizacja kończy z 72–75% miast (PRZED 22–27%), pozostali z 1 miastem (stolicą). Przyczyna: cena 3000–4350 PN przy mieście ~1840 PN zmusza przegrywającego do oddania 2 miast na wojnę, a w modelu jedna cywilizacja wygrywa wszystkie pary. Ograniczenie modelu: wartość miasta 1840 PN to jedna wycena; realna wycena zależy od obywateli/budynków.
 
-## Symulacja (b) `gra/tools/weary40-sim-measure.cjs`
-Uruchomiona domyślnie (`--variant both`, seedy 1–3, 150 tur, 4–6 cywilizacji) — wynik surowy zapisany w `scratchpad/weary40-after.txt`. Dla wariantów zwróconych przez skrypt:
-- seed 1: wariant „po”: cityTransfers 4, eliminated 0, avgWarTurns 25,5, warsRunningAtEnd 0; wariant „przed”: cityTransfers 2, eliminated 0, avgWarTurns 10,4, warsRunningAtEnd 0.
-- seed 2: „po”: cityTransfers 4, eliminated 0, avgWarTurns 25,07, warsRunningAtEnd 0; „przed”: cityTransfers 1, eliminated 1, avgWarTurns 9,27, warsRunningAtEnd 4.
-- seed 3: „po”: cityTransfers 0, eliminated 0, avgWarTurns 19, warsRunningAtEnd 0; „przed”: cityTransfers 0, eliminated 0, avgWarTurns 9, warsRunningAtEnd 0.
-NIE ZWERYFIKOWANO: co dokładnie oznacza wariant „przed” w skrypcie (nie sprawdzono, czy odpowiada bazie 76a1739). Wniosek surowy: średni czas wojny rośnie ~2–2,5× (z ~9–10 do ~19–25 tur), eliminacji brak w „po”. To jest pytanie do właściciela (patrz UWAGI).
-
-## BLOKADY (niezrealizowane albo niepotwierdzone)
-1. (e) Chromium / żywy podgląd ceny ≈6000 w t1 wojny i niższej po kilku turach: NIE ZMIERZONO.
-2. (b) Wiki/Civpedia: zmienione tylko dwa hasła (rozejm-pokoj, zmeczenie-wojna); `gra/data/diplomacy.json` nie zawiera tekstów o cenie (sprawdzone grepem: brak „615/185/554/min. 3 miasta”). Komentarz w `gra/src/game/ai.ts:6617` („615, stała C”) nadal opisuje starą cenę — plik spoza allowlisty, nie zmieniono.
-3. (b) Panel dyplomacji / audiencja: NIE zmieniono. Ścieżka info AI→gracz (`diplomacy-proposals.ts`, ok. l. 1436 `wearinessPeaceItemPw(basePnCfg, aiToPlayerLevel)`) nadal liczy pozycję Z (kwadratowa) i jest pokazywana w `ui/diplomacyAcceptanceBalance.ts` (wiersz „Zmęczenie wojną”). To NIE jest jeszcze jedna prawda ceny.
-4. Funkcja `wearinessPeaceItemPw` i krzywa `wearinessPeaceX` zostają w kodzie (używane przez ścieżkę info AI→gracz); do usunięcia po pkt 3.
-5. Pokój zmęczeniowy przy cenie > 0 bez pełnego pokrycia: teraz wojna trwa (wymuszony) — w ofercie dobrowolnej zachowano poprzednią logikę (oferta odrzucona, jeśli bilans nie domyka). Osobny test „tylko stolica + cena > 0 → wojna trwa” jest pokryty przez `diplo-peace-price-decay-test` (P-testy), nie przez test wywołań produkcyjnych.
-6. Brak testu mutanta „powrót do 3 miast” dla nowej ścieżki main.ts (test wiringowy sprawdza obecność funkcji i brak `minMiastPoOddaniu` w ofertach/wymuszeniu, nie zachowanie w grze).
-7. Nie wykonano `npm run build` (zakaz); `vite` nie uruchomiono.
+## Błędy znalezione i naprawione w tej rundzie
+- Rozejm w R5 błędnie dostawał malejącą cenę pokoju → `cenaWymaganaPn` tylko dla pokoju; testy truce-r1 (P8b, M2) dopasowane.
+- Komunikat silniejszej AI mówił „zmęczenie nie obniża tej ceny”, a cena maleje → zmieniony na „cena pokoju maleje ze zmęczeniem wojną”.
+- Stare asercje regexowe (`basePn = cenaPokojuPn`) w diplo-peace-price-wiring-test i as-pw-peace-item-test → `cenaWymaganaPn`.
+- Tool `pw-weary-table-browser-*` i `weary40-sim-measure.cjs` przepisane pod nowy model (sim używa realnej ceny, wariant PRZED z kodu bazy `--basesrc`).
 
 ## UWAGI-DLA-ORKIESTRATORA
-- Pytanie ABC do właściciela (nowe, nie blokuje kodu): symulacja pokazuje dłuższe wojny (średnio ~19–25 tur zamiast ~9–10 w wariancie „przed”). Czy akceptujemy dłuższe wojny kosztem ceny 6000 na starcie, czy zmienić `pelneTur`/cenę startową?
-- Pytanie ABC: w ofercie dobrowolnej przy cenie > 0 i pełnym braku miast przegrywający czeka dalej (poprzednia logika) — potwierdzić, że taka sama zasada ma obowiązywać w pokoju wymuszonym (obecnie tam, dla L < 1, wymuszenia nie ma; przy L = 1 cena = 0).
-- Plik `.claude-cand.patch` (kopia patcha z bc67097a9) leży nieśledzony w korzeniu worktree; NIE jest częścią commita. Nie usunięto go (zakaz rm).
-- `gra/node_modules` zainstalowano w worktree (`npm ci --ignore-scripts`), nie jest śledzony.
-- Wiki/UI/Chromium wymagają osobnej rundy (R4) albo pracy orkiestratora przy merge; propozycja zakresu R4: panel/audiencja na `wearinessPeaceCashPn`, usunięcie `wearinessPeaceItemPw` z ścieżki info, ai.ts komentarz 615, Civpedia pozostałe hasła, Chromium (obejrzeć t1 ≈6000 i spadek).
+1. DECYZJA WŁAŚCICIELA (ABC): snowball w pomiarze — przy cenie 6000×(1−L) i mieście ~1840 PN zwycięzca zbiera 70–75% miast, przegrani zostają ze stolicą. Opcje: A zostawić (zgodnie z GOAL), B limit miast oddawanych na jeden pokój, C przeskalować wycenę miasta (to był wcześniejszy temat CITYSCALE). Nie zmieniałem parametrów.
+2. Panel gracza: pierwsza widoczna cena to tura 11 (bramka 10 tur istniejąca wcześniej); decyzja czy skrócić bramkę — poza zakresem.
+3. Parametry `czlowiek.*` (m.in. `rwProgBonusMax`, `minMiastAi`) w `war-weariness-params.json` zostają, ale są nieużywane w kodzie.
+4. AI przy L=1 nie składa dobrowolnej oferty pokoju (cena 0, `peaceWeakerNoCityVsPlayer` bez zmian); pokój zapada w ticku wymuszonym (cena 0, bez miast).
+5. Zgodność zapisów: cena liczona na bieżąco z poziomu zmęczenia, bez nowych pól w zapisie, bez migracji.
+6. `wikiBundle.json` zregenerowany (22 rozdz. + 185 haseł). `json-descriptions-sync-test` i `diplomacy-city-cession-r3-test` nie dają się porównać na kopii bazy (brak obiektu commita w /tmp/basegra), zielone na kandydacie.
+7. Dług Rust: REPIN modelu ceny pokoju (wearinessPeaceCashPn, planCityPeacePayment) w rust-port.
 
-## Commit
-Commit obejmuje wyłącznie zmienione pliki (bez `git add -A`): 2 dokumenty, `war-weariness-params.json`, `wikiBundle.json`, `diplomacy-proposals.ts`, `war-weariness.ts`, `main.ts`, 9 testów `gra/tools/*.cjs` (8 zmodyfikowanych + 2 nowe), niniejszy raport.
-
-RUNDY: 3/5 (Operator); bez zużycia rund Evaluatora.
-NASTĘPNY KROK: runda 4 Operatora na pozostałe pkt (ścieżka info AI→gracz i UI, ai.ts komentarz, Civpedia, Chromium) albo decyzja ABC o długości wojen z pkt UWAGI; potem Evaluator/FC.
-DEPLOY/PUSH: NIE WYKONANO
+NASTĘPNY KROK: Evaluator (Sonnet) — przegląd diffu, uruchomienie nowego testu produkcyjnego i mutantów, decyzja właściciela w punkcie 1.
+BLOKADY: brak blokad technicznych; niezmierzone: testy *-live (timeout 120 s), pełna gra w Chromium.

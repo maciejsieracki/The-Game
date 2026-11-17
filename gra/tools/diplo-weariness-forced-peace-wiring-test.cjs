@@ -5,7 +5,7 @@
  * planEscalatedPeacePayment z diplomacy-ai-forced-peace.ts). Para: gracz (id 0) ↔ AI (id 1); scenariusz z wyraźnie
  * przegrywającym graczem (udział 0,3) i 6 miastami. Sprawdza:
  *  (a) 100% (40 tur, bez strat) → pokój wymuszony, przegrywający oddaje miasta do zrównoważenia ceny;
- *  (b) nigdy stolica (c0 zakazana), zostaje ≥ minMiastPoOddaniu (3) miast;
+ *  (b) nigdy stolica (c0 zakazana), zostaje co najmniej stolica (bez progu min. 3 miast);
  *  (c) battlePending → pokój ODROCZONY (brak pay/finalize), decyzja 'none';
  *  (d) cena 0 (remis / brak ceny) → pokój BEZ miast;
  *  (e) 80% (32 tury) → NIE pokój wymuszony (tylko propozycja/eskalacja);
@@ -92,10 +92,10 @@ async function main() {
     check('a3 cena 0 przy 100% -> 0 miast oddanych (dispatch: „cena 0 -> pokoj bez miast”)', givenA === 0, givenA);
     check('a4 cena 0 -> brak zaplaty (pay nie wywolany)', a.calls.pay.length === 0, a.calls.pay.length);
 
-    // (b) nigdy stolica; po oddaniu zostaje ≥ minMiastPoOddaniu (3) miast.
+    // (b) nigdy stolica; prog min. 3 miast odpadl (R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1) — po oddaniu zostaje co najmniej stolica.
     const itemsA = fa?.plan?.items.map((i) => i.id) ?? [];
     check('b1 stolica (c0) nigdy nie oddawana', !itemsA.includes(CAPITAL), itemsA);
-    check('b2 po oddaniu zostaje ≥ minMiastPoOddaniu (3) miast gracza', 6 - givenA >= P.przegrywajacy.minMiastPoOddaniu, { left: 6 - givenA, min: P.przegrywajacy.minMiastPoOddaniu });
+    check('b2 po oddaniu zostaje co najmniej stolica (prog min. 3 miast odpadl; parametr minMiastPoOddaniu usuniety)', 6 - givenA >= 1 && P.przegrywajacy.minMiastPoOddaniu === undefined, { left: 6 - givenA });
     check('b3 zakres: lockEnd = karencja po pokoju (40 tur, bez ochrony)', a.calls.finalize[0]?.lock === P.przegrywajacy.karencjaPoPokojuTur, a.calls.finalize[0]);
 
     // (c) bitwa w toku → odroczenie na następną turę, bez zapłaty i bez pokoju.

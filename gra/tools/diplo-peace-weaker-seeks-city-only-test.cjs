@@ -172,12 +172,11 @@ async function main() {
     check('h6 słabsza AI, 80% zmęczenia (32 tury): oferta miasta za pokój, bez pokoju bezwarunkowego',
       weakEndWeary.length === 1 && weakEndWeary[0].type === 'oferuj_miasto_za_pokoj' && weakEndWeary[0].rodzaj === 'pokoj'
       && !weakEndWeary.some(c => c.bezwarunkowy === true), weakEndWeary);
-    // h6b (100% = 40 tur): słabsza AI nadal OFERUJE miasto za pokój (pozytywnie, jak h6) i nie składa pokoju
-    // bezwarunkowego. Pokój wymuszony to efekt tyku dyplomacji (test wiringu osobno), nie propozycja AI.
+    // h6b (100% = 40 tur): R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (DR-1 = A): cena pokoju = 0, wiec AI NIE sklada oferty miasta
+    // ani pokoju bezwarunkowego — pokoj bez miast zapada w tiku zmeczenia (pokoj wymuszony, test wiringu osobno).
     const weakFullWeary = aiDecide(40, 0, 6, 100, 200);
-    check('h6b słabsza AI, 100% zmęczenia (40 tur): dokładnie oferuj_miasto_za_pokoj (rodzaj pokoj), bez bezwarunkowego',
-      weakFullWeary.length === 1 && weakFullWeary[0].type === 'oferuj_miasto_za_pokoj' && weakFullWeary[0].rodzaj === 'pokoj'
-      && !weakFullWeary.some(c => c.bezwarunkowy === true), weakFullWeary);
+    check('h6b słabsza AI, 100% zmęczenia (40 tur, cena 0): brak oferty miasta i brak pokoju bezwarunkowego (pokój zapada w tiku wymuszonym)',
+      weakFullWeary.length === 0, weakFullWeary);
     // h5: silniejsza AI przed końcem zmęczenia (14 tur) nie składa żadnej oferty pokoju/rozejmu ani miasta.
     const strongAi = aiDecide(14, 5000, 6, 200, 100);
     check('h5 silniejsza AI przed końcem zmęczenia (14 tur) nie składa oferty pokoju/rozejmu ani miasta wobec gracza',

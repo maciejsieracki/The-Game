@@ -43,7 +43,7 @@ check('(W3) main.ts: helper poziomu pary AI<->AI', /function aiAiPairWearinessLe
 
 // W4: sciezka R5 w diplomacy-proposals.ts
 check('(W4) R5: cena = wearinessPeaceCashPn(wearyLevel) przy bramce relacji', /const cenaPokojuPn = basePnCfg \* r5Gate\.priceMultiplier > 0 \? wearinessPeaceCashPn\(wearyLevel\) : 0;/.test(PROP));
-check('(W4) R5: wymagana cena = cena pokoju (bez odejmowania Z)', /basePn = cenaPokojuPn;/.test(PROP) && !/cenaPokojuPn - wearyPwItem/.test(PROP));
+check('(W4) R5: wymagana cena = cena pokoju (pokoj) / baza rozejmu, bez odejmowania Z', /basePn = cenaWymaganaPn;/.test(PROP) && !/cenaWymaganaPn - wearyPwItem/.test(PROP));
 check('(W4) R5: pozycja Z (wearinessPeaceItemPw) nie jest liczona dla gracza->AI', !/wearinessPeaceItemPw\(cenaPokojuPn/.test(PROP));
 
 console.log(`diplo-peace-price-wiring-test: PASS=${pass} FAIL=${fail}`);

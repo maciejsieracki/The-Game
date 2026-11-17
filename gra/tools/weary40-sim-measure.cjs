@@ -10,7 +10,9 @@
  * Co jest UPROSZCZONE (model, nie gra; patrz raport):
  *   - mapa 64x36 z 3 miastami/cywilizacje, jednostki bojowe, uproszczona walka (ai-war-defend-home-sim.cjs),
  *   - sila militarna = liczba zywych jednostek (zamiast compareMilitaryStrength z gry),
- *   - cena pokoju = 100 * (udzial_zwyciezcy - 0,5) * 2 PW (cena 0 przy remisie), miasto = 15 PW,
+ *   - PRZED (baza 5bafaa3c3, kod z /tmp/basegra lub --basesrc): proxy ceny = 100*(udzial_zwyciezcy-0,5)*2 PW, miasto = 15 PW;
+ *   - PO (kandydat, R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1): PRAWDZIWA funkcja ceny gry wearinessPeaceCashPn(L)
+ *     (6000 PN x (1-L)), miasto = 1840 PN (12 obywateli, wycena z raportu CITY-BALANCE), stolica zakazana,
  *   - brak ekonomii, mgly, dyplomacji gracza, deklaracji wojen (wojna startuje na poczatku dla wszystkich par),
  *   - brak decyzji AI o pokoju poza tickiem (w silniku zastepczym decideAITurn nie proponuje pokoju).
  *
@@ -40,6 +42,8 @@ const TURNS = parseInt(arg('turns', '150'), 10);
 const SEEDS = parseInt(arg('seeds', '3'), 10);
 const FROM = parseInt(arg('from', '1'), 10);
 const VARIANT = arg('variant', 'both');
+const BASE_ROOT = path.resolve(arg('basesrc', '/tmp/basegra/gra'));
+const CITY_PN_REAL = 1840;
 
 function rng(seed) { let x = seed >>> 0 || 1; return () => { x ^= x << 13; x >>>= 0; x ^= x >> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; }; }
 
@@ -76,10 +80,8 @@ const pk = (a, b) => (a < b ? `${a}_${b}` : `${b}_${a}`);
 /** Parametry wariantu: PO = plik gry; PRZED = proxy (pelneTur 20, bez pokoju wymuszonego). */
 function paramsFor(variant) {
   if (variant === 'po') return WAR_WEARINESS_PARAMS;
-  const P = JSON.parse(JSON.stringify(WAR_WEARINESS_PARAMS));
-  P.zmeczenie.pelneTur = 20;
-  P.zmeczenie.progWymuszonyPokoj = 2.0;
-  return P;
+  // PRZED = parametry bazy (git show / --basesrc), bez zmian wartosci.
+  return JSON.parse(require('fs').readFileSync(path.join(BASE_ROOT, 'data', 'war-weariness-params.json'), 'utf8'));
 }
 
 function runOne(seed, variant, E) {
@@ -131,9 +133,10 @@ function runOne(seed, variant, E) {
     shareOf,
     weakerOf,
     cityCountOf: cityCount,
-    price: (winner, loser) => {
+    price: (winner, loser, level) => {
       const sh = shareOf(winner, loser);
-      const req = Math.max(0, Math.round(100 * (sh - 0.5) * 2));
+      // PO: prawdziwa funkcja ceny gry; PRZED: proxy udzialowe.
+      const req = variant === 'po' ? RT_PO.wearinessPeaceCashPn(level) : Math.max(0, Math.round(100 * (sh - 0.5) * 2));
       priceByPair.set(pk(winner, loser), { required: req, share: sh, loser, winner });
       return {
         requiredPn: req,
@@ -143,7 +146,7 @@ function runOne(seed, variant, E) {
     },
     assets: (loser) => {
       const mine = state.cities.filter(c => c.ownerId === loser).sort((x, y) => (x.id < y.id ? -1 : 1));
-      return mine.map((c, i) => ({ kind: 'miasto', id: c.id, amount: 1, pn: 15, forbidden: i === 0 }));
+      return mine.map((c, i) => ({ kind: 'miasto', id: c.id, amount: 1, pn: variant === 'po' ? CITY_PN_REAL : 15, forbidden: i === 0 }));
     },
     cityCessionOk: () => true,
     battlePending: false,
@@ -191,7 +194,7 @@ function runOne(seed, variant, E) {
     const totalSnap = st.cities.length;
     const startSnap = new Map(warStart);
     priceByPair.clear();
-    const outs = pairs.length ? require(RUNTIME).runWarWearinessTick({ ...deps, turn }) : [];
+    const outs = pairs.length ? (variant === 'po' ? RT_PO : RT_PRZED).runWarWearinessTick({ ...deps, turn }) : [];
     ticks++;
     for (const o of outs) {
       if (o.action === 'forced_peace' || o.action === 'offer_accepted') {
@@ -252,16 +255,21 @@ function runOne(seed, variant, E) {
   };
 }
 
-const RUNTIME = (() => {
-  // Bundle prawdziwego war-weariness.ts (zrodlo gry) do pliku tymczasowego obok skryptu, usuwany na koncu.
+function bundleRuntime(root, tag) {
+  // Bundle prawdziwego war-weariness.ts (zrodlo gry w root) do pliku tymczasowego obok skryptu, usuwany na koncu.
   const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
   const fs = require('fs');
-  const entry = path.resolve(__dirname, '.weary40-entry.ts');
-  const bundle = path.resolve(__dirname, '.weary40-bundle.cjs');
-  fs.writeFileSync(entry, `export { runWarWearinessTick, warWearinessLevel, WAR_WEARINESS_PARAMS } from ${JSON.stringify(path.resolve(__dirname, '..', 'src', 'game', 'war-weariness.ts'))};\n`, 'utf8');
-  esbuild.buildSync({ entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18', outfile: bundle, absWorkingDir: path.resolve(__dirname, '..'), logLevel: 'silent' });
-  return bundle;
-})();
+  const entry = path.resolve(__dirname, `.weary40-entry-${tag}.ts`);
+  const bundle = path.resolve(__dirname, `.weary40-bundle-${tag}.cjs`);
+  const exp = tag === 'po' ? 'runWarWearinessTick, warWearinessLevel, wearinessPeaceCashPn, WAR_WEARINESS_PARAMS' : 'runWarWearinessTick, warWearinessLevel, WAR_WEARINESS_PARAMS';
+  fs.writeFileSync(entry, `export { ${exp} } from ${JSON.stringify(path.resolve(root, 'src', 'game', 'war-weariness.ts'))};\n`, 'utf8');
+  esbuild.buildSync({ entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18', outfile: bundle, absWorkingDir: root, logLevel: 'silent', loader: { '.json': 'json' } });
+  return { bundle, entry, mod: require(bundle) };
+}
+const _po = bundleRuntime(path.resolve(__dirname, '..'), 'po');
+const RT_PO = _po.mod;
+const _pr = (VARIANT === 'po') ? null : bundleRuntime(BASE_ROOT, 'przed');
+const RT_PRZED = _pr ? _pr.mod : null;
 
 function main() {
   const E = S.loadEngine(null, 'weary40');
@@ -278,8 +286,7 @@ function main() {
     }
   }
   S.cleanup(E);
-  try { require('fs').unlinkSync(RUNTIME); } catch (_) { /* ok */ }
-  try { require('fs').unlinkSync(path.resolve(__dirname, '.weary40-entry.ts')); } catch (_) { /* ok */ }
+  for (const b of [_po, _pr]) if (b) for (const f of [b.bundle, b.entry]) { try { require('fs').unlinkSync(f); } catch (_) { /* ok */ } }
 }
 
 if (require.main === module) main();

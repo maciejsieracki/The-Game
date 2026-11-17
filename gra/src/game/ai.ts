@@ -17,7 +17,6 @@ import type { Hex }     from '../types/hex';
 import { Nakladka }     from '../types/hex';
 import type { GameData, BuildingDef } from '../data/loader';
 import aiParamsRaw from '../../data/ai-params.json';
-import diplomacyAcceptanceRaw from '../../data/diplomacy-acceptance-points.json';
 import type { RuntimeUnit } from '../units/setup';
 import { isWarAllInCapitalEnabled, planWarAllInCapital, type WarAllInContext } from './warAllInCapital';
 import {
@@ -6277,9 +6276,9 @@ import {
 import type { GameDifficulty } from './difficulty-cost';
 import { TypCywilizacji } from '../types/player';
 import {
-  WAR_WEARINESS_PARAMS, warWearinessLevel, isWarWeary, loserDespair, despairStage, offerMultiplier,
-  wearyMilitaryShare,
+  warWearinessLevel, wearinessPeaceCashPn, planEscalatedPeacePayment,
 } from './war-weariness';
+import type { PeaceAsset } from './diplomacy-ai-forced-peace';
 import {
   AI_TRADE_GOLD_MAX,
   AI_TRADE_AGREEMENT_SWEETENER_MARGIN,
@@ -6550,7 +6549,7 @@ export interface DiplomacjaInputs {
   tolerancjaRyzyka?: number;
   /**
    * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): miasta TEGO AI z wyceną PW — kandydaci do oddania
-   * w pokoju (zamiast trybutu). Mniej niż AI_MIASTO_PRZEKAZ_MIN_MIAST miast = brak oddania.
+   * w pokoju (zamiast trybutu). Liczba oddanych miast = minimum równoważące cenę (aiPlanMiastaDoOddania), stolica nigdy.
    */
   miastaAI?: ReadonlyArray<MiastoWycenaWejscie>;
   /** R-WEB-PEACE-CITY-CESSION-Q1 r3: ekspansywność AI z civ-ai.json (waga oddawanego miasta). Domyślnie 3. */
@@ -6607,18 +6606,10 @@ export interface DiplomacjaInputs {
  */
 /** R-WEB-PEACE-CITY-CESSION-Q1 r3: bazowy próg słabości AI do oddania miasta (rw). */
 export const AI_MIASTO_PRZEKAZ_RW_BAZA = 0.15;
-/** Minimalna liczba miast AI, by mogło oddać miasto. */
-export const AI_MIASTO_PRZEKAZ_MIN_MIAST = 3;
 /** Próg siły AI (rw), od którego AI żąda miasta gracza w kontrofercie pokoju. */
 export const AI_MIASTO_ZADANIE_RW = 0.7;
 /** Tury wojny, po których silne AI żąda miasta (alternatywnie: zdobycie miasta gracza). */
 export const AI_MIASTO_ZADANIE_TURY_WOJNY = 20;
-/**
- * Cena bazowa pokoju w PW = traktaty.pokoj.punkty z diplomacy-acceptance-points.json (615, stała C; R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615).
- * Jedna prawda: czytane z JSON (nie lustro); test r3 pilnuje zgodności z `treatyBasePnFromConfig('pokoj')`.
- */
-export const AI_MIASTO_CENA_POKOJU_PN: number = (diplomacyAcceptanceRaw as unknown as { traktaty: { pokoj: { punkty: number } } }).traktaty.pokoj.punkty;
-
 /** Próg rw oddania miasta: 0.15 − 0.01·(agresywność − 5); brak danych = agresywność 5. */
 export function aiMiastoPrzekazRwProg(agresywnoscRaw?: number): number {
   const agr = agresywnoscRaw ?? 5;
@@ -6633,38 +6624,39 @@ export function aiMiastoWagaOddawanego(ekspansywnosc?: number): number {
 }
 
 /**
- * Najtańsze miasto AI (niezakazane), którego ważona wycena pokrywa cenę pokoju.
- * Null, gdy AI ma < AI_MIASTO_PRZEKAZ_MIN_MIAST miast lub żadne miasto nie pokrywa ceny.
+ * R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (DR-2): plan miast oddawanych przez AI za pokój przy JEDNEJ cenie
+ * `cenaPn` = wearinessPeaceCashPn(L) (bez mnożników stopnia, bez stałej 615, bez progu min. liczby miast). Liczba miast
+ * = MINIMUM równoważące cenę (planEscalatedPeacePayment: najtańsze pokrywające resztę, inaczej najcenniejsze i kolejne);
+ * wartość miasta AI = cityPn × waga oddającego. Miasta `zakazane` (stolica) nigdy. `full` = cena pokryta w całości;
+ * cena <= 0 → plan pusty i full (pokój bez miast).
  */
-export function aiPickMiastoDoOddania(
+export function aiPlanMiastaDoOddania(
   miasta: ReadonlyArray<MiastoWycenaWejscie>,
-  ekspansywnosc?: number,
-  /** R-WEB-AI-WAR-WEARINESS-PEACE-Q1: eskalacja — niższy próg liczby miast i wyższa wymagana wartość oferty. */
-  opcje?: { minMiast?: number; cenaPn?: number },
-): MiastoWycenaWejscie | null {
-  if (miasta.length < (opcje?.minMiast ?? AI_MIASTO_PRZEKAZ_MIN_MIAST)) return null;
+  ekspansywnosc: number | undefined,
+  cenaPn: number,
+): { miasta: MiastoWycenaWejscie[]; full: boolean } {
   const waga = aiMiastoWagaOddawanego(ekspansywnosc);
-  const cena = opcje?.cenaPn ?? AI_MIASTO_CENA_POKOJU_PN;
-  let best: MiastoWycenaWejscie | null = null;
-  for (const m of miasta) {
-    if (m.zakazane) continue;
-    if (!(m.cityPn * waga >= cena)) continue;
-    if (best === null || m.cityPn < best.cityPn) best = m;
-  }
-  return best;
+  const byId = new Map(miasta.map(m => [m.cityId, m] as const));
+  const assets: PeaceAsset[] = miasta.map(m => ({
+    kind: 'miasto' as const, id: m.cityId, amount: 1, pn: m.cityPn * waga, forbidden: m.zakazane === true,
+  }));
+  const plan = planEscalatedPeacePayment(cenaPn, assets, miasta.length);
+  return { miasta: plan.items.map(i => byId.get(i.id)!).filter(Boolean), full: plan.full };
 }
 
 /**
- * Najtańsze miasto gracza (niezakazane), którego wycena PW pokrywa brakującą cenę pokoju
- * (strona przyjmująca liczy wagę 1, jak w diplomacySumPn). Null gdy żadne nie pokrywa.
+ * Najtańsze miasto gracza (niezakazane), którego wycena PW pokrywa cenę pokoju `cenaPn` (strona przyjmująca liczy wagę 1,
+ * jak w diplomacySumPn). Null gdy żadne nie pokrywa albo cena <= 0 (pokój bez miast — nie ma czego żądać).
  */
 export function aiPickMiastoDoZadania(
   miastaPartnera: ReadonlyArray<MiastoWycenaWejscie>,
+  cenaPn: number,
 ): MiastoWycenaWejscie | null {
+  if (!(cenaPn > 0)) return null;
   let best: MiastoWycenaWejscie | null = null;
   for (const m of miastaPartnera) {
     if (m.zakazane) continue;
-    if (!(m.cityPn >= AI_MIASTO_CENA_POKOJU_PN)) continue;
+    if (!(m.cityPn >= cenaPn)) continue;
     if (best === null || m.cityPn < best.cityPn) best = m;
   }
   return best;
@@ -6676,7 +6668,7 @@ export type AIDiplomacyCommand =
    * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI oddaje własne miasto w pokoju (zamiast trybutu).
    * `cityWeight` = waga oddającego (diplomacyMiastoWagaBilansu z ekspansywnością AI).
    */
-  | { type: 'oferuj_miasto_za_pokoj'; targetId: string; powod: string; cityId: string; cityPn: number; cityWeight: number; rodzaj?: 'pokoj' | 'rozejm' }
+  | { type: 'oferuj_miasto_za_pokoj'; targetId: string; powod: string; cityId: string; cityPn: number; cityWeight: number; /** Kolejne miasta planu (minimum równoważące cenę), poza pierwszym. */ dodatkoweMiasta?: Array<{ cityId: string; cityPn: number }>; rodzaj?: 'pokoj' | 'rozejm' }
   /**
    * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): AI żąda miasta gracza w kontrofercie pokoju.
    */
@@ -7104,13 +7096,11 @@ export function decideAIDiplomacy(
     const aiPeaceTimeOk = turnsAtWarRel >= Math.max(warProfile.minTurWojny, PEACE_PROPOSAL_MIN_WAR_TURNS);
 
     // ---- R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI ODDAJE miasto zamiast trybutu ----
-    // Warunki: wojna z graczem, rw <= 0.15 − 0.01·(agresywność − 5), ≥ 3 miasta, a niezakazane
-    // miasto AI pokrywa cenę pokoju (najtańsze z pokrywających). Brak takiego miasta →
-    // przechodzimy do priorytetu 1 (trybut), jak dotąd. r4: + bramki czasu wojny (R5a/R5b).
+    // Warunki: wojna z graczem, AI słabsza militarnie, a niezakazane miasta AI pokrywają w całości cenę pokoju
+    // (minimum miast). Brak pełnego pokrycia przy cenie > 0 → wojna trwa. r4: + bramki czasu wojny (R5a/R5b).
     const csBlocksCession = inp.isMinorCivSelf === true || rel.isMinorCivPartner === true;
-    // R-WEB-AI-WAR-WEARINESS-PEACE-Q1: zmęczenie wojną + wyraźna przegrana podnoszą próg oddania miasta
-    // (do +rwProgBonusMax), obniżają minimum miast AI i podnoszą wartość oferowanego miasta (eskalacja).
-    // Gracz decyduje o przyjęciu; powtórki ogranicza istniejący cooldown odrzuconych ofert.
+    // R-WEB-AI-WAR-WEARINESS-PEACE-Q1: zmęczenie wojną obniża cenę pokoju (wearinessPeaceCashPn) — AI oddaje tyle miast,
+    // ile równoważy tę jedną cenę. Gracz decyduje o przyjęciu; powtórki ogranicza istniejący cooldown odrzuconych ofert.
     const wearyLevel = rel.stanWojny
       ? warWearinessLevel({
           turnsAtWar: turnsAtWarRel,
@@ -7118,14 +7108,9 @@ export function decideAIDiplomacy(
           turnsSinceCityChange: rel.turnsSinceCityChange,
         })
       : 0;
-    // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: udział w desperacji = udział SIŁY MILITARNEJ (nie rw/Power).
-    const wearyShare = wearyMilitaryShare(rel.silaMilitarnaAI, rel.silaMilitarnaPartner, rw);
-    const wearyDespair = rel.stanWojny && isWarWeary(wearyLevel)
-      ? loserDespair({ level: wearyLevel, share: wearyShare, lostCities: Math.max(0, rel.lostCitiesInWar ?? 0) })
-      : 0;
-    const wearyStage = despairStage(wearyDespair);
-    const wearyCityBonus = wearyStage >= 2 ? WAR_WEARINESS_PARAMS.czlowiek.rwProgBonusMax * wearyDespair : 0;
-    const wearyOfferMult = wearyStage >= 2 ? offerMultiplier(wearyStage, 0) : 1;
+    // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (DR-2): JEDNA cena pokoju = wearinessPeaceCashPn(poziom zmęczenia pary)
+    // (6000 PN × (1 − L)); bez mnożnika stopnia desperacji, bez stałej 615 i bez progu min. liczby miast AI.
+    const cenaPokojuPn = rel.stanWojny ? wearinessPeaceCashPn(wearyLevel) : 0;
     // DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: przy 80% zmęczenia AI NIE składa pokoju bezwarunkowego —
     // obowiązuje istniejąca eskalacja (pokój/rozejm z miastem poniżej). Pokój przy 100% jest wymuszony (tick AI↔AI,
     // war-weariness.ts: runWarWearinessTick; wojny z graczem: patrz temat — gracz nie jest jeszcze objęty wymuszeniem).
@@ -7139,11 +7124,9 @@ export function decideAIDiplomacy(
       // miastem; stara bramka rw (aiMiastoPrzekazRwProg) nie decyduje już o oddaniu miasta wobec gracza.
       && peacePosMil === 'slabsza'
     ) {
-      const wearyMinMiast = wearyDespair > 0 ? WAR_WEARINESS_PARAMS.czlowiek.minMiastAi : undefined;
-      const pick = aiPickMiastoDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc, {
-        minMiast: wearyMinMiast,
-        cenaPn: AI_MIASTO_CENA_POKOJU_PN * wearyOfferMult,
-      }) ?? aiPickMiastoDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc, { minMiast: wearyMinMiast });
+      const cityPlan = aiPlanMiastaDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc, cenaPokojuPn);
+      // Cena > 0 i brak PEŁNEGO pokrycia miastami (np. tylko stolica) → AI nie składa oferty miasta, wojna trwa.
+      const pick = cenaPokojuPn > 0 && cityPlan.full ? cityPlan.miasta[0] : undefined;
       if (pick) {
         // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (wymóg 3): słabsza AI proponuje ROZEJM z miastem
         // w okresie rozejmowym (ta sama reguła rodzaju co zaproponuj_pokoj: aiPeaceProposalKind); potem pokój.
@@ -7155,6 +7138,7 @@ export function decideAIDiplomacy(
           cityId:     pick.cityId,
           cityPn:     pick.cityPn,
           cityWeight: aiMiastoWagaOddawanego(inp.ekspansywnosc),
+          dodatkoweMiasta: cityPlan.miasta.slice(1).map(m => ({ cityId: m.cityId, cityPn: m.cityPn })),
           rodzaj:     cityOfferKind,
         });
         continue;
@@ -7173,7 +7157,7 @@ export function decideAIDiplomacy(
       && rw >= AI_MIASTO_ZADANIE_RW
       && (turnsAtWarRel >= AI_MIASTO_ZADANIE_TURY_WOJNY || (rel.zdobyteMiastaPartnera ?? 0) > 0)
     ) {
-      const pick = aiPickMiastoDoZadania(rel.miastaPartnera ?? []);
+      const pick = aiPickMiastoDoZadania(rel.miastaPartnera ?? [], cenaPokojuPn);
       if (pick) {
         komendy.push({
           type:     'zada_miasto_za_pokoj',
@@ -7234,6 +7218,8 @@ export function decideAIDiplomacy(
     }
     // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: wobec gracza słabsza AI proponuje pokój WYŁĄCZNIE
     // z miastem (blok N1a wyżej). Gdy nie ma miasta do oddania — brak propozycji (ZAŁOŻENIE Z5).
+    // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: przy cenie 0 (L = 1) pokój bez miasta zapada w tiku zmęczenia (pokój wymuszony, DR-1 = A) —
+    // AI nie składa wtedy osobnej, dobrowolnej propozycji (brak pokoju „bezwarunkowego” z ai.ts, decyzja #361).
     const peaceWeakerNoCityVsPlayer = rel.partnerId === '0' && peacePosMil === 'slabsza';
     // R-WEB-AUDIT-PEACE-GATE-MILITARY-STRENGTH-Q1: słabość = siła militarna (peacePosMil), nie rw (Power).
     if (rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && !peaceWeakerNoCityVsPlayer && (peacePosMil === 'slabsza' || peaceSignals.wantsPeace)) {

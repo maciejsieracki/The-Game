@@ -101,7 +101,7 @@ for (const mnoznik of [0.7, 1.0, 1.5]) {
   check(`C0 ${label}: cena pokoju odczytana w turze 10`, cAt(20) !== null && cAt(20) > 0, { cena: cAt(20) });
   for (let t = 20; t <= 40; t++) {
     const C = cAt(t);
-    const Z = M.wearinessPeaceItemPw(C, L_OF(t));
+    const Z = 0; // pozycja Z usunieta (DR-2); zostaje w obiekcie diagnostycznym dla zgodnosci komunikatow
     const proposes = aiDecision({ t, silaAI: 75 });
     const bal = tableBalance(t);
     // (b) DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: 80%+ NIE daje pokoju bezwarunkowego (galezi nie ma w ai.ts);
@@ -156,7 +156,9 @@ for (const t of [20, 30, 40]) {
   const { withWar } = aiToPlayerPeace({ t });
   check(`(f) AI->gracz tura ${t}: brak pozycji Z (wearinessPw undefined), informacja po stronie gracza`,
     withWar.wearinessSide === 'player' && withWar.wearinessInfo && withWar.wearinessInfo.turnsAtWar === t
-    && withWar.wearinessPw === undefined,
+    && withWar.wearinessPw === undefined
+    // JEDNA cena (DR-2): panel AI->gracz pokazuje 6000 x (1 - L), L = t/40 (bramka relacji: cena 0 gdy wycena bazowa 0).
+    && withWar.wearinessInfo.cenaPokojuPn === Math.round(6000 * (1 - Math.min(1, t / 40))),
     { side: withWar.wearinessSide, z: withWar.wearinessPw, info: withWar.wearinessInfo });
 }
 console.log(`diplo-weariness-pw-behavior-test: ${pass} pass / ${fail} fail`);

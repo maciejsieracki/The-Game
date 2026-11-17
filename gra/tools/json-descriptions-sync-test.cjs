@@ -86,7 +86,7 @@ function checkWearinessDescriptions(json) {
     [wz, 'progChetnosci', z.progChetnosci],
     [wz, 'progWzajemnyPokoj', z.progWzajemnyPokoj],
     [wz, 'progKoncaZmeczenia', z.progKoncaZmeczenia],
-    [wp, 'maxMiastNaPokoj', p.maxMiastNaPokoj],
+    [wz, 'pelneTur', z.pelneTur], // (maxMiastNaPokoj usuniety: jedna cena, minimum miast)
   ];
   for (const [text, label, field] of numChecks) {
     const got = labelledNumber(text, label);
@@ -155,9 +155,17 @@ if (warCur && dipCur) {
     // DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1 (ABC właściciela 2026-11-16): celowe zmiany wobec bazy —
     // pełne zmęczenie po 40 turach (było 20) i nowy próg pokoju wymuszonego progWymuszonyPokoj=1,0. Reszta bez zmian.
     let curCmp = cur;
+    // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (decyzja wlasciciela 2026-11-17): celowe zmiany wobec bazy — NOWA sekcja cenaPokoju
+    // (cenaStartPn 6000) oraz USUNIETE parametry limitu/mnoznikow oferty i progu 3 miast (jedna cena, minimum miast):
+    // przegrywajacy.{mnozniStopni, mnoznikNaOdrzucenie, maxMiastNaPokoj, minMiastPoOddaniu}. Reszta wartosci musi byc identyczna.
+    if (rel === WAR_JSON && base && base.przegrywajacy) {
+      for (const k of ['mnozniStopni', 'mnoznikNaOdrzucenie', 'maxMiastNaPokoj', 'minMiastPoOddaniu']) delete base.przegrywajacy[k];
+      curCmp = JSON.parse(JSON.stringify(cur));
+      delete curCmp.cenaPokoju;
+    }
     if (rel === WAR_JSON && base && base.zmeczenie) {
       base.zmeczenie.pelneTur = 40;
-      curCmp = JSON.parse(JSON.stringify(cur));
+      curCmp = JSON.parse(JSON.stringify(curCmp));
       if (curCmp.zmeczenie) delete curCmp.zmeczenie.progWymuszonyPokoj;
     }
     check('a1: ' + rel + ' — wartości bez prefiksu _ równe wersji bazowej ' + BASE + ' (+ celowe: pelneTur 40, progWymuszonyPokoj)',
@@ -186,8 +194,8 @@ if (warCur) {
     checkWearinessDescriptions(m3).length > 0);
 
   const m4 = deepClone(warCur);
-  m4.przegrywajacy.maxMiastNaPokoj = 3;
-  check('b5: mutacja maxMiastNaPokoj 2->3 czerwieni test', checkWearinessDescriptions(m4).length > 0);
+  m4.zmeczenie.pelneTur = 50;
+  check('b5: mutacja pelneTur 40->50 (bez zmiany opisu) czerwieni test', checkWearinessDescriptions(m4).length > 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -200,17 +208,18 @@ const srcDir = path.join(REPO, 'gra', 'src');
 
 // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: jedna funkcja konca zmeczenia — progKoncaZmeczenia czyta wearinessPeaceX,
 // a wearinessUnconditionalEndDue = wearinessPeaceX(...) >= 1 (dawna forma `level >= P.zmeczenie.progKoncaZmeczenia` nieaktualna).
-check('c1: progKoncaZmeczenia czytane przez wearinessPeaceX (skala PW); pokój wymuszony = wearinessForcedPeaceDue (progWymuszonyPokoj, war-weariness.ts)',
-  wwSrc.includes('P.zmeczenie.progKoncaZmeczenia') && wwSrc.includes('return level >= P.zmeczenie.progWymuszonyPokoj;')
+check('c1: progKoncaZmeczenia czytane przez widok (war-weariness-view.ts); pokój wymuszony = wearinessForcedPeaceDue (progWymuszonyPokoj, war-weariness.ts)',
+  readRepoText('gra/src/game/war-weariness-view.ts').includes('P.zmeczenie.progKoncaZmeczenia')
+  && wwSrc.includes('return level >= P.zmeczenie.progWymuszonyPokoj;')
   && !wwSrc.includes('wearinessUnconditionalEndDue'));
 check('c2: progWzajemnyPokoj czytane w warunku wyjścia awaryjnego (war-weariness.ts)',
   wwSrc.includes('lvl >= P.zmeczenie.progWzajemnyPokoj'));
 check('c3: wyjście awaryjne wymaga odrzuceniaDoKapitulacji (war-weariness.ts)',
   wwSrc.includes('st.rejectedOffers >= P.przegrywajacy.odrzuceniaDoKapitulacji'));
-check('c4: stageCityLimit: stopień 1-2 = min(1, maxMiastNaPokoj) (war-weariness.ts)',
-  wwSrc.includes('if (stage <= 2) return Math.min(1, P.przegrywajacy.maxMiastNaPokoj);'));
-check('c5: plan oferty zmęczenia tylko miasta (planEscalatedPeacePayment)',
-  wwSrc.includes("a.kind === 'miasto' && !a.forbidden"));
+check('c4: cena pokoju = jedna funkcja wearinessPeaceCashPn (war-weariness.ts); limit miast wg stopnia i mnozniki oferty usuniete',
+  wwSrc.includes('export function wearinessPeaceCashPn(') && !wwSrc.includes('stageCityLimit') && !wwSrc.includes('offerMultiplier'));
+check('c5: plan oferty zmeczenia tylko miasta (planCityPeacePayment w diplomacy-ai-forced-peace.ts)',
+  readRepoText('gra/src/game/diplomacy-ai-forced-peace.ts').includes("a.kind === 'miasto' && !a.forbidden"));
 check('c6: flaga pakietu domyślnie true (DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT, diplomacy-tick-war-brake.ts)',
   brakeSrc.includes('export const DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT = true;'));
 check('c7: main.ts nadpisuje kryzysTurDoWojny wartością w.n (profil wojny)',

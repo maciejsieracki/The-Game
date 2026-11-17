@@ -179,31 +179,26 @@ function behaviour(W) {
     const wir = W.militaryWearinessWiring(sideA);
     chk('h4: okablowanie: shareOf(1,2)=0,25 i weakerOf(1,2)=1 z sideOf',
       Math.abs(wir.shareOf(1, 2) - 0.25) < 1e-9 && wir.weakerOf(1, 2) === 1);
-    chk('h5: udzial AI w desperacji = udzial sily (300/(300+100)); bez danych = fallback rw',
-      Math.abs(W.wearyMilitaryShare(mil(300, 0), mil(100, 0), 0.9) - 0.75) < 1e-9
-      && W.wearyMilitaryShare(undefined, mil(100, 0), 0.4) === 0.4
-      && W.wearyMilitaryShare(mil(0, 0), mil(0, 0), 0.3) === 0.3);
   }
   return res;
 }
 
 /** Mutacje okablowania main.ts / ai.ts: test statyczny (wiring nie ma czystej funkcji w tym module). */
 const WIRING_MAIN = '...militaryWearinessWiring(diploMilitarySideOf),';
-const WIRING_AI = 'wearyMilitaryShare(rel.silaMilitarnaAI, rel.silaMilitarnaPartner, rw)';
-function wiringOk(mainSrc, aiSrc) {
+// R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: ai.ts nie liczy juz desperacji (wearyMilitaryShare usuniete) — okablowanie tylko main.ts.
+function wiringOk(mainSrc) {
   const cnt = (s, t) => s.split(t).length - 1;
-  return cnt(mainSrc, WIRING_MAIN) === 1 && cnt(aiSrc, WIRING_AI) === 1;
+  return cnt(mainSrc, WIRING_MAIN) === 1;
 }
 
 /** Mutacje zrodla war-weariness.ts: kazda musi czerwienic co najmniej jeden test behawioralny. */
 const MUTANTS = [
   { id: 'M1-ignoruj-silna-regule', from: 'const loser = d.weakerOf ? d.weakerOf(pr.a, pr.b) : (shareA <= 0.5 ? pr.a : pr.b);',
     to: 'const loser = (shareA <= 0.5 ? pr.a : pr.b);', gate: 'slabsza wg sily militarnej (a2)' },
-  { id: 'M2-zloto-w-puli-miast', from: "const pool = assets.filter(a => a.kind === 'miasto' && !a.forbidden && a.pn > 0)",
-    to: "const pool = assets.filter(a => (a.kind === 'miasto' || a.kind === 'zloto') && !a.forbidden && a.pn > 0)", gate: 'brak zlota w ofertach (b)' },
+  // M2 (zloto w puli miast) przeniesiony: planner miast zyje w diplomacy-ai-forced-peace.ts (planCityPeacePayment), test (b) pilnuje behawioralnie.
   { id: 'M3-bez-guardu-jednego-miasta', from: 'if (ownCities <= 1 && !priceZero) { none(); continue; }', to: '/* usunieto guard */',
     gate: 'jedno miasto => brak pokoju (d)' },
-  { id: 'M4-bez-wymogu-miasta', from: 'const cityGiven = priceZero || plan.histogram.miasto > 0;', to: 'const cityGiven = true;',
+  { id: 'M4-bez-wymogu-miasta', from: 'const priceCovered = priceZero || plan.full;', to: 'const priceCovered = true;',
     gate: 'pokoj tylko z miastem (c, e2)' },
   { id: 'M5-karencja-bez-ochrony', from: 'd.finalize(loser, winner, protectedLoser ? L.karencjaChronionegoTur : L.karencjaPoPokojuTur);',
     to: 'd.finalize(loser, winner, L.karencjaPoPokojuTur);', gate: 'karencja 40/100 w ofercie (e1, f)' },
@@ -213,8 +208,6 @@ const MUTANTS = [
     gate: 'udzial sily militarnej (h1, h4)' },
   { id: 'M8-slabsza-odwrotnie', from: "return peaceStanceOf(self, partner) === 'slabsza' ? x : y;",
     to: "return peaceStanceOf(partner, self) === 'slabsza' ? x : y;", gate: 'slabsza wg sily militarnej (h2, h3)' },
-  { id: 'M9-desperacja-rw', from: 'return sum > 0 && own ? own.sila / sum : fallbackRw;', to: 'return fallbackRw;',
-    gate: 'desperacja AI wg sily militarnej (h5)' },
   { id: 'M10-okablowanie-stala', from: 'shareOf: (x, y) => wearinessMilitaryShare(sideOf(x, y).sila, sideOf(y, x).sila),',
     to: 'shareOf: (x, y) => 0.5,', gate: 'okablowanie shareOf (h4)' },
 ];
@@ -222,7 +215,6 @@ const MUTANTS = [
 /** Mutanty okablowania (main.ts / ai.ts): czerwienia test statyczny wiringOk. */
 const WIRING_MUTANTS = [
   { id: 'W1-main-power', file: 'main', from: WIRING_MAIN, to: 'shareOf: (x, y) => requesterShare(objectivePowerForOwner(x), objectivePowerForOwner(y)),' },
-  { id: 'W2-ai-rw', file: 'ai', from: WIRING_AI, to: 'rw' },
 ];
 
 function run() {
@@ -235,14 +227,13 @@ function run() {
   console.log(`baza: ${base.filter((c) => c.ok).length}/${base.length} sprawdzen behawioralnych zielonych`);
 
   const MAIN_SRC = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
-  const AI_SRC = fs.readFileSync(path.join(SRC, 'game', 'ai.ts'), 'utf8');
-  report(wiringOk(MAIN_SRC, AI_SRC), 'okablowanie main.ts/ai.ts: brak wywolania militaryWearinessWiring / wearyMilitaryShare');
+  report(wiringOk(MAIN_SRC), 'okablowanie main.ts: brak wywolania militaryWearinessWiring');
   for (const w of WIRING_MUTANTS) {
-    const src = w.file === 'main' ? MAIN_SRC : AI_SRC;
+    const src = MAIN_SRC;
     const hits = src.split(w.from).length - 1;
     if (hits !== 1) { report(false, `mutant ${w.id}: fragment nie wystapil dokladnie raz (${hits})`); continue; }
     const mutated = src.replace(w.from, w.to);
-    const ok = w.file === 'main' ? wiringOk(mutated, AI_SRC) : wiringOk(MAIN_SRC, mutated);
+    const ok = wiringOk(mutated);
     report(!ok, `mutant ${w.id} (okablowanie) PRZESZEDL - test statyczny go nie wykrywa`);
     console.log(`mutant ${w.id} [okablowanie ${w.file}]: wykryty = ${!ok}`);
   }

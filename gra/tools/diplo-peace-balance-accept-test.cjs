@@ -169,8 +169,8 @@ function playerPeace(warState, actionId = 'pokoj', payload = {}) {
     relation: rel29, stanWojny: true, turn: 80, proposerRespekt: 40, responderRespekt: 60, militaryRatio: 0.7,
     respektWzgledny: 0.45, karaWspolnaGranica: false, difficulty: 'normal',
     responderPlayer: { ownerId: 0, typCywilizacji: 'rzymianie' }, proposerPlayer: { ownerId: 1, typCywilizacji: 'chinczycy' },
-    authorOwnerId: 1, warState: { turnsAtWar: 40, lostCitiesResponder: 0, responderRw: 0.55 },
-  });
+    authorOwnerId: 1, warState: { turnsAtWar: 10, lostCitiesResponder: 0, responderRw: 0.55 },
+  }); // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: tura 10 (cena 4500 PN); przy turze 40 cena = 0 i brak liczby bilansu.
   check('Z1: pokoj/rozejm zlozony przez AI w wojnie: accepted=true (gracz moze przyjac)', res.accepted === true, res);
   check('Z2: ...mimo UJEMNEGO bilansu PW (decyzja wlasciciela 2026-09-07: oferowany pokoj nigdy nie blokowany liczba)',
     typeof res.pwBalance === 'number' && res.pwBalance < 0, res);

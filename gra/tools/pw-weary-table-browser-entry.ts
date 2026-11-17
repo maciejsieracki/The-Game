@@ -1,4 +1,4 @@
-// R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1, runda 2 — zrzut stolu z wierszem „Zmęczenie wojną +N PW".
+// R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 — zrzut stolu z wierszem „Cena pokoju: N PN (zmęczenie X%)" (cena maleje z turami wojny).
 // Wynik evaluateProposal (prawdziwy silnik) trafia do renderPnBalancePanelHtml (prawdziwy renderer tabeli).
 // Stan: window.__pwTable.ready / .states (dane z silnika, do asercji w runnerze).
 import { createNegotiation, negotiationAsProposal, evaluateProposal } from '../src/game/diplomacy-proposals';
@@ -20,9 +20,11 @@ function playerPeace(t: number, pos: 'slabsza' | 'silniejsza') {
 }
 
 const SCENARIOS = [
-  { id: 'wczesna', label: 'Wojna: tura 11 (zmęczenie ok. 0,55) — AI słabsza, pokój od gracza', t: 11, pos: 'slabsza' as const },
-  { id: 'pozna', label: 'Wojna: tura 15 (zmęczenie ok. 0,75) — AI słabsza, pokój od gracza', t: 15, pos: 'slabsza' as const },
-  { id: 'silna', label: 'Wojna: tura 15 — AI silniejsza militarnie (komunikat o cenie)', t: 15, pos: 'silniejsza' as const },
+  { id: 't11', label: 'Wojna: tura 11 (pierwsza po 10-turowej bramce pokoju) — AI slabsza, pokoj od gracza', t: 11, pos: 'slabsza' as const },
+  { id: 't20', label: 'Wojna: tura 20 — cena nizsza', t: 20, pos: 'slabsza' as const },
+  { id: 't30', label: 'Wojna: tura 30 — cena jeszcze nizsza', t: 30, pos: 'slabsza' as const },
+  { id: 't40', label: 'Wojna: tura 40 (zmeczenie 100%) — cena 0', t: 40, pos: 'slabsza' as const },
+  { id: 'silna', label: 'Wojna: tura 20 — AI silniejsza militarnie (komunikat o cenie)', t: 20, pos: 'silniejsza' as const },
 ];
 
 const states: any[] = [];

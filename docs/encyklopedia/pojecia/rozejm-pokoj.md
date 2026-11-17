@@ -115,4 +115,4 @@ Wojna trwa 12 tur. Gracz proponuje rozejm na 10 tur. Po 10 turach pojawia się p
 
 Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1, runda 3). Zasady pokoju (siła militarna zamiast Power, miasto jako jedyny słodzik, usunięcie warunku „czuje się silniejsze” i mnożnika ceny od siły) są wdrożone (kroki 4a i 4b, FALA 685). Dawne wiersze tabeli (odrzucenie rw 0,55, odrzucenie po 10 turach) zostały usunięte, bo bramka `evaluatePeaceAiGate` ich nie używa.
 
-Rozbieżność do zgłoszenia: opis w `war-weariness-params.json` (`przegrywajacy`, stopnie 1–3) wspomina złoto i surowce, a kod (`war-weariness.ts`, plan zapłaty eskalowanej) używa wyłącznie miast. Hasło podaje stan z kodu.
+Od 2026-11-17 (R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1) opis w `war-weariness-params.json` i kod są zgodne: oferta pokoju zmęczenia to wyłącznie miasta za jedną cenę (`wearinessPeaceCashPn`), w liczbie minimalnej równoważącej cenę (`planCityPeacePayment`).

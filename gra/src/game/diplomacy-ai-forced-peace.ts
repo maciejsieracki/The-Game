@@ -215,6 +215,32 @@ export function planPeacePayment(requiredPn: number, assets: readonly PeaceAsset
 }
 
 /**
+ * Plan zapłaty miastami (jedna implementacja: pokój wymuszony, oferty dobrowolne, prośby AI↔AI): WYŁĄCZNIE miasta (R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: złoto i surowce nie wchodzą w ofertę
+ * zmęczenia). Do `maxCities` miast: najtańsze pokrywające resztę, inaczej najcenniejsze i kolejne. Miasta `forbidden`
+ * (stolica / ostatnie) nigdy. maxCities=0 → plan pusty. Czysta, deterministyczna (remisy: mniejsze id).
+ */
+export function planCityPeacePayment(requiredPn: number, assets: readonly PeaceAsset[], maxCities: number): PeacePaymentPlan {
+  const items: PeaceAsset[] = [];
+  let covered = 0;
+  const need0 = Math.max(0, Math.ceil(requiredPn));
+  let rem = need0;
+  const byId = (a: PeaceAsset, b: PeaceAsset): number => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  const pool = assets.filter(a => a.kind === 'miasto' && !a.forbidden && a.pn > 0)
+    .sort((a, b) => a.pn - b.pn || byId(a, b));
+  for (let n = 0; n < maxCities && rem > 0 && pool.length > 0; n++) {
+    const cover = pool.find(c => c.pn >= rem) ?? pool[pool.length - 1]!;
+    pool.splice(pool.indexOf(cover), 1);
+    items.push(cover);
+    covered += cover.pn;
+    rem -= cover.pn;
+  }
+  const histogram = { zloto: 0, surowiec_ilosc: 0, miasto: 0 };
+  for (const it of items) histogram[it.kind] += 1;
+  return { items, coveredPn: covered, shortfallPn: Math.max(0, need0 - covered), full: covered >= need0, histogram };
+}
+
+
+/**
  * Udział siły prośącego (przegrywającego) w sumie siły pary (objective power). Zwycięzca = druga strona.
  * ZAŁOŻENIE „wyraźnie przegrywa" (dispatch B): prośba jest rejestrowana tylko gdy udział prośącego <= LOSER_MAX_SHARE_AT_REQUEST,
  * a wygasa (bez pokoju wymuszonego), gdy prośący jest już STRONGER niż druga strona (udział > LOSER_MAX_SHARE_KEEP).
@@ -266,6 +292,11 @@ export function decideAiPeaceRequest(inp: AiPeaceDecisionInput): AiPeaceDecision
   // Regula wlasciciela 2026-11-09: ujemny bilans ktorejkolwiek AI blokuje pokoj -- takze po limicie tur (wymuszenie).
   if (!isAiAiPeaceBalanceAllowed(inp.balanceAfterPn, inp.loserBalanceAfterPn, inp.minBalancePn)) {
     return { action: 'wait', reason: 'ujemny bilans PW jednej z AI (pokoj AI↔AI zablokowany)', balanceBefore, balanceAfter, turnsSince };
+  }
+  // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (decyzja właściciela): pokój (nie rozejm) przy cenie > 0 bez PEŁNEGO pokrycia
+  // miastami nie zapada — także po limicie tur od prośby („wojna trwa”). Cena 0 → plan pusty i full → pokój bez miast.
+  if ((inp.req.kind ?? 'pokoj') === 'pokoj' && !inp.plan.full) {
+    return { action: 'wait', reason: 'cena pokoju > 0 bez pełnego pokrycia miastami (wojna trwa)', balanceBefore, balanceAfter, turnsSince };
   }
   if (turnsSince >= limit) {
     return { action: 'force', reason: `limit ${limit} tur od prośby`, balanceBefore, balanceAfter, turnsSince };
@@ -358,7 +389,11 @@ export function runAiAiPeaceTick(d: AiPeaceTickDeps): AiPeaceTickOutcome[] {
       const assets = d.assets(loser, winner, skipCities)
         .filter(a => a.kind === 'miasto')
         .map(a => (d.battlePending && a.kind === 'miasto' ? { ...a, forbidden: true } : a));
-      return planPeacePayment(price.requiredPn, assets);
+      // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (DR-2): pokój (nie rozejm) = JEDNA cena; liczba miast = minimum
+      // równoważące cenę (bez limitu 1 miasta), stolica nigdy. Rozejm: dotychczasowy plan (osobna baza PW).
+      return kind === 'pokoj'
+        ? planCityPeacePayment(price.requiredPn, assets, assets.length)
+        : planPeacePayment(price.requiredPn, assets);
     };
     let plan = planFor();
     for (let guard = 0; guard < 8; guard++) {

@@ -47,17 +47,11 @@ Bramki czasu ofert przegrywającego to tura 3 wojny po utracie miasta i tura 6 b
 
 ### Przegrywający
 
-Przegrywający (udział siły 45% lub mniej) zaczyna oferować pokój, gdy jego **desperacja** rośnie. Desperacja łączy zmęczenie, przewagę przeciwnika i straty miast. Ma trzy stopnie:
+Przegrywający (udział siły 45% lub mniej) zaczyna oferować pokój, gdy jego **desperacja** rośnie (jest > 0 przy stopniu ≥ 1; progi stopni 0,25 / 0,45 / 0,65). Desperacja łączy zmęczenie, przewagę przeciwnika i straty miast, ale **nie zmienia już ceny ani liczby oddawanych miast**: stopień decyduje wyłącznie o tym, czy oferta w ogóle się składa.
 
-| Stopień | Co oferuje |
-|--------:|-----------|
-| 1 | jedno miasto (pierwsze z puli) |
-| 2 | jedno miasto |
-| 3 | do dwóch miast |
+Oferta to wyłącznie miasta (decyzja właściciela 2026-11-13) za **jedną cenę** `wearinessPeaceCashPn` (6000 PN × (1 − zmęczenie), decyzja 2026-11-17). Liczba oddanych miast = **minimum równoważące cenę** („nie więcej, nie mniej”); stolica nigdy. Gdy cena > 0, a przegrywający nie ma miast pokrywających ją w całości (np. tylko stolica), pokój nie zapada i wojna trwa (`war-weariness.ts`, `planCityPeacePayment`).
 
-Od decyzji właściciela 2026-11-13 (wariant CITY-ONLY) złoto i surowce nie są walutą pokoju zmęczenia: oferta składa się wyłącznie z miast. Stopień 1 i 2 oddają najwyżej jedno miasto, stopień 3 do dwóch (`war-weariness.ts`, `stageCityLimit`).
-
-Po odrzuceniu oferty przegrywający czeka 3 tury, zanim złoży kolejną, a jego cena rośnie o 20%.
+Po odrzuceniu oferty przegrywający czeka 3 tury, zanim złoży kolejną (cena się nie zmienia — maleje wyłącznie ze zmęczeniem).
 
 ### Ochrona przegrywającego
 
@@ -118,9 +112,6 @@ Wojna trwa 20 tur (20/40 = 0,5), utracono 2 miasta (2 × 0,10 = 0,2). Poziom = 0
 | 0.25 | `war-weariness-params.json:przegrywajacy.progiStopni.0` |
 | 0.45 | `war-weariness-params.json:przegrywajacy.progiStopni.1` |
 | 0.65 | `war-weariness-params.json:przegrywajacy.progiStopni.2` |
-| 2 | `war-weariness-params.json:przegrywajacy.maxMiastNaPokoj` |
-| 3 | `war-weariness-params.json:przegrywajacy.minMiastPoOddaniu` (martwy parametr od R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1; nie steruje ofertami) |
-| 0.2 | `war-weariness-params.json:przegrywajacy.mnoznikNaOdrzucenie` |
 | 3 | `war-weariness-params.json:przegrywajacy.cooldownOfertTur` |
 | 3 | `war-weariness-params.json:przegrywajacy.ochronaMaxMiast` |
 | 3 | `war-weariness-params.json:przegrywajacy.ochronaUtratyWojny` |
@@ -131,6 +122,6 @@ Wojna trwa 20 tur (20/40 = 0,5), utracono 2 miasta (2 × 0,10 = 0,2). Poziom = 0
 
 ## Historia / decyzje
 
-Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Od 2026-11-14 (R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1, decyzja właściciela) stary rabat ceny 60% został usunięty; zmęczenie działa jako pozycja PW (funkcja `wearinessPeaceItemPw` w `war-weariness.ts`). Krzywa kwadratowa wybrana przez właściciela; próg końca zmęczenia 0,8 potwierdzony 2026-11-14. Od 2026-11-17 (R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1) pozycja PW zmęczenia w ofertach pokoju zastąpiona jedną ceną malejącą z L (patrz „Cena pokoju od gracza”); wpisy o „615 PW” i „x²” powyżej są historyczne.
+Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Od 2026-11-14 (R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1, decyzja właściciela) stary rabat ceny 60% został usunięty; zmęczenie działało jako pozycja PW (kwadratowa) — od 2026-11-17 (R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1) pozycja PW została usunięta, a zmęczenie obniża jedną cenę pokoju (`wearinessPeaceCashPn`). Krzywa kwadratowa wybrana przez właściciela; próg końca zmęczenia 0,8 potwierdzony 2026-11-14. Od 2026-11-17 (R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1) pozycja PW zmęczenia w ofertach pokoju zastąpiona jedną ceną malejącą z L (patrz „Cena pokoju od gracza”); wpisy o „615 PW” i „x²” powyżej są historyczne.
 
 R-WEB-DOCS-CIVPEDIA-DIPLO-REDESIGN-Q1 (obrona, runda 2): próg końca zmęczenia 0,8 zamiast „100% wygasa”; bramki ofert 3/6 opisane jako nieosiągalne przed turą 10; panel dyplomacji opisany wg `diplomacyAudience.ts`. Akcja `mutual_peace` nie jest akcją gracza ani AI: to wynik ticku AI↔AI (`war-weariness.ts`, `runWarWearinessTick`) przy progu końca zmęczenia. Rozbieżności JSON wobec kodu (`_wzor` „100% wojna wygasa”, stopień 1 „złoto i surowce”) zgłoszone do orkiestratora.
