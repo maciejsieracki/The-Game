@@ -10,7 +10,7 @@
  * Rozkład po miastach robi `game/empire-recruit-plan.ts` (wiring w main.ts); ten moduł to tylko UI.
  * Liczniki to stan UI sesji (poza zapisem gry) — zamówienia są zwykłymi wpisami kolejek miast.
  * R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: panel NIE jest już oknem modalnym — to sekcja osadzana
- * w panelu armii (empireDetailPanel.ts, „Rekrutacja”, nad wodzem). Host: `[data-erp-root]`, montowany przez
+ * w panelu armii (empireDetailPanel.ts, „Rekrutacja”, pod wodzem i „Idź do wodza”; R-WEB-UI-RECRUIT-LEADER-FIRST-ABOVE-MASS-Q1). Host: `[data-erp-root]`, montowany przez
  * `mountEmpireRecruitSection`. Przycisk w górnym pasku usunięty.
  */
 

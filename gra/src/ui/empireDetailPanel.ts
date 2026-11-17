@@ -85,7 +85,7 @@ export interface EmpireMassRecruitmentUiConfig {
   mountGeneralRecruitment?: (host: HTMLElement) => boolean;
   /**
    * R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: montuje sekcję „Rekrutacja — cała cywilizacja”
-   * w hoście `[data-erp-root]` na samej górze części Rekrutacja (nad wodzem).
+   * w hoście `[data-erp-root]` w części Rekrutacja, pod wodzem i „Idź do wodza” (R-WEB-UI-RECRUIT-LEADER-FIRST-ABOVE-MASS-Q1).
    */
   mountEmpireRecruit?: (host: HTMLElement | null) => void;
   getRecruitFollowGeneralDefault?: () => boolean;
@@ -3023,18 +3023,18 @@ export function renderMassRecruitmentSection(
   let h = `<div class="civ-emp-mass" data-mass-recruitment>`
     + `<div class="civ-emp-mass-hd"><span class="civ-emp-mass-title">Rekrutacja</span>`
     + `<span class="civ-emp-mass-sub">jednostki pogrupowane według miasta</span></div>`
-    // R-WEB-UI-EMPIRE-RECRUIT-PANEL-MOVE-TO-ARMY-PANEL-Q1: rekrutacja całej cywilizacji na samej górze, nad wodzem.
-    + `<div id="civ-empire-recruit-panel" data-erp-root class="civ-emp-erp-host"></div>`
+    // R-WEB-UI-RECRUIT-LEADER-FIRST-ABOVE-MASS-Q1: kolejność: wódz → „Idź do wodza” → masowa rekrutacja (erp, liczniki, pula, miasta).
     + `<div class="civ-emp-mass-leader"><div class="civ-emp-mass-leader-title">Wódz / Generał — rekrutacja w stolicy</div>`
     + `<div data-general-recruitment-card></div></div>`
+    + `<label class="civ-emp-rally-default" style="display:flex;align-items:center;gap:8px;margin:10px 0;padding:9px 11px;border:1px solid #927c4f;border-radius:6px;background:rgba(139,107,46,.18);font-weight:700">`
+    + `<input type="checkbox" data-recruit-follow-general ${massRecruitmentUi.getRecruitFollowGeneralDefault?.() !== false ? 'checked' : ''} />`
+    + `<span>Idź do wodza</span><small style="font-weight:400;opacity:.8"> · nowe jednostki będą maszerować i śledzić jego pozycję</small></label>`
+    + `<div id="civ-empire-recruit-panel" data-erp-root class="civ-emp-erp-host"></div>`
     + `<div class="civ-emp-mass-counters">`
     + `<div class="civ-emp-mass-counter"><div class="k">W KOLEJCE</div>`
     + `<div class="v" data-mass-recruitment-queued>${state.queuedCount}</div></div>`
     + `<div class="civ-emp-mass-counter"><div class="k">UKOŃCZONE</div>`
     + `<div class="v" data-mass-recruitment-completed>${state.completedCount}</div></div></div>`
-    + `<label class="civ-emp-rally-default" style="display:flex;align-items:center;gap:8px;margin:10px 0;padding:9px 11px;border:1px solid #927c4f;border-radius:6px;background:rgba(139,107,46,.18);font-weight:700">`
-    + `<input type="checkbox" data-recruit-follow-general ${massRecruitmentUi.getRecruitFollowGeneralDefault?.() !== false ? 'checked' : ''} />`
-    + `<span>Idź do wodza</span><small style="font-weight:400;opacity:.8"> · nowe jednostki będą maszerować i śledzić jego pozycję</small></label>`
     + `<div class="civ-emp-mass-pool">Skarbiec: <b>${formatRawCount(state.treasury)} złota</b>`
     + ` · Manpower: <b>${formatRawCount(state.manpower)}</b>`
     + `${stock ? ` · Magazyn: <b>${stock}</b>` : ''}</div>`
