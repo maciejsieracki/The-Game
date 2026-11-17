@@ -1,3 +1,9 @@
+## ROBOCZA 1ddbed4b -- 2026-11-17 -- FALA 802: Zastap: Oszczepnik i Oszczepnik Zulu przechodza do Lucznika (lancuch oszczepnik-lucznik-procarz) (testowa)
+
+- tabela zamian (units.json): Oszczepnik i Oszczepnik Zulu (Izijula) -> Lucznik; wyjatek AI w ai-era-unit-promotion.ts; testy promotion-table i archer-slinger
+- Weryfikacja: tsc 0; logic 213/213; promotion-table PASS bez cykli; archer-slinger 51/0; ai-era-unit-promotion 17/0; ai-unit-replace-same-rules 45/0; unit-replace 21/21; combat 6/6; mutacje czerwone (Evaluator i FC)
+- Limity: NIE ZMIERZONO: zywy Chromium okna Zastap; Estolica Inkow nadal -> Procarz (decyzja A: tylko Lucznik, w temacie RANGEDHEALTH); unit-replace-full-cost 39/1 = dlug bazowy; dlug Rust REPIN tabeli zamian
+
 ## ROBOCZA 0295087e -- 2026-11-17 -- FALA 801: Gracz zawsze niebieski, przeciwnik czerwony w KAZDEJ sciezce i roli bitwy (PLAYERBLUE) + minimapa bitwy wg strony gracza (MINIMAP) (testowa)
 
 - Kolor jest przypisany do gracza i przeciwnika, nie do atakujacego i broniacego: Szczegoly bitwy (endDetails1E), panel Obrona muru/garnizon (siegeHud1E), werdykt w podsumowaniu po bitwie (postBattleSummary), preset playtest i oblezenie z rola gracza; minimapa bitwy zbiera kolor przez helper minimapUnitColor (zachowanie bez zmian). Werdykt po bitwie traci zielen, jest niebieski/czerwony wg gracza
