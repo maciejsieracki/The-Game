@@ -3444,3 +3444,16 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Renderer zbiorczo (#330):** Q5, R1, R3, R5, R2, R6 — wszystko na `parity-v2`.
 - **Sprzątanie:** worktrees `wf_c2556b0f-9ea-*` (4 sztuki) usunięte, brak żywych procesów. Dysk 17 GB.
 - **Sloty: 0 aktywnych workflow.** Następny kandydat: K5DOC-T4e (#315) — dispatch r4 na `c120f2373` do napisania (następny tick). Pozostałe zablokowane decyzjami ABC/kontraktem.
+
+### Przebieg — heartbeat sloty (druga połowa godziny), 2026-11-17 ~12:2x UTC
+
+- **Aktywne Workflow przed heartbeatem: 0** (journale po czasie zapisu i ostatniej linii `result`/`failed`).
+- **Parity:** `parity-v2` = `c120f2373` (R6 zintegrowane). Dysk 17 GB.
+- **Start (1 slot):** K5DOC-T4e r4 (#315) — DODATEK r4 dopisany do `00-dispatch.md` (commit `e50106511`), baza `c120f2373`; rozstrzygnięcia D1–D4 bez zmian. Skrypt Haiku Operator (kod silnika, nie grafika). Workflow `wf_ce0d4740-311`.
+- **Dlaczego jeden:** brak innych czystych tematów z dispatchem (patrz wpisy wcześniejsze). Kandydaci zablokowani decyzjami ABC lub kontraktem: mgła (#253 → #278/#279/#334/#335/#337), CRED-HAK (#286/#350), garnizon AI (#327), K5LOOP (#107/#113), ZŁOŻA (#104/#172), R7K7C-WIRING-IMPL (#298/#351). R4 (#322) już ma nazwę "do uruchomienia" w tasku, ale wpis `32c84d6a9` jest w parity wg kolejki — do weryfikacji przed startem.
+
+| Temat | Etap | Model | Od kiedy |
+|---|---|---|---|
+| K5DOC-T4e wpięcie ruchu pieszego w ProdBody (#315, r4) | 1/4 Operator | HAIKU 5.5 | ~12:2x UTC |
+
+**Sloty: 1/4.**
