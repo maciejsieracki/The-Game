@@ -68,6 +68,59 @@ export const IMPROVEMENT_KEYS: readonly string[] = Object.keys(IMPROVEMENTS)
   .filter(k => !k.startsWith('_'));
 
 /**
+ * R-WEB-UI-IMPROVEMENTS-LIST-ORDER-BY-TYPE-Q1 (decyzja właściciela 2026-11-17): KANONICZNA kolejność
+ * listy ulepszeń terenu, grupowana po 7 typach (nagłówki grup to opis, nie elementy listy).
+ * Jedno źródło dla panelu budowy (buildModeHud) i podpowiedzi heksa (hexContextTooltip).
+ * Reguła sortowania: NAJPIERW dostępne (dzisiejszy mechanizm, bez zmiany definicji „dostępne”),
+ * potem niedostępne; w obrębie każdej z dwóch grup kolejność kanoniczna poniżej. Klucz spoza
+ * listy (brak pozycji) trafia na koniec, zachowując kolejność wejściową. Czysto prezentacyjne.
+ */
+export const TERRAIN_IMPROVEMENT_CANONICAL_ORDER: readonly string[] = [
+  // 1. Rolnictwo i żywność
+  'farma', 'irygacja', 'tarasy', 'lodzie_rybackie',
+  // 2. Hodowla
+  'bydlo', 'owce', 'lama', 'stadnina',
+  // 3. Drewno i las
+  'wyrab', 'tartak', 'oboz_lowiecki',
+  // 4. Kamień, glina i sól
+  'kamieniolom', 'glinianka', 'warzelnia_soli',
+  // 5. Kopalnie
+  'kopalnia_miedzi', 'kopalnia_cyny', 'kopalnia_zlota', 'kopalnia_zelaza',
+  // 6. Komunikacja
+  'droga', 'droga_brukowana',
+  // 7. Obrona i terytorium
+  'posterunek', 'fort',
+];
+
+const TERRAIN_IMPROVEMENT_ORDER_RANK: ReadonlyMap<string, number> = new Map(
+  TERRAIN_IMPROVEMENT_CANONICAL_ORDER.map((k, i) => [k, i] as const),
+);
+
+/** Pozycja klucza w kanonicznej kolejności; brak pozycji = na koniec (Infinity). */
+export function terrainImprovementOrderRank(key: string): number {
+  return TERRAIN_IMPROVEMENT_ORDER_RANK.get(key) ?? Number.POSITIVE_INFINITY;
+}
+
+/**
+ * Stabilne sortowanie listy ulepszeń: najpierw niezablokowane (dostępne), potem kanoniczna
+ * kolejność. Nie mutuje wejścia. `isLocked` = true dla pozycji niedostępnej.
+ */
+export function sortTerrainImprovementsCanonical<T>(
+  items: readonly T[],
+  keyOf: (item: T) => string,
+  isLocked: (item: T) => boolean = () => false,
+): T[] {
+  return items
+    .map((item, index) => ({ item, index, locked: isLocked(item), rank: terrainImprovementOrderRank(keyOf(item)) }))
+    .sort((x, y) => {
+      if (x.locked !== y.locked) return x.locked ? 1 : -1;
+      if (x.rank !== y.rank) return x.rank < y.rank ? -1 : 1;
+      return x.index - y.index;
+    })
+    .map(e => e.item);
+}
+
+/**
  * Era multiplier used for terrain-improvement upkeep. Construction Work costs
  * use `scaleTerrainImprovementWorkCost` below; their Stone/Bronze/Iron rates
  * are 0.5/1/2 after FALA2, while upkeep keeps its existing 1/2/4 progression.
