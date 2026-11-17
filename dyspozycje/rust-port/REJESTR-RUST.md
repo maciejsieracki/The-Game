@@ -3196,3 +3196,13 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Dysk:** 9,7 GB — powyżej progu 8 GB dla bramek.
 - **Wolne sloty (3 z 4): powód.** T7a (falanga) wstrzymany do potwierdzenia ścieżki auto (patrz przebieg 05:2x). Pozostali kandydaci zablokowani jak w poprzednich przebiegach (#253, #285, #286, #358, #304→#310, #113→#107/#109/#112, #315 decyzja kosztu per jednostka).
 - **Otwarte decyzje ABC (w czacie):** #327, #358.
+
+### Przebieg — heartbeat (2026-11-17 ~06:18 UTC): 2/4 aktywne, dysk 11 GB
+
+- **Aktywne Workflow (2/4):**
+  - K5DOC-T7b odwrót (`wf_c345eac0-607`): Operator PASS-WITH-NOTES `5141e9471`, Ewaluator PASS-WITH-NOTES, Obrona PASS-WITH-NOTES `9b5a31f15`. Etap: FC (Sonnet). Nota Ewaluatora: mutant `d_min <= 1.0` → `<` przeżywa (brak wektora na gałąź pina :7209). Do kolejnej rundy/T8.
+  - K5DOC-T7a falanga (`wf_30e2308d-50d`): dispatch `36eec80db` na `claude/rust-sivvrn`, baza `f85622878`. Zakres: port funkcji falangi (`is_phalanx`, `phalanx_line_front`, `phalanx_action_decide`, `phalanx_step_decide`); wiring poza zakresem (ścieżka auto omija falangę — zapisane w dispatchu).
+- **Krok 2:** T7b czeka na FC; po PASS → refs/keep, push wip, runda integracyjna Operatora z pełnym `cargo test`, FF.
+- **Krok 3:** usunięte cache po zintegrowanych tematach: `ev_t6_target`, `t5b-ev-target`. Nie ruszane: `tgt-t7b` (T7b w użyciu).
+- **Wolne sloty (2 z 4): powód.** Renderer (Opus) wymaga bramki przy ≥12 GB bez równoległych buildów; dysk 11 GB z działającym cargo T7b. Wariant skryptu Workflow z Operatorem na Opus wymaga zgody (zasady: Opus tylko dla grafiki). Pozostali kandydaci zablokowani jak wcześniej.
+- **Otwarte decyzje ABC (w czacie):** #327, #358.
