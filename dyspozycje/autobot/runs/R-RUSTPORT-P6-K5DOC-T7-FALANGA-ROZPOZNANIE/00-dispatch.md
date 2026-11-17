@@ -10,3 +10,10 @@ Nie pisz kodu, nie zmieniaj `rust-port/**`, nie uruchamiaj cargo (dysk < 8 GB), 
 
 ## WYJŚCIE
 Zapisz `dyspozycje/autobot/runs/R-RUSTPORT-P6-K5DOC-T7-FALANGA-ROZPOZNANIE/01-rozpoznanie.md`: pin (mapa funkcji z liniami), Rust (co jest / czego brakuje), zależności, allowlista, wektory, NIE_ZMIERZONO. STATUS (PASS | BLOCK) i jedna linia rekomendacji. Commit tylko tego pliku (jawny `git add`, bez nazwy modelu w trailerach).
+
+## DODATEK r2 — BAZA NADPISANA (po integracji T4b i T4c)
+
+- Baza rozpoznania: **`f85622878`** (parity-v2 z T4a, T4b, T4c, T5a, T5b, T6). Stara baza `32c84d6a9` nieaktualna.
+- T4b (`_advanceStep`, `siege_tactics_advance.rs`) i T4c (`_doMove`, `siege_tactics_move_effects.rs`) są zintegrowane — uwzględnij je w sekcji „co już istnieje”.
+- Rozpoznanie tylko do odczytu: `git show f85622878:<ścieżka>`, `git grep` na `f85622878` i `07d2fbd72`. Bez cargo, bez zmian w `rust-port/**`, bez push.
+- Wynik: `01-rozpoznanie.md` w tym katalogu (commit przez orkiestratora po odbiorze).
