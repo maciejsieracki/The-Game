@@ -1,0 +1,1 @@
+# DODATEK 0 (orkiestrator, 06:32 UTC) — runda 1. cand = pełne SHA origin/main (bbaa3b27c2dbea5843d8e540b8b58cbf9994b7ea). Temat dotyka war-weariness.ts — NIE uruchamiaj równolegle innych tematów w tym pliku. Zmiana gry → po FC PASS wdrożenie jako FALA. Dług Rust REPIN war-weariness.
