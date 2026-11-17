@@ -28,3 +28,15 @@ Podpiąć ruch pieszego (krok `advance_step_decide` → `do_move_effects`) w `Pr
 ## KRYTERIA KOŃCA
 1. Wektory z pinu zielone; mutacje FAIL; wiring ProdBody pokryty testem end-to-end (sekwencja tury z ruchem pieszego).
 2. Commit jawnym `git add` (nigdy `-A`), bez `Cargo.lock`, bez push do parity. Raport `01-operator-r1.md`.
+
+## DODATEK r2 (orkiestrator, po BLOCK r1: brak kodu z powodu czterech decyzji technicznych D1–D4)
+Decyzje podejmuje orkiestrator (reguła 8). Wykonawca NIE wybiera.
+- BAZA r2: `origin/rust-port/parity-v2` = `760be5187`. Worktree MUSI być przełączony na tę bazę (r1 zostawiła detached na `d44d5b982`). Nie rozpoczynaj od worktree r1.
+- D1 (dane terenu dla ProdBody): wprowadź trait `MoveTerrain` w `siege_tactics_move_effects.rs` (passable, move_cost, is_ford, combat_terrain_name, mnożnik kawalerii). ProdBody dostaje pole `terrain: Option<Box<dyn MoveTerrain>>`. Gdy `None` i ruch jest wymagany → zwróć jawny błąd (`MissingTerrain`), NIE domyślną wartość. Dane terenu dostarcza adapter; w testach — implementacja testowa.
+- D2 (czas kroku): `do_move_effects` nie dostaje czasu. Czas kroku (STEP_GAP_MS = 70 z pinu `battleScene.ts:1011`) liczy adapter (zgodnie z wariantem synchronicznym `siege_walk_to`). Nie zmieniaj `LoopBody` w tej rundzie.
+- D3 (occByKey): pole `occ_by_key` w `ProdBody` (mapa zajętości wg klucza pola). Zainicjalizowane przez konstruktor; aktualizowane przez `do_move_effects` przez `MoveWorld::occ_mut`.
+- D4 (podział): ta runda realizuje WYŁĄCZNIE **T4e-0**: typ `MoveTerrain`, pola `terrain` i `occ_by_key` w `ProdBody`, wiring ruchu w jednej ścieżce (krok → `do_move_effects`) z wektorami dla passable i occ. **T4e-1** (pełne `_advanceStep` 1–10, mutacje, kawaleria, brody) to osobny temat po integracji T4e-0.
+- Bramki i mutacje jak w r1 (fmt, clippy -D warnings, `p6_k5doc_t4e`, `--all-targets`, mutacje a/b/c). Mutacje dla T4e-0: (a) pominięcie `occ_mut` update; (b) brak błędu `MissingTerrain` (domyślna wartość); (c) odwrócenie kolejności occ/facing.
+- DYSK: ≥ 8 GB przed startem (`df -h /`). Przy < 8 GB: BLOCK INFRA z liczbą GB.
+- Trailery commitów: BEZ nazwy modelu (#289).
+- Raport `02-operator-r2.md`; commit jawnym `git add`, bez `Cargo.lock`, bez push do parity.
