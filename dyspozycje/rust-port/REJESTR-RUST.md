@@ -3261,3 +3261,13 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **G5 normalizacja (#332), r3:** dispatch gotowy (`814a24102`), czeka na zakończenie T7a r3.
 - **T7b (#342), r4:** po G5 r3, baza `61ffc110f` (wip, nie PASS).
 - **Brak integracji i brak sprzątania w tym ticku** (worktree T7a r3 żywy, nie ruszam).
+
+### Przebieg — T7a falanga zintegrowany (FF parity-v2 = 7fcef940b); G5 r3 uruchomiony jako jedyny worker (2026-11-17 ~08:1x UTC)
+
+- **#261 T7a falanga — FC PASS-WITH-NOTES** (FC `40d04da4e`, kod integracyjny `7fcef940b`). Bramki Operatora r3 na drzewie identycznym z `7fcef940b` (`rust-port/` bit-w-bit): `cargo clippy --all-targets -- -D warnings` EXIT 0; `cargo test --all-targets --no-fail-fast` EXIT 0 (515 `ok`, 0 FAILED); `p6_k5doc_t7a` 10/10. Mutacje (a)–(e) FAIL (tolerancja 2→3, pominięty filtr `primary_ranged`, negacja gałęzi `is_phalanx`, usunięcie +6 za sąsiada, `nr >= BF_ROWS`→`>`). Mutant `d_enemy > d_now` przeżył i jest równoważny (Manhattan zmienia się o ±1).
+- **Integracja:** `parity-v2` był dokładnie bazą T7a (`f85622878`), więc FF bez merge. Osobnej rundy integracyjnej nie uruchamiałem — test już był zrobiony na identycznym drzewie (potwierdzone `git diff 64fce9ed2 7fcef940b -- rust-port` puste). Readback `parity-v2` = `7fcef940b`.
+- **Zachowane (wip):** `rust-port-wip/p6-k5doc-t7a-r3-{ob,fc,ev}`; `refs/keep/...-T7A-FALANGA-r3-{ob,fc}` (lokalnie — push refs/keep odrzucany).
+- **Uwagi do rejestru (z FC):** wariant Schedule z dispatchu nie istnieje w pinie dla falangi (callback `_doMove` = `done()`, `battleScene.ts:6635`) — udokumentowane w nagłówku modułu. Moduł nie ma jeszcze wołającego (wiring T8/#113). Dług `norm_name` NFD (tylko U+00C0..U+017F).
+- **Sprzątanie:** usunięte 3 worktrees rundy T7a r3 (`-2`, `-3`, `-4`) i `-1` (locked, po zakończeniu). Dysk 18 GB.
+- **Okno dla G5 r3:** brak aktywnych workflow i `cargo` przed startem; dysk ≥ 12 GB. **G5 r3 (#332) uruchomiony** jako jedyny worker (`wf_4f452094-b88`, skrypt Opus, baza zgodna z DODATKIEM r3 `02b07a83e`).
+- **Następnie:** T7b r4 (baza `61ffc110f`) dopiero po G5 r3.
