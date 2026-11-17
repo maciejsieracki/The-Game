@@ -3021,3 +3021,14 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Otwarte uwagi FC:** Evaluator zauważył, że wpis R3 w §4 wiąże `river_render_paths` z `rivers[]`; `landRiverRenderPath`/`mediumRiverRenderPath` czytają też `map.hexes` (`scene.ts:1317-1318`). Obrona: nie czyta `rzeka.obecna`, bo funkcje są w `gen-helpers.ts` (nie w render). Do przeglądu przy integracji renderera (#319/#330).
 - **Aktywne Workflow (2/4):** K5DOC-T6 jazda, Evaluator (Sonnet), `wf_6d014d2a-144`; K5DOC-T5b strzelec-marsz, Operator (Haiku), `wf_5291e068-ccd`.
 - **Krok 1 (sloty):** 2/4. Wstrzymane: dysk 7,1 GB < 8 GB (nowy temat z kodem Rust). Brak czystego tematu docs-only (#325 to komentarze w kodzie Rust, #326/#357 to procesowe).
+
+### Przebieg — T5b runda 1 zakończona FAIL/BLOCK INFRA; DODATEK r2 wypchnięty (2026-11-17 ~02:xx UTC)
+
+- **Temat:** K5DOC-T5b strzelec-marsz (#260), ID `R-RUSTPORT-P6-K5DOC-T5B-MARSZ`, wf `wf_5291e068-ccd`.
+- **Runda 1:** Operator BLOCK INFRA (dysk 2,7 GB, cargo nie uruchomione); Ewaluator FAIL (brak bramek cargo; mutacje Rust nie wykonane; lektura APPROACH w obronie); FC FAIL. Kod i wektory generatora (621 przypadków, bajt-w-bajt) są w bazie r2.
+- **Refy zabezpieczające:** `refs/keep/R-RUSTPORT-P6-K5DOC-T5B-OP_R1-op-r1` = `2701a2065`, `…-OB_R1-ob-r1` = `6a2ded8bb`, `…-EV_R1-ev-r1` = `83e67bad6`, `…-FC_R1-fc-r1` = `412eefb81`. Gałąź `rust-port-wip/R-RUSTPORT-P6-K5DOC-T5B-MARSZ` = `412eefb81` (push zrobiony).
+- **Sprzątanie:** usunięte 4 worktree rundy 1 (`wf_5291e068-ccd-1..4`), ok. 4,8 GB. Dysk 8,2 GB.
+- **Odstępstwo od procedury:** pliki z keep-refs są w repo; push refs/keep bywa odrzucany przez proxy (#288), więc zabezpieczenie opiera się na gałęzi WIP i lokalnych refach.
+- **DODATEK r2:** `a68da9f14` na `claude/rust-sivvrn`. Nowa baza `6a2ded8bb` (kod r1 + komentarze obrony). Zakres: bramki cargo z kontrolą dysku przed każdą, mutacje (a), (b), (d) na Rust, (c) z dowodem równoważności.
+- **Start r2: WSTRZYMANY.** Dysk 8,2 GB, ale Ewaluator T6 (`wf_6d014d2a-144`, worktree `-144-2`) nadal działa i buduje; poprzednie odczyty spadały do 2,7 GB. Start r2 po zakończeniu T6 i jego sprzątaniu.
+- **Aktywne Workflow:** 1/4 (T6, Ewaluator, Sonnet). Wolne sloty: 3 — dysk poniżej progu startów z kodem Rust, plus brak czystych tematów docs-only (patrz wpis DOC-323).
