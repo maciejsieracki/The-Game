@@ -1133,6 +1133,341 @@ pub mod visibility {
             })
             .collect()
     }
+
+    /// R-RUSTPORT-P4-1C-FOG-VIEW-R1 (#253, #335): producent `FogViewDto` (mgla aktywnego fotela) z
+    /// [`PlayableState`](crate::domain::playable::PlayableState), 1:1 z `refreshFog` weba.
+    ///
+    /// Pin `07d2fbd72` (`gra/src/main.ts`):
+    /// * `ownPlayerVisibleHexes` (`:12968-12985`): jednostki, miasta (`citySightRadius`, `sight <= 0`
+    ///   pomijane) i forty/posterunki (`fortSightSources`) fotela `ME()`;
+    /// * `currentVisible` (`:12995-13039`): unia z `currentVisibleForOwner(oid)` dla kazdego ownera AI
+    ///   (`aiOwnerCivMap.keys()`), z ktorym `allianceFormalKindBetween(activeDeals, ME(), oid) !== null`;
+    ///   pusta -> krag startu `playerStartHexFor(ME())` o promieniu `startRevealRadius`, inaczej pusta;
+    /// * `currentVisibleForOwner` (`:13059-13075`): `computePlayerVisibility` ownera (bez `startHex`)
+    ///   + unia z `ownPlayerVisibleHexes()`, gdy owner nie jest `ME()` i ma sojusz z `ME()`;
+    /// * `refreshFog` (`:13475-13513`): `addExplored(exploredByHuman.get(ME())!, vis)`,
+    ///   `exploredForRender = exploredSetForRender(explored, ALL_LAND_KEYS, revealAllLand)`
+    ///   (`:12864-12866`, `visibility.ts:241-250`), `useFogRender = fogOn || revealAllLand`; bez mgly
+    ///   (`else`, `:13505-13513`) oba zbiory = `ALL_KEYS`.
+    ///
+    /// Decyzje techniczne (raport `01-operator-r1.md`):
+    /// * Z-FOG-1: `PlayableState` nie niesie `ME()`, `exploredByHuman`, `fogOn`, `revealAllLand`,
+    ///   `playerStartHexByOwner` ani `startRevealRadius` - podaje je wolajacy ([`FogViewInputs`],
+    ///   [`ExploredByHuman`]); brak wpisu fotela w `exploredByHuman` = blad (web `!` -> wyjatek).
+    /// * Z-FOG-2: eksploracja per fotel - render czyta `exploredByHuman.get(ME())` (dispatch; na pinie
+    ///   `explored` jest tym samym obiektem co wpis jedynego fotela, `main.ts:13759`).
+    /// * Z-FOG-3: `aiOwnerCivMap.keys()` = gracze stanu z `is_human == false`; kultura miasta web
+    ///   `(c as {kultura?}).kultura ?? 0` = `PlayableCity::culture` (konwencja producentow wojny);
+    ///   `cityBorderRadius` z domyslnymi `FALLBACK_CULTURE_PARAMS` (web domyslny argument).
+    /// * Z-FOG-4: kolejnosc `fog.state` = kontrakt §1.4 (`r`-major, `q`-minor) - jak `map.hexes`.
+    /// * Z-FOG-5: kod heksa (D-DTO-10 = A): `2` w `vis`, `1` w `exploredForRender`, inaczej `0`; bez
+    ///   mgly (`!useFogRender`) kazdy heks `2`, `fog_active = false` (konsument: `renderer/src/view/fog.rs`).
+    pub mod fog_view {
+        use std::collections::{BTreeMap, BTreeSet};
+        use std::fmt;
+        use std::sync::OnceLock;
+
+        use civ_view_model::{FogState, FogViewDto};
+
+        use super::{
+            add_explored, all_reveal_land_keys, build_unit_sight_resolver,
+            compute_player_visibility_with_extra, compute_visible_at, explored_set_for_render,
+            ComputePlayerVisibilityOptions, PlayerVisibilityCity, UnitSightDef,
+        };
+        use crate::data::units_combat::parse_units;
+        use crate::domain::diplomacy::{ActiveDeal, CivilizationPair, TreatyKind};
+        use crate::domain::fort_territory::fort_sight_sources;
+        use crate::domain::order_effects_culture::{city_border_radius, FALLBACK_CULTURE_PARAMS};
+        use crate::domain::pathfinding::ruch_jednostek::{Klucz, RuchJednostka, RuchMapa};
+        use crate::domain::playable::{PlayableFortKind, PlayableState};
+        use crate::domain::playable_movement::{klucz_of, ruch_jednostka_of, ruch_mapa_from_state};
+        use crate::domain::terrain::{FortImprovementType, FortNode};
+        use crate::domain::PlayerId;
+
+        /// Web `exploredByHuman` (`main.ts:13759`): odkryte heksy per fotel czlowieka.
+        pub type ExploredByHuman = BTreeMap<PlayerId, BTreeSet<Klucz>>;
+
+        /// Web wynik `allianceFormalKindBetween` (`game/diplomacy-treaties.ts:380-389`).
+        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        pub enum AllianceFormalKind {
+            /// `'wojskowy'` (`sojusz_pelny`).
+            Wojskowy,
+            /// `'obronny'` (`sojusz_defensywny`).
+            Obronny,
+        }
+
+        /// Web `allianceFormalKindBetween(state, a, b)`: traktaty pary (`dealsForPair`), pelny przed
+        /// obronnym; inne rodzaje (pakt, handel, granice) -> `None`.
+        pub fn alliance_formal_kind_between(
+            deals: &[ActiveDeal],
+            a: PlayerId,
+            b: PlayerId,
+        ) -> Option<AllianceFormalKind> {
+            let pair = CivilizationPair::new(a, b);
+            let in_pair =
+                |d: &&ActiveDeal| CivilizationPair::new(d.parties.first, d.parties.second) == pair;
+            if deals
+                .iter()
+                .filter(in_pair)
+                .any(|d| d.kind == TreatyKind::FullAlliance)
+            {
+                return Some(AllianceFormalKind::Wojskowy);
+            }
+            if deals
+                .iter()
+                .filter(in_pair)
+                .any(|d| d.kind == TreatyKind::DefensiveAlliance)
+            {
+                return Some(AllianceFormalKind::Obronny);
+            }
+            None
+        }
+
+        /// Wejscia `refreshFog`, ktorych `PlayableState` nie niesie (Z-FOG-1).
+        #[derive(Debug, Clone, Copy)]
+        pub struct FogViewInputs<'a> {
+            /// Web `ME()` (`main.ts:13729-13731`, `humanSeats.activeHumanOwnerId`).
+            pub active_seat: PlayerId,
+            /// Web `fogOn` (`main.ts:12801`).
+            pub fog_on: bool,
+            /// Web `revealAllLand` (`main.ts:12804`).
+            pub reveal_all_land: bool,
+            /// Web `playerStartHexByOwner` (`main.ts:3022-3029`).
+            pub player_start_hex_by_owner: &'a BTreeMap<PlayerId, Klucz>,
+            /// Web `startRevealRadius` (`startRevealRadiusForDifficulty`).
+            pub start_reveal_radius: f64,
+        }
+
+        /// Wynik producenta: DTO oraz zbiory, z ktorych powstal.
+        #[derive(Debug, Clone, PartialEq, Eq)]
+        pub struct FogView {
+            /// `FogViewDto` rownolegle do `map.hexes` (Z-FOG-4).
+            pub fog: FogViewDto,
+            /// Web `useFogRender` (`fogOn || revealAllLand`) = `ViewerDto.fog_active`.
+            pub fog_active: bool,
+            /// Web `vis = currentVisible()`.
+            pub visible: BTreeSet<Klucz>,
+            /// Web `exploredForRender`.
+            pub explored_for_render: BTreeSet<Klucz>,
+        }
+
+        /// Blad producenta mgly.
+        #[derive(Debug, Clone, PartialEq, Eq)]
+        pub enum FogViewError {
+            /// Web `exploredByHuman.get(ME())!` bez wpisu (wyjatek w JS).
+            MissingExploredSeat(u64),
+        }
+
+        impl fmt::Display for FogViewError {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                match self {
+                    Self::MissingExploredSeat(seat) => {
+                        write!(f, "exploredByHuman nie ma wpisu fotela {seat}")
+                    }
+                }
+            }
+        }
+
+        impl std::error::Error for FogViewError {}
+
+        fn unit_sight_defs() -> &'static [UnitSightDef] {
+            static DEFS: OnceLock<Vec<UnitSightDef>> = OnceLock::new();
+            DEFS.get_or_init(|| {
+                parse_units()
+                    .expect("embedded units.json must parse")
+                    .iter()
+                    .map(UnitSightDef::from_unit_record)
+                    .collect()
+            })
+        }
+
+        fn owner_raw(id: PlayerId) -> i64 {
+            i64::try_from(id.get()).expect("PlayerId miesci sie w i64")
+        }
+
+        /// Web `cityBorderRadius(kultura)` z domyslnymi parametrami (`citySightRadius`, `okolica.ts:55`).
+        fn border_radius(kultura: f64) -> f64 {
+            f64::from(city_border_radius(kultura, &FALLBACK_CULTURE_PARAMS))
+        }
+
+        fn fort_nodes(state: &PlayableState) -> Vec<FortNode> {
+            state
+                .forts
+                .iter()
+                .map(|f| FortNode {
+                    q: f.q,
+                    r: f.r,
+                    owner_id: owner_raw(f.owner_id),
+                    kind: match f.kind {
+                        PlayableFortKind::Fort => FortImprovementType::Fort,
+                        PlayableFortKind::Posterunek => FortImprovementType::Posterunek,
+                    },
+                    contested_useless: f.contested_useless,
+                })
+                .collect()
+        }
+
+        /// Web `computePlayerVisibility({ map, playerUnits, playerCities, unitSight, extraSightSources:
+        /// fortSightSources(fortNodes, owner) })` bez `startHex` - wspolny rdzen `ownPlayerVisibleHexes`
+        /// i `currentVisibleForOwner`.
+        fn owner_visibility(
+            state: &PlayableState,
+            map: &RuchMapa,
+            owner: PlayerId,
+        ) -> BTreeSet<Klucz> {
+            let units: Vec<RuchJednostka> = state
+                .units
+                .iter()
+                .filter(|u| u.owner_id == owner)
+                .map(|u| ruch_jednostka_of(state, u))
+                .collect();
+            let cities: Vec<PlayerVisibilityCity> = state
+                .cities
+                .iter()
+                .filter(|c| c.owner_id == owner)
+                .map(|c| {
+                    let (q, r) = klucz_of(c.position);
+                    PlayerVisibilityCity {
+                        q,
+                        r,
+                        population: f64::from(c.population),
+                        kultura: Some(f64::from(c.culture)),
+                    }
+                })
+                .collect();
+            let resolver = build_unit_sight_resolver(unit_sight_defs(), None);
+            let unit_sight = |u: &RuchJednostka| resolver(u);
+            let opts = ComputePlayerVisibilityOptions {
+                map,
+                player_units: &units,
+                player_cities: &cities,
+                unit_sight: &unit_sight,
+                start_hex: None,
+                start_reveal_radius: None,
+            };
+            let extra = fort_sight_sources(&fort_nodes(state), owner_raw(owner));
+            compute_player_visibility_with_extra(&opts, &border_radius, &extra)
+        }
+
+        /// Web `ownPlayerVisibleHexes()` (`main.ts:12968-12985`) dla fotela `me`.
+        pub fn own_player_visible_hexes(
+            state: &PlayableState,
+            map: &RuchMapa,
+            me: PlayerId,
+        ) -> BTreeSet<Klucz> {
+            owner_visibility(state, map, me)
+        }
+
+        /// Web `currentVisibleForOwner(ownerId)` (`main.ts:13059-13075`).
+        pub fn current_visible_for_owner(
+            state: &PlayableState,
+            map: &RuchMapa,
+            owner: PlayerId,
+            me: PlayerId,
+        ) -> BTreeSet<Klucz> {
+            let mut visible = owner_visibility(state, map, owner);
+            if owner != me
+                && alliance_formal_kind_between(&state.war.diplomacy.deals, me, owner).is_some()
+            {
+                visible.extend(own_player_visible_hexes(state, map, me));
+            }
+            visible
+        }
+
+        /// Web `currentVisible()` (`main.ts:12995-13039`).
+        pub fn current_visible(
+            state: &PlayableState,
+            map: &RuchMapa,
+            inputs: &FogViewInputs<'_>,
+        ) -> BTreeSet<Klucz> {
+            let me = inputs.active_seat;
+            let mut visible = own_player_visible_hexes(state, map, me);
+            for player in state.players.iter().filter(|p| !p.is_human) {
+                if alliance_formal_kind_between(&state.war.diplomacy.deals, me, player.id).is_none()
+                {
+                    continue;
+                }
+                visible.extend(current_visible_for_owner(state, map, player.id, me));
+            }
+            if !visible.is_empty() {
+                return visible;
+            }
+            match inputs.player_start_hex_by_owner.get(&me) {
+                Some(&(q, r)) => compute_visible_at(q, r, map, inputs.start_reveal_radius),
+                None => BTreeSet::new(),
+            }
+        }
+
+        /// Kolejnosc heksow `map.hexes` (kontrakt §1.4: `r`-major, `q`-minor) dla mapy stanu.
+        pub fn hex_order(state: &PlayableState) -> Vec<Klucz> {
+            let mut keys: Vec<Klucz> = state
+                .map
+                .tiles
+                .iter()
+                .map(|t| klucz_of(t.position))
+                .collect();
+            keys.sort_by_key(|&(q, r)| (r, q));
+            keys
+        }
+
+        /// Kodowanie `FogViewDto` (Z-FOG-5) dla podanej kolejnosci heksow.
+        pub fn fog_view_dto(
+            order: &[Klucz],
+            visible: &BTreeSet<Klucz>,
+            explored_for_render: &BTreeSet<Klucz>,
+            fog_active: bool,
+        ) -> FogViewDto {
+            let state = order
+                .iter()
+                .map(|key| {
+                    if !fog_active || visible.contains(key) {
+                        FogState::Visible
+                    } else if explored_for_render.contains(key) {
+                        FogState::Explored
+                    } else {
+                        FogState::Unexplored
+                    }
+                })
+                .collect();
+            FogViewDto { state }
+        }
+
+        /// Web `refreshFog()` (czesc mgly, `main.ts:13475-13513`): liczy `vis`, dopisuje je do
+        /// eksploracji AKTYWNEGO fotela i zwraca DTO.
+        ///
+        /// # Errors
+        ///
+        /// [`FogViewError::MissingExploredSeat`], gdy `explored_by_human` nie ma wpisu `active_seat`.
+        pub fn refresh_fog(
+            state: &PlayableState,
+            inputs: &FogViewInputs<'_>,
+            explored_by_human: &mut ExploredByHuman,
+        ) -> Result<FogView, FogViewError> {
+            let me = inputs.active_seat;
+            let explored = explored_by_human
+                .get_mut(&me)
+                .ok_or(FogViewError::MissingExploredSeat(me.get()))?;
+            let map = ruch_mapa_from_state(state);
+            let visible = current_visible(state, &map, inputs);
+            add_explored(explored, &visible);
+            let all_land: BTreeSet<Klucz> = all_reveal_land_keys(&map).into_iter().collect();
+            let explored_for_render =
+                explored_set_for_render(explored, &all_land, inputs.reveal_all_land);
+            let fog_active = inputs.fog_on || inputs.reveal_all_land;
+            let fog = fog_view_dto(
+                &hex_order(state),
+                &visible,
+                &explored_for_render,
+                fog_active,
+            );
+            Ok(FogView {
+                fog,
+                fog_active,
+                visible,
+                explored_for_render,
+            })
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
