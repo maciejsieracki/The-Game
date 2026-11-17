@@ -49,6 +49,22 @@ pub trait MoveWorld {
     fn update_facing(&mut self, unit_id: &str);
 }
 
+/// Dane terenu czytane przez koszt ruchu jednostki (K5DOC-T4e-0, decyzja D1): `terrainMap.passable/moveCost/
+/// combatTerrainName` (`_moveCostForUnit`, `battleScene.ts:7436-7443`), `isFordTile` (`:1897`) i mnoznik kawalerii
+/// `cavalryTerrainMultiplier` (`combat.ts:756`, wejscie adaptera). Brak implementacji przy wymaganym ruchu to jawny
+/// blad po stronie wolajacego (`MissingTerrain` w `ProdBody::move_step`), a nie wartosc domyslna.
+pub trait MoveTerrain {
+    /// Web `terrainMap.passable(col, row)`.
+    fn passable(&self, col: f64, row: f64) -> bool;
+    /// Web `terrainMap.moveCost(col, row)` (koszt wejscia pieszego, przed mnoznikiem kawalerii).
+    fn move_cost(&self, col: f64, row: f64) -> f64;
+    /// Web `isFordTile(terrainMap, col, row)` (`battleScene.ts:1897`).
+    fn is_ford(&self, col: f64, row: f64) -> bool;
+    /// Web `cavalryTerrainMultiplier(terrainMap.combatTerrainName(col, row), terrainData)` (`combat.ts:756`).
+    /// `Infinity` = niedostepne dla kawalerii.
+    fn cavalry_multiplier(&self, col: f64, row: f64) -> f64;
+}
+
 /// Wynik efektow ruchu.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct MoveOutcome {

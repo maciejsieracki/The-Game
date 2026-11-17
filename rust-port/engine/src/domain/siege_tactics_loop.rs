@@ -22,6 +22,8 @@
 //!
 //! Nie wpina się w `PlayableState`. Nie zawiera czasu ściennego: budżet przewijania to jawny `max_steps`.
 
+use std::collections::HashMap;
+
 use crate::domain::army_leadership::{army_morale_ratio_without_commander, ArmyLeaderCombatant};
 use crate::domain::city_towers::{strongest_ranged_unit_for_era, tower_range_for, UnitRow};
 use crate::domain::js_math::js_max0;
@@ -34,6 +36,8 @@ use crate::domain::siege_tactics_actions::{
 use crate::domain::siege_tactics_activate::{
     activate_unit, ActivateEvent, ActivateOps, ActivateScene, ActivateUnit, EnemyRef,
 };
+use crate::domain::siege_tactics_autobatch::{cell_key, CellKey};
+use crate::domain::siege_tactics_autophase::AutoBatchIntent;
 use crate::domain::siege_tactics_blow::{
     js_max, js_min, ClashTag, DefenderState, HitArc, Outcome, RollSource, SceneEffect, Side,
     MORALE_HIT_LOSS_SCALE,
@@ -52,6 +56,9 @@ use crate::domain::siege_tactics_fastforward::{
 use crate::domain::siege_tactics_inputs_pos::{facing_toward, relative_hit, JsVal};
 use crate::domain::siege_tactics_inputs_unit::{
     to_combat_unit, BattleUnitIn, StatRow, ToCombatUnitOpts, UVal,
+};
+use crate::domain::siege_tactics_move_effects::{
+    do_move_effects, MoveOutcome, MoveTerrain, MoveUnit, MoveWorld,
 };
 use crate::domain::siege_tactics_roundcap::RoundCapState;
 use crate::domain::siege_tactics_tower::{pick_tower_target, TowerTarget};
@@ -1142,6 +1149,81 @@ pub struct ProdBody<R: RollSource> {
     /// P4-1I3 (obrona r1): web `_ffActive` ([`LoopBody::set_ff_active`]); `true` = bez [`BattleAction::Damage`]
     /// (`_spawnDamageLabel` `:9943`). Domyślnie `false` (ciało wołane poza przewijaniem).
     ff_active: bool,
+    /// K5DOC-T4e-0 (D1): dane terenu dla kosztu ruchu i brodu. `None` = brak danych; ruch wtedy zwraca
+    /// [`MissingTerrain`] (bez wartości domyślnej). Ustawiane przez [`ProdBody::with_terrain`].
+    terrain: Option<Box<dyn MoveTerrain>>,
+    /// K5DOC-T4e-0 (D3): web `occByKey` (klucz kafelka -> identyfikator jednostki zajmującej pole). Seedowane z
+    /// pozycji jednostek w [`ProdBody::new`]; aktualizowane przez [`ProdBody::move_step`].
+    occ_by_key: HashMap<CellKey, String>,
+}
+
+/// K5DOC-T4e-0 (D1): brak danych terenu przy wymaganym kroku ruchu. Jawny błąd, nie wartość domyślna.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct MissingTerrain;
+
+/// Wynik jednego kroku ruchu ([`ProdBody::move_step`]).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MoveStepResult {
+    /// Web `ru.moveLeft` po kroku (`_doMove`, `battleScene.ts:8703`).
+    pub move_left: f64,
+    /// Wynik `do_move_effects` (`done` = web `done()` synchronicznie).
+    pub outcome: MoveOutcome,
+}
+
+/// Zajętość startowa (web `occByKey` ustawiane przy rozstawieniu): klucz pola -> `unit_tag` jednostki.
+fn seed_occupancy(units: &[Vec<ProdUnit>; 2]) -> HashMap<CellKey, String> {
+    let mut occ = HashMap::new();
+    for (ix, side) in units.iter().enumerate() {
+        let side_id = if ix == 0 {
+            BattleSide::Attacker
+        } else {
+            BattleSide::Defender
+        };
+        for (idx, pu) in side.iter().enumerate() {
+            let tag = unit_tag(UnitRef { side: side_id, idx });
+            occ.insert(cell_key(pu.activate.q as f64, pu.activate.r as f64), tag);
+        }
+    }
+    occ
+}
+
+/// Adapter [`MoveWorld`] jednej jednostki w [`ProdBody::move_step`]: zajętość z ciała, teren z [`MoveTerrain`],
+/// `mounted` z `ActivateUnit` (koszt per jednostka). `update_facing`: no-op (znany dług #107, decyzja r4).
+struct ProdMoveWorld<'a> {
+    occ: &'a mut HashMap<CellKey, String>,
+    terrain: &'a dyn MoveTerrain,
+    mounted: bool,
+}
+
+impl MoveWorld for ProdMoveWorld<'_> {
+    fn occ_mut(&mut self) -> &mut HashMap<CellKey, String> {
+        &mut *self.occ
+    }
+
+    /// Web `_moveCostForUnit` (`battleScene.ts:7436-7443`): nieprzejezdne = `Infinity`; piechota = koszt bazowy;
+    /// kawaleria = koszt bazowy * mnożnik terenu, a niedostępny dla kawalerii mnożnik = `Infinity`.
+    fn move_cost(&self, col: f64, row: f64) -> f64 {
+        if !self.terrain.passable(col, row) {
+            return f64::INFINITY;
+        }
+        let base = self.terrain.move_cost(col, row);
+        if !self.mounted {
+            return base;
+        }
+        let mult = self.terrain.cavalry_multiplier(col, row);
+        if !mult.is_finite() {
+            return f64::INFINITY;
+        }
+        base * mult
+    }
+
+    fn is_ford(&self, col: f64, row: f64) -> bool {
+        self.terrain.is_ford(col, row)
+    }
+
+    fn update_facing(&mut self, _unit_id: &str) {
+        // #107 zablokowany (decyzja orkiestratora r4): `_updateFacing` nie jest wykonywany w tym kroku.
+    }
 }
 
 impl<R: RollSource> ProdBody<R> {
@@ -1177,6 +1259,8 @@ impl<R: RollSource> ProdBody<R> {
             (0..units[1].len()).map(|i| format!("def{i}")).collect(),
         ];
         Self {
+            occ_by_key: seed_occupancy(&units),
+            terrain: None,
             units,
             scene,
             rolls,
@@ -1311,6 +1395,68 @@ impl<R: RollSource> ProdBody<R> {
                 }
             })
             .collect()
+    }
+}
+
+impl<R: RollSource> ProdBody<R> {
+    /// K5DOC-T4e-0 (D1): ustawia dane terenu dla ruchu (adapter sceny albo test).
+    pub fn with_terrain(mut self, terrain: Box<dyn MoveTerrain>) -> Self {
+        self.terrain = Some(terrain);
+        self
+    }
+
+    /// K5DOC-T4e-0 (D3): web `occByKey` (klucz pola -> identyfikator jednostki).
+    pub fn occ_by_key(&self) -> &HashMap<CellKey, String> {
+        &self.occ_by_key
+    }
+
+    /// K5DOC-T4e-0: jeden krok ruchu pieszego/kawalerii (web `_doMove`, `battleScene.ts:8685-8776`) przez
+    /// [`do_move_effects`]. Dla jednostki `unit` ustawia pozycję (`ActivateUnit::q/r`) i zajętość `occ_by_key`;
+    /// koszt liczy per `mounted` tej jednostki. Zwraca nowe `move_left` (`max(0, moveLeft - stepCost)`).
+    ///
+    /// Brak danych terenu ([`Self::with_terrain`] nie wywołane) = [`MissingTerrain`] PRZED jakąkolwiek mutacją,
+    /// także przy odmowie (wejście do adaptera jest wymagane). `refused` = wynik `_siegeMoveRefused`.
+    pub fn move_step(
+        &mut self,
+        unit: UnitRef,
+        col: i64,
+        row: i64,
+        refused: bool,
+        move_left: f64,
+        autobatch: Option<&mut AutoBatchIntent>,
+    ) -> Result<MoveStepResult, MissingTerrain> {
+        let ix = side_ix(unit.side);
+        let (old_q, old_r, mounted) = {
+            let pu = &self.units[ix][unit.idx];
+            (pu.activate.q, pu.activate.r, pu.activate.mounted)
+        };
+        let Some(terrain) = self.terrain.as_deref() else {
+            return Err(MissingTerrain);
+        };
+        let mut mu = MoveUnit {
+            id: unit_tag(unit),
+            q: old_q as f64,
+            r: old_r as f64,
+            move_left,
+        };
+        let mut world = ProdMoveWorld {
+            occ: &mut self.occ_by_key,
+            terrain,
+            mounted,
+        };
+        let outcome = do_move_effects(
+            &mut world, &mut mu, col as f64, row as f64, refused, autobatch,
+        );
+        // Pozycja jednostki po kroku (`ru.q`, `ru.r`). Odmowa (`refused`) nie zmienia pozycji (web :8689-8692).
+        if !refused {
+            let pu = &mut self.units[ix][unit.idx];
+            pu.activate.q = col;
+            pu.activate.r = row;
+        }
+        Ok(MoveStepResult {
+            move_left: mu.move_left,
+            outcome,
+        })
     }
 }
 
