@@ -303,9 +303,13 @@ for (const s of SCENARIOS) {
       fogActive: useFogRender,
       reveal: {
         revealAllLand: s.revealAllLand,
-        riverRevealKeys: !useFogRender || r.startReveal === undefined
+        // Taken from the EXECUTED pin path, not re-derived: `refreshFog`
+        // (main.ts:13489-13494 / 13505-13506) picks the `setFog` call, and
+        // scene.ts:3531 `lastRiverRevealKeys = opts?.riverRevealKeys ?? null`
+        // turns a call without options (fog off) into `null`.
+        riverRevealKeys: scene.lastRiverRevealKeys === null
           ? null
-          : sortKeys(r.startReveal).map(([q, rr]) => ({ q, r: rr })),
+          : sortKeys(scene.lastRiverRevealKeys).map(([q, rr]) => ({ q, r: rr })),
       },
     },
     exploredCopyState: fogCodes(s.hexes, useFogRender, vis, r.explored),
