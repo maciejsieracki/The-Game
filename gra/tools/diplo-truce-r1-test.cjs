@@ -260,7 +260,7 @@ async function main() {
     const paid = { turns: 10, goldOnce: 400 };
     const ackRes = mod.evaluateProposal(propose(mod, 'rozejm', paid), ctxFor({ warState: WAR_LONG }));
     // Kontrola: pokój ma bazę 500 PW, więc dla porównania potrzebuje większej zapłaty (600 złota).
-    const pokojPaid = mod.evaluateProposal(propose(mod, 'pokoj', { turns: 10, goldOnce: 600 }), ctxFor({ warState: WAR_LONG }));
+    const pokojPaid = mod.evaluateProposal(propose(mod, 'pokoj', { turns: 10, goldOnce: 6000 }), ctxFor({ warState: WAR_LONG })); // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: cena pokoju malejaca (do 6000 PN), zatem zapłata 6000
     check('P8: rozejm ze złotem (400) w wojnie zostaje zaakceptowany (bramka walutowa jak dla pokoju)',
       ackRes.accepted === true && !/pieniądze tylko w ugodzie/.test(ackRes.reason || ''), ackRes);
     check('P8b: pokój ze złotem w wojnie — kontrola: ta sama ścieżka co rozejm',
@@ -291,9 +291,11 @@ async function main() {
     const m2mod = require(BUNDLE_M2);
     const m2rz = m2mod.evaluateProposal(propose(m2mod, 'rozejm', { turns: 10 }), ctxFor({ warState: WAR_MID }));
     const m2pk = m2mod.evaluateProposal(propose(m2mod, 'pokoj', { turns: 10 }), ctxFor({ warState: WAR_MID }));
-    check('M2 (baza rozejmu = baza pokoju): pwBalance równy pokojowi — mutacja wykrywalna',
-      !(typeof m2rz.pwBalance === 'number' && m2rz.pwBalance > m2pk.pwBalance),
-      { rozejm: m2rz.pwBalance, pokoj: m2pk.pwBalance });
+    // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: cena pokoju jest teraz malejaca (osobna funkcja), wiec mutacje bazy rozejmu
+    // wykrywamy porownaniem z NIEZMUTOWANYM wynikiem rozejmu (zmieniona baza rozejmu zmienia pwBalance).
+    check('M2 (baza rozejmu = baza pokoju): pwBalance rozejmu zmienia sie wzgledem oryginalu — mutacja wykrywalna',
+      typeof m2rz.pwBalance === 'number' && m2rz.pwBalance !== ok.rozejmMid.pwBalance,
+      { mut: m2rz.pwBalance, orig: ok.rozejmMid.pwBalance, pokoj: m2pk.pwBalance });
     // M3: bramka PW pokoju NIE obejmuje rozejmu → P10 wykrywa (komunikat różni się od pokoju)
     const m3mod = require(BUNDLE_M3);
     const m3rz = m3mod.evaluateProposal(propose(m3mod, 'rozejm', pnShort), ctxFor({ warState: WAR_LONG }));

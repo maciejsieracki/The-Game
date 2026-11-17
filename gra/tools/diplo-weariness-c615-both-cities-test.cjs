@@ -79,19 +79,19 @@ for (let turns = 0; turns <= 24; turns++) {
       const tickLevel = W.warWearinessLevel({ turnsAtWar: turns, lostCitiesTotal: tickCount }, P);
       const tableLevel = W.warWearinessLevel({ turnsAtWar: turns, lostCitiesTotal: tableCount }, P);
       if (tickLevel !== tableLevel) consOk = false;
-      if (W.wearinessPeaceItemPw(C, tickLevel, P) !== W.wearinessPeaceItemPw(C, tableLevel, P)) consOk = false;
+      if (W.wearinessPeaceCashPn(tickLevel, P) !== W.wearinessPeaceCashPn(tableLevel, P)) consOk = false;
     }
   }
 }
-ok(consOk, '(d) tabela i tick: ta sama wojna => ten sam licznik, poziom i Z');
+ok(consOk, '(d) tabela i tick: ta sama wojna => ten sam licznik, poziom i cena pokoju');
 // mutacja "tylko respondent": utrata miast tylko jednej strony zmienia Z przy zamianie stron -> wykrywalne
 let mutDetected = false;
 for (let t = 10; t <= 16; t++) {
-  const zOnlyResp0 = W.wearinessPeaceItemPw(C, W.warWearinessLevel({ turnsAtWar: t, lostCitiesTotal: 0 }, P), P);
-  const zOnlyResp2 = W.wearinessPeaceItemPw(C, W.warWearinessLevel({ turnsAtWar: t, lostCitiesTotal: 2 }, P), P);
+  const zOnlyResp0 = W.wearinessPeaceCashPn(W.warWearinessLevel({ turnsAtWar: t, lostCitiesTotal: 0 }, P), P);
+  const zOnlyResp2 = W.wearinessPeaceCashPn(W.warWearinessLevel({ turnsAtWar: t, lostCitiesTotal: 2 }, P), P);
   if (zOnlyResp0 !== zOnlyResp2) mutDetected = true;
 }
-ok(mutDetected, '(d-mut) licznik miast wplywa na Z (mutacja wykrywalna)');
+ok(mutDetected, '(d-mut) licznik miast wplywa na cene pokoju (mutacja wykrywalna)');
 
 // (d2) ZACHOWANIE, nie tylko regex: runWarWearinessTick (tick AI<->AI) dla tej samej wojny z zamienionymi stronami
 // daje ten sam poziom i ten sam poziom jak warWearinessLevel(lostCitiesForWeariness(...)) -- czyli liczy OBIE strony.
@@ -131,13 +131,13 @@ for (let t = 0; t <= 24; t++) {
 ok(tickSymOk, '(d2) tick AI<->AI: poziom niezalezny od kolejnosci stron (lostA,lostB) vs (lostB,lostA)');
 ok(tickMatchesTable, '(d2) tick AI<->AI = warWearinessLevel(lostCitiesForWeariness) dla tur 0..24 i strat 0..3');
 
-// (e) Z z funkcji dla tur 10..16 bez strat (C=615)
-const expectZ = [0, 17, 68, 154, 273, 427, 615];
-const gotZ = [];
-// DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: skala 40 tur — te same poziomy 0,50..0,80 co dawniej przy turach 10..16 (20 tur),
-// czyli tury 20..32 (przeskalowanie 2×; wartości Z bez zmian).
-for (let t = 10; t <= 16; t++) gotZ.push(W.wearinessPeaceItemPw(C, W.warWearinessLevel({ turnsAtWar: 2 * t, lostCitiesTotal: 0 }, P), P));
-ok(JSON.stringify(gotZ) === JSON.stringify(expectZ), `(e) Z(615) tury 10..16 = ${JSON.stringify(expectZ)} (got ${JSON.stringify(gotZ)})`);
+// (e) R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: cena pokoju = round(6000 x (1 - L)) z jednej funkcji; tury 20..32 (L = 0,50..0,80) bez strat.
+// Pozycja Z (round(C x x^2)) i funkcje wearinessPeaceItemPw / wearinessPeaceX zostaly usuniete (DR-2: jedna cena).
+const expectPrice = [3000, 2700, 2400, 2100, 1800, 1500, 1200];
+const gotPrice = [];
+for (let t = 10; t <= 16; t++) gotPrice.push(W.wearinessPeaceCashPn(W.warWearinessLevel({ turnsAtWar: 2 * t, lostCitiesTotal: 0 }, P), P));
+ok(JSON.stringify(gotPrice) === JSON.stringify(expectPrice), `(e) cena pokoju tury 20..32 = ${JSON.stringify(expectPrice)} (got ${JSON.stringify(gotPrice)})`);
+ok(W.wearinessPeaceItemPw === undefined && W.wearinessPeaceX === undefined, '(e) stara pozycja Z (kwadratowa) usunieta z kodu');
 
 // (f) wiazanie w kodzie
 const main = read('src/main.ts');

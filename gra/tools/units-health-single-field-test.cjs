@@ -4,7 +4,7 @@
 // Sprawdza:
 //   (a) żaden wiersz units.json nie ma pola `Health`;
 //   (b) każda jednostka ma `health` > 0;
-//   (c) piesze łuczniczki mają health = 20;
+//   (c) piesze łuczniczki mają health = 10 (RANGEDHEALTH 2026-11-17);
 //   (d) czytelnicy definicji w gra/src nie czytają `Health` (wyjątki: pola runtime HP
 //       SiegeUnit / parametr estimateUnitCombatStrength — nie są polem definicji);
 //   (e) mutacja na KOPII danych (przywrócenie `Health`) daje czerwony wynik.
@@ -16,7 +16,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const UNITS_PATH = path.join(ROOT, 'data', 'units.json');
 const SRC_DIR = path.join(ROOT, 'src');
-const ARCHER_HEALTH = 20;
+const ARCHER_HEALTH = 10;
 const PEDESTRIAN_ARCHERS = [
   'Łucznik', 'Łucznik egipski', 'Łucznik nubijski', 'Łucznik sumeryjski',
   'Łucznik akadyjski', 'Łucznik asyryjski',
@@ -94,7 +94,7 @@ egypt['Health'] = 40;
 check(checkUnits(copy).length > 0, 'mutacja: Health dodany do Łucznika egipskiego wykryty');
 const copy2 = JSON.parse(JSON.stringify(units));
 copy2.find(u => u['Jednostka'] === 'Łucznik egipski').health = 40;
-check(checkUnits(copy2).length > 0, 'mutacja: health egipskiego=40 wykryte (łuczniczki = 20)');
+check(checkUnits(copy2).length > 0, 'mutacja: health egipskiego=40 wykryte (łuczniczki = 10)');
 
 console.log(failures === 0 ? 'WYNIK: ZIELONO' : `WYNIK: CZERWONO (${failures})`);
 process.exitCode = failures === 0 ? 0 : 1;

@@ -188,15 +188,16 @@ console.log('11. Narodowi łucznicy Brązu (nubijski, akadyjski, asyryjski) i Os
   const mutNub = unitsJson.map(u => (u.Jednostka === 'Łucznik nubijski' ? { ...u, 'Zastąp specjalnie': '—' } : u));
   check(!idsOf({ buildings: [], units: mutNub }, 'Łucznik nubijski', baseCtx(2, 'Egipt')).includes('Procarz'),
     'mutacja kopii (pole Łucznika nubijskiego cofnięte do "—") -> Procarz znika');
-  // Oszczepnik (Estólica) = dystansowa jednostka Inków (Kamień, Specjalna): Procarz standard + Huaracoc (Inkowie)
+  // Oszczepnik (Estólica) = dystansowa jednostka Inków (Kamień, Specjalna): „Zastąp" = TYLKO Łucznik
+  // (decyzja właściciela 2026-11-17, wariant A); Procarz i Procarz (Huaracoc) NIE są zamiennikami.
   const est = idsOf(DATA, 'Oszczepnik (Estólica)', baseCtx(2, 'Inkowie'));
-  check(est.includes('Procarz') && est.includes('Procarz (Huaracoc)'),
-    'Oszczepnik (Estólica) w Brązie (Inkowie): Procarz i Procarz (Huaracoc) na liście', JSON.stringify(est));
+  check(est.includes('Łucznik') && !est.includes('Procarz') && !est.includes('Procarz (Huaracoc)'),
+    'Oszczepnik (Estólica) w Brązie (Inkowie): Łucznik na liście, Procarz i Huaracoc nie', JSON.stringify(est));
   const estKam = idsOf(DATA, 'Oszczepnik (Estólica)', baseCtx(1, 'Inkowie'));
-  check(!estKam.includes('Procarz'), 'Oszczepnik (Estólica) w Kamieniu: Procarz niedostępny epoką', JSON.stringify(estKam));
+  check(estKam.includes('Łucznik') && !estKam.includes('Procarz'), 'Oszczepnik (Estólica) w Kamieniu: Łucznik tak, Procarz nie', JSON.stringify(estKam));
   const estRome = idsOf(DATA, 'Oszczepnik (Estólica)', baseCtx(2, 'Rzym'));
-  check(estRome.includes('Procarz') && !estRome.includes('Procarz (Huaracoc)'),
-    'Oszczepnik (Estólica) w Rzymie: Procarz tak, Procarz (Huaracoc) nie (nacja Inkowie)', JSON.stringify(estRome));
+  check(estRome.includes('Łucznik') && !estRome.includes('Procarz') && !estRome.includes('Procarz (Huaracoc)'),
+    'Oszczepnik (Estólica) w Rzymie: Łucznik tak, Procarz i Huaracoc nie', JSON.stringify(estRome));
   // Procarz (Huaracoc) nie jest zamiennikiem Estólicy poza Inkami (gating nacji)
   check(!estRome.includes('Procarz (Huaracoc)'), 'Huaracoc nie wchodzi do listy dla nacji spoza Inków');
   // AI: wyjątek same-epoch dla narodowych łuczników Brązu -> Procarz (ai-era-unit-promotion.ts,
@@ -234,7 +235,27 @@ console.log('11. Narodowi łucznicy Brązu (nubijski, akadyjski, asyryjski) i Os
   }
   // AI dla Estólicy (Kamień -> Brąz): wzrost epoki, awans dozwolony
   const aiEst = aiPromote('Oszczepnik (Estólica)', { ...baseCtx(2, 'Inkowie'), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } }, 100);
-  check(aiEst.ok, 'AI Oszczepnik (Estólica) Kamień -> Brąz: awans dozwolony (wzrost epoki)', JSON.stringify(aiEst));
+  check(aiEst.ok && aiEst.typeId === 'Łucznik', 'AI Oszczepnik (Estólica) -> Łucznik (Zastąp, jedyny cel): awans dozwolony', JSON.stringify(aiEst));
+}
+
+console.log('12. Oszczepnik i Oszczepnik Zulu -> Łucznik (decyzja właściciela 2026-11-17)');
+{
+  const ozg = idsOf(DATA, 'Oszczepnik', baseCtx(1, 'Rzym'));
+  check(ozg.includes('Łucznik'), 'Oszczepnik w Kamieniu: Łucznik jest na liście zamienników', JSON.stringify(ozg));
+  // Asercja dokumentacyjna (Procarz to Brąz, więc w Kamieniu jest niedostępny z epoki, nie z łańcucha).
+  check(!ozg.includes('Procarz'), 'Oszczepnik w Kamieniu: Procarz nie jest zamiennikiem (dokumentacja: brak skoku, dowód pośrednio przez epokę)', JSON.stringify(ozg));
+  const ozu = idsOf(DATA, 'Oszczepnik Zulu (Izijula)', baseCtx(1, 'Zulu'));
+  check(ozu.includes('Łucznik'), 'Oszczepnik Zulu w Kamieniu: Łucznik jest na liście zamienników', JSON.stringify(ozu));
+  check(!ozu.includes('Procarz'), 'Oszczepnik Zulu w Kamieniu: Procarz nie jest zamiennikiem (dokumentacja)', JSON.stringify(ozu));
+  // Pola danych bezpośrednio (wykrywają cofnięcie wpisu w units.json; lista gracza nie zależy od tego pola).
+  const fieldOf = n => String((unitsJson.find(u => String(u.Jednostka).trim() === n) || {})['Zastąp specjalnie'] ?? '').trim();
+  check(fieldOf('Oszczepnik') === 'Łucznik', 'units.json: pole Zastąp specjalnie Oszczepnika = "Łucznik"', fieldOf('Oszczepnik'));
+  check(fieldOf('Oszczepnik Zulu (Izijula)') === 'Łucznik', 'units.json: pole Zastąp specjalnie Oszczepnika Zulu = "Łucznik"', fieldOf('Oszczepnik Zulu (Izijula)'));
+  const aiOzg = aiPromote('Oszczepnik', { ...baseCtx(1, 'Rzym'), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } }, 100);
+  check(aiOzg.ok && aiOzg.typeId === 'Łucznik', 'AI Oszczepnik (Kamień) -> Łucznik: wyjątek same-epoch dozwolony', JSON.stringify(aiOzg));
+  // AI Zulu: obniżka klasy (Specjalna -> Standardowa) dozwolona wyłącznie przez JAVELIN_TO_ARCHER_SOURCES.
+  const aiOzu = aiPromote('Oszczepnik Zulu (Izijula)', { ...baseCtx(1, 'Zulu'), empireResourceStock: { braz: 10, zelazo: 10, Drewno: 100, drewno: 100 } }, 100);
+  check(aiOzu.ok && aiOzu.typeId === 'Łucznik', 'AI Oszczepnik Zulu (Kamień) -> Łucznik: wyjątek dla Zulu dozwolony', JSON.stringify(aiOzu));
 }
 
 console.log('10. Ścieżka AI dla narodowych łuczników Kamienia (egipski, sumeryjski): te same reguły co gracz');

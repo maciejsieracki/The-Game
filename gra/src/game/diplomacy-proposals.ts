@@ -31,7 +31,7 @@ import { czyAgresorAktywny, deltaRelacjiSojusz } from './diplomacy';
 import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';
 import type { PeaceMilitaryPosition } from './diplomacy-military-strength';
 import { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS } from './diplomacy-peace-proposal-timing';
-import { warWearinessLevel, wearinessPeaceItemPw } from './war-weariness';
+import { warWearinessLevel, wearinessPeaceCashPn } from './war-weariness';
 import type { Player } from '../types/player';
 import { TypCywilizacji } from '../types/player';
 import {
@@ -331,6 +331,8 @@ export interface WearinessPwInfo {
   turnsAtWar: number;
   lostCities: number;
   level: number;
+  /** R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: aktualna cena pokoju w PN (wearinessPeaceCashPn(level) po bramce relacji) — pokazywana w panelu/audiencji. */
+  cenaPokojuPn?: number;
 }
 
 export interface PendingProposal {
@@ -1424,20 +1426,31 @@ function evaluateProposalImpl(
       let wearyInfo: WearinessPwInfo | undefined;
       let wearySide: 'ai' | 'player' = 'ai';
       // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 r3 (zarzut 1 Evaluatora, DODATEK pkt 3): kierunek AI -> gracz.
-      // Gdy AI jest autorem pokoju, a respondentem jest gracz, wiersz Z (ta sama funkcja wearinessPeaceItemPw,
-      // C = basePnCfg bez mnoznika cywilizacji — ZALOZENIE: bramka R5 nie dziala dla autora AI) trafia do
-      // kolumny GRACZA. Informacyjnie: basePn / pokojPwBalance / accepted NIE zmieniaja sie w tej galezi.
+      // Gdy AI jest autorem pokoju, a respondentem jest gracz, informacja o zmęczeniu trafia do kolumny GRACZA
+      // (bez pozycji PW — patrz komentarz niżej). Informacyjnie: basePn / pokojPwBalance / accepted NIE zmieniaja sie w tej galezi.
       if (ctx.warState && !r5PlayerAuthors && !r5RespondentIsAi && !ctx.responderIsCityState) {
         const aiToPlayerLevel = warWearinessLevel({
           turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
           lostCitiesTotal: Math.max(0, ctx.warState.lostCitiesResponder),
           turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
         });
-        wearyPwItem = wearinessPeaceItemPw(basePnCfg, aiToPlayerLevel);
+        // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: stara pozycja Z (krzywa kwadratowa) usunieta — jedyna cena pokoju to
+        // wearinessPeaceCashPn(poziom pary).
+        // Wiersz „Zmęczenie wojną” zostaje tylko jako informacja (tury, miasta, poziom) bez pozycji PW.
+        wearyPwItem = undefined;
+        // JEDNA cena (DR-2): ta sama funkcja co w ofercie AI (ai.ts), pokazana w panelu; bramka relacji jak w gałęzi gracz→AI.
+        const aiToPlayerPriceGate = evaluatePeaceAiGate(
+          { rw: 0.5, turnsAtWar: Math.max(0, ctx.warState.turnsAtWar), lostCitiesInWar: 0 },
+          resolveWarPeaceProfile(typeof ctx.proposerPlayer?.typCywilizacji === 'string' ? ctx.proposerPlayer.typCywilizacji : undefined),
+        );
+        const aiToPlayerPriceMult = aiToPlayerPriceGate.verdict === 'ok' ? aiToPlayerPriceGate.priceMultiplier : 1;
+        const aiToPlayerCenaPn = basePnCfg * aiToPlayerPriceMult > 0 ? wearinessPeaceCashPn(aiToPlayerLevel) : 0;
+        if (actionId === 'pokoj') basePn = aiToPlayerCenaPn;
         wearyInfo = {
           turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
           lostCities: Math.max(0, ctx.warState.lostCitiesResponder),
           level: aiToPlayerLevel,
+          ...(actionId === 'pokoj' ? { cenaPokojuPn: aiToPlayerCenaPn } : {}),
         };
         wearySide = 'player';
       }
@@ -1458,22 +1471,25 @@ function evaluateProposalImpl(
         if (r5Gate.verdict === 'too_early') {
           return { accepted: false, reason: r5Gate.reason ?? 'AI odrzuca pokój' };
         }
-        // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (ABC 2026-11-14: krzywa kwadratowa, rabat 60% usunięty):
-        // zmęczenie wojną to POZYCJA PW Z = round(C × x²), a NIE rabat ceny. Z pojawia się w tabeli po stronie
-        // oceniającego AI („Zmęczenie wojną (AI)”); wymagana reszta R = C − Z pokrywana wyłącznie miastem.
-        const cenaPokojuPn = Math.round(basePnCfg * r5Gate.priceMultiplier);
+        // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: JEDNA cena pokoju = wearinessPeaceCashPn(L) (malejaca z
+        // zmeczeniem pary; 0 przy L = 1). Pozycja Z (krzywa kwadratowa) i stala cena relacyjna odpadaja: cala cena
+        // pokrywana miastami (stolica nigdy). Bramka relacji: cena 0, gdy wycena bazowa daje 0 (r5Gate.priceMultiplier).
         const wearyLevel = warWearinessLevel({
           turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
           lostCitiesTotal: Math.max(0, ctx.warState.lostCitiesResponder),
           turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
         });
-        wearyPwItem = wearinessPeaceItemPw(cenaPokojuPn, wearyLevel);
+        const cenaPokojuPn = basePnCfg * r5Gate.priceMultiplier > 0 ? wearinessPeaceCashPn(wearyLevel) : 0;
+        wearyPwItem = undefined;
         wearyInfo = {
           turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
           lostCities: Math.max(0, ctx.warState.lostCitiesResponder),
           level: wearyLevel,
+          ...(actionId === 'pokoj' ? { cenaPokojuPn } : {}),
         };
-        basePn = Math.max(0, cenaPokojuPn - wearyPwItem);
+        // Rozejm (osobna baza PW z diplomacy-acceptance-points.json) NIE podlega cenie pokoju — decyzja dispatchu (cena dotyczy pokoju, nie rozejmu).
+        const cenaWymaganaPn = actionId === 'pokoj' ? cenaPokojuPn : basePnCfg * r5Gate.priceMultiplier;
+        basePn = cenaWymaganaPn;
         // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (zarzut 5 / wymóg 4): złoto i surowce NIE są
         // słodzikiem pokoju ani rozejmu — w każdej pozycji (słabsza i silniejsza AI) oferta z nimi jest
         // odrzucana. Słodzikiem jest wyłącznie miasto (poniżej, dla 'stronger').
@@ -1496,11 +1512,11 @@ function evaluateProposalImpl(
           // (regula siły bez wygasania, R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1; testy C1/C2 diplo-peace-balance-accept
           // i S3b/S3c diplo-war-peace-sim czerwieniały przy wymaganiu R = C − Z). Rozjazd z tabelą przy Z = C
           // = DECISION_REQUIRED (raport, sekcja BLOKADY).
-          if (!(cityGivePn >= cenaPokojuPn)) {
+          if (!(cityGivePn >= cenaWymaganaPn)) {
             return {
               accepted: false,
-              reason: `${r5Gate.reason ?? 'AI odrzuca pokój'} — Silniejsza AI wymaga miasta o wartości ≥ ${cenaPokojuPn} PW `
-                + `(zmęczenie nie obniża tej ceny); miasta w ofercie warte ${Math.round(cityGivePn)} PN, wymagane ${cenaPokojuPn} PN`,
+              reason: `${r5Gate.reason ?? 'AI odrzuca pokój'} — Silniejsza AI wymaga miasta o wartości ≥ ${cenaWymaganaPn} PW `
+                + `(cena pokoju maleje ze zmęczeniem wojną); miasta w ofercie warte ${Math.round(cityGivePn)} PN, wymagane ${cenaWymaganaPn} PN`,
             };
           }
         }
@@ -2133,8 +2149,8 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
       return `Oferujemy jednorazową zapłatę ${cmd.goldOnce ?? 0} ¤ w zamian za pokój.`;
     case 'oferuj_miasto_za_pokoj':
       return cmd.rodzaj === 'rozejm'
-        ? 'Oferujemy rozejm w zamian za przekazanie jednego z naszych miast.'
-        : 'Oferujemy pokój w zamian za przekazanie jednego z naszych miast.';
+        ? (cmd.dodatkoweMiasta?.length ? 'Oferujemy rozejm w zamian za przekazanie kilku naszych miast.' : 'Oferujemy rozejm w zamian za przekazanie jednego z naszych miast.')
+        : (cmd.dodatkoweMiasta?.length ? 'Oferujemy pokój w zamian za przekazanie kilku naszych miast.' : 'Oferujemy pokój w zamian za przekazanie jednego z naszych miast.');
     case 'zada_miasto_za_pokoj':
       return 'Warunkiem pokoju jest przekazanie jednego z twoich miast.';
     case 'wypowiedz_wojne':
@@ -2152,6 +2168,14 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
     default:
       return 'Propozycja dyplomatyczna od tego państwa.';
   }
+}
+
+/** Pozycje miast oferowanych przez AI w pokoju (pierwsze miasto planu + kolejne = minimum równoważące cenę). */
+function aiOfferedCityItems(cmd: Extract<AIDiplomacyCommand, { type: 'oferuj_miasto_za_pokoj' }>): BasketItem[] {
+  return [
+    { typ: 'miasto', id: cmd.cityId, ilosc: 1, cityPn: cmd.cityPn, cityWeight: cmd.cityWeight },
+    ...(cmd.dodatkoweMiasta ?? []).map(m => ({ typ: 'miasto' as const, id: m.cityId, ilosc: 1, cityPn: m.cityPn, cityWeight: cmd.cityWeight })),
+  ];
 }
 
 /** Konwersja komendy AI → propozycja oczekująca (banner audiencji). */
@@ -2233,7 +2257,7 @@ export function aiCommandToPendingProposal(
           actionId: 'rozejm',
           payload: {
             turns: TRUCE_DEFAULT_TURNS,
-            giveItems: [{ typ: 'miasto', id: cmd.cityId, ilosc: 1, cityPn: cmd.cityPn, cityWeight: cmd.cityWeight }],
+            giveItems: aiOfferedCityItems(cmd),
           },
         };
       }
@@ -2242,7 +2266,7 @@ export function aiCommandToPendingProposal(
         id: makeDealId('pending-pokoj-miasto', turn, fromOwnerId, toOwnerId),
         actionId: 'pokoj',
         payload: {
-          giveItems: [{ typ: 'miasto', id: cmd.cityId, ilosc: 1, cityPn: cmd.cityPn, cityWeight: cmd.cityWeight }],
+          giveItems: aiOfferedCityItems(cmd),
         },
       };
     case 'zada_miasto_za_pokoj':

@@ -176,9 +176,9 @@ const closeAudience = (page) => page.evaluate(() => { const b = Array.from(docum
     if (ONLY !== 'A') {
       const { page, errs } = await newPage(browser, '?civTest=1');
       const lay = await page.evaluate(() => window.__amb.setupAi());
-      ck('B0 uklad AI->gracz (korytarz) ustawiony', !lay.error, lay.error ? lay : { wall: lay.wall });
+      ck('B0 uklad AI->gracz (korytarz; zasadzka na trasie AI do miasta) ustawiony', !lay.error, lay.error ? lay : { wall: lay.wall, ambHex: lay.ambHex, toCity: lay.toCity });
       if (!lay.error) {
-        await page.evaluate(([q, r]) => window.__amb.focus(q, r), [lay.line[3].q, lay.line[3].r]);
+        await page.evaluate(([q, r]) => window.__amb.focus(q, r), [lay.ambHex.q, lay.ambHex.r]);
         let info = await page.evaluate(() => window.__amb.info());
         ck('B1 zasadzka gracza zastawiona, AI jej nie widzi', info.ai.s1 && info.ai.s1.ambush === true, info.ai);
         await page.screenshot({ path: path.join(shotsDir, 'B-przed-faza-AI-1280x720.png') });
@@ -216,7 +216,10 @@ const closeAudience = (page) => page.evaluate(() => { const b = Array.from(docum
         // wznowienie fazy AI po bitwie: automatyczne rozstrzygniecie i dalsze tury
         if (battle) {
           const resolved = await page.evaluate(() => {
-            const btn = Array.from(document.querySelectorAll('button')).find(b => /auto|automat|szybk|rozstrzyg/i.test((b.innerText || '')));
+            // R-WEB-TEST-DEBT-AMBUSH-LIVE-B3-B5-B6-Q1 (B6): w oknie przedbitewnym przycisk „AUTO” rozstrzyga bitwę;
+            // dopasowanie „szybk” trafiało w „SZYBKA WYMIANA” (nie zamyka okna -> preBattleOpen zostaje true).
+            const btn = Array.from(document.querySelectorAll('button')).find(b => /^AUTO$/.test((b.innerText || '').trim()))
+              || Array.from(document.querySelectorAll('button')).find(b => /auto|automat|szybk|rozstrzyg/i.test((b.innerText || '')));
             if (btn) { btn.click(); return btn.innerText; }
             return null;
           });

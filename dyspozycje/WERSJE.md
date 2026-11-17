@@ -1,3 +1,45 @@
+## ROBOCZA f6449b22 -- 2026-11-17 -- FALA 808: Procarz: przebicie 2, strzal liczony jak cios wrecz (18/9/6/6 obrazen przy pancerzu 0/3/6/8) (testowa)
+
+- units.json: Procarz i Procarz (Huaracoc) piercing 2, fieldPower 14; combat.ts: rangedShotBase/isPiercingShotShooter, auto-walka rangedShotDamage; battleScene.ts: strzal Procarza przez rangedShotBase; karta i tooltip Procarza z opisem przebicia; test procarz-piercing-shot. Lucznik i Oszczepnik bez zmian.
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; procarz-piercing-shot ALL PASS (mutacje czerwone); ranged-damage-mult PASS; unit-card-ranged-mult OK; ranged-health-card-align 5/0; archers-health 10/0; unit-power 6/0; hit-mode-consistency 8/0
+- Limity: NIE ZMIERZONO: zywy Chromium (bitwa Procarz vs pancerz 6, karta), pomiar 10 Procarzy vs 10 Falang/Triari; przebicie to jedno pole, wiec Procarz we wrecz tez ma przebicie 2 (cios 0 -> 2) - do decyzji wlasciciela; dlug: komentarz unit-power.ts ~187-190 nieaktualny; dlug Rust REPIN units.json i rangedShotBase
+
+## ROBOCZA ad458fdd -- 2026-11-17 -- FALA 807: Cena pokoju 6000 PN malejaca ze zmeczeniem wojna (jedna cena wszedzie) (testowa)
+
+- diplomacja: jedna cena pokoju 6000 x (1 - zmeczenie wojna) we wszystkich sciezkach, bez stalych 185/554/615; testy diplo-weariness i city-cession zaktualizowane; narzedzie weary40-sim-measure
+- Weryfikacja: tsc 0; logic 213/213; diplo-weariness-as-pw-peace-item 39/0; city-only 26/0; forced-peace 14/0; pw-behavior 147/0; json-descriptions-sync 19/0; city-cession-r3 79/0; unit-replace 21/21; combat 6/6; symulacja weary40 (3 ziarna x 150 tur, realny kod): eliminacji 0, wojny ok. 30 tur
+- Limity: RYZYKO BALANSU zaakceptowane przez wlasciciela (A): najsilniejsza civ trzyma 72-75% miast (przed 22-27%); NIE ZMIERZONO w zywej grze z graczem; dlug Rust REPIN ceny pokoju
+
+## ROBOCZA 4a8ee091 -- 2026-11-17 -- FALA 806: Hak testowy __civTest.addUnit z typem jednostki (typeId) + narzedzie pomiaru Wojownik vs Wojownik (testowa)
+
+- main.ts i civ-test-hooks.ts: hak testowy addUnit z wyborem typu jednostki (bez zmian zasad gry); gra/tools: live-verify-wojownik-map-q1.cjs i test civtest-addunit-typeid
+- Weryfikacja: tsc 0; logic 213/213; civtest-addunit-typeid 10/10 (mutacja 9/10); unit-replace 21/21; combat 6/6; pomiar Wojownik 10 vs 10 na sciezce mapowej w Chromium (3 ziarna x auto/skip): atakujacy wygrywa w ziarnie 1, obronca w 2 i 3
+- Limity: tylko narzedzie testowe; NIE ZMIERZONO: tryb reczny z rozkazami (brak generala w stosie), zamiana stron, zgodnosc statystyk z units.json; n=3 ziarna
+
+## ROBOCZA 680859c8 -- 2026-11-17 -- FALA 805: Dystansowi: zdrowie x0,5, Oszczepnik Zulu i Estolica atak 5, karty zgodne z silnikiem, Zastap Estolica tylko Lucznik (testowa)
+
+- units.json: health Oszczepnik 8, Zulu 10, Estolica 10, Lucznicy (uniw., egipski, nubijski, sumeryjski, akadyjski, asyryjski) 10, Procarz i Huaracoc 8; missileAttack Zulu i Estolica 5; karta Atak dystansowy i Zasieg = silnik dla 75 jednostek (Druzynnik, Thorakites, Evocati, Gwardzista z champi: zasieg 2); Estolica Zastap tylko Lucznik; wyjatki bez zmian: Hastati, Wojownik germanski, Medzaj, konni, rydwany, Katapulta; fieldPower oszczepnikow odswiezone; ai-era-unit-promotion.ts wyjatek Estolica
+- Weryfikacja: tsc 0; logic 213/213; ranged-health-card-align 5/0 (+mutacje); ranged-damage-mult PASS; archers-health 10/0; units-health-single-field PASS; unit-power 6/0; archer-slinger 51/0; promotion-table PASS bez cykli; ai-era 17/0; unit-replace 21/21; combat 6/6
+- Limity: NIE ZMIERZONO: zywy Chromium (karty), skutek balansowy zdrowia x0,5 na wynik bitew; unit-replace-full-cost 39/1, unit-epoch-cost 56/1, fortify-pole 39/2 = dlug bazowy; Zastap Lucznik 10 -> Procarz 8 (nizsze zdrowie i atak) do wiadomosci wlasciciela; dlug Rust REPIN units.json i tabeli zamian
+
+## ROBOCZA 39da9ed2 -- 2026-11-17 -- FALA 804: Toast Zasadzka sie powiodla od razu takze z fazy AI (testowa)
+
+- main.ts: showHintMessage z flaga showNowDuringEot - toast zasadzki (AI->gracz i barbarzynca->gracz) pokazuje sie od razu, wpis w Wazne zostaje; test ambush-live (Chromium) w repo
+- Weryfikacja: tsc 0; ambush-core 48/0, ui-reason 10/0, wiring 28/0, realstep 16/0; ambush-live Chromium 26/0 (B5 zielony), mutacja czerwona; logic 213/213; unit-replace 21/21; combat 6/6
+- Limity: NIE ZMIERZONO: widocznosc wizualna toastu pod nakladka przejscia tury (test sprawdza DOM); merge z main cc3c80b17 bez konfliktu
+
+## ROBOCZA 36609bb7 -- 2026-11-17 -- FALA 803: Preset playtest=mapa: prognoza Zakoncz ture od tury 1 (markCityStateDirty) (testowa)
+
+- main.ts: markCityStateDirty() po dodaniu miast presetu w doStartPlaytestMapaSwiata (tylko sciezka testowa playtest=mapa); test statyczny obu presetow
+- Weryfikacja: tsc 0; logic 213/213; playtest-mapa-dirty-forecast 10/0 + mutacje czerwone; unit-replace 21/21; combat 6/6; zywy Chromium: kandydat ma prognoze w t1, wariant bez poprawki forecast=null (2 z 2 przebiegow)
+- Limity: dotyczy tylko presetu testowego playtest=mapa, nie normalnej gry; test jest tekstowy (trafilby tez w komentarz); NIE ZMIERZONO live dla playtest=miasto
+
+## ROBOCZA 1ddbed4b -- 2026-11-17 -- FALA 802: Zastap: Oszczepnik i Oszczepnik Zulu przechodza do Lucznika (lancuch oszczepnik-lucznik-procarz) (testowa)
+
+- tabela zamian (units.json): Oszczepnik i Oszczepnik Zulu (Izijula) -> Lucznik; wyjatek AI w ai-era-unit-promotion.ts; testy promotion-table i archer-slinger
+- Weryfikacja: tsc 0; logic 213/213; promotion-table PASS bez cykli; archer-slinger 51/0; ai-era-unit-promotion 17/0; ai-unit-replace-same-rules 45/0; unit-replace 21/21; combat 6/6; mutacje czerwone (Evaluator i FC)
+- Limity: NIE ZMIERZONO: zywy Chromium okna Zastap; Estolica Inkow nadal -> Procarz (decyzja A: tylko Lucznik, w temacie RANGEDHEALTH); unit-replace-full-cost 39/1 = dlug bazowy; dlug Rust REPIN tabeli zamian
+
 ## ROBOCZA 0295087e -- 2026-11-17 -- FALA 801: Gracz zawsze niebieski, przeciwnik czerwony w KAZDEJ sciezce i roli bitwy (PLAYERBLUE) + minimapa bitwy wg strony gracza (MINIMAP) (testowa)
 
 - Kolor jest przypisany do gracza i przeciwnika, nie do atakujacego i broniacego: Szczegoly bitwy (endDetails1E), panel Obrona muru/garnizon (siegeHud1E), werdykt w podsumowaniu po bitwie (postBattleSummary), preset playtest i oblezenie z rola gracza; minimapa bitwy zbiera kolor przez helper minimapUnitColor (zachowanie bez zmian). Werdykt po bitwie traci zielen, jest niebieski/czerwony wg gracza

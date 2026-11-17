@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "0295087e7b7e6294e0c26d274f1d4413",
-  "bundleSha256": "3057f7ddd52eb32f01c84f0e39baa38fa7ecacee80dbf4a6dab3178c49d9c66a",
-  "bundleBytes": 14852117,
+  "bundleMd5": "f6449b22370cf5a7af9bcc1e91afac60",
+  "bundleSha256": "24d5edbec0768febe0992991a895ed8b1edabbe28c93b3d611b3d3e2aa7ce0e0",
+  "bundleBytes": 14856698,
   "sourceSnapshot": {
-    "source": "R-WEB-UI-BATTLE-PLAYER-ALWAYS-BLUE-ALL-PATHS-Q1 r1 abca05c45 + MINIMAP 5a26c74bb, main 6476789",
+    "source": "build Vite z merge FC 002c4bcd6 (raport c659c6d61) na main 32c13e63",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 801: Kolor jest przypisany do gracza i przeciwnika, nie do atakujacego i broniacego: Szczegoly bitwy (endDetails1E), panel Obrona muru/garnizon (siegeHud1E), werdykt w podsumowaniu po bitwie (postBattleSummary), preset playtest i oblezenie z rola gracza; minimapa bitwy zbiera kolor przez helper minimapUnitColor (zachowanie bez zmian). Werdykt po bitwie traci zielen, jest niebieski/czerwony wg gracza"
+    "FALA 808: units.json: Procarz i Procarz (Huaracoc) piercing 2, fieldPower 14; combat.ts: rangedShotBase/isPiercingShotShooter, auto-walka rangedShotDamage; battleScene.ts: strzal Procarza przez rangedShotBase; karta i tooltip Procarza z opisem przebicia; test procarz-piercing-shot. Lucznik i Oszczepnik bez zmian."
   ],
   "verification": [
-    "tsc 0; testy battle-player-always-blue, battle-minimap-side-colors, battle-side-colors-3d, tempo-minimap-brand, hp-display, damage-colors, map-field-battle, minimap-viewport-rect-follow zielone; zywy Chromium xvfb 12/12 w 2 rozdzielczosciach (1024x640, 1280x720) i 2 rolach; mutacje czerwienia; FC PASS-WITH-NOTES"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; procarz-piercing-shot ALL PASS (mutacje czerwone); ranged-damage-mult PASS; unit-card-ranged-mult OK; ranged-health-card-align 5/0; archers-health 10/0; unit-power 6/0; hit-mode-consistency 8/0"
   ],
   "limits": [
-    "NIE ZMIERZONO na zywo: werdykt po bitwie, endDetails1E i siegeHud1E dla obroncy-gracza, okno przed bitwa, zrzuty t0. Dlug Rust: REPIN palety stron. Pliki poza literalna allowlista (postBattleSummary.ts, oblezenie/main.ts) zaakceptowane"
+    "NIE ZMIERZONO: zywy Chromium (bitwa Procarz vs pancerz 6, karta), pomiar 10 Procarzy vs 10 Falang/Triari; przebicie to jedno pole, wiec Procarz we wrecz tez ma przebicie 2 (cios 0 -> 2) - do decyzji wlasciciela; dlug: komentarz unit-power.ts ~187-190 nieaktualny; dlug Rust REPIN units.json i rangedShotBase"
   ],
-  "finalControl": "R-WEB-UI-BATTLE-PLAYER-ALWAYS-BLUE-ALL-PATHS-Q1 r1 FC PASS-WITH-NOTES abca05c45 + MINIMAP 5a26c74bb",
+  "finalControl": "R-WEB-UNIT-PROCARZ-PIERCING-ARMOR-REDUCTION-Q1 r1 FC PASS-WITH-NOTES c659c6d61 (kod 002c4bcd6)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T17:10:48",
+  "hubGeneratedAt": "2026-11-17T19:47:31",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "0295087e7b7e6294e0c26d274f1d4413",
-      "sizeBytes": 14852117
+      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
+      "sizeBytes": 14856698
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "0295087e7b7e6294e0c26d274f1d4413",
-      "sizeBytes": 14852117
+      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
+      "sizeBytes": 14856698
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "0295087e7b7e6294e0c26d274f1d4413",
-      "sizeBytes": 14852117
+      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
+      "sizeBytes": 14856698
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "0295087e7b7e6294e0c26d274f1d4413",
-      "sizeBytes": 14852117
+      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
+      "sizeBytes": 14856698
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "0295087e7b7e6294e0c26d274f1d4413",
-      "sizeBytes": 14852117
+      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
+      "sizeBytes": 14856698
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "0295087e7b7e6294e0c26d274f1d4413",
-      "sizeBytes": 14852117
+      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
+      "sizeBytes": 14856698
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "0295087e7b7e6294e0c26d274f1d4413",
-      "sizeBytes": 14852117
+      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
+      "sizeBytes": 14856698
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "0295087e7b7e6294e0c26d274f1d4413",
-      "sizeBytes": 14852117
+      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
+      "sizeBytes": 14856698
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "0295087e7b7e6294e0c26d274f1d4413",
-      "sizeBytes": 14852117
+      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
+      "sizeBytes": 14856698
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "0295087e7b7e6294e0c26d274f1d4413",
-      "sizeBytes": 14852117
+      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
+      "sizeBytes": 14856698
     }
   ],
-  "md5": "0295087e7b7e6294e0c26d274f1d4413",
+  "md5": "f6449b22370cf5a7af9bcc1e91afac60",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

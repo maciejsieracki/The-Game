@@ -49,7 +49,8 @@ export interface CivTestDeps {
   /** REALNE zalozenie miasta gracza (jak klik). */
   foundPlayerCity: (q: number, r: number) => boolean;
   /** Dodanie jednostki wlasciciela na heksie (szablon z istniejacej jednostki). Zwraca id albo null. */
-  addUnit: (ownerId: number, q: number, r: number, civilian: boolean) => string | null;
+  /** R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1: opcjonalny typeId (klon wg units.json); bez niego jak dotąd. */
+  addUnit: (ownerId: number, q: number, r: number, civilian: boolean, typeId?: string) => string | null;
   setWar: (a: number, b: number) => void;
   /** Koniec tury gracza — w nim uruchamia sie automat ulepszen (REALNY `triggerPlayerEndTurn`). */
   endTurn: () => void;
@@ -151,7 +152,7 @@ export interface CivTestApi {
   setPolicy: (ownerId: number, patch: CivTestPolicyPatch) => unknown;
   foundCandidates: (limit: number) => Array<{ q: number; r: number }>;
   foundCity: (q: number, r: number) => boolean;
-  addUnit: (ownerId: number, q: number, r: number, civilian?: boolean) => string | null;
+  addUnit: (ownerId: number, q: number, r: number, civilian?: boolean, typeId?: string) => string | null;
   setWar: (a: number, b: number) => void;
   /** Wlacza log decyzji pickera (zbierany do bufora); zwraca nic. */
   debugOn: () => void;
@@ -216,7 +217,7 @@ export function installCivTestHooks(win: Record<string, unknown>, search: string
     setPolicy: (ownerId, patch) => { deps.setUlepszeniaPolicy(ownerId, patch); return deps.getUlepszeniaPolicy(ownerId); },
     foundCandidates: limit => deps.foundCandidates(limit),
     foundCity: (q, r) => deps.foundPlayerCity(q, r),
-    addUnit: (ownerId, q, r, civilian = false) => deps.addUnit(ownerId, q, r, civilian),
+    addUnit: (ownerId, q, r, civilian = false, typeId) => deps.addUnit(ownerId, q, r, civilian, typeId),
     setWar: (a, b) => deps.setWar(a, b),
     debugOn: () => { win.__civAutoImproveDebug = (e: unknown) => { buffer.push(e); }; },
     debugOff: () => { delete win.__civAutoImproveDebug; },

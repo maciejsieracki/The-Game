@@ -7,11 +7,11 @@
     "progChetnosci": 0.5,
     "progWzajemnyPokoj": 0.8,
     "progKoncaZmeczenia": 0.8,
-    "_progi": "progChetnosci=0,5 (chec pokoju); progWzajemnyPokoj=0,8 (wyjscie awaryjne po odrzuceniach); progKoncaZmeczenia=0,8 - WYLACZNIE skala krzywej PW (wearinessPeaceX: x=0 przy progChetnosci, x=1 przy progKoncaZmeczenia); progWymuszonyPokoj=1,0 (100%) - jedyny prog pokoju wymuszonego (wearinessForcedPeaceDue). Pokoj wymuszony jest zawsze platny miastami przegrywajacego (przy wyraznie przegrywajacym), nigdy bezwarunkowy.",
+    "_progi": "progChetnosci=0,5 (chęć pokoju); progWzajemnyPokoj=0,8 (wyjście awaryjne po odrzuceniach); progKoncaZmeczenia=0,8 - tylko próg pokazywany w widoku zmęczenia (war-weariness-view.ts: „AI proponuje pokój z miastami”), NIE wyzwala pokoju bezwarunkowego; progWymuszonyPokoj=1,0 (100%) - jedyny próg pokoju wymuszonego (wearinessForcedPeaceDue). Cena pokoju (R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1) = sekcja cenaPokoju (cenaStartPn*(1-L)), jedna dla panelu, AI i pokoju wymuszonego; przy L=1 cena 0 = pokój bez miast; cena>0 bez pełnego pokrycia miastami (np. tylko stolica) = wojna trwa.",
     "progWymuszonyPokoj": 1.0
   },
   "przegrywajacy": {
-    "_wzor": "desperacja = clamp(wagaZmeczenia*poziom + wagaSily*max(0,(udzialWyraznie-udzialSily)/udzialWyraznie) + wagaStrat*min(1,utraty/stratyNasycenie), 0, 1); stopien = liczba progow <= desperacja (progiStopni=0,25 / 0,45 / 0,65; stopnie 0..3). W ofercie tylko MIASTA (planEscalatedPeacePayment; zloto i surowce nie wchodza w oferte zmeczenia). Limit miast (stageCityLimit, war-weariness.ts:113-117): stopien 1 = 1 miasto; stopien 2 = nadal 1 miasto, wyzszy mnoznik oferty (mnozniStopni); stopien 3 = do maxMiastNaPokoj=2 miast. Limit efektywny = min(limit stopnia, miasta przegrywajacego - minMiastPoOddaniu), a 0 miast, gdy battlePending (war-weariness.ts:292-294).",
+    "_wzor": "desperacja = clamp(wagaZmeczenia*poziom + wagaSily*max(0,(udzialWyraznie-udzialSily)/udzialWyraznie) + wagaStrat*min(1,utraty/stratyNasycenie), 0, 1); stopien = liczba progow <= desperacja (progiStopni=0,25 / 0,45 / 0,65; stopnie 0..3) - stopień decyduje WYŁĄCZNIE o tym, czy przegrywający składa ofertę (stopień > 0). Oferta zmęczenia = tylko MIASTA za JEDNĄ cenę wearinessPeaceCashPn(L) (bez mnożników stopnia/odrzuceń i bez limitu liczby miast): liczba miast = minimum równoważące cenę (planCityPeacePayment), stolica nigdy; cena > 0 bez pełnego pokrycia = pokój nie zapada; 0 miast, gdy battlePending.",
     "udzialWyraznie": 0.45,
     "wagaZmeczenia": 0.5,
     "wagaSily": 0.5,
@@ -22,19 +22,10 @@
       0.45,
       0.65
     ],
-    "mnozniStopni": [
-      1,
-      1.5,
-      2,
-      2.5
-    ],
-    "mnoznikNaOdrzucenie": 0.2,
-    "maxMiastNaPokoj": 2,
-    "minMiastPoOddaniu": 3,
     "cooldownOfertTur": 3,
-    "_wyczerpanie": "Wyjscie awaryjne (zarzut 2): gdy szczyt zmeczenia >= progWzajemnyPokoj i odrzucono >= odrzuceniaDoKapitulacji ofert, wygrywajacy (rowniez wyczerpany) przyjmuje to, co przegrywajacy realnie moze zaplacic (nawet czesciowo) - pokoj nie jest blokowany niedoborem majatku.",
+    "_wyczerpanie": "Wyjscie awaryjne (zarzut 2): gdy szczyt zmeczenia >= progWzajemnyPokoj i odrzucono >= odrzuceniaDoKapitulacji ofert, wygrywajacy (rowniez wyczerpany) przyjmuje oferte mimo ujemnej tolerancji bilansu - ale cena > 0 nadal musi byc pokryta miastami w calosci (R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1).",
     "odrzuceniaDoKapitulacji": 3,
-    "_LIVE_AUDIT_Q1": "R-WEB-AI-WAR-WEARINESS-LIVE-AUDIT-Q1: (1) wyraznie przegrywajacy skladaja oferty BEZ czekania na zmeczenie pary >= progChetnosci (bylo: min. ~100 tur wojny), ale nie wczesniej niz ofertaOdTurWojny, a bez zadnej utraty miasta dopiero od ofertaBezStratOdTur; (2) ochrona przed snowballem: przegrywajacy z <= ochronaMaxMiast miastami (po >= 1 utracie) albo z >= ochronaUtratyWojny utratami w tej wojnie -> zwyciezca MUSI przyjac oferte (bez dalszych miast - minMiastPoOddaniu); (3) symetria: zmeczenie obniza wymagania zwyciezcy o tolerancjaZmeczenia*poziom*cena.",
+    "_LIVE_AUDIT_Q1": "R-WEB-AI-WAR-WEARINESS-LIVE-AUDIT-Q1: (1) wyraznie przegrywajacy skladaja oferty BEZ czekania na zmeczenie pary >= progChetnosci (bylo: min. ~100 tur wojny), ale nie wczesniej niz ofertaOdTurWojny, a bez zadnej utraty miasta dopiero od ofertaBezStratOdTur; (2) ochrona przed snowballem: przegrywajacy z <= ochronaMaxMiast miastami (po >= 1 utracie) albo z >= ochronaUtratyWojny utratami w tej wojnie -> zwyciezca MUSI przyjac oferte (bez dalszych miast); (3) symetria: zmeczenie obniza wymagania zwyciezcy o tolerancjaZmeczenia*poziom*cena.",
     "ofertaOdTurWojny": 3,
     "ofertaBezStratOdTur": 6,
     "ochronaMaxMiast": 3,
@@ -44,10 +35,14 @@
     "karencjaPoPokojuTur": 40,
     "karencjaChronionegoTur": 100
   },
+  "cenaPokoju": {
+    "_opis": "R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (decyzja właściciela 2026-11-17): cena pokoju po wojnie = cenaStartPn × (1 − L), L = poziom zmęczenia wojną pary (0..1). Na starcie wojny ok. 3 miasta przegrywającego (≈ 6000 PN); przy L = 1 cena 0 (pokój bez oddania miasta). Funkcja: war-weariness.ts wearinessPeaceCashPn.",
+    "cenaStartPn": 6000
+  },
   "czlowiek": {
     "_opis": "AI przegrywajace z graczem: oferuj_miasto_za_pokoj - prog rw rosnie o rwProgBonusMax*desperacja, min. miast AI spada do minMiastAi (gracz decyduje o przyjeciu).",
     "rwProgBonusMax": 0.25,
     "minMiastAi": 2,
-    "_pozycjaPW": "R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: zmeczenie wojna przy pokoju zadanym przez AI to POZYCJA PW (nie rabat): x=clamp((L-progChetnosci)/(progKoncaZmeczenia-progChetnosci),0,1), Z=round(C*x^2) (krzywa kwadratowa, ABC 2026-11-14). Stary rabat ceny 60% USUNIETY. Kod: war-weariness.ts wearinessPeaceItemPw."
+    "_pozycjaPW": "R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: stara pozycja PW „zmęczenie” (Z=round(C*x^2), krzywa kwadratowa) USUNIĘTA - jedyna cena pokoju to cenaPokoju (wearinessPeaceCashPn). Pole czlowiek.rwProgBonusMax/minMiastAi: nieużywane w kodzie od tej zmiany (zostają jako parametry historyczne)."
   }
 }

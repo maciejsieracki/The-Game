@@ -51,6 +51,7 @@ import { formatEntityDisplayName } from '../game/display-names';
 import type { DaninaLabel } from '../game/danina-nazwa';
 import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
 import { fieldPower } from '../game/unit-power';
+import { isPiercingShotShooter } from '../game/combat';
 import type { VeteranProgress } from '../game/veteran';
 import {
   buildPathLevelIconsRowHtml,
@@ -903,7 +904,10 @@ function buildUnitExpandedStatsHtml(u: UnitContextTooltipInput): string {
     { label: 'Pancerz', html: unitCardStatValueHtml(combat.pancerzEffective, combat.pancerzBase) },
     { label: 'HP max', html: unitCardStatValueHtml(combat.hpMaxEffective, combat.hpMaxBase) },
     { label: 'Atak dystansowy', html: unitCardStatValueHtml(combat.missileAttackEffective, combat.missileAttackBase)
-      + (combat.rangedDamageMult > 1 ? ` <span class="uc-stat-eff">×${combat.rangedDamageMult} obrażeń pocisku</span>` : '') },
+      + (combat.rangedDamageMult > 1 ? ` <span class="uc-stat-eff">×${combat.rangedDamageMult} obrażeń pocisku</span>` : '')
+      // PROCARZ-PIERCING: strzał z przebiciem liczy się jak cios wręcz (decyzja właściciela 2026-11-17).
+      + (isPiercingShotShooter({ counterTyp: combat.Typ }) && combat.piercingEffective > 0
+        ? ` <span class="uc-stat-eff">przebicie ${combat.piercingEffective}: strzał liczy się jak cios wręcz</span>` : '') },
     { label: 'Zasięg', html: `<span class="uc-stat-eff">${u.zasieg ?? 0}</span>` },
     { label: 'Ruch max', html: `<span class="uc-stat-eff">${u.ruchMax}</span>` },
   ];

@@ -39,14 +39,14 @@
 - **Próg różnicy siły w grze wynosi 0**: każda różnica decyduje. Wartość w `diplomacy-war-peace-params.json:progRozniceSilyPokoj` można zmienić bez kodu (np. 20 = różnica ±20% nie wymusza odrzucenia).
 - **Miasto jako jedyny słodzik.** Ceny pokoju są płacone wyłącznie miastami. Złoto i surowce nie wchodzą w ofertę pokoju.
 - **Minimalny czas wojny** zależy od profilu cywilizacji: od 1 do 8 tur (domyślnie 5). Przed tym czasem AI odrzuca pokój zawsze (`diplomacy-war-peace-params.json:minTurWojny`). Niezależnie od profilu obowiązuje wspólna blokada: pierwsze 10 pełnych tur wojny nie przyjmuje żadnej propozycji pokoju ani rozejmu, także od AI (`PEACE_PROPOSAL_MIN_WAR_TURNS = 10`, `diplomacy-peace-proposal-timing.ts`). Obie bramki obowiązują jednocześnie.
-- **Cena pokoju jest stała: 615 PW** (`diplomacy-acceptance-points.json:traktaty.pokoj.punkty`). Bez mnożnika cywilizacji i bez zależności od tury wojny (ABC 2026-11-14, R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615). Mnożnik ceny w ocenie AI = 1.
+- **Cena pokoju maleje ze zmęczeniem: 6000 PN na starcie wojny, 0 przy zmęczeniu 100%** (`war-weariness-params.json:cenaPokoju.cenaStartPn`, funkcja `wearinessPeaceCashPn`: cena = 6000 × (1 − L), L = poziom zmęczenia pary, ABC 2026-11-17, R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1). Ta sama cena dla panelu dyplomacji, decyzji AI, AI↔AI i pokoju wymuszonego. Rozejm ma osobną wycenę. Bramka relacji: przy relacji, dla której wycena bazowa daje 0, cena pozostaje 0.
 
 ### Zmęczenie wojną a pokój
 
 Licznik zmęczenia (5% na turę od startu wojny, +10% za każde zmienione miasto, patrz hasło **Zmęczenie wojną**) zmienia zasady pokoju:
 - **50%** — silniejsza strona obniża cenę pokoju, słabsza szuka pokoju;
 - **80%** — AI proponuje pokój z miastami przegrywającego (bez pokoju bezwarunkowego);
-- **100%** — **pokój wymuszony**: wyraźnie przegrywający oddaje miasta do zrównoważenia ceny (min. 3 miasta zostają, stolica nigdy); przy remisie sił albo cenie 0 pokój bez miast (patrz hasło **Zmęczenie wojną**).
+- **100%** — **pokój wymuszony**: wyraźnie przegrywający oddaje miasta do zrównoważenia ceny (oddaje tyle miast, ile trzeba do pokrycia ceny; stolica nigdy; brak progu min. 3 miast); przy remisie sił albo cenie 0 (zmęczenie 100%) pokój bez miast (patrz hasło **Zmęczenie wojną**).
 
 Pierwsze propozycje pokoju AI pojawiają się od tury 10 wojny.
 
@@ -115,4 +115,4 @@ Wojna trwa 12 tur. Gracz proponuje rozejm na 10 tur. Po 10 turach pojawia się p
 
 Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1, runda 3). Zasady pokoju (siła militarna zamiast Power, miasto jako jedyny słodzik, usunięcie warunku „czuje się silniejsze” i mnożnika ceny od siły) są wdrożone (kroki 4a i 4b, FALA 685). Dawne wiersze tabeli (odrzucenie rw 0,55, odrzucenie po 10 turach) zostały usunięte, bo bramka `evaluatePeaceAiGate` ich nie używa.
 
-Rozbieżność do zgłoszenia: opis w `war-weariness-params.json` (`przegrywajacy`, stopnie 1–3) wspomina złoto i surowce, a kod (`war-weariness.ts`, plan zapłaty eskalowanej) używa wyłącznie miast. Hasło podaje stan z kodu.
+Od 2026-11-17 (R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1) opis w `war-weariness-params.json` i kod są zgodne: oferta pokoju zmęczenia to wyłącznie miasta za jedną cenę (`wearinessPeaceCashPn`), w liczbie minimalnej równoważącej cenę (`planCityPeacePayment`).

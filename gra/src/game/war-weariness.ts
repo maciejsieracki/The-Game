@@ -10,6 +10,7 @@
 import paramsRaw from '../../data/war-weariness-params.json';
 import {
   isAiAiPeaceBalanceAllowed,
+  planCityPeacePayment,
   type PeaceAsset,
   type PeacePaymentPlan,
 } from './diplomacy-ai-forced-peace';
@@ -19,15 +20,15 @@ import { peaceStanceOf, type PeaceStanceSide } from './diplomacy-military-streng
 export interface WarWearinessParams {
   zmeczenie: {
     pelneTur: number; wagaStratMiasta: number; progChetnosci: number; progWzajemnyPokoj: number;
-    /** Skala krzywej PW (wearinessPeaceX): x = 0 przy progChetnosci, x = 1 przy tym progu. NIE wyzwala pokoju bezwarunkowego. */
+    /** Prog 80% pokazywany w widoku zmeczenia (war-weariness-view.ts: „AI proponuje pokoj z miastami”). NIE wyzwala pokoju bezwarunkowego. */
     progKoncaZmeczenia: number;
     /** DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: od tego poziomu pokój jest WYMUSZONY (1,0 = 100%). */
     progWymuszonyPokoj: number;
   };
   przegrywajacy: {
     udzialWyraznie: number; wagaZmeczenia: number; wagaSily: number; wagaStrat: number; stratyNasycenie: number;
-    progiStopni: number[]; mnozniStopni: number[]; mnoznikNaOdrzucenie: number; maxMiastNaPokoj: number;
-    minMiastPoOddaniu: number; cooldownOfertTur: number; odrzuceniaDoKapitulacji: number;
+    progiStopni: number[];
+    cooldownOfertTur: number; odrzuceniaDoKapitulacji: number;
     /** LIVE-AUDIT-Q1: najwcześniejsza tura wojny, od której wyraźnie przegrywający składa ofertę (bez czekania na zmęczenie). */
     ofertaOdTurWojny: number;
     /** LIVE-AUDIT-Q1: gdy przegrywający nie stracił żadnego miasta — oferta dopiero od tylu tur wojny. */
@@ -46,6 +47,8 @@ export interface WarWearinessParams {
     karencjaChronionegoTur: number;
   };
   czlowiek: { rwProgBonusMax: number; minMiastAi: number };
+  /** R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: cena pokoju = cenaStartPn × (1 − L). */
+  cenaPokoju: { cenaStartPn: number };
 }
 
 export const WAR_WEARINESS_PARAMS = paramsRaw as unknown as WarWearinessParams;
@@ -83,31 +86,14 @@ export function warWearinessLevel(inp: WarWearinessInput, P: WarWearinessParams 
 }
 
 /**
- * R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (ABC właściciela 2026-11-14: krzywa KWADRATOWA, stary rabat 60% usunięty).
- * Zmęczenie wojną jako POZYCJA PW przy pokoju zadanym przez AI (nie rabat ceny):
- *   x = clamp((L − progChetnosci) / (progKoncaZmeczenia − progChetnosci), 0, 1),  Z = round(C × x²).
- * C = cena pokoju (PN; stała z diplomacy-acceptance-points.json, bez mnożnika cywilizacji), L = poziom zmęczenia 0..1. Z trafia do tabeli PW po stronie
- * niebędącej proponującym; reszta do pokrycia R = C − Z (miasto). Przy L ≥ progKoncaZmeczenia: Z = C, R = 0.
- * Czysta funkcja; bez `rabatCenyPokojuMax` (usunięty z JSON).
+ * R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (decyzja właściciela 2026-11-17): cena pokoju w PN po wojnie maleje
+ * liniowo z poziomem zmęczenia pary: cena = round(cenaStartPn × (1 − L)), L = clamp(level, 0, 1).
+ * Na starcie wojny (L = 0) ≈ 6000 PN (3 miasta przegrywającego); przy L = 1 cena 0 (pokój bez oddania miasta).
+ * Jedyne miejsce liczenia tej ceny (jedna prawda). Czysta funkcja.
  */
-export function wearinessPeaceItemPw(
-  priceC: number,
-  level: number,
-  P: WarWearinessParams = WAR_WEARINESS_PARAMS,
-): number {
-  const x = wearinessPeaceX(level, P);
-  return Math.round(Math.max(0, priceC) * x * x);
-}
-
-/**
- * R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (runda 2, „jedna prawda"): x = clamp((L − progChetnosci)/(progKoncaZmeczenia
- * − progChetnosci), 0, 1) — JEDNA funkcja dla tabeli PW (wearinessPeaceItemPw) i dla decyzji AI o pokoju
- * bezwarunkowym (ai.ts: wearinessPeaceX(L) >= 1 ⇔ R = C − Z = 0).
- */
-export function wearinessPeaceX(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): number {
-  const t = P.zmeczenie.progChetnosci;
-  const span = Math.max(1e-9, P.zmeczenie.progKoncaZmeczenia - t);
-  return clamp((level - t) / span, 0, 1);
+export function wearinessPeaceCashPn(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): number {
+  const start = Math.max(0, P.cenaPokoju.cenaStartPn);
+  return Math.round(start * (1 - clamp(level, 0, 1)));
 }
 
 export function isWarWeary(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): boolean {
@@ -139,46 +125,10 @@ export function despairStage(despair: number, P: WarWearinessParams = WAR_WEARIN
 }
 
 /**
- * Ile miast wolno oddać na danym stopniu (0 / 1 / maxMiastNaPokoj). Od R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1
- * stopień 1 oddaje pierwsze miasto (złoto i surowce nie są już walutą pokoju zmęczenia).
+ * Plan zapłaty miastami (re-eksport z diplomacy-ai-forced-peace: jedna implementacja dla pokoju wymuszonego, ofert
+ * dobrowolnych i próśb AI↔AI). Zob. planCityPeacePayment.
  */
-export function stageCityLimit(stage: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): number {
-  if (stage <= 0) return 0;
-  if (stage <= 2) return Math.min(1, P.przegrywajacy.maxMiastNaPokoj);
-  return P.przegrywajacy.maxMiastNaPokoj;
-}
-
-/** Mnożnik wartości oferty: bazowy stopnia + przyrost za każdą odrzuconą ofertę. */
-export function offerMultiplier(stage: number, rejectedOffers: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): number {
-  const arr = P.przegrywajacy.mnozniStopni;
-  const base = arr[Math.min(Math.max(0, stage), arr.length - 1)] ?? 1;
-  return base * (1 + P.przegrywajacy.mnoznikNaOdrzucenie * Math.max(0, rejectedOffers));
-}
-
-/**
- * Plan zapłaty eskalowanej: WYŁĄCZNIE miasta (R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: złoto i surowce nie wchodzą w ofertę
- * zmęczenia). Do `maxCities` miast: najtańsze pokrywające resztę, inaczej najcenniejsze i kolejne. Miasta `forbidden`
- * (stolica / ostatnie) nigdy. maxCities=0 → plan pusty. Czysta, deterministyczna (remisy: mniejsze id).
- */
-export function planEscalatedPeacePayment(requiredPn: number, assets: readonly PeaceAsset[], maxCities: number): PeacePaymentPlan {
-  const items: PeaceAsset[] = [];
-  let covered = 0;
-  const need0 = Math.max(0, Math.ceil(requiredPn));
-  let rem = need0;
-  const byId = (a: PeaceAsset, b: PeaceAsset): number => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
-  const pool = assets.filter(a => a.kind === 'miasto' && !a.forbidden && a.pn > 0)
-    .sort((a, b) => a.pn - b.pn || byId(a, b));
-  for (let n = 0; n < maxCities && rem > 0 && pool.length > 0; n++) {
-    const cover = pool.find(c => c.pn >= rem) ?? pool[pool.length - 1]!;
-    pool.splice(pool.indexOf(cover), 1);
-    items.push(cover);
-    covered += cover.pn;
-    rem -= cover.pn;
-  }
-  const histogram = { zloto: 0, surowiec_ilosc: 0, miasto: 0 };
-  for (const it of items) histogram[it.kind] += 1;
-  return { items, coveredPn: covered, shortfallPn: Math.max(0, need0 - covered), full: covered >= need0, histogram };
-}
+export const planEscalatedPeacePayment = planCityPeacePayment;
 
 // ---------------------------------------------------------------------------
 // Stan pary (save/load) + tick AI↔AI
@@ -238,7 +188,8 @@ export interface WearinessTickDeps {
    */
   weakerOf?: (x: number, y: number) => number;
   cityCountOf: (owner: number) => number;
-  price: (winner: number, loser: number) => { requiredPn: number; balanceFor: (coveredPn: number) => number; tolerancePn: number; loserBalanceFor?: (coveredPn: number) => number };
+  /** R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: `level` = poziom zmęczenia pary (cena pokoju = wearinessPeaceCashPn(level)). */
+  price: (winner: number, loser: number, level: number) => { requiredPn: number; balanceFor: (coveredPn: number) => number; tolerancePn: number; loserBalanceFor?: (coveredPn: number) => number };
   assets: (loser: number, winner: number, skipCityIds: ReadonlySet<string>) => PeaceAsset[];
   cityCessionOk: (cityId: string, loser: number, winner: number) => boolean;
   battlePending: boolean;
@@ -298,20 +249,23 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     const ownCities = d.cityCountOf(loser);
     const protectedLoser = (ownCities <= L.ochronaMaxMiast && lostLoser >= 1) || lostLoser >= L.ochronaUtratyWojny;
     // DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: 100% zmęczenia = pokój WYMUSZONY. Wyraźnie przegrywający
-    // oddaje tyle miast, ile trzeba do zrównoważenia ceny pokoju (bez stałego limitu 1–2; nigdy stolica, nigdy poniżej
-    // minMiastPoOddaniu). Brak wyraźnie przegrywającego albo cena 0 → pokój BEZ miast. Bez bramki bilansu.
+    // oddaje tyle miast, ile trzeba do zrównoważenia ceny pokoju (bez stałego limitu 1–2; nigdy stolica; BEZ progu
+    // min. 3 miast — decyzja właściciela 2026-11-17). Brak wyraźnie przegrywającego albo cena 0 → pokój BEZ miast.
+    // Uwaga: przy progWymuszonyPokoj = 1,0 cena = 0 (wearinessPeaceCashPn(1) = 0), więc gałąź „cena > 0” jest
+    // nieosiągalna do czasu osobnej decyzji ABC o progu/cenie minimalnej (DECISION_REQUIRED w raporcie). Bez bramki bilansu.
     // Bitwa w toku (battlePending): pokój wymuszony ODROCZONY na następną turę (ABC orkiestratora, zarzut FC 1+2).
     if (wearinessForcedPeaceDue(lvl, P) && d.battlePending) { none(); continue; }
     if (wearinessForcedPeaceDue(lvl, P)) {
       const lockEnd = protectedLoser ? L.karencjaChronionegoTur : L.karencjaPoPokojuTur;
-      const price = d.price(winner, loser);
-      const cityCap = d.battlePending ? 0 : Math.max(0, ownCities - L.minMiastPoOddaniu);
+      // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: cena = cenaPokojuPn(L) (malejąca; 0 przy 100%). Bez progu min. 3 miast.
+      const cashPn = wearinessPeaceCashPn(lvl, P);
+      const cityCap = d.battlePending ? 0 : Math.max(0, ownCities);
       const clearLoser = loserShare <= L.udzialWyraznie;
       let forcedPlan: PeacePaymentPlan | undefined;
-      if (clearLoser && price.requiredPn > 0 && cityCap > 0) {
+      if (clearLoser && cashPn > 0 && cityCap > 0) {
         const skipF = new Set<string>();
         const cityPlan = (): PeacePaymentPlan => planEscalatedPeacePayment(
-          price.requiredPn, d.assets(loser, winner, skipF).filter(x => x.kind === 'miasto'), cityCap);
+          cashPn, d.assets(loser, winner, skipF).filter(x => x.kind === 'miasto'), cityCap);
         forcedPlan = cityPlan();
         for (let guard = 0; guard < 8; guard++) {
           const bad = forcedPlan.items.find(i => !d.cityCessionOk(i.id, loser, winner));
@@ -322,6 +276,8 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
         if (forcedPlan.items.length > 0) d.pay(loser, winner, forcedPlan);
       }
       const given = forcedPlan?.histogram.miasto ?? 0;
+      // Cena > 0 i brak pełnego pokrycia miastami (np. tylko stolica) → pokój NIE zapada, wojna trwa (stan pary zostaje).
+      if (cashPn > 0 && !forcedPlan?.full) { none(); continue; }
       d.finalize(loser, winner, lockEnd);
       d.log?.(`pokój WYMUSZONY AI${loser}↔AI${winner} przy zmęczeniu ${lvl.toFixed(2)}; miasta oddane: ${given}`);
       d.store.delete(key);
@@ -336,7 +292,7 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     if (w.turnsAtWar < L.ofertaOdTurWojny) { none(); continue; }
     if (lostLoser <= 0 && w.turnsAtWar < L.ofertaBezStratOdTur && !isWarWeary(lvl, P)) { none(); continue; }
     // R-WEB-DIPLO-WEARINESS-UNCONDITIONAL-END-Q1: cena pokoju 0 → pokój bez oddawania miasta (także przy jednym mieście).
-    const price = d.price(winner, loser);
+    const price = d.price(winner, loser, lvl);
     const priceZero = price.requiredPn <= 0;
     // Zmiana 4: słabsza strona z JEDNYM miastem nie kupuje pokoju do końca wojny (cena 0 nie jest zakupem).
     if (ownCities <= 1 && !priceZero) { none(); continue; }
@@ -347,10 +303,11 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     if (st.stage <= 0) { none(); continue; }
     if (st.lastOfferTurn >= 0 && d.turn - st.lastOfferTurn < P.przegrywajacy.cooldownOfertTur) { none(); continue; }
 
-    const required = price.requiredPn * offerMultiplier(st.stage, st.rejectedOffers, P);
-    const maxCities = d.battlePending
-      ? 0
-      : Math.max(0, Math.min(stageCityLimit(st.stage, P), ownCities - P.przegrywajacy.minMiastPoOddaniu));
+    // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (DR-2): JEDNA cena = price.requiredPn (= wearinessPeaceCashPn(L) po bramce
+    // relacji) — bez mnożników stopnia/odrzuceń i bez limitu liczby miast; liczba miast = minimum równoważące cenę
+    // (planEscalatedPeacePayment), stolica nigdy. Bitwa w toku → brak oddawalnych miast.
+    const required = price.requiredPn;
+    const maxCities = d.battlePending ? 0 : Math.max(0, ownCities);
     const skip = new Set<string>();
     const planFor = (): PeacePaymentPlan => planEscalatedPeacePayment(required, d.assets(loser, winner, skip), maxCities);
     let plan = planFor();
@@ -370,9 +327,10 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     const tol = price.tolerancePn + Math.max(0, L.tolerancjaZmeczenia) * lvl * Math.max(0, required);
     // Regula nieujemnego bilansu AI↔AI (2026-11-09): ujemny bilans ktorejkolwiek AI blokuje pokoj takze przy ochronie/wyczerpaniu.
     const balanceOk = isAiAiPeaceBalanceAllowed(price.balanceFor(plan.coveredPn), price.loserBalanceFor?.(plan.coveredPn));
-    // Zmiana 4: pokój wymaga oddania co najmniej jednego miasta (także przy ochronie i wyczerpaniu).
-    const cityGiven = priceZero || plan.histogram.miasto > 0;
-    if (cityGiven && balanceOk && (mustAccept || exhausted || price.balanceFor(plan.coveredPn) >= -tol)) {
+    // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (decyzja właściciela): cena > 0 bez PEŁNEGO pokrycia miastami = pokój nie
+    // zapada, wojna trwa (także przy ochronie/wyczerpaniu — brak „częściowej” zapłaty).
+    const priceCovered = priceZero || plan.full;
+    if (priceCovered && balanceOk && (mustAccept || exhausted || price.balanceFor(plan.coveredPn) >= -tol)) {
       d.pay(loser, winner, plan);
       d.log?.(
         `pokój AI${loser}↔AI${winner} za cenę (stopień ${st.stage}${mustAccept ? ', ochrona przegrywającego' : exhausted ? ', wyczerpanie' : ''}, oferta #${st.rejectedOffers + 1}, zmęczenie ${lvl.toFixed(2)}); `
@@ -429,17 +387,4 @@ export function militaryWearinessWiring(
     shareOf: (x, y) => wearinessMilitaryShare(sideOf(x, y).sila, sideOf(y, x).sila),
     weakerOf: (x, y) => wearinessWeakerOf(x, y, sideOf),
   };
-}
-
-/**
- * Udział desperacji AI (ai.ts): udział SIŁY MILITARNEJ AI w parze (własna / suma). Brak danych siły po którejkolwiek
- * stronie → `fallbackRw` (dotychczasowy udział, tylko przy braku danych).
- */
-export function wearyMilitaryShare(
-  own: WearinessMilitarySide | undefined,
-  partner: WearinessMilitarySide | undefined,
-  fallbackRw: number,
-): number {
-  const sum = (own?.sila ?? 0) + (partner?.sila ?? 0);
-  return sum > 0 && own ? own.sila / sum : fallbackRw;
 }

@@ -1660,7 +1660,7 @@ import {
   registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
-import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
+import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, wearinessPeaceCashPn, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
 import { warWearinessPairView, peakForCurrentWar, warWearinessSideView, type WarWearinessPairView, type WarWearinessReference } from './game/war-weariness-view';
 import {
   isPeaceTreatyLocked,
@@ -18217,10 +18217,13 @@ async function boot(): Promise<void> {
       // R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: komunikat tuz przed bitwa musi byc ponad
       // pelnoekranowa scena bitwy (.overlay z-index 9999), inaczej jest niewidoczny.
       aboveBattle: boolean = false,
+      // R-WEB-UI-AMBUSH-SUCCESS-TOAST-IMMEDIATE-IN-AI-PHASE-Q1: komunikat zasadzki gracza ujawnionej
+      // w fazie AI ma ZARAZEM trafic do kolejki odroczonej (wpis „Ważne” zostaje) i pokazac sie od razu.
+      showNowDuringEot: boolean = false,
     ): void {
       if (shouldDeferEotEvents(endTurnInProgress)) {
         deferredEotHints.push({ msg, durationMs, ...ctx });
-        return;
+        if (!showNowDuringEot) return;
       }
       if (hintOverrideTimer !== null) {
         clearTimeout(hintOverrideTimer);
@@ -22013,7 +22016,7 @@ async function boot(): Promise<void> {
     function previewNegotiationEntryImpl(
       entry: PendingNegotiation,
       siblingOverride?: { givePn: number; receivePn: number },
-    ): { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: { turnsAtWar: number; lostCities: number; level: number } } {
+    ): { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: { turnsAtWar: number; lostCities: number; level: number; cenaPokojuPn?: number } } {
       const sibling = siblingOverride ?? livePackageSiblingFor(entry);
       // R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1: `authorOwnerId` DYNAMICZNY (entry, aktualizowany
       // przez applyCounterOffer po każdej kontrofercie) dopisany do ctx — jedyny konsument to
@@ -31122,7 +31125,22 @@ async function boot(): Promise<void> {
         for (const c of cities) if (c.ownerId === ME()) c.population = Math.max(c.population, 10);
         return tryFoundPlayerCityAt(q, r);
       },
-      addUnit: (ownerId, q, r, civilian) => {
+      addUnit: (ownerId, q, r, civilian, typeId) => {
+        if (typeId !== undefined) {
+          // R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1 (tylko ?civTest=1): klon wg units.json; nieznany typ -> null.
+          const typeDef = (data.units as any[]).find((u: any) => u['Jednostka'] === typeId);
+          if (!typeDef) return null;
+          const ruchT = applyRuchSwiataPace(normFieldVal(typeDef['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
+          const idT = `civtest-${ownerId}-${q}-${r}-${units.length}`;
+          units.push({
+            id: idT, ownerId, typeId, isGeneral: false,
+            category: categoryOf(typeId, String(typeDef['Rola'] ?? typeDef['Rola (linia)'] ?? ''), typeDef['Super-jednostka'] === 'TAK', typeDef['Typ']),
+            q, r, ruch: ruchT, ruchLeft: ruchT, inGarnizon: false,
+            ...bestBuildingProgressAfterCityVisit(undefined, undefined, data.buildings), // bez wizyty w mieście: 0 bonusów narodzin
+          } as RuntimeUnit);
+          syncUnitsRender();
+          return idT;
+        }
         const tpl = units.find(u => u.ownerId === ownerId && isCivilianUnit(u) === civilian)
           ?? units.find(u => isCivilianUnit(u) === civilian);
         if (!tpl) return null;
@@ -38733,6 +38751,17 @@ async function boot(): Promise<void> {
      * (planCityCession) i wycenę `diploMiastaWycenaDla`. Bilans zwycięzcy liczy `peaceOfferAiOwnBilans` (nie konstrukcja).
      * Skutki: pokój -> `finalizePeaceTreatyBetween` (blokada bez zmian); rozejm -> z `truceTurns`. Logika: runAiAiPeaceTick.
      */
+    /** R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: poziom zmęczenia pary (ta sama liczba co tick zmęczenia). */
+    function aiAiPairWearinessLevel(a: number, b: number): number {
+      const wa = diploWarStateFor(a, b);
+      const wb = diploWarStateFor(b, a);
+      return warWearinessLevel({
+        turnsAtWar: wa.turnsAtWar,
+        lostCitiesTotal: lostCitiesForWeariness(wa.lostCities, wb.lostCities),
+        turnsSinceCityChange: wa.turnsSinceCityChange,
+      });
+    }
+
     function tickAiAiPeaceRequests(battlePending: boolean): void {
       if (aiAiPeaceRequestByPairKey.size === 0) return;
       refreshObjectivePowerCache();
@@ -38771,12 +38800,14 @@ async function boot(): Promise<void> {
           const basePn = treatyBasePnFromConfig(kind, kind === 'rozejm' ? { turns: TRUCE_DEFAULT_TURNS } : undefined);
           const relTotal = treatyEvalRelationTotal(getDiploRelation(winner, loser));
           const difficulty = effectiveGameDifficultyForOwner(winner);
-          // R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1: cena podniesiona tak, by bilans zwyciezcy doszedl do >= 0;
-          // bilans przegranego (zaplata = jego `aiGive`) liczony z jego relacji; ujemny u ktorejkolwiek AI blokuje pokoj.
-          const requiredPn = aiAiPeaceRequiredPn(
+          // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: JEDNA cena pokoju = wearinessPeaceCashPn(L) (rozejm bez zmian).
+          // Bramka relacji (zero dla relacji, przy ktorej dzisiejsza wycena daje 0) zostaje; stale 185/554 odpadaja.
+          const relBasedPn = aiAiPeaceRequiredPn(
             peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty),
             peaceOfferAiOwnBilans(0, 0, relTotal, basePn),
           );
+          const requiredPn = kind === 'rozejm' ? relBasedPn
+            : (relBasedPn > 0 ? wearinessPeaceCashPn(aiAiPairWearinessLevel(winner, loser)) : 0);
           const loserRelTotal = treatyEvalRelationTotal(getDiploRelation(loser, winner));
           return {
             requiredPn,
@@ -38845,16 +38876,18 @@ async function boot(): Promise<void> {
         // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: shareOf i weakerOf wg SIŁY MILITARNEJ (nie Power) — war-weariness.ts.
         ...militaryWearinessWiring(diploMilitarySideOf),
         cityCountOf: o => cities.filter(c => c.ownerId === o).length,
-        price: (winner, loser) => {
+        price: (winner, loser, level) => {
           const basePn = treatyBasePnFromConfig('pokoj');
           const relTotal = treatyEvalRelationTotal(getDiploRelation(winner, loser));
           const difficulty = effectiveGameDifficultyForOwner(winner);
           const loserRelTotal = treatyEvalRelationTotal(getDiploRelation(loser, winner));
+          // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: cena = wearinessPeaceCashPn(poziom pary); bramka relacji jak wyzej.
+          const relBasedPn = aiAiPeaceRequiredPn(
+            peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty),
+            peaceOfferAiOwnBilans(0, 0, relTotal, basePn),
+          );
           return {
-            requiredPn: aiAiPeaceRequiredPn(
-              peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty),
-              peaceOfferAiOwnBilans(0, 0, relTotal, basePn),
-            ),
+            requiredPn: relBasedPn > 0 ? wearinessPeaceCashPn(level) : 0,
             balanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(0, coveredPn, relTotal, basePn),
             loserBalanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(coveredPn, 0, loserRelTotal, basePn),
             tolerancePn: aiOfferPwSurplusTolerance(difficulty),
@@ -45794,7 +45827,7 @@ async function boot(): Promise<void> {
                     const ambOrder = resolveAmbushAfterMove(units, u, aiAmbushCutter.hit(), areEnemyOwners);
                     if (ambOrder !== undefined) {
                       const ambDef = ambOrder.defender;
-                      if (isMe(ambDef.ownerId)) showHintMessage('Zasadzka się powiodła', 4500);
+                      if (isMe(ambDef.ownerId)) showHintMessage('Zasadzka się powiodła', 4500, undefined, false, true);
                       commands.splice(ci + 1, 0, {
                         type: 'attack', unitId: u.id, targetUnitId: ambDef.id, ambush: true,
                       } as AICommand);
@@ -46692,7 +46725,7 @@ async function boot(): Promise<void> {
                   {
                     const barbAmb = buildBarbarianAmbushAttack(units, bu, barbAmbushHit, areEnemyOwners);
                     if (barbAmb !== undefined) {
-                      if (isMe(barbAmb.defender.ownerId)) showHintMessage('Zasadzka się powiodła', 4500);
+                      if (isMe(barbAmb.defender.ownerId)) showHintMessage('Zasadzka się powiodła', 4500, undefined, false, true);
                       barbCmds.splice(barbCmds.indexOf(bcmd) + 1, 0, barbAmb.cmd);
                       syncUnitsRender();
                     }
@@ -49025,6 +49058,10 @@ async function boot(): Promise<void> {
         ensureCitySaveDefaults(c);
         cities.push(c);
       }
+      // R-WEB-TEST-HOOK-PLAYTEST-MAPA-DIRTY-FORECAST-Q1 (K1): dołożenie miast presetu bez
+      // inwalidacji = brak prognozy bramki „Zakończ turę” w t1 (empireEconDirty/powerDirty).
+      // Tylko ścieżka presetu playtest=mapa; produkcja bez zmian.
+      markCityStateDirty();
 
       explored.clear();
       for (const k of preset.explored) explored.add(k);
@@ -49261,6 +49298,9 @@ async function boot(): Promise<void> {
         ensureCitySaveDefaults(c);
         cities.push(c);
       }
+      // R-WEB-TEST-HOOK-PLAYTEST-MAPA-DIRTY-FORECAST-Q1 (K1, mapa): dołożenie miast presetu
+      // bez inwalidacji = brak prognozy bramki „Zakończ turę” w t1. Tylko ścieżka presetu.
+      markCityStateDirty();
       reapplyCityHexDecorHides();
       syncWonderRender();
 

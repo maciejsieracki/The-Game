@@ -26,23 +26,25 @@ const exe = [process.env.CHROMIUM_PATH, '/usr/bin/chromium', ...(fs.existsSync('
     await page.waitForFunction(() => window.__pwTable?.ready === true, undefined, { timeout: 60000 });
     const st = await page.evaluate(() => window.__pwTable.states);
     console.log(JSON.stringify(st));
-    const early = st.find(s => s.id === 'wczesna');
-    const late = st.find(s => s.id === 'pozna');
-    const strong = st.find(s => s.id === 'silna');
-    const ok1 = early && early.wearinessPw > 0 && late && late.wearinessPw > early.wearinessPw;
-    const ok2 = strong && strong.wearinessPw === undefined && /wymaga miasta o wartości ≥ \d+ PW/.test(strong.reason || '');
-    if (!ok1) { bad++; console.error('FAIL: wiersz Z nie rosnie z turą (wczesna vs poznа)'); }
-    if (!ok2) { bad++; console.error('FAIL: silna AI bez wiersza Z i z komunikatem o cenie'); }
-    for (const id of ['wczesna', 'pozna', 'silna']) {
+    const price = id => st.find(x => x.id === id)?.wearinessInfo?.cenaPokojuPn;
+    const p11 = price('t11'), p20 = price('t20'), p30 = price('t30'), p40 = price('t40');
+    console.log('ceny PN z silnika (t11,t20,t30,t40):', p11, p20, p30, p40);
+    // 6000 x (1 - tury/40): 4350 / 3000 / 1500 / 0
+    const okMono = p11 === 4350 && p20 === 3000 && p30 === 1500 && p40 === 0;
+    if (!okMono) { bad++; console.error('FAIL: cena nie maleje 4350 -> 3000 -> 1500 -> 0 wraz z turami wojny'); }
+    for (const id of ['t11', 't20', 't30', 't40', 'silna']) {
       const el = await page.$(`section[data-state="${id}"]`);
       if (el) await el.screenshot({ path: path.join(outDir, `stol-${id}.png`) });
     }
     const rowTexts = await page.$$eval('.weariness', els => els.map(e => e.textContent + ' | ' + e.getAttribute('title')));
-    console.log('wiersze Z w DOM:', JSON.stringify(rowTexts));
+    console.log('wiersze ceny w DOM:', JSON.stringify(rowTexts));
+    const texts = {};
+    for (const id of ['t11', 't20', 't30', 't40']) texts[id] = await page.$eval(`section[data-state="${id}"]`, el => el.innerText);
+    const okDom = /Cena pokoju: 4[  .\s]?350 PN/.test(texts.t11) && /Cena pokoju: 0 PN/.test(texts.t40) && !/Zmęczenie wojną \+/.test(texts.t11 + texts.t20);
+    console.log('wiersz ceny widoczny w DOM (t11=4350, t40=0, brak starego wiersza Z):', okDom);
+    if (!okDom) { bad++; console.error('FAIL: wiersz ceny pokoju w DOM', JSON.stringify(texts.t11.slice(0, 300))); }
     const strongText = await page.$eval('section[data-state="silna"]', el => el.innerText);
-    const ok3 = strongText.includes('zmęczenie nie obniża tej ceny');
-    console.log('komunikat silnej AI widoczny w stole:', ok3);
-    if (!ok3) { bad++; console.error('FAIL: komunikat o cenie silnej AI nie jest widoczny w stole'); }
+    console.log('silna AI (tekst):', JSON.stringify(strongText.slice(0, 400)));
     if (errors.length) { bad++; console.error('PAGE ERRORS', errors); }
     await page.close();
   } finally { await browser.close(); await server.close(); }

@@ -80,13 +80,14 @@ const dmgOszcz = combat.rangedShotDamage(oszczepnik, oszczepnik.missileAttack, f
 const baseProcarz = combat.rangeDamageTw(procarz.missileAttack, falanga.armor);
 const baseLucznik = combat.rangeDamageTw(lucznik.missileAttack, falanga.armor);
 console.log(`info: Falanga armor=${falanga.armor}; Procarz missile=${procarz.missileAttack} base=${baseProcarz}; Łucznik missile=${lucznik.missileAttack} base=${baseLucznik}`);
-check('Procarz vs Falanga dmg (base x3)', dmgProcarz, Math.max(1, Math.round(baseProcarz * 3)));
+// PROCARZ-PIERCING: strzal procarza = max(0, atak - pancerz) + przebicie 2, x3 (wzor wreczny).
+check('Procarz vs Falanga dmg (wzor wreczny x3)', dmgProcarz, Math.max(1, Math.round((Math.max(0, procarz.missileAttack - falanga.armor) + procarz.piercing) * 3)));
 check('Łucznik vs Falanga dmg (base x2)', dmgLucznik, Math.max(1, Math.round(baseLucznik * 2)));
 check('Oszczepnik vs Falanga dmg (bez zmian)', dmgOszcz, Math.max(1, Math.round(combat.rangeDamageTw(oszczepnik.missileAttack, falanga.armor))));
 // Kontra mnozona przed zaokragleniem, podloga 1
 check('dmg floor 1 (oszczepnik, shot 1 vs armor 9)', combat.rangedShotDamage(oszczepnik, 1, 9, 1), 1);
-check('dmg floor 1 (procarz x3, shot 1 vs armor 9 -> 3)', combat.rangedShotDamage(procarz, 1, 9, 1), 3);
-check('kontra x1.5 + procarz x3 (missile 4, armor 0)', combat.rangedShotDamage(procarz, 4, 0, 1.5), 18);
+check('dmg (procarz x3 wzor wreczny, shot 1 vs armor 9 -> (0+2)*3 = 6)', combat.rangedShotDamage(procarz, 1, 9, 1), 6);
+check('kontra x1.5 + procarz x3 (missile 4, armor 0 -> (4+2)*3*1.5 = 27)', combat.rangedShotDamage(procarz, 4, 0, 1.5), 27);
 
 // 4. Celnosc = max(wrecz, dystansowy)
 check('rangedShotAccuracy(wrecz 1, dyst 4)', combat.rangedShotAccuracy(1, 4), 4);
@@ -108,13 +109,20 @@ check('moc konnicy łuczniczej bez zmian', power.fieldPower({ ...kRow }).total, 
 // 6. Moc AI/auto-walki = armyFieldPower() na SUROWYM wierszu units.json (z cache fieldPower).
 // Cache eksportu liczony bez mnoznika -> armyFieldPower musi go ignorowac dla Procarza/Lucznika.
 const armyRaw = (name) => power.armyFieldPower({ ...row(name) });
-check('armyFieldPower Procarz (cache 12) = fieldPower z mnoznikiem 16', armyRaw('Procarz'), 16);
-check('armyFieldPower Procarz (Huaracoc) (cache 12) = 16', armyRaw('Procarz (Huaracoc)'), 16);
+// PROCARZ-PIERCING: fieldPower zawiera piercing (num(u.piercing)) -> 12 + 2 = 14 na zywo.
+check('armyFieldPower Procarz (health 8, cache 12 + piercing 2) = 14', armyRaw('Procarz'), 14);
+check('armyFieldPower Procarz (Huaracoc) (health 8, cache 12 + piercing 2) = 14', armyRaw('Procarz (Huaracoc)'), 14);
 // R-WEB-DATA-ARCHERS-HEALTH-20-DIST-EGYPT-6-Q1: zdrowie lucznikow = 20 (pole health) => nowa moc pola.
 // R-WEB-DATA-ARCHERS-RANGED-ATTACK-4-5-6-ALIGN-Q1: missileAttack Łucznik 4 / egipski 5 => moc pola 22 / 19 (runtime).
-check('armyFieldPower Łucznik (health 20, missileAttack 4) = 22', armyRaw('Łucznik'), 22);
-check('armyFieldPower Łucznik egipski (health 20, missileAttack 5) = 19', armyRaw('Łucznik egipski'), 19);
-check('armyFieldPower Oszczepnik (cache 12) bez zmian', armyRaw('Oszczepnik'), row('Oszczepnik').fieldPower);
+check('armyFieldPower Łucznik (health 10, missileAttack 4) = 17', armyRaw('Łucznik'), 17);
+check('armyFieldPower Łucznik egipski (health 10, missileAttack 5) = 14', armyRaw('Łucznik egipski'), 14);
+// Oszczepnik (health 8) i oszczepnicy Zulu/Estólica: cache musi odpowiadać fieldPower() z nowych statów.
+check('armyFieldPower Oszczepnik (health 8, cache 8) = 8', armyRaw('Oszczepnik'), 8);
+check('armyFieldPower Oszczepnik Zulu (health 10, missile 5, cache 11.5) = 11.5', armyRaw('Oszczepnik Zulu (Izijula)'), 11.5);
+check('armyFieldPower Oszczepnik (Estólica) (health 10, missile 5, cache 9.5) = 9.5', armyRaw('Oszczepnik (Estólica)'), 9.5);
+check('cache Oszczepnik == fieldPower().total', row('Oszczepnik').fieldPower, power.fieldPower({ ...row('Oszczepnik') }).total);
+check('cache Oszczepnik Zulu == fieldPower().total', row('Oszczepnik Zulu (Izijula)').fieldPower, power.fieldPower({ ...row('Oszczepnik Zulu (Izijula)') }).total);
+check('cache Oszczepnik (Estólica) == fieldPower().total', row('Oszczepnik (Estólica)').fieldPower, power.fieldPower({ ...row('Oszczepnik (Estólica)') }).total);
 check('armyFieldPower Konnica łucznicza (cache) bez zmian', armyRaw('Konnica łucznicza asyryjska'), row('Konnica łucznicza asyryjska').fieldPower);
 check('armyFieldPower Procarz == fieldPower().total', armyRaw('Procarz'), power.fieldPower({ ...row('Procarz') }).total);
 

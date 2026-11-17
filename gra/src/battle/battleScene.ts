@@ -56,7 +56,7 @@ import {
   resolveCombat,
   hitChanceTw,
   baseDamage,
-  rangeDamage,
+  rangedShotBase,
   rangedShotAccuracy,
   counterMultiplier,
   terrainDefenseMultiplier,
@@ -9550,7 +9550,8 @@ export class BattleScene {
     let meleeCharge = false; // FACTOR 2 flag: this blow is a mounted charge's first blow
     if (ranged) {
       // R-WEB-BATTLE-RANGED-DAMAGE-MULT-Q1: mnoznik klasy strzelca przed zaokragleniem.
-      rawDmg = rangeDamage(atkMissile, defArmor) * rangedDamageMultFor({
+      // PROCARZ-PIERCING: strzał procarza = wzór wręcz (przebicie 2); reszta bez przebicia.
+      rawDmg = rangedShotBase(cuA, atkMissile, defArmor) * rangedDamageMultFor({
         Typ: cuA.counterTyp,
         Jednostka: cuA.typNazwa,
       });

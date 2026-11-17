@@ -91,7 +91,11 @@ async function main() {
           // D2/Z5 (R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1): 6 miast -> dokladnie 1 komenda (miasto);
           // 2 miasta (< minimum 3 miast do oddania) -> brak komendy pokojowej, zloto jej nie tworzy.
           // R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: od t=10 (poziom >= 0,5, progChetnosci) zmęczenie obniża minimum miast (wearyMinMiast) -> 2 miasta wystarczają.
-          const want = (nc === 6 || t >= 20) ? 1 : 0;
+          // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: JEDNA cena = 6000 x (1 - t/40); AI oddaje MINIMUM miast rownowazace cene
+          // (wartosc oddawanego miasta = 800 PN x waga 1,5 = 1200); cena 0 (t>=40) -> brak oferty (pokoj wymusza tick); brak pelnego
+          // pokrycia (np. 1 oddawalne miasto, cena 3000) -> wojna trwa.
+          const cena = Math.round(6000 * (1 - Math.min(1, t / 40)));
+          const want = (cena > 0 && (nc - 1) * 1200 >= cena) ? 1 : 0;
           if (peace.length !== want) { everyStateHasOneCmd = false; gaps.push({ t, gold, nc, n: peace.length }); }
         }
       }

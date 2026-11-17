@@ -112,10 +112,20 @@ const probe = `
           }
           if (clash) continue;
           for (const k of wall) (map.hexes[k] as any).terenBazowy = TerenBazowy.Gory;
+          // R-WEB-TEST-DEBT-AMBUSH-LIVE-B3-B5-B6-Q1 (r3): zasadzka GRACZA lezy NA TRASIE ruchu AI. Przycinacz trasy
+          // (makeAmbushPathCutter/truncatePathAtAmbush) tnie plan tylko wtedy, gdy zasadzka jest na sciezce planu;
+          // planer nie widzi zasadzek (unitsForPlanner), wiec sciezke AI wyznacza ta sama logika co bez zasadzki.
+          // Trasa AI do miasta gracza: sciezka z pozycji AI; heks ataku = krok przed miastem.
+          const cityT = cities.find(c => c.ownerId === 0);
+          const probeAi = mk('aiamb-probe', 1, line[0]!.q, line[0]!.r, 8);
+          const toCity = cityT ? computePath(probeAi, map, cityT.q, cityT.r, occupiedForMove(1), moveCostFnForUnit(probeAi)) : [];
+          const endIsCity = !!cityT && toCity.length >= 2 && toCity[toCity.length - 1]!.q === cityT.q && toCity[toCity.length - 1]!.r === cityT.r;
+          const ambHex = endIsCity ? toCity[toCity.length - 2]! : undefined;
+          if (!ambHex || lineKeys.has(keyOf(ambHex.q, ambHex.r)) || !okHex(ambHex.q, ambHex.r)) return { error: 'no-path-hex', toCity };
           units.push(mk('aiamb-e1', 1, line[0]!.q, line[0]!.r, 8));
           units.push(mk('aiamb-e2', 1, line[0]!.q, line[0]!.r, 8));
-          units.push({ ...mk('aiamb-s1', 0, line[3]!.q, line[3]!.r, 8), isGeneral: true } as any);
-          units.push(mk('aiamb-s2', 0, line[3]!.q, line[3]!.r, 8));
+          units.push({ ...mk('aiamb-s1', 0, ambHex.q, ambHex.r, 8), isGeneral: true } as any);
+          units.push(mk('aiamb-s2', 0, ambHex.q, ambHex.r, 8));
           units.push(mk('aiamb-t1', 0, line[5]!.q, line[5]!.r, 8));
           units.push(mk('aiamb-t2', 0, line[5]!.q, line[5]!.r, 8));
           units.push(mk('aiamb-t3', 0, line[5]!.q, line[5]!.r, 8));
@@ -127,7 +137,7 @@ const probe = `
           setAmbush(units.filter(u => u.id === 'aiamb-s1' || u.id === 'aiamb-s2'));
           for (const u of units) if (u.ownerId === 1 && u.id.startsWith('aiamb-')) u.ruchLeft = u.ruch;
           syncUnitsRender();
-          return { line, wall: wall.length };
+          return { line, wall: wall.length, ambHex, toCity };
         }
         return { error: 'no-line' };
       },

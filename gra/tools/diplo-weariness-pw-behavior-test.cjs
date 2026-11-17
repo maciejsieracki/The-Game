@@ -101,7 +101,7 @@ for (const mnoznik of [0.7, 1.0, 1.5]) {
   check(`C0 ${label}: cena pokoju odczytana w turze 10`, cAt(20) !== null && cAt(20) > 0, { cena: cAt(20) });
   for (let t = 20; t <= 40; t++) {
     const C = cAt(t);
-    const Z = M.wearinessPeaceItemPw(C, L_OF(t));
+    const Z = 0; // pozycja Z usunieta (DR-2); zostaje w obiekcie diagnostycznym dla zgodnosci komunikatow
     const proposes = aiDecision({ t, silaAI: 75 });
     const bal = tableBalance(t);
     // (b) DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1: 80%+ NIE daje pokoju bezwarunkowego (galezi nie ma w ai.ts);
@@ -113,10 +113,16 @@ for (const mnoznik of [0.7, 1.0, 1.5]) {
       const prev = tableBalance(t - 1);
       check(`(b2) ${label} tura ${t}: bilans rosnie wzgledem tury ${t - 1} (Z=${Z})`, bal > prev, { t, bal, prev });
     }
-    // (b3) silniejsza AI: odrzucenie podaje wymagane C w tej turze (zmeczenie nie obniza ceny)
+    // (b3) R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (DR-1 ABC 2026-11-17): cena pokoju = 6000 x (1 - L), L = t/40.
+    // Przy cenie > 0 silniejsza AI odrzuca i podaje wymagane cene; przy L = 1 (cena 0) pokoj zapada bez miast.
+    const cashExp = Math.round(6000 * (1 - Math.min(1, t / 40)));
     const rs = playerPeace({ t, pos: 'silniejsza' });
-    check(`(b3) ${label} tura ${t}: silniejsza AI odrzuca i podaje wymagane C=${C} PN`,
-      rs.accepted === false && typeof rs.reason === 'string' && rs.reason.includes(`wymagane ${C} PN`), rs);
+    if (cashExp > 0) {
+      check(`(b3) ${label} tura ${t}: silniejsza AI odrzuca i podaje wymagane ${cashExp} PN`,
+        rs.accepted === false && typeof rs.reason === 'string' && rs.reason.includes(`wymagane ${cashExp} PN`), rs);
+    } else {
+      check(`(b3) ${label} tura ${t}: cena 0 (L=1) => pokoj bez miast (accepted)`, rs.accepted === true, rs);
+    }
   }
 }
 PRICE.mnoznikCywMin = savedMin;
@@ -144,12 +150,15 @@ function aiToPlayerPeace({ t }) {
   }));
   return { withWar, zeroWar };
 }
+// R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (zarzut 1 Evaluatora): w kierunku AI->gracz NIE ma już pozycji Z
+// (wearinessPw === undefined dla kazdej tury); zostaje tylko informacja o zmęczeniu (wearinessInfo, strona player).
 for (const t of [20, 30, 40]) {
-  const { withWar, zeroWar } = aiToPlayerPeace({ t });
-  const zExpected = t === 20 ? 0 : null; // skala 40 tur (DIPLO-WAR-WEARINESS-40-TURNS): tura 20: L=0,5 => x=0 => Z=0; tury 30/40: Z>0
-  check(`(f) AI->gracz tura ${t}: wiersz Z po stronie gracza (wearinessSide=player)`,
+  const { withWar } = aiToPlayerPeace({ t });
+  check(`(f) AI->gracz tura ${t}: brak pozycji Z (wearinessPw undefined), informacja po stronie gracza`,
     withWar.wearinessSide === 'player' && withWar.wearinessInfo && withWar.wearinessInfo.turnsAtWar === t
-    && (zExpected === 0 ? withWar.wearinessPw === 0 : withWar.wearinessPw > 0),
+    && withWar.wearinessPw === undefined
+    // JEDNA cena (DR-2): panel AI->gracz pokazuje 6000 x (1 - L), L = t/40 (bramka relacji: cena 0 gdy wycena bazowa 0).
+    && withWar.wearinessInfo.cenaPokojuPn === Math.round(6000 * (1 - Math.min(1, t / 40))),
     { side: withWar.wearinessSide, z: withWar.wearinessPw, info: withWar.wearinessInfo });
 }
 console.log(`diplo-weariness-pw-behavior-test: ${pass} pass / ${fail} fail`);
