@@ -76,3 +76,18 @@ WZÓR: moduł T4a/T5a — `rust-port/engine/src/domain/siege_tactics_pathstep.rs
   2. `git diff --stat 625624d97 <merge>` musi pokazać tylko pliki T6 (siege_tactics_cavalry.rs, mod.rs +1 linia, p6_k5doc_cavalry*, vectors.json, raport). Inaczej BLOCK.
   3. Bramka na drzewie merge, `df -h /` ≥ 8 GB: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --all-targets --no-fail-fast` w `rust-port/engine` — EXIT 0 z liczbami. Dla `p6_k5doc_cavalry` 10/10.
   4. Raport `03-integracja-r5.md` w run dir, commit tylko raportu (jawny `git add`, bez `Cargo.lock`, bez nazwy modelu). NIE pushuj do parity.
+
+## DODATEK r6 (po restarcie kontenera: Ewaluator i FC rundy integracyjnej r5 przerwane; BAZA NADPISANA)
+
+- Runda r5: Operator PASS. Merge `87829df94` na `625624d97` = **`57ee8fc7d`**, raport `03-integracja-r5.md` = **`1af81a8c3`**. Bramki r5 zielone (fmt, clippy, p6_k5doc_cavalry 10/10, pełny test passed=3810 failed=0 ignored=1 pre-existing). Nie wypchnięto na parity.
+- Restart kontenera przerwał Ewaluatora r5 i mutation run (w worktree pozostał nieskomitowany mutant w `siege_tactics_cavalry.rs` — przywrócony do HEAD, nie jest częścią kodu). Zachowane refy: `refs/keep/R-RUSTPORT-P6-K5DOC-T6-MERGE-R5` = `57ee8fc7d`, `refs/keep/R-RUSTPORT-P6-K5DOC-T6-OP-R5-int` = `1af81a8c3`; gałąź `rust-port-wip/R-RUSTPORT-P6-K5DOC-T6-JAZDA-INT` = `1af81a8c3`.
+- **NOWA BAZA (jedyna obowiązująca): `1af81a8c3`.** Worktree detached. Nie przepisuj merge, nie rób nowego merge.
+
+### Zadanie r6 (Operator — weryfikacja integracji, bez zmian kodu)
+1. Ancestry: `git merge-base --is-ancestor 87829df94 HEAD` i `git merge-base --is-ancestor 625624d97 HEAD` — oba EXIT 0. `git diff --stat 625624d97 HEAD` pokazuje TYLKO 7 plików T6 (allowlista T6) plus raport `03-integracja-r5.md` i katalog run.
+2. Bramki EXIT 0 w `rust-port/engine`: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --test p6_k5doc_cavalry`, `cargo test --all-targets --no-fail-fast`. Zapisz kody wyjścia i liczby passed/failed/ignored. **Przed każdą bramką `df -h /`; przy < 8 GB BLOCK z liczbą GB.**
+3. Nie zmieniaj kodu. Nie pushuj. Nie rób FF na parity.
+4. Raport `04-integracja-r6.md` w run dir, commit jawnym `git add` (bez `-A`, bez `Cargo.lock`, bez nazwy modelu w trailerach).
+
+### Ewaluator i Final Control (r6)
+Ewaluator: odtwórz bramki sam i zweryfikuj diff względem 625624d97 (tylko allowlista T6); nie przyjmuj wyników Operatora bez własnego EXIT. FC: orzeka na dowodzie; po PASS orkiestrator robi FF `rust-port/parity-v2` na zweryfikowany SHA.
