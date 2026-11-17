@@ -248,7 +248,9 @@ console.log('\n-- B. main.ts buildEmpireDetailSnap() + empireDetailTypes.ts -- w
   const returnBlockEnd = mainSrc.indexOf('\n      };', returnBlockIdx);
   const returnBlock = returnBlockIdx > -1 && returnBlockEnd > returnBlockIdx
     ? mainSrc.slice(returnBlockIdx, returnBlockEnd) : '';
-  assert(/\n\s*armiaProdukcja,\s*$/.test(returnBlock),
+  // Kotwica bez `$`: armiaProdukcja nie jest ostatnim polem zwracanego obiektu (po nim idą
+  // producers, ...; main.ts ~20657), wiec `\s*$` zawsze dawal FALSE mimo poprawnej implementacji.
+  assert(/\n\s*armiaProdukcja,/.test(returnBlock),
     'B10: zwracany obiekt EmpireDetailSnap zawiera armiaProdukcja (pole faktycznie wystawione, nie tylko policzone i porzucone)');
 }
 
