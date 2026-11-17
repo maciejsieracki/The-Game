@@ -3347,3 +3347,10 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Notatki do rejestru (decyzje techniczne):** walidacja `UnknownDoctrine` i `set_group_doctrine` napisowy to dodatek Rust (bez odpowiednika w pinie); `_setGroupDoctrine` (formacja, rally, kolejka, `17870-17929`) poza T1 — #264/K5EXEC; moduł NIEPODPIĘTY do #264; wiele kopii `GroupDoctrine` w repo (dług ujednolicenia).
 - **Brakuje przed FF:** pełny `cargo test --all-targets --no-fail-fast` na bazie `760be5187` + T1 (integracja: runda Operatora z pełnym testem, gdy dysk ≥ 8 GB i bez równoległych buildów).
 - **Dysk:** 13 GB. Trwa `cargo test --all-targets` (pid 6576), prawdopodobnie FC T7b r4 — czekamy.
+
+### Przebieg — heartbeat Rust 09:48 UTC: sloty 1/4 (świadome wstrzymanie), T7b FC w toku
+
+- **Aktywne Workflow: 1/4** — #342 T7b odwrót, runda r4, FC (`wf_38d93827-c1b`). Żywy `cargo test --all-targets` (pid 6576, ok. 2,5 min od startu, limit 1700 s). Dysk 9,1 GB.
+- **Wstrzymane świadomie:** R7K7C (#106) r2 (dispatch `6cc0c4878`) i T4e (#315) r4 — start po zakończeniu FC T7b. Powód: trzy kolejne rundy padły przez dysk przy równoległych buildach; drugi build naraz przy 9 GB ryzykuje kolejne BLOCK INFRA.
+- **Zakończone bez integracji:** T1 (#263) r1 — FC PASS-WITH-NOTES (`020b3b7c9`), brak pełnego `cargo test`; integracja po teście (kolejność: T7b FF → T1 pełny test → FF). R7K7C (#106) r1 — FC FAIL, r2 gotowy.
+- **Następnie (kolejność):** (1) T7b FC → FF na parity po ancestry; (2) T1 integracja z pełnym testem (Operator Haiku, 1 build); (3) R7K7C r2 (dysk ≥ 8 GB); (4) T4e r4 (DODATEK r4, baza `760be5187`, detached).
