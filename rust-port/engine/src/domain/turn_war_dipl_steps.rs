@@ -404,12 +404,7 @@ fn apply_cyclic_outcome(
                 }
             }
             Some(PaymentKind::Work) if z > 0.0 => {
-                let b = ledger.praca_of(buyer)?;
-                let s = ledger.praca_of(seller)?;
-                ledger.praca.insert(buyer, b - z);
-                ledger.praca.insert(seller, s + z);
-                *ledger.praca_delta.entry(buyer).or_insert(0.0) -= z;
-                *ledger.praca_delta.entry(seller).or_insert(0.0) += z;
+                pay_work_floored(&mut ledger.praca, &mut ledger.praca_delta, buyer, seller, z)?;
             }
             _ => {}
         }
@@ -1020,6 +1015,40 @@ pub fn run_dipl_steps(
 // ---------------------------------------------------------------------------------------------
 // P6-WIRE-WAR-R7K7-C: zastosowanie efektow umow do stanu (skarbce, pule Pracy).
 // ---------------------------------------------------------------------------------------------
+
+/// Platnosc Praca z umowy cyklicznej (pin `main.ts:24015-24016`): `setOwnerPracaPool(platnik, pula - z)`,
+/// potem `setOwnerPracaPool(odbiorca, pula + z)`. Kazdy zapis przechodzi przez podloge `Math.max(0, value)`
+/// (`main.ts:34879-34882`), a odbiorca czytany jest PO zapisie platnika (jak w pinie, wazne gdy platnik = odbiorca).
+/// Przyrost raportu (`praca_delta`) = faktyczna zmiana salda po podlodze, nie surowe `-z`/`+z`.
+/// Brak wpisu = 0 (`?? 0`). Brak sprawdzenia salda: pin nie sprawdza go dla Pracy, sama podloga go zastepuje.
+pub fn pay_work_floored(
+    praca: &mut BTreeMap<i64, f64>,
+    praca_delta: &mut BTreeMap<i64, f64>,
+    buyer: i64,
+    seller: i64,
+    z: f64,
+) -> Result<(), WarTurnError> {
+    fn set_floored(
+        praca: &mut BTreeMap<i64, f64>,
+        praca_delta: &mut BTreeMap<i64, f64>,
+        owner: i64,
+        value: f64,
+    ) -> Result<(), WarTurnError> {
+        if !value.is_finite() {
+            return Err(err(format!("pula Pracy wlasciciela {owner} nieskonczona")));
+        }
+        let old = praca.get(&owner).copied().unwrap_or(0.0);
+        // Pin `Math.max(0, value)` (main.ts:34880).
+        let new = if value > 0.0 { value } else { 0.0 };
+        praca.insert(owner, new);
+        *praca_delta.entry(owner).or_insert(0.0) += new - old;
+        Ok(())
+    }
+    let b = praca.get(&buyer).copied().unwrap_or(0.0);
+    set_floored(praca, praca_delta, buyer, b - z)?;
+    let s = praca.get(&seller).copied().unwrap_or(0.0);
+    set_floored(praca, praca_delta, seller, s + z)
+}
 
 fn owner_key(owner: i64) -> Result<u64, WarTurnError> {
     u64::try_from(owner).map_err(|_| err(format!("wlasciciel {owner} poza zakresem stanu")))

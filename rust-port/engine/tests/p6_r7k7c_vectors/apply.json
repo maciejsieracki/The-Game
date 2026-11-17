@@ -1,0 +1,7387 @@
+{
+ "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+ "human_owner": 0,
+ "fragments": {
+  "add": {
+   "lines": "22628-22644",
+   "sha256": "1649ad2f9cd163ea3a6f58eb48a4d95609cb853765f89ec2c27dca154234da0e"
+  },
+  "ownerTreasury": {
+   "lines": "34864-34866",
+   "sha256": "2f613ca7bc250ac5fcabab759aa07da03b3d73f61ac78cb210ecfab54c4e0304"
+  },
+  "setOwnerTreasury": {
+   "lines": "34867-34871",
+   "sha256": "93500a72a0c73c41fe749e4b7f78b079cbd3ce11b8a54c4c86acbfaad23e96f9"
+  },
+  "ownerPracaPool": {
+   "lines": "34876-34878",
+   "sha256": "deca4e8b754431a53e66bd265ebf22e390af99235e3a8eafa49fb4fc171322f6"
+  },
+  "setOwnerPracaPool": {
+   "lines": "34879-34894",
+   "sha256": "4309ec145c2d439c9a9c7af2ed6cfb5348c9a77cdc775e39f40b0785d32f81c6"
+  }
+ },
+ "count": 232,
+ "vectors": [
+  {
+   "id": 1,
+   "ref": "main.ts:22628-22644",
+   "kind": "edge",
+   "human_treasury": 0,
+   "human_praca": 0,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {},
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 0,
+    "ai_treasury": {},
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 2,
+   "ref": "main.ts:22628-22644",
+   "kind": "edge",
+   "human_treasury": 50,
+   "human_praca": 0,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {
+    "2": 3
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 50,
+    "human_praca": 0,
+    "ai_treasury": {
+     "2": 3
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 3,
+   "ref": "main.ts:22628-22644",
+   "kind": "edge",
+   "human_treasury": 50,
+   "human_praca": 0,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {
+    "2": -40
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 50,
+    "human_praca": 0,
+    "ai_treasury": {
+     "2": -40
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 4,
+   "ref": "main.ts:22628-22644",
+   "kind": "edge",
+   "human_treasury": 40,
+   "human_praca": 0,
+   "ai_treasury": {
+    "2": 7
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": -3,
+    "2": 3
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 37,
+    "human_praca": 0,
+    "ai_treasury": {
+     "2": 10
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 5,
+   "ref": "main.ts:34879-34894",
+   "kind": "edge",
+   "human_treasury": 0,
+   "human_praca": 0,
+   "ai_treasury": {},
+   "ai_praca": {
+    "2": 5
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "2": -10
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 0,
+    "ai_treasury": {},
+    "ai_praca": {
+     "2": 0
+    }
+   }
+  },
+  {
+   "id": 6,
+   "ref": "main.ts:34879-34894",
+   "kind": "edge",
+   "human_treasury": 0,
+   "human_praca": 0,
+   "ai_treasury": {},
+   "ai_praca": {
+    "2": 5
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "2": -5
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 0,
+    "ai_treasury": {},
+    "ai_praca": {
+     "2": 0
+    }
+   }
+  },
+  {
+   "id": 7,
+   "ref": "main.ts:34879-34894",
+   "kind": "edge",
+   "human_treasury": 0,
+   "human_praca": 12,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "0": -12,
+    "3": 12
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 0,
+    "ai_treasury": {},
+    "ai_praca": {
+     "3": 12
+    }
+   }
+  },
+  {
+   "id": 8,
+   "ref": "main.ts:34879-34894",
+   "kind": "edge",
+   "human_treasury": 0,
+   "human_praca": 0,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "1": 0
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 0,
+    "ai_treasury": {},
+    "ai_praca": {
+     "1": 0
+    }
+   }
+  },
+  {
+   "id": 9,
+   "ref": "main.ts:22628-22644",
+   "kind": "edge",
+   "human_treasury": 0,
+   "human_praca": 0,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {
+    "4": 0.1
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 0,
+    "ai_treasury": {
+     "4": 0.1
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 10,
+   "ref": "main.ts:22628-22644",
+   "kind": "edge",
+   "human_treasury": 0.2,
+   "human_praca": 0,
+   "ai_treasury": {
+    "4": 0.1
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": 0.1
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 0.30000000000000004,
+    "human_praca": 0,
+    "ai_treasury": {
+     "4": 0.1
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 11,
+   "ref": "main.ts:22628-22644",
+   "kind": "edge",
+   "human_treasury": -30,
+   "human_praca": 0,
+   "ai_treasury": {
+    "3": -30
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": 10,
+    "3": 10
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": -20,
+    "human_praca": 0,
+    "ai_treasury": {
+     "3": -20
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 12,
+   "ref": "main.ts:22628-22644",
+   "kind": "edge",
+   "human_treasury": 1000000000000000,
+   "human_praca": 0,
+   "ai_treasury": {
+    "3": 1000000000000000
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "3": 1000000000000000
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 1000000000000000,
+    "human_praca": 0,
+    "ai_treasury": {
+     "3": 2000000000000000
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 13,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -37,
+   "human_praca": 999.75,
+   "ai_treasury": {},
+   "ai_praca": {
+    "3": 1
+   },
+   "treasury_deltas": {
+    "0": -0.1,
+    "3": 0.2
+   },
+   "praca_deltas": {
+    "0": 10
+   },
+   "expect": {
+    "human_treasury": -37.1,
+    "human_praca": 1009.75,
+    "ai_treasury": {
+     "3": 0.2
+    },
+    "ai_praca": {
+     "3": 1
+    }
+   }
+  },
+  {
+   "id": 14,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 37,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "5": 10
+   },
+   "expect": {
+    "human_treasury": 0.1,
+    "human_praca": 37,
+    "ai_treasury": {},
+    "ai_praca": {
+     "5": 10
+    }
+   }
+  },
+  {
+   "id": 15,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 999.75,
+   "ai_treasury": {
+    "2": 37,
+    "3": 10
+   },
+   "ai_praca": {
+    "3": 10
+   },
+   "treasury_deltas": {
+    "2": 1
+   },
+   "praca_deltas": {
+    "2": -1
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 999.75,
+    "ai_treasury": {
+     "2": 38,
+     "3": 10
+    },
+    "ai_praca": {
+     "2": 0,
+     "3": 10
+    }
+   }
+  },
+  {
+   "id": 16,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -1000000000,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "2": 37,
+    "3": 1000000000,
+    "5": 0.1
+   },
+   "ai_praca": {
+    "1": 2.5,
+    "2": 0.2,
+    "3": 10,
+    "5": 0.2
+   },
+   "treasury_deltas": {
+    "1": -1000000000,
+    "3": 1,
+    "5": 0.1
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": -1000000000,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "1": -1000000000,
+     "2": 37,
+     "3": 1000000001,
+     "5": 0.2
+    },
+    "ai_praca": {
+     "1": 2.5,
+     "2": 0.2,
+     "3": 10,
+     "5": 0.2
+    }
+   }
+  },
+  {
+   "id": 17,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 1,
+   "human_praca": 10,
+   "ai_treasury": {
+    "1": 999.75
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": 0.2
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 1.2,
+    "human_praca": 10,
+    "ai_treasury": {
+     "1": 999.75
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 18,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 37,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "2": 999.75,
+    "3": 0.1,
+    "4": 2.5
+   },
+   "ai_praca": {
+    "3": 1000000000,
+    "4": 2.5
+   },
+   "treasury_deltas": {
+    "0": 999.75,
+    "2": 10,
+    "4": -1
+   },
+   "praca_deltas": {
+    "2": 1,
+    "3": 1000000000
+   },
+   "expect": {
+    "human_treasury": 1036.75,
+    "human_praca": 12345.678,
+    "ai_treasury": {
+     "2": 1009.75,
+     "3": 0.1,
+     "4": 1.5
+    },
+    "ai_praca": {
+     "2": 1,
+     "3": 2000000000,
+     "4": 2.5
+    }
+   }
+  },
+  {
+   "id": 19,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "2": 0.1
+   },
+   "ai_praca": {
+    "2": 10
+   },
+   "treasury_deltas": {
+    "2": 12345.678
+   },
+   "praca_deltas": {
+    "0": 0
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "2": 12345.778
+    },
+    "ai_praca": {
+     "2": 10
+    }
+   }
+  },
+  {
+   "id": 20,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 1000000000,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "4": -999.75,
+    "5": -10
+   },
+   "ai_praca": {
+    "5": 1000000000
+   },
+   "treasury_deltas": {
+    "5": 999.75
+   },
+   "praca_deltas": {
+    "0": -37,
+    "5": 999.75
+   },
+   "expect": {
+    "human_treasury": 1000000000,
+    "human_praca": 0,
+    "ai_treasury": {
+     "4": -999.75,
+     "5": 989.75
+    },
+    "ai_praca": {
+     "5": 1000000999.75
+    }
+   }
+  },
+  {
+   "id": 21,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 0,
+   "ai_treasury": {
+    "1": 0.2,
+    "2": -1000000000,
+    "3": 37,
+    "4": 1000000000
+   },
+   "ai_praca": {
+    "1": 0.2,
+    "3": 37,
+    "4": 12345.678
+   },
+   "treasury_deltas": {
+    "0": -10,
+    "2": 37,
+    "3": 999.75,
+    "4": 2.5
+   },
+   "praca_deltas": {
+    "3": 12345.678
+   },
+   "expect": {
+    "human_treasury": 12335.678,
+    "human_praca": 0,
+    "ai_treasury": {
+     "1": 0.2,
+     "2": -999999963,
+     "3": 1036.75,
+     "4": 1000000002.5
+    },
+    "ai_praca": {
+     "1": 0.2,
+     "3": 12382.678,
+     "4": 12345.678
+    }
+   }
+  },
+  {
+   "id": 22,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -1000000000,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "1": 2.5
+   },
+   "ai_praca": {
+    "1": 999.75
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": -1000000000,
+    "human_praca": 12345.678,
+    "ai_treasury": {
+     "1": 2.5
+    },
+    "ai_praca": {
+     "1": 999.75
+    }
+   }
+  },
+  {
+   "id": 23,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 999.75,
+   "human_praca": 1000000000,
+   "ai_treasury": {},
+   "ai_praca": {
+    "2": 10
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "0": 37
+   },
+   "expect": {
+    "human_treasury": 999.75,
+    "human_praca": 1000000037,
+    "ai_treasury": {},
+    "ai_praca": {
+     "2": 10
+    }
+   }
+  },
+  {
+   "id": 24,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 0,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": 2.5
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 2.5,
+    "human_praca": 0,
+    "ai_treasury": {},
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 25,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 2.5,
+   "human_praca": 37,
+   "ai_treasury": {},
+   "ai_praca": {
+    "1": 12345.678
+   },
+   "treasury_deltas": {
+    "0": 1000000000,
+    "1": -999.75
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 1000000002.5,
+    "human_praca": 37,
+    "ai_treasury": {
+     "1": -999.75
+    },
+    "ai_praca": {
+     "1": 12345.678
+    }
+   }
+  },
+  {
+   "id": 26,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "4": 12345.678
+   },
+   "ai_praca": {
+    "3": 37,
+    "4": 12345.678
+   },
+   "treasury_deltas": {
+    "4": 0
+   },
+   "praca_deltas": {
+    "0": 12345.678,
+    "3": -2.5
+   },
+   "expect": {
+    "human_treasury": 10,
+    "human_praca": 24691.356,
+    "ai_treasury": {
+     "4": 12345.678
+    },
+    "ai_praca": {
+     "3": 34.5,
+     "4": 12345.678
+    }
+   }
+  },
+  {
+   "id": 27,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -0.2,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "4": 0,
+    "5": 1000000000
+   },
+   "ai_praca": {
+    "4": 12345.678,
+    "5": 10
+   },
+   "treasury_deltas": {
+    "2": -0.2,
+    "4": 999.75,
+    "5": 999.75
+   },
+   "praca_deltas": {
+    "0": 37
+   },
+   "expect": {
+    "human_treasury": -0.2,
+    "human_praca": 39.5,
+    "ai_treasury": {
+     "2": -0.2,
+     "4": 999.75,
+     "5": 1000000999.75
+    },
+    "ai_praca": {
+     "4": 12345.678,
+     "5": 10
+    }
+   }
+  },
+  {
+   "id": 28,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "3": 2.5
+   },
+   "ai_praca": {
+    "3": 37
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "3": 2.5
+    },
+    "ai_praca": {
+     "3": 37
+    }
+   }
+  },
+  {
+   "id": 29,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -37,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "1": 999.75,
+    "2": 0.1,
+    "4": 1000000000
+   },
+   "ai_praca": {
+    "1": 0,
+    "3": 0,
+    "4": 10
+   },
+   "treasury_deltas": {
+    "1": -37,
+    "3": 0,
+    "4": -999.75
+   },
+   "praca_deltas": {
+    "3": 10,
+    "4": 2.5
+   },
+   "expect": {
+    "human_treasury": -37,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "1": 962.75,
+     "2": 0.1,
+     "3": 0,
+     "4": 999999000.25
+    },
+    "ai_praca": {
+     "1": 0,
+     "3": 10,
+     "4": 12.5
+    }
+   }
+  },
+  {
+   "id": 30,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -999.75,
+   "human_praca": 1,
+   "ai_treasury": {
+    "3": -10
+   },
+   "ai_praca": {
+    "3": 37
+   },
+   "treasury_deltas": {
+    "0": 1000000000
+   },
+   "praca_deltas": {
+    "0": 0
+   },
+   "expect": {
+    "human_treasury": 999999000.25,
+    "human_praca": 1,
+    "ai_treasury": {
+     "3": -10
+    },
+    "ai_praca": {
+     "3": 37
+    }
+   }
+  },
+  {
+   "id": 31,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 1,
+   "ai_treasury": {},
+   "ai_praca": {
+    "1": 2.5,
+    "2": 1000000000
+   },
+   "treasury_deltas": {
+    "0": 1000000000,
+    "2": 10
+   },
+   "praca_deltas": {
+    "0": 0
+   },
+   "expect": {
+    "human_treasury": 1000000000,
+    "human_praca": 1,
+    "ai_treasury": {
+     "2": 10
+    },
+    "ai_praca": {
+     "1": 2.5,
+     "2": 1000000000
+    }
+   }
+  },
+  {
+   "id": 32,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 1000000000,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {
+    "1": -37
+   },
+   "praca_deltas": {
+    "0": 0
+   },
+   "expect": {
+    "human_treasury": 0.1,
+    "human_praca": 1000000000,
+    "ai_treasury": {
+     "1": -37
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 33,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -37,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "1": -37
+   },
+   "ai_praca": {
+    "1": 1000000000
+   },
+   "treasury_deltas": {
+    "0": 0
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": -37,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "1": -37
+    },
+    "ai_praca": {
+     "1": 1000000000
+    }
+   }
+  },
+  {
+   "id": 34,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "1": 999.75,
+    "2": 1000000000,
+    "3": 37,
+    "5": 999.75
+   },
+   "ai_praca": {
+    "2": 0.1,
+    "3": 0,
+    "5": 0
+   },
+   "treasury_deltas": {
+    "0": 1,
+    "1": 0.2,
+    "3": 0
+   },
+   "praca_deltas": {
+    "2": 37,
+    "3": 2.5
+   },
+   "expect": {
+    "human_treasury": 1.1,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "1": 999.95,
+     "2": 1000000000,
+     "3": 37,
+     "5": 999.75
+    },
+    "ai_praca": {
+     "2": 37.1,
+     "3": 2.5,
+     "5": 0
+    }
+   }
+  },
+  {
+   "id": 35,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 37,
+   "ai_treasury": {
+    "2": 0
+   },
+   "ai_praca": {
+    "2": 2.5
+   },
+   "treasury_deltas": {
+    "2": 12345.678
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 12345.678,
+    "human_praca": 37,
+    "ai_treasury": {
+     "2": 12345.678
+    },
+    "ai_praca": {
+     "2": 2.5
+    }
+   }
+  },
+  {
+   "id": 36,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -1,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "2": -0.1,
+    "3": 1000000000
+   },
+   "ai_praca": {
+    "2": 999.75
+   },
+   "treasury_deltas": {
+    "3": 37,
+    "4": 0.2
+   },
+   "praca_deltas": {
+    "3": 0.2
+   },
+   "expect": {
+    "human_treasury": -1,
+    "human_praca": 12345.678,
+    "ai_treasury": {
+     "2": -0.1,
+     "3": 1000000037,
+     "4": 0.2
+    },
+    "ai_praca": {
+     "2": 999.75,
+     "3": 0.2
+    }
+   }
+  },
+  {
+   "id": 37,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -12345.678,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "5": 0.1
+   },
+   "ai_praca": {
+    "5": 0.1
+   },
+   "treasury_deltas": {
+    "0": 999.75,
+    "5": -10
+   },
+   "praca_deltas": {
+    "5": 0.1
+   },
+   "expect": {
+    "human_treasury": -11345.928,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "5": -9.9
+    },
+    "ai_praca": {
+     "5": 0.2
+    }
+   }
+  },
+  {
+   "id": 38,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 2.5,
+   "human_praca": 0.2,
+   "ai_treasury": {},
+   "ai_praca": {
+    "1": 0
+   },
+   "treasury_deltas": {
+    "2": 10
+   },
+   "praca_deltas": {
+    "2": 0.2
+   },
+   "expect": {
+    "human_treasury": 2.5,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "2": 10
+    },
+    "ai_praca": {
+     "1": 0,
+     "2": 0.2
+    }
+   }
+  },
+  {
+   "id": 39,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 999.75,
+   "human_praca": 2.5,
+   "ai_treasury": {},
+   "ai_praca": {
+    "4": 0.2
+   },
+   "treasury_deltas": {
+    "4": 37
+   },
+   "praca_deltas": {
+    "4": 0.2
+   },
+   "expect": {
+    "human_treasury": 999.75,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "4": 37
+    },
+    "ai_praca": {
+     "4": 0.4
+    }
+   }
+  },
+  {
+   "id": 40,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 2.5,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "3": 1000000000,
+    "4": 0.1
+   },
+   "ai_praca": {
+    "4": 1
+   },
+   "treasury_deltas": {
+    "3": 1000000000,
+    "4": 12345.678
+   },
+   "praca_deltas": {
+    "0": -1,
+    "3": -999.75,
+    "4": 37
+   },
+   "expect": {
+    "human_treasury": 2.5,
+    "human_praca": 0,
+    "ai_treasury": {
+     "3": 2000000000,
+     "4": 12345.778
+    },
+    "ai_praca": {
+     "3": 0,
+     "4": 38
+    }
+   }
+  },
+  {
+   "id": 41,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.2,
+   "human_praca": 37,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": 0,
+    "4": 1
+   },
+   "praca_deltas": {
+    "0": -1
+   },
+   "expect": {
+    "human_treasury": 0.2,
+    "human_praca": 36,
+    "ai_treasury": {
+     "4": 1
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 42,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 999.75,
+   "human_praca": 999.75,
+   "ai_treasury": {
+    "2": 0,
+    "5": -1
+   },
+   "ai_praca": {
+    "2": 10,
+    "5": 0.1
+   },
+   "treasury_deltas": {
+    "4": 1
+   },
+   "praca_deltas": {
+    "0": 37,
+    "2": 2.5
+   },
+   "expect": {
+    "human_treasury": 999.75,
+    "human_praca": 1036.75,
+    "ai_treasury": {
+     "2": 0,
+     "4": 1,
+     "5": -1
+    },
+    "ai_praca": {
+     "2": 12.5,
+     "5": 0.1
+    }
+   }
+  },
+  {
+   "id": 43,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 0.2,
+   "ai_treasury": {},
+   "ai_praca": {
+    "3": 37
+   },
+   "treasury_deltas": {
+    "3": 0
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 0.1,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "3": 0
+    },
+    "ai_praca": {
+     "3": 37
+    }
+   }
+  },
+  {
+   "id": 44,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -10,
+   "human_praca": 10,
+   "ai_treasury": {
+    "1": 0,
+    "4": -1000000000
+   },
+   "ai_praca": {
+    "1": 1,
+    "4": 0
+   },
+   "treasury_deltas": {
+    "1": 0.1,
+    "4": -12345.678
+   },
+   "praca_deltas": {
+    "0": -2.5
+   },
+   "expect": {
+    "human_treasury": -10,
+    "human_praca": 7.5,
+    "ai_treasury": {
+     "1": 0.1,
+     "4": -1000012345.678
+    },
+    "ai_praca": {
+     "1": 1,
+     "4": 0
+    }
+   }
+  },
+  {
+   "id": 45,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -12345.678,
+   "human_praca": 0,
+   "ai_treasury": {
+    "1": 10,
+    "2": 1,
+    "4": -2.5
+   },
+   "ai_praca": {
+    "1": 12345.678,
+    "4": 2.5
+   },
+   "treasury_deltas": {
+    "1": 1,
+    "4": 0
+   },
+   "praca_deltas": {
+    "0": 10,
+    "2": 0
+   },
+   "expect": {
+    "human_treasury": -12345.678,
+    "human_praca": 10,
+    "ai_treasury": {
+     "1": 11,
+     "2": 1,
+     "4": -2.5
+    },
+    "ai_praca": {
+     "1": 12345.678,
+     "2": 0,
+     "4": 2.5
+    }
+   }
+  },
+  {
+   "id": 46,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 0,
+   "ai_treasury": {
+    "1": 12345.678
+   },
+   "ai_praca": {
+    "1": 2.5
+   },
+   "treasury_deltas": {
+    "0": -12345.678,
+    "1": -0.2
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 0,
+    "ai_treasury": {
+     "1": 12345.478
+    },
+    "ai_praca": {
+     "1": 2.5
+    }
+   }
+  },
+  {
+   "id": 47,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.2,
+   "human_praca": 0,
+   "ai_treasury": {
+    "1": 999.75
+   },
+   "ai_praca": {
+    "2": 0.2
+   },
+   "treasury_deltas": {
+    "1": 0.2
+   },
+   "praca_deltas": {
+    "0": -1000000000
+   },
+   "expect": {
+    "human_treasury": 0.2,
+    "human_praca": 0,
+    "ai_treasury": {
+     "1": 999.95
+    },
+    "ai_praca": {
+     "2": 0.2
+    }
+   }
+  },
+  {
+   "id": 48,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0.2,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "1": -10,
+    "3": 0.2,
+    "4": 10
+   },
+   "ai_praca": {
+    "1": 0,
+    "2": 12345.678,
+    "3": 0.1
+   },
+   "treasury_deltas": {
+    "1": 0,
+    "2": 0.2,
+    "3": 0
+   },
+   "praca_deltas": {
+    "2": 10
+   },
+   "expect": {
+    "human_treasury": 0.2,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "1": -10,
+     "2": 0.2,
+     "3": 0.2,
+     "4": 10
+    },
+    "ai_praca": {
+     "1": 0,
+     "2": 12355.678,
+     "3": 0.1
+    }
+   }
+  },
+  {
+   "id": 49,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "4": 1
+   },
+   "ai_praca": {
+    "3": 12345.678,
+    "4": 1,
+    "5": 12345.678
+   },
+   "treasury_deltas": {
+    "0": -1000000000,
+    "5": 0
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": -1000000000,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "4": 1,
+     "5": 0
+    },
+    "ai_praca": {
+     "3": 12345.678,
+     "4": 1,
+     "5": 12345.678
+    }
+   }
+  },
+  {
+   "id": 50,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "2": 1
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": -999.75,
+    "2": 0,
+    "4": 1000000000
+   },
+   "praca_deltas": {
+    "4": 1
+   },
+   "expect": {
+    "human_treasury": 11345.928,
+    "human_praca": 1000000000,
+    "ai_treasury": {
+     "2": 1,
+     "4": 1000000000
+    },
+    "ai_praca": {
+     "4": 1
+    }
+   }
+  },
+  {
+   "id": 51,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -0.2,
+   "human_praca": 2.5,
+   "ai_treasury": {},
+   "ai_praca": {
+    "1": 0.1
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "0": 999.75
+   },
+   "expect": {
+    "human_treasury": -0.2,
+    "human_praca": 1002.25,
+    "ai_treasury": {},
+    "ai_praca": {
+     "1": 0.1
+    }
+   }
+  },
+  {
+   "id": 52,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -0.1,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "2": 1,
+    "4": 12345.678,
+    "5": 0.2
+   },
+   "ai_praca": {
+    "2": 1,
+    "4": 2.5,
+    "5": 0.1
+   },
+   "treasury_deltas": {
+    "0": 1,
+    "4": -1000000000
+   },
+   "praca_deltas": {
+    "4": -12345.678
+   },
+   "expect": {
+    "human_treasury": 0.9,
+    "human_praca": 1000000000,
+    "ai_treasury": {
+     "2": 1,
+     "4": -999987654.322,
+     "5": 0.2
+    },
+    "ai_praca": {
+     "2": 1,
+     "4": 0,
+     "5": 0.1
+    }
+   }
+  },
+  {
+   "id": 53,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 37,
+   "human_praca": 1,
+   "ai_treasury": {
+    "2": -10,
+    "3": 999.75,
+    "4": 1000000000,
+    "5": -0.1
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": 37,
+    "3": 0,
+    "4": 37,
+    "5": 37
+   },
+   "praca_deltas": {
+    "0": -1000000000,
+    "2": -2.5,
+    "4": 12345.678
+   },
+   "expect": {
+    "human_treasury": 74,
+    "human_praca": 0,
+    "ai_treasury": {
+     "2": -10,
+     "3": 999.75,
+     "4": 1000000037,
+     "5": 36.9
+    },
+    "ai_praca": {
+     "2": 0,
+     "4": 12345.678
+    }
+   }
+  },
+  {
+   "id": 54,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 37,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "4": 0.2
+   },
+   "ai_praca": {
+    "4": 1000000000
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 37,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "4": 0.2
+    },
+    "ai_praca": {
+     "4": 1000000000
+    }
+   }
+  },
+  {
+   "id": 55,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 1000000000,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "2": 0,
+    "3": 1000000000,
+    "5": 1000000000
+   },
+   "ai_praca": {
+    "4": 12345.678,
+    "5": 999.75
+   },
+   "treasury_deltas": {
+    "0": 10,
+    "2": 1000000000,
+    "4": 0.2
+   },
+   "praca_deltas": {
+    "4": -12345.678
+   },
+   "expect": {
+    "human_treasury": 1000000010,
+    "human_praca": 1000000000,
+    "ai_treasury": {
+     "2": 1000000000,
+     "3": 1000000000,
+     "4": 0.2,
+     "5": 1000000000
+    },
+    "ai_praca": {
+     "4": 0,
+     "5": 999.75
+    }
+   }
+  },
+  {
+   "id": 56,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0.2,
+   "human_praca": 0,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {
+    "2": 12345.678
+   },
+   "praca_deltas": {
+    "0": 0.1,
+    "2": 37
+   },
+   "expect": {
+    "human_treasury": 0.2,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "2": 12345.678
+    },
+    "ai_praca": {
+     "2": 37
+    }
+   }
+  },
+  {
+   "id": 57,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 0.1,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": 0,
+    "5": 12345.678
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 10,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "5": 12345.678
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 58,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 999.75,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "2": 12345.678,
+    "4": -12345.678,
+    "5": 2.5
+   },
+   "ai_praca": {
+    "2": 999.75,
+    "5": 999.75
+   },
+   "treasury_deltas": {
+    "1": 1,
+    "5": 10
+   },
+   "praca_deltas": {
+    "0": 2.5,
+    "1": -0.1
+   },
+   "expect": {
+    "human_treasury": 999.75,
+    "human_praca": 1000000002.5,
+    "ai_treasury": {
+     "1": 1,
+     "2": 12345.678,
+     "4": -12345.678,
+     "5": 12.5
+    },
+    "ai_praca": {
+     "1": 0,
+     "2": 999.75,
+     "5": 999.75
+    }
+   }
+  },
+  {
+   "id": 59,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0.2,
+   "human_praca": 0,
+   "ai_treasury": {},
+   "ai_praca": {
+    "3": 1
+   },
+   "treasury_deltas": {
+    "0": -2.5
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": -2.3,
+    "human_praca": 0,
+    "ai_treasury": {},
+    "ai_praca": {
+     "3": 1
+    }
+   }
+  },
+  {
+   "id": 60,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.2,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "3": 12345.678
+   },
+   "ai_praca": {
+    "1": 0,
+    "3": 1
+   },
+   "treasury_deltas": {
+    "2": 1000000000,
+    "3": 37
+   },
+   "praca_deltas": {
+    "0": 0.1,
+    "1": 10,
+    "3": 0
+   },
+   "expect": {
+    "human_treasury": 0.2,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "2": 1000000000,
+     "3": 12382.678
+    },
+    "ai_praca": {
+     "1": 10,
+     "3": 1
+    }
+   }
+  },
+  {
+   "id": 61,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "2": 1000000000,
+    "4": 0.1,
+    "5": 1000000000
+   },
+   "ai_praca": {
+    "2": 10,
+    "5": 1
+   },
+   "treasury_deltas": {
+    "4": -10,
+    "5": 1
+   },
+   "praca_deltas": {
+    "4": 0.1,
+    "5": 0.1
+   },
+   "expect": {
+    "human_treasury": 10,
+    "human_praca": 12345.678,
+    "ai_treasury": {
+     "2": 1000000000,
+     "4": -9.9,
+     "5": 1000000001
+    },
+    "ai_praca": {
+     "2": 10,
+     "4": 0.1,
+     "5": 1.1
+    }
+   }
+  },
+  {
+   "id": 62,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 37,
+   "ai_treasury": {
+    "1": 0.2,
+    "2": 1000000000,
+    "4": -37
+   },
+   "ai_praca": {
+    "1": 37
+   },
+   "treasury_deltas": {
+    "0": 1,
+    "2": -0.1,
+    "4": -37
+   },
+   "praca_deltas": {
+    "4": -0.1
+   },
+   "expect": {
+    "human_treasury": 11,
+    "human_praca": 37,
+    "ai_treasury": {
+     "1": 0.2,
+     "2": 999999999.9,
+     "4": -74
+    },
+    "ai_praca": {
+     "1": 37,
+     "4": 0
+    }
+   }
+  },
+  {
+   "id": 63,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 999.75,
+   "human_praca": 37,
+   "ai_treasury": {
+    "3": 12345.678
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "3": 0.1
+   },
+   "praca_deltas": {
+    "3": -1
+   },
+   "expect": {
+    "human_treasury": 999.75,
+    "human_praca": 37,
+    "ai_treasury": {
+     "3": 12345.778
+    },
+    "ai_praca": {
+     "3": 0
+    }
+   }
+  },
+  {
+   "id": 64,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -10,
+   "human_praca": 10,
+   "ai_treasury": {
+    "3": 0,
+    "4": 2.5
+   },
+   "ai_praca": {
+    "3": 12345.678
+   },
+   "treasury_deltas": {
+    "0": 0,
+    "3": 0
+   },
+   "praca_deltas": {
+    "3": 1
+   },
+   "expect": {
+    "human_treasury": -10,
+    "human_praca": 10,
+    "ai_treasury": {
+     "3": 0,
+     "4": 2.5
+    },
+    "ai_praca": {
+     "3": 12346.678
+    }
+   }
+  },
+  {
+   "id": 65,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 0.1,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": 1000000000,
+    "5": 1000000000
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 1000000000,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "5": 1000000000
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 66,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "2": -999.75,
+    "3": 0.1,
+    "5": -0.1
+   },
+   "ai_praca": {
+    "2": 12345.678,
+    "3": 0
+   },
+   "treasury_deltas": {
+    "1": 12345.678,
+    "2": 0.2,
+    "5": -999.75
+   },
+   "praca_deltas": {
+    "2": 0
+   },
+   "expect": {
+    "human_treasury": 10,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "1": 12345.678,
+     "2": -999.55,
+     "3": 0.1,
+     "5": -999.85
+    },
+    "ai_praca": {
+     "2": 12345.678,
+     "3": 0
+    }
+   }
+  },
+  {
+   "id": 67,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -12345.678,
+   "human_praca": 37,
+   "ai_treasury": {
+    "1": 12345.678,
+    "5": -10
+   },
+   "ai_praca": {
+    "1": 37,
+    "5": 0.2
+   },
+   "treasury_deltas": {
+    "1": -37
+   },
+   "praca_deltas": {
+    "5": 0.2
+   },
+   "expect": {
+    "human_treasury": -12345.678,
+    "human_praca": 37,
+    "ai_treasury": {
+     "1": 12308.678,
+     "5": -10
+    },
+    "ai_praca": {
+     "1": 37,
+     "5": 0.4
+    }
+   }
+  },
+  {
+   "id": 68,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -37,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "5": 12345.678
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "5": 0.2
+   },
+   "praca_deltas": {
+    "0": 1000000000
+   },
+   "expect": {
+    "human_treasury": -37,
+    "human_praca": 2000000000,
+    "ai_treasury": {
+     "5": 12345.878
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 69,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 1000000000,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "3": 0.2,
+    "4": -999.75
+   },
+   "ai_praca": {
+    "4": 2.5
+   },
+   "treasury_deltas": {
+    "0": -0.2,
+    "3": 10,
+    "4": 999.75,
+    "5": 12345.678
+   },
+   "praca_deltas": {
+    "4": -1000000000,
+    "5": -0.2
+   },
+   "expect": {
+    "human_treasury": 999999999.8,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "3": 10.2,
+     "4": 0,
+     "5": 12345.678
+    },
+    "ai_praca": {
+     "4": 0,
+     "5": 0
+    }
+   }
+  },
+  {
+   "id": 70,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 1,
+   "human_praca": 37,
+   "ai_treasury": {
+    "1": 0,
+    "3": 12345.678,
+    "5": -0.1
+   },
+   "ai_praca": {
+    "2": 1
+   },
+   "treasury_deltas": {
+    "0": 999.75,
+    "1": 0,
+    "3": -37
+   },
+   "praca_deltas": {
+    "1": 0.2
+   },
+   "expect": {
+    "human_treasury": 1000.75,
+    "human_praca": 37,
+    "ai_treasury": {
+     "1": 0,
+     "3": 12308.678,
+     "5": -0.1
+    },
+    "ai_praca": {
+     "1": 0.2,
+     "2": 1
+    }
+   }
+  },
+  {
+   "id": 71,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -999.75,
+   "human_praca": 10,
+   "ai_treasury": {
+    "3": -1000000000
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": 12345.678
+   },
+   "praca_deltas": {
+    "0": 10
+   },
+   "expect": {
+    "human_treasury": 11345.928,
+    "human_praca": 20,
+    "ai_treasury": {
+     "3": -1000000000
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 72,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 37,
+   "ai_treasury": {
+    "4": 10
+   },
+   "ai_praca": {
+    "3": 1
+   },
+   "treasury_deltas": {
+    "3": 1000000000
+   },
+   "praca_deltas": {
+    "0": -12345.678,
+    "4": -0.2
+   },
+   "expect": {
+    "human_treasury": 10,
+    "human_praca": 0,
+    "ai_treasury": {
+     "3": 1000000000,
+     "4": 10
+    },
+    "ai_praca": {
+     "3": 1,
+     "4": 0
+    }
+   }
+  },
+  {
+   "id": 73,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -0.2,
+   "human_praca": 10,
+   "ai_treasury": {
+    "1": 10
+   },
+   "ai_praca": {
+    "1": 12345.678
+   },
+   "treasury_deltas": {
+    "1": -12345.678
+   },
+   "praca_deltas": {
+    "0": -0.1
+   },
+   "expect": {
+    "human_treasury": -0.2,
+    "human_praca": 9.9,
+    "ai_treasury": {
+     "1": -12335.678
+    },
+    "ai_praca": {
+     "1": 12345.678
+    }
+   }
+  },
+  {
+   "id": 74,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 37,
+   "human_praca": 999.75,
+   "ai_treasury": {
+    "1": 37,
+    "2": -999.75,
+    "5": -10
+   },
+   "ai_praca": {
+    "1": 2.5,
+    "2": 12345.678
+   },
+   "treasury_deltas": {
+    "0": 10
+   },
+   "praca_deltas": {
+    "1": 0,
+    "5": 1000000000
+   },
+   "expect": {
+    "human_treasury": 47,
+    "human_praca": 999.75,
+    "ai_treasury": {
+     "1": 37,
+     "2": -999.75,
+     "5": -10
+    },
+    "ai_praca": {
+     "1": 2.5,
+     "2": 12345.678,
+     "5": 1000000000
+    }
+   }
+  },
+  {
+   "id": 75,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "2": 0
+   },
+   "ai_praca": {
+    "5": 999.75
+   },
+   "treasury_deltas": {
+    "5": 999.75
+   },
+   "praca_deltas": {
+    "0": 0,
+    "5": 1
+   },
+   "expect": {
+    "human_treasury": 0.1,
+    "human_praca": 1000000000,
+    "ai_treasury": {
+     "2": 0,
+     "5": 999.75
+    },
+    "ai_praca": {
+     "5": 1000.75
+    }
+   }
+  },
+  {
+   "id": 76,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -0.1,
+   "human_praca": 1,
+   "ai_treasury": {
+    "1": -37,
+    "2": 999.75
+   },
+   "ai_praca": {
+    "1": 999.75,
+    "2": 1
+   },
+   "treasury_deltas": {
+    "0": 0.1,
+    "1": 999.75,
+    "2": -12345.678
+   },
+   "praca_deltas": {
+    "2": 2.5
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 1,
+    "ai_treasury": {
+     "1": 962.75,
+     "2": -11345.928
+    },
+    "ai_praca": {
+     "1": 999.75,
+     "2": 3.5
+    }
+   }
+  },
+  {
+   "id": 77,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "1": -0.2,
+    "2": 10,
+    "4": 999.75
+   },
+   "ai_praca": {
+    "1": 999.75,
+    "4": 12345.678
+   },
+   "treasury_deltas": {
+    "0": 0
+   },
+   "praca_deltas": {
+    "2": 0.2
+   },
+   "expect": {
+    "human_treasury": 0.1,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "1": -0.2,
+     "2": 10,
+     "4": 999.75
+    },
+    "ai_praca": {
+     "1": 999.75,
+     "2": 0.2,
+     "4": 12345.678
+    }
+   }
+  },
+  {
+   "id": 78,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "2": 0,
+    "4": 999.75
+   },
+   "ai_praca": {
+    "2": 1000000000
+   },
+   "treasury_deltas": {
+    "5": 999.75
+   },
+   "praca_deltas": {
+    "3": 0.1,
+    "4": -10
+   },
+   "expect": {
+    "human_treasury": 0.1,
+    "human_praca": 12345.678,
+    "ai_treasury": {
+     "2": 0,
+     "4": 999.75,
+     "5": 999.75
+    },
+    "ai_praca": {
+     "2": 1000000000,
+     "3": 0.1,
+     "4": 0
+    }
+   }
+  },
+  {
+   "id": 79,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 37,
+   "ai_treasury": {
+    "5": 999.75
+   },
+   "ai_praca": {
+    "5": 1000000000
+   },
+   "treasury_deltas": {
+    "5": 0.2
+   },
+   "praca_deltas": {
+    "5": 1
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 37,
+    "ai_treasury": {
+     "5": 999.95
+    },
+    "ai_praca": {
+     "5": 1000000001
+    }
+   }
+  },
+  {
+   "id": 80,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -10,
+   "human_praca": 10,
+   "ai_treasury": {},
+   "ai_praca": {
+    "5": 10
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "5": 12345.678
+   },
+   "expect": {
+    "human_treasury": -10,
+    "human_praca": 10,
+    "ai_treasury": {},
+    "ai_praca": {
+     "5": 12355.678
+    }
+   }
+  },
+  {
+   "id": 81,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -2.5,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "2": -1
+   },
+   "ai_praca": {
+    "2": 0.1
+   },
+   "treasury_deltas": {
+    "0": 1000000000,
+    "2": 12345.678
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 999999997.5,
+    "human_praca": 1000000000,
+    "ai_treasury": {
+     "2": 12344.678
+    },
+    "ai_praca": {
+     "2": 0.1
+    }
+   }
+  },
+  {
+   "id": 82,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 1000000000,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "1": -10
+   },
+   "ai_praca": {
+    "1": 0
+   },
+   "treasury_deltas": {
+    "0": 0,
+    "1": 0.2
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 1000000000,
+    "human_praca": 12345.678,
+    "ai_treasury": {
+     "1": -9.8
+    },
+    "ai_praca": {
+     "1": 0
+    }
+   }
+  },
+  {
+   "id": 83,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -1000000000,
+   "human_praca": 1,
+   "ai_treasury": {
+    "3": -1,
+    "5": 0.2
+   },
+   "ai_praca": {
+    "3": 12345.678
+   },
+   "treasury_deltas": {
+    "5": -0.2
+   },
+   "praca_deltas": {
+    "0": 12345.678
+   },
+   "expect": {
+    "human_treasury": -1000000000,
+    "human_praca": 12346.678,
+    "ai_treasury": {
+     "3": -1,
+     "5": 0
+    },
+    "ai_praca": {
+     "3": 12345.678
+    }
+   }
+  },
+  {
+   "id": 84,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "3": 0.2
+   },
+   "ai_praca": {
+    "3": 10,
+    "4": 0.2
+   },
+   "treasury_deltas": {
+    "0": -10,
+    "4": -0.2
+   },
+   "praca_deltas": {
+    "4": -1000000000
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "3": 0.2,
+     "4": -0.2
+    },
+    "ai_praca": {
+     "3": 10,
+     "4": 0
+    }
+   }
+  },
+  {
+   "id": 85,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -0.1,
+   "human_praca": 0.1,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "0": -0.1
+   },
+   "expect": {
+    "human_treasury": -0.1,
+    "human_praca": 0,
+    "ai_treasury": {},
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 86,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "2": 0,
+    "3": 999.75,
+    "5": 0.2
+   },
+   "ai_praca": {
+    "2": 0.1,
+    "3": 10,
+    "5": 10
+   },
+   "treasury_deltas": {
+    "0": 0.2,
+    "5": -2.5
+   },
+   "praca_deltas": {
+    "0": 12345.678,
+    "3": 1000000000
+   },
+   "expect": {
+    "human_treasury": 10.2,
+    "human_praca": 12345.878,
+    "ai_treasury": {
+     "2": 0,
+     "3": 999.75,
+     "5": -2.3
+    },
+    "ai_praca": {
+     "2": 0.1,
+     "3": 1000000010,
+     "5": 10
+    }
+   }
+  },
+  {
+   "id": 87,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 999.75,
+   "ai_treasury": {},
+   "ai_praca": {
+    "1": 999.75
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 12345.678,
+    "human_praca": 999.75,
+    "ai_treasury": {},
+    "ai_praca": {
+     "1": 999.75
+    }
+   }
+  },
+  {
+   "id": 88,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -1,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "3": 1000000000
+   },
+   "ai_praca": {
+    "3": 0.1,
+    "4": 1000000000
+   },
+   "treasury_deltas": {
+    "3": -0.1
+   },
+   "praca_deltas": {
+    "0": 1,
+    "4": 1000000000,
+    "5": 12345.678
+   },
+   "expect": {
+    "human_treasury": -1,
+    "human_praca": 1.1,
+    "ai_treasury": {
+     "3": 999999999.9
+    },
+    "ai_praca": {
+     "3": 0.1,
+     "4": 2000000000,
+     "5": 12345.678
+    }
+   }
+  },
+  {
+   "id": 89,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 1,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "1": 2.5,
+    "2": 1000000000,
+    "4": 37
+   },
+   "ai_praca": {
+    "3": 0.2
+   },
+   "treasury_deltas": {
+    "0": 0.2,
+    "2": 10
+   },
+   "praca_deltas": {
+    "2": 0.2
+   },
+   "expect": {
+    "human_treasury": 1.2,
+    "human_praca": 1000000000,
+    "ai_treasury": {
+     "1": 2.5,
+     "2": 1000000010,
+     "4": 37
+    },
+    "ai_praca": {
+     "2": 0.2,
+     "3": 0.2
+    }
+   }
+  },
+  {
+   "id": 90,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "3": 0.2
+   },
+   "ai_praca": {},
+   "treasury_deltas": {},
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 12345.678,
+    "human_praca": 12345.678,
+    "ai_treasury": {
+     "3": 0.2
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 91,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 999.75,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "2": 10,
+    "5": 0
+   },
+   "ai_praca": {
+    "1": 10,
+    "2": 0.1,
+    "5": 2.5
+   },
+   "treasury_deltas": {
+    "2": -12345.678
+   },
+   "praca_deltas": {
+    "2": 0.2
+   },
+   "expect": {
+    "human_treasury": 999.75,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "2": -12335.678,
+     "5": 0
+    },
+    "ai_praca": {
+     "1": 10,
+     "2": 0.30000000000000004,
+     "5": 2.5
+    }
+   }
+  },
+  {
+   "id": 92,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 37,
+   "human_praca": 10,
+   "ai_treasury": {
+    "5": 0.1
+   },
+   "ai_praca": {
+    "2": 2.5,
+    "4": 10,
+    "5": 12345.678
+   },
+   "treasury_deltas": {
+    "0": -37,
+    "2": 0,
+    "4": -0.2,
+    "5": -0.1
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 10,
+    "ai_treasury": {
+     "2": 0,
+     "4": -0.2,
+     "5": 0
+    },
+    "ai_praca": {
+     "2": 2.5,
+     "4": 10,
+     "5": 12345.678
+    }
+   }
+  },
+  {
+   "id": 93,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 37,
+   "ai_treasury": {
+    "2": 0
+   },
+   "ai_praca": {
+    "2": 2.5
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "2": -12345.678
+   },
+   "expect": {
+    "human_treasury": 0.1,
+    "human_praca": 37,
+    "ai_treasury": {
+     "2": 0
+    },
+    "ai_praca": {
+     "2": 0
+    }
+   }
+  },
+  {
+   "id": 94,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 999.75,
+   "human_praca": 999.75,
+   "ai_treasury": {},
+   "ai_praca": {
+    "5": 0.1
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "0": 0
+   },
+   "expect": {
+    "human_treasury": 999.75,
+    "human_praca": 999.75,
+    "ai_treasury": {},
+    "ai_praca": {
+     "5": 0.1
+    }
+   }
+  },
+  {
+   "id": 95,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 1,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "2": 0.2,
+    "3": 0
+   },
+   "ai_praca": {
+    "2": 0.2,
+    "3": 1000000000,
+    "5": 12345.678
+   },
+   "treasury_deltas": {
+    "1": 0.1
+   },
+   "praca_deltas": {
+    "0": -1000000000,
+    "3": -0.1,
+    "5": -0.2
+   },
+   "expect": {
+    "human_treasury": 1,
+    "human_praca": 0,
+    "ai_treasury": {
+     "1": 0.1,
+     "2": 0.2,
+     "3": 0
+    },
+    "ai_praca": {
+     "2": 0.2,
+     "3": 999999999.9,
+     "5": 12345.478
+    }
+   }
+  },
+  {
+   "id": 96,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -37,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "1": -10,
+    "5": 2.5
+   },
+   "ai_praca": {
+    "1": 2.5,
+    "5": 999.75
+   },
+   "treasury_deltas": {
+    "0": 12345.678
+   },
+   "praca_deltas": {
+    "0": 1,
+    "1": 2.5,
+    "2": -37
+   },
+   "expect": {
+    "human_treasury": 12308.678,
+    "human_praca": 1000000001,
+    "ai_treasury": {
+     "1": -10,
+     "5": 2.5
+    },
+    "ai_praca": {
+     "1": 5,
+     "2": 0,
+     "5": 999.75
+    }
+   }
+  },
+  {
+   "id": 97,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -0.2,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "2": 0
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": 0.1,
+    "2": 37
+   },
+   "praca_deltas": {
+    "0": 1
+   },
+   "expect": {
+    "human_treasury": -0.1,
+    "human_praca": 1.1,
+    "ai_treasury": {
+     "2": 37
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 98,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -0.2,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "4": -37
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "5": 37
+   },
+   "praca_deltas": {
+    "2": 12345.678,
+    "4": -12345.678
+   },
+   "expect": {
+    "human_treasury": -0.2,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "4": -37,
+     "5": 37
+    },
+    "ai_praca": {
+     "2": 12345.678,
+     "4": 0
+    }
+   }
+  },
+  {
+   "id": 99,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "1": 1,
+    "3": 0.2
+   },
+   "ai_praca": {
+    "3": 1000000000,
+    "5": 1
+   },
+   "treasury_deltas": {
+    "1": 2.5,
+    "5": 1000000000
+   },
+   "praca_deltas": {
+    "1": 37,
+    "3": 37,
+    "5": -10
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "1": 3.5,
+     "3": 0.2,
+     "5": 1000000000
+    },
+    "ai_praca": {
+     "1": 37,
+     "3": 1000000037,
+     "5": 0
+    }
+   }
+  },
+  {
+   "id": 100,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 10,
+   "ai_treasury": {
+    "1": 37,
+    "5": 0.2
+   },
+   "ai_praca": {
+    "5": 2.5
+   },
+   "treasury_deltas": {
+    "0": 1000000000
+   },
+   "praca_deltas": {
+    "0": 10,
+    "5": -999.75
+   },
+   "expect": {
+    "human_treasury": 1000000000,
+    "human_praca": 20,
+    "ai_treasury": {
+     "1": 37,
+     "5": 0.2
+    },
+    "ai_praca": {
+     "5": 0
+    }
+   }
+  },
+  {
+   "id": 101,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 2.5,
+   "human_praca": 37,
+   "ai_treasury": {
+    "2": 12345.678,
+    "3": 37
+   },
+   "ai_praca": {
+    "1": 2.5
+   },
+   "treasury_deltas": {
+    "2": 1,
+    "3": 2.5
+   },
+   "praca_deltas": {
+    "0": 0,
+    "1": 10,
+    "3": -1
+   },
+   "expect": {
+    "human_treasury": 2.5,
+    "human_praca": 37,
+    "ai_treasury": {
+     "2": 12346.678,
+     "3": 39.5
+    },
+    "ai_praca": {
+     "1": 12.5,
+     "3": 0
+    }
+   }
+  },
+  {
+   "id": 102,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 1000000000,
+   "ai_treasury": {},
+   "ai_praca": {
+    "2": 999.75
+   },
+   "treasury_deltas": {
+    "0": 1000000000,
+    "2": -0.1
+   },
+   "praca_deltas": {
+    "2": -2.5
+   },
+   "expect": {
+    "human_treasury": 1000000010,
+    "human_praca": 1000000000,
+    "ai_treasury": {
+     "2": -0.1
+    },
+    "ai_praca": {
+     "2": 997.25
+    }
+   }
+  },
+  {
+   "id": 103,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 2.5,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "3": -2.5,
+    "4": 1000000000,
+    "5": 0.2
+   },
+   "ai_praca": {
+    "1": 1,
+    "4": 0
+   },
+   "treasury_deltas": {
+    "1": 2.5,
+    "3": 37,
+    "4": 999.75,
+    "5": 37
+   },
+   "praca_deltas": {
+    "1": 1000000000,
+    "3": -12345.678,
+    "5": -1000000000
+   },
+   "expect": {
+    "human_treasury": 2.5,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "1": 2.5,
+     "3": 34.5,
+     "4": 1000000999.75,
+     "5": 37.2
+    },
+    "ai_praca": {
+     "1": 1000000001,
+     "3": 0,
+     "4": 0,
+     "5": 0
+    }
+   }
+  },
+  {
+   "id": 104,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -999.75,
+   "human_praca": 1,
+   "ai_treasury": {
+    "1": 2.5,
+    "3": 37
+   },
+   "ai_praca": {
+    "1": 12345.678,
+    "3": 10,
+    "4": 2.5,
+    "5": 1
+   },
+   "treasury_deltas": {
+    "0": 12345.678,
+    "1": 37
+   },
+   "praca_deltas": {
+    "0": 12345.678,
+    "1": -37,
+    "3": 10,
+    "5": 1
+   },
+   "expect": {
+    "human_treasury": 11345.928,
+    "human_praca": 12346.678,
+    "ai_treasury": {
+     "1": 39.5,
+     "3": 37
+    },
+    "ai_praca": {
+     "1": 12308.678,
+     "3": 20,
+     "4": 2.5,
+     "5": 2
+    }
+   }
+  },
+  {
+   "id": 105,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 0.2,
+   "ai_treasury": {},
+   "ai_praca": {
+    "2": 12345.678
+   },
+   "treasury_deltas": {
+    "1": 2.5,
+    "2": -1
+   },
+   "praca_deltas": {
+    "0": -999.75,
+    "1": 0.1
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 0,
+    "ai_treasury": {
+     "1": 2.5,
+     "2": -1
+    },
+    "ai_praca": {
+     "1": 0.1,
+     "2": 12345.678
+    }
+   }
+  },
+  {
+   "id": 106,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -0.2,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "1": -0.1,
+    "2": 0.2,
+    "4": 2.5
+   },
+   "ai_praca": {
+    "2": 1000000000
+   },
+   "treasury_deltas": {
+    "2": -37
+   },
+   "praca_deltas": {
+    "1": 37
+   },
+   "expect": {
+    "human_treasury": -0.2,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "1": -0.1,
+     "2": -36.8,
+     "4": 2.5
+    },
+    "ai_praca": {
+     "1": 37,
+     "2": 1000000000
+    }
+   }
+  },
+  {
+   "id": 107,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "5": 12345.678
+   },
+   "ai_praca": {
+    "2": 1,
+    "4": 10
+   },
+   "treasury_deltas": {
+    "2": -0.1,
+    "4": 1000000000,
+    "5": -1
+   },
+   "praca_deltas": {
+    "4": 1
+   },
+   "expect": {
+    "human_treasury": 12345.678,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "2": -0.1,
+     "4": 1000000000,
+     "5": 12344.678
+    },
+    "ai_praca": {
+     "2": 1,
+     "4": 11
+    }
+   }
+  },
+  {
+   "id": 108,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -0.1,
+   "human_praca": 10,
+   "ai_treasury": {
+    "1": 2.5,
+    "2": 10,
+    "5": -0.2
+   },
+   "ai_praca": {
+    "2": 999.75,
+    "3": 2.5,
+    "5": 2.5
+   },
+   "treasury_deltas": {
+    "2": 1000000000,
+    "3": 0
+   },
+   "praca_deltas": {
+    "0": 12345.678
+   },
+   "expect": {
+    "human_treasury": -0.1,
+    "human_praca": 12355.678,
+    "ai_treasury": {
+     "1": 2.5,
+     "2": 1000000010,
+     "3": 0,
+     "5": -0.2
+    },
+    "ai_praca": {
+     "2": 999.75,
+     "3": 2.5,
+     "5": 2.5
+    }
+   }
+  },
+  {
+   "id": 109,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "1": 12345.678,
+    "2": 999.75,
+    "5": 0
+   },
+   "ai_praca": {
+    "2": 0,
+    "5": 0.2
+   },
+   "treasury_deltas": {
+    "0": 0,
+    "1": 999.75,
+    "2": 0.2,
+    "5": 10
+   },
+   "praca_deltas": {
+    "5": 0.2
+   },
+   "expect": {
+    "human_treasury": 12345.678,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "1": 13345.428,
+     "2": 999.95,
+     "5": 10
+    },
+    "ai_praca": {
+     "2": 0,
+     "5": 0.4
+    }
+   }
+  },
+  {
+   "id": 110,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 2.5,
+   "human_praca": 1,
+   "ai_treasury": {
+    "3": 10
+   },
+   "ai_praca": {
+    "1": 999.75,
+    "4": 2.5,
+    "5": 0
+   },
+   "treasury_deltas": {
+    "0": -12345.678,
+    "1": 12345.678
+   },
+   "praca_deltas": {
+    "0": 1
+   },
+   "expect": {
+    "human_treasury": -12343.178,
+    "human_praca": 2,
+    "ai_treasury": {
+     "1": 12345.678,
+     "3": 10
+    },
+    "ai_praca": {
+     "1": 999.75,
+     "4": 2.5,
+     "5": 0
+    }
+   }
+  },
+  {
+   "id": 111,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0.2,
+   "human_praca": 0,
+   "ai_treasury": {
+    "1": 1000000000,
+    "2": 37
+   },
+   "ai_praca": {
+    "1": 0.2,
+    "2": 1000000000
+   },
+   "treasury_deltas": {
+    "1": -2.5,
+    "2": 10
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 0.2,
+    "human_praca": 0,
+    "ai_treasury": {
+     "1": 999999997.5,
+     "2": 47
+    },
+    "ai_praca": {
+     "1": 0.2,
+     "2": 1000000000
+    }
+   }
+  },
+  {
+   "id": 112,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -999.75,
+   "human_praca": 999.75,
+   "ai_treasury": {
+    "3": 1,
+    "4": -999.75
+   },
+   "ai_praca": {
+    "1": 1,
+    "2": 0.1,
+    "3": 0,
+    "4": 0.1
+   },
+   "treasury_deltas": {
+    "0": 0,
+    "1": 1000000000,
+    "3": 0,
+    "4": 1000000000
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": -999.75,
+    "human_praca": 999.75,
+    "ai_treasury": {
+     "1": 1000000000,
+     "3": 1,
+     "4": 999999000.25
+    },
+    "ai_praca": {
+     "1": 1,
+     "2": 0.1,
+     "3": 0,
+     "4": 0.1
+    }
+   }
+  },
+  {
+   "id": 113,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -1000000000,
+   "human_praca": 0.2,
+   "ai_treasury": {},
+   "ai_praca": {
+    "5": 0.1
+   },
+   "treasury_deltas": {
+    "5": 1000000000
+   },
+   "praca_deltas": {
+    "5": 1
+   },
+   "expect": {
+    "human_treasury": -1000000000,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "5": 1000000000
+    },
+    "ai_praca": {
+     "5": 1.1
+    }
+   }
+  },
+  {
+   "id": 114,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 1,
+   "ai_treasury": {
+    "1": 12345.678,
+    "4": 1000000000,
+    "5": 12345.678
+   },
+   "ai_praca": {
+    "1": 0.1,
+    "5": 999.75
+   },
+   "treasury_deltas": {
+    "2": 0
+   },
+   "praca_deltas": {
+    "4": 12345.678
+   },
+   "expect": {
+    "human_treasury": 0.1,
+    "human_praca": 1,
+    "ai_treasury": {
+     "1": 12345.678,
+     "2": 0,
+     "4": 1000000000,
+     "5": 12345.678
+    },
+    "ai_praca": {
+     "1": 0.1,
+     "4": 12345.678,
+     "5": 999.75
+    }
+   }
+  },
+  {
+   "id": 115,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 999.75,
+   "human_praca": 999.75,
+   "ai_treasury": {
+    "1": -999.75,
+    "5": -10
+   },
+   "ai_praca": {
+    "2": 0.2,
+    "5": 12345.678
+   },
+   "treasury_deltas": {
+    "0": 0.1
+   },
+   "praca_deltas": {
+    "1": -12345.678
+   },
+   "expect": {
+    "human_treasury": 999.85,
+    "human_praca": 999.75,
+    "ai_treasury": {
+     "1": -999.75,
+     "5": -10
+    },
+    "ai_praca": {
+     "1": 0,
+     "2": 0.2,
+     "5": 12345.678
+    }
+   }
+  },
+  {
+   "id": 116,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 2.5,
+   "human_praca": 0.1,
+   "ai_treasury": {},
+   "ai_praca": {
+    "1": 0.2,
+    "5": 999.75
+   },
+   "treasury_deltas": {
+    "0": 0,
+    "1": -10,
+    "4": 12345.678,
+    "5": 1
+   },
+   "praca_deltas": {
+    "0": -12345.678,
+    "4": -0.1
+   },
+   "expect": {
+    "human_treasury": 2.5,
+    "human_praca": 0,
+    "ai_treasury": {
+     "1": -10,
+     "4": 12345.678,
+     "5": 1
+    },
+    "ai_praca": {
+     "1": 0.2,
+     "4": 0,
+     "5": 999.75
+    }
+   }
+  },
+  {
+   "id": 117,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "2": 0,
+    "3": 2.5,
+    "5": -0.2
+   },
+   "ai_praca": {
+    "2": 12345.678,
+    "3": 1,
+    "4": 2.5
+   },
+   "treasury_deltas": {
+    "0": -0.2,
+    "2": 12345.678,
+    "3": -37,
+    "4": 0
+   },
+   "praca_deltas": {
+    "4": 12345.678
+   },
+   "expect": {
+    "human_treasury": 9.8,
+    "human_praca": 1000000000,
+    "ai_treasury": {
+     "2": 12345.678,
+     "3": -34.5,
+     "4": 0,
+     "5": -0.2
+    },
+    "ai_praca": {
+     "2": 12345.678,
+     "3": 1,
+     "4": 12348.178
+    }
+   }
+  },
+  {
+   "id": 118,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -1,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "1": 0,
+    "2": 10,
+    "5": 999.75
+   },
+   "ai_praca": {
+    "5": 1
+   },
+   "treasury_deltas": {
+    "0": -1000000000,
+    "2": 1
+   },
+   "praca_deltas": {
+    "3": 0.2,
+    "5": 37
+   },
+   "expect": {
+    "human_treasury": -1000000001,
+    "human_praca": 12345.678,
+    "ai_treasury": {
+     "1": 0,
+     "2": 11,
+     "5": 999.75
+    },
+    "ai_praca": {
+     "3": 0.2,
+     "5": 38
+    }
+   }
+  },
+  {
+   "id": 119,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 999.75,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "1": 37,
+    "5": 10
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "4": -999.75
+   },
+   "praca_deltas": {
+    "4": 999.75,
+    "5": 0.1
+   },
+   "expect": {
+    "human_treasury": 999.75,
+    "human_praca": 1000000000,
+    "ai_treasury": {
+     "1": 37,
+     "4": -999.75,
+     "5": 10
+    },
+    "ai_praca": {
+     "4": 999.75,
+     "5": 0.1
+    }
+   }
+  },
+  {
+   "id": 120,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0.2,
+   "human_praca": 37,
+   "ai_treasury": {
+    "2": 2.5,
+    "5": 1
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "2": 1000000000
+   },
+   "praca_deltas": {
+    "0": 1000000000,
+    "2": 0.2,
+    "4": 1
+   },
+   "expect": {
+    "human_treasury": 0.2,
+    "human_praca": 1000000037,
+    "ai_treasury": {
+     "2": 1000000002.5,
+     "5": 1
+    },
+    "ai_praca": {
+     "2": 0.2,
+     "4": 1
+    }
+   }
+  },
+  {
+   "id": 121,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 999.75,
+   "human_praca": 999.75,
+   "ai_treasury": {
+    "4": 12345.678,
+    "5": 2.5
+   },
+   "ai_praca": {
+    "5": 0.2
+   },
+   "treasury_deltas": {
+    "0": 999.75,
+    "4": 37
+   },
+   "praca_deltas": {
+    "0": 2.5,
+    "4": 37,
+    "5": 0.2
+   },
+   "expect": {
+    "human_treasury": 1999.5,
+    "human_praca": 1002.25,
+    "ai_treasury": {
+     "4": 12382.678,
+     "5": 2.5
+    },
+    "ai_praca": {
+     "4": 37,
+     "5": 0.4
+    }
+   }
+  },
+  {
+   "id": 122,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "1": 0,
+    "2": -1000000000
+   },
+   "ai_praca": {
+    "2": 37,
+    "5": 1000000000
+   },
+   "treasury_deltas": {
+    "0": 2.5,
+    "1": 1,
+    "2": -37
+   },
+   "praca_deltas": {
+    "0": 1000000000,
+    "2": 1
+   },
+   "expect": {
+    "human_treasury": 12348.178,
+    "human_praca": 1000000000.2,
+    "ai_treasury": {
+     "1": 1,
+     "2": -1000000037
+    },
+    "ai_praca": {
+     "2": 38,
+     "5": 1000000000
+    }
+   }
+  },
+  {
+   "id": 123,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 0.1,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": 0,
+    "4": -0.2
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 10,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "4": -0.2
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 124,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 1,
+   "ai_treasury": {
+    "5": 2.5
+   },
+   "ai_praca": {
+    "5": 0.1
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "0": 0.1,
+    "5": 10
+   },
+   "expect": {
+    "human_treasury": 10,
+    "human_praca": 1.1,
+    "ai_treasury": {
+     "5": 2.5
+    },
+    "ai_praca": {
+     "5": 10.1
+    }
+   }
+  },
+  {
+   "id": 125,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 1,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {
+    "4": -0.1
+   },
+   "praca_deltas": {
+    "0": 12345.678
+   },
+   "expect": {
+    "human_treasury": 12345.678,
+    "human_praca": 12346.678,
+    "ai_treasury": {
+     "4": -0.1
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 126,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 1,
+   "human_praca": 999.75,
+   "ai_treasury": {
+    "1": 10
+   },
+   "ai_praca": {
+    "4": 0.1
+   },
+   "treasury_deltas": {
+    "0": 999.75
+   },
+   "praca_deltas": {
+    "1": 0.2
+   },
+   "expect": {
+    "human_treasury": 1000.75,
+    "human_praca": 999.75,
+    "ai_treasury": {
+     "1": 10
+    },
+    "ai_praca": {
+     "1": 0.2,
+     "4": 0.1
+    }
+   }
+  },
+  {
+   "id": 127,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "4": 12345.678
+   },
+   "ai_praca": {
+    "1": 999.75,
+    "4": 10
+   },
+   "treasury_deltas": {
+    "0": 37,
+    "1": 37,
+    "4": -37
+   },
+   "praca_deltas": {
+    "0": -2.5,
+    "1": 37
+   },
+   "expect": {
+    "human_treasury": 12382.678,
+    "human_praca": 0,
+    "ai_treasury": {
+     "1": 37,
+     "4": 12308.678
+    },
+    "ai_praca": {
+     "1": 1036.75,
+     "4": 10
+    }
+   }
+  },
+  {
+   "id": 128,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 0,
+   "ai_treasury": {
+    "2": 0.2,
+    "4": -2.5,
+    "5": -0.2
+   },
+   "ai_praca": {
+    "2": 0.1,
+    "3": 1,
+    "4": 37,
+    "5": 37
+   },
+   "treasury_deltas": {
+    "0": 999.75,
+    "2": 37,
+    "3": 1000000000
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 999.75,
+    "human_praca": 0,
+    "ai_treasury": {
+     "2": 37.2,
+     "3": 1000000000,
+     "4": -2.5,
+     "5": -0.2
+    },
+    "ai_praca": {
+     "2": 0.1,
+     "3": 1,
+     "4": 37,
+     "5": 37
+    }
+   }
+  },
+  {
+   "id": 129,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -1,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "1": 10,
+    "2": 1,
+    "4": 12345.678
+   },
+   "ai_praca": {
+    "2": 1000000000
+   },
+   "treasury_deltas": {
+    "0": 999.75
+   },
+   "praca_deltas": {
+    "1": 37
+   },
+   "expect": {
+    "human_treasury": 998.75,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "1": 10,
+     "2": 1,
+     "4": 12345.678
+    },
+    "ai_praca": {
+     "1": 37,
+     "2": 1000000000
+    }
+   }
+  },
+  {
+   "id": 130,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "1": 999.75,
+    "2": -999.75,
+    "5": 10
+   },
+   "ai_praca": {
+    "2": 37,
+    "5": 37
+   },
+   "treasury_deltas": {
+    "0": 2.5,
+    "1": 10,
+    "5": 999.75
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 12348.178,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "1": 1009.75,
+     "2": -999.75,
+     "5": 1009.75
+    },
+    "ai_praca": {
+     "2": 37,
+     "5": 37
+    }
+   }
+  },
+  {
+   "id": 131,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "1": 12345.678,
+    "4": 1000000000
+   },
+   "ai_praca": {
+    "1": 37,
+    "2": 12345.678,
+    "4": 999.75
+   },
+   "treasury_deltas": {
+    "1": 999.75,
+    "2": -1,
+    "4": 0.2
+   },
+   "praca_deltas": {
+    "0": 1000000000
+   },
+   "expect": {
+    "human_treasury": 12345.678,
+    "human_praca": 1000000000.1,
+    "ai_treasury": {
+     "1": 13345.428,
+     "2": -1,
+     "4": 1000000000.2
+    },
+    "ai_praca": {
+     "1": 37,
+     "2": 12345.678,
+     "4": 999.75
+    }
+   }
+  },
+  {
+   "id": 132,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -0.2,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "1": 1000000000
+   },
+   "ai_praca": {
+    "1": 1000000000
+   },
+   "treasury_deltas": {
+    "1": 0.1,
+    "3": 999.75
+   },
+   "praca_deltas": {
+    "3": 12345.678
+   },
+   "expect": {
+    "human_treasury": -0.2,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "1": 1000000000.1,
+     "3": 999.75
+    },
+    "ai_praca": {
+     "1": 1000000000,
+     "3": 12345.678
+    }
+   }
+  },
+  {
+   "id": 133,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -999.75,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "1": 0,
+    "2": 37
+   },
+   "ai_praca": {
+    "1": 0.1,
+    "2": 10
+   },
+   "treasury_deltas": {
+    "2": 999.75,
+    "3": 999.75
+   },
+   "praca_deltas": {
+    "1": 2.5
+   },
+   "expect": {
+    "human_treasury": -999.75,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "1": 0,
+     "2": 1036.75,
+     "3": 999.75
+    },
+    "ai_praca": {
+     "1": 2.6,
+     "2": 10
+    }
+   }
+  },
+  {
+   "id": 134,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 37,
+   "human_praca": 37,
+   "ai_treasury": {},
+   "ai_praca": {
+    "1": 1000000000,
+    "2": 0.2,
+    "3": 1
+   },
+   "treasury_deltas": {
+    "0": 12345.678,
+    "5": 37
+   },
+   "praca_deltas": {
+    "3": 2.5,
+    "5": 0
+   },
+   "expect": {
+    "human_treasury": 12382.678,
+    "human_praca": 37,
+    "ai_treasury": {
+     "5": 37
+    },
+    "ai_praca": {
+     "1": 1000000000,
+     "2": 0.2,
+     "3": 3.5,
+     "5": 0
+    }
+   }
+  },
+  {
+   "id": 135,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "2": 37,
+    "3": -12345.678,
+    "5": 10
+   },
+   "ai_praca": {
+    "2": 1000000000,
+    "3": 12345.678
+   },
+   "treasury_deltas": {
+    "0": 0
+   },
+   "praca_deltas": {
+    "0": -1,
+    "2": 10,
+    "3": 0.2
+   },
+   "expect": {
+    "human_treasury": 0.1,
+    "human_praca": 0,
+    "ai_treasury": {
+     "2": 37,
+     "3": -12345.678,
+     "5": 10
+    },
+    "ai_praca": {
+     "2": 1000000010,
+     "3": 12345.878
+    }
+   }
+  },
+  {
+   "id": 136,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "1": 37,
+    "3": 0.1,
+    "5": 0
+   },
+   "ai_praca": {
+    "2": 2.5,
+    "3": 0.2,
+    "5": 999.75
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "0": 10,
+    "2": 0,
+    "5": 2.5
+   },
+   "expect": {
+    "human_treasury": 10,
+    "human_praca": 1000000010,
+    "ai_treasury": {
+     "1": 37,
+     "3": 0.1,
+     "5": 0
+    },
+    "ai_praca": {
+     "2": 2.5,
+     "3": 0.2,
+     "5": 1002.25
+    }
+   }
+  },
+  {
+   "id": 137,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 37,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "1": 0.2
+   },
+   "ai_praca": {
+    "1": 1
+   },
+   "treasury_deltas": {
+    "1": 2.5
+   },
+   "praca_deltas": {
+    "0": 1000000000,
+    "1": 37
+   },
+   "expect": {
+    "human_treasury": 37,
+    "human_praca": 1000000000.2,
+    "ai_treasury": {
+     "1": 2.7
+    },
+    "ai_praca": {
+     "1": 38
+    }
+   }
+  },
+  {
+   "id": 138,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 2.5,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "2": 0.1,
+    "3": 12345.678,
+    "4": 37
+   },
+   "ai_praca": {
+    "2": 0,
+    "4": 999.75
+   },
+   "treasury_deltas": {
+    "0": -2.5,
+    "2": 37,
+    "4": 37
+   },
+   "praca_deltas": {
+    "2": -999.75
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "2": 37.1,
+     "3": 12345.678,
+     "4": 74
+    },
+    "ai_praca": {
+     "2": 0,
+     "4": 999.75
+    }
+   }
+  },
+  {
+   "id": 139,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 37,
+   "ai_treasury": {
+    "2": 999.75,
+    "4": 0.2
+   },
+   "ai_praca": {
+    "2": 2.5,
+    "3": 0,
+    "4": 2.5
+   },
+   "treasury_deltas": {
+    "0": -0.2,
+    "2": 999.75,
+    "3": 10,
+    "4": 1
+   },
+   "praca_deltas": {
+    "0": 2.5,
+    "2": 2.5,
+    "4": -1
+   },
+   "expect": {
+    "human_treasury": -0.2,
+    "human_praca": 39.5,
+    "ai_treasury": {
+     "2": 1999.5,
+     "3": 10,
+     "4": 1.2
+    },
+    "ai_praca": {
+     "2": 5,
+     "3": 0,
+     "4": 1.5
+    }
+   }
+  },
+  {
+   "id": 140,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 1000000000,
+   "human_praca": 10,
+   "ai_treasury": {
+    "1": 0.1,
+    "4": -12345.678
+   },
+   "ai_praca": {
+    "1": 1000000000,
+    "2": 0,
+    "4": 37
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 1000000000,
+    "human_praca": 10,
+    "ai_treasury": {
+     "1": 0.1,
+     "4": -12345.678
+    },
+    "ai_praca": {
+     "1": 1000000000,
+     "2": 0,
+     "4": 37
+    }
+   }
+  },
+  {
+   "id": 141,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 37,
+   "ai_treasury": {
+    "5": 10
+   },
+   "ai_praca": {
+    "1": 12345.678,
+    "3": 0
+   },
+   "treasury_deltas": {
+    "0": 1000000000,
+    "1": 37,
+    "5": -2.5
+   },
+   "praca_deltas": {
+    "5": 10
+   },
+   "expect": {
+    "human_treasury": 1000000000,
+    "human_praca": 37,
+    "ai_treasury": {
+     "1": 37,
+     "5": 7.5
+    },
+    "ai_praca": {
+     "1": 12345.678,
+     "3": 0,
+     "5": 10
+    }
+   }
+  },
+  {
+   "id": 142,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 2.5,
+   "human_praca": 1,
+   "ai_treasury": {},
+   "ai_praca": {
+    "1": 10
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "0": -999.75
+   },
+   "expect": {
+    "human_treasury": 2.5,
+    "human_praca": 0,
+    "ai_treasury": {},
+    "ai_praca": {
+     "1": 10
+    }
+   }
+  },
+  {
+   "id": 143,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "2": 10
+   },
+   "ai_praca": {
+    "1": 10,
+    "3": 1000000000
+   },
+   "treasury_deltas": {
+    "0": 1000000000,
+    "1": 12345.678,
+    "3": 37
+   },
+   "praca_deltas": {
+    "0": 0,
+    "2": 1,
+    "3": 1
+   },
+   "expect": {
+    "human_treasury": 1000012345.678,
+    "human_praca": 12345.678,
+    "ai_treasury": {
+     "1": 12345.678,
+     "2": 10,
+     "3": 37
+    },
+    "ai_praca": {
+     "1": 10,
+     "2": 1,
+     "3": 1000000001
+    }
+   }
+  },
+  {
+   "id": 144,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 37,
+   "human_praca": 37,
+   "ai_treasury": {
+    "4": 12345.678
+   },
+   "ai_praca": {
+    "4": 0
+   },
+   "treasury_deltas": {
+    "0": 0.2,
+    "4": 2.5
+   },
+   "praca_deltas": {
+    "0": 37
+   },
+   "expect": {
+    "human_treasury": 37.2,
+    "human_praca": 74,
+    "ai_treasury": {
+     "4": 12348.178
+    },
+    "ai_praca": {
+     "4": 0
+    }
+   }
+  },
+  {
+   "id": 145,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 37,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "4": 999.75
+   },
+   "ai_praca": {
+    "2": 0.2,
+    "3": 37
+   },
+   "treasury_deltas": {
+    "0": 1000000000,
+    "2": 0,
+    "3": 999.75,
+    "4": 999.75
+   },
+   "praca_deltas": {
+    "2": 0.1,
+    "4": -999.75
+   },
+   "expect": {
+    "human_treasury": 1000000037,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "2": 0,
+     "3": 999.75,
+     "4": 1999.5
+    },
+    "ai_praca": {
+     "2": 0.30000000000000004,
+     "3": 37,
+     "4": 0
+    }
+   }
+  },
+  {
+   "id": 146,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -12345.678,
+   "human_praca": 1,
+   "ai_treasury": {
+    "4": 37
+   },
+   "ai_praca": {
+    "4": 10
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "0": 37
+   },
+   "expect": {
+    "human_treasury": -12345.678,
+    "human_praca": 38,
+    "ai_treasury": {
+     "4": 37
+    },
+    "ai_praca": {
+     "4": 10
+    }
+   }
+  },
+  {
+   "id": 147,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 37,
+   "ai_treasury": {
+    "5": -999.75
+   },
+   "ai_praca": {
+    "1": 2.5,
+    "5": 2.5
+   },
+   "treasury_deltas": {
+    "0": -1000000000,
+    "2": 0.1,
+    "4": 1
+   },
+   "praca_deltas": {
+    "0": 37,
+    "5": 2.5
+   },
+   "expect": {
+    "human_treasury": -999999990,
+    "human_praca": 74,
+    "ai_treasury": {
+     "2": 0.1,
+     "4": 1,
+     "5": -999.75
+    },
+    "ai_praca": {
+     "1": 2.5,
+     "5": 5
+    }
+   }
+  },
+  {
+   "id": 148,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -37,
+   "human_praca": 10,
+   "ai_treasury": {
+    "1": 2.5,
+    "3": 1000000000,
+    "4": 12345.678
+   },
+   "ai_praca": {
+    "3": 1000000000
+   },
+   "treasury_deltas": {
+    "1": -0.2,
+    "3": 2.5,
+    "4": 999.75
+   },
+   "praca_deltas": {
+    "1": 0.2,
+    "2": 999.75,
+    "4": 0.1
+   },
+   "expect": {
+    "human_treasury": -37,
+    "human_praca": 10,
+    "ai_treasury": {
+     "1": 2.3,
+     "3": 1000000002.5,
+     "4": 13345.428
+    },
+    "ai_praca": {
+     "1": 0.2,
+     "2": 999.75,
+     "3": 1000000000,
+     "4": 0.1
+    }
+   }
+  },
+  {
+   "id": 149,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 1,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "4": 1
+   },
+   "ai_praca": {
+    "4": 999.75
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "4": 10
+   },
+   "expect": {
+    "human_treasury": 1,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "4": 1
+    },
+    "ai_praca": {
+     "4": 1009.75
+    }
+   }
+  },
+  {
+   "id": 150,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 2.5,
+   "human_praca": 1000000000,
+   "ai_treasury": {},
+   "ai_praca": {
+    "4": 1
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "4": -999.75
+   },
+   "expect": {
+    "human_treasury": 2.5,
+    "human_praca": 1000000000,
+    "ai_treasury": {},
+    "ai_praca": {
+     "4": 0
+    }
+   }
+  },
+  {
+   "id": 151,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 999.75,
+   "ai_treasury": {},
+   "ai_praca": {
+    "1": 999.75,
+    "4": 1,
+    "5": 0
+   },
+   "treasury_deltas": {
+    "0": 999.75,
+    "2": 10,
+    "5": 1
+   },
+   "praca_deltas": {
+    "1": 0.1,
+    "5": 0
+   },
+   "expect": {
+    "human_treasury": 999.85,
+    "human_praca": 999.75,
+    "ai_treasury": {
+     "2": 10,
+     "5": 1
+    },
+    "ai_praca": {
+     "1": 999.85,
+     "4": 1,
+     "5": 0
+    }
+   }
+  },
+  {
+   "id": 152,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "2": 0.1
+   },
+   "ai_praca": {
+    "1": 0,
+    "2": 999.75,
+    "3": 1
+   },
+   "treasury_deltas": {
+    "0": 1000000000,
+    "3": -0.1
+   },
+   "praca_deltas": {
+    "0": -999.75,
+    "1": 1000000000,
+    "2": 0,
+    "3": 37
+   },
+   "expect": {
+    "human_treasury": 1000012345.678,
+    "human_praca": 0,
+    "ai_treasury": {
+     "2": 0.1,
+     "3": -0.1
+    },
+    "ai_praca": {
+     "1": 1000000000,
+     "2": 999.75,
+     "3": 38
+    }
+   }
+  },
+  {
+   "id": 153,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 1000000000,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "5": 0
+   },
+   "ai_praca": {
+    "4": 10
+   },
+   "treasury_deltas": {
+    "0": 12345.678,
+    "4": 1000000000,
+    "5": 1000000000
+   },
+   "praca_deltas": {
+    "4": 0.1
+   },
+   "expect": {
+    "human_treasury": 1000012345.678,
+    "human_praca": 12345.678,
+    "ai_treasury": {
+     "4": 1000000000,
+     "5": 1000000000
+    },
+    "ai_praca": {
+     "4": 10.1
+    }
+   }
+  },
+  {
+   "id": 154,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -0.1,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "2": -10,
+    "3": 0.1
+   },
+   "ai_praca": {
+    "2": 2.5,
+    "3": 0.2
+   },
+   "treasury_deltas": {
+    "3": 0
+   },
+   "praca_deltas": {
+    "2": 0
+   },
+   "expect": {
+    "human_treasury": -0.1,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "2": -10,
+     "3": 0.1
+    },
+    "ai_praca": {
+     "2": 2.5,
+     "3": 0.2
+    }
+   }
+  },
+  {
+   "id": 155,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 1000000000,
+   "human_praca": 0,
+   "ai_treasury": {
+    "1": 0
+   },
+   "ai_praca": {
+    "1": 2.5
+   },
+   "treasury_deltas": {
+    "1": 1
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 1000000000,
+    "human_praca": 0,
+    "ai_treasury": {
+     "1": 1
+    },
+    "ai_praca": {
+     "1": 2.5
+    }
+   }
+  },
+  {
+   "id": 156,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 37,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "1": 10,
+    "3": 0
+   },
+   "ai_praca": {
+    "1": 37,
+    "3": 0
+   },
+   "treasury_deltas": {
+    "0": 37,
+    "1": 0,
+    "2": 2.5,
+    "3": -0.1
+   },
+   "praca_deltas": {
+    "2": -1000000000
+   },
+   "expect": {
+    "human_treasury": 74,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "1": 10,
+     "2": 2.5,
+     "3": -0.1
+    },
+    "ai_praca": {
+     "1": 37,
+     "2": 0,
+     "3": 0
+    }
+   }
+  },
+  {
+   "id": 157,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 999.75,
+   "ai_treasury": {
+    "3": 10,
+    "4": -2.5
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "3": 999.75,
+    "5": 1
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 0.1,
+    "human_praca": 999.75,
+    "ai_treasury": {
+     "3": 1009.75,
+     "4": -2.5,
+     "5": 1
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 158,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 999.75,
+   "human_praca": 37,
+   "ai_treasury": {
+    "1": 999.75,
+    "3": 0
+   },
+   "ai_praca": {
+    "1": 37,
+    "3": 1,
+    "5": 1000000000
+   },
+   "treasury_deltas": {
+    "1": 999.75,
+    "3": 2.5
+   },
+   "praca_deltas": {
+    "1": 37
+   },
+   "expect": {
+    "human_treasury": 999.75,
+    "human_praca": 37,
+    "ai_treasury": {
+     "1": 1999.5,
+     "3": 2.5
+    },
+    "ai_praca": {
+     "1": 74,
+     "3": 1,
+     "5": 1000000000
+    }
+   }
+  },
+  {
+   "id": 159,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "1": 0.2,
+    "2": 1,
+    "4": 2.5
+   },
+   "ai_praca": {
+    "1": 1,
+    "2": 12345.678
+   },
+   "treasury_deltas": {
+    "0": 0,
+    "1": 0.1,
+    "2": 2.5,
+    "3": 0,
+    "4": -1000000000
+   },
+   "praca_deltas": {
+    "0": 0,
+    "2": -0.1
+   },
+   "expect": {
+    "human_treasury": 10,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "1": 0.30000000000000004,
+     "2": 3.5,
+     "3": 0,
+     "4": -999999997.5
+    },
+    "ai_praca": {
+     "1": 1,
+     "2": 12345.578
+    }
+   }
+  },
+  {
+   "id": 160,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 37,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "1": -999.75,
+    "2": -0.2,
+    "5": 1000000000
+   },
+   "ai_praca": {
+    "1": 2.5,
+    "4": 0.1
+   },
+   "treasury_deltas": {
+    "1": 2.5,
+    "2": 0.2,
+    "5": 0
+   },
+   "praca_deltas": {
+    "0": 12345.678,
+    "4": 10,
+    "5": -37
+   },
+   "expect": {
+    "human_treasury": 37,
+    "human_praca": 1000012345.678,
+    "ai_treasury": {
+     "1": -997.25,
+     "2": 0,
+     "5": 1000000000
+    },
+    "ai_praca": {
+     "1": 2.5,
+     "4": 10.1,
+     "5": 0
+    }
+   }
+  },
+  {
+   "id": 161,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -999.75,
+   "human_praca": 0,
+   "ai_treasury": {
+    "1": 2.5
+   },
+   "ai_praca": {
+    "2": 0
+   },
+   "treasury_deltas": {
+    "0": 0.2,
+    "1": 10
+   },
+   "praca_deltas": {
+    "1": 999.75
+   },
+   "expect": {
+    "human_treasury": -999.55,
+    "human_praca": 0,
+    "ai_treasury": {
+     "1": 12.5
+    },
+    "ai_praca": {
+     "1": 999.75,
+     "2": 0
+    }
+   }
+  },
+  {
+   "id": 162,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 37,
+   "ai_treasury": {},
+   "ai_praca": {
+    "1": 1000000000,
+    "3": 1,
+    "4": 37
+   },
+   "treasury_deltas": {
+    "3": -37,
+    "4": 0
+   },
+   "praca_deltas": {
+    "1": 0,
+    "3": 37
+   },
+   "expect": {
+    "human_treasury": 10,
+    "human_praca": 37,
+    "ai_treasury": {
+     "3": -37,
+     "4": 0
+    },
+    "ai_praca": {
+     "1": 1000000000,
+     "3": 38,
+     "4": 37
+    }
+   }
+  },
+  {
+   "id": 163,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 2.5,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "1": -999.75,
+    "2": 1,
+    "3": 0.2
+   },
+   "ai_praca": {
+    "1": 12345.678,
+    "3": 999.75,
+    "5": 0.2
+   },
+   "treasury_deltas": {
+    "1": 10,
+    "2": 37,
+    "5": 37
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 2.5,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "1": -989.75,
+     "2": 38,
+     "3": 0.2,
+     "5": 37
+    },
+    "ai_praca": {
+     "1": 12345.678,
+     "3": 999.75,
+     "5": 0.2
+    }
+   }
+  },
+  {
+   "id": 164,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0.2,
+   "human_praca": 999.75,
+   "ai_treasury": {},
+   "ai_praca": {
+    "1": 0.2,
+    "2": 0.2,
+    "3": 1000000000,
+    "5": 12345.678
+   },
+   "treasury_deltas": {
+    "2": -10,
+    "3": -37
+   },
+   "praca_deltas": {
+    "2": 12345.678,
+    "5": 37
+   },
+   "expect": {
+    "human_treasury": 0.2,
+    "human_praca": 999.75,
+    "ai_treasury": {
+     "2": -10,
+     "3": -37
+    },
+    "ai_praca": {
+     "1": 0.2,
+     "2": 12345.878,
+     "3": 1000000000,
+     "5": 12382.678
+    }
+   }
+  },
+  {
+   "id": 165,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 0.1,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": 1
+   },
+   "praca_deltas": {
+    "1": 1000000000
+   },
+   "expect": {
+    "human_treasury": 11,
+    "human_praca": 0.1,
+    "ai_treasury": {},
+    "ai_praca": {
+     "1": 1000000000
+    }
+   }
+  },
+  {
+   "id": 166,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 999.75,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "4": 1000000000,
+    "5": 12345.678
+   },
+   "ai_praca": {
+    "4": 1
+   },
+   "treasury_deltas": {
+    "0": -2.5,
+    "4": -0.1
+   },
+   "praca_deltas": {
+    "5": 1
+   },
+   "expect": {
+    "human_treasury": 997.25,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "4": 999999999.9,
+     "5": 12345.678
+    },
+    "ai_praca": {
+     "4": 1,
+     "5": 1
+    }
+   }
+  },
+  {
+   "id": 167,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 1,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "2": 0
+   },
+   "ai_praca": {
+    "3": 37
+   },
+   "treasury_deltas": {
+    "0": 2.5,
+    "2": 999.75
+   },
+   "praca_deltas": {
+    "3": 12345.678
+   },
+   "expect": {
+    "human_treasury": 3.5,
+    "human_praca": 1000000000,
+    "ai_treasury": {
+     "2": 999.75
+    },
+    "ai_praca": {
+     "3": 12382.678
+    }
+   }
+  },
+  {
+   "id": 168,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -0.1,
+   "human_praca": 10,
+   "ai_treasury": {
+    "1": 2.5
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": -1000000000
+   },
+   "praca_deltas": {
+    "1": 0.1
+   },
+   "expect": {
+    "human_treasury": -1000000000.1,
+    "human_praca": 10,
+    "ai_treasury": {
+     "1": 2.5
+    },
+    "ai_praca": {
+     "1": 0.1
+    }
+   }
+  },
+  {
+   "id": 169,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 1000000000,
+   "human_praca": 0,
+   "ai_treasury": {
+    "3": -2.5,
+    "4": 37
+   },
+   "ai_praca": {
+    "1": 12345.678,
+    "3": 1,
+    "4": 999.75,
+    "5": 0.1
+   },
+   "treasury_deltas": {
+    "3": 0.2
+   },
+   "praca_deltas": {
+    "1": 1000000000,
+    "4": 1000000000
+   },
+   "expect": {
+    "human_treasury": 1000000000,
+    "human_praca": 0,
+    "ai_treasury": {
+     "3": -2.3,
+     "4": 37
+    },
+    "ai_praca": {
+     "1": 1000012345.678,
+     "3": 1,
+     "4": 1000000999.75,
+     "5": 0.1
+    }
+   }
+  },
+  {
+   "id": 170,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 37,
+   "ai_treasury": {
+    "4": 1,
+    "5": 1
+   },
+   "ai_praca": {
+    "4": 1000000000,
+    "5": 1
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "2": 37
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 37,
+    "ai_treasury": {
+     "4": 1,
+     "5": 1
+    },
+    "ai_praca": {
+     "2": 37,
+     "4": 1000000000,
+     "5": 1
+    }
+   }
+  },
+  {
+   "id": 171,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "4": 37,
+    "5": -1000000000
+   },
+   "ai_praca": {
+    "4": 0.2
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "0": -1,
+    "4": 1,
+    "5": -1
+   },
+   "expect": {
+    "human_treasury": 0.1,
+    "human_praca": 0,
+    "ai_treasury": {
+     "4": 37,
+     "5": -1000000000
+    },
+    "ai_praca": {
+     "4": 1.2,
+     "5": 0
+    }
+   }
+  },
+  {
+   "id": 172,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "2": -1
+   },
+   "ai_praca": {
+    "2": 12345.678
+   },
+   "treasury_deltas": {
+    "0": 10,
+    "2": 0.1
+   },
+   "praca_deltas": {
+    "0": 0.1
+   },
+   "expect": {
+    "human_treasury": 12355.678,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "2": -0.9
+    },
+    "ai_praca": {
+     "2": 12345.678
+    }
+   }
+  },
+  {
+   "id": 173,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 1,
+   "human_praca": 2.5,
+   "ai_treasury": {},
+   "ai_praca": {
+    "4": 0
+   },
+   "treasury_deltas": {
+    "0": 1,
+    "4": 1000000000
+   },
+   "praca_deltas": {
+    "0": 10,
+    "4": 999.75
+   },
+   "expect": {
+    "human_treasury": 2,
+    "human_praca": 12.5,
+    "ai_treasury": {
+     "4": 1000000000
+    },
+    "ai_praca": {
+     "4": 999.75
+    }
+   }
+  },
+  {
+   "id": 174,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.2,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "3": 1
+   },
+   "ai_praca": {
+    "4": 2.5
+   },
+   "treasury_deltas": {
+    "0": -12345.678,
+    "4": -12345.678
+   },
+   "praca_deltas": {
+    "3": 10
+   },
+   "expect": {
+    "human_treasury": -12345.478,
+    "human_praca": 12345.678,
+    "ai_treasury": {
+     "3": 1,
+     "4": -12345.678
+    },
+    "ai_praca": {
+     "3": 10,
+     "4": 2.5
+    }
+   }
+  },
+  {
+   "id": 175,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 37,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "1": 999.75
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": 2.5,
+    "2": 999.75
+   },
+   "praca_deltas": {
+    "0": 0.1
+   },
+   "expect": {
+    "human_treasury": 39.5,
+    "human_praca": 2.6,
+    "ai_treasury": {
+     "1": 999.75,
+     "2": 999.75
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 176,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -0.1,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "5": 0.2
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": 37,
+    "5": -12345.678
+   },
+   "praca_deltas": {
+    "0": 2.5,
+    "5": 10
+   },
+   "expect": {
+    "human_treasury": 36.9,
+    "human_praca": 1000000002.5,
+    "ai_treasury": {
+     "5": -12345.478
+    },
+    "ai_praca": {
+     "5": 10
+    }
+   }
+  },
+  {
+   "id": 177,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 999.75,
+   "ai_treasury": {
+    "1": -2.5,
+    "3": 0,
+    "5": 999.75
+   },
+   "ai_praca": {
+    "1": 1,
+    "3": 0.2
+   },
+   "treasury_deltas": {
+    "0": 1,
+    "3": 10,
+    "5": 12345.678
+   },
+   "praca_deltas": {
+    "3": -1000000000
+   },
+   "expect": {
+    "human_treasury": 11,
+    "human_praca": 999.75,
+    "ai_treasury": {
+     "1": -2.5,
+     "3": 10,
+     "5": 13345.428
+    },
+    "ai_praca": {
+     "1": 1,
+     "3": 0
+    }
+   }
+  },
+  {
+   "id": 178,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 999.75,
+   "ai_treasury": {
+    "3": 10,
+    "5": 0
+   },
+   "ai_praca": {
+    "3": 1000000000,
+    "5": 37
+   },
+   "treasury_deltas": {
+    "0": -12345.678,
+    "3": -10,
+    "5": 2.5
+   },
+   "praca_deltas": {
+    "0": 0.1
+   },
+   "expect": {
+    "human_treasury": -12335.678,
+    "human_praca": 999.85,
+    "ai_treasury": {
+     "3": 0,
+     "5": 2.5
+    },
+    "ai_praca": {
+     "3": 1000000000,
+     "5": 37
+    }
+   }
+  },
+  {
+   "id": 179,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.2,
+   "human_praca": 0,
+   "ai_treasury": {
+    "1": 0.1,
+    "3": 0.2
+   },
+   "ai_praca": {
+    "1": 10,
+    "2": 1000000000,
+    "3": 0
+   },
+   "treasury_deltas": {
+    "0": -2.5,
+    "1": 10,
+    "2": 0,
+    "3": -0.2
+   },
+   "praca_deltas": {
+    "2": -2.5,
+    "3": 2.5
+   },
+   "expect": {
+    "human_treasury": -2.3,
+    "human_praca": 0,
+    "ai_treasury": {
+     "1": 10.1,
+     "2": 0,
+     "3": 0
+    },
+    "ai_praca": {
+     "1": 10,
+     "2": 999999997.5,
+     "3": 2.5
+    }
+   }
+  },
+  {
+   "id": 180,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -37,
+   "human_praca": 1,
+   "ai_treasury": {
+    "1": 999.75,
+    "3": 0
+   },
+   "ai_praca": {
+    "1": 0.2,
+    "2": 2.5,
+    "3": 12345.678
+   },
+   "treasury_deltas": {
+    "2": 10
+   },
+   "praca_deltas": {
+    "0": 0.2,
+    "2": -0.2,
+    "5": -0.2
+   },
+   "expect": {
+    "human_treasury": -37,
+    "human_praca": 1.2,
+    "ai_treasury": {
+     "1": 999.75,
+     "2": 10,
+     "3": 0
+    },
+    "ai_praca": {
+     "1": 0.2,
+     "2": 2.3,
+     "3": 12345.678,
+     "5": 0
+    }
+   }
+  },
+  {
+   "id": 181,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "2": 0.2,
+    "5": 10
+   },
+   "ai_praca": {
+    "4": 0,
+    "5": 37
+   },
+   "treasury_deltas": {
+    "4": 1000000000,
+    "5": 12345.678
+   },
+   "praca_deltas": {
+    "4": 2.5,
+    "5": 37
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "2": 0.2,
+     "4": 1000000000,
+     "5": 12355.678
+    },
+    "ai_praca": {
+     "4": 2.5,
+     "5": 74
+    }
+   }
+  },
+  {
+   "id": 182,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 10,
+   "ai_treasury": {
+    "4": 1000000000,
+    "5": 0
+   },
+   "ai_praca": {
+    "1": 12345.678
+   },
+   "treasury_deltas": {
+    "1": -2.5,
+    "5": -1000000000
+   },
+   "praca_deltas": {
+    "0": 1000000000,
+    "1": 2.5,
+    "4": 10,
+    "5": 12345.678
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 1000000010,
+    "ai_treasury": {
+     "1": -2.5,
+     "4": 1000000000,
+     "5": -1000000000
+    },
+    "ai_praca": {
+     "1": 12348.178,
+     "4": 10,
+     "5": 12345.678
+    }
+   }
+  },
+  {
+   "id": 183,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.2,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "2": 2.5,
+    "4": 0.2
+   },
+   "ai_praca": {
+    "1": 1000000000,
+    "2": 999.75,
+    "5": 1000000000
+   },
+   "treasury_deltas": {
+    "1": -1000000000,
+    "5": 1
+   },
+   "praca_deltas": {
+    "1": 1,
+    "5": 999.75
+   },
+   "expect": {
+    "human_treasury": 0.2,
+    "human_praca": 12345.678,
+    "ai_treasury": {
+     "1": -1000000000,
+     "2": 2.5,
+     "4": 0.2,
+     "5": 1
+    },
+    "ai_praca": {
+     "1": 1000000001,
+     "2": 999.75,
+     "5": 1000000999.75
+    }
+   }
+  },
+  {
+   "id": 184,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -1,
+   "human_praca": 1,
+   "ai_treasury": {
+    "1": -999.75,
+    "2": 12345.678,
+    "4": 0,
+    "5": 1
+   },
+   "ai_praca": {
+    "2": 999.75,
+    "4": 1000000000,
+    "5": 999.75
+   },
+   "treasury_deltas": {
+    "0": 1000000000,
+    "1": 999.75,
+    "4": 2.5,
+    "5": 0.2
+   },
+   "praca_deltas": {
+    "2": 12345.678,
+    "4": 1
+   },
+   "expect": {
+    "human_treasury": 999999999,
+    "human_praca": 1,
+    "ai_treasury": {
+     "1": 0,
+     "2": 12345.678,
+     "4": 2.5,
+     "5": 1.2
+    },
+    "ai_praca": {
+     "2": 13345.428,
+     "4": 1000000001,
+     "5": 999.75
+    }
+   }
+  },
+  {
+   "id": 185,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 999.75,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "1": -12345.678
+   },
+   "ai_praca": {
+    "1": 0
+   },
+   "treasury_deltas": {
+    "0": 0,
+    "1": 10
+   },
+   "praca_deltas": {
+    "1": 2.5
+   },
+   "expect": {
+    "human_treasury": 999.75,
+    "human_praca": 0.2,
+    "ai_treasury": {
+     "1": -12335.678
+    },
+    "ai_praca": {
+     "1": 2.5
+    }
+   }
+  },
+  {
+   "id": 186,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -1,
+   "human_praca": 1,
+   "ai_treasury": {
+    "3": 0.2
+   },
+   "ai_praca": {
+    "2": 1,
+    "3": 37
+   },
+   "treasury_deltas": {
+    "3": 999.75
+   },
+   "praca_deltas": {
+    "1": 0.2,
+    "2": -0.1,
+    "5": 37
+   },
+   "expect": {
+    "human_treasury": -1,
+    "human_praca": 1,
+    "ai_treasury": {
+     "3": 999.95
+    },
+    "ai_praca": {
+     "1": 0.2,
+     "2": 0.9,
+     "3": 37,
+     "5": 37
+    }
+   }
+  },
+  {
+   "id": 187,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 1,
+   "human_praca": 37,
+   "ai_treasury": {
+    "2": 0.1,
+    "4": -0.1
+   },
+   "ai_praca": {
+    "1": 12345.678,
+    "2": 0.2
+   },
+   "treasury_deltas": {
+    "0": -1000000000,
+    "2": 10,
+    "4": 0.1
+   },
+   "praca_deltas": {
+    "1": -2.5
+   },
+   "expect": {
+    "human_treasury": -999999999,
+    "human_praca": 37,
+    "ai_treasury": {
+     "2": 10.1,
+     "4": 0
+    },
+    "ai_praca": {
+     "1": 12343.178,
+     "2": 0.2
+    }
+   }
+  },
+  {
+   "id": 188,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.2,
+   "human_praca": 10,
+   "ai_treasury": {
+    "4": 0.2
+   },
+   "ai_praca": {
+    "3": 10,
+    "4": 12345.678
+   },
+   "treasury_deltas": {
+    "0": 2.5
+   },
+   "praca_deltas": {
+    "0": 1
+   },
+   "expect": {
+    "human_treasury": 2.7,
+    "human_praca": 11,
+    "ai_treasury": {
+     "4": 0.2
+    },
+    "ai_praca": {
+     "3": 10,
+     "4": 12345.678
+    }
+   }
+  },
+  {
+   "id": 189,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 999.75,
+   "human_praca": 37,
+   "ai_treasury": {
+    "2": 0,
+    "3": 10
+   },
+   "ai_praca": {
+    "1": 1000000000,
+    "2": 10
+   },
+   "treasury_deltas": {
+    "0": -999.75,
+    "2": 37,
+    "3": 37
+   },
+   "praca_deltas": {
+    "0": 2.5
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 39.5,
+    "ai_treasury": {
+     "2": 37,
+     "3": 47
+    },
+    "ai_praca": {
+     "1": 1000000000,
+     "2": 10
+    }
+   }
+  },
+  {
+   "id": 190,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 1,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "1": 0.1,
+    "2": 12345.678,
+    "3": -2.5
+   },
+   "ai_praca": {
+    "2": 1,
+    "3": 0
+   },
+   "treasury_deltas": {
+    "2": 12345.678,
+    "3": 1000000000
+   },
+   "praca_deltas": {
+    "3": 12345.678
+   },
+   "expect": {
+    "human_treasury": 1,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "1": 0.1,
+     "2": 24691.356,
+     "3": 999999997.5
+    },
+    "ai_praca": {
+     "2": 1,
+     "3": 12345.678
+    }
+   }
+  },
+  {
+   "id": 191,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 1000000000,
+   "human_praca": 0.1,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {
+    "1": 0.2
+   },
+   "praca_deltas": {
+    "0": 999.75,
+    "1": 1000000000
+   },
+   "expect": {
+    "human_treasury": 1000000000,
+    "human_praca": 999.85,
+    "ai_treasury": {
+     "1": 0.2
+    },
+    "ai_praca": {
+     "1": 1000000000
+    }
+   }
+  },
+  {
+   "id": 192,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 2.5,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "2": -999.75,
+    "5": 0
+   },
+   "ai_praca": {
+    "2": 999.75,
+    "5": 2.5
+   },
+   "treasury_deltas": {
+    "0": -1000000000
+   },
+   "praca_deltas": {
+    "0": 10,
+    "5": 0.1
+   },
+   "expect": {
+    "human_treasury": -999999997.5,
+    "human_praca": 12.5,
+    "ai_treasury": {
+     "2": -999.75,
+     "5": 0
+    },
+    "ai_praca": {
+     "2": 999.75,
+     "5": 2.6
+    }
+   }
+  },
+  {
+   "id": 193,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 1000000000,
+   "human_praca": 2.5,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {
+    "3": 12345.678
+   },
+   "praca_deltas": {
+    "3": 0
+   },
+   "expect": {
+    "human_treasury": 1000000000,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "3": 12345.678
+    },
+    "ai_praca": {
+     "3": 0
+    }
+   }
+  },
+  {
+   "id": 194,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 37,
+   "human_praca": 0.1,
+   "ai_treasury": {},
+   "ai_praca": {
+    "1": 1
+   },
+   "treasury_deltas": {
+    "1": 2.5
+   },
+   "praca_deltas": {
+    "0": 0,
+    "2": 0.1
+   },
+   "expect": {
+    "human_treasury": 37,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "1": 2.5
+    },
+    "ai_praca": {
+     "1": 1,
+     "2": 0.1
+    }
+   }
+  },
+  {
+   "id": 195,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 1000000000,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "1": 0,
+    "3": -37,
+    "4": 0.1
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "2": 0.2,
+    "4": 37
+   },
+   "praca_deltas": {
+    "1": 12345.678,
+    "4": 0
+   },
+   "expect": {
+    "human_treasury": 1000000000,
+    "human_praca": 1000000000,
+    "ai_treasury": {
+     "1": 0,
+     "2": 0.2,
+     "3": -37,
+     "4": 37.1
+    },
+    "ai_praca": {
+     "1": 12345.678,
+     "4": 0
+    }
+   }
+  },
+  {
+   "id": 196,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 2.5,
+   "human_praca": 0,
+   "ai_treasury": {
+    "1": -2.5
+   },
+   "ai_praca": {
+    "1": 0.2
+   },
+   "treasury_deltas": {
+    "0": 0.1,
+    "2": 999.75
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 2.6,
+    "human_praca": 0,
+    "ai_treasury": {
+     "1": -2.5,
+     "2": 999.75
+    },
+    "ai_praca": {
+     "1": 0.2
+    }
+   }
+  },
+  {
+   "id": 197,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 12345.678,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "1": 0.1
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 12345.678,
+    "ai_treasury": {},
+    "ai_praca": {
+     "1": 0.1
+    }
+   }
+  },
+  {
+   "id": 198,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -37,
+   "human_praca": 1,
+   "ai_treasury": {
+    "1": -37,
+    "2": 12345.678
+   },
+   "ai_praca": {
+    "5": 0
+   },
+   "treasury_deltas": {
+    "0": 0.1,
+    "2": 1,
+    "5": 1000000000
+   },
+   "praca_deltas": {
+    "5": -1000000000
+   },
+   "expect": {
+    "human_treasury": -36.9,
+    "human_praca": 1,
+    "ai_treasury": {
+     "1": -37,
+     "2": 12346.678,
+     "5": 1000000000
+    },
+    "ai_praca": {
+     "5": 0
+    }
+   }
+  },
+  {
+   "id": 199,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0.2,
+   "human_praca": 0.2,
+   "ai_treasury": {
+    "1": 1000000000,
+    "2": 0
+   },
+   "ai_praca": {
+    "2": 0.1
+   },
+   "treasury_deltas": {
+    "2": -1000000000,
+    "4": 2.5
+   },
+   "praca_deltas": {
+    "0": 0.1,
+    "2": 10
+   },
+   "expect": {
+    "human_treasury": 0.2,
+    "human_praca": 0.30000000000000004,
+    "ai_treasury": {
+     "1": 1000000000,
+     "2": -1000000000,
+     "4": 2.5
+    },
+    "ai_praca": {
+     "2": 10.1
+    }
+   }
+  },
+  {
+   "id": 200,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 0.1,
+   "ai_treasury": {},
+   "ai_praca": {
+    "4": 0.1
+   },
+   "treasury_deltas": {
+    "4": 1000000000,
+    "5": 2.5
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 0.1,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "4": 1000000000,
+     "5": 2.5
+    },
+    "ai_praca": {
+     "4": 0.1
+    }
+   }
+  },
+  {
+   "id": 201,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -37,
+   "human_praca": 37,
+   "ai_treasury": {},
+   "ai_praca": {
+    "3": 37,
+    "4": 1000000000
+   },
+   "treasury_deltas": {
+    "0": 1000000000,
+    "3": 10,
+    "4": 37
+   },
+   "praca_deltas": {
+    "0": 0,
+    "3": -37,
+    "4": 0.1
+   },
+   "expect": {
+    "human_treasury": 999999963,
+    "human_praca": 37,
+    "ai_treasury": {
+     "3": 10,
+     "4": 37
+    },
+    "ai_praca": {
+     "3": 0,
+     "4": 1000000000.1
+    }
+   }
+  },
+  {
+   "id": 202,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 999.75,
+   "ai_treasury": {
+    "4": 1000000000
+   },
+   "ai_praca": {
+    "4": 12345.678
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "0": 2.5,
+    "4": 999.75
+   },
+   "expect": {
+    "human_treasury": 0.1,
+    "human_praca": 1002.25,
+    "ai_treasury": {
+     "4": 1000000000
+    },
+    "ai_praca": {
+     "4": 13345.428
+    }
+   }
+  },
+  {
+   "id": 203,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -0.2,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "1": 10,
+    "3": 10,
+    "5": 37
+   },
+   "ai_praca": {
+    "1": 2.5,
+    "2": 0,
+    "3": 0.2
+   },
+   "treasury_deltas": {
+    "0": 0.2,
+    "1": 1,
+    "2": 37,
+    "3": 12345.678
+   },
+   "praca_deltas": {
+    "0": 0.2,
+    "3": 1000000000
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 12345.878,
+    "ai_treasury": {
+     "1": 11,
+     "2": 37,
+     "3": 12355.678,
+     "5": 37
+    },
+    "ai_praca": {
+     "1": 2.5,
+     "2": 0,
+     "3": 1000000000.2
+    }
+   }
+  },
+  {
+   "id": 204,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 1000000000,
+   "human_praca": 999.75,
+   "ai_treasury": {
+    "3": 1000000000
+   },
+   "ai_praca": {
+    "5": 12345.678
+   },
+   "treasury_deltas": {
+    "0": 1
+   },
+   "praca_deltas": {
+    "0": 0.1,
+    "3": 1000000000,
+    "5": 2.5
+   },
+   "expect": {
+    "human_treasury": 1000000001,
+    "human_praca": 999.85,
+    "ai_treasury": {
+     "3": 1000000000
+    },
+    "ai_praca": {
+     "3": 1000000000,
+     "5": 12348.178
+    }
+   }
+  },
+  {
+   "id": 205,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -10,
+   "human_praca": 0,
+   "ai_treasury": {
+    "4": 0.2
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "4": -12345.678
+   },
+   "praca_deltas": {
+    "0": 37
+   },
+   "expect": {
+    "human_treasury": -10,
+    "human_praca": 37,
+    "ai_treasury": {
+     "4": -12345.478
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 206,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 1,
+   "ai_treasury": {
+    "2": -2.5
+   },
+   "ai_praca": {
+    "1": 999.75,
+    "2": 10,
+    "3": 1
+   },
+   "treasury_deltas": {
+    "1": 0
+   },
+   "praca_deltas": {
+    "3": 1
+   },
+   "expect": {
+    "human_treasury": 12345.678,
+    "human_praca": 1,
+    "ai_treasury": {
+     "1": 0,
+     "2": -2.5
+    },
+    "ai_praca": {
+     "1": 999.75,
+     "2": 10,
+     "3": 2
+    }
+   }
+  },
+  {
+   "id": 207,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 0,
+   "ai_treasury": {
+    "2": 1000000000,
+    "3": 999.75,
+    "4": 999.75
+   },
+   "ai_praca": {
+    "4": 12345.678
+   },
+   "treasury_deltas": {
+    "1": -37,
+    "2": 1000000000,
+    "3": 10,
+    "4": -0.2
+   },
+   "praca_deltas": {
+    "0": 0.1,
+    "1": 10,
+    "4": 10
+   },
+   "expect": {
+    "human_treasury": 0.1,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "1": -37,
+     "2": 2000000000,
+     "3": 1009.75,
+     "4": 999.55
+    },
+    "ai_praca": {
+     "1": 10,
+     "4": 12355.678
+    }
+   }
+  },
+  {
+   "id": 208,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 2.5,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "2": 0.2,
+    "3": 2.5,
+    "5": 10
+   },
+   "ai_praca": {
+    "3": 0.1,
+    "5": 2.5
+   },
+   "treasury_deltas": {
+    "0": 1000000000,
+    "2": 1000000000,
+    "3": 12345.678,
+    "5": 12345.678
+   },
+   "praca_deltas": {
+    "3": 1
+   },
+   "expect": {
+    "human_treasury": 1000000002.5,
+    "human_praca": 12345.678,
+    "ai_treasury": {
+     "2": 1000000000.2,
+     "3": 12348.178,
+     "5": 12355.678
+    },
+    "ai_praca": {
+     "3": 1.1,
+     "5": 2.5
+    }
+   }
+  },
+  {
+   "id": 209,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -0.1,
+   "human_praca": 10,
+   "ai_treasury": {
+    "1": 1000000000,
+    "5": 2.5
+   },
+   "ai_praca": {
+    "1": 1,
+    "5": 0.2
+   },
+   "treasury_deltas": {
+    "1": -0.2,
+    "5": 10
+   },
+   "praca_deltas": {
+    "5": -10
+   },
+   "expect": {
+    "human_treasury": -0.1,
+    "human_praca": 10,
+    "ai_treasury": {
+     "1": 999999999.8,
+     "5": 12.5
+    },
+    "ai_praca": {
+     "1": 1,
+     "5": 0
+    }
+   }
+  },
+  {
+   "id": 210,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 37,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "1": -1
+   },
+   "ai_praca": {
+    "1": 0.1
+   },
+   "treasury_deltas": {
+    "0": 10
+   },
+   "praca_deltas": {
+    "1": -12345.678
+   },
+   "expect": {
+    "human_treasury": 47,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "1": -1
+    },
+    "ai_praca": {
+     "1": 0
+    }
+   }
+  },
+  {
+   "id": 211,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "1": 37
+   },
+   "ai_praca": {
+    "2": 37,
+    "3": 1
+   },
+   "treasury_deltas": {
+    "2": 0,
+    "3": 37
+   },
+   "praca_deltas": {
+    "1": 2.5,
+    "3": -2.5
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "1": 37,
+     "2": 0,
+     "3": 37
+    },
+    "ai_praca": {
+     "1": 2.5,
+     "2": 37,
+     "3": 0
+    }
+   }
+  },
+  {
+   "id": 212,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 37,
+   "human_praca": 2.5,
+   "ai_treasury": {},
+   "ai_praca": {
+    "2": 1000000000,
+    "3": 2.5,
+    "5": 2.5
+   },
+   "treasury_deltas": {
+    "0": 999.75,
+    "1": -1,
+    "5": 1000000000
+   },
+   "praca_deltas": {
+    "0": 0,
+    "1": -2.5,
+    "2": -37
+   },
+   "expect": {
+    "human_treasury": 1036.75,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "1": -1,
+     "5": 1000000000
+    },
+    "ai_praca": {
+     "1": 0,
+     "2": 999999963,
+     "3": 2.5,
+     "5": 2.5
+    }
+   }
+  },
+  {
+   "id": 213,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0.2,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "2": 10
+   },
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": 2.5,
+    "2": 1000000000
+   },
+   "praca_deltas": {
+    "2": 999.75
+   },
+   "expect": {
+    "human_treasury": 2.7,
+    "human_praca": 1000000000,
+    "ai_treasury": {
+     "2": 1000000010
+    },
+    "ai_praca": {
+     "2": 999.75
+    }
+   }
+  },
+  {
+   "id": 214,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 1000000000,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "1": -2.5
+   },
+   "ai_praca": {
+    "2": 1000000000,
+    "4": 1000000000
+   },
+   "treasury_deltas": {
+    "2": 0.2,
+    "4": 10
+   },
+   "praca_deltas": {
+    "4": 0.2
+   },
+   "expect": {
+    "human_treasury": 1000000000,
+    "human_praca": 12345.678,
+    "ai_treasury": {
+     "1": -2.5,
+     "2": 0.2,
+     "4": 10
+    },
+    "ai_praca": {
+     "2": 1000000000,
+     "4": 1000000000.2
+    }
+   }
+  },
+  {
+   "id": 215,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 1,
+   "human_praca": 0.1,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {
+    "1": 0.2
+   },
+   "praca_deltas": {
+    "0": 1000000000
+   },
+   "expect": {
+    "human_treasury": 1,
+    "human_praca": 1000000000.1,
+    "ai_treasury": {
+     "1": 0.2
+    },
+    "ai_praca": {}
+   }
+  },
+  {
+   "id": 216,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 1,
+   "ai_treasury": {
+    "2": 0.1
+   },
+   "ai_praca": {
+    "2": 10,
+    "3": 1
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "3": 0
+   },
+   "expect": {
+    "human_treasury": 0,
+    "human_praca": 1,
+    "ai_treasury": {
+     "2": 0.1
+    },
+    "ai_praca": {
+     "2": 10,
+     "3": 1
+    }
+   }
+  },
+  {
+   "id": 217,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 0.1,
+   "human_praca": 999.75,
+   "ai_treasury": {},
+   "ai_praca": {},
+   "treasury_deltas": {
+    "0": -2.5
+   },
+   "praca_deltas": {
+    "2": 0
+   },
+   "expect": {
+    "human_treasury": -2.4,
+    "human_praca": 999.75,
+    "ai_treasury": {},
+    "ai_praca": {
+     "2": 0
+    }
+   }
+  },
+  {
+   "id": 218,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 1000000000,
+   "human_praca": 1000000000,
+   "ai_treasury": {
+    "1": 0.1
+   },
+   "ai_praca": {
+    "1": 0.2
+   },
+   "treasury_deltas": {
+    "0": -10
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 999999990,
+    "human_praca": 1000000000,
+    "ai_treasury": {
+     "1": 0.1
+    },
+    "ai_praca": {
+     "1": 0.2
+    }
+   }
+  },
+  {
+   "id": 219,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 1,
+   "human_praca": 0,
+   "ai_treasury": {},
+   "ai_praca": {
+    "4": 0
+   },
+   "treasury_deltas": {
+    "2": 0.2,
+    "4": 12345.678
+   },
+   "praca_deltas": {
+    "2": 1
+   },
+   "expect": {
+    "human_treasury": 1,
+    "human_praca": 0,
+    "ai_treasury": {
+     "2": 0.2,
+     "4": 12345.678
+    },
+    "ai_praca": {
+     "2": 1,
+     "4": 0
+    }
+   }
+  },
+  {
+   "id": 220,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "1": 0,
+    "2": 1
+   },
+   "ai_praca": {
+    "2": 10,
+    "4": 0.2
+   },
+   "treasury_deltas": {
+    "0": 0.1,
+    "1": 2.5,
+    "2": 0.2
+   },
+   "praca_deltas": {
+    "1": 0.1,
+    "2": 1000000000
+   },
+   "expect": {
+    "human_treasury": 12345.778,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "1": 2.5,
+     "2": 1.2
+    },
+    "ai_praca": {
+     "1": 0.1,
+     "2": 1000000010,
+     "4": 0.2
+    }
+   }
+  },
+  {
+   "id": 221,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 0,
+   "ai_treasury": {},
+   "ai_praca": {
+    "3": 37,
+    "4": 0
+   },
+   "treasury_deltas": {
+    "0": 12345.678,
+    "3": -1,
+    "4": -0.2
+   },
+   "praca_deltas": {
+    "3": 12345.678,
+    "4": 999.75
+   },
+   "expect": {
+    "human_treasury": 12345.678,
+    "human_praca": 0,
+    "ai_treasury": {
+     "3": -1,
+     "4": -0.2
+    },
+    "ai_praca": {
+     "3": 12382.678,
+     "4": 999.75
+    }
+   }
+  },
+  {
+   "id": 222,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "3": -10
+   },
+   "ai_praca": {
+    "1": 12345.678,
+    "4": 0
+   },
+   "treasury_deltas": {
+    "2": 0,
+    "4": 0.2
+   },
+   "praca_deltas": {
+    "0": 10,
+    "3": -0.1
+   },
+   "expect": {
+    "human_treasury": 12345.678,
+    "human_praca": 12.5,
+    "ai_treasury": {
+     "2": 0,
+     "3": -10,
+     "4": 0.2
+    },
+    "ai_praca": {
+     "1": 12345.678,
+     "3": 0,
+     "4": 0
+    }
+   }
+  },
+  {
+   "id": 223,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 0,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "4": 37,
+    "5": 999.75
+   },
+   "ai_praca": {
+    "4": 12345.678,
+    "5": 999.75
+   },
+   "treasury_deltas": {
+    "0": 10,
+    "5": 1
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 10,
+    "human_praca": 2.5,
+    "ai_treasury": {
+     "4": 37,
+     "5": 1000.75
+    },
+    "ai_praca": {
+     "4": 12345.678,
+     "5": 999.75
+    }
+   }
+  },
+  {
+   "id": 224,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 999.75,
+   "human_praca": 10,
+   "ai_treasury": {},
+   "ai_praca": {
+    "1": 37
+   },
+   "treasury_deltas": {},
+   "praca_deltas": {
+    "1": 12345.678
+   },
+   "expect": {
+    "human_treasury": 999.75,
+    "human_praca": 10,
+    "ai_treasury": {},
+    "ai_praca": {
+     "1": 12382.678
+    }
+   }
+  },
+  {
+   "id": 225,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 10,
+   "human_praca": 37,
+   "ai_treasury": {
+    "2": 12345.678,
+    "3": 999.75,
+    "4": 10,
+    "5": 0.2
+   },
+   "ai_praca": {
+    "2": 0.1,
+    "4": 999.75
+   },
+   "treasury_deltas": {
+    "0": 0,
+    "5": 0.1
+   },
+   "praca_deltas": {
+    "3": 10,
+    "5": -37
+   },
+   "expect": {
+    "human_treasury": 10,
+    "human_praca": 37,
+    "ai_treasury": {
+     "2": 12345.678,
+     "3": 999.75,
+     "4": 10,
+     "5": 0.30000000000000004
+    },
+    "ai_praca": {
+     "2": 0.1,
+     "3": 10,
+     "4": 999.75,
+     "5": 0
+    }
+   }
+  },
+  {
+   "id": 226,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": -1000000000,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "1": 0,
+    "2": -1,
+    "4": -37
+   },
+   "ai_praca": {
+    "2": 999.75,
+    "4": 0.1
+   },
+   "treasury_deltas": {
+    "0": 0,
+    "4": -0.1
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": -1000000000,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "1": 0,
+     "2": -1,
+     "4": -37.1
+    },
+    "ai_praca": {
+     "2": 999.75,
+     "4": 0.1
+    }
+   }
+  },
+  {
+   "id": 227,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 2.5,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "1": 0.1,
+    "4": -2.5
+   },
+   "ai_praca": {
+    "2": 0.1,
+    "3": 0,
+    "4": 0
+   },
+   "treasury_deltas": {
+    "0": 12345.678,
+    "1": 0,
+    "2": -1000000000
+   },
+   "praca_deltas": {
+    "3": 37,
+    "4": 1000000000
+   },
+   "expect": {
+    "human_treasury": 12348.178,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "1": 0.1,
+     "2": -1000000000,
+     "4": -2.5
+    },
+    "ai_praca": {
+     "2": 0.1,
+     "3": 37,
+     "4": 1000000000
+    }
+   }
+  },
+  {
+   "id": 228,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 999.75,
+   "human_praca": 2.5,
+   "ai_treasury": {
+    "1": 1
+   },
+   "ai_praca": {
+    "1": 37,
+    "2": 0.1,
+    "5": 1
+   },
+   "treasury_deltas": {
+    "0": 2.5,
+    "1": 2.5,
+    "2": 12345.678,
+    "5": -10
+   },
+   "praca_deltas": {
+    "0": 12345.678,
+    "2": -999.75,
+    "5": 1
+   },
+   "expect": {
+    "human_treasury": 1002.25,
+    "human_praca": 12348.178,
+    "ai_treasury": {
+     "1": 3.5,
+     "2": 12345.678,
+     "5": -10
+    },
+    "ai_praca": {
+     "1": 37,
+     "2": 0,
+     "5": 2
+    }
+   }
+  },
+  {
+   "id": 229,
+   "ref": "main.ts:34879-34894",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 0.1,
+   "ai_treasury": {
+    "1": 1
+   },
+   "ai_praca": {
+    "1": 0
+   },
+   "treasury_deltas": {
+    "0": 2.5
+   },
+   "praca_deltas": {
+    "1": 12345.678
+   },
+   "expect": {
+    "human_treasury": 12348.178,
+    "human_praca": 0.1,
+    "ai_treasury": {
+     "1": 1
+    },
+    "ai_praca": {
+     "1": 12345.678
+    }
+   }
+  },
+  {
+   "id": 230,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 12345.678,
+   "human_praca": 37,
+   "ai_treasury": {
+    "1": 0,
+    "2": 10,
+    "3": 2.5
+   },
+   "ai_praca": {
+    "2": 37
+   },
+   "treasury_deltas": {
+    "0": 2.5,
+    "3": -999.75
+   },
+   "praca_deltas": {},
+   "expect": {
+    "human_treasury": 12348.178,
+    "human_praca": 37,
+    "ai_treasury": {
+     "1": 0,
+     "2": 10,
+     "3": -997.25
+    },
+    "ai_praca": {
+     "2": 37
+    }
+   }
+  },
+  {
+   "id": 231,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": -0.2,
+   "human_praca": 37,
+   "ai_treasury": {},
+   "ai_praca": {
+    "4": 0.2
+   },
+   "treasury_deltas": {
+    "4": 0.2
+   },
+   "praca_deltas": {
+    "4": 12345.678
+   },
+   "expect": {
+    "human_treasury": -0.2,
+    "human_praca": 37,
+    "ai_treasury": {
+     "4": 0.2
+    },
+    "ai_praca": {
+     "4": 12345.878
+    }
+   }
+  },
+  {
+   "id": 232,
+   "ref": "main.ts:22628-22644",
+   "kind": "random",
+   "human_treasury": 2.5,
+   "human_praca": 12345.678,
+   "ai_treasury": {
+    "3": 12345.678
+   },
+   "ai_praca": {
+    "4": 0.1
+   },
+   "treasury_deltas": {
+    "0": -999.75,
+    "4": -12345.678
+   },
+   "praca_deltas": {
+    "4": 12345.678
+   },
+   "expect": {
+    "human_treasury": -997.25,
+    "human_praca": 12345.678,
+    "ai_treasury": {
+     "3": 12345.678,
+     "4": -12345.678
+    },
+    "ai_praca": {
+     "4": 12345.778
+    }
+   }
+  }
+ ]
+}

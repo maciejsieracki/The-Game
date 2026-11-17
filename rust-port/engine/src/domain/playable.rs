@@ -16,6 +16,7 @@ use super::playable_movement::{
     occupied_for_move, plan_march_to, stack_limit_block_message, PlayableMoveModel,
     MARCH_FOREIGN_CITY_HINT, MARCH_NO_ROUTE_HINT,
 };
+use super::turn_war_dipl_steps::apply_dipl_deltas_to_state;
 use super::turn_war_inputs::{
     build_war_inputs, power_raw_for_owner, production_config, start_epoch_number,
 };
@@ -1406,6 +1407,9 @@ impl PlayableGame {
         // Migawka przed przejsciem tury: blad fazy wojny cofa kolejke i stan wojny (brak polowicznego zuzycia).
         let queue_before = self.phase_queue.clone();
         let war_before = self.state.war.clone();
+        // P6-WIRE-R7K7C (zarzut obrony r1): migawka ekonomii cofa przyrosty skarbcow/pul Pracy zastosowane przez
+        // faze Diplomacy, gdy tura nie zostanie zaliczona (kolejka niekompletna).
+        let economy_before = self.state.economy.clone();
         // Migawka pol zwyciestwa: niekompletna kolejka faz (blad przejscia tury) cofa tez koniec gry i flage.
         // Sam blad sprawdzenia zwyciestwa nie cofa tury (semantyka pina, zob. faza Victory nizej).
         let koniec_before = self.state.koniec_gry;
@@ -1423,6 +1427,7 @@ impl PlayableGame {
                 if let Err(error) = self.run_diplomacy_war_phase() {
                     self.phase_queue = queue_before;
                     self.state.war = war_before;
+                    self.state.economy = economy_before;
                     return Err(error);
                 }
             }
@@ -1452,6 +1457,7 @@ impl PlayableGame {
         if phases.len() != PHASE_COUNT {
             self.state.koniec_gry = koniec_before;
             self.state.gracz_kiedys_mial_miasto = flag_before;
+            self.state.economy = economy_before;
             return Err(PlayableError::TurnPhaseQueueIncomplete {
                 expected: PHASE_COUNT,
                 actual: phases.len(),
@@ -1488,7 +1494,17 @@ impl PlayableGame {
             inputs: &inputs,
             config: &config,
         };
-        run_war_turn(&mut ctx).map_err(|error| PlayableError::WarTurn(error.to_string()))?;
+        let report =
+            run_war_turn(&mut ctx).map_err(|error| PlayableError::WarTurn(error.to_string()))?;
+        // P6-WIRE-R7K7C (#106): przyrosty skarbcow i pul Pracy z krokow D1-D7 (raport `dipl`) stosowane do
+        // stanu gry, jak web `ownerTreasury`/`setOwnerPracaPool` w pinie. Blad = zero zmian w ekonomii
+        // (walidacja przed zapisem); migawka wojny cofa `advance_turn` przy bledzie tej fazy.
+        apply_dipl_deltas_to_state(
+            &mut self.state,
+            &report.dipl.treasury_deltas,
+            &report.dipl.praca_deltas,
+        )
+        .map_err(|error| PlayableError::WarTurn(error.to_string()))?;
         Ok(())
     }
 
@@ -2096,5 +2112,76 @@ mod cancel_planned_march_game_tests {
             );
             assert_eq!(game.state, before);
         }
+    }
+}
+
+#[cfg(test)]
+mod r7k7c_rollback_tests {
+    //! P6-WIRE-R7K7C (zarzut 6, runda 2): cofniecie salda skarbca po bledzie kolejki faz.
+    //! Faza Diplomacy zdazy zastosowac przyrost (danina AI 2 -> gracz 1), a potem kolejka okazuje sie
+    //! niekompletna (`phases.len() != PHASE_COUNT`). Migawka `economy_before` musi cofnac skarbiec i skarbiec AI.
+    use super::*;
+    use crate::domain::diplomacy::{ActiveDeal, TreatyEconomy, TreatyKind};
+    use crate::domain::events::EventQueue;
+    use crate::domain::PlayerId;
+
+    fn tribute_game() -> PlayableGame {
+        let mut game = PlayableGame::new(StartGameParams {
+            seed: 11,
+            ..StartGameParams::default()
+        })
+        .expect("scenario");
+        game.add_player(2, "AI".to_owned()).expect("ai");
+        let mut deal = ActiveDeal::new(
+            TreatyKind::Vassalization,
+            PlayerId::new(2),
+            PlayerId::new(1),
+            1,
+            None,
+        );
+        deal.id = "danina".to_owned();
+        deal.economy = Some(TreatyEconomy {
+            payer_owner_id: PlayerId::new(2),
+            receiver_owner_id: PlayerId::new(1),
+            money_per_turn: 40.0,
+        });
+        let mut state = game.state().clone();
+        state.economy.treasury = 10.0;
+        state.economy.ai_treasury_by_owner.insert(2, 100.0);
+        state.war.diplomacy.add_deal(deal);
+        PlayableGame::from_state(state)
+    }
+
+    #[test]
+    fn niekompletna_kolejka_cofa_przyrost_skarbca_z_fazy_dyplomacji() {
+        let mut game = tribute_game();
+        let turn = game.state().turn;
+        // Kolejka bez fazy AI: Diplomacy zastosuje platnosc, a `advance_turn` odrzuci niekompletna kolejke.
+        game.phase_queue = EventQueue::new();
+        for phase in TurnPhase::all() {
+            if *phase != TurnPhase::Ai {
+                game.phase_queue
+                    .enqueue(turn, *phase, event_for_phase(turn, *phase));
+            }
+        }
+        let err = game
+            .advance_turn()
+            .expect_err("niekompletna kolejka -> blad");
+        assert!(
+            matches!(err, PlayableError::TurnPhaseQueueIncomplete { .. }),
+            "{err:?}"
+        );
+        // Bez cofniecia byloby 50 (gracz) i 60 (AI): przyrost z Diplomacy musi zostac cofniety.
+        assert_eq!(
+            game.state().economy.treasury,
+            10.0,
+            "skarbiec gracza cofniety"
+        );
+        assert_eq!(
+            game.state().economy.ai_treasury_by_owner.get(&2).copied(),
+            Some(100.0),
+            "skarbiec AI cofniety"
+        );
+        assert_eq!(game.state().turn, turn, "tura sie nie zwieksza");
     }
 }
