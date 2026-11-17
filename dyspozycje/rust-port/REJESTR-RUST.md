@@ -2951,3 +2951,11 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Merge z parity:** `merge-tree` `32c84d6a9` ↔ `270e5711b` czysty (exit 0). Integracja = merge `--no-ff` na parity + pełna bramka na merge (runda integracyjna Haiku) + FF. Start dopiero gdy dysk ≥ 8 GB i bramka T4b (`wf_a6a0b1b3-74a`) zakończona.
 - **Sprzątanie:** usunięte worktree T5a `-1..-4` i target `t5a-r3-target` (3,3 GB). Dysk 1,2 → 5,6 GB.
 - **Uwaga:** T4b bramka (`wf_a6a0b1b3-74a`) w toku, worktree `wf_a6a0b1b3-74a-1/-2` — nie ruszane.
+
+### Przebieg — heartbeat (2026-11-17 ~00:20 UTC): 1/4 aktywne, dysk 3,4 GB — bez startów
+
+- **Aktywne Workflow (1/4):** K5DOC-T4b `_advanceStep`, bramka na merge `3d016a5ae` (`wf_a6a0b1b3-74a`), etap FC (Ewaluator zgłosił zarzuty, Obrona odpowiedziała, FC w toku), Haiku/Sonnet. Cargo działa w `wf_a6a0b1b3-74a-4`.
+- **Krok 1:** poniżej 4 aktywnych, ale dysk 3,4 GB < 4 GB — heartbeat zabrania startów. Nie uruchamiam nowych tematów.
+- **Krok 2:** brak FC PASS bez integracji. T5a r3 (`270e5711b`) czeka na bramkę na merge z parity `32c84d6a9` (merge-tree czysty) po zwolnieniu miejsca i zakończeniu T4b.
+- **Krok 3:** worktree T4b-gate i kopie robocze w użyciu, nie ruszane.
+- **Wakeup:** nie planuję ScheduleWakeup. Ten tryb służy pętli `/loop`, a tej sesji nie uruchomiłem jako pętli.
