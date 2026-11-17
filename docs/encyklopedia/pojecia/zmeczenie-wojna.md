@@ -77,7 +77,7 @@ Przegrywający z małą liczbą miast (do 3) albo po wielu stratach (co najmniej
 
 ### Cena pokoju od gracza
 
-Zmęczenie wojną nie obniża ceny pokoju. Od poziomu 0,5 pojawia się w tabeli punktów wymiany (PW) jako pozycja „Zmęczenie wojną +N PW”: N = cena pokoju × x², gdzie x rośnie liniowo od 0 (przy 50%) do 1 (przy 80%). Cena pokoju wynosi stałe 615 PW (nie zależy od cywilizacji ani od tury wojny). Czyli wolny start i przyspieszenie (krzywa kwadratowa). Reszta ceny do pokrycia to miasto. Przy 80% zmęczenia pozycja równa się całej cenie, pokój jest bezwarunkowy, a bilans wynosi 0.
+Cena pokoju po wojnie maleje z poziomem zmęczenia pary: `cena = cenaStartPn × (1 − L)`, `cenaStartPn` = 6000 PN (`war-weariness-params.json:cenaPokoju`, funkcja `wearinessPeaceCashPn`). Na starcie wojny (L = 0) pokój kosztuje 6000 PN (ok. 3 miasta przegrywającego); przy L = 0,5 — 3000 PN; przy L = 1 (100%) — 0, czyli pokój zapada bez oddania miasta. Ta sama funkcja liczy cenę wszędzie: panel dyplomacji i audiencja, oferty AI dobrowolne (gracz↔AI), oferty AI↔AI oraz pokój wymuszony. Pozycja PW „Zmęczenie wojną” (krzywa kwadratowa) NIE jest już liczona w ofertach pokoju; zostaje tylko informacja o zmęczeniu. Reszta ceny do pokrycia to miasta przegrywającego (stolica nigdy; brak progu min. 3 miast). Bramka relacji ≤ 90 nadal daje cenę 0.
 
 ### Panel dyplomacji
 
@@ -131,6 +131,6 @@ Wojna trwa 20 tur (20/40 = 0,5), utracono 2 miasta (2 × 0,10 = 0,2). Poziom = 0
 
 ## Historia / decyzje
 
-Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Od 2026-11-14 (R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1, decyzja właściciela) stary rabat ceny 60% został usunięty; zmęczenie działa jako pozycja PW (funkcja `wearinessPeaceItemPw` w `war-weariness.ts`). Krzywa kwadratowa wybrana przez właściciela; próg końca zmęczenia 0,8 potwierdzony 2026-11-14.
+Hasło zweryfikowane w kodzie 2026-11-13 (R-WEB-DIPLO-CIVPEDIA-Q1). Od 2026-11-14 (R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1, decyzja właściciela) stary rabat ceny 60% został usunięty; zmęczenie działa jako pozycja PW (funkcja `wearinessPeaceItemPw` w `war-weariness.ts`). Krzywa kwadratowa wybrana przez właściciela; próg końca zmęczenia 0,8 potwierdzony 2026-11-14. Od 2026-11-17 (R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1) pozycja PW zmęczenia w ofertach pokoju zastąpiona jedną ceną malejącą z L (patrz „Cena pokoju od gracza”); wpisy o „615 PW” i „x²” powyżej są historyczne.
 
 R-WEB-DOCS-CIVPEDIA-DIPLO-REDESIGN-Q1 (obrona, runda 2): próg końca zmęczenia 0,8 zamiast „100% wygasa”; bramki ofert 3/6 opisane jako nieosiągalne przed turą 10; panel dyplomacji opisany wg `diplomacyAudience.ts`. Akcja `mutual_peace` nie jest akcją gracza ani AI: to wynik ticku AI↔AI (`war-weariness.ts`, `runWarWearinessTick`) przy progu końca zmęczenia. Rozbieżności JSON wobec kodu (`_wzor` „100% wojna wygasa”, stopień 1 „złoto i surowce”) zgłoszone do orkiestratora.

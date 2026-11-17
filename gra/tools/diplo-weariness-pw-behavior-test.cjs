@@ -150,12 +150,13 @@ function aiToPlayerPeace({ t }) {
   }));
   return { withWar, zeroWar };
 }
+// R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (zarzut 1 Evaluatora): w kierunku AI->gracz NIE ma już pozycji Z
+// (wearinessPw === undefined dla kazdej tury); zostaje tylko informacja o zmęczeniu (wearinessInfo, strona player).
 for (const t of [20, 30, 40]) {
-  const { withWar, zeroWar } = aiToPlayerPeace({ t });
-  const zExpected = t === 20 ? 0 : null; // skala 40 tur (DIPLO-WAR-WEARINESS-40-TURNS): tura 20: L=0,5 => x=0 => Z=0; tury 30/40: Z>0
-  check(`(f) AI->gracz tura ${t}: wiersz Z po stronie gracza (wearinessSide=player)`,
+  const { withWar } = aiToPlayerPeace({ t });
+  check(`(f) AI->gracz tura ${t}: brak pozycji Z (wearinessPw undefined), informacja po stronie gracza`,
     withWar.wearinessSide === 'player' && withWar.wearinessInfo && withWar.wearinessInfo.turnsAtWar === t
-    && (zExpected === 0 ? withWar.wearinessPw === 0 : withWar.wearinessPw > 0),
+    && withWar.wearinessPw === undefined,
     { side: withWar.wearinessSide, z: withWar.wearinessPw, info: withWar.wearinessInfo });
 }
 console.log(`diplo-weariness-pw-behavior-test: ${pass} pass / ${fail} fail`);

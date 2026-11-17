@@ -31,7 +31,7 @@ import { czyAgresorAktywny, deltaRelacjiSojusz } from './diplomacy';
 import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';
 import type { PeaceMilitaryPosition } from './diplomacy-military-strength';
 import { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS } from './diplomacy-peace-proposal-timing';
-import { warWearinessLevel, wearinessPeaceItemPw, wearinessPeaceCashPn } from './war-weariness';
+import { warWearinessLevel, wearinessPeaceCashPn } from './war-weariness';
 import type { Player } from '../types/player';
 import { TypCywilizacji } from '../types/player';
 import {
@@ -1424,16 +1424,18 @@ function evaluateProposalImpl(
       let wearyInfo: WearinessPwInfo | undefined;
       let wearySide: 'ai' | 'player' = 'ai';
       // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 r3 (zarzut 1 Evaluatora, DODATEK pkt 3): kierunek AI -> gracz.
-      // Gdy AI jest autorem pokoju, a respondentem jest gracz, wiersz Z (ta sama funkcja wearinessPeaceItemPw,
-      // C = basePnCfg bez mnoznika cywilizacji — ZALOZENIE: bramka R5 nie dziala dla autora AI) trafia do
-      // kolumny GRACZA. Informacyjnie: basePn / pokojPwBalance / accepted NIE zmieniaja sie w tej galezi.
+      // Gdy AI jest autorem pokoju, a respondentem jest gracz, informacja o zmęczeniu trafia do kolumny GRACZA
+      // (bez pozycji PW — patrz komentarz niżej). Informacyjnie: basePn / pokojPwBalance / accepted NIE zmieniaja sie w tej galezi.
       if (ctx.warState && !r5PlayerAuthors && !r5RespondentIsAi && !ctx.responderIsCityState) {
         const aiToPlayerLevel = warWearinessLevel({
           turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
           lostCitiesTotal: Math.max(0, ctx.warState.lostCitiesResponder),
           turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
         });
-        wearyPwItem = wearinessPeaceItemPw(basePnCfg, aiToPlayerLevel);
+        // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (zarzut 1 Evaluatora): wiersz Z (wearinessPeaceItemPw, krzywa
+        // kwadratowa) NIE jest już liczony w tym kierunku — jedyna cena pokoju to wearinessPeaceCashPn(poziom pary).
+        // Wiersz „Zmęczenie wojną” zostaje tylko jako informacja (tury, miasta, poziom) bez pozycji PW.
+        wearyPwItem = undefined;
         wearyInfo = {
           turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
           lostCities: Math.max(0, ctx.warState.lostCitiesResponder),

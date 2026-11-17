@@ -288,7 +288,8 @@ ok(cession(runAI({ rw: 0.12, turnsAtWar: 200, lost: 3, miastaAI: CITIES.slice(0,
 
 // ---- 6. straznik okablowania main.ts ----
 const propTs = fs.readFileSync(path.join(SRC, 'game/diplomacy-proposals.ts'), 'utf8');
-ok(/wearinessPeaceItemPw\(/.test(propTs) && !/wearinessPeacePriceFactor/.test(propTs), 'diplomacy-proposals: pozycja PW zmeczenia podpieta do bramki R5 (bez rabatu)');
+// R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: jedna cena pokoju (wearinessPeaceCashPn) zamiast pozycji Z w bramce R5.
+ok(/wearinessPeaceCashPn\(/.test(propTs) && !/wearinessPeacePriceFactor/.test(propTs) && !/wearinessPeaceItemPw\(/.test(propTs), 'diplomacy-proposals: jedna cena pokoju wearinessPeaceCashPn podpieta do bramki R5 (bez pozycji Z)');
 
 const mainTs = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
 ok(/runWarWearinessTick\(/.test(mainTs) && /tickAiAiWarWeariness\(aiTurnAwaitingBattle\)/.test(mainTs), 'main.ts: tick zmeczenia wywolany po fazie AI');
