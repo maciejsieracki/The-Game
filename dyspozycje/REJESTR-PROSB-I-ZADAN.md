@@ -10586,3 +10586,8 @@ AMBUSH-CORE (FC a42586f84, integracja ab317b6cf, PASS-WITH-NOTES, runda 5/5) + U
 
 ### Temat 2026-11-17: R-WEB-ARMY-AMBUSH-DEPLOY-BATTLE-Q1 (ciąg dalszy zasadzki, FALA 786)
 Rozstawienie w bitwie z zasadzki: zastawiający także na polu wroga; zaskoczeni w długiej linii ≤3 szerokości (decyzje ABC właściciela A/A/A/C). Haiku r1. STATUS: **OTWARTE** (uruchomiony).
+
+### WEARY40-SIM → FC PASS-WITH-NOTES (2026-11-17) — pomiar zmęczenia wojną 40 tur + pokój wymuszony (Node, model uproszczony)
+Kandydat d1b1ef140 (raport FC cc943828; refs/keep/WEARYSIM-r1-fc): narzędzie `gra/tools/weary40-sim-measure.cjs` + raw K3/K6 (3 ziarna × 150 tur). Tylko gra/tools + runs — integracja z najbliższą FALĄ. Smoke do listy deployu: `cd gra && node tools/weary40-sim-measure.cjs --turns 30 --seeds 1 --variant both`.
+WYNIKI (model, nie żywa gra; „PRZED” = proxy parametrowe pelneTur 20 / bez pokoju wymuszonego): wojny 31; zakończone pokojem PO 31/31 vs PRZED 23/31 (K3), 31 vs 30 (K6); eliminacje PO 0/0 vs PRZED 2/1; max udział miast jednej civ PO 0,25 (K3) / 0,30 (K6) vs PRZED 0,40 / 0,25; średni czas wojny PO 30,8 (max 39) K3, 20,2 (max 39) K6 vs PRZED ~10; pokoje wymuszone PO 17 (K3) / 2 (K6); miasta oddane pokojem PO 0 (K3) / 10 (K6).
+**CZEKA NA RANO (decyzja produktowa, RYZYKO):** pokój wymuszony przy 100% zapada BEZ oddania miasta, gdy przegrywający ma ≤3 miasta (cityCap=0 przez minMiastPoOddaniu=3) — w K3 wszystkie 17 przypadków. Warianty: **A)** pokój wymuszony tylko gdy cityCap>0 (wojna trwa dalej przy ≤3 miastach — NIE ZMIERZONO skutku); **B)** zostawić jako wyjątek (pokój bez miast) i ujednolicić komentarze/Civpedię (war-weariness.ts:265 „ZAWSZE płatny” vs _opis „bez miast”). NIE ZMIERZONO: realna częstość w grze, pętle wojen, wariant A, Chromium.
