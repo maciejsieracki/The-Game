@@ -3,7 +3,7 @@ DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-K5DOC-T5A-KITE (K5DOC-T5a, #257) — runda 3 Operatora (DODATEK r3: poprawka pokrycia granic po FAIL Ewaluatora r2)
 GOAL: czyste funkcje galezi KITE strzelca (_bestKiteShotStep, _nearestEnemyMelee, warunek galezi 1, MELEE_SAFE_GAP) z wektorami pinu 07d2fbd72; bez wpiecia w petle. Runda 3: pokrycie granic planszy w best_kite_shot_step.
 BAZA: 761768677 (detached; commit Operatora r2; ref keep refs/keep/T5a-r2-op-761768677, galaz rust-port-wip/R-RUSTPORT-P6-K5DOC-T5A-KITE-r2). Pin 07d2fbd72 (tylko odczyt). Kod r2 NIE przepisany.
-ZMIANY/COMMIT: allowlista (jawny git add): 
+ZMIANY/COMMIT: allowlista (jawny git add):
   - rust-port/engine/tests/p6_k5doc_t5a_gen.mjs: +5 nazwanych przypadkow granicznych (generator wykonuje tekst pina).
   - rust-port/engine/tests/p6_k5doc_t5a_vectors/vectors.json: regenerowany generatorem (722 przypadki, bylo 718; losowe przypadki bez zmian, bo RNG nie jest uzywany przez nazwane).
   - rust-port/engine/tests/p6_k5doc_t5a.rs: +4 nazwane testy granic (best_granica_nc_ujemne_w_jedyny_odrzucony, best_granica_nc_ge_bf_cols_odrzuca_e, best_granica_nr_ge_bf_rows_odrzuca_s, best_granica_nr_ujemne_odrzuca_n) + importy BF_COLS (autobatch) i BF_ROWS (approach).
