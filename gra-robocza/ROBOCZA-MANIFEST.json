@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4a8ee091b0b39b97c9b34e67112ea092",
-  "bundleSha256": "120089043d06a62786e61e4fcb17cf87ad5dfeed58d07897a263f102e02a4a4d",
-  "bundleBytes": 14852740,
+  "bundleMd5": "ad458fdd11ab8da23259c8d22bff86ce",
+  "bundleSha256": "9a2d48d63c9711b774aa3dd6a586b38ca9b3fe35f8f6ead208bf3775728d5a2f",
+  "bundleBytes": 14856274,
   "sourceSnapshot": {
-    "source": "build Vite z merge FC 6df5de757 (raport 4bd8d9c07) na main 59fd3a9d",
+    "source": "build Vite z merge FC 3363756d3 na main cc7ba086",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 806: main.ts i civ-test-hooks.ts: hak testowy addUnit z wyborem typu jednostki (bez zmian zasad gry); gra/tools: live-verify-wojownik-map-q1.cjs i test civtest-addunit-typeid"
+    "FALA 807: diplomacja: jedna cena pokoju 6000 x (1 - zmeczenie wojna) we wszystkich sciezkach, bez stalych 185/554/615; testy diplo-weariness i city-cession zaktualizowane; narzedzie weary40-sim-measure"
   ],
   "verification": [
-    "tsc 0; logic 213/213; civtest-addunit-typeid 10/10 (mutacja 9/10); unit-replace 21/21; combat 6/6; pomiar Wojownik 10 vs 10 na sciezce mapowej w Chromium (3 ziarna x auto/skip): atakujacy wygrywa w ziarnie 1, obronca w 2 i 3"
+    "tsc 0; logic 213/213; diplo-weariness-as-pw-peace-item 39/0; city-only 26/0; forced-peace 14/0; pw-behavior 147/0; json-descriptions-sync 19/0; city-cession-r3 79/0; unit-replace 21/21; combat 6/6; symulacja weary40 (3 ziarna x 150 tur, realny kod): eliminacji 0, wojny ok. 30 tur"
   ],
   "limits": [
-    "tylko narzedzie testowe; NIE ZMIERZONO: tryb reczny z rozkazami (brak generala w stosie), zamiana stron, zgodnosc statystyk z units.json; n=3 ziarna"
+    "RYZYKO BALANSU zaakceptowane przez wlasciciela (A): najsilniejsza civ trzyma 72-75% miast (przed 22-27%); NIE ZMIERZONO w zywej grze z graczem; dlug Rust REPIN ceny pokoju"
   ],
-  "finalControl": "R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1 r4 FC PASS-WITH-NOTES 4bd8d9c07 (kod 6df5de757)",
+  "finalControl": "R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 r4 FC PASS-WITH-NOTES 3363756d3; decyzja wlasciciela A (zostawic) 2026-11-17",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T18:23:47",
+  "hubGeneratedAt": "2026-11-17T19:31:15",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
-      "sizeBytes": 14852740
+      "md5": "ad458fdd11ab8da23259c8d22bff86ce",
+      "sizeBytes": 14856274
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
-      "sizeBytes": 14852740
+      "md5": "ad458fdd11ab8da23259c8d22bff86ce",
+      "sizeBytes": 14856274
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
-      "sizeBytes": 14852740
+      "md5": "ad458fdd11ab8da23259c8d22bff86ce",
+      "sizeBytes": 14856274
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
-      "sizeBytes": 14852740
+      "md5": "ad458fdd11ab8da23259c8d22bff86ce",
+      "sizeBytes": 14856274
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
-      "sizeBytes": 14852740
+      "md5": "ad458fdd11ab8da23259c8d22bff86ce",
+      "sizeBytes": 14856274
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
-      "sizeBytes": 14852740
+      "md5": "ad458fdd11ab8da23259c8d22bff86ce",
+      "sizeBytes": 14856274
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
-      "sizeBytes": 14852740
+      "md5": "ad458fdd11ab8da23259c8d22bff86ce",
+      "sizeBytes": 14856274
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
-      "sizeBytes": 14852740
+      "md5": "ad458fdd11ab8da23259c8d22bff86ce",
+      "sizeBytes": 14856274
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
-      "sizeBytes": 14852740
+      "md5": "ad458fdd11ab8da23259c8d22bff86ce",
+      "sizeBytes": 14856274
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "4a8ee091b0b39b97c9b34e67112ea092",
-      "sizeBytes": 14852740
+      "md5": "ad458fdd11ab8da23259c8d22bff86ce",
+      "sizeBytes": 14856274
     }
   ],
-  "md5": "4a8ee091b0b39b97c9b34e67112ea092",
+  "md5": "ad458fdd11ab8da23259c8d22bff86ce",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

@@ -1,3 +1,9 @@
+## ROBOCZA ad458fdd -- 2026-11-17 -- FALA 807: Cena pokoju 6000 PN malejaca ze zmeczeniem wojna (jedna cena wszedzie) (testowa)
+
+- diplomacja: jedna cena pokoju 6000 x (1 - zmeczenie wojna) we wszystkich sciezkach, bez stalych 185/554/615; testy diplo-weariness i city-cession zaktualizowane; narzedzie weary40-sim-measure
+- Weryfikacja: tsc 0; logic 213/213; diplo-weariness-as-pw-peace-item 39/0; city-only 26/0; forced-peace 14/0; pw-behavior 147/0; json-descriptions-sync 19/0; city-cession-r3 79/0; unit-replace 21/21; combat 6/6; symulacja weary40 (3 ziarna x 150 tur, realny kod): eliminacji 0, wojny ok. 30 tur
+- Limity: RYZYKO BALANSU zaakceptowane przez wlasciciela (A): najsilniejsza civ trzyma 72-75% miast (przed 22-27%); NIE ZMIERZONO w zywej grze z graczem; dlug Rust REPIN ceny pokoju
+
 ## ROBOCZA 4a8ee091 -- 2026-11-17 -- FALA 806: Hak testowy __civTest.addUnit z typem jednostki (typeId) + narzedzie pomiaru Wojownik vs Wojownik (testowa)
 
 - main.ts i civ-test-hooks.ts: hak testowy addUnit z wyborem typu jednostki (bez zmian zasad gry); gra/tools: live-verify-wojownik-map-q1.cjs i test civtest-addunit-typeid
