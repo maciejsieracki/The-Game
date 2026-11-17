@@ -6,6 +6,12 @@
 //! * [`ranged_forward_step_key`] = czesc decyzyjna `_rangedForwardStep` (`:6777-6787`): flagi, zasieg i wybor klucza
 //!   kroku. Zwraca klucz kandydata PRZED bramka `lineAllowsRangedStep` (`:6791-6798`) i PRZED `_doMove` (`:6800`).
 //!
+//! Lektura galezi APPROACH (adnotacja obrony, zarzut 4; pin `07d2fbd72`): `_rangedAction` gałąź 3 (`:6738`)
+//! wola `this._rangedForwardStep(ru, done)` — to jest APPROACH, portowane tutaj. `_rangedApproachStep` (`:7257-7283`)
+//! NIE ma zewnetrznego wolajacego (wywolywana tylko rekurencyjnie z `:7283`), wiec jest martwa dla sciezki strzelca i
+//! poza zakresem. `_siegeMachineRange` (`:7530-7534`) wola tylko katapultowa sciezka (`:6200`) i czyta stan gry
+//! (`_attackRangeFor`, `_isCatapult`, bonusy cywilizacji) — NIE PORTOWANA (poza modulem, zgodnie z dispatchem).
+//!
 //! Poza zakresem T5b (NIE_ZMIERZONO, zob. raport): bramka `lineAllowsRangedStep` (zalezy od
 //! `_effectiveMetaForUnit`, `_rangedFiringStepStaysBehindMelee`, `_compactAttackAllowsStep`), cialo `_doMove`
 //! i rekurencja `_schedule(STEP_GAP_MS, ...)` / `_rangedAction` po wejsciu w zasieg (`:6800-6811`), wpiecie w

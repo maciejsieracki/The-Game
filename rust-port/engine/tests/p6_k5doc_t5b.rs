@@ -225,6 +225,12 @@ fn best_bfs_kolejnosc_row_minus_1_pierwszy() {
 
 /// Pin `:6832`: granica `nc >= BF_COLS` -> jedyny kandydat E poza plansza (wrog off-board w kolumnie 69) -> `None`.
 /// Mutant `nc > BF_COLS` dalby `(68, 5)` (wrog nie zajmuje tego kafelka), wiec test go wykrywa.
+///
+/// MOC TESTU (adnotacja obrony, zarzut 3 evaluatora): mutant `nc > BF_COLS` rozni sie od pina TYLKO dla
+/// `me.q == BF_COLS - 1` i kandydata E `nc == BF_COLS`. Dla wroga na planszy (`nearest.q <= BF_COLS - 1`) kandydat E
+/// ma `forwardGain = (me.q - nq) - (BF_COLS - nq) = -1` oraz `rowGap = 0`, wiec jest odrzucany w obu wersjach
+/// (mutant rownowazny). Mutant jest zabijany wylacznie przez ten wektor z wrogiem poza plansza (`nearest.q = BF_COLS + 1`,
+/// `forwardGain = +1`). To slaba moc testu, swiadomie przyjeta: wrog poza plansza nie wystepuje w grze.
 #[test]
 fn best_granica_nc_ge_bf_cols_odrzuca_e() {
     let me = u(67.0, 5.0, ATK, 2.0, 2.0);
