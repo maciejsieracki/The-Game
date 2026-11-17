@@ -1,3 +1,9 @@
+## ROBOCZA 988636d5 -- 2026-11-17 -- FALA 809: Etykiety obrazen w bitwie nie nakladaja sie (testowa)
+
+- kolejne etykiety obrazen nad ta sama jednostka sa przesuniete w pionie o ok. 20 px ekranu (krok skalowany kamera, stos wg wysokosci aktywnych etykiet); kolory bez zmian
+- Weryfikacja: tsc 0; logic 213/213; label-stack 23/0; colors 28/0; zywy Chromium odstepy 20,6-21,8 px (13/0); FC PASS-WITH-NOTES
+- Limity: NIE ZMIERZONO: wygasanie etykiet na zywo; manualBattle.ts poza zakresem
+
 ## ROBOCZA f6449b22 -- 2026-11-17 -- FALA 808: Procarz: przebicie 2, strzal liczony jak cios wrecz (18/9/6/6 obrazen przy pancerzu 0/3/6/8) (testowa)
 
 - units.json: Procarz i Procarz (Huaracoc) piercing 2, fieldPower 14; combat.ts: rangedShotBase/isPiercingShotShooter, auto-walka rangedShotDamage; battleScene.ts: strzal Procarza przez rangedShotBase; karta i tooltip Procarza z opisem przebicia; test procarz-piercing-shot. Lucznik i Oszczepnik bez zmian.

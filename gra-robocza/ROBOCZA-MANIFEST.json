@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "f6449b22370cf5a7af9bcc1e91afac60",
-  "bundleSha256": "24d5edbec0768febe0992991a895ed8b1edabbe28c93b3d611b3d3e2aa7ce0e0",
-  "bundleBytes": 14856698,
+  "bundleMd5": "988636d5649a0989c21827e4c2af5e72",
+  "bundleSha256": "f08274f2fdbba471622869ea9cbcebdfb5d9d1fcffa7e11ab11f1a7d31bf3d93",
+  "bundleBytes": 14857200,
   "sourceSnapshot": {
-    "source": "build Vite z merge FC 002c4bcd6 (raport c659c6d61) na main 32c13e63",
+    "source": "main + 42a49bb7f (DMGLBL)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 808: units.json: Procarz i Procarz (Huaracoc) piercing 2, fieldPower 14; combat.ts: rangedShotBase/isPiercingShotShooter, auto-walka rangedShotDamage; battleScene.ts: strzal Procarza przez rangedShotBase; karta i tooltip Procarza z opisem przebicia; test procarz-piercing-shot. Lucznik i Oszczepnik bez zmian."
+    "FALA 809: kolejne etykiety obrazen nad ta sama jednostka sa przesuniete w pionie o ok. 20 px ekranu (krok skalowany kamera, stos wg wysokosci aktywnych etykiet); kolory bez zmian"
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; procarz-piercing-shot ALL PASS (mutacje czerwone); ranged-damage-mult PASS; unit-card-ranged-mult OK; ranged-health-card-align 5/0; archers-health 10/0; unit-power 6/0; hit-mode-consistency 8/0"
+    "tsc 0; logic 213/213; label-stack 23/0; colors 28/0; zywy Chromium odstepy 20,6-21,8 px (13/0); FC PASS-WITH-NOTES"
   ],
   "limits": [
-    "NIE ZMIERZONO: zywy Chromium (bitwa Procarz vs pancerz 6, karta), pomiar 10 Procarzy vs 10 Falang/Triari; przebicie to jedno pole, wiec Procarz we wrecz tez ma przebicie 2 (cios 0 -> 2) - do decyzji wlasciciela; dlug: komentarz unit-power.ts ~187-190 nieaktualny; dlug Rust REPIN units.json i rangedShotBase"
+    "NIE ZMIERZONO: wygasanie etykiet na zywo; manualBattle.ts poza zakresem"
   ],
-  "finalControl": "R-WEB-UNIT-PROCARZ-PIERCING-ARMOR-REDUCTION-Q1 r1 FC PASS-WITH-NOTES c659c6d61 (kod 002c4bcd6)",
+  "finalControl": "R-WEB-UI-BATTLE-DAMAGE-LABELS-NO-OVERLAP-Q1 r1 FC PASS-WITH-NOTES 42a49bb7f (kod f1356f78d)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T19:47:31",
+  "hubGeneratedAt": "2026-11-17T20:45:53",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
-      "sizeBytes": 14856698
+      "md5": "988636d5649a0989c21827e4c2af5e72",
+      "sizeBytes": 14857200
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
-      "sizeBytes": 14856698
+      "md5": "988636d5649a0989c21827e4c2af5e72",
+      "sizeBytes": 14857200
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
-      "sizeBytes": 14856698
+      "md5": "988636d5649a0989c21827e4c2af5e72",
+      "sizeBytes": 14857200
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
-      "sizeBytes": 14856698
+      "md5": "988636d5649a0989c21827e4c2af5e72",
+      "sizeBytes": 14857200
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
-      "sizeBytes": 14856698
+      "md5": "988636d5649a0989c21827e4c2af5e72",
+      "sizeBytes": 14857200
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
-      "sizeBytes": 14856698
+      "md5": "988636d5649a0989c21827e4c2af5e72",
+      "sizeBytes": 14857200
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
-      "sizeBytes": 14856698
+      "md5": "988636d5649a0989c21827e4c2af5e72",
+      "sizeBytes": 14857200
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
-      "sizeBytes": 14856698
+      "md5": "988636d5649a0989c21827e4c2af5e72",
+      "sizeBytes": 14857200
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
-      "sizeBytes": 14856698
+      "md5": "988636d5649a0989c21827e4c2af5e72",
+      "sizeBytes": 14857200
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "f6449b22370cf5a7af9bcc1e91afac60",
-      "sizeBytes": 14856698
+      "md5": "988636d5649a0989c21827e4c2af5e72",
+      "sizeBytes": 14857200
     }
   ],
-  "md5": "f6449b22370cf5a7af9bcc1e91afac60",
+  "md5": "988636d5649a0989c21827e4c2af5e72",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
