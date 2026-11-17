@@ -10841,3 +10841,4 @@ Właściciel: koszt pokoju znacząco podwyższyć tak, by na starcie wojny zwyci
 - r4 FC PASS-WITH-NOTES (kod 3363756d3; `refs/keep/PEACEDECAY-r4-fc`). Jedna cena pokoju 6000×(1−zmęczenie) we wszystkich ścieżkach, bez stałych 185/554/615; testy diplo-weariness/city-cession zaktualizowane.
 - main 32c13e63, ROBOCZA MD5 ad458fdd, GitHub Raw MD5 zgodne, sidecary 3/3. Testy: tsc 0; logic 213/213; diplo-weariness 39/0, 26/0, 14/0, 147/0; json-descriptions-sync 19/0; city-cession-r3 79/0; unit-replace 21/21; combat 6/6.
 - RYZYKO BALANSU zaakceptowane (A): najsilniejsza civ trzyma 72–75% miast; NIE ZMIERZONO w żywej grze. Dług Rust REPIN ceny pokoju.
+- Wojownik vs Wojownik — ODPOWIEDŹ 2026-11-17 (ABC A): pomiar rozszerzony (≥20 ziaren, „losowe”/„pewne”, kontrola zamiany stron, tryb ręczny, porównanie statystyk, diagnoza przyczyny, bez zmian zasad) → temat R-WEB-TEST-MEASURE-WARRIOR-DEFENDER-ADVANTAGE-Q1 (Haiku). #286 pozostaje wstrzymane do wyniku.
