@@ -10577,3 +10577,6 @@ GENSTAR (FC 5b275ed46, integracja 3c96d46ca, PASS-WITH-NOTES): jasna gwiazdka na
 
 ### UPKEEP-TOOLS r1 → FC PASS-WITH-NOTES (2026-11-17) — tylko narzędzia, wejdzie z najbliższą FALĄ
 Kandydat 154b2fd13 (raport FC 3fffd9b57; refs/keep/UPKEEPTOOLS-r1-fc): `ai-economy-measure-run.cjs` + `ai-economy-measure-upkeep-onoff.cjs` + test haka (metryki wojen, tryb ON/OFF po FALI 770). Zero zmian w gra/src i gra/data, więc bundle ROBOCZEJ bez zmian — integracja do main razem z najbliższą FALĄ (merge FC). Hook-test 20/20 w Chromium, tsc 0. NIE ZMIERZONO: pełne 100 tur ON/OFF, odtworzenie liczb UPKEEP-ONOFF. Metryka `upkeepGate` = null (brak `window.__aiUpkeepGateStats` w src) → osobny niski temat po decyzji (hak w src).
+
+### AMBUSH r4 → FC FAIL (2026-11-17 01:00) — runda 5/5 (ostatnia, Sonnet)
+r4: wpięcie wyzwalacza (gracz→AI w Chromium 13/0), barbarzyńcy, znacznik UI, test realnego kroku ruchu (14/0), audyt widoczności. Jedyny powód FAIL: regresja bramki `mgla-sciezka-inwariant` 40/2 (zapis `bu.q = barbToQ` w pętli barbarzyńców). R5: naprawa N1 + wyodrębnienie planu barbarzyńcy z testem dynamicznym + pomiar AI→gracz w Chromium + uzupełnienie audytu. **CZEKA NA RANO (decyzja produktowa):** ranking mocy (Power) nie jest filtrowany względem zasadzek. Rozstawienie w bitwie na polu wroga = osobny temat AMBUSH-DEPLOY.
