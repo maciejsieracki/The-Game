@@ -1660,7 +1660,7 @@ import {
   registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
-import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
+import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, wearinessPeaceCashPn, type WarWearinessStore, type WarWearinessPairState } from './game/war-weariness';
 import { warWearinessPairView, peakForCurrentWar, warWearinessSideView, type WarWearinessPairView, type WarWearinessReference } from './game/war-weariness-view';
 import {
   isPeaceTreatyLocked,
@@ -22016,7 +22016,7 @@ async function boot(): Promise<void> {
     function previewNegotiationEntryImpl(
       entry: PendingNegotiation,
       siblingOverride?: { givePn: number; receivePn: number },
-    ): { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: { turnsAtWar: number; lostCities: number; level: number } } {
+    ): { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: { turnsAtWar: number; lostCities: number; level: number; cenaPokojuPn?: number } } {
       const sibling = siblingOverride ?? livePackageSiblingFor(entry);
       // R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1: `authorOwnerId` DYNAMICZNY (entry, aktualizowany
       // przez applyCounterOffer po każdej kontrofercie) dopisany do ctx — jedyny konsument to
@@ -38751,6 +38751,17 @@ async function boot(): Promise<void> {
      * (planCityCession) i wycenę `diploMiastaWycenaDla`. Bilans zwycięzcy liczy `peaceOfferAiOwnBilans` (nie konstrukcja).
      * Skutki: pokój -> `finalizePeaceTreatyBetween` (blokada bez zmian); rozejm -> z `truceTurns`. Logika: runAiAiPeaceTick.
      */
+    /** R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: poziom zmęczenia pary (ta sama liczba co tick zmęczenia). */
+    function aiAiPairWearinessLevel(a: number, b: number): number {
+      const wa = diploWarStateFor(a, b);
+      const wb = diploWarStateFor(b, a);
+      return warWearinessLevel({
+        turnsAtWar: wa.turnsAtWar,
+        lostCitiesTotal: lostCitiesForWeariness(wa.lostCities, wb.lostCities),
+        turnsSinceCityChange: wa.turnsSinceCityChange,
+      });
+    }
+
     function tickAiAiPeaceRequests(battlePending: boolean): void {
       if (aiAiPeaceRequestByPairKey.size === 0) return;
       refreshObjectivePowerCache();
@@ -38789,12 +38800,14 @@ async function boot(): Promise<void> {
           const basePn = treatyBasePnFromConfig(kind, kind === 'rozejm' ? { turns: TRUCE_DEFAULT_TURNS } : undefined);
           const relTotal = treatyEvalRelationTotal(getDiploRelation(winner, loser));
           const difficulty = effectiveGameDifficultyForOwner(winner);
-          // R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1: cena podniesiona tak, by bilans zwyciezcy doszedl do >= 0;
-          // bilans przegranego (zaplata = jego `aiGive`) liczony z jego relacji; ujemny u ktorejkolwiek AI blokuje pokoj.
-          const requiredPn = aiAiPeaceRequiredPn(
+          // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: JEDNA cena pokoju = wearinessPeaceCashPn(L) (rozejm bez zmian).
+          // Bramka relacji (zero dla relacji, przy ktorej dzisiejsza wycena daje 0) zostaje; stale 185/554 odpadaja.
+          const relBasedPn = aiAiPeaceRequiredPn(
             peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty),
             peaceOfferAiOwnBilans(0, 0, relTotal, basePn),
           );
+          const requiredPn = kind === 'rozejm' ? relBasedPn
+            : (relBasedPn > 0 ? wearinessPeaceCashPn(aiAiPairWearinessLevel(winner, loser)) : 0);
           const loserRelTotal = treatyEvalRelationTotal(getDiploRelation(loser, winner));
           return {
             requiredPn,
@@ -38863,16 +38876,18 @@ async function boot(): Promise<void> {
         // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: shareOf i weakerOf wg SIŁY MILITARNEJ (nie Power) — war-weariness.ts.
         ...militaryWearinessWiring(diploMilitarySideOf),
         cityCountOf: o => cities.filter(c => c.ownerId === o).length,
-        price: (winner, loser) => {
+        price: (winner, loser, level) => {
           const basePn = treatyBasePnFromConfig('pokoj');
           const relTotal = treatyEvalRelationTotal(getDiploRelation(winner, loser));
           const difficulty = effectiveGameDifficultyForOwner(winner);
           const loserRelTotal = treatyEvalRelationTotal(getDiploRelation(loser, winner));
+          // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: cena = wearinessPeaceCashPn(poziom pary); bramka relacji jak wyzej.
+          const relBasedPn = aiAiPeaceRequiredPn(
+            peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty),
+            peaceOfferAiOwnBilans(0, 0, relTotal, basePn),
+          );
           return {
-            requiredPn: aiAiPeaceRequiredPn(
-              peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty),
-              peaceOfferAiOwnBilans(0, 0, relTotal, basePn),
-            ),
+            requiredPn: relBasedPn > 0 ? wearinessPeaceCashPn(level) : 0,
             balanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(0, coveredPn, relTotal, basePn),
             loserBalanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(coveredPn, 0, loserRelTotal, basePn),
             tolerancePn: aiOfferPwSurplusTolerance(difficulty),

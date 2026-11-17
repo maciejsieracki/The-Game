@@ -4,7 +4,8 @@
  * Zastepuje obsoletny diplo-weariness-unconditional-end-test.cjs (pokoj bezwarunkowy przy 80% zostal usuniety;
  * 80% = tylko oferta z miastami, 100% = pokoj WYMUSZONY).
  *
- *   (F1) poziom 100% (40 tur), wyrazie przegrywajacy z cena > 0 -> forced_peace, miasta oddane > 0, pokoj sfinalizowany;
+ *   (F1) poziom 100% (40 tur), wyrazie przegrywajacy -> forced_peace, cena 0 (cenaPokoju(1)=0): brak miast, pokoj sfinalizowany
+ *        (R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1, asercje zaktualizowane 2026-11-17: dawna wersja zakladala stala cene 500);
  *   (F2) poziom 80% (32 tury) -> NIE jest wymuszony (wearinessForcedPeaceDue(0,8) = false; progWymuszonyPokoj = 1,0);
  *   (F3) chroniony przegrywajacy (<= 3 miast, 1 utrata) przy 100% -> karencja chronionego (100 tur);
  *   (F4) cena 0 przy 100% -> pokoj bez oddania miasta (brak pay);
@@ -96,7 +97,7 @@ function run(W, src) {
     const pay = log.find((x) => x.ev === 'pay');
     const pe = log.find((x) => x.ev === 'peace');
     chk('F1: 100% (40 tur) wyrazny przegrywajacy -> forced_peace', r.action === 'forced_peace', r.action);
-    chk('F1: oddaje miasta (plan z miastem, pay wywolany)', !!pay && pay.plan.histogram.miasto >= 1, JSON.stringify(pay && pay.plan.histogram));
+    chk('F1: cena 0 przy 100% -> brak pay (brak miast), decyzja „cena 0 -> pokoj bez miast”', !pay, JSON.stringify(pay && pay.plan.histogram));
     chk('F1: pokoj sfinalizowany z karencja zwykla 40', !!pe && pe.lock === P.przegrywajacy.karencjaPoPokojuTur, pe && pe.lock);
   }
   // F2 — 80% (32 tury) nie jest pokojem wymuszonym.
@@ -140,8 +141,8 @@ function run(W, src) {
     const { deps, log } = mk(W, { a: 0, b: 2, turnsAtWar: 40, share1: 0.15, weakerId: 0, requiredPn: 500 });
     const r = W.runWarWearinessTick(deps)[0];
     const pe = log.find((x) => x.ev === 'peace');
-    chk('F7: gracz (0) przegrywajacy przy 100% -> forced_peace, miasta oddaje gracz', r.action === 'forced_peace'
-      && !!pe && pe.l === 0 && pe.w === 2 && log.some((x) => x.ev === 'pay' && x.l === 0));
+    chk('F7: gracz (0) przegrywajacy przy 100% -> forced_peace (cena 0, brak pay), pokoj gracz<->AI', r.action === 'forced_peace'
+      && !!pe && pe.l === 0 && pe.w === 2 && !log.some((x) => x.ev === 'pay'));
   }
   // F8 — stolica nigdy w planie.
   {

@@ -20,6 +20,8 @@ export interface WearinessRowInfo {
   lostCities: number;
   /** Poziom zmęczenia 0..1 (warWearinessLevel). */
   level: number;
+  /** R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: aktualna cena pokoju w PN (jedna funkcja ceny, malejąca z zmęczeniem). */
+  cenaPokojuPn?: number;
 }
 
 export interface NegotiationBalanceSource {
@@ -593,17 +595,20 @@ function treatyMetaHtml(
 
 /** Główny panel PW — widoczny między kolumnami My / Oni na stole. */
 /**
- * R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: pozycja „Zmęczenie wojną +N PW" po stronie AI (kolumna „Oni oddają").
- * Z = round(C × x²) z wearinessPeaceItemPw; wiersz tylko dla Z > 0. Tooltip: tury wojny, utracone miasta, zmęczenie.
+ * R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: wiersz „Cena pokoju” w panelu/audiencji — JEDNA cena (wearinessPeaceCashPn:
+ * 6000 PN × (1 − zmęczenie)), ta sama co w decyzji AI i w pokoju wymuszonym. Tooltip: tury wojny, utracone miasta, zmęczenie.
+ * Wiersz tylko gdy znana jest cena (info.cenaPokojuPn); cena 0 → „bez oddawania miast”.
  */
-export function wearinessPwRowHtml(z: number | undefined, info?: WearinessRowInfo, side: 'ai' | 'player' = 'ai'): string {
-  if (z == null || !(z > 0)) return '';
-  const tip = info
-    ? `Zmęczenie wojną: tury wojny ${Math.max(0, Math.round(info.turnsAtWar))} · utracone miasta ${Math.max(0, Math.round(info.lostCities))}`
-      + ` · zmęczenie ${Math.round(Math.max(0, Math.min(1, info.level)) * 100)}%`
-    : 'Zmęczenie wojną: pozycja PW po stronie AI — rośnie z turami wojny i utraconymi miastami';
-  return '<div class="da-pn-bal-meta weariness" title="' + esc(tip) + '">'
-    + esc('Zmęczenie wojną (' + (side === 'player' ? 'gracz' : 'AI') + ') +' + Math.round(z) + ' PW') + '</div>';
+export function peacePriceRowHtml(info?: WearinessRowInfo): string {
+  if (!info || info.cenaPokojuPn == null) return '';
+  const pct = Math.round(Math.max(0, Math.min(1, info.level)) * 100);
+  const tip = `Cena pokoju maleje ze zmęczeniem wojną: tury wojny ${Math.max(0, Math.round(info.turnsAtWar))}`
+    + ` · utracone miasta ${Math.max(0, Math.round(info.lostCities))} · zmęczenie ${pct}%`;
+  const cena = Math.max(0, Math.round(info.cenaPokojuPn));
+  const txt = cena > 0
+    ? 'Cena pokoju: ' + formatLiczbaPl(cena) + ' PN (zmęczenie ' + pct + '%) — maleje z turami wojny'
+    : 'Cena pokoju: 0 PN (zmęczenie ' + pct + '%) — pokój bez oddawania miast';
+  return '<div class="da-pn-bal-meta weariness" title="' + esc(tip) + '">' + esc(txt) + '</div>';
 }
 
 export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): string {
@@ -710,9 +715,6 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     + (playerTreatyPw > 0
       ? pwAmountWithBaseHtml(data.myOfferPn, treatyBase, modPct)
       : pwAmountHtml(data.myOfferPn))
-    + (data.responderPreview?.wearinessSide === 'player'
-      ? wearinessPwRowHtml(data.responderPreview?.wearinessPw, data.responderPreview?.wearinessInfo, 'player')
-      : '')
     + '</div>'
     + '<div class="da-pn-bal-cell center ' + balCls + '">'
     + '<span class="da-pn-bal-lbl">' + esc(centerLabel) + '</span>'
@@ -722,12 +724,10 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     + '<div class="da-pn-bal-cell they">'
     + '<span class="da-pn-bal-lbl">Oni oddają</span>'
     + pwAmountHtml(data.theirOfferPn)
-    + (data.responderPreview?.wearinessSide === 'player'
-      ? ''
-      : wearinessPwRowHtml(data.responderPreview?.wearinessPw, data.responderPreview?.wearinessInfo, 'ai'))
     + '</div>'
     + '</div>'
     + relModRow
+    + peacePriceRowHtml(data.responderPreview?.wearinessInfo)
     + treatyNote + relNote
     + '<div class="da-pn-bal-verdict ' + verdict.tone + '">' + esc(verdict.html) + '</div>'
     + '</div>'

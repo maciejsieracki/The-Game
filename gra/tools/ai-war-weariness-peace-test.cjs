@@ -74,9 +74,8 @@ const dA = W.loserDespair({ level: 0.5, share: 0.3, lostCities: 0 });
 const dB = W.loserDespair({ level: 1, share: 0.1, lostCities: 3 });
 ok(dB > dA, 'desperacja rosnie z zmeczeniem/slaboscia/stratami');
 eq(W.despairStage(0), 0, 'stopien 0'); eq(W.despairStage(0.99), 3, 'stopien 3');
-eq(W.stageCityLimit(0), 0, 'stopien 0: bez miast'); eq(W.stageCityLimit(1), 1, 'stopien 1: 1 miasto (zloto/surowce nie sa waluta pokoju, zmiana 2)'); eq(W.stageCityLimit(2), 1, 'stopien 2: 1 miasto'); eq(W.stageCityLimit(3), 2, 'stopien 3: max 2 miasta');
-ok(W.offerMultiplier(3, 0) > W.offerMultiplier(1, 0), 'oferta rosnie ze stopniem');
-ok(W.offerMultiplier(1, 3) > W.offerMultiplier(1, 0), 'oferta rosnie z odrzuceniami');
+// R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (DR-2): limit miast wg stopnia i mnozniki oferty USUNIETE — jedna cena, minimum miast.
+ok(W.stageCityLimit === undefined && W.offerMultiplier === undefined, 'stageCityLimit / offerMultiplier usuniete (jedna cena)');
 const A = (kind, id, amount, pn, forbidden) => ({ kind, id, amount, pn, forbidden });
 const assets = [A('zloto', 'zloto', 100, 100), A('miasto', 'c1', 1, 400), A('miasto', 'c2', 1, 700), A('miasto', 'cap', 1, 9999, true)];
 const p1 = W.planEscalatedPeacePayment(900, assets, 0);
@@ -136,7 +135,7 @@ function mkDeps(o) {
 // 4b. przegrywajacy znacznie: eskalacja gold -> miasto, wygrywajacy akceptuje
 {
   const store2 = new Map();
-  const base = { share1: 0.15, lostA: 3, turnsAtWar: 150, cities: 4, store: store2, winnerNeed: 900,
+  const base = { share1: 0.15, lostA: 3, turnsAtWar: 150, cities: 4, store: store2, winnerNeed: 500,
     assets: [A('zloto', 'zloto', 100, 100), A('miasto', 'c1', 1, 400), A('miasto', 'c2', 1, 800), A('miasto', 'cap', 1, 9999, true)] };
   // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: 6 miast => do 2 miast do oddania (złoto już nie wchodzi w ofertę).
   const { deps, log } = mkDeps({ ...base, cities: 6, turn: 400 });
@@ -145,7 +144,7 @@ function mkDeps(o) {
   ok(r[0].stage >= 2, 'stopien >= 2 przy duzej desperacji');
   if (r[0].action === 'offer_accepted') {
     ok(r[0].plan.histogram.miasto >= 1, 'przegrywajacy oferuje miasto');
-    ok(r[0].plan.histogram.miasto <= W.WAR_WEARINESS_PARAMS.przegrywajacy.maxMiastNaPokoj, 'limit miast');
+    ok(r[0].plan.full, 'plan pokrywa cene w calosci (minimum miast)');
     ok(!r[0].plan.items.some(i => i.id === 'cap'), 'stolica nie oddana');
     eq(log.find(x => x.ev === 'peace').l, 1, 'przegrywa AI1');
   } else ok(false, 'wygrywajacy powinien zaakceptowac oferte z miastem');
@@ -247,13 +246,13 @@ function mkDeps(o) {
   eq(M.requesterShare(300, 700), rwScale, '4i: requesterShare = potAI/(potAI+potPlr) (ta sama skala co respektWzgledny)');
   eq(W.loserDespair({ level: 0.7, share: M.requesterShare(300, 700), lostCities: 2 }), W.loserDespair({ level: 0.7, share: rwScale, lostCities: 2 }), '4i: desperacja identyczna dla obu zrodel udzialu');
 }
-// 4j. R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: zmeczenie = pozycja PW Z=round(C*x^2) (rabat 60% usuniety)
+// 4j. R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: zmeczenie obniza JEDNA cene pokoju (6000 x (1 - L)); pozycja Z usunieta
 {
-  eq(W.wearinessPeaceItemPw(500, 0), 0, '4j: brak zmeczenia => Z=0');
-  eq(W.wearinessPeaceItemPw(500, 0.5), 0, '4j: na progu chetnosci => Z=0');
-  eq(W.wearinessPeaceItemPw(500, 0.8), 500, '4j: przy progu konca zmeczenia => Z=C (R=0)');
-  eq(W.wearinessPeaceItemPw(500, 1), 500, '4j: pelne zmeczenie => Z=C');
-  ok(W.wearinessPeaceItemPw(500, 0.7) > W.wearinessPeaceItemPw(500, 0.6), '4j: Z rosnie z zmeczeniem');
+  eq(W.wearinessPeaceCashPn(0), 6000, '4j: brak zmeczenia => cena 6000');
+  eq(W.wearinessPeaceCashPn(0.5), 3000, '4j: zmeczenie 50% => cena 3000');
+  eq(W.wearinessPeaceCashPn(1), 0, '4j: pelne zmeczenie => cena 0');
+  ok(W.wearinessPeaceCashPn(0.7) < W.wearinessPeaceCashPn(0.6), '4j: cena maleje z zmeczeniem');
+  ok(W.wearinessPeaceItemPw === undefined, '4j: pozycja Z (wearinessPeaceItemPw) usunieta');
   ok(W.WAR_WEARINESS_PARAMS.czlowiek.rabatCenyPokojuMax === undefined, '4j: pole rabatCenyPokojuMax usuniete z parametrow');
 }
 
@@ -288,7 +287,8 @@ ok(cession(runAI({ rw: 0.12, turnsAtWar: 200, lost: 3, miastaAI: CITIES.slice(0,
 
 // ---- 6. straznik okablowania main.ts ----
 const propTs = fs.readFileSync(path.join(SRC, 'game/diplomacy-proposals.ts'), 'utf8');
-ok(/wearinessPeaceItemPw\(/.test(propTs) && !/wearinessPeacePriceFactor/.test(propTs), 'diplomacy-proposals: pozycja PW zmeczenia podpieta do bramki R5 (bez rabatu)');
+// R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: jedna cena pokoju (wearinessPeaceCashPn) zamiast pozycji Z w bramce R5.
+ok(/wearinessPeaceCashPn\(/.test(propTs) && !/wearinessPeacePriceFactor/.test(propTs) && !/wearinessPeaceItemPw\(/.test(propTs), 'diplomacy-proposals: jedna cena pokoju wearinessPeaceCashPn podpieta do bramki R5 (bez pozycji Z)');
 
 const mainTs = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
 ok(/runWarWearinessTick\(/.test(mainTs) && /tickAiAiWarWeariness\(aiTurnAwaitingBattle\)/.test(mainTs), 'main.ts: tick zmeczenia wywolany po fazie AI');
@@ -331,16 +331,18 @@ ok(/warWearinessByPairKey\.delete\(diploPairKey\(proposerId, responderId\)\)/.te
       'offer_rejected', '7c-NN: ochrona NIE wymusza pokoju przy ujemnym bilansie zwyciezcy');
     // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1 (zmiana 4): ochrona wymaga MIASTA w ofercie; przy 3 miastach (= minMiastPoOddaniu)
     // nie ma czego oddać => brak pokoju mimo ochrony (skutek: wojna trwa do decyzji silniejszej strony).
-    eq(r.action, 'offer_rejected', '7c: chroniony przegrywajacy z 3 miast nie kupuje pokoju (brak miasta do oddania)');
-    eq(r.plan.histogram.miasto, 0, '7c: z 3 miast (= minMiastPoOddaniu) nie oddaje zadnego');
-    ok(!log.some(x => x.ev === 'peace'), '7c: pokoj NIE sfinalizowany');
+    // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (2026-11-17): prog min. 3 miast (minMiastPoOddaniu) odpada
+    // (decyzja wlasciciela „bez progu min. 3 miast”). Liczba miast = minimum rownowazace cene.
+    eq(r.action, 'offer_accepted', '7c: chroniony przegrywajacy z 3 miast kupuje pokoj miastem (bez progu 3)');
+    eq(r.plan.histogram.miasto, 1, '7c: oddaje MINIMUM miast rownowazace cene (jedno miasto), nie wiecej');
+    ok(log.some(x => x.ev === 'peace'), '7c: pokoj sfinalizowany');
   }
   // 7d. ochrona po >= ochronaUtratyWojny utratach, nawet z duza liczba miast; oddaje co najwyzej tyle, by zostalo >= minMiastPoOddaniu
   {
     const { deps } = mkDeps({ turn: 140, turnsAtWar: 60, since: 3, share1: 0.1, lostA: 3, cities: 5, winnerNeed: 0, assets: cityAssets });
     const r = W.runWarWearinessTick(deps)[0];
     eq(r.action, 'offer_accepted', '7d: 3 utraty => zwyciezca musi przyjac');
-    ok(r.plan.histogram.miasto <= 5 - W.WAR_WEARINESS_PARAMS.przegrywajacy.minMiastPoOddaniu, '7d: po oddaniu zostaje >= minMiastPoOddaniu miast');
+    ok(r.plan.full && !r.plan.items.some(i => i.id === 'cap'), '7d: plan pokrywa cene, stolica nie oddana (prog min. 3 miast odpadl)');
   }
   // 7e. NIE chroniony (6 miast, 1 utrata) i cena nie do pokrycia => zwykla wycena (odrzucenie), brak przymusu
   {
