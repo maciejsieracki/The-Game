@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "39da9ed2f75db437638ea3d9172065e0",
-  "bundleSha256": "a84c0031a71f0125cd256d9ccacff831f004e43f3f1615113ca43083f74b29ab",
-  "bundleBytes": 14852351,
+  "bundleMd5": "680859c8510250153f1e353f016d47c8",
+  "bundleSha256": "730703d2ce8267ce36a24e2fe9d5d2821f353fe2dc9e144d6eceb6ba60c6b56c",
+  "bundleBytes": 14852339,
   "sourceSnapshot": {
-    "source": "build Vite z merge FC 5b38b2cf4 (raport 3e09e6ce2) na main 525da354",
+    "source": "build Vite z merge FC 009cb5c69 (raport f0f5cd08c) na main 1ff04368",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 804: main.ts: showHintMessage z flaga showNowDuringEot - toast zasadzki (AI->gracz i barbarzynca->gracz) pokazuje sie od razu, wpis w Wazne zostaje; test ambush-live (Chromium) w repo"
+    "FALA 805: units.json: health Oszczepnik 8, Zulu 10, Estolica 10, Lucznicy (uniw., egipski, nubijski, sumeryjski, akadyjski, asyryjski) 10, Procarz i Huaracoc 8; missileAttack Zulu i Estolica 5; karta Atak dystansowy i Zasieg = silnik dla 75 jednostek (Druzynnik, Thorakites, Evocati, Gwardzista z champi: zasieg 2); Estolica Zastap tylko Lucznik; wyjatki bez zmian: Hastati, Wojownik germanski, Medzaj, konni, rydwany, Katapulta; fieldPower oszczepnikow odswiezone; ai-era-unit-promotion.ts wyjatek Estolica"
   ],
   "verification": [
-    "tsc 0; ambush-core 48/0, ui-reason 10/0, wiring 28/0, realstep 16/0; ambush-live Chromium 26/0 (B5 zielony), mutacja czerwona; logic 213/213; unit-replace 21/21; combat 6/6"
+    "tsc 0; logic 213/213; ranged-health-card-align 5/0 (+mutacje); ranged-damage-mult PASS; archers-health 10/0; units-health-single-field PASS; unit-power 6/0; archer-slinger 51/0; promotion-table PASS bez cykli; ai-era 17/0; unit-replace 21/21; combat 6/6"
   ],
   "limits": [
-    "NIE ZMIERZONO: widocznosc wizualna toastu pod nakladka przejscia tury (test sprawdza DOM); merge z main cc3c80b17 bez konfliktu"
+    "NIE ZMIERZONO: zywy Chromium (karty), skutek balansowy zdrowia x0,5 na wynik bitew; unit-replace-full-cost 39/1, unit-epoch-cost 56/1, fortify-pole 39/2 = dlug bazowy; Zastap Lucznik 10 -> Procarz 8 (nizsze zdrowie i atak) do wiadomosci wlasciciela; dlug Rust REPIN units.json i tabeli zamian"
   ],
-  "finalControl": "R-WEB-UI-AMBUSH-SUCCESS-TOAST-IMMEDIATE-IN-AI-PHASE-Q1 r1 FC PASS 3e09e6ce2 (kod 5b38b2cf4)",
+  "finalControl": "R-WEB-DATA-RANGED-HEALTH-HALF-AND-CARDS-ALIGN-Q1 r1 FC PASS-WITH-NOTES f0f5cd08c (kod 009cb5c69)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-17T17:50:04",
+  "hubGeneratedAt": "2026-11-17T17:52:25",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "39da9ed2f75db437638ea3d9172065e0",
-      "sizeBytes": 14852351
+      "md5": "680859c8510250153f1e353f016d47c8",
+      "sizeBytes": 14852339
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "39da9ed2f75db437638ea3d9172065e0",
-      "sizeBytes": 14852351
+      "md5": "680859c8510250153f1e353f016d47c8",
+      "sizeBytes": 14852339
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "39da9ed2f75db437638ea3d9172065e0",
-      "sizeBytes": 14852351
+      "md5": "680859c8510250153f1e353f016d47c8",
+      "sizeBytes": 14852339
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "39da9ed2f75db437638ea3d9172065e0",
-      "sizeBytes": 14852351
+      "md5": "680859c8510250153f1e353f016d47c8",
+      "sizeBytes": 14852339
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "39da9ed2f75db437638ea3d9172065e0",
-      "sizeBytes": 14852351
+      "md5": "680859c8510250153f1e353f016d47c8",
+      "sizeBytes": 14852339
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "39da9ed2f75db437638ea3d9172065e0",
-      "sizeBytes": 14852351
+      "md5": "680859c8510250153f1e353f016d47c8",
+      "sizeBytes": 14852339
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "39da9ed2f75db437638ea3d9172065e0",
-      "sizeBytes": 14852351
+      "md5": "680859c8510250153f1e353f016d47c8",
+      "sizeBytes": 14852339
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "39da9ed2f75db437638ea3d9172065e0",
-      "sizeBytes": 14852351
+      "md5": "680859c8510250153f1e353f016d47c8",
+      "sizeBytes": 14852339
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "39da9ed2f75db437638ea3d9172065e0",
-      "sizeBytes": 14852351
+      "md5": "680859c8510250153f1e353f016d47c8",
+      "sizeBytes": 14852339
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "39da9ed2f75db437638ea3d9172065e0",
-      "sizeBytes": 14852351
+      "md5": "680859c8510250153f1e353f016d47c8",
+      "sizeBytes": 14852339
     }
   ],
-  "md5": "39da9ed2f75db437638ea3d9172065e0",
+  "md5": "680859c8510250153f1e353f016d47c8",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

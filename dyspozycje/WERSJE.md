@@ -1,3 +1,9 @@
+## ROBOCZA 680859c8 -- 2026-11-17 -- FALA 805: Dystansowi: zdrowie x0,5, Oszczepnik Zulu i Estolica atak 5, karty zgodne z silnikiem, Zastap Estolica tylko Lucznik (testowa)
+
+- units.json: health Oszczepnik 8, Zulu 10, Estolica 10, Lucznicy (uniw., egipski, nubijski, sumeryjski, akadyjski, asyryjski) 10, Procarz i Huaracoc 8; missileAttack Zulu i Estolica 5; karta Atak dystansowy i Zasieg = silnik dla 75 jednostek (Druzynnik, Thorakites, Evocati, Gwardzista z champi: zasieg 2); Estolica Zastap tylko Lucznik; wyjatki bez zmian: Hastati, Wojownik germanski, Medzaj, konni, rydwany, Katapulta; fieldPower oszczepnikow odswiezone; ai-era-unit-promotion.ts wyjatek Estolica
+- Weryfikacja: tsc 0; logic 213/213; ranged-health-card-align 5/0 (+mutacje); ranged-damage-mult PASS; archers-health 10/0; units-health-single-field PASS; unit-power 6/0; archer-slinger 51/0; promotion-table PASS bez cykli; ai-era 17/0; unit-replace 21/21; combat 6/6
+- Limity: NIE ZMIERZONO: zywy Chromium (karty), skutek balansowy zdrowia x0,5 na wynik bitew; unit-replace-full-cost 39/1, unit-epoch-cost 56/1, fortify-pole 39/2 = dlug bazowy; Zastap Lucznik 10 -> Procarz 8 (nizsze zdrowie i atak) do wiadomosci wlasciciela; dlug Rust REPIN units.json i tabeli zamian
+
 ## ROBOCZA 39da9ed2 -- 2026-11-17 -- FALA 804: Toast Zasadzka sie powiodla od razu takze z fazy AI (testowa)
 
 - main.ts: showHintMessage z flaga showNowDuringEot - toast zasadzki (AI->gracz i barbarzynca->gracz) pokazuje sie od razu, wpis w Wazne zostaje; test ambush-live (Chromium) w repo
