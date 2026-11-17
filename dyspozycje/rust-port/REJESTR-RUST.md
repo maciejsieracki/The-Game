@@ -3323,3 +3323,10 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **Sprzątanie:** usunięte 4 worktrees r2 (zakończone, niezablokowane). Dysk 8,3 GB.
 - **r3 uruchomiony** (`wf_f0bd9aa4-589`, baza `760be5187`).
 - **Dysk jest wąskim gardłem** — w trakcie działają buildy innych tematów (T1 / R7K7C / T7b). Wymóg dispatchu: ≥ 8 GB przed startem i przed każdą mutacją.
+
+### Przebieg — R7K7C-WIRING (#106) r1 BLOCK INFRA + FC FAIL → DODATEK r2 (2026-11-17 ~10:5x UTC)
+
+- **r1 (`wf_f6310912-6d1`):** wiring `apply_dipl_deltas_to_state` w `advance_turn` i 7 testów zielonych (`p6_r7k7c`, apply 6 + wiring 1, `cargo test -p civ-engine` EXIT 0); bramki clippy i all-targets NIE uruchomione (dysk < 8 GB); brak wektorów D3 (#299); rozjazd Ledger D3 vs pula Pracy (pin podłogowuje przy każdym zapisie); luka rollbacku (economy poza migawką). Commity zabezpieczone: `rust-port-wip/p6-r7k7c-r1-{op,ob}` i `…-{d013613ed,932536c37,f0eb32ab8}`.
+- **Rozstrzygnięcia (DODATEK r2 `6cc0c4878`):** rozjazd wg pinu (`main.ts:34879-34882`), allowlista rozszerzona o `turn_war_dipl_steps.rs` (ledger D3, tylko podłoga); rollback z ekonomią + test; wektory D3 ≥150 i apply ≥150 z generatora, sekwencje przepływów; mutant (c) MUSI dać FAIL po poprawce podłogi (nie uznawany za równoważny). Wielu ludzi (is_human, #282) — poza zakresem.
+- **Sprzątanie:** usunięte 4 worktrees r1 (zakończone). Dysk 7,4 GB — **poniżej progu 8 GB, r2 NIE uruchomiony**. Start po zwolnieniu dysku.
+- **Nadal aktywne:** T4e r3 (`wf_f0bd9aa4-589`), T1 (`wf_2261fa9c-ded`), T7b r4 (`wf_38d93827-c1b`) — stan do sprawdzenia w następnym tiku.
