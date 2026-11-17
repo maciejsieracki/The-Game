@@ -890,7 +890,7 @@ function ensureEntityCardOverrideStyles(): void {
 #${HOST_ID} .tdn-entity-card-v2 .entity-card-diorama-stage,
 #${HOST_ID} .tdn-side-card .entity-card-diorama-stage{padding-bottom:72px;}
 #${HOST_ID} .tdn-entity-card-v2 .entity-card-diorama-ground,
-#${HOST_ID} .tdn-side-card .entity-card-diorama-ground{bottom:63px;}
+#${HOST_ID} .tdn-side-card .entity-card-diorama-ground{bottom:70px;}
 #${HOST_ID} .entity-card-header{position:relative;padding-right:44px;}
 .tdn-entity-close{position:absolute;top:10px;right:10px;width:28px;height:28px;
   border-radius:var(--tg-radius-btn,8px);border:2px solid rgba(232,216,138,.4);

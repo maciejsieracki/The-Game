@@ -392,7 +392,7 @@ async function main() {
       rMut1.completion.badgeTexts);
 
     // (d2) usuń blok CSS naprawiający scenę → wraca nachodzenie tekstu na grafikę
-    const MUT_CSS_FROM = /#\$\{HOST_ID\} \.tdn-entity-card-v2 \.entity-card-diorama,\n#\$\{HOST_ID\} \.tdn-side-card \.entity-card-diorama\{height:226px;\}\n#\$\{HOST_ID\} \.tdn-entity-card-v2 \.entity-card-diorama-stage,\n#\$\{HOST_ID\} \.tdn-side-card \.entity-card-diorama-stage\{padding-bottom:72px;\}\n#\$\{HOST_ID\} \.tdn-entity-card-v2 \.entity-card-diorama-ground,\n#\$\{HOST_ID\} \.tdn-side-card \.entity-card-diorama-ground\{bottom:63px;\}\n/;
+    const MUT_CSS_FROM = /#\$\{HOST_ID\} \.tdn-entity-card-v2 \.entity-card-diorama,\n#\$\{HOST_ID\} \.tdn-side-card \.entity-card-diorama\{height:226px;\}\n#\$\{HOST_ID\} \.tdn-entity-card-v2 \.entity-card-diorama-stage,\n#\$\{HOST_ID\} \.tdn-side-card \.entity-card-diorama-stage\{padding-bottom:72px;\}\n#\$\{HOST_ID\} \.tdn-entity-card-v2 \.entity-card-diorama-ground,\n#\$\{HOST_ID\} \.tdn-side-card \.entity-card-diorama-ground\{bottom:70px;\}\n/;
     check('(D) kotwica mutacji (d2) istnieje w źródle', MUT_CSS_FROM.test(orig));
     const mut2 = orig.replace(MUT_CSS_FROM, '');
     const allMut2 = await runCore(page, await buildBundle(mut2));

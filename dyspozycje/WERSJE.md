@@ -1,3 +1,9 @@
+## ROBOCZA a07725de -- 2026-11-16 -- FALA 790: odznaki w oknie odkrycia technologii nie nachodza na elipse gruntu (testowa)
+
+- R-WEB-UI-TECH-DISCOVERY-BADGE-ELLIPSE-OVERLAP-Q1 (r1, FC PASS-WITH-NOTES b4768c224): w oknie odkrycia technologii elipsa gruntu diorama przesunieta (bottom 63px -> 70px, jedna linia CSS), odznaki Ukonczona/Podglad nie nachodza na medalion ani elipse (przed: 120x7 i 58x7 px, po: 0); tresc, kolory i rozmiary bez zmian
+- Weryfikacja: tsc 0; tech-discovery-badge-diorama 63 PASS/0 FAIL (baza 62/1); 5 bramek zielone; entity-card-diorama 45/0, technology-discovery-card-visual 48/0, tech-discovery-card-click 13/0, real-click 12/0, resource-chips 6/0, civpedia-karty-spojnosc 24/0; Chromium: 24 zrzuty przed/po (2 rozdzielczosci, 3 technologie), obejrzane (FC: 1 zrzut po obejrzany osobno); mutacja (cofniecie do 63px) czerwona
+- Limity: NIE ZMIERZONO: pozostale ok. 29 technologii poza lista TECHS testu; bisekt sprawcy 57d1c7d3b. Przedistniejace czerwone na bazie: wydarzenia-zbadano-karta-tech-real-render, era-change-toast-live, ai-economy-measure-hook
+
 ## ROBOCZA e03ced2d -- 2026-11-16 -- FALA 789: wiki bez surowych kluczy technicznych (testowa)
 
 - R-WEB-DOCS-IDS-LEAK-WIKI-SKAD-ZAPASY-ZAUFANIE-Q1 (r1, FC PASS de02176bb): hasla wiki Skad zapasow i Zaufanie opisuja slownie dlugosc dziennika zasobow (10 tur) i czas dobrej woli (3 tury) zamiast surowych kluczy ksiega_zasobow_tury i dobra_wola_tur; wartosci i mechanika bez zmian; regeneracja wikiBundle tylko dla tych dwoch hasel
