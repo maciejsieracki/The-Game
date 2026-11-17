@@ -1575,7 +1575,7 @@ import {
   type ProposalEvalContext, type ProposalPayload,
   // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — propozycja/kontroferta/odpowiedź.
   type PendingNegotiation, createNegotiation, applyCounterOffer, applyOwnProposalEdit, canCounterNegotiation, canPlayerCounterNegotiation,
-  negotiationStillValid, resolveNegotiationAsResponder, negotiationToLegacyPending,
+  negotiationStillValid, WAR_DEPENDENT_ACTIONS, resolveNegotiationAsResponder, negotiationToLegacyPending,
   negotiationAsProposal, proposalHasResourceAccess,
   hasPendingNegotiationForPair, findOwnOutgoingNegotiation, allowsMultipleOwnOutgoingNegotiations,
   treatyEvalRelationTotal, treatyBasePnFromConfig,
@@ -12695,6 +12695,18 @@ async function boot(): Promise<void> {
      * pair instead of the default lock length; same underlying DOW-block mechanism either
      * way. Omitted = unchanged behavior (default PEACE_TREATY_LOCK_TURNS).
      */
+    /** Usuwa ze stołu wpisy zależne od wojny (pokoj/rozejm) pary `pairKey`; zwraca liczbę usuniętych. */
+    function purgeWarDependentNegotiations(pairKey: string): number {
+      const before = negotiationTable.length;
+      const kept = negotiationTable.filter(e => !(
+        WAR_DEPENDENT_ACTIONS.has(e.actionId) && diploPairKey(e.proposerOwnerId, e.responderOwnerId) === pairKey
+      ));
+      if (kept.length === before) return 0;
+      negotiationTable.length = 0;
+      for (const e of kept) negotiationTable.push(e);
+      return before - kept.length;
+    }
+
     function finalizePeaceTreatyBetween(
       proposerId: number,
       responderId: number,
@@ -12765,6 +12777,13 @@ async function boot(): Promise<void> {
           ),
         );
       }
+      // DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1 (2a, Z5/Z6): pokój kończy oferty zależne od wojny TEJ pary
+      // (pokoj i rozejm - także oferta miast AI "za pokój"; po stronie gracza widoczna jako "Dar / prezent").
+      // Usuwanie przez przebudowę tablicy (bez splice w pętli indeksowej): finalize jest wołane z
+      // applyProposalOutcome wewnątrz odwrotnych pętli indeksowych po negotiationTable - splice(ni) tu
+      // przesuwałby indeksy i dawał TypeError na undefined. Pętle po indeksie patrzą na id
+      // (zob. resolvePendingNegotiationsForOwner).
+      purgeWarDependentNegotiations(pairKey);
       cancelSiegesBetweenPeaceOwners(proposerId, responderId);
       // R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: pokój czyści osobny rejestr Kamienia
       // przed zachowaniem istniejącego cleanupu Brązu.
@@ -12893,7 +12912,22 @@ async function boot(): Promise<void> {
           const k = pendingDiplomacyInbox.findIndex(p => p.id === inboxId);
           if (k >= 0) pendingDiplomacyInbox.splice(k, 1);
         },
-        finalizePeace: (proposerId, responderId) => finalizePeaceTreatyBetween(proposerId, responderId),
+        finalizePeace: (proposerId, responderId) => {
+          finalizePeaceTreatyBetween(proposerId, responderId);
+          // DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1 (Z7): pokój po końcu rozejmu (AI przyjęła pokój stały) nie może
+          // być "cichy" - gracz dostaje wpis w "Ważne" (jak pokój wymuszony, bez okna: sam go zainicjował rozejmem).
+          if (proposerId === ME() || responderId === ME()) {
+            const other = proposerId === ME() ? responderId : proposerId;
+            const evId = `truce-peace-${turn}-${diploPairKey(proposerId, responderId)}`;
+            if (!warEventLog.some(e => e.id === evId)) {
+              warEventLog.unshift({
+                id: evId, icon: '⚔', title: 'Rozejm przeszedł w pokój: ' + ownerDiploLabel(other),
+                subtitle: 'Strona przyjęła pokój stały po końcu rozejmu (bez wymiany miast)', kind: 'enemy', turnCreated: turn,
+              });
+              trimWarEventLog();
+            }
+          }
+        },
       };
     }
 
@@ -21641,10 +21675,17 @@ async function boot(): Promise<void> {
           siblingByTreatyId.set(id, packageSiblingPn(e.proposerOwnerId, e.responderOwnerId, id, scopeIds));
         }
       }
-      for (let ni = negotiationTable.length - 1; ni >= 0; ni--) {
+      // Z5: iteracja po ID (snapshot), nie po indeksie - rozstrzygnięcie wpisu (pokój -> finalizePeaceTreatyBetween)
+      // usuwa ze stołu także INNE wpisy tej pary; indeksowa pętla odwrotna trafiałaby wtedy w undefined.
+      const pendingIds = negotiationTable
+        .filter(n => n.awaitingOwnerId === ownerId && (isMe(n.proposerOwnerId) || isMe(n.responderOwnerId)))
+        .map(n => n.id)
+        .reverse();
+      for (const id of pendingIds) {
+        const ni = negotiationTable.findIndex(n => n.id === id);
+        if (ni < 0) continue; // usunięty przez wcześniejsze rozstrzygnięcie (np. pokój tej pary)
         const entry = negotiationTable[ni]!;
         if (entry.awaitingOwnerId !== ownerId) continue;
-        if (!isMe(entry.proposerOwnerId) && !isMe(entry.responderOwnerId)) continue;
         resolveNegotiationEntryAt(ni, siblingByTreatyId.get(entry.id));
         changed = true;
       }
@@ -21674,6 +21715,7 @@ async function boot(): Promise<void> {
       const validity = negotiationStillValid(entry, {
         turn,
         isAtWar: getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna',
+        isAtPeace: isPairAtStablePeace(entry.proposerOwnerId, entry.responderOwnerId),
         proposerEliminated: eliminatedOwners.has(entry.proposerOwnerId),
         responderEliminated: eliminatedOwners.has(entry.responderOwnerId),
       });
@@ -25851,6 +25893,13 @@ async function boot(): Promise<void> {
       };
     }
 
+    /** DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1: pokój stały/sojusz bez aktywnego rozejmu (rozejm bywa przekształcany w pokój). */
+    function isPairAtStablePeace(a: number, b: number): boolean {
+      const st = getDiploRelation(a, b).status;
+      if (st !== 'pokoj' && st !== 'sojusz') return false;
+      return getDiploPairMeta(a, b).truceUntilTurn == null;
+    }
+
     function buildNegotiationWorldCtx(
       proposerId: number,
       responderId: number,
@@ -25860,6 +25909,7 @@ async function boot(): Promise<void> {
       return {
         turn,
         isAtWar,
+        isAtPeace: isPairAtStablePeace(proposerId, responderId),
         proposerEliminated: eliminatedOwners.has(proposerId),
         responderEliminated: eliminatedOwners.has(responderId),
         proposerIsCityState: isOwnerClusterCityState(proposerId, csOpts),
@@ -30606,6 +30656,32 @@ async function boot(): Promise<void> {
       // Rozstrzygnięcie wpisów stołu czekających na AI (ta sama siatka co w turze AI: resolvePendingNegotiationsForOwner),
       // wołane BEZ kończenia tury — test nie dostaje autonomicznej propozycji pokoju AI z tej samej tury.
       (window as any).__truceTestDebug.resolveAiAwaitingForTest = (aiId: number): void => { resolvePendingNegotiationsForOwner(aiId); };
+      // DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1: hooki diagnostyczne (TYLKO ?civTest=1). Wołają REALNE funkcje gry.
+      // finalizePeaceForTest = finalizePeaceTreatyBetween (jak każda ścieżka pokoju); pushEntryForTest = createNegotiation na stół.
+      (window as any).__truceTestDebug.finalizePeaceForTest = (a: number, b: number): void => { finalizePeaceTreatyBetween(a, b); };
+      (window as any).__truceTestDebug.pushNegotiationForTest = (actionId: string, proposer: number, responder: number, awaiting: number, withCityOf: number | null, truceTurns: number | null = null): string => {
+        const cityItems = withCityOf === null ? [] : cities.filter(c => c.ownerId === withCityOf).slice(0, 1)
+          .map(c => ({ typ: 'miasto' as const, id: c.id, ilosc: 1, cityPn: 100 }));
+        const entry = createNegotiation(
+          { actionId: actionId as any, proposerOwnerId: proposer, responderOwnerId: responder, payload: { ...(cityItems.length ? { giveItems: cityItems } : {}), ...(truceTurns !== null ? { turns: truceTurns } : {}) } } as any,
+          turn, proposer === ME() ? 'player' : 'ai', negotiationTable.length + 1000,
+        );
+        negotiationTable.push({ ...entry, awaitingOwnerId: awaiting, authorOwnerId: awaiting === proposer ? responder : proposer });
+        return entry.id;
+      };
+      (window as any).__truceTestDebug.tableSummaryForTest = (): Array<Record<string, unknown>> => negotiationTable.map(e => ({
+        id: e.id, actionId: e.actionId, proposer: e.proposerOwnerId, responder: e.responderOwnerId, awaiting: e.awaitingOwnerId,
+        cities: ((e.payload.giveItems ?? []) as readonly any[]).filter(i => i.typ === 'miasto').length,
+      }));
+      (window as any).__truceTestDebug.warLogForTest = (): Array<{ id: string; title: string; subtitle?: string }> =>
+        warEventLog.map(e => ({ id: e.id, title: e.title, subtitle: (e as any).subtitle }));
+      (window as any).__truceTestDebug.purgeStaleForTest = (): void => { pruneInvalidNegotiations(); };
+      // Wywołuje REALNY tick zmęczenia bez bramki bitwy (w playtest=mapa po turze zwykle czeka bitwa => battlePending=true => tick pomija).
+      (window as any).__truceTestDebug.runWearinessTickForTest = (): void => { tickAiAiWarWeariness(false); };
+      (window as any).__truceTestDebug.wearinessStateForTest = (a: number, b: number): { warStart: number; peak: number; stage: number } | null => {
+        const st = warWearinessByPairKey.get(diploPairKey(a, b));
+        return st ? { warStart: st.warStart, peak: st.peak, stage: st.stage } : null;
+      };
       (window as any).__truceTestDebug.playerProposeTruceForTest = (aiId: number, turns: number): { queued: boolean; reason: string | null } => {
         // Ładunek jak z UI (akcja '10' + rodzaj 'rozejm', patrz proposalActionIdFromPayload → 'rozejm').
         const before = negotiationTable.length;
@@ -38887,6 +38963,8 @@ async function boot(): Promise<void> {
         // R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: shareOf i weakerOf wg SIŁY MILITARNEJ (nie Power) — war-weariness.ts.
         ...militaryWearinessWiring(diploMilitarySideOf),
         cityCountOf: o => cities.filter(c => c.ownerId === o).length,
+        // DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1: para z graczem — pokój tylko przy wymuszeniu 100% (war-weariness.ts).
+        isPlayerPair: (a, b) => a === humanOwner || b === humanOwner,
         price: (winner, loser, level) => {
           const basePn = treatyBasePnFromConfig('pokoj');
           const relTotal = treatyEvalRelationTotal(getDiploRelation(winner, loser));

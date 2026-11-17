@@ -1,0 +1,40 @@
+{
+  "rows": [
+    {
+      "scenario": "S1",
+      "turn": 2,
+      "warTurns": 0,
+      "status": "pokoj",
+      "weariness": null,
+      "tablePairWarDep": 0
+    },
+    {
+      "scenario": "S2",
+      "turn": 2,
+      "status": "pokoj",
+      "forcedPeaceLog": [
+        "Pokój wymuszony: Grecy | Pokój bez wymiany miast"
+      ],
+      "modalOpen": true
+    },
+    {
+      "scenario": "S3",
+      "before": 2,
+      "after": 0
+    },
+    {
+      "scenario": "S4",
+      "before": 3,
+      "after": 0,
+      "status": "pokoj"
+    },
+    {
+      "scenario": "S5",
+      "after": 0,
+      "status": "pokoj",
+      "truceUntilTurn": 7,
+      "newErrors": []
+    }
+  ],
+  "errors": []
+}
