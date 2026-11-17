@@ -1090,8 +1090,12 @@ const AMMOBAR_COLOR = 0x2f7adf;         // BLUE ammo bar
 // exactly like the bars.
 //
 // Stała semantyka UI: kolor opisuje właściciela, nie rolę w walce.
+// Tokeny z battleHudTheme (BATTLE_PLAYER / BATTLE_ENEMY) -- jedno źródło prawdy
+// dla kolorów stron w HUD i w 3D: gracz niebieski, przeciwnik czerwony.
+const SIDE_COLOR_PLAYER = parseInt(BATTLE_PLAYER.slice(1), 16);
+const SIDE_COLOR_ENEMY  = parseInt(BATTLE_ENEMY.slice(1), 16);
 function sideColor(side: 'atk' | 'def', playerSide: 'atk' | 'def'): number {
-  return side === playerSide ? 0x3a6ad0 : 0xc84040;
+  return side === playerSide ? SIDE_COLOR_PLAYER : SIDE_COLOR_ENEMY;
 }
 // The coloured frame extends this far (world units) beyond the bar cluster on
 // every edge, so only a thin rim of colour is visible around the slim bars.
@@ -4594,9 +4598,9 @@ export class BattleScene {
       let group: THREE.Group;
       try {
         const modelName = String((bu.stats as any)?.['Jednostka'] ?? bu.nazwa);
-        group = buildUnitModel(bu.kategoria, bu.ownerColor, modelName);
+        group = buildUnitModel(bu.kategoria, sideColor(side, this._playerControlSide()), modelName);
       } catch (_) {
-        group = makeFallbackAvatar(bu.ownerColor);
+        group = makeFallbackAvatar(sideColor(side, this._playerControlSide()));
       }
       group.position.set(x, topY, z);
       group.rotation.y = dirYaw(faceDir);
@@ -4764,9 +4768,9 @@ export class BattleScene {
       let group: THREE.Group;
       try {
         const modelName = String((bu.stats as any)?.['Jednostka'] ?? bu.nazwa);
-        group = buildUnitModel(bu.kategoria, bu.ownerColor, modelName);
+        group = buildUnitModel(bu.kategoria, sideColor('def', this._playerControlSide()), modelName);
       } catch (_) {
-        group = makeFallbackAvatar(bu.ownerColor);
+        group = makeFallbackAvatar(sideColor('def', this._playerControlSide()));
       }
       group.position.set(x, topY, z);
       group.rotation.y = dirYaw(Dir.W); // face attacker
@@ -5501,9 +5505,9 @@ export class BattleScene {
           // key the renderer/buildNamedUnit match on); bu.nazwa now holds the
           // ENGLISH display name, so use stats['Jednostka'] for dispatch.
           const modelName = String((bu.stats as any)?.['Jednostka'] ?? bu.nazwa);
-          group = buildUnitModel(bu.kategoria, bu.ownerColor, modelName);
+          group = buildUnitModel(bu.kategoria, sideColor(side, this._playerControlSide()), modelName);
         } catch (_) {
-          group = makeFallbackAvatar(bu.ownerColor);
+          group = makeFallbackAvatar(sideColor(side, this._playerControlSide()));
         }
         // Stand on the VISIBLE top of this tile (hill summit if on a hill) so
         // the figure rests ON the terrain instead of sinking into a raised bump.
@@ -18094,9 +18098,9 @@ export class BattleScene {
       let group: THREE.Group;
       try {
         const modelName = String((bu.stats as any)?.['Jednostka'] ?? bu.nazwa);
-        group = buildUnitModel(bu.kategoria, bu.ownerColor, modelName);
+        group = buildUnitModel(bu.kategoria, sideColor(side, this._playerControlSide()), modelName);
       } catch (_) {
-        group = makeFallbackAvatar(bu.ownerColor);
+        group = makeFallbackAvatar(sideColor(side, this._playerControlSide()));
       }
       group.position.set(x, topY, z);
       group.rotation.y = dirYaw(faceDir);
