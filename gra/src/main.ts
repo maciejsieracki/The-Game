@@ -49025,6 +49025,10 @@ async function boot(): Promise<void> {
         ensureCitySaveDefaults(c);
         cities.push(c);
       }
+      // R-WEB-TEST-HOOK-PLAYTEST-MAPA-DIRTY-FORECAST-Q1 (K1): dołożenie miast presetu bez
+      // inwalidacji = brak prognozy bramki „Zakończ turę” w t1 (empireEconDirty/powerDirty).
+      // Tylko ścieżka presetu playtest=mapa; produkcja bez zmian.
+      markCityStateDirty();
 
       explored.clear();
       for (const k of preset.explored) explored.add(k);
@@ -49261,6 +49265,9 @@ async function boot(): Promise<void> {
         ensureCitySaveDefaults(c);
         cities.push(c);
       }
+      // R-WEB-TEST-HOOK-PLAYTEST-MAPA-DIRTY-FORECAST-Q1 (K1, mapa): dołożenie miast presetu
+      // bez inwalidacji = brak prognozy bramki „Zakończ turę” w t1. Tylko ścieżka presetu.
+      markCityStateDirty();
       reapplyCityHexDecorHides();
       syncWonderRender();
 
