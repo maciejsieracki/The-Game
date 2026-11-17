@@ -9,7 +9,7 @@ GAŁĄŹ: `rust-port-wip/p4-364-bridge-layers-r2`
 
 ## ZMIANY/COMMIT
 
-Commit kodu i raportu: patrz sekcja „SHA” na końcu (uzupełniane po commicie).
+Commit kodu (i pierwszej wersji raportu): `648ea087c` na `rust-port-wip/p4-364-bridge-layers-r2` (rodzic `1508eda34`). Kolejny commit tylko dopisuje to SHA do raportu.
 
 Allowlista:
 - `rust-port/engine/src/bridge.rs`:
