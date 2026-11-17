@@ -3215,3 +3215,12 @@ Zasada: wpis „ZINTEGROWANE / wpięte” oznacza, że kod jest w `parity-v2`. N
 - **T7a falanga** (`wf_30e2308d-50d`) — w Operatorze.
 - **Sloty: 4/4.** Dysk ~8 GB — bramki renderera i pełnego testu mogą czekać.
 - **Otwarte decyzje ABC (w czacie):** #327, #358.
+
+### Przebieg — T7b integracja r2: BLOCK INFRA, FC FAIL → r3 (2026-11-17 ~07:xx UTC)
+
+- **Wynik r2 (`wf_22aea0c3-510`):** Operator BLOCK INFRA (dysk 4,6 GB, bramki nieuruchomione). Ewaluator PASS-WITH-NOTES (zarzuty infra + noty). FC FAIL (infra) → runda r3 tego samego ID.
+- **Noty do zapisu (nieblokujące):** (a) `nearest == None` przy niepustej liście wrogów nieosiągalne w produkcji (ten sam filtr `_enemiesOf`, pin 8290–8304) → zależność producenta W8/ProdBody; (b) wektory nie zawierają pola `nearest` z pina → do dodania przy zmianie generatora; (c) filtr `routed` z `_enemiesOf` nieobjęty wektorami → jawna zależność.
+- **Sprzątanie:** zabezpieczone refami `refs/keep/R-SWEEP-wf_22aea0c3-510-*` i `R-SWEEP-wf_c345eac0-607-4`; usunięte worktree rundy r2 (4 szt.) i FC T7b; usunięte zakończone targety `tgt-t7b` (3,3 GB) i `tgt-fc-t7b` (363 MB). Dysk 3,6 → ok. 13 GB.
+- **T7b r3 (`wf_af7143d7-863`):** DODATEK r3 `c4756db1a` na bazie `7def6d636`, z osobnym przebiegiem `p6_8i_pick` (timeout 900 s).
+- **Kolejka (KOLEJKA-RUST.md, `ef82f9cb3`):** P0 — T7b r3, #332 (Opus), #356 audyt, #261 T7a; P1 — integracja renderera (Q5, R1, R3, R5, R2) po bramce ≥ 12 GB bez równoległych buildów; P2 — #218 BATTLE-EVENTS (Opus), pierwszy kandydat do startu po zwolnieniu slotu.
+- **Aktywne Workflow:** 4/4 (T7b r3, #332 Opus, #356, T7a).
