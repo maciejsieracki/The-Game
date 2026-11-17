@@ -172,12 +172,16 @@ window.__runEpoch = function (epoch) {
   document.body.appendChild(host);
   if (!A.mountCityRecruitmentCardsForArmy(city.id, host)) throw new Error('army mount failed');
   const armyRows = rowsOf(host);
-  const armyList = host.querySelector('.list-scroll');
+  // R-WEB-UI-EMPIRE-RECRUIT-PANEL-NO-INNER-SCROLL-Q1 (cityPanel.ts renderPurchasableUnits, noInnerScroll):
+  // panel Armia celowo nie ma wewnętrznego suwaka -- lista to div.unit-recruit-list-full (pełna wysokość).
+  // Sonda sprawdza więc: pierwszy wiersz mieści się w liście BEZ wewnętrznego przewijania.
+  const armyList = host.querySelector('.list-scroll, .unit-recruit-list-full');
   const armyFirst = host.querySelector('.unit-recruit-compact-row');
   let armyFirstVisible = false;
   if (armyList && armyFirst) {
     const lr = armyList.getBoundingClientRect(), fr = armyFirst.getBoundingClientRect();
-    armyFirstVisible = fr.top >= lr.top - 1 && fr.bottom <= lr.bottom + 1 && armyList.scrollTop === 0;
+    armyFirstVisible = fr.top >= lr.top - 1 && fr.bottom <= lr.bottom + 1 && armyList.scrollTop === 0
+      && armyList.scrollHeight <= armyList.clientHeight + 1;
   }
   return { model, cityRows, armyRows, firstVisible, armyFirstVisible };
 };

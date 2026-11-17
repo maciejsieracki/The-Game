@@ -326,11 +326,19 @@ async function main() {
         defaultCardWidth: Math.round(card.getBoundingClientRect().width),
         defaultDioramaHeight: Math.round(card.querySelector('.entity-card-diorama').getBoundingClientRect().height),
         sideDioramaHeight: side ? Math.round(side.getBoundingClientRect().height) : null,
+        // R-KARTA-BUDYNKU (commit dacae1798, renderer.ts `.entity-card-building .entity-card-diorama`):
+        // diorama karty BUDYNKU ma height:auto (wysokość z treści), nie stałe 190px.
+        buildingAutoRuleInCss: /\.entity-card-building \.entity-card-diorama\{height:auto/.test(window.__C.ENTITY_CARD_CSS),
       };
     }, buildingId);
     check('(C) fixture: domyślna karta budynku wyrenderowana', !sideAndDefault.error, sideAndDefault);
-    check('(c1) domyślna karta encji (budynek) ma NADAL diaromę 190px z renderer.ts',
-      sideAndDefault.defaultDioramaHeight === 190, sideAndDefault);
+    // Dawna asercja `=== 190` była NIEAKTUALNA: karta budynku ma regułę `height:auto` (renderer.ts,
+    // dacae1798 „fix: integrate building and recruitment card fixes”, własny test
+    // building-card-overlap-real-render-test). Zmierzone 209 px = wysokość z treści, nie 190 px.
+    // Nowy dowód zakresu: reguła budynku jest w CSS, a domyślna karta NIE przejmuje wysokości
+    // sceny popupu (226 px z techDiscoveryNotice.ts:889, zawężonej do #host).
+    check('(c1) domyślna karta encji (budynek): reguła height:auto w CSS i wysokość ≠ 226 px sceny popupu',
+      sideAndDefault.buildingAutoRuleInCss === true && sideAndDefault.defaultDioramaHeight !== 226, sideAndDefault);
     // R-CIVPEDIA-KARTY-SPOJNOSC-Q1-A świadomie odwraca tę asercję: `.entity-card` base
     // (renderer.ts) zmienia szerokość referencyjną 434→660px dla WSZYSTKICH kart używających
     // jej wprost (dispatch GOAL pkt 2 + kryterium końca 3) — domyślna karta budynku (ta ścieżka)
