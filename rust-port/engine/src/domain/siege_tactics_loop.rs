@@ -1430,6 +1430,14 @@ impl<R: RollSource> ProdBody<R> {
             let pu = &self.units[ix][unit.idx];
             (pu.activate.q, pu.activate.r, pu.activate.mounted)
         };
+        // Odmowa (web :8689-8692): `ru.moveLeft = 0; done();` bez czytania terenu, bez zmiany pozycji i zajetosci.
+        // Dlatego nie wymaga adaptera terenu (D1: MissingTerrain tylko gdy ruch faktycznie wymaga danych).
+        if refused {
+            return Ok(MoveStepResult {
+                move_left: 0.0,
+                outcome: MoveOutcome { done: true },
+            });
+        }
         let Some(terrain) = self.terrain.as_deref() else {
             return Err(MissingTerrain);
         };

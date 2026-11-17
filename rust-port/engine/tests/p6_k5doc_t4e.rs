@@ -371,9 +371,45 @@ fn missing_terrain_is_explicit_error_without_mutation() {
         (5, 5)
     );
     assert_eq!(
+        body.occ_by_key(),
+        &before,
+        "brak mutacji zajetosci po bledzie"
+    );
+}
+
+/// Odmowa (`refused = true`) nie czyta terenu w webie (`_doMove` :8689-8692: `moveLeft = 0; done()`), więc
+/// brak adaptera terenu NIE jest błędem: wynik to `move_left = 0`, `done = true`, bez zmiany pozycji i zajętości.
+#[test]
+fn refusal_needs_no_terrain_and_changes_nothing() {
+    let inp = Input {
+        unit: UnitIn {
+            q: 5,
+            r: 5,
+            move_left: 6.0,
+            mounted: false,
+        },
+        col: 5,
+        row: 6,
+        refused: true,
+        tiles: Vec::new(),
+        occupancy: vec![(5, 5, "u".to_string())],
+        autobatch: None,
+    };
+    let (mut body, _) = body_for(&inp);
+    let before = body.occ_by_key().clone();
+    assert_eq!(
         body.move_step(ATK0, 5, 6, true, 6.0, None),
-        Err(MissingTerrain),
-        "odmowa tez wymaga adaptera terenu"
+        Ok(civ_engine::domain::siege_tactics_loop::MoveStepResult {
+            move_left: 0.0,
+            outcome: civ_engine::domain::siege_tactics_move_effects::MoveOutcome { done: true },
+        }),
+        "odmowa bez terenu: moveLeft=0, done=true"
+    );
+    assert_eq!(body.occ_by_key(), &before, "odmowa nie zmienia zajetosci");
+    assert_eq!(
+        (body.units[0][0].activate.q, body.units[0][0].activate.r),
+        (5, 5),
+        "odmowa nie zmienia pozycji"
     );
 }
 
