@@ -180,6 +180,40 @@ export function planBarbarianAmbushMove<T extends { q: number; r: number }>(
 }
 
 /**
+ * Pelny krok planu barbarzyncy (R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 r5, zarzut 3): trasa do celu liczona przez
+ * `computeFullPath` TYLKO gdy na planszy jest zasadzka (inaczej `null`, bez zmian). Petla barbarzyncow w main.ts
+ * wola WYLACZNIE te funkcje; pathfinding (computePath) zostaje po stronie wolajacego.
+ */
+export function planBarbarianStep<T extends { q: number; r: number }>(
+  units: ReadonlyArray<Pick<RuntimeUnit, 'ownerId' | 'ambush' | 'q' | 'r'>>,
+  barb: Pick<RuntimeUnit, 'q' | 'r' | 'ownerId'>,
+  destQ: number,
+  destR: number,
+  computeFullPath: () => ReadonlyArray<T> | null,
+  isAtWar: AmbushWarPredicate,
+): BarbarianMovePlan {
+  const fullPath = units.some(x => x.ambush === true) ? computeFullPath() : null;
+  return planBarbarianAmbushMove(units, barb, destQ, destR, fullPath, isAtWar);
+}
+
+/**
+ * Rozdzielenie armii na heks z UKRYTA zasadzka wroga (R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 r5, zarzut 1).
+ * Panel rozdzielenia pokazuje ten heks jako wolny (ukryta zasadzka), wiec klik musi zachowac sie tak samo jak
+ * wejscie w zasadzke -- a NIE komunikatem „Heks zajety” (to byloby wyrocznie ujawniajaca zasadzke).
+ * `kind: 'ambush'` = wolajacy otwiera bitwe o heks (ruch przerwany, jednostki nie zostaja nalozone).
+ */
+export function planSplitAgainstHiddenAmbush(
+  units: ReadonlyArray<Pick<RuntimeUnit, 'ownerId' | 'ambush' | 'q' | 'r'>>,
+  destQ: number,
+  destR: number,
+  moverOwnerId: number,
+  isAtWar: AmbushWarPredicate,
+): { kind: 'ambush'; ambushHex: { q: number; r: number } } | { kind: 'split' } {
+  const hidden = units.some(u => u.q === destQ && u.r === destR && isAmbushHiddenFromMover(u, moverOwnerId, isAtWar));
+  return hidden ? { kind: 'ambush', ambushHex: { q: destQ, r: destR } } : { kind: 'split' };
+}
+
+/**
  * Po ruchu barbarzyncy: ujawnia zasadzke (jesli stoi tuz przy niej) i zwraca komende `attack` do wstrzykniecia
  * oraz obronce (do komunikatu dla wlasciciela zasadzki). Brak zasadzki w zasiegu = undefined.
  */

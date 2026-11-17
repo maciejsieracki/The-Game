@@ -57,7 +57,7 @@ import { humanizeId, nazwaCywilizacji, nazwaWyswietlana } from './game/text-name
 import { TEREN_LABEL_PL } from './map/terrain-names';
 import { normalizeDetDigestStackGroups } from './game/det-digest-normalize';
 import { AMBUSH_BLOCK_MESSAGES, canSetAmbush, cancelAmbush, isStackAmbushed, isUnitVisibleToViewer, resolveAmbushTrigger, setAmbush, truncatePathAtAmbush } from './game/ambush';
-import { buildBarbarianAmbushAttack, makeAmbushPathCutter, planBarbarianAmbushMove, planPlayerAmbushMove, reconcileAmbushInWorld, releaseAmbushOnMoveOrder, resolveAmbushAfterMove, unitsForPlanner, unitsForViewer } from './game/ambushMove';
+import { buildBarbarianAmbushAttack, makeAmbushPathCutter, planBarbarianStep, planPlayerAmbushMove, planSplitAgainstHiddenAmbush, reconcileAmbushInWorld, releaseAmbushOnMoveOrder, resolveAmbushAfterMove, unitsForPlanner, unitsForViewer } from './game/ambushMove';
 import * as THREE from 'three';
 import { loadGameData } from './data/loader';
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from './map/generator';
@@ -16013,8 +16013,11 @@ async function boot(): Promise<void> {
           }
           // r5: panel liczy wolne heksy na widocznych jednostkach; ukryta zasadzka wroga na celu = heks zajety
           // (brak nakladania jednostek obu stron; zasadzka zostaje nietknieta, wyzwala ja dopiero ruch).
-          if (units.some(x => x.q === destQ && x.r === destR && x.ambush === true && x.ownerId !== active.ownerId)) {
-            showHintMessage('Heks zajęty.', 3500);
+          // r5 (zarzut 1): ukryta zasadzka na celu = WEJSCIE w zasadzke (bitwa z lidera stosu), nie komunikat o zajetym heksie.
+          const splitAmbush = planSplitAgainstHiddenAmbush(units, destQ, destR, active.ownerId, areEnemyOwners);
+          if (splitAmbush.kind === 'ambush') {
+            const splitLeader = units.find(x => x.id === ids[0]);
+            if (splitLeader !== undefined) fireAmbushOnHex(splitLeader, destQ, destR);
             return;
           }
           const splitArrivals = ids
@@ -46611,13 +46614,12 @@ async function boot(): Promise<void> {
                   // (w tym barbarzynce ruszajacego wczesniej w tej turze).
                   // R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (r4, zarzut 6): trasa barbarzyncy przez zasadzke gracza/AI
                   // (dla barbarzyncy heks pusty) konczy sie PRZED nia; po ruchu ujawniamy zasadzke i wstrzykujemy atak.
-                  const barbPathFull = units.some(x => x.ambush === true)
-                    ? computePath(
+                  const barbMove = planBarbarianStep(units, bu, bcmd.toQ, bcmd.toR,
+                    () => computePath(
                       bu, map, bcmd.toQ, bcmd.toR,
                       buildMoveOccupancy(units, bu.ownerId, [bu.id], areEnemyOwners), moveCostFnForUnit(bu),
-                    )
-                    : null;
-                  const barbMove = planBarbarianAmbushMove(units, bu, bcmd.toQ, bcmd.toR, barbPathFull, areEnemyOwners);
+                    ),
+                    areEnemyOwners);
                   const barbToQ = barbMove.toQ;
                   const barbToR = barbMove.toR;
                   const barbAmbushHit = barbMove.ambushHex;

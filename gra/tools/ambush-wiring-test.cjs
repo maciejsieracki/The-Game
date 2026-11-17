@@ -258,7 +258,14 @@ const unit = (over) => Object.assign({
   check('E2 wpiecie punktowe (liczby wywolan): release x3 (rozkaz ruchu, start animacji, marsz instant), planPlayer x3 (gracz, marsz, barbarzyncy), resolveAfterMove x2 (AI, barbarzyncy), AI cutter z realnym ownerId', () => {
     assert.strictEqual(occ('releaseAmbushOnMoveOrder('), 3, 'releaseAmbushOnMoveOrder w main.ts: M2 (playerStackAt) / MB (rozkaz ruchu) usuwaja jedno wystapienie');
     assert.strictEqual(occ('planPlayerAmbushMove('), 2, 'planPlayerAmbushMove w main.ts: gracz animowany i marsz (barbarzyncy: planBarbarianAmbushMove)');
-    assert.strictEqual(occ('planBarbarianAmbushMove('), 1, 'planBarbarianAmbushMove w main.ts: petla barbarzyncow');
+    assert.strictEqual(occ('planBarbarianStep('), 1, 'planBarbarianStep w main.ts: petla barbarzyncow (r5: pelna trasa tylko przy zasadzce)');
+    assert.strictEqual(occ('planBarbarianAmbushMove('), 0, 'planBarbarianAmbushMove wolane wylacznie przez planBarbarianStep (ambushMove.ts)');
+    assert.strictEqual(occ('planSplitAgainstHiddenAmbush('), 1, 'planSplitAgainstHiddenAmbush w main.ts: onSplit (r5: wejscie w ukryta zasadzke zamiast „Heks zajety”)');
+    assert.strictEqual(occ('Heks zajęty.'), 0, 'brak komunikatu „Heks zajęty.” w onSplit (wyrocznia zasadzki)');
+    // r5 (zarzuty 1-3): galezie wpiete w main.ts -- strukturalnie (pelne wyniki logiki: ambush-split-barb-test.cjs).
+    assert.strictEqual(occ("if (splitAmbush.kind === 'ambush') {"), 1, 'onSplit: galaz wejscia w ukryta zasadzke (wylaczenie = dwie jednostki na heksie)');
+    assert.strictEqual(occ('fireAmbushOnHex(splitLeader, destQ, destR);'), 1, 'onSplit: wyzwolenie bitwy z lidera stosu');
+    assert.equal(/planBarbarianStep\(units, bu, bcmd\.toQ, bcmd\.toR,\s*\(\) => computePath\(/.test(mainSrc), true, 'petla barbarzyncow: pelna trasa z computePath (mutacja na null czerwieni)');
     assert.strictEqual(occ('resolveAmbushAfterMove('), 1, 'resolveAmbushAfterMove w main.ts: AI (barbarzyncy: buildBarbarianAmbushAttack)');
     assert.strictEqual(occ('buildBarbarianAmbushAttack('), 1, 'buildBarbarianAmbushAttack w main.ts: petla barbarzyncow');
     assert.ok(mainSrc.includes('makeAmbushPathCutter(units, ownerId, areEnemyOwners)'), 'MD: executor AI musi dostac realna liste zasadzek (nie [])');
