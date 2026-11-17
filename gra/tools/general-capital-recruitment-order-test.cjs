@@ -7,6 +7,18 @@
  * crosses Playwright into the exact purchaseRecruitmentUnit body from main.ts; the
  * engine's persistence/economy functions are explicit test doubles. The general
  * preflight helper is also extracted from game/generals.ts (not reimplemented).
+ *
+ * R-WEB-TEST-DEBT-GENERAL-CAPITAL-RECRUIT-LOADER-Q1: the cut purchase body now gets its
+ * helpers from the REAL sources, not from stubs:
+ *   - pure modules (army-stack-limit, production, recruit-general, resource-ledger,
+ *     army-leadership, human-owners, effective-difficulty-for-owner) are bundled by esbuild
+ *     from src/ and their exports are injected by name;
+ *   - helpers defined only inside main.ts (isMe, armyStackLimit, reservedUnitTypeNamesForOwner,
+ *     effectiveGameDifficultyForOwner, unlockedTechsForOwner, productionAvailabilityCtxForCity)
+ *     are copied VERBATIM from main.ts by signature (sliceMainFunction), not re-typed;
+ *   - constants that exist only as literals in main.ts / battle/battleScene.ts are read from
+ *     those literals (constFromSource), so a changed source value changes the test input.
+ * Remaining test doubles are only the persistence/economy functions listed in makeHarness().
  */
 const fs = require('node:fs');
 const os = require('node:os');
@@ -19,11 +31,14 @@ const MAIN = path.resolve(GRA, 'src/main.ts');
 const CITY = path.resolve(GRA, 'src/ui/cityPanel.ts');
 const GENERALS = path.resolve(GRA, 'src/game/generals.ts');
 const PRODUCTION = path.resolve(GRA, 'src/game/production.ts');
+const BATTLE_SCENE = path.resolve(GRA, 'src/battle/battleScene.ts');
 const mainSource = fs.readFileSync(MAIN, 'utf8');
 const citySource = fs.readFileSync(CITY, 'utf8');
 const generalsSource = fs.readFileSync(GENERALS, 'utf8');
 const productionSource = fs.readFileSync(PRODUCTION, 'utf8');
+const battleSceneSource = fs.readFileSync(BATTLE_SCENE, 'utf8');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'general-recruitment-ui-'));
+const RAW_PLUGIN = require(path.resolve(__dirname, 'lib', 'esbuild-raw-plugin.cjs'));
 
 function check(name, condition, detail) {
   console.log(`${condition ? 'PASS' : 'FAIL'}: ${name}${condition || detail === undefined ? '' : ` — ${JSON.stringify(detail)}`}`);
@@ -80,7 +95,56 @@ function loadCitySiegeModule() {
   return new Function(`${code}\nreturn { isCityUnderSiege, CITY_SIEGE_RECRUIT_BLOCK_PL };`)();
 }
 
-function extractBackend() {
+/**
+ * Bundles a REAL module from src/ with esbuild (same plugin as the other gra/tools harnesses)
+ * and returns its exports. Nothing is re-typed; the module's own imports are bundled too.
+ */
+async function loadRealModule(relPath) {
+  const built = await esbuild.build({
+    entryPoints: [path.resolve(GRA, relPath)],
+    bundle: true,
+    format: 'cjs',
+    platform: 'neutral',
+    target: 'es2020',
+    write: false,
+    absWorkingDir: GRA,
+    loader: { '.ts': 'ts', '.json': 'json' },
+    plugins: [RAW_PLUGIN],
+    logLevel: 'silent',
+  });
+  const mod = { exports: {} };
+  // eslint-disable-next-line no-new-func
+  new Function('module', 'exports', 'require', built.outputFiles[0].text)(mod, mod.exports, require);
+  return mod.exports;
+}
+
+/** Verbatim copy of a top-level `    function NAME(...) {...}` from main.ts (located by signature). */
+function sliceMainFunction(name) {
+  const start = mainSource.indexOf(`\n    function ${name}(`);
+  if (start < 0) throw new Error(`main.ts: brak definicji funkcji ${name}`);
+  const end = mainSource.indexOf('\n    }\n', start);
+  if (end < 0) throw new Error(`main.ts: nie znaleziono końca funkcji ${name}`);
+  return mainSource.slice(start + 1, end + '\n    }'.length);
+}
+
+/** Literal value read from source text (throws when the declaration is missing). */
+function constFromSource(source, pattern, label) {
+  const match = pattern.exec(source);
+  if (!match) throw new Error(`Nie znaleziono deklaracji: ${label}`);
+  return match[1];
+}
+
+// Helpers that exist ONLY in main.ts and are called from the cut purchase body (or its dependencies).
+const MAIN_ONLY_HELPERS = [
+  'isMe',
+  'armyStackLimit',
+  'reservedUnitTypeNamesForOwner',
+  'effectiveGameDifficultyForOwner',
+  'unlockedTechsForOwner',
+  'productionAvailabilityCtxForCity',
+];
+
+function extractBackend(deps) {
   const purchaseStart = mainSource.indexOf('function purchaseRecruitmentUnit(');
   const purchaseEnd = mainSource.indexOf('\n    /** Anulowanie opłaconej rekrutacji', purchaseStart);
   const helperStart = generalsSource.indexOf('export function attemptGeneralPurchase(');
@@ -90,30 +154,40 @@ function extractBackend() {
   if ([purchaseStart, purchaseEnd, helperStart, helperEnd, limitsStart, requestInterface].some(index => index < 0)) {
     throw new Error('Nie udało się wyciąć produkcyjnego preflightu/zakupu');
   }
+  const mainHelpers = MAIN_ONLY_HELPERS.map(sliceMainFunction).join('\n');
   const transformed = esbuild.transformSync(
     `${generalsSource.slice(limitsStart, requestInterface).replace(/^export\s+/gm, '')}\n`
       + `${generalsSource.slice(helperStart, helperEnd).replace(/^export\s+/gm, '')}\n`
+      + `${mainHelpers}\n`
       + `${mainSource.slice(purchaseStart, purchaseEnd)}`,
     { loader: 'ts', target: 'es2020' },
   ).code;
-  const names = [
-    'ownerTreasury', 'cities', 'cityHasCoastOrRiverAccess',
-    'showHintMessage', 'empireEpochForOwner', 'civManpowerMultsForOwner',
-    'canAffordUnitManpowerEmpire', 'unitProductionItem', 'data', 'civBonusyForOwnerId',
-    'player', '_menuDifficulty', 'unitStockCost', 'ownerResourceStockAll', 'pickUnitRecruitHint',
-    'missingStockFor', 'stockResourceLabel', 'tryDeductUnitSpawnCostsEmpire',
-    'unitManpowerCostForType', 'empireManpowerCurrent', 'deductManpowerFromEmpire',
-    'UNIT_POPULATION_COST', 'setOwnerTreasury', 'deductBuildingStockCostAcrossCities',
-    'markCityStateDirty', 'cityProd', 'enqueueRecruitment', 'updateHud',
-    'refreshCityPanelIfOpen', 'refundManpowerToEmpire', 'creditOwnerResourceStock',
-    'bestGeneralUnitForOwner', 'units', 'capitalCityIdForOwner', 'armyLeaderTitle',
-    'empireBuiltIdsForOwner', 'isCityUnderSiege', 'CITY_SIEGE_RECRUIT_BLOCK_PL',
-  ];
+  const names = Object.keys(deps);
   // eslint-disable-next-line no-new-func
-  return new Function(...names, `${transformed}\nreturn purchaseRecruitmentUnit;`);
+  return new Function(...names, `${transformed}\nreturn purchaseRecruitmentUnit;`)(...names.map(name => deps[name]));
 }
 
-function makeHarness() {
+// Real modules (bundled from src/) and literals read from source text. Filled by loadRealSources():
+// esbuild.build is async, so the harness is built only after this has finished.
+const REAL = {};
+async function loadRealSources() {
+  REAL.armyStackMod = await loadRealModule('src/game/army-stack-limit.ts');
+  REAL.productionMod = await loadRealModule('src/game/production.ts');
+  REAL.recruitGeneralMod = await loadRealModule('src/game/recruit-general.ts');
+  REAL.resourceLedgerMod = await loadRealModule('src/game/resource-ledger.ts');
+  REAL.armyLeadershipMod = await loadRealModule('src/game/army-leadership.ts');
+  REAL.humanOwnersMod = await loadRealModule('src/game/human-owners.ts');
+  REAL.effectiveDifficultyMod = await loadRealModule('src/game/effective-difficulty-for-owner.ts');
+  REAL.MAX_PER_SIDE = Number(constFromSource(battleSceneSource, /\nconst MAX_PER_SIDE = (\d+);/, 'MAX_PER_SIDE (battleScene.ts)'));
+  REAL.MENU_DIFFICULTY = constFromSource(mainSource, /let _menuDifficulty: [^=]+= '(\w+)';/, '_menuDifficulty (main.ts)');
+  REAL.MENU_CITY_STATE_DIFFICULTY = constFromSource(mainSource, /let _menuCityStateDifficulty: [^=]+= '(\w+)';/, '_menuCityStateDifficulty (main.ts)');
+  REAL.RECRUIT_FOLLOW_GENERAL_DEFAULT = constFromSource(mainSource, /let recruitFollowGeneralDefault = (true|false);/, 'recruitFollowGeneralDefault (main.ts)') === 'true';
+  if (!mainSource.includes('const typCityCopyOwners = new Set<number>();')) {
+    throw new Error('main.ts: zmieniono początkową wartość typCityCopyOwners (pusty zbiór)');
+  }
+}
+
+function makeHarness(stubOverrides = {}) {
   const city = { id: 'capital', ownerId: 0, name: 'Ateny', q: 0, r: 0, population: 10, manpower: 1_000_000, surowce: { drewno: 40 } };
   const cities = [city];
   const units = [];
@@ -136,63 +210,81 @@ function makeHarness() {
     home.manpower -= amount;
     return true;
   };
-  const pool = () => ownerResourceStockAll(cities, 0);
   const unitProductionItem = () => ({ ...offer });
   const enqueueRecruitment = (prod, entry) => ({ ...prod, kolejka: [...prod.kolejka], rekrutacja: [...(prod.rekrutacja ?? []), entry] });
-  const productionPurchase = extractBackend()(
-    () => treasury,
+  const deps = {
+    // Test doubles: persistence / economy / UI side effects (their values are not part of the recruitment ORDER).
+    ownerTreasury: () => treasury,
     cities,
-    () => true,
-    () => {},
-    () => era,
-    () => ({ maxMult: 1, costMult: 1 }),
-    () => true,
+    cityHasCoastOrRiverAccess: () => true,
+    showHintMessage: () => {},
+    empireEpochForOwner: () => era,
+    civManpowerMultsForOwner: () => ({ maxMult: 1, costMult: 1 }),
+    canAffordUnitManpowerEmpire: () => true,
     unitProductionItem,
     data,
-    () => [],
-    { kosztJednostekPace: 'niski' },
-    'normal',
-    unitDef => unitDef?.Jednostka === 'Wojownik' ? { drewno: 13 } : {},
+    civBonusyForOwnerId: () => [],
+    player: { kosztJednostekPace: 'niski' },
+    unitStockCost: unitDef => unitDef?.Jednostka === 'Wojownik' ? { drewno: 13 } : {},
     ownerResourceStockAll,
-    stock => stock.drewno >= 13 ? null : 'Brakuje drewna',
-    (stock, cost) => Object.fromEntries(Object.entries(cost).filter(([key, need]) => (stock[key] ?? 0) < need)),
-    key => key,
-    (_cities, cityId, ownerId, _era, _pop, _max, _unitId) => {
+    pickUnitRecruitHint: stock => stock.drewno >= 13 ? null : 'Brakuje drewna',
+    missingStockFor: (stock, cost) => Object.fromEntries(Object.entries(cost).filter(([key, need]) => (stock[key] ?? 0) < need)),
+    stockResourceLabel: key => key,
+    tryDeductUnitSpawnCostsEmpire: (_cities, cityId, ownerId, _era, _pop, _max, _unitId) => {
       const home = cities.find(c => c.id === cityId && c.ownerId === ownerId);
       if (!home || home.manpower < manpowerCost) return { ok: false, manpower: home?.manpower ?? 0 };
       home.manpower -= manpowerCost;
       return { ok: true, manpower: home.manpower };
     },
-    () => manpowerCost,
+    unitManpowerCostForType: () => manpowerCost,
     empireManpowerCurrent,
     deductManpowerFromEmpire,
-    0,
-    (_ownerId, value) => { treasury = value; },
-    (_cities, ownerId, costs) => {
+    UNIT_POPULATION_COST: 0,
+    setOwnerTreasury: (_ownerId, value) => { treasury = value; },
+    deductBuildingStockCostAcrossCities: (_cities, ownerId, costs) => {
       const home = cities.find(c => c.ownerId === ownerId);
       for (const [key, value] of Object.entries(costs)) home.surowce[key] -= value;
     },
-    () => { dirty++; },
+    markCityStateDirty: () => { dirty++; },
     cityProd,
-    (prod, entry) => { transactions++; return enqueueRecruitment(prod, entry); },
-    () => {},
-    () => {},
-    () => {},
-    () => {},
-    () => offer,
+    enqueueRecruitment: (prod, entry) => { transactions++; return enqueueRecruitment(prod, entry); },
+    updateHud: () => {},
+    refreshCityPanelIfOpen: () => {},
+    refundManpowerToEmpire: () => {},
+    creditOwnerResourceStock: () => {},
+    bestGeneralUnitForOwner: () => offer,
     units,
-    ownerId => ownerId === 0 ? 'capital' : undefined,
-    () => 'Wódz',
-    () => [],
-    loadCitySiegeModule().isCityUnderSiege,
-    loadCitySiegeModule().CITY_SIEGE_RECRUIT_BLOCK_PL,
-  );
+    // Capital = the only city of owner 0 (the harness city); no buildings are built in it, so the built-id set is empty.
+    capitalCityIdForOwner: ownerId => ownerId === 0 ? 'capital' : undefined,
+    empireBuiltIdsForOwner: () => new Set(),
+    isCityUnderSiege: loadCitySiegeModule().isCityUnderSiege,
+    CITY_SIEGE_RECRUIT_BLOCK_PL: loadCitySiegeModule().CITY_SIEGE_RECRUIT_BLOCK_PL,
+    // Real values: literals from main.ts / battleScene.ts, real modules from src/.
+    BATTLE_MAX_PER_SIDE: REAL.MAX_PER_SIDE,
+    ME: () => REAL.humanOwnersMod.HUMAN_OWNER_PRIMARY,
+    _menuDifficulty: REAL.MENU_DIFFICULTY,
+    _menuCityStateDifficulty: REAL.MENU_CITY_STATE_DIFFICULTY,
+    typCityCopyOwners: new Set(),
+    recruitFollowGeneralDefault: REAL.RECRUIT_FOLLOW_GENERAL_DEFAULT,
+    armyLeaderTitle: REAL.armyLeadershipMod.armyLeaderTitle,
+    effectiveGameDifficultyForOwnerPure: REAL.effectiveDifficultyMod.effectiveGameDifficultyForOwnerPure,
+    hexHasRoomFor: REAL.armyStackMod.hexHasRoomFor,
+    stackLimitBlockMessage: REAL.armyStackMod.stackLimitBlockMessage,
+    superUnitLimitViolation: REAL.productionMod.superUnitLimitViolation,
+    SUPER_UNIT_LIMIT_BLOCK_PL: REAL.productionMod.SUPER_UNIT_LIMIT_BLOCK_PL,
+    reservedUnitTypeNamesOfOwner: REAL.productionMod.reservedUnitTypeNamesOfOwner,
+    recruitFollowGeneralForOrder: REAL.productionMod.recruitFollowGeneralForOrder,
+    recruitRallyStamp: REAL.recruitGeneralMod.recruitRallyStamp,
+    pendingLedgerSink: REAL.resourceLedgerMod.pendingLedgerSink,
+  };
+  const productionPurchase = extractBackend({ ...deps, ...stubOverrides });
   return {
     city, cities, data, offer, cityProd,
     purchase: (...args) => productionPurchase(...args),
     setManpowerCost: value => { manpowerCost = value; },
     setEra: value => { era = value; },
-    addLivingGeneral: () => { units.push({ ownerId: 0, isGeneral: true }); },
+    // A living commander standing on the capital hex (real position/type, so it counts for the stack limit).
+    addLivingGeneral: () => { units.push({ id: `general-${units.length + 1}`, typeId: 'Wojownik', ownerId: 0, isGeneral: true, q: city.q, r: city.r }); },
     snapshot: () => ({
       treasury,
       manpower: city.manpower,
@@ -216,6 +308,46 @@ const BRAND_STUB = {
     });
   },
 };
+
+/**
+ * Mechanical proof for the remaining stubs (criterion b): the backend scenarios below are re-run with each
+ * stub replaced by a different value. If the recorded outcomes differ from the baseline, the stub influences
+ * the recruitment order and the check fails; identical outcomes show the value does not reach the verdict.
+ */
+const SENSITIVITY_VARIANTS = [
+  ['cityHasCoastOrRiverAccess=false', { cityHasCoastOrRiverAccess: () => false }],
+  ['civBonusyForOwnerId=[probe]', { civBonusyForOwnerId: () => ['__stub_probe__'] }],
+  ['empireBuiltIdsForOwner=barracks+academy', { empireBuiltIdsForOwner: () => new Set(['koszary', 'akademia']) }],
+  ['capitalCityIdForOwner=capital for every owner', { capitalCityIdForOwner: () => 'capital' }],
+];
+
+function backendOutcomes(harnessFactory) {
+  const outcomes = [];
+  const run = (label, build) => {
+    const h = harnessFactory();
+    const returned = build(h);
+    outcomes.push({ label, returned, state: h.snapshot() });
+  };
+  run('plain purchase', h => h.purchase('capital', 'Wojownik', 5, 0, 1, { isGeneral: true }));
+  run('non-capital', h => h.purchase('other-city', 'Wojownik', 5, 0, 1, { isGeneral: true }));
+  run('era limit', h => { h.addLivingGeneral(); return h.purchase('capital', 'Wojownik', 5, 0, 1, { isGeneral: true }); });
+  run('next era', h => { h.addLivingGeneral(); h.setEra(2); return h.purchase('capital', 'Wojownik', 5, 0, 1, { isGeneral: true }); });
+  run('siege', h => { h.city.oblegane = true; return h.purchase('capital', 'Wojownik', 5, 0, 1, { isGeneral: true }); });
+  return JSON.stringify(outcomes);
+}
+
+async function runStubSensitivity() {
+  const baseline = backendOutcomes(() => makeHarness());
+  for (const [name, overrides] of SENSITIVITY_VARIANTS) {
+    let variant;
+    try {
+      variant = backendOutcomes(() => makeHarness(overrides));
+    } catch (error) {
+      variant = `threw: ${error && error.message}`;
+    }
+    check(`stub sensitivity: ${name} leaves all backend recruitment outcomes unchanged`, variant === baseline, variant === baseline ? undefined : { baseline, variant });
+  }
+}
 
 async function browserCardTransaction(harness) {
   const entry = path.join(tmp, 'entry.ts');
@@ -272,6 +404,8 @@ async function browserCardTransaction(harness) {
 (async () => {
   try {
     sourceChecks();
+    await loadRealSources();
+    await runStubSensitivity();
     const h = makeHarness();
     const uiManpowerCost = await browserCardTransaction(h);
     const state = h.snapshot();
