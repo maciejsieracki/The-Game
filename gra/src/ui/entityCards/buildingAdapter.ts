@@ -46,7 +46,7 @@ import {
 } from '../../game/production';
 import type { BuildingCostPace } from '../../game/building-cost-tempo';
 import type { GameDifficulty } from '../../game/difficulty-cost';
-import { buildingUpkeep, buildingResourceUpkeep, readBuildingResourceUpkeepRatio } from '../../game/economy-upkeep';
+import { buildingUpkeepBreakdown, buildingUpkeepExplanation, buildingResourceUpkeep, readBuildingResourceUpkeepRatio } from '../../game/economy-upkeep';
 import econParamsData from '../../../data/econ-params.json';
 import {
   BUILDING_HAPPINESS_BASE_PER_BUILDING,
@@ -428,13 +428,15 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   sections.push({ key: 'cost-build', title: 'Koszt budowy', rows: buildCostRows });
 
   const upkeepLevel = cityState.hasCity ? displayLevel : 1;
-  const upkeepGold = buildingUpkeep(building as unknown as BuildingRecord, upkeepLevel);
+  const upkeepBreakdown = buildingUpkeepBreakdown(building as unknown as BuildingRecord, upkeepLevel);
+  const upkeepGold = upkeepBreakdown.total;
+  const upkeepHint = buildingUpkeepExplanation(upkeepBreakdown) ?? undefined;
   const upkeepResources = buildingResourceUpkeep(building, upkeepLevel, readBuildingResourceUpkeepRatio(
     econParamsData as unknown as Parameters<typeof readBuildingResourceUpkeepRatio>[0],
     cityState.difficulty,
   ));
   const upkeepCostRows: EntityCardRow[] = [
-    { label: 'Co turę', ...upkeepRowFields(upkeepGold, upkeepResources) },
+    { label: 'Co turę', ...upkeepRowFields(upkeepGold, upkeepResources), hint: upkeepHint },
   ];
   if (building.przyrostUtrzymania) {
     upkeepCostRows.push({

@@ -222,6 +222,8 @@ import { tileYield } from '../game/economy';
 import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../game/unit-building-bonuses';
 import {
   buildingUpkeep,
+  buildingUpkeepBreakdown,
+  buildingUpkeepExplanation,
   buildingResourceUpkeep,
   readBuildingResourceUpkeepRatio,
   addResourceCosts,
@@ -7375,7 +7377,8 @@ function buildBuildingInfocard(
   if (upkeepLine !== BUILDING_UPKEEP_ZERO_LABEL) {
     const up = el('span', 'bld-infocard-upkeep');
     up.innerHTML = upkeepLine;
-    up.title = 'Utrzymanie co turę';
+    // R-WEB-UI-GARRISON-UPKEEP-TOOLTIP-EXPLAIN-Q1: stopka karty — to samo wyjaśnienie co w liście miasta.
+    up.title = buildingUpkeepExplanation(buildingUpkeepBreakdown(def as unknown as BuildingRecord, 1)) ?? 'Utrzymanie co turę';
     ft.appendChild(up);
   }
   const ftR = el('span');
@@ -7649,12 +7652,13 @@ function appendDetailGrid(card: HTMLElement): HTMLDivElement {
   return g;
 }
 
-function gridDetailRow(grid: HTMLElement, label: string, val: string | null | undefined): void {
+function gridDetailRow(grid: HTMLElement, label: string, val: string | null | undefined, hint?: string): void {
   if (!val || isEmptyDataVal(val)) return;
   const lEl = el('span', 'dc-l');
   lEl.innerHTML = cpInlineIcons(label);
   grid.appendChild(lEl);
   const vEl = el('span', 'dc-v');
+  if (hint) vEl.title = hint;
   vEl.innerHTML = cpInlineIcons(val);
   grid.appendChild(vEl);
 }
@@ -7937,6 +7941,8 @@ function _legacyBuildBuildingDetailCard(def: BuildingDef, data: GameData, city?:
     gCost,
     'Utrzymanie (co turę)',
     formatBuildingUpkeepGridValue(buildingUpkeepDisplay(def, 1)),
+    // R-WEB-UI-GARRISON-UPKEEP-TOOLTIP-EXPLAIN-Q1: wiersz szczegółowej karty — ta sama podpowiedź.
+    buildingUpkeepExplanation(buildingUpkeepBreakdown(def as unknown as BuildingRecord, 1)) ?? undefined,
   );
   if (def.przyrostUtrzymania) {
     gridDetailRow(
@@ -9761,6 +9767,11 @@ function appendOwnedBuildingRow(
       : buildingUpkeepDisplay(def, level);
     const upSpan = el('span', 'bld-owned-upkeep' + (upkeepDisplay.gold === 0 && Object.keys(upkeepDisplay.resources).length === 0 ? ' muted' : ''));
     upSpan.innerHTML = formatBuildingUpkeepRowHtml(upkeepDisplay, compact);
+    if (!toggledOff) {
+      // R-WEB-UI-GARRISON-UPKEEP-TOOLTIP-EXPLAIN-Q1: „baza × mnożnik silnika = wynik” z tego samego rozbicia co silnik.
+      const upHint = buildingUpkeepExplanation(buildingUpkeepBreakdown(def as unknown as BuildingRecord, level));
+      if (upHint) upSpan.title = upHint;
+    }
     tail.appendChild(upSpan);
     const bonusHtml = buildingOwnedBonusCompactHtml(def, level, data.buildings, { compact });
     if (bonusHtml) {
