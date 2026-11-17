@@ -1,0 +1,16 @@
+Pewne / AUTO — zestawienie ziaren (z 60-pomiar-tabela.md, wiersze "pewne | auto").
+Zwyciezca sceny-atakujacego = kto wygral w roli atakujacego sceny.
+
+ziarno, rola atk (gracz = atakujacy sceny), zwyciezca
+  wygral gracz (= atakujacy sceny) na ziarnach: 4, 12, 14, 16, 18, 20   (6/20)
+  wygral AI  (= obronca sceny)     na ziarnach: 1, 2, 3, 5-11, 13, 15, 17, 19  (14/20)
+
+ziarno, rola swap (AI/barbarzynca = atakujacy sceny), zwyciezca
+  wygral AI  (= atakujacy sceny) na ziarnach: 4, 12, 14, 16, 18, 20   (6/20)
+  wygral gracz (= obronca sceny) na ziarnach: 1, 2, 3, 5-11, 13, 15, 17, 19  (14/20)
+
+Wniosek: zbiory zwyciezcow sceny-atakujacego sa IDENTYCZNE na tych samych 20 ziarnach w obu rolach.
+Wiersze swap sa lustrzanym powtorzeniem wierszy atk (ten sam stos, ten sam wynik per ziarno).
+Niezalezna liczba prob dla trybu "pewne/auto" wynosi 20, nie 40.
+Wilson 95% dla 6/20 (atakujacy sceny): [14,5; 51,9]; dla obroncy 14/20: [48,1; 85,5] (symetria wzgledem 50%).
+Obrońca NIE wykracza poza 50% na n=20. Dodatkowo tryb "pewne" daje tylko 8-9 unikalnych przebiegow.

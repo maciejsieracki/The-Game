@@ -54,7 +54,11 @@ export interface CivTestDeps {
   setWar: (a: number, b: number) => void;
   /** R-WEB-TEST-HOOK-WARRIOR-SIDESWAP-MANUAL-MEASURE-Q1: ustawia isGeneral na jednostce wlasciciela na heksie (bramka trybu recznego). */
   setGeneral: (ownerId: number, q: number, r: number) => boolean;
-  /** R-WEB-TEST-HOOK-WARRIOR-SIDESWAP-MANUAL-MEASURE-Q1: zamiana stron sceny bitwy przy nastepnym wejsciu na pole (tylko ?civTest=1). */
+  /**
+   * R-WEB-TEST-HOOK-WARRIOR-SIDESWAP-MANUAL-MEASURE-Q1: zamiana stron sceny bitwy przy nastepnym wejsciu na pole (tylko ?civTest=1).
+   * UWAGA: dotyczy WYLACZNIE sceny bitwy. Sciezka mapowa AI->gracz (callback bs.play -> applyMapBattleOutcomeWithSummary
+   * w main.ts) NIE jest zamieniana: po bitwie ze swap stan mapy liczy strony wg oryginalnych rosterow (NIE ZMIERZONO).
+   */
   setSwapSides: (v: boolean) => void;
   /** Koniec tury gracza — w nim uruchamia sie automat ulepszen (REALNY `triggerPlayerEndTurn`). */
   endTurn: () => void;

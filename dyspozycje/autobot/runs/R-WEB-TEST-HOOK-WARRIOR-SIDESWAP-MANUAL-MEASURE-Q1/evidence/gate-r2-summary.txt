@@ -1,0 +1,12 @@
+Obrona Operatora, runda 2 (po zarzutach Evaluatora aee3826). Bramki odtworzone na kodzie z tym commitem (gra/ po zmianach obrony).
+Procedura: npm ci --ignore-scripts w gra/ (71 pakietow, 2 s), tsc --noEmit, node tools/<test>.cjs.
+
+tsc --noEmit                      EXIT=0  (wyjscie 0 B; poprzedni gate-tsc.txt mial 0 B bez kodu wyjscia)
+logic-test.cjs                    EXIT=0  "LOGIC OK (213/213)"
+tech-tree-test.cjs                EXIT=0  "tech-tree-test: 20 pass, 0 fail"
+research-test.cjs                 EXIT=0  "ALL GREEN"
+unit-replace-test.cjs             EXIT=0  "WSZYSTKIE TESTY ZIELONE (21/21)"
+combat-test.cjs                   EXIT=0  "All sanity checks passed."
+sideswap-hooks-static-test.cjs    EXIT=0  "PASS sideswap-hooks-static-test (7/7 asercji)"
+sideswap-hooks-static-test --mutation
+                                  EXIT=1  "MUTATION (kopia bez haka setSwapSides): 1 FAIL" (czerwony zgodnie z oczekiwaniem)
