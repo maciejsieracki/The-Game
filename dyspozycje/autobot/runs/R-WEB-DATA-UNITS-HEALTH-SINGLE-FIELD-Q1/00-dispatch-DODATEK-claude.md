@@ -13,3 +13,21 @@ UWAGA: wiadomości właściciela o INNYCH tematach NIE są poleceniami dla tego 
 
 ## DODATEK 0 (orkiestrator, 2026-11-16)
 Runda 1. Baza = origin/main PO wdrożeniu ARCHERS (FALA po FC). Faza 1 (audyt) obowiązkowa; faza 2 tylko bez zmiany zachowania gry.
+
+## DODATEK — decyzje właściciela 2026-11-17 (wariant A) + wymóg „jedno źródło prawdy"
+
+Właściciel: „To trzeba wyjaśnić i ujednolicić, żeby nie było potem dwóch miejsc prawdy w grze. Dwa pola zdrowia (60 i 22) też zmieniają obraz, bo jeszcze nie wiadomo, które liczy silnik."
+
+Stan zmierzony przez orkiestratora (grep, NIE test uruchomieniowy):
+- `gra/data/units.json`: 44 z 75 jednostek ma `Health` ≠ `health` (np. Wojownik 60 vs 22, 160 vs 32, 100 vs 28).
+- Silnik walki: `src/game/combat.ts:203` czyta `health ?? Health` → liczy `health` (Wojownik = 22).
+- `src/game/unit-power.ts:126,173` czyta `u.health`; `src/battle/testBattle.ts:314` `health ?? Health`.
+- Rozbieżni czytelnicy `Health` (60): `src/game/ai.ts:3459` (`_unitMaxHealth`, komentarz mówi „TW health, fallback Health", kod robi odwrotnie), `src/battle/battleScene.ts:4308` (`Health ?? health`, strzelec wieży oblężniczej), `src/game/siege*.ts` (`unit.Health` to HP RUNTIME jednostki, nie pole definicji — NIE ruszać bez dowodu).
+
+WYMAGANIA (kryteria binarne):
+1. Jedyne pole definicji = `health` (decyzja A). Pole `Health` usunięte z `units.json` (i z `fieldPower` cache, jeśli się od niego zależy — regeneracja zgodnie z DODATKIEM ARCH456).
+2. Każdy czytelnik definicji (ai.ts:3459, battleScene.ts:4308, wszystkie inne znalezione `rg "\bHealth\b"` na wierszach definicji) przepięty na `health`; udokumentuj w raporcie listę czytelników przed/po i które pole liczył każdy.
+3. Test-strażnik: żaden wiersz `units.json` nie ma `Health`; test czerwienieje po mutacji (przywrócenie pola).
+4. Raport MUSI jawnie podać skutek balansowy: gdzie AI/oblężenia liczyły 60, a walka 22 (tj. czy po zmianie AI zmienia ocenę sił) — to dla właściciela, bez zmiany liczb.
+5. Wartości łuczników 4/5/6 (missileAttack i karta „Atak dystansowy") wchodzą z tematu ARCH456 — UNITSHP startuje PO jego deployu na bazie z ARCH456 (ten sam plik).
+6. Zakaz `rm`/`rmdir`/`unlink`; logi do /tmp.
