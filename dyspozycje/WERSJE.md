@@ -1,3 +1,9 @@
+## ROBOCZA f6449b22 -- 2026-11-17 -- FALA 808: Procarz: przebicie 2, strzal liczony jak cios wrecz (18/9/6/6 obrazen przy pancerzu 0/3/6/8) (testowa)
+
+- units.json: Procarz i Procarz (Huaracoc) piercing 2, fieldPower 14; combat.ts: rangedShotBase/isPiercingShotShooter, auto-walka rangedShotDamage; battleScene.ts: strzal Procarza przez rangedShotBase; karta i tooltip Procarza z opisem przebicia; test procarz-piercing-shot. Lucznik i Oszczepnik bez zmian.
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; procarz-piercing-shot ALL PASS (mutacje czerwone); ranged-damage-mult PASS; unit-card-ranged-mult OK; ranged-health-card-align 5/0; archers-health 10/0; unit-power 6/0; hit-mode-consistency 8/0
+- Limity: NIE ZMIERZONO: zywy Chromium (bitwa Procarz vs pancerz 6, karta), pomiar 10 Procarzy vs 10 Falang/Triari; przebicie to jedno pole, wiec Procarz we wrecz tez ma przebicie 2 (cios 0 -> 2) - do decyzji wlasciciela; dlug: komentarz unit-power.ts ~187-190 nieaktualny; dlug Rust REPIN units.json i rangedShotBase
+
 ## ROBOCZA ad458fdd -- 2026-11-17 -- FALA 807: Cena pokoju 6000 PN malejaca ze zmeczeniem wojna (jedna cena wszedzie) (testowa)
 
 - diplomacja: jedna cena pokoju 6000 x (1 - zmeczenie wojna) we wszystkich sciezkach, bez stalych 185/554/615; testy diplo-weariness i city-cession zaktualizowane; narzedzie weary40-sim-measure
