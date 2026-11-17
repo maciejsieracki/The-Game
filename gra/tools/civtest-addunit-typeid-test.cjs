@@ -27,8 +27,14 @@ check('main.ts: nieznany typ -> null (brak wpisu w units.json)',
   /const typeDef = [^;]*Jednostka'\] === typeId\);\s*if \(!typeDef\) return null;/.test(block));
 check('main.ts: typ z units.json ustawia typeId i ruch (applyRuchSwiataPace)',
   /typeId, isGeneral: false[\s\S]*ruch: ruchT, ruchLeft: ruchT/.test(block) && block.includes("applyRuchSwiataPace(normFieldVal(typeDef['Ruch'], 2)"));
-check('main.ts: hak installCivTestHooks wywolywany tylko przy ?civTest (isCivTestEnabled gate w civ-test-hooks)',
-  /export function installCivTestHooks[\s\S]*?isCivTestEnabled\(/.test(hooks));
+check('main.ts: typeId klonowany z właścicielem (ownerId, typeId, isGeneral: false na jednostce)',
+  /id: idT, ownerId, typeId, isGeneral: false/.test(block));
+check('main.ts: kategoria z categoryOf(typeId, rola, super-jednostka, typ) z units.json',
+  block.includes("category: categoryOf(typeId, String(typeDef['Rola'] ?? typeDef['Rola (linia)'] ?? ''), typeDef['Super-jednostka'] === 'TAK', typeDef['Typ'])"));
+check('main.ts: bonusy narodzin bez wizyty w miescie (bestBuildingProgressAfterCityVisit(undefined, undefined, ...))',
+  block.includes('...bestBuildingProgressAfterCityVisit(undefined, undefined, data.buildings)'));
+check('civ-test-hooks.ts: installCivTestHooks zwraca false przed utworzeniem haka, gdy brak ?civTest (gate na poczatku funkcji)',
+  /export function installCivTestHooks\([^)]*\)[^{]*\{\s*if \(!isCivTestEnabled\(search\)\) return false;/.test(hooks));
 check('civ-test-hooks.ts: forwarder deps.addUnit przekazuje typeId',
   hooks.includes('addUnit: (ownerId, q, r, civilian = false, typeId) => deps.addUnit(ownerId, q, r, civilian, typeId),'));
 check('civ-test-hooks.ts: typ deps.addUnit zawiera typeId opcjonalny',

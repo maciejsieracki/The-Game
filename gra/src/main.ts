@@ -31124,17 +31124,16 @@ async function boot(): Promise<void> {
       },
       addUnit: (ownerId, q, r, civilian, typeId) => {
         if (typeId !== undefined) {
-          // R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1 (tylko ?civTest=1): klon wg typu z units.json,
-          // ten sam kształt co rekrutacja miasta (ruch, kategoria, ruchLeft); nieznany typ -> null.
+          // R-WEB-TEST-HOOK-ADDUNIT-TYPE-SELECT-Q1 (tylko ?civTest=1): klon wg units.json; nieznany typ -> null.
           const typeDef = (data.units as any[]).find((u: any) => u['Jednostka'] === typeId);
           if (!typeDef) return null;
           const ruchT = applyRuchSwiataPace(normFieldVal(typeDef['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
-          const roleT = String(typeDef['Rola'] ?? typeDef['Rola (linia)'] ?? '');
           const idT = `civtest-${ownerId}-${q}-${r}-${units.length}`;
           units.push({
             id: idT, ownerId, typeId, isGeneral: false,
-            category: categoryOf(typeId, roleT, typeDef['Super-jednostka'] === 'TAK', typeDef['Typ']),
+            category: categoryOf(typeId, String(typeDef['Rola'] ?? typeDef['Rola (linia)'] ?? ''), typeDef['Super-jednostka'] === 'TAK', typeDef['Typ']),
             q, r, ruch: ruchT, ruchLeft: ruchT, inGarnizon: false,
+            ...bestBuildingProgressAfterCityVisit(undefined, undefined, data.buildings), // bez wizyty w mieście: 0 bonusów narodzin
           } as RuntimeUnit);
           syncUnitsRender();
           return idT;
