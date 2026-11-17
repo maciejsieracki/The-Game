@@ -47,3 +47,12 @@ Dodać producenta `FogViewDto` z stanu silnika, tak jak web:
 ## DODATEK r2 (orkiestrator, 2026-11-17 13:5x): BAZA przesunięta
 - BAZA r2: `origin/rust-port/parity-v2` = `2760b4f0c` (zawiera T4e-0 `732ef51a0`, R6 `c120f2373`, renderer zbiorczo). Worktree detached na `2760b4f0c`.
 - Zakres bez zmian. Konflikty z T4e nieprzewidziane: T4e dotyka `siege_tactics_loop.rs`, `siege_tactics_move_effects.rs`; FOG dotyka `state.rs`/view-model.
+
+## DODATEK r3 (orkiestrator, po FC FAIL r1 = wyłącznie INFRA): kod bez zmian, tylko bramka pełna
+- KOD: `a17f28d42` (zabezpieczony: `refs/keep/FOG-VIEW-R1-code`, gałąź `rust-port-wip/R-RUSTPORT-P4-1C-FOG-VIEW-R1-impl`). Nie zmieniać kodu.
+- BAZA r3: `2760b4f0c` (zgodna z DODATKIEM r2).
+- ZAKRES r3: wyłącznie bramka pełna na `a17f28d42`: `cargo fmt --check` i `cargo clippy --all-targets -- -D warnings` w engine i renderer; `cargo test --test p4_1c_fog_view`; `cargo test --all-targets --no-fail-fast` w engine i renderer. Zero FAILED/panicked.
+- MUTACJE r3: (a) unia sojuszników, (b) eksploracja współdzielona, (c) revealAllLand — każda musi dać FAIL (odtworzyć z raportu r1).
+- DYSK: ≥ 8 GB przed startem i przed bramką pełną. Przy < 8 GB: BLOCK INFRA z liczbą GB (bez zmian kodu).
+- POZA ZAKRESEM (osobny temat, nie w tej rundzie): wołający produkcyjny producenta (`fog_view_dto`, `refresh_fog`) — droga DTO → renderer (L6/#308), `fog_active` w ViewerDto, PRIO-3D-11/10. Zapis w rejestrze jako FOG-WIRE.
+- Trailery commitów: BEZ nazwy modelu (#289). Raport `03-operator-r3.md`. Nie pushować do parity.
