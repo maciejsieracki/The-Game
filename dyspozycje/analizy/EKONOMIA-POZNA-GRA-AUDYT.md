@@ -1,94 +1,121 @@
 # Audyt: wzrost produkcji i zasobów w późnej grze (R-WEB-ECONOMY-LATE-GAME-RESOURCE-GROWTH-AUDIT-Q1)
 
-Status: runda 1/5, Operator (HAIKU 5.5). Tylko analiza; bez zmian w `gra/src/**`, `gra/data/**`, balansie.
+Status: runda 2/5, Operator (HAIKU 5.5), obrona po FAIL Evaluatora (`e2ae332014b4096f6ab64fd100b805d5bd50ad5f`). Tylko analiza; bez zmian w `gra/src/**`, `gra/data/**`, balansie.
 Baza: origin/main `0c3fa0747abc9b9776c082259c2c4378dd2fd6a0`.
-Dowody: `runs/R-WEB-ECONOMY-LATE-GAME-RESOURCE-GROWTH-AUDIT-Q1/evidence/analiza-jsonl.txt` (wynik `gra/tools/econ-growth-analyze.cjs`) i `.../model-produkcji.txt` (wynik `gra/tools/econ-growth-model.cjs`).
+Dowody (wyniki skryptów, nie z pamięci): `runs/R-WEB-ECONOMY-LATE-GAME-RESOURCE-GROWTH-AUDIT-Q1/evidence/analiza-jsonl.txt` (`gra/tools/econ-growth-analyze.cjs`) i `.../model-produkcji.txt` (`gra/tools/econ-growth-model.cjs`).
 
-## 0. Zakres pomiaru (co jest, a czego nie ma)
+## 0. Odpowiedź na pytanie właściciela (krótko)
 
-- Dane: `/tmp/terr-out/seed4242.jsonl` (tury 2–76), `/tmp/terr-out/seed777.jsonl` (tury 2–80), `/tmp/war-out/seed7.jsonl` (tury 2–76). Tylko właściciele AI.
-- **Gracz: NIE ZMIERZONO.** Harness (`window.__aiEconomyMeasure`, `gra/tools/ai-economy-measure-README.md`) nie ma wiersza gracza.
-- Tury 100/125/150 **NIEZMIERZONO**: pliki kończą się na 76–80. Wartości dla t100+ w tabeli są powtórzeniem tury 76/80 (oznaczone w analizie jako „zmierz.”).
-- Wiersz jsonl zawiera: skarbiec i spichlerz (zapas), utrzymanie budynków/jednostek/garnizonu (Pieniądz i Surowce), miasta, hexy, obywateli. **Nie zawiera:** przychodu na turę (Skarb, Praca, Nauka PN), zapasów żelaza/brązu/cegły/drewna/kamienia/ceramiki, Pracy i Nauki. Te pola są **NIEZMIERZONO**; wymagają rozszerzenia haka pomiarowego (osobny temat).
+- **Produkcja** (cegła, żelazo, ceramika) rośnie w epoce **liniowo**, m(e) = 1+0,5(e−1), i w liczbie miast. Dla imperium z pomiaru AI żelazo rośnie e1→e4 ×9,5 = ×3,8 (miasta; udział w skali ln 59%) × ×2,5 (epoka; 41%). Patrz §2.
+- **Jedyny czynnik wykładniczy** to **sufit zapasów**: cap surowców państwa i cap żywności Spichlerza mają mnożnik **2^(e−1)**, czyli ×2 co epokę (`economy-upkeep.ts:391-394,457`; `empire-food.ts:190-193`). Cap nie jest sinkiem; tylko podnosi górną granicę magazynu. Sufit żelaza: 50 000 w epoce 1, 400 000 w epoce 4 (przy 0 Magazynach). Patrz §3.
+- **Główna luka:** model per typowe miasto daje dla imperium N=16,3 (e4) ~11,7 tys. surowców na turę (cegła + żelazo + ceramika), a zrzut HUD właściciela pokazuje „Surowce +153,1k/turę brutto”. Różnica ~10× jest **NIEWYJAŚNIONA**, a gracz **NIE ZMIERZONO**. Bez wyjaśnienia nie wolno wybierać wariantu balansu.
 
-## 1. Krzywe wzrostu (AI, średnia / mediana / max na właściciela z miastem)
+## 1. Krzywe wzrostu (AI: średnia / mediana / max na właściciela z miastem)
 
-| Tura | n (AI) | Skarbiec mean / med / max (seed4242) | Skarbiec mean / med / max (seed777) | Spichlerz mean / max (4242) | Utrzymanie budynków Pieniądz mean (4242) | Utrzymanie jednostek Pieniądz mean (4242) | Miasta mean |
+Źródło: `evidence/analiza-jsonl.txt` (analizator po poprawce oznacza tury poza zakresem pliku jako NIEZMIERZONO). Dane kończą się na t76 (seed4242, war-out seed7) i t80 (seed777). **Tury 100/125/150: NIEZMIERZONO**. Poprzednia wersja powtarzała t76/t80 w tych wierszach; to było mylące i zostało usunięte.
+
+| Tura | n (AI) | Skarbiec mean / med / max (seed4242) | Skarbiec mean / med / max (seed777) | Spichlerz mean / max (seed4242) | Utrzymanie budynków Pieniądz mean (seed4242) | Utrzymanie jednostek Pieniądz mean (seed4242) | Miasta mean |
 |---|---|---|---|---|---|---|---|
 | 10 | 41 | 48,8 / 8 / 254 | 51,7 / 22 / 323 | 4,4 / 15 | 0,2 | 4,2 | 1,0 |
 | 25 | 15 | 157,4 / 53 / 622 | 120,9 / 45 / 986 | 9,9 / 44 | 20,4 | 12,0 | 4,3 |
 | 50 | 15 | 1 437 / 392 / 4 962 | 1 647 / 1 382 / 5 714 | 3 994 / 14 130 | 370 | 112 | 11,9 |
-| 75 | 14 (15) | 9 006 / 8 707 / 22 453 | 9 038 / 6 768 / 25 435 | 45 061 / 85 000 | 1 482 | 560 | 16,3 |
-| 100 | NIEZMIERZONO (użyto t76/t80) | 9 328 / 8 830 / 23 696 (t76) | 11 059 / 7 757 / 31 948 (t80) | 47 222 / 85 000 (t76) | 1 509 | 583 | 16,6 |
+| 75 | 14 (seed777: 15) | 9 006 / 8 707 / 22 453 | 9 038 / 6 768 / 25 435 | 45 061 / 85 000 | 1 482 | 560 | 16,3 |
+| 100 / 125 / 150 | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO |
 
-Tempo wzrostu (średnia skarbca, seed4242): t25→t50 ×9,1; t50→t75 ×6,3. Mediana (seed777): t50→t75 ×4,9.
-Wykładnik potęgowy S ∝ t^k: k ≈ 3,2 (t25→t50) i ≈ 4,5 (t50→t75). Są to wzrosty **wielomianowe / przyspieszające**, nie dowiedziono wykładniczych (brak składania w konwerterach, patrz §2).
+Tempo wzrostu (średnia skarbca, seed4242): t25→t50 ×9,1; t50→t75 ×6,3. Mediana (seed777) t50→t75 ×4,9.
+Dwa okna po 25 turach dają k ≈ 3,2 i ≈ 4,5 (wykładnik potęgowy). Wykładnik rośnie, czyli wzrost przyspiesza. Z dwóch punktów nie wnioskuję o kształcie krzywej. Wcześniejsze zdanie „wielomianowy, nie wykładniczy” było za mocne i jest wycofane. Dane t100+ są potrzebne do rozstrzygnięcia.
 
-Spichlerz (żywność) max = 85 000 (seed4242, t75) i 95 000 (seed777, t80): okrągłe wartości zgodne z limitem; **NIE potwierdzone** w kodzie (limit Spichlerza jest per miasto, `economy-upkeep.ts` ~l.340–370). Jeśli to limit, to żywność jest już ograniczona przez magazyn, nie przez produkcję.
+Spichlerz (żywność): max 85 000 (seed4242, t75) i 95 000 (seed777, t80). Są zgodne z capem żywności z §3. Nie wiem, ile Spichlerzy mają ci właściciele, więc to zgodność z formułą, nie dowód.
 
-Zapasy surowców (żelazo, cegła itd.): **NIEZMIERZONO** w jsonl. Teoretyczny limit państwa: `cap = 50 000 × (1 + 0,2 × Magazyny) × (mnożnik epoki, NIEZMIERZONY)` (`economy-upkeep.ts` ~l.315–372). Zapas „>20× przychodu” nie da się policzyć bez przychodu.
+Zapasy surowców per typ (żelazo, brąz, cegła, drewno, kamień, ceramika) oraz przychód na turę (Skarb, Praca, Nauka PN): **NIEZMIERZONO** w jsonl. Wymagają rozszerzenia haka pomiarowego (osobny temat).
 
-Utrzymanie (AI, t75): budynki Pieniądz śr. 1 482 (max 4 586), jednostki Pieniądz śr. 560 (max 1 392), surowce budynki śr. 854 / jednostki 346 (sumy po typach). Przy skarbcu śr. 9 006 utrzymanie stanowi ułamek stanu, ale **nie jest znany ułamek przychodu** (NIEZMIERZONO).
+Utrzymanie (AI, t75, seed4242): budynki Pieniądz średnio 1 482 (max 4 586); jednostki Pieniądz średnio 560 (max 1 392); surowce: budynki średnio 854, jednostki 346. Przychodu AI na turę nie mam, więc nie podaję ułamka przychodu.
+
+**Gracz: NIE ZMIERZONO.** Harness mierzy tylko AI (`gra/tools/ai-economy-measure-README.md`).
 
 ## 2. Dekompozycja źródeł (plik:linia)
 
 | Czynnik | Źródło | Sposób łączenia |
 |---|---|---|
-| Mnożnik epoki Odlewni żelaza: `m(e) = 1 + 0,5(e−1)` | `citizen-consumption-era.ts:19,24`; `converters.ts:206-213` | **Liniowo** w epoce (×1…×3 dla e=1..5) |
-| Cegielnia: cykle wg epoki 50/75/100 | `econ-params.json` `budynek_cegielnia_*` | Tabela, nie mnożnik |
-| Cegielnia: mnożnik wyjścia cegły `1+0,5(e−1)` | `converters.ts:171-194` (`CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE`) | **Mnoży** cykle × 2 wyjścia; liniowo w e |
-| Garncarnia: 30/50/70/90/110 cykli | `econ-params.json` `budynek_garncarnia_*` | Tabela, liniowo +20/epokę |
-| Huta brązu: 50 (e2), 75 (e3+) | `econ-params.json` `budynek_huta_braz_*` | Tabela |
-| Stolarnia / Warsztat: +10% za sztukę (civ-wide) | `econ-params.json` (drewno/kamień) | **Addytywnie** między budynkami (`1+0,1·n`) |
-| Magazyn: +20% bazy na cap | `economy-upkeep.ts` | **Addytywnie** między Magazynami |
-| Liczba miast | pomiar: 4,3 (t25) → 11,9 (t50) → 16,3 (t75) | **Mnożąco** (wszystkie miasta produkują) |
-| Odrzucony wariant składany (×(1+PCT)^(e−1)) | `converters.ts:127-136` | nieużyty |
+| Mnożnik epoki m(e) = 1+0,5(e−1) (×1/1,5/2/2,5/3) | `citizen-consumption-era.ts:19,24`; `converters.ts` `converterThroughputForEra` (Odlewnie żelaza) | **liniowo** w epoce |
+| Odlewnia żelaza: baza 50 × m(e) | `converters.ts` `converterThroughputForEra` | liniowo |
+| Cegielnia: cykle 50/75/100 wg epoki | `econ-params.json` `budynek_cegielnia_*`; `throughputEraParamKeys` | tabela (cykle nie są mnożnikiem) |
+| Cegielnia: mnożnik wyjścia 1+0,5(e−1) | `converters.ts:171-194` (`CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE`, `converterOutputMultiplierForEra`) | **mnoży** cykle × wyjście; liniowo w e |
+| Garncarnia 30/50/70/90/110 cykli | `econ-params.json` `budynek_garncarnia_*` | tabela, +20 na epokę |
+| Huta brązu 50 (e2), 75 (e3+) | `econ-params.json` `budynek_huta_braz_*` | tabela |
+| Stolarnia / Warsztat +10% za sztukę (civ-wide) | `econ-params.json` (drewno, kamień) | **addytywnie** między budynkami |
+| Magazyn +20% bazy na cap państwa | `economy-upkeep.ts:457` | **addytywnie** między Magazynami |
+| Mnożnik capu 2^(e−1) | `economy-upkeep.ts:391-394` (`magazynEraMultiplier`) | **składany** (×2 na epokę), tylko w sufit |
+| Liczba miast | pomiar AI: 4,3 (t25) → 11,9 (t50) → 16,3 (t75) | **mnożąco** (każde miasto produkuje) |
+| Wariant składany produkcji (compound) | `converters.ts:127-136` (komentarz; odrzucony) | nieużyty |
 
-Model (`gra/tools/econ-growth-model.cjs`, założenie: 1 Cegielnia + 1 Garncarnia + 1 Odlewnia żelaza na miasto; liczby wyprowadzone, nie zmierzone):
+Model (`gra/tools/econ-growth-model.cjs`). Założenie: 1 Cegielnia + 1 Garncarnia + 1 Odlewnia żelaza na miasto. Liczby wyprowadzone z kodu, nie z pomiaru budynków.
 
 | Epoka | m(e) | Cegła/t na miasto | Żelazo/t na miasto | Ceramika/t na miasto |
 |---|---|---|---|---|
-| 1 | 1,0 | 100 | 50 | 30 |
-| 3 | 2,0 | 400 | 100 | 70 |
-| 5 | 3,0 | 600 | 150 | 110 |
+| 1 | 1 | 100 | 50 | 30 |
+| 3 | 2 | 400 | 100 | 70 |
+| 5 | 3 | 600 | 150 | 110 |
 
-Imperium (N = 16,3 miast, e=4): żelazo 2 037,5/t; cegła 8 150/t. Od (N=4,3; e=1) do (N=16,3; e=4): żelazo ×9,5 = **×3,8 (miasta) × ×2,5 (epoka)**. Cegła: ×5 epoka (cykle × wyjście).
+Imperium (N=16,3, e4): żelazo 2 037,5/t; cegła 8 150/t. Od (N=4,3; e1) do (N=16,3; e4) żelazo rośnie ×9,5 = ×3,8 (miasta) × ×2,5 (epoka). W skali ln: miasta 59%, epoka 41%. Cegła ×5 w epoce (cykle × wyjście).
 
-Wniosek z dekompozycji: wzrost jest **iloczynem czynników liniowych** (miasta × epoka × bonusy addytywne), nie kompozycją wykładniczą. Największy udział: liczba miast (×3,8) i epoka (×2,5 żelazo, ×5 cegła, bo wyjście cegły skaluje się z epoką podwójnie: cykle ×1,5…2 oraz wyjście ×1,5…2).
+Wniosek: produkcja to iloczyn czynników liniowych (miasta × epoka) z bonusami addytywnymi. Składany wykładniczo jest tylko sufit (§3).
 
 ## 3. Sinki i ograniczniki
 
-Obecne sinki (z kodu / danych): utrzymanie budynków, jednostek i garnizonu w Pieniądzu i w Surowcach (`ai-upkeep-params.json`, `citizen-resource-upkeep.json`); racje żywności z mnożnikiem `m(e)` (`citizen-consumption-era.ts`); zakupy za Pieniądz; limit Spichlerza (żywność).
+**Sufit (cap) surowców państwa, per typ:** `cap = magazyn_baza_surowce × (1 + 0,2 × Magazyny) × 2^(e−1)`, e = epoka właściciela.
+- Dowód: `economy-upkeep.ts:391-394` (`magazynEraMultiplier(e) = 2^(e−1)`), `economy-upkeep.ts:457` (`ownerResourceCapacityPerType`), `econ-params.json` `magazyn_baza_surowce` (opis: epoka2 = 100 000, epoka3 = 200 000, zgodne z kodem).
 
-Czego brakuje w późnej grze (potwierdzone brakiem w danych i w `econ-params.json`):
-- brak sinka rosnącego z liczbą miast (koszt administracji imperium);
-- brak inflacji cen zakupu z epoką lub liczbą miast;
-- utrzymanie budynków/jednostek **nie skaluje się z zasobami** (stała wartość na sztukę);
-- cap surowców (50 000 × Magazyny) jest rzędu wielkości zapasów z HUD (zrzut właściciela: Żelazo i Skarbiec w setkach tysięcy) — **NIEZMIERZONO**, czy cap jest osiągany; w HUD suma 157k skarbca przekracza bazę 50k, więc mnożnik epoki lub skala musi być większa (do weryfikacji).
+| Epoka | mnożnik 2^(e−1) | cap, 0 Magazynów | cap, 5 Magazynów |
+|---|---|---|---|
+| 1 | 1 | 50 000 | 100 000 |
+| 2 | 2 | 100 000 | 200 000 |
+| 3 | 4 | 200 000 | 400 000 |
+| 4 | 8 | 400 000 | 800 000 |
+| 5 | 16 | 800 000 | 1 600 000 |
 
-## 4. Propozycje (NIE wdrożone)
+Poprzednie stwierdzenie „mnożnik epoki NIEZMIERZONY” było błędem: mnożnik jest w kodzie (`economy-upkeep.ts:391-394`). Cap jest jedynym czynnikiem wykładniczym po stronie zapasów. Rośnie ×2 co epokę właściciela (parytet AI).
 
-| Wariant | Parametry do zmiany | Wpływ liczbowy (model) | Skarbiec t100/t150 | Ryzyko balansu | Ryzyko zapisów | Liczba tematów |
-|---|---|---|---|---|---|---|
-| **A. Spłaszczenie mnożników epok** | `CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE.cegielnia` 0,50 → 0,25; `citizen-consumption-era` STEP 0,5 → 0,25 (foundry m(e)) | Żelazo e4 per miasto: 2,5 → 1,75 (**−30%**); cegła e4: 500 → 350 (−30%) | NIEZMIERZONO (brak przychodu w jsonl); kierunek: spadek przychodu ok. −30% w epokach 3+ | Racje żywności też rosną z m(e): trzeba rozdzielić klucze | niski (tylko wartości) | 1 |
-| **B. Utrzymanie skalowane z epoką i miastami** | `ai-upkeep-params.json` (mnożnik po liczbie miast, np. +X%/miasto) | Utrzymanie budynków Pieniądz AI t75 śr. 1 482/turę → wzrost zależny od X (NIEZMIERZONE do kalibracji) | mniejszy wzrost skarbca; wielkość zależna od X | wpływ na AI-owe armie (utrzymanie jednostek 560/t) | średni (zapis zawiera stan utrzymania) | 1–2 |
-| **C. Cap magazynów/państwa wymuszający wydatki** | `economy-upkeep.ts` `bazaSurowcePanstwo` 50 000 → np. 20 000 (+20% per Magazyn bez zmian) | Ogranicza zapas surowców; wpływ na skarbiec pośredni | przy obecnych danych NIEZMIERZONE (brak zapasów surowców) | wymusza wydatki, ale może psuć budowę Magazynów | średni (zapisy z przekroczonym capem) | 1 |
-| **D. Nowy sink: koszt administracji imperium** | nowy parametr w `econ-params.json`: Pieniądz/turę = k × (miasta−1) × m(e) | Przy 16,3 miastach i e=4: koszt ~ k×15,3×2,5 (k do ustalenia przez właściciela) | obniża skarbiec proporcjonalnie do k | nowa mechanika (ryzyko UI) | niski (nowe pole, domyślne 0) | 2 |
-| **E. Bez zmian** | — | Dane AI nie pokazują wzrostu poza miastami (16 miast, tempo wynika z liczby miast i epok); gracz NIEZMIERZONO | — | brak | brak | 0 |
+Czy gracz lub AI dobija do capu: **NIEZMIERZONO** (brak zapasów surowców w jsonl). Model: żelazo imperium N=16,3, e4, to 2 037,5/t, a cap 0 Magazynów = 400 000, czyli ~196 tur produkcji bez zużycia. Cap może być dobijany dopiero przy dużym zużyciu lub przy wielu Magazynach. To wymaga pomiaru.
 
-Rekomendacja Operatora (do oceny właściciela, nie decyzja): najpierw rozszerzyć pomiar o przychód/turę i zapasy surowców (osobny temat, bez zmian gry), dopiero potem wybrać A/B/C. Wariant E jest uczciwy tylko, jeśli pomiar gracza potwierdzi, że problem dotyczy wyłącznie dużych imperiów.
+**Sufit żywności (Spichlerz):** `cap = centralCapBaza (1000, płaska) + Σ(Spichlerz I × 1000 + Spichlerz II × 1500) × 2^(e−1)`.
+- Dowód: `empire-food.ts:190-193` (`computeCentralFoodCap`), `empire-food.ts:124-126` (`centralCapBaza` z `magazyn_centralny_baza_zywnosc` = 1000), `building-resource-gate.ts:551-552` (`SPICHLERZ_EMPIRE_CAP_I/II_FULL`).
+- Max 85 000 (seed4242, t75) i 95 000 (seed777, t80) są zgodne z tą formułą. Przykład: e4, 6×I + 3×II daje 1000 + 10 500×8 = 85 000. To zgodność z formułą, nie pomiar liczby Spichlerzy.
+
+**Utrzymanie budynków:** stała na budynek, z mnożnikiem wg epoki WEJŚCIA budynku (×1 kamień, ×2 brąz, ×4 żelazo i wyżej): `building-stock-cost.ts:34-40` (`epochCostMultiplier`), `economy-upkeep.ts:1121` (`scaleCostByEpoch`). Utrzymanie nie rośnie w czasie gry ani z liczbą miast. Zdanie „utrzymanie nie skaluje się z zasobami” jest prawdziwe tylko w tym sensie (stała na budynek). Wcześniej podane bez dowodu zdanie w tej formie jest wycofane.
+
+**Utrzymanie jednostek i obywateli:** racje żywności ×m(e) (`citizen-consumption-era.ts`); utrzymanie surowcami w `citizen-resource-upkeep.json` i `ai-upkeep-params.json`. Nie przeglądałem tych plików liczbowo.
+
+**Czego brakuje w późnej grze:**
+- Sinka rosnącego z liczbą miast (koszt administracji imperium): nie znaleziono w `economy-upkeep.ts` ani w `econ-params.json`.
+- Wzrostu cen zakupu z epoką lub liczbą miast: grep `inflac` w `gra/src` nie trafia w ceny budowy (trafia w dyplomację i handel). To wymaga osobnego przeglądu.
+
+## 4. Propozycje (nie wdrożone)
+
+Skarbiec t100/t150 jest **NIEZMIERZONY** we wszystkich wariantach (brak przychodu na turę w danych), więc nie podaję liczb skarbca. Liczby poniżej są z modelu i z kodu.
+
+| Wariant | Parametry do zmiany | Wpływ liczbowy (model / kod) | Ryzyko balansu | Ryzyko zapisów | Tematy |
+|---|---|---|---|---|---|
+| **A. Spłaszczenie mnożników epok** | `CONVERTER_OUTPUT_ERA_PCT_BY_RECIPE.cegielnia` 0,50 → 0,25; `citizen-consumption-era` STEP 0,5 → 0,25 (najpierw rozdzielić klucze, bo STEP steruje też racjami żywności) | Żelazo e4 na miasto: m(4)=2,5 → 1,75, czyli 125 → 87,5/t (−30%). Cegła e4: 500 → 350/t (−30%) | Racje obywateli też spadają | niski (same wartości) | 1 |
+| **B. Utrzymanie rosnące z liczbą miast** | `ai-upkeep-params.json` lub nowy mnożnik per miasto | Utrzymanie budynków AI t75 = 1 482/t (~91/miasto). Wzrost zależy od X, którego nie ma | Wpływ na armie AI (utrzymanie jednostek 560/t) | średni | 1–2 |
+| **C. Niższa baza capu państwa** | `magazyn_baza_surowce` 50 000 → 20 000 (mnożnik 2^(e−1) zostaje) | Cap e4, 0 Magazynów: 400 000 → 160 000 (−60%). Cap e1: 50 000 → 20 000 | Może psuć budowę Magazynów i zapisy z przekroczonym capem | średni | 1 |
+| **D. Nowy sink: administracja imperium** | nowy parametr w `econ-params.json`: Pieniądz/t = k × (miasta−1) × m(e), domyślnie k=0 | Przy N=16,3, e4: k × 15,3 × 2,5 = k × 38,25 Pieniądza/t. k=1 → 38/t (~2,6% utrzymania budynków AI t75); k=5 → 191/t (~13%); k=10 → 383/t (~26%). k do ustalenia | Nowa mechanika (UI) | niski (domyślnie 0) | 2 |
+| **E. Bez zmian** | — | Wzrost tłumaczy liczba miast i epoka (§2). Cap rośnie ×2/epokę, ale nie potwierdzono, że go dobijamy | brak | brak | 0 |
+
+Rekomendacja Operatora (decyzja właściciela, nie moja): najpierw wyjaśnić różnicę ~10× (model vs HUD) i rozszerzyć pomiar o przychód i zapasy surowców oraz o gracza. Dopiero potem A/B/C/D.
 
 ## 5. Pytania ABC do właściciela (decyzje liczbowe należą do Ciebie)
 
-1. **Spłaszczenie epok (wariant A)?** A) tak, 0,50 → 0,25 dla cegły i m(e) 0,5 → 0,25 (−30% w epoce 4); B) tylko cegła (0,50 → 0,25); C) nie zmieniać. Rekomendacja: **A** po pomiarze przychodu.
-2. **Utrzymanie rosnące z miastami (wariant B)?** A) tak, +X% za miasto po 5; B) tylko po epoce; C) nie. Rekomendacja: **B** po kalibracji na danych.
-3. **Cap surowców państwa (wariant C)?** A) obniżyć bazę 50 000 → 20 000; B) zostawić, dodać sink; C) zostawić. Rekomendacja: **B**, bo cap nie jest zmierzony.
-4. **Sink administracji imperium (wariant D)?** A) tak, nowy parametr z wartością domyślną 0; B) nie. Rekomendacja: **A**.
-5. **Pomiar gracza (przed balansem)?** A) rozszerzyć harness o przychód/turę, Pracę, Naukę i zapasy surowców (osobny temat); B) bez pomiaru gracza. Rekomendacja: **A**.
+1. **Spłaszczenie epok (wariant A)?** A) tak: cegielnia 0,50 → 0,25 i m(e) 0,5 → 0,25 (−30% w epoce 4, także racje); B) tylko cegła (0,50 → 0,25); C) nie zmieniać. Rekomendacja: **A**, ale dopiero po pomiarze przychodu.
+2. **Cap surowców (wariant C)?** A) obniżyć bazę 50 000 → 20 000 (e4: 400 000 → 160 000); B) zostawić mnożnik 2^(e−1) i dodać sink (D); C) zostawić. Rekomendacja: **B**, bo nie wiadomo, czy cap jest dobijany.
+3. **Sink administracji imperium (wariant D)?** A) tak, nowy parametr k z domyślnym 0, wartość k po pomiarze; B) nie. Rekomendacja: **A**.
+4. **Utrzymanie rosnące z miastami (wariant B)?** A) tak, +X% za miasto po 5; B) tylko po epoce; C) nie. Rekomendacja: **B**, po kalibracji.
+5. **Pomiar gracza i przychodu przed balansem?** A) rozszerzyć harness o przychód na turę, Pracę, Naukę i zapasy surowców (osobny temat, bez zmian gry); B) bez pomiaru. Rekomendacja: **A**.
 
 ## 6. Ograniczenia tej analizy
 
-- Liczby AI, nie gracza. Tury 100–150 nieobecne w danych.
-- Model zakłada 1 budynek każdego typu na miasto; liczby budynków nie są zmierzone.
-- Mapa tura→epoka nie jest w jsonl; model operuje na epoce i liczbie miast.
-- Mnożnik epoki capu surowców **NIEZMIERZONY**.
+- Liczby AI, nie gracza. Tury 100–150 nieobecne w danych (NIEZMIERZONO).
+- Model zakłada 1 budynek każdego typu na miasto. Liczby budynków nie są zmierzone.
+- Mapa tura→epoka nie jest w jsonl. Dekompozycja łączy N z t25 (e1) z N z t75 (e4), więc to przybliżenie, nie pomiar.
+- Różnica model vs HUD gracza (~10×) jest NIEWYJAŚNIONA. Możliwe przyczyny do sprawdzenia: liczba budynków, Stolarnie/Warsztaty, handel, definicja „Surowce” w HUD.
+- Cap żywności: zgodność z formułą, bez liczby Spichlerzy.

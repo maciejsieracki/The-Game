@@ -3,6 +3,7 @@
 // Uzycie: node gra/tools/econ-growth-analyze.cjs <plik.jsonl> [więcej plików...]
 // Wypisuje per tura kontrolna (10,25,50,75,100,125,150; najbliższa <= tury dostępnej) statystyki
 // właścicieli AI z miastem: skarbiec, spichlerz, utrzymanie (Pieniądz/Surowce), miasta.
+// Tura kontrolna powyżej ostatniej zmierzonej tury pliku = NIEZMIERZONO (nie powtarzamy danych).
 // Pola, których jsonl NIE zawiera (przychód/turę, Praca, Nauka PN, zapasy surowców poza skarbcem
 // i spichlerzem), są oznaczone NIEZMIERZONO. Nie modyfikuje plików wejściowych.
 'use strict';
@@ -37,6 +38,11 @@ function analyzeFile(file) {
     // najbliższa tura <= t: nie dopisujemy danych ponad to, co zmierzono
     const avail = turns.filter((x) => x <= t);
     if (avail.length === 0) continue;
+    if (t > turns[turns.length - 1]) {
+      // tura kontrolna poza zakresem pliku: NIE kopiujemy ostatniej zmierzonej tury
+      out.points.push({ turnRequested: t, turnMeasured: null, unmeasured: true });
+      continue;
+    }
     const tt = avail[avail.length - 1];
     const r = byTurn.get(tt);
     const ai = (r.owners || []).filter((o) => o.owner !== 0 && o.miasta > 0);
@@ -71,6 +77,10 @@ for (const res of results) {
     'tura(zad/zmierz) | n | skarbiec mean/med/max | spichlerz mean/max | utrzym. budynki Pieniądz mean/max | utrzym. jednostki Pieniądz mean/max | utrzym. surowce budynki / jednostki mean/max | miasta mean/max'
   );
   for (const p of res.points) {
+    if (p.unmeasured) {
+      console.log(`${p.turnRequested}(NIEZMIERZONO: plik kończy się na t${res.lastTurn}) | - | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO`);
+      continue;
+    }
     console.log(
       `${p.turnRequested}(${p.turnMeasured}) | ${p.n} | ${gmed(p.skarbiec)} | ${gm(p.spichlerz)} | ${gm(p.utrzymBudynkiPieniadz)} | ${gm(p.utrzymJednostkiPieniadz)} | ${gm(p.utrzymBudynkiSurowce)} / ${gm(p.utrzymJednostkiSurowce)} | ${gm(p.miasta)}`
     );
