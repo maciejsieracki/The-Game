@@ -25538,6 +25538,17 @@ async function boot(): Promise<void> {
      * Zawarcie: ta sama końcówka co sojusz AI↔AI w gałęzi sióstr (addTreaty sojusz_pelny, wygasaTura null) + syncRelationFromDeals.
      * Skutki akceptacji: dopłata D ZŁOTEM z płatnika na odbiorcę (skarbiec nigdy poniżej zera). Bez nowego UI.
      */
+    /** R-WEB-AI-AI-ALLIANCES-E3-MEASURE-RUNNER-Q1: liczniki prób/odmów toru sojuszy (skumulowane od załadowania strony, tylko odczyt pomiaru). */
+    let aiAiAllianceProbyLacznie = 0;
+    let aiAiAllianceOdmowyLacznie = 0;
+    /** R-WEB-AI-AI-ALLIANCES-E3-MEASURE-RUNNER-Q1 (runda 2): histogram powodów odmów toru (skumulowany, tylko odczyt pomiaru). */
+    const aiAiAllianceOdmowyPowody = new Map<string, number>();
+    /** R-WEB-AI-AI-ALLIANCES-E3-MEASURE-RUNNER-Q1: wymuszenie włączenia toru WYŁĄCZNIE pod ?civTest=1 i ustawioną flagą strony
+     *  (window.__civAiAllianceMeasureForce === true, ustawianą przez wrapper pomiaru). Bez tego: zachowanie domyślne (flaga z danych). */
+    function aiAiAllianceMeasureForced(): boolean {
+      return isCivTestEnabled(window.location.search) && (window as any).__civAiAllianceMeasureForce === true;
+    }
+
     function tickAiAiAllianceRequests(): void {
       if (!isAiAiAllianceTickEnabled()) return;
       refreshObjectivePowerCache();
@@ -25612,6 +25623,9 @@ async function boot(): Promise<void> {
         }),
         treasury: new Map<number, number>(owners.map(oid => [oid, aiSkarbiecByOwner.get(oid) ?? 0] as [number, number])),
       });
+      aiAiAllianceProbyLacznie += plan.proby;
+      aiAiAllianceOdmowyLacznie += plan.odmowy;
+      for (const [klucz, n] of plan.powodyOdmow) aiAiAllianceOdmowyPowody.set(klucz, (aiAiAllianceOdmowyPowody.get(klucz) ?? 0) + n);
       for (const [oid, po] of plan.treasuryPo) {
         if ((aiSkarbiecByOwner.get(oid) ?? 0) !== po) aiSkarbiecByOwner.set(oid, po);
       }
@@ -25631,6 +25645,65 @@ async function boot(): Promise<void> {
           (tr.paymentGold > 0 && tr.payer !== null ? `, dopłata ${tr.paymentGold} ¤ od ${ownerDiploLabel(tr.payer)}(${tr.payer})` : ''),
         );
       }
+    }
+
+    /**
+     * R-WEB-AI-AI-ALLIANCES-E3-MEASURE-RUNNER-Q1: ODCZYT stanu sojuszy AI↔AI (tylko odczyt, bez zmian stanu gry).
+     * Sojusze = aktywne traktaty sojuszu między głównymi AI (owners jak w tickAiAiAllianceRequests) i gracz, rozdzielone.
+     * Liczby: liczba sojuszy per cywilizacja (tylko między owners), próby/odmowy toru (skumulowane), wojny AI↔AI (pary).
+     */
+    function aiAiAllianceMeasureState(): {
+      flaga: boolean;
+      wymuszona: boolean;
+      sojusze: Array<{ a: number; b: number; typ: string; zawartaTura: number | null }>;
+      naCywilizacje: Array<{ owner: number; n: number }>;
+      proby: number;
+      odmowy: number;
+      wojnyAiAi: number;
+      sojuszeAiAi: number;
+      powodyOdmow: Array<{ powod: string; n: number }>;
+    } {
+      const owners = Array.from(aiOwnerCivMap.keys())
+        .filter(oid => isMajorAiCivForForcedPeace(oid)
+          && !activeDeals.some(d => normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.Wasalizacja && d.strony.includes(oid)))
+        .sort((x, y) => x - y);
+      const ownerSet = new Set<number>(owners);
+      const sojusze: Array<{ a: number; b: number; typ: string; zawartaTura: number | null }> = [];
+      const liczba = new Map<number, number>(owners.map(oid => [oid, 0] as [number, number]));
+      for (const d of activeDeals) {
+        if (!isAllianceDealKind(d.rodzaj)) continue;
+        const [a, b] = d.strony;
+        if (a === undefined || b === undefined) continue;
+        sojusze.push({ a, b, typ: String(normalizeTreatyKind(d.rodzaj)), zawartaTura: d.zawartaTura ?? null });
+        if (ownerSet.has(a) && ownerSet.has(b)) {
+          liczba.set(a, (liczba.get(a) ?? 0) + 1);
+          liczba.set(b, (liczba.get(b) ?? 0) + 1);
+        }
+      }
+      let wojny = 0;
+      let sojuszeAiAi = 0;
+      // Odczyt BEZ tworzenia relacji (getDiploRelation leniwie zapisuje relację i zamraża zaufanie D4).
+      // owners posortowane rosnąco, więc klucz `${a}_${b}` zgadza się z kluczem getDiploRelation.
+      // Brak wpisu = relacja domyślna 'neutralni' (defaultNeutralRelation), czyli nie-wojna.
+      for (let i = 0; i < owners.length; i++) {
+        for (let j = i + 1; j < owners.length; j++) {
+          if (diplomacyRelations.get(`${owners[i]!}_${owners[j]!}`)?.status === 'wojna') wojny++;
+        }
+      }
+      for (const s of sojusze) if (ownerSet.has(s.a) && ownerSet.has(s.b)) sojuszeAiAi++;
+      return {
+        flaga: isAiAiAllianceTickEnabled(),
+        wymuszona: aiAiAllianceMeasureForced(),
+        sojusze,
+        naCywilizacje: owners.map(oid => ({ owner: oid, n: liczba.get(oid) ?? 0 })),
+        proby: aiAiAllianceProbyLacznie,
+        odmowy: aiAiAllianceOdmowyLacznie,
+        wojnyAiAi: wojny,
+        sojuszeAiAi,
+        powodyOdmow: Array.from(aiAiAllianceOdmowyPowody.entries())
+          .map(([powod, n]) => ({ powod, n }))
+          .sort((x, y) => y.n - x.n || (x.powod < y.powod ? -1 : x.powod > y.powod ? 1 : 0)),
+      };
     }
 
     function aiSojuszObowiazekParam(key: string, fallback: number): number {
@@ -31457,9 +31530,12 @@ async function boot(): Promise<void> {
         runTick: (): void => { tickAiAiTreatyRequests(); },
       };
       // R-WEB-AI-AI-ALLIANCES-E3 (hak testowy, NIE UI): przełącznik toru sojuszy AI↔AI i pojedynczy krok sojuszy.
+      if ((window as any).__civAiAllianceMeasureForce === true) setAiAiAllianceTickEnabledForTest(true);
       (window as any).__truceTestDebug.aiAiAllianceTickForTest = {
         setEnabled: (v: boolean | null): void => { setAiAiAllianceTickEnabledForTest(v); },
         runTick: (): void => { tickAiAiAllianceRequests(); },
+        /** Odczyt stanu sojuszy (lista par, per cywilizacja, próby/odmowy, wojny AI↔AI). */
+        state: (): ReturnType<typeof aiAiAllianceMeasureState> => aiAiAllianceMeasureState(),
         // R-WEB-AI-AI-COALITION-ANTI-LEADER-Q1 (hak testowy, NIE UI): przełącznik koalicji i odczyt stanu lidera.
         setCoalitionEnabled: (v: boolean | null): void => { setAiAiCoalitionEnabledForTest(v); },
         getLiderStan: (): LiderKoalicjiStan => liderKoalicjiStan,
@@ -33749,6 +33825,8 @@ async function boot(): Promise<void> {
               /** Właściciele z aiStartHexes, których NIE MA w wierszach metryk (brak miasta i jednostki): defekt startu, jawnie, bez wierszy zerowych. */
               aiStartOwnersBezWiersza: aiStartHexes.map(h => h.ownerId).filter(oid => !isBarbarian(oid) && !owners.includes(oid)),
               ownersBezMiastIJednostek: per.filter(o => o.miasta === 0 && o.jednostkiWojskowe + o.jednostkiCywilne === 0).map(o => o.owner),
+              /** R-WEB-AI-AI-ALLIANCES-E3-MEASURE-RUNNER-Q1: sojusze AI↔AI (odczyt; flaga, lista, per cywilizacja, próby/odmowy). */
+              sojusze: aiAiAllianceMeasureState(),
             },
             /** Pola, których nie ma jednoznacznego, zweryfikowanego źródła w grze (NIE ZMIERZONO w tym haku). */
             niezmierzone: ['przychodNaTure', 'utratyNaTure'],
