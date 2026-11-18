@@ -33,3 +33,17 @@ W bitwie jednostka wykorzystuje **cały swój ruch**. Do **pierwszego zderzenia 
 Strzelcy po strzale idą co najwyżej do miejsca, z którego następny cel jest w zasięgu (nie wchodzą w zwarcie). Doktryny Obrona i Ostrzał po ciosie nie maszerują. Reguła dotyczy bitwy w polu; oblężenie z murem i ręczne rozkazy gracza działają jak dotąd.
 
 > Założenia robocze **DO POTWIERDZENIA** przez właściciela: przełączenie jest jedno, globalne dla bitwy (pierwsze zderzenie wręcz którejkolwiek pary); strzelcy po strzale podchodzą tylko na zasięg.
+
+---
+
+### Obrażenia wręcz a pancerz
+
+Cios wręcz zadaje obrażenia broni pomniejszone o pancerz celu, do tego dochodzi przebicie oraz bonus szarży w rundzie szarży. Jeśli pancerz jest równy obrażeniom broni albo większy, a atakująca jednostka nie ma przebicia, cios nie zadaje obrażeń w rozstrzyganiu walki (zadaje 0). W bitwie ręcznej najmniejsze obrażenie z ciosu wręcz wynosi 1.
+
+### Morale i ucieczka
+
+Jednostka ucieka, gdy jej bieżące morale spadnie do progu „Morale ucieczki” z jej danych (liczba bezwzględna; gdy brakuje wpisu, próg wynosi 25). Uciekająca jednostka przestaje atakować, odwraca się od wroga i ucieka ku swojej krawędzi mapy. Na wzgórzu lub w lesie próg jest o 5 punktów niższy, więc jednostka trzyma się dłużej.
+
+Morale spada od strat zdrowia (każde 10% utraconego zdrowia to −10 punktów), od śmierci sojusznika w promieniu 3 pól (−12), od ciosu z flanki (−8) lub z tyłu (−15), od ciosu szarży (−15) oraz raz, gdy jednostkę otacza co najmniej trzech wrogów (−10). Jednostki „walczące do śmierci” nie uciekają i walczą do zera zdrowia.
+
+Ucieczka dotyczy także łuczników i innych jednostek dystansowych, na tych samych zasadach co reszta. Dodatkowo dystansowa jednostka, do której podszedł wróg, odsuwa się, by odzyskać odstęp co najmniej 2 pól i dalej strzelać. Ucieczka jednostek dystansowych jest zamierzona i pozostaje bez zmian.
