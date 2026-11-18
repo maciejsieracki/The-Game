@@ -99,6 +99,10 @@ async function main() {
     check('mt3 bez miast: „Pokój bez wymiany miast.” + „Zapłata: 0 PN.”',
       mNone.terms.startsWith('Pokój bez wymiany miast.') && mNone.terms.includes('Zapłata: 0 PN.'), mNone);
 
+    // (8) DECLUTTER-WINDOW (2026-11-18): na wierzchu okna jest tylko lead; whyShort nie znika z danych (idzie w tooltip).
+    check('mt4 whyShort nadal zwracany (nic nie usunięte z treści)', typeof mLoser.whyShort === 'string' && mLoser.whyShort.includes('100%'), mLoser.whyShort);
+    check('mt5 lead ≠ whyShort (lead jest jedynym zdaniem na wierzchu)', mLoser.lead !== mLoser.whyShort, mLoser.lead);
+
     console.log('');
     console.log('diplo-weariness-stages-view-test: ' + pass + ' pass / ' + fail + ' fail');
   } finally {
