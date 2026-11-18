@@ -12342,12 +12342,19 @@ async function boot(): Promise<void> {
       // (ta sama funkcja co tick AI↔AI, war-weariness.ts lostCitiesForWeariness). Pole `lostCitiesResponder` — nazwa
       // historyczna; wartość = suma, nie tylko respondent.
       const lostProposerInWar = diploWarStateFor(proposerId, responderId).lostCities;
+      // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r2, P1): moc POWER obu stron pary (power-objective.ts, computeObjectivePower
+      // przez objectivePowerForOwner) — zasila podział P·r / P/r w diplomacy-proposals.ts (bramka PW pokoju).
+      // Konwencja: powerPlayer = moc GRACZA (ME()), powerOther = moc drugiej strony pary (AI).
+      const playerSideId = ME();
+      const otherSideId = proposerId === playerSideId ? responderId : proposerId;
       return {
         turnsAtWar: s.turnsAtWar,
         lostCitiesResponder: lostCitiesForWeariness(s.lostCities, lostProposerInWar),
         turnsSinceCityChange: s.turnsSinceCityChange,
         responderRw,
         responderPozycjaMilitarna,
+        powerPlayer: objectivePowerForOwner(proposerId),
+        powerOther: objectivePowerForOwner(responderId),
       };
     }
 
