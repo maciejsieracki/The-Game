@@ -117,10 +117,11 @@ export function isTruceBreach(until: number | null | undefined, currentTurn: num
 // ---------------------------------------------------------------------------
 
 /**
- * (E) Próg ułamka zmęczenia wojną (0..1 = turnsAtWar / T, `warWearinessFraction`), od którego
- * AI proponuje pokój stały zamiast rozejmu. 1 = PEŁNE zmęczenie (t >= T, T ≤ 20 tur wg
- * zmeczenieT). Próg 1 zachowuje dotychczasowe N4 (wojna < ~20 tur → rozejm, dalej → pokój) jako
- * sygnał, a nie zmienia go na „od połowy wojny". Wartość ZAŁOŻENIE orkiestratora (do ABC).
+ * (E) Próg ułamka zmęczenia wojną (0..1 = poziom `warWearinessLevel`, w ai.ts `wearyLevel`;
+ * skala 40 tur: 2,5% na turę + 10% za zmienione miasto, war-weariness-params.json), od którego
+ * AI proponuje pokój stały zamiast rozejmu. 1 = PEŁNE zmęczenie (pelneTur = 40 tur bez strat miast).
+ * Wartość 1 ZAŁOŻENIE orkiestratora (do ABC). Zegar profilu `zmeczenieT` / `warWearinessFraction`
+ * NIE zasila tej bramki (zostaje jako wejście resolvera i testów zachowania).
  */
 export const TRUCE_AI_FATIGUE_PEACE_MIN = 1;
 
@@ -141,7 +142,7 @@ export const TRUCE_AI_TRUST_PEACE_MIN = 60;
  * w pozostałych przypadkach — `fallbackKind` (dotychczasowy wybór po turach wojny).
  */
 export function aiTruceOrPeaceMode(input: {
-  /** Ułamek zmęczenia wojną 0..1 = `warWearinessFraction(turnsAtWar, T)`. */
+  /** Ułamek zmęczenia wojną 0..1 = poziom `warWearinessLevel` (ai.ts: `wearyLevel`), nie zegar profilu. */
   fatigueFraction: number;
   /** `stance.willingnessPeace` 0..1 (diplomacy.ts). */
   willingnessPeace: number;
