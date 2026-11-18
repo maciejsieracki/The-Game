@@ -1,3 +1,9 @@
+## ROBOCZA a1072e8e -- 2026-11-18 -- FALA 824: STALEWEAR: nieaktualne opisy zmeczenia wojna 5% na ture i 20 tur poprawione (testowa)
+
+- Komentarze w kodzie, opis w danych diplomacy-war-peace-params i etykiety testow mowily jeszcze o 5% na ture i 20 turach; teraz zgodnie z parametrami: 2,5% na ture, 100% po 40 turach, +10% za miasto; zachowanie gry bez zmian (kod 52f41f30e)
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; weariness-20-turns 31/0; peace-gate-military-strength 14/0; json-descriptions-sync 46/46 i 19/0; war-peace-main-guard 35/0; weariness-display 54/0; po usunieciu pola _wzor JSON identyczny z baza
+- Limity: NIE ZMIERZONO: Chromium (zmiana tylko komentarzy i opisow); legacy pole zmeczenieT i nazwy w diplo-war-peace-profile-unit-test.cjs:79,91,92 poza zakresem
+
 ## ROBOCZA 15e1ba0b -- 2026-11-18 -- FALA 823: DOCWEAR: Civpedia Rozejm i pokoj podaje tempo zmeczenia 2,5% na ture zgodnie z parametrami (testowa)
 
 - Haslo Civpedii Rozejm i pokoj mowilo blednie 5% na ture od startu wojny; teraz 2,5% na ture (100% po 40 turach), +10% za zmienione miasto — zgodnie z parametrami i oknem pokoju wymuszonego; wikiBundle regenerowany generatorem, zmieniona tylko to haslo; nowy test-straznik pilnuje zgodnosci hasel z war-weariness-params.json (kod 1b6fd0947)

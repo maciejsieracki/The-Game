@@ -2,12 +2,12 @@
 /**
  * diplo-weariness-20-turns-test.cjs -- R-WEB-DIPLO-WEARINESS-20-TURNS-Q1 (decyzja wlasciciela 2026-11-13, wariant A).
  *
- * Zmeczenie wojna zamyka sie w 20 turach, jeden licznik:
- *   (a) bez strat miast: poziom = 0,5 w turze 10, 0,8 w turze 16, 1,0 w turze 20 (liniowo 5% na ture);
+ * Zmeczenie wojna: jeden licznik (war-weariness-params.json, pelneTur = 40), test sprawdza:
+ *   (a) bez strat miast: poziom = 0,5 w turze 20, 0,8 w turze 32, 1,0 w turze 40 (liniowo 2,5% na ture);
  *   (b) kazde miasto, ktore zmienilo wlasciciela (obie strony), dodaje +0,10 (min(1, ...));
  *   (c) brak zastoju: poziom nie zalezy od turnsSinceCityChange; brak drugiego zegara w diplomacy.ts
  *       (warWearinessShare / zmeczenieT nie sa juz zrodlem chec pokoju AI);
- *   (d) parametry JSON: pelneTur = 20, wagaStratMiasta = 0,10, ofertaOdTurWojny = 3, ofertaBezStratOdTur = 6,
+ *   (d) parametry JSON: pelneTur = 40, wagaStratMiasta = 0,10, ofertaOdTurWojny = 3, ofertaBezStratOdTur = 6,
  *       progi 0,5 / 0,8 / 1,0 (progChetnosci, progKoncaZmeczenia, pelny poziom);
  *   (e) mutacja: przywrocenie pelneTur 200 czerwieni test (a); przywrocenie stagnacji czerwieni test (c).
  *
