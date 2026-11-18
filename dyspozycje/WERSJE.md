@@ -1,3 +1,9 @@
+## ROBOCZA 11bbd0aa -- 2026-11-18 -- FALA 837: Zywa weryfikacja okien platnosci traktatow (hooki testowe) (testowa)
+
+- Hooki civTest w main.ts (peaceRoomTailForTest, extraPayload w pushNegotiationForTest) i testy zywe okna platnosci D, ogona pokoju i stosunku sil; logika gry bez zmian
+- Weryfikacja: FC PASS-WITH-NOTES a3cb25482: tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; zywy Chromium 29/29 (wiersz D, wartosc rowna przelewowi), ogon pokoju 16/16, mutacje czerwone; ai-ai-treaty-nap-wiring 44/44, evaluate 21/0
+- Limity: NIE ZMIERZONO: wyglad wiersza D na zrzucie (natywny title), wasal, sojusz, kierunek gracz-AI, rozejm jako prawdziwa sciezka; kosmetyka: wiersz D i podzial PW dublowane w tooltipie
+
 ## ROBOCZA 449acaa1 -- 2026-11-18 -- FALA 836: tor umów AI↔AI: pakt o nieagresji (przełącznik WYŁĄCZONY) (testowa)
 
 - Do gry wchodzi tor paktu o nieagresji (NAP) między AI: krok tickAiAiTreatyRequests w turze AI (NAP 15 tur, dopłata D złotem ze skarbca płatnika, nigdy poniżej zera, kara za zerwanie −20 Zaufania i −30 Relacji przeliczone na Respekt), ale cały tor jest za przełącznikiem torAktywny=false w gra/data/ai-ai-treaty-params.json — domyślnie WYŁĄCZONY, więc zachowanie gry bez zmian do czasu pomiaru ≥3×150 tur (etap E6) i decyzji właściciela. Moduły: ai-ai-treaty-tick.ts (nowy), hak testowy aiAiTreatyTickForTest.
