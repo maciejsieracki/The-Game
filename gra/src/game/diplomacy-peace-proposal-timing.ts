@@ -18,3 +18,16 @@ export function peaceProposalTurnsLeft(turnsAtWar: number): number {
   const t = Math.floor(Number.isFinite(turnsAtWar) ? Math.max(0, turnsAtWar) : 0);
   return Math.max(0, PEACE_PROPOSAL_MIN_WAR_TURNS - t);
 }
+
+/**
+ * Odmiana słowa „tura" przy liczbie N (pol.): 1 → „turę", 2–4 → „tury" (z wyjątkiem 12–14), reszta → „tur".
+ * Używane w notce blokady „dostępne za N …" (np. 5 → „5 tur", 10 → „10 tur", 1 → „1 turę", 3 → „3 tury").
+ */
+export function turyWojnyLabel(n: number): string {
+  const k = Math.abs(Math.trunc(Number.isFinite(n) ? n : 0));
+  if (k === 1) return 'turę';
+  const mod10 = k % 10;
+  const mod100 = k % 100;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'tury';
+  return 'tur';
+}

@@ -48,6 +48,7 @@ import { deltaRelacjiSojusz } from './diplomacy';
 import {
   peaceProposalBlocked,
   peaceProposalTurnsLeft,
+  turyWojnyLabel,
   PEACE_PROPOSAL_MIN_WAR_TURNS,
 } from './diplomacy-peace-proposal-timing';
 
@@ -320,6 +321,15 @@ export function resolveDiplomacyActionLock(ctx: DiplomacyActionLockContext): Dip
       // KRYTYCZNE (v1.1 CHANGELOG): silnik dotąd NIE gate'ował tej akcji na Respekt —
       // klikalne przy Respekt 61 < prog 70. Naprawione tutaj.
       if (ctx.atWar) {
+        // R-WEB-DIPLO-PEACE-WINNER-PROPOSAL-FLOW-Q1 (zarzut Evaluatora 7): oferta trybutu w wojnie jest
+        // też „propozycją pokoju" dla silnika (peaceProposalBlocked: trybut_oferta) — blokada przed kliknięciem.
+        if (ctx.turnsAtWar !== undefined && peaceProposalBlocked('trybut_oferta', true, ctx.turnsAtWar)) {
+          const left = peaceProposalTurnsLeft(ctx.turnsAtWar);
+          return {
+            locked: true,
+            note: `dostępne za ${left} ${turyWojnyLabel(left)} (pokój i rozejm po ${PEACE_PROPOSAL_MIN_WAR_TURNS} pełnych turach wojny)`,
+          };
+        }
         // W wojnie: tylko oferta jednorazowych reparacji za pokój — zawsze dostępne.
         return { locked: false, note: 'oferta reparacji za pokój' };
       }
@@ -345,7 +355,7 @@ export function resolveDiplomacyActionLock(ctx: DiplomacyActionLockContext): Dip
         const left = peaceProposalTurnsLeft(ctx.turnsAtWar);
         return {
           locked: true,
-          note: `dostępne za ${left} ${left === 1 ? 'turę' : 'tury'} (pokój i rozejm po ${PEACE_PROPOSAL_MIN_WAR_TURNS} pełnych turach wojny)`,
+          note: `dostępne za ${left} ${turyWojnyLabel(left)} (pokój i rozejm po ${PEACE_PROPOSAL_MIN_WAR_TURNS} pełnych turach wojny)`,
         };
       }
       return { locked: false, note: '' };
