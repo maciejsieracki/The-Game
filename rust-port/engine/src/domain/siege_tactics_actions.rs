@@ -93,6 +93,17 @@ pub enum BattleAction {
         to: (i64, i64),
         arrive_at: f64,
     },
+    /// K5LOOP-CLOSE r3: strzał jednostki `_doRangedAttack` (`battleScene.ts:9179-9235`): zwrot strzelca ku celowi
+    /// (osobna akcja `Facing`), pocisk z pola strzelca na pole celu wystrzelony w `t0` i trafiający w
+    /// `land_at = t0 + RANGED_FLY_MS` (`:1012`, `_schedule(RANGED_FLY_MS, ...)` `:9223`); trafienie (`_singleBlow`
+    /// ranged) i etykieta obrażeń w `land_at`. Pola jak w `TowerShot` (cel + chwila trafienia), żeby I5 mógł dodać
+    /// wariant DTO 1:1; [`BattleActionKindDto`] go jeszcze nie ma, więc [`actions_to_dto`] zwraca
+    /// [`ActionError::ShotWithoutDto`] (jawnie, bez cichego pominięcia).
+    Shot {
+        attacker: UnitRef,
+        target: UnitRef,
+        land_at: f64,
+    },
 }
 
 /// Akcja z czasem wirtualnym wywołania sceny (`vNow`, ms).
@@ -387,6 +398,8 @@ pub enum ActionError {
     /// K5LOOP-CLOSE r2: [`BattleAction::Move`] nie ma jeszcze wariantu w [`BattleActionKindDto`] (view-model, temat I5
     /// #280/#336). Konwersja listy z krokiem ruchu jest jawnym błędem, nie cichym pominięciem animacji.
     MoveWithoutDto(UnitRef),
+    /// K5LOOP-CLOSE r3: [`BattleAction::Shot`] nie ma jeszcze wariantu w [`BattleActionKindDto`] (I5 #280/#336).
+    ShotWithoutDto(UnitRef),
 }
 
 impl From<IdOutOfRange> for ActionError {
@@ -511,6 +524,9 @@ pub fn actions_to_dto(
                 winner: winner_dto(*winner),
             },
             BattleAction::Move { unit, .. } => return Err(ActionError::MoveWithoutDto(*unit)),
+            BattleAction::Shot { attacker, .. } => {
+                return Err(ActionError::ShotWithoutDto(*attacker))
+            }
         };
         out.push(BattleActionDto { t0: a.t0, action });
     }
