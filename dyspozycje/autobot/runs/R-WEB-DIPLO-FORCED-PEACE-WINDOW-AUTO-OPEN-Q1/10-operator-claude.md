@@ -1,35 +1,30 @@
-STATUS: DECISION_REQUIRED
-DOMAIN: GAME
+# R-WEB-DIPLO-FORCED-PEACE-WINDOW-AUTO-OPEN-Q1 — Operator, runda 2 (DODATEK 2, wariant B)
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (wyłącznie test żywy; kod gry bez zmian)
 TEMAT: R-WEB-DIPLO-FORCED-PEACE-WINDOW-AUTO-OPEN-Q1
-GOAL: ustalić przyczynę braku samoczynnego okna „Pokój wymuszony” po końcu tury i naprawić ją bez zmiany logiki pokoju (runda 1/5, Operator HAIKU).
-BAZA: 899667a91e23fa3a796412a485b77a3da30221f4 (origin/main), HEAD worktree = ta sama baza (merge-base --is-ancestor: OK).
+GOAL: test żywy gra/tools/diplo-forced-peace-pending-live-paths-test.cjs — S4 i S2(a) zielone; okno pokoju wymuszonego otwiera się samo w turze utworzenia pending (bez Esc/kliknięcia); odroczenie przy trwającej bitwie zmierzone; mutacja czerwona. Decyzja ABC (wariant B): D1 = odroczenie wg decyzji, nie defekt; logika gry nietknięta.
+ZMIANY/COMMIT: gra/tools/diplo-forced-peace-pending-live-paths-test.cjs (+ ten raport). Baza: c8ae0d3e9 + merge origin/main (a8a57008a; merge-base 899667a91 OK). Hak `pendingForcedPeaceForTest` z r1 już w main.ts, bez zmian w tej rundzie.
 
-ZMIANY-COMMIT: brak zmian w kodzie gry. Commit zawiera wyłącznie ten raport. Hak `pendingForcedPeaceForTest` i tymczasowe logi diagnostyczne zostały cofnięte (git checkout gra/src/main.ts); test żywy nie został zmieniony.
+TESTY (ZMIERZONO):
+- Test żywy na niezmienionym buildzie (vite, poza repo): EXIT 0. S4 PASS (okno samo, topmost, odroczenie, Esc/tło/„Zakończ turę”/Enter, akceptacja, warLog). S3 PASS. S2(a) PASS. Zero pageerror/console.error.
+- Mutacja na kopii buildu (usunięte wywołanie showNextPendingForcedPeace po ticku, main.ts:39301, przywrócone po teście, cmp OK): EXIT 1, 8 FAIL (auto-open, topmost, S2a, S3 wariant).
+- Zrzut s4-okno-pokoju.png OBEJRZANY: okno „Pokój wymuszony” na wierzchu, tura 2, przycisk „AKCEPTUJĘ WARUNKI POKOJU”; „Zakończ turę” zablokowane.
+- tsc --noEmit: exit 0.
+- logic 213/213; tech-tree 20 pass / 0 fail; research 33/33; unit-replace 21/21; combat 6/6.
+- diplo-forced-peace-pending-test 40/0; diplo-weariness-forced-peace-test 14/0; peace-vazne-always-test ZIELONE; diplo-weariness-stages-view-test PASS; diplo-peace-auto-stale-offer-live-test 15/0.
+- git diff --check: czysto.
 
-TESTY (zmierzone na surowym wyjściu):
-- Build vite poza repo (scratchpad/fpb), 17,6 s, exit 0.
-- Test żywy diplo-forced-peace-pending-live-paths-test.cjs na bazie: exit 1, asercje FAIL: 4 (S4 „okno pojawia się samo” FAIL; S2 „pierwsze okno samo” FAIL; S2 „drugie okno po akceptacji” FAIL; S2 „po akceptacji pierwszego nadal zablokowane” FAIL). Zgodne z dispatchem (dziś czerwony, 4 FAIL). S1/S5 NIE ZMIERZONO (brak haka).
-- Sonda DOM (probe2, Chromium, 2 tury z wojną 40 tur, bez zmian w kodzie):
-  * tura 1→2: tick zwraca outcome „none”, pb-overlay (bitwa AI) otwarta przy końcu tury, pending pusty, okno brak;
-  * tura 2→3: tick zwraca „forced_peace” (deferred=true), pending = [{pairKey 0_1, loser 1, winner 0, turnCreated 3}], okno `.cd-forced-peace-ok` = 1 bez jakiejkolwiek akcji gracza (pb-overlay = 0).
-- Pozostałe testy (diplo-forced-peace-pending-test, weariness, tsc, 5 bramek referencyjnych, git diff --check): NIE ZMIERZONO — brak zmiany kodu, nie było czego weryfikować.
+BLOKADY / NIE ZMIERZONO:
+- S2(b)/D2 (drugi pokój po akceptacji pierwszego): NIE ROZSTRZYGNIĘTE. W zmierzonym przebiegu pending = 1 mimo dwóch wojen (druga para nie weszła do kolejki); nie naprawiano (zgodnie z dispatchem).
+- S1 (zapis/wczytanie z pending) i S5 (AI↔AI bez okna): NIE ZMIERZONO (brak haków).
+- S3 wariant „Oddajesz: miasta”: NIE ZMIERZONO (mapa testowa dała tylko wariant „bez wymiany miast”).
 
-USTALENIA (przyczyna):
-1. Okno jest tworzone i pokazywane automatycznie w tej samej pipeline'owej turze, w której pojawia się oczekujący pokój (tick w runAiPhase → showNextPendingForcedPeace, main.ts ~39259). Nie zaobserwowano, by okno znikało po utworzeniu (żadne `.remove()` na overlayu poza własnymi handlerami diplomacyAudience.ts).
-2. Brak okna po końcu tury w scenariuszu testu wynika z odroczenia przez bitwę: src/game/war-weariness.ts:391 — gdy `wearinessForcedPeaceDue(...) && d.battlePending` → `none()`; pokój wymuszony jest odraczany na następną turę (decyzja ABC orkiestratora z komentarza). W sondzie tura 2 kończyła się z otwartą bitwą AI (pb-overlay=1), tick zwrócił „none”, a pending pojawił się dopiero w turze 3.
-3. Test S4 zakłada okno po PIERWSZYM końcu tury (1→2), czyli w chwili, gdy pokój jest już „due”, ale jeszcze odroczony. Test czeka 90 s bez kolejnej tury, więc okno nie ma skąd się pojawić. Esc w teście „odsłania” okno dopiero po kolejnym przejściu (zgodne z obserwacją: pending pojawia się przy następnym ticku).
-4. Komentarz main.ts ~41664 („wraca na wierzch na początku tury gracza”) dotyczy kolejki, która już istnieje; nie obejmuje przypadku „due, ale odroczone przez bitwę” — w tym przypadku w ogóle nie ma wpisu w kolejce do przywrócenia.
+UWAGI-DLA-ORKIESTRATORA:
+- Odkrycie w teście: po auto-walce AI ekran „Wynik auto-walki” (src/ui/postBattleSummary.ts, przycisk „Kontynuuj”) potrafi przesłonić okno pokoju wymuszonego, dopóki gracz nie kliknie Kontynuuj. Test zamyka ten ekran jak bitwę (closeSummaries) i mierzy, czy przycisk okna jest na wierzchu (overlayTopmost). To nie zmienia logiki gry; do decyzji, czy kolejka okien powinna czekać na zamknięcie wyniku bitwy (poza tym tematem).
+- Pierwsza wersja testu klikała „Akceptuję” przez Playwright i trafiała w nakładkę ekranu wyniku; w S2 klik zrobiono przez DOM (click() na przycisku okna).
+- Ścieżka robocza (do sprzątania): /home/user/The-Game/.claude/worktrees/wf_e10e019c-4fb-1; zrzuty i bundle: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/fpb-base (ev4/s4-okno-pokoju.png), .../fpb-mut (mutacja). node_modules w gra/ zainstalowane (npm ci --ignore-scripts).
 
-WNIOSEK: nie znalazłem defektu w main.ts, który wymagałby poprawki w allowliście. Rozbieżność dotyczy reguły odroczenia (war-weariness.ts, poza allowlistą i w ZAKAZIE tematu) oraz oczekiwania testu. Dalsza naprawa wymaga decyzji właściciela, nie zmiany kodu przez Operatora.
-
-BLOKADY: (a) war-weariness.ts:391 jest poza allowlistą i ZAKAZ; (b) zmiana zachowania (pokój wymuszony wyskakujący od razu po zamknięciu bitwy, zamiast w następnej turze) zmienia logikę pokoju — wymaga ABC; (c) test S4 w obecnej formie oczekuje okna przy due+odroczonym pokoju.
-
-DECYZJA DO PODJĘCIA (DECISION_REQUIRED), dwie opcje:
-- A: po zamknięciu bitwy, gdy pokój był odroczony przez `battlePending`, ponownie uruchomić tick wojny (main.ts, po flushu kolejki preBattle) — zmienia moment pokoju o 0 tur, wymaga zmiany allowlisty o war-weariness.ts (wywołanie/flaga) i nowego testu;
-- B: zostawić odroczenie, a S4 przepisać na oczekiwanie okna dopiero w turze, w której tick tworzy pending (test-only, bez zmiany gry).
-
-ZALECENIE OPERATORA: B (najmniejsza zmiana, zgodna z ABC „odroczenie na następną turę”), o ile właściciel potwierdzi, że 1-turowe opóźnienie jest akceptowalne.
-
-NASTĘPNY KROK: decyzja właściciela A/B; po niej Operator runda 2 (lub integracja testu).
-RUNDY: 1/5 (ostatni werdykt: brak; decyzja wymagana).
+RUNDY: 2/5 (Operator HAIKU; licznik porażek Haiku = 0)
+NASTĘPNY KROK: Evaluator (SONNET) — weryfikacja testu żywego i mutacji; potem Final Control.
 DEPLOY/PUSH: NIE WYKONANO

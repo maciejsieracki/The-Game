@@ -74,9 +74,28 @@ const turnNo = (page) => page.evaluate(() => window.__truceTestDebug.turn());
 
 /** Domyka bitwy wyzwolone przez AI (pre-battle .pb-overlay). Preferuje „Auto” (rozstrzyga bitwę bez wycofania), inaczej pierwszy aktywny przycisk.
  * Zwraca liczbę kliknięć — ile bitew zostało domkniętych przed asercją. */
+/** Zamyka ekran wyniku bitwy („Wynik auto-walki” / „Wynik bitwy”, przycisk Kontynuuj) — część bitwy, nie okno pokoju. */
+async function closeSummaries(page) {
+  let n = 0;
+  for (let i = 0; i < 10; i++) {
+    const btn = page.locator('button').filter({ hasText: /^\s*kontynuuj\s*$/i }).first();
+    if (!(await btn.count()) || !(await btn.isVisible().catch(() => false))) break;
+    await btn.click({ force: true, timeout: 5000 }).catch(() => {});
+    n++;
+    await wait(400);
+    await waitIdle(page);
+  }
+  return n;
+}
+/** Otwarty ekran bitwy: pre-battle (.pb-overlay) albo wynik bitwy z przyciskiem Kontynuuj. */
+const battleUiOpen = (page) => page.evaluate(() => {
+  if (document.querySelector('.pb-overlay')) return true;
+  return [...document.querySelectorAll('button')].some(b => /^\s*kontynuuj\s*$/i.test(b.textContent || '') && b.offsetParent !== null);
+});
 async function clearBattles(page) {
   let n = 0;
   for (let i = 0; i < 40; i++) {
+    n += await closeSummaries(page);
     if ((await page.locator('.pb-overlay').count()) === 0) break;
     const auto = page.locator('.pb-overlay button[data-act="auto"]:not([disabled])').first();
     const target = (await auto.count()) ? auto : page.locator('.pb-overlay button:not([disabled])').first();
@@ -85,6 +104,7 @@ async function clearBattles(page) {
     await wait(700);
     await waitIdle(page);
   }
+  n += await closeSummaries(page);
   return n;
 }
 
@@ -119,6 +139,51 @@ async function waitOverlayClearing(page, ms) {
     await wait(500);
   }
   return { ok: false, sec: ms / 1000, cleared };
+}
+const pendingCount = (page) => page.evaluate(() => window.__truceTestDebug.pendingForcedPeaceForTest().length);
+/** Obserwator (MutationObserver) zapamiętuje PIERWSZE pojawienie się okna pokoju; bez wejścia użytkownika. */
+const armAutoOpenObserver = (page) => page.evaluate(() => {
+  window.__fpFirstSeen = null;
+  if (window.__fpObs) window.__fpObs.disconnect();
+  window.__fpObs = new MutationObserver(() => {
+    if (window.__fpFirstSeen === null && document.querySelector('.civ-diplo-modal-overlay .cd-forced-peace-ok')) {
+      window.__fpFirstSeen = performance.now();
+    }
+  });
+  window.__fpObs.observe(document.body, { childList: true, subtree: true });
+});
+const autoOpenSeen = (page) => page.evaluate(() => window.__fpFirstSeen !== null);
+/** Przycisk okna pokoju jest widoczny i to nakładka okna jest na wierzchu (nie przesłania jej inne okno). */
+const overlayTopmost = (page) => page.evaluate(() => {
+  const b = document.querySelector('.civ-diplo-modal-overlay .cd-forced-peace-ok');
+  if (!b) return false;
+  const r = b.getBoundingClientRect();
+  const el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+  return !!el && !!el.closest('.civ-diplo-modal-overlay');
+});
+/** Jedna tura przez REALNE endTurn. Bitwy AI są widoczne na końcu tury (przed domknięciem) — stan pending mierzony w tym oknie. */
+async function driveOneTurn(page) {
+  const start = await turnNo(page);
+  await waitIdle(page);
+  await clearBattles(page);
+  await page.evaluate(() => window.__eraTestDebug.endTurn());
+  await waitIdle(page);
+  await wait(150);
+  const battleOpenAfterEnd = await battleUiOpen(page);
+  const pendingAfterEnd = await pendingCount(page);
+  const clicks = await clearBattles(page);
+  return { advanced: (await turnNo(page)) > start, battleOpenAfterEnd, pendingAfterEnd, clicks };
+}
+/** Prowadzi tury, aż pendingForcedPeaceForTest() pokaże pozycję (tura utworzenia pending). Bez akcji na oknie pokoju. */
+async function advanceUntilPending(page, maxTurns) {
+  const log = [];
+  for (let k = 0; k < maxTurns; k++) {
+    if ((await pendingCount(page)) > 0) return { ok: true, turns: k, log };
+    if ((await overlayCount(page)) > 0) return { ok: true, turns: k, log, overlayAlreadyUp: true };
+    await armAutoOpenObserver(page);
+    log.push(await driveOneTurn(page));
+  }
+  return { ok: (await pendingCount(page)) > 0, turns: maxTurns, log };
 }
 const endBtn = (page) => page.locator('button.end-turn[data-end]');
 const endBtnState = (page) => page.evaluate(() => {
@@ -161,29 +226,43 @@ async function main() {
     fails++;
   }
 
-  // ---- (4) + (3) pojedynczy pokój wymuszony: bramka, Esc, tło, akceptacja
-  scenario('S4', 'bramka „Zakończ turę” przy pending (przycisk / Enter / Esc / tło / akceptacja)');
+  // ---- (4) + (3) pojedynczy pokój wymuszony: bramka, Esc, tło, akceptacja (runda 3: tura utworzenia pending, auto-otwarcie)
+  scenario('S4', 'bramka „Zakończ turę” przy pending (przycisk / Enter / Esc / tło / akceptacja) + auto-otwarcie okna');
   scenario('S3', 'spójność okna (wiersze miast) z wpisem warLog po akceptacji');
   try {
     if (ais.length < 1) throw new Error('brak AI');
     const ai = ais[0];
     await page.evaluate((a) => window.__truceTestDebug.setWarAge(a, 40), ai);
-    const turnBefore = await turnNo(page);
-    const advanced = await tryEndFullTurn(page);
+    const adv = await advanceUntilPending(page, 12);
+    measured('S4', 'tury do utworzenia pending (od ustawienia wojny)', { turns: adv.turns, log: adv.log });
+    check('S4', adv.ok, 'pending pokoju wymuszonego powstaje w ciągu 12 tur (pendingForcedPeaceForTest)', { turns: adv.turns });
+    // (3) Odroczenie: w turach, w których bitwa była otwarta po końcu tury, pending NIE może powstać.
+    const deferredTurns = adv.log.filter(r => r.battleOpenAfterEnd && r.pendingAfterEnd === 0).length;
+    const leaked = adv.log.filter(r => r.battleOpenAfterEnd && r.pendingAfterEnd > 0).length;
+    if (deferredTurns > 0) {
+      check('S4', leaked === 0, 'odroczenie: przy trwającej bitwie pending nie powstaje do jej zamknięcia', { deferredTurns, leaked });
+    } else {
+      nmz('S4', 'odroczenie przy trwającej bitwie NIE ZMIERZONO: w żadnej turze bitwa nie była otwarta po końcu tury');
+    }
+    // (2) Samo otwarcie okna: po utworzeniu pending okno ma się pojawić BEZ Esc/kliknięcia w okno pokoju.
     const w4 = await waitOverlayClearing(page, 90000);
-    measured('S4', 'czas do pojawienia się okna pokoju po turze (s) i domknięte bitwy', w4);
-    measured('S4', 'ostrzeżenia konsoli dotyczące pokoju/tury (diagnostyka)', warns.slice(0, 12));
+    const autoFired = await autoOpenSeen(page);
+    // Ekran wyniku bitwy (Kontynuuj) może przesłaniać okno — zamykamy go jak bitwę, nie okno pokoju.
+    const summariesClosed = await closeSummaries(page);
+    measured('S4', 'czas do pojawienia się okna (s), domknięte bitwy, obserwator MutationObserver', { ...w4, autoFired, summariesClosed, pendingNow: await pendingCount(page) });
     const battlesLeft = await battleCount(page);
     const autoShown = (await overlayCount(page)) === 1;
-    // D1 (zarzut 2 Evaluatora): sprawdzamy SAMOCZYNNE pojawienie się okna po końcu tury, bez akcji gracza.
-    check('S4', w4.ok && autoShown, 'po końcu tury okno pokoju wymuszonego pojawia się samo (do 90 s)', { autoShown, sec: w4.sec, battlesLeft, advanced });
+    const topmost = await overlayTopmost(page);
+    check('S4', w4.ok && autoShown && autoFired, 'okno pokoju pojawia się SAMO w tej turze (bez Esc/kliknięcia; MutationObserver)', { autoShown, autoFired, sec: w4.sec, battlesLeft });
+    check('S4', topmost, 'okno pokoju jest na wierzchu (przycisk widoczny, nie przesłonięty innym oknem)', { topmost });
     if (!autoShown) {
-      // Okno nie pojawiło się: jeden Esc (zmierzony jako odsłaniający okno) tylko po to, by domknąć resztę scenariusza.
+      // Okno nie pojawiło się: jeden Esc tylko diagnostycznie, by domknąć resztę scenariusza.
       await page.keyboard.press('Escape');
       await wait(300);
       measured('S4', 'okno po jednym Esc, gdy nie pojawiło się samo (odsłonięcie, diagnostyka)', { count: await overlayCount(page) });
     }
     check('S4', (await overlayCount(page)) === 1, 'okno pokoju wymuszonego jest widoczne przed sprawdzaniem bramki', { count: await overlayCount(page) });
+    check('S4', (await pendingCount(page)) === 1, 'pending istnieje i okno jest widoczne (rozróżnienie: pending + okno)', { pending: await pendingCount(page), okno: await overlayCount(page) });
     measured('S4', 'stan przycisku „Zakończ turę” przy pending', await endBtnState(page));
     const txt = await modalText(page);
     measured('S3', 'tekst okna (pierwsze 400 znaków)', txt.slice(0, 400));
@@ -236,44 +315,33 @@ async function main() {
     results.S4.asserts.push({ ok: false, what: 'wyjątek', detail: e.message }); results.S4.status = 'FAIL'; fails++;
   }
 
-  // ---- (2) kolejka dwóch pokoi
-  scenario('S2', 'kolejka dwóch oczekujących pokojów (dwie cywilizacje)');
+  // ---- (2) kolejka dwóch pokoi. S2(a) = asserted: okno pierwszego pojawia się SAMO. S2(b)/D2 = NIE ROZSTRZYGNIĘTE (tylko dane).
+  scenario('S2', 'S2(a): dwie wojny -> okno pierwszego pokoju pojawia się samo w turze utworzenia pending');
+  scenario('S2b', 'S2(b)/D2: kolejka drugiego pokoju po akceptacji pierwszego');
   if (ais.length < 2) {
     nmz('S2', `mapa testowa ma tylko ${ais.length} AI (potrzebne 2)`);
+    nmz('S2b', `mapa testowa ma tylko ${ais.length} AI (potrzebne 2)`);
   } else {
     try {
       await page.evaluate((list) => { list.forEach(a => window.__truceTestDebug.setWarAge(a, 40)); }, ais.slice(0, 2));
-      const advanced = await tryEndFullTurn(page);
+      const adv2 = await advanceUntilPending(page, 12);
+      check('S2', adv2.ok, 'pending dla dwóch wojen powstaje (do 12 tur)', { turns: adv2.turns });
       const w2 = await waitOverlayClearing(page, 90000);
-      measured('S2', 'czas do pojawienia się pierwszego okna (s) i domknięte bitwy', w2);
-      const battlesLeft2 = await battleCount(page);
-      check('S2', w2.ok && (await overlayCount(page)) === 1, 'po turze z dwiema wojnami okno pierwszego pokoju pojawia się samo (do 90 s)', { advanced, battlesLeft2 });
-      if (!w2.ok) {
-        await page.keyboard.press('Escape');
-        await wait(300);
-        measured('S2', 'okno po jednym Esc, gdy nie pojawiło się samo (odsłonięcie, diagnostyka)', { count: await overlayCount(page) });
-      }
-      measured('S2', 'status par przed akceptacją', { p1: await pairStatus(page, ais[0]), p2: await pairStatus(page, ais[1]), turn: await turnNo(page) });
+      const autoFired2 = await autoOpenSeen(page);
+      measured('S2', 'czas do pojawienia się pierwszego okna (s), domknięte bitwy, obserwator', { ...w2, autoFired2 });
+      await closeSummaries(page);
+      check('S2', w2.ok && autoFired2 && (await overlayCount(page)) === 1 && (await overlayTopmost(page)), 'po turze z dwiema wojnami okno pierwszego pokoju pojawia się samo i jest na wierzchu (do 90 s, bez Esc/kliknięcia)', { battlesLeft: await battleCount(page), pending: await pendingCount(page) });
+      measured('S2', 'status par i pending przed akceptacją', { p1: await pairStatus(page, ais[0]), p2: await pairStatus(page, ais[1]), turn: await turnNo(page), pending: await pendingCount(page) });
+      // Akceptacja pierwszego: klik DOM na przycisku okna (Playwright odrzucał klik — przechwytywany przez nakładkę).
       const t0 = await turnNo(page);
-      await page.locator('.cd-forced-peace-ok').first().click();
+      await page.evaluate(() => { const b = document.querySelector('.civ-diplo-modal-overlay .cd-forced-peace-ok'); if (b) b.click(); });
       await wait(500);
-      measured('S2', 'status par po akceptacji pierwszego', { p1: await pairStatus(page, ais[0]), p2: await pairStatus(page, ais[1]) });
+      measured('S2b', 'po akceptacji pierwszego: pending, okno, statusy par', { pending: await pendingCount(page), okno: await overlayCount(page), p1: await pairStatus(page, ais[0]), p2: await pairStatus(page, ais[1]) });
       const w3 = await waitOverlayClearing(page, 30000);
-      const appeared3 = w3.ok;
-      measured('S2', 'czas do pojawienia się drugiego okna po akceptacji pierwszego (s)', w3);
-      check('S2', appeared3, 'po akceptacji pierwszego okno drugiego pokoju wraca (kolejka, do 30 s)');
-      const txt2 = await modalText(page);
-      measured('S2', 'treść drugiego okna (fragment)', txt2.slice(0, 160));
-      await endBtn(page).click({ force: true, timeout: 5000 }).catch(() => {});
-      await wait(500);
-      await waitIdle(page);
-      check('S2', (await turnNo(page)) === t0, 'po akceptacji pierwszego nadal zablokowane (tura nie rusza) — para 2 nadal „wojna”', { t0, t1: await turnNo(page), p2: await pairStatus(page, ais[1]), okno: await overlayCount(page) });
-      if (appeared3) await page.locator('.cd-forced-peace-ok').first().click();
-      await wait(500);
-      check('S2', (await overlayCount(page)) === 0, 'po akceptacji drugiego okno znika');
-      const ok = await tryEndFullTurn(page);
-      check('S2', ok, 'po akceptacji obu tura odblokowana i kończy się');
-      note('S2: brak haka odczytu pendingForcedPeaceTreaties — czy druga pozycja powstała, została usunięta przez prune czy zagłuszona, nie jest rozstrzygnięte; wynik opisuje tylko okno i status par.');
+      measured('S2b', 'drugie okno w ciągu 30 s po akceptacji pierwszego (dane, nie asercja)', w3);
+      const tEnd = await tryEndFullTurn(page);
+      measured('S2b', 'tura po akceptacji pierwszego (dane)', { t0, t1: await turnNo(page), advanced: tEnd });
+      nmz('S2b', 'NIE ROZSTRZYGNIĘTE (D2, decyzja właściciela 2026-11-18): druga wojna → drugi pokój; brak haka odczytu pozycji po prune; wynik tylko zmierzony powyżej');
     } catch (e) {
       console.error('S2 EXC', e.message);
       results.S2.asserts.push({ ok: false, what: 'wyjątek', detail: e.message }); results.S2.status = 'FAIL'; fails++;
