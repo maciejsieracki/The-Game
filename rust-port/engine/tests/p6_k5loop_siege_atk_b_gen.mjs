@@ -806,3 +806,74 @@ write('vectors_nan.json', nanCases, SEED + 1);
 rnd = mulberry32(SEED + 2);
 const edgeCases = gen('edge', { cata: 120, ram: 60, inf: 60, cav: 40 }, 'edge');
 write('vectors_edge.json', edgeCases, SEED + 2);
+
+// Obrona r1 (zarzut 3, mutanty Evaluatora E14 i E11): odwrot z wyburzonego kafla (`_breachWallTile` `:7697-7741`).
+// (a) `retreat-dc3`: obronca (nie katapulta) na koronie w wierszu wylomu, pola `dc = 1` i `dc = 2` (wiersze `wr`,
+//     `wr +- 1`, `wr +- 2`) zajete albo nieprzejezdne, wiec o polu odwrotu decyduje dopiero `dc = 3` (`:7719`);
+// (b) `retreat-fading`: obronca `fadingOut` na wyburzonym kaflu (`:7698` `continue`): zostaje na polu i na koronie.
+// Scenariusz bazowy = `makeCase('cata')`; wszystkie kafle maja HP 1 (kazde trafienie wyburza). Wiersz wylomu z pierwszego
+// wykonania pinu (`lastAttackedWallRow`); po dostawieniu jednostek pin jest wykonywany ponownie i to wynik tego wykonania
+// jest wektorem. Osobny plik i ziarno (SEED + 3): vectors/vectors_nan/vectors_edge bez zmian bajt w bajt.
+rnd = mulberry32(SEED + 3);
+function retreatCase(fading) {
+  for (let t = 0; t < 20000; t++) {
+    const sc = makeCase('cata', null);
+    if (!sc || sc.wallCol > BF_COLS - 5 || sc.wallTiles.length === 0) continue;
+    for (const w of sc.wallTiles) w[1] = 1;
+    const probe = activate(structuredClone(sc));
+    if (branchOf(sc, probe) !== 'wall-breach' || probe.trace.includes('flee')) continue;
+    const W = sc.wallCol;
+    const wr = probe.lastAttackedWallRow;
+    const at = (q, r) => [...sc.atk, ...sc.def].find((u) => u.q === q && u.r === r);
+    const blockedTile = (q, r) => sc.terrain.tiles.some((x) => x.c === q && x.r === r && !x.pass);
+    let u = at(W, wr);
+    if (u && u.side === 'atk') continue;
+    if (!u) { u = baseUnit('def', sc.def.length, W, wr); sc.def.push(u); }
+    Object.assign(u, { onWall: true, cata: false, siege: false, dead: false, routed: false, fadingOut: fading, rangedBase: false, ammoLeft: 0 });
+    if (!fading) {
+      for (let dc = 1; dc <= 2; dc++) {
+        const cc = Math.min(BF_COLS - 1, W + dc);
+        for (let dr = 0; dr <= 2; dr++) {
+          for (const rr of [wr + dr, wr - dr]) {
+            const rc = Math.max(0, Math.min(BF_ROWS - 1, rr));
+            if (!at(cc, rc) && !blockedTile(cc, rc)) sc.def.push(baseUnit('def', sc.def.length, cc, rc));
+          }
+        }
+      }
+    }
+    const expect = activate(structuredClone(sc));
+    if (branchOf(sc, expect) !== 'wall-breach' || expect.lastAttackedWallRow !== wr || expect.trace.includes('flee')) continue;
+    return sc;
+  }
+  throw new Error('za malo scenariuszy odwrotu');
+}
+const retreatCases = [];
+for (const [fading, n] of [[false, 60], [true, 30]]) {
+  for (let i = 0; i < n; i++) {
+    const sc = retreatCase(fading);
+    retreatCases.push(finalize(sc, activate(sc), `siege-atk-b-retreat-${fading ? 'fading' : 'dc3'}-${i}`, 'cata'));
+  }
+}
+// Liczniki pokrycia (nazwy jak w tescie `pokrycie_odwrotu_z_muru`): obronca z korony wiersza wylomu skonczyl w kolumnie
+// `W + 3` (`retreatDc3`); obronca `fadingOut` zostal na polu i na koronie (`retreatSkipFading`).
+const retreatStats = (cases) => {
+  let dc3 = 0;
+  let skipFading = 0;
+  for (const c of cases) {
+    const W = c.wallCol;
+    const wr = c.expect.lastAttackedWallRow;
+    const start = [...c.atk, ...c.def];
+    c.expect.units.forEach((u, i) => {
+      const s = start[i];
+      if (s.side !== 'def' || !s.onWall || s.q !== W || s.r !== wr) return;
+      if (s.fadingOut && u.onWall && u.q === W && u.r === wr) skipFading += 1;
+      if (!s.fadingOut && !u.onWall && u.q === Math.min(BF_COLS - 1, W + 3)) dc3 += 1;
+    });
+  }
+  return { retreatDc3: dc3, retreatSkipFading: skipFading };
+};
+{
+  const stats = { ...statsFor(retreatCases), ...retreatStats(retreatCases) };
+  console.error('vectors_retreat.json', JSON.stringify(stats));
+  writeFileSync(join(outDir, 'vectors_retreat.json'), JSON.stringify({ pin: PIN, seed: SEED + 3, pinSha256: PIN_SHA256, stats, cases: retreatCases }, nanJson) + '\n');
+}

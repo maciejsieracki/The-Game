@@ -5635,3 +5635,79 @@ mod prod_tag_tests {
         );
     }
 }
+
+#[cfg(test)]
+mod plains_cell_tests {
+    //! Obrona r1 K5LOOP-SIEGE-ATK-B (zarzut 2, E21/E22): nakładka [`PlainsCell`] = pin `tiles[idx] = BTerrain.Plains`
+    //! (`_breachWallTile` `battleScene.ts:7644`, `_breachGate` `:7770`). Pin NADPISUJE typ kafla, więc każdy odczyt
+    //! terenu na tym polu widzi `Plains` niezależnie od tego, co było pod spodem: przejezdny, `moveCost =
+    //! MOVE_COST[Plains] = 1` (`battle-terrain.ts:139`, `:795`), `isFordTile` (`battleScene.ts:1897`) = `at(c, r) === Ford` fałsz
+    //! (`battle-terrain.ts:42`). Warstwa niżej jest celowo „najgorsza” (nieprzejezdna, koszt 3, bród, mnożnik jazdy 2),
+    //! żeby każdą regułę nakładki rozstrzygała nakładka, a nie teren pod spodem.
+    use super::*;
+
+    struct WorstTerrain;
+
+    impl MoveTerrain for WorstTerrain {
+        fn passable(&self, _col: f64, _row: f64) -> bool {
+            false
+        }
+        fn move_cost(&self, _col: f64, _row: f64) -> f64 {
+            3.0
+        }
+        fn is_ford(&self, _col: f64, _row: f64) -> bool {
+            true
+        }
+        fn cavalry_multiplier(&self, _col: f64, _row: f64) -> f64 {
+            2.0
+        }
+    }
+
+    fn breached(col: f64, row: f64) -> PlainsCell {
+        PlainsCell {
+            inner: Box::new(WorstTerrain),
+            col,
+            row,
+        }
+    }
+
+    #[test]
+    fn wyburzony_kafel_jest_rownina_jak_pin() {
+        let t = breached(30.0, 7.0);
+        assert!(t.passable(30.0, 7.0));
+        assert_eq!(t.move_cost(30.0, 7.0), 1.0, "MOVE_COST[Plains]");
+        assert!(!t.is_ford(30.0, 7.0), "Plains nie jest brodem");
+        // Mnożnik jazdy: nazwa terenu walki muru/bramy i Plains jest ta sama (`battle-terrain.ts:151,157-158`).
+        assert_eq!(t.cavalry_multiplier(30.0, 7.0), 2.0);
+        for (c, r) in [(30.0, 8.0), (31.0, 7.0), (29.0, 7.0), (30.0, 6.0)] {
+            assert!(!t.passable(c, r));
+            assert_eq!(t.move_cost(c, r), 3.0);
+            assert!(t.is_ford(c, r));
+        }
+        // Dwa kafle bramy (`gr - 1` i `gr`, `:7768-7772`): obie nakładki działają, reszta bez zmian.
+        let two = PlainsCell {
+            inner: Box::new(t),
+            col: 30.0,
+            row: 8.0,
+        };
+        for r in [7.0, 8.0] {
+            assert!(two.passable(30.0, r));
+            assert_eq!(two.move_cost(30.0, r), 1.0);
+            assert!(!two.is_ford(30.0, r));
+        }
+        assert!(!two.passable(30.0, 9.0));
+        assert_eq!(two.move_cost(30.0, 9.0), 3.0);
+        assert!(two.is_ford(30.0, 9.0));
+    }
+
+    /// Koszt kroku przez wyburzony kafel w `_doMove` (`ProdMoveWorld::move_cost` = [`unit_move_cost`] nad terenem ciała,
+    /// pin `_moveCostForUnit` `:7436-7444`): piechota płaci `MOVE_COST[Plains] = 1`, jazda `1 × mnożnik`; pole obok
+    /// zostaje nieprzejezdne (`Infinity`).
+    #[test]
+    fn krok_przez_wyburzony_kafel_placi_koszt_rowniny() {
+        let t = breached(30.0, 7.0);
+        assert_eq!(unit_move_cost(&t, false, 30.0, 7.0), 1.0);
+        assert_eq!(unit_move_cost(&t, true, 30.0, 7.0), 2.0);
+        assert_eq!(unit_move_cost(&t, false, 31.0, 7.0), f64::INFINITY);
+    }
+}

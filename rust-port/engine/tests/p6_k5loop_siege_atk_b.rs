@@ -7,7 +7,7 @@
 //! - pozostałe gałęzie atakującego przy murze (krok doktryny, cios, strzelec, jazda, falanga, krok, odwrót) z bramką
 //!   `_doMove` (`_siegeMoveRefused` + `_siegeShooterThreats`, `:8689`) i filtrem `_meleeBlockedByWall`.
 //!
-//! Wektory: `p6_k5loop_siege_atk_b_vectors/{vectors,vectors_nan,vectors_edge}.json`, generowane przez
+//! Wektory: `p6_k5loop_siege_atk_b_vectors/{vectors,vectors_nan,vectors_edge,vectors_retreat}.json`, generowane przez
 //! `p6_k5loop_siege_atk_b_gen.mjs`, który WYKONUJE tekst pinu (strażnik SHA-256 wycinków).
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
@@ -41,6 +41,8 @@ use serde_json::Value;
 const VECTORS: &str = include_str!("p6_k5loop_siege_atk_b_vectors/vectors.json");
 const VECTORS_NAN: &str = include_str!("p6_k5loop_siege_atk_b_vectors/vectors_nan.json");
 const VECTORS_EDGE: &str = include_str!("p6_k5loop_siege_atk_b_vectors/vectors_edge.json");
+/// Obrona r1 (zarzut 3): odwrót z wyburzonego kafla rozstrzygany przez `dc = 3` i obrońca `fadingOut` na kaflu.
+const VECTORS_RETREAT: &str = include_str!("p6_k5loop_siege_atk_b_vectors/vectors_retreat.json");
 const PIN: &str = "07d2fbd72f758705f8e1d59cc4968027ffbafe75";
 /// Strażnik generatora (`EXPECTED_SHA256` w `p6_k5loop_siege_atk_b_gen.mjs`).
 const PIN_SHA256: &str = "489ddf8ec4d902b13ccd8e83109506ef34d3659b0657aef924f821661d441699";
@@ -1155,6 +1157,53 @@ fn zgodnosc_z_pinem_krawedzie_planszy() {
     at_least(&cov, "ram-move", 20);
 }
 
+/// Obrona r1 (zarzut 3, mutanty E14/E11): `_breachWallTile` `:7697-7741`. (a) pola `dc = 1` i `dc = 2` zajęte albo
+/// nieprzejezdne: o polu odwrotu decyduje `dc = 3` (`:7719`); (b) obrońca `fadingOut` na wyburzonym kaflu jest pomijany
+/// (`:7698`) i zostaje na polu i na koronie. Każdy przypadek porównuje pełny stan z pinem (`check_case`); liczniki z
+/// generatora (`retreatDc3`, `retreatSkipFading`) liczy też test z wektora.
+#[test]
+fn zgodnosc_z_pinem_odwrot_z_muru() {
+    let (failures, cov, n) = guarded("odwrot", VECTORS_RETREAT);
+    report("odwrot", &failures);
+    assert!(n >= 90, "liczba wektorow odwrotu {n}");
+    at_least(&cov, "wall-breach", 90);
+    let v = load_from(VECTORS_RETREAT);
+    let (mut dc3, mut skip) = (0i64, 0i64);
+    for c in v["cases"].as_array().expect("cases") {
+        let w = int(&c["wallCol"]);
+        let wr = int(&c["expect"]["lastAttackedWallRow"]);
+        let start: Vec<&Value> = c["atk"]
+            .as_array()
+            .expect("atk")
+            .iter()
+            .chain(c["def"].as_array().expect("def"))
+            .collect();
+        for (s, u) in start
+            .iter()
+            .zip(c["expect"]["units"].as_array().expect("units"))
+        {
+            if s["side"] != "def" || !b(&s["onWall"]) || int(&s["q"]) != w || int(&s["r"]) != wr {
+                continue;
+            }
+            if b(&s["fadingOut"]) {
+                assert!(b(&u["onWall"]) && int(&u["q"]) == w && int(&u["r"]) == wr);
+                skip += 1;
+            } else if !b(&u["onWall"]) && int(&u["q"]) == (w + 3).min(67) {
+                dc3 += 1;
+            }
+        }
+    }
+    assert_eq!(dc3, v["stats"]["retreatDc3"].as_i64().expect("retreatDc3"));
+    assert_eq!(
+        skip,
+        v["stats"]["retreatSkipFading"]
+            .as_i64()
+            .expect("retreatSkipFading")
+    );
+    assert!(dc3 >= 30, "retreatDc3 {dc3}");
+    assert!(skip >= 15, "retreatSkipFading {skip}");
+}
+
 /// Statystyki generatora (liczniki pokrycia skutków wyłomu) — nazwy jak w `statsFor` generatora.
 #[test]
 fn pokrycie_skutkow_wylomu() {
@@ -1202,7 +1251,7 @@ fn brak_tagow_oblezniczych_dla_atakujacego() {
         "oblezenie-odmowa-ruchu",
     ];
     let mut seen_missing = 0usize;
-    for src in [VECTORS, VECTORS_NAN, VECTORS_EDGE] {
+    for src in [VECTORS, VECTORS_NAN, VECTORS_EDGE, VECTORS_RETREAT] {
         let v = load_from(src);
         for case in v["cases"].as_array().expect("cases") {
             for terrain in [true, false] {
@@ -1517,5 +1566,120 @@ fn sterownik_synchronizuje_wylom_z_cialem() {
             .iter()
             .any(|a| matches!(a.action, BattleAction::WallBreach { row: 5 })),
         "akcja ciala przekazana do sterownika"
+    );
+}
+
+/// Ciało-atrapa wyłomu BRAMY (Obrona r1, zarzut 1 / E06): `_attackGate` -> `_breachGate` (`battleScene.ts:7757-7759`:
+/// `gateOpen = true; wallEverBreached = true`) ustawia flagę ciała synchronicznie w aktywacji, BEZ akcji
+/// [`BattleAction::WallBreach`] (brama nie jest kaflem `wallTileHp`, `wall_tile_rows` bez zmian). Jedyną drogą do
+/// sterownika jest [`LoopBody::wall_ever_breached`] w `drain_body`. `breach = false` = bliźniak bez wyłomu.
+struct GateBreachBody {
+    breach: bool,
+    breached: bool,
+    starts: usize,
+}
+
+impl LoopBody for GateBreachBody {
+    fn start(&mut self, unit: UnitRef, _st: &TurnSeqState) -> f64 {
+        self.starts += 1;
+        if self.breach && unit.side == BattleSide::Attacker {
+            self.breached = true;
+        }
+        0.0
+    }
+    fn complete(&mut self, _unit: UnitRef, _st: &mut TurnSeqState) {}
+    fn set_now(&mut self, _v_now: f64) {}
+    fn take_actions(&mut self) -> Vec<TimedAction> {
+        Vec::new()
+    }
+    fn wall_ever_breached(&self) -> bool {
+        self.breached
+    }
+}
+
+/// K5LOOP-SIEGE-ATK-B, Obrona r1 (zarzut 1): wyłom bramy w ciele przechodzi do sterownika wyłącznie przez
+/// `body.wall_ever_breached()` (`drain_body`). Skutek w sterowniku = `_roundCapVerdict` (`battleScene.ts:9449-9464`):
+/// mur bez wyłomu kończy bitwę REMISEM po `siegeNoBreachMaxRounds` (tu 2), po wyłomie sufit to `FF_MAX_ROUNDS`.
+/// Bez synchronizacji oba przebiegi kończą się remisem po 2 rundach.
+#[test]
+fn sterownik_przejmuje_wylom_bramy_z_ciala_bez_akcji_wallbreach() {
+    use civ_engine::domain::siege_tactics_clock::VirtualClock;
+    use civ_engine::domain::siege_tactics_fastforward::FfStop;
+    use civ_engine::domain::siege_tactics_loop::{LoopTimer, SiegeEnv, SiegeLoop};
+    let cu = || CombatUnit {
+        hp: 100.0,
+        morale: 100.0,
+        flee_morale: 0.0,
+        move_left: 1.0,
+        never_rout: false,
+        dead: false,
+        fading_out: false,
+        routed: false,
+        removed: false,
+        acted: false,
+    };
+    let run = |breach: bool| {
+        let st = TurnSeqState {
+            atk: vec![SeqUnit { id: 1, c: cu() }],
+            def: vec![SeqUnit { id: 2, c: cu() }],
+            turn_order: Vec::new(),
+            turn_idx: 0,
+            round_no: 0,
+            siege_wall_col: 30,
+            manual_mode: false,
+            player_side: BattleSide::Attacker,
+            finished: false,
+            awaiting_orders: false,
+            auto_battle_suspended: false,
+            busy: false,
+            auto_batch_planning: false,
+            queued_order_ids: BTreeSet::new(),
+        };
+        let env = SiegeEnv {
+            body: GateBreachBody {
+                breach,
+                breached: false,
+                starts: 0,
+            },
+            tower_rows: Vec::new(),
+            pending_tower_shots: Vec::new(),
+            tower_range: 2.0,
+            tower_shot: None,
+            wall_tile_rows: vec![4, 5, 6],
+            wall_ever_breached: false,
+            no_breach_cap: 2,
+            move_points: [vec![1.0], vec![1.0]],
+            morale_max: [vec![100.0], vec![100.0]],
+        };
+        let mut sl = SiegeLoop::new(st, env);
+        let mut clock: VirtualClock<LoopTimer> = VirtualClock::new();
+        let stop = sl.run(&mut clock, 4000);
+        (stop, sl)
+    };
+    let (stop_twin, twin) = run(false);
+    // Bliźniak: mur bez wyłomu, sufit `siegeNoBreachMaxRounds = 2` (`_beginTurn` -> `_checkEnd` -> remis).
+    assert_eq!(stop_twin, FfStop::Finished);
+    assert_eq!(twin.winner_label(), Some("remis"));
+    assert!(!twin.env.wall_ever_breached);
+    assert_eq!(twin.st.round_no, 2, "bliźniak: remis po 2 rundach");
+
+    let (stop, sl) = run(true);
+    assert!(sl.env.body.breached, "ciało ustawiło wyłom bramy");
+    assert!(sl.env.body.starts >= 1);
+    // Synchronizacja: flaga sterownika z ciała, bez akcji `WallBreach` i bez zmiany kafli muru.
+    assert!(sl.env.wall_ever_breached, "drain_body przenosi wyłom bramy");
+    assert_eq!(sl.env.wall_tile_rows, vec![4, 5, 6]);
+    assert!(!sl
+        .actions()
+        .iter()
+        .any(|a| matches!(a.action, BattleAction::WallBreach { .. })));
+    // Skutek: brak remisu „mur bez wyłomu” po 2 rundach; bitwa trwa dalej niż bliźniak.
+    assert_eq!(stop, FfStop::StepLimit, "po wyłomie bramy bitwa trwa");
+    assert_eq!(sl.winner_label(), None);
+    assert!(
+        sl.st.round_no > 2 * twin.st.round_no,
+        "po wyłomie bramy runda {} > {}",
+        sl.st.round_no,
+        twin.st.round_no
     );
 }
