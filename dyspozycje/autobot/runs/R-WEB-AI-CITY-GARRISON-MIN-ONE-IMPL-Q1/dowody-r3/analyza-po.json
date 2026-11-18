@@ -1,0 +1,1558 @@
+{
+ "file": "seed4242.jsonl",
+ "player": 0,
+ "control": [
+  {
+   "turn": 10,
+   "peace": {
+    "cities": 41,
+    "empty": 11
+   },
+   "war": {
+    "cities": 0,
+    "empty": 0
+   },
+   "playerCities": 1
+  },
+  {
+   "turn": 20,
+   "peace": {
+    "cities": 41,
+    "empty": 12
+   },
+   "war": {
+    "cities": 0,
+    "empty": 0
+   },
+   "playerCities": 1
+  },
+  {
+   "turn": 30,
+   "peace": {
+    "cities": 90,
+    "empty": 32
+   },
+   "war": {
+    "cities": 0,
+    "empty": 0
+   },
+   "playerCities": 1
+  },
+  {
+   "turn": 40,
+   "peace": {
+    "cities": 62,
+    "empty": 12
+   },
+   "war": {
+    "cities": 85,
+    "empty": 44
+   },
+   "playerCities": 1
+  },
+  {
+   "turn": 50,
+   "peace": {
+    "cities": 68,
+    "empty": 4
+   },
+   "war": {
+    "cities": 109,
+    "empty": 23
+   },
+   "playerCities": 1
+  },
+  {
+   "turn": 60,
+   "peace": {
+    "cities": 71,
+    "empty": 42
+   },
+   "war": {
+    "cities": 125,
+    "empty": 7
+   },
+   "playerCities": 1
+  }
+ ],
+ "events": [
+  {
+   "turn": 11,
+   "owner": 13,
+   "city": "city15",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 12,
+   "owner": 14,
+   "city": "city16",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 24,
+   "owner": 1,
+   "city": "city5",
+   "war": false,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 25,
+   "owner": 10,
+   "city": "city12",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 25,
+   "owner": 10,
+   "city": "city13",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 31,
+   "owner": 13,
+   "city": "city15",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 32,
+   "owner": 13,
+   "city": "city16",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 33,
+   "owner": 19,
+   "city": "city61",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 33,
+   "owner": 19,
+   "city": "city79",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 34,
+   "owner": 19,
+   "city": "city45",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 35,
+   "owner": 1,
+   "city": "city4",
+   "war": false,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 35,
+   "owner": 13,
+   "city": "city15",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 35,
+   "owner": 13,
+   "city": "city16",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 35,
+   "owner": 13,
+   "city": "city44",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 37,
+   "owner": 16,
+   "city": "city19",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 37,
+   "owner": 16,
+   "city": "city98",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 37,
+   "owner": 19,
+   "city": "city79",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 37,
+   "owner": 22,
+   "city": "city25",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 37,
+   "owner": 22,
+   "city": "city80",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 39,
+   "owner": 1,
+   "city": "city4",
+   "war": false,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 39,
+   "owner": 13,
+   "city": "city15",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 39,
+   "owner": 31,
+   "city": "city93",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 39,
+   "owner": 31,
+   "city": "city108",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 40,
+   "owner": 1,
+   "city": "city5",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 40,
+   "owner": 1,
+   "city": "city65",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 40,
+   "owner": 7,
+   "city": "city9",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 40,
+   "owner": 7,
+   "city": "city10",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 40,
+   "owner": 7,
+   "city": "city43",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 40,
+   "owner": 7,
+   "city": "city51",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 40,
+   "owner": 10,
+   "city": "city13",
+   "war": false,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 40,
+   "owner": 10,
+   "city": "city14",
+   "war": false,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 40,
+   "owner": 22,
+   "city": "city80",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 40,
+   "owner": 22,
+   "city": "city100",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 40,
+   "owner": 34,
+   "city": "city36",
+   "war": true,
+   "left": 1,
+   "stillInCity": 2,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 40,
+   "owner": 34,
+   "city": "city37",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 41,
+   "owner": 1,
+   "city": "city3",
+   "war": false,
+   "left": 1,
+   "stillInCity": 10,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 42,
+   "owner": 7,
+   "city": "city11",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 42,
+   "owner": 7,
+   "city": "city59",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 42,
+   "owner": 7,
+   "city": "city70",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 42,
+   "owner": 7,
+   "city": "city75",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 42,
+   "owner": 7,
+   "city": "city81",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 42,
+   "owner": 7,
+   "city": "city85",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 42,
+   "owner": 7,
+   "city": "city103",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 42,
+   "owner": 7,
+   "city": "city120",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 42,
+   "owner": 7,
+   "city": "city137",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 42,
+   "owner": 19,
+   "city": "city79",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 42,
+   "owner": 28,
+   "city": "city30",
+   "war": true,
+   "left": 2,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 43,
+   "owner": 1,
+   "city": "city42",
+   "war": false,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 43,
+   "owner": 28,
+   "city": "city51",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 44,
+   "owner": 4,
+   "city": "city6",
+   "war": true,
+   "left": 2,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 45,
+   "owner": 4,
+   "city": "city110",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 46,
+   "owner": 4,
+   "city": "city6",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 46,
+   "owner": 7,
+   "city": "city51",
+   "war": true,
+   "left": 1,
+   "stillInCity": 2,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 46,
+   "owner": 34,
+   "city": "city36",
+   "war": true,
+   "left": 3,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 47,
+   "owner": 1,
+   "city": "city4",
+   "war": false,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 47,
+   "owner": 1,
+   "city": "city58",
+   "war": false,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 47,
+   "owner": 1,
+   "city": "city65",
+   "war": false,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 47,
+   "owner": 7,
+   "city": "city51",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 47,
+   "owner": 31,
+   "city": "city33",
+   "war": true,
+   "left": 2,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 47,
+   "owner": 41,
+   "city": "city2",
+   "war": true,
+   "left": 3,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 48,
+   "owner": 10,
+   "city": "city52",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 48,
+   "owner": 10,
+   "city": "city97",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 48,
+   "owner": 10,
+   "city": "city160",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 48,
+   "owner": 22,
+   "city": "city25",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 48,
+   "owner": 22,
+   "city": "city26",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 48,
+   "owner": 22,
+   "city": "city46",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 48,
+   "owner": 22,
+   "city": "city55",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 49,
+   "owner": 1,
+   "city": "city3",
+   "war": false,
+   "left": 2,
+   "stillInCity": 20,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 49,
+   "owner": 1,
+   "city": "city4",
+   "war": false,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 49,
+   "owner": 4,
+   "city": "city91",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 49,
+   "owner": 7,
+   "city": "city51",
+   "war": false,
+   "left": 4,
+   "stillInCity": 3,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 49,
+   "owner": 7,
+   "city": "city149",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 49,
+   "owner": 7,
+   "city": "city153",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 49,
+   "owner": 19,
+   "city": "city45",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 49,
+   "owner": 19,
+   "city": "city79",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 50,
+   "owner": 1,
+   "city": "city4",
+   "war": false,
+   "left": 1,
+   "stillInCity": 3,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 50,
+   "owner": 7,
+   "city": "city51",
+   "war": false,
+   "left": 2,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 50,
+   "owner": 7,
+   "city": "city59",
+   "war": false,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 50,
+   "owner": 22,
+   "city": "city25",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 50,
+   "owner": 22,
+   "city": "city46",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 50,
+   "owner": 22,
+   "city": "city80",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 50,
+   "owner": 28,
+   "city": "city32",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 51,
+   "owner": 1,
+   "city": "city4",
+   "war": false,
+   "left": 1,
+   "stillInCity": 4,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 51,
+   "owner": 10,
+   "city": "city52",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 51,
+   "owner": 13,
+   "city": "city17",
+   "war": true,
+   "left": 2,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 51,
+   "owner": 19,
+   "city": "city79",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 51,
+   "owner": 41,
+   "city": "city2",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 52,
+   "owner": 7,
+   "city": "city51",
+   "war": false,
+   "left": 4,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 52,
+   "owner": 13,
+   "city": "city17",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 52,
+   "owner": 41,
+   "city": "city1",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 53,
+   "owner": 1,
+   "city": "city4",
+   "war": false,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 53,
+   "owner": 10,
+   "city": "city12",
+   "war": true,
+   "left": 12,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 53,
+   "owner": 13,
+   "city": "city17",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 53,
+   "owner": 22,
+   "city": "city24",
+   "war": true,
+   "left": 13,
+   "stillInCity": 2,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 53,
+   "owner": 22,
+   "city": "city25",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 54,
+   "owner": 4,
+   "city": "city6",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 54,
+   "owner": 4,
+   "city": "city7",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 54,
+   "owner": 7,
+   "city": "city51",
+   "war": false,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 54,
+   "owner": 13,
+   "city": "city44",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 54,
+   "owner": 13,
+   "city": "city67",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 54,
+   "owner": 13,
+   "city": "city71",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 54,
+   "owner": 13,
+   "city": "city87",
+   "war": true,
+   "left": 3,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 54,
+   "owner": 34,
+   "city": "city36",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 54,
+   "owner": 34,
+   "city": "city37",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 54,
+   "owner": 34,
+   "city": "city38",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 54,
+   "owner": 34,
+   "city": "city74",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 54,
+   "owner": 34,
+   "city": "city83",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 54,
+   "owner": 34,
+   "city": "city94",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 54,
+   "owner": 34,
+   "city": "city101",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 54,
+   "owner": 34,
+   "city": "city114",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 54,
+   "owner": 34,
+   "city": "city128",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 54,
+   "owner": 34,
+   "city": "city133",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 54,
+   "owner": 34,
+   "city": "city168",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 54,
+   "owner": 34,
+   "city": "city176",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 55,
+   "owner": 1,
+   "city": "city95",
+   "war": false,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 55,
+   "owner": 13,
+   "city": "city17",
+   "war": true,
+   "left": 3,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 55,
+   "owner": 37,
+   "city": "city39",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 56,
+   "owner": 13,
+   "city": "city17",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 56,
+   "owner": 19,
+   "city": "city21",
+   "war": true,
+   "left": 9,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 56,
+   "owner": 22,
+   "city": "city24",
+   "war": true,
+   "left": 2,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 56,
+   "owner": 22,
+   "city": "city25",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 56,
+   "owner": 22,
+   "city": "city26",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 56,
+   "owner": 22,
+   "city": "city46",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 56,
+   "owner": 22,
+   "city": "city55",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 56,
+   "owner": 22,
+   "city": "city62",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 56,
+   "owner": 22,
+   "city": "city80",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 56,
+   "owner": 22,
+   "city": "city100",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 56,
+   "owner": 22,
+   "city": "city125",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 56,
+   "owner": 22,
+   "city": "city147",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 56,
+   "owner": 22,
+   "city": "city163",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 56,
+   "owner": 22,
+   "city": "city173",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 56,
+   "owner": 22,
+   "city": "city184",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 56,
+   "owner": 34,
+   "city": "city114",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 57,
+   "owner": 10,
+   "city": "city66",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 58,
+   "owner": 1,
+   "city": "city3",
+   "war": false,
+   "left": 3,
+   "stillInCity": 36,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 58,
+   "owner": 1,
+   "city": "city65",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 58,
+   "owner": 7,
+   "city": "city149",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 58,
+   "owner": 7,
+   "city": "city153",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 58,
+   "owner": 10,
+   "city": "city12",
+   "war": true,
+   "left": 8,
+   "stillInCity": 3,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 58,
+   "owner": 10,
+   "city": "city160",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 58,
+   "owner": 10,
+   "city": "city170",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 58,
+   "owner": 10,
+   "city": "city181",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 59,
+   "owner": 1,
+   "city": "city4",
+   "war": false,
+   "left": 1,
+   "stillInCity": 3,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 59,
+   "owner": 4,
+   "city": "city130",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 59,
+   "owner": 10,
+   "city": "city12",
+   "war": true,
+   "left": 3,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 59,
+   "owner": 10,
+   "city": "city13",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 59,
+   "owner": 10,
+   "city": "city14",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 59,
+   "owner": 10,
+   "city": "city52",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 59,
+   "owner": 10,
+   "city": "city76",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 59,
+   "owner": 10,
+   "city": "city86",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 59,
+   "owner": 10,
+   "city": "city121",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 59,
+   "owner": 10,
+   "city": "city144",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 59,
+   "owner": 10,
+   "city": "city187",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 59,
+   "owner": 13,
+   "city": "city71",
+   "war": true,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 59,
+   "owner": 13,
+   "city": "city111",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 59,
+   "owner": 22,
+   "city": "city46",
+   "war": true,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 60,
+   "owner": 10,
+   "city": "city13",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 60,
+   "owner": 10,
+   "city": "city97",
+   "war": false,
+   "left": 1,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 60,
+   "owner": 22,
+   "city": "city24",
+   "war": false,
+   "left": 3,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 60,
+   "owner": 22,
+   "city": "city66",
+   "war": false,
+   "left": 2,
+   "stillInCity": 0,
+   "cityEmptyAfter": true
+  },
+  {
+   "turn": 60,
+   "owner": 25,
+   "city": "city82",
+   "war": false,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  },
+  {
+   "turn": 60,
+   "owner": 25,
+   "city": "city126",
+   "war": false,
+   "left": 1,
+   "stillInCity": 1,
+   "cityEmptyAfter": false
+  }
+ ],
+ "siege": [
+  {
+   "turn": 40,
+   "owner": 7,
+   "city": "city51",
+   "wojsko": 0,
+   "oblega": 1,
+   "war": true
+  },
+  {
+   "turn": 50,
+   "owner": 40,
+   "city": "city1",
+   "wojsko": 0,
+   "oblega": 1,
+   "war": true
+  }
+ ],
+ "eventsCount": 162,
+ "eventsEmptyAfter": 100
+}

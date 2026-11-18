@@ -1,0 +1,28 @@
+== before
+t10 peace 11/41 war 0/0
+t20 peace 13/41 war 0/0
+t30 peace 78/91 war 0/0
+t40 peace 66/71 war 72/79
+t50 peace 81/86 war 77/92
+t60 peace 51/54 war 118/138
+leave events 73 cityEmptyAfter 64 war 42 peace 31
+t10 ownersAI=41 miasta=41 wojsko=43 skarbiecSum=2002 skarbiecAvg=48.8 utrzJedn=172 utrzGarn=128 deficytOwners=0
+t20 ownersAI=41 miasta=41 wojsko=41 skarbiecSum=2189 skarbiecAvg=53.4 utrzJedn=164 utrzGarn=136 deficytOwners=0
+t30 ownersAI=15 miasta=91 wojsko=44 skarbiecSum=3520 skarbiecAvg=234.7 utrzJedn=228 utrzGarn=164 deficytOwners=0
+t40 ownersAI=15 miasta=150 wojsko=71 skarbiecSum=10246 skarbiecAvg=683.1 utrzJedn=532 utrzGarn=396 deficytOwners=0
+t50 ownersAI=15 miasta=178 wojsko=145 skarbiecSum=21598 skarbiecAvg=1439.9 utrzJedn=1680 utrzGarn=1296 deficytOwners=0
+t60 ownersAI=14 miasta=192 wojsko=232 skarbiecSum=49816 skarbiecAvg=3558.3 utrzJedn=2744 utrzGarn=1080 deficytOwners=0
+== after
+t10 peace 11/41 war 0/0
+t20 peace 12/41 war 0/0
+t30 peace 32/90 war 0/0
+t40 peace 12/62 war 44/85
+t50 peace 4/68 war 23/109
+t60 peace 42/71 war 7/125
+leave events 162 cityEmptyAfter 100 war 103 peace 59
+t10 ownersAI=41 miasta=41 wojsko=44 skarbiecSum=1988 skarbiecAvg=48.5 utrzJedn=176 utrzGarn=128 deficytOwners=0
+t20 ownersAI=41 miasta=41 wojsko=42 skarbiecSum=2108 skarbiecAvg=51.4 utrzJedn=168 utrzGarn=140 deficytOwners=0
+t30 ownersAI=15 miasta=90 wojsko=91 skarbiecSum=3114 skarbiecAvg=207.6 utrzJedn=416 utrzGarn=340 deficytOwners=0
+t40 ownersAI=15 miasta=147 wojsko=168 skarbiecSum=7755 skarbiecAvg=517.0 utrzJedn=1000 utrzGarn=796 deficytOwners=0
+t50 ownersAI=15 miasta=177 wojsko=296 skarbiecSum=21372 skarbiecAvg=1424.8 utrzJedn=2104 utrzGarn=1584 deficytOwners=0
+t60 ownersAI=14 miasta=196 wojsko=397 skarbiecSum=52265 skarbiecAvg=3733.2 utrzJedn=3468 utrzGarn=1476 deficytOwners=0
