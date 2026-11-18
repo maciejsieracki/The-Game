@@ -36,6 +36,8 @@ use serde_json::Value;
 
 const VECTORS: &str = include_str!("p6_k5loop_close_vectors/vectors_r3.json");
 const VECTORS_NAN: &str = include_str!("p6_k5loop_close_vectors/vectors_r3_nan.json");
+/// Obrona r3 (N1): ręcznie ułożone scenariusze KITE „przyparty” z remisem odległości (generator, sekcja `tieCases`).
+const VECTORS_TIE: &str = include_str!("p6_k5loop_close_vectors/vectors_r3_tie.json");
 const PIN: &str = "07d2fbd72f758705f8e1d59cc4968027ffbafe75";
 /// Strażnik generatora (`EXPECTED_SHA256` w `p6_k5loop_close_r3_gen.mjs`).
 const PIN_SHA256: &str = "2bba6a05f81e66287314361878b2fbc510dc598664ef729c2ef71f02e8c2cebd";
@@ -926,4 +928,50 @@ fn rzuty_strzalow_w_kolejnosci_aktywacji() {
         }
     }
     assert!(pairs >= 20, "pary strzalow: {pairs}");
+}
+
+/// Obrona r3 (N1, mutant Evaluatora E11): KITE „przyparty” (`:6719-6721`) strzela w `_rangedTargetInRange(ru) ?? nearest`.
+/// `_rangedTargetInRange` (`:7041-7052`) przy remisie odległości bierze niższe HP, `_nearestEnemy` (`:8296-8304`) pierwszego
+/// na liście. Każdy wektor ma remis z niższym HP DALEJ na liście, więc podmiana na samo `nearest` daje inny cel (generator
+/// odrzuca wektor, w którym cel pinu == `nearest`). Wszystkie cztery sąsiednie pola są nieprzechodnie: brak kroku.
+#[test]
+fn kite_przyparty_remis_odleglosci_nizsze_hp() {
+    let (v, cav_mult) = load_from(VECTORS_TIE);
+    let cases = v["cases"].as_array().expect("cases");
+    assert_eq!(cases.len(), 8);
+    let mut failures = Vec::new();
+    for case in cases {
+        let name = case["name"].as_str().expect("name");
+        let c = check_case(case, &cav_mult, &mut failures);
+        assert!(c.shot, "{name}: brak strzału");
+        assert_eq!(c.n_steps, 0, "{name}: krok mimo przyparcia");
+        assert!(!c.attack, "{name}: cios wręcz");
+        let blows = case["expect"]["blows"].as_array().expect("blows");
+        assert_eq!(blows.len(), 1, "{name}");
+        // Cel pinu różny od `nearest` (pierwszy przy remisie): wektor rozróżnia mutanta E11.
+        let acting_atk = case["acting"]["side"].as_str() == Some("atk");
+        let enemies = case[if acting_atk { "def" } else { "atk" }]
+            .as_array()
+            .expect("wrogowie");
+        let me = &case[if acting_atk { "atk" } else { "def" }][0];
+        let (mq, mr) = (num(&me["q"]), num(&me["r"]));
+        let mut nearest = (usize::MAX, f64::INFINITY);
+        for (i, e) in enemies.iter().enumerate() {
+            let d = (num(&e["q"]) - mq).abs() + (num(&e["r"]) - mr).abs();
+            if d < nearest.1 {
+                nearest = (i, d);
+            }
+        }
+        assert_ne!(
+            blows[0]["target"].as_u64(),
+            Some(nearest.0 as u64),
+            "{name}: wektor nie rozróżnia E11"
+        );
+    }
+    assert!(
+        failures.is_empty(),
+        "{} rozbieznosci: {:#?}",
+        failures.len(),
+        failures
+    );
 }

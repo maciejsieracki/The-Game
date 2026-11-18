@@ -535,7 +535,11 @@ const stats = {
   phalanxAttack: fam('phalanx').filter((c) => c.expect.attack).length,
   phalanxStep: fam('phalanx').filter((c) => !c.expect.phalanxAdvance && c.expect.steps.length === 1).length,
   phalanxAdvance: fam('phalanx').filter((c) => c.expect.phalanxAdvance).length,
-  phalanxHold: fam('phalanx').filter((c) => !c.expect.attack && c.expect.steps.length === 0).length,
+  // Obrona r3 (N2, lekcja r2 b): `phalanxNoAttackNoStep` liczy WSZYSTKIE scenariusze falangi bez ciosu i bez kroku
+  // (takze samotny marsz `phalanxAdvance` bez kroku); `phalanxHold` = rozlaczna kategoria testu `phalanx_no_action`
+  // (bez ciosu, bez `phalanxAdvance`, bez jednego kroku).
+  phalanxNoAttackNoStep: fam('phalanx').filter((c) => !c.expect.attack && c.expect.steps.length === 0).length,
+  phalanxHold: fam('phalanx').filter((c) => !c.expect.attack && !c.expect.phalanxAdvance && c.expect.steps.length !== 1).length,
 };
 console.error(JSON.stringify(stats));
 const cavMult = Object.fromEntries(TERRAIN_NAMES.map((n) => [n, cavMultOf(n)]));
@@ -573,3 +577,58 @@ writeFileSync(
   JSON.stringify({ pin: PIN, seed: SEED, pinSha256: PIN_SHA256, cavMult, stats: nanStats, cases: nanCases }, nanJson) + '\n',
 );
 console.error(`zapisano ${nanCases.length} wektorow NaN`);
+
+// Obrona r3 (N1, mutant Evaluatora E11): KITE "przyparty" (`:6719-6721`) wybiera `_rangedTargetInRange(ru) ?? nearest`.
+// `_rangedTargetInRange` (`:7041-7052`) przy remisie odleglosci bierze NIZSZE HP (`e.bu.hp < best.bu.hp`), a
+// `_nearestEnemy` (`:8296-8304`) przy remisie zostaje przy PIERWSZYM na liscie (`dd < bestD`). Scenariusze recznie
+// ulozone (bez `rnd`, zero wplywu na pliki wyzej): strzelec z amunicja, zagrozenie wrecz w MELEE_SAFE_GAP, wszystkie
+// 4 sasiednie pola nieprzechodnie (`_bestKiteShotStep` = null), dwaj wrogowie w remisie odleglosci z nizszym HP DALEJ na
+// liscie. Oczekiwanie = wykonanie tekstu pinu; generator sprawdza, ze cel pinu != `nearest` (inaczej wektor nie
+// rozroznia mutanta) i ze nie bylo kroku.
+const tieCases = [];
+{
+  const unit = (side, idx, q, r, hp, extra = {}) => ({
+    side, idx, q, r, facing: 0, moveLeft: 3, dead: false, fadingOut: false, routed: false, unitDoctrine: null,
+    groupId: null, formationRank: null, hp, mounted: false, primaryRanged: false, rangedBase: false, antiCavSpear: false,
+    ...extra,
+  });
+  const shooter = (side, q, r, range, moveLeft) => unit(side, 0, q, r, 100, {
+    primaryRanged: true, rangedBase: true, ammoLeft: 'Infinity', range, rangedKite: true, unitDoctrine: 'manual', moveLeft,
+  });
+  const walls = (q, r) => [[q + 1, r], [q - 1, r], [q, r + 1], [q, r - 1]].map(([c, rr]) => [c, rr, false, 1, false, DEFAULT_TERRAIN]);
+  // [strona strzelca, [dq, dr, hp, primaryRanged] wrogow w kolejnosci listy, zasieg, moveLeft]
+  const specs = [
+    ['atk', [[2, 0, 100, false], [0, 2, 40, false]], 3, 4],
+    ['def', [[-2, 0, 100, false], [0, -2, 40, false]], 3, 4],
+    ['atk', [[1, 0, 120, false], [0, 1, 60, false]], 2, 3],
+    ['def', [[0, -1, 80, false], [-1, 0, 60, false]], 1, 2],
+    ['atk', [[0, 2, 100, false], [2, 0, 100, true], [-2, 0, 60, true]], 4, 4],
+    ['def', [[1, 1, 100, false], [-1, 1, 80, false], [3, 3, 10, false]], 6, 'NaN'],
+    ['atk', [[2, 0, 60, false], [0, 2, 60, false], [-2, 0, 40, false]], 2, 0],
+    ['def', [[-1, 0, 100, false], [0, 2, 90, true], [0, 1, 30, false]], 3, 2.5],
+  ];
+  specs.forEach(([side, foes, range, moveLeft], n) => {
+    const q = 30 + n;
+    const r = 70 + 2 * n;
+    const me = shooter(side, q, r, range, moveLeft === 'NaN' ? NaN : moveLeft);
+    const other = side === 'atk' ? 'def' : 'atk';
+    const enemies = foes.map(([dq, dr, hp, pr], i) => unit(other, i, q + dq, r + dr, hp, pr ? { primaryRanged: true, rangedBase: true, range: 3 } : {}));
+    const sc = { acting: { side, idx: 0 }, atk: side === 'atk' ? [me] : enemies, def: side === 'atk' ? enemies : [me], groupMeta: [], tiles: walls(q, r) };
+    const expect = tryRun(JSON.parse(JSON.stringify(sc, (_k, v) => (typeof v === 'number' && Number.isNaN(v) ? 'NaN' : v)), (_k, v) => (v === 'NaN' ? NaN : v)));
+    if (!expect) throw new Error(`remis ${n}: okrazenie`);
+    if (!expect.trace.includes('rangedAction')) throw new Error(`remis ${n}: brak _rangedAction (${expect.trace})`);
+    if (expect.steps.length !== 0) throw new Error(`remis ${n}: krok ${JSON.stringify(expect.steps)}`);
+    if (expect.blows.length !== 1) throw new Error(`remis ${n}: strzaly ${expect.blows.length}`);
+    // `nearest` pinu: pierwszy na liscie przy remisie (`:8300`).
+    let ni = -1;
+    let nd = Infinity;
+    enemies.forEach((e, i) => { const d = Math.abs(e.q - q) + Math.abs(e.r - r); if (d < nd) { nd = d; ni = i; } });
+    if (expect.blows[0].target === ni) throw new Error(`remis ${n}: cel pinu == nearest (${ni}), wektor nie rozroznia E11`);
+    tieCases.push({ ...sc, name: `close-r3-kite-tie-${n}`, kind: moveLeft === 'NaN' ? 'ranged-nan' : 'ranged', expect });
+  });
+}
+writeFileSync(
+  join(outDir, 'vectors_r3_tie.json'),
+  JSON.stringify({ pin: PIN, seed: SEED, pinSha256: PIN_SHA256, cavMult, stats: { tie: tieCases.length }, cases: tieCases }, nanJson) + '\n',
+);
+console.error(`zapisano ${tieCases.length} wektorow remisu KITE`);
