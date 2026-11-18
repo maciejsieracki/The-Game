@@ -998,5 +998,10 @@
     "wartosc": 2,
     "sekcja": "§9 Armia AI",
     "opis": "R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1: ruch zakladany dla jednostki bez pola ruch (heksy na ture) przy liczeniu zasiegu."
+  },
+  "siege_relief_min_advantage": {
+    "wartosc": 0.2,
+    "sekcja": "§9 Armia AI",
+    "opis": "R-WEB-AI-SIEGE-RELIEF-ATTACK-BESIEGERS-Q1: prog przewagi odsieczy (0,2 = 20%). AI atakuje oblegajacych miasto wlasne, gdy sila jednostek w zasiegu jest co najmniej (1 + wartosc) x sila oblegajacych. Czytane w game/ai.ts (applySiegeRelief)."
   }
 }

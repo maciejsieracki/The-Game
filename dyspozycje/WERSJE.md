@@ -1,3 +1,45 @@
+## ROBOCZA 82515bef -- 2026-11-18 -- FALA 851: Pomiar sojuszy AI-AI: hak, histogram powodow odmow, runner i analizator (flaga wylaczona) (testowa)
+
+- Hak aiAiAllianceTickForTest.state i diag.sojusze (liczniki prob/odmow, histogram powodow odmow, sojusze na cywilizacje, wojny AI-AI), runner ai-ai-alliance-measure-run.cjs (--alliances 0|1), analizator i test haka; scalone z koalicja antylidera (FALA 849); brak zmian zasad gry, flagi nadal wylaczone
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; alliance-tick 19/19 + mutanty 8/8; coalition 0 bledow + mutanty 8/8; hook-test H1-H15 zielone, mutanty M1-M14; smoke seed 4242 30 tur z flaga ON: 302 proby, 302 odmowy (300 = prog gotowosci 0,54, 2 = skarbiec), 0 sojuszy, 0 NaN
+- Limity: Narzedzie pomiarowe bez efektu w rozgrywce; test haka statyczny (bez bundla); rozklad gotowosci do sojuszu NIE ZMIERZONO (osobny temat); pelny pomiar 100-150 tur OFF/ON NIE ZMIERZONO
+
+## ROBOCZA b8f2f22e -- 2026-11-18 -- FALA 850: Pomiar twardszej dyplomacji: hak, runner i analizator (flaga wylaczona kontra wlaczona) (testowa)
+
+- Hak window.__diploHarderMeasure (tylko ?civTest=1: setEnabled, isEnabled, metrics - odczyt par glownych cywilizacji i gracza bez miast-panstw); narzedzia gra/tools/diplomacy-harder-measure-run.cjs i -analyze.cjs (z --selftest) oraz test haka; brak zmian zasad gry
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplomacy-harder-unit 50/0; diplomacy-test 149/0; hook-test 15 zielonych/0 czerwonych (z bundlem); smoke seed 4242 OFF i ON, 6-19 tur, 0 NaN
+- Limity: Narzedzie pomiarowe bez efektu w rozgrywce; efekt flagi ON vs OFF NIE ZMIERZONO (smoke za krotki); zgodnosc tury sasiedztwa z licznikiem gry NIE ZMIERZONO; metrics() leniwie tworzy domyslne wpisy meta par
+
+## ROBOCZA 39b38bf9 -- 2026-11-18 -- FALA 849: Koalicja antylidera (etap B4, za flaga, wylaczona) + audyt wspolnych wojen sojusznikow (testowa)
+
+- Nowy modul ai-ai-coalition.ts (wykrycie lidera: prog 1,5x sredniej Mocy, histereza 5 tur) i premia celu w torze sojuszy AI-AI; parametry w ai-ai-treaty-params.json; wpiecie w main.ts za flaga koalicjaAntyLiderAktywna=false = zachowanie gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-ai-coalition-test 0 bledow, mutanty 8/8; ai-ai-alliance-tick-test 19/19, mutanty 8/8; ai-ai-treaty-evaluate 21/0
+- Limity: Flaga domyslnie wylaczona i tor sojuszy tez wylaczony: koalicja nie dziala w rozgrywce do czasu pomiaru; wplyw na rozgrywke NIE ZMIERZONO; premia dziala tylko gdy obie AI sa w wojnie z liderem; brak histerezy wyjscia z lidera; luki audytu B2: brak sprawdzenia dystansu, zwykly pokoj nie blokuje dolaczenia, barbarzyncy w activeWarCount, licznik wojen globalny a nie per epoka
+
+## ROBOCZA 304eac4b -- 2026-11-18 -- FALA 848: Sojusze AI-AI (etap B1, za flaga, wylaczone): tor sojuszy z limitem 2 na cywilizacje (testowa)
+
+- Nowy modul ai-ai-alliance-tick.ts (czysta logika: limit 2, ponowne proby co 8 tur, wybor celu wg gotowosci i wspolnego wroga) + wpiecie tickAiAiAllianceRequests w main.ts; parametry w ai-ai-treaty-params.json; flaga torSojuszyAktywny=false = zachowanie gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; ai-ai-alliance-tick-test 19/19, mutanty 8/8; ai-ai-treaty-evaluate 21/0; nap-wiring 44/44; diplomacy-harder 50/0 po scaleniu z FALA 847
+- Limity: Flaga domyslnie wylaczona: sojusze AI-AI nie powstaja w rozgrywce do czasu pomiaru i decyzji wlasciciela; bieg dymny z flaga i runner pomiaru NIE ZMIERZONO (osobny temat); brak UI listy ukladow swiata; zawarcie przez addTreaty+syncRelationFromDeals (jak NAP)
+
+## ROBOCZA 5758cd3b -- 2026-11-18 -- FALA 847: Twardsza dyplomacja etap A (za flaga, wylaczona): napiecie graniczne, sufit handlu, zazdrosc lidera (testowa)
+
+- Nowy modul diplomacy-harder.ts + gra/data/diplomacy-harder-params.json; wpiecie w tick dyplomacji (diplomacy.ts, main.ts) i wiersz Zazdrosc wobec lidera w panelu; flaga twardaDyplomacjaAktywna=false = zachowanie gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 45/0; combat 6/6; diplomacy-test 149/0; diplomacy-harder-unit-test 50/0 (mutacje czerwone)
+- Limity: Flaga domyslnie wylaczona: efekt w rozgrywce dopiero po pomiarze ON/OFF i decyzji wlasciciela; licznik napiecia A1 w pamieci modulu (nie w SaveGame); bieg dymny ON/OFF w zywej grze NIE ZMIERZONO
+
+## ROBOCZA 55c7bdb1 -- 2026-11-18 -- FALA 846: Pomiar ekonomii: HUD per surowiec, analizator, runner (testowa)
+
+- Hak odczytowy __aiEconomyMeasure.metrics rozszerzony o pole hud (sumy surowcow jak HUD); narzedzia gra/tools/econ-measure-run.cjs i econ-measure-analyze.cjs; audyt EKONOMIA-POZNA-GRA-AUDYT.md (sekcje 7 i Bazowe liczby). Brak zmian zasad gry ani balansu.
+- Weryfikacja: tsc 0 bledow; logic-test 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-economy-measure-hook-test 23/23; smoke seed 4242 t10: 9 wierszy, 0 NaN
+- Limity: Narzedzie pomiarowe, bez efektu w rozgrywce; biegi do t150 i punkt B (jednostki, utrzymanie, zywnosc, Praca) wykonuje orkiestrator; wyjasnienie 10x liczbowo NIE_ZMIERZONE
+
+## ROBOCZA 3a050893 -- 2026-11-18 -- FALA 845: Odsiecz: AI atakuje oblegajacych swoje miasto przy przewadze 20 procent (testowa)
+
+- AI (ai.ts applySiegeRelief + nowy ai-siege-relief.ts): gdy miasto AI jest oblezone, a AI ma w zasiegu sile co najmniej o 20 procent wieksza niz oblegajacy (siege_relief_min_advantage 0,2 w ai-params.json), atakuje oblegajacych z priorytetem przed ofensywa; dotyczy oblegajacych gracza, innej AI i barbarzyncow, tylko w stanie wojny; panstwa-miasta (defensiveCopy) bez odsieczy; zgloszenie wlasciciela
+- Weryfikacja: FC PASS-WITH-NOTES 0f3f3795 (kod 66859718, operator 3c536464): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, unit-power 6/0; ai-siege-relief-test 23/0 (granice 5v5/5v7/6v7/6v8, progi 0,5/0,2/0,1), mutacja bez odsieczy 10 FAIL; testy AI/oblezen bez regresji (defend-home 30/0, siege-ai 17/0, last-stand-sortie 71/0 i inne)
+- Limity: NIE ZMIERZONO: zywa gra w Chromium; wpiecie flagi oblegane w petli main.ts poza czytaniem kodu; panstwa-miasta bez odsieczy (decyzja produktowa); jednostki niestojace obok oblegajacych dochodza i atakuja w nastepnej turze
+
 ## ROBOCZA 6d0c13f6 -- 2026-11-18 -- FALA 844: Panel Za co cie lubia: wiersz Przewaga militarna tylko aktualny, bez Wygrana bitwa +5 (testowa)
 
 - Rozbicie czynnikow relacji (diplomacy-factors.ts + 2 pola w getRelationBreakdown main.ts): zdarzenia Przewaga militarna i Slabszy militarnie pokazuja sie jako JEDEN wiersz aktualnego stanu pary (+15 lub -10, zgodny z paskiem Respektu), wiersze Wygrana bitwa (historia) +5 ukryte (nie wchodzily do paska); rejestr zdarzen i pasek bez zmian; decyzje wlasciciela 2026-11-18 (ABC A i B)

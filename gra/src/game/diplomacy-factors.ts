@@ -78,6 +78,7 @@ export const DIPLO_FACTOR_LABELS_PL: Record<string, string> = {
   zerwanie_handlu_bez_kary: 'Zerwana umowa po 10 turach (bez kary)',
   zerwanie_traktatu: 'Zerwanie traktatu (decyzja własna)',
   ultimatum_bezpodstawne: 'Ultimatum bezpodstawne',
+  zazdrosc_lider: 'Zazdrość wobec lidera',
 };
 
 export interface RelationFactorRow {
@@ -108,6 +109,8 @@ export interface ContinuousFactorFlags {
   karaWspolnaGranica?: boolean;
   /** Resolved penalty for this pair, matching the live tick. */
   karaWspolnaGranicaZaufaniePerTura?: number;
+  /** R-WEB-DIPLO-HARDER A3: zazdrość wobec lidera (≤ 0/turę); pokazywana tylko gdy ≠ 0 (flaga ON). */
+  zazdroscZaufaniePerTura?: number;
   /** Fakt statyczny pary (ustalony przy starcie kontaktu) — rywale tego samego typu cywilizacji. */
   rywalizacjaTenSamTyp?: boolean;
   /** REL-MP-SAME-Q1: gracz ↔ miasto-państwo kopii typu gracza (+20 start). */
@@ -201,6 +204,9 @@ export function buildRelationBreakdown(
   if (continuous.karaWspolnaGranica && (continuous.karaWspolnaGranicaZaufaniePerTura ?? -1) !== 0) {
     pushRow(pozytywne, negatywne, 'Kara za wspólną granicę',
       continuous.karaWspolnaGranicaZaufaniePerTura ?? params.ekspansjaGranica_zaufanie_perTura, true);
+  }
+  if (continuous.zazdroscZaufaniePerTura) {
+    pushRow(pozytywne, negatywne, 'Zazdrość wobec lidera', continuous.zazdroscZaufaniePerTura, true);
   }
   if (continuous.rywalizacjaTenSamTyp) {
     pushRow(pozytywne, negatywne, 'Rywalizacja (ten sam typ nacji)', params.rywalizacjaTenSamTyp_zaufanie);

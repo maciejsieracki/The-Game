@@ -24,13 +24,15 @@
  */
 const os = require('os');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 function arg(name, def) {
   const i = process.argv.indexOf('--' + name);
   return i >= 0 && process.argv[i + 1] !== undefined ? process.argv[i + 1] : def;
 }
 const GRA_DIR = path.resolve(__dirname, '..');
-const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'ai-economy-dist')));
+const DIST_GIVEN = process.argv.includes('--dist');
+let DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'ai-economy-dist')));
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 const MUTANT_DIST = arg('mutant-dist', '') ? path.resolve(arg('mutant-dist', '')) : null;
 const RUNNER = path.resolve(arg('runner', path.join(GRA_DIR, 'tools', 'ai-economy-measure-run.cjs')));
@@ -197,6 +199,17 @@ async function fullChecks(browser) {
     'owners=' + metrics.owners.length + ' bezWiersza=' + JSON.stringify(metrics.diag.aiStartOwnersBezWiersza));
   check('po starcie AI maja miasta: liczba wlascicieli z miastem > 1 (gracz + AI)', metrics.owners.filter(o => o.miasta > 0).length > 1, 'z miastem=' + metrics.owners.filter(o => o.miasta > 0).length);
   check('niezmierzone wymienia przychod/utrate (nie udajemy pomiaru)', Array.isArray(metrics.niezmierzone) && metrics.niezmierzone.includes('przychodNaTure'));
+  // R-WEB-ECONOMY-MEASURE-EXTEND-INCOME-STOCKS-Q1: pola HUD per wlasciciel (kształt; wartosc null = NIE ZMIERZONE, jawnie).
+  const finNum = v => typeof v === 'number' && Number.isFinite(v);
+  const hudBad = metrics.owners.filter(o => !o.hud || !finNum(o.hud.epoka) || !finNum(o.hud.surowceBrutto) || !finNum(o.hud.surowceNetto)
+    || !Array.isArray(o.hud.surowceTyp) || !o.hud.budynkiPerTyp || typeof o.hud.budynkiPerTyp !== 'object').map(o => o.owner);
+  check('pola HUD per wlasciciel: epoka, surowceBrutto/Netto liczbowe, surowceTyp[], budynkiPerTyp{}', hudBad.length === 0, 'bledne=' + JSON.stringify(hudBad.slice(0, 5)));
+  const hudGr = metrics.owners.find(o => o.owner === 0);
+  const hudGrVals = hudGr && hudGr.hud ? [hudGr.hud.naukaRate, hudGr.hud.handelIncome, hudGr.hud.spichlerzRate, hudGr.hud.skarbiecRate] : [];
+  check('pola HUD gracza (owner 0): naukaRate, handelIncome, spichlerzRate, skarbiecRate sa liczbami (buildHudState(0))',
+    hudGrVals.length === 4 && hudGrVals.every(finNum), JSON.stringify(hudGrVals));
+  const hudTypOk = hudGr && hudGr.hud.surowceTyp.every(r => finNum(r.stan) && finNum(r.brutto) && finNum(r.netto) && (r.cap === null || finNum(r.cap)));
+  check('surowceTyp gracza: stan/brutto/netto liczbowe, cap liczbowy lub null', !!hudTypOk, JSON.stringify(hudGr && hudGr.hud.surowceTyp.slice(0, 2)));
   const ls0 = await page.evaluate(() => window.__aiEconomyMeasure.ledgerStats());
   const lsProbs = ledgerShapeProblems(ls0);
   check('ksztalt ledgerStats: {entries, bytes} liczbowe (rozmiar ksiegi N=10, hak civTest)', lsProbs.length === 0, lsProbs.join('; ') || JSON.stringify(ls0));
@@ -264,7 +277,16 @@ async function fullChecks(browser) {
   }
 }
 
+/** Bez --dist: buduje bundle `vite build` (tylko npx vite, bez prebuild) do katalogu poza repo, jak sidepanel-event-header-wydarzenie-real-render-test. */
+function ensureDist() {
+  if (DIST_GIVEN) return;
+  const outDir = path.join(os.tmpdir(), `ai-economy-dist-${process.pid}-${Date.now()}`);
+  execFileSync('npx', ['vite', 'build', '--outDir', outDir, '--emptyOutDir'], { cwd: GRA_DIR, stdio: 'ignore' });
+  DIST = outDir;
+}
+
 async function main() {
+  if (!MODAL_ONLY) ensureDist();
   const { chromium } = require(path.join(PW_DIR, 'node_modules', 'playwright'));
   const args = ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage'];
   const browser = await chromium.launch({ headless: true, executablePath: CHROME, args });

@@ -1,0 +1,12 @@
+
+=== /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/r2-on ===
+ziarno | ostatnia tura | flaga | wymuszona | tura 1. sojuszu AI↔AI | tura 1. wojny AI↔AI | max sojuszy/cyw. | próby | odmowy
+4242 | 30 | true | true | brak | brak | 0 | 302 | 302
+
+Powody odmów toru (skumulowane, n = liczba odmów E1 wg powodu; liczby w powodzie zastąpione przez N):
+ziarno 4242 | n=300 | gotowość N poniżej progu N
+ziarno 4242 | n=2 | brakuje N PN w skarbcu płatnika (dopłata D = N)
+
+Punkty kontrolne (tura wiersza <= kontrolnej): sojusze AI↔AI / odsetek głównych AI z >=1 sojuszem (%) / wojny AI↔AI
+ziarno | tura 25 | tura 50 | tura 75 | tura 100 | tura 150
+4242 | t25: 0 / 0% / 0 | t30: 0 / 0% / 0 | t30: 0 / 0% / 0 | t30: 0 / 0% / 0 | t30: 0 / 0% / 0

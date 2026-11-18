@@ -29,6 +29,11 @@ import { estimateUnitCombatStrength } from './siegeAi';
 import { isHomeWarDefenseEnabled, planHomeWar } from './ai-war-home-defense';
 import { cityNeedsGarrison, garrisonUnitIdSet, getCityGarrisonUnitIds } from './ai-city-garrison';
 import {
+  planSiegeRelief,
+  SIEGE_RELIEF_DEFAULT_MIN_ADVANTAGE,
+  type SiegeReliefUnit,
+} from './ai-siege-relief';
+import {
   ARMY_SEEKS_ARMY_DEFAULTS,
   isArmySeeksArmyEnabled,
   planArmySeeksArmy,
@@ -3540,10 +3545,99 @@ export function decideAITurn(
     if (opts.defensiveCopy) return commands;
     const afterHome = applyHomeWarPriorities(commands, playerId, units, cities, map, data, opts);
     // R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1: najwieksza armia na najwieksza armie wroga (po obronie domu).
-    return applyArmySeeksEnemyArmy(afterHome, playerId, units, cities, map, data, opts);
+    const afterArmy = applyArmySeeksEnemyArmy(afterHome, playerId, units, cities, map, data, opts);
+    // R-WEB-AI-SIEGE-RELIEF-ATTACK-BESIEGERS-Q1: odsiecz obleganego miasta -- PRZED ofensywa i koncentracja,
+    // czyli jako ostatnie slowo nad ruchami tury (planer: ai-siege-relief.ts; prog: ai-params.json).
+    return applySiegeRelief(afterArmy, playerId, units, cities, map, data, opts);
   } finally {
     activeMarchGuard = prevGuard;
   }
+}
+
+/**
+ * R-WEB-AI-SIEGE-RELIEF-ATTACK-BESIEGERS-Q1: odsiecz miasta AI oblezonego przez wrogie jednostki.
+ * Planer: ai-siege-relief.ts. Gdy AI ma przewage >= (1 + siege_relief_min_advantage) nad oblegajacymi
+ * (jednostki w zasiegu ruchu, bez garnizonu), wydaje atak / krok w strone oblegajacych jako ostatnie slowo
+ * nad ruchami tury. Mutuje i zwraca `commands`.
+ */
+function applySiegeRelief(
+  commands: AICommand[],
+  playerId: number,
+  units: RuntimeUnit[],
+  cities: AICity[],
+  map: GameMap,
+  data: GameData,
+  opts: AITurnOpts,
+): AICommand[] {
+  if (opts.defensiveCopy) return commands;
+  const myCities = cities.filter(c => c.ownerId === playerId && c.oblegane === true);
+  if (myCities.length === 0) return commands;
+  // Oblegajacym moze byc gracz, inna AI i barbarzyncy (dispatch; aiCanEngageOwner/aiHasContactWith
+  // dla barbarzyncow zwracaja true w main.ts) -- stad brak wykluczenia ownerId -1.
+  const isField = (u: RuntimeUnit): boolean => !isCivilianUnit(u) && !isScoutUnit(u);
+  const enemyField = units.filter(u =>
+    u.ownerId !== playerId && aiCanEngageOwner(opts, u.ownerId) && isField(u));
+  const visibleEnemy = enemyField.filter(
+    u => opts.visibleHexes === undefined || opts.visibleHexes.has(keyOf(u.q, u.r)));
+  if (visibleEnemy.length === 0) return commands;
+  const minAdvantage = getAiParam(data, 'siege_relief_min_advantage', SIEGE_RELIEF_DEFAULT_MIN_ADVANTAGE);
+  const locked = new Set<string>();
+  for (const c of commands) if (c.type === 'attack') locked.add(c.unitId);
+  const byId = new Map(units.map(u => [u.id, u] as const));
+  const toRelief = (u: RuntimeUnit): SiegeReliefUnit => ({
+    id: u.id, ownerId: u.ownerId, q: u.q, r: u.r, ruchLeft: u.ruchLeft, embarked: u.embarked,
+  });
+  const plan = planSiegeRelief({
+    ownerId: playerId,
+    myUnits: units.filter(u => u.ownerId === playerId && isField(u)).map(toRelief),
+    enemyUnits: visibleEnemy.map(toRelief),
+    myCities: myCities.map(c => ({ id: c.id, ownerId: c.ownerId, q: c.q, r: c.r, oblegane: c.oblegane })),
+    canEngageOwner: o => aiCanEngageOwner(opts, o),
+    hasContactWith: o => aiHasContactWith(opts, o),
+    lockedUnitIds: locked,
+    strengthOf: s => { const u = byId.get(s.id); return u !== undefined ? aiUnitCombatStrength(u, data) : 0; },
+    distance: hexDistance,
+    minAdvantage,
+  });
+  if (plan.orders.length === 0) return commands;
+
+  const planned = new Set(plan.orders.map(o => o.unitId));
+  for (let i = commands.length - 1; i >= 0; i--) {
+    const c = commands[i]!;
+    if (c.type === 'move' && planned.has(c.unitId)) commands.splice(i, 1);
+  }
+  const replacements: AICommand[] = [];
+  for (const order of plan.orders) {
+    const unit = byId.get(order.unitId);
+    if (unit === undefined) continue;
+    if (order.kind === 'attack') {
+      replacements.push({ type: 'attack', unitId: unit.id, targetUnitId: order.targetUnitId });
+      continue;
+    }
+    // Cel = wolny heks przy oblegajacym (sam heks wroga jest zajety); najblizsze wolne sasiedztwo pierwsze.
+    // Heks miasta (wlasnego, obleganego) nie jest celem odsieczy -- to garnizon, nie pole bitwy.
+    const occupied = (q: number, r: number): boolean =>
+      units.some(x => x.q === q && x.r === r) || cities.some(c => c.q === q && c.r === r);
+    const adj: { q: number; r: number }[] = [];
+    for (let dq = -1; dq <= 1; dq++) for (let dr = -1; dr <= 1; dr++) {
+      const q = order.targetQ + dq;
+      const r = order.targetR + dr;
+      if (hexDistance(q, r, order.targetQ, order.targetR) === 1 && !occupied(q, r)) adj.push({ q, r });
+    }
+    adj.sort((a, b) => hexDistance(unit.q, unit.r, a.q, a.r) - hexDistance(unit.q, unit.r, b.q, b.r)
+      || (a.q - b.q) || (a.r - b.r));
+    for (const dest of adj) {
+      const step = firstStep(unit, map, dest.q, dest.r, units);
+      // Zatrzymanie na wlasnym (obleganym) miescie = garnizon, nie odsiecz -- taki krok pomijamy.
+      if (step !== null && !cities.some(c => c.q === step.q && c.r === step.r)) {
+        replacements.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+        break;
+      }
+    }
+  }
+  const endIdx = commands.findIndex(c => c.type === 'endTurn');
+  if (endIdx >= 0) commands.splice(endIdx, 0, ...replacements); else commands.push(...replacements);
+  return commands;
 }
 
 /** Wspolna ocena sily jednostki (ta sama funkcja co atak ostatniej woli: siegeAi.estimateUnitCombatStrength). */
