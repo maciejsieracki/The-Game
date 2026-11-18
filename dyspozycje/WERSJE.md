@@ -1,3 +1,9 @@
+## ROBOCZA 487869e7 -- 2026-11-18 -- FALA 825: PEACEPWIMPL: model punktow PW pokoju P*r i P/r wedlug Power, slabsza doplaca roznice miastami (testowa)
+
+- Cena pokoju: silniejsza strona ma S = P·r punktow PW, slabsza W = P/r (r = Power silniejszej / slabszej), slabsza doplaca roznice D = S − W miastami, bez sufitu; silniejszy gracz nie dostaje blokady Brakuje N PW z powodu wlasnej wyceny; AI slabsze oddaje miasta na D albo nie sklada oferty, AI silniejsze zada od gracza miasta wartosci ≥ D; AI-AI slabsza strona placi D; panel PW i tooltip pokazuja moc obu stron, r, S, W, D i etykiete po rabacie relacji; Civpedia opisuje wzor; pokoj wymuszony przy 100% zmeczenia bez zmian (kod 7a5ea2a19)
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; test tematu 47/0 z mutacjami; price-wiring 14/0; price-decay 13/0; balance-accept 32/0; winner-proposal-table 77/0; sensible-deals 63/0; weariness-city-only 26/0; war-peace-sim 25/0; wiki-weariness-rate 18/0
+- Limity: NIE ZMIERZONO: Chromium i hotseat; wiring main.ts sprawdzany testem zrodlowym z mutacja; AI silniejsze-autor: blokada Brakuje N PW tylko informacyjna (regula wlasciciela z 2026-09-07); zalozenie: rabat relacji stosuje sie do D
+
 ## ROBOCZA a1072e8e -- 2026-11-18 -- FALA 824: STALEWEAR: nieaktualne opisy zmeczenia wojna 5% na ture i 20 tur poprawione (testowa)
 
 - Komentarze w kodzie, opis w danych diplomacy-war-peace-params i etykiety testow mowily jeszcze o 5% na ture i 20 turach; teraz zgodnie z parametrami: 2,5% na ture, 100% po 40 turach, +10% za miasto; zachowanie gry bez zmian (kod 52f41f30e)
