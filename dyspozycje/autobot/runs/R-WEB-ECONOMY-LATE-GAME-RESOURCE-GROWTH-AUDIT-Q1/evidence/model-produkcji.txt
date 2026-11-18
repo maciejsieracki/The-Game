@@ -1,0 +1,44 @@
+# Model produkcji — typowe miasto (ZAŁOŻENIE: 1 Cegielnia + 1 Garncarnia + 1 Odlewnia żelaza)
+epoka | m(e) | cegła/t | żelazo/t | ceramika/t | cegła × vs e1 | żelazo × vs e1
+1 | 1 | 100 | 50 | 30 | 1 | 1
+2 | 1.5 | 225 | 75 | 50 | 2.3 | 1.5
+3 | 2 | 400 | 100 | 70 | 4 | 2
+4 | 2.5 | 500 | 125 | 90 | 5 | 2.5
+5 | 3 | 600 | 150 | 110 | 6 | 3
+
+# Imperium (N miast z pomiaru AI seed4242, epoka założona wg tury, NIEZMIERZONA mapa tura→epoka)
+N | e | cegła/t | żelazo/t | ceramika/t (sumy ×N)
+4.3 | 1 | 430 | 215 | 129
+4.3 | 2 | 967.5 | 322.5 | 215
+11.9 | 2 | 2677.5 | 892.5 | 595
+11.9 | 3 | 4760 | 1190 | 833
+16.3 | 3 | 6520 | 1630 | 1141
+16.3 | 4 | 8150 | 2037.5 | 1467
+
+# Dekompozycja mnożąca (żelazo, e1 N=4,3 → e4 N=16,3)
+czynnik miast = 3.8x; czynnik epoki (żelazo, m(e) liniowe) = 2.5x; czynnik epoki (cegła, cykle×outMult) = 5x
+całkowity wzrost żelaza = 9.5x = 3.8 × 2.5
+Uwaga: m(e) i outMult są LINIOWE w epoce (1+0,5(e−1)), nie wykładnicze; składanie wykładnicze = NIE znaleziono w konwerterach (converters.ts:127-136 odrzuca wariant compound).
+Kontrola: bonus civ-wide 5 Stolarni = ×1.5 (dotyczy drewna, nie żelaza; żelazo ×1 w modelu).
+
+# Cap surowców państwa (per typ) = 50000 × (1+0,2×Magazyny) × 2^(e−1)  [economy-upkeep.ts:391-394,457]
+epoka | mnożnik 2^(e−1) | cap M=0 | cap M=5 | cap / poprzednia epoka (M=0)
+1 | 1 | 50000 | 100000 | -
+2 | 2 | 100000 | 200000 | 2
+3 | 4 | 200000 | 400000 | 2
+4 | 8 | 400000 | 800000 | 2
+5 | 16 | 800000 | 1600000 | 2
+Żelazo imperium N=16,3 e=4: 2037.5/t (model per typowe miasto, bez Stolarni); tury do capu M=0 (400000) bez zużycia = 196.3
+UWAGA: model NIE odtwarza HUD gracza (zrzut: Surowce +153,1k/t brutto). Różnica ~10x NIEWYJAŚNIONA — patrz dokument §0/§6.
+
+# Cap żywności imperium = 1000 + (Spichlerz I×1000 + Spichlerz II×1500) × 2^(e−1)  [empire-food.ts:190-193]
+epoka | przykład 6×I+3×II | cap
+1 | 6I+3II | 11500
+2 | 6I+3II | 22000
+3 | 6I+3II | 43000
+4 | 6I+3II | 85000
+5 | 6I+3II | 169000
+Max spichlerza w jsonl = 85000 (seed4242 t75) = zgodne z tą formułą dla e=4 i 10500 pojemności Spichlerzy (6I+3II), NIE potwierdzone liczbą Spichlerzy w danych.
+
+# Udział czynników we wzroście żelaza e1 (N=4,3) → e4 (N=16,3), skala ln
+miasta (mnożąco): ln(3,79)=1.3 (59.3%); epoka m(e) liniowe: ln(2,5)=0.9 (40.7%); cap państwa ×8 (NIE wlicza się do produkcji, tylko do sufitu zapasów): ln(8)=2.1

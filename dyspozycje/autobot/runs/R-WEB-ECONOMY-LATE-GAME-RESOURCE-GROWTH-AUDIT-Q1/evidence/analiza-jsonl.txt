@@ -1,0 +1,33 @@
+
+== /tmp/terr-out/seed4242.jsonl  tury 2..76
+tura(zad/zmierz) | n | skarbiec mean/med/max | spichlerz mean/max | utrzym. budynki Pieniądz mean/max | utrzym. jednostki Pieniądz mean/max | utrzym. surowce budynki / jednostki mean/max | miasta mean/max
+10(10) | 41 | 48.8/8/254 | 4.4/15 | 0.2/4 | 4.2/8 | 0/0 / 3.1/6 | 1/1
+25(25) | 15 | 157.4/53/622 | 9.9/44 | 20.4/42 | 12/36 | 5.1/17 / 8.3/19 | 4.3/6
+50(50) | 15 | 1436.9/392/4962 | 3993.5/14130.4 | 370.4/768 | 112/620 | 231.5/492 / 69.7/381 | 11.9/15
+75(75) | 14 | 9006.4/8706.5/22453 | 45060.5/85000 | 1481.9/4586 | 560/1392 | 854.4/2248 / 345.8/940 | 16.3/21
+100(NIEZMIERZONO: plik kończy się na t76) | - | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO
+125(NIEZMIERZONO: plik kończy się na t76) | - | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO
+150(NIEZMIERZONO: plik kończy się na t76) | - | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO
+NIEZMIERZONO w jsonl: przychod/ture (Skarb, Praca, Nauka PN), zapasy surowcow (zelazo, braz, cegla, drewno, kamien, ceramika), Praca, Nauka.
+
+== /tmp/terr-out/seed777.jsonl  tury 2..80
+tura(zad/zmierz) | n | skarbiec mean/med/max | spichlerz mean/max | utrzym. budynki Pieniądz mean/max | utrzym. jednostki Pieniądz mean/max | utrzym. surowce budynki / jednostki mean/max | miasta mean/max
+10(10) | 41 | 51.7/22/323 | 4.8/15 | 0.4/4 | 4.5/20 | 0/0 / 3.3/13 | 1/1
+25(25) | 15 | 120.9/45/986 | 22/131.5 | 23.6/62 | 13.6/36 | 7.3/27 / 9.3/23 | 4.4/6
+50(50) | 15 | 1646.9/1382/5714 | 4682.4/17000 | 351.9/720 | 114.9/520 | 220.6/471 / 73.7/340 | 11.8/15
+75(75) | 15 | 9037.8/6768/25435 | 45900.6/91336.8 | 1286.9/3086 | 516.3/1824 | 744.7/1587 / 322.9/1154 | 14.9/20
+100(NIEZMIERZONO: plik kończy się na t80) | - | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO
+125(NIEZMIERZONO: plik kończy się na t80) | - | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO
+150(NIEZMIERZONO: plik kończy się na t80) | - | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO
+NIEZMIERZONO w jsonl: przychod/ture (Skarb, Praca, Nauka PN), zapasy surowcow (zelazo, braz, cegla, drewno, kamien, ceramika), Praca, Nauka.
+
+== /tmp/war-out/seed7.jsonl  tury 2..76
+tura(zad/zmierz) | n | skarbiec mean/med/max | spichlerz mean/max | utrzym. budynki Pieniądz mean/max | utrzym. jednostki Pieniądz mean/max | utrzym. surowce budynki / jednostki mean/max | miasta mean/max
+10(10) | 41 | 40.6/7/230 | 3.8/19 | 0.9/4 | 4.5/20 | 0/0 / 3.3/13 | 1/1
+25(25) | 15 | 125.1/117/442 | 19/115.5 | 21.6/36 | 12.5/28 | 6.1/14 / 8.7/19 | 4.5/6
+50(50) | 15 | 1484.9/1132/4810 | 4072.7/16804.4 | 382.5/674 | 131.5/632 | 239.3/433 / 91.7/446 | 11.7/15
+75(75) | 15 | 8375.6/5276/37367.5 | 44367.4/85993.8 | 1306.7/3872 | 791.7/2344 | 758.2/1955 / 499.8/1560 | 15.1/20
+100(NIEZMIERZONO: plik kończy się na t76) | - | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO
+125(NIEZMIERZONO: plik kończy się na t76) | - | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO
+150(NIEZMIERZONO: plik kończy się na t76) | - | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO | NIEZMIERZONO
+NIEZMIERZONO w jsonl: przychod/ture (Skarb, Praca, Nauka PN), zapasy surowcow (zelazo, braz, cegla, drewno, kamien, ceramika), Praca, Nauka.
