@@ -30,8 +30,8 @@ use crate::domain::city_towers::{strongest_ranged_unit_for_era, tower_range_for,
 use crate::domain::formation_rules::CompactSide;
 use crate::domain::js_math::js_max0;
 use crate::domain::player_order_move_gate::{
-    compact_attack_allows_step, should_avoid_auto_backtrack, BacktrackUnit, CompactStepUnit,
-    GroupDoctrine as GateDoctrine, GroupMeta, LineMember,
+    compact_attack_allows_step, should_avoid_auto_backtrack, BacktrackUnit, BlockadeSettings,
+    CompactStepUnit, GroupDoctrine as GateDoctrine, GroupMeta, LineMember,
 };
 use crate::domain::siege_no_breach::RoundCapVerdict;
 use crate::domain::siege_tactics_actions::{
@@ -64,10 +64,14 @@ use crate::domain::siege_tactics_cavalry::{
 };
 use crate::domain::siege_tactics_clock::{ScheduleOutcome, VirtualClock};
 use crate::domain::siege_tactics_doctrine_state::{GroupDoctrine, ProdDoctrineState};
+use crate::domain::siege_tactics_doctrine_step::{
+    effective_doctrine, execute_group_doctrine_step, DoctrineAction, DoctrineStep, DoctrineStepUnit,
+};
 use crate::domain::siege_tactics_doctrine_target::{
-    desired_hit_for_direction, enemies_of as enemies_of_cmb, pick_target_by_priority,
-    ranged_target_in_range as ranged_target_cmb, target_in_range as target_in_range_cmb,
-    AttackDirection, Combatant, TargetPriorities, TargetScene,
+    desired_hit_for_direction, enemies_of as enemies_of_cmb, pick_adjacent_target_by_priority,
+    pick_target_by_priority, ranged_target_in_range as ranged_target_cmb,
+    target_in_range as target_in_range_cmb, AttackDirection, Combatant, TargetPriorities,
+    TargetScene,
 };
 use crate::domain::siege_tactics_end::BattleSide;
 use crate::domain::siege_tactics_endcheck::EndCheckOutcome;
@@ -1012,8 +1016,11 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
 // po każdym kroku), wektory `tests/p6_k5loop_close*`. K5LOOP-CLOSE r2: C-FLANK i `_cavalryAction`; r3: `_rangedAction`
 // (KITE, strzał `_doRangedAttack`, marsz `_rangedForwardStep`), U7.6 z `_fallBackStep` i `_phalanxAction`; r4: ucieczka
 // `_fleeStep` (z `_removeUnitFromScene` i ripple `_shakeAlliesOnLoss`) i strzelec z `shootingEnabled = false` (zasięg
-// strzału w `_targetInRange`/`_canAttackFrom`, `_doAttack` -> `_doRangedAttack`). Pozostałe gałęzie `_activateUnit`
-// (doktryna, wieże, machiny, mur, tryb ręczny) NIE są wykonywane: jednostka nic nie robi, a ścieżka trafia do
+// strzału w `_targetInRange`/`_canAttackFrom`, `_doAttack` -> `_doRangedAttack`). K5DOC-T8: krok doktryny
+// `_executeGroupDoctrineStep` (`:6092-6099`, `:17966-18124`) jest WYKONYWANY bez muru (decyzja
+// `siege_tactics_doctrine_step`, treść tymi samymi klockami; rozkaz ruchu `skirmish` = tag `doktryna-rozkaz-ruchu`,
+// K5EXEC-T3). Pozostałe gałęzie `_activateUnit` (wieże, machiny, mur, tryb ręczny) NIE są wykonywane: jednostka nic nie
+// robi, a ścieżka trafia do
 // [`ProdBody::unported`]. Ripple przy ZABICIU (`_resolveBlowOutcome`) nadal ma tag `shakeAlliesOnLoss` (raport r4). Wybór celu (`_targetInRange`) zależy od `facing`/`attackDirection`,
 // których ten klocek nie niesie, więc cel jest wejściem adaptera ([`ProdUnit::melee_target`]).
 // ---------------------------------------------------------------------------------------------------------------
@@ -1070,6 +1077,10 @@ struct ProdOps {
     advance_coord: f64,
     /// K5LOOP-CLOSE r3: `_nearestEnemy(ru)` (`:8296-8304`, pierwszy ściśle najbliższy żywy wróg), pozycja.
     nearest: Option<(i64, i64)>,
+    /// K5DOC-T8: wartość zwracana przez `_executeGroupDoctrineStep` ([`DoctrineStep::returns`], liczona przed maszyną
+    /// przez [`execute_group_doctrine_step`] z tego samego stanu; pin: każda ścieżka `return true`, `:17966-18084`).
+    /// Treść kroku wykonuje [`ProdBody`] po maszynie (zdarzenie [`ActivateEvent::DoctrineStep`]).
+    doctrine_returns: bool,
 }
 
 impl ActivateOps for ProdOps {
@@ -1081,7 +1092,7 @@ impl ActivateOps for ProdOps {
         false
     }
     fn doctrine_step(&mut self) -> bool {
-        false
+        self.doctrine_returns
     }
     fn tower_climb(&mut self) -> bool {
         false
@@ -1110,7 +1121,6 @@ impl ActivateOps for ProdOps {
 fn prod_tag(ev: ActivateEvent) -> &'static str {
     match ev {
         ActivateEvent::Flee => "ucieczka-routed",
-        ActivateEvent::DoctrineStep => "doktryna",
         ActivateEvent::TowerClimb => "wieza-wejscie",
         ActivateEvent::InfantryToTower => "piechota-do-wiezy",
         ActivateEvent::RamTowerStep => "taran-wieza",
@@ -1170,6 +1180,9 @@ pub struct ProdBody<R: RollSource> {
     pub trace: Vec<(UnitRef, Vec<ActivateEvent>)>,
     /// Zapis każdego wykonanego ciosu (jeden rzut na cios).
     pub blows: Vec<BlowRecord>,
+    /// K5DOC-T8: decyzja każdego wykonanego kroku doktryny (`_executeGroupDoctrineStep`, `battleScene.ts:17966-18084`)
+    /// w kolejności `start`: która metoda pinu wykonała turę jednostki (obserwacja dla testów zgodności z pinem).
+    pub doctrine_steps: Vec<(UnitRef, DoctrineAction)>,
     /// Zbiór `engaged` sceny (`attacker>defender`, `battleScene.ts:8899`): tylko ciosy w zwarciu, także chybione.
     pub engaged: Vec<(UnitRef, UnitRef)>,
     /// Kontrataki obrońców (K5LOOP-KONTRATAK), osobno od ciosów głównych; jeden wpis na wykonany kontratak.
@@ -1191,7 +1204,8 @@ pub struct ProdBody<R: RollSource> {
     /// Stan doktryny każdej jednostki (K5DOC-PROD-UNIT-STAN): `unitDoctrine`, `groupId`, `rangedKite`, `shootingEnabled`,
     /// `lastAutoMoveFrom`, `antiCavSpear`, `unitTargetPriorities`. `dryCol`, `heldAfterFallback`, `mounted` są w
     /// `ProdUnit::activate` (ActivateUnit, K5H), jedynym źródle prawdy tych pól.
-    /// Tylko stan (wartości domyślne z pinu, patrz [`ProdDoctrineState`]); nic w tym ciele go jeszcze nie czyta.
+    /// Wartości domyślne z pinu (patrz [`ProdDoctrineState`]). Czytają go `_advanceStep`, `_rangedAction`, wybór celu
+    /// i krok doktryny (K5DOC-T8: `_getEffectiveDoctrine`, `rangedKite` z `skirmish`).
     /// Trzymany w ciele, a nie w [`ProdUnit`], bo literał `ProdUnit` jest też w `p6_k5loop_outcome_pin.rs` (poza allowlistą).
     pub doctrine: [Vec<ProdDoctrineState>; 2],
     /// P4-1I3: `bu.nazwa` jednostek (teksty logu i `_pushClash`), indeks: [strona][jednostka]. Wejście adaptera;
@@ -1448,6 +1462,17 @@ impl AutoBatchEnv for ProdPathEnv<'_> {
 
 /// Doktryna z `siege_tactics_doctrine_state` w typie bramek ruchu (`player_order_move_gate`); te same wartości pinu
 /// (`battleScene.ts:1938`).
+/// Odwrotność [`gate_doctrine`] (wpis `this._groupMeta` w typie stanu doktryny ciała).
+fn doctrine_of_gate(d: GateDoctrine) -> GroupDoctrine {
+    match d {
+        GateDoctrine::Defensive => GroupDoctrine::Defensive,
+        GateDoctrine::Steady => GroupDoctrine::Steady,
+        GateDoctrine::Aggressive => GroupDoctrine::Aggressive,
+        GateDoctrine::Skirmish => GroupDoctrine::Skirmish,
+        GateDoctrine::Manual => GroupDoctrine::Manual,
+    }
+}
+
 fn gate_doctrine(d: GroupDoctrine) -> GateDoctrine {
     match d {
         GroupDoctrine::Defensive => GateDoctrine::Defensive,
@@ -1526,9 +1551,10 @@ impl AdvanceWorld for ProdAdvanceWorld<'_> {
         })
     }
 
-    /// Web `_pickAdjacentTargetByPriority(ru)`: w ciele NIEOSIĄGALNE dla `_advanceStep` wołanego z `_activateUnit`
-    /// (dowód przy `ProdBody::advance_step`); zwraca pierwszego sąsiada wyłącznie po to, by gałąź `Attack` była
-    /// jawnie oznaczona tagiem (bez ciosu), a nie po cichu zamieniona na `done()`.
+    /// Web `_pickAdjacentTargetByPriority(ru)` (`:8242`): tu wyłącznie rozstrzyga `adjacent ? _doAttack : done()`
+    /// (`:8243-8244`). Zwraca pierwszego żywego sąsiada (dystans 1); `_pickAdjacentTargetByPriority` (`:17545-17569`)
+    /// zwraca cel dokładnie wtedy, gdy taki sąsiad istnieje, więc decyzja jest ta sama. Sam cel ciosu liczy
+    /// [`ProdBody::advance_step`] klockiem T2 [`pick_adjacent_target_by_priority`] (K5DOC-T8).
     fn pick_adjacent_target(&self, _unit_id: &str) -> Option<String> {
         let me = &self.units[side_ix(self.unit.side)][self.unit.idx].activate;
         let (mq, mr) = (me.q, me.r);
@@ -1716,6 +1742,7 @@ impl<R: RollSource> ProdBody<R> {
             unported: Vec::new(),
             trace: Vec::new(),
             blows: Vec::new(),
+            doctrine_steps: Vec::new(),
             engaged: Vec::new(),
             counters: Vec::new(),
             counter_round,
@@ -1994,17 +2021,23 @@ impl<R: RollSource> ProdBody<R> {
     ///
     /// Gałęzie jawnie oznaczone (bez cichego pominięcia):
     /// * `krok-naprzod-brak-terenu`: decyzja wymaga `_passableForUnit`, a ciało nie ma [`MoveTerrain`] (D1).
-    /// * `krok-naprzod-atak`: `Attack` z `_advanceStep` (`:8241-8244`). W pinie NIEOSIĄGALNE z `_activateUnit`: dla
-    ///   melee bez muru `_targetInRange` (`:8373-8392`, `dd === 1 || dd === 0`) zwraca cel zawsze, gdy
-    ///   `_canAttackFrom` (`:8436-8444`, `dd === 1`) jest prawdą, więc `_activateUnit` wybiera `_doAttack` (`:6293-6297`)
-    ///   przed `_advanceStep` (`:6298`); kolejne wywołania z `_schedule` następują tylko, gdy callback `_doMove` sprawdził
-    ///   `!_canAttackFrom` z nowej pozycji (`:8277`), a w turze sekwencyjnej nic innego nie zmienia stanu przed nimi. W
-    ///   ciele osiągalne tylko przy niespójnym wejściu adaptera ([`ProdUnit::melee_target`] = `None` przy sąsiedzie).
+    /// * `krok-naprzod-atak`: `Attack` z `_advanceStep` (`:8241-8244`) PO kroku ruchu. Nieosiągalne: kolejne wywołania
+    ///   z `_schedule` następują tylko, gdy callback `_doMove` sprawdził `!_canAttackFrom` z nowej pozycji (`:8223`,
+    ///   `:8277`), a w turze sekwencyjnej nic innego nie zmienia stanu przed nimi.
+    ///
+    /// K5DOC-T8: `Attack` przy PIERWSZYM wejściu (`:8241-8245`) jest osiągalny z kroku doktryny (`steady`, `:18022-18025`;
+    /// `aggressive`, `:18048`), bo doktryna woła `_advanceStep` bez wcześniejszego `_targetInRange`. Cel liczy
+    /// `_pickAdjacentTargetByPriority` (K5DOC-T2 [`pick_adjacent_target_by_priority`]); zwracany jako trzeci element
+    /// wyniku i wykonywany wspólną ścieżką `_doAttack` w `start` (szablon ciosu jak dla każdego ciosu).
     ///
     /// C-FLANK (`:8204-8235`, K5LOOP-CLOSE r2, zdjęty tag `krok-naprzod-flanka`): dla `attackDirection` `'bok'`/`'tyl'`
     /// każde wejście `_advanceStep` najpierw próbuje manewru na flankę/tył celu `_pickTargetByPriority ?? _nearestEnemy`
     /// ([`Self::flank_decide`]); brak kroku = marsz czołowy poniżej (`:8231-8233`), jak w pinie.
-    fn advance_step(&mut self, unit: UnitRef, st: &TurnSeqState) -> (f64, Option<f64>) {
+    fn advance_step(
+        &mut self,
+        unit: UnitRef,
+        st: &TurnSeqState,
+    ) -> (f64, Option<f64>, Option<usize>) {
         let ix = side_ix(unit.side);
         let mounted = self.units[ix][unit.idx].activate.mounted;
         let mut move_left = st.unit(unit).c.move_left;
@@ -2012,6 +2045,7 @@ impl<R: RollSource> ProdBody<R> {
         // (`NaN` nie spełnia, jak w JS) kończy przed blokiem C-FLANK.
         let desired = desired_hit_for_direction(self.attack_direction[ix][unit.idx]);
         let mut moved = false;
+        let mut attack: Option<usize> = None;
         let now0 = self.now;
         let mut elapsed = 0.0;
         let enemies = self.enemies_of(unit.side, st);
@@ -2080,8 +2114,16 @@ impl<R: RollSource> ProdBody<R> {
             }
             match decision {
                 AdvanceDecision::Done => break,
-                AdvanceDecision::Attack { .. } => {
+                AdvanceDecision::Attack { .. } if moved => {
                     self.unported.push((unit, "krok-naprzod-atak"));
+                    break;
+                }
+                AdvanceDecision::Attack { .. } => {
+                    // `const adjacent = this._pickAdjacentTargetByPriority(ru); if (adjacent) _doAttack(...) else done()`.
+                    let me = self.combatant(unit, st);
+                    let en = self.combatants(opposite(unit.side), st);
+                    attack =
+                        pick_adjacent_target_by_priority(&me, &en, &self.target_priorities, None);
                     break;
                 }
                 AdvanceDecision::Move { col, row, then } => {
@@ -2116,7 +2158,7 @@ impl<R: RollSource> ProdBody<R> {
             }
         }
         self.now = now0;
-        (elapsed, moved.then_some(move_left))
+        (elapsed, moved.then_some(move_left), attack)
     }
 
     fn advance_unit(&self, unit: UnitRef, move_left: f64) -> AdvanceUnit {
@@ -2193,6 +2235,76 @@ impl<R: RollSource> ProdBody<R> {
             use_unit_priorities: false,
             unit_target_priorities: None,
         }
+    }
+
+    /// K5DOC-T8: `_getEffectiveDoctrine(ru)` (`battleScene.ts:17612-17619`) ze stanu doktryny ciała: `unitDoctrine`,
+    /// potem `this._groupMeta.get(ru.groupId)` (pusty `groupId` = brak grupy, jak falsy w JS), inaczej `'steady'`.
+    fn effective_doctrine_of(&self, unit: UnitRef) -> GroupDoctrine {
+        let ds = &self.doctrine[side_ix(unit.side)][unit.idx];
+        let group = ds
+            .group_id
+            .as_deref()
+            .filter(|g| !g.is_empty())
+            .and_then(|g| self.group_meta.get(g))
+            .map(|m| doctrine_of_gate(m.doctrine));
+        effective_doctrine(ds.unit_doctrine, group)
+    }
+
+    /// K5DOC-T8: `_ensureGroupMeta(gid)` (`battleScene.ts:17586-17593`) wołane z `_effectiveMetaForUnit` (`:17636`):
+    /// brakujący wpis grupy = `{ doctrine: 'steady', autoPlay: true }`.
+    fn ensure_group_meta_of(&mut self, unit: UnitRef) {
+        let gid = self.doctrine[side_ix(unit.side)][unit.idx]
+            .group_id
+            .clone()
+            .filter(|g| !g.is_empty());
+        if let Some(g) = gid {
+            self.group_meta.entry(g).or_insert(GroupMeta {
+                doctrine: GateDoctrine::Steady,
+                auto_play: true,
+            });
+        }
+    }
+
+    /// K5DOC-T8: decyzja `_executeGroupDoctrineStep(ru, meta, done)` ([`execute_group_doctrine_step`]) dla jednostki
+    /// ciała. `ru.formationOffset` = `null` (spawn pinu `:4575`; ustawia go wyłącznie UI szyku grupy, którego ciało nie
+    /// niesie); `this._generalSettings` blokady = wartości startowe pinu (`blockadeActive: false`, `:2335-2340`; zmienia
+    /// je wyłącznie panel gracza).
+    fn plan_doctrine_step(
+        &self,
+        unit: UnitRef,
+        st: &TurnSeqState,
+        doctrine: GroupDoctrine,
+    ) -> DoctrineStep {
+        let ix = side_ix(unit.side);
+        let pu = &self.units[ix][unit.idx].activate;
+        let ds = &self.doctrine[ix][unit.idx];
+        let u = DoctrineStepUnit {
+            side: unit.side,
+            q: pu.q,
+            r: pu.r,
+            has_group: ds.group_id.as_deref().is_some_and(|g| !g.is_empty()),
+            mounted: pu.mounted,
+            can_shoot: pu.can_shoot,
+            shooting_enabled: !pu.shooting_disabled,
+            primary_ranged: pu.primary_ranged,
+            ranged_base: self.ranged_base[ix][unit.idx],
+            range: pu.range,
+            move_left: st.unit(unit).c.move_left,
+            formation_offset: None,
+        };
+        let me = self.combatant(unit, st);
+        let en = self.combatants(opposite(unit.side), st);
+        execute_group_doctrine_step(
+            doctrine,
+            &u,
+            &me,
+            &en,
+            &self.target_priorities,
+            BlockadeSettings {
+                active: false,
+                col: None,
+            },
+        )
     }
 
     /// Lista [`Combatant`] strony `side` w kolejności `TurnSeqState` (indeksy = indeksy jednostek tej strony).
@@ -3385,8 +3497,6 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             Some("tryb-reczny")
         } else if self.scene.wall_col >= 0 || st.siege_wall_col >= 0 {
             Some("oblezenie")
-        } else if pu.activate.doctrine_auto {
-            Some("doktryna")
         } else {
             None
         };
@@ -3403,6 +3513,12 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         au.flee_morale = seq.flee_morale;
         au.never_rout = seq.never_rout;
         au.surround_applied = self.surround[ix][unit.idx];
+        // K5DOC-T8: `meta.doctrine !== 'manual'` (`battleScene.ts:6096`) czyta `_effectiveMetaForUnit(ru).doctrine` =
+        // `_getEffectiveDoctrine(ru)` (`:17634`, `:17612-17619`) ze stanu doktryny ciała; flaga wejścia adaptera jest
+        // nadpisywana. `_isUnitDoctrineAuto(ru)` (`:17621-17630`) zostaje wejściem adaptera (`activate.doctrine_auto`,
+        // port: [`crate::domain::siege_tactics_doctrine_step::is_unit_doctrine_auto`]).
+        let doctrine_now = self.effective_doctrine_of(unit);
+        au.doctrine_manual = doctrine_now == GroupDoctrine::Manual;
 
         let enemies = self.enemies_of(unit.side, st);
         let scene = ActivateScene {
@@ -3450,10 +3566,16 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 nearest = Some((e.q, e.r));
             }
         }
+        // K5DOC-T8: krok doktryny liczony przed maszyną z tego samego stanu (`_applyTerrainRange` w ciele jest
+        // tożsamością, a reset `playerOrder` nie zmienia wejść kroku); wykonywany tylko, gdy maszyna go wywoła.
+        let doctrine_plan = au
+            .doctrine_auto
+            .then(|| self.plan_doctrine_step(unit, st, doctrine_now));
         let mut ops = ProdOps {
             melee_target,
             advance_coord,
             nearest,
+            doctrine_returns: doctrine_plan.is_some_and(|p| p.returns),
         };
         let res = activate_unit(&mut au, &scene, &enemies, &mut ops);
         self.trace.push((unit, res.events.clone()));
@@ -3483,6 +3605,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         let mut fallback = false;
         let mut phalanx = false;
         let mut flee = false;
+        let mut doctrine = false;
         for ev in res.events.iter().copied() {
             match ev {
                 ActivateEvent::Done
@@ -3510,6 +3633,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 // K5LOOP-CLOSE r4: rout z okrążenia (`:6116-6117`: `_checkRout` -> `_startRout`, potem `_fleeStep`).
                 // Bez [`MoveTerrain`] (D1) zostaje tag `ucieczka-routed` jak dotąd (rout wykonuje wtedy `complete`).
                 ActivateEvent::Flee if self.terrain.is_some() => flee = true,
+                // K5DOC-T8: `_executeGroupDoctrineStep(ru, meta, done)` (`battleScene.ts:6097`, ciało `:17966-18084`).
+                ActivateEvent::DoctrineStep => doctrine = res.branches.contains(&"U7.0-doctrine"),
                 other => skipped.push(prod_tag(other)),
             }
         }
@@ -3536,7 +3661,35 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             self.pending[ix][unit.idx] = Some(pend);
             return dur;
         }
-        // Gałąź spoza zakresu (ucieczka bez terenu, marsz, doktryna...) = brak akcji po efektach stanu.
+        // K5DOC-T8: krok doktryny (`:6092-6099`). Maszyna kończy aktywację po `DoctrineStep` (`return`), więc nie ma
+        // tu okrążenia, `_updateFacing` ani innych gałęzi. Treść kroku = te same klocki co gałęzie `_activateUnit`.
+        if let Some(plan) = doctrine_plan.filter(|_| doctrine && skipped.is_empty()) {
+            // `_effectiveMetaForUnit` (`:17636`): `{ ...this._ensureGroupMeta(ru.groupId) }` tworzy brakujący wpis grupy.
+            self.ensure_group_meta_of(unit);
+            if plan.set_ranged_kite {
+                // `_executeSkirmishDoctrineStep` (`:18092`): `ru.rangedKite = true` przed `_rangedAction`.
+                self.doctrine[ix][unit.idx].ranged_kite = true;
+            }
+            self.doctrine_steps.push((unit, plan.action));
+            match plan.action {
+                DoctrineAction::Done => {
+                    self.pending[ix][unit.idx] = Some(pend);
+                    return 0.0;
+                }
+                DoctrineAction::Attack(t) => pend.attack = Some(t),
+                DoctrineAction::CavalryAction => cavalry = true,
+                DoctrineAction::RangedAction => ranged = true,
+                DoctrineAction::AdvanceStep => advance = true,
+                DoctrineAction::MoveOrder { .. } => {
+                    // `_performPlayerOrder(ru, finish)` (`:18082`, `:18122`; ciało `:18280-18352`) to K5EXEC-T3 (#268):
+                    // jawny tag, brak ruchu.
+                    self.unported.push((unit, "doktryna-rozkaz-ruchu"));
+                    self.pending[ix][unit.idx] = Some(pend);
+                    return 0.0;
+                }
+            }
+        }
+        // Gałąź spoza zakresu (ucieczka bez terenu, marsz...) = brak akcji po efektach stanu.
         if !skipped.is_empty() {
             for tag in skipped {
                 self.unported.push((unit, tag));
@@ -3606,12 +3759,18 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 }
             }
         }
-        // `_advanceStep` i `_doAttack` wykluczaja sie w `_activateUnit` (kazda galaz konczy sie `return`).
+        // `_advanceStep` i `_doAttack` wykluczaja sie w `_activateUnit` (kazda galaz konczy sie `return`). K5DOC-T8: cios z
+        // `_advanceStep` (`:8241-8245`, osiągalny z kroku doktryny `steady`/`aggressive`) idzie wspólną ścieżką `_doAttack`.
         if advance {
-            let (dur, move_left) = self.advance_step(unit, st);
+            let (dur, move_left, attack) = self.advance_step(unit, st);
             pend.move_left = move_left;
-            self.pending[ix][unit.idx] = Some(pend);
-            return dur;
+            match attack {
+                Some(t) => pend.attack = Some(t),
+                None => {
+                    self.pending[ix][unit.idx] = Some(pend);
+                    return dur;
+                }
+            }
         }
         // K5LOOP-CLOSE r4: `_doAttack` (`:8787-8797`): `if (canShoot(attacker)) this._doRangedAttack(...)`. Strzelec z
         // amunicją dochodzi tu tylko z `shootingEnabled = false` (inaczej `_rangedAction`, `:6241`; mur wykluczony
