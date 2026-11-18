@@ -38,12 +38,10 @@ Strzelcy po strzale idą co najwyżej do miejsca, z którego następny cel jest 
 
 ### Obrażenia wręcz a pancerz
 
-Cios wręcz zadaje obrażenia broni pomniejszone o pancerz celu, do tego dochodzi przebicie oraz bonus szarży w rundzie szarży. Jeśli pancerz jest równy obrażeniom broni albo większy, a atakująca jednostka nie ma przebicia, cios nie zadaje obrażeń w rozstrzyganiu walki (zadaje 0). W bitwie ręcznej najmniejsze obrażenie z ciosu wręcz wynosi 1.
+Cios wręcz zadaje obrażenia broni pomniejszone o pancerz celu, plus przebicie i bonus szarży. Gdy pancerz jest równy obrażeniom broni albo większy, a atakujący nie ma przebicia, cios w rozstrzyganiu walki zadaje 0. W bitwie ręcznej najmniejsze obrażenie z ciosu wręcz wynosi 1.
 
 ### Morale i ucieczka
 
-Jednostka ucieka, gdy jej bieżące morale spadnie do progu „Morale ucieczki” z jej danych (liczba bezwzględna; gdy brakuje wpisu, próg wynosi 25). Uciekająca jednostka przestaje atakować, odwraca się od wroga i ucieka ku swojej krawędzi mapy. Na wzgórzu lub w lesie próg jest o 5 punktów niższy, więc jednostka trzyma się dłużej.
+Jednostka ucieka, gdy jej bieżące morale spadnie do progu „Morale ucieczki” z jej danych (domyślnie 25; na wzgórzu lub w lesie o 5 punktów niżej). Uciekająca jednostka przestaje atakować i odchodzi ku swojej krawędzi mapy. Morale spada m.in. od strat zdrowia (każde 10% to −10), od śmierci sojusznika w promieniu 3 pól (−12), od ciosu z flanki (−8) lub z tyłu (−15), od szarży (−15) i raz, gdy otacza jednostkę co najmniej trzech wrogów (−10). Jednostki „walczące do śmierci” nie uciekają.
 
-Morale spada od strat zdrowia (każde 10% utraconego zdrowia to −10 punktów), od śmierci sojusznika w promieniu 3 pól (−12), od ciosu z flanki (−8) lub z tyłu (−15), od ciosu szarży (−15) oraz raz, gdy jednostkę otacza co najmniej trzech wrogów (−10). Jednostki „walczące do śmierci” nie uciekają i walczą do zera zdrowia.
-
-Ucieczka dotyczy także łuczników i innych jednostek dystansowych, na tych samych zasadach co reszta. Dodatkowo dystansowa jednostka, do której podszedł wróg, odsuwa się, by odzyskać odstęp co najmniej 2 pól i dalej strzelać. Ucieczka jednostek dystansowych jest zamierzona i pozostaje bez zmian.
+Ucieczka dotyczy także łuczników i innych jednostek dystansowych, na tych samych zasadach. Gdy strona straci ostatnią jednostkę walczącą wręcz, jej strzelcy jednorazowo tracą połowę morale i od razu sprawdzany jest próg ucieczki (osłona wręcz). Strzelec, do którego podszedł wróg walczący wręcz w odległości do 2 pól, cofa się o krok, by odzyskać odstęp i strzelać dalej; wrogowie dystansowi tego nie wywołują. Ucieczka jednostek dystansowych jest zamierzona i pozostaje bez zmian.
