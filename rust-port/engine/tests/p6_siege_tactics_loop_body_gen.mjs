@@ -64,7 +64,7 @@ const DOATTACK_SHA256 = '592a6cbc279655a09b13fe9cd5ccbad24b325fa093610d685d5d946
 const FACING_SHA256 = '6d4858eded6e566c91a2874b30a5eabff0080b477bbf29c02a1a67f69493eae3';
 const COUNTER_SHA256 = '3913ba4050eaa30429418fade9b1a2b2adc374f1abe1a65f9291c96568e83ce7';
 const OUTCOME_SHA256 = '6cc2b1e08bcee451d42d8d022c446c6ef42f8e4d045087dff5a653d7a09f737c';
-const N_SEQ = 320;
+const N_SEQ = 340;
 const SEED = 2301;
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -228,6 +228,17 @@ const outcomeParts = {
   armyRatio: L(SCENE, 9988, sceneEnd(9988)),
   armyFn: L(ARMY, armyStart, fnRange(ARMY, armyStart)[1]),
 };
+// K5LOOP-KILL-RIPPLE (D-INT-2, R-RUSTPORT-P6-K5LOOP-SIEGE-DEF-Q1): ripple `_shakeAlliesOnLoss` (`:9743-9753`, wywolanie
+// `:9048`) wykonywany tekstem pinu (wczesniej atrapa licznika). Osobny strażnik `rippleSha256` (stała `EXPECTED_RIPPLE_SHA256`, `throw`) (bez zmiany outcomeSha256).
+expectLine(SCENE, 1118, 'const MORALE_ALLY_DEATH_LOSS');
+expectLine(SCENE, 9743, 'private _shakeAlliesOnLoss(fallen: RuntimeBattleUnit)');
+const rippleParts = { allyLoss: L(SCENE, 1118, 1118), shake: L(SCENE, 9743, sceneEnd(9743)) };
+const rippleDigest = createHash('sha256').update(Object.keys(rippleParts).map((n) => `${n}\n${rippleParts[n]}`).join('\n---\n')).digest('hex');
+console.error(`ripple sha256 = ${rippleDigest}`);
+// Obrona r1 SIEGE-DEF (zarzut Z5): strażnik = porównanie ze stałą (wycinki `:1118` i `:9743-9753` pinu); zmiana tekstu
+// pinu albo zakresu wycinka = błąd generatora, nie cicha regeneracja wektorów.
+const EXPECTED_RIPPLE_SHA256 = '2fccc76c9111ff9949786ff7b4bbe468bfebe479473cd7a6fadd13ccd35cdb6a';
+if (rippleDigest !== EXPECTED_RIPPLE_SHA256) throw new Error(`SHA wycinkow ripple zmieniony: ${rippleDigest}`);
 const outcomeDigest = createHash('sha256').update(Object.keys(outcomeParts).map((n) => `${n}\n${outcomeParts[n]}`).join('\n---\n')).digest('hex');
 if (outcomeDigest !== OUTCOME_SHA256) throw new Error(`SHA fragmentow efektow po ciosie zmieniony: ${outcomeDigest}`);
 
@@ -383,6 +394,7 @@ const stubNames = Object.keys(stubs);
 const classSrc = [
   L(SCENE, 1142, 1143), L(SCENE, 1161, 1161), L(SCENE, 1917, 1919),
   outcomeParts.consts,
+  rippleParts.allyLoss,
   outcomeParts.armyFn.replace(/^export /gm, ''),
   DIR_JS,
   L(SCENE, 347, fnRange(SCENE, 347)[1]).replace(/^export /gm, ''),
@@ -418,7 +430,9 @@ const classSrc = [
   '  _sfxRout() {}',
   '  _sfxDeath() {}',
   '  _pushClash(a, d, dmg, tag) { getFx().clash += 1; }',
-  '  _shakeAlliesOnLoss(fallen) { getFx().shakes += 1; }',
+  // Ripple = TEKST pinu (`_shakeAlliesOnLossPin`), licznik wywolan zostaje; glebokosc efektow jak w `_resolveBlowOutcome`.
+  '  _shakeAlliesOnLoss(fallen) { getFx().shakes += 1; this.__fxDepth = (this.__fxDepth || 0) + 1; try { return this._shakeAlliesOnLossPin(fallen); } finally { this.__fxDepth -= 1; } }',
+  `  ${rippleParts.shake.replace('private _shakeAlliesOnLoss', '_shakeAlliesOnLossPin')}`,
   '  _removeCommanderMoraleBonus(side) { throw new Error("efekty dowodcy poza zakresem (isArmyCommander = false)"); }',
   '  _disableManualIfCommanderLost(side) { throw new Error("efekty dowodcy poza zakresem (isArmyCommander = false)"); }',
   '  _updateArmyMoraleBars() {}',
@@ -795,6 +809,6 @@ const outDir = join(here, 'p6_siege_tactics_loop_body_vectors');
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'vectors.json'), `${JSON.stringify({
   pin: PIN, activateSha256: activateDigest, blowSha256: blowDigest, unitFragmentSha256: uDigest, unitsSha256: unitsDigest,
-  doAttackSha256: doAttackDigest, facingSha256: facingDigest, counterSha256: counterDigest, outcomeSha256: outcomeDigest, seed: SEED, coverage: cov, sequences,
+  doAttackSha256: doAttackDigest, facingSha256: facingDigest, counterSha256: counterDigest, outcomeSha256: outcomeDigest, rippleSha256: rippleDigest, seed: SEED, coverage: cov, sequences,
 })}\n`);
 console.error(JSON.stringify(cov));

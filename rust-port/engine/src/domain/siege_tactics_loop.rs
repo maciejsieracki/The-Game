@@ -1002,8 +1002,8 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
 // (`_applyMoraleDamage` -> `_checkRout` -> `_startRout`, `_gainMorale` atakującego, gdy cel się złamał).
 // `_startRout` (`:9799`) obsługuje też rout z aktywacji (okrążenie). KONTRATAK obrońcy (`_defenderCounters`,
 // K5LOOP-KONTRATAK) JEST zaimplementowany w [`ProdBody::counter_strike`].
-// JAWNIE NIEPORTOWANE (NIE_ZMIERZONO, wpis w `unported`): ripple `_shakeAlliesOnLoss` przy zabiciu (tag
-// `shakeAlliesOnLoss`, wymaga K5LOOP-RUCH #123), efekty dowódcy armii (`isArmyCommander`: tagi `dowodca-*`),
+// K5LOOP-KILL-RIPPLE (D-INT-2): ripple `_shakeAlliesOnLoss` przy zabiciu (`:9048`) JEST wykonywany
+// ([`ProdBody::kill_ripples`]). JAWNIE NIEPORTOWANE (NIE_ZMIERZONO, wpis w `unported`): efekty dowódcy armii (`isArmyCommander`: tagi `dowodca-*`),
 // `occByKey` (brak konsumenta w ProdBody) i `routedUnits` (dane na przyszłość). Timing `BLOW_HIT_T` (150 ms)
 // to wejście adaptera ([`ProdUnit::body_ms`]).
 // FACING (r4, K5LOOP-FACING): ciało trzyma `facing` każdej jednostki. `_updateFacing` (zdarzenie `UpdateFacing` na
@@ -1019,10 +1019,12 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
 // strzału w `_targetInRange`/`_canAttackFrom`, `_doAttack` -> `_doRangedAttack`). K5DOC-T8: krok doktryny
 // `_executeGroupDoctrineStep` (`:6092-6099`, `:17966-18124`) jest WYKONYWANY bez muru (decyzja
 // `siege_tactics_doctrine_step`, treść tymi samymi klockami; rozkaz ruchu `skirmish` = tag `doktryna-rozkaz-ruchu`,
-// K5EXEC-T3). Pozostałe gałęzie `_activateUnit` (wieże, machiny, mur, tryb ręczny) NIE są wykonywane: jednostka nic nie
-// robi, a ścieżka trafia do
-// [`ProdBody::unported`]. Ripple przy ZABICIU (`_resolveBlowOutcome`) nadal ma tag `shakeAlliesOnLoss` (raport r4). Wybór celu (`_targetInRange`) zależy od `facing`/`attackDirection`,
-// których ten klocek nie niesie, więc cel jest wejściem adaptera ([`ProdUnit::melee_target`]).
+// K5EXEC-T3). K5LOOP-SIEGE-DEF (T1): obrońca przy murze (`onWallWalkway` `:6129-6172` z kontrbaterią katapulty,
+// HOLD `:6225-6236`) jest WYKONYWANY; cel liczy ciało (`_rangedTargetInRange` / `_targetInRange` z filtrem muru).
+// Pozostałe gałęzie `_activateUnit` (strona `atk` przy murze: wieże, machiny, wejście na mur; tryb ręczny) NIE są
+// wykonywane: jednostka nic nie robi, a ścieżka trafia do [`ProdBody::unported`]. Wybór celu zwykłego ciosu poza
+// oblężeniem (`_targetInRange`) pozostaje wejściem adaptera ([`ProdUnit::melee_target`]); szablon ciosu jest zawsze
+// wejściem adaptera (cel ciała różny od `melee_target` = tag `cios-bez-szablonu`).
 // ---------------------------------------------------------------------------------------------------------------
 
 /// Statyczna konfiguracja jednostki dla [`ProdBody`]: pola `ru` spoza [`CombatUnit`] oraz wejścia adapterów.
@@ -1072,6 +1074,9 @@ struct ProdShot {
 /// Zapytania maszyny K5H dla [`ProdBody`] (bez skutków ubocznych).
 struct ProdOps {
     melee_target: Option<usize>,
+    /// K5LOOP-SIEGE-DEF (T1): `_rangedTargetInRange(ru)` (`battleScene.ts:7041-7053`) liczone przez ciało dla obrońcy w
+    /// oblężeniu (gałęzie U7.1 i U7.4 maszyny; poza nimi maszyna nie woła tego zapytania). Poza oblężeniem `None`.
+    ranged_target: Option<usize>,
     /// K5LOOP-CLOSE r3: `_advanceCoord(ru)` (`battleScene.ts:6537-6539`: atak `q`, obrona `-q`) z pozycji na starcie
     /// aktywacji (pozycja nie zmienia się w trakcie `_activateUnit` przed gałęzią ruchu).
     advance_coord: f64,
@@ -1104,7 +1109,7 @@ impl ActivateOps for ProdOps {
         false
     }
     fn ranged_target_in_range(&mut self) -> Option<usize> {
-        None
+        self.ranged_target
     }
     fn target_in_range(&mut self) -> Option<usize> {
         self.melee_target
@@ -1214,6 +1219,15 @@ pub struct ProdBody<R: RollSource> {
     /// P4-1I3: `String(towerShooterRow['Jednostka'] ?? 'Strzelec')` (`battleScene.ts:4211`); nazwa strzelca wieży w
     /// logu to `'Wieza (' + nazwa + ')'` (`:4241`). Wejście adaptera; domyślnie `Strzelec`.
     pub tower_shooter_nazwa: String,
+    /// K5LOOP-SIEGE-DEF (T1): web `this.wallEverBreached` czytane przez `_meleeBlockedByWall` (`battleScene.ts:8361-8371`)
+    /// przy wyborze celu obrońcy wręcz w oblężeniu (`_targetInRange`, `:8373-8410`). Wejście sterownika/adaptera
+    /// (stan wyłomu trzyma [`SiegeEnv::wall_ever_breached`]; synchronizacja przy wyłomie w trakcie bitwy = T2/T7).
+    /// Domyślnie `false` (pin: `wallEverBreached = false` na starcie bitwy).
+    pub wall_ever_breached: bool,
+    /// K5LOOP-KILL-RIPPLE (D-INT-2): poległe jednostki, dla których `_resolveBlowOutcome` wywołało ripple
+    /// `_shakeAlliesOnLoss(defender)` (`battleScene.ts:9048`), w kolejności wywołań (obserwacja dla testów zgodności z
+    /// pinem; ripple z `_fleeStep` nie jest tu zapisywany).
+    pub kill_ripples: Vec<UnitRef>,
     /// P4-1I3: czas wirtualny bieżącego wywołania (ustawia sterownik, [`LoopBody::set_now`]).
     now: f64,
     /// P4-1I3: wiersz wieży bieżącego trafienia ([`LoopBody::set_tower_row`]).
@@ -1755,6 +1769,8 @@ impl<R: RollSource> ProdBody<R> {
             doctrine,
             names,
             tower_shooter_nazwa: "Strzelec".to_string(),
+            wall_ever_breached: false,
+            kill_ripples: Vec::new(),
             now: 0.0,
             tower_row: 0,
             actions: Vec::new(),
@@ -3498,10 +3514,22 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         }
         let pu = self.units[ix][unit.idx].clone();
         // Gałęzie spoza zakresu sprawdzane PRZED maszyną (żeby maszyna nie wybrała ścieżki strzelca/doktryny).
+        // K5LOOP-SIEGE-DEF (T1): przy murze ciało wykonuje WYŁĄCZNIE stronę `def` (`_activateUnit` `:6087`, `:6129-6172`,
+        // `:6225-6236`: obrońca nie ma doktryny, trzyma mur, strzela/bije z miejsca). Strona `atk` przy murze (wieże,
+        // taran, katapulta, wejście na mur, doktryna atakującego) zostaje tagiem `oblezenie` (T2). Mur sceny maszyny
+        // (`scene.wall_col`) i mur sekwencji (`st.siege_wall_col`) to jedna wartość pinu (`this.siegeWallCol`): dwie
+        // różne nieujemne wartości = błąd wejścia, jawny tag `oblezenie-mur-niespojny`.
+        let siege = self.scene.wall_col >= 0 || st.siege_wall_col >= 0;
+        let wall_col = self.scene.wall_col.max(st.siege_wall_col);
         let out_of_scope = if self.scene.manual_mode {
             Some("tryb-reczny")
-        } else if self.scene.wall_col >= 0 || st.siege_wall_col >= 0 {
+        } else if siege && unit.side == BattleSide::Attacker {
             Some("oblezenie")
+        } else if self.scene.wall_col >= 0
+            && st.siege_wall_col >= 0
+            && self.scene.wall_col != st.siege_wall_col
+        {
+            Some("oblezenie-mur-niespojny")
         } else {
             None
         };
@@ -3528,6 +3556,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         let enemies = self.enemies_of(unit.side, st);
         let scene = ActivateScene {
             finished: st.finished,
+            // K5LOOP-SIEGE-DEF: `this.siegeWallCol` (spójność sprawdzona wyżej; `-1` bez muru).
+            wall_col,
             ..self.scene.clone()
         };
         // `_targetInRange` czyta `_enemiesOf`: cel martwy / znikający / uciekający nie jest celem (battleScene.ts:8291-8294).
@@ -3535,7 +3565,30 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         // wchodzi) idzie ścieżkami wręcz, ale `_targetInRange` (`:8373-8410`) liczy wtedy zasięg STRZAŁU (`canShoot`,
         // `:8376-8380`: `1 <= dd <= ru.range`) z kierunkiem natarcia (`:8402-8407`) i `lowestHp`: cel liczy ciało
         // (K5DOC-T2 [`target_in_range_cmb`], bez zmian), nie adapter. Pozostałe jednostki: wejście adaptera jak dotąd.
-        let melee_target = if pu.activate.can_shoot {
+        // K5LOOP-SIEGE-DEF (T1): obrońca w oblężeniu (maszyna: tylko gałęzie U7.1 `onWallWalkway` i U7.4 HOLD, obie
+        // kończą aktywację) liczy cel w ciele z bieżących pozycji: strzelec `_rangedTargetInRange` (`:7041-7053`),
+        // wręcz `_targetInRange` (`:8373-8410`) z filtrem `_meleeBlockedByWall` (`:8361-8371`, mur i wyłom).
+        let siege_def = siege && unit.side == BattleSide::Defender;
+        let ranged_target = if siege_def && pu.activate.can_shoot {
+            self.ranged_target_in_range_js(unit, st)
+        } else {
+            None
+        };
+        let melee_target = if siege_def && !pu.activate.can_shoot {
+            let me = self.combatant(unit, st);
+            let en = self.combatants(opposite(unit.side), st);
+            target_in_range_cmb(
+                &me,
+                &en,
+                &TargetScene {
+                    siege_wall_col: wall_col,
+                    wall_ever_breached: self.wall_ever_breached,
+                },
+            )
+        } else if siege_def {
+            // Strzelec obrońcy przy murze nie woła `_targetInRange` (U7.1/U7.4 czytają `_rangedTargetInRange`).
+            None
+        } else if pu.activate.can_shoot {
             let me = self.combatant(unit, st);
             let en = self.combatants(opposite(unit.side), st);
             target_in_range_cmb(
@@ -3578,6 +3631,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             .then(|| self.plan_doctrine_step(unit, st, doctrine_now));
         let mut ops = ProdOps {
             melee_target,
+            ranged_target,
             advance_coord,
             nearest,
             doctrine_returns: doctrine_plan.is_some_and(|p| p.returns),
@@ -3623,7 +3677,9 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 | ActivateEvent::StartRout => {}
                 ActivateEvent::UpdateFacing => self.update_facing(unit, &enemies),
                 // Wywołania wież i taranu są w pinie bezczynne bez muru (`siegeWallCol < 0` -> `return false`,
-                // battleScene.ts:8023, :8057, :8088); strażnik `oblezenie` wyżej wyklucza mur.
+                // battleScene.ts:8023, :8057, :8088) i dla obrońcy (`ru.side !== 'atk'` -> `return false`, `:8057`,
+                // `:8088`; `_siegeRamTowerStep` woła tylko gałąź `isSiegeUnit && side === 'atk'`, `:6187`). Strona `atk`
+                // przy murze ma strażnik `oblezenie` wyżej.
                 ActivateEvent::TowerClimb
                 | ActivateEvent::InfantryToTower
                 | ActivateEvent::RamTowerStep => {}
@@ -3639,6 +3695,14 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 ActivateEvent::PhalanxAction => phalanx = true,
                 // K5LOOP-CLOSE r4: rout z okrążenia (`:6116-6117`: `_checkRout` -> `_startRout`, potem `_fleeStep`).
                 // Bez [`MoveTerrain`] (D1) zostaje tag `ucieczka-routed` jak dotąd (rout wykonuje wtedy `complete`).
+                // K5LOOP-SIEGE-DEF: rout z okrążenia obrońcy przy murze. `_fleeStep` -> `_doMove` czyta
+                // `_siegeMoveRefused` (`:8689`), nieportowane w ciele: jawny tag (efekty stanu aktywacji, w tym
+                // `_startRout`, zapisują się w `complete`). Precedencja tagów TAKA SAMA jak w gałęzi `routed` w
+                // [`LoopBody::start`]: najpierw brak [`MoveTerrain`] (`ucieczka-routed`, ramię `other` niżej), potem mur
+                // (`ucieczka-oblezenie`), dopiero potem wykonanie `_fleeStep`.
+                ActivateEvent::Flee if siege && self.terrain.is_some() => {
+                    skipped.push("ucieczka-oblezenie")
+                }
                 ActivateEvent::Flee if self.terrain.is_some() => flee = true,
                 // K5DOC-T8: `_executeGroupDoctrineStep(ru, meta, done)` (`battleScene.ts:6097`, ciało `:17966-18084`).
                 ActivateEvent::DoctrineStep => doctrine = res.branches.contains(&"U7.0-doctrine"),
@@ -4047,7 +4111,14 @@ impl<R: RollSource> ProdBody<R> {
                     }
                     self.start_fade(st, defender);
                 }
-                SceneEffect::ShakeAllies => self.unported.push((defender, "shakeAlliesOnLoss")),
+                // K5LOOP-KILL-RIPPLE (D-INT-2): `_shakeAlliesOnLoss(defender)` (`battleScene.ts:9048`) po `_startFade`,
+                // przed `_boostEnemiesOnBreak` (kolejność listy efektów = kolejność pinu `:9047-9051`). Pole poległego
+                // (`fallen.q/r`) zostaje po `_removeUnitFromScene` (zwalnia tylko `occByKey`), więc promień liczy się
+                // od tego samego pola co w pinie.
+                SceneEffect::ShakeAllies => {
+                    self.kill_ripples.push(defender);
+                    self.shake_allies_on_loss(st, defender);
+                }
                 SceneEffect::BoostEnemies => self.boost_enemies_on_break(st, defender),
                 SceneEffect::GainMorale { side, amount } => {
                     // Zabicie zyskuje bezwarunkowo (cel jest już `dead`); gałęzie morale tylko po złamaniu celu.
@@ -4134,6 +4205,37 @@ impl<R: RollSource> ProdBody<R> {
             }
             self.gain_morale(st, e, MORALE_ENEMY_BREAK_GAIN);
         }
+    }
+
+    /// K5LOOP-SIEGE-DEF (T1): `_rangedTargetInRange(ru)` (`battleScene.ts:7041-7053`) na liczbach JS: `ru.range` jako
+    /// `f64` (bez obcięcia do `i64`, jak w [`Combatant::range`]), więc `dd > NaN` jest fałszem (NaN = każdy wróg
+    /// z `dd >= 1` w zasięgu), a `+Infinity` obejmuje całe pole. `_enemiesOf` (`:8291-8294`): bez martwych,
+    /// znikających i uciekających. Najbliższy w `[1..range]`; remis odległości = niższe `bu.hp` (`<` ścisłe, NaN
+    /// nie wygrywa), kolejność listy strony przeciwnej.
+    fn ranged_target_in_range_js(&self, unit: UnitRef, st: &TurnSeqState) -> Option<usize> {
+        let (q, r) = self.cell_of(unit);
+        let range = self.units[side_ix(unit.side)][unit.idx].activate.range;
+        let other = opposite(unit.side);
+        let mut best: Option<(usize, f64)> = None;
+        let mut best_d = f64::INFINITY;
+        for idx in 0..self.units[side_ix(other)].len() {
+            let e = UnitRef { side: other, idx };
+            let c = st.unit(e).c;
+            if c.dead || c.fading_out || c.routed {
+                continue;
+            }
+            let (eq, er) = self.cell_of(e);
+            let dd = ((q - eq).abs() + (r - er).abs()) as f64;
+            if dd < 1.0 || dd > range {
+                continue;
+            }
+            let take = dd < best_d || (dd == best_d && best.is_some_and(|(_, hp)| c.hp < hp));
+            if take {
+                best_d = dd;
+                best = Some((idx, c.hp));
+            }
+        }
+        best.map(|(i, _)| i)
     }
 
     fn cell_of(&self, unit: UnitRef) -> (i64, i64) {

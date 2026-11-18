@@ -715,7 +715,11 @@ fn tower_case(ff: bool) {
                     if next_shot || matches!(a.action, BattleAction::Turn { .. }) {
                         break;
                     }
-                    let skip = matches!(&a.action, BattleAction::End { .. })
+                    // K5LOOP-SIEGE-DEF (T1): syntetyczny obrońca za murem (poza wektorem pinu) działa gałęzią obrońcy
+                    // w oblężeniu (`_updateFacing`, `:6123`; HOLD `:6225-6236`): jego zwrot nie należy do okna wieży.
+                    let synthetic_def = matches!(&a.action, BattleAction::Facing { unit, .. } if unit.side == BattleSide::Defender);
+                    let skip = synthetic_def
+                        || matches!(&a.action, BattleAction::End { .. })
                         || matches!(&a.action, BattleAction::Log { text } if text.starts_with("==="));
                     if skip {
                         continue;

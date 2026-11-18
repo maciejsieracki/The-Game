@@ -220,6 +220,18 @@ const outcomeParts = {
   armyRatio: L(SCENE, 9988, sceneEnd(9988)),
   armyFn: L(ARMY, armyStart, fnRange(ARMY, armyStart)[1]),
 };
+// K5LOOP-KILL-RIPPLE (D-INT-2, R-RUSTPORT-P6-K5LOOP-SIEGE-DEF-Q1): ripple `_shakeAlliesOnLoss` (`:9743-9753`, wywolanie
+// `:9048`) wykonywany tekstem pinu (wczesniej atrapa); akcja `shaken` przy `_updateMoraleBar` wolanym bezposrednio z petli
+// ripple (`:9749`). Osobny strażnik `rippleSha256` (stała `EXPECTED_RIPPLE_SHA256`, `throw`) (bez zmiany outcomeSha256).
+expectLine(SCENE, 1118, 'const MORALE_ALLY_DEATH_LOSS');
+expectLine(SCENE, 9743, 'private _shakeAlliesOnLoss(fallen: RuntimeBattleUnit)');
+const rippleParts = { allyLoss: L(SCENE, 1118, 1118), shake: L(SCENE, 9743, sceneEnd(9743)) };
+const rippleDigest = createHash('sha256').update(Object.keys(rippleParts).map((n) => `${n}\n${rippleParts[n]}`).join('\n---\n')).digest('hex');
+console.error(`ripple sha256 = ${rippleDigest}`);
+// Obrona r1 SIEGE-DEF (zarzut Z5): strażnik = porównanie ze stałą (wycinki `:1118` i `:9743-9753` pinu); zmiana tekstu
+// pinu albo zakresu wycinka = błąd generatora, nie cicha regeneracja wektorów.
+const EXPECTED_RIPPLE_SHA256 = '2fccc76c9111ff9949786ff7b4bbe468bfebe479473cd7a6fadd13ccd35cdb6a';
+if (rippleDigest !== EXPECTED_RIPPLE_SHA256) throw new Error(`SHA wycinkow ripple zmieniony: ${rippleDigest}`);
 const outcomeDigest = createHash('sha256').update(Object.keys(outcomeParts).map((n) => `${n}\n${outcomeParts[n]}`).join('\n---\n')).digest('hex');
 if (outcomeDigest !== OUTCOME_SHA256) throw new Error(`SHA fragmentow efektow po ciosie zmieniony: ${outcomeDigest}`);
 
@@ -449,6 +461,7 @@ const stubNames = Object.keys(stubs);
 const classSrc = [
   L(SCENE, 1142, 1143), L(SCENE, 1161, 1161), L(SCENE, 1917, 1919),
   outcomeParts.consts,
+  rippleParts.allyLoss,
   outcomeParts.armyFn.replace(/^export /gm, ''),
   actParts.consts,
   actParts.sideTag,
@@ -486,7 +499,8 @@ const classSrc = [
   '  _isUnitDoctrineAuto(ru) { return false; }',
   '  _effectiveMetaForUnit(ru) { return { doctrine: "steady" }; }',
   '  _executeGroupDoctrineStep(ru, meta, done) { return false; }',
-  '  _updateMoraleBar(ru) {}',
+  '  _updateMoraleBar(ru) { if (this.__shakeDirect) this.__act({ k: "shaken", id: ru.__key, fallen: this.__shakeDirect, morale: ru.morale }); }',
+  '  _checkRout(ru) { const s = this.__shakeDirect; this.__shakeDirect = null; try { return this._checkRoutPin(ru); } finally { this.__shakeDirect = s; } }',
   '  _updateHpBar(u) {}',
   '  _updateArmyMoraleBars() {}',
   // `_startRout`: po strazniku pierwsze wywolanie sceny to `_sfxRout()` (`:9801`) -> akcja rout; dalej TEKST pinu.
@@ -500,7 +514,8 @@ const classSrc = [
   `  _spawnDamageLabel(ru, dmg) { ${DAMAGE_FF_GUARD} this.__act({ k: "damage", target: ru.__key, dmg }); }`,
   '  _pushClash(a, d, dmg, tag) { this.__clash = [a, d, dmg, tag]; return this._pushClashPin(a, d, dmg, tag); }',
   '  _renderClashLog() { const [a, d, dmg, tag] = this.__clash; this.__act({ k: "clash", attacker: a.__key ?? a.bu.id, target: d.__key, dmg, tag, text: this.clashLogEntries[0] }); }',
-  '  _shakeAlliesOnLoss(fallen) {}',
+  '  _shakeAlliesOnLoss(fallen) { if (this.__towerBlow) return; const s = this.__shakeDirect; this.__shakeDirect = fallen.__key; try { return this._shakeAlliesOnLossPin(fallen); } finally { this.__shakeDirect = s; } }',
+  `  ${rippleParts.shake.replace('private _shakeAlliesOnLoss', '_shakeAlliesOnLossPin')}`,
   '  _removeCommanderMoraleBonus(side) { throw new Error("efekty dowodcy poza zakresem (isArmyCommander = false)"); }',
   '  _disableManualIfCommanderLost(side) { throw new Error("efekty dowodcy poza zakresem (isArmyCommander = false)"); }',
   '  _gainMorale(ru, amount) { return this._gainMoralePin(ru, amount); }',
@@ -537,17 +552,21 @@ const classSrc = [
   `  ${actParts.finishDraw.replace('private _finishDraw', '_finishDraw')}`,
   `  ${actParts.ffCap.replace('private _ffRoundCapResult', '_ffRoundCapResult')}`,
   `  ${actParts.checkEnd.replace('private _checkEnd', '_checkEnd')}`,
-  `  ${outcomeParts.resolve.replace('private _resolveBlowOutcome', '_resolveBlowOutcome')}`,
+  // Trafienie wiezy (strzelec bez `__key`): skutki `_resolveBlowOutcome` sa w Rust nieportowane (tag
+  // `wieza-resolveBlowOutcome-efekty`), wiec ripple przy zabiciu przez wieze nie jest wykonywany (jak dotad).
+  '  _resolveBlowOutcome(a, d, dmg, extra) { const s = this.__towerBlow; this.__towerBlow = a.__key === undefined; try { return this._resolveBlowOutcomePin(a, d, dmg, extra); } finally { this.__towerBlow = s; } }',
+  `  ${outcomeParts.resolve.replace('private _resolveBlowOutcome', '_resolveBlowOutcomePin')}`,
   `  ${outcomeParts.gain.replace('private _gainMorale', '_gainMoralePin')}`,
   `  ${outcomeParts.boost.replace('private _boostEnemiesOnBreak', '_boostEnemiesOnBreakPin')}`,
   `  ${outcomeParts.applyMorale.replace('private _applyMoraleDamage', '_applyMoraleDamage')}`,
-  `  ${outcomeParts.screenLost.replace('private _checkMeleeScreenLost', '_checkMeleeScreenLost')}`,
+  '  _checkMeleeScreenLost(side) { const s = this.__shakeDirect; this.__shakeDirect = null; try { return this._checkMeleeScreenLostPin(side); } finally { this.__shakeDirect = s; } }',
+  `  ${outcomeParts.screenLost.replace('private _checkMeleeScreenLost', '_checkMeleeScreenLostPin')}`,
   `  ${outcomeParts.startRout.replace('private _startRout', '_startRoutPin')}`,
   `  ${outcomeParts.removeFromScene.replace('private _removeUnitFromScene', '_removeUnitFromScene')}`,
   `  ${outcomeParts.startFade.replace('private _startFade', '_startFadePin')}`,
   `  ${outcomeParts.armyRatio.replace('private _armyMoraleRatio', '_armyMoraleRatioPin')}`,
   `  ${L(SCENE, 6048, 6299).replace('private _activateUnit', '_activateUnit')}`,
-  `  ${L(SCENE, 9783, sceneEnd(9783)).replace('private _checkRout', '_checkRout')}`,
+  `  ${L(SCENE, 9783, sceneEnd(9783)).replace('private _checkRout', '_checkRoutPin')}`,
   `  ${L(SCENE, 8291, 8294).replace('private _enemiesOf', '_enemiesOf')}`,
   `  ${L(SCENE, 8296, sceneEnd(8296)).replace('private _nearestEnemy', '_nearestEnemy')}`,
   `  ${L(SCENE, 8334, sceneEnd(8334)).replace('private _updateFacing', '_updateFacing')}`,
@@ -704,6 +723,7 @@ function enc(a) {
     case 'clash': return `${t} clash ${a.attacker} ${a.target} ${n2s(a.dmg)} ${a.tag === '' ? 'plain' : a.tag} ${a.text}`;
     case 'rout': return `${t} rout ${a.id}`;
     case 'kill': return `${t} kill ${a.id}`;
+    case 'shaken': return `${t} shaken ${a.id} ${a.fallen} ${n2s(a.morale)}`;
     case 'towerShot': return `${t} towerShot ${n2s(a.row)} ${a.target} ${n2s(a.landAt)}`;
     case 'end': return `${t} end ${a.winner}`;
     default: throw new Error(`nieznana akcja ${a.k}`);
@@ -967,6 +987,6 @@ mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'vectors.json'), `${JSON.stringify({
   pin: PIN, activateSha256: activateDigest, blowSha256: blowDigest, unitFragmentSha256: uDigest, unitsSha256: unitsDigest,
   doAttackSha256: doAttackDigest, facingSha256: facingDigest, counterSha256: counterDigest, outcomeSha256: outcomeDigest,
-  actionsSha256: actionsDigest, seed: SEED_ACT, blowHitT: BLOW_HIT_T, wallCol: WALL_COL, coverage: cov, melee, towers, ends,
+  rippleSha256: rippleDigest, actionsSha256: actionsDigest, seed: SEED_ACT, blowHitT: BLOW_HIT_T, wallCol: WALL_COL, coverage: cov, melee, towers, ends,
 })}\n`);
 console.error(JSON.stringify(cov));

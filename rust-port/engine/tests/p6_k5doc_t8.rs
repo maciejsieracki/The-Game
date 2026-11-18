@@ -1116,13 +1116,20 @@ fn doktryna_manual_ze_stanu_ciala_odcina_krok() {
     assert_eq!(n, 30);
 }
 
-/// Ciało przy murze: gałęzie oblężnicze (w tym doktryna atakującego przy murze) to T1/T2 — jawny tag `oblezenie`, bez
-/// kroku doktryny i bez tagu `doktryna`.
+/// Ciało przy murze: gałęzie oblężnicze ATAKUJĄCEGO (w tym doktryna atakującego przy murze) to T2 — jawny tag
+/// `oblezenie`, bez kroku doktryny i bez tagu `doktryna`. Obrońca przy murze jest wykonywany od T1 (K5LOOP-SIEGE-DEF,
+/// wektory `p6_k5loop_siege_def`), więc ten test bierze tylko scenariusze z działającym atakującym.
 #[test]
 fn cialo_przy_murze_zostaje_tagiem_oblezenie() {
     let (v, cav_mult) = load_from(VECTORS);
     let mut n = 0;
-    for case in v["cases"].as_array().expect("cases").iter().take(40) {
+    for case in v["cases"]
+        .as_array()
+        .expect("cases")
+        .iter()
+        .filter(|c| c["acting"]["side"] == "atk")
+        .take(40)
+    {
         let Built {
             mut body,
             mut st,
