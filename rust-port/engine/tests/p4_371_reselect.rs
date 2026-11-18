@@ -230,6 +230,15 @@ fn flaga_true_przywraca_we_wszystkich_trybach() {
             },
             false,
         ),
+        // Pusty klucz jest w webie falszywy (`activeImprovementKey &&` w `:32273`): trasa zostaje
+        // (obrona r1, U1; mutant g: `.is_some()` zamiast `.is_some_and(|k| !k.is_empty())`).
+        (
+            RenderUiParams {
+                active_improvement_key: Some(String::new()),
+                ..reselected(WARRIOR)
+            },
+            true,
+        ),
         (
             RenderUiParams {
                 found_city_mode: true,
