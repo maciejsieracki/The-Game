@@ -169,6 +169,9 @@ import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
 import { installCivTestHooks, isCivTestEnabled, civTestSeedOverride, civTestRuntime } from './game/civ-test-hooks';
+/** R-WEB-TEST-HOOK-WARRIOR-SIDESWAP-MANUAL-MEASURE-Q1: zamiana stron sceny (hak civTest; ustawiany przez __civTest.setSwapSides). */
+let _civTestSwapSides = false;
+const civTestSwapSidesFlag = (): boolean => _civTestSwapSides && typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search);
 /** W80B-B1 (R-WEB-LIVE-VERIFY-WAVE-689-697-B1-AI-PEACE-GATE-TRACE-Q1): ślad ścieżki pokoju AI (zapis tylko gdy `on`, ustawia hak ?civTest=1). */
 const peaceTraceState: { on: boolean; rows: Array<Record<string, unknown>> } = { on: false, rows: [] };
 import { gameStreamRng, gameIdSuffix } from './game/game-rng';
@@ -31262,6 +31265,14 @@ async function boot(): Promise<void> {
         return id;
       },
       setWar: (a, b) => { getDiploRelation(a, b).status = 'wojna'; },
+      // R-WEB-TEST-HOOK-WARRIOR-SIDESWAP-MANUAL-MEASURE-Q1 (tylko ?civTest=1): isGeneral na jednostce heksu; zamiana stron sceny.
+      setGeneral: (ownerId, q, r) => {
+        const gu = units.find(x => x.ownerId === ownerId && x.q === q && x.r === r);
+        if (!gu) return false;
+        gu.isGeneral = true;
+        return true;
+      },
+      setSwapSides: v => { _civTestSwapSides = v === true; },
       endTurn: () => { triggerPlayerEndTurn(); },
       meOwnerId: () => ME(),
       setCityLimitBase: base => { _menuCityLimitBase = base; }, // R-WEB-TEST-HOOK-SETCITYLIMIT-Q1 (tylko ?civTest=1)
@@ -36441,8 +36452,15 @@ async function boot(): Promise<void> {
             );
             if (reserveNote) showHintMessage(reserveNote, 5000, undefined, true);
           }
-          const atkBus = rosterToBattleUnits(atkRosterRef, 0xffd54a);
-          const defBus = rosterToBattleUnits(defRosterRef, 0xc84040);
+          // R-WEB-TEST-HOOK-WARRIOR-SIDESWAP-MANUAL-MEASURE-Q1: hak testowy (tylko ?civTest=1 + setSwapSides): scena z zamienionymi stronami.
+          const swapSides = civTestSwapSidesFlag();
+          const sceneAtkRef = swapSides ? defRosterRef : atkRosterRef;
+          const sceneDefRef = swapSides ? atkRosterRef : defRosterRef;
+          const scenePlayerRef = swapSides ? defRosterRef : atkRosterRef;
+          const sceneAtkLead = swapSides ? defLead : atkLead;
+          const sceneDefLead = swapSides ? atkLead : defLead;
+          const atkBus = rosterToBattleUnits(sceneAtkRef, 0xffd54a);
+          const defBus = rosterToBattleUnits(sceneDefRef, 0xc84040);
           setMood('bitwa');
           const bs = new BattleScene({
             combatRng: battleCombatRng(), // R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1
@@ -36451,13 +36469,13 @@ async function boot(): Promise<void> {
             teren: dTeren4,
             worldTerrain: worldTerrainFromHex(dHex4),
             data,
-            deploy: atkRosterRef.some(u => u.isGeneral === true) || ambushSurprised,
-            deployPlayerSide: 'atk',
+            deploy: scenePlayerRef.some(u => u.isGeneral === true) || ambushSurprised,
+            deployPlayerSide: swapSides ? 'def' : 'atk',
             ...(ambushSurprised ? { ambush: { surprisedSide: 'atk' as const } } : {}),
-            manualControlAllowed: atkRosterRef.some(u => u.isGeneral === true),
-            attackerCivBonusy: civBonusyForOwnerId(atkLead.ownerId),
-            defenderCivBonusy: civBonusyForOwnerId(defLead.ownerId),
-            defenderOwnTerritory: territoryOwnerAtLive(defUnit.q, defUnit.r) === defLead.ownerId,
+            manualControlAllowed: scenePlayerRef.some(u => u.isGeneral === true),
+            attackerCivBonusy: civBonusyForOwnerId(sceneAtkLead.ownerId),
+            defenderCivBonusy: civBonusyForOwnerId(sceneDefLead.ownerId),
+            defenderOwnTerritory: territoryOwnerAtLive(defUnit.q, defUnit.r) === sceneDefLead.ownerId,
             shallowSea: dHex4!.terenBazowy === TerenBazowy.PlytkieMorze,
             attackerCivLabel: pbInfo4.atakujacy.cywilizacja,
             defenderCivLabel: pbInfo4.obronca.cywilizacja,
@@ -36472,15 +36490,15 @@ async function boot(): Promise<void> {
             defenderLeaderName: pbInfo4.obronca.wodz,
             attackerSideLabel: pbInfo4.atakujacy.nazwa,
             defenderSideLabel: pbInfo4.obronca.nazwa,
-            attackerEra: empireEpochForOwner(atkLead.ownerId),
-            defenderEra: empireEpochForOwner(defLead.ownerId),
+            attackerEra: empireEpochForOwner(sceneAtkLead.ownerId),
+            defenderEra: empireEpochForOwner(sceneDefLead.ownerId),
             attackerIsCityState: pbInfo4.atakujacy.isCityState,
             defenderIsCityState: pbInfo4.obronca.isCityState,
             attackerIsBarbarian: pbInfo4.atakujacy.isBarbarian,
             defenderIsBarbarian: pbInfo4.obronca.isBarbarian,
-            ...armyHungerBattleOpts(atkLead.ownerId, defLead.ownerId),
-            ...goldDeficitBattleOpts(atkLead.ownerId, defLead.ownerId),
-            ...difficultyBattleOpts(atkLead.ownerId, defLead.ownerId),
+            ...armyHungerBattleOpts(sceneAtkLead.ownerId, sceneDefLead.ownerId),
+            ...goldDeficitBattleOpts(sceneAtkLead.ownerId, sceneDefLead.ownerId),
+            ...difficultyBattleOpts(sceneAtkLead.ownerId, sceneDefLead.ownerId),
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
