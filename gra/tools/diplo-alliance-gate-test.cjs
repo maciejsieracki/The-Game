@@ -24,6 +24,7 @@ const OUT = path.resolve(__dirname, '.dip-alliance-gate-bundle.cjs');
 fs.writeFileSync(ENTRY, `
 export { DIPLOMACY_PARAMS, relationTier, relationTierDisplay, relationScore } from ${JSON.stringify(SRC + '/game/diplomacy')};
 export { resolveDiplomacyActionLock } from ${JSON.stringify(SRC + '/game/diplomacy-locks')};
+export { PROG_SOJUSZ } from ${JSON.stringify(SRC + '/game/ai')};
 `);
 try {
   esbuild.buildSync({ entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs', target: 'node18', outfile: OUT, logLevel: 'silent' });
@@ -58,6 +59,9 @@ ok(P.progSojuszZaufanie === 90, 'próg Zaufania sojuszu = 90 (dane)');
   const aiParams = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'data', 'ai-params.json'), 'utf8'));
   ok(aiParams.ai_diplomacja_prog_sojusz.wartosc === P.progSojuszWillingnessMin,
     'inicjatywa AI ai_diplomacja_prog_sojusz (ai-params.json) = progSojuszWillingnessMin (diplomacy.json) = 0,54');
+  // Fallback stałej PROG_SOJUSZ w ai.ts (używany tylko gdy brak ai-params) musi być tą samą wartością.
+  ok(B.PROG_SOJUSZ === P.progSojuszWillingnessMin && B.PROG_SOJUSZ === 0.54,
+    'fallback ai.ts PROG_SOJUSZ = progSojuszWillingnessMin = 0,54 (got ' + B.PROG_SOJUSZ + ')');
 }
 ok(l128.locked === true, 'Relacja 128 < 130 -> sojusz zablokowany');
 ok(/Relacji 130 \(masz 128\)/.test(l128.note), 'powód po polsku: ' + l128.note);
