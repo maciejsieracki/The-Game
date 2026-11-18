@@ -55,6 +55,7 @@ import {
   RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON,
 } from '../game/diplomacy-proposals';
 import type { ProposalPayload } from '../game/diplomacy-proposals';
+import { detailTipAttr } from './diplomacyTipText';
 import { forcedPeaceModalTextPl, type ForcedPeaceTextInput } from '../game/war-weariness-view';
 import {
   audienceActionStatusNote,
@@ -1850,7 +1851,7 @@ const ACTION_BAR_LOCK_SVG =
  * `.da-quickdeal`) który woła openQuickDealBasket (zaległość #1: realna auto-uczciwa
  * oferta, nie zaślepka) zamiast generycznego handlera po data-aid.
  */
-export function actionBarHtml(st: DiplomacyAudienceState): string {
+export function actionBarHtml(st: DiplomacyAudienceState, part: 'all' | 'top' | 'bar' = 'all'): string {
   const byId = new Map(st.actions.map(a => [a.id, a] as const));
   const btns = ACTION_BAR_SPECS.map(spec => {
     const action = byId.get(spec.aid);
@@ -1877,17 +1878,25 @@ export function actionBarHtml(st: DiplomacyAudienceState): string {
   const handel = byId.get('14');
   const handelEnabled = handel ? handel.enabled : false;
   const qdTitle = handelEnabled ? 'auto-uczciwa wymiana' : (handel?.lockNote || handel?.tooltip || 'Wymiana niedostępna');
+  // R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1: podpis „auto-uczciwa oferta” przeniesiony do tooltipa.
+  const qdTip = handelEnabled ? 'SZYBKA WYMIANA — auto-uczciwa oferta' : qdTitle;
   const quickdealBtn =
     '<button type="button" class="da-quickdeal"' + (handelEnabled ? '' : ' disabled') +
-    ' title="' + esc(qdTitle) + '" aria-label="' + esc(qdTitle) + '">' + ACTION_BAR_SVG.quickdeal +
-    '<span>SZYBKA WYMIANA<small>auto-uczciwa oferta</small></span>' +
+    ' title="' + esc(qdTip) + '" aria-label="' + esc(qdTitle) + '">' + ACTION_BAR_SVG.quickdeal +
+    '<span>SZYBKA WYMIANA</span>' +
     (handelEnabled ? '' : ACTION_BAR_LOCK_SVG) + '</button>';
   const quickdeal =
     '<span class="da-abtn-cell da-abtn-cell--cta' + (handelEnabled ? '' : ' is-locked') + '">' +
     '<span class="da-abtn-slot">' + quickdealBtn + '</span>' +
     '</span>';
 
-  return '<div class="da-actionbar">' + btns + quickdeal + '</div>';
+  // Szybka wymiana stoi NAD paskiem akcji (pierwszy element okna); pasek zostaje na dole.
+  const quickRow = '<div class="da-quickdeal-row" style="display:flex;justify-content:flex-end;margin:0 0 8px;">'
+    + quickdeal + '</div>';
+  const bar = '<div class="da-actionbar">' + btns + '</div>';
+  if (part === 'top') return quickRow;
+  if (part === 'bar') return bar;
+  return quickRow + bar;
 }
 
 /**
@@ -2311,14 +2320,15 @@ function negotiationActionBarHtml(st: DiplomacyAudienceState): string {
     : '';
 
   return (
-    '<div class="da-negot-actionbar da-negot-actionbar--package">'
-    + '<div class="da-neg-act-label">Decyzja dla całego pakietu (' + rows.length + ')</div>'
+    '<div class="da-negot-actionbar da-negot-actionbar--package"' + detailTipAttr([
+      'Decyzja dla całego pakietu (' + rows.length + ')',
+      'Jeden bilans PW — jedno Przyjmij/Odrzuć; niechcianą pozycję najpierw Usuń',
+    ]) + '>'
     + '<div class="da-btnrow">'
     + '<button type="button" class="acc"' + (!canAccept ? ' disabled title="' + acceptTitle + '"' : '')
     + ' data-negot-act="accept-package">Przyjmij</button>'
     + '<button type="button" class="rej" data-negot-act="reject-package">Odrzuć</button>'
     + '</div>'
-    + '<div class="da-package-hint">Jeden bilans PW — jedno Przyjmij/Odrzuć; niechcianą pozycję najpierw Usuń</div>'
     + '</div>'
   );
 }
@@ -2394,6 +2404,7 @@ function render(): void {
 
   rootEl.innerHTML =
     '<div class="civ-diplo-aud-box">' +
+      actionBarHtml(st, 'top') +
       '<div class="civ-diplo-aud-head">' +
         '<h2>' + headIc + 'Audiencja dyplomatyczna</h2>' +
         '<div class="civ-diplo-aud-head-btns">' +
@@ -2417,7 +2428,7 @@ function render(): void {
         '</div>' +
         otherCardHtml(st) +
       '</div>' +
-      actionBarHtml(st) +
+      actionBarHtml(st, 'bar') +
     '</div>';
 
   /** Dopełnia kontekst koszyka polami wspólnymi ze stanu audiencji (jak dotąd inline w handlerze). */

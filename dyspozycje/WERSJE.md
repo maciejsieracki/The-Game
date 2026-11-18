@@ -1,3 +1,9 @@
+## ROBOCZA f1112410 -- 2026-11-18 -- FALA 820: DECLUTTER-Q1: porzadek plansz dyplomacji, wyjasnienia do tooltipow, Szybka wymiana na gorze (testowa)
+
+- Plansze dyplomacji pokazuja tylko najwazniejsze informacje: panel PW (trzy liczby + jednolinijkowy werdykt), okno Umowa wymiany surowcow (partner, czas umowy), decyzja dla calego pakietu; wszystkie wyliczenia i wyjasnienia przeniesione do tooltipow (nic nie usuniete); SZYBKA WYMIANA jako pierwszy element audiencji (kod 5b8c6ac5a)
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; declutter 13/0 z mutacja; acceptance-points 304/0; relation-deal-text 6/0; trade-era-dom 58/0; zywy Chromium w FC: SZYBKA WYMIANA pierwsza, 0 bledow konsoli
+- Limity: NIE ZMIERZONO: fokus klawiatury i dotyk tooltipow; dlug bazowy terminology 798/1, bilans-gate 21/1, pakt-ekspansja, warunek-niespelniony
+
 ## ROBOCZA 8ed1f355 -- 2026-11-18 -- FALA 819: PEACE-CONCLUDED-VAZNE: wpis Pokoj zawarty w Wazne przy kazdym pokoju z graczem (testowa)
 
 - Kazdy pokoj z udzialem gracza (oferta gracza przyjeta przez AI, oferta AI przyjeta przez gracza, koniec rozejmu, pokoj wymuszony) zostawia dokladnie jeden wpis Pokoj zawarty w zakladce Wazne; pokoje AI-AI bez gracza nie dodaja wpisow; bez duplikatow (kod 402b8cdd6)
