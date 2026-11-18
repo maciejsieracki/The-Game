@@ -1,0 +1,12 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (tylko testy/narzedzia; gra/src nietkniete)
+TEMAT: R-WEB-TEST-DEBT-Q4-UPGRADE-ENDTURN-TERMINOLOGY-Q1
+GOAL: cztery czerwone testy dlugu bazowego naprawione lub rozstrzygniete bez zmian logiki gry.
+ZMIANY-COMMIT: kandydat 9cf635f24acf0cb3f55f21bf8f72d762d57d48c6 (baza b2d5b4e51 jest przodkiem: is-ancestor OK). diff --stat: 5 plikow, +88/-4: gra/tools/{upgrade-budynki-test,end-turn-block-event-test,barb-karencja-czas-trwania-real-render-test}.cjs + 2 raporty runu. Allowlista zachowana, gra/src bez zmian.
+TESTY (wlasny przebieg na 9cf635f24): tsc --noEmit exit 0; logic-test 213/213; tech-tree-test 20/0; research-test 33/33; unit-replace-test 21/21; combat-test 6/6; upgrade-budynki-test 61 pass 0 fail; end-turn-block-event-test passed=36 failed=0; barb-karencja real-render 13 PASS 0 FAIL; terminology-trade-vs-tax-test 798 pass 1 fail ([G] gen-building-cards-top5 --check, bez zmian wzgledem bazy). Mutacje (kopie, usuniete): end-turn bez noteEndTurnBlockedByNns -> 35/1; upgrade bez collapseFortificationChain -> 60/1.
+OCENA ZARZUTOW: (1) upgrade-budynki: rozstrzygniecie obrony PRZYJETE. Wejscie ['mury_kamienne','mury','fort'] to stan zestarzaly; sciezka wczytania (main.ts:50764) stosuje collapseFortificationChain przed applyCompletedBuildingIds, wiec asercja zlozona odpowiada realnemu przeplywowi i nie jest oslabiona (mutacja czerwieni). Luka production.ts:922 zostaje nota. (2) terminology [G]: ODDANE jako nota. CSV budynki-top5.csv:13 ('do 50 sztuk na ture') vs econ-params 404-410 (30/50/70/90/110, decyzja 2026-11-14); naprawa poza allowlista, wymaga decyzji orkiestratora; regeneracja bylaby regresja. Nie jest regresja tego tematu. (3) kotwica wciecia: obrona naprawila; kotwica niezalezna od wciecia, brak kotwicy = jawny FAIL (ok(hint.length>0)). (4) FALLBACK_CHROME w dwoch testach administrator-*: poza zakresem, nota.
+BLOKADY: brak blokad technicznych; otwarta pozycja terminology [G] wymaga decyzji (Q2).
+RUNDY: 3/5 (r1 operator, r2 obrona, r3 Final Control).
+NASTEPNY KROK: orkiestrator: integracja 9cf635f24 do main (bramki), potem osobny temat na CSV top5 / card-text-corrections (Q2), ewentualnie hardening applyCompletedBuildingIds (Q1) i FALLBACK_CHROME w administrator-*-render-test.cjs.
+UWAGI-DLA-ORKIESTRATORA: (a) Q2 CSV top5 nieaktualny wzgledem econ-params; (b) production.ts:922 nie zwija wejscia niespojnego - kandydat na temat; (c) administrator-panel-real-render-test.cjs i administrator-icon-everywhere-render-test.cjs maja bledny chromium-1194.
+DEPLOY/PUSH: NIE WYKONANO
