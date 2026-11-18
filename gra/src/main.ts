@@ -54,6 +54,7 @@ window.addEventListener('unhandledrejection', (e) => {
 // Imports
 
 import { humanizeId, nazwaCywilizacji, nazwaWyswietlana } from './game/text-names';
+import { nazwaMiastaDyplomacji, setDiplomacyCityNameResolver } from './game/diplomacy-city-name';
 import { TEREN_LABEL_PL } from './map/terrain-names';
 import { normalizeDetDigestStackGroups } from './game/det-digest-normalize';
 import { AMBUSH_BLOCK_MESSAGES, canSetAmbush, cancelAmbush, isStackAmbushed, isUnitVisibleToViewer, resolveAmbushTrigger, setAmbush, truncatePathAtAmbush } from './game/ambush';
@@ -2349,6 +2350,14 @@ async function boot(): Promise<void> {
     // -----------------------------------------------------------------------
 
     const cities: City[] = [];
+    // R-WEB-UI-DIPLO-OFFER-CITY-NAMES-RAW-ID-Q1: UI dyplomacji pokazuje nazwę miasta, nigdy cityId.
+    setDiplomacyCityNameResolver((cityId: string) => {
+      const c = cities.find(x => x.id === cityId);
+      if (!c) return null;
+      const nazwa = (c.name ?? '').trim();
+      if (nazwa) return nazwa;
+      return 'miasto ' + nazwaCywilizacji(civTypeForOwner(c.ownerId));
+    });
     let cityRenderer = new CityRenderer(scene, map);
     let siegeMarkerRenderer = new SiegeMarkerRenderer(scene, map);
     let wonderRenderer = new WonderRenderer(scene, map);
@@ -27027,7 +27036,7 @@ async function boot(): Promise<void> {
               .filter(m => !m.zakazane)
               .map(m => ({
                 id: m.cityId,
-                label: cities.find(c => c.id === m.cityId)?.name ?? m.cityId,
+                label: nazwaMiastaDyplomacji(m.cityId),
                 pn: m.cityPn,
               })),
             // Zaległość #3 (2026-07-23): resourceOptions PER STRONA — realnie posiadane dobra
