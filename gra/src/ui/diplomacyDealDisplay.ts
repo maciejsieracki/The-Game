@@ -11,6 +11,7 @@ import {
 } from '../game/diplomacy-display';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import { nazwaWyswietlana } from '../game/text-names';
+import { nazwaMiastaDyplomacji } from '../game/diplomacy-city-name';
 
 function formatTuryCount(n: number): string {
   const lastDigit = Math.abs(n) % 10;
@@ -81,6 +82,12 @@ export function renderBasketItemValueHtml(item: BasketItem, ctx: BasketItemForma
     case 'surowiec_boolean': {
       const label = resourceDisplayLabel(item.id);
       return `${resourceIconHtml(label, 16)}<span class="da-deal-amt">dostęp: ${esc(label)}</span><span class="da-deal-once">(nieaktualne)</span>`;
+    }
+    case 'miasto': {
+      // R-WEB-UI-DIPLO-OFFER-CITY-NAMES-RAW-ID-Q1: nazwa miasta (nigdy surowe id).
+      const name = nazwaMiastaDyplomacji(item.id, item.cityLabel);
+      const pn = item.cityPn != null ? ' · ' + Math.round(item.cityPn) + ' PW' : '';
+      return `<span class="da-deal-amt">miasto: ${esc(name)}${pn}</span>`;
     }
     case 'zloze':
       return `<span class="da-deal-amt">dostęp do złoża: ${esc(item.id)}</span><span class="da-deal-once">(nieaktualne)</span>`;

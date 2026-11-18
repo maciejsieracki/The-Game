@@ -19,6 +19,7 @@ import {
   type WiarygodnoscRozbicie,
 } from './diplomacy-credibility';
 import { nazwaWyswietlana } from './text-names';
+import { nazwaMiastaDyplomacji } from './diplomacy-city-name';
 import { isTruceActive } from './diplomacy-peace-lock';
 import { formatTurCountAcc } from '../ui/formatPl';
 import { warWearinessNextStagePl, warWearinessStagesSummaryPl } from './war-weariness-view';
@@ -574,6 +575,9 @@ export function formatBasketItemBrief(item: BasketItem, ctx?: BasketItemFormatCt
       }
       return `jednorazowo ${szt} ${label}`;
     }
+    case 'miasto':
+      // R-WEB-UI-DIPLO-OFFER-CITY-NAMES-RAW-ID-Q1: nazwa miasta, nigdy surowe id.
+      return nazwaMiastaDyplomacji(item.id, item.cityLabel);
     default:
       return nazwaWyswietlana(item.id ?? item.typ);
   }
