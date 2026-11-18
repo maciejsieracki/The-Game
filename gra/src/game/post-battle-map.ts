@@ -378,6 +378,60 @@ function tryTwoHexRetreat(
   return done;
 }
 
+/**
+ * R-WEB-BATTLE-DEFEATED-UNIT-STAYS-ON-BATTLE-HEX-Q1: kierunki odwrotu przegranej grupy w polu.
+ * Kolejnosc: kierunek wprost (dotychczasowy wybor `direct`), potem 2 sasiednie heksy heksu bitwy
+ * najdalsze od zwyciezcy (malejaca odleglosc hex, potem kwadrat euklidesowy). Zwraca heksy
+ * docelowe-sasiadow (wspolrzedne bezwzgledne); duplikaty i heks bitwy pomijane.
+ */
+function retreatDirectionCascade(
+  input: PostBattleMapInput,
+  direct: { q: number; r: number },
+): { q: number; r: number }[] {
+  const atk = centroidOfRoster(input.atkRoster);
+  const ranked = hexNeighborCoords(input.battleQ, input.battleR)
+    .map(n => ({
+      q: n.q,
+      r: n.r,
+      hd: axialDist(n.q, n.r, atk.q, atk.r),
+      sq: (n.q - atk.q) ** 2 + (n.r - atk.r) ** 2,
+    }))
+    .sort((a, b) => b.hd - a.hd || b.sq - a.sq)
+    .slice(0, 3);
+  const out: { q: number; r: number }[] = [];
+  const seen = new Set<string>();
+  for (const c of [direct, ...ranked]) {
+    const k = c.q + ',' + c.r;
+    if (seen.has(k) || (c.q === input.battleQ && c.r === input.battleR)) continue;
+    seen.add(k);
+    out.push({ q: c.q, r: c.r });
+  }
+  return out;
+}
+
+/**
+ * R-WEB-BATTLE-DEFEATED-UNIT-STAYS-ON-BATTLE-HEX-Q1: kaskada odwrotu przegranej grupy w polu.
+ * Najpierw 2 heksy we wszystkich kierunkach (wg kolejnosci), potem 1 heks w tych kierunkach.
+ * Legalnosc heksow (przechodni, obca jednostka, cudze miasto) jak w retreatHexFreeForGroup.
+ * Brak wolnego heksu w zadnym kierunku -> grupa nie jest ruszona (wolajacy: dotychczasowy fallback).
+ */
+function tryRetreatCascade(
+  input: PostBattleMapInput,
+  movable: RuntimeUnit[],
+  dirs: { q: number; r: number }[],
+): Set<string | number> {
+  const done = new Set<string | number>();
+  for (const steps of [2, 1] as const) {
+    for (const d of dirs) {
+      const rest = movable.filter(u => !done.has(u.id));
+      if (rest.length === 0) return done;
+      const got = tryTwoHexRetreat(input, rest, d.q - input.battleQ, d.r - input.battleR, steps);
+      for (const id of got) done.add(id);
+    }
+  }
+  return done;
+}
+
 function placeFanOutGroup(
   input: PostBattleMapInput,
   roster: RuntimeUnit[],
@@ -397,7 +451,7 @@ function placeFanOutGroup(
       .filter((u): u is RuntimeUnit => !!u)
       .filter(u => !(stayOnCityCenter && input.cityOnBattleHex
         && u.q === input.cityOnBattleHex.q && u.r === input.cityOnBattleHex.r));
-    twoHexDone = tryTwoHexRetreat(input, movable, dq, dr);
+    twoHexDone = tryRetreatCascade(input, movable, retreatDirectionCascade(input, direction));
     for (const id of twoHexDone) twoHex.retreated.push(String(id));
     for (const u of movable) if (!twoHexDone.has(u.id)) twoHex.noRoute.push(String(u.id));
   }
