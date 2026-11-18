@@ -14,6 +14,7 @@ import {
   wiarygodnoscTooltipPl,
   wiarygodnoscTooltipDefPl,
   warWearinessLabelPl,
+  warWearinessForcedRowPl,
   type FormalDiplomaticKind,
 } from '../game/diplomacy-display';
 import {
@@ -1610,9 +1611,16 @@ function relationPartnerListHtml(title: string, partners: readonly AudienceRelat
 function warWearinessRowHtml(who: string, view: AudienceWarWearinessView): string {
   const info = warWearinessLabelPl(view);
   if (!info) return '';
-  return '<div class="da-rel-row war-weariness"' + ' title="' + esc(info.tooltip) + '">'
+  const mainRow = '<div class="da-rel-row war-weariness"' + ' title="' + esc(info.tooltip) + '">'
     + '<span>' + esc(who) + '</span>'
     + '<span class="v">' + esc(info.label) + '</span>'
+    + '</div>';
+  if (view.zmeczenie === undefined) return mainRow;
+  // Wiersz „Pokój wymuszony za ≈N tur” (dispatch pkt 3): widoczny pod zmęczeniem, liczony z parametrów.
+  const forced = warWearinessForcedRowPl(view.zmeczenie);
+  return mainRow + '<div class="da-rel-row war-weariness-forced">'
+    + '<span>' + esc(forced.label) + '</span>'
+    + '<span class="v">' + esc(forced.value) + '</span>'
     + '</div>';
 }
 
