@@ -183,6 +183,20 @@ async function main() {
       .filter(c => c.type === 'move');
     ok(!c3Moves.some(c => c.unitId === 'a-garn'), 'C3: garnizon NIE maszeruje na wrogie miasto w wojnie ofensywnej');
     ok(c3Moves.some(c => c.unitId === 'b-res'), 'C3b: jednostka polowa z tego samego miasta maszeruje (garnizon zostaje, reszta idzie)');
+
+    // C4 (r3, dyskryminujacy front-merge/konsolidacja POKOJOWA ai.ts ~4322): w pokoju przy wlaczonej
+    // konsolidacji garnizon miasta Y NIE maszeruje do stolicy CAP; jednostka polowa 'b-field' -- tak.
+    GOOD.setArmyConsolidationOverride(true);
+    const capC4 = { id: 'CAP', ownerId: 1, q: 10, r: 10, name: 'CAP', population: 6 };
+    const cityYC4 = { id: 'Y', ownerId: 1, q: 30, r: 30, name: 'Y', population: 6 };
+    const garnC4 = unit('a-garn', 30, 30);
+    const fieldC4 = unit('b-field', 31, 35);
+    const peaceOpts = { civType: 'grecy', currentTurn: 40, capitalCityId: 'CAP', canEngageOwner: () => true, atWarWithCiv: false };
+    const c4Moves = GOOD.decideAITurn(1, [{ ...garnC4 }, { ...fieldC4 }], [capC4, cityYC4], bigMap(60, 60), testData, peaceOpts)
+      .filter(c => c.type === 'move');
+    GOOD.setArmyConsolidationOverride(false);
+    ok(!c4Moves.some(c => c.unitId === 'a-garn'), 'C4: garnizon NIE maszeruje do stolicy w pokojowej konsolidacji (front-merge wykluczony)');
+    ok(c4Moves.some(c => c.unitId === 'b-field'), 'C4b: jednostka polowa maszeruje do stolicy w pokojowej konsolidacji');
   }
 
   const total = passed + failed;
