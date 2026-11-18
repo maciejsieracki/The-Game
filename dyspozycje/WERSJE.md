@@ -1,3 +1,9 @@
+## ROBOCZA 6a497e99 -- 2026-11-18 -- FALA 852: Zerowe zaufanie (etap C cz.1, za flaga, wylaczone): licznik, zerwanie handlu/NAP po 5 turach, protektor (testowa)
+
+- Nowy modul diplomacy-zero-trust.ts (licznik zera Zaufania per para, plan zerwan handel/NAP, rejestr zerwan, protektor C1 jako preferowany cel w torze sojuszy AI-AI) + parametry diplomacy-zero-trust-params.json + wpiecie tickZeroTrustTreaties w main.ts przez breakTreatyVoluntarily; flaga zeroZaufaniaAktywna=false = zachowanie gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplomacy-test 149/0; diplomacy-harder 50/0; ai-ai-alliance-tick 19/19 + mutanty 8/8; diplomacy-zero-trust-unit 43/0 (mutacje czerwone)
+- Limity: Flaga domyslnie wylaczona: zerwan nie ma w rozgrywce do czasu pomiaru; bieg dymny z flaga ON NIE ZMIERZONO; tick w main.ts bez testu przegladarkowego; licznik w pamieci modulu (nie w SaveGame); lista partnerow C1 nie wyklucza gracza-wasala
+
 ## ROBOCZA 82515bef -- 2026-11-18 -- FALA 851: Pomiar sojuszy AI-AI: hak, histogram powodow odmow, runner i analizator (flaga wylaczona) (testowa)
 
 - Hak aiAiAllianceTickForTest.state i diag.sojusze (liczniki prob/odmow, histogram powodow odmow, sojusze na cywilizacje, wojny AI-AI), runner ai-ai-alliance-measure-run.cjs (--alliances 0|1), analizator i test haka; scalone z koalicja antylidera (FALA 849); brak zmian zasad gry, flagi nadal wylaczone
