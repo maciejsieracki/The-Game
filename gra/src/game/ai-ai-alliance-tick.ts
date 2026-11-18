@@ -95,6 +95,12 @@ export interface AiAiAlliancePlanInput {
    * Wpływa WYŁĄCZNIE na kolejność wyboru celu (premia), nie na progi E1 ani limity.
    */
   koalicja?: AiAiCoalitionCtx | null;
+  /**
+   * R-WEB-DIPLO-ZERO-TRUST-TREATY-BREAK-PROTECTOR-Q1 (C1): preferowany cel protektora (p, t) → true dla celu
+   * wskazanego przez zerowe zaufanie. Wpływa WYŁĄCZNIE na kolejność wyboru celu (jak premia koalicji), nie na E1.
+   * Brak / null = zachowanie sprzed tematu.
+   */
+  preferowanyCel?: (proposer: number, target: number) => boolean;
 }
 
 export interface AiAiAlliancePlanResult {
@@ -150,7 +156,7 @@ export function planAiAiAllianceTickFull(input: AiAiAlliancePlanInput): AiAiAlli
       const sideT = input.sideOf(t);
       const sharesEnemy = sideP.enemies.some(x => sideT.enemies.includes(x));
       // R-WEB-AI-AI-COALITION-ANTI-LEADER-Q1: premia koalicji wyprzedza willingness (tylko kolejność celu).
-      const premia = maPremieKoalicji(p, t, input.koalicja);
+      const premia = maPremieKoalicji(p, t, input.koalicja) || (input.preferowanyCel?.(p, t) ?? false);
       const kandydat = { t, premia, willingness: info.willingness, sharesEnemy, info };
       if (
         best === null
