@@ -1,28 +1,27 @@
-STATUS: FAIL (częściowy wynik: (f) zmierzone; (a) i (d) NIE ZMIERZONO)
-DOMAIN: GAME (pomiar; zero zmian w gra/src i gra/tools)
+STATUS: BLOCK (krok 3 (a): przeszkoda techniczna; kroki 1 i 2 zacommitowane)
+DOMAIN: GAME (pomiar na żywo; zmiany logiki gry: zero)
 TEMAT: R-WEB-LIVE-VERIFY-TREATY-PAYMENT-WINDOWS-2-Q1
 GOAL: (a) render wiersza D + zrzut; (d) ogon pokoju przy cenie >0; (f) diagnoza r
-ZMIANY-COMMIT: baza f172a83bd (kandydat); commit obrony: SHA w polu sha. Pliki: dowody/moc-probe-r1.cjs (PW_DIR/PROBE_URL z env, seria bonusów), dowody/moc-probe-r2.log (nowy przebieg), 30-obrona-claude.md.
-TESTY: sonda (realny Chromium headless, bundle /tmp/r1lv zbudowany z 80c4e3625, poza repo), EXIT=0, wynik surowy: bonus_ai=0 → ai 274; 500 → 1274; 1000 → 2274; 2000 → 4274; 5000 → 10274; target 1,3 (bonus 3427) → ai 7128; player 2847 we wszystkich wierszach. Bramki gry nie uruchamiane ponownie (zero zmian w kodzie gry).
-BLOKADY: (a) i (d) bez kodu testu i bez zrzutów w tej rundzie; brak hak civTest. Czas nie jest blokadą formalną — to przyznaję.
-RUNDY: 2/5 (obrona); ostatni werdykt Evaluatora: FAIL
-NASTĘPNY KROK: runda 3 Operatora tylko dla (a) i (d): test renderu + zrzut + asercje tekstu + hak civTest (cena pokoju >0) + mutacja przez kopię pliku; (f): poprawka założenia testu (bonus/2) jako osobny ruch.
+ZMIANY-COMMIT: b35cfdeb6 na bazie ab9d9860b. gra/src/main.ts (+25, tylko __cityCessionTestDebug: peaceRoomTailForTest); nowy gra/tools/diplo-treaty-pay-room-tail-live-verify-2-test.cjs. Dowody (gitignored, lokalnie): runs/.../dowody/krok2-room-tail-live.log, krok2-room-tail-MUTACJA-przelew-usuniety.log.
+TESTY:
+- (d) realny Chromium headless, bundle Vite poza repo, ?playtest=mapa: 16/16. D1 złoto 100 + brąz 9700 = 3010 PN, brak 0. D2 żelazo 2000 → ruda 20000 = 2800 PN, brak 200 jawnie. D3 rozejm bez złota: brąz 10000, złoto nietknięte. D4 cena 0: pusto. D5 „Oddajesz: miasta” (2 miasta): miasto pierwsze, po płatności 1 miasto. Zero pageerror/console.error.
+- Mutacja (kopia main.ts, przelew wycięty, bundle /tmp/civ-ob-mut, źródło przywrócone, cmp OK): 14/16, FAIL D1 T1 i D2 T1.
+- (f): bez zmian od ab9d9860b (nachylenie 2; asercja R1 ±0,05 na getPowers).
+- Bramki (surowe wyjścia): tsc --noEmit exit 0; logic-test LOGIC OK (213/213); tech-tree-test 20 pass, 0 fail; research-test 33/33; unit-replace-test 21/21; combat-test 6/6.
+BLOKADY:
+- (a) NIE ZMIERZONO, BLOCK techniczny. Live `__truceTestDebug` nie ma `pushNegotiationForTest` (klucze: turn, pairState, setWarAge, declareWar, acceptTruceForTest, negotiationEntries, credibilityEvents, aggressorFlags, openAudience, closeAudience, suppressVictoryForTest), więc nie da się wystawić oferty AI do okna. Sonda: /tmp/civ-ob-probe/probe.cjs. Wiersz D to `.da-pn-bal-num[title]` (src/ui/diplomacyAcceptanceBalance.ts, treatyPaymentRowHtml ~l.652–670).
+- (d) rozejm: noGold to parametr haka, nie prawdziwa ścieżka rozejmu. NIE ZMIERZONO.
+- (f) okno: asercja R1 czyta getPowers (silnik), nie DOM. NIE ZMIERZONO do (a).
+RUNDY: 3/5 (obrona). Ostatni werdykt Evaluatora: FAIL.
+NASTĘPNY KROK: runda 4 Operatora tylko dla (a): hak wystawiający ofertę AI do okna (stan testowy), zrzut DSF 1 ≤1 MB, asercje PL i wartość D == przelew, mutacja w kopii; (d) rozejm: osobny hak ścieżki 'rozejm'.
 DEPLOY/PUSH: NIE WYKONANO
 
 ## Odpowiedzi na zarzuty
-
-1. (a) PRZYJMUJĘ. Brak zrzutu i asercji tekstu, wynik = NIE ZMIERZONO. Naprawy w tej rundzie nie ma (wymaga Chromium i nowego testu).
-2. (d) PRZYJMUJĘ, bez naprawy. Hak civTest jest w allowliście i nie został dodany; niezbudowany, niezmierzony hak nie jest dowodem. NIE ZMIERZONO, do rundy 3.
-3. STATUS PRZYJMUJĘ: zmieniony na FAIL (częściowy).
-4. PRZYJMUJĘ. Ladder 16/16 mierzy zapasy, nie render okna i nie ogon pokoju; nie liczę go jako postępu (a) ani (d).
-5. PRZYJMUJĘ i NAPRAWIAM. Sonda ma PW_DIR i PROBE_URL z env (bez twardej ścieżki do wf_4474cbc6-012-1). Przebieg r2 (moc-probe-r2.log) potwierdza nachylenie 2: 274/1274/2274/4274/10274 dla bonusów 0/500/1000/2000/5000 przy stałym player=2847.
-6. PRZYJMUJĘ część, ODRZUCAM część.
-   - Przyczyna nie jest błędem gry: współczynnik „zdobycze” 1→2 to decyzja P-MOC-BALANS-WAGI (Maciej, 2026-08-12), patrz gra/src/game/power-objective.ts:257 i komentarz nad nim. Błąd leży w założeniu testu (bonus 1:1). r = (274 + 2·3427) / 2847 = 2,504.
-   - ODRZUCAM „cache nie jest przyczyną, bo to czytanie kodu”. Sonda r2 odczytuje wartość zaraz po setAiPowerBonusForTest (bez przeładowania): po bonus 500 od razu 1274. Stary cache dałby 274, a zmierzona wartość zgadza się z wagą 2. To jest pomiar, nie wniosek z kodu.
-   - Test nadal nie osiąga celu 1,3 (założenie nie poprawione); poprawka testu w rundzie 3.
-7. PRZYJMUJĘ. Raport skrócony poniżej limitu 400 słów.
+1. (d) PRZYJMUJĘ: hak i pomiar (b35cfdeb6), 16/16 live, mutacja czerwieni.
+2. (a) PRZYJMUJĘ jako NIE ZMIERZONO. Zrzutu brak. Przyczyna: BLOCK techniczny (brak haka, klucze wyżej), nie czas.
+3. (f) PRZYJMUJĘ: brak asercji DOM okna; NIE ZMIERZONO do (a).
+4. PRZYJMUJĘ: wcześniejszy BLOCK „czas/zakres” był błędny. Obecny BLOCK ma przyczynę techniczną. Bramki odtworzone i zielone.
 
 ## UWAGI-DLA-ORKIESTRATORA
-- Wpis LIVETREATY r1 „r = 2,3–2,5” jest wyjaśniony (waga zdobyczy 2, P-MOC-BALANS-WAGI), nie cache.
-- Nie utworzono sesji, zadań ani harmonogramów. Procesy w tle: brak.
-- /tmp/r1lv (bundle) i /tmp/r1-*.log do sprzątania przez orkiestratora.
+- Bez sesji, zadań i harmonogramów. Procesy w tle: brak. Push: brak.
+- Sprzątanie: /tmp/civ-ob-build, /tmp/civ-ob-mut, /tmp/civ-ob-probe, /tmp/civ-ob-*.log; gra/node_modules w worktree (~0,6 GB).
