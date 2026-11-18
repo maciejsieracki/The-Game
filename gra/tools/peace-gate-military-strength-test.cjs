@@ -88,7 +88,7 @@ function aiTurn({ silaAI, silaPlr, rw, turnsAtWar, miastaAI = [] }) {
   });
 }
 const peaceCmd = (cmds) => cmds.some(c => c.type === 'zaproponuj_pokoj' || c.type === 'oferuj_miasto_za_pokoj');
-// Tura 7 = minTurWojny: zmęczenie (5%/turę) jest poniżej progu sygnału (e), więc tylko pozycja militarna może zadecydować.
+// Tura 7 = minTurWojny: zmęczenie (2,5%/turę) jest poniżej progu sygnału (e), więc tylko pozycja militarna może zadecydować.
 // Słabsza AI oddaje miasto wyłącznie przy wystarczającej liczbie miast i wartości (aiPickMiastoDoOddania).
 const CITY = [1, 2, 3, 4, 5, 6].map(i => ({ cityId: `c${i}`, cityPn: 1000, zakazane: false }));
 

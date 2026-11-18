@@ -303,7 +303,7 @@ export function aiPeaceSignals(input: PeaceSignalInput, profile: WarPeaceProfile
   if (input.turnsAtWar >= S.patTurWojny && sinceChange >= S.patBrakZmianyTur) {
     reasons.push('d');
   }
-  // (e): poziom zmęczenia (jeden licznik, R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: 5%/turę + 10%/miasto) ≥ progSygnaluPokoju (0.4 = tura 8 bez strat).
+  // (e): poziom zmęczenia (jeden licznik, war-weariness-params.json: 2,5%/turę + 10%/miasto, pełne po 40 turach) ≥ progSygnaluPokoju (0,4 = tura 16 bez strat).
   if (warWearinessLevel({
     turnsAtWar: input.turnsAtWar,
     lostCitiesTotal: Math.max(0, input.lostCitiesInWar),

@@ -47,7 +47,7 @@ async function main() {
   });
   const V = require(BUNDLE_A);
   const P = V.WAR_WEARINESS_PARAMS;
-  // Liczby tur wyprowadzane z pelneTur (R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: skala 20 tur, nie stałe 10/80/120/300).
+  // Liczby tur wyprowadzane z pelneTur (R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: skala 40 tur, nie stałe 10/80/120/300).
   const T = (frakcja) => Math.round(frakcja * P.zmeczenie.pelneTur);
 
   {
