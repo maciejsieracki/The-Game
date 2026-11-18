@@ -157,7 +157,7 @@ import {
 } from './ui/eliminationSpectacle';
 import { civIconSvg } from './ui/icons/brandAssets';
 // R-WEB-UI-CIV-WELCOME-SCREEN-Q1: ekran „Odkryłeś nową cywilizację” (pierwszy kontakt + „O cywilizacji").
-import { showCivWelcomeScreen, isCivWelcomeScreenOpen } from './ui/civWelcomeScreen';
+import { showCivWelcomeScreen, isCivWelcomeScreenOpen, hideCivWelcomeScreen } from './ui/civWelcomeScreen';
 import { isFriendlyStance as civWelcomeIsFriendly, firstContactWelcomeDue, legacyShownMigration } from './ui/civWelcomeLogic';
 import { nastawienieLabelFromScore as civWelcomeNastawienieLabel } from './game/diplomacy-display';
 import { leaderName as civWelcomeLeaderName } from './ui/leaderPortraits';
@@ -24035,6 +24035,8 @@ async function boot(): Promise<void> {
     function resetDiplomaticDiscoveryUiState(): void {
       lastDiplomaticContactsSnapshot = new Set<number>();
       pendingFirstContactCards.length = 0;
+      // R-WEB-UI-CIV-WELCOME-SCREEN-Q1: reset / nowa gra / wczytanie zapisu zamyka ekran powitalny bez callbacków.
+      hideCivWelcomeScreen();
       diplomaticDiscoveryPopupShownByHuman.clear();
       diplomaticContactTrackingReady = false;
     }
@@ -24085,6 +24087,12 @@ async function boot(): Promise<void> {
       if (!canAutoOpenDiploAudience()) return;
       // R-WEB-UI-CIV-WELCOME-SCREEN-Q1: jeden ekran naraz — kolejna karta czeka, aż ekran powitalny się zamknie.
       if (isCivWelcomeScreenOpen()) return;
+      // R-WEB-UI-CIV-WELCOME-SCREEN-Q1: otwarte okno dyplomatyczne (np. pokój wymuszony, z-index 500) ma pierwszeństwo.
+      // Ekran powitalny (z-index 9650) nie może go przykryć ani wejść na jego Esc — ponów po zamknięciu okna.
+      if (document.querySelector('.civ-diplo-modal-overlay')) {
+        if (pendingFirstContactCards.length > 0) window.setTimeout(tryOpenNextFirstContactCard, 400);
+        return;
+      }
       while (pendingFirstContactCards.length > 0) {
         const cardIndex = pendingFirstContactCards.findIndex(card => card.humanOwnerId === ME());
         if (cardIndex < 0) return;

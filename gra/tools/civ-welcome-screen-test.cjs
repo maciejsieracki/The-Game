@@ -110,6 +110,25 @@ ok(L.isFriendlyStance('Wrogi') === false, 'Wrogi powinien być nieprzyjazny');
   ok(r.minusy.some(t => t.startsWith('Koszt budynków')), 'Rzymianie: koszt budynków +20% powinien być minusem');
 }
 
+// 7) Okablowanie w main.ts / diplomacyAudience.ts (asercje źródłowe — test DOM nie jest w tym repo).
+// Usunięcie któregokolwiek wywołania poniżej ma dać FAIL.
+{
+  const mainSrc = fs.readFileSync(path.join(root, 'src', 'main.ts'), 'utf8');
+  const audSrc = fs.readFileSync(path.join(root, 'src', 'ui', 'diplomacyAudience.ts'), 'utf8');
+  ok(/firstContactWelcomeDue\(diplomaticDiscoveryPopupShownSet\(\), oid\)/.test(mainSrc),
+    'main.ts: brak bramki „raz” firstContactWelcomeDue przy kontakcie');
+  ok(/legacyShownMigration\(saved\.meta\?\.diplomaticDiscoveryPopupShown/.test(mainSrc),
+    'main.ts: brak migracji starego zapisu legacyShownMigration');
+  ok(/function resetDiplomaticDiscoveryUiState\(\): void \{[\s\S]*?hideCivWelcomeScreen\(\);/.test(mainSrc),
+    'main.ts: reset nie zamyka ekranu powitalnego (hideCivWelcomeScreen)');
+  ok(/document\.querySelector\('\.civ-diplo-modal-overlay'\)/.test(mainSrc),
+    'main.ts: brak pierwszeństwa okien dyplomatycznych (pokój wymuszony) w kolejce');
+  ok(/onOpenCivInfo: \(oid: number\) => showCivInfoFromAudience\(oid\)/.test(mainSrc),
+    'main.ts: przycisk „O cywilizacji” nie jest podpięty w audiencji');
+  ok(/da-civinfo-btn/.test(audSrc) && /cfg\.onOpenCivInfo\?\.\(cfg\.ownerId\)/.test(audSrc),
+    'diplomacyAudience.ts: brak przycisku „O cywilizacji” lub jego obsługi');
+}
+
 if (failures > 0) {
   console.error(`civ-welcome-screen-test: ${failures} FAIL (zaliczone asercje: ${passes})`);
   process.exit(1);
