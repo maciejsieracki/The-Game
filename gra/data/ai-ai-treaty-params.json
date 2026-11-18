@@ -1,5 +1,7 @@
 {
   "_opis": "R-WEB-AI-AI-TREATIES-E1-EVALUATE-PURE-Q1 (ABC właściciela 2026-11-18): parametry czystej oceny traktatów AI↔AI (gra/src/game/ai-ai-treaty-evaluate.ts). Próg gotowości 0,54 NIE jest tu powielany — czyta się go z gra/data/diplomacy.json (params.progSojuszWillingnessMin). Progi Relacji/Zaufania też z diplomacy.json.",
+  "_uwaga_tor": "R-WEB-AI-AI-TREATIES-E2 (ABC 2026-11-18): torAktywny=false = tor AI↔AI WYŁĄCZONY (zachowanie gry bez zmian). Włączenie na ROBOCZEJ dopiero po pomiarze ≥3 ziarna × 150 tur (etap E6). Ustawiane wyłącznie w danych / testach civTest, nie w UI.",
+  "torAktywny": false,
   "nap_czas_trwania_tur": 15,
   "zerwanie_relacja": -30,
   "zerwanie_zaufanie": -20,

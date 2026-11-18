@@ -68,7 +68,8 @@ import { loadGameData } from './data/loader';
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from './map/generator';
 import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
-import { typSwiataFromMenuLabel, defaultLandFractionPercentForTyp, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
+import { isAiAiTreatyTickEnabled, setAiAiTreatyTickEnabledForTest, planAiAiNapTreatyTickFull, applyAiAiNapBreachRelacja, aiAiNapBreachRelacjaDelta, type AiAiWarStatus } from './game/ai-ai-treaty-tick';
+import { typSwiataFromMenuLabel,defaultLandFractionPercentForTyp, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
 import { buildScene, getLastSetFogMs, type SceneBuildTimings, type SceneResult } from './render/scene';
 import { improvementAutomationBlockedRule } from './ui/administratorPanel';
 import { showMapLoadingOverlay, type MapLoadingOverlayHandle, formatCaughtError } from './ui/mapLoadingOverlay';
@@ -25348,6 +25349,10 @@ async function boot(): Promise<void> {
       suspendZlozeOnWar(a, b);
       const brokenIds = treatiesBrokenByWar(activeDeals, a, b);
       if (!brokenIds.length) return;
+      // R-WEB-AI-AI-TREATIES-E2 (tor flagowany, domyślnie wyłączony): zerwanie NAP AI↔AI wojną = kara P-4 (−30 Relacji).
+      // Zaufanie (−20) nalicza istniejące zdarzenie 'zlamana_obietnica_ai' niżej; tu tylko dopisek relacji.
+      const napAiAiZerwany = isAiAiTreatyTickEnabled() && !isHuman(a) && !isHuman(b) && !opts?.bezKary
+        && activeDeals.some(d => brokenIds.includes(d.id) && normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.PaktNieagresji);
       activeDeals = removeTreatiesById(activeDeals, brokenIds);
       for (const id of brokenIds) {
         zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, id);
@@ -25357,6 +25362,87 @@ async function boot(): Promise<void> {
       const cur = getDiploRelation(a, b);
       const ev = breakerIsPlayer ? 'zlamana_obietnica' as const : 'zlamana_obietnica_ai' as const;
       setDiploRelation(a, b, applyDiploEventTracked(a, b, cur, ev));
+      if (napAiAiZerwany) {
+        setDiploRelation(a, b, applyAiAiNapBreachRelacja(getDiploRelation(a, b), aiAiNapBreachRelacjaDelta(), DIPLOMACY_PARAMS.mnoznikRespektu));
+      }
+    }
+
+    /**
+     * R-WEB-AI-AI-TREATIES-E2-NAP-WIRING-FLAGGED-Q1: krok paktu o nieagresji AI↔AI, raz na turę (po tickAiAiWarWeariness).
+     * Działa WYŁĄCZNIE gdy `torAktywny` (gra/data/ai-ai-treaty-params.json, domyślnie false) — przy false zero zmiany stanu.
+     * Logika czysta: ai-ai-treaty-tick.ts (planAiAiNapTreatyTick, ocena przez E1 evaluateTreatyOffer).
+     * Skutki akceptacji: NAP obustronnie w activeDeals (15 tur, wygasa istniejącym mechanizmem), dopłata D ZŁOTEM
+     * z aiSkarbiecByOwner płatnika na odbiorcę (skarbiec nigdy poniżej zera), relacja zsynchronizowana.
+     * Zdarzenie dyplomatyczne: wpis w logu konsoli (jak pozostałe zdarzenia AI↔AI); bez nowego UI.
+     */
+    function tickAiAiTreatyRequests(): void {
+      if (!isAiAiTreatyTickEnabled()) return;
+      refreshObjectivePowerCache();
+      const owners = Array.from(aiOwnerCivMap.keys())
+        .filter(oid => isMajorAiCivForForcedPeace(oid)
+          && !activeDeals.some(d => normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.Wasalizacja && d.strony.includes(oid)))
+        .sort((x, y) => x - y);
+      if (owners.length < 2) return;
+      const stubOf = (oid: number): Player => ({ ownerId: oid, typCywilizacji: aiOwnerCivMap.get(oid) } as unknown as Player);
+      const alliesOf = (oid: number): number[] => activeDeals
+        .filter(d => isAllianceDealKind(d.rodzaj) && d.strony.includes(oid))
+        .map(d => (d.strony[0] === oid ? d.strony[1] : d.strony[0]));
+      const plan = planAiAiNapTreatyTickFull({
+        turn,
+        owners,
+        pairPrefilter: (p, t) => {
+          if (getDiploRelation(p, t).status === 'wojna') return false;
+          if (hasTreaty(activeDeals, p, t, RodzajTraktatu.Rozejm)) return false;
+          if (hasTreaty(activeDeals, p, t, RodzajTraktatu.PaktNieagresji)) return false;
+          return ownersShareLandBorderLive(p, t);
+        },
+        pairInfo: (p, t) => {
+          const rel = getDiploRelation(p, t);
+          const dipCtx: AIDiplomacyContext = {
+            isMinorCiv: false,
+            militaryRatio: militaryRatioFromArmyM(sumArmyMForOwner(p), sumArmyMForOwner(t)),
+            currentTurn: turn,
+            turnsAtWar: 0,
+          };
+          return {
+            warStatus: hasTreaty(activeDeals, p, t, RodzajTraktatu.Rozejm) ? 'rozejm' : rel.status,
+            hasNap: hasTreaty(activeDeals, p, t, RodzajTraktatu.PaktNieagresji),
+            hasAlliance: activeDeals.some(d => isAllianceDealKind(d.rodzaj) && dealInvolvesOwners(d, p, t)),
+            sharesBorder: ownersShareLandBorderLive(p, t),
+            relacja: relationScore(rel),
+            zaufanie: rel.zaufanie,
+            // Gotowość celu t wobec proponenta p (ta sama ścieżka co sojusze siostrzane: aiDiplomacyStance).
+            willingness: aiDiplomacyStance(stubOf(t), stubOf(p), rel, dipCtx).willingnessAlly,
+          };
+        },
+        sideOf: (oid) => ({
+          power: objectivePowerForOwner(oid),
+          treasuryGold: 0,
+          allies: alliesOf(oid),
+          enemies: allPowerOwnerIds().filter(x => x !== oid && getDiploRelation(oid, x).status === 'wojna'),
+        }),
+        treasury: new Map<number, number>(owners.map(oid => [oid, aiSkarbiecByOwner.get(oid) ?? 0] as [number, number])),
+      });
+      // Przelewy dopłat D są już wyliczone w planerze (skarbce po kroku); zapisujemy tylko zmienione skarbce.
+      for (const [oid, po] of plan.treasuryPo) {
+        if ((aiSkarbiecByOwner.get(oid) ?? 0) !== po) aiSkarbiecByOwner.set(oid, po);
+      }
+      for (const tr of plan.accepted) {
+        const [p0, p1] = pairOwnerIds(tr.proposer, tr.target);
+        activeDeals = addTreaty(activeDeals, {
+          id: `nap_aiai_${p0}_${p1}_t${turn}`,
+          rodzaj: RodzajTraktatu.PaktNieagresji,
+          strony: [p0, p1],
+          wygasaTura: tr.wygasaTura,
+          zawartaTura: turn,
+        });
+        syncRelationFromDeals(tr.proposer, tr.target);
+        console.log(
+          `[Dyplomacja] AI↔AI Pakt o nieagresji ${ownerDiploLabel(p0)}(${p0})-${ownerDiploLabel(p1)}(${p1}) ` +
+          `na ${tr.durationTurns} tur` +
+          (tr.paymentGold > 0 && tr.payer !== null ? `, dopłata ${tr.paymentGold} ¤ od ${ownerDiploLabel(tr.payer)}(${tr.payer})` : ''),
+        );
+      }
     }
 
     function aiSojuszObowiazekParam(key: string, fallback: number): number {
@@ -31152,6 +31238,11 @@ async function boot(): Promise<void> {
       (window as any).__truceTestDebug.purgeStaleForTest = (): void => { pruneInvalidNegotiations(); };
       // Wywołuje REALNY tick zmęczenia bez bramki bitwy (w playtest=mapa po turze zwykle czeka bitwa => battlePending=true => tick pomija).
       (window as any).__truceTestDebug.runWearinessTickForTest = (): void => { tickAiAiWarWeariness(false); };
+      // R-WEB-AI-AI-TREATIES-E2 (hak testowy, NIE UI): przełącznik toru AI↔AI i pojedynczy krok NAP.
+      (window as any).__truceTestDebug.aiAiTreatyTickForTest = {
+        setEnabled: (v: boolean | null): void => { setAiAiTreatyTickEnabledForTest(v); },
+        runTick: (): void => { tickAiAiTreatyRequests(); },
+      };
       // R-WEB-DIPLO-FORCED-PEACE-WINDOW-AUTO-OPEN-Q1 (zarzut 1): TYLKO ODCZYT kolejki pokoju wymuszonego (bez efektów).
       (window as any).__truceTestDebug.pendingForcedPeaceForTest = (): Array<{ pairKey: string; loser: number; winner: number }> =>
         pendingForcedPeaceTreaties.map(p => ({ pairKey: p.pairKey, loser: p.loser, winner: p.winner }));
@@ -47043,6 +47134,12 @@ async function boot(): Promise<void> {
               tickAiAiWarWeariness(aiTurnAwaitingBattle);
             } catch (eAiAiWeary) {
               console.error('[Dyplomacja] Blad zmeczenia wojna AI-AI:', eAiAiWeary);
+            }
+            // R-WEB-AI-AI-TREATIES-E2: pakt o nieagresji AI↔AI (tor za przełącznikiem torAktywny=false).
+            try {
+              tickAiAiTreatyRequests();
+            } catch (eAiAiTreaty) {
+              console.error('[Dyplomacja] Blad paktow AI-AI (E2):', eAiAiTreaty);
             }
             if (!aiTurnAwaitingBattle) {
               scanAutoSiegesAfterAiTurn();
