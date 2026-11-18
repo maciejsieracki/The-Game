@@ -23,7 +23,7 @@
 //! Nie wpina się w `PlayableState`. Nie zawiera czasu ściennego: budżet przewijania to jawny `max_steps`.
 
 use std::cell::Cell;
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 use crate::domain::army_leadership::{army_morale_ratio_without_commander, ArmyLeaderCombatant};
 use crate::domain::city_towers::{strongest_ranged_unit_for_era, tower_range_for, UnitRow};
@@ -45,7 +45,14 @@ use crate::domain::siege_tactics_activate::{
 use crate::domain::siege_tactics_advance::{
     advance_after_move, advance_step_decide, AdvanceDecision, AdvanceUnit, AdvanceWorld, AfterStep,
 };
-use crate::domain::siege_tactics_approach::{BF_COLS, BF_ROWS};
+use crate::domain::siege_tactics_approach::{
+    siege_approach_restricted, ApproachUnit, ApproachWallState, BF_COLS, BF_ROWS,
+};
+use crate::domain::siege_tactics_atk::{
+    advance_toward_pick, attacker_wall_entry_is_breach, goal_holds, infantry_to_tower_plan,
+    ram_tower_plan, tower_climb_allowed, AtkGoal, AtkSiegeScene, AtkUnitFlags, InfantryPlan,
+    RamTowerPlan, WYLOM_LOG,
+};
 use crate::domain::siege_tactics_autobatch::{
     cell_key, AutoBatchEnv, BatchBoard, BatchState, CellKey,
 };
@@ -105,7 +112,9 @@ use crate::domain::siege_tactics_turnseq::{
 use crate::domain::siege_tactics_unit::{
     effective_flee_threshold, should_rout, side_alive_end, CombatUnit,
 };
-use crate::domain::siege_tactics_walk::STEP_GAP_MS;
+use crate::domain::siege_tactics_walk::{
+    siege_walk_to, DoMoveGate, WalkEvent, WalkUnit, WalkWorld, STEP_GAP_MS,
+};
 
 /// Wejście ciała jednostki (web `_activateUnit`): czas trwania i zakończenie.
 pub trait LoopBody {
@@ -1086,6 +1095,14 @@ struct ProdOps {
     /// przez [`execute_group_doctrine_step`] z tego samego stanu; pin: każda ścieżka `return true`, `:17966-18084`).
     /// Treść kroku wykonuje [`ProdBody`] po maszynie (zdarzenie [`ActivateEvent::DoctrineStep`]).
     doctrine_returns: bool,
+    /// K5LOOP-SIEGE-ATK-A (T2a): wartości zwracane przez `_trySiegeTowerClimb` / `_siegeInfantryToTowerStep` /
+    /// `_siegeRamTowerStep` (`battleScene.ts:8056`, `:8087`, `:8022`), liczone przed maszyną z tego samego stanu
+    /// ([`ProdBody::siege_atk_plan`]; między startem aktywacji a tymi wywołaniami pin zmienia tylko morale okrążenia i
+    /// `facing`, których te funkcje nie czytają). Treść wykonuje ciało po maszynie (gałęzie `U7.2-*`, `U7.3-ramtower`).
+    /// Poza atakującym przy murze `false` (pin: `return false` dla obrońcy i bez muru).
+    tower_climb: bool,
+    infantry_to_tower: bool,
+    ram_tower_step: bool,
 }
 
 impl ActivateOps for ProdOps {
@@ -1100,13 +1117,13 @@ impl ActivateOps for ProdOps {
         self.doctrine_returns
     }
     fn tower_climb(&mut self) -> bool {
-        false
+        self.tower_climb
     }
     fn infantry_to_tower(&mut self) -> bool {
-        false
+        self.infantry_to_tower
     }
     fn ram_tower_step(&mut self) -> bool {
-        false
+        self.ram_tower_step
     }
     fn ranged_target_in_range(&mut self) -> Option<usize> {
         self.ranged_target
@@ -1126,11 +1143,12 @@ impl ActivateOps for ProdOps {
 fn prod_tag(ev: ActivateEvent) -> &'static str {
     match ev {
         ActivateEvent::Flee => "ucieczka-routed",
-        ActivateEvent::TowerClimb => "wieza-wejscie",
-        ActivateEvent::InfantryToTower => "piechota-do-wiezy",
-        ActivateEvent::RamTowerStep => "taran-wieza",
+        // K5LOOP-SIEGE-ATK-A (T2a): `_trySiegeTowerClimb`, `_siegeInfantryToTowerStep`, `_siegeRamTowerStep` i
+        // `_advanceToward` (dawne `wieza-wejscie`, `piechota-do-wiezy`, `taran-wieza`, `marsz`) wykonuje ciało. Ostrzał
+        // kafla muru katapultą (`_attackWallTile`, `:7540`) to T2b: jawny tag.
         ActivateEvent::AttackWallTile { .. } => "atak-muru",
-        ActivateEvent::AdvanceToward { .. } => "marsz",
+        // Obrona r1 (zarzut 3): `_advanceToward` spoza atakującego przy murze (nieosiągalne w maszynie) = jawny tag.
+        ActivateEvent::AdvanceToward { .. } => "marsz-poza-oblezeniem",
         ActivateEvent::RangedAction => "strzelec",
         ActivateEvent::FallBackStep => "odwrot",
         ActivateEvent::CavalryAction => "kawaleria",
@@ -1224,6 +1242,23 @@ pub struct ProdBody<R: RollSource> {
     /// (stan wyłomu trzyma [`SiegeEnv::wall_ever_breached`]; synchronizacja przy wyłomie w trakcie bitwy = T2/T7).
     /// Domyślnie `false` (pin: `wallEverBreached = false` na starcie bitwy).
     pub wall_ever_breached: bool,
+    /// K5LOOP-SIEGE-ATK-A (T2a): web `siegeGateCol` / `siegeGateRow` (`battleScene.ts:2450`, `:2452`; wartości pinu na
+    /// starcie sceny `-1`, ustawia je `_carveWallTiles` `:4045-4046`). Czytane przez `_siegeRamTowerStep` (`:8026-8035`).
+    /// Wejście adaptera ustawienia pola (T5/T6); domyślnie wartości inicjalne pinu.
+    pub siege_gate_col: i64,
+    pub siege_gate_row: i64,
+    /// K5LOOP-SIEGE-ATK-A (T2a): web `siegeWallTilesInit` (`:2458`, inicjalnie `0`; `_carveWallTiles` `:4055`). Czytane
+    /// przez `_siegeApproachRestricted` (`:7956`) w bramce `_doMove` marszu atakującego.
+    pub siege_wall_tiles_init: usize,
+    /// K5LOOP-SIEGE-ATK-A (T2a): web `towerAtWallRows` (`:2499`, pusty zbiór na starcie): wiersze wież oblężniczych
+    /// atakującego stojących pod murem. Dopisuje `_siegeRamTowerStep` (`:8040`, `arrive` `:8044-8047`); czytają
+    /// `_trySiegeTowerClimb`, `_siegeInfantryToTowerStep` i `_siegeApproachRestricted`. Czyszczenie przy wyłomie
+    /// (`:10523`) należy do T2b.
+    pub tower_at_wall_rows: BTreeSet<i64>,
+    /// K5LOOP-SIEGE-ATK-A (T2a): web `_siegeMachineRange(ru)` (`:7530-7534`) jednostki, indeks [strona][jednostka]. Pin
+    /// liczy go per jednostka; `ActivateScene::siege_machine_range` jest jedną wartością sceny. `Some(x)` = wartość tej
+    /// jednostki (adapter), `None` = wartość sceny (zachowanie sprzed T2a).
+    pub siege_machine_range: [Vec<Option<f64>>; 2],
     /// K5LOOP-KILL-RIPPLE (D-INT-2): poległe jednostki, dla których `_resolveBlowOutcome` wywołało ripple
     /// `_shakeAlliesOnLoss(defender)` (`battleScene.ts:9048`), w kolejności wywołań (obserwacja dla testów zgodności z
     /// pinem; ripple z `_fleeStep` nie jest tu zapisywany).
@@ -1708,6 +1743,7 @@ impl<R: RollSource> ProdBody<R> {
             (0..units[1].len()).map(|i| format!("def{i}")).collect(),
         ];
         let formation_rank = [vec![None; units[0].len()], vec![None; units[1].len()]];
+        let siege_machine_range = [vec![None; units[0].len()], vec![None; units[1].len()]];
         Self {
             occ_by_key: seed_occupancy(&units),
             formation_rank,
@@ -1770,6 +1806,11 @@ impl<R: RollSource> ProdBody<R> {
             names,
             tower_shooter_nazwa: "Strzelec".to_string(),
             wall_ever_breached: false,
+            siege_gate_col: -1,
+            siege_gate_row: -1,
+            siege_wall_tiles_init: 0,
+            tower_at_wall_rows: BTreeSet::new(),
+            siege_machine_range,
             kill_ripples: Vec::new(),
             now: 0.0,
             tower_row: 0,
@@ -3514,17 +3555,18 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         }
         let pu = self.units[ix][unit.idx].clone();
         // Gałęzie spoza zakresu sprawdzane PRZED maszyną (żeby maszyna nie wybrała ścieżki strzelca/doktryny).
-        // K5LOOP-SIEGE-DEF (T1): przy murze ciało wykonuje WYŁĄCZNIE stronę `def` (`_activateUnit` `:6087`, `:6129-6172`,
-        // `:6225-6236`: obrońca nie ma doktryny, trzyma mur, strzela/bije z miejsca). Strona `atk` przy murze (wieże,
-        // taran, katapulta, wejście na mur, doktryna atakującego) zostaje tagiem `oblezenie` (T2). Mur sceny maszyny
-        // (`scene.wall_col`) i mur sekwencji (`st.siege_wall_col`) to jedna wartość pinu (`this.siegeWallCol`): dwie
-        // różne nieujemne wartości = błąd wejścia, jawny tag `oblezenie-mur-niespojny`.
+        // K5LOOP-SIEGE-DEF (T1): przy murze ciało wykonuje stronę `def` (`_activateUnit` `:6087`, `:6129-6172`,
+        // `:6225-6236`: obrońca nie ma doktryny, trzyma mur, strzela/bije z miejsca). K5LOOP-SIEGE-ATK-A (T2a): strona
+        // `atk` przy murze przechodzi przez maszynę; ciało wykonuje wejście na mur od wieży, marsz piechoty pod wieżę,
+        // taran/wieżę (`_siegeRamTowerStep`) i marsz `_advanceToward` (`:6179-6220`); pozostałe gałęzie atakującego przy
+        // murze (atak bramy, ostrzał muru, doktryna, cios, strzelec, jazda, falanga, krok) to jawne tagi po maszynie
+        // (T2b/T4). Mur sceny maszyny (`scene.wall_col`) i mur sekwencji (`st.siege_wall_col`) to jedna wartość pinu
+        // (`this.siegeWallCol`): dwie różne nieujemne wartości = błąd wejścia, jawny tag `oblezenie-mur-niespojny`.
         let siege = self.scene.wall_col >= 0 || st.siege_wall_col >= 0;
+        let siege_atk = siege && unit.side == BattleSide::Attacker;
         let wall_col = self.scene.wall_col.max(st.siege_wall_col);
         let out_of_scope = if self.scene.manual_mode {
             Some("tryb-reczny")
-        } else if siege && unit.side == BattleSide::Attacker {
-            Some("oblezenie")
         } else if self.scene.wall_col >= 0
             && st.siege_wall_col >= 0
             && self.scene.wall_col != st.siege_wall_col
@@ -3558,6 +3600,9 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             finished: st.finished,
             // K5LOOP-SIEGE-DEF: `this.siegeWallCol` (spójność sprawdzona wyżej; `-1` bez muru).
             wall_col,
+            // K5LOOP-SIEGE-ATK-A: `_siegeMachineRange(ru)` (`:7530-7534`) tej jednostki, gdy adapter go podał.
+            siege_machine_range: self.siege_machine_range[ix][unit.idx]
+                .unwrap_or(self.scene.siege_machine_range),
             ..self.scene.clone()
         };
         // `_targetInRange` czyta `_enemiesOf`: cel martwy / znikający / uciekający nie jest celem (battleScene.ts:8291-8294).
@@ -3568,13 +3613,18 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         // K5LOOP-SIEGE-DEF (T1): obrońca w oblężeniu (maszyna: tylko gałęzie U7.1 `onWallWalkway` i U7.4 HOLD, obie
         // kończą aktywację) liczy cel w ciele z bieżących pozycji: strzelec `_rangedTargetInRange` (`:7041-7053`),
         // wręcz `_targetInRange` (`:8373-8410`) z filtrem `_meleeBlockedByWall` (`:8361-8371`, mur i wyłom).
-        let siege_def = siege && unit.side == BattleSide::Defender;
-        let ranged_target = if siege_def && pu.activate.can_shoot {
+        // K5LOOP-SIEGE-ATK-A: atakujący przy murze liczy cele tym samym kodem (pin `_rangedTargetInRange` /
+        // `_targetInRange` z `_meleeBlockedByWall` są wspólne dla stron); maszyna czyta je dla atakującego tylko w gałęzi
+        // `onWallWalkway` (U7.1: cios/strzał albo trzymanie korony) i w gałęziach wręcz U7.6/U7.9 (tag `oblezenie`).
+        let siege_targets = siege;
+        let ranged_target = if siege_targets && pu.activate.can_shoot {
             self.ranged_target_in_range_js(unit, st)
         } else {
             None
         };
-        let melee_target = if siege_def && !pu.activate.can_shoot {
+        // Atakujący strzelec przy murze (`shootingEnabled = false` albo `primaryRanged` w U7.6) czyta `_targetInRange` z
+        // zasięgiem strzału (`:8376-8380`): też liczone w ciele.
+        let melee_target = if siege_targets && (!pu.activate.can_shoot || siege_atk) {
             let me = self.combatant(unit, st);
             let en = self.combatants(opposite(unit.side), st);
             target_in_range_cmb(
@@ -3585,7 +3635,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                     wall_ever_breached: self.wall_ever_breached,
                 },
             )
-        } else if siege_def {
+        } else if siege_targets {
             // Strzelec obrońcy przy murze nie woła `_targetInRange` (U7.1/U7.4 czytają `_rangedTargetInRange`).
             None
         } else if pu.activate.can_shoot {
@@ -3629,12 +3679,22 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         let doctrine_plan = au
             .doctrine_auto
             .then(|| self.plan_doctrine_step(unit, st, doctrine_now));
+        // K5LOOP-SIEGE-ATK-A: decyzje `_trySiegeTowerClimb` / `_siegeInfantryToTowerStep` / `_siegeRamTowerStep` z
+        // pozycji na starcie aktywacji (wartości zwracane maszynie; treść wykonywana po maszynie).
+        let atk_plan = siege_atk.then(|| self.siege_atk_plan(unit, wall_col));
         let mut ops = ProdOps {
             melee_target,
             ranged_target,
             advance_coord,
             nearest,
             doctrine_returns: doctrine_plan.is_some_and(|p| p.returns),
+            tower_climb: atk_plan.as_ref().is_some_and(|p| p.climb),
+            infantry_to_tower: atk_plan
+                .as_ref()
+                .is_some_and(|p| p.infantry_missing || p.infantry != InfantryPlan::NotHandled),
+            ram_tower_step: atk_plan
+                .as_ref()
+                .is_some_and(|p| p.ram_missing || p.ram != RamTowerPlan::NotHandled),
         };
         let res = activate_unit(&mut au, &scene, &enemies, &mut ops);
         self.trace.push((unit, res.events.clone()));
@@ -3667,6 +3727,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         let mut doctrine = false;
         // K5DOC-T8: `_advanceStep` wołane przez krok doktryny (cios z `:8241-8245` osiągalny w pinie).
         let mut advance_from_doctrine = false;
+        // K5LOOP-SIEGE-ATK-A: `_advanceToward(ru, approachCol, bestRow, done)` katapulty atakującego (`:6214-6216`).
+        let mut toward: Option<(i64, i64)> = None;
         for ev in res.events.iter().copied() {
             match ev {
                 ActivateEvent::Done
@@ -3678,11 +3740,18 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 ActivateEvent::UpdateFacing => self.update_facing(unit, &enemies),
                 // Wywołania wież i taranu są w pinie bezczynne bez muru (`siegeWallCol < 0` -> `return false`,
                 // battleScene.ts:8023, :8057, :8088) i dla obrońcy (`ru.side !== 'atk'` -> `return false`, `:8057`,
-                // `:8088`; `_siegeRamTowerStep` woła tylko gałąź `isSiegeUnit && side === 'atk'`, `:6187`). Strona `atk`
-                // przy murze ma strażnik `oblezenie` wyżej.
+                // `:8088`; `_siegeRamTowerStep` woła tylko gałąź `isSiegeUnit && side === 'atk'`, `:6187`).
+                // K5LOOP-SIEGE-ATK-A: dla atakującego przy murze treść wykonuje ciało po maszynie, gdy wywołanie
+                // zwróciło `true` (gałąź `U7.2-climb`, `U7.2-inf`, `U7.3-ramtower`).
                 ActivateEvent::TowerClimb
                 | ActivateEvent::InfantryToTower
                 | ActivateEvent::RamTowerStep => {}
+                // K5LOOP-SIEGE-ATK-A: marsz katapulty pod mur (maszyna emituje go tylko dla atakującego przy murze).
+                ActivateEvent::AdvanceToward { col, row } if siege_atk => toward = Some((col, row)),
+                // Obrona r1 (zarzut 3 Evaluatora): poza atakującym przy murze zdarzenie jest strukturalnie nieosiągalne
+                // (maszyna emituje je tylko w gałęzi `isSiegeUnit && side === 'atk' && siegeWallCol >= 0`, `:6187`);
+                // gdyby jednak padło, jawny tag `marsz-poza-oblezeniem` (ramię `other` -> [`prod_tag`]), nie ciche
+                // pominięcie.
                 ActivateEvent::Attack { target } => pend.attack = Some(target),
                 // K5LOOP-CLOSE: `_advanceStep(ru, done)` (`battleScene.ts:6298`, cialo `:8198-8285`).
                 ActivateEvent::AdvanceStep => advance = true,
@@ -3708,6 +3777,21 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 ActivateEvent::DoctrineStep => doctrine = res.branches.contains(&"U7.0-doctrine"),
                 other => skipped.push(prod_tag(other)),
             }
+        }
+        // K5LOOP-SIEGE-ATK-A: gałęzie atakującego przy murze spoza T2a (cios `_doAttack` z U7.1/U7.6/U7.9, krok doktryny,
+        // `_rangedAction`, `_fallBackStep`, `_cavalryAction`, `_phalanxAction`, `_advanceStep`): przy murze ruch przechodzi
+        // przez bramkę `_siegeMoveRefused` (`:8689`), a cios przez reguły muru, których te klocki ciała nie mają. Jawny
+        // tag `oblezenie` (T2b/T4), bez akcji i bez kroku doktryny.
+        if siege_atk
+            && (pend.attack.is_some()
+                || advance
+                || cavalry
+                || ranged
+                || fallback
+                || phalanx
+                || doctrine)
+        {
+            skipped.push("oblezenie");
         }
         // K5LOOP-CLOSE r4: okrążenie złamało jednostkę w tej aktywacji. Pin: `ru.morale` po trafieniu okrążenia,
         // `_checkRout` -> `_startRout` (`:9799-9831`: osłona wręcz, boost wrogów, zwolnienie pola, zwrot ku krawędzi) w
@@ -3771,6 +3855,29 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             pend.attack = None;
             self.pending[ix][unit.idx] = Some(pend);
             return 0.0;
+        }
+        // K5LOOP-SIEGE-ATK-A (T2a): gałęzie wież, taranu i marszu atakującego przy murze (`:6179-6220`). Każda kończy
+        // aktywację (`return` po `true`), więc wyklucza pozostałe gałęzie.
+        if let Some(plan) = atk_plan {
+            let run = if res.branches.contains(&"U7.2-climb") {
+                Some(self.siege_atk_climb(unit, wall_col))
+            } else if res.branches.contains(&"U7.2-inf") {
+                Some(self.siege_atk_infantry(unit, st, wall_col, &plan, &enemies))
+            } else if res.branches.contains(&"U7.3-ramtower") {
+                Some(self.siege_atk_ram_tower(unit, st, wall_col, &plan, &enemies))
+            } else {
+                toward.map(|(col, row)| {
+                    self.siege_atk_advance_toward(unit, st, wall_col, col, row, None, &enemies)
+                })
+            };
+            if let Some(run) = run {
+                if let Some(tag) = run.tag {
+                    self.unported.push((unit, tag));
+                }
+                pend.move_left = run.move_left;
+                self.pending[ix][unit.idx] = Some(pend);
+                return run.dur;
+            }
         }
         // `_cavalryAction` (`:6284`) wyklucza `_advanceStep` / `_doAttack` z `_activateUnit` (`return`). Gałąź jest
         // decyzją ruchową (D1 K5DOC-T4e-0): bez [`MoveTerrain`] jawny tag `kawaleria-brak-terenu` i brak akcji (także
@@ -4443,6 +4550,460 @@ impl<R: RollSource> ProdBody<R> {
     }
 }
 
+/// K5LOOP-SIEGE-ATK-A (T2a): decyzje trzech funkcji wież atakującego przy murze z pozycji na starcie aktywacji
+/// ([`ProdBody::siege_atk_plan`]). `*_missing` = decyzja wymagała `_passableForUnit` (BFS), a ciało nie ma
+/// [`MoveTerrain`] (D1 K5DOC-T4e-0): wywołanie zwraca maszynie `true` (aktywacja kończy się jak w pinie po obsłużonej
+/// gałęzi), a ciało zapisuje jawny tag `*-brak-terenu` zamiast wykonania.
+#[derive(Debug, Clone, PartialEq)]
+struct ProdAtkPlan {
+    climb: bool,
+    infantry: InfantryPlan,
+    infantry_missing: bool,
+    ram: RamTowerPlan,
+    ram_missing: bool,
+}
+
+/// K5LOOP-SIEGE-ATK-A: wynik wykonania gałęzi atakującego przy murze (czas, `moveLeft` po ruchu, jawny tag).
+struct AtkRun {
+    dur: f64,
+    move_left: Option<f64>,
+    tag: Option<&'static str>,
+}
+
+impl AtkRun {
+    fn idle() -> Self {
+        AtkRun {
+            dur: 0.0,
+            move_left: None,
+            tag: None,
+        }
+    }
+    fn tagged(tag: &'static str) -> Self {
+        AtkRun {
+            dur: 0.0,
+            move_left: None,
+            tag: Some(tag),
+        }
+    }
+}
+
+/// K5LOOP-SIEGE-ATK-A: adapter [`WalkWorld`] pętli marszu K1b (`_siegeWalkTo`, `battleScene.ts:8006-8019`) dla jednej
+/// jednostki ciała: `isGoal` z [`goal_holds`] na BIEŻĄCEJ zajętości ciała, `passable_free` = `!occByKey.has(k) &&
+/// _passableForUnit(ru, c, r)` (`Number.isFinite(_moveCostForUnit)`, `:7446-7448`), `do_move` = `_doMove` (`:8685-8776`):
+/// bramka `siegeWallCol >= 0 && _siegeMoveRefused` (`:8689`), potem [`ProdBody::move_step_core`] (efekty T4c +
+/// `_updateFacing` z nowego pola + akcja `Move` w chwili `t0`).
+///
+/// Bramka: `_siegeMoveRefused` wymaga `_siegeApproachRestricted(ru)` (`:7963-7964`), który dla machin (`isSiegeUnit`,
+/// `:7953`) i dla piechoty przy stojącej wieży (`towerAtWallRows.size > 0`, `:7959`; piechota idzie pod wieżę tylko
+/// wtedy, `:8089`) zwraca `false`. Gałąź odmowy jest więc w T2a strukturalnie nieosiągalna; gdyby jednak
+/// `_siegeApproachRestricted` zwróciło `true` (niespójne wejście), adapter NIE zgaduje zagrożeń (`_siegeShooterThreats`
+/// = T2b): kończy marsz i ciało zapisuje jawny tag `oblezenie-odmowa-ruchu`.
+struct ProdSiegeWalk<'a, R: RollSource> {
+    body: &'a mut ProdBody<R>,
+    unit: UnitRef,
+    scene: AtkSiegeScene,
+    goal: AtkGoal,
+    pref_row: Option<i64>,
+    finished: bool,
+    enemies: &'a [EnemyRef],
+    approach: ApproachUnit,
+    mounted: bool,
+    now0: f64,
+    moves: u32,
+    missing: Cell<bool>,
+    gate_unported: bool,
+}
+
+impl<R: RollSource> ProdSiegeWalk<'_, R> {
+    fn occupied(&self, c: i64, r: i64) -> bool {
+        self.body
+            .occ_by_key
+            .contains_key(&cell_key(c as f64, r as f64))
+    }
+}
+
+impl<R: RollSource> WalkWorld for ProdSiegeWalk<'_, R> {
+    fn finished(&self) -> bool {
+        self.finished
+    }
+
+    fn is_goal(&self, col: i64, row: i64) -> bool {
+        goal_holds(
+            &self.scene,
+            &|c, r| self.occupied(c, r),
+            self.goal,
+            col,
+            row,
+        )
+    }
+
+    fn passable_free(&self, col: i64, row: i64) -> bool {
+        if self.occupied(col, row) {
+            return false;
+        }
+        match self.body.terrain.as_deref() {
+            Some(t) => unit_move_cost(t, self.mounted, col as f64, row as f64).is_finite(),
+            None => {
+                self.missing.set(true);
+                false
+            }
+        }
+    }
+
+    fn pref_row(&self) -> Option<i64> {
+        self.pref_row
+    }
+
+    fn do_move(&mut self, unit: &mut WalkUnit, col: i64, row: i64) -> DoMoveGate {
+        let wall = ApproachWallState {
+            wall_col_ge0: self.scene.wall_col >= 0,
+            gate_open: self.scene.gate_open,
+            wall_ever_breached: self.body.wall_ever_breached,
+            wall_tiles_init: self.body.siege_wall_tiles_init,
+            wall_tiles_alive: self.body.scene.wall_tile_hp.len(),
+            tower_at_wall_rows_count: self.body.tower_at_wall_rows.len(),
+        };
+        if self.scene.wall_col >= 0 && siege_approach_restricted(&self.approach, &wall) {
+            self.gate_unported = true;
+            return DoMoveGate::Refused;
+        }
+        // Każdy kolejny krok poprzedza `_schedule(STEP_GAP_MS)` (`:8017`): `t0` kroku k = k * (MOVE + GAP).
+        self.body.now = self.now0 + f64::from(self.moves) * (MOVE_STEP_MS + f64::from(STEP_GAP_MS));
+        match self.body.move_step_core(
+            self.unit,
+            col,
+            row,
+            false,
+            unit.move_left,
+            None,
+            self.enemies,
+        ) {
+            Ok(res) => {
+                unit.q = col;
+                unit.r = row;
+                unit.move_left = res.move_left;
+                self.moves += 1;
+                DoMoveGate::Proceed
+            }
+            Err(MissingTerrain) => {
+                self.missing.set(true);
+                DoMoveGate::Refused
+            }
+        }
+    }
+}
+
+impl<R: RollSource> ProdBody<R> {
+    /// K5LOOP-SIEGE-ATK-A: pola `this` gałęzi atakującego (`siegeWallCol`, brama, `wallTileHp.has`, `towerAtWallRows`).
+    fn atk_scene(&self, wall_col: i64) -> AtkSiegeScene {
+        AtkSiegeScene {
+            wall_col,
+            gate_col: self.siege_gate_col,
+            gate_row: self.siege_gate_row,
+            gate_open: self.scene.gate_open,
+            wall_tile_rows: self.scene.wall_tile_hp.iter().map(|&(r, _)| r).collect(),
+            tower_rows: self.tower_at_wall_rows.clone(),
+        }
+    }
+
+    fn atk_flags(a: &ActivateUnit) -> AtkUnitFlags {
+        AtkUnitFlags {
+            side_atk: a.side_atk,
+            on_wall_walkway: a.on_wall_walkway,
+            mounted: a.mounted,
+            is_siege_unit: a.is_siege_unit,
+            is_siege_tower: a.is_siege_tower,
+            is_ram: a.is_ram,
+            primary_ranged: a.primary_ranged,
+            can_shoot: a.can_shoot,
+            shooting_disabled: a.shooting_disabled,
+        }
+    }
+
+    /// K5LOOP-SIEGE-ATK-A: decyzje `_trySiegeTowerClimb`, `_siegeInfantryToTowerStep`, `_siegeRamTowerStep` (wartości
+    /// zwracane maszynie K5H) z pozycji i zajętości na starcie aktywacji.
+    fn siege_atk_plan(&self, unit: UnitRef, wall_col: i64) -> ProdAtkPlan {
+        let a = &self.units[side_ix(unit.side)][unit.idx].activate;
+        let flags = Self::atk_flags(a);
+        let scene = self.atk_scene(wall_col);
+        let occ = |c: i64, r: i64| self.occ_by_key.contains_key(&cell_key(c as f64, r as f64));
+        let missing = Cell::new(false);
+        let passable = |c: i64, r: i64| {
+            if occ(c, r) {
+                return false;
+            }
+            match self.terrain.as_deref() {
+                Some(t) => unit_move_cost(t, a.mounted, c as f64, r as f64).is_finite(),
+                None => {
+                    missing.set(true);
+                    false
+                }
+            }
+        };
+        let climb = tower_climb_allowed(&scene, &occ, flags, a.q, a.r);
+        let infantry = infantry_to_tower_plan(&scene, &occ, &passable, flags, a.q, a.r);
+        let infantry_missing = missing.replace(false);
+        let ram = ram_tower_plan(&scene, &occ, &passable, flags, a.q, a.r);
+        let ram_missing = missing.get();
+        ProdAtkPlan {
+            climb,
+            infantry,
+            infantry_missing,
+            ram,
+            ram_missing,
+        }
+    }
+
+    /// K5LOOP-SIEGE-ATK-A: `_trySiegeTowerClimb` (`battleScene.ts:8067-8082`) po decyzji `true`: zwolnienie pola,
+    /// `ru.q = wallCol`, `onWallWalkway = true`, pierwszy wyłom przez wieżę (`attackerWallEntryIsBreach`,
+    /// `city-fortification.ts:96-98`: `wallEverBreached = true` + wpis dziennika), zajęcie korony, `moveLeft = 0`,
+    /// `done()` synchronicznie (czas 0). Akcje: `Log` (jeśli wyłom), potem `ClimbWall`.
+    fn siege_atk_climb(&mut self, unit: UnitRef, wall_col: i64) -> AtkRun {
+        let ix = side_ix(unit.side);
+        let (q, r) = self.cell_of(unit);
+        self.occ_by_key.remove(&cell_key(q as f64, r as f64));
+        let side_atk = {
+            let a = &mut self.units[ix][unit.idx].activate;
+            a.q = wall_col;
+            a.on_wall_walkway = true;
+            a.side_atk
+        };
+        if attacker_wall_entry_is_breach(side_atk, true) && !self.wall_ever_breached {
+            self.wall_ever_breached = true;
+            self.emit(BattleAction::Log {
+                text: WYLOM_LOG.to_string(),
+            });
+        }
+        self.occ_by_key
+            .insert(cell_key(wall_col as f64, r as f64), unit_tag(unit));
+        self.emit(BattleAction::ClimbWall {
+            unit,
+            from: (q, r),
+            to: (wall_col, r),
+        });
+        AtkRun {
+            dur: 0.0,
+            move_left: Some(0.0),
+            tag: None,
+        }
+    }
+
+    /// K5LOOP-SIEGE-ATK-A: `_siegeInfantryToTowerStep` (`:8097-8100`) po decyzji `true`: czekanie przy wieży (`done()`)
+    /// albo `_siegeWalkTo(ru, goal, done)`.
+    fn siege_atk_infantry(
+        &mut self,
+        unit: UnitRef,
+        st: &TurnSeqState,
+        wall_col: i64,
+        plan: &ProdAtkPlan,
+        enemies: &[EnemyRef],
+    ) -> AtkRun {
+        if plan.infantry_missing {
+            return AtkRun::tagged("piechota-do-wiezy-brak-terenu");
+        }
+        match plan.infantry {
+            InfantryPlan::NotHandled | InfantryPlan::Wait => AtkRun::idle(),
+            InfantryPlan::Walk(goal) => {
+                self.siege_atk_walk(unit, st, wall_col, goal, None, None, enemies)
+            }
+        }
+    }
+
+    /// K5LOOP-SIEGE-ATK-A: `_siegeRamTowerStep` (`:8022-8054`) po decyzji `true`.
+    fn siege_atk_ram_tower(
+        &mut self,
+        unit: UnitRef,
+        st: &TurnSeqState,
+        wall_col: i64,
+        plan: &ProdAtkPlan,
+        enemies: &[EnemyRef],
+    ) -> AtkRun {
+        if plan.ram_missing {
+            return AtkRun::tagged("taran-wieza-brak-terenu");
+        }
+        match plan.ram {
+            RamTowerPlan::NotHandled => AtkRun::idle(),
+            // `_attackGate(ru, done)` (`:7310`): obrażenia bramy, animacja taranu, wyłom bramy = T2b.
+            RamTowerPlan::AttackGate => AtkRun::tagged("atak-bramy"),
+            RamTowerPlan::AtWall { row } => {
+                self.tower_at_wall_rows.insert(row);
+                AtkRun::idle()
+            }
+            RamTowerPlan::Walk {
+                goal,
+                pref_row,
+                arrive_base,
+            } => self.siege_atk_walk(unit, st, wall_col, goal, pref_row, arrive_base, enemies),
+            RamTowerPlan::AdvanceToward {
+                col,
+                row,
+                arrive_base,
+            } => self.siege_atk_advance_toward(unit, st, wall_col, col, row, arrive_base, enemies),
+        }
+    }
+
+    /// K5LOOP-SIEGE-ATK-A: `_siegeWalkTo(ru, goal, done|arrive, undefined, prefRow)` (`:8006-8019`) przez pętlę K1b
+    /// [`siege_walk_to`] i adapter [`ProdSiegeWalk`]. Czas: `MOVE_STEP_MS` na krok + `STEP_GAP_MS` na każdy `_schedule`
+    /// (nominalnie, jak [`Self::advance_step`]). `arrive_base` = callback `arrive` wieży (`:8044-8047`), wykonywany przy
+    /// `done()` marszu: `if (ru.q >= wallBase) towerAtWallRows.add(ru.r)`.
+    #[allow(clippy::too_many_arguments)]
+    fn siege_atk_walk(
+        &mut self,
+        unit: UnitRef,
+        st: &TurnSeqState,
+        wall_col: i64,
+        goal: AtkGoal,
+        pref_row: Option<i64>,
+        arrive_base: Option<i64>,
+        enemies: &[EnemyRef],
+    ) -> AtkRun {
+        let ix = side_ix(unit.side);
+        let a = self.units[ix][unit.idx].activate.clone();
+        let seq = st.unit(unit).c;
+        let mut wu = WalkUnit {
+            q: a.q,
+            r: a.r,
+            move_left: seq.move_left,
+            dead: seq.dead,
+            fading_out: seq.fading_out,
+        };
+        let now0 = self.now;
+        let scene = self.atk_scene(wall_col);
+        let approach = ApproachUnit {
+            side_atk: a.side_atk,
+            routed: seq.routed,
+            on_wall_walkway: a.on_wall_walkway,
+            is_siege_unit: a.is_siege_unit,
+            primary_ranged: a.primary_ranged,
+            can_shoot: a.can_shoot,
+            shooting_disabled: a.shooting_disabled,
+            mounted: a.mounted,
+        };
+        let (events, moves, missing, gate_unported) = {
+            let mut world = ProdSiegeWalk {
+                body: self,
+                unit,
+                scene,
+                goal,
+                pref_row,
+                finished: st.finished,
+                enemies,
+                approach,
+                mounted: a.mounted,
+                now0,
+                moves: 0,
+                missing: Cell::new(false),
+                gate_unported: false,
+            };
+            let ev = siege_walk_to(&mut world, &mut wu);
+            (ev, world.moves, world.missing.get(), world.gate_unported)
+        };
+        self.now = now0;
+        let schedules = events
+            .iter()
+            .filter(|e| matches!(e, WalkEvent::Schedule { .. }))
+            .count() as f64;
+        let dur = f64::from(moves) * MOVE_STEP_MS + schedules * f64::from(STEP_GAP_MS);
+        let move_left = (moves > 0).then_some(wu.move_left);
+        if missing || gate_unported {
+            return AtkRun {
+                dur,
+                move_left,
+                tag: Some(if missing {
+                    "marsz-brak-terenu"
+                } else {
+                    "oblezenie-odmowa-ruchu"
+                }),
+            };
+        }
+        if let Some(base) = arrive_base {
+            if wu.q >= base {
+                self.tower_at_wall_rows.insert(wu.r);
+            }
+        }
+        AtkRun {
+            dur,
+            move_left,
+            tag: None,
+        }
+    }
+
+    /// K5LOOP-SIEGE-ATK-A: `_advanceToward(ru, col, row, done|arrive)` (`battleScene.ts:7892-7916`): preludium
+    /// (`finished`, `dead`/`fadingOut`, `moveLeft <= 0`; `NaN` nie kończy), jeden zachłanny krok
+    /// ([`advance_toward_pick`]: `_moveCostForUnit === Infinity` odrzuca, `NaN` NIE), `_doMove` (bramka jak w
+    /// [`ProdSiegeWalk`]), potem `done`/`arrive` (`arrive_base`, `:8044-8047`). Bez [`MoveTerrain`] przy wymaganym
+    /// odczycie kosztu: jawny tag `marsz-brak-terenu`.
+    #[allow(clippy::too_many_arguments)]
+    fn siege_atk_advance_toward(
+        &mut self,
+        unit: UnitRef,
+        st: &TurnSeqState,
+        wall_col: i64,
+        col: i64,
+        row: i64,
+        arrive_base: Option<i64>,
+        enemies: &[EnemyRef],
+    ) -> AtkRun {
+        let ix = side_ix(unit.side);
+        let a = self.units[ix][unit.idx].activate.clone();
+        let seq = st.unit(unit).c;
+        let arrive = |body: &mut Self, run: AtkRun| -> AtkRun {
+            if let Some(base) = arrive_base {
+                let (q, r) = body.cell_of(unit);
+                if q >= base {
+                    body.tower_at_wall_rows.insert(r);
+                }
+            }
+            run
+        };
+        if st.finished || seq.dead || seq.fading_out || seq.move_left <= 0.0 {
+            return arrive(self, AtkRun::idle());
+        }
+        let Some(terrain) = self.terrain.as_deref() else {
+            return AtkRun::tagged("marsz-brak-terenu");
+        };
+        let occ = |c: i64, r: i64| self.occ_by_key.contains_key(&cell_key(c as f64, r as f64));
+        let cost_inf = |c: i64, r: i64| {
+            unit_move_cost(terrain, a.mounted, c as f64, r as f64) == f64::INFINITY
+        };
+        let Some((nc, nr)) = advance_toward_pick(a.q, a.r, col, row, &cost_inf, &occ) else {
+            return arrive(self, AtkRun::idle());
+        };
+        let wall = ApproachWallState {
+            wall_col_ge0: wall_col >= 0,
+            gate_open: self.scene.gate_open,
+            wall_ever_breached: self.wall_ever_breached,
+            wall_tiles_init: self.siege_wall_tiles_init,
+            wall_tiles_alive: self.scene.wall_tile_hp.len(),
+            tower_at_wall_rows_count: self.tower_at_wall_rows.len(),
+        };
+        let approach = ApproachUnit {
+            side_atk: a.side_atk,
+            routed: seq.routed,
+            on_wall_walkway: a.on_wall_walkway,
+            is_siege_unit: a.is_siege_unit,
+            primary_ranged: a.primary_ranged,
+            can_shoot: a.can_shoot,
+            shooting_disabled: a.shooting_disabled,
+            mounted: a.mounted,
+        };
+        if wall_col >= 0 && siege_approach_restricted(&approach, &wall) {
+            return AtkRun::tagged("oblezenie-odmowa-ruchu");
+        }
+        let Ok(res) = self.move_step_core(unit, nc, nr, false, seq.move_left, None, enemies) else {
+            return AtkRun::tagged("marsz-brak-terenu");
+        };
+        arrive(
+            self,
+            AtkRun {
+                dur: MOVE_STEP_MS,
+                move_left: Some(res.move_left),
+                tag: None,
+            },
+        )
+    }
+}
+
 #[cfg(test)]
 mod tower_target_tests {
     //! WIEZE-2B1: wybór celu wieży odbywa się W CHWILI WYSTRZAŁU (web `_fireOneTower` → `pickTowerTarget`), a nie przy
@@ -4555,5 +5116,23 @@ mod tower_target_tests {
         let st = state(&[10.0]);
         let e = env(vec![Some((9, 9))]);
         assert_eq!(e.pick_tower_for_row(&st, 3), None);
+    }
+}
+
+#[cfg(test)]
+mod prod_tag_tests {
+    //! Obrona r1 K5LOOP-SIEGE-ATK-A (zarzut 3): `_advanceToward` spoza atakującego przy murze nie jest pomijane po cichu.
+    use super::*;
+
+    #[test]
+    fn advance_toward_outside_siege_atk_has_explicit_tag() {
+        assert_eq!(
+            prod_tag(ActivateEvent::AdvanceToward { col: 3, row: 4 }),
+            "marsz-poza-oblezeniem"
+        );
+        assert_eq!(
+            prod_tag(ActivateEvent::AttackWallTile { row: 4 }),
+            "atak-muru"
+        );
     }
 }
