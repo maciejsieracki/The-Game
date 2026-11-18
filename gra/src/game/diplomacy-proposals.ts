@@ -222,6 +222,11 @@ export interface ProposalEvalContext {
     powerPlayer?: number;
     powerOther?: number;
   };
+  /**
+   * R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1: moc POWER gracza i drugiej strony pary dla traktatów z parytetem
+   * (sojusz, NAP, przemarsz, wasal — flaga `parytet` w diplomacy-acceptance-points.json). Brak = bramka parytetu pominięta.
+   */
+  treatyPower?: { powerPlayer: number; powerOther: number };
   /** Realne sąsiedztwo terytorialne (granica lądowa) + obie strony >2 miasta. */
   karaWspolnaGranica?: boolean;
   /** Benchmark wartości handlu (fair value) */
@@ -806,6 +811,41 @@ export function peaceProposalOfferPn(
 }
 
 /**
+ * R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (wersja 1, tylko autor = gracz): parytet siły dla traktatów z
+ * `parytet: true` w diplomacy-acceptance-points.json. X = cena bazowa (z konfigu, już po ×10), S/W/D z
+ * `peacePwPointsByPowerRatio(X, moc gracza, moc partnera)`. Silniejszy gracz: brak blokady. Słabszy gracz:
+ * oferta musi pokryć D (po rabacie relacji, `effectiveTreatyPnRequired`) — inaczej blokada z kwotą.
+ * Brak `powerPower` (undefined) → null (bramka pominięta, zachowanie sprzed rundy).
+ * Nie obejmuje: rozejmu (ścieżka pokoju), ścieżki AI-autora, płatności surowcami.
+ */
+function treatyParityPowerGate(
+  actionId: string,
+  payload: ProposalPayload,
+  relation: Relation,
+  pnOpts: ResolveProposalPnOptions,
+  treatyPower: { powerPlayer: number; powerOther: number } | undefined,
+): ProposalEvalResult | null {
+  if (!treatyPower) return null;
+  const cfg = acceptancePointsJson.traktaty as Record<string, { parytet?: boolean; platnik?: string } | undefined>;
+  if (cfg[actionId]?.parytet !== true || cfg[actionId]?.platnik !== 'slabsza') return null;
+  const proposerIsPlayer = (pnOpts.proposerOwnerId ?? 0) === (pnOpts.playerOwnerId ?? 0);
+  if (!proposerIsPlayer) return null;
+  const X = treatyBasePnFromConfig(actionId, payload);
+  if (X <= 0) return null;
+  const split = peacePwPointsByPowerRatio(X, treatyPower.powerPlayer, treatyPower.powerOther);
+  if (split.strongerSide === 'a') return null;
+  const relTotal = treatyEvalRelationTotal(relation);
+  const requiredD = effectiveTreatyPnRequired(split.D, relTotal);
+  const { givePn } = resolveProposalPn(payload, pnOpts);
+  if (givePn >= requiredD) return null;
+  return {
+    accepted: false,
+    reason: `Brakuje ${requiredD - givePn} PW do parytetu siły — słabszy gracz dopłaca D = ${split.D} PW `
+      + `(po rabacie relacji: ${requiredD}; X = ${X}, S = ${split.S}, W = ${split.W}, r = ${split.r.toFixed(2)})`,
+  };
+}
+
+/**
  * Bramka PN traktatu @ Relacji (mod ±90%). Zwraca wynik odrzucenia lub null = OK.
  *
  * Pokój: propozycja pokoju liczy się jako PN traktatu @ Relacji (+ słodzik z koszyka).
@@ -1229,6 +1269,9 @@ function evaluateProposalImpl(
 
   const pnReject = treatyPnGate(actionId, payload, relation, pnOpts);
   if (pnReject) return pnReject;
+
+  const parityReject = treatyParityPowerGate(actionId, payload, relation, pnOpts, ctx.treatyPower);
+  if (parityReject) return parityReject;
 
   switch (actionId) {
     case 'nap': {

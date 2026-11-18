@@ -25973,6 +25973,12 @@ async function boot(): Promise<void> {
           responderId,
           potSum > 0 ? potResponder / potSum : 0.5,
         ),
+        // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1: moc POWER pary dla parytetu traktatów (sojusz/NAP/przemarsz/wasal).
+        // Ta sama konwencja co warState.powerPlayer/powerOther (gracz = ME(), druga strona = partner).
+        treatyPower: (() => {
+          const sides = peacePowerSidesForPair(ME(), proposerId, responderId, objectivePowerForOwner);
+          return { powerPlayer: sides.powerPlayer, powerOther: sides.powerOther };
+        })(),
       };
     }
 
