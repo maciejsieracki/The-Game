@@ -31,3 +31,16 @@ export function turyWojnyLabel(n: number): string {
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'tury';
   return 'tur';
 }
+
+/**
+ * R-WEB-DIPLO-PEACE-WINNER-PROPOSAL-FLOW-Q1 (r3, zarzut 1 Evaluatora): dopisek powodu odmowy do
+ * komunikatu „X odrzuca propozycję: …" przy rozstrzygnięciu AI na stole. Dotyczy WYŁĄCZNIE
+ * pokoju/zawieszenia broni (akcje `pokoj`, `rozejm`) — tam `evaluateProposal` zwraca konkretny
+ * powód z liczbami (r5Gate / bilans PW / bramka relacji / zmęczenie). Dla pozostałych akcji
+ * zwraca pusty ciąg (zachowanie sprzed zmiany).
+ */
+export function peaceRejectReasonSuffix(actionId: string, reason: string | undefined): string {
+  if (actionId !== 'pokoj' && actionId !== 'rozejm') return '';
+  const r = (reason ?? '').trim();
+  return r.length > 0 ? ' — powód: ' + r : '';
+}

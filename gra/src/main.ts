@@ -1583,7 +1583,7 @@ import {
   cyclicItemTradeEra, cyclicSelfHealPakiety,
 } from './game/diplomacy-proposals';
 import { selectAiTradeBarter } from './game/ai-trade-proposal';
-import { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS } from './game/diplomacy-peace-proposal-timing';
+import { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS, peaceRejectReasonSuffix } from './game/diplomacy-peace-proposal-timing';
 import {
   type RejectedOfferCooldown,
   type RejectCooldownKey,
@@ -21645,10 +21645,13 @@ async function boot(): Promise<void> {
         const skipGenericToast = entry.actionId === 'wchloniecie' && outcome.kind === 'accepted';
         if (!skipGenericToast) {
           const summary = negotiationSummary(entry, true);
+          // R-WEB-DIPLO-PEACE-WINNER-PROPOSAL-FLOW-Q1 r3 (zarzut 1): odmowa pokoju/rozejmu niesie konkretny
+          // powód z liczbami (evaluateProposal); dopisek tylko dla pokoju/rozejmu, dłuższy czas toastu.
+          const rejectSuffix = outcome.kind === 'accepted' ? '' : peaceRejectReasonSuffix(entry.actionId, outcome.reason);
           showHintMessage(
             ownerDiploLabel(awaitingId)
-              + (outcome.kind === 'accepted' ? ' przyjmuje propozycję: ' + summary : ' odrzuca propozycję: ' + summary),
-            4000,
+              + (outcome.kind === 'accepted' ? ' przyjmuje propozycję: ' + summary : ' odrzuca propozycję: ' + summary + rejectSuffix),
+            rejectSuffix ? 7000 : 4000,
           );
         }
       }
