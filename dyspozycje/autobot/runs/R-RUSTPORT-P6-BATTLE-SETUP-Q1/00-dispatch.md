@@ -1,7 +1,7 @@
 # R-RUSTPORT-P6-BATTLE-SETUP-Q1 — ustawienie pola bitwy oblężniczej w silniku (T5a: teren i mur)
 
 STATUS: dispatch orkiestratora. Opus (3D), wszystkie etapy Opus. Podstawa: rozpoznanie `dyspozycje/autobot/runs/R-RUSTPORT-P6-K5LOOP-WIRING-ROZP-Q1/00-rozpoznanie.md` §3 (wiersz T5), §4 (D-WIR-4), §5 (ryzyka). Czytaj je PIERWSZE.
-BAZA: `origin/rust-port/parity-v2` w chwili startu (wpisz SHA w raporcie; po integracji K5LOOP r4 ma być nowsza, ale ten temat nie dotyka `siege_tactics_loop.rs`). Przed startem: `git fetch origin && git checkout -B <gałąź> origin/rust-port/parity-v2`.
+BAZA: `origin/rust-port/parity-v2` = `d21caf8f2ac41f44126d310b9319b6dcbe125b97` w chwili startu (ta linia ma priorytet; wpisz SHA w raporcie). Przed startem: `git fetch origin && git checkout -B <gałąź> d21caf8f2ac41f44126d310b9319b6dcbe125b97`.
 
 ## GOAL (runda 1 = T5a: teren + mur; T5b rozstawienie jednostek = osobna runda tego samego ID po FC)
 Domena silnika, która produkuje pole bitwy jak pin `07d2fbd72` (WEB NAJPIERW — czytaj `git show 07d2fbd72:gra/src/...`, przede wszystkim `battle-terrain.ts` (generateBattleTerrain, `:403`, ziarno `'bf:' + teren`), presetForWorldTerrain, battleSafeCols/battleClearSideCap oraz w `battleScene.ts` `_carveBattleBox`, `_fencePlayableZone`, `_carveWallTiles`, rzędy wież):
