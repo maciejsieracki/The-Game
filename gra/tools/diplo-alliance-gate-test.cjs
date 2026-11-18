@@ -53,6 +53,12 @@ function lockCtx(zaufanie, respekt) {
 const l128 = B.resolveDiplomacyActionLock(lockCtx(100, 28));
 ok(P.progSojuszRelacja === 130, 'próg Relacji sojuszu = 130 (dane)');
 ok(P.progSojuszZaufanie === 90, 'próg Zaufania sojuszu = 90 (dane)');
+// R-WEB-DIPLO-AI-ALLIANCE-INITIATIVE-THRESHOLD-054-ALIGN-Q1: inicjatywa AI = ta sama gotowość co tor gracza (0,54).
+{
+  const aiParams = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'data', 'ai-params.json'), 'utf8'));
+  ok(aiParams.ai_diplomacja_prog_sojusz.wartosc === P.progSojuszWillingnessMin,
+    'inicjatywa AI ai_diplomacja_prog_sojusz (ai-params.json) = progSojuszWillingnessMin (diplomacy.json) = 0,54');
+}
 ok(l128.locked === true, 'Relacja 128 < 130 -> sojusz zablokowany');
 ok(/Relacji 130 \(masz 128\)/.test(l128.note), 'powód po polsku: ' + l128.note);
 const l130 = B.resolveDiplomacyActionLock(lockCtx(100, 30));

@@ -6258,6 +6258,7 @@ export function decideAIReinforcements(
 // v0.2 TODO: wieloturowe sojusze, handel, wasalizacja.
 
 import {
+  DIPLOMACY_PARAMS,
   aiDiplomacyStance,
   diplomacyProposerStrengthEase,
   diplomacyAllianceStrengthAdjust,
@@ -6348,9 +6349,12 @@ export function aiPeaceProposalKind(turnsAtWar: number): 'pokoj' | 'rozejm' {
 
 /**
  * Minimalne willingnessAlly (0..1) wymagane do zaproponowania sojuszu.
- * 0.6 = wysokie zaufanie + dobra relacja; partner musi być „równy" (rw w [0.4,0.7]).
+ * Jedna wartość dla obu torów (tor oceny propozycji gracz→AI też): DIPLOMACY_PARAMS.progSojuszWillingnessMin
+ * (0,54; decyzja właściciela 2026-11-18, AIAI-TREATIES P-2 = A). Nie powielać liczby.
+ * Runtime czyta ai-params.json (`ai_diplomacja_prog_sojusz`); ta stała to tylko fallback.
+ * Partner musi być „równy" (rw w [0.4,0.7]).
  */
-export const PROG_SOJUSZ = 0.6;
+export const PROG_SOJUSZ = DIPLOMACY_PARAMS.progSojuszWillingnessMin;
 
 /**
  * Minimalne willingnessTrade (0..1) wymagane do zaproponowania handlu.
