@@ -335,9 +335,9 @@
     "opis": "Max respektWzgledny w wojnie — AI proponuje pokój gdy słabsze."
   },
   "ai_diplomacja_prog_sojusz": {
-    "wartosc": 0.6,
+    "wartosc": 0.54,
     "sekcja": "§6 Dyplomacja AI",
-    "opis": "Min. willingnessAlly do propozycji sojuszu."
+    "opis": "Min. willingnessAlly do propozycji sojuszu (inicjatywa AI). Ta sama wartość co progSojuszWillingnessMin (tor gracz→AI), 0,54 — decyzja właściciela 2026-11-18."
   },
   "ai_diplomacja_prog_handel": {
     "wartosc": 0.5,
