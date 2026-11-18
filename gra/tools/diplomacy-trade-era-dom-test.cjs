@@ -196,7 +196,11 @@ async function main() {
         };
         add('give');
         add('receive');
-        const txt = document.querySelector('.civ-diplo-basket-overlay > div').textContent;
+        // R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1: wyliczenia (SUMA, Fair min) są w tooltipie
+        // (atrybut title), nie w widocznym tekście — asercje czytają oba źródła, bez osłabiania.
+        const root = document.querySelector('.civ-diplo-basket-overlay > div');
+        const tips = Array.from(root.querySelectorAll('[title]')).map(e => e.getAttribute('title')).join('\n');
+        const txt = root.textContent + '\n' + tips;
         const sum = /SUMA oddaję:\s*([\d.,]+) PW\s*·\s*SUMA dostaję:\s*([\d.,]+) PW/.exec(txt);
         const fair = /Fair min \(Rel (\d+)\):\s*([\d.,]+) PW/.exec(txt);
         const rowInputs = q('.cdb-row-qty-inp').map(i => ({ v: i.value, step: i.step, min: i.min }));
