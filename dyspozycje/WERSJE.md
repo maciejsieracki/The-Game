@@ -1,3 +1,9 @@
+## ROBOCZA 6d0c13f6 -- 2026-11-18 -- FALA 844: Panel Za co cie lubia: wiersz Przewaga militarna tylko aktualny, bez Wygrana bitwa +5 (testowa)
+
+- Rozbicie czynnikow relacji (diplomacy-factors.ts + 2 pola w getRelationBreakdown main.ts): zdarzenia Przewaga militarna i Slabszy militarnie pokazuja sie jako JEDEN wiersz aktualnego stanu pary (+15 lub -10, zgodny z paskiem Respektu), wiersze Wygrana bitwa (historia) +5 ukryte (nie wchodzily do paska); rejestr zdarzen i pasek bez zmian; decyzje wlasciciela 2026-11-18 (ABC A i B)
+- Weryfikacja: FC PASS a0ce282d0 (kod 8b84c505, operator 3925d8f5): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; nowy test diplo-factors-military-row-current-only 20/0, mutacja 12 FAIL; infografiki 12/0, diplomacy 149/0, locks 88/0, trust-numbers 22/0, military-events 30/0
+- Limity: NIE ZMIERZONO: zrzut panelu w Chromium; dyplo-pakt-ekspansja-granica-test 22/26 czerwony tez na bazie; getDiploPairMeta tworzy wpis meta przy odczycie (kosmetyka)
+
 ## ROBOCZA c9536172 -- 2026-11-18 -- FALA 843: Wydarzenia innych cywilizacji (kapitulacja z glodu) w zakladce Dyplomacja (testowa)
 
 - Powiadomienie o kapitulacji z glodu miasta miedzy innymi cywilizacjami (gracz nie jest strona) dostaje origin other-civs i trafia do zakladki Dyplomacja zamiast Wazne (zgloszenie wlasciciela: Chengdu/Chongqing przejete przez Rzymian); wydarzenia z udzialem gracza zostaja w Wazne; tresc komunikatow bez zmian
