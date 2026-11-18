@@ -97,6 +97,10 @@ export interface AiAiAlliancePlanResult {
   treasuryPo: Map<number, number>;
   /** Liczba sojuszy po kroku (ownerId -> n), dla logów i testów. */
   alliancesCountPo: Map<number, number>;
+  /** Licznik prób toru w tym kroku (wywołania evaluate, maks. 1 na proponenta). Odczyt pomiaru. */
+  proby: number;
+  /** Licznik odmów E1 w tym kroku (evaluate.accept = false). Odczyt pomiaru. */
+  odmowy: number;
 }
 
 /**
@@ -110,6 +114,8 @@ export function planAiAiAllianceTickFull(input: AiAiAlliancePlanInput): AiAiAlli
   const counts = new Map<number, number>(input.alliancesCount);
   const owners = input.owners;
   const accepted: AiAiAllianceAccepted[] = [];
+  let proby = 0;
+  let odmowy = 0;
   // Pary zawarte w tym kroku: prefilter czyta activeDeals dopiero po planowaniu, więc bez tego mogłyby
   // powstać dwa sojusze tej samej pary w jednej turze.
   const zawartePary = new Set<string>();
@@ -149,6 +155,7 @@ export function planAiAiAllianceTickFull(input: AiAiAlliancePlanInput): AiAiAlli
     const target = best.t;
     const info = best.info;
     const sideT = input.sideOf(target);
+    proby++;
     const result = evaluate({
       actionId: 'sojusz_pelny',
       proposer: { ...sideP, treasuryGold: treasury.get(p) ?? 0 },
@@ -161,7 +168,10 @@ export function planAiAiAllianceTickFull(input: AiAiAlliancePlanInput): AiAiAlli
       hasAlliance: info.hasAlliance,
       sharesBorder: info.sharesBorder,
     });
-    if (!result.accept) continue;
+    if (!result.accept) {
+      odmowy++;
+      continue;
+    }
 
     let payer: number | null = null;
     let payee: number | null = null;
@@ -189,7 +199,7 @@ export function planAiAiAllianceTickFull(input: AiAiAlliancePlanInput): AiAiAlli
       result,
     });
   }
-  return { accepted, treasuryPo: treasury, alliancesCountPo: counts };
+  return { accepted, treasuryPo: treasury, alliancesCountPo: counts, proby, odmowy };
 }
 
 /** Wersja skrócona (lista zaakceptowanych sojuszy); przelewy wg `planAiAiAllianceTickFull`. */
