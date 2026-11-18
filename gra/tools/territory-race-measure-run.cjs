@@ -39,7 +39,8 @@ const COLS = ['tura', 'wlasciciel', 'miasta', 'forty', 'posterunki', 'hexyTeryto
 
 fs.mkdirSync(OUT, { recursive: true });
 const env = Object.assign({}, process.env, { CHROME_PATH: process.env.CHROME_PATH || '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome' });
-const res = spawnSync(process.execPath, [RUNNER, ...argv], { stdio: 'inherit', env, maxBuffer: 64 * 1024 * 1024 });
+// TERR_POSTPROCESS_ONLY=1: tylko przeliczenie CSV/kontrolnych z istniejącego seed<S>.jsonl (bez przebiegu gry).
+const res = process.env.TERR_POSTPROCESS_ONLY === '1' ? { status: 0, signal: null } : spawnSync(process.execPath, [RUNNER, ...argv], { stdio: 'inherit', env, maxBuffer: 64 * 1024 * 1024 });
 if (res.status !== 0) {
   console.error(`territory-race-measure-run: runner exit ${res.status} (${res.signal || ''}); wynik czesciowy zostaje w --out`);
 }
@@ -69,7 +70,8 @@ const ownersOf = r => (r.owners || r.metrics?.owners || []);
 const control = {};
 for (const t of CONTROL_TURNS) {
   const r = rowAtOrBefore(t);
-  if (!r) { control[t] = 'NIE ZMIERZONO'; continue; }
+  const lastTurn = rows.length ? rows[rows.length - 1].turn : 0;
+  if (!r || lastTurn < t) { control[t] = 'NIE ZMIERZONO (ostatnia zapisana tura ' + lastTurn + ')'; continue; }
   control[t] = {
     turaZmierzona: r.turn,
     heksySporneOgolem: r.terytorium?.heksySporneOgolem ?? null,

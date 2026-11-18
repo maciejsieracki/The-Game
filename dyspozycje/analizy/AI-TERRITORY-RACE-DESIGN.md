@@ -118,18 +118,42 @@ Priorytet budżetu (iii): forty/posterunki z osobnym udziałem puli pracy (np. X
 - (vi) Dyplomacja: fort obcy blokuje zakładanie miast (sekcja 1.2) — naturalne tarcie graniczne już istnieje. Propozycja: bez nowej kary w etapie 1; kara za sąsiedztwo tylko jako osobna decyzja ABC po pomiarze.
 - (vii) Gracz: ten sam picker (`pickFortClaims`) już obsługuje gracza. Udostępnienie mechanizmu „wyścigu” graczowi = zmiana bramki `cityLimitExhausted` i parametrów; wymaga osobnej decyzji (poza zakresem tej rundy).
 
-## 6. Pomiar — NIE ZMIERZONO
+## 6. Pomiar — CZĘŚCIOWY (R2): ziarno 4242, tury 1–40; reszta NIE ZMIERZONO
 
-Harness `gra/tools/ai-economy-measure-run.cjs` wymaga: `npm ci --ignore-scripts` w `gra/` (brak `gra/node_modules` w worktree), budowy bundle poza repo, headless Chromium (`/opt/pw-browsers/chromium`), startu ok. 2 min i 6–50 s na turę (dane z poprzednich przebiegów, nie zmierzone tutaj). Trzy ziarna × 150 tur = około 450 tur, co daje kilka godzin wall-time.
+Źródło liczb: `runs/R-WEB-AI-TERRITORY-RACE-FORTS-OUTPOSTS-DESIGN-Q1/dowody/seed4242.jsonl` (surowe wiersze runnera), `dowody/seed4242-terytorium.csv`, `dowody/seed4242-kontrolne.json`. Hak: `gra/src/main.ts`, `__aiEconomyMeasure.metrics()` (commit ccd24c6fb, tylko odczyt). Narzędzie: `gra/tools/territory-race-measure-run.cjs` (commit 2c46de4e0; przeliczenie CSV bez przebiegu: `TERR_POSTPROCESS_ONLY=1`). Bundle zbudowany poza repo (vite, po `npm ci --ignore-scripts` w `gra/`).
 
-Korekta: wcześniejsze uzasadnienie „dispatch zabrania biegów w tle" było błędne. Dispatch dopuszcza `setsid nohup` z odpytywaniem ≤60 s; ograniczenie dotyczy wyłącznie parametru `run_in_background`. Brak wykonania wynika z zakresu pracy tej rundy (instalacja, build, rozszerzenie haka i kilka godzin przebiegów), nie z zakazu. Nie utworzono narzędzia `gra/tools/territory-race-measure-run.cjs`. Stan: NIE WYKONANO.
+Zmierzono (ziarno 4242; „wiersze AI" = właściciele obecni w metrykach; gracz, owner 0, wyłączony z sum):
 
-Plan pomiaru do kolejnej rundy (dla etapu 0, PRZED zmianą):
-- ziarna 4242, 777, +1 trzecie; tury kontrolne 30/60/90/120/150;
-- per AI: liczba miast, fortów, posterunków; heksy z miast vs z fortów; heksy sporne; pierwsza tura fortu AI; udział lądu zajętego.
-- Dane z `__aiEconomyMeasure` (hak `?civTest=1`, odczyt) — do potwierdzenia, czy hak zawiera pola fortów (NIE ZWERYFIKOWANO).
+| Tura | Wiersze AI | Miasta | Forty | Posterunki | Heksy terytorium | z miast | z fortów/posterunków | Heksy sporne (suma po AI) | Heksy sporne ogółem | Jednostki wojskowe AI |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 10 | 41 | 41 | 0 | 0 | 2531 | 2531 | 0 | 2103 | 930 | 43 |
+| 20 | 41 | 41 | 0 | 0 | 2593 | 2593 | 0 | 2193 | 968 | 41 |
+| 30 | 15 | 91 | 0 | 0 | 4283 | 4283 | 0 | 472 | 251 | 44 |
+| 40 | 15 | 150 | 5 | 2 | 6814 | 6560 | 254 | 2001 | 993 | 71 |
 
-Wniosek „AI rzadko stawia forty” wolno uznać dopiero po tym pomiarze.
+Mapa: 20160 heksów (`heksyMapy`). Tury 50, 60, 90, 120, 150: **NIE ZMIERZONO** (szczegóły niżej).
+
+Wnioski z tej części (wyłącznie z powyższych liczb):
+- Pierwszy fort lub posterunek AI pojawia się dopiero po turze 30. Z 15 właścicieli z wierszem 5 zbudowało go w turach 32–40 (właściciel → tura: 19→32, 13→34, 22→35, 10→37, 37→40). Do tury 30 włącznie zero fortów i posterunków u wszystkich właścicieli.
+- W turze 40 z 6814 heksów terytorium AI 254 (≈3,7%) pochodzi z fortów i posterunków, reszta z miast.
+- Liczba właścicieli z wierszem spada z 41 (t20) do 15 (t30). Ten sam wzór był w poprzednim pomiarze (r3 harnessu); przyczyna NIE zbadana w tym temacie.
+- Suma heksów spornych po AI spada z 2193 (t20) do 2001 (t40) razem ze spadkiem liczby właścicieli; reguł zakładania nie zmieniano.
+
+Zakres NIE ZMIERZONO:
+- Tury 50–150 na ziarnie 4242. Przebieg zatrzymano na turze 40. Wznowienie ze slotu t40 kończy się segfaultem Chromium (`signal 11`) w dwóch powtórzeniach (`dowody/seed4242-wznowienie-t40-BLAD-SIGSEGV.log`). Wcześniejsze wznowienie ze slotu t20 działało; przyczyna NIE zbadana. Przebieg w tle (`setsid nohup`) został odrzucony przez classifier uprawnień, więc nie wykonano go w tle.
+- Ziarna 777 i 1234: NIE ZMIERZONO.
+- Moment pierwszego forta AI powyżej tury 40 i udział lądu zajętego w turach kontrolnych: NIE ZMIERZONO.
+
+Dlatego wniosek „AI rzadko stawia forty" NIE jest jeszcze potwierdzony liczbą dla tur 50–150. Naprawa wznowienia (klasa defektu save-load, zob. `gra/tools/ai-economy-measure-README.md`, sekcja „Test wznowienia") jest warunkiem dokończenia pomiaru.
+
+### Sprostowania (sprawdzone w kodzie w R2)
+- Zasięg miasta: `cityRangeForPopulation` = min(max(CITY_RANGE_MIN, pop), CITY_RANGE_CAP), wartości z danych (`gra/src/game/okolica.ts:37–40, 46–50`); `cityTerritoryRadius` dla miasta w `gra/src/map/territory.ts:89–93`. Forty r=5, posterunki r=3 (`territory.ts`, stałe promieni).
+- Pierwszeństwo: heks w zasięgu miasta rozstrzyga miasto; forty i posterunki zajmują tylko heksy wolne od miast (`territory.ts`, komentarz ZALOZENIE ok. l. 136–150). Stąd „z fortów/posterunków" = ogółem − z miast.
+- Koszt utrzymania fortu i posterunku: ZWERYFIKOWANO w kodzie (wcześniej NIE ZWERYFIKOWANO). `RESOURCE_UPKEEP_IMPROVEMENT_KEYS` obejmuje wszystkie klucze ulepszeń poza wycinką (`gra/src/game/terrain-improvements.ts:608–610`), a `'fort'` i `'posterunek'` są w liście kluczy (`terrain-improvements.ts:92`). Pracy/turę liczy `computePracaUpkeepByOwner` (`gra/src/game/turn-economy.ts:991`), mnożnik epoki 1/2/4 (`terrain-improvements.ts:134–137`). Kwota dla fortu i posterunku z econ-params: NIE ZMIERZONO liczbowo.
+- Planer AI (`ai.ts`, ok. l. 3115) zwraca jedną komendę na wywołanie: sprostowanie Evaluatora przyjęte, NIE ZWERYFIKOWANO ponownie w tej rundzie.
+- `hexySporne` liczy heks pokryty zasięgiem co najmniej dwóch właścicieli (także miast). Suma po AI liczy ten sam heks wielokrotnie, po jednym razie dla każdego współwłaściciela.
+
+„Zajęte pierwszy raz" (historia per heks): NIE ZMIERZONO, haka nie ma takiego pola.
 
 ## 7. Pytania ABC do właściciela (rekomendacja pierwsza)
 
