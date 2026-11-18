@@ -132,11 +132,12 @@ export function composeTreatyPayment(input: TreatyPaymentInput): TreatyPaymentRe
     if (have <= 0) continue;
     const qty = Math.min(have, Math.ceil(rem / price));
     if (qty <= 0) continue;
-    const pn = Math.round(qty * price);
+    // Zarzut 7 (FC r1): pn = PN faktycznie pokryte przez ten stopień (min(wartość, reszta)), nie surową wartość
+    // qty·price — dzięki temu Σ extra[].pn = coveredByExtraPn i nic nie przekracza reszty D.
+    const pn = Math.min(Math.round(qty * price), rem);
     extra.push({ key: st.key, qty, pn });
-    const paid = Math.min(pn, rem);
-    coveredByExtraPn += paid;
-    rem -= paid;
+    coveredByExtraPn += pn;
+    rem -= pn;
   }
 
   const coveredPn = coveredByTechPn + coveredByTailPn + coveredByExtraPn;

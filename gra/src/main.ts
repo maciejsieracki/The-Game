@@ -26275,6 +26275,12 @@ async function boot(): Promise<void> {
         if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
         return;
       }
+      // R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1: nośnik dopłaty D traktatu z parytetem (gracz = płatnik). Pozycje ogona
+      // z zapasów gracza (złoto/brąz/żelazo/rudy, plan z treatyCarrierPlanForPlayerPayer) dopisujemy do giveItems — przelew
+      // robi ta sama gałąź co słodzik traktatowy (transferBasketItems) przy zawarciu NAP/sojuszu. Technologie: NIE podłączone.
+      if (result.deal && result.treatyCarrier && result.treatyCarrier.items.length > 0) {
+        payload = { ...payload, giveItems: [...(payload.giveItems ?? []), ...(result.treatyCarrier.items as BasketItem[])] };
+      }
       if (result.deal) {
         activeDeals = applyAcceptedProposal(activeDeals, result);
         syncRelationFromDeals(proposerId, responderId);

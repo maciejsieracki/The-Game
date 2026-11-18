@@ -4,8 +4,9 @@
  */
 import {
   PEACE_TAIL_ORDER, composePeaceTail, peaceTailPnPerUnit, peaceTailStep, peaceTailLabel,
-  type PeaceTailItem,
+  peaceTailBasketItems, type PeaceTailItem,
 } from './peace-tail-payment';
+import { composeTreatyPayment, treatyPaymentLabel, type TreatyPaymentResult } from './treaty-payment';
 import { formatTurCountAcc } from '../ui/formatPl';
 import {
   aiDiplomacyStance,
@@ -322,6 +323,12 @@ export interface ProposalEvalResult {
    * evaluateProposal (attachTreatyPowerSplit); pusty dla traktatów spoza listy parytetu i dla pokoju.
    */
   treatyPowerSplit?: PeacePowerSplitInfo;
+  /**
+   * R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1: nośnik dopłaty D (gracz = płatnik traktatu z parytetem), gdy pokrywa D
+   * w całości z zapasów. `items` = pozycje koszyka (zloto / surowiec_ilosc) do przelewu razem z zawarciem traktatu
+   * (main.ts dopisuje je do giveItems gracza). Brak pola = brak dopłaty do wykonania.
+   */
+  treatyCarrier?: { items: Array<{ typ: 'zloto' | 'surowiec_ilosc'; id: string; ilosc: number }>; coveredPn: number };
   /** Traktat do dodania (NAP, sojusz, trybut, wasal, granice) */
   deal?: ActiveDeal;
   /** Jednorazowy handel T3A — bez trwałego dealu */
@@ -890,14 +897,23 @@ export function treatyParityBaseX(actionId: string, payload: ProposalPayload, we
   return base;
 }
 
-function treatyParityPowerGate(
+/**
+ * R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1: plan nośnika dopłaty D dla GRACZA-płatnika traktatu z parytetem
+ * (gracz słabszy, autor = gracz). `null` = bramka nie dotyczy (silniejszy gracz, brak mocy, brak parytetu,
+ * koszyk już pokrywa D). Czysty: zapasy płatnika = `payerStock` (ctx.playerStock), pozycje koszyka już oferowane
+ * (giveItems zloto/surowce) są odejmowane od zapasu, żeby nie liczyć tego samego złota dwa razy.
+ * Stopień technologii NIE jest tu jeszcze podłączony (brak listy technologii w ctx) — patrz raport.
+ */
+export function treatyCarrierPlanForPlayerPayer(
   actionId: string,
   payload: ProposalPayload,
   relation: Relation,
   pnOpts: ResolveProposalPnOptions,
   treatyPower: { powerPlayer: number; powerOther: number } | undefined,
-  wearinessL = 0,
-): ProposalEvalResult | null {
+  wearinessL: number,
+  payerStock: Readonly<Record<string, number>> | undefined,
+  era: number | undefined,
+): TreatyCarrierPlan | null {
   if (!treatyPower) return null;
   if (!treatyParityEnabled(actionId)) return null;
   const proposerIsPlayer = (pnOpts.proposerOwnerId ?? 0) === (pnOpts.playerOwnerId ?? 0);
@@ -910,11 +926,101 @@ function treatyParityPowerGate(
   const requiredD = effectiveTreatyPnRequired(split.D, relTotal);
   const { givePn } = resolveProposalPn(payload, pnOpts);
   if (givePn >= requiredD) return null;
+  // Zapas płatnika pomniejszony o pozycje koszyka już oferowane (jedno złoto nie liczy się dwa razy).
+  const left: Record<string, number> = {};
+  // Brak zapasu (undefined) = zero zapasów: bramka parytetu nadal odrzuca (jak przed nośnikiem), tylko z komunikatem.
+  for (const k of PEACE_TAIL_ORDER) left[k] = Math.max(0, Math.floor((payerStock ?? {})[k] ?? 0));
+  for (const i of payload.giveItems ?? []) {
+    if (i.typ !== 'zloto' && i.typ !== 'surowiec_ilosc') continue;
+    const k = i.typ === 'zloto' ? 'zloto' : i.id;
+    if (k in left) left[k] = Math.max(0, left[k]! - Math.max(0, Math.floor(i.ilosc ?? 0)));
+  }
+  const duePn = requiredD - givePn;
+  const payment = composeTreatyPayment({
+    duePn,
+    payerTechs: [],
+    otherTechs: [],
+    techPn: () => null,
+    pricing: {
+      holdings: left,
+      pnPerUnit: k => peaceTailPnPerUnit(k, era),
+      stepOf: k => peaceTailStep(k, era),
+    },
+  });
+  return { requiredD, givePn, duePn, split, payment, supported: TREATY_CARRIER_ACTIONS.has(actionId) };
+}
+
+/** Plan nośnika dopłaty D dla gracza-płatnika (wynik treatyCarrierPlanForPlayerPayer). */
+export interface TreatyCarrierPlan {
+  requiredD: number;
+  givePn: number;
+  duePn: number;
+  split: PeacePwPowerSplit;
+  payment: TreatyPaymentResult;
+  /** false = akcja spoza zweryfikowanego zakresu wykonania (granice, wasal): nośnik nie przelewa, bramka odrzuca jak dotąd. */
+  supported: boolean;
+}
+
+/**
+ * R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1: traktaty, których ścieżka akceptacji (main.ts, gałąź transferu giveItems)
+ * jest zweryfikowana dla nośnika dopłaty. Granice i wasal: ich ścieżka nie przelewa koszyka przy zawarciu — nie
+ * wolno zaakceptować z nośnikiem bez przelewu, więc zostają przy bramce odrzucającej.
+ */
+const TREATY_CARRIER_ACTIONS: ReadonlySet<string> = new Set(['nap', 'sojusz_defensywny', 'sojusz_pelny']);
+
+function treatyParityPowerGate(
+  actionId: string,
+  payload: ProposalPayload,
+  relation: Relation,
+  pnOpts: ResolveProposalPnOptions,
+  treatyPower: { powerPlayer: number; powerOther: number } | undefined,
+  wearinessL = 0,
+  payerStock?: Readonly<Record<string, number>>,
+  era?: number,
+): ProposalEvalResult | null {
+  const plan = treatyCarrierPlanForPlayerPayer(actionId, payload, relation, pnOpts, treatyPower, wearinessL, payerStock, era);
+  if (!plan) return null;
+  // Nośnik pokrywa całą dopłatę D (zapasy płatnika) → bramka przepuszcza; przelew wykonuje ścieżka akceptacji
+  // (treatyCarrierForAcceptance / attachTreatyCarrier), a nie tekst oferty.
+  if (plan.supported && plan.payment.full) return null;
+  const hasStock = plan.supported && (plan.payment.tail.length > 0 || plan.payment.extra.length > 0);
+  const hint = hasStock
+    ? ` (możesz dopłacić: ${treatyPaymentLabel(plan.payment).replace('Dopłata: ', '')}; brakuje jeszcze ${plan.payment.shortfallPn} PN)`
+    : ` (brak zapasów płatnika na dopłatę: brakuje ${plan.payment.shortfallPn} PN)`;
   return {
     accepted: false,
-    reason: `Brakuje ${requiredD - givePn} PW do parytetu siły — słabszy gracz dopłaca D = ${split.D} PW `
-      + `(po rabacie relacji: ${requiredD}; X = ${X}, S = ${split.S}, W = ${split.W}, r = ${split.r.toFixed(2)})`,
+    reason: `Brakuje ${plan.duePn} PW do parytetu siły — słabszy gracz dopłaca D = ${plan.split.D} PW `
+      + `(po rabacie relacji: ${plan.requiredD}; r = ${plan.split.r.toFixed(2)})${hint}`,
   };
+}
+
+/**
+ * Dołącza do wyniku akceptacji (accepted = true) pozycje nośnika dopłaty, gdy nośnik pokrywa D w całości.
+ * Ścieżka akceptacji w main.ts dopisuje `treatyCarrier.items` do giveItems gracza przed przelewem.
+ */
+function attachTreatyCarrier(
+  proposal: DiplomaticProposal,
+  ctx: ProposalEvalContext,
+  result: ProposalEvalResult,
+): ProposalEvalResult {
+  if (!result.accepted || !ctx.treatyPower) return result;
+  // Te same opcje co w evaluateProposalImpl (pnOpts), żeby givePn w planie = givePn w bramce.
+  const pnOpts: ResolveProposalPnOptions = {
+    difficulty: ctx.difficulty ?? 'normal',
+    proposerOwnerId: proposal.proposerOwnerId,
+    playerOwnerId: 0,
+    actionId: proposal.actionId,
+    tradeEra: ctx.tradeEra,
+    ...proposalPnTurnsMultiplier(proposal.payload),
+  };
+  const plan = treatyCarrierPlanForPlayerPayer(
+    proposal.actionId, proposal.payload, ctx.relation, pnOpts,
+    ctx.treatyPower, treatyWearinessLevelOf(ctx), ctx.playerStock ?? ctx.payerStock, ctx.tradeEra,
+  );
+  if (!plan || !plan.supported || !plan.payment.full) return result;
+  const items = peaceTailBasketItems(plan.payment.tail);
+  if (items.length === 0) return result;
+  return { ...result, treatyCarrier: { items, coveredPn: plan.payment.coveredPn } };
 }
 
 /**
@@ -1295,7 +1401,7 @@ export function evaluateProposal(
   // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: ocena w jawnej epoce umowy (ctx.tradeEra), nie w
   // epoce, którą akurat zostawił globalny stan (domyślna epoka handlu zostaje fallbackiem).
   const result = withDiplomacyTradeEra(ctx.tradeEra ?? diplomacyTradeEra(), () => evaluateProposalImpl(proposal, ctx));
-  return attachTreatyPowerSplit(proposal, ctx, result);
+  return attachTreatyCarrier(proposal, ctx, attachTreatyPowerSplit(proposal, ctx, result));
 }
 
 /**
@@ -1411,7 +1517,9 @@ function evaluateProposalImpl(
   const pnReject = treatyPnGate(actionId, payload, relation, pnOpts, parityOwnedByPlayer);
   if (pnReject) return pnReject;
 
-  const parityReject = treatyParityPowerGate(actionId, payload, relation, pnOpts, ctx.treatyPower, wearinessL);
+  const parityReject = treatyParityPowerGate(
+    actionId, payload, relation, pnOpts, ctx.treatyPower, wearinessL, ctx.playerStock ?? ctx.payerStock, ctx.tradeEra,
+  );
   if (parityReject) return parityReject;
 
   switch (actionId) {
