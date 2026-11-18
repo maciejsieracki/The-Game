@@ -53,7 +53,7 @@ const ENTRY_SRC = [
   'export { applyDiplomaticEvent } from \'./game/diplomacy\';',
   'export { decideAIDiplomacy, aiPeaceProposalKind } from \'./game/ai\';',
   'export { aiCommandToPendingProposal, evaluateProposal } from \'./game/diplomacy-proposals\';',
-  'export { warWearinessFraction, WAR_PEACE_PARAMS } from \'./game/diplomacy-war-peace-profile\';',
+  'export { WAR_PEACE_PARAMS } from \'./game/diplomacy-war-peace-profile\';',
   '',
 ].join('\n');
 
@@ -252,11 +252,6 @@ function makeWorld() {
     && lib.peaceFinalizeTrustEvent(7) === 'pokoj' && lib.peaceFinalizeTrustEvent(null) === 'pokoj');
 
   // ---- Część 1d: (E) tryb AI — nowe wejście (ułamek t/T + willingnessPeace + Zaufanie + słabość) ----
-  check('E: ułamek zmęczenia t=T → 1 (pełna skala)', lib.warWearinessFraction(15, 15) === 1);
-  check('E: ułamek zmęczenia t=T/2 → 0.5 (poniżej progu pełnego zmęczenia)',
-    lib.warWearinessFraction(7.5, 15) === 0.5 && 0.5 < lib.TRUCE_AI_FATIGUE_PEACE_MIN);
-  check('E: 19 tur wojny przy T=20 → ułamek < progu (rozejm wg N4)',
-    lib.warWearinessFraction(19, 20) < lib.TRUCE_AI_FATIGUE_PEACE_MIN);
   check('E: duże zmęczenie (ułamek ≥ progu) → pokój stały',
     lib.aiTruceOrPeaceMode({ fatigueFraction: lib.TRUCE_AI_FATIGUE_PEACE_MIN, willingnessPeace: 0, zaufanie: 0, weaker: true, fallbackKind: 'rozejm' }) === 'pokoj');
   check('E: wysoka willingnessPeace → pokój stały (przy małym zmęczeniu)',

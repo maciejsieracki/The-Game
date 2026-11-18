@@ -28,7 +28,7 @@ export interface WarPeaceParams {
   progKrytyczny: { baza: number; agresjaSrodek: number; wagaAgresja: number; min: number; max: number; bazaBrakDanych: number };
   progZdrowia: { baza: number; tolerancjaSrodek: number; wagaTolerancja: number; min: number; max: number; bazaBrakDanych: number };
   minTurWojny: { baza: number; agresjaWysoka: number; premiaAgresjaWysoka: number; agresjaNiska: number; karaAgresjaNiska: number; karaProfilObronny: number; min: number; max: number; bazaBrakDanych: number };
-  zmeczenie: { maksUdzial: number; bazaTur: number; wagaAgresja: number; maksTur: number; progSygnaluPokoju: number; bazaTurBrakDanych: number };
+  zmeczenie: { progSygnaluPokoju: number };
   sygnalyPokoju: { progRwMiasta: number; patTurWojny: number; patBrakZmianyTur: number };
   cenaPokoju: {
     odrzucenieRwProg: number; odrzucenieMaxTurWojny: number; progSilyWysoki: number; wagaSily: number; maxMnoznikSily: number;
@@ -66,9 +66,6 @@ export function progPrzewagiWypowiedzeniaWojnyProc(
 
 export const WAR_PEACE_PARAMS = paramsRaw as unknown as WarPeaceParams;
 
-/** Maksymalny udział zmęczenia wojną (0..0.5) — "pełne zmęczenie" po T turach. */
-export const WAR_WEARINESS_MAX_SHARE = WAR_PEACE_PARAMS.zmeczenie.maksUdzial;
-
 export interface WarPeaceProfile {
   /** Klucz cywilizacji (typCywilizacji) albo null dla gracza/nieznanego. */
   civKey: string | null;
@@ -90,8 +87,6 @@ export interface WarPeaceProfile {
   progZdrowia: number;
   /** Minimalna liczba tur wojny, zanim AI przyjmie pokój od gracza. */
   minTurWojny: number;
-  /** Liczba tur wojny do pełnego zmęczenia (T ≤ 20). */
-  zmeczenieT: number;
   /** Liczba kolejnych tur kryzysu Relacji do wojny z progu (hamulec N). */
   hamulecN: number;
 }
@@ -139,7 +134,6 @@ export function resolveWarPeaceProfile(civKey?: string | null, params: WarPeaceP
       progKrytyczny: params.progKrytyczny.bazaBrakDanych,
       progZdrowia: zdrowieBazaZAiParams(params),
       minTurWojny: params.minTurWojny.bazaBrakDanych,
-      zmeczenieT: params.zmeczenie.bazaTurBrakDanych,
       hamulecN: clampNum(Math.round(params.hamulecRelacji.bazaN - params.hamulecRelacji.wagaProgWojny * 5), params.hamulecRelacji.minN, params.hamulecRelacji.maxN),
     };
   }
@@ -181,9 +175,6 @@ export function resolveWarPeaceProfile(civKey?: string | null, params: WarPeaceP
     M.max,
   ));
 
-  const T = params.zmeczenie;
-  const zmeczenieT = Math.min(T.maksTur, T.bazaTur + T.wagaAgresja * agr);
-
   const H = params.hamulecRelacji;
   const hamulecN = clampNum(Math.round(H.bazaN - H.wagaProgWojny * dipProg), H.minN, H.maxN);
 
@@ -201,27 +192,8 @@ export function resolveWarPeaceProfile(civKey?: string | null, params: WarPeaceP
     progKrytyczny,
     progZdrowia,
     minTurWojny,
-    zmeczenieT,
     hamulecN,
   };
-}
-
-/**
- * Ułamek pełnego zmęczenia wojną: min(1, turyWojny / T), 0..1. Zero poza wojną.
- * R4 (D4): T ≤ 20 → pełne zmęczenie najpóźniej po 20 turach wojny (dla każdej cywilizacji).
- */
-export function warWearinessFraction(turnsAtWar: number, zmeczenieT: number): number {
-  const turns = Number.isFinite(turnsAtWar) ? Math.max(0, turnsAtWar) : 0;
-  if (!(zmeczenieT > 0) || turns <= 0) return 0;
-  return Math.min(1, turns / zmeczenieT);
-}
-
-/**
- * Udział zmęczenia wojną w udziale wpływającym na decyzję: maksUdzial · ułamek (0..0.5).
- * Poprzednia wersja min(0.5, t/T) saturowała się już przy t = T/2 (~10 tur), co łamało D4.
- */
-export function warWearinessShare(turnsAtWar: number, zmeczenieT: number): number {
-  return WAR_WEARINESS_MAX_SHARE * warWearinessFraction(turnsAtWar, zmeczenieT);
 }
 
 /**

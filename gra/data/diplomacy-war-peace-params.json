@@ -54,13 +54,8 @@
     "bazaBrakDanych": 5
   },
   "zmeczenie": {
-    "_wzor": "R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: zrodlem poziomu zmeczenia jest jeden licznik warWearinessLevel (war-weariness-params.json: 2,5%/ture + 10%/miasto, pelne po 40 turach). Sygnal (e) aiPeaceSignals: warWearinessLevel >= progSygnaluPokoju. Pola T/bazaTur/wagaAgresja/maksUdzial/zmeczenieT nie steruja juz decyzjami (zostaly jako wejscie resolvera profilu, zmeczenieT i warWearinessShare/Fraction sa uzywane wylacznie przez testy zachowania; usuniecie wymaga zmiany asercji testow zachowania, czyli poza allowlista R-WEB-DIPLO-WEARINESS-LEGACY-FIELDS-CLEANUP-Q1; brak zarejestrowanego ID tematu-nastepcy, do ustalenia przez orkiestratora).",
-    "maksUdzial": 0.5,
-    "bazaTur": 15,
-    "wagaAgresja": 1,
-    "maksTur": 20,
-    "progSygnaluPokoju": 0.4,
-    "bazaTurBrakDanych": 20
+    "_wzor": "R-WEB-DIPLO-WEARINESS-LEGACY-FIELDS-REMOVE-Q1: zrodlem poziomu zmeczenia jest jeden licznik warWearinessLevel (war-weariness-params.json: 2,5%/ture + 10%/miasto, pelne po 40 turach). Sygnal (e) aiPeaceSignals: warWearinessLevel >= progSygnaluPokoju. Martwe pola T/bazaTur/wagaAgresja/maksUdzial/bazaTurBrakDanych oraz zegar profilu zmeczenieT i funkcje warWearinessShare/Fraction usuniete.",
+    "progSygnaluPokoju": 0.4
   },
   "sygnalyPokoju": {
     "_opis": "AI proponuje pokoj (priorytet 2 decideAIDiplomacy) przy: (a) rw <= progPokojSlabosc; (b) >=1 miasto utracone w tej wojnie i rw <= progRwMiasta; (c) zdrowie armii AI (sum health/sum hpMax jednostek bojowych) < progZdrowia; (d) pat: >=patTurWojny tur wojny i brak zmiany miast przez patBrakZmianyTur tur; (e) ulamek zmeczenia >= progSygnaluPokoju. ZAWSZE tylko gdy AI sama przyjęłaby pokoj od gracza (bramka cenaPokoju, verdict ok) — spojnosc: AI nie proponuje pokoju, ktorego sama by odrzucila.",
