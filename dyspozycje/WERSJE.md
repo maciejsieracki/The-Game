@@ -1,3 +1,9 @@
+## ROBOCZA f493f62a -- 2026-11-18 -- FALA 840: Ekran powitalny cywilizacji w stylu brand booka (testowa)
+
+- Ekran Odkryles nowa cywilizacje (civWelcomeScreen.ts) przestylowany wg brand booka: ciemny panel z tokenow --civ-*, tytul Georgia w zlocie, tresc Segoe UI, przyciski: Audiencja wypelniony zlotem, Zamknij outline 2px; usuniety jasny motyw i prefers-color-scheme; tresc i logika bez zmian (zgloszenie wlasciciela)
+- Weryfikacja: FC PASS-WITH-NOTES 69a3051f (kod 5a635721, operator 73cb6977): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, civ-welcome-screen-test 309 asercji OK; zywy Chromium civSeed=4242 w 3 szerokosciach (1324x1300, 1024x640, 480x800): asercje font/tlo/kolor/przyciski OK, zero pageerror, brak poziomego przewijania; PRZED 15/15 FAIL, mutacja 6 FAIL; zrzuty PRZED/PO w runs/<ID>/dowody
+- Limity: NIE ZMIERZONO: zgodnosc z brand bookiem to ocena Operatora, decyzje wizualna podejmuje wlasciciel po zrzutach; hierarchia przyciskow (Audiencja glowny) do akceptacji wlasciciela; zrzut przy innych cywilizacjach i trybie ciemnym przegladarki nie emulowany
+
 ## ROBOCZA e2a9295a -- 2026-11-18 -- FALA 839: Tooltip bilansu okna traktatu: wiersz D i podzial PW tylko raz (testowa)
 
 - plainTextWithTitles (gra/src/ui/diplomacyTipText.ts) pomija title zawarty w tekscie elementu; tooltip bilansu okna traktatu pokazuje wiersz Doplata traktatu i Podzial PW raz zamiast dwa razy; reguly gry bez zmian

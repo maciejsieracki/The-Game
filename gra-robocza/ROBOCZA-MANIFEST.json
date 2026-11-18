@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "e2a9295a2b9e423ea85c6047c8d6e40c",
-  "bundleSha256": "23e3aa02116da01da98da8323e6b0ceae1c79f30e70e1d9d70f3669e198e420a",
-  "bundleBytes": 14950302,
+  "bundleMd5": "f493f62aa2665c99f1986b12c0213d22",
+  "bundleSha256": "c49b4ae6258bb5a1ef872ad24356b572cd58047e74d82db2846952cfa3923e21",
+  "bundleBytes": 14951291,
   "sourceSnapshot": {
-    "source": "gra/ (main db29c24d + merge FC 9c66b1f6)",
+    "source": "gra/ (main 1ca19bd8 + merge FC 69a3051f)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 839: plainTextWithTitles (gra/src/ui/diplomacyTipText.ts) pomija title zawarty w tekscie elementu; tooltip bilansu okna traktatu pokazuje wiersz Doplata traktatu i Podzial PW raz zamiast dwa razy; reguly gry bez zmian"
+    "FALA 840: Ekran Odkryles nowa cywilizacje (civWelcomeScreen.ts) przestylowany wg brand booka: ciemny panel z tokenow --civ-*, tytul Georgia w zlocie, tresc Segoe UI, przyciski: Audiencja wypelniony zlotem, Zamknij outline 2px; usuniety jasny motyw i prefers-color-scheme; tresc i logika bez zmian (zgloszenie wlasciciela)"
   ],
   "verification": [
-    "FC PASS 9c66b1f6 (kod 3206b38ec / operator 0d27ffcd9): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; nowy test diplo-tooltip-duplicate-rows 6/0 z mutacja (stara funkcja: D==2, PW==2); declutter 16/0; deal-boards 13/0"
+    "FC PASS-WITH-NOTES 69a3051f (kod 5a635721, operator 73cb6977): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, civ-welcome-screen-test 309 asercji OK; zywy Chromium civSeed=4242 w 3 szerokosciach (1324x1300, 1024x640, 480x800): asercje font/tlo/kolor/przyciski OK, zero pageerror, brak poziomego przewijania; PRZED 15/15 FAIL, mutacja 6 FAIL; zrzuty PRZED/PO w runs/<ID>/dowody"
   ],
   "limits": [
-    "NIE ZMIERZONO: zywy Chromium (tooltip w oknie); filtr po podciagu moze pominac bardzo krotki tytul zawarty w tekscie (ryzyko niskie)"
+    "NIE ZMIERZONO: zgodnosc z brand bookiem to ocena Operatora, decyzje wizualna podejmuje wlasciciel po zrzutach; hierarchia przyciskow (Audiencja glowny) do akceptacji wlasciciela; zrzut przy innych cywilizacjach i trybie ciemnym przegladarki nie emulowany"
   ],
-  "finalControl": "R-WEB-UI-DIPLO-TOOLTIP-DUPLICATE-ROWS-Q1 r1 (Operator Haiku, Evaluator Sonnet bez zarzutow) FC PASS 9c66b1f6 (kod 0d27ffcd9)",
+  "finalControl": "R-WEB-UI-WELCOME-SCREEN-BRAND-BOOK-RESTYLE-Q1 r1 (Operator Haiku, Obrona Haiku) FC PASS-WITH-NOTES 69a3051f (kod 5a635721)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T19:31:07",
+  "hubGeneratedAt": "2026-11-18T19:46:46",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "e2a9295a2b9e423ea85c6047c8d6e40c",
-      "sizeBytes": 14950302
+      "md5": "f493f62aa2665c99f1986b12c0213d22",
+      "sizeBytes": 14951291
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "e2a9295a2b9e423ea85c6047c8d6e40c",
-      "sizeBytes": 14950302
+      "md5": "f493f62aa2665c99f1986b12c0213d22",
+      "sizeBytes": 14951291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "e2a9295a2b9e423ea85c6047c8d6e40c",
-      "sizeBytes": 14950302
+      "md5": "f493f62aa2665c99f1986b12c0213d22",
+      "sizeBytes": 14951291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "e2a9295a2b9e423ea85c6047c8d6e40c",
-      "sizeBytes": 14950302
+      "md5": "f493f62aa2665c99f1986b12c0213d22",
+      "sizeBytes": 14951291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "e2a9295a2b9e423ea85c6047c8d6e40c",
-      "sizeBytes": 14950302
+      "md5": "f493f62aa2665c99f1986b12c0213d22",
+      "sizeBytes": 14951291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "e2a9295a2b9e423ea85c6047c8d6e40c",
-      "sizeBytes": 14950302
+      "md5": "f493f62aa2665c99f1986b12c0213d22",
+      "sizeBytes": 14951291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "e2a9295a2b9e423ea85c6047c8d6e40c",
-      "sizeBytes": 14950302
+      "md5": "f493f62aa2665c99f1986b12c0213d22",
+      "sizeBytes": 14951291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "e2a9295a2b9e423ea85c6047c8d6e40c",
-      "sizeBytes": 14950302
+      "md5": "f493f62aa2665c99f1986b12c0213d22",
+      "sizeBytes": 14951291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "e2a9295a2b9e423ea85c6047c8d6e40c",
-      "sizeBytes": 14950302
+      "md5": "f493f62aa2665c99f1986b12c0213d22",
+      "sizeBytes": 14951291
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "e2a9295a2b9e423ea85c6047c8d6e40c",
-      "sizeBytes": 14950302
+      "md5": "f493f62aa2665c99f1986b12c0213d22",
+      "sizeBytes": 14951291
     }
   ],
-  "md5": "e2a9295a2b9e423ea85c6047c8d6e40c",
+  "md5": "f493f62aa2665c99f1986b12c0213d22",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
