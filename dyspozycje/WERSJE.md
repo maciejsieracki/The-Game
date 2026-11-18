@@ -1,3 +1,9 @@
+## ROBOCZA 5758cd3b -- 2026-11-18 -- FALA 847: Twardsza dyplomacja etap A (za flaga, wylaczona): napiecie graniczne, sufit handlu, zazdrosc lidera (testowa)
+
+- Nowy modul diplomacy-harder.ts + gra/data/diplomacy-harder-params.json; wpiecie w tick dyplomacji (diplomacy.ts, main.ts) i wiersz Zazdrosc wobec lidera w panelu; flaga twardaDyplomacjaAktywna=false = zachowanie gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 45/0; combat 6/6; diplomacy-test 149/0; diplomacy-harder-unit-test 50/0 (mutacje czerwone)
+- Limity: Flaga domyslnie wylaczona: efekt w rozgrywce dopiero po pomiarze ON/OFF i decyzji wlasciciela; licznik napiecia A1 w pamieci modulu (nie w SaveGame); bieg dymny ON/OFF w zywej grze NIE ZMIERZONO
+
 ## ROBOCZA 55c7bdb1 -- 2026-11-18 -- FALA 846: Pomiar ekonomii: HUD per surowiec, analizator, runner (testowa)
 
 - Hak odczytowy __aiEconomyMeasure.metrics rozszerzony o pole hud (sumy surowcow jak HUD); narzedzia gra/tools/econ-measure-run.cjs i econ-measure-analyze.cjs; audyt EKONOMIA-POZNA-GRA-AUDYT.md (sekcje 7 i Bazowe liczby). Brak zmian zasad gry ani balansu.

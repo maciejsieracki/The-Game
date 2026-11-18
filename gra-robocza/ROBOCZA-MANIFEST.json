@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "55c7bdb1d2ade3d01acd5ab9a2841096",
-  "bundleSha256": "f1f18f0088770283c70f21a8077eddf761f9d79f553a69145569bd05d591ba6c",
-  "bundleBytes": 14958459,
+  "bundleMd5": "5758cd3b2f01fa5f51a9f1772546cf5c",
+  "bundleSha256": "cd359f33c8e5897ac9b4b419e321033fc3f773f4488dea5df621df154841756e",
+  "bundleBytes": 14961063,
   "sourceSnapshot": {
-    "source": "R-WEB-ECONOMY-MEASURE-EXTEND-INCOME-STOCKS-Q1 (kod 109f1e251, FC 7327942cd)",
+    "source": "R-WEB-DIPLO-HARDER-RELATIONS-A-NEIGHBOR-TENSION-Q1 (kod a1a63f919, FC 1c78f218)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 846: Hak odczytowy __aiEconomyMeasure.metrics rozszerzony o pole hud (sumy surowcow jak HUD); narzedzia gra/tools/econ-measure-run.cjs i econ-measure-analyze.cjs; audyt EKONOMIA-POZNA-GRA-AUDYT.md (sekcje 7 i Bazowe liczby). Brak zmian zasad gry ani balansu."
+    "FALA 847: Nowy modul diplomacy-harder.ts + gra/data/diplomacy-harder-params.json; wpiecie w tick dyplomacji (diplomacy.ts, main.ts) i wiersz Zazdrosc wobec lidera w panelu; flaga twardaDyplomacjaAktywna=false = zachowanie gry bez zmian"
   ],
   "verification": [
-    "tsc 0 bledow; logic-test 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-economy-measure-hook-test 23/23; smoke seed 4242 t10: 9 wierszy, 0 NaN"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 45/0; combat 6/6; diplomacy-test 149/0; diplomacy-harder-unit-test 50/0 (mutacje czerwone)"
   ],
   "limits": [
-    "Narzedzie pomiarowe, bez efektu w rozgrywce; biegi do t150 i punkt B (jednostki, utrzymanie, zywnosc, Praca) wykonuje orkiestrator; wyjasnienie 10x liczbowo NIE_ZMIERZONE"
+    "Flaga domyslnie wylaczona: efekt w rozgrywce dopiero po pomiarze ON/OFF i decyzji wlasciciela; licznik napiecia A1 w pamieci modulu (nie w SaveGame); bieg dymny ON/OFF w zywej grze NIE ZMIERZONO"
   ],
-  "finalControl": "PASS-WITH-NOTES: bramki wlasne zielone, kandydat potomkiem bazy, allowlista zachowana",
+  "finalControl": "PASS-WITH-NOTES: bramki wlasne zielone, mutacje czerwone, kandydat potomkiem bazy, allowlista zachowana",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T22:08:53",
+  "hubGeneratedAt": "2026-11-18T22:24:38",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
-      "sizeBytes": 14958459
+      "md5": "5758cd3b2f01fa5f51a9f1772546cf5c",
+      "sizeBytes": 14961063
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
-      "sizeBytes": 14958459
+      "md5": "5758cd3b2f01fa5f51a9f1772546cf5c",
+      "sizeBytes": 14961063
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
-      "sizeBytes": 14958459
+      "md5": "5758cd3b2f01fa5f51a9f1772546cf5c",
+      "sizeBytes": 14961063
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
-      "sizeBytes": 14958459
+      "md5": "5758cd3b2f01fa5f51a9f1772546cf5c",
+      "sizeBytes": 14961063
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
-      "sizeBytes": 14958459
+      "md5": "5758cd3b2f01fa5f51a9f1772546cf5c",
+      "sizeBytes": 14961063
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
-      "sizeBytes": 14958459
+      "md5": "5758cd3b2f01fa5f51a9f1772546cf5c",
+      "sizeBytes": 14961063
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
-      "sizeBytes": 14958459
+      "md5": "5758cd3b2f01fa5f51a9f1772546cf5c",
+      "sizeBytes": 14961063
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
-      "sizeBytes": 14958459
+      "md5": "5758cd3b2f01fa5f51a9f1772546cf5c",
+      "sizeBytes": 14961063
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
-      "sizeBytes": 14958459
+      "md5": "5758cd3b2f01fa5f51a9f1772546cf5c",
+      "sizeBytes": 14961063
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
-      "sizeBytes": 14958459
+      "md5": "5758cd3b2f01fa5f51a9f1772546cf5c",
+      "sizeBytes": 14961063
     }
   ],
-  "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
+  "md5": "5758cd3b2f01fa5f51a9f1772546cf5c",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
