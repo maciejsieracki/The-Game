@@ -29,7 +29,7 @@ const DIST = path.resolve(arg('dist', ''));
 const TAG = arg('tag', 'pre');
 const OUT = path.join(RUN_DIR, `trade-live-${TAG}.json`);
 const SHOTS = path.join(RUN_DIR, `shots-${TAG}`);
-const CHROME_CANDIDATES = ['/opt/pw-browsers/chromium-1194/chrome-linux/chrome', '/opt/pw-browsers/chromium/chrome-linux/chrome'];
+const CHROME_CANDIDATES = ['/opt/pw-browsers/chromium', '/opt/pw-browsers/chromium/chrome-linux/chrome'];
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 const res = { tag: TAG, dist: path.basename(DIST), points: {}, checks: [], pageErrors: [], notes: [] };

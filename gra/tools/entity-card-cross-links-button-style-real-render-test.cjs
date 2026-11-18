@@ -56,7 +56,7 @@ catch (e) {
 const GRA = path.resolve(__dirname, '..');
 const ENTRY = path.resolve(__dirname, '.entity-card-xlink-button-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.entity-card-xlink-button-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const CITY_PANEL = path.resolve(GRA, 'src', 'ui', 'cityPanel.ts');
 const RENDERER = path.resolve(GRA, 'src', 'ui', 'entityCards', 'renderer.ts');
 const BRAND_DIR = path.resolve(GRA, 'src', 'ui', 'icons', 'brand');

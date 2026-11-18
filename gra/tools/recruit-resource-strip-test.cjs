@@ -55,7 +55,7 @@ const LEADER_STUB = path.resolve(__dirname, '.stubs', 'recruit-strip-leaderPortr
 const MUZYKA_STUB = path.resolve(__dirname, '.stubs', 'recruit-strip-muzyka-stub.ts');
 const ENTRY = path.resolve(__dirname, '.recruit-strip-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.recruit-strip-bundle.js');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const stubPlugin = {
   name: 'recruit-strip-stubs',

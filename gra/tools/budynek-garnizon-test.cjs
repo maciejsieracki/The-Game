@@ -66,7 +66,7 @@ const ENTRY = path.resolve(__dirname, '.budynek-garnizon-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.budynek-garnizon-bundle.cjs');
 const NODE_ENTRY = path.resolve(__dirname, '.budynek-garnizon-node-entry.ts');
 const NODE_BUNDLE = path.resolve(__dirname, '.budynek-garnizon-node-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const ROOT = path.resolve(GRA, '..');
 const AI_TS = path.join(GRA, 'src', 'game', 'ai.ts');

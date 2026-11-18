@@ -69,7 +69,7 @@ const BRAND_ASSETS_TS = path.resolve(GRA, 'src', 'ui', 'icons', 'brandAssets.ts'
 const BRAND_DIR = path.resolve(GRA, 'src', 'ui', 'icons', 'brand');
 const ENTRY = path.resolve(__dirname, '.tech-discovery-badge-diorama-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.tech-discovery-badge-diorama-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const buildings = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'buildings.json'), 'utf8'));
 const techJson = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'tech.json'), 'utf8'));

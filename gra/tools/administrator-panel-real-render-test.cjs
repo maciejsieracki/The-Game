@@ -30,7 +30,7 @@ catch (e) { console.error('[administrator-panel] playwright missing — npm ci')
 
 const GRA = path.resolve(__dirname, '..');
 const SHOTS_DIR = process.env.ADM_PANEL_SHOTS_DIR ? path.resolve(process.env.ADM_PANEL_SHOTS_DIR) : null;
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'adm-panel-'));
 const PARAMS_PATH = path.resolve(GRA, 'data', 'city-administrator-params.json');
 const PARAMS = JSON.parse(fs.readFileSync(PARAMS_PATH, 'utf8'));

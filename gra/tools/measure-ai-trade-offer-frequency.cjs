@@ -68,7 +68,7 @@ const ECON_KEYS = ['drewno', 'glina', 'kamien', 'ruda', 'ruda_zelaza', 'ruda_cyn
 const CD_TURNS = parseInt(process.env.MEAS_CD_TURNS || '15', 10);
 const PLAYTEST_SEED_DEFAULT = 271828;
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa' + (GATE ? '' : '&civTest=1') + (SEED != null ? '&civSeed=' + SEED : '');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 function buildBundle() {

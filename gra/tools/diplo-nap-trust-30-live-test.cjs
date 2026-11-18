@@ -26,7 +26,7 @@ const SCRATCH = process.argv[2] || path.join(os.tmpdir(), 'civ-nap-trust-live-' 
 const EVIDENCE = process.argv[3]
   || path.join(REPO_ROOT, 'dyspozycje', 'autobot', 'runs', 'R-WEB-DIPLO-NAP-TRUST-30-Q1', 'evidence');
 const OUT_HTML = 'file://' + path.join(SCRATCH, 'index.html') + '?playtest=mapa';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const PLAYER = 0;
 const AI = 1;
 const NAP_AID = '2';

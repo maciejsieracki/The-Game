@@ -29,7 +29,7 @@ const STUB_DIR = path.resolve(__dirname, '.stubs');
 const SCIENCE_OWL_STUB = path.resolve(STUB_DIR, 'entity-card-contract-scienceOwlIcon-stub.ts');
 const ENTRY = path.resolve(__dirname, '.tech-discovery-notice-resource-chips-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.tech-discovery-notice-resource-chips-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 // Ikony brandu zastąpione niepustym SVG (jak w grze), żeby chip z ikoną nie zawierał tekstu —
 // test widzi wtedy dokładnie to, co zobaczy gracz (liczba + symbol, bez nazwy).

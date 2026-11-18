@@ -29,7 +29,7 @@ const ok = (c, n, d) => {
   await server.listen();
   const addr = server.httpServer.address();
   const base = `http://127.0.0.1:${addr.port}`;
-  const exe = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+  const exe = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/opt/pw-browsers/chromium';
   const browser = await chromium.launch({ executablePath: exe, args: ['--no-sandbox', '--headless=new'] });
   try {
     const page = await browser.newPage({ viewport: { width: 520, height: 900 } });

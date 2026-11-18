@@ -45,7 +45,7 @@ const BUNDLE = process.env.BUNDLE_DIR || path.join(os.tmpdir(), 'ai-trade-wiring
 const EVIDENCE_DIR = process.env.AITW_EVIDENCE || '';
 const RESULT_FILE = process.env.AITW_RESULT || '';
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa&civTest=1';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const H = 'window.__aiTradeWiringTestDebug';
 const GIVE = 'cegla'; // r3 (A1): AI daje cegle (nadwyzka zapasu, Cegielnia = stawka > 0); graczowi brakuje
 const RECV = 'zelazo'; // r3 (A1): AI bierze zelazo (brak), gracz ma nadwyzke (Odlewnia). Para 4:1 (cegla 5 PW / zelazo 20 PW): 10 zelaza = 40 cegly = 200 PW

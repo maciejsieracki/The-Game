@@ -7,7 +7,7 @@
  * Sprawdza: domyślnie 0 (przycisk nieaktywny), jeden górny przycisk „Rekrutuj wszystkie”,
  * rekrutacja tylko pozycji > 0 przez tę samą ścieżkę onOrder, liczniki → 0 po sukcesie, brak złota
  * (typ odrzucony, licznik zostaje, komunikat PL bez surowego id), częściowy sukces (licznik = reszta).
- * Usage (z gra/): PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome node tools/empire-recruit-all-test.cjs
+ * Usage (z gra/): PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium node tools/empire-recruit-all-test.cjs
  */
 const fs = require('fs');
 const path = require('path');

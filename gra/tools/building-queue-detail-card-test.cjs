@@ -18,7 +18,7 @@ const CITY_PANEL = path.resolve(GRA, 'src/ui/cityPanel.ts');
 const ENTRY = path.resolve(__dirname, '.building-queue-rr-entry.ts');
 const OUT = path.resolve(__dirname, '.building-queue-rr-bundle.cjs');
 const MUTANT = path.resolve(__dirname, '.building-queue-rr-mutant.cjs');
-const FALLBACK = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK = '/opt/pw-browsers/chromium';
 let passed = 0;
 function check(name, value, detail) {
   if (!value) throw new Error(`FAIL ${name}${detail ? ` — ${JSON.stringify(detail)}` : ''}`);

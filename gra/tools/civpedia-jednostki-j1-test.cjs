@@ -60,7 +60,7 @@ const STUB_DIR = path.resolve(__dirname, '.stubs');
 const BRAND_ASSETS_STUB = path.resolve(STUB_DIR, 'civpedia-historia-infra-brandAssets-stub.ts');
 const ENTRY = path.resolve(__dirname, '.civpedia-jednostki-j1-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.civpedia-jednostki-j1-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 // Dokładnie 25 plików batcha J1 (kopia listy z 00-dispatch.md, w tej samej
 // kolejności alfabetycznej — pozycje 1-25 z `ls jednostki/*.md | sort`).

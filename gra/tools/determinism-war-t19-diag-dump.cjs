@@ -20,7 +20,7 @@ const WAR_TURNS = parseInt(process.env.WAR_TURNS || '22', 10);
 const SEED = parseInt(process.env.WAR_SEED || '271828', 10);
 const RESULT = process.env.RESULT;
 const MAX_MS = parseInt(process.env.MAX_SEC || '420', 10) * 1000;
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa&civTest=1&civSeed=' + SEED;
 const wait = ms => new Promise(r => setTimeout(r, ms));
 

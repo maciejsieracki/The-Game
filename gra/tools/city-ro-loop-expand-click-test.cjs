@@ -16,7 +16,7 @@ const CITY_TS = path.resolve(GRA, 'src/ui/cityPanel.ts');
 const HUD_TS = path.resolve(GRA, 'src/ui/sidePanelHud.ts');
 const FRAME_TS = path.resolve(GRA, 'src/ui/cityUxFrame.ts');
 const TMP = path.join(os.tmpdir(), `civ-ro-expand-${process.pid}-${Math.random().toString(36).slice(2, 8)}`);
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const MUTANT = process.argv.includes('--mutant');
 
 const OLD_OBSERVER_BLOCK = `  if (typeof ResizeObserver !== 'undefined') {

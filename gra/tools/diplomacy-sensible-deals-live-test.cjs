@@ -29,7 +29,7 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const OUT_DIR = process.env.DEALS_LIVE_OUT || path.join(os.tmpdir(), 'deals-sensible-live-dist');
 const EVIDENCE_DIR = process.env.DEALS_LIVE_EVIDENCE || '';
 const URL_HTML = 'file://' + path.join(OUT_DIR, 'index.html') + '?playtest=mapa';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 let pass = 0;
 let fail = 0;

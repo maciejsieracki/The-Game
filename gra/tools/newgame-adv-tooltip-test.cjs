@@ -42,7 +42,7 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const OUT_DIR = path.join(GRA_DIR, 'dist-newgame-adv-tooltip-test');
 let appOrigin = null;
 const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
-  || (fs.existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : '/opt/pw-browsers/chromium-1194/chrome-linux/chrome');
+  || (fs.existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : '/opt/pw-browsers/chromium');
 const SHOW_DELAY_MS = 380; // musi być zsynchronizowane z hudTitleTooltip.ts
 
 let pass = 0;

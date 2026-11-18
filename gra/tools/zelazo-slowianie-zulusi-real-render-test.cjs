@@ -114,7 +114,7 @@ process.on('exit', () => {
   } catch { /* best-effort */ }
 })();
 const OUTDIR = path.resolve(os.tmpdir(), `civ-zelazo-t10-bundles-${TMPDIR_RUN_ID}`);
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const Z3_TS = path.resolve(GRA, 'src', 'render', 'jednostki-z3-plemiona.ts');
 const T4_TS = path.resolve(GRA, 'src', 'render', 'zelazo-jezdziec-oszczepami-opus5.ts');
 const UNITS_TS = path.resolve(GRA, 'src', 'render', 'units.ts');

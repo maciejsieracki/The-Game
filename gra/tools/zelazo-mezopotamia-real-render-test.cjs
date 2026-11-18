@@ -119,7 +119,7 @@ process.on('exit', () => {
   } catch { /* best-effort */ }
 })();
 const OUTDIR = path.resolve(os.tmpdir(), `civ-zelazo-t5-bundles-${TMPDIR_RUN_ID}`);
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const UNITS_TS = path.resolve(GRA, 'src', 'render', 'units.ts');
 const MEZO_TS = path.resolve(GRA, 'src', 'render', 'jednostki-z1-mezopotamia.ts');
 const UNITS_JSON = path.resolve(GRA, 'data', 'units.json');

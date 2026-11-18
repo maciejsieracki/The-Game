@@ -26,7 +26,7 @@ const ROOT = path.resolve(arg('dist', ''));
 const OUT = arg('out');
 const TURNS = Number(arg('turns', '9'));
 const HTML = arg('html', 'index.html');
-const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = '/opt/pw-browsers/chromium';
 if (!arg('dist') || !OUT) { console.error('Użycie: --dist <katalog> --out <katalog>'); process.exit(2); }
 fs.mkdirSync(OUT, { recursive: true });
 const logLines = [];

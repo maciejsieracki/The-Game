@@ -29,7 +29,7 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const SCRATCH = process.argv[2] || path.join(os.tmpdir(), 'civ-defeat-last-city-live-' + process.pid);
 const EVIDENCE = process.argv[3] || path.join(GRA_DIR, '..', 'dyspozycje', 'autobot', 'runs', 'R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1', 'evidence');
 const OUT_HTML = 'file://' + path.join(SCRATCH, 'index.html') + '?playtest=mapa';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const PLAYER = 0;
 const OVERLAY_SEL = '#__victory_screen__.vsc-overlay.lose';
 

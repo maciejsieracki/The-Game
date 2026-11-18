@@ -36,7 +36,7 @@ const EVIDENCE = process.argv[3]
   || path.join(REPO_ROOT, 'dyspozycje', 'autobot', 'runs', 'R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1', 'evidence');
 const MODE = process.env.MODE === 'pokoj' ? 'pokoj' : 'rozejm';
 const OUT_HTML = 'file://' + path.join(SCRATCH, 'index.html') + '?playtest=mapa';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const PLAYER = 0;
 const AI = 1;
 const AI_POWER_BONUS = 500;

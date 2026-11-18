@@ -117,7 +117,7 @@ const BRAND_STUB = path.resolve(STUB_DIR, 'build-panel-scroll-brandAssets-stub.t
 const OWL_STUB = path.resolve(STUB_DIR, 'build-panel-scroll-scienceOwlIcon-stub.ts');
 const ENTRY = path.resolve(__dirname, '.build-panel-scroll-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.build-panel-scroll-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const shotArgIdx = process.argv.indexOf('--shot');
 const SHOT_PATH = shotArgIdx !== -1 ? process.argv[shotArgIdx + 1] : null;

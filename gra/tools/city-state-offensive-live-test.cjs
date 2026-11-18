@@ -56,7 +56,7 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const MAIN_TS = path.join(GRA_DIR, 'src', 'main.ts');
 const OUT_BEFORE = path.join(GRA_DIR, 'dist-cs-offensive-live-before');
 const OUT_AFTER = path.join(GRA_DIR, 'dist-cs-offensive-live-after');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 let pass = 0, fail = 0;
 function assert(label, cond, detail) {

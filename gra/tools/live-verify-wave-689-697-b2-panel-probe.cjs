@@ -22,7 +22,7 @@ const SHOT_DIR = process.env.SHOT_DIR || path.dirname(RESULT || '.');
 const MAX_MS = parseInt(process.env.MAX_SEC || '480', 10) * 1000;
 const LAST_TURN = parseInt(process.env.LAST_TURN || '20', 10);
 const PROBE = (process.env.PROBE_TURNS || '5,10,16,20').split(',').map(s => parseInt(s, 10));
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 function buildBundle() {

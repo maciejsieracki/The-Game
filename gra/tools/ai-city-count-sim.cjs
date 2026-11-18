@@ -229,7 +229,7 @@ const TURNS = Number(arg('turns', '100'));
 const SIZE = arg('size', 'Standardowy');
 const LABEL = arg('label', 'run');
 const HIGH = new Set(['laka', 'rownina']); // hexCityScore >= 3 przy poprawnym dopasowaniu (Laka 4, Rownina 3)
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), LABEL, ...a);
 

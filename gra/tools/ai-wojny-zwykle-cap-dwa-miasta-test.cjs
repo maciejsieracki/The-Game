@@ -68,7 +68,7 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const MAIN_TS = path.join(GRA_DIR, 'src', 'main.ts');
 const OUT_DIR = path.join(GRA_DIR, 'dist-ai-wojny-zwykle-cap-dwa-miasta-test');
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html') + '?playtest=mapa';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 let pass = 0;
 let fail = 0;

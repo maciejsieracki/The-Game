@@ -44,7 +44,7 @@ const CAPTURE_DELAY = parseInt(process.env.CAPTURE_DELAY || '3', 10);
 let DECLARED = true;
 let TT = Date.now();                                                    // start liczenia czasu tur
 const OVERLAY_WAIT_MS = 10000;
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const RESULT = path.join(RUN_DIR, `b2-${SCEN}-seed${SEED}${TAG}.json`);
 const SHOT = (turn, what) => path.join(RUN_DIR, `b2-${SCEN}-seed${SEED}${TAG}-T${turn}-${what}.png`);

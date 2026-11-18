@@ -18,7 +18,7 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const OUT_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'civ-saveload-hudcache-hs-'));
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
 const EVIDENCE = process.argv[2] || null;
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 let pass = 0, fail = 0;
 const assert = (label, cond, detail) => {
   if (cond) { pass++; console.log('  OK  ' + label); }

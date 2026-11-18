@@ -38,7 +38,7 @@ const BUILDINGS_JSON = path.join(GRA, 'data', 'buildings.json');
 const REAL_BUNDLE_PATH = path.join(GRA, 'src', 'data', 'wikiBundle.json');
 const ENTRY = path.resolve(__dirname, '.civpedia-budynki-historia-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.civpedia-budynki-historia-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 let pass = 0;
 let fail = 0;

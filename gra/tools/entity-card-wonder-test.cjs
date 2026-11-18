@@ -47,7 +47,7 @@ const BRAND_ASSETS_STUB = path.resolve(STUB_DIR, 'entity-card-wonder-brandAssets
 const SCIENCE_OWL_STUB = path.resolve(STUB_DIR, 'entity-card-wonder-scienceOwlIcon-stub.ts');
 const ENTRY = path.resolve(__dirname, '.entity-card-wonder-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.entity-card-wonder-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const stubPlugin = {
   name: 'stub-icons',

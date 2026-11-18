@@ -17,7 +17,7 @@ const TMP_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const TMP = path.join(os.tmpdir(), `civ-recruitment-panel-height-${TMP_RUN_ID}`);
 const FALLBACK_CHROMIUM_CANDIDATES = [
   process.env.CHROME_PATH,
-  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+  '/opt/pw-browsers/chromium',
   '/usr/bin/chromium',
   '/usr/bin/chromium-browser',
 ].filter(Boolean);

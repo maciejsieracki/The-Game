@@ -80,7 +80,7 @@ window.__openWizard();
 
 async function launchBrowser() {
   // Bez zahardkodowanych ścieżek: domyślny Chromium Playwrighta, a gdy go brak — ścieżka z env
-  // PLAYWRIGHT_CHROMIUM_EXECUTABLE (np. /opt/pw-browsers/chromium-1194/chrome-linux/chrome).
+  // PLAYWRIGHT_CHROMIUM_EXECUTABLE (np. /opt/pw-browsers/chromium).
   const args = ['--no-sandbox', '--disable-dev-shm-usage'];
   const exe = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
   return exe

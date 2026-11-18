@@ -78,7 +78,7 @@ const crypto = require('crypto');
 const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const TURNS = 30; // BINARNE KRYTERIUM SUKCESU (dispatch) -- dokładnie 30, bez trybu debug/override
 const RNG_SEED = 424242; // dowolna, stała wartość -- ten sam seed w obu uruchomieniach (A i B)
 

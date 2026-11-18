@@ -118,7 +118,7 @@ const SHOTS_DIR = (() => {
     ? path.resolve(ARGV[i + 1])
     : path.join(os.tmpdir(), `civ-shots-praca-panel-budowy-warstwa-${TMPDIR_RUN_ID}`);
 })();
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const HUD_TS = path.resolve(GRA, 'src/ui/buildModeHud.ts');
 const EMP_TS = path.resolve(GRA, 'src/ui/empireDetailPanel.ts');

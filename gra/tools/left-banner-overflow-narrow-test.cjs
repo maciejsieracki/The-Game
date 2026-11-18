@@ -13,7 +13,7 @@ const path = require('path');
 const GRA = path.resolve(__dirname, '..');
 const CITY_TS = path.resolve(GRA, 'src/ui/cityPanel.ts');
 const TMP = path.join(os.tmpdir(), `civ-side-top-${process.pid}-${Math.random().toString(36).slice(2, 8)}`);
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const MUTANT = process.argv.includes('--mutant');
 const SHOTS = (process.argv.find((a) => a.startsWith('--shots=')) || '').slice(8) || null;
 const TAG = (process.argv.find((a) => a.startsWith('--tag=')) || '').slice(6) || (MUTANT ? 'mutant' : 'after');

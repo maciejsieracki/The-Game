@@ -7,7 +7,7 @@
  * Klika przelacznik, odczytuje stan z DOM, robi zrzuty do evidence/.
  *
  * Run from gra/: node tools/resource-building-toggle-ui-live.cjs [outDir]
- * Wymaga: /opt/pw-browsers/chromium-1194/chrome-linux/chrome (albo PW_CHROMIUM).
+ * Wymaga: /opt/pw-browsers/chromium (albo PW_CHROMIUM).
  */
 const fs = require('fs');
 const path = require('path');
@@ -106,7 +106,7 @@ const STUB = {
     banner: { js: 'var __globStub = function () { return {}; }; var __envStub = {};' },
     outfile: BUNDLE, absWorkingDir: GRA, logLevel: 'silent',
   });
-  const exe = process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+  const exe = process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium';
   const browser = await chromium.launch({ executablePath: exe, args: ['--no-sandbox'] });
   const page = await browser.newPage({ viewport: { width: 760, height: 1100 } });
   const errors = [];

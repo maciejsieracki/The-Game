@@ -41,7 +41,7 @@ const GRA = path.resolve(__dirname, '..');
 const UI_DIR = path.resolve(GRA, 'src', 'ui');
 const ENTRY = path.resolve(__dirname, '.administrator-icon-everywhere-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.administrator-icon-everywhere-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const SHOTS_DIR = process.env.ADM_ICON_SHOTS_DIR ? path.resolve(process.env.ADM_ICON_SHOTS_DIR) : null;
 const PANEL_WIDTH_PX = 520;
 

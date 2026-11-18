@@ -56,7 +56,7 @@ const ENTITY_CARDS_DIR = path.resolve(GRA, 'src', 'ui', 'entityCards');
 const RENDERER_TS = path.resolve(ENTITY_CARDS_DIR, 'renderer.ts');
 const ENTRY = path.resolve(__dirname, '.entitycard-sufit-dwoch-kart-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.entitycard-sufit-dwoch-kart-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const SHOTS_DIR = process.env.CIV_SHOTS_DIR ? path.resolve(process.env.CIV_SHOTS_DIR) : null;
 
 /** Prostokat o indeksie `i` albo sentinel z NaN. Bez tego bramka na kodzie SPRZED sufitu

@@ -106,7 +106,7 @@ async function main() {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const origin = `http://127.0.0.1:${server.address().port}`;
   const launchArgs = { headless: true, args: ['--no-sandbox'] };
-  const fallback = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+  const fallback = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/opt/pw-browsers/chromium';
   let browser;
   try { browser = await chromium.launch(launchArgs); }
   catch (_error) { browser = await chromium.launch({ ...launchArgs, executablePath: fallback }); }

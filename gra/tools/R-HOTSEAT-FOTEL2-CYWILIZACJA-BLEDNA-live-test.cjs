@@ -54,7 +54,7 @@ const { execSync } = require('child_process');
 const GRA_DIR = path.resolve(__dirname, '..');
 const REPO_DIR = path.resolve(GRA_DIR, '..');
 const DOWODY_DIR = path.join(REPO_DIR, 'dowody');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-fotel2-cywilizacja-${RUN_ID}`);

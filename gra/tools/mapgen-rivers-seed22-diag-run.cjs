@@ -22,7 +22,7 @@ function arg(name, def) {
   return i >= 0 && process.argv[i + 1] !== undefined ? process.argv[i + 1] : def;
 }
 const wait = ms => new Promise(r => setTimeout(r, ms));
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const DIST = arg('dist');
 const OUT = arg('out');
 const SEED = parseInt(arg('seed', '22'), 10);

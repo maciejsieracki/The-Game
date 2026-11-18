@@ -95,7 +95,7 @@ const BUNDLE_PRZED = path.resolve(__dirname, '.dthc-bundle-przed.js');
  * `payload.treatyTurns = state.tributeTurns` w case '8'. Kontrola nietautologiczna dla
  * zarzutu 1 piatego przebiegu Evaluatora (regresja mnoznika x8 dla domyslnego trybutu). */
 const BUNDLE_TRIB_PRZED = path.resolve(__dirname, '.dthc-bundle-trib-przed.js');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const DIPLO_AUD = path.resolve(GRA, 'src', 'ui', 'diplomacyAudience.ts');
 const DIPLO_BASKET = path.resolve(GRA, 'src', 'ui', 'diplomacyTradeBasket.ts');
 const MAIN_TS = path.resolve(GRA, 'src', 'main.ts');

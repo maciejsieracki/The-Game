@@ -37,7 +37,7 @@ const GRA = path.resolve(__dirname, '..');
 const BRAND_STUB = path.resolve(__dirname, '.stubs', 'recruit-card-stock-chip-brandAssets-stub.ts');
 const ENTRY   = path.resolve(__dirname, '.recruit-card-stock-chip-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.recruit-card-stock-chip-bundle.js');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const units = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'units.json'), 'utf8'));
 const WOJOWNIK = units.find(u => u && u.Jednostka === 'Wojownik');

@@ -28,7 +28,7 @@ const MUZYKA_STUB = path.join(__dirname, '.stubs', 'recruit-strip-muzyka-stub.ts
 const ENTRY = path.join(__dirname, '.recruit-card-manpower-entry.ts');
 const OUTFILE = path.join(__dirname, '.recruit-card-manpower-bundle.js');
 const MUTANT_OUTFILE = path.join(__dirname, '.recruit-card-manpower-mutant-bundle.js');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const MUTATE = process.argv.includes('--mutate');
 
 let esbuild;

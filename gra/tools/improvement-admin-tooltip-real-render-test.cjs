@@ -34,7 +34,7 @@ const BRAND_STUB = path.resolve(STUB_DIR, 'build-mode-lock-tip-brandAssets-stub.
 const OWL_STUB = path.resolve(STUB_DIR, 'build-mode-lock-tip-scienceOwlIcon-stub.ts');
 const TMP = path.resolve(__dirname, '.improvement-admin-tooltip-tmp');
 const EVIDENCE = path.resolve(GRA, '..', 'dyspozycje', 'autobot', 'runs', 'R-WEB-UI-IMPROVEMENT-ADMIN-TOOLTIP-Q1', 'evidence');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const MAX_PANEL_TEXT = 60;
 
 let pass = 0;

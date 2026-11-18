@@ -25,7 +25,7 @@ const { execSync } = require('child_process');
 const GRA_DIR = path.resolve(__dirname, '..');
 const SCRATCH = process.argv[2] || path.join(os.tmpdir(), 'civ-r9-live-' + process.pid);
 const OUT_HTML = 'file://' + path.join(SCRATCH, 'index.html') + '?playtest=mapa';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const OLD_LIMIT_TURNS = 25; // dawny próg czasu wojny wymuszonej (R-WOJNA-WYMUSZONA-REGULY-Q1)
 const ERAS = ['bronze', 'stone', 'iron'];
 

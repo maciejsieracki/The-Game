@@ -34,7 +34,7 @@ const REPO = path.resolve(GRA, '..');
 /** Zrzuty dowodowe rundy 5 (R5-K1). */
 const SHOTS = path.resolve(REPO, 'dyspozycje', 'autobot', 'runs',
   'P-ULEPSZENIA-WYRAB-WYCINKA-NAZWA-Q1', 'dowody');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const ENTRY = path.resolve(__dirname, '.wyrab-wycinka-live-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.wyrab-wycinka-live-bundle.cjs');
 const STUB_DIR = path.resolve(__dirname, '.stubs');

@@ -65,7 +65,7 @@ catch (e) {
 const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const TMPDIR_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const TMP_ROOT = path.join(os.tmpdir(), `civ-bitwa-obroncy-mur-${TMPDIR_RUN_ID}`);
 

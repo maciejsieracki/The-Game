@@ -43,7 +43,7 @@ async function launch() {
   try { return await chromium.launch({ headless: true }); }
   catch (e) {
     return await chromium.launch({ headless: true, args: ['--no-sandbox'],
-      executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+      executablePath: '/opt/pw-browsers/chromium' });
   }
 }
 

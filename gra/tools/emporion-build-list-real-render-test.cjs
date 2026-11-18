@@ -33,7 +33,7 @@ const REPO = path.resolve(GRA, '..');
 const BRAND_STUB = path.resolve(__dirname, '.stubs', 'recruit-list-visibility-ui-brandAssets-stub.ts');
 const ENTRY = path.resolve(__dirname, '.emporion-build-list-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.emporion-build-list-bundle.js');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const KATALOG_ZRZUTOW = path.resolve(REPO, 'dyspozycje', 'autobot', 'runs', 'R-WEB-BUILDING-EMPORION-Q1');
 
 const cityPanelSrc = fs.readFileSync(path.join(GRA, 'src', 'ui', 'cityPanel.ts'), 'utf8');

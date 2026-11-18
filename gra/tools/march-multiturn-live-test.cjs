@@ -12,7 +12,7 @@
  * Uzycie:
  *   node gra/tools/march-multiturn-live-test.cjs [--only S1,S2] [--dist <katalog>]
  *   node gra/tools/march-multiturn-live-test.cjs --mutant no-eot   (mutacja (b): musi byc CZERWONY)
- * Wymaga chromium (MM_CHROMIUM, domyslnie /opt/pw-browsers/chromium-1194/chrome-linux/chrome).
+ * Wymaga chromium (MM_CHROMIUM, domyslnie /opt/pw-browsers/chromium).
  */
 const fs = require('fs');
 const os = require('os');
@@ -28,7 +28,7 @@ const ONLY = argv('--only', 'S1,S2,S3,S4,S6,S7').split(',');
 const MUTANT = argv('--mutant', '');
 const SEED = 424242;
 const MAX_CLICKS = 3;
-const CHROMIUM = process.env.MM_CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROMIUM = process.env.MM_CHROMIUM || '/opt/pw-browsers/chromium';
 const PORT = 18000 + Math.floor(Math.random() * 1000);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const log = (...a) => console.log(...a);

@@ -36,7 +36,7 @@ if (!DIST) { console.error('usage: --dist <dir> [--skip-guard]'); process.exit(2
 const SKIP_GUARD = process.argv.includes('--skip-guard');
 const DIR = path.resolve(DIST);
 const GRA = path.resolve(__dirname, '..');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 let failed = 0;
 function check(name, ok, detail) {

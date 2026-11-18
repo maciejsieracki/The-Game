@@ -43,7 +43,7 @@ if (!BUNDLE || !fs.existsSync(path.join(BUNDLE, 'index.html'))) {
 const TURNS = Number(process.env.TRSF_TURNS || 3);
 const RESULT_FILE = process.env.TRSF_RESULT || '';
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa&civTest=1';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const SZLAK_KEYS = ['braz', 'zelazo', 'cegla', 'kon', 'zloto', 'sol'];
 const SETUP_STOCK = 400;
 

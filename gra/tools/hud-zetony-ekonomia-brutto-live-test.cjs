@@ -27,7 +27,7 @@ const esbuild = require('esbuild');
 
 const GRA_DIR = path.resolve(__dirname, '..');
 const HUD_TS = path.join(GRA_DIR, 'src/ui/hud.ts');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const TMP_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'civ-hud-brutto-live-'));
 process.on('exit', () => { try { fs.rmSync(TMP_DIR, { recursive: true, force: true }); } catch { /* best-effort */ } });

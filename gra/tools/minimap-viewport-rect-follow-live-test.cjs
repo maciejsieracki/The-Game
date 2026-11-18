@@ -26,7 +26,7 @@ const SHOTS = process.env.CIV_MM_SHOTS || null;
 let chromium;
 try { ({ chromium } = require(path.join(GRA, 'node_modules', 'playwright'))); }
 catch (e) { console.error('Brak playwright w gra/node_modules:', e.message); process.exit(2); }
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
 

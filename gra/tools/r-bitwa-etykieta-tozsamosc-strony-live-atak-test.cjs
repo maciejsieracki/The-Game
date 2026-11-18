@@ -118,7 +118,7 @@ process.on('exit', () => {
 })();
 const OUT_DIR = path.join(os.tmpdir(), `civ-dist-bitwa-etykieta-live-atak-${TMPDIR_RUN_ID}`);
 const SRC_BATTLE = path.join(GRA_DIR, 'src/battle/battleScene.ts');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const MUTACJA = ['1', '2', '3'].includes(String(process.env.LIVE_ATAK_MUTACJA))
   ? String(process.env.LIVE_ATAK_MUTACJA) : null;
 

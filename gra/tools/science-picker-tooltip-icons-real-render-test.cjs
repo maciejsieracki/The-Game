@@ -60,7 +60,7 @@ catch (e) {
 const GRA = path.resolve(__dirname, '..');
 const ENTRY = path.resolve(__dirname, '.science-picker-tooltip-icons-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.science-picker-tooltip-icons-bundle.js');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const BRAND_DIR = path.resolve(GRA, 'src', 'ui', 'icons', 'brand');
 const BRAND_ASSETS_TS = path.resolve(GRA, 'src', 'ui', 'icons', 'brandAssets.ts');
 const SCIENCE_PICKER_TS = path.resolve(GRA, 'src', 'ui', 'sciencePicker.ts');

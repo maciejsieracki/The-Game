@@ -38,7 +38,7 @@ const BRAND_ASSETS_STUB = path.resolve(STUB_DIR, 'entity-card-contract-brandAsse
 const SCIENCE_OWL_STUB = path.resolve(STUB_DIR, 'entity-card-contract-scienceOwlIcon-stub.ts');
 const ENTRY = path.resolve(__dirname, '.unit-hover-layout-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.unit-hover-layout-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const stubPlugin = {
   name: 'stub-icons',

@@ -30,7 +30,7 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const SCRATCH = process.argv[2] || path.join(os.tmpdir(), 'civ-pay-window-live-' + process.pid);
 const SHOT_DIR = process.argv[3] || '';
 const OUT_HTML = 'file://' + path.join(SCRATCH, 'index.html') + '?playtest=mapa&civTest=1';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const R_TARGET = 1.3;
 const STAGE_KEY = { 'złoto': 'zloto', 'brąz': 'braz', 'żelazo': 'zelazo', 'ruda miedzi': 'ruda', 'ruda cyny': 'ruda_cyny', 'ruda żelaza': 'ruda_zelaza' };
 

@@ -70,7 +70,7 @@ const TMPDIR = fs.mkdtempSync(path.join(os.tmpdir(), 'entitycard-rozwiniete-scro
 const ENTRY = path.join(TMPDIR, 'entry.ts');
 const OUTFILE_FIXED = path.join(TMPDIR, 'bundle-fixed.cjs');
 const OUTFILE_PRE = path.join(TMPDIR, 'bundle-pre.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const SHOTS_DIR = process.env.CIV_SHOTS_DIR ? path.resolve(process.env.CIV_SHOTS_DIR) : null;
 
 let pass = 0;

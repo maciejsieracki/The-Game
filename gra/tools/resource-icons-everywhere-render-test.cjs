@@ -40,7 +40,7 @@ const SRC_OVERRIDE = process.env.RESOURCE_ICONS_SRC_DIR
   ? path.resolve(process.env.RESOURCE_ICONS_SRC_DIR) : null;
 const ENTRY = path.resolve(__dirname, '.resource-icons-everywhere-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.resource-icons-everywhere-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const SHOTS_DIR = process.env.BUILDING_RESOURCE_ICONS_SHOTS_DIR
   ? path.resolve(process.env.BUILDING_RESOURCE_ICONS_SHOTS_DIR) : null;
 const SHOT_TAG = process.env.RESOURCE_ICONS_SHOT_TAG || process.env.BUILDING_RESOURCE_ICONS_SHOT_TAG || 'run';

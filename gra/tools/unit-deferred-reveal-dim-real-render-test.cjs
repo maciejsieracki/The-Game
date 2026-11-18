@@ -109,7 +109,7 @@ process.on('exit', () => {
 const OUTFILE = path.resolve(os.tmpdir(), `unit-deferred-reveal-dim-bundle-${TMPDIR_RUN_ID}.js`);
 const SHOTS = process.env.CIV_DEFERRED_SHOTS_DIR
   || path.join(os.tmpdir(), `civ-jednostka-niewidoczna-r2-shots-${TMPDIR_RUN_ID}`);
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 let pass = 0;
 let fail = 0;

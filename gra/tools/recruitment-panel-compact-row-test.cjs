@@ -40,7 +40,7 @@ const CARD_TS = path.resolve(GRA, 'src/ui/unitRecruitCard.ts');
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'civ-recruitment-compact-row-'));
 const FALLBACK_CHROMIUM_CANDIDATES = [
   process.env.CHROME_PATH,
-  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+  '/opt/pw-browsers/chromium',
   '/usr/bin/chromium',
   '/usr/bin/chromium-browser',
 ].filter(Boolean);
