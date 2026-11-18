@@ -931,9 +931,12 @@ fn ripple_przy_zabiciu_zgodny_z_pinem() {
     });
 }
 
-/// Strona atakująca przy murze nadal ma jawny tag `oblezenie` (zakres T2), bez akcji.
+/// Strona atakująca przy murze: od K5LOOP-SIEGE-ATK-B (T2b) ciało wykonuje jej gałęzie (zgodność z pinem: wektory
+/// `p6_k5loop_siege_atk_b`). D-INT-2: dawna asercja „dokładnie tag `oblezenie`” zastąpiona asercją „brak tagu
+/// oblężniczego; ciało bez terenu i bez szablonu ciosu (ten wektor) zapisuje wyłącznie jawne tagi wejścia adaptera
+/// (`*-brak-terenu`, `*-bez-szablonu`), morale atakującego bez zmian”.
 #[test]
-fn atakujacy_przy_murze_zostaje_tagiem_oblezenie() {
+fn atakujacy_przy_murze_bez_tagu_oblezenie() {
     let v = load_from(VECTORS);
     let case = v["cases"]
         .as_array()
@@ -949,9 +952,20 @@ fn atakujacy_przy_murze_zostaje_tagiem_oblezenie() {
         idx: 0,
     };
     let morale0 = st.unit(atk0).c.morale;
-    assert_eq!(body.start(atk0, &st), 0.0);
+    let _ = body.start(atk0, &st);
     body.complete(atk0, &mut st);
-    assert_eq!(body.unported, vec![(atk0, "oblezenie")]);
+    assert!(
+        !body.unported.is_empty(),
+        "wektor bez terenu i szablonu: jawny tag wejscia"
+    );
+    for (u, t) in &body.unported {
+        assert_eq!(*u, atk0);
+        assert!(!t.starts_with("oblezenie"), "tag oblezniczy {t}");
+        assert!(
+            t.ends_with("-brak-terenu") || t.ends_with("-bez-szablonu"),
+            "tag {t}"
+        );
+    }
     assert_eq!(st.unit(atk0).c.morale.to_bits(), morale0.to_bits());
 }
 
