@@ -184,6 +184,17 @@ fn enc(a: &TimedAction) -> String {
             key(*fallen),
             js_num(*morale)
         ),
+        // K5LOOP-SIEGE-ATK-A (T2a): mechaniczne ramię dla nowego wariantu `ClimbWall` (wejście na mur od wieży
+        // oblężniczej); scenariusze tego testu nie mają wież atakującego przy murze (`tower_at_wall_rows` puste), więc
+        // ramię nie występuje w danych.
+        BattleAction::ClimbWall { unit, from, to } => format!(
+            "{t} climbWall {} {},{} {},{}",
+            key(*unit),
+            from.0,
+            from.1,
+            to.0,
+            to.1
+        ),
         BattleAction::TowerShot {
             row,
             target,
@@ -708,6 +719,7 @@ fn tower_case(ff: bool) {
                 let shift = num(&tw["t0"]) - t_shot;
                 let mut out = Vec::new();
                 let mut landing: Option<f64> = None;
+                let mut rout_facing_pending: Vec<UnitRef> = Vec::new();
                 for (k, a) in acts[s..].iter().enumerate() {
                     // Okno: od logu wystrzału do następnej tury albo następnego wystrzału.
                     let next_shot = k > 0
@@ -718,7 +730,28 @@ fn tower_case(ff: bool) {
                     // K5LOOP-SIEGE-DEF (T1): syntetyczny obrońca za murem (poza wektorem pinu) działa gałęzią obrońcy
                     // w oblężeniu (`_updateFacing`, `:6123`; HOLD `:6225-6236`): jego zwrot nie należy do okna wieży.
                     let synthetic_def = matches!(&a.action, BattleAction::Facing { unit, .. } if unit.side == BattleSide::Defender);
+                    // K5LOOP-SIEGE-ATK-A (T2a, D-INT-2): atakujący przy murze przechodzi przez maszynę `_activateUnit`
+                    // (wcześniej tag `oblezenie` przed maszyną), więc jego aktywacja w pętli wykonuje `_updateFacing`
+                    // (`:6123`). Generator pinu nie aktywuje jednostek w oknie wieży (woła wyłącznie `_fireOneTower`),
+                    // więc taki zwrot nie należy do okna. Zwrot z `_startRout` (`:9818`) celu trafionego przez wieżę
+                    // NALEŻY do okna: jest pierwszym `Facing` tej jednostki po jej `Rout` i zostaje.
+                    if let BattleAction::Rout { unit } = &a.action {
+                        rout_facing_pending.push(*unit);
+                    }
+                    let activation_atk_facing = match &a.action {
+                        BattleAction::Facing { unit, .. } if unit.side == BattleSide::Attacker => {
+                            match rout_facing_pending.iter().position(|u| u == unit) {
+                                Some(p) => {
+                                    rout_facing_pending.remove(p);
+                                    false
+                                }
+                                None => true,
+                            }
+                        }
+                        _ => false,
+                    };
                     let skip = synthetic_def
+                        || activation_atk_facing
                         || matches!(&a.action, BattleAction::End { .. })
                         || matches!(&a.action, BattleAction::Log { text } if text.starts_with("==="));
                     if skip {

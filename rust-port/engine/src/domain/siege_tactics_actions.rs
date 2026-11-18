@@ -119,6 +119,17 @@ pub enum BattleAction {
         fallen: UnitRef,
         morale: f64,
     },
+    /// K5LOOP-SIEGE-ATK-A (T2a): wejście atakującego na koronę muru od wieży oblężniczej `_trySiegeTowerClimb`
+    /// (`battleScene.ts:8067-8082`): `occByKey` zwalnia `from`, `ru.q = wallCol`, `onWallWalkway = true`, zajęcie `to`,
+    /// model ustawiony od razu na wysokości korony (`group.position.set(x, 2.5, z)`, `:8077-8079`, bez animacji
+    /// `_raf`), `moveLeft = 0`, `done()` synchronicznie. Ewentualny wpis dziennika wyłomu (`this.log.push`, `:8074`)
+    /// jest osobną akcją [`BattleAction::Log`] PRZED tą (kolejność wywołań w pinie). [`BattleActionKindDto`] nie ma
+    /// jeszcze wariantu (I5b #370): [`actions_to_dto`] zwraca [`ActionError::ClimbWallWithoutDto`].
+    ClimbWall {
+        unit: UnitRef,
+        from: (i64, i64),
+        to: (i64, i64),
+    },
 }
 
 /// Akcja z czasem wirtualnym wywołania sceny (`vNow`, ms).
@@ -419,6 +430,9 @@ pub enum ActionError {
     LeaveWithoutDto(UnitRef),
     /// K5LOOP-CLOSE r4: [`BattleAction::Shaken`] nie ma jeszcze wariantu w [`BattleActionKindDto`] (I5 #280/#336).
     ShakenWithoutDto(UnitRef),
+    /// K5LOOP-SIEGE-ATK-A (T2a): [`BattleAction::ClimbWall`] nie ma jeszcze wariantu w [`BattleActionKindDto`] (I5b
+    /// #370).
+    ClimbWallWithoutDto(UnitRef),
 }
 
 impl From<IdOutOfRange> for ActionError {
@@ -548,6 +562,9 @@ pub fn actions_to_dto(
             }
             BattleAction::Leave { unit } => return Err(ActionError::LeaveWithoutDto(*unit)),
             BattleAction::Shaken { unit, .. } => return Err(ActionError::ShakenWithoutDto(*unit)),
+            BattleAction::ClimbWall { unit, .. } => {
+                return Err(ActionError::ClimbWallWithoutDto(*unit))
+            }
         };
         out.push(BattleActionDto { t0: a.t0, action });
     }
