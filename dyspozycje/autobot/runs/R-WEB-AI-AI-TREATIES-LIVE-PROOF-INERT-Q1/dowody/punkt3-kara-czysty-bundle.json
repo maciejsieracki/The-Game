@@ -1,0 +1,104 @@
+{
+  "seed": 4242,
+  "pairs": {
+    "ON": {
+      "name": "ON",
+      "a": 1,
+      "b": 2,
+      "flag": true,
+      "z": 100,
+      "r": 50,
+      "napId": "nap_aiai_1_2_t1",
+      "before": {
+        "turn": 1,
+        "status": "pokoj",
+        "zaufanie": 100,
+        "respekt": 50,
+        "relacja": 150,
+        "hasNap": true,
+        "skarbiecA": null,
+        "skarbiecB": null
+      },
+      "after": {
+        "turn": 1,
+        "status": "wojna",
+        "zaufanie": 0,
+        "respekt": 20,
+        "relacja": 20,
+        "hasNap": false,
+        "skarbiecA": null,
+        "skarbiecB": null
+      },
+      "dZaufanie": -100,
+      "dRespekt": -30
+    },
+    "OFF": {
+      "name": "OFF",
+      "a": 3,
+      "b": 4,
+      "flag": false,
+      "z": 100,
+      "r": 50,
+      "napId": "nap_aiai_3_4_t1",
+      "before": {
+        "turn": 1,
+        "status": "pokoj",
+        "zaufanie": 100,
+        "respekt": 50,
+        "relacja": 150,
+        "hasNap": true,
+        "skarbiecA": null,
+        "skarbiecB": null
+      },
+      "after": {
+        "turn": 1,
+        "status": "wojna",
+        "zaufanie": 0,
+        "respekt": 50,
+        "relacja": 50,
+        "hasNap": false,
+        "skarbiecA": null,
+        "skarbiecB": null
+      },
+      "dZaufanie": -100,
+      "dRespekt": 0
+    },
+    "LOW": {
+      "name": "LOW",
+      "a": 5,
+      "b": 6,
+      "flag": true,
+      "z": 100,
+      "r": 20,
+      "napId": "nap_aiai_5_6_t1",
+      "before": {
+        "turn": 1,
+        "status": "pokoj",
+        "zaufanie": 100,
+        "respekt": 20,
+        "relacja": 120,
+        "hasNap": true,
+        "skarbiecA": null,
+        "skarbiecB": null
+      },
+      "after": {
+        "turn": 1,
+        "status": "wojna",
+        "zaufanie": 0,
+        "respekt": 0,
+        "relacja": 0,
+        "hasNap": false,
+        "skarbiecA": null,
+        "skarbiecB": null
+      },
+      "dZaufanie": -100,
+      "dRespekt": -20
+    }
+  },
+  "asercje": {
+    "pass": 10,
+    "fail": 0,
+    "kara": -30,
+    "errors": 0
+  }
+}
