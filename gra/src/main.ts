@@ -31151,6 +31151,31 @@ async function boot(): Promise<void> {
           dealKind: result.deal ? String(result.deal.rodzaj) : null,
         };
       },
+      // R-WEB-LIVE-VERIFY-TREATY-PAYMENT-WINDOWS-2-Q1 (KROK 2, d; hak testowy): ogon płatności POKOJU gracz→AI.
+      // Wejściowe D (duePn) planu jest nadpisywane przez test (cena pokoju >0 bez zmiany obliczeń; plan = realne
+      // peacePlanWithTail z tymi samymi cenami/zapasami/miastami co wiring tailPlan). Przelew = realne transferBasketItems.
+      // noGold=true → wariant rozejmu bez złota (kolejność ogona bez 'zloto'). Zwraca pozycje planu i liczbę miast gracza.
+      peaceRoomTailForTest: (aiId: number, duePn: number, noGold: boolean): { items: Array<{ kind: string; id: string; amount: number; pn: number }>; coveredPn: number; shortfallPn: number; ownCitiesAfter: number } => {
+        const order = noGold ? PEACE_TAIL_ORDER.filter(k => k !== 'zloto') : PEACE_TAIL_ORDER;
+        const assets = aiPeacePaymentAssets(ME(), aiId, new Set());
+        const plan = peacePlanWithTail({
+          ...peaceTailPricingForPayer(ME(), aiId, peaceTailWiringDeps(), order),
+          duePn: Math.max(0, duePn), cities: assets, maxCities: assets.length,
+        });
+        const basket: BasketItem[] = plan.items.map(i => ({
+          typ: i.kind,
+          id: i.id,
+          ilosc: i.kind === 'miasto' ? 1 : i.amount,
+          ...(i.kind === 'miasto' ? { cityPn: i.pn } : {}),
+        }));
+        transferBasketItems(ME(), aiId, basket);
+        return {
+          items: plan.items.map(i => ({ kind: i.kind, id: i.id, amount: i.amount, pn: i.pn })),
+          coveredPn: plan.coveredPn,
+          shortfallPn: plan.shortfallPn,
+          ownCitiesAfter: cities.filter(c => c.ownerId === ME()).length,
+        };
+      },
     };
 
     // R-WEB-TRUCE-Q1 (r5, N5/N7 live): hak WYŁĄCZNIE do tools/diplo-truce-live-test.cjs.
