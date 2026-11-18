@@ -22,9 +22,11 @@ const os = require('os');
 const GRA_DIR = path.resolve(__dirname, '..');
 const BUILD = process.argv[2] || path.join(os.tmpdir(), 'civ-fp-d2-' + process.pid);
 const EVIDENCE = process.argv[3] || path.join(BUILD, 'evidence');
-const OUT_HTML = 'file://' + path.join(BUILD, 'index.html') + '?playtest=mapa&civTest=1';
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const PLAYER = 0;
+const SEED = 4242;
+const BUILD_INDEX = path.join(BUILD, 'index.html');
+const MAJOR_DIAG_IDS = [];
 const SLOT = 'd2-forced-peace-slot';
 
 const results = {};
@@ -45,19 +47,24 @@ async function launchBrowser(chromium) {
     return await chromium.launch({ headless: true, executablePath: FALLBACK_CHROME, args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
   }
 }
-async function gotoPlaytestMapa(page) {
-  await page.goto(OUT_HTML, { waitUntil: 'load', timeout: 120000 });
-  await page.waitForSelector('.civ-hud, .civ-ux-frame, .civ-cs', { timeout: 120000 });
-  for (let i = 0; i < 900; i++) {
-    if ((await page.locator('text=Tworzenie świata').count()) === 0) break;
-    await wait(1000);
-  }
+/** R-WEB-DIPLO-FORCED-PEACE-D2 (r3): pełna gra `?civTest=1&civSeed=` (jak ai-economy-measure-hook-test), NIE playtest=mapa.
+ * Powód: playtest=mapa ma jednego głównego AI (AI 2..6 to miasta-państwa), więc pary AI↔AI i druga para z graczem
+ * nie kwalifikują się do pokoju wymuszonego (isMajorAiCivForForcedPeace). */
+async function gotoFullGame(page) {
+  await page.goto('file://' + BUILD_INDEX + '?civTest=1&civSeed=' + SEED, { waitUntil: 'load', timeout: 180000 });
   await page.waitForFunction(
-    () => !!window.__peaceRulesTestDebug && !!window.__truceTestDebug && !!window.__eraTestDebug
-      && window.__eraTestDebug.getWorldState().citiesLen > 0 && window.__eraTestDebug.getWorldState().turn === 1,
-    undefined, { timeout: 900000 },
+    () => !!window.__nnsMeasureDebug && !!window.__aiTradeWiringTestDebug && !!window.__truceTestDebug && !!window.__eraTestDebug,
+    undefined, { timeout: 180000 },
   );
+  await page.evaluate((sd) => window.__nnsMeasureDebug.startGame({ seed: sd }), SEED);
+  await page.waitForFunction(() => { try { return window.__aiTradeWiringTestDebug.state().turn >= 1; } catch (_) { return false; } }, undefined, { timeout: 180000 });
+  await page.waitForFunction(() => {
+    const ov = Array.from(document.querySelectorAll('*')).some(el => el.textContent && el.textContent.includes('Tworzenie świata') && el.offsetParent !== null);
+    return !ov && window.__nnsMeasureDebug.awaitingFirstCity() === true;
+  }, undefined, { timeout: 600000, polling: 500 });
+  if (!(await page.evaluate(() => window.__aiTradeWiringTestDebug.foundFirstCity()))) throw new Error('foundFirstCity=false');
   await wait(300);
+  try { await page.evaluate(() => window.__rebelProtectionTestDebug.disableVictoryCheckForTest()); } catch (e) { /* opcjonalne */ }
 }
 const waitIdle = (page) => page.waitForFunction(() => !window.__eraTestDebug.isEndTurnInProgress(), undefined, { timeout: 180000 });
 const turnNo = (page) => page.evaluate(() => window.__truceTestDebug.turn());
@@ -127,6 +134,14 @@ const armAutoOpenObserver = (page) => page.evaluate(() => {
   });
   window.__fpObs.observe(document.body, { childList: true, subtree: true });
 });
+/** DIAG (r3): wejścia tyku zmęczenia dla par z graczem (ais) i pary AI↔AI (ais[0],ais[1]). Tylko odczyt. */
+const diagPairs = (page) => page.evaluate((ai) => {
+  const d = window.__truceTestDebug.wearDiagForTest;
+  const out = {};
+  for (const x of ai) out['0_' + x] = d(0, x);
+  if (ai.length >= 2) out['AI' + ai[0] + '_AI' + ai[1]] = d(ai[0], ai[1]);
+  return out;
+}, MAJOR_DIAG_IDS);
 const autoOpenSeen = (page) => page.evaluate(() => window.__fpFirstSeen !== null);
 const overlayTopmost = (page) => page.evaluate(() => {
   const b = document.querySelector('.civ-diplo-modal-overlay .cd-forced-peace-ok');
@@ -162,6 +177,7 @@ async function advanceUntilPending(page, want, maxTurns) {
     const n = (await pendingList(page)).length;
     if (n >= want) return { ok: true, turns: k, log, n };
     log.push(await driveOneTurn(page));
+    console.log('  DIAG tura ' + (await turnNo(page)) + ' ' + JSON.stringify(await diagPairs(page)));
   }
   return { ok: (await pendingList(page)).length >= want, turns: maxTurns, log, n: (await pendingList(page)).length };
 }
@@ -176,11 +192,19 @@ async function main() {
   page.on('console', (m) => { if (m.type() === 'error') errors.push('console.error: ' + m.text()); });
   let ais = [];
   try {
-    await gotoPlaytestMapa(page);
+    await gotoFullGame(page);
     await page.evaluate(() => window.__truceTestDebug.suppressVictoryForTest());
     await page.evaluate(() => window.__nnsMeasureDebug && window.__nnsMeasureDebug.setPlayerGranary(999));
-    ais = await page.evaluate(() => window.__peaceRulesTestDebug.listAiOwnerIds());
-    console.log(`AI owners: ${JSON.stringify(ais)}`);
+    const allAi = await page.evaluate(() => window.__peaceRulesTestDebug.listAiOwnerIds());
+    // R-WEB-DIPLO-FORCED-PEACE-D2 (r3): pokój wymuszony wymaga GŁÓWNEGO AI (isMajorAiCivForForcedPeace).
+    // Mapa testowa ma AI 1..6, ale nie wszystkie są główne (np. AI 2 = city-state/kopia) — bierzemy tylko główne.
+    ais = [];
+    for (const x of allAi) {
+      const m = await page.evaluate((y) => window.__truceTestDebug.wearDiagForTest(0, y).majorB, x);
+      if (m) ais.push(x);
+    }
+    MAJOR_DIAG_IDS.splice(0, MAJOR_DIAG_IDS.length, ...ais.slice(0, 2));
+    console.log(`AI owners: ${JSON.stringify(allAi)} glowne: ${JSON.stringify(ais)}`);
   } catch (e) {
     console.error('SETUP FAIL', e.message);
     fails++;
@@ -286,6 +310,7 @@ async function main() {
         const MAX = 60;
         for (let k = 0; k < MAX; k++) {
           await driveOneTurn(page);
+          console.log('  DIAG-A tura ' + (await turnNo(page)) + ' ' + JSON.stringify(await diagPairs(page)));
           const pl = await pendingList(page);
           if (pl.some(p => (p.loser === a || p.loser === b) && (p.winner === a || p.winner === b))) leakedToPlayer = true;
           if (pl.some(p => p.loser !== PLAYER && p.winner !== PLAYER)) leakedToPlayer = true;

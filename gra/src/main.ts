@@ -31002,6 +31002,16 @@ async function boot(): Promise<void> {
         const st = warWearinessByPairKey.get(diploPairKey(a, b));
         return st ? { warStart: st.warStart, peak: st.peak, stage: st.stage } : null;
       };
+      // DIAG (r3, tymczasowy): stan wejść tyku zmęczenia dla pary — tylko odczyt.
+      (window as any).__truceTestDebug.wearDiagForTest = (a: number, b: number) => ({
+        turn,
+        status: getDiploRelation(a, b).status,
+        majorA: isMajorAiCivForForcedPeace(a),
+        majorB: isMajorAiCivForForcedPeace(b),
+        turnsAtWar: diploWarStateForRead(a, b).turnsAtWar,
+        awaiting: aiTurnAwaitingBattle,
+        store: (() => { const st = warWearinessByPairKey.get(diploPairKey(a, b)); return st ? { warStart: st.warStart, peak: st.peak, stage: st.stage } : null; })(),
+      });
       (window as any).__truceTestDebug.playerProposeTruceForTest = (aiId: number, turns: number): { queued: boolean; reason: string | null } => {
         // Ładunek jak z UI (akcja '10' + rodzaj 'rozejm', patrz proposalActionIdFromPayload → 'rozejm').
         const before = negotiationTable.length;
