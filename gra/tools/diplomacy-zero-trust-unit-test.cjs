@@ -17,6 +17,7 @@ const BUNDLE = path.resolve(__dirname, '.dip-zerotrust-bundle.cjs');
 fs.writeFileSync(ENTRY, [
   "export * from './game/diplomacy-zero-trust';",
   "export { planAiAiAllianceTickFull } from './game/ai-ai-alliance-tick';",
+  "export { RodzajTraktatu } from './types/diplomacy';",
 ].join('\n') + '\n');
 try {
   esbuild.buildSync({ entryPoints: [ENTRY], bundle: true, format: 'cjs', platform: 'node', outfile: BUNDLE, logLevel: 'silent' });
@@ -121,6 +122,55 @@ M.resetZeroTrustSession();
 const serie = [0, 0, 0, 5, 0, 0, 0, 0, 0];
 const wyniki = serie.map(z => M.zeroTrustAdvancePair(2, 0, z));
 eq('seria licznika', wyniki, [1, 2, 3, 0, 1, 2, 3, 4, 5]);
+
+// --- plan zerwania (main.ts tickZeroTrustTreaties → zeroTrustBreakOrders; filtr handel/NAP, wasale, licznik) ---
+const T = M.RodzajTraktatu;
+const deal = (id, rodzaj, a, b) => ({ id, rodzaj, strony: a < b ? [a, b] : [b, a] });
+const lbl = (r) => String(r);
+let zMap = () => 0;
+const plan = (deals, owners = [1, 2]) => M.zeroTrustBreakOrders({ me: 0, owners, deals, zaufanie: (ai, p) => zMap(ai, p), labelOf: lbl });
+const sig = (orders) => orders.map(o => [o.ai, o.partner, o.dealIds]);
+
+M.resetZeroTrustSession();
+M.setZeroTrustEnabledForTest(false);
+eq('plan OFF = brak zleceń', sig(plan([deal('nap', T.PaktNieagresji, 0, 1)])), []);
+eq('plan OFF nie zmienia licznika', M.zeroTrustCount(1, 0), 0);
+M.setZeroTrustEnabledForTest(true);
+
+M.resetZeroTrustSession();
+const dealsG = [
+  deal('nap', T.PaktNieagresji, 0, 1),
+  deal('sojusz', T.SojuszWojskowy, 0, 1),
+  deal('handel', T.UmowaHandlowa, 0, 1),
+  deal('ai-h', T.UmowaHandlowa, 1, 2),
+  deal('ai-sojusz', T.SojuszWojskowy, 1, 2),
+];
+for (let t = 1; t <= 4; t++) eq(`tura ${t}: brak zleceń (próg 5)`, sig(plan(dealsG)), []);
+const o5 = plan(dealsG);
+eq('tura 5: zlecenia tylko handel/NAP (sojusz nietknięty)', sig(o5), [[1, 0, ['nap', 'handel']], [1, 2, ['ai-h']], [2, 1, ['ai-h']]]);
+eq('tura 5: etykiety typów z labelOf', o5[0].typy, ['pakt_nieagresji', 'umowa_handlowa']);
+for (const o of o5) M.zeroTrustRecordBreak(5, o.ai, o.partner, o.typy);
+eq('po zerwaniu licznik pary (1,0) = 0', M.zeroTrustCount(1, 0), 0);
+eq('tura 6 po zerwaniu: brak powtórki (licznik 1)', sig(plan(dealsG)), []);
+eq('licznik (1,0) po turze 6 = 1', M.zeroTrustCount(1, 0), 1);
+for (let t = 7; t <= 9; t++) plan(dealsG);
+eq('tura 10: powtórka dopiero po 5 kolejnych turach', sig(plan(dealsG)).some(x => x[0] === 1 && x[1] === 0), true);
+
+// zaufanie > 0 zeruje licznik w planie
+M.resetZeroTrustSession();
+for (let t = 1; t <= 4; t++) plan(dealsG);
+zMap = (ai, p) => (ai === 1 && p === 0 ? 10 : 0);
+plan(dealsG);
+zMap = () => 0;
+eq('zaufanie > 0 zeruje licznik (1,0)', M.zeroTrustCount(1, 0), 0);
+
+// wasal (gracz i AI) wykluczony po obu stronach: brak zleceń z graczem i z wasalem
+M.resetZeroTrustSession();
+const dW = [deal('nap', T.PaktNieagresji, 0, 1), deal('wasal', T.Wasalizacja, 0, 3)];
+let wOrders = [];
+for (let t = 1; t <= 6; t++) wOrders = wOrders.concat(sig(plan(dW, [1, 2, 3])));
+eq('wasal: brak zleceń z graczem-wasalem i AI-wasalem', wOrders, []);
+eq('wasal: licznik pary z wasalem nie rośnie', M.zeroTrustCount(1, 0), 0);
 
 fs.unlinkSync(BUNDLE);
 console.log(`diplomacy-zero-trust-unit-test: PASS=${pass} FAIL=${fail}`);

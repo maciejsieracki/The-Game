@@ -8,6 +8,8 @@
 //   cywilizacji niebędącej partnerem (tylko kolejność celu w ai-ai-alliance-tick.ts; progi E1 bez zmian).
 
 import zeroTrustParamsJson from '../../data/diplomacy-zero-trust-params.json';
+import { RodzajTraktatu } from '../types/diplomacy';
+import { normalizeTreatyKind, type ActiveDeal, type TreatyKind } from './diplomacy-treaties';
 
 export interface ZeroTrustParams {
   zeroZaufaniaAktywna: boolean;
@@ -98,10 +100,80 @@ export function zeroTrustPreferredTarget(
   return best;
 }
 
-/** Rejestruje wykonane zerwanie (hak odczytowy). */
+/** Rodzaje umów zrywane przez zerowe zaufanie: handel + NAP (sojusz, pokój, wasal nietknięte). */
+const RODZAJE_ZERWANIA_ZEROWEGO_ZAUFANIA: ReadonlySet<string> = new Set<string>([
+  RodzajTraktatu.UmowaSzlakow,
+  RodzajTraktatu.UmowaWymiany,
+  RodzajTraktatu.UmowaHandlowa,
+  RodzajTraktatu.PaktNieagresji,
+]);
+
+export interface ZeroTrustBreakOrder {
+  ai: number;
+  partner: number;
+  dealIds: string[];
+  typy: string[];
+}
+
+/**
+ * Plan zerwania (czysta funkcja, bez stanu gry): aktualizuje liczniki wszystkich par (AI → partner) i zwraca
+ * zlecenia zerwania dla par, które osiągnęły próg i mają umowę handlową/NAP. Wykonanie (breakTreatyVoluntarily,
+ * komunikaty) robi main.ts. Partnerzy i proponenci będący w traktacie Wasalizacja (po obu stronach) są pomijani.
+ * Flaga OFF = [] i zero zmiany licznika.
+ */
+export function zeroTrustBreakOrders(input: {
+  me: number;
+  owners: readonly number[];
+  deals: readonly Pick<ActiveDeal, 'id' | 'rodzaj' | 'strony'>[];
+  zaufanie: (ai: number, partner: number) => number;
+  labelOf: (rodzaj: TreatyKind) => string;
+  progTur?: number;
+}): ZeroTrustBreakOrder[] {
+  if (!isZeroTrustEnabled()) return [];
+  const prog = input.progTur ?? zeroZaufaniaProgTur();
+  const wasal = new Set<number>();
+  for (const d of input.deals) {
+    if (normalizeTreatyKind(d.rodzaj as TreatyKind) === RodzajTraktatu.Wasalizacja) {
+      wasal.add(d.strony[0]);
+      wasal.add(d.strony[1]);
+    }
+  }
+  const ais = input.owners.filter(o => !wasal.has(o));
+  const partnerzy = [input.me, ...input.owners].filter(o => !wasal.has(o));
+  for (const ai of ais) {
+    for (const p of partnerzy) {
+      if (p === ai) continue;
+      zeroTrustAdvancePair(ai, p, input.zaufanie(ai, p));
+    }
+  }
+  const orders: ZeroTrustBreakOrder[] = [];
+  for (const ai of ais) {
+    for (const p of partnerzy) {
+      if (p === ai || !zeroTrustBreakDue(ai, p, prog)) continue;
+      const [lo, hi] = ai < p ? [ai, p] : [p, ai];
+      const doZerwania = input.deals.filter(d =>
+        d.strony[0] === lo && d.strony[1] === hi
+        && RODZAJE_ZERWANIA_ZEROWEGO_ZAUFANIA.has(normalizeTreatyKind(d.rodzaj as TreatyKind)));
+      if (doZerwania.length === 0) continue;
+      orders.push({
+        ai,
+        partner: p,
+        dealIds: doZerwania.map(d => d.id),
+        typy: doZerwania.map(d => input.labelOf(d.rodzaj as TreatyKind)),
+      });
+    }
+  }
+  return orders;
+}
+
+/**
+ * Rejestruje wykonane zerwanie (hak odczytowy) i zeruje licznik pary: po zerwaniu zerwanie może się powtórzyć
+ * dopiero po kolejnych zeroZaufaniaProgTur turach zerowego zaufania (bez kary co turę).
+ */
 export function zeroTrustRecordBreak(turn: number, ai: number, partner: number, typy: string[]): void {
   zerwaniaLacznie++;
   zerwaniaLog.push({ turn, ai, partner, typy: [...typy] });
+  licznikZera.delete(kluczZera(ai, partner));
 }
 
 /** Odczyt pomiaru: liczba zerwań i ich tury (kopia, bez wpływu na stan). */

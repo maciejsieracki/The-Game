@@ -70,7 +70,7 @@ import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
 import { isAiAiTreatyTickEnabled, setAiAiTreatyTickEnabledForTest, planAiAiNapTreatyTickFull, applyAiAiNapBreachRelacja, aiAiNapBreachRelacjaDelta, type AiAiWarStatus } from './game/ai-ai-treaty-tick';
 import { isAiAiAllianceTickEnabled, setAiAiAllianceTickEnabledForTest, planAiAiAllianceTickFull } from './game/ai-ai-alliance-tick';
-import { isZeroTrustEnabled, setZeroTrustEnabledForTest, zeroZaufaniaProgTur, zeroTrustAdvancePair, zeroTrustBreakDue, zeroTrustCount, zeroTrustPreferredTarget, zeroTrustRecordBreak, zeroTrustStats, resetZeroTrustSession } from './game/diplomacy-zero-trust';
+import { isZeroTrustEnabled, setZeroTrustEnabledForTest, zeroZaufaniaProgTur, zeroTrustBreakOrders, zeroTrustCount, zeroTrustPreferredTarget, zeroTrustRecordBreak, zeroTrustStats, resetZeroTrustSession } from './game/diplomacy-zero-trust';
 import { isAiAiCoalitionEnabled, setAiAiCoalitionEnabledForTest, aktualizujLidera, budujKontekstKoalicji, initLiderKoalicjiStan, loadAiAiCoalitionParams, type LiderKoalicjiStan } from './game/ai-ai-coalition';
 import { typSwiataFromMenuLabel, defaultLandFractionPercentForTyp, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
 import { buildScene, getLastSetFogMs, type SceneBuildTimings, type SceneResult } from './render/scene';
@@ -24397,7 +24397,7 @@ async function boot(): Promise<void> {
      * AI dostanie kiedyś własną ścieżkę dobrowolnego zerwania (dziś jej nie ma, patrz
      * raport wdrożeniowy), wystarczy przekazać jej ownerId tutaj, bez zmiany tej funkcji.
      */
-    function breakTreatyVoluntarily(dealId: string, initiatorOwnerId: number = 0): void {
+    function breakTreatyVoluntarily(dealId: string, initiatorOwnerId: number = 0, pokazPodpowiedz: boolean = true): void {
       const deal = activeDeals.find(d => d.id === dealId);
       if (!deal) return;
       const [a, b] = deal.strony;
@@ -24453,8 +24453,13 @@ async function boot(): Promise<void> {
       }
       setDiploRelation(a, b, next);
 
-      const otherId = a === 0 ? b : a;
-      showHintMessage('Zerwano traktat: ' + treatyDisplayLabel(deal.rodzaj) + ' — ' + ownerDiploLabel(otherId), 4000);
+      // R-WEB-DIPLO-ZERO-TRUST (fix obrony): podpowiedź „Zerwano traktat" tylko dla zerwań, w których gracz jest stroną
+      // (przycisk gracza). Zerwanie AI↔AI nie pokazuje graczowi podpowiedzi z etykietą złej strony; wywołujący AI
+      // sam pokazuje swój komunikat (tickZeroTrustTreaties).
+      if (pokazPodpowiedz) {
+        const otherId = a === 0 ? b : a;
+        showHintMessage('Zerwano traktat: ' + treatyDisplayLabel(deal.rodzaj) + ' — ' + ownerDiploLabel(otherId), 4000);
+      }
       updateDiplomacyAudience();
       updateDiplomacyPanel();
       updateHud();
@@ -25560,41 +25565,43 @@ async function boot(): Promise<void> {
      */
     function zeroTrustOwners(): number[] {
       return Array.from(aiOwnerCivMap.keys())
-        .filter(oid => isMajorAiCivForForcedPeace(oid)
-          && !activeDeals.some(d => normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.Wasalizacja && d.strony.includes(oid)))
+        .filter(oid => isMajorAiCivForForcedPeace(oid))
         .sort((x, y) => x - y);
     }
 
     function tickZeroTrustTreaties(): void {
       if (!isZeroTrustEnabled()) return;
-      const owners = zeroTrustOwners();
-      const partnerzy: number[] = [ME(), ...owners];
-      for (const ai of owners) {
-        for (const partner of partnerzy) {
-          if (partner === ai) continue;
-          zeroTrustAdvancePair(ai, partner, getDiploRelation(ai, partner).zaufanie);
-        }
-      }
+      // Plan (liczniki, próg, filtr handel/NAP, wykluczenie wasali po obu stronach) — czysta funkcja w
+      // diplomacy-zero-trust.ts, testowana w tools/diplomacy-zero-trust-unit-test.cjs.
+      const orders = zeroTrustBreakOrders({
+        me: ME(),
+        owners: zeroTrustOwners(),
+        deals: activeDeals,
+        zaufanie: (ai, partner) => getDiploRelation(ai, partner).zaufanie,
+        labelOf: rodzaj => treatyDisplayLabel(rodzaj),
+      });
       const prog = zeroZaufaniaProgTur();
-      for (const ai of owners) {
-        for (const partner of partnerzy) {
-          if (partner === ai || !zeroTrustBreakDue(ai, partner, prog)) continue;
-          const doZerwania = activeDeals.filter(d => {
-            if (!dealInvolvesOwners(d, ai, partner)) return false;
-            const rodz = normalizeTreatyKind(d.rodzaj);
-            return rodz === RodzajTraktatu.UmowaSzlakow
-              || rodz === RodzajTraktatu.UmowaWymiany
-              || rodz === RodzajTraktatu.UmowaHandlowa
-              || rodz === RodzajTraktatu.PaktNieagresji;
+      for (const o of orders) {
+        // Zerwanie = ISTNIEJĄCA ścieżka breakTreatyVoluntarily (kara Wiarygodności inicjatora = AI); bez podpowiedzi gracza.
+        for (const dealId of o.dealIds) breakTreatyVoluntarily(dealId, o.ai, false);
+        zeroTrustRecordBreak(turn, o.ai, o.partner, o.typy);
+        const komunikat = `${ownerDiploLabel(o.ai)} wypowiedziała umowę: zerowe zaufanie od ${prog} tur`;
+        console.log(`[Dyplomacja] ${komunikat} (${o.typy.join(', ')}) — partner ${ownerDiploLabel(o.partner)}(${o.partner})`);
+        // Wiersz w dzienniku Wydarzeń (warEventLog, istniejący mechanizm) i podpowiedź — tylko gdy gracz jest partnerem
+        // (zerwania AI↔AI nie trafiają do dziennika gracza, jak wojny AI↔AI w recordWarEventFor…).
+        if (o.partner === ME()) {
+          warEventLog.unshift({
+            id: `zerotrust-${turn}-${o.ai}-${o.partner}`,
+            icon: '⚖',
+            title: komunikat,
+            subtitle: o.typy.join(', '),
+            kind: 'enemy',
+            negative: true,
+            turnCreated: turn,
           });
-          if (doZerwania.length === 0) continue;
-          const typy = doZerwania.map(d => treatyDisplayLabel(d.rodzaj));
-          for (const d of doZerwania) breakTreatyVoluntarily(d.id, ai);
-          zeroTrustRecordBreak(turn, ai, partner, typy);
-          const komunikat = `${ownerDiploLabel(ai)} wypowiedziała umowę: zerowe zaufanie od ${prog} tur`;
-          console.log(`[Dyplomacja] ${komunikat} (${typy.join(', ')}) — partner ${ownerDiploLabel(partner)}(${partner})`);
-          // breakTreatyVoluntarily pokazuje ogólny podpowiedź „Zerwano traktat”; dla pary z graczem nadpisujemy ją komunikatem zdarzenia.
-          if (partner === ME()) showHintMessage(komunikat, 4000);
+          trimWarEventLog();
+          refreshD1bHud();
+          showHintMessage(komunikat, 4000);
         }
       }
     }
