@@ -43,7 +43,7 @@
 
 ### Zmęczenie wojną a pokój
 
-Licznik zmęczenia (5% na turę od startu wojny, +10% za każde zmienione miasto, patrz hasło **Zmęczenie wojną**) zmienia zasady pokoju:
+Licznik zmęczenia (2,5% na turę od startu wojny (100% po 40 turach), +10% za każde zmienione miasto, patrz hasło **Zmęczenie wojną**) zmienia zasady pokoju:
 - **50%** — silniejsza strona obniża cenę pokoju, słabsza szuka pokoju;
 - **80%** — AI proponuje pokój z miastami przegrywającego (bez pokoju bezwarunkowego);
 - **100%** — **pokój wymuszony**: wyraźnie przegrywający oddaje miasta do zrównoważenia ceny (oddaje tyle miast, ile trzeba do pokrycia ceny; stolica nigdy; brak progu min. 3 miast); przy remisie sił albo cenie 0 (zmęczenie 100%) pokój bez miast (patrz hasło **Zmęczenie wojną**).
