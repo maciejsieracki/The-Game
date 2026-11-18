@@ -4468,6 +4468,12 @@ function decideAITurnCore(
       continue;
     }
 
+    // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r3, diagnoza pomiaru: w pokoju garnizon odchodzil
+    // po wioski/cele/patrol/idle -- 437 odejsc w 60 turach): stały garnizon miasta po ataku
+    // sasiedniego wroga (wyzej) NIE opuszcza miasta -- ani po wioske, ani na marsz, ani na patrol.
+    // Wyjatek: przydzial obroncy domu (homeDefenderPool -- decyzja wlasciciela "CZEKA NA RANO").
+    if (cityGarrisonUnitIds.has(unit.id) && !homeDefenderAssignments.has(unit.id)) continue;
+
     // 4b: adjacent enemy city -> move onto it (engine handles capture)
     // CYWIL NIE ZDOBYWA (P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1, obrona
     // zarzutu 1): osadnik/robotnik nie ma czym przejąć miasta (kotwica

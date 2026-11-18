@@ -174,6 +174,15 @@ async function main() {
     const mutMoves = movesOf(MUT);
     ok(!goodMoves.some(c => c.unitId === 'a-garn'), 'C1: garnizon NIE dostaje rozkazu marszu do zbiorki');
     ok(mutMoves.some(c => c.unitId === 'a-garn'), 'C2: mutacja (bez wykluczenia garnizonu) zlamala C1 -- garnizon idzie do zbiorki');
+
+    // C3 (r3): w WOJNIE ofensywnej garnizon nie maszeruje na wrogie miasto (petla jednostek:
+    // marsz/wioski/patrol), a jednostka polowa z tego samego miasta -- tak.
+    const enemyCity = { id: 'E', ownerId: 2, q: 30, r: 40, name: 'E', population: 6 };
+    const warOpts = { civType: 'grecy', currentTurn: 40, canEngageOwner: () => true, atWarWithCiv: true };
+    const c3Moves = GOOD.decideAITurn(1, [{ ...G }, { ...R1, q: 30, r: 30 }], [cityX, enemyCity], map, testData, warOpts)
+      .filter(c => c.type === 'move');
+    ok(!c3Moves.some(c => c.unitId === 'a-garn'), 'C3: garnizon NIE maszeruje na wrogie miasto w wojnie ofensywnej');
+    ok(c3Moves.some(c => c.unitId === 'b-res'), 'C3b: jednostka polowa z tego samego miasta maszeruje (garnizon zostaje, reszta idzie)');
   }
 
   const total = passed + failed;
