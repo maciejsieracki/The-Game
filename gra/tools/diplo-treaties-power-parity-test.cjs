@@ -97,5 +97,24 @@ ok(!(tradeEval.reason ?? '').includes('parytetu'), 'umowa_handlowa (spoza paryte
 // Baza NAP po ×10 (kontrakt danych).
 ok(mod.treatyBasePnFromConfig('nap', {}) === 2000, `baza NAP w konfigu = 2000 (jest ${mod.treatyBasePnFromConfig('nap', {})})`);
 
+// R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (obrona r2, zarzut 7a): wzor S/W/D dla X z KONFIGU kazdego z 5 traktatow
+// z parytetem (nie tylko X = 2000), przy r = 1 / 1,5 / 2,67 / 5 — S = round(X·r), W = round(X/r), D = S − W.
+for (const act of ['nap', 'sojusz_defensywny', 'sojusz_pelny', 'granice', 'wasal']) {
+  const Xc = mod.treatyBasePnFromConfig(act, {});
+  for (const [a, b] of [[100, 100], [150, 100], [6969, 2611], [500, 100]]) {
+    const sp = mod.peacePwPointsByPowerRatio(Xc, a, b);
+    const r = a / b;
+    ok(sp.S === Math.round(Xc * r) && sp.W === Math.round(Xc / r) && sp.D === sp.S - sp.W,
+      `${act} (X=${Xc}) r=${r.toFixed(2)}: S/W/D = wzor (jest S=${sp.S} W=${sp.W} D=${sp.D})`);
+  }
+}
+// (zarzut 4, dla sojuszu/NAP): silniejszy gracz z koszykiem PW nie dostaje „Brakuje … parytetu" z wlasnej wyceny X.
+const strongBasket = mod.evaluateProposal(
+  napProposal({ giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 50 }] }),
+  strongCtx,
+);
+ok(!(strongBasket.reason ?? '').includes('parytetu'),
+  `silniejszy gracz z koszykiem: brak blokady „parytetu" (powód: ${strongBasket.reason})`);
+
 console.log(`diplo-treaties-power-parity-test: ${pass} pass, ${fail} fail`);
 if (fail > 0) process.exit(1);
