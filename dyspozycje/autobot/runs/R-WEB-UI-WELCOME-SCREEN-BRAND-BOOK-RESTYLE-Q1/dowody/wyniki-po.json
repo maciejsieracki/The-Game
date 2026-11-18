@@ -6,7 +6,7 @@
       "ok": true,
       "what": "[1324x1300] zrzut ≤ 1 MB",
       "detail": {
-        "bytes": 524554
+        "bytes": 522615
       }
     },
     {
@@ -67,7 +67,7 @@
       "ok": true,
       "what": "[1024x640] zrzut ≤ 1 MB",
       "detail": {
-        "bytes": 237183
+        "bytes": 236995
       }
     },
     {
@@ -128,7 +128,7 @@
       "ok": true,
       "what": "[480x800] zrzut ≤ 1 MB",
       "detail": {
-        "bytes": 153729
+        "bytes": 153612
       }
     },
     {

@@ -66,7 +66,7 @@ function ensureStyles(): void {
 #${ROOT_ID}{position:fixed;inset:0;z-index:9650;display:flex;align-items:center;justify-content:center;
   background:rgba(0,0,0,.55);padding:16px;box-sizing:border-box;}
 #${ROOT_ID} .cww-card{width:min(640px,100%);max-height:calc(100vh - 32px);overflow:auto;
-  background-color:#121820;background-image:var(--civ-panel-gradient,linear-gradient(180deg,rgba(14,18,28,.98),rgba(8,10,16,.95)));
+  background-color:var(--civ-panel-bg,#121820);background-image:var(--civ-panel-gradient,linear-gradient(180deg,rgba(14,18,28,.98),rgba(8,10,16,.95)));
   color:var(--civ-text-primary,#e8e0c8);border-radius:var(--civ-radius-panel,12px);
   box-shadow:var(--civ-shadow-panel,0 12px 40px rgba(0,0,0,.65));
   border:2px solid var(--civ-gold-border-strong,rgba(232,216,138,.45));
