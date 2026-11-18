@@ -50,6 +50,21 @@
 //! the caller must clear the unit selection itself, as `onOpenBuild` does
 //! with `clearPlayerUnitSelection()` (`main.ts:26702-26703`).
 //!
+//! Decision D-371-5b (#371 T5b, refinement of Q6-2 for the re-selection of
+//! `R-RUSTPORT-P4-371-T5A-FRAME-RESELECT-ENGINE`): since T5a the frame can
+//! carry BOTH layers at once (`selection` / `reachable` / `pathRoute` and
+//! `buildHighlight`, `RenderUiParams::unit_selected_after_build_open`). The
+//! pin still has one `setHighlight` layer where the last call wins:
+//! `selectPlayerUnit` writes the reachable range (`main.ts:7253-7261`) and
+//! `refreshBuildHighlight` writes the build set (`:16351-16396`). The frame is
+//! stateless, so the client keeps the last writer and passes it as
+//! [`HighlightPriority`]: [`HighlightPriority::Build`] (default) = Q6-2 above;
+//! [`HighlightPriority::Reachable`] = the reachable range first when it is not
+//! empty (with the siege map panel open the reachable write is
+//! `clearHighlight()`, `:7253-7255`), else the build layer. The selection ring
+//! and the route are separate renderer calls (`setSelectionHex`,
+//! `setPathRoute`) and do not depend on the highlight layer.
+//!
 //! No game rules here: only the order of the pin calls and the conversions.
 
 use civ_view_model as vm;
@@ -108,22 +123,60 @@ fn build_highlight_call(dto: &vm::BuildHighlightDto) -> Option<UnitHighlight> {
     })
 }
 
-/// The single highlight layer of the snapshot (decision Q6-2 in the module
-/// header): build highlight first, then `reachable` unless the siege map
-/// panel is open (`main.ts:7120-7122`), else `clearHighlight()`.
-#[must_use]
-pub fn unit_highlight(overlays: &vm::OverlaysViewDto, siege_map_panel_open: bool) -> UnitHighlight {
-    if let Some(call) = build_highlight_call(&overlays.build_highlight) {
-        return call;
+/// Which call wrote the single highlight layer last (decision D-371-5b in
+/// the module header). The client keeps it (`highlight_last_writer`); the
+/// frame DTO does not carry it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum HighlightPriority {
+    /// `refreshBuildHighlight` wrote last (`main.ts:16351-16396`): decision
+    /// Q6-2 (build highlight first). The behaviour without a client state.
+    #[default]
+    Build,
+    /// `selectPlayerUnit` wrote last (`main.ts:7253-7261`): the reachable
+    /// range first when it is not empty.
+    Reachable,
+}
+
+/// The reachable call of `selectPlayerUnit` / `syncPlayerUnitSelectionOnMap`
+/// (`main.ts:7253-7261`, `:7120-7125`); `None` = empty `reachable`.
+fn reachable_call(
+    overlays: &vm::OverlaysViewDto,
+    siege_map_panel_open: bool,
+) -> Option<UnitHighlight> {
+    if overlays.reachable.is_empty() {
+        return None;
     }
-    if siege_map_panel_open || overlays.reachable.is_empty() {
-        return UnitHighlight::Clear;
+    if siege_map_panel_open {
+        return Some(UnitHighlight::Clear);
     }
-    UnitHighlight::Set {
+    Some(UnitHighlight::Set {
         source: HighlightSource::Reachable,
         hexes: overlays.reachable.iter().copied().map(pick_hex).collect(),
         opacity: HIGHLIGHT_OPACITY,
-    }
+    })
+}
+
+/// The single highlight layer of the snapshot.
+///
+/// - [`HighlightPriority::Build`] (decision Q6-2 in the module header): build
+///   highlight first, then `reachable` unless the siege map panel is open
+///   (`main.ts:7120-7122`), else `clearHighlight()`;
+/// - [`HighlightPriority::Reachable`] (decision D-371-5b): `reachable` first
+///   when it is not empty (`clearHighlight()` with the siege map panel open),
+///   else the build highlight, else `clearHighlight()`.
+#[must_use]
+pub fn unit_highlight(
+    overlays: &vm::OverlaysViewDto,
+    siege_map_panel_open: bool,
+    priority: HighlightPriority,
+) -> UnitHighlight {
+    let build = || build_highlight_call(&overlays.build_highlight);
+    let reach = || reachable_call(overlays, siege_map_panel_open);
+    let first = match priority {
+        HighlightPriority::Build => build().or_else(reach),
+        HighlightPriority::Reachable => reach().or_else(build),
+    };
+    first.unwrap_or(UnitHighlight::Clear)
 }
 
 /// `setSelectionHex(q, r, ownerId)` arguments (`main.ts:7119`).
@@ -172,11 +225,23 @@ pub struct UnitOverlayInputs {
 
 impl UnitOverlayInputs {
     /// The renderer calls of `overlays` (siege map panel closed: it is not
-    /// part of [`MapUiState`]; see [`Self::with_siege_map_panel_open`]).
+    /// part of [`MapUiState`]; see [`Self::with_siege_map_panel_open`]), with
+    /// [`HighlightPriority::Build`] (decision Q6-2).
     #[must_use]
     pub fn from_overlays(overlays: &vm::OverlaysViewDto) -> Self {
+        Self::from_overlays_with_priority(overlays, HighlightPriority::Build)
+    }
+
+    /// As [`Self::from_overlays`] with the highlight layer chosen by
+    /// `priority` (decision D-371-5b). The selection ring and the route do
+    /// not depend on `priority`.
+    #[must_use]
+    pub fn from_overlays_with_priority(
+        overlays: &vm::OverlaysViewDto,
+        priority: HighlightPriority,
+    ) -> Self {
         Self {
-            highlight: unit_highlight(overlays, false),
+            highlight: unit_highlight(overlays, false, priority),
             selection: selection_input(overlays.selection.as_ref()),
             path_route: path_route_input(overlays.path_route.as_ref()),
         }

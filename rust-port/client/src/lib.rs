@@ -44,13 +44,38 @@
 //!   `refreshMapOverlayToggles`, `:15459-15463`), and the siege map panel gate
 //!   is read by the renderer only (`:7120-7122`).
 //!
+//! Highlight writer (decision D-371-5b, #371 T5b): the pin has ONE
+//! `unitRenderer.setHighlight` layer and the last call wins
+//! (`selectPlayerUnit` writes the reachable range, `main.ts:7253-7261`;
+//! `refreshBuildHighlight` writes the build set, `:16351-16396`). Since T5a
+//! the frame can carry both (`RenderUiParams::unit_selected_after_build_open`),
+//! so the client keeps the last writer ([`ClientUiState::highlight_last_writer`])
+//! and passes it to the renderer ([`FrameInputs::from_dto_with_priority`]):
+//! - [`RenderClient::select_unit`] in build mode (open panel, `foundCityMode`,
+//!   `activeWonderId` or an improvement key): `selected_unit_id`, flag
+//!   `unit_selected_after_build_open = true`, writer
+//!   [`HighlightPriority::Reachable`]; outside build mode a plain selection
+//!   (flag `false`);
+//! - [`RenderClient::set_active_improvement_key`] (`onSelectType` then
+//!   `refreshBuildHighlight`, `:26733-26739`): writer
+//!   [`HighlightPriority::Build`]; the flag and `selected_unit_id` are kept
+//!   (the pin does not clear the selection on a key change);
+//! - [`RenderClient::set_build_mode`] (open/close of the panel, found city,
+//!   wonder): flag `false`, writer [`HighlightPriority::Build`]; opening or
+//!   closing the panel also clears the selection (`onOpenBuild` calls
+//!   `clearPlayerUnitSelection()`, `:26702-26703`);
+//! - [`RenderClient::set_highlight_last_writer`]: the writer alone never calls
+//!   the engine (D-371-4): the cached frame is composed again.
+//!
 //! Seat: the client always asks for the active seat (`seat = None` = web
 //! `ME()`, `bridge.rs` `GetRenderFrame`), see [`VIEWER_SEAT`].
 
 use std::fmt;
 
+use civ_engine::domain::overlays_view::build_highlight_mode_active;
 pub use civ_engine::domain::render_frame::{RenderFramePayload, RenderMapPayload, RenderUiParams};
 pub use civ_renderer::terrain::MapDetailQuality;
+pub use civ_renderer::view::units::HighlightPriority;
 pub use civ_renderer::view::{FrameError, FrameInputs, MapScene, MapStatic, MapUiState};
 use civ_view_model::RenderLayersDto;
 
@@ -73,7 +98,9 @@ pub const VIEWER_SEAT: Option<u64> = None;
 ///   `statChipHoverCityId`); the engine never receives it;
 /// - [`Self::siege_map_panel_open`] is `isSiegeMapPanelOpen()` (`main.ts:7120`),
 ///   read by the renderer only
-///   ([`civ_renderer::view::UnitOverlayInputs::with_siege_map_panel_open`]).
+///   ([`civ_renderer::view::UnitOverlayInputs::with_siege_map_panel_open`]);
+/// - [`Self::highlight_last_writer`] is the last writer of the single
+///   `setHighlight` layer (decision D-371-5b), read by the renderer only.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ClientUiState {
     /// UI parameters of `GetRenderFrame`.
@@ -82,18 +109,55 @@ pub struct ClientUiState {
     pub map_ui: MapUiState,
     /// `isSiegeMapPanelOpen()`.
     pub siege_map_panel_open: bool,
+    /// Last writer of `unitRenderer.setHighlight` (D-371-5b).
+    pub highlight_last_writer: HighlightPriority,
+}
+
+/// The build mode switches of `onOpenBuild` / `exitBuildMode` /
+/// `onSelectFoundCity` / `onSelectWonder` (`main.ts:26702-26793`,
+/// `:16526-16541`): web `buildModeOpen`, `foundCityMode`, `!!activeWonderId`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct BuildMode {
+    /// `buildModeOpen`.
+    pub build_mode_open: bool,
+    /// `foundCityMode`.
+    pub found_city_mode: bool,
+    /// `!!activeWonderId`.
+    pub wonder_active: bool,
+}
+
+impl BuildMode {
+    /// The build mode switches of `ui`.
+    #[must_use]
+    pub const fn of(ui: &RenderUiParams) -> Self {
+        Self {
+            build_mode_open: ui.build_mode_open,
+            found_city_mode: ui.found_city_mode,
+            wonder_active: ui.wonder_active,
+        }
+    }
+}
+
+/// The engine build branch of the frame (`render_frame.rs`: `build_mode_open
+/// || build_highlight_mode_active`): open panel, found city, wonder, or an
+/// improvement key with the panel open.
+#[must_use]
+pub fn in_build_mode(ui: &RenderUiParams) -> bool {
+    ui.build_mode_open || build_highlight_mode_active(&ui.build_ui())
 }
 
 impl ClientUiState {
     /// The start state of the pin: no selection, no hover, no build mode
     /// ([`RenderUiParams::default`]), [`MapUiState::WEB_INITIAL`], siege map
-    /// panel closed.
+    /// panel closed, highlight writer [`HighlightPriority::Build`] (decision
+    /// Q6-2, the renderer default).
     #[must_use]
     pub fn web_initial() -> Self {
         Self {
             frame_ui: RenderUiParams::default(),
             map_ui: MapUiState::WEB_INITIAL,
             siege_map_panel_open: false,
+            highlight_last_writer: HighlightPriority::Build,
         }
     }
 }
@@ -336,14 +400,133 @@ impl<S: RenderSource> RenderClient<S> {
             frame_ui,
             map_ui,
             siege_map_panel_open,
+            highlight_last_writer,
         } = ui;
         self.ui.map_ui = map_ui;
         self.ui.siege_map_panel_open = siege_map_panel_open;
+        self.ui.highlight_last_writer = highlight_last_writer;
         if frame_ui == self.ui.frame_ui || self.map.is_none() {
             self.ui.frame_ui = frame_ui;
             return self.recompose();
         }
         self.set_frame_ui(frame_ui)
+    }
+
+    /// `selectPlayerUnit` / `clearPlayerUnitSelection` (`main.ts:7233-7269`,
+    /// `:7090-7106`), decision D-371-5b:
+    /// - `Some(id)` in build mode ([`in_build_mode`]): `selected_unit_id`,
+    ///   `unit_selected_after_build_open = true` (the pin does not close the
+    ///   build mode), writer [`HighlightPriority::Reachable`];
+    /// - `Some(id)` outside build mode: a plain selection, flag `false`,
+    ///   writer [`HighlightPriority::Reachable`] (there is no build layer);
+    /// - `None`: `selected_unit_id = None`; outside build mode flag `false`;
+    ///   the writer is kept.
+    ///
+    /// A change of [`RenderUiParams`] asks the engine (D-371-4); a change of
+    /// the writer alone composes the cached frame again.
+    ///
+    /// # Errors
+    ///
+    /// As [`Self::set_frame_ui`] / [`Self::set_highlight_last_writer`].
+    pub fn select_unit(&mut self, unit_id: Option<u64>) -> Result<(), ClientError<S::Error>> {
+        let mut frame_ui = self.ui.frame_ui.clone();
+        let mut writer = self.ui.highlight_last_writer;
+        let build = in_build_mode(&frame_ui);
+        frame_ui.selected_unit_id = unit_id;
+        if unit_id.is_some() {
+            frame_ui.unit_selected_after_build_open = build;
+            writer = HighlightPriority::Reachable;
+        } else if !build {
+            frame_ui.unit_selected_after_build_open = false;
+        }
+        self.update_ui(frame_ui, writer)
+    }
+
+    /// `onOpenBuild` / `exitBuildMode` / `onSelectFoundCity` /
+    /// `onSelectWonder` (`main.ts:26702-26793`, `:16526-16541`): a change of
+    /// the build mode switches zeroes `unit_selected_after_build_open` and the
+    /// writer becomes [`HighlightPriority::Build`] (`refreshBuildHighlight`
+    /// runs after each, decision D-371-5b). Opening or closing the panel
+    /// (`build_mode_open` changes) also clears the selection (`onOpenBuild`
+    /// calls `clearPlayerUnitSelection()`, `:26702-26703`); closing it clears
+    /// the improvement key (`exitBuildMode`, `:16533-16536`). An equal value
+    /// does nothing.
+    ///
+    /// # Errors
+    ///
+    /// As [`Self::set_frame_ui`].
+    pub fn set_build_mode(&mut self, mode: BuildMode) -> Result<(), ClientError<S::Error>> {
+        let current = BuildMode::of(&self.ui.frame_ui);
+        if mode == current {
+            return Ok(());
+        }
+        let mut frame_ui = self.ui.frame_ui.clone();
+        if mode.build_mode_open != current.build_mode_open {
+            frame_ui.selected_unit_id = None;
+            if !mode.build_mode_open {
+                frame_ui.active_improvement_key = None;
+            }
+        }
+        frame_ui.build_mode_open = mode.build_mode_open;
+        frame_ui.found_city_mode = mode.found_city_mode;
+        frame_ui.wonder_active = mode.wonder_active;
+        frame_ui.unit_selected_after_build_open = false;
+        self.update_ui(frame_ui, HighlightPriority::Build)
+    }
+
+    /// `onSelectType(key)` then `refreshBuildHighlight()`
+    /// (`main.ts:26733-26739`): a change of the improvement key makes
+    /// [`HighlightPriority::Build`] the writer; `unit_selected_after_build_open`
+    /// and `selected_unit_id` are kept (decision D-371-5b: the pin does not
+    /// clear the selection on a key change). The found city / wonder switches
+    /// are the caller's ([`Self::set_build_mode`]). An equal key does nothing.
+    ///
+    /// # Errors
+    ///
+    /// As [`Self::set_frame_ui`].
+    pub fn set_active_improvement_key(
+        &mut self,
+        key: Option<String>,
+    ) -> Result<(), ClientError<S::Error>> {
+        if key == self.ui.frame_ui.active_improvement_key {
+            return Ok(());
+        }
+        let mut frame_ui = self.ui.frame_ui.clone();
+        frame_ui.active_improvement_key = key;
+        self.update_ui(frame_ui, HighlightPriority::Build)
+    }
+
+    /// Sets the last writer of the highlight layer (e.g. `refreshBuildHighlight`
+    /// without a change of [`RenderUiParams`]). Never calls the engine
+    /// (D-371-4): the cached frame is composed again. An equal value does
+    /// nothing.
+    ///
+    /// # Errors
+    ///
+    /// [`ClientError::Frame`] from the adapters.
+    pub fn set_highlight_last_writer(
+        &mut self,
+        writer: HighlightPriority,
+    ) -> Result<(), ClientError<S::Error>> {
+        if writer == self.ui.highlight_last_writer {
+            return Ok(());
+        }
+        self.ui.highlight_last_writer = writer;
+        self.recompose()
+    }
+
+    /// New frame UI + writer: a [`RenderUiParams`] change asks the engine
+    /// (composed with the new writer); a writer change alone recomposes.
+    fn update_ui(
+        &mut self,
+        frame_ui: RenderUiParams,
+        writer: HighlightPriority,
+    ) -> Result<(), ClientError<S::Error>> {
+        if frame_ui != self.ui.frame_ui {
+            self.ui.highlight_last_writer = writer;
+            return self.set_frame_ui(frame_ui);
+        }
+        self.set_highlight_last_writer(writer)
     }
 
     /// The cached frame with the current UI state, applied to the renderer.
@@ -367,9 +550,14 @@ impl<S: RenderSource> RenderClient<S> {
         let Some(map) = self.map.as_ref() else {
             return Err(ClientError::NoSession);
         };
-        let inputs =
-            FrameInputs::from_dto(map, &frame.0, &self.ui.map_ui, self.ui.siege_map_panel_open)
-                .map_err(ClientError::Frame)?;
+        let inputs = FrameInputs::from_dto_with_priority(
+            map,
+            &frame.0,
+            &self.ui.map_ui,
+            self.ui.siege_map_panel_open,
+            self.ui.highlight_last_writer,
+        )
+        .map_err(ClientError::Frame)?;
         let detail = self.detail;
         let scene = self
             .scene

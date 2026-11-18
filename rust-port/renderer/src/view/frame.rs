@@ -115,7 +115,7 @@ use super::overlays::{
     overlay_layers, MapUiState, OverlayAdapterError, OverlayLayers, OverlayLayersInput,
 };
 use super::terrain::{apply_terrain_fog, okolica_map, overlay_map, terrain_data, TerrainData};
-use super::units::sync_units;
+use super::units::{sync_units, HighlightPriority, UnitOverlayInputs};
 use super::ViewAdapterError;
 use crate::cities::revolt::RevoltRenderer;
 use crate::map_units::MapUnitRenderer;
@@ -314,6 +314,30 @@ impl FrameInputs {
         ui: &MapUiState,
         siege_map_panel_open: bool,
     ) -> Result<Self, FrameError> {
+        Self::from_dto_with_priority(
+            map,
+            layers,
+            ui,
+            siege_map_panel_open,
+            HighlightPriority::Build,
+        )
+    }
+
+    /// As [`Self::from_dto`], with the unit highlight layer chosen by
+    /// `priority` (decision D-371-5b, [`super::units`]: the last writer of
+    /// the single `setHighlight` layer, kept by the client). The selection
+    /// ring and the route do not depend on it.
+    ///
+    /// # Errors
+    ///
+    /// As [`Self::from_dto`].
+    pub fn from_dto_with_priority(
+        map: &MapStatic,
+        layers: &vm::RenderLayersDto,
+        ui: &MapUiState,
+        siege_map_panel_open: bool,
+        priority: HighlightPriority,
+    ) -> Result<Self, FrameError> {
         if layers.contract_version != vm::CONTRACT_VERSION {
             return Err(FrameError::ContractVersion {
                 expected: vm::CONTRACT_VERSION,
@@ -338,8 +362,7 @@ impl FrameInputs {
             },
             ui,
         )?;
-        overlays.units = overlays
-            .units
+        overlays.units = UnitOverlayInputs::from_overlays_with_priority(&layers.overlays, priority)
             .with_siege_map_panel_open(siege_map_panel_open);
         Ok(Self {
             viewer: layers.viewer,

@@ -23,6 +23,7 @@ use civ_renderer::map_units::consts::{HIGHLIGHT_OPACITY, IMPROVEMENT_BUILD_HIGHL
 use civ_renderer::map_units::{MapUnitRenderer, PathRouteOptions, TurnStop};
 use civ_renderer::pick::hex::HexCoord;
 use civ_renderer::pick::terrain::Terrain;
+use civ_renderer::view::units::HighlightPriority;
 use civ_renderer::view::{
     self, FogSets, HighlightSource, MapUiState, OverlayLayers, UnitHighlight, UnitOverlayInputs,
 };
@@ -378,4 +379,209 @@ fn q6_sync_units_matches_direct_sync() {
     for id in ["900", "901"] {
         assert_eq!(got.token(id), want.token(id), "token {id}");
     }
+}
+
+// ------------------------------------------------------------ D-371-5b (#371 T5b)
+
+/// One frame of the re-selection branch of the engine (T5a, D-OP-8): both
+/// layers at once.
+fn both(kind: vm::BuildHighlightKind, qs: &[i32]) -> vm::OverlaysViewDto {
+    overlays(build(kind, qs))
+}
+
+fn reach_set() -> UnitHighlight {
+    UnitHighlight::Set {
+        source: HighlightSource::Reachable,
+        hexes: vec![h(2), h(3), h(1)],
+        opacity: HIGHLIGHT_OPACITY,
+    }
+}
+
+fn farm_set() -> UnitHighlight {
+    UnitHighlight::Set {
+        source: HighlightSource::Build(vm::BuildHighlightKind::Improvement),
+        hexes: vec![h(4), h(5)],
+        opacity: IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY,
+    }
+}
+
+/// The default priority is Q6-2 byte for byte: `from_overlays` ==
+/// `from_overlays_with_priority(Build)` and `HighlightPriority::default()`
+/// is `Build`.
+#[test]
+fn t5b_default_priority_is_q6_2() {
+    assert_eq!(HighlightPriority::default(), HighlightPriority::Build);
+    for ov in [
+        overlays(no_build()),
+        both(vm::BuildHighlightKind::Improvement, &[4, 5]),
+        both(vm::BuildHighlightKind::Mine, &[4]),
+        both(vm::BuildHighlightKind::FoundCity, &[0]),
+    ] {
+        assert_eq!(
+            UnitOverlayInputs::from_overlays(&ov),
+            UnitOverlayInputs::from_overlays_with_priority(&ov, HighlightPriority::Build)
+        );
+        assert_eq!(
+            UnitOverlayInputs::from_overlays(&ov).highlight,
+            view::unit_highlight(&ov, false, HighlightPriority::Build)
+        );
+    }
+}
+
+/// `refreshBuildHighlight` wrote last (`main.ts:16351-16396`): the build layer
+/// wins over a non-empty `reachable` (mutant b: constant Reachable).
+#[test]
+fn t5b_build_writer_shows_the_build_layer() {
+    let ov = both(vm::BuildHighlightKind::Improvement, &[4, 5]);
+    assert_eq!(
+        view::unit_highlight(&ov, false, HighlightPriority::Build),
+        farm_set()
+    );
+    // Deposit mine: `clearHighlight()` (the mine layer is Q5).
+    let mine = both(vm::BuildHighlightKind::Mine, &[4]);
+    assert_eq!(
+        view::unit_highlight(&mine, false, HighlightPriority::Build),
+        UnitHighlight::Clear
+    );
+}
+
+/// `selectPlayerUnit` wrote last (`main.ts:7253-7261`): the reachable range
+/// wins over a non-empty build layer of every kind (mutant a: constant Build).
+#[test]
+fn t5b_reachable_writer_shows_the_range() {
+    for kind in [
+        vm::BuildHighlightKind::Improvement,
+        vm::BuildHighlightKind::Mine,
+        vm::BuildHighlightKind::FoundCity,
+        vm::BuildHighlightKind::Wonder,
+    ] {
+        let ov = both(kind, &[4, 5]);
+        assert_eq!(
+            view::unit_highlight(&ov, false, HighlightPriority::Reachable),
+            reach_set(),
+            "{kind:?}"
+        );
+        assert_eq!(
+            UnitOverlayInputs::from_overlays_with_priority(&ov, HighlightPriority::Reachable)
+                .highlight,
+            reach_set(),
+            "{kind:?}"
+        );
+    }
+}
+
+/// D-371-5b: with the reachable writer and an EMPTY `reachable` the build
+/// layer is shown; with neither layer `clearHighlight()`.
+#[test]
+fn t5b_reachable_writer_falls_back_to_build_when_range_is_empty() {
+    let mut ov = both(vm::BuildHighlightKind::Improvement, &[4, 5]);
+    ov.reachable.clear();
+    assert_eq!(
+        view::unit_highlight(&ov, false, HighlightPriority::Reachable),
+        farm_set()
+    );
+    let mut none = overlays(no_build());
+    none.reachable.clear();
+    for p in [HighlightPriority::Build, HighlightPriority::Reachable] {
+        assert_eq!(view::unit_highlight(&none, false, p), UnitHighlight::Clear);
+    }
+}
+
+/// The siege map panel (`main.ts:7253-7255`): the reachable write of
+/// `selectPlayerUnit` is `clearHighlight()`; the gate gives the same through
+/// `with_siege_map_panel_open`.
+#[test]
+fn t5b_reachable_writer_with_siege_map_panel_clears() {
+    let ov = both(vm::BuildHighlightKind::Improvement, &[4, 5]);
+    assert_eq!(
+        view::unit_highlight(&ov, true, HighlightPriority::Reachable),
+        UnitHighlight::Clear
+    );
+    assert_eq!(
+        UnitOverlayInputs::from_overlays_with_priority(&ov, HighlightPriority::Reachable)
+            .with_siege_map_panel_open(true)
+            .highlight,
+        UnitHighlight::Clear
+    );
+    // The build writer keeps its layer (another call site).
+    assert_eq!(
+        UnitOverlayInputs::from_overlays_with_priority(&ov, HighlightPriority::Build)
+            .with_siege_map_panel_open(true)
+            .highlight,
+        farm_set()
+    );
+}
+
+/// `setSelectionHex` / `setPathRoute` are separate calls: the ring and the
+/// route are the same for both writers and stay on the renderer when the
+/// build layer wins (mutant f).
+#[test]
+fn t5b_ring_and_route_do_not_depend_on_the_writer() {
+    let ov = both(vm::BuildHighlightKind::Improvement, &[4, 5]);
+    let b = UnitOverlayInputs::from_overlays_with_priority(&ov, HighlightPriority::Build);
+    let r = UnitOverlayInputs::from_overlays_with_priority(&ov, HighlightPriority::Reachable);
+    assert_eq!(b.selection, Some((h(0), 1)));
+    assert_eq!(b.selection, r.selection);
+    assert_eq!(b.path_route, r.path_route);
+    assert!(b.path_route.is_some());
+
+    let mut got = renderer();
+    b.apply(&mut got);
+    let mut want = renderer();
+    want.set_selection_hex(h(0), 1);
+    want.set_highlight(&[h(4), h(5)], IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY);
+    want.set_path_route(&(0..6).map(h).collect::<Vec<_>>(), &pin_turn_stops());
+    assert_eq!(got.selection(), want.selection());
+    assert_eq!(got.highlight(), want.highlight());
+    assert_eq!(got.path_route(), want.path_route());
+    assert!(got.selection().is_some() && got.path_route().is_some());
+}
+
+/// The web scenario on hand DTOs, one renderer, the pin call order:
+/// `onOpenBuild` (no unit overlays, panel without key) -> `selectPlayerUnit`
+/// in build mode (selection + reachable, writer Reachable) -> key chosen
+/// (`refreshBuildHighlight`, writer Build: build layer, ring kept; the route
+/// is cleared by the mouse handler, `main.ts:32273-32278`, i.e. by the DTO)
+/// -> `selectPlayerUnit` again with the key (writer Reachable).
+#[test]
+fn t5b_web_scenario_on_hand_dtos() {
+    let mut r = renderer();
+    // 1. onOpenBuild: `clearPlayerUnitSelection()`, no key = no build layer.
+    let mut opened = overlays(no_build());
+    opened.reachable.clear();
+    opened.selection = None;
+    opened.path_route = None;
+    let u = UnitOverlayInputs::from_overlays_with_priority(&opened, HighlightPriority::Build);
+    u.apply(&mut r);
+    assert!(r.selection().is_none() && r.highlight().is_none() && r.path_route().is_none());
+
+    // 2. selectPlayerUnit with the panel open (no key yet).
+    let reselected = overlays(no_build());
+    let u =
+        UnitOverlayInputs::from_overlays_with_priority(&reselected, HighlightPriority::Reachable);
+    assert_eq!(u.highlight, reach_set());
+    u.apply(&mut r);
+    assert_eq!(r.highlight().unwrap().hexes, vec![h(2), h(3), h(1)]);
+    assert!(r.selection().is_some());
+
+    // 3. Key chosen: the frame carries both layers, the build writer wins.
+    let mut keyed = both(vm::BuildHighlightKind::Improvement, &[4, 5]);
+    keyed.path_route = None;
+    let u = UnitOverlayInputs::from_overlays_with_priority(&keyed, HighlightPriority::Build);
+    assert_eq!(u.highlight, farm_set());
+    u.apply(&mut r);
+    assert_eq!(r.highlight().unwrap().hexes, vec![h(4), h(5)]);
+    assert_eq!(
+        r.highlight().unwrap().opacity,
+        IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY
+    );
+    let ring = r.selection().expect("ring kept after the key change");
+    assert_eq!((ring.hex.q, ring.hex.r), (0, 0));
+
+    // 4. selectPlayerUnit again with the key: the range wins again.
+    let u = UnitOverlayInputs::from_overlays_with_priority(&keyed, HighlightPriority::Reachable);
+    u.apply(&mut r);
+    assert_eq!(r.highlight().unwrap().hexes, vec![h(2), h(3), h(1)]);
+    assert_eq!(r.highlight().unwrap().opacity, HIGHLIGHT_OPACITY);
+    assert!(r.selection().is_some());
 }

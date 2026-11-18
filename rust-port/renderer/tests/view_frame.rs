@@ -26,6 +26,7 @@ use civ_renderer::models::misc::siege::SiegeMarkerRenderer;
 use civ_renderer::models::wonders::RenderedWonder;
 use civ_renderer::pick::hex::HexCoord;
 use civ_renderer::terrain::{build_terrain, MapDetailQuality, TerrainScene};
+use civ_renderer::view::units::HighlightPriority;
 use civ_renderer::view::{
     self, CityInputs, FogSets, FrameError, FrameInputs, HighlightSource, MapScene, MapStatic,
     MapUiState, OverlayLayers, OverlayLayersInput, UnitHighlight, UnitOverlayInputs,
@@ -822,4 +823,80 @@ fn non_start_ui_state_reaches_overlays_and_units() {
     let start = applied_with(&l, &UI, false);
     assert!(!token_visible(&start, "902"), "not in stacks.visible_ids");
     assert_ne!(snap(&s), snap(&start));
+}
+
+// ------------------------------------------------------------ D-371-5b (#371 T5b)
+
+/// The frame of the engine re-selection branch (T5a): selection + reachable
+/// AND a build layer.
+fn layers_both() -> vm::RenderLayersDto {
+    let mut l = layers();
+    l.overlays.build_highlight = vm::BuildHighlightDto {
+        kind: vm::BuildHighlightKind::Improvement,
+        hexes: vec![hx(0, 1), hx(1, 0)],
+    };
+    l
+}
+
+fn frame_p(l: &vm::RenderLayersDto, siege_open: bool, p: HighlightPriority) -> FrameInputs {
+    FrameInputs::from_dto_with_priority(&statik(), l, &UI, siege_open, p).unwrap()
+}
+
+/// `from_dto` = `from_dto_with_priority(Build)` (default behaviour unchanged).
+#[test]
+fn t5b_from_dto_is_the_build_priority() {
+    for l in [layers(), layers_both()] {
+        for siege in [false, true] {
+            assert_eq!(
+                FrameInputs::from_dto(&statik(), &l, &UI, siege).unwrap(),
+                frame_p(&l, siege, HighlightPriority::Build)
+            );
+        }
+    }
+}
+
+/// The priority changes only the highlight call of the frame; the scene
+/// keeps the ring for both writers (mutants a, b, f on the frame entry).
+#[test]
+fn t5b_priority_selects_the_highlight_layer_of_the_frame() {
+    let l = layers_both();
+    let b = frame_p(&l, false, HighlightPriority::Build);
+    let r = frame_p(&l, false, HighlightPriority::Reachable);
+    assert_eq!(
+        b.overlays.units.highlight,
+        UnitHighlight::Set {
+            source: HighlightSource::Build(vm::BuildHighlightKind::Improvement),
+            hexes: vec![h(0, 1), h(1, 0)],
+            opacity: civ_renderer::map_units::consts::IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY,
+        }
+    );
+    assert_eq!(
+        r.overlays.units.highlight,
+        UnitHighlight::Set {
+            source: HighlightSource::Reachable,
+            hexes: vec![h(1, 1), h(2, 0)],
+            opacity: civ_renderer::map_units::consts::HIGHLIGHT_OPACITY,
+        }
+    );
+    // Everything else of the frame is the same.
+    let mut b2 = b.clone();
+    b2.overlays.units.highlight = r.overlays.units.highlight.clone();
+    assert_eq!(b2, r);
+    // Siege map panel: the reachable write is `clearHighlight()`.
+    assert_eq!(
+        frame_p(&l, true, HighlightPriority::Reachable)
+            .overlays
+            .units
+            .highlight,
+        UnitHighlight::Clear
+    );
+
+    let st = statik();
+    for (f, hexes) in [(&b, vec![h(0, 1), h(1, 0)]), (&r, vec![h(1, 1), h(2, 0)])] {
+        let mut scene = MapScene::new(&st, f, DETAIL);
+        scene.apply(f).unwrap();
+        let ring = scene.units().selection().expect("ring for both writers");
+        assert_eq!((ring.hex.q, ring.hex.r), (2, 1));
+        assert_eq!(scene.units().highlight().unwrap().hexes, hexes);
+    }
 }

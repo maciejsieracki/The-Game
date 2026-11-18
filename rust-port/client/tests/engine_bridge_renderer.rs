@@ -22,8 +22,9 @@ use bridge::{
     EngineBridge, EngineCommand, StartGameParams,
 };
 use civ_client::{
-    ClientError, ClientUiState, FrameError, MapDetailQuality, MapScene, MapUiState, RenderClient,
-    RenderFramePayload, RenderMapPayload, RenderSource, RenderUiParams, VIEWER_SEAT,
+    BuildMode, ClientError, ClientUiState, FrameError, HighlightPriority, MapDetailQuality,
+    MapScene, MapUiState, RenderClient, RenderFramePayload, RenderMapPayload, RenderSource,
+    RenderUiParams, VIEWER_SEAT,
 };
 use civ_engine::{PlayerId, PositionDto};
 use civ_renderer::map_units::{default_owner_color, default_ring_stance, RingStance};
@@ -804,4 +805,261 @@ fn detail_quality_reaches_the_terrain() {
     assert!(low.roblox_lite, "low: lite");
     assert!(!high.roblox_lite, "high: not lite");
     assert_ne!(low, high, "the detail changes the terrain");
+}
+
+// ------------------------------------------------------------ D-371-5b (#371 T5b)
+
+/// The improvement key of the scenario (`onSelectType`); the start capital
+/// gives it a non-empty qualifying set (asserted below).
+const KEY: &str = "farma";
+
+fn highlight_hexes(client: &Client) -> Option<Vec<(i32, i32)>> {
+    client
+        .scene()
+        .expect("scene")
+        .units()
+        .highlight()
+        .map(|h| h.hexes.iter().map(|x| (x.q, x.r)).collect())
+}
+
+fn dto_hexes(hexes: &[vm::HexCoord]) -> Vec<(i32, i32)> {
+    hexes.iter().map(|h| (h.q, h.r)).collect()
+}
+
+fn ring(client: &Client) -> Option<(i32, i32)> {
+    client
+        .scene()
+        .expect("scene")
+        .units()
+        .selection()
+        .map(|s| (s.hex.q, s.hex.r))
+}
+
+fn open_panel() -> BuildMode {
+    BuildMode {
+        build_mode_open: true,
+        ..BuildMode::default()
+    }
+}
+
+fn started_client() -> Client {
+    let mut client = RenderClient::new(BridgeSource::new(), MapDetailQuality::Low);
+    assert!(client.source_mut().command(EngineCommand::CreateSession {
+        params: StartGameParams::default(),
+    }));
+    client.on_session_created().expect("map");
+    client.on_state_changed().expect("frame");
+    client
+}
+
+/// The web scenario of D-371-5b end to end (engine -> bridge -> client ->
+/// renderer): `onOpenBuild` -> frame without selection -> `selectPlayerUnit`
+/// in build mode -> frame with `selection` + `reachable` (+ `buildHighlight`
+/// once a key is chosen), visible layer = range -> key change -> visible
+/// layer = build, selection and ring kept -> panel closed -> flag `false`.
+#[test]
+fn t5b_web_scenario_build_mode_reselect_end_to_end() {
+    let mut client = started_client();
+    assert_eq!(calls(&client), (1, 1));
+    assert_eq!(client.ui().highlight_last_writer, HighlightPriority::Build);
+
+    // 1. onOpenBuild: no selection, no reachable, no ring.
+    client.set_build_mode(open_panel()).expect("open panel");
+    assert_eq!(calls(&client), (1, 2));
+    let ui = &client.ui().frame_ui;
+    assert!(ui.build_mode_open && !ui.unit_selected_after_build_open);
+    assert_eq!(ui.selected_unit_id, None);
+    assert_eq!(client.ui().highlight_last_writer, HighlightPriority::Build);
+    let f = frame(&client);
+    assert_eq!(f.overlays.selection, None);
+    assert!(f.overlays.reachable.is_empty());
+    assert_eq!(ring(&client), None);
+    assert_renderer_mirrors_dto(&client, "panel open");
+
+    // 2. selectPlayerUnit with the panel open: flag on, writer Reachable.
+    client
+        .select_unit(Some(WARRIOR))
+        .expect("select in build mode");
+    assert_eq!(calls(&client), (1, 3), "RenderUiParams changed");
+    let ui = &client.ui().frame_ui;
+    assert_eq!(ui.selected_unit_id, Some(WARRIOR));
+    assert!(ui.unit_selected_after_build_open, "flag set in build mode");
+    assert_eq!(
+        client.ui().highlight_last_writer,
+        HighlightPriority::Reachable
+    );
+    assert_active_seat_frame(&mut client, "reselected");
+    assert_renderer_mirrors_dto(&client, "reselected");
+    assert_selection_drawn(&client, "reselected");
+    let reach = dto_hexes(&frame(&client).overlays.reachable);
+    let sel = frame(&client).overlays.selection.expect("selection");
+    assert_eq!(highlight_hexes(&client), Some(reach.clone()));
+
+    // 3. Key chosen (`onSelectType` -> `refreshBuildHighlight`): both layers
+    //    in the frame, the build layer wins; selection, flag and ring kept.
+    client
+        .set_active_improvement_key(Some(KEY.to_owned()))
+        .expect("key");
+    assert_eq!(calls(&client), (1, 4));
+    let ui = &client.ui().frame_ui;
+    assert_eq!(ui.selected_unit_id, Some(WARRIOR), "selection kept");
+    assert!(
+        ui.unit_selected_after_build_open,
+        "flag kept on a key change (mutant c)"
+    );
+    assert_eq!(client.ui().highlight_last_writer, HighlightPriority::Build);
+    assert_renderer_mirrors_dto(&client, "keyed");
+    assert_active_seat_frame(&mut client, "keyed");
+    let f = frame(&client).clone();
+    assert_eq!(f.overlays.selection, Some(sel), "selection in the frame");
+    assert_eq!(dto_hexes(&f.overlays.reachable), reach, "reachable kept");
+    assert_eq!(
+        f.overlays.build_highlight.kind,
+        vm::BuildHighlightKind::Improvement
+    );
+    let build = dto_hexes(&f.overlays.build_highlight.hexes);
+    assert!(!build.is_empty(), "{KEY}: qualifying hexes of the capital");
+    assert_ne!(build, reach);
+    assert_eq!(highlight_hexes(&client), Some(build.clone()), "build wins");
+    assert_eq!(
+        ring(&client),
+        Some((sel.hex.q, sel.hex.r)),
+        "ring kept (mutant f)"
+    );
+
+    // 4. The writer alone never calls the engine (D-371-4, mutant e).
+    client
+        .set_highlight_last_writer(HighlightPriority::Reachable)
+        .expect("writer");
+    assert_eq!(calls(&client), (1, 4), "writer change: no GetRenderFrame");
+    assert_eq!(highlight_hexes(&client), Some(reach.clone()));
+    assert_eq!(ring(&client), Some((sel.hex.q, sel.hex.r)));
+    assert_renderer_mirrors_dto(&client, "writer reachable");
+    client
+        .set_highlight_last_writer(HighlightPriority::Build)
+        .expect("writer back");
+    assert_eq!(calls(&client), (1, 4));
+    assert_eq!(highlight_hexes(&client), Some(build.clone()));
+    // `selectPlayerUnit` again with the key: same RenderUiParams, only the
+    // writer changes -> no engine call, the range wins.
+    client.select_unit(Some(WARRIOR)).expect("select again");
+    assert_eq!(
+        calls(&client),
+        (1, 4),
+        "same RenderUiParams: no GetRenderFrame"
+    );
+    assert_eq!(highlight_hexes(&client), Some(reach.clone()));
+    // An equal key does nothing (writer stays Reachable).
+    client
+        .set_active_improvement_key(Some(KEY.to_owned()))
+        .expect("same key");
+    assert_eq!(calls(&client), (1, 4));
+    assert_eq!(
+        client.ui().highlight_last_writer,
+        HighlightPriority::Reachable
+    );
+
+    // 5. Panel closed (`onOpenBuild` again): flag false, selection cleared.
+    client
+        .set_build_mode(BuildMode::default())
+        .expect("close panel");
+    assert_eq!(calls(&client), (1, 5));
+    let ui = &client.ui().frame_ui;
+    assert!(
+        !ui.unit_selected_after_build_open,
+        "flag zeroed on mode change"
+    );
+    assert!(!ui.build_mode_open);
+    assert_eq!(ui.selected_unit_id, None);
+    assert_eq!(ui.active_improvement_key, None);
+    assert_eq!(client.ui().highlight_last_writer, HighlightPriority::Build);
+    assert_eq!(frame(&client).overlays.selection, None);
+    assert_eq!(ring(&client), None);
+    assert_renderer_mirrors_dto(&client, "panel closed");
+
+    // 6. Outside build mode: a plain selection, the flag stays false
+    //    (mutant d).
+    client.select_unit(Some(WARRIOR)).expect("plain select");
+    assert_eq!(calls(&client), (1, 6));
+    assert_eq!(client.ui().frame_ui, selected(WARRIOR));
+    assert!(!client.ui().frame_ui.unit_selected_after_build_open);
+    assert_selection_drawn(&client, "plain select");
+    assert_active_seat_frame(&mut client, "plain select");
+}
+
+/// Mode switches inside the open panel (found city / wonder) zero the flag
+/// and make Build the writer (D-371-5b); the selection id is kept (only the
+/// panel toggle clears it), so the engine hides the unit overlays (D-OP-3).
+#[test]
+fn t5b_mode_switch_zeroes_the_flag_and_key_change_keeps_it() {
+    let mut client = started_client();
+    client.set_build_mode(open_panel()).expect("open");
+    client.select_unit(Some(WARRIOR)).expect("select");
+    assert!(client.ui().frame_ui.unit_selected_after_build_open);
+    let before = calls(&client);
+
+    // Key change: flag kept (mutant c).
+    client
+        .set_active_improvement_key(Some(KEY.to_owned()))
+        .expect("key");
+    assert!(client.ui().frame_ui.unit_selected_after_build_open);
+    client.set_active_improvement_key(None).expect("no key");
+    assert!(client.ui().frame_ui.unit_selected_after_build_open);
+    assert_eq!(calls(&client).1, before.1 + 2);
+
+    // Found city mode switched on inside the panel: flag zeroed.
+    client.select_unit(Some(WARRIOR)).expect("select");
+    client
+        .set_build_mode(BuildMode {
+            found_city_mode: true,
+            ..open_panel()
+        })
+        .expect("found city");
+    let ui = &client.ui().frame_ui;
+    assert!(!ui.unit_selected_after_build_open);
+    assert_eq!(ui.selected_unit_id, Some(WARRIOR));
+    assert_eq!(client.ui().highlight_last_writer, HighlightPriority::Build);
+    assert_eq!(frame(&client).overlays.selection, None);
+    assert!(frame(&client).overlays.reachable.is_empty());
+    assert_eq!(ring(&client), None);
+    assert_renderer_mirrors_dto(&client, "found city");
+
+    // selectPlayerUnit in found city mode: flag on again.
+    client.select_unit(Some(WARRIOR)).expect("select");
+    assert!(client.ui().frame_ui.unit_selected_after_build_open);
+    assert!(frame(&client).overlays.selection.is_some());
+    assert_eq!(
+        client.ui().highlight_last_writer,
+        HighlightPriority::Reachable
+    );
+    // Wonder switch: flag zeroed again; an equal mode does nothing.
+    client
+        .set_build_mode(BuildMode {
+            wonder_active: true,
+            ..open_panel()
+        })
+        .expect("wonder");
+    assert!(!client.ui().frame_ui.unit_selected_after_build_open);
+    let n = calls(&client);
+    client
+        .set_build_mode(BuildMode {
+            wonder_active: true,
+            ..open_panel()
+        })
+        .expect("same mode");
+    assert_eq!(calls(&client), n);
+}
+
+/// Before a session the new setters only store the state (no engine call).
+#[test]
+fn t5b_setters_before_session_only_store() {
+    let mut client = RenderClient::new(BridgeSource::new(), MapDetailQuality::Low);
+    client.set_build_mode(open_panel()).expect("stored");
+    client.select_unit(Some(WARRIOR)).expect("stored");
+    client
+        .set_highlight_last_writer(HighlightPriority::Build)
+        .expect("stored");
+    assert_eq!(calls(&client), (0, 0));
+    assert!(client.ui().frame_ui.unit_selected_after_build_open);
+    assert!(client.last_frame().is_none());
 }
