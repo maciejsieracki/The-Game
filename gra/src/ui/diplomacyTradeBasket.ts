@@ -57,7 +57,8 @@ import {
 } from '../game/diplomacy-acceptance-points';
 import { proposalActionIdFromPayload } from './diplomacyNegotiationModal';
 import type { ProposalPayload, ProposalActionId } from '../game/diplomacy-proposals';
-import { humanizeId, nazwaWyswietlana } from '../game/text-names';
+import { nazwaWyswietlana } from '../game/text-names';
+import { nazwaMiastaDyplomacji } from '../game/diplomacy-city-name';
 
 export type TradeBasketMode = 'trade' | 'gift' | 'treaty';
 
@@ -241,9 +242,10 @@ function toPnItems(items: BasketItem[], ctx: NegotiationModalContext): PnItem[] 
  * (1 sztuka, wycena PW, „(pokój)") żyje w pliku z allowlisty, a nie w diplomacyDealDisplay.ts.
  * Pozostałe typy — bez zmian, przez renderBasketItemValueBaseHtml.
  */
-function renderBasketItemValueHtml(item: BasketItem, fmtCtx: BasketItemFormatCtx): string {
+export function renderBasketItemValueHtml(item: BasketItem, fmtCtx: BasketItemFormatCtx): string {
   if (item.typ !== 'miasto') return renderBasketItemValueBaseHtml(item, fmtCtx);
-  const name = item.cityLabel ?? humanizeId(item.id);
+  // R-WEB-UI-DIPLO-OFFER-CITY-NAMES-RAW-ID-Q1: nazwa miasta, nigdy surowe id.
+  const name = nazwaMiastaDyplomacji(item.id, item.cityLabel);
   const pn = item.cityPn != null ? ' · ' + Math.round(item.cityPn) + ' PW' : '';
   return '<span class="da-deal-amt">miasto: ' + esc(name) + pn + '</span><span class="da-deal-once">(pokój)</span>';
 }

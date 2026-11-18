@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "9a7a9a7ca88dc7263c88c43ff1cfc5d5",
-  "bundleSha256": "df230c7b4d3895561c92727bc5d99417b120ba73f7acab6bc7bc0d9ea348267c",
-  "bundleBytes": 14861928,
+  "bundleMd5": "777f9176523bf4a90c2de0d1c8fae072",
+  "bundleSha256": "16548e20ff9bf9d461077c88702a80899303310d64bb4d88c2a55019ea84fbc6",
+  "bundleBytes": 14862452,
   "sourceSnapshot": {
-    "source": "FALA 814 d94f7c043+7c6ace95a na main da727c9a4",
+    "source": "FALA 815 262f59469 na main b92aab971",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 814: Marsz: zaplanowany marsz na koniec tury gracza wykorzystuje pozostaly ruch takze gdy jednostka byla ruszona recznie lub zatrzymala sie przed wlasna jednostka (S6); znacznik marsz ruszy na koniec tury w rozwinietym panelu jednostki (main.ts, planned-march, armyStackHud, hexContextTooltip, unitCardStatus); haki civTest zamiany stron i trybu recznego dla pomiaru Wojownik 10v10 (civ-test-hooks.ts, main.ts civTest)"
+    "FALA 815: Dyplomacja: karta oferty Dar/prezent, koszyk i lista miast pokazuja nazwy miast (jawna nazwa, nazwa z gry, miasto <cywilizacja>, miasto) zamiast surowych id typu City27; nowy modul diplomacy-city-name.ts podpiety w main.ts, diplomacyDealDisplay.ts, diplomacyTradeBasket.ts, diplomacy-display.ts"
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; march-multiturn-live (Chromium) ALL PASS 6; march-resume-next-turn 50/0; planned-march 18/0; rally-point-automarch 30/0; march-end-of-turn-only exit 0; sideswap-hooks-static 7/7; mutacja S6 czerwona"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplomacy-city-name 20/0; diplomacy-display 45/0; testy koszyka 21/31/25/24 zielone; mutacja renderera karty i koszyka czerwona"
   ],
   "limits": [
-    "march-attack-queue-persist 55/57 (g5, g8) bylo czerwone przed zmiana; wskaznik marszu tylko w rozwinietym panelu (pytanie produktowe); NIE ZMIERZONO scenariusza przerwania z MP>0 na EOT w zywej grze; pomiar Wojownik: przewaga obroncy nie wychodzi poza przedzial Wilson 95% przy n=20, przyczyna asymetrii NIE ZMIERZONA"
+    "NIE ZMIERZONO w zywej grze (Chromium); resolver w main.ts tylko wiazanie statyczne; okno pokoju wymuszonego i edycja oferty niezweryfikowane"
   ],
-  "finalControl": "R-WEB-MARCH-OWN-UNIT-STOP-LOSES-MP-AND-INDICATOR-Q1 r1 FC PASS-WITH-NOTES 572b05a09 (kod d94f7c043); R-WEB-TEST-HOOK-WARRIOR-SIDESWAP-MANUAL-MEASURE-Q1 r1 FC PASS-WITH-NOTES df8ce029e (kod 7c6ace95a)",
+  "finalControl": "R-WEB-UI-DIPLO-OFFER-CITY-NAMES-RAW-ID-Q1 r1 FC PASS-WITH-NOTES e94edc2e5 (kod 262f59469)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T00:26:04",
+  "hubGeneratedAt": "2026-11-18T00:33:27",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "9a7a9a7ca88dc7263c88c43ff1cfc5d5",
-      "sizeBytes": 14861928
+      "md5": "777f9176523bf4a90c2de0d1c8fae072",
+      "sizeBytes": 14862452
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "9a7a9a7ca88dc7263c88c43ff1cfc5d5",
-      "sizeBytes": 14861928
+      "md5": "777f9176523bf4a90c2de0d1c8fae072",
+      "sizeBytes": 14862452
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "9a7a9a7ca88dc7263c88c43ff1cfc5d5",
-      "sizeBytes": 14861928
+      "md5": "777f9176523bf4a90c2de0d1c8fae072",
+      "sizeBytes": 14862452
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "9a7a9a7ca88dc7263c88c43ff1cfc5d5",
-      "sizeBytes": 14861928
+      "md5": "777f9176523bf4a90c2de0d1c8fae072",
+      "sizeBytes": 14862452
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "9a7a9a7ca88dc7263c88c43ff1cfc5d5",
-      "sizeBytes": 14861928
+      "md5": "777f9176523bf4a90c2de0d1c8fae072",
+      "sizeBytes": 14862452
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "9a7a9a7ca88dc7263c88c43ff1cfc5d5",
-      "sizeBytes": 14861928
+      "md5": "777f9176523bf4a90c2de0d1c8fae072",
+      "sizeBytes": 14862452
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "9a7a9a7ca88dc7263c88c43ff1cfc5d5",
-      "sizeBytes": 14861928
+      "md5": "777f9176523bf4a90c2de0d1c8fae072",
+      "sizeBytes": 14862452
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "9a7a9a7ca88dc7263c88c43ff1cfc5d5",
-      "sizeBytes": 14861928
+      "md5": "777f9176523bf4a90c2de0d1c8fae072",
+      "sizeBytes": 14862452
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "9a7a9a7ca88dc7263c88c43ff1cfc5d5",
-      "sizeBytes": 14861928
+      "md5": "777f9176523bf4a90c2de0d1c8fae072",
+      "sizeBytes": 14862452
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "9a7a9a7ca88dc7263c88c43ff1cfc5d5",
-      "sizeBytes": 14861928
+      "md5": "777f9176523bf4a90c2de0d1c8fae072",
+      "sizeBytes": 14862452
     }
   ],
-  "md5": "9a7a9a7ca88dc7263c88c43ff1cfc5d5",
+  "md5": "777f9176523bf4a90c2de0d1c8fae072",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

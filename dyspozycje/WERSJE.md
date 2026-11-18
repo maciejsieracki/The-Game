@@ -1,3 +1,9 @@
+## ROBOCZA 777f9176 -- 2026-11-17 -- FALA 815: DIPLO-1: nazwy miast zamiast City27 w ofertach dyplomacji (testowa)
+
+- Dyplomacja: karta oferty Dar/prezent, koszyk i lista miast pokazuja nazwy miast (jawna nazwa, nazwa z gry, miasto <cywilizacja>, miasto) zamiast surowych id typu City27; nowy modul diplomacy-city-name.ts podpiety w main.ts, diplomacyDealDisplay.ts, diplomacyTradeBasket.ts, diplomacy-display.ts
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplomacy-city-name 20/0; diplomacy-display 45/0; testy koszyka 21/31/25/24 zielone; mutacja renderera karty i koszyka czerwona
+- Limity: NIE ZMIERZONO w zywej grze (Chromium); resolver w main.ts tylko wiazanie statyczne; okno pokoju wymuszonego i edycja oferty niezweryfikowane
+
 ## ROBOCZA 9a7a9a7c -- 2026-11-17 -- FALA 814: MARCHFIX + WARRIORHOOK: marsz wykorzystuje ruch przy wlasnej jednostce, wskaznik marszu, haki testowe Wojownika (testowa)
 
 - Marsz: zaplanowany marsz na koniec tury gracza wykorzystuje pozostaly ruch takze gdy jednostka byla ruszona recznie lub zatrzymala sie przed wlasna jednostka (S6); znacznik marsz ruszy na koniec tury w rozwinietym panelu jednostki (main.ts, planned-march, armyStackHud, hexContextTooltip, unitCardStatus); haki civTest zamiany stron i trybu recznego dla pomiaru Wojownik 10v10 (civ-test-hooks.ts, main.ts civTest)
