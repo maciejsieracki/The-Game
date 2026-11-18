@@ -69,6 +69,7 @@ import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from
 import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
 import { isAiAiTreatyTickEnabled, setAiAiTreatyTickEnabledForTest, planAiAiNapTreatyTickFull, applyAiAiNapBreachRelacja, aiAiNapBreachRelacjaDelta, type AiAiWarStatus } from './game/ai-ai-treaty-tick';
+import { isAiAiAllianceTickEnabled, setAiAiAllianceTickEnabledForTest, planAiAiAllianceTickFull } from './game/ai-ai-alliance-tick';
 import { typSwiataFromMenuLabel, defaultLandFractionPercentForTyp, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
 import { buildScene, getLastSetFogMs, type SceneBuildTimings, type SceneResult } from './render/scene';
 import { improvementAutomationBlockedRule } from './ui/administratorPanel';
@@ -25526,6 +25527,92 @@ async function boot(): Promise<void> {
       }
     }
 
+    /**
+     * R-WEB-AI-AI-ALLIANCES-E3-WIRING-FLAGGED-Q1: krok sojuszy AI↔AI, raz na turę, PO kroku NAP (tickAiAiTreatyRequests).
+     * Działa WYŁĄCZNIE gdy `torSojuszyAktywny` (gra/data/ai-ai-treaty-params.json, domyślnie false) — przy false zero zmiany stanu.
+     * Logika czysta: ai-ai-alliance-tick.ts (planAiAiAllianceTickFull, ocena przez E1 evaluateTreatyOffer, akcja 'sojusz_pelny').
+     * Zawarcie: ta sama końcówka co sojusz AI↔AI w gałęzi sióstr (addTreaty sojusz_pelny, wygasaTura null) + syncRelationFromDeals.
+     * Skutki akceptacji: dopłata D ZŁOTEM z płatnika na odbiorcę (skarbiec nigdy poniżej zera). Bez nowego UI.
+     */
+    function tickAiAiAllianceRequests(): void {
+      if (!isAiAiAllianceTickEnabled()) return;
+      refreshObjectivePowerCache();
+      const owners = Array.from(aiOwnerCivMap.keys())
+        .filter(oid => isMajorAiCivForForcedPeace(oid)
+          && !activeDeals.some(d => normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.Wasalizacja && d.strony.includes(oid)))
+        .sort((x, y) => x - y);
+      if (owners.length < 2) return;
+      const ownerSet = new Set<number>(owners);
+      const stubOf = (oid: number): Player => ({ ownerId: oid, typCywilizacji: aiOwnerCivMap.get(oid) } as unknown as Player);
+      // Limit sojuszy liczy wyłącznie sojusze AI↔AI między `owners` (sojusze z graczem poza limitem; założenie E3).
+      const alliancesCount = new Map<number, number>(owners.map(oid => [oid, 0] as [number, number]));
+      for (const d of activeDeals) {
+        if (!isAllianceDealKind(d.rodzaj)) continue;
+        const [a, b] = d.strony;
+        if (a === undefined || b === undefined || !ownerSet.has(a) || !ownerSet.has(b)) continue;
+        alliancesCount.set(a, (alliancesCount.get(a) ?? 0) + 1);
+        alliancesCount.set(b, (alliancesCount.get(b) ?? 0) + 1);
+      }
+      const alliancesOf = (oid: number): number[] => activeDeals
+        .filter(d => isAllianceDealKind(d.rodzaj) && d.strony.includes(oid))
+        .map(d => (d.strony[0] === oid ? d.strony[1] : d.strony[0]));
+      const plan = planAiAiAllianceTickFull({
+        turn,
+        owners,
+        alliancesCount,
+        pairPrefilter: (p, t) => {
+          if (getDiploRelation(p, t).status === 'wojna') return false;
+          if (hasTreaty(activeDeals, p, t, RodzajTraktatu.Rozejm)) return false;
+          return !activeDeals.some(d => isAllianceDealKind(d.rodzaj) && dealInvolvesOwners(d, p, t));
+        },
+        pairInfo: (p, t) => {
+          const rel = getDiploRelation(p, t);
+          const dipCtx: AIDiplomacyContext = {
+            isMinorCiv: false,
+            militaryRatio: militaryRatioFromArmyM(sumArmyMForOwner(p), sumArmyMForOwner(t)),
+            currentTurn: turn,
+            turnsAtWar: 0,
+          };
+          return {
+            warStatus: hasTreaty(activeDeals, p, t, RodzajTraktatu.Rozejm) ? 'rozejm' : rel.status,
+            hasNap: hasTreaty(activeDeals, p, t, RodzajTraktatu.PaktNieagresji),
+            hasAlliance: activeDeals.some(d => isAllianceDealKind(d.rodzaj) && dealInvolvesOwners(d, p, t)),
+            sharesBorder: ownersShareLandBorderLive(p, t),
+            relacja: relationScore(rel),
+            zaufanie: rel.zaufanie,
+            // Gotowość celu t wobec proponenta p (ta sama ścieżka co krok NAP i sojusze siostrzane).
+            willingness: aiDiplomacyStance(stubOf(t), stubOf(p), rel, dipCtx).willingnessAlly,
+          };
+        },
+        sideOf: (oid) => ({
+          power: objectivePowerForOwner(oid),
+          treasuryGold: 0,
+          allies: alliancesOf(oid),
+          enemies: allPowerOwnerIds().filter(x => x !== oid && getDiploRelation(oid, x).status === 'wojna'),
+        }),
+        treasury: new Map<number, number>(owners.map(oid => [oid, aiSkarbiecByOwner.get(oid) ?? 0] as [number, number])),
+      });
+      for (const [oid, po] of plan.treasuryPo) {
+        if ((aiSkarbiecByOwner.get(oid) ?? 0) !== po) aiSkarbiecByOwner.set(oid, po);
+      }
+      for (const tr of plan.accepted) {
+        const [p0, p1] = pairOwnerIds(tr.proposer, tr.target);
+        activeDeals = addTreaty(activeDeals, {
+          id: `sojusz_aiai_${p0}_${p1}_t${turn}`,
+          rodzaj: 'sojusz_pelny',
+          strony: [p0, p1],
+          wygasaTura: null,
+          zawartaTura: turn,
+        });
+        syncRelationFromDeals(tr.proposer, tr.target);
+        console.log(
+          `[Dyplomacja] AI↔AI Sojusz ${ownerDiploLabel(p0)}(${p0})-${ownerDiploLabel(p1)}(${p1}) ` +
+          `(pełny, bezterminowy)` +
+          (tr.paymentGold > 0 && tr.payer !== null ? `, dopłata ${tr.paymentGold} ¤ od ${ownerDiploLabel(tr.payer)}(${tr.payer})` : ''),
+        );
+      }
+    }
+
     function aiSojuszObowiazekParam(key: string, fallback: number): number {
       const v = (aiParamsRaw as Record<string, { wartosc?: number }>)[key]?.wartosc;
       return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
@@ -31348,6 +31435,11 @@ async function boot(): Promise<void> {
       (window as any).__truceTestDebug.aiAiTreatyTickForTest = {
         setEnabled: (v: boolean | null): void => { setAiAiTreatyTickEnabledForTest(v); },
         runTick: (): void => { tickAiAiTreatyRequests(); },
+      };
+      // R-WEB-AI-AI-ALLIANCES-E3 (hak testowy, NIE UI): przełącznik toru sojuszy AI↔AI i pojedynczy krok sojuszy.
+      (window as any).__truceTestDebug.aiAiAllianceTickForTest = {
+        setEnabled: (v: boolean | null): void => { setAiAiAllianceTickEnabledForTest(v); },
+        runTick: (): void => { tickAiAiAllianceRequests(); },
       };
       // R-WEB-AI-AI-TREATIES-LIVE-PROOF-INERT-Q1 (hak TESTOWY, tylko ?civTest=1, bez zmian logiki gry):
       // concludeNap = ta sama końcówka co akceptacja w tickAiAiTreatyRequests (addTreaty + syncRelationFromDeals),
@@ -47355,6 +47447,12 @@ async function boot(): Promise<void> {
               tickAiAiTreatyRequests();
             } catch (eAiAiTreaty) {
               console.error('[Dyplomacja] Blad paktow AI-AI (E2):', eAiAiTreaty);
+            }
+            // R-WEB-AI-AI-ALLIANCES-E3: sojusze AI↔AI (tor za przełącznikiem torSojuszyAktywny=false).
+            try {
+              tickAiAiAllianceRequests();
+            } catch (eAiAiAlliance) {
+              console.error('[Dyplomacja] Blad sojuszy AI-AI (E3):', eAiAiAlliance);
             }
             if (!aiTurnAwaitingBattle) {
               scanAutoSiegesAfterAiTurn();

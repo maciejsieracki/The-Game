@@ -6,5 +6,9 @@
   "zerwanie_relacja": -30,
   "zerwanie_zaufanie": -20,
   "_uwaga_zerwanie": "P-4 A: zerwanie NAP/sojuszu przez AI — jak dla gracza (−30 Relacji, −20 Zaufania). Stosowane przy zerwaniu, nie przy zawarciu.",
-  "_uwaga_nap": "P-5 A: NAP AI↔AI trwa 15 tur (taki sam domyślny czas jak resolveNapDealExpiry dla gracza)."
+  "_uwaga_nap": "P-5 A: NAP AI↔AI trwa 15 tur (taki sam domyślny czas jak resolveNapDealExpiry dla gracza).",
+  "_uwaga_sojusze": "R-WEB-AI-AI-ALLIANCES-E3 (ABC 2026-11-18): torSojuszyAktywny=false = tor SOJUSZY AI↔AI WYŁĄCZONY (zachowanie gry bez zmian). Włączenie na ROBOCZEJ dopiero po pomiarze (ABC). Ustawiane wyłącznie w danych / testach civTest, nie w UI.",
+  "torSojuszyAktywny": false,
+  "maxSojuszyNaCywilizacje": 2,
+  "alliancePonowneProbyTur": 8
 }
