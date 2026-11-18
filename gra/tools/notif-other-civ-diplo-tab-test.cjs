@@ -34,14 +34,14 @@ const CHENGDU = 'Chengdu — kapitulacja z głodu! Miasto przejęte przez Rzymia
 
 fs.writeFileSync(
   ENTRY,
-  "export { eventTabOf } from '../src/ui/sidePanelEventTabs';\n"
+  "export { eventTabOf, captureEventOrigin } from '../src/ui/sidePanelEventTabs';\n"
     + "export { deferredHintsToSidePanelEvents } from '../src/game/eot-event-defer';\n",
 );
 esbuild.buildSync({
   entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
   outfile: BUNDLE, absWorkingDir: GRA, logLevel: 'silent',
 });
-const { eventTabOf, deferredHintsToSidePanelEvents } = require(BUNDLE);
+const { eventTabOf, deferredHintsToSidePanelEvents, captureEventOrigin } = require(BUNDLE);
 
 console.log('notif-other-civ-diplo-tab-test (R-WEB-UI-NOTIF-OTHER-CIV-EVENTS-TO-DIPLOMACY-TAB-Q1)\n');
 
@@ -57,12 +57,17 @@ check(eventTabOf(noOrigin[0]) === 'wazne', '(3) ta sama treść bez origin -> wa
 const playerSide = deferredHintsToSidePanelEvents([{ msg: 'Ur — kapitulacja z głodu! Miasto przejęte przez Rzymian.', durationMs: 5500, ownerId: 0 }], 7);
 check(eventTabOf(playerSide[0]) === 'wazne', '(3b) kapitulacja z udziałem gracza -> wazne', eventTabOf(playerSide[0]));
 
-// (4) strażnik na źródle main.ts
+// (4) predykat zachowaniowy: origin tylko gdy gracz nie jest ani starym, ani nowym właścicielem
+check(captureEventOrigin(false, false) === 'other-civs', '(4a) AI→AI (gracz poza stronami) -> other-civs', captureEventOrigin(false, false));
+check(captureEventOrigin(true, false) === undefined, '(4b) gracz = poprzedni właściciel -> brak origin', captureEventOrigin(true, false));
+check(captureEventOrigin(false, true) === undefined, '(4c) gracz = zdobywca -> brak origin', captureEventOrigin(false, true));
+check(captureEventOrigin(true, true) === undefined, '(4d) gracz po obu stronach -> brak origin', captureEventOrigin(true, true));
+// (4e) strażnik wiringu: main.ts wywołuje predykat i przekazuje origin do showHintMessage
 const mainTs = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
-check(mainTs.includes('const capitulationOtherCivs = !isHuman(oldOwner) && !isHuman(newOwner);'),
-  '(4) main.ts: warunek other-civs = !isHuman(oldOwner) && !isHuman(newOwner)');
-check(mainTs.includes("...(capitulationOtherCivs ? { origin: 'other-civs' as const } : {}),"),
-  '(4b) main.ts: origin przekazany do showHintMessage tylko gdy capitulationOtherCivs');
+check(mainTs.includes('const capitulationOrigin = captureEventOrigin(isHuman(oldOwner), isHuman(newOwner));'),
+  '(4e) main.ts: origin liczony predykatem captureEventOrigin(isHuman(oldOwner), isHuman(newOwner))');
+check(mainTs.includes("...(capitulationOrigin ? { origin: capitulationOrigin } : {}),"),
+  '(4f) main.ts: origin przekazany do showHintMessage gdy ustawiony');
 
 // (5) mutacja w pamięci: cofnięcie propagacji origin w eot-event-defer.ts (nic nie zapisuje do src/)
 const defSrc = fs.readFileSync(path.join(GRA, 'src', 'game', 'eot-event-defer.ts'), 'utf8');

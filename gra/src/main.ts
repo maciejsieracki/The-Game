@@ -1199,6 +1199,7 @@ import {
   type DeferrableNoticeChannel,
 } from './game/event-defer-queue';
 import { isBlockingSidePanelEvent } from './game/side-panel-event-priority';
+import { captureEventOrigin } from './ui/sidePanelEventTabs';
 import {
   sidePanelEventLinkKind,
   sidePanelEventLinkLabel,
@@ -18980,11 +18981,11 @@ async function boot(): Promise<void> {
           : `${capitulationBaseMsg} ${captureReportOneLine(surrenderRows)}`;
         // R-WEB-UI-NOTIF-OTHER-CIV-EVENTS-TO-DIPLOMACY-TAB-Q1: gracz nie jest stroną (ani zdobywca,
         // ani poprzedni właściciel) → origin 'other-civs' = zakładka „Dyplomacja”, nie „Ważne”.
-        const capitulationOtherCivs = !isHuman(oldOwner) && !isHuman(newOwner);
+        const capitulationOrigin = captureEventOrigin(isHuman(oldOwner), isHuman(newOwner));
         showHintMessage(capitulationMsg, captureOutcome ? 6000 : 5500, {
           cityId: city.id,
           ownerId: newOwner,
-          ...(capitulationOtherCivs ? { origin: 'other-civs' as const } : {}),
+          ...(capitulationOrigin ? { origin: capitulationOrigin } : {}),
         });
       } else {
         showHintMessage(city.name + ': głód — oblężenie zakończone bez przejęcia.', 4500);
