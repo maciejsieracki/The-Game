@@ -1,0 +1,330 @@
+'use strict';
+/**
+ * diplo-forced-peace-d2-live-test.cjs -- R-WEB-DIPLO-FORCED-PEACE-D2-HOOKS-Q1 (runda 1, Operator).
+ *
+ * Żywa gra w headless Chromium (bundle Vite, ?playtest=mapa&civTest=1), REALNE endTurn / okno / akceptacja.
+ * Trzy ścieżki z dispatchu:
+ *   D2 -- dwa pokoje wymuszone w tej samej turze; po akceptacji pierwszego drugie okno pojawia się SAMO
+ *         (bez Esc/kliknięcia), pending maleje do 1, tura blokowana do akceptacji drugiego.
+ *   S  -- zapis gry z oczekującym pokojem wymuszonym, potem wczytanie: czy pending wraca i okno otwiera się samo.
+ *   A  -- pokój wymuszony AI<->AI: nie trafia do kolejki gracza (pendingForcedPeaceForTest) i nie otwiera okna.
+ *
+ * Hooki civTest użyte: setWarAge, pendingForcedPeaceForTest, pairState, warLogForTest, declareWar,
+ *   wearinessStateForTest, saveForTest / loadForTest (dopisane w tym temacie, tylko ?civTest=1).
+ *
+ * Usage (z gra/): SKIP_BUILD=1 node tools/diplo-forced-peace-d2-live-test.cjs <buildDir> [evidenceDir]
+ * Wynik: kod wyjścia 0 = wszystkie zmierzone asercje PASS. Scenariusz bez wystarczających warunków = NIE ZMIERZONO.
+ */
+const path = require('path');
+const fs = require('fs');
+const os = require('os');
+
+const GRA_DIR = path.resolve(__dirname, '..');
+const BUILD = process.argv[2] || path.join(os.tmpdir(), 'civ-fp-d2-' + process.pid);
+const EVIDENCE = process.argv[3] || path.join(BUILD, 'evidence');
+const OUT_HTML = 'file://' + path.join(BUILD, 'index.html') + '?playtest=mapa&civTest=1';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
+const PLAYER = 0;
+const SLOT = 'd2-forced-peace-slot';
+
+const results = {};
+let fails = 0;
+function scenario(id, label) { results[id] = { label, asserts: [], status: 'PASS' }; console.log(`[${id}] ${label}`); }
+function check(id, ok, what, detail) {
+  results[id].asserts.push({ ok: !!ok, what, detail });
+  console.log(`  ${ok ? 'OK  ' : 'FAIL'} ${what}${detail !== undefined ? ' -- ' + JSON.stringify(detail) : ''}`);
+  if (!ok) { results[id].status = 'FAIL'; fails++; }
+}
+function measured(id, what, detail) { results[id].asserts.push({ ok: null, what, detail }); console.log(`  DATA ${what} -- ${JSON.stringify(detail)}`); }
+function nmz(id, why) { results[id].status = 'NIE ZMIERZONO'; results[id].why = why; console.log(`  NIE ZMIERZONO: ${why}`); }
+
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+async function launchBrowser(chromium) {
+  try { return await chromium.launch({ headless: true }); }
+  catch (e) {
+    return await chromium.launch({ headless: true, executablePath: FALLBACK_CHROME, args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
+  }
+}
+async function gotoPlaytestMapa(page) {
+  await page.goto(OUT_HTML, { waitUntil: 'load', timeout: 120000 });
+  await page.waitForSelector('.civ-hud, .civ-ux-frame, .civ-cs', { timeout: 120000 });
+  for (let i = 0; i < 900; i++) {
+    if ((await page.locator('text=Tworzenie świata').count()) === 0) break;
+    await wait(1000);
+  }
+  await page.waitForFunction(
+    () => !!window.__peaceRulesTestDebug && !!window.__truceTestDebug && !!window.__eraTestDebug
+      && window.__eraTestDebug.getWorldState().citiesLen > 0 && window.__eraTestDebug.getWorldState().turn === 1,
+    undefined, { timeout: 900000 },
+  );
+  await wait(300);
+}
+const waitIdle = (page) => page.waitForFunction(() => !window.__eraTestDebug.isEndTurnInProgress(), undefined, { timeout: 180000 });
+const turnNo = (page) => page.evaluate(() => window.__truceTestDebug.turn());
+const pendingList = (page) => page.evaluate(() => window.__truceTestDebug.pendingForcedPeaceForTest());
+const overlayCount = (page) => page.locator('.civ-diplo-modal-overlay .cd-forced-peace-ok').count();
+const battleCount = (page) => page.locator('.pb-overlay').count();
+const pairStatus = (page, ai) => page.evaluate(([a, b]) => window.__truceTestDebug.pairState(a, b).status, [PLAYER, ai]);
+const aiPairStatus = (page, a, b) => page.evaluate(([x, y]) => window.__truceTestDebug.pairState(x, y).status, [a, b]);
+
+async function closeSummaries(page) {
+  let n = 0;
+  for (let i = 0; i < 10; i++) {
+    const btn = page.locator('button').filter({ hasText: /^\s*kontynuuj\s*$/i }).first();
+    if (!(await btn.count()) || !(await btn.isVisible().catch(() => false))) break;
+    await btn.click({ force: true, timeout: 5000 }).catch(() => {});
+    n++;
+    await wait(400);
+    await waitIdle(page);
+  }
+  return n;
+}
+async function clearBattles(page) {
+  let n = 0;
+  for (let i = 0; i < 40; i++) {
+    n += await closeSummaries(page);
+    if ((await page.locator('.pb-overlay').count()) === 0) break;
+    const auto = page.locator('.pb-overlay button[data-act="auto"]:not([disabled])').first();
+    const target = (await auto.count()) ? auto : page.locator('.pb-overlay button:not([disabled])').first();
+    await target.click({ force: true, timeout: 5000 }).catch(() => {});
+    n++;
+    await wait(700);
+    await waitIdle(page);
+  }
+  n += await closeSummaries(page);
+  return n;
+}
+/** Jedna tura przez REALNE endTurn; bitwy AI domykane. Zwraca stan pending widoczny po endTurn (przed domknięciem bitew). */
+async function driveOneTurn(page) {
+  const start = await turnNo(page);
+  await waitIdle(page);
+  await clearBattles(page);
+  await page.evaluate(() => window.__eraTestDebug.endTurn());
+  await waitIdle(page);
+  await wait(150);
+  const pendingAfterEnd = (await pendingList(page)).length;
+  await clearBattles(page);
+  return { advanced: (await turnNo(page)) > start, pendingAfterEnd };
+}
+/** Czeka na okno pokoju wymuszonego, domykając bitwy AI po drodze (bez akcji na oknie). */
+async function waitOverlay(page, ms) {
+  const t = Date.now();
+  let cleared = 0;
+  while (Date.now() - t < ms) {
+    if ((await overlayCount(page)) > 0) return { ok: true, sec: (Date.now() - t) / 1000, cleared };
+    cleared += await clearBattles(page);
+    await wait(500);
+  }
+  return { ok: false, sec: ms / 1000, cleared };
+}
+const armAutoOpenObserver = (page) => page.evaluate(() => {
+  window.__fpFirstSeen = null;
+  if (window.__fpObs) window.__fpObs.disconnect();
+  window.__fpObs = new MutationObserver(() => {
+    if (window.__fpFirstSeen === null && document.querySelector('.civ-diplo-modal-overlay .cd-forced-peace-ok')) {
+      window.__fpFirstSeen = performance.now();
+    }
+  });
+  window.__fpObs.observe(document.body, { childList: true, subtree: true });
+});
+const autoOpenSeen = (page) => page.evaluate(() => window.__fpFirstSeen !== null);
+const overlayTopmost = (page) => page.evaluate(() => {
+  const b = document.querySelector('.civ-diplo-modal-overlay .cd-forced-peace-ok');
+  if (!b) return false;
+  const r = b.getBoundingClientRect();
+  const el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+  return !!el && !!el.closest('.civ-diplo-modal-overlay');
+});
+/** Akceptacja okna: klik DOM na przycisku (przycisk pod nakładką bywa nieklikalny dla Playwright). */
+const acceptOverlay = (page) => page.evaluate(() => {
+  const b = document.querySelector('.civ-diplo-modal-overlay .cd-forced-peace-ok');
+  if (b) b.click();
+});
+async function tryEndFullTurn(page) {
+  const start = await turnNo(page);
+  for (let i = 0; i < 8; i++) {
+    await waitIdle(page);
+    await clearBattles(page);
+    if (await overlayCount(page)) return false;
+    await page.evaluate(() => window.__eraTestDebug.endTurn());
+    await waitIdle(page);
+    await wait(150);
+    await clearBattles(page);
+    if ((await turnNo(page)) > start) return true;
+    if (await overlayCount(page)) return false;
+  }
+  return false;
+}
+/** Prowadzi tury, aż pending ma co najmniej `want` pozycji (tura utworzenia). */
+async function advanceUntilPending(page, want, maxTurns) {
+  const log = [];
+  for (let k = 0; k < maxTurns; k++) {
+    const n = (await pendingList(page)).length;
+    if (n >= want) return { ok: true, turns: k, log, n };
+    log.push(await driveOneTurn(page));
+  }
+  return { ok: (await pendingList(page)).length >= want, turns: maxTurns, log, n: (await pendingList(page)).length };
+}
+
+async function main() {
+  const { chromium } = require(path.join(GRA_DIR, 'node_modules', 'playwright'));
+  fs.mkdirSync(EVIDENCE, { recursive: true });
+  const browser = await launchBrowser(chromium);
+  const errors = [];
+  const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+  page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
+  page.on('console', (m) => { if (m.type() === 'error') errors.push('console.error: ' + m.text()); });
+  let ais = [];
+  try {
+    await gotoPlaytestMapa(page);
+    await page.evaluate(() => window.__truceTestDebug.suppressVictoryForTest());
+    await page.evaluate(() => window.__nnsMeasureDebug && window.__nnsMeasureDebug.setPlayerGranary(999));
+    ais = await page.evaluate(() => window.__peaceRulesTestDebug.listAiOwnerIds());
+    console.log(`AI owners: ${JSON.stringify(ais)}`);
+  } catch (e) {
+    console.error('SETUP FAIL', e.message);
+    fails++;
+  }
+
+  // ---------------- D2: drugi pokój wymuszony w tej samej turze
+  scenario('D2', 'D2: dwa pokoje wymuszone w tej samej turze -> po akceptacji pierwszego drugie okno pojawia się samo');
+  if (ais.length < 2) {
+    nmz('D2', `mapa testowa ma ${ais.length} AI (potrzebne 2)`);
+  } else {
+    try {
+      await page.evaluate((list) => { list.forEach(a => window.__truceTestDebug.setWarAge(a, 40)); }, ais.slice(0, 2));
+      const st = [await pairStatus(page, ais[0]), await pairStatus(page, ais[1])];
+      check('D2', st[0] === 'wojna' && st[1] === 'wojna', 'setup: obie pary z graczem w stanie wojny', { st });
+      const adv = await advanceUntilPending(page, 2, 12);
+      measured('D2', 'tury do pending (dane)', { turns: adv.turns, log: adv.log, n: adv.n });
+      check('D2', adv.n === 2, 'w jednej turze powstają DWA oczekujące pokoje (pending = 2)', { n: adv.n });
+      const w1 = await waitOverlay(page, 90000);
+      await closeSummaries(page);
+      check('D2', w1.ok && (await overlayCount(page)) === 1 && (await overlayTopmost(page)), 'okno pierwszego pokoju pojawia się samo i jest na wierzchu', { sec: w1.sec, pending: (await pendingList(page)).length });
+      const before = await pendingList(page);
+      check('D2', before.length === 2, 'przed akceptacją pending = 2', { keys: before.map(p => p.pairKey) });
+      await armAutoOpenObserver(page);
+      await acceptOverlay(page);
+      await wait(600);
+      const after1 = await pendingList(page);
+      check('D2', after1.length === 1, 'po akceptacji pierwszego pending maleje do 1', { n: after1.length });
+      check('D2', after1.length === 1 && after1[0].pairKey !== before[0].pairKey, 'pozostała pozycja to DRUGI pokój (inny pairKey)', { first: before[0].pairKey, rest: after1.map(p => p.pairKey) });
+      const count2 = await overlayCount(page);
+      const seen2 = await autoOpenSeen(page);
+      check('D2', count2 === 1 && seen2, 'drugie okno pojawia się SAMO po akceptacji pierwszego (bez Esc/kliknięcia; MutationObserver)', { count: count2, seen2 });
+      check('D2', (await overlayTopmost(page)), 'drugie okno jest na wierzchu');
+      measured('D2', 'statusy par po akceptacji pierwszego', { p1: await pairStatus(page, ais[0]), p2: await pairStatus(page, ais[1]) });
+      const endBlocked = await tryEndFullTurn(page);
+      check('D2', endBlocked === false, 'tura NIE kończy się, dopóki wisi drugi pokój (blokada)', { advanced: endBlocked });
+      await acceptOverlay(page);
+      await wait(600);
+      check('D2', (await pendingList(page)).length === 0 && (await overlayCount(page)) === 0, 'po akceptacji drugiego: pending = 0, okno zamknięte');
+      check('D2', (await pairStatus(page, ais[1])) !== 'wojna', 'po akceptacji drugiego para z drugim AI nie jest w wojnie', { status: await pairStatus(page, ais[1]) });
+      check('D2', (await tryEndFullTurn(page)) === true, 'po akceptacji obu tura kończy się normalnie');
+    } catch (e) {
+      console.error('D2 EXC', e.message);
+      results.D2.asserts.push({ ok: false, what: 'wyjątek', detail: e.message }); results.D2.status = 'FAIL'; fails++;
+    }
+  }
+
+  // ---------------- S: zapis i wczytanie z oczekującym pokojem
+  scenario('S', 'S: zapis gry z oczekującym pokojem wymuszonym, wczytanie -> pending wraca i okno otwiera się samo');
+  if (ais.length < 1) {
+    nmz('S', 'brak AI');
+  } else {
+    try {
+      const ai = ais[0];
+      await page.evaluate((a) => window.__truceTestDebug.setWarAge(a, 40), ai);
+      check('S', (await pairStatus(page, ai)) === 'wojna', 'setup: para z graczem w stanie wojny przed utworzeniem pending', { status: await pairStatus(page, ai) });
+      const adv = await advanceUntilPending(page, 1, 12);
+      check('S', adv.n === 1, 'pending pokoju wymuszonego powstaje (1)', { turns: adv.turns, n: adv.n });
+      const w = await waitOverlay(page, 90000);
+      await closeSummaries(page);
+      check('S', w.ok && (await overlayCount(page)) === 1, 'okno pokoju pojawia się przed zapisem', { sec: w.sec });
+      const pendBefore = await pendingList(page);
+      const turnBefore = await turnNo(page);
+      const saved = await page.evaluate((s) => window.__truceTestDebug.saveForTest(s), SLOT);
+      check('S', saved === true, 'zapis z oczekującym pokojem zakończony (persistSaveToSlot)', { saved });
+      // Zamknięcie okna przed wczytaniem NIE jest wykonywane: wczytanie ma zastać pending w stanie zapisu.
+      await page.evaluate((s) => window.__truceTestDebug.loadForTest(s), SLOT);
+      await wait(1500);
+      await waitIdle(page);
+      const pendAfter = await pendingList(page);
+      measured('S', 'pending przed zapisem / po wczytaniu, tura przed/po', { pendBefore, pendAfter, turnBefore, turnAfter: await turnNo(page) });
+      check('S', pendAfter.length === 1 && pendAfter[0].pairKey === pendBefore[0].pairKey, 'po wczytaniu pending wraca (ten sam pairKey)', { n: pendAfter.length });
+      const wl = await waitOverlay(page, 60000);
+      await closeSummaries(page);
+      const shown = await overlayCount(page);
+      check('S', wl.ok && shown === 1 && (await overlayTopmost(page)), 'po wczytaniu okno pokoju otwiera się samo i jest na wierzchu', { sec: wl.sec, shown });
+      await acceptOverlay(page);
+      await wait(600);
+      check('S', (await pendingList(page)).length === 0 && (await overlayCount(page)) === 0, 'po akceptacji po wczytaniu pending = 0, okno zamknięte');
+      check('S', (await tryEndFullTurn(page)) === true, 'po akceptacji po wczytaniu tura kończy się normalnie');
+    } catch (e) {
+      console.error('S EXC', e.message);
+      results.S.asserts.push({ ok: false, what: 'wyjątek', detail: e.message }); results.S.status = 'FAIL'; fails++;
+    }
+  }
+
+  // ---------------- A: pokój AI<->AI nie trafia do kolejki gracza i nie otwiera okna
+  scenario('A', 'A: pokój wymuszony AI<->AI nie otwiera okna gracza i nie trafia do kolejki gracza');
+  if (ais.length < 2) {
+    nmz('A', `mapa testowa ma ${ais.length} AI (potrzebne 2 dla wojny AI<->AI)`);
+  } else {
+    try {
+      const [a, b] = ais;
+      await page.evaluate(([x, y]) => window.__truceTestDebug.declareWar(x, y), [a, b]);
+      const st0 = await aiPairStatus(page, a, b);
+      measured('A', 'stan pary AI<->AI po wypowiedzeniu wojny (dane)', { st0, weariness: await page.evaluate(([x, y]) => window.__truceTestDebug.wearinessStateForTest(x, y), [a, b]) });
+      if (st0 !== 'wojna') {
+        nmz('A', `wojna AI<->AI nie powstała (status „${st0}”) — brak wpływu na kolejkę gracza do zmierzenia`);
+      } else {
+        await armAutoOpenObserver(page);
+        let forcedTurn = null;
+        let leakedToPlayer = false;
+        let openedWindow = false;
+        const MAX = 60;
+        for (let k = 0; k < MAX; k++) {
+          await driveOneTurn(page);
+          const pl = await pendingList(page);
+          if (pl.some(p => (p.loser === a || p.loser === b) && (p.winner === a || p.winner === b))) leakedToPlayer = true;
+          if (pl.some(p => p.loser !== PLAYER && p.winner !== PLAYER)) leakedToPlayer = true;
+          if ((await overlayCount(page)) > 0 || (await autoOpenSeen(page))) { openedWindow = true; break; }
+          const st = await aiPairStatus(page, a, b);
+          if (st !== 'wojna') { forcedTurn = k + 1; break; }
+        }
+        await closeSummaries(page);
+        const wl = await warLogText(page);
+        const forced = /zmęczenie wojną/.test(wl) || /Wymuszony przez zmęczenie/.test(wl);
+        measured('A', 'wynik po pętli tur', { turnsRun: forcedTurn, endStatus: await aiPairStatus(page, a, b), forcedInWarLog: forced, pendingNow: await pendingList(page) });
+        if (forcedTurn === null) {
+          nmz('A', `pokój AI<->AI nie zapadł w ${MAX} turach — asercje nieobsadzone (dane powyżej)`);
+        } else {
+          check('A', !leakedToPlayer, 'pending gracza nie zawiera pary AI<->AI', { pending: await pendingList(page) });
+          check('A', !openedWindow, 'okno pokoju gracza się NIE otwiera w turach pokoju AI<->AI');
+          check('A', forced, 'pokój AI<->AI zawarty przez zmęczenie (wpis warLog „Wymuszony przez zmęczenie”)', { forced });
+        }
+      }
+    } catch (e) {
+      console.error('A EXC', e.message);
+      results.A.asserts.push({ ok: false, what: 'wyjątek', detail: e.message }); results.A.status = 'FAIL'; fails++;
+    }
+  }
+
+  check('D2', errors.length === 0, 'zero pageerror/console.error (cały przebieg)', errors.slice(0, 5));
+  await browser.close();
+  Object.keys(results).forEach((k) => {
+    if (results[k].status === 'PASS' && results[k].asserts.every(x => x.ok === null)) results[k].status = 'BRAK ASERCJI';
+  });
+  fs.writeFileSync(path.join(EVIDENCE, 'wyniki-d2.json'), JSON.stringify({ results }, null, 2));
+  console.log('\n=== WYNIKI ===');
+  Object.keys(results).forEach((k) => console.log(`${k}: ${results[k].status} — ${results[k].label}${results[k].why ? ' (' + results[k].why + ')' : ''}`));
+  console.log(fails === 0 ? 'EXIT 0 (wszystkie zmierzone asercje PASS)' : `EXIT 1 (asercje FAIL: ${fails})`);
+  process.exit(fails === 0 ? 0 : 1);
+}
+
+async function warLogText(page) {
+  return page.evaluate(() => { try { return JSON.stringify(window.__truceTestDebug.warLogForTest()); } catch (e) { return 'ERR ' + e; } });
+}
+
+main().catch((e) => { console.error('FATAL', e); process.exit(2); });
