@@ -393,8 +393,21 @@ function warDespairTooltipPl(): string {
     + '), słabością siły (' + pct(L.wagaSily) + ') i utratą miast (' + pct(L.wagaStrat)
     + ' przy nasyceniu ' + L.stratyNasycenie + ' miast). '
     + 'Dotyczy tylko strony przegrywającej i decyduje wyłącznie o tym, czy ta strona składa ofertę miast '
-    + '(od progu ' + pct(L.progiStopni[0] ?? 0) + '); nie wymusza pokoju. '
+    + '(od progu ' + pct(L.progiStopni[0] ?? 0) + ', nie wcześniej niż po ' + L.ofertaOdTurWojny + ' turach wojny, '
+    + 'a bez utraty miast po ' + L.ofertaBezStratOdTur + ' turach); nie wymusza pokoju. '
     + '0%, gdy strona nie jest wyraźnie słabsza (udział jej siły powyżej ' + pct(L.udzialWyraznie) + ').';
+}
+
+/**
+ * Wiersz „Pokój wymuszony” pod zmęczeniem wojną: etykieta + wartość „za ≈N tur” (liczone z parametrów,
+ * tylko przy stałym tempie, bez zmiany posiadania miast). Przy 100% — „już trwa”.
+ */
+export function warWearinessForcedRowPl(level: number): { label: string; value: string } {
+  const Z = wearyParamsRaw.zmeczenie;
+  const toForced = warWearinessTurnsToLevel(level, Z.progWymuszonyPokoj);
+  return toForced > 0
+    ? { label: 'Pokój wymuszony', value: 'za ≈' + formatTurCountAcc(toForced) }
+    : { label: 'Pokój wymuszony', value: 'już trwa (100%)' };
 }
 
 /**
@@ -405,10 +418,9 @@ function warWearinessScaleTooltipPl(level: number): string {
   const Z = wearyParamsRaw.zmeczenie;
   const pct = (v: number): string => Math.round(v * 100) + '%';
   const perTurn = 100 / Z.pelneTur;
-  const perCity = Z.wagaStratMiasta * 100;
-  const toForced = warWearinessTurnsToLevel(level, Z.progWymuszonyPokoj);
-  const forcedTxt = toForced > 0
-    ? 'Pokój wymuszony za ' + formatTurCountAcc(toForced) + ' przy obecnym tempie (bez zmiany posiadania miast).'
+  const forced = warWearinessForcedRowPl(level);
+  const forcedTxt = forced.value.startsWith('za')
+    ? 'Pokój wymuszony ' + forced.value + ' przy obecnym tempie (bez zmiany posiadania miast).'
     : 'Pokój wymuszony już trwa — poziom osiągnął 100%.';
   return 'Zmęczenie wojną: skala 0–100%, gdzie 0% = start wojny, a 100% = pokój wymuszony. '
     + 'Rośnie o ' + perTurn.toFixed(1).replace('.', ',') + '% za każdą turę wojny i o ' + pct(Z.wagaStratMiasta)

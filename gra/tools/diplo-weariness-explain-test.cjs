@@ -25,6 +25,7 @@ function check(name, cond, detail) {
 const ENTRY_SRC = [
   "export { warWearinessLabelPl } from './game/diplomacy-display';",
   "export { warWearinessTurnsToLevel } from './game/war-weariness-view';",
+  "export { warWearinessForcedRowPl } from './game/diplomacy-display';",
   '',
 ].join('\n');
 
@@ -52,14 +53,24 @@ async function main() {
     check('E1 etykieta zmęczenia z procentem', z && z.label === 'Zmęczenie wojną 20%', z);
     const t = z.tooltip;
     check('E2 skala: 0% = start wojny, 100% = pokój wymuszony', t.includes('0% = start wojny') && t.includes('100% = pokój wymuszony'), t);
-    check('E3 narastanie z parametrów (2,5% na turę, 10% za miasto)',
-      t.includes('2,5% za każdą turę wojny') && t.includes(pctTxt(Z.wagaStratMiasta) + ' za każde miasto'), t);
+    const perTurnTxt = (100 / Z.pelneTur).toFixed(1).replace('.', ',') + '%';
+    check('E3 narastanie z parametrów (100/pelneTur % na turę, wagaStratMiasta za miasto)',
+      t.includes(perTurnTxt + ' za każdą turę wojny') && t.includes(pctTxt(Z.wagaStratMiasta) + ' za każde miasto'), { perTurnTxt, t });
     check('E4 progi z parametrów (50/80/100%)',
       t.includes(pctTxt(Z.progChetnosci)) && t.includes(pctTxt(Z.progKoncaZmeczenia)) && t.includes(pctTxt(Z.progWymuszonyPokoj)), t);
     const turnsToForced = mod.warWearinessTurnsToLevel(lvl, Z.progWymuszonyPokoj);
     check('E5 „Pokój wymuszony za N tur” liczone z parametrów',
       t.includes('Pokój wymuszony za ') && turnsToForced === Math.ceil((1 - lvl) * Z.pelneTur - 1e-9), { turnsToForced, t });
-    check('E6 zachowano podpowiedź następnego etapu i pełną listę', t.includes('Za 12 tur: 50%') && t.includes('Etapy: 50%'), t);
+    const turnsTo50 = Math.ceil((0.5 - lvl) * Z.pelneTur - 1e-9);
+    check('E6 zachowano podpowiedź następnego etapu (tury z parametrów) i pełną listę',
+      t.includes('Za ' + turnsTo50 + ' tur') && t.includes('Etapy: 50%'), { turnsTo50, t });
+
+    // E13: wiersz „Pokój wymuszony” — wartość z parametrów; przy 100% „już trwa”.
+    const row = mod.warWearinessForcedRowPl(lvl);
+    const turnsForced = Math.ceil((1 - lvl) * Z.pelneTur - 1e-9);
+    check('E13 wiersz „Pokój wymuszony” z liczbą tur z parametrów (pelneTur)',
+      row.label === 'Pokój wymuszony' && row.value.startsWith('za ≈') && row.value.includes(String(turnsForced)), { row, turnsForced });
+    check('E13b wiersz przy 100% = „już trwa”', mod.warWearinessForcedRowPl(1).value.includes('już trwa'), mod.warWearinessForcedRowPl(1));
 
     // E7: przy 100% — pokój wymuszony już trwa.
     const z100 = mod.warWearinessLabelPl({ zmeczenie: 1 });
@@ -71,12 +82,20 @@ async function main() {
     check('E9 desperacja: skala 0–100%, tylko przegrywający, oferta miast, brak wymuszenia',
       d.tooltip.includes('skala 0–100%') && d.tooltip.includes('Dotyczy tylko strony przegrywającej')
       && d.tooltip.includes('ofertę miast') && d.tooltip.includes('nie wymusza pokoju'), d.tooltip);
-    check('E10 próg oferty desperacji z parametrów',
-      d.tooltip.includes(pctTxt(L.progiStopni[0])) && d.tooltip.includes(pctTxt(L.udzialWyraznie)), d.tooltip);
+    check('E10 próg oferty desperacji i bramki tur z parametrów',
+      d.tooltip.includes(pctTxt(L.progiStopni[0])) && d.tooltip.includes(pctTxt(L.udzialWyraznie))
+      && d.tooltip.includes('po ' + L.ofertaOdTurWojny + ' turach') && d.tooltip.includes('po ' + L.ofertaBezStratOdTur + ' turach'), d.tooltip);
+
+    // E12: Civpedia — hasło zgodne z progami z parametrów (źródło wikiBundle).
+    const civ = fs.readFileSync(path.resolve(GRA, '..', 'docs', 'encyklopedia', 'pojecia', 'zmeczenie-wojna.md'), 'utf8');
+    check('E12 Civpedia: skala 0–100% i progi z parametrów',
+      civ.includes('0–100%') && civ.includes('0% oznacza start wojny') && civ.includes('100% oznacza pokój wymuszony')
+      && civ.includes(pctTxt(Z.progChetnosci)) && civ.includes(pctTxt(Z.progKoncaZmeczenia)) && civ.includes(pctTxt(Z.progWymuszonyPokoj))
+      && civ.includes('Desperacja') && civ.includes('Nie wymusza pokoju'), 'zmeczenie-wojna.md');
 
     // E11: teksty bez surowych ID i bez angielskich słów z listy kontrolnej.
     const all = [t, d.tooltip, z100.tooltip].join(' ');
-    check('E11 brak surowych ID (np. „war_”, „_pct”)', !/\b(war_|_pct|zmeczenie\.)/.test(all), all);
+    check('E11 brak surowych ID (np. „war_”, „_pct”, klucze JSON)', !/\b(war_|_pct|zmeczenie\.|przegrywajacy\.|progWymuszonyPokoj)/.test(all), all);
   } finally {
     cleanup();
   }

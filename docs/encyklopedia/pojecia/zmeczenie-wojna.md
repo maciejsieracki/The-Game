@@ -79,7 +79,7 @@ Panel dyplomacji pokazuje zmęczenie wojną strony wygrywającej (lub remisu) i 
 
 **Jak czytać skalę:** zmęczenie wojną ma skalę 0–100%. 0% oznacza start wojny (brak zmęczenia), a 100% oznacza pokój wymuszony. Przy 50% strony chcą pokoju, przy 80% AI proponuje pokój z miastami, a przy 100% pokój zostaje wymuszony. Podpowiedź przy etykiecie podaje, za ile tur następny próg zostanie osiągnięty przy obecnym tempie (bez zmiany posiadania miast).
 
-**Desperacja** (0–100%) dotyczy wyłącznie strony przegrywającej. Mówi, jak bardzo jest gotowa oddać miasta za pokój: decyduje tylko o tym, czy składa ofertę miast. Nie wymusza pokoju; pokój wymuszony wynika wyłącznie z zmęczenia wojną na poziomie 100%.
+**Desperacja** (0–100%) dotyczy wyłącznie strony przegrywającej. Mówi, jak bardzo jest gotowa oddać miasta za pokój: decyduje tylko o tym, czy składa ofertę miast (nie wcześniej niż po 3 turach wojny; bez utraty miast dopiero po 6 turach). Nie wymusza pokoju; pokój wymuszony wynika wyłącznie z zmęczenia wojną na poziomie 100%.
 
 ---
 
