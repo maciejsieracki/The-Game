@@ -121,9 +121,10 @@ function wiring(src) {
   const p2 = blockAfter(src, "if (p.cmdType === 'zaproponuj_pokoj') {\n          // PEACEVAZNE");
   if (!p2 || !/logPeaceVazne\(\s*ME\(\)\s*,\s*p\.ownerId/.test(p2)) problems.push('P2 oferta AI przyjeta przez gracza bez logPeaceVazne');
   // P3: wymuszony pokoj 100%
-  if (!/const evId = `forced-peace-\$\{turn\}-\$\{o\.pairKey\}`;/.test(src)) problems.push('P3 brak wpisu forced-peace');
+  // (sprawdzane jest, ze warunek deduplikacji i unshift stoja bezposrednio za evId, wiec usuniecie wpisu lub zamiana warunku na `false` czerwieni test)
+  if (!/const evId = `forced-peace-\$\{turn\}-\$\{o\.pairKey\}`;\s*if \(!warEventLog\.some\(e => e\.id === evId\)\) \{\s*warEventLog\.unshift\(/.test(src)) problems.push('P3 brak wpisu forced-peace');
   // P4: koniec rozejmu -> pokoj (finalizePeace z truce-peace)
-  if (!/const evId = `truce-peace-\$\{turn\}-\$\{diploPairKey\(proposerId, responderId\)\}`;/.test(src)) problems.push('P4 brak wpisu truce-peace');
+  if (!/const evId = `truce-peace-\$\{turn\}-\$\{diploPairKey\(proposerId, responderId\)\}`;\s*if \(!warEventLog\.some\(e => e\.id === evId\)\) \{\s*warEventLog\.unshift\(/.test(src)) problems.push('P4 brak wpisu truce-peace');
   // P5: rozmowa gracz<->gracz
   const p5 = blockAfter(src, "if (p.cmd.type === 'zaproponuj_pokoj') {\n        finalizePeaceTreatyBetween(p.fromOwnerId, p.toOwnerId);");
   if (!p5 || !/logPeaceVazne\(\s*p\.fromOwnerId\s*,\s*p\.toOwnerId/.test(p5)) problems.push('P5 rozmowa gracz<->gracz bez logPeaceVazne');
@@ -152,9 +153,19 @@ const mutants = [
     to: "        void(p.fromOwnerId, p.toOwnerId, 'Pokój zawarty: ', 'Propozycja pokoju przyjęta w rozmowie dyplomatycznej');",
   },
   {
-    name: 'M3 usuniety wpis P3 (wymuszony pokoj 100%)',
-    from: 'const evId = `forced-peace-${turn}-${o.pairKey}`;',
-    to: 'const evId = `forced-peace-${turn}-${o.pairKey}-x`; void evId;',
+    name: 'M3 usuniety wpis P3 (wymuszony pokoj 100%: warunek -> false, brak unshift)',
+    from: "        if (!warEventLog.some(e => e.id === evId)) {\n          warEventLog.unshift({\n            id: evId,\n            icon: '⚔',\n            title: 'Pokój wymuszony: '",
+    to: "        if (false) {\n          warEventLog.unshift({\n            id: evId,\n            icon: '⚔',\n            title: 'Pokój wymuszony: '",
+  },
+  {
+    name: 'M4 usuniety wpis P1 (oferta gracza przyjeta przez AI)',
+    from: "logPeaceVazne(proposerId, responderId, 'Pokój zawarty: ', 'Propozycja pokoju przyjęta przez stronę (wpis stołu)');",
+    to: "void(proposerId, responderId, 'Pokój zawarty: ', 'Propozycja pokoju przyjęta przez stronę (wpis stołu)');",
+  },
+  {
+    name: 'M5 usuniety wpis P4 (koniec rozejmu -> pokoj: warunek -> false)',
+    from: "            if (!warEventLog.some(e => e.id === evId)) {\n              warEventLog.unshift({\n                id: evId, icon: '⚔', title: 'Rozejm przeszedł w pokój: '",
+    to: "            if (false) {\n              warEventLog.unshift({\n                id: evId, icon: '⚔', title: 'Rozejm przeszedł w pokój: '",
   },
 ];
 for (const m of mutants) {
