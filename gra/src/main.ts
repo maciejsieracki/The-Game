@@ -987,7 +987,7 @@ import {
 // R-WEB-DIPLO-HARDER-RELATIONS A1–A3: twarda dyplomacja — wszystko za isHarderDiplomacyEnabled() (domyślnie OFF).
 import {
   capZaufanieZaHandel, harderPairDeltas, isHarderDiplomacyEnabled,
-  neighborTenureTur, resetNeighborTenureSession,
+  neighborTenureTur, resetNeighborTenureSession, setHarderDiplomacyEnabledForTest,
 } from './game/diplomacy-harder';
 import {
   resolveAutoBattleByPower,
@@ -33583,6 +33583,49 @@ async function boot(): Promise<void> {
     if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
       // R-WEB-AI-ECONOMY-MEASURE-HARNESS-Q1: metryki ekonomii AI per owner per tura — TYLKO ODCZYT
       // (tylko ?civTest=1; bez tego hak nie istnieje). Zero zapisu do stanu gry.
+      // R-WEB-DIPLO-HARDER-MEASURE-RUNNER-Q1: hak pomiaru „twardszej dyplomacji" (tylko ?civTest=1).
+      // setEnabled = ustawienie flagi etapu A PO starcie gry (jedyny zapis; wyłącznie przez setHarderDiplomacyEnabledForTest).
+      // metrics() = TYLKO ODCZYT: pary nie-barbarzyńskich właścicieli, bez wywołań mutujących (brak neighborTenureTur,
+      // brak tickDiplomacy) — tura sąsiedztwa i napięcie liczy analizator z serii `sasiad`/`sasiedztwoBezPokoju`.
+      (window as any).__diploHarderMeasure = {
+        schemaVersion: 1,
+        setEnabled: (on: boolean | null): boolean => { setHarderDiplomacyEnabledForTest(on); return isHarderDiplomacyEnabled(); },
+        isEnabled: (): boolean => isHarderDiplomacyEnabled(),
+        metrics: () => {
+          // R-WEB-DIPLO-HARDER-MEASURE-RUNNER-Q1 (poprawka obrony): wyłącznie gracz + główne cywilizacje AI;
+          // państwa-miasta (isCityStateOwner) wykluczone, jak w dispatchu (pary głównych cywilizacji i gracza).
+          const owners = [...new Set<number>([ME(), ...cities.map(c => c.ownerId), ...units.map(u => u.ownerId)])]
+            .filter(o => o != null && !isBarbarian(o) && !isCityStateOwner(o))
+            .sort((a, b) => a - b);
+          const liczbaMiast = new Map<number, number>();
+          for (const c of cities) liczbaMiast.set(c.ownerId, (liczbaMiast.get(c.ownerId) ?? 0) + 1);
+          const pairs: Array<Record<string, unknown>> = [];
+          for (let i = 0; i < owners.length; i++) {
+            for (let j = i + 1; j < owners.length; j++) {
+              const a = owners[i] as number;
+              const b = owners[j] as number;
+              const rel = diplomacyRelations.get(diploPairKey(a, b)) as Relation | undefined;
+              const status = rel ? rel.status : 'neutralni';
+              const atWar = status === 'wojna';
+              const contactOk = isHuman(a) ? diplomaticContactEstablishedSet(a).has(b)
+                : (isHuman(b) ? diplomaticContactEstablishedSet(b).has(a) : true);
+              const pokoj = resolvePokojTrustTier(activeDeals, a, b, { contactEstablished: contactOk, atWar });
+              const sasiad = (liczbaMiast.get(a) ?? 0) > 2 && (liczbaMiast.get(b) ?? 0) > 2
+                && ownersShareLandBorderLive(a, b);
+              const bezPokoju = sasiad && pokoj !== 'nap' && pokoj !== 'sojusz';
+              const peaceOrTruce = isPeaceLockedBetween(a, b) || isTruceActive(getDiploPairMeta(a, b).truceUntilTurn, turn);
+              pairs.push({
+                a, b, aiAi: isHuman(a) === false && isHuman(b) === false,
+                status, zaufanie: rel ? rel.zaufanie : null, respekt: rel ? rel.respekt : null,
+                pokoj, sasiad, sasiedztwoBezPokoju: bezPokoju,
+                karaBazowa: peaceOrTruce ? 0 : sharedBorderPenaltyForEpochs(
+                  empireEpochForOwner(a), empireEpochForOwner(b), _diplomacyParams()),
+              });
+            }
+          }
+          return { turn, flag: isHarderDiplomacyEnabled(), gracz: ME(), owners, pairs };
+        },
+      };
       (window as any).__aiEconomyMeasure = {
         schemaVersion: 1,
         /** R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 (tylko odczyt, ?civTest=1): rozmiar dziennika w pamieci (wszyscy wlasciciele). */

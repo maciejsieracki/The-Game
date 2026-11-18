@@ -1,0 +1,16 @@
+ZIELONE A1 poprawny obiekt przechodzi walidator :: brak problemow
+ZIELONE A2 mutacja: brak pairs jest odrzucona :: brak pairs
+ZIELONE A3 mutacja: NaN w zaufaniu jest odrzucona :: zaufanie nie jest liczba (NaN?)
+ZIELONE A4 mutacja: flaga nie-bool jest odrzucona :: flag nie jest boolem
+ZIELONE A5 mutacja: nieznany status jest odrzucona :: nieznany status przymierze
+ZIELONE A6 mutacja: brak turn jest odrzucona :: turn nie jest liczba
+ZIELONE A7 mutacja: para bez karaBazowa jest odrzucona :: para bez pola karaBazowa
+ZIELONE A8 mutacja: brak gracz jest odrzucona :: brak gracz (ME)
+ZIELONE B1a bez ?civTest=1 hak nie istnieje
+ZIELONE B1b przy ?civTest=1 hak istnieje
+ZIELONE B2a setEnabled(true) ustawia flage
+ZIELONE B2b setEnabled(null) wraca do stalej (OFF)
+ZIELONE B2c setEnabled(false) ustawia OFF
+ZIELONE B3 metryki po starcie gry maja poprawny ksztalt (gracz nalezy do owners) :: pary=91, wlasciciele=14, gracz=0
+CZERWONE B4 metrics() tylko do odczytu (dwa wywolania = ten sam JSON, tura bez zmian) :: tura=1
+WYNIK: 14 zielonych, 1 czerwonych
