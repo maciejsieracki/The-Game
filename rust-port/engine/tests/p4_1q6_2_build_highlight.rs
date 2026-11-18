@@ -244,7 +244,8 @@ fn q6_2_wektory_pinu_warstwa_podswietlenia() {
 }
 
 /// Mutacja (a): aktywny tryb budowy z pustym zbiorem heksow MUSI wygasic `reachable`
-/// (`setHighlight(new Set())` `main.ts:16360`, `:16366`, `:16392-16395`; `clearHighlight()` `:16387`).
+/// (pusty zbior w `setHighlight(qual)` `main.ts:16360`, `setHighlight(new Set(...))` `:16366`,
+/// `:16392-16395`; `clearHighlight()` `:16387`).
 #[test]
 fn q6_2_pusty_zbior_budowy_wygasza_zasieg() {
     let state = corridor(4);

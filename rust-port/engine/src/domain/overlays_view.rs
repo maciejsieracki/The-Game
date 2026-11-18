@@ -220,8 +220,9 @@ fn no_layer() -> BuildHighlightDto {
 /// `false` = galaz „brak trybu budowy” (`:16369-16373`; [`build_highlight`] zwraca brak warstwy).
 ///
 /// R-RUSTPORT-P4-1Q6-2 (dlug Q6-2): w aktywnym trybie budowy JEDNA warstwa `setHighlight` pinu
-/// nalezy do trybu budowy rowniez przy PUSTYM zbiorze heksow (`setHighlight(new Set())` `:16360`,
-/// `:16366`, `:16392-16395`; `clearHighlight()` przy kopalni `:16387`), wiec zasieg ruchu znika.
+/// nalezy do trybu budowy rowniez przy PUSTYM zbiorze heksow (`setHighlight(qual)` `:16360`,
+/// `setHighlight(new Set(...))` `:16366`, `:16392-16395`; `clearHighlight()` przy kopalni `:16387`),
+/// wiec zasieg ruchu znika.
 /// Kontrakt DTO nie odroznia „tryb aktywny, brak heksow” od „brak trybu” (puste `hexes` = brak
 /// warstwy), dlatego [`unit_overlays_view`] wygasza `reachable`, gdy ta funkcja zwraca `true`.
 #[must_use]
