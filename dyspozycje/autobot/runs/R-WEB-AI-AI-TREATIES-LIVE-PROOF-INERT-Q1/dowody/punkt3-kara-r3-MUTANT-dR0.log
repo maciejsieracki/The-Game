@@ -1,0 +1,19 @@
+[ON] {"name":"ON","a":1,"b":2,"flag":true,"z":100,"r":50,"napId":"nap_aiai_1_2_t1","before":{"turn":1,"status":"pokoj","zaufanie":100,"respekt":50,"relacja":150,"factors":[],"hasNap":true,"skarbiecA":null,"skarbiecB":null},"after":{"turn":1,"status":"wojna","zaufanie":0,"respekt":50,"relacja":50,"factors":[{"eventKey":"zlamana_obietnica_ai","delta":-20,"tura":1},{"eventKey":"wojna_wypowiedziana","delta":-80,"tura":1}],"hasNap":false,"skarbiecA":null,"skarbiecB":null},"dZaufanie":-100,"dRespekt":0}
+[OFF] {"name":"OFF","a":3,"b":4,"flag":false,"z":100,"r":50,"napId":"nap_aiai_3_4_t1","before":{"turn":1,"status":"pokoj","zaufanie":100,"respekt":50,"relacja":150,"factors":[],"hasNap":true,"skarbiecA":null,"skarbiecB":null},"after":{"turn":1,"status":"wojna","zaufanie":0,"respekt":50,"relacja":50,"factors":[{"eventKey":"zlamana_obietnica_ai","delta":-20,"tura":1},{"eventKey":"wojna_wypowiedziana","delta":-80,"tura":1}],"hasNap":false,"skarbiecA":null,"skarbiecB":null},"dZaufanie":-100,"dRespekt":0}
+[LOW] {"name":"LOW","a":5,"b":6,"flag":true,"z":100,"r":20,"napId":"nap_aiai_5_6_t1","before":{"turn":1,"status":"pokoj","zaufanie":100,"respekt":20,"relacja":120,"factors":[],"hasNap":true,"skarbiecA":null,"skarbiecB":null},"after":{"turn":1,"status":"wojna","zaufanie":0,"respekt":20,"relacja":20,"factors":[{"eventKey":"zlamana_obietnica_ai","delta":-20,"tura":1},{"eventKey":"wojna_wypowiedziana","delta":-80,"tura":1}],"hasNap":false,"skarbiecA":null,"skarbiecB":null},"dZaufanie":-100,"dRespekt":0}
+
+Asercje:
+  OK  A1 ON: przed wojną NAP i status 'pokoj' -- {"turn":1,"status":"pokoj","zaufanie":100,"respekt":50,"relacja":150,"factors":[],"hasNap":true,"skarbiecA":null,"skarbiecB":null}
+  OK  A2 ON: po wojnie status 'wojna', NAP usunięty -- {"turn":1,"status":"wojna","zaufanie":0,"respekt":50,"relacja":50,"factors":[{"eventKey":"zlamana_obietnica_ai","delta":-20,"tura":1},{"eventKey":"wojna_wypowiedziana","delta":-80,"tura":1}],"hasNap":false,"skarbiecA":null,"skarbiecB":null}
+  OK  A1 OFF: przed wojną NAP i status 'pokoj' -- {"turn":1,"status":"pokoj","zaufanie":100,"respekt":50,"relacja":150,"factors":[],"hasNap":true,"skarbiecA":null,"skarbiecB":null}
+  OK  A2 OFF: po wojnie status 'wojna', NAP usunięty -- {"turn":1,"status":"wojna","zaufanie":0,"respekt":50,"relacja":50,"factors":[{"eventKey":"zlamana_obietnica_ai","delta":-20,"tura":1},{"eventKey":"wojna_wypowiedziana","delta":-80,"tura":1}],"hasNap":false,"skarbiecA":null,"skarbiecB":null}
+  OK  A1 LOW: przed wojną NAP i status 'pokoj' -- {"turn":1,"status":"pokoj","zaufanie":100,"respekt":20,"relacja":120,"factors":[],"hasNap":true,"skarbiecA":null,"skarbiecB":null}
+  OK  A2 LOW: po wojnie status 'wojna', NAP usunięty -- {"turn":1,"status":"wojna","zaufanie":0,"respekt":20,"relacja":20,"factors":[{"eventKey":"zlamana_obietnica_ai","delta":-20,"tura":1},{"eventKey":"wojna_wypowiedziana","delta":-80,"tura":1}],"hasNap":false,"skarbiecA":null,"skarbiecB":null}
+  OK  A3 Zaufanie po wojnie identyczne ON i OFF (−20 NIE izolowane: wojna zeruje Zaufanie) -- {"on":-100,"off":-100}
+  OK  A3b ON: zdarzenie zlamana_obietnica_ai z deltą −20 w rejestrze pary -- [{"eventKey":"zlamana_obietnica_ai","delta":-20,"tura":1}]
+  OK  A3c OFF (kontrola): ta sama kara −20 zlamana_obietnica_ai (flaga nie zmienia Zaufania) -- [{"eventKey":"zlamana_obietnica_ai","delta":-20,"tura":1}]
+ FAIL A4 Respekt: Δ(ON) − Δ(OFF) = −30 (zerwanie_relacja / mnoznikRespektu=1) -- {"kara":0,"dON":0,"dOFF":0}
+ FAIL A5 Respekt<30 (LOW): wynik zgodny z clampem 0..100 -- {"after":20,"expected":0}
+  OK  A6 zero pageerror / console.error -- []
+
+Wynik: 10 OK / 2 FAIL  -> /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/breach-mut.json

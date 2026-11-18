@@ -31268,6 +31268,44 @@ async function boot(): Promise<void> {
         setEnabled: (v: boolean | null): void => { setAiAiTreatyTickEnabledForTest(v); },
         runTick: (): void => { tickAiAiTreatyRequests(); },
       };
+      // R-WEB-AI-AI-TREATIES-LIVE-PROOF-INERT-Q1 (hak TESTOWY, tylko ?civTest=1, bez zmian logiki gry):
+      // concludeNap = ta sama końcówka co akceptacja w tickAiAiTreatyRequests (addTreaty + syncRelationFromDeals),
+      // bo tick nie daje NAP bez planu granicy/gotowości; setRelation = SETUP wartości Zaufania/Respektu;
+      // state = odczyt (Zaufanie, Respekt, Relacja, NAP, skarbiec).
+      (window as any).__truceTestDebug.aiAiNapLiveProof = {
+        concludeNap: (a: number, b: number): string => {
+          const [p0, p1] = pairOwnerIds(a, b);
+          const id = `nap_aiai_${p0}_${p1}_t${turn}`;
+          activeDeals = addTreaty(activeDeals, {
+            id,
+            rodzaj: RodzajTraktatu.PaktNieagresji,
+            strony: [p0, p1],
+            wygasaTura: turn + 15,
+            zawartaTura: turn,
+          });
+          syncRelationFromDeals(a, b);
+          return id;
+        },
+        setRelation: (a: number, b: number, zaufanie: number, respekt: number): void => {
+          setDiploRelation(a, b, { ...getDiploRelation(a, b), zaufanie, respekt });
+        },
+        state: (a: number, b: number): Record<string, unknown> => {
+          const r = getDiploRelation(a, b);
+          return {
+            turn,
+            status: r.status,
+            zaufanie: r.zaufanie,
+            respekt: r.respekt,
+            relacja: relationScore(r),
+            // Odczyt rejestru zdarzeń pary (delta FAKTYCZNIE zastosowana, recordDiploFactor): izoluje −20 'zlamana_obietnica_ai'
+            // mimo że wojna zeruje Zaufanie w tym samym kroku (breakTreatiesOnWar biegnie przed setDiploRelation wojny).
+            factors: (diplomacyFactorLog.get(diploPairKey(a, b)) ?? []).map(f => ({ eventKey: f.eventKey, delta: f.delta, tura: f.tura })),
+            hasNap: hasTreaty(activeDeals, a, b, RodzajTraktatu.PaktNieagresji),
+            skarbiecA: aiSkarbiecByOwner.get(a) ?? null,
+            skarbiecB: aiSkarbiecByOwner.get(b) ?? null,
+          };
+        },
+      };
       // R-WEB-DIPLO-FORCED-PEACE-WINDOW-AUTO-OPEN-Q1 (zarzut 1): TYLKO ODCZYT kolejki pokoju wymuszonego (bez efektów).
       (window as any).__truceTestDebug.pendingForcedPeaceForTest = (): Array<{ pairKey: string; loser: number; winner: number }> =>
         pendingForcedPeaceTreaties.map(p => ({ pairKey: p.pairKey, loser: p.loser, winner: p.winner }));
