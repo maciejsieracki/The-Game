@@ -761,3 +761,44 @@ writeFileSync(
   JSON.stringify({ pin: PIN, seed: SEED, pinSha256: PIN_SHA256, stats: nanStats, cases: nanCases }, nanJson) + '\n',
 );
 console.error(`zapisano ${nanCases.length} wektorow NaN`);
+
+// Obrona r1, zarzut Z4 (mutant Evaluatora E02: `dd < 1` -> `dd < 0`): wrog ATAKUJACY na TYM SAMYM polu co obronca
+// (`dd === 0`, wejscie po wiezy na korone albo wrog w polu za murem). Pin: `_rangedTargetInRange` (`:7041-7053`) pomija
+// `dd < 1`; kontrbateria `bestCata` (`:6144-6148`) NIE ma dolnej granicy (`dd <= ru.range`), wiec katapulta wroga na polu
+// obroncy JEST celem; `_targetInRange` wrecz (`:8386-8391`) bierze `dd === 0`. Osobny plik, bez wywolan `rnd` (pliki
+// `vectors.json` i `vectors_nan.json` bez zmian): kazdy scenariusz obroncy bez okrazenia + jeden wrog na polu obroncy
+// (HP 1, czyli najslabszy; co trzeci w `walk-cata` jest katapulta, co czwarty poza `walk-cata` jest na koronie).
+const dd0Cases = [];
+for (const c of cases) {
+  if (c.kind === 'ripple' || c.kind === 'surround') continue;
+  const { expect: _old, name, kind, ...sc0 } = c;
+  const sc = JSON.parse(JSON.stringify(sc0, nanJson), (_k, v) => (v === 'NaN' ? NaN : v));
+  const me = sc.def[sc.acting.idx];
+  const n = dd0Cases.length;
+  const cata = kind === 'walk-cata' && n % 3 === 0;
+  sc.atk.push({
+    side: 'atk', idx: sc.atk.length, q: me.q, r: me.r, facing: n % 4, moveLeft: 0, dead: false, fadingOut: false,
+    routed: false, unitDoctrine: null, groupId: null, formationRank: null, hp: 1, mounted: false, primaryRanged: false,
+    rangedBase: false, antiCavSpear: false, morale: 100, fleeMorale: 0, moraleMax: 100, neverRout: false, tdm: 1,
+    onWall: me.onWall || n % 4 === 0, cata, siege: cata, range: 1,
+  });
+  const expect = runDef(sc);
+  if (expect.trace.includes('flee')) throw new Error(`dd0: ucieczka w ${name}`);
+  expect.branch = branchOf(sc, expect);
+  dd0Cases.push({ ...sc, name: `${name}-dd0`, kind: `${kind}-dd0`, expect });
+}
+const stackedIdx = (c) => c.atk.length - 1;
+const dd0Stats = {
+  cases: dd0Cases.length,
+  shotOther: dd0Cases.filter((c) => c.expect.blows.length > 0 && c.expect.blows[0].target !== stackedIdx(c)).length,
+  shotStacked: dd0Cases.filter((c) => c.expect.blows.length > 0 && c.expect.blows[0].target === stackedIdx(c)).length,
+  meleeStacked: dd0Cases.filter((c) => c.expect.attack !== null && c.expect.attack.target === stackedIdx(c)).length,
+  meleeOther: dd0Cases.filter((c) => c.expect.attack !== null && c.expect.attack.target !== stackedIdx(c)).length,
+  hold: dd0Cases.filter((c) => c.expect.blows.length === 0 && c.expect.attack === null).length,
+};
+console.error(JSON.stringify(dd0Stats));
+writeFileSync(
+  join(outDir, 'vectors_dd0.json'),
+  JSON.stringify({ pin: PIN, seed: SEED, pinSha256: PIN_SHA256, stats: dd0Stats, cases: dd0Cases }, nanJson) + '\n',
+);
+console.error(`zapisano ${dd0Cases.length} wektorow dd0`);

@@ -1,21 +1,22 @@
 //! P6 SIEGE-TAKTYKA K5LOOP-SIEGE-DEF (dispatch R-RUSTPORT-P6-K5LOOP-SIEGE-DEF-Q1, T1, Operator r1): zgodność `ProdBody`
 //! z pinem `07d2fbd72` dla:
 //! - obrońcy w oblężeniu (`siegeWallCol >= 0`, strona `def`) w `_activateUnit` (`battleScene.ts:6048-6299`): bramka
-//!   `siegeDefenderNeverDoctrine` (`:6087`), okrążenie (`:6105-6118`, ucieczka przy murze = jawny tag
-//!   `ucieczka-oblezenie`), `_updateFacing` (`:6123`), gałąź `onWallWalkway` (`:6129-6172`: strzelec
+//!   `siegeDefenderNeverDoctrine` (`:6087`), okrążenie (`:6105-6118`, ucieczka = jawny tag: bez terenu
+//!   `ucieczka-routed`, z terenem przy murze `ucieczka-oblezenie`), `_updateFacing` (`:6123`), gałąź `onWallWalkway` (`:6129-6172`: strzelec
 //!   `_rangedTargetInRange` `:7041-7053`, kontrbateria katapulty `bestCata`, cios sąsiada `_targetInRange`, trzymanie
 //!   muru), `_trySiegeTowerClimb`/`_siegeInfantryToTowerStep` (`:6179-6180`, dla obrońcy `return false`), SIEGE DEFENDER
 //!   HOLD (`:6225-6236`); filtr `_meleeBlockedByWall` (`:8361-8371`) z wyłomem (`wallEverBreached`);
 //! - K5LOOP-KILL-RIPPLE (D-INT-2): ripple `_shakeAlliesOnLoss` przy zabiciu (`_resolveBlowOutcome` `:9044-9056`,
 //!   wywołanie `:9048`) z kaskadami `_checkRout`/`_startRout`/`_checkMeleeScreenLost`/`_boostEnemiesOnBreak`.
 //!
-//! Wektory: `p6_k5loop_siege_def_vectors/vectors.json` (+ `vectors_nan.json`: `range` NaN/+Inf, `morale` NaN, `hp` NaN),
+//! Wektory: `p6_k5loop_siege_def_vectors/vectors.json` (oraz `vectors_nan.json`: `range` NaN/+Inf, `morale` NaN, `hp`
+//! NaN; oraz `vectors_dd0.json`: wróg na polu obrońcy, `dd == 0`),
 //! generowane przez `p6_k5loop_siege_def_gen.mjs`, który WYKONUJE tekst pinu (strażnik SHA-256 wycinków).
 //!
 //! Porównanie na każdym wektorze obrońcy: ślad aktywacji, czas, `facing` (końcowe i zmiany z czasem), strzał (`Facing` +
 //! `Shot`, rekord trafienia: cel i łuk), cios wręcz (`Melee`: cel i czas), amunicja, akcje `Rout`/`Shaken` z czasem i
 //! morale, stan WSZYSTKICH jednostek (bez ciosu wręcz), `occByKey`, liczba rzutów = liczba `_singleBlow` pinu, `unported`
-//! (puste; okrążenie: dokładnie `ucieczka-oblezenie`; nigdy `oblezenie` dla obrońcy). Ripple: pełny cios zabijający
+//! (puste; okrążenie: dokładnie jeden tag ucieczki; nigdy `oblezenie` dla obrońcy). Ripple: pełny cios zabijający
 //! (`strike` z rzutem trafiającym), stan wszystkich jednostek po zabiciu, kolejność `Kill`/`Shaken`/`Rout`,
 //! [`ProdBody::kill_ripples`].
 
@@ -33,12 +34,15 @@ use civ_engine::domain::siege_tactics_doctrine_state::GroupDoctrine;
 use civ_engine::domain::siege_tactics_doctrine_target::AttackDirection;
 use civ_engine::domain::siege_tactics_end::BattleSide;
 use civ_engine::domain::siege_tactics_loop::{LoopBody, ProdBody, ProdUnit, RANGED_FLY_MS};
+use civ_engine::domain::siege_tactics_move_effects::MoveTerrain;
 use civ_engine::domain::siege_tactics_turnseq::{SeqUnit, TurnSeqState, UnitRef};
 use civ_engine::domain::siege_tactics_unit::CombatUnit;
 use serde_json::Value;
 
 const VECTORS: &str = include_str!("p6_k5loop_siege_def_vectors/vectors.json");
 const VECTORS_NAN: &str = include_str!("p6_k5loop_siege_def_vectors/vectors_nan.json");
+/// Obrona r1 (Z4): wróg na polu obrońcy (`dd == 0`), osobny plik generatora (bez zmiany dwóch pozostałych).
+const VECTORS_DD0: &str = include_str!("p6_k5loop_siege_def_vectors/vectors_dd0.json");
 const PIN: &str = "07d2fbd72f758705f8e1d59cc4968027ffbafe75";
 /// Strażnik generatora (`EXPECTED_SHA256` w `p6_k5loop_siege_def_gen.mjs`).
 const PIN_SHA256: &str = "e8e86aec589637a83159e765eab68f09198932326f7505d03b97cde7468a9deb";
@@ -553,8 +557,55 @@ fn check_order(name: &str, e: &Value, got: &Got, failures: &mut Vec<String>) {
     }
 }
 
+/// Skąd ciało czyta mur (`this.siegeWallCol` pinu to JEDNA wartość; w Rust są dwa wejścia).
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum WallSrc {
+    /// Scena maszyny i `TurnSeqState` (wektory generatora).
+    Both,
+    /// Tylko scena maszyny (`st.siege_wall_col = -1`), obrona r1 Z2.
+    SceneOnly,
+    /// Tylko `TurnSeqState` (`scene.wall_col = -1`).
+    SeqOnly,
+}
+
+/// Wariant wejścia ciała dla tego samego wektora pinu.
+#[derive(Clone, Copy)]
+struct Opts {
+    wall: WallSrc,
+    /// `ProdBody::with_terrain` (płaski teren): ucieczka z okrążenia ma wtedy dane ruchu i o tagu decyduje mur (Z3).
+    terrain: bool,
+}
+
+const BASE: Opts = Opts {
+    wall: WallSrc::Both,
+    terrain: false,
+};
+
+/// Płaski teren (`passable`, koszt 1, bez brodu, mnożnik jazdy 1): tylko po to, by `terrain.is_some()`.
+struct Flat;
+
+impl MoveTerrain for Flat {
+    fn passable(&self, _col: f64, _row: f64) -> bool {
+        true
+    }
+    fn move_cost(&self, _col: f64, _row: f64) -> f64 {
+        1.0
+    }
+    fn is_ford(&self, _col: f64, _row: f64) -> bool {
+        false
+    }
+    fn cavalry_multiplier(&self, _col: f64, _row: f64) -> f64 {
+        1.0
+    }
+}
+
 /// Jedna aktywacja obrońcy w oblężeniu wobec pinu. Zwraca gałąź pinu (licznik pokrycia).
 fn check_def(case: &Value, failures: &mut Vec<String>) -> String {
+    check_def_with(case, BASE, failures)
+}
+
+/// [`check_def`] z wariantem wejścia ciała ([`Opts`]); oczekiwania pinu te same.
+fn check_def_with(case: &Value, opts: Opts, failures: &mut Vec<String>) -> String {
     let name = case["name"].as_str().expect("name");
     let e = &case["expect"];
     let want_attack = e["attack"]["target"].as_u64().map(|t| t as usize);
@@ -569,6 +620,14 @@ fn check_def(case: &Value, failures: &mut Vec<String>) -> String {
         acting,
     } = build(case, want_attack, &shots, vec![MISS_ROLL; shots.len()]);
     assert_eq!(acting.side, BattleSide::Defender, "{name}: obronca");
+    match opts.wall {
+        WallSrc::Both => {}
+        WallSrc::SceneOnly => st.siege_wall_col = -1,
+        WallSrc::SeqOnly => body.scene.wall_col = -1,
+    }
+    if opts.terrain {
+        body = body.with_terrain(Box::new(Flat));
+    }
     body.set_now(0.0);
     let _ = body.take_actions();
     let dur = body.start(acting, &st);
@@ -663,13 +722,14 @@ fn check_def(case: &Value, failures: &mut Vec<String>) -> String {
     if want_attack.is_none() {
         check_units(name, e, &body, &st, failures);
     }
-    // Kryterium końca T1: obrońca przy murze nigdy nie ma tagu `oblezenie`; jedyny dopuszczalny tag to ucieczka przy
-    // murze (`_fleeStep` -> `_siegeMoveRefused`, poza zakresem ciała) po rozbiciu okrążeniem.
+    // Kryterium końca T1: obrońca przy murze nigdy nie ma tagu `oblezenie`; jedyny dopuszczalny tag to ucieczka po
+    // rozbiciu okrążeniem (`_fleeStep`). Precedencja jak w gałęzi `routed` (`LoopBody::start`, K5LOOP-CLOSE r4): bez
+    // danych terenu `ucieczka-routed`, z terenem przy murze `ucieczka-oblezenie` (`_doMove` -> `_siegeMoveRefused`).
     let fled = want_trace.iter().any(|t| t == "flee");
-    let want_unported: Vec<(UnitRef, &str)> = if fled {
-        vec![(acting, "ucieczka-oblezenie")]
-    } else {
-        Vec::new()
+    let want_unported: Vec<(UnitRef, &str)> = match (fled, opts.terrain) {
+        (false, _) => Vec::new(),
+        (true, false) => vec![(acting, "ucieczka-routed")],
+        (true, true) => vec![(acting, "ucieczka-oblezenie")],
     };
     if body.unported != want_unported {
         failures.push(format!("{name}: unported {:?}", body.unported));
@@ -992,4 +1052,168 @@ fn obronca_wrecz_cel_liczy_cialo_nie_adapter() {
         n += 1;
     }
     assert!(n >= 200, "{n}");
+}
+
+/// Obrona r1, Z2 (mutant E01: `wall_col = st.siege_wall_col`): mur TYLKO w scenie maszyny (`st.siege_wall_col = -1`)
+/// daje ten sam wynik pinu co mur w obu wejściach, na WSZYSTKICH wektorach obrońcy (w tym HOLD `:6225-6236`, który
+/// czyta `scene.wall_col` maszyny) i NaN/Inf. Lustro testu [`mur_tylko_w_sekwencji_daje_ten_sam_wynik`], tu z pełnym
+/// porównaniem [`check_def`] (także wariant „tylko sekwencja” na tych samych wektorach).
+#[test]
+fn mur_tylko_w_scenie_daje_ten_sam_wynik() {
+    with_timeout("siege-def-scena", || {
+        let mut failures = Vec::new();
+        let mut cov: BTreeMap<String, usize> = BTreeMap::new();
+        for src in [VECTORS, VECTORS_NAN] {
+            let v = load_from(src);
+            for case in v["cases"]
+                .as_array()
+                .expect("cases")
+                .iter()
+                .filter(|c| c["kind"] != "ripple")
+            {
+                for wall in [WallSrc::SceneOnly, WallSrc::SeqOnly] {
+                    let br = check_def_with(
+                        case,
+                        Opts {
+                            wall,
+                            terrain: false,
+                        },
+                        &mut failures,
+                    );
+                    if wall == WallSrc::SceneOnly {
+                        *cov.entry(br).or_default() += 1;
+                    }
+                }
+            }
+        }
+        report(&failures);
+        eprintln!("pokrycie (mur tylko w scenie): {cov:?}");
+        assert_eq!(cov.values().sum::<usize>(), 880 + 1343);
+        for k in [
+            "walk-shoot-hold",
+            "walk-cata-hold",
+            "walk-melee-hold",
+            "hold-shoot-hold",
+            "hold-melee-hold",
+            "surround-flee",
+        ] {
+            assert!(cov.get(k).copied().unwrap_or(0) >= 10, "{k}: {cov:?}");
+        }
+    });
+}
+
+/// Obrona r1, Z3 (mutant E14: `Flee if siege && terrain.is_none()`): okrążenie obrońcy przy murze z danymi terenu.
+/// `_fleeStep` -> `_doMove` czyta `_siegeMoveRefused` (`:8689`), więc ciało NIE wykonuje ucieczki: jawny tag
+/// `ucieczka-oblezenie`, ten sam stan co pin bez ruchu (pełne [`check_def`]: stan wszystkich jednostek, `occByKey`, brak
+/// akcji ruchu). Bez terenu tag `ucieczka-routed` (precedencja jak w gałęzi `routed` `LoopBody::start`, r4). Pozostałe
+/// gałęzie obrońcy nie zależą od terenu (wszystkie 880 wektorów z terenem).
+#[test]
+fn ucieczka_okrazenia_przy_murze_z_terenem_jawny_tag() {
+    with_timeout("siege-def-teren", || {
+        let v = load_from(VECTORS);
+        let mut failures = Vec::new();
+        let mut fled = 0;
+        let mut n = 0;
+        for case in v["cases"]
+            .as_array()
+            .expect("cases")
+            .iter()
+            .filter(|c| c["kind"] != "ripple")
+        {
+            let br = check_def_with(
+                case,
+                Opts {
+                    wall: WallSrc::Both,
+                    terrain: true,
+                },
+                &mut failures,
+            );
+            if br == "surround-flee" {
+                fled += 1;
+            }
+            n += 1;
+        }
+        report(&failures);
+        assert_eq!(n, 880);
+        assert_eq!(fled, 80);
+        // Precedencja tagów ta sama co w `start()` dla jednostki już uciekającej: bez terenu `ucieczka-routed`, z terenem
+        // przy murze `ucieczka-oblezenie` (wektor okrążenia z `routed = true` na starcie aktywacji).
+        let case = v["cases"]
+            .as_array()
+            .expect("cases")
+            .iter()
+            .find(|c| c["kind"] == "surround")
+            .expect("surround");
+        for (terrain, tag) in [(false, "ucieczka-routed"), (true, "ucieczka-oblezenie")] {
+            let Built {
+                mut body,
+                mut st,
+                acting,
+            } = build(case, None, &[], Vec::new());
+            if terrain {
+                body = body.with_terrain(Box::new(Flat));
+            }
+            st.def[acting.idx].c.routed = true;
+            assert_eq!(body.start(acting, &st), 0.0);
+            body.complete(acting, &mut st);
+            assert_eq!(
+                body.unported,
+                vec![(acting, tag)],
+                "start(), teren={terrain}"
+            );
+        }
+    });
+}
+
+/// Obrona r1, Z4 (mutant E02: `dd < 1` -> `dd < 0`): wróg na polu obrońcy (`dd == 0`). Pin: `_rangedTargetInRange`
+/// (`:7041-7053`) go pomija, kontrbateria `bestCata` (`:6144-6148`, bez dolnej granicy) bierze katapultę na tym polu,
+/// `_targetInRange` wręcz (`:8386-8391`) bierze `dd === 0`. Pełne porównanie [`check_def`].
+#[test]
+fn obronca_wrog_na_tym_samym_polu_zgodny_z_pinem() {
+    with_timeout("siege-def-dd0", || {
+        let v = load_from(VECTORS_DD0);
+        let cases = v["cases"].as_array().expect("cases");
+        assert_eq!(cases.len(), 800);
+        let mut failures = Vec::new();
+        let (mut shot_other, mut shot_stacked, mut melee_stacked) = (0, 0, 0);
+        for case in cases {
+            check_def(case, &mut failures);
+            let stacked = case["atk"].as_array().expect("atk").len() as u64 - 1;
+            let me = &case["def"][0];
+            let s = &case["atk"][stacked as usize];
+            assert_eq!(
+                (int(&s["q"]), int(&s["r"])),
+                (int(&me["q"]), int(&me["r"])),
+                "{}: wrog na polu obroncy",
+                case["name"]
+            );
+            let e = &case["expect"];
+            match e["blows"].as_array().expect("blows").first() {
+                Some(x) if x["target"].as_u64() == Some(stacked) => shot_stacked += 1,
+                Some(_) => shot_other += 1,
+                None => {}
+            }
+            if e["attack"]["target"].as_u64() == Some(stacked) {
+                melee_stacked += 1;
+            }
+        }
+        report(&failures);
+        eprintln!("dd0: strzal_inny={shot_other} kontrbateria_dd0={shot_stacked} wrecz_dd0={melee_stacked}");
+        // Strzał zwykły nigdy nie trafia wroga na tym samym polu (`dd < 1`); trafia go tylko kontrbateria katapulty.
+        assert!(shot_other >= 200, "{shot_other}");
+        assert!(shot_stacked >= 20, "{shot_stacked}");
+        assert!(melee_stacked >= 150, "{melee_stacked}");
+        for case in cases {
+            let stacked = case["atk"].as_array().expect("atk").len() as u64 - 1;
+            if let Some(x) = case["expect"]["blows"].as_array().expect("blows").first() {
+                if x["target"].as_u64() == Some(stacked) {
+                    assert!(
+                        b(&case["atk"][stacked as usize]["cata"]) && b(&case["def"][0]["cata"]),
+                        "{}: strzal w pole obroncy tylko kontrbateria",
+                        case["name"]
+                    );
+                }
+            }
+        }
+    });
 }

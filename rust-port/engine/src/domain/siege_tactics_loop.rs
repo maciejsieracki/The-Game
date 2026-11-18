@@ -3696,9 +3696,13 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 // K5LOOP-CLOSE r4: rout z okrążenia (`:6116-6117`: `_checkRout` -> `_startRout`, potem `_fleeStep`).
                 // Bez [`MoveTerrain`] (D1) zostaje tag `ucieczka-routed` jak dotąd (rout wykonuje wtedy `complete`).
                 // K5LOOP-SIEGE-DEF: rout z okrążenia obrońcy przy murze. `_fleeStep` -> `_doMove` czyta
-                // `_siegeMoveRefused` (`:8689`), nieportowane w ciele: jawny tag jak w gałęzi `routed` (efekty stanu
-                // aktywacji, w tym `_startRout`, zapisują się w `complete`).
-                ActivateEvent::Flee if siege => skipped.push("ucieczka-oblezenie"),
+                // `_siegeMoveRefused` (`:8689`), nieportowane w ciele: jawny tag (efekty stanu aktywacji, w tym
+                // `_startRout`, zapisują się w `complete`). Precedencja tagów TAKA SAMA jak w gałęzi `routed` w
+                // [`LoopBody::start`]: najpierw brak [`MoveTerrain`] (`ucieczka-routed`, ramię `other` niżej), potem mur
+                // (`ucieczka-oblezenie`), dopiero potem wykonanie `_fleeStep`.
+                ActivateEvent::Flee if siege && self.terrain.is_some() => {
+                    skipped.push("ucieczka-oblezenie")
+                }
                 ActivateEvent::Flee if self.terrain.is_some() => flee = true,
                 // K5DOC-T8: `_executeGroupDoctrineStep(ru, meta, done)` (`battleScene.ts:6097`, ciało `:17966-18084`).
                 ActivateEvent::DoctrineStep => doctrine = res.branches.contains(&"U7.0-doctrine"),
