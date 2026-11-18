@@ -15,9 +15,12 @@
 //! * D-OP-2: mapa statyczna z [`PlayableState`] przez [`snapshot_map_of`] (teren wg
 //!   [`teren_of`](crate::domain::playable_movement::teren_of), ten sam co model ruchu); sesja nie dostaje
 //!   nowego pola (D-R3-6 spelnione bez zmian `playable.rs`).
-//! * D-OP-3: Q6-2 (D-R3-3): aktywny tryb budowy ([`build_highlight_mode_active`]) = web `onOpenBuild` ->
-//!   `clearPlayerUnitSelection()` (`main.ts:26702-26703`, `:7090-7106`): brak `selection`, pusty
-//!   `reachable` i brak `pathRoute`.
+//! * D-OP-3: Q6-2 (D-R3-3, obrona r1 zarzut 1): otwarty panel budowy (`buildModeOpen`, z kluczem albo
+//!   bez) albo inny tryb podswietlenia ([`build_highlight_mode_active`]: `foundCityMode`,
+//!   `activeWonderId`) = web `onOpenBuild` -> `clearPlayerUnitSelection()` (`main.ts:26702-26703`,
+//!   `:7090-7106`), wolane w chwili otwarcia panelu, przed wyborem klucza: brak `selection`, pusty
+//!   `reachable` i brak `pathRoute`. Ponowne zaznaczenie jednostki przy otwartym panelu (web
+//!   `selectPlayerUnit` nie zamyka trybu) nie jest odwzorowane: ramka bezstanowa wg litery D-R3-3.
 //! * D-OP-4: zaznaczenie z UI (`RenderUiParams::selected_unit_id`, web `selectedId`, `main.ts:7116`) zasila
 //!   `selection`, `reachable` i `pathRoute` (w webie jedna zmienna); `PlayableState.selected_unit_id` nie
 //!   jest czytany przez ramke.
@@ -135,6 +138,8 @@ pub enum RenderFrameError {
     IdOutOfRange(String),
     /// `units.json` nie dal sie wczytac.
     UnitsData(String),
+    /// Typ jednostki bez definicji w `units.json` (zamiast cichego `hp = 0` / pustego `typeId`).
+    UnknownUnitType(String),
 }
 
 impl fmt::Display for RenderFrameError {
@@ -147,6 +152,12 @@ impl fmt::Display for RenderFrameError {
             Self::Overlays(e) => write!(f, "render frame: nakladki: {e}"),
             Self::IdOutOfRange(id) => write!(f, "render frame: id {id} poza zakresem DTO"),
             Self::UnitsData(e) => write!(f, "render frame: units.json: {e}"),
+            Self::UnknownUnitType(t) => {
+                write!(
+                    f,
+                    "render frame: typ jednostki {t:?} bez definicji w units.json"
+                )
+            }
         }
     }
 }
@@ -220,6 +231,50 @@ pub const RENDER_FRAME_GAPS: &[RenderFrameGap] = &[
         field: "units[].hp (brak hp w stanie) / units[].hpMax",
         produced: "hp = health z units.json, hpMax = economy.units[id].hpMax",
         reason: "web hpMaxEffective (unitCardCombatFor) z bonusami trwalymi nie jest portowany",
+    },
+];
+
+/// Pola ramki z wartoscia webu dla stanu, ktory NIE niesie danego faktu (obrona r1 zarzut 5). To nie sa
+/// rozbieznosci z webem (web w takim stanie daje te same wartosci), ale zrodlo jest stala, nie stan: gdy
+/// [`PlayableState`] dostanie fakt, pozycja musi przejsc na producenta. Kazda pozycja jest tez w tabeli
+/// raportu operatora / obrony.
+pub const RENDER_FRAME_STATE_DEFAULTS: &[RenderFrameGap] = &[
+    RenderFrameGap {
+        field: "cities[] kolejka / bunt / wzrost na zywo",
+        produced: "CityViewCityFacts::default() poza besieged (= state.oblegane)",
+        reason: "stan nie ma kolejki produkcji, buntu ani wzrostu miasta (EKONOMIA-STAN #310); web bez \
+                 kolejki/buntu daje te same plakietki",
+    },
+    RenderFrameGap {
+        field: "owners[] / cities[] miasta-panstwa",
+        produced: "CityStateFacts::default()",
+        reason: "stan nie ma miast-panstw; web bez miast-panstw daje te same wartosci",
+    },
+    RenderFrameGap {
+        field: "units[].isGeneral / units[].dimmed",
+        produced: "false",
+        reason: "stan nie ma generalow ani dimmedUnitIds (web undefined/false)",
+    },
+    RenderFrameGap {
+        field: "units[].embarked / units[].inGarnizon",
+        produced: "z adaptera ruchu (stan bez zaokretowania i garnizonu -> false)",
+        reason: "PlayableUnit nie niesie embarked/inGarnizon; ruch_jednostki_from_state daje wartosci webu \
+                 dla jednostki bez tych pol",
+    },
+    RenderFrameGap {
+        field: "units[].armorBadgeLevel / units[].softBadgeLevel",
+        produced: "armor_path_badge_level(None) / soft_path_badge_level(None)",
+        reason: "stan nie ma unitBuildingProgress (web armorPathBadgeLevel(undefined))",
+    },
+    RenderFrameGap {
+        field: "overlays.tradeRoutes",
+        produced: "[]",
+        reason: "stan nie ma tradeRoutes (main.ts:3454); web bez tras rysuje pusta warstwe",
+    },
+    RenderFrameGap {
+        field: "battle",
+        produced: "None",
+        reason: "stan nie ma otwartej bitwy (D-R3-4)",
     },
 ];
 
@@ -383,11 +438,20 @@ fn unit_view(
     rj: &RuchJednostka,
     defs: &HashMap<String, UnitRecord>,
 ) -> Result<UnitViewDto, RenderFrameError> {
-    let type_id = rj.type_id.clone().unwrap_or_default();
+    // Adapter ruchu zawsze ustawia typ (`playable_movement.rs`: zamiana albo typ startowy); brak typu albo
+    // definicji = jawny blad (obrona r1 zarzut 3), nie `hp = 0` / pusty `typeId`.
+    let type_id = rj
+        .type_id
+        .clone()
+        .ok_or_else(|| RenderFrameError::UnknownUnitType(String::new()))?;
+    let def = defs
+        .get(&type_id)
+        .ok_or_else(|| RenderFrameError::UnknownUnitType(type_id.clone()))?;
     let replace = state.economy.units.get(&unit.id.get());
-    // `hp` undefined = pelne z definicji (`units/setup.ts:60`); luka hpMaxEffective w RENDER_FRAME_GAPS.
+    // `hp` undefined = pelne z definicji (`units/setup.ts:60`, `unitHealth(def)` `main.ts:33093-33095`);
+    // luka hpMaxEffective w RENDER_FRAME_GAPS.
     #[allow(clippy::cast_precision_loss)]
-    let full_hp = defs.get(&type_id).map_or(0.0, |d| d.health_lc as f64);
+    let full_hp = def.health_lc as f64;
     let hp = replace.and_then(|r| r.hp).unwrap_or(full_hp);
     let stars = veteran_star_count(replace.and_then(|r| r.battles_survived));
     // Gwiazdki to `0..=3` (`VETERAN_MAX_BATTLES_TRACKED`).
@@ -698,9 +762,9 @@ fn overlays_view(
         path_route: None,
     };
 
-    if build_highlight_mode_active(&build_ui) {
-        // D-OP-3 (Q6-2): `onOpenBuild` -> `clearPlayerUnitSelection()` (`main.ts:26702-26703`):
-        // bez `selection`, `reachable` i `pathRoute`.
+    if ui.build_mode_open || build_highlight_mode_active(&build_ui) {
+        // D-OP-3 (Q6-2, D-R3-3): `onOpenBuild` -> `clearPlayerUnitSelection()` (`main.ts:26702-26703`)
+        // juz przy otwarciu panelu (bez klucza): bez `selection`, `reachable` i `pathRoute`.
         return Ok(dto);
     }
 

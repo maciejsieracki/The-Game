@@ -15,16 +15,18 @@ use bridge::{
     EnginePort, MockEngineAdapter, RenderUiParams, StartGameParams, CONTRACT_VERSION,
 };
 use civ_engine::data::units_combat::parse_units;
+use civ_engine::domain::diplomacy::RelationStatus;
 use civ_engine::domain::map_view::build_map_view;
 use civ_engine::domain::overlays_view::reachable_overlay;
 use civ_engine::domain::playable::{
-    MovementPoints, PlayableFogSession, PlayableGame, PlayablePlayer, PlayableUnit,
-    PlayableUnitKind,
+    MovementPoints, PlayableFogSession, PlayableGame, PlayablePlayer, PlayableReplaceUnit,
+    PlayableUnit, PlayableUnitKind,
 };
 use civ_engine::domain::render_frame::{
     build_render_frame, render_map, snapshot_map_of, RenderFrameError, RENDER_FRAME_GAPS,
+    RENDER_FRAME_STATE_DEFAULTS,
 };
-use civ_engine::{PlayableState, PlayerId, PositionDto, UnitId};
+use civ_engine::{CityId, PlayableCity, PlayableState, PlayerId, PositionDto, UnitId};
 use civ_view_model as vm;
 use civ_view_model::{FogState, MapViewDto, RenderLayersDto, Terrain};
 use serde_json::{json, Value};
@@ -175,6 +177,11 @@ fn c_bez_trybu_budowy_nakladki_jednostki_zgodne_z_overlays_view() {
 fn c_tryb_budowy_czysci_zaznaczenie_zasieg_i_trase() {
     let mut bridge = session_bridge();
     for ui in [
+        // Obrona r1 zarzut 1 (D-R3-3): sam otwarty panel, przed wyborem klucza, tez czysci.
+        RenderUiParams {
+            build_mode_open: true,
+            ..selected(WARRIOR)
+        },
         RenderUiParams {
             build_mode_open: true,
             active_improvement_key: Some("farma".to_owned()),
@@ -195,15 +202,9 @@ fn c_tryb_budowy_czysci_zaznaczenie_zasieg_i_trase() {
         assert!(f.overlays.reachable.is_empty(), "{ui:?}");
         assert_eq!(f.overlays.path_route, None, "{ui:?}");
     }
-    // Kontrola: `buildModeOpen` bez klucza = galaz „brak trybu” (`:16369`) - zaznaczenie zostaje.
-    let f = frame(
-        &mut bridge,
-        None,
-        Some(RenderUiParams {
-            build_mode_open: true,
-            ..selected(WARRIOR)
-        }),
-    );
+    // `buildModeOpen` bez klucza: warstwa podswietlenia = galaz „brak trybu” (`:16369`), ale zaznaczenie
+    // i tak wyczyszczone (wyzej). Kontrola: zamkniety panel zostawia zaznaczenie.
+    let f = frame(&mut bridge, None, Some(selected(WARRIOR)));
     assert!(f.overlays.selection.is_some());
     assert!(!f.overlays.reachable.is_empty());
     // Rodzaj warstwy wg trybu (`refreshBuildHighlight`).
@@ -579,6 +580,25 @@ fn h_skladacz_odrzuca_nieznany_fotel() {
 
 #[test]
 fn h_jawne_luki_ramki() {
+    let defaults: BTreeSet<&str> = RENDER_FRAME_STATE_DEFAULTS
+        .iter()
+        .map(|g| g.field)
+        .collect();
+    let expected_defaults: BTreeSet<&str> = [
+        "cities[] kolejka / bunt / wzrost na zywo",
+        "owners[] / cities[] miasta-panstwa",
+        "units[].isGeneral / units[].dimmed",
+        "units[].embarked / units[].inGarnizon",
+        "units[].armorBadgeLevel / units[].softBadgeLevel",
+        "overlays.tradeRoutes",
+        "battle",
+    ]
+    .into_iter()
+    .collect();
+    assert_eq!(defaults, expected_defaults);
+    assert!(RENDER_FRAME_STATE_DEFAULTS
+        .iter()
+        .all(|g| !g.reason.is_empty() && !g.produced.is_empty()));
     let fields: BTreeSet<&str> = RENDER_FRAME_GAPS.iter().map(|g| g.field).collect();
     let expected: BTreeSet<&str> = [
         "overlays.workerFields",
@@ -591,4 +611,243 @@ fn h_jawne_luki_ramki() {
     .collect();
     assert_eq!(fields, expected);
     assert!(RENDER_FRAME_GAPS.iter().all(|g| !g.reason.is_empty()));
+}
+
+// (h) obrona r1 zarzut 2: pola produkowane od zera ---------------------------------------------------------
+
+fn ai_player() -> PlayablePlayer {
+    PlayablePlayer {
+        id: PlayerId::new(AI),
+        name: "AI".to_owned(),
+        civilization: "grecy".to_owned(),
+        is_human: false,
+    }
+}
+
+fn city(id: u64, owner: u64, x: u16, y: u16) -> PlayableCity {
+    PlayableCity {
+        id: CityId::new(id),
+        owner_id: PlayerId::new(owner),
+        name: format!("miasto-{id}"),
+        position: PositionDto::new(x, y),
+        is_capital: false,
+        population: 1,
+        culture: 0,
+    }
+}
+
+fn start_state() -> PlayableState {
+    PlayableGame::new(StartGameParams::default())
+        .expect("scenariusz")
+        .state()
+        .clone()
+}
+
+fn frame_of(state: &PlayableState, fog_on: bool) -> RenderLayersDto {
+    let mut session = PlayableFogSession::for_new_game(state);
+    session.fog_on = fog_on;
+    build_render_frame(
+        state,
+        &mut session,
+        PlayerId::new(HUMAN),
+        &RenderUiParams::default(),
+    )
+    .expect("ramka")
+}
+
+fn hexes_of(f: &RenderLayersDto, owner: u64) -> BTreeSet<(i32, i32)> {
+    f.territory
+        .by_owner
+        .iter()
+        .filter(|o| o.owner_id == player(owner))
+        .flat_map(|o| o.hexes.iter().map(|h| (h.q, h.r)))
+        .collect()
+}
+
+fn fog_at(m: &MapViewDto, f: &RenderLayersDto, q: i32, r: i32) -> FogState {
+    let i = m
+        .hexes
+        .iter()
+        .position(|h| h.coord == vm::HexCoord::new(q, r))
+        .expect("heks mapy");
+    f.fog.state[i]
+}
+
+/// Web `refreshTerritoryBorderOverlay` (`main.ts:15582-15601`): cudze terytorium tylko na heksach
+/// `vis.has(key) || explored.has(key)`; wlasne zawsze (`isMe`); `!fogOn` = wszystko.
+#[test]
+fn h_terytorium_cudze_filtrowane_mgla() {
+    let mut state = start_state();
+    state.players.push(ai_player());
+    // Miasto AI w naroznym heksie (poza widokiem gracza, jak `h_stosy_i_filtr_mgly_jednostek`).
+    let (fx, fy) = (state.map.width - 1, state.map.height - 1);
+    state.cities.push(city(77, AI, fx, fy));
+    let m = render_map(&state).expect("mapa");
+
+    // Bez mgly: pelne terytorium AI (punkt odniesienia filtra).
+    let all = frame_of(&state, false);
+    let ai_all = hexes_of(&all, AI);
+    assert!(ai_all.contains(&(i32::from(fx), i32::from(fy))));
+    assert!(ai_all.len() > 1, "miasto AI ma terytorium");
+
+    // Mgla: heksy AI dziela sie na widoczne/odkryte i nieodkryte (obie czesci niepuste); w ramce
+    // zostaja tylko te pierwsze. Wlasne terytorium bez zmian (`isMe`).
+    let fogged = frame_of(&state, true);
+    let seen = |f: &RenderLayersDto| -> BTreeSet<(i32, i32)> {
+        ai_all
+            .iter()
+            .copied()
+            .filter(|&(q, r)| fog_at(&m, f, q, r) != FogState::Unexplored)
+            .collect()
+    };
+    let hidden: Vec<(i32, i32)> = ai_all
+        .iter()
+        .copied()
+        .filter(|&(q, r)| fog_at(&m, &fogged, q, r) == FogState::Unexplored)
+        .collect();
+    assert!(!hidden.is_empty(), "czesc terytorium AI pod mgla");
+    assert!(
+        hexes_of(&fogged, AI).len() < ai_all.len(),
+        "cudze terytorium pod mgla ukryte"
+    );
+    assert_eq!(hexes_of(&fogged, AI), seen(&fogged));
+    // Galaz `vis.has(key)`: swiezo po starcie odkryte = widoczne, wiec te heksy sa `Visible`.
+    assert!(
+        !hexes_of(&fogged, AI).is_empty(),
+        "czesc terytorium AI w widoku"
+    );
+    assert!(hexes_of(&fogged, AI)
+        .iter()
+        .all(|&(q, r)| fog_at(&m, &fogged, q, r) == FogState::Visible));
+    assert_eq!(
+        hexes_of(&fogged, HUMAN),
+        hexes_of(&all, HUMAN),
+        "isMe(owner) zawsze"
+    );
+
+    // Galaz `explored.has(key)`: dwa nieodkryte heksy AI dopisane do eksploracji (nie widoczne) ->
+    // dochodza do ramki jako `Explored`.
+    let picked: Vec<(i32, i32)> = hidden.iter().copied().take(2).collect();
+    let mut explored = PlayableFogSession::for_new_game(&state);
+    explored
+        .explored_by_human
+        .entry(PlayerId::new(HUMAN))
+        .or_default()
+        .extend(picked.iter().copied());
+    let part = build_render_frame(
+        &state,
+        &mut explored,
+        PlayerId::new(HUMAN),
+        &RenderUiParams::default(),
+    )
+    .expect("ramka z odkrytymi");
+    for &(q, r) in &picked {
+        assert_eq!(fog_at(&m, &part, q, r), FogState::Explored);
+    }
+    let mut expected = hexes_of(&fogged, AI);
+    expected.extend(picked.iter().copied());
+    assert_eq!(hexes_of(&part, AI), expected);
+    assert_eq!(hexes_of(&part, AI), seen(&part));
+}
+
+/// `cities[].besieged` = `c.oblegane`; `sieges` = `siege_views` z obozem wroga (wojna) przy miescie.
+#[test]
+fn h_oblezenie_besieged_i_sieges() {
+    let mut state = start_state();
+    state.players.push(ai_player());
+    let capital = state.cities[0].clone();
+    // Jednostka AI na heksie sasiednim do stolicy (1,1).
+    state.units.push(PlayableUnit {
+        id: UnitId::new(9),
+        owner_id: PlayerId::new(AI),
+        kind: PlayableUnitKind::Warrior,
+        position: PositionDto::new(1, 2),
+        movement: MovementPoints::from(1_u8),
+        movement_max: MovementPoints::from(1_u8),
+        selected: false,
+    });
+    state.oblegane.insert(capital.id);
+    state
+        .war
+        .diplomacy
+        .ensure_relation(PlayerId::new(HUMAN), PlayerId::new(AI))
+        .status = RelationStatus::War;
+    let f = frame_of(&state, true);
+    let c = f
+        .cities
+        .iter()
+        .find(|c| c.id.get() == capital.id.get())
+        .expect("stolica");
+    assert!(c.besieged, "c.oblegane");
+    assert_eq!(f.sieges.len(), 1);
+    assert_eq!(f.sieges[0].city_id.get(), capital.id.get());
+    assert_eq!(
+        f.sieges[0]
+            .camp_hexes
+            .iter()
+            .map(|c| (c.hex, c.owner_id))
+            .collect::<Vec<_>>(),
+        vec![(vm::HexCoord::new(1, 2), player(AI))]
+    );
+    // Bez wojny (`areEnemyOwners` = false): oblezenie bez obozu; bez `oblegane`: brak wpisu.
+    let mut peace = state.clone();
+    peace
+        .war
+        .diplomacy
+        .ensure_relation(PlayerId::new(HUMAN), PlayerId::new(AI))
+        .status = RelationStatus::Peace;
+    let fp = frame_of(&peace, true);
+    assert_eq!(fp.sieges.len(), 1);
+    assert!(fp.sieges[0].camp_hexes.is_empty());
+    peace.oblegane.clear();
+    let none = frame_of(&peace, true);
+    assert!(none.sieges.is_empty());
+    assert!(none.cities.iter().all(|c| !c.besieged));
+}
+
+/// `units[].hp` = `economy.units[id].hp` (web `unit.hp`), `hpMax` = `economy.units[id].hpMax`.
+#[test]
+fn h_hp_jednostki_z_ekonomii() {
+    let mut state = start_state();
+    state.economy.units.insert(
+        WARRIOR,
+        PlayableReplaceUnit {
+            hp: Some(7.5),
+            hp_max: Some(20.0),
+            ..PlayableReplaceUnit::default()
+        },
+    );
+    let f = frame_of(&state, true);
+    let u = f
+        .units
+        .iter()
+        .find(|u| u.id.get() == WARRIOR)
+        .expect("wojownik");
+    assert_eq!(u.hp, 7.5);
+    assert_eq!(u.hp_max, Some(20.0));
+}
+
+/// Obrona r1 zarzut 3: typ bez definicji w `units.json` = jawny blad, nie `hp = 0`.
+#[test]
+fn h_typ_bez_definicji_to_blad() {
+    let mut state = start_state();
+    state.economy.units.insert(
+        WARRIOR,
+        PlayableReplaceUnit {
+            type_id: Some("NieistniejacyTyp".to_owned()),
+            ..PlayableReplaceUnit::default()
+        },
+    );
+    let mut session = PlayableFogSession::for_new_game(&state);
+    let err = build_render_frame(
+        &state,
+        &mut session,
+        PlayerId::new(HUMAN),
+        &RenderUiParams::default(),
+    )
+    .expect_err("brak definicji");
+    assert_eq!(
+        err,
+        RenderFrameError::UnknownUnitType("NieistniejacyTyp".to_owned())
+    );
 }
