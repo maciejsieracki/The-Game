@@ -23,7 +23,8 @@ use civ_engine::domain::battle_setup_units::{
     Occupancy, PlaceUnitsInput, PlacedUnit, SetupUnit, Side, SiegeWallRows, BATTLE_MAX_PER_SIDE,
     DEPLOY_ATK_FRONT_COL, DEPLOY_DEF_FRONT_COL,
 };
-use civ_engine::domain::battle_setup_units_formation::InitialRole;
+use civ_engine::domain::battle_setup_units_formation::{initial_formation, InitialRole};
+use civ_engine::domain::siege_tactics_classify::norm_name;
 use civ_engine::domain::siege_tactics_inputs_pos::Dir;
 use serde_json::Value;
 
@@ -33,6 +34,11 @@ const PIN: &str = "07d2fbd72f758705f8e1d59cc4968027ffbafe75";
 /// `FILE_SHA[FORMATION]` / `FRAG_SHA` z `p6_battle_setup_units_gen.mjs`.
 const FORMATION_SHA: &str = "800ffb600b4443210def79662f0b7f53b9959e602a130ce4687c77d9ea9fc48c";
 const FRAG_SHA: &str = "5c9ce1504295cf84c1c4c584302913d7777a2b079d61345d0552cb6d0afe5c66";
+/// Progi licznikow rundy 2 (minimalne wartosci; zmierzone wartosci w raporcie `02a-obrona.md`).
+const PROG_PASMO_GRANICA: usize = 10;
+const PROG_DOLNE_SKRZYDLO: usize = 8;
+const PROG_DOWODCY_NAJSZERSI: usize = 5;
+const PROG_ROLA_Z_KATEGORII: usize = 20;
 /// Straznik czasu petli wektorow (dispatch: 90 s).
 const TIME_GUARD_SECS: u64 = 90;
 
@@ -243,6 +249,120 @@ struct Coverage {
     pod_jednostka_wzgorza_skaly: usize,
     nadpisanie_occ: usize,
     dowodca: usize,
+    // --- runda 2 (zarzuty Evaluatora r1)
+    /// E16: pasmo (strona rozstawiana przez `place`) z `per` rozna dla 108 i 109 wierszy gry.
+    pasmo_granica_wierszy_gry: usize,
+    /// E12: jazda dolnego skrzydla strony bez korpusu, stojaca poza slotem (pole z przeszkoda vs rowna Plains).
+    jazda_dolne_skrzydlo_bez_korpusu_poza_slotem: usize,
+    /// E32: strona z jazda, w ktorej pasmo dowodcow ma najwieksze `per` (scisle).
+    pasmo_dowodcow_najszersze_z_jazda: usize,
+    /// E27: rola javelin/archer/slinger pochodzi tylko z dopasowania kategorii (kategoria != dokladnej, nazwa bez slowa).
+    rola_z_kategorii_oszczepnik: usize,
+    rola_z_kategorii_lucznik: usize,
+    rola_z_kategorii_procarz: usize,
+}
+
+/// Wiersze gry, przy ktorych liczona jest granica pasma: pin `PLAY_ROW1 - PLAY_ROW0 - 1` i wartosc o jeden wieksza.
+const PLAYABLE_ROWS_PIN: i64 = PLAY_ROW1 - PLAY_ROW0 - 1;
+
+/// `per` pasma n jednostek (`linesForBand`) przy `rows` wierszach gry - wzor z `formationRules.ts:64-70` (liczony
+/// niezaleznie od implementacji, tylko do licznikow pokrycia).
+fn band_per(n: usize, configured: Option<u8>, rows: i64) -> i64 {
+    if n == 0 {
+        return 0;
+    }
+    let n = i64::try_from(n).unwrap();
+    let requested = configured.map_or_else(|| (n + 19) / 20, i64::from);
+    let lines = n.min(requested.max((n + rows - 1) / rows));
+    (n + lines - 1) / lines
+}
+
+/// Pasma (dlugosc, linie) w kolejnosci `layBand`: piechota, oszczepnicy, lucznicy, procarze, strzelcy, machiny,
+/// dowodcy; plus liczba jazdy.
+fn side_bands(
+    units: &[SetupUnit],
+    input: &PlaceUnitsInput<'_>,
+) -> ([(usize, Option<u8>); 7], usize) {
+    let roles: Vec<InitialRole> = units.iter().map(SetupUnit::initial_role).collect();
+    let f = initial_formation(&roles);
+    (
+        [
+            (f.infantry.len(), input.melee_lines),
+            (f.javelins.len(), input.melee_lines),
+            (f.archers.len(), input.archer_lines),
+            (f.slingers.len(), input.archer_lines),
+            (f.ranged.len(), input.archer_lines),
+            (f.siege.len(), None),
+            (f.commanders.len(), None),
+        ],
+        f.mounted.len(),
+    )
+}
+
+/// Liczniki rundy 2 dla strony rozstawianej przez `place` (`got`/`ideal` = wynik na polu wektora / na rownej Plains).
+fn cover_place_side(
+    cov: &mut Coverage,
+    units: &[SetupUnit],
+    input: &PlaceUnitsInput<'_>,
+    got: &[PlacedUnit],
+    ideal: &[PlacedUnit],
+) {
+    let (bands, mounted) = side_bands(units, input);
+    for &(n, lines) in &bands {
+        if band_per(n, lines, PLAYABLE_ROWS_PIN) != band_per(n, lines, PLAYABLE_ROWS_PIN + 1) {
+            cov.pasmo_granica_wierszy_gry += 1;
+        }
+    }
+    let pers: Vec<i64> = bands
+        .iter()
+        .map(|&(n, l)| band_per(n, l, PLAYABLE_ROWS_PIN))
+        .collect();
+    if mounted > 0 && pers[6] > pers[..6].iter().copied().max().unwrap() {
+        cov.pasmo_dowodcow_najszersze_z_jazda += 1;
+    }
+    if bands.iter().all(|&(n, _)| n == 0) && mounted >= 2 {
+        // jazda w kolejnosci jednostek: indeksy nieparzyste = dolne skrzydlo (`i % 2 === 1`)
+        let mut k = 0;
+        for (a, b) in got.iter().zip(ideal.iter()) {
+            if units[a.index].initial_role() != InitialRole::Mounted {
+                continue;
+            }
+            if k % 2 == 1 && (a.col, a.row) != (b.col, b.row) {
+                cov.jazda_dolne_skrzydlo_bez_korpusu_poza_slotem += 1;
+            }
+            k += 1;
+        }
+    }
+}
+
+/// E27: rola strzelecka wylacznie z kategorii (kategoria zawiera slowo, ale != kategorii dokladnej; nazwa bez slowa).
+fn cover_role_from_category(cov: &mut Coverage, u: &SetupUnit) {
+    let kat = norm_name(u.kategoria.as_deref().unwrap_or(""));
+    let name = norm_name(u.jednostka.as_deref().or(u.nazwa.as_deref()).unwrap_or(""));
+    let (exact, words, slot): (&str, &[&str], &mut usize) = match u.initial_role() {
+        InitialRole::Javelin => (
+            "oszczepnik",
+            &["oszczepnik", "javelin", "atlatl", "estolic"],
+            &mut cov.rola_z_kategorii_oszczepnik,
+        ),
+        InitialRole::Archer => (
+            "lucznik",
+            &["luczn", "archer", "kusznik", "crossbow"],
+            &mut cov.rola_z_kategorii_lucznik,
+        ),
+        InitialRole::Slinger => (
+            "procarz",
+            &["procarz", "slinger"],
+            &mut cov.rola_z_kategorii_procarz,
+        ),
+        _ => return,
+    };
+    if kat != exact
+        && words.iter().any(|w| kat.contains(w))
+        && !words.iter().any(|w| name.contains(w))
+    {
+        *slot += 1;
+    }
 }
 
 fn run_case(c: &Value, fields: &Value, cov: &mut Coverage) {
@@ -341,6 +461,7 @@ fn run_case(c: &Value, fields: &Value, cov: &mut Coverage) {
         if u.is_army_commander {
             cov.dowodca += 1;
         }
+        cover_role_from_category(cov, u);
         #[allow(clippy::cast_precision_loss)]
         match f.map.at_f(p.col as f64, p.row as f64) {
             Some(bterrain::FOREST) => cov.pod_jednostka_las += 1,
@@ -429,6 +550,12 @@ fn run_case(c: &Value, fields: &Value, cov: &mut Coverage) {
             }
         }
     }
+    let atk_n = atk_units.len().min(BATTLE_MAX_PER_SIDE);
+    cover_place_side(cov, &atk_units[..atk_n], &input, &got.atk, &ideal.atk);
+    if !siege_branch {
+        let def_n = def_units.len().min(BATTLE_MAX_PER_SIDE);
+        cover_place_side(cov, &def_units[..def_n], &input, &got.def, &ideal.def);
+    }
 }
 
 #[test]
@@ -513,7 +640,7 @@ fn rozstawienie_identyczne_z_pinem() {
 
 /// Progi licznikow pokrycia (kazda galaz rozstawienia wykonana w wektorach pinu).
 fn pokrycie_galezi_rozstawienia(cov: &Coverage) {
-    let checks: [(&str, usize, usize); 23] = [
+    let checks: [(&str, usize, usize); 29] = [
         ("przypadki_oblezenie", cov.przypadki_oblezenie, 60),
         ("przypadki_polowe", cov.przypadki_polowe, 20),
         (
@@ -553,6 +680,37 @@ fn pokrycie_galezi_rozstawienia(cov: &Coverage) {
         ),
         ("nadpisanie_occ", cov.nadpisanie_occ, 10),
         ("dowodca", cov.dowodca, 3),
+        // runda 2: progi = wartosci z wektorow r2 (dokladnie te scenariusze R2-*; patrz 02a-obrona.md)
+        (
+            "pasmo_granica_wierszy_gry",
+            cov.pasmo_granica_wierszy_gry,
+            PROG_PASMO_GRANICA,
+        ),
+        (
+            "jazda_dolne_skrzydlo_bez_korpusu_poza_slotem",
+            cov.jazda_dolne_skrzydlo_bez_korpusu_poza_slotem,
+            PROG_DOLNE_SKRZYDLO,
+        ),
+        (
+            "pasmo_dowodcow_najszersze_z_jazda",
+            cov.pasmo_dowodcow_najszersze_z_jazda,
+            PROG_DOWODCY_NAJSZERSI,
+        ),
+        (
+            "rola_z_kategorii_oszczepnik",
+            cov.rola_z_kategorii_oszczepnik,
+            PROG_ROLA_Z_KATEGORII,
+        ),
+        (
+            "rola_z_kategorii_lucznik",
+            cov.rola_z_kategorii_lucznik,
+            PROG_ROLA_Z_KATEGORII,
+        ),
+        (
+            "rola_z_kategorii_procarz",
+            cov.rola_z_kategorii_procarz,
+            PROG_ROLA_Z_KATEGORII,
+        ),
     ];
     for (name, got, min) in checks {
         assert!(got >= min, "pokrycie {name}: {got} < {min}");
@@ -667,14 +825,14 @@ fn fikstura_renderera_max_per_side() {
     );
     // Renderer ma 120 (stary limit sprzed R-WEB-BATTLE-CAP-500-Q1): rozbieznosc z pinem = dlug DTO-BRIDGE.
     assert_eq!(r["rendererMaxPerSide"].as_u64(), Some(120));
-    let path = concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/../renderer/src/battle/field.rs"
+    // Linia zrodla renderera jest czytana WYLACZNIE przez generator (fikstura JSON); test silnika nie otwiera plikow
+    // `renderer/` (dispatch: porownanie tylko przez fiksture; obrona r2, uwaga N1 Evaluatora).
+    assert_eq!(
+        r["maxPerSideLine"].as_str(),
+        Some("pub const MAX_PER_SIDE: i32 = 120;")
     );
-    let text = std::fs::read_to_string(path).expect("field.rs (tylko odczyt)");
-    let line = r["maxPerSideLine"].as_str().unwrap();
-    assert!(
-        text.lines().any(|l| l == line),
-        "field.rs: linia `{line}` zmieniona - zregeneruj fiksture i zaktualizuj dlug DTO-BRIDGE"
+    assert_eq!(
+        r["source"].as_str(),
+        Some("rust-port/renderer/src/battle/field.rs")
     );
 }

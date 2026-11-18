@@ -511,6 +511,12 @@ fn place_one(
 /// `_placeSiegeDefenders(defenders)` (`:4442-4744`): korona muru, potem reszta za murem. Kolejnosc wyniku jak pin:
 /// wrecz, strzelcy, katapulty obroncy (korona), potem jazda i machiny nie-katapulty (`placeOne`). Jednostka konna
 /// i katapulta naraz trafia do obu list (korona i reszta) - jak w pinie.
+///
+/// Zakres zgodnosci z pinem: geometria muru z `_carveWallTiles` (T5a), jedyna osiagalna w pinie
+/// (`row_lo = 0`, `row_hi = BF_ROWS - 1 = 155`, `gate_row = 77`). Dla dowolnych `SiegeWallRows` z `row_hi < row_lo`
+/// (poza pinem) wynik NIE odpowiada dzieleniu JS `Math.floor(rearOffset / (rHi - rLo + 1))` przy dzielniku <= 0:
+/// tutaj w buildzie debug zadziala `debug_assert!`, a w release dzielnik jest podnoszony do 1 (`max(1)`).
+/// Wolajacy (T6) ma przekazywac wylacznie mur z [`super::battle_setup`] (`SiegeWallRows::from(&layout)`).
 #[allow(
     clippy::cast_possible_truncation,
     clippy::cast_precision_loss,

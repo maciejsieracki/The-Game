@@ -498,7 +498,8 @@ runCase('S14-wieze-dowodcy', 'mury-kamienne-pustynia',
   [makeUnit({ commander: true }), ...mixed(12)], true);
 runCase('S15-teren-gesty', 'synt-mur-gesty', mixed(80), mixed(60), true);
 runCase('S16-teren-rzadki', 'synt-mur-rzadki', mixed(45), mixed(45), true, { meleeLines: 3, archerLines: 3 });
-// siegeMode bez muru (siegeWallCol = -1) -> galaz polowa
+// pola z murem (siegeMode = true, galaz oblezenia): placeOne bez szukania (S18), bez miejsca (S19), balisty na
+// koronie (S20), miejsce dopiero w ostatnim kroku petli kolumn dc = 4 (S22)
 runCase('S18-plaski-jazda-bezposrednio', 'synt-mur-plaski', mixed(12),
   [...named('Konnica', 'konnica', 6), ...named('Taran', 'oblezenie', 2), ...named('Wojownik', 'wojownik', 3)], true);
 runCase('S19-zablokowane-za-murem', 'synt-mur-zablokowany', mixed(12),
@@ -506,6 +507,7 @@ runCase('S19-zablokowane-za-murem', 'synt-mur-zablokowany', mixed(12),
 runCase('S20-balista-oblezenia-na-koronie', 'mur-wzgorza', mixed(5),
   [...named('Balista oblężnicza', 'oblezenie', 2), ...named('Balista', 'oblezenie', 1), ...named('Taran', 'oblezenie', 1)], true);
 runCase('S22-reszta-kolumna-dc4', 'synt-mur-kolumna-46', mixed(4), [...named('Konnica', 'konnica', 3), ...named('Taran', 'oblezenie', 1)], true);
+// siegeMode bez muru (siegeWallCol = -1) -> galaz polowa
 runCase('S17-siegeMode-bez-muru', 'polowa-40', mixed(20), mixed(20), true);
 // --- scenariusze polowe (galaz wspolna z place())
 runCase('F1-polowa-40', 'polowa-40', mixed(40), mixed(40), false);
@@ -533,6 +535,108 @@ for (let k = 0; k < 140; k++) {
   if (R() < 0.35) params.meleeLines = pick([1, 2, 3]);
   if (R() < 0.35) params.archerLines = pick([1, 2, 3]);
   runCase('L' + k, fid, randomArmy(na), randomArmy(nd), siegeMode, params);
+}
+
+// --- runda 2 (obrona, zarzuty Evaluatora r1: E16, E12, E32, E27). Dopisane PO petli losowej, zeby nie zmieniac
+// strumienia RNG przypadkow S*/F*/L* z rundy 1 (ich wektory pozostaja bajt w bajt te same).
+// `exact`: jednostki bez losowego dowodcy (licznosc pasma musi byc dokladna); kontrola rol wykonaniem pinu.
+const exact = (name, kategoria, n, commander = false) =>
+  Array.from({ length: n }, () => makeUnit({ base: byName(name), kategoria, commander }));
+const expectRoles = (id, units, want) => {
+  const got = {};
+  for (const u of units) { const r = H.initialBattleRoleOf(u); got[r] = (got[r] ?? 0) + 1; }
+  for (const [role, n] of Object.entries(want)) {
+    if ((got[role] ?? 0) !== n) throw new Error(`${id}: rola ${role} ${got[role] ?? 0} != ${n}`);
+  }
+};
+const runChecked = (id, fieldId, attackers, defenders, siegeMode, params, atkRoles, defRoles) => {
+  expectRoles(id + '/atk', attackers, atkRoles);
+  expectRoles(id + '/def', defenders, defRoles);
+  runCase(id, fieldId, attackers, defenders, siegeMode, params);
+};
+const L1 = { meleeLines: 1, archerLines: 1 };
+
+// E16: granica `playableRows = PLAY_ROW1 - PLAY_ROW0 - 1 = 108`. Pasmo n z ceil(n/108) > ceil(n/109) i liniami
+// skonfigurowanymi < ceil(n/108): 109 (2 linie po 55), 217/218 (3 linie po 73), 325 (4 po 82), 433 (5 po 87).
+{
+  const a = exact('Wojownik', 'wojownik', 109);
+  runChecked('R2-E16-oblezenie-piechota-109', 'mur-wzgorza', a, exact('Wojownik', 'wojownik', 4), true, L1,
+    { melee: 109 }, { melee: 4 });
+}
+{
+  const a = [...exact('Łucznik', 'lucznik', 109), ...exact('Wojownik', 'wojownik', 3)];
+  runChecked('R2-E16-oblezenie-lucznicy-109', 'mur-wzgorza', a, exact('Łucznik', 'lucznik', 6), true, L1,
+    { archer: 109, melee: 3 }, { archer: 6 });
+}
+{
+  const a = [...exact('Wojownik', 'wojownik', 218), ...exact('Łucznik', 'lucznik', 109)];
+  runChecked('R2-E16-oblezenie-218-109', 'mury-kamienne-pustynia', a, exact('Wojownik', 'wojownik', 10), true, L1,
+    { melee: 218, archer: 109 }, { melee: 10 });
+}
+{
+  const a = exact('Wojownik', 'wojownik', 217);
+  const d = exact('Wojownik', 'wojownik', 218);
+  runChecked('R2-E16-polowa-piechota-217-218', 'polowa-500', a, d, false, L1, { melee: 217 }, { melee: 218 });
+}
+{
+  const a = exact('Łucznik', 'lucznik', 109);
+  const d = exact('Łucznik', 'lucznik', 218);
+  runChecked('R2-E16-polowa-lucznicy-109-218', 'polowa-40', a, d, false, L1, { archer: 109 }, { archer: 218 });
+}
+{
+  const a = exact('Wojownik', 'wojownik', 325);
+  const d = exact('Wojownik', 'wojownik', 433);
+  runChecked('R2-E16-polowa-325-433', 'polowa-500', a, d, false, L1, { melee: 325 }, { melee: 433 });
+}
+
+// E12: lustro F8 dla DOLNEGO skrzydla bez korpusu (strona z sama jazda, >= 2 jednostki). Slot dolny = PLAY_MID_ROW+1
+// (78), pasmo pinu max(78, ir-3)..; wiersze 78..83 = rzeka na calej szerokosci strefy gry: pin wybiera wiersz 84,
+// a dolna granica `PLAY_MID_ROW` (mutant) dopuscilaby wolny wiersz 77 obok slotu.
+buildMapped('synt-pas-skrzydlo-dol', 'polowa-40', (t, c, r) => (c >= 10 && c <= 57 && r >= 78 && r <= 83 ? 3 : 0));
+runChecked('R2-E12-dol-jazda-2v2', 'synt-pas-skrzydlo-dol', exact('Konnica', 'konnica', 2), exact('Konnica', 'konnica', 2),
+  false, L1, { mounted: 2 }, { mounted: 2 });
+runChecked('R2-E12-dol-jazda-5v4', 'synt-pas-skrzydlo-dol',
+  [...exact('Konnica', 'konnica', 3), ...exact('Rydwan konny', 'rydwan', 2)], exact('Konnica', 'konnica', 4),
+  false, L1, { mounted: 5 }, { mounted: 4 });
+// to samo pole z siegeMode = true (brak muru -> galaz polowa)
+runChecked('R2-E12-dol-jazda-siegeMode-bez-muru', 'synt-pas-skrzydlo-dol', exact('Konnica', 'konnica', 3),
+  exact('Konnica', 'konnica', 2), true, L1, { mounted: 3 }, { mounted: 2 });
+
+// E32: pasmo dowodcow najszersze (per = liczba dowodcow <= 20) przy obecnej jezdzie; > 2 jazdy na skrzydlo, zeby
+// przesuniecie rzedow skrzydla (topRows/bottomRows z bandWidth) zmienialo wybor pola.
+{
+  const a = [...exact('Wojownik', 'wojownik', 3, true), ...exact('Wojownik', 'wojownik', 1), ...exact('Konnica', 'konnica', 6)];
+  const d = [...exact('Wojownik', 'wojownik', 5, true), ...exact('Łucznik', 'lucznik', 2), ...exact('Konnica', 'konnica', 8)];
+  runChecked('R2-E32-dowodcy-najszersi-polowa', 'polowa-40', a, d, false, L1,
+    { commander: 3, melee: 1, mounted: 6 }, { commander: 5, archer: 2, mounted: 8 });
+}
+{
+  const a = [...exact('Wojownik', 'wojownik', 4, true), ...exact('Wojownik', 'wojownik', 2), ...exact('Konnica', 'konnica', 7)];
+  runChecked('R2-E32-dowodcy-najszersi-oblezenie', 'mur-wzgorza', a, exact('Wojownik', 'wojownik', 3), true, L1,
+    { commander: 4, melee: 2, mounted: 7 }, { melee: 3 });
+}
+{
+  const a = [...exact('Wojownik', 'wojownik', 3, true), ...exact('Konnica', 'konnica', 2)];
+  const d = [...exact('Wojownik', 'wojownik', 2, true), ...exact('Konnica', 'konnica', 4)];
+  runChecked('R2-E32-dowodcy-i-jazda-bez-piechoty', 'polowa-40', a, d, false, L1,
+    { commander: 3, mounted: 2 }, { commander: 2, mounted: 4 });
+}
+
+// E27: kategoria ZAWIERA slowo kluczowe javelin/archer/slinger, ale != kategorii dokladnej, nazwa bez slowa
+// (jednostka bazowa Wojownik) - rola pochodzi wylacznie z dopasowania `haystack` na kategorii.
+{
+  const KAT_JAV = ['Javelinmen', 'Atlatl band', 'Estólicos', 'Oszczepnik ciężki'];
+  const KAT_ARC = ['Łucznicy', 'Archers', 'Kusznik najemny', 'Crossbowmen'];
+  const KAT_SLI = ['Procarze', 'slinger corps', 'Balearic Slingers'];
+  const mk = (kats) => kats.flatMap((k) => exact('Wojownik', k, 2));
+  const a = [...mk(KAT_JAV), ...mk(KAT_ARC), ...mk(KAT_SLI), ...exact('Wojownik', 'wojownik', 3)];
+  const d = [...mk(KAT_SLI), ...mk(KAT_ARC), ...mk(KAT_JAV), ...exact('Konnica', 'konnica', 2)];
+  runChecked('R2-E27-kategoria-zawiera-polowa', 'polowa-40', a, d, false, L1,
+    { javelin: 8, archer: 8, slinger: 6, melee: 3 }, { javelin: 8, archer: 8, slinger: 6, mounted: 2 });
+  const a2 = [...mk(KAT_ARC), ...mk(KAT_JAV), ...mk(KAT_SLI)];
+  const d2 = [...mk(KAT_JAV), ...mk(KAT_SLI)];
+  runChecked('R2-E27-kategoria-zawiera-oblezenie', 'mur-wzgorza', a2, d2, true, { meleeLines: 2, archerLines: 3 },
+    { javelin: 8, archer: 8, slinger: 6 }, { javelin: 8, slinger: 6 });
 }
 
 Math.random = realRandom;
