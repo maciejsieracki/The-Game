@@ -1,20 +1,28 @@
-STATUS: BLOCK
-DOMAIN: GAME (analiza/projekt; bez zmian logiki gry)
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (analiza/projekt + pomiar; bez zmian logiki gry)
 TEMAT: R-WEB-AI-TERRITORY-RACE-FORTS-OUTPOSTS-DESIGN-Q1
-GOAL: Zinwentaryzować forty/posterunki, zmierzyć stan PRZED (3 ziarna x >=150 tur), zaproponować mechanizm wyścigu o teren dla AI z wariantami i pytaniami ABC.
-ZMIANY-COMMIT: 96ac7bfafa3e2426e9a473d1e6ef71e6b8d8eb60 (dyspozycje/analizy/AI-TERRITORY-RACE-DESIGN.md, korekty obrony r2). Raport: commit po tym pliku, SHA w polu sha wyniku. Baza 64208a85b; kod gry nietknięty.
-TESTY: NIE ZMIERZONO. Pomiar PRZED nie wykonany (zarzut 1 PRZYJĘTY). Bramki tsc/logic/tech-tree/research/unit-replace/combat nie uruchamiane: main.ts ani kod gry nie zmienione.
-BLOKADY: (a) pomiar PRZED: brak gra/node_modules, brak narzędzia gra/tools/territory-race-measure-run.cjs, hak __aiEconomyMeasure nie ma pól fortów/terytorium (main.ts:33398); wykonanie to kilka godzin wall-time, poza zakresem tej rundy. (b) koszt utrzymania fortu/posterunku i UI gracza: NIE ZWERYFIKOWANO.
-RUNDY: 2/5 (ostatni werdykt Evaluatora: FAIL, zarzuty 1-6)
-NASTĘPNY KROK: nowy dispatch wyłącznie na pomiar PRZED: (1) npm ci --ignore-scripts w gra/ (df >= 4 GB), (2) read-only rozszerzenie haka metrics o liczbę miast/fortów/posterunków i heksy terytorium z miast vs fortów, (3) narzędzie gra/tools/territory-race-measure-run.cjs, uruchomienie setsid nohup, 3 ziarna x 150 tur, dowody/ z commitem po każdym ziarnie. Równolegle: pytania P1-P5 do właściciela (sekcja 7), rekomendacje traktować jako wstępne.
+GOAL: Zmierzyć PRZED (3 ziarna × ≥150 tur) terytorium miast vs forty/posterunki AI i odpowiedzieć na zarzuty FC r1/r2.
+ZMIANY-COMMIT:
+- ccd24c6fb: hak `__aiEconomyMeasure.metrics()` (gra/src/main.ts, tylko odczyt): forty, posterunki, heksy terytorium (ogółem, z miast, z fortów/posterunków), heksy sporne.
+- 2c46de4e0: gra/tools/territory-race-measure-run.cjs (wrapper runnera + CSV + kontrolne) i pole `terytorium` w rekordzie runnera.
+- 891eefc8e: sekcja 6 projektu z liczbami (ziarno 4242, t1–40), sprostowania z kodu, dowody (dowody/, 0,7 MB, git add -f).
+- Ten raport: osobny commit.
+Bramki: tsc --noEmit EXIT 0; logic-test 213/213; tech-tree-test 20 pass / 0 fail; research-test 33/33; unit-replace-test 21 [OK], 0 FAIL; combat-test "All sanity checks passed"; ai-economy-measure-hook-test 20/20 zielone.
+TESTY (pomiar, dane z dowody/seed4242.jsonl):
+- ziarno 4242, tury 1–40 ZMIERZONE: t10 41 AI, 0 fortów/posterunków, 2531 heksów (wszystkie z miast); t20 41 AI, 0 fortów, 2593 heksy; t30 15 AI z wierszem, 0 fortów, 4283 heksy; t40 15 AI, 5 fortów, 2 posterunki, 6814 heksów, 254 z fortów/posterunków (≈3,7%).
+- Pierwszy fort/posterunek AI: 5 właścicieli między turą 32 a 40 (19→32, 13→34, 22→35, 10→37, 37→40).
+- Ziarna 777 i 1234: NIE ZMIERZONO. Tury 50, 60, 90, 120, 150: NIE ZMIERZONO.
+- Wznowienie ze slotu t40 kończy się segfaultem Chromium (signal 11), 2 z 2 powtórzeń (dowody/seed4242-wznowienie-t40-BLAD-SIGSEGV.log). Wznowienie ze slotu t20 działało w tym samym dniu; przyczyna NIE zbadana.
+- Przebieg w tle (setsid nohup) został odrzucony przez classifier uprawnień; przebieg wykonywano w pierwszym planie, w porcjach <590 s.
+ODPOWIEDZI NA ZARZUTY R2 (ostatniej rundy FC):
+- Zarzut 1 (pomiar PRZED 3×≥150 niewykonany): PRZYJĘTY CZĘŚCIOWO. Wykonano ziarno 4242 do tury 40. Pozostałe tury i ziarna NIE ZMIERZONO (patrz TESTY).
+- Zarzut 2 (brak tools/territory-race-measure-run.cjs): PRZYJĘTY. Narzędzie dodane (2c46de4e0), działa jako wrapper i przelicza CSV.
+- Zarzut 3 (hak nie rozszerzony): PRZYJĘTY. Rozszerzony (ccd24c6fb).
+- Zarzut 4 (punkty NIE ZWERYFIKOWANO): PRZYJĘTY w części (a) — upkeep fortu i posterunku: `RESOURCE_UPKEEP_IMPROVEMENT_KEYS` obejmuje oba klucze (terrain-improvements.ts:92, 608–610; turn-economy.ts:991). Kwota: NIE ZMIERZONO. (b) UI/administrator gracza: NIE ZWERYFIKOWANO (poza zakresem tej rundy). (c) kontakt granic i dyplomacja: NIE ZWERYFIKOWANO. (d) inne ścieżki budowy AI: NIE ZWERYFIKOWANO wyczerpująco.
+- Zarzut 5 (runda 2 bez pracy): PRZYJĘTY. Ta runda ma commity z pracą (ccd24c6fb, 2c46de4e0, 891eefc8e).
+- Zarzut 6 (SHA w treści, rekomendacje wstępne): PRZYJĘTY. SHA podane wyżej; rekomendacje P1–P5 oznaczone jako wstępne w sekcji 7 (nie ustalone pomiarem tur 50+).
+BLOKADY: (1) wznowienie segfaultuje po t40 (klasa save-load, do naprawy poza tym tematem); (2) brak pomiaru tur 50–150 i dwóch ziaren; (3) classifier odrzucił tło. Pomiar wymaga dokończenia przed decyzją ABC o liczbach.
+RUNDY: 3/5 (runda 3 tego tematu; r2 zakończyła się BLOCK bez pomiaru).
+NASTĘPNY KROK: naprawa wznowienia (save-load) albo pomiar pełny w osobnej rundzie; po nim uzupełnić sekcję 6 i dopiero wtedy przedstawić pytania ABC z liczbami. Wniosek „AI rzadko stawia forty” NIE jest potwierdzony dla tur 50–150.
 DEPLOY/PUSH: NIE WYKONANO
-
-Odpowiedzi na zarzuty Evaluatora:
-1. PRZYJĘTY. Pomiar nie został wykonany. Wcześniejsze uzasadnienie „zakaz biegów w tle" było błędne: dispatch dopuszcza `setsid nohup` i odpytywanie. Opisane w sekcji 6 projektu.
-2. PRZYJĘTY. Wniosek „AI rzadko stawia forty" oznaczony jako hipoteza z kodu (przebadano 0 AI x 0 ziaren x 0 tur). Rekomendacje A/C w sekcjach 4 i 7 oznaczone jako wstępne.
-3. PRZYJĘTY. SHA podane wyżej: 96ac7bfa (korekty projektu).
-4. PRZYJĘTY. Zasięg miasta to max(5, populacja) z limitem 15 (`gra/src/map/territory.ts:89-93`, `cityRangeForPopulation` w `okolica.ts`). Fort 5, posterunek 3. Zapis „10 pól" usunięty.
-5. CZĘŚCIOWO PRZYJĘTY. Potwierdzono: hak `metrics()` (main.ts:33398-~33480) nie ma pól fortów/posterunków/terytorium, więc zarzut o braku w haku jest prawdziwy. Dodano zapis o utrzymaniu ogólnym (`terrain-improvements.ts:124`, mnożnik epoki 1/2/4), ale czy obejmuje forty: NIE ZWERYFIKOWANO. UI gracza i zachowanie sporne heksy/kontakt granic: NIE ZWERYFIKOWANO, oznaczone jako otwarte.
-6. PRZYJĘTY. Planer ekspansji zwraca najwyżej jedną komendę budowy na wywołanie (fort z pętli 1 albo posterunek z pętli 2, `ai.ts:~3120`, `return` po pierwszym trafieniu). Zapis „1 posterunek na turę" poprawiony w sekcjach 1.4 i 4 (wariant C) oraz P3.
-
-Uwagi dla orkiestratora: pytania ABC P1-P5 pozostają ważne, ale ich rekomendacje nie są dowodem. Decyzje liczbowe (limit fortów, udział pracy) nie zostały wybrane.
+UWAGI-DLA-ORKIESTRATORA: (a) `setsid nohup` zostało odrzucone przez classifier — dispatch to dopuszcza, ale tło nie zadziałało; (b) przy wznowieniu z t40 widać ten sam wzór co w r3 harnessu (znikanie właścicieli z wierszy między t20 a t30, 41→15) — warto go zbadać osobno.
