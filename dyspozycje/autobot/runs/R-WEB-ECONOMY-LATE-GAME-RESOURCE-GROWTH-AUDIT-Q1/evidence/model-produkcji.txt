@@ -1,0 +1,22 @@
+# Model produkcji — typowe miasto (ZAŁOŻENIE: 1 Cegielnia + 1 Garncarnia + 1 Odlewnia żelaza)
+epoka | m(e) | cegła/t | żelazo/t | ceramika/t | cegła × vs e1 | żelazo × vs e1
+1 | 1 | 100 | 50 | 30 | 1 | 1
+2 | 1.5 | 225 | 75 | 50 | 2.3 | 1.5
+3 | 2 | 400 | 100 | 70 | 4 | 2
+4 | 2.5 | 500 | 125 | 90 | 5 | 2.5
+5 | 3 | 600 | 150 | 110 | 6 | 3
+
+# Imperium (N miast z pomiaru AI seed4242, epoka założona wg tury, NIEZMIERZONA mapa tura→epoka)
+N | e | cegła/t | żelazo/t | ceramika/t (sumy ×N)
+4.3 | 1 | 430 | 215 | 129
+4.3 | 2 | 967.5 | 322.5 | 215
+11.9 | 2 | 2677.5 | 892.5 | 595
+11.9 | 3 | 4760 | 1190 | 833
+16.3 | 3 | 6520 | 1630 | 1141
+16.3 | 4 | 8150 | 2037.5 | 1467
+
+# Dekompozycja mnożąca (żelazo, e1 N=4,3 → e4 N=16,3)
+czynnik miast = 3.8x; czynnik epoki (żelazo, m(e) liniowe) = 2.5x; czynnik epoki (cegła, cykle×outMult) = 5x
+całkowity wzrost żelaza = 9.5x = 3.8 × 2.5
+Uwaga: m(e) i outMult są LINIOWE w epoce (1+0,5(e−1)), nie wykładnicze; składanie wykładnicze = NIE znaleziono w konwerterach (converters.ts:127-136 odrzuca wariant compound).
+Kontrola: bonus civ-wide 5 Stolarni = ×1.5 (dotyczy drewna, nie żelaza; żelazo ×1 w modelu).
