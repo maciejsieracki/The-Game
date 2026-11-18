@@ -14,6 +14,7 @@ const BUNDLE = path.resolve(__dirname, '.upgrade-budynki-bundle.cjs');
 fs.writeFileSync(ENTRY, `
 export {
   availableProduction, buildableProduction, eraBuildingCatalog, applyCompletedBuildingIds, isBuildingSupersededByUpgrade,
+  collapseFortificationChain,
 } from '../src/game/production';
 export {
   upgradeProductionDisplayName, isBuildingSuppressedFromProduction,
@@ -128,8 +129,13 @@ function ok(c, m) {
 
   const delayedStone = M.applyCompletedBuildingIds(['mury', 'fort', 'baszta'], 'mury_kamienne', buildings);
   ok(JSON.stringify(delayedStone) === JSON.stringify(['mury', 'fort', 'baszta']), 'stale stone completion cannot downgrade or stack beside brick; additive defense buildings survive');
-  const delayedPalisade = M.applyCompletedBuildingIds(['mury_kamienne', 'mury', 'fort'], 'palisada', buildings);
-  ok(JSON.stringify(delayedPalisade) === JSON.stringify(['mury', 'fort']), 'stale palisade completion preserves only stronger wall tier and Citadel');
+  // Wejście ['mury_kamienne','mury','fort'] to stan ZESTARZAŁY (stare zapisy z dwoma etapami muru).
+  // Ścieżka produkcyjna nigdy nie podaje go wprost do applyCompletedBuildingIds: wczytanie zapisu
+  // (main.ts, collapseFortificationChain przy wczytaniu cityBuilt) najpierw zostawia najwyższy etap,
+  // dopiero potem spóźnione ukończenie niższego etapu jest stosowane. Asercja sprawdza ten łańcuch.
+  const delayedPalisadeRaw = M.applyCompletedBuildingIds(['mury_kamienne', 'mury', 'fort'], 'palisada', buildings);
+  const delayedPalisade = M.collapseFortificationChain(delayedPalisadeRaw, buildings);
+  ok(JSON.stringify(delayedPalisade) === JSON.stringify(['mury', 'fort']), 'stale palisade completion (after load-time chain collapse) preserves only stronger wall tier and Citadel');
 }
 
 // GRUPY-BUDYNKOW: Biblioteka + Akademia TERAZ niezalezne (upgradeFrom usuniety).
