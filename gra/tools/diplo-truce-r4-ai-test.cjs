@@ -143,8 +143,8 @@ async function runSuite(bundle, label, expectFailures) {
     !!results.pPokoj && results.pPokoj.actionId === 'pokoj', results.pPokoj && results.pPokoj.actionId);
   check(`[${label}] brak rodzaju → actionId 'pokoj' (dawne zachowanie)`,
     !!results.pBrak && results.pBrak.actionId === 'pokoj', results.pBrak && results.pBrak.actionId);
-  check(`[${label}] baza PW rozejmu = 200 (≠ pokój 615, stała C)`,
-    results.baseRozejm === 200 && results.basePokoj === 615,
+  check(`[${label}] baza PW rozejmu = 2000 (×10 TREATYIMPL; ≠ pokój 615, stała C)`,
+    results.baseRozejm === 2000 && results.basePokoj === 615,
     { rozejm: results.baseRozejm, pokoj: results.basePokoj });
   return results;
 }

@@ -237,14 +237,22 @@ function playerPeace(powers, giveItems) {
     }, extraRel || {})],
   }).filter(c => c.targetId === '0');
   const miasta = (n, pn) => Array.from({ length: n }, (_, i) => ({ cityId: 'c' + i, cityPn: pn, zakazane: false }));
-  // 14 tur wojny: L = 0,35, P = round(6000*0,65) = 3900. AI słabsze mocą 1:3 → D = 3900*(3-1/3) = 10400.
-  const weakSmall = ai(14, miasta(6, 800), 100, 300, 100, 200);
+  // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (r3): przed 20. turą wojny AI proponuje ROZEJM (aiPeaceProposalKind), a ten ma
+  // własną cenę X = 2000 × (1 − L) (parytet traktatów), nie P pokoju. Asercje A1/A2 dotyczą POKOJU → 20 tur wojny:
+  // L = 0,5, P = 3000, AI słabsze mocą 1:3 → D = 3000*(3-1/3) = 8000. (Rozejm: sekcja A1r niżej.)
+  const weakSmall = ai(20, miasta(6, 800), 100, 300, 100, 200);
   check('A1: (c) AI słabsze (r = 3), 6 miast po 800 PW (suma ≪ D) → brak oferty miasta (nie ma czym zapłacić D)',
     !weakSmall.some(c => c.type === 'oferuj_miasto_za_pokoj'), weakSmall);
-  const weakBig = ai(14, miasta(6, 5000), 100, 300, 100, 200);
+  const weakBig = ai(20, miasta(6, 5000), 100, 300, 100, 200);
   check('A2: AI słabsze (r = 3), miasta po 5000 PW (×1,5 waga; dopiero dwa pokrywają D) → oferta miasta za pokój/rozejm z dodatkowymi miastami',
     weakBig.length === 1 && weakBig[0].type === 'oferuj_miasto_za_pokoj'
     && (1 + (weakBig[0].dodatkoweMiasta || []).length) >= 2, weakBig);
+  // A1r (TREATYIMPL r3): rozejm (14 tur) liczy D z X = 2000 × (1 − 0,35) = 1300 → D = 1300*(3-1/3) = 3467; 6 miast po 800 PW
+  // (×1,5 waga = 1200) pokrywa to trzema miastami — oferta ROZEJMU istnieje (przy cenie pokoju P = 3900, D = 10400 nie istniała).
+  const weakTruce = ai(14, miasta(6, 800), 100, 300, 100, 200);
+  check('A1r: rozejm AI (14 tur, r = 3): D = 3467 (X rozejmu), 3 miasta po 800 PW wystarczą → oferta rodzaj=rozejm z 2 dodatkowymi',
+    weakTruce.length === 1 && weakTruce[0].type === 'oferuj_miasto_za_pokoj' && weakTruce[0].rodzaj === 'rozejm'
+    && (weakTruce[0].dodatkoweMiasta || []).length === 2, weakTruce);
   const weakNoPow = ai(14, miasta(6, 800), undefined, undefined, 100, 200);
   check('A3: bez mocy (stary kontrakt) AI płaci samo P (800 PW × waga, 6 miast) → oferta jak dotąd',
     weakNoPow.some(c => c.type === 'oferuj_miasto_za_pokoj'), weakNoPow);

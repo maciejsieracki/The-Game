@@ -8,6 +8,7 @@
 // jest zapisywany w save (main.ts) i kasowany przy pokoju (nowa wojna = nowy stan).
 
 import paramsRaw from '../../data/war-weariness-params.json';
+import acceptancePointsJson from '../../data/diplomacy-acceptance-points.json';
 import {
   isAiAiPeaceBalanceAllowed,
   planCityPeacePayment,
@@ -181,6 +182,36 @@ export function peaceAiAiPaymentPn(
 ): number {
   const split = peacePwPointsByPowerRatio(P, powerLoser, powerWinner, params);
   return split.strongerSide === 'a' ? 0 : split.D;
+}
+
+/**
+ * R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (r3): czy traktat jest objęty parytetem siły i jaka jest jego cena bazowa X
+ * (pole `punkty`, flaga `parytet` + `platnik: "slabsza"` w diplomacy-acceptance-points.json). Brak parytetu → 0.
+ * Rozejm: X = punkty × (1 − L), L = poziom zmęczenia pary (tak samo jak w bramce gracza, treatyParityBaseX).
+ * Czas trwania NAP (mnożnik) nie wchodzi: dla decyzji „czy AI jest stroną płacącą” liczy się tylko r > 1.
+ */
+export function treatyParityBasePnFromData(actionId: string, wearinessLevel = 0): number {
+  const cfg = (acceptancePointsJson.traktaty as Record<string, { punkty?: number; parytet?: boolean; platnik?: string } | undefined>)[actionId];
+  if (!cfg || cfg.parytet !== true || cfg.platnik !== 'slabsza') return 0;
+  const base = Math.max(0, cfg.punkty ?? 0);
+  return actionId === 'rozejm' ? Math.round(base * (1 - clamp(wearinessLevel, 0, 1))) : base;
+}
+
+/**
+ * R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (r3): dopłata D (PW) strony płacącej (słabszej wg POWER) dla traktatu z
+ * parytetem — jedno miejsce wzoru po stronie AI (wrapper peaceAiAiPaymentPn z X traktatu zamiast P pokoju).
+ * Brak parytetu dla traktatu albo brak mocy któregokolwiek → 0 (bez blokady). Płacący silniejszy/równy → 0.
+ */
+export function aiTreatyParityDuePn(
+  actionId: string,
+  payerPower: number | undefined,
+  receiverPower: number | undefined,
+  wearinessLevel = 0,
+): number {
+  if (payerPower == null || receiverPower == null) return 0;
+  const X = treatyParityBasePnFromData(actionId, wearinessLevel);
+  if (!(X > 0)) return 0;
+  return peaceAiAiPaymentPn(X, payerPower, receiverPower);
 }
 
 export function isWarWeary(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): boolean {

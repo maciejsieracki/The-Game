@@ -1,37 +1,44 @@
-STATUS: FAIL (runda 2/5 częściowa — punkt 1 zrobiony, punkty 2–5 do rundy 3)
+STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1
-GOAL: parytet siły i ceny ×10 dla 6 traktatów (rozejm, nap, granice, sojusz_defensywny, sojusz_pelny, wasal). Runda 2: punkt 1 (rozejm z parytetem, X = 2000×(1−L), płaci słabsza) zrobiony dla autora-gracza; punkty 2 (ścieżka AI), 4 (panel/tooltipy), 5 (Civpedia/wiki) NIE zrobione w tej rundzie.
-ZMIANY-COMMIT: baza kandydat 749ee84d5 (potomek origin/main 2b950566f; `git merge origin/main` = już aktualne). Pliki: gra/data/diplomacy-acceptance-points.json (rozejm: `parytet: true`, `platnik: "slabsza"`, uwaga zaktualizowana); gra/src/game/diplomacy-proposals.ts (nowe eksporty treatyParityEnabled / treatyWearinessLevelOf / treatyParityBaseX; treatyParityPowerGate przyjmuje L; treatyPnGate z flagą skipTruceFlatGate — rozejm z parytetem nie idzie bramką pokoju z nieskalowaną bazą; w case 'rozejm' basePn = X(L) i pkPowerSplit także dla rozejmu, gdy autor = gracz i ctx.treatyPower podane); gra/tools/diplo-rozejm-parity-test.cjs (nowy, 25 asercji); gra/tools/diplo-truce-r1-test.cjs (2 zmiany uzasadnione: P8 zapłata złotem 400 → 4000 = skala ×10 bazy rozejmu 200→2000; M3 kotwica mutacji dopasowana do nowej linii bramki pokoju). Commit: SHA w polu sha raportu orkiestratora.
-TESTY:
-- tsc --noEmit: exit 0, 0 błędów.
-- Bramki: logic-test PASS [213]; tech-tree-test 20 pass 0 fail; research-test ALL GREEN; unit-replace-test OK (15 cywilizacji); combat-test "All sanity checks passed".
-- diplo-json-descriptions-sync-test 46/46 OK, FAIL 0.
-- diplo-rozejm-parity-test (nowy): 25 pass 0 fail — kontrakt danych; X = 2000×(1−L) dla L = 0 / 0,5 / 1; L z warState (turnsAtWar 20 → 0,5); słabszy (100 vs 400) bez PW: odrzucony, kwota D = 3750 (nie 7500); silniejszy (400 vs 100): brak „Brakuje” i „parytetu”; brak treatyPower = bez bramki parytetu; L 0,25 → X = 1500 → D = 5625; wzór S/W/D rozejmu przy X = 1000 dla r = 1/1,5/5/10 i moc słabszej 0; r = 1 → D = 0.
-- diplo-treaties-power-parity-test 43/0 (runda 1, bez zmian).
-- diplomacy-acceptance-points-test 304/0 (bez zmian).
-- diplo-truce-r1-test 31/0 (po 2 uzasadnionych zmianach, patrz ZMIANY).
-- Regresja zielona: diplo-truce-impl-test 94/0; diplo-truce-until-turn-test 15/0; diplo-truce-n6-saveload-test 8/0; diplo-peace-balance-accept-test 32/0; diplo-peace-price-wiring-test 14/0; diplo-peace-price-decay-test 13/0; diplo-peace-weaker-seeks-city-only-test 35/0; diplo-peace-winner-proposal-flow-test 49/0; diplo-war-peace-sim-test 25/0; diplo-weariness-city-only-test 26/0; diplo-peace-pw-power-ratio-test 47/0; diplo-peace-ai-ai-nonnegative-test 21/0; diplo-war-peace-gate-test 24/0; diplo-wiki-weariness-rate-consistency-test PASS.
-- Mutacje (kopia pliku) dla sojuszu i rozejmu: NIE WYKONANO w tej rundzie (do rundy 3).
-- Chromium: NIE ZMIERZONO (brak panelu, żywy test nieuzasadniony przed punktem 4).
+GOAL: parytet siły (S = X·r, W = X/r, D = S − W płaci słabsza) dla rozejmu, NAP, przemarszu, sojuszy i wasala; runda 3: ścieżka AI i AI↔AI, testy, Civpedia/wikiBundle.
+ZMIERZONO NA: baza 7cc59b10f (origin/main 2b950566f już w niej zawarty, merge = "Already up to date").
 
-ZMIANY UZASADNIONE (testy, każda z powodem):
-- diplo-truce-r1-test P8: rozejm ze złotem 400 był akceptowany przy bazie 200; po skali ×10 (ABC A, baza 2000) ta sama zapłata byłaby za mała. Zapłata skalowana ×10 (4000), asercja „zostaje zaakceptowany” bez zmiany sensu.
-- diplo-truce-r1-test M3: mutacja szukała starej linii bramki pokoju; linia zmieniona na bramkę z wyłączeniem rozejmu z parytetem — kotwica dopasowana, mutacja nadal wykrywana (M3 → P10).
+ZMIANY-COMMIT (Operator SONNET, uzasadnienie w dispatchu: wielościeżkowy temat po 2 rundach Haiku)
+- gra/src/game/war-weariness.ts: treatyParityBasePnFromData (X z JSON, rozejm × (1 − L)) i aiTreatyParityDuePn (jedno miejsce wzoru po stronie AI, wrapper peaceAiAiPaymentPn z X traktatu zamiast P).
+- gra/src/game/ai.ts: (a) rozejm AI (oferuj_miasto_za_pokoj rodzaj=rozejm) liczy D z X = 2000 × (1 − L) przez ten sam aiPeaceCityDuePn; (b) zaproponuj_pakt i zaproponuj_sojusz: AI słabsze wg POWER (D > 0) nie składa oferty; progi gotowości 130/90 bez zmian.
+- gra/src/main.ts: AI↔AI rozejm (tickAiAiPeaceRequests) = D z X rozejmu, bilans od ceny (nie od bazy 2000); rozejm AI → gracz: baza żądania = D (AI silniejsze) albo 0 (słabsze/równe); prośba AI o przemarsz bramkowana parytetem.
+- gra/src/game/diplomacy-proposals.ts: bilans AI-autora rozejmu liczony od D (nie od surowej bazy 2000).
+- docs/encyklopedia/pojecia/rozejm-pokoj.md + gra/src/data/wikiBundle.json (wygenerowany generatorem bundle-wiki-for-game.cjs; zdanie "2,5% na turę" zachowane): sekcja "Parytet siły w traktatach" z cenami ×10, regułą S/W/D, tabelą 6 traktatów.
+- Testy: NOWY gra/tools/diplo-treaties-ai-parity-test.cjs (80 PASS / 0 FAIL); zaktualizowane asercje (uzasadnienie niżej): diplo-peace-pw-power-ratio (A1/A2 → 20 tur = pokój, nowe A1r rozejm), diplo-truce-r4-ai (baza 200→2000), dyplo-bilans-gate-n-e1-reprodukcja (zbiór TREATY_GATED z 'rozejm' — wyjątek allowlisty z dispatchu), diplo-peace-price-production-paths (B: cena rozejmu przed 20. turą), diplo-peace-price-wiring (W3: nowy kształt requiredPn rozejmu).
 
-BLOKADY / NIEZROBIONE (lista dla rundy 3):
-1. Ścieżka AI (punkt 2): oferty AI → gracz, AI↔AI, planAiOfferOnTable, ai.ts, aiPeaceSignals — parytet NIE policzony dla autora-AI (treatyParityPowerGate zwraca null, gdy proponentem nie jest gracz). Rozejm autorstwa AI nadal liczy X = 2000 bez (1−L) dla pwBalance; AI bez czym zapłacić D nie ma odmowy z formuły.
-2. Panel PW i tooltipy (punkt 4): diplomacyAcceptanceBalance.ts / diplomacyAudience.ts — wiersz „moc/r/S/W/D/rabat” dotąd tylko dla pokoju (warunek actionId==='pokoj'); dla rozejmu wiersz pojawi się przez wearinessInfo.powerSplit (ustawiany w pkPowerSplit), ale NIE zweryfikowane w UI.
-3. Civpedia/wikiBundle (punkt 5): hasła traktatów nieaktualne (ceny ×10, reguła parytetu); generator dopiero po merge z main.
-4. Pozostałe z rundy 1 bez zmian: sojusz/NAP/granice/wasal — ścieżka autora-gracza działa (testy 43/0), ścieżka AI nie.
-5. Pokój i pokój wymuszony: nietknięte (zgodnie z zakazem).
+TESTY (surowe wyjście)
+- tsc --noEmit: exit 0, 0 linii.
+- logic-test 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; ai-test 297/0.
+- diplo-json-descriptions-sync 46/46. json-descriptions-sync-test: 18/1 — FAIL a1 (war-weariness-params.json vs f196422ef): plik NIETKNIĘTY przeze mnie, błąd istnieje w bazie (dług).
+- diplo-treaties-ai-parity 80/0; diplo-treaties-power-parity 50/0; diplo-rozejm-parity 25/0; diplo-peace-pw-power-ratio 48/0; diplo-truce-impl 94/0; diplo-truce-r1 31/0; diplo-truce-r4-ai 24/0 (przed: 23/1); diplo-war-peace-sim 25/0; diplo-wiki-weariness-rate-consistency 18/0; dyplo-bilans-gate-n-e1-reprodukcja 22/0 (przed: 21/1); diplo-peace-price-production-paths 15/0; diplo-peace-price-wiring 14/0.
+- Mutacje (w nowym teście): bez bramki sojuszu → B5 czerwieni; bez bramki paktu → B1 czerwieni; bez bramki przemarszu → F3 czerwieni; istniejące mutacje rozejmu/sojuszu (r2) zostają.
+- Regresje bazowe BEZ zmian względem bazy (te same 5 czerwonych w bazie i po zmianie): dyplo-bilans-gate-…-runda2, …-runda3, dyplo-karta-duplikat-komunikat, dyplo-pakt-ekspansja-granica, dyplo-warunek-niespelniony-czerwony-tooltip (weryfikowane odtworzeniem bazy ai.ts/main.ts/proposals).
+- POMIAR częstości rozejmów AI względem bazy (siatka 5 r × 6 L × 5 cen miast × 4 liczby miast = 600 komórek, ai.ts z 7cc59b10f vs nowy): ofert rozejmu NOWE 185 vs BAZA 107; gorzej 0 komórek, lepiej 78. Powód: X rozejmu (2000·(1−L)) < P pokoju (6000·(1−L)), z którego bazowy ai.ts liczył rozejm.
+- Żywy Chromium: NIE ZMIERZONO (wymaga buildu `npm run build` w gra/, zakazanego w tym dispatchu).
 
-UWAGI-DLA-ORKIESTRATORA:
-- Tabela S/W/D rozejmu (X = 2000×(1−L); dla L = 0 → X = 2000; przykład L = 0,5 → X = 1000) przy r = 1 / 1,5 / 2,67 / 5 (X = 1000): r1 S1000 W1000 D0 | r1,5 S1500 W667 D833 | r2,67 S2670 W375 D2295 | r5 S5000 W200 D4800. Dla X = 2000: r1 D0 | r1,5 D1667 | r2,67 D4589 | r5 D9600.
-- Pozostałe traktaty z szóstki (X bez L) — tabela z rundy 1 aktualna (nap/sojusz/granice/wasal), nie zmieniona w tej rundzie.
-- Wpływ na AI↔AI i częstość zawierania traktatów: NIE ZMIERZONO. Ścieżka AI↔AI nadal nie stosuje parytetu.
-- Świadoma konsekwencja ABC „bez sufitu”: przy dużym r słabszy gracz nie zawrze rozejmu/sojuszu bez bardzo dużej zapłaty PW — widoczne w testach (D = 3750 przy r = 4, L = 0,5).
-- Dług zgłoszony: test dyplo-bilans-gate-n-e1-reprodukcja (rzekomo 1 FAIL na stałej TREATY_GATED z rozejmem) nie był uruchomiony w tej rundzie.
+BLOKADY: brak. Płatność surowcami/złotem nie dodana (zgodnie z zakazem).
 
-NASTĘPNY KROK: runda 3/5 tego samego ID — punkt 2 (ścieżka AI: aiPeaceCityDuePn / planAiOfferOnTable z X i parytetem, AI słabsze bez miast = odmowa, AI↔AI słabsza płaci D), punkt 4 (panel PW i tooltipy dla szóstki), mutacje sojuszu i rozejmu, potem punkt 5 (Civpedia/wiki po merge z main). Baza rundy 3: SHA commita tej rundy.
+ZAŁOŻENIA / UWAGI-DLA-ORKIESTRATORA
+1. Pozycja 'miasto' jest dozwolona tylko w pokoju i wasalizacji (MIASTO_AKCJE_DOZWOLONE, diplomacy-value-catalog.ts); pakt, sojusz i przemarsz nie przenoszą miast, a płatność surowcami jest niezatwierdzona. Dlatego AI słabsze (D > 0) NIE proponuje paktu, sojuszu ani prośby o przemarsz; AI silniejsze/równe — oferty jak dotąd. Konsekwencja bez sufitu: przy dużej różnicy mocy te oferty AI słabszego zanikają (zgodne z wyborem właściciela B), do decyzji jeśli ma być inaczej (np. zatwierdzenie złota/surowców albo miast w pakcie).
+2. AI silniejsze nie żąda od gracza miasta ≥ D przy sojuszu/NAP/przemarszu (brak nośnika miasta w tych koszykach); blokada "Brakuje N PW" zostaje tylko dla autora-gracza (reguła 2026-09-07). Rozejm AI silniejszego żąda D w pozycjach koszyka (receiveItems), jak dotąd przez peaceOfferAiRequestBasket.
+3. AI↔AI: istnieje tylko tor rozejmu/pokoju i przemarsz (granice); AI↔AI sojusz/NAP/wasal nie powstają w kodzie komendami (brak toru) — parytet tam nie ma zastosowania. Przemarsz AI↔AI słabszego: brak prośby (teren zostaje zablokowany jak po odmowie); wpływ na ruch AI do zmierzenia w grze.
+4. Wpływ na częstość: rozejmy AI↔gracz i AI↔AI nie spadają (pomiar wyżej); sojusze i NAP AI słabszego mocą znikają, równa/większa moc bez zmian. Panel PW i tooltipy dla szóstki z r2 (treatyPowerSplit) — bez zmian w tej rundzie.
+5. Tabela S/W/D z kodu (S/W/D, X z JSON):
+| r | rozejm/NAP (X=2000) | przemarsz (600) | sojusz obronny (4200) | sojusz pełny (5000) | wasal (3500) |
+| 1 | 2000/2000/0 | 600/600/0 | 4200/4200/0 | 5000/5000/0 | 3500/3500/0 |
+| 1,5 | 3000/1333/1667 | 900/400/500 | 6300/2800/3500 | 7500/3333/4167 | 5250/2333/2917 |
+| 2,67 | 5338/749/4589 | 1601/225/1376 | 11210/1574/9636 | 13345/1873/11472 | 9342/1311/8031 |
+| 5 | 10000/400/9600 | 3000/120/2880 | 21000/840/20160 | 25000/1000/24000 | 17500/700/16800 |
+   (rozejm: X × (1 − L) przy zmęczeniu.)
+6. Testy uruchamiające przeglądarkę nadpisują PNG w dyspozycje/autobot/runs/*/dowody — przywrócone przed commitem (nie wchodzą do commita).
+7. Dług: json-descriptions-sync-test a1 (war-weariness-params.json vs f196422ef) czerwony w bazie.
+
+RUNDY: 3/5
+NASTĘPNY KROK: Evaluator → Obrona → Final Control (ten sam ID).
 DEPLOY/PUSH: NIE WYKONANO

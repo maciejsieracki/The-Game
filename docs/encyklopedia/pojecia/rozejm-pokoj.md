@@ -39,8 +39,26 @@
 - **Próg różnicy siły w grze wynosi 0**: każda różnica decyduje. Wartość w `diplomacy-war-peace-params.json:progRozniceSilyPokoj` można zmienić bez kodu (np. 20 = różnica ±20% nie wymusza odrzucenia).
 - **Miasto jako jedyny słodzik.** Ceny pokoju są płacone wyłącznie miastami. Złoto i surowce nie wchodzą w ofertę pokoju.
 - **Minimalny czas wojny** zależy od profilu cywilizacji: od 1 do 8 tur (domyślnie 5). Przed tym czasem AI odrzuca pokój zawsze (`diplomacy-war-peace-params.json:minTurWojny`). Niezależnie od profilu obowiązuje wspólna blokada: pierwsze 10 pełnych tur wojny nie przyjmuje żadnej propozycji pokoju ani rozejmu, także od AI (`PEACE_PROPOSAL_MIN_WAR_TURNS = 10`, `diplomacy-peace-proposal-timing.ts`). Obie bramki obowiązują jednocześnie.
-- **Cena pokoju maleje ze zmęczeniem: 6000 PN na starcie wojny, 0 przy zmęczeniu 100%** (`war-weariness-params.json:cenaPokoju.cenaStartPn`, funkcja `wearinessPeaceCashPn`: cena = 6000 × (1 − L), L = poziom zmęczenia pary, ABC 2026-11-17, R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1). Ta sama cena dla panelu dyplomacji, decyzji AI, AI↔AI i pokoju wymuszonego. Rozejm ma osobną wycenę. Bramka relacji: przy relacji, dla której wycena bazowa daje 0, cena pozostaje 0.
+- **Cena pokoju maleje ze zmęczeniem: 6000 PN na starcie wojny, 0 przy zmęczeniu 100%** (`war-weariness-params.json:cenaPokoju.cenaStartPn`, funkcja `wearinessPeaceCashPn`: cena = 6000 × (1 − L), L = poziom zmęczenia pary, ABC 2026-11-17, R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1). Ta sama cena dla panelu dyplomacji, decyzji AI, AI↔AI i pokoju wymuszonego. Rozejm ma osobną wycenę (X = 2000 × (1 − L), patrz niżej: parytet siły w traktatach). Bramka relacji: przy relacji, dla której wycena bazowa daje 0, cena pozostaje 0.
 - **Podział PW pokoju wg mocy: „P·r i P/r” (zwykły pokój przed 100% zmęczenia i pokój AI↔AI).** Niech P będzie ceną pokoju z poprzedniego punktu, a r = Power silniejszej strony / Power słabszej (r ≥ 1; miara to **Power** z hasła o Mocy, nie siła militarna; mianownik chroniony przed zerem). Silniejsza strona ma punkty PW S = P·r, słabsza W = P/r. **Słabsza strona dopłaca różnicę D = S − W = P·(r − 1/r) miastami** propozycji pokoju (bez sufitu dopłaty; rabat relacji gracza zostaje i jest oznaczony w panelu „po rabacie relacji”). **Przy równej mocy (r = 1) D = 0 — pokój bez dopłaty.** Przykład: Power 6969 do 2611 i P = 4320 daje r ≈ 2,67, S = 11 530, W = 1 619, D = 9 911 PW. Silniejszy gracz nigdy nie dostaje blokady „Brakuje N PW” z powodu własnej wyceny; ta blokada dotyczy tylko gracza jako strony słabszej, gdy oferta miast nie pokrywa D. Gdy słabsza strona nie ma czym zapłacić (stolica i ostatnie miasto nie wchodzą w ofertę), pokój tą drogą nie dochodzi do skutku, a przy zmęczeniu 100% działa pokój wymuszony (cena 0). AI jako słabsza strona oferuje miasta pokrywające D; AI jako silniejsza może żądać od gracza dopłaty D. Panel Punktów Wartości pokazuje moc obu stron, r, S, W, D i rabat relacji w podpowiedzi (`PeacePowerSplitInfo`, funkcja `peacePwPointsByPowerRatio` w `war-weariness.ts`; ABC 2026-11-18, R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1).
+
+### Parytet siły w traktatach: rozejm, pakt, przemarsz, sojusz, wasal
+
+Sześć traktatów ma cenę bazową **X** (ceny ×10 względem dawnych; ABC 2026-11-18, R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1) i ten sam podział co pokój „P·r i P/r”: **r = Power silniejszej / Power słabszej** (r ≥ 1), silniejsza strona ma **S = X·r**, słabsza **W = X/r**, a **słabsza dopłaca D = S − W** (bez sufitu dopłaty, rabat relacji gracza zostaje, panel pisze „po rabacie relacji”). **Przy równej mocy (r = 1) D = 0.** Płaci zawsze słabsza strona: silniejsza „sprzedaje” ochronę albo dostęp, a przy wasalu słabsza się poddaje.
+
+| Traktat (nazwa w grze) | Cena bazowa X | Uwagi |
+|------|------|------|
+| Rozejm | 2000 × (1 − L) | L = zmęczenie wojną pary; zmęczenie 0,5 obniża X o połowę (2,5% na turę, patrz hasło **Zmęczenie wojną**) |
+| Pakt o nieagresji (NAP) | 2000 | mnożnik czasu bez zmian: 10/15/20 tur ×1/×2/×4, bezterminowy ×8 |
+| Traktat przemarszu | 600 | w danych klucz `granice` |
+| Sojusz obronny | 4200 | próg Relacji 130 i Zaufania 90 bez zmian |
+| Sojusz pełny | 5000 | jak wyżej |
+| Wasal | 3500 | próg Respektu bez zmian |
+
+Przykład: Power 6969 do 2611 daje r ≈ 2,67; dla sojuszu pełnego X = 5000, S = 13 345, W = 1 873, D = 11 472 PW. Pokój, handel, umowy handlowe i szlaków, technologie, dary, trybut, ultimatum, namawianie do wojny, wchłonięcie i reparacje **nie mają parytetu** — ich ceny i reguły zostają. Zasady są w danych: pola `parytet` i `platnik` w `diplomacy-acceptance-points.json`, wzór w `peacePwPointsByPowerRatio` (`war-weariness.ts`).
+
+- **Gracz jako autor:** silniejszy gracz nie dostaje blokady „Brakuje N PW” z powodu własnej wyceny; słabszy z ofertą mniejszą niż D dostaje blokadę z kwotą. Panel pokazuje moc obu stron, r, S, W, D i rabat relacji w podpowiedzi.
+- **AI jako słabsza strona:** płaci D miastami tylko tam, gdzie oferta może zawierać miasta, czyli w rozejmie (oferta miast, jak w pokoju). Pakt, przemarsz i sojusz nie przenoszą miast, a płatność surowcami lub złotem nie jest zatwierdzona, więc **AI słabsza wg Power nie proponuje paktu, sojuszu ani prośby o przemarsz**; przy równej mocy i gdy AI jest silniejsza oferty działają jak dotąd (progi gotowości do sojuszu 130/90 bez zmian). Rozejm AI↔AI: słabsza strona płaci D z X rozejmu.
 
 ### Zmęczenie wojną a pokój
 

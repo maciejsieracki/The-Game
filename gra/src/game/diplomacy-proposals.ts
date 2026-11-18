@@ -1723,10 +1723,21 @@ function evaluateProposalImpl(
       // Bardzo dobra (95/95, relTotal surowy=190) → effReq(500,190)=950>500 → bilans wyraźnie
       // dodatni (+450). Dar 300 PW za darmo → bilans dodatni przy neutralnej/dobrej relacji
       // (rośnie liniowo z wielkością daru, poprawna polaryzacja — zweryfikowane).
-      let gap = basePn > 0
+      // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (r3): rozejm AI → gracz z parytetem. Baza luki = dopłata D, którą ma pokryć
+      // SŁABSZA strona (X = 2000 × (1 − L)): AI silniejsze wg POWER żąda od gracza D, AI słabsze/równe nie żąda niczego (0) —
+      // ta sama liczba, od której main.ts liczy `receiveItems` oferty AI (enqueueNegotiationFromAiCmd). Bez tego luka liczyłaby
+      // się od surowej bazy 2000 (×10) i pokazywała graczowi zawyżony ujemny bilans AI-owego rozejmu.
+      let gapBasePn = basePn;
+      if (actionId === 'rozejm' && !proposerIsPlayer && treatyParityEnabled(actionId) && ctx.treatyPower !== undefined && basePn > 0) {
+        const aiSplit = peacePwPointsByPowerRatio(
+          treatyParityBaseX(actionId, payload, wearinessL), ctx.treatyPower.powerPlayer, ctx.treatyPower.powerOther,
+        );
+        gapBasePn = aiSplit.strongerSide === 'a' ? 0 : aiSplit.D;
+      }
+      let gap = gapBasePn > 0
         ? (proposerIsPlayer
             ? treatyBaseFairnessGap(basePn, givePn, receivePn, relTotal)
-            : treatyBaseFairnessGap(basePn, givePn, receivePn, relationTotal(relation)))
+            : treatyBaseFairnessGap(gapBasePn, givePn, receivePn, relationTotal(relation)))
         : 0;
       // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (ABC 2026-11-18, D1–D4): gdy znana moc POWER obu stron, podział P·r / P/r.
       // Autor = gracz: silniejszy gracz ma wymaganie 0 (nigdy blokada „Brakuje"); słabszy gracz pokrywa D = S − W

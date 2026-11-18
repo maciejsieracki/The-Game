@@ -6277,6 +6277,7 @@ import type { GameDifficulty } from './difficulty-cost';
 import { TypCywilizacji } from '../types/player';
 import {
   warWearinessLevel, wearinessPeaceCashPn, planEscalatedPeacePayment, peaceAiAiPaymentPn,
+  aiTreatyParityDuePn, treatyParityBasePnFromData,
 } from './war-weariness';
 import type { PeaceAsset } from './diplomacy-ai-forced-peace';
 import {
@@ -7147,14 +7148,19 @@ export function decideAIDiplomacy(
     ) {
       // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (R2): AI płaci jako strona słabsza wg POWER — kwota do pokrycia = D = S − W
       // (aiPeaceCityDuePn); AI silniejsze mocą (lub r = 1) nie dopłaca (D = 0) i nie składa tej oferty.
-      const cenaOddaniaPn = aiPeaceCityDuePn(cenaPokojuPn, rel.mocAI, rel.mocPartner);
+      // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (r3): rozejm ma własną cenę bazową X = 2000 × (1 − L) (parytet siły,
+      // ta sama funkcja co ścieżka gracza), pokój — P = wearinessPeaceCashPn(L). Wspólny wzór D: aiPeaceCityDuePn(X, ...).
+      const cityOfferKind = aiPeaceProposalKind(turnsAtWarRel);
+      const cenaBazaOddaniaPn = cityOfferKind === 'rozejm' && treatyParityBasePnFromData('rozejm') > 0
+        ? treatyParityBasePnFromData('rozejm', wearyLevel)
+        : cenaPokojuPn;
+      const cenaOddaniaPn = aiPeaceCityDuePn(cenaBazaOddaniaPn, rel.mocAI, rel.mocPartner);
       const cityPlan = aiPlanMiastaDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc, cenaOddaniaPn);
       // Cena > 0 i brak PEŁNEGO pokrycia miastami (np. tylko stolica) → AI nie składa oferty miasta, wojna trwa.
       const pick = cenaOddaniaPn > 0 && cityPlan.full ? cityPlan.miasta[0] : undefined;
       if (pick) {
         // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (wymóg 3): słabsza AI proponuje ROZEJM z miastem
         // w okresie rozejmowym (ta sama reguła rodzaju co zaproponuj_pokoj: aiPeaceProposalKind); potem pokój.
-        const cityOfferKind = aiPeaceProposalKind(turnsAtWarRel);
         komendy.push({
           type:       'oferuj_miasto_za_pokoj',
           targetId:   rel.partnerId,
@@ -7398,6 +7404,9 @@ export function decideAIDiplomacy(
       && score >= dipP.progNapRelacja - bias.napScoreEase + deltaRelacjiSojusz(rel.celAgresorAktywny === true, undefined)
       // R-WEB-DIPLO-NAP-TRUST-30-Q1: AI proponuje pakt dopiero przy Zaufaniu ≥ progNapZaufanie.
       && rel.relation.zaufanie >= dipP.progNapZaufanie
+      // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (r3): AI słabsze wg POWER płaci D = S − W; pakt nie przenosi miast
+      // (pozycja 'miasto' tylko w pokoju/wasalu), a płatność surowcami/złotem nie jest zatwierdzona → brak oferty.
+      && aiTreatyParityDuePn('nap', rel.mocAI, rel.mocPartner) <= 0
     ) {
       const napIndefinite = score >= dipP.progNapBezterminowyRelacja;
       komendy.push({
@@ -7492,6 +7501,8 @@ export function decideAIDiplomacy(
     // D-MP-DYPL Q1 (część 2): dyplomacjaAktywnosc skaluje willingnessAlly (T4=B analogicznie
     // do agresjaMnoznik na effAgresja) -- wyzsza aktywnosc trudnosci = chetniej proponuje sojusz.
     const effWillingnessAlly = Math.min(1, stance.willingnessAlly * dyplomacjaAktywnosc);
+    const sojuszAllianceKind: 'defensywny' | 'pelny' =
+      rw < 0.45 || stance.willingnessWar < 0.35 ? 'defensywny' : 'pelny';
     if (
       !rel.stanWojny &&
       (sojuszCoreMet || (
@@ -7500,9 +7511,11 @@ export function decideAIDiplomacy(
         rel.relation.zaufanie >= diplomacyAllianceMinZaufanie(sojuszAdj, aiMilRatio, dipP)
       )) &&
       effWillingnessAlly >= minSojuszAlly
+      // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (r3): AI słabsze wg POWER płaci D = S − W (X sojuszu), a sojusz nie
+      // przenosi miast ani zatwierdzonej płatności surowcami → AI nie składa oferty (gotowość 130/90 bez zmian).
+      && aiTreatyParityDuePn(sojuszAllianceKind === 'pelny' ? 'sojusz_pelny' : 'sojusz_defensywny', rel.mocAI, rel.mocPartner) <= 0
     ) {
-      const allianceKind: 'defensywny' | 'pelny' =
-        rw < 0.45 || stance.willingnessWar < 0.35 ? 'defensywny' : 'pelny';
+      const allianceKind = sojuszAllianceKind;
       komendy.push({
         type:     'zaproponuj_sojusz',
         targetId: rel.partnerId,

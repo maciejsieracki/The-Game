@@ -1667,7 +1667,7 @@ import {
   registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
-import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, wearinessPeaceCashPn, peacePowerSidesForPair, peaceAiAiPaymentPn, type WarWearinessStore, type WarWearinessPairState, type WearinessTickOutcome } from './game/war-weariness';
+import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, wearinessPeaceCashPn, peacePowerSidesForPair, peaceAiAiPaymentPn, aiTreatyParityDuePn, treatyParityBasePnFromData, type WarWearinessStore, type WarWearinessPairState, type WearinessTickOutcome } from './game/war-weariness';
 import { warWearinessPairView, peakForCurrentWar, warWearinessSideView, type WarWearinessPairView, type WarWearinessReference } from './game/war-weariness-view';
 import {
   isPeaceTreatyLocked,
@@ -15612,6 +15612,10 @@ async function boot(): Promise<void> {
       // last > turn = wpis z przyszlosci (stara mapa po wczytaniu): cooldown nieaktualny, nie wycisza prosb.
       if (isMarchPassageCooldownActive(last, turn, AI_MARCH_PASSAGE_REQUEST_COOLDOWN_TURNS)) return;
       if (isBarbarian(territoryOwnerId)) return;
+      // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (r3): przemarsz ('granice') ma parytet siły — AI słabsze wg POWER płaciłoby
+      // D = S − W, a umowa przemarszu nie przenosi miast (pozycja 'miasto' tylko w pokoju/wasalu), płatność surowcami
+      // nie jest zatwierdzona → brak prośby (teren zostaje zablokowany jak po odmowie). AI równe/silniejsze: bez zmian.
+      if (aiTreatyParityDuePn('granice', objectivePowerForOwner(aiOwnerId), objectivePowerForOwner(territoryOwnerId)) > 0) return;
       aiMarchPassageRequestTurn.set(key, turn);
       const cmd: AIDiplomacyCommand = {
         type: 'zaproponuj_przemarsz',
@@ -21298,9 +21302,18 @@ async function boot(): Promise<void> {
         const relForPeace = getDiploRelation(ownerId, ME());
         const difficultyForPeace = effectiveGameDifficultyForOwner(ownerId);
         // R-WEB-TRUCE-Q1 r4 (N4): rozejm AI ma własną bazę PW (200), nie bazę pokoju (500).
-        const basePnPeace = treatyBasePnFromConfig(
-          workingCmd.rodzaj === 'rozejm' ? 'rozejm' : 'pokoj', converted.payload,
-        );
+        // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (r3): rozejm AI → gracz = parytet siły. AI silniejsze wg POWER żąda od
+        // gracza D = S − W (X = 2000 × (1 − L)); AI równe/słabsze nie żąda niczego (słabsze płaci miastem w ścieżce
+        // oferuj_miasto_za_pokoj, równe: D = 0) — baza 0 ⇒ neededPn = 0 i goły rozejm przechodzi (peaceBareAllowed).
+        const rozejmParity = workingCmd.rodzaj === 'rozejm' && treatyParityBasePnFromData('rozejm') > 0;
+        const basePnPeace = rozejmParity
+          ? aiTreatyParityDuePn(
+            'rozejm', objectivePowerForOwner(ME()), objectivePowerForOwner(ownerId),
+            aiAiPairWearinessLevel(ownerId, ME()),
+          )
+          : treatyBasePnFromConfig(
+            workingCmd.rodzaj === 'rozejm' ? 'rozejm' : 'pokoj', converted.payload,
+          );
         // givePn/receivePn AI = 0/0 — payload dziś zawsze goły w tym miejscu (żaden branch
         // wyżej nie dotyczy 'zaproponuj_pokoj'); gdyby to się kiedyś zmieniło, resolveProposalPn
         // czytałby realne wartości, ale dziś jest to poza zakresem (payload:{} zawsze).
@@ -39099,7 +39112,13 @@ async function boot(): Promise<void> {
           );
           // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r3, P2): pokój AI↔AI — słabszy przegrany dopłaca D = S − W (POWER),
           // cena bazowa P = wearinessPeaceCashPn(L) bez zmian (D1). Rozejm bez zmian.
-          const requiredPn = kind === 'rozejm' ? relBasedPn
+          // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (r3): rozejm AI↔AI = parytet siły z X = 2000 × (1 − L) (słabszy
+          // przegrany dopłaca D = S − W wg POWER; r = 1 ⇒ D = 0). Dawniej cena rozejmu szła z relacji × baza 200 — po
+          // skali ×10 (baza 2000) tor zażądałby 10× więcej, więc częstość rozejmów AI↔AI spadłaby (test diplo-treaties-ai-parity).
+          const rozejmDuePn = kind === 'rozejm'
+            ? aiTreatyParityDuePn('rozejm', objectivePowerForOwner(loser), objectivePowerForOwner(winner), aiAiPairWearinessLevel(winner, loser))
+            : 0;
+          const requiredPn = kind === 'rozejm' ? (relBasedPn > 0 ? rozejmDuePn : 0)
             : (relBasedPn > 0
               ? peaceAiAiPaymentPn(
                 wearinessPeaceCashPn(aiAiPairWearinessLevel(winner, loser)),
@@ -39108,10 +39127,13 @@ async function boot(): Promise<void> {
               )
               : 0);
           const loserRelTotal = treatyEvalRelationTotal(getDiploRelation(loser, winner));
+          // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (r3): rozejm — bilans liczony od ceny = wymaganej dopłaty D (0 ⇒ neutralny),
+          // nie od bazy 2000 (×10), która odrzucałaby rozejm przy D = 0 (r = 1).
+          const balBasePn = kind === 'rozejm' ? requiredPn : basePn;
           return {
             requiredPn,
-            balanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(0, coveredPn, relTotal, basePn),
-            loserBalanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(coveredPn, 0, loserRelTotal, basePn),
+            balanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(0, coveredPn, relTotal, balBasePn),
+            loserBalanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(coveredPn, 0, loserRelTotal, balBasePn),
             tolerancePn: aiOfferPwSurplusTolerance(difficulty),
           };
         },

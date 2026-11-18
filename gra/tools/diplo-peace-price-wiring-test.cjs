@@ -39,7 +39,7 @@ check('(W5) brak minMiastPoOddaniu w cityCap wymuszenia', !/ownCities - L\.minMi
 // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r3): cena AI<->AI = dopłata D słabszego (peaceAiAiPaymentPn) liczona z bazy wearinessPeaceCashPn (P bez zmian).
 check('(W3) main.ts: cena pokoju AI<->AI z wearinessPeaceCashPn (prosby) przez peaceAiAiPaymentPn', /relBasedPn > 0\s*\?\s*peaceAiAiPaymentPn\(\s*wearinessPeaceCashPn\(aiAiPairWearinessLevel\(winner, loser\)\)/.test(MAIN));
 check('(W3) main.ts: cena pokoju AI<->AI z wearinessPeaceCashPn (tick zmeczenia) przez peaceAiAiPaymentPn', /requiredPn: relBasedPn > 0\s*\?\s*peaceAiAiPaymentPn\(wearinessPeaceCashPn\(level\)/.test(MAIN));
-check('(W3) main.ts: rozejm AI<->AI zachowuje dotychczasowa wycene', /const requiredPn = kind === 'rozejm' \? relBasedPn/.test(MAIN));
+check('(W3) main.ts: rozejm AI<->AI = parytet traktatu (X = 2000 x (1 - L), TREATYIMPL r3), bramka relacji zostaje', /const requiredPn = kind === 'rozejm' \? \(relBasedPn > 0 \? rozejmDuePn : 0\)/.test(MAIN));
 check('(W3) main.ts: helper poziomu pary AI<->AI', /function aiAiPairWearinessLevel\(a: number, b: number\): number/.test(MAIN));
 
 // W4: sciezka R5 w diplomacy-proposals.ts
