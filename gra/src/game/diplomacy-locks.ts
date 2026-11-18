@@ -45,6 +45,11 @@ import {
   NAP_GRANICA_RELACJA_NARZUT,
 } from './diplomacy-proposals';
 import { deltaRelacjiSojusz } from './diplomacy';
+import {
+  peaceProposalBlocked,
+  peaceProposalTurnsLeft,
+  PEACE_PROPOSAL_MIN_WAR_TURNS,
+} from './diplomacy-peace-proposal-timing';
 
 /** Próg Zaufania paktu, gdy kontekst go nie niesie (fikstury). Ta sama wartość co diplomacy.json progNapZaufanie. */
 const NAP_ZAUFANIE_FALLBACK = 30;
@@ -84,6 +89,12 @@ export interface DiplomacyActionLockContext {
   hasTradeTechSelf?: boolean;
   /** Jw., dla DRUGIEJ strony (partnera negocjacji). */
   hasTradeTechOther?: boolean;
+  /**
+   * R-WEB-DIPLO-PEACE-WINNER-PROPOSAL-FLOW-Q1: pełne tury trwającej wojny z perspektywy GRACZA
+   * wobec partnera (0 gdy brak wojny). Opcjonalne: `undefined` = blokada 10 tur nie jest liczona
+   * (wsteczna zgodność fikstur); main.ts zawsze przekazuje realną wartość.
+   */
+  turnsAtWar?: number;
   /** Umowa wymiany surowców (`umowa_wymiany`). */
   hasWymiana?: boolean;
   hasSojusz: boolean;
@@ -327,6 +338,15 @@ export function resolveDiplomacyActionLock(ctx: DiplomacyActionLockContext): Dip
     case '10': { // Propozycja pokoju / zawieszenia broni
       if (!ctx.atWar) {
         return { locked: true, note: 'niedostępna — nie trwa wojna' };
+      }
+      // R-WEB-DIPLO-PEACE-WINNER-PROPOSAL-FLOW-Q1: blokada 10 pełnych tur wojny widoczna PRZED kliknięciem
+      // (ta sama reguła co silnik: peaceProposalBlocked) — przycisk wyszarzony z licznikiem tur.
+      if (ctx.turnsAtWar !== undefined && peaceProposalBlocked('pokoj', true, ctx.turnsAtWar)) {
+        const left = peaceProposalTurnsLeft(ctx.turnsAtWar);
+        return {
+          locked: true,
+          note: `dostępne za ${left} ${left === 1 ? 'turę' : 'tury'} (pokój i rozejm po ${PEACE_PROPOSAL_MIN_WAR_TURNS} pełnych turach wojny)`,
+        };
       }
       return { locked: false, note: '' };
     }

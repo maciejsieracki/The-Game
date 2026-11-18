@@ -26631,6 +26631,8 @@ async function boot(): Promise<void> {
         hasTradeTechOther: ownerHasTradeTech(ownerId),
         hasWymiana: hasWymianaTreaty(activeDeals, ME(), ownerId),
         hasSojusz,
+        // R-WEB-DIPLO-PEACE-WINNER-PROPOSAL-FLOW-Q1: ta sama para/orientacja co peaceProposalIsTooEarly (gracz → partner).
+        turnsAtWar: atWar ? diploWarStateFor(ME(), ownerId).turnsAtWar : 0,
         // P-DYPLO-PRZEMARSZ-DUPLIKAT-AKTYWNY-Q1: traktat przemarszu jest symetryczny
         // (hasTreaty normalizuje parę stron przez pairKey) — sprawdzamy WSZYSTKIE trzy
         // odmiany jednocześnie (cywilny/wojskowy/wspólna walka z barbarzyńcami).
