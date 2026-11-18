@@ -70,15 +70,57 @@ export function neighborTenureTur(
     return 0;
   }
   let since = neighborSinceTurn.get(key);
-  if (since === undefined) {
+  // Tura cofnięta (nowa gra od tury 1 albo wczytanie wcześniejszego zapisu) = licznik od nowa.
+  if (since === undefined || since > turn) {
     since = turn;
     neighborSinceTurn.set(key, since);
   }
   return Math.max(0, turn - since);
 }
 
-export function resetNeighborTenureForTest(): void {
+/** Czyści licznik A1: wywoływane przy nowej grze i przy wczytaniu zapisu (prepareSessionForLoad). */
+export function resetNeighborTenureSession(): void {
   neighborSinceTurn.clear();
+}
+
+export function resetNeighborTenureForTest(): void {
+  resetNeighborTenureSession();
+}
+
+/**
+ * A1 w ctx pary: wynikowa kara za granicę = kara bazowa (-3/-4/-5, ≤ 0) + napięcie z tury,
+ * ucięta do ŁĄCZNIE -granicaMax (dispatch: „do −6 łącznie"). Kara bazowa 0 (brak wspólnej granicy
+ * albo karencja po pokoju/rozejmie) zostaje 0 — napięcie nie działa w karencji, licznik idzie dalej.
+ */
+export function karaGranicaZNapieciem(
+  karaBazowa: number,
+  tenureTur: number,
+  p: HarderDiplomacyParams = HARDER_PARAMS,
+): number {
+  if (!(karaBazowa < 0)) return karaBazowa;
+  const suma = karaBazowa + napieciePenaltyZaTure(tenureTur, p);
+  return Math.max(suma, -Math.abs(p.granicaMax));
+}
+
+/**
+ * A1+A3 w ctx pary (czysta funkcja; wywołuje ją main.ts tylko gdy flaga ON).
+ */
+export function harderPairDeltas(
+  args: {
+    karaBazowa: number;
+    tenureTur: number;
+    czyParaZLiderem: boolean;
+    partnerToGracz: boolean;
+    sojuszZLiderem: boolean;
+    mocLidera: number;
+    mocDrugiego: number;
+  },
+  p: HarderDiplomacyParams = HARDER_PARAMS,
+): { karaWspolnaGranicaDelta: number; zazdroscDelta: number } {
+  return {
+    karaWspolnaGranicaDelta: karaGranicaZNapieciem(args.karaBazowa, args.tenureTur, p),
+    zazdroscDelta: zazdroscLidera(args, p),
+  };
 }
 
 /**

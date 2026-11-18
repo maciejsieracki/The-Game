@@ -984,8 +984,8 @@ import {
 } from './game/diplomacy-tick-war-brake';
 // R-WEB-DIPLO-HARDER-RELATIONS A1–A3: twarda dyplomacja — wszystko za isHarderDiplomacyEnabled() (domyślnie OFF).
 import {
-  capZaufanieZaHandel, isHarderDiplomacyEnabled, napieciePenaltyZaTure,
-  neighborTenureTur, zazdroscLidera,
+  capZaufanieZaHandel, harderPairDeltas, isHarderDiplomacyEnabled,
+  neighborTenureTur, resetNeighborTenureSession,
 } from './game/diplomacy-harder';
 import {
   resolveAutoBattleByPower,
@@ -2761,6 +2761,7 @@ async function boot(): Promise<void> {
 
     /** Etykiety + epoka: wszyscy AI startują w tej samej epoce co gracz (E1). */
     function initAllAiOwnersForNewGame(epochId: string): void {
+      resetNeighborTenureSession(); // R-WEB-DIPLO-HARDER A1: nowa gra zaczyna licznik od zera
       for (const oid of allAiOwnerIdsOnMap()) {
         setupAiOwnerEpoch(oid, epochId);
       }
@@ -10378,6 +10379,7 @@ async function boot(): Promise<void> {
 
     /** Pełny reset UI / flag przed wczytaniem innej gry (nie czyści mapy — to robi rebuild). */
     function prepareSessionForLoad(): void {
+      resetNeighborTenureSession(); // R-WEB-DIPLO-HARDER A1: licznik sąsiedztwa nie przechodzi między grami/wczytaniami
       resetStuckInteractiveState();
       resetEmpireRecruitPanelSession(); // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: panel/stan UI nie przeżywa wczytania
       resetArmyRecruitDraftsSession();
@@ -24567,20 +24569,16 @@ async function boot(): Promise<void> {
       };
       // R-WEB-DIPLO-HARDER: flaga OFF = brak tej gałęzi, wynik identyczny jak baza.
       if (!isHarderDiplomacyEnabled()) return ctxBazowy;
-      const karencja = isPeaceLockedBetween(a, b)
-        || isTruceActive(getDiploPairMeta(a, b).truceUntilTurn, turn);
-      const karaBazowa = ctxBazowy.karaWspolnaGranicaDelta ?? 0;
-      // A1: licznik sąsiedztwa bez NAP/sojuszu; kara rośnie też w karencji, aplikowana po jej końcu.
+      // A1: licznik sąsiedztwa bez NAP/sojuszu (narasta też w karencji; kara wraca po jej końcu).
       const sasiedztwoBezPokoju = karaWspolnaGranicaFlag && pokojTier !== 'nap' && pokojTier !== 'sojusz';
       const tenure = neighborTenureTur(diploPairKey(a, b), turn, sasiedztwoBezPokoju);
-      if (karaWspolnaGranicaFlag && !karencja && karaBazowa !== 0) {
-        ctxBazowy.karaWspolnaGranicaDelta = karaBazowa + napieciePenaltyZaTure(tenure);
-      }
-      // A3: zazdrość lidera wobec każdej AI bez sojuszu z nim.
+      // A3: zazdrość lidera wobec każdej AI bez sojuszu z nim (partner-gracz = 0).
       const lider = diploHarderLeaderInfo();
       const czyParaZLiderem = lider.leaderId >= 0 && (a === lider.leaderId || b === lider.leaderId);
       const inny = a === lider.leaderId ? b : a;
-      ctxBazowy.zazdroscDelta = zazdroscLidera({
+      const harder = harderPairDeltas({
+        karaBazowa: ctxBazowy.karaWspolnaGranicaDelta ?? 0,
+        tenureTur: tenure,
         czyParaZLiderem,
         partnerToGracz: isHuman(inny),
         sojuszZLiderem: czyParaZLiderem && resolvePokojTrustTier(activeDeals, lider.leaderId, inny, {
@@ -24589,6 +24587,8 @@ async function boot(): Promise<void> {
         mocLidera: lider.mocLidera,
         mocDrugiego: lider.mocDrugiego,
       });
+      ctxBazowy.karaWspolnaGranicaDelta = harder.karaWspolnaGranicaDelta;
+      ctxBazowy.zazdroscDelta = harder.zazdroscDelta;
       return ctxBazowy;
     }
 
