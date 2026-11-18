@@ -1,6 +1,12 @@
+//! R-RUSTPORT-P4-371-T0-BRIDGE-CONTRACT-ROOT (= #374, D-371-6): kontrakt powloki Tauri
+//! (`src-tauri/src/lib.rs`) i mostu (`engine/src/bridge.rs`), przeniesiony z root
+//! `tests/bridge_contract.rs` (niekompilowanego przez zaden manifest ani CI) do testow engine.
+//! Dopasowania `match` w `command_kind` i `result_kind` sa WYCZERPUJACE bez `_ =>`: nowy wariant
+//! `EngineCommand` lub `BridgeResult` bez ramienia tutaj lamie kompilacje tego testu (cel D-371-6).
+
 #![allow(dead_code)]
 
-#[path = "../rust-port/engine/src/bridge.rs"]
+#[path = "../src/bridge.rs"]
 mod bridge;
 
 use bridge::{
@@ -10,11 +16,192 @@ use bridge::{
 };
 use serde_json::json;
 
-const TAURI_SHELL: &str = include_str!("../src-tauri/src/lib.rs");
+const TAURI_SHELL: &str = include_str!("../../../src-tauri/src/lib.rs");
 
 fn state_from(result: &BridgeResult) -> &bridge::EngineState {
     match result {
         BridgeResult::State { state } => state,
+        BridgeResult::RenderLayers { .. } => panic!("expected State, got RenderLayers"),
+        BridgeResult::RenderMap { .. } => panic!("expected State, got RenderMap"),
+        BridgeResult::RenderFrame { .. } => panic!("expected State, got RenderFrame"),
+    }
+}
+
+/// Wire `kind` of every `EngineCommand` variant, indexed by [`command_index`].
+/// `COMMAND_KINDS.len()` is the declared number of variants: a new variant needs a new arm in
+/// `command_index` (compile error otherwise), a new entry here and a new sample in `every_command`
+/// (the completeness test fails otherwise).
+const COMMAND_KINDS: [&str; 11] = [
+    "create_session",
+    "add_player",
+    "select_unit",
+    "move_unit",
+    "cancel_planned_march",
+    "advance_turn",
+    "get_state",
+    "declare_war",
+    "get_render_layers",
+    "get_render_map",
+    "get_render_frame",
+];
+
+/// Position of every `EngineCommand` variant in [`COMMAND_KINDS`]. Exhaustive on purpose (no
+/// `_ =>`): a new command without an arm here is a compile error of this contract test.
+fn command_index(command: &EngineCommand) -> usize {
+    match command {
+        EngineCommand::CreateSession { .. } => 0,
+        EngineCommand::AddPlayer { .. } => 1,
+        EngineCommand::SelectUnit { .. } => 2,
+        EngineCommand::MoveUnit { .. } => 3,
+        EngineCommand::CancelPlannedMarch { .. } => 4,
+        EngineCommand::AdvanceTurn => 5,
+        EngineCommand::GetState => 6,
+        EngineCommand::DeclareWar { .. } => 7,
+        EngineCommand::GetRenderLayers { .. } => 8,
+        EngineCommand::GetRenderMap => 9,
+        EngineCommand::GetRenderFrame { .. } => 10,
+    }
+}
+
+/// Wire `kind` of a command (via the exhaustive [`command_index`]).
+fn command_kind(command: &EngineCommand) -> &'static str {
+    COMMAND_KINDS[command_index(command)]
+}
+
+/// Name of every `BridgeResult` variant. Exhaustive on purpose (no `_ =>`).
+fn result_kind(result: &BridgeResult) -> &'static str {
+    match result {
+        BridgeResult::State { .. } => "State",
+        BridgeResult::RenderLayers { .. } => "RenderLayers",
+        BridgeResult::RenderMap { .. } => "RenderMap",
+        BridgeResult::RenderFrame { .. } => "RenderFrame",
+    }
+}
+
+/// One sample of every `EngineCommand` variant. Completeness is asserted by
+/// `every_command_serializes_with_its_wire_kind_and_round_trips`: every index of
+/// [`COMMAND_KINDS`] must be hit exactly once.
+fn every_command() -> Vec<EngineCommand> {
+    vec![
+        EngineCommand::CreateSession {
+            params: StartGameParams::default(),
+        },
+        EngineCommand::AddPlayer {
+            id: 2,
+            name: "AI".to_owned(),
+        },
+        EngineCommand::SelectUnit { unit_id: 1 },
+        EngineCommand::MoveUnit {
+            unit_id: 1,
+            destination: civ_engine::PositionDto::new(1, 1),
+            attack_unit_id: None,
+        },
+        EngineCommand::CancelPlannedMarch {
+            unit_id: 1,
+            force: false,
+        },
+        EngineCommand::AdvanceTurn,
+        EngineCommand::GetState,
+        EngineCommand::DeclareWar {
+            declarer: 1,
+            target: 2,
+        },
+        EngineCommand::GetRenderLayers { seat: None },
+        EngineCommand::GetRenderMap,
+        EngineCommand::GetRenderFrame {
+            seat: None,
+            ui: None,
+        },
+    ]
+}
+
+#[test]
+fn every_command_serializes_with_its_wire_kind_and_round_trips() {
+    let commands = every_command();
+    let mut covered = [false; COMMAND_KINDS.len()];
+    for command in &commands {
+        let index = command_index(command);
+        assert!(
+            index < COMMAND_KINDS.len(),
+            "command_index {index} outside COMMAND_KINDS for {command:?}"
+        );
+        assert!(
+            !covered[index],
+            "duplicate sample for {}",
+            COMMAND_KINDS[index]
+        );
+        covered[index] = true;
+    }
+    let missing: Vec<&str> = COMMAND_KINDS
+        .iter()
+        .zip(covered)
+        .filter(|(_, hit)| !hit)
+        .map(|(kind, _)| *kind)
+        .collect();
+    assert!(
+        missing.is_empty(),
+        "every_command misses samples: {missing:?}"
+    );
+    assert_eq!(
+        commands.len(),
+        COMMAND_KINDS.len(),
+        "one sample per variant"
+    );
+    let mut unique_kinds = COMMAND_KINDS.to_vec();
+    unique_kinds.sort_unstable();
+    unique_kinds.dedup();
+    assert_eq!(
+        unique_kinds.len(),
+        COMMAND_KINDS.len(),
+        "wire kinds are unique"
+    );
+    for command in commands {
+        let request = BridgeRequest::new("kind", command.clone());
+        let encoded = serde_json::to_value(&request).expect("request serializes");
+        assert_eq!(encoded["command"]["kind"], command_kind(&command));
+        let decoded: BridgeRequest = serde_json::from_value(encoded).expect("request deserializes");
+        assert_eq!(decoded.command, command);
+    }
+}
+
+#[test]
+fn render_queries_through_real_adapter_answer_their_variant_without_events() {
+    let mut bridge = EngineBridge::new(CivEngineAdapter::default());
+    bridge
+        .handle(BridgeRequest::new(
+            "create",
+            EngineCommand::CreateSession {
+                params: StartGameParams::default(),
+            },
+        ))
+        .expect("create session succeeds");
+    let cases = [
+        (
+            EngineCommand::GetRenderLayers { seat: None },
+            "RenderLayers",
+        ),
+        (EngineCommand::GetRenderMap, "RenderMap"),
+        (
+            EngineCommand::GetRenderFrame {
+                seat: None,
+                ui: None,
+            },
+            "RenderFrame",
+        ),
+    ];
+    for (command, expected) in cases {
+        let kind = command_kind(&command);
+        let dispatch = bridge
+            .handle(BridgeRequest::new(kind, command))
+            .unwrap_or_else(|error| panic!("{kind} succeeds: {error:?}"));
+        assert!(
+            dispatch.events.is_empty(),
+            "{kind} emits no StateChanged ({} events)",
+            dispatch.events.len()
+        );
+        assert_eq!(dispatch.response.request_id, kind);
+        assert_eq!(dispatch.response.contract_version, CONTRACT_VERSION);
+        assert_eq!(result_kind(&dispatch.response.result), expected);
     }
 }
 
@@ -134,7 +321,10 @@ fn bridge_invokes_mock_adapter_and_emits_only_for_mutations() {
         ))
         .expect("add player succeeds");
     assert_eq!(add.response.request_id, "add-1");
-    assert_eq!(state_from(&add.response.result).players[0].id, 1);
+    assert_eq!(
+        state_from(&add.response.result).players[0].id,
+        civ_engine::PlayerId::new(1)
+    );
     assert_eq!(add.events.len(), 1);
     assert_eq!(add.events[0].channel(), EVENT_STATE_CHANGED);
     assert!(matches!(
