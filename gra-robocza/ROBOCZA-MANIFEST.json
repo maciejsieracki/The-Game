@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "7679767248251d5db1b89a0c5313ac17",
-  "bundleSha256": "60c222ee89ea6434489f915cc355f83878789f9b319c03b07f8d93c5d7502fc3",
-  "bundleBytes": 14890294,
+  "bundleMd5": "4eea286a7477e48e7bf5d9754e73b2b2",
+  "bundleSha256": "15eaa859bb713b332f2f66c75fd51c6942fad3ab4f6a7301bc5592242aefca10",
+  "bundleBytes": 14890861,
   "sourceSnapshot": {
-    "source": "FPDECLUT r1 FC ae9813dac + merge main 899667a9",
+    "source": "PANELREF r2 FC 9f1e55bb4 + merge main 49ddb001",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 827: Okno pokoju wymuszonego (showForcedPeaceModal): wyliczenia (tury wojny, zmienione miasta, 2,5% na ture i 10% za miasto, kto wygrywa wg sily militarnej, karencja, zaufanie) przeniesione do tooltipow; na wierzchu tytul, partner, jedno zdanie dlaczego, warunki i przycisk Akceptuje; liczby bez zmian (z WAR_WEARINESS_PARAMS)"
+    "FALA 828: Po odkryciu technologii (badania na koniec tury, nauka wioski, grant technologii przez handel) otwarty panel miasta i panel rekrutacji imperium odswiezaja liste bez ponownego otwierania (helper refreshOpenPanelsAfterTechDiscovery); hak test-only prepareNonEraCompletion w __eraTestDebug; reguly dostepnosci bez zmian"
   ],
   "verification": [
-    "tsc 0; logic 213/213; declutter-test 15/0 (4 mutanty), forced-peace-pending 40/0, stages-view 22/0, forced-peace 14/0, wiki-weariness 18/0; Chromium: diplo-peace-auto-stale-offer-live 15/0, zero pageerror"
+    "tsc 0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; army-panel-recruit-remove 21/0, army-auto-recruit-general-ui 11/0, administrators-wizard 58/0; Chromium: test strazniczy PASS dla Murarstwa i Obrobki drewna, po zamianie odswiezania na no-op FAIL, kontrola bez techu BLOCKED"
   ],
   "limits": [
-    "Wizualny dymek tooltipu i zrzut PRZED NIE ZMIERZONO (natywny title nie trafia do zrzutu headless); na wierzchu okna dwa zdania o zmeczeniu (lead i whyShort) - kosmetyka do decyzji wlasciciela"
+    "NIE ZMIERZONO: odswiezenie panelu rekrutacji imperium na zywo, sciezki handel-tech i nauka wioski, scroll i zaznaczenia po odswiezeniu, powtarzalnosc (1 przebieg); dlug bazowy: konwerter-produkcja 107/1, tech-tile 16/1"
   ],
-  "finalControl": "R-WEB-UI-DIPLO-FORCED-PEACE-WINDOW-DECLUTTER-TOOLTIPS-Q1 r1 FC PASS-WITH-NOTES ae9813dac (kod 1101d7fdc, obrona 4aaeaae17)",
+  "finalControl": "R-WEB-UI-OPEN-PANEL-REFRESH-AFTER-TECH-DISCOVERY-Q1 r2 FC PASS-WITH-NOTES 9f1e55bb4 (kod e12764b59, test dd4ec930c)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T12:48:43",
+  "hubGeneratedAt": "2026-11-18T12:56:45",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "7679767248251d5db1b89a0c5313ac17",
-      "sizeBytes": 14890294
+      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
+      "sizeBytes": 14890861
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "7679767248251d5db1b89a0c5313ac17",
-      "sizeBytes": 14890294
+      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
+      "sizeBytes": 14890861
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "7679767248251d5db1b89a0c5313ac17",
-      "sizeBytes": 14890294
+      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
+      "sizeBytes": 14890861
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "7679767248251d5db1b89a0c5313ac17",
-      "sizeBytes": 14890294
+      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
+      "sizeBytes": 14890861
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "7679767248251d5db1b89a0c5313ac17",
-      "sizeBytes": 14890294
+      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
+      "sizeBytes": 14890861
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "7679767248251d5db1b89a0c5313ac17",
-      "sizeBytes": 14890294
+      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
+      "sizeBytes": 14890861
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "7679767248251d5db1b89a0c5313ac17",
-      "sizeBytes": 14890294
+      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
+      "sizeBytes": 14890861
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "7679767248251d5db1b89a0c5313ac17",
-      "sizeBytes": 14890294
+      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
+      "sizeBytes": 14890861
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "7679767248251d5db1b89a0c5313ac17",
-      "sizeBytes": 14890294
+      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
+      "sizeBytes": 14890861
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "7679767248251d5db1b89a0c5313ac17",
-      "sizeBytes": 14890294
+      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
+      "sizeBytes": 14890861
     }
   ],
-  "md5": "7679767248251d5db1b89a0c5313ac17",
+  "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

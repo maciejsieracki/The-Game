@@ -1,3 +1,9 @@
+## ROBOCZA 4eea286a -- 2026-11-18 -- FALA 828: PANELREF: otwarty panel miasta i rekrutacji odswieza liste po odkryciu technologii (testowa)
+
+- Po odkryciu technologii (badania na koniec tury, nauka wioski, grant technologii przez handel) otwarty panel miasta i panel rekrutacji imperium odswiezaja liste bez ponownego otwierania (helper refreshOpenPanelsAfterTechDiscovery); hak test-only prepareNonEraCompletion w __eraTestDebug; reguly dostepnosci bez zmian
+- Weryfikacja: tsc 0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; army-panel-recruit-remove 21/0, army-auto-recruit-general-ui 11/0, administrators-wizard 58/0; Chromium: test strazniczy PASS dla Murarstwa i Obrobki drewna, po zamianie odswiezania na no-op FAIL, kontrola bez techu BLOCKED
+- Limity: NIE ZMIERZONO: odswiezenie panelu rekrutacji imperium na zywo, sciezki handel-tech i nauka wioski, scroll i zaznaczenia po odswiezeniu, powtarzalnosc (1 przebieg); dlug bazowy: konwerter-produkcja 107/1, tech-tile 16/1
+
 ## ROBOCZA 76797672 -- 2026-11-18 -- FALA 827: FPDECLUT: okno pokoju wymuszonego - na wierzchu tytul, partner, jedno zdanie, warunki i przycisk; wyliczenia w tooltipach (testowa)
 
 - Okno pokoju wymuszonego (showForcedPeaceModal): wyliczenia (tury wojny, zmienione miasta, 2,5% na ture i 10% za miasto, kto wygrywa wg sily militarnej, karencja, zaufanie) przeniesione do tooltipow; na wierzchu tytul, partner, jedno zdanie dlaczego, warunki i przycisk Akceptuje; liczby bez zmian (z WAR_WEARINESS_PARAMS)
