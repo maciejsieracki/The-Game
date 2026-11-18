@@ -2731,6 +2731,40 @@ export function hasPendingNegotiationForPair(
   );
 }
 
+/**
+ * DIPLO-5 (R-WEB-DIPLO-AI-PEACE-OFFER-DEDUP-ONE-ACTIVE-Q1): planowanie wstawienia propozycji AI na stół.
+ * Pokój/rozejm (WAR_DEPENDENT_ACTIONS) — na parę co najwyżej JEDNA aktywna propozycja:
+ *  - propozycja GRACZA tej pary już na stole → AI nie dokłada drugiej (accept=false);
+ *  - w przeciwnym razie nowa propozycja AI zastępuje wszystkie wcześniejsze propozycje AI tej pary
+ *    (replacedIds — do usunięcia ze stołu przed wstawieniem).
+ * Pozostałe typy: dotychczasowy dedup tego samego typu (hasPendingNegotiationForPair), bez zastępowania.
+ * EN: at most one active war-peace (peace/truce) offer per pair; a player's pending one blocks the AI,
+ * an AI offer replaces the AI's previous one. Other action types keep the same-type dedup.
+ */
+export function planAiOfferOnTable(
+  table: readonly PendingNegotiation[],
+  aiOwnerId: number,
+  playerOwnerId: number,
+  actionId: ProposalActionId,
+): { accept: boolean; replacedIds: string[] } {
+  if (!WAR_DEPENDENT_ACTIONS.has(actionId)) {
+    const dup = hasPendingNegotiationForPair(table, playerOwnerId, aiOwnerId, actionId);
+    return { accept: !dup, replacedIds: [] };
+  }
+  const pairEntries = table.filter(n =>
+    WAR_DEPENDENT_ACTIONS.has(n.actionId)
+    && ((n.proposerOwnerId === playerOwnerId && n.responderOwnerId === aiOwnerId)
+      || (n.proposerOwnerId === aiOwnerId && n.responderOwnerId === playerOwnerId)),
+  );
+  // DIPLO-5 r2 (zarzut Evaluatora, kontrkontrofertą gracza): wpis z proposerem AI, którego kontroferte
+  // złożył GRACZ (applyCounterOffer zachowuje proposerOwnerId, zmienia authorOwnerId) też zajmuje stół —
+  // inaczej AI nadpisałaby kontrofertę gracza własną nową ofertą.
+  const playerOccupies = (n: PendingNegotiation): boolean =>
+    n.proposerOwnerId === playerOwnerId || n.authorOwnerId === playerOwnerId;
+  if (pairEntries.some(playerOccupies)) return { accept: false, replacedIds: [] };
+  return { accept: true, replacedIds: pairEntries.map(n => n.id) };
+}
+
 /** Własna propozycja gracza (proposer=0) oczekująca u partnera — bez duplikatu tego typu. */
 export function findOwnOutgoingNegotiation(
   table: readonly PendingNegotiation[],
@@ -2856,6 +2890,8 @@ export interface NegotiationWorldCtx {
   /** Gdy któraś strona to miasto-państwo — trybut niedostępny. */
   proposerIsCityState?: boolean;
   responderIsCityState?: boolean;
+  /** DIPLO-5: właściciel miasta o danym id (undefined = miasto nie istnieje). Wiring: main.ts buildNegotiationWorldCtx. */
+  cityOwnerOf?: (cityId: string) => number | undefined;
 }
 
 /** Akcje trybutu — blokada u miast-państw + gaszenie przy wojnie (poza ofertą pokojową majorów). */
@@ -2907,6 +2943,17 @@ export function negotiationStillValid(
   if (world.isAtWar && entry.actionId === 'trybut_oferta'
     && (world.proposerIsCityState || world.responderIsCityState)) {
     return { valid: false, reason: 'Wybuchła wojna — warunki straciły aktualność' };
+  }
+  // DIPLO-5 (kryterium 3): oferta miasta, której nie da się wykonać (miasto utracone / oddane), wygasa.
+  // Miasto z giveItems musi należeć do proposera, z receiveItems do respondera. Brak miasta (undefined) = utracone.
+  // Pole opcjonalne: bez wiringu (cityOwnerOf undefined) reguła nie działa — stan zachowany jak dotąd.
+  if (world.cityOwnerOf) {
+    const cityOk = (items: readonly { typ: string; id: string }[] | undefined, owner: number): boolean =>
+      (items ?? []).every(i => i.typ !== 'miasto' || world.cityOwnerOf!(i.id) === owner);
+    if (!cityOk(entry.payload.giveItems, entry.proposerOwnerId)
+      || !cityOk(entry.payload.receiveItems, entry.responderOwnerId)) {
+      return { valid: false, reason: 'Miasto z oferty nie należy już do strony oferującej — oferta straciła aktualność' };
+    }
   }
   return { valid: true };
 }
