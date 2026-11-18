@@ -1,3 +1,9 @@
+## ROBOCZA 7baf24b2 -- 2026-11-18 -- FALA 826: TREATYIMPL: parytet sily i ceny x10 dla rozejmu, NAP, przemarszu, sojuszy i wasala (jak w pokoju) (testowa)
+
+- Ceny bazowe x10 (rozejm 2000 z mnoznikiem 1-L, NAP 2000, przemarsz 600, sojusz obronny 4200, pelny 5000, wasal 3500); S=X*r, W=X/r, D=S-W placi slabsza (wedlug Power, bez sufitu), r=1 => D=0; AI slabsze nie sklada ofert bez czym zaplacic; panel PW i Civpedia
+- Weryfikacja: tsc 0; logic 213/213; diplo-treaties-ai-parity 80/0, treaties-power-parity 50/0, rozejm-parity 25/0, truce-r1 31/0, acceptance-points 304/0, peace-pw-power-ratio 48/0, wiki-weariness 18/0; pomiar ofert rozejmu AI: 185 vs 107 (baza), 0 komorek gorzej; Chromium NIE ZMIERZONO
+- Limity: AI silniejsze nie zada D od gracza przy sojuszu/NAP/przemarszu (brak nosnika: miasta zakazane, platnosc surowcami niezatwierdzona); AI-AI sojusz/NAP/wasal bez toru w kodzie; Chromium NIE ZMIERZONO
+
 ## ROBOCZA 487869e7 -- 2026-11-18 -- FALA 825: PEACEPWIMPL: model punktow PW pokoju P*r i P/r wedlug Power, slabsza doplaca roznice miastami (testowa)
 
 - Cena pokoju: silniejsza strona ma S = P·r punktow PW, slabsza W = P/r (r = Power silniejszej / slabszej), slabsza doplaca roznice D = S − W miastami, bez sufitu; silniejszy gracz nie dostaje blokady Brakuje N PW z powodu wlasnej wyceny; AI slabsze oddaje miasta na D albo nie sklada oferty, AI silniejsze zada od gracza miasta wartosci ≥ D; AI-AI slabsza strona placi D; panel PW i tooltip pokazuja moc obu stron, r, S, W, D i etykiete po rabacie relacji; Civpedia opisuje wzor; pokoj wymuszony przy 100% zmeczenia bez zmian (kod 7a5ea2a19)
