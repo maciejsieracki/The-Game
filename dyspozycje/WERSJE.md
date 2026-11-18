@@ -1,3 +1,9 @@
+## ROBOCZA e2a9295a -- 2026-11-18 -- FALA 839: Tooltip bilansu okna traktatu: wiersz D i podzial PW tylko raz (testowa)
+
+- plainTextWithTitles (gra/src/ui/diplomacyTipText.ts) pomija title zawarty w tekscie elementu; tooltip bilansu okna traktatu pokazuje wiersz Doplata traktatu i Podzial PW raz zamiast dwa razy; reguly gry bez zmian
+- Weryfikacja: FC PASS 9c66b1f6 (kod 3206b38ec / operator 0d27ffcd9): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; nowy test diplo-tooltip-duplicate-rows 6/0 z mutacja (stara funkcja: D==2, PW==2); declutter 16/0; deal-boards 13/0
+- Limity: NIE ZMIERZONO: zywy Chromium (tooltip w oknie); filtr po podciagu moze pominac bardzo krotki tytul zawarty w tekscie (ryzyko niskie)
+
 ## ROBOCZA 70401185 -- 2026-11-18 -- FALA 838: Pokoj wymuszony: pomiary zywe D2, wczytanie z oczekujacym, AI-AI bez okna (hooki testowe) (testowa)
 
 - Hooki civTest w main.ts (setPairWarAgeForTest, wearDiagForTest tylko odczyt, saveForTest/loadForTest) i testy zywe D2/S/A z mutantami; logika gry bez zmian
