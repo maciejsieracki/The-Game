@@ -1,5 +1,10 @@
-const { chromium } = require('/home/user/The-Game/.claude/worktrees/wf_4474cbc6-012-1/gra/node_modules/playwright');
-const URL = 'file:///tmp/r1lv/index.html?playtest=mapa';
+// Sonda Mocy (f): realny Chromium, bundle Vite, ten sam ciag co test. Sciezki z env (powtarzalnosc):
+//   PW_DIR   = katalog z zainstalowanym pakietem playwright (np. <worktree>/gra/node_modules/playwright)
+//   PROBE_URL = adres bundle'a, np. file:///tmp/<bundle>/index.html?playtest=mapa
+// Odczyt po KAZDYM ustawieniu bonusu (bez przeladowania): swiezosc cache Mocy = wartosc zaraz po setterze.
+const PW_DIR = process.env.PW_DIR || '/home/user/The-Game/.claude/worktrees/wf_4474cbc6-012-1/gra/node_modules/playwright';
+const URL = process.env.PROBE_URL || 'file:///tmp/r1lv/index.html?playtest=mapa';
+const { chromium } = require(PW_DIR);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 (async () => {
   let browser;
@@ -16,11 +21,13 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     const ai = d.listAiOwnerIds()[0];
     const log = [];
     const snap = (tag) => { const p = d.getPowers(ai); log.push({ tag, ai: p.ai, player: p.player }); };
-    d.setAiPowerBonusForTest(ai, 0); snap('after bonus0 (ai)');
-    d.setAiPowerBonusForTest(0, 0); snap('after bonus0 (player)');
+    d.setAiPowerBonusForTest(ai, 0); snap('bonus_ai=0');
+    d.setAiPowerBonusForTest(0, 0); snap('bonus_player=0');
+    for (const b of [500, 1000, 2000, 5000]) { d.setAiPowerBonusForTest(ai, b); snap('bonus_ai=' + b); }
+    d.setAiPowerBonusForTest(ai, 0);
     const pw0 = d.getPowers(ai);
-    d.setAiPowerBonusForTest(ai, Math.max(0, Math.round(1.3 * pw0.player - pw0.ai))); snap('after set 1.3 target');
-    d.setRelationForBrake(ai, 200, 200); snap('after setRelationForBrake');
+    const target = Math.max(0, Math.round(1.3 * pw0.player - pw0.ai));
+    d.setAiPowerBonusForTest(ai, target); snap('target_1.3_bonus=' + target);
     return { ai, log };
   });
   console.log(JSON.stringify(out));
