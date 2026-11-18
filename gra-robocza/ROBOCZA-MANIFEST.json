@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "f11124109c8cb2ccaa333ea61cc49327",
-  "bundleSha256": "0e0e8fb3c195075a8d6abd9069eba34039be1acb11765f8726eef94bc4194579",
-  "bundleBytes": 14871125,
+  "bundleMd5": "a92917e4c7a3a1415d37b1272ca8c546",
+  "bundleSha256": "a81493bc8cc7c632c5742397e1d1e7241d277a6b4026fd529a829c168b0f4619",
+  "bundleBytes": 14871188,
   "sourceSnapshot": {
-    "source": "origin/main 92afbe82 + merge FC 5b8c6ac5a (DECLUTTER-Q1 r3)",
+    "source": "FC fcdaf38ce",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 820: Plansze dyplomacji pokazuja tylko najwazniejsze informacje: panel PW (trzy liczby + jednolinijkowy werdykt), okno Umowa wymiany surowcow (partner, czas umowy), decyzja dla calego pakietu; wszystkie wyliczenia i wyjasnienia przeniesione do tooltipow (nic nie usuniete); SZYBKA WYMIANA jako pierwszy element audiencji (kod 5b8c6ac5a)"
+    "FALA 821: Wszystkie pozostale okna propozycji (formularze umow koszyka: pakt, sojusz, przemarsz, wasal, wchlonięcie, pokoj/rozejm, reparacje, handel; slodzik; Odmowa = casus belli; okna wojny, zgody, sojuszu i zerwania umowy) pokazuja tylko liczby i werdykt; wyliczenia i uzasadnienia w tooltipach, nic nie usuniete; linie informacyjne kar zostaja widoczne jako werdykt (kod fcdaf38ce)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; declutter 13/0 z mutacja; acceptance-points 304/0; relation-deal-text 6/0; trade-era-dom 58/0; zywy Chromium w FC: SZYBKA WYMIANA pierwsza, 0 bledow konsoli"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; declutter-tooltips Q2 48/0; Q1 13/0; barb-karencja real-render 13/0; declutter real-render (Chromium) fail=0, mutacje 10/10; zrzuty PRZED/PO w runs/<ID>/dowody"
   ],
   "limits": [
-    "NIE ZMIERZONO: fokus klawiatury i dotyk tooltipow; dlug bazowy terminology 798/1, bilans-gate 21/1, pakt-ekspansja, warunek-niespelniony"
+    "NIE ZMIERZONO: fokus klawiatury i dotyk tooltipow; testy *-live; osobne okno Pokoj/Zawieszenie poza koszykiem; dlug bazowy 6 plikow dyplo-* identyczny na bazie"
   ],
-  "finalControl": "R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1 r3 FC PASS-WITH-NOTES 515d02876 (kod 5b8c6ac5a)",
+  "finalControl": "R-WEB-UI-DIPLO-ALL-PROPOSAL-WINDOWS-DECLUTTER-TOOLTIPS-Q2 r3 FC PASS-WITH-NOTES 884091d9e (kod fcdaf38ce)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T08:27:41",
+  "hubGeneratedAt": "2026-11-18T10:17:45",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "f11124109c8cb2ccaa333ea61cc49327",
-      "sizeBytes": 14871125
+      "md5": "a92917e4c7a3a1415d37b1272ca8c546",
+      "sizeBytes": 14871188
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "f11124109c8cb2ccaa333ea61cc49327",
-      "sizeBytes": 14871125
+      "md5": "a92917e4c7a3a1415d37b1272ca8c546",
+      "sizeBytes": 14871188
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "f11124109c8cb2ccaa333ea61cc49327",
-      "sizeBytes": 14871125
+      "md5": "a92917e4c7a3a1415d37b1272ca8c546",
+      "sizeBytes": 14871188
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "f11124109c8cb2ccaa333ea61cc49327",
-      "sizeBytes": 14871125
+      "md5": "a92917e4c7a3a1415d37b1272ca8c546",
+      "sizeBytes": 14871188
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "f11124109c8cb2ccaa333ea61cc49327",
-      "sizeBytes": 14871125
+      "md5": "a92917e4c7a3a1415d37b1272ca8c546",
+      "sizeBytes": 14871188
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "f11124109c8cb2ccaa333ea61cc49327",
-      "sizeBytes": 14871125
+      "md5": "a92917e4c7a3a1415d37b1272ca8c546",
+      "sizeBytes": 14871188
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "f11124109c8cb2ccaa333ea61cc49327",
-      "sizeBytes": 14871125
+      "md5": "a92917e4c7a3a1415d37b1272ca8c546",
+      "sizeBytes": 14871188
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "f11124109c8cb2ccaa333ea61cc49327",
-      "sizeBytes": 14871125
+      "md5": "a92917e4c7a3a1415d37b1272ca8c546",
+      "sizeBytes": 14871188
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "f11124109c8cb2ccaa333ea61cc49327",
-      "sizeBytes": 14871125
+      "md5": "a92917e4c7a3a1415d37b1272ca8c546",
+      "sizeBytes": 14871188
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "f11124109c8cb2ccaa333ea61cc49327",
-      "sizeBytes": 14871125
+      "md5": "a92917e4c7a3a1415d37b1272ca8c546",
+      "sizeBytes": 14871188
     }
   ],
-  "md5": "f11124109c8cb2ccaa333ea61cc49327",
+  "md5": "a92917e4c7a3a1415d37b1272ca8c546",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

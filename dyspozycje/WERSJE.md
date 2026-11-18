@@ -1,3 +1,9 @@
+## ROBOCZA a92917e4 -- 2026-11-18 -- FALA 821: DECLUTTER-Q2: porzadek wszystkich okien propozycji dyplomacji, wyjasnienia do tooltipow (testowa)
+
+- Wszystkie pozostale okna propozycji (formularze umow koszyka: pakt, sojusz, przemarsz, wasal, wchlonięcie, pokoj/rozejm, reparacje, handel; slodzik; Odmowa = casus belli; okna wojny, zgody, sojuszu i zerwania umowy) pokazuja tylko liczby i werdykt; wyliczenia i uzasadnienia w tooltipach, nic nie usuniete; linie informacyjne kar zostaja widoczne jako werdykt (kod fcdaf38ce)
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; declutter-tooltips Q2 48/0; Q1 13/0; barb-karencja real-render 13/0; declutter real-render (Chromium) fail=0, mutacje 10/10; zrzuty PRZED/PO w runs/<ID>/dowody
+- Limity: NIE ZMIERZONO: fokus klawiatury i dotyk tooltipow; testy *-live; osobne okno Pokoj/Zawieszenie poza koszykiem; dlug bazowy 6 plikow dyplo-* identyczny na bazie
+
 ## ROBOCZA f1112410 -- 2026-11-18 -- FALA 820: DECLUTTER-Q1: porzadek plansz dyplomacji, wyjasnienia do tooltipow, Szybka wymiana na gorze (testowa)
 
 - Plansze dyplomacji pokazuja tylko najwazniejsze informacje: panel PW (trzy liczby + jednolinijkowy werdykt), okno Umowa wymiany surowcow (partner, czas umowy), decyzja dla calego pakietu; wszystkie wyliczenia i wyjasnienia przeniesione do tooltipow (nic nie usuniete); SZYBKA WYMIANA jako pierwszy element audiencji (kod 5b8c6ac5a)
