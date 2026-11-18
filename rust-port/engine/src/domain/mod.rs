@@ -85,6 +85,7 @@ pub mod player_order_queue;
 pub mod production_queue;
 pub mod production_units;
 pub mod recruitment;
+pub mod render_frame;
 // Wymagane: replay.rs używa `civ_engine::`, a tests/replay.rs włącza go przez #[path]; lib test nie ma tej ścieżki.
 #[cfg(not(test))]
 pub mod replay;
