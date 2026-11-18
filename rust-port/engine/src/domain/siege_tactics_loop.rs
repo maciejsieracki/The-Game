@@ -22,7 +22,8 @@
 //!
 //! Nie wpina się w `PlayableState`. Nie zawiera czasu ściennego: budżet przewijania to jawny `max_steps`.
 
-use std::collections::HashMap;
+use std::cell::Cell;
+use std::collections::{HashMap, HashSet};
 
 use crate::domain::army_leadership::{army_morale_ratio_without_commander, ArmyLeaderCombatant};
 use crate::domain::city_towers::{strongest_ranged_unit_for_era, tower_range_for, UnitRow};
@@ -56,9 +57,16 @@ use crate::domain::siege_tactics_blow_full::{
     attacker_from_cu, single_blow_full, AtkMods, AttackerCu, BlowEnv, DefMods, DefenderCu,
     FullBlowInput, FullBlowOutput,
 };
+use crate::domain::siege_tactics_cavalry::{
+    best_charge_step, cav_adjacent_non_spear, cav_directed_maneuver_step, cav_maneuver_step,
+    cavalry_target, first_step_toward_directed_attack, CavTerrain, Tile as CavTile,
+};
 use crate::domain::siege_tactics_clock::{ScheduleOutcome, VirtualClock};
 use crate::domain::siege_tactics_doctrine_state::{GroupDoctrine, ProdDoctrineState};
-use crate::domain::siege_tactics_doctrine_target::{desired_hit_for_direction, AttackDirection};
+use crate::domain::siege_tactics_doctrine_target::{
+    desired_hit_for_direction, enemies_of as enemies_of_cmb, pick_target_by_priority,
+    AttackDirection, Combatant, TargetPriorities,
+};
 use crate::domain::siege_tactics_end::BattleSide;
 use crate::domain::siege_tactics_endcheck::EndCheckOutcome;
 use crate::domain::siege_tactics_fastforward::{
@@ -1182,6 +1190,15 @@ pub struct ProdBody<R: RollSource> {
     /// `:4722`, `:5492`, `:17265`); gracz ustawia `'bok'`/`'tyl'` z UI (`:13917`, `:16975`). Domyślnie
     /// [`AttackDirection::Front`].
     pub attack_direction: [Vec<AttackDirection>; 2],
+    /// K5LOOP-CLOSE r2 (D-K5C-4): `ru.rangedBase` (`battleScene.ts:2019`-okolice), czytane przez `_unitBattleClass`
+    /// (`:17486-17489`) w `_priorityScore` (C-FLANK `_pickTargetByPriority`). Domyślnie `activate.can_shoot`
+    /// (pin `canShoot(ru) = ru.rangedBase && ru.ammoLeft > 0`, `:1457-1459`, więc `can_shoot` implikuje `rangedBase`);
+    /// adapter spawnu podaje wartość z klasy jednostki (strzelec bez amunicji = `true` przy `can_shoot = false`).
+    pub ranged_base: [Vec<bool>; 2],
+    /// K5LOOP-CLOSE r2 (D-K5C-4): `this._targetPriorities` (`battleScene.ts:2328-2332`), priorytety celu armii dla
+    /// `_prefsForUnit` (`:17496-17511`). Pin: wartości `DEFAULT_TARGET_PRIORITIES`; zmienia je wyłącznie panel gracza.
+    /// `ru.useUnitPriorities` i `meta.useGroupPriorities` (UI gracza) w ciele = `false` (pola nieobecne w AUTO).
+    pub target_priorities: TargetPriorities,
 }
 
 /// K5DOC-T4e-0 (D1): brak danych terenu przy wymaganym kroku ruchu. Jawny błąd, nie wartość domyślna.
@@ -1497,6 +1514,19 @@ impl AdvanceWorld for ProdAdvanceWorld<'_> {
     }
 }
 
+/// Wynik bloku C-FLANK `_advanceStep` (`battleScene.ts:8208-8233`) dla jednego wejścia.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum FlankDecision {
+    /// Brak celu albo brak kroku manewru: marsz czołowy poniżej bloku (`:8231-8233`).
+    Fallthrough,
+    /// Już w pozycji do ciosu z zadanego kierunku (`:8212-8214`): `done()`.
+    Done,
+    /// `_doMove` na pierwszy krok `_firstStepTowardDirectedAttack` (`:8216-8229`).
+    Move(CavTile),
+    /// Przejezdność czytana bez [`MoveTerrain`] (D1 K5DOC-T4e-0): jawny tag.
+    MissingTerrain,
+}
+
 impl<R: RollSource> ProdBody<R> {
     pub fn new(units: [Vec<ProdUnit>; 2], scene: ActivateScene, rolls: R) -> Self {
         let surround = [
@@ -1538,6 +1568,11 @@ impl<R: RollSource> ProdBody<R> {
                 vec![AttackDirection::Front; units[0].len()],
                 vec![AttackDirection::Front; units[1].len()],
             ],
+            ranged_base: [
+                units[0].iter().map(|u| u.activate.can_shoot).collect(),
+                units[1].iter().map(|u| u.activate.can_shoot).collect(),
+            ],
+            target_priorities: TargetPriorities::default(),
             terrain: None,
             units,
             scene,
@@ -1755,6 +1790,8 @@ impl<R: RollSource> ProdBody<R> {
             r: old_r as f64,
             move_left,
         };
+        // Planowanie AUTO-batch (`_autoBatchPlanning`, `:8694-8713`) nie animuje kroku: bez [`BattleAction::Move`].
+        let planning = autobatch.is_some();
         let mut world = ProdMoveWorld {
             occ: &mut self.occ_by_key,
             terrain,
@@ -1774,6 +1811,16 @@ impl<R: RollSource> ProdBody<R> {
         // `_updateFacing(ru)` (`:8704`/`:8756`): ostatni efekt stanu `_doMove`, z nowej pozycji.
         if facing_requested {
             self.update_facing(unit, enemies);
+        }
+        // K5LOOP-CLOSE r2 (D-K5C-r2-2): animacja kroku (`const t0 = this._now()` po `_updateFacing`, `:8746`; koniec przy
+        // `p >= 1`, `MOVE_STEP_MS`). Kolejność akcji jak wywołań sceny w pinie: `Facing` (`:8340`), potem `Move`.
+        if !planning {
+            self.emit(BattleAction::Move {
+                unit,
+                from: (old_q, old_r),
+                to: (col, row),
+                arrive_at: self.now + MOVE_STEP_MS,
+            });
         }
         Ok(MoveStepResult {
             move_left: mu.move_left,
@@ -1817,23 +1864,17 @@ impl<R: RollSource> ProdBody<R> {
     ///   przed `_advanceStep` (`:6298`); kolejne wywołania z `_schedule` następują tylko, gdy callback `_doMove` sprawdził
     ///   `!_canAttackFrom` z nowej pozycji (`:8277`), a w turze sekwencyjnej nic innego nie zmienia stanu przed nimi. W
     ///   ciele osiągalne tylko przy niespójnym wejściu adaptera ([`ProdUnit::melee_target`] = `None` przy sąsiedzie).
-    /// * `krok-naprzod-flanka` (obrona r1, Z1): C-FLANK (`:8204-8235`). Pin wchodzi w blok manewru na flankę/tył, gdy
-    ///   `desiredHitForDirection(ru.attackDirection)` (`:8208`) nie jest `null` (`'bok'`/`'tyl'`), po preludium
-    ///   (`finished`, `dead`/`fadingOut`, `moveLeft <= 0`, `:8199-8202`). Port bloku (`_pickTargetByPriority`,
-    ///   `_canStrikeTargetFrom`, `_firstStepTowardDirectedAttack`) = runda 2 (T4d); do tego czasu jednostka nie
-    ///   wykonuje akcji i gałąź jest jawnie oznaczona, a NIE po cichu zamieniona na marsz czołowy (`'front'`).
+    ///
+    /// C-FLANK (`:8204-8235`, K5LOOP-CLOSE r2, zdjęty tag `krok-naprzod-flanka`): dla `attackDirection` `'bok'`/`'tyl'`
+    /// każde wejście `_advanceStep` najpierw próbuje manewru na flankę/tył celu `_pickTargetByPriority ?? _nearestEnemy`
+    /// ([`Self::flank_decide`]); brak kroku = marsz czołowy poniżej (`:8231-8233`), jak w pinie.
     fn advance_step(&mut self, unit: UnitRef, st: &TurnSeqState) -> (f64, Option<f64>) {
         let ix = side_ix(unit.side);
         let mounted = self.units[ix][unit.idx].activate.mounted;
         let mut move_left = st.unit(unit).c.move_left;
         // Preludium `_advanceStep` (`:8199-8202`): `finished` i `dead`/`fadingOut` odcina już `start`; `moveLeft <= 0`
         // (`NaN` nie spełnia, jak w JS) kończy przed blokiem C-FLANK.
-        let prelude_done = move_left <= 0.0;
-        if !prelude_done && desired_hit_for_direction(self.attack_direction[ix][unit.idx]).is_some()
-        {
-            self.unported.push((unit, "krok-naprzod-flanka"));
-            return (0.0, None);
-        }
+        let desired = desired_hit_for_direction(self.attack_direction[ix][unit.idx]);
         let mut moved = false;
         let now0 = self.now;
         let mut elapsed = 0.0;
@@ -1846,6 +1887,45 @@ impl<R: RollSource> ProdBody<R> {
             })
         };
         loop {
+            // C-FLANK (`:8204-8235`): każde wejście `_advanceStep` (także z `_schedule`), po preludium `:8199-8202`
+            // (`moveLeft <= 0` kończy przed blokiem; `NaN` nie, jak w JS).
+            if let Some(want) = desired.filter(|_| move_left > 0.0 || move_left.is_nan()) {
+                match self.flank_decide(unit, st, want, mounted) {
+                    FlankDecision::Fallthrough => {}
+                    FlankDecision::Done => break,
+                    FlankDecision::MissingTerrain => {
+                        self.unported.push((unit, "krok-naprzod-brak-terenu"));
+                        break;
+                    }
+                    FlankDecision::Move((col, row)) => {
+                        self.now = now0 + elapsed;
+                        let Ok(res) =
+                            self.move_step_core(unit, col, row, false, move_left, None, &enemies)
+                        else {
+                            self.unported.push((unit, "krok-naprzod-brak-terenu"));
+                            break;
+                        };
+                        move_left = res.move_left;
+                        moved = true;
+                        elapsed += MOVE_STEP_MS;
+                        // Callback `_doMove` bloku C-FLANK (`:8222-8229`) = ten sam co marszu czołowego (`:8275-8283`),
+                        // bez zapisu `lastAutoMoveFrom`.
+                        let after = {
+                            let au2 = self.advance_unit(unit, move_left);
+                            let bst2 = board_state(&self.occ_by_key);
+                            let world = self.advance_world(unit, st);
+                            advance_after_move(&world, &bst2, &au2)
+                        };
+                        match after {
+                            AfterStep::Done => break,
+                            AfterStep::Schedule { ms } => {
+                                elapsed += f64::from(ms);
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
             let au = self.advance_unit(unit, move_left);
             let bst = board_state(&self.occ_by_key);
             let (decision, missing) = {
@@ -1928,6 +2008,313 @@ impl<R: RollSource> ProdBody<R> {
             group_meta: &self.group_meta,
             formation_rank: &self.formation_rank,
         }
+    }
+
+    /// [`Combatant`] jednostki ciała (pola `ru` czytane przez wybór celu C-FLANK i decyzje kawalerii T6). Stan z `st`
+    /// (`hp`, `dead`/`fadingOut`/`routed`), pozycja z `ProdUnit::activate`, `facing` z ciała. `ammo_left` służy wyłącznie
+    /// `canShoot` (`rangedBase && ammoLeft > 0`), więc niesie `activate.can_shoot`. `useUnitPriorities` = `false`
+    /// (pole UI gracza, nieobecne w AUTO), patrz [`Self::target_priorities`].
+    fn combatant(&self, r: UnitRef, st: &TurnSeqState) -> Combatant {
+        let ix = side_ix(r.side);
+        let pu = &self.units[ix][r.idx].activate;
+        let c = st.unit(r).c;
+        let ds = &self.doctrine[ix][r.idx];
+        #[allow(clippy::cast_possible_truncation)]
+        let range = pu.range as i64;
+        Combatant {
+            q: pu.q,
+            r: pu.r,
+            hp: c.hp,
+            range,
+            mounted: pu.mounted,
+            primary_ranged: pu.primary_ranged,
+            ranged_base: self.ranged_base[ix][r.idx],
+            ammo_left: if pu.can_shoot { 1.0 } else { 0.0 },
+            shooting_enabled: ds.shooting_enabled,
+            anti_cav_spear: ds.anti_cav_spear,
+            facing: self.facing[ix][r.idx],
+            on_wall_walkway: pu.on_wall_walkway,
+            is_siege_unit: pu.is_siege_unit,
+            attack_direction: self.attack_direction[ix][r.idx],
+            dead: c.dead,
+            fading_out: c.fading_out,
+            routed: c.routed,
+            use_unit_priorities: false,
+            unit_target_priorities: None,
+        }
+    }
+
+    /// Lista [`Combatant`] strony `side` w kolejności `TurnSeqState` (indeksy = indeksy jednostek tej strony).
+    fn combatants(&self, side: BattleSide, st: &TurnSeqState) -> Vec<Combatant> {
+        (0..self.units[side_ix(side)].len())
+            .map(|idx| self.combatant(UnitRef { side, idx }, st))
+            .collect()
+    }
+
+    /// Web `this.occByKey.has(key)` jako zbiór pól (wejście helperów T6).
+    fn occupied_tiles(&self) -> HashSet<CavTile> {
+        #[allow(clippy::cast_possible_truncation)]
+        self.occ_by_key
+            .keys()
+            .map(|k| (f64::from_bits(k.0) as i64, f64::from_bits(k.1) as i64))
+            .collect()
+    }
+
+    /// Uruchamia `f` z [`CavTerrain`] jednostki (`mounted`) wobec wrogów `en`. Zakres ciała: melee bez muru, więc
+    /// `reach = 1` (`canShoot` = `false`, strażnik `strzelec`) i `_meleeBlockedByWall` = `false` (strażnik `oblezenie`):
+    /// `_canStrikeTargetFrom` (`:8487-8493`) i `_makeCanAttackFromTest` (`:8454-8478`) = dystans Manhattan 1.
+    /// `_passableForUnit` (`:7446-7448`) = skończony `_moveCostForUnit` (z mnożnikiem jazdy). Drugi element wyniku =
+    /// `true`, gdy przejezdność była czytana bez [`MoveTerrain`] (D1: jawny tag u wołającego).
+    fn with_cav_terrain<T>(
+        &self,
+        mounted: bool,
+        en: &[Combatant],
+        f: impl FnOnce(&CavTerrain) -> T,
+    ) -> (T, bool) {
+        let terrain = self.terrain.as_deref();
+        let missing = Cell::new(false);
+        let passable = |c: i64, r: i64| match terrain {
+            Some(t) => unit_move_cost(t, mounted, c as f64, r as f64).is_finite(),
+            None => {
+                missing.set(true);
+                false
+            }
+        };
+        let is_ford = |c: i64, r: i64| terrain.is_some_and(|t| t.is_ford(c as f64, r as f64));
+        let can_strike_from = |c: i64, r: i64, i: usize| {
+            let e = &en[i];
+            (c - e.q).abs() + (r - e.r).abs() == 1
+        };
+        let can_attack_from = |c: i64, r: i64| {
+            enemies_of_cmb(en)
+                .iter()
+                .any(|(_, e)| (c - e.q).abs() + (r - e.r).abs() == 1)
+        };
+        let ct = CavTerrain {
+            passable: &passable,
+            is_ford: &is_ford,
+            can_strike_from: &can_strike_from,
+            can_attack_from: &can_attack_from,
+        };
+        let out = f(&ct);
+        (out, missing.get())
+    }
+
+    /// C-FLANK `_advanceStep` (`battleScene.ts:8208-8233`) dla `desired` (`flank`/`rear`): cel
+    /// `_pickTargetByPriority(ru) ?? _nearestEnemy(ru)` (`:8210`); już w pozycji (`_canStrikeTargetFrom` i `relativeHit`
+    /// celu == `desired`, `:8212-8214`) = `done()`; krok `_firstStepTowardDirectedAttack` (`:8216`, BFS T6) = ruch;
+    /// brak celu albo brak kroku = marsz czołowy (`:8231-8233`).
+    fn flank_decide(
+        &self,
+        unit: UnitRef,
+        st: &TurnSeqState,
+        desired: HitArc,
+        mounted: bool,
+    ) -> FlankDecision {
+        let me = self.combatant(unit, st);
+        let en = self.combatants(opposite(unit.side), st);
+        let picked = pick_target_by_priority(&me, &en, &self.target_priorities, None);
+        // `?? this._nearestEnemy(ru)` (`:8296-8304`): pierwszy ściśle najbliższy żywy wróg.
+        let tgt = picked.or_else(|| {
+            let mut best: Option<usize> = None;
+            let mut best_d = i64::MAX;
+            for (i, e) in enemies_of_cmb(&en) {
+                let d = (me.q - e.q).abs() + (me.r - e.r).abs();
+                if d < best_d {
+                    best_d = d;
+                    best = Some(i);
+                }
+            }
+            best
+        });
+        let Some(t) = tgt else {
+            return FlankDecision::Fallthrough;
+        };
+        let e = &en[t];
+        let already = (me.q - e.q).abs() + (me.r - e.r).abs() == 1
+            && relative_hit(
+                &JsVal::Num(e.facing),
+                &JsVal::Num(me.q as f64),
+                &JsVal::Num(me.r as f64),
+                &JsVal::Num(e.q as f64),
+                &JsVal::Num(e.r as f64),
+            ) == desired;
+        if already {
+            return FlankDecision::Done;
+        }
+        let occ = self.occupied_tiles();
+        let (step, missing) = self.with_cav_terrain(mounted, &en, |ct| {
+            first_step_toward_directed_attack(&me, &en, t, desired, &occ, ct)
+        });
+        if missing {
+            return FlankDecision::MissingTerrain;
+        }
+        match step {
+            Some(tile) => FlankDecision::Move(tile),
+            None => FlankDecision::Fallthrough,
+        }
+    }
+
+    /// Jeden krok `_doMove` kawalerii (efekty T4c + `_updateFacing` + `Move`) w bieżącej chwili `self.now`.
+    fn cav_move(
+        &mut self,
+        unit: UnitRef,
+        tile: CavTile,
+        move_left: f64,
+        enemies: &[EnemyRef],
+    ) -> Option<f64> {
+        self.move_step_core(unit, tile.0, tile.1, false, move_left, None, enemies)
+            .ok()
+            .map(|r| r.move_left)
+    }
+
+    /// K5LOOP-CLOSE r2: wykonanie `_cavalryAction(ru, done)` (`battleScene.ts:6372-6412`) w ciele, z decyzjami K5DOC-T6
+    /// (`siege_tactics_cavalry`, bez zmian, D-K5C-3) i PRAWDZIWYM `_doMove` ([`Self::move_step_core`]: koszt terenu jazdy,
+    /// bród, `_updateFacing`, `Move`) zamiast emulacji T6 `moveLeft -= 1` (`cavalry_action_decide` nie jest wołane).
+    /// Kolejność: (1) sąsiad nie-włócznik -> cios (`:6377-6378`); (2) cel `_cavalryTarget`, brak = `done()`
+    /// (`:6382-6383`); C-FLANK `_cavDirectedManeuverStep` (`:6389-6390`, `:6426-6446`) z pętlą w callbacku `_doMove`;
+    /// `_cavManeuverStep` (`:6392`, `:6457-6501`) z pętlą; (3) wymuszony cios w pierwszego sąsiada z `_enemiesOf`
+    /// (`:6397-6401`); (4) krok szarży `_bestChargeStepKey` przy `moveLeft > 0` (`:6403-6409`). Rekursja callbacków
+    /// `_doMove` kawalerii NIE używa `_schedule` (inaczej niż `_advanceStep`): kroki następują co `MOVE_STEP_MS`.
+    /// Helpery T6 przyjmują `moves_left: i64` wyłącznie do testu `moveLeft <= 0`; ciało podaje `1`/`0` z `ru.moveLeft`
+    /// (`f64`, także ułamkowy po brodzie), żeby nie obcinać `0.5` do `0`.
+    /// Zwraca (czas ms, `moveLeft` po ruchu albo `None`, cel ciosu).
+    fn cavalry_action(
+        &mut self,
+        unit: UnitRef,
+        st: &TurnSeqState,
+    ) -> (f64, Option<f64>, Option<usize>) {
+        let ix = side_ix(unit.side);
+        let mounted = self.units[ix][unit.idx].activate.mounted;
+        let mut move_left = st.unit(unit).c.move_left;
+        let en = self.combatants(opposite(unit.side), st);
+        let enemies = self.enemies_of(unit.side, st);
+        let gate = |ml: f64| i64::from(ml > 0.0 || ml.is_nan());
+        // (1) `_cavAdjacentNonSpear` -> `_doAttack`.
+        if let Some(i) = cav_adjacent_non_spear(&self.combatant(unit, st), &en) {
+            return (0.0, None, Some(i));
+        }
+        // (2) `_cavalryTarget`; brak = `done()`.
+        let Some(tgt) = cavalry_target(&self.combatant(unit, st), &en) else {
+            return (0.0, None, None);
+        };
+        let now0 = self.now;
+        let mut elapsed = 0.0;
+        let mut moved = false;
+        let desired = desired_hit_for_direction(self.attack_direction[ix][unit.idx]);
+        // C-FLANK: `_cavDirectedManeuverStep(ru, done, tgt, desiredDir)`; `true` = manewr przejmuje turę.
+        if let Some(want) = desired {
+            let first = {
+                let me = self.combatant(unit, st);
+                let occ = self.occupied_tiles();
+                self.with_cav_terrain(mounted, &en, |ct| {
+                    cav_directed_maneuver_step(&me, &en, tgt, want, gate(move_left), &occ, ct)
+                })
+                .0
+            };
+            if let Some(mut step) = first {
+                let mut cur = tgt;
+                loop {
+                    self.now = now0 + elapsed;
+                    let Some(ml) = self.cav_move(unit, step, move_left, &enemies) else {
+                        break;
+                    };
+                    move_left = ml;
+                    moved = true;
+                    elapsed += MOVE_STEP_MS;
+                    // Callback (`:6436-6443`): dobry sąsiad -> `done()`; ruch -> cel `_cavalryTarget(ru) ?? tgt`.
+                    let me = self.combatant(unit, st);
+                    if cav_adjacent_non_spear(&me, &en).is_some() || move_left <= 0.0 {
+                        break;
+                    }
+                    cur = cavalry_target(&me, &en).unwrap_or(cur);
+                    let occ = self.occupied_tiles();
+                    let next = self
+                        .with_cav_terrain(mounted, &en, |ct| {
+                            cav_directed_maneuver_step(
+                                &me,
+                                &en,
+                                cur,
+                                want,
+                                gate(move_left),
+                                &occ,
+                                ct,
+                            )
+                        })
+                        .0;
+                    match next {
+                        Some(s2) => step = s2,
+                        None => break,
+                    }
+                }
+                self.now = now0;
+                return (elapsed, moved.then_some(move_left), None);
+            }
+        }
+        // `_cavManeuverStep(ru, done, tgt)`; `true` = manewr przejmuje turę.
+        let first = {
+            let me = self.combatant(unit, st);
+            let occ = self.occupied_tiles();
+            self.with_cav_terrain(mounted, &en, |ct| {
+                cav_maneuver_step(&me, &en, tgt, gate(move_left), &occ, ct)
+            })
+            .0
+        };
+        if let Some(mut step) = first {
+            loop {
+                self.now = now0 + elapsed;
+                let Some(ml) = self.cav_move(unit, step, move_left, &enemies) else {
+                    break;
+                };
+                move_left = ml;
+                moved = true;
+                elapsed += MOVE_STEP_MS;
+                // Callback (`:6492-6499`): dobry sąsiad -> `done()`; ruch -> `t2 = _cavalryTarget(ru)` i kolejny krok.
+                let me = self.combatant(unit, st);
+                if cav_adjacent_non_spear(&me, &en).is_some() || move_left <= 0.0 {
+                    break;
+                }
+                let Some(t2) = cavalry_target(&me, &en) else {
+                    break;
+                };
+                let occ = self.occupied_tiles();
+                let next = self
+                    .with_cav_terrain(mounted, &en, |ct| {
+                        cav_maneuver_step(&me, &en, t2, gate(move_left), &occ, ct)
+                    })
+                    .0;
+                match next {
+                    Some(s2) => step = s2,
+                    None => break,
+                }
+            }
+            self.now = now0;
+            return (elapsed, moved.then_some(move_left), None);
+        }
+        // (3) Wymuszony cios: pierwszy sąsiad w kolejności `_enemiesOf` (`:6397-6401`).
+        let me = self.combatant(unit, st);
+        if let Some((i, _)) = enemies_of_cmb(&en)
+            .into_iter()
+            .find(|(_, e)| (me.q - e.q).abs() + (me.r - e.r).abs() == 1)
+        {
+            return (0.0, None, Some(i));
+        }
+        // (4) `_bestChargeStepKey(ru, tgt)` i `ru.moveLeft > 0` -> jeden `_doMove(ru, nc, nr, done)`.
+        let occ = self.occupied_tiles();
+        let charge = self
+            .with_cav_terrain(mounted, &en, |ct| best_charge_step(&me, &en, tgt, &occ, ct))
+            .0;
+        if let Some(step) = charge {
+            if move_left > 0.0 {
+                if let Some(ml) = self.cav_move(unit, step, move_left, &enemies) {
+                    move_left = ml;
+                    moved = true;
+                    elapsed += MOVE_STEP_MS;
+                }
+            }
+        }
+        self.now = now0;
+        (elapsed, moved.then_some(move_left), None)
     }
 }
 
@@ -2077,6 +2464,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         };
         let mut skipped: Vec<&'static str> = Vec::new();
         let mut advance = false;
+        let mut cavalry = false;
         for ev in res.events.iter().copied() {
             match ev {
                 ActivateEvent::Done
@@ -2094,6 +2482,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 ActivateEvent::Attack { target } => pend.attack = Some(target),
                 // K5LOOP-CLOSE: `_advanceStep(ru, done)` (`battleScene.ts:6298`, cialo `:8198-8285`).
                 ActivateEvent::AdvanceStep => advance = true,
+                // K5LOOP-CLOSE r2: `_cavalryAction(ru, done)` (`battleScene.ts:6284`, ciało `:6372-6412`).
+                ActivateEvent::CavalryAction => cavalry = true,
                 other => skipped.push(prod_tag(other)),
             }
         }
@@ -2105,6 +2495,26 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             pend.attack = None;
             self.pending[ix][unit.idx] = Some(pend);
             return 0.0;
+        }
+        // `_cavalryAction` (`:6284`) wyklucza `_advanceStep` / `_doAttack` z `_activateUnit` (`return`). Gałąź jest
+        // decyzją ruchową (D1 K5DOC-T4e-0): bez [`MoveTerrain`] jawny tag `kawaleria-brak-terenu` i brak akcji (także
+        // bez ciosu w sąsiada; wektory `p6_siege_tactics_loop_body_pin` mają tu stub generatora = brak akcji).
+        if cavalry {
+            if self.terrain.is_none() {
+                self.unported.push((unit, "kawaleria-brak-terenu"));
+                self.pending[ix][unit.idx] = Some(pend);
+                return 0.0;
+            }
+            let (dur, move_left, attack) = self.cavalry_action(unit, st);
+            pend.move_left = move_left;
+            match attack {
+                // Cios (`_doAttack`) jest zawsze pierwszą i jedyną akcją tury jazdy: wspólna ścieżka ciosu niżej.
+                Some(t) => pend.attack = Some(t),
+                None => {
+                    self.pending[ix][unit.idx] = Some(pend);
+                    return dur;
+                }
+            }
         }
         // `_advanceStep` i `_doAttack` wykluczaja sie w `_activateUnit` (kazda galaz konczy sie `return`).
         if advance {

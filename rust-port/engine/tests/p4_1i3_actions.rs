@@ -142,6 +142,22 @@ fn enc(a: &TimedAction) -> String {
         }
         BattleAction::Rout { unit } => format!("{t} rout {}", key(*unit)),
         BattleAction::Kill { unit } => format!("{t} kill {}", key(*unit)),
+        // K5LOOP-CLOSE r2 (D-K5C-r2-2): mechaniczne ramię dla nowego wariantu `Move`; scenariusze tego testu nie
+        // ruszają jednostek (ciało bez `MoveTerrain`), więc generator nie ma odpowiednika i ramię nie występuje.
+        BattleAction::Move {
+            unit,
+            from,
+            to,
+            arrive_at,
+        } => format!(
+            "{t} move {} {},{} {},{} {}",
+            key(*unit),
+            from.0,
+            from.1,
+            to.0,
+            to.1,
+            js_num(*arrive_at)
+        ),
         BattleAction::TowerShot {
             row,
             target,

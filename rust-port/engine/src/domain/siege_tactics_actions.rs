@@ -81,6 +81,18 @@ pub enum BattleAction {
     Log { text: String },
     /// `_showEndScreen(winner)`.
     End { winner: LoopWinner },
+    /// K5LOOP-CLOSE r2 (D-K5C-r2-2): krok `_doMove` (`battleScene.ts:8714-8775`, bez planowania AUTO-batch): jednostka
+    /// przechodzi z pola `from` na `to`; animacja startuje w `t0` (`const t0 = this._now()`, `:8746`, po `_updateFacing`)
+    /// i kończy się, gdy `p >= 1`, czyli w `arrive_at = t0 + MOVE_STEP_MS` (`:1010`, nominalnie; kwantyzacja klatek rAF
+    /// to wejście sterownika). Pozycja logiczna (`ru.q/ru.r`, `occByKey`) zmienia się w `t0`. Pola jak w wariantach
+    /// `Melee`/`TowerShot` (jednostka + chwila końca), żeby I5 mógł dodać wariant DTO 1:1; [`BattleActionKindDto`] go
+    /// jeszcze nie ma, więc [`actions_to_dto`] zwraca [`ActionError::MoveWithoutDto`] (jawnie, bez cichego pominięcia).
+    Move {
+        unit: UnitRef,
+        from: (i64, i64),
+        to: (i64, i64),
+        arrive_at: f64,
+    },
 }
 
 /// Akcja z czasem wirtualnym wywołania sceny (`vNow`, ms).
@@ -372,6 +384,9 @@ pub enum ActionError {
     /// jednostki samym [`UnitId`] (bez strony), więc id muszą być unikalne w bitwie, jak w ramce
     /// (`BattleFrameDto::validate`, `units (unique id)`).
     DuplicateId(u64),
+    /// K5LOOP-CLOSE r2: [`BattleAction::Move`] nie ma jeszcze wariantu w [`BattleActionKindDto`] (view-model, temat I5
+    /// #280/#336). Konwersja listy z krokiem ruchu jest jawnym błędem, nie cichym pominięciem animacji.
+    MoveWithoutDto(UnitRef),
 }
 
 impl From<IdOutOfRange> for ActionError {
@@ -495,6 +510,7 @@ pub fn actions_to_dto(
             BattleAction::End { winner } => BattleActionKindDto::End {
                 winner: winner_dto(*winner),
             },
+            BattleAction::Move { unit, .. } => return Err(ActionError::MoveWithoutDto(*unit)),
         };
         out.push(BattleActionDto { t0: a.t0, action });
     }

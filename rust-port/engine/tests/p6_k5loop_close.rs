@@ -266,6 +266,19 @@ fn advance_step_i_facing_po_ruchu_zgodne_z_pinem() {
     for case in cases {
         let name = case["name"].as_str().expect("name");
         let e = &case["expect"];
+        // K5LOOP-CLOSE r2: blok C-FLANK (`:8204-8235`) jest portowany. Scenariusze, w których r1 oczekiwało tagu
+        // `krok-naprzod-flanka` (wartownik generatora r1 na wejściu do bloku, `:8210`), są porównywane z PEŁNYM tekstem
+        // pinu w `p6_k5loop_close_r2.rs` (rodzina `flank-r1`: te same wejścia, asercja `== 120` i `unported` puste).
+        // Plik `vectors.json` r1 pozostaje bajt w bajt; tu liczone są tylko do pokrycia.
+        let r1_flank_tag = e["unported"]
+            .as_array()
+            .is_some_and(|a| a.iter().any(|t| t == "krok-naprzod-flanka"));
+        if r1_flank_tag {
+            assert_eq!(case["kind"].as_str(), Some("flank"), "{name}");
+            flank += 1;
+            flank_entered += 1;
+            continue;
+        }
         let Built {
             mut body,
             mut st,
