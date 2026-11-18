@@ -24560,6 +24560,9 @@ async function boot(): Promise<void> {
         roznicaKulturowa: bothCivsKnown && sameCulture === false,
         wiarygodnoscSelf: pairTickCtx.wiarygodnoscSelf,
         atWar,
+        // R-WEB-UI-DIPLO-FACTORS-MILITARY-ROW-CURRENT-ONLY-Q1: aktualny stan progu militarnego pary.
+        respektMilStan: getDiploPairMeta(a, b).respektPrzewagaStan ?? null,
+        respektMilOffset: getDiploPairMeta(a, b).respektMilOffset,
       };
       return buildRelationBreakdown(log, continuous, dip);
     }
