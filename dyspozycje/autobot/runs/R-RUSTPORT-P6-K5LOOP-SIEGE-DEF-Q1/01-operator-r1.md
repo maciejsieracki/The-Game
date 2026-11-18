@@ -65,7 +65,7 @@ Bez zmian: `mod.rs`, `Cargo.*`, `renderer/`, `view-model/`, `bridge.rs`, `siege_
   `e8e86aec589637a83159e765eab68f09198932326f7505d03b97cde7468a9deb`, ziarno 5501.
 - `tests/p6_k5loop_siege_def_vectors/vectors.json` (880 aktywacji obrońcy + 320 zabić z ripple),
   `vectors_nan.json` (1343: `range` NaN 462, `range` +Inf 376, `morale` NaN 80, `hp` NaN 425).
-- `tests/p6_k5loop_siege_def.rs` — 8 testów, strażnik czasu 90 s. Porównanie: ślad, czas, facing (końcowe i zmiany
+- `tests/p6_k5loop_siege_def.rs` — 7 testów [ERRATA obrona r1 (Z5): było „8”; po obronie 10, `02a-obrona.md`], strażnik czasu 90 s. Porównanie: ślad, czas, facing (końcowe i zmiany
   z czasem), strzał (Facing+Shot, cel, łuk), cios (cel, czas), amunicja, Rout/Shaken/Kill z kolejnością, stan WSZYSTKICH
   jednostek (morale bitowo), `occByKey`, liczba rzutów, `unported` (pusty; okrążenie = dokładnie `ucieczka-oblezenie`).
 
@@ -103,7 +103,8 @@ Zmierzone na gałęzi Operatora (tylko allowlista), 3 testy z bramek FAIL:
 
 Zawartość DODATKU (`6468e30fa`, też jako `01-operator-r1-poza-allowlista.patch` bez wektorów):
 1. `p6_siege_tactics_loop_body_gen.mjs`: atrapa → TEKST pinu `_shakeAlliesOnLoss` (`:9743`, stała `:1118`), osobny
-   strażnik `rippleSha256`; `N_SEQ 320 → 340` (po ripple licznik kontrataków spadł do 298 < progu 300 — próg NIE
+   strażnik `rippleSha256` [ERRATA obrona r1 (Z5): w r1 tylko log i pole JSON; porównanie ze stałą + `throw` dodane w
+   `60f04b10f`]; `N_SEQ 320 → 340` (po ripple licznik kontrataków spadł do 298 < progu 300 — próg NIE
    poluzowany, dodano sekwencje). Wektory zregenerowane (`sha256 527db205…`).
 2. `p4_1i3_actions_gen.mjs`: atrapa → TEKST pinu + akcja `shaken` (format jak w Rust); trafienie WIEŻY nadal bez ripple
    (zgodnie z istniejącym jawnym tagiem `wieza-resolveBlowOutcome-efekty`). Wektory zregenerowane (`sha256 30b660f2…`).
@@ -143,7 +144,7 @@ bramki zielone, §6). Alternatywa (gorsza): wycofać KILL-RIPPLE do osobnego tem
 ## 6. Bramki (`rust-port/engine`, CARGO_INCREMENTAL=0, *_DEBUG=0, target w scratchpadzie)
 
 6.1 Stan OP+DODATEK: `cargo fmt --check` EXIT 0; `cargo clippy --all-targets -- -D warnings` EXIT 0;
-`p6_k5loop_siege_def` 8/8; `p6_siege_tactics_loop_body` 8/8; `p6_siege_tactics_loop_body_pin` 2/2;
+`p6_k5loop_siege_def` 7/7 [ERRATA obrona r1: było „8/8”]; `p6_siege_tactics_loop_body` 8/8; `p6_siege_tactics_loop_body_pin` 2/2;
 `p6_k5loop_outcome_pin` 8/8; `p6_k5loop_close_r4` 7/7; `p6_k5doc_t8` 6/6; `p4_1i3_actions` 9/9;
 `p6_k5loop_close`/`_r2`/`_r3`, `p6_siege_tactics_loop`, `p6_siege_tactics_loop_resume` OK.
 
