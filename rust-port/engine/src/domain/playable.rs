@@ -1115,6 +1115,17 @@ impl PlayableFogSession {
             explored_by_human,
         }
     }
+
+    /// R-RUSTPORT-P4-364-FOG-SAVE-R1 (D-FS-3): eksploracja z wczytanego zapisu, web `main.ts:46393-46411`:
+    /// mapa eksploracji = wpisy zapisu (kazdy fotel osobno), fotel glowny ma ZAWSZE wpis (brak w zapisie =
+    /// pusty zbior, web `if (!exploredByHuman.has(HUMAN_OWNER_PRIMARY))`), `revealAllLand = false`. Web
+    /// mutuje istniejacy `explored` fotela glownego (alias zmiennej modulu); w Rust aliasu nie ma, wiec
+    /// zbior jest po prostu ustawiany.
+    pub fn restore_explored_by_human(&mut self, saved: ExploredByHuman) {
+        self.explored_by_human = saved;
+        self.explored_by_human.entry(HUMAN_PLAYER_ID).or_default();
+        self.reveal_all_land = false;
+    }
 }
 
 /// Mutable first-slice game with a deterministic phase queue.

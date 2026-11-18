@@ -43,7 +43,8 @@ use super::{
         PlannedMarchSaved, RuchJednostka,
     },
     playable::{
-        PlayablePlacedWonder, PlayablePlannedMarch, PlayableSiegeMachineKind, PlayableState,
+        PlayableFogSession, PlayablePlacedWonder, PlayablePlannedMarch, PlayableSiegeMachineKind,
+        PlayableState,
     },
     CityId, UnitId,
 };
@@ -68,7 +69,8 @@ use civ_engine::{
         PlannedMarchSaved, RuchJednostka,
     },
     domain::playable::{
-        PlayablePlacedWonder, PlayablePlannedMarch, PlayableSiegeMachineKind, PlayableState,
+        PlayableFogSession, PlayablePlacedWonder, PlayablePlannedMarch, PlayableSiegeMachineKind,
+        PlayableState,
     },
     CityId, UnitId,
 };
@@ -168,6 +170,119 @@ pub struct SaveSnapshot {
     /// klucz pomijany (zapis sprzed zmiany bajt w bajt).
     #[serde(rename = "citySiege", default, skip_serializing_if = "Vec::is_empty")]
     city_siege: Vec<SavedCitySiege>,
+    /// R-RUSTPORT-P4-364-FOG-SAVE-R1 (D-FS-1): odkryta mgla per fotel czlowieka, web `exploredByHuman`
+    /// (`game/save.ts:359-363`, zapis `main.ts:37229-37239`): tablica par `[ownerId, ["q,r", ...]]`.
+    /// Zrodlo: [`PlayableFogSession::explored_by_human`] (poza `GameStateDto`/replay, D-FS-2). Pusty =>
+    /// klucz pomijany (zapis bez eksploracji bajt w bajt jak przed zmiana).
+    #[serde(
+        rename = "exploredByHuman",
+        default,
+        skip_serializing_if = "Vec::is_empty"
+    )]
+    explored_by_human: Vec<SavedExploredSeat>,
+}
+
+/// R-RUSTPORT-P4-364-FOG-SAVE-R1: jeden wpis `exploredByHuman` zapisu - web `[ownerId, string[]]`.
+/// Klucze heksow trzymane jako `(q, r)`; w JSON jak web `hexKey` (`"q,r"`, `main.ts:13480-13483`).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SavedExploredSeat {
+    /// Id wlasciciela-fotela (`PlayerId` sesji Rust).
+    pub owner_id: u64,
+    /// Odkryte heksy fotela `(q, r)`, w kolejnosci zapisu.
+    pub keys: Vec<(i32, i32)>,
+}
+
+impl Serialize for SavedExploredSeat {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let keys: Vec<String> = self.keys.iter().map(|(q, r)| format!("{q},{r}")).collect();
+        (self.owner_id, keys).serialize(serializer)
+    }
+}
+
+/// R-RUSTPORT-P4-364-FOG-SAVE-R1 (D-FS-3): blad wczytania `exploredByHuman` - jawny, z numerem pozycji
+/// (zakaz cichego pominiecia wpisu albo klucza).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ExploredByHumanLoadError {
+    /// Wpis `entry` nie jest para `[ownerId, string[]]` z calkowitym `ownerId >= 0`.
+    BadEntry { entry: usize },
+    /// Klucz `key` wpisu `entry` nie jest kanonicznym kluczem heksu `"q,r"` (liczby calkowite `i32`);
+    /// `value` = ten klucz jako tekst JSON.
+    BadKey {
+        entry: usize,
+        key: usize,
+        value: String,
+    },
+}
+
+impl fmt::Display for ExploredByHumanLoadError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::BadEntry { entry } => write!(
+                formatter,
+                "exploredByHuman[{entry}] is not an [ownerId, string[]] pair"
+            ),
+            Self::BadKey { entry, key, value } => write!(
+                formatter,
+                "exploredByHuman[{entry}][1][{key}] = {value} is not a hex key \"q,r\""
+            ),
+        }
+    }
+}
+
+impl Error for ExploredByHumanLoadError {}
+
+/// R-RUSTPORT-P4-364-FOG-SAVE-R1: kanoniczny klucz heksu web `${q},${r}` -> `(q, r)`; inna forma
+/// (spacje, `+`, zera wiodace, brak przecinka, poza `i32`) -> `None`.
+fn parse_canonical_hex_key(text: &str) -> Option<(i32, i32)> {
+    let (q, r) = text.split_once(',')?;
+    let q: i32 = q.parse().ok()?;
+    let r: i32 = r.parse().ok()?;
+    (format!("{q},{r}") == text).then_some((q, r))
+}
+
+/// R-RUSTPORT-P4-364-FOG-SAVE-R1: `exploredByHuman` z surowego JSON zapisu. Jak web `normalize`
+/// (`game/save.ts:725`): brak klucza albo nie-tablica => `[]`. W tablicy kazdy wpis i kazdy klucz musi
+/// byc poprawny, inaczej jawny blad z numerem pozycji (D-FS-3).
+fn explored_by_human_from_save(
+    value: Option<&Value>,
+) -> Result<Vec<SavedExploredSeat>, ExploredByHumanLoadError> {
+    let Some(Value::Array(items)) = value else {
+        return Ok(Vec::new());
+    };
+    let mut out = Vec::with_capacity(items.len());
+    for (entry, item) in items.iter().enumerate() {
+        let bad_entry = || ExploredByHumanLoadError::BadEntry { entry };
+        let Value::Array(pair) = item else {
+            return Err(bad_entry());
+        };
+        let [owner, keys] = pair.as_slice() else {
+            return Err(bad_entry());
+        };
+        let owner_id = owner.as_u64().ok_or_else(bad_entry)?;
+        let Value::Array(keys) = keys else {
+            return Err(bad_entry());
+        };
+        let mut parsed = Vec::with_capacity(keys.len());
+        for (key, raw) in keys.iter().enumerate() {
+            let hex = raw
+                .as_str()
+                .and_then(parse_canonical_hex_key)
+                .ok_or_else(|| ExploredByHumanLoadError::BadKey {
+                    entry,
+                    key,
+                    value: raw.to_string(),
+                })?;
+            parsed.push(hex);
+        }
+        out.push(SavedExploredSeat {
+            owner_id,
+            keys: parsed,
+        });
+    }
+    Ok(out)
 }
 
 /// P4-1F3: stan oblezenia jednego miasta w zapisie (`citySiege[]`), pola jak web `City`.
@@ -609,6 +724,10 @@ struct SnapshotWire {
     /// jest pomijany (jak pozostale pola opcjonalne zapisu).
     #[serde(default, rename = "citySiege", deserialize_with = "lenient_city_siege")]
     city_siege: Option<Vec<SavedCitySiege>>,
+    /// R-RUSTPORT-P4-364-FOG-SAVE-R1: web `exploredByHuman` (surowy JSON; walidacja w
+    /// `explored_by_human_from_save`, zly wpis/klucz = blad wczytania).
+    #[serde(default, rename = "exploredByHuman")]
+    explored_by_human: Option<Value>,
 }
 
 /// P4-1F3: `citySiege` jako tablica; wpisy o zlej formie (i nie-tablica) sa pomijane.
@@ -685,6 +804,7 @@ impl SaveSnapshot {
             owner_eras: BTreeMap::new(),
             gracze: None,
             city_siege: Vec::new(),
+            explored_by_human: Vec::new(),
         }
     }
 
@@ -854,6 +974,29 @@ impl SaveSnapshot {
             self.meta.extra.get(PLACED_WORLD_WONDERS_KEY),
             &self.city_siege,
         )
+    }
+
+    /// R-RUSTPORT-P4-364-FOG-SAVE-R1: kopia z wpisami `exploredByHuman`.
+    pub fn with_explored_by_human(mut self, explored_by_human: Vec<SavedExploredSeat>) -> Self {
+        self.explored_by_human = explored_by_human;
+        self
+    }
+
+    /// R-RUSTPORT-P4-364-FOG-SAVE-R1: zapisane wpisy `exploredByHuman` (puste, gdy brak).
+    pub fn explored_by_human(&self) -> &[SavedExploredSeat] {
+        &self.explored_by_human
+    }
+
+    /// R-RUSTPORT-P4-364-FOG-SAVE-R1 (D-FS-4): kopia z eksploracja mgly sesji, jak web
+    /// `buildSaveGameSnapshot` (`main.ts:37229-37239`). Zasady: [`playable_explored_by_human_to_save`].
+    pub fn with_playable_explored_by_human(self, fog: &PlayableFogSession) -> Self {
+        self.with_explored_by_human(playable_explored_by_human_to_save(fog))
+    }
+
+    /// R-RUSTPORT-P4-364-FOG-SAVE-R1 (D-FS-2/D-FS-3): odtworzenie eksploracji do mgly sesji, jak web
+    /// wczytanie (`main.ts:46385-46411`). Zasady: [`restore_playable_explored_by_human`].
+    pub fn restore_explored_by_human(&self, fog: &mut PlayableFogSession) {
+        restore_playable_explored_by_human(fog, &self.explored_by_human);
     }
 
     /// Returns the format version stamped on this snapshot.
@@ -1295,6 +1438,9 @@ impl<'de> Deserialize<'de> for RawSnapshot {
             .with_owner_eras(owner_eras)
             .with_gracze(wire.gracze)
             .with_city_siege(wire.city_siege.unwrap_or_default());
+        let explored_by_human = explored_by_human_from_save(wire.explored_by_human.as_ref())
+            .map_err(de::Error::custom)?;
+        let snapshot = snapshot.with_explored_by_human(explored_by_human);
         snapshot.validate().map_err(de::Error::custom)?;
         Ok(RawSnapshot(snapshot))
     }
@@ -1306,4 +1452,40 @@ impl<'de> Deserialize<'de> for RawSnapshot {
 /// while `rng_state` becomes the exact checkpoint for the restored [`Rng`].
 pub fn migrate_v1(state: GameStateDto, rng_state: u32) -> SaveSnapshot {
     SaveSnapshot::new(state, EventQueue::new(), Rng::from_state(rng_state))
+}
+
+/// R-RUSTPORT-P4-364-FOG-SAVE-R1: `exploredByHuman` z mgly sesji (web `Array.from(exploredByHuman
+/// .entries(), ([oid, set]) => [oid, Array.from(set)])`, `main.ts:37229-37232`). Kolejnosc: fotele
+/// rosnaco, klucze rosnaco po `(q, r)` (`BTreeMap`/`BTreeSet`; web: kolejnosc wstawiania - kolejnosc
+/// nie niesie znaczenia, wczytanie buduje zbior). Fotele z PUSTYM zbiorem sa pomijane: wczytanie i tak
+/// zaklada pusty wpis fotela glownego (web `main.ts:46407-46410`), a fotel bez wpisu dostaje pusty zbior
+/// przy pierwszym zapytaniu warstw (`session_render_layers`) - dzieki temu zapis bez eksploracji jest
+/// bajt w bajt jak przed zmiana (D-FS-1).
+pub fn playable_explored_by_human_to_save(fog: &PlayableFogSession) -> Vec<SavedExploredSeat> {
+    fog.explored_by_human
+        .iter()
+        .filter(|(_, keys)| !keys.is_empty())
+        .map(|(owner, keys)| SavedExploredSeat {
+            owner_id: owner.get(),
+            keys: keys.iter().copied().collect(),
+        })
+        .collect()
+}
+
+/// R-RUSTPORT-P4-364-FOG-SAVE-R1: web wczytanie `exploredByHuman` (`main.ts:46393-46411`):
+/// `exploredByHuman.clear()`, kazdy wpis zapisu ustawia zbior swojego fotela (powtorzony fotel: wygrywa
+/// ostatni, jak `Map.set`), a fotel glowny zawsze ma wpis - patrz
+/// [`PlayableFogSession::restore_explored_by_human`].
+pub fn restore_playable_explored_by_human(
+    fog: &mut PlayableFogSession,
+    saved: &[SavedExploredSeat],
+) {
+    let mut explored = BTreeMap::new();
+    for seat in saved {
+        explored.insert(
+            PlayerId::new(seat.owner_id),
+            seat.keys.iter().copied().collect(),
+        );
+    }
+    fog.restore_explored_by_human(explored);
 }
