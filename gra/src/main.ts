@@ -25968,7 +25968,9 @@ async function boot(): Promise<void> {
         // kontekstu oceny, więc pokrywa wszystkie wywołania evaluateProposal/generateCounterOffer.
         tradeEra: dealTradeEraForOwners(proposerId, responderId),
         // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1: zapas płatnika ogona pokoju (miasta proponującego).
-        payerStock: Object.fromEntries(PEACE_TAIL_ORDER.map(k => [k, ownerResourceStock(proposerId, k)])),
+        // ZARZUT 6 (Evaluator r2): złoto to Skarbiec państwa (ownerTreasury), nie suma c.surowce miast (tam złota nie ma).
+        // Brąz/żelazo/rudy: suma Spichlerzy miast właściciela (ownerResourceStock).
+        payerStock: Object.fromEntries(PEACE_TAIL_ORDER.map(k => [k, k === 'zloto' ? ownerTreasury(proposerId) : ownerResourceStock(proposerId, k)])),
         proposerRespekt,
         responderRespekt,
         militaryRatio,
