@@ -1,3 +1,9 @@
+## ROBOCZA 5bc75dc2 -- 2026-11-18 -- FALA 835: jeden próg gotowości AI do sojuszu 0,54 (inicjatywa AI jak ocena propozycji) (testowa)
+
+- Próg gotowości do sojuszu dla INICJATYWY AI obniżony z 0,6 do 0,54 — taki sam jak przy ocenie propozycji (jedna wartość dla obu torów, decyzja właściciela P-2 A); PROG_SOJUSZ w ai.ts czyta teraz tę samą wartość co progSojuszWillingnessMin (bez trzeciej kopii liczby); AI może częściej proponować sojusze. Rozjazd NAP (Relacja 50 w acceptance-points vs 110 w diplomacy.json) NIE ruszony — żywa ścieżka, czeka na decyzję właściciela.
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; diplo-alliance-gate 21/0 (mutacja 0,6 → 20/1); ai-test 297/0; treaties-ai-parity 80/0; power-parity 50/0; peace-tail-integration 42/0; war-peace-sim 25/0; ai-ai-treaty-evaluate 21/0; acceptance-points 304/0.
+- Limity: NIE ZMIERZONO: skutek w grze — liczba sojuszy AI przed/po (3 ziarna × 100 tur; brak gotowego harnessu); wiki/Civpedia pod kątem wzmianki o 0,6 nie przejrzana w pełni; dług Rust: REPIN ai_diplomacja_prog_sojusz.
+
 ## ROBOCZA 76db1726 -- 2026-11-18 -- FALA 834: preset testowy walka-mapy przelicza ekonomię; asercja przewijania panelu miasta (testowa)
 
 - Preset testowy playtest walka-mapy po dołożeniu miast woła markCityStateDirty() (prognoza ekonomii istnieje od tury 1, tak jak w pozostałych presetach); żywy test odświeżania panelu miasta po końcu tury sprawdza teraz zachowanie przewijania (scrollTop 150→150). Zmiana dotyczy wyłącznie presetu testowego (?playtest=), nie normalnej gry.
