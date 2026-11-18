@@ -51,6 +51,8 @@ function loadModule(proposalsSrc) {
     `export { evaluateProposal, createNegotiation, negotiationAsProposal } from '${entryTarget}';`,
     "export { peacePwPointsByPowerRatio, WAR_WEARINESS_PARAMS, peacePowerSidesForPair, peaceAiAiPaymentPn } from './game/war-weariness';",
     "export { runAiAiPeaceTick, planCityPeacePayment } from './game/diplomacy-ai-forced-peace';",
+    "export { decideAIDiplomacy, aiPeaceCityDuePn } from './game/ai';",
+    "export { peacePowerSplitRowHtml } from './ui/diplomacyAcceptanceBalance';",
     '',
   ].join('\n'), 'utf8');
   try {
@@ -217,8 +219,112 @@ function playerPeace(powers, giveItems) {
   const mainSrc = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
   check('P3a: main.ts wiring pary przez peacePowerSidesForPair (zarzut 4/5)', mainSrc.includes('peacePowerSidesForPair(ME(), proposerId, responderId, objectivePowerForOwner)'));
   check('P3b: main.ts AI↔AI price przez peaceAiAiPaymentPn (zarzut 1)', (mainSrc.match(/peaceAiAiPaymentPn\(/g) || []).length === 2);
+  check('P3c: main.ts przekazuje mocAI/mocPartner (Power) do decideAIDiplomacy w obu relacjeDip.push', (mainSrc.match(/mocAI: objectivePowerForOwner\(ownerId\)/g) || []).length === 2);
 }
 
+// --- (A) r3 P2: AI jako autor pokoju wobec gracza (R2): D z POWER, miasta, stolica, AI silniejsze żąda D ---
+{
+  check('A0: aiPeaceCityDuePn bez mocy → baza P (zachowanie sprzed zmiany)', M.aiPeaceCityDuePn(4320, undefined, 100) === 4320);
+  check('A0b: aiPeaceCityDuePn płacący słabszy 100 vs 300 → D = 11520; silniejszy → 0; P = 0 → 0',
+    M.aiPeaceCityDuePn(4320, 100, 300) === 11520 && M.aiPeaceCityDuePn(4320, 300, 100) === 0 && M.aiPeaceCityDuePn(0, 100, 300) === 0);
+  const ai = (turns, miasta, mocAI, mocPl, silaAI, silaPl, extraRel) => M.decideAIDiplomacy({
+    myPlayerId: '1', agresja: 0.5, currentTurn: 80, skarbiecGold: 0, miastaAI: miasta,
+    relacje: [Object.assign({
+      partnerId: '0', relation: { zaufanie: 0, respekt: 29, status: 'wojna' }, respektWzgledny: 0.06,
+      stanWojny: true, turnsAtWar: turns, lostCitiesInWar: 0, turnsSinceCityChange: turns, armyHealthShare: 0.9, peaceLocked: false,
+      silaMilitarnaAI: { sila: silaAI, armiaPkt: 0 }, silaMilitarnaPartner: { sila: silaPl, armiaPkt: 0 },
+      mocAI, mocPartner: mocPl,
+    }, extraRel || {})],
+  }).filter(c => c.targetId === '0');
+  const miasta = (n, pn) => Array.from({ length: n }, (_, i) => ({ cityId: 'c' + i, cityPn: pn, zakazane: false }));
+  // 14 tur wojny: L = 0,35, P = round(6000*0,65) = 3900. AI słabsze mocą 1:3 → D = 3900*(3-1/3) = 10400.
+  const weakSmall = ai(14, miasta(6, 800), 100, 300, 100, 200);
+  check('A1: (c) AI słabsze (r = 3), 6 miast po 800 PW (suma ≪ D) → brak oferty miasta (nie ma czym zapłacić D)',
+    !weakSmall.some(c => c.type === 'oferuj_miasto_za_pokoj'), weakSmall);
+  const weakBig = ai(14, miasta(6, 5000), 100, 300, 100, 200);
+  check('A2: AI słabsze (r = 3), miasta po 5000 PW (×1,5 waga; dopiero dwa pokrywają D) → oferta miasta za pokój/rozejm z dodatkowymi miastami',
+    weakBig.length === 1 && weakBig[0].type === 'oferuj_miasto_za_pokoj'
+    && (1 + (weakBig[0].dodatkoweMiasta || []).length) >= 2, weakBig);
+  const weakNoPow = ai(14, miasta(6, 800), undefined, undefined, 100, 200);
+  check('A3: bez mocy (stary kontrakt) AI płaci samo P (800 PW × waga, 6 miast) → oferta jak dotąd',
+    weakNoPow.some(c => c.type === 'oferuj_miasto_za_pokoj'), weakNoPow);
+  const weakStrongPow = ai(14, miasta(6, 800), 300, 100, 100, 200);
+  check('A4: AI słabsze militarnie, ale SILNIEJSZE mocą (D = 0) → nie składa oferty miasta (brak dopłaty do pokrycia)',
+    !weakStrongPow.some(c => c.type === 'oferuj_miasto_za_pokoj'), weakStrongPow);
+  const cap = [{ cityId: 'cap', cityPn: 90000, zakazane: true }];
+  const weakCapOnly = ai(14, cap, 100, 300, 100, 200);
+  check('A5: (c) AI słabsze, jedyne miasto = stolica (zakazane) → brak oferty miasta (wymuszony pokój zostaje drogą 100%)',
+    !weakCapOnly.some(c => c.type === 'oferuj_miasto_za_pokoj'), weakCapOnly);
+  // (e) AI silniejsze żąda D od gracza: rw >= 0,7, wojna >= 20 tur. P przy 20 turach: L = 0,5 → 3000; r = 3 → D = 8000.
+  const strongArgs = (miastaGracza, mocAI, mocPl) => ai(20, miasta(3, 800), mocAI, mocPl, 200, 100, {
+    respektWzgledny: 0.8, miastaPartnera: miastaGracza });
+  const demandBig = strongArgs([{ cityId: 'p1', cityPn: 9000, zakazane: false }], 300, 100);
+  check('A6: (e) AI silniejsze mocą (r = 3) żąda miasta gracza o wartości ≥ D (9000 ≥ 8000)',
+    demandBig.some(c => c.type === 'zada_miasto_za_pokoj' && c.cityId === 'p1'), demandBig);
+  const demandSmall = strongArgs([{ cityId: 'p1', cityPn: 5000, zakazane: false }], 300, 100);
+  check('A7: (e) miasto gracza < D (5000 < 8000) → AI nie żąda (nie ma czym pokryć D)',
+    !demandSmall.some(c => c.type === 'zada_miasto_za_pokoj'), demandSmall);
+  const demandEqualPow = strongArgs([{ cityId: 'p1', cityPn: 9000, zakazane: false }], 100, 100);
+  check('A8: (e) równa moc (r = 1, D = 0) → AI nie żąda miasta (konsekwencja wzoru)',
+    !demandEqualPow.some(c => c.type === 'zada_miasto_za_pokoj'), demandEqualPow);
+  // (A9) mutacja: ai.ts bez aiPeaceCityDuePn w N1b/N1a (powrót do samego P) czerwieni A1/A4/A8 — dowód czułości
+  const aiSrc = fs.readFileSync(path.join(SRC_DIR, 'ai.ts'), 'utf8');
+  check('A9: ai.ts używa aiPeaceCityDuePn w obu ścieżkach (oddanie i żądanie)',
+    (aiSrc.match(/aiPeaceCityDuePn\(/g) || []).length >= 3);
+}
+// (T) r3 P3: panel PW — tooltip z mocami, r, S, W, D, rabatem relacji i etykietą „(po rabacie relacji)”
+{
+  const info = (ps) => ({ turnsAtWar: 10, lostCities: 0, level: 0.25, cenaPokojuPn: 4500, powerSplit: ps });
+  const weak = { playerPower: 2611, otherPower: 6969, r: 2.669, S: 11530, W: 1619, D: 9911, dAfterRelief: 8000, playerStronger: false };
+  const h1 = M.peacePowerSplitRowHtml(info(weak));
+  check('T1: gracz słabszy — tooltip: moce 2611/6969, r = 2,7, S, W, D, „po rabacie relacji” i kwota dopłaty',
+    /2.?611/.test(h1) && /6.?969/.test(h1) && /r = 2,7/.test(h1) && /11.?530/.test(h1) && /1.?619/.test(h1) && /9.?911/.test(h1)
+    && /po rabacie relacji/.test(h1) && /dopłacasz miastami/.test(h1), h1);
+  const strong = { playerPower: 6969, otherPower: 2611, r: 2.669, S: 11530, W: 1619, D: 9911, dAfterRelief: 9911, playerStronger: true };
+  const h2 = M.peacePowerSplitRowHtml(info(strong));
+  check('T2: gracz silniejszy — „nie dopłacasz”, bez słowa „Brakuje”', /nie dopłacasz/.test(h2) && !/Brakuje/.test(h2), h2);
+  const eq = { playerPower: 100, otherPower: 100, r: 1, S: 4320, W: 4320, D: 0, dAfterRelief: 0, playerStronger: true };
+  check('T3: r = 1 — „brak dopłaty”', /brak dopłaty/.test(M.peacePowerSplitRowHtml(info(eq))));
+  check('T4: bez powerSplit → pusty ciąg (zachowanie sprzed zmiany)', M.peacePowerSplitRowHtml(info(undefined)) === '');
+  // (T5) evaluateProposal przekazuje powerSplit w wearinessInfo (silnik → panel)
+  const evW = playerPeace([100, 300], null);
+  const ps = evW.wearinessInfo && evW.wearinessInfo.powerSplit;
+  check('T5: evaluateProposal zwraca wearinessInfo.powerSplit (moce 100/300, r = 3, playerStronger = false)',
+    !!ps && ps.playerPower === 100 && ps.otherPower === 300 && ps.r === 3 && ps.playerStronger === false && ps.dAfterRelief > 0, evW.wearinessInfo);
+}
+
+
+// --- (M2) mutacja ai.ts: aiPeaceCityDuePn zwraca samo P (brak wzoru mocy po stronie AI) → A4 i A8 muszą czerwienieć ---
+{
+  const aiSrc = fs.readFileSync(path.join(SRC_DIR, 'ai.ts'), 'utf8');
+  const sig = 'export function aiPeaceCityDuePn(';
+  const i = aiSrc.indexOf(sig);
+  const bodyStart = aiSrc.indexOf('{', aiSrc.indexOf('): number', i)) + 1;
+  const mutSrc = aiSrc.slice(0, bodyStart) + '\n  return basePn;\n' + aiSrc.slice(aiSrc.indexOf('\n}\n', bodyStart));
+  const mutPath = path.join(SRC_DIR, `.pwpow-ai-${TAG}.ts`);
+  const entry = path.resolve(GRA, 'src', `.pwpow-aient-${TAG}.ts`);
+  const out = path.resolve(__dirname, `.pwpow-ai-${TAG}.cjs`);
+  fs.writeFileSync(mutPath, mutSrc, 'utf8');
+  fs.writeFileSync(entry, `export { decideAIDiplomacy } from './game/.pwpow-ai-${TAG}';\n`, 'utf8');
+  try {
+    esbuild.buildSync({ entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18', outfile: out,
+      absWorkingDir: GRA, loader: { '.ts': 'ts', '.json': 'json' }, logLevel: 'silent' });
+  } finally { for (const f of [mutPath, entry]) { try { fs.unlinkSync(f); } catch (_) { /* ok */ } } }
+  const MM = require(out);
+  try { fs.unlinkSync(out); } catch (_) { /* ok */ }
+  const aiM = (mocAI, mocPl, silaAI, silaPl, extra) => MM.decideAIDiplomacy({
+    myPlayerId: '1', agresja: 0.5, currentTurn: 80, skarbiecGold: 0,
+    miastaAI: Array.from({ length: 6 }, (_, i) => ({ cityId: 'c' + i, cityPn: 800, zakazane: false })),
+    relacje: [Object.assign({
+      partnerId: '0', relation: { zaufanie: 0, respekt: 29, status: 'wojna' }, respektWzgledny: 0.06,
+      stanWojny: true, turnsAtWar: 14, lostCitiesInWar: 0, turnsSinceCityChange: 14, armyHealthShare: 0.9, peaceLocked: false,
+      silaMilitarnaAI: { sila: silaAI, armiaPkt: 0 }, silaMilitarnaPartner: { sila: silaPl, armiaPkt: 0 }, mocAI, mocPartner: mocPl,
+    }, extra || {})],
+  }).filter(c => c.targetId === '0');
+  const a4m = aiM(300, 100, 100, 200);
+  check('M2: mutant ai.ts (D = samo P) → A4 czerwieni (AI silniejsze mocą wciąż oferuje miasto) — test czuły na wzór po stronie AI',
+    a4m.some(c => c.type === 'oferuj_miasto_za_pokoj'), a4m);
+}
 // --- (S) statyczna: funkcja bez magicznych liczb (poza 1 = ochrona mianownika i 0 = dolna granica) ---
 {
   const ww = fs.readFileSync(path.join(SRC_DIR, 'war-weariness.ts'), 'utf8');

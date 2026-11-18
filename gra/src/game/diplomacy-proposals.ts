@@ -31,7 +31,7 @@ import { czyAgresorAktywny, deltaRelacjiSojusz } from './diplomacy';
 import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';
 import type { PeaceMilitaryPosition } from './diplomacy-military-strength';
 import { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS } from './diplomacy-peace-proposal-timing';
-import { warWearinessLevel, wearinessPeaceCashPn, peacePwPointsByPowerRatio, type PeacePwPowerSplit } from './war-weariness';
+import { warWearinessLevel, wearinessPeaceCashPn, peacePwPointsByPowerRatio, type PeacePwPowerSplit, type PeacePowerSplitInfo } from './war-weariness';
 import type { Player } from '../types/player';
 import { TypCywilizacji } from '../types/player';
 import {
@@ -340,6 +340,8 @@ export interface WearinessPwInfo {
   level: number;
   /** R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: aktualna cena pokoju w PN (wearinessPeaceCashPn(level) po bramce relacji) — pokazywana w panelu/audiencji. */
   cenaPokojuPn?: number;
+  /** R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (D4): podział PW pokoju wg POWER (moce, r, S, W, D, D po rabacie) — tooltip panelu PW. */
+  powerSplit?: PeacePowerSplitInfo;
 }
 
 export interface PendingProposal {
@@ -1629,6 +1631,17 @@ function evaluateProposalImpl(
           powerSplitNote = `słabszy gracz dopłaca D = ${pkPowerSplit.D} PW miastami `
             + `(po rabacie relacji: ${requiredD} PW; S = ${pkPowerSplit.S}, W = ${pkPowerSplit.W}, r = ${pkPowerSplit.r.toFixed(2)})`;
         }
+      }
+      if (pkPowerSplit && wearyInfo) {
+        wearyInfo = {
+          ...wearyInfo,
+          powerSplit: {
+            playerPower: ctx.warState!.powerPlayer!, otherPower: ctx.warState!.powerOther!,
+            r: pkPowerSplit.r, S: pkPowerSplit.S, W: pkPowerSplit.W, D: pkPowerSplit.D,
+            dAfterRelief: effectiveTreatyPnRequired(pkPowerSplit.D, relTotal),
+            playerStronger: pkPowerSplit.strongerSide === 'a',
+          },
+        };
       }
       const pokojPwBalanceRaw = basePn > 0 ? -gap : undefined;
       // Normalizacja -0 → 0 (JS: `-0 < 0` jest `false`, więc bramka canAccept działa poprawnie

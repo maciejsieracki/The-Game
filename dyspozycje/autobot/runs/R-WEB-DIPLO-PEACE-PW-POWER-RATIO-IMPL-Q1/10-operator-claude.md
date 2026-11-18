@@ -1,38 +1,23 @@
-# R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 — raport Operatora (runda 2/5)
-
-STATUS: BLOCK (runda częściowa: P1 zrobione i zielone; P2, P3, P4 NIE wykonane — patrz BLOKADY)
-DOMAIN: GAME (dyplomacja, kod)
+STATUS: PASS
+DOMAIN: GAME
 TEMAT: R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1
-GOAL: pokój „P·r i P/r" wg POWER (r = moc silniejszej / słabszej, S = round(P·r), W = round(P/r), D = S − W dopłaca słabsza miastami, bez sufitu). Start r2: baza 5057586001032855a99bd1b94d82a9ae2b5743a3, następnie `git merge origin/main` (origin/main = ba2d59d17ceffb6c079ed6f9fedee9ee7a433696, bez konfliktów). Ta runda domyka P1 (wiring POWER w main.ts).
-
-ZMIANY-COMMIT: commit na gałęzi autobot/R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (SHA w polu sha). Pliki:
-- gra/src/main.ts (allowlista rozszerzona przez orkiestratora, tylko `diploProposalWarState`): dodane pola `powerPlayer` = `objectivePowerForOwner(ME())` i `powerOther` = `objectivePowerForOwner(drugiej strony)`. Konwencja: powerPlayer = moc GRACZA. Nic poza tą funkcją nie zmienione; ścieżka pokoju wymuszonego, okno i bramka „Zakończ turę" nietknięte.
-- dyspozycje/autobot/runs/R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1/10-operator-claude.md (ten raport).
-Pozostałe pliki z r1 (war-weariness.ts: peacePwPointsByPowerRatio; diplomacy-proposals.ts: bramka gracza; params pwPrzezMoc; test diplo-peace-pw-power-ratio-test.cjs) bez zmian w tej rundzie.
-
-NIE ZMIENIONO: progów zmęczenia, cen (wearinessPeaceCashPn), ścieżki wymuszonego pokoju, zakazu surowców, miary (POWER, nie siła militarna), WERSJE.md, gra-robocza/gra-kanon.
-
-TESTY:
-- `npx tsc --noEmit` (gra/): exit 0, brak błędów wyjścia.
-- `node tools/diplo-peace-pw-power-ratio-test.cjs`: 18 PASS / 0 FAIL (wzór U1–U7, integracja I1–I6, mutant M1, statyczna S1). Uwaga: test NIE sprawdza wiringu w main.ts (test jednostkowy na evaluateProposal z ręcznie podanymi mocami); wiring potwierdzony tylko przeglądem diffu (7 linii).
-- Bramki (logic-test, tech-tree-test, research-test, unit-replace-test, combat-test): NIE ZMIERZONO w tej rundzie (runda niepełna; nie uruchamiane po częściowej zmianie).
-- Build vite: NIE ZMIERZONO. Chromium: NIE ZMIERZONO.
-- Asercje zaktualizowane: żadne.
-
-BLOKADY (jawnie, NIE zrobione w r2):
-1. P2 — ścieżka AI: planCityPeacePayment (kwota = D słabszej), runWarWearinessTick AI↔AI (war-weariness.ts ~333–400: `required = price.requiredPn` nadal bez podziału), planAiOfferOnTable / loserDespair, testy (c) i (d). Wymaga decyzji o kierunku D dla AI↔AI (kto jest słabszy w parze) i przeliczenia testów bilansu AI↔AI — zakres za duży na jedną rundę.
-2. P3 — panel PW i tooltipy (diplomacyAcceptanceBalance.ts, diplomacyAudience.ts, diplomacyTipText.ts): moc obu stron, r, S, W, D, rabat, etykieta „(po rabacie relacji)". NIE zrobione.
-3. P4 — Civpedia / wikiBundle (generator). NIE zrobione.
-4. Test end-to-end „w grze" (P1) przez main.ts nie został dopisany — brak w tej rundzie.
-
+GOAL: pokój wg „P·r / P/r" (Power) we wszystkich ścieżkach (gracz, AI→gracz, AI↔AI), panel/tooltipy, Civpedia/wikiBundle
+ZMIANY/COMMIT: start 7f26a28b2 + merge origin/main (zmiany: ai.ts, main.ts [tylko przekazanie mocAI/mocPartner + typ], war-weariness.ts [PeacePowerSplitInfo], diplomacy-proposals.ts [powerSplit w wearinessInfo], diplomacyAcceptanceBalance.ts + diplomacyAudience.ts [tooltip], docs/encyklopedia/pojecia/rozejm-pokoj.md, wikiBundle.json [generator], test diplo-peace-pw-power-ratio-test.cjs, ten raport). SHA: patrz pole sha zwrotu.
+TESTY (surowe wyjście):
+- tsc --noEmit: 0 błędów.
+- diplo-peace-pw-power-ratio-test: 47 PASS / 0 FAIL (U1-U7 wzór, I1-I6 gracz, P1-P3 wiring/AI↔AI, A0-A9 AI jako autor, T1-T5 tooltip, M1 i M2 mutacje czerwienieją, S1).
+- Istniejące: price-decay 13/0, balance-accept 32/0, war-peace-sim 25/0, winner-proposal-table 77/0, sensible-deals 63/0, weariness-city-only 26/0, weaker-seeks 35/0, price-production-paths 15/0, peace-gate-military-strength 14/0, ai-war-weariness-peace 96/0. Asercje nie zmieniane (bez ścieżki mocy zachowanie bez zmian).
+- 5 bramek: logic 213/213, tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6.
+- Chromium / żywa gra: NIE ZMIERZONO (brak sesji przeglądarkowej w tej rundzie); hotseat NIE ZMIERZONO (main.ts zawsze ME(), silnik z fallbackiem 0 jak w bazie).
+BLOKADY: brak.
+RUNDY: 3/5.
+P2 (AI): ai.ts — nowe pola rel.mocAI/mocPartner (Power) i aiPeaceCityDuePn (jedno miejsce: peaceAiAiPaymentPn → peacePwPointsByPowerRatio). AI słabsze mocą: oferta miast musi pokryć D (aiPlanMiastaDoOddania z D); brak pokrycia/stolica/ostatnie => brak oferty. AI silniejsze: żąda miasta gracza o wartości >= D (zada_miasto_za_pokoj). AI↔AI: bez zmian z r2 (D słabszej, przegrany-silniejszy 0). main.ts przekazuje moce w obu relacjeDip.push. Bez mocy => stary kontrakt (samo P).
+P3 (panel): evaluateProposal zwraca wearinessInfo.powerSplit {moce, r, S, W, D, D po rabacie, playerStronger}; tooltip bilansu (peacePowerSplitRowHtml) pokazuje moce, r, S, W, D i „(po rabacie relacji)"; na wierzchu bez zmian (werdykt + brakujące PW).
+P4: hasło rozejm-pokoj.md (wzór, r=1 => D=0, przykład, droga wymuszona), wikiBundle regenerowany generatorem (bundle-wiki-for-game.cjs); zdanie „2,5% na turę" zachowane.
+NASTĘPNY KROK: Evaluator r3.
 UWAGI-DLA-ORKIESTRATORA:
-(a) Konsekwencja wzoru: r = 1 ⇒ D = 0 (pokój bez dopłaty), także przy równej mocy — zgodnie z wzorem właściciela, nie zmieniano.
-(b) Przykład liczbowy 6969/2611, P = 4320 → S = 11530, W = 1619, D = 9911 (test U3).
-(c) Słabsza strona bez środków: bramka blokuje pokój z kwotą (test I4); pokój wymuszony przy 100% zmęczenia nietknięty.
-(d) ZAŁOŻENIE: rabat relacji stosowany do D (effectiveTreatyPnRequired), zgodnie z rozstrzygnięciem zarzutu 5 w DODATKU 2. Przy słabych relacjach rabat jest duży (test I2b: D 12000 → 1200 PW po rabacie). Właściciel potwierdzi w grze.
-(e) Pola warState są opcjonalne; brak ich = zachowanie sprzed zmiany.
-(f) Zmiana w main.ts wywołuje `objectivePowerForOwner` przy każdej ocenie propozycji pokoju (koszt: jedno liczenie POWER na parę); nie zmierzono wpływu na wydajność.
-
-RUNDY: 2/5 (r1 FAIL/BLOCK wiringu; r2 = ta runda, BLOCK z powodu niepełnego zakresu P2–P4)
-NASTĘPNY KROK: runda 3 — P2 (ścieżka AI i AI↔AI na peacePwPointsByPowerRatio, po decyzji kierunku D dla AI↔AI), potem P3 (panel/tooltipy), P4 (Civpedia + wikiBundle generatorem), test end-to-end wiringu.
+(a) r = 1 => D = 0: pokój bez dopłaty (konsekwencja wzoru; AI w obu rolach nie składa wtedy oferty/żądania miasta; pokój zapada drogą wymuszoną przy 100% zmęczenia).
+(b) Przykład z kodu: moc 6969/2611, P = 4320 => r ≈ 2,669, S = 11 530, W = 1 619, D = 9 911 (test U3).
+(c) Słabsza strona bez czym zapłacić D (stolica/ostatnie miasto chronione): odmowa/brak oferty tą drogą; pokój wymuszony przy 100% zmęczenia (cena 0) bez zmian (testy A1, A5, P2d, P2e).
+ZAŁOŻENIA: rabat relacji gracza stosowany do D (zatwierdzone w DODATKU 2); AI-silniejsze żąda jednego miasta gracza o wartości >= D (bez kombinacji miast; gdy żadne pojedyncze nie pokrywa D — brak żądania; ABC właściciela może rozszerzyć); AI↔AI przegrany-silniejszy dopłata 0 (R2). Test wiringu main.ts jest źródłowy (R3), bez wykonania main.ts.
 DEPLOY/PUSH: NIE WYKONANO

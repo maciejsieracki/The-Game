@@ -22130,7 +22130,7 @@ async function boot(): Promise<void> {
     function previewNegotiationEntryImpl(
       entry: PendingNegotiation,
       siblingOverride?: { givePn: number; receivePn: number },
-    ): { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: { turnsAtWar: number; lostCities: number; level: number; cenaPokojuPn?: number } } {
+    ): { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: { turnsAtWar: number; lostCities: number; level: number; cenaPokojuPn?: number; powerSplit?: import('./game/war-weariness').PeacePowerSplitInfo } } {
       const sibling = siblingOverride ?? livePackageSiblingFor(entry);
       // R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1: `authorOwnerId` DYNAMICZNY (entry, aktualizowany
       // przez applyCounterOffer po każdej kontrofercie) dopisany do ctx — jedyny konsument to
@@ -44965,6 +44965,9 @@ async function boot(): Promise<void> {
                   // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: siła militarna obu stron (ai.ts P4).
                   silaMilitarnaAI: diploMilitarySideOf(ownerId, ME()),
                   silaMilitarnaPartner: diploMilitarySideOf(ME(), ownerId),
+                  // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (R2): moc POWER obu stron — wzór P·r / P/r po stronie AI.
+                  mocAI: objectivePowerForOwner(ownerId),
+                  mocPartner: objectivePowerForOwner(ME()),
                   stanWojny: (relTicked as any).status === 'wojna',
                   lastOneShotGiftTurn: aiOneShotGiftLastTurn.get(ownerId),
                   hasHandelTreaty: tickCtx.aktywnyHandel,
@@ -45036,6 +45039,8 @@ async function boot(): Promise<void> {
                   // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: siła militarna obu stron (ai.ts P4).
                   silaMilitarnaAI: diploMilitarySideOf(ownerId, otherId),
                   silaMilitarnaPartner: diploMilitarySideOf(otherId, ownerId),
+                  mocAI: objectivePowerForOwner(ownerId),
+                  mocPartner: objectivePowerForOwner(otherId),
                   stanWojny: relAi.status === 'wojna',
                   partnerTypCywilizacji: civKeyForOwnerId(otherId),
                   // R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner AI — flaga agresora wpływa na sojusz/pakt.

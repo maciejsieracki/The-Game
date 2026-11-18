@@ -14,6 +14,7 @@ import {
 import { diplomacyFairGivePn } from '../game/diplomacy-value-catalog';
 import { detailTipAttr, plainTextWithTitles } from './diplomacyTipText';
 import { formatLiczbaPl, formatUmowyCount } from './formatPl';
+import type { PeacePowerSplitInfo } from '../game/war-weariness';
 
 /** R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (runda 2): dane tooltipa wiersza „Zmęczenie wojną". */
 export interface WearinessRowInfo {
@@ -23,6 +24,8 @@ export interface WearinessRowInfo {
   level: number;
   /** R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: aktualna cena pokoju w PN (jedna funkcja ceny, malejąca z zmęczeniem). */
   cenaPokojuPn?: number;
+  /** R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (D4): podział PW pokoju wg POWER. */
+  powerSplit?: PeacePowerSplitInfo;
 }
 
 export interface NegotiationBalanceSource {
@@ -612,6 +615,26 @@ export function peacePriceRowHtml(info?: WearinessRowInfo): string {
   return '<div class="da-pn-bal-meta weariness" title="' + esc(tip) + '">' + esc(txt) + '</div>';
 }
 
+/**
+ * R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (D4): wiersz „Podział PW pokoju wg mocy" — moc obu stron (POWER), r, S, W, D i D po
+ * rabacie relacji. Wyliczenia wyłącznie w tooltipie (zasada „najważniejsze na wierzchu"); brak danych mocy → pusty ciąg.
+ */
+export function peacePowerSplitRowHtml(info?: WearinessRowInfo): string {
+  const ps = info?.powerSplit;
+  if (!ps) return '';
+  const f = (n: number): string => formatLiczbaPl(Math.round(n));
+  const who = ps.playerStronger
+    ? 'Ty jesteś silniejszy — nie dopłacasz; druga strona dopłaca miastami'
+    : 'Druga strona jest silniejsza — dopłacasz miastami: ' + f(ps.dAfterRelief) + ' PW (po rabacie relacji)';
+  const txt = 'Podział PW pokoju wg mocy (Power): Ty ' + f(ps.playerPower) + ' · Oni ' + f(ps.otherPower)
+    + ' · r = ' + formatLiczbaPl(Math.round(ps.r * 100) / 100)
+    + ' · silniejsza ' + f(ps.S) + ' PW · słabsza ' + f(ps.W) + ' PW · różnica D = ' + f(ps.D) + ' PW'
+    + (ps.dAfterRelief !== ps.D ? ' (po rabacie relacji: ' + f(ps.dAfterRelief) + ' PW)' : '')
+    + (ps.D <= 0 ? ' — przy równej mocy brak dopłaty' : '')
+    + '. ' + who;
+  return '<div class="da-pn-bal-meta weariness" title="' + esc(txt) + '">' + esc(txt) + '</div>';
+}
+
 /** Szczegóły bazy traktatu (dawniej widoczny dopisek „(baza …)") — trafiają do tooltipa, wording 1:1. */
 function treatyBaseDetailText(basePw: number, modPct?: number): string {
   const modHint = modPct != null && modPct !== 0
@@ -722,6 +745,7 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     hintDuplicatesVerdict ? hint : '',
     plainTextWithTitles(relModRow),
     plainTextWithTitles(peacePriceRowHtml(data.responderPreview?.wearinessInfo)),
+    plainTextWithTitles(peacePowerSplitRowHtml(data.responderPreview?.wearinessInfo)),
     plainTextWithTitles(treatyNote),
     plainTextWithTitles(relNote),
   ]);

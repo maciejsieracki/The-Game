@@ -112,6 +112,20 @@ export interface PeacePwPowerSplit {
   D: number;
 }
 
+/** Dane podziału PW pokoju do panelu/tooltipów (R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1, D4): moce, r, S, W, D i D po rabacie relacji. */
+export interface PeacePowerSplitInfo {
+  playerPower: number;
+  otherPower: number;
+  r: number;
+  S: number;
+  W: number;
+  D: number;
+  /** D po rabacie relacji gracza (effectiveTreatyPnRequired) — kwota widoczna jako „(po rabacie relacji)". */
+  dAfterRelief: number;
+  /** true = gracz jest stroną silniejszą wg POWER (nie dopłaca). */
+  playerStronger: boolean;
+}
+
 /**
  * R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (ABC właściciela 2026-11-18, D2/D3): pokój „P·r i P/r".
  * Silniejsza strona dostaje S = P·r punktów PW, słabsza W = P/r; słabsza dopłaca D = S − W miastami.
