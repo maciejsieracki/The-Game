@@ -1,0 +1,50 @@
+AI owners: [1,2,3,4,5,6]
+[S4] bramka „Zakończ turę” przy pending (przycisk / Enter / Esc / tło / akceptacja)
+[S3] spójność okna (wiersze miast) z wpisem warLog po akceptacji
+  DATA czas do pojawienia się okna pokoju po turze (s) i domknięte bitwy -- {"ok":false,"sec":90,"cleared":0}
+  DATA ostrzeżenia konsoli dotyczące pokoju/tury (diagnostyka) -- ["[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)","[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)","[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)","[EndTurn] triggerPlayerEndTurn: START tura 1","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: preBattleOpen {pending: false}","[EndTurn] blocked: preBattleOpen {pending: false}","[EndTurn] triggerPlayerEndTurn: DONE tura 2"]
+  FAIL po końcu tury okno pokoju wymuszonego pojawia się samo (do 90 s) -- {"autoShown":false,"sec":90,"battlesLeft":0,"advanced":true}
+  DATA okno po jednym Esc, gdy nie pojawiło się samo (odsłonięcie, diagnostyka) -- {"count":1}
+  OK   okno pokoju wymuszonego jest widoczne przed sprawdzaniem bramki -- {"count":1}
+  DATA stan przycisku „Zakończ turę” przy pending -- {"aria":"false","cls":"end-turn et-signal"}
+  DATA tekst okna (pierwsze 400 znaków) -- "Pokój wymuszony\n\nWojna z Grecy osiągnęła 100% zmęczenia — pokój wymuszony.\n\nZmęczenie wojną 100% (próg wymuszenia 100%), wojna trwa 41 tur, miast zmieniło właściciela: 0. Wygrywasz tę wojnę, bo Twoja siła militarna jest wyższa (zmęczenie jest wspólne dla obu stron). Zmęczenie rośnie o 2,5% za każdą turę wojny i o 10% za każde miasto, które zmieniło właściciela. Nie da się odrzucić tego pokoju: gra"
+  OK   okno zawiera jeden z dwóch wariantów: „Oddajesz:” albo „Pokój bez wymiany miast” -- {"modalBranch":"bez-wymiany"}
+  OK   Esc przy widocznym oknie nie zamyka okna pokoju wymuszonego
+  OK   klik w tło nie zamyka okna
+  OK   klik „Zakończ turę” (button.end-turn, force) przy pending nie kończy tury -- {"t0":2,"t1":2,"clickErr":null}
+  FAIL Enter na przycisku „Zakończ turę” przy pending nie kończy tury -- {"t1":3}
+  NOTA: D3 (wpis „Nie można zakończyć tury”) nie jest mierzony: panel „Ważne” bywa zamknięty, DOM nie dowodzi braku wpisu.
+  OK   po akceptacji okno znika
+  OK   po akceptacji status pary nie jest „wojna” -- {"status":"pokoj"}
+  DATA warLog po akceptacji (fragment) -- "[{\"id\":\"peace-vazne-3-0_1\",\"title\":\"Pokój zawarty: Grecy\",\"subtitle\":\"Wymuszony przez zmęczenie wojną 100% (wojna 41 tur, zmienione miasta 0). Pokój bez wymiany miast\"}]"
+  OK   po akceptacji w warLog jest wpis „Pokój zawarty”
+  OK   wpis warLog zawiera wariant wymiany miast -- {"logBranch":"bez-wymiany"}
+  OK   wariant w oknie zgadza się z wpisem warLog po akceptacji -- {"modalBranch":"bez-wymiany","logBranch":"bez-wymiany"}
+  NOTA: S3 wariant „Oddajesz: <miasta>” NIE ZMIERZONO: w tej mapie plan pokoju nie zawiera miast do oddania (tylko cena=0 / bez wymiany).
+  OK   po akceptacji tura kończy się normalnie
+[S2] kolejka dwóch oczekujących pokojów (dwie cywilizacje)
+  DATA czas do pojawienia się pierwszego okna (s) i domknięte bitwy -- {"ok":false,"sec":90,"cleared":0}
+  FAIL po turze z dwiema wojnami okno pierwszego pokoju pojawia się samo (do 90 s) -- {"advanced":true,"battlesLeft2":0}
+  DATA okno po jednym Esc, gdy nie pojawiło się samo (odsłonięcie, diagnostyka) -- {"count":1}
+  DATA status par przed akceptacją -- {"p1":"wojna","p2":"wojna","turn":5}
+  DATA status par po akceptacji pierwszego -- {"p1":"pokoj","p2":"wojna"}
+  DATA czas do pojawienia się drugiego okna po akceptacji pierwszego (s) -- {"ok":false,"sec":30,"cleared":0}
+  FAIL po akceptacji pierwszego okno drugiego pokoju wraca (kolejka, do 30 s)
+  DATA treść drugiego okna (fragment) -- ""
+  FAIL po akceptacji pierwszego nadal zablokowane (tura nie rusza) — para 2 nadal „wojna” -- {"t0":5,"t1":6,"p2":"wojna","okno":0}
+  OK   po akceptacji drugiego okno znika
+  OK   po akceptacji obu tura odblokowana i kończy się
+  NOTA: S2: brak haka odczytu pendingForcedPeaceTreaties — czy druga pozycja powstała, została usunięta przez prune czy zagłuszona, nie jest rozstrzygnięte; wynik opisuje tylko okno i status par.
+[S1] zapis i wczytanie gry z oczekującym traktatem
+  NIE ZMIERZONO: brak haka odczytu meta.pendingForcedPeaceTreaties ani helpera zapis+wczytaj; propozycja haka test-only w raporcie
+[S5] pokój AI<->AI nadal natychmiast (bez okna)
+  NIE ZMIERZONO: brak haka ustawiającego wiek wojny dla pary AI<->AI (setWarAge działa tylko dla gracza)
+  OK   zero pageerror/console.error -- []
+
+=== WYNIKI ===
+S4: FAIL — bramka „Zakończ turę” przy pending (przycisk / Enter / Esc / tło / akceptacja)
+S3: PASS — spójność okna (wiersze miast) z wpisem warLog po akceptacji
+S2: FAIL — kolejka dwóch oczekujących pokojów (dwie cywilizacje)
+S1: NIE ZMIERZONO — zapis i wczytanie gry z oczekującym traktatem (brak haka odczytu meta.pendingForcedPeaceTreaties ani helpera zapis+wczytaj; propozycja haka test-only w raporcie)
+S5: NIE ZMIERZONO — pokój AI<->AI nadal natychmiast (bez okna) (brak haka ustawiającego wiek wojny dla pary AI<->AI (setWarAge działa tylko dla gracza))
+EXIT 1 (asercje FAIL: 5)
