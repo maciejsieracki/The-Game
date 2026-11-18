@@ -34,6 +34,8 @@ use civ_engine::domain::siege_tactics_unit::CombatUnit;
 use serde_json::Value;
 
 const VECTORS: &str = include_str!("p6_k5loop_close_vectors/vectors_r2.json");
+/// Obrona r2 (zarzut Z1): rodzina `cavalry-nan` (kopie scenariuszy `cavalry` z `ru.moveLeft = NaN`), ten sam generator.
+const VECTORS_NAN: &str = include_str!("p6_k5loop_close_vectors/vectors_r2_nan.json");
 const PIN: &str = "07d2fbd72f758705f8e1d59cc4968027ffbafe75";
 /// Strażnik generatora (`EXPECTED_SHA256` w `p6_k5loop_close_r2_gen.mjs`).
 const PIN_SHA256: &str = "c5a5bc11db1471b17b61da5ce6a73951e34ee8790711386a179ea97bf1153619";
@@ -78,7 +80,11 @@ fn bo(v: &Value) -> bool {
     v.as_bool().unwrap_or(false)
 }
 fn num(v: &Value) -> f64 {
-    v.as_f64().expect("liczba")
+    // `NaN` nie ma zapisu w JSON: generator (`vectors_r2_nan.json`) zapisuje je jako napis `"NaN"`.
+    match v.as_str() {
+        Some("NaN") => f64::NAN,
+        _ => v.as_f64().expect("liczba"),
+    }
 }
 fn int(v: &Value) -> i64 {
     v.as_i64().expect("calkowita")
@@ -354,7 +360,11 @@ fn build(case: &Value, cav_mult: &HashMap<String, f64>, with_terrain: bool) -> B
 }
 
 fn load() -> (Value, HashMap<String, f64>) {
-    let v: Value = serde_json::from_str(VECTORS).expect("wektory");
+    load_from(VECTORS)
+}
+
+fn load_from(src: &str) -> (Value, HashMap<String, f64>) {
+    let v: Value = serde_json::from_str(src).expect("wektory");
     assert_eq!(v["pin"].as_str(), Some(PIN));
     assert_eq!(v["pinSha256"].as_str(), Some(PIN_SHA256));
     let cav_mult = v["cavMult"]
@@ -401,7 +411,9 @@ struct Cov {
     flank_r1_moved: usize,
     flank_full: usize,
     flank_moved: usize,
-    flank_already: usize,
+    /// Flanka z 0 krokami i 0 ms (obrona r2, U1): wszystkie wyjścia bez ruchu, NIE tylko gałąź „już w pozycji”
+    /// (`battleScene.ts:8212-8214`); tę gałąź pokrywa osobno `flanka_juz_w_pozycji_konczy_bez_akcji`.
+    flank_bez_ruchu_0ms: usize,
     cav: usize,
     cav_attack: usize,
     cav_moved: usize,
@@ -415,6 +427,157 @@ struct Cov {
     cav_adj: usize,
 }
 
+/// Wynik porównania jednego wektora (do liczników pokrycia).
+struct Checked {
+    n_steps: usize,
+    dur: f64,
+    want_attack: Option<usize>,
+    ml0: f64,
+    ml_fin: f64,
+    facing_after_move: bool,
+}
+
+/// Równość bitowa `f64`; `NaN` (wektor `"NaN"`) równe dowolnemu `NaN` (ładunek NaN nie jest stanem gry).
+fn same_f64(a: f64, b: f64) -> bool {
+    a.to_bits() == b.to_bits() || (a.is_nan() && b.is_nan())
+}
+
+/// Wykonanie `ProdBody::start` na wektorze i porównanie z pinem; rozbieżności dopisywane do `failures`.
+fn check_case(
+    case: &Value,
+    cav_mult: &HashMap<String, f64>,
+    failures: &mut Vec<String>,
+) -> Checked {
+    let name = case["name"].as_str().expect("name");
+    let e = &case["expect"];
+    let Built {
+        mut body,
+        mut st,
+        acting,
+    } = build(case, cav_mult, true);
+    let start_pos = body.unit_cell(acting).expect("pozycja");
+    let ml0 = st.unit(acting).c.move_left;
+    let dur = body.start(acting, &st);
+    let want_attack = e["attack"]["target"].as_u64().map(|t| t as usize);
+    if want_attack.is_none() {
+        body.complete(acting, &mut st);
+    }
+
+    let got_trace: Vec<String> = body.trace[0]
+        .1
+        .iter()
+        .filter(|ev| !matches!(ev, ActivateEvent::ResetPlayerOrder))
+        .map(label)
+        .collect();
+    let want_trace: Vec<String> = e["trace"]
+        .as_array()
+        .expect("trace")
+        .iter()
+        .map(|t| t.as_str().expect("t").to_string())
+        .collect();
+    if got_trace != want_trace {
+        failures.push(format!(
+            "{name}: trace rust={got_trace:?} js={want_trace:?}"
+        ));
+    }
+    if dur != num(&e["duration"]) {
+        failures.push(format!("{name}: duration rust={dur} js={}", e["duration"]));
+    }
+    let fin = &e["final"];
+    let pos = body.unit_cell(acting).expect("pozycja");
+    if pos != (int(&fin["q"]), int(&fin["r"])) {
+        failures.push(format!(
+            "{name}: pozycja rust={pos:?} js=({},{})",
+            fin["q"], fin["r"]
+        ));
+    }
+    let ml = st.unit(acting).c.move_left;
+    if !same_f64(ml, num(&fin["moveLeft"])) {
+        failures.push(format!("{name}: moveLeft rust={ml} js={}", fin["moveLeft"]));
+    }
+    if body.facing(acting) != num(&fin["facing"]) {
+        failures.push(format!(
+            "{name}: facing rust={} js={}",
+            body.facing(acting),
+            fin["facing"]
+        ));
+    }
+    let got_last = body.doctrine(acting).last_auto_move_from;
+    let want_last = fin["lastAutoMoveFrom"]
+        .as_object()
+        .map(|o| (int(&o["q"]), int(&o["r"])));
+    if got_last != want_last {
+        failures.push(format!(
+            "{name}: lastAutoMoveFrom rust={got_last:?} js={want_last:?}"
+        ));
+    }
+    let (got_facing, got_moves, got_melee) = split_actions(body.pending_actions(), acting);
+    let want_facing: Vec<(f64, f64)> = e["facing"]
+        .as_array()
+        .expect("facing")
+        .iter()
+        .map(|f| (num(&f["t"]), num(&f["dir"])))
+        .collect();
+    if got_facing != want_facing {
+        failures.push(format!(
+            "{name}: zmiany facing rust={got_facing:?} js={want_facing:?}"
+        ));
+    }
+    // Każdy krok `_doMove` = jedna akcja `Move` (pole startu = pole po poprzednim kroku, `t0` = start animacji).
+    let steps = e["steps"].as_array().expect("steps");
+    let mut want_moves: Vec<TimedAction> = Vec::new();
+    let mut prev = start_pos;
+    for s in steps {
+        let to = (int(&s["col"]), int(&s["row"]));
+        let t0 = num(&s["t"]);
+        want_moves.push(TimedAction {
+            t0,
+            action: BattleAction::Move {
+                unit: acting,
+                from: prev,
+                to,
+                arrive_at: t0 + MOVE_STEP_MS,
+            },
+        });
+        prev = to;
+    }
+    if got_moves != want_moves {
+        failures.push(format!("{name}: Move rust={got_moves:?} js={want_moves:?}"));
+    }
+    let want_melee = want_attack.map(|t| (t, num(&e["attack"]["t"])));
+    if got_melee != want_melee {
+        failures.push(format!("{name}: cios rust={got_melee:?} js={want_melee:?}"));
+    }
+    let want_occ: HashMap<_, String> = e["occ"]
+        .as_array()
+        .expect("occ")
+        .iter()
+        .map(|o| {
+            (
+                cell_key(num(&o[0]), num(&o[1])),
+                o[2].as_str().expect("tag").to_string(),
+            )
+        })
+        .collect();
+    if body.occ_by_key() != &want_occ {
+        failures.push(format!("{name}: occByKey rozny"));
+    }
+    // Cel końcowy tematu: brak gałęzi nieportowanych we wszystkich scenariuszach wektorów.
+    if !body.unported.is_empty() {
+        failures.push(format!("{name}: unported {:?}", body.unported));
+    }
+
+    let steps_n = e["steps"].as_array().expect("steps").len();
+    Checked {
+        n_steps: steps_n,
+        dur,
+        want_attack,
+        ml0,
+        ml_fin: num(&fin["moveLeft"]),
+        facing_after_move: want_facing.iter().any(|(t, _)| *t > 0.0),
+    }
+}
+
 #[test]
 fn flank_i_kawaleria_zgodne_z_pinem() {
     let (v, cav_mult) = load();
@@ -423,127 +586,17 @@ fn flank_i_kawaleria_zgodne_z_pinem() {
     let mut failures: Vec<String> = Vec::new();
     let mut cov = Cov::default();
     for case in cases {
+        let Checked {
+            n_steps,
+            dur,
+            want_attack,
+            ml0,
+            ml_fin,
+            facing_after_move,
+        } = check_case(case, &cav_mult, &mut failures);
         let name = case["name"].as_str().expect("name");
-        let e = &case["expect"];
-        let Built {
-            mut body,
-            mut st,
-            acting,
-        } = build(case, &cav_mult, true);
-        let start_pos = body.unit_cell(acting).expect("pozycja");
-        let ml0 = st.unit(acting).c.move_left;
-        let dur = body.start(acting, &st);
-        let want_attack = e["attack"]["target"].as_u64().map(|t| t as usize);
-        if want_attack.is_none() {
-            body.complete(acting, &mut st);
-        }
-
-        let got_trace: Vec<String> = body.trace[0]
-            .1
-            .iter()
-            .filter(|ev| !matches!(ev, ActivateEvent::ResetPlayerOrder))
-            .map(label)
-            .collect();
-        let want_trace: Vec<String> = e["trace"]
-            .as_array()
-            .expect("trace")
-            .iter()
-            .map(|t| t.as_str().expect("t").to_string())
-            .collect();
-        if got_trace != want_trace {
-            failures.push(format!(
-                "{name}: trace rust={got_trace:?} js={want_trace:?}"
-            ));
-        }
-        if dur != num(&e["duration"]) {
-            failures.push(format!("{name}: duration rust={dur} js={}", e["duration"]));
-        }
-        let fin = &e["final"];
-        let pos = body.unit_cell(acting).expect("pozycja");
-        if pos != (int(&fin["q"]), int(&fin["r"])) {
-            failures.push(format!(
-                "{name}: pozycja rust={pos:?} js=({},{})",
-                fin["q"], fin["r"]
-            ));
-        }
-        let ml = st.unit(acting).c.move_left;
-        if ml.to_bits() != num(&fin["moveLeft"]).to_bits() {
-            failures.push(format!("{name}: moveLeft rust={ml} js={}", fin["moveLeft"]));
-        }
-        if body.facing(acting) != num(&fin["facing"]) {
-            failures.push(format!(
-                "{name}: facing rust={} js={}",
-                body.facing(acting),
-                fin["facing"]
-            ));
-        }
-        let got_last = body.doctrine(acting).last_auto_move_from;
-        let want_last = fin["lastAutoMoveFrom"]
-            .as_object()
-            .map(|o| (int(&o["q"]), int(&o["r"])));
-        if got_last != want_last {
-            failures.push(format!(
-                "{name}: lastAutoMoveFrom rust={got_last:?} js={want_last:?}"
-            ));
-        }
-        let (got_facing, got_moves, got_melee) = split_actions(body.pending_actions(), acting);
-        let want_facing: Vec<(f64, f64)> = e["facing"]
-            .as_array()
-            .expect("facing")
-            .iter()
-            .map(|f| (num(&f["t"]), num(&f["dir"])))
-            .collect();
-        if got_facing != want_facing {
-            failures.push(format!(
-                "{name}: zmiany facing rust={got_facing:?} js={want_facing:?}"
-            ));
-        }
-        // Każdy krok `_doMove` = jedna akcja `Move` (pole startu = pole po poprzednim kroku, `t0` = start animacji).
-        let steps = e["steps"].as_array().expect("steps");
-        let mut want_moves: Vec<TimedAction> = Vec::new();
-        let mut prev = start_pos;
-        for s in steps {
-            let to = (int(&s["col"]), int(&s["row"]));
-            let t0 = num(&s["t"]);
-            want_moves.push(TimedAction {
-                t0,
-                action: BattleAction::Move {
-                    unit: acting,
-                    from: prev,
-                    to,
-                    arrive_at: t0 + MOVE_STEP_MS,
-                },
-            });
-            prev = to;
-        }
-        if got_moves != want_moves {
-            failures.push(format!("{name}: Move rust={got_moves:?} js={want_moves:?}"));
-        }
-        let want_melee = want_attack.map(|t| (t, num(&e["attack"]["t"])));
-        if got_melee != want_melee {
-            failures.push(format!("{name}: cios rust={got_melee:?} js={want_melee:?}"));
-        }
-        let want_occ: HashMap<_, String> = e["occ"]
-            .as_array()
-            .expect("occ")
-            .iter()
-            .map(|o| {
-                (
-                    cell_key(num(&o[0]), num(&o[1])),
-                    o[2].as_str().expect("tag").to_string(),
-                )
-            })
-            .collect();
-        if body.occ_by_key() != &want_occ {
-            failures.push(format!("{name}: occByKey rozny"));
-        }
-        // Cel końcowy tematu: brak gałęzi nieportowanych we wszystkich scenariuszach wektorów.
-        if !body.unported.is_empty() {
-            failures.push(format!("{name}: unported {:?}", body.unported));
-        }
-
-        let n_steps = steps.len();
-        let dir = case[case["acting"]["side"].as_str().expect("side")][acting.idx]
+        let acting_idx = case["acting"]["idx"].as_u64().expect("idx") as usize;
+        let dir = case[case["acting"]["side"].as_str().expect("side")][acting_idx]
             ["attackDirection"]
             .as_str()
             .unwrap_or("front");
@@ -568,11 +621,11 @@ fn flank_i_kawaleria_zgodne_z_pinem() {
                         cov.cav_directed_moved += 1;
                     }
                     // Koszt kroku jazdy > 1 (mnożnik terenu / koszt bazowy) albo ułamkowy `moveLeft` po brodzie.
-                    let spent = ml0 - num(&fin["moveLeft"]);
+                    let spent = ml0 - ml_fin;
                     if spent > n_steps as f64 {
                         cov.cav_cost_gt1 += 1;
                     }
-                    if num(&fin["moveLeft"]).fract() != 0.0 {
+                    if ml_fin.fract() != 0.0 {
                         cov.cav_frac_left += 1;
                     }
                 }
@@ -595,10 +648,10 @@ fn flank_i_kawaleria_zgodne_z_pinem() {
             if n_steps > 0 {
                 cov.flank_moved += 1;
             } else if dur == 0.0 {
-                cov.flank_already += 1;
+                cov.flank_bez_ruchu_0ms += 1;
             }
         }
-        if want_facing.iter().any(|(t, _)| *t > 0.0) {
+        if facing_after_move {
             cov.facing_after_move += 1;
         }
     }
@@ -625,9 +678,9 @@ fn flank_i_kawaleria_zgodne_z_pinem() {
         cov.flank_moved
     );
     assert!(
-        cov.flank_already >= 20,
+        cov.flank_bez_ruchu_0ms >= 20,
         "flank bez ruchu: {}",
-        cov.flank_already
+        cov.flank_bez_ruchu_0ms
     );
     assert!(cov.cav >= 300, "kawaleria: {}", cov.cav);
     assert!(cov.cav_attack >= 15, "kawaleria cios: {}", cov.cav_attack);
@@ -670,7 +723,7 @@ fn flank_i_kawaleria_zgodne_z_pinem() {
         cov.flank_r1_moved,
         cov.flank_full,
         cov.flank_moved,
-        cov.flank_already,
+        cov.flank_bez_ruchu_0ms,
         cov.cav,
         cov.cav_attack,
         cov.cav_moved,
@@ -853,4 +906,89 @@ fn flanka_juz_w_pozycji_konczy_bez_akcji() {
         a.action,
         BattleAction::Move { .. } | BattleAction::Melee { .. }
     )));
+}
+
+/// Obrona r2, zarzut Z1: `ru.moveLeft = NaN` w jeździe. Pin kontynuuje manewr w callbacku `_doMove` wyłącznie przy
+/// `ru.moveLeft > 0` (`battleScene.ts:6439` C-FLANK, `:6496` `_cavManeuverStep`), a szarża wymaga `ru.moveLeft > 0`
+/// (`:6403-6409`); dla `NaN` porównanie jest fałszywe, więc jazda wykonuje co najwyżej JEDEN krok. Wektory: kopie
+/// wszystkich 320 scenariuszy `cavalry` z `moveLeft = NaN` jednostki działającej, oczekiwanie z tekstu pinu. Pełne
+/// porównanie jak w [`flank_i_kawaleria_zgodne_z_pinem`] (ślad, czas, pozycja, `moveLeft` NaN, facing, `Move`, cios,
+/// `occByKey`, `unported` puste) plus jawna asercja `<= 1` krok.
+#[test]
+fn kawaleria_nan_move_left_zgodna_z_pinem() {
+    // Strażnik czasu: pętla kawalerii, która nie kończy się przy `NaN` (warunek `move_left <= 0.0` bez `is_nan`),
+    // kręci się bez końca; test ma wtedy dać czytelny FAIL zamiast zawieszenia binarki (normalnie < 2 s w debug).
+    let (tx, rx) = std::sync::mpsc::channel();
+    let worker = std::thread::spawn(move || {
+        let r = std::panic::catch_unwind(kawaleria_nan_cialo);
+        let _ = tx.send(r.is_ok());
+        if let Err(e) = r {
+            std::panic::resume_unwind(e);
+        }
+    });
+    match rx.recv_timeout(std::time::Duration::from_secs(90)) {
+        Ok(true) => worker.join().expect("watek testu NaN"),
+        Ok(false) => {
+            let _ = worker.join();
+            panic!("kawaleria NaN: rozbieznosc z pinem (szczegoly wyzej)");
+        }
+        Err(_) => panic!(
+            "kawaleria NaN: brak konca w 90 s (petla manewru nie konczy sie przy moveLeft = NaN)"
+        ),
+    }
+}
+
+fn kawaleria_nan_cialo() {
+    let (v, cav_mult) = load_from(VECTORS_NAN);
+    let cases = v["cases"].as_array().expect("cases");
+    assert_eq!(cases.len(), 320, "wektory NaN");
+    let mut failures: Vec<String> = Vec::new();
+    let (mut moved, mut attack, mut hold, mut directed) = (0usize, 0usize, 0usize, 0usize);
+    for case in cases {
+        assert_eq!(case["kind"].as_str(), Some("cavalry-nan"));
+        let name = case["name"].as_str().expect("name");
+        let side = case["acting"]["side"].as_str().expect("side");
+        let me = &case[side][case["acting"]["idx"].as_u64().expect("idx") as usize];
+        assert_eq!(me["moveLeft"].as_str(), Some("NaN"), "{name}: wejscie NaN");
+        let c = check_case(case, &cav_mult, &mut failures);
+        assert!(c.ml0.is_nan(), "{name}: moveLeft na starcie");
+        assert!(
+            c.n_steps <= 1,
+            "{name}: pin robi <= 1 krok przy NaN, wektor {}",
+            c.n_steps
+        );
+        assert!(
+            c.ml_fin.is_nan(),
+            "{name}: moveLeft po turze = NaN (Math.max(0, NaN - koszt))"
+        );
+        if c.want_attack.is_some() {
+            attack += 1;
+        } else if c.n_steps == 1 {
+            moved += 1;
+            if me["attackDirection"].as_str().unwrap_or("front") != "front" {
+                directed += 1;
+            }
+        } else {
+            hold += 1;
+        }
+        let _ = c.dur;
+        let _ = c.facing_after_move;
+    }
+    assert!(
+        failures.is_empty(),
+        "{} rozbieznosci, pierwsze: {:#?}",
+        failures.len(),
+        &failures[..failures.len().min(12)]
+    );
+    // Pokrycie: oba manewry (C-FLANK i `_cavManeuverStep`) z jednym krokiem, cios, brak akcji.
+    assert!(moved >= 200, "NaN z jednym krokiem: {moved}");
+    assert!(directed >= 60, "NaN C-FLANK z krokiem: {directed}");
+    assert!(
+        moved - directed >= 60,
+        "NaN _cavManeuverStep z krokiem: {}",
+        moved - directed
+    );
+    assert!(attack >= 15, "NaN cios: {attack}");
+    assert!(hold >= 5, "NaN bez akcji: {hold}");
+    eprintln!("NaN: krok={moved} (cflank {directed}), cios={attack}, stoi={hold}");
 }

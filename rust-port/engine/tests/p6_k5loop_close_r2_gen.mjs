@@ -521,3 +521,32 @@ const outDir = join(here, 'p6_k5loop_close_vectors');
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'vectors_r2.json'), JSON.stringify({ pin: PIN, seed: SEED, pinSha256: PIN_SHA256, cavMult, stats, cases }) + '\n');
 console.error(`zapisano ${cases.length} wektorow`);
+
+// Obrona r2 (zarzut Z1): rodzina `cavalry-nan` w OSOBNYM pliku `vectors_r2_nan.json` (plik `vectors_r2.json` bajt w bajt
+// bez zmian, zapisany wyzej przed ta sekcja; bez dodatkowych wywolan `rnd`). Wejscia = kopie WSZYSTKICH scenariuszy
+// `cavalry` z `ru.moveLeft = NaN` jednostki dzialajacej; oczekiwanie z tekstu pinu. Pin w callbacku `_doMove`
+// (`battleScene.ts:6439`, `:6496`) kontynuuje manewr tylko przy `ru.moveLeft > 0`, a szarza (`:6403-6409`) wymaga
+// `ru.moveLeft > 0`, wiec dla NaN jazda wykonuje co najwyzej jeden krok manewru. NaN w JSON = napis "NaN".
+const nanCases = [];
+for (const c of cases.filter((x) => x.kind === 'cavalry')) {
+  const { expect: _old, name, kind: _k, ...sc0 } = c;
+  const sc = JSON.parse(JSON.stringify(sc0));
+  const own = sc.acting.side === 'atk' ? sc.atk : sc.def;
+  own[sc.acting.idx].moveLeft = NaN;
+  const expect = runCase(sc);
+  if (expect.steps.length > 1) throw new Error(`${name}: NaN, pin wykonal ${expect.steps.length} krokow`);
+  nanCases.push({ ...sc, name: name.replace('close-cavalry-', 'close-cavalry-nan-'), kind: 'cavalry-nan', expect });
+}
+const nanStats = {
+  cavalryNan: nanCases.length,
+  nanMoved: nanCases.filter((c) => c.expect.steps.length === 1).length,
+  nanAttack: nanCases.filter((c) => c.expect.attack).length,
+  nanHold: nanCases.filter((c) => !c.expect.attack && c.expect.steps.length === 0).length,
+};
+console.error(JSON.stringify(nanStats));
+const nanJson = (_k, v) => (typeof v === 'number' && Number.isNaN(v) ? 'NaN' : v);
+writeFileSync(
+  join(outDir, 'vectors_r2_nan.json'),
+  JSON.stringify({ pin: PIN, seed: SEED, pinSha256: PIN_SHA256, cavMult, stats: nanStats, cases: nanCases }, nanJson) + '\n',
+);
+console.error(`zapisano ${nanCases.length} wektorow NaN`);

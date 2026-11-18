@@ -2224,7 +2224,12 @@ impl<R: RollSource> ProdBody<R> {
                     elapsed += MOVE_STEP_MS;
                     // Callback (`:6436-6443`): dobry sąsiad -> `done()`; ruch -> cel `_cavalryTarget(ru) ?? tgt`.
                     let me = self.combatant(unit, st);
-                    if cav_adjacent_non_spear(&me, &en).is_some() || move_left <= 0.0 {
+                    // `ru.moveLeft > 0` (`:6439`/`:6496`): dla `NaN` porównanie jest fałszywe, więc pętla kończy się po
+                    // jednym kroku; samo `move_left <= 0.0` jest fałszywe dla `NaN` i kręciło pętlę dalej (zarzut Z1 r2).
+                    if cav_adjacent_non_spear(&me, &en).is_some()
+                        || move_left <= 0.0
+                        || move_left.is_nan()
+                    {
                         break;
                     }
                     cur = cavalry_target(&me, &en).unwrap_or(cur);
@@ -2271,7 +2276,12 @@ impl<R: RollSource> ProdBody<R> {
                 elapsed += MOVE_STEP_MS;
                 // Callback (`:6492-6499`): dobry sąsiad -> `done()`; ruch -> `t2 = _cavalryTarget(ru)` i kolejny krok.
                 let me = self.combatant(unit, st);
-                if cav_adjacent_non_spear(&me, &en).is_some() || move_left <= 0.0 {
+                // `ru.moveLeft > 0` (`:6439`/`:6496`): dla `NaN` porównanie jest fałszywe, więc pętla kończy się po
+                // jednym kroku; samo `move_left <= 0.0` jest fałszywe dla `NaN` i kręciło pętlę dalej (zarzut Z1 r2).
+                if cav_adjacent_non_spear(&me, &en).is_some()
+                    || move_left <= 0.0
+                    || move_left.is_nan()
+                {
                     break;
                 }
                 let Some(t2) = cavalry_target(&me, &en) else {
