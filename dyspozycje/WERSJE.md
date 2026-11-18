@@ -1,3 +1,9 @@
+## ROBOCZA b8f2f22e -- 2026-11-18 -- FALA 850: Pomiar twardszej dyplomacji: hak, runner i analizator (flaga wylaczona kontra wlaczona) (testowa)
+
+- Hak window.__diploHarderMeasure (tylko ?civTest=1: setEnabled, isEnabled, metrics - odczyt par glownych cywilizacji i gracza bez miast-panstw); narzedzia gra/tools/diplomacy-harder-measure-run.cjs i -analyze.cjs (z --selftest) oraz test haka; brak zmian zasad gry
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplomacy-harder-unit 50/0; diplomacy-test 149/0; hook-test 15 zielonych/0 czerwonych (z bundlem); smoke seed 4242 OFF i ON, 6-19 tur, 0 NaN
+- Limity: Narzedzie pomiarowe bez efektu w rozgrywce; efekt flagi ON vs OFF NIE ZMIERZONO (smoke za krotki); zgodnosc tury sasiedztwa z licznikiem gry NIE ZMIERZONO; metrics() leniwie tworzy domyslne wpisy meta par
+
 ## ROBOCZA 39b38bf9 -- 2026-11-18 -- FALA 849: Koalicja antylidera (etap B4, za flaga, wylaczona) + audyt wspolnych wojen sojusznikow (testowa)
 
 - Nowy modul ai-ai-coalition.ts (wykrycie lidera: prog 1,5x sredniej Mocy, histereza 5 tur) i premia celu w torze sojuszy AI-AI; parametry w ai-ai-treaty-params.json; wpiecie w main.ts za flaga koalicjaAntyLiderAktywna=false = zachowanie gry bez zmian

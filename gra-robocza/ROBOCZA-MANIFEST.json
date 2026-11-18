@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "39b38bf9abd315328520d738b14ebcc7",
-  "bundleSha256": "68c47a78352e10cb2ce41dded7bc0c8501b25caa43d3c994d330dc0111885170",
-  "bundleBytes": 14965982,
+  "bundleMd5": "b8f2f22e35a25bc17623224735688fe7",
+  "bundleSha256": "d00733631ab65b8df8e0ab6727e85ee8366ccab65967d4e4fe8fb449672a3e3a",
+  "bundleBytes": 14966930,
   "sourceSnapshot": {
-    "source": "R-WEB-AI-AI-COALITION-ANTI-LEADER-Q1 (kod dd1790a25, FC 63acbc405)",
+    "source": "R-WEB-DIPLO-HARDER-MEASURE-RUNNER-Q1 (kod a71a061ee, FC 2e3b550e5)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 849: Nowy modul ai-ai-coalition.ts (wykrycie lidera: prog 1,5x sredniej Mocy, histereza 5 tur) i premia celu w torze sojuszy AI-AI; parametry w ai-ai-treaty-params.json; wpiecie w main.ts za flaga koalicjaAntyLiderAktywna=false = zachowanie gry bez zmian"
+    "FALA 850: Hak window.__diploHarderMeasure (tylko ?civTest=1: setEnabled, isEnabled, metrics - odczyt par glownych cywilizacji i gracza bez miast-panstw); narzedzia gra/tools/diplomacy-harder-measure-run.cjs i -analyze.cjs (z --selftest) oraz test haka; brak zmian zasad gry"
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-ai-coalition-test 0 bledow, mutanty 8/8; ai-ai-alliance-tick-test 19/19, mutanty 8/8; ai-ai-treaty-evaluate 21/0"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplomacy-harder-unit 50/0; diplomacy-test 149/0; hook-test 15 zielonych/0 czerwonych (z bundlem); smoke seed 4242 OFF i ON, 6-19 tur, 0 NaN"
   ],
   "limits": [
-    "Flaga domyslnie wylaczona i tor sojuszy tez wylaczony: koalicja nie dziala w rozgrywce do czasu pomiaru; wplyw na rozgrywke NIE ZMIERZONO; premia dziala tylko gdy obie AI sa w wojnie z liderem; brak histerezy wyjscia z lidera; luki audytu B2: brak sprawdzenia dystansu, zwykly pokoj nie blokuje dolaczenia, barbarzyncy w activeWarCount, licznik wojen globalny a nie per epoka"
+    "Narzedzie pomiarowe bez efektu w rozgrywce; efekt flagi ON vs OFF NIE ZMIERZONO (smoke za krotki); zgodnosc tury sasiedztwa z licznikiem gry NIE ZMIERZONO; metrics() leniwie tworzy domyslne wpisy meta par"
   ],
-  "finalControl": "PASS-WITH-NOTES: bramki wlasne zielone, mutanty wykryte, kandydat potomkiem bazy, allowlista zachowana",
+  "finalControl": "PASS-WITH-NOTES: bramki wlasne zielone, mutacje czerwone, kandydat potomkiem bazy, allowlista zachowana",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T22:47:34",
+  "hubGeneratedAt": "2026-11-18T23:09:16",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "39b38bf9abd315328520d738b14ebcc7",
-      "sizeBytes": 14965982
+      "md5": "b8f2f22e35a25bc17623224735688fe7",
+      "sizeBytes": 14966930
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "39b38bf9abd315328520d738b14ebcc7",
-      "sizeBytes": 14965982
+      "md5": "b8f2f22e35a25bc17623224735688fe7",
+      "sizeBytes": 14966930
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "39b38bf9abd315328520d738b14ebcc7",
-      "sizeBytes": 14965982
+      "md5": "b8f2f22e35a25bc17623224735688fe7",
+      "sizeBytes": 14966930
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "39b38bf9abd315328520d738b14ebcc7",
-      "sizeBytes": 14965982
+      "md5": "b8f2f22e35a25bc17623224735688fe7",
+      "sizeBytes": 14966930
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "39b38bf9abd315328520d738b14ebcc7",
-      "sizeBytes": 14965982
+      "md5": "b8f2f22e35a25bc17623224735688fe7",
+      "sizeBytes": 14966930
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "39b38bf9abd315328520d738b14ebcc7",
-      "sizeBytes": 14965982
+      "md5": "b8f2f22e35a25bc17623224735688fe7",
+      "sizeBytes": 14966930
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "39b38bf9abd315328520d738b14ebcc7",
-      "sizeBytes": 14965982
+      "md5": "b8f2f22e35a25bc17623224735688fe7",
+      "sizeBytes": 14966930
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "39b38bf9abd315328520d738b14ebcc7",
-      "sizeBytes": 14965982
+      "md5": "b8f2f22e35a25bc17623224735688fe7",
+      "sizeBytes": 14966930
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "39b38bf9abd315328520d738b14ebcc7",
-      "sizeBytes": 14965982
+      "md5": "b8f2f22e35a25bc17623224735688fe7",
+      "sizeBytes": 14966930
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "39b38bf9abd315328520d738b14ebcc7",
-      "sizeBytes": 14965982
+      "md5": "b8f2f22e35a25bc17623224735688fe7",
+      "sizeBytes": 14966930
     }
   ],
-  "md5": "39b38bf9abd315328520d738b14ebcc7",
+  "md5": "b8f2f22e35a25bc17623224735688fe7",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
