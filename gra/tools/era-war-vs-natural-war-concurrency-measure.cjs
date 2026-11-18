@@ -6,17 +6,21 @@
  * wojna epoki; inna AI wypowiada naturalna wojne temu celowi). Run from gra/:
  *   node tools/era-war-vs-natural-war-concurrency-measure.cjs
  */
-const fs = require('fs');
-const os = require('os');
 const path = require('path');
+const Module = require('module');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
 const GRA = path.resolve(__dirname, '..');
-const out = path.join(os.tmpdir(), 'era-war-natural-probe-' + process.pid + '.cjs');
-esbuild.buildSync({
+// Bundle w pamięci (write:false) i wykonaj przez Module._compile: bez zapisu i bez usuwania plików.
+const built = esbuild.buildSync({
   entryPoints: [path.join(GRA, 'src/game/war-rules-multiwar.ts')],
-  bundle: true, platform: 'node', format: 'cjs', outfile: out, logLevel: 'silent',
+  bundle: true, platform: 'node', format: 'cjs', write: false, logLevel: 'silent',
 });
-const m = require(out);
+const virtualFile = path.join(GRA, 'tools', '__era-war-natural-probe-bundle.cjs');
+const mod = new Module(virtualFile, module);
+mod.filename = virtualFile;
+mod.paths = Module._nodeModulePaths(path.dirname(virtualFile));
+mod._compile(built.outputFiles[0].text, virtualFile);
+const m = mod.exports;
 const P = m.WAR_RULES_PARAMS;
 const EPOCH = { kamien: 1, braz: 2, zelazo: 3 };
 const rows = [];
@@ -48,4 +52,3 @@ rows.push({
   }, P),
 });
 for (const r of rows) console.log(JSON.stringify(r));
-fs.unlinkSync(out);
