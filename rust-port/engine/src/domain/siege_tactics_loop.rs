@@ -2021,12 +2021,16 @@ impl<R: RollSource> ProdBody<R> {
     ///
     /// Gałęzie jawnie oznaczone (bez cichego pominięcia):
     /// * `krok-naprzod-brak-terenu`: decyzja wymaga `_passableForUnit`, a ciało nie ma [`MoveTerrain`] (D1).
-    /// * `krok-naprzod-atak`: `Attack` z `_advanceStep` (`:8241-8244`) PO kroku ruchu. Nieosiągalne: kolejne wywołania
-    ///   z `_schedule` następują tylko, gdy callback `_doMove` sprawdził `!_canAttackFrom` z nowej pozycji (`:8223`,
-    ///   `:8277`), a w turze sekwencyjnej nic innego nie zmienia stanu przed nimi.
+    /// * `krok-naprzod-atak`: `Attack` z `_advanceStep` (`:8241-8244`) poza krokiem doktryny (`from_doctrine = false`)
+    ///   albo po kroku ruchu. W pinie NIEOSIĄGALNE: z `_activateUnit` (U7.8/U7.9) dla melee bez muru `_targetInRange`
+    ///   (`:8373-8392`, `dd === 1 || dd === 0`) zwraca cel zawsze, gdy `_canAttackFrom` (`:8436-8444`, `dd === 1`) jest
+    ///   prawdą, więc `_activateUnit` wybiera `_doAttack` (`:6293-6297`) przed `_advanceStep` (`:6298`); kolejne
+    ///   wywołania z `_schedule` następują tylko, gdy callback `_doMove` sprawdził `!_canAttackFrom` z nowej pozycji
+    ///   (`:8223`, `:8277`). W ciele osiągalne tylko przy niespójnym wejściu adaptera ([`ProdUnit::melee_target`] =
+    ///   `None` przy sąsiedzie), stąd jawny tag.
     ///
-    /// K5DOC-T8: `Attack` przy PIERWSZYM wejściu (`:8241-8245`) jest osiągalny z kroku doktryny (`steady`, `:18022-18025`;
-    /// `aggressive`, `:18048`), bo doktryna woła `_advanceStep` bez wcześniejszego `_targetInRange`. Cel liczy
+    /// K5DOC-T8: `Attack` przy PIERWSZYM wejściu z kroku doktryny (`from_doctrine = true`; `steady`, `:18022-18025`) jest
+    /// osiągalny w pinie, bo doktryna woła `_advanceStep` bez wcześniejszego `_targetInRange`. Cel liczy
     /// `_pickAdjacentTargetByPriority` (K5DOC-T2 [`pick_adjacent_target_by_priority`]); zwracany jako trzeci element
     /// wyniku i wykonywany wspólną ścieżką `_doAttack` w `start` (szablon ciosu jak dla każdego ciosu).
     ///
@@ -2037,6 +2041,7 @@ impl<R: RollSource> ProdBody<R> {
         &mut self,
         unit: UnitRef,
         st: &TurnSeqState,
+        from_doctrine: bool,
     ) -> (f64, Option<f64>, Option<usize>) {
         let ix = side_ix(unit.side);
         let mounted = self.units[ix][unit.idx].activate.mounted;
@@ -2114,7 +2119,7 @@ impl<R: RollSource> ProdBody<R> {
             }
             match decision {
                 AdvanceDecision::Done => break,
-                AdvanceDecision::Attack { .. } if moved => {
+                AdvanceDecision::Attack { .. } if moved || !from_doctrine => {
                     self.unported.push((unit, "krok-naprzod-atak"));
                     break;
                 }
@@ -3606,6 +3611,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         let mut phalanx = false;
         let mut flee = false;
         let mut doctrine = false;
+        // K5DOC-T8: `_advanceStep` wołane przez krok doktryny (cios z `:8241-8245` osiągalny w pinie).
+        let mut advance_from_doctrine = false;
         for ev in res.events.iter().copied() {
             match ev {
                 ActivateEvent::Done
@@ -3679,7 +3686,10 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 DoctrineAction::Attack(t) => pend.attack = Some(t),
                 DoctrineAction::CavalryAction => cavalry = true,
                 DoctrineAction::RangedAction => ranged = true,
-                DoctrineAction::AdvanceStep => advance = true,
+                DoctrineAction::AdvanceStep => {
+                    advance = true;
+                    advance_from_doctrine = true;
+                }
                 DoctrineAction::MoveOrder { .. } => {
                     // `_performPlayerOrder(ru, finish)` (`:18082`, `:18122`; ciało `:18280-18352`) to K5EXEC-T3 (#268):
                     // jawny tag, brak ruchu.
@@ -3762,7 +3772,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         // `_advanceStep` i `_doAttack` wykluczaja sie w `_activateUnit` (kazda galaz konczy sie `return`). K5DOC-T8: cios z
         // `_advanceStep` (`:8241-8245`, osiągalny z kroku doktryny `steady`/`aggressive`) idzie wspólną ścieżką `_doAttack`.
         if advance {
-            let (dur, move_left, attack) = self.advance_step(unit, st);
+            let (dur, move_left, attack) = self.advance_step(unit, st, advance_from_doctrine);
             pend.move_left = move_left;
             match attack {
                 Some(t) => pend.attack = Some(t),
