@@ -459,6 +459,8 @@ struct Got {
     routs: Vec<(String, f64)>,
     leaves: Vec<(String, f64)>,
     shaken: Vec<(String, String, u64, f64)>,
+    /// U1 Evaluatora r4: globalna kolejność `Shaken`/`Rout`/`Leave` w strumieniu akcji (`S:`/`R:`/`L:` + jednostka).
+    order: Vec<String>,
 }
 
 fn split_actions(actions: &[TimedAction], acting: UnitRef) -> Got {
@@ -489,15 +491,23 @@ fn split_actions(actions: &[TimedAction], acting: UnitRef) -> Got {
             BattleAction::Melee {
                 attacker, target, ..
             } if *attacker == acting => g.melee = Some((target.idx, a.t0)),
-            BattleAction::Rout { unit } => g.routs.push((tag_of(*unit), a.t0)),
-            BattleAction::Leave { unit } => g.leaves.push((tag_of(*unit), a.t0)),
+            BattleAction::Rout { unit } => {
+                g.routs.push((tag_of(*unit), a.t0));
+                g.order.push(format!("R:{}", tag_of(*unit)));
+            }
+            BattleAction::Leave { unit } => {
+                g.leaves.push((tag_of(*unit), a.t0));
+                g.order.push(format!("L:{}", tag_of(*unit)));
+            }
             BattleAction::Shaken {
                 unit,
                 fallen,
                 morale,
-            } => g
-                .shaken
-                .push((tag_of(*unit), tag_of(*fallen), morale.to_bits(), a.t0)),
+            } => {
+                g.shaken
+                    .push((tag_of(*unit), tag_of(*fallen), morale.to_bits(), a.t0));
+                g.order.push(format!("S:{}", tag_of(*unit)));
+            }
             _ => {}
         }
     }
@@ -726,6 +736,20 @@ fn check_activation(
             got.shaken
         ));
     }
+    // U1 Evaluatora r4: kolejność zdarzeń w strumieniu jak w pinie (`_updateMoraleBar` przed `_checkRout` w ripple,
+    // `:9749-9750`; `_removeUnitFromScene` przed `_shakeAlliesOnLoss`, `:9855-9856`), nie tylko listy osobno.
+    let want_order: Vec<String> = e["order"]
+        .as_array()
+        .expect("order")
+        .iter()
+        .map(|o| o.as_str().expect("order").to_string())
+        .collect();
+    if got.order != want_order {
+        failures.push(format!(
+            "{name}: kolejnosc Shaken/Rout/Leave rust={:?} js={want_order:?}",
+            got.order
+        ));
+    }
     // Stan wszystkich jednostek po aktywacji (bez ciosu wręcz: `complete` nie jest wtedy wołane).
     if want_attack.is_none() {
         for u in e["units"].as_array().expect("units") {
@@ -868,6 +892,7 @@ struct Cov {
     flee_cascade_rout: usize,
     surround: usize,
     surround_steps: usize,
+    surround_left: usize,
     surround_shaken_or_cascade: usize,
     nobow: usize,
     nobow_shot: usize,
@@ -919,6 +944,9 @@ fn run_family(v: &Value, cav_mult: &HashMap<String, f64>, nan: bool) -> (Vec<Str
                 assert!(c.routs >= 1, "{name}: okrazenie bez routu");
                 if c.n_steps > 0 {
                     cov.surround_steps += 1;
+                }
+                if c.left {
+                    cov.surround_left += 1;
                 }
                 if c.shaken > 0 || c.routs > 1 {
                     cov.surround_shaken_or_cascade += 1;
@@ -981,7 +1009,7 @@ fn with_timeout(label: &'static str, f: impl FnOnce() + Send + 'static) {
 fn ucieczka_strzelec_bez_strzelania_zgodne_z_pinem() {
     with_timeout("r4", || {
         let (v, cav_mult) = load_from(VECTORS);
-        assert_eq!(v["cases"].as_array().expect("cases").len(), 1180);
+        assert_eq!(v["cases"].as_array().expect("cases").len(), 1220);
         let (failures, cov) = run_family(&v, &cav_mult, false);
         assert!(
             failures.is_empty(),
@@ -997,8 +1025,10 @@ fn ucieczka_strzelec_bez_strzelania_zgodne_z_pinem() {
         assert!(cov.flee_stuck_or_hold >= 50, "{cov:?}");
         assert!(cov.flee_shaken >= 80, "{cov:?}");
         assert!(cov.flee_cascade_rout >= 30, "{cov:?}");
-        assert_eq!(cov.surround, 200);
+        assert_eq!(cov.surround, 240);
         assert!(cov.surround_steps >= 150, "{cov:?}");
+        // U3 Evaluatora r4: okrążenie kończy się zniknięciem z pola (krawędź / `fleeStuck >= 2`).
+        assert!(cov.surround_left >= 40, "{cov:?}");
         assert_eq!(cov.nobow, 480);
         assert!(cov.nobow_shot >= 200, "{cov:?}");
         assert!(cov.nobow_move >= 60, "{cov:?}");
@@ -1015,7 +1045,7 @@ fn ucieczka_strzelec_bez_strzelania_zgodne_z_pinem() {
 fn nan_move_left_zgodne_z_pinem() {
     with_timeout("NaN", || {
         let (v, cav_mult) = load_from(VECTORS_NAN);
-        assert_eq!(v["cases"].as_array().expect("cases").len(), 1080);
+        assert_eq!(v["cases"].as_array().expect("cases").len(), 1120);
         let (failures, cov) = run_family(&v, &cav_mult, true);
         assert!(
             failures.is_empty(),
@@ -1158,4 +1188,47 @@ fn leave_i_shaken_bez_dto_to_jawny_blad() {
         actions_to_dto(&no_leave, &st),
         Err(ActionError::ShakenWithoutDto(first_shaken))
     );
+}
+
+/// U5 Evaluatora r4: kontrakt `flee_after` (stan jednostek bez zmian między `start` a `complete` ucieczki) jest twardą
+/// asercją w każdym profilu, nie `debug_assert`: zmiana stanu przez sterownik w tym oknie daje panic, nie ciche
+/// nadpisanie cudzych zmian kopią z `start`.
+#[test]
+#[should_panic(expected = "kontrakt flee_after")]
+fn ucieczka_kontrakt_stanu_miedzy_start_a_complete() {
+    let (v, cav_mult) = load_from(VECTORS);
+    let case = v["cases"]
+        .as_array()
+        .expect("cases")
+        .iter()
+        .find(|c| c["kind"] == "flee")
+        .expect("flee");
+    let Built {
+        mut body,
+        mut st,
+        acting,
+    } = build(case, &cav_mult, true);
+    body.start(acting, &st);
+    // Sterownik łamie kontrakt: zmienia jednostkę w oknie start..complete.
+    st.atk[0].c.morale += 1.0;
+    body.complete(acting, &mut st);
+}
+
+/// U5: ten sam scenariusz bez naruszenia kontraktu przechodzi (asercja nie strzela na poprawnej ścieżce).
+#[test]
+fn ucieczka_kontrakt_stanu_bez_zmian_przechodzi() {
+    let (v, cav_mult) = load_from(VECTORS);
+    let case = v["cases"]
+        .as_array()
+        .expect("cases")
+        .iter()
+        .find(|c| c["kind"] == "flee")
+        .expect("flee");
+    let Built {
+        mut body,
+        mut st,
+        acting,
+    } = build(case, &cav_mult, true);
+    body.start(acting, &st);
+    body.complete(acting, &mut st);
 }

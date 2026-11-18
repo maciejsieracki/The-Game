@@ -1253,7 +1253,29 @@ pub struct ProdBody<R: RollSource> {
     /// z okrążenia, `_removeUnitFromScene` i `_shakeAlliesOnLoss` w kolejności pinu); `complete` tej samej jednostki
     /// przepisuje je do stanu sterownika. Bezpieczne, bo gałąź ucieczki działa tylko bez muru (tag `ucieczka-oblezenie`),
     /// więc między `start` a `complete` żaden zegar (wieże) nie zmienia jednostek.
-    flee_after: Option<(UnitRef, Vec<SeqUnit>, Vec<SeqUnit>)>,
+    ///
+    /// KONTRAKT dla sterownika (#113, U5 Evaluatora r4): między `start` a `complete` uciekającej jednostki stan jednostek
+    /// `TurnSeqState` (`atk`, `def`) nie może się zmienić i nie może wystartować inna aktywacja z ucieczką. `complete`
+    /// sprawdza to twardą asercją ([`ProdFleeAfter::before_atk`]/[`ProdFleeAfter::before_def`] i jednostka), w każdym
+    /// profilu kompilacji: naruszenie kontraktu to błąd sterownika, który inaczej po cichu nadpisałby cudze zmiany.
+    flee_after: Option<ProdFleeAfter>,
+}
+
+/// K5LOOP-CLOSE r4: wynik ucieczki wykonanej w `start` (patrz [`ProdBody::flee_after`]).
+#[derive(Debug, Clone)]
+struct ProdFleeAfter {
+    unit: UnitRef,
+    /// Jednostki obu stron w chwili `start` (przed ucieczką): strażnik kontraktu w `complete`.
+    before_atk: Vec<SeqUnit>,
+    before_def: Vec<SeqUnit>,
+    /// Jednostki obu stron po ucieczce (kopia z efektami `_startRout`, `_removeUnitFromScene`, `_shakeAlliesOnLoss`).
+    atk: Vec<SeqUnit>,
+    def: Vec<SeqUnit>,
+}
+
+/// Równość list jednostek odporna na NaN (`moveLeft = NaN` z lekcji r2 a): bitowa, gdy `==` zawodzi tylko przez NaN.
+fn same_seq_units(a: &[SeqUnit], b: &[SeqUnit]) -> bool {
+    a == b || format!("{a:?}") == format!("{b:?}")
 }
 
 /// K5LOOP-CLOSE r3: wynik `_rangedAction` w ciele (czas, `moveLeft` po ruchu, strzał: cel i chwila wystrzału względem
@@ -3339,7 +3361,13 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             }
             let mut st2 = st.clone();
             let dur = self.flee_run(unit, &mut st2);
-            self.flee_after = Some((unit, st2.atk, st2.def));
+            self.flee_after = Some(ProdFleeAfter {
+                unit,
+                before_atk: st.atk.clone(),
+                before_def: st.def.clone(),
+                atk: st2.atk,
+                def: st2.def,
+            });
             self.pending[ix][unit.idx] = Some(ProdPending {
                 morale: seq.morale,
                 start_rout: false,
@@ -3496,7 +3524,13 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 self.start_rout(&mut st2, unit);
             }
             let dur = self.flee_run(unit, &mut st2);
-            self.flee_after = Some((unit, st2.atk, st2.def));
+            self.flee_after = Some(ProdFleeAfter {
+                unit,
+                before_atk: st.atk.clone(),
+                before_def: st.def.clone(),
+                atk: st2.atk,
+                def: st2.def,
+            });
             pend.start_rout = false;
             pend.flee = true;
             self.pending[ix][unit.idx] = Some(pend);
@@ -3643,11 +3677,21 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         // K5LOOP-CLOSE r4: ucieczka wykonana w `start` na kopii stanu (rout z okrążenia, kroki, zniknięcie z pola, ripple);
         // stan jednostek obu stron po aktywacji = ta kopia.
         if pend.flee {
-            if let Some((u, atk, def)) = self.flee_after.take() {
-                debug_assert_eq!(u, unit, "complete innej jednostki niz start ucieczki");
-                st.atk = atk;
-                st.def = def;
-            }
+            // Kontrakt `flee_after` (U5 Evaluatora r4): twarde asercje w każdym profilu, patrz [`Self::flee_after`].
+            let fa = self
+                .flee_after
+                .take()
+                .expect("complete ucieczki bez wyniku start (kontrakt flee_after)");
+            assert_eq!(
+                fa.unit, unit,
+                "complete innej jednostki niz start ucieczki (kontrakt flee_after)"
+            );
+            assert!(
+                same_seq_units(&st.atk, &fa.before_atk) && same_seq_units(&st.def, &fa.before_def),
+                "stan jednostek zmieniony miedzy start a complete ucieczki (kontrakt flee_after)"
+            );
+            st.atk = fa.atk;
+            st.def = fa.def;
             return;
         }
         {

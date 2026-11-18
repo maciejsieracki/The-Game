@@ -45,6 +45,7 @@ const N_SURROUND = 200;
 const N_NOBOW = 480;
 const N_AMMO2 = 60;
 const N_STEADY2 = 40;
+const N_SURROUND_LEFT = 40;
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..', '..', '..');
@@ -239,7 +240,7 @@ const classSrc = [
   '    this.__advStarted = false; this.__steps = []; this.__facing = []; this.__attack = null; this.terrainMap = null; this.terrainData = [];',
   '    this.__blows = []; this.__rangedStarted = false; this.__fbStarted = false; this.__phStarted = false; this.__inPhalanx = 0; this.__phalanxAdvance = false;',
   '    this.projectiles = []; this.scene = { add() {}, remove() {} }; this.log = []; this.routedUnits = [];',
-  '    this.__shakeDirect = null; this.__shaken = []; this.__routs = []; this.__leaves = []; this.__fleeStarted = false;',
+  '    this.__shakeDirect = null; this.__shaken = []; this.__routs = []; this.__leaves = []; this.__order = []; this.__fleeStarted = false;',
   `    this._targetPriorities = {\n${prioInit}\n    }; }`,
   '  _now() { return this.vNow; }',
   '  _raf(cb) { this.__q.push({ kind: "raf", cb }); }',
@@ -250,13 +251,13 @@ const classSrc = [
   '  _executeGroupDoctrineStep() { throw new Error("doktryna poza zakresem (autoPlay=false)"); }',
   '  __tag(ru) { return ru.side + (ru.side === "atk" ? this.atk : this.def).indexOf(ru); }',
   // Pasek morale (THREE): bez logiki gry. Wywolanie bezposrednio z petli `_shakeAlliesOnLoss` (`:9749`) = akcja `Shaken`.
-  '  _updateMoraleBar(ru) { if (this.__shakeDirect) this.__shaken.push({ unit: this.__tag(ru), fallen: this.__shakeDirect, morale: ru.morale, t: this.vNow }); }',
+  '  _updateMoraleBar(ru) { if (this.__shakeDirect) { this.__shaken.push({ unit: this.__tag(ru), fallen: this.__shakeDirect, morale: ru.morale, t: this.vNow }); this.__order.push("S:" + this.__tag(ru)); } }',
   '  _shakeAlliesOnLoss(f) { const s = this.__shakeDirect; this.__shakeDirect = this.__tag(f); try { return this._shakeAlliesOnLossPin(f); } finally { this.__shakeDirect = s; } }',
   '  _checkRout(ru) { const s = this.__shakeDirect; this.__shakeDirect = null; try { return this._checkRoutPin(ru); } finally { this.__shakeDirect = s; } }',
   '  _checkMeleeScreenLost(side) { const s = this.__shakeDirect; this.__shakeDirect = null; try { return this._checkMeleeScreenLostPin(side); } finally { this.__shakeDirect = s; } }',
   // Zapis routu w chwili `_sfxRout()` (`:9801`, poczatek `_startRout`, przed kaskada oslony wrecz), jak akcja `Rout`.
-  '  _startRout(ru) { if (!(ru.routed || ru.dead || ru.fadingOut)) this.__routs.push({ unit: this.__tag(ru), t: this.vNow }); const s = this.__shakeDirect; this.__shakeDirect = null; try { this._startRoutPin(ru); } finally { this.__shakeDirect = s; } }',
-  '  _removeUnitFromScene(ru) { const was = ru.removed; this._removeUnitFromScenePin(ru); if (!was) this.__leaves.push({ unit: this.__tag(ru), t: this.vNow }); }',
+  '  _startRout(ru) { if (!(ru.routed || ru.dead || ru.fadingOut)) { this.__routs.push({ unit: this.__tag(ru), t: this.vNow }); this.__order.push("R:" + this.__tag(ru)); } const s = this.__shakeDirect; this.__shakeDirect = null; try { this._startRoutPin(ru); } finally { this.__shakeDirect = s; } }',
+  '  _removeUnitFromScene(ru) { const was = ru.removed; this._removeUnitFromScenePin(ru); if (!was) { this.__leaves.push({ unit: this.__tag(ru), t: this.vNow }); this.__order.push("L:" + this.__tag(ru)); } }',
   '  _fleeStep(ru, done) { if (!this.__fleeStarted) { this.__fleeStarted = true; this.__trace.push("flee"); } return this._fleeStepPin(ru, done); }',
   '  _sfxRout() {}',
   '  _trySiegeTowerClimb(ru, done) { this.__trace.push("towerClimb"); return false; }',
@@ -581,7 +582,7 @@ function activate(h, sc) {
   const ru = (sc.acting.side === 'atk' ? h.atk : h.def)[sc.acting.idx];
   h.vNow = 0;
   h.__trace = []; h.__steps = []; h.__facing = []; h.__attack = null; h.__blows = []; h.__shaken = []; h.__routs = [];
-  h.__leaves = []; h.__advStarted = false; h.__rangedStarted = false; h.__fbStarted = false; h.__phStarted = false;
+  h.__leaves = []; h.__order = []; h.__advStarted = false; h.__rangedStarted = false; h.__fbStarted = false; h.__phStarted = false;
   h.__phalanxAdvance = false; h.__fleeStarted = false;
   let doneAt = null;
   h._activateUnit(ru, () => { doneAt = h.vNow; });
@@ -616,6 +617,9 @@ function activate(h, sc) {
     shaken: h.__shaken,
     routs: h.__routs,
     leaves: h.__leaves,
+    // U1 Evaluatora r4: globalna kolejnosc zdarzen Shaken/Rout/Leave w strumieniu (pin `_updateMoraleBar` przed
+    // `_checkRout`, `:9749-9750`; `_removeUnitFromScene` przed ripple, `:9855-9856`).
+    order: h.__order,
     // Stan wszystkich jednostek po aktywacji (ripple, kaskady rout, boost wrogow, oslona wrecz).
     units: [...h.atk, ...h.def].map((u) => ({
       tag: tagOf(u), morale: u.morale, routed: !!u.routed, dead: !!u.dead, removed: !!u.removed,
@@ -687,6 +691,21 @@ family('surround', N_SURROUND, (e) => e.trace.includes('flee'));
 family('nobow', N_NOBOW, () => true);
 family('ammo2', N_AMMO2, (e) => e.blows.length === 1);
 family('steady2', N_STEADY2, (e) => e.trace.includes('rangedAction') && e.steps.length >= 1);
+// U3 Evaluatora r4: okrazenie (`:6105-6118`) zakonczone zniknieciem z pola (`_fleeStep` po `_startRout`: krawedz
+// wlasna albo `fleeStuck >= 2`, `:9850-9858`). Dopisane NA KONCU (po wszystkich rodzinach), wiec wczesniejsze wektory
+// i ich rzuty `rnd` sa bez zmian.
+{
+  let got = 0;
+  while (got < N_SURROUND_LEFT) {
+    if (++tries > 4000000) throw new Error('za malo scenariuszy surround-left');
+    const sc = makeCase('surround');
+    if (!sc) continue;
+    const expect = runCase(sc);
+    if (!expect.trace.includes('flee') || expect.leaves.length === 0) continue;
+    cases.push({ ...sc, name: `close-r4-surround-left-${got}`, kind: 'surround', expect });
+    got += 1;
+  }
+}
 
 const fam = (kind) => cases.filter((c) => c.kind === kind);
 const actingOf = (c) => (c.acting.side === 'atk' ? c.atk : c.def)[c.acting.idx];
@@ -703,7 +722,7 @@ const stats = {
   surroundCascade: fam('surround').filter((c) => c.expect.routs.length > 1).length,
   nobow: fam('nobow').length,
   nobowShot: fam('nobow').filter((c) => c.expect.blows.length === 1).length,
-  nobowShotAdjFar: fam('nobow').filter((c) => c.expect.blows.length === 1 && c.expect.steps.length === 0).length,
+  nobowShotNoStep: fam('nobow').filter((c) => c.expect.blows.length === 1 && c.expect.steps.length === 0).length,
   nobowMove: fam('nobow').filter((c) => c.expect.steps.length > 0).length,
   nobowPrimary: fam('nobow').filter((c) => actingOf(c).primaryRanged).length,
   nobowMounted: fam('nobow').filter((c) => actingOf(c).mounted).length,
