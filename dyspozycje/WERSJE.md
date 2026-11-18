@@ -1,3 +1,9 @@
+## ROBOCZA 15e1ba0b -- 2026-11-18 -- FALA 823: DOCWEAR: Civpedia Rozejm i pokoj podaje tempo zmeczenia 2,5% na ture zgodnie z parametrami (testowa)
+
+- Haslo Civpedii Rozejm i pokoj mowilo blednie 5% na ture od startu wojny; teraz 2,5% na ture (100% po 40 turach), +10% za zmienione miasto — zgodnie z parametrami i oknem pokoju wymuszonego; wikiBundle regenerowany generatorem, zmieniona tylko to haslo; nowy test-straznik pilnuje zgodnosci hasel z war-weariness-params.json (kod 1b6fd0947)
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplo-wiki-weariness-rate-consistency 18/0 z mutacjami (5% na ture, 110%) czerwienieja; pr141-matrix-only-data-wiki OK; civpedia-wikihubhud-duplikacja 7/0
+- Limity: NIE ZMIERZONO: widok w przegladarce (tekst statyczny); cztery stare komentarze 5%/ture poza zakresem (osobny temat)
+
 ## ROBOCZA 2f16feff -- 2026-11-18 -- FALA 822: FORCEDPEACE: pokoj wymuszony czeka na akceptacje gracza, blokuje Zakoncz ture, okno z uzasadnieniem (testowa)
 
 - Gdy zmeczenie wojna osiaga 100% i gracz jest w wojnie, pokoj nie zapada po cichu: otwiera sie okno z uzasadnieniem (tur wojny, zmienione miasta, 2,5% na ture z parametrow, +10% za miasto, kto wygrywa wg sily militarnej) i warunkami; Esc i klik w tlo nie zamykaja; Zakoncz ture jest zablokowane do akceptacji; po akceptacji pokoj, dokladnie jeden wpis Pokoj zawarty w Wazne; pary AI-AI bez zmian (kod 9db388f25)
