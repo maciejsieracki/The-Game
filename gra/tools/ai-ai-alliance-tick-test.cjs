@@ -15,11 +15,14 @@
  *  (S10) determinizm i brak mutacji wejścia;
  *  (S11) E1 (prawdziwe evaluateTreatyOffer): rdzeń 150/100 + gotowość 0,6 -> akceptacja, bezterminowy, callToWar;
  *        gotowość 0,53 -> odmowa; wojna -> odmowa;
+ *  (S13) limit proponenta: proponent z 2 sojuszami nie proponuje kolejnego;
+ *  (S14) para z istniejącym sojuszem nie jest proponowana (prefilter przepuszcza, evaluate akceptuje);
  *  (S12) main.ts: tickAiAiAllianceRequests zaczyna się od bramki flagi i jest wołane w bloku try po tickAiAiTreatyRequests;
  *        moduł bez Math.random / Date / DOM.
  *  Mutanty (kopia źródła w pamięci, esbuild; NIE git checkout) — każdy musi czerwienić test:
  *  M1 limit sojuszy usunięty; M2 bramka wojny usunięta (przy evaluate = akceptuj); M3 bramka duplikatów usunięta;
- *  M4 kadencja 1-sojuszowa usunięta; M5 sortowanie willingness odwrócone; M6 kontrola skarbca usunięta.
+ *  M4 kadencja 1-sojuszowa usunięta; M5 sortowanie willingness odwrócone; M6 kontrola skarbca usunięta;
+ *  M7 limit proponenta off-by-one (> zamiast >=); M8 bramka hasAlliance usunięta.
  *
  *   node tools/ai-ai-alliance-tick-test.cjs   # exit 0 = wszystko zielone i mutanty wykryte
  */
@@ -227,6 +230,23 @@ function runSuite(M) {
     return true;
   });
 
+  check('S13 limit proponenta: gracz z 2 sojuszami (= limit) nie proponuje kolejnego', () => {
+    const r = M.planAiAiAllianceTickFull(makeInput({
+      turn: 8, owners: [0, 1, 2, 3], counts: [[0, 2], [1, 0], [2, 0], [3, 0]], maxSojuszy: 2,
+    }));
+    if (r.accepted.some(a => a.proposer === 0)) return 'proponent na limicie 2 zawarl kolejny sojusz';
+    if ((r.alliancesCountPo.get(0) ?? 0) !== 2) return 'licznik proponenta zmieniony';
+    return true;
+  });
+
+  check('S14 para z istniejacym sojuszem (hasAlliance=true) nie jest proponowana, nawet gdy prefilter przepuszcza i evaluate akceptuje', () => {
+    const r = M.planAiAiAllianceTickFull(makeInput({
+      turn: 1, owners: [0, 1], prefilter: () => true, info: () => ({ hasAlliance: true }),
+    }));
+    if (r.accepted.length !== 0) return 'zawarto duplikat istniejacego sojuszu';
+    return true;
+  });
+
   check('S12 main.ts: bramka flagi na poczatku tickAiAiAllianceRequests, wolanie po NAP; moduł bez Math.random/Date/DOM', () => {
     const main = fs.readFileSync(MAIN_FILE, 'utf8');
     if (!/function tickAiAiAllianceRequests\(\): void \{\s*if \(!isAiAiAllianceTickEnabled\(\)\) return;/.test(main)) return 'brak bramki flagi';
@@ -238,7 +258,7 @@ function runSuite(M) {
   return out;
 }
 
-const SUITE_NAMES = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6a', 'S6b', 'S6c', 'S7a', 'S7b', 'S8', 'S9', 'S10', 'S11a', 'S11b', 'S11c', 'S12'];
+const SUITE_NAMES = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6a', 'S6b', 'S6c', 'S7a', 'S7b', 'S8', 'S9', 'S10', 'S11a', 'S11b', 'S11c', 'S12', 'S13', 'S14'];
 
 function main() {
   const M = loadModule([]);
@@ -265,6 +285,12 @@ function main() {
     ],
     M6_treasury_gate_removed: [
       ['if (D > have) continue;', ''],
+    ],
+    M7_proposer_limit_off_by_one: [
+      ['if (ileP >= maxSojuszy) continue;', 'if (ileP > maxSojuszy) continue;'],
+    ],
+    M8_has_alliance_gate_removed: [
+      ['if (info.hasAlliance) continue;', ''],
     ],
   };
   const mutantReport = [];
