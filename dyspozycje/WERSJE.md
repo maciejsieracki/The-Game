@@ -1,3 +1,9 @@
+## ROBOCZA 304eac4b -- 2026-11-18 -- FALA 848: Sojusze AI-AI (etap B1, za flaga, wylaczone): tor sojuszy z limitem 2 na cywilizacje (testowa)
+
+- Nowy modul ai-ai-alliance-tick.ts (czysta logika: limit 2, ponowne proby co 8 tur, wybor celu wg gotowosci i wspolnego wroga) + wpiecie tickAiAiAllianceRequests w main.ts; parametry w ai-ai-treaty-params.json; flaga torSojuszyAktywny=false = zachowanie gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; ai-ai-alliance-tick-test 19/19, mutanty 8/8; ai-ai-treaty-evaluate 21/0; nap-wiring 44/44; diplomacy-harder 50/0 po scaleniu z FALA 847
+- Limity: Flaga domyslnie wylaczona: sojusze AI-AI nie powstaja w rozgrywce do czasu pomiaru i decyzji wlasciciela; bieg dymny z flaga i runner pomiaru NIE ZMIERZONO (osobny temat); brak UI listy ukladow swiata; zawarcie przez addTreaty+syncRelationFromDeals (jak NAP)
+
 ## ROBOCZA 5758cd3b -- 2026-11-18 -- FALA 847: Twardsza dyplomacja etap A (za flaga, wylaczona): napiecie graniczne, sufit handlu, zazdrosc lidera (testowa)
 
 - Nowy modul diplomacy-harder.ts + gra/data/diplomacy-harder-params.json; wpiecie w tick dyplomacji (diplomacy.ts, main.ts) i wiersz Zazdrosc wobec lidera w panelu; flaga twardaDyplomacjaAktywna=false = zachowanie gry bez zmian
