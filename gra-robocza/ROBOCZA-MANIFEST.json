@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "f9eb9970d6b7cda42f5fb6b3e664393e",
-  "bundleSha256": "bef445fb4389ebdbc5493211304ce3b32a36a7a0cf9fdc3bb0cbdccade8df6c0",
-  "bundleBytes": 14952494,
+  "bundleMd5": "882a31fe73568cb46b2235dc0aa3594d",
+  "bundleSha256": "e6cf2e6b45898af7451ef0ed283e06afd1b49e9e0982117132c6f4cb53ce4a49",
+  "bundleBytes": 14953625,
   "sourceSnapshot": {
-    "source": "gra/ (main 2d2c425f + merge FC 18a0710bd)",
+    "source": "gra/ (main ea43bc32 + merge FC e13f8103 i 9a20e765)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 841: Panel miasta: w naglowku sekcji Ulepsz przycisk Ulepsz wszystko dodaje do kolejki wszystkie aktywne ulepszenia ta sama funkcja addItem co klik Ulepsz w wierszu (bez zakupu); przycisk nieaktywny gdy wszystko w kolejce; komunikat Dodano do kolejki: N (zgloszenie wlasciciela)"
+    "FALA 842: Po bitwie przegrana grupa, ktorej kierunek wprost od zwyciezcy jest zablokowany, odskakuje na inny wolny sasiedni heks (2 heksy, potem 1; kaskada 3 kierunkow w post-battle-map.ts) zamiast zostawac na heksie bitwy (zgloszenie wlasciciela); plus hooki civTest aiAiNapLiveProof w main.ts i testy zywe toru NAP AI-AI (kara za zerwanie, wiring ticku), tor nadal wylaczony torAktywny=false"
   ],
   "verification": [
-    "FC PASS-WITH-NOTES 18a0710bd (kod a26997e44, operator 52657c27a): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, growth-percent 29/0; nowy test city-upgrade-all-button 25/0, mutacja 7 FAIL; zrzuty PRZED/PO headless Chromium (lista budowy)"
+    "FC PASS-WITH-NOTES e13f8103 (kod a2f362d6/operator 057788a9) i 9a20e765 (kod af72e15e/operator cec91fed): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; battle-defeat-retreat-blocked-direction 16/0 (mutacja 9/7), two-hex 44/0, retreat-limit 43/0; NAP: kara zerwania zywy Chromium 12/0 (Respekt -30, clamp, -20 zlamana_obietnica_ai), wiring 60 tur NAP=1; nap-wiring 44/44, evaluate 21/0"
   ],
   "limits": [
-    "NIE ZMIERZONO: wyglad w pelnej zywej grze, wyczerpanie puli surowcow w polowie serii (tooltip do N, zaleznie od zasobow); upgrade-budynki-test 60/1 (stale palisade completion) czerwony tez na bazie 2d2c425f"
+    "NIE ZMIERZONO: zywy Chromium odwrotu (zrzut), zwyciezca z 71 jednostkami (tylko przez zajetosc heksow, S8), odwrot atakujacego (retreatAtkRosterToStart bez kaskady, osobny temat), kierunek wprost liczony euklidesowo w osiach (osobny temat); NAP: dokladna kwota przelewu D w chwili ticku, liczniki prob i odmow ticku, wznowienie ze slotu (Target page closed); tor torAktywny=false bez zmian"
   ],
-  "finalControl": "R-WEB-UI-CITY-UPGRADE-ALL-BUTTON-Q1 r1 (Operator Haiku, Obrona Haiku) FC PASS-WITH-NOTES 18a0710bd (kod a26997e44)",
+  "finalControl": "R-WEB-BATTLE-DEFEATED-UNIT-STAYS-ON-BATTLE-HEX-Q1 r1 FC PASS-WITH-NOTES e13f8103 (kod a2f362d6); R-WEB-AI-AI-TREATIES-LIVE-PROOF-INERT-Q1 r3 FC PASS-WITH-NOTES 9a20e765 (kod af72e15e)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T20:01:37",
+  "hubGeneratedAt": "2026-11-18T20:03:27",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
-      "sizeBytes": 14952494
+      "md5": "882a31fe73568cb46b2235dc0aa3594d",
+      "sizeBytes": 14953625
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
-      "sizeBytes": 14952494
+      "md5": "882a31fe73568cb46b2235dc0aa3594d",
+      "sizeBytes": 14953625
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
-      "sizeBytes": 14952494
+      "md5": "882a31fe73568cb46b2235dc0aa3594d",
+      "sizeBytes": 14953625
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
-      "sizeBytes": 14952494
+      "md5": "882a31fe73568cb46b2235dc0aa3594d",
+      "sizeBytes": 14953625
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
-      "sizeBytes": 14952494
+      "md5": "882a31fe73568cb46b2235dc0aa3594d",
+      "sizeBytes": 14953625
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
-      "sizeBytes": 14952494
+      "md5": "882a31fe73568cb46b2235dc0aa3594d",
+      "sizeBytes": 14953625
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
-      "sizeBytes": 14952494
+      "md5": "882a31fe73568cb46b2235dc0aa3594d",
+      "sizeBytes": 14953625
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
-      "sizeBytes": 14952494
+      "md5": "882a31fe73568cb46b2235dc0aa3594d",
+      "sizeBytes": 14953625
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
-      "sizeBytes": 14952494
+      "md5": "882a31fe73568cb46b2235dc0aa3594d",
+      "sizeBytes": 14953625
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
-      "sizeBytes": 14952494
+      "md5": "882a31fe73568cb46b2235dc0aa3594d",
+      "sizeBytes": 14953625
     }
   ],
-  "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
+  "md5": "882a31fe73568cb46b2235dc0aa3594d",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

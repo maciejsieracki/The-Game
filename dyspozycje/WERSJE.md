@@ -1,3 +1,9 @@
+## ROBOCZA 882a31fe -- 2026-11-18 -- FALA 842: Odskok przegranej armii na inny wolny heks + zywy dowod toru NAP AI-AI (hooki testowe) (testowa)
+
+- Po bitwie przegrana grupa, ktorej kierunek wprost od zwyciezcy jest zablokowany, odskakuje na inny wolny sasiedni heks (2 heksy, potem 1; kaskada 3 kierunkow w post-battle-map.ts) zamiast zostawac na heksie bitwy (zgloszenie wlasciciela); plus hooki civTest aiAiNapLiveProof w main.ts i testy zywe toru NAP AI-AI (kara za zerwanie, wiring ticku), tor nadal wylaczony torAktywny=false
+- Weryfikacja: FC PASS-WITH-NOTES e13f8103 (kod a2f362d6/operator 057788a9) i 9a20e765 (kod af72e15e/operator cec91fed): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; battle-defeat-retreat-blocked-direction 16/0 (mutacja 9/7), two-hex 44/0, retreat-limit 43/0; NAP: kara zerwania zywy Chromium 12/0 (Respekt -30, clamp, -20 zlamana_obietnica_ai), wiring 60 tur NAP=1; nap-wiring 44/44, evaluate 21/0
+- Limity: NIE ZMIERZONO: zywy Chromium odwrotu (zrzut), zwyciezca z 71 jednostkami (tylko przez zajetosc heksow, S8), odwrot atakujacego (retreatAtkRosterToStart bez kaskady, osobny temat), kierunek wprost liczony euklidesowo w osiach (osobny temat); NAP: dokladna kwota przelewu D w chwili ticku, liczniki prob i odmow ticku, wznowienie ze slotu (Target page closed); tor torAktywny=false bez zmian
+
 ## ROBOCZA f9eb9970 -- 2026-11-18 -- FALA 841: Przycisk Ulepsz wszystko w sekcji Ulepsz panelu miasta (testowa)
 
 - Panel miasta: w naglowku sekcji Ulepsz przycisk Ulepsz wszystko dodaje do kolejki wszystkie aktywne ulepszenia ta sama funkcja addItem co klik Ulepsz w wierszu (bez zakupu); przycisk nieaktywny gdy wszystko w kolejce; komunikat Dodano do kolejki: N (zgloszenie wlasciciela)
