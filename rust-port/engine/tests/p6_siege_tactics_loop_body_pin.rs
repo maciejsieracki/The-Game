@@ -401,11 +401,8 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
             let trace_before = body.trace.len();
             let blows_before = body.blows.len();
             let counters_before = body.counters.len();
-            let shakes_before = body
-                .unported
-                .iter()
-                .filter(|(_, t)| *t == "shakeAlliesOnLoss")
-                .count();
+            // K5LOOP-KILL-RIPPLE (D-INT-2): ripple przy zabiciu jest wykonywany; licznik wywołań = `kill_ripples`.
+            let shakes_before = body.kill_ripples.len();
             let dur = body.start(unit, &st);
             body.complete(unit, &mut st);
             let who = format!("#{id} act{k} {}", tag(unit));
@@ -681,13 +678,11 @@ fn zgodnosc_ciala_z_tekstem_pinu_end_to_end() {
                 *prev = now;
             }
 
-            // --- ripple `_shakeAlliesOnLoss`: nieportowany, ale liczba wywołań z pinu = liczba wpisów `unported` ---
-            let shakes_now = body
-                .unported
-                .iter()
-                .filter(|(_, t)| *t == "shakeAlliesOnLoss")
-                .count()
-                - shakes_before;
+            // --- ripple `_shakeAlliesOnLoss` (`:9048`): liczba wywołań z pinu = liczba wpisów `kill_ripples` ---
+            let shakes_now = body.kill_ripples.len() - shakes_before;
+            if body.unported.iter().any(|(_, t)| *t == "shakeAlliesOnLoss") {
+                failures.push(format!("{who}: tag shakeAlliesOnLoss po wpieciu ripple"));
+            }
             let want_shakes = e["fx"]["shakes"].as_u64().expect("fx.shakes") as usize;
             if shakes_now != want_shakes {
                 failures.push(format!(

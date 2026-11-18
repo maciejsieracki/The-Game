@@ -255,7 +255,8 @@ fn def_act(q: i64) -> ActivateUnit {
 
 /// Scenariusz 1 (Kill): cios 5 przy HP 3 zabija. `_startFade` -> `removed`+`dead`, `fadingOut = false`;
 /// `_boostEnemiesOnBreak` daje atakującemu (wróg poległego, dystans 1 <= 3) +5, `_gainMorale` +6 (80 -> 91).
-/// Ripple `_shakeAlliesOnLoss` jest nieportowany (tag w `unported`).
+/// Ripple `_shakeAlliesOnLoss` (`battleScene.ts:9048`) jest wykonywany (K5LOOP-KILL-RIPPLE, D-INT-2): jedno wywołanie dla
+/// poległego, bez tagu w `unported` (brak sojuszników w promieniu, więc bez zmian morale).
 #[test]
 fn scenariusz_kill_znika_z_pola_i_morale_atakujacego() {
     let (mut body, mut st) = scenario(vec![(def_act(1), cu(3.0, 100.0))], 80.0);
@@ -265,7 +266,12 @@ fn scenariusz_kill_znika_z_pola_i_morale_atakujacego() {
     assert_eq!(d.hp, 0.0);
     assert_eq!(st.atk[0].c.morale, 91.0, "boost +5 i gain +6");
     assert!(!d.routed, "zabicie nie ustawia routed");
-    assert!(body.unported.contains(&(def(0), "shakeAlliesOnLoss")));
+    assert_eq!(
+        body.kill_ripples,
+        vec![def(0)],
+        "ripple przy zabiciu (:9048)"
+    );
+    assert!(body.unported.iter().all(|(_, t)| *t != "shakeAlliesOnLoss"));
 }
 
 /// Scenariusz 2 (MoraleOnly): cios 5 przy maxHp 50 = -10 morale, bez routu i bez zabicia, bez zysku atakującego.
@@ -279,6 +285,7 @@ fn scenariusz_morale_only_obniza_morale_bez_routu() {
     assert!(!d.routed && !d.dead && !d.removed);
     assert_eq!(st.atk[0].c.morale, 80.0, "brak zysku bez zlamania celu");
     assert!(body.unported.iter().all(|(_, t)| *t != "shakeAlliesOnLoss"));
+    assert!(body.kill_ripples.is_empty(), "bez zabicia brak ripple");
 }
 
 /// Scenariusz 3 (rout-flaga): morale 12, próg 5 -> po ciosie 2 <= 5. Rout przed śmiercią: `routed`, `acted`,
