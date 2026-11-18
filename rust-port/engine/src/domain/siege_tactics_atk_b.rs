@@ -173,6 +173,19 @@ mod tests {
         assert!(wall_tile_damage(&st(0.0, 0.0, 0.0, f64::NAN)).is_nan());
     }
 
+    /// `idx >= 0 && idx < tiles.length` (`:7642-7645`, `:7768-7769`), `tiles.length = BF_COLS * BF_ROWS`.
+    #[test]
+    fn indeks_kafla_w_zakresie_jak_pin() {
+        assert!(tile_index_in_bounds(0, 0));
+        assert!(tile_index_in_bounds(BF_COLS - 1, BF_ROWS - 1));
+        assert!(!tile_index_in_bounds(0, -1));
+        assert!(!tile_index_in_bounds(-1, 0));
+        assert!(!tile_index_in_bounds(0, BF_ROWS));
+        // JS liczy indeks liniowy: kolumna poza planszą w wierszu < ostatni trafia w kafel następnego wiersza.
+        assert!(tile_index_in_bounds(BF_COLS, 0));
+        assert!(!tile_index_in_bounds(BF_COLS, BF_ROWS - 1));
+    }
+
     #[test]
     fn odwrot_z_muru_kolejnosc_pol() {
         let pass = |_: i64, _: i64| true;

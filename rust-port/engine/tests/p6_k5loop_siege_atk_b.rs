@@ -863,6 +863,26 @@ fn check_case(case: &Value, failures: &mut Vec<String>) -> CaseOut {
                 wall_labels.push((*row, "MUR WYBURZONY!".into(), ta.t0));
             }
             BattleAction::TowerDestroyed { row } => got_order.push(format!("TOWER:{row}")),
+            // `LeaveField` (zejście z wyburzonego kafla, `:7704-7741`): `from` = kafel muru, `to` = pole po odwrocie
+            // z pinu (stan końcowy jednostki; `to == from`, gdy jednostka zostaje), obrońca już nie na murze.
+            BattleAction::LeaveField { unit, from, to } => {
+                let want = e["units"]
+                    .as_array()
+                    .expect("units")
+                    .iter()
+                    .find(|u| unit_of(u["unit"].as_str().expect("unit")) == *unit)
+                    .map(|u| ((int(&u["q"]), int(&u["r"])), b(&u["onWall"])));
+                let breached = actions
+                    .iter()
+                    .any(|a| matches!(a.action, BattleAction::WallBreach { row } if row == from.1));
+                if unit.side != BattleSide::Defender || want != Some((*to, false)) || !breached {
+                    fail(
+                        "LeaveField",
+                        format!("{unit:?} {from:?} -> {to:?}"),
+                        format!("{want:?}"),
+                    );
+                }
+            }
             BattleAction::Rout { unit } => got_order.push(format!("R:{}", tag_of(*unit))),
             BattleAction::Kill { unit } => got_order.push(format!("K:{}", tag_of(*unit))),
             BattleAction::Leave { unit } => got_order.push(format!("L:{}", tag_of(*unit))),
