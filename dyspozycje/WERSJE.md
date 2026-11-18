@@ -1,3 +1,9 @@
+## ROBOCZA 5bab018a -- 2026-11-18 -- FALA 832: usunięcie martwych pól zmęczenia wojną (zegar profilu) (testowa)
+
+- Usunięte martwe pola zegara zmęczenia wojną: zmeczenie.maksUdzial, bazaTur, wagaAgresja, maksTur, bazaTurBrakDanych, profil zmeczenieT, funkcje warWearinessFraction/Share i stała WAR_WEARINESS_MAX_SHARE (od zmęczenia w 20 turach nie sterują grą; zostaje progSygnaluPokoju czytany przez aiPeaceSignals). Zachowanie gry bez zmian; usunięto tylko asercje martwych pól (truce-impl 94→91, profile-unit 198→124).
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; profile-unit 124/0; truce-impl 91/0; war-peace-sim 25/0 (bez zmian); weariness-20-turns 31/0; main-guard 35/0; forced-peace-pending 40/0; peace-tail-integration 42/0; treaties-ai-parity 80/0; mutacje kontrolne (Obrona): usunięcie progSygnaluPokoju → profile-unit 123/1, .zmeczenieT w diplomacy.ts → main-guard 34/1.
+- Limity: NIE ZMIERZONO: build i test w przeglądarce dla tego tematu; dług bazowy: diplo-forced-peace-pending-live-paths-test (fixture) i json-descriptions-sync-test a1 18/1 identyczne przed i po; sim-test nie chroni progSygnaluPokoju (chroni profile-unit).
+
 ## ROBOCZA dd31cc6f -- 2026-11-18 -- FALA 831: otwarty panel miasta i panel rekrutacji odświeżają się po końcu tury gracza (testowa)
 
 - Po zakończeniu tury gracza otwarty panel miasta (skarbiec, praca, nauka, żywność, lista budowy) i panel rekrutacji imperium pokazują stan z nowej tury zamiast migawki z jej początku; zachowany scrollTop paneli; poprzednio błąd potwierdzony pomiarem na żywo (skarbiec 100000 vs 99998, praca/nauka 0 vs 4).
