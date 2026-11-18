@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "016fd4cf401b57c2f08b084270588f1b",
-  "bundleSha256": "2f6312fbeb178230601877231f834ce8c1ef596be469f7224e813c30a3f96f91",
-  "bundleBytes": 14865486,
+  "bundleMd5": "f53b90b03b6a494cf431f423855e5a98",
+  "bundleSha256": "5e34f85fab08f84dbe2aa5e9318109a25575f0821d2106977331bd970284cf47",
+  "bundleBytes": 14866378,
   "sourceSnapshot": {
-    "source": "FALA 816 f21ac536c na main 99724ec70",
+    "source": "FALA 817 df528913a na main e42aac930",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 816: Panel audiencji: podpowiedzi przy Zmeczenie wojna i Desperacja wyjasniaja skale 0-100%, narastanie, progi 50/80/100%, role desperacji (tylko przegrywajacy, oferty miast, nie wymusza pokoju) oraz bramki tur; nowy widoczny wiersz Pokoj wymuszony za okolo N tur (liczba z war-weariness-params.json); haslo Civpedii zmeczenie-wojna uzupelnione, wikiBundle zregenerowany (diplomacy-display.ts, diplomacyAudience.ts, zmeczenie-wojna.md)"
+    "FALA 817: Dyplomacja: przycisk Zaproponuj pokoj i pozycja w Mozliwych umowach wyszarzone z licznikiem dostepne za N tur gdy wojna trwa krocej niz 10 pelnych tur (takze oferta trybutu), poprawna odmiana tura/tury/tur; render blokady bez zapisu stanu wojny; toast odrzucenia AI dla pokoju i rozejmu dopisuje konkretny powod z evaluateProposal (diplomacy-locks.ts, diplomacy-peace-proposal-timing.ts, main.ts)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplo-weariness-explain 14/0; display 54/0; stages-view 22/0; civpedia-values 129 PASS; Chromium FC: render showDiplomacyAudience z danymi syntetycznymi, wiersz 28% daje 29 tur, bez bledow strony"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplo-winner-proposal-table 77/0; flow-test 49/0; diplomacy-locks 88/0; balance-accept 32/0; war-peace-gate 24/0; truce-r1 31/0; Chromium FC: wiek wojny 5 przycisk wyszarzony z napisem dostepne za 5 tur, wiek 11 aktywny, zero pageerror"
   ],
   "limits": [
-    "NIE ZMIERZONO w pelnej grze (render komponentu z danymi syntetycznymi); title nie dziala na dotyku; wikiBundle regenerowac generatorem na koncu przy integracji z DIPLO-4/5"
+    "NIE ZMIERZONO live: toastu odmowy AI i klikniecia wyslania w scenariuszu zmeczenia 28%; kierunek platnosci za pokoj i etykieta Brakuje N PW czekaja na decyzje wlasciciela (ABC)"
   ],
-  "finalControl": "R-WEB-UI-DIPLO-WEARINESS-PEACE-EXPLAIN-Q1 r1 FC PASS-WITH-NOTES bf44f3d31 (kod f21ac536c)",
+  "finalControl": "R-WEB-DIPLO-PEACE-WINNER-PROPOSAL-FLOW-Q1 r3 FC PASS-WITH-NOTES e31d6cd17 (kod df528913a)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T00:46:19",
+  "hubGeneratedAt": "2026-11-18T00:49:37",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "016fd4cf401b57c2f08b084270588f1b",
-      "sizeBytes": 14865486
+      "md5": "f53b90b03b6a494cf431f423855e5a98",
+      "sizeBytes": 14866378
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "016fd4cf401b57c2f08b084270588f1b",
-      "sizeBytes": 14865486
+      "md5": "f53b90b03b6a494cf431f423855e5a98",
+      "sizeBytes": 14866378
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "016fd4cf401b57c2f08b084270588f1b",
-      "sizeBytes": 14865486
+      "md5": "f53b90b03b6a494cf431f423855e5a98",
+      "sizeBytes": 14866378
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "016fd4cf401b57c2f08b084270588f1b",
-      "sizeBytes": 14865486
+      "md5": "f53b90b03b6a494cf431f423855e5a98",
+      "sizeBytes": 14866378
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "016fd4cf401b57c2f08b084270588f1b",
-      "sizeBytes": 14865486
+      "md5": "f53b90b03b6a494cf431f423855e5a98",
+      "sizeBytes": 14866378
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "016fd4cf401b57c2f08b084270588f1b",
-      "sizeBytes": 14865486
+      "md5": "f53b90b03b6a494cf431f423855e5a98",
+      "sizeBytes": 14866378
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "016fd4cf401b57c2f08b084270588f1b",
-      "sizeBytes": 14865486
+      "md5": "f53b90b03b6a494cf431f423855e5a98",
+      "sizeBytes": 14866378
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "016fd4cf401b57c2f08b084270588f1b",
-      "sizeBytes": 14865486
+      "md5": "f53b90b03b6a494cf431f423855e5a98",
+      "sizeBytes": 14866378
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "016fd4cf401b57c2f08b084270588f1b",
-      "sizeBytes": 14865486
+      "md5": "f53b90b03b6a494cf431f423855e5a98",
+      "sizeBytes": 14866378
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "016fd4cf401b57c2f08b084270588f1b",
-      "sizeBytes": 14865486
+      "md5": "f53b90b03b6a494cf431f423855e5a98",
+      "sizeBytes": 14866378
     }
   ],
-  "md5": "016fd4cf401b57c2f08b084270588f1b",
+  "md5": "f53b90b03b6a494cf431f423855e5a98",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

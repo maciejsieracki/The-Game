@@ -1,3 +1,9 @@
+## ROBOCZA f53b90b0 -- 2026-11-17 -- FALA 817: DIPLO-4: blokada propozycji pokoju przed klikiem i powod odmowy AI w toscie (testowa)
+
+- Dyplomacja: przycisk Zaproponuj pokoj i pozycja w Mozliwych umowach wyszarzone z licznikiem dostepne za N tur gdy wojna trwa krocej niz 10 pelnych tur (takze oferta trybutu), poprawna odmiana tura/tury/tur; render blokady bez zapisu stanu wojny; toast odrzucenia AI dla pokoju i rozejmu dopisuje konkretny powod z evaluateProposal (diplomacy-locks.ts, diplomacy-peace-proposal-timing.ts, main.ts)
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplo-winner-proposal-table 77/0; flow-test 49/0; diplomacy-locks 88/0; balance-accept 32/0; war-peace-gate 24/0; truce-r1 31/0; Chromium FC: wiek wojny 5 przycisk wyszarzony z napisem dostepne za 5 tur, wiek 11 aktywny, zero pageerror
+- Limity: NIE ZMIERZONO live: toastu odmowy AI i klikniecia wyslania w scenariuszu zmeczenia 28%; kierunek platnosci za pokoj i etykieta Brakuje N PW czekaja na decyzje wlasciciela (ABC)
+
 ## ROBOCZA 016fd4cf -- 2026-11-17 -- FALA 816: DIPLO-3: wyjasnienie zmeczenia wojna, desperacji i pokoju wymuszonego w panelu i Civpedii (testowa)
 
 - Panel audiencji: podpowiedzi przy Zmeczenie wojna i Desperacja wyjasniaja skale 0-100%, narastanie, progi 50/80/100%, role desperacji (tylko przegrywajacy, oferty miast, nie wymusza pokoju) oraz bramki tur; nowy widoczny wiersz Pokoj wymuszony za okolo N tur (liczba z war-weariness-params.json); haslo Civpedii zmeczenie-wojna uzupelnione, wikiBundle zregenerowany (diplomacy-display.ts, diplomacyAudience.ts, zmeczenie-wojna.md)
