@@ -405,7 +405,7 @@ async function playOneTurn(page, ctxState) {
   const m = await page.evaluate(() => window.__aiEconomyMeasure.metrics());
   const rec = {
     seed: SEED, turn: after, gateBlockedBeforeEnd: blocked, bypass, battlesAuto, modalClosedThisTurn: modalDelta(),
-    owners: m.owners, diag: m.diag, niezmierzone: m.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
+    owners: m.owners, terytorium: m.terytorium, diag: m.diag, niezmierzone: m.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
     load1: Math.round(os.loadavg()[0] * 100) / 100,
     ledgerRecording: LEDGER_OFF ? 'off' : 'on',
   };
