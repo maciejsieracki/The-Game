@@ -1,13 +1,24 @@
 'use strict';
 /**
- * diplo-treaty-payment-live-test.cjs — R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1 (r3): realny przebieg AKCEPTACJI traktatu
+ * diplo-treaty-payment-live-test.cjs — R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1 (r4): realny przebieg AKCEPTACJI traktatu
  * z nośnikiem dopłaty D w prawdziwym Chromium na prawdziwym bundle Vite (?playtest=mapa).
  *
- * Hooki civTest (__cityCessionTestDebug.treatyPay*) nie reimplementują logiki: akceptacja oferty AI idzie przez
- * resolvePlayerAcceptsAiPending (+ carrierCtx) → applyProposalOutcome → transferBasketItems; propozycja gracza przez
- * evaluateProposal → applyProposalOutcome. Test sprawdza STAN PO (zapasy płatnika zmalały dokładnie o pozycje nośnika,
- * odbiorca zyskał, technologia przeszła tylko gdy odbiorca jej nie miał, nigdy poniżej zera) dla pięciu traktatów
- * (NAP, sojusz obronny, sojusz pełny, przemarsz, wasal) w obu kierunkach (AI→gracz, gracz→AI).
+ * Co jest sprawdzane:
+ *  S (statycznie, main.ts): WSZYSTKIE akceptacje oferty AI przez gracza idą przez jedną funkcję
+ *    resolvePlayerAcceptsAiPendingWired, która sama dołącza carrierCtx. Bezpośrednie wywołanie
+ *    resolvePlayerAcceptsAiPending( w main.ts jest dozwolone tylko w tej funkcji i w AI↔AI (poza zakresem).
+ *    Usunięcie kontekstu z któregokolwiek miejsca wywołania nie jest więc możliwe bez zmiany tej funkcji.
+ *  L (live): pięć traktatów (NAP, sojusz obronny, sojusz pełny, przemarsz, wasal) w obu kierunkach
+ *    (gracz→AI, AI→gracz). Hooki civTest nie reimplementują logiki: akceptacja oferty AI idzie przez
+ *    resolvePlayerAcceptsAiPendingWired → applyProposalOutcome → transferBasketItems; propozycja gracza przez
+ *    evaluateProposal → applyProposalOutcome. Sprawdzany jest STAN PO: zapasy płatnika zmalały dokładnie o pozycje
+ *    nośnika, odbiorca zyskał to samo, technologia przeszła tylko gdy odbiorca jej nie miał i jej płatnik miał,
+ *    nic nie schodzi poniżej zera, strona koszyka zgodna z płatnikiem.
+ *  Precondycja respektu: przemarsz wymaga udziału siły gracza/AI ≥55%, wasal ≥70% — asertowane przed propozycją
+ *    (nie ma cichego pominięcia przypadku).
+ *
+ * Płatnik = słabsza strona wg Power (FALA 826). Dla przemarszu/wasala strona wymuszająca Respekt jest silniejsza,
+ * więc płatnikiem jest druga strona (AI przy propozycji gracza, gracz przy propozycji AI).
  *
  * Usage (z gra/):
  *   node ./node_modules/vite/bin/vite.js build --outDir <scratchAbs> --emptyOutDir
@@ -25,6 +36,7 @@ const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
 let pass = 0;
 let fail = 0;
+const knownGaps = [];
 function assert(label, cond, detail) {
   if (cond) { pass++; console.log(`  OK  ${label}`); }
   else {
@@ -33,6 +45,26 @@ function assert(label, cond, detail) {
   }
 }
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const sameSet = (a, b) => JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
+
+/** S: statyczna bramka okablowania (main.ts). */
+function staticWiringCheck() {
+  const src = fs.readFileSync(path.join(GRA_DIR, 'src', 'main.ts'), 'utf8');
+  const direct = (src.match(/resolvePlayerAcceptsAiPending\(/g) || []).length;
+  const ctxCount = (src.match(/carrierCtx:/g) || []).length;
+  const wrapperStart = src.indexOf('function resolvePlayerAcceptsAiPendingWired(');
+  const wrapperEnd = wrapperStart < 0 ? -1 : src.indexOf('\n    }\n', wrapperStart);
+  const wrapper = wrapperStart < 0 || wrapperEnd < 0 ? '' : src.slice(wrapperStart, wrapperEnd);
+  assert('S1 wrapper resolvePlayerAcceptsAiPendingWired istnieje i dołącza carrierCtx z buildProposalEvalContext',
+    /carrierCtx: buildProposalEvalContext\(pending\.fromOwnerId, pending\.toOwnerId\)/.test(wrapper), wrapper.slice(0, 200));
+  assert('S2 carrierCtx: wyłącznie w wrapperze (zero innych miejsc wywołania)', ctxCount === 1, ctxCount);
+  assert('S3 bezpośrednie resolvePlayerAcceptsAiPending( = 2 (wrapper + AI↔AI poza zakresem)', direct === 2, direct);
+  const aiAiAt = src.indexOf('resolvePlayerAcceptsAiPending(', src.indexOf('function applyAiAiHandelSurowiecCmd('));
+  assert('S4 drugie bezpośrednie wywołanie stoi w applyAiAiHandelSurowiecCmd (AI↔AI)',
+    aiAiAt > 0 && aiAiAt < src.indexOf('\n    }\n', src.indexOf('function applyAiAiHandelSurowiecCmd(')), aiAiAt);
+  const wiredCalls = (src.match(/resolvePlayerAcceptsAiPendingWired\(/g) || []).length - 1; // minus definicja
+  assert('S5 wywołania przez wrapper >= 7 (wszystkie realne ścieżki akceptacji)', wiredCalls >= 7, wiredCalls);
+}
 
 function buildBundle() {
   if (process.env.SKIP_BUILD === '1' && fs.existsSync(path.join(SCRATCH, 'index.html'))) return;
@@ -72,13 +104,37 @@ const PAYLOADS = {
   wasal: {},
 };
 
-// Zapasy GRACZA (płatnika) i techy: gracz ma 3 techy, AI ma jeden z nich (filtr „których druga strona nie ma").
+// Próg udziału siły WNIOSKODAWCY (proposerRespekt = 100·P_self/(P_self+P_partner)) — bramki Respektu w ocenie.
+const SHARE_NEED = { granice: 55, wasal: 70 };
+// Stosunek sił wymagany przez bramkę (z zapasem): 55% ⇔ 1,22; 70% ⇔ 2,33. Wybrane 1,3 i 2,5.
+const RATIO_NEED = { granice: 1.3, wasal: 2.5 };
+const DEFAULT_RATIO = 1.3; // AI silniejsza 1,3× (akcje bez bramki Respektu, jak w r3)
+
+// Zapasy GRACZA i AI: gracz ma 3 techy, AI ma jeden z nich (filtr „których druga strona nie ma").
 const PLAYER_TECHS = ['Rolnictwo', 'Murarstwo', 'Obróbka drewna'];
 const AI_TECHS = ['Rolnictwo'];
+const TECH_PREREQ = { Murarstwo: 'Obróbka drewna' }; // Murarstwo wymaga Obróbki drewna u odbiorcy
 const PLAYER_HOLD = { zloto: 30000, braz: 300, zelazo: 300, ruda: 300, ruda_cyny: 300, ruda_zelaza: 300 };
 const AI_HOLD = { zloto: 10, braz: 0, zelazo: 0, ruda: 0, ruda_cyny: 0, ruda_zelaza: 0 };
+// Zapasy płatnika w przypadkach o dużej D (stosunek 2,5 albo płatnik AI): nie ma być ograniczeniem.
+const RICH = { zloto: 5000000, braz: 50000, zelazo: 50000, ruda: 50000, ruda_cyny: 50000, ruda_zelaza: 50000 };
+const ORDER = ['zloto', 'braz', 'zelazo', 'ruda', 'ruda_cyny', 'ruda_zelaza'];
+
+/**
+ * Konfiguracja przypadku. proposerIsPlayer=true: gracz→AI (gracz proponuje, AI ocenia i wysyła).
+ * aiOverPlayer = P_AI / P_gracz. Strona wymuszająca Respekt (wnioskodawca) ma być silniejsza.
+ */
+function caseCfg(action, proposerIsPlayer) {
+  const need = SHARE_NEED[action];
+  const R = need ? RATIO_NEED[action] : DEFAULT_RATIO;
+  const aiOverPlayer = !need ? DEFAULT_RATIO : (proposerIsPlayer ? 1 / R : R);
+  const payerIsPlayer = aiOverPlayer >= 1; // słabsza strona płaci
+  const rich = !payerIsPlayer || (need && R >= 2.5);
+  return { need, aiOverPlayer, payerIsPlayer, rich };
+}
 
 async function main() {
+  staticWiringCheck();
   let chromium;
   try { ({ chromium } = require('playwright')); } catch (e) { console.error('playwright nie znaleziony'); process.exit(1); }
   buildBundle();
@@ -96,99 +152,128 @@ async function main() {
     const AI2 = ais[1]; // gracz→AI (osobna para: bez kolizji z już zawartym traktatem)
     console.log('AI owner:', AI, 'wszystkie:', JSON.stringify(ais));
 
-    const stage = async (AI) => {
-      await page.evaluate(([ai, ph, pt, ah, at]) => {
-        const d = window.__peaceRulesTestDebug;
-        // AI umiarkowanie silniejsza (r ≈ 1,3) => gracz = słabsza strona = płatnik D; D rzędu tysięcy PN, nie milionów.
-        d.setAiPowerBonusForTest(ai, 0);
-        const pw = d.getPowers(ai);
-        d.setAiPowerBonusForTest(ai, Math.max(0, Math.round(1.3 * pw.player - pw.ai)));
-        d.setRelationForBrake(ai, 200, 200);
-        window.__cityCessionTestDebug.treatyPaySetHoldingsForTest(0, ph, pt);
-        window.__cityCessionTestDebug.treatyPaySetHoldingsForTest(ai, ah, at);
-      }, [AI, PLAYER_HOLD, PLAYER_TECHS, AI_HOLD, AI_TECHS]);
-    };
-    const snap = async (AI) => page.evaluate(([ai]) => ({
-      p: window.__cityCessionTestDebug.treatyPayHoldingsForTest(0),
-      a: window.__cityCessionTestDebug.treatyPayHoldingsForTest(ai),
-    }), [AI]);
+    // Ustawia siłę (aiOverPlayer), zapasy i techy; zwraca moce i udział wnioskodawcy.
+    const stage = async (ai, cfg) => page.evaluate(([aiId, c, ph, pt, ah, at, rich, payerIsPlayer]) => {
+      const d = window.__peaceRulesTestDebug;
+      d.setAiPowerBonusForTest(aiId, 0);
+      d.setAiPowerBonusForTest(0, 0);
+      const pw0 = d.getPowers(aiId);
+      if (c.aiOverPlayer >= 1) d.setAiPowerBonusForTest(aiId, Math.max(0, Math.round(c.aiOverPlayer * pw0.player - pw0.ai)));
+      else d.setAiPowerBonusForTest(0, Math.max(0, Math.round(pw0.ai / c.aiOverPlayer - pw0.player)));
+      d.setRelationForBrake(aiId, 200, 200);
+      const pwr = d.getPowers(aiId);
+      const ph2 = payerIsPlayer && rich ? rich.RICH : ph;
+      const ah2 = !payerIsPlayer && rich ? rich.RICH : ah;
+      window.__cityCessionTestDebug.treatyPaySetHoldingsForTest(0, ph2, pt);
+      window.__cityCessionTestDebug.treatyPaySetHoldingsForTest(aiId, ah2, at);
+      return pwr;
+    }, [ai, cfg, PLAYER_HOLD, PLAYER_TECHS, AI_HOLD, AI_TECHS, cfg.rich ? { RICH } : null, cfg.payerIsPlayer]);
 
-    function verify(label, before, after, res, dirTag) {
+    const snap = async (ai) => page.evaluate(([aiId]) => ({
+      p: window.__cityCessionTestDebug.treatyPayHoldingsForTest(0),
+      a: window.__cityCessionTestDebug.treatyPayHoldingsForTest(aiId),
+    }), [ai]);
+
+    /**
+     * Sprawdza STAN PO akceptacji. payerIsPlayer: kto płaci D. proposerIsPlayer: kto wnioskuje (strona koszyka).
+     */
+    function verify(label, before, after, res, cfg, proposerIsPlayer) {
+      const payerB = cfg.payerIsPlayer ? before.p : before.a;
+      const payerA = cfg.payerIsPlayer ? after.p : after.a;
+      const recvB = cfg.payerIsPlayer ? before.a : before.p;
+      const recvA = cfg.payerIsPlayer ? after.a : after.p;
+      const payerTechs = cfg.payerIsPlayer ? PLAYER_TECHS : AI_TECHS;
+      const recvTechs = cfg.payerIsPlayer ? AI_TECHS : PLAYER_TECHS;
       const c = res.carrier;
       assert(`${label}: zaakceptowano (${res.reason})`, res.accepted === true, res);
       assert(`${label}: wynik niesie nośnik treatyCarrier`, !!c && c.items.length > 0, res);
       if (!c) return;
-      // Kolejność: technologie najpierw, potem złoto → brąz → żelazo → rudy (kolejność z danych).
-      const ORDER = ['zloto', 'braz', 'zelazo', 'ruda', 'ruda_cyny', 'ruda_zelaza'];
       const techItems = c.items.filter(i => i.typ === 'tech');
       const stockItems = c.items.filter(i => i.typ !== 'tech');
       const firstStock = c.items.findIndex(i => i.typ !== 'tech');
       assert(`${label}: technologie przed ogonem`, firstStock === -1 || c.items.slice(0, firstStock).every(i => i.typ === 'tech'), c.items);
       const idx = stockItems.map(i => ORDER.indexOf(i.id));
       assert(`${label}: ogon w kolejności złoto→brąz→żelazo→rudy`, idx.every((v, k) => v >= 0 && (k === 0 || idx[k - 1] < v)), stockItems);
-      // Technologie: tylko takie, których odbiorca (AI) NIE miał, i które płatnik (gracz) miał.
-      assert(`${label}: tech tylko spoza zbioru odbiorcy i z puli płatnika`,
-        techItems.every(i => !AI_TECHS.includes(i.id) && PLAYER_TECHS.includes(i.id)), techItems);
-      // Stan po: zapasy płatnika zmalały dokładnie o pozycje, odbiorca zyskał, nigdy < 0.
+      // Technologie: dokładnie te, które płatnik MA, a odbiorca NIE ma (i prerekwizyt odbiorcy spełniony).
+      const expectTech = payerTechs.filter(t => !recvTechs.includes(t) && (!TECH_PREREQ[t] || recvTechs.includes(TECH_PREREQ[t])));
+      assert(`${label}: technologie = dokładnie ${JSON.stringify(expectTech)} (płatnik ma, odbiorca nie ma)`,
+        sameSet(techItems.map(i => i.id), expectTech), techItems);
+      // Stan po — zapasy: płatnik −ilość, odbiorca +ilość, nigdy < 0.
       for (const it of stockItems) {
-        const key = it.id;
-        const dp = (before.p.holdings[key] ?? 0) - (after.p.holdings[key] ?? 0);
-        const da = (after.a.holdings[key] ?? 0) - (before.a.holdings[key] ?? 0);
-        assert(`${label}: ${key} płatnik −${it.ilosc} (jest −${dp})`, dp === it.ilosc, { dp, it });
-        assert(`${label}: ${key} odbiorca +${it.ilosc} (jest +${da})`, da === it.ilosc, { da, it });
-        assert(`${label}: ${key} płatnika ≥ 0`, (after.p.holdings[key] ?? 0) >= 0, after.p.holdings);
+        const dp = (payerB.holdings[it.id] ?? 0) - (payerA.holdings[it.id] ?? 0);
+        const dr = (recvA.holdings[it.id] ?? 0) - (recvB.holdings[it.id] ?? 0);
+        assert(`${label}: ${it.id} płatnik −${it.ilosc} (jest −${dp})`, dp === it.ilosc, { dp, it });
+        assert(`${label}: ${it.id} odbiorca +${it.ilosc} (jest +${dr})`, dr === it.ilosc, { dr, it });
+        assert(`${label}: ${it.id} płatnika ≥ 0`, (payerA.holdings[it.id] ?? 0) >= 0, payerA.holdings);
       }
-      // Klucze bez pozycji nośnika nie zmieniają się u płatnika.
       for (const k of ORDER) {
         if (stockItems.some(i => i.id === k)) continue;
-        assert(`${label}: ${k} płatnika bez zmian (brak pozycji)`, (before.p.holdings[k] ?? 0) === (after.p.holdings[k] ?? 0), { b: before.p.holdings[k], a: after.p.holdings[k] });
+        assert(`${label}: ${k} płatnika bez zmian (brak pozycji)`, (payerB.holdings[k] ?? 0) === (payerA.holdings[k] ?? 0),
+          { b: payerB.holdings[k], a: payerA.holdings[k] });
       }
-      // Murarstwo wymaga „Obróbki drewna" u odbiorcy (nie ma jej) — nie może być płatnością (nie zostałaby dostarczona);
-      // „Rolnictwo" odbiorca już ma. Zostaje wyłącznie „Obróbka drewna".
-      assert(`${label}: tech = tylko „Obróbka drewna" (Murarstwo bez prerekwizytu i Rolnictwo posiadane odpadają)`,
-        techItems.length === 1 && techItems[0].id === 'Obróbka drewna', techItems);
-      for (const t of techItems) {
-        assert(`${label}: tech „${t.id}" odkryta przez odbiorcę`, after.a.techs.includes(t.id), after.a.techs);
-      }
-      assert(`${label}: tech nieoferowana nie przeszła do odbiorcy`,
-        PLAYER_TECHS.filter(t => !techItems.some(i => i.id === t) && !AI_TECHS.includes(t)).every(t => !after.a.techs.includes(t)), after.a.techs);
-      assert(`${label}: płatnik nie utracił techów`, PLAYER_TECHS.every(t => after.p.techs.includes(t)), after.p.techs);
+      // Technologie: odbiorca zyskuje dokładnie te pozycje; płatnik nie traci żadnej.
+      const expectRecvTechs = [...recvB.techs, ...techItems.map(i => i.id)];
+      assert(`${label}: odbiorca dostał dokładnie technologie z nośnika`, sameSet(recvA.techs, expectRecvTechs), { after: recvA.techs, expect: expectRecvTechs });
+      assert(`${label}: płatnik nie utracił ani nie zyskał technologii`, sameSet(payerA.techs, payerB.techs), { b: payerB.techs, a: payerA.techs });
+      // Strona koszyka: wnioskodawca = „proposer”; płatnik = wnioskodawca → proposer, inaczej responder.
+      const wantSide = (cfg.payerIsPlayer === proposerIsPlayer) ? 'proposer' : 'responder';
+      assert(`${label}: strona koszyka = ${wantSide} (płatnik ${cfg.payerIsPlayer ? 'gracz' : 'AI'})`, c.side === wantSide, c);
     }
 
+    const share = (pwr, cfg, proposerIsPlayer) => {
+      const proposerPower = proposerIsPlayer ? pwr.player : pwr.ai;
+      const sum = pwr.player + pwr.ai;
+      return sum > 0 ? Math.round(100 * proposerPower / sum) : 50;
+    };
+
     for (const action of Object.keys(PAYLOADS)) {
-      // Najpierw gracz→AI (pakt/sojusz jeszcze nie istnieje), potem AI→gracz (akceptacja nie sprawdza duplikatów).
-      // --- gracz → AI (gracz proponuje, AI ocenia) ---
-      await stage(AI2);
-      const before2 = await snap(AI2);
-      const res2 = await page.evaluate(([ai, act, pl]) => window.__cityCessionTestDebug.treatyPayProposeAsPlayerForTest(ai, act, pl), [AI2, action, PAYLOADS[action]]);
-      const after2 = await snap(AI2);
-      console.log(`[${action}] gracz→AI:`, JSON.stringify({ acc: res2.accepted, reason: res2.reason, carrier: res2.carrier, deal: res2.dealKind }));
-      if (res2.accepted) {
-        verify(`${action} gracz→AI`, before2, after2, res2, 'pl');
-        assert(`${action} gracz→AI: strona koszyka = proposer (gracz oddaje z giveItems)`, res2.carrier && res2.carrier.side === 'proposer', res2.carrier);
+      // --- gracz → AI (gracz proponuje, AI ocenia, akceptacja po stronie AI) ---
+      const cfgP = caseCfg(action, true);
+      const pwrP = await stage(AI2, cfgP);
+      const shP = share(pwrP, cfgP, true);
+      console.log(`[${action}] gracz→AI: udział siły gracza ${shP}% (płatnik: ${cfgP.payerIsPlayer ? 'gracz' : 'AI'}${cfgP.rich ? ', zapasy bogate' : ''})`);
+      if (SHARE_NEED[action]) assert(`${action} gracz→AI: precondycja Respekt gracza ≥ ${SHARE_NEED[action]}% (jest ${shP}%)`, shP >= SHARE_NEED[action], pwrP);
+      const beforeP = await snap(AI2);
+      const resP = await page.evaluate(([ai, act, pl]) => window.__cityCessionTestDebug.treatyPayProposeAsPlayerForTest(ai, act, pl), [AI2, action, PAYLOADS[action]]);
+      const afterP = await snap(AI2);
+      console.log(`[${action}] gracz→AI:`, JSON.stringify({ acc: resP.accepted, reason: resP.reason, carrier: resP.carrier, deal: resP.dealKind }));
+      if (cfgP.payerIsPlayer) {
+        verify(`${action} gracz→AI`, beforeP, afterP, resP, cfgP, true);
+      } else {
+        // ZNANA LUKA (NIE ZALICZANA jako PASS): gracz silniejszy ⇒ płatnikiem jest AI. treatyCarrierPlanForPlayerPayer
+        // zwraca null (split.strongerSide === 'a'), więc nośnik nie jest dołączany ani przelewany. Test PRZYPINA ten stan,
+        // żeby luka była widoczna; decyzja właściciela: czy płatnik-AI ma dostać nośnik (osobny temat).
+        knownGaps.push(`${action} gracz→AI: płatnik AI (gracz silniejszy) — nośnik nie podłączony`);
+        assert(`${action} gracz→AI [znana luka]: akceptacja przechodzi bramkę Respektu`, resP.accepted === true, resP);
+        assert(`${action} gracz→AI [znana luka]: brak nośnika (carrier=null) — przelewu nie ma`, resP.carrier === null, resP.carrier);
+        assert(`${action} gracz→AI [znana luka]: zapasy AI nietknięte`,
+          JSON.stringify(beforeP.a.holdings) === JSON.stringify(afterP.a.holdings), { b: beforeP.a.holdings, a: afterP.a.holdings });
       }
-      else console.log(`  NIE ZMIERZONO ${action} gracz→AI live: AI odmówiła przed płatnością (bramka inna niż nośnik): ${res2.reason}`);
 
       // --- AI → gracz (gracz klika „Przyjmij" na ofercie AI) ---
-      await stage(AI);
-      const before1 = await snap(AI);
-      const res1 = await page.evaluate(([ai, act, pl]) => window.__cityCessionTestDebug.treatyPayAcceptAiPendingForTest(ai, act, pl), [AI, action, PAYLOADS[action]]);
-      const after1 = await snap(AI);
-      console.log(`[${action}] AI→gracz:`, JSON.stringify({ acc: res1.accepted, reason: res1.reason, carrier: res1.carrier, deal: res1.dealKind }));
-      verify(`${action} AI→gracz`, before1, after1, res1, 'ai');
-      assert(`${action} AI→gracz: strona koszyka = responder (gracz oddaje z receiveItems)`, res1.carrier && res1.carrier.side === 'responder', res1.carrier);
-      if (!res1.windowCarrier && /Respekt/.test(res1.windowReason || '')) {
-        console.log(`  NIE ZMIERZONO ${action} AI→gracz: zgodność z wierszem okna — okno oferty odrzuca z innej bramki (${res1.windowReason}); realna akceptacja niesie nośnik`);
-      } else
+      const cfgA = caseCfg(action, false);
+      const pwrA = await stage(AI, cfgA);
+      const shA = share(pwrA, cfgA, false);
+      console.log(`[${action}] AI→gracz: udział siły AI ${shA}% (płatnik: ${cfgA.payerIsPlayer ? 'gracz' : 'AI'}${cfgA.rich ? ', zapasy bogate' : ''})`);
+      if (SHARE_NEED[action]) assert(`${action} AI→gracz: precondycja Respekt AI ≥ ${SHARE_NEED[action]}% (jest ${shA}%)`, shA >= SHARE_NEED[action], pwrA);
+      const beforeA = await snap(AI);
+      const resA = await page.evaluate(([ai, act, pl]) => window.__cityCessionTestDebug.treatyPayAcceptAiPendingForTest(ai, act, pl), [AI, action, PAYLOADS[action]]);
+      const afterA = await snap(AI);
+      console.log(`[${action}] AI→gracz:`, JSON.stringify({ acc: resA.accepted, reason: resA.reason, carrier: resA.carrier, deal: resA.dealKind }));
+      verify(`${action} AI→gracz`, beforeA, afterA, resA, cfgA, false);
       assert(`${action} AI→gracz: nośnik akceptacji = wiersz okna (te same pozycje i strona)`,
-        JSON.stringify(res1.windowCarrier && res1.windowCarrier.items) === JSON.stringify(res1.carrier && res1.carrier.items)
-        && (res1.windowCarrier && res1.windowCarrier.side) === (res1.carrier && res1.carrier.side), { w: res1.windowCarrier, c: res1.carrier });
-
+        JSON.stringify(resA.windowCarrier && resA.windowCarrier.items) === JSON.stringify(resA.carrier && resA.carrier.items)
+        && (resA.windowCarrier && resA.windowCarrier.side) === (resA.carrier && resA.carrier.side),
+        { w: resA.windowCarrier, c: resA.carrier, windowReason: resA.windowReason });
     }
   } finally {
     await browser.close();
   }
   assert('C. zero pageerror / console.error', errors.length === 0, errors.slice(0, 5));
+  if (knownGaps.length) {
+    console.log(`NIE ZMIERZONO przelewu (znane luki, nie PASS): ${knownGaps.length}`);
+    for (const g of knownGaps) console.log('  - ' + g);
+  }
   console.log(`\n${pass}/${pass + fail} passed`);
   process.exit(fail === 0 ? 0 : 1);
 }

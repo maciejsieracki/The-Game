@@ -1586,7 +1586,7 @@ import {
   evaluatePendingFromAI, resolvePlayerAcceptsAiPending, formatAiDiplomacyPlayerMessage,
   enrichAiCommandWithTreasury, clampDealTurns,
   findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
-  type ProposalEvalContext, type ProposalPayload, type PendingProposal, type ProposalActionId,
+  type ProposalEvalContext, type ProposalEvalResult, type ProposalPayload, type PendingProposal, type ProposalActionId,
   // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — propozycja/kontroferta/odpowiedź.
   type PendingNegotiation, createNegotiation, applyCounterOffer, applyOwnProposalEdit, canCounterNegotiation, canPlayerCounterNegotiation,
   negotiationStillValid, WAR_DEPENDENT_ACTIONS, planAiOfferOnTable, resolveNegotiationAsResponder, negotiationToLegacyPending,
@@ -21671,7 +21671,7 @@ async function boot(): Promise<void> {
         outcome = forcedDecision === 'accept'
           ? {
             kind: 'accepted',
-            result: resolvePlayerAcceptsAiPending(negotiationToLegacyPending(entry), turn, undefined, { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId), carrierCtx: buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId) }),
+            result: resolvePlayerAcceptsAiPendingWired(negotiationToLegacyPending(entry), turn, undefined, { tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId) }),
           }
           : { kind: 'rejected', reason: 'test: AI odmawia' };
       }
@@ -21849,11 +21849,11 @@ async function boot(): Promise<void> {
       }
       negotiationTable.splice(idx, 1);
       const atWar = getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna';
-      const result = resolvePlayerAcceptsAiPending(
+      const result = resolvePlayerAcceptsAiPendingWired(
         negotiationToLegacyPending(entry),
         turn,
         _menuDifficulty,
-        { atWar, hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId), carrierCtx: buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId) }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 + TRADE-ERA r3 (epoka umowy jawnie)
+        { atWar, tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId) }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 + TRADE-ERA r3 (epoka umowy jawnie)
       );
       applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
       refreshD1bHud();
@@ -22568,9 +22568,9 @@ async function boot(): Promise<void> {
           } as AIDiplomacyCommand;
           const pending = aiCommandToPendingProposal(cmd, p.ownerId, ME(), turn);
           if (pending) {
-            const result = resolvePlayerAcceptsAiPending(
+            const result = resolvePlayerAcceptsAiPendingWired(
               pending, turn, undefined,
-              { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId), carrierCtx: buildProposalEvalContext(pending.fromOwnerId, pending.toOwnerId) }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 + TRADE-ERA r3 (difficulty: undefined -> default 'normal')
+              { tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 + TRADE-ERA r3 (difficulty: undefined -> default 'normal')
             );
             applyProposalOutcome(p.ownerId, ME(), result, pending.payload, pending.actionId);
             if (result.accepted) showHintMessage('Przyjęto: ' + p.civName, 3500);
@@ -22712,9 +22712,9 @@ async function boot(): Promise<void> {
       }
       const pending = aiCommandToPendingProposal(p.cmd, p.fromOwnerId, p.toOwnerId, turn);
       if (!pending) return false;
-      const result = resolvePlayerAcceptsAiPending(
+      const result = resolvePlayerAcceptsAiPendingWired(
         pending, turn, undefined,
-        { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId), carrierCtx: buildProposalEvalContext(pending.fromOwnerId, pending.toOwnerId) },
+        { tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) },
       );
       applyProposalOutcome(p.fromOwnerId, p.toOwnerId, result, pending.payload, pending.actionId);
       return true;
@@ -25990,6 +25990,25 @@ async function boot(): Promise<void> {
           label: techNameFromSlug(slug) ?? slug,
           suggestedPrice: 50 + player.era * 20,
         })).slice(0, 12);
+    }
+
+    /**
+     * R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1 (r4, zarzut 1 Evaluatora): JEDYNA sciezka akceptacji oferty AI przez gracza
+     * w main.ts. Kontekst nosnika doplaty D (buildProposalEvalContext) dolacza TUTAJ, a nie w kazdym miejscu wywolania:
+     * usuniecie kontekstu z jednego wywolania nie jest mozliwe bez zmiany tej funkcji (test live i test statyczny
+     * diplo-treaty-payment-live-test.cjs ja pokrywaja). AI<->AI (applyAiAiHandelSurowiecCmd) poza zakresem tematu.
+     */
+    function resolvePlayerAcceptsAiPendingWired(
+      pending: PendingProposal,
+      turn: number,
+      difficulty: GameDifficulty | undefined,
+      opts?: { atWar?: boolean; tradeEra?: number },
+    ): ProposalEvalResult {
+      return resolvePlayerAcceptsAiPending(pending, turn, difficulty, {
+        ...opts,
+        hasTradeTech: ownerHasTradeTech,
+        carrierCtx: buildProposalEvalContext(pending.fromOwnerId, pending.toOwnerId),
+      });
     }
 
     /**
@@ -30917,9 +30936,9 @@ async function boot(): Promise<void> {
       acceptAiCommandForTest: (ownerId: number, cmd: AIDiplomacyCommand): { converted: boolean; accepted: boolean; reason: string | null } => {
         const pending = aiCommandToPendingProposal(cmd, ownerId, ME(), turn);
         if (!pending) return { converted: false, accepted: false, reason: 'nie skonwertowano' };
-        const result = resolvePlayerAcceptsAiPending(
+        const result = resolvePlayerAcceptsAiPendingWired(
           pending, turn, undefined,
-          { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId), carrierCtx: buildProposalEvalContext(pending.fromOwnerId, pending.toOwnerId) },
+          { tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) },
         );
         applyProposalOutcome(ownerId, ME(), result, pending.payload, pending.actionId);
         return { converted: true, accepted: !!result.accepted, reason: result.reason ?? null };
@@ -30959,9 +30978,9 @@ async function boot(): Promise<void> {
         const ctx = buildProposalEvalContext(fromOwnerId, ME());
         // Wiersz okna (evaluateProposal) liczony PRZED akceptacją — z tych samych zapasów co realna akceptacja.
         const windowRes = evaluateProposal({ actionId: pending.actionId, proposerOwnerId: fromOwnerId, responderOwnerId: ME(), payload: pending.payload }, ctx);
-        const result = resolvePlayerAcceptsAiPending(
+        const result = resolvePlayerAcceptsAiPendingWired(
           pending, turn, undefined,
-          { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(fromOwnerId, ME()), carrierCtx: ctx },
+          { tradeEra: dealTradeEraForOwners(fromOwnerId, ME()) },
         );
         applyProposalOutcome(fromOwnerId, ME(), result, pending.payload, pending.actionId);
         return {
@@ -31019,7 +31038,7 @@ async function boot(): Promise<void> {
         const pending = aiCommandToPendingProposal(cmd, ownerId, ME(), turn);
         if (!pending) return { accepted: false, reason: 'nie skonwertowano' };
         pending.payload = { ...pending.payload, turns };
-        const result = resolvePlayerAcceptsAiPending(pending, turn, undefined, { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId), carrierCtx: buildProposalEvalContext(pending.fromOwnerId, pending.toOwnerId) });
+        const result = resolvePlayerAcceptsAiPendingWired(pending, turn, undefined, { tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) });
         applyProposalOutcome(ownerId, ME(), result, pending.payload, pending.actionId);
         return { accepted: !!result.accepted, reason: result.reason ?? null };
       },
@@ -31963,8 +31982,8 @@ async function boot(): Promise<void> {
           const entry = negotiationTable[idx]!;
           negotiationTable.splice(idx, 1);
           const atWar = getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna';
-          const result = resolvePlayerAcceptsAiPending(
-            negotiationToLegacyPending(entry), turn, _menuDifficulty, { atWar, hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId), carrierCtx: buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId) },
+          const result = resolvePlayerAcceptsAiPendingWired(
+            negotiationToLegacyPending(entry), turn, _menuDifficulty, { atWar, tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId) },
           );
           applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
           refreshD1bHud();

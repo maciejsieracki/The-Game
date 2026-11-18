@@ -1,35 +1,39 @@
-STATUS: FAIL
+STATUS: DECISION_REQUIRED
 DOMAIN: GAME
 TEMAT: R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1
-GOAL: obrona r2 na zarzuty FC r2 (baza a8fad7000 -> kandydat 4941d5c3e). Wykonano: kierunek AI->gracz, nosnik po stronie koszyka, tempo wyceny techu, brak podwojnego techu, wiersz okna, testy wiringu. NIE ZMIERZONO: przelew w main.ts (transferBasketItems) dla przemarszu i wasala oraz wiersz okna w przegladarce.
-ZMIANY/COMMIT: cbc1d7c8c (gra/src/game/diplomacy-proposals.ts, gra/src/main.ts, gra/src/ui/diplomacyAcceptanceBalance.ts, gra/tools/diplo-treaty-payment-wiring-test.cjs). Baza kodu = 4941d5c3e. Raport zacommitowany osobnym commitem (SHA w sekcji DEPLOY/PUSH).
-ODPOWIEDZI NA ZARZUTY FC r2:
-1 (AI->gracz) PRZYJMUJE. Planer nie wymaga juz proposerIsPlayer; platnik = gracz, gdy jest slabszy (strongerSide !== 'a'). Dla AI->gracz pozycje gracza = receivePn/receiveItems. Rozejm bez zmian (kierunek AI->gracz tylko dla TREATY_CARRIER_ACTIONS; regres diplo-treaties-ai-parity 79/1 naprawiony, teraz 80/0). Dowod: W5 (plan payerSide=responder, akceptacja z zapasem, odrzut bez zapasu), W5b, W17 (technologia gracza w receiveItems). Kod: diplomacy-proposals.ts treatyCarrierPlanForPlayerPayer.
-2 (okno propozycji) PRZYJMUJE CZESCIOWO. Dodany wiersz "Dopłata traktatu" (treatyPaymentRowHtml, diplomacyAcceptanceBalance.ts), dane z evaluateProposal.treatyPayment (etykiety z treatyPaymentLabel, bez surowych ID), podpiety w renderze obok wiersza zmeczenia. Brak testu renderu w przegladarce: NIE ZMIERZONO. Polskie nazwy technologii: zakladam, ze name = nazwa z tech.json (NIE ZMIERZONO w danych).
-3 (test przelewu) NIE ZMIERZONO w pelni. Dodany helper treatyCarrierPayloadPatch (czysty, uzywany w main.ts): testy W16/W17 + mutant M6. Realny transferBasketItems w main.ts NIE jest testowany (zamknieta funkcja w boot()).
-4 (sojusz obronny) PRZYJMUJE. W13: sojusz_defensywny gracz->AI i AI->gracz akceptowany z zapasem, odrzut bez zapasu w obu kierunkach.
-5 (tempo) PRZYJMUJE. ProposalEvalContext.tempoGry (main.ts podaje player.tempoGry); planer: diplomacyPnTech(name, tempo). W14: wycena szybka = diplomacyPnTech(T,'szybka'), standardowa = diplomacyPnTech(T,'standardowa'), roznica > 0. Mutant M8.
-6 (podwojne liczenie techu) PRZYJMUJE. Tech juz w koszyku platnika (giveItems dla gracza, receiveItems dla AI) jest filtrowana z payerTechs. W15/W15b. Mutant M7.
-7 (przemarsz/wasal) NIE ZMIERZONO. Zmiana w main.ts to tylko podpiecie payloadu przed galezia else-if (transferBasketItems). Brak testu wykonania; ODRZUCAM jako dowod, przyjmuje jako otwarte.
-8 (status) PRZYJMUJE. STATUS obnizony do FAIL: zarzuty 3 i 7 oraz render UI nie maja dowodu wykonania.
-TESTY (surowe wyniki, cbc1d7c8c; npm ci --ignore-scripts w gra/, df / przed: 9,6 GB wolne):
-- tsc --noEmit: exit 0 (po zmianach UI i po zmianie kierunku)
-- diplo-treaty-payment-wiring-test: 468 pass, 0 fail (wszystkie 9 mutantow M1-M9 wykryte)
-- diplo-treaty-payment-carrier-test: 11 pass / 0 fail; mutanty niewykryte: 0
-- diplo-treaties-power-parity-test: 50 pass, 0 fail
-- diplo-treaties-ai-parity-test: 80 pass, 0 fail (po naprawie rozejmu; przed naprawa 79/1)
-- diplo-rozejm-parity-test: 25 pass, 0 fail
-- diplo-peace-tail-integration-test: 42 pass / 0 fail
-- diplo-peace-tail-proposal-test: 9 pass / 0 fail
-- diplo-peace-last-stage-payment-test: LIVE 12/12 zielone
-- diplo-war-peace-sim-test: 25 pass / 0 fail
-- logic-test: LOGIC OK (213/213); tech-tree-test: 20 pass / 0 fail; research-test: 33/33; unit-replace-test: 21/21; combat-test: All sanity checks passed
-- Tabela przed/po (wiring): 95/0 (r1, zgloszone) -> 468/0 (r2); mutanty M1-M5 -> M1-M9.
-BLOKADY:
-- main.ts transferBasketItems dla przemarszu, wasala i AI->gracz (receiveItems): brak testu wykonania (zarzut 3, 7).
-- Wiersz okna w przegladarce: NIE ZMIERZONO (Chromium nie uruchamiany).
-- Stopnie "praca" i "pieniadze" (¤): poza zakresem (czeka na decyzje wlasciciela 3b); extraStages puste.
-RUNDY: 2/5 (obrona). Ostatni werdykt FC: FAIL (8 zarzutow).
-NASTEPNY KROK: FC r3 na cbc1d7c8c: sprawdzic wiersz okna w przegladarce i przelew przemarszu/wasala (zarzuty 3 i 7 jako test wykonania w main.ts, jesli orkiestrator dopuszcza).
-UWAGI-DLA-ORKIESTRATORA: brak nowych sesji/zadan utworzonych przez Operatora. Worktree ma zaleznosci w gra/node_modules (do sprzatania przez orkiestratora). Worktree: /home/user/The-Game/.claude/worktrees/wf_bc0986ea-4ea-3.
-DEPLOY/PUSH: NIE WYKONANO
+GOAL: odpowiedź na zarzuty Evaluatora (db52137a0, baza 455d864e7): (1) test live omijał realne miejsca wywołania w main.ts; (2) przemarsz i wasal bez pomiaru live. Obie strony zmierzone na realnej ścieżce akceptacji.
+ZMIANY-COMMIT: SHA w sekcji DEPLOY-PUSH (commit obrony). Pliki: gra/src/main.ts, gra/tools/diplo-treaty-payment-live-test.cjs, ten raport.
+
+## Zarzut 1 — PRZYJMUJĘ (poprawka + dowód)
+Poprawka: wszystkie akceptacje oferty AI przez gracza (8 realnych miejsc: przycisk „Przyjmij", stół, kontroferta, odpowiedź AI, hooki) idą przez jedną funkcję `resolvePlayerAcceptsAiPendingWired` (main.ts ~l.26001), która sama dołącza `carrierCtx`. Ctx nie da się już pominąć w pojedynczym miejscu wywołania. Jedyne bezpośrednie wywołanie `resolvePlayerAcceptsAiPending(` poza wrapperem to AI↔AI (applyAiAiHandelSurowiecCmd) — poza zakresem tematu.
+Dowód statyczny (live test, sekcja S, zielone): S1 wrapper dołącza ctx; S2 `carrierCtx:` tylko w wrapperze (1 wystąpienie); S3 bezpośrednie wywołania = 2 (wrapper + AI↔AI); S4 drugie to AI↔AI; S5 wywołań przez wrapper >= 7.
+Dowód mutacyjny (zarzut 1 Evaluatora): usunięcie `carrierCtx` z wrappera → live 67/79, FAIL na wszystkich 5 traktatach AI→gracz (`carrier=null`, brak przelewu) oraz S1/S2. Źródło przywrócone z kopii, cmp zgodny.
+
+## Zarzut 2 — PRZYJMUJĘ (pomiar wykonany; wynik: jedna luka zakresu)
+Test live ustawia siłę tak, by wnioskodawca spełniał próg Respektu (przemarsz ≥55%, wasal ≥70%) i asertuje precondycję przed propozycją (`precondycja Respekt ... ≥ N%`, zielone).
+Wyniki realnej akceptacji (zielone = stan po zgodny z wierszem okna):
+- AI→gracz (płatnik gracz): NAP, sojusz obronny, sojusz pełny, przemarsz (AI 69%), wasal (AI 82%, zapasy bogate) — nośnik przelany, zapasy płatnika −ilość, odbiorca +ilość, technologia tylko gdy odbiorca jej nie ma, wiersz okna = nośnik.
+- gracz→AI (płatnik gracz): NAP, sojusz obronny, sojusz pełny — jak wyżej.
+- gracz→AI przemarsz i wasal (gracz 88% / 94% siły → płatnik AI): NIE ZMIERZONO przelewu. Traktat zaakceptowany, `carrier=null`, zapasy AI nietknięte. Test przypina ten stan jako ZNANĄ LUKĘ (nie PASS): `treatyCarrierPlanForPlayerPayer` zwraca null, gdy `split.strongerSide === 'a'`; planer obsługuje wyłącznie gracza jako płatnika (komentarz „Stopień technologii NIE jest tu jeszcze podłączony"; W5 z r2 — płatnik AI nie podłączony).
+Ta luka dotyczy każdej akcji w kierunku gracz→AI, gdy gracz jest silniejszy (nie tylko przemarszu/wasala). Nie naprawiona tutaj: wymaga planera z zapasami i technologiami AI oraz decyzji właściciela, czy płatnik-AI ma płacić (decyzja 2 dispatchu mówi o słabszej stronie, ale FALA 826 mówi o gracz-płatniku w bramce).
+
+## Testy (kolejność: przed = 455d864e7, po = ten commit)
+- tsc --noEmit: exit 0 (przed i po).
+- logic-test 213/213; tech-tree-test 20 pass/0 fail; research-test 33/0; unit-replace-test 21/21; combat-test 6/6.
+- diplo-treaty-payment-wiring-test: 468 pass / 0 fail.
+- diplo-treaty-payment-carrier-test: 11 pass / 0 fail; mutanty niewykryte 0.
+- diplo-treaties-power-parity-test: 50/0; diplo-treaties-ai-parity-test: 80 PASS (exit 0); diplo-rozejm-parity-test: 25/0.
+- diplo-peace-tail-integration-test: 42/0; diplo-peace-tail-proposal-test: exit 0 (9 PASS); diplo-war-peace-sim-test: exit 0 (25 PASS); diplo-peace-last-stage-payment-test: 12/12.
+- Live (diplo-treaty-payment-live-test.cjs, Chromium, bundle z vite poza repo): 149/149 passed, plus 2 znane luki (NIE ZMIERZONO). Jeden przebieg zakończył się zamknięciem przeglądarki w trakcie „wasal gracz→AI" (`Target page ... closed`, log GPU); ponowny przebieg czysty. Log: scratchpad/live-r4-run3.log.
+
+## BLOKADY
+- Decyzja właściciela: czy płatnik-AI (gracz silniejszy, przemarsz/wasal/każda akcja gracz→AI) ma płacić D z zapasów AI i jaka kolejność dla AI. Do tego czasu kierunek gracz→AI przy silniejszym graczu przechodzi bez przelewu (test to przypina).
+- Stopnie „praca" i „pieniądze (¤)" — poza zakresem (decyzja 3b, czeka na rano).
+
+## RUNDY
+Obrona r4 (odpowiedź na zarzuty FC r4). Poprzednie: r1 FC FAIL, r2 FC FAIL, r3 FC FAIL (defekt AI→gracz, naprawiony w 455d864).
+
+## NASTĘPNY KROK
+Orkiestrator: decyzja właściciela o płatniku-AI (ABC). Dopóki brak decyzji — nie integrować jako READY_FOR_DEPLOY. Jeśli właściciel potwierdzi „płaci AI": osobny temat na planer z zapasami AI (treatyCarrierPlanForPlayerPayer z parametrem płatnika).
+
+## DEPLOY/PUSH: NIE WYKONANO
