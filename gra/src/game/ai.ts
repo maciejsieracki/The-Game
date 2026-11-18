@@ -27,6 +27,7 @@ import {
 import { armyFieldPower, type UnitPowerInput } from './unit-power';
 import { estimateUnitCombatStrength } from './siegeAi';
 import { isHomeWarDefenseEnabled, planHomeWar } from './ai-war-home-defense';
+import { cityNeedsGarrison, garrisonUnitIdSet, getCityGarrisonUnitIds } from './ai-city-garrison';
 import {
   ARMY_SEEKS_ARMY_DEFAULTS,
   isArmySeeksArmyEnabled,
@@ -1945,21 +1946,18 @@ export const EMPTY_CITY_GARRISON_UNIT_ID = 'Wojownik';
 export function emptyCityGarrisonRecruitIds(
   myCities: readonly AICity[],
   myUnits: readonly RuntimeUnit[],
-  enemyUnitsAll: readonly RuntimeUnit[],
-  opts: AITurnOpts,
-  data: GameData,
+  _enemyUnitsAll: readonly RuntimeUnit[],
+  _opts: AITurnOpts,
+  _data: GameData,
 ): Set<string> {
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1: stały garnizon min. 1 jednostki bojowej w KAŻDYM
+  // mieście AI, także w pokoju (wymóg właściciela 2026-11-18). Rekrutacja dotyczy każdego
+  // miasta bez kwalifikującej się jednostki bojowej (cywile/zwiadowcy/wódz się nie liczą).
+  // Wcześniejszy warunek wojna/zagrożenie został zniesiony; ochronę przed "pustym miastem"
+  // w wojnie zachowuje ta sama reguła, tylko stała.
   const out = new Set<string>();
-  const atWar = opts.atWarWithCiv === true
-    || (opts.warAllIn !== undefined && opts.warAllIn.targets.length > 0);
-  const threatRange = getAiParam(data, 'ekspansja_zagroz_zasieg', AI_THREAT_RANGE_DEFAULT);
-  const hostile = enemyUnitsAll.filter(u => aiCanEngageOwner(opts, u.ownerId));
   for (const city of myCities) {
-    const hasMilitary = myUnits.some(u => u.q === city.q && u.r === city.r
-      && !isCivilianUnit(u) && !isScoutUnit(u) && u.isGeneral !== true && u.embarked !== true);
-    if (hasMilitary) continue;
-    const threatened = hostile.some(eu => hexDistance(city.q, city.r, eu.q, eu.r) <= threatRange);
-    if (atWar || threatened) out.add(city.id);
+    if (cityNeedsGarrison(city, myUnits, city.ownerId)) out.add(city.id);
   }
   return out;
 }
@@ -3738,14 +3736,11 @@ function applyArmySeeksEnemyArmy(
   const defaultMove = getAiParam(data, 'ai_wojna_armia_szuka_armii_ruch_domyslny', ARMY_SEEKS_ARMY_DEFAULTS.defaultMove);
   const toSeek = (u: RuntimeUnit): SeekUnit => ({ id: u.id, q: u.q, r: u.r, ownerId: u.ownerId, ruch: u.ruch ?? defaultMove });
   // Armia = jednostki bojowe poza garnizonem (najslabsza jednostka na heksie wlasnego miasta zostaje).
-  const cityHexes = new Set(myCities.map(c => keyOf(c.q, c.r)));
   const mine = units.filter(u => u.ownerId === playerId && isField(u));
-  const garrison = new Set<string>();
-  for (const k of cityHexes) {
-    const here = mine.filter(u => keyOf(u.q, u.r) === k)
-      .sort((a, b) => aiUnitCombatStrength(a, data) - aiUnitCombatStrength(b, data) || (a.id < b.id ? -1 : 1));
-    if (here.length > 0) garrison.add(here[0]!.id);
-  }
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1: garnizon = wspólna funkcja (ai-city-garrison.ts).
+  const garrison = garrisonUnitIdSet(
+    getCityGarrisonUnitIds(myCities, units, playerId, u => aiUnitCombatStrength(u, data)),
+  );
   const locked = new Set<string>();
   for (const c of commands) if (c.type === 'attack') locked.add(c.unitId);
   const byId = new Map(units.map(u => [u.id, u] as const));
@@ -4155,10 +4150,16 @@ function decideAITurnCore(
       )
       .map(u => u.id),
   );
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1: garnizon miasta (min. 1 bojowa, także w pokoju)
+  // NIE wchodzi do zbiórki/scalania (planArmyConcentration, planArmyFrontMerge).
+  const cityGarrisonUnitIds = garrisonUnitIdSet(
+    getCityGarrisonUnitIds(myCities, myUnits, playerId, u => aiUnitCombatStrength(u, data)),
+  );
   const concentrationExcludedUnitIds = new Set<string>([
     ...homeDefenderAssignments.keys(),
     ...activeFlankingUnitIds,
     ...activeWaveUnitIds,
+    ...cityGarrisonUnitIds,
   ]);
   // R-WEB-ARMY-CONSOLIDATION-Q1: w POKOJU (flaga ON) jedyny mechanizm zbiorki to zbiorka w
   // stolicy nizej; lokalna planArmyConcentration i front-merge nie dzialaja (jeden punkt
@@ -5672,8 +5673,12 @@ function decideDefensiveCopyTurn(
   // GOAL 2 nadal realnie działa dla jednostek, które inaczej szłyby po chatkę/patrolować dom
   // (patrz test C3 w city-state-offensive-normal-easy-test.cjs, scenariusz bez widocznego wroga).
   const canConcentratePm = canConcentrateArmy(opts);
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1: garnizony miast nie wchodzą do zbiórki ani scalania.
+  const csGarrisonUnitIds = garrisonUnitIdSet(
+    getCityGarrisonUnitIds(myCities, myUnits, playerId, u => aiUnitCombatStrength(u, data)),
+  );
   const csConcentration = canConcentratePm
-    ? planArmyConcentration(playerId, myUnits, {})
+    ? planArmyConcentration(playerId, myUnits, { excludedUnitIds: csGarrisonUnitIds })
     : null;
   const csConcentrationMoveTarget = new Map<string, { q: number; r: number }>();
   if (csConcentration !== null) {
@@ -5690,6 +5695,7 @@ function decideDefensiveCopyTurn(
     const csFrontMergeExcluded = new Set<string>([
       ...(csConcentration?.unitIds ?? []),
       ...csCombatEngagedUnitIds,
+      ...csGarrisonUnitIds,
     ]);
     const csThreatFrontCount = countThreatFronts(nonSisterEnemyUnits, myCities, myUnits, map);
     const csFrontMerge = planArmyFrontMerge(playerId, myUnits, {

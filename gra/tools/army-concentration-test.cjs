@@ -381,8 +381,13 @@ function runTurns(myUnits, cities, map, nTurns) {
   }
   ok(clustersAtEnd !== null && clustersAtEnd < 10,
     `scenario 4: 5 miast z 1 nieszkodliwym barbarzyńcą każde (5 obsłużonych "frontów") -- po 40 turach klastrów=${clustersAtEnd}, MUSI być < 10 (przed naprawą: 10, każda jednostka osobno -- front-merge nigdy nie łączył wolnych jednostek, bo obsłużone zagrożenia liczyły się DODATKOWO jako fronty)`);
-  ok(clustersAtEnd !== null && clustersAtEnd <= 6,
-    `scenario 4: mutation guard na dokładną wartość zmierzoną po naprawie (klastrów=${clustersAtEnd}, oczekiwane <=6 -- 5 obrońców domu poprawnie zostają osobno + wolne jednostki realnie się łączą)`);
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (korekta progu, uzasadnienie): każde z 5 miast ma
+  // garnizon (najsłabsza bojowa na heksie miasta), który OD TEJ RUNDY nie wchodzi do zbiórki ani
+  // scalania (wymóg właściciela: garnizon nie dołącza do armii). 5 garnizonów zostaje osobno,
+  // więc dolna granica klastrów to 5; zmierzone po zmianie: 9 (poprzednio <=6, gdy garnizony
+  // scalały się z rezerwami). Próg 9 = zmierzona wartość po zmianie (mutation guard).
+  ok(clustersAtEnd !== null && clustersAtEnd <= 9,
+    `scenario 4: mutation guard na zmierzoną wartość po zmianie garnizonów (klastrów=${clustersAtEnd}, oczekiwane <=9 = 5 garnizonów osobno + rezerwy)`);
 }
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,169 @@
+'use strict';
+/**
+ * ai-city-garrison-min-one-test.cjs -- R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1.
+ *
+ * Kontrakt (wymog wlasciciela 2026-11-18): kazde miasto AI trzyma min. 1 jednostke bojowa takze
+ * w pokoju, a ta jednostka nie wchodzi do zbiorki/scalania armii.
+ *
+ * Czesc A -- czysta funkcja (gra/src/game/ai-city-garrison.ts):
+ *   H1 garnizon = najslabsza kwalifikujaca sie jednostka na heksie miasta (remis: id);
+ *   H2 cywil, zwiadowca, wodz, zaokretowany, galera nie sa garnizonem;
+ *   H3 jednostki innego wlasciciela sa ignorowane;
+ *   H4 wynik nie zalezy od kolejnosci wejsc (determinizm);
+ *   H5 miasto bez kwalifikujacej sie jednostki -> cityNeedsGarrison === true.
+ * Czesc B -- rekrutacja (emptyCityGarrisonRecruitIds, z ai.ts):
+ *   R1 puste miasto w POKOJU dostaje garnizon; miasto z jednostka bojowa nie;
+ *   R2 miasto tylko z cywilem/zwiadowca/wodzem dostaje garnizon.
+ * Czesc C -- wykluczenie z armii (decideAITurn, pokoj/wojna bez wroga):
+ *   C1 garnizon NIE dostaje rozkazu marszu do zbiorki (3 jednostki w promieniu zbiorki);
+ *   C2 MUTACJA w kopii ai.ts (usuniete wykluczenie garnizonow z concentrationExcludedUnitIds)
+ *      MUSI zlamac C1 (garnizon idzie do zbiorki).
+ *
+ * Run (z gra/):  node tools/ai-city-garrison-min-one-test.cjs
+ */
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
+
+const WORK = fs.mkdtempSync(path.join(process.env.GARRISON_TMP || os.tmpdir(), 'cgm1-'));
+const SRC = path.resolve(__dirname, '..', 'src');
+const CONC_LINE = '...cityGarrisonUnitIds,\n  ]);';
+
+const ENTRY_BODY = `
+export { decideAITurn, emptyCityGarrisonRecruitIds } from ${JSON.stringify(path.join(SRC, 'game', 'ai.ts'))};
+export {
+  getCityGarrisonUnitIds, garrisonUnitIdSet, cityNeedsGarrison, isGarrisonEligibleUnit,
+} from ${JSON.stringify(path.join(SRC, 'game', 'ai-city-garrison.ts'))};
+export { setArmyConsolidationOverride } from ${JSON.stringify(path.join(SRC, 'game', 'army-consolidation.ts'))};
+`;
+
+async function buildBundle(name, mutate) {
+  const entry = path.join(WORK, `${name}-entry.ts`);
+  const out = path.join(WORK, `${name}-bundle.cjs`);
+  fs.writeFileSync(entry, ENTRY_BODY);
+  const plugin = {
+    name: 'mutate-min-one',
+    setup(b) {
+      b.onLoad({ filter: /game[\\/]ai\.ts$/ }, (args) => {
+        let text = fs.readFileSync(args.path, 'utf8');
+        if (mutate) {
+          if (text.split(CONC_LINE).length !== 2) throw new Error('mutacja: nie znaleziono wykluczenia garnizonow w concentration');
+          text = text.replace(CONC_LINE, '  ]);');
+        }
+        return { contents: text, loader: 'ts' };
+      });
+    },
+  };
+  await esbuild.build({
+    entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
+    outfile: out, loader: { '.ts': 'ts', '.json': 'json' }, absWorkingDir: path.resolve(__dirname, '..'),
+    logLevel: 'silent', plugins: [plugin],
+  });
+  return require(out);
+}
+
+let passed = 0;
+let failed = 0;
+function ok(value, message) {
+  if (value) passed++; else { failed++; console.error('FAIL:', message); }
+}
+
+function unit(id, q, r, extra = {}) {
+  return { id, ownerId: 1, typeId: 'Wojownik', category: 'miecznik', q, r, ruch: 2, ruchLeft: 2, ...extra };
+}
+function bigMap(w, h) {
+  const hexes = {};
+  for (let q = 0; q < w; q++) for (let r = 0; r < h; r++) {
+    hexes[`${q},${r}`] = {
+      coords: { q, r }, terenBazowy: 'laka', nakladka: 'brak', ulepszenie: 'brak', wlasciciel: null,
+      wioska: { istnieje: false, ludnosc: 0 }, widocznosc: {}, rzeka: { obecna: false, krawedzie: [] },
+    };
+  }
+  return { szerokoscQ: w, wysokoscR: h, hexes, seed: 1, riverPaths: [] };
+}
+const testData = { units: [], buildings: [], terrainYields: { terrain_types: [] }, aiParams: {} };
+
+async function main() {
+  const GOOD = await buildBundle('good', false);
+  const MUT = await buildBundle('mut', true);
+  const strengthById = (u) => (u.str !== undefined ? u.str : 1);
+
+  // ---- A: czysta funkcja ----
+  {
+    const city = { id: 'A', q: 5, r: 5 };
+    const strong = unit('strong', 5, 5, { str: 9 });
+    const weak = unit('weak', 5, 5, { str: 2 });
+    const map = GOOD.getCityGarrisonUnitIds([city], [strong, weak], 1, strengthById);
+    ok(map.get('A') === 'weak', `H1: garnizon = najslabsza jednostka na heksie (${map.get('A')})`);
+
+    const tie = GOOD.getCityGarrisonUnitIds([city], [unit('zz', 5, 5), unit('aa', 5, 5)], 1, () => 1);
+    ok(tie.get('A') === 'aa', `H1b: remis sily -> najmniejsze id (${tie.get('A')})`);
+
+    const notEligible = [
+      unit('civ', 5, 5, { typeId: 'Osadnik', category: 'osadnik' }),
+      unit('scout', 5, 5, { typeId: 'Zwiadowca', category: 'zwiadowca' }),
+      unit('gen', 5, 5, { typeId: 'Wodz', category: 'wodz', isGeneral: true }),
+      unit('emb', 5, 5, { embarked: true }),
+      unit('galera', 5, 5, { category: 'galera' }),
+    ];
+    ok(GOOD.getCityGarrisonUnitIds([city], notEligible, 1, strengthById).size === 0,
+      'H2: cywil/zwiadowca/wodz/zaokretowany/galera nie sa garnizonem');
+    ok(GOOD.cityNeedsGarrison(city, notEligible, 1) === true, 'H5: miasto tylko z niekwalifikujacymi sie -> potrzebuje garnizonu');
+    ok(GOOD.cityNeedsGarrison(city, [unit('x', 5, 5)], 1) === false, 'H5b: miasto z jednostka bojowa -> nie potrzebuje');
+
+    const foreign = [unit('foreign', 5, 5, { ownerId: 2, str: 0 }), unit('own', 5, 5, { str: 5 })];
+    ok(GOOD.getCityGarrisonUnitIds([city], foreign, 1, strengthById).get('A') === 'own',
+      'H3: jednostka innego wlasciciela ignorowana');
+
+    const a = [strong, weak, unit('mid', 5, 5, { str: 5 })];
+    const b = [...a].reverse();
+    const m1 = [...GOOD.getCityGarrisonUnitIds([city], a, 1, strengthById).entries()];
+    const m2 = [...GOOD.getCityGarrisonUnitIds([city], b, 1, strengthById).entries()];
+    ok(JSON.stringify(m1) === JSON.stringify(m2), 'H4: determinizm wzgledem kolejnosci jednostek');
+    ok(!GOOD.isGarrisonEligibleUnit(unit('s', 0, 0, { typeId: 'Zwiadowca' })), 'H2b: Zwiadowca nie kwalifikuje sie');
+  }
+
+  // ---- B: rekrutacja (peace, bez wroga) ----
+  {
+    const cityA = { id: 'A', ownerId: 1, q: 5, r: 5, name: 'A', population: 5 };
+    const cityB = { id: 'B', ownerId: 1, q: 15, r: 5, name: 'B', population: 5 };
+    const cityC = { id: 'C', ownerId: 1, q: 25, r: 5, name: 'C', population: 5 };
+    const opts = { civType: 'grecy', currentTurn: 40, canEngageOwner: () => true, atWarWithCiv: false };
+    const mine = [unit('b1', 15, 5), unit('c-civ', 25, 5, { typeId: 'Osadnik', category: 'osadnik' })];
+    const rec = GOOD.emptyCityGarrisonRecruitIds([cityA, cityB, cityC], mine, [], opts, testData);
+    ok(rec.has('A'), 'R1: puste miasto A w pokoju dostaje garnizon');
+    ok(!rec.has('B'), 'R1b: miasto B z jednostka bojowa nie dostaje garnizonu');
+    ok(rec.has('C'), 'R2: miasto C z samym cywilem dostaje garnizon');
+  }
+
+  // ---- C: wykluczenie z armii ----
+  {
+    const map = bigMap(60, 60);
+    const cityX = { id: 'X', ownerId: 1, q: 30, r: 30, name: 'X', population: 6 };
+    const cities = [cityX];
+    // Garnizon G (najmlodszy id 'a-garn') stoi na heksie miasta; dwie rezerwy w promieniu zbiorki.
+    const G = unit('a-garn', 30, 30);
+    // Rezerwy po JEDNEJ stronie garnizonu: kotwica zbiorki = R1 (najmniejsza suma odleglosci),
+    // wiec garnizon (na heksie miasta) musialby sie ruszyc do R1 -- to jest dyskryminujace.
+    const R1 = unit('b-res', 32, 30);
+    const R2 = unit('c-res', 33, 30);
+    const opts = { civType: 'grecy', currentTurn: 40, canEngageOwner: () => true, atWarWithCiv: true };
+    GOOD.setArmyConsolidationOverride(false);
+    MUT.setArmyConsolidationOverride(false);
+    const movesOf = (B) => {
+      const units = [{ ...G }, { ...R1 }, { ...R2 }];
+      return B.decideAITurn(1, units, cities, map, testData, opts).filter(c => c.type === 'move');
+    };
+    const goodMoves = movesOf(GOOD);
+    const mutMoves = movesOf(MUT);
+    ok(!goodMoves.some(c => c.unitId === 'a-garn'), 'C1: garnizon NIE dostaje rozkazu marszu do zbiorki');
+    ok(mutMoves.some(c => c.unitId === 'a-garn'), 'C2: mutacja (bez wykluczenia garnizonu) zlamala C1 -- garnizon idzie do zbiorki');
+  }
+
+  const total = passed + failed;
+  console.log(`ai-city-garrison-min-one-test: ${passed} passed, ${failed} failed (of ${total})`);
+  if (failed > 0) process.exitCode = 1;
+}
+
+main().catch((e) => { console.error(e); process.exitCode = 1; });
