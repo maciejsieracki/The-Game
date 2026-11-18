@@ -4,8 +4,9 @@
  */
 import {
   PEACE_TAIL_ORDER, composePeaceTail, peaceTailPnPerUnit, peaceTailStep, peaceTailLabel,
-  type PeaceTailItem,
+  peaceTailBasketItems, type PeaceTailItem,
 } from './peace-tail-payment';
+import { composeTreatyPayment, treatyPaymentLabel, type TreatyPaymentResult } from './treaty-payment';
 import { formatTurCountAcc } from '../ui/formatPl';
 import {
   aiDiplomacyStance,
@@ -52,7 +53,7 @@ import {
 } from './diplomacy-pn-engine';
 import {
   diplomacyProgDarRelacja, diplomacyFairGivePn, diplomacyNormalizeSurowiecIlosc,
-  withDiplomacyTradeEra, diplomacyTradeEra, diplomacyClampQtyToEraBlock,
+  withDiplomacyTradeEra, diplomacyTradeEra, diplomacyClampQtyToEraBlock, diplomacyPnTech,
 } from './diplomacy-value-catalog';
 import {
   isCurrencyProposalForbiddenDuringWar,
@@ -206,6 +207,14 @@ export interface ProposalEvalContext {
    * Brak pola = jak `payerStock`.
    */
   playerStock?: Readonly<Record<string, number>>;
+  /**
+   * R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1 (r2): technologie GRACZA i drugiej strony (nazwy jak w tech.json), z main.ts.
+   * Stopień „technologie” dopłaty D: płatnik-gracz oddaje technologię, której druga strona NIE ma. Brak pola = brak stopnia.
+   */
+  playerTechs?: readonly string[];
+  partnerTechs?: readonly string[];
+  /** r3 (zarzut 5): tempo gry do wyceny technologii nośnika (jak diplomacyPnTech). Brak = standardowa. */
+  tempoGry?: Parameters<typeof diplomacyPnTech>[1];
   /** Respekt proponującego (0–100) w oczach respondenta */
   proposerRespekt: number;
   /** Respekt respondenta (0–100) w oczach proponującego */
@@ -322,6 +331,19 @@ export interface ProposalEvalResult {
    * evaluateProposal (attachTreatyPowerSplit); pusty dla traktatów spoza listy parytetu i dla pokoju.
    */
   treatyPowerSplit?: PeacePowerSplitInfo;
+  /**
+   * R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1: nośnik dopłaty D (gracz = płatnik traktatu z parytetem), gdy pokrywa D
+   * w całości z zapasów. `items` = pozycje koszyka (zloto / surowiec_ilosc) do przelewu razem z zawarciem traktatu
+   * (main.ts dopisuje je do giveItems gracza). Brak pola = brak dopłaty do wykonania.
+   */
+  /** r3 (zarzut 2): podsumowanie nośnika dla okna propozycji (wiersz „Dopłata traktatu"). */
+  treatyPayment?: TreatyPaymentUiInfo;
+  treatyCarrier?: {
+    items: Array<{ typ: 'zloto' | 'surowiec_ilosc' | 'tech'; id: string; ilosc: number }>;
+    coveredPn: number;
+    /** Strona koszyka, do której dopisać `items` (treatyCarrierPayloadPatch): 'proposer' = giveItems, 'responder' = receiveItems. */
+    side: 'proposer' | 'responder';
+  };
   /** Traktat do dodania (NAP, sojusz, trybut, wasal, granice) */
   deal?: ActiveDeal;
   /** Jednorazowy handel T3A — bez trwałego dealu */
@@ -890,6 +912,120 @@ export function treatyParityBaseX(actionId: string, payload: ProposalPayload, we
   return base;
 }
 
+/** Technologie do stopnia technologii nośnika (+ tempo gry do wyceny). */
+export interface CarrierTechs {
+  payerTechs: readonly string[];
+  otherTechs: readonly string[];
+  tempoGry?: Parameters<typeof diplomacyPnTech>[1];
+}
+
+/**
+ * R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1: plan nośnika dopłaty D dla GRACZA-płatnika traktatu z parytetem
+ * (gracz słabszy, autor = gracz). `null` = bramka nie dotyczy (silniejszy gracz, brak mocy, brak parytetu,
+ * koszyk już pokrywa D). Czysty: zapasy płatnika = `payerStock` (ctx.playerStock), pozycje koszyka już oferowane
+ * (giveItems zloto/surowce) są odejmowane od zapasu, żeby nie liczyć tego samego złota dwa razy.
+ * Stopień technologii NIE jest tu jeszcze podłączony (brak listy technologii w ctx) — patrz raport.
+ */
+export function treatyCarrierPlanForPlayerPayer(
+  actionId: string,
+  payload: ProposalPayload,
+  relation: Relation,
+  pnOpts: ResolveProposalPnOptions,
+  treatyPower: { powerPlayer: number; powerOther: number } | undefined,
+  wearinessL: number,
+  payerStock: Readonly<Record<string, number>> | undefined,
+  era: number | undefined,
+  techs?: CarrierTechs,
+): TreatyCarrierPlan | null {
+  if (!treatyPower) return null;
+  if (!treatyParityEnabled(actionId)) return null;
+  // r3 (zarzut 1): płatnikiem jest GRACZ, gdy jest słabszą stroną — niezależnie od tego, kto proponuje.
+  // Propozycja gracza: jego pozycje = giveItems / givePn. Propozycja AI→gracz: gracz odpowiada, jego pozycje = receiveItems / receivePn.
+  const proposerIsPlayer = (pnOpts.proposerOwnerId ?? 0) === (pnOpts.playerOwnerId ?? 0);
+  // Kierunek AI→gracz tylko dla traktatów z zweryfikowanym nośnikiem (r3). Rozejm (AI autor) zostaje jak dotąd: bez planu.
+  if (!proposerIsPlayer && !TREATY_CARRIER_ACTIONS.has(actionId)) return null;
+  const X = treatyParityBaseX(actionId, payload, wearinessL);
+  if (X <= 0) return null;
+  const split = peacePwPointsByPowerRatio(X, treatyPower.powerPlayer, treatyPower.powerOther);
+  if (split.strongerSide === 'a') return null;
+  const relTotal = treatyEvalRelationTotal(relation);
+  const requiredD = effectiveTreatyPnRequired(split.D, relTotal);
+  const { givePn: proposerGivePn, receivePn } = resolveProposalPn(payload, pnOpts);
+  // PN wnoszone przez GRACZA (płatnika) w samej propozycji.
+  const givePn = proposerIsPlayer ? proposerGivePn : receivePn;
+  if (givePn >= requiredD) return null;
+  // Zapas płatnika pomniejszony o pozycje koszyka już oferowane (jedno złoto nie liczy się dwa razy).
+  const left: Record<string, number> = {};
+  // Brak zapasu (undefined) = zero zapasów: bramka parytetu nadal odrzuca (jak przed nośnikiem), tylko z komunikatem.
+  for (const k of PEACE_TAIL_ORDER) left[k] = Math.max(0, Math.floor((payerStock ?? {})[k] ?? 0));
+  const payerBasket = (proposerIsPlayer ? payload.giveItems : payload.receiveItems) ?? [];
+  for (const i of payerBasket) {
+    if (i.typ !== 'zloto' && i.typ !== 'surowiec_ilosc') continue;
+    const k = i.typ === 'zloto' ? 'zloto' : i.id;
+    if (k in left) left[k] = Math.max(0, left[k]! - Math.max(0, Math.floor(i.ilosc ?? 0)));
+  }
+  // Zarzut 6 (FC r2): technologia już oferowana w koszyku płatnika nie może być dobrana drugi raz do nośnika.
+  const offeredTechs = new Set(payerBasket.filter(i => i.typ === 'tech').map(i => i.id));
+  const duePn = requiredD - givePn;
+  const payment = composeTreatyPayment({
+    duePn,
+    // Stopień technologii: tylko techy płatnika, których druga strona NIE ma i które nie są już w koszyku.
+    payerTechs: (techs?.payerTechs ?? []).filter(t => !offeredTechs.has(t)),
+    otherTechs: techs?.otherTechs ?? [],
+    // Zarzut 5 (FC r2): wycena technologii w tempie gry (ctx.tempoGry), nie domyślnym „standardowa”.
+    techPn: name => diplomacyPnTech(name, techs?.tempoGry ?? 'standardowa'),
+    pricing: {
+      holdings: left,
+      pnPerUnit: k => peaceTailPnPerUnit(k, era),
+      stepOf: k => peaceTailStep(k, era),
+    },
+  });
+  return {
+    requiredD, givePn, duePn, split, payment,
+    supported: TREATY_CARRIER_ACTIONS.has(actionId),
+    payerSide: proposerIsPlayer ? 'proposer' : 'responder',
+  };
+}
+
+/** Plan nośnika dopłaty D dla gracza-płatnika (wynik treatyCarrierPlanForPlayerPayer). */
+export interface TreatyCarrierPlan {
+  requiredD: number;
+  givePn: number;
+  duePn: number;
+  split: PeacePwPowerSplit;
+  payment: TreatyPaymentResult;
+  /** Strona koszyka płatnika-gracza: 'proposer' = giveItems (gracz proponuje), 'responder' = receiveItems (AI proponuje). */
+  payerSide: 'proposer' | 'responder';
+  /** false = akcja spoza zweryfikowanego zakresu wykonania (granice, wasal): nośnik nie przelewa, bramka odrzuca jak dotąd. */
+  supported: boolean;
+}
+
+/**
+ * R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1: traktaty, których ścieżka akceptacji (main.ts, gałąź transferu giveItems)
+ * jest zweryfikowana dla nośnika dopłaty. Granice (przemarsz) i wasal (r2): zawarcie idzie gałęzią `else if` w main.ts
+ * (transferBasketItems z payload.giveItems / receiveItems) — koszyk nośnika jest przelewany razem z traktatem.
+ * Kierunek (r3, zarzut 1): płatnik = gracz także gdy to AI proponuje (pozycje w receiveItems, treatyCarrierPayloadPatch).
+ */
+const TREATY_CARRIER_ACTIONS: ReadonlySet<string> = new Set(['nap', 'sojusz_defensywny', 'sojusz_pelny', 'granice', 'wasal']);
+
+/** Podsumowanie dopłaty nośnika do okna propozycji (etykiety z treatyPaymentLabel, bez surowych ID). */
+export interface TreatyPaymentUiInfo {
+  label: string;
+  coveredPn: number;
+  shortfallPn: number;
+  full: boolean;
+}
+
+function treatyPaymentUiInfo(plan: TreatyCarrierPlan): TreatyPaymentUiInfo {
+  const hasItems = plan.payment.techs.length + plan.payment.tail.length + plan.payment.extra.length > 0;
+  return {
+    label: hasItems ? treatyPaymentLabel(plan.payment).replace('Dopłata: ', '') : '',
+    coveredPn: plan.payment.coveredPn,
+    shortfallPn: plan.payment.shortfallPn,
+    full: plan.payment.full,
+  };
+}
+
 function treatyParityPowerGate(
   actionId: string,
   payload: ProposalPayload,
@@ -897,24 +1033,82 @@ function treatyParityPowerGate(
   pnOpts: ResolveProposalPnOptions,
   treatyPower: { powerPlayer: number; powerOther: number } | undefined,
   wearinessL = 0,
+  payerStock?: Readonly<Record<string, number>>,
+  era?: number,
+  techs?: CarrierTechs,
 ): ProposalEvalResult | null {
-  if (!treatyPower) return null;
-  if (!treatyParityEnabled(actionId)) return null;
-  const proposerIsPlayer = (pnOpts.proposerOwnerId ?? 0) === (pnOpts.playerOwnerId ?? 0);
-  if (!proposerIsPlayer) return null;
-  const X = treatyParityBaseX(actionId, payload, wearinessL);
-  if (X <= 0) return null;
-  const split = peacePwPointsByPowerRatio(X, treatyPower.powerPlayer, treatyPower.powerOther);
-  if (split.strongerSide === 'a') return null;
-  const relTotal = treatyEvalRelationTotal(relation);
-  const requiredD = effectiveTreatyPnRequired(split.D, relTotal);
-  const { givePn } = resolveProposalPn(payload, pnOpts);
-  if (givePn >= requiredD) return null;
+  const plan = treatyCarrierPlanForPlayerPayer(actionId, payload, relation, pnOpts, treatyPower, wearinessL, payerStock, era, techs);
+  if (!plan) return null;
+  // Nośnik pokrywa całą dopłatę D (zapasy płatnika) → bramka przepuszcza; przelew wykonuje ścieżka akceptacji
+  // (treatyCarrierForAcceptance / attachTreatyCarrier), a nie tekst oferty.
+  if (plan.supported && plan.payment.full) return null;
+  const hasStock = plan.supported && (plan.payment.tail.length > 0 || plan.payment.extra.length > 0);
+  const hint = hasStock
+    ? ` (możesz dopłacić: ${treatyPaymentLabel(plan.payment).replace('Dopłata: ', '')}; brakuje jeszcze ${plan.payment.shortfallPn} PN)`
+    : ` (brak zapasów płatnika na dopłatę: brakuje ${plan.payment.shortfallPn} PN)`;
   return {
     accepted: false,
-    reason: `Brakuje ${requiredD - givePn} PW do parytetu siły — słabszy gracz dopłaca D = ${split.D} PW `
-      + `(po rabacie relacji: ${requiredD}; X = ${X}, S = ${split.S}, W = ${split.W}, r = ${split.r.toFixed(2)})`,
+    reason: `Brakuje ${plan.duePn} PW do parytetu siły — słabszy gracz dopłaca D = ${plan.split.D} PW `
+      + `(po rabacie relacji: ${plan.requiredD}; r = ${plan.split.r.toFixed(2)})${hint}`,
+    treatyPayment: treatyPaymentUiInfo(plan),
   };
+}
+
+/** Technologie płatnika-gracza i drugiej strony z kontekstu oceny (stopień technologii nośnika). Brak pól = puste listy. */
+function treatyCarrierTechsOf(ctx: ProposalEvalContext): CarrierTechs {
+  return { payerTechs: ctx.playerTechs ?? [], otherTechs: ctx.partnerTechs ?? [], tempoGry: ctx.tempoGry };
+}
+
+/**
+ * Dołącza do wyniku akceptacji (accepted = true) pozycje nośnika dopłaty, gdy nośnik pokrywa D w całości.
+ * Ścieżka akceptacji w main.ts dopisuje `treatyCarrier.items` do giveItems gracza przed przelewem.
+ */
+function attachTreatyCarrier(
+  proposal: DiplomaticProposal,
+  ctx: ProposalEvalContext,
+  result: ProposalEvalResult,
+): ProposalEvalResult {
+  if (!result.accepted || !ctx.treatyPower) return result;
+  // Te same opcje co w evaluateProposalImpl (pnOpts), żeby givePn w planie = givePn w bramce.
+  const pnOpts: ResolveProposalPnOptions = {
+    difficulty: ctx.difficulty ?? 'normal',
+    proposerOwnerId: proposal.proposerOwnerId,
+    playerOwnerId: 0,
+    actionId: proposal.actionId,
+    tradeEra: ctx.tradeEra,
+    ...proposalPnTurnsMultiplier(proposal.payload),
+  };
+  const plan = treatyCarrierPlanForPlayerPayer(
+    proposal.actionId, proposal.payload, ctx.relation, pnOpts,
+    ctx.treatyPower, treatyWearinessLevelOf(ctx), ctx.playerStock ?? ctx.payerStock, ctx.tradeEra,
+    treatyCarrierTechsOf(ctx),
+  );
+  if (!plan || !plan.supported || !plan.payment.full) return result;
+  // Technologie najpierw (stopień 1), potem ogon (złoto/metale/rudy): pozycje koszyka `typ: 'tech'` przelewa
+  // transferBasketItems (grantTechToOwner = odkrycie dla odbiorcy).
+  const techItems = plan.payment.techs.map(t => ({ typ: 'tech' as const, id: t.name, ilosc: 1 }));
+  const items = [...techItems, ...peaceTailBasketItems(plan.payment.tail)];
+  if (items.length === 0) return result;
+  return {
+    ...result,
+    treatyCarrier: { items, coveredPn: plan.payment.coveredPn, side: plan.payerSide },
+    treatyPayment: treatyPaymentUiInfo(plan),
+  };
+}
+
+/**
+ * r3 (zarzut 3 FC r2): dopisuje nośnik dopłaty do właściwej strony koszyka traktatu. Gracz proponuje → pozycje płatnika
+ * idą do `giveItems` (gracz oddaje); AI proponuje → gracz odpowiada, pozycje idą do `receiveItems` (gracz oddaje).
+ * Czysta: używana przez main.ts przed gałęzią przelewu traktatu (transferBasketItems). Brak pozycji → payload bez zmian.
+ */
+export function treatyCarrierPayloadPatch<P extends { giveItems?: readonly BasketItem[]; receiveItems?: readonly BasketItem[] }>(
+  payload: P,
+  carrier: { side: 'proposer' | 'responder'; items: ReadonlyArray<{ typ: string; id: string; ilosc: number }> },
+): P {
+  if (carrier.items.length === 0) return payload;
+  const items = carrier.items as unknown as BasketItem[];
+  if (carrier.side === 'proposer') return { ...payload, giveItems: [...(payload.giveItems ?? []), ...items] };
+  return { ...payload, receiveItems: [...(payload.receiveItems ?? []), ...items] };
 }
 
 /**
@@ -1295,7 +1489,7 @@ export function evaluateProposal(
   // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: ocena w jawnej epoce umowy (ctx.tradeEra), nie w
   // epoce, którą akurat zostawił globalny stan (domyślna epoka handlu zostaje fallbackiem).
   const result = withDiplomacyTradeEra(ctx.tradeEra ?? diplomacyTradeEra(), () => evaluateProposalImpl(proposal, ctx));
-  return attachTreatyPowerSplit(proposal, ctx, result);
+  return attachTreatyCarrier(proposal, ctx, attachTreatyPowerSplit(proposal, ctx, result));
 }
 
 /**
@@ -1411,7 +1605,10 @@ function evaluateProposalImpl(
   const pnReject = treatyPnGate(actionId, payload, relation, pnOpts, parityOwnedByPlayer);
   if (pnReject) return pnReject;
 
-  const parityReject = treatyParityPowerGate(actionId, payload, relation, pnOpts, ctx.treatyPower, wearinessL);
+  const parityReject = treatyParityPowerGate(
+    actionId, payload, relation, pnOpts, ctx.treatyPower, wearinessL, ctx.playerStock ?? ctx.payerStock, ctx.tradeEra,
+    treatyCarrierTechsOf(ctx),
+  );
   if (parityReject) return parityReject;
 
   switch (actionId) {
@@ -2726,6 +2923,58 @@ export function resolvePlayerAcceptsAiPending(
   difficulty: GameDifficulty = 'normal',
   // R-HANDEL-WYMIANA-TECH-GATE-Q1: `hasTradeTech` opcjonalny — wsteczna zgodność
   // dla wywołujących spoza allowlisty tego tematu (undefined = bramka pominięta).
+  // R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1 (r3): `carrierCtx` = ten sam kontekst oceny co w oknie propozycji
+  // (buildProposalEvalContext). Gdy podany, akceptacja oferty AI-traktatu (autor = AI) z parytetem siły dostaje
+  // TEN SAM nośnik dopłaty D co wiersz okna (attachTreatyCarrier z zapasów GRACZA) albo odmowę, gdy zapasów brak.
+  opts?: { atWar?: boolean; hasTradeTech?: (ownerId: number) => boolean; tradeEra?: number; carrierCtx?: ProposalEvalContext },
+): ProposalEvalResult {
+  const result = resolvePlayerAcceptsAiPendingBase(pending, turn, difficulty, opts);
+  return applyTreatyCarrierToAiAcceptance(pending, difficulty, opts?.carrierCtx, result);
+}
+
+/**
+ * Nośnik dopłaty D przy akceptacji oferty AI przez gracza (r3, defekt główny FC): realna akceptacja idzie przez
+ * resolvePlayerAcceptsAiPending, która nie liczyła parytetu — wiersz okna obiecywał płatność, a przelewu nie było.
+ * Tylko traktaty z TREATY_CARRIER_ACTIONS i tylko gdy autorem jest strona inna niż gracz (kierunek AI→gracz;
+ * kierunek gracz→AI przechodzi przez evaluateProposal, który już dołącza nośnik).
+ * Bez zapasów pokrywających D: odmowa z tym samym powodem co bramka okna (treatyParityPowerGate).
+ */
+function applyTreatyCarrierToAiAcceptance(
+  pending: PendingProposal,
+  difficulty: GameDifficulty,
+  ctx: ProposalEvalContext | undefined,
+  result: ProposalEvalResult,
+): ProposalEvalResult {
+  if (!ctx || !result.accepted || !result.deal) return result;
+  if (!TREATY_CARRIER_ACTIONS.has(pending.actionId)) return result;
+  if (pending.fromOwnerId === 0) return result;
+  if (!ctx.treatyPower || !treatyParityEnabled(pending.actionId)) return result;
+  const proposal: DiplomaticProposal = {
+    actionId: pending.actionId,
+    proposerOwnerId: pending.fromOwnerId,
+    responderOwnerId: pending.toOwnerId,
+    payload: pending.payload,
+  };
+  const pnOpts: ResolveProposalPnOptions = {
+    difficulty: ctx.difficulty ?? difficulty,
+    proposerOwnerId: proposal.proposerOwnerId,
+    playerOwnerId: 0,
+    actionId: proposal.actionId,
+    tradeEra: ctx.tradeEra,
+    ...proposalPnTurnsMultiplier(proposal.payload),
+  };
+  const gate = treatyParityPowerGate(
+    proposal.actionId, proposal.payload, ctx.relation, pnOpts, ctx.treatyPower, treatyWearinessLevelOf(ctx),
+    ctx.playerStock ?? ctx.payerStock, ctx.tradeEra, treatyCarrierTechsOf(ctx),
+  );
+  if (gate) return { accepted: false, reason: gate.reason, treatyPayment: gate.treatyPayment };
+  return attachTreatyCarrier(proposal, ctx, result);
+}
+
+function resolvePlayerAcceptsAiPendingBase(
+  pending: PendingProposal,
+  turn: number,
+  difficulty: GameDifficulty,
   opts?: { atWar?: boolean; hasTradeTech?: (ownerId: number) => boolean; tradeEra?: number },
 ): ProposalEvalResult {
   const { actionId, fromOwnerId, toOwnerId, payload } = pending;

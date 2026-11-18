@@ -52,7 +52,7 @@ export interface NegotiationBalanceSource {
    * SAMEJ bramki, która policzyła `accepted` — patrz ProposalEvalResult w
    * diplomacy-proposals.ts. `undefined` gdy akcja nie ma numerycznej bramki PW.
    */
-  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: WearinessRowInfo; treatyPowerSplit?: PeacePowerSplitInfo };
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: WearinessRowInfo; treatyPowerSplit?: PeacePowerSplitInfo; treatyPayment?: TreatyPaymentRowInfo };
   isGift?: boolean;
   awaitingAiResponse?: boolean;
   canCounter?: boolean;
@@ -75,7 +75,7 @@ export interface PnBalancePanelData {
    * SAMEJ bramki, która policzyła `accepted` — patrz ProposalEvalResult w
    * diplomacy-proposals.ts. `undefined` gdy akcja nie ma numerycznej bramki PW.
    */
-  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: WearinessRowInfo; treatyPowerSplit?: PeacePowerSplitInfo };
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: WearinessRowInfo; treatyPowerSplit?: PeacePowerSplitInfo; treatyPayment?: TreatyPaymentRowInfo };
   canCounter?: boolean;
   uiActionId?: string;
 }
@@ -643,6 +643,34 @@ export function peaceTailRowHtml(info?: Pick<WearinessRowInfo, 'peaceTail'>): st
   return '<div class="da-pn-bal-meta weariness" title="' + esc(txt) + '">' + esc(txt) + '</div>';
 }
 
+/** r3 (zarzut 2): podsumowanie dopłaty nośnika traktatu (etykiety po polsku, bez surowych ID). */
+export interface TreatyPaymentRowInfo {
+  label: string;
+  coveredPn: number;
+  shortfallPn: number;
+  full: boolean;
+}
+
+/**
+ * r3 (zarzut 2): wiersz „Dopłata traktatu" w tooltipie bilansu — co płatnik-gracz oddaje (technologie → złoto → brąz →
+ * żelazo → rudy) albo ile PN brakuje. Wyliczenia wyłącznie w tooltipie; brak nośnika → pusty ciąg.
+ */
+export function treatyPaymentRowHtml(info?: { treatyPayment?: TreatyPaymentRowInfo }): string {
+  const t = info?.treatyPayment;
+  if (!t) return '';
+  const f = (n: number): string => formatLiczbaPl(Math.round(n));
+  let txt: string;
+  if (t.full && t.label) {
+    txt = 'Dopłata traktatu: ' + t.label + ' (pokrywa ' + f(t.coveredPn) + ' PN; oddane razem z zawarciem traktatu)';
+  } else if (t.shortfallPn > 0) {
+    txt = 'Dopłata traktatu: brakuje ' + f(t.shortfallPn) + ' PN'
+      + (t.label ? ' (możesz dopłacić: ' + t.label + ')' : ' — brak zapasów technologii, złota i surowców');
+  } else {
+    return '';
+  }
+  return '<div class="da-pn-bal-meta weariness" title="' + esc(txt) + '">' + esc(txt) + '</div>';
+}
+
 /**
  * R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (D4): wiersz „Podział PW pokoju wg mocy" — moc obu stron (POWER), r, S, W, D i D po
  * rabacie relacji. Wyliczenia wyłącznie w tooltipie (zasada „najważniejsze na wierzchu"); brak danych mocy → pusty ciąg.
@@ -776,6 +804,8 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     plainTextWithTitles(peacePowerSplitRowHtml(data.responderPreview?.wearinessInfo)),
     // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (r3): „Dopłata: X złota, Y rudy żelaza" — tylko w tooltipie.
     plainTextWithTitles(peaceTailRowHtml(data.responderPreview?.wearinessInfo)),
+    // r3 (zarzut 2): dopłata traktatu z parytetem (NAP/sojusz/przemarsz/wasal) — ten sam wzorzec tooltipa.
+    plainTextWithTitles(treatyPaymentRowHtml(data.responderPreview)),
     // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (runda 3, zarzut 4): sojusz/NAP/przemarsz/wasal — ten sam wiersz podziału PW.
     plainTextWithTitles(peacePowerSplitRowHtml({ powerSplit: data.responderPreview?.treatyPowerSplit })),
     plainTextWithTitles(treatyNote),
