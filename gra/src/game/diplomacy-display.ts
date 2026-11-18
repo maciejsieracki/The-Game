@@ -22,7 +22,7 @@ import { nazwaWyswietlana } from './text-names';
 import { nazwaMiastaDyplomacji } from './diplomacy-city-name';
 import { isTruceActive } from './diplomacy-peace-lock';
 import { formatTurCountAcc } from '../ui/formatPl';
-import { warWearinessNextStagePl, warWearinessStagesSummaryPl } from './war-weariness-view';
+import { warWearinessNextStagePl, warWearinessStagesSummaryPl, warWearinessTurnsToLevel } from './war-weariness-view';
 import wearyParamsRaw from '../../data/war-weariness-params.json';
 
 const MATRIX = loadCivMatrix();
@@ -388,10 +388,34 @@ export function warWearinessPercentPl(value: number): string {
 function warDespairTooltipPl(): string {
   const L = wearyParamsRaw.przegrywajacy;
   const pct = (v: number): string => Math.round(v * 100) + '%';
-  return 'Desperacja przegrywającej strony (0–100%) rośnie ze zmęczeniem wojną (' + pct(L.wagaZmeczenia)
+  return 'Desperacja przegrywającej strony (skala 0–100%: 0% = brak desperacji, 100% = skrajna gotowość oddania miast) '
+    + 'rośnie ze zmęczeniem wojną (' + pct(L.wagaZmeczenia)
     + '), słabością siły (' + pct(L.wagaSily) + ') i utratą miast (' + pct(L.wagaStrat)
-    + ' przy nasyceniu ' + L.stratyNasycenie + ' miast); wysoka oznacza gotowość oddania miast za pokój. '
+    + ' przy nasyceniu ' + L.stratyNasycenie + ' miast). '
+    + 'Dotyczy tylko strony przegrywającej i decyduje wyłącznie o tym, czy ta strona składa ofertę miast '
+    + '(od progu ' + pct(L.progiStopni[0] ?? 0) + '); nie wymusza pokoju. '
     + '0%, gdy strona nie jest wyraźnie słabsza (udział jej siły powyżej ' + pct(L.udzialWyraznie) + ').';
+}
+
+/**
+ * Podpowiedź „Zmęczenie wojną”: skala 0–100%, wzór narastania (tury wojny + utracone miasta) i progi z parametrów.
+ * Wiersz „Pokój wymuszony za ≈N tur” liczony z bieżącego poziomu tylko przy stałym tempie (bez zmiany miast).
+ */
+function warWearinessScaleTooltipPl(level: number): string {
+  const Z = wearyParamsRaw.zmeczenie;
+  const pct = (v: number): string => Math.round(v * 100) + '%';
+  const perTurn = 100 / Z.pelneTur;
+  const perCity = Z.wagaStratMiasta * 100;
+  const toForced = warWearinessTurnsToLevel(level, Z.progWymuszonyPokoj);
+  const forcedTxt = toForced > 0
+    ? 'Pokój wymuszony za ' + formatTurCountAcc(toForced) + ' przy obecnym tempie (bez zmiany posiadania miast).'
+    : 'Pokój wymuszony już trwa — poziom osiągnął 100%.';
+  return 'Zmęczenie wojną: skala 0–100%, gdzie 0% = start wojny, a 100% = pokój wymuszony. '
+    + 'Rośnie o ' + perTurn.toFixed(1).replace('.', ',') + '% za każdą turę wojny i o ' + pct(Z.wagaStratMiasta)
+    + ' za każde miasto, które zmieniło właściciela. '
+    + 'Od ' + pct(Z.progChetnosci) + ' strony chcą pokoju, od ' + pct(Z.progKoncaZmeczenia)
+    + ' AI proponuje pokój z miastami, a przy ' + pct(Z.progWymuszonyPokoj) + ' pokój zostaje wymuszony. '
+    + forcedTxt + ' ' + warWearinessNextStagePl(level) + ' ' + warWearinessStagesSummaryPl();
 }
 
 /** Etykieta i podpowiedź (jedno zdanie) dla zmęczenia wojną („wygrywa"/„rowny") albo desperacji („przegrywa"). */
@@ -408,8 +432,7 @@ export function warWearinessLabelPl(view: {
   if (view.zmeczenie !== undefined) {
     return {
       label: 'Zmęczenie wojną ' + warWearinessPercentPl(view.zmeczenie),
-      tooltip: 'Zmęczenie wojną rośnie z każdą turą wojny i z utraconymi miastami; wysoka wartość zwiększa chęć pokoju. '
-        + warWearinessNextStagePl(view.zmeczenie) + ' ' + warWearinessStagesSummaryPl(),
+      tooltip: warWearinessScaleTooltipPl(view.zmeczenie),
     };
   }
   return null;
