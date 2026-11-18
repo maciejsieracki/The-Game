@@ -222,12 +222,16 @@ const outcomeParts = {
 };
 // K5LOOP-KILL-RIPPLE (D-INT-2, R-RUSTPORT-P6-K5LOOP-SIEGE-DEF-Q1): ripple `_shakeAlliesOnLoss` (`:9743-9753`, wywolanie
 // `:9048`) wykonywany tekstem pinu (wczesniej atrapa); akcja `shaken` przy `_updateMoraleBar` wolanym bezposrednio z petli
-// ripple (`:9749`). Osobny strażnik `rippleSha256` (bez zmiany outcomeSha256).
+// ripple (`:9749`). Osobny strażnik `rippleSha256` (stała `EXPECTED_RIPPLE_SHA256`, `throw`) (bez zmiany outcomeSha256).
 expectLine(SCENE, 1118, 'const MORALE_ALLY_DEATH_LOSS');
 expectLine(SCENE, 9743, 'private _shakeAlliesOnLoss(fallen: RuntimeBattleUnit)');
 const rippleParts = { allyLoss: L(SCENE, 1118, 1118), shake: L(SCENE, 9743, sceneEnd(9743)) };
 const rippleDigest = createHash('sha256').update(Object.keys(rippleParts).map((n) => `${n}\n${rippleParts[n]}`).join('\n---\n')).digest('hex');
 console.error(`ripple sha256 = ${rippleDigest}`);
+// Obrona r1 SIEGE-DEF (zarzut Z5): strażnik = porównanie ze stałą (wycinki `:1118` i `:9743-9753` pinu); zmiana tekstu
+// pinu albo zakresu wycinka = błąd generatora, nie cicha regeneracja wektorów.
+const EXPECTED_RIPPLE_SHA256 = '2fccc76c9111ff9949786ff7b4bbe468bfebe479473cd7a6fadd13ccd35cdb6a';
+if (rippleDigest !== EXPECTED_RIPPLE_SHA256) throw new Error(`SHA wycinkow ripple zmieniony: ${rippleDigest}`);
 const outcomeDigest = createHash('sha256').update(Object.keys(outcomeParts).map((n) => `${n}\n${outcomeParts[n]}`).join('\n---\n')).digest('hex');
 if (outcomeDigest !== OUTCOME_SHA256) throw new Error(`SHA fragmentow efektow po ciosie zmieniony: ${outcomeDigest}`);
 
