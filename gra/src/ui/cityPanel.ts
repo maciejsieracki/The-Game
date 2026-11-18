@@ -6515,27 +6515,64 @@ export function appendRecruitMilitaryResourceStrip(
  * odtąd nie dodany ponownie), nowa pozycja startuje z TYM postępem zamiast
  * od zera -- zapis jest przy tym konsumowany (usuwany z mapy).
  */
-function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean }): void {
+function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean; silent?: boolean }): boolean {
   if (item.kind === 'budynek') {
     const prod = getProd(city.id);
-    if (buildingTypeQueued(item.id, prod.kolejka)) return;
+    if (buildingTypeQueued(item.id, prod.kolejka)) return false;
     if (!opts?.upgrade) {
       const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
-      if (built.includes(item.id)) return;
+      if (built.includes(item.id)) return false;
     }
     const cost = buildingStockCostForItem(item);
     if (Object.keys(cost).length > 0) {
-      if (!canAffordBuildingStock(ownerSurowcePoolFor(city), cost)) return; // blokada: pula panstwa nie starcza
+      if (!canAffordBuildingStock(ownerSurowcePoolFor(city), cost)) return false; // blokada: pula panstwa nie starcza
       // pobór RAZ, przy starcie budowy — rozłożony po miastach ownera (pula PAŃSTWA).
       deductBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost, pendingLedgerSink(city.ownerId, 'budowa', 'Budowa budynku'));
     }
   } else if (item.kind === 'jednostka') {
     // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: jednostki nie są
     // budowane za Pracę. Rekrutacja ma własną ścieżkę zakupu poniżej.
-    return;
+    return false;
   }
   setProd(city.id, enqueue(getProd(city.id), item, city));
-  rerender();
+  if (!opts?.silent) rerender();
+  return true;
+}
+
+/**
+ * „Ulepsz wszystko” (R-WEB-UI-CITY-UPGRADE-ALL-BUTTON-Q1): dla każdego aktywnego wiersza listy
+ * „Ulepsz" wykonuje DOKŁADNIE tę samą akcję co klik „Ulepsz" tego wiersza (ta sama addItem,
+ * te same walidacje, koszt i kolejność listy). Kup nie jest wołane. Nie odświeża panelu (`silent`):
+ * wywołujący robi jeden rerender po całej serii. Zwraca liczbę pozycji faktycznie dodanych do kolejki.
+ */
+function enqueueActiveUpgradeRows(city: City, activeItems: ProductionItem[]): number {
+  let added = 0;
+  for (const item of activeItems) {
+    if (addItem(city, item, { upgrade: true, silent: true })) added++;
+  }
+  return added;
+}
+
+/** Komunikat po „Ulepsz wszystko” — pokazany w następnym renderze listy budowy (panel jest odtwarzany). */
+let pendingUpgradeAllMsg: string | null = null;
+
+/** Dokleja komunikat „Ulepsz wszystko” (jeśli czeka) i zeruje go — wywoływane w każdym renderze listy budowy. */
+function appendUpgradeAllStatus(parent: HTMLElement): void {
+  if (!pendingUpgradeAllMsg) return;
+  const msg = el('div', 'muted', pendingUpgradeAllMsg);
+  msg.setAttribute('role', 'status');
+  msg.style.cssText = 'font-size:0.72em;margin:0 0 0.2em;';
+  parent.appendChild(msg);
+  pendingUpgradeAllMsg = null;
+}
+
+/** Polska odmiana rzeczownika „ulepszenie” dla liczby n (1 ulepszenie, 2-4 ulepszenia, 5+ ulepszeń). */
+function pluralUlepszenia(n: number): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (n === 1) return 'ulepszenie';
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'ulepszenia';
+  return 'ulepszeń';
 }
 
 function applyBuildButtonVisualState(btn: HTMLButtonElement, canAct: boolean, title: string): void {
@@ -9400,6 +9437,7 @@ export function renderBuildList(
 
   if (items.length === 0 && sortedUps.length === 0 && previewEntries.length === 0) {
     mount.appendChild(el('div', 'muted', '(brak budynków — zbadaj technologie)'));
+    appendUpgradeAllStatus(mount);
     return;
   }
 
@@ -9415,10 +9453,41 @@ export function renderBuildList(
     appendBuildableItemRow(scroll, city, it, data, { praca, skarb, buildLabel: 'Buduj' });
   }
   if (sortedUps.length > 0) {
-    const h = el('div', 'muted');
-    h.style.cssText = 'font-size:0.72em;margin:0.35em 0 0.2em;padding-top:0.25em;border-top:1px solid var(--border);';
-    h.textContent = 'Ulepsz';
-    scroll.appendChild(h);
+    const hRow = el('div');
+    hRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:0.35em;margin:0.35em 0 0.2em;padding-top:0.25em;border-top:1px solid var(--border);';
+    const h = el('div', 'muted', 'Ulepsz');
+    h.style.cssText = 'font-size:0.72em;';
+    hRow.appendChild(h);
+    // Aktywne wiersze „Ulepsz" = te, których przycisk Ulepsz jest włączony (wymagania spełnione)
+    // i które NIE są już w kolejce (klik Ulepsz na pozycji już zakolejkowanej i tak nic nie robi).
+    const activeUpgrades: ProductionItem[] = [];
+    let readyButQueued = 0;
+    for (const u of sortedUps) {
+      const uDef = findBuildingDef(data, u.id);
+      if (!uDef || !buildingCanBuildNow(uDef, city, data, prodCtx, techs)) continue;
+      if (buildingTypeQueued(u.id, prodState.kolejka)) readyButQueued++;
+      else activeUpgrades.push(u);
+    }
+    const bAll = el('button', 'btn btn-sm btn-b', 'Ulepsz wszystko') as HTMLButtonElement;
+    // Liczba w tooltipie to górna granica: kolejne pozycje podlegają tym samym warunkom zasobów
+    // co pojedynczy „Ulepsz" (addItem), więc faktyczny wynik może być mniejszy.
+    const allTitle = activeUpgrades.length > 0
+      ? `Dodaj do kolejki dostępne ulepszenia (do ${activeUpgrades.length}, zależnie od zasobów)`
+      : (readyButQueued > 0
+        ? 'Wszystkie dostępne ulepszenia są już w kolejce'
+        : 'Brak ulepszeń do dodania — wymagania budowy nie są spełnione');
+    applyBuildButtonVisualState(bAll, activeUpgrades.length > 0, allTitle);
+    bAll.addEventListener('click', () => {
+      if (activeUpgrades.length === 0) return;
+      const n = enqueueActiveUpgradeRows(city, activeUpgrades);
+      pendingUpgradeAllMsg = n > 0
+        ? `Dodano do kolejki: ${n} ${pluralUlepszenia(n)}`
+        : 'Brak ulepszeń do dodania';
+      rerender();
+    });
+    hRow.appendChild(bAll);
+    scroll.appendChild(hRow);
+    appendUpgradeAllStatus(scroll);
     for (const u of sortedUps) {
       const srcId = chainSource(u);
       const fromName = srcId ? (findBuildingDef(data, srcId)?.nazwa ?? srcId) : undefined;
@@ -9452,6 +9521,9 @@ export function renderBuildList(
       });
     }
   }
+  // Po „Ulepsz wszystko” wszystkie pozycje mogły wyjść z listy „Ulepsz” (przeszły do kolejki),
+  // więc nagłówek sekcji mógł zniknąć — komunikat dokładamy tu, żeby zawsze był widoczny.
+  appendUpgradeAllStatus(scroll);
   mount.appendChild(scroll);
 }
 
