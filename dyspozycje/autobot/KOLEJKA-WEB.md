@@ -1,6 +1,10 @@
-# KOLEJKA WEB — stan na 2026-11-15 ~21:30 UTC (main bd647523b, ROBOCZA FALA 748 MD5 ead39d06) — PROGRAM NA NOC 15/16.11
+# KOLEJKA WEB — stan na 2026-11-18 (baza kandydata a86a847d7; origin/main fb5b2045a = FALA 835; ROBOCZA MD5 5bc75dc23e87cde560cb71ad892d70b6)
 
-Czytana przez heartbeat :17 i :47 (sesja orkiestratora). Zastępuje wersję z 2026-11-14 (stara w historii git: `git log -- dyspozycje/autobot/KOLEJKA-WEB.md`). Zakres: WYŁĄCZNIE web (Rust NIE). Źródła prawdy o stanie: `dyspozycje/REJESTR-PROSB-I-ZADAN.md`, TaskList sesji, `git log origin/main`.
+Czytana przez heartbeat :17 i :47. Źródła stanu (każda pozycja ma odsyłacz):
+- `git log origin/main` (commity „ROBOCZA … FALA n” i „FALA n: merge FC …”) — dla FAL 747–835,
+- `dyspozycje/REJESTR-PROSB-I-ZADAN.md` — kończy się na FALI 746 (wiersz 10148), więc FALE 747–835 są potwierdzane z gita, nie z rejestru,
+- listy zadań sesji orkiestratora NIE są źródłem tego pliku (nie są w repo); pozycje z nich wpisane tylko po potwierdzeniu w repo.
+Zakres: WYŁĄCZNIE web. Rust tylko jako dług (sekcja DŁUG RUST/REPIN).
 
 ## PROCEDURA NOCNA (obowiązuje heartbeat i orkiestratora; kolejność ważna)
 
@@ -8,66 +12,90 @@ Czytana przez heartbeat :17 i :47 (sesja orkiestratora). Zastępuje wersję z 20
 2. **Wynik FC (powiadomienie o zakończeniu workflowa):** `PASS`/`PASS-WITH-NOTES` → refs `refs/keep/<TAG>-{op,eval,obrona,fc}` → **wdrożenie** (niżej) → rejestr → push → sprzątanie worktree → dopiero potem start kolejnego. `FAIL`/`BLOCK` → ta sama ID, następna runda (max 5), DODATEK z konkretnymi NAPRAW z FC; **Sonnet na Operatorze tylko po DWÓCH nieudanych rundach Haiku TEGO SAMEGO tematu** (args `opModel:"claude-sonnet-5-5", haikuFailures:2, sonnetWhy:"…"`). Po rundzie 5: `LIMIT-5-EXCEEDED` → zapisz w rejestrze i zostaw do rana (ABC).
 3. **START tematu:** dispatch (`00-dispatch.md` + identyczny `00-dispatch-DODATEK-claude.md`) wypchnięty na `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, potem `scratchpad/mkwf.sh <ID> "<opis bez apostrofów i />"` i `Workflow` z `scriptPath`, args `{"id","tag","mode":"full","branch":"claude/sprawdzenie-funkcjonalnosci-ek4ra0","cand":"<SHA>","opModel":"claude-haiku-5-5","round":N}`. **`cand` = SHA `origin/main` (albo kandydat będący JEGO POTOMKIEM) — NIGDY HEAD gałęzi dispatchów** (skrypt każe Operatorowi `git checkout --detach ${cand}`; gałąź dispatchów NIE ma kodu main — incydent 2026-11-15: 3 tematy zmierzone na starym kodzie). Przy rundzie ≥2: `cand` = kandydat poprzedniej rundy (potomek main) i `git merge-base --is-ancestor <main> <cand>` PRZED startem.
 4. **Nie startuj** przy dysku < 6 GB (`df -h /`; worktree Operatora ≈ 1 GB, sprzątaj zakończone: `git worktree unlock` + `git worktree remove --force --force`; `/tmp/*-live-dist`, `/tmp/civ-*` starsze niż 90 min — ale nie katalogi trwających testów). Nie uruchamiaj tematu z zależnością, jeśli warunek startu nie jest spełniony. Nie startuj tematów „dla zapełnienia” bez realnej pracy.
-4a. **Sprzątanie w trakcie nocy (dysk spada o ok. 1 GB na worktree; 4 tematy × 3–4 worktree = do 14 GB):** dla trwającego workflowa zakończone etapy (Operator/Evaluator/Obrona) NIE potrzebują już swoich worktree — najpierw zapisz commity etapów w refs (python po `journal.jsonl`: pola `sha`/`report_sha` każdego wyniku → `git update-ref refs/keep/R-WEB-<TAG>-<etap>`), potem `git worktree unlock` + `git worktree remove --force --force` dla worktree etapów o numerze mniejszym niż bieżący (bieżący etap zostaw). Zakończone workflowy: usuń wszystkie ich worktree po zapisaniu refs `-op/-eval/-obrona/-fc`. Dodatkowo `rm -rf` katalogów `/tmp/*-dist`, `/tmp/civ-*`, `scratchpad/*-bundle*` starszych niż 90 min (nie dotykaj `scratchpad/aiecon`, `kopia`, `dist`, `perf-seq` dopóki #417/#419 trwają).
+4a. **Sprzątanie w trakcie nocy (dysk spada o ok. 1 GB na worktree; 4 tematy × 3–4 worktree = do 14 GB):** dla trwającego workflowa zakończone etapy (Operator/Evaluator/Obrona) NIE potrzebują już swoich worktree — najpierw zapisz commity etapów w refs (python po `journal.jsonl`: pola `sha`/`report_sha` każdego wyniku → `git update-ref refs/keep/R-WEB-<TAG>-<etap>`), potem `git worktree unlock` + `git worktree remove --force --force` dla worktree etapów o numerze mniejszym niż bieżący (bieżący etap zostaw). Zakończone workflowy: usuń wszystkie ich worktree po zapisaniu refs `-op/-eval/-obrona/-fc`. Dodatkowo `rm -rf` katalogów `/tmp/*-dist`, `/tmp/civ-*`, `scratchpad/*-bundle*` starszych niż 90 min (nie dotykaj `scratchpad/aiecon`, `kopia`, `dist`, `perf-seq` dopóki trwa pomiar wydajnościowy — sprawdź TaskList; #417 i #419 są już completed).
 5. **Decyzje produktowe/progi liczbowe → ABC do właściciela** (AskUserQuestion, po polsku, rekomendacja pierwsza) — **w nocy NIE blokuj na odpowiedzi**: zapisz pytanie w rejestrze („CZEKA NA RANO”) i idź dalej z tematami niezależnymi. Błędy webowe wykryte w testach → osobny temat R-WEB-* bez pytania (stała zgoda 2026-11-01).
-6. **Wdrożenie (tylko ROBOCZA, nigdy KANON/FINALNA)** — przepis z FALI 747/748: `cd scratchpad; FALA_NR=<n> setsid nohup ./dep3.sh "<SHA raportu FC (potomek kodu)>" "<pliki testów tematu>" > /dev/null 2>&1 < /dev/null & disown` (merge do `/home/user/integ`, `npm ci`, `tsc`, `logic-test`, testy tematu, `vite build` do `/tmp/civ-deploy-out`, log `/tmp/vbuild.log`); czekaj w tle na `BUILD_DONE` i brak procesu dep3 (`until grep -q BUILD_DONE /tmp/vbuild.log && ! pgrep -f dep3.sh >/dev/null; do sleep 10; done` jako zadanie w tle; foreground `sleep` >60 s zablokowany); konflikt tylko w `wikiBundle.json` → `cd gra && node tools/bundle-wiki-for-game.cjs`, nigdy ręcznie w kodzie; potem `cp finalize-<poprzedni>.sh finalize-<n>.sh`, podmień `m["finalControl"]=…` (python `re.sub`), `./finalize-<n>.sh <n> "tytuł" "zakres" "weryfikacja" "limity" "źródło"` (stempel, ROBOCZA-MANIFEST, WERSJE.md, push main, kontrola MD5 w GitHub Raw, usunięcie integ). **Nie uruchamiaj finalize przed BUILD_DONE.** Sprawdź MD5: `curl …/raw/<sha main>/gra-robocza/Gra-ROBOCZA.html | md5sum` = manifest. Numer FALI: kolejny po ostatniej w `git log origin/main` (obecnie 748 → 749). Bez nakładania deployu na trwające pomiary wydajnościowe (dep3 obciąża CPU).
+6. **Wdrożenie (tylko ROBOCZA, nigdy KANON/FINALNA)** — przepis z FAL 833/834: `cd scratchpad; FALA_NR=<n> setsid nohup ./dep3.sh "<SHA raportu FC (potomek kodu)>" "<pliki testów tematu>" > /dev/null 2>&1 < /dev/null & disown` (merge do `/home/user/integ`, `npm ci`, `tsc`, `logic-test`, testy tematu, `vite build` do `/tmp/civ-deploy-out`, log `/tmp/vbuild.log`); czekaj w tle na `BUILD_DONE` i brak procesu dep3 (`until grep -q BUILD_DONE /tmp/vbuild.log && ! pgrep -f dep3.sh >/dev/null; do sleep 10; done` jako zadanie w tle; foreground `sleep` >60 s zablokowany); konflikt tylko w `wikiBundle.json` → `cd gra && node tools/bundle-wiki-for-game.cjs`, nigdy ręcznie w kodzie; potem `cp finalize-<poprzedni>.sh finalize-<n>.sh`, podmień `m["finalControl"]=…` (python `re.sub`), `./finalize-<n>.sh <n> "tytuł" "zakres" "weryfikacja" "limity" "źródło"` (stempel, ROBOCZA-MANIFEST, WERSJE.md, push main, kontrola MD5 w GitHub Raw, usunięcie integ). **Nie uruchamiaj finalize przed BUILD_DONE.** Sprawdź MD5: `curl …/raw/<sha main>/gra-robocza/Gra-ROBOCZA.html | md5sum` = manifest. Numer FALI: kolejny po ostatniej w `git log origin/main` (obecnie 835 → 836). Bez nakładania deployu na trwające pomiary wydajnościowe (dep3 obciąża CPU).
 7. **Po każdym kroku:** wpis w rejestrze, `git push` gałęzi dispatchów, refs/keep, sprzątanie, `TaskUpdate`. Raport w czacie po polsku: tabela (temat | etap | model etapu | od kiedy); uczciwie NIE ZMIERZONO tam, gdzie nie zmierzono.
 8. **Dispatch**: zawsze z regułą „baza = origin/main, sprawdź `git merge-base --is-ancestor`, podaj `git rev-parse HEAD`”, allowlistą, zakazem sesji/zadań/harmonogramów, kryteriami binarnymi i plan testów (5 bramek referencyjnych po `npm ci`).
 
-## TRWAJĄCE (21:30; nie uruchamiać drugi raz)
+## STAN NA DZIEŃ 2026-11-18 (ta sekcja nadpisuje historię; poprzednie wersje pliku są w git log)
 
-| Temat | ID workflowa / runda | Model | Co dalej po FC |
+Nowe starty: sprawdzić `df -h /` przed każdym startem (próg z kroku 4). Wartość wolnego miejsca nie jest tu zapisywana — jest zmienna między pomiarami.
+Ostatnia FALA w `git log origin/main`: 835 (fb5b2045a). Rejestr w repo kończy się na FALI 746.
+
+## WDROŻONE OSTATNIE 10 FAL (źródło: `git log origin/main`, subject commita ROBOCZEJ)
+
+| FAL | Commit ROBOCZEJ | Temat (jedno zdanie) | Źródło (subject commita) |
 |---|---|---|---|
-| #410 Bitwa: arbitraż kolizji, piechota pierwsza (R-WEB-BATTLE-COLLISION-ARBITRATION-INFANTRY-FIRST-Q1) | wf_ce781194-250, r1 | Sonnet (uzasadnione) | PASS → FALA 749 (battleScene.ts; pilnuj, by reguła pełnego ruchu nie zregresowała); potem START #421 |
-| #417 Harness ekonomii AI (R-WEB-AI-ECONOMY-MEASURE-HARNESS-Q1) | wf_3163500e-500, r3 | Sonnet (po 2 nieudanych Haiku) | PASS → wdrożenie (tylko narzędzia + blok civTest w main.ts) → START #418, #419, #415-pomiar; sprawdź wynik `--resume-test` (N5) → rozstrzyga #424 |
-| #420+#423 Dług testowy sidecarów i L2b (R-WEB-TEST-DEBT-SIDECAR-HTML-AND-L2B-Q1) | wf_1b099da4-581, r2 (baza main 7ac79dafb) | Haiku | PASS → wdrożenie (tylko testy) |
-| #426 Weryfikacja bitwy po pełnym ruchu (R-WEB-LIVE-VERIFY-BATTLE-AFTER-FULL-MOVE-Q1) | wf_951a88b2-52e, r3 | Sonnet (po 2 nieudanych Haiku) | PASS → wdrożenie narzędzi; kandydaci z raportu → osobne tematy; START #421 |
+| 835 | fb5b2045a | Jeden próg gotowości AI do sojuszu 0,54; inicjatywa AI jak ocena propozycji. | „ROBOCZA 5bc75dc2 FALA 835” |
+| 834 | f91060856 | Preset testowy walka-mapy przelicza ekonomię; asercja przewijania panelu miasta. | „ROBOCZA 76db1726 FALA 834” |
+| 833 | a62b09b3c | Nośnik dopłaty D w traktatach: technologie, złoto, brąz, żelazo, rudy. | „ROBOCZA 5e3de9fb FALA 833” |
+| 832 | 13ad6b363 | Usunięcie martwych pól zmęczenia wojną w zegarze profilu. | „ROBOCZA 5bab018a FALA 832” |
+| 831 | a72c6b968 | Otwarty panel miasta i panel rekrutacji odświeżają się po końcu tury gracza. | „ROBOCZA dd31cc6f FALA 831” |
+| 830 | 0c12240a3 | Traktaty i pokój: ostatni stopień płatności; okno pokoju otwiera się samo. | „ROBOCZA fdc9f6a0 FALA 830” |
+| 829 | 1906b3f32 | Okno pokoju wymuszonego z jednym zdaniem na wierzchu; ekran powitalny nowej cywilizacji. | „ROBOCZA fbbefaa4 FALA 829” |
+| 828 | c8b0e498b | Panel miasta i panel rekrutacji odświeżają listę po odkryciu technologii. | „ROBOCZA 4eea286a FALA 828” |
+| 827 | 49ddb0012 | Okno pokoju wymuszonego: tytuł, partner, zdanie, warunki i przycisk na wierzchu; wyliczenia w tooltipach. | „ROBOCZA 76797672 FALA 827” |
+| 826 | 56bb088c1 | Parytet siły i ceny x10 dla rozejmu, NAP, przemarszu, sojuszy i wasala. | „ROBOCZA 7baf24b2 FALA 826” |
 
-## GOTOWE DO STARTU (dispatch w repo; kolejność = priorytet; start gdy slot < 4 i dysk ≥ 6 GB)
+Pełna lista FAL: `git log origin/main --grep 'FALA'`. Rejestr (do FALI 746): `dyspozycje/REJESTR-PROSB-I-ZADAN.md`.
 
-1. **R-WEB-UI-GROSS-NET-NUMBERS-ONLY-UNIFY-AND-WIKI-Q1** (#428; decyzja właściciela ABC A 2026-11-15): Nauka/Żywność/Handel do samych liczb + wiki §53.1a (regeneracja bundla generatorem). Haiku, `cand` = origin/main. Pliki: `empireDetailPanel.ts`, `docs/PORADNIK-GRACZA/08-ekonomia-imperium.md`.
-2. **R-WEB-TEST-DEBT-RESOURCE-USAGE-BREAKDOWN-BUILD-Q1** (#427): test `resource-usage-breakdown-test.cjs` nie buduje się (loader .svg). Haiku, tylko `gra/tools`.
+## TRWAJĄCE WORKFLOWY (nie uruchamiać drugi raz)
 
-## ZALEŻNE (dispatch w repo; START dopiero po warunku)
+Nie da się ustalić z repo: rejestr i git nie zapisują aktywnych workflowów. Wpis: ustalić z journalem workflowów (`subagents/workflows/*/journal.jsonl`) przed jakimkolwiek wznowieniem.
+Pozycje z listy zadań sesji orkiestratora usunięte, bo nie są potwierdzone w repo. THRESH054 jest wdrożony jako FALA 835 (fb5b2045a, subject „ROBOCZA 5bc75dc2 FALA 835”).
 
-3. **R-WEB-BATTLE-FULL-MOVE-GAPS-MEASURE-Q1** (#421) — po FC #410 **i** #426 (ten sam obszar `battleScene.ts`/narzędzi bitwy). Haiku, pomiary.
-4. **R-WEB-ENDTURN-T57-DIAGNOSIS-Q1** (#418) — po FC PASS #417 (harness z AI). Haiku, diagnoza.
-5. **R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1** (#419) — po FC PASS #417; **sekwencyjnie** (nie równolegle z innymi ciężkimi testami live ani z dep3) — mierzy czas tury. Haiku.
-6. **#415 R-WEB-AI-ARMY-UPKEEP-Q2** (AI utrzymanie armii ponad zapas): kod bramki w `refs/keep/R-WEB-AI-UPKEEP-Q2-r2-*` (flaga OFF), wstrzymany, bo harness nie domykał tury 1. Po #417 PASS: dispatch **pomiaru ON/OFF** na harnessie (README #415 z tematu #417) — wyniki do decyzji ABC (próg/włączenie) **rano**; nie włączaj flagi bez właściciela. Dispatch napisz po #417 (baza: kandydat harnessu + `refs/keep/R-WEB-AI-UPKEEP-Q2-r2-obrona`).
-7. **#424 R-WEB-SAVE-LOAD-CITY-WORK-SPLIT-ROUNDTRIP-Q1** — ZATRZYMANY; przesłanka z zlej bazy. Po #417 PASS (wynik `--resume-test` na main): 10/10 → zamknąć jako nieodtworzone; inaczej wznowić (dispatch e4161c9f, refs `refs/keep/R-WEB-SAVELOAD-SPLIT-r1-*`, `cand` = SHA main).
+## GOTOWE DO STARTU
 
-## WDROŻENIA OCZEKUJĄCE
-Brak (FALA 748 wdrożona). Następna: **FALA 749** = pierwszy FC PASS z listy TRWAJĄCE.
+Brak pozycji potwierdzonych w repo (dispatch w `dyspozycje/autobot/runs/` i warunek startu). Katalogi runs/ nie zawierają dispatchów tematów AIAI E2–E6 ani TREATY-PAY krok 2.
 
-## DO ZROBIENIA RANO / CZEKA NA DECYZJĘ WŁAŚCICIELA (nie uruchamiać w nocy)
-- #415: wyniki pomiaru ON/OFF → próg/włączenie bramki utrzymania armii AI (ABC).
-- Kandydaci z raportów #426 (K-A/K-B/K-C: driver ręczny, eksport odwrotów, scenariusz 12v12 „cała armia ucieka bez zabitych”) — ocena właściciela, jeśli wskażą defekt reguł.
-- #428/ujednolicenie: po wdrożeniu — potwierdzenie wyglądu w grze.
-- Wiki/Civpedia: inne hasła opisujące stary format brutto/netto (jeśli generator wskaże).
-- Dług Rust REPIN po zmianach weba FALA 724–748 (#408) — poza pętlą webową.
+## ZALEŻNE (START dopiero po warunku)
+
+Brak pozycji potwierdzonych w repo. AIAI E1 jest w main jako czysta funkcja `evaluateTreatyOffer`, niewpięta w grę (a86a847d7, merge FC 326dede8e; subject „AIAIE1: merge FC 326dede8e”). Dalsze kroki AIAI wymagają dispatchu i decyzji właściciela — wpis po ich zapisaniu w `runs/`.
+
+## CZEKA NA RANO — decyzje i weryfikacja właściciela
+
+Rejestr w repo nie zawiera markerów „CZEKA NA RANO”. Poniżej pozycje „DO DECYZJI WŁAŚCICIELA” z rejestru (przegląd ograniczony do FAL 722–746; brak zamknięcia w rejestrze do wiersza 10148). Statusu po FALI 746 nie zbadano.
+
+1. Gęstość listy wojsk w oknie rozstawienia przy 640 px i wartości liczbowe premii w chipach (rejestr L10123, FALA 744: „jeszcze nie zadane”).
+2. Plakietka „+X” obok „Brutto · netto” jest redundantna — do decyzji (rejestr L10001, FALA 729); status po FALI 746 nie ustalony.
+3. Palisada w kolejce po odblokowaniu Murarstwa i awans Palisada → Mury kamienne po odblokowaniu Budownictwa (rejestr L9944).
+4. Stała C dla AI→gracz bez mnożnika cywilizacji; C 615 vs 500 zależne od tury (rejestr L9961, FALA 722).
+
+## DŁUG RUST / REPIN (źródło: rejestr, wpisy FAL 730–745)
+
+- FALA 730 — REPIN reguły ilości ofert AI (rejestr L10004).
+- FALA 731 — REPIN: melee_latched, przeplanowanie uciętych ścieżek, cavTrail (rejestr L10010).
+- FALA 740 — REPIN prezentacji karty „Skąd zapasy” (rejestr L10076).
+- FALA 741 — REPIN: mnożnik 3, sufit 64, estymata (rejestr L10082).
+- FALA 742 — pn_per_szt → pn_per_blok (rejestr L10107).
+- FALA 743 — REPIN podłogi bloku w aiNeedPerTurn (rejestr L10121).
+- FALA 744 — REPIN (rejestr L10123).
+- FALA 745 — REPIN logiki bitewnej, pełny ruch i cios na końcu ruchu (rejestr L10142).
+
+## DŁUG TESTOWY / OBSERWACJE NIE ZMIERZONO (źródło: rejestr)
+
+- FALA 728: test recruitment-panel-compact-row — 7 FAIL, dług bazowy (rejestr L9998).
+- FALA 729: 4 testy czerwone — resource-usage-breakdown, ui-language-count-renderer, citizen-resource-upkeep (2 FAIL), empire-armia-produkcja (rejestr L10001).
+- FALA 740: martwa sonda ledgerAuditE3c* w main.ts; dziennik AI nie przeżywa zapisu (rejestr L10076).
+- FALA 744: defense-breakdown-test (TypeError grecy.bonusy); 4 testy pr141 / budynek-civ-bonus-u17 (rejestr L10123).
+- FALA 745: długi bazowe doctrine-live r3 i line-advance-browser (sidecary zwracają HTML) (rejestr L10142).
+- FALA 746: t57 endTurn — przyczyna nierozstrzygnięta; pomiar w konfiguracji domyślnej NIE ZMIERZONO (rejestr L10148).
+
+## ZAMKNIĘTE (nie wpisywać do kolejki; źródło: rejestr)
+
+- Decyzje ABC 2026-11-15: żetony widoku miasta bez zmian (wariant A, temat zamknięty); żądanie miasta po 20 turach wojny zostaje (rejestr L10134–10137).
+- FALA 741: ilość odbioru oferty AI ≤ 3× potrzeba AI, decyzja ABC B (rejestr L10082).
+- FALA 743: oferta AI przy małej potrzebie = 1 pełny blok epoki, decyzja ABC 2026-11-15 B (rejestr L10117–10121).
+- FALA 745: pełny ruch i cios na końcu ruchu, wariant B wdrożony (rejestr L10138–10142).
 
 ## WYKLUCZONE / WSTRZYMANE
-- #286 (wojownik barbarzyńców „z supermocą”) — na żądanie właściciela, nie uruchamiać.
-- #57 nowe epoki Klasyczna/Średniowieczna — wstrzymane (dopiero przy nowej wersji Rust).
-- Wszystko w Rust (poza pętlą webową).
 
-## ZAMKNIĘTE (nie wpisywać do kolejki)
-FALE 650–748 (zob. rejestr). Decyzje ABC 2026-11-14/15: miedź bez zmian; AI od tury 1 tak; dźwignia kolejki usunięta; walka ręczna RNG AUTO; martwa gałąź żądania miasta ZOSTAJE (2026-11-15, #376); oferty AI min. 1 blok; pełny ruch: pierwszeństwo mają doktryny Obrona/Ostrzał i rozkaz gracza; arbitraż kolizji A (piechota pierwsza); żetony widoku miasta jedna linia; ujednolicenie brutto/netto A. Tematy z `DECYZJE 2026-11-14` (NOTIF-DIPLO-TAB-COUNT, UNIT-CARD-STATS-ENGINE-CANON, NNS-AI-BALANCE-FROM-TURN1, NNS-GATE-REMOVE-QUEUE-LEVER, TRADE-OFFER-FREQUENCY-UP, TRUST-WAR-N6-CLEANUP, RIVERS-FILL-CENTROID-PERF, BATTLE-MANUAL-RNG-DETERMINISM, UI-SIEGE-PANEL-NARROW, ADMIN-DISMISS-CONFIRM) mają FC na main — NIE powtarzać; `R-WEB-AI-CITY-FOR-PEACE-BRANCH-ORDER-Q1` zastąpiony decyzją #376 (nie startować).
+Brak pozycji potwierdzonych w repo. Pozycje z listy zadań sesji (np. #286, #57) usunięte do czasu potwierdzenia decyzji w rejestrze.
 
-## KRÓTKA ŚCIĄGA PO UPADKU KONTENERA
-Worktree, journale (`/root/.claude/projects/.../subagents/workflows/<wf>/journal.jsonl`) i refs przeżywają restart. Wznów workflow: `Workflow({scriptPath, resumeFromRunId:<wf id TEGO samego tematu>, args: IDENTYCZNE})` — **nie zamieniaj ID między tematami** (incydent 2026-11-15). Wyniki rund: python po `journal.jsonl` (linie `"type":"result"`, pole `result`; ostatni = FC).
+## REGUŁY (obowiązują heartbeat i operatorów)
 
-## ZALEŻNE — NOWE (2026-11-16 01:25)
-- **#415 runda 2: R-WEB-AI-UPKEEP-ONOFF-MEASURE-100T-Q1** — r1 FC FAIL (refs `refs/keep/R-WEB-UPKEEP-ONOFF-r1-*`), DODATEK 1 zapisany. START dopiero po FC PASS + wdrożeniu **R-WEB-HARNESS-CLOSE-DIPLO-AUDIENCE-Q1** (wf_8e38b091-f78). `cand` = SHA origin/main PO tym wdrożeniu (nie wcześniej!). `round: 2`, Haiku (r1 = 1 nieudana runda). Przebiegi ciągłe w tle, sekwencyjnie (ok. 3 h).
-- **#432 + defekt `playerEverOwnedCityByOwner`** (nie odtwarzany po wczytaniu; blokuje „Zakończ turę” gdy gracz ma 0 miast) — tematy zapisu/wczytania; START po zakończeniu #424 (te same pliki save/load).
-- **#419 runda 2: R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1** — r1 FC FAIL (refs `refs/keep/R-WEB-LEDGER-PERF-r1-*`; wynik wstępny: ON +20% średnia / +17% mediana przy load ~7, 1 ziarno × 1 para — NIE ROZSTRZYGNIĘTE). DODATEK 2 zapisany. START TYLKO W CISZY: load < 3 i brak innych przebiegów live (po zakończeniu #415 r2 i innych pomiarów). `cand` = SHA origin/main w chwili startu, `round: 2`, Haiku, scriptPath `WEB-R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1.js`.
-
-## STAN 2026-11-16 ~14:50 UTC (nadpisuje sekcje wyżej, które są historyczne) — main 8265bbec0, ROBOCZA FALA 769 MD5 f24457ae
-- WDROŻONE od 15.11: FALE 749–769 (m.in. 764 ręczny pełny ruch, 765 brak domyślnej listy budowy, 766 tekst podpowiedzi audiencji, 767 arbitraż niewybranych, 768 panel obrony bez zer + narzędzia, 769 stary zapis nie czeka na pierwsze miasto). Wszystkie tematy z sekcji TRWAJĄCE/GOTOWE/ZALEŻNE powyżej są ZAMKNIĘTE (zob. rejestr).
-- TRWA: tylko R-WEB-AI-UPKEEP-ONOFF-MEASURE-100T-Q1 r3 (wf_2bd2286e-571, Sonnet po 2 nieudanych Haiku; pomiar, flaga OFF). Po FC → ABC właściciela (włączenie bramki utrzymania armii AI).
-- Brak tematów gotowych do startu bez decyzji właściciela. Niski priorytet (nie na zapełnienie slotów): #438 hak civTest do odmowy AI (L2b); sprzątanie martwej pozostałości `wspolnaReligia` w main.ts (~44101); #272 obserwacje.
-- CZEKA NA WŁAŚCICIELA: bramka utrzymania armii AI (po pomiarze); dane Greków `walka_obrona_piechota_teren_las = 0`; `map-snapshot-load` KNOWN-FAIL (budżet rotacji autozapisu); nieblokująco: zapis z 0 miast ma grać dalej bez porażki?
-- ZALEŻNE (2026-11-18): R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 — model PW pokoju P·r / P/r wg Power; START po wdrożeniu FORCEDPEACE i DECLUTQ2 (te same pliki); dispatch w dyspozycje/autobot/runs/.
-- ZALEŻNE (2026-11-18, audyt ABC): R-WEB-UI-DIPLO-FORCED-PEACE-WINDOW-DECLUTTER-TOOLTIPS-Q1 — okno pokoju wymuszonego: wyliczenia do tooltipów; START po wdrożeniu R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (ten sam diplomacyAudience.ts).
-- GOTOWE (2026-11-18): R-WEB-DOC-WEARINESS-STALE-5PCT-20TURNS-COMMENTS-Q1 — stare opisy 5%/20 tur w komentarzach i opisie danych; start od razu (Haiku).
-- ZALEŻNE (2026-11-18): R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 — parytet siły i ceny ×10 dla rozejmu/NAP/przemarszu/sojuszy/wasala (ABC właściciela: skala A, bez sufitu B); START po wdrożeniu R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1.
+- Zawsze do 4 aktywnych tematów web (właściciel 2026-11-12); start tylko z sekcji GOTOWE DO STARTU i tylko po wypchnięciu dispatchu na gałąź orkiestratora.
+- Operatorzy NIE zakładają sesji: `create_session`, `spawn_task`, `create_trigger`, `send_later` są zakazane (zakaz właściciela 2026-11-13).
+- Heartbeat NIE zmienia balansu bez zgody właściciela (balans = pozycje z sekcji CZEKA NA RANO).
+- Po zakończeniu tematu: integracja, deploy ROBOCZA, push, sprzątanie dysku (worktree zakończonych workflowów).
