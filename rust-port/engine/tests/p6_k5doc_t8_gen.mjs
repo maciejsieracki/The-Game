@@ -638,6 +638,67 @@ family('skirmish', 240, { 'ranged-shot': 30, 'ranged-move': 30, melee: 30, order
     got += 1;
   }
 }
+// Obrona r1, zarzut Z2 (mutant E12): jazda strzelajaca (`mounted` + `canShoot` + `shootingEnabled !== false`) w `steady`
+// i `aggressive`. Pin kieruje ja do `_cavalryAction` PRZED strzalem (`:17992-17995` steady, `:18028-18031` aggressive).
+// Realne jednostki pinu (`units.json`, `Typ: Mount`, zasieg >= 2): Rydwan egipski (3), Konnica lucznicza asyryjska (2),
+// Jezdziec z oszczepami (2). `rangedAtStart` = `_pickRangedTargetByPriority(ru)` (`:17571`) przed aktywacja na osobnej
+// uprzezy (bez `rnd`): cel strzalu w zasiegu istnieje, wiec mutant „strzal przed jazda” daje inne zdarzenia.
+// Dopisane po wszystkich rodzinach: wczesniejsze rzuty `rnd` i wektory bez zmian.
+function rangedAtStart(sc) {
+  const h = newHarness(sc);
+  const ru = (sc.acting.side === 'atk' ? h.atk : h.def)[sc.acting.idx];
+  return !!h._pickRangedTargetByPriority(ru);
+}
+for (const [kind, base, n, inRange] of [['steady-cav-shoot', 'steady-cav', 120, 60], ['aggressive-cav-shoot', 'aggressive', 120, 60]]) {
+  let got = 0;
+  let gotIn = 0;
+  while (got < n) {
+    if (++tries > 3000000) throw new Error(`za malo scenariuszy ${kind}`);
+    const sc = makeCase(base);
+    const own = sc.acting.side === 'atk' ? sc.atk : sc.def;
+    const me = own[sc.acting.idx];
+    me.mounted = true;
+    me.phalanx = false;
+    me.rangedBase = true;
+    me.primaryRanged = rnd() < 0.5;
+    me.ammoLeft = pick(['Infinity', 1, 2, 5]);
+    me.range = ri(2, 3);
+    delete me.shootingEnabled;
+    if (kind === 'aggressive-cav-shoot' && me.moveLeft === 0) me.moveLeft = pick([1, 2, 3]);
+    const inR = rangedAtStart(sc);
+    if (!inR && n - got <= inRange - gotIn) continue;
+    const expect = runCase(sc);
+    if (!expect.doctrineAuto || expect.trace[1] !== 'doctrine') throw new Error(`${kind}: brak kroku doktryny ${expect.trace}`);
+    const br = branchOf(expect);
+    if (br !== 'cav') throw new Error(`${kind}: galaz ${br} zamiast cav`);
+    cases.push({ ...sc, name: `t8-${kind}-${got}`, kind, branch: br, rangedAtStart: inR, expect });
+    got += 1;
+    if (inR) gotIn += 1;
+  }
+  console.error(`${kind}: ${got} (z celem strzalu w zasiegu ${gotIn})`);
+}
+// Obrona r1, uwaga N2 (mutant E13): `unitDoctrine` w {defensive, aggressive, skirmish} + grupa BEZ wpisu `_groupMeta`
+// i krok konczy `done()` bez akcji. `_effectiveMetaForUnit` (`:17636-17638`) i tak wola `_ensureGroupMeta` (`:17586`),
+// wiec po aktywacji `_groupMeta` ma wpis `{steady, true}` — pominiecie go przy `Done` jest wykrywalne.
+for (const doctrine of ['defensive', 'aggressive', 'skirmish']) {
+  let got = 0;
+  while (got < 20) {
+    if (++tries > 3000000) throw new Error(`za malo scenariuszy ensure-done ${doctrine}`);
+    const sc = makeCase(doctrine);
+    const own = sc.acting.side === 'atk' ? sc.atk : sc.def;
+    const me = own[sc.acting.idx];
+    me.unitDoctrine = doctrine;
+    me.groupId = 'gE';
+    me.doctrineMode = 'unit-group-ensure';
+    sc.groupMeta = [];
+    const expect = runCase(sc);
+    const br = branchOf(expect);
+    if (br !== 'none') continue;
+    if (!expect.groupMeta.some(([id]) => id === 'gE')) throw new Error('ensure-done: brak wpisu gE');
+    cases.push({ ...sc, name: `t8-ensure-done-${doctrine}-${got}`, kind: `ensure-done-${doctrine}`, branch: br, expect });
+    got += 1;
+  }
+}
 
 const fam = (kind) => cases.filter((c) => c.kind === kind);
 const count = (kind, br) => fam(kind).filter((c) => c.branch === br).length;

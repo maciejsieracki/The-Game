@@ -845,7 +845,7 @@ fn at_least(cov: &HashMap<String, usize>, key: &str, n: usize) {
 fn krok_doktryny_zgodny_z_pinem() {
     with_timeout("T8", || {
         let (v, cav_mult) = load_from(VECTORS);
-        assert_eq!(v["cases"].as_array().expect("cases").len(), 1540);
+        assert_eq!(v["cases"].as_array().expect("cases").len(), 1840);
         let (failures, cov) = run_family(&v, &cav_mult);
         assert!(
             failures.is_empty(),
@@ -883,6 +883,39 @@ fn krok_doktryny_zgodny_z_pinem() {
         at_least(&cov, "skirmish/none", 20);
         // Krawędź planszy: punkt zbiórki po clampie = własne pole (`:18104`, mutant M13 r1).
         at_least(&cov, "skirmish-edge/none", 20);
+        // Jazda strzelająca (`mounted` + `canShoot` + `shootingEnabled`, zarzut Z2 / mutant E12 obrony r1): pin woła
+        // `_cavalryAction` PRZED strzałem (`:17992-17995` steady, `:18028-18031` aggressive). Każdy wektor rodziny to
+        // gałąź `cav`, a w co najmniej 60 z nich cel strzału był w zasięgu przed aktywacją (`rangedAtStart`), więc
+        // „strzał przed jazdą” zmienia zdarzenia.
+        for fam in ["steady-cav-shoot", "aggressive-cav-shoot"] {
+            at_least(&cov, &format!("{fam}/cav"), 120);
+            let cases = v["cases"].as_array().expect("cases");
+            let shooters_in_range = cases
+                .iter()
+                .filter(|c| c["kind"] == fam && b(&c["rangedAtStart"]))
+                .filter(|c| {
+                    let side = if c["acting"]["side"] == "atk" {
+                        "atk"
+                    } else {
+                        "def"
+                    };
+                    let me = &c[side][int(&c["acting"]["idx"]) as usize];
+                    bo(&me["mounted"])
+                        && bo(&me["rangedBase"])
+                        && num_or(&me["ammoLeft"], 0.0) > 0.0
+                        && me.get("shootingEnabled").is_none()
+                })
+                .count();
+            assert!(
+                shooters_in_range >= 60,
+                "{fam}: jazda strzelajaca z celem w zasiegu {shooters_in_range} < 60"
+            );
+        }
+        // `unitDoctrine` defensive/aggressive/skirmish + grupa bez wpisu `_groupMeta`, krok kończy `done()` (uwaga N2,
+        // mutant E13): `_ensureGroupMeta` (`:17586`, z `_effectiveMetaForUnit` `:17636`) i tak tworzy wpis.
+        for d in ["defensive", "aggressive", "skirmish"] {
+            at_least(&cov, &format!("ensure-done-{d}/none"), 20);
+        }
         assert!(
             cov.keys().all(|k| !k.ends_with("/bez-kroku-doktryny")),
             "kazdy wektor przechodzi krok doktryny ciala: {cov:?}"
@@ -969,7 +1002,8 @@ fn bramki_doktryny_przy_murze_zgodne_z_pinem() {
     let cases = v["cases"].as_array().expect("cases");
     assert_eq!(cases.len(), 240);
     let mut failures = Vec::new();
-    let (mut def_blocked, mut machine_blocked, mut atk_wall_doctrine, mut no_wall) = (0, 0, 0, 0);
+    let (mut def_przy_murze_auto_bez_kroku, mut machina_przy_murze_auto_bez_kroku) = (0, 0);
+    let (mut atk_wall_doctrine, mut no_wall) = (0, 0);
     for case in cases {
         let name = case["name"].as_str().expect("name");
         let side_atk = case["acting"]["side"] == "atk";
@@ -1014,11 +1048,12 @@ fn bramki_doktryny_przy_murze_zgodne_z_pinem() {
         if called && e["meta"].as_str() != Some(doctrine_name(eff)) {
             failures.push(format!("{name}: meta rust={eff:?} js={}", e["meta"]));
         }
-        if auto && wall >= 0 && !side_atk {
-            def_blocked += 1;
+        // Zaobserwowana blokada: auto + mur + obrońca (albo machina atakującego) i krok doktryny NIE wołany.
+        if auto && wall >= 0 && !side_atk && !called {
+            def_przy_murze_auto_bez_kroku += 1;
         }
-        if auto && wall >= 0 && side_atk && bo(&me["siege"]) {
-            machine_blocked += 1;
+        if auto && wall >= 0 && side_atk && bo(&me["siege"]) && !called {
+            machina_przy_murze_auto_bez_kroku += 1;
         }
         if called && wall >= 0 && side_atk {
             atk_wall_doctrine += 1;
@@ -1028,10 +1063,13 @@ fn bramki_doktryny_przy_murze_zgodne_z_pinem() {
         }
     }
     assert!(failures.is_empty(), "{failures:#?}");
-    assert!(def_blocked >= 30, "obronca przy murze: {def_blocked}");
     assert!(
-        machine_blocked >= 15,
-        "machina przy murze: {machine_blocked}"
+        def_przy_murze_auto_bez_kroku >= 30,
+        "obronca auto przy murze bez kroku doktryny: {def_przy_murze_auto_bez_kroku}"
+    );
+    assert!(
+        machina_przy_murze_auto_bez_kroku >= 15,
+        "machina auto przy murze bez kroku doktryny: {machina_przy_murze_auto_bez_kroku}"
     );
     assert!(
         atk_wall_doctrine >= 15,

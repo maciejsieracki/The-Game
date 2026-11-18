@@ -308,7 +308,14 @@ fn doktryna_i_mur_sa_poza_zakresem_i_zapisane() {
         st.def[0].c.hp, 50.0,
         "doktryna nie jest wykonywana przez ten klocek"
     );
-    assert_eq!(body.unported, vec![(atk0(), "doktryna")]);
+    assert_eq!(body.unported, vec![]);
+    assert_eq!(
+        body.doctrine_steps,
+        vec![(
+            atk0(),
+            civ_engine::domain::siege_tactics_doctrine_step::DoctrineAction::AdvanceStep
+        )]
+    );
 
     let mut body = body_with(act(0, 0, true), Some(melee_blow()));
     let mut st = state(cu(100.0, 100.0), cu(50.0, 100.0));
