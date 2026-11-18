@@ -24,9 +24,13 @@
 //!
 //! Order of [`MapScene::apply`], pin `07d2fbd72` (`gra/src/main.ts` unless
 //! stated). The reference sequence is the full map refresh after a load
-//! (`main.ts:46138-46156`), whose calls are the ones every frame needs:
+//! (`main.ts:46138-46156`). [`MapScene`] makes the calls of that sequence
+//! that reach the renderers it owns (terrain prisms, cities + revolt, wonders,
+//! unit tokens, siege markers, overlay groups); the calls listed under "Not
+//! synced by [`MapScene`]" below are NOT made, although some have CPU ports:
 //! 1. `syncWonderRender()` (`:46139`) = `wonderRenderer.sync(placedWonderSnapshot(),
-//!    { ownerColorFn: civColorFn })` (`:4315-4318`) → [`WonderInputs::sync`];
+//!    { ownerColorFn: civColorFn })` (`:4316`) → [`WonderInputs::sync`]
+//!    (its `reapplyWonderHexDecorHides()`, `:4317`, is not made, see below);
 //! 2. `syncUnitsRender()` (`:46142`): `unitRenderer.setForceVisibleUnitId`,
 //!    `setCityHexKeys(cities)`, `unitRenderer.sync(src, display, …)`
 //!    (`:14550-14553`, `render/units.ts:6095-6263`) → [`super::sync_units`]
@@ -38,16 +42,18 @@
 //! 5. `refreshSiegeMarkers()` (`:46151`, body `:17492-17530`) →
 //!    `siegeMarkerRenderer.sync(oblegane, positions, { getTopY: (q, r) =>
 //!    unitRenderer.topYAt(q, r), … })` (`:17521-17527`);
-//! 6. `refreshFog()` (`:46152`, body `:13475-13520`): `setFog` (`:13489`,
-//!    `:13506`) → [`super::apply_terrain_fog`];
-//!    `syncWorkerFieldOverlayFog` (`:13497`, `:13510`) is already applied by
+//! 6. `refreshFog()` (`:46152`, body `:13475-13519`): `setFog` (`:13491`,
+//!    fog branch; `:13506` `setFog(ALL_KEYS, ALL_KEYS)` without fog) →
+//!    [`super::apply_terrain_fog`] (both branches through [`FogSets`], whose
+//!    sets are all keys when `viewer.fog_active` is off);
+//!    `syncWorkerFieldOverlayFog` (`:13498`, `:13510`) is already applied by
 //!    [`super::worker_field_overlay`]; `syncUnitsRender(visibleUnitsList(vis))`
-//!    (`:13501`, `:13511`) repeats step 2 with the same list (the DTO units are
+//!    (`:13502`, `:13511`) repeats step 2 with the same list (the DTO units are
 //!    already the visible ones), so it is not repeated;
 //!    `cityRenderer.applyFogVisibility(vis, fogOn, ME())` (`:13503`, `:13512`)
 //!    → [`super::apply_city_fog`]; `wonderRenderer.applyFogVisibility(vis,
 //!    fogOn)` (`:13504`, `:13513`) → [`super::apply_wonder_fog`];
-//!    `refreshTerritoryBorderOverlay()` (`:13517`) → the territory group;
+//!    `refreshTerritoryBorderOverlay()` (`:13518`) → the territory group;
 //! 7. `refreshMapOverlayToggles()` (`:46156`, body `:15459-15463`): territory
 //!    border (`:15582-15616`) and worker fields (`:15432-15448`); the ranges
 //!    (`refreshRangeOverlays`, `:15626-15647`), the surroundings
@@ -75,6 +81,28 @@
 //!   set by [`MapScene`]; they stay the renderer defaults
 //!   (debt, see the T1 report);
 //! - `dimmedUnitIds` is per unit in the DTO (`UnitViewDto::dimmed`).
+//!
+//! Not synced by [`MapScene`] (pin calls of the sequences above whose
+//! renderers [`MapScene`] does not own; debt DŁUG-T1-NOT-SYNCED of the T1
+//! report, for the client topic):
+//! - `cityRenderer.syncStatChips(cities, _cityRenderOpts(sharedVis))`
+//!   (`main.ts:14563`, end of `syncUnitsRender`) — CPU port
+//!   `cities::sync::stat_chips` (`sync_stat_chips`);
+//! - `syncForestForUnits(unitForestHexKeys)` (`main.ts:14562`) — CPU port
+//!   `decor::placement` (`sync_forest_for_units`);
+//! - in `refreshFog`: `syncCampMeshes()` / `syncVillageMeshes()`
+//!   (`:13488-13489`) and `syncResourceOverlayFog` / `syncImprovementMeshFog` /
+//!   `syncSettlementMeshFog` (`:13495-13497`, `:13507-13509` without fog) —
+//!   CPU port `improvements::sync` (`MapObjectsLayer`);
+//! - `reapplyWonderHexDecorHides()` (`:4317`, end of `syncWonderRender`) —
+//!   CPU port `decor::placement` (`hide_decor_at_hex`).
+//!
+//! So the fields [`MapUiState::hover_stat_chip_city_id`] and
+//! [`MapUiState::city_panel_view_city_id`] have no reader in [`MapScene`]
+//! (they are read only by the stat chip sync above), and
+//! [`MapUiState::is_city_panel_open`] is read in [`MapScene`] only by the
+//! territory border gate of [`overlay_layers`] (`territoryBorderVisible ||
+//! isCityPanelOpen()`), not as `hideStatChips`.
 
 use std::collections::HashSet;
 
@@ -245,7 +273,7 @@ pub struct FrameInputs {
     pub terrain: TerrainData,
     /// [`FogSets::from_dto`] of `fog` with `viewer.fog_active`.
     pub fog: FogSets,
-    /// `landReveal` of `setFog` (`main.ts:13489-13494`). `RenderLayersDto`
+    /// `landReveal` of `setFog` (`main.ts:13491-13494`). `RenderLayersDto`
     /// carries no `FogRevealDto` (gaps L1/L2), so this is the pin start state
     /// `revealAllLand = false` (`main.ts:12803`).
     pub land_reveal: bool,
@@ -376,7 +404,7 @@ impl MapScene {
     /// builder); [`FrameError::City`] when `viewer.owner_id` does not fit the
     /// renderer's `i32` (city fog). The state may be partially updated then.
     pub fn apply(&mut self, f: &FrameInputs) -> Result<(), FrameError> {
-        // 1. syncWonderRender (`main.ts:46139`, `:4315-4318`).
+        // 1. syncWonderRender (`main.ts:46139`, `:4316`).
         f.wonders.sync(&mut self.wonders);
         // 2. syncUnitsRender (`:46142`, `:14550-14553`).
         self.units.set_city_hex_keys(f.city_hexes.clone());
@@ -391,7 +419,7 @@ impl MapScene {
         #[allow(clippy::cast_possible_truncation)]
         let top_y = move |q: f64, r: f64| units.top_y_at(HexCoord::new(q as i32, r as i32));
         self.sieges.sync(&s.ids, &s.positions, &top_y, &s.options);
-        // 6. refreshFog (`:46152`, `:13475-13520`).
+        // 6. refreshFog (`:46152`, `:13475-13519`).
         self.show_ocean_backdrop = apply_terrain_fog(&mut self.terrain, &f.fog, f.land_reveal);
         apply_city_fog(&mut self.cities, &f.fog, &f.viewer)?;
         apply_wonder_fog(&mut self.wonders, &f.fog);

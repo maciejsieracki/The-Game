@@ -313,12 +313,20 @@ fn statik() -> MapStatic {
 }
 
 fn frame(l: &vm::RenderLayersDto, siege_open: bool) -> FrameInputs {
-    FrameInputs::from_dto(&statik(), l, &UI, siege_open).unwrap()
+    frame_ui(l, &UI, siege_open)
+}
+
+fn frame_ui(l: &vm::RenderLayersDto, ui: &MapUiState, siege_open: bool) -> FrameInputs {
+    FrameInputs::from_dto(&statik(), l, ui, siege_open).unwrap()
 }
 
 fn applied(siege_open: bool) -> MapScene {
+    applied_with(&layers(), &UI, siege_open)
+}
+
+fn applied_with(l: &vm::RenderLayersDto, ui: &MapUiState, siege_open: bool) -> MapScene {
     let st = statik();
-    let f = frame(&layers(), siege_open);
+    let f = frame_ui(l, ui, siege_open);
     let mut scene = MapScene::new(&st, &f, DETAIL);
     scene.apply(&f).unwrap();
     scene
@@ -387,9 +395,13 @@ fn snap(s: &MapScene) -> Snap {
 
 /// The pin sequence, written out by hand with the existing adapters only.
 fn manual_web_sequence(siege_open: bool) -> Snap {
+    manual_web_sequence_for(&layers(), &UI, siege_open)
+}
+
+/// [`manual_web_sequence`] for any frame and UI state.
+fn manual_web_sequence_for(l: &vm::RenderLayersDto, ui: &MapUiState, siege_open: bool) -> Snap {
     let m = map();
-    let l = layers();
-    let ui = UI;
+    let ui = *ui;
     // buildScene + renderer constructors.
     let mut terrain = build_terrain(&view::terrain_data(&m, &l.hex_state).unwrap().input(DETAIL));
     let mut cities = view::city_renderer(&m);
@@ -729,4 +741,85 @@ fn next_frame_updates_the_state() {
     s.apply(&f1).unwrap();
     assert!(!city_visible(&s, "9"));
     assert!(s.revolt().sprite("7").is_some());
+}
+
+// ------------------------------------------------------------ fog off, unexplored, UI
+
+/// `refreshFog` without fog (`main.ts:13505-13513`): `setFog(ALL_KEYS,
+/// ALL_KEYS)`, `cityRenderer.applyFogVisibility(ALL_KEYS, false, ME())`,
+/// `wonderRenderer.applyFogVisibility(ALL_KEYS, false)`. The frame must
+/// forward `viewer.fog_active = false` to [`FogSets::from_dto`]: the city and
+/// the wonder on the explored-only column are shown, the prisms are not
+/// fogged, and the state equals the hand sequence for that frame.
+#[test]
+fn frame_without_fog_matches_the_web_else_branch() {
+    let mut l = layers();
+    l.viewer.fog_active = false;
+    let f = frame(&l, false);
+    assert!(!f.fog.fog_on);
+    assert_eq!(f.fog.visible.len(), 8, "ALL_KEYS");
+    let s = applied_with(&l, &UI, false);
+    assert_eq!(snap(&s), manual_web_sequence_for(&l, &UI, false));
+    assert!(city_visible(&s, "9"));
+    assert!(s.wonders().wonders()[0].visible());
+    assert!(s.show_ocean_backdrop());
+    // Not the fog branch: differs from the frame with fog on.
+    assert_ne!(snap(&s), snap(&applied(false)));
+}
+
+/// A hex with fog code 0 (unexplored) under active fog: `setFog` hides its
+/// prism and returns `showOceanBackdrop = false` (`scene.ts:3532-3548`);
+/// [`MapScene::show_ocean_backdrop`] must carry that result.
+#[test]
+fn unexplored_hex_hides_the_ocean_backdrop() {
+    let mut l = layers();
+    // (1,1) = index 5 of the r-major 4×2 map.
+    assert_eq!(map().hexes[5].coord, hx(1, 1));
+    l.fog.state[5] = vm::FogState::from_code(0).unwrap();
+    let s = applied_with(&l, &UI, false);
+    assert!(!s.show_ocean_backdrop());
+    assert_eq!(snap(&s), manual_web_sequence_for(&l, &UI, false));
+    assert!(applied(false).show_ocean_backdrop());
+}
+
+/// A UI state other than the start one reaches both readers of
+/// [`MapUiState`] in [`MapScene`]: `overlay_layers` (borders, trade routes,
+/// worker icons off) and `sync_units` (`setForceVisibleUnitId`,
+/// `main.ts:14550`: unit 902, hidden by the stack display, is shown).
+#[test]
+fn non_start_ui_state_reaches_overlays_and_units() {
+    let mut l = layers();
+    l.units.push(unit(902, player(1), 2, 1));
+    let ui = MapUiState {
+        territory_border_visible: false,
+        show_trade_routes_overlay: false,
+        show_worker_overlay: false,
+        is_city_panel_open: false,
+        city_panel_view_city_id: Some(cid(7)),
+        force_visible_unit_id: Some(uid(902)),
+        hover_stat_chip_city_id: Some(cid(9)),
+    };
+    let f = frame_ui(&l, &ui, false);
+    assert_eq!(f.ui, ui);
+    assert!(f.overlays.territory.is_none());
+    assert!(frame(&l, false).overlays.territory.is_some());
+    // `territoryBorderVisible || isCityPanelOpen()` (`main.ts:15583`).
+    let panel = MapUiState {
+        is_city_panel_open: true,
+        ..ui
+    };
+    assert!(frame_ui(&l, &panel, false).overlays.territory.is_some());
+    let s = applied_with(&l, &ui, false);
+    assert_eq!(snap(&s), manual_web_sequence_for(&l, &ui, false));
+    let token_visible = |s: &MapScene, id: &str| {
+        s.units()
+            .tokens()
+            .find(|t| t.id == id)
+            .map(|t| t.visible())
+            .unwrap()
+    };
+    assert!(token_visible(&s, "902"), "forceVisibleUnitId shows 902");
+    let start = applied_with(&l, &UI, false);
+    assert!(!token_visible(&start, "902"), "not in stacks.visible_ids");
+    assert_ne!(snap(&s), snap(&start));
 }

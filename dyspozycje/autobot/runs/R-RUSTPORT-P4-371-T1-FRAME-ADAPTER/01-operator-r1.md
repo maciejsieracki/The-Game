@@ -148,3 +148,13 @@ Mutanty (skrypt `t1frame/mut/run.sh` + `mutate.py`, przywrócenie sprawdzone `cm
   `cityPanelViewCityId` w `isVisible` (L4), `RENDER_FRAME_GAPS` (workerFields, starving/goldDeficit), `battle = None`
   (bitwa nie jest częścią `MapScene`), DŁUG-FRAME-RESELECT (T5a/T5b).
 - Notatka FC spoza tematu: `MAX_PER_SIDE=120` w `battle/field.rs` — NIE ten temat, nie ruszane.
+- **DŁUG-T1-NOT-SYNCED (dopisek obrony, zarzut Evaluatora Z4):** `MapScene` NIE wykonuje wywołań pinu, których
+  renderery nie należą do `MapScene`, choć mają porty CPU: `cityRenderer.syncStatChips` (`main.ts:14563`;
+  `cities/sync/stat_chips.rs:201`), `syncForestForUnits` (`main.ts:14562`; `decor/placement/mod.rs:244`),
+  w `refreshFog` `syncCampMeshes`/`syncVillageMeshes` (`:13488-13489`) oraz
+  `syncResourceOverlayFog`/`syncImprovementMeshFog`/`syncSettlementMeshFog` (`:13495-13497`, `:13507-13509`;
+  `improvements/sync/mod.rs`, `MapObjectsLayer`), `reapplyWonderHexDecorHides` (`:4317`;
+  `decor/placement/mod.rs:237`). Pola `MapUiState::hover_stat_chip_city_id` i `city_panel_view_city_id` nie mają
+  odbiorcy w `MapScene`; `is_city_panel_open` ma tylko bramkę granic terytorium (`main.ts:15583`), nie
+  `hideStatChips`. Lista także w nagłówku `view/frame.rs` („Not synced by MapScene”). Do tematu klienta (T2) albo
+  rozszerzenia `MapScene` (osobny dispatch).
