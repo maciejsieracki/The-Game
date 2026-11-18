@@ -40,7 +40,7 @@ export interface NegotiationBalanceSource {
    * SAMEJ bramki, która policzyła `accepted` — patrz ProposalEvalResult w
    * diplomacy-proposals.ts. `undefined` gdy akcja nie ma numerycznej bramki PW.
    */
-  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: WearinessRowInfo };
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: WearinessRowInfo; treatyPowerSplit?: PeacePowerSplitInfo };
   isGift?: boolean;
   awaitingAiResponse?: boolean;
   canCounter?: boolean;
@@ -63,7 +63,7 @@ export interface PnBalancePanelData {
    * SAMEJ bramki, która policzyła `accepted` — patrz ProposalEvalResult w
    * diplomacy-proposals.ts. `undefined` gdy akcja nie ma numerycznej bramki PW.
    */
-  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: WearinessRowInfo };
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: WearinessRowInfo; treatyPowerSplit?: PeacePowerSplitInfo };
   canCounter?: boolean;
   uiActionId?: string;
 }
@@ -619,7 +619,7 @@ export function peacePriceRowHtml(info?: WearinessRowInfo): string {
  * R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (D4): wiersz „Podział PW pokoju wg mocy" — moc obu stron (POWER), r, S, W, D i D po
  * rabacie relacji. Wyliczenia wyłącznie w tooltipie (zasada „najważniejsze na wierzchu"); brak danych mocy → pusty ciąg.
  */
-export function peacePowerSplitRowHtml(info?: WearinessRowInfo): string {
+export function peacePowerSplitRowHtml(info?: { powerSplit?: PeacePowerSplitInfo }): string {
   const ps = info?.powerSplit;
   if (!ps) return '';
   const f = (n: number): string => formatLiczbaPl(Math.round(n));
@@ -746,6 +746,8 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     plainTextWithTitles(relModRow),
     plainTextWithTitles(peacePriceRowHtml(data.responderPreview?.wearinessInfo)),
     plainTextWithTitles(peacePowerSplitRowHtml(data.responderPreview?.wearinessInfo)),
+    // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (runda 3, zarzut 4): sojusz/NAP/przemarsz/wasal — ten sam wiersz podziału PW.
+    plainTextWithTitles(peacePowerSplitRowHtml({ powerSplit: data.responderPreview?.treatyPowerSplit })),
     plainTextWithTitles(treatyNote),
     plainTextWithTitles(relNote),
   ]);

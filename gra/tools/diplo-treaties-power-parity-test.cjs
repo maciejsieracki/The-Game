@@ -116,5 +116,33 @@ const strongBasket = mod.evaluateProposal(
 ok(!(strongBasket.reason ?? '').includes('parytetu'),
   `silniejszy gracz z koszykiem: brak blokady „parytetu" (powód: ${strongBasket.reason})`);
 
+// R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (runda 3, zarzut 4): podział PW (treatyPowerSplit) dla sojuszu/NAP
+// trafia do panelu stołu — ten sam wzór co peacePwPointsByPowerRatio, bez zmiany accepted/reason.
+const alliancePayload = {};
+const allianceX = mod.treatyBasePnFromConfig('sojusz_pelny', alliancePayload);
+const allianceProposal = { actionId: 'sojusz_pelny', proposerOwnerId: 0, responderOwnerId: 1, payload: alliancePayload };
+const weakSplitCtx = { ...baseCtx, treatyPower: { powerPlayer: 100, powerOther: 400 } };
+const strongSplitCtx = { ...baseCtx, treatyPower: { powerPlayer: 400, powerOther: 100 } };
+const weakAlliance = mod.evaluateProposal(allianceProposal, weakSplitCtx);
+const strongAlliance = mod.evaluateProposal(allianceProposal, strongSplitCtx);
+const noPowerAlliance = mod.evaluateProposal(allianceProposal, baseCtx);
+const tradeSplit = mod.evaluateProposal(
+  { actionId: 'umowa_handlowa', proposerOwnerId: 0, responderOwnerId: 1, payload: {} },
+  weakSplitCtx,
+);
+const expSplitWeak = mod.peacePwPointsByPowerRatio(allianceX, 100, 400);
+ok(weakAlliance.treatyPowerSplit != null, 'sojusz słabszy gracz: treatyPowerSplit obecny');
+ok(weakAlliance.treatyPowerSplit && weakAlliance.treatyPowerSplit.playerStronger === false,
+  'sojusz słabszy gracz: playerStronger = false');
+ok(weakAlliance.treatyPowerSplit && weakAlliance.treatyPowerSplit.D === expSplitWeak.D
+  && weakAlliance.treatyPowerSplit.S === expSplitWeak.S && weakAlliance.treatyPowerSplit.W === expSplitWeak.W,
+  `sojusz słabszy gracz: S/W/D = wzór dla X=${allianceX} (jest ${JSON.stringify(weakAlliance.treatyPowerSplit)})`);
+ok(weakAlliance.treatyPowerSplit && weakAlliance.treatyPowerSplit.r === 4,
+  'sojusz słabszy gracz: r = 400/100 = 4');
+ok(strongAlliance.treatyPowerSplit && strongAlliance.treatyPowerSplit.playerStronger === true,
+  'sojusz silniejszy gracz: playerStronger = true');
+ok(noPowerAlliance.treatyPowerSplit === undefined, 'sojusz bez treatyPower: brak treatyPowerSplit');
+ok(tradeSplit.treatyPowerSplit === undefined, 'umowa_handlowa (spoza parytetu): brak treatyPowerSplit');
+
 console.log(`diplo-treaties-power-parity-test: ${pass} pass, ${fail} fail`);
 if (fail > 0) process.exit(1);

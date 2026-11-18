@@ -301,6 +301,12 @@ export interface ProposalEvalContext {
 export interface ProposalEvalResult {
   accepted: boolean;
   reason: string;
+  /**
+   * R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (runda 3, zarzut 4): podział PW traktatu z parytetem (sojusz, NAP,
+   * przemarsz, wasal, rozejm bez wearinessInfo) — moc obu stron, r, S, W, D, D po rabacie relacji. Ustawiane w
+   * evaluateProposal (attachTreatyPowerSplit); pusty dla traktatów spoza listy parytetu i dla pokoju.
+   */
+  treatyPowerSplit?: PeacePowerSplitInfo;
   /** Traktat do dodania (NAP, sojusz, trybut, wasal, granice) */
   deal?: ActiveDeal;
   /** Jednorazowy handel T3A — bez trwałego dealu */
@@ -1250,7 +1256,35 @@ export function evaluateProposal(
 ): ProposalEvalResult {
   // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: ocena w jawnej epoce umowy (ctx.tradeEra), nie w
   // epoce, którą akurat zostawił globalny stan (domyślna epoka handlu zostaje fallbackiem).
-  return withDiplomacyTradeEra(ctx.tradeEra ?? diplomacyTradeEra(), () => evaluateProposalImpl(proposal, ctx));
+  const result = withDiplomacyTradeEra(ctx.tradeEra ?? diplomacyTradeEra(), () => evaluateProposalImpl(proposal, ctx));
+  return attachTreatyPowerSplit(proposal, ctx, result);
+}
+
+/**
+ * R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (runda 3, zarzut 4): dołącza podział PW (S/W/D, r, moce) do wyniku oceny
+ * traktatu z parytetem, żeby panel stołu pokazał ten sam wiersz co dla pokoju. Nie zmienia `accepted`/`reason`.
+ * Pomija wyniki z wearinessInfo (pokój/rozejm mają już powerSplit w tej strukturze).
+ */
+function attachTreatyPowerSplit(
+  proposal: DiplomaticProposal,
+  ctx: ProposalEvalContext,
+  result: ProposalEvalResult,
+): ProposalEvalResult {
+  if (!ctx.treatyPower || result.wearinessInfo || !treatyParityEnabled(proposal.actionId)) return result;
+  const X = treatyParityBaseX(proposal.actionId, proposal.payload, treatyWearinessLevelOf(ctx));
+  if (!(X > 0)) return result;
+  const { powerPlayer, powerOther } = ctx.treatyPower;
+  const split = peacePwPointsByPowerRatio(X, powerPlayer, powerOther);
+  const relTotal = treatyEvalRelationTotal(ctx.relation);
+  return {
+    ...result,
+    treatyPowerSplit: {
+      playerPower: powerPlayer, otherPower: powerOther,
+      r: split.r, S: split.S, W: split.W, D: split.D,
+      dAfterRelief: effectiveTreatyPnRequired(split.D, relTotal),
+      playerStronger: split.strongerSide === 'a',
+    },
+  };
 }
 
 function evaluateProposalImpl(
