@@ -1,3 +1,9 @@
+## ROBOCZA 8ed1f355 -- 2026-11-18 -- FALA 819: PEACE-CONCLUDED-VAZNE: wpis Pokoj zawarty w Wazne przy kazdym pokoju z graczem (testowa)
+
+- Kazdy pokoj z udzialem gracza (oferta gracza przyjeta przez AI, oferta AI przyjeta przez gracza, koniec rozejmu, pokoj wymuszony) zostawia dokladnie jeden wpis Pokoj zawarty w zakladce Wazne; pokoje AI-AI bez gracza nie dodaja wpisow; bez duplikatow (kod 402b8cdd6)
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; peace-vazne-always 5 mutantow wykrytych; diplo-peace-balance-accept 32/0; negotiation-table 62/62; Chromium NIE ZMIERZONO
+- Limity: NIE ZMIERZONO: Chromium (zywa gra); testy sprawdzaja wiring i funkcje logPeaceVazne, nie pelna sciezke boot()
+
 ## ROBOCZA 5eff4938 -- 2026-11-17 -- FALA 818: DIPLO-5 + DOC-CIVPEDIA: jedna aktywna propozycja pokoju na stole, wygasanie ofert miast, notki Civpedii o ciosach i ucieczce (testowa)
 
 - Dyplomacja: dla pokoju i rozejmu na pare co najwyzej jedna aktywna propozycja (planAiOfferOnTable; propozycja i kontroferta gracza blokuja oferte AI, nowa oferta AI zastepuje stara); oferta miast niewykonalna (miasto utracone lub oddane) wygasa (negotiationStillValid z cityOwnerOf); Civpedia: hasło ruch-i-cios-w-bitwie uzupelnione o obrazenia wrecz a pancerz oraz morale i ucieczke (osłona wręcz -50% morale strzelców, odsuwanie MELEE_SAFE_GAP=2), wikiBundle zregenerowany
