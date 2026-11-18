@@ -93,7 +93,7 @@ check('mutacja R1 (stała 5 w ai.ts) jest wykrywalna',
 
 // ---- R4: zmęczenie w stance używa T(civ) ----
 // R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: jedno źródło zmęczenia = warWearinessLevel (drugi zegar T/zmeczenieT usunięty z chęci pokoju).
-check('R4: stance liczy zmęczenie przez warWearinessLevel (jeden licznik 20 tur)',
+check('R4: stance liczy zmęczenie przez warWearinessLevel (jeden licznik 40 tur)',
   DIPLO.includes('warWearinessLevel(') && !DIPLO.includes('warWearinessShare(') && !DIPLO.includes('.zmeczenieT'));
 check('R4: stała /20 usunięta z diplomacy.ts', !DIPLO.includes('context.turnsAtWar / 20'));
 
