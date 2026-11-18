@@ -3,7 +3,9 @@
  * diplo-treaty-pay-ladder-live-verify-test.cjs -- R-WEB-LIVE-VERIFY-TREATY-PAYMENT-AND-PEACE-TAIL-WINDOWS-Q1 (r1, Operator HAIKU).
  * Ścieżka (c): drabina płatności traktatu brąz / żelazo / rudy w ŻYWEJ grze (Chromium, bundle Vite, ?playtest=mapa).
  *
- * Płatnik = gracz (propozycja AI → gracz, przemarsz: AI ma ~1,3× siły, gracz płaci dopłatę D). Zapasy gracza są
+ * Płatnik = gracz (propozycja AI → gracz, przemarsz). Próba ustawienia siły AI na ~1,3× gracza (cel) NIE daje
+ * tego stosunku w żywej grze: zmierzony stosunek (Power AI / Power gracza) jest LOGOWANY w każdym przypadku i NIE
+ * jest asercjonowany (rozjazd mocy = BLOKADY raportu, ZNANA niezmierzona przyczyna). Zapasy gracza są
  * ustawiane tak, by złoto NIE wystarczało i drabina schodziła na niższe szczeble. Kolejność nośnika z danych
  * (PEACE_TAIL_ORDER): złoto → brąz → żelazo → rudy; szczebel niżej tylko gdy wyższy wyczerpany (composePeaceTail).
  *
@@ -16,7 +18,7 @@
  *
  * Usage (z gra/): node ./node_modules/vite/bin/vite.js build --outDir <scratchAbs> --emptyOutDir
  *                 SKIP_BUILD=1 node tools/diplo-treaty-pay-ladder-live-verify-test.cjs <scratchAbs>
- * Zrzuty: brak (ścieżka mierzona stanem, nie renderem okna — render = osobna ścieżka (a)).
+ * Zrzuty: brak (ścieżka (c) mierzona STANEM zapasów przed/po, nie renderem okna — okno = ścieżka (a), NIE ZMIERZONO).
  */
 const path = require('path');
 const fs = require('fs');
@@ -117,7 +119,8 @@ async function main() {
 
     for (const c of cases) {
       console.log(`\n[${c.name}] AI→gracz, przemarsz (płatnik: gracz)`);
-      // Siła: AI 1,3× gracza (bramka Respektu AI ≥55% zachowana). Zapasy: gracz wg przypadku, AI bez zapasów.
+      // Siła: próba celu AI ≈1,3× gracza (bramka Respektu AI ≥55% zachowana); stosunek ZMIERZONY poniżej (log, bez asercji).
+      // Zapasy: gracz wg przypadku, AI bez zapasów.
       await page.evaluate(([aiId]) => {
         const d = window.__peaceRulesTestDebug;
         d.setAiPowerBonusForTest(aiId, 0);
@@ -126,6 +129,8 @@ async function main() {
         d.setAiPowerBonusForTest(aiId, Math.max(0, Math.round(1.3 * pw0.player - pw0.ai)));
         d.setRelationForBrake(aiId, 200, 200);
       }, [AI]);
+      const pw = await page.evaluate(([aiId]) => window.__peaceRulesTestDebug.getPowers(aiId), [AI]);
+      console.log(`  MOC ZMIERZONA: AI/gracz = ${(pw.ai / Math.max(1, pw.player)).toFixed(3)} (ai=${pw.ai}, player=${pw.player}; cel 1,3; bez asercji)`);
       await page.evaluate(([aiId, h]) => {
         window.__cityCessionTestDebug.treatyPaySetHoldingsForTest(0, h, []);
         window.__cityCessionTestDebug.treatyPaySetHoldingsForTest(aiId, { zloto: 5000000, braz: 50000, zelazo: 50000, ruda: 50000 }, []);

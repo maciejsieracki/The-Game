@@ -38,7 +38,7 @@
           "what": "czas do pojawienia się okna (s), domknięte bitwy, obserwator MutationObserver",
           "detail": {
             "ok": true,
-            "sec": 0.719,
+            "sec": 0.558,
             "cleared": 0,
             "autoFired": true,
             "summariesClosed": 0,
@@ -51,7 +51,7 @@
           "detail": {
             "autoShown": true,
             "autoFired": true,
-            "sec": 0.719,
+            "sec": 0.558,
             "battlesLeft": 0
           }
         },
@@ -189,7 +189,7 @@
           "what": "czas do pojawienia się pierwszego okna (s), domknięte bitwy, obserwator",
           "detail": {
             "ok": true,
-            "sec": 0.667,
+            "sec": 0.417,
             "cleared": 0,
             "autoFired2": true
           }

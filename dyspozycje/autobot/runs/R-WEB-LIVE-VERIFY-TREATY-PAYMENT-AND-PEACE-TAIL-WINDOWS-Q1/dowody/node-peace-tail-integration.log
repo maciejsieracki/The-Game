@@ -1,0 +1,44 @@
+PASS: A1 AI słabsze: 6 miast po 800 (×1,5 = 1200 → 7200 < D = 8000) bez zapasów → brak oferty (jak dziś)
+PASS: A2 te same miasta + zapasy złota → oferta POKOJU: miasta najpierw, reszta (800) ogonem złotem
+PASS: A3 AI nie płaci metalami przed miastami: miasta pokrywają cenę → ogon pusty mimo zapasów
+PASS: A4 AI bez miast do oddania (tylko stolica zakazana) + zapasy → oferta samym ogonem (cityId pusty), cena pokryta
+PASS: A5 stolica + zapasy niewystarczające (złoto 100) → brak oferty (pokój nie zapada przez ogon)
+PASS: A6 kolejność z danych: złoto wyczerpane (500) → dalej brąz → żelazo (nie rudy, gdy żelazo wystarcza)
+PASS: A7 rozejm (14 tur): ogon NIE jest używany (rozejm bez złota/surowców) — same małe miasta nie wystarczają → brak oferty
+PASS: A8 oferta AI → propozycja stołu: giveItems = miasta + złoto/surowce (bez pozycji miasta przy cityId pustym)
+PASS: A9 oferta AI miasta + ogon → giveItems: miasta, potem zloto
+PASS: B1 przegrany ma tylko stolicę + zapasy → pokój za ogon; zapasy płatnika maleją, odbiorcy rosną, nigdy < 0
+PASS: B2 miasta najpierw, ogon tylko na resztę (miasto 1000 + złoto 2000)
+PASS: B3 zapasów brak → wait: bez pay, bez finalize, zapasy nietknięte (pokój nie zapada przez ogon)
+PASS: B4 kolejność złoto → brąz (krok 5): złoto 1000, brąz 100 szt. (5 PN/szt.) → 1000 + 400 szt. ... nigdy ponad zapas
+PASS: B5 bez tailPlan (stara ścieżka) przy samej stolicy → wait (kontrola: to tailPlan włącza płatność ogonem)
+PASS: B6 rozejm nie używa tailPlan
+PASS: C1 eskalowana oferta: przegrywający ma tylko stolicę + złoto → pokój za ogon (offer_accepted), zapasy zdjęte
+PASS: C2 ta sama oferta bez tailPlan → odrzucona (cena > 0 bez pełnego pokrycia miastami) — jak dotąd
+PASS: C3 jedno miasto (stolica) + ogon: oferta składa się (z tailPlan), bez tailPlan action none
+PASS: D1 słabszy gracz (Power 100 vs 300), stół z małym miastem, zapasy gracza → kompozytor domyka resztę D ogonem (accepted + applied)
+PASS: D2 ten sam stół bez zapasów gracza → „Brakuje N PW” (blokada jak dziś), tooltip bez ogona
+PASS: D3 płatnik = gracz, nie proponent: payerStock (proponenta) pusty, playerStock pełny → ogon składa się z zapasów GRACZA
+PASS: D4 częściowy zapas: złoto 500 + żelazo, brąz brak → kolejność złoto → (brąz pomijany: brak zapasu) → żelazo; nigdy ponad zapas
+PASS: D5 silniejszy gracz (Power 300 vs 100) nie dostaje ogona ani blokady
+PASS: D6 rozejm nie dostaje ogona (kompozytor tylko dla pokoju)
+PASS: D7 silniejsza AI (bramka r5Gate): płatnik = gracz (playerStock), proponent bez zapasu → ogon zastępuje brakujące miasto
+PASS: E1 tooltip „Dopłata: X złota, Y rudy żelaza” z wyliczeniem (kolejność, reszta, pokrycie) w atrybucie title
+PASS: E2 evaluateProposal → UI: wearinessInfo.peaceTail z wyniku renderuje się w tooltipie
+PASS: F1 peaceTailHoldings: złoto ze Skarbca, reszta ze Spichlerza; floor, nigdy < 0
+PASS: F2 Spichlerz państwa = suma c.surowce miast właściciela: stan z ownerResourceStock == stan, z którego transferSurowiecIlosc zdejmuje towar
+PASS: F3 płatnik = strona płacąca: peacePayerOwner (autor daje → autor; autor żąda → druga strona)
+PASS: F4 krok bloku: ilości metali zaokrąglane do kroku (peaceTailStep), zapas ucinany do pełnych bloków
+PASS: W1 peaceTailPricingForPayer: zapasy i epoka czytane WYŁĄCZNIE dla płatnika (id 7), nigdy dla partnera
+PASS: W2 peaceTailPricingForPayer: pnPerUnit/stepOf używają epoki z eraOf(płatnik, partner)
+PASS: W3 peaceTailPricingForPayer: pusty stan płatnika → zapasy 0, nigdy < 0 (getter ujemny/NaN)
+PASS: M1 odwrócona kolejność ogona wykryty (2 czerwonych, np. A6 kolejność z danych: złoto wyczerpane (500) → dalej brąz →)
+PASS: M2 stolica płaci (forbidden ignorowane w settlePeaceDue) wykryty (8 czerwonych, np. A4 AI bez miast do oddania (tylko stolica zakazana) + zapasy)
+PASS: M3 AI↔AI: runAiAiPeaceTick ignoruje tailPlan wykryty (3 czerwonych, np. B1 przegrany ma tylko stolicę + zapasy → pokój za ogon; zapa)
+PASS: M4 AI→gracz: aiPlanOddaniaZOgonem ignoruje ogon wykryty (5 czerwonych, np. A2 te same miasta + zapasy złota → oferta POKOJU: miasta naj)
+PASS: M5 wearyTick ignoruje tailPlan wykryty (2 czerwonych, np. C1 eskalowana oferta: przegrywający ma tylko stolicę + złoto)
+PASS: M6 kompozytor gracza: ignoruje playerStock (płatnik = proponent) wykryty (1 czerwonych, np. D7 silniejsza AI (bramka r5Gate): płatnik = gracz (playerSto)
+PASS: M7 kompozytor gracza (słabszy): ignoruje zapasy ponad stan (brak ucięcia do zapasu) wykryty (5 czerwonych, np. A5 stolica + zapasy niewystarczające (złoto 100) → brak ofer)
+PASS: M8 okablowanie: zapasy płatnika czytane z partnera (zamiana stron) wykryty (1 czerwonych, np. W1 peaceTailPricingForPayer: zapasy i epoka czytane WYŁĄCZNI)
+
+diplo-peace-tail-integration-test: 42 pass / 0 fail
