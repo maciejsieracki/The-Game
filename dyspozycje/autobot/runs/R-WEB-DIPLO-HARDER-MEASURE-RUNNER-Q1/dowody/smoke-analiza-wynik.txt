@@ -1,0 +1,18 @@
+Pomiar twardszej dyplomacji: OFF (1 ziaren) vs ON (1 ziaren). Tury 25/50/75/100.
+== OFF (flaga wyłączona) ==
+tura | Zaufanie sąsiadów śr. | mediana | Zaufanie wszystkich par śr. | wojny razem | wojny AI↔AI | wojny AI↔gracz | NAP/sojusz razem | NAP/sojusz AI↔AI | odsetek par Zaufanie≥50 | kara graniczna śr. | seedy
+25 | NIE_ZMIERZONO
+50 | NIE_ZMIERZONO
+75 | NIE_ZMIERZONO
+100 | NIE_ZMIERZONO
+pierwsza wojna AI↔AI (ziarno: tura): 4242: brak
+pierwsza wojna AI↔gracz (ziarno: tura): 4242: brak
+
+== ON (flaga włączona) ==
+tura | Zaufanie sąsiadów śr. | mediana | Zaufanie wszystkich par śr. | wojny razem | wojny AI↔AI | wojny AI↔gracz | NAP/sojusz razem | NAP/sojusz AI↔AI | odsetek par Zaufanie≥50 | kara graniczna śr. | seedy
+25 | NIE_ZMIERZONO
+50 | NIE_ZMIERZONO
+75 | NIE_ZMIERZONO
+100 | NIE_ZMIERZONO
+pierwsza wojna AI↔AI (ziarno: tura): 4242: brak
+pierwsza wojna AI↔gracz (ziarno: tura): 4242: brak
