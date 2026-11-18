@@ -1,0 +1,32 @@
+[package]
+name = "civ-client"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.87"
+description = "Client core without Tauri and without GPU: owner of the UI state and of the refresh rule, caller of GetRenderMap / GetRenderFrame feeding the CPU map renderer (R-RUSTPORT-P4-371-T2-CLIENT-CORE-E2E, decision D-371-1)"
+publish = false
+
+# Standalone crate (like rust-port/engine, rust-port/renderer and
+# rust-port/view-model): no workspace.
+#
+# Decision D-371-1: the client logic lives here, outside `src-tauri`, so the
+# end-to-end test "engine -> bridge -> adapter -> CPU renderer" builds in the
+# container without the Tauri stack. The bridge (`engine/src/bridge.rs`) is
+# NOT a module of the `civ-engine` library (every consumer includes its own
+# copy through `#[path]`), so this crate talks to it through the trait
+# `RenderSource` over the payload types of the library
+# (`civ_engine::domain::render_frame`), which have one identity.
+#
+# `civ-renderer` with its default features: `gpu` is OFF (decision D-371-7).
+
+[dependencies]
+civ-engine = { path = "../engine" }
+civ-renderer = { path = "../renderer" }
+civ-view-model = { path = "../view-model" }
+
+[dev-dependencies]
+# tests/engine_bridge_renderer.rs includes `engine/src/bridge.rs` through
+# `#[path]`; that file derives the serde traits, and the test compares frames
+# as JSON (same lines as rust-port/engine).
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
