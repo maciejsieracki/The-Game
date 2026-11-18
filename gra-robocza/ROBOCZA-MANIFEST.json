@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "fdc9f6a01566fdb805308c9f21d75077",
-  "bundleSha256": "0b586332dab0db1803e2c813b3816aa2bfe7e5ae1b94e89dbb11c5155c37d644",
-  "bundleBytes": 14936013,
+  "bundleMd5": "dd31cc6ffd43aee96f8e9dc7c0469c37",
+  "bundleSha256": "f82cce6420dfd6b560a50a038f6f3b0e1d504af6e7206811a955b9ac134282fe",
+  "bundleBytes": 14936758,
   "sourceSnapshot": {
-    "source": "FALA 830: merge FC 55335541a + 72800c1bd + fd4f09cf1 + 1efb5be86 na main 3a00b867f",
+    "source": "FALA 831: merge FC e1bdddd2a (kod 4d93fba1e) na main d3bc0fd7b",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 830: Pokój (zmęczenie wojną): gdy cena przekracza dostępne miasta, ogon płatności pokrywają złoto ze Skarbca, potem brąz/żelazo/rudy ze Spichlerza Państwa, nigdy ostatnie miasto; rozejm bez złota; ogon także przy odmowie silniejszej AI (zastępuje miasto) i dla AI↔AI; okno pokoju wymuszonego otwiera się samo na początku tury (hak testowy +3 linie w main.ts); martwe pola zmęczenia wyczyszczone (komentarze, tekst _wzor, nazwy asercji); etykiety obrażeń w bitwie bez nakładania."
+    "FALA 831: Po zakończeniu tury gracza otwarty panel miasta (skarbiec, praca, nauka, żywność, lista budowy) i panel rekrutacji imperium pokazują stan z nowej tury zamiast migawki z jej początku; zachowany scrollTop paneli; poprzednio błąd potwierdzony pomiarem na żywo (skarbiec 100000 vs 99998, praca/nauka 0 vs 4)."
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; peace-tail-integration 42/0; last-stage-payment OK (mutant M3 wykryty); tail-proposal 9/0; profile-unit 198/0; war-peace-sim 25/0; battle-damage-labels 23/0; test żywy forced-peace-pending-live-paths EXIT 0 (FC, mutacja 8 FAIL)."
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; army-panel-recruit-remove 21/0; administrators-wizard 58/0; army-auto-recruit-general-ui 11/0 (FC); open-panel-refresh-after-tech-live PASS; test żywy city-panel-refresh-at-turn-start PASS, mutacja (usunięte wywołanie) FAIL (FC i Evaluator)."
   ],
   "limits": [
-    "NIE ZMIERZONO: wiring main.ts ogona (wybór argumentów ME() vs proposerId) bez testu żywego; sensible-deals-live (Chromium) nie uruchamiany; zrzuty PRZED/PO etykiet obrażeń; symulacja >=3x150 tur dla płatności ogonem; założenie właściciela (pokój bez technologii, pracy i ¤) czeka na potwierdzenie."
+    "NIE ZMIERZONO: asercja scrollTop w teście, panel rekrutacji imperium na żywo po końcu tury, migotanie, zaznaczenia/fokus pól."
   ],
-  "finalControl": "R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 r3 FC PASS-WITH-NOTES 2e834afbb (kod fd4f09cf1) + R-WEB-DIPLO-FORCED-PEACE-WINDOW-AUTO-OPEN-Q1 r2 FC PASS-WITH-NOTES 5015575d9 (kod 1efb5be86) + R-WEB-DIPLO-WEARINESS-LEGACY-FIELDS-CLEANUP-Q1 r1 FC PASS-WITH-NOTES 103cf8a72 (kod 72800c1bd) + R-WEB-UI-BATTLE-DAMAGE-LABELS-NO-OVERLAP-Q1 FC PASS-WITH-NOTES 1d7203471 (kod 55335541a)",
+  "finalControl": "R-WEB-UI-CITY-PANEL-REFRESH-AT-TURN-START-Q1 r1 FC PASS-WITH-NOTES e1bdddd2a (kod 4d93fba1e)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T15:40:38",
+  "hubGeneratedAt": "2026-11-18T16:05:52",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "fdc9f6a01566fdb805308c9f21d75077",
-      "sizeBytes": 14936013
+      "md5": "dd31cc6ffd43aee96f8e9dc7c0469c37",
+      "sizeBytes": 14936758
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "fdc9f6a01566fdb805308c9f21d75077",
-      "sizeBytes": 14936013
+      "md5": "dd31cc6ffd43aee96f8e9dc7c0469c37",
+      "sizeBytes": 14936758
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "fdc9f6a01566fdb805308c9f21d75077",
-      "sizeBytes": 14936013
+      "md5": "dd31cc6ffd43aee96f8e9dc7c0469c37",
+      "sizeBytes": 14936758
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "fdc9f6a01566fdb805308c9f21d75077",
-      "sizeBytes": 14936013
+      "md5": "dd31cc6ffd43aee96f8e9dc7c0469c37",
+      "sizeBytes": 14936758
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "fdc9f6a01566fdb805308c9f21d75077",
-      "sizeBytes": 14936013
+      "md5": "dd31cc6ffd43aee96f8e9dc7c0469c37",
+      "sizeBytes": 14936758
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "fdc9f6a01566fdb805308c9f21d75077",
-      "sizeBytes": 14936013
+      "md5": "dd31cc6ffd43aee96f8e9dc7c0469c37",
+      "sizeBytes": 14936758
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "fdc9f6a01566fdb805308c9f21d75077",
-      "sizeBytes": 14936013
+      "md5": "dd31cc6ffd43aee96f8e9dc7c0469c37",
+      "sizeBytes": 14936758
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "fdc9f6a01566fdb805308c9f21d75077",
-      "sizeBytes": 14936013
+      "md5": "dd31cc6ffd43aee96f8e9dc7c0469c37",
+      "sizeBytes": 14936758
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "fdc9f6a01566fdb805308c9f21d75077",
-      "sizeBytes": 14936013
+      "md5": "dd31cc6ffd43aee96f8e9dc7c0469c37",
+      "sizeBytes": 14936758
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "fdc9f6a01566fdb805308c9f21d75077",
-      "sizeBytes": 14936013
+      "md5": "dd31cc6ffd43aee96f8e9dc7c0469c37",
+      "sizeBytes": 14936758
     }
   ],
-  "md5": "fdc9f6a01566fdb805308c9f21d75077",
+  "md5": "dd31cc6ffd43aee96f8e9dc7c0469c37",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

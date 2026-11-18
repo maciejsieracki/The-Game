@@ -1,3 +1,9 @@
+## ROBOCZA dd31cc6f -- 2026-11-18 -- FALA 831: otwarty panel miasta i panel rekrutacji odświeżają się po końcu tury gracza (testowa)
+
+- Po zakończeniu tury gracza otwarty panel miasta (skarbiec, praca, nauka, żywność, lista budowy) i panel rekrutacji imperium pokazują stan z nowej tury zamiast migawki z jej początku; zachowany scrollTop paneli; poprzednio błąd potwierdzony pomiarem na żywo (skarbiec 100000 vs 99998, praca/nauka 0 vs 4).
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; army-panel-recruit-remove 21/0; administrators-wizard 58/0; army-auto-recruit-general-ui 11/0 (FC); open-panel-refresh-after-tech-live PASS; test żywy city-panel-refresh-at-turn-start PASS, mutacja (usunięte wywołanie) FAIL (FC i Evaluator).
+- Limity: NIE ZMIERZONO: asercja scrollTop w teście, panel rekrutacji imperium na żywo po końcu tury, migotanie, zaznaczenia/fokus pól.
+
 ## ROBOCZA fdc9f6a0 -- 2026-11-18 -- FALA 830: traktaty i pokój: ostatni stopień płatności, okno pokoju otwiera się samo, czyszczenie martwych pól zmęczenia, etykiety obrażeń (testowa)
 
 - Pokój (zmęczenie wojną): gdy cena przekracza dostępne miasta, ogon płatności pokrywają złoto ze Skarbca, potem brąz/żelazo/rudy ze Spichlerza Państwa, nigdy ostatnie miasto; rozejm bez złota; ogon także przy odmowie silniejszej AI (zastępuje miasto) i dla AI↔AI; okno pokoju wymuszonego otwiera się samo na początku tury (hak testowy +3 linie w main.ts); martwe pola zmęczenia wyczyszczone (komentarze, tekst _wzor, nazwy asercji); etykiety obrażeń w bitwie bez nakładania.
