@@ -119,3 +119,24 @@ Rekomendacja Operatora (decyzja właściciela, nie moja): najpierw wyjaśnić r�
 - Mapa tura→epoka nie jest w jsonl. Dekompozycja łączy N z t25 (e1) z N z t75 (e4), więc to przybliżenie, nie pomiar.
 - Różnica model vs HUD gracza (~10×) jest NIEWYJAŚNIONA. Możliwe przyczyny do sprawdzenia: liczba budynków, Stolarnie/Warsztaty, handel, definicja „Surowce” w HUD.
 - Cap żywności: zgodność z formułą, bez liczby Spichlerzy.
+
+## 7. Wyjaśnienie HUD „Surowce +X / +Y” (R-WEB-ECONOMY-MEASURE-EXTEND-INCOME-STOCKS-Q1, baza 198e63685)
+
+Źródło z kodu (odczyt, bez zmian gry):
+- Suma chipu „Surowce” = `surowceBrutto` / `surowceNetto` w `gra/src/main.ts` (buildHudStateRaw, ok. l. 23862–23872), po wierszach `shortageRows` = `buildEmpireResourceRows(0)` z filtrem `cap != null && !placeholder` (gracz: `storedResourceRows`). Czyli suma po WSZYSTKICH magazynowanych surowcach imperium (13 typów: drewno, kamień, glina, ruda, cegła, brąz, żelazo, stal, ceramika, sól, koń, złoto itd.), a NIE po trzech (cegła, żelazo, ceramika) jak model `econ-growth-model.cjs`. Żywność jest osobnym chipem „Spichlerz”.
+- Brutto na surowiec = `resourceGrossNetPerTurn` (`gra/src/game/resource-gross-net.ts`): produkcja + przychód z umów; netto = `ratePerTurn` − zużycie (obywatele + budynki + wojsko). Jednostka: sztuki na turę (zaokrąglone), nie PN.
+- Skarbiec, Praca, Nauka, Handel, Spichlerz: pola `buildHudStateRaw` (`zlotoRate`, `pracaRate`, `naukaRate`, `handelIncome`, `zywnoscRate`, `zywnoscWplywMiast`); tylko gracz (singleton `player`).
+
+Wyjaśnienie ~10×: strukturalne (HUD sumuje wszystkie magazynowane surowce, model trzy). Liczbowe potwierdzenie na pełnym biegu NIE ZMIERZONE w tej rundzie. Próbka t10 (seed 4242, 1 tura po starcie, katalog poza repo): suma HUD brutto wszystkich właścicieli = 991; suma trzech surowców modelu (cegła, żelazo, ceramika) = 0 (brak produkcji tych surowców w t10) — to nie jest jeszcze test proporcji.
+
+## Bazowe liczby do pomysłów właściciela (inwentaryzacja danych; bez propozycji liczb)
+
+Cuda (`gra/data/wonders.json`, pole `cuda`, 19 pozycji; koszt = `kosztBudowy`, jednostka kosztu NIE POTWIERDZONA w tej rundzie):
+- Epoka 1 (Kamień): 2 cuda (piramidy 160 — wyłączny Egipt; wyrocznia 180 — wyścig, 15 cywilizacji).
+- Epoka 2 (Brąz): 8 cudów, koszt 150–260.
+- Epoka 3 (Żelazo): 9 cudów, koszt 140–320.
+- Epoka 4+: 5 cudów „parkowanych” (`parkowane_epoka4plus`), poza listą aktywną.
+- Unikatowość: 15 cudów wyłącznych (po 1 cywilizacji; Chińczycy mają 2), 3 cuda wyścigowe (wyrocznia, hamonga, brama_narodow) dostępne dla wszystkich 15 cywilizacji; max 1 cudu każdego typu na świecie.
+- Porównanie koszt cudu z Pracą na turę (t75/t100/t150): NIE ZMIERZONE (brak biegów do t150 w tej rundzie). Próbka t10: średnia Praca/turę AI z miastem = 0,00 (41 AI).
+
+Jednostki wojskowe (koszty i utrzymanie per typ), utrzymanie budynków per typ, udział wydatków Pracy (kolejki): NIE WYKONANO w tej rundzie (brak odczytu danych i biegu).
