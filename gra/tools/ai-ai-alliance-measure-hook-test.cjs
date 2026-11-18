@@ -13,6 +13,7 @@
  *  H8a/H8b liczenie sojuszy per cywilizacja (+1 na każdą stronę, tylko między owners);
  *  H9 liczenie wojen czyta diplomacyRelations.get (bez getDiploRelation, który tworzy relację).
  *  H10a-c histogram powodów odmów toru (planer -> skumulowany licznik -> diag.sojusze.powodyOdmow).
+ *  H25 flaga `przestarzale` próby ostatniego kroku (tura kroku ≠ bieżąca tura gry) w hooku.
  *  H21-H24 pola odczytu próby w planerze (gotowość, Relacja, Zaufanie, wspólna granica, wspólny wróg) — dopasowanie tekstu.
  *  B1 (BEHAWIORALNY, esbuild z gra/node_modules): planer na znanych wejściach zwraca w probyDetale dokładnie
  *     wartości z pairInfo/sideOf (gotowość 0,7; Relacja 123; Zaufanie 45; respekt 33; siła 1,5; archetyp; flagi granicy,
@@ -61,6 +62,7 @@ const CHECKS = [
   ['H18', 'main', 'aiAiAllianceOstatniaProby = { tura: turn, probki: plan.probyDetale };'],
   ['H19', 'main', 'pomiar: { respekt: rel.respekt, militaryRatio: dipCtx.militaryRatio, typ: String(aiOwnerCivMap.get(t) ?? \'\') },'],
   ['H20', 'main', 'probyOstatniaTura: aiAiAllianceOstatniaProby'],
+  ['H25', 'main', 'przestarzale: aiAiAllianceOstatniaProby.tura !== turn,'],
   ['H21', 'tick', 'gotowosc: info.willingness,'],
   ['H22', 'tick', '      relacja: info.relacja,\n      zaufanie: info.zaufanie,\n      respekt: info.pomiar?.respekt ?? null,'],
   ['H23', 'tick', 'wspolnaGranica: info.sharesBorder,'],
@@ -138,6 +140,7 @@ const MUTANTS = [
   ['M22 Zaufanie próby = 0', 'tick', '      relacja: info.relacja,\n      zaufanie: info.zaufanie,\n      respekt: info.pomiar?.respekt ?? null,', '      relacja: info.relacja,\n      zaufanie: 0,\n      respekt: info.pomiar?.respekt ?? null,'],
   ['M23 wspólna granica = false', 'tick', 'wspolnaGranica: info.sharesBorder,', 'wspolnaGranica: false,'],
   ['M24 wspólny wróg = false', 'tick', 'wspolnyWrog: sideP.enemies.some(x => sideT.enemies.includes(x)),', 'wspolnyWrog: false,'],
+  ['M25 przestarzałe zawsze false', 'main', 'przestarzale: aiAiAllianceOstatniaProby.tura !== turn,', 'przestarzale: false,'],
 ];
 
 function src(kind, mainText, tickText) { return kind === 'main' ? mainText : tickText; }
@@ -156,7 +159,7 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) fai
 
 // 1) Stan rzeczywisty: wszystkie reguły zielone (statyczne) + B1 behawioralny na planerze.
 const real = evaluate(MAIN, TICK);
-ok(real.length === 0, `hak odczytowy: reguły H1..H24 zielone (nieprzechodzące: ${real.join(',') || 'brak'})`);
+ok(real.length === 0, `hak odczytowy: reguły H1..H25 zielone (nieprzechodzące: ${real.join(',') || 'brak'})`);
 const realB = behaviorFails(TICK);
 ok(realB.length === 0, `B1 behawioralny: probyDetale = wejścia (nieprzechodzące pola: ${realB.join(',') || 'brak'})`);
 

@@ -70,6 +70,7 @@ import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
 import { isAiAiTreatyTickEnabled, setAiAiTreatyTickEnabledForTest, planAiAiNapTreatyTickFull, applyAiAiNapBreachRelacja, aiAiNapBreachRelacjaDelta, type AiAiWarStatus } from './game/ai-ai-treaty-tick';
 import { isAiAiAllianceTickEnabled, setAiAiAllianceTickEnabledForTest, planAiAiAllianceTickFull, type AiAiAllianceProbaDetal } from './game/ai-ai-alliance-tick';
+import { isZeroTrustEnabled, setZeroTrustEnabledForTest, zeroZaufaniaProgTur, zeroTrustBreakOrders, zeroTrustCount, zeroTrustPreferredTarget, zeroTrustRecordBreak, zeroTrustStats, resetZeroTrustSession } from './game/diplomacy-zero-trust';
 import { isAiAiCoalitionEnabled, setAiAiCoalitionEnabledForTest, aktualizujLidera, budujKontekstKoalicji, initLiderKoalicjiStan, loadAiAiCoalitionParams, type LiderKoalicjiStan } from './game/ai-ai-coalition';
 import { typSwiataFromMenuLabel, defaultLandFractionPercentForTyp, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
 import { buildScene, getLastSetFogMs, type SceneBuildTimings, type SceneResult } from './render/scene';
@@ -2764,6 +2765,7 @@ async function boot(): Promise<void> {
     /** Etykiety + epoka: wszyscy AI startują w tej samej epoce co gracz (E1). */
     function initAllAiOwnersForNewGame(epochId: string): void {
       resetNeighborTenureSession(); // R-WEB-DIPLO-HARDER A1: nowa gra zaczyna licznik od zera
+      resetZeroTrustSession(); // R-WEB-DIPLO-ZERO-TRUST: licznik zerowego zaufania od zera (nie w SaveGame)
       for (const oid of allAiOwnerIdsOnMap()) {
         setupAiOwnerEpoch(oid, epochId);
       }
@@ -10382,6 +10384,7 @@ async function boot(): Promise<void> {
     /** Pełny reset UI / flag przed wczytaniem innej gry (nie czyści mapy — to robi rebuild). */
     function prepareSessionForLoad(): void {
       resetNeighborTenureSession(); // R-WEB-DIPLO-HARDER A1: licznik sąsiedztwa nie przechodzi między grami/wczytaniami
+      resetZeroTrustSession(); // R-WEB-DIPLO-ZERO-TRUST: licznik zerowego zaufania nie przechodzi między grami/wczytaniami
       resetStuckInteractiveState();
       resetEmpireRecruitPanelSession(); // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: panel/stan UI nie przeżywa wczytania
       resetArmyRecruitDraftsSession();
@@ -24394,7 +24397,7 @@ async function boot(): Promise<void> {
      * AI dostanie kiedyś własną ścieżkę dobrowolnego zerwania (dziś jej nie ma, patrz
      * raport wdrożeniowy), wystarczy przekazać jej ownerId tutaj, bez zmiany tej funkcji.
      */
-    function breakTreatyVoluntarily(dealId: string, initiatorOwnerId: number = 0): void {
+    function breakTreatyVoluntarily(dealId: string, initiatorOwnerId: number = 0, pokazPodpowiedz: boolean = true): void {
       const deal = activeDeals.find(d => d.id === dealId);
       if (!deal) return;
       const [a, b] = deal.strony;
@@ -24450,8 +24453,13 @@ async function boot(): Promise<void> {
       }
       setDiploRelation(a, b, next);
 
-      const otherId = a === 0 ? b : a;
-      showHintMessage('Zerwano traktat: ' + treatyDisplayLabel(deal.rodzaj) + ' — ' + ownerDiploLabel(otherId), 4000);
+      // R-WEB-DIPLO-ZERO-TRUST (fix obrony): podpowiedź „Zerwano traktat" tylko dla zerwań, w których gracz jest stroną
+      // (przycisk gracza). Zerwanie AI↔AI nie pokazuje graczowi podpowiedzi z etykietą złej strony; wywołujący AI
+      // sam pokazuje swój komunikat (tickZeroTrustTreaties).
+      if (pokazPodpowiedz) {
+        const otherId = a === 0 ? b : a;
+        showHintMessage('Zerwano traktat: ' + treatyDisplayLabel(deal.rodzaj) + ' — ' + ownerDiploLabel(otherId), 4000);
+      }
       updateDiplomacyAudience();
       updateDiplomacyPanel();
       updateHud();
@@ -25551,6 +25559,55 @@ async function boot(): Promise<void> {
       return isCivTestEnabled(window.location.search) && (window as any).__civAiAllianceMeasureForce === true;
     }
 
+    /**
+     * R-WEB-DIPLO-ZERO-TRUST-TREATY-BREAK-PROTECTOR-Q1 (C2): licznik zerowego zaufania per para (AI → partner: gracz lub
+     * inna główna AI) + zerwanie umów HANDLOWYCH i NAP po zeroZaufaniaProgTur turach. Raz na turę, przed krokiem sojuszy.
+     * Zerwanie = ISTNIEJĄCA ścieżka breakTreatyVoluntarily (ten sam skutek i kara Wiarygodności inicjatora = AI).
+     * Sojusze i pokój nietknięte. Flaga OFF = zero zmiany stanu (także licznika).
+     */
+    function zeroTrustOwners(): number[] {
+      return Array.from(aiOwnerCivMap.keys())
+        .filter(oid => isMajorAiCivForForcedPeace(oid))
+        .sort((x, y) => x - y);
+    }
+
+    function tickZeroTrustTreaties(): void {
+      if (!isZeroTrustEnabled()) return;
+      // Plan (liczniki, próg, filtr handel/NAP, wykluczenie wasali po obu stronach) — czysta funkcja w
+      // diplomacy-zero-trust.ts, testowana w tools/diplomacy-zero-trust-unit-test.cjs.
+      const orders = zeroTrustBreakOrders({
+        me: ME(),
+        owners: zeroTrustOwners(),
+        deals: activeDeals,
+        zaufanie: (ai, partner) => getDiploRelation(ai, partner).zaufanie,
+        labelOf: rodzaj => treatyDisplayLabel(rodzaj),
+      });
+      const prog = zeroZaufaniaProgTur();
+      for (const o of orders) {
+        // Zerwanie = ISTNIEJĄCA ścieżka breakTreatyVoluntarily (kara Wiarygodności inicjatora = AI); bez podpowiedzi gracza.
+        for (const dealId of o.dealIds) breakTreatyVoluntarily(dealId, o.ai, false);
+        zeroTrustRecordBreak(turn, o.ai, o.partner, o.typy);
+        const komunikat = `${ownerDiploLabel(o.ai)} wypowiedziała umowę: zerowe zaufanie od ${prog} tur`;
+        console.log(`[Dyplomacja] ${komunikat} (${o.typy.join(', ')}) — partner ${ownerDiploLabel(o.partner)}(${o.partner})`);
+        // Wiersz w dzienniku Wydarzeń (warEventLog, istniejący mechanizm) i podpowiedź — tylko gdy gracz jest partnerem
+        // (zerwania AI↔AI nie trafiają do dziennika gracza, jak wojny AI↔AI w recordWarEventFor…).
+        if (o.partner === ME()) {
+          warEventLog.unshift({
+            id: `zerotrust-${turn}-${o.ai}-${o.partner}`,
+            icon: '⚖',
+            title: komunikat,
+            subtitle: o.typy.join(', '),
+            kind: 'enemy',
+            negative: true,
+            turnCreated: turn,
+          });
+          trimWarEventLog();
+          refreshD1bHud();
+          showHintMessage(komunikat, 4000);
+        }
+      }
+    }
+
     function tickAiAiAllianceRequests(): void {
       if (!isAiAiAllianceTickEnabled()) return;
       refreshObjectivePowerCache();
@@ -25588,10 +25645,21 @@ async function boot(): Promise<void> {
           );
         }
       }
+      // R-WEB-DIPLO-ZERO-TRUST (C1): protektor — najsilniejsza trzecia główna AI dostaje premię celu u AI z zerowym
+      // zaufaniem wobec silniejszego partnera. Flaga OFF = pusta mapa = zachowanie sprzed tematu.
+      const zeroPreferowany = new Map<number, number>();
+      if (isZeroTrustEnabled()) {
+        const partnerzy: number[] = [ME(), ...owners];
+        for (const p of owners) {
+          const cel = zeroTrustPreferredTarget(p, owners, partnerzy, oid => objectivePowerForOwner(oid));
+          if (cel !== null) zeroPreferowany.set(p, cel);
+        }
+      }
       const plan = planAiAiAllianceTickFull({
         turn,
         owners,
         koalicja: koalicjaKontekst,
+        preferowanyCel: (p, t) => zeroPreferowany.get(p) === t,
         alliancesCount,
         pairPrefilter: (p, t) => {
           if (getDiploRelation(p, t).status === 'wojna') return false;
@@ -25667,8 +25735,9 @@ async function boot(): Promise<void> {
       wojnyAiAi: number;
       sojuszeAiAi: number;
       powodyOdmow: Array<{ powod: string; n: number }>;
-      /** Próby ostatniego kroku toru (tura null, gdy krok jeszcze nie biegł). */
-      probyOstatniaTura: { tura: number | null; probki: AiAiAllianceProbaDetal[] };
+      /** Próby ostatniego kroku toru (tura null, gdy krok jeszcze nie biegł). `przestarzale` = true, gdy tura kroku
+       *  ≠ bieżąca tura gry (próby są kopią z wcześniejszej tury; konsument nie musi deduplikować). Tylko odczyt. */
+      probyOstatniaTura: { tura: number | null; przestarzale: boolean; probki: AiAiAllianceProbaDetal[] };
     } {
       const owners = Array.from(aiOwnerCivMap.keys())
         .filter(oid => isMajorAiCivForForcedPeace(oid)
@@ -25711,8 +25780,12 @@ async function boot(): Promise<void> {
           .map(([powod, n]) => ({ powod, n }))
           .sort((x, y) => y.n - x.n || (x.powod < y.powod ? -1 : x.powod > y.powod ? 1 : 0)),
         probyOstatniaTura: aiAiAllianceOstatniaProby
-          ? { tura: aiAiAllianceOstatniaProby.tura, probki: aiAiAllianceOstatniaProby.probki }
-          : { tura: null, probki: [] },
+          ? {
+            tura: aiAiAllianceOstatniaProby.tura,
+            przestarzale: aiAiAllianceOstatniaProby.tura !== turn,
+            probki: aiAiAllianceOstatniaProby.probki,
+          }
+          : { tura: null, przestarzale: false, probki: [] },
       };
     }
 
@@ -31541,6 +31614,13 @@ async function boot(): Promise<void> {
       };
       // R-WEB-AI-AI-ALLIANCES-E3 (hak testowy, NIE UI): przełącznik toru sojuszy AI↔AI i pojedynczy krok sojuszy.
       if ((window as any).__civAiAllianceMeasureForce === true) setAiAiAllianceTickEnabledForTest(true);
+      // R-WEB-DIPLO-ZERO-TRUST (hak testowy, NIE UI): przełącznik zerowego zaufania, krok zerwań i odczyt pomiaru.
+      (window as any).__truceTestDebug.zeroTrustForTest = {
+        setEnabled: (v: boolean | null): void => { setZeroTrustEnabledForTest(v); },
+        runTick: (): void => { tickZeroTrustTreaties(); },
+        count: (ai: number, partner: number): number => zeroTrustCount(ai, partner),
+        stats: (): ReturnType<typeof zeroTrustStats> => zeroTrustStats(),
+      };
       (window as any).__truceTestDebug.aiAiAllianceTickForTest = {
         setEnabled: (v: boolean | null): void => { setAiAiAllianceTickEnabledForTest(v); },
         runTick: (): void => { tickAiAiAllianceRequests(); },
@@ -47601,6 +47681,12 @@ async function boot(): Promise<void> {
               tickAiAiTreatyRequests();
             } catch (eAiAiTreaty) {
               console.error('[Dyplomacja] Blad paktow AI-AI (E2):', eAiAiTreaty);
+            }
+            // R-WEB-DIPLO-ZERO-TRUST: zerowe zaufanie → zerwanie umów handlowych/NAP po progu (flaga OFF = nic).
+            try {
+              tickZeroTrustTreaties();
+            } catch (eZeroTrust) {
+              console.error('[Dyplomacja] Blad zerowego zaufania:', eZeroTrust);
             }
             // R-WEB-AI-AI-ALLIANCES-E3: sojusze AI↔AI (tor za przełącznikiem torSojuszyAktywny=false).
             try {

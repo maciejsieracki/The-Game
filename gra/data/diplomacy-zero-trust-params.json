@@ -1,0 +1,6 @@
+{
+  "_opis": "R-WEB-DIPLO-ZERO-TRUST-TREATY-BREAK-PROTECTOR-Q1 (ABC właściciela 2026-11-18): Zaufanie 0 przez zeroZaufaniaProgTur tur → AI zrywa umowę handlową i NAP z tym partnerem (nie sojusz, nie wojnę) i szuka protektora (tor sojuszy E3, premia celu).",
+  "_uwaga_flaga": "zeroZaufaniaAktywna=false = zachowanie gry identyczne jak przed tym tematem. Ustawiane wyłącznie w danych / testach civTest, NIE w UI.",
+  "zeroZaufaniaAktywna": false,
+  "zeroZaufaniaProgTur": 5
+}
