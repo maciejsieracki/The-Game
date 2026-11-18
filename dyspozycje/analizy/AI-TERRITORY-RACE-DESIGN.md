@@ -3,7 +3,7 @@
 Status: PROJEKT — bez implementacji. Baza kodu: `64208a85b` (origin/main w chwili startu).
 Zakres (ABC, DODATEK 1, 2026-11-18): forty i posterunki jako element STRATEGII AI. Automatyka gracza poza zakresem (w pkt 7 tylko opis możliwego udostępnienia).
 
-NIE ZMIERZONO: pomiar przed zmianą (3 ziarna × ≥150 tur) nie został wykonany w tej rundzie. Powód w sekcji 6. Wnioski o częstotliwości budowy fortów przez AI poniżej są z KODU, nie z pomiaru.
+NIE ZMIERZONO: pomiar przed zmianą (3 ziarna × ≥150 tur) nie został wykonany w tej rundzie (runda 2 nie zmieniła tego faktu; poprzednie uzasadnienie „zakaz biegów w tle" było BŁĘDNE — dispatch dopuszcza `setsid nohup` + odpytywanie). Powód i plan w sekcji 6. Wszystkie wnioski o częstotliwości budowy fortów przez AI są HIPOTEZAMI Z KODU, nie wynikiem pomiaru. Rekomendacje w sekcji 4 i 7 są WSTĘPNE i wymagają pomiaru PRZED decyzją ABC.
 
 ---
 
@@ -21,7 +21,7 @@ NIE ZMIERZONO: pomiar przed zmianą (3 ziarna × ≥150 tur) nie został wykonan
 | Bonus obrony | +100% (obozowanie) | +50% (obozowanie) |
 | Warunek | teren zabezpieczony; obca cywilizacja nie buduje tam miasta/ulepszeń | jak fort, zasięg 3; odkrywa mgłę, węzeł dróg |
 
-Dane NIE zawierają pola kosztu utrzymania (grep `utrzymanie|upkeep` w JSON nie zwrócił wpisu dla fortu/posterunku). Koszt utrzymania: NIE ZWERYFIKOWANO.
+Dane JSON NIE zawierają pola kosztu utrzymania dla fortu ani posterunku (grep `utrzymanie|upkeep` w `terrain-improvements.json` nie zwrócił wpisu dla tych kluczy). Istnieje natomiast ogólne utrzymanie ulepszeń terenu z mnożnikiem epoki 1/2/4 (`gra/src/game/terrain-improvements.ts:124`). Czy i jak obejmuje ono forty/posterunki: NIE ZWERYFIKOWANO (do następnej rundy).
 
 Obie to ulepszenia terenu (nie jednostki). Nie wymagają jednostki-budowniczego w danych; w kodzie AI wymagana jest własna jednostka stojąca na heksie (patrz 1.4).
 
@@ -45,19 +45,21 @@ Są TRZY ścieżki w kodzie:
 2. **Planer ekspansji** — `ai.ts:3093` `planExpansionFortBuilding`, wołany z `decideAITurn` (ok. l. 4002) i `decideDefensiveCopyTurn` (ok. l. 5538; oba z bramką `defensiveCopy`):
    - bramki zasobów: `canAfford` (l. ~3128–3140): `pracaAvailable >= kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS`, budżet `plannedCost + kosztPraca <= improvementBudget`, technologia odblokowana;
    - pętla 1 (l. ~3146–3180): fort na heksie WŁASNEJ jednostki (nie garnizon) poza `isHexWithinAnyCityReach`, poza terytorium obcej cywilizacji, na lądzie; **bez ruchu jednostek** (komentarz l. 3085–3090: „Celowo NIE przesuwa/nie wysyła jednostek”);
-   - pętla 2 (l. ~3180–3195): posterunek na heksie własnej jednostki, gdy `isOutpostPlacementAllowed` (własna granica). **Maks. 1 na turę** (`return` po pierwszym trafieniu).
+   - pętla 2 (l. ~3180–3195): posterunek na heksie własnej jednostki, gdy `isOutpostPlacementAllowed` (własna granica). Funkcja zwraca **najwyżej jedną komendę budowy na wywołanie** (`return` po pierwszym trafieniu), czyli łącznie 1 fort LUB 1 posterunek na turę z tej ścieżki, nie „1 posterunek”. Klucz pętli 1 to `'fort'` (`EXPANSION_KEY`, `ai.ts:~3120`).
 3. **Pozostałe** — brak innych ścieżek budowy fortów/posterunków przez AI znalezionych w tej rundzie (NIE ZWERYFIKOWANO wyczerpująco).
 
 ### 1.5 Dlaczego AI rzadko stawia forty
 
-Z kodu wynikają cztery twarde bramki (każda sama wystarcza do braku budowy):
+Z kodu wynikają cztery bramki ograniczające budowę (hipoteza: to one powodują rzadkość; ich ilościowego wpływu NIE zmierzono):
 
 - ścieżka 1 wymaga WYCZERPANEGO limitu miast; przed tym AI nie stawia fortu przez picker;
 - ścieżka 2 wymaga, aby WŁASNA jednostka już stała poza zasięgiem — AI nie wysyła jednostek po teren, więc sytuacja zdarza się przypadkowo (zwiadowca, eskorta);
 - fort wymaga technologii Wojskowość (epoka 3), posterunek dwóch technologii; przed nimi ścieżki są zamknięte;
 - budżet pracy (`canAfford`) konkuruje z ulepszeniami żywności i surowców (kolejność w `AI_IMPROVEMENT_PRACA_SURPLUS`/`foodPriority`).
 
-Hipoteza „AI rzadko stawia forty” jest zgodna z kodem, ale NIE jest potwierdzona liczbą (brak pomiaru, sekcja 6).
+Hipoteza „AI rzadko stawia forty" jest zgodna z kodem, ale NIE jest potwierdzona liczbą: przebadano 0 AI × 0 ziaren × 0 tur (brak pomiaru, sekcja 6). Wniosku wolno użyć dopiero po pomiarze.
+
+Hak pomiarowy `__aiEconomyMeasure.metrics()` (`gra/src/main.ts:33398-~33480`) NIE zawiera pól fortów, posterunków ani terytorium (sprawdzone: brak wpisów fort/posterunek/terytorium w bloku). Pomiar wymaga rozszerzenia haka o odczyt (tylko odczyt, `?civTest=1`).
 
 ### 1.6 Limity i koszty
 
@@ -75,7 +77,7 @@ Hipoteza „AI rzadko stawia forty” jest zgodna z kodem, ale NIE jest potwierd
 
 ## 2. Problem
 
-Dziś AI rozszerza terytorium praktycznie tylko przez miasta (zasięg 10 pól na miasto, `cityTerritoryRadius`), a forty pojawiają się po wyczerpaniu limitu miast lub przypadkiem. Brak aktywnego „wyścigu o heksy” oznacza, że przeciwnik, który wcześnie postawi forty na granicy i na zasobach, zajmie wolny teren pierwszy (reguła „wcześniej zbudowany fort wygrywa spór”, `territory.ts`).
+Według kodu AI rozszerza terytorium głównie przez miasta: zasięg miasta to `max(5, populacja)` z limitem 15 (`gra/src/map/territory.ts:89-93`, `cityRangeForPopulation` w `okolica.ts`), fort ma zasięg 5, posterunek 3. Forty pojawiają się według kodu po wyczerpaniu limitu miast lub przypadkiem (hipoteza, niezmierzona). Brak aktywnego „wyścigu o heksy” oznacza, że przeciwnik, który wcześnie postawi forty na granicy i na zasobach, zajmie wolny teren pierwszy (reguła „wcześniej zbudowany fort wygrywa spór”, `territory.ts`).
 
 ## 3. Mechanizm wspólny (wszystkie warianty)
 
@@ -109,7 +111,7 @@ Priorytet budżetu (iii): forty/posterunki z osobnym udziałem puli pracy (np. X
 - Minusy: dwa etapy, wymaga pomiaru przed etapem 2.
 - Szacunek: etap 1 — 2–3 tematy; etap 2 — 3–5 tematów.
 
-**REKOMENDACJA: C (etap 1 najpierw, etap 2 po pomiarze).**
+**REKOMENDACJA WSTĘPNA: C (etap 1 najpierw, etap 2 po pomiarze). Nie do przyjęcia bez pomiaru PRZED (sekcja 6).**
 
 ## 5. Wpływ na dyplomację i gracza
 
@@ -118,7 +120,9 @@ Priorytet budżetu (iii): forty/posterunki z osobnym udziałem puli pracy (np. X
 
 ## 6. Pomiar — NIE ZMIERZONO
 
-Harness `gra/tools/ai-economy-measure-run.cjs` (README: `ai-economy-measure-README.md`) wymaga: budowy bundle poza repo, startu ok. 2 min, a następnie 6–50 s na turę (rośnie z turą; 100-turowe przebiegi trwały 18–35 min na część). Trzy ziarna × 150 tur to kilka godzin pracy. Dispatch zabrania uruchamiania w tle (`run_in_background`), a foreground ma limit 590 s na wywołanie, więc przebieg wymaga wielu wznowień. Nie wykonano w tej rundzie. Nie utworzono też nowego narzędzia `gra/tools/territory-race-measure-run.cjs`.
+Harness `gra/tools/ai-economy-measure-run.cjs` wymaga: `npm ci --ignore-scripts` w `gra/` (brak `gra/node_modules` w worktree), budowy bundle poza repo, headless Chromium (`/opt/pw-browsers/chromium`), startu ok. 2 min i 6–50 s na turę (dane z poprzednich przebiegów, nie zmierzone tutaj). Trzy ziarna × 150 tur = około 450 tur, co daje kilka godzin wall-time.
+
+Korekta: wcześniejsze uzasadnienie „dispatch zabrania biegów w tle" było błędne. Dispatch dopuszcza `setsid nohup` z odpytywaniem ≤60 s; ograniczenie dotyczy wyłącznie parametru `run_in_background`. Brak wykonania wynika z zakresu pracy tej rundy (instalacja, build, rozszerzenie haka i kilka godzin przebiegów), nie z zakazu. Nie utworzono narzędzia `gra/tools/territory-race-measure-run.cjs`. Stan: NIE WYKONANO.
 
 Plan pomiaru do kolejnej rundy (dla etapu 0, PRZED zmianą):
 - ziarna 4242, 777, +1 trzecie; tury kontrolne 30/60/90/120/150;
@@ -142,7 +146,7 @@ Wniosek „AI rzadko stawia forty” wolno uznać dopiero po tym pomiarze.
 **P3. Limity fortów/posterunków AI.**
 - A (rek.): maks. liczba naraz i minimalny odstęp — wartości do wyboru przez właściciela (propozycja: naraz X zależne od liczby miast, odstęp Y pól; liczby NIE wybieram sam).
 - B: bez limitu łącznego, tylko budżet pracy; plus: prostota; minus: ryzyko zalania mapy.
-- C: stały limit na turę (dziś 1 posterunek na turę); plus: zgodne z obecnym kodem; minus: wolne tempo.
+- C: stały limit na turę (dziś najwyżej 1 komenda fortu LUB posterunku na turę z planera ekspansji); plus: zgodne z obecnym kodem; minus: wolne tempo.
 
 **P4. Udział pracy na forty/posterunki (budżet).**
 - A (rek.): osobny udział puli (wartość do ustalenia), reszta na żywność i surowce; plus: kontrola wpływu na ekonomię; minus: nowy parametr do balansu.
