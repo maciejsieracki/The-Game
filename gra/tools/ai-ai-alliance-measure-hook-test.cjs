@@ -36,8 +36,8 @@ const CHECKS = [
   ['H4', 'main', 'sojusze: aiAiAllianceMeasureState(),'],
   ['H5a', 'tick', '    proby++;\n    const result = evaluate({'],
   ['H5b', 'tick', '    if (!result.accept) {\n      odmowy++;'],
-  ['H5c', 'tick', 'return { accepted, treasuryPo: treasury, alliancesCountPo: counts, proby, odmowy, powodyOdmow };'],
-  ['H10a', 'tick', "      powodyOdmow.set(klucz, (powodyOdmow.get(klucz) ?? 0) + 1);"],
+  ['H5c', 'tick', 'return { accepted, treasuryPo: treasury, alliancesCountPo: counts, proby, odmowy, powodyOdmow, probyDetale };'],
+  ['H10a', 'tick', "      powodyOdmow.set(powodKlucz, (powodyOdmow.get(powodKlucz) ?? 0) + 1);"],
   ['H10b', 'main', 'for (const [klucz, n] of plan.powodyOdmow) aiAiAllianceOdmowyPowody.set(klucz, (aiAiAllianceOdmowyPowody.get(klucz) ?? 0) + n);'],
   ['H10c', 'main', 'powodyOdmow: Array.from(aiAiAllianceOdmowyPowody.entries())'],
   ['H6', 'main', 'aiAiAllianceProbyLacznie += plan.proby;'],
@@ -51,6 +51,12 @@ const CHECKS = [
   ['H13', 'main', '        wojnyAiAi: wojny,'],
   ['H14', 'main', '        naCywilizacje: owners.map(oid => ({ owner: oid, n: liczba.get(oid) ?? 0 })),'],
   ['H15', 'main', '        sojuszeAiAi,\n        powodyOdmow:'],
+  // H16-H20 (WILLINGNESS-MEASURE-Q1): dane próby (wejścia E1 + flagi) zapisywane z planera do haka, tylko odczyt.
+  ['H16', 'tick', '    probyDetale.push({'],
+  ['H17', 'tick', '      sojusznikWrogaCelu: sideT.allies.some(x => sideP.enemies.includes(x)),'],
+  ['H18', 'main', 'aiAiAllianceOstatniaProby = { tura: turn, probki: plan.probyDetale };'],
+  ['H19', 'main', 'pomiar: { respekt: rel.respekt, militaryRatio: dipCtx.militaryRatio, typ: String(aiOwnerCivMap.get(t) ?? \'\') },'],
+  ['H20', 'main', 'probyOstatniaTura: aiAiAllianceOstatniaProby'],
 ];
 
 /** Mutanty: [id, plik, fragment do usunięcia/zamiany na pusty lub inny]. */
@@ -64,13 +70,18 @@ const MUTANTS = [
   ['M5c wojny przez getDiploRelation (mutacja)', 'main', 'if (diplomacyRelations.get(`${owners[i]!}_${owners[j]!}`)?.status === \'wojna\') wojny++;', 'if (getDiploRelation(owners[i]!, owners[j]!).status === \'wojna\') wojny++;'],
   ['M6 wymuszenie bez ?civTest', 'main', 'return isCivTestEnabled(window.location.search) && (window as any)', 'return (window as any)'],
   ['M7 bez zasilania licznika skumulowanego', 'main', 'aiAiAllianceOdmowyLacznie += plan.odmowy;', ''],
-  ['M8 bez histogramu powodow w planerze', 'tick', "      powodyOdmow.set(klucz, (powodyOdmow.get(klucz) ?? 0) + 1);", ''],
+  ['M8 bez histogramu powodow w planerze', 'tick', "      powodyOdmow.set(powodKlucz, (powodyOdmow.get(powodKlucz) ?? 0) + 1);", ''],
   ['M9 bez zasilania histogramu skumulowanego', 'main', 'for (const [klucz, n] of plan.powodyOdmow) aiAiAllianceOdmowyPowody.set(klucz, (aiAiAllianceOdmowyPowody.get(klucz) ?? 0) + n);', ''],
   ['M10 proby w stanie = 0 (zerowanie licznika w odczycie)', 'main', '        proby: aiAiAllianceProbyLacznie,', '        proby: 0,'],
   ['M11 odmowy w stanie = 0', 'main', '        odmowy: aiAiAllianceOdmowyLacznie,', '        odmowy: 0,'],
   ['M12 wojnyAiAi w stanie = 0', 'main', '        wojnyAiAi: wojny,', '        wojnyAiAi: 0,'],
   ['M13 naCywilizacje zawsze zero', 'main', '        naCywilizacje: owners.map(oid => ({ owner: oid, n: liczba.get(oid) ?? 0 })),', '        naCywilizacje: owners.map(oid => ({ owner: oid, n: 0 })),'],
   ['M14 sojuszeAiAi w stanie = 0', 'main', '        sojuszeAiAi,\n        powodyOdmow:', '        sojuszeAiAi: 0,\n        powodyOdmow:'],
+  ['M15 brak szczegółów prób w planerze', 'tick', '    probyDetale.push({', '    void ({'],
+  ['M16 flaga sojusznika wroga zawsze false', 'tick', '      sojusznikWrogaCelu: sideT.allies.some(x => sideP.enemies.includes(x)),', '      sojusznikWrogaCelu: false,'],
+  ['M17 brak zapisu ostatniego kroku w hooku', 'main', 'aiAiAllianceOstatniaProby = { tura: turn, probki: plan.probyDetale };', ''],
+  ['M18 brak pomiaru respektu/siły w pairInfo', 'main', 'pomiar: { respekt: rel.respekt, militaryRatio: dipCtx.militaryRatio, typ: String(aiOwnerCivMap.get(t) ?? \'\') },', ''],
+  ['M19 stan bez probyOstatniaTura', 'main', 'probyOstatniaTura: aiAiAllianceOstatniaProby', 'probyOstatniaTura: null'],
 ];
 
 function src(kind, mainText, tickText) { return kind === 'main' ? mainText : tickText; }

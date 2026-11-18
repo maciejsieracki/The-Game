@@ -11,6 +11,14 @@
  *   - maksimum sojuszy na cywilizację po wszystkich wierszach (MUSI być <= 2);
  *   - liczba wojen AI↔AI w punktach kontrolnych oraz tura pierwszej wojny AI↔AI (z wars.aiAi);
  *   - próby i odmowy toru (skumulowane, ostatni wiersz).
+ * ROZKŁAD GOTOWOŚCI (R-WEB-AI-AI-ALLIANCES-E3-WILLINGNESS-MEASURE-Q1), z `diag.sojusze.probyOstatniaTura.probki`
+ * (próby kroku toru w TURZE PRÓBKOWANIA każdego wiersza jsonl; nie cała historia biegu):
+ *   - tabela kubełków willingnessAlly 0,1 (liczba prób, odsetek), tabela per tura próbkowania;
+ *   - mediana gotowości per archetyp celu; min/mediana/max per para (proponent→cel);
+ *   - 5 par o medianie najbliżej progu (diplomacy.json: progSojuszWillingnessMin);
+ *   - średnie wejścia (Relacja, Zaufanie, Respekt, stosunek siły) dla prób powyżej i poniżej progu oraz udział czynników.
+ *   Składniki gotowości nie są zwracane przez aiDiplomacyStance (zwraca tylko wartość końcową), więc rozbicie to
+ *   WEJŚCIA funkcji (relacja, zaufanie, respekt, siła, archetyp) + flagi granicy/wrogów, a nie jej wewnętrzne składowe.
  * Brak pola -> "NIE ZMIERZONO" (nie zero). Pierwsze/ostatnie wiersze nie są odrzucane (warm-up tylko w runnerze).
  *
  * Uzycie:
@@ -46,7 +54,10 @@ function loadDir(dir) {
     bySeed[seed] = rows.map(r => {
       const s = r.diag && r.diag.sojusze;
       const w = r.wars && typeof r.wars.aiAi === 'number' ? r.wars.aiAi : null;
+      const pt = s && s.probyOstatniaTura ? s.probyOstatniaTura : null;
       return {
+        probyTura: pt && typeof pt.tura === 'number' ? pt.tura : null,
+        probki: pt && Array.isArray(pt.probki) ? pt.probki : null,
         turn: r.turn,
         flaga: s ? s.flaga : null,
         wymuszona: s ? s.wymuszona : null,
@@ -145,12 +156,124 @@ function printTable(label, sum) {
   }
 }
 
+/** Próg gotowości z danych gry (diplomacy.json, params.progSojuszWillingnessMin); null gdy brak. */
+function progGotowosci() {
+  try {
+    const d = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'data', 'diplomacy.json'), 'utf8'));
+    const v = d && d.params ? d.params.progSojuszWillingnessMin : null;
+    return typeof v === 'number' ? v : null;
+  } catch (_) { return null; }
+}
+
+function mediana(xs) {
+  if (xs.length === 0) return null;
+  const a = [...xs].sort((x, y) => x - y);
+  const m = Math.floor(a.length / 2);
+  return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+}
+
+const r4 = v => (v === null || v === undefined || Number.isNaN(v) ? NZ : Number(v.toFixed(4)));
+
+/** Rozkład gotowości z prób zebranych ze WSZYSTKICH katalogów (deduplikacja: tura próbkowania + para). */
+function gotowoscRaport(bySeed) {
+  const probes = [];
+  const widziane = new Set();
+  for (const [seed, rows] of Object.entries(bySeed)) {
+    for (const r of rows) {
+      if (!r.probki || r.probyTura === null) continue;
+      for (const p of r.probki) {
+        const k = `${seed}|${r.probyTura}|${p.proponent}|${p.cel}|${p.gotowosc}`;
+        if (widziane.has(k)) continue;
+        widziane.add(k);
+        probes.push({ ...p, tura: r.probyTura });
+      }
+    }
+  }
+  return probes;
+}
+
+function printGotowosc(label, bySeed) {
+  console.log(`\n=== GOTOWOŚĆ DO SOJUSZU (willingnessAlly) — ${label} ===`);
+  const probes = gotowoscRaport(bySeed);
+  if (probes.length === 0) {
+    console.log(`${NZ}: brak prób toru w wierszach jsonl (flaga wyłączona, krok nie biegł albo brak pola probyOstatniaTura).`);
+    return;
+  }
+  const prog = progGotowosci();
+  console.log(`Próby (unikalne tura|para|gotowość): ${probes.length}; tury próbkowania: ${new Set(probes.map(p => p.tura)).size}; próg progSojuszWillingnessMin = ${prog === null ? NZ : prog}`);
+  // Tabela kubełków 0,1.
+  const kub = Array.from({ length: 10 }, () => 0);
+  for (const p of probes) kub[Math.min(9, Math.max(0, Math.floor(p.gotowosc * 10)))]++;
+  console.log('gotowość: kubełek | liczba prób | odsetek');
+  kub.forEach((n, i) => console.log(`${(i / 10).toFixed(1)}-${((i + 1) / 10).toFixed(1)} | ${n} | ${(100 * n / probes.length).toFixed(1)}%`));
+  // Per tura próbkowania.
+  const perTura = new Map();
+  for (const p of probes) {
+    const e = perTura.get(p.tura) || { n: 0, max: -1, ile: 0 };
+    e.n++; e.max = Math.max(e.max, p.gotowosc); if (prog !== null && p.gotowosc >= prog) e.ile++;
+    perTura.set(p.tura, e);
+  }
+  console.log('\nPer tura próbkowania: tura | próby | max gotowość | prób >= progu');
+  for (const t of [...perTura.keys()].sort((x, y) => x - y)) {
+    const e = perTura.get(t);
+    console.log(`${t} | ${e.n} | ${r4(e.max)} | ${prog === null ? NZ : e.ile}`);
+  }
+  // Mediana per archetyp celu.
+  const perTyp = new Map();
+  for (const p of probes) {
+    const k = p.typCelu === null || p.typCelu === undefined || p.typCelu === '' ? NZ : p.typCelu;
+    if (!perTyp.has(k)) perTyp.set(k, []);
+    perTyp.get(k).push(p.gotowosc);
+  }
+  console.log('\nMediana gotowości per archetyp celu: archetyp | próby | mediana | max');
+  for (const [k, xs] of [...perTyp.entries()].sort((a, b) => mediana(b[1]) - mediana(a[1]))) {
+    console.log(`${k} | ${xs.length} | ${r4(mediana(xs))} | ${r4(Math.max(...xs))}`);
+  }
+  // Min/mediana/max per para.
+  const perPara = new Map();
+  for (const p of probes) {
+    const k = `${p.proponent}->${p.cel}`;
+    if (!perPara.has(k)) perPara.set(k, { xs: [], rows: [] });
+    perPara.get(k).xs.push(p.gotowosc);
+    perPara.get(k).rows.push(p);
+  }
+  console.log('\nMin / mediana / max per para (proponent→cel): para | próby | min | mediana | max');
+  for (const [k, v] of perPara) {
+    console.log(`${k} | ${v.xs.length} | ${r4(Math.min(...v.xs))} | ${r4(mediana(v.xs))} | ${r4(Math.max(...v.xs))}`);
+  }
+  if (prog !== null) {
+    const bliskie = [...perPara.entries()]
+      .map(([k, v]) => ({ k, med: mediana(v.xs), n: v.xs.length }))
+      .sort((a, b) => Math.abs(a.med - prog) - Math.abs(b.med - prog))
+      .slice(0, 5);
+    console.log('\n5 par najbliższych progowi (wg mediany): para | mediana | próby | odległość od progu');
+    for (const b of bliskie) console.log(`${b.k} | ${r4(b.med)} | ${b.n} | ${r4(Math.abs(b.med - prog))}`);
+  }
+  // Wejścia i czynniki: średnie powyżej/poniżej progu.
+  if (prog !== null) {
+    const nad = probes.filter(p => p.gotowosc >= prog);
+    const pod = probes.filter(p => p.gotowosc < prog);
+    const sr = (xs, f) => { const v = xs.map(f).filter(x => typeof x === 'number' && !Number.isNaN(x)); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+    const udz = (xs, f) => (xs.length ? Math.round(100 * xs.filter(f).length / xs.length) : null);
+    console.log(`\nWejścia i czynniki (nad progiem: ${nad.length} prób, pod progiem: ${pod.length} prób):`);
+    console.log('wielkość | nad progiem (średnia) | pod progiem (średnia)');
+    console.log(`Relacja | ${r4(sr(nad, p => p.relacja))} | ${r4(sr(pod, p => p.relacja))}`);
+    console.log(`Zaufanie | ${r4(sr(nad, p => p.zaufanie))} | ${r4(sr(pod, p => p.zaufanie))}`);
+    console.log(`Respekt celu | ${r4(sr(nad, p => p.respekt))} | ${r4(sr(pod, p => p.respekt))}`);
+    console.log(`Stosunek siły | ${r4(sr(nad, p => p.militaryRatio))} | ${r4(sr(pod, p => p.militaryRatio))}`);
+    console.log(`Wspólna granica (% prób) | ${udz(nad, p => p.wspolnaGranica)}% | ${udz(pod, p => p.wspolnaGranica)}%`);
+    console.log(`Wspólny wróg (% prób) | ${udz(nad, p => p.wspolnyWrog)}% | ${udz(pod, p => p.wspolnyWrog)}%`);
+    console.log(`Sojusznik celu = wróg proponenta (% prób) | ${udz(nad, p => p.sojusznikWrogaCelu)}% | ${udz(pod, p => p.sojusznikWrogaCelu)}%`);
+  }
+}
+
 function main() {
   const off = arg('off', null);
   const on = arg('on', null);
   const single = arg('in', null);
   if (single) {
     printTable(path.resolve(single), summarize(loadDir(path.resolve(single))));
+    printGotowosc(path.resolve(single), loadDir(path.resolve(single)));
     return;
   }
   if (!off || !on) {
@@ -161,6 +284,7 @@ function main() {
   const sOn = summarize(loadDir(path.resolve(on)));
   printTable('OFF (' + path.resolve(off) + ')', sOff);
   printTable('ON (' + path.resolve(on) + ')', sOn);
+  printGotowosc('ON (' + path.resolve(on) + ')', loadDir(path.resolve(on)));
   // Werdykt pomocniczy: limit 2 na cywilizację (twardy) i cel 100% AI z sojuszem (informacyjny, decyzja po stronie właściciela).
   const maxAll = Object.values(sOn).reduce((m, x) => (x.maxNaCywilizacje === null ? m : Math.max(m, x.maxNaCywilizacje)), 0);
   console.log(`\nLimit 2 na cywilizację (ON, wszystkie wiersze): max = ${maxAll} -> ${maxAll <= 2 ? 'OK' : 'NARUSZONY'}`);
