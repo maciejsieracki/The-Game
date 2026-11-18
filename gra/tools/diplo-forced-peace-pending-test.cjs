@@ -16,6 +16,7 @@
  *   (g) zrodlo main.ts: bramka w canPlayerInitiateEndTurn, pole meta.pendingForcedPeaceTreaty w zapisie/odczycie,
  *       reset przy nowej grze (stary zapis = pusta lista);
  *   (h) zrodlo diplomacyAudience.ts: brak zamkniecia klikiem w tlo i blokada Esc, jedyny przycisk = akceptacja;
+ *   (f2) kolejka: dwa pokoje z graczem w jednym ticku -> dwa odroczone, zero zaplaty.
  *   (i) mutacja: usuniecie deferForcedPeace z war-weariness.ts czerwieni (a).
  *
  *   node tools/diplo-forced-peace-pending-test.cjs   # exit 0 = wszystko zielone
@@ -128,6 +129,34 @@ function behaviour(W) {
   }
 }
 
+// (f2) kolejka: dwa pokoje z graczem naraz w jednym ticku -> dwa odroczone outcome, zero zaplaty i finalizacji
+function queueBehaviour(W) {
+  const log = [];
+  const pairs = [{ a: 0, b: 2 }, { a: 0, b: 3 }];
+  const warInfo = () => ({ warStart: 360, turnsAtWar: 40, lostA: 0, lostB: 0, turnsSinceCityChange: 40 });
+  const deps = {
+    store: new Map(), turn: 400, pairs,
+    pairKey: (x, y) => `${Math.min(x, y)}-${Math.max(x, y)}`,
+    warInfo,
+    shareOf: () => 0.5,
+    weakerOf: () => 0,
+    cityCountOf: () => 6,
+    isPlayerPair: (x, y) => x === 0 || y === 0,
+    price: () => ({ requiredPn: 0, balanceFor: (c) => c, tolerancePn: 20 }),
+    assets: () => CITY,
+    cityCessionOk: () => true,
+    battlePending: false,
+    pay: (l, w, plan) => log.push({ ev: 'pay', l, w, plan }),
+    finalize: (l, w, lock) => log.push({ ev: 'peace', l, w, lock }),
+    deferForcedPeace: (l, w) => l === 0 || w === 0,
+  };
+  const outs = W.runWarWearinessTick(deps).filter(o => o.action === 'forced_peace');
+  chk('f2: dwa pokoje z graczem naraz -> dwa forced_peace', outs.length === 2);
+  chk('f2: obie odroczone (deferred=true)', outs.length === 2 && outs.every(o => o.deferred === true));
+  chk('f2: kolejka: brak pay/finalize przed akceptacja', log.length === 0);
+  chk('f2: obie pary usunięte ze stanu', deps.store.size === 0);
+}
+
 function textChecks(V) {
   const t = V.forcedPeaceModalTextPl({ otherName: 'Rzym', humanIsLoser: true, cityNames: [], levelPct: 100, turnsAtWar: 40, citiesChanged: 2 });
   chk('f: tekst zawiera procent zmeczenia (100%)', /100%/.test(t.why) || /100%/.test(t.lead));
@@ -186,6 +215,7 @@ function mutation() {
 
 const W = loadWW(fs.readFileSync(WW, 'utf8'));
 behaviour(W);
+queueBehaviour(W);
 textChecks(loadView());
 sourceChecks();
 mutation();

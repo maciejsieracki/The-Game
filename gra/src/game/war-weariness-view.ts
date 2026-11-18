@@ -241,7 +241,10 @@ export function forcedPeaceModalTextPl(inp: ForcedPeaceTextInput, P: WarWearines
   const pct = inp.levelPct ?? 100;
   const wojna = inp.turnsAtWar !== undefined ? `, wojna trwa ${inp.turnsAtWar} tur` : '';
   const zmiany = inp.citiesChanged !== undefined ? `, miast zmieniło właściciela: ${inp.citiesChanged}` : '';
-  const kto = inp.humanIsLoser ? ' Przegrywasz tę wojnę.' : ' Wygrywasz tę wojnę.';
+  // Przegrywający = strona o słabszej sile militarnej (weakerOf → compareMilitaryStrength); zmęczenie jest jedną wartością pary.
+  const kto = inp.humanIsLoser
+    ? ' Przegrywasz tę wojnę, bo Twoja siła militarna jest niższa (zmęczenie jest wspólne dla obu stron).'
+    : ' Wygrywasz tę wojnę, bo Twoja siła militarna jest wyższa (zmęczenie jest wspólne dla obu stron).';
   const karencja = inp.lockTurns !== undefined ? ` Po pokoju karencja: ${inp.lockTurns} tur.` : '';
   return {
     title: 'Pokój wymuszony',

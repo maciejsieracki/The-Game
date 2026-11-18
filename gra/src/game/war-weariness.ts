@@ -289,6 +289,8 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
           skipF.add(bad.id);
           forcedPlan = cityPlan();
         }
+        // Zapłata miastami jak w bazie (AI↔AI bez zmian). Para z graczem: zapłata dopiero po akceptacji (PENDING-FORCED-PEACE-Q1).
+        if (forcedPlan.items.length > 0 && d.deferForcedPeace?.(loser, winner) !== true) d.pay(loser, winner, forcedPlan);
       }
       const given = forcedPlan?.histogram.miasto ?? 0;
       // Cena > 0 i brak pełnego pokrycia miastami (np. tylko stolica) → pokój NIE zapada, wojna trwa (stan pary zostaje).
@@ -299,7 +301,6 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
         out.push({ pairKey: key, action: 'forced_peace', level: lvl, stage: st.stage, plan: forcedPlan, loser, winner, lockTurns: lockEnd, deferred: true });
         continue;
       }
-      if (forcedPlan && forcedPlan.items.length > 0) d.pay(loser, winner, forcedPlan);
       d.finalize(loser, winner, lockEnd);
       d.log?.(`pokój WYMUSZONY AI${loser}↔AI${winner} przy zmęczeniu ${lvl.toFixed(2)}; miasta oddane: ${given}`);
       d.store.delete(key);

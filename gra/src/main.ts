@@ -26028,6 +26028,12 @@ async function boot(): Promise<void> {
       }
     }
 
+    /** PENDING-FORCED-PEACE-Q1: pozycje planu zapłaty realnie przenoszone po akceptacji (wspólne dla okna i zapisu —
+     * miasto bez poprawnej cesji odpada w obu miejscach, więc okno nie obiecuje tego, czego nie przeniesie). */
+    function pendingPeaceItems(p: PendingForcedPeaceTreaty): NonNullable<WearinessTickOutcome['plan']>['items'] {
+      return (p.plan?.items ?? []).filter(i => i.kind !== 'miasto' || cityCessionPlanFor(i.id, p.loser, p.winner).ok);
+    }
+
     /** PENDING-FORCED-PEACE-Q1: okno kolejnego oczekującego pokoju wymuszonego (bez opcji odmowy). */
     function showNextPendingForcedPeace(): void {
       prunePendingForcedPeace();
@@ -26035,7 +26041,7 @@ async function boot(): Promise<void> {
       if (!p) return;
       const humanIsLoser = p.loser === ME();
       const other = humanIsLoser ? p.winner : p.loser;
-      const cityNames = (p.plan?.items ?? [])
+      const cityNames = pendingPeaceItems(p)
         .filter(i => i.kind === 'miasto')
         .map(i => cities.find(c => c.id === i.id)?.name ?? i.id);
       showForcedPeaceModal({
@@ -26055,7 +26061,7 @@ async function boot(): Promise<void> {
       prunePendingForcedPeace();
       const p = pendingForcedPeaceTreaties.shift();
       if (!p) { showNextPendingForcedPeace(); return; }
-      const items = (p.plan?.items ?? []).filter(i => i.kind !== 'miasto' || cityCessionPlanFor(i.id, p.loser, p.winner).ok);
+      const items = pendingPeaceItems(p);
       if (items.length > 0) {
         const basket: BasketItem[] = items.map(i => ({
           typ: i.kind,
