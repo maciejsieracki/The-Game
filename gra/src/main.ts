@@ -1667,7 +1667,7 @@ import {
   registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
-import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, wearinessPeaceCashPn, type WarWearinessStore, type WarWearinessPairState, type WearinessTickOutcome } from './game/war-weariness';
+import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, wearinessPeaceCashPn, peacePowerSidesForPair, peaceAiAiPaymentPn, type WarWearinessStore, type WarWearinessPairState, type WearinessTickOutcome } from './game/war-weariness';
 import { warWearinessPairView, peakForCurrentWar, warWearinessSideView, type WarWearinessPairView, type WarWearinessReference } from './game/war-weariness-view';
 import {
   isPeaceTreatyLocked,
@@ -12345,16 +12345,15 @@ async function boot(): Promise<void> {
       // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r2, P1): moc POWER obu stron pary (power-objective.ts, computeObjectivePower
       // przez objectivePowerForOwner) — zasila podział P·r / P/r w diplomacy-proposals.ts (bramka PW pokoju).
       // Konwencja: powerPlayer = moc GRACZA (ME()), powerOther = moc drugiej strony pary (AI).
-      const playerSideId = ME();
-      const otherSideId = proposerId === playerSideId ? responderId : proposerId;
+      const powerSides = peacePowerSidesForPair(ME(), proposerId, responderId, objectivePowerForOwner);
       return {
         turnsAtWar: s.turnsAtWar,
         lostCitiesResponder: lostCitiesForWeariness(s.lostCities, lostProposerInWar),
         turnsSinceCityChange: s.turnsSinceCityChange,
         responderRw,
         responderPozycjaMilitarna,
-        powerPlayer: objectivePowerForOwner(proposerId),
-        powerOther: objectivePowerForOwner(responderId),
+        powerPlayer: powerSides.powerPlayer,
+        powerOther: powerSides.powerOther,
       };
     }
 
@@ -39091,8 +39090,16 @@ async function boot(): Promise<void> {
             peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty),
             peaceOfferAiOwnBilans(0, 0, relTotal, basePn),
           );
+          // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r3, P2): pokój AI↔AI — słabszy przegrany dopłaca D = S − W (POWER),
+          // cena bazowa P = wearinessPeaceCashPn(L) bez zmian (D1). Rozejm bez zmian.
           const requiredPn = kind === 'rozejm' ? relBasedPn
-            : (relBasedPn > 0 ? wearinessPeaceCashPn(aiAiPairWearinessLevel(winner, loser)) : 0);
+            : (relBasedPn > 0
+              ? peaceAiAiPaymentPn(
+                wearinessPeaceCashPn(aiAiPairWearinessLevel(winner, loser)),
+                objectivePowerForOwner(loser),
+                objectivePowerForOwner(winner),
+              )
+              : 0);
           const loserRelTotal = treatyEvalRelationTotal(getDiploRelation(loser, winner));
           return {
             requiredPn,
@@ -39173,8 +39180,11 @@ async function boot(): Promise<void> {
             peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty),
             peaceOfferAiOwnBilans(0, 0, relTotal, basePn),
           );
+          // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r3, P2): tick AI↔AI — słabszy przegrany dopłaca D (POWER), P bez zmian.
           return {
-            requiredPn: relBasedPn > 0 ? wearinessPeaceCashPn(level) : 0,
+            requiredPn: relBasedPn > 0
+              ? peaceAiAiPaymentPn(wearinessPeaceCashPn(level), objectivePowerForOwner(loser), objectivePowerForOwner(winner))
+              : 0,
             balanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(0, coveredPn, relTotal, basePn),
             loserBalanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(coveredPn, 0, loserRelTotal, basePn),
             tolerancePn: aiOfferPwSurplusTolerance(difficulty),

@@ -36,8 +36,9 @@ check('(W5) brak minMiastPoOddaniu w maxCities ofert', !/ownCities - P\.przegryw
 check('(W5) brak minMiastPoOddaniu w cityCap wymuszenia', !/ownCities - L\.minMiastPoOddaniu/.test(WW));
 
 // W3: AI<->AI w main.ts (prosby + tick zmeczenia). Rozejm zostaje na dotychczasowej wycenie.
-check('(W3) main.ts: cena pokoju AI<->AI z wearinessPeaceCashPn (prosby)', /relBasedPn > 0 \? wearinessPeaceCashPn\(aiAiPairWearinessLevel\(winner, loser\)\) : 0/.test(MAIN));
-check('(W3) main.ts: cena pokoju AI<->AI z wearinessPeaceCashPn (tick zmeczenia)', /requiredPn: relBasedPn > 0 \? wearinessPeaceCashPn\(level\) : 0,/.test(MAIN));
+// R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r3): cena AI<->AI = dopłata D słabszego (peaceAiAiPaymentPn) liczona z bazy wearinessPeaceCashPn (P bez zmian).
+check('(W3) main.ts: cena pokoju AI<->AI z wearinessPeaceCashPn (prosby) przez peaceAiAiPaymentPn', /relBasedPn > 0\s*\?\s*peaceAiAiPaymentPn\(\s*wearinessPeaceCashPn\(aiAiPairWearinessLevel\(winner, loser\)\)/.test(MAIN));
+check('(W3) main.ts: cena pokoju AI<->AI z wearinessPeaceCashPn (tick zmeczenia) przez peaceAiAiPaymentPn', /requiredPn: relBasedPn > 0\s*\?\s*peaceAiAiPaymentPn\(wearinessPeaceCashPn\(level\)/.test(MAIN));
 check('(W3) main.ts: rozejm AI<->AI zachowuje dotychczasowa wycene', /const requiredPn = kind === 'rozejm' \? relBasedPn/.test(MAIN));
 check('(W3) main.ts: helper poziomu pary AI<->AI', /function aiAiPairWearinessLevel\(a: number, b: number\): number/.test(MAIN));
 

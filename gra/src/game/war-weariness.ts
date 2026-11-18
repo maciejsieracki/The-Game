@@ -138,6 +138,37 @@ export function peacePwPointsByPowerRatio(
   return { strongerSide: aStronger ? 'a' : 'b', r, S, W, D: S - W };
 }
 
+/**
+ * R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r3, zarzut 5/P1): wiring pary gracz↔partner dla podziału PW pokoju.
+ * Konwencja (jedna w całym kodzie): powerPlayer = moc GRACZA (playerId), powerOther = moc DRUGIEJ strony pary —
+ * niezależnie od tego, kto proponuje (gracz albo AI). Czysta funkcja: main.ts podaje tylko `powerOf` (objectivePowerForOwner).
+ */
+export function peacePowerSidesForPair(
+  playerId: number,
+  proposerId: number,
+  responderId: number,
+  powerOf: (ownerId: number) => number,
+): { powerPlayer: number; powerOther: number } {
+  const otherId = proposerId === playerId ? responderId : proposerId;
+  return { powerPlayer: powerOf(playerId), powerOther: powerOf(otherId) };
+}
+
+/**
+ * R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r3, zarzut 1/P2): kwota PW pokoju AI↔AI do pokrycia miastami.
+ * Słabsza strona (ta, która płaci) dopłaca D = S − W z `peacePwPointsByPowerRatio(P, moc przegranego, moc zwycięzcy)`.
+ * Gdy przegrany jest silniejszy (lub równy — D = 0) → 0: dopłaca wtedy zwycięzca, a tor AI↔AI modeluje tylko zapłatę przegranego.
+ * P = cena bazowa wearinessPeaceCashPn(L) (D1) — ta funkcja jej nie zmienia.
+ */
+export function peaceAiAiPaymentPn(
+  P: number,
+  powerLoser: number,
+  powerWinner: number,
+  params: WarWearinessParams = WAR_WEARINESS_PARAMS,
+): number {
+  const split = peacePwPointsByPowerRatio(P, powerLoser, powerWinner, params);
+  return split.strongerSide === 'a' ? 0 : split.D;
+}
+
 export function isWarWeary(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): boolean {
   return level >= P.zmeczenie.progChetnosci;
 }

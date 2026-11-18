@@ -49,7 +49,8 @@ function loadModule(proposalsSrc) {
   const BUNDLE = path.resolve(__dirname, `.pwpow-${TAG}-${++bundleSeq}.cjs`);
   fs.writeFileSync(ENTRY, [
     `export { evaluateProposal, createNegotiation, negotiationAsProposal } from '${entryTarget}';`,
-    "export { peacePwPointsByPowerRatio, WAR_WEARINESS_PARAMS } from './game/war-weariness';",
+    "export { peacePwPointsByPowerRatio, WAR_WEARINESS_PARAMS, peacePowerSidesForPair, peaceAiAiPaymentPn } from './game/war-weariness';",
+    "export { runAiAiPeaceTick, planCityPeacePayment } from './game/diplomacy-ai-forced-peace';",
     '',
   ].join('\n'), 'utf8');
   try {
@@ -149,6 +150,73 @@ function playerPeace(powers, giveItems) {
     });
     check('M1: mutant (gap = 0 dla słabszego gracza) czerwieni I2 — test wykrywa brak podziału', m2.accepted === true, m2);
   }
+}
+
+// --- (P) wiring pary i ścieżka AI↔AI (zarzuty Evaluatora r2: 1, 4, 5) ---
+{
+  // (P1a) AI proponuje pokój graczowi: powerPlayer = moc GRACZA, powerOther = moc AI (konwencja, zarzut 5)
+  const pow = { 0: 6969, 2: 2611 };
+  const sAi = M.peacePowerSidesForPair(0, 2, 0, o => pow[o]);
+  check('P1a: AI proposer (2) → powerPlayer = moc gracza (6969), powerOther = moc AI (2611)',
+    sAi.powerPlayer === 6969 && sAi.powerOther === 2611, sAi);
+  // (P1b) gracz proponuje: ta sama konwencja
+  const sPl = M.peacePowerSidesForPair(0, 0, 2, o => pow[o]);
+  check('P1b: player proposer (0) → powerPlayer = 6969, powerOther = 2611',
+    sPl.powerPlayer === 6969 && sPl.powerOther === 2611, sPl);
+  // (P1c) end-to-end: wiring + evaluateProposal AI→gracz (AI słabsza), bez ręcznego ustawiania mocy po stronie gracza
+  const evAi = M.evaluateProposal(M.negotiationAsProposal(M.createNegotiation(
+    { actionId: 'pokoj', proposerOwnerId: 2, responderOwnerId: 0, payload: {} }, 80, 'ai', 0)), {
+    relation: WOJNA, stanWojny: true, turn: 80, proposerRespekt: 60, responderRespekt: 60, militaryRatio: 1,
+    respektWzgledny: 0.5, karaWspolnaGranica: false, difficulty: 'normal',
+    responderPlayer: { ownerId: 0, typCywilizacji: 'rzymianie' }, proposerPlayer: { ownerId: 2, typCywilizacji: 'rzymianie' },
+    authorOwnerId: 2, warState: Object.assign({ turnsAtWar: 10, lostCitiesResponder: 0, responderRw: 0.5 },
+      M.peacePowerSidesForPair(0, 2, 0, o => pow[o])),
+  });
+  check('P1c: AI (słabsza wg wiringu) proponuje pokój — evaluateProposal nie zwraca „Brakuje” dla gracza (AI nie jest blokowana)',
+    !/Brakuje/.test(String(evAi.reason || '')), evAi);
+}
+{
+  // (P2a) AI↔AI: przegrany słabszy (100 vs 300), P = 4320 → dopłata D = 11520 (S 12960 − W 1440)
+  const d2a = M.peaceAiAiPaymentPn(4320, 100, 300);
+  check('P2a: AI↔AI słabszy przegrany dopłaca D = 11520 (P = 4320, r = 3)', d2a === 11520, d2a);
+  check('P2b: AI↔AI przegrany silniejszy → 0 (dopłaca zwycięzca, nie modelowane tu)', M.peaceAiAiPaymentPn(4320, 300, 100) === 0);
+  check('P2c: AI↔AI równa moc (r = 1) → 0 (D = 0)', M.peaceAiAiPaymentPn(4320, 200, 200) === 0);
+  // (P2d) test (c): słabsza AI bez miast do oddania (stolica / ostatnie) → plan niepełny → pokój NIE zapada (wait)
+  const cap = [{ kind: 'miasto', id: 'stolica', amount: 1, pn: 15000, forbidden: true }];
+  const planCap = M.planCityPeacePayment(d2a, cap, cap.length);
+  check('P2d: (c) słabsza AI tylko ze stolicą → plan niepełny (full=false), brak pokoju', planCap.full === false && planCap.items.length === 0, planCap);
+  // (P2e) test (d): AI↔AI przez runAiAiPeaceTick — tylko miasto o wartości ≥ D pokrywa cenę i pokój zapada
+  const runTick = (assets, turn) => {
+    const store = new Map();
+    store.set('1-0', { requesterId: 1, otherId: 0, sinceTurn: 10, kind: 'pokoj' });
+    const paid = [];
+    const out = M.runAiAiPeaceTick({
+      store, turn, limit: 10,
+      pairEligible: () => true,
+      requesterShareOf: () => 0.2,
+      gateVerdict: () => 'ok',
+      price: () => ({ requiredPn: d2a, balanceFor: () => 0, tolerancePn: 1e9, loserBalanceFor: () => 0 }),
+      assets: () => assets,
+      cityCessionOk: () => true,
+      battlePending: false,
+      pay: (l, w, plan) => { paid.push(plan.coveredPn); },
+      finalize: () => {},
+    });
+    return { out, paid };
+  };
+  const stolicaOnly = runTick(cap, 40);
+  check('P2e: (c) runAiAiPeaceTick, słabsza AI bez miast do oddania → brak zapłaty i brak pokoju',
+    stolicaOnly.paid.length === 0 && stolicaOnly.out.length === 1 && stolicaOnly.out[0].action === 'wait', stolicaOnly.out.map(o => o.action));
+  const city = [{ kind: 'miasto', id: 'c1', amount: 1, pn: 12000, forbidden: false }];
+  const cityTick = runTick(city, 12);
+  check('P2f: (d) runAiAiPeaceTick, miasto 12000 ≥ D → zapłata zapada, pokój (accept_paid)',
+    cityTick.paid.length === 1 && cityTick.out[0].action === 'accept_paid', { paid: cityTick.paid, out: cityTick.out.map(o => o.action) });
+}
+// (P3) statyczna: main.ts używa wspólnych helperów (brak lokalnych konwencji mocy w obu miejscach)
+{
+  const mainSrc = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
+  check('P3a: main.ts wiring pary przez peacePowerSidesForPair (zarzut 4/5)', mainSrc.includes('peacePowerSidesForPair(ME(), proposerId, responderId, objectivePowerForOwner)'));
+  check('P3b: main.ts AI↔AI price przez peaceAiAiPaymentPn (zarzut 1)', (mainSrc.match(/peaceAiAiPaymentPn\(/g) || []).length === 2);
 }
 
 // --- (S) statyczna: funkcja bez magicznych liczb (poza 1 = ochrona mianownika i 0 = dolna granica) ---
