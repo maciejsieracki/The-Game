@@ -1,0 +1,34 @@
+AI owner: 1
+
+[L-A złoto 100 + brąz 20000 (drabina do brązu)] AI→gracz, przemarsz (płatnik: gracz)
+  MOC ZMIERZONA: AI/gracz = 2.504 (ai=7128, player=2847; cel 1,3; bez asercji)
+  wynik: {"acc":true,"reason":"Traktat przemarszu (wojskowy)","carrier":{"items":[{"typ":"zloto","id":"zloto","ilosc":100},{"typ":"surowiec_ilosc","id":"braz","ilosc":7700}],"side":"responder","coveredPn":2398}}
+  OK   L-A złoto 100 + brąz 20000 (drabina do brązu): zaakceptowano i niesie nośnik
+  OK   L-A złoto 100 + brąz 20000 (drabina do brązu) L1: płatnik −ilość, odbiorca +ilość, nic < 0
+  OK   L-A złoto 100 + brąz 20000 (drabina do brązu) L2: szczebel niżej tylko po wyczerpaniu wyższego
+  OK   L-A złoto 100 + brąz 20000 (drabina do brązu) L3: kolejność drabiny, brak pozycji spoza drabiny
+  OK   L-A złoto 100 + brąz 20000 (drabina do brązu) L4: wiersz okna = nośnik akceptacji
+  ZMIERZONO: zloto×100, braz×7700
+
+[L-B bez złota, żelazo 2000 → ruda 20000] AI→gracz, przemarsz (płatnik: gracz)
+  MOC ZMIERZONA: AI/gracz = 2.304 (ai=2136, player=927; cel 1,3; bez asercji)
+  wynik: {"acc":true,"reason":"Traktat przemarszu (wojskowy)","carrier":{"items":[{"typ":"surowiec_ilosc","id":"zelazo","ilosc":2000},{"typ":"surowiec_ilosc","id":"ruda","ilosc":13350}],"side":"responder","coveredPn":2134}}
+  OK   L-B bez złota, żelazo 2000 → ruda 20000: zaakceptowano i niesie nośnik
+  OK   L-B bez złota, żelazo 2000 → ruda 20000 L1: płatnik −ilość, odbiorca +ilość, nic < 0
+  OK   L-B bez złota, żelazo 2000 → ruda 20000 L2: szczebel niżej tylko po wyczerpaniu wyższego
+  OK   L-B bez złota, żelazo 2000 → ruda 20000 L3: kolejność drabiny, brak pozycji spoza drabiny
+  OK   L-B bez złota, żelazo 2000 → ruda 20000 L4: wiersz okna = nośnik akceptacji
+  ZMIERZONO: zelazo×2000, ruda×13350
+
+[L-C tylko ruda 30000] AI→gracz, przemarsz (płatnik: gracz)
+  MOC ZMIERZONA: AI/gracz = 2.304 (ai=2136, player=927; cel 1,3; bez asercji)
+  wynik: {"acc":true,"reason":"Traktat przemarszu (wojskowy)","carrier":{"items":[{"typ":"surowiec_ilosc","id":"ruda","ilosc":21350}],"side":"responder","coveredPn":2134}}
+  OK   L-C tylko ruda 30000: zaakceptowano i niesie nośnik
+  OK   L-C tylko ruda 30000 L1: płatnik −ilość, odbiorca +ilość, nic < 0
+  OK   L-C tylko ruda 30000 L2: szczebel niżej tylko po wyczerpaniu wyższego
+  OK   L-C tylko ruda 30000 L3: kolejność drabiny, brak pozycji spoza drabiny
+  OK   L-C tylko ruda 30000 L4: wiersz okna = nośnik akceptacji
+  ZMIERZONO: ruda×21350
+  OK   L5: zero pageerror / console.error
+
+16/16 passed

@@ -1,0 +1,18 @@
+
+[W-A złoto] AI→gracz, przemarsz (płatnik: gracz), okno audiencji
+  FAIL W-A złoto i: pasek bilansu oferty w oknie audiencji + wiersz D w tooltipie -- {"bar":true,"deal":"Traktat przemarszu"}
+  tip: Punkty wymiany (PW) mierzą bilans oferty na stole negocjacji. „My oddajemy” vs „Oni oddają” — dodatni bilans oznacza, że możesz coś wyciągnąć lub przyjąć ofertę; ujemny bilans — trzeba dopłacić (surowce, ¤, ustępstwa). To nie jest waluta ¤ ani złoto-surowiec w magazynie.
+Punkty wymiany (PW) mierzą bilans oferty na stole negocjacji. „My oddajemy” vs „Oni oddają” — dodatni bilans oznacza, że możesz 
+
+[W-B złoto 100 + brąz] AI→gracz, przemarsz (płatnik: gracz), okno audiencji
+  FAIL W-B złoto 100 + brąz i: pasek bilansu oferty w oknie audiencji + wiersz D w tooltipie -- {"bar":true,"deal":"Traktat przemarszu"}
+  tip: Punkty wymiany (PW) mierzą bilans oferty na stole negocjacji. „My oddajemy” vs „Oni oddają” — dodatni bilans oznacza, że możesz coś wyciągnąć lub przyjąć ofertę; ujemny bilans — trzeba dopłacić (surowce, ¤, ustępstwa). To nie jest waluta ¤ ani złoto-surowiec w magazynie.
+Punkty wymiany (PW) mierzą bilans oferty na stole negocjacji. „My oddajemy” vs „Oni oddają” — dodatni bilans oznacza, że możesz 
+
+[W-C technologia + złoto] AI→gracz, przemarsz (płatnik: gracz), okno audiencji
+  FAIL W-C technologia + złoto i: pasek bilansu oferty w oknie audiencji + wiersz D w tooltipie -- {"bar":true,"deal":"Traktat przemarszu"}
+  tip: Punkty wymiany (PW) mierzą bilans oferty na stole negocjacji. „My oddajemy” vs „Oni oddają” — dodatni bilans oznacza, że możesz coś wyciągnąć lub przyjąć ofertę; ujemny bilans — trzeba dopłacić (surowce, ¤, ustępstwa). To nie jest waluta ¤ ani złoto-surowiec w magazynie.
+Punkty wymiany (PW) mierzą bilans oferty na stole negocjacji. „My oddajemy” vs „Oni oddają” — dodatni bilans oznacza, że możesz 
+  OK   v: zero pageerror / console.error
+
+1/4 passed

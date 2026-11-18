@@ -1,6 +1,7 @@
 'use strict';
 /**
  * diplo-treaty-pay-ladder-live-verify-test.cjs -- R-WEB-LIVE-VERIFY-TREATY-PAYMENT-AND-PEACE-TAIL-WINDOWS-Q1 (r1, Operator HAIKU).
+ * r2 (KROK 1): stosunek sił ustawiany z poprawnym nachyleniem (2) i ASERCJONOWANY (R1, ±0,05).
  * Ścieżka (c): drabina płatności traktatu brąz / żelazo / rudy w ŻYWEJ grze (Chromium, bundle Vite, ?playtest=mapa).
  *
  * Płatnik = gracz (propozycja AI → gracz, przemarsz). Próba ustawienia siły AI na ~1,3× gracza (cel) NIE daje
@@ -31,6 +32,7 @@ const OUT_HTML = 'file://' + path.join(SCRATCH, 'index.html') + '?playtest=mapa'
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const ORDER = ['zloto', 'braz', 'zelazo', 'ruda', 'ruda_cyny', 'ruda_zelaza'];
 const ACTION = 'granice';
+const R_TARGET = 1.3; // cel stosunku sił AI/gracz (r2: mierzony i asercjonowany, R1)
 const PAYLOAD = { borderMilitary: true };
 
 let pass = 0;
@@ -121,16 +123,20 @@ async function main() {
       console.log(`\n[${c.name}] AI→gracz, przemarsz (płatnik: gracz)`);
       // Siła: próba celu AI ≈1,3× gracza (bramka Respektu AI ≥55% zachowana); stosunek ZMIERZONY poniżej (log, bez asercji).
       // Zapasy: gracz wg przypadku, AI bez zapasów.
-      await page.evaluate(([aiId]) => {
+      // r2 (R-WEB-LIVE-VERIFY-TREATY-PAYMENT-WINDOWS-2-Q1, KROK 1): składnik „zdobycze" ma współczynnik 2
+      // (power-objective.ts, P-MOC-BALANS-WAGI), więc ai = base + 2·bonus; bonus = (r·gracz − base)/2.
+      await page.evaluate(([aiId, r]) => {
         const d = window.__peaceRulesTestDebug;
         d.setAiPowerBonusForTest(aiId, 0);
         d.setAiPowerBonusForTest(0, 0);
         const pw0 = d.getPowers(aiId);
-        d.setAiPowerBonusForTest(aiId, Math.max(0, Math.round(1.3 * pw0.player - pw0.ai)));
+        d.setAiPowerBonusForTest(aiId, Math.max(0, Math.round((r * pw0.player - pw0.ai) / 2)));
         d.setRelationForBrake(aiId, 200, 200);
-      }, [AI]);
+      }, [AI, R_TARGET]);
       const pw = await page.evaluate(([aiId]) => window.__peaceRulesTestDebug.getPowers(aiId), [AI]);
-      console.log(`  MOC ZMIERZONA: AI/gracz = ${(pw.ai / Math.max(1, pw.player)).toFixed(3)} (ai=${pw.ai}, player=${pw.player}; cel 1,3; bez asercji)`);
+      const rMeas = pw.ai / Math.max(1, pw.player);
+      console.log(`  MOC ZMIERZONA: AI/gracz = ${rMeas.toFixed(3)} (ai=${pw.ai}, player=${pw.player}; cel ${R_TARGET})`);
+      assert(`${c.name} R1: zmierzony stosunek sił ≈ cel ${R_TARGET} (±0,05)`, Math.abs(rMeas - R_TARGET) <= 0.05, { rMeas, ai: pw.ai, player: pw.player });
       await page.evaluate(([aiId, h]) => {
         window.__cityCessionTestDebug.treatyPaySetHoldingsForTest(0, h, []);
         window.__cityCessionTestDebug.treatyPaySetHoldingsForTest(aiId, { zloto: 5000000, braz: 50000, zelazo: 50000, ruda: 50000 }, []);
