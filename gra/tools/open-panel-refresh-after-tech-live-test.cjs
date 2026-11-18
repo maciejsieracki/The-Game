@@ -69,17 +69,19 @@ async function openCityPanel(page, cityId) {
       try { if (window.__nnsMeasureDebug && window.__nnsMeasureDebug.setPlayerTreasury) { window.__nnsMeasureDebug.setPlayerTreasury(100000); r.skarbiec = true; } } catch (e) { r.skarbiecErr = String(e); }
       return r;
     });
+    // MODE=tech (domyślnie): ukończenie technologii bez awansu epoki. MODE=control: ten sam EOT BEZ technologii (kontrola).
+    // Przygotowanie celu badań MUSI być PRZED pierwszym otwarciem panelu i odczytem A (inaczej A już zawiera
+    // technologię jako zbadaną i A == C z konstrukcji — błąd kolejności z r2, zarzut FC).
+    const MODE = process.env.MODE || 'tech';
+    out.steps.mode = MODE;
+    const prep = MODE === 'tech' ? await page.evaluate((t) => window.__eraTestDebug.prepareNonEraCompletion(t), process.env.TECH || 'Murarstwo') : { tech: null };
+    out.steps.prep = prep;
     await wait(300);
     await openCityPanel(page, cityId);
     const A = await panelText(page);
     out.steps.panelOpenA = A.includes('Dostępne do budowy');
     if (!out.steps.panelOpenA) throw new Error('panel miasta nie otwarty (brak „Dostępne do budowy”)');
 
-    // MODE=tech (domyślnie): ukończenie technologii bez awansu epoki. MODE=control: ten sam EOT BEZ technologii (kontrola).
-    const MODE = process.env.MODE || 'tech';
-    out.steps.mode = MODE;
-    const prep = MODE === 'tech' ? await page.evaluate((t) => window.__eraTestDebug.prepareNonEraCompletion(t), process.env.TECH || 'Murarstwo') : { tech: null };
-    out.steps.prep = prep;
     const eraBefore = await page.evaluate(() => window.__eraTestDebug.getPlayerState().era);
     const logMark = s.logs.length;
     await page.evaluate(() => window.__eraTestDebug.endTurn());
