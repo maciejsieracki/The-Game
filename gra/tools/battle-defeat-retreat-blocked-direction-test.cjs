@@ -36,7 +36,7 @@ const BQ = 11, BR = 22; // heks bitwy
 const ATK = [11, 23];   // zwyciezca (poludnie od bitwy)
 
 /** Odwrot obroncy d0 (wlasciciel 1) po wygranej atakujacego a0 (wlasciciel 0). */
-function scenario(P, extraUnits, blocked) {
+function scenario(P, extraUnits, blocked, auto) {
   const a0 = U('a0', 0, ATK[0], ATK[1]);
   const d0 = U('d0', 1, BQ, BR);
   const units = [a0, d0, ...extraUnits];
@@ -46,7 +46,7 @@ function scenario(P, extraUnits, blocked) {
     atkAnchor: a0, atkRoster: [a0], defRoster: [d0],
     atkStart: new Map([[a0.id, { q: ATK[0], r: ATK[1] }]]),
     winner: 'atakujacy', lossAtkPct: 0, lossDefPct: 0,
-    manualSurvivors: [{ id: 'a0', hp: 90 }, { id: 'd0', hp: 40 }],
+    ...(auto ? {} : { manualSurvivors: [{ id: 'a0', hp: 90 }, { id: 'd0', hp: 40 }] }),
     getDef: () => ({ health: 100, 'Rola (linia)': 'Wręcz' }), maxHpOf: () => 100,
     isPassableHex: (q, r) => !blocked.some(b => b[0] === q && b[1] === r),
     isUnitAt: (q, r, ex) => units.some(u => u.id !== ex && u.q === q && u.r === r),
@@ -107,6 +107,34 @@ async function main() {
     const { d } = scenario(P, [], []);
     console.log('S5 q,r po=' + hx(d));
     assert(d && dist(d.q, d.r) === 2, 'S5: kontrola -- odskok 2 heksy, jest ' + hx(d));
+  }
+
+  // S6) Tryb AUTO (brak manualSurvivors, applyAutoLosses): ten sam scenariusz co S1 -> odskok 2 heksy.
+  {
+    const spill = U('sp6', 0, 12, 21);
+    const { d, res } = scenario(P, [spill], [[13, 20]], true);
+    console.log('S6 AUTO q,r po=' + hx(d) + ' dist=' + (d ? dist(d.q, d.r) : '-') + ' retreated=' + JSON.stringify(res.retreatedTwoHexIds));
+    assert(d && !(d.q === BQ && d.r === BR), 'S6 AUTO: przegrany NIE zostaje na heksie bitwy, jest ' + hx(d));
+    assert(d && d.q === 11 && d.r === 20, 'S6 AUTO: odskok 2 heksy na (11,20), jest ' + hx(d));
+  }
+
+  // S7) Tryb AUTO, S3 (nic wolnego) -> zostaje na heksie bitwy.
+  {
+    const nb = [[12, 22], [12, 21], [11, 21], [10, 22], [10, 23], [11, 24]];
+    const { d } = scenario(P, [], nb, true);
+    console.log('S7 AUTO q,r po=' + hx(d));
+    assert(d && d.q === BQ && d.r === BR, 'S7 AUTO: nic wolnego -> zostaje, jest ' + hx(d));
+  }
+
+  // S8) Zwyciezca liczniejszy (zajete 3 heksy "od zwyciezcy" przez rozlane jednostki, 69 + ...):
+  //     kaskada nie ma wolnego heksu -> dotychczasowy fallback. Pomiar: dokad trafia przegrany.
+  {
+    const spill = [];
+    const away = [[12, 21], [11, 21], [10, 22]];
+    away.forEach(([q, r], i) => spill.push(U('spA' + i, 0, q, r)));
+    const { d, res } = scenario(P, spill, [], false);
+    console.log('S8 (3 heksy zajete) q,r po=' + hx(d) + ' dist=' + (d ? dist(d.q, d.r) : '-') + ' retreated=' + JSON.stringify(res.retreatedTwoHexIds));
+    assert(d && !away.some(([q, r]) => q === d.q && r === d.r), 'S8: nie wchodzi na zajety heks');
   }
 
   console.log('battle-defeat-retreat-blocked-direction-test: ' + pass + ' pass, ' + fail + ' fail');
