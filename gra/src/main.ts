@@ -33472,6 +33472,40 @@ async function boot(): Promise<void> {
           };
         },
       };
+      // R-WEB-DIPLO-WAR-CONCURRENCY-MEASURE-Q1: hak WYŁĄCZNIE ODCZYTOWY (tylko ?civTest=1; zero zapisu do stanu).
+      // snapshot(ownerIds): dla każdej pary właścicieli w stanie 'wojna' zwraca typ (EPOKI = wpis w rejestrze
+      // wojny wymuszonej kamień/brąz/żelazo; NATURALNA = brak wpisu), turę rozpoczęcia wojny (wojnaStartTura)
+      // i turę startu wojny wymuszonej (startTurn). Plus epoka każdego właściciela.
+      (window as any).__warConcurrencyMeasure = {
+        schemaVersion: 1,
+        snapshot: (ownerIds: number[]): Record<string, unknown> => {
+          const pairs: Array<Record<string, unknown>> = [];
+          for (let i = 0; i < ownerIds.length; i++) {
+            for (let j = i + 1; j < ownerIds.length; j++) {
+              const a = ownerIds[i] as number;
+              const b = ownerIds[j] as number;
+              if (getDiploRelation(a, b).status !== 'wojna') continue;
+              const key = diploPairKey(a, b);
+              const meta = getDiploPairMeta(a, b) as DiploPairMeta & { wojnaStartTura?: number };
+              const sK: any = stoneForceWarActiveByPairKey.get(key);
+              const sB: any = bronzeForceWarActiveByPairKey.get(key);
+              const sI: any = ironForceWarActiveByPairKey.get(key);
+              const tag = sK ? 'stone' : sB ? 'bronze' : sI ? 'iron' : null;
+              const st: any = sK ?? sB ?? sI ?? null;
+              pairs.push({
+                a, b,
+                typ: tag ? 'EPOKI' : 'NATURALNA',
+                epokaTag: tag,
+                wojnaStartTura: meta.wojnaStartTura ?? null,
+                startWymuszonejTury: st && st.startTurn !== undefined ? st.startTurn : null,
+              });
+            }
+          }
+          const epochs: Record<string, number> = {};
+          for (const o of ownerIds) epochs[String(o)] = empireEpochForOwner(o);
+          return { turn, pairs, epochs };
+        },
+      };
       (window as any).__nnsMeasureDebug = {
         startGame: (o: { seed: number; mapSize?: string; civTypes?: number; cityStates?: number; typSwiata?: string }): void => {
           const mqTier = mapQualityTierFromQuery('high');

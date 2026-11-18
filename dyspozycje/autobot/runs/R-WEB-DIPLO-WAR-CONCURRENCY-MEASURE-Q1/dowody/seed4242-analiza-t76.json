@@ -1,0 +1,337 @@
+{
+  "plik": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/out-4242-h/seed4242.jsonl",
+  "tury": {
+    "pierwsza": 2,
+    "ostatnia": 76,
+    "liczba": 75
+  },
+  "cywilizacjeWDanych": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41
+  ],
+  "a_wojnyEpoki": {
+    "liczbaEpizodow": 1,
+    "liczbaParUczestniczacychRozne": 1,
+    "epizody": [
+      {
+        "para": [
+          0,
+          25
+        ],
+        "start": 40,
+        "koniec": null,
+        "tag": "bronze",
+        "graczem": true
+      }
+    ],
+    "cywilizacjeKiedykolwiekStronaEpoki": [
+      0,
+      25
+    ],
+    "cywilizacjeBezWojnyEpoki": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41
+    ]
+  },
+  "b_wojnyNaturalne": {
+    "liczbaEpizodow": 21,
+    "liczbaPar": 21,
+    "epizody": [
+      {
+        "para": [
+          4,
+          40
+        ],
+        "start": 40,
+        "koniec": 50,
+        "graczem": false
+      },
+      {
+        "para": [
+          4,
+          41
+        ],
+        "start": 40,
+        "koniec": null,
+        "graczem": false
+      },
+      {
+        "para": [
+          7,
+          28
+        ],
+        "start": 40,
+        "koniec": 48,
+        "graczem": false
+      },
+      {
+        "para": [
+          13,
+          40
+        ],
+        "start": 40,
+        "koniec": 50,
+        "graczem": false
+      },
+      {
+        "para": [
+          13,
+          41
+        ],
+        "start": 40,
+        "koniec": null,
+        "graczem": false
+      },
+      {
+        "para": [
+          31,
+          40
+        ],
+        "start": 40,
+        "koniec": 50,
+        "graczem": false
+      },
+      {
+        "para": [
+          31,
+          41
+        ],
+        "start": 40,
+        "koniec": null,
+        "graczem": false
+      },
+      {
+        "para": [
+          34,
+          40
+        ],
+        "start": 40,
+        "koniec": 50,
+        "graczem": false
+      },
+      {
+        "para": [
+          34,
+          41
+        ],
+        "start": 40,
+        "koniec": null,
+        "graczem": false
+      },
+      {
+        "para": [
+          40,
+          41
+        ],
+        "start": 40,
+        "koniec": 50,
+        "graczem": false
+      },
+      {
+        "para": [
+          4,
+          7
+        ],
+        "start": 43,
+        "koniec": 56,
+        "graczem": false
+      },
+      {
+        "para": [
+          28,
+          34
+        ],
+        "start": 45,
+        "koniec": 54,
+        "graczem": false
+      },
+      {
+        "para": [
+          4,
+          28
+        ],
+        "start": 49,
+        "koniec": 67,
+        "graczem": false
+      },
+      {
+        "para": [
+          16,
+          34
+        ],
+        "start": 51,
+        "koniec": 66,
+        "graczem": false
+      },
+      {
+        "para": [
+          4,
+          37
+        ],
+        "start": 52,
+        "koniec": 66,
+        "graczem": false
+      },
+      {
+        "para": [
+          10,
+          22
+        ],
+        "start": 52,
+        "koniec": 58,
+        "graczem": false
+      },
+      {
+        "para": [
+          16,
+          19
+        ],
+        "start": 52,
+        "koniec": 61,
+        "graczem": false
+      },
+      {
+        "para": [
+          7,
+          37
+        ],
+        "start": 55,
+        "koniec": 65,
+        "graczem": false
+      },
+      {
+        "para": [
+          13,
+          31
+        ],
+        "start": 60,
+        "koniec": 69,
+        "graczem": false
+      },
+      {
+        "para": [
+          22,
+          37
+        ],
+        "start": 73,
+        "koniec": null,
+        "graczem": false
+      },
+      {
+        "para": [
+          1,
+          34
+        ],
+        "start": 74,
+        "koniec": null,
+        "graczem": false
+      }
+    ]
+  },
+  "c_zdarzeniaEpokiPotemNaturalna": [],
+  "d_wspolbieznosc": {
+    "maksNaCywilizacjePerEpoka": {
+      "epoka2": 5,
+      "epoka3": 2
+    },
+    "sredniaNaCywilizacjePerEpoka": {
+      "epoka2": 1.99,
+      "epoka3": 1.26
+    },
+    "maksNaturalnychNaCywilizacje": 5,
+    "tur2NaturalneNaCywilizacje": 187,
+    "cywilizacjeZ2Naturalnymi": [
+      4,
+      7,
+      13,
+      16,
+      28,
+      31,
+      34,
+      37,
+      40,
+      41
+    ]
+  },
+  "nieZmierzone": [
+    "(e) odrzucone proby wypowiedzenia przez bramke stone_limit: brak haka na odrzucone proby"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "seed": 4242,
+  "startTurn": 60,
+  "endTurn": 76,
+  "stop": {
+    "reason": "cannot-end",
+    "tura": 76,
+    "why": {
+      "modal": {
+        "diploAudience": false,
+        "armyMerge": false,
+        "techNotice": false,
+        "dom": null
+      },
+      "gra": {
+        "battle": {
+          "preBattleOpen": false,
+          "pendingAuto": false,
+          "sceneOpen": false,
+          "summaryOpen": false,
+          "resolving": false
+        },
+        "pending": 0
+      }
+    }
+  },
+  "counters": {
+    "gateActiveTurns": 1,
+    "bypassApplied": 1,
+    "stuckQueueHeals": 0,
+    "battlesAuto": 0,
+    "diploAudienceClosed": 0,
+    "armyMergeClosed": 0,
+    "techNoticeClosed": 0
+  },
+  "wallSec": 425,
+  "resumed": true
+}
