@@ -8,7 +8,7 @@
     "progWzajemnyPokoj": 0.8,
     "progKoncaZmeczenia": 0.8,
     "_progi": "progChetnosci=0,5 (chęć pokoju); progWzajemnyPokoj=0,8 (wyjście awaryjne po odrzuceniach); progKoncaZmeczenia=0,8 - tylko próg pokazywany w widoku zmęczenia (war-weariness-view.ts: „AI proponuje pokój z miastami”), NIE wyzwala pokoju bezwarunkowego; progWymuszonyPokoj=1,0 (100%) - jedyny próg pokoju wymuszonego (wearinessForcedPeaceDue). Cena pokoju (R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1) = sekcja cenaPokoju (cenaStartPn*(1-L)), jedna dla panelu, AI i pokoju wymuszonego; przy L=1 cena 0 = pokój bez miast; cena>0 bez pełnego pokrycia miastami (np. tylko stolica) = wojna trwa.",
-    "progWymuszonyPokoj": 1.0
+    "progWymuszonyPokoj": 1
   },
   "przegrywajacy": {
     "_wzor": "desperacja = clamp(wagaZmeczenia*poziom + wagaSily*max(0,(udzialWyraznie-udzialSily)/udzialWyraznie) + wagaStrat*min(1,utraty/stratyNasycenie), 0, 1); stopien = liczba progow <= desperacja (progiStopni=0,25 / 0,45 / 0,65; stopnie 0..3) - stopień decyduje WYŁĄCZNIE o tym, czy przegrywający składa ofertę (stopień > 0). Oferta zmęczenia = tylko MIASTA za JEDNĄ cenę wearinessPeaceCashPn(L) (bez mnożników stopnia/odrzuceń i bez limitu liczby miast): liczba miast = minimum równoważące cenę (planCityPeacePayment), stolica nigdy; cena > 0 bez pełnego pokrycia = pokój nie zapada; 0 miast, gdy battlePending.",
@@ -48,5 +48,16 @@
     "rwProgBonusMax": 0.25,
     "minMiastAi": 2,
     "_pozycjaPW": "R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: stara pozycja PW „zmęczenie” (Z=round(C*x^2), krzywa kwadratowa) USUNIĘTA - jedyna cena pokoju to cenaPokoju (wearinessPeaceCashPn). Pole czlowiek.rwProgBonusMax/minMiastAi: nieużywane w kodzie od tej zmiany (zostają jako parametry historyczne)."
+  },
+  "ogonPokoju": {
+    "_opis": "R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (ABC właściciela 2026-11-18): gdy słabsza strona nie ma już miast do oddania (nigdy ostatnie miasto / stolica), reszta ceny pokoju płatna jest kolejno: złoto → brąz → żelazo → rudy (miedzi, cyny, żelaza). Wycena: diplomacy-value-catalog (cena_* per blok). Logika: gra/src/game/peace-tail-payment.ts. Stal nie wchodzi (nie ma jej na liście właściciela).",
+    "kolejnosc": [
+      "zloto",
+      "braz",
+      "zelazo",
+      "ruda",
+      "ruda_cyny",
+      "ruda_zelaza"
+    ]
   }
 }
