@@ -261,7 +261,8 @@ fn explored_by_human_from_save(
         let [owner, keys] = pair.as_slice() else {
             return Err(bad_entry());
         };
-        let owner_id = owner.as_u64().ok_or_else(bad_entry)?;
+        // Jak `placedWorldWonders.ownerId`: liczba JS calkowita `>= 0` (takze `1.0`), inaczej blad.
+        let owner_id = owner.as_f64().and_then(js_owner_id).ok_or_else(bad_entry)?;
         let Value::Array(keys) = keys else {
             return Err(bad_entry());
         };

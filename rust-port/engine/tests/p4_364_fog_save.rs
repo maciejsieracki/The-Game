@@ -307,6 +307,17 @@ fn d_niepoprawny_klucz_jawny_blad_z_pozycja() {
             keys: vec![(-3, 4), (0, -2)],
         }]
     );
+    // Obrona U4: `ownerId` jako liczba JS calkowita z czescia `.0` (np. `2.0`) jest przyjmowany jak
+    // `placedWorldWonders.ownerId` (`js_owner_id`).
+    let (loaded, _) =
+        load_save_snapshot(&with_explored(json!([[2.0, ["1,1"]]]))).expect("ownerId 2.0");
+    assert_eq!(
+        loaded.explored_by_human(),
+        &[SavedExploredSeat {
+            owner_id: 2,
+            keys: vec![(1, 1)],
+        }]
+    );
 }
 
 #[test]
