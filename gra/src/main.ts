@@ -18368,8 +18368,69 @@ async function boot(): Promise<void> {
      * empire recruit panel). Called after every player tech completion, including without an era advance.
      */
     function refreshOpenPanelsAfterTechDiscovery(): void {
+      refreshOpenPanelsAtTurnStart();
+    }
+
+    /** Korzenie paneli, których zawartość przerysowujemy bez pełnego przeładowania strony. */
+    const PANEL_REFRESH_ROOTS = '.civ-cs, [data-erp-root]';
+
+    function panelRefreshRootsNow(): HTMLElement[] {
+      return Array.from(document.querySelectorAll<HTMLElement>(PANEL_REFRESH_ROOTS))
+        .filter(r => !r.parentElement?.closest(PANEL_REFRESH_ROOTS));
+    }
+
+    /**
+     * Ścieżka dzieci (indeksy) od korzenia do elementu — klucz do przywrócenia przewijania po
+     * przerysowaniu innerHTML. Pusta, gdy element nie leży w korzeniu.
+     */
+    function panelRefreshPathOf(el: HTMLElement, root: HTMLElement): number[] {
+      const path: number[] = [];
+      let node: HTMLElement | null = el;
+      while (node && node !== root) {
+        const parent: HTMLElement | null = node.parentElement;
+        if (!parent) return [];
+        path.unshift(Array.prototype.indexOf.call(parent.children, node) as number);
+        node = parent;
+      }
+      return node === root ? path : [];
+    }
+
+    /** Zapamiętuje pozycje przewijania wszystkich przewijanych elementów otwartych paneli. */
+    function snapshotPanelScrollPositions(): Array<{ root: number; path: number[]; top: number }> {
+      const snap: Array<{ root: number; path: number[]; top: number }> = [];
+      panelRefreshRootsNow().forEach((root, ri) => {
+        root.querySelectorAll<HTMLElement>('*').forEach(el => {
+          if (el.scrollTop > 0) snap.push({ root: ri, path: panelRefreshPathOf(el, root), top: el.scrollTop });
+        });
+      });
+      return snap;
+    }
+
+    /** Przywraca przewijanie zapamiętane przez snapshotPanelScrollPositions (po przerysowaniu). */
+    function restorePanelScrollPositions(snap: Array<{ root: number; path: number[]; top: number }>): void {
+      if (snap.length === 0) return;
+      const roots = panelRefreshRootsNow();
+      for (const entry of snap) {
+        const root = roots[entry.root];
+        if (!root) continue;
+        let node: HTMLElement | null = root;
+        for (const idx of entry.path) {
+          node = node ? (node.children[idx] as HTMLElement | undefined) ?? null : null;
+          if (!node) break;
+        }
+        if (node) node.scrollTop = entry.top;
+      }
+    }
+
+    /**
+     * Odświeża otwarty panel miasta i panel rekrutacji imperium po zmianie stanu gry w turze
+     * (odkrycie technologii, koniec tury gracza). Zachowuje pozycje przewijania paneli.
+     */
+    function refreshOpenPanelsAtTurnStart(): void {
+      const scrollSnap = snapshotPanelScrollPositions();
       refreshCityPanelIfOpen();
       refreshEmpireRecruitPanel();
+      restorePanelScrollPositions(scrollSnap);
     }
 
     function notifyPlayerEraChangeIfAdvanced(prevEra: number): void {
@@ -47668,6 +47729,10 @@ async function boot(): Promise<void> {
           // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: śmierć generała rekrutującego zgłaszana NA ŻYWO zaraz po
           // końcu tury (endTurnInProgress=false => prawdziwy toast, nie bierny wpis), także przy zamkniętym panelu.
           validateRecruitGeneral();
+          // Otwarty panel miasta i panel rekrutacji czytają stan gry (skarbiec, surowce, kolejka,
+          // dostępność budynków) — po końcu tury przerysuj je na świeżym stanie, a nie zostawiaj
+          // migawki z początku tury (bez tego panel pokazuje nieaktualne liczby do ponownego otwarcia).
+          refreshOpenPanelsAtTurnStart();
           syncPlayerUnitSelectionOnMap();
           console.warn('[EndTurn] triggerPlayerEndTurn: DONE tura', turn);
         }
