@@ -49367,6 +49367,10 @@ async function boot(): Promise<void> {
         ensureCitySaveDefaults(c);
         cities.push(c);
       }
+      // R-WEB-TEST-GAPS-WALKAMAPY-DIRTY-SCROLL-ASSERT-Q1 (A): dołożenie miast presetu walka-mapy
+      // bez inwalidacji = brak prognozy bramki „Zakończ turę” w t1 (empireEconDirty/powerDirty).
+      // Ta sama poprawka co w presetach mapa/miasto; tylko ścieżka walka-mapy.
+      markCityStateDirty();
 
       explored.clear();
       for (const k of preset.explored) explored.add(k);
