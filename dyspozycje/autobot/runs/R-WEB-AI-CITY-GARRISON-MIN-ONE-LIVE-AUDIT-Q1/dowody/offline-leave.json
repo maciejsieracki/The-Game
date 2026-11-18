@@ -1,0 +1,65 @@
+{
+ "lastUnitLeftCity_alive_outside": 64,
+ "lastUnitLeftCity_war": 34,
+ "lastUnitLeftCity_peace": 30,
+ "lastUnitGone_dead_or_other": 2,
+ "cityOwnerMultiCities": 61,
+ "samples": [
+  {
+   "turn": 11,
+   "owner": 13,
+   "city": "city15",
+   "war": false,
+   "units": 1
+  },
+  {
+   "turn": 12,
+   "owner": 14,
+   "city": "city16",
+   "war": false,
+   "units": 1
+  },
+  {
+   "turn": 25,
+   "owner": 10,
+   "city": "city12",
+   "war": false,
+   "units": 1
+  },
+  {
+   "turn": 31,
+   "owner": 13,
+   "city": "city15",
+   "war": false,
+   "units": 1
+  },
+  {
+   "turn": 32,
+   "owner": 13,
+   "city": "city16",
+   "war": false,
+   "units": 1
+  },
+  {
+   "turn": 33,
+   "owner": 7,
+   "city": "city9",
+   "war": false,
+   "units": 1
+  },
+  {
+   "turn": 33,
+   "owner": 37,
+   "city": "city39",
+   "war": false,
+   "units": 1
+  },
+  {
+   "turn": 35,
+   "owner": 13,
+   "city": "city44",
+   "war": false,
+   "units": 1
+  }
+ ]
+}
