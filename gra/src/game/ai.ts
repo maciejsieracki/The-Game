@@ -4319,6 +4319,7 @@ function decideAITurnCore(
         && !homeDefenderAssignments.has(u.id)
         && !activeFlankingUnitIds.has(u.id)
         && !activeWaveUnitIds.has(u.id)
+        && !cityGarrisonUnitIds.has(u.id)
         && !combatEngagedIds.has(u.id)
         && isEligibleForArmyConcentration(u, playerId));
       if (candidates.length > 0) {
@@ -4771,18 +4772,16 @@ function applyWarAllInCapitalToCommands(
   // jednostek idzie do marszu/zbiorki jak dotad. Miasta puste NIE sa tu uzupelniane (proba
   // przesuniecia najblizszej jednostki ustawiala ja poza obroncy domu -- ai-war-defend-home-test
   // gubil miasto; patrz runda 1 raportu). Rekrutacja NIE jest zmieniana.
-  const compareIds = (a: RuntimeUnit, b: RuntimeUnit): number => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r3): garnizon = wspolna funkcja (ai-city-garrison.ts),
+  // ta sama co w koncentracji/front-merge/marszu "armia szuka armii" -- najslabsza kwalifikujaca sie
+  // jednostka na heksie miasta, takze gdy jest jedyna (zasada wlasciciela: garnizon nie dolacza do
+  // armii). Jednostka z rozkazem w `keep` (atak/wejscie na wrogie miasto/obronca domu) go zachowuje.
   const garrisonIds = new Set<string>();
-  for (const city of cities.filter(c => c.ownerId === playerId).sort(
-    (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+  for (const id of garrisonUnitIdSet(
+    getCityGarrisonUnitIds(cities.filter(c => c.ownerId === playerId), myUnits, playerId,
+      u => aiUnitCombatStrength(u, data)),
   )) {
-    const atCity = myUnits.filter(u => u.q === city.q && u.r === city.r && !keep.has(u.id)
-      && !isCivilianUnit(u) && !isScoutUnit(u) && u.isGeneral !== true && u.embarked !== true);
-    // Jednostka bojowa bez pozostalego ruchu (ruchLeft <= 0) i tak zostaje w miescie -- ono juz
-    // ma garnizon; druga jednostka nie jest zatrzymywana bez potrzeby.
-    if (atCity.some(u => u.ruchLeft <= 0)) continue;
-    const stayers = atCity.filter(u => eligibleIds.has(u.id)).sort(compareIds);
-    if (stayers.length > 0) garrisonIds.add(stayers[0]!.id);
+    if (!keep.has(id)) garrisonIds.add(id);
   }
   let planned = eligible.filter(u => !keep.has(u.id) && !garrisonIds.has(u.id));
   const plannedIds = new Set(planned.map(u => u.id));
@@ -5349,6 +5348,12 @@ function appendAiGeneralCampaignOrders(
   const general = campaign.generalUnitId
     ? myUnits.find(unit => unit.id === campaign.generalUnitId && unit.isGeneral === true)
     : undefined;
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r3): garnizon miasta NIE idzie do wodza (zbiorka
+  // recruiting/gathering, rezerwa drugiego wodza, rozwijanie stosow) -- zostaje w miescie.
+  const campaignGarrisonIds = garrisonUnitIdSet(
+    getCityGarrisonUnitIds(cities.filter(c => c.ownerId === playerId), myUnits, playerId,
+      u => aiUnitCombatStrength(u, data)),
+  );
   if (campaign.stage === 'recruiting' || campaign.stage === 'gathering') {
     const rallyQ = general?.q ?? campaign.rallyQ;
     const rallyR = general?.r ?? campaign.rallyR;
@@ -5361,6 +5366,7 @@ function appendAiGeneralCampaignOrders(
       .filter(l => !blockedIds.includes(l.id));
     for (const unit of myUnits) {
       if (!isEligibleForArmyConcentration(unit, playerId)) continue;
+      if (campaignGarrisonIds.has(unit.id)) continue;
       // Jeden wodz -> bez wyboru (bez kosztu liczenia trasy), zachowanie jak dotad.
       const choice = leaders.length > 1
         ? pickNearestAvailableLeader(unit, leaders, leaderPathLengthFor(unit, map, units))
@@ -5409,6 +5415,7 @@ function appendAiGeneralCampaignOrders(
         for (const unit of myUnits) {
           if (unit.isGeneral === true || barbDefense.defenderIds.has(unit.id)) continue;
           if (!isEligibleForArmyConcentration(unit, playerId)) continue;
+          if (campaignGarrisonIds.has(unit.id)) continue;
           const pathLen = leaderPathLengthFor(unit, map, units);
           const dMain = unit.q === general.q && unit.r === general.r ? 0 : pathLen(unit, general) ?? Infinity;
           let best: RuntimeUnit | null = null;
@@ -5453,6 +5460,7 @@ function appendAiGeneralCampaignOrders(
     const stackGroups = new Map<string, RuntimeUnit[]>();
     for (const unit of myUnits) {
       if (!isEligibleForArmyConcentration(unit, playerId)) continue;
+      if (campaignGarrisonIds.has(unit.id)) continue;
       const key = keyOf(unit.q, unit.r);
       const group = stackGroups.get(key) ?? [];
       group.push(unit);
@@ -5775,6 +5783,8 @@ function decideDefensiveCopyTurn(
     if (
       reinforcementsSentThisTurn < RESUP_MAX_PER_TURN
       && sisterCityStates.length > 0
+      // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r3): stały garnizon miasta nie jest posiłkiem.
+      && !csGarrisonUnitIds.has(unit.id)
     ) {
       const homeCityForResup = nearest(unit.q, unit.r, myCities, c => c.q, c => c.r);
       const atHome = homeCityForResup !== undefined
@@ -5814,6 +5824,7 @@ function decideDefensiveCopyTurn(
     // Normal/Easy (offensiveSupport=false): legacy defend-only — ten blok pomijany.
     if (
       offensiveSupport
+      && !csGarrisonUnitIds.has(unit.id)
       && offensiveMovesThisTurn < maxOffensiveMovesPerTurn
       && (nonSisterEnemyUnits.length > 0 || enemyCitiesAtWar.length > 0)
     ) {
