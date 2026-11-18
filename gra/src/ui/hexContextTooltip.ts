@@ -674,6 +674,10 @@ export interface UnitContextTooltipInput extends UnitSufferingStatusFields {
   ambush?: boolean;
   ufortyfikowanyWPolu?: boolean;
   oblegaCityName?: string;
+  /** R-WEB-MARCH-RESUME-NEXT-TURN-Q1: powód wstrzymania trasy („trasa wstrzymana”). */
+  marchPausedReason?: string;
+  /** R-WEB-MARCH-OWN-UNIT-STOP-LOSES-MP-AND-INDICATOR-Q1: aktywny plan -> „marsz ruszy na koniec tury”. */
+  marchQueuedEndTurn?: boolean;
   /** Zasięg ataku (z definicji jednostki). */
   zasieg?: number;
   /** Kompakt (domyślnie) vs rozszerzony panel boczny. */
@@ -720,6 +724,8 @@ function unitCardStatusFromTooltip(u: UnitContextTooltipInput): UnitCardStatusIn
     ambush: u.ambush,
     ufortyfikowanyWPolu: u.ufortyfikowanyWPolu,
     oblegaCityName: u.oblegaCityName,
+    marchPausedReason: u.marchPausedReason,
+    marchQueuedEndTurn: u.marchQueuedEndTurn,
     // R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: głód wojska + deficyt Złota.
     ...pickUnitSufferingFields(u),
     esc: u.esc,

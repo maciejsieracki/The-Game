@@ -1,3 +1,9 @@
+## ROBOCZA 9a7a9a7c -- 2026-11-17 -- FALA 814: MARCHFIX + WARRIORHOOK: marsz wykorzystuje ruch przy wlasnej jednostce, wskaznik marszu, haki testowe Wojownika (testowa)
+
+- Marsz: zaplanowany marsz na koniec tury gracza wykorzystuje pozostaly ruch takze gdy jednostka byla ruszona recznie lub zatrzymala sie przed wlasna jednostka (S6); znacznik marsz ruszy na koniec tury w rozwinietym panelu jednostki (main.ts, planned-march, armyStackHud, hexContextTooltip, unitCardStatus); haki civTest zamiany stron i trybu recznego dla pomiaru Wojownik 10v10 (civ-test-hooks.ts, main.ts civTest)
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; march-multiturn-live (Chromium) ALL PASS 6; march-resume-next-turn 50/0; planned-march 18/0; rally-point-automarch 30/0; march-end-of-turn-only exit 0; sideswap-hooks-static 7/7; mutacja S6 czerwona
+- Limity: march-attack-queue-persist 55/57 (g5, g8) bylo czerwone przed zmiana; wskaznik marszu tylko w rozwinietym panelu (pytanie produktowe); NIE ZMIERZONO scenariusza przerwania z MP>0 na EOT w zywej grze; pomiar Wojownik: przewaga obroncy nie wychodzi poza przedzial Wilson 95% przy n=20, przyczyna asymetrii NIE ZMIERZONA
+
 ## ROBOCZA 10848663 -- 2026-11-17 -- FALA 813: PEACEAUTO: pokoj z graczem tylko przy 100% zmeczenia, czyszczenie ofert po pokoju (testowa)
 
 - Pokoj z graczem nie zapada juz automatycznie przy zmeczeniu ponizej 100% (tick zmeczenia pomija pary z graczem poza wymuszonym pokojem 100% z oknem i wpisem Wazne); po zawarciu pokoju czyszczone oferty zalezne od wojny (pokoj, rozejm) na stole i w liscie audiencji (iteracja po ID); wpis Wazne po pokoju ze stolu i po koncu rozejmu (war-weariness.ts, diplomacy-proposals.ts, main.ts)

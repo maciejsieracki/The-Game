@@ -1,0 +1,19 @@
+{
+  "runs": {
+    "swap-s1|auto": {
+      "cfg": {
+        "id": "swap-s1",
+        "role": "swap",
+        "seed": 1
+      },
+      "mode": "auto",
+      "error": "page.evaluate: TypeError: window.__civTest.setSwapSides is not a function\n    at eval (eval at evaluate (:303:30), <anonymous>:1:26)\n    at UtilityScript.evaluate (<anonymous>:305:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    }
+  },
+  "meta": {
+    "chromium": "/usr/bin/chromium",
+    "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-base",
+    "runda": 4,
+    "path": "playtest=mapa + __civTest.addUnit(typeId=Wojownik) x10 vs x10, bez presetu i bez przepisywania statystyk"
+  }
+}

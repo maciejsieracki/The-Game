@@ -192,6 +192,12 @@ function wall(q) {
   ok(/trasa wstrzymana/.test(withBadge) && /brak trasy do celu/.test(withBadge), 'T8 panel pokazuje "trasa wstrzymana" + powod: ' + withBadge);
   const without = buildUnitExtraStatusLinesHtml({ esc });
   ok(!/trasa wstrzymana/.test(without), 'T8 bez powodu brak wskaznika');
+  // R-WEB-MARCH-OWN-UNIT-STOP-LOSES-MP-AND-INDICATOR-Q1 (S8): aktywny plan bez pauzy -> znacznik „marsz ruszy na koniec tury”.
+  const queued = buildUnitExtraStatusLinesHtml({ marchQueuedEndTurn: true, esc });
+  ok(/marsz ruszy na koniec tury/.test(queued) && !/trasa wstrzymana/.test(queued), 'S8 znacznik planu: ' + queued);
+  const pausedNoQueued = buildUnitExtraStatusLinesHtml({ marchPausedReason: 'x', marchQueuedEndTurn: true, esc });
+  ok(!/marsz ruszy/.test(pausedNoQueued) && /trasa wstrzymana/.test(pausedNoQueued), 'S8 pauza przesłania znacznik planu');
+  ok(!/marsz ruszy/.test(buildUnitExtraStatusLinesHtml({ esc })), 'S8 bez planu brak znacznika');
 }
 
 // Bramki zrodla: EOT nie kasuje planu, a zatrzymanie nie czysci wpisu (poza przycieciem stosu).
@@ -218,7 +224,7 @@ function wall(q) {
   ok(/planA\.kind === 'fire-now'[\s\S]{0,200}plannedMarches\.delete\(/.test(seg), 'G2b kasowanie w galezi fire-now zasadzki');
   ok(/instantAmbushHex !== undefined\)\s*\{\s*plannedMarches\.delete\(/.test(seg), 'G2c kasowanie przy odcieciu marszu zasadzka (instantAmbushHex)');
   const run = fnBody('function runPlannedMarchesAtPlayerEndTurn(');
-  ok(/movedByPlayerThisTurn\.has\(id\)/.test(run), 'G3 koniec tury pomija jednostki ruszone recznie');
+  ok(/plannedMarches\.has\(id\)/.test(run) && !/movedByPlayerThisTurn\.has\(id\)/.test(run), 'G3 koniec tury kontynuuje jednostki ruszone przez gracza z planem i MP (S6)');
   const noteBody = fnBody('function noteMarchStop(');
   ok(noteBody.length > 0 && /registerMarchStop\(/.test(noteBody), 'G4 noteMarchStop filtruje/dedupuje przez registerMarchStop (isNotifiableMarchStop)');
   ok(/noteMarchStop\(unitId, result\.stopReason/.test(seg), 'G5 pusty krok koniec tury zglasza przerwanie (nie cicho)');

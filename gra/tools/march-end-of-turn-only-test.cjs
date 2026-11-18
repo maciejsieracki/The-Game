@@ -42,8 +42,9 @@ function checks(src) {
   if (!/if \(!enqueueNewlyPlanned\) return;/.test(sg)) bad.push('E4 syncGeneralMarchTargets kolejkuje poza koncem tury');
   const run = nc(fnBody(src, 'function runPlannedMarchesAtPlayerEndTurn('));
   if (!/syncGeneralMarchTargets\(true\)/.test(run)) bad.push('E5 faza konca tury nie kolejkuje podopiecznych wodza');
-  // E6: jednostka ruszona recznie nie maszeruje tej tury.
-  if (!/movedByPlayerThisTurn\.has\(id\)/.test(run)) bad.push('E6 kolejka konca tury nie pomija jednostek ruszonych recznie');
+  // E6 (S6, R-WEB-MARCH-OWN-UNIT-STOP-LOSES-MP-AND-INDICATOR-Q1): jednostka ruszona przez gracza z aktywnym
+  // planem i MP nadal kontynuuje marsz na koniec tury (bez pominiecia movedByPlayerThisTurn w kolejce).
+  if (!/if \(!plannedMarches\.has\(id\) \|\| opts\.skipUnitIds\?\.has\(id\)\) continue;/.test(run)) bad.push('E6 kolejka konca tury pomija jednostki z planem i MP (S6)');
   return bad;
 }
 
@@ -66,5 +67,5 @@ mutate('M3 afterPlayerUnitSpawned wykonuje marsz', 'E3', (s) =>
   s.replace('      // R-WEB-MARCH-END-OF-TURN-ONLY-Q1: nowa jednostka idaca',
     '      if (autoMarchingToGeneral && !generalMarchPreplanned) enqueueMarchSegments([newUnitId]);\n      // R-WEB-MARCH-END-OF-TURN-ONLY-Q1: nowa jednostka idaca'));
 mutate('M4 sync kolejkuje zawsze', 'E4', (s) => s.replace('if (!enqueueNewlyPlanned) return;', ''));
-mutate('M5 brak pomijania recznie ruszonych', 'E6', (s) => s.replace(' || movedByPlayerThisTurn.has(id)) continue;', ') continue;'));
+mutate('M5 przywrocenie pomijania ruszonych recznie (S6)', 'E6', (s) => s.replace('if (!plannedMarches.has(id) || opts.skipUnitIds?.has(id)) continue;', 'if (!plannedMarches.has(id) || opts.skipUnitIds?.has(id) || movedByPlayerThisTurn.has(id)) continue;'));
 process.exit(fail ? 1 : 0);

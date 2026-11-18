@@ -92,6 +92,8 @@ export interface UnitCardStatusInput extends UnitSufferingStatusFields {
   oblegaCityName?: string;
   /** R-WEB-MARCH-RESUME-NEXT-TURN-Q1: powód wstrzymania zaplanowanej trasy (wskaźnik „trasa wstrzymana”). */
   marchPausedReason?: string;
+  /** R-WEB-MARCH-OWN-UNIT-STOP-LOSES-MP-AND-INDICATOR-Q1: aktywny plan marszu -> znacznik na koniec tury. */
+  marchQueuedEndTurn?: boolean;
   esc: (raw: string) => string;
 }
 
@@ -304,6 +306,8 @@ export function buildUnitExtraStatusLinesHtml(input: UnitCardStatusInput): strin
   }
   if (input.marchPausedReason) {
     lines.push(`<div class="uc-extra-status uc-march-paused">Status: \u23f8 trasa wstrzymana \u2014 ${esc(input.marchPausedReason)}</div>`);
+  } else if (input.marchQueuedEndTurn) {
+    lines.push(`<div class="uc-extra-status uc-march-queued">Status: \u27a4 marsz ruszy na koniec tury</div>`);
   }
   if (input.oblegaCityName) {
     lines.push(`<div class="uc-extra-status">Status: oblega ${esc(input.oblegaCityName)}</div>`);

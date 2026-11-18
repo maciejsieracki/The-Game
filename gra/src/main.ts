@@ -169,6 +169,9 @@ import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
 import { installCivTestHooks, isCivTestEnabled, civTestSeedOverride, civTestRuntime } from './game/civ-test-hooks';
+/** R-WEB-TEST-HOOK-WARRIOR-SIDESWAP-MANUAL-MEASURE-Q1: zamiana stron sceny (hak civTest; ustawiany przez __civTest.setSwapSides). */
+let _civTestSwapSides = false;
+const civTestSwapSidesFlag = (): boolean => _civTestSwapSides && typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search);
 /** W80B-B1 (R-WEB-LIVE-VERIFY-WAVE-689-697-B1-AI-PEACE-GATE-TRACE-Q1): ślad ścieżki pokoju AI (zapis tylko gdy `on`, ustawia hak ?civTest=1). */
 const peaceTraceState: { on: boolean; rows: Array<Record<string, unknown>> } = { on: false, rows: [] };
 import { gameStreamRng, gameIdSuffix } from './game/game-rng';
@@ -7133,6 +7136,10 @@ async function boot(): Promise<void> {
         ambush: status.ambush,
         ufortyfikowanyWPolu: status.ufortyfikowanyWPolu,
         oblegaCityName: status.oblegaCityName,
+        // R-WEB-MARCH-OWN-UNIT-STOP-LOSES-MP-AND-INDICATOR-Q1 (S8): wskaźnik marszu w żywym panelu jednostki
+        // (ten builder zasila panel boczny; armyStackHud nie jest montowany: buildArmyStackHudState -> null).
+        marchPausedReason: plannedMarches.has(u.id) ? marchStopDetail.get(u.id) : undefined,
+        marchQueuedEndTurn: plannedMarches.has(u.id) && !marchStopDetail.has(u.id),
         // R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: wiersze „głód wojska” / „deficyt Złota”.
         poziomTrudnosciLabel: status.poziomTrudnosciLabel,
         glodWojska: status.glodWojska,
@@ -27224,6 +27231,8 @@ async function boot(): Promise<void> {
         ...status,
         // R-WEB-MARCH-RESUME-NEXT-TURN-Q1 r3: wskaźnik „trasa wstrzymana” (tylko gdy plan istnieje).
         marchPausedReason: plannedMarches.has(active.id) ? marchStopDetail.get(active.id) : undefined,
+        // R-WEB-MARCH-OWN-UNIT-STOP-LOSES-MP-AND-INDICATOR-Q1: znacznik „marsz ruszy na koniec tury” (plan aktywny, bez pauzy).
+        marchQueuedEndTurn: plannedMarches.has(active.id) && !marchStopDetail.has(active.id),
       };
       if (isAwaitingFirstPlayerCity()) {
         return {
@@ -31256,6 +31265,14 @@ async function boot(): Promise<void> {
         return id;
       },
       setWar: (a, b) => { getDiploRelation(a, b).status = 'wojna'; },
+      // R-WEB-TEST-HOOK-WARRIOR-SIDESWAP-MANUAL-MEASURE-Q1 (tylko ?civTest=1): isGeneral na jednostce heksu; zamiana stron sceny.
+      setGeneral: (ownerId, q, r) => {
+        const gu = units.find(x => x.ownerId === ownerId && x.q === q && x.r === r);
+        if (!gu) return false;
+        gu.isGeneral = true;
+        return true;
+      },
+      setSwapSides: v => { _civTestSwapSides = v === true; },
       endTurn: () => { triggerPlayerEndTurn(); },
       meOwnerId: () => ME(),
       setCityLimitBase: base => { _menuCityLimitBase = base; }, // R-WEB-TEST-HOOK-SETCITYLIMIT-Q1 (tylko ?civTest=1)
@@ -33762,7 +33779,10 @@ async function boot(): Promise<void> {
     const marchStopDetail = new Map<string, string>();
     /**
      * Jednostki gracza, które w bieżącej turze dostały nowy rozkaz ruchu / zmianę celu.
-     * Czyścimy przy odnowieniu MP — EOT kontynuuje marsz tylko gdy jednostki tu NIE ma.
+     * Czyścimy przy odnowieniu MP. Od R-WEB-MARCH-OWN-UNIT-STOP-LOSES-MP-AND-INDICATOR-Q1 flaga NIE blokuje
+     * wykonania marszu na koniec tury gracza (EOT wykorzystuje pozostały ruch także ruszonej jednostki).
+     * Zbiór nie steruje już wykonaniem marszu (żaden kod ścieżki marszu go nie czyta); zostaje tylko jako
+     * licznik w diagnostyce (`movedByPlayerThisTurn: size`).
      */
     const movedByPlayerThisTurn = new Set<string>();
     /** Cel ataku po dotarciu marszem (unitId → enemyUnitId). */
@@ -34319,7 +34339,11 @@ async function boot(): Promise<void> {
       );
 
       if (!result.ok || result.movePath.length === 0) {
-        showHintMessage('Marsz przerwany: ' + (result.stopDetail ?? 'brak ruchu'), 3500);
+        // R-WEB-MARCH-OWN-UNIT-STOP-LOSES-MP-AND-INDICATOR-Q1 (kryt. 3): ten sam powód przerwania nie
+        // pokazuje dymka przy każdym końcu tury — jedno powiadomienie na epizod (jak wpis w „Ważne").
+        if (marchStopNotified.get(unitId) !== result.stopReason) {
+          showHintMessage('Marsz przerwany: ' + (result.stopDetail ?? 'brak ruchu'), 3500);
+        }
         noteMarchStop(unitId, result.stopReason, result.stopDetail);
         return false;
       }
@@ -34372,7 +34396,6 @@ async function boot(): Promise<void> {
       syncGeneralMarchTargets();
       const ids = units
         .filter(u => u.ownerId === humanOwnerId && plannedMarches.has(u.id)
-          && !movedByPlayerThisTurn.has(u.id)
           && planningStackRuchLeft(playerStackAt(u)) > 0)
         .map(u => u.id);
       enqueueMarchSegments(ids);
@@ -34525,15 +34548,18 @@ async function boot(): Promise<void> {
       // (`startAnimatedMove`), ktorego koniec (odjecie ruchu, mgla, hint) dopalal sie w `renderLoop` juz
       // PO resecie ruchu i w trakcie fazy AI. Teraz kazdy segment idzie przez `applyMarchSegmentInstant`.
       syncGeneralMarchTargets(true);
+      // R-WEB-MARCH-OWN-UNIT-STOP-LOSES-MP-AND-INDICATOR-Q1 (S6): jednostka ruszona przez gracza w tej
+      // turze z AKTYWNYM planem i pozostalym ruchem (ruchLeft>0) tez wykorzystuje ten ruch na koniec tury
+      // (wczesniej pomijana -> MP przepadal po cichu). Plan bez MP i jednostki bez planu pomijane jak dotad.
       for (const u of units) {
         if (u.ownerId !== humanOwnerId || !plannedMarches.has(u.id)) continue;
-        if (movedByPlayerThisTurn.has(u.id) || opts.skipUnitIds?.has(u.id)) continue;
+        if (opts.skipUnitIds?.has(u.id)) continue;
         if (planningStackRuchLeft(playerStackAt(u)) <= 0) continue;
         if (!marchExecQueue.includes(u.id)) marchExecQueue.push(u.id);
       }
       while (marchExecQueue.length > 0) {
         const id = marchExecQueue.shift()!;
-        if (!plannedMarches.has(id) || opts.skipUnitIds?.has(id) || movedByPlayerThisTurn.has(id)) continue;
+        if (!plannedMarches.has(id) || opts.skipUnitIds?.has(id)) continue;
         if (!applyMarchSegmentInstant(id, humanOwnerId, opts.launchAttacks !== false)) continue;
       }
       syncUnitsRender();
@@ -36426,8 +36452,15 @@ async function boot(): Promise<void> {
             );
             if (reserveNote) showHintMessage(reserveNote, 5000, undefined, true);
           }
-          const atkBus = rosterToBattleUnits(atkRosterRef, 0xffd54a);
-          const defBus = rosterToBattleUnits(defRosterRef, 0xc84040);
+          // R-WEB-TEST-HOOK-WARRIOR-SIDESWAP-MANUAL-MEASURE-Q1: hak testowy (tylko ?civTest=1 + setSwapSides): scena z zamienionymi stronami.
+          const swapSides = civTestSwapSidesFlag();
+          const sceneAtkRef = swapSides ? defRosterRef : atkRosterRef;
+          const sceneDefRef = swapSides ? atkRosterRef : defRosterRef;
+          const scenePlayerRef = swapSides ? defRosterRef : atkRosterRef;
+          const sceneAtkLead = swapSides ? defLead : atkLead;
+          const sceneDefLead = swapSides ? atkLead : defLead;
+          const atkBus = rosterToBattleUnits(sceneAtkRef, 0xffd54a);
+          const defBus = rosterToBattleUnits(sceneDefRef, 0xc84040);
           setMood('bitwa');
           const bs = new BattleScene({
             combatRng: battleCombatRng(), // R-WEB-BATTLE-MANUAL-RNG-DETERMINISM-Q1
@@ -36436,13 +36469,13 @@ async function boot(): Promise<void> {
             teren: dTeren4,
             worldTerrain: worldTerrainFromHex(dHex4),
             data,
-            deploy: atkRosterRef.some(u => u.isGeneral === true) || ambushSurprised,
-            deployPlayerSide: 'atk',
+            deploy: scenePlayerRef.some(u => u.isGeneral === true) || ambushSurprised,
+            deployPlayerSide: swapSides ? 'def' : 'atk',
             ...(ambushSurprised ? { ambush: { surprisedSide: 'atk' as const } } : {}),
-            manualControlAllowed: atkRosterRef.some(u => u.isGeneral === true),
-            attackerCivBonusy: civBonusyForOwnerId(atkLead.ownerId),
-            defenderCivBonusy: civBonusyForOwnerId(defLead.ownerId),
-            defenderOwnTerritory: territoryOwnerAtLive(defUnit.q, defUnit.r) === defLead.ownerId,
+            manualControlAllowed: scenePlayerRef.some(u => u.isGeneral === true),
+            attackerCivBonusy: civBonusyForOwnerId(sceneAtkLead.ownerId),
+            defenderCivBonusy: civBonusyForOwnerId(sceneDefLead.ownerId),
+            defenderOwnTerritory: territoryOwnerAtLive(defUnit.q, defUnit.r) === sceneDefLead.ownerId,
             shallowSea: dHex4!.terenBazowy === TerenBazowy.PlytkieMorze,
             attackerCivLabel: pbInfo4.atakujacy.cywilizacja,
             defenderCivLabel: pbInfo4.obronca.cywilizacja,
@@ -36457,15 +36490,15 @@ async function boot(): Promise<void> {
             defenderLeaderName: pbInfo4.obronca.wodz,
             attackerSideLabel: pbInfo4.atakujacy.nazwa,
             defenderSideLabel: pbInfo4.obronca.nazwa,
-            attackerEra: empireEpochForOwner(atkLead.ownerId),
-            defenderEra: empireEpochForOwner(defLead.ownerId),
+            attackerEra: empireEpochForOwner(sceneAtkLead.ownerId),
+            defenderEra: empireEpochForOwner(sceneDefLead.ownerId),
             attackerIsCityState: pbInfo4.atakujacy.isCityState,
             defenderIsCityState: pbInfo4.obronca.isCityState,
             attackerIsBarbarian: pbInfo4.atakujacy.isBarbarian,
             defenderIsBarbarian: pbInfo4.obronca.isBarbarian,
-            ...armyHungerBattleOpts(atkLead.ownerId, defLead.ownerId),
-            ...goldDeficitBattleOpts(atkLead.ownerId, defLead.ownerId),
-            ...difficultyBattleOpts(atkLead.ownerId, defLead.ownerId),
+            ...armyHungerBattleOpts(sceneAtkLead.ownerId, sceneDefLead.ownerId),
+            ...goldDeficitBattleOpts(sceneAtkLead.ownerId, sceneDefLead.ownerId),
+            ...difficultyBattleOpts(sceneAtkLead.ownerId, sceneDefLead.ownerId),
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
