@@ -1586,7 +1586,7 @@ import {
   evaluatePendingFromAI, resolvePlayerAcceptsAiPending, formatAiDiplomacyPlayerMessage,
   enrichAiCommandWithTreasury, clampDealTurns,
   findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
-  type ProposalEvalContext, type ProposalPayload,
+  type ProposalEvalContext, type ProposalPayload, type PendingProposal, type ProposalActionId,
   // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — propozycja/kontroferta/odpowiedź.
   type PendingNegotiation, createNegotiation, applyCounterOffer, applyOwnProposalEdit, canCounterNegotiation, canPlayerCounterNegotiation,
   negotiationStillValid, WAR_DEPENDENT_ACTIONS, planAiOfferOnTable, resolveNegotiationAsResponder, negotiationToLegacyPending,
@@ -21671,7 +21671,7 @@ async function boot(): Promise<void> {
         outcome = forcedDecision === 'accept'
           ? {
             kind: 'accepted',
-            result: resolvePlayerAcceptsAiPending(negotiationToLegacyPending(entry), turn, undefined, { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId) }),
+            result: resolvePlayerAcceptsAiPending(negotiationToLegacyPending(entry), turn, undefined, { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId), carrierCtx: buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId) }),
           }
           : { kind: 'rejected', reason: 'test: AI odmawia' };
       }
@@ -21853,7 +21853,7 @@ async function boot(): Promise<void> {
         negotiationToLegacyPending(entry),
         turn,
         _menuDifficulty,
-        { atWar, hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId) }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 + TRADE-ERA r3 (epoka umowy jawnie)
+        { atWar, hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId), carrierCtx: buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId) }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 + TRADE-ERA r3 (epoka umowy jawnie)
       );
       applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
       refreshD1bHud();
@@ -22570,7 +22570,7 @@ async function boot(): Promise<void> {
           if (pending) {
             const result = resolvePlayerAcceptsAiPending(
               pending, turn, undefined,
-              { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 + TRADE-ERA r3 (difficulty: undefined -> default 'normal')
+              { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId), carrierCtx: buildProposalEvalContext(pending.fromOwnerId, pending.toOwnerId) }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 + TRADE-ERA r3 (difficulty: undefined -> default 'normal')
             );
             applyProposalOutcome(p.ownerId, ME(), result, pending.payload, pending.actionId);
             if (result.accepted) showHintMessage('Przyjęto: ' + p.civName, 3500);
@@ -22714,7 +22714,7 @@ async function boot(): Promise<void> {
       if (!pending) return false;
       const result = resolvePlayerAcceptsAiPending(
         pending, turn, undefined,
-        { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) },
+        { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId), carrierCtx: buildProposalEvalContext(pending.fromOwnerId, pending.toOwnerId) },
       );
       applyProposalOutcome(p.fromOwnerId, p.toOwnerId, result, pending.payload, pending.actionId);
       return true;
@@ -26042,7 +26042,13 @@ async function boot(): Promise<void> {
         // r3: płatnikiem ogona w ścieżce „gracz jest autorem pokoju" jest GRACZ (nie zawsze proponent: kontroferta, AI proponuje graczowi).
         playerStock: peaceTailPricingForPayer(ME(), proposerId, peaceTailWiringDeps()).holdings,
         // R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1 (r2): stopień technologii nośnika dopłaty D — techy gracza i drugiej strony.
-        playerTechs: Array.from(ownerResearchedTechs(ME())),
+        // Tylko techy, które odbiorca (druga strona) może REALNIE przyjąć teraz (prerekwizyty/epoka spełnione — ta sama bramka co
+        // grantTechToOwner i handel techami): inaczej płatność policzona w PN nie zostałaby dostarczona (odkrycie odrzucone).
+        playerTechs: techIdsWithPrereqsMetForRecipient(
+          Array.from(ownerResearchedTechs(ME())),
+          ownerResearchedTechs(proposerId === ME() ? responderId : proposerId),
+          data.tech,
+        ),
         partnerTechs: Array.from(ownerResearchedTechs(proposerId === ME() ? responderId : proposerId)),
         // r3 (zarzut 5): tempo gry do wyceny technologii nośnika (ta sama wycena co koszyk).
         tempoGry: player.tempoGry ?? 'standardowa',
@@ -30913,10 +30919,71 @@ async function boot(): Promise<void> {
         if (!pending) return { converted: false, accepted: false, reason: 'nie skonwertowano' };
         const result = resolvePlayerAcceptsAiPending(
           pending, turn, undefined,
-          { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) },
+          { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId), carrierCtx: buildProposalEvalContext(pending.fromOwnerId, pending.toOwnerId) },
         );
         applyProposalOutcome(ownerId, ME(), result, pending.payload, pending.actionId);
         return { converted: true, accepted: !!result.accepted, reason: result.reason ?? null };
+      },
+      // R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1 (r3): hooki WYŁĄCZNIE do tools/diplo-treaty-payment-live-test.cjs.
+      // Nie reimplementują logiki — akceptacja/propozycja idzie REALNYMI funkcjami (resolvePlayerAcceptsAiPending /
+      // evaluateProposal → applyProposalOutcome → transferBasketItems). Hooki tylko ustawiają zapasy i czytają stan.
+      treatyPaySetHoldingsForTest: (ownerId: number, holdings: Record<string, number>, techs?: string[]): void => {
+        for (const [key, qty] of Object.entries(holdings)) {
+          if (key === 'zloto') { setOwnerTreasury(ownerId, qty); continue; }
+          const own = cities.filter(c => c.ownerId === ownerId);
+          own.forEach((c, i) => { c.surowce = c.surowce ?? {}; c.surowce[key] = i === 0 ? qty : 0; });
+        }
+        if (techs) {
+          if (isHuman(ownerId)) {
+            const st = playerStateByHuman.get(ownerId)!;
+            st.zbadane.clear();
+            for (const t of techs) st.zbadane.add(t);
+            player.zbadane = st.zbadane;
+          } else {
+            aiResearchDone.set(ownerId, new Set(techs));
+          }
+        }
+        markCityStateDirty();
+      },
+      treatyPayHoldingsForTest: (ownerId: number): { holdings: Record<string, number>; techs: string[] } => ({
+        holdings: { ...peaceTailPricingForPayer(ownerId, ME(), peaceTailWiringDeps()).holdings },
+        techs: Array.from(ownerResearchedTechs(ownerId)),
+      }),
+      // Akceptacja oferty AI-traktatu przez gracza: ta sama ścieżka co przycisk „Przyjmij" (main.ts ~22717).
+      treatyPayAcceptAiPendingForTest: (fromOwnerId: number, actionId: string, payload: Record<string, unknown>): { accepted: boolean; reason: string | null; carrier: { items: Array<{ typ: string; id: string; ilosc: number }>; side: string; coveredPn: number } | null; windowCarrier: { items: Array<{ typ: string; id: string; ilosc: number }>; side: string } | null; windowReason: string | null; dealKind: string | null } => {
+        const pending: PendingProposal = {
+          id: 'treatypay-test-' + fromOwnerId + '-' + actionId, fromOwnerId, toOwnerId: ME(),
+          actionId: actionId as ProposalActionId, payload: payload as ProposalPayload,
+          createdTurn: turn, expiresTurn: turn + 5, source: 'ai',
+        };
+        const ctx = buildProposalEvalContext(fromOwnerId, ME());
+        // Wiersz okna (evaluateProposal) liczony PRZED akceptacją — z tych samych zapasów co realna akceptacja.
+        const windowRes = evaluateProposal({ actionId: pending.actionId, proposerOwnerId: fromOwnerId, responderOwnerId: ME(), payload: pending.payload }, ctx);
+        const result = resolvePlayerAcceptsAiPending(
+          pending, turn, undefined,
+          { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(fromOwnerId, ME()), carrierCtx: ctx },
+        );
+        applyProposalOutcome(fromOwnerId, ME(), result, pending.payload, pending.actionId);
+        return {
+          accepted: !!result.accepted, reason: result.reason ?? null,
+          carrier: result.treatyCarrier ? { items: result.treatyCarrier.items.map(i => ({ ...i })), side: result.treatyCarrier.side, coveredPn: result.treatyCarrier.coveredPn } : null,
+          windowCarrier: windowRes.treatyCarrier ? { items: windowRes.treatyCarrier.items.map(i => ({ ...i })), side: windowRes.treatyCarrier.side } : null,
+          windowReason: windowRes.accepted ? null : (windowRes.reason ?? null),
+          dealKind: result.deal ? String(result.deal.rodzaj) : null,
+        };
+      },
+      // Propozycja gracza→AI: evaluateProposal (ten sam ctx co okno) → applyProposalOutcome.
+      treatyPayProposeAsPlayerForTest: (aiId: number, actionId: string, payload: Record<string, unknown>): { accepted: boolean; reason: string | null; carrier: { items: Array<{ typ: string; id: string; ilosc: number }>; side: string; coveredPn: number } | null; dealKind: string | null } => {
+        const result = evaluateProposal(
+          { actionId: actionId as ProposalActionId, proposerOwnerId: ME(), responderOwnerId: aiId, payload: payload as ProposalPayload },
+          buildProposalEvalContext(ME(), aiId),
+        );
+        applyProposalOutcome(ME(), aiId, result, payload as ProposalPayload, actionId as ProposalActionId);
+        return {
+          accepted: !!result.accepted, reason: result.reason ?? null,
+          carrier: result.treatyCarrier ? { items: result.treatyCarrier.items.map(i => ({ ...i })), side: result.treatyCarrier.side, coveredPn: result.treatyCarrier.coveredPn } : null,
+          dealKind: result.deal ? String(result.deal.rodzaj) : null,
+        };
       },
     };
 
@@ -30952,7 +31019,7 @@ async function boot(): Promise<void> {
         const pending = aiCommandToPendingProposal(cmd, ownerId, ME(), turn);
         if (!pending) return { accepted: false, reason: 'nie skonwertowano' };
         pending.payload = { ...pending.payload, turns };
-        const result = resolvePlayerAcceptsAiPending(pending, turn, undefined, { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId) });
+        const result = resolvePlayerAcceptsAiPending(pending, turn, undefined, { hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(pending.fromOwnerId, pending.toOwnerId), carrierCtx: buildProposalEvalContext(pending.fromOwnerId, pending.toOwnerId) });
         applyProposalOutcome(ownerId, ME(), result, pending.payload, pending.actionId);
         return { accepted: !!result.accepted, reason: result.reason ?? null };
       },
@@ -31897,7 +31964,7 @@ async function boot(): Promise<void> {
           negotiationTable.splice(idx, 1);
           const atWar = getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna';
           const result = resolvePlayerAcceptsAiPending(
-            negotiationToLegacyPending(entry), turn, _menuDifficulty, { atWar, hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId) },
+            negotiationToLegacyPending(entry), turn, _menuDifficulty, { atWar, hasTradeTech: ownerHasTradeTech, tradeEra: dealTradeEraForOwners(entry.proposerOwnerId, entry.responderOwnerId), carrierCtx: buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId) },
           );
           applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
           refreshD1bHud();

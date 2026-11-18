@@ -2923,6 +2923,58 @@ export function resolvePlayerAcceptsAiPending(
   difficulty: GameDifficulty = 'normal',
   // R-HANDEL-WYMIANA-TECH-GATE-Q1: `hasTradeTech` opcjonalny — wsteczna zgodność
   // dla wywołujących spoza allowlisty tego tematu (undefined = bramka pominięta).
+  // R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1 (r3): `carrierCtx` = ten sam kontekst oceny co w oknie propozycji
+  // (buildProposalEvalContext). Gdy podany, akceptacja oferty AI-traktatu (autor = AI) z parytetem siły dostaje
+  // TEN SAM nośnik dopłaty D co wiersz okna (attachTreatyCarrier z zapasów GRACZA) albo odmowę, gdy zapasów brak.
+  opts?: { atWar?: boolean; hasTradeTech?: (ownerId: number) => boolean; tradeEra?: number; carrierCtx?: ProposalEvalContext },
+): ProposalEvalResult {
+  const result = resolvePlayerAcceptsAiPendingBase(pending, turn, difficulty, opts);
+  return applyTreatyCarrierToAiAcceptance(pending, difficulty, opts?.carrierCtx, result);
+}
+
+/**
+ * Nośnik dopłaty D przy akceptacji oferty AI przez gracza (r3, defekt główny FC): realna akceptacja idzie przez
+ * resolvePlayerAcceptsAiPending, która nie liczyła parytetu — wiersz okna obiecywał płatność, a przelewu nie było.
+ * Tylko traktaty z TREATY_CARRIER_ACTIONS i tylko gdy autorem jest strona inna niż gracz (kierunek AI→gracz;
+ * kierunek gracz→AI przechodzi przez evaluateProposal, który już dołącza nośnik).
+ * Bez zapasów pokrywających D: odmowa z tym samym powodem co bramka okna (treatyParityPowerGate).
+ */
+function applyTreatyCarrierToAiAcceptance(
+  pending: PendingProposal,
+  difficulty: GameDifficulty,
+  ctx: ProposalEvalContext | undefined,
+  result: ProposalEvalResult,
+): ProposalEvalResult {
+  if (!ctx || !result.accepted || !result.deal) return result;
+  if (!TREATY_CARRIER_ACTIONS.has(pending.actionId)) return result;
+  if (pending.fromOwnerId === 0) return result;
+  if (!ctx.treatyPower || !treatyParityEnabled(pending.actionId)) return result;
+  const proposal: DiplomaticProposal = {
+    actionId: pending.actionId,
+    proposerOwnerId: pending.fromOwnerId,
+    responderOwnerId: pending.toOwnerId,
+    payload: pending.payload,
+  };
+  const pnOpts: ResolveProposalPnOptions = {
+    difficulty: ctx.difficulty ?? difficulty,
+    proposerOwnerId: proposal.proposerOwnerId,
+    playerOwnerId: 0,
+    actionId: proposal.actionId,
+    tradeEra: ctx.tradeEra,
+    ...proposalPnTurnsMultiplier(proposal.payload),
+  };
+  const gate = treatyParityPowerGate(
+    proposal.actionId, proposal.payload, ctx.relation, pnOpts, ctx.treatyPower, treatyWearinessLevelOf(ctx),
+    ctx.playerStock ?? ctx.payerStock, ctx.tradeEra, treatyCarrierTechsOf(ctx),
+  );
+  if (gate) return { accepted: false, reason: gate.reason, treatyPayment: gate.treatyPayment };
+  return attachTreatyCarrier(proposal, ctx, result);
+}
+
+function resolvePlayerAcceptsAiPendingBase(
+  pending: PendingProposal,
+  turn: number,
+  difficulty: GameDifficulty,
   opts?: { atWar?: boolean; hasTradeTech?: (ownerId: number) => boolean; tradeEra?: number },
 ): ProposalEvalResult {
   const { actionId, fromOwnerId, toOwnerId, payload } = pending;
