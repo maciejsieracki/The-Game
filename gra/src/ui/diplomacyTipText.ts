@@ -45,3 +45,15 @@ export function detailTipAttr(parts: ReadonlyArray<string | null | undefined | f
     .join('\n');
   return txt ? ' title="' + escTipAttr(txt) + '"' : '';
 }
+
+/**
+ * Tekst fragmentu HTML z zachowaniem treści atrybutów `title` (dymki zagnieżdżone w fragmencie).
+ * Sama `plainTextFromHtml` gubi tekst `title`, a wyjaśnienie ma zostać w tooltipie, nie zniknąć
+ * (R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1).
+ */
+export function plainTextWithTitles(html: string): string {
+  const titles = Array.from(html.matchAll(/ title="([^"]*)"/g))
+    .map(m => plainTextFromHtml(m[1] ?? ''))
+    .filter(t => t.length > 0);
+  return [plainTextFromHtml(html), ...titles].filter(t => t.length > 0).join(' · ');
+}

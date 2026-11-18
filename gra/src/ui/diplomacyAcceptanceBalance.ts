@@ -12,7 +12,7 @@ import {
   treatyPwForRole,
 } from '../game/diplomacy-pn-engine';
 import { diplomacyFairGivePn } from '../game/diplomacy-value-catalog';
-import { detailTipAttr, plainTextFromHtml } from './diplomacyTipText';
+import { detailTipAttr, plainTextWithTitles } from './diplomacyTipText';
 import { formatLiczbaPl, formatUmowyCount } from './formatPl';
 
 /** R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (runda 2): dane tooltipa wiersza „Zmęczenie wojną". */
@@ -712,14 +712,17 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
 
   // R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1: na planszy zostają liczby i werdykt;
   // wpływ Relacji, cena pokoju, traktat i „relacja wymagana" zostają w tooltipie bilansu.
+  // Podpowiedź (hint) nie powtarza werdyktu: gdy jej treść już stoi w werdykcie, trafia do tooltipa.
+  const hintDuplicatesVerdict = verdict.html.includes(hint);
   const detailTip = detailTipAttr([
     playerTreatyPw > 0 && treatyBase > 0 && treatyBase !== data.myOfferPn
       ? treatyBaseDetailText(treatyBase, modPct)
       : '',
-    plainTextFromHtml(relModRow),
-    plainTextFromHtml(peacePriceRowHtml(data.responderPreview?.wearinessInfo)),
-    plainTextFromHtml(treatyNote),
-    plainTextFromHtml(relNote),
+    hintDuplicatesVerdict ? hint : '',
+    plainTextWithTitles(relModRow),
+    plainTextWithTitles(peacePriceRowHtml(data.responderPreview?.wearinessInfo)),
+    plainTextWithTitles(treatyNote),
+    plainTextWithTitles(relNote),
   ]);
   return (
     '<div class="da-pn-balance-bar ' + balCls + '"'
@@ -737,7 +740,7 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     + '<div class="da-pn-bal-cell center ' + balCls + '">'
     + '<span class="da-pn-bal-lbl">' + esc(centerLabel) + '</span>'
     + '<span class="da-pn-bal-num ' + deltaCls + '"' + detailTip + '>' + esc(delta) + '</span>'
-    + '<span class="da-pn-bal-hint">' + esc(hint) + '</span>'
+    + (hintDuplicatesVerdict ? '' : '<span class="da-pn-bal-hint">' + esc(hint) + '</span>')
     + '</div>'
     + '<div class="da-pn-bal-cell they">'
     + '<span class="da-pn-bal-lbl">Oni oddają</span>'
@@ -794,7 +797,7 @@ export function renderPnBalancePanelFromBasket(
   // wyliczenia (Relacja, fair min, bilans @ Relacji, werdykt, podsumowanie koszyka) w tooltipie.
   const detailTip = detailTipAttr([
     extraDetails,
-    plainTextFromHtml(renderRelationDealModRowHtml(relTotal, 'trade')),
+    plainTextWithTitles(renderRelationDealModRowHtml(relTotal, 'trade')),
     'PW @ Rel ' + formatLiczbaPl(relTotal) + ': fair min ' + previewFairMin + ' · bilans '
       + (balancePn >= 0 ? '+' : '') + balancePn,
     verdict,
@@ -923,9 +926,9 @@ export function renderPnBalancePanelForTreaty(
   // Relacja, traktat, baza i werdykt zostają w tooltipie bilansu.
   const detailTip = detailTipAttr([
     myDisplay > 0 && base > 0 && base !== myDisplay ? treatyBaseDetailText(base, modPct) : '',
-    plainTextFromHtml(renderRelationDealModRowHtml(relTotal, 'treaty')),
-    plainTextFromHtml(treatyMetaHtml(playerPw, partnerPw, relTotal, treatyMetaLabel, base, basketNet)),
-    plainTextFromHtml(relNote),
+    plainTextWithTitles(renderRelationDealModRowHtml(relTotal, 'treaty')),
+    plainTextWithTitles(treatyMetaHtml(playerPw, partnerPw, relTotal, treatyMetaLabel, base, basketNet)),
+    plainTextWithTitles(relNote),
     verdict,
   ]);
   return (

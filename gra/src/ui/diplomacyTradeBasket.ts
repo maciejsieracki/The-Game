@@ -1416,12 +1416,12 @@ export function dealDurationHtml(
   ).join('');
   return (
     '<div class="cdb-duration">'
-      + '<label for="cdb-deal-turns">' + esc(label) + '</label>'
+      // R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1: opis czasu umowy (sub) przeniesiony do tooltipa etykiety.
+      + '<label for="cdb-deal-turns"' + detailTipAttr([sub]) + '>' + esc(label) + '</label>'
       + '<div class="cdb-chip-row cdb-turn-presets">' + turnChips + '</div>'
       + (allowIndefinite
         ? qtyStepperHtml('cdb-deal-turns', 'deal', turns, 1, maxTurns, 1, { label: 'Bezterminowo', action: 'indefinite-exchange' })
         : qtyStepperHtml('cdb-deal-turns', 'deal', turns, 1, maxTurns))
-      + '<p class="cdb-sub">' + esc(sub) + '</p>'
     + '</div>'
   );
 }

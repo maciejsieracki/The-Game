@@ -210,8 +210,11 @@ check('[D] koszyk: podpis „Co turę — widoczna w Aktywnych traktatach”', b
 // Wzmocnienie: podpis zależy od trybu w JEDNYM miejscu renderu (resourceTradeModeHtml), a ta funkcja
 // jest wywoływana z renderBasket z bieżącym resourceTradeMode (chip → refresh → renderBasket).
 // UWAGA: to asercja źródłowa, NIE render w przeglądarce — efekt w UI pozostaje NIE_ZMIERZONY tu.
-check('[D] koszyk: podpis w resourceTradeModeHtml z gałęzią po trybie (mode === \'once\' ? … : …)',
-  /cdb-res-mode-hint/.test(basket) && /mode === 'once'\s*\?\s*'Jednorazowo — nie pojawi się w Aktywnych traktatach'\s*:\s*'Co turę — widoczna w Aktywnych traktatach'/.test(basket));
+// R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1: podpis trybu przeniesiony z widocznego <p> do tooltipa etykiety
+// „Tryb wymiany” (detailTipAttr), nadal w resourceTradeModeHtml z gałęzią po trybie.
+check('[D] koszyk: podpis w resourceTradeModeHtml z gałęzią po trybie (mode === \'once\' ? … : …) — w tooltipie etykiety',
+  /detailTipAttr\(\[mode === 'once'\s*\?\s*'Jednorazowo — nie pojawi się w Aktywnych traktatach'\s*:\s*'Co turę — widoczna w Aktywnych traktatach'\]\)/.test(basket)
+  && !/<p class="cdb-sub cdb-res-mode-hint">/.test(basket));
 check('[D] koszyk: renderBasket przekazuje bieżący resourceTradeMode do resourceTradeModeHtml',
   /html \+= resourceTradeModeHtml\(resourceTradeMode, showMode\);/.test(basket));
 

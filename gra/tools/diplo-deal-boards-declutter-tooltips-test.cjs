@@ -34,7 +34,7 @@ function buildRenderers(moduleFile, tag) {
   const entry = path.resolve(UI, `.dip-declutter-entry-${tag}-${PID}.ts`);
   const bundle = path.resolve(__dirname, `.dip-declutter-${tag}-${PID}.cjs`);
   fs.writeFileSync(entry, [
-    `export { renderPnBalancePanelFromBasket, renderPnBalancePanelForTreaty } from './${base}';`,
+    `export { renderPnBalancePanelFromBasket, renderPnBalancePanelForTreaty, renderPnBalancePanelHtml } from './${base}';`,
     '',
   ].join('\n'), 'utf8');
   try {
@@ -79,12 +79,26 @@ function runScenarios(M) {
   const treaty = M.renderPnBalancePanelForTreaty(
     50, 40, 10, 100, 'Sojusz', undefined, 'Traktat', 120, 100,
   );
-  return { basket, treaty };
+  // Główny panel PW (stół, pokój/zawieszenie): wariant z relacją 55,3, wiszącym traktatem i werdyktem.
+  const main = M.renderPnBalancePanelHtml({
+    actionLabel: 'Propozycja pokoju',
+    direction: 'own',
+    myOfferPn: 111,
+    theirOfferPn: 200,
+    theirBalance: { mode: 'treaty', balancePn: -89, accepted: false, statusLabel: 'Brakuje 89 PW',
+      treatyBasePn: 200, treatyEffectivePn: 200, relCurrent: 55.3, relationModPct: -44.7 },
+    myBalance: { mode: 'treaty', balancePn: -89, accepted: false, statusLabel: 'Brakuje 89 PW',
+      treatyBasePn: 200, treatyEffectivePn: 111, relCurrent: 55.3, relationModPct: -44.7 },
+    canAccept: false,
+    awaitingAiResponse: false,
+    responderPreview: { accepted: false, reason: 'Brakuje 89 PW', pwBalance: -89 },
+  });
+  return { basket, treaty, main };
 }
 
 // ---- Wariant oryginalny (kod z dyspozycji) ----
 const M = buildRenderers(SRC_MODULE, 'orig');
-const { basket, treaty } = runScenarios(M);
+const { basket, treaty, main } = runScenarios(M);
 
 check('koszyk: widoczne etykiety trzech pól PW zostają', ['My oddajemy', 'Bilans (Oni)', 'Oni oddają']
   .every(l => visibleText(basket).includes(l)), visibleText(basket));
@@ -99,6 +113,27 @@ check('traktat: brak wyjaśnień poza tooltipem (widoczny tekst)', boardViolatio
 check('traktat: tooltip niesie treść traktatu i Relacji',
   /Relacja|Traktat/.test(tooltipText(treaty)) && tooltipText(treaty).length > 0,
   tooltipText(treaty));
+
+check('główny panel PW: brak wyjaśnień poza tooltipem (widoczny tekst)', boardViolations(main).length === 0,
+  boardViolations(main));
+check('główny panel PW: tooltip bilansu niesie wpływ Relacji i traktat (treść nie ginie)',
+  /Relacja z perspektywy AI 55,3/.test(tooltipText(main)) && /Traktat: Ty: baza 200/.test(tooltipText(main))
+    || /Baza traktatu 200 PW/.test(tooltipText(main)),
+  tooltipText(main));
+check('główny panel PW: widoczne są trzy pola liczbowe i werdykt', ['My oddajemy', 'Oni oddają', 'Brakuje u nich']
+  .every(l => visibleText(main).includes(l)), visibleText(main));
+
+// ---- Źródło: czas umowy (dealDurationSub) i szybka wymiana — asercje na ułożeniu i tooltipach ----
+const basketSrc = fs.readFileSync(path.resolve(GRA, 'src/ui/diplomacyTradeBasket.ts'), 'utf8');
+const audSrc = fs.readFileSync(path.resolve(UI, 'diplomacyAudience.ts'), 'utf8');
+check('czas umowy: opis dealDurationSub NIE jest widocznym <p class="cdb-sub"> (przeniesiony do tooltipa etykiety)',
+  !/<p class="cdb-sub">' \+ esc\(sub\)/.test(basketSrc)
+  && /<label for="cdb-deal-turns"' \+ detailTipAttr\(\[sub\]\)/.test(basketSrc));
+check('szybka wymiana: podpis „auto-uczciwa oferta” NIE jest widocznym tekstem przycisku (tylko tooltip)',
+  /<span>SZYBKA WYMIANA<\/span>/.test(audSrc) && !/<small>auto-uczciwa oferta<\/small>/.test(audSrc));
+check('szybka wymiana: wiersz szybkiej wymiany renderowany PRZED paskiem akcji (pierwszy element audiencji)',
+  /actionBarHtml\(st, 'top'\)[\s\S]*?actionBarHtml\(st, 'bar'\)/.test(audSrc.slice(audSrc.indexOf('function render(): void')))
+  && /return quickRow \+ bar;/.test(audSrc));
 
 // ---- Mutacja: wyjaśnienie wraca do widocznego tekstu, test MUSI czerwienieć ----
 const orig = fs.readFileSync(SRC_MODULE, 'utf8');
