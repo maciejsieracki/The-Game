@@ -588,7 +588,7 @@ impl CityRenderer {
     }
 
     /// `applyFogVisibility(vis, fogOn, playerOwnerId = HUMAN_OWNER_PRIMARY)`
-    /// (`cities.ts:657-680`); `vis` holds `` `${q},${r}` `` keys.
+    /// (`cities.ts:740-763`); `vis` holds `` `${q},${r}` `` keys.
     pub fn apply_fog_visibility(
         &mut self,
         vis: &HashSet<String>,

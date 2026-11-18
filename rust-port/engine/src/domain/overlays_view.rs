@@ -1,6 +1,6 @@
 //! Producent nakladek mapy (`OverlaysViewDto`, kontrakt P4-1 §3.7).
 //!
-//! R-RUSTPORT-P4-1F6: `buildHighlight` (4 galezie `refreshBuildHighlight`, `main.ts:16351-16395`
+//! R-RUSTPORT-P4-1F6: `buildHighlight` (4 galezie `refreshBuildHighlight`, `main.ts:16351-16396`
 //! @ `07d2fbd72`) i `selection` (`setSelectionHex(u.q, u.r, u.ownerId)`, `main.ts:7119`).
 //!
 //! Decyzja techniczna (kontrakt §3.7: „silnik (legalnosc budowy + odjecie heksow z cofaniem w tej
@@ -220,7 +220,7 @@ fn no_layer() -> BuildHighlightDto {
 /// `false` = galaz „brak trybu budowy” (`:16369-16373`; [`build_highlight`] zwraca brak warstwy).
 ///
 /// R-RUSTPORT-P4-1Q6-2 (dlug Q6-2): w aktywnym trybie budowy JEDNA warstwa `setHighlight` pinu
-/// nalezy do trybu budowy rowniez przy PUSTYM zbiorze heksow (`setHighlight(new Set())` `:16359`,
+/// nalezy do trybu budowy rowniez przy PUSTYM zbiorze heksow (`setHighlight(new Set())` `:16360`,
 /// `:16366`, `:16392-16395`; `clearHighlight()` przy kopalni `:16387`), wiec zasieg ruchu znika.
 /// Kontrakt DTO nie odroznia „tryb aktywny, brak heksow” od „brak trybu” (puste `hexes` = brak
 /// warstwy), dlatego [`unit_overlays_view`] wygasza `reachable`, gdy ta funkcja zwraca `true`.
@@ -231,11 +231,11 @@ pub fn build_highlight_mode_active(ui: &BuildHighlightUi<'_>) -> bool {
         || (ui.build_mode_open && ui.active_improvement_key.is_some_and(|k| !k.is_empty()))
 }
 
-/// `refreshBuildHighlight()` (`main.ts:16351-16395` @ `07d2fbd72`) jako DTO.
+/// `refreshBuildHighlight()` (`main.ts:16351-16396` @ `07d2fbd72`) jako DTO.
 ///
 /// Kolejnosc galezi jak w pinie: zalozenie miasta (`:16352-16361`), cud (`:16363-16367`), brak
 /// trybu budowy (`:16369-16373`), kopalnia zloza (`:16386-16390`), pozostale ulepszenia
-/// (`:16391-16395`).
+/// (`:16392-16395`).
 #[must_use]
 pub fn build_highlight(
     ui: &BuildHighlightUi<'_>,
@@ -1156,7 +1156,7 @@ mod q6_unit_overlays_tests {
         assert_eq!(v.selection, None);
     }
 
-    /// Tryby `refreshBuildHighlight` przez agregator (`main.ts:16351-16395`).
+    /// Tryby `refreshBuildHighlight` przez agregator (`main.ts:16351-16396`).
     #[test]
     fn q6_tryby_budowy_przez_agregator() {
         let state = corridor(6, 3);

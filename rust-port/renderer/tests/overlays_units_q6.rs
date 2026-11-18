@@ -16,7 +16,7 @@
 //! The renderer has no engine dependency (D-DTO-1 = A), so the hand-off is the
 //! DTO literal. Every expected renderer state is built by calling the
 //! renderer the way the pin calls it (`syncPlayerUnitSelectionOnMap`,
-//! `main.ts:7115-7134`; `refreshBuildHighlight`, `:16351-16395`;
+//! `main.ts:7115-7134`; `refreshBuildHighlight`, `:16351-16396`;
 //! `refreshPlannedMarchPreview`, `:31146-31179`).
 
 use civ_renderer::map_units::consts::{HIGHLIGHT_OPACITY, IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY};
@@ -255,9 +255,9 @@ fn build(kind: vm::BuildHighlightKind, qs: &[i32]) -> vm::BuildHighlightDto {
     }
 }
 
-/// `refreshBuildHighlight` (`main.ts:16351-16395`), one layer: found city and
-/// wonder → default opacity (`:16359`, `:16366`), improvement →
-/// `IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY` (`:16391-16394`), deposit mine →
+/// `refreshBuildHighlight` (`main.ts:16351-16396`), one layer: found city and
+/// wonder → default opacity (`:16360`, `:16366`), improvement →
+/// `IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY` (`:16392-16395`), deposit mine →
 /// `clearHighlight()` plus the mine layer (`:16386-16390`). A build layer
 /// replaces the reachable range (decision Q6-2).
 #[test]

@@ -436,7 +436,7 @@ fn city_fog_hides_foreign_cities_outside_visible() {
 #[test]
 fn own_city_outside_visible_stays_visible() {
     // Own city at an unexplored hex: `grp.ownerId === playerOwnerId` → visible
-    // (`cities.ts:657-680`).
+    // (`cities.ts:740-763`).
     let cs = vec![city(
         20,
         player(ME),

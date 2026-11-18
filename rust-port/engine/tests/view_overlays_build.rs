@@ -1,6 +1,6 @@
 //! R-RUSTPORT-P4-1F6: producent `overlays.buildHighlight` i `overlays.selection`.
 //!
-//! Wektory wyprowadzone z kodu pinu `07d2fbd72` (`gra/src/main.ts:16351-16395`
+//! Wektory wyprowadzone z kodu pinu `07d2fbd72` (`gra/src/main.ts:16351-16396`
 //! `refreshBuildHighlight`, `gra/src/render/buildHighlight.ts:22-28` `filterBuildHighlightHexes`,
 //! `gra/src/map/improvement-build.ts:719-728` `MINE_IMPROVEMENT_KEYS`/`isMineImprovementKey`,
 //! `gra/src/main.ts:7119` `setSelectionHex`). Wartosci oczekiwane z kodu pinu, nie z uruchomionego
@@ -72,7 +72,7 @@ fn deposit_mine_maps_to_mine_layer() {
     }
 }
 
-/// Zwykle ulepszenie -> `Improvement` (`main.ts:16391-16395`, krycie `IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY`).
+/// Zwykle ulepszenie -> `Improvement` (`main.ts:16392-16395`, krycie `IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY`).
 #[test]
 fn plain_improvement_maps_to_improvement_layer() {
     let dto = run(&ui(false, false, true, Some("farma")), &HashSet::new());
