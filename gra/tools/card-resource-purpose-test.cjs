@@ -237,7 +237,7 @@ check('[A] silnik: bonus.pieniadz ulepszenia terenu wpada w TileYield.handel (po
 const waluta = techCards['Waluta'];
 check('[B] Waluta/Mennica: podział podatku na naukę, pieniądz i luksus ZOSTAJE (klasa B)',
   waluta.top5[0].zdanie.includes('naukę, pieniądz i luksus') && waluta.cmz[0].korzysc.includes('pieniądz i nauka'));
-check('[B] adaptery: utrzymanie budynku wciąż liczone w Pieniądzu (opłacane z kasy)', /parts\.push\(`\$\{gold\} Pieniądza`\)/.test(fs.readFileSync(path.join(GRA, 'src/ui/entityCards/buildingAdapter.ts'), 'utf8')));
+check('[B] adaptery: utrzymanie budynku wciąż liczone w Pieniądzu (opłacane z kasy)', /\.\.\.\(gold > 0 \? \[\{ id: 'pieniadz', amount: gold \}\] : \[\]\)/.test(fs.readFileSync(path.join(GRA, 'src/ui/entityCards/buildingAdapter.ts'), 'utf8')));
 check('[C] port/port_wielki: premia morska (+1 pieniądza za trasę morską) bez zmian — klasa C do decyzji',
   bldCards.port.top5[2].tytul === '+1 pieniądza za każdą trasę morską ponad pierwszą' && /premii \+1 pieniądza za trasę morską/.test(bldCards.port_wielki.top5[1].zdanie));
 
@@ -261,7 +261,7 @@ check('[J] korekty zapisane w card-text-corrections.cjs mają powód (c, r) i kl
 // ------------------------------------------------------------------ [W] adaptery „Plony i efekty”
 const bAd = fs.readFileSync(path.join(GRA, 'src/ui/entityCards/buildingAdapter.ts'), 'utf8');
 const iAd = fs.readFileSync(path.join(GRA, 'src/ui/entityCards/improvementAdapter.ts'), 'utf8');
-check('[W] buildingAdapter: wiersz plonu budynku z kluczem `pieniadz` ma etykietę „Podatek”', /\{ key: 'pieniadz', label: 'Podatek' \}/.test(bAd));
+check('[W] buildingAdapter: wiersz plonu budynku z kluczem `pieniadz` ma etykietę „Podatek”', /\{ key: 'pieniadz', label: 'Podatek'[^}]*\}/.test(bAd));
 check('[W] improvementAdapter: `pieniadz` i `handel` ulepszenia = jeden wiersz „Podatek” (suma)',
   /pieniadz: 'Podatek'/.test(iAd) && /podatekSuma/.test(iAd));
 
