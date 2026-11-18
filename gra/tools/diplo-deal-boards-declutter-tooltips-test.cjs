@@ -110,15 +110,14 @@ check('koszyk: tooltip liczby Bilans niesie wyliczenia (fair min, Rel, szczegó�
   tooltipText(basket));
 check('traktat: brak wyjaśnień poza tooltipem (widoczny tekst)', boardViolations(treaty).length === 0,
   boardViolations(treaty));
-check('traktat: tooltip niesie treść traktatu i Relacji',
-  /Relacja|Traktat/.test(tooltipText(treaty)) && tooltipText(treaty).length > 0,
+check('traktat: tooltip niesie wpływ Relacji i bazę traktatu',
+  /Relacja z perspektywy AI \d/.test(tooltipText(treaty)) && /\(baza \d+\)/.test(tooltipText(treaty)),
   tooltipText(treaty));
 
 check('główny panel PW: brak wyjaśnień poza tooltipem (widoczny tekst)', boardViolations(main).length === 0,
   boardViolations(main));
-check('główny panel PW: tooltip bilansu niesie wpływ Relacji i traktat (treść nie ginie)',
-  /Relacja z perspektywy AI 55,3/.test(tooltipText(main)) && /Traktat: Ty: baza 200/.test(tooltipText(main))
-    || /Baza traktatu 200 PW/.test(tooltipText(main)),
+check('główny panel PW: tooltip bilansu niesie wpływ Relacji i bazę traktatu (bez alternatyw)',
+  /Relacja z perspektywy AI 55,3/.test(tooltipText(main)) && /\(baza 200, Relacja −44,7% siła\)/.test(tooltipText(main)),
   tooltipText(main));
 check('główny panel PW: widoczne są trzy pola liczbowe i werdykt', ['My oddajemy', 'Oni oddają', 'Brakuje u nich']
   .every(l => visibleText(main).includes(l)), visibleText(main));

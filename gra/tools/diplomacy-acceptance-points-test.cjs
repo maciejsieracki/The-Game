@@ -609,7 +609,7 @@ ok(tradeTablePanel52.includes('80 PW'), 'stół negocjacji umowa_handlowa: partn
 const tradePanel896 = mod.renderPnBalancePanelForTreaty(72, 0, 0, 89.6, 'Traktat handlowy', 0, 'Traktat', 80, 80);
 ok(!tradePanel896.includes('000000'), 'umowa_handlowa panel @ rel 89.6: bez IEEE junk');
 ok(tradePanel896.includes('−10,4%'), 'umowa_handlowa panel @ rel 89.6: badge −10,4%');
-ok(tipTextOf(tradePanel896).includes('Baza traktatu 80 PW, Relacja −10,4% siła'), 'umowa_handlowa panel @ rel 89.6: hint baza z czystym mod% (w tooltipie)');
+ok(tipTextOf(tradePanel896).includes('(baza 80, Relacja −10,4% siła)'), 'umowa_handlowa panel @ rel 89.6: hint baza z czystym mod% (w tooltipie)');
 
 // ---------------------------------------------------------------------------
 // P-DYPLOMACJA-AI-OFERTY-STRUKTURALNIE-NIEUCZCIWE (Maciej, zrzuty ekranu 2026-08-1x):

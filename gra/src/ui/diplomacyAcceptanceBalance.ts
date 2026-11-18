@@ -612,12 +612,12 @@ export function peacePriceRowHtml(info?: WearinessRowInfo): string {
   return '<div class="da-pn-bal-meta weariness" title="' + esc(tip) + '">' + esc(txt) + '</div>';
 }
 
-/** Szczegóły bazy traktatu (dawniej widoczny dopisek „(baza …)") — trafiają do tooltipa. */
+/** Szczegóły bazy traktatu (dawniej widoczny dopisek „(baza …)") — trafiają do tooltipa, wording 1:1. */
 function treatyBaseDetailText(basePw: number, modPct?: number): string {
   const modHint = modPct != null && modPct !== 0
     ? `, Relacja ${formatModPctSigned(modPct)} siła`
     : '';
-  return `Baza traktatu ${basePw} PW${modHint}`;
+  return `(baza ${basePw}${modHint})`;
 }
 
 export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): string {
@@ -715,6 +715,7 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
   // Podpowiedź (hint) nie powtarza werdyktu: gdy jej treść już stoi w werdykcie, trafia do tooltipa.
   const hintDuplicatesVerdict = verdict.html.includes(hint);
   const detailTip = detailTipAttr([
+    PW_EXCHANGE_TOOLTIP,
     playerTreatyPw > 0 && treatyBase > 0 && treatyBase !== data.myOfferPn
       ? treatyBaseDetailText(treatyBase, modPct)
       : '',
@@ -796,6 +797,7 @@ export function renderPnBalancePanelFromBasket(
   // R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1: plansza = trzy liczby + krótka podpowiedź;
   // wyliczenia (Relacja, fair min, bilans @ Relacji, werdykt, podsumowanie koszyka) w tooltipie.
   const detailTip = detailTipAttr([
+    PW_EXCHANGE_TOOLTIP,
     extraDetails,
     plainTextWithTitles(renderRelationDealModRowHtml(relTotal, 'trade')),
     'PW @ Rel ' + formatLiczbaPl(relTotal) + ': fair min ' + previewFairMin + ' · bilans '
@@ -925,6 +927,7 @@ export function renderPnBalancePanelForTreaty(
   // R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1: na planszy trzy liczby i podpowiedź;
   // Relacja, traktat, baza i werdykt zostają w tooltipie bilansu.
   const detailTip = detailTipAttr([
+    PW_EXCHANGE_TOOLTIP,
     myDisplay > 0 && base > 0 && base !== myDisplay ? treatyBaseDetailText(base, modPct) : '',
     plainTextWithTitles(renderRelationDealModRowHtml(relTotal, 'treaty')),
     plainTextWithTitles(treatyMetaHtml(playerPw, partnerPw, relTotal, treatyMetaLabel, base, basketNet)),

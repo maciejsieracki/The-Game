@@ -2455,16 +2455,20 @@ function renderBasket(
 
   const title = modalOpts?.dialogTitle
     ?? (mode === 'gift' ? 'Prezent / dar' : action.label);
-  const sub = isTreatyOnly
-    ? 'Tylko warunki tej umowy · partner: <strong>' + esc(ctx.civName) + '</strong>'
+  // R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1 (zarzut Evaluatora 6): na planszy zostaje
+  // tylko partner; opis trybu i progi Relacji trafiają do tooltipa podtytułu.
+  const subExplain = isTreatyOnly
+    ? 'Tylko warunki tej umowy'
     : mode === 'treaty'
-      ? 'Ustal warunki traktatu — wymiana PW jest opcjonalna · partner: <strong>' + esc(ctx.civName) + '</strong>'
+      ? 'Ustal warunki traktatu — wymiana PW jest opcjonalna'
       : mode === 'gift'
         ? 'Oddajesz bez towaru w zamian · Rel ≥ ' + progDar
-        : 'Wymiana dwustronna · partner: <strong>' + esc(ctx.civName) + '</strong>';
-  const subTip = mode === 'trade'
-    ? detailTipAttr(['Wymagana Relacja ≥ ' + progHandel + ' (obecnie: ' + rel + ')'])
-    : '';
+        : 'Wymiana dwustronna';
+  const sub = 'partner: <strong>' + esc(ctx.civName) + '</strong>';
+  const subTip = detailTipAttr([
+    subExplain,
+    mode === 'trade' ? 'Wymagana Relacja ≥ ' + progHandel + ' (obecnie: ' + rel + ')' : '',
+  ]);
 
   const validation = validateBasketForm(
     mode, action.id, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode, !!blocked, treatyState,
@@ -2499,7 +2503,7 @@ function renderBasket(
     box.className = 'civ-diplo-basket cdb-treaty-mode cdb-treaty-only-mode cdb-landscape-mode';
     morphBasketMarkup(box,
       '<h3>' + esc(title) + '</h3>' +
-      '<div class="cdb-sub">' + sub + '</div>' +
+      '<div class="cdb-sub"' + subTip + '>' + sub + '</div>' +
       '<div class="cdb-body-scroll">' + scrollBody + '</div>' +
       '<div class="cdb-footer">' + treatyOnlyFooter + '</div>');
     return;

@@ -46,3 +46,36 @@ UWAGI-DLA-ORKIESTRATORA
 
 NASTĘPNY KROK: ponowna ocena Evaluatora (bramka: tsc 0, 5 bramek referencyjnych, testy UI bez regresji).
 DEPLOY/PUSH: NIE WYKONANO
+
+## Runda 3 (odpowiedź na zarzuty Evaluatora 80b9a63f6)
+
+Start: 80b9a63f6 (potomek bazy 98c988d7c). Gałąź: autobot/R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1-r3.
+
+- Zarzut 1 (zrzuty pełnej gry): NIE ZMIERZONO. Brak zrzutu okna „Umowa wymiany surowców”, paska akcji z SZYBKĄ WYMIANĄ i dymka hover w żywej audiencji w tej rundzie. Dowód SZYBKIEJ WYMIANY na górze pozostaje sprawdzeniem po źródle (test). Zrzuty PW pokoju z r2 nie są dowodem gry.
+- Zarzut 2 (natywny title): ODRZUCAM. Okno koszyka ma klasę `civ-diplo-basket` (diplomacyTradeBasket.ts, box.className ok. linii 2499 i 2618); hudTitleTooltip.ts SCOPE_SELECTOR zawiera `.civ-diplo-aud` i `.civ-diplo-basket` (linie 51-52); resolveTarget i przeniesienie title do `data-civ-ori-title` (linie 152-162) zdejmują natywny dymek i pokazują dymek gry. Hover w żywej grze, fokus i dotyk: NIE ZMIERZONO.
+- Zarzut 3 (hint „Poniżej progu fair min” na planszy): ODRZUCAM. Hint w span `.da-pn-bal-hint` to wyłącznie `Brakuje N PW` / `Nadwyżka N PW` / `Równo — spełnia` (diplomacyAcceptanceBalance.ts, ok. linii 787-790). Zdanie „Poniżej progu fair min (…) — ryzyko odrzucenia” jest w `verdict` (ok. linii 794) i trafia tylko do `title` (detailTip). Test FORBIDDEN_ON_BOARD sprawdza widoczny tekst.
+- Zarzut 4 (przeredagowany tekst bazy): PRZYJMUJĘ. Przywrócone brzmienie 1:1 „(baza 80, Relacja −10,4% siła)” (treatyBaseDetailText); asercja w diplomacy-acceptance-points-test.cjs dopasowana (linia 612).
+- Zarzut 5 (tooltip PW zniknął z liczby Bilans; title „Baza traktatu”): PRZYJMUJĘ. PW_EXCHANGE_TOOLTIP dodany na początku detailTip liczby Bilans we wszystkich trzech panelach. Dawny `title="Baza traktatu"` był w pwAmountWithBaseHtml, która nie jest używana; treść bazy jest w tooltipie przez treatyBaseDetailText.
+- Zarzut 6 (podtytuł gift/trade widoczny): PRZYJMUJĘ. Na planszy zostaje tylko „partner: <nazwa>”. Opis trybu (gift „Oddajesz bez towaru w zamian · Rel ≥ …”, trade „Wymiana dwustronna”, treaty „Ustal warunki…”) i „Wymagana Relacja” idą do title podtytułu (diplomacyTradeBasket.ts, subExplain/subTip, również wariant treaty-only).
+- Zarzut 7 (luźne asercje testu declutter): PRZYJMUJĘ częściowo. Dwie asercje z OR i luźnym regexem zastąpione dokładnymi (tooltip niesie „Relacja z perspektywy AI 55,3” i „(baza 200, Relacja −44,7% siła)”; traktat: „Relacja z perspektywy AI <liczba>” i „(baza <liczba>)”). Pozostałe asercje (np. „fair min” w tooltipie koszyka) nadal szersze; nie zmieniano ich w tej rundzie.
+- Zarzut 8 (testy nadpisują tracked png w runs/): PRZYJMUJĘ jako notkę. Przywrócono `git checkout --` zmienionych png w runs/P-DYPLO-BILANS-GATE-… i R-DYPLO-WARUNEK-…; nie wchodzą do commita.
+- Zarzut 9 (terminology 798/1): informacyjne. Wynik identyczny na bazie (tabela poniżej).
+
+Pomiary (surowe wyniki; baza = worktree 98c988d7c, kandydat = ta gałąź):
+
+| test | baza 98c988d7c | kandydat r3 |
+|---|---|---|
+| terminology-trade-vs-tax-test | 798 pass / 1 fail | 798 pass / 1 fail |
+| dyplo-bilans-gate-n-e1-reprodukcja-test | 21 PASS / 1 FAIL | 21 PASS / 1 FAIL |
+| dyplo-pakt-ekspansja-granica-test | 22/26 | 22/26 |
+| dyplo-warunek-niespelniony-czerwony-tooltip-test | 22/26 | 22/26 |
+
+Kandydat r3, pozostałe: tsc --noEmit exit 0; diplo-deal-boards-declutter-tooltips-test 13 pass / 0 fail; diplomacy-acceptance-points-test 304 pass / 0 fail; diplomacy-relation-deal-text-consistent-test 6 pass / 0 fail; diplomacy-trade-era-dom-test 58 pass / 0 fail.
+Testy live (4 timeouty 60 s na kandydacie r2): baza NIE ZMIERZONO; nie uruchamiano ich w tej rundzie.
+
+Środowisko: gra/node_modules to dowiązanie do katalogu w scratchpadzie (npm ci tam, gitignored).
+
+UWAGI-DLA-ORKIESTRATORA: worktree bazy w scratchpadzie (base-98c) do usunięcia przy sprzątaniu. Część 2 nie ruszana. Brak DECISION_REQUIRED.
+RUNDY: 3/5 (Operator Haiku; licznik porażek Haiku tematu = 2, decyzja o Sonnet należy do orkiestratora).
+NASTĘPNY KROK: Evaluator (to samo ID), potem Final Control.
+DEPLOY/PUSH: NIE WYKONANO
