@@ -2,6 +2,7 @@
  * diplomacy-proposals.ts — ocena propozycji dyplomatycznych v1.1 (lane CYW).
  * SILNIK/UI wołają evaluateProposal; EKO tick osobno po akceptacji trybutu.
  */
+import { PEACE_TAIL_ORDER } from './peace-tail-payment';
 import { formatTurCountAcc } from '../ui/formatPl';
 import {
   aiDiplomacyStance,
@@ -191,6 +192,11 @@ export interface ProposalEvalContext {
    * zatwierdzenia liczą tak samo). Brak = globalna epoka handlu.
    */
   tradeEra?: number;
+  /**
+   * R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1: zapas płatnika ogona pokoju (klucz surowca → sztuki), z main.ts.
+   * Brak pola = bez limitu zapasu (testy/AI bez wiązania). Nigdy nie schodzi poniżej zera.
+   */
+  payerStock?: Readonly<Record<string, number>>;
   /** Respekt proponującego (0–100) w oczach respondenta */
   proposerRespekt: number;
   /** Respekt respondenta (0–100) w oczach proponującego */
@@ -1613,13 +1619,31 @@ function evaluateProposalImpl(
         // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (zarzut 5 / wymóg 4): złoto i surowce NIE są
         // słodzikiem pokoju ani rozejmu — w każdej pozycji (słabsza i silniejsza AI) oferta z nimi jest
         // odrzucana. Słodzikiem jest wyłącznie miasto (poniżej, dla 'stronger').
-        const nonCitySweetener = (payload.giveItems ?? []).find(i => i.typ === 'zloto' || i.typ === 'surowiec_ilosc');
-        if (nonCitySweetener) {
+        // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (ABC 2026-11-18, wariant A): ZAKAZ złota/surowców wycofany DLA
+        // POKOJU — końcówka ceny pokoju (po miastach) może być złotem i metalami/rudami (ogon, peace-tail-payment).
+        // Rozejm bez zmian: złoto i surowce nie są słodzikiem rozejmu.
+        const nonCityItems = (payload.giveItems ?? []).filter(i => i.typ === 'zloto' || i.typ === 'surowiec_ilosc');
+        if (actionId !== 'pokoj' && nonCityItems.length > 0) {
           return {
             accepted: false,
             reason: 'Złoto i surowce nie są słodzikiem pokoju ani rozejmu — w ofercie wymagane są wyłącznie miasta',
           };
         }
+        // Ogon pokoju: tylko kolejność z danych (PEACE_TAIL_ORDER), nie więcej sztuk niż zapas płatnika (ctx.payerStock).
+        const tailKeyOf = (i: { typ: string; id: string }): string => (i.typ === 'zloto' ? 'zloto' : i.id);
+        const tailBad = nonCityItems.find(i => !PEACE_TAIL_ORDER.includes(tailKeyOf(i)));
+        if (tailBad) {
+          return { accepted: false, reason: `Ogon ceny pokoju: nieobsługiwany surowiec „${tailKeyOf(tailBad)}” (dozwolone: złoto, brąz, żelazo, rudy)` };
+        }
+        if (ctx.payerStock) {
+          const short = nonCityItems.find(i => (i.ilosc ?? 0) > (ctx.payerStock?.[tailKeyOf(i)] ?? 0));
+          if (short) {
+            return { accepted: false, reason: `Ogon ceny pokoju: brak zapasu „${tailKeyOf(short)}” w państwie płatnika` };
+          }
+        }
+        const tailPn = nonCityItems.length > 0
+          ? resolveProposalPn({ giveItems: nonCityItems, actionId }, pnOpts).givePn
+          : 0;
         // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: militarnie silniejsza AI odrzuca pokój, chyba że
         // oferta zawiera MIASTO gracza o wartości PN ≥ ceny. Liczą się WYŁĄCZNIE miasta w giveItems
         // (pieniądze i surowce nie są słodzikiem). Cena jak dotąd (bez mnożnika od siły).
@@ -1632,11 +1656,14 @@ function evaluateProposalImpl(
           // (regula siły bez wygasania, R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1; testy C1/C2 diplo-peace-balance-accept
           // i S3b/S3c diplo-war-peace-sim czerwieniały przy wymaganiu R = C − Z). Rozjazd z tabelą przy Z = C
           // = DECISION_REQUIRED (raport, sekcja BLOKADY).
-          if (!(cityGivePn >= cenaWymaganaPn)) {
+          // Ogon (złoto/metale/rudy po miastach) liczy się TAKŻE przy odrzuceniu i ZASTĘPUJE brakujące miasto (ABC B).
+          if (!(cityGivePn + tailPn >= cenaWymaganaPn)) {
             return {
               accepted: false,
               reason: `${r5Gate.reason ?? 'AI odrzuca pokój'} — Silniejsza AI wymaga miasta o wartości ≥ ${cenaWymaganaPn} PW `
-                + `(cena pokoju maleje ze zmęczeniem wojną); miasta w ofercie warte ${Math.round(cityGivePn)} PN, wymagane ${cenaWymaganaPn} PN`,
+                + `(cena pokoju maleje ze zmęczeniem wojną); miasta w ofercie warte ${Math.round(cityGivePn)} PN`
+                + (tailPn > 0 ? `, złoto i rudy warte ${Math.round(tailPn)} PN` : '')
+                + `, wymagane ${cenaWymaganaPn} PN`,
             };
           }
         }

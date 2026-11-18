@@ -53,6 +53,7 @@ window.addEventListener('unhandledrejection', (e) => {
 
 // Imports
 
+import { PEACE_TAIL_ORDER } from './game/peace-tail-payment';
 import { humanizeId, nazwaCywilizacji, nazwaWyswietlana } from './game/text-names';
 import { nazwaMiastaDyplomacji, setDiplomacyCityNameResolver } from './game/diplomacy-city-name';
 import { TEREN_LABEL_PL } from './map/terrain-names';
@@ -25966,6 +25967,8 @@ async function boot(): Promise<void> {
         // R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r3: epoka UMOWY (wyższa z epok stron) — jedyny punkt budowy
         // kontekstu oceny, więc pokrywa wszystkie wywołania evaluateProposal/generateCounterOffer.
         tradeEra: dealTradeEraForOwners(proposerId, responderId),
+        // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1: zapas płatnika ogona pokoju (miasta proponującego).
+        payerStock: Object.fromEntries(PEACE_TAIL_ORDER.map(k => [k, ownerResourceStock(proposerId, k)])),
         proposerRespekt,
         responderRespekt,
         militaryRatio,
