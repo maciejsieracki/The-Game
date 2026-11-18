@@ -6556,6 +6556,25 @@ function enqueueActiveUpgradeRows(city: City, activeItems: ProductionItem[]): nu
 /** Komunikat po „Ulepsz wszystko” — pokazany w następnym renderze listy budowy (panel jest odtwarzany). */
 let pendingUpgradeAllMsg: string | null = null;
 
+/** Dokleja komunikat „Ulepsz wszystko” (jeśli czeka) i zeruje go — wywoływane w każdym renderze listy budowy. */
+function appendUpgradeAllStatus(parent: HTMLElement): void {
+  if (!pendingUpgradeAllMsg) return;
+  const msg = el('div', 'muted', pendingUpgradeAllMsg);
+  msg.setAttribute('role', 'status');
+  msg.style.cssText = 'font-size:0.72em;margin:0 0 0.2em;';
+  parent.appendChild(msg);
+  pendingUpgradeAllMsg = null;
+}
+
+/** Polska odmiana rzeczownika „ulepszenie” dla liczby n (1 ulepszenie, 2-4 ulepszenia, 5+ ulepszeń). */
+function pluralUlepszenia(n: number): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (n === 1) return 'ulepszenie';
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'ulepszenia';
+  return 'ulepszeń';
+}
+
 function applyBuildButtonVisualState(btn: HTMLButtonElement, canAct: boolean, title: string): void {
   btn.disabled = !canAct;
   btn.title = title;
@@ -9418,6 +9437,7 @@ export function renderBuildList(
 
   if (items.length === 0 && sortedUps.length === 0 && previewEntries.length === 0) {
     mount.appendChild(el('div', 'muted', '(brak budynków — zbadaj technologie)'));
+    appendUpgradeAllStatus(mount);
     return;
   }
 
@@ -9438,32 +9458,36 @@ export function renderBuildList(
     const h = el('div', 'muted', 'Ulepsz');
     h.style.cssText = 'font-size:0.72em;';
     hRow.appendChild(h);
-    // Aktywne wiersze „Ulepsz" = te, których przycisk Ulepsz jest włączony (wymagania spełnione).
+    // Aktywne wiersze „Ulepsz" = te, których przycisk Ulepsz jest włączony (wymagania spełnione)
+    // i które NIE są już w kolejce (klik Ulepsz na pozycji już zakolejkowanej i tak nic nie robi).
     const activeUpgrades: ProductionItem[] = [];
+    let readyButQueued = 0;
     for (const u of sortedUps) {
       const uDef = findBuildingDef(data, u.id);
-      if (uDef && buildingCanBuildNow(uDef, city, data, prodCtx, techs)) activeUpgrades.push(u);
+      if (!uDef || !buildingCanBuildNow(uDef, city, data, prodCtx, techs)) continue;
+      if (buildingTypeQueued(u.id, prodState.kolejka)) readyButQueued++;
+      else activeUpgrades.push(u);
     }
     const bAll = el('button', 'btn btn-sm btn-b', 'Ulepsz wszystko') as HTMLButtonElement;
+    // Liczba w tooltipie to górna granica: kolejne pozycje podlegają tym samym warunkom zasobów
+    // co pojedynczy „Ulepsz" (addItem), więc faktyczny wynik może być mniejszy.
     const allTitle = activeUpgrades.length > 0
-      ? `Dodaj do kolejki wszystkie dostępne ulepszenia (${activeUpgrades.length})`
-      : 'Brak ulepszeń do dodania — wymagania budowy nie są spełnione';
+      ? `Dodaj do kolejki dostępne ulepszenia (do ${activeUpgrades.length}, zależnie od zasobów)`
+      : (readyButQueued > 0
+        ? 'Wszystkie dostępne ulepszenia są już w kolejce'
+        : 'Brak ulepszeń do dodania — wymagania budowy nie są spełnione');
     applyBuildButtonVisualState(bAll, activeUpgrades.length > 0, allTitle);
     bAll.addEventListener('click', () => {
       if (activeUpgrades.length === 0) return;
       const n = enqueueActiveUpgradeRows(city, activeUpgrades);
-      pendingUpgradeAllMsg = n > 0 ? `Dodano do kolejki: ${n} ulepszeń` : 'Brak ulepszeń do dodania';
+      pendingUpgradeAllMsg = n > 0
+        ? `Dodano do kolejki: ${n} ${pluralUlepszenia(n)}`
+        : 'Brak ulepszeń do dodania';
       rerender();
     });
     hRow.appendChild(bAll);
     scroll.appendChild(hRow);
-    if (pendingUpgradeAllMsg) {
-      const msg = el('div', 'muted', pendingUpgradeAllMsg);
-      msg.setAttribute('role', 'status');
-      msg.style.cssText = 'font-size:0.72em;margin:0 0 0.2em;';
-      scroll.appendChild(msg);
-      pendingUpgradeAllMsg = null;
-    }
+    appendUpgradeAllStatus(scroll);
     for (const u of sortedUps) {
       const srcId = chainSource(u);
       const fromName = srcId ? (findBuildingDef(data, srcId)?.nazwa ?? srcId) : undefined;
@@ -9497,6 +9521,9 @@ export function renderBuildList(
       });
     }
   }
+  // Po „Ulepsz wszystko” wszystkie pozycje mogły wyjść z listy „Ulepsz” (przeszły do kolejki),
+  // więc nagłówek sekcji mógł zniknąć — komunikat dokładamy tu, żeby zawsze był widoczny.
+  appendUpgradeAllStatus(scroll);
   mount.appendChild(scroll);
 }
 
