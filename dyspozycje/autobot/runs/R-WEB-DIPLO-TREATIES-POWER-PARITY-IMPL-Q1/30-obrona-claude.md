@@ -1,32 +1,35 @@
-STATUS: BLOCK (obrona rundy 2: zarzuty 1, 7 częściowo; zarzuty 2, 3, 5, 6 przyjęte, niewykonane; zarzut 4 częściowo odrzucony)
-DOMAIN: GAME
+# R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 — obrona (runda 2, Operator HAIKU)
+
+STATUS: BLOCK
+DOMAIN: GAME (dyplomacja, kod)
 TEMAT: R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1
-GOAL: parytet siły i ceny x10 dla 6 traktatów (rozejm, nap, granice, sojusz_defensywny, sojusz_pelny, wasal). Ta runda domyka zarzuty testowe i część zarzutu o bramce autora-gracza. Rozejm, ścieżka AI, panel, wiki zostają na rundę 3.
-ZMIANY-COMMIT: baza kandydata 06cccb961 (obrona startuje od niego). Zmienione pliki: gra/tools/diplomacy-acceptance-points-test.cjs (aktualizacja asercji, patrz niżej), gra/tools/diplo-treaties-power-parity-test.cjs (+21 asercji), ten raport. Kod gry (src/, data/) bez zmian. SHA: patrz pole sha w StructuredOutput.
+GOAL: parytet siły dla rozejmu, nap, granic, sojuszy i wasala (S/W/D, płaci słabsza, bez sufitu) w bramce gracza, ścieżce AI, panelu i Civpedii; pokój nietknięty.
+ZMIANY-COMMIT: 5b2e86311 (wiersz podziału PW dla 6 traktatów: `treatyPowerSplit` w evaluateProposal, main.ts, UI panelu, test + mutacja sojuszu). Start: 513339a4c. Baza main 2b950566 jest przodkiem HEAD, więc merge nie był potrzebny.
+TESTY (surowe wyniki tej rundy):
+- tsc --noEmit: bez błędów.
+- logic-test 213/213; tech-tree-test 20/0; research-test ALL GREEN; unit-replace-test 21/21; combat-test: All sanity checks passed.
+- diplo-treaties-power-parity-test 50/0 (po zmianach). MUTACJA sojusz_pelny parytet=false: 45 pass / 5 FAIL. JSON przywrócony.
+- diplo-rozejm-parity-test 25/0; diplo-truce-r1-test 31/0; diplo-peace-pw-power-ratio-test 47/0; diplomacy-acceptance-points-test 304/0; diplo-json-descriptions-sync-test 46/46; diplo-wiki-weariness-rate-consistency-test PASS.
+- dyplo-bilans-gate-n-e1-reprodukcja-test: 21 PASS / 1 FAIL (asercja (0), patrz zarzut 6). Test zapisuje PNG do `dowody/`; zmiany cofnięte `git checkout`.
+- NIE ZMIERZONO: Chromium.
 
 ODPOWIEDZI NA ZARZUTY:
-1. PRZYJMUJĘ, NAPRAWIONE. diplomacy-acceptance-points-test: 255/49 -> 304/0 (baza 2b950566f: 304/0). Zmiany wyłącznie w asercjach zależnych od starych cen: 49 literałów przeskalowanych x10 (NAP 200->2000, sojusz_pelny 500->5000, sojusz_defensywny 420->4200, granice 60->600, wasal 350->3500, pochodne: efektywna cena przy rel 151 302->3020, bilans sojuszu rel 160 +300->+3000, scenariusze U1/U2 i NAP+złoto). Jedna asercja (U2 NAP @ rel 61) miała błędną wartość w komunikacie („122−200"): rzeczywisty bilans to 0 − 2000×0,39 = −780, poprawiono na −780. Asercje 'NIEZMIENIONY' (sojusz/granice/wasal bez czasu) przeskalowane bez zmiany logiki.
-2. PRZYJMUJĘ, NIE WYKONANO. Rozejm zostaje z parytet: false. Powód: X rozejmu = 2000x(1-L) wynika z mnożnika zmęczenia (r5Gate.priceMultiplier w case 'rozejm', diplomacy-proposals.ts ~1454–1560), którego bramka parytetu (treatyParityPowerGate) nie widzi. Wymaga przekazania L do kontekstu i testów pokoju. Odkładam na rundę 3.
-3. PRZYJMUJĘ, NIE WYKONANO. Ścieżka AI (ai.ts, diplomacy-ai-offer-balance.ts, planAiOfferOnTable, aiPeaceSignals, AI<->AI) nadal bez wzoru S/W/D. Zakres zbyt duży na tę rundę. Runda 3.
-4. CZĘŚCIOWO ODRZUCAM, CZĘŚCIOWO PRZYJMUJĘ. Odrzucenie: dla nap/sojusz_defensywny/sojusz_pelny/granice/wasal treatyBaseFairnessGap NIE jest wywoływane. Dowód: grep wywołań daje diplomacy-proposals.ts:1654 (wewnątrz case 'pokoj'/'rozejm', linie 1453–1765) i :1937 (case 'umowa_handlowa'/'umowa_szlakow', od linii 1895). treatyPnGate (linie 857–990) dla nie-pokojowych akcji liczy tylko pnDealAcceptedByAi(givePn, receivePn, relTotal), bez X. Czyli silniejszy gracz z koszykiem przy sojuszu/NAP nie dostaje „Brakuje" z X. Dodany test (zarzut 7). Przyjęcie: 1654 dla rozejmu używa X bez S/W/D — to część zarzutu 2, NIE wykonana.
-5. PRZYJMUJĘ, NIE WYKONANO. Panel PW (diplomacyAcceptanceBalance.ts), diplomacyAudience.ts, diplomacyTipText.ts bez zmian. Runda 3.
-6. PRZYJMUJĘ, NIE WYKONANO. Civpedia/wikiBundle wymagają generatora po merge z main. Runda 3.
-7. CZĘŚCIOWO PRZYJMUJĘ, CZĘŚCIOWO NIE WYKONANO. Dodane w diplo-treaties-power-parity-test.cjs: (a) wzór S/W/D z X z KONFIGU dla każdego z 5 traktatów z parytetem przy r = 1 / 1,5 / 2,67 / 5 (20 asercji); (b) silniejszy gracz z koszykiem PW nie dostaje blokady „parytetu" (1 asercja). Wynik: 43 pass / 0 fail (wcześniej 22/0). NIE dodane: słabszy z ofertą >= D (przyjęty) i < D (blokada z kwotą) — wymaga fixture PW miast; sojusz/granice/wasal przez evaluateProposal z ofertą; AI słabsze bez miast; AI<->AI; regresja pokoju; mutacja dla pozostałych traktatów; Chromium — NIE ZMIERZONO.
+1. Punkt 2 (ścieżka AI): PRZYJMUJĘ, NIE WYKONANO w tej rundzie. ai.ts i diplomacy-ai-offer-balance.ts bez zmian. Zostaje na rundę 3.
+2. Panel PW dla szóstki: PRZYJMUJĘ, WYKONANE. `treatyPowerSplit` (evaluateProposal, funkcja attachTreatyPowerSplit) → main.ts previewNegotiationEntryImpl → responderPreview → peacePowerSplitRowHtml w diplomacyAcceptanceBalance.ts. Dowód: asercje „sojusz słabszy/silniejszy/bez treatyPower/umowa_handlowa” w diplo-treaties-power-parity-test (50/0). Chromium NIE ZMIERZONO.
+3. Civpedia i wikiBundle: PRZYJMUJĘ, NIE WYKONANO. Brak zmian w docs/encyklopedii i wikiBundle; generator nieuruchomiony. Zostaje na rundę 3.
+4. Testy i mutacje sojuszu: PRZYJMUJĘ, CZĘŚCIOWO WYKONANE. Mutacja sojuszu (parytet=false) daje 5 FAIL. Brak testów AI-słabsze-bez-miast i AI↔AI (zależą od zarzutu 1).
+5. Ryzyko regresji rozejmu AI: PRZYJMUJĘ, NIE ZMIERZONO. Nie mierzono wpływu na częstość rozejmów AI i AI↔AI.
+6. Dług dyplo-bilans-gate: ODRZUCAM jako dług tej rundy. Jedyny FAIL to asercja (0) „TREATY_GATED_NEGOTIATION_ACTIONS === {pokoj, umowa_szlakow, umowa_handlowa}”. Zbiór w main.ts:21526 (stan 2b950566) ma już `'pokoj', 'rozejm', 'umowa_szlakow', 'umowa_handlowa'`, dodany przez f2f6c7cea (R-WEB-TRUCE-Q1 r5), który jest przodkiem main. Test jest nieaktualny od tamtej zmiany, nie od tego tematu. Test leży poza allowlistą (`dyplo-`, nie `diplo-`). Nie naprawiałem; decyzja dla orkiestratora.
 
-TESTY (surowe wyniki tej rundy):
-- npx tsc --noEmit: bez błędów (brak wyjścia).
-- logic-test: LOGIC OK (213/213)
-- tech-tree-test: 20 pass, 0 fail
-- research-test: ALL GREEN
-- unit-replace-test: WSZYSTKIE TESTY ZIELONE (21/21)
-- combat-test: All sanity checks passed.
-- diplo-json-descriptions-sync-test: WYNIK 46/46 OK, FAIL: 0
-- diplomacy-acceptance-points-test: 304 pass, 0 fail
-- diplo-treaties-power-parity-test: 43 pass, 0 fail
-- dyplo-bilans-gate-n-e1 (dług bazowy z raportu ewaluatora): nie uruchamiano ponownie w tej rundzie.
+TABELA S/W/D (X = punkty z configu, L = 0; r z wzoru peacePwPointsByPowerRatio):
+- rozejm, nap (X=2000): r=1 → 2000/2000/0; r=1,5 → 3000/1333/1667; r=2,67 → 5338/749/4589; r=5 → 10000/400/9600.
+- granice (600): r=1 → 600/600/0; r=1,5 → 900/400/500; r=2,67 → 1601/225/1376; r=5 → 3000/120/2880.
+- sojusz_defensywny (4200): r=1 → 4200/4200/0; r=1,5 → 6300/2800/3500; r=2,67 → 11210/1574/9636; r=5 → 21000/840/20160.
+- sojusz_pelny (5000): r=1 → 5000/5000/0; r=1,5 → 7500/3333/4167; r=2,67 → 13345/1873/11472; r=5 → 25000/1000/24000.
+- wasal (3500): r=1 → 3500/3500/0; r=1,5 → 5250/2333/2917; r=2,67 → 9342/1311/8031; r=5 → 17500/700/16800.
 
-BLOKADY: zarzuty 2, 3, 5, 6 i rozszerzenia 7 wymagają pracy poza tą rundą (patrz wyżej). Brak blokad infrastrukturalnych (npm ci --ignore-scripts wykonane).
-RUNDY: obrona rundy 2/5 tego samego ID.
-NASTĘPNY KROK: runda 3/5: (a) rozejm parytet z przekazaniem L do bramki i testem; (b) ścieżka AI (oferty AI, AI<->AI, planAiOfferOnTable); (c) panel PW i tooltipy; (d) testy: słabszy >= D / < D z kwotą, sojusz/granice/wasal przez evaluateProposal, mutacja dla każdego traktatu; (e) Civpedia/wiki po merge z main.
-UWAGI-DLA-ORKIESTRATORA: ewaluator słusznie wskazał, że rozejm jest w szóstce z dispatchu. Zarzut 4 nie dotyczy szóstki poza rozejmem (patrz odpowiedź). Dług bazowy dyplo-bilans-gate-n-e1 (21/1) nie badany w tej rundzie.
+BLOKADY: punkty 1, 3 i 5 (ścieżka AI, Civpedia/wiki, regresja AI) nieukończone. Bez nich PASS nie jest możliwy.
+RUNDY: 2/5. Poprzedni werdykt FC: FAIL (runda 1). Decyzja wymagana: brak.
+NASTĘPNY KROK: runda 3. Punkt 2: ai.ts (AI słabsze płaci D miastami albo nie składa oferty; AI silniejsze żąda miasta ≥ D; AI↔AI), testy AI. Punkt 3: Civpedia i generator wikiBundle. Mutacja NAP/rozejmu w ścieżce AI.
+UWAGI-DLA-ORKIESTRATORA: (a) po `npm ci` na `/` zostało ok. 3,0 GB wolnego miejsca, poniżej progu 4 GB dla web. (b) Test dyplo-bilans-gate zapisuje PNG w `dowody/` przy każdym uruchomieniu. (c) Nie użyto spawn_task, create_session ani run_in_background.
 DEPLOY/PUSH: NIE WYKONANO
