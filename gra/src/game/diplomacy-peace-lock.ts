@@ -120,8 +120,8 @@ export function isTruceBreach(until: number | null | undefined, currentTurn: num
  * (E) Próg ułamka zmęczenia wojną (0..1 = poziom `warWearinessLevel`, w ai.ts `wearyLevel`;
  * skala 40 tur: 2,5% na turę + 10% za zmienione miasto, war-weariness-params.json), od którego
  * AI proponuje pokój stały zamiast rozejmu. 1 = PEŁNE zmęczenie (pelneTur = 40 tur bez strat miast).
- * Wartość 1 ZAŁOŻENIE orkiestratora (do ABC). Zegar profilu `zmeczenieT` / `warWearinessFraction`
- * NIE zasila tej bramki (zostaje jako wejście resolvera i testów zachowania).
+ * Wartość 1 ZAŁOŻENIE orkiestratora (do ABC). Zegar profilu (`zmeczenieT` / `warWearinessFraction`,
+ * usunięty w R-WEB-DIPLO-WEARINESS-LEGACY-FIELDS-REMOVE-Q1) nigdy nie zasilał tej bramki.
  */
 export const TRUCE_AI_FATIGUE_PEACE_MIN = 1;
 

@@ -38,13 +38,11 @@ eq('zulusi hasData', zulusi.hasData, true);
 near('zulusi progWojnyRelacji=63', zulusi.progWojnyRelacji, 63);
 near('zulusi progPokojSlabosc=0.33 (agr 9: 0.28 + premia profilu 0.05)', zulusi.progPokojSlabosc, 0.33);
 eq('zulusi minTurWojny=7 (agr 9 => +3, profil obronny => -1)', zulusi.minTurWojny, 7);
-near('zulusi zmeczenieT=20', zulusi.zmeczenieT, 20);
 eq('zulusi hamulecN=4 (round(8-4.5))', zulusi.hamulecN, 4);
 
 const chin = M.resolveWarPeaceProfile('chinczycy');
 near('chinczycy progWojnyRelacji=16', chin.progWojnyRelacji, 16);
 near('chinczycy progPokojSlabosc=0.54 (agr 2: 0.49 + premia profilu 0.05)', chin.progPokojSlabosc, 0.54);
-near('chinczycy zmeczenieT=17', chin.zmeczenieT, 17);
 eq('chinczycy hamulecN=7', chin.hamulecN, 7);
 
 near('grecy progWojnyRelacji=30', M.resolveWarPeaceProfile('grecy').progWojnyRelacji, 30);
@@ -57,7 +55,6 @@ near('brak danych progWojnyRelacji=30', brak.progWojnyRelacji, 30);
 near('brak danych progPokojSlabosc=0.40', brak.progPokojSlabosc, 0.40);
 near('brak danych progKrytyczny=0.25', brak.progKrytyczny, 0.25);
 near('brak danych progZdrowia=0.40', brak.progZdrowia, 0.40);
-near('brak danych zmeczenieT=20', brak.zmeczenieT, 20);
 eq('nieznany typ = brak danych', M.resolveWarPeaceProfile('nie-ma-takiej').hasData, false);
 
 // zakresy clamp dla wszystkich 15 cywilizacji (progi w dozwolonych granicach)
@@ -67,31 +64,9 @@ for (const k of civKeys) {
   eq(`${k} hasData`, pr.hasData, true);
   eq(`${k} progWojnyRelacji w [10,70]`, pr.progWojnyRelacji >= 10 && pr.progWojnyRelacji <= 70, true);
   eq(`${k} progPokojSlabosc w [0.20,0.55]`, pr.progPokojSlabosc >= 0.20 && pr.progPokojSlabosc <= 0.55, true);
-  eq(`${k} zmeczenieT <= 20`, pr.zmeczenieT <= 20, true);
   eq(`${k} minTurWojny w [1,8]`, pr.minTurWojny >= 1 && pr.minTurWojny <= 8, true);
   eq(`${k} hamulecN w [3,7]`, pr.hamulecN >= 3 && pr.hamulecN <= 7, true);
 }
-
-// ---- R4 / D4: zmęczenie wojną ----
-near('zmęczenie 0 poza wojną', M.warWearinessShare(0, 20), 0);
-near('zmęczenie 10/20 = 0.25 (połowa maksimum, NIE saturacja)', M.warWearinessShare(10, 20), 0.25);
-near('zmęczenie 5/20 = 0.125', M.warWearinessShare(5, 20), 0.125);
-near('zmęczenie 20/20 = 0.5 (legacy zegar profilu T=20: udział 0.5, nie steruje decyzjami)', M.warWearinessShare(20, 20), 0.5);
-near('ułamek zmęczenia 15/15 = 1 (T=15, Grecy-like)', M.warWearinessFraction(15, 15), 1);
-near('ułamek zmęczenia 10/20 = 0.5 (brak saturacji przy T/2)', M.warWearinessFraction(10, 20), 0.5);
-near('ułamek zmęczenia 99/20 = 1 (kapa)', M.warWearinessFraction(99, 20), 1);
-// R-WEB-PEACE-RULES-Q1 r3 (D4): dla KAŻDEJ z 15 cywilizacji pełne zmęczenie (1.0) osiągane
-// dokładnie przy turnsAtWar = T(civ) ≤ 20, a tura wcześniej jest jeszcze niepełne.
-for (const k of civKeys) {
-  const T = M.resolveWarPeaceProfile(k).zmeczenieT;
-  eq(`${k} T(civ)<=20 (D4)`, T <= 20, true);
-  eq(`${k} pełne zmęczenie dokładnie przy T=${T}`, M.warWearinessFraction(T, T) === 1, true);
-  eq(`${k} przed T zmęczenie niepełne`, M.warWearinessFraction(T - 1, T) < 1, true);
-}
-near('legacy zegar profilu: t=T=20 daje maksymalny udział (0.5)', M.warWearinessShare(20, 20), 0.5);
-near('legacy zegar profilu: t=20 przy T=17 daje maksymalny udział (0.5)', M.warWearinessShare(20, 17), 0.5);
-near('zmęczenie nie przekracza 0.5', M.warWearinessShare(99, 17), 0.5);
-near('zmęczenie rośnie z turami', M.warWearinessShare(3, 20) < M.warWearinessShare(6, 20) ? 1 : 0, 1);
 
 // ---- R3: sygnały pokoju ----
 const rzym = M.resolveWarPeaceProfile('rzymianie');

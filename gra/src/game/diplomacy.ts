@@ -1364,7 +1364,7 @@ export function aiDiplomacyStance(
   let peaceW: number;
   if (rel.status === 'wojna') {
     // R-WEB-DIPLO-WEARINESS-20-TURNS-Q1: jedno źródło zmęczenia = warWearinessLevel (40 tur do 100%,
-    // +10% za zmienione miasto). Udział w chęci pokoju = 0.5 × poziom (waga jak dawniej maksUdzial).
+    // +10% za zmienione miasto). Udział w chęci pokoju = 0.5 × poziom.
     // Drugi zegar (min(0.5, turnsAtWar / T(civ))) usunięty.
     const warWeariness     = 0.5 * warWearinessLevel({
       turnsAtWar: context.turnsAtWar,

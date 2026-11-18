@@ -52,7 +52,7 @@ function check(name, cond, detail) {
 const ENTRY_SRC = [
   "export { decideAIDiplomacy } from './game/ai';",
   "export { evaluateProposal, createNegotiation, negotiationAsProposal } from './game/diplomacy-proposals';",
-  "export { warWearinessFraction, warWearinessShare, resolveWarPeaceProfile, aiPeaceSignals } from './game/diplomacy-war-peace-profile';",
+  "export { resolveWarPeaceProfile, aiPeaceSignals } from './game/diplomacy-war-peace-profile';",
   "export { PEACE_PROPOSAL_MIN_WAR_TURNS } from './game/diplomacy-peace-proposal-timing';",
   '',
 ].join('\n');
