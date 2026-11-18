@@ -1,0 +1,8 @@
+{
+  "_opis": "R-WEB-AI-AI-TREATIES-E1-EVALUATE-PURE-Q1 (ABC właściciela 2026-11-18): parametry czystej oceny traktatów AI↔AI (gra/src/game/ai-ai-treaty-evaluate.ts). Próg gotowości 0,54 NIE jest tu powielany — czyta się go z gra/data/diplomacy.json (params.progSojuszWillingnessMin). Progi Relacji/Zaufania też z diplomacy.json.",
+  "nap_czas_trwania_tur": 15,
+  "zerwanie_relacja": -30,
+  "zerwanie_zaufanie": -20,
+  "_uwaga_zerwanie": "P-4 A: zerwanie NAP/sojuszu przez AI — jak dla gracza (−30 Relacji, −20 Zaufania). Stosowane przy zerwaniu, nie przy zawarciu.",
+  "_uwaga_nap": "P-5 A: NAP AI↔AI trwa 15 tur (taki sam domyślny czas jak resolveNapDealExpiry dla gracza)."
+}
