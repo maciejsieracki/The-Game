@@ -1,3 +1,9 @@
+## ROBOCZA 55c7bdb1 -- 2026-11-18 -- FALA 846: Pomiar ekonomii: HUD per surowiec, analizator, runner (testowa)
+
+- Hak odczytowy __aiEconomyMeasure.metrics rozszerzony o pole hud (sumy surowcow jak HUD); narzedzia gra/tools/econ-measure-run.cjs i econ-measure-analyze.cjs; audyt EKONOMIA-POZNA-GRA-AUDYT.md (sekcje 7 i Bazowe liczby). Brak zmian zasad gry ani balansu.
+- Weryfikacja: tsc 0 bledow; logic-test 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-economy-measure-hook-test 23/23; smoke seed 4242 t10: 9 wierszy, 0 NaN
+- Limity: Narzedzie pomiarowe, bez efektu w rozgrywce; biegi do t150 i punkt B (jednostki, utrzymanie, zywnosc, Praca) wykonuje orkiestrator; wyjasnienie 10x liczbowo NIE_ZMIERZONE
+
 ## ROBOCZA 3a050893 -- 2026-11-18 -- FALA 845: Odsiecz: AI atakuje oblegajacych swoje miasto przy przewadze 20 procent (testowa)
 
 - AI (ai.ts applySiegeRelief + nowy ai-siege-relief.ts): gdy miasto AI jest oblezone, a AI ma w zasiegu sile co najmniej o 20 procent wieksza niz oblegajacy (siege_relief_min_advantage 0,2 w ai-params.json), atakuje oblegajacych z priorytetem przed ofensywa; dotyczy oblegajacych gracza, innej AI i barbarzyncow, tylko w stanie wojny; panstwa-miasta (defensiveCopy) bez odsieczy; zgloszenie wlasciciela

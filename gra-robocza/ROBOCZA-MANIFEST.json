@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "3a0508936afb357cc8adcba0205b468b",
-  "bundleSha256": "e2af43bae0188dc785eab53f5aeb08e2cbf2b94d24006b07c70787ce006a3174",
-  "bundleBytes": 14957498,
+  "bundleMd5": "55c7bdb1d2ade3d01acd5ab9a2841096",
+  "bundleSha256": "f1f18f0088770283c70f21a8077eddf761f9d79f553a69145569bd05d591ba6c",
+  "bundleBytes": 14958459,
   "sourceSnapshot": {
-    "source": "gra/ (main 198e6368 + merge FC 0f3f3795)",
+    "source": "R-WEB-ECONOMY-MEASURE-EXTEND-INCOME-STOCKS-Q1 (kod 109f1e251, FC 7327942cd)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 845: AI (ai.ts applySiegeRelief + nowy ai-siege-relief.ts): gdy miasto AI jest oblezone, a AI ma w zasiegu sile co najmniej o 20 procent wieksza niz oblegajacy (siege_relief_min_advantage 0,2 w ai-params.json), atakuje oblegajacych z priorytetem przed ofensywa; dotyczy oblegajacych gracza, innej AI i barbarzyncow, tylko w stanie wojny; panstwa-miasta (defensiveCopy) bez odsieczy; zgloszenie wlasciciela"
+    "FALA 846: Hak odczytowy __aiEconomyMeasure.metrics rozszerzony o pole hud (sumy surowcow jak HUD); narzedzia gra/tools/econ-measure-run.cjs i econ-measure-analyze.cjs; audyt EKONOMIA-POZNA-GRA-AUDYT.md (sekcje 7 i Bazowe liczby). Brak zmian zasad gry ani balansu."
   ],
   "verification": [
-    "FC PASS-WITH-NOTES 0f3f3795 (kod 66859718, operator 3c536464): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, unit-power 6/0; ai-siege-relief-test 23/0 (granice 5v5/5v7/6v7/6v8, progi 0,5/0,2/0,1), mutacja bez odsieczy 10 FAIL; testy AI/oblezen bez regresji (defend-home 30/0, siege-ai 17/0, last-stand-sortie 71/0 i inne)"
+    "tsc 0 bledow; logic-test 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-economy-measure-hook-test 23/23; smoke seed 4242 t10: 9 wierszy, 0 NaN"
   ],
   "limits": [
-    "NIE ZMIERZONO: zywa gra w Chromium; wpiecie flagi oblegane w petli main.ts poza czytaniem kodu; panstwa-miasta bez odsieczy (decyzja produktowa); jednostki niestojace obok oblegajacych dochodza i atakuja w nastepnej turze"
+    "Narzedzie pomiarowe, bez efektu w rozgrywce; biegi do t150 i punkt B (jednostki, utrzymanie, zywnosc, Praca) wykonuje orkiestrator; wyjasnienie 10x liczbowo NIE_ZMIERZONE"
   ],
-  "finalControl": "R-WEB-AI-SIEGE-RELIEF-ATTACK-BESIEGERS-Q1 r1 (Operator Haiku, Obrona Haiku) FC PASS-WITH-NOTES 0f3f3795 (kod 66859718)",
+  "finalControl": "PASS-WITH-NOTES: bramki wlasne zielone, kandydat potomkiem bazy, allowlista zachowana",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T21:47:47",
+  "hubGeneratedAt": "2026-11-18T22:08:53",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "3a0508936afb357cc8adcba0205b468b",
-      "sizeBytes": 14957498
+      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
+      "sizeBytes": 14958459
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "3a0508936afb357cc8adcba0205b468b",
-      "sizeBytes": 14957498
+      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
+      "sizeBytes": 14958459
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "3a0508936afb357cc8adcba0205b468b",
-      "sizeBytes": 14957498
+      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
+      "sizeBytes": 14958459
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "3a0508936afb357cc8adcba0205b468b",
-      "sizeBytes": 14957498
+      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
+      "sizeBytes": 14958459
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "3a0508936afb357cc8adcba0205b468b",
-      "sizeBytes": 14957498
+      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
+      "sizeBytes": 14958459
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "3a0508936afb357cc8adcba0205b468b",
-      "sizeBytes": 14957498
+      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
+      "sizeBytes": 14958459
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "3a0508936afb357cc8adcba0205b468b",
-      "sizeBytes": 14957498
+      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
+      "sizeBytes": 14958459
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "3a0508936afb357cc8adcba0205b468b",
-      "sizeBytes": 14957498
+      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
+      "sizeBytes": 14958459
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "3a0508936afb357cc8adcba0205b468b",
-      "sizeBytes": 14957498
+      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
+      "sizeBytes": 14958459
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "3a0508936afb357cc8adcba0205b468b",
-      "sizeBytes": 14957498
+      "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
+      "sizeBytes": 14958459
     }
   ],
-  "md5": "3a0508936afb357cc8adcba0205b468b",
+  "md5": "55c7bdb1d2ade3d01acd5ab9a2841096",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
