@@ -67,3 +67,4 @@ Worktree, journale (`/root/.claude/projects/.../subagents/workflows/<wf>/journal
 - TRWA: tylko R-WEB-AI-UPKEEP-ONOFF-MEASURE-100T-Q1 r3 (wf_2bd2286e-571, Sonnet po 2 nieudanych Haiku; pomiar, flaga OFF). Po FC → ABC właściciela (włączenie bramki utrzymania armii AI).
 - Brak tematów gotowych do startu bez decyzji właściciela. Niski priorytet (nie na zapełnienie slotów): #438 hak civTest do odmowy AI (L2b); sprzątanie martwej pozostałości `wspolnaReligia` w main.ts (~44101); #272 obserwacje.
 - CZEKA NA WŁAŚCICIELA: bramka utrzymania armii AI (po pomiarze); dane Greków `walka_obrona_piechota_teren_las = 0`; `map-snapshot-load` KNOWN-FAIL (budżet rotacji autozapisu); nieblokująco: zapis z 0 miast ma grać dalej bez porażki?
+- ZALEŻNE (2026-11-18): R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 — model PW pokoju P·r / P/r wg Power; START po wdrożeniu FORCEDPEACE i DECLUTQ2 (te same pliki); dispatch w dyspozycje/autobot/runs/.
