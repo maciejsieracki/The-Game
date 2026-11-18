@@ -45,6 +45,12 @@ const CHECKS = [
   ['H8a', 'main', 'if (ownerSet.has(a) && ownerSet.has(b)) {\n          liczba.set(a, (liczba.get(a) ?? 0) + 1);'],
   ['H8b', 'main', '          liczba.set(b, (liczba.get(b) ?? 0) + 1);\n        }'],
   ['H9', 'main', 'if (diplomacyRelations.get(`${owners[i]!}_${owners[j]!}`)?.status === \'wojna\') wojny++;'],
+  // H11-H15 (runda obrony 2): pola zwracanego obiektu stanu muszą czytać realne liczniki/wyliczenia (nie stałe).
+  ['H11', 'main', '        proby: aiAiAllianceProbyLacznie,'],
+  ['H12', 'main', '        odmowy: aiAiAllianceOdmowyLacznie,'],
+  ['H13', 'main', '        wojnyAiAi: wojny,'],
+  ['H14', 'main', '        naCywilizacje: owners.map(oid => ({ owner: oid, n: liczba.get(oid) ?? 0 })),'],
+  ['H15', 'main', '        sojuszeAiAi,\n        powodyOdmow:'],
 ];
 
 /** Mutanty: [id, plik, fragment do usunięcia/zamiany na pusty lub inny]. */
@@ -60,6 +66,11 @@ const MUTANTS = [
   ['M7 bez zasilania licznika skumulowanego', 'main', 'aiAiAllianceOdmowyLacznie += plan.odmowy;', ''],
   ['M8 bez histogramu powodow w planerze', 'tick', "      powodyOdmow.set(klucz, (powodyOdmow.get(klucz) ?? 0) + 1);", ''],
   ['M9 bez zasilania histogramu skumulowanego', 'main', 'for (const [klucz, n] of plan.powodyOdmow) aiAiAllianceOdmowyPowody.set(klucz, (aiAiAllianceOdmowyPowody.get(klucz) ?? 0) + n);', ''],
+  ['M10 proby w stanie = 0 (zerowanie licznika w odczycie)', 'main', '        proby: aiAiAllianceProbyLacznie,', '        proby: 0,'],
+  ['M11 odmowy w stanie = 0', 'main', '        odmowy: aiAiAllianceOdmowyLacznie,', '        odmowy: 0,'],
+  ['M12 wojnyAiAi w stanie = 0', 'main', '        wojnyAiAi: wojny,', '        wojnyAiAi: 0,'],
+  ['M13 naCywilizacje zawsze zero', 'main', '        naCywilizacje: owners.map(oid => ({ owner: oid, n: liczba.get(oid) ?? 0 })),', '        naCywilizacje: owners.map(oid => ({ owner: oid, n: 0 })),'],
+  ['M14 sojuszeAiAi w stanie = 0', 'main', '        sojuszeAiAi,\n        powodyOdmow:', '        sojuszeAiAi: 0,\n        powodyOdmow:'],
 ];
 
 function src(kind, mainText, tickText) { return kind === 'main' ? mainText : tickText; }

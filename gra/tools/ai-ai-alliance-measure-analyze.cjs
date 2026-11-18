@@ -62,11 +62,15 @@ function loadDir(dir) {
   return bySeed;
 }
 
-/** Wiersz o największej turze <= cp (null gdy brak). */
+/** Wiersz o DOKŁADNIE turze cp (null gdy bieg nie dotarł do cp lub brak wiersza).
+ *  Nie podstawiamy wiersza z wcześniejszej tury: kolumna "tura cp" musi pokazywać wartość z tury cp. */
 function atCheckpoint(rows, cp) {
-  let best = null;
-  for (const r of rows) if (r.turn <= cp) best = r;
-  return best;
+  return rows.find(r => r.turn === cp) || null;
+}
+
+/** Ostatnia tura biegu (null gdy brak wierszy). */
+function lastTurn(rows) {
+  return rows.length ? rows[rows.length - 1].turn : null;
 }
 
 function fmt(v) { return v === null || v === undefined ? NZ : String(v); }
@@ -89,7 +93,10 @@ function summarize(bySeed) {
       if (r && r.naCyw && r.naCyw.length > 0) {
         pct = Math.round((100 * r.naCyw.filter(c => c.n >= 1).length) / r.naCyw.length);
       }
-      cps[cp] = r ? { turn: r.turn, sojusze: r.sojuszeAiAi, pct, wojny: r.wojny } : null;
+      // Brak wiersza o turze cp: bieg krótszy niż cp (poza biegiem) albo luka w jsonl (NIE ZMIERZONO).
+      cps[cp] = r
+        ? { turn: r.turn, sojusze: r.sojuszeAiAi, pct, wojny: r.wojny }
+        : { poza: (lastTurn(rows) !== null && lastTurn(rows) < cp) ? `poza biegiem (koniec t${lastTurn(rows)})` : NZ };
     }
     out[seed] = {
       ostatniaTura: last ? last.turn : null,
@@ -125,13 +132,14 @@ function printTable(label, sum) {
     if (p.length === 0) { console.log(`ziarno ${s}: brak odmów`); continue; }
     for (const e of p) console.log(`ziarno ${s} | n=${e.n} | ${e.powod}`);
   }
-  console.log('\nPunkty kontrolne (tura wiersza <= kontrolnej): sojusze AI↔AI / odsetek głównych AI z >=1 sojuszem (%) / wojny AI↔AI');
+  console.log('\nPunkty kontrolne (wartość z wiersza o DOKŁADNIEJ turze kontrolnej): sojusze AI↔AI / odsetek głównych AI z >=1 sojuszem (%) / wojny AI↔AI');
   console.log('ziarno | ' + CHECK.map(cp => `tura ${cp}`).join(' | '));
   for (const s of seeds) {
     const cells = CHECK.map(cp => {
       const c = sum[s].cps[cp];
-      if (!c) return 'brak wiersza';
-      return `t${c.turn}: ${fmt(c.sojusze)} / ${fmt(c.pct)}% / ${fmt(c.wojny)}`;
+      if (!c) return NZ;
+      if (c.poza) return c.poza;
+      return `${fmt(c.sojusze)} / ${fmt(c.pct)}% / ${fmt(c.wojny)}`;
     });
     console.log(s + ' | ' + cells.join(' | '));
   }

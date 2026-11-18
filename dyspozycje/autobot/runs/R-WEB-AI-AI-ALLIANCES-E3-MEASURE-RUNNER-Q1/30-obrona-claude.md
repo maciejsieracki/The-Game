@@ -44,3 +44,39 @@ BLOKADY: brak techniczny. Ograniczenie jakości: hook-test statyczny (zob. odp. 
 RUNDY: 1/5 (obrona rundy 1)
 NASTĘPNY KROK: Evaluator (ponowna weryfikacja zarzutów 1-3 i mutantów), potem Final Control.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+# RUNDA 2 — obrona na raport Evaluatora (commit fcaf8bffd), baza kandydat 0fafa926e
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (narzędzie pomiarowe; zero zmian zasad, progów, balansu; flaga torSojuszyAktywny pozostaje false; src/ NIE zmieniany w tej rundzie)
+TEMAT: R-WEB-AI-AI-ALLIANCES-E3-MEASURE-RUNNER-Q1
+GOAL: odpowiedź na 3 zarzuty Evaluatora i poprawki w tej samej rundzie.
+
+ODPOWIEDZI NA ZARZUTY:
+1. PRZYJMUJĘ. Zarzut: mutacja `proby: aiAiAllianceProbyLacznie -> proby: 0` oraz `wojnyAiAi: wojny -> 0` przechodziły zielono.
+   Poprawka (gra/tools/ai-ai-alliance-measure-hook-test.cjs): reguły H11 (`proby: aiAiAllianceProbyLacznie,`),
+   H12 (`odmowy: aiAiAllianceOdmowyLacznie,`), H13 (`wojnyAiAi: wojny,`), H14 (`naCywilizacje: ... liczba.get(oid) ...`),
+   H15 (`sojuszeAiAi,` w zwracanym obiekcie) oraz mutanty M10-M14 (zerowanie każdego z tych pól).
+   ZASTRZEŻENIE: test pozostaje STATYCZNY (dopasowanie tekstu źródła). Wymóg dispatchu p.4 (test budujący bundle albo SKIP)
+   NIE ZREALIZOWANY: NIE ZMIERZONO w teście behawioralnym; liczby potwierdza wyłącznie bieg dymny i analizator.
+2. PRZYJMUJĘ. Zarzut: kolumny 50/75/100/150 pokazywały wartość z ostatniej tury (t30) przy biegu 30-turowym.
+   Poprawka (gra/tools/ai-ai-alliance-measure-analyze.cjs): punkt kontrolny bierze wiersz o DOKŁADNIE turze kontrolnej
+   (`atCheckpoint` = `rows.find(r => r.turn === cp)`); gdy bieg jest krótszy, kolumna pokazuje "poza biegiem (koniec tN)".
+3. PRZYJMUJĘ jako ograniczenie zakresu (bez zmiany kodu). Pełny pomiar OFF vs ON (100-150 tur x 3 ziarna) NIE ZMIERZONO
+   w tym temacie: dispatch zabrania biegów > 30 tur, a bieg wykonuje orkiestrator. Otwarty punkt dla orkiestratora.
+
+PONOWNE BRAMKI (kod po poprawce; surowe wyjścia):
+ - `node tools/ai-ai-alliance-measure-hook-test.cjs`: reguły H1..H15 zielone (nieprzechodzące: brak); mutanty M1..M14 wykryte,
+   każdy czerwieni test (M10->H11, M11->H12, M12->H13, M13->H14, M14->H15); WYNIK: ZIELONY, exit 0.
+ - `node tools/ai-ai-alliance-measure-analyze.cjs --in dowody`: ziarno 4242 | ostatnia tura 30 | flaga true | wymuszona true |
+   tura 1. sojuszu brak | tura 1. wojny brak | max sojuszy/cyw. 0 | próby 302 | odmowy 302; powody: n=300 gotowość poniżej progu,
+   n=2 brak PN w skarbcu; punkty kontrolne: t25 = 0 / 0% / 0, t50/t75/t100/t150 = "poza biegiem (koniec t30)".
+ - src/ (main.ts, ai-ai-alliance-tick.ts) NIE zmieniany w tej rundzie; tsc i pozostałe bramki gry NIE uruchamiane ponownie
+   (zmiany wyłącznie w gra/tools/*.cjs i raporcie) — NIE ZMIERZONO w tej rundzie.
+
+BLOKADY: brak techniczny. Otwarte: test behawioralny (p.4 dispatchu) NIE ZREALIZOWANY; pełne biegi OFF/ON NIE ZMIERZONO.
+RUNDY: 2/5 (obrona rundy 2)
+NASTĘPNY KROK: Evaluator (weryfikacja H11-H15/M10-M14 i kolumn punktów kontrolnych), potem Final Control.
+DEPLOY/PUSH: NIE WYKONANO
