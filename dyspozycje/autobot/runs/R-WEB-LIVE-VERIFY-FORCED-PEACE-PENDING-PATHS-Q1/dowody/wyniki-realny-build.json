@@ -1,0 +1,170 @@
+{
+  "S4": {
+    "label": "bramka „Zakończ turę” przy pending (przycisk / Esc / tło / akceptacja)",
+    "asserts": [
+      {
+        "ok": false,
+        "what": "po turze z wojną 40 tur okno pokoju wymuszonego jest widoczne",
+        "detail": {
+          "advanced": true,
+          "shown": 0,
+          "turnBefore": 1
+        }
+      },
+      {
+        "ok": null,
+        "what": "stan przycisku „Zakończ turę” przy pending",
+        "detail": {
+          "aria": "true",
+          "cls": "end-turn is-disabled"
+        }
+      },
+      {
+        "ok": true,
+        "what": "Esc nie zamyka okna pokoju wymuszonego"
+      },
+      {
+        "ok": true,
+        "what": "klik w tło nie zamyka okna"
+      },
+      {
+        "ok": true,
+        "what": "klik „Zakończ turę” (button.end-turn, force) przy pending nie kończy tury",
+        "detail": {
+          "t0": 2,
+          "t1": 2,
+          "clickErr": null
+        }
+      },
+      {
+        "ok": true,
+        "what": "Enter na przycisku „Zakończ turę” przy pending nie kończy tury",
+        "detail": {
+          "t1": 2
+        }
+      },
+      {
+        "ok": null,
+        "what": "wpis/komunikat blokady „Nie można zakończyć tury” widoczny w DOM",
+        "detail": {
+          "hasBlockEvent": false
+        }
+      },
+      {
+        "ok": true,
+        "what": "po akceptacji okno znika"
+      },
+      {
+        "ok": true,
+        "what": "po akceptacji status pary nie jest „wojna”",
+        "detail": {
+          "status": "pokoj"
+        }
+      },
+      {
+        "ok": true,
+        "what": "po akceptacji tura kończy się normalnie"
+      },
+      {
+        "ok": true,
+        "what": "zero pageerror/console.error",
+        "detail": []
+      }
+    ],
+    "status": "FAIL"
+  },
+  "S3": {
+    "label": "treść okna: wiersze miast (Oddajesz) i wpis po akceptacji",
+    "asserts": [
+      {
+        "ok": null,
+        "what": "tekst okna (pierwsze 400 znaków)",
+        "detail": ""
+      },
+      {
+        "ok": false,
+        "what": "okno zawiera przycisk akceptacji i blok o wymianie miast/zapłacie",
+        "detail": {
+          "hasOddajesz": false
+        }
+      },
+      {
+        "ok": null,
+        "what": "warLog po akceptacji (fragment)",
+        "detail": "[{\"id\":\"peace-vazne-2-0_1\",\"title\":\"Pokój zawarty: Grecy\",\"subtitle\":\"Wymuszony przez zmęczenie wojną 100% (wojna 41 tur, zmienione miasta 0). Pokój bez wymiany miast\"},{\"id\":\"eot-hint-2-0\",\"title\":\"\",\"subtitle\":\"Wróg atakuje twoje wojsko!\"}]"
+      },
+      {
+        "ok": true,
+        "what": "po akceptacji w warLog jest wpis „Pokój zawarty”"
+      },
+      {
+        "ok": true,
+        "what": "wpis zawiera opis wymiany miast (oddanie lub brak wymiany)"
+      }
+    ],
+    "status": "FAIL"
+  },
+  "S2": {
+    "label": "kolejka dwóch oczekujących pokojów (dwie cywilizacje)",
+    "asserts": [
+      {
+        "ok": true,
+        "what": "po turze z dwiema wojnami widoczne okno (pierwszy pokój)",
+        "detail": {
+          "advanced": true
+        }
+      },
+      {
+        "ok": null,
+        "what": "status par przed akceptacją",
+        "detail": {
+          "p1": "wojna",
+          "p2": "wojna",
+          "turn": 4
+        }
+      },
+      {
+        "ok": null,
+        "what": "status par po akceptacji pierwszego",
+        "detail": {
+          "p1": "pokoj",
+          "p2": "wojna"
+        }
+      },
+      {
+        "ok": false,
+        "what": "po akceptacji pierwszego okno drugiego pokoju wraca (kolejka)"
+      },
+      {
+        "ok": null,
+        "what": "nazwa cywilizacji w drugim oknie (fragment)",
+        "detail": ""
+      },
+      {
+        "ok": false,
+        "what": "po akceptacji pierwszego nadal zablokowane (tura nie rusza)"
+      },
+      {
+        "ok": true,
+        "what": "po akceptacji drugiego okno znika"
+      },
+      {
+        "ok": true,
+        "what": "po akceptacji obu tura odblokowana i kończy się"
+      }
+    ],
+    "status": "FAIL"
+  },
+  "S1": {
+    "label": "zapis i wczytanie gry z oczekującym traktatem",
+    "asserts": [],
+    "status": "NIE ZMIERZONO",
+    "why": "brak haka odczytu meta.pendingForcedPeaceTreaties ani helpera zapis+wczytaj z ponownym uruchomieniem przeglądarki; propozycja haka test-only w raporcie"
+  },
+  "S5": {
+    "label": "pokój AI<->AI nadal natychmiast (bez okna)",
+    "asserts": [],
+    "status": "NIE ZMIERZONO",
+    "why": "brak haka ustawiającego wiek wojny dla pary AI<->AI (setWarAge działa tylko dla gracza)"
+  }
+}
