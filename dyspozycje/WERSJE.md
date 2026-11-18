@@ -1,3 +1,9 @@
+## ROBOCZA fdc9f6a0 -- 2026-11-18 -- FALA 830: traktaty i pokój: ostatni stopień płatności, okno pokoju otwiera się samo, czyszczenie martwych pól zmęczenia, etykiety obrażeń (testowa)
+
+- Pokój (zmęczenie wojną): gdy cena przekracza dostępne miasta, ogon płatności pokrywają złoto ze Skarbca, potem brąz/żelazo/rudy ze Spichlerza Państwa, nigdy ostatnie miasto; rozejm bez złota; ogon także przy odmowie silniejszej AI (zastępuje miasto) i dla AI↔AI; okno pokoju wymuszonego otwiera się samo na początku tury (hak testowy +3 linie w main.ts); martwe pola zmęczenia wyczyszczone (komentarze, tekst _wzor, nazwy asercji); etykiety obrażeń w bitwie bez nakładania.
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; peace-tail-integration 42/0; last-stage-payment OK (mutant M3 wykryty); tail-proposal 9/0; profile-unit 198/0; war-peace-sim 25/0; battle-damage-labels 23/0; test żywy forced-peace-pending-live-paths EXIT 0 (FC, mutacja 8 FAIL).
+- Limity: NIE ZMIERZONO: wiring main.ts ogona (wybór argumentów ME() vs proposerId) bez testu żywego; sensible-deals-live (Chromium) nie uruchamiany; zrzuty PRZED/PO etykiet obrażeń; symulacja >=3x150 tur dla płatności ogonem; założenie właściciela (pokój bez technologii, pracy i ¤) czeka na potwierdzenie.
+
 ## ROBOCZA fbbefaa4 -- 2026-11-18 -- FALA 829: FPSENT + WELCOME: okno pokoju wymuszonego z jednym zdaniem na wierzchu oraz ekran Odkryles nowa cywilizacje (testowa)
 
 - Okno pokoju wymuszonego: na wierzchu tylko pierwsze zdanie o zmeczeniu, pelny opis w tooltipie. Nowy ekran Odkryles nowa cywilizacje (raz przy pierwszym kontakcie + przycisk O cywilizacji w panelu dyplomacji): rys historyczny, plusy i minusy, jednostki specjalne, powitanie wladcy przyjazne lub nieprzyjazne z podpisem, przyciski Audiencja i Zamknij; teksty zatwierdzone przez wlasciciela
