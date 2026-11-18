@@ -1249,8 +1249,9 @@ export function showForcedPeaceModal(opts: ForcedPeaceModalOptions): void {
     '<div class="civ-diplo-modal cd-war-consent-modal" role="dialog" aria-modal="true">' +
       '<h3>' + esc(text.title) + '</h3>' +
       '<p class="cd-war-lead">' + esc(text.lead) + '</p>' +
-      '<p>' + esc(text.why) + '</p>' +
-      '<p>' + esc(text.terms) + '</p>' +
+      // DECLUTTER-WINDOW (2026-11-18): na wierzchu tylko jedno zdanie „dlaczego” i warunki; wyliczenia w tooltipie (title).
+      '<p' + detailTipAttr([text.why]) + '>' + esc(text.whyShort) + '</p>' +
+      '<p' + detailTipAttr([text.terms]) + '>' + esc(text.termsShort) + '</p>' +
       '<div class="cd-modal-btns cd-war-consent-btns">' +
         '<button type="button" class="dip-gold-btn cd-forced-peace-ok">' + esc(text.acceptLabel) + '</button>' +
       '</div></div>';

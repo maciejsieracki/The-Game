@@ -219,9 +219,14 @@ export interface ForcedPeaceTextInput {
 export interface ForcedPeaceText {
   title: string;
   lead: string;
-  /** PENDING-FORCED-PEACE-Q1: jedno zdanie „z czego to wynika”. */
+  /** PENDING-FORCED-PEACE-Q1: pełny tekst „z czego to wynika” (wyliczenia) — w oknie w tooltipie. */
   why: string;
+  /** DECLUTTER-WINDOW (2026-11-18): jedno zdanie „dlaczego” widoczne na wierzchu okna. */
+  whyShort: string;
+  /** Pełny tekst warunków (warunki + karencja + zaufanie) — w oknie w tooltipie. */
   terms: string;
+  /** DECLUTTER-WINDOW (2026-11-18): tylko warunki widoczne na wierzchu (co oddajesz / co otrzymujesz / bez miast). */
+  termsShort: string;
   /** PENDING-FORCED-PEACE-Q1: etykieta jedynego przycisku (bez opcji odmowy). */
   acceptLabel: string;
 }
@@ -235,9 +240,14 @@ export function forcedPeaceModalTextPl(inp: ForcedPeaceTextInput, P: WarWearines
   const fmtPct = (v: number): string => (Math.round(v * 10) / 10).toString().replace('.', ',');
   const perTurnPct = fmtPct(100 / P.zmeczenie.pelneTur);
   const perCityPct = fmtPct(P.zmeczenie.wagaStratMiasta * 100);
-  const terms = inp.cityNames.length === 0
+  // DECLUTTER-WINDOW: warunki widoczne (termsShort) i szczegóły (zapłata, karencja, zaufanie) — łącznie = terms.
+  const termsShort = inp.cityNames.length === 0
     ? 'Pokój bez wymiany miast.'
     : (inp.humanIsLoser ? 'Oddajesz: ' : 'Otrzymujesz: ') + inp.cityNames.join(', ') + '.';
+  const termsDetail = (inp.cityNames.length === 0 ? ' Zapłata: 0 PN.' : '')
+    + (inp.lockTurns !== undefined ? ` Po pokoju karencja: ${inp.lockTurns} tur.` : '')
+    + ' Zaufanie po pokoju: 20.';
+  const terms = termsShort + termsDetail;
   const pct = inp.levelPct ?? 100;
   const wojna = inp.turnsAtWar !== undefined ? `, wojna trwa ${inp.turnsAtWar} tur` : '';
   const zmiany = inp.citiesChanged !== undefined ? `, miast zmieniło właściciela: ${inp.citiesChanged}` : '';
@@ -245,14 +255,15 @@ export function forcedPeaceModalTextPl(inp: ForcedPeaceTextInput, P: WarWearines
   const kto = inp.humanIsLoser
     ? ' Przegrywasz tę wojnę, bo Twoja siła militarna jest niższa (zmęczenie jest wspólne dla obu stron).'
     : ' Wygrywasz tę wojnę, bo Twoja siła militarna jest wyższa (zmęczenie jest wspólne dla obu stron).';
-  const karencja = inp.lockTurns !== undefined ? ` Po pokoju karencja: ${inp.lockTurns} tur.` : '';
   return {
     title: 'Pokój wymuszony',
     lead: `Wojna z ${inp.otherName} osiągnęła ${pct}% zmęczenia — pokój wymuszony.`,
     why: `Zmęczenie wojną ${pct}% (próg wymuszenia 100%)${wojna}${zmiany}.${kto} ` +
       `Zmęczenie rośnie o ${perTurnPct}% za każdą turę wojny i o ${perCityPct}% za każde miasto, które zmieniło właściciela. ` +
       'Nie da się odrzucić tego pokoju: gra nie pozwoli zakończyć tury, dopóki nie zaakceptujesz warunków.',
-    terms: terms + (inp.cityNames.length === 0 ? ' Zapłata: 0 PN.' : '') + karencja + ' Zaufanie po pokoju: 20.',
+    whyShort: `Zmęczenie wojną osiągnęło ${pct}% — pokój jest wymuszony.`,
+    terms,
+    termsShort,
     acceptLabel: 'Akceptuję warunki pokoju',
   };
 }
