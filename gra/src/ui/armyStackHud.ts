@@ -82,6 +82,8 @@ export interface ArmyStackHudState extends UnitSufferingStatusFields {
   oblegaCityName?: string;
   /** Powód wstrzymania zaplanowanej trasy (R-WEB-MARCH-RESUME-NEXT-TURN-Q1). */
   marchPausedReason?: string;
+  /** R-WEB-MARCH-OWN-UNIT-STOP-LOSES-MP-AND-INDICATOR-Q1: plan aktywny -> „marsz ruszy na koniec tury”. */
+  marchQueuedEndTurn?: boolean;
   buildingBonusLabel?: string;
   actions: UnitPanelAction[];
   /** R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 (runda 2): stos stoi w zasadzce — znacznik widoczny TYLKO
@@ -357,6 +359,7 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
       ufortyfikowanyWPolu: st.ufortyfikowanyWPolu,
       oblegaCityName: st.oblegaCityName,
       marchPausedReason: st.marchPausedReason,
+      marchQueuedEndTurn: st.marchQueuedEndTurn,
       // R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: głód wojska + deficyt Złota.
       ...pickUnitSufferingFields(st),
       esc,
