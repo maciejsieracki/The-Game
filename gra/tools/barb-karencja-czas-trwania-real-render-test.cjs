@@ -35,7 +35,7 @@ const ENTRY = path.resolve(__dirname, '.bkct-entry.ts');
 const BUNDLE_PO = path.resolve(__dirname, '.bkct-bundle-po.js');
 const BUNDLE_PRZED = path.resolve(__dirname, '.bkct-bundle-przed.js');
 // Na maszynie sesji zainstalowany jest Chromium 153 pod /opt/pw-browsers/chromium (skrypt powłoki
-// -> chromium-1243); ścieżka chromium-1194 nie istnieje. Ten sam wzorzec co w sąsiednich testach żywych.
+// -> chromium-1243); ścieżka wersji 1194 nie istnieje. Ten sam wzorzec co w sąsiednich testach żywych.
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const DIPLO_BASKET = path.resolve(GRA, 'src', 'ui', 'diplomacyTradeBasket.ts');
 // P-BRAMKI-BARBARZYNCY-PISZA-DO-CUDZEGO-RUNU-Q1: dowody PNG szly do SLEDZONEGO katalogu runu

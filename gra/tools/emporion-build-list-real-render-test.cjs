@@ -15,7 +15,7 @@
  *   Zrzuty PNG: dyspozycje/autobot/runs/R-WEB-BUILDING-EMPORION-Q1/ (sciezki w KATALOG_ZRZUTOW).
  *
  * Usage (z gra/): node tools/emporion-build-list-real-render-test.cjs
- * Wymaga: npm ci --ignore-scripts (gra/), Chromium /opt/pw-browsers/chromium-1194.
+ * Wymaga: npm ci --ignore-scripts (gra/), Chromium /opt/pw-browsers/chromium.
  */
 const fs = require('fs');
 const path = require('path');
