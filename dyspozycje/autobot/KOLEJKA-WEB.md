@@ -68,3 +68,5 @@ Worktree, journale (`/root/.claude/projects/.../subagents/workflows/<wf>/journal
 - Brak tematów gotowych do startu bez decyzji właściciela. Niski priorytet (nie na zapełnienie slotów): #438 hak civTest do odmowy AI (L2b); sprzątanie martwej pozostałości `wspolnaReligia` w main.ts (~44101); #272 obserwacje.
 - CZEKA NA WŁAŚCICIELA: bramka utrzymania armii AI (po pomiarze); dane Greków `walka_obrona_piechota_teren_las = 0`; `map-snapshot-load` KNOWN-FAIL (budżet rotacji autozapisu); nieblokująco: zapis z 0 miast ma grać dalej bez porażki?
 - ZALEŻNE (2026-11-18): R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 — model PW pokoju P·r / P/r wg Power; START po wdrożeniu FORCEDPEACE i DECLUTQ2 (te same pliki); dispatch w dyspozycje/autobot/runs/.
+- ZALEŻNE (2026-11-18, audyt ABC): R-WEB-UI-DIPLO-FORCED-PEACE-WINDOW-DECLUTTER-TOOLTIPS-Q1 — okno pokoju wymuszonego: wyliczenia do tooltipów; START po wdrożeniu R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (ten sam diplomacyAudience.ts).
+- GOTOWE (2026-11-18): R-WEB-DOC-WEARINESS-STALE-5PCT-20TURNS-COMMENTS-Q1 — stare opisy 5%/20 tur w komentarzach i opisie danych; start od razu (Haiku).
