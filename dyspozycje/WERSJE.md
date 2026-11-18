@@ -1,3 +1,9 @@
+## ROBOCZA 5eff4938 -- 2026-11-17 -- FALA 818: DIPLO-5 + DOC-CIVPEDIA: jedna aktywna propozycja pokoju na stole, wygasanie ofert miast, notki Civpedii o ciosach i ucieczce (testowa)
+
+- Dyplomacja: dla pokoju i rozejmu na pare co najwyzej jedna aktywna propozycja (planAiOfferOnTable; propozycja i kontroferta gracza blokuja oferte AI, nowa oferta AI zastepuje stara); oferta miast niewykonalna (miasto utracone lub oddane) wygasa (negotiationStillValid z cityOwnerOf); Civpedia: hasło ruch-i-cios-w-bitwie uzupelnione o obrazenia wrecz a pancerz oraz morale i ucieczke (osłona wręcz -50% morale strzelców, odsuwanie MELEE_SAFE_GAP=2), wikiBundle zregenerowany
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplo-peace-offer-dedup T1-T9 zielone, 3 mutacje zrodla wykryte; peace-auto-stale 6/0; winner-flow 49/0; negotiation-table 62/62; civpedia guard 7/0; polish audit 7497/0; 13 czerwonych testow dyplomacji identycznie czerwone na bazie
+- Limity: NIE ZMIERZONO w zywej grze (Chromium) dedup ofert; Przyjmij dla prezentu przy bilansie PW (blokada z evaluateProposal, bramka PW) niezmieniona - decyzja wlasciciela; wymiana oferty AI jest cicha; cios wreczny 0 vs 1 (reczna vs auto) czeka na ABC
+
 ## ROBOCZA f53b90b0 -- 2026-11-17 -- FALA 817: DIPLO-4: blokada propozycji pokoju przed klikiem i powod odmowy AI w toscie (testowa)
 
 - Dyplomacja: przycisk Zaproponuj pokoj i pozycja w Mozliwych umowach wyszarzone z licznikiem dostepne za N tur gdy wojna trwa krocej niz 10 pelnych tur (takze oferta trybutu), poprawna odmiana tura/tury/tur; render blokady bez zapisu stanu wojny; toast odrzucenia AI dla pokoju i rozejmu dopisuje konkretny powod z evaluateProposal (diplomacy-locks.ts, diplomacy-peace-proposal-timing.ts, main.ts)
