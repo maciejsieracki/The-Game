@@ -1,3 +1,9 @@
+## ROBOCZA 449acaa1 -- 2026-11-18 -- FALA 836: tor umów AI↔AI: pakt o nieagresji (przełącznik WYŁĄCZONY) (testowa)
+
+- Do gry wchodzi tor paktu o nieagresji (NAP) między AI: krok tickAiAiTreatyRequests w turze AI (NAP 15 tur, dopłata D złotem ze skarbca płatnika, nigdy poniżej zera, kara za zerwanie −20 Zaufania i −30 Relacji przeliczone na Respekt), ale cały tor jest za przełącznikiem torAktywny=false w gra/data/ai-ai-treaty-params.json — domyślnie WYŁĄCZONY, więc zachowanie gry bez zmian do czasu pomiaru ≥3×150 tur (etap E6) i decyzji właściciela. Moduły: ai-ai-treaty-tick.ts (nowy), hak testowy aiAiTreatyTickForTest.
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-ai-treaty-nap-wiring 43/43 (mutanty M1–M6 wykryte); ai-ai-treaty-evaluate 21/0; treaty-payment wiring 468/0; treaties-ai-parity 80/0; war-peace-sim 25/0; alliance-gate 21/0; ai-test 297/0.
+- Limity: NIE ZMIERZONO: hash stanu gry przy torAktywny=false (3 ziarna × 30 tur; harness żywy kończy się FATAL endTurn timeout w turze 1), wiring ticku w uruchomionej grze (hak niewywołany), dynamiczny test kary za zerwanie NAP AI↔AI, tabela PRZED dla testów diplo; inertność przy false potwierdzona tylko czytaniem kodu (wczesny return); symulacja ≥3×150 tur (E6) niewykonana.
+
 ## ROBOCZA 5bc75dc2 -- 2026-11-18 -- FALA 835: jeden próg gotowości AI do sojuszu 0,54 (inicjatywa AI jak ocena propozycji) (testowa)
 
 - Próg gotowości do sojuszu dla INICJATYWY AI obniżony z 0,6 do 0,54 — taki sam jak przy ocenie propozycji (jedna wartość dla obu torów, decyzja właściciela P-2 A); PROG_SOJUSZ w ai.ts czyta teraz tę samą wartość co progSojuszWillingnessMin (bez trzeciej kopii liczby); AI może częściej proponować sojusze. Rozjazd NAP (Relacja 50 w acceptance-points vs 110 w diplomacy.json) NIE ruszony — żywa ścieżka, czeka na decyzję właściciela.
