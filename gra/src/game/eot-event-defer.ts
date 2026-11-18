@@ -12,6 +12,9 @@ export interface DeferredEotHint {
   hex?: { q: number; r: number };
   cityId?: string;
   ownerId?: number;
+  /** R-WEB-UI-NOTIF-OTHER-CIV-EVENTS-TO-DIPLOMACY-TAB-Q1: `'other-civs'` = wydarzenie między INNYMI
+   * cywilizacjami (gracz nie jest stroną) → zakładka „Dyplomacja” zamiast „Ważne”. */
+  origin?: 'other-civs';
 }
 
 /** Czy UI ma odkładać toasty / chipy wydarzeń (faza przejścia tury). */
@@ -195,7 +198,7 @@ export function deferredHintsToSidePanelEvents(
       title: isDiplomacy ? 'Dyplomacja' : '',
       subtitle: h.msg.replace(/<[^>]+>/g, ''),
       kind: isDiplomacy ? ('diplo' as const) : ('info' as const),
-      ...(isAiAiTrade ? { origin: 'other-civs' as const } : {}),
+      ...(isAiAiTrade || h.origin === 'other-civs' ? { origin: 'other-civs' as const } : {}),
       ...(h.hex ? { hex: h.hex } : {}),
       ...(h.cityId !== undefined ? { cityId: h.cityId } : {}),
       ...(h.ownerId !== undefined ? { ownerId: h.ownerId } : {}),
