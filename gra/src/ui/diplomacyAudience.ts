@@ -715,7 +715,6 @@ ${DIPLO_1E_SHARED_CSS}
 .da-rel-row.credibility .v{color:#9ab8e8;}
 .da-rel-row.relacja-total{margin-top:6px;border-top:1px dashed rgba(232,216,138,.12);padding-top:6px;}
 .da-rel-row.relacja-total .v{color:#e8d88a;font-weight:700;}
-.da-rel-sum-hint{font-size:0.58em;color:#6a6058;margin-left:4px;}
 .da-war-cap-note{font-size:0.8em;font-weight:600;color:#d9a05b;margin-left:6px;}
 .da-rbar.relacja-total{background:rgba(232,216,138,.12);}
 .da-rbar.relacja-total i{background:linear-gradient(90deg,#8a7050,#e8d88a);}
@@ -724,7 +723,6 @@ ${DIPLO_1E_SHARED_CSS}
 .da-rbar.trust i{background:linear-gradient(90deg,#2f7a4a,#5ad07a);}
 .da-rbar.respect i{background:linear-gradient(90deg,#9a7420,#e8d88a);}
 .da-rbar.credibility i{background:linear-gradient(90deg,#3a4a7a,#7aa0e8);}
-.da-credibility-hint{font-size:0.58em;color:#6a7080;line-height:1.35;margin-top:2px;}
 .da-credbreak{margin-top:6px;background:rgba(0,0,0,.18);border:1px solid rgba(232,216,138,.14);
   border-radius:8px;overflow:hidden;}
 .da-credbreak-h{font-size:0.58em;text-transform:uppercase;letter-spacing:.04em;color:#8a8070;
@@ -793,7 +791,6 @@ ${DIPLO_1E_SHARED_CSS}
 .da-negot-linked-they{position:relative;}
 .da-negot-linked.can-edit{cursor:pointer;transition:border-color .15s,box-shadow .15s;}
 .da-negot-linked.can-edit:hover{border-color:rgba(232,216,138,.55);box-shadow:0 0 0 1px rgba(232,216,138,.25);}
-.da-negot-edit-hint{font-size:0.62em;color:#8a8070;margin-top:4px;font-style:italic;}
 .da-card-actions{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
 .da-card-actions button{font-size:0.72em;padding:3px 8px;border-radius:5px;cursor:pointer;
   border:1px solid rgba(232,216,138,.25);background:rgba(30,36,48,.85);color:#e8e0c8;}
@@ -974,7 +971,6 @@ ${DIPLO_1E_SHARED_CSS}
 .da-treaty svg.da-ti{width:14px;height:14px;color:#8ec5ff;flex:none;margin-top:1px;}
 .da-treaty .da-nm{font-size:0.72em;font-weight:600;color:#e8e0c8;}
 .da-treaty .da-meta{font-size:0.62em;color:#8a8070;margin-top:2px;}
-.da-treaty .da-pen{font-size:0.62em;color:#e08a8a;margin-top:3px;}
 /* Zaległość #2 — „Zerwij" = SAMA IKONA rozerwanego ogniwa (SVG z makiety) + podpis na hover
    (.da-ttip); aktywny gdy SILNIK dostarcza onBreakTreaty (main.ts breakTreatyVoluntarily). */
 .da-treaty .da-ttip{margin-left:auto;align-self:center;}

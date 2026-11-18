@@ -22,6 +22,7 @@ const GRA = path.resolve(__dirname, '..');
 const UI = path.resolve(GRA, 'src', 'ui');
 const AUD_FILE = path.resolve(UI, 'diplomacyAudience.ts');
 const HT_FILE = path.resolve(UI, 'hudTitleTooltip.ts');
+const NEG_FILE = path.resolve(UI, 'diplomacyNegotiationModal.ts');
 
 let pass = 0;
 let fail = 0;
@@ -42,6 +43,23 @@ const VISIBLE_FORBIDDEN = [
   { name: 'widoczny opis „dodaj kolejną umowę” (podpowiedź stołu)', re: /'<\/b> · dodaj kolejną/ },
   { name: 'widoczna podpowiedź „Użyj Edytuj…”', re: />Użyj Edytuj/ },
   { name: 'widoczna linia „kara zerwania” w kolumnie traktatów', re: /class="da-pen">kara zerwania/ },
+  { name: 'skutek złamania paktu jako widoczny <p> (formularz paktu)', re: /<label>Czas paktu<\/label><p class="cdn-sub">Złamanie/ },
+  { name: 'instrukcja „zamknij to okno” jako widoczny tekst (handel/dar)', re: /'">Zamknij to okno/ },
+];
+/** Przykład tekstu łamiącego każdy wzorzec (ten sam indeks co VISIBLE_FORBIDDEN): mutacja = doklejenie przykładu do źródła. */
+const EXAMPLES = [
+  "'</b> — ' + esc(l.reason)",
+  '<strong>Wypowiedz wojnę</strong> — bez ataku',
+  '>Nie jesteście w stanie wojny',
+  '</strong> — kara Wiarygodności',
+  "subParts.push('zerwanie: '",
+  'da-rel-sum-hint">(Zaufanie',
+  'class="da-credibility-hint"',
+  "'</b> · dodaj kolejną",
+  '>Użyj Edytuj',
+  'class="da-pen">kara zerwania',
+  '<label>Czas paktu</label><p class="cdn-sub">Złamanie: −30',
+  '\'">Zamknij to okno i użyj',
 ];
 
 /** Dawne treści, które MUSZĄ istnieć jako wartość title (tooltip) — nic nie usunięte (R1). */
@@ -55,6 +73,9 @@ const TOOLTIP_REQUIRED = [
   'Użyj Edytuj, aby zmienić ilości w koszyku',
   'Relacja = Zaufanie + Respekt',
   'Rozbicie: życiorys ',
+  'Złamanie: −30 Relacja, −20 Zaufanie',
+  'zamknij to okno i użyj przycisku',
+  'Dar PW otwiera się w koszyku',
 ];
 
 function violations(src) {
@@ -62,15 +83,16 @@ function violations(src) {
 }
 
 const audSrc = fs.readFileSync(AUD_FILE, 'utf8');
+const negSrc = fs.readFileSync(NEG_FILE, 'utf8');
 const htSrc = fs.readFileSync(HT_FILE, 'utf8');
 
 // (1) widoczny tekst bez wyjaśnień
-const viol = violations(audSrc);
+const viol = violations(audSrc + '\n' + negSrc);
 check('widoczny szablon okien dyplomacji: brak wyjaśnień poza tooltipem', viol.length === 0, viol);
 
 // (2) dawne treści w tooltipie (title)
 for (const t of TOOLTIP_REQUIRED) {
-  check('tooltip (title) zawiera: „' + t.trim() + '”', audSrc.includes(t), t);
+  check('tooltip (title) zawiera: „' + t.trim() + '”', (audSrc + negSrc).includes(t), t);
 }
 check('wiarygodność: wiersz ma tooltip z rozbiciem (bez widocznego bloku)',
   /splitTip = rozbicie/.test(audSrc) && /tipBody \+ splitTip/.test(audSrc));
@@ -81,17 +103,12 @@ check('kolumna „Możliwe umowy”: widoczne tylko „Na stole: N”', /'<\/b><
 // (3) scope dymków obejmuje modale (inaczej tooltip w modalu byłby tylko natywny)
 check('hudTitleTooltip: scope obejmuje .civ-diplo-modal-overlay', /'\.civ-diplo-modal-overlay'/.test(htSrc));
 
-// (4) MUTACJA: uzasadnienie kary wraca do widocznego tekstu → test MUSI czerwienić
-const anchorOld = "signedDelta(l.delta)) + '</b></li>';";
-const anchorCount = audSrc.split(anchorOld).length - 1;
-check('mutacja: kotwica (wiersz kary) występuje dokładnie raz', anchorCount === 1, anchorCount);
-if (anchorCount === 1) {
-  const mutated = audSrc.replace(anchorOld,
-    "signedDelta(l.delta)) + '</b> — ' + esc(l.reason) + '</li>';");
+// (4) MUTACJE: dla KAŻDEGO wzorca doklejamy jego przykład do źródła → test MUSI czerwienieć (dowód, że wzorzec działa).
+VISIBLE_FORBIDDEN.forEach((p, i) => {
+  const mutated = audSrc + '\n' + negSrc + '\n' + EXAMPLES[i];
   const mutViol = violations(mutated);
-  check('mutacja: uzasadnienie kary wrócone na widoczny tekst czerwieni test (1)',
-    mutViol.length > 0, mutViol);
-}
+  check('mutacja ' + (i + 1) + '/' + VISIBLE_FORBIDDEN.length + ': wzorzec „' + p.name + '” czerwieni test', mutViol.indexOf(p.name) !== -1, mutViol);
+});
 
 console.log('');
 console.log('diplo-all-windows-declutter-tooltips-test: ' + pass + ' pass, ' + fail + ' fail');
