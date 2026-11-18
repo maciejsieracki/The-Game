@@ -1,3 +1,9 @@
+## ROBOCZA 39b38bf9 -- 2026-11-18 -- FALA 849: Koalicja antylidera (etap B4, za flaga, wylaczona) + audyt wspolnych wojen sojusznikow (testowa)
+
+- Nowy modul ai-ai-coalition.ts (wykrycie lidera: prog 1,5x sredniej Mocy, histereza 5 tur) i premia celu w torze sojuszy AI-AI; parametry w ai-ai-treaty-params.json; wpiecie w main.ts za flaga koalicjaAntyLiderAktywna=false = zachowanie gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-ai-coalition-test 0 bledow, mutanty 8/8; ai-ai-alliance-tick-test 19/19, mutanty 8/8; ai-ai-treaty-evaluate 21/0
+- Limity: Flaga domyslnie wylaczona i tor sojuszy tez wylaczony: koalicja nie dziala w rozgrywce do czasu pomiaru; wplyw na rozgrywke NIE ZMIERZONO; premia dziala tylko gdy obie AI sa w wojnie z liderem; brak histerezy wyjscia z lidera; luki audytu B2: brak sprawdzenia dystansu, zwykly pokoj nie blokuje dolaczenia, barbarzyncy w activeWarCount, licznik wojen globalny a nie per epoka
+
 ## ROBOCZA 304eac4b -- 2026-11-18 -- FALA 848: Sojusze AI-AI (etap B1, za flaga, wylaczone): tor sojuszy z limitem 2 na cywilizacje (testowa)
 
 - Nowy modul ai-ai-alliance-tick.ts (czysta logika: limit 2, ponowne proby co 8 tur, wybor celu wg gotowosci i wspolnego wroga) + wpiecie tickAiAiAllianceRequests w main.ts; parametry w ai-ai-treaty-params.json; flaga torSojuszyAktywny=false = zachowanie gry bez zmian
