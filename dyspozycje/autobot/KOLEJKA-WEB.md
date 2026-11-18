@@ -70,3 +70,4 @@ Worktree, journale (`/root/.claude/projects/.../subagents/workflows/<wf>/journal
 - ZALEŻNE (2026-11-18): R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 — model PW pokoju P·r / P/r wg Power; START po wdrożeniu FORCEDPEACE i DECLUTQ2 (te same pliki); dispatch w dyspozycje/autobot/runs/.
 - ZALEŻNE (2026-11-18, audyt ABC): R-WEB-UI-DIPLO-FORCED-PEACE-WINDOW-DECLUTTER-TOOLTIPS-Q1 — okno pokoju wymuszonego: wyliczenia do tooltipów; START po wdrożeniu R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (ten sam diplomacyAudience.ts).
 - GOTOWE (2026-11-18): R-WEB-DOC-WEARINESS-STALE-5PCT-20TURNS-COMMENTS-Q1 — stare opisy 5%/20 tur w komentarzach i opisie danych; start od razu (Haiku).
+- ZALEŻNE (2026-11-18): R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 — parytet siły i ceny ×10 dla rozejmu/NAP/przemarszu/sojuszy/wasala (ABC właściciela: skala A, bez sufitu B); START po wdrożeniu R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1.
