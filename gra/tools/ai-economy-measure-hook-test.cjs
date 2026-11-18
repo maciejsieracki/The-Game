@@ -24,13 +24,15 @@
  */
 const os = require('os');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 function arg(name, def) {
   const i = process.argv.indexOf('--' + name);
   return i >= 0 && process.argv[i + 1] !== undefined ? process.argv[i + 1] : def;
 }
 const GRA_DIR = path.resolve(__dirname, '..');
-const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'ai-economy-dist')));
+const DIST_GIVEN = process.argv.includes('--dist');
+let DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'ai-economy-dist')));
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 const MUTANT_DIST = arg('mutant-dist', '') ? path.resolve(arg('mutant-dist', '')) : null;
 const RUNNER = path.resolve(arg('runner', path.join(GRA_DIR, 'tools', 'ai-economy-measure-run.cjs')));
@@ -275,7 +277,16 @@ async function fullChecks(browser) {
   }
 }
 
+/** Bez --dist: buduje bundle `vite build` (tylko npx vite, bez prebuild) do katalogu poza repo, jak sidepanel-event-header-wydarzenie-real-render-test. */
+function ensureDist() {
+  if (DIST_GIVEN) return;
+  const outDir = path.join(os.tmpdir(), `ai-economy-dist-${process.pid}-${Date.now()}`);
+  execFileSync('npx', ['vite', 'build', '--outDir', outDir, '--emptyOutDir'], { cwd: GRA_DIR, stdio: 'ignore' });
+  DIST = outDir;
+}
+
 async function main() {
+  if (!MODAL_ONLY) ensureDist();
   const { chromium } = require(path.join(PW_DIR, 'node_modules', 'playwright'));
   const args = ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage'];
   const browser = await chromium.launch({ headless: true, executablePath: CHROME, args });
