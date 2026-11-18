@@ -2,7 +2,7 @@
 
 STATUS: dispatch orkiestratora. Opus (3D), wszystkie etapy Opus. Decyzje techniczne podejmuje orkiestrator (reguła 8); web najpierw (reguła 11).
 START: po zintegrowaniu RENDER-FRAME r2 (ten sam obszar `playable.rs`/sesji mgły) i przy dysku >= 8 GB.
-BAZA: `origin/rust-port/parity-v2` (aktualny po RENDER-FRAME r2; wpisz SHA w raporcie; w chwili pisania `0941c8225`). Przed startem: `git fetch origin && git checkout -B <gałąź> origin/rust-port/parity-v2`.
+BAZA: `origin/rust-port/parity-v2` (aktualny po RENDER-FRAME r2; wpisz SHA w raporcie; w chwili startu `5a1ddc10b9b894161e6f4e84694693b459dc992f` = merge RENDER-FRAME r2 + K5LOOP-CLOSE r2; ta linia ma priorytet). Przed startem: `git fetch origin && git checkout -B <gałąź> origin/rust-port/parity-v2`.
 
 ## GOAL
 Po `from_state`/wczytaniu zapisu mgła sesji (`PlayableFogSession::explored_by_human`) jest pusta, a web zapisuje i odtwarza odkrycie: `exploredByHuman: Array<[ownerId, string[]]>` w zapisie (`gra/src/main.ts:37229-37239` zapis, `:46385-46400` odczyt; typ `gra/src/game/save.ts:359-363`, normalizacja `:725`: brak => `[]`). Zapewnić rundę zapis → odczyt zachowującą odkrycie.
