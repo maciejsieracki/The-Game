@@ -1,3 +1,9 @@
+## ROBOCZA 2f16feff -- 2026-11-18 -- FALA 822: FORCEDPEACE: pokoj wymuszony czeka na akceptacje gracza, blokuje Zakoncz ture, okno z uzasadnieniem (testowa)
+
+- Gdy zmeczenie wojna osiaga 100% i gracz jest w wojnie, pokoj nie zapada po cichu: otwiera sie okno z uzasadnieniem (tur wojny, zmienione miasta, 2,5% na ture z parametrow, +10% za miasto, kto wygrywa wg sily militarnej) i warunkami; Esc i klik w tlo nie zamykaja; Zakoncz ture jest zablokowane do akceptacji; po akceptacji pokoj, dokladnie jeden wpis Pokoj zawarty w Wazne; pary AI-AI bez zmian (kod 9db388f25)
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; forced-peace-pending 40/0 z mutacja; stages-view 22/0; peace-vazne zielone; weariness-forced-peace 14/0; declutter Q2 48/0; zywy Chromium w FC: status wojna przy oknie, Esc i tlo nie zamykaja, endTurn nie zmienia tury, po akceptacji pokoj i 1 wpis; live stale-offer 15/0
+- Limity: NIE ZMIERZONO: fokus klawiatury i tooltipy okna; zapis/wczytanie z oczekujacym traktatem; scenariusz z miastami w pelnym main.ts; kolejka dwoch traktatow na zywo; okno nie uzywa tooltipow (odstepstwo od DODATKU 1, tekst inline)
+
 ## ROBOCZA a92917e4 -- 2026-11-18 -- FALA 821: DECLUTTER-Q2: porzadek wszystkich okien propozycji dyplomacji, wyjasnienia do tooltipow (testowa)
 
 - Wszystkie pozostale okna propozycji (formularze umow koszyka: pakt, sojusz, przemarsz, wasal, wchlonięcie, pokoj/rozejm, reparacje, handel; slodzik; Odmowa = casus belli; okna wojny, zgody, sojuszu i zerwania umowy) pokazuja tylko liczby i werdykt; wyliczenia i uzasadnienia w tooltipach, nic nie usuniete; linie informacyjne kar zostaja widoczne jako werdykt (kod fcdaf38ce)
