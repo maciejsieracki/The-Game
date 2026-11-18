@@ -1,3 +1,9 @@
+## ROBOCZA 76db1726 -- 2026-11-18 -- FALA 834: preset testowy walka-mapy przelicza ekonomię; asercja przewijania panelu miasta (testowa)
+
+- Preset testowy playtest walka-mapy po dołożeniu miast woła markCityStateDirty() (prognoza ekonomii istnieje od tury 1, tak jak w pozostałych presetach); żywy test odświeżania panelu miasta po końcu tury sprawdza teraz zachowanie przewijania (scrollTop 150→150). Zmiana dotyczy wyłącznie presetu testowego (?playtest=), nie normalnej gry.
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; playtest-walkamapy-dirty-forecast 5/0 (mutacja: usunięcie wywołania → 2/3); playtest-mapa-dirty-forecast 10/0; city-panel-refresh-at-turn-start-live PASS ×3 (scrollTop 150→150), mutacja restorePanelScrollPositions → FAIL (150→0); open-panel-refresh-after-tech-live PASS.
+- Limity: NIE ZMIERZONO: prognoza ekonomii presetu walka-mapy w żywej grze (test statyczny, jak wzorzec); jednorazowy pad Chromium przy teście żywym (niepowtórzony); zaznaczenia i fokus pól paneli.
+
 ## ROBOCZA 5e3de9fb -- 2026-11-18 -- FALA 833: nośnik dopłaty D w traktatach: technologie, złoto, brąz, żelazo, rudy (testowa)
 
 - Traktaty z parytetem siły (pakt o nieagresji, sojusz obronny i pełny, przemarsz, wasal): dopłatę D płaci strona słabsza z zapasów w kolejności technologie (tylko takie, których druga strona nie ma) → złoto Skarbca → brąz → żelazo → rudy; realna akceptacja oferty AI przez gracza przelewa pozycje (resolvePlayerAcceptsAiPendingWired), gracz bez środków dostaje odmowę z powodem; okno propozycji pokazuje listę pozycji płatności. Stopnie praca i pieniądze (¤) poza zakresem (czeka na decyzję). Gdy płatnikiem byłaby AI (gracz silniejszy) — stan jak przed zmianą, bez dopłaty (czeka na decyzję).
