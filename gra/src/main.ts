@@ -31002,7 +31002,13 @@ async function boot(): Promise<void> {
         const st = warWearinessByPairKey.get(diploPairKey(a, b));
         return st ? { warStart: st.warStart, peak: st.peak, stage: st.stage } : null;
       };
-      // DIAG (r3, tymczasowy): stan wejść tyku zmęczenia dla pary — tylko odczyt.
+      // R-WEB-DIPLO-FORCED-PEACE-D2-HOOKS-Q1 (A): SETUP wieku wojny dowolnej pary (AI↔AI) — jak setWarAge, ale bez udziału gracza. TYLKO ?civTest=1.
+      (window as any).__truceTestDebug.setPairWarAgeForTest = (a: number, b: number, turnsAtWar: number): void => {
+        const key = diploPairKey(a, b);
+        const meta = (diplomacyPairMeta.get(key) ?? {}) as Record<string, unknown>;
+        diplomacyPairMeta.set(key, { ...meta, wojnaStartTura: turn - turnsAtWar } as any);
+      };
+      // R-WEB-DIPLO-FORCED-PEACE-D2-HOOKS-Q1: stan wejść tyku zmęczenia dla pary — tylko odczyt.
       (window as any).__truceTestDebug.wearDiagForTest = (a: number, b: number) => ({
         turn,
         status: getDiploRelation(a, b).status,

@@ -66,6 +66,11 @@ ok('G5a hak saveForTest w bloku civTest',
 ok('G5b hak loadForTest w bloku civTest',
   /__truceTestDebug\.loadForTest = async \(slot: string\)[^\n]*loadGameFromSlot\(slot, false\)/.test(src));
 
+ok('G5c hak setPairWarAgeForTest (setup pary AI<->AI) w bloku civTest, tylko diplomacyPairMeta',
+  (() => { const i = src.indexOf('__truceTestDebug.setPairWarAgeForTest ='); if (i < 0) return false; const body = src.slice(i, src.indexOf('};', i)); return /diplomacyPairMeta\.set\(key, \{ \.\.\.meta, wojnaStartTura: turn - turnsAtWar \}/.test(body) && !/setDiploRelation|pendingForcedPeaceTreaties/.test(body); })());
+ok('G5d hak wearDiagForTest tylko odczyt (bez set/push/delete w ciele)',
+  (() => { const i = src.indexOf('__truceTestDebug.wearDiagForTest ='); if (i < 0) return false; const body = src.slice(i, src.indexOf('__truceTestDebug.playerProposeTruceForTest', i)); return !/\.(set|push|delete|splice)\(/.test(body); })());
+
 const failed = checks.filter(c => !c.ok);
 console.log(failed.length === 0 ? `GUARD OK (${checks.length}/${checks.length})` : `GUARD FAIL (${failed.length} z ${checks.length})`);
 process.exit(failed.length === 0 ? 0 : 1);
