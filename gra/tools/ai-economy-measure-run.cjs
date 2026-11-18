@@ -66,6 +66,8 @@ const OUT = path.resolve(arg('out', path.join(GRA_DIR, 'ai-economy-out')));
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 const SAVE_AT = parseInt(arg('save-at', '40'), 10);
 const MUTANT = arg('mutant', '0') === '1';
+/** R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1: --player-ai 1 = gracz (0) sterowany autopilotem AI (hak, domyślnie 0). */
+const PLAYER_AI = arg('player-ai', '0') === '1';
 const SLOT = 'ai-econ-s' + SEED;
 const HASH_IGNORED = ['units[].stackGroupId(null)', 'cities[].budowaLista(gdy [])', 'cities[].magazynZywnosci(gdy 0)', 'cities[].postepBudynkowUsuniete(gdy {})', 'resourceLedgerHistory(#432)'];
 const CHROME = process.env.CHROME_PATH || '/usr/bin/chromium';
@@ -268,6 +270,11 @@ async function openGame(ctx, { fresh }) {
     if (!ok) throw new Error('nie udalo sie zalozyc miasta gracza (foundFirstCity=false)');
   }
   await suppressVictory(page);
+  if (PLAYER_AI) {
+    await page.evaluate(() => window.__aiEconomyMeasure.setPlayerAiAutopilotForTest(true));
+    const on = await page.evaluate(() => window.__aiEconomyMeasure.playerAiAutopilotForTestState());
+    console.log('[econ] player-ai autopilot=' + on);
+  }
   if (FAST) await page.evaluate(() => window.__aiTradeWiringTestDebug.setFastMode(true));
   // R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1: wariant OFF = zapis do ksiegi zrodel wylaczony przez
   // __ledgerTestDebug.setRecording(false) (stan gry nietkniety, tylko zapis do ksiegi). Wariant ON = domyslnie.

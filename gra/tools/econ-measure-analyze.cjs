@@ -7,6 +7,7 @@
  *       spichlerz, liczba budynkow; tempo wzrostu (x) surowcow brutto miedzy punktami kontrolnymi;
  *   (2) "wyjasnienie HUD": suma Surowce brutto wg HUD (wszystkie wiersze z cap) vs suma 3 surowcow modelu
  *       (etykiety /cegl|elaz|ceram/i) na TYCH SAMYCH rekordach, stosunek.
+ * (R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1: sekcja "Gracz (autopilot)" dla wl 0, co 10 tur, tylko gdy >=1 miasto.)
  * Tylko odczyt plikow; liczby z surowego jsonl, bez wlasnych wzorow. Brak pola -> '-'.
  *
  * Uzycie: node tools/econ-measure-analyze.cjs --in <abs-katalog> [--json <abs-plik-wyjscia>]
@@ -116,6 +117,25 @@ function main() {
     }
     console.log('\nTempo wzrostu surowcow brutto (x miedzy punktami kontrolnymi):');
     for (const g of growth) console.log('wl ' + g.owner + ': t' + g.odTury + '->t' + g.doTury + ' x' + fmt(g.xBruttoSurowce));
+    // R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1: sekcja gracza (wl 0) tylko gdy gracz ma >=1 miasto w którymś rekordzie.
+    // Co 10 tur (rekordy o turze podzielnej przez 10). Odczyt z tego samego jsonl (HUD), bez własnych wzorów.
+    const playerRecs = records.filter(r => r.seed === seed && r.turn % 10 === 0
+      && r.owners.some(o => o.owner === 0 && (o.miasta || 0) >= 1))
+      .sort((a, b) => a.turn - b.turn);
+    if (playerRecs.length > 0) {
+      console.log('\nGracz (autopilot), wl 0, co 10 tur (HUD; tylko tury z >=1 miastem):');
+      console.log('Tura | miasta | Surowce brutto (+X) | Surowce netto (+Y) | Praca | Praca+ | Spichlerz | Skarbiec | budynki');
+      for (const rec of playerRecs) {
+        const o = rec.owners.find(x => x.owner === 0);
+        const h = o.hud || {};
+        console.log([rec.turn, o.miasta, h.surowceBrutto, h.surowceNetto, h.praca, h.pracaRate, h.spichlerzStan,
+          h.skarbiecStan, h.budynkiPerTyp ? Object.values(h.budynkiPerTyp).reduce((a, b) => a + b, 0) : null].map(fmt).join(' | '));
+      }
+      report.seeds[seed].graczAutopilot = playerRecs.map(rec => {
+        const o = rec.owners.find(x => x.owner === 0);
+        return { tura: rec.turn, miasta: o.miasta, hud: o.hud || null };
+      });
+    }
   }
   const jsonOut = arg('json', '');
   if (jsonOut) fs.writeFileSync(path.resolve(jsonOut), JSON.stringify(report, null, 2));
