@@ -1,3 +1,9 @@
+## ROBOCZA 82515bef -- 2026-11-18 -- FALA 851: Pomiar sojuszy AI-AI: hak, histogram powodow odmow, runner i analizator (flaga wylaczona) (testowa)
+
+- Hak aiAiAllianceTickForTest.state i diag.sojusze (liczniki prob/odmow, histogram powodow odmow, sojusze na cywilizacje, wojny AI-AI), runner ai-ai-alliance-measure-run.cjs (--alliances 0|1), analizator i test haka; scalone z koalicja antylidera (FALA 849); brak zmian zasad gry, flagi nadal wylaczone
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; alliance-tick 19/19 + mutanty 8/8; coalition 0 bledow + mutanty 8/8; hook-test H1-H15 zielone, mutanty M1-M14; smoke seed 4242 30 tur z flaga ON: 302 proby, 302 odmowy (300 = prog gotowosci 0,54, 2 = skarbiec), 0 sojuszy, 0 NaN
+- Limity: Narzedzie pomiarowe bez efektu w rozgrywce; test haka statyczny (bez bundla); rozklad gotowosci do sojuszu NIE ZMIERZONO (osobny temat); pelny pomiar 100-150 tur OFF/ON NIE ZMIERZONO
+
 ## ROBOCZA b8f2f22e -- 2026-11-18 -- FALA 850: Pomiar twardszej dyplomacji: hak, runner i analizator (flaga wylaczona kontra wlaczona) (testowa)
 
 - Hak window.__diploHarderMeasure (tylko ?civTest=1: setEnabled, isEnabled, metrics - odczyt par glownych cywilizacji i gracza bez miast-panstw); narzedzia gra/tools/diplomacy-harder-measure-run.cjs i -analyze.cjs (z --selftest) oraz test haka; brak zmian zasad gry
