@@ -153,12 +153,12 @@ pub struct WorkerFieldDto {
 }
 
 /// Build highlight kind (contract §3.7): one variant per branch of
-/// `refreshBuildHighlight` (`main.ts:16351-16395` @ `07d2fbd72`), so the
+/// `refreshBuildHighlight` (`main.ts:16351-16396` @ `07d2fbd72`), so the
 /// renderer picks the layer and its opacity from the kind alone (P4-1F1 b):
 /// - `foundCity`: `setHighlight(qual)`, default opacity (`:16352-16361`);
 /// - `wonder`: `setHighlight(...)`, default opacity (`:16363-16367`);
 /// - `improvement`: `setHighlight(..., IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY)`
-///   (`:16391-16395`);
+///   (`:16392-16395`);
 /// - `mine`: separate `refreshMineEligibleOverlay(hexes)` layer, no disc
 ///   (`:16386-16390`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

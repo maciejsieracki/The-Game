@@ -221,9 +221,9 @@ fn camp_without_owner_is_rejected() {
 
 // ---------------------------------------------------------- (b) build highlight
 
-/// One kind per branch of `refreshBuildHighlight` (`main.ts:16351-16395`):
+/// One kind per branch of `refreshBuildHighlight` (`main.ts:16351-16396`):
 /// a wonder (`activeWonderId`, `:16363-16367`) and an improvement
-/// (`IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY`, `:16391-16395`) are distinct
+/// (`IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY`, `:16392-16395`) are distinct
 /// kinds, so the renderer can pick the opacity.
 #[test]
 fn wonder_and_improvement_are_distinct_kinds() {

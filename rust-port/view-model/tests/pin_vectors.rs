@@ -551,9 +551,9 @@ fn trade_medium() {
 }
 
 /// Contract §3.7 `buildHighlight.kind`, one value per branch of
-/// `refreshBuildHighlight` (`main.ts:16351-16395` @ `07d2fbd72`, P4-1F1 b):
+/// `refreshBuildHighlight` (`main.ts:16351-16396` @ `07d2fbd72`, P4-1F1 b):
 /// `foundCity` (`:16352-16361`), `wonder` (`:16363-16367`), `improvement`
-/// (`setHighlight(..., IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY)`, `:16391-16395`),
+/// (`setHighlight(..., IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY)`, `:16392-16395`),
 /// `mine` (`refreshMineEligibleOverlay`, `:16386-16390`). There is no web
 /// literal to generate (the web switches layers), so these values are the
 /// contract's own.
