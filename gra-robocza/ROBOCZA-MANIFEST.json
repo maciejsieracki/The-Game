@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4eea286a7477e48e7bf5d9754e73b2b2",
-  "bundleSha256": "15eaa859bb713b332f2f66c75fd51c6942fad3ab4f6a7301bc5592242aefca10",
-  "bundleBytes": 14890861,
+  "bundleMd5": "fbbefaa44611c52f93d8864acf0ae72a",
+  "bundleSha256": "36f73b2793c05e59636dee8748143510e96ae36b51e6f6b6f55a7ecf909a514f",
+  "bundleBytes": 14925028,
   "sourceSnapshot": {
-    "source": "PANELREF r2 FC 9f1e55bb4 + merge main 49ddb001",
+    "source": "FPSENT r1 FC 1738820bb + WELCOMEUI r1 FC 74a3c9b13 + merge main c8b0e498",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 828: Po odkryciu technologii (badania na koniec tury, nauka wioski, grant technologii przez handel) otwarty panel miasta i panel rekrutacji imperium odswiezaja liste bez ponownego otwierania (helper refreshOpenPanelsAfterTechDiscovery); hak test-only prepareNonEraCompletion w __eraTestDebug; reguly dostepnosci bez zmian"
+    "FALA 829: Okno pokoju wymuszonego: na wierzchu tylko pierwsze zdanie o zmeczeniu, pelny opis w tooltipie. Nowy ekran Odkryles nowa cywilizacje (raz przy pierwszym kontakcie + przycisk O cywilizacji w panelu dyplomacji): rys historyczny, plusy i minusy, jednostki specjalne, powitanie wladcy przyjazne lub nieprzyjazne z podpisem, przyciski Audiencja i Zamknij; teksty zatwierdzone przez wlasciciela"
   ],
   "verification": [
-    "tsc 0; logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; army-panel-recruit-remove 21/0, army-auto-recruit-general-ui 11/0, administrators-wizard 58/0; Chromium: test strazniczy PASS dla Murarstwa i Obrobki drewna, po zamianie odswiezania na no-op FAIL, kontrola bez techu BLOCKED"
+    "tsc 0; logic 213/213; civ-welcome-screen-test 309 asercji, civ-intro-texts 15 cywilizacji/90 powitan, declutter 16/0, pending 40/0, stages-view 24/0, forced-peace 14/0, wiki-weariness 18/0; FC: tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; Chromium: ekran powitalny zrzuty Rzymianie (przyjazne) i Egipt (nieprzyjazne), Esc/klik w tlo/Audiencja/Zamknij dzialaja"
   ],
   "limits": [
-    "NIE ZMIERZONO: odswiezenie panelu rekrutacji imperium na zywo, sciezki handel-tech i nauka wioski, scroll i zaznaczenia po odswiezeniu, powtarzalnosc (1 przebieg); dlug bazowy: konwerter-produkcja 107/1, tech-tile 16/1"
+    "NIE ZMIERZONO w pelnej grze: realny pierwszy kontakt, muzyka przywitania, koniec tury przy otwartym ekranie; okno pokoju wymuszonego otwarte po ekranie powitalnym zostaje pod nim; Chromium dla zmiany okna pokoju NIE ZMIERZONO"
   ],
-  "finalControl": "R-WEB-UI-OPEN-PANEL-REFRESH-AFTER-TECH-DISCOVERY-Q1 r2 FC PASS-WITH-NOTES 9f1e55bb4 (kod e12764b59, test dd4ec930c)",
+  "finalControl": "R-WEB-UI-DIPLO-FORCED-PEACE-WINDOW-ONE-SENTENCE-Q1 r1 FC PASS-WITH-NOTES 1738820bb (kod fe7d24dca) + R-WEB-UI-CIV-WELCOME-SCREEN-Q1 r1 FC PASS-WITH-NOTES 74a3c9b13 (kod 846ea43c3)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T12:56:45",
+  "hubGeneratedAt": "2026-11-18T14:16:02",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
-      "sizeBytes": 14890861
+      "md5": "fbbefaa44611c52f93d8864acf0ae72a",
+      "sizeBytes": 14925028
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
-      "sizeBytes": 14890861
+      "md5": "fbbefaa44611c52f93d8864acf0ae72a",
+      "sizeBytes": 14925028
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
-      "sizeBytes": 14890861
+      "md5": "fbbefaa44611c52f93d8864acf0ae72a",
+      "sizeBytes": 14925028
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
-      "sizeBytes": 14890861
+      "md5": "fbbefaa44611c52f93d8864acf0ae72a",
+      "sizeBytes": 14925028
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
-      "sizeBytes": 14890861
+      "md5": "fbbefaa44611c52f93d8864acf0ae72a",
+      "sizeBytes": 14925028
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
-      "sizeBytes": 14890861
+      "md5": "fbbefaa44611c52f93d8864acf0ae72a",
+      "sizeBytes": 14925028
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
-      "sizeBytes": 14890861
+      "md5": "fbbefaa44611c52f93d8864acf0ae72a",
+      "sizeBytes": 14925028
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
-      "sizeBytes": 14890861
+      "md5": "fbbefaa44611c52f93d8864acf0ae72a",
+      "sizeBytes": 14925028
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
-      "sizeBytes": 14890861
+      "md5": "fbbefaa44611c52f93d8864acf0ae72a",
+      "sizeBytes": 14925028
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
-      "sizeBytes": 14890861
+      "md5": "fbbefaa44611c52f93d8864acf0ae72a",
+      "sizeBytes": 14925028
     }
   ],
-  "md5": "4eea286a7477e48e7bf5d9754e73b2b2",
+  "md5": "fbbefaa44611c52f93d8864acf0ae72a",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

@@ -406,6 +406,11 @@ export interface DiplomacyAudienceConfig {
    * capitalCityIdForOwner + camCtrl.focusAt). UI zamyka overlay i woła callback.
    */
   onFocusCapital?: (ownerId: number) => void;
+  /**
+   * R-WEB-UI-CIV-WELCOME-SCREEN-Q1 — przycisk „O cywilizacji” na karcie rozmówcy: otwiera ekran
+   * powitalny tej cywilizacji (main.ts). Nie zmienia stanu audiencji ani jej muzyki.
+   */
+  onOpenCivInfo?: (ownerId: number) => void;
 }
 
 let cfg: DiplomacyAudienceConfig | null = null;
@@ -675,6 +680,8 @@ ${DIPLO_1E_SHARED_CSS}
 .da-card.you{border-color:rgba(58,106,208,.5);}
 .da-card.them{border-color:rgba(210,120,30,.45);}
 .da-card.them .dip-capital-locate{position:absolute;top:8px;right:8px;z-index:2;}
+.da-civinfo-btn{font:inherit;font-size:12px;margin-top:6px;padding:4px 10px;border-radius:6px;cursor:pointer;border:1px solid currentColor;background:transparent;color:inherit;opacity:.9;}
+.da-civinfo-btn:hover{opacity:1;text-decoration:underline;}
 .da-portrait{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;
   padding-bottom:8px;border-bottom:1px solid rgba(232,216,138,.18);}
 .da-portrait .dip-leader-medallion{width:64px;height:64px;}
@@ -1248,9 +1255,9 @@ export function showForcedPeaceModal(opts: ForcedPeaceModalOptions): void {
   modalOverlay.innerHTML =
     '<div class="civ-diplo-modal cd-war-consent-modal" role="dialog" aria-modal="true">' +
       '<h3>' + esc(text.title) + '</h3>' +
-      '<p class="cd-war-lead">' + esc(text.lead) + '</p>' +
-      // DECLUTTER-WINDOW (2026-11-18): na wierzchu tylko jedno zdanie „dlaczego” i warunki; wyliczenia w tooltipie (title).
-      '<p' + detailTipAttr([text.why]) + '>' + esc(text.whyShort) + '</p>' +
+      // DECLUTTER-WINDOW (2026-11-18, ABC wariant A): na wierzchu tylko jedno zdanie o zmęczeniu (lead) i warunki;
+      // pełne „dlaczego” (wyliczenia) w tooltipie zdania (title). whyShort nie jest już wyświetlany na wierzchu.
+      '<p class="cd-war-lead"' + detailTipAttr([text.why]) + '>' + esc(text.lead) + '</p>' +
       '<p' + detailTipAttr([text.terms]) + '>' + esc(text.termsShort) + '</p>' +
       '<div class="cd-modal-btns cd-war-consent-btns">' +
         '<button type="button" class="dip-gold-btn cd-forced-peace-ok">' + esc(text.acceptLabel) + '</button>' +
@@ -1580,6 +1587,9 @@ export function otherCardHtml(st: DiplomacyAudienceState): string {
             : '') +
         '</div>' +
         stanceBadgeHtml(st) +
+        (cfg?.onOpenCivInfo
+          ? '<button type="button" class="da-civinfo-btn" title="Rys, plusy i minusy cywilizacji" aria-label="O cywilizacji">O cywilizacji</button>'
+          : '') +
       '</div>' +
       '<div>' +
         '<div class="da-sec-title">Atrybuty</div>' +
@@ -2482,6 +2492,11 @@ function render(): void {
     ev.stopPropagation();
     if (cfg === null) return;
     cfg.onFocusCapital?.(cfg.ownerId);
+  });
+  rootEl.querySelector('.da-civinfo-btn')?.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    if (cfg === null) return;
+    cfg.onOpenCivInfo?.(cfg.ownerId);
   });
   rootEl.querySelectorAll<HTMLButtonElement>('.da-goods-cat-hdr').forEach(btn => {
     btn.addEventListener('click', () => {

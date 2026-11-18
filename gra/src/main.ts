@@ -157,6 +157,11 @@ import {
   serializeChronicles, restoreChronicles,
 } from './ui/eliminationSpectacle';
 import { civIconSvg } from './ui/icons/brandAssets';
+// R-WEB-UI-CIV-WELCOME-SCREEN-Q1: ekran „Odkryłeś nową cywilizację” (pierwszy kontakt + „O cywilizacji").
+import { showCivWelcomeScreen, isCivWelcomeScreenOpen, hideCivWelcomeScreen } from './ui/civWelcomeScreen';
+import { isFriendlyStance as civWelcomeIsFriendly, firstContactWelcomeDue, legacyShownMigration } from './ui/civWelcomeLogic';
+import { nastawienieLabelFromScore as civWelcomeNastawienieLabel } from './game/diplomacy-display';
+import { leaderName as civWelcomeLeaderName } from './ui/leaderPortraits';
 import {
   beginTurnTransition,
   endTurnTransition,
@@ -24031,6 +24036,8 @@ async function boot(): Promise<void> {
     function resetDiplomaticDiscoveryUiState(): void {
       lastDiplomaticContactsSnapshot = new Set<number>();
       pendingFirstContactCards.length = 0;
+      // R-WEB-UI-CIV-WELCOME-SCREEN-Q1: reset / nowa gra / wczytanie zapisu zamyka ekran powitalny bez callbacków.
+      hideCivWelcomeScreen();
       diplomaticDiscoveryPopupShownByHuman.clear();
       diplomaticContactTrackingReady = false;
     }
@@ -24079,17 +24086,74 @@ async function boot(): Promise<void> {
 
     function tryOpenNextFirstContactCard(): void {
       if (!canAutoOpenDiploAudience()) return;
+      // R-WEB-UI-CIV-WELCOME-SCREEN-Q1: jeden ekran naraz — kolejna karta czeka, aż ekran powitalny się zamknie.
+      if (isCivWelcomeScreenOpen()) return;
+      // R-WEB-UI-CIV-WELCOME-SCREEN-Q1: otwarte okno dyplomatyczne (np. pokój wymuszony, z-index 500) ma pierwszeństwo.
+      // Ekran powitalny (z-index 9650) nie może go przykryć ani wejść na jego Esc — ponów po zamknięciu okna.
+      if (document.querySelector('.civ-diplo-modal-overlay')) {
+        if (pendingFirstContactCards.length > 0) window.setTimeout(tryOpenNextFirstContactCard, 400);
+        return;
+      }
       while (pendingFirstContactCards.length > 0) {
         const cardIndex = pendingFirstContactCards.findIndex(card => card.humanOwnerId === ME());
         if (cardIndex < 0) return;
         const [card] = pendingFirstContactCards.splice(cardIndex, 1);
         if (!card || !getDiplomaticContacts(card.humanOwnerId).has(card.ownerId)) continue;
-        openDiplomacyAudience(card.ownerId);
+        showFirstContactWelcome(card.ownerId);
         return;
       }
     }
 
-    /** Pierwsze odkrycie cywilizacji w mgle → auto-kontakt + pełna audiencja dyplomacji. */
+    /**
+     * R-WEB-UI-CIV-WELCOME-SCREEN-Q1: dane ekranu powitalnego dla rozmówcy. Nastawienie = ta sama
+     * etykieta co na karcie audiencji (nastawienieLabelFromScore: Zaufanie + Respekt, w wojnie Wrogi).
+     * Przyjazne = etykieta inna niż Wrogi/Nieufny (próg Zaufania 30 — diplomacy-display.ts).
+     */
+    function civWelcomeScreenData(ownerId: number): { civKey: string; friendly: boolean; era: number; leader: string | null } {
+      const rel = getDiploRelation(ME(), ownerId);
+      const label = civWelcomeNastawienieLabel(rel.zaufanie ?? 0, objectiveRespektPctTowardEffective(ownerId), {
+        atWar: rel.status === 'wojna',
+      });
+      const civKey = civKeyForOwner(ownerId);
+      const era = empireEpochForOwner(ownerId);
+      return { civKey, friendly: civWelcomeIsFriendly(label), era, leader: civWelcomeLeaderName(civKey, era) };
+    }
+
+    /** Pierwszy kontakt: ekran powitalny RAZ (flaga = diplomaticDiscoveryPopupShown). „Audiencja" otwiera audiencję. */
+    function showFirstContactWelcome(ownerId: number): void {
+      const d = civWelcomeScreenData(ownerId);
+      const shown = showCivWelcomeScreen({
+        ownerId,
+        civKey: d.civKey,
+        friendly: d.friendly,
+        seed: _gameSeed,
+        era: d.era,
+        leaderName: d.leader,
+        playMusic: true,
+        onAudience: () => { openDiplomacyAudience(ownerId); },
+        onClose: () => { requestAnimationFrame(() => tryOpenNextFirstContactCard()); },
+      });
+      // Brak danych cywilizacji (klucz spoza 15) → dotychczasowe zachowanie: audiencja.
+      if (!shown) openDiplomacyAudience(ownerId);
+    }
+
+    /** Przycisk „O cywilizacji” w audiencji: ten sam ekran, bez muzyki i bez zmiany stanu audiencji. */
+    function showCivInfoFromAudience(ownerId: number): void {
+      const d = civWelcomeScreenData(ownerId);
+      showCivWelcomeScreen({
+        ownerId,
+        civKey: d.civKey,
+        friendly: d.friendly,
+        seed: _gameSeed,
+        era: d.era,
+        leaderName: d.leader,
+        playMusic: false,
+        onAudience: () => { /* audiencja jest już otwarta — tylko zamknięcie ekranu */ },
+        onClose: () => { /* bez zmian */ },
+      });
+    }
+
+    /** Pierwsze odkrycie cywilizacji w mgle → auto-kontakt + ekran powitalny (RAZ; potem audiencja z jego przycisku). */
     function checkNewDiplomaticContacts(): void {
       if (!diplomaticContactTrackingReady || galleryOn) return;
       const current = getDiplomaticContacts();
@@ -24103,7 +24167,7 @@ async function boot(): Promise<void> {
 
       for (const oid of newlySeen) {
         establishDiplomaticContact(oid);
-        if (diplomaticDiscoveryPopupShownSet().has(oid)) continue;
+        if (!firstContactWelcomeDue(diplomaticDiscoveryPopupShownSet(), oid)) continue;
         diplomaticDiscoveryPopupShownSet().add(oid);
         pendingFirstContactCards.push({ humanOwnerId: ME(), ownerId: oid });
       }
@@ -26997,6 +27061,7 @@ async function boot(): Promise<void> {
       showDiplomacyAudience({
         ownerId,
         otherCivId: civKeyForOwner(ownerId),
+        onOpenCivInfo: (oid: number) => showCivInfoFromAudience(oid),
         getState: () => {
           const contacted = getDiplomaticContacts();
           if (!contacted.has(ownerId)) return null;
@@ -50779,6 +50844,13 @@ async function boot(): Promise<void> {
           for (const aid of savedDiscoveryPopupsRaw as number[]) {
             diplomaticDiscoveryPopupShownSet(HUMAN_OWNER_PRIMARY).add(aid);
           }
+        }
+      }
+      // R-WEB-UI-CIV-WELCOME-SCREEN-Q1 (migracja): zapis sprzed flagi „ekran pokazany" → cywilizacje,
+      // które gracz już zna, nie dostają ekranu powitalnego przy ponownym zobaczeniu.
+      for (const [oid, s] of diplomaticallyDiscoveredOwnersByHuman) {
+        for (const aid of legacyShownMigration(saved.meta?.diplomaticDiscoveryPopupShown, Array.from(s))) {
+          diplomaticDiscoveryPopupShownSet(oid).add(aid);
         }
       }
       veteranEnemyEducationShown = saved.meta?.veteranEnemyEducationShown === true;
