@@ -5506,10 +5506,22 @@ function decideDefensiveCopyTurn(
   // potem PEŁNA kolejka jak zwykłe miasto AI (budynki gospodarcze, Koszary, jednostki);
   // bez ekspansji (Osadnik/foundCity zablokowane w chooseCityProduction i tutaj nigdzie
   // nie emitujemy foundCity). Zero bonusu: identyczna funkcja co dla zwykłego AI.
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1: miasta-państwa (defensiveCopy) też mają stały
+  // garnizon min. 1 bojowej; ta sama reguła i ten sam wybór miast co w decideAITurn.
+  const dcGarrisonRecruitCityIds = emptyCityGarrisonRecruitIds(myCities, myUnits, [], opts, data);
   for (const city of myCities) {
     const buildId = chooseCityProduction(
       city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, difficultyParams,
     );
+    if (dcGarrisonRecruitCityIds.has(city.id)) {
+      const rest = buildId === null ? [] : [buildId, ...(opts.lastProductionFallbackIds ?? [])];
+      commands.push({
+        type: 'build', cityId: city.id, buildingId: EMPTY_CITY_GARRISON_UNIT_ID,
+        fallbackIds: rest.filter(id => id !== EMPTY_CITY_GARRISON_UNIT_ID),
+      });
+      if (buildId === null || buildId === EMPTY_CITY_GARRISON_UNIT_ID
+        || data.units.some(u => u.Jednostka === buildId && armyClassOfUnit(u) !== null)) continue;
+    }
     if (buildId !== null) {
       // P-AI-MOC-GAP: dołącz fallbacki (odczyt NATYCHMIAST — kolejne miasto w tej
       // samej pętli nadpisze opts.lastProductionFallbackIds przy następnym wywołaniu).
