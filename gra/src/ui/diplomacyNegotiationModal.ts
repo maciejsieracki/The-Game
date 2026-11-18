@@ -236,8 +236,8 @@ function sweetenerSectionHtml(ctx: NegotiationModalContext): string {
     ).join('');
   return (
     '<div class="cdn-sweetener" style="margin-top:12px;border-top:1px dashed rgba(232,216,138,.18);padding-top:8px">'
-    + '<label style="margin-top:0">Dołóż do umowy (opcjonalnie — słodzik)</label>'
-    + '<p class="cdn-sub">Zwiększa szansę akceptacji — wliczane RAZEM z traktatem.</p>'
+    // Q2: wyjaśnienie słodzika w tooltipie etykiety (nic nie usunięte).
+    + '<label style="margin-top:0" title="' + esc('Zwiększa szansę akceptacji — wliczane RAZEM z traktatem.') + '">Dołóż do umowy (opcjonalnie — słodzik)</label>'
     + numInput('cdn-sw-gold', 'Pieniądze (¤)', 0, 0, goldMax)
     + '<label>Surowiec</label>'
     + '<select id="cdn-sw-res">' + resOptions + '</select>'
@@ -321,7 +321,7 @@ function buildFormBody(action: AudienceAction, ctx: NegotiationModalContext): st
       return sub
         + '<div class="cdn-row"><input type="checkbox" id="cdn-mil" />'
         + '<label for="cdn-mil" style="margin:0">Prawo wojskowe (+ opłata)</label></div>'
-        + '<p class="cdn-sub">Opłata cywilne: ' + feeC + ' ¤ · wojskowe: ' + feeM + ' ¤ (jednorazowo)</p>';
+        + '<p class="cdn-sub" title="' + esc('Opłata cywilne: ' + feeC + ' ¤ · wojskowe: ' + feeM + ' ¤ (jednorazowo)') + '">Opłata: ' + feeC + ' ¤ · ' + feeM + ' ¤</p>';
     }
 
     case '5':
@@ -369,8 +369,10 @@ function buildFormBody(action: AudienceAction, ctx: NegotiationModalContext): st
 
     case '9':
       return sub
+        // Q2: „Odmowa = casus belli” w tooltipie pola (nic nie usunięte).
+        + '<div title="' + esc('Odmowa = casus belli') + '">'
         + numInput('cdn-ult-gold', 'Reparacje ¤ (preset v1.1)', 50, 0)
-        + '<p class="cdn-sub">Odmowa = casus belli</p>';
+        + '</div>';
 
     case '12':
       return sub

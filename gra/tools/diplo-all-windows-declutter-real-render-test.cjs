@@ -35,6 +35,7 @@ fs.writeFileSync(MUSIC, 'export function startDiplomacyMusic(){} export function
 fs.writeFileSync(ENTRY, [
   `export { showWarConsentModal, showAllianceObligationModal, showWarConfirmModal, showBreakTreatyConfirmModal, showDiplomacyAudience, hideDiplomacyAudience } from ${JSON.stringify(AUD)};`,
   `export { showNegotiationModal, hideNegotiationModal } from ${JSON.stringify(NEG)};`,
+  `export { installHudTitleTooltips } from ${JSON.stringify(path.join(SRC_ROOT, 'src/ui/hudTitleTooltip.ts'))};`,
   `export { resolveFormalDiplomaticStatus } from ${JSON.stringify(path.join(SRC_ROOT, 'src/game/diplomacy-display.ts'))};`,
   '',
 ].join('\n'), 'utf8');
@@ -55,8 +56,8 @@ const stubAssets = {
 /** Mutacje: każda przywraca JEDNO wyjaśnienie do widocznego tekstu. from musi wystąpić dokładnie raz. */
 const MUTANTS = [
   { name: 'M1 uzasadnienie kary wraca na widoczny tekst', file: AUD,
-    from: "'<li title=\"' + esc(l.reason) + '\"><b>' + esc(penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta)) + '</b></li>'",
-    to: "'<li><b>' + esc(penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta)) + '</b> — ' + esc(l.reason) + '</li>'" },
+    from: "'<li><b>' + esc(penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta)) + '</b></li>',",
+    to: "'<li><b>' + esc(penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta)) + '</b> — ' + esc(l.reason) + '</li>',"  },
   { name: 'M2 opis „bez ataku” wraca na widoczny tekst', file: AUD,
     from: "<strong>Wypowiedz wojnę</strong></p>'",
     to: "<strong>Wypowiedz wojnę</strong> — bez ataku w tej turze (karencja N1)</p>'" },
@@ -219,6 +220,8 @@ async function runVariant(browser, label, mutant) {
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.setContent('<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;background:#101218"></body></html>');
   await page.addScriptTag({ path: bundle });
+  // Q2 r3: dymki gry (hudTitleTooltip) zainstalowane — hover pokazuje tooltip wyjaśnienia.
+  await page.evaluate(() => { window.DAR.installHudTitleTooltips(); });
 
   const shot = async (name) => {
     if (!SHOT_DIR || !TAG) return;
@@ -236,6 +239,20 @@ async function runVariant(browser, label, mutant) {
     if (SNAP[sc].error) { ok(sc + ': render bez wyjątku', false, SNAP[sc].error); continue; }
     await page.waitForTimeout(120);
     await shot(sc);
+    // Q2 r3: zrzut z WIDOCZNYM dymkiem (hover na elemencie z title) dla okien war/alliance.
+    if ((sc === 'war' || sc === 'alliance') && SHOT_DIR && TAG) {
+      const el = await page.$('.cd-war-opt[title], .cd-war-lead[title]');
+      if (el) {
+        const bb = await el.boundingBox();
+        await page.mouse.move(bb.x + bb.width / 2, bb.y + bb.height / 2);
+        await page.waitForTimeout(900);
+        await shot('hover-' + sc);
+        const tipText = await page.evaluate(() => { const t = document.querySelector('#civ-hud-title-tip-el'); return t ? (t.textContent || '') : ''; });
+        ok('hover ' + sc + ': dymek gry pokazuje treść z title', tipText.trim().length > 0, tipText);
+      } else {
+        ok('hover ' + sc + ': element z title znaleziony', false);
+      }
+    }
     // Zamknięcie przed następnym: usuwa overlaye (window.DAR nie eksportuje closeAll).
     await page.evaluate(() => { document.querySelectorAll('.civ-diplo-modal-overlay, .civ-diplo-neg-overlay').forEach(e => e.remove()); });
     if (sc === 'audience') await page.evaluate(() => { window.DAR.hideDiplomacyAudience(); });

@@ -1,62 +1,53 @@
-# R-WEB-UI-DIPLO-ALL-PROPOSAL-WINDOWS-DECLUTTER-TOOLTIPS-Q2 — raport Operatora (runda 1/5)
-
-STATUS: PASS-WITH-NOTES
-DOMAIN: GAME (UI dyplomacji — wyłącznie prezentacja)
+STATUS: PASS-WITH-NOTES (Operator, runda 2/5 — do Evaluatora; nie integrowane)
+DOMAIN: GAME (UI dyplomacji, wyłącznie prezentacja)
 TEMAT: R-WEB-UI-DIPLO-ALL-PROPOSAL-WINDOWS-DECLUTTER-TOOLTIPS-Q2
-GOAL: część 2 poleceń właściciela — wyjaśnienia z okien dyplomacji do tooltipów, na planszach zostają tylko liczby, nazwy i przyciski.
-BAZA: origin/main 89a5e25cc (FALA 820, Q1 wdrożone). Worktree: wf_b958c925-d62-1, tryb detached.
+GOAL: reguły R1–R6 dla pozostałych okien dyplomacji (zakres r2 = zarzut 1 FC: wojna/zgoda, sojusz, pakt, pokój/rozejm, wasal, wchłonięcie, handel, dar, zerwanie, panel PW w negocjacjach).
+ZMIANY/COMMIT: baza 89a5e25cc; kod rundy 1 = 92fede741 (kandydat FC r1); czubek tej rundy = commit tego raportu (SHA w polu sha).
+  Kod: gra/src/ui/diplomacyTradeBasket.ts (formularze umów koszyka: Pakt, Sojusz, Przemarsz, Wasal, Wchłonięcie, Pokój/Rozejm, Reparacje, Handel-dolny opis; wyjaśnienia → title etykiety/pola, widoczna tylko liczba); gra/src/ui/diplomacyNegotiationModal.ts (słodzik, opłata przemarszu, „Odmowa = casus belli”); gra/src/ui/diplomacyAudience.ts (penaltyBlockHtml: modal wojny/zgody/sojuszu/zerwania — lista skutków = same liczby, uzasadnienia i linie „info” w title bloku, nagłówek „Skutki:”); gra/src/ui/hudTitleTooltip.ts (+ scope `.civ-diplo-neg-overlay`). Testy: gra/tools/diplo-all-windows-declutter-tooltips-test.cjs (+ blok koszyka, mutacje), gra/tools/diplo-all-windows-declutter-real-render-test.cjs (M1 zaktualizowana do nowej kotwicy). Zrzuty: dowody/PRZED-*.png i PO-*.png (7 okien) + PO-hover-war.png, PO-hover-alliance.png (dymek hudTitleTooltip z treścią title).
+  Ta runda NIE rusza showForcedPeaceModal (poza zakresem, FORCEDPEACE).
 
-## KROK 0 — INWENTARZ (plansza | plik:linia | tekst widoczny dziś | decyzja)
-
-| plansza | plik:linia | tekst widoczny (przed) | decyzja |
+KROK 0 — INWENTARZ (skrót; pełne wiersze wg kodu)
+| plansza | plik | tekst dziś | decyzja |
 |---|---|---|---|
-| Wojna — modal zgody | diplomacyAudience.ts:1142–1145 | lead „Nie jesteście w stanie wojny. Wybierz…”; „— bez ataku w tej turze (karencja N1)” | lead → „Wybierz działanie:”, pełny tekst i opis w title |
-| Wojna — opcja ataku | :1135 | „— wojna od razu i atak w tej turze” | opis w title opcji |
-| Wojna — kara (lista skutków) | penaltyBlockHtml :1105 | „Kind ±N — uzasadnienie” | liczba zostaje, uzasadnienie w title wiersza |
-| Sojusz — obowiązek | :1192–1196 | „Sojusznik X wymaga, żebyś wypowiedział…”; „— kara Wiarygodności i zerwanie sojuszu” | „Wymagana wojna z: Y” widoczne; reszta w title |
-| Baner stanu formalnego | formalBannerHtml :1320 | „zerwanie: kara” w podtytule | w title etykiety „Stan: …” (etykieta zawsze widoczna) |
-| Wiersz relacji | relacjaTotalHtml :1669 | „(Zaufanie + Respekt)” | usunięte z widoku (już w title wiersza) |
-| Wiarygodność | credibilityBarHtml :1711 | „życiorys X · bieżące Y” | w title wiersza (Rozbicie) |
-| Możliwe umowy — stół | dealsColumnHtml :2039 | „dodaj kolejną umowę z listy · jeden bilans PW…” | widoczne „Na stole: N”, reszta w title |
-| Aktywne traktaty | treatiesColumnHtml :2065 | „kara zerwania: X” (linia) | w title nazwy traktatu (Zerwij ma już title) |
-| Karty negocjacji (WE/ONI) | renderIncoming*Card :2225, :2253 | „Użyj Edytuj, aby zmienić ilości w koszyku” | w title karty |
-| Pasek akcji / SZYBKA WYMIANA | actionBarHtml | — | bez zmian (zrobione w Q1, R5) |
-| Nagłówek audiencji, status, „(w wojnie zaufanie…)” | :1349 | dopisek „(w wojnie zaufanie spada do zera)” | ZOSTAJE (krótki, testy live go wymagają) |
-| Pokój wymuszony (showForcedPeaceModal) | :1223 | — | POZA ZAKRESEM (zgodnie z dispatchem) |
-| Pakt, Handel/szlak, Dar, Wasal, Wchłonięcie w diplomacyTradeBasket | — | — | NIE ZBADANE w tej rundzie — do Q3 |
+| Wojna: zgoda/kara | diplomacyAudience.ts penaltyBlockHtml | „Czy na pewno? Skutki…”, uzasadnienia, info-linie | Skutki: liczby zostają; uzasadnienia + info → title bloku |
+| Wojna: opcje | showWarConsentModal | „Bez ataku…”, „Wojna od razu…”, lead „Nie jesteście…” | title opcji / lead (r1) |
+| Wojna: potwierdzenie | showWarConfirmModal | „Na pewno wypowiadasz wojnę X?” | pytanie decyzyjne ZOSTAJE |
+| Zerwanie traktatu | showBreakTreatyConfirmModal | „Na pewno zrywasz: X?” + kara | pytanie zostaje; kara → title bloku |
+| Sojusz (obowiązek) | showAllianceObligationModal | „Kara Wiarygodności…” | title (r1) |
+| Baner stanu | formalBannerHtml | „Stan: X”, „zerwanie: …” | etykieta zostaje; kara → title (r1) |
+| Relacje / wiarygodność | relacjaTotalHtml, credibilityBarHtml | „(Zaufanie + Respekt)”, rozbicie | title (r1) |
+| Zmęczenie/desperacja | warWearinessRowHtml | etykieta „Desperacja N%”, „Pokój wymuszony za ≈N tur” | liczby zostają; opis w title (istniejący) |
+| Aktywne traktaty | treatiesColumnHtml | „kara zerwania”, meta | title nazwy (r1) |
+| Stół negocjacji | dealsColumnHtml, negotiation cards | „Na stole: N”, „Użyj Edytuj…” | title (r1) |
+| Pakt | treatySectionHtml case 2 | „Ręcznie: 10–20…”, „Koszty/kary: Złamanie…” | etykieta „Czas paktu” + title |
+| Sojusz (typ) | case 3 | „Zerwanie sojuszu… kary” | title etykiety „Typ sojuszu” |
+| Przemarsz | case 4 | „Opłata cywilne/wojskowe (jednorazowo)” | widoczne „Opłata: C · M”, pełna treść w title |
+| Wasal | case 12 | „Wasal zachowuje terytorium…” | title etykiety |
+| Wchłonięcie | case 15 | „Wymagane minimum X · wasal musi… (Relacja ≥ 60)” | widoczne „Minimum X ¤”, reszta title |
+| Handel/traktat handlowy | case 5 | „Ręcznie: 1–20… fundament szlaków…” | title etykiety |
+| Reparacje/ultimatum | case 9, negotiation „cdn-ult-gold” | „Odmowa partnera = casus belli” | title pola |
+| Pokój/Rozejm | case 10 | „Rozejm: po wygaśnięciu…”, „Zakończenie wojny…” | title etykiety „Rodzaj”/„Czas rozejmu” |
+| Dar | negotiation case 13/14 | „zamknij to okno…” | title (r1) |
+| Słodzik (PW) | sweetenerSectionHtml | „Zwiększa szansę akceptacji…” | title etykiety |
+| Empty states | „Brak technologii…”, „Brak znanych wrogów…” | komunikaty blokujące | ZOSTAJĄ (R2) |
+| Okno pokoju wymuszonego | showForcedPeaceModal | — | POZA ZAKRESEM (FORCEDPEACE), nietknięte |
 
-## ZMIANY-COMMIT
+TESTY (wszystkie na candidate, Node 22/esbuild/Chromium):
+- tsc --noEmit: exit 0.
+- Bramki referencyjne: logic-test 213/213; tech-tree 20/20; research 33/33; unit-replace 21/21; combat-test OK; unit-power 6/0. (5 wierszy z dispatchu + combat.)
+- diplo-all-windows-declutter-tooltips-test: 48 pass, 0 fail (po poprawce asercji wielkości liter w bloku koszyka; 7 mutacji koszyka wykrytych).
+- diplo-all-windows-declutter-real-render-test: baza fail=0 (250 asercji PASS), mutacje 10/10 wykryte, zrzuty PO + hover.
+- diplo-deal-boards-declutter-tooltips-test (Q1): 13/0.
+- Pełny zestaw diplo*/dyplo* (178 plików): 101+72 uruchomione z limitem 30–40 s na plik. Exit 1 — IDENTYCZNE na bazie 89a5e25c (pre-existing): civ-matrix-ai-diplomacy-wiring (1 fail), dyplo-bilans-gate-n-e1 (×3), dyplo-karta-duplikat, dyplo-pakt-ekspansja, dyplo-warunek-niespelniony, granice-relacja-dyplomatyczna, diplomacy-border-era-penalty-live (dług #369).
+- Exit 124 (limit mojej pętli 30–40 s, NIE_ZMIERZONO do końca): 16 testów *-live-test i hotseat; diplo-aggressor-marker-live na bazie też 124 po 200 s (pre-existing).
 
-- gra/src/ui/diplomacyAudience.ts — tabela powyżej (wszystko przeniesione do title, nic nie usunięte z DOM-tooltipów).
-- gra/src/ui/hudTitleTooltip.ts — dodany scope `.civ-diplo-modal-overlay` (modale są na document.body; bez tego title w modalach byłby tylko natywny).
-- gra/tools/diplo-all-windows-declutter-tooltips-test.cjs — nowy test: 17 asercji (brak wyjaśnień w widocznym szablonie, tooltip zawiera dawne treści, scope modali, mutacja: uzasadnienie kary wraca na widok → test czerwieni).
-- dyspozycje/autobot/runs/R-WEB-UI-DIPLO-ALL-PROPOSAL-WINDOWS-DECLUTTER-TOOLTIPS-Q2/10-operator-claude.md — ten raport.
+ZAKOŃCZENIE / BLOKADY:
+- NIE_ZMIERZONO: 16 testów live (przekroczony limit czasu pętli) — wymagają osobnego przebiegu z dłuższym timeoutem.
+- Hover: zrzut dymka tylko dla war i alliance (dispatch wymagał min. 2 okien — spełnione). Fokus klawiatury/dotyk: NIE_ZMIERZONO.
+- Dowody PRZED/PO: PRZED z bazy 89a5e25cc, PO z kandydata. Uwaga: testy diplo* nadpisały w innych runs/ zrzuty; PRZED-*/PO-* tej rundy nie są tam; cofnięte (git checkout) — nie ma zmian poza tematem.
+- Dwa nieśledzone pliki wygenerowane przez test w innym runs/ (render.png, live-table.json) pozostawione nietknięte, NIE dodane do commita.
 
-## TESTY
-
-- tsc --noEmit: exit 0 (surowy wynik: TSC=0).
-- Nowy test: 17 pass, 0 fail.
-- Q1 diplo-deal-boards-declutter-tooltips-test: 13 pass, 0 fail.
-- Pełny zestaw node-owy diplo*/diplomacy*/dyplo*/wiarygodnosc (bez live): 196 zielonych (w tym nowy). 6 czerwonych — TE SAME na bazie 89a5e25c (zweryfikowane przez checkout bazy): dyplo-warunek-niespelniony-czerwony-tooltip, dyplo-karta-duplikat-komunikat, dyplo-bilans-gate-n-e1-reprodukcja (+ runda2, runda3), dyplo-pakt-ekspansja-granica. Nie są związane z tą zmianą.
-- Zrzuty Chromium PRZED/PO i z widocznym tooltipem: NIE ZMIERZONO. Powód: moduł audiencji nie daje się zbundlować w node (import.meta.glob z brandAssets); żywy harness wymagałby buildu Vite poza repo, nie uruchomiony w tej rundzie.
-- Dodatkowo `npm ci --ignore-scripts` w gra/ (worktree) — tylko zależności, bez `npm run build/dev`.
-
-## BLOKADY
-
-- Brak żywego zrzutu (patrz wyżej). Evaluator powinien to zamknąć albo wskazać, że brak zrzutu jest NIE ZMIERZONO z powodem.
-- Pakt/Handel/Dar/Wasal/Wchłonięcie oraz panel PW w negocjacjach (diplomacyNegotiationModal.ts) nie zostały zinwentaryzowane — poza tą rundą.
-
-## RUNDY
-
-1/5
-
-## UWAGI-DLA-ORKIESTRATORA
-
-- Worktree ma świeżo zainstalowane gra/node_modules (npm ci, ~9 GB wolne na dysku przed startem). Nie usuwałem (dispatch zakazuje rm).
-- Testy node-owe zapisują pliki PNG w dyspozycje/autobot/runs/…/dowody; po uruchomieniu przywracałem je git checkout — nie są częścią zmiany.
-
-## NASTĘPNY KROK
-
-Evaluator: przegląd inwentarza i tooltipów; zrzuty Chromium (jeśli dostępne) dla Wojny, Sojuszu, Możliwych umów, Aktywnych traktatów, nagłówka audiencji; decyzja, czy Pakt/Handel/Dar/Wasal wchodzą do Q3.
-
+RUNDY: 2/5 (ten przebieg = runda 2 Operatora; FC r1 FAIL).
+NASTĘPNY KROK: Evaluator (Sonnet/Haiku wg zasady) → Obrona → FC; sprawdzić zwłaszcza zarzut 1 (koszyk + penaltyBlock) i powtórzyć tooltips-test.
 DEPLOY/PUSH: NIE WYKONANO
+UWAGI-DLA-ORKIESTRATORA: dwa testy live (diplo-truce-live itp.) wymagają dłuższego limitu; test hover robi zrzut tylko dla war/alliance.

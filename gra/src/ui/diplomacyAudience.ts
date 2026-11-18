@@ -1094,16 +1094,16 @@ function penaltyKindLabel(kind: DiploPenaltyPreviewLine['kind']): string {
 
 function penaltyBlockHtml(preview: DiploPenaltyPreview | undefined): string {
   if (!preview?.lines.length) return '';
-  const items = preview.lines.map((l) => {
-    if (l.kind === 'info') {
-      return '<li class="info">' + esc(l.reason) + '</li>';
-    }
-    // R-WEB-UI-DIPLO-ALL-PROPOSAL-WINDOWS-DECLUTTER-TOOLTIPS-Q2: uzasadnienie kary zostaje w tooltipie
-    // wiersza (liczba = widoczna), nie na oknie. / EN: the penalty reason moves into the row tooltip.
-    return '<li title="' + esc(l.reason) + '"><b>' + esc(penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta)) + '</b></li>';
-  }).join('');
-  return '<div class="cd-penalty-wrap">' +
-    '<p class="cd-penalty-title">Czy na pewno? Skutki tej decyzji:</p>' +
+  // R-WEB-UI-DIPLO-ALL-PROPOSAL-WINDOWS-DECLUTTER-TOOLTIPS-Q2: na oknie zostają tylko liczby kar;
+  // uzasadnienia (także linie „info”) idą do tooltipa bloku. / EN: reasons move into the block tooltip.
+  const infoTips = preview.lines.filter(l => l.kind === 'info').map(l => l.reason);
+  const reasonTips = preview.lines.filter(l => l.kind !== 'info').map(l => penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta) + ': ' + l.reason);
+  const blockTip = ['Czy na pewno? Skutki tej decyzji:', ...reasonTips, ...infoTips].join('\n');
+  const items = preview.lines.filter(l => l.kind !== 'info').map((l) =>
+    '<li><b>' + esc(penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta)) + '</b></li>',
+  ).join('');
+  return '<div class="cd-penalty-wrap" title="' + esc(blockTip) + '">' +
+    '<p class="cd-penalty-title">Skutki:</p>' +
     '<ul class="cd-penalty-list">' + items + '</ul></div>';
 }
 

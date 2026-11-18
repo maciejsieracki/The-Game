@@ -110,6 +110,51 @@ VISIBLE_FORBIDDEN.forEach((p, i) => {
   check('mutacja ' + (i + 1) + '/' + VISIBLE_FORBIDDEN.length + ': wzorzec „' + p.name + '” czerwieni test', mutViol.indexOf(p.name) !== -1, mutViol);
 });
 
+// (5) Q2 r3: formularze umów na koszyku (diplomacyTradeBasket.ts — Pakt, Sojusz, Wasal, Wchłonięcie,
+// Pokój/Rozejm, Dar/Handel, Reparacje). Widoczny <p>/<label> bez wyjaśnień; wyjaśnienia w title.
+const BASKET_FILE = path.resolve(UI, 'diplomacyTradeBasket.ts');
+const bkSrc = fs.readFileSync(BASKET_FILE, 'utf8');
+const BASKET_FORBIDDEN = [
+  { name: 'basket: „Ręcznie: 10–20 tur” jako widoczny <p>', re: /<p class="cdb-sub">Ręcznie: 10/ },
+  { name: 'basket: opis roli wasala jako widoczny <p>', re: /<p class="cdb-sub">Wasal zachowuje/ },
+  { name: 'basket: opis rozejmu jako widoczny <p>', re: /<p class="cdb-sub">Rozejm: po wygaśnięciu/ },
+  { name: 'basket: opis pokoju jako widoczny <p>', re: /<p class="cdb-sub">Zakończenie wojny\. Wymagane/ },
+  { name: 'basket: „Odmowa partnera = casus belli” jako widoczny <p>', re: /<p class="cdb-sub">Odmowa partnera/ },
+  { name: 'basket: kary paktu/sojuszu w widocznym boksie „Koszty / kary”', re: /cdb-penalty-title">Koszty/ },
+  { name: 'basket: „Wymagane minimum” jako widoczny tekst', re: /'<p class="cdb-sub">Wymagane minimum/ },
+];
+const BASKET_EXAMPLES = [
+  '<p class="cdb-sub">Ręcznie: 10–20 tur lub 0 = bezterminowy</p>',
+  '<p class="cdb-sub">Wasal zachowuje terytorium · płaci trybut co turę</p>',
+  '<p class="cdb-sub">Rozejm: po wygaśnięciu wojna wraca bez kary.</p>',
+  '<p class="cdb-sub">Zakończenie wojny. Wymagane PW traktatu zależą od Relacji.</p>',
+  '<p class="cdb-sub">Odmowa partnera = casus belli (zaznacz ultimatum poniżej).</p>',
+  '<div class="cdb-penalty-title">Koszty / kary</div>',
+  "'<p class=\"cdb-sub\">Wymagane minimum ' + minGold",
+];
+const BASKET_TOOLTIP_REQUIRED = [
+  'Ręcznie: 10–20 tur lub 0 = bezterminowy',
+  'Koszty / kary: Złamanie paktu: −30 Relacja, −20 Zaufanie',
+  'Koszty / kary: Zerwanie sojuszu / wojna z sojusznikiem',
+  'Wasal zachowuje terytorium · płaci trybut co turę',
+  'Ręcznie: 1–20 tur lub 0 = bezterminowy',
+  'Odmowa partnera = casus belli',
+  'Rozejm: po wygaśnięciu wojna wraca bez kary',
+  'Zakończenie wojny. Wymagane PW traktatu zależą od Relacji',
+  'wasal musi wyrazić zgodę (Relacja ≥ 60)',
+  'Stolica i ostatnie miasto są wyłączone.',
+];
+const basketViol = (src) => BASKET_FORBIDDEN.filter(p => p.re.test(src)).map(p => p.name);
+check('koszyk umów: brak wyjaśnień jako widoczny tekst (Pakt/Sojusz/Wasal/Rozejm/Pokój/Reparacje)',
+  basketViol(bkSrc).length === 0, basketViol(bkSrc));
+for (const t of BASKET_TOOLTIP_REQUIRED) {
+  check('koszyk umów: tooltip (title) zawiera: „' + t + '”', bkSrc.includes(t), t);
+}
+BASKET_FORBIDDEN.forEach((p, i) => {
+  const mutViol = basketViol(bkSrc + '\n' + BASKET_EXAMPLES[i]);
+  check('mutacja koszyk ' + (i + 1) + '/' + BASKET_FORBIDDEN.length + ': wzorzec „' + p.name + '” czerwieni test', mutViol.indexOf(p.name) !== -1, mutViol);
+});
+
 console.log('');
 console.log('diplo-all-windows-declutter-tooltips-test: ' + pass + ' pass, ' + fail + ' fail');
 process.exit(fail === 0 ? 0 : 1);
