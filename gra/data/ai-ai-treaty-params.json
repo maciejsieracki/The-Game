@@ -10,5 +10,9 @@
   "_uwaga_sojusze": "R-WEB-AI-AI-ALLIANCES-E3 (ABC 2026-11-18): torSojuszyAktywny=false = tor SOJUSZY AI↔AI WYŁĄCZONY (zachowanie gry bez zmian). Włączenie na ROBOCZEJ dopiero po pomiarze (ABC). Ustawiane wyłącznie w danych / testach civTest, nie w UI.",
   "torSojuszyAktywny": false,
   "maxSojuszyNaCywilizacje": 2,
-  "alliancePonowneProbyTur": 8
+  "alliancePonowneProbyTur": 8,
+  "_uwaga_koalicja": "R-WEB-AI-AI-COALITION-ANTI-LEADER-Q1 (ABC właściciela 2026-11-18): koalicjaAntyLiderAktywna=false = koalicja antylidera WYŁĄCZONA (zachowanie bez zmian). Lider: Moc >= liderProgPrzewagi × średnia pozostałych przez >= liderMinTur kolejnych tur. Ustawiane wyłącznie w danych / testach civTest, nie w UI.",
+  "koalicjaAntyLiderAktywna": false,
+  "liderProgPrzewagi": 1.5,
+  "liderMinTur": 5
 }

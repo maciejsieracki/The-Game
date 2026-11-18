@@ -70,6 +70,7 @@ import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
 import { isAiAiTreatyTickEnabled, setAiAiTreatyTickEnabledForTest, planAiAiNapTreatyTickFull, applyAiAiNapBreachRelacja, aiAiNapBreachRelacjaDelta, type AiAiWarStatus } from './game/ai-ai-treaty-tick';
 import { isAiAiAllianceTickEnabled, setAiAiAllianceTickEnabledForTest, planAiAiAllianceTickFull } from './game/ai-ai-alliance-tick';
+import { isAiAiCoalitionEnabled, setAiAiCoalitionEnabledForTest, aktualizujLidera, budujKontekstKoalicji, initLiderKoalicjiStan, loadAiAiCoalitionParams, type LiderKoalicjiStan } from './game/ai-ai-coalition';
 import { typSwiataFromMenuLabel, defaultLandFractionPercentForTyp, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
 import { buildScene, getLastSetFogMs, type SceneBuildTimings, type SceneResult } from './render/scene';
 import { improvementAutomationBlockedRule } from './ui/administratorPanel';
@@ -25527,6 +25528,9 @@ async function boot(): Promise<void> {
       }
     }
 
+    /** R-WEB-AI-AI-COALITION-ANTI-LEADER-Q1: stan wykrywania lidera (seria tur); aktualizowany tylko przy włączonej fladze. */
+    let liderKoalicjiStan: LiderKoalicjiStan = initLiderKoalicjiStan();
+
     /**
      * R-WEB-AI-AI-ALLIANCES-E3-WIRING-FLAGGED-Q1: krok sojuszy AI↔AI, raz na turę, PO kroku NAP (tickAiAiTreatyRequests).
      * Działa WYŁĄCZNIE gdy `torSojuszyAktywny` (gra/data/ai-ai-treaty-params.json, domyślnie false) — przy false zero zmiany stanu.
@@ -25556,9 +25560,25 @@ async function boot(): Promise<void> {
       const alliancesOf = (oid: number): number[] => activeDeals
         .filter(d => isAllianceDealKind(d.rodzaj) && d.strony.includes(oid))
         .map(d => (d.strony[0] === oid ? d.strony[1] : d.strony[0]));
+      // R-WEB-AI-AI-COALITION-ANTI-LEADER-Q1: wykrycie lidera (Moc jak pasek Respektu) i kontekst premii koalicji.
+      // Flaga false -> koalicja null, planer zachowuje się jak przed B4.
+      let koalicjaKontekst: ReturnType<typeof budujKontekstKoalicji> = null;
+      if (isAiAiCoalitionEnabled()) {
+        const moceLidera = new Map<number, number>([0, ...owners].map(oid => [oid, objectivePowerForOwner(oid)] as [number, number]));
+        liderKoalicjiStan = aktualizujLidera(liderKoalicjiStan, moceLidera, loadAiAiCoalitionParams());
+        if (liderKoalicjiStan.lider !== null) {
+          const lider = liderKoalicjiStan.lider;
+          koalicjaKontekst = budujKontekstKoalicji(
+            liderKoalicjiStan,
+            new Set<number>(alliancesOf(lider)),
+            new Set<number>(allPowerOwnerIds().filter(x => x !== lider && getDiploRelation(lider, x).status === 'wojna')),
+          );
+        }
+      }
       const plan = planAiAiAllianceTickFull({
         turn,
         owners,
+        koalicja: koalicjaKontekst,
         alliancesCount,
         pairPrefilter: (p, t) => {
           if (getDiploRelation(p, t).status === 'wojna') return false;
@@ -31440,6 +31460,9 @@ async function boot(): Promise<void> {
       (window as any).__truceTestDebug.aiAiAllianceTickForTest = {
         setEnabled: (v: boolean | null): void => { setAiAiAllianceTickEnabledForTest(v); },
         runTick: (): void => { tickAiAiAllianceRequests(); },
+        // R-WEB-AI-AI-COALITION-ANTI-LEADER-Q1 (hak testowy, NIE UI): przełącznik koalicji i odczyt stanu lidera.
+        setCoalitionEnabled: (v: boolean | null): void => { setAiAiCoalitionEnabledForTest(v); },
+        getLiderStan: (): LiderKoalicjiStan => liderKoalicjiStan,
       };
       // R-WEB-AI-AI-TREATIES-LIVE-PROOF-INERT-Q1 (hak TESTOWY, tylko ?civTest=1, bez zmian logiki gry):
       // concludeNap = ta sama końcówka co akceptacja w tickAiAiTreatyRequests (addTreaty + syncRelationFromDeals),
