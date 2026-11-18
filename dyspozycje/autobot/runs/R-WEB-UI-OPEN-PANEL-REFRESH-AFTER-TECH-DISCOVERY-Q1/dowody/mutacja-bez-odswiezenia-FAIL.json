@@ -1,0 +1,66 @@
+{
+  "verdict": "FAIL",
+  "steps": {
+    "panelOpenA": true,
+    "prep": {
+      "tech": "Obróbka drewna",
+      "cost": 20
+    },
+    "hooks": {
+      "spichlerz": false,
+      "skarbiec": true
+    },
+    "completed": true,
+    "settled": true,
+    "eraBefore": 2,
+    "eraAfter": 2,
+    "popupClosed": false,
+    "panelStillOpenAfterEot": true,
+    "blockLinesA": 68,
+    "visibleChange": true,
+    "fullLines": {
+      "A": 239,
+      "B": 295,
+      "C": 239
+    },
+    "techRowsAB": {
+      "A": [
+        "Stolarnia"
+      ],
+      "B": [
+        "Stolarnia",
+        "Palisada: +100% Obrony obrońców miasta",
+        "Stolarnia",
+        "Palisada drewniana",
+        "Tartak",
+        "Stolarnia",
+        "Stolarnia — utrzymanie",
+        "Palisada drewniana — utrzymanie"
+      ],
+      "C": [
+        "Stolarnia"
+      ]
+    }
+  },
+  "logTail": [
+    "[EndTurn] triggerPlayerEndTurn: START tura 1",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[NNS-AI 7] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/8; akcje=podatek,racje",
+    "[NNS-AI 8] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/8; akcje=podatek,racje",
+    "[NNS-AI 1] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/7; akcje=podatek,racje",
+    "[NNS-AI 2] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 3/5; akcje=podatek,racje",
+    "[NNS-AI 3] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 2/6; akcje=podatek,racje",
+    "[NNS-AI 4] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 4/6; akcje=podatek,racje",
+    "[NNS-AI 5] tura 2: po ticku skarbiec=-2 spichlerz=-4 -> 6/8; akcje=podatek,racje",
+    "[NNS-AI 6] tura 2: po ticku skarbiec=-3 spichlerz=-4 -> 2/5; akcje=podatek,racje",
+    "[Nauka] Tura 2: <span style=\"display:inline-flex;width:16px;height:16px;vertical-align:-3px;margin-right:5px;color:#e8d88a\"><svg height=\"16\" width=\"16\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14.5 6 5 15.5\"></path><path d=\"M13.5 4.2l5.2 5.2-3.1 1.4-3.5-3.5Z\"></path><path d=\"M4 19.5h7M6 17.3h3.5\"></path></svg></span>Zbadano: Obróbka drewna (-20 nauki)",
+    "[Nauka] Skarbiec=99998 Nauka=4 Epoka=2 Zbadane=12",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] blocked: endTurnInProgress",
+    "[EndTurn] triggerPlayerEndTurn: DONE tura 2"
+  ],
+  "reason": "otwarty panel nie odświeżył listy budowy po odkryciu (B != świeży render)",
+  "diffStaleVsFresh": [],
+  "diffFreshVsStale": []
+}

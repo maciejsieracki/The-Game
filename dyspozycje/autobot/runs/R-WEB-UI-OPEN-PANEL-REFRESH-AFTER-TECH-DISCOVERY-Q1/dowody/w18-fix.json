@@ -1,0 +1,15 @@
+{
+  "phase": {
+    "przed": {
+      "names": [],
+      "siegeHits": [],
+      "sample": []
+    },
+    "po": {
+      "names": [],
+      "siegeHits": [],
+      "sample": []
+    }
+  },
+  "verdict": "NIE_ZMIERZONO (brak machin w panelu rekrutacji przed i po unlockAllTech; scenariusz oblezenia nie wykonany)"
+}

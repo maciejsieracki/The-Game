@@ -13439,6 +13439,7 @@ async function boot(): Promise<void> {
             queueEraDiscoveryTech([techId]);
             notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
           }
+          refreshOpenPanelsAfterTechDiscovery();
         }
       } else {
         aiResearchDone.set(
@@ -18337,6 +18338,19 @@ async function boot(): Promise<void> {
       const tech = data.tech.find(t => t.awansDoEpoki === player.era
         && completedTechNames.includes(t.Technologia));
       pendingEraDiscoveryTech = tech?.Technologia ?? null;
+    }
+
+    /**
+     * R-WEB-UI-OPEN-PANEL-REFRESH-AFTER-TECH-DISCOVERY-Q1: jedno wspólne odświeżenie OTWARTYCH paneli zależnych od
+     * zbadanych technologii gracza (panel miasta: lista budowy i rekrutacji; panel Rekrutacja imperium). Wołane po
+     * każdym ukończeniu technologii gracza, także BEZ awansu epoki (przy awansie epoki odświeża
+     * notifyPlayerEraChangeIfAdvanced). No-op, gdy panele są zamknięte.
+     * EN: single shared refresh of OPEN player panels that depend on researched techs (city build/recruit list,
+     * empire recruit panel). Called after every player tech completion, including without an era advance.
+     */
+    function refreshOpenPanelsAfterTechDiscovery(): void {
+      refreshCityPanelIfOpen();
+      refreshEmpireRecruitPanel();
     }
 
     function notifyPlayerEraChangeIfAdvanced(prevEra: number): void {
@@ -29207,6 +29221,27 @@ async function boot(): Promise<void> {
         syncDiplomacyTradeEra();
         return { remaining: remaining.Technologia as string, era1Count: era1.length };
       },
+      /**
+       * R-WEB-UI-OPEN-PANEL-REFRESH-AFTER-TECH-DISCOVERY-Q1: przygotowuje NIEERA ukończenie technologii Kamienia
+       * (najtańsza nieodkryta bez awansu epoki) na NASTĘPNY realny `endTurn()` (researchStep). Era gracza nie zmienia się.
+       */
+      prepareNonEraCompletion: (): { tech: string; cost: number } => {
+        // Start gry ma już zbadane technologie Kamienia: wybieramy najtańszą Kamienia BEZ awansu epoki i zdejmujemy ją
+        // ze zbioru zbadanych (test-only), żeby było co ukończyć w EOT.
+        const cand = data.tech
+          .filter(t => t.Epoka === 'Kamień' && !t.awansDoEpoki)
+          .sort((a, b) => (a['Koszt nauki'] as number) - (b['Koszt nauki'] as number));
+        const target = cand[0];
+        if (!target) throw new Error('brak technologii Kamienia bez awansu epoki');
+        const name = target.Technologia as string;
+        player.zbadane.delete(name);
+        if (!setPlayerResearchTarget(player, name, data.tech, researchGateForOwner(0))) {
+          throw new Error('setPlayerResearchTarget odrzucona: ' + name);
+        }
+        const cost = scaledResearchCost(target['Koszt nauki'] as number, player.tempoGry ?? 'standardowa', 0, _menuDifficulty, target.Epoka);
+        player.nauka = cost;
+        return { tech: name, cost };
+      },
       getPlayerState: () => ({ era: player.era, zbadaneSize: player.zbadane.size, nauka: player.nauka, badana: player.badana }),
       endTurn: () => advanceSeat(),
       getToast: () => {
@@ -34889,6 +34924,7 @@ async function boot(): Promise<void> {
               // Nagroda nauki może dokończyć technologię bez awansu epoki — pokaż tę
               // samą pełną kartę co przy EOT, ale z komunikatem zwykłego ukończenia.
               const villageTechName = step.completed[step.completed.length - 1]!.id;
+              refreshOpenPanelsAfterTechDiscovery();
               const villageEraIdx = player.era;
               emitOrDeferNotice('tech-discovery', humanSeats.activeHumanOwnerId, () => showTechDiscoveryNotice({
                 techName: villageTechName,
@@ -42617,6 +42653,7 @@ async function boot(): Promise<void> {
               );
               refreshSciencePickerIfOpen();
               refreshTechTreeViewIfOpen();
+              refreshOpenPanelsAfterTechDiscovery();
             }
           } catch (errBank) {
             console.warn('[Nauka] B\u0142\u0105d bankowania/badania:', errBank);
