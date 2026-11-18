@@ -3574,10 +3574,11 @@ function applySiegeRelief(
   if (opts.defensiveCopy) return commands;
   const myCities = cities.filter(c => c.ownerId === playerId && c.oblegane === true);
   if (myCities.length === 0) return commands;
-  const BARB = -1;
+  // Oblegajacym moze byc gracz, inna AI i barbarzyncy (dispatch; aiCanEngageOwner/aiHasContactWith
+  // dla barbarzyncow zwracaja true w main.ts) -- stad brak wykluczenia ownerId -1.
   const isField = (u: RuntimeUnit): boolean => !isCivilianUnit(u) && !isScoutUnit(u);
   const enemyField = units.filter(u =>
-    u.ownerId !== playerId && u.ownerId !== BARB && aiCanEngageOwner(opts, u.ownerId) && isField(u));
+    u.ownerId !== playerId && aiCanEngageOwner(opts, u.ownerId) && isField(u));
   const visibleEnemy = enemyField.filter(
     u => opts.visibleHexes === undefined || opts.visibleHexes.has(keyOf(u.q, u.r)));
   if (visibleEnemy.length === 0) return commands;
@@ -3629,7 +3630,8 @@ function applySiegeRelief(
       || (a.q - b.q) || (a.r - b.r));
     for (const dest of adj) {
       const step = firstStep(unit, map, dest.q, dest.r, units);
-      if (step !== null) {
+      // Zatrzymanie na wlasnym (obleganym) miescie = garnizon, nie odsiecz -- taki krok pomijamy.
+      if (step !== null && !cities.some(c => c.q === step.q && c.r === step.r)) {
         replacements.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
         break;
       }
