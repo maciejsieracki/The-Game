@@ -76,7 +76,7 @@ for (const k of civKeys) {
 near('zmęczenie 0 poza wojną', M.warWearinessShare(0, 20), 0);
 near('zmęczenie 10/20 = 0.25 (połowa maksimum, NIE saturacja)', M.warWearinessShare(10, 20), 0.25);
 near('zmęczenie 5/20 = 0.125', M.warWearinessShare(5, 20), 0.125);
-near('zmęczenie 20/20 = 0.5 (D4: pełne po 20 turach)', M.warWearinessShare(20, 20), 0.5);
+near('zmęczenie 20/20 = 0.5 (legacy zegar profilu T=20: udział 0.5, nie steruje decyzjami)', M.warWearinessShare(20, 20), 0.5);
 near('ułamek zmęczenia 15/15 = 1 (T=15, Grecy-like)', M.warWearinessFraction(15, 15), 1);
 near('ułamek zmęczenia 10/20 = 0.5 (brak saturacji przy T/2)', M.warWearinessFraction(10, 20), 0.5);
 near('ułamek zmęczenia 99/20 = 1 (kapa)', M.warWearinessFraction(99, 20), 1);
@@ -88,8 +88,8 @@ for (const k of civKeys) {
   eq(`${k} pełne zmęczenie dokładnie przy T=${T}`, M.warWearinessFraction(T, T) === 1, true);
   eq(`${k} przed T zmęczenie niepełne`, M.warWearinessFraction(T - 1, T) < 1, true);
 }
-near('zmęczenie po 20 turach pełne (0.5)', M.warWearinessShare(20, 20), 0.5);
-near('zmęczenie po 20 turach pełne dla T=17', M.warWearinessShare(20, 17), 0.5);
+near('legacy zegar profilu: t=T=20 daje maksymalny udział (0.5)', M.warWearinessShare(20, 20), 0.5);
+near('legacy zegar profilu: t=20 przy T=17 daje maksymalny udział (0.5)', M.warWearinessShare(20, 17), 0.5);
 near('zmęczenie nie przekracza 0.5', M.warWearinessShare(99, 17), 0.5);
 near('zmęczenie rośnie z turami', M.warWearinessShare(3, 20) < M.warWearinessShare(6, 20) ? 1 : 0, 1);
 
