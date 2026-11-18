@@ -1063,3 +1063,117 @@ fn t5b_setters_before_session_only_store() {
     assert!(client.ui().frame_ui.unit_selected_after_build_open);
     assert!(client.last_frame().is_none());
 }
+
+/// U-EV-1 (Obrona r1): `set_ui` carries `highlight_last_writer` — without a
+/// `RenderUiParams` change it only recomposes (D-371-4), with one the new
+/// frame is composed with the new writer.
+#[test]
+fn t5b_set_ui_carries_the_highlight_writer() {
+    let mut client = started_client();
+    client.set_build_mode(open_panel()).expect("open");
+    client.select_unit(Some(WARRIOR)).expect("select");
+    let reach = dto_hexes(&frame(&client).overlays.reachable);
+    let sel = frame(&client).overlays.selection.expect("selection");
+    client
+        .set_active_improvement_key(Some(KEY.to_owned()))
+        .expect("key");
+    let build = dto_hexes(&frame(&client).overlays.build_highlight.hexes);
+    assert!(!build.is_empty() && build != reach);
+    assert_eq!(highlight_hexes(&client), Some(build.clone()));
+    let n = calls(&client);
+
+    // Writer alone through set_ui: no engine call, the range wins.
+    let ui = ClientUiState {
+        highlight_last_writer: HighlightPriority::Reachable,
+        ..client.ui().clone()
+    };
+    client.set_ui(ui).expect("set_ui writer");
+    assert_eq!(calls(&client), n, "set_ui writer only: no GetRenderFrame");
+    assert_eq!(
+        client.ui().highlight_last_writer,
+        HighlightPriority::Reachable
+    );
+    assert_eq!(highlight_hexes(&client), Some(reach));
+
+    // Writer back to Build together with a RenderUiParams change (hover):
+    // one engine call, composed with the new writer.
+    let mut ui = ClientUiState {
+        highlight_last_writer: HighlightPriority::Build,
+        ..client.ui().clone()
+    };
+    ui.frame_ui.hover = Some(PositionDto::new(
+        u16::try_from(sel.hex.q).expect("q"),
+        u16::try_from(sel.hex.r).expect("r"),
+    ));
+    client.set_ui(ui).expect("set_ui writer + frame_ui");
+    assert_eq!(calls(&client), (n.0, n.1 + 1));
+    assert_eq!(client.ui().highlight_last_writer, HighlightPriority::Build);
+    assert_eq!(highlight_hexes(&client), Some(build));
+}
+
+/// U-EV-2 (Obrona r1): `onSelectFoundCity` (`main.ts:26758-26762`) and
+/// `onSelectWonder` (`:26767-26770`) set `activeImprovementKey = null`.
+/// U-EV-3: `onSelectType` (`:26733-26739`) switches found city and the wonder
+/// off without clearing the selection (flag and ring kept, D-371-5b key rule).
+#[test]
+fn t5b_mode_switches_clear_the_key_and_key_choice_clears_the_modes() {
+    let mut client = started_client();
+    client.set_build_mode(open_panel()).expect("open");
+    client
+        .set_active_improvement_key(Some(KEY.to_owned()))
+        .expect("key");
+
+    // onSelectFoundCity: key cleared.
+    client
+        .set_build_mode(BuildMode {
+            found_city_mode: true,
+            ..open_panel()
+        })
+        .expect("found city");
+    assert_eq!(client.ui().frame_ui.active_improvement_key, None);
+    assert!(client.ui().frame_ui.found_city_mode);
+
+    // onSelectType in found city mode with a selected unit: found city off,
+    // flag and selection kept, the build layer of the key wins, ring kept.
+    client.select_unit(Some(WARRIOR)).expect("select");
+    assert!(client.ui().frame_ui.unit_selected_after_build_open);
+    let sel = frame(&client).overlays.selection.expect("selection");
+    client
+        .set_active_improvement_key(Some(KEY.to_owned()))
+        .expect("key in found city");
+    let ui = &client.ui().frame_ui;
+    assert!(!ui.found_city_mode && !ui.wonder_active, "onSelectType");
+    assert!(ui.unit_selected_after_build_open, "flag kept");
+    assert_eq!(ui.selected_unit_id, Some(WARRIOR));
+    assert_eq!(ui.active_improvement_key.as_deref(), Some(KEY));
+    assert_eq!(client.ui().highlight_last_writer, HighlightPriority::Build);
+    assert_active_seat_frame(&mut client, "key after found city");
+    let f = frame(&client).clone();
+    assert_eq!(
+        f.overlays.build_highlight.kind,
+        vm::BuildHighlightKind::Improvement
+    );
+    assert_eq!(
+        highlight_hexes(&client),
+        Some(dto_hexes(&f.overlays.build_highlight.hexes))
+    );
+    assert_eq!(ring(&client), Some((sel.hex.q, sel.hex.r)), "ring kept");
+
+    // onSelectWonder: key cleared.
+    client
+        .set_build_mode(BuildMode {
+            wonder_active: true,
+            ..open_panel()
+        })
+        .expect("wonder");
+    assert_eq!(client.ui().frame_ui.active_improvement_key, None);
+    // onSelectType with the wonder active: wonder off.
+    client
+        .set_active_improvement_key(Some(KEY.to_owned()))
+        .expect("key in wonder");
+    assert!(!client.ui().frame_ui.wonder_active);
+    assert_eq!(
+        client.ui().frame_ui.active_improvement_key.as_deref(),
+        Some(KEY)
+    );
+}

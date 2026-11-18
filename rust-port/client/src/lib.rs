@@ -59,11 +59,13 @@
 //! - [`RenderClient::set_active_improvement_key`] (`onSelectType` then
 //!   `refreshBuildHighlight`, `:26733-26739`): writer
 //!   [`HighlightPriority::Build`]; the flag and `selected_unit_id` are kept
-//!   (the pin does not clear the selection on a key change);
+//!   (the pin does not clear the selection on a key change); a `Some` key
+//!   switches found city and the wonder off, as `onSelectType` does;
 //! - [`RenderClient::set_build_mode`] (open/close of the panel, found city,
 //!   wonder): flag `false`, writer [`HighlightPriority::Build`]; opening or
 //!   closing the panel also clears the selection (`onOpenBuild` calls
-//!   `clearPlayerUnitSelection()`, `:26702-26703`);
+//!   `clearPlayerUnitSelection()`, `:26702-26703`); found city on or a
+//!   wonder switch clears the improvement key (`:26758-26770`);
 //! - [`RenderClient::set_highlight_last_writer`]: the writer alone never calls
 //!   the engine (D-371-4): the cached frame is composed again.
 //!
@@ -449,8 +451,10 @@ impl<S: RenderSource> RenderClient<S> {
     /// runs after each, decision D-371-5b). Opening or closing the panel
     /// (`build_mode_open` changes) also clears the selection (`onOpenBuild`
     /// calls `clearPlayerUnitSelection()`, `:26702-26703`); closing it clears
-    /// the improvement key (`exitBuildMode`, `:16533-16536`). An equal value
-    /// does nothing.
+    /// the improvement key (`exitBuildMode`, `:16533-16536`). Switching found
+    /// city on (`onSelectFoundCity`, `:26758-26762`) or changing the wonder
+    /// switch (`onSelectWonder`, `:26767-26770`) clears the improvement key as
+    /// well. An equal value does nothing.
     ///
     /// # Errors
     ///
@@ -467,6 +471,13 @@ impl<S: RenderSource> RenderClient<S> {
                 frame_ui.active_improvement_key = None;
             }
         }
+        // `onSelectFoundCity` (`:26758-26762`) and `onSelectWonder`
+        // (`:26767-26770`) set `activeImprovementKey = null`.
+        if (mode.found_city_mode && !current.found_city_mode)
+            || mode.wonder_active != current.wonder_active
+        {
+            frame_ui.active_improvement_key = None;
+        }
         frame_ui.build_mode_open = mode.build_mode_open;
         frame_ui.found_city_mode = mode.found_city_mode;
         frame_ui.wonder_active = mode.wonder_active;
@@ -478,8 +489,10 @@ impl<S: RenderSource> RenderClient<S> {
     /// (`main.ts:26733-26739`): a change of the improvement key makes
     /// [`HighlightPriority::Build`] the writer; `unit_selected_after_build_open`
     /// and `selected_unit_id` are kept (decision D-371-5b: the pin does not
-    /// clear the selection on a key change). The found city / wonder switches
-    /// are the caller's ([`Self::set_build_mode`]). An equal key does nothing.
+    /// clear the selection on a key change). A `Some` key also switches found
+    /// city and the wonder off, as `onSelectType` does (`foundCityMode =
+    /// false; activeWonderId = null`, `:26735-26736`), without zeroing the
+    /// flag (the pin keeps the selection ring). An equal key does nothing.
     ///
     /// # Errors
     ///
@@ -492,6 +505,10 @@ impl<S: RenderSource> RenderClient<S> {
             return Ok(());
         }
         let mut frame_ui = self.ui.frame_ui.clone();
+        if key.is_some() {
+            frame_ui.found_city_mode = false;
+            frame_ui.wonder_active = false;
+        }
         frame_ui.active_improvement_key = key;
         self.update_ui(frame_ui, HighlightPriority::Build)
     }
