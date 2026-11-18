@@ -31,9 +31,10 @@ const NZ = 'NIE ZMIERZONO';
 /** Wczytuje wiersze jsonl z katalogu; zwraca { seed: [wiersz...] } posortowane po turze. */
 function loadDir(dir) {
   const bySeed = {};
-  const files = fs.readdirSync(dir).filter(n => /^seed\d+\.jsonl$/.test(n)).sort();
+  // Akceptuje dowolną nazwę `*.jsonl` (np. seed4242-t30.jsonl, smoke-...-seed4242.jsonl); numer ziarna z nazwy, gdy występuje.
+  const files = fs.readdirSync(dir).filter(n => /\.jsonl$/.test(n)).sort();
   for (const f of files) {
-    const seed = f.match(/\d+/)[0];
+    const seed = (f.match(/seed(\d+)/) || f.match(/(\d+)/) || [null, f])[1];
     const rows = [];
     for (const ln of fs.readFileSync(path.join(dir, f), 'utf8').split('\n')) {
       if (!ln.trim()) continue;

@@ -25658,9 +25658,12 @@ async function boot(): Promise<void> {
       }
       let wojny = 0;
       let sojuszeAiAi = 0;
+      // Odczyt BEZ tworzenia relacji (getDiploRelation leniwie zapisuje relację i zamraża zaufanie D4).
+      // owners posortowane rosnąco, więc klucz `${a}_${b}` zgadza się z kluczem getDiploRelation.
+      // Brak wpisu = relacja domyślna 'neutralni' (defaultNeutralRelation), czyli nie-wojna.
       for (let i = 0; i < owners.length; i++) {
         for (let j = i + 1; j < owners.length; j++) {
-          if (getDiploRelation(owners[i]!, owners[j]!).status === 'wojna') wojny++;
+          if (diplomacyRelations.get(`${owners[i]!}_${owners[j]!}`)?.status === 'wojna') wojny++;
         }
       }
       for (const s of sojusze) if (ownerSet.has(s.a) && ownerSet.has(s.b)) sojuszeAiAi++;

@@ -10,7 +10,11 @@
  *  H4 metrics().diag zawiera `sojusze: aiAiAllianceMeasureState()` (pole trafia do każdego wiersza jsonl);
  *  H5 planer liczy próby i odmowy (proby++ przed evaluate, odmowy++ przy accept=false) i zwraca je w wyniku;
  *  H6/H7 liczniki skumulowane w main.ts (aiAiAllianceProbyLacznie / OdmowyLacznie) są zasilane z planu.
- * Mutanty (kopia źródła w pamięci, NIE zapis na dysk): każdy usuwa jedną z powyższych linii i MUSI czerwienić test.
+ *  H8a/H8b liczenie sojuszy per cywilizacja (+1 na każdą stronę, tylko między owners);
+ *  H9 liczenie wojen czyta diplomacyRelations.get (bez getDiploRelation, który tworzy relację).
+ * UWAGA: to test STATYCZNY (dopasowanie tekstu źródła). NIE sprawdza zachowania w grze; poprawność liczb
+ * potwierdza wyłącznie bieg dymny i analizator (NIE ZMIERZONO w teście behawioralnym: brak bundla w tym teście).
+ * Mutanty (kopia źródła w pamięci, NIE zapis na dysk): każdy usuwa/zamienia jedną z powyższych linii i MUSI czerwienić test.
  *
  * Wymaga tylko Node (bez esbuild/chromium). Exit 0 = wszystko zielone i mutanty wykryte.
  *   node tools/ai-ai-alliance-measure-hook-test.cjs
@@ -34,6 +38,9 @@ const CHECKS = [
   ['H5c', 'tick', 'return { accepted, treasuryPo: treasury, alliancesCountPo: counts, proby, odmowy };'],
   ['H6', 'main', 'aiAiAllianceProbyLacznie += plan.proby;'],
   ['H7', 'main', 'aiAiAllianceOdmowyLacznie += plan.odmowy;'],
+  ['H8a', 'main', 'if (ownerSet.has(a) && ownerSet.has(b)) {\n          liczba.set(a, (liczba.get(a) ?? 0) + 1);'],
+  ['H8b', 'main', '          liczba.set(b, (liczba.get(b) ?? 0) + 1);\n        }'],
+  ['H9', 'main', 'if (diplomacyRelations.get(`${owners[i]!}_${owners[j]!}`)?.status === \'wojna\') wojny++;'],
 ];
 
 /** Mutanty: [id, plik, fragment do usunięcia/zamiany na pusty lub inny]. */
@@ -42,7 +49,9 @@ const MUTANTS = [
   ['M2 brak pola sojusze w diag', 'main', 'sojusze: aiAiAllianceMeasureState(),', ''],
   ['M3 brak licznika odmów', 'tick', '      odmowy++;\n', ''],
   ['M4 brak licznika prób', 'tick', '    proby++;\n', ''],
-  ['M5 brak zasilania licznika skumulowanego', 'main', 'aiAiAllianceOdmowyLacznie += plan.odmowy;', ''],
+  ['M5 liczenie per cywilizacja: +5 zamiast +1', 'main', 'liczba.set(a, (liczba.get(a) ?? 0) + 1);', 'liczba.set(a, (liczba.get(a) ?? 0) + 5);'],
+  ['M5b brak liczenia per cywilizacja (strona b)', 'main', '          liczba.set(b, (liczba.get(b) ?? 0) + 1);', ''],
+  ['M5c wojny przez getDiploRelation (mutacja)', 'main', 'if (diplomacyRelations.get(`${owners[i]!}_${owners[j]!}`)?.status === \'wojna\') wojny++;', 'if (getDiploRelation(owners[i]!, owners[j]!).status === \'wojna\') wojny++;'],
   ['M6 wymuszenie bez ?civTest', 'main', 'return isCivTestEnabled(window.location.search) && (window as any)', 'return (window as any)'],
   ['M7 bez zasilania licznika skumulowanego', 'main', 'aiAiAllianceOdmowyLacznie += plan.odmowy;', ''],
 ];
