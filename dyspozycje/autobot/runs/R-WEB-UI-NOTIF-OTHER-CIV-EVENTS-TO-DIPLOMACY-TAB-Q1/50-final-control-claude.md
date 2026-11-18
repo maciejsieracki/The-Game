@@ -1,0 +1,17 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-UI-NOTIF-OTHER-CIV-EVENTS-TO-DIPLOMACY-TAB-Q1
+GOAL: Wydarzenia miedzy innymi cywilizacjami (gracz nie jest strona) trafiaja do zakladki Dyplomacja; przypadek: kapitulacja z glodu przejeta przez AI.
+ZMIANY/COMMIT: kandydat 4d77c6e11804ead703ce20049c22d6ef5fd11a95; `git merge-base --is-ancestor ea43bc32 4d77c6e11` = tak (ANC_OK). git diff --stat: 6 plikow, +187/-3: gra/src/game/eot-event-defer.ts (+4/-1), gra/src/main.ts (+10/-2), gra/src/ui/sidePanelEventTabs.ts (+12), gra/tools/notif-other-civ-diplo-tab-test.cjs (+86), 10-operator-claude.md, 30-obrona-claude.md. Poza gra/ i runem nic nie zmieniono. Przeczytalem caly diff gra/src: origin 'other-civs' jest wyliczany czysta funkcja captureEventOrigin(isHuman(oldOwner), isHuman(newOwner)), przekazywany przez showHintMessage -> deferredEotHints (spread ctx) -> deferredHintsToSidePanelEvents -> wpis z origin, ktory eventTabOf klasyfikuje do Dyplomacji. Kapitulacja AI-AI zachodzi w fazie AI (sciezka odroczona), wiec propagacja w eot-event-defer.ts jest wlasciwa.
+TESTY (surowe wyniki wlasne, gra/, npm ci wykonane w worktree): tsc --noEmit exit 0; logic-test LOGIC OK (213/213); tech-tree-test 20 pass, 0 fail; research-test PASSED 33/FAILED 0/TOTAL 33; unit-replace-test 21/21 exit 0; combat-test 6/6; notif-other-civ-diplo-tab-test 13 OK, 0 FAIL; sidepanel-notification-tabs-test 29 pass 0 fail; sidepanel-event-tabs-classify-test PASS; eot-event-defer-test 43/43 PASS; notif-diplo-tab-count-blocking-test 25 OK 0 FAIL; side-panel-event-link-test 37 pass 0 fail; end-turn-block-event-test passed=34 failed=1 ((f) hintEndTurnBlocked zapisuje probe w galezi NNS) - ten sam wynik na bazie ea43bc32 (src wycofane do bazy), wiec PREEXISTING, nie regresja. unit-power-test nie jest w liscie bramek tematu - NIE URUCHOMIONO.
+OCENA ZARZUTOW (bez etykiet rol):
+1. eot-event-defer.ts poza allowlista: formalnie prawda; zmiana addytywna, konieczna (bez niej origin ginie w sciezce odroczonej; mutacja 5b to dowodzi). Werdykt: uwaga, nie FAIL; akceptacja odstepstwa od allowlisty nalezy do orkiestratora.
+2. Test tylko tekstowy: zarzut byl zasadny dla pierwszej wersji, naprawiony - logika w czystej funkcji, testy 4a-4d behawioralne (4 kombinacje), 4e/4f to dodatkowy straznik wiringu, 5/5b mutacja. Zalatwiony.
+3. Zakres tylko kapitulacja z glodu: zgodny z przypadkiem nazwanym w GOAL; inne zdarzenia AI-AI (eliminacja/rebelia/aneksja) poza zakresem - uwaga, kandydat na osobny temat.
+4. Wpisy other-civs poza naglowkiem/"Zamknij wszystkie": istniejace zachowanie handlu AI-AI, nie regresja; zarzut odrzucony.
+5. Brak zrzutu Chromium: NIE ZMIERZONO. R-PROC-AUTOBOT §9 pkt 6a wymaga zrzutu dla tematow wizualnych/UX; ten temat to routing wpisu do zakladki (logika testowana na funkcjach produkcyjnych), ale orkiestrator powinien swiadomie rozstrzygnac, czy tak go traktowac - stad PASS-WITH-NOTES, nie PASS.
+BLOKADY: brak. Nie zmierzono: zrzut Chromium, unit-power-test.
+RUNDY: FC po rundzie 2/5.
+NASTEPNY KROK: integracja orkiestratora (merge kodu 4d77c6e11, sprawdzic ancestor i diff --stat); decyzja o allowliscie eot-event-defer.ts i o zrzucie Chromium; kandydat na osobny temat: zdarzenia AI-AI bez origin.
+UWAGI-DLA-ORKIESTRATORA: end-turn-block-event-test (f) czerwony na main od ea43bc32 (preexisting) - osobny temat R-WEB-*. node_modules w worktree zainstalowane przez npm ci (gitignored).
+DEPLOY/PUSH: NIE WYKONANO
