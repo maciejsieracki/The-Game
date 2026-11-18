@@ -242,7 +242,7 @@ function toPnItems(items: BasketItem[], ctx: NegotiationModalContext): PnItem[] 
  * (1 sztuka, wycena PW, „(pokój)") żyje w pliku z allowlisty, a nie w diplomacyDealDisplay.ts.
  * Pozostałe typy — bez zmian, przez renderBasketItemValueBaseHtml.
  */
-function renderBasketItemValueHtml(item: BasketItem, fmtCtx: BasketItemFormatCtx): string {
+export function renderBasketItemValueHtml(item: BasketItem, fmtCtx: BasketItemFormatCtx): string {
   if (item.typ !== 'miasto') return renderBasketItemValueBaseHtml(item, fmtCtx);
   // R-WEB-UI-DIPLO-OFFER-CITY-NAMES-RAW-ID-Q1: nazwa miasta, nigdy surowe id.
   const name = nazwaMiastaDyplomacji(item.id, item.cityLabel);
