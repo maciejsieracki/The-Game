@@ -31,7 +31,7 @@ import { czyAgresorAktywny, deltaRelacjiSojusz } from './diplomacy';
 import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';
 import type { PeaceMilitaryPosition } from './diplomacy-military-strength';
 import { peaceProposalBlocked, PEACE_PROPOSAL_MIN_WAR_TURNS } from './diplomacy-peace-proposal-timing';
-import { warWearinessLevel, wearinessPeaceCashPn } from './war-weariness';
+import { warWearinessLevel, wearinessPeaceCashPn, peacePwPointsByPowerRatio, type PeacePwPowerSplit } from './war-weariness';
 import type { Player } from '../types/player';
 import { TypCywilizacji } from '../types/player';
 import {
@@ -214,6 +214,13 @@ export interface ProposalEvalContext {
      * (peaceMilitaryPosition). 'silniejsza' = odrzuca pokój bez miasta o wartości PN ≥ ceny.
      */
     responderPozycjaMilitarna?: PeaceMilitaryPosition;
+    /**
+     * R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1: moc POWER (power-objective.ts) gracza i drugiej strony pary.
+     * Gdy podane (obie) — bramka PW pokoju liczy podział P·r / P/r (silniejszy: wymaganie 0; słabszy dopłaca D).
+     * Brak = dotychczasowa bramka (bit-identycznie).
+     */
+    powerPlayer?: number;
+    powerOther?: number;
   };
   /** Realne sąsiedztwo terytorialne (granica lądowa) + obie strony >2 miasta. */
   karaWspolnaGranica?: boolean;
@@ -1597,11 +1604,32 @@ function evaluateProposalImpl(
       // Bardzo dobra (95/95, relTotal surowy=190) → effReq(500,190)=950>500 → bilans wyraźnie
       // dodatni (+450). Dar 300 PW za darmo → bilans dodatni przy neutralnej/dobrej relacji
       // (rośnie liniowo z wielkością daru, poprawna polaryzacja — zweryfikowane).
-      const gap = basePn > 0
+      let gap = basePn > 0
         ? (proposerIsPlayer
             ? treatyBaseFairnessGap(basePn, givePn, receivePn, relTotal)
             : treatyBaseFairnessGap(basePn, givePn, receivePn, relationTotal(relation)))
         : 0;
+      // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (ABC 2026-11-18, D1–D4): gdy znana moc POWER obu stron, podział P·r / P/r.
+      // Autor = gracz: silniejszy gracz ma wymaganie 0 (nigdy blokada „Brakuje"); słabszy gracz pokrywa D = S − W
+      // miastami (cena bazowa P = basePn, rabat relacji zostaje w effectiveTreatyPnRequired). Autor = AI: bramka
+      // tylko informacyjna (AI nie jest blokowane tą liczbą). r = 1 daje D = 0 (pokój bez dopłaty — konsekwencja wzoru).
+      let powerSplitNote: string | undefined;
+      const pkPowerSplit: PeacePwPowerSplit | undefined = actionId === 'pokoj'
+        && ctx.warState && ctx.warState.powerPlayer != null && ctx.warState.powerOther != null
+        && !ctx.responderIsCityState && basePn > 0
+        ? peacePwPointsByPowerRatio(basePn, ctx.warState.powerPlayer, ctx.warState.powerOther)
+        : undefined;
+      if (pkPowerSplit && ((ctx.authorOwnerId ?? proposerOwnerId) === (pnOpts.playerOwnerId ?? 0))) {
+        if (pkPowerSplit.strongerSide === 'a') {
+          gap = 0;
+          powerSplitNote = `silniejszy gracz nie dopłaca (S = ${pkPowerSplit.S} PW)`;
+        } else {
+          const requiredD = effectiveTreatyPnRequired(pkPowerSplit.D, relTotal);
+          gap = requiredD - givePn;
+          powerSplitNote = `słabszy gracz dopłaca D = ${pkPowerSplit.D} PW miastami `
+            + `(po rabacie relacji: ${requiredD} PW; S = ${pkPowerSplit.S}, W = ${pkPowerSplit.W}, r = ${pkPowerSplit.r.toFixed(2)})`;
+        }
+      }
       const pokojPwBalanceRaw = basePn > 0 ? -gap : undefined;
       // Normalizacja -0 → 0 (JS: `-0 < 0` jest `false`, więc bramka canAccept działa poprawnie
       // nawet bez tego, ale `-0` w komunikacie/liczbie wyświetlanej graczowi wyglądałby myląco).
@@ -1667,8 +1695,10 @@ function evaluateProposalImpl(
           pwBalance: pokojPwBalance,
           wearinessPw: wearyPwItem, wearinessSide: wearySide,
           wearinessInfo: wearyInfo,
-          reason: `Brakuje ${Math.abs(pokojPwBalance)} PW do uczciwej oferty pokoju @ Relacji `
-            + `(baza ${basePn} PW) — dopłać, by wysłać`,
+          reason: powerSplitNote != null
+            ? `Brakuje ${Math.abs(pokojPwBalance)} PW do wyrównania mocy — ${powerSplitNote} — dopłać, by wysłać`
+            : `Brakuje ${Math.abs(pokojPwBalance)} PW do uczciwej oferty pokoju @ Relacji `
+              + `(baza ${basePn} PW) — dopłać, by wysłać`,
         };
       }
       return {

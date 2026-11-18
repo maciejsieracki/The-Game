@@ -49,6 +49,8 @@ export interface WarWearinessParams {
   czlowiek: { rwProgBonusMax: number; minMiastAi: number };
   /** R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: cena pokoju = cenaStartPn × (1 − L). */
   cenaPokoju: { cenaStartPn: number };
+  /** R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1: podział PW pokoju wg stosunku mocy POWER (peacePwPointsByPowerRatio). */
+  pwPrzezMoc?: { mianownikMin: number };
 }
 
 export const WAR_WEARINESS_PARAMS = paramsRaw as unknown as WarWearinessParams;
@@ -94,6 +96,46 @@ export function warWearinessLevel(inp: WarWearinessInput, P: WarWearinessParams 
 export function wearinessPeaceCashPn(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): number {
   const start = Math.max(0, P.cenaPokoju.cenaStartPn);
   return Math.round(start * (1 - clamp(level, 0, 1)));
+}
+
+/** Wynik podziału PW pokoju wg stosunku mocy (R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1). */
+export interface PeacePwPowerSplit {
+  /** Strona silniejsza wg POWER: 'a' = pierwszy argument (remis = 'a', D = 0). */
+  strongerSide: 'a' | 'b';
+  /** r = moc silniejszej / max(mianownikMin, moc słabszej), r >= 1. */
+  r: number;
+  /** PW punktów dla silniejszej strony = round(P × r). */
+  S: number;
+  /** PW punktów dla słabszej strony = round(P / r). */
+  W: number;
+  /** Różnica D = S − W: dopłata słabszej strony miastami (r = 1 ⇒ D = 0). */
+  D: number;
+}
+
+/**
+ * R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (ABC właściciela 2026-11-18, D2/D3): pokój „P·r i P/r".
+ * Silniejsza strona dostaje S = P·r punktów PW, słabsza W = P/r; słabsza dopłaca D = S − W miastami.
+ * r liczony z POWER obu stron (power-objective.ts), mianownik chroniony przed 0 (max(mianownikMin, słabsza)).
+ * Bez sufitu dopłaty. Czysta funkcja (jedno miejsce wzoru).
+ * Przykład z kodu: moc 6969/2611, P = 4320 → r ≈ 2,669, S = 11530, W = 1619, D = 9911.
+ */
+export function peacePwPointsByPowerRatio(
+  P: number,
+  powerA: number,
+  powerB: number,
+  params: WarWearinessParams = WAR_WEARINESS_PARAMS,
+): PeacePwPowerSplit {
+  const floor = Math.max(1, params.pwPrzezMoc?.mianownikMin ?? 1);
+  const pa = Math.max(0, powerA);
+  const pb = Math.max(0, powerB);
+  const aStronger = pa >= pb;
+  const strong = aStronger ? pa : pb;
+  const weak = aStronger ? pb : pa;
+  const r = Math.max(1, strong / Math.max(floor, weak));
+  const base = Math.max(0, P);
+  const S = Math.round(base * r);
+  const W = Math.round(base / r);
+  return { strongerSide: aStronger ? 'a' : 'b', r, S, W, D: S - W };
 }
 
 export function isWarWeary(level: number, P: WarWearinessParams = WAR_WEARINESS_PARAMS): boolean {
