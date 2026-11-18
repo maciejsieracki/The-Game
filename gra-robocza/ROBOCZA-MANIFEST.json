@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "f53b90b03b6a494cf431f423855e5a98",
-  "bundleSha256": "5e34f85fab08f84dbe2aa5e9318109a25575f0821d2106977331bd970284cf47",
-  "bundleBytes": 14866378,
+  "bundleMd5": "5eff4938ade2c51456a81ab4aa887b10",
+  "bundleSha256": "37a36b1dd53098733c3887939ee2a64d8b4ed67490abc39fa2b46cf9eb34d7c4",
+  "bundleBytes": 14870684,
   "sourceSnapshot": {
-    "source": "FALA 817 df528913a na main e42aac930",
+    "source": "FALA 818 243b16ab3+e4d4ef4de na main e37eef154",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 817: Dyplomacja: przycisk Zaproponuj pokoj i pozycja w Mozliwych umowach wyszarzone z licznikiem dostepne za N tur gdy wojna trwa krocej niz 10 pelnych tur (takze oferta trybutu), poprawna odmiana tura/tury/tur; render blokady bez zapisu stanu wojny; toast odrzucenia AI dla pokoju i rozejmu dopisuje konkretny powod z evaluateProposal (diplomacy-locks.ts, diplomacy-peace-proposal-timing.ts, main.ts)"
+    "FALA 818: Dyplomacja: dla pokoju i rozejmu na pare co najwyzej jedna aktywna propozycja (planAiOfferOnTable; propozycja i kontroferta gracza blokuja oferte AI, nowa oferta AI zastepuje stara); oferta miast niewykonalna (miasto utracone lub oddane) wygasa (negotiationStillValid z cityOwnerOf); Civpedia: hasło ruch-i-cios-w-bitwie uzupelnione o obrazenia wrecz a pancerz oraz morale i ucieczke (osłona wręcz -50% morale strzelców, odsuwanie MELEE_SAFE_GAP=2), wikiBundle zregenerowany"
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplo-winner-proposal-table 77/0; flow-test 49/0; diplomacy-locks 88/0; balance-accept 32/0; war-peace-gate 24/0; truce-r1 31/0; Chromium FC: wiek wojny 5 przycisk wyszarzony z napisem dostepne za 5 tur, wiek 11 aktywny, zero pageerror"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplo-peace-offer-dedup T1-T9 zielone, 3 mutacje zrodla wykryte; peace-auto-stale 6/0; winner-flow 49/0; negotiation-table 62/62; civpedia guard 7/0; polish audit 7497/0; 13 czerwonych testow dyplomacji identycznie czerwone na bazie"
   ],
   "limits": [
-    "NIE ZMIERZONO live: toastu odmowy AI i klikniecia wyslania w scenariuszu zmeczenia 28%; kierunek platnosci za pokoj i etykieta Brakuje N PW czekaja na decyzje wlasciciela (ABC)"
+    "NIE ZMIERZONO w zywej grze (Chromium) dedup ofert; Przyjmij dla prezentu przy bilansie PW (blokada z evaluateProposal, bramka PW) niezmieniona - decyzja wlasciciela; wymiana oferty AI jest cicha; cios wreczny 0 vs 1 (reczna vs auto) czeka na ABC"
   ],
-  "finalControl": "R-WEB-DIPLO-PEACE-WINNER-PROPOSAL-FLOW-Q1 r3 FC PASS-WITH-NOTES e31d6cd17 (kod df528913a)",
+  "finalControl": "R-WEB-DIPLO-AI-PEACE-OFFER-DEDUP-ONE-ACTIVE-Q1 r2 FC PASS-WITH-NOTES 63d87d88a (kod 243b16ab3); R-WEB-DOC-CIVPEDIA-MELEE-ZERO-DAMAGE-AND-ARCHER-FLEE-NOTES-Q1 r1 FC PASS-WITH-NOTES 68114a305 (kod e4d4ef4de)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T00:49:37",
+  "hubGeneratedAt": "2026-11-18T01:24:13",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "f53b90b03b6a494cf431f423855e5a98",
-      "sizeBytes": 14866378
+      "md5": "5eff4938ade2c51456a81ab4aa887b10",
+      "sizeBytes": 14870684
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "f53b90b03b6a494cf431f423855e5a98",
-      "sizeBytes": 14866378
+      "md5": "5eff4938ade2c51456a81ab4aa887b10",
+      "sizeBytes": 14870684
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "f53b90b03b6a494cf431f423855e5a98",
-      "sizeBytes": 14866378
+      "md5": "5eff4938ade2c51456a81ab4aa887b10",
+      "sizeBytes": 14870684
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "f53b90b03b6a494cf431f423855e5a98",
-      "sizeBytes": 14866378
+      "md5": "5eff4938ade2c51456a81ab4aa887b10",
+      "sizeBytes": 14870684
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "f53b90b03b6a494cf431f423855e5a98",
-      "sizeBytes": 14866378
+      "md5": "5eff4938ade2c51456a81ab4aa887b10",
+      "sizeBytes": 14870684
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "f53b90b03b6a494cf431f423855e5a98",
-      "sizeBytes": 14866378
+      "md5": "5eff4938ade2c51456a81ab4aa887b10",
+      "sizeBytes": 14870684
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "f53b90b03b6a494cf431f423855e5a98",
-      "sizeBytes": 14866378
+      "md5": "5eff4938ade2c51456a81ab4aa887b10",
+      "sizeBytes": 14870684
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "f53b90b03b6a494cf431f423855e5a98",
-      "sizeBytes": 14866378
+      "md5": "5eff4938ade2c51456a81ab4aa887b10",
+      "sizeBytes": 14870684
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "f53b90b03b6a494cf431f423855e5a98",
-      "sizeBytes": 14866378
+      "md5": "5eff4938ade2c51456a81ab4aa887b10",
+      "sizeBytes": 14870684
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "f53b90b03b6a494cf431f423855e5a98",
-      "sizeBytes": 14866378
+      "md5": "5eff4938ade2c51456a81ab4aa887b10",
+      "sizeBytes": 14870684
     }
   ],
-  "md5": "f53b90b03b6a494cf431f423855e5a98",
+  "md5": "5eff4938ade2c51456a81ab4aa887b10",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
