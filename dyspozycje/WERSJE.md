@@ -1,3 +1,9 @@
+## ROBOCZA 5e3de9fb -- 2026-11-18 -- FALA 833: nośnik dopłaty D w traktatach: technologie, złoto, brąz, żelazo, rudy (testowa)
+
+- Traktaty z parytetem siły (pakt o nieagresji, sojusz obronny i pełny, przemarsz, wasal): dopłatę D płaci strona słabsza z zapasów w kolejności technologie (tylko takie, których druga strona nie ma) → złoto Skarbca → brąz → żelazo → rudy; realna akceptacja oferty AI przez gracza przelewa pozycje (resolvePlayerAcceptsAiPendingWired), gracz bez środków dostaje odmowę z powodem; okno propozycji pokazuje listę pozycji płatności. Stopnie praca i pieniądze (¤) poza zakresem (czeka na decyzję). Gdy płatnikiem byłaby AI (gracz silniejszy) — stan jak przed zmianą, bez dopłaty (czeka na decyzję).
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; treaty-payment carrier 11/0 (mutanty 0 niewykrytych); wiring 468/0; power-parity 50/0; ai-parity 80/0; rozejm-parity 25/0; peace-tail-integration 42/0; war-peace-sim 25/0; live Chromium diplo-treaty-payment-live 149/149 (FC), mutanty live wykryte.
+- Limity: NIE ZMIERZONO: płatność AI jako płatnika (gracz silniejszy; decyzja właściciela); live gracz→AI przemarsz i wasal (bramka Respektu); render wiersza okna w Chromium; drabina brąz/żelazo/rudy tylko testami czystymi; stopnie praca/pieniądze (¤).
+
 ## ROBOCZA 5bab018a -- 2026-11-18 -- FALA 832: usunięcie martwych pól zmęczenia wojną (zegar profilu) (testowa)
 
 - Usunięte martwe pola zegara zmęczenia wojną: zmeczenie.maksUdzial, bazaTur, wagaAgresja, maksTur, bazaTurBrakDanych, profil zmeczenieT, funkcje warWearinessFraction/Share i stała WAR_WEARINESS_MAX_SHARE (od zmęczenia w 20 turach nie sterują grą; zostaje progSygnaluPokoju czytany przez aiPeaceSignals). Zachowanie gry bez zmian; usunięto tylko asercje martwych pól (truce-impl 94→91, profile-unit 198→124).

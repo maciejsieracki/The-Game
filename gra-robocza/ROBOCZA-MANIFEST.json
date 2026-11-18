@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "5bab018ac671cb5051ed06853c0fa9e8",
-  "bundleSha256": "35eecbc0ced30f0b4a46c4ab7072205a5e92ad21ed604881461d813196f2beaf",
-  "bundleBytes": 14936294,
+  "bundleMd5": "5e3de9fb72e91cc380223ee420389c8d",
+  "bundleSha256": "afaaf636ae5e9ea51a893437680bcffd178128c25742da58aa30310844a3e581",
+  "bundleBytes": 14943299,
   "sourceSnapshot": {
-    "source": "FALA 832: merge FC ea5ad135e (kod ea0f60e7f) na main a72c6b96",
+    "source": "FALA 833: merge FC 45f05a8a5 (kod ee6a6e6cc) na main 13ad6b36",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 832: Usunięte martwe pola zegara zmęczenia wojną: zmeczenie.maksUdzial, bazaTur, wagaAgresja, maksTur, bazaTurBrakDanych, profil zmeczenieT, funkcje warWearinessFraction/Share i stała WAR_WEARINESS_MAX_SHARE (od zmęczenia w 20 turach nie sterują grą; zostaje progSygnaluPokoju czytany przez aiPeaceSignals). Zachowanie gry bez zmian; usunięto tylko asercje martwych pól (truce-impl 94→91, profile-unit 198→124)."
+    "FALA 833: Traktaty z parytetem siły (pakt o nieagresji, sojusz obronny i pełny, przemarsz, wasal): dopłatę D płaci strona słabsza z zapasów w kolejności technologie (tylko takie, których druga strona nie ma) → złoto Skarbca → brąz → żelazo → rudy; realna akceptacja oferty AI przez gracza przelewa pozycje (resolvePlayerAcceptsAiPendingWired), gracz bez środków dostaje odmowę z powodem; okno propozycji pokazuje listę pozycji płatności. Stopnie praca i pieniądze (¤) poza zakresem (czeka na decyzję). Gdy płatnikiem byłaby AI (gracz silniejszy) — stan jak przed zmianą, bez dopłaty (czeka na decyzję)."
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; profile-unit 124/0; truce-impl 91/0; war-peace-sim 25/0 (bez zmian); weariness-20-turns 31/0; main-guard 35/0; forced-peace-pending 40/0; peace-tail-integration 42/0; treaties-ai-parity 80/0; mutacje kontrolne (Obrona): usunięcie progSygnaluPokoju → profile-unit 123/1, .zmeczenieT w diplomacy.ts → main-guard 34/1."
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; treaty-payment carrier 11/0 (mutanty 0 niewykrytych); wiring 468/0; power-parity 50/0; ai-parity 80/0; rozejm-parity 25/0; peace-tail-integration 42/0; war-peace-sim 25/0; live Chromium diplo-treaty-payment-live 149/149 (FC), mutanty live wykryte."
   ],
   "limits": [
-    "NIE ZMIERZONO: build i test w przeglądarce dla tego tematu; dług bazowy: diplo-forced-peace-pending-live-paths-test (fixture) i json-descriptions-sync-test a1 18/1 identyczne przed i po; sim-test nie chroni progSygnaluPokoju (chroni profile-unit)."
+    "NIE ZMIERZONO: płatność AI jako płatnika (gracz silniejszy; decyzja właściciela); live gracz→AI przemarsz i wasal (bramka Respektu); render wiersza okna w Chromium; drabina brąz/żelazo/rudy tylko testami czystymi; stopnie praca/pieniądze (¤)."
   ],
-  "finalControl": "R-WEB-DIPLO-WEARINESS-LEGACY-FIELDS-REMOVE-Q1 r1 FC PASS-WITH-NOTES ea5ad135e (kod ea0f60e7f, operator 8e677191f)",
+  "finalControl": "R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1 r4 (Operator SONNET po 2 rundach Haiku) FC PASS-WITH-NOTES 45f05a8a5 (kod ee6a6e6cc, operator 455d864e7)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T16:19:24",
+  "hubGeneratedAt": "2026-11-18T17:01:40",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "5bab018ac671cb5051ed06853c0fa9e8",
-      "sizeBytes": 14936294
+      "md5": "5e3de9fb72e91cc380223ee420389c8d",
+      "sizeBytes": 14943299
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "5bab018ac671cb5051ed06853c0fa9e8",
-      "sizeBytes": 14936294
+      "md5": "5e3de9fb72e91cc380223ee420389c8d",
+      "sizeBytes": 14943299
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "5bab018ac671cb5051ed06853c0fa9e8",
-      "sizeBytes": 14936294
+      "md5": "5e3de9fb72e91cc380223ee420389c8d",
+      "sizeBytes": 14943299
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "5bab018ac671cb5051ed06853c0fa9e8",
-      "sizeBytes": 14936294
+      "md5": "5e3de9fb72e91cc380223ee420389c8d",
+      "sizeBytes": 14943299
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "5bab018ac671cb5051ed06853c0fa9e8",
-      "sizeBytes": 14936294
+      "md5": "5e3de9fb72e91cc380223ee420389c8d",
+      "sizeBytes": 14943299
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "5bab018ac671cb5051ed06853c0fa9e8",
-      "sizeBytes": 14936294
+      "md5": "5e3de9fb72e91cc380223ee420389c8d",
+      "sizeBytes": 14943299
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "5bab018ac671cb5051ed06853c0fa9e8",
-      "sizeBytes": 14936294
+      "md5": "5e3de9fb72e91cc380223ee420389c8d",
+      "sizeBytes": 14943299
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "5bab018ac671cb5051ed06853c0fa9e8",
-      "sizeBytes": 14936294
+      "md5": "5e3de9fb72e91cc380223ee420389c8d",
+      "sizeBytes": 14943299
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "5bab018ac671cb5051ed06853c0fa9e8",
-      "sizeBytes": 14936294
+      "md5": "5e3de9fb72e91cc380223ee420389c8d",
+      "sizeBytes": 14943299
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "5bab018ac671cb5051ed06853c0fa9e8",
-      "sizeBytes": 14936294
+      "md5": "5e3de9fb72e91cc380223ee420389c8d",
+      "sizeBytes": 14943299
     }
   ],
-  "md5": "5bab018ac671cb5051ed06853c0fa9e8",
+  "md5": "5e3de9fb72e91cc380223ee420389c8d",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
