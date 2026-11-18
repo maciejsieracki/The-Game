@@ -1361,10 +1361,8 @@ import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { isTechDiscoveryNoticeOpen, showTechDiscoveryNotice } from './ui/techDiscoveryNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
 import { buildAiLevers, decideAiOwnerBalance, nnsAiUnitLeverInputs, nnsUnitIdsFromPlan, isNnsAiBalanceEnabled, setNnsAiBalanceEnabled, projectTreasuryAfterTick, NNS_AI_BALANCE_TURN_MIN, type NnsAiUnitInfo, type NnsLever } from './game/no-negative-stocks';
-import { EMPTY_CITY_GARRISON_UNIT_ID } from './game/ai';
-import { cityNeedsGarrison } from './game/ai-city-garrison';
-import { armyClassOfUnit } from './game/ai-army-composition';
-import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, loadAiPurchaseReserveParams,decideAIEconomySliders, aiSeedPodzialHandlu, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, AI_TRADE_BARTER_COOLDOWN_TURNS, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
+import { cityNeedsGarrison, isGarrisonPriorityPurchase } from './game/ai-city-garrison';
+import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, loadAiPurchaseReserveParams, decideAIEconomySliders, aiSeedPodzialHandlu, EMPTY_CITY_GARRISON_UNIT_ID, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, AI_TRADE_BARTER_COOLDOWN_TURNS, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import { aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand, MiastoWycenaWejscie } from './game/ai';
 import {
@@ -47079,8 +47077,8 @@ async function boot(): Promise<void> {
                     // i rezerwę utrzymania (zostaje: skarbiec >= cena, Manpower, brak wstrzymania NNS).
                     // Reszta zakupów nadal przechodzi pełną bramkę i nie może wydać złota
                     // zarezerwowanego na garnizony (aiGarrisonGoldReserve).
-                    const isGarrisonPriority = cityNeedsGarrison(city, units, ownerId)
-                      && armyClassOfUnit(data.units.find(u => u.Jednostka === candId)) !== null;
+                    const isGarrisonPriority = isGarrisonPriorityPurchase(
+                      city, units, ownerId, candId, EMPTY_CITY_GARRISON_UNIT_ID);
                     const garrisonReserve = isGarrisonPriority
                       ? 0
                       : aiGarrisonGoldReserve(ownerId, player.kosztJednostekPace ?? 'niski');

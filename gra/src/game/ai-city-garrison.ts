@@ -82,3 +82,19 @@ export function cityNeedsGarrison(
   return !units.some(u => u.ownerId === ownerId && u.q === city.q && u.r === city.r
     && isGarrisonEligibleUnit(u));
 }
+
+/**
+ * R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r3, wariant C): czy zakup `candId` jest zakupem
+ * PRIORYTETOWYM garnizonu pustego miasta. Tylko najtanszy garnizon (`garrisonUnitId`, dla AI
+ * Wojownik) w miescie bez kwalifikujacej sie jednostki bojowej; drozsze jednostki nie dostaja
+ * priorytetu ani omijania runway/rezerwy.
+ */
+export function isGarrisonPriorityPurchase(
+  city: GarrisonCityRef,
+  units: readonly RuntimeUnit[],
+  ownerId: number,
+  candId: string,
+  garrisonUnitId: string,
+): boolean {
+  return candId === garrisonUnitId && cityNeedsGarrison(city, units, ownerId);
+}

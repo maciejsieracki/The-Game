@@ -34,6 +34,7 @@ const ENTRY_BODY = `
 export { decideAITurn, emptyCityGarrisonRecruitIds } from ${JSON.stringify(path.join(SRC, 'game', 'ai.ts'))};
 export {
   getCityGarrisonUnitIds, garrisonUnitIdSet, cityNeedsGarrison, isGarrisonEligibleUnit,
+  isGarrisonPriorityPurchase,
 } from ${JSON.stringify(path.join(SRC, 'game', 'ai-city-garrison.ts'))};
 export { setArmyConsolidationOverride } from ${JSON.stringify(path.join(SRC, 'game', 'army-consolidation.ts'))};
 `;
@@ -111,6 +112,14 @@ async function main() {
       'H2: cywil/zwiadowca/wodz/zaokretowany/galera nie sa garnizonem');
     ok(GOOD.cityNeedsGarrison(city, notEligible, 1) === true, 'H5: miasto tylko z niekwalifikujacymi sie -> potrzebuje garnizonu');
     ok(GOOD.cityNeedsGarrison(city, [unit('x', 5, 5)], 1) === false, 'H5b: miasto z jednostka bojowa -> nie potrzebuje');
+
+    // H6: priorytet zakupu tylko dla najtanszego garnizonu (Wojownik) w pustym miescie.
+    ok(GOOD.isGarrisonPriorityPurchase(city, notEligible, 1, 'Wojownik', 'Wojownik') === true,
+      'H6: Wojownik do pustego miasta -> priorytet garnizonu');
+    ok(GOOD.isGarrisonPriorityPurchase(city, notEligible, 1, 'Miecznik', 'Wojownik') === false,
+      'H6b: drozsza jednostka bojowa NIE dostaje priorytetu/omijania rezerwy');
+    ok(GOOD.isGarrisonPriorityPurchase(city, [unit('x', 5, 5)], 1, 'Wojownik', 'Wojownik') === false,
+      'H7: miasto z jednostka bojowa -> brak priorytetu (jest juz garnizon)');
 
     const foreign = [unit('foreign', 5, 5, { ownerId: 2, str: 0 }), unit('own', 5, 5, { str: 5 })];
     ok(GOOD.getCityGarrisonUnitIds([city], foreign, 1, strengthById).get('A') === 'own',
