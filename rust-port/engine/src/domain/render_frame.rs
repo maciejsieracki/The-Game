@@ -20,10 +20,14 @@
 //!   `activeWonderId`) = web `onOpenBuild` -> `clearPlayerUnitSelection()` (`main.ts:26702-26703`,
 //!   `:7090-7106`), wolane w chwili otwarcia panelu, przed wyborem klucza: brak `selection`, pusty
 //!   `reachable` i brak `pathRoute`. Ponowne zaznaczenie jednostki przy otwartym panelu (web
-//!   `selectPlayerUnit` nie zamyka trybu) nie jest odwzorowane: ramka bezstanowa wg litery D-R3-3.
+//!   `selectPlayerUnit` nie zamyka trybu) odwzorowuje flaga D-OP-8 (domyslnie wylaczona).
 //! * D-OP-4: zaznaczenie z UI (`RenderUiParams::selected_unit_id`, web `selectedId`, `main.ts:7116`) zasila
 //!   `selection`, `reachable` i `pathRoute` (w webie jedna zmienna); `PlayableState.selected_unit_id` nie
 //!   jest czytany przez ramke.
+//! * D-OP-8 (#371 T5a, DLUG-FRAME-RESELECT): [`RenderUiParams::unit_selected_after_build_open`] = web
+//!   `selectPlayerUnit` (`main.ts:7233-7260`) po `onOpenBuild`: przy otwartym trybie budowy ramka
+//!   przywraca `selection`, `reachable` i `pathRoute` z `selected_unit_id`, a `buildHighlight` liczy jak
+//!   dotad. Domyslne `false` = D-OP-3 bajt w bajt.
 //!
 //! Runda r2 (DODATEK r2, raport `01-operator-r2.md`):
 //! * D-OP-5: `overlays.buildHighlight.hexes` z adapterow stanu: `canFoundPlayerCityAt` (`FoundCityCtx`,
@@ -77,9 +81,9 @@ use crate::domain::map_snapshot::{
 use crate::domain::map_view::{build_hex_dyn, build_map_view, MapViewError};
 use crate::domain::mapgen::prims::hex_key;
 use crate::domain::overlays_view::{
-    build_highlight, build_highlight_mode_active, siege_views, trade_routes_view,
-    unit_overlays_view, wonder_views, BuildHighlightSources, BuildHighlightUi, OverlaysUi,
-    OverlaysViewError, SelectionUi, UnitOverlaysInput,
+    build_highlight, build_highlight_mode_active, path_route_overlay, reachable_overlay, selection,
+    siege_views, trade_routes_view, unit_overlays_view, wonder_views, BuildHighlightSources,
+    BuildHighlightUi, OverlaysUi, OverlaysViewError, SelectionUi, UnitOverlaysInput,
 };
 use crate::domain::pathfinding::ruch_jednostek::{Klucz, RuchJednostka};
 use crate::domain::playable::PlayableFortKind;
@@ -137,6 +141,13 @@ pub struct RenderUiParams {
     pub build_mode_open: bool,
     /// Web `activeImprovementKey` (`main.ts:16369`).
     pub active_improvement_key: Option<String>,
+    /// D-OP-8 (#371 T5a, DLUG-FRAME-RESELECT): `true` = jednostka zaznaczona PO otwarciu panelu
+    /// budowy albo wejsciu w tryb podswietlenia (web `selectPlayerUnit`, `main.ts:7233-7260`, wolane
+    /// po `onOpenBuild` -> `clearPlayerUnitSelection()`, `:26702-26703`; `selectPlayerUnit` nie zamyka
+    /// trybu budowy). Wtedy ramka w trybie budowy przywraca `selection`, `reachable` i `pathRoute` z
+    /// [`Self::selected_unit_id`], a `buildHighlight` liczy jak dotad. `false` (domyslnie) = D-OP-3:
+    /// tryb budowy czysci zaznaczenie. Poza trybem budowy pole nie ma znaczenia (D-OP-4).
+    pub unit_selected_after_build_open: bool,
 }
 
 impl RenderUiParams {
@@ -1086,7 +1097,10 @@ fn overlays_view(
         path_route: None,
     };
 
-    if ui.build_mode_open || build_highlight_mode_active(&build_ui) {
+    let build_branch = ui.build_mode_open || build_highlight_mode_active(&build_ui);
+    // D-OP-8: zaznaczenie po otwarciu panelu (`selectPlayerUnit`) przywraca nakladki jednostki.
+    let reselected = ui.unit_selected_after_build_open && ui.selected_unit_id.is_some();
+    if build_branch && !reselected {
         // D-OP-3 (Q6-2, D-R3-3): `onOpenBuild` -> `clearPlayerUnitSelection()` (`main.ts:26702-26703`)
         // juz przy otwarciu panelu (bez klucza): bez `selection`, `reachable` i `pathRoute`.
         return Ok(dto);
@@ -1102,6 +1116,37 @@ fn overlays_view(
         owned = s;
         &owned
     };
+    if build_branch {
+        // D-OP-8 (#371 T5a): `selectPlayerUnit` (`main.ts:7233-7260`) przy otwartym panelu: `selectedId`,
+        // `reachable = reachableWithMergeTargets(u)` (`:7252-7256`), pierscien `setSelectionHex`
+        // (`:7258`). Podglad trasy kursora (`refreshHoverPathPreview`, `:31181`) dziala przy otwartym
+        // panelu bez wybranego trybu; przy `buildModeOpen && (foundCityMode || activeImprovementKey ||
+        // activeWonderId)` handler ruchu myszy czysci trase (`clearPathRoute`, `:32273-32278`).
+        // `buildHighlight` zostaje policzone wyzej (tryb nadal otwarty; `refreshBuildHighlight`,
+        // `:16351-16396`). Ktora warstwa `setHighlight` jest widoczna („ostatni zapis wygrywa”) wybiera
+        // klient (dlug T5b). `unit_overlays_view` nie jest uzywany, bo w trybie podswietlenia zeruje
+        // `reachable` (Q6-2), a web po `selectPlayerUnit` trzyma `reachable` niezaleznie od trybu.
+        let hover_path_blocked = ui.build_mode_open
+            && (ui.found_city_mode
+                || ui.wonder_active
+                || ui
+                    .active_improvement_key
+                    .as_deref()
+                    .is_some_and(|k| !k.is_empty()));
+        dto.reachable = reachable_overlay(view_state);
+        dto.selection = selection(
+            &SelectionUi {
+                selected_unit_id: ui.selected_unit_id,
+            },
+            &view_state.units,
+        );
+        dto.path_route = if hover_path_blocked {
+            None
+        } else {
+            path_route_overlay(view_state, ui.hover)
+        };
+        return Ok(dto);
+    }
     unit_overlays_view(
         view_state,
         &UnitOverlaysInput {
