@@ -40,17 +40,17 @@ Ostatnia FALA w `git log origin/main`: 835 (fb5b2045a). Rejestr w repo kończy s
 
 Pełna lista FAL: `git log origin/main --grep 'FALA'`. Rejestr (do FALI 746): `dyspozycje/REJESTR-PROSB-I-ZADAN.md`.
 
-## TRWAJĄCE WORKFLOWY (stan 2026-11-18 22:25 UTC; origin/main e29f8c8b3 = FALA 846)
+## TRWAJĄCE WORKFLOWY (stan 2026-11-18 ~23:55 UTC; origin/main 77b103c7f = FALA 851)
 
 | Temat | wf | Model etapu |
 |---|---|---|
-| R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 r2 (wariant C, baza 8a2d31af9) | wf_456a1f27-c8e | Operator HAIKU |
-| R-WEB-DIPLO-HARDER-RELATIONS-A-NEIGHBOR-TENSION-Q1 r1 (etap A, za flagą) | wf_8d891a52-8b4 | Operator HAIKU |
-| R-WEB-AI-AI-ALLIANCES-E3-WIRING-FLAGGED-Q1 r1 (etap B1, za flagą) | wf_5cc7b000-7e5 | Operator HAIKU |
-| R-WEB-TEST-DEBT-Q6 r1 | wf_1bf9e5b0-744 | Operator HAIKU |
+| R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 r4 (baza b6302fcc2) | wf_7f706ef5-57c | Operator SONNET (uzasadnienie w DODATKU 2/3) |
+| R-WEB-AI-AI-ALLIANCES-E3-WILLINGNESS-MEASURE-Q1 r1 | wf_0852a31f-22a | Operator HAIKU |
+| R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1 r1 | wf_52c55d5a-0a5 | Operator HAIKU |
 
-Bieg orkiestratora poza workflow: pomiar ekonomii 150 tur, ziarna 4242 i 7 (/tmp/econ-out, /tmp/econ-run.sh).
-Kolejka na później: etap B2/B4 (wspólne wojny, koalicja antylidera), etap C (Zaufanie 0), reguła wojen C po pomiarze WARMEASURE, TERRITORYRACE r3, punkt B audytu ekonomii.
+Biegi orkiestratora poza workflow: pomiar dyplomacji etap A OFF/ON (/tmp/harder-out, /tmp/harder-run.sh; 3 ziarna × 90 tur).
+Wdrożone tej nocy: FALE 846–851 (pomiar ekonomii; etap A dyplomacji za flagą; sojusze AI↔AI B1 za flagą; koalicja antylidera B4 za flagą; runnery pomiarowe).
+Kolejka na później: etap C dyplomacji (Zaufanie 0), reguła wojen C po pomiarze WARMEASURE, TERRITORYRACE r3, punkt B audytu ekonomii, luki B2 (dystans, pokój bez karencji, barbarzyńcy w liczniku wojen).
 
 ## GOTOWE DO STARTU
 
