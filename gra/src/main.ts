@@ -25947,6 +25947,8 @@ async function boot(): Promise<void> {
         responderEliminated: eliminatedOwners.has(responderId),
         proposerIsCityState: isOwnerClusterCityState(proposerId, csOpts),
         responderIsCityState: isOwnerClusterCityState(responderId, csOpts),
+        // DIPLO-5 (kryterium 3): oferta miasta znika, gdy miasto zmieniło właściciela lub przestało istnieć.
+        cityOwnerOf: (cityId: string) => cities.find(c => c.id === cityId)?.ownerId,
       };
     }
 

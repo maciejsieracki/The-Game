@@ -156,6 +156,45 @@ function main() {
     check('T6: para AI2<->gracz niezalezna od pary AI<->gracz', r.accepted === true);
   }
 
+  // (T7) DIPLO-5 r2: kontroferta gracza na ofertę AI zajmuje stół — AI nie nadpisuje jej nową ofertą.
+  {
+    const sim = makeTable(D);
+    sim.offer(1, AI, HUMAN, 'pokoj');
+    const aiEntry = sim.table[0];
+    sim.table[0] = D.applyCounterOffer(aiEntry, {}, HUMAN, 2);
+    const r = sim.offer(3, AI, HUMAN, 'rozejm');
+    check('T7: kontroferta gracza (authorOwner=gracz) blokuje nowa oferte AI tej pary',
+      r.accepted === false && sim.pairCount(HUMAN, AI) === 1 && sim.table[0].authorOwnerId === HUMAN,
+      `accepted=${r.accepted} count=${sim.pairCount(HUMAN, AI)}`);
+  }
+
+  // (T8) DIPLO-5 r2 (kryterium 3): oferta miasta wygasa, gdy miasto nie należy do strony oferującej / nie istnieje.
+  {
+    const entry = D.createNegotiation({
+      actionId: 'pokoj', proposerOwnerId: AI, responderOwnerId: HUMAN,
+      payload: { giveItems: [{ typ: 'miasto', id: 'City27', ilosc: 1 }] },
+    }, 1, 'ai', 1);
+    const world = cityOwnerOf => ({
+      turn: 2, isAtWar: false, isAtPeace: false, proposerEliminated: false, responderEliminated: false, cityOwnerOf,
+    });
+    const own = D.negotiationStillValid(entry, world(() => AI)).valid === true;
+    const lost = D.negotiationStillValid(entry, world(() => AI2)).valid === false;
+    const gone = D.negotiationStillValid(entry, world(() => undefined)).valid === false;
+    const noWiring = D.negotiationStillValid(entry, world(undefined)).valid === true;
+    check('T8: miasto oferty: wlasne=wazne, oddane/utracone/nieistniejace=wygasa, brak wiringu=bez zmian',
+      own && lost && gone && noWiring, `own=${own} lost=${lost} gone=${gone} noWiring=${noWiring}`);
+  }
+
+  // (T9) wiring-guard (ZRODLO, nie zachowanie): main.ts musi korzystac z planera i podawac cityOwnerOf.
+  // Wyjatek swiadomy od zasady „bez regex na zrodle": main.ts nie laduje sie w node; guard wylapuje usuniecie wiringu.
+  {
+    const mainSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
+    const wired = mainSrc.includes('planAiOfferOnTable(negotiationTable, ownerId, ME(), converted.actionId)')
+      && mainSrc.includes('offerPlan.replacedIds.length > 0')
+      && /cityOwnerOf:\s*\(cityId: string\)\s*=>\s*cities\.find/.test(mainSrc);
+    check('T9 (wiring-guard, zrodlo): main.ts uzywa planAiOfferOnTable, zastepuje replacedIds i podaje cityOwnerOf', wired);
+  }
+
   console.log(failures === 0 ? 'diplo-peace-offer-dedup-one-active-test: WSZYSTKO ZIELONE' : `FAILURES=${failures}`);
   process.exit(failures === 0 ? 0 : 1);
 }
