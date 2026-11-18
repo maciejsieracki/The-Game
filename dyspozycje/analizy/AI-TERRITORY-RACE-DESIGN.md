@@ -1,0 +1,166 @@
+# AI — wyścig o terytorium przez forty i posterunki (projekt, R-WEB-AI-TERRITORY-RACE-FORTS-OUTPOSTS-DESIGN-Q1)
+
+Status: PROJEKT — bez implementacji. Baza kodu: `64208a85b` (origin/main w chwili startu).
+Zakres (ABC, DODATEK 1, 2026-11-18): forty i posterunki jako element STRATEGII AI. Automatyka gracza poza zakresem (w pkt 7 tylko opis możliwego udostępnienia).
+
+NIE ZMIERZONO: pomiar przed zmianą (3 ziarna × ≥150 tur) nie został wykonany w tej rundzie. Powód w sekcji 6. Wnioski o częstotliwości budowy fortów przez AI poniżej są z KODU, nie z pomiaru.
+
+---
+
+## 1. Inwentarz (z kodu i danych)
+
+### 1.1 Fort vs posterunek (`gra/data/terrain-improvements.json`)
+
+| Cecha | Fort (`"fort"`, l. 274) | Posterunek (`"posterunek"`, l. 402) |
+|---|---|---|
+| Epoka | 3 | 2 |
+| Technologia | `Wojskowość` | brak pojedynczej; bramka AND `Obróbka drewna` + `Murarstwo` (`improvement-tech.ts`, `IMPROVEMENT_MULTI_TECH_REQ`, wg uwagi l. 415) |
+| Koszt pracy (`koszt_praca`) | 25 | 30 (droższy) |
+| Zasięg terytorium | 5 | 3 |
+| Teren | „dowolny ląd w terytorium” | „ląd w/na krawędzi własnego zasięgu” |
+| Bonus obrony | +100% (obozowanie) | +50% (obozowanie) |
+| Warunek | teren zabezpieczony; obca cywilizacja nie buduje tam miasta/ulepszeń | jak fort, zasięg 3; odkrywa mgłę, węzeł dróg |
+
+Dane NIE zawierają pola kosztu utrzymania (grep `utrzymanie|upkeep` w JSON nie zwrócił wpisu dla fortu/posterunku). Koszt utrzymania: NIE ZWERYFIKOWANO.
+
+Obie to ulepszenia terenu (nie jednostki). Nie wymagają jednostki-budowniczego w danych; w kodzie AI wymagana jest własna jednostka stojąca na heksie (patrz 1.4).
+
+### 1.2 Zajmowanie terytorium
+
+- `gra/src/map/territory.ts:122` `territoryOwnerAt`: dla heksu liczy się węzeł, który go obejmuje. Węzły miast mają pierwszeństwo przed fortami/posterunkami (komentarz l. 111–115). Spór fort vs fort: gdy oba mają `order`, wygrywa wcześniej zbudowany (`turn`, potem `seq`); w przeciwnym razie najbliższy węzeł.
+- `gra/src/game/fort-territory.ts:144` `fortTerritoryNodes`: fort z `contestedUseless` (reguła 3) NIE tworzy terytorium.
+- `gra/src/game/fort-territory.ts:~165` `isHexInForeignFortTerritory`: obcy fort blokuje zakładanie miasta w swoim promieniu, o ile `territoryOwnerAt` rozstrzyga go na korzyść obcego.
+- `gra/src/game/ai.ts:1200` `isHexWithinAnyCityReach`: miasta + własne forty/posterunki (bez `contestedUseless`) rozszerzają zasięg zakładania miast (R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA).
+- `gra/src/game/ai.ts:3218` `planCityFounding`: AI zakłada miasto tylko w zasięgu własnego miasta/fortu (parytet z graczem, decyzja A 2026-08-09).
+
+### 1.3 Gracz
+
+Gracz stawia forty/posterunki przez UI i przez automat ulepszeń (`gra/src/game/auto-improvements.ts`, ta sama logika `pickFortClaims`, l. 688). Szczegóły UI nie były inwentaryzowane w tej rundzie (NIE ZWERYFIKOWANO).
+
+### 1.4 AI — gdzie już stawia forty/posterunki
+
+Są TRZY ścieżki w kodzie:
+
+1. **Automat ulepszeń (picker)** — `auto-improvements.ts` `pickFortClaims` (l. 688), wpięty w `pickAutoImprovements` (l. 1107–1151). Warunek: `cityLimitExhausted === true` (AI: `ai.ts:3017`, `isCityLimitExhausted` `auto-improvements.ts:643`: limit = `cityLimitBase + (era-1)*5`, liczone miasta z `foundedByOwner !== false`). Próg zysku: `FORT_CLAIM_MIN_NEW_HEXES = 1` (l. 655). Kolejność: fort preferowany, posterunek gdy fort niedostępny (`FORT_CLAIM_KEYS`, l. 658).
+2. **Planer ekspansji** — `ai.ts:3093` `planExpansionFortBuilding`, wołany z `decideAITurn` (ok. l. 4002) i `decideDefensiveCopyTurn` (ok. l. 5538; oba z bramką `defensiveCopy`):
+   - bramki zasobów: `canAfford` (l. ~3128–3140): `pracaAvailable >= kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS`, budżet `plannedCost + kosztPraca <= improvementBudget`, technologia odblokowana;
+   - pętla 1 (l. ~3146–3180): fort na heksie WŁASNEJ jednostki (nie garnizon) poza `isHexWithinAnyCityReach`, poza terytorium obcej cywilizacji, na lądzie; **bez ruchu jednostek** (komentarz l. 3085–3090: „Celowo NIE przesuwa/nie wysyła jednostek”);
+   - pętla 2 (l. ~3180–3195): posterunek na heksie własnej jednostki, gdy `isOutpostPlacementAllowed` (własna granica). **Maks. 1 na turę** (`return` po pierwszym trafieniu).
+3. **Pozostałe** — brak innych ścieżek budowy fortów/posterunków przez AI znalezionych w tej rundzie (NIE ZWERYFIKOWANO wyczerpująco).
+
+### 1.5 Dlaczego AI rzadko stawia forty
+
+Z kodu wynikają cztery twarde bramki (każda sama wystarcza do braku budowy):
+
+- ścieżka 1 wymaga WYCZERPANEGO limitu miast; przed tym AI nie stawia fortu przez picker;
+- ścieżka 2 wymaga, aby WŁASNA jednostka już stała poza zasięgiem — AI nie wysyła jednostek po teren, więc sytuacja zdarza się przypadkowo (zwiadowca, eskorta);
+- fort wymaga technologii Wojskowość (epoka 3), posterunek dwóch technologii; przed nimi ścieżki są zamknięte;
+- budżet pracy (`canAfford`) konkuruje z ulepszeniami żywności i surowców (kolejność w `AI_IMPROVEMENT_PRACA_SURPLUS`/`foodPriority`).
+
+Hipoteza „AI rzadko stawia forty” jest zgodna z kodem, ale NIE jest potwierdzona liczbą (brak pomiaru, sekcja 6).
+
+### 1.6 Limity i koszty
+
+- Limit miast: `cityLimitBase` z konfiguracji gry (`main.ts:13898`), + 5 za każdą epokę powyżej 1 (`isCityLimitExhausted`).
+- Limit fortów/posterunków: NIE ZNALEZIONO twardego limitu liczby fortów AI (poza „maks. 1 posterunek na turę”). Brak limitu łącznego.
+- Koszt utrzymania: NIE ZWERYFIKOWANO (sekcja 1.1).
+
+### 1.7 Zachowanie przy kontakcie granic
+
+- Fort/posterunek obcego gracza blokuje zakładanie miast w swoim promieniu (sekcja 1.2).
+- AI nie buduje w terytorium obcej cywilizacji (`planExpansionFortBuilding` filtruje `territoryOwnerAt`, ok. l. 3148).
+- Brak mechaniki „kara za sąsiedztwo” ani tarcia granicznego związanego z fortami (NIE ZNALEZIONO w tej rundzie).
+
+---
+
+## 2. Problem
+
+Dziś AI rozszerza terytorium praktycznie tylko przez miasta (zasięg 10 pól na miasto, `cityTerritoryRadius`), a forty pojawiają się po wyczerpaniu limitu miast lub przypadkiem. Brak aktywnego „wyścigu o heksy” oznacza, że przeciwnik, który wcześnie postawi forty na granicy i na zasobach, zajmie wolny teren pierwszy (reguła „wcześniej zbudowany fort wygrywa spór”, `territory.ts`).
+
+## 3. Mechanizm wspólny (wszystkie warianty)
+
+Kryterium wyboru heksu (iv) — proponowana funkcja wartości:
+`wartość(h) = nowe_heksy_zajęte(h) + bonus_zasobu(h) + bonus_strategiczny(h) − kara_odległości_od_konkurenta(h) − koszt_pracy(h)`
+
+- `nowe_heksy_zajęte(h)`: heksy w promieniu fortu (5) lub posterunku (3), nieobjęte jeszcze przez żadnego właściciela (`territoryOwnerAt` = null), liczone bez wygranej przez wcześniejszy węzeł obcego.
+- Próg minimalnego zysku: `FORT_CLAIM_MIN_NEW_HEXES` (dziś 1) — wartość do decyzji ABC.
+- Dostępność: heks lądowy, poza terytorium obcych miast i fortów, w zasięgu technologii.
+
+Priorytet budżetu (iii): forty/posterunki z osobnym udziałem puli pracy (np. X% — wartość do ABC), reszta nadal dla żywności i surowców; wojsko i ekonomia pierwsze przy zagrożeniu (istniejący `countThreatFronts`, `ai.ts:~3267`).
+
+## 4. Warianty
+
+### Wariant A — minimalny (rozszerzenie dzisiejszej heurystyki)
+- Forty/posterunki jeszcze PRZED wyczerpaniem limitu miast, ale WYŁĄCZNIE na heksach granicy (`isOutpostPlacementAllowed`) lub wolnym terenie w zasięgu własnej jednostki (ścieżka 2 bez zmian ruchu).
+- Plusy: mała zmiana (1–2 pliki: `ai.ts` planner + bramka w `auto-improvements.ts`), brak ruchu jednostek, łatwy test parytetu.
+- Minusy: AI nadal nie aktywnie zajmuje teren; zależy od przypadkowych jednostek; efekt na tempo wyścigu mały.
+- Szacunek pracy: 2–3 tematy (planner, bramka limitu, testy haka). Ryzyko balansu niskie.
+
+### Wariant B — pełny (aktywne budowanie z ruchem)
+- Nowy „budowniczy” (zwiadowca lub osobny typ) dostaje cel: heks o najwyższej wartości z sekcji 3; ruch do celu; po dotarciu buduje fort/posterunek.
+- Plusy: realny wyścig o teren; zgodne z życzeniem właściciela („jak największy teren przed przeciwnikiem”).
+- Minusy: nowa logika ruchu i pathfindingu ekspansyjnego (w kodzie dziś brak), koszt wydajności tury AI (ok. 6–50 s/turę wg README harnessu, rośnie z turą), duże ryzyko regresji wojska i determinizmu, wielotematowe (szacunek 6–9 tematów, dziesiątki plików).
+- Ryzyka: AI wysyła jednostki w niebezpieczne miejsca; konflikt z `ARMY_CONCENTRATION_RADIUS`.
+
+### Wariant C — hybryda (rekomendowana)
+- Etap 1: jak A (budowa przed wyczerpaniem limitu miast, tylko na granicy/wolnym terenie w zasięgu, z limitem liczby naraz i odstępem).
+- Etap 2: ograniczony ruch — budowniczy wysyłany wyłącznie do heksu w zasięgu N kroków od własnego terytorium i tylko gdy wartość(h) > próg; bez wysyłania przez terytorium wroga.
+- Plusy: większość zysku wyścigu przy małym ryzyku; etapy weryfikowalne osobno (pomiar po etapie 1).
+- Minusy: dwa etapy, wymaga pomiaru przed etapem 2.
+- Szacunek: etap 1 — 2–3 tematy; etap 2 — 3–5 tematów.
+
+**REKOMENDACJA: C (etap 1 najpierw, etap 2 po pomiarze).**
+
+## 5. Wpływ na dyplomację i gracza
+
+- (vi) Dyplomacja: fort obcy blokuje zakładanie miast (sekcja 1.2) — naturalne tarcie graniczne już istnieje. Propozycja: bez nowej kary w etapie 1; kara za sąsiedztwo tylko jako osobna decyzja ABC po pomiarze.
+- (vii) Gracz: ten sam picker (`pickFortClaims`) już obsługuje gracza. Udostępnienie mechanizmu „wyścigu” graczowi = zmiana bramki `cityLimitExhausted` i parametrów; wymaga osobnej decyzji (poza zakresem tej rundy).
+
+## 6. Pomiar — NIE ZMIERZONO
+
+Harness `gra/tools/ai-economy-measure-run.cjs` (README: `ai-economy-measure-README.md`) wymaga: budowy bundle poza repo, startu ok. 2 min, a następnie 6–50 s na turę (rośnie z turą; 100-turowe przebiegi trwały 18–35 min na część). Trzy ziarna × 150 tur to kilka godzin pracy. Dispatch zabrania uruchamiania w tle (`run_in_background`), a foreground ma limit 590 s na wywołanie, więc przebieg wymaga wielu wznowień. Nie wykonano w tej rundzie. Nie utworzono też nowego narzędzia `gra/tools/territory-race-measure-run.cjs`.
+
+Plan pomiaru do kolejnej rundy (dla etapu 0, PRZED zmianą):
+- ziarna 4242, 777, +1 trzecie; tury kontrolne 30/60/90/120/150;
+- per AI: liczba miast, fortów, posterunków; heksy z miast vs z fortów; heksy sporne; pierwsza tura fortu AI; udział lądu zajętego.
+- Dane z `__aiEconomyMeasure` (hak `?civTest=1`, odczyt) — do potwierdzenia, czy hak zawiera pola fortów (NIE ZWERYFIKOWANO).
+
+Wniosek „AI rzadko stawia forty” wolno uznać dopiero po tym pomiarze.
+
+## 7. Pytania ABC do właściciela (rekomendacja pierwsza)
+
+**P1. Kiedy AI zaczyna stawiać forty/posterunki?**
+- A (rek.): już przed wyczerpaniem limitu miast, tylko na granicy i wolnym terenie w zasięgu; plus: szybki efekt, mała zmiana; minus: może zabrać pracę miastom.
+- B: jak dziś — dopiero po wyczerpaniu limitu miast; plus: bez zmian balansu; minus: wyścig praktycznie nie istnieje.
+- C: wszędzie w kierunku nieodebranego terenu; plus: maks. zysk terenu; minus: duży koszt pracy i ryzyko przeciążenia tury.
+
+**P2. Kto buduje?**
+- A (rek.): etap 1 bez ruchu (jednostki już stojące); etap 2 — budowniczy z ruchem w zasięgu N kroków; plus: bezpieczne kroki; minus: wolniejszy efekt.
+- B: od razu aktywny budowniczy z ruchem po całej mapie; plus: pełny wyścig; minus: duże ryzyko i koszt wydajności.
+- C: tylko praca z puli miasta bez jednostek; plus: najprostsze; minus: nie zajmuje odległego terenu.
+
+**P3. Limity fortów/posterunków AI.**
+- A (rek.): maks. liczba naraz i minimalny odstęp — wartości do wyboru przez właściciela (propozycja: naraz X zależne od liczby miast, odstęp Y pól; liczby NIE wybieram sam).
+- B: bez limitu łącznego, tylko budżet pracy; plus: prostota; minus: ryzyko zalania mapy.
+- C: stały limit na turę (dziś 1 posterunek na turę); plus: zgodne z obecnym kodem; minus: wolne tempo.
+
+**P4. Udział pracy na forty/posterunki (budżet).**
+- A (rek.): osobny udział puli (wartość do ustalenia), reszta na żywność i surowce; plus: kontrola wpływu na ekonomię; minus: nowy parametr do balansu.
+- B: brak osobnego udziału, konkurencja z ulepszeniami; plus: bez nowego parametru; minus: fort może być wypierany.
+- C: pełny priorytet wyścigu (ponad żywność); plus: maks. tempo; minus: ryzyko głodu miast.
+
+**P5. Gracz.**
+- A (rek.): na razie tylko AI; osobna decyzja po pomiarze; plus: zakres bez zmian; minus: brak parytetu.
+- B: od razu udostępnić automat graczowi; plus: parytet; minus: większy zakres i ryzyko.
+- C: opcja włączana przez gracza w ustawieniach; plus: wybór; minus: nowe UI.
+
+---
+
+## 8. Zakres implementacji (propozycja, po ABC)
+
+- Etap 0: pomiar PRZED (sekcja 6) + narzędzie `gra/tools/territory-race-measure-run.cjs` (nowe, allowlista).
+- Etap 1 (wariant A): `ai.ts` `planExpansionFortBuilding` (bramka przed limitem miast), `auto-improvements.ts` `pickFortClaims`; testy: `tools/auto-fort-claim-test.cjs` (rozszerzenie), nowy test parytetu AI.
+- Etap 2 (wariant C): ruch budowniczego — nowa funkcja celu w `ai.ts`; wymaga osobnego dispatchu.
+- Po każdym etapie: pomiar PO (te same ziarna i tury), porównanie liczb z pliku wynikowego.
+
+Bramki (przy dotknięciu main.ts/ai.ts): `tsc --noEmit` 0; logic-test 213/213; tech-tree-test 20/0; research-test 33/33; unit-replace-test 21/21; combat-test 6/6.
