@@ -183,15 +183,15 @@ function runSuite(M) {
     const yes = ev({ actionId: 'granice', sharesBorder: true });
     if (no.accept) return 'przemarsz bez granicy zaakceptowany';
     if (!yes.accept) return `odmowa: ${yes.reason}`;
-    if (yes.relationDelta !== undefined || yes.trustDelta !== undefined) return 'kara P-4 przy przemarszu';
+    if (yes.breachRelationDelta !== undefined || yes.breachTrustDelta !== undefined) return 'kara P-4 przy przemarszu';
     return true;
   });
 
   check('A13 kary P-4 (−30 / −20) w wyniku NAP i sojuszu', () => {
     const n = ev();
     const s = ev({ actionId: 'sojusz_defensywny', relacja: 130, zaufanie: 90 });
-    if (n.relationDelta !== -30 || n.trustDelta !== -20) return `NAP: ${n.relationDelta}/${n.trustDelta}`;
-    if (s.relationDelta !== -30 || s.trustDelta !== -20) return `sojusz: ${s.relationDelta}/${s.trustDelta}`;
+    if (n.breachRelationDelta !== -30 || n.breachTrustDelta !== -20) return `NAP: ${n.breachRelationDelta}/${n.breachTrustDelta}`;
+    if (s.breachRelationDelta !== -30 || s.breachTrustDelta !== -20) return `sojusz: ${s.breachRelationDelta}/${s.breachTrustDelta}`;
     return true;
   });
 
@@ -260,7 +260,7 @@ const MUTANTS = [
   ['M3 brak limitu skarbca', [['if (D > have) {', 'if (false) {']]],
   ['M4 zła długość NAP', [['if (actionId === \'nap\') extras.durationTurns = treatyParams.napCzasTur;', "if (actionId === 'nap') extras.durationTurns = 10;"]]],
   ['M5 brak bramki sojusz-z-wrogiem', [['if (isAllianceAction(actionId) && allianceWithEnemy(ctx.proposer, ctx.target)) {', 'if (false) {']]],
-  ['M6 brak kary P-4 przy NAP', [['extras.relationDelta = treatyParams.zerwanieRelacja;', 'extras.relationDelta = 0;']]],
+  ['M6 brak kary P-4 przy NAP', [['extras.breachRelationDelta = treatyParams.zerwanieRelacja;', 'extras.breachRelationDelta = 0;']]],
 ];
 let mutFail = 0;
 for (const [name, reps] of MUTANTS) {

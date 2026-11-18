@@ -25,7 +25,7 @@
  * Parytet: X = treatyParityBaseX (ta sama funkcja co ścieżka gracza), S/W/D/r = peacePwPointsByPowerRatio
  * (ta sama funkcja co pokój AI↔AI). Brak różnicy mocy (r = 1) -> D = 0, płatnik null.
  *
- * Pola `relationDelta` / `trustDelta` NIE są naliczane przy zawarciu: to KARA za zerwanie tej umowy
+ * Pola `breachRelationDelta` / `breachTrustDelta` NIE są naliczane przy zawarciu: to KARA za zerwanie tej umowy
  * (P-4 A: −30 Relacji, −20 Zaufania; parametry w gra/data/ai-ai-treaty-params.json). `durationTurns`
  * dla NAP = 15 (P-5 A). `callToWar` przy zaakceptowanym sojuszu = true (P-7 A: wezwanie wykonuje
  * istniejąca kaskada, tu tylko pole wyniku, bez wykonania).
@@ -108,9 +108,9 @@ export interface AiAiTreatyEvalResult {
   payer: 'proposer' | 'target' | null;
   parity: AiAiTreatyParity;
   /** Kara za zerwanie tej umowy (P-4): −30 Relacji. Nie nalicza się przy zawarciu. */
-  relationDelta?: number;
+  breachRelationDelta?: number;
   /** Kara za zerwanie tej umowy (P-4): −20 Zaufania. Nie nalicza się przy zawarciu. */
-  trustDelta?: number;
+  breachTrustDelta?: number;
   /** Czas trwania w turach (NAP = 15; sojusze/przemarsz bezterminowe = brak pola). */
   durationTurns?: number;
   /** Sojusz zaakceptowany: wezwanie do wojny obsługuje istniejąca kaskada (P-7 A). */
@@ -258,8 +258,8 @@ function acceptedExtras(actionId: AiAiTreatyAction, treatyParams: AiAiTreatyPara
   const extras: Partial<AiAiTreatyEvalResult> = {};
   // Kara P-4 dotyczy zerwania NAP i sojuszu (nie przemarszu).
   if (actionId === 'nap' || isAllianceAction(actionId)) {
-    extras.relationDelta = treatyParams.zerwanieRelacja;
-    extras.trustDelta = treatyParams.zerwanieZaufanie;
+    extras.breachRelationDelta = treatyParams.zerwanieRelacja;
+    extras.breachTrustDelta = treatyParams.zerwanieZaufanie;
   }
   if (actionId === 'nap') extras.durationTurns = treatyParams.napCzasTur;
   if (isAllianceAction(actionId)) extras.callToWar = true;
