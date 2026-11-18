@@ -73,13 +73,18 @@ function panel(direction, canAccept, relCurrent, net) {
   };
 }
 
+/** Treść atrybutów title (dymków) — wyjaśnienia planszy żyją w tooltipie (R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1, R6). */
+function tipTextOf(html) {
+  return Array.from(html.matchAll(/ title="([^"]*)"/g)).map(m => m[1]).join('\n');
+}
+
 const REL_TEXT_BAD = 'musisz dać więcej';
 
 // 1. AI→gracz, Przyjmij aktywne, relacja < 100 — brak sprzeczności.
 const incomingOk = mod.renderPnBalancePanelHtml(panel('incoming', true, 60, 5));
 ok(incomingOk.includes('Możesz przyjąć'), 'incoming+accept: werdykt „Możesz przyjąć" obecny');
 ok(!incomingOk.includes(REL_TEXT_BAD), 'incoming+accept: brak „musisz dać więcej" (sprzeczność z werdyktem)');
-ok(incomingOk.includes('da-pn-rel-mod-deal'), 'incoming+accept: wiersz Relacji nadal renderowany');
+ok(tipTextOf(incomingOk).includes('Wpływ Relacji na deal'), 'incoming+accept: wiersz Relacji nadal renderowany (w tooltipie)');
 
 // 1b. AI→gracz, Przyjmij aktywne, bilans ujemny (przewaga u gracza) — też bez sprzeczności.
 const incomingNeg = mod.renderPnBalancePanelHtml(panel('incoming', true, 60, -3));

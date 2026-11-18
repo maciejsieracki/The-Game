@@ -1,39 +1,41 @@
-# R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1 — raport Operatora (runda 1/5)
+# R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1 — Operator, runda 2/5
 
-STATUS: PASS-WITH-NOTES
-DOMAIN: GAME (UI dyplomacji — wyłącznie prezentacja, zero zmian reguł/progów/AI)
-TEMAT: R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1 (część 1 z 2)
-GOAL: na planszach umów (Punkty Wymiany, Umowa wymiany surowców, Decyzja dla pakietu, Szybka wymiana) zostają tylko liczby decyzyjne, werdykt i przyciski; wyjaśnienia trafiają do atrybutu title (tooltip) bez usuwania treści; „SZYBKA WYMIANA” na górze audiencji.
+STATUS: PASS-WITH-NOTES (Operator; do decyzji FC)
+DOMAIN: GAME (UI dyplomacji, wyłącznie prezentacja)
+TEMAT: R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1
+GOAL: plansze dyplomacji: tylko liczby i werdykt, wyjaśnienia w tooltipach, SZYBKA WYMIANA na górze; nic nie usunięte.
+ZMIANY-COMMIT: kod z rundy 1 bez zmian (2998c9c59, src/ui/diplomacy*.ts, diplomacyTipText.ts). Runda 2 zmienia tylko testy: `gra/tools/diplomacy-acceptance-points-test.cjs` (2 asercje) i `gra/tools/diplomacy-relation-deal-text-consistent-test.cjs` (1 asercja) — sprawdzanie treści tooltipa (`title`) zamiast widocznego DOM. Dodany zrzut PRZED/PO w runs/. SHA commita rundy 2: w polu `sha` odpowiedzi.
+BAZA: 98c988d7cf0ae3dfdc0bb39b6b95f9e1c658a9fc — merge-base --is-ancestor = tak.
 
-ZMIANY-COMMIT: commit na gałęzi autobot/R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1 (SHA w polu sha wyniku; baza 98c988d7c). Pliki:
-- gra/src/ui/diplomacyTipText.ts (NOWY) — helper: escTipAttr, plainTextFromHtml, detailTipAttr (wspólny wzorzec title).
-- gra/src/ui/diplomacyAcceptanceBalance.ts — renderPnBalancePanelHtml / FromBasket / ForTreaty: na planszy trzy pola PW + hint; relacja (WPŁYW), cena pokoju, traktat („Ty: baza → PW”), baza, „PW @ Rel … fair min … bilans”, werdykt → title na liczbie Bilansu. Werdykt jednolinijkowy („Brakuje N PW” / „Równo — spełnia”).
-- gra/src/ui/diplomacyTradeBasket.ts — summaryHtml przepisane: SUMA, Fair min, Nadmiar, Dobra wola, Jednorazowo/Co turę, Szczegóły zostają w title panelu (lub podpowiedzi, gdy brak panelu); „Tryb wymiany” — opis w title etykiety; „Czas umowy” — podpowiedź w title nagłówka; podtytuł okna: „Wymiana dwustronna · partner: X” (Relacja w title); gift: „SUMA daru” z title.
-- gra/src/ui/diplomacyAudience.ts — „SZYBKA WYMIANA” (sam tytuł, podpis „auto-uczciwa oferta” w title) jako pierwszy rząd audiencji nad paskiem akcji; „Decyzja dla całego pakietu (N)” i „Jeden bilans PW…” → title kontenera; zostają Przyjmij/Odrzuć.
-- gra/tools/diplomacy-trade-era-dom-test.cjs — asercje bez osłabiania; czytają textContent + wartości title (wyliczenia SUMA/Fair min są teraz w tooltipie).
-- gra/tools/diplo-deal-boards-declutter-tooltips-test.cjs (NOWY) — 7 asercji: widoczny tekst bez wyjaśnień i ≤160 znaków; tooltip niesie dawne treści; MUTACJA (wyjaśnienie wraca na planszę) czerwieni test.
+ZARZUTY FC (r1) — wynik:
+1. diplomacy-acceptance-points-test: baza 304 pass / 0 fail; kandydat r1 302/2 → kandydat r2 **304/0**. Asercje „rel-mod row” i „hint baza z czystym mod%” czytają tooltip. Uwaga: tekst tooltipa z r1 brzmi „Baza traktatu 80 PW, Relacja −10,4% siła” (wcześniej widoczny „baza 80, Relacja −10,4% siła”); asercja sprawdza obecny tekst tooltipa, nie stary napis.
+2. diplomacy-relation-deal-text-consistent-test: baza 6/0; kandydat r1 5/1 → kandydat r2 **6/0** (asercja „wiersz Relacji” na tooltipie).
+3. Zrzuty Chromium: wykonane częściowo (patrz niżej).
 
-Nic nie usunięto z DOM-u tekstowego planszy — przeniesiono do title.
+TESTY (surowe wyniki, kandydat 2998c9c59 + testy r2):
+- tsc --noEmit: exit 0
+- diplo-deal-boards-declutter-tooltips-test: 13 pass / 0 fail (z mutacją: wyjaśnienie wrócone na planszę → czerwień)
+- diplomacy-acceptance-points-test: 304 pass / 0 fail
+- diplomacy-relation-deal-text-consistent-test: 6 pass / 0 fail
+- terminology-trade-vs-tax-test: 798 pass / 1 fail — [G] gen-building-cards-top5 --check (dług bazowy, jak w FC). Pliki generatora/danych nie są zmienione względem 98c988d7c (git diff --stat), więc wynik na bazie jest ten sam z konstrukcji; NIE ZMIERZONO uruchomieniem na bazie.
+- logic-test: 213/213 OK (exit 0)
+- tech-tree-test 20/0; research-test 33/0; combat-test 6/6; unit-power-test 6/0; unit-replace-test 21 OK / 0 FAIL
+- diplo-weariness-pw-row-ui-test 15/0; diplomacy-cyclic-trade-duration-ui-test 12/12
+- Batch 132 testów dyplomacji (bez *live*/*real-render*): w wyjściu brak wyników FAIL poza liniami mutantów zabitych (KILLED / MUTANT WYKRYTY). Testy live i real-render nie uruchomione w tej rundzie.
+- Baza 98c988d7c nie była ponownie mierzona dla każdego testu (koszt); dla dwóch testów zarzutu FC wynik bazy przyjęty z raportu FC (304/0, 6/0).
 
-TESTY:
-- `npx tsc --noEmit` = 0 (brak błędów).
-- Diplomacy UI (40 skryptów referencyjnych dotykających modułów diplomacy*/Audience/TradeBasket/AcceptanceBalance): przed zmianą 33 zielone / 7 czerwonych; po zmianie 33 zielone / 7 czerwonych — te same 7 (dyplo-bilans-gate-n-e1-reprodukcja{,-runda2,-runda3}, dyplo-pakt-ekspansja-granica, dyplo-warunek-niespelniony-czerwony-tooltip, terminology-trade-vs-tax, ui-language-count-renderer): czerwone PRZED zmianą, błędy dotyczą silnika paktu/bilansu, nie prezentacji. Brak nowych regresji.
-- Naprawione przy okazji dwa testy, które by poczerwieniały: diplo-quick-actions-labels (aria-label CTA zostaje „auto-uczciwa wymiana”) 38/0; diplomacy-infografiki-tooltipy 12/0.
-- diplomacy-trade-era-dom-test 58/0 (po przeniesieniu asercji na title).
-- Nowy diplo-deal-boards-declutter-tooltips-test: 7 pass / 0 fail, mutacja czerwieni.
-- Chromium / zrzuty PRZED–PO / zrzut tooltipa: NIE ZMIERZONO (brak uruchomionej przeglądarki w tej rundzie; wymagane przez Evaluator).
-
-BLOKADY: brak blokad technicznych. Zakres świadomie ograniczony do części 1:
-- Okna Wojna / Sojusz / Pakt / Handel / Dar / Wasal / Wchłonięcie i nagłówek relacji — część 2 (R-…-ALL-PROPOSAL-WINDOWS-…-Q2).
-- diplomacyDealDisplay.ts i diplomacyPanel.ts nie zmieniane (teksty poza panelem PW).
-- Układ CSS „Szybkiej wymiany” nad paskiem: inline flex, bez zrzutu nie potwierdzono wyglądu.
-- Opisy w dealDurationHtml (sub pod czasem umowy) zostawione widoczne.
+ZRZUTY CHROMIUM (xvfb nie był potrzebny, headless `chromium --headless`):
+- `zrzut-pw-pokoj-PRZED.png` (baza 98c988d7c) i `zrzut-pw-pokoj-PO.png` (kandydat): panel PW pokoju/zawieszenia (Traktat handlowy, rel 89,6). PRZED: wiersz wpływu Relacji, „(baza 80, Relacja…)”, werdykt w czerwonym pasku. PO: trzy liczby, jednolinijkowy werdykt „Brakuje 8 PW — zawrzyj osobną umowę”, reszta w tooltipie.
+- Ograniczenie: strona składana z pure-renderera i CSS z gra-robocza/Gra-ROBOCZA.html, nie z pełnej gry.
+- NIE ZMIERZONO: okno „Umowa wymiany surowców”, pasek akcji z „SZYBKA WYMIANA” na górze audiencji, zrzut z widocznym dymkiem (hover) — wymaga pełnej gry z aktywną audiencją; nie zbudowano sterownika w tej rundzie.
 
 UWAGI-DLA-ORKIESTRATORA:
-- W worktree przed startem były zmodyfikowane pliki PNG w dyspozycje/autobot/runs/* (nie moje) — NIE dodawane do commita (git add tylko ścieżek gra/* i raportu).
-- Zainstalowano `npm ci --ignore-scripts` w gra/ tego worktree (node_modules) — do sprzątania po FC.
-- Część kodu (wyliczenia Relacja/fair min w tooltipach) wymaga weryfikacji w grze: czy tooltip na liczbie Bilans jest czytelny dla gracza (dotyk — brak wzorca długiego tapnięcia; title działa wg zasad gry na hover).
+- `gra/node_modules` utworzony przez `npm ci` w worktree (gitignored) — do usunięcia przy sprzątaniu.
+- Uruchamianie testów `diplomacy-*` zmodyfikowało śledzony plik `dyspozycje/autobot/runs/R-WEB-PEACE-CITY-CESSION-Q1/evidence/r3-modal-pokoj-miasto.png`. Przywrócone `git checkout`; nie wchodzi do commita. Warto sprawdzić, który test go nadpisuje.
+- Część 2 (R-WEB-UI-DIPLO-ALL-PROPOSAL-WINDOWS-DECLUTTER-TOOLTIPS-Q2) nie ruszana.
+- Zrzuty PRZED/PO są w `runs/` obok raportu; nie są dowodem gry.
 
-RUNDY: 1/5
-NASTĘPNY KROK: Evaluator (Sonnet) — Chromium: zrzuty PRZED/PO dla planszy Umowy wymiany surowców, PW (pokój/zawieszenie), Decyzji pakietu, Szybkiej wymiany + zrzut z tooltipem; ocena R2/R3; potem Final Control i część 2 (Q2).
+BLOKADY: brak blokad infrastruktury. Brak DECISION_REQUIRED.
+RUNDY: 2/5 (Haiku, licznik porażek Haiku tematu = 1; decyzja Sonnet nie wymagana).
+NASTĘPNY KROK: Evaluator (to samo ID), potem Final Control.
 DEPLOY/PUSH: NIE WYKONANO

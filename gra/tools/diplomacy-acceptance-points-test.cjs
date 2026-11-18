@@ -64,6 +64,10 @@ esbuild.buildSync({
 });
 
 const mod = require(BUNDLE);
+/** Treść wszystkich atrybutów title (dymków) w fragmencie HTML — wyjaśnienia żyją w tooltipie. */
+function tipTextOf(html) {
+  return Array.from(html.matchAll(/ title="([^"]*)"/g)).map(m => m[1]).join('\n');
+}
 let pass = 0;
 let fail = 0;
 
@@ -596,7 +600,8 @@ const tradeRow52 = {
 };
 const tradePanelData52 = mod.balancePanelDataFromRow(tradeRow52, 0);
 const tradeTablePanel52 = mod.renderPnBalancePanelHtml(tradePanelData52);
-ok(tradeTablePanel52.includes('da-pn-rel-mod'), 'stół negocjacji umowa_handlowa: rel-mod row');
+// R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1 (R6): wiersz Relacji jest w tooltipie bilansu — asercja na jego treść.
+ok(tipTextOf(tradeTablePanel52).includes('Wpływ Relacji na deal'), 'stół negocjacji umowa_handlowa: rel-mod row (w tooltipie)');
 ok(tradeTablePanel52.includes('42 PW'), 'stół negocjacji umowa_handlowa: gracz 42 PW');
 ok(tradeTablePanel52.includes('80 PW'), 'stół negocjacji umowa_handlowa: partner 80 PW');
 
@@ -604,7 +609,7 @@ ok(tradeTablePanel52.includes('80 PW'), 'stół negocjacji umowa_handlowa: partn
 const tradePanel896 = mod.renderPnBalancePanelForTreaty(72, 0, 0, 89.6, 'Traktat handlowy', 0, 'Traktat', 80, 80);
 ok(!tradePanel896.includes('000000'), 'umowa_handlowa panel @ rel 89.6: bez IEEE junk');
 ok(tradePanel896.includes('−10,4%'), 'umowa_handlowa panel @ rel 89.6: badge −10,4%');
-ok(tradePanel896.includes('baza 80, Relacja −10,4% siła'), 'umowa_handlowa panel @ rel 89.6: hint baza z czystym mod%');
+ok(tipTextOf(tradePanel896).includes('Baza traktatu 80 PW, Relacja −10,4% siła'), 'umowa_handlowa panel @ rel 89.6: hint baza z czystym mod% (w tooltipie)');
 
 // ---------------------------------------------------------------------------
 // P-DYPLOMACJA-AI-OFERTY-STRUKTURALNIE-NIEUCZCIWE (Maciej, zrzuty ekranu 2026-08-1x):
