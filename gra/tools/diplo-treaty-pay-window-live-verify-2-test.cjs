@@ -157,12 +157,11 @@ async function runCase(chromium, c, ordinal) {
     }
 
     // iii) akceptacja REALNYM klikiem + stan po
+    // Przycisk Przyjmij MUSI być aktywny; brak => FAIL (bez cichego przejścia na hak — to osłabiałoby dowód).
+    assert(`${c.name} iii0: przycisk Przyjmij aktywny w oknie (akceptacja realnym klikiem)`, win.accept === true && win.acceptDisabled === false, { accept: win.accept, acceptDisabled: win.acceptDisabled });
     if (win.accept && !win.acceptDisabled) {
       await page.click('[data-negot-act="accept-package"]');
       await wait(800);
-    } else {
-      console.log('  UWAGA: przycisk Przyjmij niedostępny w oknie — akceptacja przez hak treatyPayAcceptAiPendingForTest (ta sama ścieżka)');
-      await page.evaluate(([aiId]) => window.__cityCessionTestDebug.treatyPayAcceptAiPendingForTest(aiId, 'granice', { borderMilitary: true }), [AI]);
     }
     const after = await page.evaluate(([aiId]) => ({
       p: window.__cityCessionTestDebug.treatyPayHoldingsForTest(0),
