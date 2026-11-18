@@ -12,6 +12,7 @@ import {
   treatyPwForRole,
 } from '../game/diplomacy-pn-engine';
 import { diplomacyFairGivePn } from '../game/diplomacy-value-catalog';
+import { detailTipAttr, plainTextFromHtml } from './diplomacyTipText';
 import { formatLiczbaPl, formatUmowyCount } from './formatPl';
 
 /** R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (runda 2): dane tooltipa wiersza „Zmęczenie wojną". */
@@ -611,6 +612,14 @@ export function peacePriceRowHtml(info?: WearinessRowInfo): string {
   return '<div class="da-pn-bal-meta weariness" title="' + esc(tip) + '">' + esc(txt) + '</div>';
 }
 
+/** Szczegóły bazy traktatu (dawniej widoczny dopisek „(baza …)") — trafiają do tooltipa. */
+function treatyBaseDetailText(basePw: number, modPct?: number): string {
+  const modHint = modPct != null && modPct !== 0
+    ? `, Relacja ${formatModPctSigned(modPct)} siła`
+    : '';
+  return `Baza traktatu ${basePw} PW${modHint}`;
+}
+
 export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): string {
   if (!data) {
     return (
@@ -701,6 +710,17 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
       + ' — wym. ' + formatLiczbaPl(their.relRequired) + '</div>'
     : '';
 
+  // R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1: na planszy zostają liczby i werdykt;
+  // wpływ Relacji, cena pokoju, traktat i „relacja wymagana" zostają w tooltipie bilansu.
+  const detailTip = detailTipAttr([
+    playerTreatyPw > 0 && treatyBase > 0 && treatyBase !== data.myOfferPn
+      ? treatyBaseDetailText(treatyBase, modPct)
+      : '',
+    plainTextFromHtml(relModRow),
+    plainTextFromHtml(peacePriceRowHtml(data.responderPreview?.wearinessInfo)),
+    plainTextFromHtml(treatyNote),
+    plainTextFromHtml(relNote),
+  ]);
   return (
     '<div class="da-pn-balance-bar ' + balCls + '"'
     + (data.negotiationId ? ' data-negot-id="' + esc(data.negotiationId) + '"' : '')
@@ -712,13 +732,11 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     + '<div class="da-pn-bal-cols">'
     + '<div class="da-pn-bal-cell my">'
     + '<span class="da-pn-bal-lbl">My oddajemy</span>'
-    + (playerTreatyPw > 0
-      ? pwAmountWithBaseHtml(data.myOfferPn, treatyBase, modPct)
-      : pwAmountHtml(data.myOfferPn))
+    + pwAmountHtml(data.myOfferPn)
     + '</div>'
     + '<div class="da-pn-bal-cell center ' + balCls + '">'
     + '<span class="da-pn-bal-lbl">' + esc(centerLabel) + '</span>'
-    + '<span class="da-pn-bal-num ' + deltaCls + '"' + pwTipAttr() + '>' + esc(delta) + '</span>'
+    + '<span class="da-pn-bal-num ' + deltaCls + '"' + detailTip + '>' + esc(delta) + '</span>'
     + '<span class="da-pn-bal-hint">' + esc(hint) + '</span>'
     + '</div>'
     + '<div class="da-pn-bal-cell they">'
@@ -726,13 +744,11 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     + pwAmountHtml(data.theirOfferPn)
     + '</div>'
     + '</div>'
-    + relModRow
-    + peacePriceRowHtml(data.responderPreview?.wearinessInfo)
-    + treatyNote + relNote
     + '<div class="da-pn-bal-verdict ' + verdict.tone + '">' + esc(verdict.html) + '</div>'
     + '</div>'
   );
 }
+
 
 /** Koszyk handlu — ten sam układ 3 kolumn, live podgląd podczas budowania oferty. */
 export function renderPnBalancePanelFromBasket(
@@ -741,6 +757,7 @@ export function renderPnBalancePanelFromBasket(
   relTotal: number,
   actionLabel = 'Wymiana',
   fairnessPreview?: { accepted: boolean; pwBalance?: number },
+  extraDetails = '',
 ): string {
   if (givePn == null || receivePn == null) {
     return (
@@ -773,6 +790,15 @@ export function renderPnBalancePanelFromBasket(
       : 'Równo — partner spełnia oczekiwania przy tej Relacji')
     : 'Poniżej progu fair min (' + previewFairMin + ' PW) — ryzyko odrzucenia';
 
+  // R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1: plansza = trzy liczby + krótka podpowiedź;
+  // wyliczenia (Relacja, fair min, bilans @ Relacji, werdykt, podsumowanie koszyka) w tooltipie.
+  const detailTip = detailTipAttr([
+    extraDetails,
+    plainTextFromHtml(renderRelationDealModRowHtml(relTotal, 'trade')),
+    'PW @ Rel ' + formatLiczbaPl(relTotal) + ': fair min ' + previewFairMin + ' · bilans '
+      + (balancePn >= 0 ? '+' : '') + balancePn,
+    verdict,
+  ]);
   return (
     '<div class="da-pn-balance-bar ' + balCls + ' da-pn-balance-bar--basket">'
     + '<div class="da-pn-bal-head">'
@@ -786,7 +812,7 @@ export function renderPnBalancePanelFromBasket(
     + '</div>'
     + '<div class="da-pn-bal-cell center ' + balCls + '">'
     + '<span class="da-pn-bal-lbl">Bilans (Oni)</span>'
-    + '<span class="da-pn-bal-num ' + deltaCls + '"' + pwTipAttr() + '>' + esc(delta) + '</span>'
+    + '<span class="da-pn-bal-num ' + deltaCls + '"' + detailTip + '>' + esc(delta) + '</span>'
     + '<span class="da-pn-bal-hint">' + esc(hint) + '</span>'
     + '</div>'
     + '<div class="da-pn-bal-cell they">'
@@ -794,17 +820,10 @@ export function renderPnBalancePanelFromBasket(
     + pwAmountHtml(receivePn)
     + '</div>'
     + '</div>'
-    + renderRelationDealModRowHtml(relTotal, 'trade')
-    // P-DYPLO-BILANS-GATE-NIESPOJNY (Maciej 2026-08-14): usunięta osobna linia "PW surowe
-    // (bez Relacji) ... bilans +N" — pokazywała DRUGĄ, sprzeczną liczbę "bilans" tuż obok
-    // powyższego, prawdziwego Bilansu (Oni) @ Relacji, dokładnie ten wzorzec zamieszania,
-    // który zgłosił Maciej. Jedna liczba "Bilans" na panelu — ta @ Relacji, poniżej.
-    + '<div class="da-pn-bal-meta">PW @ Rel ' + formatLiczbaPl(relTotal) + ': fair min ' + previewFairMin + ' · bilans '
-    + (balancePn >= 0 ? '+' : '') + balancePn + '</div>'
-    + '<div class="da-pn-bal-verdict ' + (accepted ? 'ok' : 'no') + '">' + esc(verdict) + '</div>'
     + '</div>'
   );
 }
+
 
 /**
  * Koszyk traktatu — asymetryczny PW (gracz @ Relacji, partner = baza) + koszyk.
@@ -900,6 +919,15 @@ export function renderPnBalancePanelForTreaty(
       + ' — wym. ' + formatLiczbaPl(relRequired!) + '</div>'
     : '';
 
+  // R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1: na planszy trzy liczby i podpowiedź;
+  // Relacja, traktat, baza i werdykt zostają w tooltipie bilansu.
+  const detailTip = detailTipAttr([
+    myDisplay > 0 && base > 0 && base !== myDisplay ? treatyBaseDetailText(base, modPct) : '',
+    plainTextFromHtml(renderRelationDealModRowHtml(relTotal, 'treaty')),
+    plainTextFromHtml(treatyMetaHtml(playerPw, partnerPw, relTotal, treatyMetaLabel, base, basketNet)),
+    plainTextFromHtml(relNote),
+    verdict,
+  ]);
   return (
     '<div class="da-pn-balance-bar ' + balCls + ' da-pn-balance-bar--basket da-pn-balance-bar--treaty">'
     + '<div class="da-pn-bal-head">'
@@ -909,11 +937,11 @@ export function renderPnBalancePanelForTreaty(
     + '<div class="da-pn-bal-cols">'
     + '<div class="da-pn-bal-cell my">'
     + '<span class="da-pn-bal-lbl">My oddajemy</span>'
-    + pwAmountWithBaseHtml(myDisplay, base, modPct)
+    + pwAmountHtml(myDisplay)
     + '</div>'
     + '<div class="da-pn-bal-cell center ' + balCls + '">'
     + '<span class="da-pn-bal-lbl">Bilans (netto)</span>'
-    + '<span class="da-pn-bal-num ' + deltaCls + '"' + pwTipAttr() + '>' + esc(delta) + '</span>'
+    + '<span class="da-pn-bal-num ' + deltaCls + '"' + detailTip + '>' + esc(delta) + '</span>'
     + '<span class="da-pn-bal-hint">' + esc(hint) + '</span>'
     + '</div>'
     + '<div class="da-pn-bal-cell they">'
@@ -921,13 +949,10 @@ export function renderPnBalancePanelForTreaty(
     + pwAmountHtml(theirDisplay)
     + '</div>'
     + '</div>'
-    + renderRelationDealModRowHtml(relTotal, 'treaty')
-    + treatyMetaHtml(playerPw, partnerPw, relTotal, treatyMetaLabel, base, basketNet)
-    + relNote
-    + '<div class="da-pn-bal-verdict ' + balCls + '">' + esc(verdict) + '</div>'
     + '</div>'
   );
 }
+
 
 /** @deprecated alias — użyj renderPnBalancePanelForTreaty */
 export function renderPnBalancePanelForPeace(

@@ -50,6 +50,7 @@ import {
 import type { BasketItemFormatCtx } from '../game/diplomacy-display';
 import { formatBasketListBrief, resourceDisplayLabel } from '../game/diplomacy-display';
 import { renderPnBalancePanelFromBasket, renderPnBalancePanelForTreaty } from './diplomacyAcceptanceBalance';
+import { detailTipAttr } from './diplomacyTipText';
 import {
   bilateralTreatyDisplayPw,
   computePlayerAcceptanceSides,
@@ -1449,16 +1450,13 @@ function resourceTradeModeHtml(mode: 'once' | 'per_turn', visible: boolean): str
   const perTurnIc = cdbIconWrap(brandIconSvg('ui-end-turn', 22));
   return (
     '<div class="cdb-duration">'
-      + '<label>Tryb wymiany</label>'
+      + '<label' + detailTipAttr([mode === 'once'
+        ? 'Jednorazowo — nie pojawi się w Aktywnych traktatach'
+        : 'Co turę — widoczna w Aktywnych traktatach']) + '>Tryb wymiany</label>'
       + '<div class="cdb-chip-row">'
       + buildChipBtn('cdb-chip-mode', 'once', 'deal', mode === 'once', onceIc, 'Jednorazowo')
       + buildChipBtn('cdb-chip-mode', 'per_turn', 'deal', mode === 'per_turn', perTurnIc, 'Co turę')
       + '</div>'
-      + '<p class="cdb-sub cdb-res-mode-hint">'
-      + (mode === 'once'
-        ? 'Jednorazowo — nie pojawi się w Aktywnych traktatach'
-        : 'Co turę — widoczna w Aktywnych traktatach')
-      + '</p>'
       + '<input type="hidden" class="cdb-res-mode" value="' + mode + '" />'
     + '</div>'
   );
@@ -1477,10 +1475,7 @@ function dealSettingsBlockHtml(
   allowIndefinite = false,
 ): string {
   let html = '<div class="cdb-deal-settings">';
-  html += '<div class="cdb-deal-settings-title">Czas umowy</div>';
-  if (hintWhenIdle) {
-    html += '<p class="cdb-sub">' + esc(hintWhenIdle) + '</p>';
-  }
+  html += '<div class="cdb-deal-settings-title"' + detailTipAttr([hintWhenIdle]) + '>Czas umowy</div>';
   html += resourceTradeModeHtml(resourceTradeMode, showMode);
   html += dealDurationHtml(dealTurns, showDuration, dealDurationLabel, dealDurationSub, maxTurns, allowIndefinite);
   html += '</div>';
@@ -2085,52 +2080,43 @@ function summaryHtml(
     ? sumBasketPn(receiveItems, ctx, 'receive', resourceTradeMode, dealTurns)
     : 0;
 
-  let html = '<div class="cdb-summary">';
-  // R-WEB-UI-TRADE-DIALOG-NO-RERENDER-BOTH-SIDES-Q1: gdy jedna strona jest jeszcze pusta,
-  // zamiast ostrzeżenia o odrzuceniu (fair min liczony od pustej strony) — neutralna podpowiedź.
+  // R-WEB-UI-DIPLO-DEAL-BOARDS-DECLUTTER-TOOLTIPS-Q1: plansza pokazuje tylko panel PW
+  // (trzy liczby + krótka podpowiedź) i rzadkie komunikaty blokujące. Wszystkie wyliczenia
+  // (SUMA, fair min, nadmiar, zaufanie, dobra wola, jednorazowo/co turę, werdykt) są zbierane
+  // tutaj i trafiają do tooltipa liczby „Bilans" (albo — bez panelu — do podpowiedzi).
+  const details: string[] = [];
   const oneSideEmpty = mode === 'trade' && (giveItems.length === 0) !== (receiveItems.length === 0);
-  if (mode === 'trade') {
-    if (!oneSideEmpty) {
-      html += renderPnBalancePanelFromBasket(
-        givePn,
-        receivePn,
-        rel,
-        'Wymiana',
-        ctx.tradeFairnessPreview?.(givePn ?? 0, receivePn ?? 0),
-      );
-    }
-  }
+  let neutralText = '';
+  let warnUnknown = false;
+  let giftSum = false;
 
   if (mode === 'trade') {
-    html += '<div>SUMA oddaję: <b>' + (givePn ?? '—') + ' PW</b> · SUMA dostaję: <b>' + (receivePn ?? '—') + ' PW</b></div>';
+    details.push('SUMA oddaję: ' + (givePn ?? '—') + ' PW · SUMA dostaję: ' + (receivePn ?? '—') + ' PW');
     if (oneSideEmpty) {
-      html += '<div class="cdb-neutral-hint">' + esc(receiveItems.length === 0
+      neutralText = receiveItems.length === 0
         ? 'Dodaj, co chcesz dostać w zamian — albo wyślij jako dar'
-        : 'Dodaj, co oddasz w zamian — albo wyślij jako dar') + '</div>';
+        : 'Dodaj, co oddasz w zamian — albo wyślij jako dar';
     } else if (givePn != null && receivePn != null) {
       const fairMin = diplomacyFairGivePn(receivePn, rel);
-      html += '<div>Fair min (Rel ' + rel + '): <b>' + fairMin + ' PW</b></div>';
+      details.push('Fair min (Rel ' + rel + '): ' + fairMin + ' PW');
       const preview = diplomacyTradeTrustFromDeal(givePn, receivePn, rel, trustGained);
-      html += '<div>Nadmiar: <b>' + preview.surplusPn + ' PW</b>';
+      let nadmiar = 'Nadmiar: ' + preview.surplusPn + ' PW';
       if (preview.deltaZaufanie > 0) {
-        html += ' → <b>+' + preview.deltaZaufanie + ' Zauf.</b>';
+        nadmiar += ' → +' + preview.deltaZaufanie + ' Zauf.';
         if (preview.deltaZaufanieRaw > preview.deltaZaufanie) {
-          html += ' <span style="color:#9aa6b6">(limit ' + maxTrust + '/turę, już +' + trustGained + ')</span>';
+          nadmiar += ' (limit ' + maxTrust + '/turę, już +' + trustGained + ')';
         }
       }
-      html += '</div>';
+      details.push(nadmiar);
       const dobraWola = diplomacyDobraWolaFromSurplus(preview.surplusPn);
       if (dobraWola.active) {
-        html += '<div>Dobra wola: <b>+' + dobraWola.zaufaniePerTura + ' Zauf./turę × ' + dobraWola.tur + '</div>';
+        details.push('Dobra wola: +' + dobraWola.zaufaniePerTura + ' Zauf./turę × ' + dobraWola.tur);
       }
       if (givePn < fairMin) {
-        html += '<div class="cdb-warn">' + brandIconSvg('chip-warning', 14) + ' Oddajesz mniej niż fair min — partner może odrzucić (W4-A).</div>';
+        details.push('Oddajesz mniej niż fair min — partner może odrzucić (W4-A).');
       }
 
-      // FAZA 2 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 7): bilans — pozycje JEDNORAZOWE
-      // (nadmiar PN → Zaufanie od razu) vs CO TURĘ (dobra wola + — jeśli oferta ma dostęp
-      // do surowców/złóż — Zaufanie z aktywnej Umowy handlowej przez czas jej trwania).
-      // Same liczby co wyżej, tylko pogrupowane + jeden werdykt z uzasadnieniem.
+      // Bilans: pozycje JEDNORAZOWE (nadmiar PN → Zaufanie od razu) vs CO TURĘ.
       const fmtCtx: BasketItemFormatCtx = {
         perTurn: resourceTradeMode === 'per_turn',
         turns: dealTurns,
@@ -2149,39 +2135,57 @@ function summaryHtml(
       if (basketHasResourceAccess(giveItems, receiveItems)) {
         perTurn.push('+' + diplomacyHandelZaufaniePerTura() + ' Zaufania/turę (trwa umowa handlowa)');
       }
-      html += '<div class="cdb-split">' +
-        '<div>Jednorazowo: <b>' + (oneShot.length > 0 ? oneShot.join(' · ') : '—') + '</b></div>' +
-        '<div>Co turę: <b>' + (perTurn.length > 0 ? perTurn.join(' · ') : '—') + '</b></div>' +
-      '</div>';
+      details.push('Jednorazowo: ' + (oneShot.length > 0 ? oneShot.join(' · ') : '—'));
+      details.push('Co turę: ' + (perTurn.length > 0 ? perTurn.join(' · ') : '—'));
 
       let verdict: string;
-      let verdictCls: string;
       if (givePn < fairMin) {
         verdict = 'poniżej progu — ryzyko odrzucenia przez partnera';
-        verdictCls = 'bad';
       } else if (preview.surplusPn > 0) {
         verdict = 'korzystna — nadwyżka ' + preview.surplusPn + ' PW przekłada się na Zaufanie';
-        verdictCls = 'good';
       } else {
         verdict = 'zrównoważona — dokładnie fair min przy tej Relacji';
-        verdictCls = 'neutral';
       }
-      html += '<div class="cdb-verdict cdb-verdict-' + verdictCls + '">Szczegóły: ' + esc(verdict) + '</div>';
+      details.push('Szczegóły: ' + verdict);
     } else {
-      html += '<div class="cdb-warn">' + brandIconSvg('chip-warning', 14) + ' Nieznana wartość PW — sprawdź pozycje.</div>';
+      warnUnknown = true;
     }
   } else {
-    html += '<div>SUMA daru: <b>' + (givePn ?? '—') + ' PW</b></div>';
     if (givePn != null) {
       const gift = diplomacyGiftTrustFromPn(givePn, trustGained);
-      html += '<div>Przewidywane: <b>+' + gift.deltaZaufanie + ' Zauf.</b>';
+      let przewidywane = 'Przewidywane: +' + gift.deltaZaufanie + ' Zauf.';
       if (gift.deltaZaufanieRaw > gift.deltaZaufanie) {
-        html += ' <span style="color:#9aa6b6">(limit ' + maxTrust + '/turę, już +' + trustGained + ')</span>';
+        przewidywane += ' (limit ' + maxTrust + '/turę, już +' + trustGained + ')';
       }
-      html += '</div>';
+      details.push(przewidywane);
     }
+    giftSum = true;
   }
 
+  const panelHtml = mode === 'trade' && !oneSideEmpty
+    ? renderPnBalancePanelFromBasket(
+      givePn,
+      receivePn,
+      rel,
+      'Wymiana',
+      ctx.tradeFairnessPreview?.(givePn ?? 0, receivePn ?? 0),
+      details.join('\n'),
+    )
+    : '';
+  // Bez panelu (pusta strona / gift) szczegóły wiszą na widocznej linii, nie giną.
+  const tipWhenNoPanel = panelHtml ? '' : detailTipAttr(details);
+
+  let html = '<div class="cdb-summary">' + panelHtml;
+  if (neutralText) {
+    html += '<div class="cdb-neutral-hint"' + tipWhenNoPanel + '>' + esc(neutralText) + '</div>';
+  }
+  if (warnUnknown) {
+    html += '<div class="cdb-warn"' + (panelHtml ? '' : tipWhenNoPanel) + '>'
+      + brandIconSvg('chip-warning', 14) + ' Nieznana wartość PW — sprawdź pozycje.</div>';
+  }
+  if (giftSum) {
+    html += '<div class="cdb-gift-sum"' + tipWhenNoPanel + '>SUMA daru: <b>' + (givePn ?? '—') + ' PW</b></div>';
+  }
   html += '</div>';
   return html;
 }
@@ -2457,7 +2461,10 @@ function renderBasket(
       ? 'Ustal warunki traktatu — wymiana PW jest opcjonalna · partner: <strong>' + esc(ctx.civName) + '</strong>'
       : mode === 'gift'
         ? 'Oddajesz bez towaru w zamian · Rel ≥ ' + progDar
-        : 'Wymiana dwustronna · Rel ≥ ' + progHandel + ' · partner: <strong>' + esc(ctx.civName) + '</strong>';
+        : 'Wymiana dwustronna · partner: <strong>' + esc(ctx.civName) + '</strong>';
+  const subTip = mode === 'trade'
+    ? detailTipAttr(['Wymagana Relacja ≥ ' + progHandel + ' (obecnie: ' + rel + ')'])
+    : '';
 
   const validation = validateBasketForm(
     mode, action.id, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode, !!blocked, treatyState,
@@ -2611,7 +2618,7 @@ function renderBasket(
   box.className = 'civ-diplo-basket cdb-landscape-mode' + (mode === 'gift' ? ' cdb-gift' : '') + modeCls;
   morphBasketMarkup(box,
     '<h3>' + esc(title) + '</h3>' +
-    '<div class="cdb-sub">' + sub + '</div>' +
+    '<div class="cdb-sub"' + subTip + '>' + sub + '</div>' +
     '<div class="cdb-body-scroll">' + scrollBody + '</div>' +
     '<div class="cdb-footer">' + footerBlock + '</div>');
 }
