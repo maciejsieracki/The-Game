@@ -236,8 +236,8 @@ function sweetenerSectionHtml(ctx: NegotiationModalContext): string {
     ).join('');
   return (
     '<div class="cdn-sweetener" style="margin-top:12px;border-top:1px dashed rgba(232,216,138,.18);padding-top:8px">'
-    + '<label style="margin-top:0">Dołóż do umowy (opcjonalnie — słodzik)</label>'
-    + '<p class="cdn-sub">Zwiększa szansę akceptacji — wliczane RAZEM z traktatem.</p>'
+    // Q2: wyjaśnienie słodzika w tooltipie etykiety (nic nie usunięte).
+    + '<label style="margin-top:0" title="' + esc('Zwiększa szansę akceptacji — wliczane RAZEM z traktatem.') + '">Dołóż do umowy (opcjonalnie — słodzik)</label>'
     + numInput('cdn-sw-gold', 'Pieniądze (¤)', 0, 0, goldMax)
     + '<label>Surowiec</label>'
     + '<select id="cdn-sw-res">' + resOptions + '</select>'
@@ -302,11 +302,11 @@ function buildFormBody(action: AudienceAction, ctx: NegotiationModalContext): st
         + '" data-turns="' + t + '">' + t + '</button>',
       ).join('');
       return sub
-        + '<label>Czas paktu</label>'
+        // Q2: skutek złamania paktu przeniesiony do tooltipa etykiety (nic nie usunięte).
+        + '<label title="' + esc('Złamanie: −30 Relacja, −20 Zaufanie') + '">Czas paktu</label>'
         + '<div class="cdn-chip-row">' + turnChips
         + '<button type="button" class="cdn-chip-turn" data-turns="0">Bezterminowy</button></div>'
-        + numInput('cdn-turns', 'Ręcznie (10–20 lub 0 = bezterminowy)', 15, 0, 20)
-        + '<p class="cdn-sub">Złamanie: −30 Relacja, −20 Zaufanie</p>';
+        + numInput('cdn-turns', 'Ręcznie (10–20 lub 0 = bezterminowy)', 15, 0, 20);
     }
 
     case '3':
@@ -321,15 +321,16 @@ function buildFormBody(action: AudienceAction, ctx: NegotiationModalContext): st
       return sub
         + '<div class="cdn-row"><input type="checkbox" id="cdn-mil" />'
         + '<label for="cdn-mil" style="margin:0">Prawo wojskowe (+ opłata)</label></div>'
-        + '<p class="cdn-sub">Opłata cywilne: ' + feeC + ' ¤ · wojskowe: ' + feeM + ' ¤ (jednorazowo)</p>';
+        + '<p class="cdn-sub" title="' + esc('Opłata cywilne: ' + feeC + ' ¤ · wojskowe: ' + feeM + ' ¤ (jednorazowo)') + '">Opłata: ' + feeC + ' ¤ · ' + feeM + ' ¤</p>';
     }
 
     case '5':
-      return sub + '<p class="cdn-sub">' + TRAKTAT_HANDLOWY_LABEL + ' — zamknij to okno i użyj przycisku „' + TRAKTAT_HANDLOWY_LABEL + '” na stole (bez koszyka).</p>';
+      // Q2: pełna instrukcja w tooltipie, widoczna tylko krótka wskazówka.
+      return sub + '<p class="cdn-sub" title="' + esc(TRAKTAT_HANDLOWY_LABEL + ' — zamknij to okno i użyj przycisku „' + TRAKTAT_HANDLOWY_LABEL + '” na stole (bez koszyka).') + '">Użyj przycisku „' + esc(TRAKTAT_HANDLOWY_LABEL) + '” na stole.</p>';
     case '14':
-      return sub + '<p class="cdn-sub">Umowa wymiany PW — zamknij to okno i wybierz „Umowa wymiany” (koszyk).</p>';
+      return sub + '<p class="cdn-sub" title="' + esc('Umowa wymiany PW — zamknij to okno i wybierz „Umowa wymiany” (koszyk).') + '">Wybierz „Umowa wymiany” na stole.</p>';
     case '13':
-      return sub + '<p class="cdn-sub">Dar PW otwiera się w koszyku — zamknij to okno i wybierz „Przekaż dar” ponownie.</p>';
+      return sub + '<p class="cdn-sub" title="' + esc('Dar PW otwiera się w koszyku — zamknij to okno i wybierz „Przekaż dar” ponownie.') + '">Wybierz „Przekaż dar” na stole.</p>';
 
     case '6': {
       const techs = ctx.techOptions ?? [];
@@ -368,13 +369,16 @@ function buildFormBody(action: AudienceAction, ctx: NegotiationModalContext): st
 
     case '9':
       return sub
+        // Q2: „Odmowa = casus belli” w tooltipie pola (nic nie usunięte).
+        + '<div title="' + esc('Odmowa = casus belli') + '">'
         + numInput('cdn-ult-gold', 'Reparacje ¤ (preset v1.1)', 50, 0)
-        + '<p class="cdn-sub">Odmowa = casus belli</p>';
+        + '</div>';
 
     case '12':
       return sub
         + numInput('cdn-wasal-gpt', 'Trybut wasala ¤/turę', 10, 10)
-        + '<p class="cdn-sub">Wasal zachowuje terytorium · płaci trybut co turę</p>';
+        // Q2: opis roli wasala (terytorium, trybut) przeniesiony do tooltipa; widoczna krótka etykieta.
+        + '<p class="cdn-sub" title="' + esc('Wasal zachowuje terytorium · płaci trybut co turę') + '">Trybut co turę.</p>';
 
     default:
       return sub + '<p class="cdn-sub">Brak formularza dla tej akcji.</p>';

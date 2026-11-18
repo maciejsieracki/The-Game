@@ -715,7 +715,6 @@ ${DIPLO_1E_SHARED_CSS}
 .da-rel-row.credibility .v{color:#9ab8e8;}
 .da-rel-row.relacja-total{margin-top:6px;border-top:1px dashed rgba(232,216,138,.12);padding-top:6px;}
 .da-rel-row.relacja-total .v{color:#e8d88a;font-weight:700;}
-.da-rel-sum-hint{font-size:0.58em;color:#6a6058;margin-left:4px;}
 .da-war-cap-note{font-size:0.8em;font-weight:600;color:#d9a05b;margin-left:6px;}
 .da-rbar.relacja-total{background:rgba(232,216,138,.12);}
 .da-rbar.relacja-total i{background:linear-gradient(90deg,#8a7050,#e8d88a);}
@@ -724,7 +723,6 @@ ${DIPLO_1E_SHARED_CSS}
 .da-rbar.trust i{background:linear-gradient(90deg,#2f7a4a,#5ad07a);}
 .da-rbar.respect i{background:linear-gradient(90deg,#9a7420,#e8d88a);}
 .da-rbar.credibility i{background:linear-gradient(90deg,#3a4a7a,#7aa0e8);}
-.da-credibility-hint{font-size:0.58em;color:#6a7080;line-height:1.35;margin-top:2px;}
 .da-credbreak{margin-top:6px;background:rgba(0,0,0,.18);border:1px solid rgba(232,216,138,.14);
   border-radius:8px;overflow:hidden;}
 .da-credbreak-h{font-size:0.58em;text-transform:uppercase;letter-spacing:.04em;color:#8a8070;
@@ -793,7 +791,6 @@ ${DIPLO_1E_SHARED_CSS}
 .da-negot-linked-they{position:relative;}
 .da-negot-linked.can-edit{cursor:pointer;transition:border-color .15s,box-shadow .15s;}
 .da-negot-linked.can-edit:hover{border-color:rgba(232,216,138,.55);box-shadow:0 0 0 1px rgba(232,216,138,.25);}
-.da-negot-edit-hint{font-size:0.62em;color:#8a8070;margin-top:4px;font-style:italic;}
 .da-card-actions{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
 .da-card-actions button{font-size:0.72em;padding:3px 8px;border-radius:5px;cursor:pointer;
   border:1px solid rgba(232,216,138,.25);background:rgba(30,36,48,.85);color:#e8e0c8;}
@@ -974,7 +971,6 @@ ${DIPLO_1E_SHARED_CSS}
 .da-treaty svg.da-ti{width:14px;height:14px;color:#8ec5ff;flex:none;margin-top:1px;}
 .da-treaty .da-nm{font-size:0.72em;font-weight:600;color:#e8e0c8;}
 .da-treaty .da-meta{font-size:0.62em;color:#8a8070;margin-top:2px;}
-.da-treaty .da-pen{font-size:0.62em;color:#e08a8a;margin-top:3px;}
 /* Zaległość #2 — „Zerwij" = SAMA IKONA rozerwanego ogniwa (SVG z makiety) + podpis na hover
    (.da-ttip); aktywny gdy SILNIK dostarcza onBreakTreaty (main.ts breakTreatyVoluntarily). */
 .da-treaty .da-ttip{margin-left:auto;align-self:center;}
@@ -1098,16 +1094,23 @@ function penaltyKindLabel(kind: DiploPenaltyPreviewLine['kind']): string {
 
 function penaltyBlockHtml(preview: DiploPenaltyPreview | undefined): string {
   if (!preview?.lines.length) return '';
-  const items = preview.lines.map((l) => {
-    if (l.kind === 'info') {
-      return '<li class="info">' + esc(l.reason) + '</li>';
-    }
-    return '<li><b>' + esc(penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta)) + '</b> — '
-      + esc(l.reason) + '</li>';
-  }).join('');
-  return '<div class="cd-penalty-wrap">' +
-    '<p class="cd-penalty-title">Czy na pewno? Skutki tej decyzji:</p>' +
-    '<ul class="cd-penalty-list">' + items + '</ul></div>';
+  // R-WEB-UI-DIPLO-ALL-PROPOSAL-WINDOWS-DECLUTTER-TOOLTIPS-Q2: na oknie zostają tylko liczby kar;
+  // uzasadnienia (także linie „info”) idą do tooltipa bloku. / EN: reasons move into the block tooltip.
+  const infoLines = preview.lines.filter(l => l.kind === 'info');
+  const infoTips = infoLines.map(l => l.reason);
+  const reasonTips = preview.lines.filter(l => l.kind !== 'info').map(l => penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta) + ': ' + l.reason);
+  const blockTip = ['Czy na pewno? Skutki tej decyzji:', ...reasonTips, ...infoTips].join('\n');
+  const items = preview.lines.filter(l => l.kind !== 'info').map((l) =>
+    '<li title="' + esc(penaltyKindLabel(l.kind) + ': ' + l.reason) + '"><b>' + esc(penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta)) + '</b></li>',
+  ).join('');
+  // Werdykt decyzyjny (np. „brak kary…”, „kara jeszcze N tur”, „Sojusz zostanie zerwany”) zostaje widoczny:
+  // pierwsza klauzula linii info; pełne uzasadnienie idzie do tooltipa tej pozycji. / EN: short verdict stays visible.
+  const verdicts = infoLines.map((l) =>
+    '<li class="cd-penalty-verdict" title="' + esc(l.reason) + '">' + esc(l.reason.replace(/;.*$/, '').trim()) + '</li>',
+  ).join('');
+  return '<div class="cd-penalty-wrap" title="' + esc(blockTip) + '">' +
+    '<p class="cd-penalty-title">Skutki:</p>' +
+    '<ul class="cd-penalty-list">' + items + verdicts + '</ul></div>';
 }
 
 export interface WarConsentModalOptions {
@@ -1131,17 +1134,17 @@ export function showWarConsentModal(opts: WarConsentModalOptions): void {
   modalOverlay = document.createElement('div');
   modalOverlay.className = 'civ-diplo-modal-overlay';
   const attackBlock = showAttack
-    ? '<div class="cd-war-opt">' +
-        '<p class="cd-war-opt-title"><strong>Atakuj bez wypowiedzenia</strong> — wojna od razu i atak w tej turze</p>' +
+    ? '<div class="cd-war-opt" title="Wojna od razu i atak w tej turze">' +
+        '<p class="cd-war-opt-title"><strong>Atakuj bez wypowiedzenia</strong></p>' +
         penaltyBlockHtml(opts.previewDeclareAndAttack ?? opts.previewDeclareOnly) +
       '</div>'
     : '';
   modalOverlay.innerHTML =
     '<div class="civ-diplo-modal cd-war-consent-modal" role="dialog" aria-modal="true">' +
       '<h3>Konflikt z ' + esc(opts.civName) + '</h3>' +
-      '<p class="cd-war-lead">Nie jesteście w stanie wojny. Wybierz, jak chcesz postąpić:</p>' +
-      '<div class="cd-war-opt">' +
-        '<p class="cd-war-opt-title"><strong>Wypowiedz wojnę</strong> — bez ataku w tej turze (karencja N1)</p>' +
+      '<p class="cd-war-lead" title="Nie jesteście w stanie wojny. Wybierz, jak chcesz postąpić.">Wybierz działanie:</p>' +
+      '<div class="cd-war-opt" title="Bez ataku w tej turze (karencja N1)">' +
+        '<p class="cd-war-opt-title"><strong>Wypowiedz wojnę</strong></p>' +
         penaltyBlockHtml(opts.previewDeclareOnly) +
       '</div>' +
       attackBlock +
@@ -1189,10 +1192,10 @@ export function showAllianceObligationModal(opts: AllianceObligationModalOptions
   modalOverlay.innerHTML =
     '<div class="civ-diplo-modal cd-war-consent-modal" role="dialog" aria-modal="true">' +
       '<h3>Obowiązek sojuszu</h3>' +
-      '<p class="cd-war-lead">Sojusznik <strong>' + esc(opts.allyName) + '</strong> wymaga, '
-      + 'żebyś wypowiedział wojnę: <strong>' + esc(opts.targetName) + '</strong>.</p>' +
-      '<div class="cd-war-opt">' +
-        '<p class="cd-war-opt-title"><strong>Odmowa</strong> — kara Wiarygodności i zerwanie sojuszu</p>' +
+      '<p class="cd-war-lead" title="' + esc('Sojusznik ' + opts.allyName + ' wymaga, żebyś wypowiedział wojnę: ' + opts.targetName + '.') + '">'
+      + 'Wymagana wojna z: <strong>' + esc(opts.targetName) + '</strong></p>' +
+      '<div class="cd-war-opt" title="' + esc('Kara Wiarygodności i zerwanie sojuszu') + '">' +
+        '<p class="cd-war-opt-title"><strong>Odmowa</strong></p>' +
         penaltyBlockHtml(opts.previewRefuse) +
       '</div>' +
       '<div class="cd-modal-btns cd-war-consent-btns">' +
@@ -1316,14 +1319,15 @@ export function formalBannerHtml(st: DiplomacyAudienceState): string {
     : null;
   if (truceLabel) subParts.push(truceLabel);
   if (detail?.sinceTurns !== undefined) subParts.push('obowiązuje od ' + detail.sinceTurns + ' tur');
-  if (detail?.breakPenaltyLabel) subParts.push('zerwanie: ' + detail.breakPenaltyLabel);
+  // Q2: kara zerwania to wyjaśnienie — w tooltipie etykiety banera (etykieta zawsze widoczna).
+  const breakTip = detail?.breakPenaltyLabel ? ' title="' + esc('Zerwanie: ' + detail.breakPenaltyLabel) + '"' : '';
   const sub = subParts.length > 0
     ? '<span class="da-b-sub">' + esc(subParts.join(' · ')) + '</span>'
     : '';
   return (
     '<div class="da-banner da-tone-' + st.formalStatus.kind + '"' +
     ' title="Aktualny formalny stan umów między wami. To nie jest propozycja.">' +
-    icon + '<span class="da-b-lbl">' + esc('Stan: ' + st.formalStatus.label.toUpperCase()) + '</span>' + sub +
+    icon + '<span class="da-b-lbl"' + breakTip + '>' + esc('Stan: ' + st.formalStatus.label.toUpperCase()) + '</span>' + sub +
     '</div>'
   );
 }
@@ -1665,7 +1669,7 @@ function relacjaTotalHtml(st: DiplomacyAudienceState): string {
     '<div class="da-rel-row relacja-total"' + tip + '>'
     + '<span>Relacja z perspektywy gracza</span>'
     + '<span class="v">' + relTotal + ' / 200' + formatPerTurnDelta(st.relacjaDeltaPerTurn) + '</span>'
-    + '<span class="da-rel-sum-hint">(Zaufanie + Respekt)</span>' + warCapNoteHtml(st)
+    + warCapNoteHtml(st)
     + '</div>'
     + '<div class="da-rbar relacja-total"><i style="width:' + pct + '%"></i></div>'
   );
@@ -1705,18 +1709,17 @@ function credibilityBarHtml(value: number, rozbicie?: WiarygodnoscRozbicie): str
   const tipBody = rozbicie
     ? wiarygodnoscTooltipDefPl() + ' ' + wiarygodnoscTooltipRozbiciePl(rozbicie, band)
     : wiarygodnoscTooltipPl();
-  const tip = ' title="' + esc(tipBody) + '"';
-  const hint = rozbicie && (rozbicie.trwalyZyciorys !== 0 || rozbicie.biezaceUczynki !== 0)
-    ? '<div class="da-credibility-hint">życiorys '
+  // Q2: rozbicie (życiorys / bieżące) zostaje w tooltipie wiersza, nie na widocznej karcie.
+  const splitTip = rozbicie && (rozbicie.trwalyZyciorys !== 0 || rozbicie.biezaceUczynki !== 0)
+    ? '\nRozbicie: życiorys '
       + formatCredibilityHintPkt(rozbicie.trwalyZyciorys)
       + ' · bieżące '
       + formatCredibilityHintPkt(rozbicie.biezaceUczynki)
-      + '</div>'
     : '';
+  const tip = ' title="' + esc(tipBody + splitTip) + '"';
   return (
     '<div class="da-rel-row credibility"' + tip + '><span>Wiarygodność</span><span class="v">' + signed + ' · ' + esc(band) + '</span></div>' +
-    '<div class="da-rbar credibility"><i style="width:' + pct + '%"></i></div>' +
-    hint
+    '<div class="da-rbar credibility"><i style="width:' + pct + '%"></i></div>'
   );
 }
 
@@ -2033,8 +2036,8 @@ export function dealsColumnHtml(st: DiplomacyAudienceState): string {
     .map(r => r.html)
     .join('');
   const multiHint = ownPendingCount > 0
-    ? '<div class="da-multi-deal-hint">Na stole: <b>' + ownPendingCount
-      + '</b> · dodaj kolejną umowę z listy · jeden bilans PW — jedno Przyjmij/Odrzuć; niechcianą pozycję najpierw Usuń</div>'
+    ? '<div class="da-multi-deal-hint" title="Dodaj kolejną umowę z listy. Jeden bilans PW — jedno Przyjmij/Odrzuć; niechcianą pozycję najpierw Usuń.">Na stole: <b>' + ownPendingCount
+      + '</b></div>'
     : '';
   return (
     '<div class="da-col da-col-deals">' +
@@ -2058,7 +2061,8 @@ export function treatiesColumnHtml(
     if (t.sinceTurns !== undefined) metaParts.push('od ' + t.sinceTurns + ' tur');
     else if (t.detail) metaParts.push(t.detail);
     const meta = metaParts.length > 0 ? '<div class="da-meta">' + esc(metaParts.join(' · ')) + '</div>' : '';
-    const pen = t.breakPenaltyLabel ? '<div class="da-pen">kara zerwania: ' + esc(t.breakPenaltyLabel) + '</div>' : '';
+    // Q2: kara zerwania to wyjaśnienie — w tooltipie nazwy traktatu, nie jako widoczna linia.
+    const penTip = t.breakPenaltyLabel ? ' title="' + esc('Kara zerwania: ' + t.breakPenaltyLabel) + '"' : '';
     /* R-WEB-DIPLO-ACTIVE-TREATIES-RESOURCE-DEALS-Q1: co, ile, jak często + status ostatniej dostawy. */
     const exch = (t.exchanges ?? []).map(x =>
       '<div class="da-meta da-exch" data-exch-status="' + x.status + '">' + esc(x.text) +
@@ -2073,7 +2077,7 @@ export function treatiesColumnHtml(
       : 'Zerwij traktat — niedostępne';
     return (
       '<div class="da-treaty">' + icon +
-        '<div><div class="da-nm">' + esc(t.label) + '</div>' + meta + freq + exch + pen + '</div>' +
+        '<div><div class="da-nm"' + penTip + '>' + esc(t.label) + '</div>' + meta + freq + exch + '</div>' +
         /* Zaległość #2 — ikona rozerwanego ogniwa + podpis „Zerwij traktat" TYLKO na hover. */
         '<span class="da-ttip"><span class="da-ttip-lbl" style="bottom:34px">Zerwij traktat</span>' +
         '<button type="button" class="da-brk" data-deal-id="' + esc(dealId ?? '') + '"' +
@@ -2217,15 +2221,13 @@ function renderIncomingPendingWeLinked(r: PendingNegotiationRow): string {
     ? '<div class="da-deal-detail">' + dealHtml + '</div>'
     : '<div class="da-deal-detail"><span class="da-deal-empty">—</span></div>';
   const editCls = r.canCounter ? ' can-edit' : '';
-  const editHint = r.canCounter
-    ? '<div class="da-negot-edit-hint" title="Edytuj kwoty w koszyku">Użyj Edytuj, aby zmienić ilości w koszyku</div>'
-    : '';
+  // Q2: podpowiedź „Użyj Edytuj…” przeniesiona do tooltipa karty (nic nie usunięte).
+  const editTip = r.canCounter ? ' title="Użyj Edytuj, aby zmienić ilości w koszyku"' : '';
   return (
     '<div class="da-negot da-negot-linked da-negot-linked-we' + editCls + '" data-negot-id="' + esc(r.id) + '" data-negot-linked="we"'
-    + (r.canCounter ? ' data-negot-editable="1"' : '') + '>' +
+    + (r.canCounter ? ' data-negot-editable="1"' : '') + editTip + '>' +
       '<div class="da-nm"><span class="dir">' + esc('W ofercie oddajemy') + '</span>' + esc(r.actionLabel) + '</div>' +
       dealBlock +
-      editHint +
       pendingNegotiationMetaHtml(r) +
       negotiationCardActionsHtml(r, negotiationCardHasContent(r, 'we', true)) +
     '</div>'
@@ -2247,16 +2249,14 @@ function renderIncomingPendingTheyCard(r: PendingNegotiationRow): string {
   const dirLabel = r.isGift ? 'Prezent od nich' : 'Ich propozycja';
   const titleLabel = r.isGift ? 'Dar / prezent' : r.actionLabel;
   const editCls = r.canCounter && !r.isGift ? ' can-edit' : '';
-  const editHint = r.canCounter && !r.isGift
-    ? '<div class="da-negot-edit-hint" title="Edytuj kwoty w koszyku">Użyj Edytuj, aby zmienić ilości w koszyku</div>'
-    : '';
+  // Q2: podpowiedź „Użyj Edytuj…” przeniesiona do tooltipa karty (nic nie usunięte).
+  const editTip = r.canCounter && !r.isGift ? ' title="Użyj Edytuj, aby zmienić ilości w koszyku"' : '';
   return (
     '<div class="da-negot incoming da-negot-linked da-negot-linked-they' + giftCls + editCls + '" data-negot-id="' + esc(r.id) + '" data-negot-linked="they"'
-    + (r.canCounter && !r.isGift ? ' data-negot-editable="1"' : '') + '>' +
+    + (r.canCounter && !r.isGift ? ' data-negot-editable="1"' : '') + editTip + '>' +
       '<div class="da-nm"><span class="dir">' + dirIcon + esc(dirLabel) + '</span>' + esc(titleLabel) + '</div>' +
       dealBlock +
       legacyNote +
-      editHint +
       pendingNegotiationMetaHtml(r) +
       negotiationCardActionsHtml(r, negotiationCardHasContent(r, 'they', true)) +
     '</div>'

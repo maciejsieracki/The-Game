@@ -50,6 +50,11 @@ const SCOPE_SELECTOR = [
   '.civ-emp-panel',
   '.civ-diplo-aud',
   '.civ-diplo-basket',
+  // R-WEB-UI-DIPLO-ALL-PROPOSAL-WINDOWS-DECLUTTER-TOOLTIPS-Q2: modale dyplomacji (wojna, sojusz,
+  // zerwanie) montują się na `document.body` — ich wyjaśnienia są w title, więc potrzebują tego scope.
+  '.civ-diplo-modal-overlay',
+  // Q2: okno negocjacji/propozycji (formularz wojny/pokoju/sojuszu, słodzik) — tooltips w title.
+  '.civ-diplo-neg-overlay',
   // P-TOOLTIP-CIV-UNIT-PANEL-BRAK-W-SCOPE (2026-08-15, znalezisko Evaluatora C-025 przy okazji
   // RUNDY 2): ta sama przyczyna — `.civ-unit-panel` (unitPanelHud.ts) montuje się bezpośrednio
   // na `document.body`, poza wszystkimi kontenerami wyżej. Renderuje plakietkę weterana

@@ -663,28 +663,24 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
         + '" data-turns="' + t + '">' + t + '</button>',
       ).join('');
       const indefiniteSelected = state.turns <= 0 ? ' selected' : '';
-      body = '<label for="cdb-treaty-turns">Czas paktu</label>'
+      // Q2: wyjaśnienie zakresu i kary przeniesione do tooltipa etykiety (nic nie usunięte).
+      body = '<label for="cdb-treaty-turns"' + detailTipAttr([
+          'Ręcznie: 10–20 tur lub 0 = bezterminowy',
+          'Koszty / kary: Złamanie paktu: −30 Relacja, −20 Zaufanie',
+        ]) + '>Czas paktu</label>'
         + '<div class="cdb-chip-row cdb-turn-presets">' + turnChips
         + '<button type="button" class="cdb-chip cdb-chip-turn' + indefiniteSelected
         + '" data-turns="0">Bezterminowy</button></div>'
-        + qtyStepperHtml('cdb-treaty-turns', 'treaty', state.turns <= 0 ? 0 : state.turns, 0, 20)
-        + '<p class="cdb-sub">Ręcznie: 10–20 tur lub 0 = bezterminowy</p>'
-        + '<div class="cdb-penalty-box">'
-        + '<div class="cdb-penalty-title">Koszty / kary</div>'
-        + '<p class="cdb-sub" style="margin:0">Złamanie paktu: −30 Relacja, −20 Zaufanie</p>'
-        + '</div>';
+        + qtyStepperHtml('cdb-treaty-turns', 'treaty', state.turns <= 0 ? 0 : state.turns, 0, 20);
       break;
     }
     case '3':
-      body = '<label>Typ sojuszu</label>'
+      // Q2: kary zerwania sojuszu w tooltipie etykiety (nic nie usunięte).
+      body = '<label' + detailTipAttr(['Koszty / kary: Zerwanie sojuszu / wojna z sojusznikiem: kary Relacji i Wiarygodności']) + '>Typ sojuszu</label>'
         + '<select id="cdb-treaty-alliance" class="cdb-treaty-alliance">'
         + '<option value="pelny"' + (state.allianceKind === 'pelny' ? ' selected' : '') + '>Sojusz wojskowy (wojna sojusznika = twoja)</option>'
         + '<option value="defensywny"' + (state.allianceKind === 'defensywny' ? ' selected' : '') + '>Sojusz obronny (atak na sojusznika)</option>'
-        + '</select>'
-        + '<div class="cdb-penalty-box">'
-        + '<div class="cdb-penalty-title">Koszty / kary</div>'
-        + '<p class="cdb-sub" style="margin:0">Zerwanie sojuszu / wojna z sojusznikiem: kary Relacji i Wiarygodności</p>'
-        + '</div>';
+        + '</select>';
       break;
     case '4': {
       const feeC = ctx.borderFeeCivil ?? 20;
@@ -721,7 +717,7 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
         + (state.barbarianCooperation ? ' selected' : '') + '">Wspólna walka z barbarzyńcami</button>'
         + '</div>'
         + barbDurationSection
-        + '<p class="cdb-sub">Opłata cywilne: ' + feeC + ' ¤ · wojskowe: ' + feeM + ' ¤ (jednorazowo)</p>';
+        + '<p class="cdb-sub"' + detailTipAttr(['Opłata cywilne: ' + feeC + ' ¤ · wojskowe: ' + feeM + ' ¤ (jednorazowo)']) + '>Opłata: ' + feeC + ' ¤ · ' + feeM + ' ¤</p>';
       break;
     }
     case '8':
@@ -736,15 +732,14 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
         + '<input type="number" id="cdb-treaty-trib-turns" class="cdb-treaty-trib-turns" value="' + state.tributeTurns + '" min="0" />';
       break;
     case '12':
-      body = '<label for="cdb-treaty-wasal-gpt">Trybut wasala ¤/turę</label>'
-        + '<input type="number" id="cdb-treaty-wasal-gpt" class="cdb-treaty-wasal-gpt" value="' + state.goldPerTurn + '" min="10" />'
-        + '<p class="cdb-sub">Wasal zachowuje terytorium · płaci trybut co turę</p>';
+      body = '<label for="cdb-treaty-wasal-gpt"' + detailTipAttr(['Wasal zachowuje terytorium · płaci trybut co turę']) + '>Trybut wasala ¤/turę</label>'
+        + '<input type="number" id="cdb-treaty-wasal-gpt" class="cdb-treaty-wasal-gpt" value="' + state.goldPerTurn + '" min="10" />';
       break;
     case '15': {
       const minGold = ctx.wchloniecieGoldRequired ?? 200;
       body = '<label for="cdb-treaty-wchlon-gold">Opłata za wchłonięcie (¤)</label>'
         + '<input type="number" id="cdb-treaty-wchlon-gold" class="cdb-treaty-wchlon-gold" value="' + state.goldOnce + '" min="' + minGold + '" />'
-        + '<p class="cdb-sub">Wymagane minimum ' + minGold + ' ¤ · wasal musi wyrazić zgodę (Relacja ≥ 60)</p>';
+        + '<p class="cdb-sub"' + detailTipAttr(['Wymagane minimum ' + minGold + ' ¤ · wasal musi wyrazić zgodę (Relacja ≥ 60)']) + '>Minimum ' + minGold + ' ¤</p>';
       break;
     }
     case '5': {
@@ -759,13 +754,13 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
       // 1 turę, `clampDealTurns` 1–20 — patrz E3) — chip pomija pole `turns` w payloadzie
       // całkowicie (patrz `buildTreatyPayload`, case '5').
       const indefiniteSelected = state.turns <= 0 ? ' selected' : '';
-      body = '<label for="cdb-treaty-turns">Czas traktatu handlowego (tur)</label>'
+      body = '<label for="cdb-treaty-turns"' + detailTipAttr([
+          'Ręcznie: 1–20 tur lub 0 = bezterminowy. Fundament szlaków handlowych — opcjonalnie dołóż wymianę PW poniżej.',
+        ]) + '>Czas traktatu handlowego (tur)</label>'
         + '<div class="cdb-chip-row cdb-turn-presets">' + turnChips
         + '<button type="button" class="cdb-chip cdb-chip-turn' + indefiniteSelected
         + '" data-turns="0">Bezterminowy</button></div>'
-        + qtyStepperHtml('cdb-treaty-turns', 'treaty', state.turns <= 0 ? 0 : state.turns, 0, 20)
-        + '<p class="cdb-sub">Ręcznie: 1–20 tur lub 0 = bezterminowy. Fundament szlaków '
-        + 'handlowych — opcjonalnie dołóż wymianę PW poniżej.</p>';
+        + qtyStepperHtml('cdb-treaty-turns', 'treaty', state.turns <= 0 ? 0 : state.turns, 0, 20);
       break;
     }
     case '6': {
@@ -842,9 +837,8 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
       break;
     }
     case '9':
-      body = '<label for="cdb-treaty-ult-gold">Reparacje (¤)</label>'
-        + '<input type="number" id="cdb-treaty-ult-gold" class="cdb-treaty-ult-gold" value="' + state.goldOnce + '" min="0" />'
-        + '<p class="cdb-sub">Odmowa partnera = casus belli (zaznacz ultimatum poniżej).</p>';
+      body = '<label for="cdb-treaty-ult-gold"' + detailTipAttr(['Odmowa partnera = casus belli (zaznacz ultimatum poniżej).']) + '>Reparacje (¤)</label>'
+        + '<input type="number" id="cdb-treaty-ult-gold" class="cdb-treaty-ult-gold" value="' + state.goldOnce + '" min="0" />';
       break;
     case '10':
       // R-DYP-STOL-A-KOREKTA (2026-08-09, nota Evaluatora): akcja '10' (pokój) jest teraz
@@ -864,15 +858,17 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
           '<button type="button" class="cdb-chip cdb-chip-truceturns' + (state.truceTurns === t ? ' selected' : '')
           + '" data-turns="' + t + '">' + t + ' tur</button>',
         ).join('');
-        body = '<label>Rodzaj</label>'
+        // Q2: opisy trybów (rozejm / pokój) przeniesione do tooltipów etykiet (nic nie usunięte).
+        body = '<label' + detailTipAttr([isTruce
+            ? 'Rozejm: po wygaśnięciu wojna wraca bez kary. Wypowiedzenie wojny w jego trakcie = złamanie (kara jak za pakt). Baza ~200 PW.'
+            : 'Zakończenie wojny. Wymagane PW traktatu zależą od Relacji (baza ~500 PW, modyfikator ±90%).']) + '>Rodzaj</label>'
           + '<div class="cdb-chip-row">' + kindChips + '</div>'
           + '<input type="hidden" id="cdb-treaty-peacekind" class="cdb-treaty-peacekind" value="' + state.peaceKind + '" />'
           + (isTruce
             ? '<label>Czas rozejmu</label>'
               + '<div class="cdb-chip-row cdb-turn-presets">' + truceChips + '</div>'
               + '<input type="hidden" id="cdb-treaty-truceturns" class="cdb-treaty-truceturns" value="' + state.truceTurns + '" />'
-              + '<p class="cdb-sub">Rozejm: po wygaśnięciu wojna wraca bez kary. Wypowiedzenie wojny w jego trakcie = złamanie (kara jak za pakt). Baza ~200 PW.</p>'
-            : '<p class="cdb-sub">Zakończenie wojny. Wymagane PW traktatu zależą od Relacji (baza ~500 PW, modyfikator ±90%).</p>');
+            : '');
       }
       break;
     default:
@@ -1679,7 +1675,7 @@ export function buildAddForm(
         ' title="' + esc(m.label + ' — wycena ' + m.pn + ' PW') + '"',
       ),
     ).join('')
-    : '<span class="cdb-sub">— brak miast do oddania (stolica i ostatnie miasto są wyłączone) —</span>';
+    : '<span class="cdb-sub"' + detailTipAttr(['Stolica i ostatnie miasto są wyłączone.']) + '>— brak miast do oddania —</span>';
 
   const qtyResources = side === 'give'
     ? (ctx.giveQuantityResourceOptions ?? defaultQuantityResourceOptions())

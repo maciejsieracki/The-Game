@@ -116,7 +116,7 @@ const HTML_PO_ANCHOR = `        + '<button type="button" id="cdb-treaty-barb" cl
         + (state.barbarianCooperation ? ' selected' : '') + '">Wspólna walka z barbarzyńcami</button>'
         + '</div>'
         + barbDurationSection
-        + '<p class="cdb-sub">Opłata cywilne: ' + feeC + ' ¤ · wojskowe: ' + feeM + ' ¤ (jednorazowo)</p>';`;
+        + '<p class="cdb-sub"' + detailTipAttr(['Opłata cywilne: ' + feeC + ' ¤ · wojskowe: ' + feeM + ' ¤ (jednorazowo)']) + '>Opłata: ' + feeC + ' ¤ · ' + feeM + ' ¤</p>';`;
 const HTML_PRZED_ANCHOR = `        + '<button type="button" id="cdb-treaty-barb" class="cdb-chip cdb-treaty-barb'
         + (state.barbarianCooperation ? ' selected' : '') + '">Wspólna walka z barbarzyńcami (3 tury)</button>'
         + '</div>'
