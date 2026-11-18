@@ -2,7 +2,7 @@
 
 STATUS: dispatch orkiestratora. Opus (3D), wszystkie etapy Opus. Zmiana WYŁĄCZNIE w komentarzach i literałach tekstowych komentarzy: zero zmian zachowania.
 START: po zintegrowaniu RENDER-FRAME r2 (dotyka `overlays_view.rs`/`render_frame.rs`) i FOG-SAVE; wymaga dysku >= 12 GB (bramka renderera, bez równoległych buildów renderera).
-BAZA: `origin/rust-port/parity-v2` (aktualny; wpisz SHA w raporcie). Przed startem: `git fetch origin && git checkout -B <gałąź> origin/rust-port/parity-v2`.
+BAZA: `origin/rust-port/parity-v2` = `acf238f599059e71b3394ca1a164759491463889` w chwili startu (ta linia ma priorytet; wpisz SHA w raporcie). Przed startem: `git fetch origin && git checkout -B <gałąź> origin/rust-port/parity-v2`.
 
 ## GOAL
 Poprawić cytaty numerów linii pinu `07d2fbd72` w pozostałych plikach (inwentarz z `dyspozycje/autobot/runs/R-RUSTPORT-P4-1-DOC-DEBTS-R1/02a-obrona.md`; WERYFIKUJ każdy numer przez `git show 07d2fbd72:gra/src/...`, nie ufaj tabeli):
