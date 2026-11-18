@@ -3832,3 +3832,6 @@ Konsekwencje dla kolejki:
 
 ### Przebieg 2026-11-18 ~15:50 UTC — polecenie właściciela: po 3D kolejka 10 tematów na Haiku
 - Zadanie #379 (zablokowane przez #369/#371/#376/#378/#346): po wyczerpaniu tematów 3D start 10 tematów, Operator/Obrona = HAIKU, Evaluator/FC = SONNET (tabela ról CLAUDE.md). Lista: DOC-DEBTS-R3, BRIDGE-COMMENTS-STALE, BRIDGE-CJS-HARNESS, CI-ENGINE-PATHS-TAURI, REJESTR-STATUSY, R7K7C-WIRING, EKONOMIA-TURA, ZLOZA-WIRING-IMPL, COMBAT-HARNESS-WEJSCIA, SAVE-LOAD-BRIDGE; rezerwa: CRED-HAK-WYPOWIEDZENIE-IMPL (wymaga wariantu A/B), K5EXEC-T3..T7, STATCHIP-SYNC. Do tego czasu sloty tylko 3D/Opus; puste sloty = brak czystego tematu 3D (powód wpisany).
+
+### Przebieg 2026-11-18 ~15:50 UTC — heartbeat: 2 aktywne Workflow, sloty 3–4 puste (powód)
+- Aktywne: T5a BATTLE-SETUP (FC 4/4) i T3 K5DOC-T8 (Obrona 3/4). Brak startu nowych tematów 3D: (a) dysk 7,8 GB < bramka 8 GB (engine) i < 12 GB (renderer — #371 T1 FRAME-ADAPTER, I5a); (b) limit 2 równoległych buildów silnika już zajęty; (c) kolejne tematy na `siege_tactics_loop.rs` (T1/T2/T4) czekają na integrację T3 (jeden temat naraz na pliku); T6 ADAPTER czeka na integrację T5a. Po FC T5a/T3 i sprzątaniu worktree dysk wzrośnie — wtedy start T1 SIEGE-DEF (+K5LOOP-KILL-RIPPLE) i #371 T1.
