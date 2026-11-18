@@ -22461,7 +22461,14 @@ async function boot(): Promise<void> {
       const curRel = getDiploRelation(ME(), p.ownerId);
       if (accept) {
         if (p.cmdType === 'zaproponuj_pokoj') {
+          // PEACEVAZNE (R-WEB-UI-DIPLO-PEACE-CONCLUDED-VAZNE-ALWAYS-Q1): każdy pokój z graczem = wpis w „Ważne”.
+          // Znacznik końca rozejmu czytany PRZED finalize (finalize go czyści).
+          const koniecRozejmuPokoj = getDiploPairMeta(ME(), p.ownerId).truceEndOffer != null;
           finalizePeaceTreatyBetween(ME(), p.ownerId);
+          logPeaceVazne(
+            ME(), p.ownerId, 'Pokój zawarty: ',
+            koniecRozejmuPokoj ? 'Koniec rozejmu: pokój przyjęty przez gracza' : 'Oferta pokoju od AI przyjęta przez gracza',
+          );
           showHintMessage('Pokój z: ' + p.civName, 4000);
         } else {
           const cmd = {
@@ -22620,6 +22627,9 @@ async function boot(): Promise<void> {
       // nie tą ścieżką; warunek `rodzaj !== 'rozejm'` był więc martwy i usunięty.
       if (p.cmd.type === 'zaproponuj_pokoj') {
         finalizePeaceTreatyBetween(p.fromOwnerId, p.toOwnerId);
+        // PEACEVAZNE (R-WEB-UI-DIPLO-PEACE-CONCLUDED-VAZNE-ALWAYS-Q1): pokój z udziałem gracza = wpis w „Ważne”
+        // (logPeaceVazne ignoruje pary bez gracza, więc AI↔AI nie dodaje wpisu).
+        logPeaceVazne(p.fromOwnerId, p.toOwnerId, 'Pokój zawarty: ', 'Propozycja pokoju przyjęta w rozmowie dyplomatycznej');
         return true;
       }
       const pending = aiCommandToPendingProposal(p.cmd, p.fromOwnerId, p.toOwnerId, turn);
