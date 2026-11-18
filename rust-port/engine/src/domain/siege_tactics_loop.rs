@@ -45,6 +45,7 @@ use crate::domain::siege_tactics_activate::{
 use crate::domain::siege_tactics_advance::{
     advance_after_move, advance_step_decide, AdvanceDecision, AdvanceUnit, AdvanceWorld, AfterStep,
 };
+use crate::domain::siege_tactics_approach::{BF_COLS, BF_ROWS};
 use crate::domain::siege_tactics_autobatch::{
     cell_key, AutoBatchEnv, BatchBoard, BatchState, CellKey,
 };
@@ -65,7 +66,8 @@ use crate::domain::siege_tactics_clock::{ScheduleOutcome, VirtualClock};
 use crate::domain::siege_tactics_doctrine_state::{GroupDoctrine, ProdDoctrineState};
 use crate::domain::siege_tactics_doctrine_target::{
     desired_hit_for_direction, enemies_of as enemies_of_cmb, pick_target_by_priority,
-    ranged_target_in_range as ranged_target_cmb, AttackDirection, Combatant, TargetPriorities,
+    ranged_target_in_range as ranged_target_cmb, target_in_range as target_in_range_cmb,
+    AttackDirection, Combatant, TargetPriorities, TargetScene,
 };
 use crate::domain::siege_tactics_end::BattleSide;
 use crate::domain::siege_tactics_endcheck::EndCheckOutcome;
@@ -94,7 +96,7 @@ use crate::domain::siege_tactics_roundcap::RoundCapState;
 use crate::domain::siege_tactics_tower::{pick_tower_target, TowerTarget};
 use crate::domain::siege_tactics_turnseq::{
     activate_next, activation_done, begin_turn, CheckSite, EndCheckSnapshot, SeqEvent, SeqStep,
-    TurnSeqEnv, TurnSeqState, UnitRef,
+    SeqUnit, TurnSeqEnv, TurnSeqState, UnitRef,
 };
 use crate::domain::siege_tactics_unit::{
     effective_flee_threshold, should_rout, side_alive_end, CombatUnit,
@@ -140,6 +142,8 @@ pub trait LoopBody {
 
 /// Stałe morale z pinu (`battleScene.ts:1129, 1141, 1144-1145`).
 pub const MORALE_DEATH_RADIUS: i64 = 3;
+/// Web `MORALE_ALLY_DEATH_LOSS = 12` (`battleScene.ts:1118`): strata morale sojusznika w ripple `_shakeAlliesOnLoss`.
+pub const MORALE_ALLY_DEATH_LOSS: f64 = 12.0;
 pub const MORALE_ENEMY_BREAK_GAIN: f64 = 5.0;
 pub const MORALE_ARMY_COLLAPSE_RATIO: f64 = 0.40;
 pub const MORALE_ARMY_COLLAPSE_MULT: f64 = 1.3;
@@ -1006,9 +1010,11 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
 // `Attack` wykonuje [`single_blow_full`] (K5I) na celu podanym przez adapter. K5LOOP-CLOSE r1: zdarzenie `AdvanceStep`
 // (`_advanceStep`, `battleScene.ts:8198-8285`) jest WYKONYWANE ([`ProdBody::advance_step`]: T4b + T4c + `_updateFacing`
 // po każdym kroku), wektory `tests/p6_k5loop_close*`. K5LOOP-CLOSE r2: C-FLANK i `_cavalryAction`; r3: `_rangedAction`
-// (KITE, strzał `_doRangedAttack`, marsz `_rangedForwardStep`), U7.6 z `_fallBackStep` i `_phalanxAction`. Pozostałe
-// gałęzie `_activateUnit` (ucieczka `_fleeStep`, doktryna, wieże, machiny, tryb ręczny) NIE są wykonywane: jednostka
-// nic nie robi, a ścieżka trafia do [`ProdBody::unported`]. Wybór celu (`_targetInRange`) zależy od `facing`/`attackDirection`,
+// (KITE, strzał `_doRangedAttack`, marsz `_rangedForwardStep`), U7.6 z `_fallBackStep` i `_phalanxAction`; r4: ucieczka
+// `_fleeStep` (z `_removeUnitFromScene` i ripple `_shakeAlliesOnLoss`) i strzelec z `shootingEnabled = false` (zasięg
+// strzału w `_targetInRange`/`_canAttackFrom`, `_doAttack` -> `_doRangedAttack`). Pozostałe gałęzie `_activateUnit`
+// (doktryna, wieże, machiny, mur, tryb ręczny) NIE są wykonywane: jednostka nic nie robi, a ścieżka trafia do
+// [`ProdBody::unported`]. Ripple przy ZABICIU (`_resolveBlowOutcome`) nadal ma tag `shakeAlliesOnLoss` (raport r4). Wybór celu (`_targetInRange`) zależy od `facing`/`attackDirection`,
 // których ten klocek nie niesie, więc cel jest wejściem adaptera ([`ProdUnit::melee_target`]).
 // ---------------------------------------------------------------------------------------------------------------
 
@@ -1043,6 +1049,9 @@ struct ProdPending {
     move_left: Option<f64>,
     /// K5LOOP-CLOSE r3: strzał `_doRangedAttack` (cel w liście strony przeciwnej, chwila trafienia `t + RANGED_FLY_MS`).
     shot: Option<ProdShot>,
+    /// K5LOOP-CLOSE r4: ucieczka `_fleeStep` wykonana w `start` na kopii stanu ([`ProdBody::flee_after`]); `complete`
+    /// przepisuje tę kopię do `TurnSeqState` (efekty `_startRout`, `_removeUnitFromScene`, `_shakeAlliesOnLoss`).
+    flee: bool,
 }
 
 /// K5LOOP-CLOSE r3: strzał jednostki wykonany w `complete` (trafienie `_singleBlow(attacker, defender, true)`).
@@ -1236,6 +1245,15 @@ pub struct ProdBody<R: RollSource> {
     /// [`TurnSeqState`] przy `complete`. Brak szablonu dla celu wybranego przez `_rangedAction` = tag
     /// `strzal-bez-szablonu` (bez strzału).
     pub ranged_blows: [Vec<HashMap<usize, FullBlowInput>>; 2],
+    /// K5LOOP-CLOSE r4 (D-K5C-4): `ru.fleeStuck` (`battleScene.ts:2018`): liczba kolejnych tur zablokowanej ucieczki
+    /// (`_fleeStep` `:9877-9878`: `(ru.fleeStuck ?? 0) + 1`, przy `>= 2` jednostka znika z pola; po kroku `0`, `:9882`).
+    /// Trwa między aktywacjami. Pin spawn: `0` (`:4567`, `:4717`, `:5478`, `:17255`).
+    pub flee_stuck: [Vec<f64>; 2],
+    /// K5LOOP-CLOSE r4: strony `TurnSeqState` po ucieczce wykonanej w `start` (kopia stanu z efektami `_startRout`
+    /// z okrążenia, `_removeUnitFromScene` i `_shakeAlliesOnLoss` w kolejności pinu); `complete` tej samej jednostki
+    /// przepisuje je do stanu sterownika. Bezpieczne, bo gałąź ucieczki działa tylko bez muru (tag `ucieczka-oblezenie`),
+    /// więc między `start` a `complete` żaden zegar (wieże) nie zmienia jednostek.
+    flee_after: Option<(UnitRef, Vec<SeqUnit>, Vec<SeqUnit>)>,
 }
 
 /// K5LOOP-CLOSE r3: wynik `_rangedAction` w ciele (czas, `moveLeft` po ruchu, strzał: cel i chwila wystrzału względem
@@ -1431,6 +1449,9 @@ struct ProdAdvanceWorld<'a> {
     doctrine: &'a [Vec<ProdDoctrineState>; 2],
     group_meta: &'a HashMap<String, GroupMeta>,
     formation_rank: &'a [Vec<Option<f64>>; 2],
+    /// K5LOOP-CLOSE r4: `reach = canShoot(ru) ? ru.range : 1` (`_canAttackFrom` `:8437`, `_makeCanAttackFromTest`
+    /// `:8455`), patrz [`ProdBody::reach_of`].
+    reach: i64,
 }
 
 impl ProdAdvanceWorld<'_> {
@@ -1475,9 +1496,11 @@ impl ProdAdvanceWorld<'_> {
 impl AdvanceWorld for ProdAdvanceWorld<'_> {
     /// Web `_canAttackFrom(ru, col, row)` (`battleScene.ts:8436-8444`) / `_makeCanAttackFromTest` (`:8454`).
     fn can_attack_from(&self, _unit_id: &str, col: f64, row: f64) -> bool {
+        // `dd >= 1 && dd <= reach` (`:8441`); wręcz `reach = 1` (= sąsiad).
+        let reach = self.reach as f64;
         self.live_enemies().any(|(_, q, r)| {
             let dd = (col - q as f64).abs() + (row - r as f64).abs();
-            dd == 1.0
+            dd >= 1.0 && dd <= reach
         })
     }
 
@@ -1662,6 +1685,8 @@ impl<R: RollSource> ProdBody<R> {
                 vec![HashMap::new(); units[0].len()],
                 vec![HashMap::new(); units[1].len()],
             ],
+            flee_stuck: [vec![0.0; units[0].len()], vec![0.0; units[1].len()]],
+            flee_after: None,
             terrain: None,
             units,
             scene,
@@ -2088,8 +2113,23 @@ impl<R: RollSource> ProdBody<R> {
         }
     }
 
+    /// K5LOOP-CLOSE r4: zasięg ataku jednostki `canShoot(ru) ? ru.range : 1` (`_canAttackFrom` `:8437`,
+    /// `_makeCanAttackFromTest` `:8455`, `_canStrikeTargetFrom` `:8491`). Strzelec z amunicją dochodzi do ścieżek ruchu
+    /// wręcz tylko z `shootingEnabled = false` (`:6241`); pozostałe jednostki mają `1`.
+    fn reach_of(&self, unit: UnitRef) -> i64 {
+        let a = &self.units[side_ix(unit.side)][unit.idx].activate;
+        if a.can_shoot {
+            #[allow(clippy::cast_possible_truncation)]
+            let r = a.range as i64;
+            r
+        } else {
+            1
+        }
+    }
+
     fn advance_world<'a>(&'a self, unit: UnitRef, st: &'a TurnSeqState) -> ProdAdvanceWorld<'a> {
         ProdAdvanceWorld {
+            reach: self.reach_of(unit),
             unit,
             units: &self.units,
             st,
@@ -2149,15 +2189,16 @@ impl<R: RollSource> ProdBody<R> {
             .collect()
     }
 
-    /// Uruchamia `f` z [`CavTerrain`] jednostki (`mounted`) wobec wrogów `en`. Zakres ciała: melee bez muru, więc
-    /// `reach = 1` (`canShoot` = `false`: konny strzelec z amunicją idzie `_rangedAction`, `:6241` przed `:6284`) i
-    /// `_meleeBlockedByWall` = `false` (strażnik `oblezenie`):
-    /// `_canStrikeTargetFrom` (`:8487-8493`) i `_makeCanAttackFromTest` (`:8454-8478`) = dystans Manhattan 1.
+    /// Uruchamia `f` z [`CavTerrain`] jednostki (`mounted`, zasięg ataku `reach`, [`Self::reach_of`]) wobec wrogów `en`.
+    /// Bez muru (strażnik `oblezenie`) `_meleeBlockedByWall` = `false`, więc `_canStrikeTargetFrom` (`:8487-8493`) i
+    /// `_makeCanAttackFromTest` (`:8454-8478`) = dystans Manhattan w `[1..reach]` (wręcz `reach = 1`; K5LOOP-CLOSE r4:
+    /// strzelec z amunicją i `shootingEnabled = false` ma `reach = ru.range`, `:8491`, `:8455`).
     /// `_passableForUnit` (`:7446-7448`) = skończony `_moveCostForUnit` (z mnożnikiem jazdy). Drugi element wyniku =
     /// `true`, gdy przejezdność była czytana bez [`MoveTerrain`] (D1: jawny tag u wołającego).
     fn with_cav_terrain<T>(
         &self,
         mounted: bool,
+        reach: i64,
         en: &[Combatant],
         f: impl FnOnce(&CavTerrain) -> T,
     ) -> (T, bool) {
@@ -2171,14 +2212,15 @@ impl<R: RollSource> ProdBody<R> {
             }
         };
         let is_ford = |c: i64, r: i64| terrain.is_some_and(|t| t.is_ford(c as f64, r as f64));
+        let in_reach = |d: i64| d >= 1 && d <= reach;
         let can_strike_from = |c: i64, r: i64, i: usize| {
             let e = &en[i];
-            (c - e.q).abs() + (r - e.r).abs() == 1
+            in_reach((c - e.q).abs() + (r - e.r).abs())
         };
         let can_attack_from = |c: i64, r: i64| {
             enemies_of_cmb(en)
                 .iter()
-                .any(|(_, e)| (c - e.q).abs() + (r - e.r).abs() == 1)
+                .any(|(_, e)| in_reach((c - e.q).abs() + (r - e.r).abs()))
         };
         let ct = CavTerrain {
             passable: &passable,
@@ -2221,7 +2263,11 @@ impl<R: RollSource> ProdBody<R> {
             return FlankDecision::Fallthrough;
         };
         let e = &en[t];
-        let already = (me.q - e.q).abs() + (me.r - e.r).abs() == 1
+        // `_canStrikeTargetFrom(ru, ru.q, ru.r, dirTarget)` (`:8212`, ciało `:8487-8493`): `1 <= dd <= reach`.
+        let reach = self.reach_of(unit);
+        let dd = (me.q - e.q).abs() + (me.r - e.r).abs();
+        let already = dd >= 1
+            && dd <= reach
             && relative_hit(
                 &JsVal::Num(e.facing),
                 &JsVal::Num(me.q as f64),
@@ -2233,7 +2279,7 @@ impl<R: RollSource> ProdBody<R> {
             return FlankDecision::Done;
         }
         let occ = self.occupied_tiles();
-        let (step, missing) = self.with_cav_terrain(mounted, &en, |ct| {
+        let (step, missing) = self.with_cav_terrain(mounted, reach, &en, |ct| {
             first_step_toward_directed_attack(&me, &en, t, desired, &occ, ct)
         });
         if missing {
@@ -2276,6 +2322,7 @@ impl<R: RollSource> ProdBody<R> {
     ) -> (f64, Option<f64>, Option<usize>) {
         let ix = side_ix(unit.side);
         let mounted = self.units[ix][unit.idx].activate.mounted;
+        let reach = self.reach_of(unit);
         let mut move_left = st.unit(unit).c.move_left;
         let en = self.combatants(opposite(unit.side), st);
         let enemies = self.enemies_of(unit.side, st);
@@ -2297,7 +2344,7 @@ impl<R: RollSource> ProdBody<R> {
             let first = {
                 let me = self.combatant(unit, st);
                 let occ = self.occupied_tiles();
-                self.with_cav_terrain(mounted, &en, |ct| {
+                self.with_cav_terrain(mounted, reach, &en, |ct| {
                     cav_directed_maneuver_step(&me, &en, tgt, want, gate(move_left), &occ, ct)
                 })
                 .0
@@ -2325,7 +2372,7 @@ impl<R: RollSource> ProdBody<R> {
                     cur = cavalry_target(&me, &en).unwrap_or(cur);
                     let occ = self.occupied_tiles();
                     let next = self
-                        .with_cav_terrain(mounted, &en, |ct| {
+                        .with_cav_terrain(mounted, reach, &en, |ct| {
                             cav_directed_maneuver_step(
                                 &me,
                                 &en,
@@ -2350,7 +2397,7 @@ impl<R: RollSource> ProdBody<R> {
         let first = {
             let me = self.combatant(unit, st);
             let occ = self.occupied_tiles();
-            self.with_cav_terrain(mounted, &en, |ct| {
+            self.with_cav_terrain(mounted, reach, &en, |ct| {
                 cav_maneuver_step(&me, &en, tgt, gate(move_left), &occ, ct)
             })
             .0
@@ -2379,7 +2426,7 @@ impl<R: RollSource> ProdBody<R> {
                 };
                 let occ = self.occupied_tiles();
                 let next = self
-                    .with_cav_terrain(mounted, &en, |ct| {
+                    .with_cav_terrain(mounted, reach, &en, |ct| {
                         cav_maneuver_step(&me, &en, t2, gate(move_left), &occ, ct)
                     })
                     .0;
@@ -2402,7 +2449,9 @@ impl<R: RollSource> ProdBody<R> {
         // (4) `_bestChargeStepKey(ru, tgt)` i `ru.moveLeft > 0` -> jeden `_doMove(ru, nc, nr, done)`.
         let occ = self.occupied_tiles();
         let charge = self
-            .with_cav_terrain(mounted, &en, |ct| best_charge_step(&me, &en, tgt, &occ, ct))
+            .with_cav_terrain(mounted, reach, &en, |ct| {
+                best_charge_step(&me, &en, tgt, &occ, ct)
+            })
             .0;
         if let Some(step) = charge {
             if move_left > 0.0 {
@@ -2876,6 +2925,168 @@ impl<R: RollSource> ProdBody<R> {
         (elapsed, moved.then_some(move_left))
     }
 
+    /// K5LOOP-CLOSE r4: wykonanie `_fleeStep(ru, done)` (`battleScene.ts:9845-9897`) na stanie `st` (kopia stanu
+    /// sterownika, patrz [`Self::flee_after`]). Każde wejście `_fleeStep` (także z `_schedule(STEP_GAP_MS)`):
+    /// 1. preludium (`:9846-9848`): `finished`, `dead`/`fadingOut`/`removed` = koniec; `moveLeft <= 0` = koniec (`NaN`
+    ///    przechodzi, jak w JS);
+    /// 2. na krawędzi własnej strony (`:9853-9858`: atak `q <= 0`, obrona `q >= BF_COLS - 1`) = `_removeUnitFromScene` +
+    ///    `_shakeAlliesOnLoss`, koniec;
+    /// 3. pole docelowe (`:9862-9873`): kolumna `q + dir` (atak `-1`, obrona `+1`), wiersze `r + 0, +1, -1, +2, -2`,
+    ///    pierwsze w planszy, wolne w `occByKey` i przejezdne dla jednostki (`_passableForUnit`);
+    /// 4. brak pola (`:9874-9880`): `fleeStuck += 1`, przy `>= 2` zniknięcie z pola + ripple; koniec;
+    /// 5. `fleeStuck = 0`, krok `_doMove` (koszt, bród, `_updateFacing`, `Move`), callback (`:9884-9896`): `finished` /
+    ///    `removed` / `dead` = koniec; krawędź osiągnięta = zniknięcie + ripple; `ru.moveLeft > 0` (dokładna negacja:
+    ///    `<= 0 || NaN` kończy) = `_schedule(STEP_GAP_MS)` i kolejne wejście; inaczej koniec.
+    ///
+    /// Zwraca czas (`MOVE_STEP_MS` na krok + `STEP_GAP_MS` na `_schedule`, nominalnie). Zniknięcie z pola i ripple mają
+    /// chwilę końca ostatniego kroku. Ucieczka nie losuje.
+    fn flee_run(&mut self, unit: UnitRef, st: &mut TurnSeqState) -> f64 {
+        let ix = side_ix(unit.side);
+        let mounted = self.units[ix][unit.idx].activate.mounted;
+        let atk = unit.side == BattleSide::Attacker;
+        let home_col = if atk { 0 } else { BF_COLS - 1 };
+        let at_home = |q: i64| if atk { q <= home_col } else { q >= home_col };
+        let dir: i64 = if atk { -1 } else { 1 };
+        let enemies = self.enemies_of(unit.side, st);
+        let now0 = self.now;
+        let mut elapsed = 0.0;
+        let mut move_left = st.unit(unit).c.move_left;
+        let mut moved = false;
+        loop {
+            // Preludium `_fleeStep` (`:9846-9848`).
+            let c = st.unit(unit).c;
+            if st.finished || c.dead || c.fading_out || c.removed || move_left <= 0.0 {
+                break;
+            }
+            let (q, r) = self.cell_of(unit);
+            if at_home(q) {
+                self.now = now0 + elapsed;
+                self.leave_field(st, unit);
+                break;
+            }
+            let nc = q + dir;
+            let target = {
+                let terrain = self
+                    .terrain
+                    .as_deref()
+                    .expect("teren sprawdzony w start (ucieczka bez MoveTerrain ma jawny tag)");
+                [0_i64, 1, -1, 2, -2].into_iter().find_map(|dr| {
+                    let nr = r + dr;
+                    if !(0..BF_COLS).contains(&nc) || !(0..BF_ROWS).contains(&nr) {
+                        return None;
+                    }
+                    if self
+                        .occ_by_key
+                        .contains_key(&cell_key(nc as f64, nr as f64))
+                    {
+                        return None;
+                    }
+                    if !unit_move_cost(terrain, mounted, nc as f64, nr as f64).is_finite() {
+                        return None;
+                    }
+                    Some((nc, nr))
+                })
+            };
+            let Some(tile) = target else {
+                // Zablokowany (`:9874-9880`): po dwóch turach z rzędu znika z pola, żeby nie zamarzał.
+                let stuck = &mut self.flee_stuck[ix][unit.idx];
+                *stuck += 1.0;
+                if *stuck >= 2.0 {
+                    self.now = now0 + elapsed;
+                    self.leave_field(st, unit);
+                }
+                break;
+            };
+            self.flee_stuck[ix][unit.idx] = 0.0;
+            move_left = self.body_step(unit, tile, move_left, now0 + elapsed, &enemies);
+            moved = true;
+            elapsed += MOVE_STEP_MS;
+            // Callback `_doMove` (`:9884-9896`).
+            let c = st.unit(unit).c;
+            if st.finished || c.removed || c.dead {
+                break;
+            }
+            if at_home(self.cell_of(unit).0) {
+                self.now = now0 + elapsed;
+                self.leave_field(st, unit);
+                break;
+            }
+            // `if (ru.moveLeft > 0) _schedule(...) else done()`: dokładna negacja (NaN kończy, lekcja r2).
+            if move_left <= 0.0 || move_left.is_nan() {
+                break;
+            }
+            elapsed += f64::from(STEP_GAP_MS);
+        }
+        self.now = now0;
+        if moved {
+            unit_cu_mut(st, unit).move_left = move_left;
+        }
+        elapsed
+    }
+
+    /// `_removeUnitFromScene(ru)` + `_shakeAlliesOnLoss(ru)` z `_fleeStep` (`:9855-9856`, `:9878`, `:9890-9891`).
+    fn leave_field(&mut self, st: &mut TurnSeqState, unit: UnitRef) {
+        self.remove_unit_from_scene(st, unit);
+        self.shake_allies_on_loss(st, unit);
+    }
+
+    /// `_removeUnitFromScene(ru)` (`battleScene.ts:9910-9925`) dla uciekającej jednostki: idempotentne (`removed`),
+    /// `removed = dead = true`, `fadingOut = false`, zwolnienie pola `occByKey.delete(cellKey(ru.q, ru.r))` (`:9915`, bez
+    /// sprawdzania właściciela, jak w pinie), odpięcie modelu i paska ([`BattleAction::Leave`]).
+    fn remove_unit_from_scene(&mut self, st: &mut TurnSeqState, unit: UnitRef) {
+        {
+            let c = unit_cu_mut(st, unit);
+            if c.removed {
+                return;
+            }
+            c.removed = true;
+            c.dead = true;
+            c.fading_out = false;
+        }
+        self.release_tile(unit);
+        self.emit(BattleAction::Leave { unit });
+    }
+
+    /// `_shakeAlliesOnLoss(fallen)` (`battleScene.ts:9743-9754`): każdy żywy, nieznikający, nieuciekający sojusznik (bez
+    /// samego `fallen`) w promieniu [`MORALE_DEATH_RADIUS`] (Manhattan od pola `fallen`) traci
+    /// [`MORALE_ALLY_DEATH_LOSS`] morale (`Math.max(0, ...)`), pasek ([`BattleAction::Shaken`]) i `_checkRout` (rout
+    /// może kaskadować); na końcu `_checkMeleeScreenLost(fallen.side)`, gdy `fallen` nie jest `primaryRanged`.
+    fn shake_allies_on_loss(&mut self, st: &mut TurnSeqState, fallen: UnitRef) {
+        let (fq, fr) = self.cell_of(fallen);
+        let side = fallen.side;
+        for idx in 0..self.units[side_ix(side)].len() {
+            let a = UnitRef { side, idx };
+            if a == fallen {
+                continue;
+            }
+            let c = st.unit(a).c;
+            if c.dead || c.fading_out || c.routed {
+                continue;
+            }
+            let (aq, ar) = self.cell_of(a);
+            if (aq - fq).abs() + (ar - fr).abs() > MORALE_DEATH_RADIUS {
+                continue;
+            }
+            let morale = {
+                let ac = unit_cu_mut(st, a);
+                ac.morale = js_max0(ac.morale - MORALE_ALLY_DEATH_LOSS);
+                ac.morale
+            };
+            self.emit(BattleAction::Shaken {
+                unit: a,
+                fallen,
+                morale,
+            });
+            self.check_rout(st, a);
+        }
+        if !self.units[side_ix(side)][fallen.idx]
+            .activate
+            .primary_ranged
+        {
+            self.check_melee_screen_lost(st, side);
+        }
+    }
+
     /// K5LOOP-CLOSE r3: wykonanie `_phalanxAction(ru, done)` (`battleScene.ts:6546-6578`) w ciele przez K5DOC-T7a
     /// ([`phalanx_action_decide`], bez zmian): sąsiad (`_targetInRange`) = cios wspólną ścieżką, samotna falanga =
     /// `_advanceStep`, wyprzedzenie linii = `done()`, krok `_phalanxStep` = jeden prawdziwy `_doMove` i `done()`
@@ -2948,6 +3159,45 @@ impl<R: RollSource> ProdBody<R> {
                 PhalanxRun::Finished(MOVE_STEP_MS, Some(ml))
             }
         }
+    }
+
+    /// K5LOOP-CLOSE r3/r4: wystrzał `_doRangedAttack` (`battleScene.ts:9179-9222`) w chwili `self.now + at`: zwrot strzelca
+    /// ku polu celu (`facingFromTo`, `:9182-9184`, zawsze `rotation.y`), potem pocisk (`:9218-9221`) z trafieniem po
+    /// `RANGED_FLY_MS`. Brak szablonu strzału na cel (wejście adaptera [`Self::ranged_blows`]) = jawny tag
+    /// `strzal-bez-szablonu` i brak strzału.
+    fn begin_shot(&mut self, unit: UnitRef, target: usize, at: f64) -> Option<ProdShot> {
+        let ix = side_ix(unit.side);
+        if !self.ranged_blows[ix][unit.idx].contains_key(&target) {
+            self.unported.push((unit, "strzal-bez-szablonu"));
+            return None;
+        }
+        let t_shot = self.now + at;
+        let tref = UnitRef {
+            side: opposite(unit.side),
+            idx: target,
+        };
+        let (aq, ar) = self.cell_of(unit);
+        let (dq, dr) = self.cell_of(tref);
+        let dir = facing_toward(
+            &JsVal::Num((dq - aq) as f64),
+            &JsVal::Num((dr - ar) as f64),
+            &JsVal::Num(self.facing[ix][unit.idx]),
+        )
+        .to_number();
+        self.facing[ix][unit.idx] = dir;
+        let saved = self.now;
+        self.now = t_shot;
+        self.emit(BattleAction::Facing { unit, dir });
+        self.emit(BattleAction::Shot {
+            attacker: unit,
+            target: tref,
+            land_at: t_shot + RANGED_FLY_MS,
+        });
+        self.now = saved;
+        Some(ProdShot {
+            target,
+            hit_at: t_shot + RANGED_FLY_MS,
+        })
     }
 
     /// K5LOOP-CLOSE r3: trafienie strzału (`_doRangedAttack` callback `:9223-9228`): amunicja (`ammoLeft -= 1` przy
@@ -3073,11 +3323,33 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             self.trace.push((unit, vec![ActivateEvent::Done]));
             return 0.0;
         }
-        // Uciekająca jednostka (`_fleeStep`, battleScene.ts:6055) nigdy nie atakuje; ruch ucieczki nie jest portowany.
+        // Uciekająca jednostka (`if (ru.routed) { this._fleeStep(ru, done); return; }`, battleScene.ts:6055) nigdy nie
+        // atakuje; gałąź działa przed trybem ręcznym i doktryną. K5LOOP-CLOSE r4: `_fleeStep` (`:9845-9897`) jest
+        // WYKONYWANY ([`Self::flee_run`]). Bez [`MoveTerrain`] (D1 K5DOC-T4e-0) zostaje jawny tag `ucieczka-routed` i
+        // brak akcji; przy murze (`_doMove` czyta `_siegeMoveRefused`, `:8689`) jawny tag `ucieczka-oblezenie`.
         if seq.routed {
             self.trace.push((unit, vec![ActivateEvent::Flee]));
-            self.unported.push((unit, "ucieczka-routed"));
-            return 0.0;
+            if self.terrain.is_none() {
+                self.unported.push((unit, "ucieczka-routed"));
+                return 0.0;
+            }
+            if self.scene.wall_col >= 0 || st.siege_wall_col >= 0 {
+                self.unported.push((unit, "ucieczka-oblezenie"));
+                return 0.0;
+            }
+            let mut st2 = st.clone();
+            let dur = self.flee_run(unit, &mut st2);
+            self.flee_after = Some((unit, st2.atk, st2.def));
+            self.pending[ix][unit.idx] = Some(ProdPending {
+                morale: seq.morale,
+                start_rout: false,
+                surround_applied: self.surround[ix][unit.idx],
+                attack: None,
+                move_left: None,
+                shot: None,
+                flee: true,
+            });
+            return dur;
         }
         let pu = self.units[ix][unit.idx].clone();
         // Gałęzie spoza zakresu sprawdzane PRZED maszyną (żeby maszyna nie wybrała ścieżki strzelca/doktryny).
@@ -3085,11 +3357,6 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             Some("tryb-reczny")
         } else if self.scene.wall_col >= 0 || st.siege_wall_col >= 0 {
             Some("oblezenie")
-        } else if pu.activate.can_shoot && pu.activate.shooting_disabled {
-            // K5LOOP-CLOSE r3: strzelec z `shootingEnabled = false` (tryb UI) idzie ścieżką wręcz (`:6241` nie wchodzi),
-            // ale `_targetInRange`/`_canAttackFrom` czytają wtedy zasięg strzału (`canShoot`, `:8373-8377`, `:8436`), a
-            // adaptery ciała zakładają `reach = 1`. Jawny tag zamiast cichego złego zasięgu (lista r4 w raporcie).
-            Some("strzelec-bez-strzelania")
         } else if pu.activate.doctrine_auto {
             Some("doktryna")
         } else {
@@ -3115,11 +3382,28 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             ..self.scene.clone()
         };
         // `_targetInRange` czyta `_enemiesOf`: cel martwy / znikający / uciekający nie jest celem (battleScene.ts:8291-8294).
-        let melee_target = pu.melee_target.filter(|t| {
-            enemies
-                .get(*t)
-                .is_some_and(|e| !e.dead && !e.fading_out && !e.routed)
-        });
+        // K5LOOP-CLOSE r4: strzelec z amunicją i `shootingEnabled = false` (`canShoot && !shootingEnabled`, `:6241` nie
+        // wchodzi) idzie ścieżkami wręcz, ale `_targetInRange` (`:8373-8410`) liczy wtedy zasięg STRZAŁU (`canShoot`,
+        // `:8376-8380`: `1 <= dd <= ru.range`) z kierunkiem natarcia (`:8402-8407`) i `lowestHp`: cel liczy ciało
+        // (K5DOC-T2 [`target_in_range_cmb`], bez zmian), nie adapter. Pozostałe jednostki: wejście adaptera jak dotąd.
+        let melee_target = if pu.activate.can_shoot {
+            let me = self.combatant(unit, st);
+            let en = self.combatants(opposite(unit.side), st);
+            target_in_range_cmb(
+                &me,
+                &en,
+                &TargetScene {
+                    siege_wall_col: -1,
+                    wall_ever_breached: false,
+                },
+            )
+        } else {
+            pu.melee_target.filter(|t| {
+                enemies
+                    .get(*t)
+                    .is_some_and(|e| !e.dead && !e.fading_out && !e.routed)
+            })
+        };
         // K5LOOP-CLOSE r3: `_advanceCoord(ru)` i `_nearestEnemy(ru)` dla gałęzi `primaryRanged` bez amunicji (U7.6).
         let advance_coord = if pu.activate.side_atk {
             pu.activate.q as f64
@@ -3162,6 +3446,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             attack: None,
             move_left: None,
             shot: None,
+            flee: false,
         };
         let mut skipped: Vec<&'static str> = Vec::new();
         let mut advance = false;
@@ -3169,6 +3454,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         let mut ranged = false;
         let mut fallback = false;
         let mut phalanx = false;
+        let mut flee = false;
         for ev in res.events.iter().copied() {
             match ev {
                 ActivateEvent::Done
@@ -3193,10 +3479,30 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 ActivateEvent::RangedAction => ranged = true,
                 ActivateEvent::FallBackStep => fallback = true,
                 ActivateEvent::PhalanxAction => phalanx = true,
+                // K5LOOP-CLOSE r4: rout z okrążenia (`:6116-6117`: `_checkRout` -> `_startRout`, potem `_fleeStep`).
+                // Bez [`MoveTerrain`] (D1) zostaje tag `ucieczka-routed` jak dotąd (rout wykonuje wtedy `complete`).
+                ActivateEvent::Flee if self.terrain.is_some() => flee = true,
                 other => skipped.push(prod_tag(other)),
             }
         }
-        // Gałąź spoza zakresu (ucieczka po okrążeniu, marsz, kawaleria, falanga...) = brak akcji po efektach stanu.
+        // K5LOOP-CLOSE r4: okrążenie złamało jednostkę w tej aktywacji. Pin: `ru.morale` po trafieniu okrążenia,
+        // `_checkRout` -> `_startRout` (`:9799-9831`: osłona wręcz, boost wrogów, zwolnienie pola, zwrot ku krawędzi) w
+        // chwili aktywacji, potem `_fleeStep` (`:6117`). Ciało wykonuje to na kopii stanu w tej samej kolejności (rout PRZED
+        // ruchem ucieczki, bo `_fleeStep` czyta zwolnione pola i facing po `_startRout`); `complete` przepisuje kopię.
+        if flee && skipped.is_empty() {
+            let mut st2 = st.clone();
+            unit_cu_mut(&mut st2, unit).morale = au.morale;
+            if pend.start_rout {
+                self.start_rout(&mut st2, unit);
+            }
+            let dur = self.flee_run(unit, &mut st2);
+            self.flee_after = Some((unit, st2.atk, st2.def));
+            pend.start_rout = false;
+            pend.flee = true;
+            self.pending[ix][unit.idx] = Some(pend);
+            return dur;
+        }
+        // Gałąź spoza zakresu (ucieczka bez terenu, marsz, doktryna...) = brak akcji po efektach stanu.
         if !skipped.is_empty() {
             for tag in skipped {
                 self.unported.push((unit, tag));
@@ -3244,39 +3550,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             let run = self.ranged_action(unit, st);
             pend.move_left = run.move_left;
             if let Some((target, at)) = run.shot {
-                if self.ranged_blows[ix][unit.idx].contains_key(&target) {
-                    let t_shot = self.now + at;
-                    pend.shot = Some(ProdShot {
-                        target,
-                        hit_at: t_shot + RANGED_FLY_MS,
-                    });
-                    // `_doRangedAttack` (`:9182-9184`): zwrot strzelca ku polu celu (`facingFromTo`, zawsze `rotation.y`),
-                    // potem pocisk (`:9218-9221`) z trafieniem po `RANGED_FLY_MS`.
-                    let tref = UnitRef {
-                        side: opposite(unit.side),
-                        idx: target,
-                    };
-                    let (aq, ar) = self.cell_of(unit);
-                    let (dq, dr) = self.cell_of(tref);
-                    let dir = facing_toward(
-                        &JsVal::Num((dq - aq) as f64),
-                        &JsVal::Num((dr - ar) as f64),
-                        &JsVal::Num(self.facing[ix][unit.idx]),
-                    )
-                    .to_number();
-                    self.facing[ix][unit.idx] = dir;
-                    let saved = self.now;
-                    self.now = t_shot;
-                    self.emit(BattleAction::Facing { unit, dir });
-                    self.emit(BattleAction::Shot {
-                        attacker: unit,
-                        target: tref,
-                        land_at: t_shot + RANGED_FLY_MS,
-                    });
-                    self.now = saved;
-                } else {
-                    self.unported.push((unit, "strzal-bez-szablonu"));
-                }
+                pend.shot = self.begin_shot(unit, target, at);
             }
             self.pending[ix][unit.idx] = Some(pend);
             return run.dur;
@@ -3304,6 +3578,22 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             pend.move_left = move_left;
             self.pending[ix][unit.idx] = Some(pend);
             return dur;
+        }
+        // K5LOOP-CLOSE r4: `_doAttack` (`:8787-8797`): `if (canShoot(attacker)) this._doRangedAttack(...)`. Strzelec z
+        // amunicją dochodzi tu tylko z `shootingEnabled = false` (inaczej `_rangedAction`, `:6241`; mur wykluczony
+        // strażnikiem `oblezenie`): cios z U7.6 (sąsiad w zasięgu strzału), kawalerii, falangi albo U7.9 jest STRZAŁEM
+        // (`Facing` + `Shot`, trafienie `_singleBlow(…, true)` po `RANGED_FLY_MS`, koniec po `RANGED_GAP_MS`), nie ciosem.
+        if pu.activate.can_shoot {
+            if let Some(target) = pend.attack.take() {
+                pend.shot = self.begin_shot(unit, target, 0.0);
+                let dur = if pend.shot.is_some() {
+                    RANGED_FLY_MS + RANGED_GAP_MS
+                } else {
+                    0.0
+                };
+                self.pending[ix][unit.idx] = Some(pend);
+                return dur;
+            }
         }
         if let Some(target) = pend.attack {
             if pu.melee_target != Some(target) || pu.blow.is_none() {
@@ -3350,6 +3640,16 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             return;
         };
         self.surround[ix][unit.idx] = pend.surround_applied;
+        // K5LOOP-CLOSE r4: ucieczka wykonana w `start` na kopii stanu (rout z okrążenia, kroki, zniknięcie z pola, ripple);
+        // stan jednostek obu stron po aktywacji = ta kopia.
+        if pend.flee {
+            if let Some((u, atk, def)) = self.flee_after.take() {
+                debug_assert_eq!(u, unit, "complete innej jednostki niz start ucieczki");
+                st.atk = atk;
+                st.def = def;
+            }
+            return;
+        }
         {
             let c = unit_cu_mut(st, unit);
             c.morale = pend.morale;

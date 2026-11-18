@@ -170,6 +170,20 @@ fn enc(a: &TimedAction) -> String {
             key(*target),
             js_num(*land_at)
         ),
+        // K5LOOP-CLOSE r4: mechaniczne ramiona dla nowych wariantów `Leave` (ucieczka z pola) i `Shaken` (ripple
+        // `_shakeAlliesOnLoss`); scenariusze tego testu nie mają danych terenu, więc ucieczka nie jest wykonywana
+        // (tag `ucieczka-routed`) i ramiona nie występują w danych.
+        BattleAction::Leave { unit } => format!("{t} leave {}", key(*unit)),
+        BattleAction::Shaken {
+            unit,
+            fallen,
+            morale,
+        } => format!(
+            "{t} shaken {} {} {}",
+            key(*unit),
+            key(*fallen),
+            js_num(*morale)
+        ),
         BattleAction::TowerShot {
             row,
             target,
