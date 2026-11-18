@@ -158,6 +158,18 @@ fn enc(a: &TimedAction) -> String {
             to.1,
             js_num(*arrive_at)
         ),
+        // K5LOOP-CLOSE r3: mechaniczne ramię dla nowego wariantu `Shot` (strzał jednostki); scenariusze tego testu nie
+        // mają strzelców (`can_shoot = false`), więc ramię nie występuje w danych.
+        BattleAction::Shot {
+            attacker,
+            target,
+            land_at,
+        } => format!(
+            "{t} shot {} {} {}",
+            key(*attacker),
+            key(*target),
+            js_num(*land_at)
+        ),
         BattleAction::TowerShot {
             row,
             target,
