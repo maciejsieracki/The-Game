@@ -1,3 +1,9 @@
+## ROBOCZA 10848663 -- 2026-11-17 -- FALA 813: PEACEAUTO: pokoj z graczem tylko przy 100% zmeczenia, czyszczenie ofert po pokoju (testowa)
+
+- Pokoj z graczem nie zapada juz automatycznie przy zmeczeniu ponizej 100% (tick zmeczenia pomija pary z graczem poza wymuszonym pokojem 100% z oknem i wpisem Wazne); po zawarciu pokoju czyszczone oferty zalezne od wojny (pokoj, rozejm) na stole i w liscie audiencji (iteracja po ID); wpis Wazne po pokoju ze stolu i po koncu rozejmu (war-weariness.ts, diplomacy-proposals.ts, main.ts)
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplo-peace-auto-stale-offer static 6/0 i live Chromium 12/0; mutacje M1-M4 czerwone; 9 testow dyplomacji/pokoju/rozejmu/zmeczenia zielonych
+- Limity: Nie udowodniono ze tick zmeczenia byl jedyna sciezka pokoju w grze wlasciciela; wpisy Wazne po akceptacji AI i koncu rozejmu bez testu zywego; blockReason Przyjmij przy +98 PW nie zmierzony (DIPLO-4/5); dary z miastami o innym actionId nie sa czyszczone; ABC czeka: cena pokoju 0 przy <100% oraz wpis Wazne
+
 ## ROBOCZA c74dc4bd -- 2026-11-17 -- FALA 812: LEADERFIRST: panel Rekrutacja - wodz i Idz do wodza na gorze (testowa)
 
 - Panel Rekrutacja w zakladce Armia: kolejnosc od gory - blok Wodz/General, pole Idz do wodza, dopiero masowa rekrutacja (erp), liczniki, pula, miasta; czysta zmiana kolejnosci HTML i komentarzy (empireDetailPanel.ts, empireRecruitPanel.ts)

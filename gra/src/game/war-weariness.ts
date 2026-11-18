@@ -179,6 +179,12 @@ export interface WearinessTickDeps {
   /** Pary AI↔AI aktualnie w wojnie (główne AI, nie wyeliminowane). Kolejność deterministyczna (a<b rosnąco). */
   pairs: readonly WearinessPair[];
   pairKey: (a: number, b: number) => string;
+  /**
+   * DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1: true = para zawiera gracza. Dla takiej pary tick kończy pokój
+   * WYŁĄCZNIE przy wymuszeniu (100% zmęczenia, z oknem i wpisem „Ważne"); bez tego pokój „za cenę" (w tym cena 0)
+   * zapadałby po cichu przy niższym zmęczeniu, bez zgody gracza.
+   */
+  isPlayerPair?: (a: number, b: number) => boolean;
   warInfo: (a: number, b: number) => WearinessWarInfo;
   /** Udział siły MILITARNEJ x w parze (x vs y), 0..1 (R-WEB-DIPLO-WEARINESS-CITY-ONLY-Q1: nie Power). */
   shareOf: (x: number, y: number) => number;
@@ -284,6 +290,9 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
       out.push({ pairKey: key, action: 'forced_peace', level: lvl, stage: st.stage, plan: forcedPlan, loser, winner });
       continue;
     }
+    // DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1: para z graczem poza wymuszeniem (wyżej) — brak automatycznego
+    // pokoju „za cenę" i brak ofert AI tym torem; pokój za zgodą gracza przez zwykłe negocjacje.
+    if (d.isPlayerPair && d.isPlayerPair(pr.a, pr.b)) { none(); continue; }
     // Desperacja liczona z udziałem nie większym niż próg „wyraźnie" (słabsza strona przy remisie nie wypada z oferty).
     const shareForDespair = Math.min(loserShare, L.udzialWyraznie);
 
