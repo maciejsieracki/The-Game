@@ -111,7 +111,11 @@ function eventsAfter(attempts, input) {
 // (f) wiring w main.ts
 {
   const src = fs.readFileSync(path.join(GRA_ROOT, 'src', 'main.ts'), 'utf8');
-  const hint = src.slice(src.indexOf('function hintEndTurnBlocked'), src.indexOf('function hintEndTurnBlocked') + 2500);
+  // Kotwica strukturalna zamiast stałego okna znaków: ciało funkcji kończy się przed
+  // następną deklaracją na tym samym poziomie wcięcia (4 spacje), niezależnie od jej długości.
+  const hintStart = src.indexOf('function hintEndTurnBlocked');
+  const hintEnd = src.indexOf('\n    function ', hintStart + 10);
+  const hint = src.slice(hintStart, hintEnd > hintStart ? hintEnd : hintStart + 2500);
   ok(/if \(nnsHint\.blokada\) \{\s*noteEndTurnBlockedByNns\(\);/.test(hint), '(f) hintEndTurnBlocked zapisuje próbę w gałęzi NNS');
   const collectIdx = src.indexOf('function collectTurnEventsUncached');
   const collectBody = src.slice(collectIdx, src.indexOf('dismissedSidePanelEventIds.has(e.id));', collectIdx));
