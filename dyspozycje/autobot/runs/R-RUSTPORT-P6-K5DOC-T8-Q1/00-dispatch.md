@@ -1,0 +1,19 @@
+# R-RUSTPORT-P6-K5DOC-T8-Q1 — krok doktryny grupy w ciele ProdBody (#264, T3 z rozpoznania #369)
+
+STATUS: dispatch orkiestratora. Opus (3D), wszystkie etapy Opus. Podstawa: `dyspozycje/autobot/runs/R-RUSTPORT-P6-K5LOOP-WIRING-ROZP-Q1/00-rozpoznanie.md` §0 (pkt 3), §3 (wiersz T3), §4 (D-WIR-9). Czytaj je PIERWSZE. Temat jest warunkiem #369: domyślna doktryna `steady` + `autoPlay=true` (pin `battleScene.ts:17612-17630`) kieruje każdą jednostkę atakującego (poza machinami) przez krok doktryny; w Rust zamiast tego jest tag `doktryna` (`siege_tactics_loop.rs` ~:3094) i `ProdOps::doctrine_step` = `false`.
+BAZA: `origin/rust-port/parity-v2` = `47af8dac30e5997eed70d6ba4a58f4ce6d8d4f79` (zawiera K5LOOP-CLOSE r4 i T0) — ta linia ma priorytet; wpisz SHA w raporcie. Przed startem: `git fetch origin && git checkout -B <gałąź> 47af8dac30e5997eed70d6ba4a58f4ce6d8d4f79`.
+
+## GOAL
+Port z TEKSTU pinu `07d2fbd72` (WEB NAJPIERW; `git show 07d2fbd72:gra/src/...`): `_executeGroupDoctrineStep` (`battleScene.ts:17966-18070`) wraz z `_executeSkirmishDoctrineStep`, ścieżkami `defensive` i `aggressive`, bramkami `siegeDefenderNeverDoctrine` / `siegeMachineNeverDoctrine` oraz wejściem z `_activateUnit` (`:6091`), tak aby `ProdBody` wykonywał krok doktryny w ciele, a `ProdOps::doctrine_step` przestało być stałym `false`. Tag `doktryna` ma zniknąć z listy `unported` dla bitew z domyślną doktryną `steady`/`doctrine_auto = true`.
+## DECYZJE (D-T8-1..3, techniczne)
+- D-T8-1: krok doktryny wołany DOKŁADNIE tam i w takiej kolejności względem pozostałych gałęzi `_activateUnit`, jak w pinie; zdarzenia (Move/Shot/Facing/inne) w tej samej kolejności co pin.
+- D-T8-2: istniejące rodziny wektorów r1–r4 (`p6_k5loop_close_vectors/*`) bajt w bajt bez zmian; zmiany zachowania tylko tam, gdzie wektor miał tag `doktryna` w `unported` (jeśli któraś asercja wymaga zmiany — wypisz jawnie plik i powód, NIE osłabiaj; poza allowlistą zgłoś jako blokadę).
+- D-T8-3: czas rzeczywisty i kwantyzacja rAF poza zakresem (NIE_ZMIERZONO); RNG tylko wstrzyknięty (jak r1–r4).
+## ALLOWLISTA
+`rust-port/engine/src/domain/siege_tactics_loop.rs`, ewentualnie nowe `rust-port/engine/src/domain/siege_tactics_doctrine_*.rs` (+ `pub mod` w `domain/mod.rs`), `rust-port/engine/src/domain/siege_tactics_actions.rs` (tylko nowe warianty akcji, jeśli pin je emituje, z `...WithoutDto`), mechaniczne ramiona `match` w `rust-port/engine/tests/p4_1i3_actions.rs`, nowe pliki `rust-port/engine/tests/p6_k5doc_t8*.rs`, `p6_k5doc_t8_gen.mjs`, `p6_k5doc_t8_vectors/*`, raporty runu. NIE ruszaj: istniejących wektorów/testów r1–r4, `Cargo.toml`/`Cargo.lock`, `renderer/`, `gra/**`.
+## KRYTERIA KOŃCA
+Domyślna doktryna `steady` z `doctrine_auto = true` daje te same zdarzenia co pin dla >= 4 rodzin (jazda, strzelec w zasięgu, strzelec poza zasięgiem, piechota) oraz dla `defensive` i `aggressive`; bramki `siegeDefenderNeverDoctrine`/`siegeMachineNeverDoctrine` pokryte wektorami; tag `doktryna` zniknął z `unported`; mutanty każdej nowej gałęzi i kolejności rzutów RNG giną (równoważne uzasadnione); NaN (`x <= 0.0 || x.is_nan()`) i strażnik czasu 90 s w testach pętli; generator wykonuje TEKST pinu (strażnik SHA wycinków); nazwy liczników pokrycia dokładnie mówią, co liczą.
+## BRAMKI (EXIT 0)
+`cargo fmt --check`; `cargo clippy --all-targets -- -D warnings`; nowe testy + `p6_k5loop_close*` i `p6_siege*` (bez regresji); pełny `cargo test --all-targets --no-fail-fast` w tle (`setsid nohup`, EXIT w logu). Dysk >= 8 GB przed pełną bramką; unikalny podkatalog scratchpadu `k5t8/…` (NIE używaj wspólnych nazw), target usuń po bramkach.
+## ZAKAZY
+Brak `#[ignore]`, brak osłabiania asercji, brak push/deploy, brak linii Co-Authored-By z nazwą modelu. Raporty: `01-operator-r1.md`, `02-evaluator.md`, `02a-obrona.md`, `03-final-control.md`; po FC integruje orkiestrator.
