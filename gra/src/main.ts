@@ -53,7 +53,10 @@ window.addEventListener('unhandledrejection', (e) => {
 
 // Imports
 
-import { PEACE_TAIL_ORDER } from './game/peace-tail-payment';
+import {
+  PEACE_TAIL_ORDER, peacePlanWithTail, peaceTailHoldings, peaceTailPnPerUnit, peaceTailStep, peaceTailBasketItems,
+  type PeaceTailPricing,
+} from './game/peace-tail-payment';
 import { humanizeId, nazwaCywilizacji, nazwaWyswietlana } from './game/text-names';
 import { nazwaMiastaDyplomacji, setDiplomacyCityNameResolver } from './game/diplomacy-city-name';
 import { TEREN_LABEL_PL } from './map/terrain-names';
@@ -26034,7 +26037,9 @@ async function boot(): Promise<void> {
         // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1: zapas płatnika ogona pokoju (miasta proponującego).
         // ZARZUT 6 (Evaluator r2): złoto to Skarbiec państwa (ownerTreasury), nie suma c.surowce miast (tam złota nie ma).
         // Brąz/żelazo/rudy: suma Spichlerzy miast właściciela (ownerResourceStock).
-        payerStock: Object.fromEntries(PEACE_TAIL_ORDER.map(k => [k, k === 'zloto' ? ownerTreasury(proposerId) : ownerResourceStock(proposerId, k)])),
+        payerStock: peaceTailHoldings(ownerTreasury(proposerId), k => ownerResourceStock(proposerId, k), PEACE_TAIL_ORDER),
+        // r3: płatnikiem ogona w ścieżce „gracz jest autorem pokoju" jest GRACZ (nie zawsze proponent: kontroferta, AI proponuje graczowi).
+        playerStock: peaceTailHoldings(ownerTreasury(ME()), k => ownerResourceStock(ME(), k), PEACE_TAIL_ORDER),
         proposerRespekt,
         responderRespekt,
         militaryRatio,
@@ -26347,6 +26352,14 @@ async function boot(): Promise<void> {
           transferBasketItems(proposerId, responderId, payload.giveItems, result.deal.id, !payload.receiveItems?.length);
           transferBasketItems(responderId, proposerId, payload.receiveItems, result.deal.id);
         }
+      }
+      // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (r3): ogon złożony z reszty ceny pokoju (złoto → brąz → żelazo → rudy) dopisujemy
+      // do koszyka strony płacącej — wykonuje go ten sam przelew co miasta/pozycje oferty (executePnDealTransfer → transferBasketItems).
+      if (cywAction === 'pokoj' && result.oneShotTrade && result.peaceTail?.applied) {
+        const tailItems = peaceTailBasketItems(result.peaceTail.items) as BasketItem[];
+        payload = result.peaceTail.giver === 'proposer'
+          ? { ...payload, giveItems: [...(payload.giveItems ?? []), ...tailItems] }
+          : { ...payload, receiveItems: [...(payload.receiveItems ?? []), ...tailItems] };
       }
       if (result.oneShotTrade) {
         // R-WEB-PEACE-CITY-CESSION-Q1 r4 (zarzut 3 Evaluatora): cesja miasta sprawdzana PRZED
@@ -39136,6 +39149,21 @@ async function boot(): Promise<void> {
       }
     }
 
+    /**
+     * R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (r3): zapasy i wycena PŁATNIKA ogona ceny pokoju. Złoto = Skarbiec państwa
+     * (ownerTreasury), brąz/żelazo/rudy = Spichlerz państwa (pula surowców miast właściciela: ownerResourceStock = suma c.surowce —
+     * ten sam stan, z którego transferSurowiecIlosc realnie zdejmuje towar; empireFoodStates.zapasyPanstwa to wyłącznie żywność).
+     * Wycena w epoce UMOWY pary (dealTradeEraForOwners). `payerId` = STRONA, KTÓRA PŁACI (nie zawsze proponent).
+     */
+    function peaceTailPricingFor(payerId: number, partnerId: number): PeaceTailPricing {
+      const era = dealTradeEraForOwners(payerId, partnerId);
+      return {
+        holdings: peaceTailHoldings(ownerTreasury(payerId), k => ownerResourceStock(payerId, k), PEACE_TAIL_ORDER),
+        pnPerUnit: k => peaceTailPnPerUnit(k, era),
+        stepOf: k => peaceTailStep(k, era),
+      };
+    }
+
     /** Majątek przegranego do zapłaty za pokój w istniejących formach koszyka: złoto, surowce, cesja miasta. */
     function aiPeacePaymentAssets(loserId: number, winnerId: number, skipCityIds: ReadonlySet<string>): PeaceAsset[] {
       const assets: PeaceAsset[] = [];
@@ -39247,6 +39275,10 @@ async function boot(): Promise<void> {
           };
         },
         assets: aiPeacePaymentAssets,
+        // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (ABC D): pokój AI↔AI — miasta, potem ogon z zapasów przegranego (ta sama funkcja).
+        tailPlan: (requiredPn, cityAssets, maxCities, loser, winner) => peacePlanWithTail({
+          ...peaceTailPricingFor(loser, winner), duePn: requiredPn, cities: cityAssets, maxCities,
+        }),
         cityCessionOk: (cityId, loser, winner) => cityCessionPlanFor(cityId, loser, winner).ok,
         battlePending,
         pay: (loser, winner, plan) => {
@@ -39329,6 +39361,10 @@ async function boot(): Promise<void> {
           };
         },
         assets: aiPeacePaymentAssets,
+        // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (ABC D): pokój AI↔AI — miasta, potem ogon z zapasów przegranego (ta sama funkcja).
+        tailPlan: (requiredPn, cityAssets, maxCities, loser, winner) => peacePlanWithTail({
+          ...peaceTailPricingFor(loser, winner), duePn: requiredPn, cities: cityAssets, maxCities,
+        }),
         cityCessionOk: (cityId, loser, winner) => cityCessionPlanFor(cityId, loser, winner).ok,
         battlePending,
         pay: (loser, winner, plan) => {
@@ -45497,6 +45533,8 @@ async function boot(): Promise<void> {
                   bronzeForceWarTargetId,
                   // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): miasta TEGO AI do oddania w pokoju.
                   miastaAI: diploMiastaWycenaDla(ownerId),
+                  // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (r3): zapasy AI do ogona ceny pokoju (Skarbiec + Spichlerz państwa).
+                  ogonPokoju: peaceTailPricingFor(ownerId, ME()),
                   ekspansywnosc: civAiProf?.ekspansywnosc,
                 };
                 diploInp.stoneForceWarTargetId = stoneForceWarTargetId;

@@ -133,10 +133,10 @@ try {
   if (liveFail.length) exitCode = 1;
 
   const mutants = [
-    ['M1 odwrócona kolejność ogona', ORIG.replace('const order = input.order ?? PEACE_TAIL_ORDER;',
-      'const order = [...(input.order ?? PEACE_TAIL_ORDER)].reverse();')],
-    ['M2 ignorowanie forbidden (stolica płaci)', ORIG.replace('planCityPeacePayment(need, input.cities, Number.POSITIVE_INFINITY)',
-      'planCityPeacePayment(need, input.cities.map(c => ({ ...c, forbidden: false })), Number.POSITIVE_INFINITY)')],
+    ['M1 odwrócona kolejność ogona', ORIG.replace('const order = pricing.order ?? PEACE_TAIL_ORDER;',
+      'const order = [...(pricing.order ?? PEACE_TAIL_ORDER)].reverse();')],
+    ['M2 ignorowanie forbidden (stolica płaci)', ORIG.replace('planCityPeacePayment(need, input.cities, input.maxCities ?? Number.POSITIVE_INFINITY)',
+      'planCityPeacePayment(need, input.cities.map(c => ({ ...c, forbidden: false })), input.maxCities ?? Number.POSITIVE_INFINITY)')],
     ['M3 brak ograniczenia zapasami', ORIG.replace('const qty = Math.min(have, unitsNeeded);', 'const qty = unitsNeeded;')],
   ];
   for (const [name, src] of mutants) {

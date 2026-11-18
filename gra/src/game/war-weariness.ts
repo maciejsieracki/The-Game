@@ -315,6 +315,12 @@ export interface WearinessTickDeps {
   /** R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: `level` = poziom zmęczenia pary (cena pokoju = wearinessPeaceCashPn(level)). */
   price: (winner: number, loser: number, level: number) => { requiredPn: number; balanceFor: (coveredPn: number) => number; tolerancePn: number; loserBalanceFor?: (coveredPn: number) => number };
   assets: (loser: number, winner: number, skipCityIds: ReadonlySet<string>) => PeaceAsset[];
+  /**
+   * R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (ABC D): eskalowana oferta POKOJU AI↔AI = miasta, potem ogon (złoto → brąz → żelazo →
+   * rudy z zapasów przegranego) — wiązanie main.ts woła peacePlanWithTail (ta sama funkcja co ścieżka gracza/AI). Brak = tylko miasta.
+   * Pokój wymuszony 100% (cena 0) nie używa ogona.
+   */
+  tailPlan?: (requiredPn: number, cityAssets: readonly PeaceAsset[], maxCities: number, loser: number, winner: number) => PeacePaymentPlan;
   cityCessionOk: (cityId: string, loser: number, winner: number) => boolean;
   battlePending: boolean;
   pay: (loser: number, winner: number, plan: PeacePaymentPlan) => void;
@@ -439,7 +445,9 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     const price = d.price(winner, loser, lvl);
     const priceZero = price.requiredPn <= 0;
     // Zmiana 4: słabsza strona z JEDNYM miastem nie kupuje pokoju do końca wojny (cena 0 nie jest zakupem).
-    if (ownCities <= 1 && !priceZero) { none(); continue; }
+    // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1: z ogonem (złoto/surowce) jedno miasto nie blokuje zakupu pokoju — miasto (stolica)
+    // nie jest oddawane, a resztę ceny płaci ogon (brak zapasów ⇒ plan niepełny ⇒ wojna trwa, jak dotąd).
+    if (ownCities <= 1 && !priceZero && !d.tailPlan) { none(); continue; }
 
     // Słabsza strona: eskalowana oferta (wyłącznie miasta).
     const despair = loserDespair({ level: lvl, share: shareForDespair, lostCities: lostLoser }, P);
@@ -453,7 +461,9 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
     const required = price.requiredPn;
     const maxCities = d.battlePending ? 0 : Math.max(0, ownCities);
     const skip = new Set<string>();
-    const planFor = (): PeacePaymentPlan => planEscalatedPeacePayment(required, d.assets(loser, winner, skip), maxCities);
+    const planFor = (): PeacePaymentPlan => d.tailPlan
+      ? d.tailPlan(required, d.assets(loser, winner, skip).filter(x => x.kind === 'miasto'), maxCities, loser, winner)
+      : planEscalatedPeacePayment(required, d.assets(loser, winner, skip), maxCities);
     let plan = planFor();
     for (let guard = 0; guard < 8; guard++) {
       const bad = plan.items.find(i => i.kind === 'miasto' && !d.cityCessionOk(i.id, loser, winner));

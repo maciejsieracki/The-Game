@@ -73,8 +73,22 @@ async function main() {
     const t5 = evalP('rozejm', { giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 100 }] }, 'silniejsza', { zloto: BIG });
     check('t5 rozejm: zloto nadal odrzucane (bez zlota/surowcow)', t5.accepted === false && /Złoto i surowce/.test(t5.reason || ''), t5);
 
-    const t6 = evalP('pokoj', { giveItems: [{ typ: 'miasto', id: 'x', ilosc: 1, cityPn: 10, cityWeight: 1 }] }, 'silniejsza', { zloto: BIG });
-    check('t6 silniejsza AI: male miasto bez ogona odrzucone', t6.accepted === false, t6);
+    // t6 (r3, klasyfikacja A: asercja nieaktualna wobec decyzji właściciela B z 2026-11-18): dawniej „małe miasto bez ogona odrzucone"
+    // przy zapasie złota; teraz ogon z RESZTY ceny zastępuje brakujące miasto (kompozytor), a odrzucenie następuje dopiero bez zapasów.
+    const smallCity = { giveItems: [{ typ: 'miasto', id: 'x', ilosc: 1, cityPn: 10, cityWeight: 1 }] };
+    const t6 = evalP('pokoj', smallCity, 'silniejsza', { zloto: BIG });
+    check('t6 silniejsza AI: małe miasto + zapas złota ⇒ kompozytor składa ogon z reszty i AI przyjmuje (ABC B)',
+      t6.accepted === true && t6.peaceTail && t6.peaceTail.applied === true && t6.peaceTail.items[0].key === 'zloto'
+      && t6.peaceTail.coveredPn >= t6.wearinessInfo.cenaPokojuPn - 10, t6);
+    const t6b = evalP('pokoj', smallCity, 'silniejsza', { zloto: 0 });
+    check('t6b silniejsza AI: małe miasto bez zapasów ⇒ odrzucone (ogon nie pojawia się z niczego)', t6b.accepted === false && !(t6b.peaceTail && t6b.peaceTail.applied), t6b);
+    const t6c = evalP('pokoj', smallCity, 'silniejsza', { zloto: 100 });
+    check('t6c zapas za mały ⇒ odrzucone, tooltip pokazuje częściowy ogon i niedobór',
+      t6c.accepted === false && t6c.peaceTail && t6c.peaceTail.applied === false && t6c.peaceTail.shortfallPn > 0
+      && t6c.peaceTail.items[0].qty === 100, t6c);
+    const t6d = evalP('pokoj', smallCity, 'silniejsza', { zloto: 100, braz: 10000, zelazo: 10000 });
+    check('t6d złoto → brąz: kolejność z danych (złoto wyczerpane przed brązem, bez żelaza gdy brąz wystarcza)',
+      t6d.peaceTail && t6d.peaceTail.items.map(i => i.key).join() === 'zloto,braz', t6d.peaceTail);
 
     console.log(`\ndiplo-peace-tail-proposal-test: ${pass} pass / ${fail} fail`);
     process.exitCode = fail > 0 ? 1 : 0;
