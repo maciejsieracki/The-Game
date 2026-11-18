@@ -144,11 +144,23 @@ async function main() {
       const st = await pairState(page);
       const wl = await warLog(page);
       const modal = await page.locator('.cd-forced-peace-ok').count();
-      rows.push({ scenario: 'S2', turn: st.turn, status: st.status, forcedPeaceLog: wl.filter((e) => e.id.startsWith('forced-peace')).map((e) => e.title + ' | ' + e.subtitle), modalOpen: modal > 0 });
-      assert('S2 pokój wymuszony zapadł przy 100%', st.status === 'pokoj', st);
-      assert('S2 wpis "Pokój wymuszony" w "Ważne" (warEventLog)', wl.some((e) => e.id.startsWith('forced-peace') && /Pokój wymuszony/.test(e.title)), wl);
-      assert('S2 okno "Rozumiem" (showForcedPeaceModal) w DOM', modal > 0, modal);
+      rows.push({ scenario: 'S2-pending', turn: st.turn, status: st.status, peaceLogBefore: wl.filter((e) => /Pokój zawarty/.test(e.title)).length, modalOpen: modal > 0 });
+      // PENDING-FORCED-PEACE-Q1: pokój wymuszony z graczem czeka na akceptację (status „wojna”, okno w DOM, bez wpisu „Pokój zawarty”).
+      assert('S2 pokój wymuszony OCZEKUJE na akceptację przy 100% (status wojna)', st.status === 'wojna', st);
+      assert('S2 okno "Akceptuję warunki pokoju" (showForcedPeaceModal) w DOM', modal > 0, modal);
+      assert('S2 przed akceptacją: brak wpisu "Pokój zawarty" w "Ważne"', !wl.some((e) => /Pokój zawarty/.test(e.title)), wl);
       await closeModal(page);
+      await wait(100);
+    }
+    {
+      const st = await pairState(page);
+      const wl = await warLog(page);
+      const peaceEntries = wl.filter((e) => /Pokój zawarty/.test(e.title));
+      const forcedEntries = wl.filter((e) => e.id.startsWith('forced-peace'));
+      rows.push({ scenario: 'S2-accepted', turn: st.turn, status: st.status, peaceLogAfter: peaceEntries.map((e) => e.title), forcedPeaceLog: forcedEntries.length });
+      assert('S2 po akceptacji pokój zawarty (status pokoj)', st.status === 'pokoj', st);
+      assert('S2 po akceptacji dokładnie 1 wpis "Pokój zawarty" w "Ważne"', peaceEntries.length === 1, wl);
+      assert('S2 brak duplikatu wpisu forced-peace-*', forcedEntries.length === 0, forcedEntries);
     }
     // --- S3: wpisy po pokoju -> prune
     console.log('[S3] martwe wpisy po pokoju (prune)');

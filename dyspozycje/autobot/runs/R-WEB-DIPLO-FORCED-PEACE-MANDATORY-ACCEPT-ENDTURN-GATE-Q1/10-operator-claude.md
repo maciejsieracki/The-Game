@@ -32,3 +32,24 @@ BLOKADY / NIE ZROBIONE:
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator — sprawdzić wpisy 1 i 3 (load), 6 (DECISION_REQUIRED) oraz uruchomić Chromium z hakiem zmęczenia 100%; ewentualna runda 2 na tooltipy i wpis Ważne.
 DEPLOY/PUSH: NIE WYKONANO
+
+## RUNDA 3/5 (DODATEK 3, po FC FAIL rundy 2; zarzut 3 FC)
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (test live, bez zmian w gra/src)
+TEMAT: R-WEB-DIPLO-FORCED-PEACE-MANDATORY-ACCEPT-ENDTURN-GATE-Q1
+GOAL: zaktualizować scenariusz S2 testu live `gra/tools/diplo-peace-auto-stale-offer-live-test.cjs` do zachowania „pokój wymuszony czeka na akceptację gracza”; zmiana wyłącznie w teście.
+ZMIANY-COMMIT: `gra/tools/diplo-peace-auto-stale-offer-live-test.cjs` (S2 podzielony na S2-pending: status `wojna`, okno „Akceptuję warunki pokoju” w DOM, brak wpisu „Pokój zawarty”; S2-accepted po `.cd-forced-peace-ok`: status `pokoj`, dokładnie 1 wpis „Pokój zawarty”, 0 wpisów forced-peace-*; nagłówek S2 zaktualizowany). Baza: f4daaf90a. Raport: `dyspozycje/autobot/runs/R-WEB-DIPLO-FORCED-PEACE-MANDATORY-ACCEPT-ENDTURN-GATE-Q1/10-operator-claude.md` (sekcja runda 3). Allowlista zachowana; gra/src nietknięte.
+TESTY (liczby z surowego wyjścia):
+- `diplo-peace-auto-stale-offer-live-test.cjs` (Chromium /opt/pw-browsers, PLAYWRIGHT_BROWSERS_PATH): exit 0, `PASS=15 FAIL=0` (było PASS=10 FAIL=2 na kandydacie).
+- `diplo-truce-live-test.cjs` (Chromium, próbka dyplomacji live): exit 0, `40 pass / 0 fail`.
+- `diplo-weariness-forced-peace-test.cjs`: `PASS=14 FAIL=0`.
+- `diplo-forced-peace-pending-test.cjs`: `PASS=36 FAIL=0`.
+- `tsc --noEmit`: exit 0.
+- Pozostałe testy Chromium z grepa (`diplo-truce-saveload-live-test`, `diplo-truce-ai-table-live-test`, `diplo-live-verify-s2c-s3c`) NIE uruchomione w tej rundzie: ich asercje dotyczą rozejmu negocjowanego lub `setWarAge` 5/25, nie zmęczenia 100%, więc zmiana zachowania ich nie dotyczy. Pozostałe 5 bramek referencyjnych NIE uruchamiane w tej rundzie (brak zmian w gra/src).
+- Mutacja: NIE wykonana w tej rundzie (poza zakresem poprawki testu).
+BLOKADY: brak techniczny. NIE ZMIERZONO: fokus/tooltipy okna (klawiatura).
+RUNDY: 3/5; licznik porażek Haiku tematu = 2 (poprawka = wąska edycja testu, Operator zostaje HAIKU).
+NASTĘPNY KROK: Evaluator r3, potem Final Control.
+UWAGI-DLA-ORKIESTRATORA: (1) ten sam błędny tekst „5% za każdą turę” jest w `docs/encyklopedia/pojecia/rozejm-pokoj.md:46` (temat DOC, poza zakresem). (2) Artefakt `evidence/live-table.json` zapisany poza repo (/tmp/fpS2/evidence), nie w worktree. (3) Sprzątanie: `gra/node_modules` zostawiony w worktree (do usunięcia przez orkiestratora; nie użyto rm), katalog `/tmp/fpS2` do usunięcia przez orkiestratora. `df -h /` przed 9.4G, po testach 9.0G.
+DEPLOY/PUSH: NIE WYKONANO
