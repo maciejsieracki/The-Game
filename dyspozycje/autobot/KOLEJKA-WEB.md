@@ -1,10 +1,9 @@
-# KOLEJKA WEB — stan na 2026-11-18 (baza origin/main a86a847d7; ostatnia FALA 834; ROBOCZA MD5 76db17269c1c6cd30a14418cbdf65dda)
+# KOLEJKA WEB — stan na 2026-11-18 (baza kandydata a86a847d7; origin/main fb5b2045a = FALA 835; ROBOCZA MD5 5bc75dc23e87cde560cb71ad892d70b6)
 
 Czytana przez heartbeat :17 i :47. Źródła stanu (każda pozycja ma odsyłacz):
-- `git log origin/main` (commity „ROBOCZA … FALA n” i „FALA n: merge FC …”) — dla FAL 747–834,
-- `dyspozycje/REJESTR-PROSB-I-ZADAN.md` — w bazie a86a847d7 kończy się na FALI 746 (wiersz 10148),
-  więc FALE 747–834 są potwierdzane z gita, nie z rejestru,
-- TaskList sesji orkiestratora (odsyłacz `#N`); ID workflowów z TaskList nie są potwierdzone w `journal.jsonl`.
+- `git log origin/main` (commity „ROBOCZA … FALA n” i „FALA n: merge FC …”) — dla FAL 747–835,
+- `dyspozycje/REJESTR-PROSB-I-ZADAN.md` — kończy się na FALI 746 (wiersz 10148), więc FALE 747–835 są potwierdzane z gita, nie z rejestru,
+- listy zadań sesji orkiestratora NIE są źródłem tego pliku (nie są w repo); pozycje z nich wpisane tylko po potwierdzeniu w repo.
 Zakres: WYŁĄCZNIE web. Rust tylko jako dług (sekcja DŁUG RUST/REPIN).
 
 ## PROCEDURA NOCNA (obowiązuje heartbeat i orkiestratora; kolejność ważna)
@@ -15,100 +14,84 @@ Zakres: WYŁĄCZNIE web. Rust tylko jako dług (sekcja DŁUG RUST/REPIN).
 4. **Nie startuj** przy dysku < 6 GB (`df -h /`; worktree Operatora ≈ 1 GB, sprzątaj zakończone: `git worktree unlock` + `git worktree remove --force --force`; `/tmp/*-live-dist`, `/tmp/civ-*` starsze niż 90 min — ale nie katalogi trwających testów). Nie uruchamiaj tematu z zależnością, jeśli warunek startu nie jest spełniony. Nie startuj tematów „dla zapełnienia” bez realnej pracy.
 4a. **Sprzątanie w trakcie nocy (dysk spada o ok. 1 GB na worktree; 4 tematy × 3–4 worktree = do 14 GB):** dla trwającego workflowa zakończone etapy (Operator/Evaluator/Obrona) NIE potrzebują już swoich worktree — najpierw zapisz commity etapów w refs (python po `journal.jsonl`: pola `sha`/`report_sha` każdego wyniku → `git update-ref refs/keep/R-WEB-<TAG>-<etap>`), potem `git worktree unlock` + `git worktree remove --force --force` dla worktree etapów o numerze mniejszym niż bieżący (bieżący etap zostaw). Zakończone workflowy: usuń wszystkie ich worktree po zapisaniu refs `-op/-eval/-obrona/-fc`. Dodatkowo `rm -rf` katalogów `/tmp/*-dist`, `/tmp/civ-*`, `scratchpad/*-bundle*` starszych niż 90 min (nie dotykaj `scratchpad/aiecon`, `kopia`, `dist`, `perf-seq` dopóki trwa pomiar wydajnościowy — sprawdź TaskList; #417 i #419 są już completed).
 5. **Decyzje produktowe/progi liczbowe → ABC do właściciela** (AskUserQuestion, po polsku, rekomendacja pierwsza) — **w nocy NIE blokuj na odpowiedzi**: zapisz pytanie w rejestrze („CZEKA NA RANO”) i idź dalej z tematami niezależnymi. Błędy webowe wykryte w testach → osobny temat R-WEB-* bez pytania (stała zgoda 2026-11-01).
-6. **Wdrożenie (tylko ROBOCZA, nigdy KANON/FINALNA)** — przepis z FAL 833/834: `cd scratchpad; FALA_NR=<n> setsid nohup ./dep3.sh "<SHA raportu FC (potomek kodu)>" "<pliki testów tematu>" > /dev/null 2>&1 < /dev/null & disown` (merge do `/home/user/integ`, `npm ci`, `tsc`, `logic-test`, testy tematu, `vite build` do `/tmp/civ-deploy-out`, log `/tmp/vbuild.log`); czekaj w tle na `BUILD_DONE` i brak procesu dep3 (`until grep -q BUILD_DONE /tmp/vbuild.log && ! pgrep -f dep3.sh >/dev/null; do sleep 10; done` jako zadanie w tle; foreground `sleep` >60 s zablokowany); konflikt tylko w `wikiBundle.json` → `cd gra && node tools/bundle-wiki-for-game.cjs`, nigdy ręcznie w kodzie; potem `cp finalize-<poprzedni>.sh finalize-<n>.sh`, podmień `m["finalControl"]=…` (python `re.sub`), `./finalize-<n>.sh <n> "tytuł" "zakres" "weryfikacja" "limity" "źródło"` (stempel, ROBOCZA-MANIFEST, WERSJE.md, push main, kontrola MD5 w GitHub Raw, usunięcie integ). **Nie uruchamiaj finalize przed BUILD_DONE.** Sprawdź MD5: `curl …/raw/<sha main>/gra-robocza/Gra-ROBOCZA.html | md5sum` = manifest. Numer FALI: kolejny po ostatniej w `git log origin/main` (obecnie 834 → 835). Bez nakładania deployu na trwające pomiary wydajnościowe (dep3 obciąża CPU).
+6. **Wdrożenie (tylko ROBOCZA, nigdy KANON/FINALNA)** — przepis z FAL 833/834: `cd scratchpad; FALA_NR=<n> setsid nohup ./dep3.sh "<SHA raportu FC (potomek kodu)>" "<pliki testów tematu>" > /dev/null 2>&1 < /dev/null & disown` (merge do `/home/user/integ`, `npm ci`, `tsc`, `logic-test`, testy tematu, `vite build` do `/tmp/civ-deploy-out`, log `/tmp/vbuild.log`); czekaj w tle na `BUILD_DONE` i brak procesu dep3 (`until grep -q BUILD_DONE /tmp/vbuild.log && ! pgrep -f dep3.sh >/dev/null; do sleep 10; done` jako zadanie w tle; foreground `sleep` >60 s zablokowany); konflikt tylko w `wikiBundle.json` → `cd gra && node tools/bundle-wiki-for-game.cjs`, nigdy ręcznie w kodzie; potem `cp finalize-<poprzedni>.sh finalize-<n>.sh`, podmień `m["finalControl"]=…` (python `re.sub`), `./finalize-<n>.sh <n> "tytuł" "zakres" "weryfikacja" "limity" "źródło"` (stempel, ROBOCZA-MANIFEST, WERSJE.md, push main, kontrola MD5 w GitHub Raw, usunięcie integ). **Nie uruchamiaj finalize przed BUILD_DONE.** Sprawdź MD5: `curl …/raw/<sha main>/gra-robocza/Gra-ROBOCZA.html | md5sum` = manifest. Numer FALI: kolejny po ostatniej w `git log origin/main` (obecnie 835 → 836). Bez nakładania deployu na trwające pomiary wydajnościowe (dep3 obciąża CPU).
 7. **Po każdym kroku:** wpis w rejestrze, `git push` gałęzi dispatchów, refs/keep, sprzątanie, `TaskUpdate`. Raport w czacie po polsku: tabela (temat | etap | model etapu | od kiedy); uczciwie NIE ZMIERZONO tam, gdzie nie zmierzono.
 8. **Dispatch**: zawsze z regułą „baza = origin/main, sprawdź `git merge-base --is-ancestor`, podaj `git rev-parse HEAD`”, allowlistą, zakazem sesji/zadań/harmonogramów, kryteriami binarnymi i plan testów (5 bramek referencyjnych po `npm ci`).
 
 ## STAN NA DZIEŃ 2026-11-18 (ta sekcja nadpisuje historię; poprzednie wersje pliku są w git log)
 
-Dysk `/` w chwili odświeżenia: 5,9 GB wolnego (`df -h /`), czyli PONIŻEJ progu z kroku 4 — nowe starty wstrzymane do sprzątania.
+Nowe starty: sprawdzić `df -h /` przed każdym startem (próg z kroku 4). Wartość wolnego miejsca nie jest tu zapisywana — jest zmienna między pomiarami.
+Ostatnia FALA w `git log origin/main`: 835 (fb5b2045a). Rejestr w repo kończy się na FALI 746.
 
-## WDROŻONE OSTATNIE 10 FAL (źródło: `git log origin/main`, bo rejestr w bazie kończy się na FALI 746)
+## WDROŻONE OSTATNIE 10 FAL (źródło: `git log origin/main`, subject commita ROBOCZEJ)
 
-| FAL | Commit ROBOCZEJ | Temat (jedno zdanie) | Źródło |
+| FAL | Commit ROBOCZEJ | Temat (jedno zdanie) | Źródło (subject commita) |
 |---|---|---|---|
-| 834 | f91060856 | Preset testowy walka-mapy przelicza ekonomię; asercja przewijania panelu miasta (MD5 76db1726). | git f91060856; TaskList #533 |
-| 833 | a62b09b3c | Nośnik dopłaty D w traktatach: technologie, złoto, brąz, żelazo, rudy (MD5 5e3de9fb). | git a62b09b3c; TaskList #528 |
-| 832 | 13ad6b363 | Usunięcie martwych pól zmęczenia wojną w zegarze profilu (MD5 5bab018a). | git 13ad6b363; TaskList #533 |
-| 831 | a72c6b968 | Otwarty panel miasta i panel rekrutacji odświeżają się po końcu tury gracza (MD5 dd31cc6f). | git a72c6b968; TaskList #533 |
-| 830 | 0c12240a3 | Traktaty i pokój: ostatni stopień płatności, okno pokoju otwiera się samo (MD5 fdc9f6a0). | git 0c12240a3; TaskList #529, #531 |
-| 829 | 1906b3f32 | Okno pokoju wymuszonego z jednym zdaniem na wierzchu oraz ekran „Odkryłeś nową cywilizację” (MD5 fbbefaa4). | git 1906b3f32; TaskList #530 |
-| 828 | c8b0e498b | Panel miasta i panel rekrutacji odświeżają listę po odkryciu technologii (PANELREF, MD5 4eea286a). | git c8b0e498b; TaskList #492 |
-| 827 | 49ddb0012 | Okno pokoju wymuszonego: tytuł, partner, zdanie, warunki i przycisk na wierzchu; wyliczenia w tooltipach (FPDECLUT, MD5 76797672). | git 49ddb0012; TaskList #525 |
-| 826 | 56bb088c1 | Parytet siły i ceny ×10 dla rozejmu, NAP, przemarszu, sojuszy i wasala (TREATYIMPL, MD5 7baf24b2). | git 56bb088c1; TaskList #527 |
-| 825 | 2b950566f | Model punktów PW pokoju P·r i P/r wg Power; słabszy dopłaca miastami (PEACEPWIMPL, MD5 487869e7). | git 2b950566f; TaskList #523 |
+| 835 | fb5b2045a | Jeden próg gotowości AI do sojuszu 0,54; inicjatywa AI jak ocena propozycji. | „ROBOCZA 5bc75dc2 FALA 835” |
+| 834 | f91060856 | Preset testowy walka-mapy przelicza ekonomię; asercja przewijania panelu miasta. | „ROBOCZA 76db1726 FALA 834” |
+| 833 | a62b09b3c | Nośnik dopłaty D w traktatach: technologie, złoto, brąz, żelazo, rudy. | „ROBOCZA 5e3de9fb FALA 833” |
+| 832 | 13ad6b363 | Usunięcie martwych pól zmęczenia wojną w zegarze profilu. | „ROBOCZA 5bab018a FALA 832” |
+| 831 | a72c6b968 | Otwarty panel miasta i panel rekrutacji odświeżają się po końcu tury gracza. | „ROBOCZA dd31cc6f FALA 831” |
+| 830 | 0c12240a3 | Traktaty i pokój: ostatni stopień płatności; okno pokoju otwiera się samo. | „ROBOCZA fdc9f6a0 FALA 830” |
+| 829 | 1906b3f32 | Okno pokoju wymuszonego z jednym zdaniem na wierzchu; ekran powitalny nowej cywilizacji. | „ROBOCZA fbbefaa4 FALA 829” |
+| 828 | c8b0e498b | Panel miasta i panel rekrutacji odświeżają listę po odkryciu technologii. | „ROBOCZA 4eea286a FALA 828” |
+| 827 | 49ddb0012 | Okno pokoju wymuszonego: tytuł, partner, zdanie, warunki i przycisk na wierzchu; wyliczenia w tooltipach. | „ROBOCZA 76797672 FALA 827” |
+| 826 | 56bb088c1 | Parytet siły i ceny x10 dla rozejmu, NAP, przemarszu, sojuszy i wasala. | „ROBOCZA 7baf24b2 FALA 826” |
 
-Pełna lista FAL 650–834: `git log origin/main --grep 'FALA'`; rejestr do FALI 746: `dyspozycje/REJESTR-PROSB-I-ZADAN.md`.
+Pełna lista FAL: `git log origin/main --grep 'FALA'`. Rejestr (do FALI 746): `dyspozycje/REJESTR-PROSB-I-ZADAN.md`.
 
 ## TRWAJĄCE WORKFLOWY (nie uruchamiać drugi raz)
 
-Źródło: TaskList (stan `in_progress`); ID workflowów z TaskList, NIE potwierdzone w `journal.jsonl`. Przed wznowieniem ustalić z journalem workflowów.
-
-| Temat | ID workflowa / runda | Model | Źródło |
-|---|---|---|---|
-| D2 + hooki testowe (dług testowy: zaufanie w wojnie N=6, playtest) | wf_f5ac066e-687, r3 (baza f2d3d48aa; r1 INFRA/BLOCK, r2 FC FAIL) | Operator SONNET po 2 nieudanych Haiku | TaskList #532 |
-| THRESH054: ujednolicenie progu inicjatywy AI do sojuszu 0,6→0,54 (P-2 A) + audyt rozjazdu NAP prog_relacja 50 vs 110. FC PASS-WITH-NOTES; FALA 835 w budowie (build) — wdrożenie w toku, nie start nowego tematu | wf_f8def1e0-d10, r1 | HAIKU | TaskList #539, #537 |
-| LIVETREATY: żywa weryfikacja okien płatności traktatów (FALA 833) i ogona pokoju (FALA 830) | wf_bfd088bd-070, r1 | HAIKU | TaskList #540 |
-| KOLEJKAREFRESH: odświeżenie tego pliku (ten run) | wf_e1f7c3d0-a0d, r1 | HAIKU | TaskList #541 |
+Nie da się ustalić z repo: rejestr i git nie zapisują aktywnych workflowów. Wpis: ustalić z journalem workflowów (`subagents/workflows/*/journal.jsonl`) przed jakimkolwiek wznowieniem.
+Pozycje z listy zadań sesji orkiestratora usunięte, bo nie są potwierdzone w repo. THRESH054 jest wdrożony jako FALA 835 (fb5b2045a, subject „ROBOCZA 5bc75dc2 FALA 835”).
 
 ## GOTOWE DO STARTU
 
-Brak. Sprawdzono: tematy AIAI E2–E6 i TREATY-PAY krok 2 nie mają dispatchu w `dyspozycje/autobot/runs/`; TREATY-PAY krok 2 wymaga decyzji ABC. Tematy poprzedniej wersji tej sekcji (FORCEDPEACE, PEACE-PW, TREATIES-POWER-PARITY, DOC-WEARINESS, FPDECLUT) są wdrożone (zob. ZAMKNIĘTE).
+Brak pozycji potwierdzonych w repo (dispatch w `dyspozycje/autobot/runs/` i warunek startu). Katalogi runs/ nie zawierają dispatchów tematów AIAI E2–E6 ani TREATY-PAY krok 2.
 
 ## ZALEŻNE (START dopiero po warunku)
 
-- **#542 TREATY-PAY krok 2** — AI jako płatnik D (gracz silniejszy) i stopnie „praca”, „pieniądze (¤)”. Warunek: decyzja ABC z #538 pkt 1–2. Dispatch do napisania po decyzji. Źródło: TaskList #542, #528.
-- **#543 AIAI E2** — NAP AI↔AI (15 tur, kara −30/−20 za zerwanie) + płatność D złotem; wpięcie `evaluateTreatyOffer` w turę AI. Warunek: wdrożenie THRESH054 (#539, FALA 835 w budowie) i decyzja ABC P-3, P-6, P-7 (#538). Źródło: TaskList #543, #537; E1 w main a86a847d7 (FC PASS-WITH-NOTES 326dede8e).
-- **#544 AIAI E3–E6** — sojusz obronny AI↔AI (kaskada wojny), sojusz pełny, reguła „sojusz z wrogiem” (P-4), symulacja ≥3×150 tur przed wpięciem. Warunek: E2 wdrożone. Źródło: TaskList #544; projekt main 3a00b867f (#535).
-- **#408 Dług Rust REPIN** — poza pętlą webową; po FALACH 724–834. Źródło: TaskList #408.
+Brak pozycji potwierdzonych w repo. AIAI E1 jest w main jako czysta funkcja `evaluateTreatyOffer`, niewpięta w grę (a86a847d7, merge FC 326dede8e; subject „AIAIE1: merge FC 326dede8e”). Dalsze kroki AIAI wymagają dispatchu i decyzji właściciela — wpis po ich zapisaniu w `runs/`.
 
 ## CZEKA NA RANO — decyzje i weryfikacja właściciela
 
-Rejestr w bazie nie zawiera otwartych pozycji „CZEKA NA RANO” w ostatnich wpisach (kończy się na FALI 746); lista z TaskList.
+Rejestr w repo nie zawiera markerów „CZEKA NA RANO”. Poniżej pozycje „DO DECYZJI WŁAŚCICIELA” z rejestru (przegląd ograniczony do FAL 722–746; brak zamknięcia w rejestrze do wiersza 10148). Statusu po FALI 746 nie zbadano.
 
-1. **#538 (pending)**: (1) AI jako płatnik D (gracz silniejszy) z własnych zapasów? (2) ¤ jako osobna pula od złota? (3) P-3 dopłata AI↔AI tylko złotem, P-6 brak wasala AI↔AI, P-7 automatyczne wezwanie do wojny — potwierdzić; (4) założenie PEACELAST: pokój bez technologii, pracy i ¤; (5) NAP: próg Relacji 50 (ścieżka UI „wym. 50”) vs 110 (diplomacy.json) — zalecenie 110.
-2. **#464 (completed; RYZYKO otwarte)**: pokój wymuszony bez oddania miasta przy ≤3 miastach przegrywającego — wariant A (jedno miasto za pokój) lub B (bez zmian).
-3. **#463 (completed; CZEKA NA RANO)**: waga miasta 10%; stolica / min. 3 miasta; pokój AI-AI przy cenie 0.
-4. **#472 (completed; CZEKA RANO)**: utrzymanie Garnizonu 4 vs 2 w danych (mnożnik silnika); decyzja o treści podpowiedzi — #485 (GARNTIP, decyzja A: dane bez zmian).
-5. **#509 (completed; CZEKA NA WŁAŚCICIELA)**: akceptacja lub poprawki tekstów ekranu powitalnego (TEKSTY-DO-AKCEPTACJI.md); wdrożenie FALA 829 (TaskList #492) — potwierdzić treść.
-6. **#489 (completed; treść „DECYZJE właściciela (otwarte)”)**: pytania ABC 1–4, siege.ts bez trybu „pewne”, balans łuczników vs Wojownik — status do ustalenia z właścicielem.
-7. **#441 (pending)**: weryfikacja w grze FAL 764–769 oraz 826–834 (parytet i ceny traktatów ×10, okno pokoju wymuszonego, ogon płatności, nośnik D, odświeżanie paneli po końcu tury).
-8. **#545 (pending)**: raport dla właściciela rano — lista FAL 826–834+, co zmienia się w grze, zmierzone vs NIE ZMIERZONO, pytania ABC.
-9. **#501 (pending, niski priorytet)**: różnica strat AUTO vs skip w bitwie; pokrycie progSygnaluPokoju tylko w profile-unit.
+1. Gęstość listy wojsk w oknie rozstawienia przy 640 px i wartości liczbowe premii w chipach (rejestr L10123, FALA 744: „jeszcze nie zadane”).
+2. Plakietka „+X” obok „Brutto · netto” jest redundantna — do decyzji (rejestr L10001, FALA 729); status po FALI 746 nie ustalony.
+3. Palisada w kolejce po odblokowaniu Murarstwa i awans Palisada → Mury kamienne po odblokowaniu Budownictwa (rejestr L9944).
+4. Stała C dla AI→gracz bez mnożnika cywilizacji; C 615 vs 500 zależne od tury (rejestr L9961, FALA 722).
 
-## DŁUG RUST / REPIN (poza pętlą webową; źródło TaskList)
+## DŁUG RUST / REPIN (źródło: rejestr, wpisy FAL 730–745)
 
-- #408 — REPIN po FALACH 724–834: treaty-payment, ogon pokoju (peace-tail-payment), ai_diplomacja_prog_sojusz 0,54, refreshOpenPanelsAtTurnStart, martwe pola zmęczenia, hooki civTest.
-- #445 — GENSTAR (meta/REPIN dług Rust).
-- #446 — REPIN meta.lossCounters.
-- #450 — REPIN releaseSplitFromSiege.
-- #454 — REPIN planRoadNetwork.
-- #457 — GARRISON (dług Rust REPIN).
-- #458 — REPIN tabeli zamian (Łucznik → Procarz).
-- #460 / #465 — AMBUSH-CORE, AMBUSH-DEPLOY (dług Rust REPIN).
-- #506 — RANGEDHEALTH (dług Rust REPIN).
+- FALA 730 — REPIN reguły ilości ofert AI (rejestr L10004).
+- FALA 731 — REPIN: melee_latched, przeplanowanie uciętych ścieżek, cavTrail (rejestr L10010).
+- FALA 740 — REPIN prezentacji karty „Skąd zapasy” (rejestr L10076).
+- FALA 741 — REPIN: mnożnik 3, sufit 64, estymata (rejestr L10082).
+- FALA 742 — pn_per_szt → pn_per_blok (rejestr L10107).
+- FALA 743 — REPIN podłogi bloku w aiNeedPerTurn (rejestr L10121).
+- FALA 744 — REPIN (rejestr L10123).
+- FALA 745 — REPIN logiki bitewnej, pełny ruch i cios na końcu ruchu (rejestr L10142).
 
-## DŁUG TESTOWY / OBSERWACJE NIE ZMIERZONO
+## DŁUG TESTOWY / OBSERWACJE NIE ZMIERZONO (źródło: rejestr)
 
-- Chromium NIE ZMIERZONO: #444 (EMPTYQ, także gałąź „Ulepsz”), #445 (GENSTAR, po Reset), #457 (GARRISON), #460 (AMBUSH-CORE, AI→gracz), #465 (rozstawienie), #506 (kart i skutku na bitwy), #508 (odświeżanie przy awansie epoki/utracie miasta w trakcie tury), #502 (widoczność toastu pod nakładką tury).
-- #536 DMGLABEL: brak zrzutów PRZED/PO.
-- #532 D2/A: NIE ZMIERZONO (playtest = mapa z 1 głównym AI).
-- #466 CSSRAW: długi formation-rules, standoff/auto-battle fixture, F8, archer-behind, brandAssets svg?raw.
-- #474 GENCAP: w main bez wdrożenia (tylko test); luka: brak asercji limitu stosu super-jednostek (niski priorytet).
-- #467 WINGBANDS: przestarzała asercja po AMBUSH-DEPLOY; #472 GARNDIAG: przestarzałe asercje AI1/E4 (tylko test).
-- #436 / #440: znany błąd `map-snapshot-load` (zostaje, budżet rotacji autozapisu); Grecy las = 0 (zostaje).
+- FALA 728: test recruitment-panel-compact-row — 7 FAIL, dług bazowy (rejestr L9998).
+- FALA 729: 4 testy czerwone — resource-usage-breakdown, ui-language-count-renderer, citizen-resource-upkeep (2 FAIL), empire-armia-produkcja (rejestr L10001).
+- FALA 740: martwa sonda ledgerAuditE3c* w main.ts; dziennik AI nie przeżywa zapisu (rejestr L10076).
+- FALA 744: defense-breakdown-test (TypeError grecy.bonusy); 4 testy pr141 / budynek-civ-bonus-u17 (rejestr L10123).
+- FALA 745: długi bazowe doctrine-live r3 i line-advance-browser (sidecary zwracają HTML) (rejestr L10142).
+- FALA 746: t57 endTurn — przyczyna nierozstrzygnięta; pomiar w konfiguracji domyślnej NIE ZMIERZONO (rejestr L10148).
 
-## ZAMKNIĘTE (nie wpisywać do kolejki)
+## ZAMKNIĘTE (nie wpisywać do kolejki; źródło: rejestr)
 
-- Traktaty, pokój i zmęczenie: DIPLO-5 (#517, FALA 818), DESPAIRIMPL (#518, FALA 811), PEACEVAZNE (#520, FALA 819), DECLUTTER (#522, FALE 820–821), FORCEDPEACE (#521, FALA 822), DOCWEAR (#523/#524, FALA 823), STALEWEAR (#526, FALA 824), PEACEPWIMPL (#523, FALA 825), TREATYIMPL (#527, FALA 826), FPDECLUT (FALA 827), TREATY-PAY (#528, FALA 833), PEACE-LASTSTAGE (#529, FALA 830), FPAUTOOPEN (#531, FALA 830).
-- Testy i porządki: TESTGAPS (FALA 834), LEGACYREMOVE (FALA 832), CITYREFRESH (FALA 831), PANELREF (FALA 828), TECHBADGE (FALA 790), IDSLEAK (FALA 789), WELCOME (FALA 829; akceptacja tekstów otwarta w CZEKA NA RANO).
-- Decyzje właściciela zamknięte: miedź bez zmian (#374); AI od tury 1 tak (#375); dźwignia kolejki usunięta (#368); próg zmęczenia 0,8 (#361); oferty AI min. 1 blok (#395); szlak handlowy tylko premia (#311); pełny ruch i cios na końcu ruchu (#407, #409); arbitraż kolizji piechota pierwsza (#410); łucznicy 4/5/6 (#451); UNITSHP jedno pole health (#455); zwolnienie administratora z potwierdzeniem (#360).
+- Decyzje ABC 2026-11-15: żetony widoku miasta bez zmian (wariant A, temat zamknięty); żądanie miasta po 20 turach wojny zostaje (rejestr L10134–10137).
+- FALA 741: ilość odbioru oferty AI ≤ 3× potrzeba AI, decyzja ABC B (rejestr L10082).
+- FALA 743: oferta AI przy małej potrzebie = 1 pełny blok epoki, decyzja ABC 2026-11-15 B (rejestr L10117–10121).
+- FALA 745: pełny ruch i cios na końcu ruchu, wariant B wdrożony (rejestr L10138–10142).
 
 ## WYKLUCZONE / WSTRZYMANE
 
-- #286 (wojownik barbarzyńców „z supermocą”) — na żądanie właściciela, nie uruchamiać (TaskList #286).
-- #57 (nowe epoki Klasyczna/Średniowieczna) — WSTRZYMANE decyzją właściciela, dopiero przy nowej wersji Rust (TaskList #57, pending).
-- Wszystko w Rust poza pętlą webową (sekcja DŁUG RUST / REPIN).
+Brak pozycji potwierdzonych w repo. Pozycje z listy zadań sesji (np. #286, #57) usunięte do czasu potwierdzenia decyzji w rejestrze.
 
 ## REGUŁY (obowiązują heartbeat i operatorów)
 
