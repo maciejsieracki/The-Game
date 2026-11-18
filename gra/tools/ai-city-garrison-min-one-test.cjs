@@ -34,7 +34,7 @@ const ENTRY_BODY = `
 export { decideAITurn, emptyCityGarrisonRecruitIds } from ${JSON.stringify(path.join(SRC, 'game', 'ai.ts'))};
 export {
   getCityGarrisonUnitIds, garrisonUnitIdSet, cityNeedsGarrison, isGarrisonEligibleUnit,
-  isGarrisonPriorityPurchase,
+  isGarrisonPriorityPurchase, garrisonGoldReserve, GARRISON_RESERVE_MAX_CITIES,
 } from ${JSON.stringify(path.join(SRC, 'game', 'ai-city-garrison.ts'))};
 export { setArmyConsolidationOverride } from ${JSON.stringify(path.join(SRC, 'game', 'army-consolidation.ts'))};
 `;
@@ -120,6 +120,12 @@ async function main() {
       'H6b: drozsza jednostka bojowa NIE dostaje priorytetu/omijania rezerwy');
     ok(GOOD.isGarrisonPriorityPurchase(city, [unit('x', 5, 5)], 1, 'Wojownik', 'Wojownik') === false,
       'H7: miasto z jednostka bojowa -> brak priorytetu (jest juz garnizon)');
+    // H8-H10 (r3): czysta bramka rezerwy zlota na garnizony (wyciagnieta z main.ts).
+    ok(GOOD.garrisonGoldReserve(0, 10) === 0 && GOOD.garrisonGoldReserve(2, 0) === 0,
+      'H8: brak pustych miast lub brak ceny -> rezerwa 0');
+    ok(GOOD.garrisonGoldReserve(2, 10) === 20, 'H9: 2 puste miasta x 10 = rezerwa 20');
+    ok(GOOD.garrisonGoldReserve(78, 10) === GOOD.GARRISON_RESERVE_MAX_CITIES * 10,
+      'H10: 78 pustych miast -> rezerwa ograniczona sufitem (brak zamrozenia skarbca)');
 
     const foreign = [unit('foreign', 5, 5, { ownerId: 2, str: 0 }), unit('own', 5, 5, { str: 5 })];
     ok(GOOD.getCityGarrisonUnitIds([city], foreign, 1, strengthById).get('A') === 'own',

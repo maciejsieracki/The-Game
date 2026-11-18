@@ -1361,7 +1361,7 @@ import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { isTechDiscoveryNoticeOpen, showTechDiscoveryNotice } from './ui/techDiscoveryNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
 import { buildAiLevers, decideAiOwnerBalance, nnsAiUnitLeverInputs, nnsUnitIdsFromPlan, isNnsAiBalanceEnabled, setNnsAiBalanceEnabled, projectTreasuryAfterTick, NNS_AI_BALANCE_TURN_MIN, type NnsAiUnitInfo, type NnsLever } from './game/no-negative-stocks';
-import { cityNeedsGarrison, isGarrisonPriorityPurchase } from './game/ai-city-garrison';
+import { cityNeedsGarrison, garrisonGoldReserve, isGarrisonPriorityPurchase } from './game/ai-city-garrison';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, loadAiPurchaseReserveParams, decideAIEconomySliders, aiSeedPodzialHandlu, EMPTY_CITY_GARRISON_UNIT_ID, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, AI_TRADE_BARTER_COOLDOWN_TURNS, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import { aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand, MiastoWycenaWejscie } from './game/ai';
@@ -38553,7 +38553,7 @@ async function boot(): Promise<void> {
         EMPTY_CITY_GARRISON_UNIT_ID, data, civBonusyForOwnerId(ownerId), pace,
         ownerId, effectiveGameDifficultyForOwner(ownerId),
       );
-      return item?.kind === 'jednostka' ? pending * item.koszt : 0;
+      return item?.kind === 'jednostka' ? garrisonGoldReserve(pending, item.koszt) : 0;
     }
 
     function ownerTreasury(ownerId: number): number {

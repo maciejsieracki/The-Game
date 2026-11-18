@@ -98,3 +98,24 @@ export function isGarrisonPriorityPurchase(
 ): boolean {
   return candId === garrisonUnitId && cityNeedsGarrison(city, units, ownerId);
 }
+
+/**
+ * Maksymalna liczba pustych miast, na ktore jednorazowo rezerwujemy zloto (wariant C). Sufit
+ * chroni ekonomie przed zamrozeniem skarbca, gdy pustych miast jest dziesiatki (FC r2, zarzut 6):
+ * garnizony i tak powstaja kolejno -- rezerwa wystarcza na najblizsze zakupy, nie na wszystkie naraz.
+ * ZALOZENIE robocze (do zatwierdzenia przez wlasciciela).
+ */
+export const GARRISON_RESERVE_MAX_CITIES = 3;
+
+/**
+ * Czysta funkcja rezerwy zlota na garnizony: `pendingCities` pustych miast wlasciciela, `unitCost`
+ * cena garnizonu (Wojownik). Rezerwa = min(pending, sufit) * cena; brak ceny/pustych miast -> 0.
+ */
+export function garrisonGoldReserve(
+  pendingCities: number,
+  unitCost: number,
+  maxCities: number = GARRISON_RESERVE_MAX_CITIES,
+): number {
+  if (!(pendingCities > 0) || !(unitCost > 0)) return 0;
+  return Math.min(Math.floor(pendingCities), Math.max(0, Math.floor(maxCities))) * unitCost;
+}
