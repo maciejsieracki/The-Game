@@ -31244,11 +31244,11 @@ async function boot(): Promise<void> {
       // DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1: hooki diagnostyczne (TYLKO ?civTest=1). Wołają REALNE funkcje gry.
       // finalizePeaceForTest = finalizePeaceTreatyBetween (jak każda ścieżka pokoju); pushEntryForTest = createNegotiation na stół.
       (window as any).__truceTestDebug.finalizePeaceForTest = (a: number, b: number): void => { finalizePeaceTreatyBetween(a, b); };
-      (window as any).__truceTestDebug.pushNegotiationForTest = (actionId: string, proposer: number, responder: number, awaiting: number, withCityOf: number | null, truceTurns: number | null = null): string => {
+      (window as any).__truceTestDebug.pushNegotiationForTest = (actionId: string, proposer: number, responder: number, awaiting: number, withCityOf: number | null, truceTurns: number | null = null, extraPayload: Record<string, unknown> | null = null): string => {
         const cityItems = withCityOf === null ? [] : cities.filter(c => c.ownerId === withCityOf).slice(0, 1)
           .map(c => ({ typ: 'miasto' as const, id: c.id, ilosc: 1, cityPn: 100 }));
         const entry = createNegotiation(
-          { actionId: actionId as any, proposerOwnerId: proposer, responderOwnerId: responder, payload: { ...(cityItems.length ? { giveItems: cityItems } : {}), ...(truceTurns !== null ? { turns: truceTurns } : {}) } } as any,
+          { actionId: actionId as any, proposerOwnerId: proposer, responderOwnerId: responder, payload: { ...(cityItems.length ? { giveItems: cityItems } : {}), ...(truceTurns !== null ? { turns: truceTurns } : {}), ...(extraPayload ?? {}) } } as any,
           turn, proposer === ME() ? 'player' : 'ai', negotiationTable.length + 1000,
         );
         negotiationTable.push({ ...entry, awaitingOwnerId: awaiting, authorOwnerId: awaiting === proposer ? responder : proposer });
