@@ -32,6 +32,7 @@ import type {
   AiAiTreatySide,
 } from './ai-ai-treaty-evaluate';
 import type { AiAiNapPairInfo } from './ai-ai-treaty-tick';
+import { maPremieKoalicji, type AiAiCoalitionCtx } from './ai-ai-coalition';
 
 let torSojuszyNadpisanieTest: boolean | null = null;
 
@@ -89,6 +90,11 @@ export interface AiAiAlliancePlanInput {
   ponowneProbyTur?: number;
   /** Domyślnie evaluateTreatyOffer (E1); wstrzykiwalne tylko w testach (mutanty). */
   evaluate?: (ctx: AiAiTreatyEvalContext) => AiAiTreatyEvalResult;
+  /**
+   * R-WEB-AI-AI-COALITION-ANTI-LEADER-Q1: kontekst lidera (tylko gdy koalicja włączona i lider potwierdzony).
+   * Wpływa WYŁĄCZNIE na kolejność wyboru celu (premia), nie na progi E1 ani limity.
+   */
+  koalicja?: AiAiCoalitionCtx | null;
 }
 
 export interface AiAiAlliancePlanResult {
@@ -101,6 +107,8 @@ export interface AiAiAlliancePlanResult {
   proby: number;
   /** Licznik odmów E1 w tym kroku (evaluate.accept = false). Odczyt pomiaru. */
   odmowy: number;
+  /** Histogram powodów odmów E1 w tym kroku (klucz = powód z liczbami zastąpionymi przez „N”). Odczyt pomiaru. */
+  powodyOdmow: Map<string, number>;
 }
 
 /**
@@ -116,6 +124,7 @@ export function planAiAiAllianceTickFull(input: AiAiAlliancePlanInput): AiAiAlli
   const accepted: AiAiAllianceAccepted[] = [];
   let proby = 0;
   let odmowy = 0;
+  const powodyOdmow = new Map<string, number>();
   // Pary zawarte w tym kroku: prefilter czyta activeDeals dopiero po planowaniu, więc bez tego mogłyby
   // powstać dwa sojusze tej samej pary w jednej turze.
   const zawartePary = new Set<string>();
@@ -129,7 +138,7 @@ export function planAiAiAllianceTickFull(input: AiAiAlliancePlanInput): AiAiAlli
     if (ileP >= 1 && (ponowne <= 0 || input.turn % ponowne !== 0)) continue;
 
     // Kandydaci: wstępna kwalifikacja + pełne dane pary (wyłącznie sojusz, bez wojny i rozejmu).
-    let best: { t: number; willingness: number; sharesEnemy: boolean; info: AiAiNapPairInfo } | null = null;
+    let best: { t: number; premia: boolean; willingness: number; sharesEnemy: boolean; info: AiAiNapPairInfo } | null = null;
     const sideP = input.sideOf(p);
     for (const t of owners) {
       if (t === p || zawartePary.has(kluczPary(p, t))) continue;
@@ -140,11 +149,14 @@ export function planAiAiAllianceTickFull(input: AiAiAlliancePlanInput): AiAiAlli
       if (info.hasAlliance) continue;
       const sideT = input.sideOf(t);
       const sharesEnemy = sideP.enemies.some(x => sideT.enemies.includes(x));
-      const kandydat = { t, willingness: info.willingness, sharesEnemy, info };
+      // R-WEB-AI-AI-COALITION-ANTI-LEADER-Q1: premia koalicji wyprzedza willingness (tylko kolejność celu).
+      const premia = maPremieKoalicji(p, t, input.koalicja);
+      const kandydat = { t, premia, willingness: info.willingness, sharesEnemy, info };
       if (
         best === null
-        || kandydat.willingness > best.willingness
-        || (kandydat.willingness === best.willingness && kandydat.sharesEnemy && !best.sharesEnemy)
+        || (kandydat.premia && !best.premia)
+        || (kandydat.premia === best.premia && kandydat.willingness > best.willingness)
+        || (kandydat.premia === best.premia && kandydat.willingness === best.willingness && kandydat.sharesEnemy && !best.sharesEnemy)
         // remis bez różnicy w wspólnym wrogu: owners są rosnąco, więc pierwszy (najniższe id) zostaje
       ) {
         best = kandydat;
@@ -170,6 +182,8 @@ export function planAiAiAllianceTickFull(input: AiAiAlliancePlanInput): AiAiAlli
     });
     if (!result.accept) {
       odmowy++;
+      const klucz = String(result.reason).replace(/[-+]?\d[\d.,]*/g, 'N');
+      powodyOdmow.set(klucz, (powodyOdmow.get(klucz) ?? 0) + 1);
       continue;
     }
 
@@ -199,7 +213,7 @@ export function planAiAiAllianceTickFull(input: AiAiAlliancePlanInput): AiAiAlli
       result,
     });
   }
-  return { accepted, treasuryPo: treasury, alliancesCountPo: counts, proby, odmowy };
+  return { accepted, treasuryPo: treasury, alliancesCountPo: counts, proby, odmowy, powodyOdmow };
 }
 
 /** Wersja skrócona (lista zaakceptowanych sojuszy); przelewy wg `planAiAiAllianceTickFull`. */

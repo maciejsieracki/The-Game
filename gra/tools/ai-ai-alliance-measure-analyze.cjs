@@ -54,6 +54,7 @@ function loadDir(dir) {
         naCyw: s && Array.isArray(s.naCywilizacje) ? s.naCywilizacje : null,
         proby: s ? s.proby : null,
         odmowy: s ? s.odmowy : null,
+        powodyOdmow: s && Array.isArray(s.powodyOdmow) ? s.powodyOdmow : null,
         wojny: w,
       };
     });
@@ -99,6 +100,8 @@ function summarize(bySeed) {
       maxNaCywilizacje: maxPerCiv,
       proby: last ? last.proby : null,
       odmowy: last ? last.odmowy : null,
+      // Histogram powodów odmów toru (skumulowany; ostatni wiersz z polem).
+      powody: (() => { const L = [...rows].reverse().find(r => r.powodyOdmow !== null); return L ? L.powodyOdmow : null; })(),
       cps,
     };
   }
@@ -114,6 +117,13 @@ function printTable(label, sum) {
     const x = sum[s];
     console.log([s, fmt(x.ostatniaTura), fmt(x.flaga), fmt(x.wymuszona), fmt(x.turaPierwszegoSojuszu),
       fmt(x.turaPierwszejWojny), fmt(x.maxNaCywilizacje), fmt(x.proby), fmt(x.odmowy)].join(' | '));
+  }
+  console.log('\nPowody odmów toru (skumulowane, n = liczba odmów E1 wg powodu; liczby w powodzie zastąpione przez N):');
+  for (const s of seeds) {
+    const p = sum[s].powody;
+    if (!p) { console.log(`ziarno ${s}: ${NZ}`); continue; }
+    if (p.length === 0) { console.log(`ziarno ${s}: brak odmów`); continue; }
+    for (const e of p) console.log(`ziarno ${s} | n=${e.n} | ${e.powod}`);
   }
   console.log('\nPunkty kontrolne (tura wiersza <= kontrolnej): sojusze AI↔AI / odsetek głównych AI z >=1 sojuszem (%) / wojny AI↔AI');
   console.log('ziarno | ' + CHECK.map(cp => `tura ${cp}`).join(' | '));

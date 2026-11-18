@@ -12,6 +12,7 @@
  *  H6/H7 liczniki skumulowane w main.ts (aiAiAllianceProbyLacznie / OdmowyLacznie) są zasilane z planu.
  *  H8a/H8b liczenie sojuszy per cywilizacja (+1 na każdą stronę, tylko między owners);
  *  H9 liczenie wojen czyta diplomacyRelations.get (bez getDiploRelation, który tworzy relację).
+ *  H10a-c histogram powodów odmów toru (planer -> skumulowany licznik -> diag.sojusze.powodyOdmow).
  * UWAGA: to test STATYCZNY (dopasowanie tekstu źródła). NIE sprawdza zachowania w grze; poprawność liczb
  * potwierdza wyłącznie bieg dymny i analizator (NIE ZMIERZONO w teście behawioralnym: brak bundla w tym teście).
  * Mutanty (kopia źródła w pamięci, NIE zapis na dysk): każdy usuwa/zamienia jedną z powyższych linii i MUSI czerwienić test.
@@ -35,7 +36,10 @@ const CHECKS = [
   ['H4', 'main', 'sojusze: aiAiAllianceMeasureState(),'],
   ['H5a', 'tick', '    proby++;\n    const result = evaluate({'],
   ['H5b', 'tick', '    if (!result.accept) {\n      odmowy++;'],
-  ['H5c', 'tick', 'return { accepted, treasuryPo: treasury, alliancesCountPo: counts, proby, odmowy };'],
+  ['H5c', 'tick', 'return { accepted, treasuryPo: treasury, alliancesCountPo: counts, proby, odmowy, powodyOdmow };'],
+  ['H10a', 'tick', "      powodyOdmow.set(klucz, (powodyOdmow.get(klucz) ?? 0) + 1);"],
+  ['H10b', 'main', 'for (const [klucz, n] of plan.powodyOdmow) aiAiAllianceOdmowyPowody.set(klucz, (aiAiAllianceOdmowyPowody.get(klucz) ?? 0) + n);'],
+  ['H10c', 'main', 'powodyOdmow: Array.from(aiAiAllianceOdmowyPowody.entries())'],
   ['H6', 'main', 'aiAiAllianceProbyLacznie += plan.proby;'],
   ['H7', 'main', 'aiAiAllianceOdmowyLacznie += plan.odmowy;'],
   ['H8a', 'main', 'if (ownerSet.has(a) && ownerSet.has(b)) {\n          liczba.set(a, (liczba.get(a) ?? 0) + 1);'],
@@ -54,6 +58,8 @@ const MUTANTS = [
   ['M5c wojny przez getDiploRelation (mutacja)', 'main', 'if (diplomacyRelations.get(`${owners[i]!}_${owners[j]!}`)?.status === \'wojna\') wojny++;', 'if (getDiploRelation(owners[i]!, owners[j]!).status === \'wojna\') wojny++;'],
   ['M6 wymuszenie bez ?civTest', 'main', 'return isCivTestEnabled(window.location.search) && (window as any)', 'return (window as any)'],
   ['M7 bez zasilania licznika skumulowanego', 'main', 'aiAiAllianceOdmowyLacznie += plan.odmowy;', ''],
+  ['M8 bez histogramu powodow w planerze', 'tick', "      powodyOdmow.set(klucz, (powodyOdmow.get(klucz) ?? 0) + 1);", ''],
+  ['M9 bez zasilania histogramu skumulowanego', 'main', 'for (const [klucz, n] of plan.powodyOdmow) aiAiAllianceOdmowyPowody.set(klucz, (aiAiAllianceOdmowyPowody.get(klucz) ?? 0) + n);', ''],
 ];
 
 function src(kind, mainText, tickText) { return kind === 'main' ? mainText : tickText; }
@@ -72,7 +78,7 @@ const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) fai
 
 // 1) Stan rzeczywisty: wszystkie reguły zielone.
 const real = evaluate(MAIN, TICK);
-ok(real.length === 0, `hak odczytowy: reguły H1..H7 zielone (nieprzechodzące: ${real.join(',') || 'brak'})`);
+ok(real.length === 0, `hak odczytowy: reguły H1..H10c zielone (nieprzechodzące: ${real.join(',') || 'brak'})`);
 
 // 2) Domyślna flaga w danych pozostaje false (pomiar nie włącza toru w kodzie).
 const params = JSON.parse(fs.readFileSync(path.resolve(GRA_ROOT, 'data', 'ai-ai-treaty-params.json'), 'utf8'));

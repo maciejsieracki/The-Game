@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "304eac4bd90d3ca80bf40b72088cb424",
-  "bundleSha256": "9fe2c056311f8745b551a94f4c295c1834e01ffe7b72a4de29fb93141a72ba5c",
-  "bundleBytes": 14964630,
+  "bundleMd5": "39b38bf9abd315328520d738b14ebcc7",
+  "bundleSha256": "68c47a78352e10cb2ce41dded7bc0c8501b25caa43d3c994d330dc0111885170",
+  "bundleBytes": 14965982,
   "sourceSnapshot": {
-    "source": "R-WEB-AI-AI-ALLIANCES-E3-WIRING-FLAGGED-Q1 (kod 5aaaa469b, FC 3af504d33)",
+    "source": "R-WEB-AI-AI-COALITION-ANTI-LEADER-Q1 (kod dd1790a25, FC 63acbc405)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 848: Nowy modul ai-ai-alliance-tick.ts (czysta logika: limit 2, ponowne proby co 8 tur, wybor celu wg gotowosci i wspolnego wroga) + wpiecie tickAiAiAllianceRequests w main.ts; parametry w ai-ai-treaty-params.json; flaga torSojuszyAktywny=false = zachowanie gry bez zmian"
+    "FALA 849: Nowy modul ai-ai-coalition.ts (wykrycie lidera: prog 1,5x sredniej Mocy, histereza 5 tur) i premia celu w torze sojuszy AI-AI; parametry w ai-ai-treaty-params.json; wpiecie w main.ts za flaga koalicjaAntyLiderAktywna=false = zachowanie gry bez zmian"
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; ai-ai-alliance-tick-test 19/19, mutanty 8/8; ai-ai-treaty-evaluate 21/0; nap-wiring 44/44; diplomacy-harder 50/0 po scaleniu z FALA 847"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-ai-coalition-test 0 bledow, mutanty 8/8; ai-ai-alliance-tick-test 19/19, mutanty 8/8; ai-ai-treaty-evaluate 21/0"
   ],
   "limits": [
-    "Flaga domyslnie wylaczona: sojusze AI-AI nie powstaja w rozgrywce do czasu pomiaru i decyzji wlasciciela; bieg dymny z flaga i runner pomiaru NIE ZMIERZONO (osobny temat); brak UI listy ukladow swiata; zawarcie przez addTreaty+syncRelationFromDeals (jak NAP)"
+    "Flaga domyslnie wylaczona i tor sojuszy tez wylaczony: koalicja nie dziala w rozgrywce do czasu pomiaru; wplyw na rozgrywke NIE ZMIERZONO; premia dziala tylko gdy obie AI sa w wojnie z liderem; brak histerezy wyjscia z lidera; luki audytu B2: brak sprawdzenia dystansu, zwykly pokoj nie blokuje dolaczenia, barbarzyncy w activeWarCount, licznik wojen globalny a nie per epoka"
   ],
-  "finalControl": "PASS-WITH-NOTES: bramki wlasne zielone, 8/8 mutantow wykryte, kandydat potomkiem bazy, allowlista zachowana",
+  "finalControl": "PASS-WITH-NOTES: bramki wlasne zielone, mutanty wykryte, kandydat potomkiem bazy, allowlista zachowana",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T22:32:06",
+  "hubGeneratedAt": "2026-11-18T22:47:34",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "304eac4bd90d3ca80bf40b72088cb424",
-      "sizeBytes": 14964630
+      "md5": "39b38bf9abd315328520d738b14ebcc7",
+      "sizeBytes": 14965982
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "304eac4bd90d3ca80bf40b72088cb424",
-      "sizeBytes": 14964630
+      "md5": "39b38bf9abd315328520d738b14ebcc7",
+      "sizeBytes": 14965982
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "304eac4bd90d3ca80bf40b72088cb424",
-      "sizeBytes": 14964630
+      "md5": "39b38bf9abd315328520d738b14ebcc7",
+      "sizeBytes": 14965982
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "304eac4bd90d3ca80bf40b72088cb424",
-      "sizeBytes": 14964630
+      "md5": "39b38bf9abd315328520d738b14ebcc7",
+      "sizeBytes": 14965982
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "304eac4bd90d3ca80bf40b72088cb424",
-      "sizeBytes": 14964630
+      "md5": "39b38bf9abd315328520d738b14ebcc7",
+      "sizeBytes": 14965982
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "304eac4bd90d3ca80bf40b72088cb424",
-      "sizeBytes": 14964630
+      "md5": "39b38bf9abd315328520d738b14ebcc7",
+      "sizeBytes": 14965982
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "304eac4bd90d3ca80bf40b72088cb424",
-      "sizeBytes": 14964630
+      "md5": "39b38bf9abd315328520d738b14ebcc7",
+      "sizeBytes": 14965982
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "304eac4bd90d3ca80bf40b72088cb424",
-      "sizeBytes": 14964630
+      "md5": "39b38bf9abd315328520d738b14ebcc7",
+      "sizeBytes": 14965982
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "304eac4bd90d3ca80bf40b72088cb424",
-      "sizeBytes": 14964630
+      "md5": "39b38bf9abd315328520d738b14ebcc7",
+      "sizeBytes": 14965982
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "304eac4bd90d3ca80bf40b72088cb424",
-      "sizeBytes": 14964630
+      "md5": "39b38bf9abd315328520d738b14ebcc7",
+      "sizeBytes": 14965982
     }
   ],
-  "md5": "304eac4bd90d3ca80bf40b72088cb424",
+  "md5": "39b38bf9abd315328520d738b14ebcc7",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
