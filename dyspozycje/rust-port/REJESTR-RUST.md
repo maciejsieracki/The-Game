@@ -3787,3 +3787,6 @@ Konsekwencje dla kolejki:
 - Incydent procesu (z raportu Evaluatora r2): współdzielony scratchpad — skrypt bramek nadpisał cudzy `gates.sh`; naprawiono. Reguła: każdy temat ma unikalny podkatalog w scratchpadzie (`<temat>-tgt`).
 - Start: FOG-SAVE r1 (`wf_c5a24e70-9ed`), baza `5a1ddc10b`, Opus we wszystkich etapach, dispatch `1f242a6f2`.
 - Sprzątanie: worktree FC/gate i targety RENDER-FRAME usunięte; dysk 16 GB przed startem FOG-SAVE.
+
+### Przebieg 2026-11-18 ~09:18 UTC — heartbeat: sloty
+- Aktywne: K5LOOP-CLOSE r3, FOG-SAVE r1 (oba engine, Opus). Wolne sloty NIE zapełnione, powód: (a) DOC-DEBTS-R2 i klient #371 to tematy renderera (bramka ≥ 12 GB wolnego, bez równoległych buildów renderera), a dwa buildy engine zjadają ~7 GB z 14 GB; (b) #369 K5LOOP-WIRING, #370 I5 i #374 zależą od wyniku K5LOOP-CLOSE r3; (c) tematów Haiku/Sonnet nie startuję (polecenie właściciela: tylko 3D na Opus). Plan: DOC-DEBTS-R2 po zakończeniu pierwszego z dwóch workflow i ≥ 12 GB.
