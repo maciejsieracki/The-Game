@@ -69,7 +69,7 @@ import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from
 import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
 import { isAiAiTreatyTickEnabled, setAiAiTreatyTickEnabledForTest, planAiAiNapTreatyTickFull, applyAiAiNapBreachRelacja, aiAiNapBreachRelacjaDelta, type AiAiWarStatus } from './game/ai-ai-treaty-tick';
-import { typSwiataFromMenuLabel,defaultLandFractionPercentForTyp, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
+import { typSwiataFromMenuLabel, defaultLandFractionPercentForTyp, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
 import { buildScene, getLastSetFogMs, type SceneBuildTimings, type SceneResult } from './render/scene';
 import { improvementAutomationBlockedRule } from './ui/administratorPanel';
 import { showMapLoadingOverlay, type MapLoadingOverlayHandle, formatCaughtError } from './ui/mapLoadingOverlay';

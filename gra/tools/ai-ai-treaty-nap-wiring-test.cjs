@@ -194,6 +194,9 @@ function suite(mod) {
     check('B11 −30 Relacji przy mnożniku 2 => Respekt 35', r2.respekt === 35, r2.respekt);
     const low = mod.applyAiAiNapBreachRelacja({ respekt: 10, zaufanie: 0, status: 'pokoj' }, -30, 1);
     check('B11 clamp dolny 0', low.respekt === 0, low.respekt);
+    // OGRANICZENIE UDOKUMENTOWANE (zarzut 1 Evaluatora): przy Respekcie 10 kara −30 Relacji daje realną utratę
+    // Relacji 10 (nie 30), bo clamp obcina Respekt do 0. Pełna kara wymaga decyzji właściciela (reszta do Zaufania?).
+    check('B11 ograniczenie: Respekt 10 => realna utrata Relacji 10 z 30 (clamp)', (10 - low.respekt) === 10, 10 - low.respekt);
     const hi = mod.applyAiAiNapBreachRelacja({ respekt: 95, zaufanie: 0, status: 'pokoj' }, 30, 1);
     check('B11 clamp górny 100', hi.respekt === 100, hi.respekt);
     check('B11 kara z danych = −30', mod.aiAiNapBreachRelacjaDelta() === -30, mod.aiAiNapBreachRelacjaDelta());
