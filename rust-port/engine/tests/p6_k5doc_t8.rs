@@ -845,7 +845,7 @@ fn at_least(cov: &HashMap<String, usize>, key: &str, n: usize) {
 fn krok_doktryny_zgodny_z_pinem() {
     with_timeout("T8", || {
         let (v, cav_mult) = load_from(VECTORS);
-        assert_eq!(v["cases"].as_array().expect("cases").len(), 1520);
+        assert_eq!(v["cases"].as_array().expect("cases").len(), 1540);
         let (failures, cov) = run_family(&v, &cav_mult);
         assert!(
             failures.is_empty(),
@@ -881,6 +881,8 @@ fn krok_doktryny_zgodny_z_pinem() {
         at_least(&cov, "skirmish/melee", 30);
         at_least(&cov, "skirmish/order", 40);
         at_least(&cov, "skirmish/none", 20);
+        // Krawędź planszy: punkt zbiórki po clampie = własne pole (`:18104`, mutant M13 r1).
+        at_least(&cov, "skirmish-edge/none", 20);
         assert!(
             cov.keys().all(|k| !k.ends_with("/bez-kroku-doktryny")),
             "kazdy wektor przechodzi krok doktryny ciala: {cov:?}"
@@ -1036,6 +1038,44 @@ fn bramki_doktryny_przy_murze_zgodne_z_pinem() {
         "atakujacy (nie machina) przy murze: {atk_wall_doctrine}"
     );
     assert!(no_wall >= 20, "bez muru: {no_wall}");
+}
+
+/// `meta.doctrine !== 'manual'` (`battleScene.ts:6096`) czyta `_getEffectiveDoctrine` ze stanu ciała, nie flagę wejścia:
+/// przy niespójnym wejściu adaptera (`doctrine_auto = true`, a `unitDoctrine = 'manual'`) krok doktryny NIE jest
+/// wykonywany (pin: `_isUnitDoctrineAuto` dałby tu `false`, a nawet przy `true` linia `:6096` odcina `manual`).
+/// Mutant M24 r1 (brak nadpisania `doctrine_manual`) jest równoważny dla spójnego wejścia; ten test go zabija.
+#[test]
+fn doktryna_manual_ze_stanu_ciala_odcina_krok() {
+    let (v, cav_mult) = load_from(VECTORS);
+    let mut n = 0;
+    for case in v["cases"]
+        .as_array()
+        .expect("cases")
+        .iter()
+        .filter(|c| c["kind"] == "steady-inf")
+        .take(30)
+    {
+        let Built {
+            mut body,
+            mut st,
+            acting,
+        } = build(case, &cav_mult, true);
+        let aix = usize::from(acting.side == BattleSide::Defender);
+        body.doctrine[aix][acting.idx].unit_doctrine = Some(GroupDoctrine::Manual);
+        // Bez kroku doktryny jednostka idzie dalszymi gałęziami `_activateUnit` (cios/kontratak zużywają rzuty).
+        body.rolls.values = vec![MISS_ROLL; 4];
+        assert!(body.units[aix][acting.idx].activate.doctrine_auto);
+        body.start(acting, &st);
+        body.complete(acting, &mut st);
+        assert!(body.doctrine_steps.is_empty(), "{}", case["name"]);
+        assert!(
+            !body.trace[0].1.contains(&ActivateEvent::DoctrineStep),
+            "{}",
+            case["name"]
+        );
+        n += 1;
+    }
+    assert_eq!(n, 30);
 }
 
 /// Ciało przy murze: gałęzie oblężnicze (w tym doktryna atakującego przy murze) to T1/T2 — jawny tag `oblezenie`, bez

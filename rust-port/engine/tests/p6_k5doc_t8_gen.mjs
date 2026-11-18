@@ -613,6 +613,31 @@ family('steady-nobow', 120, { 'advance-attack': 30, 'advance-move': 40 });
 family('defensive', 200, { shot: 50, melee: 50, none: 50 });
 family('aggressive', 240, { cav: 40, shot: 40, melee: 40, 'advance-move': 40, none: 15 });
 family('skirmish', 240, { 'ranged-shot': 30, 'ranged-move': 30, melee: 30, order: 40, none: 20 });
+// `skirmish` na krawedzi planszy (mutant M13 r1): piechota bez grupy, punkt zbiorki `_forwardCol(side, q, 2)` (`:17645`)
+// po clampie (`:6749`) = wlasne pole, wiec `_executeSkirmishDoctrineStep` konczy `done()` na warunku
+// `dest.col === ru.q && dest.row === ru.r` (`:18104`). Dopisane po rodzinach (wczesniejsze rzuty `rnd` bez zmian).
+{
+  let got = 0;
+  while (got < 20) {
+    if (++tries > 3000000) throw new Error('za malo scenariuszy skirmish-edge');
+    const sc = makeCase('skirmish');
+    const own = sc.acting.side === 'atk' ? sc.atk : sc.def;
+    const me = own[sc.acting.idx];
+    const edge = sc.acting.side === 'atk' ? 67 : 0;
+    if ([...sc.atk, ...sc.def].some((u) => u !== me && u.q === edge && u.r === me.r)) continue;
+    me.q = edge;
+    me.mounted = rnd() < 0.3;
+    me.rangedBase = false; me.primaryRanged = false; me.ammoLeft = 0; me.range = 1;
+    me.unitDoctrine = 'skirmish'; me.groupId = null; me.doctrineMode = 'unit-edge';
+    sc.groupMeta = [];
+    sc.tiles = sc.tiles.filter(([c, r]) => !(c === me.q && r === me.r));
+    const expect = runCase(sc);
+    const br = branchOf(expect);
+    if (br !== 'none') throw new Error(`skirmish-edge: ${br}`);
+    cases.push({ ...sc, name: `t8-skirmish-edge-${got}`, kind: 'skirmish-edge', branch: br, expect });
+    got += 1;
+  }
+}
 
 const fam = (kind) => cases.filter((c) => c.kind === kind);
 const count = (kind, br) => fam(kind).filter((c) => c.branch === br).length;
