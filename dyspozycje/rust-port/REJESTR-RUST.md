@@ -3780,3 +3780,10 @@ Konsekwencje dla kolejki:
 - Start: K5LOOP-CLOSE r3 (`wf_a42554e9-0cc`), baza `7bd030ead`, wszystkie etapy Opus, dispatch `93cc78304` na `claude/rust-sivvrn`.
 - Sprzątanie: usunięte worktree Evaluatora/Obrony/FC obu r2 (commity zabezpieczone: keep + wip), target `fc_k5c_r2_tgt`; dysk 13 GB.
 - RENDER-FRAME r2 (`wf_cb4802ac-c57`): FC w toku.
+
+### Przebieg 2026-11-18 ~09:17 UTC — RENDER-FRAME r2 zintegrowany, start FOG-SAVE
+- RENDER-FRAME r2: FC PASS-WITH-NOTES (`c6de53de6`; Evaluator r2 FAIL Z1 epoka limitu miast z fotela głównego + Z2 9/11 mutantów żyło → Obrona: Z1 naprawiony `owner_era(HUMAN_OWNER_ID)`, +10 testów, 11/11 mutantów zabitych). Parity przesunęło się (K5LOOP-CLOSE r2 `7bd030ead`), więc `git merge-tree` (czysty) + merge `5a1ddc10b` (rodzice `7bd030ead`, `c6de53de6`); bramki na drzewie po merge: fmt 0, clippy -D warnings 0, `p4_364_render_frame` 0, pełny `cargo test --all-targets` EXIT 0 (529 bloków, 3976 passed / 0 failed / 1 ignored). FF `origin/rust-port/parity-v2` = `5a1ddc10b` (odczyt `git ls-remote`), wip `rust-port-wip/R-RUSTPORT-P4-364-RENDER-FRAME-R2-{obrona,fc}`, lokalne `refs/keep/R-RUSTPORT-P4-364-RENDER-FRAME-r2-{merge,fc}`.
+- Długi pozostające z r2 (jawne w `RENDER_FRAME_GAPS`): `stacks.starvingRepIds/goldDeficitRepIds` i `overlays.workerFields` (zależne od #310 EKONOMIA-STAN/#304 EKONOMIA-TURA); `armorBadgeLevel` zostaje domyślny. Era per fotel niedostępna w stanie (test Z1 zgłosi, gdy stan dostanie epokę per fotel).
+- Incydent procesu (z raportu Evaluatora r2): współdzielony scratchpad — skrypt bramek nadpisał cudzy `gates.sh`; naprawiono. Reguła: każdy temat ma unikalny podkatalog w scratchpadzie (`<temat>-tgt`).
+- Start: FOG-SAVE r1 (`wf_c5a24e70-9ed`), baza `5a1ddc10b`, Opus we wszystkich etapach, dispatch `1f242a6f2`.
+- Sprzątanie: worktree FC/gate i targety RENDER-FRAME usunięte; dysk 16 GB przed startem FOG-SAVE.
