@@ -212,6 +212,8 @@ export interface ForcedPeaceTextInput {
   turnsAtWar?: number;
   /** PENDING-FORCED-PEACE-Q1: liczba miast, które zmieniły właściciela w tej wojnie. */
   citiesChanged?: number;
+  /** PENDING-FORCED-PEACE-Q1: karencja po pokoju (tury) — pokazywana w oknie. */
+  lockTurns?: number;
 }
 
 export interface ForcedPeaceText {
@@ -235,11 +237,15 @@ export function forcedPeaceModalTextPl(inp: ForcedPeaceTextInput): ForcedPeaceTe
   const pct = inp.levelPct ?? 100;
   const wojna = inp.turnsAtWar !== undefined ? `, wojna trwa ${inp.turnsAtWar} tur` : '';
   const zmiany = inp.citiesChanged !== undefined ? `, miast zmieniło właściciela: ${inp.citiesChanged}` : '';
+  const kto = inp.humanIsLoser ? ' Przegrywasz tę wojnę.' : ' Wygrywasz tę wojnę.';
+  const karencja = inp.lockTurns !== undefined ? ` Po pokoju karencja: ${inp.lockTurns} tur.` : '';
   return {
     title: 'Pokój wymuszony',
     lead: `Wojna z ${inp.otherName} osiągnęła ${pct}% zmęczenia — pokój wymuszony.`,
-    why: `Zmęczenie wojną ${pct}% (próg wymuszenia 100%)${wojna}${zmiany}. Nie da się odrzucić tego pokoju.`,
-    terms,
+    why: `Zmęczenie wojną ${pct}% (próg wymuszenia 100%)${wojna}${zmiany}.${kto} ` +
+      'Zmęczenie rośnie o 5% za każdą turę wojny i o 10% za każde miasto, które zmieniło właściciela. ' +
+      'Nie da się odrzucić tego pokoju: gra nie pozwoli zakończyć tury, dopóki nie zaakceptujesz warunków.',
+    terms: terms + (inp.cityNames.length === 0 ? ' Zapłata: 0 PN.' : '') + karencja + ' Zaufanie po pokoju: 20.',
     acceptLabel: 'Akceptuję warunki pokoju',
   };
 }

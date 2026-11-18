@@ -1224,8 +1224,20 @@ export type ForcedPeaceModalOptions = ForcedPeaceTextInput & {
  * w tło ani klawiszem Esc; jedyny przycisk „Akceptuję warunki pokoju” wywołuje onAccept (po zamknięciu okna).
  * Tekst: forcedPeaceModalTextPl (wszystkie liczby i miasta po nazwach).
  */
+/** PENDING-FORCED-PEACE-Q1 (zarzut 5): aktywny strażnik Esc okna pokoju wymuszonego — zdejmowany przy każdym
+ * ponownym otwarciu i przy akceptacji, żeby nie zostawić globalnej blokady klawisza Esc. */
+let forcedPeaceEscGuard: ((e: KeyboardEvent) => void) | null = null;
+
+function clearForcedPeaceEscGuard(): void {
+  if (forcedPeaceEscGuard !== null) {
+    window.removeEventListener('keydown', forcedPeaceEscGuard, true);
+    forcedPeaceEscGuard = null;
+  }
+}
+
 export function showForcedPeaceModal(opts: ForcedPeaceModalOptions): void {
   ensureStyles();
+  clearForcedPeaceEscGuard();
   if (modalOverlay !== null) modalOverlay.remove();
   modalOverlay = document.createElement('div');
   modalOverlay.className = 'civ-diplo-modal-overlay';
@@ -1243,13 +1255,16 @@ export function showForcedPeaceModal(opts: ForcedPeaceModalOptions): void {
   document.body.appendChild(overlay);
   // Brak odmowy: Esc nie zamyka okna (przechwycenie w fazie capture, zanim dojdzie do innych handlerów).
   const blockEsc = (e: KeyboardEvent): void => {
+    // Okno już nieobecne w DOM (np. zamknięte przez inne okno): nie blokuj Esc dłużej.
+    if (!overlay.isConnected) { clearForcedPeaceEscGuard(); return; }
     if (e.key !== 'Escape') return;
     e.preventDefault();
     e.stopPropagation();
   };
+  forcedPeaceEscGuard = blockEsc;
   window.addEventListener('keydown', blockEsc, true);
   const accept = (): void => {
-    window.removeEventListener('keydown', blockEsc, true);
+    clearForcedPeaceEscGuard();
     if (modalOverlay === overlay) { modalOverlay.remove(); modalOverlay = null; } else { overlay.remove(); }
     opts.onAccept();
   };

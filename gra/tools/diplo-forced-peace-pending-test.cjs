@@ -153,6 +153,14 @@ function sourceChecks() {
   chk('h: okno bez zamkniecia klikiem w tlo', !/modalOverlay\.addEventListener\('click', \(e\) => \{ if \(e\.target === modalOverlay\) close\(\); \}\);\s*\n\}\s*\n\n\/\*\* @deprecated/.test(ui) && /Klik w tło NIE zamyka/.test(ui));
   chk('h: Esc blokowany w oknie pokoju wymuszonego', /blockEsc/.test(ui) && /e\.key !== 'Escape'/.test(ui));
   chk('h: jedyny przycisk wywołuje onAccept', /opts\.onAccept\(\)/.test(ui) && /cd-forced-peace-ok/.test(ui));
+  // R2 (zarzuty Evaluatora 1, 2, 4, 5, 9): wpis w Ważne, auto-otwarcie po wczytaniu i turze, czyszczenie nieaktualnych, walidacja zapisu, zdjęcie strażnika Esc.
+  chk('r2-1: wpis „Nie można zakończyć tury” w Ważne dla pokoju wymuszonego', /id: 'end-turn-block-forced-peace'/.test(main) && /END_TURN_BLOCK_EVENT_TITLE,/.test(main));
+  chk('r2-2: okno wraca po wczytaniu zapisu z oczekującym traktatem', /setTimeout\(\(\) => showNextPendingForcedPeace\(\), 0\)/.test(main));
+  chk('r2-3: okno wraca na początku tury po turn++', /turn\+\+;[\s\S]{0,200}if \(pendingForcedPeaceTreaties\.length > 0\) showNextPendingForcedPeace\(\)/.test(main));
+  chk('r2-4: nieaktualne oczekujące pokoje są usuwane (prune) przed bramką i oknem', /function prunePendingForcedPeace[\s\S]{0,400}stillAtWar/.test(main) && (main.match(/prunePendingForcedPeace\(\);/g) || []).length >= 4);
+  chk('r2-5: strażnik Esc zdejmowany przy ponownym otwarciu i akceptacji', /clearForcedPeaceEscGuard\(\);\s*\n\s*if \(modalOverlay !== null\)/.test(ui) && /if \(!overlay\.isConnected\) \{ clearForcedPeaceEscGuard\(\)/.test(ui));
+  chk('r2-6: walidacja wpisu zapisu (loser/winner/pairKey)', /typeof r\.pairKey !== 'string' \|\| typeof r\.loser !== 'number'/.test(main));
+  chk('r2-7: tekst okna zawiera formułę zmęczenia, karencję i 0 PN', /zmęczenie rośnie o 5%|Zmęczenie rośnie o 5%/.test(fs.readFileSync(path.join(SRC, 'game', 'war-weariness-view.ts'), 'utf8')) && /Zapłata: 0 PN/.test(fs.readFileSync(path.join(SRC, 'game', 'war-weariness-view.ts'), 'utf8')));
 }
 
 function mutation() {

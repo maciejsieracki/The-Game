@@ -1168,6 +1168,7 @@ import { buildAutoRationSidePanelEvent } from './game/spich-auto-ration-notify';
 // R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: wydarzenie-blokada „Nie można zakończyć tury” (zakładka Ważne).
 import {
   endTurnBlockEventOf,
+  END_TURN_BLOCK_EVENT_TITLE,
   END_TURN_BLOCK_ACT_OPEN_FOOD,
   END_TURN_BLOCK_ACT_OPEN_TAX,
   END_TURN_BLOCK_ACT_TAX_RAISE,
@@ -19923,6 +19924,22 @@ async function boot(): Promise<void> {
       }
       const nnsBlockEvent = nnsEndTurnBlockEvent();
       if (nnsBlockEvent) events.push(nnsBlockEvent);
+      // PENDING-FORCED-PEACE-Q1: dopóki wisi pokój wymuszony, „Zakończ turę” jest zablokowane — wpis w Ważne mówi dlaczego.
+      prunePendingForcedPeace();
+      const pendingPeace = pendingForcedPeaceTreaties[0];
+      if (pendingPeace) {
+        const pendingWith = ownerDiploLabel(pendingPeace.loser === ME() ? pendingPeace.winner : pendingPeace.loser);
+        events.push({
+          id: 'end-turn-block-forced-peace',
+          icon: '⛔',
+          title: END_TURN_BLOCK_EVENT_TITLE,
+          subtitle: `Nie można zakończyć tury: najpierw zaakceptuj warunki pokoju wymuszonego z ${pendingWith} (zmęczenie wojną 100%).`,
+          kind: 'info',
+          important: true,
+          negative: true,
+          turnCreated: turn,
+        });
+      }
       return events.filter(e => !dismissedSidePanelEventIds.has(e.id));
     }
 
@@ -25997,9 +26014,23 @@ async function boot(): Promise<void> {
       }
     }
 
-    /** DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1 (Z7): trwały wpis „Ważne" o zawarciu pokoju/rozejmu z udziałem gracza (dedup: tura + para). */
+    /** PENDING-FORCED-PEACE-Q1: usuwa oczekujące pokoje, których wojna już się nie toczy (pokój zawarty inną drogą,
+     * eliminacja jednej ze stron). Bez tego bramka „Zakończ turę” zostałaby zablokowana na zawsze. */
+    function prunePendingForcedPeace(): void {
+      for (let i = pendingForcedPeaceTreaties.length - 1; i >= 0; i--) {
+        const p = pendingForcedPeaceTreaties[i]!;
+        const stillAtWar = getDiploRelation(p.loser, p.winner).status === 'wojna'
+          && !eliminatedOwners.has(p.loser) && !eliminatedOwners.has(p.winner);
+        if (!stillAtWar) {
+          pendingForcedPeaceTreaties.splice(i, 1);
+          console.warn('[ForcedPeace] usunięto nieaktualny oczekujący pokój', p.pairKey);
+        }
+      }
+    }
+
     /** PENDING-FORCED-PEACE-Q1: okno kolejnego oczekującego pokoju wymuszonego (bez opcji odmowy). */
     function showNextPendingForcedPeace(): void {
+      prunePendingForcedPeace();
       const p = pendingForcedPeaceTreaties[0];
       if (!p) return;
       const humanIsLoser = p.loser === ME();
@@ -26014,14 +26045,16 @@ async function boot(): Promise<void> {
         levelPct: Math.round(p.level * 100),
         turnsAtWar: p.turnsAtWar,
         citiesChanged: p.citiesChanged,
+        lockTurns: p.lockTurns,
         onAccept: acceptPendingForcedPeace,
       });
     }
 
     /** PENDING-FORCED-PEACE-Q1: akceptacja warunków — dopiero teraz zapłata miastami, pokój i wpis w Ważne. */
     function acceptPendingForcedPeace(): void {
+      prunePendingForcedPeace();
       const p = pendingForcedPeaceTreaties.shift();
-      if (!p) return;
+      if (!p) { showNextPendingForcedPeace(); return; }
       const items = (p.plan?.items ?? []).filter(i => i.kind !== 'miasto' || cityCessionPlanFor(i.id, p.loser, p.winner).ok);
       if (items.length > 0) {
         const basket: BasketItem[] = items.map(i => ({
@@ -26042,6 +26075,7 @@ async function boot(): Promise<void> {
       showNextPendingForcedPeace();
     }
 
+    /** DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1 (Z7): trwały wpis „Ważne" o zawarciu pokoju/rozejmu z udziałem gracza (dedup: tura + para). */
     function logPeaceVazne(a: number, b: number, titlePrefix: string, subtitle: string): void {
       if (a !== ME() && b !== ME()) return;
       const other = a === ME() ? b : a;
@@ -41450,6 +41484,7 @@ async function boot(): Promise<void> {
         return false;
       }
       // PENDING-FORCED-PEACE-Q1: dopóki wisi pokój wymuszony z graczem, nie da się zakończyć tury.
+      prunePendingForcedPeace();
       if (pendingForcedPeaceTreaties.length > 0) {
         console.warn('[EndTurn] blocked: oczekujący pokój wymuszony');
         return false;
@@ -41620,6 +41655,8 @@ async function boot(): Promise<void> {
           resetRetreatCountOfUnit(u);
         }
         turn++;
+        // PENDING-FORCED-PEACE-Q1: oczekujący pokój wymuszony wraca na wierzch na początku tury gracza.
+        if (pendingForcedPeaceTreaties.length > 0) showNextPendingForcedPeace();
         chronicleTickEmpireSizes(); // R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1
 
         // R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1 — TRWAJĄCA PARTIA (stan b) oraz
@@ -50366,9 +50403,28 @@ async function boot(): Promise<void> {
       }
       // PENDING-FORCED-PEACE-Q1: brak pola (stary zapis) = brak oczekującego pokoju wymuszonego.
       pendingForcedPeaceTreaties.length = 0;
-      const savedPendingPeace = saved.meta?.pendingForcedPeaceTreaties as PendingForcedPeaceTreaty[] | undefined;
+      const savedPendingPeace: unknown = saved.meta?.pendingForcedPeaceTreaties;
       if (Array.isArray(savedPendingPeace)) {
-        for (const p of savedPendingPeace) pendingForcedPeaceTreaties.push({ ...p });
+        for (const raw of savedPendingPeace) {
+          // Walidacja: uszkodzony wpis jest pomijany, nie blokuje tury.
+          if (!raw || typeof raw !== 'object') continue;
+          const r = raw as Record<string, unknown>;
+          if (typeof r.pairKey !== 'string' || typeof r.loser !== 'number' || typeof r.winner !== 'number') continue;
+          if (typeof r.level !== 'number' || typeof r.lockTurns !== 'number') continue;
+          pendingForcedPeaceTreaties.push({
+            pairKey: r.pairKey,
+            loser: r.loser,
+            winner: r.winner,
+            lockTurns: r.lockTurns,
+            level: r.level,
+            turnsAtWar: typeof r.turnsAtWar === 'number' ? r.turnsAtWar : 0,
+            citiesChanged: typeof r.citiesChanged === 'number' ? r.citiesChanged : 0,
+            plan: r.plan && typeof r.plan === 'object' ? (r.plan as WearinessTickOutcome['plan']) : null,
+            turnCreated: typeof r.turnCreated === 'number' ? r.turnCreated : 0,
+          });
+        }
+        // Okno wraca po wczytaniu (po zakończeniu ładowania UI).
+        if (pendingForcedPeaceTreaties.length > 0) setTimeout(() => showNextPendingForcedPeace(), 0);
       }
       // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): odtworzenie tury wejścia w Brąz per-owner —
       // brak wpisu dla danego ownera (stary zapis) = `undefined`, `isEligibleForBronzeForcedWar`
