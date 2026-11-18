@@ -216,6 +216,52 @@ fn side_cap_glebokosc_i_safe_cols_jak_pin() {
     }
 }
 
+/// Obrona r1 (zarzuty Evaluatora E7, E11): przemiatanie `sideCap` 0..520 obejmuje głębokość 21 (zakresy
+/// jednokolumnowe `[10,10]`/`[57,57]`) i głębokości > 31; `_carveBattleBox` pinu na syntetycznej siatce bez Plains
+/// pokazuje każdą kolumnę pasma, także k = 31 (kolumny 0 i 67).
+#[test]
+fn carve_box_na_syntetycznej_siatce_i_przemiatanie_glebokosci_jak_pin() {
+    let v = vectors();
+    let cr = v["clearRanks"].as_array().expect("clearRanks");
+    let single_col = cr.iter().any(|e| {
+        e["safeCols"]
+            .as_array()
+            .expect("safeCols")
+            .iter()
+            .any(|r| num(&r[0]) == num(&r[1]))
+    });
+    assert!(
+        single_col,
+        "brak wektora z zakresem jednokolumnowym (hi == lo)"
+    );
+    assert!(cr.iter().any(|e| num(&e["deploy"]) > 31.0));
+
+    let boxes = v["boxes"].as_array().expect("boxes");
+    let input = rle_decode(boxes[0]["input"].as_str().expect("input"));
+    assert!(input.iter().all(|&t| t != bterrain::PLAINS));
+    let cols = i32::try_from(BF_COLS).expect("cols");
+    let rows = i32::try_from(BF_ROWS).expect("rows");
+    let mut edge_cols_carved = 0;
+    for b in &boxes[1..] {
+        let pa = b["presetActive"].as_bool().expect("presetActive");
+        let cap = num(&b["cap"]);
+        let mut map = BattleTerrainMap::from_tiles(cols, rows, input.clone(), false).expect("mapa");
+        carve_battle_box(&mut map, pa, cap);
+        assert!(
+            rle(map.tiles()) == b["tiles"].as_str().expect("tiles"),
+            "carve box pa={pa} cap={cap}"
+        );
+        let mid = usize::try_from(PLAY_MID_ROW * BF_COLS).expect("idx");
+        if map.tiles()[mid] == bterrain::PLAINS {
+            edge_cols_carved += 1;
+        }
+    }
+    assert!(
+        edge_cols_carved >= 4,
+        "kolumna 0 wycieta w {edge_cols_carved} wektorach"
+    );
+}
+
 #[test]
 fn preset_for_world_terrain_jak_pin() {
     let v = vectors();

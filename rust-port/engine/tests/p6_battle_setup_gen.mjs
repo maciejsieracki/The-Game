@@ -294,6 +294,39 @@ for (const presetActive of [false, true]) for (const cap of [120, 121, 130, 200,
     safeCols: sc.map(([lo, hi]) => [num(lo), num(hi)]),
   });
 }
+// Obrona r1 (zarzut Evaluatora E11): przemiatanie sideCap 0..520 (co 1) i polowki - obejmuje glebokosc 21 (zakresy
+// jednokolumnowe [10,10] i [57,57], filtr `hi >= lo`) oraz glebokosci > 31 (k = 31 daje kolumny 0 i 67).
+for (const presetActive of [false, true]) for (let cap = 0; cap <= 520; cap += 0.5) {
+  const sc = H.battleSafeCols(presetActive, cap);
+  clearRanks.push({
+    presetActive,
+    cap: num(cap),
+    ranks: num(H.battleClearRanks(presetActive, cap)),
+    deploy: num(H.deployClearRanksFor(presetActive, cap)),
+    safeCols: sc.map(([lo, hi]) => [num(lo), num(hi)]),
+  });
+}
+
+// Obrona r1 (zarzut Evaluatora E7): `_carveBattleBox` pinu wykonany na syntetycznej siatce, w ktorej kazdy kafel
+// rodzaju innego niz Plains (takze kolumny 0 i 67, poza strefa gry) - widac kazda kolumne pasma, takze k >= 31.
+const boxes = [];
+{
+  const synth = () => {
+    const t = new Uint8Array(consts.BF_COLS * consts.BF_ROWS);
+    for (let r = 0; r < consts.BF_ROWS; r++) for (let c = 0; c < consts.BF_COLS; c++) {
+      t[r * consts.BF_COLS + c] = 1 + ((c * 5 + r * 3 + ((c * r) % 7)) % 7);
+    }
+    return t;
+  };
+  const input = synth();
+  for (const presetActive of [false, true]) for (const cap of [0, 120, 150, 210, 240, 380, 500, 1e6, NaN, -1]) {
+    const tiles = Uint8Array.from(input);
+    H.Harness.prototype._carveBattleBox.call({ terrainMap: { tiles } }, presetActive, cap);
+    boxes.push({ presetActive, cap: num(cap), tiles: rle(tiles) });
+  }
+  for (const k of Object.keys(snaps)) delete snaps[k];
+  boxes.unshift({ input: rle(input) });
+}
 
 // ---------------------------------------------------------------- 2) presetForWorldTerrain
 const BAZY = ['laka', 'rownina', 'wzgorza', 'gory', 'pustynia', 'plytkie_morze', 'tundra', '', 'LAKA', '  Gory ',
@@ -520,7 +553,7 @@ const outDir = join(here, 'p6_battle_setup_vectors');
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'vectors.json'), JSON.stringify({
   pin: PIN, seed: SEED, fileSha256: fileShaNow, fragSha256: fragShaNow,
-  consts, sideCap, clearRanks, presets, rng: rngVec, jitter, pickFromRanges: pfr, gens, scenarios, cav, sin: sinVec,
+  consts, sideCap, clearRanks, boxes, presets, rng: rngVec, jitter, pickFromRanges: pfr, gens, scenarios, cav, sin: sinVec,
   terrainCombat: terrainData.map((t) => ({ Teren: t.Teren, kaw: t['Kawaleria/Rydwan'] ?? null })),
 }) + '\n');
 
