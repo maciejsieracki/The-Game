@@ -178,9 +178,14 @@ const r4 = v => (v === null || v === undefined || Number.isNaN(v) ? NZ : Number(
 function gotowoscRaport(bySeed) {
   const probes = [];
   const widziane = new Set();
+  let przestarzaleProbki = 0;
+  let przestarzaleWiersze = 0;
   for (const [seed, rows] of Object.entries(bySeed)) {
     for (const r of rows) {
       if (!r.probki || r.probyTura === null) continue;
+      // Krok toru nie biegł w turze wiersza: wiersz niesie próby z WCZEŚNIEJSZEJ tury (probyTura < turn).
+      // Takich prób nie liczymy jako prób tury wiersza (zdublowane przestarzałe kopie).
+      if (r.probyTura !== r.turn) { przestarzaleProbki += r.probki.length; przestarzaleWiersze++; continue; }
       for (const p of r.probki) {
         const k = `${seed}|${r.probyTura}|${p.proponent}|${p.cel}|${p.gotowosc}`;
         if (widziane.has(k)) continue;
@@ -189,34 +194,36 @@ function gotowoscRaport(bySeed) {
       }
     }
   }
-  return probes;
+  return { probes, przestarzaleProbki, przestarzaleWiersze };
 }
 
 function printGotowosc(label, bySeed) {
   console.log(`\n=== GOTOWOŚĆ DO SOJUSZU (willingnessAlly) — ${label} ===`);
-  const probes = gotowoscRaport(bySeed);
+  const { probes, przestarzaleProbki, przestarzaleWiersze } = gotowoscRaport(bySeed);
   if (probes.length === 0) {
     console.log(`${NZ}: brak prób toru w wierszach jsonl (flaga wyłączona, krok nie biegł albo brak pola probyOstatniaTura).`);
     return;
   }
   const prog = progGotowosci();
-  console.log(`Próby (unikalne tura|para|gotowość): ${probes.length}; tury próbkowania: ${new Set(probes.map(p => p.tura)).size}; próg progSojuszWillingnessMin = ${prog === null ? NZ : prog}`);
-  // Tabela kubełków 0,1.
+  console.log(`Próby (unikalne tura|para|gotowość, tylko wiersze o świeżej turze): ${probes.length}; tury próbkowania: ${new Set(probes.map(p => p.tura)).size}; próg progSojuszWillingnessMin = ${prog === null ? NZ : prog}`);
+  console.log(`Pominięto przestarzałe kopie prób (wiersz z turą kroku < turze wiersza): ${przestarzaleProbki} próbek w ${przestarzaleWiersze} wierszach.`);
+  // Tabela kubełków 0,1 (ogółem).
   const kub = Array.from({ length: 10 }, () => 0);
   for (const p of probes) kub[Math.min(9, Math.max(0, Math.floor(p.gotowosc * 10)))]++;
-  console.log('gotowość: kubełek | liczba prób | odsetek');
+  console.log('\ngotowość: kubełek | liczba prób | odsetek');
   kub.forEach((n, i) => console.log(`${(i / 10).toFixed(1)}-${((i + 1) / 10).toFixed(1)} | ${n} | ${(100 * n / probes.length).toFixed(1)}%`));
-  // Per tura próbkowania.
+  // Per tura próbkowania: histogram 0,1 w kolumnach + max + liczba prób >= progu.
   const perTura = new Map();
   for (const p of probes) {
-    const e = perTura.get(p.tura) || { n: 0, max: -1, ile: 0 };
+    const e = perTura.get(p.tura) || { n: 0, max: -1, ile: 0, kub: Array.from({ length: 10 }, () => 0) };
     e.n++; e.max = Math.max(e.max, p.gotowosc); if (prog !== null && p.gotowosc >= prog) e.ile++;
+    e.kub[Math.min(9, Math.max(0, Math.floor(p.gotowosc * 10)))]++;
     perTura.set(p.tura, e);
   }
-  console.log('\nPer tura próbkowania: tura | próby | max gotowość | prób >= progu');
+  console.log('\nPer tura próbkowania (histogram 0,1): tura | próby | 0.0 | 0.1 | 0.2 | 0.3 | 0.4 | 0.5 | 0.6 | 0.7 | 0.8 | 0.9 | max | prób >= progu');
   for (const t of [...perTura.keys()].sort((x, y) => x - y)) {
     const e = perTura.get(t);
-    console.log(`${t} | ${e.n} | ${r4(e.max)} | ${prog === null ? NZ : e.ile}`);
+    console.log(`${t} | ${e.n} | ${e.kub.join(' | ')} | ${r4(e.max)} | ${prog === null ? NZ : e.ile}`);
   }
   // Mediana per archetyp celu.
   const perTyp = new Map();
@@ -242,12 +249,13 @@ function printGotowosc(label, bySeed) {
     console.log(`${k} | ${v.xs.length} | ${r4(Math.min(...v.xs))} | ${r4(mediana(v.xs))} | ${r4(Math.max(...v.xs))}`);
   }
   if (prog !== null) {
+    // Wybór wg MAKSIMUM gotowości pary (nie mediany): mediana bywa 0 dla wszystkich par, a lista byłaby arbitralna.
     const bliskie = [...perPara.entries()]
-      .map(([k, v]) => ({ k, med: mediana(v.xs), n: v.xs.length }))
-      .sort((a, b) => Math.abs(a.med - prog) - Math.abs(b.med - prog))
+      .map(([k, v]) => ({ k, max: Math.max(...v.xs), med: mediana(v.xs), min: Math.min(...v.xs), n: v.xs.length }))
+      .sort((a, b) => Math.abs(a.max - prog) - Math.abs(b.max - prog))
       .slice(0, 5);
-    console.log('\n5 par najbliższych progowi (wg mediany): para | mediana | próby | odległość od progu');
-    for (const b of bliskie) console.log(`${b.k} | ${r4(b.med)} | ${b.n} | ${r4(Math.abs(b.med - prog))}`);
+    console.log('\n5 par najbliższych progowi (wg MAKSIMUM gotowości pary): para | max | mediana | min | próby | odległość max od progu');
+    for (const b of bliskie) console.log(`${b.k} | ${r4(b.max)} | ${r4(b.med)} | ${r4(b.min)} | ${b.n} | ${r4(Math.abs(b.max - prog))}`);
   }
   // Wejścia i czynniki: średnie powyżej/poniżej progu.
   if (prog !== null) {
@@ -271,9 +279,11 @@ function main() {
   const off = arg('off', null);
   const on = arg('on', null);
   const single = arg('in', null);
+  // Nagłówki pokazują tylko nazwę katalogu (bez ścieżek scratchpadu sesji).
   if (single) {
-    printTable(path.resolve(single), summarize(loadDir(path.resolve(single))));
-    printGotowosc(path.resolve(single), loadDir(path.resolve(single)));
+    const nazwa = path.basename(path.resolve(single));
+    printTable(nazwa, summarize(loadDir(path.resolve(single))));
+    printGotowosc(nazwa, loadDir(path.resolve(single)));
     return;
   }
   if (!off || !on) {
@@ -282,9 +292,9 @@ function main() {
   }
   const sOff = summarize(loadDir(path.resolve(off)));
   const sOn = summarize(loadDir(path.resolve(on)));
-  printTable('OFF (' + path.resolve(off) + ')', sOff);
-  printTable('ON (' + path.resolve(on) + ')', sOn);
-  printGotowosc('ON (' + path.resolve(on) + ')', loadDir(path.resolve(on)));
+  printTable('OFF (' + path.basename(path.resolve(off)) + ')', sOff);
+  printTable('ON (' + path.basename(path.resolve(on)) + ')', sOn);
+  printGotowosc('ON (' + path.basename(path.resolve(on)) + ')', loadDir(path.resolve(on)));
   // Werdykt pomocniczy: limit 2 na cywilizację (twardy) i cel 100% AI z sojuszem (informacyjny, decyzja po stronie właściciela).
   const maxAll = Object.values(sOn).reduce((m, x) => (x.maxNaCywilizacje === null ? m : Math.max(m, x.maxNaCywilizacje)), 0);
   console.log(`\nLimit 2 na cywilizację (ON, wszystkie wiersze): max = ${maxAll} -> ${maxAll <= 2 ? 'OK' : 'NARUSZONY'}`);

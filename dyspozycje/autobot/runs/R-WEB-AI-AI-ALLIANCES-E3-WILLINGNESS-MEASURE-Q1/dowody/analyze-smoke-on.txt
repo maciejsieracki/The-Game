@@ -1,5 +1,5 @@
 
-=== /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/smoke-alliances-on ===
+=== smoke-alliances-on ===
 ziarno | ostatnia tura | flaga | wymuszona | tura 1. sojuszu AI↔AI | tura 1. wojny AI↔AI | max sojuszy/cyw. | próby | odmowy
 4242 | 30 | true | true | brak | brak | 0 | 302 | 302
 
@@ -11,8 +11,10 @@ Punkty kontrolne (wartość z wiersza o DOKŁADNIEJ turze kontrolnej): sojusze A
 ziarno | tura 25 | tura 50 | tura 75 | tura 100 | tura 150
 4242 | 0 / 0% / 0 | poza biegiem (koniec t30) | poza biegiem (koniec t30) | poza biegiem (koniec t30) | poza biegiem (koniec t30)
 
-=== GOTOWOŚĆ DO SOJUSZU (willingnessAlly) — /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/smoke-alliances-on ===
-Próby (unikalne tura|para|gotowość): 302; tury próbkowania: 27; próg progSojuszWillingnessMin = 0.54
+=== GOTOWOŚĆ DO SOJUSZU (willingnessAlly) — smoke-alliances-on ===
+Próby (unikalne tura|para|gotowość, tylko wiersze o świeżej turze): 302; tury próbkowania: 27; próg progSojuszWillingnessMin = 0.54
+Pominięto przestarzałe kopie prób (wiersz z turą kroku < turze wiersza): 22 próbek w 2 wierszach.
+
 gotowość: kubełek | liczba prób | odsetek
 0.0-0.1 | 300 | 99.3%
 0.1-0.2 | 0 | 0.0%
@@ -25,34 +27,34 @@ gotowość: kubełek | liczba prób | odsetek
 0.8-0.9 | 0 | 0.0%
 0.9-1.0 | 0 | 0.0%
 
-Per tura próbkowania: tura | próby | max gotowość | prób >= progu
-2 | 13 | 0 | 0
-3 | 13 | 0 | 0
-4 | 13 | 0 | 0
-5 | 13 | 0 | 0
-6 | 13 | 0 | 0
-7 | 13 | 0 | 0
-8 | 13 | 0 | 0
-9 | 13 | 0 | 0
-10 | 13 | 0 | 0
-11 | 13 | 0 | 0
-13 | 5 | 0 | 0
-14 | 6 | 0 | 0
-15 | 9 | 0 | 0
-16 | 9 | 0 | 0
-18 | 8 | 0 | 0
-19 | 7 | 0 | 0
-20 | 7 | 0 | 0
-21 | 7 | 0 | 0
-22 | 11 | 0 | 0
-23 | 12 | 0 | 0
-24 | 13 | 0 | 0
-25 | 13 | 0 | 0
-26 | 13 | 0 | 0
-27 | 13 | 0 | 0
-28 | 13 | 0 | 0
-29 | 13 | 0 | 0
-30 | 13 | 0.6612 | 2
+Per tura próbkowania (histogram 0,1): tura | próby | 0.0 | 0.1 | 0.2 | 0.3 | 0.4 | 0.5 | 0.6 | 0.7 | 0.8 | 0.9 | max | prób >= progu
+2 | 13 | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+3 | 13 | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+4 | 13 | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+5 | 13 | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+6 | 13 | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+7 | 13 | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+8 | 13 | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+9 | 13 | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+10 | 13 | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+11 | 13 | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+13 | 5 | 5 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+14 | 6 | 6 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+15 | 9 | 9 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+16 | 9 | 9 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+18 | 8 | 8 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+19 | 7 | 7 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+20 | 7 | 7 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+21 | 7 | 7 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+22 | 11 | 11 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+23 | 12 | 12 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+24 | 13 | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+25 | 13 | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+26 | 13 | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+27 | 13 | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+28 | 13 | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+29 | 13 | 13 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+30 | 13 | 11 | 0 | 0 | 0 | 0 | 0 | 2 | 0 | 0 | 0 | 0.6612 | 2
 
 Mediana gotowości per archetyp celu: archetyp | próby | mediana | max
 zulusi | 24 | 0 | 0
@@ -90,12 +92,12 @@ Min / mediana / max per para (proponent→cel): para | próby | min | mediana | 
 1->10 | 4 | 0 | 0 | 0.6
 1->7 | 2 | 0 | 0 | 0
 
-5 par najbliższych progowi (wg mediany): para | mediana | próby | odległość od progu
-1->4 | 0 | 19 | 0.54
-4->1 | 0 | 20 | 0.54
-7->1 | 0 | 19 | 0.54
-10->1 | 0 | 23 | 0.54
-13->1 | 0 | 21 | 0.54
+5 par najbliższych progowi (wg MAKSIMUM gotowości pary): para | max | mediana | min | próby | odległość max od progu
+1->10 | 0.6 | 0 | 0 | 4 | 0.06
+10->1 | 0.6612 | 0 | 0 | 23 | 0.1212
+1->4 | 0 | 0 | 0 | 19 | 0.54
+4->1 | 0 | 0 | 0 | 20 | 0.54
+7->1 | 0 | 0 | 0 | 19 | 0.54
 
 Wejścia i czynniki (nad progiem: 2 prób, pod progiem: 300 prób):
 wielkość | nad progiem (średnia) | pod progiem (średnia)

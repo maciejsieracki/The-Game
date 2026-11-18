@@ -13,11 +13,15 @@
  *  H8a/H8b liczenie sojuszy per cywilizacja (+1 na każdą stronę, tylko między owners);
  *  H9 liczenie wojen czyta diplomacyRelations.get (bez getDiploRelation, który tworzy relację).
  *  H10a-c histogram powodów odmów toru (planer -> skumulowany licznik -> diag.sojusze.powodyOdmow).
- * UWAGA: to test STATYCZNY (dopasowanie tekstu źródła). NIE sprawdza zachowania w grze; poprawność liczb
- * potwierdza wyłącznie bieg dymny i analizator (NIE ZMIERZONO w teście behawioralnym: brak bundla w tym teście).
+ *  H21-H24 pola odczytu próby w planerze (gotowość, Relacja, Zaufanie, wspólna granica, wspólny wróg) — dopasowanie tekstu.
+ *  B1 (BEHAWIORALNY, esbuild z gra/node_modules): planer na znanych wejściach zwraca w probyDetale dokładnie
+ *     wartości z pairInfo/sideOf (gotowość 0,7; Relacja 123; Zaufanie 45; respekt 33; siła 1,5; archetyp; flagi granicy,
+ *     wspólnego wroga i sojusznika wroga). Mutant źródła tick, który zmienia tę wartość, MUSI czerwienić B1.
+ * UWAGA: część H (mapowanie pomiar w main.ts, hak H18-H20) pozostaje STATYCZNA; zachowanie w grze potwierdza wyłącznie
+ * bieg dymny (NIE ZMIERZONO w tym teście: brak przeglądarki i bundla gry).
  * Mutanty (kopia źródła w pamięci, NIE zapis na dysk): każdy usuwa/zamienia jedną z powyższych linii i MUSI czerwienić test.
  *
- * Wymaga tylko Node (bez esbuild/chromium). Exit 0 = wszystko zielone i mutanty wykryte.
+ * Wymaga Node + gra/node_modules (esbuild; `npm ci --ignore-scripts` w gra/). Exit 0 = wszystko zielone i mutanty wykryte.
  *   node tools/ai-ai-alliance-measure-hook-test.cjs
  */
 const fs = require('fs');
@@ -57,7 +61,53 @@ const CHECKS = [
   ['H18', 'main', 'aiAiAllianceOstatniaProby = { tura: turn, probki: plan.probyDetale };'],
   ['H19', 'main', 'pomiar: { respekt: rel.respekt, militaryRatio: dipCtx.militaryRatio, typ: String(aiOwnerCivMap.get(t) ?? \'\') },'],
   ['H20', 'main', 'probyOstatniaTura: aiAiAllianceOstatniaProby'],
+  ['H21', 'tick', 'gotowosc: info.willingness,'],
+  ['H22', 'tick', '      relacja: info.relacja,\n      zaufanie: info.zaufanie,\n      respekt: info.pomiar?.respekt ?? null,'],
+  ['H23', 'tick', 'wspolnaGranica: info.sharesBorder,'],
+  ['H24', 'tick', 'wspolnyWrog: sideP.enemies.some(x => sideT.enemies.includes(x)),'],
 ];
+
+const esbuild = require(path.resolve(GRA_ROOT, 'node_modules', 'esbuild'));
+const GAME_DIR = path.resolve(GRA_ROOT, 'src', 'game');
+
+/** Buduje planer z tekstu źródła tick (esbuild, cjs) — ta sama ścieżka co ai-ai-alliance-tick-test. */
+function loadPlanner(tickText) {
+  const res = esbuild.buildSync({
+    stdin: { contents: tickText, resolveDir: GAME_DIR, sourcefile: 'ai-ai-alliance-tick.ts', loader: 'ts' },
+    bundle: true, format: 'cjs', platform: 'node', write: false, logLevel: 'silent',
+  });
+  const m = { exports: {} };
+  new Function('module', 'exports', 'require', res.outputFiles[0].text)(m, m.exports, require);
+  return m.exports;
+}
+
+/** B1: planer na znanych wejściach; zwraca nazwy pól probyDetale o wartości innej niż oczekiwana (pusta = zielono). */
+function behaviorFails(tickText) {
+  let M;
+  try { M = loadPlanner(tickText); } catch (e) { return ['BUILD:' + String(e && e.message || e).slice(0, 60)]; }
+  const enemies = { 0: [2, 3], 1: [2] };
+  const allies = { 1: [3] };
+  const r = M.planAiAiAllianceTickFull({
+    turn: 8,
+    owners: [0, 1],
+    alliancesCount: new Map([[0, 0], [1, 0]]),
+    pairPrefilter: () => true,
+    pairInfo: () => ({
+      hasAlliance: false, warStatus: 'pokoj', hasNap: false, sharesBorder: true,
+      relacja: 123, zaufanie: 45, willingness: 0.7,
+      pomiar: { respekt: 33, militaryRatio: 1.5, typ: 'zulus' },
+    }),
+    sideOf: (oid) => ({ power: 1000, treasuryGold: 0, allies: allies[oid] || [], enemies: enemies[oid] || [] }),
+    treasury: new Map([[0, 500], [1, 500]]),
+    evaluate: () => ({ accept: false, reason: 'test', paymentGold: 0, payer: null, parity: { S: 0, W: 0, D: 0, r: 1 } }),
+  });
+  const d = (r.probyDetale || []).find(x => x.proponent === 0 && x.cel === 1);
+  if (!d) return ['brak-proby-0-1'];
+  const oczekiwane = { gotowosc: 0.7, relacja: 123, zaufanie: 45, respekt: 33, militaryRatio: 1.5, typCelu: 'zulus',
+    wspolnaGranica: true, wspolnyWrog: true, sojusznikWrogaCelu: true, sojusznikWrogaProponenta: false, accept: false };
+  return Object.keys(oczekiwane).filter(k => d[k] !== oczekiwane[k]);
+}
+
 
 /** Mutanty: [id, plik, fragment do usunięcia/zamiany na pusty lub inny]. */
 const MUTANTS = [
@@ -82,6 +132,12 @@ const MUTANTS = [
   ['M17 brak zapisu ostatniego kroku w hooku', 'main', 'aiAiAllianceOstatniaProby = { tura: turn, probki: plan.probyDetale };', ''],
   ['M18 brak pomiaru respektu/siły w pairInfo', 'main', 'pomiar: { respekt: rel.respekt, militaryRatio: dipCtx.militaryRatio, typ: String(aiOwnerCivMap.get(t) ?? \'\') },', ''],
   ['M19 stan bez probyOstatniaTura', 'main', 'probyOstatniaTura: aiAiAllianceOstatniaProby', 'probyOstatniaTura: null'],
+  // M20-M24: mutacje WARTOŚCI pól odczytu (dawniej przechodziły test statyczny) — wykrywa je B1 (behawioralny).
+  ['M20 gotowość próby = 0', 'tick', 'gotowosc: info.willingness,', 'gotowosc: 0,'],
+  ['M21 Relacja próby = 0', 'tick', '      relacja: info.relacja,\n      zaufanie: info.zaufanie,\n      respekt: info.pomiar?.respekt ?? null,', '      relacja: 0,\n      zaufanie: info.zaufanie,\n      respekt: info.pomiar?.respekt ?? null,'],
+  ['M22 Zaufanie próby = 0', 'tick', '      relacja: info.relacja,\n      zaufanie: info.zaufanie,\n      respekt: info.pomiar?.respekt ?? null,', '      relacja: info.relacja,\n      zaufanie: 0,\n      respekt: info.pomiar?.respekt ?? null,'],
+  ['M23 wspólna granica = false', 'tick', 'wspolnaGranica: info.sharesBorder,', 'wspolnaGranica: false,'],
+  ['M24 wspólny wróg = false', 'tick', 'wspolnyWrog: sideP.enemies.some(x => sideT.enemies.includes(x)),', 'wspolnyWrog: false,'],
 ];
 
 function src(kind, mainText, tickText) { return kind === 'main' ? mainText : tickText; }
@@ -98,9 +154,11 @@ function evaluate(mainText, tickText) {
 let fail = 0;
 const ok = (c, msg) => { console.log((c ? 'PASS ' : 'FAIL ') + msg); if (!c) fail++; };
 
-// 1) Stan rzeczywisty: wszystkie reguły zielone.
+// 1) Stan rzeczywisty: wszystkie reguły zielone (statyczne) + B1 behawioralny na planerze.
 const real = evaluate(MAIN, TICK);
-ok(real.length === 0, `hak odczytowy: reguły H1..H10c zielone (nieprzechodzące: ${real.join(',') || 'brak'})`);
+ok(real.length === 0, `hak odczytowy: reguły H1..H24 zielone (nieprzechodzące: ${real.join(',') || 'brak'})`);
+const realB = behaviorFails(TICK);
+ok(realB.length === 0, `B1 behawioralny: probyDetale = wejścia (nieprzechodzące pola: ${realB.join(',') || 'brak'})`);
 
 // 2) Domyślna flaga w danych pozostaje false (pomiar nie włącza toru w kodzie).
 const params = JSON.parse(fs.readFileSync(path.resolve(GRA_ROOT, 'data', 'ai-ai-treaty-params.json'), 'utf8'));
@@ -114,7 +172,9 @@ for (const [name, kind, frag, repl] of MUTANTS) {
   const m = kind === 'main'
     ? evaluate(mutated, TICK)
     : evaluate(MAIN, mutated);
-  ok(m.length > 0, `mutant ${name} wykryty (nieprzechodzące: ${m.join(',') || 'NIC - BŁĄD TESTU'})`);
+  // Mutant źródła tick: wykrywany także behawioralnie (B1) — to on łapie zmianę WARTOŚCI, nie tylko obecności tekstu.
+  const b = kind === 'tick' ? behaviorFails(mutated) : [];
+  ok(m.length > 0 || b.length > 0, `mutant ${name} wykryty (statyczne: ${m.join(',') || 'brak'}; B1: ${b.join(',') || 'brak'})`);
 }
 
 console.log(fail === 0 ? '\nWYNIK: ZIELONY' : `\nWYNIK: CZERWONY (${fail})`);
