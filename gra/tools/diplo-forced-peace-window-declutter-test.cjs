@@ -8,10 +8,13 @@
  *   (B1) tekst widoczny (whyShort, termsShort) nie zawiera wyliczeń (tur, zmienionych miast, %/turę, karencji, zaufania, zapłaty);
  *   (B2) pełne teksty (why, terms) nadal zawierają wyliczenia — nic nie zginęło z treści;
  *   (B3) terms = termsShort + szczegóły; tytuł, partner i przycisk bez zmian;
- *   (S1) źródło okna: widoczne są text.whyShort i text.termsShort, a pełne teksty idą przez detailTipAttr (title);
+ *   (S1) źródło okna (układ 2026-11-18, ABC wariant A): na wierzchu tylko text.lead (jedno zdanie o zmęczeniu) i text.termsShort;
+ *        pełne „dlaczego” (text.why) idzie w tooltip zdania lead, pełne warunki (text.terms) w tooltip warunków;
+ *        text.whyShort NIE jest wyświetlany na wierzchu;
  *   (S2) okno nadal bez zamknięcia klikiem w tło i z blokadą Esc; jedyny przycisk = akceptacja;
  *   (S3) zakres dymka hudTitleTooltip obejmuje .civ-diplo-modal-overlay (okno jest montowane na body);
- *   (M)  mutacje w pamięci (bez zapisu plików): wyliczenie z powrotem inline i usunięty tooltip muszą czerwienić S1.
+ *   (M)  mutacje w pamięci (bez zapisu plików): wyliczenie z powrotem inline, whyShort z powrotem na wierzchu
+ *        i usunięty tooltip muszą czerwienić S1.
  *
  * Uruchomienie: node tools/diplo-forced-peace-window-declutter-test.cjs   # exit 0 = zielone
  * DOM/Chromium: NIE ZMIERZONO w tym teście (wymaga żywej gry; patrz raport).
@@ -64,8 +67,9 @@ function checkWindowSource(ui, hud) {
   const start = ui.indexOf('export function showForcedPeaceModal(');
   const end = start >= 0 ? ui.indexOf('/** @deprecated', start) : -1;
   const body = start >= 0 && end > start ? ui.slice(start, end) : '';
-  if (!/esc\(text\.whyShort\)/.test(body)) fails.push('S1 widoczne „dlaczego” = text.whyShort');
+  if (!/esc\(text\.lead\)/.test(body)) fails.push('S1 widoczne zdanie o zmęczeniu = text.lead');
   if (!/esc\(text\.termsShort\)/.test(body)) fails.push('S1 widoczne warunki = text.termsShort');
+  if (/esc\(text\.whyShort\)/.test(body)) fails.push('S1 whyShort NIE może być na wierzchu okna (układ DECLUTTER-WINDOW)');
   if (/esc\(text\.why\)|esc\(text\.terms\)/.test(body)) fails.push('S1 wyliczenia NIE mogą być inline (esc(text.why) / esc(text.terms))');
   if (!/detailTipAttr\(\[text\.why\]\)/.test(body)) fails.push('S1 tooltip „dlaczego” = detailTipAttr([text.why])');
   if (!/detailTipAttr\(\[text\.terms\]\)/.test(body)) fails.push('S1 tooltip warunków = detailTipAttr([text.terms])');
@@ -83,12 +87,14 @@ function sourceChecks() {
   chk('S1-S3 źródło okna zgodne z DECLUTTER-WINDOW', real.length === 0, real);
 
   // (M) mutanty w pamięci: każdy musi czerwienić kontrolę
-  const mutInline = ui.replace('esc(text.whyShort)', 'esc(text.why)');
+  const mutInline = ui.replace('esc(text.lead)', 'esc(text.why)');
   chk('M1 mutant: wyliczenie z powrotem inline czerwieni kontrolę', mutInline !== ui && checkWindowSource(mutInline, hud).length > 0);
   const mutTerms = ui.replace('esc(text.termsShort)', 'esc(text.terms)');
   chk('M2 mutant: pełne warunki inline czerwieni kontrolę', mutTerms !== ui && checkWindowSource(mutTerms, hud).length > 0);
-  const mutTip = ui.replace("'<p' + detailTipAttr([text.why]) + '>'", "'<p>'");
+  const mutTip = ui.replace("'<p class=\"cd-war-lead\"' + detailTipAttr([text.why]) + '>'", "'<p class=\"cd-war-lead\">'");
   chk('M3 mutant: brak tooltipa „dlaczego” czerwieni kontrolę', mutTip !== ui && checkWindowSource(mutTip, hud).length > 0);
+  const mutWhy = ui.replace('esc(text.lead)', 'esc(text.whyShort)');
+  chk('M5 mutant: whyShort z powrotem na wierzchu czerwieni kontrolę', mutWhy !== ui && checkWindowSource(mutWhy, hud).length > 0);
   const mutHud = hud.replace("'.civ-diplo-modal-overlay',", '');
   chk('M4 mutant: brak zakresu dymka dla okna czerwieni kontrolę', mutHud !== hud && checkWindowSource(ui, mutHud).length > 0);
 }
