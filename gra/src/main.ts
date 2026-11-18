@@ -33426,6 +33426,26 @@ async function boot(): Promise<void> {
             const jednPieniadz = totalUnitUpkeep(
               wojskoweJedn.map(u => ({ typeId: u.typeId, category: u.category ?? String(lookupUnitDef(u.typeId)?.Kategoria ?? 'domyslny') })),
               unitUpkTbl, upkP.jednostkaUtrzymanieStd);
+            // R-WEB-ECONOMY-MEASURE-EXTEND-INCOME-STOCKS-Q1: pola HUD per właściciel. Wyłącznie odczyt,
+            // te same funkcje co HUD: surowce = buildEmpireResourceRows + resourceGrossNetPerTurn
+            // (filtr jak HUD: cap != null && !placeholder; suma jak surowceBrutto/surowceNetto w buildHudStateRaw);
+            // Praca/Spichlerz/Handel/Nauka/Skarbiec gracza = buildHudState(0) (pola HudState); dla AI tam, gdzie
+            // HUD nie ma wartości per właściciel, zapisywane jest null (jawnie, bez wzoru zastępczego).
+            const hudSurowceRzedy = buildEmpireResourceRows(o).filter(r => r.cap != null && !r.placeholder);
+            const hudSurowceTyp = hudSurowceRzedy.map(r => {
+              const gn = resourceGrossNetPerTurn(r);
+              return { typ: r.label, stan: r.stock, cap: r.cap ?? null, przychodNetto: r.ratePerTurn,
+                brutto: gn.brutto, zuzycie: gn.zuzycie, netto: gn.netto };
+            });
+            const hudBudynkiPerTyp: Record<string, number> = {};
+            for (const c of ownerCities) {
+              for (const bid of (cityBuilt.get(c.id) ?? [])) {
+                const k = String(bid);
+                hudBudynkiPerTyp[k] = (hudBudynkiPerTyp[k] ?? 0) + 1;
+              }
+            }
+            const hudGracza = o === 0 ? buildHudState(0) : null;
+            const hudSkarbiecStan = r2(ownerTreasury(o));
             return {
               owner: o,
               skarbiec: r2(ownerTreasury(o)),
@@ -33453,6 +33473,38 @@ async function boot(): Promise<void> {
                 wojskoweJedn.map(u => ({ typeId: u.typeId })),
                 typeId => data.units.find(x => x.Jednostka === typeId),
               ),
+              /** R-WEB-ECONOMY-MEASURE-EXTEND-INCOME-STOCKS-Q1: wartości jak w HUD (tylko odczyt). */
+              hud: {
+                /** Epoka właściciela (empireEpochForOwner, jak w panelu). */
+                epoka,
+                /** Liczba miast i ich populacja (jak `miasta` / `obywatele` wyżej). */
+                miasta: ownerCities.length,
+                populacja: ownerCities.reduce((s, c) => s + (Number(c.population) || 0), 0),
+                /** Skarbiec: stan (ownerTreasury). Przychód brutto/netto: tylko gracz (HUD buildHudState(0)); AI = null. */
+                skarbiecStan: hudSkarbiecStan,
+                skarbiecRate: hudGracza ? hudGracza.zlotoRate : null,
+                /** Praca: stan i tempo (ownerLastPraca / ownerLastPracaRate / ownerLastPracaUpkeep — te same, co HUD). */
+                praca: r2(ownerLastPraca(o)),
+                pracaRate: r2(ownerLastPracaRate(o)),
+                pracaUpkeep: r2(ownerLastPracaUpkeep(o)),
+                /** Nauka: stan i tempo — tylko gracz (HUD czyta singleton gracza); AI = null. */
+                naukaStan: hudGracza ? hudGracza.nauka : null,
+                naukaRate: hudGracza ? hudGracza.naukaRate : null,
+                /** Handel: dochód tras (tylko gracz; HUD chip liczy trasy gracza). */
+                handelIncome: hudGracza ? hudGracza.handelIncome : null,
+                /** Spichlerz (żywność): stan (zapasyPanstwa), tempo netto i wpływ do zapasów (tylko gracz; AI = null). */
+                spichlerzStan: empireFoodStates.get(o)?.zapasyPanstwa ?? null,
+                spichlerzRate: hudGracza ? hudGracza.zywnoscRate : null,
+                spichlerzWplyw: hudGracza ? hudGracza.zywnoscWplywMiast : null,
+                spichlerzMax: hudGracza ? hudGracza.zywnoscMax : null,
+                /** Surowce jak chip HUD „Surowce +X / +Y”: suma po wierszach `hudSurowceTyp` (brutto/netto). */
+                surowceBrutto: r2(hudSurowceTyp.reduce((a, r) => a + r.brutto, 0)),
+                surowceNetto: r2(hudSurowceTyp.reduce((a, r) => a + r.netto, 0)),
+                /** Surowce per typ: stan, cap (pojemność państwa), tempo, brutto/zużycie/netto. */
+                surowceTyp: hudSurowceTyp,
+                /** Liczba budynków per typ (cityBuilt, po wszystkich miastach właściciela). */
+                budynkiPerTyp: hudBudynkiPerTyp,
+              },
             };
           });
           return {

@@ -197,6 +197,17 @@ async function fullChecks(browser) {
     'owners=' + metrics.owners.length + ' bezWiersza=' + JSON.stringify(metrics.diag.aiStartOwnersBezWiersza));
   check('po starcie AI maja miasta: liczba wlascicieli z miastem > 1 (gracz + AI)', metrics.owners.filter(o => o.miasta > 0).length > 1, 'z miastem=' + metrics.owners.filter(o => o.miasta > 0).length);
   check('niezmierzone wymienia przychod/utrate (nie udajemy pomiaru)', Array.isArray(metrics.niezmierzone) && metrics.niezmierzone.includes('przychodNaTure'));
+  // R-WEB-ECONOMY-MEASURE-EXTEND-INCOME-STOCKS-Q1: pola HUD per wlasciciel (kształt; wartosc null = NIE ZMIERZONE, jawnie).
+  const finNum = v => typeof v === 'number' && Number.isFinite(v);
+  const hudBad = metrics.owners.filter(o => !o.hud || !finNum(o.hud.epoka) || !finNum(o.hud.surowceBrutto) || !finNum(o.hud.surowceNetto)
+    || !Array.isArray(o.hud.surowceTyp) || !o.hud.budynkiPerTyp || typeof o.hud.budynkiPerTyp !== 'object').map(o => o.owner);
+  check('pola HUD per wlasciciel: epoka, surowceBrutto/Netto liczbowe, surowceTyp[], budynkiPerTyp{}', hudBad.length === 0, 'bledne=' + JSON.stringify(hudBad.slice(0, 5)));
+  const hudGr = metrics.owners.find(o => o.owner === 0);
+  const hudGrVals = hudGr && hudGr.hud ? [hudGr.hud.naukaRate, hudGr.hud.handelIncome, hudGr.hud.spichlerzRate, hudGr.hud.skarbiecRate] : [];
+  check('pola HUD gracza (owner 0): naukaRate, handelIncome, spichlerzRate, skarbiecRate sa liczbami (buildHudState(0))',
+    hudGrVals.length === 4 && hudGrVals.every(finNum), JSON.stringify(hudGrVals));
+  const hudTypOk = hudGr && hudGr.hud.surowceTyp.every(r => finNum(r.stan) && finNum(r.brutto) && finNum(r.netto) && (r.cap === null || finNum(r.cap)));
+  check('surowceTyp gracza: stan/brutto/netto liczbowe, cap liczbowy lub null', !!hudTypOk, JSON.stringify(hudGr && hudGr.hud.surowceTyp.slice(0, 2)));
   const ls0 = await page.evaluate(() => window.__aiEconomyMeasure.ledgerStats());
   const lsProbs = ledgerShapeProblems(ls0);
   check('ksztalt ledgerStats: {entries, bytes} liczbowe (rozmiar ksiegi N=10, hak civTest)', lsProbs.length === 0, lsProbs.join('; ') || JSON.stringify(ls0));
