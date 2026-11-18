@@ -31,7 +31,8 @@ const PROPOSALS = path.resolve(SRC, 'game', 'diplomacy-proposals.ts');
 const BUNDLE_DIR = path.resolve(__dirname);
 
 fs.writeFileSync(ENTRY, `
-export { evaluateProposal, treatyCarrierPlanForPlayerPayer, treatyBasePnFromConfig } from './game/diplomacy-proposals';
+export { evaluateProposal, treatyCarrierPlanForPlayerPayer, treatyBasePnFromConfig, treatyCarrierPayloadPatch } from './game/diplomacy-proposals';
+export { diplomacyPnTech } from './game/diplomacy-value-catalog';
 export { composeTreatyPayment } from './game/treaty-payment';
 `);
 
@@ -156,13 +157,73 @@ function run(mod) {
     { proposerOwnerId: 0, playerOwnerId: 0, difficulty: 'normal' },
     { powerPlayer: 400, powerOther: 100 }, 0, RICH, 1) === null, 'W4: plan = null dla silniejszego gracza');
 
-  // W5: AI proponuje graczowi (płatnik = AI) → bramka nie dotyczy (NIE ZMIERZONO: decyzja 2 — silna AI żąda D).
+  // W5 (r3, zarzut 1): AI proponuje graczowi, gracz słabszy = płatnik. Plan niepusty, strona 'responder' (receiveItems).
   const aiProp = { actionId: 'nap', proposerOwnerId: 1, responderOwnerId: 0, payload: {} };
   const w5plan = mod.treatyCarrierPlanForPlayerPayer('nap', {}, baseCtx.relation,
     { proposerOwnerId: 1, playerOwnerId: 0, difficulty: 'normal' },
     { powerPlayer: 100, powerOther: 400 }, 0, RICH, 1);
-  ok(w5plan === null, 'W5: propozycja AI→gracz: plan = null (obecny stan; decyzja 2 nie podłączona)');
-  void aiProp;
+  ok(w5plan !== null && w5plan.payerSide === 'responder', 'W5: AI→gracz: plan dla słabszego gracza (payerSide=responder)');
+  ok(w5plan !== null && w5plan.payment.full === true, 'W5: AI→gracz z pełnym zapasem: nośnik pokrywa D');
+  const w5 = mod.evaluateProposal(aiProp, weakCtxRich);
+  ok(w5.accepted === true, `W5: AI→gracz NAP, słaby gracz z zapasem: akceptowany (accepted=${w5.accepted}, powód: ${w5.reason})`);
+  ok(w5.treatyCarrier != null && w5.treatyCarrier.side === 'responder' && w5.treatyCarrier.items.length > 0,
+    'W5: nośnik AI→gracz ma side=responder (pozycje gracza, receiveItems)');
+  const w5z = mod.evaluateProposal(aiProp, weakCtxZero);
+  ok(w5z.accepted === false && (w5z.reason ?? '').includes('parytetu'), `W5: AI→gracz bez zapasów odrzucony z parytetem (powód: ${w5z.reason})`);
+  // W5b: silny gracz wobec AI proponującej → plan null (płaci AI, nie gracz).
+  ok(mod.treatyCarrierPlanForPlayerPayer('nap', {}, baseCtx.relation,
+    { proposerOwnerId: 1, playerOwnerId: 0, difficulty: 'normal' },
+    { powerPlayer: 400, powerOther: 100 }, 0, RICH, 1) === null, 'W5b: AI→silniejszy gracz: plan = null');
+
+  // W13 (r3, zarzut 4): sojusz obronny w obu kierunkach (gracz proponuje i AI proponuje).
+  const defP = { actionId: 'sojusz_defensywny', proposerOwnerId: 0, responderOwnerId: 1, payload: {} };
+  const defA = { actionId: 'sojusz_defensywny', proposerOwnerId: 1, responderOwnerId: 0, payload: {} };
+  const d1 = mod.evaluateProposal(defP, weakCtxRich);
+  ok(d1.accepted === true && d1.treatyCarrier && d1.treatyCarrier.side === 'proposer', `W13: sojusz obronny gracz→AI akceptowany, side=proposer (accepted=${d1.accepted}, powód: ${d1.reason})`);
+  const d2 = mod.evaluateProposal(defA, weakCtxRich);
+  ok(d2.accepted === true && d2.treatyCarrier && d2.treatyCarrier.side === 'responder', `W13: sojusz obronny AI→gracz akceptowany, side=responder (accepted=${d2.accepted}, powód: ${d2.reason})`);
+  ok(mod.evaluateProposal(defP, weakCtxZero).accepted === false, 'W13: sojusz obronny gracz→AI bez zapasów odrzucony');
+  ok(mod.evaluateProposal(defA, weakCtxZero).accepted === false, 'W13: sojusz obronny AI→gracz bez zapasów odrzucony');
+
+  // W14 (r3, zarzut 5): wycena technologii nośnika idzie w tempie gry (szybka ×1 ≠ standardowa ×2).
+  const tSz = mod.treatyCarrierPlanForPlayerPayer('nap', {}, baseCtx.relation,
+    { proposerOwnerId: 0, playerOwnerId: 0, difficulty: 'normal' },
+    { powerPlayer: 100, powerOther: 400 }, 0, RICH, 1, { payerTechs: [T], otherTechs: [], tempoGry: 'szybka' });
+  const tSt = mod.treatyCarrierPlanForPlayerPayer('nap', {}, baseCtx.relation,
+    { proposerOwnerId: 0, playerOwnerId: 0, difficulty: 'normal' },
+    { powerPlayer: 100, powerOther: 400 }, 0, RICH, 1, { payerTechs: [T], otherTechs: [], tempoGry: 'standardowa' });
+  const pnSz = tSz && tSz.payment.techs[0] ? tSz.payment.techs[0].pn : null;
+  const pnSt = tSt && tSt.payment.techs[0] ? tSt.payment.techs[0].pn : null;
+  ok(pnSz !== null && pnSz === mod.diplomacyPnTech(T, 'szybka'), `W14: wycena techu w tempie szybka = diplomacyPnTech(T,'szybka') (jest ${pnSz})`);
+  ok(pnSt !== null && pnSt === mod.diplomacyPnTech(T, 'standardowa'), `W14: wycena techu w tempie standardowa = diplomacyPnTech(T,'standardowa') (jest ${pnSt})`);
+  ok(pnSz !== pnSt, `W14: tempo zmienia wycenę techu (szybka ${pnSz} vs standardowa ${pnSt})`);
+
+  // W15 (r3, zarzut 6): technologia już oferowana w koszyku płatnika nie wchodzi drugi raz do nośnika.
+  const planDup = mod.treatyCarrierPlanForPlayerPayer('nap', { giveItems: [{ typ: 'tech', id: T, ilosc: 1 }] }, baseCtx.relation,
+    { proposerOwnerId: 0, playerOwnerId: 0, difficulty: 'normal' },
+    { powerPlayer: 100, powerOther: 400 }, 0, RICH, 1, { payerTechs: [T], otherTechs: [] });
+  ok(planDup && !planDup.payment.techs.some(t => t.name === T), 'W15: tech oferowana w koszyku gracza nie jest dobierana do nośnika');
+  const planDupAI = mod.treatyCarrierPlanForPlayerPayer('nap', { receiveItems: [{ typ: 'tech', id: T, ilosc: 1 }] }, baseCtx.relation,
+    { proposerOwnerId: 1, playerOwnerId: 0, difficulty: 'normal' },
+    { powerPlayer: 100, powerOther: 400 }, 0, RICH, 1, { payerTechs: [T], otherTechs: [] });
+  ok(planDupAI && !planDupAI.payment.techs.some(t => t.name === T), 'W15b: tech w receiveItems (AI→gracz) też nie jest dobierana drugi raz');
+
+  // W16 (r3, zarzut 3): helper przelewu — strona koszyka zgodna z kierunkiem.
+  const carrierItems = [{ typ: 'zloto', id: 'zloto', ilosc: 5 }];
+  const pPlayer = mod.treatyCarrierPayloadPatch({ giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 1 }] },
+    { side: 'proposer', items: carrierItems });
+  ok(pPlayer.giveItems.length === 2 && pPlayer.receiveItems === undefined, 'W16: side=proposer dopisuje do giveItems');
+  const pAI = mod.treatyCarrierPayloadPatch({}, { side: 'responder', items: carrierItems });
+  ok(pAI.receiveItems && pAI.receiveItems.length === 1 && pAI.giveItems === undefined, 'W16: side=responder dopisuje do receiveItems');
+  const pNone = mod.treatyCarrierPayloadPatch({ giveItems: [] }, { side: 'responder', items: [] });
+  ok(pNone.giveItems.length === 0 && pNone.receiveItems === undefined, 'W16: pusty nośnik nie zmienia payloadu');
+
+  // W17 (r3, zarzut 3): pełny łańcuch oceny → payload do przelewu (AI→gracz NAP, technologia + złoto).
+  const w17 = mod.evaluateProposal({ actionId: 'nap', proposerOwnerId: 1, responderOwnerId: 0, payload: {} },
+    { ...weakCtxRich, playerTechs: [T], partnerTechs: [] });
+  const w17p = w17.treatyCarrier ? mod.treatyCarrierPayloadPatch({}, w17.treatyCarrier) : {};
+  ok(w17p.receiveItems && w17p.receiveItems.some(i => i.typ === 'tech' && i.id === T), 'W17: AI→gracz: technologia gracza trafia do receiveItems (przelew gracz→AI)');
+  ok(w17p.giveItems === undefined, 'W17: AI→gracz: nic nie trafia do giveItems');
 
   // W6: zapas pomniejszony o pozycje koszyka już oferowane — złoto oferowane w koszyku nie wchodzi drugi raz.
   const onlyGold = { ...ZERO, zloto: 1000 };
@@ -247,6 +308,27 @@ await mutantDetected('M4-carrier-drops-tech-items', {
 await mutantDetected('M5-planner-ignores-partner-techs', {
   from: 'otherTechs: techs?.otherTechs ?? [],',
   to: 'otherTechs: [],',
+});
+
+// M6 (r3): helper przelewu ignoruje stronę koszyka → W16/W17 muszą czerwienić.
+await mutantDetected('M6-patch-ignores-side', {
+  from: "  if (carrier.side === 'proposer') return { ...payload, giveItems: [...(payload.giveItems ?? []), ...items] };",
+  to: "  if (true) return { ...payload, giveItems: [...(payload.giveItems ?? []), ...items] };",
+});
+// M7 (r3): brak filtra „tech już w koszyku płatnika” → W15 musi czerwienić.
+await mutantDetected('M7-no-offered-tech-filter', {
+  from: "payerTechs: (techs?.payerTechs ?? []).filter(t => !offeredTechs.has(t)),",
+  to: "payerTechs: (techs?.payerTechs ?? []),",
+});
+// M8 (r3): wycena techu bez tempa gry → W14 musi czerwienić.
+await mutantDetected('M8-tech-price-ignores-tempo', {
+  from: "techPn: name => diplomacyPnTech(name, techs?.tempoGry ?? 'standardowa'),",
+  to: "techPn: name => diplomacyPnTech(name),",
+});
+// M9 (r3): planer wraca do starego zachowania (tylko propozycje gracza) → W5 musi czerwienić.
+await mutantDetected('M9-planner-player-proposer-only', {
+  from: "  if (!treatyPower) return null;\n  if (!treatyParityEnabled(actionId)) return null;\n  // r3 (zarzut 1)",
+  to: "  if (!treatyPower) return null;\n  if (!treatyParityEnabled(actionId)) return null;\n  if (!((pnOpts.proposerOwnerId ?? 0) === (pnOpts.playerOwnerId ?? 0))) return null;\n  // r3 (zarzut 1)",
 });
 
 try { fs.unlinkSync(ENTRY); } catch (_) { /* już usunięty */ }

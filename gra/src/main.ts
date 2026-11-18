@@ -1592,7 +1592,7 @@ import {
   negotiationStillValid, WAR_DEPENDENT_ACTIONS, planAiOfferOnTable, resolveNegotiationAsResponder, negotiationToLegacyPending,
   negotiationAsProposal, proposalHasResourceAccess,
   hasPendingNegotiationForPair, findOwnOutgoingNegotiation, allowsMultipleOwnOutgoingNegotiations,
-  treatyEvalRelationTotal, treatyBasePnFromConfig,
+  treatyEvalRelationTotal, treatyBasePnFromConfig, treatyCarrierPayloadPatch,
   NEGOTIATION_MAX_ROUNDS, NEGOTIATION_EXPIRY_TURNS,
   cyclicItemTradeEra, cyclicSelfHealPakiety,
 } from './game/diplomacy-proposals';
@@ -22166,7 +22166,7 @@ async function boot(): Promise<void> {
     function previewNegotiationEntryImpl(
       entry: PendingNegotiation,
       siblingOverride?: { givePn: number; receivePn: number },
-    ): { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; treatyPowerSplit?: import('./game/war-weariness').PeacePowerSplitInfo; wearinessInfo?: { turnsAtWar: number; lostCities: number; level: number; cenaPokojuPn?: number; powerSplit?: import('./game/war-weariness').PeacePowerSplitInfo } } {
+    ): { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; treatyPowerSplit?: import('./game/war-weariness').PeacePowerSplitInfo; wearinessInfo?: { turnsAtWar: number; lostCities: number; level: number; cenaPokojuPn?: number; powerSplit?: import('./game/war-weariness').PeacePowerSplitInfo }; treatyPayment?: import('./game/diplomacy-proposals').TreatyPaymentUiInfo } {
       const sibling = siblingOverride ?? livePackageSiblingFor(entry);
       // R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1: `authorOwnerId` DYNAMICZNY (entry, aktualizowany
       // przez applyCounterOffer po każdej kontrofercie) dopisany do ctx — jedyny konsument to
@@ -22211,6 +22211,7 @@ async function boot(): Promise<void> {
         accepted: result.accepted, reason: result.reason, pwBalance: result.pwBalance, wearinessPw: result.wearinessPw, wearinessSide: result.wearinessSide,
         wearinessInfo: result.wearinessInfo,
         treatyPowerSplit: result.treatyPowerSplit,
+        treatyPayment: result.treatyPayment,
       };
     }
 
@@ -26043,6 +26044,8 @@ async function boot(): Promise<void> {
         // R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1 (r2): stopień technologii nośnika dopłaty D — techy gracza i drugiej strony.
         playerTechs: Array.from(ownerResearchedTechs(ME())),
         partnerTechs: Array.from(ownerResearchedTechs(proposerId === ME() ? responderId : proposerId)),
+        // r3 (zarzut 5): tempo gry do wyceny technologii nośnika (ta sama wycena co koszyk).
+        tempoGry: player.tempoGry ?? 'standardowa',
         proposerRespekt,
         responderRespekt,
         militaryRatio,
@@ -26281,8 +26284,9 @@ async function boot(): Promise<void> {
       // R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1: nośnik dopłaty D traktatu z parytetem (gracz = płatnik). Pozycje ogona
       // z zapasów gracza (złoto/brąz/żelazo/rudy, plan z treatyCarrierPlanForPlayerPayer) dopisujemy do giveItems — przelew
       // robi ta sama gałąź co słodzik traktatowy (transferBasketItems) przy zawarciu traktatu; technologie (typ tech) = grantTechToOwner.
+      // r3: strona koszyka zależy od kierunku (gracz proponuje → giveItems; AI proponuje → receiveItems), patrz treatyCarrierPayloadPatch.
       if (result.deal && result.treatyCarrier && result.treatyCarrier.items.length > 0) {
-        payload = { ...payload, giveItems: [...(payload.giveItems ?? []), ...(result.treatyCarrier.items as BasketItem[])] };
+        payload = treatyCarrierPayloadPatch(payload, result.treatyCarrier);
       }
       if (result.deal) {
         activeDeals = applyAcceptedProposal(activeDeals, result);
