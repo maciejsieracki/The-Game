@@ -202,6 +202,12 @@ export interface WearinessTickDeps {
   pay: (loser: number, winner: number, plan: PeacePaymentPlan) => void;
   /** `lockTurns` = karencja DOW po tym pokoju (z JSON); silnik przekazuje ja do finalizePeaceTreatyBetween. */
   finalize: (loser: number, winner: number, lockTurns: number) => void;
+  /**
+   * PENDING-FORCED-PEACE-Q1: true = pokój wymuszony z udziałem gracza NIE wchodzi w życie w tym ticku.
+   * Silnik zwraca wtedy outcome `forced_peace` z planem i `lockTurns` bez wywołania pay/finalize (wykonuje je
+   * dopiero akceptacja gracza). Stan pary jest usuwany jak przy zwykłym pokoju wymuszonym.
+   */
+  deferForcedPeace?: (loser: number, winner: number) => boolean;
   log?: (msg: string) => void;
   params?: WarWearinessParams;
 }
@@ -215,6 +221,10 @@ export interface WearinessTickOutcome {
   /** Strony pokoju wymuszonego (DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1): przegrywający i wygrywający. */
   loser?: number;
   winner?: number;
+  /** Karencja po pokoju wymuszonym (dla odroczonego wykonania, PENDING-FORCED-PEACE-Q1). */
+  lockTurns?: number;
+  /** true = pokój wymuszony odroczony do akceptacji gracza (deferForcedPeace); pay/finalize NIE wykonane. */
+  deferred?: boolean;
 }
 
 /**
@@ -279,15 +289,22 @@ export function runWarWearinessTick(d: WearinessTickDeps): WearinessTickOutcome[
           skipF.add(bad.id);
           forcedPlan = cityPlan();
         }
-        if (forcedPlan.items.length > 0) d.pay(loser, winner, forcedPlan);
+        // Zapłata miastami jak w bazie (AI↔AI bez zmian). Para z graczem: zapłata dopiero po akceptacji (PENDING-FORCED-PEACE-Q1).
+        if (forcedPlan.items.length > 0 && d.deferForcedPeace?.(loser, winner) !== true) d.pay(loser, winner, forcedPlan);
       }
       const given = forcedPlan?.histogram.miasto ?? 0;
       // Cena > 0 i brak pełnego pokrycia miastami (np. tylko stolica) → pokój NIE zapada, wojna trwa (stan pary zostaje).
       if (cashPn > 0 && !forcedPlan?.full) { none(); continue; }
+      // PENDING-FORCED-PEACE-Q1: pokój z udziałem gracza tylko PLANOWANY — zapłata i finalizacja po akceptacji.
+      if (d.deferForcedPeace?.(loser, winner)) {
+        d.store.delete(key);
+        out.push({ pairKey: key, action: 'forced_peace', level: lvl, stage: st.stage, plan: forcedPlan, loser, winner, lockTurns: lockEnd, deferred: true });
+        continue;
+      }
       d.finalize(loser, winner, lockEnd);
       d.log?.(`pokój WYMUSZONY AI${loser}↔AI${winner} przy zmęczeniu ${lvl.toFixed(2)}; miasta oddane: ${given}`);
       d.store.delete(key);
-      out.push({ pairKey: key, action: 'forced_peace', level: lvl, stage: st.stage, plan: forcedPlan, loser, winner });
+      out.push({ pairKey: key, action: 'forced_peace', level: lvl, stage: st.stage, plan: forcedPlan, loser, winner, lockTurns: lockEnd });
       continue;
     }
     // DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1: para z graczem poza wymuszeniem (wyżej) — brak automatycznego

@@ -206,25 +206,53 @@ export interface ForcedPeaceTextInput {
   humanIsLoser: boolean;
   /** Nazwy miast przeniesionych w pokoju wymuszonym (pusta lista = pokój bez wymiany miast). */
   cityNames: readonly string[];
+  /** PENDING-FORCED-PEACE-Q1: zmęczenie wojną w % (poziom pary przy wymuszeniu, zwykle 100). */
+  levelPct?: number;
+  /** PENDING-FORCED-PEACE-Q1: liczba tur trwania wojny. */
+  turnsAtWar?: number;
+  /** PENDING-FORCED-PEACE-Q1: liczba miast, które zmieniły właściciela w tej wojnie. */
+  citiesChanged?: number;
+  /** PENDING-FORCED-PEACE-Q1: karencja po pokoju (tury) — pokazywana w oknie. */
+  lockTurns?: number;
 }
 
 export interface ForcedPeaceText {
   title: string;
   lead: string;
+  /** PENDING-FORCED-PEACE-Q1: jedno zdanie „z czego to wynika”. */
+  why: string;
   terms: string;
+  /** PENDING-FORCED-PEACE-Q1: etykieta jedynego przycisku (bez opcji odmowy). */
+  acceptLabel: string;
 }
 
 /**
  * Tekst natywnego okna „pokój wymuszony” (DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1, DODATEK 1 pkt 1–2).
  * Czysta funkcja: okno (ui/diplomacyAudience.ts) tylko ją wyświetla.
  */
-export function forcedPeaceModalTextPl(inp: ForcedPeaceTextInput): ForcedPeaceText {
+export function forcedPeaceModalTextPl(inp: ForcedPeaceTextInput, P: WarWearinessParams = WAR_WEARINESS_PARAMS): ForcedPeaceText {
+  // Liczby wzoru zmęczenia wyliczone z parametrów (nie wpisane na sztywno): 100/pelneTur na turę, wagaStratMiasta×100 za miasto.
+  const fmtPct = (v: number): string => (Math.round(v * 10) / 10).toString().replace('.', ',');
+  const perTurnPct = fmtPct(100 / P.zmeczenie.pelneTur);
+  const perCityPct = fmtPct(P.zmeczenie.wagaStratMiasta * 100);
   const terms = inp.cityNames.length === 0
     ? 'Pokój bez wymiany miast.'
     : (inp.humanIsLoser ? 'Oddajesz: ' : 'Otrzymujesz: ') + inp.cityNames.join(', ') + '.';
+  const pct = inp.levelPct ?? 100;
+  const wojna = inp.turnsAtWar !== undefined ? `, wojna trwa ${inp.turnsAtWar} tur` : '';
+  const zmiany = inp.citiesChanged !== undefined ? `, miast zmieniło właściciela: ${inp.citiesChanged}` : '';
+  // Przegrywający = strona o słabszej sile militarnej (weakerOf → compareMilitaryStrength); zmęczenie jest jedną wartością pary.
+  const kto = inp.humanIsLoser
+    ? ' Przegrywasz tę wojnę, bo Twoja siła militarna jest niższa (zmęczenie jest wspólne dla obu stron).'
+    : ' Wygrywasz tę wojnę, bo Twoja siła militarna jest wyższa (zmęczenie jest wspólne dla obu stron).';
+  const karencja = inp.lockTurns !== undefined ? ` Po pokoju karencja: ${inp.lockTurns} tur.` : '';
   return {
     title: 'Pokój wymuszony',
-    lead: `Wojna z ${inp.otherName} osiągnęła 100% zmęczenia — pokój wymuszony.`,
-    terms,
+    lead: `Wojna z ${inp.otherName} osiągnęła ${pct}% zmęczenia — pokój wymuszony.`,
+    why: `Zmęczenie wojną ${pct}% (próg wymuszenia 100%)${wojna}${zmiany}.${kto} ` +
+      `Zmęczenie rośnie o ${perTurnPct}% za każdą turę wojny i o ${perCityPct}% za każde miasto, które zmieniło właściciela. ` +
+      'Nie da się odrzucić tego pokoju: gra nie pozwoli zakończyć tury, dopóki nie zaakceptujesz warunków.',
+    terms: terms + (inp.cityNames.length === 0 ? ' Zapłata: 0 PN.' : '') + karencja + ' Zaufanie po pokoju: 20.',
+    acceptLabel: 'Akceptuję warunki pokoju',
   };
 }

@@ -1217,14 +1217,30 @@ export function showAllianceObligationModal(opts: AllianceObligationModalOptions
   modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) close(); });
 }
 
-export type ForcedPeaceModalOptions = ForcedPeaceTextInput;
+export type ForcedPeaceModalOptions = ForcedPeaceTextInput & {
+  /** PENDING-FORCED-PEACE-Q1: jedyny przycisk — dopiero akceptacja wykonuje pokój i zapłatę. */
+  onAccept: () => void;
+};
 
 /**
- * DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1 (zarzut Evaluatora 1+2): natywne okno po pokoju wymuszonym
- * (100% zmęczenia wojną z główną AI; dotyczy gracza jako przegrywającego i wygrywającego). Tekst: forcedPeaceModalTextPl.
+ * PENDING-FORCED-PEACE-Q1: okno pokoju wymuszonego z udziałem gracza. Brak opcji odmowy: nie zamyka się kliknięciem
+ * w tło ani klawiszem Esc; jedyny przycisk „Akceptuję warunki pokoju” wywołuje onAccept (po zamknięciu okna).
+ * Tekst: forcedPeaceModalTextPl (wszystkie liczby i miasta po nazwach).
  */
+/** PENDING-FORCED-PEACE-Q1 (zarzut 5): aktywny strażnik Esc okna pokoju wymuszonego — zdejmowany przy każdym
+ * ponownym otwarciu i przy akceptacji, żeby nie zostawić globalnej blokady klawisza Esc. */
+let forcedPeaceEscGuard: ((e: KeyboardEvent) => void) | null = null;
+
+function clearForcedPeaceEscGuard(): void {
+  if (forcedPeaceEscGuard !== null) {
+    window.removeEventListener('keydown', forcedPeaceEscGuard, true);
+    forcedPeaceEscGuard = null;
+  }
+}
+
 export function showForcedPeaceModal(opts: ForcedPeaceModalOptions): void {
   ensureStyles();
+  clearForcedPeaceEscGuard();
   if (modalOverlay !== null) modalOverlay.remove();
   modalOverlay = document.createElement('div');
   modalOverlay.className = 'civ-diplo-modal-overlay';
@@ -1233,16 +1249,30 @@ export function showForcedPeaceModal(opts: ForcedPeaceModalOptions): void {
     '<div class="civ-diplo-modal cd-war-consent-modal" role="dialog" aria-modal="true">' +
       '<h3>' + esc(text.title) + '</h3>' +
       '<p class="cd-war-lead">' + esc(text.lead) + '</p>' +
+      '<p>' + esc(text.why) + '</p>' +
       '<p>' + esc(text.terms) + '</p>' +
       '<div class="cd-modal-btns cd-war-consent-btns">' +
-        '<button type="button" class="dip-gold-btn cd-forced-peace-ok">Rozumiem</button>' +
+        '<button type="button" class="dip-gold-btn cd-forced-peace-ok">' + esc(text.acceptLabel) + '</button>' +
       '</div></div>';
-  document.body.appendChild(modalOverlay);
-  const close = (): void => {
-    if (modalOverlay !== null) { modalOverlay.remove(); modalOverlay = null; }
+  const overlay = modalOverlay;
+  document.body.appendChild(overlay);
+  // Brak odmowy: Esc nie zamyka okna (przechwycenie w fazie capture, zanim dojdzie do innych handlerów).
+  const blockEsc = (e: KeyboardEvent): void => {
+    // Okno już nieobecne w DOM (np. zamknięte przez inne okno): nie blokuj Esc dłużej.
+    if (!overlay.isConnected) { clearForcedPeaceEscGuard(); return; }
+    if (e.key !== 'Escape') return;
+    e.preventDefault();
+    e.stopPropagation();
   };
-  modalOverlay.querySelector('.cd-forced-peace-ok')?.addEventListener('click', close);
-  modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) close(); });
+  forcedPeaceEscGuard = blockEsc;
+  window.addEventListener('keydown', blockEsc, true);
+  const accept = (): void => {
+    clearForcedPeaceEscGuard();
+    if (modalOverlay === overlay) { modalOverlay.remove(); modalOverlay = null; } else { overlay.remove(); }
+    opts.onAccept();
+  };
+  overlay.querySelector('.cd-forced-peace-ok')?.addEventListener('click', accept);
+  // Klik w tło NIE zamyka okna (brak opcji odmowy).
 }
 
 /** @deprecated Użyj showWarConsentModal — zostawione dla kompatybilności (2 przyciski). */

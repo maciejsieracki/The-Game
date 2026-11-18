@@ -92,11 +92,12 @@ async function main() {
     check('mt1 gracz przegrywa: lead + „Oddajesz: Memfis, Teby.”',
       mLoser.title === 'Pokój wymuszony'
       && mLoser.lead === 'Wojna z Egipt osiągnęła 100% zmęczenia — pokój wymuszony.'
-      && mLoser.terms === 'Oddajesz: Memfis, Teby.', mLoser);
+      && mLoser.terms.startsWith('Oddajesz: Memfis, Teby.') && mLoser.terms.includes('Zaufanie po pokoju: 20.'), mLoser);
     const mWinner = modalText({ otherName: 'Egipt', humanIsLoser: false, cityNames: ['Memfis'] });
-    check('mt2 gracz wygrywa: „Otrzymujesz: Memfis.”', mWinner.terms === 'Otrzymujesz: Memfis.', mWinner);
+    check('mt2 gracz wygrywa: „Otrzymujesz: Memfis.”', mWinner.terms.startsWith('Otrzymujesz: Memfis.'), mWinner);
     const mNone = modalText({ otherName: 'Egipt', humanIsLoser: true, cityNames: [] });
-    check('mt3 bez miast: „Pokój bez wymiany miast.”', mNone.terms === 'Pokój bez wymiany miast.', mNone);
+    check('mt3 bez miast: „Pokój bez wymiany miast.” + „Zapłata: 0 PN.”',
+      mNone.terms.startsWith('Pokój bez wymiany miast.') && mNone.terms.includes('Zapłata: 0 PN.'), mNone);
 
     console.log('');
     console.log('diplo-weariness-stages-view-test: ' + pass + ' pass / ' + fail + ' fail');
