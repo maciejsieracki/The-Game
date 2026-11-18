@@ -5627,9 +5627,11 @@ mod prod_tag_tests {
             prod_tag(ActivateEvent::AdvanceToward { col: 3, row: 4 }),
             "marsz-poza-oblezeniem"
         );
+        // K5LOOP-SIEGE-ATK-B (D-INT-2): `_attackWallTile` przy murze wykonuje ciało (`siege_atk_wall_tile`); `prod_tag`
+        // zostaje tylko dla zdarzenia poza atakującym przy murze (dawniej `atak-muru`, nazwa jak `marsz-poza-oblezeniem`).
         assert_eq!(
             prod_tag(ActivateEvent::AttackWallTile { row: 4 }),
-            "atak-muru"
+            "atak-muru-poza-oblezeniem"
         );
     }
 }
