@@ -2731,6 +2731,35 @@ export function hasPendingNegotiationForPair(
   );
 }
 
+/**
+ * DIPLO-5 (R-WEB-DIPLO-AI-PEACE-OFFER-DEDUP-ONE-ACTIVE-Q1): planowanie wstawienia propozycji AI na stół.
+ * Pokój/rozejm (WAR_DEPENDENT_ACTIONS) — na parę co najwyżej JEDNA aktywna propozycja:
+ *  - propozycja GRACZA tej pary już na stole → AI nie dokłada drugiej (accept=false);
+ *  - w przeciwnym razie nowa propozycja AI zastępuje wszystkie wcześniejsze propozycje AI tej pary
+ *    (replacedIds — do usunięcia ze stołu przed wstawieniem).
+ * Pozostałe typy: dotychczasowy dedup tego samego typu (hasPendingNegotiationForPair), bez zastępowania.
+ * EN: at most one active war-peace (peace/truce) offer per pair; a player's pending one blocks the AI,
+ * an AI offer replaces the AI's previous one. Other action types keep the same-type dedup.
+ */
+export function planAiOfferOnTable(
+  table: readonly PendingNegotiation[],
+  aiOwnerId: number,
+  playerOwnerId: number,
+  actionId: ProposalActionId,
+): { accept: boolean; replacedIds: string[] } {
+  if (!WAR_DEPENDENT_ACTIONS.has(actionId)) {
+    const dup = hasPendingNegotiationForPair(table, playerOwnerId, aiOwnerId, actionId);
+    return { accept: !dup, replacedIds: [] };
+  }
+  const pairEntries = table.filter(n =>
+    WAR_DEPENDENT_ACTIONS.has(n.actionId)
+    && ((n.proposerOwnerId === playerOwnerId && n.responderOwnerId === aiOwnerId)
+      || (n.proposerOwnerId === aiOwnerId && n.responderOwnerId === playerOwnerId)),
+  );
+  if (pairEntries.some(n => n.proposerOwnerId === playerOwnerId)) return { accept: false, replacedIds: [] };
+  return { accept: true, replacedIds: pairEntries.map(n => n.id) };
+}
+
 /** Własna propozycja gracza (proposer=0) oczekująca u partnera — bez duplikatu tego typu. */
 export function findOwnOutgoingNegotiation(
   table: readonly PendingNegotiation[],

@@ -1579,7 +1579,7 @@ import {
   type ProposalEvalContext, type ProposalPayload,
   // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — propozycja/kontroferta/odpowiedź.
   type PendingNegotiation, createNegotiation, applyCounterOffer, applyOwnProposalEdit, canCounterNegotiation, canPlayerCounterNegotiation,
-  negotiationStillValid, WAR_DEPENDENT_ACTIONS, resolveNegotiationAsResponder, negotiationToLegacyPending,
+  negotiationStillValid, WAR_DEPENDENT_ACTIONS, planAiOfferOnTable, resolveNegotiationAsResponder, negotiationToLegacyPending,
   negotiationAsProposal, proposalHasResourceAccess,
   hasPendingNegotiationForPair, findOwnOutgoingNegotiation, allowsMultipleOwnOutgoingNegotiations,
   treatyEvalRelationTotal, treatyBasePnFromConfig,
@@ -21383,12 +21383,23 @@ async function boot(): Promise<void> {
         if (!exactPreview.accepted) return;
       }
       converted.payload = balancedPayload;
-      // Dedup — nie stackuj drugiej propozycji TEGO SAMEGO typu, gdy jedna już czeka.
-      if (hasPendingNegotiationForPair(negotiationTable, ME(), ownerId, converted.actionId)) { ptr('dedup-oczekuje'); return; }
+      // DIPLO-5 (R-WEB-DIPLO-AI-PEACE-OFFER-DEDUP-ONE-ACTIVE-Q1): na stole co najwyżej JEDNA aktywna
+      // propozycja pokoju/rozejmu na parę (pokój, rozejm i oferta miast AI „za pokój" razem). Propozycja
+      // GRACZA tej pary zajmuje stół — AI nie dokłada drugiej. Propozycja AI zastępuje poprzednią
+      // propozycję AI tej pary (wymiana, nie nawarstwianie). Inne typy: dedup jak dotąd.
+      const offerPlan = planAiOfferOnTable(negotiationTable, ownerId, ME(), converted.actionId);
+      if (!offerPlan.accept) { ptr(WAR_DEPENDENT_ACTIONS.has(converted.actionId) ? 'dedup-gracza-pokoj' : 'dedup-oczekuje'); return; }
       // D-DYPLO-AI-NO-NAG: gracz odrzucił ten typ — AI nie nęka ponownie do wygaśnięcia cooldownu.
       // R-WEB-DIPLO-CITY-OFFER-REJECT-OWN-COOLDOWN-Q1: oferta miasta ma własny klucz cooldownu.
       const cooldownKey = rejectCooldownKeyFor(workingCmd.type, converted.actionId);
       if (isOfferRejectedOnCooldown(rejectedOfferCooldowns, ownerId, cooldownKey, turn)) { ptr('cooldown-odrzucenia'); return; }
+      // DIPLO-5: nowa propozycja AI zastępuje poprzednią propozycję AI tej pary (przebudowa tablicy,
+      // bez splice w pętli indeksowej — jak purgeWarDependentNegotiations).
+      if (offerPlan.replacedIds.length > 0) {
+        const replaced = negotiationTable.filter(n => !offerPlan.replacedIds.includes(n.id));
+        negotiationTable.length = 0;
+        for (const e of replaced) negotiationTable.push(e);
+      }
       negotiationSeq += 1;
       const entry = createNegotiation(
         { actionId: converted.actionId, proposerOwnerId: ownerId, responderOwnerId: ME(), payload: converted.payload },
