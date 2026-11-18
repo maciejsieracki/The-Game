@@ -72,13 +72,21 @@ function readParams() {
   };
 }
 
+// Dopasowanie „10%” lub „0,10” jako osobnej liczby (nie fragmentu „110%” / „0,100”).
+function miastoRe(p) {
+  const procent = p.miastoTxt.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const dziesietnie = p.miastoDziesietnie.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(^|[^0-9,.])(${procent}|${dziesietnie})(?![0-9])`);
+}
+
 // Sprawdza jedno hasło (tekst) względem wartości z parametrów.
 function sprawdzTekst(etykieta, tekst, p) {
-  ok(tekst.includes(p.tempoTxt), `${etykieta}: brak tempa „${p.tempoTxt} na turę” (100/pelneTur)`);
-  const maMiasto = tekst.includes(p.miastoTxt) || tekst.includes(p.miastoDziesietnie);
+  const tempoOk = tekst.includes(p.tempoTxt + ' na tur');
+  ok(tempoOk, `${etykieta}: brak tempa „${p.tempoTxt} na turę” (100/pelneTur)`);
+  const maMiasto = miastoRe(p).test(tekst);
   ok(maMiasto, `${etykieta}: brak przyrostu za miasto „${p.miastoTxt}” (wagaStratMiasta×100)`);
   ok(!BLEDNE_TEMPO.test(tekst), `${etykieta}: zawiera błędne tempo „5% na turę/za turę”`);
-  return { tempoOk: tekst.includes(p.tempoTxt), bledne: BLEDNE_TEMPO.test(tekst) };
+  return { tempoOk, bledne: BLEDNE_TEMPO.test(tekst) };
 }
 
 function readBundleEntry(id) {
@@ -101,11 +109,21 @@ function main() {
   }
 
   // Mutacja: pliki z błędnym tempem muszą być odrzucone.
+  // Mutacja na KOPII PLIKU na dysku (katalog tymczasowy, sprzątany na końcu).
   const rozejmMd = fs.readFileSync(path.join(MD_DIR, 'rozejm-pokoj.md'), 'utf8');
-  const mutantMd = rozejmMd.replace('2,5% na turę', '5% na turę');
-  ok(mutantMd !== rozejmMd, 'mutacja md: wzorzec „2,5% na turę” nie występuje w rozejm-pokoj.md');
-  const wykrytaMd = BLEDNE_TEMPO.test(mutantMd);
-  ok(wykrytaMd, 'mutacja md „5% na turę” NIE została wykryta przez strażnika');
+  const mutantMdTxt = rozejmMd.replace('2,5% na turę', '5% na turę');
+  ok(mutantMdTxt !== rozejmMd, 'mutacja md: wzorzec „2,5% na turę” nie występuje w rozejm-pokoj.md');
+  const tmpDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'diplo-wiki-weariness-'));
+  let wykrytaMd = false;
+  try {
+    const mutantPath = path.join(tmpDir, 'rozejm-pokoj.md');
+    fs.writeFileSync(mutantPath, mutantMdTxt, 'utf8');
+    const mutantMd = fs.readFileSync(mutantPath, 'utf8');
+    wykrytaMd = BLEDNE_TEMPO.test(mutantMd);
+    ok(wykrytaMd, 'mutacja md „5% na turę” (kopia pliku) NIE została wykryta przez strażnika');
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
 
   const bundleRozejm = readBundleEntry('pojecia/rozejm-pokoj');
   const mutantBundle = bundleRozejm.replace('2,5% na turę', '5% na turę');
