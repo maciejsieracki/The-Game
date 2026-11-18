@@ -119,3 +119,62 @@ export function garrisonGoldReserve(
   if (!(pendingCities > 0) || !(unitCost > 0)) return 0;
   return Math.min(Math.floor(pendingCities), Math.max(0, Math.floor(maxCities))) * unitCost;
 }
+
+/** Minimalny opis jednostki z units.json potrzebny do wyboru typu garnizonu. */
+export interface GarrisonUnitDef {
+  readonly Jednostka: string;
+  readonly Typ?: string | null;
+  readonly Klasa?: string | null;
+  readonly 'Pieniądz (koszt)'?: number | null;
+  readonly 'Utrzymanie (Pieniądz/turę)'?: number | null;
+}
+
+/** Typy jednostek, ktore NIE moga byc garnizonem (cywil/zwiad, machina, statek). */
+const GARRISON_EXCLUDED_TYPES: ReadonlySet<string> = new Set(['Civilian', 'Siege', 'Naval']);
+/** Typy "wrecz" (preferowane na garnizon przed dystansem, gdy dostepne). */
+const GARRISON_MELEE_TYPES: ReadonlySet<string> = new Set(['Swordsman', 'Spearman', 'Falangite', 'Offensive']);
+
+/**
+ * Czy definicja jednostki nadaje sie na garnizon: bojowa (piesza/konna), platna (koszt > 0 --
+ * jednostki Super/zerokosztowe nie sa rekrutowane za zloto), nie cywil/zwiadowca/machina/statek.
+ */
+export function isGarrisonClassUnitDef(def: GarrisonUnitDef): boolean {
+  const typ = (def.Typ ?? '').toString().trim();
+  if (GARRISON_EXCLUDED_TYPES.has(typ)) return false;
+  if (def.Jednostka === GARRISON_SCOUT_TYPE_ID) return false;
+  if ((def.Klasa ?? '').toString().trim() === 'Super') return false;
+  const cost = Number(def['Pieniądz (koszt)']);
+  return Number.isFinite(cost) && cost > 0;
+}
+
+/**
+ * R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r4): wybor typu garnizonu dla wlasciciela. DIAGNOZA r4
+ * (seed 4242, hak per miasto): staly "Wojownik" jest w units.json dostepny tylko w epoce Kamien,
+ * wiec po awansie epoki wlasciciele 13/22/28/1/19/25 nie mieli go w katalogu produkcji i miasta
+ * zostawaly puste mimo pelnego skarbca (pickNull / pickOther). Garnizonem jest teraz NAJTANSZA
+ * dostepna i oplacalna (surowce) jednostka bojowa; remis: wrecz przed dystansem, nizsze
+ * utrzymanie, nazwa. `isAllowed` = bramka tech/epoka/zasoby produkcji, `canAfford` = pula surowcow.
+ * Brak kandydata -> null (brak polecenia garnizonu w tej turze).
+ */
+export function pickGarrisonUnitId(
+  defs: readonly GarrisonUnitDef[],
+  isAllowed: (unitId: string) => boolean,
+  canAfford: (unitId: string) => boolean,
+): string | null {
+  let best: GarrisonUnitDef | null = null;
+  const rank = (d: GarrisonUnitDef): [number, number, number] => [
+    Number(d['Pieniądz (koszt)']),
+    GARRISON_MELEE_TYPES.has((d.Typ ?? '').toString().trim()) ? 0 : 1,
+    Number(d['Utrzymanie (Pieniądz/turę)']) || 0,
+  ];
+  for (const d of defs) {
+    if (!isGarrisonClassUnitDef(d)) continue;
+    if (!isAllowed(d.Jednostka) || !canAfford(d.Jednostka)) continue;
+    if (best === null) { best = d; continue; }
+    const a = rank(d), b = rank(best);
+    let cmp = 0;
+    for (let i = 0; i < 3 && cmp === 0; i++) cmp = a[i]! - b[i]!;
+    if (cmp < 0 || (cmp === 0 && d.Jednostka < best.Jednostka)) best = d;
+  }
+  return best === null ? null : best.Jednostka;
+}

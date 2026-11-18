@@ -38904,11 +38904,13 @@ async function boot(): Promise<void> {
      * zarezerwowane na garnizony puste miast AI (jedna jednostka bojowa na każde miasto bez
      * kwalifikującej się jednostki). Pozostałe zakupy AI odejmują tę rezerwę od skarbca.
      */
+    /** Typ garnizonu wybrany przez AI właściciela w bieżącej turze (r4: najtańsza dostępna jednostka bojowa). */
+    const aiGarrisonUnitIdByOwner = new Map<number, string>();
     function aiGarrisonGoldReserve(ownerId: number, pace: Parameters<typeof unitProductionItem>[3]): number {
       const pending = cities.filter(c => c.ownerId === ownerId && cityNeedsGarrison(c, units, ownerId)).length;
       if (pending === 0) return 0;
       const item = unitProductionItem(
-        EMPTY_CITY_GARRISON_UNIT_ID, data, civBonusyForOwnerId(ownerId), pace,
+        aiGarrisonUnitIdByOwner.get(ownerId) ?? EMPTY_CITY_GARRISON_UNIT_ID, data, civBonusyForOwnerId(ownerId), pace,
         ownerId, effectiveGameDifficultyForOwner(ownerId),
       );
       return item?.kind === 'jednostka' ? garrisonGoldReserve(pending, item.koszt) : 0;
@@ -47435,8 +47437,9 @@ async function boot(): Promise<void> {
                     // i rezerwę utrzymania (zostaje: skarbiec >= cena, Manpower, brak wstrzymania NNS).
                     // Reszta zakupów nadal przechodzi pełną bramkę i nie może wydać złota
                     // zarezerwowanego na garnizony (aiGarrisonGoldReserve).
-                    const isGarrisonPriority = isGarrisonPriorityPurchase(
-                      city, units, ownerId, candId, EMPTY_CITY_GARRISON_UNIT_ID);
+                    const isGarrisonPriority = cmd.garrison === true && isGarrisonPriorityPurchase(
+                      city, units, ownerId, candId, cmd.buildingId);
+                    if (cmd.garrison === true) aiGarrisonUnitIdByOwner.set(ownerId, cmd.buildingId);
                     const garrisonReserve = isGarrisonPriority
                       ? 0
                       : aiGarrisonGoldReserve(ownerId, player.kosztJednostekPace ?? 'niski');

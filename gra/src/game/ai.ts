@@ -27,7 +27,7 @@ import {
 import { armyFieldPower, type UnitPowerInput } from './unit-power';
 import { estimateUnitCombatStrength } from './siegeAi';
 import { isHomeWarDefenseEnabled, planHomeWar } from './ai-war-home-defense';
-import { cityNeedsGarrison, garrisonUnitIdSet, getCityGarrisonUnitIds } from './ai-city-garrison';
+import { cityNeedsGarrison, garrisonUnitIdSet, getCityGarrisonUnitIds, pickGarrisonUnitId } from './ai-city-garrison';
 import {
   planSiegeRelief,
   SIEGE_RELIEF_DEFAULT_MIN_ADVANTAGE,
@@ -181,6 +181,8 @@ export interface AICmdBuild {
    * Gdy brak/puste — zero regresji (dokładnie jak dziś, jedna próba).
    */
   fallbackIds?: readonly string[];
+  /** R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r4): polecenie rekrutacji garnizonu pustego miasta (priorytet wariantu C). */
+  garrison?: true;
 }
 
 /**
@@ -1940,6 +1942,21 @@ function applyArmyCompositionProgram(
 
 /** Najtansza jednostka bojowa (units.json: Wojownik, 5 Pieniadza) -- baza zawsze dostepna; garnizon pustego miasta. */
 export const EMPTY_CITY_GARRISON_UNIT_ID = 'Wojownik';
+
+/**
+ * R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r4): typ jednostki garnizonu pustego miasta. Z bramka
+ * produkcji (`opts.isProductionAllowed`) = najtansza dostepna i oplacalna (surowce) jednostka bojowa
+ * (Wojownik jest dostepny tylko w Kamieniu -- diagnoza r4); bez bramki (stare wywolania/testy) = Wojownik.
+ * null = brak mozliwego garnizonu w tym miescie w tej turze.
+ */
+function garrisonUnitForCity(cityId: string, data: GameData, opts: AITurnOpts): string | null {
+  if (!opts.isProductionAllowed) return EMPTY_CITY_GARRISON_UNIT_ID;
+  return pickGarrisonUnitId(
+    data.units,
+    id => opts.isProductionAllowed!(cityId, id),
+    id => (opts.canAfford ? opts.canAfford(cityId, id) : true),
+  );
+}
 
 /**
  * R-WEB-AI-WAR-CITY-GARRISON-ONE-REST-TO-GENERAL-Q1 (r3): ktore miasta AI maja dostac rekrutowany garnizon.
@@ -4041,14 +4058,15 @@ function decideAITurnCore(
       city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, difficultyParams,
     );
     const isGarrisonCity = garrisonRecruitCityIds.has(city.id);
-    if (isGarrisonCity) {
+    const garrisonUnitId = isGarrisonCity ? garrisonUnitForCity(city.id, data, opts) : null;
+    if (garrisonUnitId !== null) {
       const rest = buildId === null ? [] : [buildId, ...(opts.lastProductionFallbackIds ?? [])];
       garrisonCmds.push({
-        type: 'build', cityId: city.id, buildingId: EMPTY_CITY_GARRISON_UNIT_ID,
-        fallbackIds: rest.filter(id => id !== EMPTY_CITY_GARRISON_UNIT_ID),
+        type: 'build', cityId: city.id, buildingId: garrisonUnitId, garrison: true,
+        fallbackIds: rest.filter(id => id !== garrisonUnitId),
       });
       // Gdy wybrana produkcja to jednostka bojowa, garnizon ja zastepuje (jeden zakup wojska na miasto).
-      if (buildId === null || buildId === EMPTY_CITY_GARRISON_UNIT_ID
+      if (buildId === null || buildId === garrisonUnitId
         || data.units.some(u => u.Jednostka === buildId && armyClassOfUnit(u) !== null)) continue;
     }
     if (buildId !== null) {
@@ -5621,13 +5639,14 @@ function decideDefensiveCopyTurn(
     const buildId = chooseCityProduction(
       city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, difficultyParams,
     );
-    if (dcGarrisonRecruitCityIds.has(city.id)) {
+    const dcGarrisonUnitId = dcGarrisonRecruitCityIds.has(city.id) ? garrisonUnitForCity(city.id, data, opts) : null;
+    if (dcGarrisonUnitId !== null) {
       const rest = buildId === null ? [] : [buildId, ...(opts.lastProductionFallbackIds ?? [])];
       commands.push({
-        type: 'build', cityId: city.id, buildingId: EMPTY_CITY_GARRISON_UNIT_ID,
-        fallbackIds: rest.filter(id => id !== EMPTY_CITY_GARRISON_UNIT_ID),
+        type: 'build', cityId: city.id, buildingId: dcGarrisonUnitId, garrison: true,
+        fallbackIds: rest.filter(id => id !== dcGarrisonUnitId),
       });
-      if (buildId === null || buildId === EMPTY_CITY_GARRISON_UNIT_ID
+      if (buildId === null || buildId === dcGarrisonUnitId
         || data.units.some(u => u.Jednostka === buildId && armyClassOfUnit(u) !== null)) continue;
     }
     if (buildId !== null) {
