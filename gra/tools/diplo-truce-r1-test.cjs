@@ -171,7 +171,7 @@ async function main() {
     );
     await buildBundle(BUNDLE_M2, [m2.plugin]);
     const m3 = mutantPlugin(
-      "  if (actionId === 'pokoj' || actionId === 'rozejm') {\n    const { offerPn, required }",
+      "  if ((actionId === 'pokoj' || actionId === 'rozejm') && !(actionId === 'rozejm' && skipTruceFlatGate)) {\n    const { offerPn, required }",
       "  if (actionId === 'pokoj') {\n    const { offerPn, required }",
     );
     await buildBundle(BUNDLE_M3, [m3.plugin]);
@@ -257,11 +257,12 @@ async function main() {
     const mod = require(BUNDLE_OK);
     // R-WEB-TRUCE-Q1 r3 (N2): P8 testuje WALUTĘ wojenną (złoto), nie żywność — żywność nie jest walutą
     // i nie dowodzi wyjątku bramki walutowej. Rozejm ze złotem w wojnie musi przejść tak jak pokój.
-    const paid = { turns: 10, goldOnce: 400 };
+    // TREATIES-PARITY r2: baza rozejmu 200 → 2000 (skala ×10, ABC A), więc zapłata złotem skalowana ×10 (400 → 4000).
+    const paid = { turns: 10, goldOnce: 4000 };
     const ackRes = mod.evaluateProposal(propose(mod, 'rozejm', paid), ctxFor({ warState: WAR_LONG }));
     // Kontrola: pokój ma bazę 500 PW, więc dla porównania potrzebuje większej zapłaty (600 złota).
     const pokojPaid = mod.evaluateProposal(propose(mod, 'pokoj', { turns: 10, goldOnce: 6000 }), ctxFor({ warState: WAR_LONG })); // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: cena pokoju malejaca (do 6000 PN), zatem zapłata 6000
-    check('P8: rozejm ze złotem (400) w wojnie zostaje zaakceptowany (bramka walutowa jak dla pokoju)',
+    check('P8: rozejm ze złotem (4000 = 400×10) w wojnie zostaje zaakceptowany (bramka walutowa jak dla pokoju)',
       ackRes.accepted === true && !/pieniądze tylko w ugodzie/.test(ackRes.reason || ''), ackRes);
     check('P8b: pokój ze złotem w wojnie — kontrola: ta sama ścieżka co rozejm',
       pokojPaid.accepted === true, pokojPaid);

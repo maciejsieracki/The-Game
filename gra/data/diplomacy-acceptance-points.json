@@ -2,7 +2,7 @@
   "_opis": "Punkty akceptacji stołu negocjacji (Maciej 2026-07-29). Traktaty: PN bazowe (wartość strategiczna). Koszyk: runtime z diplomacy-value-catalog.ts. Skala względna: sojusz >> NAP >> traktat handlowy >> wymiana.",
   "traktaty": {
     "pokoj": { "punkty": 615, "jednostka": "umowa", "uwaga": "zakończenie wojny — wymaga trwającej wojny; PN obowiązkowe (jak sojusz); R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615 (ABC 2026-11-14): JEDNA stała cena pokoju C = 615, bez mnożnika cywilizacji i bez zależności od tury" },
-    "rozejm": { "punkty": 2000, "jednostka": "umowa", "parytet": false, "uwaga": "R-WEB-TRUCE-Q1 ZAŁOŻENIE: rozejm na 5/10/15 tur — wymaga trwającej wojny; te same bramki co pokój; baza PW do strojenia. R-WEB-DIPLO-TREATIES-POWER-PARITY: skala ×10 (2000); parytet siły NIE wdrożony w tej rundzie (ścieżka pokoju, zależność od zmęczenia L)" },
+    "rozejm": { "punkty": 2000, "jednostka": "umowa", "parytet": true, "platnik": "slabsza", "uwaga": "R-WEB-TRUCE-Q1 ZAŁOŻENIE: rozejm na 5/10/15 tur — wymaga trwającej wojny; te same bramki co pokój. R-WEB-DIPLO-TREATIES-POWER-PARITY (runda 2): X = 2000 × (1 − L) (L = zmęczenie wojną pary), parytet S/W/D, płaci słabsza strona" },
     "sojusz_pelny": { "punkty": 5000, "jednostka": "umowa", "prog_relacja": 130, "parytet": true, "platnik": "slabsza" },
     "sojusz_defensywny": { "punkty": 4200, "jednostka": "umowa", "prog_relacja": 130, "parytet": true, "platnik": "slabsza" },
     "nap": { "punkty": 2000, "jednostka": "umowa", "prog_relacja": 50, "parytet": true, "platnik": "slabsza" },

@@ -818,19 +818,47 @@ export function peaceProposalOfferPn(
  * Brak `powerPower` (undefined) → null (bramka pominięta, zachowanie sprzed rundy).
  * Nie obejmuje: rozejmu (ścieżka pokoju), ścieżki AI-autora, płatności surowcami.
  */
+/** R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (runda 2): czy traktat objęty parytetem siły (flaga `parytet` w JSON). */
+export function treatyParityEnabled(actionId: string): boolean {
+  const cfg = acceptancePointsJson.traktaty as Record<string, { parytet?: boolean; platnik?: string } | undefined>;
+  return cfg[actionId]?.parytet === true && cfg[actionId]?.platnik === 'slabsza';
+}
+
+/**
+ * Poziom zmęczenia wojną pary L (0..1) z ctx.warState; brak stanu wojny → 0 (bez redukcji).
+ * Jedno miejsce liczenia L dla X rozejmu (X_rozejm = 2000 × (1 − L)).
+ */
+export function treatyWearinessLevelOf(ctx: { warState?: { turnsAtWar: number; lostCitiesResponder: number; turnsSinceCityChange?: number } }): number {
+  if (!ctx.warState) return 0;
+  return warWearinessLevel({
+    turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
+    lostCitiesTotal: Math.max(0, ctx.warState.lostCitiesResponder),
+    turnsSinceCityChange: ctx.warState.turnsSinceCityChange,
+  });
+}
+
+/**
+ * Cena bazowa X traktatu z parytetem: cena z configu; dla rozejmu skalowana zmęczeniem wojną (× (1 − L)).
+ */
+export function treatyParityBaseX(actionId: string, payload: ProposalPayload, wearinessL: number): number {
+  const base = treatyBasePnFromConfig(actionId, payload);
+  if (actionId === 'rozejm') return Math.round(base * (1 - clamp(wearinessL, 0, 1)));
+  return base;
+}
+
 function treatyParityPowerGate(
   actionId: string,
   payload: ProposalPayload,
   relation: Relation,
   pnOpts: ResolveProposalPnOptions,
   treatyPower: { powerPlayer: number; powerOther: number } | undefined,
+  wearinessL = 0,
 ): ProposalEvalResult | null {
   if (!treatyPower) return null;
-  const cfg = acceptancePointsJson.traktaty as Record<string, { parytet?: boolean; platnik?: string } | undefined>;
-  if (cfg[actionId]?.parytet !== true || cfg[actionId]?.platnik !== 'slabsza') return null;
+  if (!treatyParityEnabled(actionId)) return null;
   const proposerIsPlayer = (pnOpts.proposerOwnerId ?? 0) === (pnOpts.playerOwnerId ?? 0);
   if (!proposerIsPlayer) return null;
-  const X = treatyBasePnFromConfig(actionId, payload);
+  const X = treatyParityBaseX(actionId, payload, wearinessL);
   if (X <= 0) return null;
   const split = peacePwPointsByPowerRatio(X, treatyPower.powerPlayer, treatyPower.powerOther);
   if (split.strongerSide === 'a') return null;
@@ -859,6 +887,7 @@ function treatyPnGate(
   payload: ProposalPayload,
   relation: Relation,
   pnOpts?: ResolveProposalPnOptions,
+  skipTruceFlatGate = false,
 ): ProposalEvalResult | null {
   const basePn = treatyBasePnFromConfig(actionId, payload);
   if (basePn <= 0) return null;
@@ -867,7 +896,9 @@ function treatyPnGate(
   const relTotal = treatyEvalRelationTotal(relation);
 
   // R-WEB-TRUCE-Q1 (runda 2): rozejm dzieli bramkę PW pokoju (ta sama formuła i komunikat).
-  if (actionId === 'pokoj' || actionId === 'rozejm') {
+  // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (runda 2): rozejm z parytetem (autor = gracz) ma bramkę
+  // parytetu (treatyParityPowerGate, X = 2000 × (1 − L)) zamiast bramki pokoju z nieskalowaną bazą.
+  if ((actionId === 'pokoj' || actionId === 'rozejm') && !(actionId === 'rozejm' && skipTruceFlatGate)) {
     const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation, proposerIsPlayer);
     if (offerPn < required) {
       return {
@@ -1267,10 +1298,13 @@ function evaluateProposalImpl(
   const unfairToPartner = proposerUnfairToPartnerGate(actionId, payload, relation, pnOpts);
   if (unfairToPartner) return unfairToPartner;
 
-  const pnReject = treatyPnGate(actionId, payload, relation, pnOpts);
+  const wearinessL = treatyWearinessLevelOf(ctx);
+  const parityOwnedByPlayer = ctx.treatyPower !== undefined && treatyParityEnabled(actionId)
+    && (pnOpts.proposerOwnerId ?? 0) === (pnOpts.playerOwnerId ?? 0);
+  const pnReject = treatyPnGate(actionId, payload, relation, pnOpts, parityOwnedByPlayer);
   if (pnReject) return pnReject;
 
-  const parityReject = treatyParityPowerGate(actionId, payload, relation, pnOpts, ctx.treatyPower);
+  const parityReject = treatyParityPowerGate(actionId, payload, relation, pnOpts, ctx.treatyPower, wearinessL);
   if (parityReject) return parityReject;
 
   switch (actionId) {
@@ -1575,6 +1609,12 @@ function evaluateProposalImpl(
       }
       const proposerIsPlayer = proposerOwnerId === (pnOpts.playerOwnerId ?? 0);
       const relTotal = treatyEvalRelationTotal(relation);
+      // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (runda 2): rozejm z parytetem — X = 2000 × (1 − L) (jedna cena, jak
+      // wearinessPeaceCashPn dla pokoju, ale z bazą rozejmu). Dotyczy też AI-autora (ta sama formuła).
+      if (actionId === 'rozejm' && treatyParityEnabled(actionId) && ctx.treatyPower !== undefined
+        && proposerOwnerId === (pnOpts.playerOwnerId ?? 0) && basePn > 0) {
+        basePn = treatyParityBaseX(actionId, payload, wearinessL);
+      }
       // OBRONA runda 2 (P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA, zarzut 1 Evaluatora,
       // POTWIERDZONY żywym testem — AI proponuje pokój z pustym koszykiem podczas wojny →
       // dawniej ZAWSZE `accepted:true` BEZ `pwBalance`, dokładnie ten sam strukturalny defekt
@@ -1659,7 +1699,7 @@ function evaluateProposalImpl(
       // miastami (cena bazowa P = basePn, rabat relacji zostaje w effectiveTreatyPnRequired). Autor = AI: bramka
       // tylko informacyjna (AI nie jest blokowane tą liczbą). r = 1 daje D = 0 (pokój bez dopłaty — konsekwencja wzoru).
       let powerSplitNote: string | undefined;
-      const pkPowerSplit: PeacePwPowerSplit | undefined = actionId === 'pokoj'
+      const pkPowerSplit: PeacePwPowerSplit | undefined = (actionId === 'pokoj' || (actionId === 'rozejm' && treatyParityEnabled(actionId)))
         && ctx.warState && ctx.warState.powerPlayer != null && ctx.warState.powerOther != null
         && !ctx.responderIsCityState && basePn > 0
         ? peacePwPointsByPowerRatio(basePn, ctx.warState.powerPlayer, ctx.warState.powerOther)
