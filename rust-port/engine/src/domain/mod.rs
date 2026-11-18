@@ -18,6 +18,8 @@ pub mod battle_mode;
 pub mod battle_setup;
 pub mod battle_setup_sin;
 pub mod battle_setup_terrain;
+pub mod battle_setup_units;
+pub mod battle_setup_units_formation;
 pub mod brake_inputs;
 pub mod brake_power;
 pub mod brake_power_army;

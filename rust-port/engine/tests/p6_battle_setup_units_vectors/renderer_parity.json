@@ -1,0 +1,1 @@
+{"source":"rust-port/renderer/src/battle/field.rs","maxPerSideLine":"pub const MAX_PER_SIDE: i32 = 120;","rendererMaxPerSide":120,"pinMaxPerSide":500}
