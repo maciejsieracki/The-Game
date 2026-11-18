@@ -1,3 +1,9 @@
+## ROBOCZA 016fd4cf -- 2026-11-17 -- FALA 816: DIPLO-3: wyjasnienie zmeczenia wojna, desperacji i pokoju wymuszonego w panelu i Civpedii (testowa)
+
+- Panel audiencji: podpowiedzi przy Zmeczenie wojna i Desperacja wyjasniaja skale 0-100%, narastanie, progi 50/80/100%, role desperacji (tylko przegrywajacy, oferty miast, nie wymusza pokoju) oraz bramki tur; nowy widoczny wiersz Pokoj wymuszony za okolo N tur (liczba z war-weariness-params.json); haslo Civpedii zmeczenie-wojna uzupelnione, wikiBundle zregenerowany (diplomacy-display.ts, diplomacyAudience.ts, zmeczenie-wojna.md)
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplo-weariness-explain 14/0; display 54/0; stages-view 22/0; civpedia-values 129 PASS; Chromium FC: render showDiplomacyAudience z danymi syntetycznymi, wiersz 28% daje 29 tur, bez bledow strony
+- Limity: NIE ZMIERZONO w pelnej grze (render komponentu z danymi syntetycznymi); title nie dziala na dotyku; wikiBundle regenerowac generatorem na koncu przy integracji z DIPLO-4/5
+
 ## ROBOCZA 777f9176 -- 2026-11-17 -- FALA 815: DIPLO-1: nazwy miast zamiast City27 w ofertach dyplomacji (testowa)
 
 - Dyplomacja: karta oferty Dar/prezent, koszyk i lista miast pokazuja nazwy miast (jawna nazwa, nazwa z gry, miasto <cywilizacja>, miasto) zamiast surowych id typu City27; nowy modul diplomacy-city-name.ts podpiety w main.ts, diplomacyDealDisplay.ts, diplomacyTradeBasket.ts, diplomacy-display.ts
