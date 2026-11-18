@@ -206,12 +206,22 @@ export interface ForcedPeaceTextInput {
   humanIsLoser: boolean;
   /** Nazwy miast przeniesionych w pokoju wymuszonym (pusta lista = pokój bez wymiany miast). */
   cityNames: readonly string[];
+  /** PENDING-FORCED-PEACE-Q1: zmęczenie wojną w % (poziom pary przy wymuszeniu, zwykle 100). */
+  levelPct?: number;
+  /** PENDING-FORCED-PEACE-Q1: liczba tur trwania wojny. */
+  turnsAtWar?: number;
+  /** PENDING-FORCED-PEACE-Q1: liczba miast, które zmieniły właściciela w tej wojnie. */
+  citiesChanged?: number;
 }
 
 export interface ForcedPeaceText {
   title: string;
   lead: string;
+  /** PENDING-FORCED-PEACE-Q1: jedno zdanie „z czego to wynika”. */
+  why: string;
   terms: string;
+  /** PENDING-FORCED-PEACE-Q1: etykieta jedynego przycisku (bez opcji odmowy). */
+  acceptLabel: string;
 }
 
 /**
@@ -222,9 +232,14 @@ export function forcedPeaceModalTextPl(inp: ForcedPeaceTextInput): ForcedPeaceTe
   const terms = inp.cityNames.length === 0
     ? 'Pokój bez wymiany miast.'
     : (inp.humanIsLoser ? 'Oddajesz: ' : 'Otrzymujesz: ') + inp.cityNames.join(', ') + '.';
+  const pct = inp.levelPct ?? 100;
+  const wojna = inp.turnsAtWar !== undefined ? `, wojna trwa ${inp.turnsAtWar} tur` : '';
+  const zmiany = inp.citiesChanged !== undefined ? `, miast zmieniło właściciela: ${inp.citiesChanged}` : '';
   return {
     title: 'Pokój wymuszony',
-    lead: `Wojna z ${inp.otherName} osiągnęła 100% zmęczenia — pokój wymuszony.`,
+    lead: `Wojna z ${inp.otherName} osiągnęła ${pct}% zmęczenia — pokój wymuszony.`,
+    why: `Zmęczenie wojną ${pct}% (próg wymuszenia 100%)${wojna}${zmiany}. Nie da się odrzucić tego pokoju.`,
     terms,
+    acceptLabel: 'Akceptuję warunki pokoju',
   };
 }
