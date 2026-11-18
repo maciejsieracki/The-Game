@@ -20,6 +20,7 @@ pub mod battle;
 pub mod cities;
 pub mod convert;
 pub mod fog;
+pub mod frame;
 pub mod overlays;
 pub mod terrain;
 pub mod units;
@@ -39,6 +40,7 @@ pub use convert::{
     seed_i32, siege_machine_kind, terrain, tower_material, trade_medium, unit_id_string,
 };
 pub use fog::FogSets;
+pub use frame::{FrameError, FrameInputs, MapScene, MapStatic};
 pub use overlays::{
     culture_range_group, mine_eligible_group, okolica_inputs, okolica_overlay, overlay_layers,
     range_hex_key_set, relation_border_color, relation_color, religion_range_group, siege_inputs,
