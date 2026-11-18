@@ -56,8 +56,8 @@ const stubAssets = {
 /** Mutacje: każda przywraca JEDNO wyjaśnienie do widocznego tekstu. from musi wystąpić dokładnie raz. */
 const MUTANTS = [
   { name: 'M1 uzasadnienie kary wraca na widoczny tekst', file: AUD,
-    from: "'<li><b>' + esc(penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta)) + '</b></li>',",
-    to: "'<li><b>' + esc(penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta)) + '</b> — ' + esc(l.reason) + '</li>',"  },
+    from: "'<li title=\"' + esc(penaltyKindLabel(l.kind) + ': ' + l.reason) + '\"><b>' + esc(penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta)) + '</b></li>',",
+    to: "'<li title=\"' + esc(penaltyKindLabel(l.kind) + ': ' + l.reason) + '\"><b>' + esc(penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta)) + '</b> — ' + esc(l.reason) + '</li>',"  },
   { name: 'M2 opis „bez ataku” wraca na widoczny tekst', file: AUD,
     from: "<strong>Wypowiedz wojnę</strong></p>'",
     to: "<strong>Wypowiedz wojnę</strong> — bez ataku w tej turze (karencja N1)</p>'" },
@@ -126,7 +126,7 @@ const SCAN = {
   breakTreaty: () => {
     const DAR = window.DAR;
     DAR.showBreakTreatyConfirmModal('Pakt o nieagresji',
-      { lines: [{ kind: 'wiarygodnosc', delta: -5, reason: 'RSN-ZERWANIE-TRAKTAT' }], wiarygodnoscTotal: -5, zaufanieTotal: 0 },
+      { lines: [{ kind: 'wiarygodnosc', delta: -5, reason: 'RSN-ZERWANIE-TRAKTAT' }, { kind: 'info', delta: 0, reason: 'brak kary Wiarygodności za samo zerwanie; przez 3 tury atak na tego partnera kosztuje -5 Wiarygodności' }], wiarygodnoscTotal: -5, zaufanieTotal: 0 },
       () => {});
     const root = document.querySelector('.civ-diplo-modal');
     return { text: root.textContent, titles: [...root.querySelectorAll('[title]')].map(e => e.getAttribute('title')) };
@@ -282,6 +282,8 @@ async function runVariant(browser, label, mutant) {
   if (!b.error) {
     ok('zerwanie: uzasadnienie (' + REASON_BREAK + ') tylko w title', !vis(b.text, REASON_BREAK) && hasTitle(b.titles, REASON_BREAK));
     ok('zerwanie: pytanie „Zerwać traktat?” zostaje (komunikat decyzji)', b.text.includes('Zerwać traktat?'));
+    ok('zerwanie: werdykt decyzyjny „brak kary Wiarygodności za samo zerwanie” widoczny', vis(b.text, 'brak kary Wiarygodności za samo zerwanie'));
+    ok('zerwanie: uzasadnienie linii info (po średniku) tylko w title', !vis(b.text, 'atak na tego partnera kosztuje') && hasTitle(b.titles, 'atak na tego partnera kosztuje'));
   }
   // Pakt
   const p = SNAP.pact;

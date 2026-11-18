@@ -1096,15 +1096,21 @@ function penaltyBlockHtml(preview: DiploPenaltyPreview | undefined): string {
   if (!preview?.lines.length) return '';
   // R-WEB-UI-DIPLO-ALL-PROPOSAL-WINDOWS-DECLUTTER-TOOLTIPS-Q2: na oknie zostają tylko liczby kar;
   // uzasadnienia (także linie „info”) idą do tooltipa bloku. / EN: reasons move into the block tooltip.
-  const infoTips = preview.lines.filter(l => l.kind === 'info').map(l => l.reason);
+  const infoLines = preview.lines.filter(l => l.kind === 'info');
+  const infoTips = infoLines.map(l => l.reason);
   const reasonTips = preview.lines.filter(l => l.kind !== 'info').map(l => penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta) + ': ' + l.reason);
   const blockTip = ['Czy na pewno? Skutki tej decyzji:', ...reasonTips, ...infoTips].join('\n');
   const items = preview.lines.filter(l => l.kind !== 'info').map((l) =>
-    '<li><b>' + esc(penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta)) + '</b></li>',
+    '<li title="' + esc(penaltyKindLabel(l.kind) + ': ' + l.reason) + '"><b>' + esc(penaltyKindLabel(l.kind) + ' ' + signedDelta(l.delta)) + '</b></li>',
+  ).join('');
+  // Werdykt decyzyjny (np. „brak kary…”, „kara jeszcze N tur”, „Sojusz zostanie zerwany”) zostaje widoczny:
+  // pierwsza klauzula linii info; pełne uzasadnienie idzie do tooltipa tej pozycji. / EN: short verdict stays visible.
+  const verdicts = infoLines.map((l) =>
+    '<li class="cd-penalty-verdict" title="' + esc(l.reason) + '">' + esc(l.reason.replace(/;.*$/, '').trim()) + '</li>',
   ).join('');
   return '<div class="cd-penalty-wrap" title="' + esc(blockTip) + '">' +
     '<p class="cd-penalty-title">Skutki:</p>' +
-    '<ul class="cd-penalty-list">' + items + '</ul></div>';
+    '<ul class="cd-penalty-list">' + items + verdicts + '</ul></div>';
 }
 
 export interface WarConsentModalOptions {
