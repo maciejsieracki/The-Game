@@ -10,6 +10,7 @@
  */
 
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
+import { ensureBrandRootTokens } from './brandTokenVars';
 import { civIconSvg } from './icons/brandAssets';
 import { leaderPortraitUrl } from './leaderPortraits';
 import { startDiplomacyMusic, stopDiplomacyMusic } from '../audio/muzyka-antyczna';
@@ -23,7 +24,7 @@ import {
 
 const OVERLAY_ID = 'civ-welcome-screen';
 const ROOT_ID = 'civ-welcome-screen-root';
-const STYLE_ID = 'civ-welcome-screen-css-v1';
+const STYLE_ID = 'civ-welcome-screen-css-v2-brand';
 
 export interface CivWelcomeOpts {
   /** ownerId rozmówcy (do zwrotnego callbacku). */
@@ -54,41 +55,51 @@ function esc(value: unknown): string {
 }
 
 function ensureStyles(): void {
+  ensureBrandRootTokens();
   if (document.getElementById(STYLE_ID)) return;
   const style = document.createElement('style');
   style.id = STYLE_ID;
+  // Brand book (dyspozycje/_handoff/UI-do-MASTER_brand-book-w1.md, decyzje 1B/2C/4C): ciemny panel,
+  // tytuły Georgia w złocie, treść Segoe UI, przyciski outline 2px złote. Jeden motyw (bez jasnego).
+  // Tokeny --civ-* z brandTokenVars; fallbacki = wartości z UI/design-tokens-brand-v1.css.
   style.textContent = `
 #${ROOT_ID}{position:fixed;inset:0;z-index:9650;display:flex;align-items:center;justify-content:center;
-  background:rgba(8,6,4,.62);padding:16px;box-sizing:border-box;}
+  background:rgba(0,0,0,.55);padding:16px;box-sizing:border-box;}
 #${ROOT_ID} .cww-card{width:min(640px,100%);max-height:calc(100vh - 32px);overflow:auto;
-  background:#f6efdf;color:#2a2118;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.45);
-  border:2px solid #b8893a;font-family:inherit;}
+  background-color:var(--civ-panel-bg,#121820);background-image:var(--civ-panel-gradient,linear-gradient(180deg,rgba(14,18,28,.98),rgba(8,10,16,.95)));
+  color:var(--civ-text-primary,#e8e0c8);border-radius:var(--civ-radius-panel,12px);
+  box-shadow:var(--civ-shadow-panel,0 12px 40px rgba(0,0,0,.65));
+  border:2px solid var(--civ-gold-border-strong,rgba(232,216,138,.45));
+  font-family:var(--civ-font-ui,'Segoe UI',Tahoma,sans-serif);}
 #${ROOT_ID} .cww-head{display:flex;gap:14px;align-items:center;padding:16px 18px 10px;}
 #${ROOT_ID} .cww-medal{width:64px;height:64px;flex:0 0 64px;border-radius:50%;overflow:hidden;
-  display:flex;align-items:center;justify-content:center;background:#e9dcc0;border:2px solid #b8893a;}
+  display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);
+  border:2px solid var(--civ-gold-primary,#e8d88a);}
 #${ROOT_ID} .cww-medal img{width:100%;height:100%;object-fit:cover;}
-#${ROOT_ID} .cww-kicker{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#7a5a20;}
-#${ROOT_ID} .cww-name{font-size:24px;font-weight:700;line-height:1.2;}
-#${ROOT_ID} .cww-sub{font-size:13px;color:#5b4a36;margin-top:2px;}
+#${ROOT_ID} .cww-kicker{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--civ-gold-dim,#a08030);}
+#${ROOT_ID} .cww-name{font-family:var(--civ-font-title,Georgia,'Times New Roman',serif);font-size:24px;font-weight:400;
+  line-height:1.2;color:var(--civ-gold-primary,#e8d88a);}
+#${ROOT_ID} .cww-sub{font-size:13px;color:var(--civ-text-muted,#8a8070);margin-top:2px;}
 #${ROOT_ID} .cww-body{padding:4px 18px 8px;font-size:14px;line-height:1.5;}
 #${ROOT_ID} .cww-sec{margin-top:12px;}
-#${ROOT_ID} .cww-sec h3{margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#7a5a20;}
+#${ROOT_ID} .cww-sec h3{margin:0 0 4px;font-family:var(--civ-font-title,Georgia,'Times New Roman',serif);font-weight:400;
+  font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--civ-gold-primary,#e8d88a);}
+#${ROOT_ID} .cww-body p{margin:0;}
 #${ROOT_ID} .cww-list{margin:0;padding-left:18px;}
-#${ROOT_ID} .cww-more{font-size:12px;color:#6b5a44;cursor:help;margin-top:2px;}
-#${ROOT_ID} .cww-greet{margin:14px 0 0;padding:12px 14px;background:#fbf6ea;border-left:4px solid #b8893a;
-  border-radius:6px;font-style:italic;}
-#${ROOT_ID} .cww-greet-sig{display:block;margin-top:6px;font-style:normal;font-weight:600;color:#5b4a36;}
+#${ROOT_ID} .cww-more{font-size:12px;color:var(--civ-text-muted,#8a8070);cursor:help;margin-top:2px;}
+#${ROOT_ID} .cww-greet{margin:14px 0 0;padding:12px 14px;background:rgba(232,216,138,.06);
+  border-left:3px solid var(--civ-gold-primary,#e8d88a);border-radius:6px;font-style:italic;
+  color:var(--civ-text-pergament,#c8b898);}
+#${ROOT_ID} .cww-greet-sig{display:block;margin-top:6px;font-style:normal;font-weight:600;color:var(--civ-gold-dim,#a08030);}
 #${ROOT_ID} .cww-foot{display:flex;gap:10px;justify-content:flex-end;padding:12px 18px 16px;}
-#${ROOT_ID} .cww-btn{font:inherit;font-size:14px;padding:8px 16px;border-radius:8px;cursor:pointer;
-  border:1px solid #b8893a;background:#fff;color:#2a2118;}
-#${ROOT_ID} .cww-btn.primary{background:#b8893a;color:#fff;}
-#${ROOT_ID} .cww-btn:focus-visible{outline:2px solid #2a6df4;outline-offset:2px;}
-@media (prefers-color-scheme: dark){
-  #${ROOT_ID} .cww-card{background:#262019;color:#efe6d4;border-color:#b8893a;}
-  #${ROOT_ID} .cww-sub,#${ROOT_ID} .cww-more,#${ROOT_ID} .cww-greet-sig{color:#c9b898;}
-  #${ROOT_ID} .cww-greet{background:#302820;}
-  #${ROOT_ID} .cww-btn{background:#302820;color:#efe6d4;}
-}
+#${ROOT_ID} .cww-btn{font-family:var(--civ-font-ui,'Segoe UI',Tahoma,sans-serif);font-size:11px;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;padding:10px 20px;border-radius:var(--civ-radius-btn,6px);cursor:pointer;
+  border:2px solid var(--civ-gold-primary,#e8d88a);background:transparent;color:var(--civ-gold-primary,#e8d88a);}
+#${ROOT_ID} .cww-btn:hover{background:rgba(232,216,138,.08);}
+#${ROOT_ID} .cww-btn.primary{background:var(--tg-btn-primary,linear-gradient(180deg,#f0dc88,#b99a28));
+  color:var(--tg-btn-primary-ink,#2e2708);}
+#${ROOT_ID} .cww-btn.primary:hover{filter:brightness(1.06);background:var(--tg-btn-primary,linear-gradient(180deg,#f0dc88,#b99a28));}
+#${ROOT_ID} .cww-btn:focus-visible{outline:2px solid var(--tg-focus-ring,#e8d88a);outline-offset:2px;}
 @media (max-width:480px){
   #${ROOT_ID} .cww-name{font-size:20px;}
   #${ROOT_ID} .cww-medal{width:52px;height:52px;flex-basis:52px;}
@@ -160,8 +171,8 @@ export function showCivWelcomeScreen(opts: CivWelcomeOpts): boolean {
       </div>
       <div class="cww-body">${bodyHtml(info, greeting, opts.leaderName)}</div>
       <div class="cww-foot">
-        <button type="button" class="cww-btn" data-cww="audience">Audiencja</button>
-        <button type="button" class="cww-btn primary" data-cww="close">Zamknij</button>
+        <button type="button" class="cww-btn primary" data-cww="audience">Audiencja</button>
+        <button type="button" class="cww-btn" data-cww="close">Zamknij</button>
       </div>
     </div>`;
   document.body.appendChild(root);

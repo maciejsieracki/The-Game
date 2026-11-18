@@ -1,0 +1,194 @@
+{
+  "label": "mut",
+  "fails": 6,
+  "checks": [
+    {
+      "ok": true,
+      "what": "[1324x1300] zrzut ≤ 1 MB",
+      "detail": {
+        "bytes": 515648
+      }
+    },
+    {
+      "ok": false,
+      "what": "[1324x1300] (i) karta nie monospace, tytuł Georgia",
+      "detail": {
+        "cardFont": "monospace",
+        "nameFont": "Georgia, \"Times New Roman\", serif"
+      }
+    },
+    {
+      "ok": false,
+      "what": "[1324x1300] (ii) tło karty ciemne (lum < 0.2)",
+      "detail": {
+        "cardBg": "rgb(246, 239, 223)",
+        "lum": 0.8665
+      }
+    },
+    {
+      "ok": true,
+      "what": "[1324x1300] (iii) kolor tytułu = złoto",
+      "detail": {
+        "nameColor": "rgb(232, 216, 138)"
+      }
+    },
+    {
+      "ok": true,
+      "what": "[1324x1300] (iv) brak prefers-color-scheme w CSS ekranu",
+      "detail": {
+        "prefersScheme": false
+      }
+    },
+    {
+      "ok": true,
+      "what": "[1324x1300] (v) przyciski: obramowanie 2px złote",
+      "detail": [
+        {
+          "text": "Audiencja",
+          "bw": "2px",
+          "bc": "rgb(232, 216, 138)"
+        },
+        {
+          "text": "Zamknij",
+          "bw": "2px",
+          "bc": "rgb(232, 216, 138)"
+        }
+      ]
+    },
+    {
+      "ok": true,
+      "what": "[1324x1300] brak poziomego przewijania strony",
+      "detail": {
+        "docW": 1324,
+        "viewW": 1324
+      }
+    },
+    {
+      "ok": true,
+      "what": "[1024x640] zrzut ≤ 1 MB",
+      "detail": {
+        "bytes": 236635
+      }
+    },
+    {
+      "ok": false,
+      "what": "[1024x640] (i) karta nie monospace, tytuł Georgia",
+      "detail": {
+        "cardFont": "monospace",
+        "nameFont": "Georgia, \"Times New Roman\", serif"
+      }
+    },
+    {
+      "ok": false,
+      "what": "[1024x640] (ii) tło karty ciemne (lum < 0.2)",
+      "detail": {
+        "cardBg": "rgb(246, 239, 223)",
+        "lum": 0.8665
+      }
+    },
+    {
+      "ok": true,
+      "what": "[1024x640] (iii) kolor tytułu = złoto",
+      "detail": {
+        "nameColor": "rgb(232, 216, 138)"
+      }
+    },
+    {
+      "ok": true,
+      "what": "[1024x640] (iv) brak prefers-color-scheme w CSS ekranu",
+      "detail": {
+        "prefersScheme": false
+      }
+    },
+    {
+      "ok": true,
+      "what": "[1024x640] (v) przyciski: obramowanie 2px złote",
+      "detail": [
+        {
+          "text": "Audiencja",
+          "bw": "2px",
+          "bc": "rgb(232, 216, 138)"
+        },
+        {
+          "text": "Zamknij",
+          "bw": "2px",
+          "bc": "rgb(232, 216, 138)"
+        }
+      ]
+    },
+    {
+      "ok": true,
+      "what": "[1024x640] brak poziomego przewijania strony",
+      "detail": {
+        "docW": 1024,
+        "viewW": 1024
+      }
+    },
+    {
+      "ok": true,
+      "what": "[480x800] zrzut ≤ 1 MB",
+      "detail": {
+        "bytes": 147163
+      }
+    },
+    {
+      "ok": false,
+      "what": "[480x800] (i) karta nie monospace, tytuł Georgia",
+      "detail": {
+        "cardFont": "monospace",
+        "nameFont": "Georgia, \"Times New Roman\", serif"
+      }
+    },
+    {
+      "ok": false,
+      "what": "[480x800] (ii) tło karty ciemne (lum < 0.2)",
+      "detail": {
+        "cardBg": "rgb(246, 239, 223)",
+        "lum": 0.8665
+      }
+    },
+    {
+      "ok": true,
+      "what": "[480x800] (iii) kolor tytułu = złoto",
+      "detail": {
+        "nameColor": "rgb(232, 216, 138)"
+      }
+    },
+    {
+      "ok": true,
+      "what": "[480x800] (iv) brak prefers-color-scheme w CSS ekranu",
+      "detail": {
+        "prefersScheme": false
+      }
+    },
+    {
+      "ok": true,
+      "what": "[480x800] (v) przyciski: obramowanie 2px złote",
+      "detail": [
+        {
+          "text": "Audiencja",
+          "bw": "2px",
+          "bc": "rgb(232, 216, 138)"
+        },
+        {
+          "text": "Zamknij",
+          "bw": "2px",
+          "bc": "rgb(232, 216, 138)"
+        }
+      ]
+    },
+    {
+      "ok": true,
+      "what": "[480x800] brak poziomego przewijania strony",
+      "detail": {
+        "docW": 480,
+        "viewW": 480
+      }
+    },
+    {
+      "ok": true,
+      "what": "(vi) zero pageerror w przebiegu",
+      "detail": []
+    }
+  ]
+}
