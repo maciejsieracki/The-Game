@@ -1,0 +1,11 @@
+{
+  "_opis": "R-WEB-DIPLO-HARDER-RELATIONS-A-NEIGHBOR-TENSION-Q1 (etap 1, część A) — parametry 'twardszej dyplomacji'. Używane tylko gdy flaga twardaDyplomacjaAktywna = true (diplomacy-harder.ts). Domyślnie flaga OFF: zachowanie gry identyczne jak baza.",
+  "twardaDyplomacjaAktywna": false,
+  "granicaPrzyrost": 1,
+  "granicaOkresTur": 10,
+  "granicaMax": 6,
+  "handelSufitZaufania": 50,
+  "zazdroscNaTure": 1,
+  "zazdroscProgPrzewagi": 0.2,
+  "zazdroscNaTureDuza": 2
+}
