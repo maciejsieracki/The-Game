@@ -9,7 +9,13 @@
 //!
 //! Porównanie na każdym wektorze: ślad aktywacji, czas trwania (kroki `MOVE_STEP_MS` + `STEP_GAP_MS`), pozycja końcowa,
 //! `moveLeft` (bitowo), `facing` końcowy, KAŻDA zmiana facing z czasem (akcje `Facing`), `occByKey` po aktywacji,
-//! `lastAutoMoveFrom`, brak wpisów `unported` i brak zużytych rzutów (gałąź nie losuje).
+//! `lastAutoMoveFrom`, wpisy `unported` (pusto albo jawny tag z wektora) i brak zużytych rzutów (gałąź nie losuje).
+//!
+//! Obrona r1 (zarzuty Evaluatora): rodzina `flank` (Z1: `attackDirection` `'bok'`/`'tyl'`, blok C-FLANK
+//! `:8204-8235` = jawny tag `krok-naprzod-flanka`, preludium `moveLeft <= 0` przed blokiem), rodzina `rank-routed`
+//! (Z2: uciekający sojusznik rangi `rank - 1` w `_compactAttackAllowsStep` `:8153-8157`; generator zachowuje tylko
+//! scenariusze rozróżniające pin od mutanta bez filtra `!u.routed`) oraz zwolnienie pola `occByKey` przy routie
+//! (`:9812`) i zabiciu (`:9915`) (Z3).
 
 use std::collections::{BTreeSet, HashMap};
 
@@ -17,8 +23,12 @@ use civ_engine::domain::player_order_move_gate::{GroupDoctrine as GateDoctrine, 
 use civ_engine::domain::siege_tactics_actions::BattleAction;
 use civ_engine::domain::siege_tactics_activate::{ActivateEvent, ActivateScene, ActivateUnit};
 use civ_engine::domain::siege_tactics_autobatch::cell_key;
-use civ_engine::domain::siege_tactics_blow::SequenceRolls;
+use civ_engine::domain::siege_tactics_blow::{DefenderState, HitArc, SequenceRolls};
+use civ_engine::domain::siege_tactics_blow_full::{
+    AtkMods, AttackerCu, BlowEnv, DefMods, DefenderCu, FullBlowInput,
+};
 use civ_engine::domain::siege_tactics_doctrine_state::GroupDoctrine;
+use civ_engine::domain::siege_tactics_doctrine_target::AttackDirection;
 use civ_engine::domain::siege_tactics_end::BattleSide;
 use civ_engine::domain::siege_tactics_loop::{LoopBody, ProdBody, ProdUnit};
 use civ_engine::domain::siege_tactics_move_effects::MoveTerrain;
@@ -207,6 +217,12 @@ fn build(case: &Value, with_terrain: bool) -> Built {
                 .map(|s| GroupDoctrine::parse(s).expect("doktryna"));
             ds.group_id = u["groupId"].as_str().map(str::to_string);
             body.formation_rank[ix][i] = u["formationRank"].as_f64();
+            body.attack_direction[ix][i] = match u["attackDirection"].as_str() {
+                None | Some("front") => AttackDirection::Front,
+                Some("bok") => AttackDirection::Bok,
+                Some("tyl") => AttackDirection::Tyl,
+                Some(other) => panic!("attackDirection {other}"),
+            };
         }
     }
     for g in case["groupMeta"].as_array().expect("groupMeta") {
@@ -246,6 +262,7 @@ fn advance_step_i_facing_po_ruchu_zgodne_z_pinem() {
     assert!(cases.len() >= 400, "wektory: {}", cases.len());
     let mut failures: Vec<String> = Vec::new();
     let (mut moved, mut multi, mut facing_after_move, mut no_move) = (0, 0, 0, 0);
+    let (mut flank, mut flank_entered, mut rank_routed) = (0, 0, 0);
     for case in cases {
         let name = case["name"].as_str().expect("name");
         let e = &case["expect"];
@@ -340,8 +357,33 @@ fn advance_step_i_facing_po_ruchu_zgodne_z_pinem() {
         if body.occ_by_key() != &want_occ {
             failures.push(format!("{name}: occByKey rozny"));
         }
-        if !body.unported.is_empty() {
-            failures.push(format!("{name}: unported={:?}", body.unported));
+        let want_unported: Vec<(UnitRef, String)> = e["unported"]
+            .as_array()
+            .map(|a| {
+                a.iter()
+                    .map(|t| (acting, t.as_str().expect("tag").to_string()))
+                    .collect()
+            })
+            .unwrap_or_default();
+        let got_unported: Vec<(UnitRef, String)> = body
+            .unported
+            .iter()
+            .map(|(u, t)| (*u, (*t).to_string()))
+            .collect();
+        if got_unported != want_unported {
+            failures.push(format!(
+                "{name}: unported rust={got_unported:?} js={want_unported:?}"
+            ));
+        }
+        match case["kind"].as_str() {
+            Some("flank") => {
+                flank += 1;
+                if !want_unported.is_empty() {
+                    flank_entered += 1;
+                }
+            }
+            Some("rank-routed") => rank_routed += 1,
+            _ => {}
         }
         let steps = e["steps"].as_array().expect("steps").len();
         if steps > 0 {
@@ -370,6 +412,15 @@ fn advance_step_i_facing_po_ruchu_zgodne_z_pinem() {
         "facing po kroku: {facing_after_move}"
     );
     assert!(no_move >= 30, "bez ruchu: {no_move}");
+    // Obrona r1: C-FLANK (wejście w blok i preludium przed blokiem) oraz linia szyku z uciekającym sojusznikiem.
+    assert!(flank >= 100, "flank: {flank}");
+    assert!(flank_entered >= 80, "flank w bloku: {flank_entered}");
+    assert!(
+        flank - flank_entered >= 15,
+        "flank z preludium: {}",
+        flank - flank_entered
+    );
+    assert!(rank_routed >= 50, "rank-routed: {rank_routed}");
 }
 
 /// Bez danych terenu gałąź `_advanceStep` nie rusza jednostki i jest jawnie oznaczona (D1 K5DOC-T4e-0), a nie
@@ -446,4 +497,207 @@ fn atak_z_advance_step_jest_oznaczony() {
     assert_eq!(body.unit_cell(acting), before);
     assert!(body.blows.is_empty());
     assert_eq!(body.unported, vec![(acting, "krok-naprzod-atak")]);
+}
+
+fn melee_blow() -> FullBlowInput {
+    FullBlowInput {
+        ranged: false,
+        hit_arc: HitArc::Front,
+        attacker: AttackerCu {
+            weapon_damage: 5.0,
+            piercing: 0.0,
+            melee_attack: 10.0,
+            missile_attack: None,
+            charge_bonus: 0.0,
+            counter_typ: String::new(),
+            typ_nazwa: String::new(),
+        },
+        atk_mods: AtkMods {
+            atk: 0.0,
+            ranged_atk: 0.0,
+            uderzenie: 0.0,
+        },
+        atk_diff_mult: 1.0,
+        atk_mounted: false,
+        defender: DefenderCu {
+            melee_defence: 0.0,
+            armor: 0.0,
+            kara_flanka: None,
+            kara_tyl: None,
+        },
+        def_mods: DefMods {
+            obrona: 0.0,
+            pancerz: 0.0,
+        },
+        def_diff_mult: 1.0,
+        def_on_wall: false,
+        def_fortified_in_field: false,
+        def_wall_civ_mult: 1.0,
+        def_braces_against_charge: false,
+        first_blow_of_pair: true,
+        counter_mult: 1.0,
+        env: BlowEnv {
+            is_city_defense_battle: false,
+            wall_bonus_proc: 0.0,
+            gated_terrain_multiplier: 1.0,
+            field_terrain_multiplier: 1.0,
+            atk_tile_is_river: false,
+            river_row_exists: false,
+            river_attack_mult: 1.0,
+            atk_on_ford: false,
+            def_on_ford_raw: false,
+            shore_adjacent: false,
+            brod_kara_obrona: 0.0,
+            brod_bonus_brzegu: 0.0,
+            fortify_obrona_proc: 0.0,
+        },
+        defender_state: DefenderState {
+            hp: 50.0,
+            max_hp: 50.0,
+            morale: 100.0,
+            flee_morale: 0.0,
+            dead: false,
+            fading_out: false,
+            routed: false,
+            never_rout: false,
+            removed: false,
+        },
+        routed_after_morale: false,
+    }
+}
+
+fn cu(hp: f64, morale: f64, flee: f64) -> CombatUnit {
+    CombatUnit {
+        hp,
+        morale,
+        flee_morale: flee,
+        move_left: 0.0,
+        never_rout: false,
+        dead: false,
+        fading_out: false,
+        routed: false,
+        removed: false,
+        acted: false,
+    }
+}
+
+fn seq_state(atk: Vec<CombatUnit>, def: Vec<CombatUnit>) -> TurnSeqState {
+    let mk = |v: Vec<CombatUnit>, base: u64| {
+        v.into_iter()
+            .enumerate()
+            .map(|(i, c)| SeqUnit {
+                id: base + i as u64,
+                c,
+            })
+            .collect::<Vec<_>>()
+    };
+    TurnSeqState {
+        atk: mk(atk, 1),
+        def: mk(def, 100),
+        turn_order: Vec::new(),
+        turn_idx: 0,
+        round_no: 1,
+        siege_wall_col: -1,
+        manual_mode: false,
+        player_side: BattleSide::Attacker,
+        finished: false,
+        awaiting_orders: false,
+        auto_battle_suspended: false,
+        busy: false,
+        auto_batch_planning: false,
+        queued_order_ids: BTreeSet::new(),
+    }
+}
+
+fn plain(activate: ActivateUnit) -> ProdUnit {
+    ProdUnit {
+        activate,
+        melee_target: None,
+        blow: None,
+        counter_blows: Vec::new(),
+        body_ms: 0.0,
+        facing: 0.0,
+    }
+}
+
+/// Z3 (rout): pin `_activateUnit` okrążenie (`:6105-6121`): 3 żywych wrogów obok, morale 10 - `MORALE_SURROUND_HIT`
+/// (10, `:1142`) = 0 <= `fleeMorale` 0 -> `_checkRout` -> `_startRout`, który zwalnia pole
+/// `this.occByKey.delete(cellKey(ru.q, ru.r))` (`:9812`), a potem `_fleeStep` (nieportowany, tag `ucieczka-routed`).
+/// Pole uciekiniera znika z `occByKey`; pola wrogów zostają.
+#[test]
+fn rout_po_okrazeniu_zwalnia_pole() {
+    let mut me = act(10, 10, true);
+    me.morale = 10.0;
+    let units = [
+        vec![plain(me)],
+        vec![
+            plain(act(11, 10, false)),
+            plain(act(10, 11, false)),
+            plain(act(10, 9, false)),
+        ],
+    ];
+    let mut st = seq_state(
+        vec![cu(100.0, 10.0, 0.0)],
+        vec![
+            cu(100.0, 100.0, 0.0),
+            cu(100.0, 100.0, 0.0),
+            cu(100.0, 100.0, 0.0),
+        ],
+    );
+    let mut body = ProdBody::new(units, scene(), SequenceRolls::new(Vec::new()));
+    let me_ref = UnitRef {
+        side: BattleSide::Attacker,
+        idx: 0,
+    };
+    let key = cell_key(10.0, 10.0);
+    assert_eq!(
+        body.occ_by_key().get(&key).map(String::as_str),
+        Some("atk0")
+    );
+    body.start(me_ref, &st);
+    body.complete(me_ref, &mut st);
+    assert!(st.atk[0].c.routed, "okrazenie lamie jednostke");
+    assert!(
+        !body.occ_by_key().contains_key(&key),
+        "_startRout zwalnia pole (:9812)"
+    );
+    assert_eq!(body.occ_by_key().len(), 3, "pola wrogow zostaja");
+    assert_eq!(body.unported, vec![(me_ref, "ucieczka-routed")]);
+}
+
+/// Z3 (zabicie): cios 5 (rzut 0.0 = trafienie) przy HP 3 zabija obrońcę: `_startFade` -> `_removeUnitFromScene`, który
+/// zwalnia pole `this.occByKey.delete(cellKey(ru.q, ru.r))` (`:9915`). Pole zabitego znika z `occByKey`.
+#[test]
+fn zabicie_zwalnia_pole() {
+    let mut atk = plain(act(0, 0, true));
+    atk.melee_target = Some(0);
+    atk.blow = Some(melee_blow());
+    atk.body_ms = 800.0;
+    let mut d = plain(act(1, 0, false));
+    d.facing = 3.0;
+    let mut st = seq_state(vec![cu(100.0, 80.0, 0.0)], vec![cu(3.0, 100.0, 0.0)]);
+    let mut body = ProdBody::new([vec![atk], vec![d]], scene(), SequenceRolls::new(vec![0.0]));
+    let me_ref = UnitRef {
+        side: BattleSide::Attacker,
+        idx: 0,
+    };
+    let key = cell_key(1.0, 0.0);
+    assert_eq!(
+        body.occ_by_key().get(&key).map(String::as_str),
+        Some("def0")
+    );
+    body.start(me_ref, &st);
+    body.complete(me_ref, &mut st);
+    assert!(st.def[0].c.dead && st.def[0].c.removed, "cios zabija");
+    assert!(
+        !body.occ_by_key().contains_key(&key),
+        "_removeUnitFromScene zwalnia pole (:9915)"
+    );
+    assert_eq!(
+        body.occ_by_key()
+            .get(&cell_key(0.0, 0.0))
+            .map(String::as_str),
+        Some("atk0"),
+        "pole atakujacego zostaje"
+    );
 }

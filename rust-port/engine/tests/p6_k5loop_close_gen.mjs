@@ -199,8 +199,10 @@ const classSrc = [
   '  _advanceCoord() { throw new Error("primaryRanged poza zakresem"); }',
   '  _doAttack() { throw new Error("atak z _advanceStep: galaz nieosiagalna z _activateUnit"); }',
   '  _pickAdjacentTargetByPriority() { throw new Error("atak z _advanceStep: galaz nieosiagalna"); }',
-  '  _pickTargetByPriority() { throw new Error("C-FLANK poza zakresem (attackDirection front)"); }',
-  '  _firstStepTowardDirectedAttack() { throw new Error("C-FLANK poza zakresem"); }',
+  // C-FLANK (obrona r1, Z1): pierwsze wywolanie w bloku `:8210` rzuca wartownika; runCase zapisuje wtedy stan sprzed
+  // bloku i tag `krok-naprzod-flanka` (Rust: jawny tag, port bloku = runda 2).
+  '  _pickTargetByPriority() { throw new Error("C-FLANK-ENTERED"); }',
+  '  _firstStepTowardDirectedAttack() { throw new Error("C-FLANK-ENTERED"); }',
   // Instrumentacja (nie logika): slad + wywolanie tekstu pinu.
   '  _updateFacing(ru) { if (!this.__inMove) this.__trace.push("facing"); const f0 = ru.facing; this._updateFacingPin(ru); if (ru.facing !== f0) this.__facing.push({ t: this.vNow, dir: ru.facing }); }',
   '  _advanceStep(ru, done) { if (!this.__advStarted) { this.__advStarted = true; this.__trace.push("advanceStep"); } return this._advanceStepPin(ru, done); }',
@@ -234,7 +236,7 @@ function mulberry32(a) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-const rnd = mulberry32(SEED);
+let rnd = mulberry32(SEED);
 const ri = (a, b) => a + Math.floor(rnd() * (b - a + 1));
 const pick = (xs) => xs[Math.floor(rnd() * xs.length)];
 const MOVE_LEFTS = [0, 1, 1, 2, 2, 3, 3, 4, 5, 6, 1.5, 2.5];
@@ -320,7 +322,7 @@ function makeCase(k) {
   return { name: `close-${k}`, acting: { side: actSide, idx: actIdx }, atk, def, groupMeta, tiles };
 }
 
-function runCase(sc) {
+function runCase(sc, opts = {}) {
   const h = new Harness();
   const tmap = new Map(sc.tiles.map(([c, r, passable, cost, ford]) => [c + ',' + r, { passable, cost, ford }]));
   const tile = (c, r) => tmap.get(c + ',' + r) ?? { passable: true, cost: 1, ford: false };
@@ -338,6 +340,7 @@ function runCase(sc) {
     primaryRanged: false, rangedBase: false, mounted: false, phalanx: false, shootingEnabled: true,
     playerOrder: { type: 'none' }, unitDoctrine: u.unitDoctrine ?? null, groupId: u.groupId ?? null,
     ...(u.formationRank === null ? {} : { formationRank: u.formationRank }),
+    ...(u.attackDirection ? { attackDirection: u.attackDirection } : {}),
     group: { position: { set() {} }, rotation: { y: 0 } }, hpBarGroup: { position: { set() {} } },
   });
   h.atk = sc.atk.map(mk);
@@ -347,8 +350,20 @@ function runCase(sc) {
     if (!ru.removed && !ru.routed) h.occByKey.set(ru.q + ',' + ru.r, ru);
   }
   const ru = (sc.acting.side === 'atk' ? h.atk : h.def)[sc.acting.idx];
+  // Emulacja mutanta E4 (obrona r1, Z2): wlasni sojusznicy `routed` widziani jako nie-routed WYLACZNIE po rozstawieniu
+  // zajetosci (pole nadal wolne), czyli tylko filtr `!u.routed` w `_compactAttackAllowsStep` (`:8154`) przestaje dzialac.
+  if (opts.unrouteOwn) for (const u of (ru.side === 'atk' ? h.atk : h.def)) if (u !== ru) u.routed = false;
   let doneAt = null;
-  h._activateUnit(ru, () => { doneAt = h.vNow; });
+  const unported = [];
+  try {
+    h._activateUnit(ru, () => { doneAt = h.vNow; });
+  } catch (e) {
+    if (e.message !== 'C-FLANK-ENTERED') throw e;
+    // Blok C-FLANK (`:8204-8235`) osiagniety w pierwszym `_advanceStep`, przed jakimkolwiek `_doMove`.
+    if (h.__steps.length !== 0 || h.__q.length !== 0) throw new Error('C-FLANK po ruchu');
+    unported.push('krok-naprzod-flanka');
+    doneAt = 0;
+  }
   let guard = 0;
   while (h.__q.length > 0) {
     if (++guard > 10000) throw new Error('petla kolejki');
@@ -368,6 +383,7 @@ function runCase(sc) {
     duration: doneAt,
     final: { q: ru.q, r: ru.r, moveLeft: ru.moveLeft, facing: ru.facing, lastAutoMoveFrom: ru.lastAutoMoveFrom ?? null },
     occ,
+    ...(unported.length > 0 ? { unported } : {}),
   };
 }
 
@@ -381,7 +397,57 @@ while (cases.length < N_CASES) {
   const expect = runCase(sc);
   cases.push({ ...sc, expect });
 }
+
+// ---- Obrona r1: rodziny celowane (osobne ziarno; 420 wektorow wyzej bajt w bajt bez zmian) ----
+rnd = mulberry32(SEED + 1);
+const N_FLANK = 120;
+const N_RANK = 60;
+// Z1: C-FLANK, `attackDirection` = 'bok'/'tyl' (pin `:8208`); czesc z `moveLeft` 0 (preludium `:8202` przed blokiem).
+let nFlank = 0;
+while (nFlank < N_FLANK) {
+  if (++tries > 60000) throw new Error('za malo scenariuszy flank');
+  const sc = makeCase(k++);
+  if (!sc) continue;
+  const me = (sc.acting.side === 'atk' ? sc.atk : sc.def)[sc.acting.idx];
+  me.attackDirection = pick(['bok', 'tyl']);
+  if (nFlank % 6 === 0) me.moveLeft = 0;
+  sc.name = `close-flank-${nFlank}`;
+  sc.kind = 'flank';
+  cases.push({ ...sc, expect: runCase(sc) });
+  nFlank += 1;
+}
+// Z2: linia szyku z uciekajacym sojusznikiem rangi `rank - 1` (`_compactAttackAllowsStep` `:8153-8157`, filtr
+// `!u.routed`). Jednostka dzialajaca: doktryna efektywna 'steady' (grupa, autoPlay=false), `formationRank` >= 1.
+// Zachowywane tylko scenariusze, w ktorych wynik pinu ROZNI SIE od emulacji mutanta E4 (filtr wylaczony).
+let nRank = 0;
+while (nRank < N_RANK) {
+  if (++tries > 200000) throw new Error('za malo scenariuszy rank-routed');
+  const sc = makeCase(k++);
+  if (!sc) continue;
+  const own = sc.acting.side === 'atk' ? sc.atk : sc.def;
+  if (own.length < 2) continue;
+  const me = own[sc.acting.idx];
+  me.unitDoctrine = null;
+  me.groupId = 'gs';
+  sc.groupMeta = [['gs', 'steady', false]];
+  me.formationRank = ri(1, 3);
+  if (me.moveLeft <= 0) me.moveLeft = pick([2, 3, 4]);
+  const others = own.filter((u) => u !== me);
+  const ally = pick(others);
+  ally.dead = false; ally.fadingOut = false; ally.routed = true; ally.formationRank = me.formationRank - 1;
+  if (ally.formationRank === 0 && rnd() < 0.5) ally.formationRank = null; // `?? 0`
+  const expect = runCase(sc);
+  const mutant = runCase(sc, { unrouteOwn: true });
+  if (JSON.stringify(expect) === JSON.stringify(mutant)) continue;
+  sc.name = `close-rank-routed-${nRank}`;
+  sc.kind = 'rank-routed';
+  cases.push({ ...sc, expect });
+  nRank += 1;
+}
 const stats = {
+  flank: cases.filter((c) => c.kind === 'flank').length,
+  flankEntered: cases.filter((c) => (c.expect.unported ?? []).includes('krok-naprzod-flanka')).length,
+  rankRouted: cases.filter((c) => c.kind === 'rank-routed').length,
   moved: cases.filter((c) => c.expect.steps.length > 0).length,
   multiStep: cases.filter((c) => c.expect.steps.length >= 2).length,
   facingAfterMove: cases.filter((c) => c.expect.facing.some((f) => f.t > 0)).length,

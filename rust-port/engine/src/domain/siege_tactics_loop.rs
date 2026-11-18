@@ -58,6 +58,7 @@ use crate::domain::siege_tactics_blow_full::{
 };
 use crate::domain::siege_tactics_clock::{ScheduleOutcome, VirtualClock};
 use crate::domain::siege_tactics_doctrine_state::{GroupDoctrine, ProdDoctrineState};
+use crate::domain::siege_tactics_doctrine_target::{desired_hit_for_direction, AttackDirection};
 use crate::domain::siege_tactics_end::BattleSide;
 use crate::domain::siege_tactics_endcheck::EndCheckOutcome;
 use crate::domain::siege_tactics_fastforward::{
@@ -1176,6 +1177,11 @@ pub struct ProdBody<R: RollSource> {
     /// K5LOOP-CLOSE (D-K5C-4): `this._groupMeta` (mapa `groupId -> { doctrine, autoPlay }`), czytana przez
     /// `_getEffectiveDoctrine` (`:17612`) i `_shouldAvoidAutoBacktrack` (`:8191`). Pin: pusta mapa na starcie bitwy.
     pub group_meta: HashMap<String, GroupMeta>,
+    /// K5LOOP-CLOSE obrona r1 (Z1, D-K5C-4): `ru.attackDirection` (`battleScene.ts:2043`), czytane przez C-FLANK w
+    /// `_advanceStep` (`:8204-8235`) przez `desiredHitForDirection` (`:1956-1960`). Pin spawn: `'front'` (`:4577`,
+    /// `:4722`, `:5492`, `:17265`); gracz ustawia `'bok'`/`'tyl'` z UI (`:13917`, `:16975`). Domyślnie
+    /// [`AttackDirection::Front`].
+    pub attack_direction: [Vec<AttackDirection>; 2],
 }
 
 /// K5DOC-T4e-0 (D1): brak danych terenu przy wymaganym kroku ruchu. Jawny błąd, nie wartość domyślna.
@@ -1528,6 +1534,10 @@ impl<R: RollSource> ProdBody<R> {
             occ_by_key: seed_occupancy(&units),
             formation_rank,
             group_meta: HashMap::new(),
+            attack_direction: [
+                vec![AttackDirection::Front; units[0].len()],
+                vec![AttackDirection::Front; units[1].len()],
+            ],
             terrain: None,
             units,
             scene,
@@ -1807,10 +1817,23 @@ impl<R: RollSource> ProdBody<R> {
     ///   przed `_advanceStep` (`:6298`); kolejne wywołania z `_schedule` następują tylko, gdy callback `_doMove` sprawdził
     ///   `!_canAttackFrom` z nowej pozycji (`:8277`), a w turze sekwencyjnej nic innego nie zmienia stanu przed nimi. W
     ///   ciele osiągalne tylko przy niespójnym wejściu adaptera ([`ProdUnit::melee_target`] = `None` przy sąsiedzie).
+    /// * `krok-naprzod-flanka` (obrona r1, Z1): C-FLANK (`:8204-8235`). Pin wchodzi w blok manewru na flankę/tył, gdy
+    ///   `desiredHitForDirection(ru.attackDirection)` (`:8208`) nie jest `null` (`'bok'`/`'tyl'`), po preludium
+    ///   (`finished`, `dead`/`fadingOut`, `moveLeft <= 0`, `:8199-8202`). Port bloku (`_pickTargetByPriority`,
+    ///   `_canStrikeTargetFrom`, `_firstStepTowardDirectedAttack`) = runda 2 (T4d); do tego czasu jednostka nie
+    ///   wykonuje akcji i gałąź jest jawnie oznaczona, a NIE po cichu zamieniona na marsz czołowy (`'front'`).
     fn advance_step(&mut self, unit: UnitRef, st: &TurnSeqState) -> (f64, Option<f64>) {
         let ix = side_ix(unit.side);
         let mounted = self.units[ix][unit.idx].activate.mounted;
         let mut move_left = st.unit(unit).c.move_left;
+        // Preludium `_advanceStep` (`:8199-8202`): `finished` i `dead`/`fadingOut` odcina już `start`; `moveLeft <= 0`
+        // (`NaN` nie spełnia, jak w JS) kończy przed blokiem C-FLANK.
+        let prelude_done = move_left <= 0.0;
+        if !prelude_done && desired_hit_for_direction(self.attack_direction[ix][unit.idx]).is_some()
+        {
+            self.unported.push((unit, "krok-naprzod-flanka"));
+            return (0.0, None);
+        }
         let mut moved = false;
         let now0 = self.now;
         let mut elapsed = 0.0;
@@ -2422,7 +2445,8 @@ impl<R: RollSource> ProdBody<R> {
     }
 
     /// `_startRout` (`battleScene.ts:9799-9825`): flaga `routed`, `acted`, oslona wrecz, boost wrogów, zwrot ku
-    /// własnej krawędzi (atakujący W = 3, obrońca E = 1). Nieportowane: `occByKey`, `routedUnits`, efekty dowódcy.
+    /// własnej krawędzi (atakujący W = 3, obrońca E = 1), zwolnienie pola `occByKey` (`:9812`). Nieportowane:
+    /// `routedUnits`, efekty dowódcy.
     fn start_rout(&mut self, st: &mut TurnSeqState, unit: UnitRef) {
         let ix = side_ix(unit.side);
         {
