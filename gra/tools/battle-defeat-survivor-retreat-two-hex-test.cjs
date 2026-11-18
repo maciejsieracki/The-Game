@@ -120,8 +120,11 @@ async function main() {
       survivors: [{ id: 'a0', hp: 90 }, { id: 'd0', hp: 40 }], pass: (q, r) => !(q === 13 && r === 20) });
     const d = at(units, 'd0');
     assert(!!d, '4: jednostka nie skasowana');
-    assert(d && dist(d, { q: 11, r: 22 }) <= 1, '4: bez trasy 2-heksowej: zachowanie dotychczasowe (<=1), jest ' + (d && d.q + ',' + d.r));
-    assert(res.retreatNoTwoHexRouteIds.includes('d0') && !res.retreatedTwoHexIds.includes('d0'), '4: raport retreatNoTwoHexRouteIds');
+    // R-WEB-BATTLE-DEFEATED-UNIT-STAYS-ON-BATTLE-HEX-Q1: kierunek wprost (12,21)->(13,20) zablokowany
+    // -> kaskada odwrotu wybiera kolejny kierunek od zwyciezcy (11,21)->(11,20), 2 heksy. Asercja
+    // zmieniona z "<=1" (dawne zachowanie) na "2 heksy, nie na zablokowany heks".
+    assert(d && dist(d, { q: 11, r: 22 }) === 2 && !(d.q === 13 && d.r === 20), '4: 2-heksowa trasa na inny kierunek (nie na zablokowany heks), jest ' + (d && d.q + ',' + d.r));
+    assert(res.retreatedTwoHexIds.includes('d0') && !res.retreatNoTwoHexRouteIds.includes('d0'), '4: raport retreatedTwoHexIds (kaskada)');
   }
 
   // 5) Krawedz: pierwszy heks nieprzechodni -> brak skoku nad nim.
