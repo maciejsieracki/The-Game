@@ -1,0 +1,5 @@
+/dev/vda         258020M 30891M     8481M  79% /
+bloki test result ok: 527
+suma: passed 3955 failed 0 ignored 1
+linie FAILED/panicked: 0
+EXIT=0

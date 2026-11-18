@@ -24,6 +24,17 @@
 //! * D-OP-4: zaznaczenie z UI (`RenderUiParams::selected_unit_id`, web `selectedId`, `main.ts:7116`) zasila
 //!   `selection`, `reachable` i `pathRoute` (w webie jedna zmienna); `PlayableState.selected_unit_id` nie
 //!   jest czytany przez ramke.
+//!
+//! Runda r2 (DODATEK r2, raport `01-operator-r2.md`):
+//! * D-OP-5: `overlays.buildHighlight.hexes` z adapterow stanu: `canFoundPlayerCityAt` (`FoundCityCtx`,
+//!   fotel `ME()`), `qualifyingWonderHexesForPlayer` (fotel) i `buildApi.getQualifyingHexes` (stan budowy
+//!   fotela glownego - pin uzywa literalu `0`, `main.ts:16293-16325`; Rust `HUMAN_OWNER_ID`).
+//! * D-OP-6: `units[].hpMax` = `hpMaxEffective` i `hp` przyciete jak `syncRuntimeUnitHpState`
+//!   (`main.ts:33099-33118`); `hp` undefined = pelne efektywne.
+//! * D-OP-7: `stacks.vitalsByRepId` z `StackVitalsDeps` (`main.ts:14476-14508`): `maxHpOf` =
+//!   `hpMaxEffective`, `defOf` = `combatPowerFullDisplayDefFor` dla stanu bez fortyfikacji/garnizonu,
+//!   `sumRosterFieldM` z `auto-battle-power.ts:50-59`. Bonus trudnosci AI: web `ownerId > 0` = wlasciciel
+//!   rozny od fotela glownego (`HUMAN_OWNER_ID`).
 #![forbid(unsafe_code)]
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
@@ -37,15 +48,28 @@ use civ_view_model::{
 };
 use serde::{Deserialize, Serialize};
 
+use crate::data::economy_society_part2::{parse_ai_params, AiParams};
 use crate::data::units_combat::{parse_units, UnitRecord};
+use crate::domain::brake_power_army::{army_field_power, is_siege_unit, ArmyUnitDef};
 use crate::domain::building_costs::p6_7b::StockRecord;
 use crate::domain::city_view::{
     city_views, owner_views, CityStateFacts, CityViewCityFacts, CityViewError, CityViewInputs,
 };
-use crate::domain::combat::unit_building_bonuses::{armor_path_badge_level, soft_path_badge_level};
+use crate::domain::combat::unit_building_bonuses::{
+    armor_path_badge_level, soft_path_badge_level, unit_parametry_bonus_frac, UnitBuildingProgress,
+};
 use crate::domain::diplomacy::RelationStatus;
 use crate::domain::dto_bridge::{
     build_view_layers, engine_territory_nodes, fog_inputs_of, DtoBridgeError,
+};
+use crate::domain::fort_territory::{is_hex_in_foreign_fort_territory, OrderedFortNode};
+use crate::domain::hex::HexCoord as DomainHexCoord;
+use crate::domain::improvement_build::{
+    create_improvement_build_api, hex_key as build_hex_key, BuildHex, BuildMap,
+    ImprovementBuildState, PlacedLayers,
+};
+use crate::domain::improvements::{
+    is_improvement_allowed_for_civ, HexLike, TerrainType as ImprovementTerrain,
 };
 use crate::domain::map_snapshot::{
     JsKeyedMap, SnapshotCoords, SnapshotHex, SnapshotMap, SnapshotRiver, SnapshotVillage,
@@ -58,16 +82,41 @@ use crate::domain::overlays_view::{
     OverlaysViewError, SelectionUi, UnitOverlaysInput,
 };
 use crate::domain::pathfinding::ruch_jednostek::{Klucz, RuchJednostka};
+use crate::domain::playable::PlayableFortKind;
 use crate::domain::playable::{
     PlayableFogSession, PlayableGame, PlayableState, PlayableTerrain, PlayableUnit,
 };
 use crate::domain::playable_movement::{klucz_of, ruch_jednostki_from_state};
-use crate::domain::recruitment::army_merge::{compute_stack_display, StosJednostka};
-use crate::domain::start_reveal::StartRevealContext;
+use crate::domain::recruitment::army_merge::{
+    compute_stack_display, RosterEntry, StackVitals, StackVitalsDeps, StosJednostka,
+};
+use crate::domain::roads::collect_road_keys;
+use crate::domain::society_breakdown::js_round;
+use crate::domain::start_position::Overlay;
+use crate::domain::start_reveal::{PlacementCheck, StartRevealContext};
+use crate::domain::state::p6_6b::cities::{
+    can_found_city, CanFoundCityOpts, City as EconCity, GameConfig,
+};
 use crate::domain::terrain::visibility::fog_view::hex_order;
 use crate::domain::terrain::visibility::units_visible_on_map;
+use crate::domain::terrain::{
+    founding_nodes_for_owner, CityNode, FortImprovementType, FortNode, TerrainType as WonderTerrain,
+};
 use crate::domain::territory::collect_territory_hex_keys_by_owner;
+use crate::domain::territory::{is_in_territory, TerritoryNode};
+use crate::domain::turn_war_epoch::{
+    empire_epoch_for_owner, game_start_era, owner_era_facts, OwnerEpochError,
+};
+use crate::domain::turn_war_inputs::HUMAN_OWNER_ID;
 use crate::domain::unit_health::veteran_star_count;
+use crate::domain::unit_health::{
+    effective_max_hp, unit_health, veteran_battles_won, veteran_combat_bonus_frac,
+};
+use crate::domain::unit_power::UnitPowerCoeffs;
+use crate::domain::wonder_placement::{
+    list_qualifying_wonder_hexes_for_owner, WonderMapHex, WonderMapPlacementInput,
+    WonderPlacementCity,
+};
 use crate::domain::{PlayerId, PositionDto};
 
 /// Stan UI, ktory web trzyma w kliencie (D-R3-2). Nazwy pol = istniejace struktury
@@ -140,6 +189,12 @@ pub enum RenderFrameError {
     UnitsData(String),
     /// Typ jednostki bez definicji w `units.json` (zamiast cichego `hp = 0` / pustego `typeId`).
     UnknownUnitType(String),
+    /// Epoka wlasciciela nieustalona (web `empireEpochForOwner` / `player.era`).
+    Epoch(OwnerEpochError),
+    /// Etykieta trudnosci stanu spoza mapy webu (`main.ts:44372-44374`).
+    UnknownDifficulty(String),
+    /// `ai-params.json` nie dal sie wczytac (`loadDifficultyParams`).
+    AiParamsData(String),
 }
 
 impl fmt::Display for RenderFrameError {
@@ -158,6 +213,9 @@ impl fmt::Display for RenderFrameError {
                     "render frame: typ jednostki {t:?} bez definicji w units.json"
                 )
             }
+            Self::Epoch(e) => write!(f, "render frame: epoka: {e:?}"),
+            Self::UnknownDifficulty(d) => write!(f, "render frame: nieznana trudnosc {d:?}"),
+            Self::AiParamsData(e) => write!(f, "render frame: ai-params.json: {e}"),
         }
     }
 }
@@ -182,6 +240,12 @@ impl From<CityViewError> for RenderFrameError {
     }
 }
 
+impl From<OwnerEpochError> for RenderFrameError {
+    fn from(e: OwnerEpochError) -> Self {
+        Self::Epoch(e)
+    }
+}
+
 impl From<OverlaysViewError> for RenderFrameError {
     fn from(e: OverlaysViewError) -> Self {
         Self::Overlays(e)
@@ -199,38 +263,28 @@ pub struct RenderFrameGap {
     pub reason: &'static str,
 }
 
-/// Pola ramki, ktorych r1 NIE produkuje zgodnie z webem (luki do rundy r2 tego samego ID). Kazda
-/// pozycja jest tez w tabeli raportu operatora.
+/// Pola ramki, ktorych skladacz NIE produkuje zgodnie z webem (jawne luki, nie ciche zera). Runda r2
+/// domknela `overlays.buildHighlight.hexes`, `stacks.vitalsByRepId` i `units[].hp` / `hpMax`
+/// (`hpMaxEffective`); ponizsze dwie pozycje zaleza od stanu ekonomii, ktorego [`PlayableState`] nie
+/// niesie (dlug #310 EKONOMIA-STAN, decyzja techniczna orkiestratora w dyspozycji r2). Kazda pozycja jest
+/// tez w tabeli raportu operatora.
 pub const RENDER_FRAME_GAPS: &[RenderFrameGap] = &[
     RenderFrameGap {
         field: "overlays.workerFields",
         produced: "[]",
-        reason: "web liczy pola robotnikow wszystkich miast (showWorkerOverlay = true, main.ts:15432-15448); \
-                 producent worker_fields_view wymaga modelu miast ekonomii (okolicaFocus/Tryb/Reczne) i BuildMap, \
-                 ktorych PlayableState nie niesie (EKONOMIA-STAN #310)",
-    },
-    RenderFrameGap {
-        field: "overlays.buildHighlight.hexes",
-        produced: "[] (kind zgodny z trybem)",
-        reason: "zrodla canFoundPlayerCityAt (canFoundCity), qualifyingWonderHexesForPlayer i \
-                 buildApi.getQualifyingHexes nie maja adaptera z PlayableState (main.ts:16351-16395)",
-    },
-    RenderFrameGap {
-        field: "stacks.vitalsByRepId",
-        produced: "[]",
-        reason: "StackVitalsDeps (hpMaxEffective, combatPowerFullDisplayDefFor, sumRosterFieldM; main.ts:14476-14506) \
-                 nie sa portowane",
+        reason: "web liczy pola robotnikow wszystkich miast (showWorkerOverlay = true, main.ts:15432-15448) z \
+                 collectWorkedHexOwnerMapByOwnerYield nad City ekonomii (okolicaFocus / okolicaTryb / reczne heksy, \
+                 magazyn, populacja na zywo) i plonami heksow (zloza, rzeki); PlayableCity niesie tylko id, \
+                 wlasciciela, pozycje, populacje i kulture, a mapa stanu nie ma zloz ani rzek \
+                 (zaleznosc: #310 EKONOMIA-STAN)",
     },
     RenderFrameGap {
         field: "stacks.starvingRepIds / stacks.goldDeficitRepIds",
         produced: "[]",
-        reason: "isArmyHungry / isGoldDeficit (main.ts:14513-14546) czytaja magazyn zywnosci i skarbiec wlasciciela, \
-                 ktorych stan nie niesie per wlasciciel (EKONOMIA-STAN #310)",
-    },
-    RenderFrameGap {
-        field: "units[].hp (brak hp w stanie) / units[].hpMax",
-        produced: "hp = health z units.json, hpMax = economy.units[id].hpMax",
-        reason: "web hpMaxEffective (unitCardCombatFor) z bonusami trwalymi nie jest portowany",
+        reason: "isArmyHungry / isGoldDeficit (main.ts:14513-14546) czytaja _lastTicks tiku ekonomii \
+                 (empire-food.ts:353-356 glodWojska, gold-deficit.ts:149-151 deficytZlota); PlayableState nie \
+                 uruchamia tiku ekonomii i nie niesie jego wyniku per wlasciciel (zaleznosc: #310 EKONOMIA-STAN, \
+                 #304 EKONOMIA-TURA)",
     },
 ];
 
@@ -262,9 +316,23 @@ pub const RENDER_FRAME_STATE_DEFAULTS: &[RenderFrameGap] = &[
                  dla jednostki bez tych pol",
     },
     RenderFrameGap {
-        field: "units[].armorBadgeLevel / units[].softBadgeLevel",
-        produced: "armor_path_badge_level(None) / soft_path_badge_level(None)",
-        reason: "stan nie ma unitBuildingProgress (web armorPathBadgeLevel(undefined))",
+        field: "units[].armorBadgeLevel",
+        produced: "armor_path_badge_level(pancerzBonusProc = None)",
+        reason: "PlayableReplaceUnit niesie parametryBonusProc, ale nie pancerzBonusProc \
+                 (web armorPathBadgeLevel z pancerzBonusProc undefined = 0)",
+    },
+    RenderFrameGap {
+        field: "stacks.vitalsByRepId fortyfikacja / garnizon / miasta-panstwa",
+        produced: "def bez fortifyFieldScaledDefFor i bez bonusu muru garnizonu; trudnosc bez typCityCopyOwners",
+        reason: "stan nie ma ufortyfikowanyWPolu ani inGarnizon (unitGetsFortifyDefenseBonus = false, \
+                 city-defense.ts:217-222; combatPowerFullDisplayDefFor zwraca base, main.ts:33936-33940) ani \
+                 miast-panstw (aiDiffLevelForOwner -> _menuDifficulty, main.ts:9517-9520)",
+    },
+    RenderFrameGap {
+        field: "overlays.buildHighlight zrodla spoza stanu",
+        produced: "wonderBuildSites = [], hexClearingStates = {}, tradeRouteKonUnlocked = false, zloza i rzeki brak",
+        reason: "stan nie ma budow cudow w toku, wycinki lasu, grantow tras handlowych ani zloz/rzek mapy; web \
+                 w takim stanie daje te same wejscia (main.ts:5199-5205, :16293-16325)",
     },
     RenderFrameGap {
         field: "overlays.tradeRoutes",
@@ -432,79 +500,289 @@ fn visible_units<'a>(
         .collect()
 }
 
+/// Postep budynkow jednostki z [`PlayableState`] (web `UnitBuildingProgress`): stan niesie tylko
+/// `parametryBonusProc` (`PlayableReplaceUnit`), `pancerzBonusProc` = `undefined`.
+fn unit_progress(state: &PlayableState, unit_id: u64) -> UnitBuildingProgress {
+    UnitBuildingProgress {
+        pancerz_bonus_proc: None,
+        parametry_bonus_proc: state
+            .economy
+            .units
+            .get(&unit_id)
+            .and_then(|r| r.parametry_bonus_proc),
+    }
+}
+
+/// Web `effectiveRuntimeUnitMaxHp(u, def)` = `unitCardCombatFor(u, def).hpMaxEffective`
+/// (`main.ts:33099-33106`, `game/unit-card-stats.ts:114`): `effectiveMaxHp(unitHealth(def),
+/// unitParametryBonusFrac(u), veteranCombatBonusFrac(u))`.
+fn hp_max_effective(state: &PlayableState, unit_id: u64, def: &UnitRecord) -> f64 {
+    let replace = state.economy.units.get(&unit_id);
+    effective_max_hp(
+        unit_health(Some(def)),
+        unit_parametry_bonus_frac(Some(&unit_progress(state, unit_id))),
+        veteran_combat_bonus_frac(replace.and_then(|r| r.battles_survived)),
+    )
+}
+
+/// Web `syncRuntimeUnitHpState(u)` (`main.ts:33109-33118`), wolane przez `syncUnitsRender`
+/// (`syncAllRuntimeUnitHpState`, `main.ts:14444`) przed renderem: `hpMax = maxHp`; `hp` undefined zostaje
+/// undefined (= pelne, `units/setup.ts:60`), skonczone `hp` przyciete do `[0, maxHp]`, nieskonczone = `maxHp`.
+/// Zwraca `(hp, hpMax)`; `hp` = `None` gdy undefined.
+fn synced_hp(state: &PlayableState, unit_id: u64, def: &UnitRecord) -> (Option<f64>, f64) {
+    let max_hp = hp_max_effective(state, unit_id, def);
+    let hp = state
+        .economy
+        .units
+        .get(&unit_id)
+        .and_then(|r| r.hp)
+        .map(|hp| {
+            if hp.is_finite() {
+                hp.clamp(0.0, max_hp)
+            } else {
+                max_hp
+            }
+        });
+    (hp, max_hp)
+}
+
+/// Definicja `units.json` jednostki widocznej (adapter ruchu zawsze ustawia typ); brak typu albo
+/// definicji = jawny blad (obrona r1 zarzut 3), nie `hp = 0` / pusty `typeId`.
+fn unit_def<'a>(
+    rj: &RuchJednostka,
+    defs: &'a HashMap<String, UnitRecord>,
+) -> Result<&'a UnitRecord, RenderFrameError> {
+    let type_id = rj
+        .type_id
+        .as_deref()
+        .ok_or_else(|| RenderFrameError::UnknownUnitType(String::new()))?;
+    defs.get(type_id)
+        .ok_or_else(|| RenderFrameError::UnknownUnitType(type_id.to_owned()))
+}
+
 fn unit_view(
     state: &PlayableState,
     unit: &PlayableUnit,
     rj: &RuchJednostka,
     defs: &HashMap<String, UnitRecord>,
 ) -> Result<UnitViewDto, RenderFrameError> {
-    // Adapter ruchu zawsze ustawia typ (`playable_movement.rs`: zamiana albo typ startowy); brak typu albo
-    // definicji = jawny blad (obrona r1 zarzut 3), nie `hp = 0` / pusty `typeId`.
-    let type_id = rj
-        .type_id
-        .clone()
-        .ok_or_else(|| RenderFrameError::UnknownUnitType(String::new()))?;
-    let def = defs
-        .get(&type_id)
-        .ok_or_else(|| RenderFrameError::UnknownUnitType(type_id.clone()))?;
-    let replace = state.economy.units.get(&unit.id.get());
-    // `hp` undefined = pelne z definicji (`units/setup.ts:60`, `unitHealth(def)` `main.ts:33093-33095`);
-    // luka hpMaxEffective w RENDER_FRAME_GAPS.
-    #[allow(clippy::cast_precision_loss)]
-    let full_hp = def.health_lc as f64;
-    let hp = replace.and_then(|r| r.hp).unwrap_or(full_hp);
+    let def = unit_def(rj, defs)?;
+    let unit_id = unit.id.get();
+    let replace = state.economy.units.get(&unit_id);
+    // R2 luka 3: `hpMax` = `hpMaxEffective` (cache `u.hpMax` nadpisany przez `syncRuntimeUnitHpState`),
+    // `hp` przyciete jak w webie; `hp` undefined = pelne efektywne (DTO nie ma `undefined`).
+    let (hp, hp_max) = synced_hp(state, unit_id, def);
     let stars = veteran_star_count(replace.and_then(|r| r.battles_survived));
     // Gwiazdki to `0..=3` (`VETERAN_MAX_BATTLES_TRACKED`).
     #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     let veteran_stars = stars as u8;
+    let progress = unit_progress(state, unit_id);
     Ok(UnitViewDto {
         id: vm_unit(&rj.id)?,
         owner_id: vm::OwnerRef::Player(vm_player(unit.owner_id)?),
-        type_id,
+        type_id: def.jednostka.clone(),
         category: rj.category.clone(),
         hex: HexCoord::new(rj.q, rj.r),
         ruch_max: rj.ruch,
         ruch_left: rj.ruch_left,
-        hp,
-        hp_max: replace.and_then(|r| r.hp_max),
+        hp: hp.unwrap_or(hp_max),
+        hp_max: Some(hp_max),
         // Stan nie ma `embarked`, `inGarnizon`, `isGeneral` ani `dimmedUnitIds`: web undefined/false.
         embarked: rj.embarked == Some(true),
         in_garnizon: rj.in_garnizon,
         is_general: false,
         veteran_stars,
-        // `unitBuildingProgress` nie istnieje w stanie: web `armorPathBadgeLevel(undefined)`.
-        armor_badge_level: armor_path_badge_level(None),
-        soft_badge_level: soft_path_badge_level(None),
+        // `pancerzBonusProc` nie istnieje w stanie (RENDER_FRAME_STATE_DEFAULTS); `parametryBonusProc` tak.
+        armor_badge_level: armor_path_badge_level(Some(&progress)),
+        soft_badge_level: soft_path_badge_level(Some(&progress)),
         dimmed: false,
     })
 }
 
-/// `stacks` (kontrakt §3.5): web `computeStackDisplay(src, unitAttackScore, ...)` (`main.ts:14476`),
-/// `unitAttackScore` = `meleeAttack` definicji (`main.ts:14436-14438`). Vitals i ikony: luki.
+/// Web `veteranLevel(u)` = `veteranLevelFromBattles(veteranBattlesWon(u))` (`game/veteran.ts:106-115`).
+fn veteran_level(battles_survived: Option<f64>) -> u8 {
+    let won = veteran_battles_won(battles_survived);
+    if won >= 3.0 {
+        3
+    } else if won >= 1.0 {
+        2
+    } else {
+        1
+    }
+}
+
+/// Poziom trudnosci AI `1 | 2 | 3` dla etykiety menu (web `aiDiffLevelForOwner`, `main.ts:9517-9520`:
+/// `'hard' -> 3`, `'easy' -> 1`, inaczej 2; etykiety stanu wg `main.ts:44372-44374`).
+fn ai_diff_level(label: &str) -> Result<u8, RenderFrameError> {
+    match label {
+        "Normalny" | "normal" => Ok(2),
+        "Łatwy" | "easy" => Ok(1),
+        "Trudny" | "hard" => Ok(3),
+        other => Err(RenderFrameError::UnknownDifficulty(other.to_owned())),
+    }
+}
+
+fn ai_params() -> Result<&'static AiParams, RenderFrameError> {
+    static PARAMS: OnceLock<Result<AiParams, String>> = OnceLock::new();
+    PARAMS
+        .get_or_init(|| parse_ai_params().map_err(|e| e.to_string()))
+        .as_ref()
+        .map_err(|e| RenderFrameError::AiParamsData(e.clone()))
+}
+
+/// Web `difficultyCombatMultForOwner(ownerId)` (`main.ts:9506-9511`): `1` gdy
+/// `!qualifiesForMajorAiDifficultyBonus(ownerId, isCityState)` (`ai-difficulty-bonus.ts:18-23`:
+/// `ownerId > 0 && !isBarbarian && !isCityState`), inaczej `difficultyCombatMultiplier(bonusWalka)`
+/// (`:26-28`) z `loadDifficultyParams(data, aiDiffLevelForOwner(ownerId))` (`ai.ts:651-664`). Web
+/// `ownerId > 0` = rozny od fotela glownego czlowieka (`HUMAN_OWNER_PRIMARY` 0 = Rust
+/// [`HUMAN_OWNER_ID`]); wlasciciele stanu nie sa barbarzyncami, stan nie ma miast-panstw.
+fn difficulty_combat_mult(state: &PlayableState, owner: i64) -> Result<f64, RenderFrameError> {
+    if owner == HUMAN_OWNER_ID {
+        return Ok(1.0);
+    }
+    let p = ai_params()?;
+    let bonus = match ai_diff_level(&state.params.difficulty)? {
+        1 => p.trudnosc_poziom1_bonus_walka.wartosc,
+        // Typ `i64` w `ai-params.json` (wartosc calkowita 0); JS `number`.
+        #[allow(clippy::cast_precision_loss)]
+        2 => p.trudnosc_poziom2_bonus_walka.wartosc as f64,
+        _ => p.trudnosc_poziom3_bonus_walka.wartosc,
+    };
+    Ok(1.0 + if bonus.is_finite() { bonus } else { 0.0 })
+}
+
+/// Web `combatPowerFullDisplayDefFor(u)` (`main.ts:33936-33962`) dla stanu bez fortyfikacji i garnizonu:
+/// `veteranScaledDefFor` (`:33063-33070`, `applyVeteranFracToCombatUnit` `veteran.ts:362-385`: atak, obrona,
+/// weaponDamage, piercing, chargeBonus, health, missileAttack x `(1 + frac)`, bez cache `fieldPower`), potem
+/// `applyDifficultyCombatToUnitDef` (`ai-difficulty-bonus.ts:41-60`: atak, obrona, missileAttack x `mult`,
+/// bez cache). `fortifyFieldScaledDefFor` i bonus muru garnizonu nie dzialaja (`unitGetsFortifyBonus` =
+/// false, `inGarnizon !== true`; RENDER_FRAME_STATE_DEFAULTS).
+#[allow(clippy::float_cmp)]
+fn full_display_def(def: &UnitRecord, veteran_frac: f64, difficulty_mult: f64) -> ArmyUnitDef {
+    let mut out = ArmyUnitDef::from_unit_record(def);
+    // `if (!frac) return def` (`main.ts:33065`).
+    if veteran_frac != 0.0 && !veteran_frac.is_nan() {
+        let up = 1.0 + veteran_frac;
+        let p = &mut out.power;
+        p.melee_attack *= up;
+        p.melee_defence *= up;
+        p.weapon_damage *= up;
+        p.piercing *= up;
+        p.charge_bonus *= up;
+        p.health *= up;
+        p.missile_attack *= up;
+        out.field_power_cache = None;
+    }
+    // `if (mult === 1) return def` (`ai-difficulty-bonus.ts:45`).
+    if difficulty_mult != 1.0 {
+        let p = &mut out.power;
+        p.melee_attack *= difficulty_mult;
+        p.melee_defence *= difficulty_mult;
+        p.missile_attack *= difficulty_mult;
+        out.field_power_cache = None;
+    }
+    out
+}
+
+/// Typy wykluczone z bitwy polowej (`auto-battle-power.ts:37` `BATTLE_EXCLUDED_TYPES`).
+const BATTLE_EXCLUDED_TYPES: [&str; 2] = ["Zwiadowca", "Osadnik"];
+
+fn unit_power_coeffs() -> &'static UnitPowerCoeffs {
+    static COEFFS: OnceLock<UnitPowerCoeffs> = OnceLock::new();
+    COEFFS.get_or_init(UnitPowerCoeffs::from_params)
+}
+
+/// Web `sumRosterFieldM(roster)` (`auto-battle-power.ts:50-59`): suma `armyFieldPower(def)` jednostek
+/// `isFieldBattleUnit` (`:39-43`: nie oblezenicza, typ spoza [`BATTLE_EXCLUDED_TYPES`],
+/// `armyFieldPower > 0`), `Math.round(sum * 10) / 10`.
+fn sum_roster_field_m(roster: &[RosterEntry<ArmyUnitDef>]) -> f64 {
+    let c = unit_power_coeffs();
+    let mut sum = 0.0;
+    for u in roster {
+        if is_siege_unit(u.def.rola_linia.as_deref()) {
+            continue;
+        }
+        if BATTLE_EXCLUDED_TYPES.contains(&u.type_id.as_str()) {
+            continue;
+        }
+        let m = army_field_power(&u.def, c);
+        if m > 0.0 {
+            sum += m;
+        }
+    }
+    js_round(sum * 10.0) / 10.0
+}
+
+/// Fakty jednostki czytane przez `StackVitalsDeps` (klucz = id jednostki w zapisie dziesietnym).
+struct VitalsFacts {
+    max_hp: f64,
+    def: ArmyUnitDef,
+    progress: UnitBuildingProgress,
+    battles_survived: Option<f64>,
+}
+
+/// `stacks` (kontrakt §3.5): web `computeStackDisplay(src, unitAttackScore, { maxHpOf, defOf })`
+/// (`main.ts:14476-14508`), `unitAttackScore` = `meleeAttack` definicji (`main.ts:14436-14438`),
+/// `maxHpOf` = `hpMaxEffective`, `defOf` = `combatPowerFullDisplayDefFor`. Ikony glodu/deficytu: luki.
 fn stack_view(
+    state: &PlayableState,
     shown: &[(&PlayableUnit, RuchJednostka)],
     defs: &HashMap<String, UnitRecord>,
 ) -> Result<StackViewDto, RenderFrameError> {
-    let stos: Vec<StosJednostka> = shown
-        .iter()
-        .map(|(_, rj)| {
-            let mut s = StosJednostka::new(
-                &rj.id,
-                rj.owner_id,
-                rj.type_id.as_deref().unwrap_or(""),
-                rj.q,
-                rj.r,
-            );
-            s.ruch = rj.ruch;
-            s.ruch_left = rj.ruch_left;
-            s.in_garnizon = Some(rj.in_garnizon);
-            s.category = rj.category.clone();
-            s
-        })
-        .collect();
+    let mut facts: HashMap<String, VitalsFacts> = HashMap::new();
+    let mut stos: Vec<StosJednostka> = Vec::with_capacity(shown.len());
+    for (unit, rj) in shown {
+        let def = unit_def(rj, defs)?;
+        let unit_id = unit.id.get();
+        let (hp, max_hp) = synced_hp(state, unit_id, def);
+        let battles = state
+            .economy
+            .units
+            .get(&unit_id)
+            .and_then(|r| r.battles_survived);
+        let owner = owner_raw(unit.owner_id)?;
+        facts.insert(
+            rj.id.clone(),
+            VitalsFacts {
+                max_hp,
+                def: full_display_def(
+                    def,
+                    veteran_combat_bonus_frac(battles),
+                    difficulty_combat_mult(state, owner)?,
+                ),
+                progress: unit_progress(state, unit_id),
+                battles_survived: battles,
+            },
+        );
+        let mut s = StosJednostka::new(&rj.id, rj.owner_id, &def.jednostka, rj.q, rj.r);
+        s.ruch = rj.ruch;
+        s.ruch_left = rj.ruch_left;
+        s.in_garnizon = Some(rj.in_garnizon);
+        s.category = rj.category.clone();
+        s.hp = hp;
+        stos.push(s);
+    }
     #[allow(clippy::cast_precision_loss)]
     let attack_of = |u: &StosJednostka| defs.get(&u.type_id).map_or(0.0, |d| d.melee_attack as f64);
-    let info = compute_stack_display::<()>(&stos, &attack_of, None);
+    // Kazda jednostka `stos` ma wpis w `facts` (ten sam przebieg); brak wpisu jest nieosiagalny.
+    let fact = |u: &StosJednostka| -> &VitalsFacts { &facts[&u.id] };
+    let max_hp_of = |u: &StosJednostka| fact(u).max_hp;
+    let def_of = |u: &StosJednostka| fact(u).def.clone();
+    let armor_badge = |u: &StosJednostka| armor_path_badge_level(Some(&fact(u).progress));
+    let soft_badge = |u: &StosJednostka| soft_path_badge_level(Some(&fact(u).progress));
+    let vet_level = |u: &StosJednostka| veteran_level(fact(u).battles_survived);
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    let vet_stars = |u: &StosJednostka| veteran_star_count(fact(u).battles_survived) as u32;
+    let deps = StackVitalsDeps {
+        max_hp_of: &max_hp_of,
+        def_of: &def_of,
+        sum_roster_field_m: &sum_roster_field_m,
+        armor_badge_level: &armor_badge,
+        soft_badge_level: &soft_badge,
+        veteran_level: &vet_level,
+        veteran_star_count: &vet_stars,
+    };
+    let info = compute_stack_display(&stos, &attack_of, Some(&deps));
     let visible_ids = info
         .visible_ids
         .iter()
@@ -518,13 +796,37 @@ fn stack_view(
             Ok((vm_unit(id)?, n))
         })
         .collect::<Result<Vec<_>, RenderFrameError>>()?;
-    let vitals_by_rep_id: Vec<(vm::UnitId, StackVitalsDto)> = Vec::new();
+    let vitals_by_rep_id = info
+        .vitals_by_rep_id
+        .unwrap_or_default()
+        .iter()
+        .map(|(id, v)| Ok((vm_unit(id)?, vitals_dto(v)?)))
+        .collect::<Result<Vec<_>, RenderFrameError>>()?;
     Ok(StackViewDto {
         visible_ids,
         badge_by_rep_id,
         starving_rep_ids: Vec::new(),
         gold_deficit_rep_ids: Vec::new(),
         vitals_by_rep_id,
+    })
+}
+
+/// `StackVitals` -> [`StackVitalsDto`] (te same 11 kluczy, `armyMerge.ts:1103-1126`).
+fn vitals_dto(v: &StackVitals) -> Result<StackVitalsDto, RenderFrameError> {
+    Ok(StackVitalsDto {
+        ruch_left: v.ruch_left,
+        ruch_max: v.ruch_max,
+        hp: v.hp,
+        hp_max: v.hp_max,
+        field_power_m: v.field_power_m,
+        count: u32::try_from(v.count)
+            .map_err(|_| RenderFrameError::IdOutOfRange(v.count.to_string()))?,
+        armor_badge_level: v.armor_badge_level,
+        soft_badge_level: v.soft_badge_level,
+        veteran_level: v.veteran_level,
+        veteran_stars: u8::try_from(v.veteran_stars)
+            .map_err(|_| RenderFrameError::IdOutOfRange(v.veteran_stars.to_string()))?,
+        has_commander: v.has_commander,
     })
 }
 
@@ -671,7 +973,7 @@ pub fn build_render_frame(
         .iter()
         .map(|(u, rj)| unit_view(state, u, rj, defs))
         .collect::<Result<Vec<_>, _>>()?;
-    let stacks = stack_view(&shown, defs)?;
+    let stacks = stack_view(state, &shown, defs)?;
 
     let sieges = siege_views(state, |a, b| are_enemy_owners(state, a, b))?;
     let wonders = wonder_views(state)?;
@@ -719,10 +1021,32 @@ fn overlays_view(
     };
     let is_in_start_reveal =
         |q: i32, r: i32| start_ctx.is_in_start_reveal(f64::from(q), f64::from(r));
-    // Luki RENDER_FRAME_GAPS `overlays.buildHighlight.hexes`.
-    let can_found = |_: i32, _: i32| false;
-    let wonder_hexes = Vec::new;
-    let qualifying = |_: &str| Vec::new();
+    // R2 luka 1: zrodla `refreshBuildHighlight` (`main.ts:16351-16396`) z adapterow stanu. Wejscia
+    // liczone tylko dla aktywnego trybu (pin liczy je tylko w galezi trybu; funkcje sa czyste).
+    let found_ctx = if build_ui.found_city_mode {
+        Some(FoundCityCtx::new(state, seat, &start_ctx)?)
+    } else {
+        None
+    };
+    let improvement_ctx = if build_highlight_mode_active(&build_ui)
+        && !build_ui.found_city_mode
+        && !build_ui.wonder_active
+    {
+        Some(improvement_build_state(state)?)
+    } else {
+        None
+    };
+    let can_found = |q: i32, r: i32| {
+        found_ctx
+            .as_ref()
+            .is_some_and(|ctx| ctx.check(&start_ctx, q, r).ok)
+    };
+    let wonder_hexes = || qualifying_wonder_hexes(state, seat);
+    let qualifying = |key: &str| {
+        improvement_ctx.as_ref().map_or_else(Vec::new, |(bs, civ)| {
+            improvement_qualifying_hexes(bs, civ, key)
+        })
+    };
     // Stan nie niesie `pendingImprovementsTurn` (`game/pending-improvements.ts:43`).
     let undo: HashSet<String> = HashSet::new();
     let sources = BuildHighlightSources {
@@ -791,6 +1115,374 @@ fn overlays_view(
     )
     .write_into(&mut dto);
     Ok(dto)
+}
+
+// ---------------------------------------------------------------------------------------------
+// R2 luka 1: zrodla `overlays.buildHighlight` (web `refreshBuildHighlight`, `main.ts:16351-16396`)
+// ---------------------------------------------------------------------------------------------
+
+/// Web `empireEpochForOwner(owner)` / `player.era` fotela ze stanu ([`owner_era_facts`]).
+fn owner_era(state: &PlayableState, owner: i64) -> Result<f64, RenderFrameError> {
+    let start = game_start_era(&state.params.epoch_id);
+    Ok(empire_epoch_for_owner(owner, &owner_era_facts(state), start)?.0)
+}
+
+/// Forty stanu jako web `fortNodes` (`FortNode` + `builtAtTurn`/`seq`), kolejnosc tablicy.
+fn fort_nodes_of(state: &PlayableState) -> Result<Vec<OrderedFortNode>, RenderFrameError> {
+    state
+        .forts
+        .iter()
+        .map(|f| {
+            Ok(OrderedFortNode::new(
+                FortNode {
+                    q: f.q,
+                    r: f.r,
+                    owner_id: owner_raw(f.owner_id)?,
+                    kind: match f.kind {
+                        PlayableFortKind::Fort => FortImprovementType::Fort,
+                        PlayableFortKind::Posterunek => FortImprovementType::Posterunek,
+                    },
+                    contested_useless: f.contested_useless,
+                },
+                f.built_at_turn,
+                f.seq,
+            ))
+        })
+        .collect()
+}
+
+/// Web `cityNodesForOwner(ownerId)` (`main.ts:5661-5665`) / `playerCityNodes()` (`:16214-16218`):
+/// `{ q, r, pop: population, level: 1 }`.
+fn city_nodes_for_owner(state: &PlayableState, owner: PlayerId) -> Vec<CityNode> {
+    state
+        .cities
+        .iter()
+        .filter(|c| c.owner_id == owner)
+        .map(|c| {
+            let (q, r) = klucz_of(c.position);
+            CityNode::city(q, r, f64::from(c.population))
+        })
+        .collect()
+}
+
+/// Web `cities` jako `City` z `cities.ts` w zakresie czytanym przez `canFoundCity` (`ownerId`, `q`, `r`);
+/// `startCityState` / `foundedByOwner` undefined (stan nie ma miast-panstw ani znacznika zalozenia;
+/// `countsTowardCityFoundingLimit(undefined)` = `true`, `cities.ts:1125`).
+fn econ_cities_of(state: &PlayableState) -> Result<Vec<EconCity>, RenderFrameError> {
+    state
+        .cities
+        .iter()
+        .map(|c| {
+            let (q, r) = klucz_of(c.position);
+            Ok(EconCity {
+                id: c.id.get().to_string(),
+                owner_id: owner_raw(c.owner_id)?,
+                q: f64::from(q),
+                r: f64::from(r),
+                name: c.name.clone(),
+                population: f64::from(c.population),
+                ..EconCity::default()
+            })
+        })
+        .collect()
+}
+
+/// Wejscia `canFoundPlayerCityAt` (`main.ts:12923-12943`) dla fotela `seat` (`ME()`), liczone raz na
+/// ramke (wszystkie bledy jawne przed wejsciem w petle heksow).
+struct FoundCityCtx {
+    me: i64,
+    era: f64,
+    city_limit_base: f64,
+    cities: Vec<EconCity>,
+    ruch_map: crate::domain::pathfinding::ruch_jednostek::RuchMapa,
+    forts: Vec<OrderedFortNode>,
+    all_nodes: Vec<TerritoryNode>,
+    /// `foundingNodesForOwner(ME(), cityNodesForOwner(ME()), fortNodes)`; puste = `{}` (bez
+    /// `withinTerritory`), takze przy oczekiwaniu na pierwsze miasto.
+    founding_nodes: Vec<CityNode>,
+}
+
+impl FoundCityCtx {
+    /// `foundingTerritoryOpts(ME())` (`main.ts:12906-12920`): `isMe && isAwaitingFirstPlayerCity` ->
+    /// `{}`; inaczej wezly = `foundingNodesForOwner(...)`, puste -> `{}`.
+    /// `_menuCityLimitBase` = `params.advanced.cityLimitBase` (`main.ts:44445`).
+    fn new(
+        state: &PlayableState,
+        seat: PlayerId,
+        start_ctx: &StartRevealContext,
+    ) -> Result<Self, RenderFrameError> {
+        let me = owner_raw(seat)?;
+        let forts = fort_nodes_of(state)?;
+        let fort_plain: Vec<FortNode> = forts.iter().map(|f| f.fort.clone()).collect();
+        let founding_nodes = if start_ctx.awaiting_first_city {
+            Vec::new()
+        } else {
+            founding_nodes_for_owner(me, &city_nodes_for_owner(state, seat), &fort_plain)
+        };
+        Ok(Self {
+            me,
+            // Obrona r2 Z1: `const playerEra = player.era ?? 1` (`main.ts:12924`). `player` to jeden obiekt
+            // fotela glownego (`createPlayerState()`, `main.ts:13713`), a `player.era` ustawia wylacznie
+            // `reconcilePlayerEraFromResearch()` z `civTypeForOwner(0)` (`main.ts:2522-2532`). Fotel `ME()`
+            // zmienia `ownerId` i wezly terytorium, ale NIE epoke limitu miast: asymetria hotseatu 1:1 z
+            // pinem (jak `player_era` w [`improvement_build_state`]).
+            era: owner_era(state, HUMAN_OWNER_ID)?,
+            city_limit_base: f64::from(state.params.advanced.city_limit_base),
+            cities: econ_cities_of(state)?,
+            ruch_map: crate::domain::playable_movement::ruch_mapa_from_state(state),
+            forts,
+            all_nodes: engine_territory_nodes(state)?,
+            founding_nodes,
+        })
+    }
+
+    /// `canFoundPlayerCityAt(q, r)`: `canFoundCity(q, r, cities, map, {...foundingTerritoryOpts(ME()),
+    /// ownerId: ME(), ownerEra: player.era ?? 1 (epoka fotela glownego, `main.ts:12924`), gameConfig: {
+    /// cityLimitBase }})` (`cities.ts:1316-1327`),
+    /// `withinTerritory = isInTerritory(q, r, wezly) && !isHexInForeignFortTerritory(q, r, ME(),
+    /// fortNodes, buildAllTerritoryNodes())`, potem `validateFirstPlayerCityPlacement`
+    /// ([`StartRevealContext::can_found_player_city_at`]).
+    fn check(&self, start_ctx: &StartRevealContext, q: i32, r: i32) -> PlacementCheck {
+        let within = |fq: f64, fr: f64| {
+            is_in_territory(fq, fr, &self.founding_nodes)
+                && !is_hex_in_foreign_fort_territory(
+                    js_hex_coord(fq),
+                    js_hex_coord(fr),
+                    self.me,
+                    &self.forts,
+                    &self.all_nodes,
+                )
+        };
+        let opts = CanFoundCityOpts {
+            within_territory: if self.founding_nodes.is_empty() {
+                None
+            } else {
+                Some(&within)
+            },
+            owner_id: Some(self.me),
+            owner_era: Some(self.era),
+            game_config: Some(GameConfig {
+                city_limit_base: Some(self.city_limit_base),
+            }),
+            ..CanFoundCityOpts::default()
+        };
+        start_ctx.can_found_player_city_at(f64::from(q), f64::from(r), |bq, br| {
+            can_found_city(bq, br, &self.cities, &self.ruch_map, Some(&opts)).into()
+        })
+    }
+}
+
+/// Wspolrzedna heksa podana przez `canFoundCity` (zawsze calkowita: klucz `map.hexes`) jako `i32`.
+#[allow(clippy::cast_possible_truncation)]
+fn js_hex_coord(v: f64) -> i32 {
+    v as i32
+}
+
+/// Teren bazowy kafla stanu dla logiki cudow (`terenBazowy`; `Forest` = `rownina` + las, jak
+/// [`terrain_labels`]).
+const fn wonder_terrain(terrain: PlayableTerrain) -> WonderTerrain {
+    match terrain {
+        PlayableTerrain::Plains | PlayableTerrain::Forest => WonderTerrain::Plains,
+        PlayableTerrain::Hills => WonderTerrain::Hills,
+        PlayableTerrain::Water => WonderTerrain::Ocean,
+    }
+}
+
+/// Web `qualifyingWonderHexesForPlayer()` (`main.ts:5210-5214`) z `wonderPlacementContext()`
+/// (`:5189-5207`): miasta fotela (`isMe`), zajete = `placedWorldWonders`, budowy = `wonderBuildSites`
+/// (stan nie ma budow cudow w toku: `[]`), heksy wszystkich miast;
+/// [`list_qualifying_wonder_hexes_for_owner`] (`map/wonder-placement.ts:93`).
+fn qualifying_wonder_hexes(state: &PlayableState, seat: PlayerId) -> Vec<(i32, i32)> {
+    let player_cities: Vec<WonderPlacementCity> = state
+        .cities
+        .iter()
+        .filter(|c| c.owner_id == seat)
+        .map(|c| {
+            let (q, r) = klucz_of(c.position);
+            WonderPlacementCity {
+                q,
+                r,
+                population: f64::from(c.population),
+                is_outpost: None,
+                is_fort: None,
+            }
+        })
+        .collect();
+    if player_cities.is_empty() {
+        return Vec::new();
+    }
+    let map: Vec<WonderMapHex> = state
+        .map
+        .tiles
+        .iter()
+        .map(|t| {
+            let (q, r) = klucz_of(t.position);
+            WonderMapHex {
+                coords: DomainHexCoord::new(q, r),
+                terrain: wonder_terrain(t.terrain),
+            }
+        })
+        .collect();
+    let occupied: Vec<DomainHexCoord> = state
+        .placed_world_wonders
+        .iter()
+        .map(|w| DomainHexCoord::new(w.q, w.r))
+        .collect();
+    let city_hexes: Vec<DomainHexCoord> = state
+        .cities
+        .iter()
+        .map(|c| {
+            let (q, r) = klucz_of(c.position);
+            DomainHexCoord::new(q, r)
+        })
+        .collect();
+    list_qualifying_wonder_hexes_for_owner(&WonderMapPlacementInput {
+        map: &map,
+        player_cities: &player_cities,
+        occupied_wonder_hexes: &occupied,
+        building_wonder_hexes: &[],
+        city_hexes: &city_hexes,
+    })
+    .into_iter()
+    .map(|h| (h.q, h.r))
+    .collect()
+}
+
+/// Teren i nakladka kafla stanu dla budowy ulepszen (to samo co [`terrain_labels`]).
+const fn build_terrain(terrain: PlayableTerrain) -> (ImprovementTerrain, Overlay) {
+    match terrain {
+        PlayableTerrain::Plains => (ImprovementTerrain::Plains, Overlay::Brak),
+        PlayableTerrain::Hills => (ImprovementTerrain::Hills, Overlay::Brak),
+        PlayableTerrain::Forest => (ImprovementTerrain::Plains, Overlay::Las),
+        PlayableTerrain::Water => (ImprovementTerrain::Ocean, Overlay::Brak),
+    }
+}
+
+/// Stan `createImprovementBuildApi({...}, { activeKey })` (`main.ts:16293-16325`,
+/// `map/improvement-build.ts:1415`) i `civArch`. Pin buduje stan WYLACZNIE dla fotela glownego (literal
+/// `0`: `playerCityNodes()` `:16214-16218`, `playerOwnerIdNum: 0`, `citySurowceSumForOwner(0)`,
+/// `ownUnitHexKeysForOwner(0)`; `player.civType`, `player.era`, `player.zbadane`) - Rust
+/// [`HUMAN_OWNER_ID`]. Wejscia spoza stanu = wartosci webu dla stanu bez nich: `hexClearingStates`
+/// puste, `pendingImprovementsTurn` puste, brak grantow tras (`tradeRouteKonUnlocked` = false), mapa bez
+/// zloz i rzek (RENDER_FRAME_STATE_DEFAULTS).
+fn improvement_build_state(
+    state: &PlayableState,
+) -> Result<(ImprovementBuildState, String), RenderFrameError> {
+    let primary = PlayerId::new(HUMAN_OWNER_ID.unsigned_abs());
+    let player = state.players.iter().find(|p| p.id == primary);
+    // `String(player.civType || 'rzymianie')` (`main.ts:16292`).
+    let civ_arch = player
+        .map(|p| p.civilization.clone())
+        .filter(|c| !c.is_empty())
+        .unwrap_or_else(|| "rzymianie".to_owned());
+    let mut hexes = Vec::with_capacity(state.map.tiles.len());
+    let mut road_entries: Vec<(String, HexLike)> = Vec::with_capacity(state.map.tiles.len());
+    let mut placed_from_hex: Vec<String> = Vec::new();
+    for tile in &state.map.tiles {
+        let (q, r) = klucz_of(tile.position);
+        let (terrain, overlay) = build_terrain(tile.terrain);
+        let layers = state
+            .map
+            .improvements
+            .iter()
+            .find(|e| e.position == tile.position);
+        let mut hex = BuildHex::new(q, r, terrain, overlay);
+        // `hex.ulepszenie` zawsze obecne w mapie webu (`Ulepszenie.Brak` = "brak"), jak [`snapshot_map_of`].
+        hex.ulepszenie = Some(
+            layers
+                .and_then(|l| l.ulepszenie.clone())
+                .unwrap_or_else(|| "brak".to_owned()),
+        );
+        hex.ulepszenia = layers.and_then(|l| l.ulepszenia.clone());
+        if hex.ulepszenie.as_deref() != Some("brak") {
+            placed_from_hex.push(hex.key());
+        }
+        road_entries.push((
+            hex.key(),
+            HexLike {
+                ulepszenie: hex.ulepszenie.clone(),
+                ulepszenia: hex.ulepszenia.clone(),
+                nakladka: Some(overlay),
+                zloze: None,
+            },
+        ));
+        hexes.push(hex);
+    }
+    // `placedImprovements` (Map klucz -> warstwy gracza) = heksy z niepustymi `ulepszenia`
+    // (`syncHexUlepszenieFields`, `main.ts:16273-16287`), kolejnosc `map.improvements`.
+    let mut placed_improvements = BTreeMap::new();
+    let mut placed_keys: Vec<String> = Vec::new();
+    for entry in &state.map.improvements {
+        if let Some(layers) = entry.ulepszenia.as_ref().filter(|l| !l.is_empty()) {
+            let (q, r) = klucz_of(entry.position);
+            let k = build_hex_key(q, r);
+            if !placed_keys.contains(&k) {
+                placed_keys.push(k.clone());
+            }
+            placed_improvements.insert(k, PlacedLayers::Many(layers.clone()));
+        }
+    }
+    // `collectPlacedImprovementKeys()` (`main.ts:16252-16258`): klucze `placedImprovements`, potem heksy
+    // z `ulepszenie !== Brak` (kolejnosc `Set`).
+    for k in placed_from_hex {
+        if !placed_keys.contains(&k) {
+            placed_keys.push(k);
+        }
+    }
+    let mut own_unit_keys: Vec<String> = Vec::new();
+    for u in state.units.iter().filter(|u| u.owner_id == primary) {
+        let (q, r) = klucz_of(u.position);
+        let k = build_hex_key(q, r);
+        if !own_unit_keys.contains(&k) {
+            own_unit_keys.push(k);
+        }
+    }
+    // `citySurowceSumForOwner(0).kon ?? 0` (`main.ts:3586-3588`, `:16318`).
+    let horse: f64 = state
+        .cities
+        .iter()
+        .filter(|c| c.owner_id == primary)
+        .filter_map(|c| state.economy.city_stock.get(&c.id.get()))
+        .filter_map(|stock| stock.get("kon"))
+        .sum();
+    let mut build_state = ImprovementBuildState::new(
+        BuildMap::new(hexes, Vec::new()),
+        city_nodes_for_owner(state, primary),
+    );
+    build_state.territory_nodes = Some(engine_territory_nodes(state)?);
+    build_state.player_owner_id_num = Some(HUMAN_OWNER_ID);
+    build_state.placed_keys = Some(placed_keys);
+    build_state.road_keys = Some(collect_road_keys(&road_entries));
+    build_state.player_civ_archetype = Some(civ_arch.clone());
+    build_state.player_era = Some(owner_era(state, HUMAN_OWNER_ID)?);
+    build_state.placed_improvements = Some(placed_improvements);
+    build_state.researched_techs = Some(
+        state
+            .stores
+            .researched_techs_by_owner
+            .get(&primary.get())
+            .cloned()
+            .unwrap_or_default(),
+    );
+    build_state.clearing_hex_keys = Some(BTreeSet::new());
+    build_state.pending_undo_keys = Some(Vec::new());
+    build_state.trade_route_kon_unlocked = Some(false);
+    build_state.horse_stock_available = Some(horse);
+    build_state.own_unit_hex_keys = Some(own_unit_keys);
+    Ok((build_state, civ_arch))
+}
+
+/// Web `buildApi.getQualifyingHexes(key)` (`main.ts:16336-16337`): `isImprovementAllowedForCiv(key,
+/// civArch) ? rawBuildApi.getQualifyingHexes(key) : []`.
+fn improvement_qualifying_hexes(
+    build_state: &ImprovementBuildState,
+    civ_arch: &str,
+    key: &str,
+) -> Vec<(i32, i32)> {
+    if !is_improvement_allowed_for_civ(key, Some(civ_arch)) {
+        return Vec::new();
+    }
+    create_improvement_build_api(build_state, Some(key)).get_qualifying_hexes(key)
 }
 
 /// `GetRenderFrame` na sesji `game` dla fotela `seat` (`None` = aktywny fotel czlowieka, web `ME()`).

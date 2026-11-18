@@ -1,0 +1,12 @@
+EV1-zalozenie-fotel-glowny-zamiast-seat: exit=0 PRZEZYL; FAILED:
+EV2-bez-obcego-fortu: exit=0 PRZEZYL; FAILED:
+EV3-bez-limitu-miast: exit=0 PRZEZYL; FAILED:
+EV4-zwiadowca-w-mocy-pola: exit=0 PRZEZYL; FAILED:
+EV5-latwy-jako-normalny: exit=0 PRZEZYL; FAILED:
+EV6-hp-bez-dolnej-granicy: exit=0 PRZEZYL; FAILED:
+EV7-poziom-weterana-prog-2: exit=0 PRZEZYL; FAILED:
+EV8-cud-fotel-glowny: exit=101 ZABITY; FAILED: r2_build_highlight_cud_wg_wonder_placement
+EV9-trudnosc-dla-czlowieka: exit=101 ZABITY; FAILED: r2_vitals_bonus_trudnosci_ai
+EV10-kon-zawsze-0: exit=0 PRZEZYL; FAILED:
+EV11-ulepszenie-fotel-seat-nie-glowny-wlasne-jednostki-puste: exit=0 PRZEZYL; FAILED:
+DONE

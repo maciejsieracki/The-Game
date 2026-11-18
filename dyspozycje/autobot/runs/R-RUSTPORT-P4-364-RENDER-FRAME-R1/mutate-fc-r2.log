@@ -1,0 +1,6 @@
+EV1-zalozenie-fotel-glowny-zamiast-seat: exit=101 ZABITY; FAILED: obrona_r2_ev1_zalozenie_miasta_fotela_2_wg_wlasnego_terytorium, obrona_r2_z1_limit_miast_fotela_2_z_epoki_fotela_glownego
+EV2-bez-obcego-fortu: exit=101 ZABITY; FAILED: obrona_r2_ev2_obcy_fort_wyklucza_heksy_obcego_terytorium
+EV6-hp-bez-dolnej-granicy: exit=101 ZABITY; FAILED: obrona_r2_ev6_hp_dolna_granica_zero
+EV10-kon-zawsze-0: exit=101 ZABITY; FAILED: obrona_r2_ev10_stadnina_z_magazynu_koni
+Z1-epoka-fotela-zapytania (oczekiwany: rownowazny, patrz 02a-obrona-r2.md): exit=0 PRZEZYL; FAILED:
+DONE

@@ -1,0 +1,36 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_cb4802ac-c57-1/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 41.71s
+     Running tests/p4_364_render_frame.rs (/tmp/claude-0/-home-user-The-Game/b3259bfd-6985-5166-9861-4edd4aa89b33/scratchpad/tgt-364r2/debug/deps/p4_364_render_frame-2641bd06c3a5f7f3)
+
+running 27 tests
+test bridge::add_player_atomicity_tests::add_player_leaves_mock_state_untouched_when_the_game_rejects_it ... ok
+test a_render_map_rowna_build_map_view_na_tym_samym_stanie ... ok
+test c_bez_trybu_budowy_nakladki_jednostki_zgodne_z_overlays_view ... ok
+test b_hex_state_i_fog_rownolegle_do_map_hexes ... ok
+test d_nieznany_fotel_odrzucony ... ok
+test c_brak_ui_to_brak_zaznaczenia ... ok
+test d_fotel_2_daje_inny_viewer_i_inna_mgle ... ok
+test f_mock_odrzuca_zapytania_ramki ... ok
+test c_tryb_budowy_czysci_zaznaczenie_zasieg_i_trase ... ok
+test e_dwa_wywolania_daja_identyczny_json ... ok
+test f_ramka_i_mapa_nie_zmieniaja_engine_state ... ok
+test g_json_komend_i_odpowiedzi ... ok
+test h_hp_jednostki_z_ekonomii ... ok
+test h_jawne_luki_ramki ... ok
+test h_skladacz_odrzuca_nieznany_fotel ... ok
+test h_pola_ramki_scenariusza_startowego ... ok
+test h_stosy_i_filtr_mgly_jednostek ... ok
+test h_oblezenie_besieged_i_sieges ... ok
+test h_terytorium_cudze_filtrowane_mgla ... ok
+test h_typ_bez_definicji_to_blad ... ok
+test r2_build_highlight_cud_wg_wonder_placement ... ok
+test r2_build_highlight_found_city_pierwsze_miasto ... ok
+test r2_build_highlight_found_city_wg_can_found_city ... ok
+test r2_build_highlight_ulepszenie_wg_build_api ... ok
+test r2_vitals_stosu_gracza ... ok
+test r2_vitals_bonus_trudnosci_ai ... ok
+test r2_hp_max_effective_z_bonusami ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+EXIT=0
