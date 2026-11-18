@@ -24,34 +24,33 @@ const path = require('path');
 
 const GRA_ROOT = path.resolve(__dirname, '..');
 const esbuild = require(path.resolve(GRA_ROOT, 'node_modules', 'esbuild'));
-const SRC_FILE = path.resolve(GRA_ROOT, 'src', 'game', 'peace-tail-payment.ts');
-const TAG = `${process.pid}`;
-const ENTRY = path.resolve(__dirname, `.ptail-${TAG}-entry.ts`);
-const MUT_FILE = path.resolve(GRA_ROOT, 'src', 'game', `.ptail-mut-${TAG}.ts`);
-const BUNDLE = path.resolve(__dirname, `.ptail-${TAG}-bundle.cjs`);
+const GAME_DIR = path.resolve(GRA_ROOT, 'src', 'game');
+const SRC_FILE = path.resolve(GAME_DIR, 'peace-tail-payment.ts');
 const ORIG = fs.readFileSync(SRC_FILE, 'utf8');
 
-function cleanup() {
-  for (const f of [ENTRY, MUT_FILE, BUNDLE]) { try { fs.unlinkSync(f); } catch (_) { /* ignore */ } }
+/**
+ * Buduje moduł z podanej TREŚCI (stdin w pamięci, bez zapisu plików — brak unlink/rm w tym teście).
+ * resolveDir = src/game, więc importy względne (./diplomacy-ai-forced-peace, ../../data/...) rozwiązują się normalnie.
+ */
+function loadEntry(contents) {
+  const res = esbuild.buildSync({
+    stdin: { contents, resolveDir: GAME_DIR, sourcefile: 'peace-tail-entry.ts', loader: 'ts' },
+    bundle: true, format: 'cjs', platform: 'node', write: false, logLevel: 'silent',
+  });
+  const m = { exports: {} };
+  new Function('module', 'exports', 'require', res.outputFiles[0].text)(m, m.exports, require);
+  return m.exports;
 }
 
-/** Buduje moduł z podanej treści źródła (mutanty) i zwraca eksporty. */
-function load(source, srcFile) {
-  fs.writeFileSync(srcFile, source);
-  fs.writeFileSync(ENTRY, `export * as T from ${JSON.stringify(srcFile)};\n`);
-  esbuild.buildSync({
-    entryPoints: [ENTRY], bundle: true, format: 'cjs', platform: 'node', outfile: BUNDLE, logLevel: 'silent',
-  });
-  delete require.cache[BUNDLE];
-  return require(BUNDLE).T;
-}
+/** Eksporty modułu źródłowego (treść podana wprost — żywa lub mutant). */
+function load(source) { return loadEntry(source); }
 
 const PRICES = { zloto: 10, braz: 5, zelazo: 4, ruda: 2, ruda_cyny: 2, ruda_zelaza: 2 };
 const pnPerUnit = (k) => PRICES[k];
 const city = (id, pn, forbidden = false) => ({ kind: 'miasto', id, amount: 1, pn, forbidden });
 
 /** Zwraca listę wyników [{name, ok, detail}] dla danego zestawu eksportów. */
-function runSuite(T) {
+function runSuite(T, W) {
   const out = [];
   const check = (name, fn) => {
     try { const r = fn(); out.push({ name, ok: r === true, detail: r === true ? '' : String(r) }); }
@@ -108,13 +107,26 @@ function runSuite(T) {
   check('T10 domyślna kolejność = dane, bez stali', () => {
     return eq(T.PEACE_TAIL_ORDER, ['zloto', 'braz', 'zelazo', 'ruda', 'ruda_cyny', 'ruda_zelaza']) ? true : JSON.stringify(T.PEACE_TAIL_ORDER);
   });
+  check('T11 każdy klucz ogona ma wycenę w katalogu (peaceTailPnPerUnit > 0)', () => {
+    const missing = T.PEACE_TAIL_ORDER.filter(k => { const p = T.peaceTailPnPerUnit(k); return !(p > 0); });
+    return missing.length === 0 ? true : 'brak wyceny: ' + JSON.stringify(missing);
+  });
+  check('T12 r = 1 (S = W) ⇒ D = 0 ⇒ płatność ogona pusta i pokryta', () => {
+    const P = W.wearinessPeaceCashPn(0.5);
+    const D = W.peaceAiAiPaymentPn(P, 100, 100);
+    if (!(P > 0)) return 'P=' + P;
+    if (D !== 0) return 'D=' + D;
+    const s = T.settlePeaceDue({ ...base, duePn: D, cities: [], holdings: { zloto: 99 } });
+    return s.full && s.tail.length === 0 && s.shortfallPn === 0 ? true : JSON.stringify(s);
+  });
   return out;
 }
 
 let exitCode = 0;
 try {
-  const live = load(ORIG, MUT_FILE);
-  const liveRes = runSuite(live);
+  const live = load(ORIG);
+  const W = loadEntry("export * from './war-weariness';");
+  const liveRes = runSuite(live, W);
   const liveFail = liveRes.filter(r => !r.ok);
   console.log(`LIVE: ${liveRes.length - liveFail.length}/${liveRes.length} zielone`);
   for (const r of liveFail) console.log('  FAIL ' + r.name + ' :: ' + r.detail);
@@ -129,16 +141,14 @@ try {
   ];
   for (const [name, src] of mutants) {
     if (src === ORIG) { console.log(`MUTANT ${name}: NIE ZASTOSOWANO (wzorzec nieobecny) -> FAIL`); exitCode = 1; continue; }
-    const T = load(src, MUT_FILE);
-    const bad = runSuite(T).filter(r => !r.ok);
+    const T = load(src);
+    const bad = runSuite(T, W).filter(r => !r.ok);
     if (bad.length) console.log(`MUTANT ${name}: wykryty (${bad.length} czerwonych, np. ${bad[0].name})`);
     else { console.log(`MUTANT ${name}: NIE WYKRYTY -> FAIL`); exitCode = 1; }
   }
 } catch (e) {
   console.log('BŁĄD: ' + (e && e.stack || e));
   exitCode = 1;
-} finally {
-  cleanup();
 }
 console.log(exitCode === 0 ? 'OK' : 'FAIL');
 process.exit(exitCode);

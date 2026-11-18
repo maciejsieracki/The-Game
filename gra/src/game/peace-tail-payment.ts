@@ -14,11 +14,23 @@
  */
 import paramsRaw from '../../data/war-weariness-params.json';
 import { planCityPeacePayment, type PeaceAsset } from './diplomacy-ai-forced-peace';
+import { diplomacyHandelSurowiecCenaZaBlok, diplomacyHandelSurowiecKrok } from './diplomacy-value-catalog';
 
 const ORDER_FROM_DATA = (paramsRaw as unknown as { ogonPokoju?: { kolejnosc?: string[] } }).ogonPokoju?.kolejnosc;
 
 /** Kolejność surowców ogona pokoju (dane: war-weariness-params.json → ogonPokoju.kolejnosc). */
 export const PEACE_TAIL_ORDER: readonly string[] = Object.freeze([...(ORDER_FROM_DATA ?? [])]);
+
+/**
+ * PN za 1 sztukę surowca ogona z katalogu wartości (diplomacy-value-catalog: cena za blok / krok bloku, ta sama
+ * wycena co handel surowcami). Brak wyceny albo cena <= 0 → null (surowiec pomijany w ogonie).
+ */
+export function peaceTailPnPerUnit(key: string, era?: number): number | null {
+  const cena = diplomacyHandelSurowiecCenaZaBlok(key, era);
+  if (cena == null || !(cena > 0)) return null;
+  const krok = diplomacyHandelSurowiecKrok(key, era);
+  return cena / (krok > 1 ? krok : 1);
+}
 
 export interface PeaceTailItem {
   /** Klucz surowca (zloto, braz, zelazo, ruda, ruda_cyny, ruda_zelaza). */
