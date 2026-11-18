@@ -2,6 +2,10 @@
  * diplomacy-proposals.ts — ocena propozycji dyplomatycznych v1.1 (lane CYW).
  * SILNIK/UI wołają evaluateProposal; EKO tick osobno po akceptacji trybutu.
  */
+import {
+  PEACE_TAIL_ORDER, composePeaceTail, peaceTailPnPerUnit, peaceTailStep, peaceTailLabel,
+  type PeaceTailItem,
+} from './peace-tail-payment';
 import { formatTurCountAcc } from '../ui/formatPl';
 import {
   aiDiplomacyStance,
@@ -191,6 +195,17 @@ export interface ProposalEvalContext {
    * zatwierdzenia liczą tak samo). Brak = globalna epoka handlu.
    */
   tradeEra?: number;
+  /**
+   * R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1: zapas płatnika ogona pokoju (klucz surowca → sztuki), z main.ts.
+   * Brak pola = bez limitu zapasu (testy/AI bez wiązania). Nigdy nie schodzi poniżej zera.
+   */
+  payerStock?: Readonly<Record<string, number>>;
+  /**
+   * R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (r3): zapas GRACZA (złoto = Skarbiec państwa, brąz/żelazo/rudy = Spichlerz państwa).
+   * Płatnikiem ogona w gałęzi „gracz jest autorem pokoju" jest gracz — nie zawsze proponent (kontroferta, AI proponuje graczowi).
+   * Brak pola = jak `payerStock`.
+   */
+  playerStock?: Readonly<Record<string, number>>;
   /** Respekt proponującego (0–100) w oczach respondenta */
   proposerRespekt: number;
   /** Respekt respondenta (0–100) w oczach proponującego */
@@ -342,6 +357,27 @@ export interface ProposalEvalResult {
   wearinessInfo?: WearinessPwInfo;
   /** R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 r3 (zarzut 1): strona, której wiersz Z trafia do tabeli: 'ai' = oferta gracz->AI (kolumna AI), 'player' = oferta AI->gracz (kolumna gracza). */
   wearinessSide?: 'ai' | 'player';
+  /**
+   * R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (r3): ogon ceny pokoju złożony z RESZTY po miastach (złoto → brąz → żelazo → rudy),
+   * gdy `applied` = true — pozycje dopisuje do koszyka warstwa wykonująca (applyProposalOutcome) po stronie `giver`.
+   */
+  peaceTail?: PeaceTailInfo;
+}
+
+/** Ogon ceny pokoju (dane tooltipa „Dopłata: …" i pozycje do wykonania). */
+export interface PeaceTailInfo {
+  items: PeaceTailItem[];
+  /** Reszta ceny po miastach i pozycjach już oferowanych (PN), którą ogon miał pokryć. */
+  restPn: number;
+  /** Ile ogon pokrywa (PN) i ile brakuje mimo ogona. */
+  coveredPn: number;
+  shortfallPn: number;
+  /** true = ogon pokrywa całą resztę i jest dopisywany do oferty automatycznie. */
+  applied: boolean;
+  /** Strona, która oddaje ogon (proponent albo respondent). */
+  giver: 'proposer' | 'responder';
+  /** Gotowy tekst „Dopłata: X złota, Y rudy żelaza". */
+  label: string;
 }
 
 /** R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 (runda 2): dane tooltipa wiersza Z. */
@@ -351,6 +387,8 @@ export interface WearinessPwInfo {
   level: number;
   /** R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: aktualna cena pokoju w PN (wearinessPeaceCashPn(level) po bramce relacji) — pokazywana w panelu/audiencji. */
   cenaPokojuPn?: number;
+  /** R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (r3): ogon ceny pokoju (tooltip „Dopłata: …"). */
+  peaceTail?: PeaceTailInfo;
   /** R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (D4): podział PW pokoju wg POWER (moce, r, S, W, D, D po rabacie) — tooltip panelu PW. */
   powerSplit?: PeacePowerSplitInfo;
 }
@@ -1287,6 +1325,41 @@ function attachTreatyPowerSplit(
   };
 }
 
+/**
+ * R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (r3): kompozytor ogona ceny pokoju dla GRACZA-płatnika. Z reszty `restPn` (po miastach i
+ * pozycjach już oferowanych) składa złoto → brąz → żelazo → rudy z zapasów płatnika (pomniejszonych o to, co już leży w
+ * `offered`) — TA SAMA funkcja co AI/AI↔AI (composePeaceTail). Brak zapasu (`stock` undefined) → null (brak składania).
+ */
+function composePlayerPeaceTail(
+  restPn: number,
+  stock: Readonly<Record<string, number>> | undefined,
+  offered: ReadonlyArray<{ typ: string; id: string; ilosc?: number }>,
+  era: number | undefined,
+  giver: 'proposer' | 'responder',
+): PeaceTailInfo | null {
+  if (!stock || !(restPn > 0)) return null;
+  const left: Record<string, number> = {};
+  for (const k of PEACE_TAIL_ORDER) left[k] = Math.max(0, Math.floor(stock[k] ?? 0));
+  for (const i of offered) {
+    const k = i.typ === 'zloto' ? 'zloto' : i.id;
+    if (k in left) left[k] = Math.max(0, left[k]! - Math.max(0, Math.floor(i.ilosc ?? 0)));
+  }
+  const t = composePeaceTail(restPn, {
+    holdings: left,
+    pnPerUnit: k => peaceTailPnPerUnit(k, era),
+    stepOf: k => peaceTailStep(k, era),
+  });
+  return {
+    items: t.tail,
+    restPn: Math.ceil(restPn),
+    coveredPn: t.coveredPn,
+    shortfallPn: t.shortfallPn,
+    applied: t.shortfallPn <= 0 && t.tail.length > 0,
+    giver,
+    label: peaceTailLabel(t.tail),
+  };
+}
+
 function evaluateProposalImpl(
   proposal: DiplomaticProposal,
   ctx: ProposalEvalContext,
@@ -1533,7 +1606,9 @@ function evaluateProposalImpl(
       // bramka przenosi TĘ SAMĄ matematykę (treatyBaseFairnessGap) lokalnie,
       // z dedykowanym komunikatem, żeby pokój dalej wymagał albo Relacji bliskiej
       // neutralnej, albo dopłaty koszykiem pokrywającej różnicę.
-      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+      const { givePn: givePnOffered, receivePn } = resolveProposalPn(payload, pnOpts);
+      // r3: wartość oferty gracza + ogon złożony automatycznie z reszty ceny (kompozytor) — jedna liczba dla bramek uczciwości PW.
+      let givePn = givePnOffered;
       const basePnCfg = treatyBasePnFromConfig(actionId, payload);
       // R-WEB-PEACE-RULES-Q1 R5: gdy GRACZ jest autorem warunków, a respondentem jest AI (nie
       // miasto-państwo), bramka AI: minimalny czas wojny, „czuje się silniejsze" i mnożnik ceny.
@@ -1543,6 +1618,8 @@ function evaluateProposalImpl(
       let basePn = basePnCfg;
       // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1: Z (PW) zmęczenia wojną w tabeli; undefined poza gałęzią R5.
       let wearyPwItem: number | undefined;
+      // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (r3): ogon złożony z reszty ceny (obie gałęzie: silniejsza AI i słabszy gracz).
+      let autoPeaceTail: PeaceTailInfo | undefined;
       let wearyInfo: WearinessPwInfo | undefined;
       let wearySide: 'ai' | 'player' = 'ai';
       // R-WEB-DIPLO-WEARINESS-AS-PW-PEACE-ITEM-Q1 r3 (zarzut 1 Evaluatora, DODATEK pkt 3): kierunek AI -> gracz.
@@ -1613,13 +1690,31 @@ function evaluateProposalImpl(
         // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (zarzut 5 / wymóg 4): złoto i surowce NIE są
         // słodzikiem pokoju ani rozejmu — w każdej pozycji (słabsza i silniejsza AI) oferta z nimi jest
         // odrzucana. Słodzikiem jest wyłącznie miasto (poniżej, dla 'stronger').
-        const nonCitySweetener = (payload.giveItems ?? []).find(i => i.typ === 'zloto' || i.typ === 'surowiec_ilosc');
-        if (nonCitySweetener) {
+        // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (ABC 2026-11-18, wariant A): ZAKAZ złota/surowców wycofany DLA
+        // POKOJU — końcówka ceny pokoju (po miastach) może być złotem i metalami/rudami (ogon, peace-tail-payment).
+        // Rozejm bez zmian: złoto i surowce nie są słodzikiem rozejmu.
+        const nonCityItems = (payload.giveItems ?? []).filter(i => i.typ === 'zloto' || i.typ === 'surowiec_ilosc');
+        if (actionId !== 'pokoj' && nonCityItems.length > 0) {
           return {
             accepted: false,
             reason: 'Złoto i surowce nie są słodzikiem pokoju ani rozejmu — w ofercie wymagane są wyłącznie miasta',
           };
         }
+        // Ogon pokoju: tylko kolejność z danych (PEACE_TAIL_ORDER), nie więcej sztuk niż zapas płatnika (ctx.payerStock).
+        const tailKeyOf = (i: { typ: string; id: string }): string => (i.typ === 'zloto' ? 'zloto' : i.id);
+        const tailBad = nonCityItems.find(i => !PEACE_TAIL_ORDER.includes(tailKeyOf(i)));
+        if (tailBad) {
+          return { accepted: false, reason: `Ogon ceny pokoju: nieobsługiwany surowiec „${tailKeyOf(tailBad)}” (dozwolone: złoto, brąz, żelazo, rudy)` };
+        }
+        if (ctx.payerStock) {
+          const short = nonCityItems.find(i => (i.ilosc ?? 0) > (ctx.payerStock?.[tailKeyOf(i)] ?? 0));
+          if (short) {
+            return { accepted: false, reason: `Ogon ceny pokoju: brak zapasu „${tailKeyOf(short)}” w państwie płatnika` };
+          }
+        }
+        const tailPn = nonCityItems.length > 0
+          ? resolveProposalPn({ giveItems: nonCityItems, actionId }, pnOpts).givePn
+          : 0;
         // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1: militarnie silniejsza AI odrzuca pokój, chyba że
         // oferta zawiera MIASTO gracza o wartości PN ≥ ceny. Liczą się WYŁĄCZNIE miasta w giveItems
         // (pieniądze i surowce nie są słodzikiem). Cena jak dotąd (bez mnożnika od siły).
@@ -1632,12 +1727,33 @@ function evaluateProposalImpl(
           // (regula siły bez wygasania, R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1; testy C1/C2 diplo-peace-balance-accept
           // i S3b/S3c diplo-war-peace-sim czerwieniały przy wymaganiu R = C − Z). Rozjazd z tabelą przy Z = C
           // = DECISION_REQUIRED (raport, sekcja BLOKADY).
-          if (!(cityGivePn >= cenaWymaganaPn)) {
-            return {
-              accepted: false,
-              reason: `${r5Gate.reason ?? 'AI odrzuca pokój'} — Silniejsza AI wymaga miasta o wartości ≥ ${cenaWymaganaPn} PW `
-                + `(cena pokoju maleje ze zmęczeniem wojną); miasta w ofercie warte ${Math.round(cityGivePn)} PN, wymagane ${cenaWymaganaPn} PN`,
-            };
+          // Ogon (złoto/metale/rudy po miastach) liczy się TAKŻE przy odrzuceniu i ZASTĘPUJE brakujące miasto (ABC B).
+          if (!(cityGivePn + tailPn >= cenaWymaganaPn)) {
+            // Kompozytor ogona (ABC B): reszta po miastach i oferowanym złocie/surowcach ZASTĘPUJE brakujące miasto, gdy płatnik (gracz)
+            // ma zapasy; niepełny ogon nie wystarcza (AI odrzuca, tooltip pokazuje, ile można dopłacić).
+            const comp = actionId === 'pokoj'
+              ? composePlayerPeaceTail(
+                cenaWymaganaPn - cityGivePn - tailPn, ctx.playerStock ?? ctx.payerStock, nonCityItems, ctx.tradeEra,
+                proposerOwnerId === (pnOpts.playerOwnerId ?? 0) ? 'proposer' : 'responder',
+              )
+              : null;
+            if (comp?.applied) {
+              autoPeaceTail = comp;
+              givePn += comp.coveredPn;
+              wearyInfo = wearyInfo ? { ...wearyInfo, peaceTail: comp } : wearyInfo;
+            } else {
+              if (comp && wearyInfo) wearyInfo = { ...wearyInfo, peaceTail: comp };
+              return {
+                accepted: false,
+                reason: `${r5Gate.reason ?? 'AI odrzuca pokój'} — Silniejsza AI wymaga miasta o wartości ≥ ${cenaWymaganaPn} PW `
+                  + `(cena pokoju maleje ze zmęczeniem wojną); miasta w ofercie warte ${Math.round(cityGivePn)} PN`
+                  + (tailPn > 0 ? `, złoto i rudy warte ${Math.round(tailPn)} PN` : '')
+                  + `, wymagane ${cenaWymaganaPn} PN`
+                  + (comp && comp.items.length > 0 ? ` (możesz dopłacić: ${comp.label.replace('Dopłata: ', '')}, brakuje jeszcze ${comp.shortfallPn} PN)` : ''),
+                wearinessInfo: wearyInfo,
+                ...(comp ? { peaceTail: comp } : {}),
+              };
+            }
           }
         }
       }
@@ -1758,6 +1874,31 @@ function evaluateProposalImpl(
           gap = requiredD - givePn;
           powerSplitNote = `słabszy gracz dopłaca D = ${pkPowerSplit.D} PW miastami `
             + `(po rabacie relacji: ${requiredD} PW; S = ${pkPowerSplit.S}, W = ${pkPowerSplit.W}, r = ${pkPowerSplit.r.toFixed(2)})`;
+          // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (r3): POKÓJ — reszta D po miastach i oferowanych pozycjach płatna ogonem
+          // (złoto → brąz → żelazo → rudy z zapasów gracza; kompozytor jak AI/AI↔AI). Pokrywa całość → brak „Brakuje"; inaczej
+          // zostaje blokada jak dziś, a tooltip pokazuje, ile ogon pokrywa. Rozejm bez ogona.
+          if (actionId === 'pokoj' && gap > 0) {
+            const alreadyTail = (autoPeaceTail?.items ?? []).map(t => ({ typ: t.key === 'zloto' ? 'zloto' : 'surowiec_ilosc', id: t.key, ilosc: t.qty }));
+            const comp = composePlayerPeaceTail(
+              gap, ctx.playerStock ?? ctx.payerStock,
+              [...(payload.giveItems ?? []).filter(i => i.typ === 'zloto' || i.typ === 'surowiec_ilosc'), ...alreadyTail], ctx.tradeEra,
+              proposerOwnerId === (pnOpts.playerOwnerId ?? 0) ? 'proposer' : 'responder',
+            );
+            if (comp) {
+              if (comp.applied) {
+                // scal z ogonem z bramki silniejszej AI (te same klucze sumujemy)
+                const byKey = new Map<string, PeaceTailItem>();
+                for (const it of [...(autoPeaceTail?.items ?? []), ...comp.items]) {
+                  const cur = byKey.get(it.key);
+                  byKey.set(it.key, cur ? { key: it.key, qty: cur.qty + it.qty, pn: cur.pn + it.pn } : { ...it });
+                }
+                const items = PEACE_TAIL_ORDER.filter(k => byKey.has(k)).map(k => byKey.get(k)!);
+                autoPeaceTail = { ...comp, items, label: peaceTailLabel(items), coveredPn: (autoPeaceTail?.coveredPn ?? 0) + comp.coveredPn };
+                gap = 0;
+              }
+              if (wearyInfo) wearyInfo = { ...wearyInfo, peaceTail: autoPeaceTail ?? comp };
+            }
+          }
         }
       }
       if (pkPowerSplit && wearyInfo) {
@@ -1836,6 +1977,7 @@ function evaluateProposalImpl(
           pwBalance: pokojPwBalance,
           wearinessPw: wearyPwItem, wearinessSide: wearySide,
           wearinessInfo: wearyInfo,
+          ...(wearyInfo?.peaceTail ? { peaceTail: wearyInfo.peaceTail } : {}),
           reason: powerSplitNote != null
             ? `Brakuje ${Math.abs(pokojPwBalance)} PW do wyrównania mocy — ${powerSplitNote} — dopłać, by wysłać`
             : `Brakuje ${Math.abs(pokojPwBalance)} PW do uczciwej oferty pokoju @ Relacji `
@@ -1844,7 +1986,8 @@ function evaluateProposalImpl(
       }
       return {
         accepted: true, pwBalance: pokojPwBalance, wearinessPw: wearyPwItem, wearinessSide: wearySide, wearinessInfo: wearyInfo,
-        reason: 'Warunki pokoju spełnione', oneShotTrade: true,
+        reason: autoPeaceTail ? `Warunki pokoju spełnione — ${autoPeaceTail.label}` : 'Warunki pokoju spełnione', oneShotTrade: true,
+        ...(autoPeaceTail ? { peaceTail: autoPeaceTail } : {}),
       };
     }
 
@@ -2319,6 +2462,11 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
     case 'oferuj_trybut_za_pokoj':
       return `Oferujemy jednorazową zapłatę ${cmd.goldOnce ?? 0} ¤ w zamian za pokój.`;
     case 'oferuj_miasto_za_pokoj':
+      if (cmd.rodzaj !== 'rozejm' && cmd.ogon?.length) {
+        return cmd.cityId
+          ? 'Oferujemy pokój w zamian za przekazanie naszych miast oraz dopłatę złotem i surowcami.'
+          : 'Oferujemy pokój w zamian za dopłatę złotem i surowcami — nie mamy już miast, które możemy oddać.';
+      }
       return cmd.rodzaj === 'rozejm'
         ? (cmd.dodatkoweMiasta?.length ? 'Oferujemy rozejm w zamian za przekazanie kilku naszych miast.' : 'Oferujemy rozejm w zamian za przekazanie jednego z naszych miast.')
         : (cmd.dodatkoweMiasta?.length ? 'Oferujemy pokój w zamian za przekazanie kilku naszych miast.' : 'Oferujemy pokój w zamian za przekazanie jednego z naszych miast.');
@@ -2343,10 +2491,17 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
 
 /** Pozycje miast oferowanych przez AI w pokoju (pierwsze miasto planu + kolejne = minimum równoważące cenę). */
 function aiOfferedCityItems(cmd: Extract<AIDiplomacyCommand, { type: 'oferuj_miasto_za_pokoj' }>): BasketItem[] {
-  return [
-    { typ: 'miasto', id: cmd.cityId, ilosc: 1, cityPn: cmd.cityPn, cityWeight: cmd.cityWeight },
-    ...(cmd.dodatkoweMiasta ?? []).map(m => ({ typ: 'miasto' as const, id: m.cityId, ilosc: 1, cityPn: m.cityPn, cityWeight: cmd.cityWeight })),
-  ];
+  const out: BasketItem[] = [];
+  // cityId '' = AI nie ma miast do oddania i płaci samym ogonem ceny pokoju (złoto → brąz → żelazo → rudy).
+  if (cmd.cityId) out.push({ typ: 'miasto', id: cmd.cityId, ilosc: 1, cityPn: cmd.cityPn, cityWeight: cmd.cityWeight });
+  for (const m of cmd.dodatkoweMiasta ?? []) {
+    out.push({ typ: 'miasto' as const, id: m.cityId, ilosc: 1, cityPn: m.cityPn, cityWeight: cmd.cityWeight });
+  }
+  // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1: ogon ceny pokoju po miastach (złoto = Skarbiec, metale/rudy = Spichlerz państwa AI).
+  for (const t of cmd.rodzaj === 'rozejm' ? [] : (cmd.ogon ?? [])) {
+    out.push({ typ: t.key === 'zloto' ? 'zloto' : 'surowiec_ilosc', id: t.key, ilosc: t.qty } as BasketItem);
+  }
+  return out;
 }
 
 /** Konwersja komendy AI → propozycja oczekująca (banner audiencji). */

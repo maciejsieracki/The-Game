@@ -6280,6 +6280,7 @@ import {
   aiTreatyParityDuePn, treatyParityBasePnFromData,
 } from './war-weariness';
 import type { PeaceAsset } from './diplomacy-ai-forced-peace';
+import { settlePeaceDue, type PeaceTailItem, type PeaceTailPricing } from './peace-tail-payment';
 import {
   AI_TRADE_GOLD_MAX,
   AI_TRADE_AGREEMENT_SWEETENER_MARGIN,
@@ -6559,6 +6560,12 @@ export interface DiplomacjaInputs {
    * w pokoju (zamiast trybutu). Liczba oddanych miast = minimum równoważące cenę (aiPlanMiastaDoOddania), stolica nigdy.
    */
   miastaAI?: ReadonlyArray<MiastoWycenaWejscie>;
+  /**
+   * R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (ABC 2026-11-18, A+C): zapasy i wycena TEGO AI do ogona ceny pokoju
+   * (złoto ze Skarbca, brąz/żelazo/rudy ze Spichlerza państwa). Brak pola = AI płaci wyłącznie miastami (jak dotąd).
+   * Dotyczy POKOJU; rozejm zostaje bez złota/surowców.
+   */
+  ogonPokoju?: PeaceTailPricing;
   /** R-WEB-PEACE-CITY-CESSION-Q1 r3: ekspansywność AI z civ-ai.json (waga oddawanego miasta). Domyślnie 3. */
   ekspansywnosc?: number;
   /** Pełna warstwa dyplomacji (nie miasto-państwo) — paki/sojusze wielostronne. */
@@ -6652,6 +6659,27 @@ export function aiPlanMiastaDoOddania(
 }
 
 /**
+ * R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1: plan oddania AI za POKÓJ = miasta (minimum, stolica nigdy), a reszta ceny po
+ * miastach — ogon złoto → brąz → żelazo → rudy z zapasów AI (settlePeaceDue — ta sama funkcja co ścieżka gracza i AI↔AI).
+ * Bez `ogon` identyczny z aiPlanMiastaDoOddania (`ogon` pusty). `full` = cena pokryta miastami + ogonem.
+ */
+export function aiPlanOddaniaZOgonem(
+  miasta: ReadonlyArray<MiastoWycenaWejscie>,
+  ekspansywnosc: number | undefined,
+  cenaPn: number,
+  ogon?: PeaceTailPricing,
+): { miasta: MiastoWycenaWejscie[]; ogon: PeaceTailItem[]; full: boolean } {
+  if (!ogon) return { ...aiPlanMiastaDoOddania(miasta, ekspansywnosc, cenaPn), ogon: [] };
+  const waga = aiMiastoWagaOddawanego(ekspansywnosc);
+  const byId = new Map(miasta.map(m => [m.cityId, m] as const));
+  const assets: PeaceAsset[] = miasta.map(m => ({
+    kind: 'miasto' as const, id: m.cityId, amount: 1, pn: m.cityPn * waga, forbidden: m.zakazane === true,
+  }));
+  const s = settlePeaceDue({ ...ogon, duePn: cenaPn, cities: assets, maxCities: miasta.length });
+  return { miasta: s.cities.map(i => byId.get(i.id)!).filter(Boolean), ogon: s.tail, full: s.full };
+}
+
+/**
  * Najtańsze miasto gracza (niezakazane), którego wycena PW pokrywa cenę pokoju `cenaPn` (strona przyjmująca liczy wagę 1,
  * jak w diplomacySumPn). Null gdy żadne nie pokrywa albo cena <= 0 (pokój bez miast — nie ma czego żądać).
  */
@@ -6690,7 +6718,7 @@ export type AIDiplomacyCommand =
    * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI oddaje własne miasto w pokoju (zamiast trybutu).
    * `cityWeight` = waga oddającego (diplomacyMiastoWagaBilansu z ekspansywnością AI).
    */
-  | { type: 'oferuj_miasto_za_pokoj'; targetId: string; powod: string; cityId: string; cityPn: number; cityWeight: number; /** Kolejne miasta planu (minimum równoważące cenę), poza pierwszym. */ dodatkoweMiasta?: Array<{ cityId: string; cityPn: number }>; rodzaj?: 'pokoj' | 'rozejm' }
+  | { type: 'oferuj_miasto_za_pokoj'; targetId: string; powod: string; cityId: string; cityPn: number; cityWeight: number; /** Kolejne miasta planu (minimum równoważące cenę), poza pierwszym. */ dodatkoweMiasta?: Array<{ cityId: string; cityPn: number }>; /** Ogon ceny pokoju po miastach (złoto → brąz → żelazo → rudy); `cityId` = '' gdy AI nie ma miast do oddania i płaci samym ogonem. */ ogon?: PeaceTailItem[]; rodzaj?: 'pokoj' | 'rozejm' }
   /**
    * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): AI żąda miasta gracza w kontrofercie pokoju.
    */
@@ -7155,20 +7183,30 @@ export function decideAIDiplomacy(
         ? treatyParityBasePnFromData('rozejm', wearyLevel)
         : cenaPokojuPn;
       const cenaOddaniaPn = aiPeaceCityDuePn(cenaBazaOddaniaPn, rel.mocAI, rel.mocPartner);
-      const cityPlan = aiPlanMiastaDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc, cenaOddaniaPn);
-      // Cena > 0 i brak PEŁNEGO pokrycia miastami (np. tylko stolica) → AI nie składa oferty miasta, wojna trwa.
-      const pick = cenaOddaniaPn > 0 && cityPlan.full ? cityPlan.miasta[0] : undefined;
+      // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1: pokój (nie rozejm) — reszta ceny po miastach płatna ogonem
+      // (złoto → brąz → żelazo → rudy z zapasów AI); brak zapasów ⇒ jak dotąd (brak oferty, wojna trwa).
+      const cityPlan = aiPlanOddaniaZOgonem(
+        inp.miastaAI ?? [], inp.ekspansywnosc, cenaOddaniaPn, cityOfferKind === 'pokoj' ? inp.ogonPokoju : undefined,
+      );
+      // Cena > 0 i brak PEŁNEGO pokrycia miastami + ogonem (np. tylko stolica i puste zapasy) → AI nie składa oferty, wojna trwa.
+      const tailOnly = cenaOddaniaPn > 0 && cityPlan.full && cityPlan.miasta.length === 0 && cityPlan.ogon.length > 0;
+      const pick = cenaOddaniaPn > 0 && cityPlan.full
+        ? (cityPlan.miasta[0] ?? (tailOnly ? { cityId: '', cityPn: 0 } as MiastoWycenaWejscie : undefined))
+        : undefined;
       if (pick) {
         // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (wymóg 3): słabsza AI proponuje ROZEJM z miastem
         // w okresie rozejmowym (ta sama reguła rodzaju co zaproponuj_pokoj: aiPeaceProposalKind); potem pokój.
         komendy.push({
           type:       'oferuj_miasto_za_pokoj',
           targetId:   rel.partnerId,
-          powod:      `krytyczna slabosc w wojnie (respektWzgledny=${rw.toFixed(2)}): oddajemy miasto ${pick.cityId} (${pick.cityPn} PW) za ${cityOfferKind === 'rozejm' ? 'rozejm' : 'pokoj'}`,
+          powod:      tailOnly
+            ? `krytyczna slabosc w wojnie (respektWzgledny=${rw.toFixed(2)}): brak miast do oddania — placimy zlotem i surowcami za pokoj (ogon ceny)`
+            : `krytyczna slabosc w wojnie (respektWzgledny=${rw.toFixed(2)}): oddajemy miasto ${pick.cityId} (${pick.cityPn} PW) za ${cityOfferKind === 'rozejm' ? 'rozejm' : 'pokoj'}${cityPlan.ogon.length > 0 ? ' + ogon ceny (zloto/surowce)' : ''}`,
           cityId:     pick.cityId,
           cityPn:     pick.cityPn,
           cityWeight: aiMiastoWagaOddawanego(inp.ekspansywnosc),
           dodatkoweMiasta: cityPlan.miasta.slice(1).map(m => ({ cityId: m.cityId, cityPn: m.cityPn })),
+          ...(cityPlan.ogon.length > 0 ? { ogon: cityPlan.ogon } : {}),
           rodzaj:     cityOfferKind,
         });
         continue;

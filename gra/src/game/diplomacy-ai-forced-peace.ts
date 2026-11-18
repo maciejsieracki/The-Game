@@ -348,6 +348,12 @@ export interface AiPeaceTickDeps {
   cityCessionOk: (cityId: string, loser: number, winner: number) => boolean;
   /** Trwa bitwa oczekująca na rozstrzygnięcie: tick MUSI mimo to zadziałać (gwarancja T+2), ale bez cesji miast. */
   battlePending: boolean;
+  /**
+   * R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (ABC D): plan POKOJU = miasta, potem ogon (złoto → brąz → żelazo → rudy z zapasów
+   * przegranego) — wiązanie main.ts woła peacePlanWithTail (jedna funkcja dla gracza, AI i AI↔AI). Brak = tylko miasta.
+   * Rozejm zawsze bez ogona.
+   */
+  tailPlan?: (requiredPn: number, cityAssets: readonly PeaceAsset[], maxCities: number, loser: number, winner: number) => PeacePaymentPlan;
   pay: (loser: number, winner: number, plan: PeacePaymentPlan) => void;
   finalize: (loser: number, winner: number, kind: AiPeaceKind) => void;
   log?: (msg: string) => void;
@@ -391,6 +397,7 @@ export function runAiAiPeaceTick(d: AiPeaceTickDeps): AiPeaceTickOutcome[] {
         .map(a => (d.battlePending && a.kind === 'miasto' ? { ...a, forbidden: true } : a));
       // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (DR-2): pokój (nie rozejm) = JEDNA cena; liczba miast = minimum
       // równoważące cenę (bez limitu 1 miasta), stolica nigdy. Rozejm: dotychczasowy plan (osobna baza PW).
+      if (kind === 'pokoj' && d.tailPlan) return d.tailPlan(price.requiredPn, assets, assets.length, loser, winner);
       return kind === 'pokoj'
         ? planCityPeacePayment(price.requiredPn, assets, assets.length)
         : planPeacePayment(price.requiredPn, assets);

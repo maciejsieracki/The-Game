@@ -109,7 +109,8 @@ async function main() {
     const bigCity = evalP('pokoj', { giveItems: [{ typ: 'miasto', id: 'x', ilosc: 1, cityPn: 1e6, cityWeight: 1 }] }, 'silniejsza');
     check('c3 miasto o PN ≥ ceny nie jest odrzucane z powodu miasta', !/miasta w ofercie warte/.test(bigCity.reason || ''), bigCity);
     const gold = evalP('pokoj', { giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 100000 }] }, 'slabsza');
-    check('d1 złoto nie jest słodzikiem (słabsza AI) — odrzucone', gold.accepted === false && /Złoto i surowce/.test(gold.reason || ''), gold);
+    // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (ABC A, 2026-11-18): zakaz złota/surowców wycofany DLA POKOJU (ogon po miastach).
+    check('d1 złoto w pokoju NIE jest odrzucane słodzikiem (ogon po miastach)', !/Złoto i surowce/.test(gold.reason || ''), gold);
     const goods = evalP('rozejm', { giveItems: [{ typ: 'surowiec_ilosc', id: 'zelazo', ilosc: 50 }] }, 'silniejsza');
     check('d2 surowce nie są słodzikiem rozejmu — odrzucone', goods.accepted === false && /Złoto i surowce/.test(goods.reason || ''), goods);
     const truceNoCity = evalP('rozejm', {}, 'silniejsza');

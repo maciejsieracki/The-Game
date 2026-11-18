@@ -48,5 +48,16 @@
     "rwProgBonusMax": 0.25,
     "minMiastAi": 2,
     "_pozycjaPW": "R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: stara pozycja PW „zmęczenie” (Z=round(C*x^2), krzywa kwadratowa) USUNIĘTA - jedyna cena pokoju to cenaPokoju (wearinessPeaceCashPn). Pole czlowiek.rwProgBonusMax/minMiastAi: nieużywane w kodzie od tej zmiany (zostają jako parametry historyczne)."
+  },
+  "ogonPokoju": {
+    "_opis": "R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (ABC właściciela 2026-11-18): gdy słabsza strona nie ma już miast do oddania (nigdy ostatnie miasto / stolica), reszta ceny pokoju płatna jest kolejno: złoto → brąz → żelazo → rudy (miedzi, cyny, żelaza). Wycena: diplomacy-value-catalog (cena_* per blok). Logika: gra/src/game/peace-tail-payment.ts. Stal nie wchodzi (nie ma jej na liście właściciela).",
+    "kolejnosc": [
+      "zloto",
+      "braz",
+      "zelazo",
+      "ruda",
+      "ruda_cyny",
+      "ruda_zelaza"
+    ]
   }
 }

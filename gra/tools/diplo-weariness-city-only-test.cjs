@@ -196,7 +196,8 @@ const MUTANTS = [
   { id: 'M1-ignoruj-silna-regule', from: 'const loser = d.weakerOf ? d.weakerOf(pr.a, pr.b) : (shareA <= 0.5 ? pr.a : pr.b);',
     to: 'const loser = (shareA <= 0.5 ? pr.a : pr.b);', gate: 'slabsza wg sily militarnej (a2)' },
   // M2 (zloto w puli miast) przeniesiony: planner miast zyje w diplomacy-ai-forced-peace.ts (planCityPeacePayment), test (b) pilnuje behawioralnie.
-  { id: 'M3-bez-guardu-jednego-miasta', from: 'if (ownCities <= 1 && !priceZero) { none(); continue; }', to: '/* usunieto guard */',
+  { id: 'M3-bez-guardu-jednego-miasta', from: 'if (ownCities <= 1 && !priceZero && !d.tailPlan) { none(); continue; }', to: '/* usunieto guard */',
+    // r3 (PEACE-LAST-STAGE): guard dostal warunek `!d.tailPlan` (z ogonem jedno miasto nie blokuje) — fragment mutanta dopasowany; asercja (d) bez zmian.
     gate: 'jedno miasto => brak pokoju (d)' },
   { id: 'M4-bez-wymogu-miasta', from: 'const priceCovered = priceZero || plan.full;', to: 'const priceCovered = true;',
     gate: 'pokoj tylko z miastem (c, e2)' },

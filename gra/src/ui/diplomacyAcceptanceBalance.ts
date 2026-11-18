@@ -26,6 +26,18 @@ export interface WearinessRowInfo {
   cenaPokojuPn?: number;
   /** R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (D4): podział PW pokoju wg POWER. */
   powerSplit?: PeacePowerSplitInfo;
+  /**
+   * R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (r3): ogon ceny pokoju po miastach (złoto → brąz → żelazo → rudy).
+   * Wyliczenie „Dopłata: X złota, Y rudy żelaza" trafia do tooltipu bilansu (nic nie wchodzi na wierzch panelu).
+   */
+  peaceTail?: {
+    items: ReadonlyArray<{ key: string; qty: number; pn: number }>;
+    restPn: number;
+    coveredPn: number;
+    shortfallPn: number;
+    applied: boolean;
+    label: string;
+  };
 }
 
 export interface NegotiationBalanceSource {
@@ -616,6 +628,22 @@ export function peacePriceRowHtml(info?: WearinessRowInfo): string {
 }
 
 /**
+ * R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (r3): wiersz „Dopłata: X złota, Y rudy żelaza" — ogon ceny pokoju po miastach
+ * (złoto → brąz → żelazo → rudy z zapasów płatnika). Wyliczenia wyłącznie w tooltipie bilansu (zasada „najważniejsze na wierzchu");
+ * brak ogona → pusty ciąg.
+ */
+export function peaceTailRowHtml(info?: Pick<WearinessRowInfo, 'peaceTail'>): string {
+  const t = info?.peaceTail;
+  if (!t || t.items.length === 0) return '';
+  const f = (n: number): string => formatLiczbaPl(Math.round(n));
+  const txt = t.label
+    + ' (' + f(t.coveredPn) + ' z ' + f(t.restPn) + ' PN reszty ceny po miastach'
+    + (t.shortfallPn > 0 ? '; brakuje jeszcze ' + f(t.shortfallPn) + ' PN' : '; dopłata pokrywa całość i zostanie dopisana do oferty')
+    + ') — kolejność: złoto, brąz, żelazo, rudy; nigdy ostatnie miasto.';
+  return '<div class="da-pn-bal-meta weariness" title="' + esc(txt) + '">' + esc(txt) + '</div>';
+}
+
+/**
  * R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (D4): wiersz „Podział PW pokoju wg mocy" — moc obu stron (POWER), r, S, W, D i D po
  * rabacie relacji. Wyliczenia wyłącznie w tooltipie (zasada „najważniejsze na wierzchu"); brak danych mocy → pusty ciąg.
  */
@@ -746,6 +774,8 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     plainTextWithTitles(relModRow),
     plainTextWithTitles(peacePriceRowHtml(data.responderPreview?.wearinessInfo)),
     plainTextWithTitles(peacePowerSplitRowHtml(data.responderPreview?.wearinessInfo)),
+    // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (r3): „Dopłata: X złota, Y rudy żelaza" — tylko w tooltipie.
+    plainTextWithTitles(peaceTailRowHtml(data.responderPreview?.wearinessInfo)),
     // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (runda 3, zarzut 4): sojusz/NAP/przemarsz/wasal — ten sam wiersz podziału PW.
     plainTextWithTitles(peacePowerSplitRowHtml({ powerSplit: data.responderPreview?.treatyPowerSplit })),
     plainTextWithTitles(treatyNote),
