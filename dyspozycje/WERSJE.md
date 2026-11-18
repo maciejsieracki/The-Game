@@ -1,3 +1,9 @@
+## ROBOCZA fbbefaa4 -- 2026-11-18 -- FALA 829: FPSENT + WELCOME: okno pokoju wymuszonego z jednym zdaniem na wierzchu oraz ekran Odkryles nowa cywilizacje (testowa)
+
+- Okno pokoju wymuszonego: na wierzchu tylko pierwsze zdanie o zmeczeniu, pelny opis w tooltipie. Nowy ekran Odkryles nowa cywilizacje (raz przy pierwszym kontakcie + przycisk O cywilizacji w panelu dyplomacji): rys historyczny, plusy i minusy, jednostki specjalne, powitanie wladcy przyjazne lub nieprzyjazne z podpisem, przyciski Audiencja i Zamknij; teksty zatwierdzone przez wlasciciela
+- Weryfikacja: tsc 0; logic 213/213; civ-welcome-screen-test 309 asercji, civ-intro-texts 15 cywilizacji/90 powitan, declutter 16/0, pending 40/0, stages-view 24/0, forced-peace 14/0, wiki-weariness 18/0; FC: tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; Chromium: ekran powitalny zrzuty Rzymianie (przyjazne) i Egipt (nieprzyjazne), Esc/klik w tlo/Audiencja/Zamknij dzialaja
+- Limity: NIE ZMIERZONO w pelnej grze: realny pierwszy kontakt, muzyka przywitania, koniec tury przy otwartym ekranie; okno pokoju wymuszonego otwarte po ekranie powitalnym zostaje pod nim; Chromium dla zmiany okna pokoju NIE ZMIERZONO
+
 ## ROBOCZA 4eea286a -- 2026-11-18 -- FALA 828: PANELREF: otwarty panel miasta i rekrutacji odswieza liste po odkryciu technologii (testowa)
 
 - Po odkryciu technologii (badania na koniec tury, nauka wioski, grant technologii przez handel) otwarty panel miasta i panel rekrutacji imperium odswiezaja liste bez ponownego otwierania (helper refreshOpenPanelsAfterTechDiscovery); hak test-only prepareNonEraCompletion w __eraTestDebug; reguly dostepnosci bez zmian
