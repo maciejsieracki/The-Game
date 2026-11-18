@@ -21,7 +21,8 @@
  *   node tools/diplomacy-harder-measure-run.cjs --dist <abs-dist> --out <abs-katalog> --seed 4242 --turns 20 --harder 1
  *   opcje: --profile <abs> (profil Chromium; domyslnie os.tmpdir), --gold 200 --food 200 --bypass 1
  *   --build 1 buduje bundle do --dist (vite, poza repo; bez tego flagi uzywa istniejacego index.html).
- *   Przegladarka: CHROME_PATH (domyslnie /usr/bin/chromium). Jeden Chromium naraz.
+ *   --every N zapisuje wiersz tylko dla tur podzielnych przez N (np. 5 albo 25; ostatnia tura zawsze).
+ *   Przegladarka: CHROME_PATH (domyslnie pierwsza z: /usr/bin/chromium, google-chrome). Jeden Chromium naraz.
  *
  * Limity: pojedyncze polecenie Bash < 590 s. Dlugie biegi (100 tur x 3 ziarna ON/OFF) uruchamia orkiestrator
  * przez `setsid nohup node tools/diplomacy-harder-measure-run.cjs ... &` (poza tym plikiem; sam runner nie wznawia).
@@ -41,6 +42,7 @@ function arg(name, def) {
 const GRA_DIR = path.resolve(__dirname, '..');
 const SEED = parseInt(arg('seed', '4242'), 10);
 const TURNS = parseInt(arg('turns', '100'), 10);
+const EVERY = Math.max(1, parseInt(arg('every', '1'), 10) || 1);
 const HARDER = arg('harder', '0') === '1';
 const GOLD = parseInt(arg('gold', '200'), 10);
 const FOOD = parseInt(arg('food', '200'), 10);
@@ -49,7 +51,8 @@ const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'diplo-harder-dist'
 const PROFILE = path.resolve(arg('profile', path.join(os.tmpdir(), 'diplo-harder-profile-' + (HARDER ? 'on' : 'off'))));
 const OUT = path.resolve(arg('out', path.join(os.tmpdir(), 'diplo-harder-out')));
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
-const CHROME = process.env.CHROME_PATH || '/usr/bin/chromium';
+/** Przegladarka: CHROME_PATH; bez niego pierwsza istniejaca z listy (brak /usr/bin/chromium nie wywala launchu). */
+const CHROME = process.env.CHROME_PATH || ['/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable'].find(p => fs.existsSync(p)) || '/usr/bin/chromium';
 const TURN_TIMEOUT_MS = 300000;
 const TAG = `seed${SEED}-harder${HARDER ? 1 : 0}`;
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -122,7 +125,7 @@ function diploRow(m) {
     if (p.sasiad || p.status !== 'neutralni' || p.pokoj) keep.push(p);
     else pominiete++;
   }
-  return { owners: m.owners, pairs: keep, pominietePary: pominiete, flagaOdczyt: m.flag };
+  return { gracz: m.gracz, owners: m.owners, pairs: keep, pominietePary: pominiete, flagaOdczyt: m.flag };
 }
 
 async function playOneTurn(page) {
@@ -170,7 +173,8 @@ async function main() {
   const { chromium } = require(path.join(PW_DIR, 'node_modules', 'playwright'));
   const jsonl = path.join(OUT, TAG + '.jsonl');
   const summaryPath = path.join(OUT, TAG + '.summary.json');
-  try { fs.unlinkSync(jsonl); } catch (_) {}
+  // Start pliku: obciecie do zera (bez unlink; poprzedni wynik tego samego ziarna/flagi zostaje nadpisany).
+  fs.writeFileSync(jsonl, '');
   const ctx = await launch(chromium);
   let stop = null;
   let turn = 0;
@@ -183,14 +187,16 @@ async function main() {
       const r = await playOneTurn(page);
       if (r.stop) { stop = { reason: r.stop, tura: r.tura }; break; }
       turn = r.rec.turn;
-      fs.appendFileSync(jsonl, JSON.stringify(r.rec) + '\n');
-      rows++;
+      if (turn % EVERY === 0 || turn >= TURNS) {
+        fs.appendFileSync(jsonl, JSON.stringify(r.rec) + '\n');
+        rows++;
+      }
       console.log(`[diplo] ${TAG} tura=${turn} pary=${r.rec.diplo.pairs.length} wojny=${r.rec.wojny} czas=${Math.round((Date.now() - t0) / 1000)}s`);
     }
   } finally {
     await ctx.close();
   }
-  const summary = { seed: SEED, harder: HARDER ? 1 : 0, turnsRequested: TURNS, endTurn: turn, rows, stop,
+  const summary = { seed: SEED, harder: HARDER ? 1 : 0, turnsRequested: TURNS, every: EVERY, endTurn: turn, rows, stop,
     counters: Object.assign({}, COUNTERS), wallSec: Math.round((Date.now() - t0) / 1000) };
   fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
   console.log('[diplo] PODSUMOWANIE ' + JSON.stringify(summary));

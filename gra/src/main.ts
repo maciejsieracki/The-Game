@@ -33477,8 +33477,10 @@ async function boot(): Promise<void> {
         setEnabled: (on: boolean | null): boolean => { setHarderDiplomacyEnabledForTest(on); return isHarderDiplomacyEnabled(); },
         isEnabled: (): boolean => isHarderDiplomacyEnabled(),
         metrics: () => {
+          // R-WEB-DIPLO-HARDER-MEASURE-RUNNER-Q1 (poprawka obrony): wyłącznie gracz + główne cywilizacje AI;
+          // państwa-miasta (isCityStateOwner) wykluczone, jak w dispatchu (pary głównych cywilizacji i gracza).
           const owners = [...new Set<number>([ME(), ...cities.map(c => c.ownerId), ...units.map(u => u.ownerId)])]
-            .filter(o => o != null && !isBarbarian(o))
+            .filter(o => o != null && !isBarbarian(o) && !isCityStateOwner(o))
             .sort((a, b) => a - b);
           const liczbaMiast = new Map<number, number>();
           for (const c of cities) liczbaMiast.set(c.ownerId, (liczbaMiast.get(c.ownerId) ?? 0) + 1);
@@ -33506,7 +33508,7 @@ async function boot(): Promise<void> {
               });
             }
           }
-          return { turn, flag: isHarderDiplomacyEnabled(), owners, pairs };
+          return { turn, flag: isHarderDiplomacyEnabled(), gracz: ME(), owners, pairs };
         },
       };
       (window as any).__aiEconomyMeasure = {

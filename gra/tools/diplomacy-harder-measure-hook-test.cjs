@@ -29,7 +29,8 @@ function arg(name, def) {
 const GRA_DIR = path.resolve(__dirname, '..');
 const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'diplo-harder-test-dist')));
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
-const CHROME = process.env.CHROME_PATH || '/usr/bin/chromium';
+/** Przegladarka: CHROME_PATH; bez niego pierwsza istniejaca (poprawka obrony: brak /usr/bin/chromium nie wywala testu). */
+const CHROME = process.env.CHROME_PATH || ['/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable'].find(p => fs.existsSync(p)) || '/usr/bin/chromium';
 const SEED = 4242;
 const STATUSY = ['wojna', 'pokoj', 'sojusz', 'neutralni'];
 const POLA_PARY = ['a', 'b', 'aiAi', 'status', 'zaufanie', 'respekt', 'pokoj', 'sasiad', 'sasiedztwoBezPokoju', 'karaBazowa'];
@@ -46,6 +47,7 @@ function shapeProblems(m) {
   if (!m || typeof m !== 'object') return ['brak obiektu'];
   if (typeof m.turn !== 'number' || !Number.isFinite(m.turn)) p.push('turn nie jest liczba');
   if (typeof m.flag !== 'boolean') p.push('flag nie jest boolem');
+  if (typeof m.gracz !== 'number' || !Number.isFinite(m.gracz)) p.push('brak gracz (ME)');
   if (!Array.isArray(m.owners)) p.push('owners nie jest tablica');
   if (!Array.isArray(m.pairs)) { p.push('brak pairs'); return p; }
   for (const x of m.pairs) {
@@ -61,7 +63,7 @@ function shapeProblems(m) {
 
 // ---- A) kontrola ksztaltu bez przegladarki (zawsze) ----
 const dobry = {
-  turn: 5, flag: false, owners: [1, 2, 3],
+  turn: 5, flag: false, gracz: 0, owners: [1, 2, 3],
   pairs: [
     { a: 1, b: 2, aiAi: true, status: 'pokoj', zaufanie: 40, respekt: 10, pokoj: 'nap', sasiad: true, sasiedztwoBezPokoju: false, karaBazowa: -3 },
     { a: 0, b: 1, aiAi: false, status: 'wojna', zaufanie: null, respekt: null, pokoj: undefined, sasiad: false, sasiedztwoBezPokoju: false, karaBazowa: 0 },
@@ -75,6 +77,7 @@ const mutacje = {
   'A5 mutacja: nieznany status': { ...dobry, pairs: [Object.assign({}, dobry.pairs[0], { status: 'przymierze' })] },
   'A6 mutacja: brak turn': Object.assign({}, dobry, { turn: undefined }),
   'A7 mutacja: para bez karaBazowa': { ...dobry, pairs: [(({ karaBazowa, ...r }) => r)(dobry.pairs[0])] },
+  'A8 mutacja: brak gracz': (({ gracz, ...r }) => r)(dobry),
 };
 for (const [nazwa, m] of Object.entries(mutacje)) {
   check(nazwa + ' jest odrzucona', shapeProblems(m).length > 0, shapeProblems(m)[0] || 'NIE ODRZUCONO');
@@ -118,7 +121,8 @@ async function browserChecks(distDir) {
     // B3: ksztalt metryk
     const m = await page.evaluate(() => window.__diploHarderMeasure.metrics());
     const probl = shapeProblems(m);
-    check('B3 metryki po starcie gry maja poprawny ksztalt', probl.length === 0, probl.slice(0, 3).join('; ') || ('pary=' + m.pairs.length + ', wlasciciele=' + m.owners.length));
+    const graczWOwners = m.owners.includes(m.gracz);
+    check('B3 metryki po starcie gry maja poprawny ksztalt (gracz nalezy do owners)', probl.length === 0 && graczWOwners, probl.slice(0, 3).join('; ') || ('pary=' + m.pairs.length + ', wlasciciele=' + m.owners.length + ', gracz=' + m.gracz));
 
     // B4: tylko odczyt
     const t1 = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);

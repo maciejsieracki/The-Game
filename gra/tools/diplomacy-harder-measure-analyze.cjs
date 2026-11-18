@@ -53,8 +53,11 @@ function median(xs) {
 }
 const f2 = x => (x === null || x === undefined ? NZ : (Math.round(x * 100) / 100).toFixed(2));
 
-/** Typ pary: 'ai-ai' gdy oba nie-gracze; gracz = owner 0 (ME). */
-function pairType(p) { return (p.a === 0 || p.b === 0) ? 'ai-gracz' : 'ai-ai'; }
+/** Typ pary wg pola `gracz` z wiersza (hak zwraca ME()); bez tego pola typ = 'nieznany' (nie zgadujemy owner 0). */
+function pairType(p, gracz) {
+  if (typeof gracz !== 'number') return 'nieznany';
+  return (p.a === gracz || p.b === gracz) ? 'ai-gracz' : 'ai-ai';
+}
 
 /** Napiecie graniczne (A1) jak gra: kara bazowa <0 + floor(tura/okres)*przyrost, ucieta do granicaMax. */
 function napiecie(karaBazowa, tenure) {
@@ -92,6 +95,7 @@ function summarizeRun(run, tura) {
   const r = run.rows.find(x => x.turn === tura);
   if (!r || !r.diplo) return null;
   const pairs = r.diplo.pairs || [];
+  const gracz = r.diplo.gracz;
   const tenure = tenureSeries(run.rows).get(tura) || new Map();
   const sasiedzi = pairs.filter(p => p.sasiad);
   const zaufNeigh = sasiedzi.map(p => p.zaufanie).filter(z => typeof z === 'number');
@@ -108,10 +112,10 @@ function summarizeRun(run, tura) {
     zaufanieSasiadMean: mean(zaufNeigh), zaufanieSasiadMedian: median(zaufNeigh), zaufanieSasiadN: zaufNeigh.length,
     zaufanieWszystkieMean: mean(zaufWszystkie.map(p => p.zaufanie)),
     wojnyLacznie: wojny.length,
-    wojnyAiAi: wojny.filter(p => pairType(p) === 'ai-ai').length,
-    wojnyAiGracz: wojny.filter(p => pairType(p) === 'ai-gracz').length,
+    wojnyAiAi: wojny.filter(p => pairType(p, gracz) === 'ai-ai').length,
+    wojnyAiGracz: wojny.filter(p => pairType(p, gracz) === 'ai-gracz').length,
     napLacznie: nap.length,
-    napAiAi: nap.filter(p => pairType(p) === 'ai-ai').length,
+    napAiAi: nap.filter(p => pairType(p, gracz) === 'ai-ai').length,
     odsetekZaufanie50: kontakt.length ? ge50 / kontakt.length : null,
     kontaktN: kontakt.length,
     karaGranicaMean: mean(kary),
@@ -123,7 +127,8 @@ function summarizeRun(run, tura) {
 /** Najmniejsza tura, w ktorej para danego typu jest w 'wojna' (per ziarno); null gdy nigdy. */
 function firstWar(run, type) {
   for (const r of run.rows) {
-    const hit = ((r.diplo && r.diplo.pairs) || []).some(p => p.status === 'wojna' && pairType(p) === type);
+    const gracz = r.diplo && r.diplo.gracz;
+    const hit = ((r.diplo && r.diplo.pairs) || []).some(p => p.status === 'wojna' && pairType(p, gracz) === type);
     if (hit) return r.turn;
   }
   return null;
@@ -189,6 +194,32 @@ function main() {
   if (json) fs.writeFileSync(path.resolve(json), JSON.stringify({ off: gOff, on: gOn, params: PARAMS }, null, 2));
 }
 
+/** Samotest (bez przegladarki): `node tools/diplomacy-harder-measure-analyze.cjs --selftest`. Zielone = zgodne. */
+function selfTest() {
+  const wyniki = [];
+  const ok = (nazwa, warunek) => { wyniki.push(!!warunek); console.log((warunek ? 'ZIELONE ' : 'CZERWONE ') + nazwa); };
+  ok('napiecie: kara dodatnia bez zmian', napiecie(2, 50) === 2);
+  ok('napiecie: tura 0 bez zmian', napiecie(-3, 0) === -3);
+  ok('napiecie: 10 tur = -1 wiecej (przyrost 1, okres 10)', napiecie(-3, 10) === -4);
+  ok('napiecie: ucięcie do granicaMax (6): -3 po 1000 turach = -6', napiecie(-3, 1000) === -6);
+  ok('pairType: gracz = a -> ai-gracz', pairType({ a: 0, b: 2 }, 0) === 'ai-gracz');
+  ok('pairType: brak gracz -> nieznany (nie zgadujemy)', pairType({ a: 0, b: 2 }, undefined) === 'nieznany');
+  ok('pairType: dwie AI -> ai-ai', pairType({ a: 1, b: 2 }, 0) === 'ai-ai');
+  const seria = [
+    { turn: 1, diplo: { pairs: [{ a: 1, b: 2, sasiedztwoBezPokoju: true }] } },
+    { turn: 2, diplo: { pairs: [{ a: 1, b: 2, sasiedztwoBezPokoju: true }] } },
+    { turn: 3, diplo: { pairs: [{ a: 1, b: 2, sasiedztwoBezPokoju: false }] } },
+    { turn: 4, diplo: { pairs: [{ a: 1, b: 2, sasiedztwoBezPokoju: true }] } },
+  ];
+  const t = tenureSeries(seria);
+  ok('tenure: licznik narasta 0,1 potem reset po przerwie', t.get(1).get('1_2') === 0 && t.get(2).get('1_2') === 1 && t.get(3).get('1_2') === 0 && t.get(4).get('1_2') === 0);
+  const bad = wyniki.filter(x => !x).length;
+  console.log('WYNIK SAMOTESTU: ' + (wyniki.length - bad) + ' zielonych, ' + bad + ' czerwonych');
+  process.exit(bad ? 1 : 0);
+}
+
 module.exports = { napiecie, tenureSeries, pairType, median, mean };
 
-if (require.main === module) main();
+if (require.main === module) {
+  if (process.argv.includes('--selftest')) selfTest(); else main();
+}
