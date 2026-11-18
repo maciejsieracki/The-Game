@@ -33505,6 +33505,42 @@ async function boot(): Promise<void> {
           for (const o of ownerIds) epochs[String(o)] = empireEpochForOwner(o);
           return { turn, pairs, epochs };
         },
+        // R-WEB-DIPLO-WAR-CONCURRENCY-MEASURE-Q1 (runda 2, obrona): flaga miast-państw per właściciel (mianownik
+        // "N głównych cywilizacji" z dispatchu). Tylko odczyt.
+        cityStateOwners: (ownerIds: number[]): number[] => ownerIds.filter(o => isCityStateOwner(o)),
+        // Probe STANU (NIE zliczanie prób wypowiedzenia): dla każdego AI-napastnika i każdego celu zwraca werdykt
+        // evaluateInterCivWarGate dla hipotetycznego ZWYKŁEGO wypowiedzenia (eraTag=null) przy bieżącym stanie wojen.
+        // Pozwala ustalić, czy w Kamieniu bramka R2 blokowałaby napastnika już w wojnie. Brak zapisu do stanu.
+        gateProbe: (ownerIds: number[]): Record<string, unknown> => {
+          const warsOf = new Map<number, number>();
+          const eraOf = new Map<number, number>();
+          for (const o of ownerIds) {
+            warsOf.set(o, countActiveWarsForOwnerExcludingBarbarians(o));
+            eraOf.set(o, empireEpochForOwner(o));
+          }
+          const counts: Record<string, number> = { ok: 0, delay_r1: 0, stone_limit_attacker_r2: 0, stone_limit_target_r2: 0 };
+          const attackersBlockedByStoneLimit: number[] = [];
+          for (const att of ownerIds) {
+            if (isHuman(att)) continue;
+            let blocked = false;
+            for (const tgt of ownerIds) {
+              if (tgt === att) continue;
+              const v = evaluateInterCivWarGate({
+                turn,
+                attackerEra: eraOf.get(att) ?? 0,
+                attackerWarCount: warsOf.get(att) ?? 0,
+                eraTag: null,
+                targetIsPlayer: isHuman(tgt),
+                targetEra: eraOf.get(tgt) ?? 0,
+                targetWarCount: warsOf.get(tgt) ?? 0,
+              });
+              counts[v] = (counts[v] ?? 0) + 1;
+              if (v === 'stone_limit_attacker_r2') blocked = true;
+            }
+            if (blocked) attackersBlockedByStoneLimit.push(att);
+          }
+          return { turn, counts, attackersBlockedByStoneLimit };
+        },
       };
       (window as any).__nnsMeasureDebug = {
         startGame: (o: { seed: number; mapSize?: string; civTypes?: number; cityStates?: number; typSwiata?: string }): void => {

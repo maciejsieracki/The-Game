@@ -90,6 +90,22 @@ for (const { turn, per } of perTurnByCiv) {
 const srednie = {};
 for (const k of Object.keys(sumConc)) srednie[k] = Math.round((sumConc[k] / cntConc[k]) * 100) / 100;
 
+// R-WEB-DIPLO-WAR-CONCURRENCY-MEASURE-Q1 (runda 2): miasta-państwa (z haka cityStateOwners) i probe bramki R2 (gate).
+// Brak pola w wierszach (stare dowody) -> null = NIE ZMIERZONO.
+const cityStateSet = new Set();
+let haveCityStates = false;
+for (const r of withWars) {
+  if (Array.isArray(r.wars.cityStates)) { haveCityStates = true; for (const id of r.wars.cityStates) cityStateSet.add(id); }
+}
+const gateRows = withWars.filter(r => r.wars.gate && typeof r.wars.gate === 'object');
+const gateBlockedTurns = gateRows.filter(r => (r.wars.gate.attackersBlockedByStoneLimit || []).length > 0);
+const gateProbeSummary = gateRows.length === 0 ? null : {
+  tur: gateRows.length,
+  turyZAtakujacymBlokowanymR2Kamien: gateBlockedTurns.length,
+  przykladTury: gateBlockedTurns.slice(0, 5).map(r => ({ tura: r.turn, napastnicy: r.wars.gate.attackersBlockedByStoneLimit })),
+  uwaga: 'probe STANU: werdykt bramki dla hipotetycznego zwyklego wypowiedzenia; NIE liczba odrzuconych prob (e)',
+};
+
 const out = {
   plik: file,
   tury: { pierwsza: turns[0] ?? null, ostatnia: turns.length ? turns[turns.length - 1] : null, liczba: turns.length },
@@ -100,6 +116,9 @@ const out = {
     epizody: epoki.map(e => ({ para: [e.a, e.b], start: e.startTurn, koniec: e.endTurn, tag: e.epokaTag, graczem: e.gracz })),
     cywilizacjeKiedykolwiekStronaEpoki: [...epokiCivs].sort((x, y) => x - y),
     cywilizacjeBezWojnyEpoki: civs.filter(c => !epokiCivs.has(c)),
+    miastaPanstwa: haveCityStates ? [...cityStateSet].sort((x, y) => x - y) : null,
+    glowneBezWojnyEpoki: haveCityStates ? civs.filter(c => !epokiCivs.has(c) && !cityStateSet.has(c)) : null,
+    glowneKiedykolwiekStronaEpoki: haveCityStates ? [...epokiCivs].filter(c => !cityStateSet.has(c)).sort((x, y) => x - y) : null,
   },
   b_wojnyNaturalne: {
     liczbaEpizodow: natural.length,
@@ -114,6 +133,9 @@ const out = {
     tur2NaturalneNaCywilizacje: turnsWith2Nat,
     cywilizacjeZ2Naturalnymi: [...civ2Nat].sort((x, y) => x - y),
   },
-  nieZmierzone: ['(e) odrzucone proby wypowiedzenia przez bramke stone_limit: brak haka na odrzucone proby'],
+  e_probeBramkiKamien: gateProbeSummary,
+  nieZmierzone: gateProbeSummary
+    ? ['(e) liczba ODRZUCONYCH prob wypowiedzenia przez bramke stone_limit: hak nie liczy prob (tylko probe stanu w e_probeBramkiKamien)']
+    : ['(e) odrzucone proby stone_limit: brak haka (dowody sprzed rundy 2)'],
 };
 console.log(JSON.stringify(out, null, 2));

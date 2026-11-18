@@ -181,9 +181,13 @@ function warsInPage(ownerIds) {
   if (!h || typeof h.snapshot !== 'function') return null;
   const snap = h.snapshot(ownerIds);
   const pairs = snap.pairs;
+  // R-WEB-DIPLO-WAR-CONCURRENCY-MEASURE-Q1 (runda 2): flagi miast-państw i probe bramki R2 (tylko odczyt; brak haka -> null).
+  const cityStates = typeof h.cityStateOwners === 'function' ? h.cityStateOwners(ownerIds) : null;
+  const gate = typeof h.gateProbe === 'function' ? h.gateProbe(ownerIds) : null;
   return { active: pairs.length, epokiCount: pairs.filter(p => p.typ === 'EPOKI').length,
     naturalnaCount: pairs.filter(p => p.typ === 'NATURALNA').length,
-    withPlayer: pairs.filter(p => p.a === 0 || p.b === 0).length, pairs, epochs: snap.epochs };
+    withPlayer: pairs.filter(p => p.a === 0 || p.b === 0).length, pairs, epochs: snap.epochs,
+    cityStates, gate };
 }
 
 /** Wojny z listy wlascicieli wiersza metryk (uruchamia warsInPage w przegladarce). */
