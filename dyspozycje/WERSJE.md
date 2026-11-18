@@ -1,3 +1,9 @@
+## ROBOCZA 76797672 -- 2026-11-18 -- FALA 827: FPDECLUT: okno pokoju wymuszonego - na wierzchu tytul, partner, jedno zdanie, warunki i przycisk; wyliczenia w tooltipach (testowa)
+
+- Okno pokoju wymuszonego (showForcedPeaceModal): wyliczenia (tury wojny, zmienione miasta, 2,5% na ture i 10% za miasto, kto wygrywa wg sily militarnej, karencja, zaufanie) przeniesione do tooltipow; na wierzchu tytul, partner, jedno zdanie dlaczego, warunki i przycisk Akceptuje; liczby bez zmian (z WAR_WEARINESS_PARAMS)
+- Weryfikacja: tsc 0; logic 213/213; declutter-test 15/0 (4 mutanty), forced-peace-pending 40/0, stages-view 22/0, forced-peace 14/0, wiki-weariness 18/0; Chromium: diplo-peace-auto-stale-offer-live 15/0, zero pageerror
+- Limity: Wizualny dymek tooltipu i zrzut PRZED NIE ZMIERZONO (natywny title nie trafia do zrzutu headless); na wierzchu okna dwa zdania o zmeczeniu (lead i whyShort) - kosmetyka do decyzji wlasciciela
+
 ## ROBOCZA 7baf24b2 -- 2026-11-18 -- FALA 826: TREATYIMPL: parytet sily i ceny x10 dla rozejmu, NAP, przemarszu, sojuszy i wasala (jak w pokoju) (testowa)
 
 - Ceny bazowe x10 (rozejm 2000 z mnoznikiem 1-L, NAP 2000, przemarsz 600, sojusz obronny 4200, pelny 5000, wasal 3500); S=X*r, W=X/r, D=S-W placi slabsza (wedlug Power, bez sufitu), r=1 => D=0; AI slabsze nie sklada ofert bez czym zaplacic; panel PW i Civpedia

@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "7baf24b26dbe3e1a57663abef3f7d072",
-  "bundleSha256": "6987b5676581fa7f46bb8339c78d7204a741278c1a5c8c1e8e9ba3975a7650bc",
-  "bundleBytes": 14890131,
+  "bundleMd5": "7679767248251d5db1b89a0c5313ac17",
+  "bundleSha256": "60c222ee89ea6434489f915cc355f83878789f9b319c03b07f8d93c5d7502fc3",
+  "bundleBytes": 14890294,
   "sourceSnapshot": {
-    "source": "TREATYIMPL r3 FC ae9456d75 + merge main 2b950566",
+    "source": "FPDECLUT r1 FC ae9813dac + merge main 899667a9",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 826: Ceny bazowe x10 (rozejm 2000 z mnoznikiem 1-L, NAP 2000, przemarsz 600, sojusz obronny 4200, pelny 5000, wasal 3500); S=X*r, W=X/r, D=S-W placi slabsza (wedlug Power, bez sufitu), r=1 => D=0; AI slabsze nie sklada ofert bez czym zaplacic; panel PW i Civpedia"
+    "FALA 827: Okno pokoju wymuszonego (showForcedPeaceModal): wyliczenia (tury wojny, zmienione miasta, 2,5% na ture i 10% za miasto, kto wygrywa wg sily militarnej, karencja, zaufanie) przeniesione do tooltipow; na wierzchu tytul, partner, jedno zdanie dlaczego, warunki i przycisk Akceptuje; liczby bez zmian (z WAR_WEARINESS_PARAMS)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; diplo-treaties-ai-parity 80/0, treaties-power-parity 50/0, rozejm-parity 25/0, truce-r1 31/0, acceptance-points 304/0, peace-pw-power-ratio 48/0, wiki-weariness 18/0; pomiar ofert rozejmu AI: 185 vs 107 (baza), 0 komorek gorzej; Chromium NIE ZMIERZONO"
+    "tsc 0; logic 213/213; declutter-test 15/0 (4 mutanty), forced-peace-pending 40/0, stages-view 22/0, forced-peace 14/0, wiki-weariness 18/0; Chromium: diplo-peace-auto-stale-offer-live 15/0, zero pageerror"
   ],
   "limits": [
-    "AI silniejsze nie zada D od gracza przy sojuszu/NAP/przemarszu (brak nosnika: miasta zakazane, platnosc surowcami niezatwierdzona); AI-AI sojusz/NAP/wasal bez toru w kodzie; Chromium NIE ZMIERZONO"
+    "Wizualny dymek tooltipu i zrzut PRZED NIE ZMIERZONO (natywny title nie trafia do zrzutu headless); na wierzchu okna dwa zdania o zmeczeniu (lead i whyShort) - kosmetyka do decyzji wlasciciela"
   ],
-  "finalControl": "R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 r3 FC PASS-WITH-NOTES ae9456d75 (kod 0b79f2848, obrona fd4622792, integracja ae9456d75)",
+  "finalControl": "R-WEB-UI-DIPLO-FORCED-PEACE-WINDOW-DECLUTTER-TOOLTIPS-Q1 r1 FC PASS-WITH-NOTES ae9813dac (kod 1101d7fdc, obrona 4aaeaae17)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T12:30:56",
+  "hubGeneratedAt": "2026-11-18T12:48:43",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "7baf24b26dbe3e1a57663abef3f7d072",
-      "sizeBytes": 14890131
+      "md5": "7679767248251d5db1b89a0c5313ac17",
+      "sizeBytes": 14890294
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "7baf24b26dbe3e1a57663abef3f7d072",
-      "sizeBytes": 14890131
+      "md5": "7679767248251d5db1b89a0c5313ac17",
+      "sizeBytes": 14890294
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "7baf24b26dbe3e1a57663abef3f7d072",
-      "sizeBytes": 14890131
+      "md5": "7679767248251d5db1b89a0c5313ac17",
+      "sizeBytes": 14890294
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "7baf24b26dbe3e1a57663abef3f7d072",
-      "sizeBytes": 14890131
+      "md5": "7679767248251d5db1b89a0c5313ac17",
+      "sizeBytes": 14890294
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "7baf24b26dbe3e1a57663abef3f7d072",
-      "sizeBytes": 14890131
+      "md5": "7679767248251d5db1b89a0c5313ac17",
+      "sizeBytes": 14890294
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "7baf24b26dbe3e1a57663abef3f7d072",
-      "sizeBytes": 14890131
+      "md5": "7679767248251d5db1b89a0c5313ac17",
+      "sizeBytes": 14890294
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "7baf24b26dbe3e1a57663abef3f7d072",
-      "sizeBytes": 14890131
+      "md5": "7679767248251d5db1b89a0c5313ac17",
+      "sizeBytes": 14890294
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "7baf24b26dbe3e1a57663abef3f7d072",
-      "sizeBytes": 14890131
+      "md5": "7679767248251d5db1b89a0c5313ac17",
+      "sizeBytes": 14890294
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "7baf24b26dbe3e1a57663abef3f7d072",
-      "sizeBytes": 14890131
+      "md5": "7679767248251d5db1b89a0c5313ac17",
+      "sizeBytes": 14890294
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "7baf24b26dbe3e1a57663abef3f7d072",
-      "sizeBytes": 14890131
+      "md5": "7679767248251d5db1b89a0c5313ac17",
+      "sizeBytes": 14890294
     }
   ],
-  "md5": "7baf24b26dbe3e1a57663abef3f7d072",
+  "md5": "7679767248251d5db1b89a0c5313ac17",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
