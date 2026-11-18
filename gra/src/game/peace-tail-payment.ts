@@ -183,6 +183,32 @@ export function peaceTailHoldings(
   return out;
 }
 
+/** Zależności okablowania (w grze: ownerTreasury, ownerResourceStock, dealTradeEraForOwners z main.ts). */
+export interface PeaceTailWiringDeps {
+  treasuryOf: (ownerId: number) => number;
+  stockOf: (ownerId: number, key: string) => number;
+  eraOf: (ownerA: number, ownerB: number) => 1 | 2 | 3;
+}
+
+/**
+ * Wycena i zapasy PŁATNIKA ogona (r4, zarzut Evaluatora 1): jedyne miejsce, w którym zapasy płatnika są składane
+ * z getterów stanu gry. `payerId` = strona płacąca (nie zawsze proponent), `partnerId` = druga strona.
+ * Zapasy czytane WYŁĄCZNIE dla `payerId` (treasuryOf/stockOf), epoka wyceny z eraOf(payer, partner).
+ */
+export function peaceTailPricingForPayer(
+  payerId: number,
+  partnerId: number,
+  deps: PeaceTailWiringDeps,
+  order: readonly string[] = PEACE_TAIL_ORDER,
+): PeaceTailPricing {
+  const era = deps.eraOf(payerId, partnerId);
+  return {
+    holdings: peaceTailHoldings(deps.treasuryOf(payerId), k => deps.stockOf(payerId, k), order),
+    pnPerUnit: k => peaceTailPnPerUnit(k, era),
+    stepOf: k => peaceTailStep(k, era),
+  };
+}
+
 /** Strona płacąca pokój: jeśli autor oferty daje (giveItems) — autor; jeśli żąda (receiveItems) — druga strona. */
 export function peacePayerOwner(proposerId: number, responderId: number, authorGives: boolean): number {
   return authorGives ? proposerId : responderId;

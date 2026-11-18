@@ -9,6 +9,7 @@
  *   D  gracz: evaluateProposal — kompozytor ogona (słabszy gracz / silniejsza AI), płatnik != proponent
  *   E  tooltip „Dopłata: X złota, Y rudy żelaza" (peaceTailRowHtml)
  *   F  okablowanie zapasów: peaceTailHoldings + realny transferSurowiecIlosc (Spichlerz państwa = suma c.surowce)
+ *   W  peaceTailPricingForPayer (funkcja składająca zapasy/epokę płatnika z getterów gry; main.ts tylko przekazuje getter)
  *   M  mutacje na KOPII źródeł (kolejność, stolica, brak ogona w tiku) → muszą czerwienić
  *
  *   node tools/diplo-peace-tail-integration-test.cjs     # exit 0 = wszystko zielone i mutanty wykryte
@@ -331,6 +332,31 @@ function suite(M) {
     const r = M.composePeaceTail(100, { holdings: { braz: 47 }, pnPerUnit, stepOf: () => 5, order: ['braz'] });
     return st >= 1 && r.tail[0].qty % 5 === 0 && r.tail[0].qty <= 47 ? true : { st, r };
   });
+  // ---------------- W: okablowanie zapasów płatnika (r4, zarzut Evaluatora 1: funkcja składa zapasy z getterów gry) ----------------
+  const wiring = (log) => ({
+    treasuryOf: id => { log.push(['treasury', id]); return id === 7 ? 321.9 : 1e9; },
+    stockOf: (id, k) => { log.push(['stock', id, k]); return id === 7 ? ({ braz: 12.5, zelazo: 4, ruda: 9 }[k] ?? 0) : 1e9; },
+    eraOf: (a, b) => { log.push(['era', a, b]); return 2; },
+  });
+  t('W1 peaceTailPricingForPayer: zapasy i epoka czytane WYŁĄCZNIE dla płatnika (id 7), nigdy dla partnera', () => {
+    const log = [];
+    const p = M.peaceTailPricingForPayer(7, 9, wiring(log));
+    const onlyPayer = log.every(e => e[0] === 'era' ? e[1] === 7 && e[2] === 9 : e[1] === 7);
+    return onlyPayer && p.holdings.zloto === 321 && p.holdings.braz === 12 && p.holdings.zelazo === 4 && p.holdings.ruda === 9
+      ? true : { log, holdings: p.holdings };
+  });
+  t('W2 peaceTailPricingForPayer: pnPerUnit/stepOf używają epoki z eraOf(płatnik, partner)', () => {
+    const log = [];
+    const p = M.peaceTailPricingForPayer(7, 9, wiring(log));
+    const ok = p.pnPerUnit('braz') === M.peaceTailPnPerUnit('braz', 2) && p.stepOf('braz') === M.peaceTailStep('braz', 2)
+      && log.some(e => e[0] === 'era' && e[1] === 7 && e[2] === 9);
+    return ok ? true : { pn: p.pnPerUnit('braz') };
+  });
+  t('W3 peaceTailPricingForPayer: pusty stan płatnika → zapasy 0, nigdy < 0 (getter ujemny/NaN)', () => {
+    const deps = { treasuryOf: () => -50, stockOf: () => NaN, eraOf: () => 1 };
+    const p = M.peaceTailPricingForPayer(1, 2, deps);
+    return Object.values(p.holdings).every(v => v === 0) ? true : p.holdings;
+  });
   return out;
 }
 
@@ -357,6 +383,7 @@ function suite(M) {
     ['M5 wearyTick ignoruje tailPlan', { [WW]: sub(rd(WW), 'const planFor = (): PeacePaymentPlan => d.tailPlan', 'const planFor = (): PeacePaymentPlan => (false as boolean) && d.tailPlan') }],
     ['M6 kompozytor gracza: ignoruje playerStock (płatnik = proponent)', { [DP]: sub(rd(DP), 'ctx.playerStock ?? ctx.payerStock, nonCityItems', 'ctx.payerStock, nonCityItems') }],
     ['M7 kompozytor gracza (słabszy): ignoruje zapasy ponad stan (brak ucięcia do zapasu)', { [PT]: sub(rd(PT), 'const qty = Math.min(have, unitsNeeded);', 'const qty = unitsNeeded;') }],
+    ['M8 okablowanie: zapasy płatnika czytane z partnera (zamiana stron)', { [PT]: sub(rd(PT), 'holdings: peaceTailHoldings(deps.treasuryOf(payerId), k => deps.stockOf(payerId, k), order),', 'holdings: peaceTailHoldings(deps.treasuryOf(partnerId), k => deps.stockOf(partnerId, k), order),') }],
   ];
   for (const [name, ov] of mutants) {
     if (Object.values(ov).some(v => v == null)) { console.log(`MUTANT ${name}: NIE ZASTOSOWANO (wzorzec nieobecny) -> FAIL`); exitCode = 1; continue; }

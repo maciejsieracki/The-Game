@@ -54,7 +54,7 @@ window.addEventListener('unhandledrejection', (e) => {
 // Imports
 
 import {
-  PEACE_TAIL_ORDER, peacePlanWithTail, peaceTailHoldings, peaceTailPnPerUnit, peaceTailStep, peaceTailBasketItems,
+  PEACE_TAIL_ORDER, peacePlanWithTail, peaceTailHoldings, peaceTailPricingForPayer, type PeaceTailWiringDeps, peaceTailPnPerUnit, peaceTailStep, peaceTailBasketItems,
   type PeaceTailPricing,
 } from './game/peace-tail-payment';
 import { humanizeId, nazwaCywilizacji, nazwaWyswietlana } from './game/text-names';
@@ -26037,9 +26037,9 @@ async function boot(): Promise<void> {
         // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1: zapas płatnika ogona pokoju (miasta proponującego).
         // ZARZUT 6 (Evaluator r2): złoto to Skarbiec państwa (ownerTreasury), nie suma c.surowce miast (tam złota nie ma).
         // Brąz/żelazo/rudy: suma Spichlerzy miast właściciela (ownerResourceStock).
-        payerStock: peaceTailHoldings(ownerTreasury(proposerId), k => ownerResourceStock(proposerId, k), PEACE_TAIL_ORDER),
+        payerStock: peaceTailPricingForPayer(proposerId, responderId, peaceTailWiringDeps()).holdings,
         // r3: płatnikiem ogona w ścieżce „gracz jest autorem pokoju" jest GRACZ (nie zawsze proponent: kontroferta, AI proponuje graczowi).
-        playerStock: peaceTailHoldings(ownerTreasury(ME()), k => ownerResourceStock(ME(), k), PEACE_TAIL_ORDER),
+        playerStock: peaceTailPricingForPayer(ME(), proposerId, peaceTailWiringDeps()).holdings,
         proposerRespekt,
         responderRespekt,
         militaryRatio,
@@ -39155,13 +39155,12 @@ async function boot(): Promise<void> {
      * ten sam stan, z którego transferSurowiecIlosc realnie zdejmuje towar; empireFoodStates.zapasyPanstwa to wyłącznie żywność).
      * Wycena w epoce UMOWY pary (dealTradeEraForOwners). `payerId` = STRONA, KTÓRA PŁACI (nie zawsze proponent).
      */
+    function peaceTailWiringDeps(): PeaceTailWiringDeps {
+      return { treasuryOf: ownerTreasury, stockOf: ownerResourceStock, eraOf: dealTradeEraForOwners };
+    }
+
     function peaceTailPricingFor(payerId: number, partnerId: number): PeaceTailPricing {
-      const era = dealTradeEraForOwners(payerId, partnerId);
-      return {
-        holdings: peaceTailHoldings(ownerTreasury(payerId), k => ownerResourceStock(payerId, k), PEACE_TAIL_ORDER),
-        pnPerUnit: k => peaceTailPnPerUnit(k, era),
-        stepOf: k => peaceTailStep(k, era),
-      };
+      return peaceTailPricingForPayer(payerId, partnerId, peaceTailWiringDeps());
     }
 
     /** Majątek przegranego do zapłaty za pokój w istniejących formach koszyka: złoto, surowce, cesja miasta. */
