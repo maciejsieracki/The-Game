@@ -1199,6 +1199,7 @@ import {
   type DeferrableNoticeChannel,
 } from './game/event-defer-queue';
 import { isBlockingSidePanelEvent } from './game/side-panel-event-priority';
+import { captureEventOrigin } from './ui/sidePanelEventTabs';
 import {
   sidePanelEventLinkKind,
   sidePanelEventLinkLabel,
@@ -18304,7 +18305,7 @@ async function boot(): Promise<void> {
     function showHintMessage(
       msg: string,
       durationMs: number = 3000,
-      ctx?: { hex?: { q: number; r: number }; cityId?: string; ownerId?: number },
+      ctx?: { hex?: { q: number; r: number }; cityId?: string; ownerId?: number; origin?: 'other-civs' },
       // R-WEB-BATTLE-UNDEPLOYED-UNITS-LOST-Q1: komunikat tuz przed bitwa musi byc ponad
       // pelnoekranowa scena bitwy (.overlay z-index 9999), inaczej jest niewidoczny.
       aboveBattle: boolean = false,
@@ -18978,7 +18979,14 @@ async function boot(): Promise<void> {
         const capitulationMsg = captureOutcome
           ? `${captureOutcome.eliminatedCivLabel} — ELIMINACJA! ${capitulationBaseMsg} ${captureOutcome.eliminatedDetails}`
           : `${capitulationBaseMsg} ${captureReportOneLine(surrenderRows)}`;
-        showHintMessage(capitulationMsg, captureOutcome ? 6000 : 5500, { cityId: city.id, ownerId: newOwner });
+        // R-WEB-UI-NOTIF-OTHER-CIV-EVENTS-TO-DIPLOMACY-TAB-Q1: gracz nie jest stroną (ani zdobywca,
+        // ani poprzedni właściciel) → origin 'other-civs' = zakładka „Dyplomacja”, nie „Ważne”.
+        const capitulationOrigin = captureEventOrigin(isHuman(oldOwner), isHuman(newOwner));
+        showHintMessage(capitulationMsg, captureOutcome ? 6000 : 5500, {
+          cityId: city.id,
+          ownerId: newOwner,
+          ...(capitulationOrigin ? { origin: capitulationOrigin } : {}),
+        });
       } else {
         showHintMessage(city.name + ': głód — oblężenie zakończone bez przejęcia.', 4500);
       }

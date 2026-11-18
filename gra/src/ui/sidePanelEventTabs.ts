@@ -87,6 +87,18 @@ export function eventTabOf(
 }
 
 /**
+ * R-WEB-UI-NOTIF-OTHER-CIV-EVENTS-TO-DIPLOMACY-TAB-Q1: wydarzenie zmiany właściciela miasta
+ * (przejęcie, kapitulacja z głodu) dotyczy INNYCH cywilizacji, gdy gracz nie jest ani zdobywcą,
+ * ani poprzednim właścicielem. Wtedy origin = 'other-civs' → zakładka „Dyplomacja”.
+ */
+export function captureEventOrigin(
+  oldOwnerIsHuman: boolean,
+  newOwnerIsHuman: boolean,
+): 'other-civs' | undefined {
+  return !oldOwnerIsHuman && !newOwnerIsHuman ? 'other-civs' : undefined;
+}
+
+/**
  * Zakładka domyślna: „Ważne” gdy są wpisy, inaczej „Dyplomacja”, inaczej „Inne”.
  * Wywołujący przekazuje liczniki BEZ ukrytych wpisów AI↔AI (patrz sidePanelHud), żeby handel
  * innych cywilizacji sam nie przełączał panelu na Dyplomację.
