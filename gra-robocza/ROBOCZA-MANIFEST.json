@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "11bbd0aa295ce5252c7833e54797db5e",
-  "bundleSha256": "ec937c3aec54ab1d3340c63ffa9c802f04bd465ef0d159f4dc4a0364681b3f9a",
-  "bundleBytes": 14949734,
+  "bundleMd5": "70401185462526b9f92638b86c026928",
+  "bundleSha256": "1a36c518f6fb12a2dbba50461dd12e2c38e7a6e8f0972ce16c3c243516bd2912",
+  "bundleBytes": 14950261,
   "sourceSnapshot": {
-    "source": "gra/ (main a18c0d8d + merge FC a3cb25482)",
+    "source": "gra/ (main 7eae7bb7 + merge FC 4103de843)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 837: Hooki civTest w main.ts (peaceRoomTailForTest, extraPayload w pushNegotiationForTest) i testy zywe okna platnosci D, ogona pokoju i stosunku sil; logika gry bez zmian"
+    "FALA 838: Hooki civTest w main.ts (setPairWarAgeForTest, wearDiagForTest tylko odczyt, saveForTest/loadForTest) i testy zywe D2/S/A z mutantami; logika gry bez zmian"
   ],
   "verification": [
-    "FC PASS-WITH-NOTES a3cb25482: tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; zywy Chromium 29/29 (wiersz D, wartosc rowna przelewowi), ogon pokoju 16/16, mutacje czerwone; ai-ai-treaty-nap-wiring 44/44, evaluate 21/0"
+    "FC PASS-WITH-NOTES 4103de843: tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; zywy Chromium civSeed=4242: D2, S, A PASS, zero pageerror; mutanty D2/S/A czerwone; d2-guard 9/9, pending 40/0, truce-impl 91/0 (w merge z main), window-declutter 16/0"
   ],
   "limits": [
-    "NIE ZMIERZONO: wyglad wiersza D na zrzucie (natywny title), wasal, sojusz, kierunek gracz-AI, rozejm jako prawdziwa sciezka; kosmetyka: wiersz D i podzial PW dublowane w tooltipie"
+    "NIE ZMIERZONO: ekran powitalny (z-index 9650) zaslania okno pokoju wymuszonego (z-index 500) w nowej grze poza harnessem; mutant S2 przezywa (sciezka redundantna)"
   ],
-  "finalControl": "R-WEB-LIVE-VERIFY-TREATY-PAYMENT-WINDOWS-2-Q1 r3 (Operator Sonnet po 2 rundach Haiku, Obrona Haiku) FC PASS-WITH-NOTES a3cb25482 (kod 2a2e76e6d, operator 80069f716); tylko hooki civTest i testy zywe, logika gry bez zmian",
+  "finalControl": "R-WEB-DIPLO-FORCED-PEACE-D2-HOOKS-Q1 r3 (Operator Sonnet po 2 rundach Haiku, Obrona Haiku) FC PASS-WITH-NOTES 4103de843 (kod 7146283a9, operator 62cc6b136); tylko hooki civTest i testy zywe D2/S/A, logika gry bez zmian",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T19:05:44",
+  "hubGeneratedAt": "2026-11-18T19:07:31",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "11bbd0aa295ce5252c7833e54797db5e",
-      "sizeBytes": 14949734
+      "md5": "70401185462526b9f92638b86c026928",
+      "sizeBytes": 14950261
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "11bbd0aa295ce5252c7833e54797db5e",
-      "sizeBytes": 14949734
+      "md5": "70401185462526b9f92638b86c026928",
+      "sizeBytes": 14950261
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "11bbd0aa295ce5252c7833e54797db5e",
-      "sizeBytes": 14949734
+      "md5": "70401185462526b9f92638b86c026928",
+      "sizeBytes": 14950261
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "11bbd0aa295ce5252c7833e54797db5e",
-      "sizeBytes": 14949734
+      "md5": "70401185462526b9f92638b86c026928",
+      "sizeBytes": 14950261
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "11bbd0aa295ce5252c7833e54797db5e",
-      "sizeBytes": 14949734
+      "md5": "70401185462526b9f92638b86c026928",
+      "sizeBytes": 14950261
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "11bbd0aa295ce5252c7833e54797db5e",
-      "sizeBytes": 14949734
+      "md5": "70401185462526b9f92638b86c026928",
+      "sizeBytes": 14950261
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "11bbd0aa295ce5252c7833e54797db5e",
-      "sizeBytes": 14949734
+      "md5": "70401185462526b9f92638b86c026928",
+      "sizeBytes": 14950261
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "11bbd0aa295ce5252c7833e54797db5e",
-      "sizeBytes": 14949734
+      "md5": "70401185462526b9f92638b86c026928",
+      "sizeBytes": 14950261
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "11bbd0aa295ce5252c7833e54797db5e",
-      "sizeBytes": 14949734
+      "md5": "70401185462526b9f92638b86c026928",
+      "sizeBytes": 14950261
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "11bbd0aa295ce5252c7833e54797db5e",
-      "sizeBytes": 14949734
+      "md5": "70401185462526b9f92638b86c026928",
+      "sizeBytes": 14950261
     }
   ],
-  "md5": "11bbd0aa295ce5252c7833e54797db5e",
+  "md5": "70401185462526b9f92638b86c026928",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

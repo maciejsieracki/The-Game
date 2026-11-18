@@ -1,3 +1,9 @@
+## ROBOCZA 70401185 -- 2026-11-18 -- FALA 838: Pokoj wymuszony: pomiary zywe D2, wczytanie z oczekujacym, AI-AI bez okna (hooki testowe) (testowa)
+
+- Hooki civTest w main.ts (setPairWarAgeForTest, wearDiagForTest tylko odczyt, saveForTest/loadForTest) i testy zywe D2/S/A z mutantami; logika gry bez zmian
+- Weryfikacja: FC PASS-WITH-NOTES 4103de843: tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; zywy Chromium civSeed=4242: D2, S, A PASS, zero pageerror; mutanty D2/S/A czerwone; d2-guard 9/9, pending 40/0, truce-impl 91/0 (w merge z main), window-declutter 16/0
+- Limity: NIE ZMIERZONO: ekran powitalny (z-index 9650) zaslania okno pokoju wymuszonego (z-index 500) w nowej grze poza harnessem; mutant S2 przezywa (sciezka redundantna)
+
 ## ROBOCZA 11bbd0aa -- 2026-11-18 -- FALA 837: Zywa weryfikacja okien platnosci traktatow (hooki testowe) (testowa)
 
 - Hooki civTest w main.ts (peaceRoomTailForTest, extraPayload w pushNegotiationForTest) i testy zywe okna platnosci D, ogona pokoju i stosunku sil; logika gry bez zmian
