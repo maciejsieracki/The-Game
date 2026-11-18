@@ -32,6 +32,7 @@ import {
 } from './civ-ai-data';
 import { isBarbarian } from './barbarians';
 import { applyWiarygodnoscTempoDoDelty, zaufanieDryfOdWiarygodnosci } from './diplomacy-credibility';
+import { capZaufanieZaHandel, isHarderDiplomacyEnabled } from './diplomacy-harder';
 import { warWearinessLevel, WAR_WEARINESS_PARAMS } from './war-weariness';
 
 // ---------------------------------------------------------------------------
@@ -1774,6 +1775,11 @@ export interface TickCtx {
    * `undefined` = brak dryfu (SILNIK: para w wojnie — C-WIAR-WROG=A).
    */
   wiarygodnoscSelf?: number;
+  /**
+   * R-WEB-DIPLO-HARDER-RELATIONS A3: zazdrość wobec lidera (Zaufanie/turę, ≤ 0). Ustawia SILNIK
+   * tylko gdy twardaDyplomacja aktywna; brak/undefined = 0.
+   */
+  zazdroscDelta?: number;
 }
 
 /**
@@ -1802,7 +1808,11 @@ export interface TickCtx {
  *
  * TODO: Akumulatory per-religia (+15/−10 cap) — uproszczenie na przyszłość.
  */
-export function computeTickZaufanieDelta(ctx: TickCtx, atWar: boolean): number {
+export function computeTickZaufanieDelta(
+  ctx: TickCtx,
+  atWar: boolean,
+  zaufanieObecne?: number,
+): number {
   const p = getEffectiveDiplomacyParams();
   let dZ = 0;
 
@@ -1810,9 +1820,20 @@ export function computeTickZaufanieDelta(ctx: TickCtx, atWar: boolean): number {
     dZ += zaufanieDryfOdWiarygodnosci(ctx.wiarygodnoscSelf);
   }
 
-  if (ctx.aktywnyHandel) dZ += p.handel_zaufanie_perTura;
   const peaceTier = ctx.pokojTrustTier
     ?? (ctx.aktywnyPakt ? 'nap' as PokojTrustTier : undefined);
+  // R-WEB-DIPLO-HARDER A2: handel nie podnosi Zaufania ponad sufit bez NAP/sojuszu (flaga OFF = bez zmian).
+  if (ctx.aktywnyHandel) {
+    let handelDZ = p.handel_zaufanie_perTura;
+    if (zaufanieObecne !== undefined && isHarderDiplomacyEnabled()) {
+      handelDZ = capZaufanieZaHandel(
+        zaufanieObecne,
+        handelDZ,
+        peaceTier === 'nap' || peaceTier === 'sojusz',
+      );
+    }
+    dZ += handelDZ;
+  }
   switch (peaceTier) {
     case 'sojusz': dZ += p.sojusz_zaufanie_perTura; break;
     case 'nap':    dZ += p.nap_zaufanie_perTura; break;
@@ -1827,6 +1848,8 @@ export function computeTickZaufanieDelta(ctx: TickCtx, atWar: boolean): number {
 
   dZ = applyWiarygodnoscTempoDoDelty(dZ, ctx.wiarygodnoscSelf);
 
+  if (ctx.zazdroscDelta) dZ += ctx.zazdroscDelta;
+
   if (atWar && dZ > 0) dZ = 0;
 
   return dZ;
@@ -1837,7 +1860,7 @@ export function tickDiplomacy(rdip: RelacjaDyplomatyczna, ctx: TickCtx): Relacja
 
   const atWar = isRelationAtWar(rdip);
 
-  const dZ = computeTickZaufanieDelta(ctx, atWar);
+  const dZ = computeTickZaufanieDelta(ctx, atWar, rdip.zaufanie);
 
   // --- zanik urazów historycznych co 20 tur ---
   // main.ts trzyma slim Relation (bez traktaty/urazy) — guard dla bezpiecznego ticku.

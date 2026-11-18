@@ -982,6 +982,11 @@ import {
   aiAiPairs, crisisStepForPair, dobraWolaTurnStep, isAiAiEligibleOwner, isDiploTickWarBrakeEnabled,
   parseCrisisCounters, sortCrisisQueue, tradeTrustBonusPerTura,
 } from './game/diplomacy-tick-war-brake';
+// R-WEB-DIPLO-HARDER-RELATIONS A1–A3: twarda dyplomacja — wszystko za isHarderDiplomacyEnabled() (domyślnie OFF).
+import {
+  capZaufanieZaHandel, harderPairDeltas, isHarderDiplomacyEnabled,
+  neighborTenureTur, resetNeighborTenureSession,
+} from './game/diplomacy-harder';
 import {
   resolveAutoBattleByPower,
   sumRosterFieldM,
@@ -2756,6 +2761,7 @@ async function boot(): Promise<void> {
 
     /** Etykiety + epoka: wszyscy AI startują w tej samej epoce co gracz (E1). */
     function initAllAiOwnersForNewGame(epochId: string): void {
+      resetNeighborTenureSession(); // R-WEB-DIPLO-HARDER A1: nowa gra zaczyna licznik od zera
       for (const oid of allAiOwnerIdsOnMap()) {
         setupAiOwnerEpoch(oid, epochId);
       }
@@ -10373,6 +10379,7 @@ async function boot(): Promise<void> {
 
     /** Pełny reset UI / flag przed wczytaniem innej gry (nie czyści mapy — to robi rebuild). */
     function prepareSessionForLoad(): void {
+      resetNeighborTenureSession(); // R-WEB-DIPLO-HARDER A1: licznik sąsiedztwa nie przechodzi między grami/wczytaniami
       resetStuckInteractiveState();
       resetEmpireRecruitPanelSession(); // R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1: panel/stan UI nie przeżywa wczytania
       resetArmyRecruitDraftsSession();
@@ -12630,8 +12637,21 @@ async function boot(): Promise<void> {
           zaufanie: rel.zaufanie ?? 0,
           kolejneTuryDostaw: streak,
         }, diploTickP7);
-        if (bonus > 0) {
-          setDiploRelation(d.sellerId, d.buyerId, { ...rel, zaufanie: Math.min(100, (rel.zaufanie ?? 0) + bonus) });
+        // R-WEB-DIPLO-HARDER A2: wymiana nie podnosi Zaufania ponad sufit bez NAP/sojuszu (flaga OFF = bez zmian).
+        const bonusCapped = isHarderDiplomacyEnabled()
+          ? capZaufanieZaHandel(
+            rel.zaufanie ?? 0,
+            bonus,
+            (() => {
+              const t = resolvePokojTrustTier(activeDeals, d.sellerId, d.buyerId, {
+                contactEstablished: true, atWar: false,
+              });
+              return t === 'nap' || t === 'sojusz';
+            })(),
+          )
+          : bonus;
+        if (bonusCapped > 0) {
+          setDiploRelation(d.sellerId, d.buyerId, { ...rel, zaufanie: Math.min(100, (rel.zaufanie ?? 0) + bonusCapped) });
         }
       }
     }
@@ -24480,6 +24500,30 @@ async function boot(): Promise<void> {
     /**
      * TickCtx dla pary (a,b) — wspólne źródło dla tickDiplomacy, rozbicia relacji i UI Δ/turę.
      */
+    /**
+     * R-WEB-DIPLO-HARDER A3: lider Mocy (ta sama miara co pasek Respektu, objectivePowerForOwnerEffective).
+     * Cache na turę — liczone raz na tykanie, nie dla każdej pary.
+     */
+    let diploHarderLeaderCache: { turn: number; leaderId: number; mocLidera: number; mocDrugiego: number } | null = null;
+    function diploHarderLeaderInfo(): { leaderId: number; mocLidera: number; mocDrugiego: number } {
+      if (diploHarderLeaderCache && diploHarderLeaderCache.turn === turn) return diploHarderLeaderCache;
+      let leaderId = -1;
+      let best = -Infinity;
+      let second = -Infinity;
+      for (const o of allPowerOwnerIds()) {
+        const pw = objectivePowerForOwnerEffective(o);
+        if (pw > best) { second = best; best = pw; leaderId = o; }
+        else if (pw > second) second = pw;
+      }
+      diploHarderLeaderCache = {
+        turn,
+        leaderId,
+        mocLidera: best === -Infinity ? 0 : best,
+        mocDrugiego: second === -Infinity ? 0 : second,
+      };
+      return diploHarderLeaderCache;
+    }
+
     function buildDiplomacyTickCtxForPair(a: number, b: number): TickCtx {
       const rel = getDiploRelation(a, b);
       const relStatus = (rel as Relation).status;
@@ -24495,22 +24539,24 @@ async function boot(): Promise<void> {
       const wiarygodnoscAiAi = isDiploTickWarBrakeEnabled() && !playerInPair && !atWar
         ? (getWiarygodnosc(a) + getWiarygodnosc(b)) / 2
         : undefined;
-      return {
+      const pokojTier = resolvePokojTrustTier(activeDeals, a, b, {
+        contactEstablished: isHuman(a) ? diplomaticContactEstablishedSet(a).has(b)
+          : (isHuman(b) ? diplomaticContactEstablishedSet(b).has(a) : true),
+        atWar,
+      });
+      const karaWspolnaGranicaFlag =
+        cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2
+        && ownersShareLandBorderLive(a, b);
+      // R-WEB-DIPLO-TRUST-NUMBERS-Q1: kara za sąsiedztwo = 0 w karencji po pokoju lub rozejmie
+      // (żeby ustawione 10/20 nie zostało natychmiast zjedzone). Flaga karaWspolnaGranica zostaje
+      // dla relacji (NAP); wpływ na Zaufanie niesie wyłącznie karaWspolnaGranicaDelta.
+      const ctxBazowy: TickCtx = {
         turn,
         aktywnyHandel: hasSzlakowTreaty(activeDeals, a, b),
-        pokojTrustTier: resolvePokojTrustTier(activeDeals, a, b, {
-          contactEstablished: isHuman(a) ? diplomaticContactEstablishedSet(a).has(b)
-            : (isHuman(b) ? diplomaticContactEstablishedSet(b).has(a) : true),
-          atWar,
-        }),
+        pokojTrustTier: pokojTier,
         dobraWolaAktywna: brakeFlags.dobraWolaAktywna,
         wspolnyWrog: brakeFlags.wspolnyWrog,
-        karaWspolnaGranica:
-          cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2
-          && ownersShareLandBorderLive(a, b),
-        // R-WEB-DIPLO-TRUST-NUMBERS-Q1: kara za sąsiedztwo = 0 w karencji po pokoju lub rozejmie
-        // (żeby ustawione 10/20 nie zostało natychmiast zjedzone). Flaga karaWspolnaGranica zostaje
-        // dla relacji (NAP); wpływ na Zaufanie niesie wyłącznie karaWspolnaGranicaDelta.
+        karaWspolnaGranica: karaWspolnaGranicaFlag,
         karaWspolnaGranicaDelta: (isPeaceLockedBetween(a, b)
           || isTruceActive(getDiploPairMeta(a, b).truceUntilTurn, turn))
           ? 0
@@ -24521,6 +24567,29 @@ async function boot(): Promise<void> {
           ? wiarygodnoscAiAi
           : getWiarygodnosc(isHuman(a) ? a : b),
       };
+      // R-WEB-DIPLO-HARDER: flaga OFF = brak tej gałęzi, wynik identyczny jak baza.
+      if (!isHarderDiplomacyEnabled()) return ctxBazowy;
+      // A1: licznik sąsiedztwa bez NAP/sojuszu (narasta też w karencji; kara wraca po jej końcu).
+      const sasiedztwoBezPokoju = karaWspolnaGranicaFlag && pokojTier !== 'nap' && pokojTier !== 'sojusz';
+      const tenure = neighborTenureTur(diploPairKey(a, b), turn, sasiedztwoBezPokoju);
+      // A3: zazdrość lidera wobec każdej AI bez sojuszu z nim (partner-gracz = 0).
+      const lider = diploHarderLeaderInfo();
+      const czyParaZLiderem = lider.leaderId >= 0 && (a === lider.leaderId || b === lider.leaderId);
+      const inny = a === lider.leaderId ? b : a;
+      const harder = harderPairDeltas({
+        karaBazowa: ctxBazowy.karaWspolnaGranicaDelta ?? 0,
+        tenureTur: tenure,
+        czyParaZLiderem,
+        partnerToGracz: isHuman(inny),
+        sojuszZLiderem: czyParaZLiderem && resolvePokojTrustTier(activeDeals, lider.leaderId, inny, {
+          contactEstablished: true, atWar: false,
+        }) === 'sojusz',
+        mocLidera: lider.mocLidera,
+        mocDrugiego: lider.mocDrugiego,
+      });
+      ctxBazowy.karaWspolnaGranicaDelta = harder.karaWspolnaGranicaDelta;
+      ctxBazowy.zazdroscDelta = harder.zazdroscDelta;
+      return ctxBazowy;
     }
 
     /**
@@ -24555,6 +24624,7 @@ async function boot(): Promise<void> {
         }),
         karaWspolnaGranica: pairTickCtx.karaWspolnaGranica,
         karaWspolnaGranicaZaufaniePerTura: pairTickCtx.karaWspolnaGranicaDelta,
+        zazdroscZaufaniePerTura: pairTickCtx.zazdroscDelta,
         rywalizacjaTenSamTyp: sameTypCiv && !isPlayerSameCivCityState,
         miastoPanstwoSameCiv: isPlayerSameCivCityState,
         roznicaKulturowa: bothCivsKnown && sameCulture === false,
