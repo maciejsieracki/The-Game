@@ -24,7 +24,7 @@ const BUILD_DIR = process.env.CIV_LIVE_BUILD_DIR || '/tmp/civ-live-verify';
 const EVIDENCE = process.env.CIV_LIVE_EVIDENCE
   || path.join(REPO_ROOT, 'dyspozycje', 'autobot', 'runs', 'R-WEB-DIPLO-LIVE-VERIFY-STEPS-1-4-Q1', 'evidence');
 const OUT_URL = 'file://' + path.join(BUILD_DIR, 'index.html') + '?playtest=mapa';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const PLAYER = 0;
 const AI = 2; // AI używana we wszystkich scenariuszach (kontakt ustawiany hakiem)

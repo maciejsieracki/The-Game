@@ -21,7 +21,7 @@ const argv = process.argv;
 const OUT_DIR = argv.indexOf('--out') !== -1 ? path.resolve(argv[argv.indexOf('--out') + 1]) : null;
 const SHOT = argv.indexOf('--shot') !== -1 ? argv[argv.indexOf('--shot') + 1] : null;
 if (!OUT_DIR) { console.error('podaj --out <katalog scratch poza repo>'); process.exit(2); }
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 let pass = 0, fail = 0;
 function ok(label, cond, detail) {
   if (cond) { pass++; console.log('  OK  ' + label); }

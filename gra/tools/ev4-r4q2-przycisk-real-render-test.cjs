@@ -42,7 +42,7 @@ const BRAND_ASSETS_STUB = path.resolve(STUB_DIR, 'ev4-r4q2-brandassets-stub.ts')
 const ENTRY = path.resolve(__dirname, '.ev4-r4q2-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.ev4-r4q2-bundle.js');
 const SCIENCE_OWL_STUB = path.resolve(STUB_DIR, 'ev4-r4q2-scienceOwlIcon-stub.ts');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 let pass = 0, fail = 0;
 function check(name, cond, detail) {

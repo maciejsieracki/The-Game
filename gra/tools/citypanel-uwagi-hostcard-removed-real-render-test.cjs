@@ -55,7 +55,7 @@ const LEADER_PORTRAITS_STUB = path.resolve(STUB_DIR, 'citypanel-uwagi-hostcard-l
 const CITY_PANEL_TS = path.resolve(GRA, 'src', 'ui', 'cityPanel.ts');
 const ENTRY = path.resolve(__dirname, '.citypanel-uwagi-hostcard-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.citypanel-uwagi-hostcard-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const argOf = (flag) => {
   const i = process.argv.indexOf(flag);
   return i > -1 ? process.argv[i + 1] : null;

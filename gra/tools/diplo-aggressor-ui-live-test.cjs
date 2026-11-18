@@ -25,7 +25,7 @@ const SCRATCH = process.argv[2] || path.join(os.tmpdir(), 'civ-aggressor-live-' 
 const EVIDENCE = process.argv[3]
   || path.join(REPO_ROOT, 'dyspozycje', 'autobot', 'runs', 'R-WEB-WAR-AGGRESSOR-FLAG-Q1', 'evidence');
 const OUT_HTML = 'file://' + path.join(SCRATCH, 'index.html') + '?playtest=mapa';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const PLAYER = 0;
 const AI_A = 1;
 const AI_B = 2;

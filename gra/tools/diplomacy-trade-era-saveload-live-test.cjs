@@ -27,7 +27,7 @@ const BUNDLE = process.env.BUNDLE_DIR || path.join(SCRATCH, 'b');
 const PROFILE = path.join(SCRATCH, 'profile');
 const STATE_FILE = path.join(SCRATCH, 'state.json');
 const OUT_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const PLAYER = 0;
 let AI = 1; // wyznaczany w fazie save (AI w pokoju z graczem)
 const SLOT = 'trade-era-roundtrip';

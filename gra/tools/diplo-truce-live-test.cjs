@@ -62,7 +62,7 @@ const EVIDENCE = process.argv[3]
 // (R-WEB-ECON-NO-NEGATIVE-STOCKS, decyzje #365/#368) blokuje endTurn od tury 2, bo scenariusz nie ma bufora żywności.
 // Hak bufora (__nnsMeasureDebug.setPlayerGranary) jest tylko przy ?civTest=1, więc URL dopina civTest=1 (bez zmiany logiki gry).
 const OUT_HTML = 'file://' + path.join(SCRATCH, 'index.html') + '?playtest=mapa&civTest=1';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const PLAYER = 0;
 const AI = 1;

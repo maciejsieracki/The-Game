@@ -71,7 +71,7 @@ const BUNDLE_MAIN = path.resolve(__dirname, '.unit-card-3d-coverage-bundle.js');
 const ENTRY_CITY = path.resolve(__dirname, '.unit-card-3d-coverage-city-entry.ts');
 const BUNDLE_CITY = path.resolve(__dirname, '.unit-card-3d-coverage-city-bundle.js');
 const CITY_PANEL_TS = path.join(GRA, 'src', 'ui', 'cityPanel.ts');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const units = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'units.json'), 'utf8'));
 const firstUnit = units.find((u) => u && u.Jednostka);

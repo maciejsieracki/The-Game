@@ -77,7 +77,7 @@ const RENDERER_TS = path.resolve(ENTITY_CARDS_DIR, 'renderer.ts');
 const LIMIT_DECL = 'const ENTITY_CARD_STACK_LIMIT = 2;';
 const ENTRY = path.resolve(__dirname, '.entity-card-single-dialog-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.entity-card-single-dialog-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const SHOTS_DIR = process.env.CIV_SHOTS_DIR ? path.resolve(process.env.CIV_SHOTS_DIR) : null;
 
 let pass = 0;

@@ -25,7 +25,7 @@ const CITY_TS = path.resolve(GRA, 'src/ui/cityPanel.ts');
 const HOVER_TS = path.resolve(GRA, 'src/ui/hoverDetailDock.ts');
 const TMP_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const TMP = path.join(os.tmpdir(), `civ-garrison-panel-${TMP_RUN_ID}`);
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const NO_SHOTS = process.argv.includes('--no-shots');
 const SHOTS_DIR = path.join(os.tmpdir(), `civ-shots-garrison-panel-${TMP_RUN_ID}`);
 

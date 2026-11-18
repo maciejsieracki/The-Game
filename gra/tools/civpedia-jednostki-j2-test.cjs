@@ -53,7 +53,7 @@ const BRAND_ASSETS_STUB = path.resolve(STUB_DIR, 'civpedia-historia-infra-brandA
 const FIXTURE_BUNDLE_JSON = path.resolve(__dirname, '.civpedia-j2-fixture-bundle.json');
 const ENTRY = path.resolve(__dirname, '.civpedia-j2-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.civpedia-j2-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const BATCH_FILES = [
   'rydwan-sumeryjski.md', 'rydwan-wo-y.md', 'taran.md', 'triari.md',

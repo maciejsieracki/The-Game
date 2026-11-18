@@ -44,7 +44,7 @@ catch (e) {
 const SRC = path.resolve(__dirname, '..', 'src');
 const ENTRY = path.resolve(SRC, '.dks-render-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.dks-render-bundle.js');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const SHOT_DIR = path.resolve(
   __dirname, '..', '..', 'dyspozycje', 'autobot', 'runs',
   'P-DYPLO-KARTA-DECYZJI-BILANS-SKROT-Q1', 'dowody',

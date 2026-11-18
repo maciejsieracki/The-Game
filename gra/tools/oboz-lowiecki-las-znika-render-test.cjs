@@ -44,7 +44,7 @@ const { execSync } = require('child_process');
 
 const GRA = path.resolve(__dirname, '..');
 const VITE_CFG = path.join(__dirname, '.oboz-las-vite.config.mts');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const argOf = (flag) => {
   const i = process.argv.indexOf(flag);

@@ -37,7 +37,7 @@ catch (e) {
 
 const GRA = path.resolve(__dirname, '..');
 const MAIN_TS = path.join(GRA, 'src', 'main.ts');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const REASON_TEXT = 'Droga musi łączyć się z miastem lub już istniejącą drogą';
 
 const shotArgIdx = process.argv.indexOf('--shot');

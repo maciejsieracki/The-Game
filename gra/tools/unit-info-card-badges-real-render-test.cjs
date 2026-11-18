@@ -46,7 +46,7 @@ const SCIENCE_OWL_STUB = path.resolve(STUB_DIR, 'unit-info-card-badges-scienceOw
 const MINI_PREVIEW_STUB = path.resolve(STUB_DIR, 'unit-info-card-badges-mini-preview-stub.ts');
 const ENTRY = path.resolve(__dirname, '.unit-info-card-badges-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.unit-info-card-badges-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const units = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'units.json'), 'utf8'));
 const firstUnit = units.find((u) => u && u.Jednostka);

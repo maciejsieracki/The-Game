@@ -23,7 +23,7 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const BUNDLE = process.env.BUNDLE_DIR || path.join(os.tmpdir(), 'drtc-live-dist');
 const EVIDENCE_DIR = process.env.DRTC_EVIDENCE || '';
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa&civTest=1';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const GIVE = 'cegla';
 const RECV = 'zelazo';
 const BIG = 400;

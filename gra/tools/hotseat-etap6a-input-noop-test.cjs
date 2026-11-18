@@ -61,7 +61,7 @@ const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(GRA_DIR, '..');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const TURNS = Number(process.env.HOTSEAT6A_TURNS) || 20; // BINARNE KRYTERIUM (dispatch + plan §C "20 tur")
 const RNG_SEED = 135797;
 const CITY_STATES_COUNT = 2;

@@ -4,7 +4,7 @@
  * Prawdziwy Chromium + prawdziwy moduł ui/empireRecruitPanel.ts: wybór generała rekrutującego w panelu Rekrutacja.
  * Bez generała: przyciski „Rekrutuj” nieaktywne + ostrzeżenie; z generałem: znacznik „rekrutuje”, zamówienie przechodzi;
  * ponowny klik w wybranego odznacza. Zrzuty: dyspozycje/autobot/runs/R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1/.
- * Usage (z gra/): PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome node tools/army-auto-recruit-general-ui-test.cjs
+ * Usage (z gra/): PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium node tools/army-auto-recruit-general-ui-test.cjs
  */
 const fs = require('fs');
 const path = require('path');
@@ -15,7 +15,7 @@ const GRA = path.resolve(__dirname, '..');
 const ENTRY = path.resolve(__dirname, '.army-auto-recruit-general-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.army-auto-recruit-general-bundle.js');
 const SHOT_DIR = path.resolve(GRA, '..', 'dyspozycje', 'autobot', 'runs', 'R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1');
-const CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/opt/pw-browsers/chromium';
 
 let pass = 0, fail = 0;
 function check(name, ok, detail) {

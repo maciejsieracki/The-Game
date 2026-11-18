@@ -41,7 +41,7 @@ const BUNDLE = process.env.BUNDLE_DIR || path.join(SCRATCH, 'b');
 const PROFILE = path.join(SCRATCH, 'profile');
 const STATE_FILE = path.join(SCRATCH, 'state.json');
 const OUT_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const PLAYER = 0;
 const AI = 1;
 const SLOT_MAIN = 'truce-roundtrip-main';

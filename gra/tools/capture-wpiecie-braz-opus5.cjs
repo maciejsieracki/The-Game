@@ -13,7 +13,7 @@ const { chromium } = require('playwright');
 
 const HTML = path.join(__dirname, '.wpiecie-braz-opus5-preview.html');
 const OUT_DIR = process.argv[2];
-const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = '/opt/pw-browsers/chromium';
 
 if (!OUT_DIR) { console.error('Podaj katalog na zrzuty.'); process.exit(1); }
 

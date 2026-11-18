@@ -20,7 +20,7 @@ const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const OUT_DIR = path.join(os.tmpdir(), `civ-starting-army-first-city-${RUN_ID}`);
 const OUT_HTML = `file://${path.join(OUT_DIR, 'index.html')}`;
 const FALLBACK_CHROME = process.env.STARTING_ARMY_CHROME_PATH
-  || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+  || '/opt/pw-browsers/chromium';
 
 let pass = 0;
 let fail = 0;

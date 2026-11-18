@@ -20,7 +20,7 @@ const SHOT = argVal('--shot');
 const LABEL = argVal('--src') ? 'SRC=' + GRA_DIR : 'KOD';
 const OUT_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'civ-ro-live-'));
 const URL = 'file://' + path.join(OUT_DIR, 'index.html') + '?civTest=1';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const RO_MSG = 'ResizeObserver loop completed with undelivered notifications';
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 let pass = 0; let fail = 0;

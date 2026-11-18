@@ -84,7 +84,7 @@ mountEmpireDetailPanel(() => ({} as any));
   const ok = (c, m) => { if (c) { pass++; console.log('PASS:', m); } else { fail++; console.error('FAIL:', m); } };
   try {
     for (let i = 0; i < 60 && !/Local:/.test(vlog); i++) await new Promise(r => setTimeout(r, 500));
-    const exe = process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+    const exe = process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium';
     const browser = await chromium.launch({ executablePath: exe, args: ['--no-sandbox'] });
     const page = await browser.newPage({ viewport: { width: 800, height: 1000 } });
     const errors = [];

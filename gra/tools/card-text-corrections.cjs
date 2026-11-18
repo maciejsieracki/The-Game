@@ -115,6 +115,9 @@ const BUD = [
   { k: 'stolarnia', p: 'top5.0.zdanie', z: '(Stolarnie sumują się).', na: '(Stolarnie sumują się); drewno idzie na budowy i rekrutację.', c: 'R', r: 'drewno: koszt_surowce.drewno w buildings.json i „Surowiec”=Drewno w units.json.' },
   { k: 'kamieniarski', p: 'top5.0.zdanie', z: '(warsztaty sumują się).', na: '(warsztaty sumują się); kamień idzie na mury, świątynie i inne budowle.', c: 'R', r: 'kamień: koszt_surowce.kamien w buildings.json (mury 80, swiatynia 40, fort 100 …).' },
   { k: 'garncarnia', p: 'top5.0.zdanie', z: 'każdy Spichlerz zużywa jej 10 na turę (Spichlerz Królewski 20).', na: 'każdy Spichlerz zużywa jej 10 na turę (Spichlerz Królewski 20), a bez niej nie daje bonusów ludności.', c: 'R', r: 'econ-params.json:390-398.' },
+  { k: 'garncarnia', p: 'top5.0.tytul', z: 'do 50 sztuk na turę', na: '30 / 50 / 70 / 90 / 110 sztuk na turę (wg epoki)', liczba: '30–110', c: 'R', r: 'synchronizacja z econ-params.json:404-410 (decyzja właściciela 2026-11-14: ceramika Garncarnia 30/50/70/90/110); CSV budynki-top5.csv nieaktualny (klasa S = synchronizacja, poza R/J/A).' },
+  { k: 'garncarnia', p: 'top5.0.zdanie', z: 'Zamienia glinę i drewno w ceramikę;', na: 'Zamienia glinę i drewno w ceramikę: 30 sztuk na turę w epoce 1, potem +20 na każdą epokę;', c: 'R', r: 'synchronizacja z econ-params.json:404-410 (budynek_garncarnia_przepustowosc 30 + 20/epokę); klasa R.' },
+  { k: 'garncarnia', p: 'top5.0.dowod', z: 'gra/src/game/converters.ts:85; gra/data/econ-params.json:383-389; gra/data/econ-params.json:390-396', na: 'gra/src/game/converters.ts:93; gra/data/econ-params.json (budynek_garncarnia_przepustowosc, budynek_garncarnia_epoka2..5_przepustowosc)', c: 'R', r: 'dowód zsynchronizowany z aktualnym miejscem wartości przepustowości Garncarni (converters.ts:93; econ-params per epoka); klasa R.' },
   { k: 'cegielnia', p: 'cmz.0.korzysc', z: 'wytwarzać cegłę na budynki epoki Żelaza', na: 'wytwarzać cegłę na Akademię, Sąd, Łaźnię publiczną i Kuźnię żelaza', c: 'R', r: 'jak wyżej.' },
   { k: 'spichlerz_ii', p: 'top5.0.zdanie', z: 'Spichlerz Królewski podnosi sufit miasta bez Akweduktu do 12 mieszkańców.', na: 'Spichlerz Królewski podnosi sufit miasta bez Akweduktu do 12 mieszkańców; zużywa 20 ceramiki i 25 soli na turę.', c: 'R', r: 'ceramika i sól: econ-params.json:400-412; building-resource-gate.ts:70.' },
   // ---------- DODATEK 2: język ----------
@@ -155,7 +158,8 @@ function applyCorrections(out, list, label, errors, liczbaOf) {
     const next = cur.replace(e.z, () => e.na);
     item[field] = next;
     if (field === 'tytul' && liczbaOf) {
-      const l = liczbaOf(next);
+      // e.liczba (opcjonalny): jawna liczba korekty, gdy tytuł nie mieści się w regule liczbaOf (np. lista „30 / 50 / …”).
+      const l = e.liczba !== undefined ? e.liczba : liczbaOf(next);
       if (l) item.liczba = l; else delete item.liczba;
       // `liczba` stoi tuż po `tytul` w kontrakcie — odtwórz kolejność kluczy deterministycznie.
       const ordered = { tytul: item.tytul };

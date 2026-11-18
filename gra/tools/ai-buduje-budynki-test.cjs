@@ -76,7 +76,7 @@ const { execSync } = require('child_process');
 const GRA_DIR = path.resolve(__dirname, '..');
 const DEFAULTS_REL = path.join('src', 'game', 'empire-city-defaults.ts');
 const DEFAULTS_TS = path.join(GRA_DIR, DEFAULTS_REL);
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 // §9 pkt 1 (C-001): katalog wyjściowy MUSI leżeć poza drzewem repo.
 // --- P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1: katalogi/pliki tymczasowe unikalne per przebieg ---
 // Stala nazwa pod os.tmpdir() jest wspoldzielona przez KAZDY rownolegly przebieg (takze

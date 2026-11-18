@@ -96,7 +96,7 @@ process.on('exit', () => {
 })();
 const OUT_DIR = path.join(os.tmpdir(), `civ-dist-perf-long-session-${TMPDIR_RUN_ID}`);
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html') + '?playtest=mapa';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const TOTAL_TURNS = Number(process.argv[2]) || 150;
 const CHECKPOINT_EVERY = Number(process.argv[3]) || 10;

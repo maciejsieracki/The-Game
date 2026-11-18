@@ -50,7 +50,7 @@ catch (e) {
 }
 
 const GRA = path.resolve(__dirname, '..');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 // --- P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1: katalogi/pliki tymczasowe unikalne per przebieg ---
 // Stala nazwa pod os.tmpdir() jest wspoldzielona przez KAZDY rownolegly przebieg (takze
 // uruchomiony z innego worktree). Skutek dziala w obie strony: raz falszywy CZERWONY

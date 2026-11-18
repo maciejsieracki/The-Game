@@ -65,7 +65,7 @@ const BUNDLE = path.resolve(__dirname, '.zelazo-zrzuty-25-bundle.js');
 const BUNDLE_MUT = path.resolve(__dirname, '.zelazo-zrzuty-25-bundle-mut.js');
 const UNITS_TS = path.resolve(GRA, 'src', 'render', 'units.ts');
 const UNITS_JSON = path.resolve(GRA, 'data', 'units.json');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const argOf = (flag) => {
   const i = process.argv.indexOf(flag);

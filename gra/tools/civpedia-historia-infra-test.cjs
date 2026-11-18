@@ -46,7 +46,7 @@ const FIXTURE_DIR = path.resolve(__dirname, '.tmp-civpedia-historia-fixture');
 const FIXTURE_BUNDLE_JSON = path.resolve(__dirname, '.civpedia-historia-fixture-bundle.json');
 const ENTRY = path.resolve(__dirname, '.civpedia-historia-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.civpedia-historia-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 let pass = 0;
 let fail = 0;

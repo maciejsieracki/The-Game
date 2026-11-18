@@ -14,7 +14,7 @@ const { chromium } = require('playwright');
 
 const HTML = path.join(__dirname, '..', '..', 'dyspozycje', 'PODGLAD-PIATKA-BRAZ-OPUS5.html');
 const OUT_DIR = process.argv[2] || path.join(__dirname, '..', '..', '..', 'scratchpad-screens');
-const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = '/opt/pw-browsers/chromium';
 
 async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });

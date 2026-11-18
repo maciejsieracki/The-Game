@@ -21,7 +21,7 @@ const TURNS = Number(process.argv[5] || 30);
 const POOL0 = Number(process.argv[6] || 300);
 const TRYB = process.argv[7] || 'auto';
 const BUNDLE = process.argv[8] || path.resolve(__dirname, '..', '..', 'gra-robocza', 'Gra-ROBOCZA.html');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function launch(chromium) {

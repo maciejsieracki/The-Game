@@ -60,7 +60,7 @@ const ENTRY_PO = path.resolve(SRC, 'ui', '.dwnc-entry-po.ts');
 const ENTRY_PRZED = path.resolve(SRC, 'ui', '.dwnc-entry-przed.ts');
 const BUNDLE_PO = path.resolve(__dirname, '.dwnc-bundle-po.js');
 const BUNDLE_PRZED = path.resolve(__dirname, '.dwnc-bundle-przed.js');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const SHOT_DIR = path.resolve(
   GRA, '..', 'dyspozycje', 'autobot', 'runs',
   'R-DYPLO-WARUNEK-NIESPELNIONY-CZERWONY-TOOLTIP-Q1', 'dowody',

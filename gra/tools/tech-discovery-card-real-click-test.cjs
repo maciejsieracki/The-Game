@@ -57,7 +57,7 @@ const BRAND_ASSETS_STUB = path.resolve(STUB_DIR, 'tech-discovery-click-brandAsse
 const SCIENCE_OWL_STUB = path.resolve(STUB_DIR, 'tech-discovery-click-scienceOwlIcon-stub.ts');
 const ENTRY = path.resolve(__dirname, '.tech-discovery-real-click-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.tech-discovery-real-click-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const stubIconsPlugin = {
   name: 'stub-icons',

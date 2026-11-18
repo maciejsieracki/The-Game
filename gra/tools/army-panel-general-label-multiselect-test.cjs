@@ -45,7 +45,7 @@ function staticGuards() {
 
 const CHROMIUM_CANDIDATES = [
   process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE,
-  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+  '/opt/pw-browsers/chromium',
   '/opt/pw-browsers/chromium',
   '/usr/bin/chromium',
 ].filter(p => p && fs.existsSync(p));

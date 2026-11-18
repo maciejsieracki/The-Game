@@ -124,7 +124,7 @@ const BUNDLE_MUT = path.resolve(__dirname, '.dyplo-bilans-n-e1-bundle-mut.js');
 const BUNDLE_MUT2 = path.resolve(__dirname, '.dyplo-bilans-n-e1-bundle-mut2.js');
 const MAIN_TS = path.resolve(GRA, 'src', 'main.ts');
 const DIPLO_BALANCE = path.resolve(GRA, 'src', 'ui', 'diplomacyAcceptanceBalance.ts');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const SHOT_DIR = path.resolve(
   GRA, '..', 'dyspozycje', 'autobot', 'runs',
   'P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA', 'dowody',

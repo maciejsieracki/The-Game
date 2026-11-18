@@ -87,7 +87,7 @@ process.on('exit', () => {
 })();
 
 const GRA_ROOT = path.resolve(__dirname, '..');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const argOf = (flag) => {
   const i = process.argv.indexOf(flag);

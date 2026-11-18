@@ -28,7 +28,7 @@ const GRA = path.resolve(__dirname, '..');
 // katalog po przerwanym przebiegu sprzata startowy sweep dowolnej z nich.
 const TMPDIR_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const DIST = process.env.WOJNY_AUDYT_DIST || `/tmp/civ-wojny-audyt-${TMPDIR_RUN_ID}`;
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const argOf = (flag, dflt) => {
   const i = process.argv.indexOf(flag);

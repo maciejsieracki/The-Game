@@ -33,7 +33,7 @@ const GRA = path.resolve(__dirname, '..');
 const CITY_TS = path.resolve(GRA, 'src/ui/cityPanel.ts');
 const FRAME_TS = path.resolve(GRA, 'src/ui/cityUxFrame.ts');
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'city-view-layout-'));
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const MUTANT = process.argv.includes('--mutant');
 /** Drugi mutant: usunięty próg 12 px i zawijanie (żetony kurczą się poniżej czytelnej granicy). Oczekiwane FAIL. */
 const MUTANT_MIN = process.argv.includes('--mutant-min');

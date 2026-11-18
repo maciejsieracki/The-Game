@@ -11,7 +11,7 @@ const fs = require('fs');
 const os = require('os');
 const { execSync } = require('child_process');
 const GRA_DIR = path.resolve(__dirname, '..');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const argv = process.argv.slice(2);
 const arg = (n, d) => { const i = argv.indexOf(n); return i >= 0 ? argv[i + 1] : d; };
 const SHOTS = arg('--shots', '');

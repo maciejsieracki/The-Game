@@ -29,7 +29,7 @@ catch (e) {
 const GRA = path.resolve(__dirname, '..');
 const ENTRY = path.resolve(__dirname, '.entity-cards-yield-icons-rr-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.entity-cards-yield-icons-rr-bundle.js');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const SHOTS_DIR = process.env.ENTITYCARD_YIELD_ICONS_SHOTS_DIR
   ? path.resolve(process.env.ENTITYCARD_YIELD_ICONS_SHOTS_DIR) : null;
 

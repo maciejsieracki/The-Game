@@ -45,7 +45,7 @@ const ENTRY = path.resolve(__dirname, '.civpedia-wikihubhud-rys-hist-entry.ts');
 const OUTFILE_FIXED = path.resolve(__dirname, '.civpedia-wikihubhud-rys-hist-bundle-fixed.cjs');
 const OUTFILE_MUT = path.resolve(__dirname, '.civpedia-wikihubhud-rys-hist-bundle-mut.cjs');
 const HUD_TS = path.resolve(GRA, 'src', 'ui', 'wikiHubHud.ts');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 // Hasła realne z wikiBundle.json (patrz recon dyspozycji): akademia ma niepuste
 // entry.historia, bogactwo (kategoria "pojęcia") nie ma go wcale.

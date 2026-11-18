@@ -137,7 +137,7 @@ const OUT_DIR_AFTER = path.join(os.tmpdir(), `civ-rebel-notify-live-test-after-$
 const OUT_DIR_BEFORE = path.join(os.tmpdir(), `civ-rebel-notify-live-test-before-${TMPDIR_RUN_ID}`);
 const URL_AFTER = 'file://' + path.join(OUT_DIR_AFTER, 'index.html') + '?playtest=mapa';
 const URL_BEFORE = 'file://' + path.join(OUT_DIR_BEFORE, 'index.html') + '?playtest=mapa';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 let pass = 0;
 let fail = 0;

@@ -34,7 +34,7 @@ const SCRATCH = process.argv[2] || path.join(os.tmpdir(), 'civ-peace-live-' + pr
 const EVIDENCE = process.argv[3]
   || path.join(REPO_ROOT, 'dyspozycje', 'autobot', 'runs', 'R-WEB-PEACE-RULES-Q1', 'evidence');
 const OUT_HTML = 'file://' + path.join(SCRATCH, 'index.html') + '?playtest=mapa';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const PLAYER = 0;
 const AI_WAR = 2;     // AI w wojnie z graczem (scenariusz A)

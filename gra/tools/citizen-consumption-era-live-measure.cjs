@@ -23,7 +23,7 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const MARKER = '(window as any).__cityForestTestDebug = {';
 const TICK_ANCHOR = 'refreshPlayerCityEcon(econ.perCity, humanOwnerId);';
 const POP_ANCHOR = 'const econ = advanceCityEconomy(';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 function startGameSource() {
   const t = fs.readFileSync(path.join(__dirname, 'clearing-deficit-live-measure.cjs'), 'utf8');

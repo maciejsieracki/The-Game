@@ -53,7 +53,7 @@ const BRAND_ASSETS_STUB = path.resolve(STUB_DIR, 'praca-budmode-slider-max-brand
 const SCIENCE_OWL_STUB = path.resolve(STUB_DIR, 'praca-budmode-slider-max-scienceOwlIcon-stub.ts');
 const ENTRY = path.resolve(__dirname, '.praca-budmode-slider-max-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.praca-budmode-slider-max-bundle.js');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 let pass = 0;
 let fail = 0;

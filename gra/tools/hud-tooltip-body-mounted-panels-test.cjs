@@ -60,7 +60,7 @@ const esbuild = require('esbuild');
 const GRA_DIR = path.resolve(__dirname, '..');
 const OUT_DIR = path.join(GRA_DIR, 'dist-hud-tooltip-body-panels-test');
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html') + '?playtest=miasto';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const SHOW_DELAY_MS = 380; // musi być zsynchronizowane z hudTitleTooltip.ts
 
 // Scenariusz 2 — harness bezpośredniego montażu `.civ-unit-panel` (patrz nagłówek pliku, WAŻNA

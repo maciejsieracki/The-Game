@@ -18,7 +18,7 @@ function arg(name, def) { const i = process.argv.indexOf('--' + name); return i 
 const DIST = arg('dist');
 const SEED = parseInt(arg('seed', '11'), 10);
 const wait = ms => new Promise(r => setTimeout(r, ms));
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 let passed = 0, failed = 0;
 function ok(c, label) { if (c) passed++; else { failed++; console.error('FAIL:', label); } }
 

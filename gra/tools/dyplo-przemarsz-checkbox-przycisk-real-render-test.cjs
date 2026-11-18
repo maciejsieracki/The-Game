@@ -48,7 +48,7 @@ const STUB_DIR = path.resolve(__dirname, '.dpcp-stubs');
 const ENTRY = path.resolve(__dirname, '.dpcp-entry.ts');
 const BUNDLE_PO = path.resolve(__dirname, '.dpcp-bundle-po.js');
 const BUNDLE_PRZED = path.resolve(__dirname, '.dpcp-bundle-przed.js');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const DIPLO_BASKET = path.resolve(GRA, 'src', 'ui', 'diplomacyTradeBasket.ts');
 const SHOT_DIR = path.resolve(
   GRA, '..', 'dyspozycje', 'autobot', 'runs',

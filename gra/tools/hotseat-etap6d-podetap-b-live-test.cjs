@@ -45,7 +45,7 @@ const os = require('os');
 const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const POST_OUT_DIR = path.join(os.tmpdir(), `civ-6d-b-POST-dist-${RUN_ID}`);

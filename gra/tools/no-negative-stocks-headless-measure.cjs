@@ -32,7 +32,7 @@ function arg(name, def) {
   return i >= 0 && process.argv[i + 1] !== undefined ? process.argv[i + 1] : def;
 }
 const wait = ms => new Promise(r => setTimeout(r, ms));
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const SLOT = 'nns-cell';
 // Próg kryterium: AI równoważy od tury 1 (R-WEB-NNS-AI-BALANCE-FROM-TURN1-Q1); wyjątek 1–10 dotyczy wyłącznie gracza.
 const NNS_FREE_TURNS = 0;

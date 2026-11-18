@@ -31,7 +31,7 @@ const SCRATCH = process.argv[2] || path.join(os.tmpdir(), 'civ-city-cession-live
 const EVIDENCE = process.argv[3]
   || path.join(REPO_ROOT, 'dyspozycje', 'autobot', 'runs', 'R-WEB-PEACE-CITY-CESSION-Q1', 'evidence');
 const OUT_HTML = 'file://' + path.join(SCRATCH, 'index.html') + '?playtest=mapa';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const PLAYER = 0;
 // AI 1 = jedyny realny AI z miastem w `?playtest=mapa` (AI 2 nie ma miast — patrz tabela świata).

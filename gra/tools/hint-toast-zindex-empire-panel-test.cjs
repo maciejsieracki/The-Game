@@ -80,7 +80,7 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const MAIN_TS = path.join(GRA_DIR, 'src', 'main.ts');
 const OUT_AFTER = path.join(GRA_DIR, 'dist-hint-toast-zindex-empire-panel-test-after');
 const OUT_BEFORE = path.join(GRA_DIR, 'dist-hint-toast-zindex-empire-panel-test-before');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 /** Formuła z-index PRZED naprawą (dokładnie main.ts:12303 w commicie 8c20c849 -- rodzic
  * 3dc1b31f, commita który wprowadził naprawę) i formuła PO naprawie -- używane wyłącznie do

@@ -28,7 +28,7 @@
 const path = require('path');
 const fs = require('fs');
 
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 function arg(name, def) {
   const i = process.argv.indexOf('--' + name);

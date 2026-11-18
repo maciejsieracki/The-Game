@@ -114,7 +114,7 @@ process.on('exit', () => {
   } catch { /* best-effort */ }
 })();
 const OUTDIR = path.resolve(os.tmpdir(), `civ-zelazo-t7-bundles-${TMPDIR_RUN_ID}`);
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const P6_TS = path.resolve(GRA, 'src', 'render', 'jednostki-p6-super.ts');
 const Z2_TS = path.resolve(GRA, 'src', 'render', 'jednostki-z2-srodziemne.ts');
 const HO_TS = path.resolve(GRA, 'src', 'render', 'hastati-opus5.ts');

@@ -29,7 +29,7 @@ const { execSync } = require('child_process');
 const GRA_DIR = path.resolve(__dirname, '..');
 const OUT_DIR = path.join(GRA_DIR, 'dist-menu-trudnosc-tooltip-test');
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const SHOW_DELAY_MS = 380; // musi być zsynchronizowane z hudTitleTooltip.ts
 
 const SHOT_DIR = (() => {

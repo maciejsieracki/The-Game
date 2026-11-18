@@ -72,7 +72,7 @@ async function shot(page, name) {
   await page.screenshot({ path: p });
   console.log('[unit-info-card-viewport-height-real-render-test] zrzut: ' + p);
 }
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const units = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'units.json'), 'utf8'));
 const counters = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'counters.json'), 'utf8'));

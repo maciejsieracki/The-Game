@@ -22,7 +22,7 @@ catch (e) { console.error('[garncarnia-render] playwright missing -- npm ci'); p
 const GRA = path.resolve(__dirname, '..');
 const ENTRY = path.resolve(__dirname, '.garncarnia-render-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.garncarnia-render-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const SHOTS_DIR = process.env.GARNCARNIA_SHOTS_DIR ? path.resolve(process.env.GARNCARNIA_SHOTS_DIR) : null;
 
 let pass = 0, fail = 0;

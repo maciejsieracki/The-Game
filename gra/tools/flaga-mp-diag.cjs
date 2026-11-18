@@ -27,7 +27,7 @@ const TURNS = parseInt(argOf('--turns', '30'), 10);
 const TMPDIR_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const OUT_DIR = path.resolve(argOf('--out', `/tmp/flaga-diag-p${process.pid}`));
 const DIST = path.resolve(argOf('--dist', `/tmp/civ-dist-flaga-op-diag-${TMPDIR_RUN_ID}`));
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
 

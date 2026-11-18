@@ -18,7 +18,7 @@ const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(GRA_DIR, '..');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-settings-${RUN_ID}`);
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');

@@ -55,7 +55,7 @@ const STRIP = hasFlag('--strip-from-current');
 const GOLD = 200;
 const FOOD = 200;
 const SLOT = 'compat-test';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const OUT_JSON = path.resolve(__dirname, '..', '..', 'dyspozycje', 'autobot', 'runs',
   'R-WEB-SAVE-LOAD-OLD-SAVE-COMPAT-Q1', 'evidence', `${PHASE}-result.json`);
 

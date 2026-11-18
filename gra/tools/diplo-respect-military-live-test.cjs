@@ -38,7 +38,7 @@ const BUNDLE = process.env.BUNDLE_DIR || path.join(os.tmpdir(), 'diplo-respect-m
 const EVIDENCE_DIR = process.env.RESPECT_EVIDENCE || '';
 const RESULT_FILE = process.env.RESPECT_RESULT || '';
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa&civTest=1';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const SYSTEM_CHROME = '/usr/bin/chromium';
 const ME = 0;
 

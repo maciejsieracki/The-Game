@@ -49,7 +49,7 @@ const os = require('os');
 const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const TURNS_BEFORE_SAVE = 3;
 const TURNS_AFTER_LOAD = 3;
 

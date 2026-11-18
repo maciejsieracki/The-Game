@@ -28,7 +28,7 @@ const args = process.argv.slice(2);
 const argOf = (k, d) => { const i = args.indexOf(k); return i >= 0 && args[i + 1] ? args[i + 1] : d; };
 const BASE = argOf('--base', 'http://127.0.0.1:8765/index.html');
 const TURNS = parseInt(argOf('--turns', '5'), 10);
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 let fails = 0;
 const check = (ok, label, extra) => {

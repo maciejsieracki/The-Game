@@ -58,7 +58,7 @@ const STUB_DIR = path.resolve(__dirname, '.dza-active-first-stubs');
 const ENTRY = path.resolve(__dirname, '.dza-active-first-entry.ts');
 const BUNDLE_PO = path.resolve(__dirname, '.dza-active-first-bundle-po.js');
 const BUNDLE_PRZED = path.resolve(__dirname, '.dza-active-first-bundle-przed.js');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const DIPLO_AUD = path.resolve(GRA, 'src', 'ui', 'diplomacyAudience.ts');
 const SHOT_DIR = path.resolve(
   GRA, '..', 'dyspozycje', 'autobot', 'runs',

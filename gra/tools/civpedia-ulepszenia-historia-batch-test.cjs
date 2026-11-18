@@ -48,7 +48,7 @@ const TERRAIN_JSON = path.join(REPO_ROOT, 'gra', 'data', 'terrain-improvements.j
 const BRAND_ASSETS_STUB = path.resolve(__dirname, '.stubs', 'civpedia-historia-infra-brandAssets-stub.ts');
 const ENTRY = path.resolve(__dirname, '.civpedia-ulepszenia-batch-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.civpedia-ulepszenia-batch-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const REGULAR_IDS = [
   'bydlo', 'droga', 'farma', 'fort', 'glinianka', 'irygacja', 'kamieniolom',

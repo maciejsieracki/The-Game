@@ -54,7 +54,7 @@ catch (e) {
 
 const GRA = path.resolve(__dirname, '..');
 const STUB_DIR = path.resolve(__dirname, '.stubs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 let pass = 0;
 let fail = 0;

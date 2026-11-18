@@ -11,7 +11,7 @@ const esbuild = require(path.join(__dirname, '..', 'node_modules', 'esbuild'));
 const { chromium } = require('playwright');
 
 const ROOT = path.join(__dirname, '..');
-const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROME = '/opt/pw-browsers/chromium';
 
 const out = esbuild.buildSync({
   entryPoints: [path.join(ROOT, 'tools', '.wpiecie-dispatch-check-entry.ts')],

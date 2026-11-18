@@ -32,7 +32,7 @@ const TMP_ROOT = path.join(os.tmpdir(), `war-rules-live-${RUN_ID}`);
 const FLAG_FILE = path.join(GRA_DIR, 'src', 'game', 'war-rules-multiwar.ts');
 const FLAG_ON_LINE = 'export const WAR_RULES_MULTIWAR_ENABLED = true;';
 const FLAG_OFF_LINE = 'export const WAR_RULES_MULTIWAR_ENABLED = false;';
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const MAX_OWNER_ID = 7;
 
 let pass = 0;

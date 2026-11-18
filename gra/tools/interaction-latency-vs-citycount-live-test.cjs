@@ -117,7 +117,7 @@ process.on('exit', () => {
 })();
 const OUT_DIR = path.join(os.tmpdir(), `civ-dist-perf-interaction-latency-${TMPDIR_RUN_ID}`);
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const FIXTURE_ENTRY = path.join(__dirname, '.il-fixture-entry.ts');
 const FIXTURE_BUNDLE = path.join(__dirname, '.il-fixture-bundle.cjs');

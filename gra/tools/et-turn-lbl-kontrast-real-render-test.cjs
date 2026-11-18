@@ -51,7 +51,7 @@ const BUNDLE_PRZED = path.resolve(__dirname, '.et-turn-lbl-bundle-przed.js');
 const STUB_DIR = path.resolve(__dirname, '.stubs');
 const STUB_BRAND_ASSETS = path.resolve(STUB_DIR, 'et-turn-lbl-brandAssets-stub.ts');
 const STUB_BRAND_TOKENS = path.resolve(STUB_DIR, 'et-turn-lbl-brandTokenVars-stub.ts');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const argOf = (flag) => {
   const i = process.argv.indexOf(flag);

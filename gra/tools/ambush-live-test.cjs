@@ -19,7 +19,7 @@ const REUSE = args.includes('--dist') ? path.resolve(args[args.indexOf('--dist')
 const ONLY = args.includes('--only') ? args[args.indexOf('--only') + 1] : null;
 const DIST = REUSE || fs.mkdtempSync(path.join(os.tmpdir(), 'ambush-live-dist-'));
 const PORT = 18000 + Math.floor(Math.random() * 1000);
-const CHROMIUM = process.env.AMB_CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const CHROMIUM = process.env.AMB_CHROMIUM || '/opt/pw-browsers/chromium';
 const log = (...a) => console.log(...a);
 
 const checks = [];

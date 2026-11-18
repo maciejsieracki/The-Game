@@ -22,7 +22,7 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const TMPDIR_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const OUT_DIR = `/tmp/civ-dist-miasta-panstwa-wylaczone-${TMPDIR_RUN_ID}`;
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 let pass = 0;
 let fail = 0;

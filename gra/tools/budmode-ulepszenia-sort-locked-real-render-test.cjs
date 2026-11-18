@@ -59,7 +59,7 @@ const BRAND_STUB = path.resolve(STUB_DIR, 'build-panel-scroll-brandAssets-stub.t
 const OWL_STUB = path.resolve(STUB_DIR, 'build-panel-scroll-scienceOwlIcon-stub.ts');
 const ENTRY = path.resolve(__dirname, '.budmode-sort-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.budmode-sort-bundle.cjs');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 let pass = 0;
 let fail = 0;

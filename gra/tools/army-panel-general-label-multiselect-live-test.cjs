@@ -19,7 +19,7 @@ const SHOT_DIR = process.env.ARMY_LIVE_SHOT || '';
 const PORT = 18761;
 const CHROME_CANDIDATES = [
   process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE,
-  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+  '/opt/pw-browsers/chromium',
   '/usr/bin/chromium',
   '/opt/pw-browsers/chromium',
 ].filter(p => p && fs.existsSync(p));
