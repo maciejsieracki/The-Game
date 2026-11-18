@@ -22,11 +22,13 @@ use bridge::{
     EngineBridge, EngineCommand, StartGameParams,
 };
 use civ_client::{
-    ClientError, ClientUiState, MapDetailQuality, MapUiState, RenderClient, RenderFramePayload,
-    RenderMapPayload, RenderSource, RenderUiParams, VIEWER_SEAT,
+    ClientError, ClientUiState, FrameError, MapDetailQuality, MapScene, MapUiState, RenderClient,
+    RenderFramePayload, RenderMapPayload, RenderSource, RenderUiParams, VIEWER_SEAT,
 };
 use civ_engine::{PlayerId, PositionDto};
+use civ_renderer::map_units::{default_owner_color, default_ring_stance, RingStance};
 use civ_renderer::models::cities::renderer::SceneObject;
+use civ_renderer::terrain::{roblox_lite, LARGE_MAP_LITE_HEX_THRESHOLD};
 use civ_view_model as vm;
 use civ_view_model::{FogState, RenderLayersDto};
 
@@ -524,4 +526,282 @@ fn source_errors_are_typed_and_keep_the_cache() {
     assert!(ClientError::<BridgeError>::NoSession
         .to_string()
         .contains("on_session_created"));
+}
+
+// ------------------------------------------------------------ defence r1
+
+/// Z1 (mutant E1): the scene is built ONCE per session (pin `main.ts:2173`,
+/// `:44769`; `MapScene::new` doc). State the caller sets through
+/// `scene_mut()` (the resolvers of DŁUG-T1-RESOLVERS, e.g.
+/// `wireUnitRendererRingStance` -> `setRingStanceResolver`, `setOwnerColorFn`)
+/// survives every later frame and every recomposition from the cache; a
+/// rebuilt scene would fall back to `default_ring_stance` /
+/// `default_owner_color`.
+#[test]
+fn scene_is_built_once_per_session_and_keeps_caller_state() {
+    const COLOR: u32 = 0x0012_3456;
+    let warrior = WARRIOR.to_string();
+    let human = i64::try_from(HUMAN).expect("id");
+    let stance = |c: &Client| {
+        let t = c
+            .scene()
+            .expect("scene")
+            .units()
+            .token(&warrior)
+            .expect("warrior token");
+        (t.ring_stance, t.overlays.plate_vitals.owner_color)
+    };
+    let mut client = RenderClient::new(BridgeSource::new(), MapDetailQuality::High);
+    assert!(client.source_mut().command(EngineCommand::CreateSession {
+        params: StartGameParams::default(),
+    }));
+    client.on_session_created().expect("map");
+    client.on_state_changed().expect("first frame");
+    // Defaults of a fresh scene (`default_ring_stance`, `default_owner_color`).
+    let defaults = (default_ring_stance(human), Some(default_owner_color(human)));
+    assert_eq!(stance(&client), defaults);
+    assert_ne!(defaults.0, RingStance::Neutral);
+    assert_ne!(defaults.1, Some(COLOR));
+    let units = client.scene_mut().expect("scene").units_mut();
+    units.set_ring_stance_resolver(|_| RingStance::Neutral);
+    units.set_owner_color_fn(|_| COLOR);
+    let kept = (RingStance::Neutral, Some(COLOR));
+
+    // GetRenderFrame after StateChanged: the same scene takes the frame.
+    command(&mut client, EngineCommand::SelectUnit { unit_id: WARRIOR });
+    assert_eq!(stance(&client), kept, "state changed");
+    // RenderUiParams change (engine asked).
+    client.set_frame_ui(selected(WARRIOR)).expect("select ui");
+    assert_eq!(stance(&client), kept, "frame ui");
+    assert_eq!(
+        client
+            .scene()
+            .expect("scene")
+            .units()
+            .selection()
+            .map(|s| s.owner_id),
+        Some(human)
+    );
+    // MapUiState / siege panel: recomposition from the cache.
+    client
+        .set_map_ui(MapUiState {
+            show_worker_overlay: false,
+            ..MapUiState::WEB_INITIAL
+        })
+        .expect("map ui");
+    assert_eq!(stance(&client), kept, "map ui");
+    client.set_siege_map_panel_open(true).expect("siege panel");
+    assert_eq!(stance(&client), kept, "siege panel");
+    // AdvanceTurn.
+    command(&mut client, EngineCommand::AdvanceTurn);
+    assert_eq!(stance(&client), kept, "next turn");
+    assert_renderer_mirrors_dto(&client, "next turn");
+
+    // A new session drops the scene: the next one starts from the defaults.
+    assert!(client.source_mut().command(EngineCommand::CreateSession {
+        params: StartGameParams::default(),
+    }));
+    client.on_session_created().expect("map again");
+    client.on_state_changed().expect("frame of the new session");
+    assert_eq!(stance(&client), defaults, "new session, new scene");
+}
+
+/// What [`FaultySource`] does with the next `GetRenderFrame`.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Fault {
+    None,
+    /// The bridge error of an unknown seat.
+    Source,
+    /// A real frame with a foreign `contract_version`.
+    Contract,
+    /// A real frame with `fog.state` not parallel to `map.hexes`.
+    FogLen,
+}
+
+/// [`BridgeSource`] with injected faults.
+struct FaultySource {
+    inner: BridgeSource,
+    fault: Fault,
+}
+
+impl RenderSource for FaultySource {
+    type Error = BridgeError;
+    fn render_map(&mut self) -> Result<RenderMapPayload, BridgeError> {
+        self.inner.render_map()
+    }
+    fn render_frame(
+        &mut self,
+        seat: Option<u64>,
+        ui: Option<RenderUiParams>,
+    ) -> Result<RenderFramePayload, BridgeError> {
+        match self.fault {
+            Fault::None => self.inner.render_frame(seat, ui),
+            Fault::Source => self.inner.render_frame(Some(99), ui),
+            Fault::Contract => {
+                let mut f = self.inner.render_frame(seat, ui)?;
+                f.0.contract_version = vm::CONTRACT_VERSION + 1;
+                Ok(f)
+            }
+            Fault::FogLen => {
+                let mut f = self.inner.render_frame(seat, ui)?;
+                f.0.fog.state.pop();
+                Ok(f)
+            }
+        }
+    }
+}
+
+/// Z2 (mutant E6): an error after a good frame keeps the cached frame, the
+/// renderer inputs and the scene of that frame (`on_state_changed` doc), for
+/// `ClientError::Source` and for `ClientError::Frame`; the client recovers
+/// on the next good frame.
+#[test]
+fn errors_after_a_frame_keep_the_previous_frame() {
+    let mut client = RenderClient::new(
+        FaultySource {
+            inner: BridgeSource::new(),
+            fault: Fault::None,
+        },
+        MapDetailQuality::High,
+    );
+    assert!(client
+        .source_mut()
+        .inner
+        .command(EngineCommand::CreateSession {
+            params: StartGameParams::default(),
+        }));
+    client.on_session_created().expect("map");
+    client.on_state_changed().expect("good frame");
+    let good = client.last_frame().expect("cached").clone();
+    let good_inputs = client.frame_inputs().expect("inputs").clone();
+    let warrior = WARRIOR.to_string();
+    let token_hex = |c: &RenderClient<FaultySource>| {
+        let t = c
+            .scene()
+            .expect("scene")
+            .units()
+            .token(&warrior)
+            .expect("warrior token");
+        (t.hex.q, t.hex.r)
+    };
+    let good_hex = token_hex(&client);
+    let check_kept = |c: &RenderClient<FaultySource>, step: &str| {
+        assert_eq!(c.last_frame(), Some(&good), "{step}: cached frame kept");
+        assert_eq!(c.frame_inputs(), Some(&good_inputs), "{step}: inputs kept");
+        assert_eq!(token_hex(c), good_hex, "{step}: scene kept");
+    };
+
+    // The state changes (the warrior moves): a good frame would differ.
+    let start = good.units[0].hex;
+    let reach = client
+        .source_mut()
+        .inner
+        .direct_frame(None, Some(selected(WARRIOR)));
+    let dest = *reach
+        .overlays
+        .reachable
+        .iter()
+        .find(|h| **h != start)
+        .expect("a reachable hex");
+    assert!(client
+        .source_mut()
+        .inner
+        .command(EngineCommand::SelectUnit { unit_id: WARRIOR }));
+    assert!(client.source_mut().inner.command(EngineCommand::MoveUnit {
+        unit_id: WARRIOR,
+        destination: PositionDto::new(
+            u16::try_from(dest.q).expect("q"),
+            u16::try_from(dest.r).expect("r"),
+        ),
+        attack_unit_id: None,
+    }));
+
+    client.source_mut().fault = Fault::Source;
+    let err = client.on_state_changed().expect_err("source error");
+    assert!(matches!(err, ClientError::Source(_)), "{err:?}");
+    check_kept(&client, "source");
+
+    client.source_mut().fault = Fault::Contract;
+    let err = client.on_state_changed().expect_err("contract error");
+    assert!(
+        matches!(
+            err,
+            ClientError::Frame(FrameError::ContractVersion { expected, actual })
+                if expected == vm::CONTRACT_VERSION && actual == vm::CONTRACT_VERSION + 1
+        ),
+        "{err:?}"
+    );
+    assert!(err.to_string().starts_with("render frame:"), "{err}");
+    check_kept(&client, "contract");
+
+    client.source_mut().fault = Fault::FogLen;
+    let err = client.on_state_changed().expect_err("fog length error");
+    assert!(
+        matches!(err, ClientError::Frame(FrameError::View(_))),
+        "{err:?}"
+    );
+    check_kept(&client, "fog length");
+
+    // A recomposition after the errors still uses the good cached frame.
+    let calls_before = client.source().inner.frame_calls;
+    client
+        .set_map_ui(MapUiState {
+            territory_border_visible: false,
+            ..MapUiState::WEB_INITIAL
+        })
+        .expect("recompose from the cache");
+    assert_eq!(client.source().inner.frame_calls, calls_before);
+    assert_eq!(
+        client.last_frame(),
+        Some(&good),
+        "recomposed from the good frame"
+    );
+    assert_eq!(token_hex(&client), good_hex);
+
+    // Recovery: the next good frame replaces the cache.
+    client.source_mut().fault = Fault::None;
+    client.on_state_changed().expect("good frame again");
+    let now = client.last_frame().expect("cached").clone();
+    assert_ne!(now, good);
+    assert_eq!(now.units[0].hex, dest, "the moved warrior");
+    assert_eq!(token_hex(&client), (dest.q, dest.r));
+}
+
+/// Z3 (mutant E7): the `MapDetailQuality` of `RenderClient::new` is the one
+/// the terrain is built with (`resolveRenderPreset(...).robloxLite`,
+/// `mapRenderStyle.ts:114-127`).
+#[test]
+fn detail_quality_reaches_the_terrain() {
+    let terrain_of = |detail: MapDetailQuality| {
+        let mut client = RenderClient::new(BridgeSource::new(), detail);
+        assert!(client.source_mut().command(EngineCommand::CreateSession {
+            params: StartGameParams::default(),
+        }));
+        client.on_session_created().expect("map");
+        client.on_state_changed().expect("frame");
+        let map = client.map().expect("map");
+        let hexes = map.map().hexes.len();
+        let inputs = client.frame_inputs().expect("inputs");
+        // The reference: a scene built by hand from the same first frame with
+        // `detail`, then fed that frame (fog changes the prisms).
+        let mut expected = MapScene::new(map, inputs, detail);
+        expected.apply(inputs).expect("apply");
+        let terrain = client.scene().expect("scene").terrain().clone();
+        assert_eq!(&terrain, expected.terrain(), "{detail:?}: terrain");
+        assert_eq!(
+            terrain.roblox_lite,
+            roblox_lite(detail, hexes),
+            "{detail:?}"
+        );
+        (hexes, terrain)
+    };
+    let (hexes, low) = terrain_of(MapDetailQuality::Low);
+    let (_, high) = terrain_of(MapDetailQuality::High);
+    assert!(
+        hexes <= LARGE_MAP_LITE_HEX_THRESHOLD,
+        "the start map is not large"
+    );
+    assert!(low.roblox_lite, "low: lite");
+    assert!(!high.roblox_lite, "high: not lite");
+    assert_ne!(low, high, "the detail changes the terrain");
 }
