@@ -26040,6 +26040,9 @@ async function boot(): Promise<void> {
         payerStock: peaceTailPricingForPayer(proposerId, responderId, peaceTailWiringDeps()).holdings,
         // r3: płatnikiem ogona w ścieżce „gracz jest autorem pokoju" jest GRACZ (nie zawsze proponent: kontroferta, AI proponuje graczowi).
         playerStock: peaceTailPricingForPayer(ME(), proposerId, peaceTailWiringDeps()).holdings,
+        // R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1 (r2): stopień technologii nośnika dopłaty D — techy gracza i drugiej strony.
+        playerTechs: Array.from(ownerResearchedTechs(ME())),
+        partnerTechs: Array.from(ownerResearchedTechs(proposerId === ME() ? responderId : proposerId)),
         proposerRespekt,
         responderRespekt,
         militaryRatio,
@@ -26277,7 +26280,7 @@ async function boot(): Promise<void> {
       }
       // R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1: nośnik dopłaty D traktatu z parytetem (gracz = płatnik). Pozycje ogona
       // z zapasów gracza (złoto/brąz/żelazo/rudy, plan z treatyCarrierPlanForPlayerPayer) dopisujemy do giveItems — przelew
-      // robi ta sama gałąź co słodzik traktatowy (transferBasketItems) przy zawarciu NAP/sojuszu. Technologie: NIE podłączone.
+      // robi ta sama gałąź co słodzik traktatowy (transferBasketItems) przy zawarciu traktatu; technologie (typ tech) = grantTechToOwner.
       if (result.deal && result.treatyCarrier && result.treatyCarrier.items.length > 0) {
         payload = { ...payload, giveItems: [...(payload.giveItems ?? []), ...(result.treatyCarrier.items as BasketItem[])] };
       }

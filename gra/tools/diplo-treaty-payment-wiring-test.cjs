@@ -113,13 +113,40 @@ function run(mod) {
   ok(w3.accepted === true, `W3: sojusz pełny z pełnym nośnikiem akceptowany (accepted=${w3.accepted}, powód: ${w3.reason})`);
   ok(w3.treatyCarrier != null, 'W3: sojusz niesie treatyCarrier');
 
-  // W9: granice i wasal — poza zakresem nośnika: bramka nadal odrzuca (brak przelewu w ścieżce akceptacji).
+  // W9 (r2): granice i wasal — ścieżka akceptacji przelewa koszyk (generic `else if` w main.ts): nośnik działa jak NAP.
   for (const act of ['granice', 'wasal']) {
-    const w9 = mod.evaluateProposal({ actionId: act, proposerOwnerId: 0, responderOwnerId: 1, payload: {} }, weakCtxRich);
-    ok(w9.accepted === false, `W9: ${act} z pełnym nośnikiem NIE akceptowany bez przelewu (accepted=${w9.accepted}, powód: ${w9.reason})`);
-    ok((w9.reason ?? '').includes('parytetu'), `W9: ${act}: powód z parytetem (jest: ${w9.reason})`);
-    ok(w9.treatyCarrier === undefined, `W9: ${act}: brak treatyCarrier`);
+    // wasal wymaga Respektu proponującego ≥ 70 (bramka wasalizacji) — ustawiamy go, żeby sprawdzić nośnik, nie próg.
+    const w9ctx = { ...weakCtxRich, proposerRespekt: 100 };
+    const w9 = mod.evaluateProposal({ actionId: act, proposerOwnerId: 0, responderOwnerId: 1, payload: {} }, w9ctx);
+    ok(w9.accepted === true, `W9: ${act} z pełnym nośnikiem akceptowany (accepted=${w9.accepted}, powód: ${w9.reason})`);
+    ok(w9.treatyCarrier != null && w9.treatyCarrier.items.length > 0, `W9: ${act} niesie treatyCarrier`);
+    const w9z = mod.evaluateProposal({ actionId: act, proposerOwnerId: 0, responderOwnerId: 1, payload: {} }, { ...weakCtxZero, proposerRespekt: 100 });
+    ok(w9z.accepted === false && (w9z.reason ?? '').includes('parytetu'), `W9: ${act} bez zapasów odrzucony z powodem parytetu`);
   }
+
+  // W10 (r2): stopień technologii w wiringu — tech gracza, której AI nie ma, trafia do treatyCarrier jako typ 'tech'.
+  const T = 'Rolnictwo';
+  const w10 = mod.evaluateProposal(napP({}), { ...weakCtxRich, playerTechs: [T], partnerTechs: [] });
+  ok(w10.accepted === true, `W10: NAP z techem i zapasem akceptowany (accepted=${w10.accepted}, powód: ${w10.reason})`);
+  ok(w10.treatyCarrier && w10.treatyCarrier.items.some(i => i.typ === 'tech' && i.id === T),
+    `W10: treatyCarrier niesie technologię ${T} (typ tech) jako pierwszy stopień`);
+  ok(w10.treatyCarrier && w10.treatyCarrier.items[0] && w10.treatyCarrier.items[0].typ === 'tech',
+    'W10: pozycje techów przed ogonem złota');
+
+  // W11 (r2): tech, którą druga strona JUŻ ma, NIE wchodzi do nośnika (brak odkrycia-duplikatu).
+  const w11 = mod.evaluateProposal(napP({}), { ...weakCtxRich, playerTechs: [T], partnerTechs: [T] });
+  ok(!(w11.treatyCarrier && w11.treatyCarrier.items.some(i => i.typ === 'tech')),
+    `W11: tech posiadana przez drugą stronę nie trafia do nośnika (items: ${JSON.stringify(w11.treatyCarrier && w11.treatyCarrier.items)})`);
+
+  // W12 (r2): planer przyjmuje listy technologii z wywołania; bez nich brak stopnia technologii.
+  const planT = mod.treatyCarrierPlanForPlayerPayer('nap', {}, baseCtx.relation,
+    { proposerOwnerId: 0, playerOwnerId: 0, difficulty: 'normal' },
+    { powerPlayer: 100, powerOther: 400 }, 0, RICH, 1, { payerTechs: [T], otherTechs: [] });
+  ok(planT && planT.payment.techs.some(t => t.name === T), 'W12: planer z techem płatnika wybiera technologię');
+  const planN = mod.treatyCarrierPlanForPlayerPayer('nap', {}, baseCtx.relation,
+    { proposerOwnerId: 0, playerOwnerId: 0, difficulty: 'normal' },
+    { powerPlayer: 100, powerOther: 400 }, 0, RICH, 1);
+  ok(planN && planN.payment.techs.length === 0, 'W12: bez listy technologii brak stopnia technologii');
 
   // W4: silniejszy gracz → plan = null, brak nośnika.
   const strongCtx = { ...baseCtx, treatyPower: { powerPlayer: 400, powerOther: 100 }, playerStock: RICH, tradeEra: 1 };
@@ -209,6 +236,17 @@ await mutantDetected('M2-no-attach', {
 await mutantDetected('M3-no-basket-dedupe', {
   from: "    if (i.typ !== 'zloto' && i.typ !== 'surowiec_ilosc') continue;\n    const k = i.typ === 'zloto' ? 'zloto' : i.id;\n    if (k in left)",
   to: "    const k = i.typ === 'zloto' ? 'zloto' : i.id;\n    if (false && k in left)",
+});
+
+// M4: attachTreatyCarrier pomija pozycje technologii → W10 musi czerwienić.
+await mutantDetected('M4-carrier-drops-tech-items', {
+  from: 'const items = [...techItems, ...peaceTailBasketItems(plan.payment.tail)];',
+  to: 'const items = [...peaceTailBasketItems(plan.payment.tail)];',
+});
+// M5: planer ignoruje technologie drugiej strony → W11 musi czerwienić.
+await mutantDetected('M5-planner-ignores-partner-techs', {
+  from: 'otherTechs: techs?.otherTechs ?? [],',
+  to: 'otherTechs: [],',
 });
 
 try { fs.unlinkSync(ENTRY); } catch (_) { /* już usunięty */ }

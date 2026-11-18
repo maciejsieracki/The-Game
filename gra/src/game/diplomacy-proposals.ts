@@ -53,7 +53,7 @@ import {
 } from './diplomacy-pn-engine';
 import {
   diplomacyProgDarRelacja, diplomacyFairGivePn, diplomacyNormalizeSurowiecIlosc,
-  withDiplomacyTradeEra, diplomacyTradeEra, diplomacyClampQtyToEraBlock,
+  withDiplomacyTradeEra, diplomacyTradeEra, diplomacyClampQtyToEraBlock, diplomacyPnTech,
 } from './diplomacy-value-catalog';
 import {
   isCurrencyProposalForbiddenDuringWar,
@@ -207,6 +207,12 @@ export interface ProposalEvalContext {
    * Brak pola = jak `payerStock`.
    */
   playerStock?: Readonly<Record<string, number>>;
+  /**
+   * R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1 (r2): technologie GRACZA i drugiej strony (nazwy jak w tech.json), z main.ts.
+   * Stopień „technologie” dopłaty D: płatnik-gracz oddaje technologię, której druga strona NIE ma. Brak pola = brak stopnia.
+   */
+  playerTechs?: readonly string[];
+  partnerTechs?: readonly string[];
   /** Respekt proponującego (0–100) w oczach respondenta */
   proposerRespekt: number;
   /** Respekt respondenta (0–100) w oczach proponującego */
@@ -328,7 +334,7 @@ export interface ProposalEvalResult {
    * w całości z zapasów. `items` = pozycje koszyka (zloto / surowiec_ilosc) do przelewu razem z zawarciem traktatu
    * (main.ts dopisuje je do giveItems gracza). Brak pola = brak dopłaty do wykonania.
    */
-  treatyCarrier?: { items: Array<{ typ: 'zloto' | 'surowiec_ilosc'; id: string; ilosc: number }>; coveredPn: number };
+  treatyCarrier?: { items: Array<{ typ: 'zloto' | 'surowiec_ilosc' | 'tech'; id: string; ilosc: number }>; coveredPn: number };
   /** Traktat do dodania (NAP, sojusz, trybut, wasal, granice) */
   deal?: ActiveDeal;
   /** Jednorazowy handel T3A — bez trwałego dealu */
@@ -913,6 +919,7 @@ export function treatyCarrierPlanForPlayerPayer(
   wearinessL: number,
   payerStock: Readonly<Record<string, number>> | undefined,
   era: number | undefined,
+  techs?: { payerTechs: readonly string[]; otherTechs: readonly string[] },
 ): TreatyCarrierPlan | null {
   if (!treatyPower) return null;
   if (!treatyParityEnabled(actionId)) return null;
@@ -938,9 +945,10 @@ export function treatyCarrierPlanForPlayerPayer(
   const duePn = requiredD - givePn;
   const payment = composeTreatyPayment({
     duePn,
-    payerTechs: [],
-    otherTechs: [],
-    techPn: () => null,
+    // Stopień technologii (r2): tylko techy płatnika, których druga strona NIE ma; wycena = koszt nauki (tech.json).
+    payerTechs: techs?.payerTechs ?? [],
+    otherTechs: techs?.otherTechs ?? [],
+    techPn: name => diplomacyPnTech(name),
     pricing: {
       holdings: left,
       pnPerUnit: k => peaceTailPnPerUnit(k, era),
@@ -963,10 +971,11 @@ export interface TreatyCarrierPlan {
 
 /**
  * R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1: traktaty, których ścieżka akceptacji (main.ts, gałąź transferu giveItems)
- * jest zweryfikowana dla nośnika dopłaty. Granice i wasal: ich ścieżka nie przelewa koszyka przy zawarciu — nie
- * wolno zaakceptować z nośnikiem bez przelewu, więc zostają przy bramce odrzucającej.
+ * jest zweryfikowana dla nośnika dopłaty. Granice (przemarsz) i wasal (r2): zawarcie idzie gałęzią `else if` w main.ts
+ * (transferBasketItems z payload.giveItems) — koszyk nośnika jest przelewany razem z traktatem.
+ * Wyjątek kierunku: propozycja AI→gracz (płatnik = gracz jako responder) NIE jest podłączona — bramka odrzuca jak dotąd.
  */
-const TREATY_CARRIER_ACTIONS: ReadonlySet<string> = new Set(['nap', 'sojusz_defensywny', 'sojusz_pelny']);
+const TREATY_CARRIER_ACTIONS: ReadonlySet<string> = new Set(['nap', 'sojusz_defensywny', 'sojusz_pelny', 'granice', 'wasal']);
 
 function treatyParityPowerGate(
   actionId: string,
@@ -977,8 +986,9 @@ function treatyParityPowerGate(
   wearinessL = 0,
   payerStock?: Readonly<Record<string, number>>,
   era?: number,
+  techs?: { payerTechs: readonly string[]; otherTechs: readonly string[] },
 ): ProposalEvalResult | null {
-  const plan = treatyCarrierPlanForPlayerPayer(actionId, payload, relation, pnOpts, treatyPower, wearinessL, payerStock, era);
+  const plan = treatyCarrierPlanForPlayerPayer(actionId, payload, relation, pnOpts, treatyPower, wearinessL, payerStock, era, techs);
   if (!plan) return null;
   // Nośnik pokrywa całą dopłatę D (zapasy płatnika) → bramka przepuszcza; przelew wykonuje ścieżka akceptacji
   // (treatyCarrierForAcceptance / attachTreatyCarrier), a nie tekst oferty.
@@ -992,6 +1002,11 @@ function treatyParityPowerGate(
     reason: `Brakuje ${plan.duePn} PW do parytetu siły — słabszy gracz dopłaca D = ${plan.split.D} PW `
       + `(po rabacie relacji: ${plan.requiredD}; r = ${plan.split.r.toFixed(2)})${hint}`,
   };
+}
+
+/** Technologie płatnika-gracza i drugiej strony z kontekstu oceny (stopień technologii nośnika). Brak pól = puste listy. */
+function treatyCarrierTechsOf(ctx: ProposalEvalContext): { payerTechs: readonly string[]; otherTechs: readonly string[] } {
+  return { payerTechs: ctx.playerTechs ?? [], otherTechs: ctx.partnerTechs ?? [] };
 }
 
 /**
@@ -1016,9 +1031,13 @@ function attachTreatyCarrier(
   const plan = treatyCarrierPlanForPlayerPayer(
     proposal.actionId, proposal.payload, ctx.relation, pnOpts,
     ctx.treatyPower, treatyWearinessLevelOf(ctx), ctx.playerStock ?? ctx.payerStock, ctx.tradeEra,
+    treatyCarrierTechsOf(ctx),
   );
   if (!plan || !plan.supported || !plan.payment.full) return result;
-  const items = peaceTailBasketItems(plan.payment.tail);
+  // Technologie najpierw (stopień 1), potem ogon (złoto/metale/rudy): pozycje koszyka `typ: 'tech'` przelewa
+  // transferBasketItems (grantTechToOwner = odkrycie dla odbiorcy).
+  const techItems = plan.payment.techs.map(t => ({ typ: 'tech' as const, id: t.name, ilosc: 1 }));
+  const items = [...techItems, ...peaceTailBasketItems(plan.payment.tail)];
   if (items.length === 0) return result;
   return { ...result, treatyCarrier: { items, coveredPn: plan.payment.coveredPn } };
 }
@@ -1519,6 +1538,7 @@ function evaluateProposalImpl(
 
   const parityReject = treatyParityPowerGate(
     actionId, payload, relation, pnOpts, ctx.treatyPower, wearinessL, ctx.playerStock ?? ctx.payerStock, ctx.tradeEra,
+    treatyCarrierTechsOf(ctx),
   );
   if (parityReject) return parityReject;
 
