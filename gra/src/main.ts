@@ -31271,10 +31271,29 @@ async function boot(): Promise<void> {
       // R-WEB-DIPLO-FORCED-PEACE-WINDOW-AUTO-OPEN-Q1 (zarzut 1): TYLKO ODCZYT kolejki pokoju wymuszonego (bez efektów).
       (window as any).__truceTestDebug.pendingForcedPeaceForTest = (): Array<{ pairKey: string; loser: number; winner: number }> =>
         pendingForcedPeaceTreaties.map(p => ({ pairKey: p.pairKey, loser: p.loser, winner: p.winner }));
+      // R-WEB-DIPLO-FORCED-PEACE-D2-HOOKS-Q1 (S): zapis i wczytanie tą samą ścieżką co gra (persistSaveToSlot / loadGameFromSlot). TYLKO ?civTest=1.
+      (window as any).__truceTestDebug.saveForTest = async (slot: string): Promise<boolean> => (await persistSaveToSlot(slot, 'd2-forced-peace-pending')).ok;
+      (window as any).__truceTestDebug.loadForTest = async (slot: string): Promise<void> => { await loadGameFromSlot(slot, false); };
       (window as any).__truceTestDebug.wearinessStateForTest = (a: number, b: number): { warStart: number; peak: number; stage: number } | null => {
         const st = warWearinessByPairKey.get(diploPairKey(a, b));
         return st ? { warStart: st.warStart, peak: st.peak, stage: st.stage } : null;
       };
+      // R-WEB-DIPLO-FORCED-PEACE-D2-HOOKS-Q1 (A): SETUP wieku wojny dowolnej pary (AI↔AI) — jak setWarAge, ale bez udziału gracza. TYLKO ?civTest=1.
+      (window as any).__truceTestDebug.setPairWarAgeForTest = (a: number, b: number, turnsAtWar: number): void => {
+        const key = diploPairKey(a, b);
+        const meta = (diplomacyPairMeta.get(key) ?? {}) as Record<string, unknown>;
+        diplomacyPairMeta.set(key, { ...meta, wojnaStartTura: turn - turnsAtWar } as any);
+      };
+      // R-WEB-DIPLO-FORCED-PEACE-D2-HOOKS-Q1: stan wejść tyku zmęczenia dla pary — tylko odczyt.
+      (window as any).__truceTestDebug.wearDiagForTest = (a: number, b: number) => ({
+        turn,
+        status: getDiploRelation(a, b).status,
+        majorA: isMajorAiCivForForcedPeace(a),
+        majorB: isMajorAiCivForForcedPeace(b),
+        turnsAtWar: diploWarStateForRead(a, b).turnsAtWar,
+        awaiting: aiTurnAwaitingBattle,
+        store: (() => { const st = warWearinessByPairKey.get(diploPairKey(a, b)); return st ? { warStart: st.warStart, peak: st.peak, stage: st.stage } : null; })(),
+      });
       (window as any).__truceTestDebug.playerProposeTruceForTest = (aiId: number, turns: number): { queued: boolean; reason: string | null } => {
         // Ładunek jak z UI (akcja '10' + rodzaj 'rozejm', patrz proposalActionIdFromPayload → 'rozejm').
         const before = negotiationTable.length;
