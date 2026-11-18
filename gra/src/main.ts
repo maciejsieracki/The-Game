@@ -30992,6 +30992,9 @@ async function boot(): Promise<void> {
       (window as any).__truceTestDebug.purgeStaleForTest = (): void => { pruneInvalidNegotiations(); };
       // Wywołuje REALNY tick zmęczenia bez bramki bitwy (w playtest=mapa po turze zwykle czeka bitwa => battlePending=true => tick pomija).
       (window as any).__truceTestDebug.runWearinessTickForTest = (): void => { tickAiAiWarWeariness(false); };
+      // R-WEB-DIPLO-FORCED-PEACE-WINDOW-AUTO-OPEN-Q1 (zarzut 1): TYLKO ODCZYT kolejki pokoju wymuszonego (bez efektów).
+      (window as any).__truceTestDebug.pendingForcedPeaceForTest = (): Array<{ pairKey: string; loser: number; winner: number }> =>
+        pendingForcedPeaceTreaties.map(p => ({ pairKey: p.pairKey, loser: p.loser, winner: p.winner }));
       (window as any).__truceTestDebug.wearinessStateForTest = (a: number, b: number): { warStart: number; peak: number; stage: number } | null => {
         const st = warWearinessByPairKey.get(diploPairKey(a, b));
         return st ? { warStart: st.warStart, peak: st.peak, stage: st.stage } : null;
