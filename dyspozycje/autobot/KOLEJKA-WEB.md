@@ -40,10 +40,17 @@ Ostatnia FALA w `git log origin/main`: 835 (fb5b2045a). Rejestr w repo kończy s
 
 Pełna lista FAL: `git log origin/main --grep 'FALA'`. Rejestr (do FALI 746): `dyspozycje/REJESTR-PROSB-I-ZADAN.md`.
 
-## TRWAJĄCE WORKFLOWY (nie uruchamiać drugi raz)
+## TRWAJĄCE WORKFLOWY (stan 2026-11-18 22:25 UTC; origin/main e29f8c8b3 = FALA 846)
 
-Nie da się ustalić z repo: rejestr i git nie zapisują aktywnych workflowów. Wpis: ustalić z journalem workflowów (`subagents/workflows/*/journal.jsonl`) przed jakimkolwiek wznowieniem.
-Pozycje z listy zadań sesji orkiestratora usunięte, bo nie są potwierdzone w repo. THRESH054 jest wdrożony jako FALA 835 (fb5b2045a, subject „ROBOCZA 5bc75dc2 FALA 835”).
+| Temat | wf | Model etapu |
+|---|---|---|
+| R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 r2 (wariant C, baza 8a2d31af9) | wf_456a1f27-c8e | Operator HAIKU |
+| R-WEB-DIPLO-HARDER-RELATIONS-A-NEIGHBOR-TENSION-Q1 r1 (etap A, za flagą) | wf_8d891a52-8b4 | Operator HAIKU |
+| R-WEB-AI-AI-ALLIANCES-E3-WIRING-FLAGGED-Q1 r1 (etap B1, za flagą) | wf_5cc7b000-7e5 | Operator HAIKU |
+| R-WEB-TEST-DEBT-Q6 r1 | wf_1bf9e5b0-744 | Operator HAIKU |
+
+Bieg orkiestratora poza workflow: pomiar ekonomii 150 tur, ziarna 4242 i 7 (/tmp/econ-out, /tmp/econ-run.sh).
+Kolejka na później: etap B2/B4 (wspólne wojny, koalicja antylidera), etap C (Zaufanie 0), reguła wojen C po pomiarze WARMEASURE, TERRITORYRACE r3, punkt B audytu ekonomii.
 
 ## GOTOWE DO STARTU
 
