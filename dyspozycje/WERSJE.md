@@ -1,3 +1,9 @@
+## ROBOCZA f9eb9970 -- 2026-11-18 -- FALA 841: Przycisk Ulepsz wszystko w sekcji Ulepsz panelu miasta (testowa)
+
+- Panel miasta: w naglowku sekcji Ulepsz przycisk Ulepsz wszystko dodaje do kolejki wszystkie aktywne ulepszenia ta sama funkcja addItem co klik Ulepsz w wierszu (bez zakupu); przycisk nieaktywny gdy wszystko w kolejce; komunikat Dodano do kolejki: N (zgloszenie wlasciciela)
+- Weryfikacja: FC PASS-WITH-NOTES 18a0710bd (kod a26997e44, operator 52657c27a): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, growth-percent 29/0; nowy test city-upgrade-all-button 25/0, mutacja 7 FAIL; zrzuty PRZED/PO headless Chromium (lista budowy)
+- Limity: NIE ZMIERZONO: wyglad w pelnej zywej grze, wyczerpanie puli surowcow w polowie serii (tooltip do N, zaleznie od zasobow); upgrade-budynki-test 60/1 (stale palisade completion) czerwony tez na bazie 2d2c425f
+
 ## ROBOCZA f493f62a -- 2026-11-18 -- FALA 840: Ekran powitalny cywilizacji w stylu brand booka (testowa)
 
 - Ekran Odkryles nowa cywilizacje (civWelcomeScreen.ts) przestylowany wg brand booka: ciemny panel z tokenow --civ-*, tytul Georgia w zlocie, tresc Segoe UI, przyciski: Audiencja wypelniony zlotem, Zamknij outline 2px; usuniety jasny motyw i prefers-color-scheme; tresc i logika bez zmian (zgloszenie wlasciciela)

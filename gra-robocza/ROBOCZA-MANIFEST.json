@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "f493f62aa2665c99f1986b12c0213d22",
-  "bundleSha256": "c49b4ae6258bb5a1ef872ad24356b572cd58047e74d82db2846952cfa3923e21",
-  "bundleBytes": 14951291,
+  "bundleMd5": "f9eb9970d6b7cda42f5fb6b3e664393e",
+  "bundleSha256": "bef445fb4389ebdbc5493211304ce3b32a36a7a0cf9fdc3bb0cbdccade8df6c0",
+  "bundleBytes": 14952494,
   "sourceSnapshot": {
-    "source": "gra/ (main 1ca19bd8 + merge FC 69a3051f)",
+    "source": "gra/ (main 2d2c425f + merge FC 18a0710bd)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 840: Ekran Odkryles nowa cywilizacje (civWelcomeScreen.ts) przestylowany wg brand booka: ciemny panel z tokenow --civ-*, tytul Georgia w zlocie, tresc Segoe UI, przyciski: Audiencja wypelniony zlotem, Zamknij outline 2px; usuniety jasny motyw i prefers-color-scheme; tresc i logika bez zmian (zgloszenie wlasciciela)"
+    "FALA 841: Panel miasta: w naglowku sekcji Ulepsz przycisk Ulepsz wszystko dodaje do kolejki wszystkie aktywne ulepszenia ta sama funkcja addItem co klik Ulepsz w wierszu (bez zakupu); przycisk nieaktywny gdy wszystko w kolejce; komunikat Dodano do kolejki: N (zgloszenie wlasciciela)"
   ],
   "verification": [
-    "FC PASS-WITH-NOTES 69a3051f (kod 5a635721, operator 73cb6977): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, civ-welcome-screen-test 309 asercji OK; zywy Chromium civSeed=4242 w 3 szerokosciach (1324x1300, 1024x640, 480x800): asercje font/tlo/kolor/przyciski OK, zero pageerror, brak poziomego przewijania; PRZED 15/15 FAIL, mutacja 6 FAIL; zrzuty PRZED/PO w runs/<ID>/dowody"
+    "FC PASS-WITH-NOTES 18a0710bd (kod a26997e44, operator 52657c27a): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, growth-percent 29/0; nowy test city-upgrade-all-button 25/0, mutacja 7 FAIL; zrzuty PRZED/PO headless Chromium (lista budowy)"
   ],
   "limits": [
-    "NIE ZMIERZONO: zgodnosc z brand bookiem to ocena Operatora, decyzje wizualna podejmuje wlasciciel po zrzutach; hierarchia przyciskow (Audiencja glowny) do akceptacji wlasciciela; zrzut przy innych cywilizacjach i trybie ciemnym przegladarki nie emulowany"
+    "NIE ZMIERZONO: wyglad w pelnej zywej grze, wyczerpanie puli surowcow w polowie serii (tooltip do N, zaleznie od zasobow); upgrade-budynki-test 60/1 (stale palisade completion) czerwony tez na bazie 2d2c425f"
   ],
-  "finalControl": "R-WEB-UI-WELCOME-SCREEN-BRAND-BOOK-RESTYLE-Q1 r1 (Operator Haiku, Obrona Haiku) FC PASS-WITH-NOTES 69a3051f (kod 5a635721)",
+  "finalControl": "R-WEB-UI-CITY-UPGRADE-ALL-BUTTON-Q1 r1 (Operator Haiku, Obrona Haiku) FC PASS-WITH-NOTES 18a0710bd (kod a26997e44)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T19:46:46",
+  "hubGeneratedAt": "2026-11-18T20:01:37",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "f493f62aa2665c99f1986b12c0213d22",
-      "sizeBytes": 14951291
+      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
+      "sizeBytes": 14952494
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "f493f62aa2665c99f1986b12c0213d22",
-      "sizeBytes": 14951291
+      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
+      "sizeBytes": 14952494
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "f493f62aa2665c99f1986b12c0213d22",
-      "sizeBytes": 14951291
+      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
+      "sizeBytes": 14952494
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "f493f62aa2665c99f1986b12c0213d22",
-      "sizeBytes": 14951291
+      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
+      "sizeBytes": 14952494
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "f493f62aa2665c99f1986b12c0213d22",
-      "sizeBytes": 14951291
+      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
+      "sizeBytes": 14952494
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "f493f62aa2665c99f1986b12c0213d22",
-      "sizeBytes": 14951291
+      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
+      "sizeBytes": 14952494
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "f493f62aa2665c99f1986b12c0213d22",
-      "sizeBytes": 14951291
+      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
+      "sizeBytes": 14952494
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "f493f62aa2665c99f1986b12c0213d22",
-      "sizeBytes": 14951291
+      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
+      "sizeBytes": 14952494
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "f493f62aa2665c99f1986b12c0213d22",
-      "sizeBytes": 14951291
+      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
+      "sizeBytes": 14952494
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "f493f62aa2665c99f1986b12c0213d22",
-      "sizeBytes": 14951291
+      "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
+      "sizeBytes": 14952494
     }
   ],
-  "md5": "f493f62aa2665c99f1986b12c0213d22",
+  "md5": "f9eb9970d6b7cda42f5fb6b3e664393e",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
