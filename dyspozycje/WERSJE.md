@@ -1,3 +1,9 @@
+## ROBOCZA 3a050893 -- 2026-11-18 -- FALA 845: Odsiecz: AI atakuje oblegajacych swoje miasto przy przewadze 20 procent (testowa)
+
+- AI (ai.ts applySiegeRelief + nowy ai-siege-relief.ts): gdy miasto AI jest oblezone, a AI ma w zasiegu sile co najmniej o 20 procent wieksza niz oblegajacy (siege_relief_min_advantage 0,2 w ai-params.json), atakuje oblegajacych z priorytetem przed ofensywa; dotyczy oblegajacych gracza, innej AI i barbarzyncow, tylko w stanie wojny; panstwa-miasta (defensiveCopy) bez odsieczy; zgloszenie wlasciciela
+- Weryfikacja: FC PASS-WITH-NOTES 0f3f3795 (kod 66859718, operator 3c536464): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, unit-power 6/0; ai-siege-relief-test 23/0 (granice 5v5/5v7/6v7/6v8, progi 0,5/0,2/0,1), mutacja bez odsieczy 10 FAIL; testy AI/oblezen bez regresji (defend-home 30/0, siege-ai 17/0, last-stand-sortie 71/0 i inne)
+- Limity: NIE ZMIERZONO: zywa gra w Chromium; wpiecie flagi oblegane w petli main.ts poza czytaniem kodu; panstwa-miasta bez odsieczy (decyzja produktowa); jednostki niestojace obok oblegajacych dochodza i atakuja w nastepnej turze
+
 ## ROBOCZA 6d0c13f6 -- 2026-11-18 -- FALA 844: Panel Za co cie lubia: wiersz Przewaga militarna tylko aktualny, bez Wygrana bitwa +5 (testowa)
 
 - Rozbicie czynnikow relacji (diplomacy-factors.ts + 2 pola w getRelationBreakdown main.ts): zdarzenia Przewaga militarna i Slabszy militarnie pokazuja sie jako JEDEN wiersz aktualnego stanu pary (+15 lub -10, zgodny z paskiem Respektu), wiersze Wygrana bitwa (historia) +5 ukryte (nie wchodzily do paska); rejestr zdarzen i pasek bez zmian; decyzje wlasciciela 2026-11-18 (ABC A i B)
