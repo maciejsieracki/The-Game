@@ -14,7 +14,11 @@ use bridge::{
     BridgeErrorCode, BridgeRequest, BridgeResult, CivEngineAdapter, EngineBridge, EngineCommand,
     EnginePort, MockEngineAdapter, RenderUiParams, StartGameParams, CONTRACT_VERSION,
 };
+use civ_engine::data::economy_society_part2::parse_ai_params;
 use civ_engine::data::units_combat::parse_units;
+use civ_engine::domain::combat::unit_building_bonuses::{
+    soft_path_badge_level, UnitBuildingProgress,
+};
 use civ_engine::domain::diplomacy::RelationStatus;
 use civ_engine::domain::map_view::build_map_view;
 use civ_engine::domain::overlays_view::reachable_overlay;
@@ -22,10 +26,13 @@ use civ_engine::domain::playable::{
     MovementPoints, PlayableFogSession, PlayableGame, PlayablePlayer, PlayableReplaceUnit,
     PlayableUnit, PlayableUnitKind,
 };
+use civ_engine::domain::playable::{PlayablePlacedWonder, PlayableTerrain};
 use civ_engine::domain::render_frame::{
     build_render_frame, render_map, snapshot_map_of, RenderFrameError, RENDER_FRAME_GAPS,
     RENDER_FRAME_STATE_DEFAULTS,
 };
+use civ_engine::domain::terrain::{axial_distance, city_territory_radius, CityNode};
+use civ_engine::domain::unit_power::{field_power, UnitPowerCoeffs, UnitPowerInput};
 use civ_engine::{CityId, PlayableCity, PlayableState, PlayerId, PositionDto, UnitId};
 use civ_view_model as vm;
 use civ_view_model::{FogState, MapViewDto, RenderLayersDto, Terrain};
@@ -457,7 +464,9 @@ fn h_pola_ramki_scenariusza_startowego() {
     assert_eq!(u.hex, vm::HexCoord::new(2, 1));
     assert_eq!((u.ruch_max, u.ruch_left), (1.0, 1.0));
     assert_eq!(u.hp, 22.0);
-    assert_eq!(u.hp_max, None);
+    // R2: `syncRuntimeUnitHpState` (`main.ts:33109-33118`) ustawia `u.hpMax = hpMaxEffective` = 22 bez
+    // bonusow (`effectiveMaxHp(22, 0, 0)`, `unit-card-stats.ts:79-95`).
+    assert_eq!(u.hp_max, Some(22.0));
     assert_eq!(
         (u.veteran_stars, u.armor_badge_level, u.soft_badge_level),
         (0, 0, 0)
@@ -589,7 +598,9 @@ fn h_jawne_luki_ramki() {
         "owners[] / cities[] miasta-panstwa",
         "units[].isGeneral / units[].dimmed",
         "units[].embarked / units[].inGarnizon",
-        "units[].armorBadgeLevel / units[].softBadgeLevel",
+        "units[].armorBadgeLevel",
+        "stacks.vitalsByRepId fortyfikacja / garnizon / miasta-panstwa",
+        "overlays.buildHighlight zrodla spoza stanu",
         "overlays.tradeRoutes",
         "battle",
     ]
@@ -602,15 +613,14 @@ fn h_jawne_luki_ramki() {
     let fields: BTreeSet<&str> = RENDER_FRAME_GAPS.iter().map(|g| g.field).collect();
     let expected: BTreeSet<&str> = [
         "overlays.workerFields",
-        "overlays.buildHighlight.hexes",
-        "stacks.vitalsByRepId",
         "stacks.starvingRepIds / stacks.goldDeficitRepIds",
-        "units[].hp (brak hp w stanie) / units[].hpMax",
     ]
     .into_iter()
     .collect();
     assert_eq!(fields, expected);
     assert!(RENDER_FRAME_GAPS.iter().all(|g| !g.reason.is_empty()));
+    // R2: luki zalezne od stanu ekonomii wskazuja dlug #310 (decyzja techniczna dyspozycji r2).
+    assert!(RENDER_FRAME_GAPS.iter().all(|g| g.reason.contains("#310")));
 }
 
 // (h) obrona r1 zarzut 2: pola produkowane od zera ---------------------------------------------------------
@@ -824,7 +834,9 @@ fn h_hp_jednostki_z_ekonomii() {
         .find(|u| u.id.get() == WARRIOR)
         .expect("wojownik");
     assert_eq!(u.hp, 7.5);
-    assert_eq!(u.hp_max, Some(20.0));
+    // R2: cache `hpMax` (20) nadpisany przez `syncRuntimeUnitHpState` (`main.ts:33109-33118`):
+    // `hpMax = effectiveRuntimeUnitMaxHp(u)` = 22 (Wojownik bez bonusow).
+    assert_eq!(u.hp_max, Some(22.0));
 }
 
 /// Obrona r1 zarzut 3: typ bez definicji w `units.json` = jawny blad, nie `hp = 0`.
@@ -850,4 +862,402 @@ fn h_typ_bez_definicji_to_blad() {
         err,
         RenderFrameError::UnknownUnitType("NieistniejacyTyp".to_owned())
     );
+}
+
+// =====================================================================================================
+// R2 (DODATEK r2, RENDER_FRAME_GAPS): luki 1-3 domkniete; 4-5 jawne (zaleznosc #310).
+// =====================================================================================================
+
+/// Stan startowy z mapa w calosci rowninna poza wskazanymi heksami (deterministyczne wektory).
+fn plains_state(water: &[(u16, u16)], hills: &[(u16, u16)]) -> PlayableState {
+    let mut state = start_state();
+    for t in &mut state.map.tiles {
+        let p = (t.position.x(), t.position.y());
+        t.terrain = if water.contains(&p) {
+            PlayableTerrain::Water
+        } else if hills.contains(&p) {
+            PlayableTerrain::Hills
+        } else {
+            PlayableTerrain::Plains
+        };
+        t.passable = t.terrain.is_passable();
+    }
+    state
+}
+
+fn ui_found_city() -> RenderUiParams {
+    RenderUiParams {
+        found_city_mode: true,
+        ..RenderUiParams::default()
+    }
+}
+
+fn ui_wonder() -> RenderUiParams {
+    RenderUiParams {
+        wonder_active: true,
+        ..RenderUiParams::default()
+    }
+}
+
+fn ui_improvement(key: &str) -> RenderUiParams {
+    RenderUiParams {
+        build_mode_open: true,
+        active_improvement_key: Some(key.to_owned()),
+        ..RenderUiParams::default()
+    }
+}
+
+fn frame_ui(state: &PlayableState, seat: u64, ui: &RenderUiParams) -> RenderLayersDto {
+    let mut session = PlayableFogSession::for_new_game(state);
+    build_render_frame(state, &mut session, PlayerId::new(seat), ui).expect("ramka")
+}
+
+fn highlight(f: &RenderLayersDto) -> Vec<(i32, i32)> {
+    f.overlays
+        .build_highlight
+        .hexes
+        .iter()
+        .map(|h| (h.q, h.r))
+        .collect()
+}
+
+fn coords(state: &PlayableState) -> Vec<(i32, i32)> {
+    state
+        .map
+        .tiles
+        .iter()
+        .map(|t| (i32::from(t.position.x()), i32::from(t.position.y())))
+        .collect()
+}
+
+/// `MIN_CITY_DISTANCE` (`cities.ts:1117` = `miasto-params.json` `min_dystans_miast`).
+const MIN_CITY_DISTANCE: f64 = 4.0;
+
+/// R2 luka 1 (`foundCityMode`, `main.ts:16352-16361`): heksy `isInStartReveal && canFoundPlayerCityAt(q,
+/// r).ok`. Wektor wg `canFoundCity` (`cities.ts:1163-1230` @ `07d2fbd72`): heks ladowy (nie woda, nie
+/// gory), `hexDistance >= MIN_CITY_DISTANCE` od kazdego miasta, w terytorium wlasnym
+/// (`foundingTerritoryOpts`, `main.ts:12906-12920`: gracz ma stolice, wiec `isInTerritory` wezlow stolicy),
+/// limit miast (1 < 10). Stolica (1,1), populacja 1.
+#[test]
+fn r2_build_highlight_found_city_wg_can_found_city() {
+    let water = [(0, 0), (0, 1), (5, 2)];
+    let state = plains_state(&water, &[]);
+    let capital = state.cities[0].position;
+    let (cq, cr) = (i32::from(capital.x()), i32::from(capital.y()));
+    let radius = city_territory_radius(&CityNode::city(cq, cr, 1.0));
+    let expected: BTreeSet<(i32, i32)> = coords(&state)
+        .into_iter()
+        .filter(|&(q, r)| !water.contains(&(q as u16, r as u16)))
+        .filter(|&(q, r)| {
+            let d = axial_distance(q, r, cq, cr);
+            d >= MIN_CITY_DISTANCE && d <= radius
+        })
+        .collect();
+    assert!(!expected.is_empty(), "wektor niepusty (promien {radius})");
+    let f = frame_ui(&state, HUMAN, &ui_found_city());
+    assert_eq!(
+        f.overlays.build_highlight.kind,
+        vm::BuildHighlightKind::FoundCity
+    );
+    let got = highlight(&f);
+    assert_eq!(got.iter().copied().collect::<BTreeSet<_>>(), expected);
+    // Kolejnosc = `Object.values(map.hexes)` (r-major), bez powtorzen (`new Set`).
+    let mut sorted = got.clone();
+    sorted.sort_by_key(|&(q, r)| (r, q));
+    assert_eq!(got, sorted);
+    assert!(!got.contains(&(5, 2)), "woda: `reasons.morze`");
+    assert!(!got.contains(&(3, 1)), "za blisko stolicy (d = 2 < 4)");
+    // Q6-2 (D-R3-3) zachowany: tryb zalozenia miasta czysci zaznaczenie.
+    let mut sel = ui_found_city();
+    sel.selected_unit_id = Some(WARRIOR);
+    let f2 = frame_ui(&state, HUMAN, &sel);
+    assert_eq!(f2.overlays.selection, None);
+    assert!(f2.overlays.reachable.is_empty());
+}
+
+/// R2 luka 1: oczekiwanie na pierwsze miasto (`isAwaitingFirstPlayerCity`, gracz bez miasta) =
+/// `foundingTerritoryOpts` -> `{}` (bez `withinTerritory`) i krag startu (`isInStartReveal`,
+/// `first-player-city.ts:23-33`): heksy poza kregiem odrzucone, w kregu wg `canFoundCity`.
+#[test]
+fn r2_build_highlight_found_city_pierwsze_miasto() {
+    let mut state = plains_state(&[(0, 0), (0, 1)], &[]);
+    // Heks startu = stolica nowej gry (`playerStartHexFor`); potem gracz bez miasta (oczekiwanie).
+    let mut session = PlayableFogSession::for_new_game(&state);
+    state.cities.clear();
+    // `playerEverOwnedCity` = false (`isAwaitingFirstPlayerCity`, `first-player-city.ts:14-20`).
+    state.gracz_kiedys_mial_miasto = false;
+    assert!(state.is_awaiting_first_city(PlayerId::new(HUMAN)));
+    let (sq, sr) = *session
+        .player_start_hex_by_owner
+        .get(&PlayerId::new(HUMAN))
+        .expect("heks startu fotela");
+    let reveal = session.start_reveal_radius;
+    let f = build_render_frame(&state, &mut session, PlayerId::new(HUMAN), &ui_found_city())
+        .expect("ramka");
+    let expected: BTreeSet<(i32, i32)> = coords(&state)
+        .into_iter()
+        .filter(|&(q, r)| !(q == 0 && r <= 1))
+        .filter(|&(q, r)| axial_distance(q, r, sq, sr) <= reveal)
+        .collect();
+    let got: BTreeSet<(i32, i32)> = highlight(&f).into_iter().collect();
+    assert_eq!(got, expected);
+}
+
+/// R2 luka 1 (`activeWonderId`, `main.ts:16363-16367`): `listQualifyingWonderHexesForOwner`
+/// (`wonder-placement.ts:53-119`): ladowe heksy `0 < dist <= cityTerritoryRadius` od miasta fotela, bez
+/// heksow miast i postawionych cudow, sortowane `dist, q, r`.
+#[test]
+fn r2_build_highlight_cud_wg_wonder_placement() {
+    let water = [(0, 0), (0, 1), (2, 2)];
+    let mut state = plains_state(&water, &[]);
+    state.placed_world_wonders.push(PlayablePlacedWonder {
+        wonder_id: "piramidy".to_owned(),
+        q: 2,
+        r: 0,
+        owner_id: PlayerId::new(HUMAN),
+    });
+    let (cq, cr) = (1, 1);
+    let radius = city_territory_radius(&CityNode::city(cq, cr, 1.0));
+    let mut expected: Vec<(f64, i32, i32)> = coords(&state)
+        .into_iter()
+        .filter(|&(q, r)| !water.contains(&(q as u16, r as u16)))
+        .filter(|&(q, r)| (q, r) != (2, 0))
+        .map(|(q, r)| (axial_distance(q, r, cq, cr), q, r))
+        .filter(|&(d, _, _)| d > 0.0 && d <= radius)
+        .collect();
+    expected.sort_by(|a, b| {
+        a.0.partial_cmp(&b.0)
+            .expect("dist")
+            .then(a.1.cmp(&b.1))
+            .then(a.2.cmp(&b.2))
+    });
+    let expected: Vec<(i32, i32)> = expected.into_iter().map(|(_, q, r)| (q, r)).collect();
+    let f = frame_ui(&state, HUMAN, &ui_wonder());
+    assert_eq!(
+        f.overlays.build_highlight.kind,
+        vm::BuildHighlightKind::Wonder
+    );
+    assert_eq!(highlight(&f), expected);
+    // Fotel bez miast: `playerCities.length === 0` -> `[]` (`main.ts:5212`).
+    state.players.push(ai_player());
+    let f_ai = frame_ui(&state, AI, &ui_wonder());
+    assert!(highlight(&f_ai).is_empty());
+}
+
+/// R2 luka 1 (ulepszenie, `main.ts:16369-16395`): `buildApi.getQualifyingHexes(key)`
+/// (`improvement-build.ts` `getQualifyingHexes` = kandydaci x `qualifies`; technologia bramkuje tylko
+/// `createBuildRequest`, nie podswietlenie) z owinieciem cywilizacji (`isImprovementAllowedForCiv`,
+/// `main.ts:16336-16337`: `tarasy` tylko `chinczycy`/`inkowie`).
+#[test]
+fn r2_build_highlight_ulepszenie_wg_build_api() {
+    let state = plains_state(&[(0, 0), (0, 1)], &[(3, 2), (2, 3)]);
+    let f = frame_ui(&state, HUMAN, &ui_improvement("farma"));
+    assert_eq!(
+        f.overlays.build_highlight.kind,
+        vm::BuildHighlightKind::Improvement
+    );
+    let with_tech = state.clone();
+    let farms = highlight(&f);
+    assert!(!farms.is_empty(), "farma na rowninie terytorium");
+    // Woda nigdy (`teren` farmy), heksy poza terytorium + pierscieniem kandydatow nigdy.
+    assert!(!farms.contains(&(0, 0)) && !farms.contains(&(0, 1)));
+    let radius = city_territory_radius(&CityNode::city(1, 1, 1.0));
+    assert!(farms
+        .iter()
+        .all(|&(q, r)| axial_distance(q, r, 1, 1) <= radius + 1.0));
+
+    // `tarasy` dla rzymian: `[]` mimo technologii (owiniecie civ, `main.ts:16336-16337`).
+    let terraces = highlight(&frame_ui(&with_tech, HUMAN, &ui_improvement("tarasy")));
+    assert!(terraces.is_empty(), "tarasy niedozwolone dla rzymian");
+    let mut chinese = with_tech.clone();
+    chinese.players[0].civilization = "chinczycy".to_owned();
+    let terraces_cn = highlight(&frame_ui(&chinese, HUMAN, &ui_improvement("tarasy")));
+    assert!(
+        !terraces_cn.is_empty(),
+        "tarasy dla chinczykow na wzgorzach terytorium"
+    );
+    assert!(terraces_cn.iter().all(|h| [(3, 2), (2, 3)].contains(h)));
+}
+
+fn wojownik() -> civ_engine::data::units_combat::UnitRecord {
+    parse_units()
+        .expect("units.json")
+        .into_iter()
+        .find(|u| u.jednostka == "Wojownik")
+        .expect("Wojownik")
+}
+
+/// R2 luka 3: `hpMax` = `hpMaxEffective` = `effectiveMaxHp(unitHealth(def), unitParametryBonusFrac,
+/// veteranCombatBonusFrac)` (`unit-card-stats.ts:79-95,114`); `veteranCombatBonusFrac` 1 bitwy = 0.10
+/// (`veteran.ts:71-76`); `parametryBonusProc` 20 -> 0.20 (`unit-building-bonuses.ts:344`). Wektory:
+/// `round(22 * 1.1, 1)` = 24.2, `round(22 * 1.3, 1)` = 28.6; `hp` przyciete do `[0, hpMax]`
+/// (`main.ts:33113-33117`).
+#[test]
+fn r2_hp_max_effective_z_bonusami() {
+    assert_eq!(wojownik().health_lc, 22);
+    let mut state = start_state();
+    state.economy.units.insert(
+        WARRIOR,
+        PlayableReplaceUnit {
+            battles_survived: Some(1.0),
+            ..PlayableReplaceUnit::default()
+        },
+    );
+    let f = frame_of(&state, true);
+    let u = &f.units[0];
+    assert_eq!(u.hp_max, Some(24.2));
+    assert_eq!(u.hp, 24.2, "hp undefined = pelne efektywne");
+    assert_eq!(u.veteran_stars, 1);
+
+    state.economy.units.insert(
+        WARRIOR,
+        PlayableReplaceUnit {
+            battles_survived: Some(1.0),
+            parametry_bonus_proc: Some(20.0),
+            hp: Some(99.0),
+            ..PlayableReplaceUnit::default()
+        },
+    );
+    let f = frame_of(&state, true);
+    let u = &f.units[0];
+    assert_eq!(u.hp_max, Some(28.6));
+    assert_eq!(u.hp, 28.6, "hp > hpMax przyciete");
+    assert_eq!(
+        u.soft_badge_level,
+        soft_path_badge_level(Some(&UnitBuildingProgress {
+            pancerz_bonus_proc: None,
+            parametry_bonus_proc: Some(20.0),
+        }))
+    );
+    assert!(u.soft_badge_level >= 1, "parametryBonusProc 20 > 0");
+
+    state.economy.units.insert(
+        WARRIOR,
+        PlayableReplaceUnit {
+            hp: Some(f64::NEG_INFINITY),
+            ..PlayableReplaceUnit::default()
+        },
+    );
+    let u = &frame_of(&state, true).units[0];
+    assert_eq!(
+        (u.hp, u.hp_max),
+        (22.0, Some(22.0)),
+        "hp nieskonczone = maxHp"
+    );
+}
+
+/// R2 luka 2: `vitalsByRepId` (`computeStackDisplay(src, unitAttackScore, { maxHpOf, defOf })`,
+/// `main.ts:14476-14508`; `stackVitals` `armyMerge.ts:1137-1155`). Stos dwoch wojownikow gracza:
+/// hp 22 + 22, `fieldPowerM` = `sumRosterFieldM` = `round((27 + 27) * 10) / 10` (cache `fieldPower` 27,
+/// `rangedDamageMultFor` = 1, `unit-power.ts` `armyFieldPower`), poziom weterana 1, 0 gwiazdek.
+#[test]
+fn r2_vitals_stosu_gracza() {
+    let state = two_stacks_state();
+    let w = wojownik();
+    assert_eq!(w.field_power, 27.0);
+    let f = frame_of(&state, true);
+    assert_eq!(f.stacks.vitals_by_rep_id.len(), f.stacks.visible_ids.len());
+    let (rep, v) = &f.stacks.vitals_by_rep_id[0];
+    assert_eq!(rep.get(), WARRIOR);
+    assert_eq!(
+        (
+            v.ruch_left,
+            v.ruch_max,
+            v.hp,
+            v.hp_max,
+            v.field_power_m,
+            v.count
+        ),
+        (1.0, 1.0, 44.0, 44.0, 54.0, 2)
+    );
+    assert_eq!(
+        (
+            v.armor_badge_level,
+            v.soft_badge_level,
+            v.veteran_level,
+            v.veteran_stars,
+            v.has_commander
+        ),
+        (0, 0, 1, 0, false)
+    );
+
+    // Weteran (1 bitwa) w stosie: `veteranScaledDefFor` usuwa cache i skaluje pola x1.1
+    // (`main.ts:33063-33070`, `veteran.ts:362-385`); hp stosu = 22 + 24.2; poziom 2, 1 gwiazdka.
+    let mut vet = state.clone();
+    vet.economy.units.insert(
+        5,
+        PlayableReplaceUnit {
+            battles_survived: Some(1.0),
+            hp: Some(10.0),
+            ..PlayableReplaceUnit::default()
+        },
+    );
+    let coeffs = UnitPowerCoeffs::from_params();
+    let up = 1.1;
+    let scaled = UnitPowerInput {
+        melee_attack: w.melee_attack as f64 * up,
+        melee_defence: w.melee_defence as f64 * up,
+        weapon_damage: w.weapon_damage as f64 * up,
+        piercing: w.piercing.unwrap_or(0) as f64 * up,
+        armor: w.armor.unwrap_or(0) as f64,
+        charge_bonus: w.charge_bonus.unwrap_or(0) as f64 * up,
+        health: w.health_lc as f64 * up,
+        missile_attack: w.missile_attack as f64 * up,
+        typ: Some(w.typ.clone()),
+        jednostka: Some(w.jednostka.clone()),
+    };
+    let vet_m = field_power(&scaled, &coeffs).total;
+    let fv = frame_of(&vet, true);
+    let (_, v) = &fv.stacks.vitals_by_rep_id[0];
+    assert_eq!(v.hp_max, 22.0 + 24.2);
+    assert_eq!(v.hp, 22.0 + 10.0);
+    assert_eq!(v.field_power_m, ((27.0 + vet_m) * 10.0_f64).round() / 10.0);
+    assert_ne!(vet_m, 27.0, "cache nie przezywa skalowania weterana");
+    assert_eq!((v.veteran_level, v.veteran_stars), (2, 1));
+}
+
+/// R2 luka 2: bonus trudnosci AI (`difficultyCombatMultForOwner`, `main.ts:9506-9511`;
+/// `qualifiesForMajorAiDifficultyBonus` `ai-difficulty-bonus.ts:18-23`; `applyDifficultyCombatToUnitDef`
+/// `:41-60`) w `fieldPowerM` stosu AI: `Normalny` (bonusWalka 0, `mult === 1` -> def bez zmian, cache 27),
+/// `Trudny` (bonusWalka poziomu 3 z `ai-params.json`: atak, obrona, pocisk x mult, cache usuniety).
+#[test]
+fn r2_vitals_bonus_trudnosci_ai() {
+    let state = two_stacks_state();
+    let w = wojownik();
+    let ai_vitals = |s: &PlayableState| -> vm::StackVitalsDto {
+        let f = frame_of(s, false);
+        f.stacks
+            .vitals_by_rep_id
+            .iter()
+            .find(|(id, _)| id.get() == 9)
+            .map(|(_, v)| v.clone())
+            .expect("stos AI")
+    };
+    assert_eq!(ai_vitals(&state).field_power_m, 27.0);
+    let mut hard = state.clone();
+    hard.params.difficulty = "Trudny".to_owned();
+    let bonus = parse_ai_params()
+        .expect("ai-params")
+        .trudnosc_poziom3_bonus_walka
+        .wartosc;
+    let mult = 1.0 + bonus;
+    let scaled = UnitPowerInput {
+        melee_attack: w.melee_attack as f64 * mult,
+        melee_defence: w.melee_defence as f64 * mult,
+        weapon_damage: w.weapon_damage as f64,
+        piercing: w.piercing.unwrap_or(0) as f64,
+        armor: w.armor.unwrap_or(0) as f64,
+        charge_bonus: w.charge_bonus.unwrap_or(0) as f64,
+        health: w.health_lc as f64,
+        missile_attack: w.missile_attack as f64 * mult,
+        typ: Some(w.typ.clone()),
+        jednostka: Some(w.jednostka.clone()),
+    };
+    let expected =
+        (field_power(&scaled, &UnitPowerCoeffs::from_params()).total * 10.0).round() / 10.0;
+    assert_ne!(expected, 27.0);
+    assert_eq!(ai_vitals(&hard).field_power_m, expected);
+    // Gracz glowny (web `ownerId 0`) nie dostaje bonusu: stos gracza bez zmian.
+    let human = frame_of(&hard, false);
+    assert_eq!(human.stacks.vitals_by_rep_id[0].1.field_power_m, 54.0);
 }

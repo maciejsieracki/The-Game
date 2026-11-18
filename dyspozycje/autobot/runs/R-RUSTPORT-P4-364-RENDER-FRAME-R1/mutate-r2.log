@@ -1,0 +1,14 @@
+L1a-zalozenie-miasta-zawsze-false: exit=101 FAIL (oczekiwane); FAILED: r2_build_highlight_found_city_pierwsze_miasto, r2_build_highlight_found_city_wg_can_found_city
+L1b-cud-pusty: exit=101 FAIL (oczekiwane); FAILED: r2_build_highlight_cud_wg_wonder_placement
+L1c-ulepszenie-puste: exit=101 FAIL (oczekiwane); FAILED: r2_build_highlight_ulepszenie_wg_build_api
+L1d-bez-owiniecia-civ: exit=101 FAIL (oczekiwane); FAILED: r2_build_highlight_ulepszenie_wg_build_api
+L1e-zalozenie-bez-terytorium: exit=101 FAIL (oczekiwane); FAILED: r2_build_highlight_found_city_wg_can_found_city
+L2a-vitals-puste: exit=101 FAIL (oczekiwane); FAILED: r2_vitals_bonus_trudnosci_ai, r2_vitals_stosu_gracza
+L2b-bez-bonusu-trudnosci: exit=101 FAIL (oczekiwane); FAILED: r2_vitals_bonus_trudnosci_ai
+L2c-bez-weterana-w-def: exit=101 FAIL (oczekiwane); FAILED: r2_vitals_stosu_gracza
+L3a-hpMax-bez-bonusow: exit=101 FAIL (oczekiwane); FAILED: r2_hp_max_effective_z_bonusami
+L3b-hpMax-bez-parametrow: exit=101 FAIL (oczekiwane); FAILED: r2_hp_max_effective_z_bonusami
+L3c-hp-bez-przyciecia: exit=101 FAIL (oczekiwane); FAILED: r2_hp_max_effective_z_bonusami
+E6r2-hp-ignoruje-ekonomie: exit=101 FAIL (oczekiwane); FAILED: h_hp_jednostki_z_ekonomii
+Z3r2-ciche-zero-bez-definicji: exit=101 FAIL (oczekiwane); FAILED: h_typ_bez_definicji_to_blad
+PODSUMOWANIE: 13/13 mutantow zabitych
