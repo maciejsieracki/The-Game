@@ -117,7 +117,27 @@ export interface ContinuousFactorFlags {
   /** REL-WIARYG-DRIFT-Q1 — globalna W gracza (dryf Zaufania/turę); brak przy wojnie. */
   wiarygodnoscSelf?: number;
   atWar?: boolean;
+  /**
+   * R-WEB-UI-DIPLO-FACTORS-MILITARY-ROW-CURRENT-ONLY-Q1: AKTUALNY stan progu przewagi militarnej pary
+   * (DiploPairMeta.respektPrzewagaStan). 'A' → wiersz „Przewaga militarna" (pozytywne),
+   * 'B' → wiersz „Słabszy militarnie" (negatywne), 'brak'/brak pola → brak wiersza.
+   */
+  respektMilStan?: 'A' | 'B' | 'brak' | null;
+  /** Faktyczna korekta Respektu z progu (DiploPairMeta.respektMilOffset, +15 / −10) — wartość wiersza. */
+  respektMilOffset?: number;
 }
+
+/**
+ * Zdarzenia Respektu, które NIE są pokazywane jako wiersze historii w rozbiciu czynników:
+ *  - przewaga/słabszy militarnie → zastąpione JEDNYM wierszem aktualnego stanu (respektMilStan),
+ *  - wygrana bitwa (historia) → nie wchodzi do paska Respektu (decyzja właściciela B, 2026-11-18;
+ *    pasek liczy ją pośrednio przez Moc). Zapis zdarzenia w rejestrze pary pozostaje bez zmian.
+ */
+const HIDDEN_BREAKDOWN_EVENT_KEYS: ReadonlySet<string> = new Set([
+  'przewaga_militarna_respekt',
+  'slabszy_militarnie_respekt',
+  'wygrana_bitwa_respekt',
+]);
 
 /** Podzbiór DiplomacyParams potrzebny do wyliczenia wartości czynników ciągłych. */
 export interface RelationBreakdownParams {
@@ -192,8 +212,17 @@ export function buildRelationBreakdown(
     pushRow(pozytywne, negatywne, 'Różna kultura', params.roznicaKulturowa_zaufanie);
   }
 
+  // Przewaga/słabszy militarnie: JEDEN wiersz aktualnego stanu progu, wartość = faktyczna korekta
+  // Respektu (respektMilOffset). Starsze wpisy z historii nie są pokazywane (patrz HIDDEN_BREAKDOWN_EVENT_KEYS).
+  if (continuous.respektMilStan === 'A') {
+    pushRow(pozytywne, negatywne, 'Przewaga militarna', continuous.respektMilOffset ?? 0);
+  } else if (continuous.respektMilStan === 'B') {
+    pushRow(pozytywne, negatywne, 'Słabszy militarnie', continuous.respektMilOffset ?? 0);
+  }
+
   for (let i = log.length - 1; i >= 0; i--) {
     const entry = log[i]!;
+    if (HIDDEN_BREAKDOWN_EVENT_KEYS.has(entry.eventKey)) continue;
     const label = DIPLO_FACTOR_LABELS_PL[entry.eventKey] ?? entry.eventKey;
     pushRow(pozytywne, negatywne, label, entry.delta);
   }
