@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "882a31fe73568cb46b2235dc0aa3594d",
-  "bundleSha256": "e6cf2e6b45898af7451ef0ed283e06afd1b49e9e0982117132c6f4cb53ce4a49",
-  "bundleBytes": 14953625,
+  "bundleMd5": "c95361727ab878b6b2c17ed59bcd2692",
+  "bundleSha256": "92cb1b0a80fdf34183868e7c1a86af1dc67f003fe6d41be6e8ff3eca0b248170",
+  "bundleBytes": 14953742,
   "sourceSnapshot": {
-    "source": "gra/ (main ea43bc32 + merge FC e13f8103 i 9a20e765)",
+    "source": "gra/ (main 46848808 + merge FC ab20479e)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 842: Po bitwie przegrana grupa, ktorej kierunek wprost od zwyciezcy jest zablokowany, odskakuje na inny wolny sasiedni heks (2 heksy, potem 1; kaskada 3 kierunkow w post-battle-map.ts) zamiast zostawac na heksie bitwy (zgloszenie wlasciciela); plus hooki civTest aiAiNapLiveProof w main.ts i testy zywe toru NAP AI-AI (kara za zerwanie, wiring ticku), tor nadal wylaczony torAktywny=false"
+    "FALA 843: Powiadomienie o kapitulacji z glodu miasta miedzy innymi cywilizacjami (gracz nie jest strona) dostaje origin other-civs i trafia do zakladki Dyplomacja zamiast Wazne (zgloszenie wlasciciela: Chengdu/Chongqing przejete przez Rzymian); wydarzenia z udzialem gracza zostaja w Wazne; tresc komunikatow bez zmian"
   ],
   "verification": [
-    "FC PASS-WITH-NOTES e13f8103 (kod a2f362d6/operator 057788a9) i 9a20e765 (kod af72e15e/operator cec91fed): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; battle-defeat-retreat-blocked-direction 16/0 (mutacja 9/7), two-hex 44/0, retreat-limit 43/0; NAP: kara zerwania zywy Chromium 12/0 (Respekt -30, clamp, -20 zlamana_obietnica_ai), wiring 60 tur NAP=1; nap-wiring 44/44, evaluate 21/0"
+    "FC PASS-WITH-NOTES ab20479e (kod 4d77c6e1, operator 64106fee): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; notif-other-civ-diplo-tab 13/0 (mutacje), sidepanel-notification-tabs 29/0, eot-event-defer 43/43, notif-diplo-tab-count-blocking 25/0"
   ],
   "limits": [
-    "NIE ZMIERZONO: zywy Chromium odwrotu (zrzut), zwyciezca z 71 jednostkami (tylko przez zajetosc heksow, S8), odwrot atakujacego (retreatAtkRosterToStart bez kaskady, osobny temat), kierunek wprost liczony euklidesowo w osiach (osobny temat); NAP: dokladna kwota przelewu D w chwili ticku, liczniki prob i odmow ticku, wznowienie ze slotu (Target page closed); tor torAktywny=false bez zmian"
+    "NIE ZMIERZONO: zrzut panelu w Chromium; zakres tylko kapitulacja z glodu (inne wydarzenia AI-AI nie tworza wpisu); wpisy other-civs nie licza sie do naglowka ani Zamknij wszystkie (istniejace zachowanie); end-turn-block-event-test (f) czerwony tez na bazie; eot-event-defer.ts poza allowlista (minimalna zmiana konieczna)"
   ],
-  "finalControl": "R-WEB-BATTLE-DEFEATED-UNIT-STAYS-ON-BATTLE-HEX-Q1 r1 FC PASS-WITH-NOTES e13f8103 (kod a2f362d6); R-WEB-AI-AI-TREATIES-LIVE-PROOF-INERT-Q1 r3 FC PASS-WITH-NOTES 9a20e765 (kod af72e15e)",
+  "finalControl": "R-WEB-UI-NOTIF-OTHER-CIV-EVENTS-TO-DIPLOMACY-TAB-Q1 r1 (Operator Haiku, Obrona Haiku) FC PASS-WITH-NOTES ab20479e (kod 4d77c6e1)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T20:03:27",
+  "hubGeneratedAt": "2026-11-18T20:11:32",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "882a31fe73568cb46b2235dc0aa3594d",
-      "sizeBytes": 14953625
+      "md5": "c95361727ab878b6b2c17ed59bcd2692",
+      "sizeBytes": 14953742
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "882a31fe73568cb46b2235dc0aa3594d",
-      "sizeBytes": 14953625
+      "md5": "c95361727ab878b6b2c17ed59bcd2692",
+      "sizeBytes": 14953742
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "882a31fe73568cb46b2235dc0aa3594d",
-      "sizeBytes": 14953625
+      "md5": "c95361727ab878b6b2c17ed59bcd2692",
+      "sizeBytes": 14953742
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "882a31fe73568cb46b2235dc0aa3594d",
-      "sizeBytes": 14953625
+      "md5": "c95361727ab878b6b2c17ed59bcd2692",
+      "sizeBytes": 14953742
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "882a31fe73568cb46b2235dc0aa3594d",
-      "sizeBytes": 14953625
+      "md5": "c95361727ab878b6b2c17ed59bcd2692",
+      "sizeBytes": 14953742
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "882a31fe73568cb46b2235dc0aa3594d",
-      "sizeBytes": 14953625
+      "md5": "c95361727ab878b6b2c17ed59bcd2692",
+      "sizeBytes": 14953742
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "882a31fe73568cb46b2235dc0aa3594d",
-      "sizeBytes": 14953625
+      "md5": "c95361727ab878b6b2c17ed59bcd2692",
+      "sizeBytes": 14953742
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "882a31fe73568cb46b2235dc0aa3594d",
-      "sizeBytes": 14953625
+      "md5": "c95361727ab878b6b2c17ed59bcd2692",
+      "sizeBytes": 14953742
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "882a31fe73568cb46b2235dc0aa3594d",
-      "sizeBytes": 14953625
+      "md5": "c95361727ab878b6b2c17ed59bcd2692",
+      "sizeBytes": 14953742
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "882a31fe73568cb46b2235dc0aa3594d",
-      "sizeBytes": 14953625
+      "md5": "c95361727ab878b6b2c17ed59bcd2692",
+      "sizeBytes": 14953742
     }
   ],
-  "md5": "882a31fe73568cb46b2235dc0aa3594d",
+  "md5": "c95361727ab878b6b2c17ed59bcd2692",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

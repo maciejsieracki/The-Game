@@ -1,3 +1,9 @@
+## ROBOCZA c9536172 -- 2026-11-18 -- FALA 843: Wydarzenia innych cywilizacji (kapitulacja z glodu) w zakladce Dyplomacja (testowa)
+
+- Powiadomienie o kapitulacji z glodu miasta miedzy innymi cywilizacjami (gracz nie jest strona) dostaje origin other-civs i trafia do zakladki Dyplomacja zamiast Wazne (zgloszenie wlasciciela: Chengdu/Chongqing przejete przez Rzymian); wydarzenia z udzialem gracza zostaja w Wazne; tresc komunikatow bez zmian
+- Weryfikacja: FC PASS-WITH-NOTES ab20479e (kod 4d77c6e1, operator 64106fee): tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6; notif-other-civ-diplo-tab 13/0 (mutacje), sidepanel-notification-tabs 29/0, eot-event-defer 43/43, notif-diplo-tab-count-blocking 25/0
+- Limity: NIE ZMIERZONO: zrzut panelu w Chromium; zakres tylko kapitulacja z glodu (inne wydarzenia AI-AI nie tworza wpisu); wpisy other-civs nie licza sie do naglowka ani Zamknij wszystkie (istniejace zachowanie); end-turn-block-event-test (f) czerwony tez na bazie; eot-event-defer.ts poza allowlista (minimalna zmiana konieczna)
+
 ## ROBOCZA 882a31fe -- 2026-11-18 -- FALA 842: Odskok przegranej armii na inny wolny heks + zywy dowod toru NAP AI-AI (hooki testowe) (testowa)
 
 - Po bitwie przegrana grupa, ktorej kierunek wprost od zwyciezcy jest zablokowany, odskakuje na inny wolny sasiedni heks (2 heksy, potem 1; kaskada 3 kierunkow w post-battle-map.ts) zamiast zostawac na heksie bitwy (zgloszenie wlasciciela); plus hooki civTest aiAiNapLiveProof w main.ts i testy zywe toru NAP AI-AI (kara za zerwanie, wiring ticku), tor nadal wylaczony torAktywny=false
