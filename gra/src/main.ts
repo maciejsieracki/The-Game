@@ -33453,6 +33453,23 @@ async function boot(): Promise<void> {
                 wojskoweJedn.map(u => ({ typeId: u.typeId })),
                 typeId => data.units.find(x => x.Jednostka === typeId),
               ),
+              /** R-WEB-AI-CITY-GARRISON-MIN-ONE-LIVE-AUDIT-Q1 (tylko odczyt, ?civTest=1): wojsko STACJONUJĄCE w
+               *  każdym mieście właściciela (ten sam predykat "jednostka wojskowa" co emptyCityGarrisonRecruitIds:
+               *  nie cywil, nie zwiadowca, nie generał, nie zaokrętowany) + flagi inGarnizon/oblężenie. */
+              miastaWojsko: ownerCities.map(c => {
+                const onHex = ownerUnits.filter(u => u.q === c.q && u.r === c.r
+                  && !isCivilianUnit(u) && !isScoutUnit(u) && u.isGeneral !== true && u.embarked !== true);
+                return {
+                  cityId: c.id, q: c.q, r: c.r,
+                  wojsko: onHex.length,
+                  ids: onHex.map(u => u.id),
+                  inGarnizon: onHex.filter(u => u.inGarnizon === true).length,
+                  oblega: units.filter(u => typeof u.oblegaCityId === 'string' && u.oblegaCityId === c.id).length,
+                };
+              }),
+              /** Wojsko właściciela (bojowe, nie generał) poza heksem swojego miasta: id. */
+              wojskoPozaMiastem: ownerUnits.filter(u => !isCivilianUnit(u) && !isScoutUnit(u) && u.isGeneral !== true
+                && u.embarked !== true && !ownerCities.some(c => c.q === u.q && c.r === u.r)).map(u => u.id),
             };
           });
           return {
