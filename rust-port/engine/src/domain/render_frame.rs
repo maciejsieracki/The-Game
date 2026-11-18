@@ -1221,7 +1221,12 @@ impl FoundCityCtx {
         };
         Ok(Self {
             me,
-            era: owner_era(state, me)?,
+            // Obrona r2 Z1: `const playerEra = player.era ?? 1` (`main.ts:12924`). `player` to jeden obiekt
+            // fotela glownego (`createPlayerState()`, `main.ts:13713`), a `player.era` ustawia wylacznie
+            // `reconcilePlayerEraFromResearch()` z `civTypeForOwner(0)` (`main.ts:2522-2532`). Fotel `ME()`
+            // zmienia `ownerId` i wezly terytorium, ale NIE epoke limitu miast: asymetria hotseatu 1:1 z
+            // pinem (jak `player_era` w [`improvement_build_state`]).
+            era: owner_era(state, HUMAN_OWNER_ID)?,
             city_limit_base: f64::from(state.params.advanced.city_limit_base),
             cities: econ_cities_of(state)?,
             ruch_map: crate::domain::playable_movement::ruch_mapa_from_state(state),
@@ -1232,7 +1237,8 @@ impl FoundCityCtx {
     }
 
     /// `canFoundPlayerCityAt(q, r)`: `canFoundCity(q, r, cities, map, {...foundingTerritoryOpts(ME()),
-    /// ownerId: ME(), ownerEra: player.era ?? 1, gameConfig: { cityLimitBase }})` (`cities.ts:1163`),
+    /// ownerId: ME(), ownerEra: player.era ?? 1 (epoka fotela glownego, `main.ts:12924`), gameConfig: {
+    /// cityLimitBase }})` (`cities.ts:1316-1327`),
     /// `withinTerritory = isInTerritory(q, r, wezly) && !isHexInForeignFortTerritory(q, r, ME(),
     /// fortNodes, buildAllTerritoryNodes())`, potem `validateFirstPlayerCityPlacement`
     /// ([`StartRevealContext::can_found_player_city_at`]).

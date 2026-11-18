@@ -1,0 +1,13 @@
+EV1-zalozenie-fotel-glowny-zamiast-seat: exit=101 ZABITY; FAILED: obrona_r2_ev1_zalozenie_miasta_fotela_2_wg_wlasnego_terytorium, obrona_r2_z1_limit_miast_fotela_2_z_epoki_fotela_glownego
+EV2-bez-obcego-fortu: exit=101 ZABITY; FAILED: obrona_r2_ev2_obcy_fort_wyklucza_heksy_obcego_terytorium
+EV3-bez-city-limit-base: exit=101 ZABITY; FAILED: obrona_r2_ev3_limit_miast_z_city_limit_base, obrona_r2_z1_limit_miast_fotela_2_z_epoki_fotela_glownego
+EV4-zwiadowca-w-mocy-pola: exit=101 ZABITY; FAILED: obrona_r2_ev4_zwiadowca_poza_moca_pola_stosu
+EV5-latwy-jako-normalny: exit=101 ZABITY; FAILED: obrona_r2_ev5_latwy_to_poziom_1
+EV6-hp-bez-dolnej-granicy: exit=101 ZABITY; FAILED: obrona_r2_ev6_hp_dolna_granica_zero
+EV7-poziom-weterana-prog-2: exit=101 ZABITY; FAILED: obrona_r2_ev7_progi_poziomu_weterana
+EV8-cud-fotel-glowny: exit=101 ZABITY; FAILED: r2_build_highlight_cud_wg_wonder_placement
+EV9-trudnosc-dla-czlowieka: exit=101 ZABITY; FAILED: r2_vitals_bonus_trudnosci_ai
+EV10-kon-zawsze-0: exit=101 ZABITY; FAILED: obrona_r2_ev10_stadnina_z_magazynu_koni
+EV11-wlasne-jednostki-puste: exit=101 ZABITY; FAILED: obrona_r2_ev11_fort_poza_terytorium_przy_wlasnej_jednostce
+Z1-epoka-fotela-zapytania (oczekiwany: rownowazny, patrz 02a-obrona-r2.md): exit=0 PRZEZYL; FAILED:
+DONE
