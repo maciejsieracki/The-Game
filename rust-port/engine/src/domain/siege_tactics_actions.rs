@@ -104,6 +104,21 @@ pub enum BattleAction {
         target: UnitRef,
         land_at: f64,
     },
+    /// K5LOOP-CLOSE r4: uciekająca jednostka opuszcza pole (`_fleeStep` -> `_removeUnitFromScene`,
+    /// `battleScene.ts:9853-9857`, `:9876-9878`, `:9887-9892`; ciało `:9910-9925`): odpięcie modelu i paska ze sceny,
+    /// `removed`/`dead`, zwolnienie pola `occByKey`. Bez dźwięku i bez etykiety (inaczej niż `Kill` = `_startFade`).
+    /// [`BattleActionKindDto`] nie ma jeszcze wariantu (I5 #280/#336): [`actions_to_dto`] zwraca
+    /// [`ActionError::LeaveWithoutDto`] (jawnie, bez cichego pominięcia).
+    Leave { unit: UnitRef },
+    /// K5LOOP-CLOSE r4: ripple `_shakeAlliesOnLoss(fallen)` (`battleScene.ts:9743-9753`): sojusznik `unit` w promieniu
+    /// `MORALE_DEATH_RADIUS` traci `MORALE_ALLY_DEATH_LOSS`; `morale` = wartość po stracie (`_updateMoraleBar(a)`,
+    /// `:9749`), przed `_checkRout(a)`. [`BattleActionKindDto`] nie ma jeszcze wariantu (I5 #280/#336):
+    /// [`actions_to_dto`] zwraca [`ActionError::ShakenWithoutDto`].
+    Shaken {
+        unit: UnitRef,
+        fallen: UnitRef,
+        morale: f64,
+    },
 }
 
 /// Akcja z czasem wirtualnym wywołania sceny (`vNow`, ms).
@@ -400,6 +415,10 @@ pub enum ActionError {
     MoveWithoutDto(UnitRef),
     /// K5LOOP-CLOSE r3: [`BattleAction::Shot`] nie ma jeszcze wariantu w [`BattleActionKindDto`] (I5 #280/#336).
     ShotWithoutDto(UnitRef),
+    /// K5LOOP-CLOSE r4: [`BattleAction::Leave`] nie ma jeszcze wariantu w [`BattleActionKindDto`] (I5 #280/#336).
+    LeaveWithoutDto(UnitRef),
+    /// K5LOOP-CLOSE r4: [`BattleAction::Shaken`] nie ma jeszcze wariantu w [`BattleActionKindDto`] (I5 #280/#336).
+    ShakenWithoutDto(UnitRef),
 }
 
 impl From<IdOutOfRange> for ActionError {
@@ -527,6 +546,8 @@ pub fn actions_to_dto(
             BattleAction::Shot { attacker, .. } => {
                 return Err(ActionError::ShotWithoutDto(*attacker))
             }
+            BattleAction::Leave { unit } => return Err(ActionError::LeaveWithoutDto(*unit)),
+            BattleAction::Shaken { unit, .. } => return Err(ActionError::ShakenWithoutDto(*unit)),
         };
         out.push(BattleActionDto { t0: a.t0, action });
     }
