@@ -1147,6 +1147,8 @@ fn prod_tag(ev: ActivateEvent) -> &'static str {
         // `_advanceToward` (dawne `wieza-wejscie`, `piechota-do-wiezy`, `taran-wieza`, `marsz`) wykonuje ciało. Ostrzał
         // kafla muru katapultą (`_attackWallTile`, `:7540`) to T2b: jawny tag.
         ActivateEvent::AttackWallTile { .. } => "atak-muru",
+        // Obrona r1 (zarzut 3): `_advanceToward` spoza atakującego przy murze (nieosiągalne w maszynie) = jawny tag.
+        ActivateEvent::AdvanceToward { .. } => "marsz-poza-oblezeniem",
         ActivateEvent::RangedAction => "strzelec",
         ActivateEvent::FallBackStep => "odwrot",
         ActivateEvent::CavalryAction => "kawaleria",
@@ -3745,7 +3747,11 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 | ActivateEvent::InfantryToTower
                 | ActivateEvent::RamTowerStep => {}
                 // K5LOOP-SIEGE-ATK-A: marsz katapulty pod mur (maszyna emituje go tylko dla atakującego przy murze).
-                ActivateEvent::AdvanceToward { col, row } => toward = Some((col, row)),
+                ActivateEvent::AdvanceToward { col, row } if siege_atk => toward = Some((col, row)),
+                // Obrona r1 (zarzut 3 Evaluatora): poza atakującym przy murze zdarzenie jest strukturalnie nieosiągalne
+                // (maszyna emituje je tylko w gałęzi `isSiegeUnit && side === 'atk' && siegeWallCol >= 0`, `:6187`);
+                // gdyby jednak padło, jawny tag `marsz-poza-oblezeniem` (ramię `other` -> [`prod_tag`]), nie ciche
+                // pominięcie.
                 ActivateEvent::Attack { target } => pend.attack = Some(target),
                 // K5LOOP-CLOSE: `_advanceStep(ru, done)` (`battleScene.ts:6298`, cialo `:8198-8285`).
                 ActivateEvent::AdvanceStep => advance = true,
@@ -5110,5 +5116,23 @@ mod tower_target_tests {
         let st = state(&[10.0]);
         let e = env(vec![Some((9, 9))]);
         assert_eq!(e.pick_tower_for_row(&st, 3), None);
+    }
+}
+
+#[cfg(test)]
+mod prod_tag_tests {
+    //! Obrona r1 K5LOOP-SIEGE-ATK-A (zarzut 3): `_advanceToward` spoza atakującego przy murze nie jest pomijane po cichu.
+    use super::*;
+
+    #[test]
+    fn advance_toward_outside_siege_atk_has_explicit_tag() {
+        assert_eq!(
+            prod_tag(ActivateEvent::AdvanceToward { col: 3, row: 4 }),
+            "marsz-poza-oblezeniem"
+        );
+        assert_eq!(
+            prod_tag(ActivateEvent::AttackWallTile { row: 4 }),
+            "atak-muru"
+        );
     }
 }

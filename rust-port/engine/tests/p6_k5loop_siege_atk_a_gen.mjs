@@ -377,6 +377,8 @@ function makeCase(kind, nan) {
   // Okrazenie: czesc scenariuszy z nieuzytym `surroundApplied` (cios morale bez routu: morale 100, prog 0).
   me.surroundApplied = rnd() < 0.8;
   if (nan === 'moveLeft-nan') me.moveLeft = NaN;
+  // Obrona r1 (zarzut 2): `moveLeft = 0` (marsz pod wieze z krokiem BFS, ale bez ruchu: `_siegeWalkTo` `:8010` -> done).
+  if (nan === 'moveLeft-zero') me.moveLeft = 0;
   const atk = [me];
   const def = [];
   // Obroncy na koronie (q = W) i w miescie (q > W), czasem martwi/uciekajacy.
@@ -580,3 +582,53 @@ const nanStats = {
 console.error(JSON.stringify(nanStats));
 writeFileSync(join(outDir, 'vectors_nan.json'), JSON.stringify({ pin: PIN, seed: SEED, pinSha256: PIN_SHA256, stats: nanStats, cases: nanCases }, nanJson) + '\n');
 console.error(`zapisano ${nanCases.length} wektorow NaN`);
+
+// Obrona r1 (zarzut 1 Evaluatora, mutant E04): `_advanceToward` (`:7896-7915`) przy KRAWEDZI planszy. Katapulta poza
+// zasiegiem muru (`:6214-6216`) stoi na krawedzi (wiersz 0, wiersz 155, kolumna 0, kolumna 67); w wariancie `boxed`
+// trzy sasiednie pola na planszy zajmuja sojusznicy, wiec jedynym kandydatem bez warunku granicy bylby kierunek POZA
+// plansza (teren testowy zwraca tam "przechodnie, koszt 1") -- pin (`:7902`) go pomija i konczy bez kroku
+// (`cata-toward-idle`). Wariant `free`: te same pozycje bez blokad (krok w strone celu). Scenariusze recznie
+// skonstruowane (bez losowania pozycji), wykonane tekstem pinu. Generowane PO zbiorach bazowym i NaN, wiec tamte pliki
+// pozostaja bajt w bajt identyczne.
+function edgeCase(edge, boxed) {
+  const W = 30;
+  const geo = {
+    N: { at: [12, 0], box: [[12, 1], [11, 0], [13, 0]], rows: [0, 20], gateRow: 60 },
+    S: { at: [12, 155], box: [[12, 154], [11, 155], [13, 155]], rows: [136, 155], gateRow: 100 },
+    W: { at: [0, 40], box: [[0, 39], [0, 41], [1, 40]], rows: [30, 50], gateRow: 80 },
+    E: { at: [67, 40], box: [[67, 39], [67, 41], [66, 40]], rows: [30, 50], gateRow: 80 },
+  }[edge];
+  const me = baseUnit('atk', 0, ...geo.at);
+  me.siege = true; me.cata = true; me.rangedBase = true; me.ammoLeft = 'Infinity';
+  me.range = 4; me.machRange = 3; me.moveLeft = 2; me.unitDoctrine = 'manual'; me.surroundApplied = true;
+  const atk = [me];
+  if (boxed) for (const [q, r] of geo.box) atk.push(baseUnit('atk', atk.length, q, r));
+  const wallRows = [];
+  for (let r = geo.rows[0]; r <= geo.rows[1]; r++) wallRows.push([r, 40]);
+  const crownRow = edge === 'S' ? 150 : (edge === 'N' ? 10 : 45);
+  const d = baseUnit('def', 0, W, crownRow);
+  d.onWall = true;
+  return {
+    acting: { side: 'atk', idx: 0 }, atk, def: [d], groupMeta: [], wallCol: W, gateCol: W, gateRow: geo.gateRow,
+    gateOpen: false, wallTiles: wallRows, wallTilesInit: wallRows.length + 2, towerRows: [], wallEverBreached: false,
+    terrain: { wallCol: W, gateRow: geo.gateRow, gateOpen: false, tiles: [] },
+  };
+}
+const edgeCases = [];
+for (const edge of ['N', 'S', 'W', 'E']) {
+  for (const boxed of [true, false]) {
+    const sc = edgeCase(edge, boxed);
+    const expect = runAtk(sc);
+    expect.branch = branchOf(sc, expect);
+    edgeCases.push({ ...sc, name: `siege-atk-edge-${edge}-${boxed ? 'boxed' : 'free'}`, kind: 'cata', expect });
+  }
+}
+// Obrona r1 (zarzut 2): piechota pod wieze z `moveLeft = 0` (galaz `inf-walk-idle`: BFS ma krok, marsz bez ruchu).
+edgeCases.push(...gen('moveLeft-zero', { inf: 80 }));
+const edgeStats = {
+  cases: edgeCases.length,
+  byBranch: edgeCases.reduce((m, c) => ({ ...m, [c.expect.branch]: (m[c.expect.branch] ?? 0) + 1 }), {}),
+};
+console.error(JSON.stringify(edgeStats));
+writeFileSync(join(outDir, 'vectors_edge.json'), JSON.stringify({ pin: PIN, seed: SEED, pinSha256: PIN_SHA256, stats: edgeStats, cases: edgeCases }, nanJson) + '\n');
+console.error(`zapisano ${edgeCases.length} wektorow krawedzi/moveLeft 0`);

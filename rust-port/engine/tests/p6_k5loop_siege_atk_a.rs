@@ -37,6 +37,9 @@ use serde_json::Value;
 
 const VECTORS: &str = include_str!("p6_k5loop_siege_atk_a_vectors/vectors.json");
 const VECTORS_NAN: &str = include_str!("p6_k5loop_siege_atk_a_vectors/vectors_nan.json");
+/// Obrona r1: `_advanceToward` przy krawędzi planszy (zarzut 1, mutant E04) i piechota pod wieżę z `moveLeft = 0`
+/// (zarzut 2, gałąź `inf-walk-idle`).
+const VECTORS_EDGE: &str = include_str!("p6_k5loop_siege_atk_a_vectors/vectors_edge.json");
 const PIN: &str = "07d2fbd72f758705f8e1d59cc4968027ffbafe75";
 /// Strażnik generatora (`EXPECTED_SHA256` w `p6_k5loop_siege_atk_a_gen.mjs`).
 const PIN_SHA256: &str = "c3ec239034bcf0351fc4da09ce073e2e727e9e56805e878a2d54a03642b87325";
@@ -777,11 +780,65 @@ fn zgodnosc_z_pinem_nan() {
     );
 }
 
+/// Obrona r1 (zarzuty 1 i 2 Evaluatora). Krawędzie planszy w `_advanceToward` (`battleScene.ts:7902`: `nc < 0 || nr < 0
+/// || nc >= BF_COLS || nr >= BF_ROWS`): katapulta na wierszu 0 / 155 i kolumnie 0 / 67; w wariancie `boxed` trzy pola
+/// sąsiednie na planszy są zajęte, więc jedynym kandydatem bez warunku granicy byłby kierunek POZA planszą
+/// ([`VecTerrain`] zwraca tam „przechodnie, koszt 1”) — pin kończy bez kroku. Każdy z czterech członów warunku ma
+/// osobny wektor rozstrzygający. Piechota pod wieżę z `moveLeft = 0`: BFS ma krok, `_siegeWalkTo` kończy od razu
+/// (`:8010`), licznik `inf-walk-idle`.
+#[test]
+fn zgodnosc_z_pinem_krawedzie_i_bez_ruchu() {
+    let (n, by_branch, failures) = guarded(|| run_all(VECTORS_EDGE));
+    assert!(
+        failures.is_empty(),
+        "{} rozbieżności, pierwsze:\n{}",
+        failures.len(),
+        failures
+            .iter()
+            .take(20)
+            .cloned()
+            .collect::<Vec<_>>()
+            .join("\n")
+    );
+    assert_eq!(n, 88);
+    eprintln!("pokrycie galezi krawedzi: {by_branch:?}");
+    let v = load_from(VECTORS_EDGE);
+    let cases = v["cases"].as_array().expect("cases");
+    for edge in ["N", "S", "W", "E"] {
+        let boxed = cases
+            .iter()
+            .find(|c| c["name"] == format!("siege-atk-edge-{edge}-boxed").as_str())
+            .expect("wektor boxed");
+        assert_eq!(
+            boxed["expect"]["branch"], "cata-toward-idle",
+            "{edge}: pin bez kroku"
+        );
+        assert!(
+            boxed["expect"]["steps"].as_array().expect("s").is_empty(),
+            "{edge}: brak kroku poza planszę"
+        );
+        let free = cases
+            .iter()
+            .find(|c| c["name"] == format!("siege-atk-edge-{edge}-free").as_str())
+            .expect("wektor free");
+        assert_eq!(
+            free["expect"]["branch"], "cata-toward-step",
+            "{edge}: krok na planszy"
+        );
+    }
+    let at = |k: &str| by_branch.get(k).copied().unwrap_or(0);
+    assert!(
+        at("inf-walk-idle") >= 20,
+        "marsz piechoty pod wieze bez ruchu (moveLeft = 0, BFS ma krok): {}",
+        at("inf-walk-idle")
+    );
+}
+
 /// Kryterium końca T2a: dla atakującego przy murze ciało nigdy nie zapisuje tagów `wieza-wejscie`, `piechota-do-wiezy`,
 /// `taran-wieza`, `marsz`; z danymi terenu jedyne tagi to tagi gałęzi T2b/T4 (`oblezenie`, `atak-muru`, `atak-bramy`).
 #[test]
 fn brak_tagow_t2a_dla_atakujacego() {
-    for src in [VECTORS, VECTORS_NAN] {
+    for src in [VECTORS, VECTORS_NAN, VECTORS_EDGE] {
         let v = load_from(src);
         for case in v["cases"].as_array().expect("cases") {
             let Built {
