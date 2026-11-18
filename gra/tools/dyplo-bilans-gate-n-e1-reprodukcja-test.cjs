@@ -255,9 +255,9 @@ function checkTreatyGatedSetSource() {
   check('(0) źródło: TREATY_GATED_NEGOTIATION_ACTIONS znaleziony w main.ts', m != null);
   if (!m) return null;
   const items = m[1].split(',').map(s => s.trim().replace(/^'|'$/g, '')).filter(Boolean);
-  const expected = ['pokoj', 'umowa_szlakow', 'umowa_handlowa'];
+  const expected = ['pokoj', 'rozejm', 'umowa_szlakow', 'umowa_handlowa']; // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1: 'rozejm' dodany przez R-WEB-TRUCE-Q1 (własna bramka PW)
   check(
-    '(0) źródło: TREATY_GATED_NEGOTIATION_ACTIONS === {pokoj, umowa_szlakow, umowa_handlowa} '
+    '(0) źródło: TREATY_GATED_NEGOTIATION_ACTIONS === {pokoj, rozejm, umowa_szlakow, umowa_handlowa} '
     + '(odtworzenie packageSiblingPn w tym pliku jest wierne)',
     items.length === expected.length && expected.every(e => items.includes(e)),
     items,

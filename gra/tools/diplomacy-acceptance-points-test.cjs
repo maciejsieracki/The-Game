@@ -77,10 +77,10 @@ function ok(cond, msg) {
   console.error('[FAIL]', msg);
 }
 
-ok(mod.treatyBaseAcceptancePn('sojusz_pelny') === 500, 'sojusz_pelny = 500 PN');
+ok(mod.treatyBaseAcceptancePn('sojusz_pelny') === 5000, 'sojusz_pelny = 5000 PN');
 const POKOJ_C = 615; // R-WEB-DIPLO-WEARINESS-PW-FOLLOWUP-C615 (ABC 2026-11-14): stała cena pokoju C
 ok(mod.treatyBaseAcceptancePn('pokoj') === POKOJ_C, 'pokoj = 615 PN (C, stała)');
-ok(mod.treatyBaseAcceptancePn('nap') === 200, 'nap = 200 PN');
+ok(mod.treatyBaseAcceptancePn('nap') === 2000, 'nap = 2000 PN');
 ok(mod.treatyBaseAcceptancePn('umowa_szlakow') === 80, 'traktat handlowy = 80 PN');
 ok(mod.treatyBaseAcceptancePn('handel') === 0, 'wymiana = 0 PN bazy');
 ok(mod.treatyBaseAcceptancePn('sojusz_pelny') > mod.treatyBaseAcceptancePn('nap'), 'sojusz >> NAP');
@@ -137,7 +137,7 @@ const napSides = mod.computePlayerAcceptanceSides(
   151,
   false,
 );
-ok(napSides.my.treatyEffectivePn === 302, 'NAP @ rel +51 effective 302 PN');
+ok(napSides.my.treatyEffectivePn === 3020, 'NAP @ rel +51 effective 3020 PN');
 ok(napSides.my.accepted, 'NAP ze słodzikiem 90¤: Rel wystarczy (koszyk nie musi ≥ effective PN)');
 ok(napSides.my.offerPn === 90, 'NAP słodzik: offerPn = 90 z koszyka');
 
@@ -147,15 +147,15 @@ ok(giftSides.my.statusLabel === 'Nic w zamian', 'gift my label');
 
 const napTreatyOnly = mod.computePlayerAcceptanceSides('nap', {}, 100, false);
 ok(napTreatyOnly.my.mode === 'treaty', 'NAP bez koszyka: mode treaty');
-ok(napTreatyOnly.my.treatyEffectivePn === 200, 'NAP @ rel 100 effective 200 PW');
-ok(mod.bilateralTreatyDisplayPw(napTreatyOnly.my, napTreatyOnly.their) === 200, 'bilateral NAP display 200 PW');
-ok(mod.sideDisplayOfferPw(napTreatyOnly.my, 200) === 200, 'proposer side display 200 PW');
-ok(mod.sideDisplayOfferPw(napTreatyOnly.their, 200) === 200, 'responder side display 200 PW (baza @ rel 100)');
+ok(napTreatyOnly.my.treatyEffectivePn === 2000, 'NAP @ rel 100 effective 2000 PW');
+ok(mod.bilateralTreatyDisplayPw(napTreatyOnly.my, napTreatyOnly.their) === 2000, 'bilateral NAP display 2000 PW');
+ok(mod.sideDisplayOfferPw(napTreatyOnly.my, 2000) === 2000, 'proposer side display 2000 PW');
+ok(mod.sideDisplayOfferPw(napTreatyOnly.their, 2000) === 2000, 'responder side display 2000 PW (baza @ rel 100)');
 
 const napIncoming = mod.computePlayerAcceptanceSides('nap', {}, 100, true);
-ok(napIncoming.their.treatyEffectivePn === 200, 'incoming NAP: their side treaty 200 PW (baza)');
-ok(mod.sideDisplayOfferPw(napIncoming.my, 200) === 200, 'incoming: my display 200 PW');
-ok(mod.sideDisplayOfferPw(napIncoming.their, 200) === 200, 'incoming: their display 200 PW');
+ok(napIncoming.their.treatyEffectivePn === 2000, 'incoming NAP: their side treaty 2000 PW (baza)');
+ok(mod.sideDisplayOfferPw(napIncoming.my, 2000) === 2000, 'incoming: my display 2000 PW');
+ok(mod.sideDisplayOfferPw(napIncoming.their, 2000) === 2000, 'incoming: their display 2000 PW');
 
 // R-DYPLO-KOSZT-CZAS-TRWANIA-TRAKTATU-Q1: mnożnik czasu trwania traktatu (NAP, baza 200 PW).
 // Kryterium 2: 10/15/20/bezterminowy → ×1/×2/×4/×8 (wzór wiążący z dispatchu), + 12 tur jako
@@ -168,17 +168,17 @@ ok(mod.treatyDurationPnMultiplier('nap', { turns: -3 }) === 8, 'mnożnik czasu N
 const napMult12 = mod.treatyDurationPnMultiplier('nap', { turns: 12 });
 ok(Math.abs(napMult12 - Math.pow(2, 2 / 5)) < 1e-9, 'mnożnik czasu NAP @ 12 tur = dokładnie 2^(2/5) wg wzoru (bez zgadywania skali)');
 
-ok(mod.treatyBasePnFromConfig('nap', { turns: 10 }) === 200, 'engine (treatyBasePnFromConfig) baza NAP @ 10 tur = 200');
-ok(mod.treatyBasePnFromConfig('nap', { turns: 15 }) === 400, 'engine baza NAP @ 15 tur = 400');
-ok(mod.treatyBasePnFromConfig('nap', { turns: 20 }) === 800, 'engine baza NAP @ 20 tur = 800');
-ok(mod.treatyBasePnFromConfig('nap', { turns: 0 }) === 1600, 'engine baza NAP bezterminowy = 1600');
+ok(mod.treatyBasePnFromConfig('nap', { turns: 10 }) === 2000, 'engine (treatyBasePnFromConfig) baza NAP @ 10 tur = 2000');
+ok(mod.treatyBasePnFromConfig('nap', { turns: 15 }) === 4000, 'engine baza NAP @ 15 tur = 4000');
+ok(mod.treatyBasePnFromConfig('nap', { turns: 20 }) === 8000, 'engine baza NAP @ 20 tur = 8000');
+ok(mod.treatyBasePnFromConfig('nap', { turns: 0 }) === 16000, 'engine baza NAP bezterminowy = 16000');
 const engineBase12 = mod.treatyBasePnFromConfig('nap', { turns: 12 });
-ok(Math.abs(engineBase12 - 200 * Math.pow(2, 2 / 5)) < 1e-9, 'engine baza NAP @ 12 tur ≈ 200×2^(2/5) ≈ 263,9 (wartość pośrednia, wzór wiążący)');
+ok(Math.abs(engineBase12 - 2000 * Math.pow(2, 2 / 5)) < 1e-9, 'engine baza NAP @ 12 tur ≈ 2000×2^(2/5) ≈ 2639,2 (wartość pośrednia, wzór wiążący)');
 
-ok(mod.treatyBaseAcceptancePn('nap', { turns: 10 }) === 200, 'UI (treatyBaseAcceptancePn) baza NAP @ 10 tur = 200');
-ok(mod.treatyBaseAcceptancePn('nap', { turns: 15 }) === 400, 'UI baza NAP @ 15 tur = 400');
-ok(mod.treatyBaseAcceptancePn('nap', { turns: 20 }) === 800, 'UI baza NAP @ 20 tur = 800');
-ok(mod.treatyBaseAcceptancePn('nap', { turns: 0 }) === 1600, 'UI baza NAP bezterminowy = 1600');
+ok(mod.treatyBaseAcceptancePn('nap', { turns: 10 }) === 2000, 'UI (treatyBaseAcceptancePn) baza NAP @ 10 tur = 2000');
+ok(mod.treatyBaseAcceptancePn('nap', { turns: 15 }) === 4000, 'UI baza NAP @ 15 tur = 4000');
+ok(mod.treatyBaseAcceptancePn('nap', { turns: 20 }) === 8000, 'UI baza NAP @ 20 tur = 8000');
+ok(mod.treatyBaseAcceptancePn('nap', { turns: 0 }) === 16000, 'UI baza NAP bezterminowy = 16000');
 const uiBase12 = mod.treatyBaseAcceptancePn('nap', { turns: 12 });
 ok(uiBase12 === engineBase12, 'kryt. 1+3: UI i engine WOŁAJĄ TĘ SAMĄ funkcję (treatyDurationPnMultiplier) — @ 12 tur identyczna baza, nie dwie kopie wzoru');
 
@@ -197,8 +197,8 @@ for (const t of [10, 12, 15, 17, 20, 0]) {
 // (silnik oceniający KAŻDĄ ofertę, także AI) czyta bazę przez treatyBasePnFromConfig,
 // czyli dokładnie tę samą ścieżkę zweryfikowaną wyżej. ai.ts NIE był edytowany w tej naprawie
 // (patrz allowlista commita) — a mimo to poniższe wartości są już przemnożone.
-ok(mod.treatyBasePnFromConfig('nap', { turns: 15 }) === 200 * 2, 'kryt. 4: oferta AI NAP terminowa (turns:15 jak w ai.ts) → silnik widzi bazę ×2 = 400, bez zmiany w ai.ts');
-ok(mod.treatyBasePnFromConfig('nap', { turns: 0 }) === 200 * 8, 'kryt. 4: oferta AI NAP bezterminowa (turns:0 jak w ai.ts) → silnik widzi bazę ×8 = 1600, bez zmiany w ai.ts');
+ok(mod.treatyBasePnFromConfig('nap', { turns: 15 }) === 2000 * 2, 'kryt. 4: oferta AI NAP terminowa (turns:15 jak w ai.ts) → silnik widzi bazę ×2 = 400, bez zmiany w ai.ts');
+ok(mod.treatyBasePnFromConfig('nap', { turns: 0 }) === 2000 * 8, 'kryt. 4: oferta AI NAP bezterminowa (turns:0 jak w ai.ts) → silnik widzi bazę ×8 = 1600, bez zmiany w ai.ts');
 
 // Runda 2 (obrona, zarzut Evaluatora): `trybut_zadanie`/`trybut_oferta` (case '8' w
 // diplomacyNegotiationModal.ts, jeden dropdown demand/offer + WSPÓLNY selektor czasu
@@ -235,20 +235,20 @@ ok(mod.treatyBasePnFromConfig('pokoj', { turns: 10 }) === POKOJ_C, 'pokój @ tur
 ok(mod.treatyBasePnFromConfig('pokoj', { turns: 20 }) === POKOJ_C, 'pokój @ turns=20: baza NIEZMIENIONA');
 ok(mod.treatyBasePnFromConfig('pokoj', { turns: 0 }) === POKOJ_C, 'pokój @ turns=0 (bezterminowy): baza NIEZMIENIONA');
 ok(mod.treatyBaseAcceptancePn('pokoj', { turns: 15 }) === POKOJ_C, 'UI: pokój @ turns=15: baza NIEZMIENIONA (brak selektora)');
-ok(mod.treatyBasePnFromConfig('sojusz_pelny', { turns: 20 }) === 500, 'sojusz_pelny @ turns=20: NIEZMIENIONY (formularz ma tylko wybór typu, bez czasu — diplomacyNegotiationModal.ts case 3)');
-ok(mod.treatyBasePnFromConfig('granice', { turns: 0 }) === 60, 'granice (przemarsz) @ turns=0: NIEZMIENIONY (formularz ma tylko checkbox prawa wojskowego, bez czasu — case 4)');
-ok(mod.treatyBasePnFromConfig('wasal', { turns: 20 }) === 350, 'wasal @ turns=20: NIEZMIENIONY (formularz ma tylko trybut ¤/turę, bez czasu — case 12)');
+ok(mod.treatyBasePnFromConfig('sojusz_pelny', { turns: 20 }) === 5000, 'sojusz_pelny @ turns=20: NIEZMIENIONY (formularz ma tylko wybór typu, bez czasu — diplomacyNegotiationModal.ts case 3)');
+ok(mod.treatyBasePnFromConfig('granice', { turns: 0 }) === 600, 'granice (przemarsz) @ turns=0: NIEZMIENIONY (formularz ma tylko checkbox prawa wojskowego, bez czasu — case 4)');
+ok(mod.treatyBasePnFromConfig('wasal', { turns: 20 }) === 3500, 'wasal @ turns=20: NIEZMIENIONY (formularz ma tylko trybut ¤/turę, bez czasu — case 12)');
 
 // Wszystkie traktaty z bazą PW > 0 — wspólna ścieżka bilateralTreatyDisplayPw / sideDisplayOfferPw
 const TREATY_PW_BASE = [
   ['pokoj', POKOJ_C],
-  ['sojusz_pelny', 500],
-  ['sojusz_defensywny', 420],
-  ['nap', 200],
+  ['sojusz_pelny', 5000],
+  ['sojusz_defensywny', 4200],
+  ['nap', 2000],
   ['umowa_szlakow', 80],
   ['umowa_handlowa', 80],
-  ['granice', 60],
-  ['wasal', 350],
+  ['granice', 600],
+  ['wasal', 3500],
   ['trybut_zadanie', 120],
   ['trybut_oferta', 100],
   ['namow_wojne', 150],
@@ -274,9 +274,9 @@ const napMixed = mod.computePlayerAcceptanceSides(
 );
 ok(napMixed.my.mode === 'mixed', 'NAP+gold: mode mixed');
 const napMixedBil = mod.bilateralTreatyDisplayPw(napMixed.my, napMixed.their);
-ok(napMixedBil === 200, 'NAP+gold: bilateral 200');
-ok(mod.sideDisplayOfferPw(napMixed.my, napMixedBil) === 250, 'NAP+gold: my display 50+200 PW');
-ok(mod.sideDisplayOfferPw(napMixed.their, napMixedBil) === 200, 'NAP+gold: their display 200 PW (baza)');
+ok(napMixedBil === 2000, 'NAP+gold: bilateral 2000');
+ok(mod.sideDisplayOfferPw(napMixed.my, napMixedBil) === 2050, 'NAP+gold: my display 50+2000 PW');
+ok(mod.sideDisplayOfferPw(napMixed.their, napMixedBil) === 2000, 'NAP+gold: their display 2000 PW (baza)');
 
 // Asymetria Relacja→PW: partner = baza, gracz @ Relacji (Maciej 2026-08-04)
 ok(mod.partnerTreatyPnRequired(80) === 80, 'partner treaty = baza 80');
@@ -656,10 +656,10 @@ ok(napEval61.accepted === false, 'kontrola silnika: evaluateProposal NAP @ rel 6
 // osobno pokój). Naprawione: bramka `asymBalance>=0` po stronie own dotyczy TERAZ wyłącznie
 // tych dwóch typów (OWN_PROPOSER_TREATY_PW_GATE_ACTIONS w diplomacy-acceptance-points.ts).
 const napOwn61 = mod.computePlayerAcceptanceSides('nap', {}, 61, false);
-ok(napOwn61.my.accepted === true, 'U2: gracz proponuje NAP @ rel 61: my.accepted true (naprawione — był fałszywy deficyt −78 PW)');
+ok(napOwn61.my.accepted === true, 'U2: gracz proponuje NAP @ rel 61: my.accepted true (naprawione — był fałszywy deficyt −1878 PW)');
 ok(napOwn61.their.accepted === true, 'U2: gracz proponuje NAP @ rel 61: their.accepted true');
 ok(!napOwn61.my.statusLabel.includes('Brakuje'), 'U2: gracz proponuje NAP @ rel 61: bez fałszywego "Brakuje"');
-ok(napOwn61.my.balancePn === -78, 'U2: gracz proponuje NAP @ rel 61: balancePn nadal informacyjnie −78 (122−200), ale nie blokuje');
+ok(napOwn61.my.balancePn === -780, 'U2: gracz proponuje NAP @ rel 61: balancePn nadal informacyjnie −780 (0−2000×0,39: rabat relacji 61), ale nie blokuje');
 // R-BALANS-PAKT-NIEAGRESJI-I-GLINA-Q1 (2026-09-02): jak wyżej przy napEval61 — progNapRelacja
 // silnika = 90, ale diplomacy-acceptance-points.json.nap.prog_relacja (panel) zostaje przy 50,
 // poza allowlistą tego tematu. Asercja aktualizowana do REALNEGO zachowania silnika.
@@ -685,7 +685,7 @@ ok(tradeOwn52StillGated.my.statusLabel.includes('Brakuje 38'), 'U2: umowa_handlo
 // Respektu/willingnessAlly; panel MUSI akceptować niezależnie od asymBalance.
 const sojuszOwn160 = mod.computePlayerAcceptanceSides('sojusz_pelny', {}, 160, false);
 ok(sojuszOwn160.my.accepted === true, 'U2: gracz proponuje sojusz_pelny @ rel 160: accepted true (brak PW gate w silniku)');
-ok(sojuszOwn160.my.balancePn === 300, 'U2: sojusz_pelny @ rel 160 (own): balancePn +300 (800−500), informacyjne, nie blokuje');
+ok(sojuszOwn160.my.balancePn === 3000, 'U2: sojusz_pelny @ rel 160 (own): balancePn +3000 (8000−5000), informacyjne, nie blokuje');
 
 // 2c) U2 — regresja etykiety/accepted: relOk=false (Relacja poniżej progu case'a) dla akcji BEZ
 // bramki PW (nap) po stronie own MUSI dalej blokować z poprawną przyczyną ("Relacja"), nie z

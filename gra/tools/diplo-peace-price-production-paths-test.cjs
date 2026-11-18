@@ -108,7 +108,9 @@ function scenarioB(M) {
     }],
   }).filter((c) => c.targetId === '0');
   for (const t of [10, 15, 20, 25, 30, 35]) {
-    const c = cena(t);
+    // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (r3): przed 20. turą wojny AI oferuje ROZEJM, którego cena bazowa to
+    // X = 2000 × (1 − L) (parytet traktatów; bez pól mocy AI płaci pełne X) = round(2000 × cena_pokoju / 6000); od 20. tury — pokój (P).
+    const c = t < 20 ? Math.round(2000 * cena(t) / 6000) : cena(t);
     const cmds = decide(t, mk(9, 1840)); // stolica (c0) + 8 miast po 1840 PN
     const off = cmds.find((x) => x.type === 'oferuj_miasto_za_pokoj');
     if (!off) { red.push(`B1 t=${t}: brak oferty miast przy cenie ${c}`); continue; }

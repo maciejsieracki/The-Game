@@ -174,7 +174,7 @@ function playerPeace(warState, actionId = 'pokoj', payload = {}) {
   check('Z1: pokoj/rozejm zlozony przez AI w wojnie: accepted=true (gracz moze przyjac)', res.accepted === true, res);
   check('Z2: ...mimo UJEMNEGO bilansu PW (decyzja wlasciciela 2026-09-07: oferowany pokoj nigdy nie blokowany liczba)',
     typeof res.pwBalance === 'number' && res.pwBalance < 0, res);
-  check('Z3: pokoj wyceniany jak towar o bazie PW (200 rozejm) -- bez skladnika zadania miasta/okupu/trybutu w tej propozycji',
+  check('Z3: pokoj wyceniany jak towar o bazie PW (baza rozejmu 2000 po FALI 825 r3 - etykieta zaktualizowana) -- bez skladnika zadania miasta/okupu/trybutu w tej propozycji',
     !res.deal && res.oneShotTrade === true, res);
 }
 
