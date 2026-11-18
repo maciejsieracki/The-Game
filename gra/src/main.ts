@@ -1667,7 +1667,7 @@ import {
   registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
-import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, wearinessPeaceCashPn, type WarWearinessStore, type WarWearinessPairState, type WearinessTickOutcome } from './game/war-weariness';
+import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, wearinessPeaceCashPn, peacePowerSidesForPair, peaceAiAiPaymentPn, type WarWearinessStore, type WarWearinessPairState, type WearinessTickOutcome } from './game/war-weariness';
 import { warWearinessPairView, peakForCurrentWar, warWearinessSideView, type WarWearinessPairView, type WarWearinessReference } from './game/war-weariness-view';
 import {
   isPeaceTreatyLocked,
@@ -12342,12 +12342,18 @@ async function boot(): Promise<void> {
       // (ta sama funkcja co tick AI↔AI, war-weariness.ts lostCitiesForWeariness). Pole `lostCitiesResponder` — nazwa
       // historyczna; wartość = suma, nie tylko respondent.
       const lostProposerInWar = diploWarStateFor(proposerId, responderId).lostCities;
+      // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r2, P1): moc POWER obu stron pary (power-objective.ts, computeObjectivePower
+      // przez objectivePowerForOwner) — zasila podział P·r / P/r w diplomacy-proposals.ts (bramka PW pokoju).
+      // Konwencja: powerPlayer = moc GRACZA (ME()), powerOther = moc drugiej strony pary (AI).
+      const powerSides = peacePowerSidesForPair(ME(), proposerId, responderId, objectivePowerForOwner);
       return {
         turnsAtWar: s.turnsAtWar,
         lostCitiesResponder: lostCitiesForWeariness(s.lostCities, lostProposerInWar),
         turnsSinceCityChange: s.turnsSinceCityChange,
         responderRw,
         responderPozycjaMilitarna,
+        powerPlayer: powerSides.powerPlayer,
+        powerOther: powerSides.powerOther,
       };
     }
 
@@ -22124,7 +22130,7 @@ async function boot(): Promise<void> {
     function previewNegotiationEntryImpl(
       entry: PendingNegotiation,
       siblingOverride?: { givePn: number; receivePn: number },
-    ): { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: { turnsAtWar: number; lostCities: number; level: number; cenaPokojuPn?: number } } {
+    ): { accepted: boolean; reason?: string; pwBalance?: number; wearinessPw?: number; wearinessSide?: 'ai' | 'player'; wearinessInfo?: { turnsAtWar: number; lostCities: number; level: number; cenaPokojuPn?: number; powerSplit?: import('./game/war-weariness').PeacePowerSplitInfo } } {
       const sibling = siblingOverride ?? livePackageSiblingFor(entry);
       // R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1: `authorOwnerId` DYNAMICZNY (entry, aktualizowany
       // przez applyCounterOffer po każdej kontrofercie) dopisany do ctx — jedyny konsument to
@@ -39084,8 +39090,16 @@ async function boot(): Promise<void> {
             peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty),
             peaceOfferAiOwnBilans(0, 0, relTotal, basePn),
           );
+          // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r3, P2): pokój AI↔AI — słabszy przegrany dopłaca D = S − W (POWER),
+          // cena bazowa P = wearinessPeaceCashPn(L) bez zmian (D1). Rozejm bez zmian.
           const requiredPn = kind === 'rozejm' ? relBasedPn
-            : (relBasedPn > 0 ? wearinessPeaceCashPn(aiAiPairWearinessLevel(winner, loser)) : 0);
+            : (relBasedPn > 0
+              ? peaceAiAiPaymentPn(
+                wearinessPeaceCashPn(aiAiPairWearinessLevel(winner, loser)),
+                objectivePowerForOwner(loser),
+                objectivePowerForOwner(winner),
+              )
+              : 0);
           const loserRelTotal = treatyEvalRelationTotal(getDiploRelation(loser, winner));
           return {
             requiredPn,
@@ -39166,8 +39180,11 @@ async function boot(): Promise<void> {
             peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty),
             peaceOfferAiOwnBilans(0, 0, relTotal, basePn),
           );
+          // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r3, P2): tick AI↔AI — słabszy przegrany dopłaca D (POWER), P bez zmian.
           return {
-            requiredPn: relBasedPn > 0 ? wearinessPeaceCashPn(level) : 0,
+            requiredPn: relBasedPn > 0
+              ? peaceAiAiPaymentPn(wearinessPeaceCashPn(level), objectivePowerForOwner(loser), objectivePowerForOwner(winner))
+              : 0,
             balanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(0, coveredPn, relTotal, basePn),
             loserBalanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(coveredPn, 0, loserRelTotal, basePn),
             tolerancePn: aiOfferPwSurplusTolerance(difficulty),
@@ -44948,6 +44965,9 @@ async function boot(): Promise<void> {
                   // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: siła militarna obu stron (ai.ts P4).
                   silaMilitarnaAI: diploMilitarySideOf(ownerId, ME()),
                   silaMilitarnaPartner: diploMilitarySideOf(ME(), ownerId),
+                  // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (R2): moc POWER obu stron — wzór P·r / P/r po stronie AI.
+                  mocAI: objectivePowerForOwner(ownerId),
+                  mocPartner: objectivePowerForOwner(ME()),
                   stanWojny: (relTicked as any).status === 'wojna',
                   lastOneShotGiftTurn: aiOneShotGiftLastTurn.get(ownerId),
                   hasHandelTreaty: tickCtx.aktywnyHandel,
@@ -45019,6 +45039,8 @@ async function boot(): Promise<void> {
                   // R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: siła militarna obu stron (ai.ts P4).
                   silaMilitarnaAI: diploMilitarySideOf(ownerId, otherId),
                   silaMilitarnaPartner: diploMilitarySideOf(otherId, ownerId),
+                  mocAI: objectivePowerForOwner(ownerId),
+                  mocPartner: objectivePowerForOwner(otherId),
                   stanWojny: relAi.status === 'wojna',
                   partnerTypCywilizacji: civKeyForOwnerId(otherId),
                   // R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner AI — flaga agresora wpływa na sojusz/pakt.

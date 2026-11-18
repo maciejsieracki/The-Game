@@ -39,6 +39,10 @@
     "_opis": "R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1 (decyzja właściciela 2026-11-17): cena pokoju po wojnie = cenaStartPn × (1 − L), L = poziom zmęczenia wojną pary (0..1). Na starcie wojny ok. 3 miasta przegrywającego (≈ 6000 PN); przy L = 1 cena 0 (pokój bez oddania miasta). Funkcja: war-weariness.ts wearinessPeaceCashPn.",
     "cenaStartPn": 6000
   },
+  "pwPrzezMoc": {
+    "_opis": "R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (ABC 2026-11-18, D2/D3): pokój P·r i P/r, r = POWER silniejszej / max(mianownikMin, POWER słabszej). S = round(P·r), W = round(P/r), D = S − W (dopłata słabszej miastami, bez sufitu). Brak magicznych liczb poza ochroną mianownika (1 = brak dzielenia przez 0).",
+    "mianownikMin": 1
+  },
   "czlowiek": {
     "_opis": "AI przegrywajace z graczem: oferuj_miasto_za_pokoj - prog rw rosnie o rwProgBonusMax*desperacja, min. miast AI spada do minMiastAi (gracz decyduje o przyjeciu).",
     "rwProgBonusMax": 0.25,

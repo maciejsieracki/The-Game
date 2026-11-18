@@ -6276,7 +6276,7 @@ import {
 import type { GameDifficulty } from './difficulty-cost';
 import { TypCywilizacji } from '../types/player';
 import {
-  warWearinessLevel, wearinessPeaceCashPn, planEscalatedPeacePayment,
+  warWearinessLevel, wearinessPeaceCashPn, planEscalatedPeacePayment, peaceAiAiPaymentPn,
 } from './war-weariness';
 import type { PeaceAsset } from './diplomacy-ai-forced-peace';
 import {
@@ -6403,6 +6403,12 @@ export interface RelacjaWejscie {
   silaMilitarnaAI?: Pick<MilitarySide, 'sila' | 'armiaPkt'>;
   /** Siła militarna partnera (ta sama miara co silaMilitarnaAI). Bez pola = brak przewagi. */
   silaMilitarnaPartner?: Pick<MilitarySide, 'sila' | 'armiaPkt'>;
+  /**
+   * R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r3, R2): moc POWER (power-objective.ts) AI i partnera — wejście wzoru
+   * „P·r / P/r" (peacePwPointsByPowerRatio). Bez któregokolwiek pola AI liczy cenę pokoju jak dotąd (samo P).
+   */
+  mocAI?: number;
+  mocPartner?: number;
   /** Czy aktualnie trwa stan wojny z tym partnerem? */
   stanWojny: boolean;
   /** Tura ostatniej propozycji/rozliczenia jednorazowego daru ¤ (cooldown per para). */
@@ -6660,6 +6666,21 @@ export function aiPickMiastoDoZadania(
     if (best === null || m.cityPn < best.cityPn) best = m;
   }
   return best;
+}
+
+/**
+ * R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r3, R2): kwota PW pokoju do pokrycia miastami przez stronę SŁABSZĄ wg POWER
+ * (D = S − W z peacePwPointsByPowerRatio; jedno miejsce wzoru: peaceAiAiPaymentPn). `payerPower` = moc strony płacącej,
+ * `receiverPower` = moc drugiej. Płacący silniejszy lub równy (r = 1) → 0. Brak mocy któregokolwiek → baza P bez zmian.
+ */
+export function aiPeaceCityDuePn(
+  basePn: number,
+  payerPower: number | undefined,
+  receiverPower: number | undefined,
+): number {
+  if (payerPower == null || receiverPower == null) return basePn;
+  if (!(basePn > 0)) return 0;
+  return peaceAiAiPaymentPn(basePn, payerPower, receiverPower);
 }
 
 export type AIDiplomacyCommand =
@@ -7124,9 +7145,12 @@ export function decideAIDiplomacy(
       // miastem; stara bramka rw (aiMiastoPrzekazRwProg) nie decyduje już o oddaniu miasta wobec gracza.
       && peacePosMil === 'slabsza'
     ) {
-      const cityPlan = aiPlanMiastaDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc, cenaPokojuPn);
+      // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (R2): AI płaci jako strona słabsza wg POWER — kwota do pokrycia = D = S − W
+      // (aiPeaceCityDuePn); AI silniejsze mocą (lub r = 1) nie dopłaca (D = 0) i nie składa tej oferty.
+      const cenaOddaniaPn = aiPeaceCityDuePn(cenaPokojuPn, rel.mocAI, rel.mocPartner);
+      const cityPlan = aiPlanMiastaDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc, cenaOddaniaPn);
       // Cena > 0 i brak PEŁNEGO pokrycia miastami (np. tylko stolica) → AI nie składa oferty miasta, wojna trwa.
-      const pick = cenaPokojuPn > 0 && cityPlan.full ? cityPlan.miasta[0] : undefined;
+      const pick = cenaOddaniaPn > 0 && cityPlan.full ? cityPlan.miasta[0] : undefined;
       if (pick) {
         // R-WEB-DIPLO-PEACE-WEAKER-SEEKS-CITY-ONLY-Q1 (wymóg 3): słabsza AI proponuje ROZEJM z miastem
         // w okresie rozejmowym (ta sama reguła rodzaju co zaproponuj_pokoj: aiPeaceProposalKind); potem pokój.
@@ -7157,7 +7181,8 @@ export function decideAIDiplomacy(
       && rw >= AI_MIASTO_ZADANIE_RW
       && (turnsAtWarRel >= AI_MIASTO_ZADANIE_TURY_WOJNY || (rel.zdobyteMiastaPartnera ?? 0) > 0)
     ) {
-      const pick = aiPickMiastoDoZadania(rel.miastaPartnera ?? [], cenaPokojuPn);
+      // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (R2): AI silniejsze wg POWER żąda od gracza dopłaty D (gracz jest stroną płacącą).
+      const pick = aiPickMiastoDoZadania(rel.miastaPartnera ?? [], aiPeaceCityDuePn(cenaPokojuPn, rel.mocPartner, rel.mocAI));
       if (pick) {
         komendy.push({
           type:     'zada_miasto_za_pokoj',
