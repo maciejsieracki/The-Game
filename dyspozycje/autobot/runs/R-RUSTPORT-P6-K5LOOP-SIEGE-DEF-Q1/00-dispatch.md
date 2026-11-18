@@ -23,3 +23,6 @@ Wprowadzenie ripple może zmienić oczekiwane liczniki/zdarzenia w: `rust-port/e
 ## ZAKAZY
 Brak push/deploy/integracji (robi orkiestrator), brak `git add -A`, brak `#[ignore]`, brak linii Co-Authored-By z nazwą modelu (dozwolona `Claude-Session:`). Gameplay poza webem → STOP (BLOCK + pytanie).
 Raporty: `01-operator-r1.md`, `02-evaluator.md`, `02a-obrona.md`, `03-final-control.md`. W sekcji „Długi" zapisz luki dla T2/T4/#369.
+
+## DODATEK r2 (orkiestrator, 2026-11-18 ~18:25 UTC, po Final Control; decyzja D-INT-5 — retroaktywna)
+Allowlista rozszerzona o 6 plików, bez których zmiana zachowania z GOAL 1/2 wprost łamie istniejące testy: `rust-port/engine/tests/p6_siege_tactics_loop_body_gen.mjs` + jego `vectors.json` (atrapa `_shakeAlliesOnLoss` zastąpiona tekstem pinu), `rust-port/engine/tests/p4_1i3_actions_gen.mjs` + jego `p4_1i3_actions_vectors/vectors.json` (ripple z pinu + akcja `shaken`), `rust-port/engine/tests/p4_1i3_actions.rs` (okno wieży pomija Facing syntetycznego obrońcy), `rust-port/engine/tests/p6_k5doc_t8.rs` (test muru tylko dla scenariuszy z działającym atakującym). Warunki: żadna asercja nie osłabiona (potwierdzone przez Evaluatora i FC), progi pokrycia bez zmian, wektory r1–r4 bez zmian. Plik `p6_siege_tactics_loop_body_pin.rs` i `p6_k5loop_outcome_pin.rs` — jak w D-INT-2.
