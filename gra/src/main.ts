@@ -29225,14 +29225,17 @@ async function boot(): Promise<void> {
        * R-WEB-UI-OPEN-PANEL-REFRESH-AFTER-TECH-DISCOVERY-Q1: przygotowuje NIEERA ukończenie technologii Kamienia
        * (najtańsza nieodkryta bez awansu epoki) na NASTĘPNY realny `endTurn()` (researchStep). Era gracza nie zmienia się.
        */
-      prepareNonEraCompletion: (): { tech: string; cost: number } => {
+      prepareNonEraCompletion: (techName?: string): { tech: string; cost: number } => {
         // Start gry ma już zbadane technologie Kamienia: wybieramy najtańszą Kamienia BEZ awansu epoki i zdejmujemy ją
         // ze zbioru zbadanych (test-only), żeby było co ukończyć w EOT.
         const cand = data.tech
           .filter(t => t.Epoka === 'Kamień' && !t.awansDoEpoki)
           .sort((a, b) => (a['Koszt nauki'] as number) - (b['Koszt nauki'] as number));
-        const target = cand[0];
-        if (!target) throw new Error('brak technologii Kamienia bez awansu epoki');
+        // Opcjonalnie konkretna technologia (np. Murarstwo: odblokowuje „Mury kamienne” na liście budowy).
+        const target = techName
+          ? data.tech.find(t => t.Technologia === techName && !t.awansDoEpoki)
+          : cand[0];
+        if (!target) throw new Error('brak technologii bez awansu epoki: ' + (techName ?? 'Kamień'));
         const name = target.Technologia as string;
         player.zbadane.delete(name);
         if (!setPlayerResearchTarget(player, name, data.tech, researchGateForOwner(0))) {

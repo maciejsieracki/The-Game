@@ -24,7 +24,7 @@ const fs = require('fs');
 const C = require('./live-verify-autoimprove-common.cjs');
 const { wait } = C;
 
-const EVID = process.env.EVID_DIR || path.join(__dirname, '..', '..', 'dyspozycje', 'autobot', 'runs', 'R-WEB-UI-OPEN-PANEL-REFRESH-AFTER-TECH-DISCOVERY-Q1', 'evidence');
+const EVID = process.env.EVID_DIR || path.join(__dirname, '..', '..', 'dyspozycje', 'autobot', 'runs', 'R-WEB-UI-OPEN-PANEL-REFRESH-AFTER-TECH-DISCOVERY-Q1', 'dowody');
 
 async function panelText(page) {
   return page.evaluate(() => {
@@ -38,7 +38,12 @@ function listBlock(text) {
   const lines = text.split('\n');
   const idx = lines.findIndex((l) => /Dostępne do budowy/i.test(l));
   // Liczniki-same-liczby (np. nagłówkowy licznik po EOT) pomijamy: zmieniają się przez inne kroki EOT, nie przez technologię.
-  return idx < 0 ? '' : lines.slice(idx, idx + 70).filter((l) => !/^[\d\s+\-−()%.,]+$/.test(l)).join('\n');
+  if (idx < 0) return '';
+  // Koniec bloku = nagłówek „Jeszcze zablokowane” (stały znacznik sekcji), a NIE stałe okno liczby linii:
+  // stałe okno przesuwa granicę przy każdej zmianie długości wcześniejszego wiersza (zarzut Evaluatora 6).
+  let end = lines.findIndex((l, i) => i > idx && /Jeszcze zablokowane/i.test(l));
+  if (end < 0) end = idx + 70;
+  return lines.slice(idx, end).filter((l) => !/^[\d\s+\-−()%.,]+$/.test(l)).join('\n');
 }
 
 async function openCityPanel(page, cityId) {
@@ -57,22 +62,25 @@ async function openCityPanel(page, cityId) {
     const st = await C.foundCapital(page);
     await wait(1500);
     const cityId = st.cities.find((c) => c.ownerId === 0).id;
+    // Bufor bramki NNS (test-only) ustawiany PRZED pierwszym odczytem A: A i C mają ten sam stan skarbca,
+    // więc różnica A/C nie pochodzi z samej zmiany skarbca (zarzut Evaluatora 1).
+    out.steps.hooks = await page.evaluate(() => {
+      const r = { skarbiec: false };
+      try { if (window.__nnsMeasureDebug && window.__nnsMeasureDebug.setPlayerTreasury) { window.__nnsMeasureDebug.setPlayerTreasury(100000); r.skarbiec = true; } } catch (e) { r.skarbiecErr = String(e); }
+      return r;
+    });
+    await wait(300);
     await openCityPanel(page, cityId);
     const A = await panelText(page);
     out.steps.panelOpenA = A.includes('Dostępne do budowy');
     if (!out.steps.panelOpenA) throw new Error('panel miasta nie otwarty (brak „Dostępne do budowy”)');
 
-    const prep = await page.evaluate(() => window.__eraTestDebug.prepareNonEraCompletion());
+    // MODE=tech (domyślnie): ukończenie technologii bez awansu epoki. MODE=control: ten sam EOT BEZ technologii (kontrola).
+    const MODE = process.env.MODE || 'tech';
+    out.steps.mode = MODE;
+    const prep = MODE === 'tech' ? await page.evaluate((t) => window.__eraTestDebug.prepareNonEraCompletion(t), process.env.TECH || 'Murarstwo') : { tech: null };
     out.steps.prep = prep;
     const eraBefore = await page.evaluate(() => window.__eraTestDebug.getPlayerState().era);
-    // Bufor bramki NNS (test-only): skarbiec i spichlerz gracza na żywych wartościach, żeby EOT nie został zablokowany
-    // prognozą < 0. Hak NNS tylko do pomiaru: __civTest.setSpichlerzPanstwa / __nnsMeasureDebug.setPlayerTreasury.
-    out.steps.hooks = await page.evaluate(() => {
-      const r = { spichlerz: false, skarbiec: false };
-      try { if (window.__civTest && window.__civTest.setSpichlerzPanstwa) { window.__civTest.setSpichlerzPanstwa(0, 100000); r.spichlerz = true; } } catch (e) { r.spichlerzErr = String(e); }
-      try { if (window.__nnsMeasureDebug && window.__nnsMeasureDebug.setPlayerTreasury) { window.__nnsMeasureDebug.setPlayerTreasury(100000); r.skarbiec = true; } } catch (e) { r.skarbiecErr = String(e); }
-      return r;
-    });
     const logMark = s.logs.length;
     await page.evaluate(() => window.__eraTestDebug.endTurn());
 
@@ -81,7 +89,7 @@ async function openCityPanel(page, cityId) {
     let settled = false;
     while (Date.now() - t0 < 240000) {
       const tail = s.logs.slice(logMark);
-      completed = tail.some((l) => l.includes('Zbadano: ' + prep.tech));
+      completed = MODE === 'tech' ? tail.some((l) => l.includes('Zbadano: ' + prep.tech)) : true;
       settled = tail.some((l) => /triggerPlayerEndTurn: DONE/.test(l));
       if (completed && settled) break;
       await wait(500);
@@ -96,6 +104,7 @@ async function openCityPanel(page, cityId) {
 
     // Karta odkrycia technologii (overlay po EOT) zasłania panel: zamykamy ją PRZYCISKIEM (bez Esc, który mógłby
     // zamknąć sam panel miasta), zanim zmierzymy stan „stale”.
+    out.steps.buttonsAfterEot = await page.evaluate(() => Array.from(document.querySelectorAll('button')).filter((x) => x.offsetParent).map((x) => (x.textContent || '').trim()).filter(Boolean).slice(0, 40));
     out.steps.popupClosed = await page.evaluate(() => {
       const b = Array.from(document.querySelectorAll('button')).find((x) => x.offsetParent && /^(Zamknij|OK|Dalej|Rozumiem)$/.test((x.textContent || '').trim()));
       if (b) { b.click(); return true; }
