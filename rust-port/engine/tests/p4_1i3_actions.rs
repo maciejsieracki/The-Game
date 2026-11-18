@@ -195,6 +195,34 @@ fn enc(a: &TimedAction) -> String {
             to.0,
             to.1
         ),
+        // K5LOOP-SIEGE-ATK-B (T2b): mechaniczne ramiona dla nowych wariantów muru i bramy (`Boulder`, `WallDamage`,
+        // `Ram`, `GateDamage`, `WallBreach`, `GateBreach`, `TowerDestroyed`, `LeaveField`); scenariusze tego testu nie
+        // mają katapult ani taranów atakującego przy murze, więc ramiona nie występują w danych.
+        BattleAction::Boulder { unit, row, land_at } => {
+            format!("{t} boulder {} {row} {}", key(*unit), js_num(*land_at))
+        }
+        BattleAction::WallDamage { row, dmg, hp_after } => {
+            format!(
+                "{t} wallDamage {row} {} {}",
+                js_num(*dmg),
+                js_num(*hp_after)
+            )
+        }
+        BattleAction::Ram { unit, until } => format!("{t} ram {} {}", key(*unit), js_num(*until)),
+        BattleAction::GateDamage { dmg, hp_after } => {
+            format!("{t} gateDamage {} {}", js_num(*dmg), js_num(*hp_after))
+        }
+        BattleAction::WallBreach { row } => format!("{t} wallBreach {row}"),
+        BattleAction::GateBreach => format!("{t} gateBreach"),
+        BattleAction::TowerDestroyed { row } => format!("{t} towerDestroyed {row}"),
+        BattleAction::LeaveField { unit, from, to } => format!(
+            "{t} leaveField {} {},{} {},{}",
+            key(*unit),
+            from.0,
+            from.1,
+            to.0,
+            to.1
+        ),
         BattleAction::TowerShot {
             row,
             target,

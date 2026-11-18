@@ -365,19 +365,36 @@ fn rust_trace(events: &[ActivateEvent]) -> Vec<String> {
     out
 }
 
-/// Tag ciała dla delegatu-znacznika pinu (gałąź spoza T2a = jawny tag).
+/// Tag ciała dla delegatu-znacznika pinu.
+///
+/// K5LOOP-SIEGE-ATK-B (T2b, D-INT-2): `_attackWallTile` i `_attackGate` są wykonywane przez ciało; ten wektor nie podaje
+/// statystyk machiny (`ProdBody::siege_stats` = `None`), więc oczekiwany jest jawny tag wejścia adaptera
+/// `atak-muru-bez-szablonu` / `atak-bramy-bez-szablonu` (dawniej `atak-muru` / `atak-bramy`), bez akcji i bez zmian stanu
+/// (pozostałe porównania tego wektora bez zmian). Pozostałe znaczniki (krok doktryny, cios, strzelec, jazda, falanga,
+/// krok, odwrót) są od T2b wykonywane (dawniej tag `oblezenie`): patrz [`marker_executed`].
 fn expected_tag(e: &Value) -> Option<&'static str> {
     let m = &e["marker"];
     if m.is_null() {
         return None;
     }
-    Some(match m["kind"].as_str().expect("kind") {
-        "attackWallTile" => "atak-muru",
-        "attackGate" => "atak-bramy",
+    match m["kind"].as_str().expect("kind") {
+        "attackWallTile" => Some("atak-muru-bez-szablonu"),
+        "attackGate" => Some("atak-bramy-bez-szablonu"),
         "doctrine" | "attack" | "rangedAction" | "cavalryAction" | "phalanxAction"
-        | "advanceStep" | "fallBackStep" => "oblezenie",
+        | "advanceStep" | "fallBackStep" => None,
         other => panic!("znacznik {other}"),
-    })
+    }
+}
+
+/// K5LOOP-SIEGE-ATK-B (T2b, D-INT-2): znacznik gałęzi, którą ciało od T2b WYKONUJE (krok doktryny, cios, strzelec,
+/// jazda, falanga, krok, odwrót). Generator T2a zatrzymuje pin na znaczniku (atrapa `done()`), więc wektor nie zawiera
+/// oczekiwań dla skutków tej gałęzi (kroki, czas, stan końcowy); te skutki sprawdzają wektory `p6_k5loop_siege_atk_b`,
+/// generowane z pełnego tekstu pinu tych gałęzi. Dla takich wektorów test porównuje ślad maszyny (bez zmian) i wymaga,
+/// żeby jedyne tagi były jawnymi tagami wejścia adaptera (brak szablonu ciosu/strzału, rozkaz ruchu K5EXEC-T3), nigdy
+/// tagiem oblężniczym.
+fn marker_executed(e: &Value) -> bool {
+    let m = &e["marker"];
+    !m.is_null() && expected_tag(e).is_none()
 }
 
 /// Jedna aktywacja atakującego przy murze wobec pinu. Zwraca gałąź pinu (licznik pokrycia).
@@ -404,10 +421,27 @@ fn check_case(case: &Value, failures: &mut Vec<String>) -> String {
     }
     // Czas aktywacji (`done()` pinu względem startu).
     let want_dur = num(&e["duration"]);
-    if !same_f64(dur, want_dur) {
+    if !same_f64(dur, want_dur) && !marker_executed(e) {
         fail("czas", format!("{dur}"), format!("{want_dur}"));
     }
-    // Tag gałęzi spoza T2a.
+    // K5LOOP-SIEGE-ATK-B (T2b, D-INT-2): gałąź wykonywana od T2b, której skutków wektor T2a nie zawiera (atrapa pinu):
+    // tylko ślad maszyny (wyżej) i jawne tagi wejścia adaptera; skutki porównują wektory `p6_k5loop_siege_atk_b`.
+    if marker_executed(e) {
+        for (u, t) in &body.unported {
+            if *u != acting
+                || t.starts_with("oblezenie")
+                || !(t.ends_with("-bez-szablonu") || *t == "doktryna-rozkaz-ruchu")
+            {
+                fail(
+                    "tag galezi T2b",
+                    t.to_string(),
+                    "tag wejscia adaptera".into(),
+                );
+            }
+        }
+        return e["branch"].as_str().expect("branch").to_string();
+    }
+    // Tag gałęzi (znacznik muru/bramy bez statystyk machiny = jawny tag wejścia adaptera).
     let want_tags: Vec<(UnitRef, &str)> =
         expected_tag(e).map(|t| (acting, t)).into_iter().collect();
     if body.unported != want_tags {
@@ -835,7 +869,9 @@ fn zgodnosc_z_pinem_krawedzie_i_bez_ruchu() {
 }
 
 /// Kryterium końca T2a: dla atakującego przy murze ciało nigdy nie zapisuje tagów `wieza-wejscie`, `piechota-do-wiezy`,
-/// `taran-wieza`, `marsz`; z danymi terenu jedyne tagi to tagi gałęzi T2b/T4 (`oblezenie`, `atak-muru`, `atak-bramy`).
+/// `taran-wieza`, `marsz`. K5LOOP-SIEGE-ATK-B (T2b, D-INT-2): z danymi terenu jedyne tagi to jawne tagi wejścia
+/// adaptera (brak statystyk machiny lub szablonu ciosu/strzału: `*-bez-szablonu`; rozkaz ruchu kroku doktryny
+/// `doktryna-rozkaz-ruchu`, K5EXEC-T3); dawne tagi gałęzi `oblezenie`, `atak-muru`, `atak-bramy` zdjęte.
 #[test]
 fn brak_tagow_t2a_dla_atakujacego() {
     for src in [VECTORS, VECTORS_NAN, VECTORS_EDGE] {
@@ -850,7 +886,7 @@ fn brak_tagow_t2a_dla_atakujacego() {
             body.complete(acting, &mut st);
             for (_, tag) in &body.unported {
                 assert!(
-                    ["oblezenie", "atak-muru", "atak-bramy"].contains(tag),
+                    tag.ends_with("-bez-szablonu") || *tag == "doktryna-rozkaz-ruchu",
                     "{}: tag {tag}",
                     case["name"]
                 );
@@ -883,7 +919,8 @@ fn bez_terenu_jawne_tagi_ruchu() {
         let tags: Vec<&str> = body.unported.iter().map(|(_, t)| *t).collect();
         match br {
             "climb" | "tower-atwall" => assert!(tags.is_empty(), "{}: {tags:?}", case["name"]),
-            "tag-attackGate" => assert_eq!(tags, ["atak-bramy"], "{}", case["name"]),
+            // K5LOOP-SIEGE-ATK-B (D-INT-2): `_attackGate` wykonywany; bez statystyk machiny jawny tag wejścia adaptera.
+            "tag-attackGate" => assert_eq!(tags, ["atak-bramy-bez-szablonu"], "{}", case["name"]),
             "inf-walk" => assert_eq!(tags, ["piechota-do-wiezy-brak-terenu"], "{}", case["name"]),
             "cata-toward-step" => assert_eq!(tags, ["marsz-brak-terenu"], "{}", case["name"]),
             // `_advanceToward` po BFS bez celu: BFS czyta teren tylko dla pól wolnych; gdy wszystkie sąsiednie pola są

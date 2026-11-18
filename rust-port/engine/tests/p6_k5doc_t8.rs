@@ -1116,11 +1116,14 @@ fn doktryna_manual_ze_stanu_ciala_odcina_krok() {
     assert_eq!(n, 30);
 }
 
-/// Ciało przy murze: gałęzie oblężnicze ATAKUJĄCEGO (w tym doktryna atakującego przy murze) to T2 — jawny tag
-/// `oblezenie`, bez kroku doktryny i bez tagu `doktryna`. Obrońca przy murze jest wykonywany od T1 (K5LOOP-SIEGE-DEF,
-/// wektory `p6_k5loop_siege_def`), więc ten test bierze tylko scenariusze z działającym atakującym.
+/// Ciało przy murze: od K5LOOP-SIEGE-ATK-B (T2b) gałęzie ATAKUJĄCEGO przy murze (w tym krok doktryny) są wykonywane
+/// (bramka `_doMove` `_siegeMoveRefused` i filtr `_meleeBlockedByWall`, zgodność z pinem: wektory
+/// `p6_k5loop_siege_atk_b`). D-INT-2: dawna asercja „dokładnie tag `oblezenie`, bez kroku doktryny” zastąpiona
+/// asercją „brak tagu oblężniczego i brak tagu `doktryna`, krok doktryny wykonany dokładnie wtedy, gdy pin go wywołał”
+/// (bramka doktryny `:6087-6092` nie zależy od muru dla piechoty/jazdy/strzelców atakującego). Obrońca przy murze jest
+/// wykonywany od T1 (K5LOOP-SIEGE-DEF, wektory `p6_k5loop_siege_def`).
 #[test]
-fn cialo_przy_murze_zostaje_tagiem_oblezenie() {
+fn cialo_przy_murze_bez_tagu_oblezenie() {
     let (v, cav_mult) = load_from(VECTORS);
     let mut n = 0;
     for case in v["cases"]
@@ -1136,10 +1139,29 @@ fn cialo_przy_murze_zostaje_tagiem_oblezenie() {
             acting,
         } = build(case, &cav_mult, true);
         st.siege_wall_col = 40;
-        assert_eq!(body.start(acting, &st), 0.0);
-        body.complete(acting, &mut st);
-        assert_eq!(body.unported, vec![(acting, "oblezenie")]);
-        assert!(body.doctrine_steps.is_empty());
+        let _ = body.start(acting, &st);
+        if case["expect"]["attack"].is_null() {
+            body.complete(acting, &mut st);
+        }
+        assert!(
+            body.unported
+                .iter()
+                .all(|(_, t)| !t.starts_with("oblezenie") && *t != "doktryna"),
+            "{}: {:?}",
+            case["name"],
+            body.unported
+        );
+        let pin_doctrine = case["expect"]["trace"]
+            .as_array()
+            .expect("trace")
+            .iter()
+            .any(|t| t == "doctrine");
+        assert_eq!(
+            !body.doctrine_steps.is_empty(),
+            pin_doctrine,
+            "{}",
+            case["name"]
+        );
         n += 1;
     }
     assert_eq!(n, 40);
