@@ -12,8 +12,9 @@
  * Asercje:
  *   A1  przed wojną: NAP obecny, status 'pokoj'
  *   A2  po wojnie: status 'wojna', NAP usunięty
- *   A3  Zaufanie: ON i OFF identyczne po wojnie (flaga nie zmienia Zaufania). UWAGA: wojna zeruje Zaufanie (start 100 -> 0),
- *       więc −20 z 'zlamana_obietnica_ai' NIE jest izolowane tym testem (NIE ZMIERZONO osobno).
+ *   A3  Zaufanie: ON i OFF identyczne po wojnie (wojna zeruje Zaufanie 100 -> 0 w obu).
+ *   A3b/A3c  −20 Zaufania z 'zlamana_obietnica_ai' izolowane z REJESTRU ZDARZEŃ pary (state.factors, delta zastosowana
+ *       w breakTreatiesOnWar przed zerowaniem przez wojnę); ON i OFF mają tę samą karę −20 (flaga dotyczy tylko Respektu).
  *   A4  Respekt: różnica Δ(ON) − Δ(OFF) = −30 (zerwanie_relacja / mnoznikRespektu, mnoznik=1)
  *   A5  przypadek Respekt<30 (LOW): wynik w 0..100 i zgodny z clampem: clamp(20 + Δ(OFF) − 30)
  *   A6  zero pageerror / console.error w scenariuszu
@@ -104,6 +105,14 @@ async function main() {
   }
   assert('A3 Zaufanie po wojnie identyczne ON i OFF (−20 NIE izolowane: wojna zeruje Zaufanie)',
     on.after.zaufanie === off.after.zaufanie, { on: on.dZaufanie, off: off.dZaufanie });
+  // A3b: −20 Zaufania izolowane z rejestru zdarzeń pary (delta faktycznie zastosowana), nie z Zaufania po wojnie.
+  const trustEv = (q) => (q.after.factors || []).filter(f => f.eventKey === 'zlamana_obietnica_ai' && f.tura === q.after.turn);
+  assert('A3b ON: zdarzenie zlamana_obietnica_ai z deltą −20 w rejestrze pary', trustEv(on).some(f => f.delta === -20) && trustEv(on).length === 1,
+    trustEv(on));
+  // Zaufanie −20 jest istniejącą karą (breakTreatiesOnWar nalicza ją przy każdej wojnie, flaga dotyczy tylko Respektu):
+  // kontrola OFF musi mieć TĘ SAMĄ deltę −20, a nie zero.
+  assert('A3c OFF (kontrola): ta sama kara −20 zlamana_obietnica_ai (flaga nie zmienia Zaufania)', trustEv(off).length === 1 && trustEv(off).some(f => f.delta === -20),
+    trustEv(off));
   const kara = on.dRespekt - off.dRespekt;
   assert('A4 Respekt: Δ(ON) − Δ(OFF) = −30 (zerwanie_relacja / mnoznikRespektu=1)', kara === -30, { kara, dON: on.dRespekt, dOFF: off.dRespekt });
   const expLow = Math.min(100, Math.max(0, low.before.respekt + off.dRespekt - 30));

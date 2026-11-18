@@ -31297,6 +31297,9 @@ async function boot(): Promise<void> {
             zaufanie: r.zaufanie,
             respekt: r.respekt,
             relacja: relationScore(r),
+            // Odczyt rejestru zdarzeń pary (delta FAKTYCZNIE zastosowana, recordDiploFactor): izoluje −20 'zlamana_obietnica_ai'
+            // mimo że wojna zeruje Zaufanie w tym samym kroku (breakTreatiesOnWar biegnie przed setDiploRelation wojny).
+            factors: (diplomacyFactorLog.get(diploPairKey(a, b)) ?? []).map(f => ({ eventKey: f.eventKey, delta: f.delta, tura: f.tura })),
             hasNap: hasTreaty(activeDeals, a, b, RodzajTraktatu.PaktNieagresji),
             skarbiecA: aiSkarbiecByOwner.get(a) ?? null,
             skarbiecB: aiSkarbiecByOwner.get(b) ?? null,
