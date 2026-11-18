@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "777f9176523bf4a90c2de0d1c8fae072",
-  "bundleSha256": "16548e20ff9bf9d461077c88702a80899303310d64bb4d88c2a55019ea84fbc6",
-  "bundleBytes": 14862452,
+  "bundleMd5": "016fd4cf401b57c2f08b084270588f1b",
+  "bundleSha256": "2f6312fbeb178230601877231f834ce8c1ef596be469f7224e813c30a3f96f91",
+  "bundleBytes": 14865486,
   "sourceSnapshot": {
-    "source": "FALA 815 262f59469 na main b92aab971",
+    "source": "FALA 816 f21ac536c na main 99724ec70",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 815: Dyplomacja: karta oferty Dar/prezent, koszyk i lista miast pokazuja nazwy miast (jawna nazwa, nazwa z gry, miasto <cywilizacja>, miasto) zamiast surowych id typu City27; nowy modul diplomacy-city-name.ts podpiety w main.ts, diplomacyDealDisplay.ts, diplomacyTradeBasket.ts, diplomacy-display.ts"
+    "FALA 816: Panel audiencji: podpowiedzi przy Zmeczenie wojna i Desperacja wyjasniaja skale 0-100%, narastanie, progi 50/80/100%, role desperacji (tylko przegrywajacy, oferty miast, nie wymusza pokoju) oraz bramki tur; nowy widoczny wiersz Pokoj wymuszony za okolo N tur (liczba z war-weariness-params.json); haslo Civpedii zmeczenie-wojna uzupelnione, wikiBundle zregenerowany (diplomacy-display.ts, diplomacyAudience.ts, zmeczenie-wojna.md)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplomacy-city-name 20/0; diplomacy-display 45/0; testy koszyka 21/31/25/24 zielone; mutacja renderera karty i koszyka czerwona"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplo-weariness-explain 14/0; display 54/0; stages-view 22/0; civpedia-values 129 PASS; Chromium FC: render showDiplomacyAudience z danymi syntetycznymi, wiersz 28% daje 29 tur, bez bledow strony"
   ],
   "limits": [
-    "NIE ZMIERZONO w zywej grze (Chromium); resolver w main.ts tylko wiazanie statyczne; okno pokoju wymuszonego i edycja oferty niezweryfikowane"
+    "NIE ZMIERZONO w pelnej grze (render komponentu z danymi syntetycznymi); title nie dziala na dotyku; wikiBundle regenerowac generatorem na koncu przy integracji z DIPLO-4/5"
   ],
-  "finalControl": "R-WEB-UI-DIPLO-OFFER-CITY-NAMES-RAW-ID-Q1 r1 FC PASS-WITH-NOTES e94edc2e5 (kod 262f59469)",
+  "finalControl": "R-WEB-UI-DIPLO-WEARINESS-PEACE-EXPLAIN-Q1 r1 FC PASS-WITH-NOTES bf44f3d31 (kod f21ac536c)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T00:33:27",
+  "hubGeneratedAt": "2026-11-18T00:46:19",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "777f9176523bf4a90c2de0d1c8fae072",
-      "sizeBytes": 14862452
+      "md5": "016fd4cf401b57c2f08b084270588f1b",
+      "sizeBytes": 14865486
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "777f9176523bf4a90c2de0d1c8fae072",
-      "sizeBytes": 14862452
+      "md5": "016fd4cf401b57c2f08b084270588f1b",
+      "sizeBytes": 14865486
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "777f9176523bf4a90c2de0d1c8fae072",
-      "sizeBytes": 14862452
+      "md5": "016fd4cf401b57c2f08b084270588f1b",
+      "sizeBytes": 14865486
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "777f9176523bf4a90c2de0d1c8fae072",
-      "sizeBytes": 14862452
+      "md5": "016fd4cf401b57c2f08b084270588f1b",
+      "sizeBytes": 14865486
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "777f9176523bf4a90c2de0d1c8fae072",
-      "sizeBytes": 14862452
+      "md5": "016fd4cf401b57c2f08b084270588f1b",
+      "sizeBytes": 14865486
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "777f9176523bf4a90c2de0d1c8fae072",
-      "sizeBytes": 14862452
+      "md5": "016fd4cf401b57c2f08b084270588f1b",
+      "sizeBytes": 14865486
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "777f9176523bf4a90c2de0d1c8fae072",
-      "sizeBytes": 14862452
+      "md5": "016fd4cf401b57c2f08b084270588f1b",
+      "sizeBytes": 14865486
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "777f9176523bf4a90c2de0d1c8fae072",
-      "sizeBytes": 14862452
+      "md5": "016fd4cf401b57c2f08b084270588f1b",
+      "sizeBytes": 14865486
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "777f9176523bf4a90c2de0d1c8fae072",
-      "sizeBytes": 14862452
+      "md5": "016fd4cf401b57c2f08b084270588f1b",
+      "sizeBytes": 14865486
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "777f9176523bf4a90c2de0d1c8fae072",
-      "sizeBytes": 14862452
+      "md5": "016fd4cf401b57c2f08b084270588f1b",
+      "sizeBytes": 14865486
     }
   ],
-  "md5": "777f9176523bf4a90c2de0d1c8fae072",
+  "md5": "016fd4cf401b57c2f08b084270588f1b",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
