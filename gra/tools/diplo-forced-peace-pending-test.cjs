@@ -137,6 +137,14 @@ function textChecks(V) {
   chk('f: brak surowych ID w tekstach', !/City\d+|c\d+/.test(JSON.stringify(t)));
   const t2 = V.forcedPeaceModalTextPl({ otherName: 'Rzym', humanIsLoser: false, cityNames: ['Ateny'] });
   chk('f: miasta po nazwach (Ateny)', /Otrzymujesz: Ateny/.test(t2.terms));
+  // r2-7 (zarzut R2): asercja porównuje tekst okna z wartością wyliczoną z JSON parametrów (nie regexem „5%”).
+  const PJ = JSON.parse(fs.readFileSync(path.join(GRA_ROOT, 'data', 'war-weariness-params.json'), 'utf8'));
+  const fmt1 = (v) => (Math.round(v * 10) / 10).toString().replace('.', ',');
+  const expTurn = fmt1(100 / PJ.zmeczenie.pelneTur);
+  const expCity = fmt1(PJ.zmeczenie.wagaStratMiasta * 100);
+  const want = `Zmęczenie rośnie o ${expTurn}% za każdą turę wojny i o ${expCity}% za każde miasto, które zmieniło właściciela.`;
+  chk('r2-7: tekst okna (why) zawiera formułę wyliczoną z parametrów: ' + want, t.why.includes(want), t.why);
+  chk('r2-7: tekst okna (why) nie zawiera literału 5%', !/(^|[^0-9,])5% za każdą turę/.test(t.why), t.why);
 }
 
 function sourceChecks() {
@@ -160,7 +168,10 @@ function sourceChecks() {
   chk('r2-4: nieaktualne oczekujące pokoje są usuwane (prune) przed bramką i oknem', /function prunePendingForcedPeace[\s\S]{0,400}stillAtWar/.test(main) && (main.match(/prunePendingForcedPeace\(\);/g) || []).length >= 4);
   chk('r2-5: strażnik Esc zdejmowany przy ponownym otwarciu i akceptacji', /clearForcedPeaceEscGuard\(\);\s*\n\s*if \(modalOverlay !== null\)/.test(ui) && /if \(!overlay\.isConnected\) \{ clearForcedPeaceEscGuard\(\)/.test(ui));
   chk('r2-6: walidacja wpisu zapisu (loser/winner/pairKey)', /typeof r\.pairKey !== 'string' \|\| typeof r\.loser !== 'number'/.test(main));
-  chk('r2-7: tekst okna zawiera formułę zmęczenia, karencję i 0 PN', /zmęczenie rośnie o 5%|Zmęczenie rośnie o 5%/.test(fs.readFileSync(path.join(SRC, 'game', 'war-weariness-view.ts'), 'utf8')) && /Zapłata: 0 PN/.test(fs.readFileSync(path.join(SRC, 'game', 'war-weariness-view.ts'), 'utf8')));
+  // r2-7 (zarzut R2): liczby wzoru w oknie liczone z parametrów (100/pelneTur, wagaStratMiasta×100), bez literału „5%”.
+  const viewSrc = fs.readFileSync(path.join(SRC, 'game', 'war-weariness-view.ts'), 'utf8');
+  chk('r2-7: brak literału „o 5% za każdą turę” w oknie pokoju wymuszonego', !/o 5% za każdą turę/.test(viewSrc) && !/zmęczenie rośnie o 5%/i.test(viewSrc));
+  chk('r2-7: liczby okna z parametrów (perTurnPct / perCityPct), zapłata 0 PN i karencja', /perTurnPct\}% za każdą turę/.test(viewSrc) && /perCityPct\}% za każde miasto/.test(viewSrc) && /Zapłata: 0 PN/.test(viewSrc) && /Po pokoju karencja/.test(viewSrc));
 }
 
 function mutation() {

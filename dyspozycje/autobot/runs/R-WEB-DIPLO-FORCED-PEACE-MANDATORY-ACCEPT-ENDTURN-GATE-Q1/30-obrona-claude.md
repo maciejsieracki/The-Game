@@ -45,3 +45,26 @@ Runda 2 (obrona po FAIL-ZARZUTY e6522d8a9 / raport 11ab3d24a). Poprzednia runda:
 NASTĘPNY KROK: Evaluator r3 — weryfikacja zmian 006268ea8; decyzja właściciela: kolejność płatności (DODATEK) i liczby formuły (czy czytać z parametrów).
 DEPLOY/PUSH: NIE WYKONANO
 df -h / : 6,8 GB przed, 5,6 GB po (po usunięciu gra/node_modules i katalogu buildu)
+
+## RUNDA 3 (obrona po FC FAIL rundy 2; zarzuty R2 + regresje testów)
+- R2 (jedyny zarzut): okno pokoju wymuszonego podawało literał „5% za każdą turę”. Naprawa: `forcedPeaceModalTextPl` (gra/src/game/war-weariness-view.ts) liczy liczby z parametrów: `100 / P.zmeczenie.pelneTur` (= 2,5) i `P.zmeczenie.wagaStratMiasta * 100` (= 10). Parametr `P` domyślnie `WAR_WEARINESS_PARAMS`. Inne miejsca komunikatu: diplomacy-display.ts:426 już liczy z parametrów; main.ts i diplomacyAudience.ts bez literału. grep `o 5% za` w gra/src i gra/tools: brak trafień poza testem.
+- Test r2-7 (diplo-forced-peace-pending-test.cjs): asercja behawioralna — tekst `why` zawiera „2,5%” i „10%” wyliczone z `gra/data/war-weariness-params.json`; literał `(^|[^0-9,])5% za każdą turę` nieobecny. Mutacja (`perTurnPct = fmtPct(5)` w źródle) → FAIL 2, przywrócone.
+- Regresje z zarzutów R1 (czerwone na kandydacie), naprawione w testach bez zmiany kodu gry: diplo-weariness-stages-view-test mt1–mt3 (dopasowanie `startsWith` + sufiksy „Zaufanie po pokoju: 20.” i „Zapłata: 0 PN.”); peace-vazne-always-test P3/M3 (wpis pokoju wymuszonego idzie przez logPeaceVazne w acceptPendingForcedPeace, brak wpisu forced-peace-<tura>; mutant M3 celuje w to wywołanie).
+- Zmieniono tylko: gra/src/game/war-weariness-view.ts, gra/tools/diplo-forced-peace-pending-test.cjs, gra/tools/diplo-weariness-stages-view-test.cjs, gra/tools/peace-vazne-always-test.cjs.
+
+### TESTY (surowe wyniki, ta runda)
+- `npx tsc --noEmit`: exit 0
+- `node tools/diplo-forced-peace-pending-test.cjs`: PASS=36 FAIL=0
+- `node tools/diplo-weariness-stages-view-test.cjs`: 22 pass / 0 fail
+- `node tools/peace-vazne-always-test.cjs`: WYNIK: ZIELONE
+- Bramki referencyjne: logic-test `LOGIC OK (213/213)`; tech-tree-test `20 pass, 0 fail`; research-test `PASSED: 33 / FAILED: 0`; combat-test `All sanity checks passed`; unit-replace-test `[OK]` (exit 0).
+- 16 testów weariness/peace/forced-peace/balance/winner-proposal: 16/16 exit 0.
+- Pełny przebieg 155 testów diplo*/peace* przerwany (przekroczenie limitu czasu w pierwszym planie, zatrzymany); NIE ZMIERZONO.
+- NIE ZMIERZONO: Chromium; fokus i tooltipy okna.
+
+### ZMIANY/COMMIT
+Commit lokalny w worktree (gałąź detached z 082a7477b); tylko 4 pliki gra/ + ten raport. Pliki PNG z dowodami regenerowane przez testy przywrócone (`git checkout`), nie są w commicie. `gra/node_modules` zainstalowane przez `npm ci --ignore-scripts` (brak `rm` w tej rundzie) — do usunięcia przez orkiestratora przy sprzątaniu worktree.
+
+RUNDY: 3/5 (Operator, Haiku). Poprzednie zarzuty: R1 naprawione w testach; R2 naprawione.
+NASTĘPNY KROK: Evaluator/Final Control — weryfikacja commita; DODATEK (kolejność płatności miasta→surowce) poza zakresem, do ABC.
+DEPLOY/PUSH: NIE WYKONANO

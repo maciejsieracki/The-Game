@@ -122,7 +122,10 @@ function wiring(src) {
   if (!p2 || !/logPeaceVazne\(\s*ME\(\)\s*,\s*p\.ownerId/.test(p2)) problems.push('P2 oferta AI przyjeta przez gracza bez logPeaceVazne');
   // P3: wymuszony pokoj 100%
   // (sprawdzane jest, ze warunek deduplikacji i unshift stoja bezposrednio za evId, wiec usuniecie wpisu lub zamiana warunku na `false` czerwieni test)
-  if (!/const evId = `forced-peace-\$\{turn\}-\$\{o\.pairKey\}`;\s*if \(!warEventLog\.some\(e => e\.id === evId\)\) \{\s*warEventLog\.unshift\(/.test(src)) problems.push('P3 brak wpisu forced-peace');
+  // (po PEACEVAZNE: jedyny wpis pokoju wymuszonego = logPeaceVazne w acceptPendingForcedPeace; bez osobnego wpisu forced-peace-<tura>)
+  const p3 = blockAfter(src, 'function acceptPendingForcedPeace(): void {');
+  if (!p3 || !/logPeaceVazne\(\s*p\.loser\s*,\s*p\.winner/.test(p3)) problems.push('P3 akceptacja pokoju wymuszonego bez logPeaceVazne');
+  if (/forced-peace-\$\{turn\}/.test(src)) problems.push('P3 zduplikowany wpis forced-peace-<tura>');
   // P4: koniec rozejmu -> pokoj (finalizePeace z truce-peace)
   if (!/const evId = `truce-peace-\$\{turn\}-\$\{diploPairKey\(proposerId, responderId\)\}`;\s*if \(!warEventLog\.some\(e => e\.id === evId\)\) \{\s*warEventLog\.unshift\(/.test(src)) problems.push('P4 brak wpisu truce-peace');
   // P5: rozmowa gracz<->gracz
@@ -153,9 +156,9 @@ const mutants = [
     to: "        void(p.fromOwnerId, p.toOwnerId, 'Pokój zawarty: ', 'Propozycja pokoju przyjęta w rozmowie dyplomatycznej');",
   },
   {
-    name: 'M3 usuniety wpis P3 (wymuszony pokoj 100%: warunek -> false, brak unshift)',
-    from: "        if (!warEventLog.some(e => e.id === evId)) {\n          warEventLog.unshift({\n            id: evId,\n            icon: '⚔',\n            title: 'Pokój wymuszony: '",
-    to: "        if (false) {\n          warEventLog.unshift({\n            id: evId,\n            icon: '⚔',\n            title: 'Pokój wymuszony: '",
+    name: 'M3 usuniety wpis P3 (akceptacja pokoju wymuszonego bez logPeaceVazne)',
+    from: "      logPeaceVazne(p.loser, p.winner, 'Pokój zawarty: ',",
+    to: "      void(p.loser, p.winner, 'Pokój zawarty: ',",
   },
   {
     name: 'M4 usuniety wpis P1 (oferta gracza przyjeta przez AI)',

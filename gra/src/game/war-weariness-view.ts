@@ -230,7 +230,11 @@ export interface ForcedPeaceText {
  * Tekst natywnego okna „pokój wymuszony” (DIPLO-WAR-WEARINESS-40-TURNS-FORCED-PEACE-AT-100-Q1, DODATEK 1 pkt 1–2).
  * Czysta funkcja: okno (ui/diplomacyAudience.ts) tylko ją wyświetla.
  */
-export function forcedPeaceModalTextPl(inp: ForcedPeaceTextInput): ForcedPeaceText {
+export function forcedPeaceModalTextPl(inp: ForcedPeaceTextInput, P: WarWearinessParams = WAR_WEARINESS_PARAMS): ForcedPeaceText {
+  // Liczby wzoru zmęczenia wyliczone z parametrów (nie wpisane na sztywno): 100/pelneTur na turę, wagaStratMiasta×100 za miasto.
+  const fmtPct = (v: number): string => (Math.round(v * 10) / 10).toString().replace('.', ',');
+  const perTurnPct = fmtPct(100 / P.zmeczenie.pelneTur);
+  const perCityPct = fmtPct(P.zmeczenie.wagaStratMiasta * 100);
   const terms = inp.cityNames.length === 0
     ? 'Pokój bez wymiany miast.'
     : (inp.humanIsLoser ? 'Oddajesz: ' : 'Otrzymujesz: ') + inp.cityNames.join(', ') + '.';
@@ -243,7 +247,7 @@ export function forcedPeaceModalTextPl(inp: ForcedPeaceTextInput): ForcedPeaceTe
     title: 'Pokój wymuszony',
     lead: `Wojna z ${inp.otherName} osiągnęła ${pct}% zmęczenia — pokój wymuszony.`,
     why: `Zmęczenie wojną ${pct}% (próg wymuszenia 100%)${wojna}${zmiany}.${kto} ` +
-      'Zmęczenie rośnie o 5% za każdą turę wojny i o 10% za każde miasto, które zmieniło właściciela. ' +
+      `Zmęczenie rośnie o ${perTurnPct}% za każdą turę wojny i o ${perCityPct}% za każde miasto, które zmieniło właściciela. ` +
       'Nie da się odrzucić tego pokoju: gra nie pozwoli zakończyć tury, dopóki nie zaakceptujesz warunków.',
     terms: terms + (inp.cityNames.length === 0 ? ' Zapłata: 0 PN.' : '') + karencja + ' Zaufanie po pokoju: 20.',
     acceptLabel: 'Akceptuję warunki pokoju',
