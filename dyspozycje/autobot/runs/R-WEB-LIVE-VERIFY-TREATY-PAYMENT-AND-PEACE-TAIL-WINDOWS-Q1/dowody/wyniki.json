@@ -1,0 +1,270 @@
+{
+  "results": {
+    "S4": {
+      "label": "bramka „Zakończ turę” przy pending (przycisk / Enter / Esc / tło / akceptacja) + auto-otwarcie okna",
+      "asserts": [
+        {
+          "ok": null,
+          "what": "tury do utworzenia pending (od ustawienia wojny)",
+          "detail": {
+            "turns": 1,
+            "log": [
+              {
+                "advanced": true,
+                "battleOpenAfterEnd": true,
+                "pendingAfterEnd": 0,
+                "clicks": 2
+              }
+            ]
+          }
+        },
+        {
+          "ok": true,
+          "what": "pending pokoju wymuszonego powstaje w ciągu 12 tur (pendingForcedPeaceForTest)",
+          "detail": {
+            "turns": 1
+          }
+        },
+        {
+          "ok": true,
+          "what": "odroczenie: przy trwającej bitwie pending nie powstaje do jej zamknięcia",
+          "detail": {
+            "deferredTurns": 1,
+            "leaked": 0
+          }
+        },
+        {
+          "ok": null,
+          "what": "czas do pojawienia się okna (s), domknięte bitwy, obserwator MutationObserver",
+          "detail": {
+            "ok": true,
+            "sec": 0.558,
+            "cleared": 0,
+            "autoFired": true,
+            "summariesClosed": 0,
+            "pendingNow": 1
+          }
+        },
+        {
+          "ok": true,
+          "what": "okno pokoju pojawia się SAMO w tej turze (bez Esc/kliknięcia; MutationObserver)",
+          "detail": {
+            "autoShown": true,
+            "autoFired": true,
+            "sec": 0.558,
+            "battlesLeft": 0
+          }
+        },
+        {
+          "ok": true,
+          "what": "okno pokoju jest na wierzchu (przycisk widoczny, nie przesłonięty innym oknem)",
+          "detail": {
+            "topmost": true
+          }
+        },
+        {
+          "ok": true,
+          "what": "okno pokoju wymuszonego jest widoczne przed sprawdzaniem bramki",
+          "detail": {
+            "count": 1
+          }
+        },
+        {
+          "ok": true,
+          "what": "pending istnieje i okno jest widoczne (rozróżnienie: pending + okno)",
+          "detail": {
+            "pending": 1,
+            "okno": 1
+          }
+        },
+        {
+          "ok": null,
+          "what": "stan przycisku „Zakończ turę” przy pending",
+          "detail": {
+            "aria": "false",
+            "cls": "end-turn et-signal"
+          }
+        },
+        {
+          "ok": true,
+          "what": "Esc przy widocznym oknie nie zamyka okna pokoju wymuszonego"
+        },
+        {
+          "ok": true,
+          "what": "klik w tło nie zamyka okna"
+        },
+        {
+          "ok": true,
+          "what": "klik „Zakończ turę” (button.end-turn, force) przy pending nie kończy tury",
+          "detail": {
+            "t0": 2,
+            "t1": 2,
+            "clickErr": null
+          }
+        },
+        {
+          "ok": true,
+          "what": "Enter na przycisku „Zakończ turę” przy pending nie kończy tury",
+          "detail": {
+            "t1": 2
+          }
+        },
+        {
+          "ok": true,
+          "what": "po akceptacji okno znika"
+        },
+        {
+          "ok": true,
+          "what": "po akceptacji status pary nie jest „wojna”",
+          "detail": {
+            "status": "pokoj"
+          }
+        },
+        {
+          "ok": true,
+          "what": "po akceptacji tura kończy się normalnie"
+        },
+        {
+          "ok": true,
+          "what": "zero pageerror/console.error",
+          "detail": []
+        }
+      ],
+      "status": "PASS"
+    },
+    "S3": {
+      "label": "spójność okna (wiersze miast) z wpisem warLog po akceptacji",
+      "asserts": [
+        {
+          "ok": null,
+          "what": "tekst okna (pierwsze 400 znaków)",
+          "detail": "Pokój wymuszony\n\nWojna z Grecy osiągnęła 100% zmęczenia — pokój wymuszony.\n\nPokój bez wymiany miast.\n\nAKCEPTUJĘ WARUNKI POKOJU"
+        },
+        {
+          "ok": true,
+          "what": "okno zawiera jeden z dwóch wariantów: „Oddajesz:” albo „Pokój bez wymiany miast”",
+          "detail": {
+            "modalBranch": "bez-wymiany"
+          }
+        },
+        {
+          "ok": null,
+          "what": "warLog po akceptacji (fragment)",
+          "detail": "[{\"id\":\"peace-vazne-2-0_1\",\"title\":\"Pokój zawarty: Grecy\",\"subtitle\":\"Wymuszony przez zmęczenie wojną 100% (wojna 41 tur, zmienione miasta 0). Pokój bez wymiany miast\"},{\"id\":\"eot-hint-2-0\",\"title\":\"\",\"subtitle\":\"Wróg atakuje twoje wojsko!\"}]"
+        },
+        {
+          "ok": true,
+          "what": "po akceptacji w warLog jest wpis „Pokój zawarty”"
+        },
+        {
+          "ok": true,
+          "what": "wpis warLog zawiera wariant wymiany miast",
+          "detail": {
+            "logBranch": "bez-wymiany"
+          }
+        },
+        {
+          "ok": true,
+          "what": "wariant w oknie zgadza się z wpisem warLog po akceptacji",
+          "detail": {
+            "modalBranch": "bez-wymiany",
+            "logBranch": "bez-wymiany"
+          }
+        }
+      ],
+      "status": "PASS"
+    },
+    "S2": {
+      "label": "S2(a): dwie wojny -> okno pierwszego pokoju pojawia się samo w turze utworzenia pending",
+      "asserts": [
+        {
+          "ok": true,
+          "what": "pending dla dwóch wojen powstaje (do 12 tur)",
+          "detail": {
+            "turns": 1
+          }
+        },
+        {
+          "ok": null,
+          "what": "czas do pojawienia się pierwszego okna (s), domknięte bitwy, obserwator",
+          "detail": {
+            "ok": true,
+            "sec": 0.417,
+            "cleared": 0,
+            "autoFired2": true
+          }
+        },
+        {
+          "ok": true,
+          "what": "po turze z dwiema wojnami okno pierwszego pokoju pojawia się samo i jest na wierzchu (do 90 s, bez Esc/kliknięcia)",
+          "detail": {
+            "battlesLeft": 0,
+            "pending": 1
+          }
+        },
+        {
+          "ok": null,
+          "what": "status par i pending przed akceptacją",
+          "detail": {
+            "p1": "wojna",
+            "p2": "wojna",
+            "turn": 4,
+            "pending": 1
+          }
+        }
+      ],
+      "status": "PASS"
+    },
+    "S2b": {
+      "label": "S2(b)/D2: kolejka drugiego pokoju po akceptacji pierwszego",
+      "asserts": [
+        {
+          "ok": null,
+          "what": "po akceptacji pierwszego: pending, okno, statusy par",
+          "detail": {
+            "pending": 0,
+            "okno": 0,
+            "p1": "pokoj",
+            "p2": "wojna"
+          }
+        },
+        {
+          "ok": null,
+          "what": "drugie okno w ciągu 30 s po akceptacji pierwszego (dane, nie asercja)",
+          "detail": {
+            "ok": false,
+            "sec": 30,
+            "cleared": 0
+          }
+        },
+        {
+          "ok": null,
+          "what": "tura po akceptacji pierwszego (dane)",
+          "detail": {
+            "t0": 4,
+            "t1": 5,
+            "advanced": true
+          }
+        }
+      ],
+      "status": "NIE ZMIERZONO",
+      "why": "NIE ROZSTRZYGNIĘTE (D2, decyzja właściciela 2026-11-18): druga wojna → drugi pokój; brak haka odczytu pozycji po prune; wynik tylko zmierzony powyżej"
+    },
+    "S1": {
+      "label": "zapis i wczytanie gry z oczekującym traktatem",
+      "asserts": [],
+      "status": "NIE ZMIERZONO",
+      "why": "brak haka odczytu meta.pendingForcedPeaceTreaties ani helpera zapis+wczytaj; propozycja haka test-only w raporcie"
+    },
+    "S5": {
+      "label": "pokój AI<->AI nadal natychmiast (bez okna)",
+      "asserts": [],
+      "status": "NIE ZMIERZONO",
+      "why": "brak haka ustawiającego wiek wojny dla pary AI<->AI (setWarAge działa tylko dla gracza)"
+    }
+  },
+  "notes": [
+    "D3 (wpis „Nie można zakończyć tury”) nie jest mierzony: panel „Ważne” bywa zamknięty, DOM nie dowodzi braku wpisu.",
+    "S3 wariant „Oddajesz: <miasta>” NIE ZMIERZONO: w tej mapie plan pokoju nie zawiera miast do oddania (tylko cena=0 / bez wymiany)."
+  ]
+}

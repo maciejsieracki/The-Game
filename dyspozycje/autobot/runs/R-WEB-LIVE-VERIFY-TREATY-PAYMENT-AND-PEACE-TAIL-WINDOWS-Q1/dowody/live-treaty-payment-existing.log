@@ -1,0 +1,175 @@
+  OK  S1 wrapper resolvePlayerAcceptsAiPendingWired istnieje i dołącza carrierCtx z buildProposalEvalContext
+  OK  S2 carrierCtx: wyłącznie w wrapperze (zero innych miejsc wywołania)
+  OK  S3 bezpośrednie resolvePlayerAcceptsAiPending( = 2 (wrapper + AI↔AI poza zakresem)
+  OK  S4 drugie bezpośrednie wywołanie stoi w applyAiAiHandelSurowiecCmd (AI↔AI)
+  OK  S5 wywołania przez wrapper >= 7 (wszystkie realne ścieżki akceptacji)
+AI owner: 1 wszystkie: [1,2,3,4,5,6]
+[nap] gracz→AI: udział siły gracza 28% (płatnik: gracz)
+[nap] gracz→AI: {"acc":true,"reason":"Pakt nieagresji na 15 tur","carrier":{"items":[{"typ":"tech","id":"Obróbka drewna","ilosc":1},{"typ":"zloto","id":"zloto","ilosc":16826}],"side":"proposer","coveredPn":16836},"deal":"pakt_nieagresji"}
+  OK  nap gracz→AI: zaakceptowano (Pakt nieagresji na 15 tur)
+  OK  nap gracz→AI: wynik niesie nośnik treatyCarrier
+  OK  nap gracz→AI: technologie przed ogonem
+  OK  nap gracz→AI: ogon w kolejności złoto→brąz→żelazo→rudy
+  OK  nap gracz→AI: technologie = dokładnie ["Obróbka drewna"] (płatnik ma, odbiorca nie ma)
+  OK  nap gracz→AI: zloto płatnik −16826 (jest −16826)
+  OK  nap gracz→AI: zloto odbiorca +16826 (jest +16826)
+  OK  nap gracz→AI: zloto płatnika ≥ 0
+  OK  nap gracz→AI: braz płatnika bez zmian (brak pozycji)
+  OK  nap gracz→AI: zelazo płatnika bez zmian (brak pozycji)
+  OK  nap gracz→AI: ruda płatnika bez zmian (brak pozycji)
+  OK  nap gracz→AI: ruda_cyny płatnika bez zmian (brak pozycji)
+  OK  nap gracz→AI: ruda_zelaza płatnika bez zmian (brak pozycji)
+  OK  nap gracz→AI: odbiorca dostał dokładnie technologie z nośnika
+  OK  nap gracz→AI: płatnik nie utracił ani nie zyskał technologii
+  OK  nap gracz→AI: strona koszyka = proposer (płatnik gracz)
+[nap] AI→gracz: udział siły AI 70% (płatnik: gracz)
+[nap] AI→gracz: {"acc":true,"reason":"Pakt nieagresji na 15 tur","carrier":{"items":[{"typ":"tech","id":"Obróbka drewna","ilosc":1},{"typ":"zloto","id":"zloto","ilosc":14751}],"side":"responder","coveredPn":14761},"deal":"pakt_nieagresji"}
+  OK  nap AI→gracz: zaakceptowano (Pakt nieagresji na 15 tur)
+  OK  nap AI→gracz: wynik niesie nośnik treatyCarrier
+  OK  nap AI→gracz: technologie przed ogonem
+  OK  nap AI→gracz: ogon w kolejności złoto→brąz→żelazo→rudy
+  OK  nap AI→gracz: technologie = dokładnie ["Obróbka drewna"] (płatnik ma, odbiorca nie ma)
+  OK  nap AI→gracz: zloto płatnik −14751 (jest −14751)
+  OK  nap AI→gracz: zloto odbiorca +14751 (jest +14751)
+  OK  nap AI→gracz: zloto płatnika ≥ 0
+  OK  nap AI→gracz: braz płatnika bez zmian (brak pozycji)
+  OK  nap AI→gracz: zelazo płatnika bez zmian (brak pozycji)
+  OK  nap AI→gracz: ruda płatnika bez zmian (brak pozycji)
+  OK  nap AI→gracz: ruda_cyny płatnika bez zmian (brak pozycji)
+  OK  nap AI→gracz: ruda_zelaza płatnika bez zmian (brak pozycji)
+  OK  nap AI→gracz: odbiorca dostał dokładnie technologie z nośnika
+  OK  nap AI→gracz: płatnik nie utracił ani nie zyskał technologii
+  OK  nap AI→gracz: strona koszyka = responder (płatnik gracz)
+  OK  nap AI→gracz: nośnik akceptacji = wiersz okna (te same pozycje i strona)
+[sojusz_defensywny] gracz→AI: udział siły gracza 29% (płatnik: gracz)
+[sojusz_defensywny] gracz→AI: {"acc":true,"reason":"Sojusz obronny zawarty","carrier":{"items":[{"typ":"tech","id":"Obróbka drewna","ilosc":1},{"typ":"zloto","id":"zloto","ilosc":16402}],"side":"proposer","coveredPn":16412},"deal":"sojusz_defensywny"}
+  OK  sojusz_defensywny gracz→AI: zaakceptowano (Sojusz obronny zawarty)
+  OK  sojusz_defensywny gracz→AI: wynik niesie nośnik treatyCarrier
+  OK  sojusz_defensywny gracz→AI: technologie przed ogonem
+  OK  sojusz_defensywny gracz→AI: ogon w kolejności złoto→brąz→żelazo→rudy
+  OK  sojusz_defensywny gracz→AI: technologie = dokładnie ["Obróbka drewna"] (płatnik ma, odbiorca nie ma)
+  OK  sojusz_defensywny gracz→AI: zloto płatnik −16402 (jest −16402)
+  OK  sojusz_defensywny gracz→AI: zloto odbiorca +16402 (jest +16402)
+  OK  sojusz_defensywny gracz→AI: zloto płatnika ≥ 0
+  OK  sojusz_defensywny gracz→AI: braz płatnika bez zmian (brak pozycji)
+  OK  sojusz_defensywny gracz→AI: zelazo płatnika bez zmian (brak pozycji)
+  OK  sojusz_defensywny gracz→AI: ruda płatnika bez zmian (brak pozycji)
+  OK  sojusz_defensywny gracz→AI: ruda_cyny płatnika bez zmian (brak pozycji)
+  OK  sojusz_defensywny gracz→AI: ruda_zelaza płatnika bez zmian (brak pozycji)
+  OK  sojusz_defensywny gracz→AI: odbiorca dostał dokładnie technologie z nośnika
+  OK  sojusz_defensywny gracz→AI: płatnik nie utracił ani nie zyskał technologii
+  OK  sojusz_defensywny gracz→AI: strona koszyka = proposer (płatnik gracz)
+[sojusz_defensywny] AI→gracz: udział siły AI 69% (płatnik: gracz)
+[sojusz_defensywny] AI→gracz: {"acc":true,"reason":"Sojusz obronny zawarty","carrier":{"items":[{"typ":"tech","id":"Obróbka drewna","ilosc":1},{"typ":"zloto","id":"zloto","ilosc":14187}],"side":"responder","coveredPn":14197},"deal":"sojusz_defensywny"}
+  OK  sojusz_defensywny AI→gracz: zaakceptowano (Sojusz obronny zawarty)
+  OK  sojusz_defensywny AI→gracz: wynik niesie nośnik treatyCarrier
+  OK  sojusz_defensywny AI→gracz: technologie przed ogonem
+  OK  sojusz_defensywny AI→gracz: ogon w kolejności złoto→brąz→żelazo→rudy
+  OK  sojusz_defensywny AI→gracz: technologie = dokładnie ["Obróbka drewna"] (płatnik ma, odbiorca nie ma)
+  OK  sojusz_defensywny AI→gracz: zloto płatnik −14187 (jest −14187)
+  OK  sojusz_defensywny AI→gracz: zloto odbiorca +14187 (jest +14187)
+  OK  sojusz_defensywny AI→gracz: zloto płatnika ≥ 0
+  OK  sojusz_defensywny AI→gracz: braz płatnika bez zmian (brak pozycji)
+  OK  sojusz_defensywny AI→gracz: zelazo płatnika bez zmian (brak pozycji)
+  OK  sojusz_defensywny AI→gracz: ruda płatnika bez zmian (brak pozycji)
+  OK  sojusz_defensywny AI→gracz: ruda_cyny płatnika bez zmian (brak pozycji)
+  OK  sojusz_defensywny AI→gracz: ruda_zelaza płatnika bez zmian (brak pozycji)
+  OK  sojusz_defensywny AI→gracz: odbiorca dostał dokładnie technologie z nośnika
+  OK  sojusz_defensywny AI→gracz: płatnik nie utracił ani nie zyskał technologii
+  OK  sojusz_defensywny AI→gracz: strona koszyka = responder (płatnik gracz)
+  OK  sojusz_defensywny AI→gracz: nośnik akceptacji = wiersz okna (te same pozycje i strona)
+[sojusz_pelny] gracz→AI: udział siły gracza 29% (płatnik: gracz)
+[sojusz_pelny] gracz→AI: {"acc":true,"reason":"Sojusz wojskowy zawarty","carrier":{"items":[{"typ":"tech","id":"Obróbka drewna","ilosc":1},{"typ":"zloto","id":"zloto","ilosc":19530}],"side":"proposer","coveredPn":19540},"deal":"sojusz_pelny"}
+  OK  sojusz_pelny gracz→AI: zaakceptowano (Sojusz wojskowy zawarty)
+  OK  sojusz_pelny gracz→AI: wynik niesie nośnik treatyCarrier
+  OK  sojusz_pelny gracz→AI: technologie przed ogonem
+  OK  sojusz_pelny gracz→AI: ogon w kolejności złoto→brąz→żelazo→rudy
+  OK  sojusz_pelny gracz→AI: technologie = dokładnie ["Obróbka drewna"] (płatnik ma, odbiorca nie ma)
+  OK  sojusz_pelny gracz→AI: zloto płatnik −19530 (jest −19530)
+  OK  sojusz_pelny gracz→AI: zloto odbiorca +19530 (jest +19530)
+  OK  sojusz_pelny gracz→AI: zloto płatnika ≥ 0
+  OK  sojusz_pelny gracz→AI: braz płatnika bez zmian (brak pozycji)
+  OK  sojusz_pelny gracz→AI: zelazo płatnika bez zmian (brak pozycji)
+  OK  sojusz_pelny gracz→AI: ruda płatnika bez zmian (brak pozycji)
+  OK  sojusz_pelny gracz→AI: ruda_cyny płatnika bez zmian (brak pozycji)
+  OK  sojusz_pelny gracz→AI: ruda_zelaza płatnika bez zmian (brak pozycji)
+  OK  sojusz_pelny gracz→AI: odbiorca dostał dokładnie technologie z nośnika
+  OK  sojusz_pelny gracz→AI: płatnik nie utracił ani nie zyskał technologii
+  OK  sojusz_pelny gracz→AI: strona koszyka = proposer (płatnik gracz)
+[sojusz_pelny] AI→gracz: udział siły AI 69% (płatnik: gracz)
+[sojusz_pelny] AI→gracz: {"acc":true,"reason":"Sojusz wojskowy zawarty","carrier":{"items":[{"typ":"tech","id":"Obróbka drewna","ilosc":1},{"typ":"zloto","id":"zloto","ilosc":16892}],"side":"responder","coveredPn":16902},"deal":"sojusz_pelny"}
+  OK  sojusz_pelny AI→gracz: zaakceptowano (Sojusz wojskowy zawarty)
+  OK  sojusz_pelny AI→gracz: wynik niesie nośnik treatyCarrier
+  OK  sojusz_pelny AI→gracz: technologie przed ogonem
+  OK  sojusz_pelny AI→gracz: ogon w kolejności złoto→brąz→żelazo→rudy
+  OK  sojusz_pelny AI→gracz: technologie = dokładnie ["Obróbka drewna"] (płatnik ma, odbiorca nie ma)
+  OK  sojusz_pelny AI→gracz: zloto płatnik −16892 (jest −16892)
+  OK  sojusz_pelny AI→gracz: zloto odbiorca +16892 (jest +16892)
+  OK  sojusz_pelny AI→gracz: zloto płatnika ≥ 0
+  OK  sojusz_pelny AI→gracz: braz płatnika bez zmian (brak pozycji)
+  OK  sojusz_pelny AI→gracz: zelazo płatnika bez zmian (brak pozycji)
+  OK  sojusz_pelny AI→gracz: ruda płatnika bez zmian (brak pozycji)
+  OK  sojusz_pelny AI→gracz: ruda_cyny płatnika bez zmian (brak pozycji)
+  OK  sojusz_pelny AI→gracz: ruda_zelaza płatnika bez zmian (brak pozycji)
+  OK  sojusz_pelny AI→gracz: odbiorca dostał dokładnie technologie z nośnika
+  OK  sojusz_pelny AI→gracz: płatnik nie utracił ani nie zyskał technologii
+  OK  sojusz_pelny AI→gracz: strona koszyka = responder (płatnik gracz)
+  OK  sojusz_pelny AI→gracz: nośnik akceptacji = wiersz okna (te same pozycje i strona)
+[granice] gracz→AI: udział siły gracza 88% (płatnik: AI, zapasy bogate)
+  OK  granice gracz→AI: precondycja Respekt gracza ≥ 55% (jest 88%)
+[granice] gracz→AI: {"acc":true,"reason":"Traktat przemarszu (wojskowy)","carrier":null,"deal":"prawo_wojskowe_przemarszu"}
+  OK  granice gracz→AI [znana luka]: akceptacja przechodzi bramkę Respektu
+  OK  granice gracz→AI [znana luka]: brak nośnika (carrier=null) — przelewu nie ma
+  OK  granice gracz→AI [znana luka]: zapasy AI nietknięte
+[granice] AI→gracz: udział siły AI 69% (płatnik: gracz)
+  OK  granice AI→gracz: precondycja Respekt AI ≥ 55% (jest 69%)
+[granice] AI→gracz: {"acc":true,"reason":"Traktat przemarszu (wojskowy)","carrier":{"items":[{"typ":"tech","id":"Obróbka drewna","ilosc":1},{"typ":"zloto","id":"zloto","ilosc":2019}],"side":"responder","coveredPn":2029},"deal":"prawo_wojskowe_przemarszu"}
+  OK  granice AI→gracz: zaakceptowano (Traktat przemarszu (wojskowy))
+  OK  granice AI→gracz: wynik niesie nośnik treatyCarrier
+  OK  granice AI→gracz: technologie przed ogonem
+  OK  granice AI→gracz: ogon w kolejności złoto→brąz→żelazo→rudy
+  OK  granice AI→gracz: technologie = dokładnie ["Obróbka drewna"] (płatnik ma, odbiorca nie ma)
+  OK  granice AI→gracz: zloto płatnik −2019 (jest −2019)
+  OK  granice AI→gracz: zloto odbiorca +2019 (jest +2019)
+  OK  granice AI→gracz: zloto płatnika ≥ 0
+  OK  granice AI→gracz: braz płatnika bez zmian (brak pozycji)
+  OK  granice AI→gracz: zelazo płatnika bez zmian (brak pozycji)
+  OK  granice AI→gracz: ruda płatnika bez zmian (brak pozycji)
+  OK  granice AI→gracz: ruda_cyny płatnika bez zmian (brak pozycji)
+  OK  granice AI→gracz: ruda_zelaza płatnika bez zmian (brak pozycji)
+  OK  granice AI→gracz: odbiorca dostał dokładnie technologie z nośnika
+  OK  granice AI→gracz: płatnik nie utracił ani nie zyskał technologii
+  OK  granice AI→gracz: strona koszyka = responder (płatnik gracz)
+  OK  granice AI→gracz: nośnik akceptacji = wiersz okna (te same pozycje i strona)
+[wasal] gracz→AI: udział siły gracza 94% (płatnik: AI, zapasy bogate)
+  OK  wasal gracz→AI: precondycja Respekt gracza ≥ 70% (jest 94%)
+[wasal] gracz→AI: {"acc":true,"reason":"Wasalizacja zaakceptowana","carrier":null,"deal":"wasalizacja"}
+  OK  wasal gracz→AI [znana luka]: akceptacja przechodzi bramkę Respektu
+  OK  wasal gracz→AI [znana luka]: brak nośnika (carrier=null) — przelewu nie ma
+  OK  wasal gracz→AI [znana luka]: zapasy AI nietknięte
+[wasal] AI→gracz: udział siły AI 82% (płatnik: gracz, zapasy bogate)
+  OK  wasal AI→gracz: precondycja Respekt AI ≥ 70% (jest 82%)
+[wasal] AI→gracz: {"acc":true,"reason":"Wasalizacja zaakceptowana","carrier":{"items":[{"typ":"tech","id":"Obróbka drewna","ilosc":1},{"typ":"zloto","id":"zloto","ilosc":29336}],"side":"responder","coveredPn":29346},"deal":"wasalizacja"}
+  OK  wasal AI→gracz: zaakceptowano (Wasalizacja zaakceptowana)
+  OK  wasal AI→gracz: wynik niesie nośnik treatyCarrier
+  OK  wasal AI→gracz: technologie przed ogonem
+  OK  wasal AI→gracz: ogon w kolejności złoto→brąz→żelazo→rudy
+  OK  wasal AI→gracz: technologie = dokładnie ["Obróbka drewna"] (płatnik ma, odbiorca nie ma)
+  OK  wasal AI→gracz: zloto płatnik −29336 (jest −29336)
+  OK  wasal AI→gracz: zloto odbiorca +29336 (jest +29336)
+  OK  wasal AI→gracz: zloto płatnika ≥ 0
+  OK  wasal AI→gracz: braz płatnika bez zmian (brak pozycji)
+  OK  wasal AI→gracz: zelazo płatnika bez zmian (brak pozycji)
+  OK  wasal AI→gracz: ruda płatnika bez zmian (brak pozycji)
+  OK  wasal AI→gracz: ruda_cyny płatnika bez zmian (brak pozycji)
+  OK  wasal AI→gracz: ruda_zelaza płatnika bez zmian (brak pozycji)
+  OK  wasal AI→gracz: odbiorca dostał dokładnie technologie z nośnika
+  OK  wasal AI→gracz: płatnik nie utracił ani nie zyskał technologii
+  OK  wasal AI→gracz: strona koszyka = responder (płatnik gracz)
+  OK  wasal AI→gracz: nośnik akceptacji = wiersz okna (te same pozycje i strona)
+  OK  C. zero pageerror / console.error
+NIE ZMIERZONO przelewu (znane luki, nie PASS): 2
+  - granice gracz→AI: płatnik AI (gracz silniejszy) — nośnik nie podłączony
+  - wasal gracz→AI: płatnik AI (gracz silniejszy) — nośnik nie podłączony
+
+149/149 passed
