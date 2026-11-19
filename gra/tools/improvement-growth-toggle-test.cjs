@@ -17,7 +17,9 @@
  *       właściciela: tylko jednostki w rekrutacji, nie pełna macierz): po jednej jednostce z Epoki 1/2/3
  *       z żywnością > 0: utrzymanie żywności (unitFoodPerTurn), skala utrzymania (unitUpkeepScaleByEpoch)
  *       i racje obywateli m(e) identyczne przy WŁ. i WYŁ.;
- *  (G7) mutanty kopii źródeł (esbuild plugin, NIE git checkout) -- każdy musi czerwienić test.
+ *  (G7) mutanty kopii źródeł (esbuild plugin, NIE git checkout) -- każdy musi czerwienić test;
+ *  (G8) okablowanie kreatora/startu/wczytania: piny linii źródłowych (migrateAdvanced, applyMenuParams,
+ *       restoreGameFromSave). Żywy dowód startu: tools/improvement-growth-live-test.cjs (Chromium).
  *
  *   node tools/improvement-growth-toggle-test.cjs   # exit 0 = wszystko zielone i mutanty wykryte
  */
@@ -172,6 +174,16 @@ function measure(mod) {
   check('G6 racje obywateli m(e) identyczne WŁ./WYŁ.', eq(uOff.racje, uOn.racje));
   check('G6 params: przychodyUlepszenStałeEpoka1 nietknięte (true)', params.przychodyUlepszenStałeEpoka1 === true);
   mod.setWzrostSurowcowZEpoka(undefined);
+
+  // G8 okablowanie (źródłowe piny): migrateAdvanced (kreator), applyMenuParams (start) i restoreGameFromSave
+  // (wczytanie) NIE są wykonywane przez ten test -- pinujemy ich dokładne linie; usunięcie = czerwono.
+  // Żywy start (applyMenuParams -> flaga -> plony) pokrywa tools/improvement-growth-live-test.cjs.
+  const NGF = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'ui', 'newGameFlow.ts'), 'utf8');
+  const MAIN = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
+  check('G8 migrateAdvanced: brak/zła wartość -> false (newGameFlow.ts)', NGF.includes('base.wzrostSurowcowZEpoka = raw.wzrostSurowcowZEpoka === true;'));
+  check('G8 applyMenuParams przekazuje pole do stanu (main.ts)', MAIN.includes('setWzrostSurowcowZEpoka(normalizeWzrostSurowcowZEpoka(params.advanced?.wzrostSurowcowZEpoka));'));
+  check('G8 restoreGameFromSave odtwarza pole z zapisu (main.ts)', MAIN.includes('?.advanced?.wzrostSurowcowZEpoka,'));
+  check('G8 restoreGameFromSave ustawia flagę (main.ts)', /setWzrostSurowcowZEpoka\(normalizeWzrostSurowcowZEpoka\(\s*\(saved\.meta\?\.newGameParams/.test(MAIN));
 
   // G7 mutanty
   const mutantSets = [
