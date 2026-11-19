@@ -1159,7 +1159,8 @@ export function unitFoodPerTurn(
   let base = p.zywnoscJednostkaRuch;
   if (unit.typeId && typeof foodTable[unit.typeId] === 'number') {
     base = foodTable[unit.typeId]!;
-    // R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: flaga ON = zywnosc wojska x3/epoke (surowe dane z buildUnitFoodTable).
+    // R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1 / UNIT-UPKEEP-ERA-SCALE-Q1: flaga ON = zywnosc wojska x1/x2/x4 wg epoki jednostki
+    // (surowe dane z buildUnitFoodTable; flaga czytana przy kazdym wywolaniu).
     const raw = UNIT_FOOD_RAW_BY_TABLE.get(foodTable)?.[unit.typeId];
     if (raw) {
       const rebalanced = rebalancedUnitFoodBase(raw.direct, raw.epoch);
@@ -1184,7 +1185,9 @@ export function unitFoodPerTurn(
 /**
  * R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: wartość „Żywność/turę" do KART jednostek (UI).
  * Flaga OFF -> surowa wartość z units.json (bez zmian, jak dotad). Flaga ON -> wartość faktyczna
- * dla własnego terytorium: baza po rebalansie epoki (x3/epokę) × R_STAWKI (×4), zgodnie z unitFoodPerTurn.
+ * dla własnego terytorium: baza po skali epoki jednostki (unitUpkeepScaleByEpoch: x1/x2/x4 przy ON,
+ * legacy epochCostMultiplier przy OFF) × R_STAWKI (×4), zgodnie z buildUnitFoodTable / unitFoodPerTurn.
+ * Jedno źródło liczby dla karty i silnika przy obu stanach flagi (bez rozjazdu karta-silnik).
  */
 export function unitFoodCardValue(unit: {
   readonly 'żywność/turę'?: unknown;
@@ -1193,9 +1196,9 @@ export function unitFoodCardValue(unit: {
   const direct = unit['żywność/turę'];
   if (typeof direct !== 'number' || !Number.isFinite(direct)) return direct;
   const epoch = typeof unit.Epoka === 'number' || typeof unit.Epoka === 'string' ? unit.Epoka : undefined;
-  const rebalanced = rebalancedUnitFoodBase(direct, epoch);
-  if (rebalanced === null) return direct;
-  return rebalanced * R_STAWKI_FALA1_FALA2_MULT;
+  const base = unitUpkeepScaleByEpoch(direct, epoch);
+  if (base <= 0) return 0;
+  return base * R_STAWKI_FALA1_FALA2_MULT;
 }
 
 /**

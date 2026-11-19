@@ -7,8 +7,8 @@
  *  (E1) niezalezne od domyslnej flagi: hak ON/OFF jawny; hak setEraRebalanceEnabledForTest(null) wraca do wartosci z danych (odczytanej z pliku, nie zakodowanej);
  *  (E2) flaga OFF = wartosci jak dotad: Tartak 50/75/113, farma zywnosc 3/4/5, zywnosc jednostki 4/8/16
  *       (units Epoka 1/2/3, baza 1, x4 R_STAWKI), mnoznik racji m = 1/1,5/2;
- *  (E3) flaga ON = Tartak 50/50/50, farma 3/3/3, zywnosc jednostki 4/12/36, m = 1/2/4;
- *  (E4) ON w epokach 4-5: przychody ulepszen stale; zywnosc 4*3^(e-1) (108/324 dla epok 4/5);
+ *  (E3) flaga ON = Tartak 50/50/50, farma 3/3/3, zywnosc jednostki 4/8/16 (x1/x2/x4, UNIT-UPKEEP-ERA-SCALE-Q1), m = 1/2/4;
+ *  (E4) ON w epokach 4-5: przychody ulepszen stale; zywnosc jednostek = Zelazo x4 (16/16 dla epok 4/5);
  *       racje m(e) = 2^(e-1) (8/16);
  *  (E5) konwersja racji i zywnosci tylko przy ON: brak NaN, era < 1 / null -> 1;
  *  (E7) konwertery/utrzymanie surowcow poza rebalansem (ON == OFF); (E8) karta jednostki faktyczna przy ON;
@@ -159,7 +159,8 @@ check('E7 OFF utrzymanie surowcow obywateli 1/1,5/2 (e1-e3)', eq(off.upk.slice(0
 check('E7 ON konwertery == OFF (nie x2^(e-1))', eq(on.conv, off.conv), { on: on.conv, off: off.conv });
 check('E7 ON utrzymanie surowcow == OFF (tylko racje zywnosci skalowane)', eq(on.upk, off.upk), { on: on.upk, off: off.upk });
 // ---- (E8) karty jednostek: wartosc faktyczna przy ON, surowa przy OFF ----
-check('E8 OFF karta zywnosci = surowa 1 (wszystkie epoki)', eq(off.card, [1, 1, 1]), off.card);
+check('E8 OFF karta zywnosci = silnik (x1/x2/x4 x R_STAWKI 4, bez rozjazdu karta-silnik)', eq(off.card, [4, 8, 16]), off.card);
+check('E8 OFF karta == zywnosc silnika (OFF)', eq(off.card, off.zywnosc.slice(0, 3)), { card: off.card, silnik: off.zywnosc });
 check('E8 ON karta zywnosci = faktyczna 4/8/16 (x1/x2/x4 x R_STAWKI 4)', eq(on.card, [4, 8, 16]), on.card);
 check('E8 karta: brak wartosci -> bez zmian (undefined)', base.mod.unitFoodCardValue({}) === undefined);
 // ---- (E9) epoki z units.json (nazwy) -> porzadkowy 1/2/3 ----
@@ -172,13 +173,13 @@ const MUTANTS = [
   { id: 'M3 bramka przychodow ulepszen usunieta', mutants: [{ file: 'terrain', from: '  if (isEraRebalanceImprovementFlat()) return base;', to: '' }] },
   { id: 'M4 produkcja surowca bramka usunieta', mutants: [{ file: 'terrain', from: '  if (isEraRebalanceImprovementFlat()) return baseAmount;', to: '' }] },
   { id: 'M5 mnoznik utrzymania jednostek Zelazo x2 zamiast x4', mutants: [{ file: 'rebalance', from: 'const fromData = ord >= 3 ? m?.zelazo : ord === 2 ? m?.braz : m?.kamien;', to: 'const fromData = ord >= 3 ? m?.braz : ord === 2 ? m?.braz : m?.kamien;' }] },
-  // M6 (bramka zywnosci jednostek w unitFoodPerTurn) usunieta w R-WEB-ECONOMY-UNIT-UPKEEP-ERA-SCALE-Q1:
-  // tabela zywnosci jest budowana tym samym helperem unitUpkeepScaleByEpoch, wiec bramka jest równoważna
-  // (mutant bez efektu). Skalowanie pokrywa tools/unit-upkeep-era-scale-test.cjs (M1-M3).
+  // M6: bramka rebalancedUnitFoodBase w unitFoodPerTurn (ON-path) psuje wynik. Przy domyslnych danych usuniecie bramki
+  // nie zmienia liczb (tabela i bramka licza to samo), wiec mutant jest zamieniony na wykrywalny: wynik x2.
+  { id: 'M6 bramka zywnosci jednostek psuje wynik (x2)', mutants: [{ file: 'upkeep', from: '      if (rebalanced !== null) base = rebalanced;', to: '      if (rebalanced !== null) base = rebalanced * 2;' }] },
   { id: 'M7 bramka racji usunieta w citizen-consumption', mutants: [{ file: 'citizen', from: '  if (rebalanced !== null) return rebalanced;', to: '' }] },
   { id: 'M8 konwertery odlewni na wzorze 2^(e-1)', mutants: [{ file: 'converters', from: 'return baseThroughput * legacyCitizenConsumptionEraMultiplier(era);', to: 'return baseThroughput * Math.pow(2, Math.floor(era) - 1);' }] },
   { id: 'M9 utrzymanie surowcow obywateli na wzorze 2^(e-1)', mutants: [{ file: 'citizenUpkeep', from: 'return CITIZEN_UPKEEP_RATE_PER_CITIZEN * legacyCitizenConsumptionEraMultiplier(era);', to: 'return CITIZEN_UPKEEP_RATE_PER_CITIZEN * Math.pow(2, Math.floor(era) - 1);' }] },
-  { id: 'M10 karta jednostki bez wartosci faktycznej (surowa przy ON)', mutants: [{ file: 'upkeep', from: '  if (rebalanced === null) return direct;', to: '  if (rebalanced === null || true) return direct;' }] },
+  { id: 'M10 karta jednostki bez wartosci faktycznej (surowa zamiast skali epoki)', mutants: [{ file: 'upkeep', from: '  const base = unitUpkeepScaleByEpoch(direct, epoch);', to: '  const base = direct;' }] },
 ];
 console.log('\n== mutanty (E6) ==');
 for (const mt of MUTANTS) {

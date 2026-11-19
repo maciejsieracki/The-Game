@@ -116,6 +116,7 @@ function measure(M) {
   check('ON zywnosc = 4/8/16 (nie x3/epoke: 4/12/36)', eq(on.zywnosc, [4, 8, 16]), on.zywnosc);
   check('ON karta zywnosci = wartosc silnika 4/8/16', eq(on.card, [4, 8, 16]), on.card);
   check('ON karta == silnik (zywnosc)', eq(on.card, on.zywnosc), { card: on.card, silnik: on.zywnosc });
+  check('OFF karta zywnosci == silnik 4/8/16 (bez rozjazdu karta-silnik przy rollbacku)', eq(off.card, off.zywnosc), { card: off.card, silnik: off.zywnosc });
   check('ON == OFF dla utrzymania jednostek', eq(on.pieniadz, off.pieniadz) && eq(on.surowiec, off.surowiec) && eq(on.zywnosc, off.zywnosc));
 
   // Brzegi: zero i zle dane.
