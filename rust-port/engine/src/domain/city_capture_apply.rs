@@ -31,6 +31,9 @@
 //!   flagę, sukcesja stolicy ofiary ustawia flagę nowej stolicy.
 //! * **D-ZMA-7** wojna zwykła AI↔AI (`maybeResolveRegularWarOnCityCapture` z auto-pokojem) jest nieosiągalna z komendy
 //!   (szturm wydaje tylko gracz, Q3 pinu: gracz = no-op); para AI↔AI zwraca jawny błąd (bitwa `Aborted`, stan bez zmian).
+//! * **D-ZMA-8** eliminacja: `eliminacja::eliminate_owner` + adapter usuwający `diplomacyPairMeta` ofiary w formacie klucza
+//!   stanu `min-max` (pin `eliminateOwner` `main.ts:35405-35409`); `clear_eliminated_owner_war_state` szuka klucza `a_b`
+//!   (rozbieżność formatu poza allowlistą — dług ZMA-DL-3).
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -49,7 +52,7 @@ use crate::domain::siege_battle_apply::{
     CityCaptureRequested, SiegeBattleError,
 };
 use crate::domain::siege_capital_plunder::{
-    is_barbarian, run_capital_capture_plunder, OwnerResourceAccess, PlunderCity, PlunderInput,
+    is_barbarian, js_max0, run_capital_capture_plunder, OwnerResourceAccess, PlunderCity, PlunderInput,
     PlunderLabels, PlunderState,
 };
 use crate::domain::siege_transfer_effects::{
@@ -100,6 +103,17 @@ pub const PIN_STEPS: &[(&str, &str)] = &[
     ("buildCityCaptureReportRows", "NOT_APPLIED: UI"),
     ("recordCityCaptureEvent", "NOT_APPLIED: CaptureEventStore brak w stanie"),
     ("validateActiveSieges", "siege_battle_apply::validate_storm_siege"),
+    ("isBarbarian", "siege_capital_plunder::is_barbarian"),
+    ("filterQueue", "NOT_APPLIED: cityProd brak w stanie"),
+    ("isCapitalOnlyBuildingCapture", "NOT_APPLIED: cityProd brak w stanie"),
+    ("capitalCityIdForOwner", "NOT_APPLIED: cityProd brak w stanie (filtr budynkow stolicy)"),
+    ("ownerPracaPool", "NOT_APPLIED: zwrot Pracy z kolejki (cityProd brak w stanie)"),
+    ("setOwnerPracaPool", "NOT_APPLIED: zwrot Pracy z kolejki (cityProd brak w stanie)"),
+    ("ownerReligionForOwnerId", "NOT_APPLIED: brak portu onCityCapturedReligion (dlug ZMA-DL-1)"),
+    ("markCityStateDirty", "NOT_APPLIED: UI"),
+    ("mocLabel", "NOT_APPLIED: UI"),
+    ("civLabelForOwner", "NOT_APPLIED: UI"),
+    ("capturePopLossReportRow", "NOT_APPLIED: UI"),
 ];
 
 /// Kroki pinu pomijane przy każdym zdobyciu (brak pola w stanie, D-ZMA-4).
@@ -345,7 +359,7 @@ fn record_war_city_loss_for_pair(
     let od = match meta.get("wojnaStartTura").and_then(Value::as_f64) {
         Some(v) => v,
         None => {
-            meta.insert("wojnaStartTura".into(), json!(turn));
+            meta.insert("wojnaStartTura".into(), num(turn));
             turn
         }
     };
@@ -366,12 +380,12 @@ fn record_war_city_loss_for_pair(
         })
     });
     let rec = record_war_city_loss(prev.as_ref(), od, &old_owner.to_string(), turn);
-    let utraty: Map<String, Value> = rec.utraty.iter().map(|(k, v)| (k.clone(), json!(v))).collect();
+    let utraty: Map<String, Value> = rec.utraty.iter().map(|(k, v)| (k.clone(), num(*v))).collect();
     let mut rec_obj = Map::new();
-    rec_obj.insert("od".into(), json!(rec.od));
+    rec_obj.insert("od".into(), num(rec.od));
     rec_obj.insert("utraty".into(), Value::Object(utraty));
     if let Some(t) = rec.ostatnia_tura {
-        rec_obj.insert("ostatniaTura".into(), json!(t));
+        rec_obj.insert("ostatniaTura".into(), num(t));
     }
     meta.insert("wojnaMiasta".into(), Value::Object(rec_obj));
     let row = Value::Array(vec![Value::String(key), Value::Object(meta)]);
@@ -386,7 +400,29 @@ fn record_war_city_loss_for_pair(
     Ok(())
 }
 
-/// `OwnerResourceAccess` nad stanem (id webu, D-ZMA-5). Skarbiec gracza = `economy.treasury`, AI =
+/// Liczba JSON jak `JSON.stringify` (całkowite bez części ułamkowej), spójnie z `war_turn_state`.
+fn num(v: f64) -> Value {
+    if v.is_finite() && v.fract() == 0.0 && v.abs() < 9.0e15 {
+        #[allow(clippy::cast_possible_truncation)]
+        Value::from(v as i64)
+    } else {
+        json!(v)
+    }
+}
+
+/// D-ZMA-8: usuwa wpisy `diplomacyPairMeta` (klucz stanu `min-max`) zawierające `owner`.
+fn remove_pair_meta_of_owner(state: &mut PlayableState, owner: i64) {
+    let Some(Value::Array(rows)) = state.war.opaque.get_mut(KEY_PAIR_META) else {
+        return;
+    };
+    rows.retain(|r| {
+        let key = r.get(0).and_then(Value::as_str).unwrap_or("");
+        !key.split('-').any(|p| p.parse::<i64>().ok() == Some(owner))
+    });
+}
+
+/// `OwnerResourceAccess` nad stanem (id webu, D-ZMA-5); zapisy `Math.max(0, v)` jak `setOwnerTreasury` /
+/// `setOwnerPracaPool` (`main.ts:34867-34871`, `:34879-34881`). Skarbiec gracza = `economy.treasury`, AI =
 /// `ai_treasury_by_owner` (brak wpisu = 0, zapis tworzy wpis); pula Pracy = `praca_pool_by_owner`; technologie =
 /// `stores.researched_techs_by_owner`. `naukaPool` i Spichlerz nie mają pola w stanie (odczyt 0, zapis pominięty,
 /// wpis w `not_applied`).
@@ -415,12 +451,12 @@ impl OwnerResourceAccess for StateAccess<'_> {
     }
     fn set_treasury(&mut self, owner: i64, value: f64) {
         if state_owner(owner) == HUMAN_OWNER_ID {
-            self.state.economy.treasury = value;
+            self.state.economy.treasury = js_max0(value);
         } else {
             self.state
                 .economy
                 .ai_treasury_by_owner
-                .insert(Self::key(owner), value);
+                .insert(Self::key(owner), js_max0(value));
         }
     }
     fn get_praca_pool(&self, owner: i64) -> f64 {
@@ -435,7 +471,7 @@ impl OwnerResourceAccess for StateAccess<'_> {
         self.state
             .economy
             .praca_pool_by_owner
-            .insert(Self::key(owner), value);
+            .insert(Self::key(owner), js_max0(value));
     }
     fn get_nauka_pool(&self, _owner: i64) -> f64 {
         0.0
@@ -611,6 +647,10 @@ fn capital_plunder(
         }
         if old_owner != HUMAN_OWNER_ID {
             eliminate_owner(state, &mut Vec::new(), old_owner);
+            // Adapter (D-ZMA-8): pin `eliminateOwner` kasuje `diplomacyPairMeta` par z właścicielem
+            // (`main.ts:35405-35409`, `diploPairKeyHasOwner`); `WarTurnState::clear_eliminated_owner_war_state` dzieli
+            // klucz po `_`, a stan zapisuje klucze `min-max` (`war_turn_declare::pair_key`) — wpisy usuwa tu adapter.
+            remove_pair_meta_of_owner(state, old_owner);
             out.eliminated_owner_id = u64::try_from(old_owner).ok();
         }
     } else {
