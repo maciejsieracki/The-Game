@@ -53,10 +53,18 @@ function median(xs) {
 }
 const f2 = x => (x === null || x === undefined ? NZ : (Math.round(x * 100) / 100).toFixed(2));
 
-/** Typ pary wg pola `gracz` z wiersza (hak zwraca ME()); bez tego pola typ = 'nieznany' (nie zgadujemy owner 0). */
+/** Typ pary wg pola `gracz` z wiersza (hak zwraca ME()); bez tego pola typ = 'nieznany' (nie zgadujemy owner 0).
+ *  R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1: przy autopilocie gracza (playerAi=1) para z graczem nadal = 'ai-gracz'
+ *  (kolumna AI↔gracz = para z graczem-autopilotem); para bez gracza = 'ai-ai'; panstwa-miasta wykluczone w metrykach. */
 function pairType(p, gracz) {
   if (typeof gracz !== 'number') return 'nieznany';
   return (p.a === gracz || p.b === gracz) ? 'ai-gracz' : 'ai-ai';
+}
+
+/** Adnotacja „gracz = autopilot” do podsumowania, gdy choc jeden wiersz pochodzi z biegu z --player-ai 1. */
+function autopilotNote(runs) {
+  const ap = runs.some(run => run.rows.some(r => r.playerAi === 1));
+  return ap ? 'gracz = autopilot (--player-ai 1): kolumna AI↔gracz liczy pary z graczem sterowanym przez AI.' : null;
 }
 
 /** Napiecie graniczne (A1) jak gra: kara bazowa <0 + floor(tura/okres)*przyrost, ucieta do granicaMax. */
@@ -187,6 +195,8 @@ function main() {
   const gOff = group(off);
   const gOn = group(on);
   console.log('Pomiar twardszej dyplomacji: OFF (' + off.length + ' ziaren) vs ON (' + on.length + ' ziaren). Tury ' + TURY.join('/') + '.');
+  const note = autopilotNote([...off, ...on]);
+  if (note) console.log(note);
   console.log(tabela('OFF (flaga wyłączona)', gOff));
   console.log('');
   console.log(tabela('ON (flaga włączona)', gOn));
@@ -205,6 +215,9 @@ function selfTest() {
   ok('pairType: gracz = a -> ai-gracz', pairType({ a: 0, b: 2 }, 0) === 'ai-gracz');
   ok('pairType: brak gracz -> nieznany (nie zgadujemy)', pairType({ a: 0, b: 2 }, undefined) === 'nieznany');
   ok('pairType: dwie AI -> ai-ai', pairType({ a: 1, b: 2 }, 0) === 'ai-ai');
+  ok('pairType: autopilot gracza (0) nadal ai-gracz dla pary z 0', pairType({ a: 0, b: 3 }, 0) === 'ai-gracz');
+  ok('autopilotNote: wiersz playerAi=1 -> adnotacja „gracz = autopilot”', (autopilotNote([{ rows: [{ playerAi: 1 }] }]) || '').startsWith('gracz = autopilot'));
+  ok('autopilotNote: brak playerAi -> brak adnotacji', autopilotNote([{ rows: [{ turn: 1 }] }]) === null);
   const seria = [
     { turn: 1, diplo: { pairs: [{ a: 1, b: 2, sasiedztwoBezPokoju: true }] } },
     { turn: 2, diplo: { pairs: [{ a: 1, b: 2, sasiedztwoBezPokoju: true }] } },
@@ -218,7 +231,7 @@ function selfTest() {
   process.exit(bad ? 1 : 0);
 }
 
-module.exports = { napiecie, tenureSeries, pairType, median, mean };
+module.exports = { napiecie, tenureSeries, pairType, autopilotNote, median, mean };
 
 if (require.main === module) {
   if (process.argv.includes('--selftest')) selfTest(); else main();
