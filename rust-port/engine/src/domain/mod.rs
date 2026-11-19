@@ -122,6 +122,7 @@ pub mod siege_tactics_activate;
 pub mod siege_tactics_advance;
 pub mod siege_tactics_approach;
 pub mod siege_tactics_atk;
+pub mod siege_tactics_atk_b;
 pub mod siege_tactics_autobatch;
 pub mod siege_tactics_autophase;
 pub mod siege_tactics_blow;

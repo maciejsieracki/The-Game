@@ -317,13 +317,28 @@ fn doktryna_i_mur_sa_poza_zakresem_i_zapisane() {
         )]
     );
 
+    // K5LOOP-SIEGE-ATK-B (T2b, D-INT-2): atakujący przy murze nie ma już tagu `oblezenie` — cios w sąsiada stojącego
+    // przed murem (`_targetInRange` + `_meleeBlockedByWall` = `false`, obrońca nie na koronie) jest wykonywany tak samo
+    // jak bez muru. Dawna asercja („HP 50, tag `oblezenie`”) zastąpiona porównaniem z bliźniaczym scenariuszem bez muru.
+    let mut twin = body_with(act(0, 0, true), Some(melee_blow()));
+    let mut st_twin = state(cu(100.0, 100.0), cu(50.0, 100.0));
+    let dur_twin = twin.start(atk0(), &st_twin);
+    twin.complete(atk0(), &mut st_twin);
     let mut body = body_with(act(0, 0, true), Some(melee_blow()));
     let mut st = state(cu(100.0, 100.0), cu(50.0, 100.0));
     st.siege_wall_col = 5;
-    assert_eq!(body.start(atk0(), &st), 0.0);
+    assert_eq!(body.start(atk0(), &st), dur_twin);
+    assert_eq!(dur_twin, 800.0, "cios: czas ciala `body_ms`");
     body.complete(atk0(), &mut st);
-    assert_eq!(st.def[0].c.hp, 50.0);
-    assert_eq!(body.unported, vec![(atk0(), "oblezenie")]);
+    assert_eq!(body.unported, vec![]);
+    assert_eq!(st.def[0].c, st_twin.def[0].c);
+    assert_eq!(st.atk[0].c, st_twin.atk[0].c);
+    assert_eq!(
+        body.blows.len(),
+        1,
+        "cios wykonany (jeden rzut, jak bez muru)"
+    );
+    assert_eq!(body.blows, twin.blows);
 }
 
 // --- K5LOOP-KONTRATAK, obrona r1 (zarzuty 1 i 3 z 02-evaluator.md) ---

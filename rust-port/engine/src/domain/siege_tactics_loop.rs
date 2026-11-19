@@ -33,6 +33,7 @@ use crate::domain::player_order_move_gate::{
     compact_attack_allows_step, should_avoid_auto_backtrack, BacktrackUnit, BlockadeSettings,
     CompactStepUnit, GroupDoctrine as GateDoctrine, GroupMeta, LineMember,
 };
+use crate::domain::siege_city_fortification::{melee_blocked_by_wall, MeleeWallContext};
 use crate::domain::siege_no_breach::RoundCapVerdict;
 use crate::domain::siege_tactics_actions::{
     actions_to_dto, arc_tag, check_end_logs, clash_line, eliminated_log, ff_round_cap_logs,
@@ -46,12 +47,18 @@ use crate::domain::siege_tactics_advance::{
     advance_after_move, advance_step_decide, AdvanceDecision, AdvanceUnit, AdvanceWorld, AfterStep,
 };
 use crate::domain::siege_tactics_approach::{
-    siege_approach_restricted, ApproachUnit, ApproachWallState, BF_COLS, BF_ROWS,
+    siege_move_refused, siege_shooter_threats, ApproachUnit, ApproachWallState, ShooterDefender,
+    SiegeTowerRef, BF_COLS, BF_ROWS,
 };
 use crate::domain::siege_tactics_atk::{
     advance_toward_pick, attacker_wall_entry_is_breach, goal_holds, infantry_to_tower_plan,
     ram_tower_plan, tower_climb_allowed, AtkGoal, AtkSiegeScene, AtkUnitFlags, InfantryPlan,
     RamTowerPlan, WYLOM_LOG,
+};
+use crate::domain::siege_tactics_atk_b::{
+    siege_structure_damage, tile_index_in_bounds, tower_destroyed_log, wall_retreat_cell,
+    wall_tile_damage, SiegeStructStats, MORALE_GATE_BREACH, MORALE_WALL_BREACH, RAM_ANIM_MS,
+    WALL_HIT_FLY_MS,
 };
 use crate::domain::siege_tactics_autobatch::{
     cell_key, AutoBatchEnv, BatchBoard, BatchState, CellKey,
@@ -151,6 +158,27 @@ pub trait LoopBody {
     fn unit_name(&self, unit: UnitRef) -> String {
         unit_tag(unit)
     }
+    /// K5LOOP-SIEGE-ATK-B (T2b): odroczone wywołania ciała zaplanowane w ostatnim wywołaniu (`start`, `complete`,
+    /// [`LoopBody::fire_timer`]) jako `(ms, id)`: web `this._schedule(ms, cb)` z wnętrza ciała, które NIE kończy aktywacji
+    /// (np. trafienie kamienia katapulty w mur, `_attackWallTile` `:7555`). Sterownik wstawia je do zegara PRZED
+    /// zakończeniem aktywacji (kolejność `id` jak w pinie: `_schedule` przed `done()`) i woła
+    /// [`LoopBody::fire_timer`] w chwili odpalenia. Domyślnie brak.
+    fn take_timers(&mut self) -> Vec<(f64, u64)> {
+        Vec::new()
+    }
+    /// K5LOOP-SIEGE-ATK-B (T2b): odpalenie odroczonego wywołania `id` (patrz [`LoopBody::take_timers`]) ze skutkami na
+    /// `st`. Domyślnie bez efektu.
+    fn fire_timer(&mut self, _id: u64, _st: &mut TurnSeqState) {}
+    /// K5LOOP-SIEGE-ATK-B (T2b, dług T2a): web `this.wallEverBreached` po stronie ciała (wyłom przez wieżę
+    /// `_trySiegeTowerClimb` `:8072-8073`, kafla muru `:7647`, bramy `:7759`). Sterownik synchronizuje
+    /// [`SiegeEnv::wall_ever_breached`] po każdym wywołaniu ciała. Domyślnie `false`.
+    fn wall_ever_breached(&self) -> bool {
+        false
+    }
+    /// K5LOOP-SIEGE-ATK-B (T2b): `_destroyTowerAtRow(row)` wołane przez sterownik (`_fireSiegeTowers`, wieża bez kafla
+    /// muru, `:4216`), żeby stan wież ciała (zagrożenia `_siegeShooterThreats`, `:7932-7935`) był zgodny. Domyślnie bez
+    /// efektu.
+    fn on_tower_destroyed(&mut self, _row: i64) {}
 }
 
 /// Stałe morale z pinu (`battleScene.ts:1129, 1141, 1144-1145`).
@@ -173,6 +201,8 @@ pub enum LoopTimer {
     TowerShot(usize),
     /// Trafienie pocisku wieży w atakującego o indeksie `target` w `st.atk` (web callback `_schedule(RANGED_FLY_MS)`).
     TowerHit(usize),
+    /// K5LOOP-SIEGE-ATK-B (T2b): odroczone wywołanie ciała `id` ([`LoopBody::take_timers`]).
+    BodyTimer(u64),
 }
 
 /// Web `stagger += 180` (`battleScene.ts:4216`): odstęp między wystrzałami kolejnych wież.
@@ -619,9 +649,35 @@ impl<B: LoopBody> SiegeLoop<B> {
     }
 
     /// Odbiór akcji ciała po jego wywołaniu (zachowuje kolejność z akcjami pętli).
+    ///
+    /// K5LOOP-SIEGE-ATK-B (T2b, dług T2a): synchronizacja stanu muru sterownika ze stanem ciała. Wyburzenie kafla
+    /// ([`BattleAction::WallBreach`], `_breachWallTile` `:7646-7648`) usuwa wiersz z [`SiegeEnv::wall_tile_rows`], ustawia
+    /// [`SiegeEnv::wall_ever_breached`] i burzy wieżę ([`Self::breach_wall_row`], ta sama reguła „pierwsza niezburzona
+    /// wieża wiersza” co w ciele); wyłom bramy i wejście na mur od wieży przenosi [`LoopBody::wall_ever_breached`].
     fn drain_body(&mut self) {
         let a = self.env.body.take_actions();
+        for t in &a {
+            if let BattleAction::WallBreach { row } = t.action {
+                self.breach_wall_row(row);
+            }
+        }
         self.actions.extend(a);
+        if self.env.body.wall_ever_breached() {
+            self.env.wall_ever_breached = true;
+        }
+    }
+
+    /// K5LOOP-SIEGE-ATK-B (T2b): wstawia do zegara odroczone wywołania ciała ([`LoopBody::take_timers`]) w kolejności
+    /// ich zaplanowania. Planowanie AUTO (`_autoBatchPlanning`) wykonuje je od razu (`ScheduleOutcome::RunNow`, jak
+    /// `_schedule` `:9599-9603`); po `finished` są pomijane (`:9604`).
+    fn schedule_body_timers(&mut self, clock: &mut VirtualClock<LoopTimer>) {
+        for (ms, id) in self.env.body.take_timers() {
+            let planning = self.st.auto_batch_planning;
+            match clock.schedule(ms, LoopTimer::BodyTimer(id), planning) {
+                ScheduleOutcome::Queued | ScheduleOutcome::Dropped => {}
+                ScheduleOutcome::RunNow(t) => self.fire(clock, t),
+            }
+        }
     }
 
     /// P4-1I2: ustawia (albo zdejmuje, `None`) obserwatora wołanego po każdym odpaleniu klocka zegara.
@@ -689,8 +745,9 @@ impl<B: LoopBody> SiegeLoop<B> {
                 continue;
             }
             let row = self.env.tower_rows[i];
-            if !self.env.wall_tile_rows.contains(&row) {
-                self.destroy_tower_at_row(row);
+            if !self.env.wall_tile_rows.contains(&row) && self.destroy_tower_at_row(row) {
+                // K5LOOP-SIEGE-ATK-B: ten sam stan wież w ciele (zagrożenia `_siegeShooterThreats`).
+                self.env.body.on_tower_destroyed(row);
             }
         }
     }
@@ -837,6 +894,8 @@ impl<B: LoopBody> SiegeLoop<B> {
                     self.env.body.set_now(clock.v_now);
                     let dur = self.env.body.start(u, &self.st);
                     self.drain_body();
+                    // K5LOOP-SIEGE-ATK-B: `_schedule` z wnętrza ciała przed `done()` (np. `_attackWallTile` `:7555`).
+                    self.schedule_body_timers(clock);
                     let _ = clock.schedule(dur, LoopTimer::BodyDone(u), false);
                 }
                 SeqEvent::Schedule { ms, step, planning } => {
@@ -862,7 +921,14 @@ impl<B: LoopBody> SiegeLoop<B> {
                 self.env.body.set_now(clock.v_now);
                 self.env.body.complete(u, &mut self.st);
                 self.drain_body();
+                self.schedule_body_timers(clock);
                 activation_done(&mut self.st, &mut self.env, u, &mut out);
+            }
+            LoopTimer::BodyTimer(id) => {
+                self.env.body.set_now(clock.v_now);
+                self.env.body.fire_timer(id, &mut self.st);
+                self.drain_body();
+                self.schedule_body_timers(clock);
             }
             LoopTimer::TowerShot(i) => {
                 self.tower_shoot(clock, i);
@@ -1070,6 +1136,10 @@ struct ProdPending {
     /// K5LOOP-CLOSE r4: ucieczka `_fleeStep` wykonana w `start` na kopii stanu ([`ProdBody::flee_after`]); `complete`
     /// przepisuje tę kopię do `TurnSeqState` (efekty `_startRout`, `_removeUnitFromScene`, `_shakeAlliesOnLoss`).
     flee: bool,
+    /// K5LOOP-SIEGE-ATK-B (T2b): wyłom bramy w `_attackGate` tej aktywacji (`_breachGate` `:7803-7810`): pętla morale
+    /// obrońców (`-MORALE_GATE_BREACH`, `_checkRout`) wykonywana w `complete` na stanie sterownika (patrz
+    /// [`ProdBody::gate_breach_morale`]).
+    gate_breach: bool,
 }
 
 /// K5LOOP-CLOSE r3: strzał jednostki wykonany w `complete` (trafienie `_singleBlow(attacker, defender, true)`).
@@ -1144,9 +1214,10 @@ fn prod_tag(ev: ActivateEvent) -> &'static str {
     match ev {
         ActivateEvent::Flee => "ucieczka-routed",
         // K5LOOP-SIEGE-ATK-A (T2a): `_trySiegeTowerClimb`, `_siegeInfantryToTowerStep`, `_siegeRamTowerStep` i
-        // `_advanceToward` (dawne `wieza-wejscie`, `piechota-do-wiezy`, `taran-wieza`, `marsz`) wykonuje ciało. Ostrzał
-        // kafla muru katapultą (`_attackWallTile`, `:7540`) to T2b: jawny tag.
-        ActivateEvent::AttackWallTile { .. } => "atak-muru",
+        // `_advanceToward` (dawne `wieza-wejscie`, `piechota-do-wiezy`, `taran-wieza`, `marsz`) wykonuje ciało.
+        // K5LOOP-SIEGE-ATK-B (T2b): ostrzał kafla muru (`_attackWallTile`, `:7540`) wykonuje ciało dla atakującego przy
+        // murze (dawny tag `atak-muru`); poza tą gałęzią (nieosiągalne w maszynie) jawny tag.
+        ActivateEvent::AttackWallTile { .. } => "atak-muru-poza-oblezeniem",
         // Obrona r1 (zarzut 3): `_advanceToward` spoza atakującego przy murze (nieosiągalne w maszynie) = jawny tag.
         ActivateEvent::AdvanceToward { .. } => "marsz-poza-oblezeniem",
         ActivateEvent::RangedAction => "strzelec",
@@ -1259,6 +1330,41 @@ pub struct ProdBody<R: RollSource> {
     /// liczy go per jednostka; `ActivateScene::siege_machine_range` jest jedną wartością sceny. `Some(x)` = wartość tej
     /// jednostki (adapter), `None` = wartość sceny (zachowanie sprzed T2a).
     pub siege_machine_range: [Vec<Option<f64>>; 2],
+    /// K5LOOP-SIEGE-ATK-B (T2b): web `gateHp` (`battleScene.ts:2454`, inicjalnie `0`; `_carveWallTiles` ustawia
+    /// [`crate::domain::siege_tactics_atk_b::GATE_MAX_HP`], `:4047`). Zmienia `_attackGate` (`:7327`). Wejście adaptera.
+    pub gate_hp: f64,
+    /// K5LOOP-SIEGE-ATK-B (T2b): web `siegeTowers` (`:2443`): wiersz i `destroyed` wieżyczek muru obrońcy, w kolejności
+    /// pinu. Czytane przez `_siegeShooterThreats` (`:7932-7935`) w bramce `_doMove`; `_destroyTowerAtRow` (`:4194-4200`)
+    /// przy wyburzeniu kafla. Wejście adaptera (te same wiersze co [`SiegeEnv::tower_rows`]); domyślnie puste.
+    pub siege_towers: Vec<SiegeTowerRef>,
+    /// K5LOOP-SIEGE-ATK-B (T2b): web `towerRange` (`:2446`, inicjalnie `DEFAULT_TOWER_MIN_RANGE = 2`,
+    /// `city-towers.ts:30`; `towerRangeFor` `:4168`). Zasięg zagrożenia wieżyczki w `_siegeShooterThreats`.
+    pub tower_range: f64,
+    /// K5LOOP-SIEGE-ATK-B (T2b): statystyki `ru.bu.stats` czytane przez `_siegeStructureDamage` (`:7505`) i
+    /// `_attackWallTile` (`:7542-7545`), indeks [strona][jednostka]. Wejście adaptera (T6); `None` = brak wiersza: jawny
+    /// tag `atak-bramy-bez-szablonu` / `atak-muru-bez-szablonu` zamiast zgadywania obrażeń.
+    pub siege_stats: [Vec<Option<SiegeStructStats>>; 2],
+    /// K5LOOP-SIEGE-ATK-B (T2b): web `ru.rangeBase` (`:1991`, zasięg bez modyfikatorów; `0` = jednostka wręcz), czytane
+    /// przez `_siegeShooterThreats` (`d.rangeBase <= 0`, `:7928`). Domyślnie `activate.range` dla `can_shoot`, inaczej `0`
+    /// (adapter spawnu podaje `_attackRangeFor(bu)`, `:4549`, `:4707`).
+    pub range_base: [Vec<f64>; 2],
+    /// K5LOOP-SIEGE-ATK-B (T2b): web `lastAttackedWallRow` (`:2511`, inicjalnie `-1`; `_attackWallTile` `:7559`). Tylko
+    /// HUD (`_updateSiegeHud` `:7848`); trzymane dla ramki/renderera.
+    pub last_attacked_wall_row: i64,
+    /// K5LOOP-SIEGE-ATK-B: `this.siegeWallCol` bieżącej aktywacji (`max(scene.wall_col, st.siege_wall_col)`, ustawiane w
+    /// `start`), czytane przez bramkę `_doMove` w [`Self::move_step_core`] (bez dostępu do `TurnSeqState`).
+    seq_wall_col: i64,
+    /// K5LOOP-SIEGE-ATK-B: `ru.routed` jednostki wykonującej ruch w bieżącej aktywacji (bramka `_siegeApproachRestricted`,
+    /// `:7953`).
+    mover_routed: bool,
+    /// K5LOOP-SIEGE-ATK-B: odroczone wywołania (`ms`, `id`) z ostatniego wywołania ciała ([`LoopBody::take_timers`]).
+    timers: Vec<(f64, u64)>,
+    /// K5LOOP-SIEGE-ATK-B: trafienia kamieni katapult w locie: `id`, katapulta, wiersz kafla, obrażenia
+    /// (`_attackWallTile` `:7555`).
+    boulders: Vec<(u64, UnitRef, i64, f64)>,
+    next_timer: u64,
+    /// K5LOOP-SIEGE-ATK-B: wyłom bramy w `_attackGate` bieżącej aktywacji (morale obrońców w `complete`).
+    pending_gate_breach: bool,
     /// K5LOOP-KILL-RIPPLE (D-INT-2): poległe jednostki, dla których `_resolveBlowOutcome` wywołało ripple
     /// `_shakeAlliesOnLoss(defender)` (`battleScene.ts:9048`), w kolejności wywołań (obserwacja dla testów zgodności z
     /// pinem; ripple z `_fleeStep` nie jest tu zapisywany).
@@ -1411,6 +1517,17 @@ fn unit_move_cost(terrain: &dyn MoveTerrain, mounted: bool, col: f64, row: f64) 
 /// wejście sterownika (NIE_ZMIERZONO w tym klocku).
 pub const MOVE_STEP_MS: f64 = 240.0;
 
+/// K5LOOP-SIEGE-ATK-B (T2b): czas kroku `_doMove` wołanego przez ciało: `MOVE_STEP_MS`, a przy odmowie bramki muru
+/// (`ru.moveLeft = 0; done();` synchronicznie, `:8689-8692`) `0`. Ciało nie planuje AUTO-batch (`autobatch = None`),
+/// więc `outcome.done` jest prawdą wyłącznie dla odmowy ([`MoveOutcome`]: gałąź bezpośrednia ma `done = false`).
+fn step_ms(res: &MoveStepResult) -> f64 {
+    if res.outcome.done {
+        0.0
+    } else {
+        MOVE_STEP_MS
+    }
+}
+
 /// Web `RANGED_FLY_MS = 380` (`battleScene.ts:1012`): lot pocisku jednostki (`_doRangedAttack`, `_schedule(RANGED_FLY_MS)`
 /// `:9223`) od wystrzału do `_singleBlow(attacker, defender, true)`.
 pub const RANGED_FLY_MS: f64 = 380.0;
@@ -1548,6 +1665,9 @@ struct ProdAdvanceWorld<'a> {
     /// K5LOOP-CLOSE r4: `reach = canShoot(ru) ? ru.range : 1` (`_canAttackFrom` `:8437`, `_makeCanAttackFromTest`
     /// `:8455`), patrz [`ProdBody::reach_of`].
     reach: i64,
+    /// K5LOOP-SIEGE-ATK-B (T2b): `_meleeBlockedByWall(ru, e)` (`:8439`, `:8456`) dla każdego wroga (indeks listy strony
+    /// przeciwnej), [`ProdBody::melee_blocked_list`]. Bez muru same `false`.
+    blocked: Vec<bool>,
 }
 
 impl ProdAdvanceWorld<'_> {
@@ -1592,11 +1712,12 @@ impl ProdAdvanceWorld<'_> {
 impl AdvanceWorld for ProdAdvanceWorld<'_> {
     /// Web `_canAttackFrom(ru, col, row)` (`battleScene.ts:8436-8444`) / `_makeCanAttackFromTest` (`:8454`).
     fn can_attack_from(&self, _unit_id: &str, col: f64, row: f64) -> bool {
-        // `dd >= 1 && dd <= reach` (`:8441`); wręcz `reach = 1` (= sąsiad).
+        // `dd >= 1 && dd <= reach` (`:8441`); wręcz `reach = 1` (= sąsiad). K5LOOP-SIEGE-ATK-B: wróg za murem
+        // (`_meleeBlockedByWall`, `:8439`) pominięty.
         let reach = self.reach as f64;
-        self.live_enemies().any(|(_, q, r)| {
+        self.live_enemies().any(|(i, q, r)| {
             let dd = (col - q as f64).abs() + (row - r as f64).abs();
-            dd >= 1.0 && dd <= reach
+            !self.blocked.get(i).copied().unwrap_or(false) && dd >= 1.0 && dd <= reach
         })
     }
 
@@ -1744,6 +1865,19 @@ impl<R: RollSource> ProdBody<R> {
         ];
         let formation_rank = [vec![None; units[0].len()], vec![None; units[1].len()]];
         let siege_machine_range = [vec![None; units[0].len()], vec![None; units[1].len()]];
+        let siege_stats = [vec![None; units[0].len()], vec![None; units[1].len()]];
+        let range_base_of = |list: &[ProdUnit]| -> Vec<f64> {
+            list.iter()
+                .map(|u| {
+                    if u.activate.can_shoot {
+                        u.activate.range
+                    } else {
+                        0.0
+                    }
+                })
+                .collect()
+        };
+        let range_base = [range_base_of(&units[0]), range_base_of(&units[1])];
         Self {
             occ_by_key: seed_occupancy(&units),
             formation_rank,
@@ -1811,6 +1945,18 @@ impl<R: RollSource> ProdBody<R> {
             siege_wall_tiles_init: 0,
             tower_at_wall_rows: BTreeSet::new(),
             siege_machine_range,
+            gate_hp: 0.0,
+            siege_towers: Vec::new(),
+            tower_range: 2.0,
+            range_base,
+            siege_stats,
+            last_attacked_wall_row: -1,
+            seq_wall_col: -1,
+            mover_routed: false,
+            timers: Vec::new(),
+            boulders: Vec::new(),
+            next_timer: 0,
+            pending_gate_breach: false,
             kill_ripples: Vec::new(),
             now: 0.0,
             tower_row: 0,
@@ -1938,6 +2084,14 @@ impl<R: RollSource> ProdBody<R> {
         self
     }
 
+    /// K5LOOP-SIEGE-ATK-B (T2b): web `this.terrainMap.passable(col, row)` terenu ciała (z kaflami wyburzonymi w trakcie
+    /// bitwy, [`PlainsCell`]); `None` = ciało bez [`MoveTerrain`]. Tylko odczyt (ramka/renderer, testy zgodności).
+    pub fn terrain_passable(&self, col: i64, row: i64) -> Option<bool> {
+        self.terrain
+            .as_deref()
+            .map(|t| t.passable(col as f64, row as f64))
+    }
+
     /// K5DOC-T4e-0 (D3): web `occByKey` (klucz pola -> identyfikator jednostki).
     pub fn occ_by_key(&self) -> &HashMap<CellKey, String> {
         &self.occ_by_key
@@ -1975,6 +2129,85 @@ impl<R: RollSource> ProdBody<R> {
         self.move_step_core(unit, col, row, refused, move_left, autobatch, &enemies)
     }
 
+    /// K5LOOP-SIEGE-ATK-B (T2b): `this.siegeWallCol >= 0 && this._siegeMoveRefused(ru, col, row)` (`battleScene.ts:8689`,
+    /// `:7963-7970`) dla jednostki `unit` stojącej na swoim polu. `_siegeApproachRestricted(ru)` (`:7951-7960`) z flag
+    /// jednostki i stanu muru ciała; `_siegeShooterThreats()` (`:7924-7937`) z obrońców (`enemies` = `this.def` z flagami
+    /// `_enemiesOf`; `removed` implikuje `dead` w ciele) z `canShoot` i `rangeBase > 0` ([`Self::range_base`]), zasięgiem
+    /// `d.range` po `_applyTerrainRange(d)` (wejście adaptera `activate.range`, jak w całym ciele) i z niezburzonych
+    /// wieżyczek ([`Self::siege_towers`], [`Self::tower_range`]). Kolejność JS: zagrożenia liczone dopiero po bramce
+    /// `_siegeApproachRestricted` (`_applyTerrainRange` nie ma tu skutku, więc kolejność nie zmienia wyniku).
+    fn siege_move_refused_now(
+        &self,
+        unit: UnitRef,
+        col: i64,
+        row: i64,
+        enemies: &[EnemyRef],
+    ) -> bool {
+        let wall_col = self.seq_wall_col.max(self.scene.wall_col);
+        if wall_col < 0 {
+            return false;
+        }
+        let a = &self.units[side_ix(unit.side)][unit.idx].activate;
+        let approach = ApproachUnit {
+            side_atk: unit.side == BattleSide::Attacker,
+            routed: self.mover_routed,
+            on_wall_walkway: a.on_wall_walkway,
+            is_siege_unit: a.is_siege_unit,
+            primary_ranged: a.primary_ranged,
+            can_shoot: a.can_shoot,
+            shooting_disabled: !self.doctrine[side_ix(unit.side)][unit.idx].shooting_enabled
+                || a.shooting_disabled,
+            mounted: a.mounted,
+        };
+        let wall = self.approach_wall(wall_col);
+        let other = side_ix(opposite(unit.side));
+        let defenders: Vec<ShooterDefender> = enemies
+            .iter()
+            .enumerate()
+            .map(|(i, e)| ShooterDefender {
+                q: e.q as f64,
+                r: e.r as f64,
+                dead: e.dead,
+                fading_out: e.fading_out,
+                removed: e.dead,
+                routed: e.routed,
+                can_shoot: self.units[other][i].activate.can_shoot,
+                range_base: self.range_base[other][i],
+            })
+            .collect();
+        let threats = siege_shooter_threats(
+            &defenders,
+            &self.siege_towers,
+            wall_col as f64,
+            self.tower_range,
+            |d| {
+                defenders
+                    .iter()
+                    .position(|x| std::ptr::eq(x, d))
+                    .map_or(f64::NAN, |i| self.units[other][i].activate.range)
+            },
+        );
+        siege_move_refused(
+            &approach,
+            &wall,
+            &threats,
+            (a.q as f64, a.r as f64),
+            (col as f64, row as f64),
+        )
+    }
+
+    /// K5LOOP-SIEGE-ATK-B: stan muru ciała dla `_siegeApproachRestricted` (`:7951-7960`).
+    fn approach_wall(&self, wall_col: i64) -> ApproachWallState {
+        ApproachWallState {
+            wall_col_ge0: wall_col >= 0,
+            gate_open: self.scene.gate_open,
+            wall_ever_breached: self.wall_ever_breached,
+            wall_tiles_init: self.siege_wall_tiles_init,
+            wall_tiles_alive: self.scene.wall_tile_hp.len(),
+            tower_at_wall_rows_count: self.tower_at_wall_rows.len(),
+        }
+    }
+
     /// Rdzeń [`Self::move_step`]: `do_move_effects` + `_updateFacing` z NOWEJ pozycji (K5LOOP-CLOSE, D-K5C-1:
     /// `battleScene.ts:8704`/`:8756`) wobec `enemies` (lista strony przeciwnej, flagi jak w `_enemiesOf`).
     #[allow(clippy::too_many_arguments)]
@@ -1995,7 +2228,11 @@ impl<R: RollSource> ProdBody<R> {
         };
         // Odmowa (web :8689-8692): `ru.moveLeft = 0; done();` bez czytania terenu, bez zmiany pozycji i zajetosci.
         // Dlatego nie wymaga adaptera terenu (D1: MissingTerrain tylko gdy ruch faktycznie wymaga danych).
-        if refused {
+        // K5LOOP-SIEGE-ATK-B (T2b): bramka `this.siegeWallCol >= 0 && this._siegeMoveRefused(ru, col, row)` (`:8689`)
+        // liczona tutaj dla KAŻDEGO kroku ciała (krok doktryny, `_advanceStep`, C-FLANK, jazda, strzelec, odwrót, falanga,
+        // ucieczka, marsze machin): jeden wspólny punkt ruchu jak w pinie. Wołający rozpoznaje odmowę po `outcome.done`
+        // ([`step_ms`]).
+        if refused || self.siege_move_refused_now(unit, col, row, enemies) {
             return Ok(MoveStepResult {
                 move_left: 0.0,
                 outcome: MoveOutcome { done: true },
@@ -2139,7 +2376,7 @@ impl<R: RollSource> ProdBody<R> {
                         };
                         move_left = res.move_left;
                         moved = true;
-                        elapsed += MOVE_STEP_MS;
+                        elapsed += step_ms(&res);
                         // Callback `_doMove` bloku C-FLANK (`:8222-8229`) = ten sam co marszu czołowego (`:8275-8283`),
                         // bez zapisu `lastAutoMoveFrom`.
                         let after = {
@@ -2200,7 +2437,7 @@ impl<R: RollSource> ProdBody<R> {
                     };
                     move_left = res.move_left;
                     moved = true;
-                    elapsed += MOVE_STEP_MS;
+                    elapsed += step_ms(&res);
                     // Callback `_doMove` (`:8273-8284`): najpierw `lastAutoMoveFrom = previousPosition`.
                     if let Some((q, r)) = then {
                         self.doctrine[ix][unit.idx].last_auto_move_from =
@@ -2256,6 +2493,7 @@ impl<R: RollSource> ProdBody<R> {
     fn advance_world<'a>(&'a self, unit: UnitRef, st: &'a TurnSeqState) -> ProdAdvanceWorld<'a> {
         ProdAdvanceWorld {
             reach: self.reach_of(unit),
+            blocked: self.melee_blocked_list(unit),
             unit,
             units: &self.units,
             st,
@@ -2393,6 +2631,7 @@ impl<R: RollSource> ProdBody<R> {
     /// `true`, gdy przejezdność była czytana bez [`MoveTerrain`] (D1: jawny tag u wołającego).
     fn with_cav_terrain<T>(
         &self,
+        unit: UnitRef,
         mounted: bool,
         reach: i64,
         en: &[Combatant],
@@ -2409,14 +2648,18 @@ impl<R: RollSource> ProdBody<R> {
         };
         let is_ford = |c: i64, r: i64| terrain.is_some_and(|t| t.is_ford(c as f64, r as f64));
         let in_reach = |d: i64| d >= 1 && d <= reach;
+        // K5LOOP-SIEGE-ATK-B (T2b): `_meleeBlockedByWall` w `_canStrikeTargetFrom` (`:8490`) i `_makeCanAttackFromTest`
+        // (`:8456`).
+        let blocked = self.melee_blocked_list(unit);
+        let is_blocked = |i: usize| blocked.get(i).copied().unwrap_or(false);
         let can_strike_from = |c: i64, r: i64, i: usize| {
             let e = &en[i];
-            in_reach((c - e.q).abs() + (r - e.r).abs())
+            !is_blocked(i) && in_reach((c - e.q).abs() + (r - e.r).abs())
         };
         let can_attack_from = |c: i64, r: i64| {
             enemies_of_cmb(en)
                 .iter()
-                .any(|(_, e)| in_reach((c - e.q).abs() + (r - e.r).abs()))
+                .any(|(i, e)| !is_blocked(*i) && in_reach((c - e.q).abs() + (r - e.r).abs()))
         };
         let ct = CavTerrain {
             passable: &passable,
@@ -2462,7 +2705,9 @@ impl<R: RollSource> ProdBody<R> {
         // `_canStrikeTargetFrom(ru, ru.q, ru.r, dirTarget)` (`:8212`, ciało `:8487-8493`): `1 <= dd <= reach`.
         let reach = self.reach_of(unit);
         let dd = (me.q - e.q).abs() + (me.r - e.r).abs();
-        let already = dd >= 1
+        // K5LOOP-SIEGE-ATK-B: `if (this._meleeBlockedByWall(ru, target)) return false;` (`:8490`).
+        let already = !self.melee_blocked_for(unit, t)
+            && dd >= 1
             && dd <= reach
             && relative_hit(
                 &JsVal::Num(e.facing),
@@ -2475,7 +2720,7 @@ impl<R: RollSource> ProdBody<R> {
             return FlankDecision::Done;
         }
         let occ = self.occupied_tiles();
-        let (step, missing) = self.with_cav_terrain(mounted, reach, &en, |ct| {
+        let (step, missing) = self.with_cav_terrain(unit, mounted, reach, &en, |ct| {
             first_step_toward_directed_attack(&me, &en, t, desired, &occ, ct)
         });
         if missing {
@@ -2494,10 +2739,10 @@ impl<R: RollSource> ProdBody<R> {
         tile: CavTile,
         move_left: f64,
         enemies: &[EnemyRef],
-    ) -> Option<f64> {
+    ) -> Option<(f64, f64)> {
         self.move_step_core(unit, tile.0, tile.1, false, move_left, None, enemies)
             .ok()
-            .map(|r| r.move_left)
+            .map(|r| (r.move_left, step_ms(&r)))
     }
 
     /// K5LOOP-CLOSE r2: wykonanie `_cavalryAction(ru, done)` (`battleScene.ts:6372-6412`) w ciele, z decyzjami K5DOC-T6
@@ -2540,7 +2785,7 @@ impl<R: RollSource> ProdBody<R> {
             let first = {
                 let me = self.combatant(unit, st);
                 let occ = self.occupied_tiles();
-                self.with_cav_terrain(mounted, reach, &en, |ct| {
+                self.with_cav_terrain(unit, mounted, reach, &en, |ct| {
                     cav_directed_maneuver_step(&me, &en, tgt, want, gate(move_left), &occ, ct)
                 })
                 .0
@@ -2549,12 +2794,12 @@ impl<R: RollSource> ProdBody<R> {
                 let mut cur = tgt;
                 loop {
                     self.now = now0 + elapsed;
-                    let Some(ml) = self.cav_move(unit, step, move_left, &enemies) else {
+                    let Some((ml, ms)) = self.cav_move(unit, step, move_left, &enemies) else {
                         break;
                     };
                     move_left = ml;
                     moved = true;
-                    elapsed += MOVE_STEP_MS;
+                    elapsed += ms;
                     // Callback (`:6436-6443`): dobry sąsiad -> `done()`; ruch -> cel `_cavalryTarget(ru) ?? tgt`.
                     let me = self.combatant(unit, st);
                     // `ru.moveLeft > 0` (`:6439`/`:6496`): dla `NaN` porównanie jest fałszywe, więc pętla kończy się po
@@ -2568,7 +2813,7 @@ impl<R: RollSource> ProdBody<R> {
                     cur = cavalry_target(&me, &en).unwrap_or(cur);
                     let occ = self.occupied_tiles();
                     let next = self
-                        .with_cav_terrain(mounted, reach, &en, |ct| {
+                        .with_cav_terrain(unit, mounted, reach, &en, |ct| {
                             cav_directed_maneuver_step(
                                 &me,
                                 &en,
@@ -2593,7 +2838,7 @@ impl<R: RollSource> ProdBody<R> {
         let first = {
             let me = self.combatant(unit, st);
             let occ = self.occupied_tiles();
-            self.with_cav_terrain(mounted, reach, &en, |ct| {
+            self.with_cav_terrain(unit, mounted, reach, &en, |ct| {
                 cav_maneuver_step(&me, &en, tgt, gate(move_left), &occ, ct)
             })
             .0
@@ -2601,12 +2846,12 @@ impl<R: RollSource> ProdBody<R> {
         if let Some(mut step) = first {
             loop {
                 self.now = now0 + elapsed;
-                let Some(ml) = self.cav_move(unit, step, move_left, &enemies) else {
+                let Some((ml, ms)) = self.cav_move(unit, step, move_left, &enemies) else {
                     break;
                 };
                 move_left = ml;
                 moved = true;
-                elapsed += MOVE_STEP_MS;
+                elapsed += ms;
                 // Callback (`:6492-6499`): dobry sąsiad -> `done()`; ruch -> `t2 = _cavalryTarget(ru)` i kolejny krok.
                 let me = self.combatant(unit, st);
                 // `ru.moveLeft > 0` (`:6439`/`:6496`): dla `NaN` porównanie jest fałszywe, więc pętla kończy się po
@@ -2622,7 +2867,7 @@ impl<R: RollSource> ProdBody<R> {
                 };
                 let occ = self.occupied_tiles();
                 let next = self
-                    .with_cav_terrain(mounted, reach, &en, |ct| {
+                    .with_cav_terrain(unit, mounted, reach, &en, |ct| {
                         cav_maneuver_step(&me, &en, t2, gate(move_left), &occ, ct)
                     })
                     .0;
@@ -2645,16 +2890,16 @@ impl<R: RollSource> ProdBody<R> {
         // (4) `_bestChargeStepKey(ru, tgt)` i `ru.moveLeft > 0` -> jeden `_doMove(ru, nc, nr, done)`.
         let occ = self.occupied_tiles();
         let charge = self
-            .with_cav_terrain(mounted, reach, &en, |ct| {
+            .with_cav_terrain(unit, mounted, reach, &en, |ct| {
                 best_charge_step(&me, &en, tgt, &occ, ct)
             })
             .0;
         if let Some(step) = charge {
             if move_left > 0.0 {
-                if let Some(ml) = self.cav_move(unit, step, move_left, &enemies) {
+                if let Some((ml, ms)) = self.cav_move(unit, step, move_left, &enemies) {
                     move_left = ml;
                     moved = true;
-                    elapsed += MOVE_STEP_MS;
+                    elapsed += ms;
                 }
             }
         }
@@ -2884,14 +3129,14 @@ impl<R: RollSource> ProdBody<R> {
         move_left: f64,
         at: f64,
         enemies: &[EnemyRef],
-    ) -> f64 {
+    ) -> (f64, f64) {
         let saved = self.now;
         self.now = at;
         let res = self
             .move_step_core(unit, tile.0, tile.1, false, move_left, None, enemies)
             .expect("teren sprawdzony w start (galaz ruchowa bez MoveTerrain ma jawny tag)");
         self.now = saved;
-        res.move_left
+        (res.move_left, step_ms(&res))
     }
 
     /// K5LOOP-CLOSE r3: wykonanie `_rangedAction(ru, done)` (`battleScene.ts:6656-6741`) w ciele, z klockami T5a
@@ -2952,15 +3197,16 @@ impl<R: RollSource> ProdBody<R> {
                             best_kite_shot_step(&me, threat.tile, &units, &occupied, &passable)
                         };
                         if let Some(key) = step {
-                            move_left = self.body_step(
+                            let (ml, ms) = self.body_step(
                                 unit,
                                 key_tile(key),
                                 move_left,
                                 now0 + elapsed,
                                 &enemies,
                             );
+                            move_left = ml;
                             moved = true;
-                            elapsed += MOVE_STEP_MS;
+                            elapsed += ms;
                             // Callback (`:6704-6716`): `_rangedTargetInRange` z nowego pola, inaczej zagrożenie, jeśli
                             // nadal żywe i w zasięgu; inaczej koniec tury.
                             let tgt = self.ranged_target_now(unit, st).or_else(|| {
@@ -3020,9 +3266,10 @@ impl<R: RollSource> ProdBody<R> {
                 if !self.ranged_line_allows_step(unit, st, tile.0) {
                     break 'ra None;
                 }
-                move_left = self.body_step(unit, tile, move_left, now0 + elapsed, &enemies);
+                let (ml, ms) = self.body_step(unit, tile, move_left, now0 + elapsed, &enemies);
+                move_left = ml;
                 moved = true;
-                elapsed += MOVE_STEP_MS;
+                elapsed += ms;
                 // Callback `_doMove` (`:6800-6807`).
                 let Some((_, eq, er)) = self.nearest_live_enemy(unit, st) else {
                     break 'ra None;
@@ -3104,15 +3351,16 @@ impl<R: RollSource> ProdBody<R> {
             let FallBackDecision::Move { col, row } = decision else {
                 break;
             };
-            move_left = self.body_step(
+            let (ml, ms) = self.body_step(
                 unit,
                 int_tile((col, row)),
                 move_left,
                 now0 + elapsed,
                 &enemies,
             );
+            move_left = ml;
             moved = true;
-            elapsed += MOVE_STEP_MS;
+            elapsed += ms;
             match fall_back_after_move(false, move_left) {
                 AfterStep::Done => break,
                 AfterStep::Schedule { ms } => elapsed += f64::from(ms),
@@ -3194,9 +3442,10 @@ impl<R: RollSource> ProdBody<R> {
                 break;
             };
             self.flee_stuck[ix][unit.idx] = 0.0;
-            move_left = self.body_step(unit, tile, move_left, now0 + elapsed, &enemies);
+            let (ml, ms) = self.body_step(unit, tile, move_left, now0 + elapsed, &enemies);
+            move_left = ml;
             moved = true;
-            elapsed += MOVE_STEP_MS;
+            elapsed += ms;
             // Callback `_doMove` (`:9884-9896`).
             let c = st.unit(unit).c;
             if st.finished || c.removed || c.dead {
@@ -3351,8 +3600,8 @@ impl<R: RollSource> ProdBody<R> {
             PhalanxDecision::Move { col, row } => {
                 let enemies = self.enemies_of(unit.side, st);
                 let now = self.now;
-                let ml = self.body_step(unit, int_tile((col, row)), move_left, now, &enemies);
-                PhalanxRun::Finished(MOVE_STEP_MS, Some(ml))
+                let (ml, ms) = self.body_step(unit, int_tile((col, row)), move_left, now, &enemies);
+                PhalanxRun::Finished(ms, Some(ml))
             }
         }
     }
@@ -3508,11 +3757,38 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         let pu = self.units[side_ix(unit.side)].get(unit.idx)?;
         Some((pu.activate.q, pu.activate.r))
     }
+    fn take_timers(&mut self) -> Vec<(f64, u64)> {
+        std::mem::take(&mut self.timers)
+    }
+    fn fire_timer(&mut self, id: u64, st: &mut TurnSeqState) {
+        let Some(k) = self.boulders.iter().position(|b| b.0 == id) else {
+            return;
+        };
+        let (_, unit, row, dmg) = self.boulders.remove(k);
+        self.boulder_hit(st, unit, row, dmg);
+    }
+    fn wall_ever_breached(&self) -> bool {
+        self.wall_ever_breached
+    }
+    fn on_tower_destroyed(&mut self, row: i64) {
+        // `_destroyTowerAtRow` (`:4195`): pierwsza niezburzona wieża wiersza.
+        if let Some(t) = self
+            .siege_towers
+            .iter_mut()
+            .find(|t| t.row == row as f64 && !t.destroyed)
+        {
+            t.destroyed = true;
+        }
+    }
 
     fn start(&mut self, unit: UnitRef, st: &TurnSeqState) -> f64 {
         let ix = side_ix(unit.side);
         self.pending[ix][unit.idx] = None;
         let seq = st.unit(unit).c;
+        // K5LOOP-SIEGE-ATK-B: wejścia bramki `_doMove` (`:8689`) dla kroków tej aktywacji ([`Self::move_step_core`]).
+        self.seq_wall_col = self.scene.wall_col.max(st.siege_wall_col);
+        self.mover_routed = seq.routed;
+        self.pending_gate_breach = false;
         // Pin (`_activateUnit`, battleScene.ts:6049-6050): `finished` albo martwa / znikająca jednostka kończy od razu
         // (`done()`), PRZED jakąkolwiek inną gałęzią.
         if st.finished || seq.dead || seq.fading_out {
@@ -3550,6 +3826,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 move_left: None,
                 shot: None,
                 flee: true,
+                gate_breach: false,
             });
             return dur;
         }
@@ -3716,6 +3993,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             move_left: None,
             shot: None,
             flee: false,
+            gate_breach: false,
         };
         let mut skipped: Vec<&'static str> = Vec::new();
         let mut advance = false;
@@ -3729,6 +4007,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         let mut advance_from_doctrine = false;
         // K5LOOP-SIEGE-ATK-A: `_advanceToward(ru, approachCol, bestRow, done)` katapulty atakującego (`:6214-6216`).
         let mut toward: Option<(i64, i64)> = None;
+        // K5LOOP-SIEGE-ATK-B: `_attackWallTile(ru, bestRow, done)` katapulty atakującego w zasięgu muru (`:6209-6212`).
+        let mut wall_shot: Option<i64> = None;
         for ev in res.events.iter().copied() {
             match ev {
                 ActivateEvent::Done
@@ -3748,6 +4028,9 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 | ActivateEvent::RamTowerStep => {}
                 // K5LOOP-SIEGE-ATK-A: marsz katapulty pod mur (maszyna emituje go tylko dla atakującego przy murze).
                 ActivateEvent::AdvanceToward { col, row } if siege_atk => toward = Some((col, row)),
+                // K5LOOP-SIEGE-ATK-B: ostrzał kafla muru (maszyna emituje go tylko w gałęzi katapulty atakującego przy
+                // murze, `:6187-6212`); poza nią jawny tag `atak-muru-poza-oblezeniem` (ramię `other`).
+                ActivateEvent::AttackWallTile { row } if siege_atk => wall_shot = Some(row),
                 // Obrona r1 (zarzut 3 Evaluatora): poza atakującym przy murze zdarzenie jest strukturalnie nieosiągalne
                 // (maszyna emituje je tylko w gałęzi `isSiegeUnit && side === 'atk' && siegeWallCol >= 0`, `:6187`);
                 // gdyby jednak padło, jawny tag `marsz-poza-oblezeniem` (ramię `other` -> [`prod_tag`]), nie ciche
@@ -3778,21 +4061,12 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 other => skipped.push(prod_tag(other)),
             }
         }
-        // K5LOOP-SIEGE-ATK-A: gałęzie atakującego przy murze spoza T2a (cios `_doAttack` z U7.1/U7.6/U7.9, krok doktryny,
-        // `_rangedAction`, `_fallBackStep`, `_cavalryAction`, `_phalanxAction`, `_advanceStep`): przy murze ruch przechodzi
-        // przez bramkę `_siegeMoveRefused` (`:8689`), a cios przez reguły muru, których te klocki ciała nie mają. Jawny
-        // tag `oblezenie` (T2b/T4), bez akcji i bez kroku doktryny.
-        if siege_atk
-            && (pend.attack.is_some()
-                || advance
-                || cavalry
-                || ranged
-                || fallback
-                || phalanx
-                || doctrine)
-        {
-            skipped.push("oblezenie");
-        }
+        // K5LOOP-SIEGE-ATK-B (T2b): gałęzie atakującego przy murze (cios `_doAttack` z U7.1/U7.6/U7.9, krok doktryny,
+        // `_rangedAction`, `_fallBackStep`, `_cavalryAction`, `_phalanxAction`, `_advanceStep`) wykonuje ciało tymi samymi
+        // klockami co bez muru: każdy `_doMove` przechodzi przez bramkę `_siegeMoveRefused` (`:8689`,
+        // [`Self::move_step_core`]), a testy zasięgu ataku `_canAttackFrom` / `_makeCanAttackFromTest` /
+        // `_canStrikeTargetFrom` (`:8436-8493`) filtrują `_meleeBlockedByWall` ([`Self::melee_blocked_for`]). Dawny tag
+        // `oblezenie` zdjęty.
         // K5LOOP-CLOSE r4: okrążenie złamało jednostkę w tej aktywacji. Pin: `ru.morale` po trafieniu okrążenia,
         // `_checkRout` -> `_startRout` (`:9799-9831`: osłona wręcz, boost wrogów, zwolnienie pola, zwrot ku krawędzi) w
         // chwili aktywacji, potem `_fleeStep` (`:6117`). Ciało wykonuje to na kopii stanu w tej samej kolejności (rout PRZED
@@ -3865,6 +4139,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 Some(self.siege_atk_infantry(unit, st, wall_col, &plan, &enemies))
             } else if res.branches.contains(&"U7.3-ramtower") {
                 Some(self.siege_atk_ram_tower(unit, st, wall_col, &plan, &enemies))
+            } else if let Some(row) = wall_shot {
+                Some(self.siege_atk_wall_tile(unit, row))
             } else {
                 toward.map(|(col, row)| {
                     self.siege_atk_advance_toward(unit, st, wall_col, col, row, None, &enemies)
@@ -3875,6 +4151,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                     self.unported.push((unit, tag));
                 }
                 pend.move_left = run.move_left;
+                pend.gate_breach = std::mem::take(&mut self.pending_gate_breach);
                 self.pending[ix][unit.idx] = Some(pend);
                 return run.dur;
             }
@@ -4044,6 +4321,10 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         // `_startRout` z aktywacji (okrążenie): ten sam kod co rout po ciosie (boost wrogów, oslona, facing).
         if pend.start_rout {
             self.start_rout(st, unit);
+        }
+        // K5LOOP-SIEGE-ATK-B: pętla morale `_breachGate` (`:7803-7810`) po wyłomie bramy w `_attackGate` tej aktywacji.
+        if pend.gate_breach {
+            self.gate_breach_morale(st);
         }
         if let Some(shot) = pend.shot {
             self.complete_shot(st, unit, shot);
@@ -4595,9 +4876,8 @@ impl AtkRun {
 ///
 /// Bramka: `_siegeMoveRefused` wymaga `_siegeApproachRestricted(ru)` (`:7963-7964`), który dla machin (`isSiegeUnit`,
 /// `:7953`) i dla piechoty przy stojącej wieży (`towerAtWallRows.size > 0`, `:7959`; piechota idzie pod wieżę tylko
-/// wtedy, `:8089`) zwraca `false`. Gałąź odmowy jest więc w T2a strukturalnie nieosiągalna; gdyby jednak
-/// `_siegeApproachRestricted` zwróciło `true` (niespójne wejście), adapter NIE zgaduje zagrożeń (`_siegeShooterThreats`
-/// = T2b): kończy marsz i ciało zapisuje jawny tag `oblezenie-odmowa-ruchu`.
+/// wtedy, `:8089`) zwraca `false`. K5LOOP-SIEGE-ATK-B (T2b): bramka jest liczona w [`ProdBody::move_step_core`] z
+/// zagrożeniami `_siegeShooterThreats` (dawny tag `oblezenie-odmowa-ruchu` zdjęty); odmowa = `DoMoveGate::Refused`.
 struct ProdSiegeWalk<'a, R: RollSource> {
     body: &'a mut ProdBody<R>,
     unit: UnitRef,
@@ -4606,12 +4886,10 @@ struct ProdSiegeWalk<'a, R: RollSource> {
     pref_row: Option<i64>,
     finished: bool,
     enemies: &'a [EnemyRef],
-    approach: ApproachUnit,
     mounted: bool,
     now0: f64,
     moves: u32,
     missing: Cell<bool>,
-    gate_unported: bool,
 }
 
 impl<R: RollSource> ProdSiegeWalk<'_, R> {
@@ -4655,18 +4933,6 @@ impl<R: RollSource> WalkWorld for ProdSiegeWalk<'_, R> {
     }
 
     fn do_move(&mut self, unit: &mut WalkUnit, col: i64, row: i64) -> DoMoveGate {
-        let wall = ApproachWallState {
-            wall_col_ge0: self.scene.wall_col >= 0,
-            gate_open: self.scene.gate_open,
-            wall_ever_breached: self.body.wall_ever_breached,
-            wall_tiles_init: self.body.siege_wall_tiles_init,
-            wall_tiles_alive: self.body.scene.wall_tile_hp.len(),
-            tower_at_wall_rows_count: self.body.tower_at_wall_rows.len(),
-        };
-        if self.scene.wall_col >= 0 && siege_approach_restricted(&self.approach, &wall) {
-            self.gate_unported = true;
-            return DoMoveGate::Refused;
-        }
         // Każdy kolejny krok poprzedza `_schedule(STEP_GAP_MS)` (`:8017`): `t0` kroku k = k * (MOVE + GAP).
         self.body.now = self.now0 + f64::from(self.moves) * (MOVE_STEP_MS + f64::from(STEP_GAP_MS));
         match self.body.move_step_core(
@@ -4678,6 +4944,8 @@ impl<R: RollSource> WalkWorld for ProdSiegeWalk<'_, R> {
             None,
             self.enemies,
         ) {
+            // K5LOOP-SIEGE-ATK-B: odmowa bramki muru (`:8689-8692`) liczona w `move_step_core`.
+            Ok(res) if res.outcome.done => DoMoveGate::Refused,
             Ok(res) => {
                 unit.q = col;
                 unit.r = row;
@@ -4824,7 +5092,8 @@ impl<R: RollSource> ProdBody<R> {
         match plan.ram {
             RamTowerPlan::NotHandled => AtkRun::idle(),
             // `_attackGate(ru, done)` (`:7310`): obrażenia bramy, animacja taranu, wyłom bramy = T2b.
-            RamTowerPlan::AttackGate => AtkRun::tagged("atak-bramy"),
+            // K5LOOP-SIEGE-ATK-B (T2b): `_attackGate(ru, done)` (`:7310-7335`).
+            RamTowerPlan::AttackGate => self.siege_atk_gate(unit),
             RamTowerPlan::AtWall { row } => {
                 self.tower_at_wall_rows.insert(row);
                 AtkRun::idle()
@@ -4869,17 +5138,7 @@ impl<R: RollSource> ProdBody<R> {
         };
         let now0 = self.now;
         let scene = self.atk_scene(wall_col);
-        let approach = ApproachUnit {
-            side_atk: a.side_atk,
-            routed: seq.routed,
-            on_wall_walkway: a.on_wall_walkway,
-            is_siege_unit: a.is_siege_unit,
-            primary_ranged: a.primary_ranged,
-            can_shoot: a.can_shoot,
-            shooting_disabled: a.shooting_disabled,
-            mounted: a.mounted,
-        };
-        let (events, moves, missing, gate_unported) = {
+        let (events, moves, missing) = {
             let mut world = ProdSiegeWalk {
                 body: self,
                 unit,
@@ -4888,15 +5147,13 @@ impl<R: RollSource> ProdBody<R> {
                 pref_row,
                 finished: st.finished,
                 enemies,
-                approach,
                 mounted: a.mounted,
                 now0,
                 moves: 0,
                 missing: Cell::new(false),
-                gate_unported: false,
             };
             let ev = siege_walk_to(&mut world, &mut wu);
-            (ev, world.moves, world.missing.get(), world.gate_unported)
+            (ev, world.moves, world.missing.get())
         };
         self.now = now0;
         let schedules = events
@@ -4904,16 +5161,16 @@ impl<R: RollSource> ProdBody<R> {
             .filter(|e| matches!(e, WalkEvent::Schedule { .. }))
             .count() as f64;
         let dur = f64::from(moves) * MOVE_STEP_MS + schedules * f64::from(STEP_GAP_MS);
-        let move_left = (moves > 0).then_some(wu.move_left);
-        if missing || gate_unported {
+        // Odmowa bramki muru (`WalkEvent::Refused`): `ru.moveLeft = 0` (`:8690`) także bez wcześniejszego kroku.
+        let refused = events
+            .iter()
+            .any(|e| matches!(e, WalkEvent::Refused { .. }));
+        let move_left = (moves > 0 || refused).then_some(wu.move_left);
+        if missing {
             return AtkRun {
                 dur,
                 move_left,
-                tag: Some(if missing {
-                    "marsz-brak-terenu"
-                } else {
-                    "oblezenie-odmowa-ruchu"
-                }),
+                tag: Some("marsz-brak-terenu"),
             };
         }
         if let Some(base) = arrive_base {
@@ -4969,38 +5226,278 @@ impl<R: RollSource> ProdBody<R> {
         let Some((nc, nr)) = advance_toward_pick(a.q, a.r, col, row, &cost_inf, &occ) else {
             return arrive(self, AtkRun::idle());
         };
-        let wall = ApproachWallState {
-            wall_col_ge0: wall_col >= 0,
-            gate_open: self.scene.gate_open,
-            wall_ever_breached: self.wall_ever_breached,
-            wall_tiles_init: self.siege_wall_tiles_init,
-            wall_tiles_alive: self.scene.wall_tile_hp.len(),
-            tower_at_wall_rows_count: self.tower_at_wall_rows.len(),
-        };
-        let approach = ApproachUnit {
-            side_atk: a.side_atk,
-            routed: seq.routed,
-            on_wall_walkway: a.on_wall_walkway,
-            is_siege_unit: a.is_siege_unit,
-            primary_ranged: a.primary_ranged,
-            can_shoot: a.can_shoot,
-            shooting_disabled: a.shooting_disabled,
-            mounted: a.mounted,
-        };
-        if wall_col >= 0 && siege_approach_restricted(&approach, &wall) {
-            return AtkRun::tagged("oblezenie-odmowa-ruchu");
-        }
+        let _ = wall_col;
+        // `_doMove` (bramka muru `:8689` w `move_step_core`; odmowa = `moveLeft = 0`, `done`/`arrive` od razu).
         let Ok(res) = self.move_step_core(unit, nc, nr, false, seq.move_left, None, enemies) else {
             return AtkRun::tagged("marsz-brak-terenu");
         };
         arrive(
             self,
             AtkRun {
-                dur: MOVE_STEP_MS,
+                dur: step_ms(&res),
                 move_left: Some(res.move_left),
                 tag: None,
             },
         )
+    }
+}
+
+/// K5LOOP-SIEGE-ATK-B (T2b): kafel wyburzony w trakcie bitwy (`tiles[idx] = BTerrain.Plains`, `_breachWallTile` `:7644`,
+/// `_breachGate` `:7770`). Nakładka na teren ciała: pole `(col, row)` przechodnie, koszt `MOVE_COST[Plains] = 1`
+/// (`battle-terrain.ts:139`), bez brodu; mnożnik jazdy z warstwy niżej (nazwa terenu walki muru i bramy to już
+/// `'Plaskie (rownina/laka)'`, `battle-terrain.ts:157-158`, ta sama co `Plains`). Pozostałe pola bez zmian.
+struct PlainsCell {
+    inner: Box<dyn MoveTerrain>,
+    col: f64,
+    row: f64,
+}
+
+impl PlainsCell {
+    fn hit(&self, col: f64, row: f64) -> bool {
+        col == self.col && row == self.row
+    }
+}
+
+impl MoveTerrain for PlainsCell {
+    fn passable(&self, col: f64, row: f64) -> bool {
+        self.hit(col, row) || self.inner.passable(col, row)
+    }
+    fn move_cost(&self, col: f64, row: f64) -> f64 {
+        if self.hit(col, row) {
+            1.0
+        } else {
+            self.inner.move_cost(col, row)
+        }
+    }
+    fn is_ford(&self, col: f64, row: f64) -> bool {
+        !self.hit(col, row) && self.inner.is_ford(col, row)
+    }
+    fn cavalry_multiplier(&self, col: f64, row: f64) -> f64 {
+        self.inner.cavalry_multiplier(col, row)
+    }
+}
+
+impl<R: RollSource> ProdBody<R> {
+    /// K5LOOP-SIEGE-ATK-B (T2b): `_meleeBlockedByWall(ru, e)` (`battleScene.ts:8361-8371`, `city-fortification.ts:76-79`)
+    /// dla jednostki `me` i wroga o indeksie `enemy` w liście strony przeciwnej. Bez muru `false`.
+    fn melee_blocked_for(&self, me: UnitRef, enemy: usize) -> bool {
+        let wall_col = self.seq_wall_col.max(self.scene.wall_col);
+        if wall_col < 0 {
+            return false;
+        }
+        let a = &self.units[side_ix(me.side)][me.idx].activate;
+        let Some(e) = self.units[side_ix(opposite(me.side))].get(enemy) else {
+            return false;
+        };
+        melee_blocked_by_wall(MeleeWallContext {
+            attacker_is_melee: !a.can_shoot && !a.is_siege_unit,
+            attacker_on_wall: a.on_wall_walkway,
+            defender_on_wall: e.activate.on_wall_walkway,
+            wall_breached: self.wall_ever_breached,
+        })
+    }
+
+    /// Flagi [`Self::melee_blocked_for`] dla wszystkich wrogów `me` (indeksy listy strony przeciwnej).
+    fn melee_blocked_list(&self, me: UnitRef) -> Vec<bool> {
+        (0..self.units[side_ix(opposite(me.side))].len())
+            .map(|i| self.melee_blocked_for(me, i))
+            .collect()
+    }
+
+    /// K5LOOP-SIEGE-ATK-B (T2b): `_attackGate(ru, done)` (`battleScene.ts:7310-7335`) wołane z `_siegeRamTowerStep`
+    /// (`:8028`): strażnik `gateOpen || siegeGateCol < 0` (`:7311`) = `done()`; obrażenia `_siegeStructureDamage(ru)`
+    /// (`:7314`, wejście adaptera [`Self::siege_stats`]); animacja taranu (`_animateRam`, akcja [`BattleAction::Ram`]);
+    /// `gateHp = max(0, gateHp - dmg)` ([`BattleAction::GateDamage`]); przy `gateHp <= 0` `_breachGate()`
+    /// ([`Self::breach_gate_scene`]); `done()` synchronicznie (czas 0). Pętla morale obrońców `_breachGate` (`:7803-7810`)
+    /// zmienia `TurnSeqState`, więc wykonuje ją `complete` tej aktywacji ([`Self::gate_breach_morale`]).
+    fn siege_atk_gate(&mut self, unit: UnitRef) -> AtkRun {
+        if self.scene.gate_open || self.siege_gate_col < 0 {
+            return AtkRun::idle();
+        }
+        let Some(stats) = self.siege_stats[side_ix(unit.side)][unit.idx] else {
+            return AtkRun::tagged("atak-bramy-bez-szablonu");
+        };
+        let dmg = siege_structure_damage(&stats);
+        let until = self.now + RAM_ANIM_MS;
+        self.emit(BattleAction::Ram { unit, until });
+        self.gate_hp = js_max0(self.gate_hp - dmg);
+        let hp_after = self.gate_hp;
+        self.emit(BattleAction::GateDamage { dmg, hp_after });
+        if self.gate_hp <= 0.0 {
+            self.breach_gate_scene();
+            self.pending_gate_breach = true;
+        }
+        AtkRun::idle()
+    }
+
+    /// K5LOOP-SIEGE-ATK-B (T2b): `_breachGate()` (`battleScene.ts:7757-7801`), część sceny: `gateOpen = true`,
+    /// `wallEverBreached = true`, kafle bramy `(siegeGateCol, siegeGateRow - 1 .. siegeGateRow)` -> `Plains` (`:7763-7772`,
+    /// w zakresie `tiles`; `_carveWallTiles` stawia tam zawsze `BTerrain.Gate`, `:4061-4063`), akcja
+    /// [`BattleAction::GateBreach`]. Bez terenu ciała (`tiles` nieobecne) kafle bez zmian, jak w pinie.
+    fn breach_gate_scene(&mut self) {
+        self.scene.gate_open = true;
+        self.wall_ever_breached = true;
+        if self.siege_gate_col >= 0 {
+            let (gc, gr) = (self.siege_gate_col, self.siege_gate_row);
+            for r in [gr - 1, gr] {
+                if tile_index_in_bounds(gc, r) {
+                    self.plains_cell(gc, r);
+                }
+            }
+        }
+        self.emit(BattleAction::GateBreach);
+    }
+
+    /// Nakładka [`PlainsCell`] na teren ciała (brak terenu = bez zmian).
+    fn plains_cell(&mut self, col: i64, row: i64) {
+        if let Some(inner) = self.terrain.take() {
+            self.terrain = Some(Box::new(PlainsCell {
+                inner,
+                col: col as f64,
+                row: row as f64,
+            }));
+        }
+    }
+
+    /// K5LOOP-SIEGE-ATK-B (T2b): pętla morale `_breachGate` (`battleScene.ts:7803-7810`): każdy żywy obrońca (bez
+    /// `dead`/`fadingOut`/`routed`) traci [`MORALE_GATE_BREACH`] (`Math.max(0, …)`), potem `_checkRout`.
+    fn gate_breach_morale(&mut self, st: &mut TurnSeqState) {
+        self.def_breach_morale(st, MORALE_GATE_BREACH);
+    }
+
+    fn def_breach_morale(&mut self, st: &mut TurnSeqState, loss: f64) {
+        for idx in 0..st.def.len() {
+            let u = UnitRef {
+                side: BattleSide::Defender,
+                idx,
+            };
+            let c = st.unit(u).c;
+            if c.dead || c.fading_out || c.routed {
+                continue;
+            }
+            let uc = unit_cu_mut(st, u);
+            uc.morale = js_max0(uc.morale - loss);
+            self.check_rout(st, u);
+        }
+    }
+
+    /// K5LOOP-SIEGE-ATK-B (T2b): `_attackWallTile(ru, wallRow, done)` (`battleScene.ts:7540-7568`): obrażenia z
+    /// [`Self::siege_stats`] ([`wall_tile_damage`]), kamień ([`BattleAction::Boulder`]), trafienie zaplanowane
+    /// `_schedule(700, …)` (odroczone wywołanie [`LoopBody::take_timers`]), `done()` synchronicznie (czas 0).
+    fn siege_atk_wall_tile(&mut self, unit: UnitRef, row: i64) -> AtkRun {
+        let Some(stats) = self.siege_stats[side_ix(unit.side)][unit.idx] else {
+            return AtkRun::tagged("atak-muru-bez-szablonu");
+        };
+        let dmg = wall_tile_damage(&stats);
+        let land_at = self.now + WALL_HIT_FLY_MS;
+        self.emit(BattleAction::Boulder { unit, row, land_at });
+        let id = self.next_timer;
+        self.next_timer += 1;
+        self.timers.push((WALL_HIT_FLY_MS, id));
+        self.boulders.push((id, unit, row, dmg));
+        AtkRun::idle()
+    }
+
+    /// K5LOOP-SIEGE-ATK-B (T2b): callback `_schedule(700)` z `_attackWallTile` (`battleScene.ts:7555-7565`):
+    /// `curHp = wallTileHp.get(row) ?? 0`, `newHp = max(0, curHp - dmg)`, `wallTileHp.set` (istniejący klucz zostaje na
+    /// swoim miejscu w kolejności mapy, nowy na końcu), `lastAttackedWallRow`, etykieta ([`BattleAction::WallDamage`]),
+    /// przy `newHp <= 0` `_breachWallTile(row)` ([`Self::breach_wall_tile`]).
+    fn boulder_hit(&mut self, st: &mut TurnSeqState, unit: UnitRef, row: i64, dmg: f64) {
+        let cur = self
+            .scene
+            .wall_tile_hp
+            .iter()
+            .find(|(r, _)| *r == row)
+            .map_or(0.0, |&(_, hp)| hp);
+        let new_hp = js_max0(cur - dmg);
+        match self.scene.wall_tile_hp.iter_mut().find(|(r, _)| *r == row) {
+            Some(e) => e.1 = new_hp,
+            None => self.scene.wall_tile_hp.push((row, new_hp)),
+        }
+        self.last_attacked_wall_row = row;
+        self.emit(BattleAction::WallDamage {
+            row,
+            dmg,
+            hp_after: new_hp,
+        });
+        if new_hp <= 0.0 {
+            self.breach_wall_tile(st, unit, row);
+        }
+    }
+
+    /// K5LOOP-SIEGE-ATK-B (T2b): `_breachWallTile(wallRow)` (`battleScene.ts:7638-7750`):
+    /// strażnik `if (!tiles) return;` (`:7640`: bez terenu ciała jawny tag `wylom-brak-terenu` na jednostce, która
+    /// strzelała, i brak skutków, jak w pinie); kafel `Plains` (w zakresie `tiles`, `:7642-7645`); `wallTileHp.delete`;
+    /// `wallEverBreached = true`; `_destroyTowerAtRow` ([`BattleAction::TowerDestroyed`] + wpis dziennika);
+    /// [`BattleAction::WallBreach`]; obrońcy na wyburzonym kaflu (`onWallWalkway`, `u.r === wallRow && u.q === wallCol`,
+    /// w kolejności `this.def`): katapulta `_startFade`, reszta schodzi z muru ([`wall_retreat_cell`],
+    /// [`BattleAction::LeaveField`], `onWallWalkway = false`; `_applyTerrainRange(u)` = zasięg z wejścia adaptera, jak w
+    /// całym ciele); na końcu pętla morale `-MORALE_WALL_BREACH` z `_checkRout` (`:7745-7750`).
+    fn breach_wall_tile(&mut self, st: &mut TurnSeqState, shooter: UnitRef, row: i64) {
+        if self.terrain.is_none() {
+            self.unported.push((shooter, "wylom-brak-terenu"));
+            return;
+        }
+        let wall_col = self.seq_wall_col.max(self.scene.wall_col);
+        if tile_index_in_bounds(wall_col, row) {
+            self.plains_cell(wall_col, row);
+        }
+        self.scene.wall_tile_hp.retain(|&(r, _)| r != row);
+        self.wall_ever_breached = true;
+        if let Some(t) = self
+            .siege_towers
+            .iter_mut()
+            .find(|t| t.row == row as f64 && !t.destroyed)
+        {
+            t.destroyed = true;
+            self.emit(BattleAction::TowerDestroyed { row });
+            self.emit(BattleAction::Log {
+                text: tower_destroyed_log(row),
+            });
+        }
+        self.emit(BattleAction::WallBreach { row });
+        for idx in 0..st.def.len() {
+            let u = UnitRef {
+                side: BattleSide::Defender,
+                idx,
+            };
+            let c = st.unit(u).c;
+            if c.dead || c.fading_out || c.routed {
+                continue;
+            }
+            let a = &self.units[1][idx].activate;
+            if !(a.on_wall_walkway && a.r == row && a.q == wall_col) {
+                continue;
+            }
+            if a.is_catapult {
+                self.start_fade(st, u);
+                continue;
+            }
+            let from = (a.q, a.r);
+            let to = {
+                let terrain = self.terrain.as_deref().expect("teren sprawdzony wyzej");
+                let occ = &self.occ_by_key;
+                let occupied = |c: i64, r: i64| occ.contains_key(&cell_key(c as f64, r as f64));
+                let passable = |c: i64, r: i64| terrain.passable(c as f64, r as f64);
+                wall_retreat_cell(wall_col, row, &occupied, &passable)
+            };
+            if let Some((c2, r2)) = to {
+                self.occ_by_key
+                    .remove(&cell_key(from.0 as f64, from.1 as f64));
+                let a = &mut self.units[1][idx].activate;
+                a.q = c2;
+                a.r = r2;
+                self.occ_by_key
+                    .insert(cell_key(c2 as f64, r2 as f64), unit_tag(u));
+            }
+            self.units[1][idx].activate.on_wall_walkway = false;
+            self.emit(BattleAction::LeaveField {
+                unit: u,
+                from,
+                to: to.unwrap_or(from),
+            });
+        }
+        self.def_breach_morale(st, MORALE_WALL_BREACH);
     }
 }
 
@@ -5130,9 +5627,87 @@ mod prod_tag_tests {
             prod_tag(ActivateEvent::AdvanceToward { col: 3, row: 4 }),
             "marsz-poza-oblezeniem"
         );
+        // K5LOOP-SIEGE-ATK-B (D-INT-2): `_attackWallTile` przy murze wykonuje ciało (`siege_atk_wall_tile`); `prod_tag`
+        // zostaje tylko dla zdarzenia poza atakującym przy murze (dawniej `atak-muru`, nazwa jak `marsz-poza-oblezeniem`).
         assert_eq!(
             prod_tag(ActivateEvent::AttackWallTile { row: 4 }),
-            "atak-muru"
+            "atak-muru-poza-oblezeniem"
         );
+    }
+}
+
+#[cfg(test)]
+mod plains_cell_tests {
+    //! Obrona r1 K5LOOP-SIEGE-ATK-B (zarzut 2, E21/E22): nakładka [`PlainsCell`] = pin `tiles[idx] = BTerrain.Plains`
+    //! (`_breachWallTile` `battleScene.ts:7644`, `_breachGate` `:7770`). Pin NADPISUJE typ kafla, więc każdy odczyt
+    //! terenu na tym polu widzi `Plains` niezależnie od tego, co było pod spodem: przejezdny, `moveCost =
+    //! MOVE_COST[Plains] = 1` (`battle-terrain.ts:139`, `:795`), `isFordTile` (`battleScene.ts:1897`) = `at(c, r) === Ford` fałsz
+    //! (`battle-terrain.ts:42`). Warstwa niżej jest celowo „najgorsza” (nieprzejezdna, koszt 3, bród, mnożnik jazdy 2),
+    //! żeby każdą regułę nakładki rozstrzygała nakładka, a nie teren pod spodem.
+    use super::*;
+
+    struct WorstTerrain;
+
+    impl MoveTerrain for WorstTerrain {
+        fn passable(&self, _col: f64, _row: f64) -> bool {
+            false
+        }
+        fn move_cost(&self, _col: f64, _row: f64) -> f64 {
+            3.0
+        }
+        fn is_ford(&self, _col: f64, _row: f64) -> bool {
+            true
+        }
+        fn cavalry_multiplier(&self, _col: f64, _row: f64) -> f64 {
+            2.0
+        }
+    }
+
+    fn breached(col: f64, row: f64) -> PlainsCell {
+        PlainsCell {
+            inner: Box::new(WorstTerrain),
+            col,
+            row,
+        }
+    }
+
+    #[test]
+    fn wyburzony_kafel_jest_rownina_jak_pin() {
+        let t = breached(30.0, 7.0);
+        assert!(t.passable(30.0, 7.0));
+        assert_eq!(t.move_cost(30.0, 7.0), 1.0, "MOVE_COST[Plains]");
+        assert!(!t.is_ford(30.0, 7.0), "Plains nie jest brodem");
+        // Mnożnik jazdy: nazwa terenu walki muru/bramy i Plains jest ta sama (`battle-terrain.ts:151,157-158`).
+        assert_eq!(t.cavalry_multiplier(30.0, 7.0), 2.0);
+        for (c, r) in [(30.0, 8.0), (31.0, 7.0), (29.0, 7.0), (30.0, 6.0)] {
+            assert!(!t.passable(c, r));
+            assert_eq!(t.move_cost(c, r), 3.0);
+            assert!(t.is_ford(c, r));
+        }
+        // Dwa kafle bramy (`gr - 1` i `gr`, `:7768-7772`): obie nakładki działają, reszta bez zmian.
+        let two = PlainsCell {
+            inner: Box::new(t),
+            col: 30.0,
+            row: 8.0,
+        };
+        for r in [7.0, 8.0] {
+            assert!(two.passable(30.0, r));
+            assert_eq!(two.move_cost(30.0, r), 1.0);
+            assert!(!two.is_ford(30.0, r));
+        }
+        assert!(!two.passable(30.0, 9.0));
+        assert_eq!(two.move_cost(30.0, 9.0), 3.0);
+        assert!(two.is_ford(30.0, 9.0));
+    }
+
+    /// Koszt kroku przez wyburzony kafel w `_doMove` (`ProdMoveWorld::move_cost` = [`unit_move_cost`] nad terenem ciała,
+    /// pin `_moveCostForUnit` `:7436-7444`): piechota płaci `MOVE_COST[Plains] = 1`, jazda `1 × mnożnik`; pole obok
+    /// zostaje nieprzejezdne (`Infinity`).
+    #[test]
+    fn krok_przez_wyburzony_kafel_placi_koszt_rowniny() {
+        let t = breached(30.0, 7.0);
+        assert_eq!(unit_move_cost(&t, false, 30.0, 7.0), 1.0);
+        assert_eq!(unit_move_cost(&t, true, 30.0, 7.0), 2.0);
+        assert_eq!(unit_move_cost(&t, false, 31.0, 7.0), f64::INFINITY);
     }
 }
