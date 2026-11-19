@@ -9,6 +9,8 @@
  *   E  udzial puli Pracy 15% w oknie [30,90]: fort za drogi dla 15% puli -> brak; poza oknem -> dozwolony
  *   F  gracz (brak `aiTerritoryRace`) niezmieniony: prog 1, brak udzialu
  *   G  parametry w danych: 40 / 16 / 0.15 / 30 / 90
+ *   H  druga sciezka budowy (planExpansionFortBuilding, jednostka poza zasiegiem): te same reguly co E-FORT
+ *      (prog zysku 40/16, kolejnosc po miastach, zagrozenie w oknie, udzial 15%); bez `territoryRace` = stara sciezka
  *
  * Run z gra/:  node tools/ai-territory-race-test.cjs
  * Mutacje:     AI_RACE_SRC_DIR=<kopia gra/src z mutacja> node tools/ai-territory-race-test.cjs
@@ -27,6 +29,7 @@ const entry = path.join(temp, 'entry.ts');
 fs.writeFileSync(entry, [
   `export * as AIMP from ${JSON.stringify(SRC + '/game/auto-improvements')};`,
   `export { getImprovementMeta } from ${JSON.stringify(SRC + '/game/improvement-tech')};`,
+  `export { planExpansionFortBuilding } from ${JSON.stringify(SRC + '/game/ai')};`,
   `export { territoryOwnerAt, cityTerritoryRadius } from ${JSON.stringify(SRC + '/map/territory')};`,
 ].join('\n') + '\n');
 
@@ -56,7 +59,7 @@ esbuild.build({
 
 const M = buildBundle('bundle-base.cjs', {});
 const { pickAutoImprovements, AI_TERRITORY_RACE } = M.AIMP;
-const { getImprovementMeta, territoryOwnerAt, cityTerritoryRadius } = M;
+const { getImprovementMeta, territoryOwnerAt, cityTerritoryRadius, planExpansionFortBuilding } = M;
 
 let passed = 0, failed = 0;
 function ok(cond, msg) {
@@ -207,6 +210,71 @@ console.log('F. gracz (brak aiTerritoryRace) niezmieniony: prog 1, brak udzialu'
   // Gracz ignoruje progi AI (brak `race`) -> progi 1000000 nie maja wplywu; fort dozwolony jak dotad.
   const picks = call(modHi, map0, { pool: FORT_COST * 4 });
   ok(keyPicks(picks, 'fort').length === 1, 'gracz: fort dozwolony mimo progu AI 10^6 i puli 4xkoszt (brak udzialu/progu)');
+}
+
+// =========================================================================
+console.log('H. druga sciezka budowy AI (planExpansionFortBuilding): te same reguly co pickFortClaims');
+{
+  const UQ = CQ + 8, UR = CR; // jednostka poza zasiegiem miasta (promien miasta < 8)
+  const unitH = { id: 'uH', ownerId: 0, q: UQ, r: UR, inGarnizon: false };
+  const GAIN_U = gainAt(UQ, UR, 'fort');
+  const FULL_SET = FULL;
+  const optsH = (over = {}) => ({
+    defensiveCopy: false,
+    cities: [{ ...CITY, foundedByOwner: true }],
+    territoryNodes: mkTN(),
+    placedImprovements: new Map(),
+    fortNodes: [],
+    improvementTechs: FULL_SET,
+    pracaAvailable: over.pool ?? 5000,
+    plannedImprovementCost: 0,
+    cityLimitBase: over.limitBase ?? 0,
+    civEra: 1,
+  });
+  const planH = (mod, over = {}, race) => mod.planExpansionFortBuilding(0, [{ ...CITY, foundedByOwner: true }], [unitH], map0, optsH(over), race);
+  ok(GAIN_U > 1, `H: zysk fortu na jednostce poza zasiegiem = ${GAIN_U} (test ma sens)`);
+  const modLow = buildBundle('bundle-h-low.cjs', { fortMinNoweHeksy: 1, posterunekMinNoweHeksy: 1 });
+  const modEqH = buildBundle('bundle-h-eq.cjs', { fortMinNoweHeksy: GAIN_U, posterunekMinNoweHeksy: 1000000 });
+  const modAboveH = buildBundle('bundle-h-above.cjs', { fortMinNoweHeksy: GAIN_U + 1, posterunekMinNoweHeksy: 1000000 });
+  const inWin = { turn: 60, threatFronts: 0 };
+  const c1 = planH(modEqH, {}, inWin);
+  ok(c1 && c1.key === 'fort', `H1 prog = zysk (${GAIN_U}), miasta wyczerpane, okno -> fort dozwolony`);
+  const c2 = planH(modAboveH, {}, inWin);
+  ok(c2 === null, `H2 prog = zysk+1 -> fort zablokowany w sciezce ekspansji`);
+  const c3 = planH(modLow, { limitBase: 5 }, inWin);
+  ok(c3 === null, 'H3 limit miast NIE wyczerpany (1 < 5) -> brak fortu w sciezce ekspansji');
+  const c4 = planH(modLow, {}, { turn: 60, threatFronts: 1 });
+  ok(c4 === null, 'H4 okno + zagrozenie -> udzial fortow = 0 (sciezka ekspansji)');
+  const c5 = planH(modLow, { pool: FORT_COST * 4 }, inWin);
+  ok(c5 === null, `H5 okno, pula ${FORT_COST * 4} (15% < koszt) -> brak fortu przez udzial`);
+  const c6 = planH(modLow, { pool: FORT_COST * 4 }, { turn: 100, threatFronts: 0 });
+  ok(c6 && c6.key === 'fort', 'H6 poza oknem (tura 100) ten sam budzet -> fort dozwolony');
+  const c7 = planH(M, { pool: 5000 }, undefined);
+  ok(c7 && c7.key === 'fort', 'H7 bez territoryRace (stara sciezka) -> fort dozwolony mimo produkcyjnego progu 40');
+  // H8/H9: PRODUKCYJNE progi (bez nadpisania). Szukamy na mapie heksu z zyskiem dokladnie 39 i 40 nowych heksow
+  // (ten sam wzor co pickFortClaims) poza zasiegiem miasta; fort ma byc blokowany przy 39, dozwolony przy 40.
+  const cityRad = cityTerritoryRadius({ q: CQ, r: CR, pop: CITY.population, level: 1 });
+  const axDist = (q1, r1, q2, r2) => (Math.abs(q1 - q2) + Math.abs(q1 - q2 + r1 - r2) + Math.abs(r1 - r2)) / 2;
+  // Heks poza zasiegiem miasta (axDist > promien) i zysk: `exact` = dokladnie, `atLeast` = >=.
+  const findSpot = (pred) => {
+    for (let q = 0; q < W; q++) for (let r = 0; r < H; r++) {
+      if (axDist(q, r, CQ, CR) <= cityRad) continue; // w zasiegu miasta: planner i tak pominie heks
+      const hx = map0.hexes[K(q, r)];
+      if (!hx || hx.terenBazowy === 'gory') continue;
+      if (pred(gainAt(q, r, 'fort'))) return [q, r];
+    }
+    return null;
+  };
+  const spot39 = findSpot(g => g === 39), spot40 = findSpot(g => g >= 40);
+  ok(spot39 !== null && spot40 !== null, `H8 na mapie testowej sa heksy poza zasiegiem z zyskiem 39 (${spot39}) i >=40 (${spot40})`);
+  if (spot39 && spot40) {
+    const unitAt = ([q, r]) => [{ id: 'uP', ownerId: 0, q, r, inGarnizon: false }];
+    const planAt = (spot, race) => M.planExpansionFortBuilding(0, [{ ...CITY, foundedByOwner: true }], unitAt(spot), map0, optsH({ pool: 5000 }), race);
+    const r39 = planAt(spot39, inWin);
+    ok(r39 === null, 'H8 produkcja (prog 40): zysk 39 -> fort ZABLOKOWANY');
+    const r40 = planAt(spot40, inWin);
+    ok(r40 !== null && r40.key === 'fort', 'H9 produkcja (prog 40): zysk >=40 -> fort DOZWOLONY');
+  }
 }
 
 console.log(`\nWYNIK: ${passed} OK / ${failed} FAIL`);
