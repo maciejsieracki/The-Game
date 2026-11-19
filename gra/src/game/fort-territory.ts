@@ -173,6 +173,21 @@ export function isHexInForeignFortTerritory(
 }
 
 /**
+ * R-WEB-TERRITORY-FORT-PLACEMENT-SAME-RULES-AS-CITY-Q1 (decyzja wlasciciela 2026-11-19: budowa
+ * zasiegu fortem ma takie same reguly jak dla miasta): WSPOLNY werdykt WLASNOSCI TERYTORIUM dla
+ * budowy fortu/posterunku (gracz, automat, AI) — heks nalezacy wg `territoryOwnerAt` do CUDZEJ
+ * cywilizacji (cudze miasto ALBO cudzy fort/posterunek w zasiegu) blokuje budowe. Ten sam
+ * rozstrzygacz co dla zakladania miasta (cudzy zasieg miasta: withinTerritory; cudzy fort:
+ * isHexInForeignFortTerritory). Nie zmienia promieni, kosztow ani reguly wlasnego terytorium
+ * fortu (fort nadal moze stac poza wlasnym terenem przy wlasnej jednostce) / EN: shared
+ * territory-ownership verdict for fort/outpost builds, same as the city founding rule.
+ * `owner` = wynik territoryOwnerAt dla heksu (null = wolny teren).
+ */
+export function isFortBuildBlockedByForeignTerritory(owner: number | null, builderOwnerId: number): boolean {
+  return owner !== null && owner !== builderOwnerId;
+}
+
+/**
  * Regula 1+3: czy hex (q,r) jest juz "zarezerwowany" (w promieniu) przez CUDZY,
  * nie-bezuzyteczny fort/posterunek — budowa WLASNEGO fortu tam wciaz jest
  * dozwolona (regula 2: nie blokuje fizycznie), ale wynik od razu bedzie
