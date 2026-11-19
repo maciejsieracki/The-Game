@@ -34,7 +34,7 @@ const ORIG_TICK = fs.readFileSync(TICK_FILE, 'utf8');
 function applyMut(src, reps) {
   let out = src;
   for (const [from, to] of reps || []) {
-    if (!out.includes(from)) throw new Error('mutant anchor missing: ' + from.slice(0, 70));
+    if (!out.includes(from)) throw new Error('KOTWICA NIEOBECNA (mutant nie zastosowany): ' + from.slice(0, 70));
     out = out.replace(from, to);
   }
   return out;
@@ -43,6 +43,12 @@ function applyMut(src, reps) {
 /** Bundluje oba moduły; mut = { coal: [[from,to]...], tick: [[from,to]...] } podmienia źródło w pamięci. */
 async function load(mut) {
   const entry = `export * from ${JSON.stringify(TICK_FILE)}; export * from ${JSON.stringify(COAL_FILE)};`;
+  // Błąd kotwicy łapany w onLoad i rzucany po buildzie: esbuild opakowuje wyjątki z pluginu w
+  // "Build failed with 1 error", co gubiło czytelny komunikat KOTWICA NIEOBECNA.
+  let anchorErr = null;
+  const safe = (src, reps) => {
+    try { return applyMut(src, reps); } catch (e) { anchorErr = anchorErr || e; return src; }
+  };
   const res = await esbuild.build({
     stdin: { contents: entry, resolveDir: GAME_DIR, sourcefile: 'entry.ts', loader: 'ts' },
     bundle: true, format: 'cjs', platform: 'node', write: false, logLevel: 'silent',
@@ -50,14 +56,15 @@ async function load(mut) {
       name: 'mutant-source',
       setup(b) {
         b.onLoad({ filter: /ai-ai-coalition\.ts$/ }, () => ({
-          contents: applyMut(ORIG_COAL, mut && mut.coal), loader: 'ts', resolveDir: GAME_DIR,
+          contents: safe(ORIG_COAL, mut && mut.coal), loader: 'ts', resolveDir: GAME_DIR,
         }));
         b.onLoad({ filter: /ai-ai-alliance-tick\.ts$/ }, () => ({
-          contents: applyMut(ORIG_TICK, mut && mut.tick), loader: 'ts', resolveDir: GAME_DIR,
+          contents: safe(ORIG_TICK, mut && mut.tick), loader: 'ts', resolveDir: GAME_DIR,
         }));
       },
     }],
   });
+  if (anchorErr) throw anchorErr;
   const m = { exports: {} };
   new Function('module', 'exports', 'require', res.outputFiles[0].text)(m, m.exports, require);
   return m.exports;
