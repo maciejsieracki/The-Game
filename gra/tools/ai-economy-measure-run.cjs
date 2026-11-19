@@ -41,6 +41,8 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const { execSync } = require('child_process');
+// R-WEB-MEASURE-RUNNERS-REJECT-AI-OFFERS-Q1: wspolne odrzucanie wiszacych ofert AI->gracz (przed sprawdzeniem canEnd).
+const { rejectAwaitingAiOffers } = require('./measure-reject-offers.cjs');
 
 const GRA_DIR = path.resolve(__dirname, '..');
 
@@ -68,17 +70,9 @@ const SAVE_AT = parseInt(arg('save-at', '40'), 10);
 const MUTANT = arg('mutant', '0') === '1';
 /** R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1: --player-ai 1 = gracz (0) sterowany autopilotem AI (hak, domyślnie 0). */
 const PLAYER_AI = arg('player-ai', '0') === '1';
-/** R-WEB-AI-TERRITORY-RACE-...-Q1 r3: --reject-offers 1 = odrzucaj wiszace oferty handlowe AI->gracz (wzorzec rejectAwaitingAiOffers z diplomacy-harder-measure-run.cjs); domyślnie 0 (bez zmiany zachowania). */
-const REJECT_OFFERS = arg('reject-offers', '0') === '1';
-let AI_OFFERS_REJECTED = 0;
-async function rejectAwaitingAiOffers(page) {
-  const ids = await page.evaluate(() => {
-    const st = window.__aiTradeWiringTestDebug.state();
-    return (st.entries || []).filter(e => e.responder === 0 && e.proposer !== 0).map(e => e.id);
-  });
-  for (const id of ids) { await page.evaluate(i => window.__aiTradeWiringTestDebug.reject(i), id); AI_OFFERS_REJECTED++; }
-  return ids.length;
-}
+/** --reject-offers 1|0: 1 = odrzucanie wiszacych ofert AI->gracz przed canEnd (JEDNA wspolna implementacja z
+ * measure-reject-offers.cjs); domyslnie 1 (bez tego biegi staja w t18/t36 na wiszacej ofercie); 0 = wylaczone (wsteczna zgodnosc). */
+const REJECT_OFFERS = arg('reject-offers', '1') !== '0';
 const SLOT = 'ai-econ-s' + SEED;
 const HASH_IGNORED = ['units[].stackGroupId(null)', 'cities[].budowaLista(gdy [])', 'cities[].magazynZywnosci(gdy 0)', 'cities[].postepBudynkowUsuniete(gdy {})', 'resourceLedgerHistory(#432)'];
 const CHROME = process.env.CHROME_PATH || '/usr/bin/chromium';
@@ -90,7 +84,10 @@ let RUN_START_TURN = 0;
 
 /** Liczniki przebiegu (zapisywane w state.json po KAZDEJ turze i w summary.json). */
 const COUNTER_KEYS = ['gateActiveTurns', 'bypassApplied', 'stuckQueueHeals', 'battlesAuto',
-  'diploAudienceClosed', 'armyMergeClosed', 'techNoticeClosed'];
+  'diploAudienceClosed', 'armyMergeClosed', 'techNoticeClosed',
+  // R-WEB-MEASURE-RUNNERS-REJECT-AI-OFFERS-Q1: aiOffersRejected = POTWIERDZONE odrzucenia (wpis zniknal),
+  // aiOffersRejectAttempts = PROBY (wywolania reject). Nie mieszac: proba bez skutku nie jest odrzuceniem.
+  'aiOffersRejected', 'aiOffersRejectAttempts'];
 /** Klucze blokad modalnych (= liczniki zamkniec). */
 const MODAL_KEYS = ['diploAudienceClosed', 'armyMergeClosed', 'techNoticeClosed'];
 
@@ -367,8 +364,22 @@ async function playOneTurn(page, ctxState) {
   await closeEndTurnModals(page, ctxState);
   const battlesAuto = await clearBattles(page, ctxState);
   ctxState.battlesAuto = (ctxState.battlesAuto || 0) + battlesAuto;
-  if (REJECT_OFFERS) { await rejectAwaitingAiOffers(page); await clearBattles(page, ctxState); }
+  // R-WEB-MEASURE-RUNNERS-REJECT-AI-OFFERS-Q1: wiszaca oferta AI->gracz blokuje koniec tury; pasywny gracz ja odrzuca
+  // PRZED sprawdzeniem canEnd (bez ofert: zero zmian stanu gry, tylko odczyt stolu). Liczniki w ctxState i w wierszu tury.
+  const offersRec = { confirmed: 0, attempts: 0 };
+  const countOffers = o => {
+    offersRec.confirmed += o.confirmed; offersRec.attempts += o.attempts;
+    ctxState.aiOffersRejected = (ctxState.aiOffersRejected || 0) + o.confirmed;
+    ctxState.aiOffersRejectAttempts = (ctxState.aiOffersRejectAttempts || 0) + o.attempts;
+  };
+  const seenOffers = new Set(); // proby liczone raz na id oferty w tej turze
+  if (REJECT_OFFERS) { countOffers(await rejectAwaitingAiOffers(page, seenOffers)); await clearBattles(page, ctxState); }
   let canEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
+  if (!canEnd && REJECT_OFFERS) {
+    // Druga proba: odrzucenie moze odslonic kolejna oferte w kolejce stolu (jak w diplomacy-harder-measure-run.cjs).
+    countOffers(await rejectAwaitingAiOffers(page, seenOffers));
+    canEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
+  }
   // r3: odlozona auto-bitwa potrafi zalegac w kolejce (pendingAuto=true, nic nie otwarte; seed 4242 t51). Gra leczy to
   // dopiero przy PROBIE zakonczenia tury (healStuckDeferredPreBattleQueueOnEndTurnAttempt, prog 8 s) -- tak jak gracz,
   // ktory klika „Zakoncz ture”. Harness robi to samo (do 3 prob, liczone w stuckQueueHeals) i NIE ukrywa faktu w wyniku.
@@ -391,7 +402,8 @@ async function playOneTurn(page, ctxState) {
     const mH = await page.evaluate(() => window.__aiEconomyMeasure.metrics());
     const recH = { seed: SEED, turn: afterH, gateBlockedBeforeEnd: blocked, bypass, battlesAuto, stuckQueueHealEndedTurn: true,
       modalClosedThisTurn: modalDelta(),
-      owners: mH.owners, diag: mH.diag, niezmierzone: mH.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10 };
+      owners: mH.owners, diag: mH.diag, niezmierzone: mH.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
+      aiOffersRejected: offersRec.confirmed, aiOffersRejectAttempts: offersRec.attempts };
     recH.wars = await collectWars(page, mH.owners);
     recH.upkeepGate = gateDelta(gateBefore, await readGateStats(page));
     if (HASH) recH.stateHash = await stateHash(page, null);
@@ -424,9 +436,10 @@ async function playOneTurn(page, ctxState) {
   const m = await page.evaluate(() => window.__aiEconomyMeasure.metrics());
   const rec = {
     seed: SEED, turn: after, gateBlockedBeforeEnd: blocked, bypass, battlesAuto, modalClosedThisTurn: modalDelta(),
-    offersRejectedTotal: AI_OFFERS_REJECTED, owners: m.owners, terytorium: m.terytorium, diag: m.diag, niezmierzone: m.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
+    offersRejectedTotal: ctxState.aiOffersRejected || 0, owners: m.owners, terytorium: m.terytorium, diag: m.diag, niezmierzone: m.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
     load1: Math.round(os.loadavg()[0] * 100) / 100,
     ledgerRecording: LEDGER_OFF ? 'off' : 'on',
+    aiOffersRejected: offersRec.confirmed, aiOffersRejectAttempts: offersRec.attempts,
   };
   rec.wars = await collectWars(page, m.owners);
   rec.upkeepGate = gateDelta(gateBefore, await readGateStats(page));

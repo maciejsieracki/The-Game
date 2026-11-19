@@ -1,0 +1,13 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (narzedzia pomiarowe; gra/src nietkniete)
+TEMAT: R-WEB-MEASURE-RUNNERS-REJECT-AI-OFFERS-Q1
+GOAL: wspolne odrzucanie wiszacych ofert AI->gracz w runnerach pomiaru; proby i potwierdzone odrzucenia rozdzielone.
+ZMIANY/COMMIT: kandydat afc4c5f2051efbdaaf3dfd361333fd288415b4bc. `git merge-base --is-ancestor 11eb45c7d... afc4c5f20...` = prawda (kandydat zawiera tez scalenie z origin/main 59d04b65c, zgodnie z DODATKIEM r2). Zakres wzgledem 59d04b65c (git diff --stat, 6 plikow): measure-reject-offers.cjs (nowy, jedyna implementacja), ai-economy-measure-run.cjs, diplomacy-harder-measure-run.cjs, measure-reject-offers-test.cjs, raporty 10/30. Wszystko w allowliscie; gra/src, gra-robocza, WERSJE.md nietkniete. ai-ai-alliance-measure-run.cjs = wrapper na ai-economy-measure-run.cjs (NODE_OPTIONS --require), wiec dziedziczy zmiane bez edycji. git diff --check = CHECK_OK.
+TESTY (wlasne, surowe wyjscie): node --check OK; measure-reject-offers-test.cjs = "15 OK, 0 FAIL". Mutant 1 (domyslna --reject-offers 1->0 w ai-economy): "14 OK, 1 FAIL" (asercja 7). Mutant 2 (bramka `if (REJECT_OFFERS)` -> `if (false)`): "14 OK, 1 FAIL" (asercja 7). Przeglad kodu: attempts liczone raz na id/zbior, confirmed = wpis zniknal po reject; offersRejectedTotal = aiOffersRejected (zgodnosc z FALA 858).
+NIE_ZMIERZONO (brak node_modules w worktree, bundle/Chromium poza zakresem tej rundy): tsc (gra/src bez zmian w diffie, wiec bez skutku), logic 213, tech-tree 20, research 33, unit-replace 21, combat 6, hook-testy (ai-economy 23/0, diplomacy-harder 15/0, alliance), player-ai-autopilot 5/5, bieg seed 1234 >=40 tur, parytet seed 4242.
+OCENA ZARZUTOW: Z1 (asercja 6 statyczna) = ODDAL (uwaga, niski priorytet): asercja 7 zamyka dwie realne mutacje (potwierdzone mutantami); integracja z biegiem tylko przegladarkowo. Z2 (luka dokumentacyjna) = ODDAL: mutant odtworzony, parytet 4242 cytowany z Evaluatora, nie mierzony przez FC. Z3 (zmiana semantyki aiOffersRejected, domyslna 1) = ODDAL jako zamierzone, wymagane DODATKIEM 1 pkt 1 i 3 oraz opisane w naglowku helpera; stare jsonl/summary nieporownywalne wprost.
+BLOKADY: brak blokad kodowych; dowod behawioralny (bieg przegladarkowy) do wykonania przez orkiestratora.
+RUNDY: FC po rundzie 2/5.
+NASTEPNY KROK: integracja orkiestratora; przed deployem: bramki referencyjne + hook-testy + bieg seed 1234 >=40 tur (przedtem cannot-end t18) i parytet 4242 --reject-offers 0 vs 1.
+UWAGI-DLA-ORKIESTRATORA: Obrona zglosila nieudane wywolanie archive_session (odrzucone przez klasyfikator uprawnien, bez skutku); prosze zweryfikowac w logu. Ja nie wywolywalem narzedzi sesji.
+DEPLOY/PUSH: NIE WYKONANO
