@@ -52,6 +52,7 @@ Nowe starty: `df --output=avail -BG /` ≥ 6 GB (integracja `/home/user/integ` �
 
 ## GOTOWE DO STARTU (kolejność; start gdy slot < 4 i dysk ≥ 6 GB; dispatch najpierw na gałąź)
 
+00000. **R-WEB-ECONOMY-UNIT-RECRUIT-COST-ERA-EXTRA-MULT-Q1** (decyzja właściciela: rekrutacja Pieniądz ×2 Brąz, ×4 Żelazo dodatkowo; plus audyt kosztów wojska; dispatch zapisany).
 0000. **R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1** (decyzja właściciela: ustawienie nowej gry „Wzrost surowców z epoką”, domyślnie WYŁ.; dispatch zapisany).
 000. **R-WEB-TERRITORY-FORT-PLACEMENT-SAME-RULES-AS-CITY-Q1** (decyzja właściciela: zasięg fortu = reguły jak miasto; URUCHOMIONY 2026-11-19 ~21:55).
 00. **R-WEB-ECONOMY-UNIT-UPKEEP-EXTRA-MULT-AND-FOOD-TAX-RATE-Q1** (korekta FALI 875 + mnożnik 1/4/8 + kurs 0,2; dispatch zapisany; pomiar obowiązkowy).
