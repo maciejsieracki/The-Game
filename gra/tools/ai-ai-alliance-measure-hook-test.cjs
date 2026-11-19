@@ -170,17 +170,28 @@ const params = JSON.parse(fs.readFileSync(path.resolve(GRA_ROOT, 'data', 'ai-ai-
 ok(params.torSojuszyAktywny === false, 'torSojuszyAktywny w danych = false (flaga nie włączona w kodzie)');
 
 // 3) Mutanty: każdy musi czerwienić test (a sam mutant musi zmienić źródło).
+// Kotwica nieobecna = mutant NIEZASTOSOWANY = FAIL (nigdy "wykryty").
+const wykryteMut = [];
+const niewykryteMut = [];
 for (const [name, kind, frag, repl] of MUTANTS) {
   const text = kind === 'main' ? MAIN : TICK;
-  if (!text.includes(frag)) { ok(false, `mutant ${name}: kotwica nieobecna w źródle`); continue; }
+  if (!text.includes(frag)) {
+    ok(false, `mutant ${name}: KOTWICA NIEOBECNA w źródle (${kind}): ${frag.slice(0, 60)}`);
+    niewykryteMut.push(name);
+    continue;
+  }
   const mutated = text.replace(frag, repl);
   const m = kind === 'main'
     ? evaluate(mutated, TICK)
     : evaluate(MAIN, mutated);
   // Mutant źródła tick: wykrywany także behawioralnie (B1) — to on łapie zmianę WARTOŚCI, nie tylko obecności tekstu.
   const b = kind === 'tick' ? behaviorFails(mutated) : [];
-  ok(m.length > 0 || b.length > 0, `mutant ${name} wykryty (statyczne: ${m.join(',') || 'brak'}; B1: ${b.join(',') || 'brak'})`);
+  const wykryty = m.length > 0 || b.length > 0;
+  ok(wykryty, `mutant ${name} wykryty (statyczne: ${m.join(',') || 'brak'}; B1: ${b.join(',') || 'brak'})`);
+  (wykryty ? wykryteMut : niewykryteMut).push(name);
 }
+console.log(`WYKRYTE MUTANTY (${wykryteMut.length}/${MUTANTS.length}): ${wykryteMut.join(', ') || 'brak'}`);
+if (niewykryteMut.length) console.log(`NIEWYKRYTE / NIEZASTOSOWANE (${niewykryteMut.length}): ${niewykryteMut.join(', ')}`);
 
 console.log(fail === 0 ? '\nWYNIK: ZIELONY' : `\nWYNIK: CZERWONY (${fail})`);
 process.exit(fail === 0 ? 0 : 1);

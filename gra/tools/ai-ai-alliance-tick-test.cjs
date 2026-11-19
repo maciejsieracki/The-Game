@@ -299,7 +299,14 @@ function main() {
     try {
       res = runSuite(loadModule(reps));
     } catch (e) {
-      mutantReport.push({ name, detected: true, why: 'build: ' + (e.message || e) });
+      // Brak kotwicy (lub błąd buildu) = mutant NIEZASTOSOWANY = CZERWONY, nigdy "wykryty".
+      const msg = String(e.message || e);
+      const anchorMissing = msg.startsWith('mutant anchor missing');
+      mutantReport.push({
+        name,
+        detected: false,
+        why: (anchorMissing ? 'KOTWICA NIEOBECNA: ' : 'BLAD BUILDU: ') + msg,
+      });
       continue;
     }
     const red = res.filter(r => !r.ok).map(r => r.name);
@@ -309,7 +316,10 @@ function main() {
   M.setAiAiAllianceTickEnabledForTest(null);
 
   const missedMut = mutantReport.filter(m => !m.detected);
+  const detectedMut = mutantReport.filter(m => m.detected);
   const ok = fail.length === 0 && missedMut.length === 0;
+  console.log(`\nWYKRYTE MUTANTY (${detectedMut.length}): ${detectedMut.map(m => m.name).join(', ') || 'brak'}`);
+  if (missedMut.length) console.log(`NIEWYKRYTE / NIEZASTOSOWANE MUTANTY (${missedMut.length}): ${missedMut.map(m => m.name).join(', ')}`);
   console.log(`\nSUMMARY: suite ${base.length - fail.length}/${base.length} OK; mutants detected ${mutantReport.length - missedMut.length}/${mutantReport.length}`);
   process.exit(ok ? 0 : 1);
 }
