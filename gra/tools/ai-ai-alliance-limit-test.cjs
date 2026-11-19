@@ -135,6 +135,24 @@ console.log(`PRAWDZIWY MODUŁ: ${realFails.length === 0 ? 'OK' : 'FAIL'}`);
 for (const f of realFails) console.log('  - ' + f);
 if (realFails.length) failures++;
 
+// (W) Wiring w main.ts: test statyczny (czyta źródło main.ts; nie uruchamia boot()).
+// Każda ścieżka zawierania sojuszu musi wołać wspólne sprawdzenie limitu.
+const MAIN_FILE = path.resolve(GRA_ROOT, 'src', 'main.ts');
+const MAIN_SRC = fs.readFileSync(MAIN_FILE, 'utf8');
+const WIRING = [
+  { nazwa: 'tor tick: licznik z pełnego stanu', wzorzec: 'const alliancesCount = liczbaSojuszyCywilizacji(aiAiAllianceLimitInput(owners));' },
+  { nazwa: 'gałąź sióstr: bramka limitu', wzorzec: 'if (isAiAiAllianceTickEnabled() && !aiAiAllianceLimitPozwala(a, b)) continue;' },
+  { nazwa: 'ścieżka wniosków (gracz↔AI): blokada', wzorzec: 'if (result.accepted && result.deal && aiAiAllianceLimitBlokujeDeal(result.deal)) {' },
+  { nazwa: 'blokada wniosku: flaga + rodzaj + pozwala', wzorzec: 'return !aiAiAllianceLimitPozwala(a, b);' },
+];
+function wiringFails(src) {
+  return WIRING.filter(w => !src.includes(w.wzorzec)).map(w => `W brak wiązania: ${w.nazwa}`);
+}
+const wFails = wiringFails(MAIN_SRC);
+console.log(`WIRING main.ts: ${wFails.length === 0 ? 'OK' : 'FAIL'}`);
+for (const f of wFails) console.log('  - ' + f);
+if (wFails.length) failures++;
+
 const mutants = {
   M1_off_by_one: LIMIT_SRC.replace('(licznik.get(oid) ?? 0) < input.maxSojuszy', '(licznik.get(oid) ?? 0) <= input.maxSojuszy'),
   M2_ai_side_not_counted: LIMIT_SRC.replace('licznik.set(x, (licznik.get(x) ?? 0) + 1);\n    if (input.aiCivs.has(y)', 'if (false) licznik.set(x, 0);\n    if (input.aiCivs.has(y)'),
@@ -148,5 +166,11 @@ for (const [name, src] of Object.entries(mutants)) {
   if (f.length === 0) { console.log(`MUTANT ${name}: NIE WYKRYTY`); failures++; }
   else console.log(`MUTANT ${name}: wykryty (${f.length} porażek)`);
 }
-console.log(failures === 0 ? 'SUMMARY: limit suite OK; mutants detected 4/4' : `SUMMARY: FAILURES ${failures}`);
+// Mutanty wiringu: usunięcie każdego wiązania z kopii main.ts (w pamięci) MUSI być wykryte.
+for (const w of WIRING) {
+  const mutSrc = MAIN_SRC.split(w.wzorzec).join('/* usunięto */');
+  if (wiringFails(mutSrc).length === 0) { console.log(`MUTANT WIRING ${w.nazwa}: NIE WYKRYTY`); failures++; }
+  else console.log(`MUTANT WIRING ${w.nazwa}: wykryty`);
+}
+console.log(failures === 0 ? 'SUMMARY: limit suite OK; mutants detected 4/4 + wiring 4/4' : `SUMMARY: FAILURES ${failures}`);
 process.exit(failures === 0 ? 0 : 1);

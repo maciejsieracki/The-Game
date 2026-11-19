@@ -25683,6 +25683,16 @@ async function boot(): Promise<void> {
       return sojuszLimitPozwala(aiAiAllianceLimitInput(owners), a, b);
     }
 
+    /** R-WEB-AI-AI-ALLIANCE-LIMIT-2-VIOLATED-Q1: zaakceptowany wniosek dyplomatyczny z sojuszem (gracz↔AI lub AI↔AI)
+     *  nie może przebić limitu 2 na cywilizację AI; przy flagowym OFF zawsze false (zachowanie jak dotąd). */
+    function aiAiAllianceLimitBlokujeDeal(deal: ActiveDeal): boolean {
+      if (!isAiAiAllianceTickEnabled()) return false;
+      if (!isAllianceDealKind(deal.rodzaj)) return false;
+      const [a, b] = deal.strony;
+      if (a === undefined || b === undefined) return false;
+      return !aiAiAllianceLimitPozwala(a, b);
+    }
+
     function tickAiAiAllianceRequests(): void {
       if (!isAiAiAllianceTickEnabled()) return;
       refreshObjectivePowerCache();
@@ -26850,6 +26860,10 @@ async function boot(): Promise<void> {
       payload: ProposalPayload,
       cywAction: string,
     ): void {
+      // R-WEB-AI-AI-ALLIANCE-LIMIT-2-VIOLATED-Q1: ścieżka wniosków (gracz↔AI) też podlega limitowi sojuszy.
+      if (result.accepted && result.deal && aiAiAllianceLimitBlokujeDeal(result.deal)) {
+        result = { ...result, accepted: false, reason: 'Limit 2 sojuszy na cywilizację AI został osiągnięty' };
+      }
       showDiplomacyProposalBanner(result.accepted, result.reason);
       if (!result.accepted) {
         if (cywAction === 'trybut_zadanie' || cywAction === 'trybut_oferta') {
