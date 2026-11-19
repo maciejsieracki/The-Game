@@ -1078,8 +1078,8 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
 // `_startRout` (`:9799`) obsługuje też rout z aktywacji (okrążenie). KONTRATAK obrońcy (`_defenderCounters`,
 // K5LOOP-KONTRATAK) JEST zaimplementowany w [`ProdBody::counter_strike`].
 // K5LOOP-KILL-RIPPLE (D-INT-2): ripple `_shakeAlliesOnLoss` przy zabiciu (`:9048`) JEST wykonywany
-// ([`ProdBody::kill_ripples`]). JAWNIE NIEPORTOWANE (NIE_ZMIERZONO, wpis w `unported`): efekty dowódcy armii (`isArmyCommander`: tagi `dowodca-*`),
-// `occByKey` (brak konsumenta w ProdBody) i `routedUnits` (dane na przyszłość). Timing `BLOW_HIT_T` (150 ms)
+// ([`ProdBody::kill_ripples`]). K5LOOP-TAGS-REST: efekty dowódcy armii (`isArmyCommander`, `_removeCommanderMoraleBonus`)
+// są WYKONYWANE ([`ProdBody::commander_lost`]); JAWNIE NIEPORTOWANE: `routedUnits` (dane na przyszłość, bez konsumenta). Timing `BLOW_HIT_T` (150 ms)
 // to wejście adaptera ([`ProdUnit::body_ms`]).
 // FACING (r4, K5LOOP-FACING): ciało trzyma `facing` każdej jednostki. `_updateFacing` (zdarzenie `UpdateFacing` na
 // początku aktywacji, `_nearestEnemy` + `facingToward`) i przypisanie `attacker.facing` w `_doMeleeAttack` (przed ciosem)
@@ -1290,9 +1290,17 @@ pub struct ProdBody<R: RollSource> {
     facing: [Vec<f64>; 2],
     /// `ru.moraleMax` każdej jednostki (`_gainMorale`, `_armyMoraleRatio`). Domyślnie morale startowe z `activate.morale`.
     pub morale_max: [Vec<f64>; 2],
-    /// `ru.isArmyCommander`. Domyślnie `false`; efekty dowódcy są nieportowane (tagi `dowodca-*` w `unported`),
-    /// ale flaga wyłącza jednostkę z `_armyMoraleRatio` (`armyMoraleRatioWithoutCommander`).
+    /// `ru.isArmyCommander`. Domyślnie `false`. Flaga wyłącza jednostkę z `_armyMoraleRatio`
+    /// (`armyMoraleRatioWithoutCommander`), a rout/zabicie dowódcy (`_startRout` `:9803-9806`, `_startFade` `:9929-9932`)
+    /// wykonuje [`ProdBody::remove_commander_morale_bonus`] dla jego strony (K5LOOP-TAGS-REST, dawne tagi `dowodca-*`).
     pub is_army_commander: [Vec<bool>; 2],
+    /// K5LOOP-TAGS-REST: `ru.bu.armyLeaderMoraleBonusFrac ?? 0` każdej jednostki (wejście adaptera; zerowane przez
+    /// `_removeCommanderMoraleBonus`, `battleScene.ts:9999`). Domyślnie `0` (pin: brak pola = `0`, jednostka pomijana).
+    pub army_leader_bonus_frac: [Vec<f64>; 2],
+    /// K5LOOP-TAGS-REST: `moraleBaseFor(u.bu)` z `armyLeaderMoraleBonusFrac = 0` (`battleScene.ts:1611-1624`, BEZ mnożnika
+    /// obrońcy `1.5`, który dokłada ciało jak pin `:10000`): wejście adaptera (statystyka `Morale bazowe` z weteranem).
+    /// `None` przy `army_leader_bonus_frac` nie `<= 0` = błąd wejścia, jawny tag `dowodca-bez-bazy-morale` (bez zgadywania).
+    pub morale_base_plain: [Vec<Option<f64>>; 2],
     /// `ru.screenLostApplied` (`_checkMeleeScreenLost`, jednorazowe -50% morale strzelców).
     screen_lost_applied: [Vec<bool>; 2],
     /// Stan doktryny każdej jednostki (K5DOC-PROD-UNIT-STAN): `unitDoctrine`, `groupId`, `rangedKite`, `shootingEnabled`,
@@ -1420,13 +1428,13 @@ pub struct ProdBody<R: RollSource> {
     pub flee_stuck: [Vec<f64>; 2],
     /// K5LOOP-CLOSE r4: strony `TurnSeqState` po ucieczce wykonanej w `start` (kopia stanu z efektami `_startRout`
     /// z okrążenia, `_removeUnitFromScene` i `_shakeAlliesOnLoss` w kolejności pinu); `complete` tej samej jednostki
-    /// przepisuje je do stanu sterownika. Bezpieczne, bo gałąź ucieczki działa tylko bez muru (tag `ucieczka-oblezenie`),
-    /// więc między `start` a `complete` żaden zegar (wieże) nie zmienia jednostek.
+    /// przepisuje je do stanu sterownika. Bez muru między `start` a `complete` żaden zegar nie zmienia jednostek (kopia
+    /// 1:1). K5LOOP-TAGS-REST: przy murze zegar (wieże, `BodyTimer`) może zmienić jednostki w tym oknie: `complete` łączy
+    /// wtedy stany pole po polu ([`merge_flee_unit`]), konflikt = jawny tag `ucieczka-konflikt-zegara`.
     ///
-    /// KONTRAKT dla sterownika (#113, U5 Evaluatora r4): między `start` a `complete` uciekającej jednostki stan jednostek
-    /// `TurnSeqState` (`atk`, `def`) nie może się zmienić i nie może wystartować inna aktywacja z ucieczką. `complete`
-    /// sprawdza to twardą asercją ([`ProdFleeAfter::before_atk`]/[`ProdFleeAfter::before_def`] i jednostka), w każdym
-    /// profilu kompilacji: naruszenie kontraktu to błąd sterownika, który inaczej po cichu nadpisałby cudze zmiany.
+    /// KONTRAKT dla sterownika (#113, U5 Evaluatora r4): między `start` a `complete` uciekającej jednostki nie może
+    /// wystartować inna aktywacja z ucieczką, a `complete` dotyczy tej samej jednostki (twarda asercja w każdym profilu).
+    /// Zmiana stanu jednostek przez zegar w tym oknie NIE jest już naruszeniem kontraktu (łączenie zamiast nadpisania).
     flee_after: Option<ProdFleeAfter>,
 }
 
@@ -1443,6 +1451,45 @@ struct ProdFleeAfter {
 }
 
 /// Równość list jednostek odporna na NaN (`moveLeft = NaN` z lekcji r2 a): bitowa, gdy `==` zawodzi tylko przez NaN.
+/// K5LOOP-TAGS-REST: łączenie trójstronne jednej jednostki po ucieczce (patrz `complete`): `cur` = stan sterownika
+/// teraz, `before` = w chwili `start`, `fled` = wynik ucieczki z `start`. Porównanie liczb po bitach (NaN = NaN). Zwraca
+/// `true` przy konflikcie (oba źródła zmieniły pole na różne wartości; zostaje wartość sterownika).
+fn merge_flee_unit(cur: &mut CombatUnit, before: &CombatUnit, fled: &CombatUnit) -> bool {
+    fn num(cur: &mut f64, before: f64, fled: f64) -> bool {
+        let same = |a: f64, b: f64| a.to_bits() == b.to_bits() || (a.is_nan() && b.is_nan());
+        if same(fled, before) || same(*cur, fled) {
+            return false;
+        }
+        if same(*cur, before) {
+            *cur = fled;
+            return false;
+        }
+        true
+    }
+    fn flag(cur: &mut bool, before: bool, fled: bool) -> bool {
+        if fled == before || *cur == fled {
+            return false;
+        }
+        if *cur == before {
+            *cur = fled;
+            return false;
+        }
+        true
+    }
+    let mut c = false;
+    c |= num(&mut cur.hp, before.hp, fled.hp);
+    c |= num(&mut cur.morale, before.morale, fled.morale);
+    c |= num(&mut cur.flee_morale, before.flee_morale, fled.flee_morale);
+    c |= num(&mut cur.move_left, before.move_left, fled.move_left);
+    c |= flag(&mut cur.never_rout, before.never_rout, fled.never_rout);
+    c |= flag(&mut cur.dead, before.dead, fled.dead);
+    c |= flag(&mut cur.fading_out, before.fading_out, fled.fading_out);
+    c |= flag(&mut cur.routed, before.routed, fled.routed);
+    c |= flag(&mut cur.removed, before.removed, fled.removed);
+    c |= flag(&mut cur.acted, before.acted, fled.acted);
+    c
+}
+
 fn same_seq_units(a: &[SeqUnit], b: &[SeqUnit]) -> bool {
     a == b || format!("{a:?}") == format!("{b:?}")
 }
@@ -1854,6 +1901,8 @@ impl<R: RollSource> ProdBody<R> {
             units[1].iter().map(|u| u.activate.morale).collect(),
         ];
         let is_army_commander = [vec![false; units[0].len()], vec![false; units[1].len()]];
+        let army_leader_bonus_frac = [vec![0.0; units[0].len()], vec![0.0; units[1].len()]];
+        let morale_base_plain = [vec![None; units[0].len()], vec![None; units[1].len()]];
         let screen_lost_applied = [vec![false; units[0].len()], vec![false; units[1].len()]];
         let doctrine = [
             vec![ProdDoctrineState::default(); units[0].len()],
@@ -1935,6 +1984,8 @@ impl<R: RollSource> ProdBody<R> {
             facing,
             morale_max,
             is_army_commander,
+            army_leader_bonus_frac,
+            morale_base_plain,
             screen_lost_applied,
             doctrine,
             names,
@@ -2315,18 +2366,17 @@ impl<R: RollSource> ProdBody<R> {
     ///
     /// Gałęzie jawnie oznaczone (bez cichego pominięcia):
     /// * `krok-naprzod-brak-terenu`: decyzja wymaga `_passableForUnit`, a ciało nie ma [`MoveTerrain`] (D1).
-    /// * `krok-naprzod-atak`: `Attack` z `_advanceStep` (`:8241-8244`) poza krokiem doktryny (`from_doctrine = false`)
-    ///   albo po kroku ruchu. W pinie NIEOSIĄGALNE: z `_activateUnit` (U7.8/U7.9) dla melee bez muru `_targetInRange`
-    ///   (`:8373-8392`, `dd === 1 || dd === 0`) zwraca cel zawsze, gdy `_canAttackFrom` (`:8436-8444`, `dd === 1`) jest
-    ///   prawdą, więc `_activateUnit` wybiera `_doAttack` (`:6293-6297`) przed `_advanceStep` (`:6298`); kolejne
-    ///   wywołania z `_schedule` następują tylko, gdy callback `_doMove` sprawdził `!_canAttackFrom` z nowej pozycji
-    ///   (`:8223`, `:8277`). W ciele osiągalne tylko przy niespójnym wejściu adaptera ([`ProdUnit::melee_target`] =
-    ///   `None` przy sąsiedzie), stąd jawny tag.
     ///
-    /// K5DOC-T8: `Attack` przy PIERWSZYM wejściu z kroku doktryny (`from_doctrine = true`; `steady`, `:18022-18025`) jest
-    /// osiągalny w pinie, bo doktryna woła `_advanceStep` bez wcześniejszego `_targetInRange`. Cel liczy
-    /// `_pickAdjacentTargetByPriority` (K5DOC-T2 [`pick_adjacent_target_by_priority`]); zwracany jako trzeci element
-    /// wyniku i wykonywany wspólną ścieżką `_doAttack` w `start` (szablon ciosu jak dla każdego ciosu).
+    /// `Attack` (`:8241-8245`: `if (_canAttackFrom(ru, ru.q, ru.r)) { const adjacent = _pickAdjacentTargetByPriority(ru);
+    /// if (adjacent) _doAttack(ru, adjacent, done); else done(); return; }`) jest wykonywany przy KAŻDYM wejściu, jak w
+    /// pinie (K5LOOP-TAGS-REST, dawny tag `krok-naprzod-atak`). Cel liczy `_pickAdjacentTargetByPriority` (K5DOC-T2
+    /// [`pick_adjacent_target_by_priority`]); zwracany jako trzeci element wyniku i wykonywany wspólną ścieżką
+    /// `_doAttack` w `start` po krokach tej aktywacji (pierwszy element wyniku = czas przed ciosem). Osiągalność w pinie:
+    /// z kroku doktryny (`steady`/`aggressive`, `:18022-18025`) przy pierwszym wejściu; z `_activateUnit` (U7.8/U7.9,
+    /// falanga) praktycznie nie, bo `_targetInRange` (`:8373-8392`) obejmuje każdy cel `_canAttackFrom` (`:8436-8444`),
+    /// a callback `_doMove` kończy przy `_canAttackFrom` (`:8223`, `:8277`). Niespójne wejście adaptera
+    /// ([`ProdUnit::melee_target`] różne od celu `_pickAdjacentTargetByPriority`) ujawnia się wtedy jako błąd wejścia
+    /// `cios-bez-szablonu` (bez zgadywania szablonu).
     ///
     /// C-FLANK (`:8204-8235`, K5LOOP-CLOSE r2, zdjęty tag `krok-naprzod-flanka`): dla `attackDirection` `'bok'`/`'tyl'`
     /// każde wejście `_advanceStep` najpierw próbuje manewru na flankę/tył celu `_pickTargetByPriority ?? _nearestEnemy`
@@ -2335,7 +2385,6 @@ impl<R: RollSource> ProdBody<R> {
         &mut self,
         unit: UnitRef,
         st: &TurnSeqState,
-        from_doctrine: bool,
     ) -> (f64, Option<f64>, Option<usize>) {
         let ix = side_ix(unit.side);
         let mounted = self.units[ix][unit.idx].activate.mounted;
@@ -2413,10 +2462,6 @@ impl<R: RollSource> ProdBody<R> {
             }
             match decision {
                 AdvanceDecision::Done => break,
-                AdvanceDecision::Attack { .. } if moved || !from_doctrine => {
-                    self.unported.push((unit, "krok-naprzod-atak"));
-                    break;
-                }
                 AdvanceDecision::Attack { .. } => {
                     // `const adjacent = this._pickAdjacentTargetByPriority(ru); if (adjacent) _doAttack(...) else done()`.
                     let me = self.combatant(unit, st);
@@ -3798,15 +3843,14 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         // Uciekająca jednostka (`if (ru.routed) { this._fleeStep(ru, done); return; }`, battleScene.ts:6055) nigdy nie
         // atakuje; gałąź działa przed trybem ręcznym i doktryną. K5LOOP-CLOSE r4: `_fleeStep` (`:9845-9897`) jest
         // WYKONYWANY ([`Self::flee_run`]). Bez [`MoveTerrain`] (D1 K5DOC-T4e-0) zostaje jawny tag `ucieczka-routed` i
-        // brak akcji; przy murze (`_doMove` czyta `_siegeMoveRefused`, `:8689`) jawny tag `ucieczka-oblezenie`.
+        // brak akcji. K5LOOP-TAGS-REST: przy murze ucieczka też jest wykonywana (dawny tag `ucieczka-oblezenie`): każdy
+        // krok przechodzi przez bramkę `_doMove` `siegeWallCol >= 0 && _siegeMoveRefused` (`:8689`,
+        // [`Self::move_step_core`]), a `_siegeApproachRestricted` (`:7953`) zwraca `false` dla `ru.routed`
+        // ([`Self::mover_routed`] = `true` tutaj), więc rozbita jednostka nigdy nie dostaje odmowy (jak w pinie).
         if seq.routed {
             self.trace.push((unit, vec![ActivateEvent::Flee]));
             if self.terrain.is_none() {
                 self.unported.push((unit, "ucieczka-routed"));
-                return 0.0;
-            }
-            if self.scene.wall_col >= 0 || st.siege_wall_col >= 0 {
-                self.unported.push((unit, "ucieczka-oblezenie"));
                 return 0.0;
             }
             let mut st2 = st.clone();
@@ -4003,8 +4047,6 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         let mut phalanx = false;
         let mut flee = false;
         let mut doctrine = false;
-        // K5DOC-T8: `_advanceStep` wołane przez krok doktryny (cios z `:8241-8245` osiągalny w pinie).
-        let mut advance_from_doctrine = false;
         // K5LOOP-SIEGE-ATK-A: `_advanceToward(ru, approachCol, bestRow, done)` katapulty atakującego (`:6214-6216`).
         let mut toward: Option<(i64, i64)> = None;
         // K5LOOP-SIEGE-ATK-B: `_attackWallTile(ru, bestRow, done)` katapulty atakującego w zasięgu muru (`:6209-6212`).
@@ -4052,9 +4094,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 // `_startRout`, zapisują się w `complete`). Precedencja tagów TAKA SAMA jak w gałęzi `routed` w
                 // [`LoopBody::start`]: najpierw brak [`MoveTerrain`] (`ucieczka-routed`, ramię `other` niżej), potem mur
                 // (`ucieczka-oblezenie`), dopiero potem wykonanie `_fleeStep`.
-                ActivateEvent::Flee if siege && self.terrain.is_some() => {
-                    skipped.push("ucieczka-oblezenie")
-                }
+                // K5LOOP-TAGS-REST: przy murze także (dawny tag `ucieczka-oblezenie`); bramka muru `_doMove` w
+                // [`Self::move_step_core`] czyta `ru.routed` po `_startRout` (patrz `mover_routed` niżej).
                 ActivateEvent::Flee if self.terrain.is_some() => flee = true,
                 // K5DOC-T8: `_executeGroupDoctrineStep(ru, meta, done)` (`battleScene.ts:6097`, ciało `:17966-18084`).
                 ActivateEvent::DoctrineStep => doctrine = res.branches.contains(&"U7.0-doctrine"),
@@ -4077,6 +4118,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             if pend.start_rout {
                 self.start_rout(&mut st2, unit);
             }
+            // `_siegeApproachRestricted` (`:7953`) czyta `ru.routed` w chwili kroku, czyli PO `_startRout` (`:6116`).
+            self.mover_routed = st2.unit(unit).c.routed;
             let dur = self.flee_run(unit, &mut st2);
             self.flee_after = Some(ProdFleeAfter {
                 unit,
@@ -4110,11 +4153,17 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 DoctrineAction::RangedAction => ranged = true,
                 DoctrineAction::AdvanceStep => {
                     advance = true;
-                    advance_from_doctrine = true;
                 }
                 DoctrineAction::MoveOrder { .. } => {
                     // `_performPlayerOrder(ru, finish)` (`:18082`, `:18122`; ciało `:18280-18352`) to K5EXEC-T3 (#268):
-                    // jawny tag, brak ruchu.
+                    // jawny tag, brak ruchu. K5LOOP-TAGS-REST: tag ZOSTAJE (decyzja techniczna, raport T4): rozkaz ruchu
+                    // doktryny wydaje wyłącznie `_executeSkirmishDoctrineStep` (`:18110-18122`) i gałąź końcowa
+                    // `:18063-18083` (nieosiągalna: `GroupDoctrine` = `defensive | steady | aggressive | skirmish |
+                    // manual`, `:1938`, każda obsłużona wcześniej). Doktrynę `skirmish` ustawia WYŁĄCZNIE gracz z UI
+                    // (`_setGroupDoctrine` `:17864` z panelu generała `:18205`, `_setUnitsDoctrine` `:17666` z `:13171`);
+                    // domyślna doktryna AUTO to `steady` (`_getEffectiveDoctrine` `:17612-17619`), więc w bitwie AUTO
+                    // bez trybu ręcznego gałąź nie występuje. Ciało `_performPlayerOrder` `'move'` (ruch zachłanny,
+                    // `_firstStepTowardMoveDestination`, kolejka rozkazów) to zakres K5EXEC-T3.
                     self.unported.push((unit, "doktryna-rozkaz-ruchu"));
                     self.pending[ix][unit.idx] = Some(pend);
                     return 0.0;
@@ -4219,11 +4268,16 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         }
         // `_advanceStep` i `_doAttack` wykluczaja sie w `_activateUnit` (kazda galaz konczy sie `return`). K5DOC-T8: cios z
         // `_advanceStep` (`:8241-8245`, osiągalny z kroku doktryny `steady`/`aggressive`) idzie wspólną ścieżką `_doAttack`.
+        // K5LOOP-TAGS-REST: czas kroków `_advanceStep` przed ciosem (`_doAttack` w chwili końca ostatniego kroku).
+        let mut attack_pre = 0.0;
         if advance {
-            let (dur, move_left, attack) = self.advance_step(unit, st, advance_from_doctrine);
+            let (dur, move_left, attack) = self.advance_step(unit, st);
             pend.move_left = move_left;
             match attack {
-                Some(t) => pend.attack = Some(t),
+                Some(t) => {
+                    pend.attack = Some(t);
+                    attack_pre = dur;
+                }
                 None => {
                     self.pending[ix][unit.idx] = Some(pend);
                     return dur;
@@ -4236,11 +4290,11 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         // (`Facing` + `Shot`, trafienie `_singleBlow(…, true)` po `RANGED_FLY_MS`, koniec po `RANGED_GAP_MS`), nie ciosem.
         if pu.activate.can_shoot {
             if let Some(target) = pend.attack.take() {
-                pend.shot = self.begin_shot(unit, target, 0.0);
+                pend.shot = self.begin_shot(unit, target, attack_pre);
                 let dur = if pend.shot.is_some() {
-                    RANGED_FLY_MS + RANGED_GAP_MS
+                    attack_pre + RANGED_FLY_MS + RANGED_GAP_MS
                 } else {
-                    0.0
+                    attack_pre
                 };
                 self.pending[ix][unit.idx] = Some(pend);
                 return dur;
@@ -4253,9 +4307,9 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             }
         }
         let dur = if pend.attack.is_some() {
-            pu.body_ms
+            attack_pre + pu.body_ms
         } else {
-            0.0
+            attack_pre
         };
         // P4-1I3: `_doMeleeAttack` (`:9096-9175`): zwrot atakującego ku celowi (`:9104-9105`, zawsze `rotation.y`),
         // potem start lunge w `t0`; cios w `t0 + body_ms` (adapter: `BLOW_HIT_T`). Sam stan `facing` zmienia
@@ -4273,13 +4327,16 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 &JsVal::Num(self.facing[ix][unit.idx]),
             )
             .to_number();
+            let saved = self.now;
+            self.now = saved + attack_pre;
             self.emit(BattleAction::Facing { unit, dir });
-            let hit_at = self.now + dur;
+            let hit_at = saved + dur;
             self.emit(BattleAction::Melee {
                 attacker: unit,
                 target: tref,
                 hit_at,
             });
+            self.now = saved;
         }
         self.pending[ix][unit.idx] = Some(pend);
         dur
@@ -4303,12 +4360,33 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 fa.unit, unit,
                 "complete innej jednostki niz start ucieczki (kontrakt flee_after)"
             );
-            assert!(
-                same_seq_units(&st.atk, &fa.before_atk) && same_seq_units(&st.def, &fa.before_def),
-                "stan jednostek zmieniony miedzy start a complete ucieczki (kontrakt flee_after)"
-            );
-            st.atk = fa.atk;
-            st.def = fa.def;
+            if same_seq_units(&st.atk, &fa.before_atk) && same_seq_units(&st.def, &fa.before_def) {
+                st.atk = fa.atk;
+                st.def = fa.def;
+                return;
+            }
+            // K5LOOP-TAGS-REST: przy murze zegar sterownika (trafienia wież `TowerHit`, odroczone wywołania ciała
+            // `BodyTimer`, np. kamień katapulty) może zmienić jednostki w oknie start..complete ucieczki. Łączenie
+            // trójstronne pole po polu: pole zmienione tylko przez ucieczkę bierze wynik ucieczki, zmienione tylko przez
+            // zegar zostaje. Pole zmienione przez oba na RÓŻNE wartości (kolejność zdarzeń w czasie rzeczywistym pinu nie
+            // jest odtwarzana w ciele, które liczy ucieczkę w `start`) = jawny tag `ucieczka-konflikt-zegara` i wartość
+            // zegara (NIE_ZMIERZONO, dług #369: sterownik czasu rzeczywistego).
+            let mut conflict = false;
+            for (cur, (before, fled)) in st
+                .atk
+                .iter_mut()
+                .zip(fa.before_atk.iter().zip(fa.atk.iter()))
+                .chain(
+                    st.def
+                        .iter_mut()
+                        .zip(fa.before_def.iter().zip(fa.def.iter())),
+                )
+            {
+                conflict |= merge_flee_unit(&mut cur.c, &before.c, &fled.c);
+            }
+            if conflict {
+                self.unported.push((unit, "ucieczka-konflikt-zegara"));
+            }
             return;
         }
         {
@@ -4644,8 +4722,8 @@ impl<R: RollSource> ProdBody<R> {
     }
 
     /// `_startRout` (`battleScene.ts:9799-9825`): flaga `routed`, `acted`, oslona wrecz, boost wrogów, zwrot ku
-    /// własnej krawędzi (atakujący W = 3, obrońca E = 1), zwolnienie pola `occByKey` (`:9812`). Nieportowane:
-    /// `routedUnits`, efekty dowódcy.
+    /// własnej krawędzi (atakujący W = 3, obrońca E = 1), zwolnienie pola `occByKey` (`:9812`), efekty dowódcy
+    /// (`:9803-9806`, [`Self::commander_lost`]). Nieportowane: `routedUnits` (dane bez konsumenta, `:9827-9830`).
     fn start_rout(&mut self, st: &mut TurnSeqState, unit: UnitRef) {
         let ix = side_ix(unit.side);
         {
@@ -4660,8 +4738,10 @@ impl<R: RollSource> ProdBody<R> {
         self.release_tile(unit);
         // P4-1I3: `_sfxRout()` (`:9801`) = początek rozbicia, przed kaskadą osłony wręcz.
         self.emit(BattleAction::Rout { unit });
+        // K5LOOP-TAGS-REST (`:9803-9806`): `if (ru.isArmyCommander) { _removeCommanderMoraleBonus(ru.side);
+        // _disableManualIfCommanderLost(ru.side); }` przed `acted` i kaskadą osłony wręcz.
         if self.is_army_commander[ix][unit.idx] {
-            self.unported.push((unit, "dowodca-rout"));
+            self.commander_lost(st, unit);
         }
         if !self.units[ix][unit.idx].activate.primary_ranged {
             self.check_melee_screen_lost(st, unit.side);
@@ -4676,6 +4756,53 @@ impl<R: RollSource> ProdBody<R> {
         self.emit(BattleAction::Facing { unit, dir });
         let text = rout_log(&self.name_of(unit));
         self.emit(BattleAction::Log { text });
+    }
+
+    /// K5LOOP-TAGS-REST: efekty utraty dowódcy armii z `_startRout` (`battleScene.ts:9803-9806`) i `_startFade`
+    /// (`:9929-9932`): `_removeCommanderMoraleBonus(ru.side)` i `_disableManualIfCommanderLost(ru.side)`.
+    ///
+    /// `_removeCommanderMoraleBonus` (`:9993-10005`), dla KAŻDEJ jednostki strony (także martwej, uciekającej i samego
+    /// dowódcy) w kolejności listy:
+    /// 1. `frac = bu.armyLeaderMoraleBonusFrac ?? 0`; `if (frac <= 0) continue` (NaN NIE spełnia, jednostka przechodzi);
+    /// 2. `ratio = moraleMax > 0 ? Math.max(0, Math.min(1, morale / moraleMax)) : 0` (NaN propaguje przez `Math.*`);
+    /// 3. `frac = 0`; `base = moraleBaseFor(bu) * (side === 'def' ? 1.5 : 1)` (`moraleBaseFor` z zerowym bonusem =
+    ///    wejście adaptera [`Self::morale_base_plain`]); `moraleMax = base`; `morale = Math.min(base, Math.ceil(base *
+    ///    ratio))`; `_updateMoraleBar` (render, bez stanu).
+    ///
+    /// `_disableManualIfCommanderLost` (`:10007-10015`) działa wyłącznie w trybie ręcznym gracza (bramka
+    /// `_manualCommanderGate`, strona gracza, odroczone `_toggleManualMode` tylko przy `_manualMode`). Ciało gra AUTO
+    /// (strażnik `tryb-reczny` w `start`, D-WIR-2): odroczone wywołanie nic nie zmienia, więc nie jest planowane (bez
+    /// pustego zdarzenia zegara). Brak wejścia `morale_base_plain` przy jednostce z bonusem = jawny tag
+    /// `dowodca-bez-bazy-morale` i brak zmiany tej jednostki (błąd wejścia adaptera, bez zgadywania bazy).
+    fn commander_lost(&mut self, st: &mut TurnSeqState, commander: UnitRef) {
+        let side = commander.side;
+        let ix = side_ix(side);
+        let side_mult = match side {
+            BattleSide::Attacker => 1.0,
+            BattleSide::Defender => 1.5,
+        };
+        for idx in 0..self.units[ix].len() {
+            let frac = self.army_leader_bonus_frac[ix][idx];
+            if frac <= 0.0 {
+                continue;
+            }
+            let u = UnitRef { side, idx };
+            let Some(plain) = self.morale_base_plain[ix][idx] else {
+                self.unported.push((u, "dowodca-bez-bazy-morale"));
+                continue;
+            };
+            let max = self.morale_max[ix][idx];
+            let morale = st.unit(u).c.morale;
+            let ratio = if max > 0.0 {
+                js_max(0.0, js_min(1.0, morale / max))
+            } else {
+                0.0
+            };
+            self.army_leader_bonus_frac[ix][idx] = 0.0;
+            let base = plain * side_mult;
+            self.morale_max[ix][idx] = base;
+            unit_cu_mut(st, u).morale = js_min(base, (base * ratio).ceil());
+        }
     }
 
     /// `_checkMeleeScreenLost(side)` (`battleScene.ts:9759-9774`): gdy strona nie ma już żywej jednostki wrecz,
@@ -4715,20 +4842,26 @@ impl<R: RollSource> ProdBody<R> {
     }
 
     /// `_startFade` -> `_removeUnitFromScene` (`battleScene.ts:9910-9937`): jednostka zabita znika z pola
-    /// (`removed`, `dead`, `fadingOut = false`). Efekty dowódcy są nieportowane (tag `dowodca-fade`).
+    /// (`removed`, `dead`, `fadingOut = false`). Efekty dowódcy (`:9929-9932`) przed zniknięciem
+    /// ([`Self::commander_lost`]).
     fn start_fade(&mut self, st: &mut TurnSeqState, unit: UnitRef) {
-        let c = unit_cu_mut(st, unit);
-        if c.fading_out || c.dead || c.removed {
-            return;
+        {
+            let c = st.unit(unit).c;
+            if c.fading_out || c.dead || c.removed {
+                return;
+            }
         }
+        // K5LOOP-TAGS-REST (`:9929-9932`): efekty dowódcy PRZED `_removeUnitFromScene` (pin: `_removeCommanderMoraleBonus`
+        // czyta morale całej strony, także zabijanej jednostki, która w tej chwili nie jest jeszcze `removed`).
+        if self.is_army_commander[side_ix(unit.side)][unit.idx] {
+            self.commander_lost(st, unit);
+        }
+        let c = unit_cu_mut(st, unit);
         c.removed = true;
         c.dead = true;
         c.fading_out = false;
         // `_removeUnitFromScene`: `this.occByKey.delete(cellKey(ru.q, ru.r))` (`battleScene.ts:9915`).
         self.release_tile(unit);
-        if self.is_army_commander[side_ix(unit.side)][unit.idx] {
-            self.unported.push((unit, "dowodca-fade"));
-        }
         // P4-1I3: `_sfxDeath()` + `_removeUnitFromScene(ru)` (`:9933-9937`).
         self.emit(BattleAction::Kill { unit });
     }
@@ -4789,8 +4922,8 @@ impl<R: RollSource> ProdBody<R> {
     /// Kontratak obrońcy (pin `_doMeleeAttack`, COUNTER-ATTACK, battleScene.ts:9134-9143). Warunki jak w
     /// `_defenderCounters` (battleScene.ts:9079-9091): obrońca żywy, nie znika, nie ucieka, HP > 0, budżet tury
     /// (`DefenderCounterBudget`: jeden kontratak na obrońcę w turze; turę oznacza `round_no`). Budżet sprawdzany przed
-    /// gałęzią strzelca. Strzelec podstawowy (`primary_ranged`) wymaga stanu „bez amunicji”, którego ProdBody nie
-    /// trzyma: zapisywany jako nieportowany, bez kontrataku.
+    /// gałęzią strzelca. Strzelec podstawowy (`primary_ranged`) kontratakuje tylko bez amunicji (`!canShoot`,
+    /// `:9091`; K5LOOP-TAGS-REST, dawny tag `kontratak-strzelec`).
     fn counter_strike(&mut self, st: &mut TurnSeqState, attacker: UnitRef, defender: UnitRef) {
         let dix = side_ix(defender.side);
         let dc = st.unit(defender).c;
@@ -4800,8 +4933,11 @@ impl<R: RollSource> ProdBody<R> {
         if self.counter_round[dix][defender.idx] == Some(st.round_no) {
             return;
         }
-        if self.units[dix][defender.idx].activate.primary_ranged {
-            self.unported.push((defender, "kontratak-strzelec"));
+        // K5LOOP-TAGS-REST (`:9090-9091`): `if (!defender.primaryRanged) return true; return !canShoot(defender);`:
+        // strzelec podstawowy kontratakuje tylko „przyparty” (bez amunicji). `canShoot = rangedBase && ammoLeft > 0`
+        // (`:1457-1459`) ciało trzyma w `activate.can_shoot` (przeliczane przy każdym strzale, [`Self::complete_shot`]).
+        let da = &self.units[dix][defender.idx].activate;
+        if da.primary_ranged && da.can_shoot {
             return;
         }
         let Some(cin) = self.units[dix][defender.idx]

@@ -9,7 +9,8 @@
 //!     armia w odwrocie),
 //!  2. daje nazwane scenariusze (Kill, MoraleOnly, rout-flaga) z ręcznie policzonymi oczekiwaniami,
 //!  3. testuje RUST-ONLY (bez wektorów pinu, NIE_ZMIERZONO względem pinu): osłonę wręcz (`_checkMeleeScreenLost`),
-//!     tagi `unported` (ripple `shakeAlliesOnLoss`, dowódca) i próg terenu obronnego w `_checkRout`.
+//!     tagi `unported` (ripple `shakeAlliesOnLoss`), efekty dowódcy (K5LOOP-TAGS-REST; zgodność z pinem w
+//!     `p6_k5loop_tags_rest`) i próg terenu obronnego w `_checkRout`.
 
 use std::collections::BTreeSet;
 
@@ -330,13 +331,52 @@ fn armia_w_odwrocie_zwieksza_strate_morale() {
     assert_eq!(st.def[0].c.morale, 17.0);
 }
 
-/// Dowódca: efekty nieportowane i oznaczone w `unported` (`_removeCommanderMoraleBonus`, `_disableManualIfCommanderLost`).
+/// K5LOOP-TAGS-REST (D-INT-2; dawniej `dowodca_jest_nieportowany_i_oznaczony`, oczekiwał tagu `dowodca-fade`):
+/// zabicie dowódcy (`_startFade` `:9929-9932`) wykonuje `_removeCommanderMoraleBonus(side)` (`:9993-10005`) dla
+/// strony obrońcy. def1 (daleko od poległego: bez ripple) ma bonus 0.25, `moraleMax` 125, morale 100: `ratio` = 0.8,
+/// `base` = 100 (`moraleBaseFor` bez bonusu) x 1.5 (obrońca) = 150, `morale = min(150, ceil(150 x 0.8)) = 120`,
+/// `moraleMax = 150`, bonus zerowany. def2 ma bonus 0 (pomijany). Brak tagów. Pełna zgodność z pinem: wektory
+/// `p6_k5loop_tags_rest` (rodzina `commander`).
 #[test]
-fn dowodca_jest_nieportowany_i_oznaczony() {
-    let (mut body, mut st) = scenario(vec![(def_act(1), cu(3.0, 100.0))], 80.0);
+fn dowodca_zabity_zdejmuje_bonus_morale_strony() {
+    let (mut body, mut st) = scenario(
+        vec![
+            (def_act(1), cu(3.0, 100.0)),
+            (def_act(20), cu(50.0, 100.0)),
+            (def_act(30), cu(50.0, 70.0)),
+        ],
+        80.0,
+    );
     body.is_army_commander[1][0] = true;
+    body.army_leader_bonus_frac[1][1] = 0.25;
+    body.morale_max[1][1] = 125.0;
+    body.morale_base_plain[1][1] = Some(100.0);
+    body.morale_max[1][2] = 90.0;
     strike_once(&mut body, &mut st);
-    assert!(body.unported.contains(&(def(0), "dowodca-fade")));
+    assert!(st.def[0].c.dead && st.def[0].c.removed);
+    assert_eq!(body.unported, vec![]);
+    assert_eq!(st.def[1].c.morale, 120.0);
+    assert_eq!(body.morale_max[1][1], 150.0);
+    assert_eq!(body.army_leader_bonus_frac[1][1], 0.0);
+    assert_eq!(st.def[2].c.morale, 70.0, "bez bonusu: bez zmian");
+    assert_eq!(body.morale_max[1][2], 90.0);
+}
+
+/// K5LOOP-TAGS-REST: bonus dowódcy bez wejścia `moraleBaseFor` (adapter nie podał [`ProdBody::morale_base_plain`]) =
+/// jawny błąd wejścia `dowodca-bez-bazy-morale` i brak zmiany tej jednostki (bez zgadywania bazy).
+#[test]
+fn dowodca_bonus_bez_bazy_morale_jest_bledem_wejscia() {
+    let (mut body, mut st) = scenario(
+        vec![(def_act(1), cu(3.0, 100.0)), (def_act(20), cu(50.0, 100.0))],
+        80.0,
+    );
+    body.is_army_commander[1][0] = true;
+    body.army_leader_bonus_frac[1][1] = 0.25;
+    body.morale_max[1][1] = 125.0;
+    strike_once(&mut body, &mut st);
+    assert_eq!(body.unported, vec![(def(1), "dowodca-bez-bazy-morale")]);
+    assert_eq!(st.def[1].c.morale, 100.0);
+    assert_eq!(body.morale_max[1][1], 125.0);
 }
 
 /// RUST-ONLY (bez wektorów pinu): osłona wręcz. Złamanie ostatniej jednostki wręcz (def0) odbiera strzelcowi (def1,

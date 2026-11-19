@@ -1097,34 +1097,56 @@ fn ucieczka_bez_terenu_jawny_tag() {
     }
 }
 
-/// Przy murze `_doMove` czyta `_siegeMoveRefused` (`:8689`), a ciało nie ma tego wejścia: ucieczka ma jawny tag
-/// `ucieczka-oblezenie` (bez ruchu i bez skutków), nie ciche pominięcie.
+/// K5LOOP-TAGS-REST (D-INT-2; dawniej `ucieczka_przy_murze_jawny_tag`, oczekiwał tagu `ucieczka-oblezenie` bez ruchu):
+/// przy murze ucieczka jest wykonywana. Jedyna różnica pinu przy murze to bramka `_doMove` `siegeWallCol >= 0 &&
+/// _siegeMoveRefused` (`:8689`), a `_siegeApproachRestricted` (`:7953`) zwraca `false` dla `ru.routed`: rozbita jednostka
+/// nigdy nie dostaje odmowy. Wektory pinu rodziny `flee` (wszystkie 400, jednostka rozbita na starcie) muszą więc dać ten
+/// sam wynik przy murze co bez niego (pełne [`check_activation`]: kroki, czasy, `Leave`, `Shaken`, stan, `occByKey`).
+/// Zgodność z wykonanym tekstem pinu PRZY MURZE (z `_siegeMoveRefused` i zagrożeniami) sprawdza `p6_k5loop_tags_rest`.
 #[test]
-fn ucieczka_przy_murze_jawny_tag() {
-    let (v, cav_mult) = load_from(VECTORS);
-    let mut n = 0;
-    for case in v["cases"]
-        .as_array()
-        .expect("cases")
-        .iter()
-        .filter(|c| c["kind"] == "flee")
-        .take(20)
-    {
-        let Built {
-            mut body,
-            mut st,
-            acting,
-        } = build(case, &cav_mult, true);
-        st.siege_wall_col = 40;
-        let before = body.unit_cell(acting);
-        assert_eq!(body.start(acting, &st), 0.0);
-        body.complete(acting, &mut st);
-        assert_eq!(body.unit_cell(acting), before);
-        assert_eq!(body.unported, vec![(acting, "ucieczka-oblezenie")]);
-        assert!(!st.unit(acting).c.removed);
-        n += 1;
-    }
-    assert_eq!(n, 20);
+fn ucieczka_przy_murze_zgodna_z_pinem() {
+    with_timeout("mur", || {
+        let (v, cav_mult) = load_from(VECTORS);
+        let mut failures = Vec::new();
+        let (mut n, mut moved) = (0, 0);
+        for case in v["cases"]
+            .as_array()
+            .expect("cases")
+            .iter()
+            .filter(|c| c["kind"] == "flee")
+        {
+            let name = case["name"].as_str().expect("name");
+            let Built {
+                mut body,
+                mut st,
+                acting,
+            } = build(case, &cav_mult, true);
+            st.siege_wall_col = 40;
+            let c = check_activation(
+                &format!("{name}@mur"),
+                &case["expect"],
+                &mut body,
+                &mut st,
+                acting,
+                0,
+                0,
+                &mut failures,
+            );
+            assert!(body.unported.is_empty(), "{name}: {:?}", body.unported);
+            if c.n_steps > 0 {
+                moved += 1;
+            }
+            n += 1;
+        }
+        assert!(
+            failures.is_empty(),
+            "{} rozbieznosci, pierwsze: {:#?}",
+            failures.len(),
+            &failures[..failures.len().min(12)]
+        );
+        assert_eq!(n, 400);
+        assert!(moved >= 150, "kroki ucieczki przy murze: {moved}");
+    });
 }
 
 /// `BattleAction::Leave` i `BattleAction::Shaken` nie mają jeszcze wariantu DTO (I5): konwersja jest jawnym błędem.
@@ -1190,9 +1212,10 @@ fn leave_i_shaken_bez_dto_to_jawny_blad() {
     );
 }
 
-/// U5 Evaluatora r4: kontrakt `flee_after` (stan jednostek bez zmian między `start` a `complete` ucieczki) jest twardą
-/// asercją w każdym profilu, nie `debug_assert`: zmiana stanu przez sterownik w tym oknie daje panic, nie ciche
-/// nadpisanie cudzych zmian kopią z `start`.
+/// U5 Evaluatora r4 (K5LOOP-TAGS-REST, D-INT-2): kontrakt `flee_after` jest twardą asercją dla JEDNOSTKI (`complete`
+/// innej jednostki niż `start` ucieczki = panic, nie ciche nadpisanie). Dawniej panic dawała też KAŻDA zmiana stanu
+/// w oknie start..complete; przy murze zegar (wieże, `BodyTimer`) zmienia jednostki w tym oknie zgodnie z pinem, więc
+/// stan jest łączony pole po polu (test `ucieczka_laczenie_ze_zmiana_zegara`).
 #[test]
 #[should_panic(expected = "kontrakt flee_after")]
 fn ucieczka_kontrakt_stanu_miedzy_start_a_complete() {
@@ -1209,9 +1232,91 @@ fn ucieczka_kontrakt_stanu_miedzy_start_a_complete() {
         acting,
     } = build(case, &cav_mult, true);
     body.start(acting, &st);
-    // Sterownik łamie kontrakt: zmienia jednostkę w oknie start..complete.
-    st.atk[0].c.morale += 1.0;
+    // Sterownik łamie kontrakt: druga ucieczka startuje przed `complete` pierwszej (nadpisałaby jej wynik).
+    let side = if acting.side == BattleSide::Attacker {
+        BattleSide::Defender
+    } else {
+        BattleSide::Attacker
+    };
+    let list = match side {
+        BattleSide::Attacker => &mut st.atk,
+        BattleSide::Defender => &mut st.def,
+    };
+    let idx = list
+        .iter()
+        .position(|u| !u.c.dead && !u.c.fading_out && !u.c.removed)
+        .expect("zywa jednostka drugiej strony");
+    list[idx].c.routed = true;
+    body.start(UnitRef { side, idx }, &st);
     body.complete(acting, &mut st);
+}
+
+/// K5LOOP-TAGS-REST: zmiana stanu przez zegar sterownika w oknie start..complete ucieczki. Pole zmienione tylko przez
+/// zegar zostaje, pole zmienione tylko przez ucieczkę bierze wynik ucieczki (bez tagu); to samo pole zmienione przez oba
+/// na różne wartości = jawny tag `ucieczka-konflikt-zegara` i wartość zegara.
+#[test]
+fn ucieczka_laczenie_ze_zmiana_zegara() {
+    let (v, cav_mult) = load_from(VECTORS);
+    let case = v["cases"]
+        .as_array()
+        .expect("cases")
+        .iter()
+        .find(|c| {
+            c["kind"] == "flee" && !c["expect"]["steps"].as_array().expect("steps").is_empty()
+        })
+        .expect("flee z krokiem");
+    let fresh = || build(case, &cav_mult, true);
+    // Wzorzec: bez zmian w oknie.
+    let Built {
+        mut body,
+        mut st,
+        acting,
+    } = fresh();
+    body.start(acting, &st);
+    body.complete(acting, &mut st);
+    let want = st.clone();
+    let ml_want = st.unit(acting).c.move_left;
+    // (a) zegar zmienia HP innej jednostki: wynik = ucieczka + zmiana zegara, bez tagu.
+    let Built {
+        mut body,
+        mut st,
+        acting,
+    } = fresh();
+    body.start(acting, &st);
+    let other = UnitRef {
+        side: if acting.side == BattleSide::Attacker {
+            BattleSide::Defender
+        } else {
+            BattleSide::Attacker
+        },
+        idx: 0,
+    };
+    let hp0 = st.unit(other).c.hp;
+    match other.side {
+        BattleSide::Attacker => st.atk[0].c.hp = hp0 - 1.0,
+        BattleSide::Defender => st.def[0].c.hp = hp0 - 1.0,
+    }
+    body.complete(acting, &mut st);
+    assert!(body.unported.is_empty(), "{:?}", body.unported);
+    assert_eq!(st.unit(other).c.hp, hp0 - 1.0);
+    assert_eq!(st.unit(acting).c.move_left.to_bits(), ml_want.to_bits());
+    assert_eq!(st.unit(acting).c.removed, want.unit(acting).c.removed);
+    // (b) zegar zmienia `moveLeft` uciekającej jednostki na inną wartość niż ucieczka: konflikt, wartość zegara, tag.
+    let Built {
+        mut body,
+        mut st,
+        acting,
+    } = fresh();
+    body.start(acting, &st);
+    let clock = -7.0;
+    assert_ne!(clock, ml_want);
+    match acting.side {
+        BattleSide::Attacker => st.atk[acting.idx].c.move_left = clock,
+        BattleSide::Defender => st.def[acting.idx].c.move_left = clock,
+    }
+    body.complete(acting, &mut st);
+    assert_eq!(body.unported, vec![(acting, "ucieczka-konflikt-zegara")]);
+    assert_eq!(st.unit(acting).c.move_left, clock);
 }
 
 /// U5: ten sam scenariusz bez naruszenia kontraktu przechodzi (asercja nie strzela na poprawnej ścieżce).

@@ -461,8 +461,10 @@ fn brak_terenu_daje_jawny_tag_bez_ruchu() {
     assert_eq!(body.unported, vec![(acting, "krok-naprzod-brak-terenu")]);
 }
 
-/// Niespójne wejście adaptera (`melee_target = None` przy żywym sąsiedzie): `_advanceStep` daje `Attack`, nieosiągalne
-/// z `_activateUnit` w pinie. Ciało oznacza to tagiem i nie wykonuje ciosu ani ruchu.
+/// Niespójne wejście adaptera (`melee_target = None` przy żywym sąsiedzie): `_advanceStep` daje `Attack`
+/// (`:8241-8245`). K5LOOP-TAGS-REST (D-INT-2; dawniej tag `krok-naprzod-atak`): ciało wykonuje gałąź jak pin
+/// (`_pickAdjacentTargetByPriority` -> `_doAttack`), a brak szablonu ciosu dla wybranego celu (adapter podał
+/// `melee_target = None`) to jawny błąd wejścia `cios-bez-szablonu`: bez ciosu i bez ruchu.
 #[test]
 fn atak_z_advance_step_jest_oznaczony() {
     let v: Value = serde_json::from_str(VECTORS).expect("wektory");
@@ -509,7 +511,7 @@ fn atak_z_advance_step_jest_oznaczony() {
     body.complete(acting, &mut st);
     assert_eq!(body.unit_cell(acting), before);
     assert!(body.blows.is_empty());
-    assert_eq!(body.unported, vec![(acting, "krok-naprzod-atak")]);
+    assert_eq!(body.unported, vec![(acting, "cios-bez-szablonu")]);
 }
 
 fn melee_blow() -> FullBlowInput {

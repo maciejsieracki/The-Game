@@ -723,13 +723,18 @@ fn check_def_with(case: &Value, opts: Opts, failures: &mut Vec<String>) -> Strin
         check_units(name, e, &body, &st, failures);
     }
     // Kryterium końca T1: obrońca przy murze nigdy nie ma tagu `oblezenie`; jedyny dopuszczalny tag to ucieczka po
-    // rozbiciu okrążeniem (`_fleeStep`). Precedencja jak w gałęzi `routed` (`LoopBody::start`, K5LOOP-CLOSE r4): bez
-    // danych terenu `ucieczka-routed`, z terenem przy murze `ucieczka-oblezenie` (`_doMove` -> `_siegeMoveRefused`).
+    // rozbiciu okrążeniem (`_fleeStep`) BEZ danych terenu (`ucieczka-routed`, D1). K5LOOP-TAGS-REST: z terenem ucieczka
+    // jest wykonywana (dawny tag `ucieczka-oblezenie`), a generator tego pliku zatrzymuje `_fleeStep` przy murze (atrapa):
+    // takich wektorów nie wolno tu porównywać (porównanie z wykonanym `_fleeStep` pinu: `p6_k5loop_tags_rest`).
     let fled = want_trace.iter().any(|t| t == "flee");
-    let want_unported: Vec<(UnitRef, &str)> = match (fled, opts.terrain) {
-        (false, _) => Vec::new(),
-        (true, false) => vec![(acting, "ucieczka-routed")],
-        (true, true) => vec![(acting, "ucieczka-oblezenie")],
+    assert!(
+        !(fled && opts.terrain),
+        "{name}: ucieczka z terenem przy murze porownywana w p6_k5loop_tags_rest"
+    );
+    let want_unported: Vec<(UnitRef, &str)> = if fled {
+        vec![(acting, "ucieczka-routed")]
+    } else {
+        Vec::new()
     };
     if body.unported != want_unported {
         failures.push(format!("{name}: unported {:?}", body.unported));
@@ -1117,12 +1122,15 @@ fn mur_tylko_w_scenie_daje_ten_sam_wynik() {
 }
 
 /// Obrona r1, Z3 (mutant E14: `Flee if siege && terrain.is_none()`): okrążenie obrońcy przy murze z danymi terenu.
-/// `_fleeStep` -> `_doMove` czyta `_siegeMoveRefused` (`:8689`), więc ciało NIE wykonuje ucieczki: jawny tag
-/// `ucieczka-oblezenie`, ten sam stan co pin bez ruchu (pełne [`check_def`]: stan wszystkich jednostek, `occByKey`, brak
-/// akcji ruchu). Bez terenu tag `ucieczka-routed` (precedencja jak w gałęzi `routed` `LoopBody::start`, r4). Pozostałe
-/// gałęzie obrońcy nie zależą od terenu (wszystkie 880 wektorów z terenem).
+/// K5LOOP-TAGS-REST (D-INT-2; dawniej `ucieczka_okrazenia_przy_murze_z_terenem_jawny_tag`, oczekiwał tagu
+/// `ucieczka-oblezenie` i stanu bez ruchu): z terenem ucieczka jest WYKONYWANA (`_fleeStep` -> `_doMove` z bramką
+/// `_siegeMoveRefused`, która dla `ru.routed` nie odmawia, `:7953`). Gałęzie bez ucieczki (800 wektorów) nie zależą od
+/// terenu: pełne [`check_def`] z terenem. Wektory okrążenia z ucieczką (80; generator tego pliku ma atrapę `_fleeStep`
+/// przy murze) sprawdzają tu jawnie: brak tagów, ślad `flee`, rout jednostki i wykonana ucieczka (krok `Move` albo
+/// zniknięcie z pola); zgodność liczbowa z wykonanym tekstem pinu przy murze: `p6_k5loop_tags_rest` (rodzina
+/// `surround`). Bez terenu tag `ucieczka-routed` (D1, bez zmian).
 #[test]
-fn ucieczka_okrazenia_przy_murze_z_terenem_jawny_tag() {
+fn ucieczka_okrazenia_przy_murze_z_terenem_wykonana() {
     with_timeout("siege-def-teren", || {
         let v = load_from(VECTORS);
         let mut failures = Vec::new();
@@ -1134,31 +1142,57 @@ fn ucieczka_okrazenia_przy_murze_z_terenem_jawny_tag() {
             .iter()
             .filter(|c| c["kind"] != "ripple")
         {
-            let br = check_def_with(
-                case,
-                Opts {
-                    wall: WallSrc::Both,
-                    terrain: true,
-                },
-                &mut failures,
-            );
-            if br == "surround-flee" {
-                fled += 1;
-            }
             n += 1;
+            let name = case["name"].as_str().expect("name");
+            if case["expect"]["branch"] != "surround-flee" {
+                check_def_with(
+                    case,
+                    Opts {
+                        wall: WallSrc::Both,
+                        terrain: true,
+                    },
+                    &mut failures,
+                );
+                continue;
+            }
+            fled += 1;
+            let Built {
+                mut body,
+                mut st,
+                acting,
+            } = build(case, None, &[], Vec::new());
+            body = body.with_terrain(Box::new(Flat));
+            body.set_now(0.0);
+            let _ = body.take_actions();
+            let start_cell = body.unit_cell(acting);
+            body.start(acting, &st);
+            body.complete(acting, &mut st);
+            let acts = body.take_actions();
+            let c = st.unit(acting).c;
+            if !body.unported.is_empty() {
+                failures.push(format!("{name}: unported {:?}", body.unported));
+            }
+            if !body.trace[0].1.contains(&ActivateEvent::Flee) || !c.routed {
+                failures.push(format!("{name}: brak routu i sladu flee"));
+            }
+            let moved = acts
+                .iter()
+                .any(|a| matches!(a.action, BattleAction::Move { unit, .. } if unit == acting));
+            if !(moved || c.removed || body.unit_cell(acting) == start_cell) {
+                failures.push(format!("{name}: pozycja zmieniona bez kroku"));
+            }
         }
         report(&failures);
         assert_eq!(n, 880);
         assert_eq!(fled, 80);
-        // Precedencja tagów ta sama co w `start()` dla jednostki już uciekającej: bez terenu `ucieczka-routed`, z terenem
-        // przy murze `ucieczka-oblezenie` (wektor okrążenia z `routed = true` na starcie aktywacji).
+        // Jednostka rozbita na starcie aktywacji: bez terenu `ucieczka-routed`, z terenem ucieczka bez tagu.
         let case = v["cases"]
             .as_array()
             .expect("cases")
             .iter()
             .find(|c| c["kind"] == "surround")
             .expect("surround");
-        for (terrain, tag) in [(false, "ucieczka-routed"), (true, "ucieczka-oblezenie")] {
+        for (terrain, want) in [(false, vec!["ucieczka-routed"]), (true, Vec::new())] {
             let Built {
                 mut body,
                 mut st,
@@ -1168,13 +1202,10 @@ fn ucieczka_okrazenia_przy_murze_z_terenem_jawny_tag() {
                 body = body.with_terrain(Box::new(Flat));
             }
             st.def[acting.idx].c.routed = true;
-            assert_eq!(body.start(acting, &st), 0.0);
+            body.start(acting, &st);
             body.complete(acting, &mut st);
-            assert_eq!(
-                body.unported,
-                vec![(acting, tag)],
-                "start(), teren={terrain}"
-            );
+            let got: Vec<&str> = body.unported.iter().map(|(_, t)| *t).collect();
+            assert_eq!(got, want, "start(), teren={terrain}");
         }
     });
 }
