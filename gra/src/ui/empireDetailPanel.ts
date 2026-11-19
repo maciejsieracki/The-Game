@@ -14,7 +14,7 @@ import { formatObywateleLabel, formatManpowerCompact } from '../game/manpower';
 import { stockResourceLabel } from '../game/building-stock-cost';
 import { CITIZEN_UPKEEP_RATE_PER_CITIZEN } from '../game/citizen-resource-upkeep';
 import { resourceUsageTotal } from '../game/resource-usage-breakdown';
-import { resourceGrossNetPerTurn } from '../game/resource-gross-net';
+import { resourceGrossNetPerTurn, resourceIsShortage } from '../game/resource-gross-net';
 import { ledgerHistoryForOwner, ledgerSourceLinesForResource } from '../game/resource-ledger';
 import { resourceSourceLedgerDetailsHtml } from './resourceSourceLedgerHtml';
 import { taxForWorkAmount } from '../game/work-tax';
@@ -3404,8 +3404,10 @@ function resIconHtml(label: string, size: 16 | 18 = 18): string {
 }
 
 /** Stan wiersza magazynowanego: niedobór (spada) / na cap (nadmiar przepada) / nadwyżka. */
-function resStateOf(r: EmpireResourceRow): 'bad' | 'warn' | 'good' {
-  if (r.ratePerTurn < 0) return 'bad';
+export function resStateOf(r: EmpireResourceRow): 'bad' | 'warn' | 'good' {
+  // R-WEB-UI-HUD-RESOURCE-CARD-STATE-NET-Q1: niedobór = netto HUD < 0 (resourceIsShortage), ta sama
+  // definicja co alert i chip „Surowce” — nie surowe ratePerTurn (pomijało zużycie i wejścia konwerterów).
+  if (resourceIsShortage(r)) return 'bad';
   if (r.cap != null && r.stock >= r.cap) return 'warn';
   return 'good';
 }
