@@ -277,6 +277,7 @@ import {
   fortTerritoryNodes,
   fortSightSources,
   isHexInForeignFortTerritory,
+  isFortBuildBlockedByForeignTerritory,
   isOutpostPlacementAllowed,
   OUTPOST_PLACEMENT_DENIED_HINT,
   isHexReservedByRivalFort,
@@ -17775,7 +17776,8 @@ async function boot(): Promise<void> {
       // (drugi, redundantny gate za qualifies()/canBuild).
       if (key === 'fort') {
         const owner = nodes.length > 0 ? territoryOwnerAt(q, r, nodes) : null;
-        const rivalCityTerritory = owner !== null && owner !== 0;
+        // R-WEB-TERRITORY-FORT-PLACEMENT-SAME-RULES-AS-CITY-Q1: wspolny werdykt wlasnosci (jak dla miasta).
+        const rivalCityTerritory = isFortBuildBlockedByForeignTerritory(owner, 0);
         const ownUnitHere = units.some(u => u.ownerId === 0 && u.q === q && u.r === r);
         if (!rivalCityTerritory && ownUnitHere) return true;
       }
@@ -47992,7 +47994,8 @@ async function boot(): Promise<void> {
                   } else if (isFortOrOutpost) {
                     const owner = territoryGate.length > 0
                       ? territoryOwnerAt(cmd.q, cmd.r, territoryGate) : null;
-                    const rivalCityTerritory = owner !== null && owner !== ownerId;
+                    // R-WEB-TERRITORY-FORT-PLACEMENT-SAME-RULES-AS-CITY-Q1: wspolny werdykt wlasnosci (jak dla miasta).
+                    const rivalCityTerritory = isFortBuildBlockedByForeignTerritory(owner, ownerId);
                     const ownTerritory = owner === ownerId;
                     const ownUnitHere = !ownTerritory
                       && units.some(u => u.ownerId === ownerId && u.q === cmd.q && u.r === cmd.r);
