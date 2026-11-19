@@ -118,6 +118,17 @@ eq('barbarzynca nie blokuje wojny epoki', M.warLimitAllows('epoki', M.collectWar
 // kontrola: gdyby barbarzynca liczyl sie, limit epoki zablokowalby wojne
 eq('kontrola: bez filtra barbarzyncy limit by blokowal', M.warLimitAllows('epoki', ['epoki'], [], ON), false);
 
+// --- R-WEB-DIPLO-WAR-LIMIT-PLAYER-TARGET-Q1: wojna z graczem (owner 0) liczy sie do limitu AI ---
+const PLAYER_ERA = row({ otherId: 0, meta: M.withWarTyp({}, 'epoki') });
+eq('wojna z graczem epoki liczy sie u AI', M.collectWarTypes([PLAYER_ERA]), ['epoki']);
+eq('ON: AI w wojnie epoki z graczem -> nowa epoka zabroniona', M.warLimitAllows('epoki', M.collectWarTypes([PLAYER_ERA]), [], ON), false);
+eq('ON: AI w wojnie epoki z graczem + inna epoka -> trzecia epoka zablokowana (lista 2 epok)', M.warLimitAllows('epoki', M.collectWarTypes([PLAYER_ERA, row({ otherId: 2, meta: M.withWarTyp({}, 'epoki') })]), [], ON), false);
+eq('OFF: AI w wojnie epoki z graczem -> nowa epoka wolno (parytet)', M.warLimitAllows('epoki', M.collectWarTypes([PLAYER_ERA]), [], { ...ON, limitWojenAktywny: false }), true);
+// panstwo-miasto w wojnie naturalnej z graczem blokuje 2. naturalna (klaster panstw-miast -> gracz)
+const CS_PLAYER_NAT = row({ otherId: 0 });
+eq('ON: panstwo-miasto w wojnie naturalnej z graczem -> nowa naturalna zabroniona', M.warLimitAllows('naturalna', M.collectWarTypes([CS_PLAYER_NAT]), [], ON), false);
+eq('OFF: panstwo-miasto w wojnie naturalnej z graczem -> wolno', M.warLimitAllows('naturalna', M.collectWarTypes([CS_PLAYER_NAT]), [], { ...ON, limitWojenAktywny: false }), true);
+
 try { fs.unlinkSync(BUNDLE); } catch (_) { /* ignore */ }
 console.log(`diplomacy-war-limit-unit-test: pass=${pass} fail=${fail}`);
 process.exit(fail === 0 ? 0 : 1);

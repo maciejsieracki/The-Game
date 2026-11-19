@@ -45161,6 +45161,8 @@ async function boot(): Promise<void> {
                 try {
                   // R-WEB-WAR-RULES-MULTIWAR-Q1 (R1/R2): klaster państw-miast też podlega bramce.
                   if (interCivWarBlockedForAi(csOwnerId, ME())) continue;
+                  // R-WEB-DIPLO-WAR-LIMIT-PLAYER-TARGET-Q1: wojna państwa-miasta na gracza liczy się do limitu wojen tego państwa (flaga OFF -> true).
+                  if (!warLimitAllowsDeclaration(csOwnerId, ME(), 'naturalna')) continue;
                   const truceBreachCluster = chargeWarDeclarationCredibility(csOwnerId, ME());
                   breakTreatiesOnWar(csOwnerId, ME(), false);
                   applyAllianceObligationsOnWar(csOwnerId, ME());
