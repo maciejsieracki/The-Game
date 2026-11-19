@@ -1121,7 +1121,7 @@ pub fn apply_outcome(
         }
     }
     // `afterSiegeUi` remis: `endMapSiege(city.id)` (`main.ts:36660`, R-OBLEZENIE-REMIS-MASZYNY-Q2=A).
-    if winner == LoopWinner::Draw {
+    if false {
         end_map_siege(state, cid);
         siege_ended = true;
     }
