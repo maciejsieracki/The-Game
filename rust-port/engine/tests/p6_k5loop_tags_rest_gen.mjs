@@ -87,6 +87,12 @@ const FACING_SHA256 = '6d4858eded6e566c91a2874b30a5eabff0080b477bbf29c02a1a67f69
 const COUNTER_SHA256 = '3913ba4050eaa30429418fade9b1a2b2adc374f1abe1a65f9291c96568e83ce7';
 const OUTCOME_SHA256 = '6cc2b1e08bcee451d42d8d022c446c6ef42f8e4d045087dff5a653d7a09f737c';
 const N_SEQ = 500;
+// Obrona r1 (Z1/Z2): rodziny wymuszone DOPISANE po 500 sekwencjach losowych (te same ziarno i strumien, wiec
+// sekwencje 0..499 sa bajt w bajt jak w r1). `shooter2` = obronca z NIEZALEZNYMI `primaryRanged` / `rangedBase` /
+// `ammoLeft` (pin `_defenderCounters` `:9090-9091`); `cmdHalf` = utrata dowodcy obrony przy `plainBase` 37
+// (`base` 55.5) i `ratio` = 1 (pin `_removeCommanderMoraleBonus` `:10002`, `Math.min(base, Math.ceil(base * ratio))`).
+const N_FAM_SHOOTER2 = 80;
+const N_FAM_CMDHALF = 60;
 const SEED = 6301;
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -276,7 +282,8 @@ const tagsParts = {
 if (sceneEnd(9993) !== 10005 || sceneEnd(10007) !== 10015) throw new Error('konce metod dowodcy');
 const tagsDigest = createHash('sha256').update(Object.keys(tagsParts).map((n) => `${n}\n${tagsParts[n]}`).join('\n---\n')).digest('hex');
 console.error(`tags sha256 = ${tagsDigest}`);
-const EXPECTED_TAGS_SHA256 = process.env.P6_TAGS_SHA_PROBE ? tagsDigest : 'e30f68e6ed53b31e3023b406202df1eeb8e431cd9e88995c48ae59fdb19aa2e3';
+// Obrona r1 (U6): strażnik bez furtki środowiskowej (zmiana tekstu pinu = błąd generatora).
+const EXPECTED_TAGS_SHA256 = 'e30f68e6ed53b31e3023b406202df1eeb8e431cd9e88995c48ae59fdb19aa2e3';
 if (tagsDigest !== EXPECTED_TAGS_SHA256) throw new Error(`SHA wycinkow dowodcy/canShoot zmieniony: ${tagsDigest}`);
 const pinCanShoot = new Function(`${stripTypeScriptTypes(tagsParts.canShoot)}\nreturn canShoot;`)();
 
@@ -653,7 +660,33 @@ function blowTemplate(a, d) {
   };
 }
 
-function genSeq(id) {
+// Obrona r1 (Z1): kombinacje flag strzelca obroncy (canShoot = rangedBase && ammoLeft > 0, `:1457-1459`).
+const SHOOTER2_COMBOS = [
+  { primaryRanged: false, rangedBase: true, ammoLeft: 2 }, // pin: !primaryRanged -> kontratak mimo amunicji
+  { primaryRanged: false, rangedBase: true, ammoLeft: Infinity },
+  { primaryRanged: false, rangedBase: true, ammoLeft: 5 },
+  { primaryRanged: false, rangedBase: true, ammoLeft: 0 },
+  { primaryRanged: true, rangedBase: false, ammoLeft: 5 }, // pin: canShoot = false -> kontratak
+  { primaryRanged: true, rangedBase: true, ammoLeft: 5 }, // pin: canShoot = true -> bez kontrataku
+];
+
+function applyFamily(fam, atk, def) {
+  const live = { dead: false, fadingOut: false, routed: false };
+  for (const u of atk) {
+    Object.assign(u, live, { hp: Math.max(1, u.hp), primaryRanged: false, rangedBase: false, ammoLeft: 0, morale: Math.max(u.morale, 50), commander: false });
+  }
+  if (fam === 'shooter2') {
+    for (const u of def) Object.assign(u, live, { hp: Math.max(40, u.hp), maxHp: Math.max(40, u.hp) + int(0, 60) }, pick(SHOOTER2_COMBOS));
+  } else if (fam === 'cmdHalf') {
+    def.forEach((u, i) => {
+      Object.assign(u, live, { plainBase: 37, moraleMaxExtra: 0, primaryRanged: false, rangedBase: false, ammoLeft: 0 });
+      if (i === 0) Object.assign(u, { commander: true, hp: int(1, 3), neverRout: false, leaderFrac: 0.25 });
+      else Object.assign(u, { commander: false, leaderFrac: pick([0.1, 0.25, 0.5, 0.3]), morale: int(20, 100) });
+    });
+  }
+}
+
+function genSeq(id, fam = null) {
   S = {
     tseed: int(0, 1000), ctrSeed: int(1, 99999), isCity: chance(0.3), wallTotal: chance(0.5) ? uni(0, 500) : 0,
     gated: pick([1, 1.25, 1.5, 2, 3]), riverRow: chance(0.5), wallCiv: pick([1, 1.2, 1.5]),
@@ -662,7 +695,7 @@ function genSeq(id) {
     rolls: [], rollIdx: 0, byId: {},
   };
   // Tryb "okrazenie": atk0 na (1,1) z 3-4 wrogami na sasiednich polach (K5H FACTOR 5, jednorazowy cios morale).
-  const surroundMode = chance(0.3);
+  const surroundMode = fam === null && chance(0.3);
   const nA = int(1, 4);
   const nD = surroundMode ? int(3, 4) : int(1, 4);
   const cells = [];
@@ -682,12 +715,13 @@ function genSeq(id) {
   }
   const atk = Array.from({ length: nA }, (_, i) => genUnit('atk', i, ...atkCells[i]));
   const def = Array.from({ length: nD }, (_, i) => genUnit('def', i, ...defCells[i]));
+  if (fam !== null) applyFamily(fam, atk, def);
   if (surroundMode) {
     Object.assign(atk[0], { dead: false, fadingOut: false, routed: false, neverRout: false, surroundApplied: false, hp: Math.max(1, atk[0].hp), primaryRanged: false, rangedBase: false, ammoLeft: 0 });
     for (const d of def.slice(0, 3)) Object.assign(d, { dead: false, fadingOut: false, routed: false });
     atk[0].morale = pick([5, 10, 15, 20, 30, 60]);
   }
-  for (const u of atk) u.target = chance(0.8) ? int(0, nD - 1) : null;
+  for (const u of atk) u.target = fam === 'cmdHalf' ? 0 : fam === 'shooter2' ? int(0, nD - 1) : chance(0.8) ? int(0, nD - 1) : null;
   for (const u of def) u.target = chance(0.8) ? int(0, nA - 1) : null;
   const all = [...atk, ...def];
   for (const u of all) {
@@ -702,12 +736,13 @@ function genSeq(id) {
   const acts = [];
   for (let k = 0; k < nAct; k++) {
     // Strzelcy nie dzialaja (galaz `_rangedAction` poza harnessem): aktywacje tylko jednostek bez `primaryRanged`.
-    const actors = all.filter((x) => !x.primaryRanged);
+    // Rodziny wymuszone: dzialaja tylko atakujacy wrecz (obroncy sa celami / kontratakujacymi).
+    const actors = fam === null ? all.filter((x) => !x.primaryRanged) : atk;
     if (actors.length === 0) break;
     const u = surroundMode && k === 0 ? atk[0] : pick(actors);
-    acts.push({ side: u.side, idx: u.idx, finished: surroundMode && k === 0 ? false : chance(0.04) });
+    acts.push({ side: u.side, idx: u.idx, finished: surroundMode && k === 0 ? false : fam !== null ? false : chance(0.04) });
     // Dwa rzuty na aktywacje: cios glowny + ewentualny kontratak (zuzywa rzut tylko gdy zachodzi).
-    S.rolls.push(pick([0, 0.9999999999, 0.05, 0.95, rnd(), rnd(), rnd(), rnd()]));
+    S.rolls.push(fam === 'cmdHalf' ? 0 : pick([0, 0.9999999999, 0.05, 0.95, rnd(), rnd(), rnd(), rnd()]));
     S.rolls.push(pick([0, 0.9999999999, 0.05, 0.95, rnd(), rnd(), rnd(), rnd()]));
   }
   return { id, atk, def, acts };
@@ -802,8 +837,9 @@ const encUnit = (u) => ({
 });
 
 const sequences = [];
-for (let i = 0; i < N_SEQ; i++) {
-  const seq = genSeq(i);
+const FAMS = [...Array(N_SEQ).fill(null), ...Array(N_FAM_SHOOTER2).fill('shooter2'), ...Array(N_FAM_CMDHALF).fill('cmdHalf')];
+for (let i = 0; i < FAMS.length; i++) {
+  const seq = genSeq(i, FAMS[i]);
   const expect = runSeq(seq);
   sequences.push({
     id: i,
@@ -870,6 +906,24 @@ const cov = {
     const after = e.units[off + e.blow.target];
     return t.primaryRanged && Number(t.ammoLeft) > 0 && !after.dead && !after.routed && !after.fadingOut;
   }),
+  // Obrona r1 (Z1): kontratak obroncy `rangedBase && !primaryRanged` z amunicja (pin `:9090`: zawsze kontratakuje)
+  // oraz `primaryRanged && !rangedBase` (canShoot = false); `shooter2Blocked` = primaryRanged + amunicja bez kontrataku.
+  secShooterCounter: sumActs((e, q, k) => {
+    if (!e.counter) return false;
+    const t = q.units[(q.acts[k].side === 'atk' ? q.nAtk : 0) + e.blow.target];
+    return t.rangedBase && !t.primaryRanged && Number(t.ammoLeft) > 0;
+  }),
+  primaryNoBaseCounter: sumActs((e, q, k) => {
+    if (!e.counter) return false;
+    const t = q.units[(q.acts[k].side === 'atk' ? q.nAtk : 0) + e.blow.target];
+    return t.primaryRanged && !t.rangedBase;
+  }),
+  // Obrona r1 (Z2): zdjecie bonusu dowodcy, po ktorym morale = moraleMax = niecalkowita baza (55.5): `Math.min(base, ...)`
+  // ogranicza `Math.ceil(base * ratio)` = 56.
+  cmdHalfCapped: sumActs((e, q, k) => e.units.some((u, i) => {
+    const prev = k === 0 ? q.units[i] : q.expect[k - 1].units[i];
+    return Number(prev.leaderFrac) > 0 && u.leaderFrac === '0' && u.morale === u.moraleMax && !Number.isInteger(Number(u.morale));
+  })),
   doneOnly: sumActs((e) => e.trace.length === 1 && e.trace[0] === 'done'),
   repeatBlow: sumActs((e, q, k) => e.blow && q.expect.slice(0, k).some((p) => p.blow && q.acts[k].side === q.acts[q.expect.indexOf(p)].side
     && q.acts[k].idx === q.acts[q.expect.indexOf(p)].idx)),
@@ -897,3 +951,7 @@ writeFileSync(join(outDir, 'vectors_fx.json'), `${JSON.stringify({
   doAttackSha256: doAttackDigest, facingSha256: facingDigest, counterSha256: counterDigest, outcomeSha256: outcomeDigest, rippleSha256: rippleDigest, tagsSha256: tagsDigest, seed: SEED, coverage: cov, sequences,
 })}\n`);
 console.error(JSON.stringify(cov));
+// Obrona r1 (Z1/Z2): progi pokrycia rodzin wymuszonych (te same nazwy i progi w tescie Rust).
+for (const [k, min] of [['secShooterCounter', 40], ['primaryNoBaseCounter', 10], ['cmdHalfCapped', 40]]) {
+  if (cov[k] < min) throw new Error(`pokrycie ${k} = ${cov[k]} < ${min}`);
+}

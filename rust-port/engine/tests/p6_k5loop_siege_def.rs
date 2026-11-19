@@ -1136,6 +1136,9 @@ fn ucieczka_okrazenia_przy_murze_z_terenem_wykonana() {
         let mut failures = Vec::new();
         let mut fled = 0;
         let mut n = 0;
+        // Obrona r1 TAGS-REST (U3): ucieczka WYKONANA (krok `Move` albo zniknięcie z pola) liczona osobno od ucieczki
+        // zablokowanej (bez kroku, ta sama komórka: `_fleeStep` bez wolnego pola wśród wrogów i muru); próg na wykonane.
+        let (mut executed, mut stuck) = (0usize, 0usize);
         for case in v["cases"]
             .as_array()
             .expect("cases")
@@ -1178,13 +1181,20 @@ fn ucieczka_okrazenia_przy_murze_z_terenem_wykonana() {
             let moved = acts
                 .iter()
                 .any(|a| matches!(a.action, BattleAction::Move { unit, .. } if unit == acting));
-            if !(moved || c.removed || body.unit_cell(acting) == start_cell) {
+            if moved || c.removed {
+                executed += 1;
+            } else if body.unit_cell(acting) == start_cell {
+                stuck += 1;
+            } else {
                 failures.push(format!("{name}: pozycja zmieniona bez kroku"));
             }
         }
         report(&failures);
         assert_eq!(n, 880);
         assert_eq!(fled, 80);
+        eprintln!("ucieczka przy murze z terenem: wykonana={executed} zablokowana={stuck}");
+        assert_eq!(executed + stuck, fled);
+        assert!(executed >= 1, "ucieczka wykonana: {executed}");
         // Jednostka rozbita na starcie aktywacji: bez terenu `ucieczka-routed`, z terenem ucieczka bez tagu.
         let case = v["cases"]
             .as_array()

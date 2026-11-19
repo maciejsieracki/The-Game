@@ -1319,6 +1319,83 @@ fn ucieczka_laczenie_ze_zmiana_zegara() {
     assert_eq!(st.unit(acting).c.move_left, clock);
 }
 
+/// Obrona r1 TAGS-REST (zarzut Z3, mutanty E5/E6): zegar w oknie start..complete ustawia KAŻDE pole zmienione przez
+/// ucieczkę (liczby i flagi) na TĘ SAMĄ wartość co ucieczka. Oba źródła zgodne = brak konfliktu: bez tagu
+/// `ucieczka-konflikt-zegara`, stan = wzorzec bez zmian w oknie. Wszystkie przypadki `flee` wektorów r4; licznik pól.
+#[test]
+fn ucieczka_laczenie_ta_sama_wartosc_bez_konfliktu() {
+    let (v, cav_mult) = load_from(VECTORS);
+    let (mut num_fields, mut flag_fields) = (0usize, 0usize);
+    for case in v["cases"]
+        .as_array()
+        .expect("cases")
+        .iter()
+        .filter(|c| c["kind"] == "flee")
+    {
+        let Built {
+            mut body,
+            mut st,
+            acting,
+        } = build(case, &cav_mult, true);
+        let before = st.clone();
+        body.start(acting, &st);
+        body.complete(acting, &mut st);
+        if !body.unported.is_empty() {
+            continue;
+        }
+        let want = st.clone();
+        let Built {
+            mut body,
+            mut st,
+            acting,
+        } = build(case, &cav_mult, true);
+        body.start(acting, &st);
+        for (side, b_list, w_list) in [
+            (BattleSide::Attacker, &before.atk, &want.atk),
+            (BattleSide::Defender, &before.def, &want.def),
+        ] {
+            for (i, (bu, wu)) in b_list.iter().zip(w_list.iter()).enumerate() {
+                let cur = match side {
+                    BattleSide::Attacker => &mut st.atk[i].c,
+                    BattleSide::Defender => &mut st.def[i].c,
+                };
+                let (b, w) = (&bu.c, &wu.c);
+                for (got, bv, wv) in [
+                    (&mut cur.hp, b.hp, w.hp),
+                    (&mut cur.morale, b.morale, w.morale),
+                    (&mut cur.flee_morale, b.flee_morale, w.flee_morale),
+                    (&mut cur.move_left, b.move_left, w.move_left),
+                ] {
+                    if bv.to_bits() != wv.to_bits() && !(bv.is_nan() && wv.is_nan()) {
+                        *got = wv;
+                        num_fields += 1;
+                    }
+                }
+                for (got, bv, wv) in [
+                    (&mut cur.never_rout, b.never_rout, w.never_rout),
+                    (&mut cur.dead, b.dead, w.dead),
+                    (&mut cur.fading_out, b.fading_out, w.fading_out),
+                    (&mut cur.routed, b.routed, w.routed),
+                    (&mut cur.removed, b.removed, w.removed),
+                    (&mut cur.acted, b.acted, w.acted),
+                ] {
+                    if bv != wv {
+                        *got = wv;
+                        flag_fields += 1;
+                    }
+                }
+            }
+        }
+        body.complete(acting, &mut st);
+        assert!(body.unported.is_empty(), "{:?}", body.unported);
+        assert_eq!(format!("{:?}", st.atk), format!("{:?}", want.atk));
+        assert_eq!(format!("{:?}", st.def), format!("{:?}", want.def));
+    }
+    eprintln!("pola zgodne zegar = ucieczka: liczby={num_fields} flagi={flag_fields}");
+    assert!(num_fields >= 400, "pola liczbowe: {num_fields}");
+    assert!(flag_fields >= 500, "pola flag: {flag_fields}");
+}
+
 /// U5: ten sam scenariusz bez naruszenia kontraktu przechodzi (asercja nie strzela na poprawnej ścieżce).
 #[test]
 fn ucieczka_kontrakt_stanu_bez_zmian_przechodzi() {

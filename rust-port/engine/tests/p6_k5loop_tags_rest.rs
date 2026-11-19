@@ -233,6 +233,10 @@ struct Cover {
     bonus_nan_removed: usize,
     shooter_counter: usize,
     shooter_no_counter: usize,
+    // Obrona r1 (Z1/Z2): rodziny wymuszone `shooter2` i `cmdHalf` generatora (sekwencje 500..639).
+    sec_shooter_counter: usize,
+    primary_no_base_counter: usize,
+    cmd_half_capped: usize,
     activations: usize,
     facing_changes: usize,
     reverse_arc_diff: usize,
@@ -313,7 +317,8 @@ fn run_fx() {
         "facing: _nearestEnemy/_updateFacing/relativeHit/_doMeleeAttack"
     );
     let seqs = v["sequences"].as_array().expect("sequences");
-    assert_eq!(seqs.len(), 500, "sekwencje");
+    // 500 losowych + 80 `shooter2` + 60 `cmdHalf` (Obrona r1, Z1/Z2).
+    assert_eq!(seqs.len(), 640, "sekwencje");
 
     let mut cov = Cover::default();
     let mut failures: Vec<String> = Vec::new();
@@ -546,7 +551,8 @@ fn run_fx() {
                 chk("roll", r.roll, num(&w["roll"]));
                 chk("dmg", r.dmg, num(&w["dmg"]));
                 chk("defHpAfter", r.def_hp_after, num(&w["defHpAfter"]));
-                if !r.missed {
+                // Obrona r1: po rozbieżności `missed` (zgłoszonej wyżej) pin nie ma `extraMorale` (null): bez paniki.
+                if !r.missed && !b(&w["missed"]) {
                     chk("extraMorale", r.extra_morale, num(&w["extraMorale"]));
                     if r.extra_morale > 0.0 {
                         cov.flank_or_rear += 1;
@@ -629,6 +635,18 @@ fn run_fx() {
                 {
                     cov.shooter_counter += 1;
                 }
+                // Obrona r1 (Z1): flagi kontratakującego z WEKTORA (niezależne `primaryRanged` / `rangedBase` / `ammoLeft`).
+                let cu = &units[if r.attacker.side == BattleSide::Attacker {
+                    r.attacker.idx
+                } else {
+                    n_atk + r.attacker.idx
+                }];
+                if b(&cu["rangedBase"]) && !b(&cu["primaryRanged"]) && num(&cu["ammoLeft"]) > 0.0 {
+                    cov.sec_shooter_counter += 1;
+                }
+                if b(&cu["primaryRanged"]) && !b(&cu["rangedBase"]) {
+                    cov.primary_no_base_counter += 1;
+                }
                 // Kontratak: atakuje obrońca z tej aktywacji (defender), celem jest jednostka aktywna (unit).
                 if r.target != unit || r.attacker.side == side {
                     failures.push(format!(
@@ -660,7 +678,7 @@ fn run_fx() {
                         failures.push(format!("{who}: counter {name} rust={got} js={want}"));
                     }
                 }
-                if !r.missed {
+                if !r.missed && !b(&w["missed"]) {
                     let want_extra = num(&w["extraMorale"]);
                     if r.extra_morale != want_extra {
                         failures.push(format!(
@@ -737,6 +755,11 @@ fn run_fx() {
                     cov.bonus_removed += 1;
                     if prev_lf.is_nan() {
                         cov.bonus_nan_removed += 1;
+                    }
+                    // Obrona r1 (Z2): `Math.min(base, Math.ceil(base * ratio))` (`:10002`) przy bazie 55.5 i `ratio` 1.
+                    let m = num(&wu["morale"]);
+                    if prev_lf > 0.0 && m == mm_want && m.fract() != 0.0 {
+                        cov.cmd_half_capped += 1;
                     }
                 }
                 chk("moveLeft", ru.move_left, num(&wu["moveLeft"]));
@@ -886,6 +909,26 @@ fn run_fx() {
         cov.shooter_no_counter >= 100,
         "strzelec z amunicja bez kontrataku: {}",
         cov.shooter_no_counter
+    );
+    // Obrona r1 (Z1/Z2): progi jak w generatorze (secShooterCounter 40, primaryNoBaseCounter 10, cmdHalfCapped 40).
+    eprintln!(
+        "pokrycie obrony r1: kontratak_strzelca_niepodstawowego={} kontratak_bez_rangedBase={} morale_bazy_55_5={}",
+        cov.sec_shooter_counter, cov.primary_no_base_counter, cov.cmd_half_capped
+    );
+    assert!(
+        cov.sec_shooter_counter >= 40,
+        "kontratak strzelca rangedBase && !primaryRanged z amunicja: {}",
+        cov.sec_shooter_counter
+    );
+    assert!(
+        cov.primary_no_base_counter >= 10,
+        "kontratak primaryRanged && !rangedBase: {}",
+        cov.primary_no_base_counter
+    );
+    assert!(
+        cov.cmd_half_capped >= 40,
+        "morale = moraleMax = niecalkowita baza po utracie dowodcy: {}",
+        cov.cmd_half_capped
     );
     // Pokrycie: wszystkie galezie musza wystapic w wektorach (liczone z porownanych danych).
     assert!(cov.activations >= 1000, "aktywacje: {}", cov.activations);
