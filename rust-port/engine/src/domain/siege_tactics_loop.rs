@@ -3987,7 +3987,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         if let Some(&(_, _, from, _)) = self
             .move_timeline
             .iter()
-            .find(|(u, t0, _, _)| *u == unit && *t0 > self.now)
+            .find(|(u, t0, _, _)| *u == unit && *t0 > f64::INFINITY)
         {
             return Some(from);
         }
