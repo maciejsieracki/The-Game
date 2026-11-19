@@ -2402,7 +2402,6 @@ impl<R: RollSource> ProdBody<R> {
                 if !self.units[other][i].activate.can_shoot || self.range_base[other][i] <= 0.0 {
                     continue;
                 }
-                self.refresh_terrain_range(opposite(unit.side), i);
             }
         }
         let defenders: Vec<ShooterDefender> = enemies
