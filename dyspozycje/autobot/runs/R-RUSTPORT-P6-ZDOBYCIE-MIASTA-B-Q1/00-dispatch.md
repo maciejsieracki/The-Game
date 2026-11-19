@@ -1,0 +1,24 @@
+# R-RUSTPORT-P6-ZDOBYCIE-MIASTA-B-Q1 — #354 część B: pola stanu dla kroków P1/P9 pominiętych w części A (prawo po przejęciu, kronika/zdarzenia, kolejka produkcji, religia)
+
+STATUS: dispatch orkiestratora. Opus, wszystkie etapy Opus. Podstawa: `REJESTR-RUST.md` wpis „ZDOBYCIE-MIASTA-A” (D-ZMA-1…10, długi DL-1…DL-7), raporty `dyspozycje/autobot/runs/R-RUSTPORT-P6-ZDOBYCIE-MIASTA-A-Q1/` (`01-operator-r1.md`, `03-final-control.md`), kod `engine/src/domain/city_capture_apply.rs` (lista `notApplied`). NAJPIERW web (pin `07d2fbd72`, `git show 07d2fbd72:gra/src/main.ts`): `applyCityCaptureToMap` (`:36034-36264`), `applyPostCaptureLawOnCapture` (import `:438`, def. w module prawa), `recordCityCaptureEvent` (`:10650`), `noteCityCapture` (`:36047`), `sanitizeProductionQueue` (`:5123`), kolejka produkcji przy przejęciu (`:36148`), `onCityCapturedReligion` (`:36205`); dopiero potem Rust.
+BAZA: `origin/rust-port/parity-v2` w chwili startu (a5fdb91b8 w dniu dispatchu; po integracji PIN3 SHA może się zmienić — wpisz faktyczny). `git fetch origin && git checkout -B <gałąź> origin/rust-port/parity-v2`.
+
+## GOAL
+Domknąć kroki zdobycia miasta, które część A wpisała do `notApplied` z powodu braku pól w `PlayableState` — 1:1 z pinem:
+1. DL-4/D-ZMA-4: pola stanu i adaptery dla `applyPostCaptureLawOnCapture` (prawo miasta po przejęciu), `recordCityCaptureEvent` + `noteCityCapture` (kronika/zdarzenia), kolejka produkcji `cityProd` z `sanitizeProductionQueue` (przejęcie miasta z kolejką ofiary), tak by `notApplied` tych kroków było puste przy ścieżce szturmu gracza.
+2. DL-1: `onCityCapturedReligion` → `religion_by_city` zmienia się jak w pinie (z wektorem z generatora wykonującego tekst pinu).
+3. DL-2: zapis/odczyt `captured_from_owner_by_city` w save/load — NAJPIERW sprawdź w pinie, czy zapis go trzyma (jeśli pin nie zapisuje — nie dodawaj; zapisz decyzję w raporcie).
+4. DL-3: klucze par wojny w `WarTurnState::clear_eliminated_owner_war_state` (`_` vs `min-max`) — usuń obejście adaptera przez poprawę źródła, jeśli pin wskazuje jednoznaczny format; DL-6: moc ofiary przy eliminacji z wektorem z pinu; DL-7: `eliminate_owner` zostawia `economy.units` (napraw u źródła, jeśli to błąd względem pinu).
+Poza zakresem: kapitulacja `resolveSiegeSurrender` (W3/W4/W5), zdobycie bez bitwy (W6–W8), cesja pokojowa (W11), przegrana po utracie miasta (W12/W13), `spectacle`, DL-5. Gameplay poza webem → STOP i zgłoś.
+
+## ALLOWLISTA
+`rust-port/engine/src/domain/city_capture_apply.rs`, `engine/src/domain/playable.rs` (tylko pola/metody konieczne, uzasadnić pinem), `engine/src/domain/siege_battle_apply.rs` (tylko jeśli konieczne), cienkie adaptery do istniejących modułów prawa/religii/kroniki/produkcji (preferuj adapter w `city_capture_apply.rs`; zmiana sygnatury istniejącego modułu tylko z uzasadnieniem), `engine/src/domain/war_turn.rs` lub odpowiednik dla DL-3/DL-6/DL-7 (tylko gdy pin rozstrzyga), `engine/tests/bridge_contract.rs`, `engine/tests/p6_zdobycie_miasta_a*.rs` (aktualizacja wektorów A tylko jeśli zmiana jest zamierzona i opisana), nowe `engine/tests/p6_zdobycie_miasta_b*.rs` (+ generator `p6_zdobycie_miasta_b_gen.mjs` ze strażnikiem SHA pinu i MD5, wektory `p6_zdobycie_miasta_b_vectors/*`), `dyspozycje/autobot/runs/R-RUSTPORT-P6-ZDOBYCIE-MIASTA-B-Q1/*`. Nie ruszać: `siege_tactics_loop.rs`, `siege_battle_session.rs`, `p6_k5loop_wiring_a*` (PIN3/FRAME-QUANT), `client`, `renderer`, `src-tauri`, `gra/`.
+
+## KRYTERIA KOŃCA
+Test end-to-end przez most: szturm z wyłomem → miasto zmienia właściciela, a stan zawiera także: prawo po przejęciu, wpis zdarzenia/kroniki, przepisaną kolejkę produkcji, zmianę religii miasta — zgodnie z wektorami z generatora wykonującego tekst pinu (nie ręczne liczby). `notApplied` pusty na ścieżce gracza (albo każdy pozostały wpis z uzasadnieniem pinem). Determinizm, brak regresji wektorów części A (lub opisana zamierzona zmiana). Mutanty ≥ 20 (każdy zabity lub jawnie równoważny). Tabela „zastosowano / poza zakresem” z numerami W1–W14 i DL-1…DL-7.
+
+## BRAMKI (EXIT 0)
+`cargo fmt --all -- --check`; `cargo clippy --all-targets -- -D warnings`; testy dotknięte + `bridge_contract`, `p6_zdobycie_miasta_a*`, `p6_k5loop_wiring_b*`, `p6_siege_transfer*`, `p6_siege_capital_plunder`, `p6_siege_capture_events`; pełny `cargo test --all-targets --no-fail-fast` przed werdyktem (checkout musi zawierać `dyspozycje/`). `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, własny `CARGO_TARGET_DIR` z nazwą tematu (UNIKALNE nazwy plików — scratchpad współdzielony), w tle `setsid nohup`; po bramce usuń własny target.
+
+## ZAKAZY
+Brak push na `parity-v2`/deploy/integracji, brak `git add -A`, brak `#[ignore]`, brak linii Co-Authored-By z nazwą modelu (dozwolona `Claude-Session:`). Commituj WIP wcześnie (rundy mogą paść z timeoutem). Raporty: `01-operator-r1.md`, `02-evaluator.md`, `02a-obrona.md`, `03-final-control.md`; sekcja „Długi”.
