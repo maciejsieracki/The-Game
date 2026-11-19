@@ -272,11 +272,13 @@ export function applyFortTakeoverOnCityFounded(
       forts.splice(i, 1);
       continue;
     }
-    if (f.ownerId === newCity.ownerId) continue;
-    if (axialDistance(newCity.q, newCity.r, f.q, f.r) > radius) continue;
-    events.push({ q: f.q, r: f.r, type: f.type, prevOwnerId: f.ownerId, newOwnerId: newCity.ownerId });
-    f.ownerId = newCity.ownerId;
-    f.contestedUseless = false;
+    // R-WEB-TERRITORY-CITY-FOUNDING-NO-FORT-TAKEOVER-Q1 (decyzja wlasciciela 2026-11-19):
+    // zalozenie miasta NIE przejmuje cudzego fortu/posterunku w swoim zasiegu (ownerId zostaje,
+    // ulepszenia na heksach fortu zostaja przy wlascicielu). Spor o heks rozstrzyga
+    // territoryOwnerAt (jak miasto<->miasto). Zdobycie fortu mozliwe WYLACZNIE silowo
+    // (applyFortCaptureByOccupation: wojna + jednostka wojskowa).
+    // / EN: founding a city no longer takes over foreign forts/outposts in its radius.
+    // Only the F1 exception above removes a node (city physically replaces the fort hex).
   }
   return events;
 }
