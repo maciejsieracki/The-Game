@@ -236,6 +236,28 @@ function runScenario(sc) {
     defenderEra: sc.defenderEra ?? 1,
   };
   const bs = new BattleScene(opts);
+  // Diagnostyka (tylko z WIRING_A_TRACE, bez wplywu na wynik): slad etykiet obrazen, rozbic, smierci i ruchow.
+  if (process.env.WIRING_A_TRACE === sc.name) {
+    const wrap = (m, fmt) => {
+      const orig = bs[m];
+      bs[m] = function (...a) { console.error(`T ${bs.vNow} r${bs.roundNo} ${fmt(...a)}`); return orig.apply(this, a); };
+    };
+    wrap('_spawnDamageLabel', (ru, dmg) => `DMG ${ru.bu.id} ${dmg}`);
+    wrap('_startRout', (ru) => `ROUT ${ru.bu.id}`);
+    wrap('_startFade', (ru) => `KILL ${ru.bu.id}`);
+    const origLogPush = bs.log.push.bind(bs.log);
+    bs.log.push = (...a) => {
+      for (const s of a) if (String(s).startsWith('Wieza strzelnicza')) console.error(`T ${bs.vNow} r${bs.roundNo} TOWER ${s} | ${bs.atk.map((u) => `${u.bu.id}@${u.q},${u.r}:${u.bu.hp}${u.routed ? 'R' : ''}${u.dead ? 'D' : ''}`).join(' ')}`);
+      return origLogPush(...a);
+    };
+    const origMove = bs._doMove;
+    bs._doMove = function (ru, c, r, ...rest) {
+      const from = `${ru.q},${ru.r}`;
+      const out = origMove.call(this, ru, c, r, ...rest);
+      if (`${ru.q},${ru.r}` !== from) console.error(`T ${bs.vNow} r${bs.roundNo} MOVE ${ru.bu.id} ${from}->${ru.q},${ru.r}`);
+      return out;
+    };
+  }
   let res = null;
   bs.play((r) => { res = r; });
   if (sc.mode === 'skip') bs.skip();
@@ -276,6 +298,7 @@ function runScenario(sc) {
 const t0 = Date.now();
 const vectors = [];
 for (const sc of SCENARIOS) {
+  if (process.env.WIRING_A_TRACE && process.env.WIRING_A_TRACE !== sc.name) continue;
   const v = runScenario(sc);
   vectors.push(v);
   console.error(`${sc.name}: ${v.expect.winner} tura ${v.expect.roundNo} wylom ${v.expect.wallEverBreached} rzuty ${v.expect.rollsDrawn} inne ${v.expect.otherRandom} (${Date.now() - t0} ms)`);
