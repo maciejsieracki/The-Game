@@ -17,6 +17,12 @@
  *     (r3: start czeka na koniec nakladki „Tworzenie swiata” -- bez tego AI=0 miast, blad harnessu, nie gry.)
  *  5) mutacja ksztaltu: zepsuty bundle (--mutant-dist) MUSI oblac ksztalt (jesli podano).
  *
+ * OGRANICZENIE (r4, zarzut Evaluatora 1; mutacja forty=0 i hexyZMiast=0 przezyla 23/23): asercja 1 sprawdza TYLKO
+ * ksztalt i typy nowych pol (number >= 0 / boolean), NIE ich wartosc. Poprawnosc liczb forty/posterunki/hexyZMiast/
+ * hexyZFortowPosterunkow/hexySporne NIE jest testowana automatycznie; jest uzasadniona czytaniem kodu (plik:linia
+ * w dyspozycje/analizy/AI-TERRITORY-RACE-DESIGN.md, sekcja 6a). Wartosciowa asercja (fort postawiony -> licznik 1)
+ * wymaga biegu gry i jest poza zakresem tej rundy.
+ *
  * Uzycie (z gra/, bundle zbudowany): node tools/ai-economy-measure-hook-test.cjs --dist <abs-dist>
  *   --modal-only 1  -- tylko asercja 0 (bez gry).
  *   --runner <abs-plik>  -- runner testowany w asercji 0 (domyslnie tools/ai-economy-measure-run.cjs; mutacja na KOPII).

@@ -1,6 +1,6 @@
 # AI — wyścig o terytorium przez forty i posterunki (projekt, R-WEB-AI-TERRITORY-RACE-FORTS-OUTPOSTS-DESIGN-Q1)
 
-Status: PROJEKT — bez implementacji. Baza kodu: `64208a85b` (origin/main w chwili startu).
+Status: PROJEKT — bez implementacji. Baza kodu: `64208a85b` (origin/main w chwili startu); numery linii r4 zweryfikowane na `53fcc1c45` (baza r3, kandydat 84ef34661).
 Zakres (ABC, DODATEK 1, 2026-11-18): forty i posterunki jako element STRATEGII AI. Automatyka gracza poza zakresem (w pkt 7 tylko opis możliwego udostępnienia).
 
 NIE ZMIERZONO: pomiar przed zmianą (3 ziarna × ≥150 tur) nie został wykonany w tej rundzie (runda 2 nie zmieniła tego faktu; poprzednie uzasadnienie „zakaz biegów w tle" było BŁĘDNE — dispatch dopuszcza `setsid nohup` + odpytywanie). Powód i plan w sekcji 6. Wszystkie wnioski o częstotliwości budowy fortów przez AI są HIPOTEZAMI Z KODU, nie wynikiem pomiaru. Rekomendacje w sekcji 4 i 7 są WSTĘPNE i wymagają pomiaru PRZED decyzją ABC.
@@ -30,7 +30,7 @@ Obie to ulepszenia terenu (nie jednostki). Nie wymagają jednostki-budowniczego 
 - `gra/src/map/territory.ts:122` `territoryOwnerAt`: dla heksu liczy się węzeł, który go obejmuje. Węzły miast mają pierwszeństwo przed fortami/posterunkami (komentarz l. 111–115). Spór fort vs fort: gdy oba mają `order`, wygrywa wcześniej zbudowany (`turn`, potem `seq`); w przeciwnym razie najbliższy węzeł.
 - `gra/src/game/fort-territory.ts:144` `fortTerritoryNodes`: fort z `contestedUseless` (reguła 3) NIE tworzy terytorium.
 - `gra/src/game/fort-territory.ts:~165` `isHexInForeignFortTerritory`: obcy fort blokuje zakładanie miasta w swoim promieniu, o ile `territoryOwnerAt` rozstrzyga go na korzyść obcego.
-- `gra/src/game/ai.ts:1200` `isHexWithinAnyCityReach`: miasta + własne forty/posterunki (bez `contestedUseless`) rozszerzają zasięg zakładania miast (R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA).
+- `gra/src/game/ai.ts:1208` `isHexWithinAnyCityReach`: miasta + własne forty/posterunki (bez `contestedUseless`) rozszerzają zasięg zakładania miast (R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA).
 - `gra/src/game/ai.ts:3218` `planCityFounding`: AI zakłada miasto tylko w zasięgu własnego miasta/fortu (parytet z graczem, decyzja A 2026-08-09).
 
 ### 1.3 Gracz
@@ -41,8 +41,8 @@ Gracz stawia forty/posterunki przez UI i przez automat ulepszeń (`gra/src/game/
 
 Są TRZY ścieżki w kodzie:
 
-1. **Automat ulepszeń (picker)** — `auto-improvements.ts` `pickFortClaims` (l. 688), wpięty w `pickAutoImprovements` (l. 1107–1151). Warunek: `cityLimitExhausted === true` (AI: `ai.ts:3017`, `isCityLimitExhausted` `auto-improvements.ts:643`: limit = `cityLimitBase + (era-1)*5`, liczone miasta z `foundedByOwner !== false`). Próg zysku: `FORT_CLAIM_MIN_NEW_HEXES = 1` (l. 655). Kolejność: fort preferowany, posterunek gdy fort niedostępny (`FORT_CLAIM_KEYS`, l. 658).
-2. **Planer ekspansji** — `ai.ts:3093` `planExpansionFortBuilding`, wołany z `decideAITurn` (ok. l. 4002) i `decideDefensiveCopyTurn` (ok. l. 5538; oba z bramką `defensiveCopy`):
+1. **Automat ulepszeń (picker)** — `auto-improvements.ts` `pickFortClaims` (l. 688), wpięty w `pickAutoImprovements` (l. 1107–1151). Warunek: `cityLimitExhausted === true` (AI: `ai.ts:3025`, `isCityLimitExhausted` `auto-improvements.ts:643`: limit = `cityLimitBase + (era-1)*5`, liczone miasta z `foundedByOwner !== false`). Próg zysku: `FORT_CLAIM_MIN_NEW_HEXES = 1` (l. 655). Kolejność: fort preferowany, posterunek gdy fort niedostępny (`FORT_CLAIM_KEYS`, l. 658).
+2. **Planer ekspansji** — `ai.ts:3101` `planExpansionFortBuilding`, wołany z `decideAITurn` (l. 4099) i `decideDefensiveCopyTurn` (l. 5635; oba z bramką `defensiveCopy`):
    - bramki zasobów: `canAfford` (l. ~3128–3140): `pracaAvailable >= kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS`, budżet `plannedCost + kosztPraca <= improvementBudget`, technologia odblokowana;
    - pętla 1 (l. ~3146–3180): fort na heksie WŁASNEJ jednostki (nie garnizon) poza `isHexWithinAnyCityReach`, poza terytorium obcej cywilizacji, na lądzie; **bez ruchu jednostek** (komentarz l. 3085–3090: „Celowo NIE przesuwa/nie wysyła jednostek”);
    - pętla 2 (l. ~3180–3195): posterunek na heksie własnej jednostki, gdy `isOutpostPlacementAllowed` (własna granica). Funkcja zwraca **najwyżej jedną komendę budowy na wywołanie** (`return` po pierwszym trafieniu), czyli łącznie 1 fort LUB 1 posterunek na turę z tej ścieżki, nie „1 posterunek”. Klucz pętli 1 to `'fort'` (`EXPANSION_KEY`, `ai.ts:~3120`).
@@ -63,7 +63,7 @@ Hak pomiarowy `__aiEconomyMeasure.metrics()` (`gra/src/main.ts`) NIE zawierał p
 
 ### 1.6 Limity i koszty
 
-- Limit miast: `cityLimitBase` z konfiguracji gry (`main.ts:13898`), + 5 za każdą epokę powyżej 1 (`isCityLimitExhausted`).
+- Limit miast: `cityLimitBase` z konfiguracji gry (`main.ts:13938`), + 5 za każdą epokę powyżej 1 (`isCityLimitExhausted`).
 - Limit fortów/posterunków: NIE ZNALEZIONO twardego limitu liczby fortów AI (poza „maks. 1 posterunek na turę”). Brak limitu łącznego.
 - Koszt utrzymania: NIE ZWERYFIKOWANO (sekcja 1.1).
 
@@ -122,9 +122,9 @@ Priorytet budżetu (iii): forty/posterunki z osobnym udziałem puli pracy (np. X
 
 Źródło liczb: `runs/R-WEB-AI-TERRITORY-RACE-FORTS-OUTPOSTS-DESIGN-Q1/dowody/seed4242.jsonl` (surowe wiersze runnera), `dowody/seed4242-terytorium.csv`, `dowody/seed4242-kontrolne.json`. Hak: `gra/src/main.ts`, `__aiEconomyMeasure.metrics()` (commit ccd24c6fb, tylko odczyt). Narzędzie: `gra/tools/territory-race-measure-run.cjs` (commit 2c46de4e0; przeliczenie CSV bez przebiegu: `TERR_POSTPROCESS_ONLY=1`). Bundle zbudowany poza repo (vite, po `npm ci --ignore-scripts` w `gra/`).
 
-Zmierzono (ziarno 4242; „wiersze AI" = właściciele obecni w metrykach; gracz, owner 0, wyłączony z sum):
+Zmierzono (ziarno 4242; „wiersze" = WSZYSTKIE właściciele ≠ 0 obecni w metrykach, NIE same cywilizacje AI: w danych są też właściciele-placeholdery i prawdopodobnie miasta-państwa; gracz, owner 0, wyłączony z sum). Sprostowanie r4 (zarzut Evaluatora 2): etykiety „AI" w tabeli i w wnioskach poniżej należy czytać jako „właściciele ≠ 0". Liczba cywilizacji AI w t40 wynosi 13 (owner 1,4,…,37, dane `dowody/r3-smoke-seed4242-t1-40-slim.jsonl`); owner 40 i 41 (po 1 mieście) to prawdopodobnie miasta-państwa, NIE zweryfikowane w kodzie.
 
-| Tura | Wiersze AI | Miasta | Forty | Posterunki | Heksy terytorium | z miast | z fortów/posterunków | Heksy sporne (suma po AI) | Heksy sporne ogółem | Jednostki wojskowe AI |
+| Tura | Wiersze właścicieli ≠0 | Miasta | Forty | Posterunki | Heksy terytorium | z miast | z fortów/posterunków | Heksy sporne (suma po AI) | Heksy sporne ogółem | Jednostki wojskowe AI |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 10 | 41 | 41 | 0 | 0 | 2531 | 2531 | 0 | 2103 | 930 | 43 |
 | 20 | 41 | 41 | 0 | 0 | 2593 | 2593 | 0 | 2193 | 968 | 41 |
@@ -134,10 +134,10 @@ Zmierzono (ziarno 4242; „wiersze AI" = właściciele obecni w metrykach; gracz
 Mapa: 20160 heksów (`heksyMapy`). Tury 50, 60, 90, 120, 150: **NIE ZMIERZONO** (szczegóły niżej).
 
 Wnioski z tej części (wyłącznie z powyższych liczb):
-- Pierwszy fort lub posterunek AI pojawia się dopiero po turze 30. Z 15 właścicieli z wierszem 5 zbudowało go w turach 32–40 (właściciel → tura: 19→32, 13→34, 22→35, 10→37, 37→40). Do tury 30 włącznie zero fortów i posterunków u wszystkich właścicieli.
+- Pierwszy fort lub posterunek pojawia się dopiero po turze 30. Z 15 właścicieli z wierszem w t40 5 zbudowało go w turach 32–40 (właściciel → tura: 19→32, 13→34, 22→35, 10→37, 37→40); wszystkie 5 to cywilizacje AI (13 w t40). Do tury 30 włącznie zero fortów i posterunków u wszystkich właścicieli. Poprzednie zdanie „5 z 15 AI" należy czytać jako „5 z 13 cywilizacji AI".
 - W turze 40 z 6814 heksów terytorium AI 254 (≈3,7%) pochodzi z fortów i posterunków, reszta z miast.
-- Liczba właścicieli z wierszem spada z 41 (t20) do 15 (t30). Ten sam wzór był w poprzednim pomiarze (r3 harnessu); przyczyna NIE zbadana w tym temacie.
-- Suma heksów spornych po AI spada z 2193 (t20) do 2001 (t40) razem ze spadkiem liczby właścicieli; reguł zakładania nie zmieniano.
+- Liczba właścicieli z wierszem spada z 41 (t20) do 15 (t30). Dane (`r3-smoke-seed4242-t1-40-slim.jsonl`) pokazują SCALENIE, nie wymarcie: t20 ma 42 właścicieli po 1 mieście, t22 ma 20 (np. owner 1: 1→3 miasta; ownery 2, 3, 8, 9 znikają), t40 ma 13 cywilizacji plus owner 40 i 41. Przyczyna w kodzie spawnu rywali NIE zweryfikowana w tym temacie.
+- Suma heksów spornych po właścicielach ≠0 spada z 2193 (t20) do 2001 (t40) razem ze spadkiem liczby właścicieli; reguł zakładania nie zmieniano. Suma zawiera placeholdery i miasta-państwa, więc NIE jest miarą sporów między cywilizacjami AI.
 
 Zakres NIE ZMIERZONO:
 - Tury 50–150 na ziarnie 4242. Przebieg zatrzymano na turze 40. Wznowienie ze slotu t40 kończy się segfaultem Chromium (`signal 11`) w dwóch powtórzeniach (`dowody/seed4242-wznowienie-t40-BLAD-SIGSEGV.log`). Wcześniejsze wznowienie ze slotu t20 działało; przyczyna NIE zbadana. Przebieg w tle (`setsid nohup`) został odrzucony przez classifier uprawnień, więc nie wykonano go w tle.
@@ -153,12 +153,14 @@ Metody:
 - Runner: `gra/tools/territory-race-measure-run.cjs` (wrapper na `ai-economy-measure-run.cjs`). Domyślnie dokłada `--player-ai 1` (gracz sterowany autopilotem AI; pasywny gracz ginie ok. t75) i `--reject-offers 1` (odrzuca wiszące oferty handlowe AI do gracza, które blokują „Zakończ turę"; nowa opcja w `ai-economy-measure-run.cjs`, domyślnie 0, wzorzec z `diplomacy-harder-measure-run.cjs`). Jawne `--player-ai 0` / `--reject-offers 0` nadpisuje. `--every N` = częstotliwość zapisu slotu (wznowienia); `--stop-at` dzieli bieg na wywołania < 590 s.
 - Analizator: `gra/tools/territory-race-measure-analyze.cjs --in <katalog> --seed <S> --step 10 [--slim <plik>] [--md <plik>]`: tabela co 10 tur (Σ heksów, z miast vs z fortów/posterunków, forty/posterunki, AI z fortem, sporne, Δheksów/tura), tempo per AI, pierwszy fort per AI, kontrola NaN.
 
-Bieg dymny r3 (ziarno 4242, 40 tur, `--player-ai 1`, jeden Chromium, 105 s): `dowody/r3-smoke-seed4242-t1-40-analiza.md`, `-slim.jsonl`, `-terytorium.csv`, `-kontrolne.json`, `-analiza.json`. Brak NaN; 5 AI z fortem/posterunkiem w t40. Liczby t40 różnią się nieznacznie od r2 (6741 vs 6814 heksów AI) — bieg nie jest bitowo powtarzalny względem r2 (inne ustawienia: autopilot gracza, odrzucanie ofert); to NIE jest błąd pomiaru, ale uniemożliwia mieszanie serii r2 i r3 w jednej tabeli.
+Bieg dymny r3 (ziarno 4242, 40 tur, `--player-ai 1`, jeden Chromium, 105 s): `dowody/r3-smoke-seed4242-t1-40-analiza.md`, `-slim.jsonl`, `-terytorium.csv`, `-kontrolne.json`, `-analiza.json`. Brak NaN; w t40 5 z 13 cywilizacji AI (owner 10, 13, 19, 22, 37) ma fort lub posterunek. Liczby t40 różnią się nieznacznie od r2 (6741 vs 6814 heksów AI) — bieg nie jest bitowo powtarzalny względem r2 (inne ustawienia: autopilot gracza, odrzucanie ofert); to NIE jest błąd pomiaru, ale uniemożliwia mieszanie serii r2 i r3 w jednej tabeli.
 
 Ograniczenia:
 - Hak nie podaje liczby wolnych heksów lądowych w zasięgu osadnictwa, więc „udział wolnej ziemi" i „część mapy lądowej zajęta" jako ułamek ziemi: NIE ZMIERZONO (dostępny jest tylko udział w `heksyMapy`, który obejmuje też wodę).
 - „Zajęte pierwszy raz" (historia per heks): NIE ZMIERZONO.
-- W t30 liczba właścicieli z miastem spada z 41 do 15 (w obu seriach); przyczyna NIE zbadana w tym temacie.
+- Runner i analizator traktują KAŻDEGO właściciela ≠ 0 jako „AI" (zarzut Evaluatora 2 przyjęty: rozbicia na cywilizacje AI / miasta-państwa / placeholdery NIE ma w tej rundzie). Dlatego liczba „AI" w tabelach to liczba właścicieli ≠ 0.
+- Test kształtu haka (`ai-economy-measure-hook-test.cjs`) nie testuje wartości liczb; mutacja wartości przeszła (ograniczenie zapisane w jego nagłówku).
+- W t30 liczba właścicieli z miastem spada z 41 do 15 (w obu seriach); patrz scalenie opisane w sekcji 6.
 - Wznowienie ze slotu t40 dawało segfault Chromium w r2; długi bieg trzeba prowadzić jednym procesem (bez wznowień) lub wznawiać ze slotu t20/t30.
 
 Wyniki 150 tur × 3 ziarna (wykonuje orkiestrator; komendę podaje raport r3): MIEJSCE NA TABELĘ — NIE ZMIERZONO do czasu biegu. Do wklejenia: wyjście `territory-race-measure-analyze.cjs --step 10` per ziarno oraz tury kontrolne 30/60/90/120/150 z `seed<S>-kontrolne.json`.
