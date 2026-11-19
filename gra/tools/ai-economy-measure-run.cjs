@@ -41,6 +41,8 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const { execSync } = require('child_process');
+// R-WEB-MEASURE-RUNNERS-REJECT-AI-OFFERS-Q1: wspolne odrzucanie wiszacych ofert AI->gracz (przed sprawdzeniem canEnd).
+const { rejectAwaitingAiOffers } = require('./measure-reject-offers.cjs');
 
 const GRA_DIR = path.resolve(__dirname, '..');
 
@@ -79,7 +81,10 @@ let RUN_START_TURN = 0;
 
 /** Liczniki przebiegu (zapisywane w state.json po KAZDEJ turze i w summary.json). */
 const COUNTER_KEYS = ['gateActiveTurns', 'bypassApplied', 'stuckQueueHeals', 'battlesAuto',
-  'diploAudienceClosed', 'armyMergeClosed', 'techNoticeClosed'];
+  'diploAudienceClosed', 'armyMergeClosed', 'techNoticeClosed',
+  // R-WEB-MEASURE-RUNNERS-REJECT-AI-OFFERS-Q1: aiOffersRejected = POTWIERDZONE odrzucenia (wpis zniknal),
+  // aiOffersRejectAttempts = PROBY (wywolania reject). Nie mieszac: proba bez skutku nie jest odrzuceniem.
+  'aiOffersRejected', 'aiOffersRejectAttempts'];
 /** Klucze blokad modalnych (= liczniki zamkniec). */
 const MODAL_KEYS = ['diploAudienceClosed', 'armyMergeClosed', 'techNoticeClosed'];
 
@@ -356,7 +361,21 @@ async function playOneTurn(page, ctxState) {
   await closeEndTurnModals(page, ctxState);
   const battlesAuto = await clearBattles(page, ctxState);
   ctxState.battlesAuto = (ctxState.battlesAuto || 0) + battlesAuto;
+  // R-WEB-MEASURE-RUNNERS-REJECT-AI-OFFERS-Q1: wiszaca oferta AI->gracz blokuje koniec tury; pasywny gracz ja odrzuca
+  // PRZED sprawdzeniem canEnd (bez ofert: zero zmian stanu gry, tylko odczyt stolu). Liczniki w ctxState i w wierszu tury.
+  const offersRec = { confirmed: 0, attempts: 0 };
+  const countOffers = o => {
+    offersRec.confirmed += o.confirmed; offersRec.attempts += o.attempts;
+    ctxState.aiOffersRejected = (ctxState.aiOffersRejected || 0) + o.confirmed;
+    ctxState.aiOffersRejectAttempts = (ctxState.aiOffersRejectAttempts || 0) + o.attempts;
+  };
+  countOffers(await rejectAwaitingAiOffers(page));
   let canEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
+  if (!canEnd) {
+    // Druga proba: odrzucenie moze odslonic kolejna oferte w kolejce stolu (jak w diplomacy-harder-measure-run.cjs).
+    countOffers(await rejectAwaitingAiOffers(page));
+    canEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
+  }
   // r3: odlozona auto-bitwa potrafi zalegac w kolejce (pendingAuto=true, nic nie otwarte; seed 4242 t51). Gra leczy to
   // dopiero przy PROBIE zakonczenia tury (healStuckDeferredPreBattleQueueOnEndTurnAttempt, prog 8 s) -- tak jak gracz,
   // ktory klika „Zakoncz ture”. Harness robi to samo (do 3 prob, liczone w stuckQueueHeals) i NIE ukrywa faktu w wyniku.
@@ -379,7 +398,8 @@ async function playOneTurn(page, ctxState) {
     const mH = await page.evaluate(() => window.__aiEconomyMeasure.metrics());
     const recH = { seed: SEED, turn: afterH, gateBlockedBeforeEnd: blocked, bypass, battlesAuto, stuckQueueHealEndedTurn: true,
       modalClosedThisTurn: modalDelta(),
-      owners: mH.owners, diag: mH.diag, niezmierzone: mH.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10 };
+      owners: mH.owners, diag: mH.diag, niezmierzone: mH.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
+      aiOffersRejected: offersRec.confirmed, aiOffersRejectAttempts: offersRec.attempts };
     recH.wars = await collectWars(page, mH.owners);
     recH.upkeepGate = gateDelta(gateBefore, await readGateStats(page));
     if (HASH) recH.stateHash = await stateHash(page, null);
@@ -415,6 +435,7 @@ async function playOneTurn(page, ctxState) {
     owners: m.owners, diag: m.diag, niezmierzone: m.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
     load1: Math.round(os.loadavg()[0] * 100) / 100,
     ledgerRecording: LEDGER_OFF ? 'off' : 'on',
+    aiOffersRejected: offersRec.confirmed, aiOffersRejectAttempts: offersRec.attempts,
   };
   rec.wars = await collectWars(page, m.owners);
   rec.upkeepGate = gateDelta(gateBefore, await readGateStats(page));
