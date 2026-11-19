@@ -52,8 +52,8 @@ use crate::domain::siege_battle_adapter_body::{
 use crate::domain::siege_battle_adapter_playable::siege_inputs_from_playable;
 use crate::domain::siege_battle_adapter_unit::{
     apply_starting_morale_power_penalty, counter_matrix, norm_counters, roster_to_battle_units,
-    spawn_fields, unit_blow_template, AdapterBattleUnit, CounterRow, OwnerContext,
-    RosterBattleCtx, SpawnEnv, SpawnSlot, StartingMoraleParams, UnitBlowTemplate, UnitDefFallback,
+    spawn_fields, unit_blow_template, AdapterBattleUnit, CounterRow, OwnerContext, RosterBattleCtx,
+    SpawnEnv, SpawnSlot, StartingMoraleParams, UnitBlowTemplate, UnitDefFallback,
 };
 use crate::domain::siege_no_breach::siege_no_breach_max_rounds_from_data;
 use crate::domain::siege_tactics_actions::{BattleAction, TimedAction, BLOW_HIT_T};
@@ -88,7 +88,9 @@ pub enum SessionError {
     /// Błąd adaptera T6 (brak miasta, brak muru, brak obrońców, dane jednostek, NaN/Inf...).
     Adapter(AdapterError),
     /// D-WIR-2: atakujący z generałem = faza rozstawienia i tryb ręczny (`deploy = true`, `_manualMode = true`), K5EXEC #268.
-    ManualModeNotPorted { general_id: String },
+    ManualModeNotPorted {
+        general_id: String,
+    },
     /// R7: `skip()` przed `started` = `_skipInstantFallback` (`:3698`) wymaga `resolveCombat` z wejściami #135/#167.
     SkipBeforeStartNotPorted,
     /// Wywołanie po zakończeniu bitwy (`step`/`skip`) albo `finish` przed końcem.
@@ -105,7 +107,9 @@ pub enum SessionError {
 impl From<AdapterError> for SessionError {
     fn from(e: AdapterError) -> Self {
         match e {
-            AdapterError::AttackerHasGeneral(id) => SessionError::ManualModeNotPorted { general_id: id },
+            AdapterError::AttackerHasGeneral(id) => {
+                SessionError::ManualModeNotPorted { general_id: id }
+            }
             other => SessionError::Adapter(other),
         }
     }
@@ -132,9 +136,7 @@ impl SessionRolls {
     /// Mieszanie `splitmix`-podobne (stałe Knutha), żeby kolejne bitwy tej samej gry nie dzieliły strumienia.
     #[must_use]
     pub fn derive(seed: u32, battle_index: u32) -> Self {
-        let mixed = seed
-            ^ battle_index.wrapping_mul(0x9E37_79B9)
-            ^ 0x5349_4547; // "SIEG"
+        let mixed = seed ^ battle_index.wrapping_mul(0x9E37_79B9) ^ 0x5349_4547; // "SIEG"
         Self {
             rng: Rng::from_seed(mixed),
             drawn: 0,
@@ -408,7 +410,13 @@ impl BlowComposer for SessionBlowComposer {
         let is_charge = !site.ranged && site.first_blow && !d.tmpl.braces_against_charge;
         // `atkBonusy` strony atakującego ciosu: `battleUnitCivBonusy(bu, side)` = `bu.civBonusy` (adapter podaje zawsze).
         let am = mods_for(a, CombatSide::Attacker, &def_terrain, is_charge, false);
-        let dm = mods_for(d, CombatSide::Defender, &def_terrain, is_charge, site.target_on_wall);
+        let dm = mods_for(
+            d,
+            CombatSide::Defender,
+            &def_terrain,
+            is_charge,
+            site.target_on_wall,
+        );
         let counter_mult = match site.attacker.side {
             BattleSide::Attacker => self.counters[0][site.attacker.idx][site.target.idx],
             BattleSide::Defender => self.counters[1][site.attacker.idx][site.target.idx],
@@ -564,8 +572,14 @@ impl SiegeBattleSession {
             &field,
             false,
             Side::Atk,
-            &atk_bu.iter().map(AdapterBattleUnit::setup_unit).collect::<Vec<_>>(),
-            &def_bu.iter().map(AdapterBattleUnit::setup_unit).collect::<Vec<_>>(),
+            &atk_bu
+                .iter()
+                .map(AdapterBattleUnit::setup_unit)
+                .collect::<Vec<_>>(),
+            &def_bu
+                .iter()
+                .map(AdapterBattleUnit::setup_unit)
+                .collect::<Vec<_>>(),
         );
         // `this.atk` / `this.def` w kolejności rozstawienia.
         let ordered = |placed: &[crate::domain::battle_setup_units::PlacedUnit],
@@ -584,7 +598,11 @@ impl SiegeBattleSession {
             // Korona = kafel muru/bramy: `combatTerrainName` = teren płaski, `terrainRangeDelta` = 0 (D-WIRA-6).
             crown_range_delta: 0.0,
         };
-        let spawn = |list: &[(crate::domain::battle_setup_units::PlacedUnit, AdapterBattleUnit, String)],
+        let spawn = |list: &[(
+            crate::domain::battle_setup_units::PlacedUnit,
+            AdapterBattleUnit,
+            String,
+        )],
                      atk_side: bool| {
             list.iter()
                 .map(|(p, bu, _)| {
@@ -612,7 +630,8 @@ impl SiegeBattleSession {
             &data.combat_opts,
             &data.starting_morale,
         );
-        let ins = |units: &[AdapterBattleUnit], sf: &[crate::domain::siege_battle_adapter_unit::SpawnFields]| {
+        let ins = |units: &[AdapterBattleUnit],
+                   sf: &[crate::domain::siege_battle_adapter_unit::SpawnFields]| {
             units
                 .iter()
                 .zip(sf)
@@ -622,7 +641,11 @@ impl SiegeBattleSession {
         let atk_in = ins(&atk_units, &atk_sf)?;
         let def_in = ins(&def_units, &def_sf)?;
         let terr_entries = entries(&data.terrain_rows);
-        let mk_units = |list: &[(crate::domain::battle_setup_units::PlacedUnit, AdapterBattleUnit, String)],
+        let mk_units = |list: &[(
+            crate::domain::battle_setup_units::PlacedUnit,
+            AdapterBattleUnit,
+            String,
+        )],
                         bins: &[BodyUnitInputs]|
          -> Result<Vec<ProdUnit>, SessionError> {
             list.iter()
@@ -699,24 +722,25 @@ impl SiegeBattleSession {
             counter_matrix(&atk_t, &def_t, &data.counters, data.counter_mult),
             counter_matrix(&def_t, &atk_t, &data.counters, data.counter_mult),
         ];
-        let compose_units = |units: &[AdapterBattleUnit], t: Vec<UnitBlowTemplate>, side_def: bool| {
-            units
-                .iter()
-                .zip(t)
-                .map(|(bu, tmpl)| ComposeUnit {
-                    tmpl,
-                    side_def,
-                    diff_mult: bu.difficulty_combat_mult,
-                    civ_bonusy: bu.civ_bonusy.clone(),
-                    building: BuildingCombatBonus {
-                        pancerz: bu.pancerz_bonus_frac,
-                        other: bu.parametry_bonus_frac,
-                    },
-                    fortified_in_field: bu.fortified_in_field,
-                    max_hp: bu.max_hp,
-                })
-                .collect::<Vec<_>>()
-        };
+        let compose_units =
+            |units: &[AdapterBattleUnit], t: Vec<UnitBlowTemplate>, side_def: bool| {
+                units
+                    .iter()
+                    .zip(t)
+                    .map(|(bu, tmpl)| ComposeUnit {
+                        tmpl,
+                        side_def,
+                        diff_mult: bu.difficulty_combat_mult,
+                        civ_bonusy: bu.civ_bonusy.clone(),
+                        building: BuildingCombatBonus {
+                            pancerz: bu.pancerz_bonus_frac,
+                            other: bu.parametry_bonus_frac,
+                        },
+                        fortified_in_field: bu.fortified_in_field,
+                        max_hp: bu.max_hp,
+                    })
+                    .collect::<Vec<_>>()
+            };
         let wall_totals = wall_defense_totals(Some(built_slice), &data.wall_params);
         let tiles = TileMap::new(
             field.map.cols(),
@@ -725,6 +749,7 @@ impl SiegeBattleSession {
             field.map.is_mountain(),
         )
         .map_err(SessionError::InvalidData)?;
+        body.tower_outcome_effects = true;
         body.blow_composer = Some(Box::new(SessionBlowComposer {
             units: [
                 compose_units(&atk_units, atk_t, false),

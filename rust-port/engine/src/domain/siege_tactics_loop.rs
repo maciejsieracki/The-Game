@@ -1455,6 +1455,11 @@ pub struct ProdBody<R: RollSource> {
     /// [`ProdUnit::counter_blows`] i [`Self::ranged_blows`] są wtedy nieużywane, a tagi `*-bez-szablonu` nieosiągalne.
     /// `None` (domyślnie) = dotychczasowe zachowanie (szablony adaptera testów).
     pub blow_composer: Option<Box<dyn BlowComposer>>,
+    /// K5LOOP-WIRING-A (#369): `true` = trafienie wieży stosuje skutki `_resolveBlowOutcome` (`battleScene.ts:9019-9068`)
+    /// jak każdy cios `_singleBlow` (`_fireOneTower` `:4264`), ze strzelcem syntetycznym `dead: true` (`:4236-4244`:
+    /// `_gainMorale` strzelca pomijane). `false` (domyślnie, dotychczasowe wektory `p4_1i3`/`p4_1i2`, które stubują te
+    /// skutki) = jawny tag `wieza-resolveBlowOutcome-efekty`. Sesja produkcyjna ustawia `true`.
+    pub tower_outcome_effects: bool,
 }
 
 /// K5LOOP-WIRING-A (#369): miejsce jednego ciosu `_singleBlow(attacker, defender, ranged)` w chwili ciosu.
@@ -2012,6 +2017,7 @@ impl<R: RollSource> ProdBody<R> {
             flee_stuck: [vec![0.0; units[0].len()], vec![0.0; units[1].len()]],
             flee_after: None,
             blow_composer: None,
+            tower_outcome_effects: false,
             terrain: None,
             units,
             scene,
@@ -3781,6 +3787,10 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             idx: target,
         };
         let max_hp = tmpl.defender_state.max_hp;
+        if self.tower_outcome_effects {
+            self.tower_blow_full(tmpl, tref, st);
+            return;
+        }
         let out = tower_blow_on_target(tmpl, st, target, &mut self.rolls);
         if out.blow.outcome != Outcome::None {
             self.unported
@@ -4348,7 +4358,9 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             }
         }
         if let Some(target) = pend.attack {
-            if self.blow_composer.is_none() && (pu.melee_target != Some(target) || pu.blow.is_none()) {
+            if self.blow_composer.is_none()
+                && (pu.melee_target != Some(target) || pu.blow.is_none())
+            {
                 self.unported.push((unit, "cios-bez-szablonu"));
                 pend.attack = None;
             }
@@ -4482,6 +4494,80 @@ impl<R: RollSource> ProdBody<R> {
     /// Jeden cios `_singleBlow` (pin): łuk względem facing celu, pierwsza para z `engaged`, stan celu z `st`, jeden rzut,
     /// skutki HP/zabicia, wpis do `engaged`. Wspólne dla ciosu głównego i kontrataku. Efekty `_resolveBlowOutcome`
     /// (morale/rout po ciosie) NIE są tu stosowane: zapis w `unported`.
+    /// K5LOOP-WIRING-A (#369): trafienie wieży `_singleBlow(shooter, target, true)` (`:4264`) z pełnymi skutkami
+    /// `_resolveBlowOutcome` (`:9019-9068`): stan celu z `st`, jeden rzut, log ciosu, potem efekty w kolejności pinu
+    /// (morale/rout, zabicie z `_startFade` + `_shakeAlliesOnLoss` + `_boostEnemiesOnBreak`, wpis `_pushClash` z aktorem
+    /// wieży). Strzelec jest syntetyczny i `dead` (`:4236-4244`), więc `_gainMorale(attacker)` nic nie robi. Etykieta
+    /// `_spawnDamageLabel` (`:4265`) gdy `dmg > 0` i cel żywy.
+    fn tower_blow_full(&mut self, tmpl: &FullBlowInput, tref: UnitRef, st: &mut TurnSeqState) {
+        let tc = st.unit(tref).c;
+        let mut input = tmpl.clone();
+        input.ranged = true;
+        input.defender_state = DefenderState {
+            hp: tc.hp,
+            max_hp: input.defender_state.max_hp,
+            morale: tc.morale,
+            flee_morale: tc.flee_morale,
+            dead: tc.dead,
+            fading_out: tc.fading_out,
+            routed: tc.routed,
+            never_rout: tc.never_rout,
+            removed: tc.removed,
+        };
+        input.routed_after_morale = true;
+        let max_hp = input.defender_state.max_hp;
+        let out = single_blow_full(&input, &mut self.rolls);
+        unit_cu_mut(st, tref).hp = out.blow.def_hp_after;
+        let shooter = tower_shooter_name(&self.tower_shooter_nazwa);
+        let tname = self.name_of(tref);
+        self.emit_blow_log(&shooter, &tname, tmpl.hit_arc, &out, max_hp);
+        let row = self.tower_row;
+        for e in &out.blow.effects {
+            match *e {
+                SceneEffect::UpdateHpBar | SceneEffect::GainMorale { .. } => {}
+                SceneEffect::PushClash { tag } => {
+                    let tag = match (tag, out.blow.outcome) {
+                        (ClashTag::Padl, _) => ClashTag::Padl,
+                        (_, Outcome::RoutBeforeDeath) => ClashTag::Rout,
+                        _ if st.unit(tref).c.routed => ClashTag::Rout,
+                        _ => ClashTag::Plain,
+                    };
+                    self.emit_clash(
+                        Actor::Tower(row),
+                        &shooter,
+                        BattleSide::Defender,
+                        tref,
+                        out.blow.dmg,
+                        tag,
+                    );
+                }
+                SceneEffect::ApplyMoraleDamage { dmg, extra_morale } => {
+                    self.apply_morale_damage(st, tref, max_hp, dmg, extra_morale);
+                }
+                SceneEffect::StartFade => {
+                    let c = st.unit(tref).c;
+                    if !c.dead && !c.fading_out && !c.removed {
+                        let text = eliminated_log(&tname);
+                        self.emit(BattleAction::Log { text });
+                    }
+                    self.start_fade(st, tref);
+                }
+                SceneEffect::ShakeAllies => {
+                    self.kill_ripples.push(tref);
+                    self.shake_allies_on_loss(st, tref);
+                }
+                SceneEffect::BoostEnemies => self.boost_enemies_on_break(st, tref),
+            }
+        }
+        let tc = st.unit(tref).c;
+        if out.blow.dmg > 0.0 && !tc.dead && !tc.fading_out {
+            self.emit(BattleAction::Damage {
+                target: tref,
+                dmg: out.blow.dmg,
+            });
+        }
+    }
+
     /// K5LOOP-WIRING-A: przy [`Self::blow_composer`] wejście składa [`Self::strike`] w chwili ciosu, więc tu zastępczy
     /// szablon niosący tylko `ranged` (nadpisywany w całości); bez kompozytora szablon adaptera (`None` = brak).
     fn composed_or(&self, ranged: bool, template: Option<FullBlowInput>) -> Option<FullBlowInput> {
