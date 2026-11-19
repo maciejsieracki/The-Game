@@ -41,6 +41,8 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const { execSync } = require('child_process');
+const { TECH_SIDE_CLOSE_SEL, TECH_MAIN_CLOSE_SEL } = require('./measure-close-modals.cjs'); // R-WEB-MEASURE-STALL-T72-T80-Q1: jedno źródło selektorów karty technologii
+const TECH_SEL = { side: TECH_SIDE_CLOSE_SEL, main: TECH_MAIN_CLOSE_SEL };
 // R-WEB-MEASURE-RUNNERS-REJECT-AI-OFFERS-Q1: wspolne odrzucanie wiszacych ofert AI->gracz (przed sprawdzeniem canEnd).
 const { rejectAwaitingAiOffers } = require('./measure-reject-offers.cjs');
 
@@ -110,7 +112,8 @@ const sha = s => crypto.createHash('sha256').update(s).digest('hex').slice(0, 16
  * wywolaniu. Klik na przycisk zamkniecia = to, co zrobilby gracz. Blokada bez przycisku nie jest zamykana (zostaje
  * w zrzucie DOM przy zatrzymaniu).
  */
-function closeModalsInPage() {
+function closeModalsInPage(techSel) {
+  // techSel = {side, main} -- selektory z measure-close-modals.cjs (TECH_SIDE_CLOSE_SEL / TECH_MAIN_CLOSE_SEL), podawane argumentem.
   const closed = [];
   const aud = document.querySelector('.civ-diplo-aud');
   if (aud && aud.style.display !== 'none') {
@@ -123,7 +126,8 @@ function closeModalsInPage() {
   }
   const tn = document.getElementById('civ-tech-discovery-notice-host');
   if (tn) {
-    const b = tn.querySelector('[data-act="close"]');
+    // R-WEB-MEASURE-STALL-T72-T80-Q1: aktualna karta ma ✕ `.tdn-entity-close` (bez data-act); karta boczna zamykana pierwsza.
+    const b = tn.querySelector(techSel.side) || tn.querySelector(techSel.main);
     if (b) { b.click(); closed.push('techNoticeClosed'); }
   }
   return closed;
@@ -156,17 +160,19 @@ function openModalKeysInPage() {
  * (pusta = wszystko zamkniete). Gdy klik 3x z rzedu nie daje skutku, petla konczy sie i zapisuje zrzut DOM na stderr.
  */
 async function closeEndTurnModals(page, ctx) {
-  const stuck = new Set();
+  // Zwraca klucze, ktore klik zostawil otwarte W OSTATNIEJ ISTOTNEJ ITERACJI (nie sumuje historii: karta boczna
+  // zamknieta w iteracji k i glowna w k+1 nie daje falszywego „niezamknietego”).
+  let stuck = [];
   let noEffect = 0;
   for (let k = 0; k < 20; k++) {
-    const clicked = await page.evaluate(closeModalsInPage);
-    if (clicked.length === 0) return [...stuck];
+    const clicked = await page.evaluate(closeModalsInPage, TECH_SEL);
+    if (clicked.length === 0) return stuck;
     await wait(300);
     const still = await page.evaluate(openModalKeysInPage);
+    stuck = clicked.filter(key => still.includes(key));
     let effect = false;
     for (const key of clicked) {
-      if (still.includes(key)) stuck.add(key);
-      else { ctx[key]++; effect = true; }
+      if (!still.includes(key)) { ctx[key]++; effect = true; }
     }
     if (effect) noEffect = 0;
     else if (++noEffect >= 3) {
@@ -174,7 +180,7 @@ async function closeEndTurnModals(page, ctx) {
       break;
     }
   }
-  return [...stuck];
+  return stuck;
 }
 
 /**
@@ -231,6 +237,8 @@ function ensureBuild() {
 
 async function launch(chromium, profileDir) {
   const args = ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage'];
+  // R-WEB-MEASURE-STALL-T72-T80-Q1: opcjonalne dodatkowe flagi Chromium (np. "--mute-audio") z env MEASURE_CHROME_ARGS; domyslnie puste.
+  for (const a of (process.env.MEASURE_CHROME_ARGS || '').split(/\s+/).filter(Boolean)) args.push(a);
   const o = { headless: true, args, viewport: { width: 1280, height: 800 }, executablePath: CHROME };
   return chromium.launchPersistentContext(profileDir, o);
 }
@@ -250,6 +258,7 @@ function attachDiagnostics(page) {
   page.on('crash', () => log('crash', 'strona przegladarki padla'));
   page.on('close', () => log('close', 'strona zamknieta'));
   page.on('console', m => { if (m.type() === 'error') log('console-error', m.text()); });
+  require('./measure-close-modals.cjs').attachEndTurnBlockLog(page, log); // R-WEB-MEASURE-STALL-T72-T80-Q1: powody blokady „Zakoncz ture”
   page.on('framenavigated', f => { if (f === page.mainFrame()) log('navigate', f.url().slice(0, 120)); });
 }
 
