@@ -284,7 +284,34 @@ fn vectors() -> Value {
 }
 
 fn run_vector(v: &Value, data: &SessionData) -> Result<SessionOutcome, SessionError> {
-    let s = SiegeBattleSession::prepare_scene(&scene_input(v), data)?;
+    let mut s = SiegeBattleSession::prepare_scene(&scene_input(v), data)?;
+    // PIN3-DIVERGENCE-Q1 (D-PIN3-4): wektor z własnym krokiem przewijania pinu (`frameMs`, bliźniak `_klatka1`) liczony
+    // w Rust przy TYM SAMYM kroku (`speedMul = frameMs / 16`): od D-PIN3-3 Rust ma fazę kroków animacji klatki jak pin, więc
+    // porównanie bliźniaka z krokiem produkcyjnym 16 ms mieszałoby dwa modele klatki.
+    if let Some(ms) = v["frameMs"].as_f64() {
+        s.diag_set_speed_mul(ms / FRAME_MS)?;
+    }
+    drive(s, v["mode"].as_str().unwrap())
+}
+
+/// PIN3-DIVERGENCE-Q1 (tylko diagnostyka): krok przewijania Rust nadpisany zmienną `WIRING_A_RUST_FF_STEP=<ms>`
+/// (`speedMul = ms / 16`, [`SiegeBattleSession::diag_set_speed_mul`]) — bliźniak `WIRING_A_FF_STEP` generatora, żeby
+/// porównać Rust i pin przy TYM SAMYM kroku klatki. Bez zmiennej = krok produkcyjny 16 ms.
+fn diag_speed(s: &mut SiegeBattleSession) {
+    if let Some(ms) = std::env::var("WIRING_A_RUST_FF_STEP")
+        .ok()
+        .and_then(|x| x.parse::<f64>().ok())
+    {
+        s.diag_set_speed_mul(ms / FRAME_MS).unwrap();
+    }
+}
+
+fn run_vector_diag(v: &Value, data: &SessionData) -> Result<SessionOutcome, SessionError> {
+    let mut s = SiegeBattleSession::prepare_scene(&scene_input(v), data)?;
+    if let Some(ms) = v["frameMs"].as_f64() {
+        s.diag_set_speed_mul(ms / FRAME_MS)?;
+    }
+    diag_speed(&mut s);
     drive(s, v["mode"].as_str().unwrap())
 }
 
@@ -297,7 +324,26 @@ fn run_vector(v: &Value, data: &SessionData) -> Result<SessionOutcome, SessionEr
 /// samej klatce 16 ms, `_drainTimers` przed kolejką `_raf`, `battleScene.ts:9419`, `:9616-9634`) — temat FRAME-QUANT
 /// (D-PIN2-2). Test pada, gdy scenariusz z listy zacznie się zgadzać, gdy zgodny się rozjedzie, gdy scenariusz z listy
 /// skończy się błędem sesji (E2-3) albo gdy jego bliźniak `<nazwa>_klatka1` nie będzie zgodny bajt w bajt.
-const ROZBIEZNE_B_WIRA_PIN_2: [&str; 1] = ["mur_jazda_rzeka"];
+///
+/// PIN3-DIVERGENCE-Q1: lista PUSTA. Po D-PIN3-1..3 (`dyspozycje/autobot/runs/R-RUSTPORT-P6-K5LOOP-PIN3-DIVERGENCE-Q1/
+/// 01-operator-r1.md`) `mur_jazda_rzeka` jest zgodny z pinem bajt w bajt przy klatce produkcyjnej 16 ms (remis t. 70 —
+/// cios `localT >= 150` w fazie `_raf` vs pocisk wieży w `_drainTimers` tej samej klatki — rozstrzyga D-PIN3-3), a
+/// bliźniak `mur_jazda_rzeka_klatka1` przy kroku 1 ms (D-PIN3-4). Test pilnuje teraz obu jako zwykłych zgodnych wektorów.
+const ROZBIEZNE_B_WIRA_PIN_2: [&str; 0] = [];
+
+/// PIN3-DIVERGENCE-Q1: JAWNY WYJĄTEK B-WIRA-PIN-3 klasy A (`01-operator-r1.md` §4): kandydaci c1 rozbieżni także przy
+/// kroku klatki 1 ms po D-PIN3-1..5. Przyczyna zmierzona (ślad pin @1 ms vs Rust): pin decyduje o KAŻDYM kolejnym kroku
+/// marszu w chwili tego kroku (`_doMove` → callback kroku `:8757-8775` → `_advanceStep`/`_rangedForwardStep` od nowa) i widzi
+/// rozbicie innej jednostki od wieży, które wypadło w trakcie marszu (118: rozbicie a0 w 171 220 ms zwalnia pole, na które
+/// a1 wchodzi w 171 460; 196: rozbicie a5 w 150 740 zmienia krok a4 w 150 900; 221: rozbicie a4 w 249 890 skraca marsz a2).
+/// Ciało Rust liczy marsz ATOMOWO w `start` (D-WIRA-18), więc nie widzi zdarzeń zegara z okna marszu. Poprawka wymaga
+/// przyrostowego marszu w ciele (temat następczy MARCH-INCREMENTAL) — poza zakresem tej rundy. Test pada, gdy wektor z listy
+/// zacznie się zgadzać (usuń z listy) albo skończy się błędem sesji.
+const ROZBIEZNE_B_WIRA_PIN_3: [&str; 3] = [
+    "a3_las_mix_d3l_palisada_118_klatka1",
+    "a3_gory_lucz2_d5_palisada_196_klatka1",
+    "a3_rown_lucz2_d3l_mury_221_klatka1",
+];
 
 #[test]
 fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
@@ -313,7 +359,8 @@ fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
             v["expect"]["otherRandom"], 0,
             "{name}: Math.random poza _singleBlow"
         );
-        let blokada = ROZBIEZNE_B_WIRA_PIN_2.contains(&name);
+        let blokada =
+            ROZBIEZNE_B_WIRA_PIN_2.contains(&name) || ROZBIEZNE_B_WIRA_PIN_3.contains(&name);
         // Obrona r2 (E2-3 Evaluatora): błąd sesji NIGDY nie jest „oczekiwaną rozbieżnością” — także scenariusz z
         // listy blokady musi zakończyć bitwę `Ok(..)`, a różnić się wyłącznie danymi wyniku.
         let d = match run_vector(v, &data) {
@@ -325,7 +372,7 @@ fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
         };
         match (d.is_empty(), blokada) {
             (true, false) => zgodne += 1,
-            (false, true) => eprintln!("B-WIRA-PIN-2 {name}: {}", d.join("; ")),
+            (false, true) => eprintln!("B-WIRA-PIN-2/3 {name}: {}", d.join("; ")),
             (true, true) => fails.push(format!("{name}: zgodny z pinem, usuń z listy blokady")),
             (false, false) => fails.push(format!("{name}: {}", d.join("; "))),
         }
@@ -335,10 +382,18 @@ fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
         "rozbieżności z pinem:\n{}",
         fails.join("\n")
     );
-    assert_eq!(zgodne, list.len() - ROZBIEZNE_B_WIRA_PIN_2.len());
+    assert_eq!(
+        zgodne,
+        list.len() - ROZBIEZNE_B_WIRA_PIN_2.len() - ROZBIEZNE_B_WIRA_PIN_3.len()
+    );
     // PIN2-PROBE-Q1 (D-PIN2-2): każdy scenariusz z jawną rozbieżnością @16 ms ma bliźniaka z granicą klatki (krok 1 ms),
     // zgodnego bajt w bajt (sprawdzony wyżej jako zwykły zgodny scenariusz) — rozbieżność jest WYŁĄCZNIE kwantyzacją klatki.
-    for name in ROZBIEZNE_B_WIRA_PIN_2 {
+    // PIN3-DIVERGENCE-Q1: bliźniak `mur_jazda_rzeka_klatka1` zostaje (krok 1 ms, to samo wejście i ziarno co wektor 16 ms).
+    for name in ROZBIEZNE_B_WIRA_PIN_2
+        .iter()
+        .copied()
+        .chain(["mur_jazda_rzeka"])
+    {
         let twin = format!("{name}_klatka1");
         let v = list
             .iter()
@@ -715,7 +770,7 @@ fn kandydaci_z_pliku_na_zadanie() {
     let data = pin_session_data();
     for v in doc["vectors"].as_array().unwrap() {
         let name = v["name"].as_str().unwrap();
-        let line = match run_vector(v, &data) {
+        let line = match run_vector_diag(v, &data) {
             Ok(out) => {
                 let d = diff(v, &out);
                 if d.is_empty() {
@@ -740,7 +795,11 @@ fn slad_diagnostyczny_na_zadanie() {
     let Ok(name) = std::env::var("WIRING_A_TRACE") else {
         return;
     };
-    let doc = vectors();
+    // PIN3-DIVERGENCE-Q1: scenariusz także z pliku kandydatów generatora (`WIRING_A_VECTORS_FILE`).
+    let doc = match std::env::var("WIRING_A_VECTORS_FILE") {
+        Ok(path) => serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap(),
+        Err(_) => vectors(),
+    };
     let data = pin_session_data();
     let v = doc["vectors"]
         .as_array()
@@ -749,6 +808,7 @@ fn slad_diagnostyczny_na_zadanie() {
         .find(|v| v["name"] == name.as_str())
         .expect("scenariusz");
     let mut s = SiegeBattleSession::prepare_scene(&scene_input(v), &data).unwrap();
+    diag_speed(&mut s);
     let ids = s.roster_ids().clone();
     let id = |u: UnitRef| ids[usize::from(u.side != BattleSide::Attacker)][u.idx].clone();
     // PIN2-PROBE-Q1: krok śladu nadpisywalny (`WIRING_A_TRACE_STEP=1`), żeby zrzut morale padał po każdym zdarzeniu.
@@ -788,6 +848,7 @@ fn slad_diagnostyczny_na_zadanie() {
                 BattleAction::Shot {
                     attacker, target, ..
                 } => format!("SHOT {} {}", id(attacker), id(target)),
+                BattleAction::Facing { unit, dir } => format!("FACE {} {dir}", id(unit)),
                 BattleAction::Move { unit, from, to, .. } => {
                     format!("MOVE {} {},{}->{},{}", id(unit), from.0, from.1, to.0, to.1)
                 }

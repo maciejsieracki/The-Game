@@ -1128,8 +1128,11 @@ impl SiegeBattleSession {
             ],
             body,
         };
+        let mut lp = SiegeLoop::new(st, senv);
+        // PIN3-DIVERGENCE-Q1 (D-PIN3-3): skutek ciała w fazie kroków animacji klatki (po `_drainTimers`).
+        lp.body_done_raf = true;
         Ok(Self {
-            lp: SiegeLoop::new(st, senv),
+            lp,
             clock: VirtualClock::new(),
             phase: SessionPhase::Prepared,
             wall_acc: 0.0,
@@ -1303,6 +1306,22 @@ impl SiegeBattleSession {
     #[must_use]
     pub fn clock(&self) -> &VirtualClock<LoopTimer> {
         &self.clock
+    }
+
+    /// PIN3-DIVERGENCE-Q1 (WYŁĄCZNIE diagnostyka/testy, bliźniak `WIRING_A_FF_STEP` generatora): mnożnik `speedMul`
+    /// zegara (pin `:2555`, `_scaledWallDelta` `:9512-9515`), od którego zależy krok przewijania
+    /// `FF_STEP_MS = _scaledWallDelta(16)` (`:9419`). Pin dopuszcza tylko `SPEED_STEPS` (`:2551`, >= 1); wartość
+    /// ułamkowa (np. `1/16` = krok 1 ms) służy do porównania z pinem w granicy klatki, NIE jest modelem produkcyjnym.
+    ///
+    /// # Errors
+    /// [`SessionError::InvalidData`] dla wartości nieskończonej albo <= 0.
+    #[doc(hidden)]
+    pub fn diag_set_speed_mul(&mut self, speed_mul: f64) -> Result<(), SessionError> {
+        if !(speed_mul.is_finite() && speed_mul > 0.0) {
+            return Err(SessionError::InvalidData(format!("speed_mul {speed_mul}")));
+        }
+        self.clock.speed_mul = speed_mul;
+        Ok(())
     }
 
     /// Pole bitwy (tylko odczyt: producent `BattleSetupDto`, #371).
