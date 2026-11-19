@@ -52,6 +52,7 @@ Nowe starty: `df --output=avail -BG /` ≥ 6 GB (integracja `/home/user/integ` �
 
 ## GOTOWE DO STARTU (kolejność; start gdy slot < 4 i dysk ≥ 6 GB; dispatch najpierw na gałąź)
 
+1a. **R-WEB-ERA-WAR-MEASURE-TOOL-AND-SMOKE-Q1** (po FALI 881 ERAWARDEFER): narzędzie pomiarowe z logami wojen epoki/pending (runner nie loguje epoki ani etykiet wojen wymuszonych) + bieg dymny 120 tur seed 4242 z tabelą prób/wypowiedzeń wojen Brązu (NIE ZMIERZONO w ERAWARDEFER) + poprawa progów 20/25→40 w testach forced-war-bronze/iron/multi-turn (9 czerwonych asercji = dług bazowy). Haiku, bez ABC.
 00000. **R-WEB-ECONOMY-UNIT-RECRUIT-COST-ERA-EXTRA-MULT-Q1** (decyzja właściciela: rekrutacja Pieniądz ×2 Brąz, ×4 Żelazo dodatkowo; plus audyt kosztów wojska; dispatch zapisany).
 0000. **R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1** (decyzja właściciela: ustawienie nowej gry „Wzrost surowców z epoką”, domyślnie WYŁ.; dispatch zapisany).
 000. **R-WEB-TERRITORY-FORT-PLACEMENT-SAME-RULES-AS-CITY-Q1** (decyzja właściciela: zasięg fortu = reguły jak miasto; URUCHOMIONY 2026-11-19 ~21:55).
