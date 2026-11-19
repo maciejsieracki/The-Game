@@ -54,6 +54,10 @@ const HARDER = arg('harder', '0') === '1';
  *  0 = wszystkie OFF; ustawia hak `__diploAllFlagsMeasure.setAll` PO starcie gry, PRZED pierwszym endTurn. */
 const ALL_FLAGS_ARG = arg('all-flags', null);
 const ALL_FLAGS = ALL_FLAGS_ARG === null ? null : (ALL_FLAGS_ARG === '1');
+if (ALL_FLAGS !== null && arg('harder', null) !== null) {
+  console.error('--all-flags nie łączy się z --harder (tryb --all-flags ignoruje --harder). Podaj tylko jedno.');
+  process.exit(2);
+}
 /** R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1: --player-ai 0|1 (domyslnie 1) = gracz (0) sterowany autopilotem AI (hak
  *  `__aiEconomyMeasure.setPlayerAiAutopilotForTest`, ustawiany po starcie gry, przed pierwszym endTurn). */
 const PLAYER_AI = arg('player-ai', '1') !== '0';

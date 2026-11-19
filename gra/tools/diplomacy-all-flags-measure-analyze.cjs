@@ -19,6 +19,7 @@
  * Samotest bez przeglądarki: node tools/diplomacy-all-flags-measure-analyze.cjs --selftest
  */
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const TURY = [25, 50, 75, 100, 125, 150];
@@ -144,6 +145,12 @@ function main() {
   const off = readDir(path.resolve(offDir)).filter(r => r.allFlags === 0);
   const on = readDir(path.resolve(onDir)).filter(r => r.allFlags === 1);
   if (!off.length || !on.length) { console.error('brak plikow jsonl (OFF=' + off.length + ', ON=' + on.length + ')'); process.exit(1); }
+  const seedyOff = off.map(r => r.seed).sort((a, b) => a - b).join(',');
+  const seedyOn = on.map(r => r.seed).sort((a, b) => a - b).join(',');
+  if (seedyOff !== seedyOn) {
+    console.error('ZIARNA NIEZGODNE: OFF=[' + seedyOff + '] ON=[' + seedyOn + ']. Porownanie wymaga tych samych ziaren po obu stronach.');
+    process.exit(3);
+  }
   const gOff = group(off);
   const gOn = group(on);
   console.log('Pomiar łączny flag dyplomacji: OFF (' + off.length + ' ziaren) vs ON (' + on.length + ' ziaren). Tury ' + TURY.join('/') + '.');
@@ -171,12 +178,49 @@ function selfTest() {
   ok('brak wiersza -> null', rowMetrics(null) === null);
   ok('format: null -> NIE_ZMIERZONO, nie NaN', f2(null) === NZ && f2(NaN) === NZ);
   ok('pairType bez gracza -> nieznany', pairType({ a: 1, b: 2 }, undefined) === 'nieznany');
+  // Odsetek par Zaufanie>=50 (granica 50 wlicza sie; pary bez kontaktu nie wchodza do mianownika).
+  const rowZ = { turn: 50, diplo: { gracz: 0, pairs: [
+    { a: 1, b: 2, sasiad: true, zaufanie: 50, status: 'neutralni', pokoj: 'pokoj' },
+    { a: 1, b: 3, sasiad: true, zaufanie: 49, status: 'wojna' },
+    { a: 2, b: 3, sasiad: false, zaufanie: 90, status: 'neutralni', pokoj: null },
+    { a: 2, b: 4, sasiad: false, zaufanie: 10, status: 'wojna' },
+  ] } };
+  ok('odsetek Zaufanie>=50: 3 pary z kontaktem (1 z zaufaniem>=50) -> 1/3; para bez kontaktu poza mianownikiem', Math.abs(rowMetrics(rowZ).odsetekZaufanie50 - 1 / 3) < 1e-9);
+  ok('odsetek Zaufanie>=50: granica 50 wlicza sie (wiersz tylko z 50 -> 1)', rowMetrics({ turn: 1, diplo: { gracz: 0, pairs: [{ a: 1, b: 2, zaufanie: 50, status: 'wojna' }] } }).odsetekZaufanie50 === 1);
+  ok('odsetek Zaufanie>=50: brak kontaktu -> NIE_ZMIERZONO (null)', rowMetrics({ turn: 1, diplo: { gracz: 0, pairs: [{ a: 1, b: 2, zaufanie: 80, status: 'neutralni', pokoj: null }] } }).odsetekZaufanie50 === null);
+  // Stala TURY (tury raportu).
+  ok('TURY = 25/50/75/100/125/150', JSON.stringify(TURY) === JSON.stringify([25, 50, 75, 100, 125, 150]));
+  // firstWar i group() na danych w pamieci.
+  const runA = { seed: 7, rows: [
+    { turn: 25, diplo: { gracz: 0, pairs: [{ a: 1, b: 2, status: 'neutralni' }] } },
+    { turn: 50, diplo: { gracz: 0, pairs: [{ a: 1, b: 2, status: 'wojna' }, { a: 0, b: 3, status: 'wojna' }] } },
+    { turn: 75, diplo: { gracz: 0, pairs: [{ a: 0, b: 3, status: 'wojna' }] } },
+  ] };
+  ok('firstWar AI↔AI = 50 (wojna 1-2)', firstWar(runA, 'ai-ai') === 50);
+  ok('firstWar AI↔gracz = 50 (wojna 0-3)', firstWar(runA, 'ai-gracz') === 50);
+  ok('firstWar bez wojny -> null', firstWar({ rows: [{ turn: 25, diplo: { gracz: 0, pairs: [] } }] }, 'ai-ai') === null);
+  const gr = group([runA]);
+  ok('group: tura 25 ma 1 ziarno i wojny razem = 0', gr.perTura[25].seedy === 1 && gr.perTura[25].wojnyLacznie === 0);
+  ok('group: tura 75 ma wojny AI↔gracz = 1, AI↔AI = 0', gr.perTura[75].wojnyAiGracz === 1 && gr.perTura[75].wojnyAiAi === 0);
+  ok('group: brak wiersza tury 100 -> null (NIE_ZMIERZONO, nie 0)', gr.perTura[100] === null);
+  ok('group: pierwsza wojna per ziarno (AI↔AI=50)', gr.pierwszaWojna['ai-ai'][0].tura === 50);
+  // readDir na katalogu tymczasowym (pliki spoza wzorca sa pomijane).
+  const dtmp = fs.mkdtempSync(path.join(os.tmpdir(), 'allflags-readdir-'));
+  fs.writeFileSync(path.join(dtmp, 'seed4242-all1.jsonl'), JSON.stringify({ turn: 2 }) + '\n' + JSON.stringify({ turn: 1 }) + '\n');
+  fs.writeFileSync(path.join(dtmp, 'seed4242-all1.summary.json'), '{}');
+  fs.writeFileSync(path.join(dtmp, 'seed9-all0.jsonl'), JSON.stringify({ turn: 1 }) + '\n');
+  const rd = readDir(dtmp);
+  ok('readDir: 2 pliki jsonl wg wzorca (summary pominiety)', rd.length === 2);
+  ok('readDir: seed i allFlags z nazwy pliku', rd.some(x => x.seed === 4242 && x.allFlags === 1) && rd.some(x => x.seed === 9 && x.allFlags === 0));
+  ok('readDir: wiersze posortowane po turze', rd.find(x => x.seed === 4242).rows[0].turn === 1);
+
+  fs.rmSync(dtmp, { recursive: true, force: true });
   const bad = wyniki.filter(x => !x).length;
   console.log('WYNIK SAMOTESTU: ' + (wyniki.length - bad) + ' zielonych, ' + bad + ' czerwonych');
   process.exit(bad ? 1 : 0);
 }
 
-module.exports = { rowMetrics, pairType, f2, NZ };
+module.exports = { rowMetrics, pairType, f2, NZ, TURY, group, firstWar, readDir };
 
 if (require.main === module) {
   if (process.argv.includes('--selftest')) selfTest(); else main();
