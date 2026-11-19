@@ -595,7 +595,11 @@ fn run_fx() {
             let new_counters = body.counters.len() - counters_before;
             if e["counter"].is_null() && !e["blow"].is_null() {
                 let t = e["blow"]["target"].as_u64().expect("target") as usize;
-                let off = if side == BattleSide::Attacker { n_atk } else { 0 };
+                let off = if side == BattleSide::Attacker {
+                    n_atk
+                } else {
+                    0
+                };
                 let tu = &units[off + t];
                 let after = &e["units"][off + t];
                 if b(&tu["primaryRanged"])
@@ -858,10 +862,26 @@ fn run_fx() {
         cov.shooter_counter,
         cov.shooter_no_counter
     );
-    assert!(cov.commander_lost >= 50, "utrata dowodcy: {}", cov.commander_lost);
-    assert!(cov.bonus_removed >= 40, "bonus zdjety: {}", cov.bonus_removed);
-    assert!(cov.bonus_nan_removed >= 15, "bonus NaN: {}", cov.bonus_nan_removed);
-    assert!(cov.shooter_counter >= 30, "kontratak strzelca bez amunicji: {}", cov.shooter_counter);
+    assert!(
+        cov.commander_lost >= 50,
+        "utrata dowodcy: {}",
+        cov.commander_lost
+    );
+    assert!(
+        cov.bonus_removed >= 40,
+        "bonus zdjety: {}",
+        cov.bonus_removed
+    );
+    assert!(
+        cov.bonus_nan_removed >= 15,
+        "bonus NaN: {}",
+        cov.bonus_nan_removed
+    );
+    assert!(
+        cov.shooter_counter >= 30,
+        "kontratak strzelca bez amunicji: {}",
+        cov.shooter_counter
+    );
     assert!(
         cov.shooter_no_counter >= 100,
         "strzelec z amunicja bez kontrataku: {}",
@@ -1274,7 +1294,10 @@ mod siege {
         let start_pos = body.unit_cell(acting).expect("pozycja");
         let dur = body.start(acting, &st);
         body.complete(acting, &mut st);
-        assert!(body.take_timers().is_empty(), "{name}: ucieczka bez odroczen");
+        assert!(
+            body.take_timers().is_empty(),
+            "{name}: ucieczka bez odroczen"
+        );
         let got_trace: Vec<String> = body.trace[0].1.iter().filter_map(label).collect();
         let want_trace: Vec<String> = e["trace"]
             .as_array()
@@ -1385,9 +1408,7 @@ mod siege {
                 BattleAction::Rout { unit } => got_order.push(format!("R:{}", tag_of(*unit))),
                 BattleAction::Kill { unit } => got_order.push(format!("K:{}", tag_of(*unit))),
                 BattleAction::Leave { unit } => got_order.push(format!("L:{}", tag_of(*unit))),
-                BattleAction::Shaken { unit, .. } => {
-                    got_order.push(format!("S:{}", tag_of(*unit)))
-                }
+                BattleAction::Shaken { unit, .. } => got_order.push(format!("S:{}", tag_of(*unit))),
                 _ => {}
             }
         }
@@ -1571,5 +1592,376 @@ mod siege {
         assert_eq!(n, 200);
         at_least(&cov, "left", 60);
         at_least(&cov, "shaken", 40);
+    }
+}
+
+/// Kryterium zamknięcia T4 (RUST-ONLY, bez wektorów pinu na poziomie CAŁEJ bitwy: NIE_ZMIERZONO, patrz raport):
+/// pełna bitwa AUTO z murem przez [`SiegeLoop`] + [`ProdBody`] (teren z murem i otwartą bramą, wieże strzelające w
+/// czasie aktywacji, strzelcy na koronie, dowódca obrońcy z bonusem morale armii, szablony ciosów, kontrataków i
+/// strzałów podane przez „adapter” testu) kończy się bez ścieżek nieportowanych poza jawnymi błędami wejścia
+/// (`*-brak-terenu`, `*-bez-szablonu`, `ucieczka-routed`). Zgodność gałęzi z pinem: rodziny `fx` i `siege` wyżej oraz
+/// dotychczasowe testy K5LOOP.
+mod battle {
+    use std::collections::BTreeSet;
+
+    use civ_engine::domain::siege_tactics_activate::{ActivateEvent, ActivateScene, ActivateUnit};
+    use civ_engine::domain::siege_tactics_blow::{DefenderState, HitArc, SequenceRolls};
+    use civ_engine::domain::siege_tactics_blow_full::{
+        AtkMods, AttackerCu, BlowEnv, DefMods, DefenderCu, FullBlowInput,
+    };
+    use civ_engine::domain::siege_tactics_clock::VirtualClock;
+    use civ_engine::domain::siege_tactics_end::BattleSide;
+    use civ_engine::domain::siege_tactics_loop::{
+        neutral_tower_shot_template, LoopTimer, ProdBody, ProdUnit, SiegeEnv, SiegeLoop,
+    };
+    use civ_engine::domain::siege_tactics_move_effects::MoveTerrain;
+    use civ_engine::domain::siege_tactics_turnseq::{SeqUnit, TurnSeqState};
+    use civ_engine::domain::siege_tactics_unit::CombatUnit;
+
+    const W: i64 = 30;
+    const GATE_ROW: i64 = 78;
+
+    struct WallTerrain;
+
+    impl MoveTerrain for WallTerrain {
+        fn passable(&self, col: f64, row: f64) -> bool {
+            // Mur w kolumnie `W`, brama otwarta w wierszach `GATE_ROW - 1`, `GATE_ROW`.
+            !(col as i64 == W && row as i64 != GATE_ROW && row as i64 != GATE_ROW - 1)
+        }
+        fn move_cost(&self, _col: f64, _row: f64) -> f64 {
+            1.0
+        }
+        fn is_ford(&self, _col: f64, _row: f64) -> bool {
+            false
+        }
+        fn cavalry_multiplier(&self, _col: f64, _row: f64) -> f64 {
+            1.0
+        }
+    }
+
+    fn blow(ranged: bool, wd: f64) -> FullBlowInput {
+        FullBlowInput {
+            ranged,
+            hit_arc: HitArc::Front,
+            attacker: AttackerCu {
+                weapon_damage: wd,
+                piercing: 1.0,
+                melee_attack: 12.0,
+                missile_attack: Some(10.0),
+                charge_bonus: 2.0,
+                counter_typ: String::new(),
+                typ_nazwa: String::new(),
+            },
+            atk_mods: AtkMods {
+                atk: 0.0,
+                ranged_atk: 0.0,
+                uderzenie: 0.0,
+            },
+            atk_diff_mult: 1.0,
+            atk_mounted: false,
+            defender: DefenderCu {
+                melee_defence: 4.0,
+                armor: 2.0,
+                kara_flanka: None,
+                kara_tyl: None,
+            },
+            def_mods: DefMods {
+                obrona: 0.0,
+                pancerz: 0.0,
+            },
+            def_diff_mult: 1.0,
+            def_on_wall: false,
+            def_fortified_in_field: false,
+            def_wall_civ_mult: 1.0,
+            def_braces_against_charge: false,
+            first_blow_of_pair: true,
+            counter_mult: 1.0,
+            env: BlowEnv {
+                is_city_defense_battle: true,
+                wall_bonus_proc: 0.0,
+                gated_terrain_multiplier: 1.0,
+                field_terrain_multiplier: 1.0,
+                atk_tile_is_river: false,
+                river_row_exists: false,
+                river_attack_mult: 1.0,
+                atk_on_ford: false,
+                def_on_ford_raw: false,
+                shore_adjacent: false,
+                brod_kara_obrona: 0.0,
+                brod_bonus_brzegu: 0.0,
+                fortify_obrona_proc: 0.0,
+            },
+            defender_state: DefenderState {
+                hp: 60.0,
+                max_hp: 60.0,
+                morale: 100.0,
+                flee_morale: 0.0,
+                dead: false,
+                fading_out: false,
+                routed: false,
+                never_rout: false,
+                removed: false,
+            },
+            routed_after_morale: false,
+        }
+    }
+
+    #[derive(Clone, Copy)]
+    enum Kind {
+        Melee,
+        Cavalry,
+        Archer,
+    }
+
+    fn act(side_atk: bool, q: i64, r: i64, kind: Kind, on_wall: bool, morale: f64) -> ActivateUnit {
+        ActivateUnit {
+            side_atk,
+            q,
+            r,
+            dead: false,
+            fading_out: false,
+            routed: false,
+            never_rout: false,
+            surround_applied: false,
+            morale,
+            flee_morale: 15.0,
+            terrain_defence_mult: 1.0,
+            range: if matches!(kind, Kind::Archer) {
+                5.0
+            } else {
+                1.0
+            },
+            on_wall_walkway: on_wall,
+            primary_ranged: matches!(kind, Kind::Archer),
+            mounted: matches!(kind, Kind::Cavalry),
+            phalanx: false,
+            shooting_disabled: false,
+            dry_col: -1.0,
+            held_after_fallback: false,
+            player_order_none: true,
+            can_shoot: matches!(kind, Kind::Archer),
+            is_siege_unit: false,
+            is_siege_tower: false,
+            is_ram: false,
+            is_catapult: false,
+            doctrine_auto: side_atk,
+            doctrine_manual: false,
+        }
+    }
+
+    /// Prosty generator liczb (LCG) dla rzutów: deterministyczny, różny dla ziaren.
+    fn rolls(seed: u64, n: usize) -> Vec<f64> {
+        let mut x = seed.wrapping_mul(6_364_136_223_846_793_005).wrapping_add(1);
+        (0..n)
+            .map(|_| {
+                x = x
+                    .wrapping_mul(6_364_136_223_846_793_005)
+                    .wrapping_add(1_442_695_040_888_963_407);
+                ((x >> 11) as f64) / ((1u64 << 53) as f64)
+            })
+            .collect()
+    }
+
+    struct Outcome {
+        unported: Vec<&'static str>,
+        flees: usize,
+        commander_bonus_removed: bool,
+        finished: bool,
+    }
+
+    fn battle(seed: u64, atk_morale: f64) -> Outcome {
+        // Atakujący przed murem (piechota, jazda, łucznik), obrońcy: łucznicy na koronie, piechota za murem, dowódca.
+        let atk_spec: Vec<(i64, i64, Kind)> = vec![
+            (W - 5, 76, Kind::Melee),
+            (W - 5, 77, Kind::Melee),
+            (W - 5, 78, Kind::Melee),
+            (W - 5, 79, Kind::Melee),
+            (W - 7, 75, Kind::Cavalry),
+            (W - 8, 78, Kind::Archer),
+        ];
+        let def_spec: Vec<(i64, i64, Kind, bool)> = vec![
+            (W, 74, Kind::Archer, true),
+            (W, 81, Kind::Archer, true),
+            (W + 1, 77, Kind::Melee, false),
+            (W + 1, 78, Kind::Melee, false),
+            (W + 2, 78, Kind::Melee, false),
+        ];
+        let n_atk = atk_spec.len();
+        let n_def = def_spec.len();
+        let mut units: [Vec<ProdUnit>; 2] = [Vec::new(), Vec::new()];
+        for (i, &(q, r, k)) in atk_spec.iter().enumerate() {
+            units[0].push(ProdUnit {
+                activate: act(true, q, r, k, false, atk_morale),
+                melee_target: Some(i % n_def),
+                blow: Some(blow(false, 9.0)),
+                counter_blows: (0..n_def).map(|_| blow(false, 6.0)).collect(),
+                body_ms: 150.0,
+                facing: 1.0,
+            });
+        }
+        for (i, &(q, r, k, on_wall)) in def_spec.iter().enumerate() {
+            units[1].push(ProdUnit {
+                activate: act(false, q, r, k, on_wall, 80.0),
+                melee_target: Some(i % n_atk),
+                blow: Some(blow(false, 9.0)),
+                counter_blows: (0..n_atk).map(|_| blow(false, 6.0)).collect(),
+                body_ms: 150.0,
+                facing: 3.0,
+            });
+        }
+        let cu = |hp: f64, morale: f64| CombatUnit {
+            hp,
+            morale,
+            flee_morale: 15.0,
+            move_left: 0.0,
+            never_rout: false,
+            dead: false,
+            fading_out: false,
+            routed: false,
+            removed: false,
+            acted: false,
+        };
+        let st = TurnSeqState {
+            atk: (0..n_atk)
+                .map(|i| SeqUnit {
+                    id: i as u64,
+                    c: cu(60.0, atk_morale),
+                })
+                .collect(),
+            def: (0..n_def)
+                .map(|i| SeqUnit {
+                    id: 100 + i as u64,
+                    c: cu(60.0, 80.0),
+                })
+                .collect(),
+            turn_order: Vec::new(),
+            turn_idx: 0,
+            round_no: 0,
+            siege_wall_col: W,
+            manual_mode: false,
+            player_side: BattleSide::Attacker,
+            finished: false,
+            awaiting_orders: false,
+            auto_battle_suspended: false,
+            busy: false,
+            auto_batch_planning: false,
+            queued_order_ids: BTreeSet::new(),
+        };
+        let wall_rows: Vec<i64> = (60..100)
+            .filter(|r| *r != GATE_ROW && *r != GATE_ROW - 1)
+            .collect();
+        let scene = ActivateScene {
+            finished: false,
+            manual_mode: false,
+            is_player_side: false,
+            wall_col: W,
+            gate_open: true,
+            wall_tile_hp: wall_rows.iter().map(|r| (*r, 40.0)).collect(),
+            siege_machine_range: f64::NAN,
+        };
+        let mut body = ProdBody::new(units, scene, SequenceRolls::new(rolls(seed, 400_000)))
+            .with_terrain(Box::new(WallTerrain));
+        body.siege_wall_tiles_init = wall_rows.len();
+        body.siege_gate_col = W;
+        body.siege_gate_row = GATE_ROW;
+        // Strzelcy: szablony strzału na każdego wroga, amunicja skończona dla atakującego łucznika.
+        for (i, spec) in atk_spec.iter().enumerate() {
+            if matches!(spec.2, Kind::Archer) {
+                body.ammo_left[0][i] = 6.0;
+                for t in 0..n_def {
+                    body.ranged_blows[0][i].insert(t, blow(true, 7.0));
+                }
+            }
+        }
+        for (i, spec) in def_spec.iter().enumerate() {
+            if matches!(spec.2, Kind::Archer) {
+                for t in 0..n_atk {
+                    body.ranged_blows[1][i].insert(t, blow(true, 7.0));
+                }
+            }
+        }
+        // Dowódca obrońcy (def2, przy bramie) i bonus morale armii jego strony; dowódca atakującego (atk1) z bonusem
+        // swojej strony (w AUTO bez trybu ręcznego tylko efekt morale, `_disableManualIfCommanderLost` bez skutku).
+        body.is_army_commander[1][2] = true;
+        body.is_army_commander[0][1] = true;
+        for i in 0..n_atk {
+            body.army_leader_bonus_frac[0][i] = 0.1;
+            body.morale_base_plain[0][i] = Some(50.0);
+        }
+        for i in 0..n_def {
+            body.army_leader_bonus_frac[1][i] = 0.2;
+            body.morale_base_plain[1][i] = Some(60.0);
+            body.morale_max[1][i] = 100.0;
+        }
+        for i in 0..n_atk {
+            body.morale_max[0][i] = 100.0;
+        }
+        let env = SiegeEnv {
+            body,
+            tower_rows: vec![70, 86],
+            pending_tower_shots: Vec::new(),
+            tower_range: 4.0,
+            tower_shot: Some(neutral_tower_shot_template()),
+            wall_tile_rows: wall_rows.clone(),
+            wall_ever_breached: false,
+            no_breach_cap: 60,
+            move_points: [vec![3.0; n_atk], vec![2.0; n_def]],
+            morale_max: [vec![100.0; n_atk], vec![100.0; n_def]],
+        };
+        let mut lp = SiegeLoop::new(st, env);
+        let mut clock = VirtualClock::<LoopTimer>::new();
+        lp.run(&mut clock, 20_000);
+        assert_eq!(lp.unsupported, None, "ziarno {seed}");
+        let body = &lp.env.body;
+        let flees = body
+            .trace
+            .iter()
+            .filter(|(_, ev)| ev.contains(&ActivateEvent::Flee))
+            .count();
+        Outcome {
+            unported: body.unported.iter().map(|(_, t)| *t).collect(),
+            flees,
+            commander_bonus_removed: body.army_leader_bonus_frac[1].iter().all(|f| *f == 0.0)
+                || body.army_leader_bonus_frac[0].iter().all(|f| *f == 0.0),
+            finished: lp.winner.is_some(),
+        }
+    }
+
+    #[test]
+    fn pelna_bitwa_auto_z_murem_bez_tagow_poza_wejsciowymi() {
+        let (tx, rx) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let mut flees = 0;
+            let mut finished = 0;
+            let mut bonus = 0;
+            for (k, seed) in (1..=12u64).enumerate() {
+                let morale = [18.0, 25.0, 40.0, 60.0][k % 4];
+                let o = battle(seed, morale);
+                let bad: Vec<&str> = o
+                    .unported
+                    .iter()
+                    .copied()
+                    .filter(|t| !super::is_input_error_tag(t))
+                    .collect();
+                assert!(
+                    bad.is_empty(),
+                    "ziarno {seed}: tagi spoza bledow wejscia {bad:?}"
+                );
+                flees += o.flees;
+                finished += usize::from(o.finished);
+                bonus += usize::from(o.commander_bonus_removed);
+            }
+            let _ = tx.send((flees, finished, bonus));
+        });
+        let (flees, finished, bonus) = rx
+            .recv_timeout(std::time::Duration::from_secs(90))
+            .expect("bitwy bez konca w 90 s albo panika (szczegoly wyzej)");
+        eprintln!(
+            "pelna bitwa: ucieczki={flees} zakonczone={finished}/12 bonus_dowodcy_zdjety={bonus}"
+        );
+        assert!(flees > 0, "ucieczka przy murze w pelnej bitwie");
+        assert!(finished > 0, "co najmniej jedna bitwa zakonczona");
+        // Utrata dowódcy w tym zestawie bitew nie występuje (licznik raportowany, bez progu): efekty dowódcy wobec
+        // pinu sprawdza rodzina `fx` (65 aktywacji z utratą dowódcy).
     }
 }

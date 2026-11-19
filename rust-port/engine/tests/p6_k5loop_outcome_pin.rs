@@ -362,6 +362,25 @@ fn dowodca_zabity_zdejmuje_bonus_morale_strony() {
     assert_eq!(body.morale_max[1][2], 90.0);
 }
 
+/// K5LOOP-TAGS-REST (mutant T12 Operatora): `ratio = u.moraleMax > 0 ? ... : 0` (`battleScene.ts:9997`). Jednostka z
+/// bonusem i `moraleMax = 0`: `ratio = 0`, więc `morale = min(base, ceil(base * 0)) = 0` (bez warunku byłoby `0 / 0 = NaN`).
+/// def1: bonus 0.25, `moraleMax` 0, morale 30, baza 80 -> `moraleMax` 120 (x1.5), morale 0.
+#[test]
+fn dowodca_bonus_przy_zerowym_morale_max_daje_ratio_zero() {
+    let (mut body, mut st) = scenario(
+        vec![(def_act(1), cu(3.0, 100.0)), (def_act(20), cu(50.0, 30.0))],
+        80.0,
+    );
+    body.is_army_commander[1][0] = true;
+    body.army_leader_bonus_frac[1][1] = 0.25;
+    body.morale_max[1][1] = 0.0;
+    body.morale_base_plain[1][1] = Some(80.0);
+    strike_once(&mut body, &mut st);
+    assert_eq!(body.unported, vec![]);
+    assert_eq!(st.def[1].c.morale.to_bits(), 0.0_f64.to_bits());
+    assert_eq!(body.morale_max[1][1], 120.0);
+}
+
 /// K5LOOP-TAGS-REST: bonus dowódcy bez wejścia `moraleBaseFor` (adapter nie podał [`ProdBody::morale_base_plain`]) =
 /// jawny błąd wejścia `dowodca-bez-bazy-morale` i brak zmiany tej jednostki (bez zgadywania bazy).
 #[test]
