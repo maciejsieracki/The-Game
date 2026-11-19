@@ -1,3 +1,9 @@
+## ROBOCZA 45557479 -- 2026-11-18 -- FALA 864: R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: rebalans ekonomii wg epok ZA FLAGA eraRebalansAktywny=false (ulepszenia stale jak epoka 1, zywnosc wojska x3/epoke, racje obywateli 2^(e-1)) (testowa)
+
+- gra/src/game/econ-era-rebalance.ts + gra/data/econ-era-rebalance-params.json (nowe), terrain-improvements.ts, economy-upkeep.ts (zywnosc wojska + wartosc karty), citizen-consumption-era.ts, converters.ts i citizen-resource-upkeep.ts (legacy mnoznik - konwertery i utrzymanie bez zmian), karty jednostek, main.ts (hak __econRebalanceMeasure), ai-economy-measure-run.cjs --rebalance. Flaga OFF = gra bez zmian.
+- Weryfikacja: tsc 0, logic 213/213, econ-era-rebalance-test 37/0 (mutanty M8-M10 czerwone), citizen-consumption-era-mult PASS, foundry 159/0, citizen-upkeep-era-mult 681/0, hud 17/18/7, ai-economy-measure-hook 23/23
+- Limity: NIE ZMIERZONO: bieg 150 tur OFF/ON (robi orkiestrator); czerwone na bazie rowniez: unit-epoch-cost-test 56/1, citizen-resource-upkeep-test 122/2 (nie z tego tematu); units.json ma tylko epoki 1-3
+
 ## ROBOCZA 25bd973d -- 2026-11-18 -- FALA 863: R-WEB-DIPLO-WAR-LIMIT-PLAYER-TARGET-Q1: wojna panstwa-miasta przeciw graczowi przechodzi przez bramke limitu wojen (za flaga limitWojenAktywny=false) (testowa)
 
 - gra/src/main.ts (+1 linia: bramka warLimitAllowsDeclaration w petli klastra panstw-miast), gra/tools/diplomacy-war-limit-unit-test.cjs (+9 asercji, wiazanie zrodlowe). Flaga OFF = zachowanie gry bez zmian.
