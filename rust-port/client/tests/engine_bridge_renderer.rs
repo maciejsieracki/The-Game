@@ -987,11 +987,15 @@ fn t5b_web_scenario_build_mode_reselect_end_to_end() {
     assert_active_seat_frame(&mut client, "plain select");
 }
 
-/// Mode switches inside the open panel (found city / wonder) zero the flag
-/// and make Build the writer (D-371-5b); the selection id is kept (only the
-/// panel toggle clears it), so the engine hides the unit overlays (D-OP-3).
+/// Mode switches inside the open panel (found city / wonder) make Build the
+/// writer (D-371-5b) and keep the selection AND the flag: `onSelectFoundCity`
+/// / `onSelectWonder` do not call `clearPlayerUnitSelection()`
+/// (`main.ts:26758-26793`; decision D-371-5c U-OP-2, which replaces the T5b
+/// assertion "flag zeroed, overlays hidden"): the ring stays, the visible
+/// layer is the build set of the mode (`refreshBuildHighlight`), never the
+/// range (mutant b: flag zeroed in found city / wonder).
 #[test]
-fn t5b_mode_switch_zeroes_the_flag_and_key_change_keeps_it() {
+fn t5c_mode_switch_keeps_selection_and_flag_key_change_keeps_it() {
     let mut client = started_client();
     client.set_build_mode(open_panel()).expect("open");
     client.select_unit(Some(WARRIOR)).expect("select");
@@ -1007,8 +1011,12 @@ fn t5b_mode_switch_zeroes_the_flag_and_key_change_keeps_it() {
     assert!(client.ui().frame_ui.unit_selected_after_build_open);
     assert_eq!(calls(&client).1, before.1 + 2);
 
-    // Found city mode switched on inside the panel: flag zeroed.
+    // Found city mode switched on inside the panel (`onSelectFoundCity`,
+    // `:26758-26762`): selection and flag kept, writer Build.
     client.select_unit(Some(WARRIOR)).expect("select");
+    let sel = frame(&client).overlays.selection.expect("selection");
+    let reach = dto_hexes(&frame(&client).overlays.reachable);
+    assert!(!reach.is_empty());
     client
         .set_build_mode(BuildMode {
             found_city_mode: true,
@@ -1016,30 +1024,59 @@ fn t5b_mode_switch_zeroes_the_flag_and_key_change_keeps_it() {
         })
         .expect("found city");
     let ui = &client.ui().frame_ui;
-    assert!(!ui.unit_selected_after_build_open);
+    assert!(ui.unit_selected_after_build_open, "U-OP-2: flag kept");
     assert_eq!(ui.selected_unit_id, Some(WARRIOR));
     assert_eq!(client.ui().highlight_last_writer, HighlightPriority::Build);
-    assert_eq!(frame(&client).overlays.selection, None);
-    assert!(frame(&client).overlays.reachable.is_empty());
-    assert_eq!(ring(&client), None);
+    assert_active_seat_frame(&mut client, "found city");
+    let f = frame(&client).clone();
+    assert_eq!(f.overlays.selection, Some(sel), "U-OP-2: selection drawn");
+    assert_eq!(
+        dto_hexes(&f.overlays.reachable),
+        reach,
+        "range in the frame"
+    );
+    assert_eq!(
+        f.overlays.build_highlight.kind,
+        vm::BuildHighlightKind::FoundCity
+    );
+    let found = dto_hexes(&f.overlays.build_highlight.hexes);
+    // `refreshBuildHighlight` with `foundCityMode`: `setHighlight(qual)`
+    // (`:16352-16361`), an empty `qual` = no discs (D-T5C-5), never the range.
+    let want = (!found.is_empty()).then_some(found);
+    assert_eq!(highlight_hexes(&client), want, "found city layer");
+    assert_ne!(highlight_hexes(&client), Some(reach.clone()));
+    assert_eq!(ring(&client), Some((sel.hex.q, sel.hex.r)), "ring kept");
     assert_renderer_mirrors_dto(&client, "found city");
 
-    // selectPlayerUnit in found city mode: flag on again.
+    // selectPlayerUnit in found city mode: the flag is already on, so only
+    // the writer changes (no engine call) and the range wins.
+    let n = calls(&client);
     client.select_unit(Some(WARRIOR)).expect("select");
+    assert_eq!(calls(&client), n, "same RenderUiParams: no GetRenderFrame");
     assert!(client.ui().frame_ui.unit_selected_after_build_open);
     assert!(frame(&client).overlays.selection.is_some());
     assert_eq!(
         client.ui().highlight_last_writer,
         HighlightPriority::Reachable
     );
-    // Wonder switch: flag zeroed again; an equal mode does nothing.
+    assert_eq!(highlight_hexes(&client), Some(reach.clone()));
+    // Wonder switch (`onSelectWonder`, `:26766-26793`): flag and selection
+    // kept, writer Build; an equal mode does nothing.
     client
         .set_build_mode(BuildMode {
             wonder_active: true,
             ..open_panel()
         })
         .expect("wonder");
-    assert!(!client.ui().frame_ui.unit_selected_after_build_open);
+    assert!(
+        client.ui().frame_ui.unit_selected_after_build_open,
+        "U-OP-2: flag kept"
+    );
+    assert_eq!(client.ui().frame_ui.selected_unit_id, Some(WARRIOR));
+    assert_eq!(client.ui().highlight_last_writer, HighlightPriority::Build);
+    assert_eq!(frame(&client).overlays.selection, Some(sel));
+    assert_ne!(highlight_hexes(&client), Some(reach));
+    assert_eq!(ring(&client), Some((sel.hex.q, sel.hex.r)));
     let n = calls(&client);
     client
         .set_build_mode(BuildMode {
@@ -1176,4 +1213,298 @@ fn t5b_mode_switches_clear_the_key_and_key_choice_clears_the_modes() {
         client.ui().frame_ui.active_improvement_key.as_deref(),
         Some(KEY)
     );
+}
+
+// ------------------------------------------------------------ D-371-5c (#371 T5c)
+
+/// The warrior hex in the cached frame.
+fn warrior_hex(client: &Client) -> vm::HexCoord {
+    frame(client)
+        .units
+        .iter()
+        .find(|u| u.id.to_string() == WARRIOR.to_string())
+        .expect("warrior")
+        .hex
+}
+
+/// U-OP-1 end to end: `selectPlayerUnit` of a unit that cannot move
+/// (`stackCanMove(u) == false`) writes `setHighlight(new Set())`
+/// (`main.ts:7256-7261`): in build mode with a key the frame carries the
+/// build layer and an EMPTY `reachable`, the visible layer is no discs (not
+/// the build layer, mutant a); the ring is drawn.
+#[test]
+fn t5c_u_op_1_unit_without_moves_in_build_mode_is_no_discs() {
+    let mut client = started_client();
+    command(&mut client, EngineCommand::SelectUnit { unit_id: WARRIOR });
+    client.select_unit(Some(WARRIOR)).expect("plain select");
+    // Spend the moves of the warrior.
+    let mut moves = 0;
+    while !frame(&client).overlays.reachable.is_empty() {
+        moves += 1;
+        assert!(moves <= 8, "the warrior runs out of moves");
+        let start = warrior_hex(&client);
+        let dest = *frame(&client)
+            .overlays
+            .reachable
+            .iter()
+            .find(|h| **h != start)
+            .expect("a reachable hex");
+        command(
+            &mut client,
+            EngineCommand::MoveUnit {
+                unit_id: WARRIOR,
+                destination: PositionDto::new(
+                    u16::try_from(dest.q).expect("q"),
+                    u16::try_from(dest.r).expect("r"),
+                ),
+                attack_unit_id: None,
+            },
+        );
+    }
+    assert!(moves >= 1);
+    assert_eq!(highlight_hexes(&client), None, "no moves: no discs");
+
+    client.set_build_mode(open_panel()).expect("open");
+    client
+        .set_active_improvement_key(Some(KEY.to_owned()))
+        .expect("key");
+    let n = calls(&client);
+    client
+        .select_unit(Some(WARRIOR))
+        .expect("select without moves");
+    assert_eq!(calls(&client), (n.0, n.1 + 1));
+    assert_eq!(
+        client.ui().highlight_last_writer,
+        HighlightPriority::Reachable
+    );
+    assert!(client.ui().frame_ui.unit_selected_after_build_open);
+    assert_active_seat_frame(&mut client, "no moves");
+    let f = frame(&client).clone();
+    let sel = f.overlays.selection.expect("selection in the frame");
+    assert!(f.overlays.reachable.is_empty(), "no moves: empty reachable");
+    let build = dto_hexes(&f.overlays.build_highlight.hexes);
+    assert!(!build.is_empty(), "{KEY}: the build layer is in the frame");
+    assert_eq!(highlight_hexes(&client), None, "U-OP-1: no discs");
+    assert_eq!(ring(&client), Some((sel.hex.q, sel.hex.r)), "ring drawn");
+    assert_renderer_mirrors_dto(&client, "no moves");
+
+    // refreshBuildHighlight (writer Build): the build layer; back to the
+    // reachable writer: no discs again. Neither calls the engine.
+    client
+        .set_highlight_last_writer(HighlightPriority::Build)
+        .expect("build writer");
+    assert_eq!(highlight_hexes(&client), Some(build));
+    client
+        .set_highlight_last_writer(HighlightPriority::Reachable)
+        .expect("reachable writer");
+    assert_eq!(highlight_hexes(&client), None);
+    assert_eq!(calls(&client), (n.0, n.1 + 1));
+}
+
+/// U-OP-4 end to end: `clearPlayerUnitSelection()` in build mode
+/// (`main.ts:7090-7101`: `selectedId = null; ...;
+/// unitRenderer.clearHighlight()`): no selection, flag `false`, writer
+/// Cleared; the frame still carries the build layer, the visible layer is no
+/// discs (mutant d) until the next `refreshBuildHighlight`; the build mode
+/// is kept. One engine call (the selection changed), the writer alone none.
+#[test]
+fn t5c_u_op_4_deselect_in_build_mode_clears_the_layer() {
+    let mut client = started_client();
+    client.set_build_mode(open_panel()).expect("open");
+    client
+        .set_active_improvement_key(Some(KEY.to_owned()))
+        .expect("key");
+    client.select_unit(Some(WARRIOR)).expect("select");
+    assert!(client.ui().frame_ui.unit_selected_after_build_open);
+    let reach = dto_hexes(&frame(&client).overlays.reachable);
+    assert_eq!(highlight_hexes(&client), Some(reach));
+    let n = calls(&client);
+
+    client.select_unit(None).expect("deselect");
+    assert_eq!(calls(&client), (n.0, n.1 + 1), "selection changed");
+    let ui = &client.ui().frame_ui;
+    assert_eq!(ui.selected_unit_id, None);
+    assert!(!ui.unit_selected_after_build_open, "no unit selected");
+    assert!(ui.build_mode_open, "build mode kept");
+    assert_eq!(ui.active_improvement_key.as_deref(), Some(KEY), "key kept");
+    assert_eq!(
+        client.ui().highlight_last_writer,
+        HighlightPriority::Cleared
+    );
+    assert_active_seat_frame(&mut client, "deselected");
+    let f = frame(&client).clone();
+    assert_eq!(f.overlays.selection, None);
+    let build = dto_hexes(&f.overlays.build_highlight.hexes);
+    assert!(!build.is_empty(), "the build layer is in the frame");
+    assert_eq!(highlight_hexes(&client), None, "U-OP-4: clearHighlight()");
+    assert_eq!(ring(&client), None);
+    assert_renderer_mirrors_dto(&client, "deselected");
+
+    // The writer is kept by the calls that are not pin writers (mutant e).
+    let n = calls(&client);
+    client.set_map_ui(client.ui().map_ui).expect("map ui");
+    client.set_siege_map_panel_open(false).expect("siege panel");
+    assert_eq!(calls(&client), n);
+    client.on_state_changed().expect("state changed");
+    assert_eq!(
+        client.ui().highlight_last_writer,
+        HighlightPriority::Cleared
+    );
+    assert_eq!(highlight_hexes(&client), None);
+
+    // The next refreshBuildHighlight (writer Build, no engine call).
+    let n = calls(&client);
+    client
+        .set_highlight_last_writer(HighlightPriority::Build)
+        .expect("refreshBuildHighlight");
+    assert_eq!(calls(&client), n);
+    assert_eq!(highlight_hexes(&client), Some(build));
+
+    // A deselect without a selection (same RenderUiParams): only the
+    // writer changes, no engine call.
+    client.select_unit(None).expect("deselect again");
+    assert_eq!(calls(&client), n);
+    assert_eq!(
+        client.ui().highlight_last_writer,
+        HighlightPriority::Cleared
+    );
+    assert_eq!(highlight_hexes(&client), None);
+
+    // Outside build mode: deselect = no discs, no ring.
+    client.set_build_mode(BuildMode::default()).expect("close");
+    client.select_unit(Some(WARRIOR)).expect("plain select");
+    assert!(highlight_hexes(&client).is_some());
+    client.select_unit(None).expect("plain deselect");
+    assert_eq!(client.ui().frame_ui, RenderUiParams::default());
+    assert_eq!(highlight_hexes(&client), None);
+    assert_eq!(ring(&client), None);
+}
+
+/// U-OP-3 end to end: `exitBuildMode()` (Escape / right click / `onExit`,
+/// `main.ts:16526-16541`) closes the build mode and does NOT clear the
+/// selection (mutant c); `refreshBuildHighlight` outside build mode is
+/// `clearHighlight()` (`:16369-16372`): the ring stays, no discs, although
+/// the frame carries the range again; the next `selectPlayerUnit` shows the
+/// range without an engine call.
+#[test]
+fn t5c_u_op_3_exit_build_mode_keeps_the_selection() {
+    let mut client = started_client();
+    client.set_build_mode(open_panel()).expect("open");
+    client
+        .set_active_improvement_key(Some(KEY.to_owned()))
+        .expect("key");
+    client.select_unit(Some(WARRIOR)).expect("select");
+    let sel = frame(&client).overlays.selection.expect("selection");
+    let n = calls(&client);
+
+    client.exit_build_mode().expect("Escape");
+    assert_eq!(calls(&client), (n.0, n.1 + 1), "build mode changed");
+    let ui = &client.ui().frame_ui;
+    assert!(!ui.build_mode_open && !ui.found_city_mode && !ui.wonder_active);
+    assert_eq!(ui.active_improvement_key, None);
+    assert!(!ui.unit_selected_after_build_open, "build mode closed");
+    assert_eq!(ui.selected_unit_id, Some(WARRIOR), "U-OP-3: selection kept");
+    assert_eq!(client.ui().frame_ui, selected(WARRIOR));
+    assert_eq!(
+        client.ui().highlight_last_writer,
+        HighlightPriority::Cleared
+    );
+    assert_active_seat_frame(&mut client, "exit");
+    let f = frame(&client).clone();
+    assert_eq!(f.overlays.selection, Some(sel));
+    assert!(f.overlays.build_highlight.hexes.is_empty());
+    let reach = dto_hexes(&f.overlays.reachable);
+    assert!(!reach.is_empty(), "the range is in the frame again");
+    assert_eq!(highlight_hexes(&client), None, "U-OP-3: clearHighlight()");
+    assert_eq!(ring(&client), Some((sel.hex.q, sel.hex.r)), "ring kept");
+    assert_renderer_mirrors_dto(&client, "exit");
+
+    // Not a writer: StateChanged keeps the layer (mutant e).
+    client.on_state_changed().expect("state changed");
+    assert_eq!(
+        client.ui().highlight_last_writer,
+        HighlightPriority::Cleared
+    );
+    assert_eq!(highlight_hexes(&client), None);
+
+    // Escape again outside build mode: same RenderUiParams, only the
+    // writer (refreshBuildHighlight -> clearHighlight), no engine call.
+    let n = calls(&client);
+    client.exit_build_mode().expect("exit again");
+    assert_eq!(calls(&client), n, "no GetRenderFrame (D-371-4)");
+
+    // selectPlayerUnit: same RenderUiParams, the range, no engine call.
+    client.select_unit(Some(WARRIOR)).expect("reselect");
+    assert_eq!(calls(&client), n, "no GetRenderFrame (mutant f)");
+    assert_eq!(
+        client.ui().highlight_last_writer,
+        HighlightPriority::Reachable
+    );
+    assert_eq!(highlight_hexes(&client), Some(reach));
+    assert_selection_drawn(&client, "reselect after exit");
+
+    // Before a session: only stored.
+    let mut fresh = RenderClient::new(BridgeSource::new(), MapDetailQuality::Low);
+    fresh.set_build_mode(open_panel()).expect("stored");
+    fresh.select_unit(Some(WARRIOR)).expect("stored");
+    fresh.exit_build_mode().expect("stored");
+    assert_eq!(calls(&fresh), (0, 0));
+    assert_eq!(fresh.ui().frame_ui, selected(WARRIOR));
+    assert_eq!(fresh.ui().highlight_last_writer, HighlightPriority::Cleared);
+}
+
+/// D-T5C-5: in build mode the writer Build never shows the range the frame
+/// carries with `unit_selected_after_build_open`: an empty build set is
+/// `setHighlight(new Set())` / `clearHighlight()` (`main.ts:16351-16372`).
+/// End to end: panel open, unit selected (flag), key chosen then cleared
+/// (`activeImprovementKey = null` -> `refreshBuildHighlight` ->
+/// `clearHighlight()`, `:16369-16372`): ring kept, no discs.
+#[test]
+fn t5c_build_writer_in_build_mode_never_shows_the_range() {
+    let mut client = started_client();
+    client.set_build_mode(open_panel()).expect("open");
+    client.select_unit(Some(WARRIOR)).expect("select");
+    let sel = frame(&client).overlays.selection.expect("selection");
+    let reach = dto_hexes(&frame(&client).overlays.reachable);
+    client
+        .set_active_improvement_key(Some(KEY.to_owned()))
+        .expect("key");
+    client.set_active_improvement_key(None).expect("no key");
+    assert!(client.ui().frame_ui.unit_selected_after_build_open);
+    assert_eq!(client.ui().highlight_last_writer, HighlightPriority::Build);
+    let f = frame(&client).clone();
+    assert!(f.overlays.build_highlight.hexes.is_empty());
+    assert_eq!(
+        dto_hexes(&f.overlays.reachable),
+        reach,
+        "range in the frame"
+    );
+    assert_eq!(highlight_hexes(&client), None, "no discs");
+    assert_eq!(ring(&client), Some((sel.hex.q, sel.hex.r)));
+    assert_eq!(
+        civ_client::renderer_priority(client.ui(), &f),
+        HighlightPriority::Cleared
+    );
+
+    // The rule on hand states: outside build mode the writer is passed as is
+    // (Q6-2 for frames without a build mode); a non-empty build set too.
+    let mut out = client.ui().clone();
+    out.frame_ui = selected(WARRIOR);
+    assert_eq!(
+        civ_client::renderer_priority(&out, &f),
+        HighlightPriority::Build
+    );
+    let mut keyed = f.clone();
+    keyed.overlays.build_highlight.hexes = vec![sel.hex];
+    assert_eq!(
+        civ_client::renderer_priority(client.ui(), &keyed),
+        HighlightPriority::Build
+    );
+    for w in [HighlightPriority::Reachable, HighlightPriority::Cleared] {
+        let ui = ClientUiState {
+            highlight_last_writer: w,
+            ..client.ui().clone()
+        };
+        assert_eq!(civ_client::renderer_priority(&ui, &f), w);
+    }
 }

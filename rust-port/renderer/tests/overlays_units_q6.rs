@@ -470,21 +470,170 @@ fn t5b_reachable_writer_shows_the_range() {
     }
 }
 
-/// D-371-5b: with the reachable writer and an EMPTY `reachable` the build
-/// layer is shown; with neither layer `clearHighlight()`.
+/// D-371-5c U-OP-1 (replaces the T5b fallback to the build layer):
+/// `selectPlayerUnit` writes `setHighlight(reachable)` also for an EMPTY set
+/// (`main.ts:7256-7261`: `reachable = stackCanMove(u) && ... ?
+/// reachableWithMergeTargets(u) : new Set()`), so the reachable writer with
+/// an empty `reachable` is no discs whatever build layer the frame carries
+/// (mutant a: the fallback to the build layer restored); with neither layer
+/// `clearHighlight()` for every writer.
 #[test]
-fn t5b_reachable_writer_falls_back_to_build_when_range_is_empty() {
-    let mut ov = both(vm::BuildHighlightKind::Improvement, &[4, 5]);
-    ov.reachable.clear();
-    assert_eq!(
-        view::unit_highlight(&ov, false, HighlightPriority::Reachable),
-        farm_set()
-    );
+fn t5c_reachable_writer_with_empty_range_is_no_discs() {
+    for kind in [
+        vm::BuildHighlightKind::Improvement,
+        vm::BuildHighlightKind::Mine,
+        vm::BuildHighlightKind::FoundCity,
+        vm::BuildHighlightKind::Wonder,
+    ] {
+        let mut ov = both(kind, &[4, 5]);
+        ov.reachable.clear();
+        for siege in [false, true] {
+            assert_eq!(
+                view::unit_highlight(&ov, siege, HighlightPriority::Reachable),
+                UnitHighlight::Clear,
+                "{kind:?} siege {siege}"
+            );
+        }
+        assert_eq!(
+            UnitOverlayInputs::from_overlays_with_priority(&ov, HighlightPriority::Reachable)
+                .highlight,
+            UnitHighlight::Clear,
+            "{kind:?}"
+        );
+        // The build writer keeps Q6-2 on the same frame (the deposit mine is
+        // `clearHighlight()`, `main.ts:16386-16390`).
+        let got = view::unit_highlight(&ov, false, HighlightPriority::Build);
+        if kind == vm::BuildHighlightKind::Mine {
+            assert_eq!(got, UnitHighlight::Clear);
+        } else {
+            assert!(
+                matches!(
+                    got,
+                    UnitHighlight::Set {
+                        source: HighlightSource::Build(k),
+                        ..
+                    } if k == kind
+                ),
+                "{kind:?}: the build layer exists on this frame"
+            );
+        }
+    }
     let mut none = overlays(no_build());
     none.reachable.clear();
-    for p in [HighlightPriority::Build, HighlightPriority::Reachable] {
+    for p in [
+        HighlightPriority::Build,
+        HighlightPriority::Reachable,
+        HighlightPriority::Cleared,
+    ] {
         assert_eq!(view::unit_highlight(&none, false, p), UnitHighlight::Clear);
     }
+}
+
+/// D-371-5c U-OP-3 / U-OP-4: `clearHighlight()` wrote last
+/// (`clearPlayerUnitSelectionStateOnly`, `main.ts:7097-7101`;
+/// `refreshBuildHighlight` outside build mode after `exitBuildMode`,
+/// `:16369-16372`): no discs for every frame, with or without the reachable
+/// range and the build layer; the ring and the route are separate calls and
+/// stay (mutant d: the deselect keeps the layer).
+#[test]
+fn t5c_cleared_writer_is_no_discs_and_keeps_ring_and_route() {
+    for kind in [
+        vm::BuildHighlightKind::Improvement,
+        vm::BuildHighlightKind::Mine,
+        vm::BuildHighlightKind::FoundCity,
+        vm::BuildHighlightKind::Wonder,
+    ] {
+        let ov = both(kind, &[4, 5]);
+        for siege in [false, true] {
+            assert_eq!(
+                view::unit_highlight(&ov, siege, HighlightPriority::Cleared),
+                UnitHighlight::Clear,
+                "{kind:?} siege {siege}"
+            );
+        }
+    }
+    let ov = overlays(no_build());
+    assert_eq!(
+        view::unit_highlight(&ov, false, HighlightPriority::Cleared),
+        UnitHighlight::Clear
+    );
+    let both_ov = both(vm::BuildHighlightKind::Improvement, &[4, 5]);
+    let c = UnitOverlayInputs::from_overlays_with_priority(&both_ov, HighlightPriority::Cleared);
+    let b = UnitOverlayInputs::from_overlays_with_priority(&both_ov, HighlightPriority::Build);
+    assert_eq!(c.highlight, UnitHighlight::Clear);
+    assert_eq!(c.selection, b.selection);
+    assert_eq!(c.path_route, b.path_route);
+
+    // On the renderer: a previous range is cleared, the ring stays.
+    let mut r = renderer();
+    UnitOverlayInputs::from_overlays_with_priority(&both_ov, HighlightPriority::Reachable)
+        .apply(&mut r);
+    assert!(r.highlight().is_some());
+    c.apply(&mut r);
+    assert!(r.highlight().is_none(), "clearHighlight()");
+    let ring = r.selection().expect("ring kept");
+    assert_eq!((ring.hex.q, ring.hex.r), (0, 0));
+}
+
+/// The web scenario of D-371-5c on hand DTOs, one renderer, pin call order:
+/// panel open with a key, unit with no moves selected (`selectPlayerUnit`
+/// with `stackCanMove(u) == false`: `setHighlight(new Set())`, U-OP-1) ->
+/// key again (`refreshBuildHighlight`: build layer) -> deselect
+/// (`clearPlayerUnitSelection`: `clearHighlight()`, U-OP-4) -> reselect ->
+/// Escape (`exitBuildMode`: `clearHighlight()`, selection kept, U-OP-3).
+#[test]
+fn t5c_web_scenario_on_hand_dtos() {
+    let mut r = renderer();
+    // 1. Unit with no moves selected in build mode: both layers in the frame
+    //    but `reachable` empty -> no discs, ring drawn.
+    let mut stuck = both(vm::BuildHighlightKind::Improvement, &[4, 5]);
+    stuck.reachable.clear();
+    stuck.path_route = None;
+    let u = UnitOverlayInputs::from_overlays_with_priority(&stuck, HighlightPriority::Reachable);
+    assert_eq!(u.highlight, UnitHighlight::Clear);
+    u.apply(&mut r);
+    assert!(r.highlight().is_none(), "U-OP-1: no discs");
+    assert!(r.selection().is_some());
+
+    // 2. refreshBuildHighlight (key chosen again): the build layer.
+    let u = UnitOverlayInputs::from_overlays_with_priority(&stuck, HighlightPriority::Build);
+    u.apply(&mut r);
+    assert_eq!(r.highlight().unwrap().hexes, vec![h(4), h(5)]);
+
+    // 3. clearPlayerUnitSelection in build mode: no selection, the build
+    //    layer still in the frame, writer Cleared -> no discs, no ring.
+    let mut deselected = both(vm::BuildHighlightKind::Improvement, &[4, 5]);
+    deselected.reachable.clear();
+    deselected.selection = None;
+    deselected.path_route = None;
+    let u = UnitOverlayInputs::from_overlays_with_priority(&deselected, HighlightPriority::Cleared);
+    u.apply(&mut r);
+    assert!(r.highlight().is_none(), "U-OP-4: clearHighlight()");
+    assert!(r.selection().is_none());
+
+    // 4. selectPlayerUnit (moves left): the range.
+    let mut reselected = both(vm::BuildHighlightKind::Improvement, &[4, 5]);
+    reselected.path_route = None;
+    let u =
+        UnitOverlayInputs::from_overlays_with_priority(&reselected, HighlightPriority::Reachable);
+    u.apply(&mut r);
+    assert_eq!(r.highlight().unwrap().hexes, vec![h(2), h(3), h(1)]);
+
+    // 5. exitBuildMode (Escape): build mode off, selection kept: the frame
+    //    carries selection + reachable, no build layer; writer Cleared ->
+    //    ring, no discs.
+    let mut exited = overlays(no_build());
+    exited.path_route = None;
+    let u = UnitOverlayInputs::from_overlays_with_priority(&exited, HighlightPriority::Cleared);
+    u.apply(&mut r);
+    assert!(r.highlight().is_none(), "U-OP-3: clearHighlight()");
+    let ring = r.selection().expect("U-OP-3: ring kept");
+    assert_eq!((ring.hex.q, ring.hex.r), (0, 0));
+    // Q6-2 on the same frame would show the range (the writer matters).
+    assert_eq!(
+        UnitOverlayInputs::from_overlays_with_priority(&exited, HighlightPriority::Build).highlight,
+        reach_set()
+    );
 }
 
 /// The siege map panel (`main.ts:7253-7255`): the reachable write of

@@ -900,3 +900,46 @@ fn t5b_priority_selects_the_highlight_layer_of_the_frame() {
         assert_eq!(scene.units().highlight().unwrap().hexes, hexes);
     }
 }
+
+/// D-371-5c on the frame entry: the reachable writer with an EMPTY
+/// `reachable` (U-OP-1, `main.ts:7256-7261`) and the `clearHighlight()`
+/// writer (U-OP-3 / U-OP-4, `:7097-7101`, `:16369-16372`) give no discs;
+/// the rest of the frame (ring included) is the frame of the build writer.
+#[test]
+fn t5c_empty_range_and_cleared_writer_on_the_frame() {
+    let mut empty = layers_both();
+    empty.overlays.reachable.clear();
+    let st = statik();
+    for (l, p) in [
+        (empty.clone(), HighlightPriority::Reachable),
+        (empty.clone(), HighlightPriority::Cleared),
+        (layers_both(), HighlightPriority::Cleared),
+        (layers(), HighlightPriority::Cleared),
+    ] {
+        for siege in [false, true] {
+            let f = frame_p(&l, siege, p);
+            assert_eq!(f.overlays.units.highlight, UnitHighlight::Clear, "{p:?}");
+            let mut b = frame_p(&l, siege, HighlightPriority::Build);
+            b.overlays.units.highlight = UnitHighlight::Clear;
+            assert_eq!(b, f, "{p:?}: only the highlight call differs");
+        }
+        let f = frame_p(&l, false, p);
+        let mut scene = MapScene::new(&st, &f, DETAIL);
+        scene.apply(&f).unwrap();
+        assert!(scene.units().highlight().is_none(), "{p:?}: no discs");
+        let ring = scene.units().selection().expect("ring kept");
+        assert_eq!((ring.hex.q, ring.hex.r), (2, 1));
+    }
+    // The build writer on the empty-range frame: the build layer (Q6-2).
+    assert_eq!(
+        frame_p(&empty, false, HighlightPriority::Build)
+            .overlays
+            .units
+            .highlight,
+        UnitHighlight::Set {
+            source: HighlightSource::Build(vm::BuildHighlightKind::Improvement),
+            hexes: vec![h(0, 1), h(1, 0)],
+            opacity: civ_renderer::map_units::consts::IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY,
+        }
+    );
+}
