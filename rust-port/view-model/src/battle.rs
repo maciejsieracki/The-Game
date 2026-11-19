@@ -510,8 +510,11 @@ impl BattleFrameDto {
 // the virtual time (`vNow`, ms) of the scene call; a list is in the order of the
 // scene calls in the pin `07d2fbd72`. Only paths already ported in the engine
 // are produced (blow, counter, tower shot, rout, kill, end, turn; P4-1I5a: the
-// step `Move` and the unit shot `Shot`); the ram, the catapult, the breach,
-// the climb and the flight from the field are P4-1I5b.
+// step `Move` and the unit shot `Shot`; P4-1I5b: the flight from the field
+// `Leave` and its ripple `Shaken`, the climb `ClimbWall`, the catapult
+// `Boulder` / `WallDamage`, the ram `Ram` / `GateDamage`, the breaches
+// `WallBreach` / `GateBreach` / `TowerDestroyed` and the retreat from the
+// breached wall `LeaveField`).
 // ---------------------------------------------------------------------------
 
 /// Tag of a clash entry (`_pushClash(…, outcome)`, `battle/battleScene.ts:9550-9566`):
@@ -667,6 +670,129 @@ pub enum BattleActionKindDto {
         /// Moment of the hit.
         land_at: f64,
     },
+    /// A fleeing unit leaves the field (`_fleeStep` → `_removeUnitFromScene`,
+    /// `:9853-9857`, `:9876-9878`, `:9887-9892`; body `:9910-9925`; P4-1I5b,
+    /// D-I5B-1): model and bars are detached at once, no sound, no label and
+    /// no HP change (unlike `Kill` = `_startFade`). The ripple on the allies is
+    /// the separate `Shaken` actions that follow with the same `t0`.
+    Leave {
+        /// Unit.
+        id: UnitId,
+    },
+    /// Morale ripple `_shakeAlliesOnLoss(fallen)` (`:9743-9753`; D-I5B-2): the
+    /// ally `id` loses `MORALE_ALLY_DEATH_LOSS`, `morale` is the value after
+    /// the loss (`Math.max(0, …)`) drawn by `_updateMoraleBar(a)` (`:9749`).
+    Shaken {
+        /// Ally shaken.
+        id: UnitId,
+        /// The unit that fell (`fallen`).
+        fallen: UnitId,
+        /// Morale after the loss.
+        morale: f64,
+    },
+    /// Climb from a siege tower onto the wall crown (`_trySiegeTowerClimb`,
+    /// `:8067-8082`; D-I5B-3): `ru.q = wallCol` (the row does not change),
+    /// `onWallWalkway = true`, model at `(x, 2.5, z)` and bars `HPBAR_Y` above
+    /// at once (no animation). The first-breach log line, when any, is the
+    /// `Log` action before it.
+    #[serde(rename_all = "camelCase")]
+    ClimbWall {
+        /// Unit.
+        id: UnitId,
+        /// Column before the climb (`ru.q`).
+        from_col: i32,
+        /// Row (`ru.r`).
+        from_row: i32,
+        /// Column after the climb (`siegeWallCol`).
+        to_col: i32,
+        /// Row after the climb (= `fromRow`).
+        to_row: i32,
+    },
+    /// Catapult stone `_attackWallTile` (`:7540-7552`, `_spawnCatapultBoulder`
+    /// `:7571-7600`; D-I5B-4): from the catapult's tile (top + 0.8) to the
+    /// wall tile `(siegeWallCol, row)` at height 1.5, launched at `t0`, landing
+    /// at `landAt = t0 + 700` (`_schedule(700, …)`, `:7555`). The tile damage is
+    /// the separate `WallDamage` at `landAt`.
+    #[serde(rename_all = "camelCase")]
+    Boulder {
+        /// The catapult.
+        id: UnitId,
+        /// Wall row aimed at.
+        row: i32,
+        /// Moment of the hit.
+        land_at: f64,
+    },
+    /// Hit of the stone on a wall tile (the `_schedule(700)` callback,
+    /// `:7556-7564`; D-I5B-5): `wallTileHp.set(row, hpAfter)`, HUD and the
+    /// label `'-' + dmg + ' (mur)'` in `#ff8800` (`_spawnWallLabel`, `:7561`).
+    #[serde(rename_all = "camelCase")]
+    WallDamage {
+        /// Wall row.
+        row: i32,
+        /// Damage (`Math.max(1, Math.round(base))`, `:7545`).
+        dmg: f64,
+        /// Tile HP after the hit (`Math.max(0, cur - dmg)`).
+        hp_after: f64,
+    },
+    /// Ram animation `_animateRam(ru.group, gateDir)` of `_attackGate`
+    /// (`:7316-7323`, `:7337-7360`; D-I5B-6): from the ram's position toward
+    /// the gate `(siegeGateCol, siegeGateRow)` and back, `until = t0 + 320`
+    /// (`duration = 320`).
+    Ram {
+        /// The ram.
+        id: UnitId,
+        /// End of the animation.
+        until: f64,
+    },
+    /// Gate damage of `_attackGate` (`:7326-7331`; D-I5B-7): `gateHp =
+    /// Math.max(0, gateHp - dmg)` and the HUD.
+    #[serde(rename_all = "camelCase")]
+    GateDamage {
+        /// Damage (`_siegeStructureDamage`, `>= 1`).
+        dmg: f64,
+        /// Gate HP after the hit.
+        hp_after: f64,
+    },
+    /// Wall tile breached `_breachWallTile(row)` (`:7638-7697`; D-I5B-8): the
+    /// tile becomes `Plains`, `wallTileHp.delete(row)`, label
+    /// `'MUR WYBURZONY!'` in `#ff4400`, the row's wall segments hidden, 7
+    /// rubble pieces. The tower of that row is the `TowerDestroyed` before it;
+    /// the defenders leaving the tile are the `LeaveField` / `Kill` after it.
+    WallBreach {
+        /// Wall row.
+        row: i32,
+    },
+    /// Gate opened `_breachGate()` (`:7757-7801`; D-I5B-9): `gateOpen`, the gate
+    /// tiles `Plains`, the gate group and the gate meshes of the wall hidden.
+    /// A struct variant without fields (not a unit variant): serde accepts
+    /// unknown keys next to the tag of an internally tagged unit variant even
+    /// with `deny_unknown_fields`, `{}` keeps the keys strict.
+    GateBreach {},
+    /// `_destroyTowerAtRow(row)` (`:4194-4200`; D-I5B-10): the first live tower
+    /// of that row is `destroyed` and its mesh hidden; its log line is the
+    /// `Log` action after it.
+    TowerDestroyed {
+        /// Wall row of the tower.
+        row: i32,
+    },
+    /// A defender leaves the breached wall tile (`_breachWallTile`,
+    /// `:7700-7741`; D-I5B-11): `onWallWalkway = false`; when a free cell was
+    /// found (`to != from`) the model stands at once on its tile top and the
+    /// bars `HPBAR_Y` above; when none was (`to == from`, `:7717`) the unit
+    /// stays where it is (model not moved).
+    #[serde(rename_all = "camelCase")]
+    LeaveField {
+        /// Unit.
+        id: UnitId,
+        /// Column before (`ru.q`, the wall column).
+        from_col: i32,
+        /// Row before.
+        from_row: i32,
+        /// Column after.
+        to_col: i32,
+        /// Row after.
+        to_row: i32,
+    },
 }
 
 /// One action with its start time (recon §2c).
@@ -719,6 +845,20 @@ fn action_dmg(field: String, v: f64) -> Result<(), crate::validate::ViewError> {
     })
 }
 
+/// A field cell index (column or row of the battle grid): `>= 0` (the grid
+/// size is the renderer's, `BF_COLS` / `BF_ROWS`, checked there).
+fn action_index(field: String, v: i32) -> Result<(), crate::validate::ViewError> {
+    if v >= 0 {
+        return Ok(());
+    }
+    Err(crate::validate::ViewError::OutOfRange {
+        field,
+        value: i64::from(v),
+        min: 0,
+        max: i64::from(i32::MAX),
+    })
+}
+
 fn action_text(field: String, s: &str) -> Result<(), crate::validate::ViewError> {
     if s.is_empty() {
         Err(crate::validate::ViewError::LengthMismatch {
@@ -739,6 +879,12 @@ impl BattleActionDto {
     /// increments before the hint); log and clash texts non-empty; melee and
     /// shot attacker != target; a step changes the cell (`from != to`; the DTO
     /// does not require adjacent cells, `_doMove` does not check it, D-WIR-6).
+    /// P4-1I5b: `landAt` (stone) / `until` (ram) finite and `>= t0`; wall /
+    /// gate `dmg` finite and `> 0`, `hpAfter` finite and `>= 0`; `Shaken`
+    /// morale finite and `>= 0`, ally != fallen; every cell index and wall
+    /// row `>= 0`; a climb keeps the row and changes the column. The exact
+    /// pin durations (`+ 700`, `+ 320`) and the grid bounds are checked by
+    /// the renderer consumer, as for `Move` / `Shot` (D-I5B-12).
     /// `prefix` is the JSON path of the action (e.g. `actions[3]`).
     ///
     /// # Errors
@@ -830,9 +976,86 @@ impl BattleActionDto {
                     });
                 }
             }
+            BattleActionKindDto::Shaken { id, fallen, morale } => {
+                action_finite(f("action.morale"), *morale)?;
+                action_at_least(f("action.morale"), *morale, 0.0)?;
+                if id == fallen {
+                    return Err(ViewError::LengthMismatch {
+                        field: f("action.fallen (!= id)"),
+                        expected: 2,
+                        actual: 1,
+                    });
+                }
+            }
+            BattleActionKindDto::ClimbWall {
+                from_col,
+                from_row,
+                to_col,
+                to_row,
+                ..
+            } => {
+                action_index(f("action.fromCol"), *from_col)?;
+                action_index(f("action.fromRow"), *from_row)?;
+                action_index(f("action.toCol"), *to_col)?;
+                action_index(f("action.toRow"), *to_row)?;
+                if to_row != from_row {
+                    // `_trySiegeTowerClimb` sets only `ru.q` (`:8068`): the row stays.
+                    return Err(ViewError::OutOfRange {
+                        field: f("action.toRow (== fromRow)"),
+                        value: i64::from(*to_row),
+                        min: i64::from(*from_row),
+                        max: i64::from(*from_row),
+                    });
+                }
+                if to_col == from_col {
+                    return Err(ViewError::LengthMismatch {
+                        field: f("action.toCol (!= fromCol)"),
+                        expected: 2,
+                        actual: 1,
+                    });
+                }
+            }
+            BattleActionKindDto::Boulder { row, land_at, .. } => {
+                action_index(f("action.row"), *row)?;
+                action_finite(f("action.landAt"), *land_at)?;
+                action_at_least(f("action.landAt"), *land_at, self.t0)?;
+            }
+            BattleActionKindDto::WallDamage { row, dmg, hp_after } => {
+                action_index(f("action.row"), *row)?;
+                action_dmg(f("action.dmg"), *dmg)?;
+                action_finite(f("action.hpAfter"), *hp_after)?;
+                action_at_least(f("action.hpAfter"), *hp_after, 0.0)?;
+            }
+            BattleActionKindDto::Ram { until, .. } => {
+                action_finite(f("action.until"), *until)?;
+                action_at_least(f("action.until"), *until, self.t0)?;
+            }
+            BattleActionKindDto::GateDamage { dmg, hp_after } => {
+                action_dmg(f("action.dmg"), *dmg)?;
+                action_finite(f("action.hpAfter"), *hp_after)?;
+                action_at_least(f("action.hpAfter"), *hp_after, 0.0)?;
+            }
+            BattleActionKindDto::WallBreach { row }
+            | BattleActionKindDto::TowerDestroyed { row } => {
+                action_index(f("action.row"), *row)?;
+            }
+            BattleActionKindDto::LeaveField {
+                from_col,
+                from_row,
+                to_col,
+                to_row,
+                ..
+            } => {
+                action_index(f("action.fromCol"), *from_col)?;
+                action_index(f("action.fromRow"), *from_row)?;
+                action_index(f("action.toCol"), *to_col)?;
+                action_index(f("action.toRow"), *to_row)?;
+            }
             BattleActionKindDto::Rout { .. }
             | BattleActionKindDto::Kill { .. }
-            | BattleActionKindDto::End { .. } => {}
+            | BattleActionKindDto::End { .. }
+            | BattleActionKindDto::Leave { .. }
+            | BattleActionKindDto::GateBreach {} => {}
         }
         Ok(())
     }
