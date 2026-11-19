@@ -3932,3 +3932,7 @@ Konsekwencje dla kolejki:
 ### Przebieg 2026-11-19 ~01:50 UTC — heartbeat, kryzys dysku
 - Dysk spadł do 2,3 GB (cache T6 `adapter/t2` 7,2 GB + T4 `tagsrest/evs/tfull`); zwolniono: worktree `wf_499692f2-310-1` (przerwana runda r1c, stan w `refs/keep/ADAPTER-op-r1c-wip`), `wf_332bf894-0ad-1` (Operator T4, `refs/keep/TAGS-REST-op-r1`), `adapter/t3`, `tgt-docdebts-obrona` → 5,2 GB. Działających buildów (T4 Evaluator, T6 Operator) nie ruszono.
 - Aktywne: T4 Evaluator, T6 Operator (Opus). Nowych tematów nie startuję (dysk < 8 GB; T7 zależny od T4/T6; renderer ≥ 12 GB).
+
+### Przebieg 2026-11-19 ~02:07 UTC — T6 ADAPTER: Operator r1d PASS-WITH-NOTES, Evaluator w toku
+- Operator r1d: `9a39bc09f` (`refs/keep/ADAPTER-op-r1d`, push `rust-port-wip/k5loop-adapter-q1-op-r1d`): 31/31 mutantów zabitych, pełny `cargo test` EXIT 0 wg raportu; parity-v2 bez zmian (`1e20c2da9`). Evaluator T6 (Opus) wystartował ~02:00.
+- T4: Evaluator nadal w toku (`tfull`). Zwolniono `adapter/ms`, `adapter/t`, worktree Operatora T6 → dysk ok. 4–5 GB (cache `adapter/t2` używany przez Evaluatora).
