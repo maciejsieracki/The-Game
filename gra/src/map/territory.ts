@@ -330,3 +330,94 @@ export function isPlayerTerritoryHex(
   // Testy / wczesny start bez listy wszystkich państw — tylko zasięg własnych miast.
   return isInTerritory(q, r, playerNodes);
 }
+
+// ============================================================
+// R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1 (ABC C, 2026-11-19): ulepszenia właściciela fortu
+// ============================================================
+
+/** Powód odrzucenia budowy w pierścieniu własnego fortu (komunikat po polsku, jak inne blokady). */
+export const FORT_RING_BUILD_BLOCK_REASON =
+  'Heks należy do innego miasta, a leży w pierścieniu twojego fortu — ulepszenie przeszłoby pod ochronę fortu. Nie można tu budować.';
+
+/**
+ * Predykat `shieldsHex` dla fortu/posterunku: heks zostaje przy właścicielu fortu TYLKO gdy ulepszenie na nim
+ * NALEŻY do tego właściciela (rejestr `ownerByHex`, klucz "q,r"). Ulepszenie innego właściciela (np. starego miasta)
+ * nie chroni heksu. / EN: shields a hex only for an improvement owned by the fort's owner.
+ */
+export function fortRingShield(
+  ownerByHex: ReadonlyMap<string, number>,
+  hasLayers: (hk: string) => boolean,
+): (q: number, r: number, fortOwnerId: number) => boolean {
+  return (q, r, fortOwnerId) => {
+    const hk = `${q},${r}`;
+    return ownerByHex.get(hk) === fortOwnerId && hasLayers(hk);
+  };
+}
+
+/**
+ * Czy w pierścieniu fortu/posterunku stoi ulepszenie NALEŻĄCE do jego właściciela. Heks SAMEGO fortu (dq=dr=0)
+ * jest pomijany: centrum fortu i tak zostaje u właściciela (`centreFortOwner`), a jego wpis w rejestrze
+ * (sam fort = warstwa) zawsze istnieje — bez pominięcia predykat byłby podpinany do każdego fortu.
+ * / EN: true when an improvement owned by the fort owner sits in its ring (centre hex excluded).
+ */
+export function fortRingHasOwnImprovement(
+  f: { q: number; r: number; ownerId: number; type?: string; isOutpost?: boolean },
+  ownerByHex: ReadonlyMap<string, number>,
+): boolean {
+  const radius = f.type === 'posterunek' || f.isOutpost ? OUTPOST_TERRITORY_RADIUS : FORT_TERRITORY_RADIUS;
+  for (let dq = -radius; dq <= radius; dq++) {
+    const lo = Math.max(-radius, -dq - radius), hi = Math.min(radius, -dq + radius);
+    for (let dr = lo; dr <= hi; dr++) {
+      if (dq === 0 && dr === 0) continue;
+      if (ownerByHex.get(`${f.q + dq},${f.r + dr}`) === f.ownerId) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Blokada budowy (ABC C): budujący B nie stawia ulepszenia na heksie, który leży w pierścieniu SWOJEGO fortu/posterunku,
+ * a którego terytorium należy do kogoś innego — inaczej ulepszenie należące do B „przeskoczyłoby” pod ochronę fortu.
+ * Zwraca powód odrzucenia albo null. Ulepszenie obcego właściciela w cudzym pierścieniu nie przeskakuje (predykat
+ * chroni tylko własne ulepszenia właściciela fortu), więc tej strony reguła nie blokuje.
+ * / EN: refuse an improvement by fort owner B on a hex inside B's own fort ring that belongs to another owner.
+ */
+export function fortRingBuildBlockReason(
+  q: number,
+  r: number,
+  builderOwner: number,
+  nodes: readonly TerritoryNode[],
+): string | null {
+  let inOwnRing = false;
+  for (const n of nodes) {
+    if (!(n.isFort || n.isOutpost) || n.ownerId !== builderOwner) continue;
+    if (axialDistance(q, r, n.q, n.r) <= cityTerritoryRadius(n)) { inOwnRing = true; break; }
+  }
+  if (!inOwnRing) return null;
+  const t = territoryOwnerAt(q, r, nodes);
+  return t === null || t === builderOwner ? null : FORT_RING_BUILD_BLOCK_REASON;
+}
+
+/**
+ * Odtworzenie rejestru właściciela ulepszeń przy wczytaniu. Zapis (`saved`, pary [hk, ownerId]) ma pierwszeństwo.
+ * Stary zapis bez rejestru (`saved` = undefined): właściciel = `ownerAt` (przybliżenie: bieżące terytorium).
+ * Wpisy bez poprawnego właściciela są pomijane (brak NaN/undefined).
+ */
+export function resolveImprovementOwners(
+  placedKeys: Iterable<string>,
+  saved: ReadonlyArray<readonly [string, number]> | undefined,
+  ownerAt: ((q: number, r: number) => number | null) | null,
+): Map<string, number> {
+  const savedMap = new Map<string, number>();
+  for (const [hk, o] of saved ?? []) if (typeof o === 'number' && Number.isFinite(o)) savedMap.set(hk, o);
+  const out = new Map<string, number>();
+  for (const hk of placedKeys) {
+    const fromSave = savedMap.get(hk);
+    if (fromSave !== undefined) { out.set(hk, fromSave); continue; }
+    if (!ownerAt) continue;
+    const parts = hk.split(',').map(Number);
+    const o = ownerAt(parts[0]!, parts[1]!);
+    if (o !== null && Number.isFinite(o)) out.set(hk, o);
+  }
+  return out;
+}

@@ -15,6 +15,7 @@ import {
   territoryOwnerAt,
   axialDistance,
   cityTerritoryRadius,
+  fortRingBuildBlockReason,
   type CityNode,
   type TerritoryNode,
 } from './territory';
@@ -1069,16 +1070,10 @@ function createQualifier(state: ImprovementBuildState, opts: ImprovementQualifie
     }
     return isPlayerTerritoryHex(q, r, cityNodes, territoryNodes, playerOwnerIdNum);
   }
-  // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1 (blokada budowy, ABC C): węzły OBCYCH fortów/posterunków.
-  // Heks w ich pierścieniu przyjmuje ulepszenie TYLKO gdy terytorium tego heksu należy do budującego — inaczej
-  // ulepszenie „przeskoczyłoby” do właściciela fortu. Gracz, AI i autopilot — ta sama bramka (qualifies()).
-  const foreignFortNodes = territoryNodes.filter(n => (n.isFort || n.isOutpost) && n.ownerId !== playerOwnerIdNum);
-  function inForeignFortRing(q: number, r: number): boolean {
-    for (const n of foreignFortNodes) {
-      if (axialDistance(q, r, n.q, n.r) <= cityTerritoryRadius(n)) return true;
-    }
-    return false;
-  }
+  // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1 (blokada budowy, ABC C): budujący z WŁASNYM fortem/posterunkiem
+  // nie stawia ulepszenia w jego pierścieniu na cudzym terytorium (ulepszenie przeskoczyłoby pod ochronę fortu).
+  // Gracz, AI i autopilot — ta sama bramka (qualifies()); regułę liczy `fortRingBuildBlockReason` (map/territory.ts).
+  const hasOwnFort = territoryNodes.some(n => (n.isFort || n.isOutpost) && n.ownerId === playerOwnerIdNum);
 
   function isRoadQualified(q: number, r: number): boolean {
     return roadAdjacencyOk(state, q, r);
@@ -1093,8 +1088,7 @@ function createQualifier(state: ImprovementBuildState, opts: ImprovementQualifie
     const hex = map.hexes[hexKey] as HexWithZloze | undefined;
     if (!hex) return false;
     // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1: w pierścieniu cudzego fortu — tylko na własnym terytorium.
-    if (foreignFortNodes.length > 0 && inForeignFortRing(q, r)
-      && territoryOwnerAt(q, r, territoryNodes) !== playerOwnerIdNum) return false;
+    if (hasOwnFort && fortRingBuildBlockReason(q, r, playerOwnerIdNum, territoryNodes) !== null) return false;
     const teren = hex.terenBazowy;
     const nakladka = hex.nakladka;
     const zloze = hexZloze(hex);

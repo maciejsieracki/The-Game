@@ -235,7 +235,7 @@ console.log('\n--- R2-zrodlo: sweepFortCaptures uzywa areEnemyOwners (wojna) i n
   // RF-18: straznik main.ts - rejestr wlascicieli zapisany w meta, predykat podpiety per fort, brak surowych zapisow placedImprovements.
   const mainSrc = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'main.ts'), 'utf8');
   assert(/improvementOwners: Array\.from\(improvementOwnerByHex\.entries\(\)\)/.test(mainSrc), 'RF-18a: zapis meta.improvementOwners');
-  assert(/fortTerritoryNodes\(fortNodes, f => \(fortRingHasImprovement\(f\) \? improvedByFortOwner : undefined\)\)/.test(mainSrc), 'RF-18b: predykat podpiety per fort z ulepszeniem w pierscieniu');
+  assert(/fortTerritoryNodes\(fortNodes, f => \(fortRingHasOwnImprovement\(f, improvementOwnerByHex\) \? improvedByFortOwner : undefined\)\)/.test(mainSrc), 'RF-18b: predykat podpiety per fort z WLASNYM ulepszeniem w pierscieniu');
   const rawWrites = (mainSrc.match(/placedImprovements\.(set|delete|clear)\(/g) || []).length;
   eq(rawWrites, 3, 'RF-18c: surowe zapisy placedImprovements tylko w helperach (set/delete/clear = 3)');
 }

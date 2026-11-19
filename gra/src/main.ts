@@ -655,7 +655,7 @@ import {
   resolveMapUnitCursor,
   CURSOR_MAP_DEFAULT,
 } from './ui/mapUnitCursor';
-import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex, cityTerritoryRadius, territoryNodesContentId, axialDistance, FORT_TERRITORY_RADIUS, OUTPOST_TERRITORY_RADIUS } from './map/territory';
+import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex, cityTerritoryRadius, territoryNodesContentId, axialDistance, fortRingShield, fortRingHasOwnImprovement, fortRingBuildBlockReason, resolveImprovementOwners } from './map/territory';
 import { isTerritoryHexOwnedBy, isReczneKeyLegal, cityCenterKeys } from './map/territory-work';
 import type { CityNode, TerritoryNode } from './map/territory';
 import type { GameMap } from './types/map';
@@ -5961,7 +5961,7 @@ async function boot(): Promise<void> {
       // z 2026-08-09): posterunek (r=3) i fort (r=5) = TWARDE terytorium jak miasto.
       // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1: predykat ochrony tylko dla fortu z ulepszeniem w pierscieniu.
       return fortNodes.length > 0
-        ? cityNodes.concat(fortTerritoryNodes(fortNodes, f => (fortRingHasImprovement(f) ? improvedByFortOwner : undefined)))
+        ? cityNodes.concat(fortTerritoryNodes(fortNodes, f => (fortRingHasOwnImprovement(f, improvementOwnerByHex) ? improvedByFortOwner : undefined)))
         : cityNodes;
     }
 
@@ -17094,22 +17094,8 @@ async function boot(): Promise<void> {
       placedImprovements.clear();
       improvementOwnerByHex.clear();
     }
-    /** Predykat dla fortu/posterunku: heks z ulepszeniem NALEZACYM do `fortOwnerId` zostaje przy forcie. */
-    const improvedByFortOwner = (q: number, r: number, fortOwnerId: number): boolean => {
-      const hk = `${q},${r}`;
-      return improvementOwnerByHex.get(hk) === fortOwnerId && (placedImprovements.get(hk)?.length ?? 0) > 0;
-    };
-    /** Czy w promieniu fortu/posterunku jest jakiekolwiek ulepszenie (tylko wtedy podpinamy predykat — cache zakresowy zostaje). */
-    function fortRingHasImprovement(f: { q: number; r: number; isOutpost?: boolean; type?: string }): boolean {
-      const radius = f.type === 'posterunek' || f.isOutpost ? OUTPOST_TERRITORY_RADIUS : FORT_TERRITORY_RADIUS;
-      for (let dq = -radius; dq <= radius; dq++) {
-        const lo = Math.max(-radius, -dq - radius), hi = Math.min(radius, -dq + radius);
-        for (let dr = lo; dr <= hi; dr++) {
-          if (improvementOwnerByHex.has(`${f.q + dq},${f.r + dr}`)) return true;
-        }
-      }
-      return false;
-    }
+    /** Predykat dla fortu/posterunku (map/territory.ts `fortRingShield`): heks z ulepszeniem NALEZACYM do `fortOwnerId` zostaje przy forcie. */
+    const improvedByFortOwner = fortRingShield(improvementOwnerByHex, hk => (placedImprovements.get(hk)?.length ?? 0) > 0);
     /**
      * R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2 (Maciej 2026-08-09):
      * rejestr WSZYSTKICH postawionych Fortow/Posterunkow (dowolny wlasciciel) z
@@ -17841,6 +17827,12 @@ async function boot(): Promise<void> {
 
       if (!pendingImprovementsTurn.has(req.hexKey, req.key)
         && !assertPlayerTerritoryForBuild(req.q, req.r, req.key)) {
+        return;
+      }
+      // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1 (ABC C): ta sama blokada co qualifies() (ścieżka bez bramki UI).
+      const fortRingBlock = fortRingBuildBlockReason(req.q, req.r, 0, buildAllTerritoryNodes());
+      if (fortRingBlock !== null && !pendingImprovementsTurn.has(req.hexKey, req.key)) {
+        showHintMessage(fortRingBlock, 4500);
         return;
       }
 
@@ -52734,18 +52726,13 @@ async function boot(): Promise<void> {
       // (ograniczenie zaznaczone w raporcie). Brak wlasciciela (poza kazdym zasiegiem) -> brak wpisu.
       improvementOwnerByHex.clear();
       const savedImprovementOwners = saved.meta?.improvementOwners as Array<[string, number]> | undefined;
-      const ownerFromSave = new Map<string, number>(
-        (savedImprovementOwners ?? []).filter(([, o]) => Number.isFinite(o)),
+      const fallbackNodes = savedImprovementOwners ? null : buildAllTerritoryNodes();
+      const restoredOwners = resolveImprovementOwners(
+        placedImprovements.keys(),
+        savedImprovementOwners,
+        fallbackNodes ? (q, r) => territoryOwnerAt(q, r, fallbackNodes) : null,
       );
-      const nodesForOwnerFallback = savedImprovementOwners ? null : buildAllTerritoryNodes();
-      for (const hk of placedImprovements.keys()) {
-        const fromSave = ownerFromSave.get(hk);
-        if (fromSave !== undefined) { improvementOwnerByHex.set(hk, fromSave); continue; }
-        if (!nodesForOwnerFallback) continue;
-        const [hq, hr] = hk.split(',').map(Number) as [number, number];
-        const o = territoryOwnerAt(hq, hr, nodesForOwnerFallback);
-        if (o !== null) improvementOwnerByHex.set(hk, o);
-      }
+      for (const [hk, o] of restoredOwners) improvementOwnerByHex.set(hk, o);
       clearAllHexClearing();
       pendingImprovementsTurn = PendingImprovementsTurn.fromSave(
         saved.meta?.pendingImprovementsTurn as PendingImprovementEntry[] | undefined,
