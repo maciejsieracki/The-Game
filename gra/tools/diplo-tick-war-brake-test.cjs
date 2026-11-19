@@ -50,7 +50,7 @@ const CHECKS = [
   ['P6: odczyt licznika w load (stary zapis = 0)', (m) => has(m, 'parseCrisisCounters(saved.meta?.diplomacyCrisisCounters)')],
   ['P7: bonus z realnych dostaw (applyCyclicDeliveryOutcome ok)', (m) => has(m, 'if (brakeOn && ok) {') && has(m, 'applyDiploP7Bonuses(p7Delivered)')],
   ['P7: barter tylko przy bothOk', (m) => has(m, 'if (brakeOn && bothOk) {')],
-  ['P7: sufit/limit/krok w tradeTrustBonusPerTura', (m, mod) => has(mod, 'Math.min(surowy, p.wymianaMaxPerTura, headroom)') && has(mod, 'if (!(headroom > 0)) return 0;')],
+  ['P7: sufit/limit/krok w tradeTrustBonusPerTura', (m, mod) => has(mod, 'scaleBonusForWarLevel(surowy)') && has(mod, 'scaleBonusForWarLevel(p.wymianaMaxPerTura)') && has(mod, '    headroom,\n  );') && has(mod, 'if (!(headroom > 0)) return 0;')],
   ['P7: DECYZJA 1 (zaliczka tylko za 1 ture)', (m) => has(m, 'diploAcceptanceTrustPn(givePn, receivePn, dealTurnsMult, isGift)') && has(m, 'diploAcceptanceTrustPn(givePn, receivePn, oneShotTurnsMult, isGift)')],
   ['P7 r3: dar wylaczony z zasady DECYZJA 1', (m) => has(m, 'if (!isDiploTickWarBrakeEnabled() || isGift || !(turnsMult > 1)) return { givePn, receivePn };')],
   ['P4 r3: dobraWolaTurnStep (aktywnosc przed odliczeniem)', (m, mod) => has(mod, 'return { activeThisTurn: r > 0, next: Math.max(0, r - 1) };')],

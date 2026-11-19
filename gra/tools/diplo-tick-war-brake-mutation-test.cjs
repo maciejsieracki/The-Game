@@ -22,7 +22,7 @@ const P7 = PARAMS.p7;
 
 function loadModule(source) {
   const out = esbuild.buildSync({
-    stdin: { contents: source, loader: 'ts', resolveDir: ROOT },
+    stdin: { contents: source, loader: 'ts', resolveDir: path.resolve(ROOT, 'src', 'game') },  // importy względne ./diplomacy-war-level
     bundle: true, format: 'cjs', platform: 'node', write: false, logLevel: 'silent',
   });
   const m = { exports: {} };
@@ -118,8 +118,9 @@ const MUTANTS = [
   ['P3 duchy bez miast wlaczone', 'o.cityCount > 0;', 'o.cityCount >= 0;'],
   ['P3 gracz wlaczony', '!o.isPlayer && !o.isBarbarian', '!o.isBarbarian'],
   ['P7 interpolacja (bez pelnych krokow)', 'const pelneKroki = Math.floor(input.nadwyzkaPn / krok);', 'const pelneKroki = input.nadwyzkaPn / krok;'],
-  ['P7 limit usuniety', 'Math.min(surowy, p.wymianaMaxPerTura, headroom)', 'Math.min(surowy, headroom)'],
-  ['P7 sufit usuniety', 'return Math.min(surowy, p.wymianaMaxPerTura, headroom);', 'return Math.min(surowy, p.wymianaMaxPerTura);'],
+  // R-WEB-DIPLO-WAR-LEVEL: kotwice po przejściu limitu/kroku przez scaleBonusForWarLevel (÷k).
+  ['P7 limit usuniety', 'scaleBonusForWarLevel(p.wymianaMaxPerTura),', ''],
+  ['P7 sufit usuniety', '    headroom,\n  );', '  );'],
   ['P7 min. tury usuniety', 'if (input.kolejneTuryDostaw < p.wymianaMinTurDostaw) return 0;', 'if (false) return 0;'],
   ['P6 kolejka odwrocona', 'if (y.counter !== x.counter) return y.counter - x.counter;', 'if (y.counter !== x.counter) return x.counter - y.counter;'],
   ['P6 strona slabsza wypowiada', 'return a.power > b.power ? a.ownerId : b.ownerId;', 'return a.power < b.power ? a.ownerId : b.ownerId;'],

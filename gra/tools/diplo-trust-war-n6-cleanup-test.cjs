@@ -32,7 +32,7 @@ function check(name, ok) {
 
 function loadModule(source) {
   const out = esbuild.buildSync({
-    stdin: { contents: source, loader: 'ts', resolveDir: ROOT },
+    stdin: { contents: source, loader: 'ts', resolveDir: path.resolve(ROOT, 'src', 'game') },  // R-WEB-DIPLO-WAR-LEVEL: importy względne ./diplomacy-war-level
     bundle: true, format: 'cjs', platform: 'node', write: false, logLevel: 'silent',
   });
   const m = { exports: {} };

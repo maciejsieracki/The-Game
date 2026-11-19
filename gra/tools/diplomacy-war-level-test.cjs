@@ -39,17 +39,25 @@ export * as V from ${JSON.stringify(path.join(GAME_DIR, 'diplomacy-value-catalog
 export * as T from ${JSON.stringify(path.join(GAME_DIR, 'diplomacy-tick-war-brake.ts'))};
 export * as B from ${JSON.stringify(path.join(GAME_DIR, 'diplomacy-border-march.ts'))};
 export * as AT from ${JSON.stringify(path.join(GAME_DIR, 'ai-ai-treaty-tick.ts'))};
+export * as AE from ${JSON.stringify(path.join(GAME_DIR, 'ai-ai-treaty-evaluate.ts'))};
+export * as P from ${JSON.stringify(path.join(GAME_DIR, 'diplomacy-penalty-preview.ts'))};
 `;
 
-/** Buduje bundle; `levelSrc` = treść diplomacy-war-level.ts (oryginał albo mutant). */
-async function loadBundle(levelSrc) {
+const PREVIEW_FILE = path.resolve(GAME_DIR, 'diplomacy-penalty-preview.ts');
+const EVAL_FILE = path.resolve(GAME_DIR, 'ai-ai-treaty-evaluate.ts');
+
+/** Buduje bundle; `overrides` = { absPath: treść } (oryginał albo mutant danego pliku). */
+async function loadBundle(overrides) {
   const res = await esbuild.build({
     stdin: { contents: ENTRY, resolveDir: GAME_DIR, sourcefile: 'entry.ts', loader: 'ts' },
     bundle: true, format: 'cjs', platform: 'node', write: false, logLevel: 'silent',
     plugins: [{
       name: 'war-level-mutant',
       setup(build) {
-        build.onLoad({ filter: /diplomacy-war-level\.ts$/ }, () => ({ contents: levelSrc, loader: 'ts' }));
+        build.onLoad({ filter: /\.ts$/ }, (args) => {
+          const src = overrides[path.resolve(args.path)];
+          return src === undefined ? undefined : { contents: src, loader: 'ts' };
+        });
       },
     }],
   });
@@ -291,6 +299,11 @@ function runSuite(M) {
     ].find(x => x !== true) || true;
   });
 
+  check('W10b AI↔AI zerwanie zaufania (treatyParamsDefault): −20 -> −40 / −60 (ścieżka evaluateTreatyOffer)', () => {
+    const z = (lvl) => withLevel(lvl, () => M.AE.aiAiBreachTrustDeltaDefault());
+    return [eq('L', z('latwa'), -20), eq('N', z('normalna'), -40), eq('T', z('trudna'), -60)].find(x => x !== true) || true;
+  });
+
   check('W11 normalizacja: brak / null / zła wartość = latwa; normalna / trudna przechodzą', () => {
     const n = M.L.normalizeDiplomacyWarLevel;
     const r = [
@@ -318,13 +331,26 @@ function runSuite(M) {
     return t && l ? true : `trudna=${t} stary=${l}`;
   });
 
-  check('W12 podgląd kary: trust-line ×k (zaufanie) — helper scalePenaltyForWarLevel(-10 / -15)', () => {
+  check('W12 podgląd kary (realny moduł diplomacy-penalty-preview.ts): zerwanie traktatu Z −10/−15 ×k', () => {
+    const PP = { zlamanaPaktGracz_zaufanie: -40, wiarygodnoscN1BezOstrzezenia: -10, wiarygodnoscN2ZlamaniePaktuNap: -18,
+      wiarygodnoscN2ZlamaniePaktuSojusz: -25, wiarygodnoscN3AtakWOknieKarencji: -12, wiarygodnoscN3KarencjaBezterminoweTur: 10,
+      wiarygodnoscN5ZerwanieTraktatCzasowy: -6, wiarygodnoscN5ZerwanieHandelCzasowy: -4 };
+    const z = (lvl, rodzaj) => withLevel(lvl, () => M.P.previewVoluntaryTreatyBreakPenalties({ rodzaj, wygasaTura: 20 }, PP).zaufanieTotal);
     const r = [
-      eq('-10 N', M.L.scalePenaltyForWarLevel(-10, 'normalna'), -20),
-      eq('-15 T', M.L.scalePenaltyForWarLevel(-15, 'trudna'), -45),
-      eq('-10 L', M.L.scalePenaltyForWarLevel(-10, 'latwa'), -10),
+      eq('handel L', z('latwa', 'umowa_handlowa'), -10),
+      eq('handel N', z('normalna', 'umowa_handlowa'), -20),
+      eq('handel T', z('trudna', 'umowa_handlowa'), -30),
+      eq('traktat L', z('latwa', 'pakt_nieagresji'), -15),
+      eq('traktat N', z('normalna', 'pakt_nieagresji'), -30),
+      eq('traktat T', z('trudna', 'pakt_nieagresji'), -45),
     ];
     return r.find(x => x !== true) || true;
+  });
+
+  check('W12c źródło: ai.ts ekspansja_heurystyka_granica_kara przechodzi przez scalePenaltyForWarLevel (ABC7)', () => {
+    const src = fs.readFileSync(path.resolve(GAME_DIR, 'ai.ts'), 'utf8');
+    return src.includes("scalePenaltyForWarLevel(getAiParam(data, 'ekspansja_heurystyka_granica_kara'")
+      || 'brak mnożnika poziomu przy ekspansja_heurystyka_granica_kara';
   });
 
   check('W12b nie-mutacja: base po poziomach == snapshot ŁATWA (JSON nie zmieniony)', () => {
@@ -345,29 +371,35 @@ function summarize(label, results) {
 
 async function main() {
 // --- bieg główny: oryginał ---
-const mainMod = await loadBundle(LEVEL_ORIG);
+const mainMod = await loadBundle({});
 const mainFailed = summarize('ORYGINAŁ', runSuite(mainMod));
 
-// --- mutant: helper ×k usunięty (kary bez mnożnika) — musi czerwienić ---
-const mutSrc = LEVEL_ORIG.replace(
-  'return k === 1 ? value : value * k;',
-  'return value;',
-);
-if (mutSrc === LEVEL_ORIG) {
-  console.log('MUTANT: wzorzec nie znaleziony w źródle — test nieważny');
-  process.exitCode = 1;
-} else {
-  const mutMod = await loadBundle(mutSrc);
-  const mutFails = runSuite(mutMod).filter(r => !r.ok).length;
-  console.log(`== MUTANT (kara bez ×k): ${mutFails} czerwonych`);
-  if (mutFails === 0) {
-    console.log('   BŁĄD: mutant NIE został wykryty');
-    process.exitCode = 1;
+// --- mutanty: każdy usuwa ×k w jednym punkcie wiązania — każdy MUSI czerwienić testy ---
+const mutants = [
+  { name: 'helper kary bez ×k', file: LEVEL_FILE,
+    from: 'return k === 1 ? value : value * k;', to: 'return value;' },
+  { name: 'podgląd zerwania traktatu bez ×k (M5)', file: PREVIEW_FILE,
+    from: 'scalePenaltyForWarLevel(isTrade ? -10 : -15)', to: '(isTrade ? -10 : -15)' },
+  { name: 'AI↔AI zerwanie zaufania bez ×k (M4)', file: EVAL_FILE,
+    from: 'zerwanieZaufanie: scalePenaltyForWarLevel(', to: 'zerwanieZaufanie: ((v: number) => v)(' },
+];
+let mutantProblem = false;
+for (const m of mutants) {
+  const orig = fs.readFileSync(m.file, 'utf8');
+  if (orig.split(m.from).length !== 2) {
+    console.log(`MUTANT ${m.name}: wzorzec nie znaleziony dokładnie raz — test nieważny`);
+    mutantProblem = true;
+    continue;
   }
+  const mutMod = await loadBundle({ [path.resolve(m.file)]: orig.replace(m.from, m.to) });
+  const mutFails = runSuite(mutMod).filter(r => !r.ok).length;
+  console.log(`== MUTANT ${m.name}: ${mutFails} czerwonych`);
+  if (mutFails === 0) { console.log('   BŁĄD: mutant NIE został wykryty'); mutantProblem = true; }
 }
 
+if (mutantProblem) process.exitCode = 1;
 if (mainFailed > 0) process.exitCode = 1;
-if (!process.exitCode) console.log('OK: wszystkie asercje zielone, mutant wykryty');
+if (!process.exitCode) console.log('OK: wszystkie asercje zielone, wszystkie mutanty wykryte');
 }
 
 main().catch((e) => { console.error(e); process.exitCode = 1; });

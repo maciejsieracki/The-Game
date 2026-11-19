@@ -12,6 +12,7 @@
  */
 
 import { formatTurCountAcc } from '../ui/formatPl';
+import { scalePenaltyForWarLevel } from './diplomacy-war-level';
 import type { GameMap } from '../types/map';
 import type { Hex }     from '../types/hex';
 import { Nakladka }     from '../types/hex';
@@ -1475,7 +1476,7 @@ export function hexCityScore(
   const tradePts   = getAiParam(data, 'ekspansja_heurystyka_handel_pkt', 1);
   const riverPts   = getAiParam(data, 'ekspansja_heurystyka_rzeka_pkt', 2);
   const resPts     = getAiParam(data, 'ekspansja_heurystyka_surowiec_pkt', 2);
-  const enemyPenalty = getAiParam(data, 'ekspansja_heurystyka_granica_kara', -3);
+  const enemyPenalty = scalePenaltyForWarLevel(getAiParam(data, 'ekspansja_heurystyka_granica_kara', -3)); // R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1 (ABC7)
 
   // Get terrain yields from data
   let food = 0; let work = 0; let trade = 0;

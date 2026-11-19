@@ -132,6 +132,11 @@ function treatyParamsDefault(): AiAiTreatyParams {
 
 const ZERO_PARITY: AiAiTreatyParity = { S: 0, W: 0, D: 0, r: 1 };
 
+/** Test/pomiar: kara zerwania zaufania AI↔AI (−20 × poziom) z tej samej ścieżki co evaluateTreatyOffer. */
+export function aiAiBreachTrustDeltaDefault(): number {
+  return treatyParamsDefault().zerwanieZaufanie;
+}
+
 let dopłataMnoznikNadpisanieTest: number | null = null;
 
 /** Tylko testy/pomiar (hak civTest). null = wróć do wartości z danych. */
