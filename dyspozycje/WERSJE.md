@@ -1,3 +1,9 @@
+## ROBOCZA 4e325c45 -- 2026-11-18 -- FALA 870: R-WEB-UI-WELCOME-SHOW-ALL-BONUSES-Q1: ekran powitalny nowej cywilizacji pokazuje WSZYSTKIE Plusy i Minusy (bez '+ N wiecej (najedz...)' i tooltipu) (testowa)
+
+- gra/src/ui/civWelcomeScreen.ts (listHtml: pelna lista, karta flex-kolumna z przewijaniem w .cww-body, przyciski zawsze widoczne), gra/src/ui/civWelcomeLogic.ts (usuniete WELCOME_VISIBLE_*), test civ-welcome-screen-test 490 asercji. Zgloszenie wlasciciela 2026-11-19 (zrzut).
+- Weryfikacja: tsc 0, logic 213/213, civ-welcome-screen-test 490 OK (mutacje czerwone: title 54, details 1, slice 44 FAIL), audio-welcome-audience-overlap 8/0; Chromium: Rzymianie 4 plusy, Grecy 11 plusow 1280x720 i 480x800, brak poziomego scrolla, zrzuty w runie
+- Limity: NIE ZMIERZONO: brand-live-test nie uruchamiany przez FC (uruchomil Evaluator: PASS 1324x1300/1024x640/480x800); inne miejsca UI ze wzorcem najedz: brak
+
 ## ROBOCZA b77db240 -- 2026-11-18 -- FALA 869: R-WEB-AUDIO-WELCOME-TO-AUDIENCE-MUSIC-OVERLAP-Q1: po komunikacie powitalnym nowej cywilizacji wejscie w audiencje nie nakłada juz dwoch muzyk (max 1 grajacy utwor) (testowa)
 
 - gra/src/audio/muzyka-antyczna.ts (startDiplomacyMusic: ta sama playlista bez restartu; inna nakladka: stop poprzedniej przed startem), gra/src/ui/civWelcomeScreen.ts (close('audience') nie zatrzymuje przywitania), test audio-welcome-audience-overlap-test (Chromium). Zgloszenie wlasciciela 2026-11-19.

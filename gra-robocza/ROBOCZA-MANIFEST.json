@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "b77db2405038d11258e91cd93a936364",
-  "bundleSha256": "a4cf85e2f3f691c5cdae48d197fb34fe716f893fa714f35dfd2f7b6a850bdfff",
-  "bundleBytes": 14987101,
+  "bundleMd5": "4e325c45371d09b4167267db404f7f4a",
+  "bundleSha256": "ce7720b55e92d0b52ed4138c6660ad958f8ebf8c1e65dd062468aa6a504e7587",
+  "bundleBytes": 14986974,
   "sourceSnapshot": {
-    "source": "kod 137b3f1f7 (Haiku r1); FC 52818ed95",
+    "source": "kod db7940f7d (Haiku r1 + Obrona); FC cf1635f76",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 869: gra/src/audio/muzyka-antyczna.ts (startDiplomacyMusic: ta sama playlista bez restartu; inna nakladka: stop poprzedniej przed startem), gra/src/ui/civWelcomeScreen.ts (close('audience') nie zatrzymuje przywitania), test audio-welcome-audience-overlap-test (Chromium). Zgloszenie wlasciciela 2026-11-19."
+    "FALA 870: gra/src/ui/civWelcomeScreen.ts (listHtml: pelna lista, karta flex-kolumna z przewijaniem w .cww-body, przyciski zawsze widoczne), gra/src/ui/civWelcomeLogic.ts (usuniete WELCOME_VISIBLE_*), test civ-welcome-screen-test 490 asercji. Zgloszenie wlasciciela 2026-11-19 (zrzut)."
   ],
   "verification": [
-    "tsc 0, logic 213/213, audio-welcome-audience-overlap 8/0 (mutacje czerwone), civ-welcome-screen 309, civ-music 100/0, diplomacy-audience-close-flush 57/0; dowod w Chromium: przed 3 grajace (grecy->rzymianie), po max 1"
+    "tsc 0, logic 213/213, civ-welcome-screen-test 490 OK (mutacje czerwone: title 54, details 1, slice 44 FAIL), audio-welcome-audience-overlap 8/0; Chromium: Rzymianie 4 plusy, Grecy 11 plusow 1280x720 i 480x800, brak poziomego scrolla, zrzuty w runie"
   ],
   "limits": [
-    "NIE ZMIERZONO: pelna sciezka przez main.ts (showFirstContactWelcome/openDiplomacyAudience), wylaczona muzyka, audiencja bez powitania; male okno: zamkniecie audiencji w 0,4 s moze na chwile zagrac muzyke gry obok gasnacego utworu"
+    "NIE ZMIERZONO: brand-live-test nie uruchamiany przez FC (uruchomil Evaluator: PASS 1324x1300/1024x640/480x800); inne miejsca UI ze wzorcem najedz: brak"
   ],
-  "finalControl": "FC PASS-WITH-NOTES: potomek bazy, 4 pliki w allowliscie, mutacja czerwona (6 OK/2 FAIL), testy audio/powitania zielone",
+  "finalControl": "FC PASS: potomek bazy, allowlista, mutacje czerwone, zrzut Rzymian = zrzut wlasciciela",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T20:04:31",
+  "hubGeneratedAt": "2026-11-19T20:09:19",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "b77db2405038d11258e91cd93a936364",
-      "sizeBytes": 14987101
+      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "b77db2405038d11258e91cd93a936364",
-      "sizeBytes": 14987101
+      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "b77db2405038d11258e91cd93a936364",
-      "sizeBytes": 14987101
+      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "b77db2405038d11258e91cd93a936364",
-      "sizeBytes": 14987101
+      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "b77db2405038d11258e91cd93a936364",
-      "sizeBytes": 14987101
+      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "b77db2405038d11258e91cd93a936364",
-      "sizeBytes": 14987101
+      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "b77db2405038d11258e91cd93a936364",
-      "sizeBytes": 14987101
+      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "b77db2405038d11258e91cd93a936364",
-      "sizeBytes": 14987101
+      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "b77db2405038d11258e91cd93a936364",
-      "sizeBytes": 14987101
+      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "b77db2405038d11258e91cd93a936364",
-      "sizeBytes": 14987101
+      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "sizeBytes": 14986974
     }
   ],
-  "md5": "b77db2405038d11258e91cd93a936364",
+  "md5": "4e325c45371d09b4167267db404f7f4a",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
