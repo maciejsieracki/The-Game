@@ -140,6 +140,25 @@ function runSuite(M) {
     return bad.length === 0 ? true : `poza ai-ai-*: ${bad.join(', ')}`;
   });
 
+  check('D9 fallback: ujemny / NaN / Infinity -> mnożnik 1,0 (bez skalowania)', () => {
+    const wrong = [];
+    for (const v of [-1, NaN, Infinity, -Infinity]) {
+      M.setAiAiDopłataMnoznikForTest(v);
+      const m = M.aiAiDopłataMnoznik();
+      if (m !== 1) wrong.push(`${v}->${m}`);
+    }
+    reset();
+    return wrong.length === 0 ? true : `niebezpieczny fallback: ${wrong.join(', ')}`;
+  });
+
+  check('D10 wiring (statyczny): main.ts woła setter z haka civTest; runner ma --mnoznik', () => {
+    const mainTxt = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
+    const runnerTxt = fs.readFileSync(path.resolve(GRA_ROOT, 'tools', 'ai-ai-alliance-measure-run.cjs'), 'utf8');
+    if (!/setAiAiDopłataMnoznikForTest\(\(window as any\)\.__civAiDopłataMnoznikMeasure\)/.test(mainTxt)) return 'brak wywołania settera w main.ts';
+    if (!/__civAiDopłataMnoznikMeasure/.test(runnerTxt) || !/--mnoznik/.test(runnerTxt)) return 'runner bez --mnoznik / __civAiDopłataMnoznikMeasure';
+    return true;
+  });
+
   return out;
 }
 
@@ -149,6 +168,7 @@ const MUTANTS = [
   ['M1 skalowanie D usunięte', [['const D = mnoznik === 1 ? split.D : Math.round(split.D * mnoznik);', 'const D = split.D;']]],
   ['M2 mnożnik zafiksowany na 1', [['const mnoznik = aiAiDopłataMnoznik();', 'const mnoznik = 1;']]],
   ['M3 setter bez efektu', [['const v = dopłataMnoznikNadpisanieTest ?? ', 'const v = ']]],
+  ['M4 fallback usunięty (ujemny/NaN przepuszczone)', [['return typeof v === \'number\' && Number.isFinite(v) && v >= 0 ? v : 1;', 'return v;']]],
 ];
 
 let allOk = liveRes.every(r => r.ok);

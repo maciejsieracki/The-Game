@@ -76,3 +76,30 @@ Orkiestrator decyduje o pomiarze seed 7 i t60 (z `--mnoznik`, z wznowieniem, kt�
 - Na maszynie działają inne biegi (`/tmp/allflags-*`); ich procesów nie ruszano.
 
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+## RUNDA OBRONY (Operator HAIKU 5.5, odpowiedz na zarzuty Evaluatora d560d5d0b)
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (parametr za flaga torSojuszyAktywny=OFF + pomiar)
+TEMAT: R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-SOFTEN-MEASURE-Q1
+GOAL: domknac zarzuty Evaluatora bez zmiany logiki gry (domyslny mnoznik 1,0, bit-w-bit jak dotad); pomiar lacznie zostaje otwarty.
+ZMIANY/COMMIT: tylko gra/tools/ai-ai-alliance-surcharge-test.cjs (dodane D9, D10, mutant M4). Kod gry (ai-ai-treaty-evaluate.ts, main.ts, params) NIE zmieniony w tej rundzie.
+
+ODPOWIEDZI NA ZARZUTY:
+1. PRZYJMUJE. Dodano D9: setter -1, NaN, Infinity, -Infinity -> aiAiDopłataMnoznik() === 1. Dodano mutant M4 (fallback zastapiony przez `return v;`). Wynik: D9 OK, M4 MUT-OK (wykryty).
+2. PRZYJMUJE, NIE ZMIERZONO. Nie ponawiano pomiaru: addendum rundy 2 zakazuje ponawiania pomiarow (CPU zajete), a bieg wymaga Chromium i 60 tur x 3 mnozniki x 2 ziarna. Tura 60 dla ziarna 7 oraz kolumny „limit 2 sojuszy” i „wojny w t60” pozostaja otwarte. Rekomendacja dla orkiestratora: osobny krok pomiaru (seed 4242 i 7, po 60 tur, mnoznik 1,0/0,5/0,25, kolejno) PRZED pytaniem ABC o wartosc mnoznika.
+3. PRZYJMUJE jako uwage (nie blokada). Wariant dopłataDWykladnikR NIE zrobiony (opcjonalny w dispatchu). Zmiana w ai-ai-treaty-evaluate.ts byla konieczna: D jest liczone tylko tam. Dowod: importerzy evaluateTreatyOffer to wylacznie moduly ai-ai-* (test D8 OK).
+4. PRZYJMUJE. Dodano D10 (statyczny): main.ts zawiera wywolanie setAiAiDopłataMnoznikForTest((window as any).__civAiDopłataMnoznikMeasure); runner ma --mnoznik i __civAiDopłataMnoznikMeasure. Wynik: D10 OK. Dzialanie haka w przegladarce NIE ZMIERZONO.
+
+TESTY (surowe wyjscie, node tools/ai-ai-alliance-surcharge-test.cjs w gra/):
+- D1..D10 OK; M1, M2, M3, M4 MUT-OK; RESULT: ALL GREEN (live + mutants detected); EXIT=0.
+- Pozostale bramki (tsc, logic-test, tech-tree, research, unit-replace, combat, ai-ai-alliance-tick, treaty-evaluate, zero-trust) NIE uruchamiano w tej rundzie: kod gry nie zmienil sie wzgledem d5bdaaa1f; wyniki Evaluatora dla tego samego kodu.
+- Lokalny node_modules: symlink do sasiedniego worktree (untracked, NIE commitowany).
+
+BLOKADY: pomiar lacznie (zarzut 2) NIE ZMIERZONO; hak w przegladarce (zarzut 4) NIE ZMIERZONO.
+RUNDY: obrona, runda 1/1 w tym obiegu; zarzuty 4/4 odpowiedziane.
+NASTEPNY KROK: Final Control (ponowna weryfikacja surcharge-test) oraz osobny krok pomiaru lacznego przed pytaniem ABC.
+UWAGI-DLA-ORKIESTRATORA: pre-existing FAIL unit-replace-full-cost-test (39/1 na 053406cec) z raportu Evaluatora — osobny temat, nie ruszany tutaj.
+DEPLOY/PUSH: NIE WYKONANO
