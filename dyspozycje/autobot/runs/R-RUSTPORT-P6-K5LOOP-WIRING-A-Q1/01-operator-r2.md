@@ -162,4 +162,8 @@ B-WIRA-PIN-1 ten sam skrypt (bez zmian) powinien zabić wszystkie W01–W14 poza
 
 ## 9. Commit
 
-(uzupełnione na końcu)
+Gałąź lokalna `rust-port-wip/k5loop-wiring-a-q1-r2` (baza 43ecdb162): `c41edf72e` (generator + wektory +
+`prepare_scene`), `5682e46ab` (test pinu + ślad), `adadc1129` (merge `parity-v2` 24c8f3b75), `0afaf4e4f` (raport +
+mutanty), końcowy = commit z tym wpisem (SHA w StructuredOutput / `git log -1`). Kod oceniany = `0afaf4e4f` (ten
+commit zmienia tylko raport). Push: NIE (Operator nie pushuje; brak push na `parity-v2`). `CARGO_TARGET_DIR`
+(`wiringa/target`) i pliki tymczasowe pinu usunięte; dysk po: 13 GB wolne.
