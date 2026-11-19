@@ -1812,6 +1812,7 @@ import {
   converterThroughputForEra,
   converterOutputMultiplierForEra,
   converterBuildingIdForRecipe,
+  converterConsumedRatesForBuildings,
   type RawConverterParamsJson,
   type ConverterBuildingUtilization,
 } from './game/converters';
@@ -3988,27 +3989,13 @@ async function boot(): Promise<void> {
     function empireConverterInputRatesForOwner(ownerId: number): Partial<Record<string, number>> {
       const rawForConverters = data.econParams as unknown as RawConverterParamsJson;
       const era = empireEpochForOwner(ownerId);
-      const inputs: Record<string, number> = {};
-      for (const recipe of DEFAULT_CONVERTER_RECIPES) {
-        const baseThroughput = loadThroughput(
-          rawForConverters, recipe.throughputParamKey, _menuDifficulty, recipe.throughputFallback,
-        );
-        const eraParamKey = converterThroughputEraParamKey(recipe, era);
-        const throughput = eraParamKey
-          ? loadThroughput(rawForConverters, eraParamKey, _menuDifficulty, baseThroughput)
-          : converterThroughputForEra(recipe.id, baseThroughput, era);
-        for (const c of cities) {
-          if (c.ownerId !== ownerId) continue;
-          const builtIds = operationalBuiltIds(c, cityBuilt.get(c.id) ?? []);
-          if (!builtIds.includes(converterBuildingIdForRecipe(recipe))) continue;
-          for (const inputKey of Object.keys(recipe.inputs)) {
-            const perCykl = recipe.inputs[inputKey] ?? 0;
-            if (perCykl <= 0) continue;
-            inputs[inputKey] = (inputs[inputKey] ?? 0) + throughput * perCykl;
-          }
-        }
+      // Operacyjne budynki każdego miasta ownera (unikalne w obrębie miasta, jak w `converterBuildingIdForRecipe`).
+      const buildingIds: string[] = [];
+      for (const c of cities) {
+        if (c.ownerId !== ownerId) continue;
+        for (const id of new Set(operationalBuiltIds(c, cityBuilt.get(c.id) ?? []))) buildingIds.push(id);
       }
-      return inputs;
+      return converterConsumedRatesForBuildings(buildingIds, rawForConverters, _menuDifficulty, era);
     }
 
     /**

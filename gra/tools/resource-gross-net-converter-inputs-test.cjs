@@ -55,10 +55,17 @@ async function bundle(srcFile, outName) {
 
   const rgn = await bundle(path.join(SRC, 'game', 'resource-gross-net.ts'), 'rgn');
 
-  console.log('== B. fixtura: 3 Garncarnie x 50 cykli/t -> wejscia Gliny 150/t');
+  console.log('== B. fixtura: 3 Garncarnie x 50 cykli/t -> wejscia Gliny 150/t (prawdziwa funkcja converters.ts)');
   const throughput = 50;
-  const budynki = 3;
-  const glinaInputs = gar.inputs.glina * throughput * budynki; // 150
+  const raw = { budynki: { budynek_garncarnia_przepustowosc: { easy: 30, normal: throughput, hard: 20 } } };
+  const consumed = conv.converterConsumedRatesForBuildings(
+    ['garncarnia', 'garncarnia', 'garncarnia', 'tartak', 'zagroda'], raw, 'normal', 1,
+  );
+  ok(consumed.glina === 150, 'converterConsumedRatesForBuildings: glina = 3 x 50 x 1 = 150 (nie-konwertery pominiete)', consumed);
+  ok(consumed.drewno === 150, 'converterConsumedRatesForBuildings: drewno = 3 x 50 x 1 = 150', consumed);
+  ok(conv.converterConsumedRatesForBuildings(['tartak'], raw, 'normal', 1).glina === undefined,
+    'budynek nie-konwerterowy nie daje wejsc');
+  const glinaInputs = consumed.glina;
   const glinaRow = {
     ratePerTurn: 326, // HUD netto przed poprawka (produkcja terytorium, bez wejsc)
     rateProductionPerTurn: 326,
@@ -82,14 +89,17 @@ async function bundle(srcFile, outName) {
 
   console.log('== E. statyczne: main.ts / panel / modul');
   const main = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
-  const panel = fs.readFileSync(path.join(SRC, 'ui', 'empireDetailPanel.ts'), 'utf8');
   const mod = fs.readFileSync(path.join(SRC, 'game', 'resource-gross-net.ts'), 'utf8');
   ok(/function empireConverterInputRatesForOwner\(/.test(main), 'main.ts: empireConverterInputRatesForOwner zdefiniowana');
-  ok(/inputs\[inputKey\]\s*=\s*\(inputs\[inputKey\] \?\? 0\)\s*\+\s*throughput\s*\*\s*perCykl/.test(main),
-    'main.ts: wejscia konwerterow = przepustowosc * perCykl');
+  const fnStart = main.indexOf('function empireConverterInputRatesForOwner(');
+  const fnBody = fnStart < 0 ? '' : main.slice(fnStart, fnStart + 900);
+  ok(/if \(c\.ownerId !== ownerId\) continue;/.test(fnBody),
+    'main.ts: empireConverterInputRatesForOwner filtruje miasta po wlascicielu (mutant c.ownerId !== -> === zlapany)');
+  ok(/return converterConsumedRatesForBuildings\(buildingIds,/.test(main),
+    'main.ts: wejscia konwerterow z WSPOLNEJ funkcji converters.ts (bez drugiej kopii formuly)');
+  ok(!/inputs\[inputKey\]\s*=/.test(main), 'main.ts: brak lokalnej petli wejsc konwerterow');
   ok(/rateConverterInputPerTurn:\s*converterInputRates\[c\.id\]/.test(main), 'main.ts: wiersz HUD niesie rateConverterInputPerTurn');
   ok(/resourceGrossNetPerTurn\(r\)/.test(main), 'main.ts: naglowek liczy netto przez resourceGrossNetPerTurn');
-  ok(/Wejścia konwerterów/.test(panel), 'panel: karta surowca pokazuje wiersz wejsc konwerterow');
   ok(/- resourceConverterInputSum\(r\)/.test(mod), 'modul: netto odejmuje resourceConverterInputSum');
 
   if (!NO_MUTANTS) {

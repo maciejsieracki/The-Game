@@ -430,6 +430,30 @@ export function converterProductionDisplayForBuilding(
   return { consumed, produced };
 }
 
+/**
+ * R-WEB-UI-HUD-NET-CONVERTER-INPUTS-Q1: NOMINALNE zużycie wejść konwerterów per surowiec na turę
+ * dla listy budynków (np. wszystkie operacyjne budynki imperium, po jednym wpisie na miasto).
+ * Sumuje `consumed` z `converterProductionDisplayForBuilding` — ta sama funkcja, którą czyta
+ * panel miasta, więc nie ma drugiej kopii formuły (przepustowość × zużycie na cykl, era, poziom trudności).
+ * Budynki nie-konwerterowe dają `null` i są pomijane. Odejmowane WYŁĄCZNIE od netto (resource-gross-net.ts).
+ */
+export function converterConsumedRatesForBuildings(
+  buildingIds: ReadonlyArray<string>,
+  rawParams: RawConverterParamsJson,
+  difficulty: Difficulty,
+  era: number,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const buildingId of buildingIds) {
+    const disp = converterProductionDisplayForBuilding(buildingId, rawParams, difficulty, era);
+    if (!disp) continue;
+    for (const [key, used] of Object.entries(disp.consumed)) {
+      out[key] = (out[key] ?? 0) + used;
+    }
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------------------
 // U-14b — Garncarnia: auto-efekt z nadwyżki Ceramiki (po drain Spichlerza)
 // ---------------------------------------------------------------------------

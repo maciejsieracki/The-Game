@@ -3441,8 +3441,7 @@ function resTooltipHtml(r: EmpireResourceRow): string {
     if (gn.brutto !== 0 || gn.zuzycie !== 0) {
       parts.push(`Brutto (produkcja łącznie): ${gn.brutto === 0 ? '0' : signedPl(gn.brutto)} / turę`);
       if (gn.zuzycie > 0) parts.push(`Zużycie: −${gn.zuzycie} / turę (obywatele, budynki, wojsko — rozbicie: „Zobacz szczegóły zużycia”)`);
-      if (gn.wejscia > 0) parts.push(`Wejścia konwerterów: −${gn.wejscia} / turę (nominalnie: przepustowość × zużycie na cykl)`);
-      parts.push(`Netto po zużyciu i wejściach: ${gn.netto === 0 ? '0' : signedPl(gn.netto)} / turę (jak w nagłówku)`);
+      parts.push(`Netto po zużyciu: ${gn.netto === 0 ? '0' : signedPl(gn.netto)} / turę (jak w nagłówku)`);
     }
   }
   // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): reguła pokrycia = magazyn centralny
