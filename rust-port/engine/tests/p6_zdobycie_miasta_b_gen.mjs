@@ -181,6 +181,7 @@ const prodScenarios = [
   { name: 'legacy_jednostka_bank', prod: { kolejka: [b(normalB), j('wojownik', { postep: 4 })], postep: 6 }, isNewCapital: false },
   { name: 'stolica_front', prod: { kolejka: [b(capitalOnly[0]), b(normalB)], postep: 7 }, isNewCapital: false },
   { name: 'stolica_bank', prod: { kolejka: [b(normalB), b(capitalOnly[0], { postep: 5 })], postep: 2 }, isNewCapital: false },
+  { name: 'stolica_front_z_postepem', prod: { kolejka: [b(capitalOnly[0], { postep: 4 }), b(normalB)], postep: 7 }, isNewCapital: false },
   { name: 'stolica_nowa_stolica', prod: { kolejka: [b(capitalOnly[0]), b(normalB, { postep: 3 })], postep: 7 }, isNewCapital: true },
   { name: 'mieszane', prod: { kolejka: [j('procarz'), b(capitalOnly[1] ?? capitalOnly[0], { postep: 8 }), b(normalB, { postep: 1 })], postep: 11, wstrzymana: true, rekrutacja: [j('wojownik')] }, isNewCapital: false },
 ];

@@ -318,6 +318,57 @@ fn tabela_krokow_bez_pominietych_krokow_b() {
     }
 }
 
+#[test]
+fn barbarzynca_zdobywca_zeruje_kolejke() {
+    // `main.ts:36134-36135`: `if (isBarbarian(atkOwner)) cityProd.set(city.id, { kolejka: [], postep: 0 })`.
+    let mut st = base("rzymianie", "grecy", 3);
+    let p: PlayableCityProduction = serde_json::from_value(serde_json::json!({
+        "kolejka": [{"kind": "budynek", "id": "stolarnia", "nazwa": "s", "koszt": 1}], "postep": 6
+    }))
+    .unwrap();
+    st.city_prod_by_city.insert(CityId::new(CITY), p);
+    let mut out = dummy_out();
+    apply_capture_production(
+        &mut st,
+        CityId::new(CITY),
+        101,
+        -1,
+        &BTreeMap::new(),
+        &mut out,
+    );
+    let want: PlayableCityProduction =
+        serde_json::from_value(serde_json::json!({"kolejka": [], "postep": 0})).unwrap();
+    assert_eq!(st.city_prod_by_city.get(&CityId::new(CITY)), Some(&want));
+}
+
+#[test]
+fn eliminacja_usuwa_wpisy_economy_units_u_zrodla() {
+    // ZMA-DL-7: pin `disbandOwnerUnits` usuwa obiekt jednostki w całości — także jednostki ofiary poza miastem.
+    use civ_engine::domain::eliminacja::eliminate_owner;
+    use civ_engine::domain::playable::{PlayableReplaceUnit, PlayableUnit, PlayableUnitKind};
+    use civ_engine::UnitId;
+    let mut st = base("rzymianie", "grecy", 3);
+    st.units.clear();
+    st.economy.units.clear();
+    for (id, owner) in [(8101_u64, OLD), (7101, ATK)] {
+        st.units.push(PlayableUnit {
+            id: UnitId::new(id),
+            owner_id: PlayerId::new(owner),
+            kind: PlayableUnitKind::Warrior,
+            position: PositionDto::new(1, 1),
+            movement: 1u8.into(),
+            movement_max: 1u8.into(),
+            selected: false,
+        });
+        st.economy.units.insert(id, PlayableReplaceUnit::default());
+    }
+    eliminate_owner(&mut st, &mut Vec::new(), 101);
+    assert_eq!(
+        st.economy.units.keys().copied().collect::<Vec<_>>(),
+        vec![7101]
+    );
+}
+
 fn dummy_out() -> CityCaptureResultDto {
     CityCaptureResultDto {
         captured: false,

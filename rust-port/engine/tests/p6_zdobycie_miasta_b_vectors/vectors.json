@@ -4619,6 +4619,47 @@
    }
   },
   {
+   "name": "stolica_front_z_postepem",
+   "prod": {
+    "kolejka": [
+     {
+      "kind": "budynek",
+      "id": "mennica",
+      "nazwa": "mennica",
+      "koszt": 50,
+      "postep": 4
+     },
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50
+     }
+    ],
+    "postep": 7
+   },
+   "isNewCapital": false,
+   "poolBefore": {
+    "old": 10,
+    "atk": 3
+   },
+   "out": {
+    "kolejka": [
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50
+     }
+    ],
+    "postep": 0
+   },
+   "poolAfter": {
+    "old": 10,
+    "atk": 10
+   }
+  },
+  {
    "name": "stolica_nowa_stolica",
    "prod": {
     "kolejka": [
