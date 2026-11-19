@@ -1,3 +1,9 @@
+## ROBOCZA f20a283a -- 2026-11-18 -- FALA 881: R-WEB-ERA-WAR-DEFER-NOT-CANCEL-WHEN-PREVIOUS-WAR-ACTIVE-Q1: wojna epoki Brazu/Zelaza bez partnera dostaje wolny cel (nie wisi bez konca) (testowa)
+
+- R-WEB-ERA-WAR-DEFER-NOT-CANCEL-WHEN-PREVIOUS-WAR-ACTIVE-Q1 (zgloszenie wlasciciela 2026-11-19): diagnoza - pending Brazu nie jest kasowany, ale nie wybucha bez partnera (assignForcedWarPairings wybiera cele tylko z podmiotow triggered tej tury; przy wojnie Kamienia ai.ts odrzuca komende). Poprawka: podmiot Brazu/Zelaza bez partnera dostaje najblizszy wolny cel spoza puli (bez wojny wymuszonej i naturalnej, bez sojuszu, z wolnym licznikiem); Kamien bez zmian; gracz nie jest celem fallbacku.
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; era-war-defer-not-cancel 28/0 (mutacje czerwone); era-war-delays 55/0; era-war-ignore-treaties 22/0; bieg dymny 120 tur NIE ZMIERZONO (runner doszedl do t75, nie loguje wojen epoki); skutecznosc w silniku NIE ZMIERZONO
+- Limity: Niezweryfikowane w silniku; 9 czerwonych asercji forced-war-bronze/iron/multi-turn (progi 20/25 vs 40) = dlug bazowy; wojna naturalna nadal odracza probe
+
 ## ROBOCZA cf2bbb82 -- 2026-11-18 -- FALA 880: R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1: ustawienie nowej gry Wzrost surowcow z epoka (WYL. domyslnie = stale jak dzis) (testowa)
 
 - R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1 (decyzja wlasciciela 2026-11-19): w zaawansowanych ustawieniach nowej gry przelacznik Wzrost surowcow z epoka; WLACZONE = dawny wzrost (plony +1 Zyw/Pra/Han/Pien w Brazie, +2 w Zelazie; produkcja surowca x1,5 na epoke: 50/75/113); WYLACZONE (domyslnie) = stale wartosci z Kamienia; zapis/wczytanie z domyslna WYL. dla starych zapisow; ustawienie dotyczy tylko ulepszen terenu (nie utrzymania jednostek ani racji obywateli).

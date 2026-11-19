@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "cf2bbb821aa201db369037bf74ac1fc2",
-  "bundleSha256": "884f52cd784cf9887e63c96a096aaa18501afd3a160c24ae7e9e7d8b33f9730e",
-  "bundleBytes": 14997903,
+  "bundleMd5": "f20a283abf3610f1f8ea93149e83c0dd",
+  "bundleSha256": "f1ecf39a3561bb95c545dd5e509a70288e04a0e637290c293f6026573e41d19b",
+  "bundleBytes": 14998527,
   "sourceSnapshot": {
-    "source": "FC e6a2f2e09 (kod 02a406ddb)",
+    "source": "FC d8f685a82 (kod 8df9ac864)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 880: R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1 (decyzja wlasciciela 2026-11-19): w zaawansowanych ustawieniach nowej gry przelacznik Wzrost surowcow z epoka; WLACZONE = dawny wzrost (plony +1 Zyw/Pra/Han/Pien w Brazie, +2 w Zelazie; produkcja surowca x1,5 na epoke: 50/75/113); WYLACZONE (domyslnie) = stale wartosci z Kamienia; zapis/wczytanie z domyslna WYL. dla starych zapisow; ustawienie dotyczy tylko ulepszen terenu (nie utrzymania jednostek ani racji obywateli)."
+    "FALA 881: R-WEB-ERA-WAR-DEFER-NOT-CANCEL-WHEN-PREVIOUS-WAR-ACTIVE-Q1 (zgloszenie wlasciciela 2026-11-19): diagnoza - pending Brazu nie jest kasowany, ale nie wybucha bez partnera (assignForcedWarPairings wybiera cele tylko z podmiotow triggered tej tury; przy wojnie Kamienia ai.ts odrzuca komende). Poprawka: podmiot Brazu/Zelaza bez partnera dostaje najblizszy wolny cel spoza puli (bez wojny wymuszonej i naturalnej, bez sojuszu, z wolnym licznikiem); Kamien bez zmian; gracz nie jest celem fallbacku."
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; improvement-growth-toggle 41/0; improvement-era-scaling 144/0; econ-era-rebalance 38/0; era-improvement-cost-upkeep 124/0; improvement-cost-owner-era 49/0; zywy Chromium (2 starty): WYL. farma 3/3/3 tartak 50/50/50, WL. farma 3/4/5 tartak 50/75/113"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; era-war-defer-not-cancel 28/0 (mutacje czerwone); era-war-delays 55/0; era-war-ignore-treaties 22/0; bieg dymny 120 tur NIE ZMIERZONO (runner doszedl do t75, nie loguje wojen epoki); skutecznosc w silniku NIE ZMIERZONO"
   ],
   "limits": [
-    "Brak wpisu EN i pozycji w podsumowaniu kreatora; zywe wczytanie zapisu NIE ZMIERZONO; DOM kafelka/HUD NIE ZMIERZONO; fishing-boats-666 czerwony (dlug testowy)"
+    "Niezweryfikowane w silniku; 9 czerwonych asercji forced-war-bronze/iron/multi-turn (progi 20/25 vs 40) = dlug bazowy; wojna naturalna nadal odracza probe"
   ],
   "finalControl": "Final Control PASS-WITH-NOTES",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T22:17:49",
+  "hubGeneratedAt": "2026-11-19T22:30:15",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "cf2bbb821aa201db369037bf74ac1fc2",
-      "sizeBytes": 14997903
+      "md5": "f20a283abf3610f1f8ea93149e83c0dd",
+      "sizeBytes": 14998527
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "cf2bbb821aa201db369037bf74ac1fc2",
-      "sizeBytes": 14997903
+      "md5": "f20a283abf3610f1f8ea93149e83c0dd",
+      "sizeBytes": 14998527
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "cf2bbb821aa201db369037bf74ac1fc2",
-      "sizeBytes": 14997903
+      "md5": "f20a283abf3610f1f8ea93149e83c0dd",
+      "sizeBytes": 14998527
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "cf2bbb821aa201db369037bf74ac1fc2",
-      "sizeBytes": 14997903
+      "md5": "f20a283abf3610f1f8ea93149e83c0dd",
+      "sizeBytes": 14998527
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "cf2bbb821aa201db369037bf74ac1fc2",
-      "sizeBytes": 14997903
+      "md5": "f20a283abf3610f1f8ea93149e83c0dd",
+      "sizeBytes": 14998527
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "cf2bbb821aa201db369037bf74ac1fc2",
-      "sizeBytes": 14997903
+      "md5": "f20a283abf3610f1f8ea93149e83c0dd",
+      "sizeBytes": 14998527
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "cf2bbb821aa201db369037bf74ac1fc2",
-      "sizeBytes": 14997903
+      "md5": "f20a283abf3610f1f8ea93149e83c0dd",
+      "sizeBytes": 14998527
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "cf2bbb821aa201db369037bf74ac1fc2",
-      "sizeBytes": 14997903
+      "md5": "f20a283abf3610f1f8ea93149e83c0dd",
+      "sizeBytes": 14998527
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "cf2bbb821aa201db369037bf74ac1fc2",
-      "sizeBytes": 14997903
+      "md5": "f20a283abf3610f1f8ea93149e83c0dd",
+      "sizeBytes": 14998527
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "cf2bbb821aa201db369037bf74ac1fc2",
-      "sizeBytes": 14997903
+      "md5": "f20a283abf3610f1f8ea93149e83c0dd",
+      "sizeBytes": 14998527
     }
   ],
-  "md5": "cf2bbb821aa201db369037bf74ac1fc2",
+  "md5": "f20a283abf3610f1f8ea93149e83c0dd",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
