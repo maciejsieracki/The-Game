@@ -1,4 +1,96 @@
-# R-RUSTPORT-P6-K5LOOP-WIRING-A-Q1 — Final Control r1
+# R-RUSTPORT-P6-K5LOOP-WIRING-A-Q1 — Final Control r2
+
+```text
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P6-K5LOOP-WIRING-A-Q1 (#369 część A), runda 2
+GOAL r2: generator TS wykonujący tekst pinu 07d2fbd72 (guard SHA, MD5) + wektory PEŁNEJ bitwy AUTO z murem (>= 6
+         scenariuszy) + test Rust bajt w bajt
+BAZA: DODATEK r2 = 43ecdb162 (rust-port-wip/k5loop-wiring-a-q1-fc); parity-v2 teraz a22257a91 — PRZODEK ocenianego
+      kodu (merge f120c49ab), więc integracja = FF bez konfliktów
+OCENIANY KOD: rust-port-wip/k5loop-wiring-a-q1-r2-obrona @ f120c49ab (Operator r2 0afaf4e4f, Evaluator r2 f681087ee,
+              obrona r2 490498746/5a38f3d35/2ecda0ca5/a93f981a7/bde79839b/ce98555fa/ce9afe0d3, merge parity-v2 f120c49ab)
+ZMIANY/COMMIT: tylko ten raport (gałąź rust-port-wip/k5loop-wiring-a-q1-r2-fc, nad f120c49ab)
+TESTY: §1 — fmt EXIT 0; clippy -D warnings EXIT 0; cargo test --all-targets --no-fail-fast FULL_EXIT=0
+       (547 x ok, 4153 passed / 0 failed / 1 ignored — istniejący, spoza diffu); generator odtworzony: MD5 zgodne;
+       wektory pinu 7/8 bajt w bajt + 1 jawna rozbieżność; mutanty FC 6/6 zabitych
+BLOKADY: B-WIRA-PIN-2 (mur_jazda_rzeka) — jawna, z pomiarem; NIE blokuje kryterium końca (7 zgodnych >= 6)
+RUNDY: 2/5
+NASTĘPNY KROK: integracja orkiestratora (FF parity-v2 do f120c49ab + ten raport), potem decyzja techniczna
+               orkiestratora o B-WIRA-PIN-2 (§3) i dispatch części B
+DEPLOY/PUSH: NIE WYKONANO (push tylko gałęzi wip raportu FC)
+```
+
+## 1. Bramki odtworzone samodzielnie (worktree FC, kod f120c49ab)
+
+`CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` w scratchpadzie
+(`wiringa-fc/target`), usunięty po bramkach (dysk po: 13 GB wolne). Uwaga: raport obrony r2 ma §8 „BRAMKI” i §9
+„COMMITY” jako niewypełnione zaślepki — bramki poniżej są wyłącznie pomiarem FC.
+
+| Bramka | Wynik |
+|---|---|
+| `cargo fmt --all -- --check` (`rust-port/engine`) | EXIT 0 |
+| `cargo clippy --all-targets -- -D warnings` | EXIT 0 |
+| `cargo test --all-targets --no-fail-fast` (w tle, `setsid nohup`, EXIT w logu) | **FULL_EXIT=0**: 547 × `test result: ok`, 0 × FAILED; 4153 passed / 0 failed / 1 ignored. W tym `p6_k5loop_wiring_a_pin` 3/3, `p6_k5loop_wiring_a`, `p6_k5loop_tags_rest`, `p6_k5loop_adapter`, `p6_k5loop_siege_*`, `p6_k5loop_close_r2..r4`, `p6_battle_setup*`, `bridge_contract` — zielone |
+| Generator `node tests/p6_k5loop_wiring_a_gen.mjs` (odtworzony przez FC) | EXIT 0; strażnik SHA-256 tekstu pinu przeszedł; `vectors.json` MD5 `269b4da23249b441e1837a2b160cb258`, `pin_data.json` MD5 `432eed76e34a0e8cc96ec548e88eae64` — identyczne z zatwierdzonymi; drzewo po regeneracji czyste |
+| Mutanty FC (skrypt obrony, `ONLY=W07,W14,W15,B02,B04,B05`, `cargo test --release --test p6_k5loop_wiring_a_pin`) | baza EXIT 0; **6/6 ZABITYCH** testem (nie kompilacją): routed w `finish`, siatka Δ zasięgu (D-WIRA-16), czas ciosu/strzału (D-WIRA-17), ogon ciosu, pozycja wieży w trakcie marszu w obu kierunkach (D-WIRA-18). Źródła przywrócone (`git status` czysty) |
+
+Allowlista (samodzielnie, `git diff --name-only origin/rust-port/parity-v2 f120c49ab`): wyłącznie
+`engine/src/domain/{siege_battle_session,siege_tactics_loop,mod}.rs` (`mod.rs`: tylko `pub mod siege_battle_session;`),
+`engine/tests/p6_k5loop_wiring_a{,_pin}.rs`, `p6_k5loop_wiring_a_gen.mjs`, `p6_k5loop_wiring_a_pin_vectors/*` i raporty
+runu. Żaden istniejący test spoza tematu nie jest zmieniony (asercje nieosłabione). Brak `bridge.rs`, `bridge_contract.rs`,
+`renderer/`, `view-model/`, `client/`, `src-tauri/`, `gra/**`, `Cargo.*`, `REJESTR-RUST.md`. Brak `#[ignore]`. Brak
+trailerów `Co-Authored-By` w commitach tematu. Generator: jedyna podmiana tekstu pinu = rzut `_singleBlow`
+`battleScene.ts:8960` ze strażnikiem linii; atrapy tylko render/DOM/audio/`performance.now` (deterministyczny).
+
+## 2. Orzeczenia (zarzuty Evaluatora r2 i uwagi)
+
+| Zarzut | Orzeczenie | Uzasadnienie (dowód FC) |
+|---|---|---|
+| E2-1 (diagnoza B-WIRA-PIN-1 sfalsyfikowana) | **ODDAL** (zamknięty) | Obrona przyjęła pomiar, wycofała „FRAME-QUANT” jako przyczynę 5 rozbieżności i znalazła przyczyny logiczne. Skutek zmierzony: 4 z 5 dawnych rozbieżności zgodne bajt w bajt w teście FC. |
+| E2-1a (krok łucznika `a3`, las, tura 12) | **ODDAL** (naprawione) | `_applyTerrainRange` (`battleScene.ts:6064`, `:7490-7502`) wpięty w ciało (D-WIRA-16). `mur_wieza_obl_las` zgodny bajt w bajt; mutant W14 (bez siatki Δ) ZABITY w pomiarze FC. |
+| E2-1b (aktywacja atomowa, palisada) | **ODDAL** (naprawione) | D-WIRA-18 (`unit_cell_at` z osi kroków `_doMove`, `_fireOneTower` `:4228-4233`) i D-WIRA-17 (ogon `done()` po ciosie/strzale, `:9119-9172`, `:9223-9229`). `palisada_liczni_taran` zgodny bajt w bajt; B02/B04/B05/W15 ZABITE w pomiarze FC. Domyślne wartości flag (`None`/`false`) zachowują stare wektory pętli — potwierdzone zielonym pełnym testem. |
+| E2-2 (kryterium końca 3/8, mutanty 3/14) | **ODDAL** | 7/8 bajt w bajt (≥ 6). Pokrycie po stronie Rust (zgodne scenariusze): z/bez machin, liczności atakujących 2/3/4/6/9, wyłom, ucieczka (routed), zejście z pola (removed), sufit 150 (remis), zwycięstwo atakującego i obrońcy, czas rzeczywisty i przewijanie, palisada vs mury vs mury+fort+baszta. Mutanty: 16/23 wg obrony, 6/6 potwierdzone przez FC (≥ 10 wymagane — spełnione). „Bez muru” niewykonalne w tej ścieżce: pin `main.ts:36814` (`if (!city.maMur)` → zwykła potyczka, nie szturm), więc brak scenariusza bez muru jest zgodny z webem. |
+| E2-3 (lista blokady akceptuje błąd sesji) | **ODDAL** (naprawione) | `p6_k5loop_wiring_a_pin.rs`: `Err(e)` → `fails.push` dla każdego scenariusza; scenariusz z listy musi dać `Ok` z różnicą danych; test pada, gdy zacznie się zgadzać. Zweryfikowane czytaniem kodu. |
+| N1 (ślad nadpisuje wektory) | **ODDAL** (naprawione) | `process.exit(0)` przed zapisem w trybie `WIRING_A_TRACE`. |
+| N2 (zegar ścienny w orakulu) | **ODDAL** (naprawione) | Deterministyczny `performance.now`; regeneracja FC daje identyczne MD5. |
+| N3 (`zlote_wyniki_sesji` ≠ parytet) | **ODDAL** | Parytet dowodzi teraz test wektorów pinu; złote FNV pozostają tylko testem regresji (zmienione w ce9afe0d3 w teście tego samego tematu, nie w teście istniejącym). |
+| Raport obrony: §8/§9 niewypełnione | **ODDAL** (uwaga procesowa) | Defekt dokumentu, nie kodu; bramki i SHA uzupełnia ten raport (§1). |
+| B-WIRA-PIN-2 (`mur_jazda_rzeka`) | **ODDAL jako zarzut tej rundy; rozstrzygnięcie dalszej drogi → decyzja techniczna orkiestratora** (§3) | Rozbieżność jawna, test ją pilnuje, przyczyna pierwszego rozjazdu (t. 70) zmierzona na samym pinie (wynik pinu zależy od klatki 16 ms vs 2 ms: remis czasowy 150 vs 156 ms, kolejność `_drainTimers` przed kolejką `_raf`, `battleScene.ts:9616-9634`). DODATEK r2 pkt (3) dopuszcza blokadę z liniami pinu, a kryterium ≥ 6 jest spełnione bez tego scenariusza. |
+
+Brak orzeczeń NAPRAW.
+
+## 3. B-WIRA-PIN-2 — co zostaje (dla orkiestratora)
+
+- Pierwszy rozjazd z wektorem (pin @16 ms, t. 70) ma zmierzoną przyczynę w modelu klatki (nie w logice Rust): pin sam
+  daje różne wyniki bajtowe przy klatce 16 ms (obrońca, t. 400, 46 rzutów) i 2 ms (48 rzutów). Parytet z wektorem @16 ms
+  wymaga kwantyzacji czasu ciała do klatki (temat „FRAME-QUANT”) albo zmiany oracle'a na pin @2 ms dla tego scenariusza.
+- Drugi rozjazd (Rust vs pin @2 ms, t. 86: `ROUT a0` po ciosie 17 `d1 → a0` w pinie, brak rozbicia w Rust) jest
+  **NIE_ZMIERZONO** — może to być kolejny remis czasowy, ale może też być realna różnica w morale/`_resolveBlowOutcome`.
+  To musi wejść do zakresu tematu następczego jako pierwszy krok (sonda stanu morale `a0` w t. 86, pin @2 ms vs Rust),
+  zanim ktokolwiek uzna, że jedyną przyczyną jest klatka.
+- Zakres: gałąź FF_MAX_ROUNDS = 400 z wyłomem jest pokryta bajt w bajt tylko przez ten scenariusz; w pozostałych
+  zgodnych jest sufit 150. Sufit 400 ma wektory na poziomie pętli (K5D), więc to nie luka portu, tylko luka dowodu
+  end-to-end sesji.
+
+## 4. Długi (do rejestru przez orkiestratora)
+
+| ID | Stan |
+|---|---|
+| B-WIRA-PIN-2 + rozbicie t. 86 @2 ms | jawne (§3); temat następczy FRAME-QUANT / sonda morale |
+| Mutanty bez wektora rozróżniającego: B03 (trafienie strzału przesunięte o `RANGED_GAP_MS`), B06 (`_siegeShooterThreats` bez Δ), B07 (zejście z korony bez Δ) | gałęzie zgodne z pinem w kodzie, brak scenariusza, który je odróżnia; dopisać scenariusz (łucznik strzelający w oknie lotu pocisku wieży; obrońca-strzelec na kaflu z Δ ≠ 0) w temacie następczym |
+| W02/W04/W08 (równoważne na wektorach) | gałęzie zabijane testami r1 `p6_k5loop_wiring_a` (W02, W04); W08 równoważny na danych |
+| Dwa modele czasu w `SiegeLoop`/`ProdBody` (flagi `pin_blow_timing`, `terrain_range_delta`, oś kroków; domyślnie dawny model) | jedyny produkcyjny wołający (sesja) włącza model pinu; stary model żyje dla wektorów pętli generowanych ze stubami czasu — kandydat na sprzątanie po przeniesieniu tych wektorów na model pinu |
+| `_applyTerrainRange` w autobatch (`:5919`), tryb ręczny, część B (most, zastosowanie wyniku, #354) | bez zmian (poza zakresem A) |
+
+## 5. Uwaga dla integracji
+
+`origin/rust-port/parity-v2` (a22257a91) jest przodkiem f120c49ab — integracja to FF. Merge f120c49ab wnosi do tej
+gałęzi wyłącznie cudze, już zintegrowane tematy P4-1I5A/B; diff względem parity-v2 to tylko pliki tego tematu (§1).
+
+---
+
+# R-RUSTPORT-P6-K5LOOP-WIRING-A-Q1 — Final Control r1 (archiwum, bez zmian)
 
 ```text
 STATUS: FAIL
