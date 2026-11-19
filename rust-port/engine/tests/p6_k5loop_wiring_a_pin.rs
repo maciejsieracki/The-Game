@@ -288,6 +288,24 @@ fn run_vector(v: &Value, data: &SessionData) -> Result<SessionOutcome, SessionEr
     drive(s, v["mode"].as_str().unwrap())
 }
 
+/// PIN3-DIVERGENCE-Q1 (tylko diagnostyka): krok przewijania Rust nadpisany zmienną `WIRING_A_RUST_FF_STEP=<ms>`
+/// (`speedMul = ms / 16`, [`SiegeBattleSession::diag_set_speed_mul`]) — bliźniak `WIRING_A_FF_STEP` generatora, żeby
+/// porównać Rust i pin przy TYM SAMYM kroku klatki. Bez zmiennej = krok produkcyjny 16 ms.
+fn diag_speed(s: &mut SiegeBattleSession) {
+    if let Some(ms) = std::env::var("WIRING_A_RUST_FF_STEP")
+        .ok()
+        .and_then(|x| x.parse::<f64>().ok())
+    {
+        s.diag_set_speed_mul(ms / FRAME_MS).unwrap();
+    }
+}
+
+fn run_vector_diag(v: &Value, data: &SessionData) -> Result<SessionOutcome, SessionError> {
+    let mut s = SiegeBattleSession::prepare_scene(&scene_input(v), data)?;
+    diag_speed(&mut s);
+    drive(s, v["mode"].as_str().unwrap())
+}
+
 /// Rozbieżności Rust ↔ pin. B-WIRA-PIN-1 (5 scenariuszy) zamknięta w WIRING-A r2 (D-WIRA-16/17/18). B-WIRA-PIN-2
 /// (`mur_jazda_rzeka`) po sondzie PIN2-PROBE-Q1 (`dyspozycje/autobot/runs/R-RUSTPORT-P6-K5LOOP-PIN2-PROBE-Q1/01-operator-r1.md`):
 /// (1) rozbicie `a0` w t. 86 przy klatce 2 ms było REALNĄ różnicą logiki Rust (`complete` przywracał morale sprzed
@@ -715,7 +733,7 @@ fn kandydaci_z_pliku_na_zadanie() {
     let data = pin_session_data();
     for v in doc["vectors"].as_array().unwrap() {
         let name = v["name"].as_str().unwrap();
-        let line = match run_vector(v, &data) {
+        let line = match run_vector_diag(v, &data) {
             Ok(out) => {
                 let d = diff(v, &out);
                 if d.is_empty() {
@@ -740,7 +758,11 @@ fn slad_diagnostyczny_na_zadanie() {
     let Ok(name) = std::env::var("WIRING_A_TRACE") else {
         return;
     };
-    let doc = vectors();
+    // PIN3-DIVERGENCE-Q1: scenariusz także z pliku kandydatów generatora (`WIRING_A_VECTORS_FILE`).
+    let doc = match std::env::var("WIRING_A_VECTORS_FILE") {
+        Ok(path) => serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap(),
+        Err(_) => vectors(),
+    };
     let data = pin_session_data();
     let v = doc["vectors"]
         .as_array()
@@ -749,6 +771,7 @@ fn slad_diagnostyczny_na_zadanie() {
         .find(|v| v["name"] == name.as_str())
         .expect("scenariusz");
     let mut s = SiegeBattleSession::prepare_scene(&scene_input(v), &data).unwrap();
+    diag_speed(&mut s);
     let ids = s.roster_ids().clone();
     let id = |u: UnitRef| ids[usize::from(u.side != BattleSide::Attacker)][u.idx].clone();
     // PIN2-PROBE-Q1: krok śladu nadpisywalny (`WIRING_A_TRACE_STEP=1`), żeby zrzut morale padał po każdym zdarzeniu.

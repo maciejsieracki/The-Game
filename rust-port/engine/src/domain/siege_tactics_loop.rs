@@ -1521,6 +1521,12 @@ pub struct ProdBody<R: RollSource> {
     /// (`_doMove` `:8714-8775`, `t0` = start kroku). Wieże (`_fireOneTower` → `pickTowerTarget` `:4228-4233`) czytają
     /// pozycje W CHWILI wystrzału, więc [`LoopBody::unit_cell`] zwraca pozycję z tej osi dla `self.now`.
     move_timeline: Vec<MoveStepAt>,
+    /// PIN3-DIVERGENCE-Q1 (D-PIN3-1): oś zmian `ru.facing` `(jednostka, t0, przed, po)` w modelu czasu pinu. Ciało
+    /// liczy marsz atomowo w `start` (kroki z przyszłym `t0`), a pin obraca jednostkę w chwili KROKU (`_doMove` →
+    /// `_updateFacing(ru)` `:8757`). Trafienie wieży w trakcie marszu (`_fireOneTower` → `_singleBlow` po
+    /// `RANGED_FLY_MS`, `:4262-4266`) czyta `defender.facing` (`relativeHit` `:8880`) i `defender.q/r` (teren
+    /// `:8831-8833`) z TEJ chwili — [`ProdBody::facing_at`] i [`LoopBody::unit_cell_at`].
+    facing_timeline: Vec<(UnitRef, f64, f64, f64)>,
 }
 
 /// K5LOOP-WIRING-A (#369): miejsce jednego ciosu `_singleBlow(attacker, defender, ranged)` w chwili ciosu.
@@ -2119,6 +2125,7 @@ impl<R: RollSource> ProdBody<R> {
             terrain_range_delta: None,
             pin_blow_timing: false,
             move_timeline: Vec::new(),
+            facing_timeline: Vec::new(),
             terrain: None,
             units,
             scene,
@@ -2216,6 +2223,47 @@ impl<R: RollSource> ProdBody<R> {
         &self.doctrine[side_ix(unit.side)][unit.idx]
     }
 
+    /// PIN3-DIVERGENCE-Q1 (D-PIN3-1): jedyny zapis `ru.facing` w ciele; w modelu czasu pinu ([`Self::pin_blow_timing`])
+    /// zmiana trafia też na oś [`Self::facing_timeline`] z chwilą `self.now` (chwila kroku/ciosu na osi ciała).
+    fn set_facing(&mut self, unit: UnitRef, dir: f64) {
+        let ix = side_ix(unit.side);
+        let prev = self.facing[ix][unit.idx];
+        if self.pin_blow_timing && prev.to_bits() != dir.to_bits() {
+            self.facing_timeline.push((unit, self.now, prev, dir));
+        }
+        self.facing[ix][unit.idx] = dir;
+    }
+
+    /// PIN3-DIVERGENCE-Q1 (D-PIN3-1): `ru.facing` w chwili `v_now` (pin czyta stan bieżący; ciało ma już stan po
+    /// atomowo policzonym marszu). Ostatnia zmiana z `t0 <= v_now` (remis `t0` = później zapisana); gdy wszystkie
+    /// zmiany jednostki na osi są później — wartość sprzed najwcześniejszej z nich; poza modelem czasu pinu albo bez
+    /// wpisów — bieżące `facing`.
+    fn facing_at(&self, unit: UnitRef, v_now: f64) -> f64 {
+        let cur = self.facing[side_ix(unit.side)][unit.idx];
+        if !self.pin_blow_timing {
+            return cur;
+        }
+        let mut past: Option<(f64, f64)> = None;
+        let mut future: Option<(f64, f64)> = None;
+        for &(u, t0, prev, dir) in &self.facing_timeline {
+            if u != unit {
+                continue;
+            }
+            if t0 <= v_now {
+                if past.is_none_or(|(pt, _)| t0 >= pt) {
+                    past = Some((t0, dir));
+                }
+            } else if future.is_none_or(|(ft, _)| t0 < ft) {
+                future = Some((t0, prev));
+            }
+        }
+        match (past, future) {
+            (Some((_, d)), _) => d,
+            (None, Some((_, p))) => p,
+            (None, None) => cur,
+        }
+    }
+
     /// `_updateFacing` (battleScene.ts:8334-8341): zwrot ku NAJBLIŻSZEMU żywemu wrogowi (`_nearestEnemy`, Manhattan,
     /// pierwszy minimalny w kolejności listy). Brak wroga = brak zmiany; wróg na tym samym polu = `facing` bez zmian.
     fn update_facing(&mut self, unit: UnitRef, enemies: &[EnemyRef]) {
@@ -2246,7 +2294,7 @@ impl<R: RollSource> ProdBody<R> {
             &JsVal::Num(cur),
         )
         .to_number();
-        self.facing[ix][unit.idx] = next;
+        self.set_facing(unit, next);
         // P4-1I3: pin zmienia `rotation.y` tylko przy zmianie (`if (newFacing === ru.facing) return;`, `:8338`).
         if next != cur {
             self.emit(BattleAction::Facing { unit, dir: next });
@@ -3861,9 +3909,9 @@ impl<R: RollSource> ProdBody<R> {
             &JsVal::Num(self.facing[ix][unit.idx]),
         )
         .to_number();
-        self.facing[ix][unit.idx] = dir;
         let saved = self.now;
         self.now = t_shot;
+        self.set_facing(unit, dir);
         self.emit(BattleAction::Facing { unit, dir });
         self.emit(BattleAction::Shot {
             attacker: unit,
@@ -4040,6 +4088,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         // Obrona r2 (E2-1b): oś kroków poprzednich aktywacji jest już w całości przeszła (`t0 <= now`).
         let now = self.now;
         self.move_timeline.retain(|(_, t0, _, _)| *t0 > now);
+        // PIN3-DIVERGENCE-Q1 (D-PIN3-1): oś zwrotów jak oś kroków — przeszłe wpisy są już w `facing`.
+        self.facing_timeline.retain(|(_, t0, _, _)| *t0 > now);
         let seq = st.unit(unit).c;
         // K5LOOP-SIEGE-ATK-B: wejścia bramki `_doMove` (`:8689`) dla kroków tej aktywacji ([`Self::move_step_core`]).
         self.seq_wall_col = self.scene.wall_col.max(st.siege_wall_col);
@@ -4701,10 +4751,13 @@ impl<R: RollSource> ProdBody<R> {
     fn tower_blow_full(&mut self, tmpl: &FullBlowInput, tref: UnitRef, st: &mut TurnSeqState) {
         let tc = st.unit(tref).c;
         let tix = side_ix(tref.side);
-        let (dq, dr) = (
+        // PIN3-DIVERGENCE-Q1 (D-PIN3-1): pozycja i zwrot celu W CHWILI trafienia (`_singleBlow` `:8831-8833`, `:8880`),
+        // nie po atomowo policzonym marszu ciała (krok `_doMove` zmienia `ru.q/r` i `facing` dopiero w chwili kroku).
+        let (dq, dr) = self.unit_cell_at(tref, self.now).unwrap_or((
             self.units[tix][tref.idx].activate.q,
             self.units[tix][tref.idx].activate.r,
-        );
+        ));
+        let target_facing = self.facing_at(tref, self.now);
         let shooter_cell = (st.siege_wall_col, self.tower_row);
         // K5LOOP-WIRING-A r2 (Z2): przy kompozytorze wejście składane jak `_singleBlow` (`:8811-8960`) z realnym celem;
         // łuk `relativeHit(target.facing, wallCol, t.row, target.q, target.r)` (`:8880`).
@@ -4719,7 +4772,7 @@ impl<R: RollSource> ProdBody<R> {
                 match c.compose_tower(&site) {
                     Some(mut inp) => {
                         inp.hit_arc = relative_hit(
-                            &JsVal::Num(self.facing[tix][tref.idx]),
+                            &JsVal::Num(target_facing),
                             &JsVal::Num(shooter_cell.0 as f64),
                             &JsVal::Num(shooter_cell.1 as f64),
                             &JsVal::Num(dq as f64),
@@ -4834,12 +4887,13 @@ impl<R: RollSource> ProdBody<R> {
         );
         // `_doMeleeAttack` (battleScene.ts:9104): atakujący zwraca się ku celowi; `_singleBlow` klasyfikuje łuk
         // względem facing OBROŃCY w tym momencie (`relativeHit`, battleScene.ts:8880).
-        self.facing[ix][attacker.idx] = facing_toward(
+        let dir = facing_toward(
             &JsVal::Num((dq - aq) as f64),
             &JsVal::Num((dr - ar) as f64),
             &JsVal::Num(self.facing[ix][attacker.idx]),
         )
         .to_number();
+        self.set_facing(attacker, dir);
         // P4-1I3: zwrot obrońcy przed kontratakiem (`:9137-9138`); zwrot atakującego ciosu głównego emituje `start`.
         if emit_facing {
             let dir = self.facing[ix][attacker.idx];
@@ -5156,7 +5210,7 @@ impl<R: RollSource> ProdBody<R> {
             BattleSide::Attacker => 3.0,
             BattleSide::Defender => 1.0,
         };
-        self.facing[ix][unit.idx] = dir;
+        self.set_facing(unit, dir);
         // P4-1I3: `ru.group.rotation.y = dirYaw(ru.facing)` (`:9818`), potem log (`:9819`).
         self.emit(BattleAction::Facing { unit, dir });
         let text = rout_log(&self.name_of(unit));
