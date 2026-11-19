@@ -38,6 +38,7 @@ const { execSync } = require('child_process');
 const base = require('./ai-economy-measure-run.cjs');
 // R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1: pokoj wymuszony (kolejka blokuje endTurn) -- ten sam modul co runner ekonomii.
 const { acceptForcedPeace } = require('./measure-forced-peace.cjs');
+const { licznikiZPar } = require('./diplomacy-all-flags-measure-counters.cjs');
 
 function arg(name, def) {
   const i = process.argv.indexOf('--' + name);
@@ -49,6 +50,14 @@ const SEED = parseInt(arg('seed', '4242'), 10);
 const TURNS = parseInt(arg('turns', '100'), 10);
 const EVERY = Math.max(1, parseInt(arg('every', '1'), 10) || 1);
 const HARDER = arg('harder', '0') === '1';
+/** R-WEB-DIPLO-ALL-FLAGS-MEASURE-RUNNER-Q1: --all-flags 0|1 (brak = tryb --harder bez zmian). 1 = wszystkie flagi pakietu ON,
+ *  0 = wszystkie OFF; ustawia hak `__diploAllFlagsMeasure.setAll` PO starcie gry, PRZED pierwszym endTurn. */
+const ALL_FLAGS_ARG = arg('all-flags', null);
+const ALL_FLAGS = ALL_FLAGS_ARG === null ? null : (ALL_FLAGS_ARG === '1');
+if (ALL_FLAGS !== null && arg('harder', null) !== null) {
+  console.error('--all-flags nie łączy się z --harder (tryb --all-flags ignoruje --harder). Podaj tylko jedno.');
+  process.exit(2);
+}
 /** R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1: --player-ai 0|1 (domyslnie 1) = gracz (0) sterowany autopilotem AI (hak
  *  `__aiEconomyMeasure.setPlayerAiAutopilotForTest`, ustawiany po starcie gry, przed pierwszym endTurn). */
 const PLAYER_AI = arg('player-ai', '1') !== '0';
@@ -62,8 +71,14 @@ const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 /** Przegladarka: CHROME_PATH; bez niego pierwsza istniejaca z listy (brak /usr/bin/chromium nie wywala launchu). */
 const CHROME = process.env.CHROME_PATH || ['/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable'].find(p => fs.existsSync(p)) || '/usr/bin/chromium';
 const TURN_TIMEOUT_MS = 300000;
-const TAG = `seed${SEED}-harder${HARDER ? 1 : 0}`;
+const TAG = ALL_FLAGS === null ? `seed${SEED}-harder${HARDER ? 1 : 0}` : `seed${SEED}-all${ALL_FLAGS ? 1 : 0}`;
 const wait = ms => new Promise(r => setTimeout(r, ms));
+
+/** Etykieta harder w wierszu: w trybie --all-flags = stan flagi etapu A z haka (odczyt), inaczej --harder. */
+function harderLabel() {
+  if (ALL_FLAGS !== null) return FLAGI_START && FLAGI_START.harder ? 1 : 0;
+  return HARDER ? 1 : 0;
+}
 
 /** Blokady modalne konca tury: jak runner ekonomii (eksport `closeEndTurnModals`). */
 const COUNTERS = base.newCtx(null);
@@ -85,7 +100,7 @@ async function openGame(ctx) {
   const page = ctx.pages()[0] || await ctx.newPage();
   const url = 'file://' + path.join(DIST, 'index.html') + '?civTest=1&civSeed=' + SEED;
   await page.goto(url, { waitUntil: 'load', timeout: 180000 });
-  await page.waitForFunction(() => !!window.__aiTradeWiringTestDebug && !!window.__aiEconomyMeasure && !!window.__detHarness && !!window.__diploHarderMeasure, null, { timeout: 180000 });
+  await page.waitForFunction(() => !!window.__aiTradeWiringTestDebug && !!window.__aiEconomyMeasure && !!window.__detHarness && !!window.__diploHarderMeasure && !!window.__diploAllFlagsMeasure, null, { timeout: 180000 });
   await page.evaluate(([seed]) => window.__nnsMeasureDebug.startGame({ seed }), [SEED]);
   await page.waitForFunction(() => { try { return window.__aiTradeWiringTestDebug.state().turn >= 1; } catch (_) { return false; } }, null, { timeout: 180000 });
   await page.waitForFunction(() => {
@@ -104,6 +119,14 @@ async function openGame(ctx) {
   }
   await page.evaluate(() => window.__aiTradeWiringTestDebug.setFastMode(true));
   // Flaga PO starcie gry, PRZED pierwszym endTurn (jedyne miejsce zapisu flagi w runnerze).
+  if (ALL_FLAGS !== null) {
+    const st = await page.evaluate(on => window.__diploAllFlagsMeasure.setAll(on), ALL_FLAGS);
+    FLAGI_START = st;
+    const wanted = Object.keys(st).every(k => st[k] === ALL_FLAGS);
+    if (!wanted) throw new Error('setAll(' + ALL_FLAGS + ') nie ustawil wszystkich flag (odczyt=' + JSON.stringify(st) + ')');
+    console.log('[diplo] all-flags=' + (ALL_FLAGS ? 1 : 0) + ' ' + JSON.stringify(st));
+    return page;
+  }
   const got = await page.evaluate(on => window.__diploHarderMeasure.setEnabled(on), HARDER);
   if (got !== HARDER) throw new Error('setEnabled(' + HARDER + ') nie ustawil flagi (odczyt=' + got + ')');
   return page;
@@ -155,6 +178,8 @@ const { rejectAwaitingAiOffers } = require('./measure-reject-offers.cjs');
 
 /** Sumy odrzucen w biegu: potwierdzone (wpis zniknal) i proby (wywolania reject). */
 let AI_OFFERS_REJECTED = 0;
+/** R-WEB-DIPLO-ALL-FLAGS-MEASURE-RUNNER-Q1: stan wszystkich flag po ustawieniu (odczyt haka), do summary. */
+let FLAGI_START = null;
 let AI_OFFERS_REJECT_ATTEMPTS = 0;
 
 async function playOneTurn(page) {
@@ -206,9 +231,12 @@ async function playOneTurn(page) {
   const modalDelta = {};
   for (const k of base.MODAL_KEYS) modalDelta[k] = COUNTERS[k] - modalBefore[k];
   const d = diploRow(m);
-  const rec = { seed: SEED, harder: HARDER ? 1 : 0, playerAi: PLAYER_AI ? 1 : 0, turn: after, gate: blocked, bypass, battlesAuto, aiOffersRejected: offersRejected, aiOffersRejectAttempts: offersAttempts,
+  const flagi = ALL_FLAGS === null ? null : await page.evaluate(() => window.__diploAllFlagsMeasure.status());
+  const liczniki = ALL_FLAGS === null ? null : licznikiZPar(m, await page.evaluate(() => window.__diploAllFlagsMeasure.zerwaniaZeroZaufania()));
+  const rec = { seed: SEED, harder: harderLabel(), allFlags: ALL_FLAGS === null ? null : (ALL_FLAGS ? 1 : 0), liczniki, playerAi: PLAYER_AI ? 1 : 0, turn: after, gate: blocked, bypass, battlesAuto, aiOffersRejected: offersRejected, aiOffersRejectAttempts: offersAttempts,
     forcedPeaceAccepted: COUNTERS.forcedPeaceAccepted, modal: modalDelta, sec: Math.round((Date.now() - t0) / 100) / 10, diplo: d,
     wojny: d.pairs.filter(p => p.status === 'wojna').length };
+  if (flagi) rec.flagi = flagi;
   return { rec };
 }
 
@@ -243,8 +271,9 @@ async function main() {
     await ctx.close();
   }
   // R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1: gracz = autopilot (playerAi 1) -- adnotacja w summary; kolumny par bez zmian.
-  const summary = { seed: SEED, harder: HARDER ? 1 : 0, playerAi: PLAYER_AI ? 1 : 0, graczAdnotacja: PLAYER_AI ? 'gracz = autopilot' : 'gracz = pasywny',
+  const summary = { seed: SEED, harder: harderLabel(), allFlags: ALL_FLAGS === null ? null : (ALL_FLAGS ? 1 : 0), playerAi: PLAYER_AI ? 1 : 0, graczAdnotacja: PLAYER_AI ? 'gracz = autopilot' : 'gracz = pasywny',
     turnsRequested: TURNS, every: EVERY, endTurn: turn, rows, stop,
+    flagi: FLAGI_START,
     counters: Object.assign({}, COUNTERS), aiOffersRejected: AI_OFFERS_REJECTED, aiOffersRejectAttempts: AI_OFFERS_REJECT_ATTEMPTS, wallSec: Math.round((Date.now() - t0) / 1000) };
   fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
   console.log('[diplo] PODSUMOWANIE ' + JSON.stringify(summary));
