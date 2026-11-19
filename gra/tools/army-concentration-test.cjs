@@ -368,6 +368,10 @@ function runTurns(myUnits, cities, map, nTurns) {
   const barbs4 = cities4.map(c => unit(`barb-${c.id}`, c.q + 6, c.r, { ownerId: 0 }));
   const map4 = bigMap(60, 60);
   let clustersAtEnd = null;
+  // R-WEB-AI-CITY-GARRISON-TESTS-REPLACE-Q1: garnizon = pierwsza jednostka (leksykograficznie) na heksie
+  // miasta (FALA 857). Zlicza, ile razy garnizon dostał ruch przez 40 tur (oczekiwane: 0).
+  const garrisonIds4 = new Set(cities4.map(c => `${c.id}-a`));
+  let garrisonMoves4 = 0;
   for (let t = 0; t < 40; t++) {
     for (const u of myUnits4) u.ruchLeft = u.ruch;
     const cmds = C.decideAITurn(1, [...myUnits4, ...barbs4], cities4, map4, testData, { civType: 'grecy', currentTurn: t });
@@ -375,17 +379,18 @@ function runTurns(myUnits, cities, map, nTurns) {
       if (cmd.type !== 'move') continue;
       const u = myUnits4.find(x => x.id === cmd.unitId);
       if (u === undefined) continue;
+      if (garrisonIds4.has(u.id)) garrisonMoves4++;
       u.q = cmd.toQ; u.r = cmd.toR;
     }
     if (t === 39) clustersAtEnd = C.clusterUnitsByProximity(myUnits4, C.ARMY_CONCENTRATION_RADIUS).length;
   }
-  ok(clustersAtEnd !== null && clustersAtEnd < 10,
-    `scenario 4: 5 miast z 1 nieszkodliwym barbarzyńcą każde (5 obsłużonych "frontów") -- po 40 turach klastrów=${clustersAtEnd}, MUSI być < 10 (przed naprawą: 10, każda jednostka osobno -- front-merge nigdy nie łączył wolnych jednostek, bo obsłużone zagrożenia liczyły się DODATKOWO jako fronty)`);
-  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r4): ORYGINALNA asercja (bez zmiany oczekiwania) zachowana OBOK
-  // nowych dowodow nizej. Kolizja z regula wlasciciela: 5 garnizonow zostaje w miastach (5 klastrow) + 5
-  // obroncow domu osobno => liczba klastrow wszystkich jednostek >= 10 -- DECISION_REQUIRED (patrz raport r4).
-  ok(clustersAtEnd !== null && clustersAtEnd <= 6,
-    `scenario 4 (ORYGINAL): mutation guard na dokładną wartość zmierzoną po naprawie (klastrów=${clustersAtEnd}, oczekiwane <=6 -- 5 obrońców domu poprawnie zostają osobno + wolne jednostki realnie się łączą)`);
+  // HISTORYCZNE (R-WEB-AI-CITY-GARRISON-TESTS-REPLACE-Q1, po FALI 857): dwie oryginalne asercje na klastrach
+  // WSZYSTKICH jednostek -- `clustersAtEnd < 10` i `clustersAtEnd <= 6` -- zakladaly puste miasta. Garnizon
+  // stoi na heksie miasta przez caly bieg i tworzy wlasny klaster, wiec te liczby sa czerwone z zalozenia
+  // (klastrow = 5 garnizonow + 5 wolnych). Zastapione NOWYMI asercjami ponizej (garnizon nie wchodzi do
+  // armii; klastry wolnych jednostek <= 6; klastry wszystkich = garnizony + klastry wolnych).
+  //   ok(clustersAtEnd !== null && clustersAtEnd < 10, ...)   // FALA 857: czerwone, patrz wyzej
+  //   ok(clustersAtEnd !== null && clustersAtEnd <= 6, ...)   // FALA 857: czerwone, patrz wyzej
   // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r3): garnizon (najslabsza bojowa na heksie miasta)
   // nie wchodzi do zbiorki ani scalania, wiec ZOSTAJE w miescie przez cale 40 tur (dowod 1), a
   // prog scalania jednostek POZA garnizonami wraca do dawnego <=6 (dowod 2) -- zamiast rozluznienia
@@ -401,6 +406,16 @@ function runTurns(myUnits, cities, map, nTurns) {
   const fieldClusters4 = C.clusterUnitsByProximity(fieldUnits4, C.ARMY_CONCENTRATION_RADIUS).length;
   ok(fieldClusters4 <= 6,
     `scenario 4: mutation guard -- klastry jednostek POZA heksami miast=${fieldClusters4}, oczekiwane <=6 (5 obroncow domu osobno + wolne jednostki realnie sie lacza)`);
+  // R-WEB-AI-CITY-GARRISON-TESTS-REPLACE-Q1 (NOWE, zastepuja czerwone asercje na klastrach wszystkich jednostek):
+  // (a) garnizon (pierwsza jednostka na heksie kazdego miasta, w tym stolicy) NIE dostaje ZADNEGO ruchu przez 40 tur
+  //     -- nie wchodzi do zbiorki ani do armii. Mutacja "garnizon wciagniety do armii" daje garrisonMoves4 > 0 = czerwono.
+  ok(garrisonMoves4 === 0,
+    `scenario 4 (NOWA): garnizon nie dostaje ruchu przez 40 tur (wciagniety do armii?) -- ruchow garnizonow=${garrisonMoves4}, oczekiwane 0`);
+  // (b) klastry WSZYSTKICH jednostek = jeden klaster na kazdy garnizon (zostaje w miescie, nie laczy sie z wolnymi)
+  //     + klastry wolnych jednostek (miara z pkt wyzej). Liczba garnizonow liczona z zywego stanu miast.
+  const garrisonCount4 = cities4.filter(c => myUnits4.some(u => u.q === c.q && u.r === c.r)).length;
+  ok(clustersAtEnd === garrisonCount4 + fieldClusters4,
+    `scenario 4 (NOWA): klastry wszystkich=${clustersAtEnd} = garnizony osobno (${garrisonCount4}) + klastry wolnych (${fieldClusters4}); garnizon nie laczy sie z wolnymi jednostkami`);
 }
 
 // ---------------------------------------------------------------------------
