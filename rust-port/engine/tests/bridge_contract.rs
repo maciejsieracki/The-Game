@@ -31,7 +31,7 @@ fn state_from(result: &BridgeResult) -> &bridge::EngineState {
 /// `COMMAND_KINDS.len()` is the declared number of variants: a new variant needs a new arm in
 /// `command_index` (compile error otherwise), a new entry here and a new sample in `every_command`
 /// (the completeness test fails otherwise).
-const COMMAND_KINDS: [&str; 11] = [
+const COMMAND_KINDS: [&str; 15] = [
     "create_session",
     "add_player",
     "select_unit",
@@ -43,6 +43,10 @@ const COMMAND_KINDS: [&str; 11] = [
     "get_render_layers",
     "get_render_map",
     "get_render_frame",
+    "start_siege_storm",
+    "step_siege_battle",
+    "skip_siege_battle",
+    "finish_siege_battle",
 ];
 
 /// Position of every `EngineCommand` variant in [`COMMAND_KINDS`]. Exhaustive on purpose (no
@@ -60,6 +64,10 @@ fn command_index(command: &EngineCommand) -> usize {
         EngineCommand::GetRenderLayers { .. } => 8,
         EngineCommand::GetRenderMap => 9,
         EngineCommand::GetRenderFrame { .. } => 10,
+        EngineCommand::StartSiegeStorm { .. } => 11,
+        EngineCommand::StepSiegeBattle { .. } => 12,
+        EngineCommand::SkipSiegeBattle => 13,
+        EngineCommand::FinishSiegeBattle => 14,
     }
 }
 
@@ -112,7 +120,85 @@ fn every_command() -> Vec<EngineCommand> {
             seat: None,
             ui: None,
         },
+        EngineCommand::StartSiegeStorm {
+            city_id: 1,
+            unit_id: 7,
+        },
+        EngineCommand::StepSiegeBattle {
+            wall_ms: bridge::WallMs(16.0),
+        },
+        EngineCommand::SkipSiegeBattle,
+        EngineCommand::FinishSiegeBattle,
     ]
+}
+
+/// R-RUSTPORT-P6-K5LOOP-WIRING-B-Q1: the siege battle commands are additive (wire shape fixed here) and
+/// the old response shape has no `siegeBattle` key.
+#[test]
+fn siege_battle_commands_have_a_fixed_wire_shape_and_old_responses_are_unchanged() {
+    let cases = [
+        (
+            EngineCommand::StartSiegeStorm {
+                city_id: 1,
+                unit_id: 7,
+            },
+            json!({"kind": "start_siege_storm", "city_id": 1, "unit_id": 7}),
+        ),
+        (
+            EngineCommand::StepSiegeBattle {
+                wall_ms: bridge::WallMs(16.5),
+            },
+            json!({"kind": "step_siege_battle", "wall_ms": 16.5}),
+        ),
+        (
+            EngineCommand::SkipSiegeBattle,
+            json!({"kind": "skip_siege_battle"}),
+        ),
+        (
+            EngineCommand::FinishSiegeBattle,
+            json!({"kind": "finish_siege_battle"}),
+        ),
+    ];
+    for (command, wire) in cases {
+        assert_eq!(serde_json::to_value(&command).expect("serializes"), wire);
+        let back: EngineCommand = serde_json::from_value(wire).expect("deserializes");
+        assert_eq!(back, command);
+    }
+    let mut bridge = EngineBridge::new(CivEngineAdapter::default());
+    let read = bridge
+        .handle(BridgeRequest::new("read", EngineCommand::GetState))
+        .expect("get_state");
+    let encoded = serde_json::to_value(&read.response).expect("response serializes");
+    assert!(
+        encoded.get("siegeBattle").is_none(),
+        "old commands keep the response JSON without siegeBattle"
+    );
+    let keys: Vec<&str> = encoded
+        .as_object()
+        .expect("object")
+        .keys()
+        .map(String::as_str)
+        .collect();
+    assert_eq!(keys, ["contractVersion", "requestId", "result"]);
+    // Battle commands without a running battle are explicit rejections, not panics.
+    for command in [
+        EngineCommand::StepSiegeBattle {
+            wall_ms: bridge::WallMs(16.0),
+        },
+        EngineCommand::SkipSiegeBattle,
+        EngineCommand::FinishSiegeBattle,
+    ] {
+        let error = bridge
+            .handle(BridgeRequest::new("battle", command))
+            .expect_err("no battle in progress");
+        assert_eq!(error.code, BridgeErrorCode::EngineRejected);
+        assert!(error.message.contains("no battle in progress"), "{error:?}");
+    }
+    let mut mock = EngineBridge::new(MockEngineAdapter::default());
+    let error = mock
+        .handle(BridgeRequest::new("battle", EngineCommand::SkipSiegeBattle))
+        .expect_err("mock without session rejects");
+    assert_eq!(error.code, BridgeErrorCode::EngineRejected);
 }
 
 #[test]

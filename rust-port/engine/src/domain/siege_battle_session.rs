@@ -51,7 +51,6 @@ use crate::domain::siege_battle_adapter_body::{
     activate_unit_for, body_unit_inputs, install_body_inputs, scene_inputs, tower_setup_for,
     BodyUnitInputs, TowerParams, TowerSetupInput, UnitPlacement,
 };
-use crate::domain::siege_battle_adapter_playable::siege_inputs_from_playable;
 use crate::domain::siege_battle_adapter_unit::counter_multiplier_pin;
 use crate::domain::siege_battle_adapter_unit::{
     apply_starting_morale_power_penalty, counter_matrix, norm_counters, roster_to_battle_units,
@@ -740,7 +739,12 @@ impl SiegeBattleSession {
         input: &SiegeSessionInput,
         data: &SessionData,
     ) -> Result<Self, SessionError> {
-        let inp = siege_inputs_from_playable(state, input.city_id, input.owner_era)?;
+        // K5LOOP-WIRING-B (D-ADP-11): sojusze z umów (`hasAllianceDealBetween`, `main.ts:22648-22655`), nie ze statusu.
+        let inp = crate::domain::siege_battle_apply::siege_inputs_with_deals(
+            state,
+            input.city_id,
+            input.owner_era,
+        )?;
         let anchor = input.anchor_unit_id.to_string();
         if !inp.units.iter().any(|u| u.id == anchor) {
             return Err(SessionError::AnchorNotFound(input.anchor_unit_id));
