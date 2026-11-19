@@ -3206,7 +3206,7 @@ export function planExpansionFortBuilding(
     ? Math.max(0, opts.plannedImprovementCost as number)
     : 0;
   const canAfford = (key: 'fort' | 'posterunek'): boolean => {
-    const m = getImprovementMeta(key);
+    const m = getImprovementMeta(key, opts.civEra);
     if (!m) return false;
     if (pracaAvailable < m.kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS) return false;
     if (m.kosztPraca > raceShare) return false;
@@ -4168,7 +4168,7 @@ function decideAITurnCore(
   for (const cmd of cityImprovementCommands) commands.push(cmd);
   // Krok 2 (Maciej 2026-08-09): heurystyka minimalna, patrz planExpansionFortBuilding.
   const plannedImprovementCost = cityImprovementCommands.reduce(
-    (sum, cmd) => sum + (getImprovementMeta(cmd.key)?.kosztPraca ?? 0),
+    (sum, cmd) => sum + (getImprovementMeta(cmd.key, opts.civEra)?.kosztPraca ?? 0),
     0,
   );
   const expansionFortCmd = planExpansionFortBuilding(
@@ -5739,7 +5739,7 @@ function decideDefensiveCopyTurn(
   for (const cmd of cityImprovementCommands) commands.push(cmd);
   // Krok 2 (Maciej 2026-08-09): heurystyka minimalna, patrz planExpansionFortBuilding.
   const plannedImprovementCost = cityImprovementCommands.reduce(
-    (sum, cmd) => sum + (getImprovementMeta(cmd.key)?.kosztPraca ?? 0),
+    (sum, cmd) => sum + (getImprovementMeta(cmd.key, opts.civEra)?.kosztPraca ?? 0),
     0,
   );
   const expansionFortCmd = planExpansionFortBuilding(

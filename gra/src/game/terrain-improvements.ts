@@ -4,6 +4,7 @@
  * PURE — lane EKONOMIA.
  */
 import improvementsJson from '../../data/terrain-improvements.json';
+import improvementCostParamsJson from '../../data/improvement-cost-params.json';
 import { Nakladka, TerenBazowy } from '../types/hex';
 import type { TileYield } from './economy';
 import { scaleImprovementWorkCost } from './r-stawki-strojenie';
@@ -167,6 +168,45 @@ export function scaleTerrainImprovementWorkCost(
   const stoneBase = scaleImprovementWorkCost(base);
   if (stoneBase <= 0) return 0;
   return stoneBase * terrainImprovementConstructionEraMultiplier(era);
+}
+
+/**
+ * R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1: flaga „koszt budowy wg epoki
+ * WŁAŚCICIELA” z gra/data/improvement-cost-params.json (domyślnie true; false = wzór sprzed zmiany).
+ */
+export const IMPROVEMENT_COST_PARAMS: { kosztUlepszenWgEpokiWlasciciela?: boolean } =
+  improvementCostParamsJson as { kosztUlepszenWgEpokiWlasciciela?: boolean };
+
+let ownerEraCostOverride: boolean | null = null;
+
+/** Tylko testy/diagnostyka (NIE z UI). null = wartość z danych. */
+export function setImprovementCostOwnerEraForTest(value: boolean | null): void {
+  ownerEraCostOverride = value;
+}
+
+export function isImprovementCostOwnerEraEnabled(): boolean {
+  if (ownerEraCostOverride !== null) return ownerEraCostOverride;
+  return IMPROVEMENT_COST_PARAMS.kosztUlepszenWgEpokiWlasciciela !== false;
+}
+
+/**
+ * Jedna funkcja kosztu budowy ulepszenia (Praca) dla gracza, AI i państw-miast.
+ * Flaga ON: FALA2-scaled base × mnożnik EPOKI WŁAŚCICIELA (Kamień 0,5 / Brąz 1 / Żelazo 2, dalej ×2).
+ * Flaga OFF: wzór sprzed zmiany — mnożnik epoki odblokowania ulepszenia (`improvementEra`).
+ * `ownerEra` brak / nieprawidłowy → 1 (Kamień), tak jak reszta kodu (`?? 1`).
+ */
+export function scaleTerrainImprovementWorkCostForOwner(
+  base: number,
+  improvementEra: number | undefined,
+  ownerEra: number | null | undefined = undefined,
+): number {
+  if (!isImprovementCostOwnerEraEnabled()) {
+    return scaleTerrainImprovementWorkCost(base, improvementEra);
+  }
+  const stoneBase = scaleImprovementWorkCost(base);
+  if (stoneBase <= 0) return 0;
+  const ownerNorm = typeof ownerEra === 'number' && Number.isFinite(ownerEra) ? ownerEra : 1;
+  return stoneBase * terrainImprovementConstructionEraMultiplier(ownerNorm);
 }
 
 export function normalizeImprovementKey(raw: string | undefined | null): string | undefined {

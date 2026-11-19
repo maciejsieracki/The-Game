@@ -3,7 +3,7 @@
  * Decyzja Maciej B1-Q1=B (2026-06-29): źródło prawdy bramki = terrain-improvements.json (tech 1:1).
  */
 import terrainJson from '../../data/terrain-improvements.json';
-import { scaleTerrainImprovementWorkCost } from './terrain-improvements';
+import { scaleTerrainImprovementWorkCostForOwner } from './terrain-improvements';
 import { humanizeId } from './text-names';
 
 export type ImprovementActionTyp = 'wycinka' | 'ulepszenie';
@@ -88,7 +88,7 @@ function normalizeTech(raw: string | null | undefined): string | null {
   return TECH_CANONICAL[raw] ?? raw;
 }
 
-function readMeta(key: string): ImprovementMeta | null {
+function readMeta(key: string, ownerEra?: number): ImprovementMeta | null {
   if (key.startsWith('_')) return null;
   const row = RAW[key];
   if (!row) return null;
@@ -103,7 +103,8 @@ function readMeta(key: string): ImprovementMeta | null {
     key,
     nazwa: row.nazwa ?? humanizeId(key),
     epoka: row.epoka ?? 1,
-    kosztPraca: scaleTerrainImprovementWorkCost(row.koszt_praca ?? 0, row.epoka),
+    // R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1: koszt wg epoki WŁAŚCICIELA (ownerEra).
+    kosztPraca: scaleTerrainImprovementWorkCostForOwner(row.koszt_praca ?? 0, row.epoka, ownerEra),
     techId: normalizeTech(row.tech ?? null),
     typ,
     clearing,
@@ -115,8 +116,9 @@ export function improvementMetaKeys(): string[] {
   return Object.keys(RAW).filter(k => !k.startsWith('_'));
 }
 
-export function getImprovementMeta(key: string): ImprovementMeta | null {
-  return readMeta(key);
+/** `ownerEra` = epoka cywilizacji WŁAŚCICIELA (koszt budowy); brak → 1 (Kamień). */
+export function getImprovementMeta(key: string, ownerEra?: number): ImprovementMeta | null {
+  return readMeta(key, ownerEra);
 }
 
 function requiredTechIds(key: string, meta: ImprovementMeta): readonly string[] | null {
