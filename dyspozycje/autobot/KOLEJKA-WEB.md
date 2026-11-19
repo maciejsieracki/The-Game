@@ -25,6 +25,8 @@ Nowe starty: `df --output=avail -BG /` ≥ 6 GB (integracja `/home/user/integ` �
 
 ## DECYZJE WŁAŚCICIELA 2026-11-19 (ZAPIS PEŁNY — źródło prawdy dla autonomicznej pętli; szczegóły i cytaty w rejestrze)
 
+**ŻYWNOŚĆ JEDNOSTEK — DECYZJA OSTATECZNA (2026-11-19, zaakceptowana tabela): ×4 na epokę jednostki (Kamień ×1, Brąz ×4, Żelazo ×16; 4/16/64 na jednostkę z bazą 1), dla wszystkich jednostek; ANULUJE ustalenia FALI 875 (×1/×2/×4) i dodatkowy mnożnik 1/4/8; pieniądz i surowce utrzymania bez zmian; kurs żywność→Podatek 0,2. Wdrożyć po FC bez dalszego pytania (temat UPKEEPMULT, wf_e37ebeff-a98).** Pozycje 1 i 3 sekcji „CZEKA NA RANO” (korekta skarbca Brąz; spadek żywności epok 4–5) są przez tę decyzję zamknięte.
+
 **ZASADA STAŁA (właściciel 2026-11-19): każdy nowy mnożnik jest DODATKOWY i mnoży obecne współczynniki w grze; nowe ustalenia nie zastępują wcześniejszych decyzji.** (Korekta: FALA 875 źle zastąpiła żywność jednostek ×3/epokę wartością ×1/×2/×4; poprawka w temacie R-WEB-ECONOMY-UNIT-UPKEEP-EXTRA-MULT-AND-FOOD-TAX-RATE-Q1: żywność ×3/epokę przywrócona, dodatkowy mnożnik utrzymania Pieniądza i Żywności 1/4/8, surowce po staremu; kurs żywność→Podatek 0,2.)
 
 **Ekonomia (rebalans wg epok):** wszystkie surowce ulepszeń bez wzrostu co epokę (stałe wartości z Kamienia); utrzymanie jednostek żywność: pierwotnie ×3/epokę, **zastąpione 2026-11-19 przez ×1/×2/×4 (Kamień/Brąz/Żelazo) dla pieniądza, surowców i żywności**; racje obywateli ×2/epokę; konwertery bez zmian („na razie tylko ulepszenia”); Praca/Drewno „najpierw zmierzyć”; flaga rebalansu ON na ROBOCZEJ (FALA 871); zrzut Żywności z Brązu miał rebalans ON.
