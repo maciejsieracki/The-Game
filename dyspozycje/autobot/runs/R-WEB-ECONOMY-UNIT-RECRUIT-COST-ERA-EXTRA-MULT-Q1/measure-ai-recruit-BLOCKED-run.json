@@ -1,0 +1,55 @@
+{
+ "label": "NEW",
+ "seed": 4242,
+ "turns": 60,
+ "size": "Maly",
+ "typ": "kontynenty",
+ "snaps": {
+  "t1": {
+   "turn": 1,
+   "cities": 30,
+   "aiTotal": 33,
+   "playerTotal": 2,
+   "byOwner": {
+    "0": 2,
+    "1": 2,
+    "2": 1,
+    "3": 1,
+    "4": 1,
+    "5": 1,
+    "6": 1,
+    "7": 2,
+    "8": 1,
+    "9": 1,
+    "10": 1,
+    "11": 1,
+    "12": 1,
+    "13": 2,
+    "14": 1,
+    "15": 1,
+    "16": 1,
+    "17": 1,
+    "18": 1,
+    "19": 2,
+    "20": 1,
+    "21": 1,
+    "22": 1,
+    "23": 1,
+    "24": 1,
+    "25": 1,
+    "26": 1,
+    "27": 1,
+    "28": 1,
+    "29": 1
+   },
+   "aiByType": {
+    "Wojownik": 29,
+    "Zwiadowca": 4
+   }
+  }
+ },
+ "errors": [
+  "[run] Error: tura nie przechodzi: {\"turn0\":1,\"turn1\":1} | ekran: Skarbiec 0 +2 / −2 Praca 0 +7 / +7 Spichlerz 0 +1 / −3 Handel 0 / 0 Nauka 0 +5 / +5 Surowce +19 / +16 Epoka brązu 2k (1) 1224 MOC 2 +1 1 0 1 0 0 0 1 0 CIVPEDIA MENU − 100% + ⛶ 1 WYMAGA DECYZJI Dyplomacja 0 Ważne 0 Inne 0 WYMAGA DECYZJI Produkcja: Rzym Kolejka pusta — wybierz budynek OTWÓRZ → WYKONAJ 1 ZAKOŃCZ TURĘ TURA 1 · 4000 P.N.E."
+ ],
+ "nanHits": 0
+}

@@ -88,7 +88,8 @@ setArmyFoodUpkeepResolver(null);
 const costNormalRuch = militaryFoodConsumptionWithSpichlerz(mkUnits(CS), CS, upkeepNormal, foodTable);
 const costCsNoRes = militaryFoodConsumptionWithSpichlerz(mkUnits(CS), CS, upkeepHard, foodTable);
 ok(costNormalRuch > 0, `A1 koszt armii > 0 (normal ruch, 3 jednostki = ${costNormalRuch})`);
-near(costCsNoRes, 2 * costNormalRuch, 'A2 bez resolvera parametr upkeep decyduje (hard = 2x normal)');
+// DECYZJA WLASCICIELA 2026-11-19 (DODATEK 1): trudnosc nie wplywa na utrzymanie/zywnosc jednostek -> hard == normal.
+near(costCsNoRes, costNormalRuch, 'A2 bez resolvera: parametr upkeep hard = normal (ujednolicony, bez wplywu trudnosci)');
 
 // ---------------- B. z resolverem: miasto-państwo wg swojego poziomu ----------------
 console.log('--- B: z resolverem per owner (CS=hard, menu=normal) ---');
@@ -96,7 +97,7 @@ setArmyFoodUpkeepResolver(resolverFor(CS_LEVEL));
 const costCs = militaryFoodConsumptionWithSpichlerz(mkUnits(CS), CS, upkeepNormal, foodTable);
 const costPlayer = militaryFoodConsumptionWithSpichlerz(mkUnits(PLAYER), PLAYER, upkeepNormal, foodTable);
 const costAi = militaryFoodConsumptionWithSpichlerz(mkUnits(AI_CIV), AI_CIV, upkeepNormal, foodTable);
-near(costCs, 2 * costNormalRuch, 'B1 miasto-państwo CS=hard płaci 2x zużycie (ruch hard=2 vs normal=1)');
+near(costCs, costNormalRuch, 'B1 miasto-państwo CS=hard płaci tyle samo co normal (DECYZJA 2026-11-19: bez wplywu trudnosci)');
 near(costPlayer, costNormalRuch, 'B2 gracz (menu normal) bez zmian');
 near(costAi, costNormalRuch, 'B3 AI cywilizacji (menu normal) bez zmian');
 // Parametr upkeep przekazany przez wołającego jest ignorowany dla właściciela z resolverem:
@@ -108,8 +109,8 @@ console.log('--- C: jednostki obozujące wg poziomu właściciela ---');
 const campCs = militaryFoodConsumptionWithSpichlerz(mkUnits(CS, true), CS, upkeepNormal, foodTable);
 const campPlayer = militaryFoodConsumptionWithSpichlerz(mkUnits(PLAYER, true), PLAYER, upkeepNormal, foodTable);
 // camping: base*(oboz/ruch); hard: 2*(0.62/2)=0.62, normal: 1*(0.5/1)=0.5
-ok(campCs > campPlayer, `C1 obozujące CS (hard) > obozujące gracza (normal) (${campCs} > ${campPlayer})`);
-near(campCs / campPlayer, 0.62 / 0.5, 'C2 stosunek obozu hard/normal = 0,62/0,5');
+near(campCs, campPlayer, 'C1 obozujące CS (hard) == obozujące gracza (normal) (DECYZJA 2026-11-19)');
+near(campCs / campPlayer, 1, 'C2 stosunek obozu hard/normal = 1 (ujednolicony)');
 
 // ---------------- D. advanceEmpireFood: kosztArmii per owner ----------------
 console.log('--- D: advanceEmpireFood -> kosztArmii per owner ---');
@@ -125,7 +126,7 @@ const runFood = (resolver) => {
 const efNoRes = runFood(null);
 const efRes = runFood(resolverFor(CS_LEVEL));
 near(efNoRes.byOwner.get(CS).kosztArmii, costNormalRuch, 'D1 bez resolvera: kosztArmii CS = wg menu (dawne)');
-near(efRes.byOwner.get(CS).kosztArmii, 2 * costNormalRuch, 'D2 z resolverem: kosztArmii CS = wg CS=hard');
+near(efRes.byOwner.get(CS).kosztArmii, costNormalRuch, 'D2 z resolverem: kosztArmii CS = normal (DECYZJA 2026-11-19: trudnosc bez wplywu)');
 near(efRes.byOwner.get(PLAYER).kosztArmii, costNormalRuch, 'D3 gracz: kosztArmii bez zmian');
 near(efRes.byOwner.get(AI_CIV).kosztArmii, costNormalRuch, 'D4 AI cywilizacji: kosztArmii bez zmian');
 eq(efRes.byOwner.get(PLAYER).zapasyPo, efNoRes.byOwner.get(PLAYER).zapasyPo, 'D5 zapasy gracza identyczne z/bez resolvera');
@@ -154,8 +155,8 @@ eq(buildEmpireFoodParams(econParams, effectiveGameDifficultyForOwnerPure(PLAYER,
 console.log('--- G: liczby econ-params.json bez zmian ---');
 eq(upkeepEasy.zywnoscJednostkaRuch, 1, 'G1 ruch easy = 1');
 eq(upkeepNormal.zywnoscJednostkaRuch, 1, 'G2 ruch normal = 1');
-eq(upkeepHard.zywnoscJednostkaRuch, 2, 'G3 ruch hard = 2');
-near(upkeepHard.zywnoscJednostkaOboz, 0.62, 'G4 oboz hard = 0,62');
+eq(upkeepHard.zywnoscJednostkaRuch, 1, 'G3 ruch hard = 1 (DECYZJA 2026-11-19: ujednolicenie do normalnej)');
+near(upkeepHard.zywnoscJednostkaOboz, 0.5, 'G4 oboz hard = 0,5 (DECYZJA 2026-11-19: ujednolicenie do normalnej)');
 near(upkeepNormal.zywnoscJednostkaOboz, 0.5, 'G5 oboz normal = 0,5');
 
 // ---------------- H. podpięcie w main.ts (skan źródła, r2) ----------------

@@ -59,14 +59,14 @@
     "zywnosc_jednostka_ruch": {
       "easy": 1,
       "normal": 1,
-      "hard": 2,
+      "hard": 1,
       "jednostka": "żywność/turę",
       "opis": "Zużycie żywności jednostki wojskowej w ruchu lub w garnizonie."
     },
     "zywnosc_jednostka_oboz": {
-      "easy": 0.38,
+      "easy": 0.5,
       "normal": 0.5,
-      "hard": 0.62,
+      "hard": 0.5,
       "jednostka": "żywność/turę",
       "opis": "Zużycie żywności jednostki wojskowej obozującej (bez ruchu)."
     },
@@ -711,7 +711,7 @@
     "utrzymanie_jednostka_standard": {
       "easy": 1,
       "normal": 1,
-      "hard": 2,
+      "hard": 1,
       "jednostka": "Pieniądz/turę",
       "opis": "Koszt utrzymania standardowej jednostki wojskowej. [PT]"
     },

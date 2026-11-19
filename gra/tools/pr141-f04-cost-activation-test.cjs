@@ -51,6 +51,7 @@ const root = path.resolve(__dirname, '..');
   eq(M.unitMoneyCost(17, [legacyImpiOnly], undefined, 0, 'normal', 'Impi'), 17, 'legacy-only Impi numeric agreement is inert');
   eq(M.unitMoneyCost(17, [f04Zulu, legacyImpiOnly], undefined, 0, 'normal', 'Wojownik'), 15, 'legacy Impi scope does not leak to ordinary units');
   eq(M.unitMoneyCost(17, [f04Zulu, { ...legacyImpiOnly, realizuje: 'walka_wygaszone' }], undefined, 0, 'normal', 'Impi'), 15, 'historical inactive Impi note is ignored');
-  eq(M.unitMoneyCost(17, [f04Zulu, g11Zulu], 'normalny', 0, 'hard', 'Impi'), 52, 'single discount floor precedes pace and difficulty');
+  // DECYZJA WLASCICIELA 2026-11-19 (DODATEK 1): trudnosc 'hard' nie mnozy kosztu jednostek (x1); pace normalny x2 -> 26 (bylo 52).
+  eq(M.unitMoneyCost(17, [f04Zulu, g11Zulu], 'normalny', 0, 'hard', 'Impi'), 26, 'single discount floor precedes pace (difficulty no longer multiplies units)');
   console.log(`pr141-f04-cost-activation-test: ${checks} passed, 0 failed`);
 })().catch(error => { console.error(error); process.exitCode = 1; });

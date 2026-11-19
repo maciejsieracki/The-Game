@@ -74,8 +74,10 @@ import {
   buildingStockCost,
   canAffordBuildingStock,
   buildingEraCostMultiplier,
+  epochCostMultiplier,
   scaleCostByEpoch,
 } from './building-stock-cost';
+import unitRecruitCostEraParamsJson from '../../data/unit-recruit-cost-era-params.json';
 import {
   isBuildingSuppressedFromProduction,
   upgradeProductionDisplayName,
@@ -409,6 +411,37 @@ export function itemCost(
   return scaleCostByEpoch(unitCostFromDef(u), u.Epoka);
 }
 
+/**
+ * R-WEB-ECONOMY-UNIT-RECRUIT-COST-ERA-EXTRA-MULT-Q1 (decyzja wlasciciela 2026-11-19):
+ * dodatkowy mnoznik kosztu REKRUTACJI w Pieniadzu wg epoki JEDNOSTKI.
+ * Kamien x1 / Braz x2 / Zelazo x4 (gra/data/unit-recruit-cost-era-params.json).
+ * Klasyfikacja epoki = ta sama co epochCostMultiplier (building-stock-cost.ts).
+ */
+export function unitRecruitEraExtraMultiplier(epoka: number | string | null | undefined): number {
+  const m = unitRecruitCostEraParamsJson.kosztRekrutacjiDodatkowyMnoznikEpoki;
+  const ordinal = epochCostMultiplier(epoka);
+  if (ordinal >= 4) return m.zelazo;
+  if (ordinal >= 2) return m.braz;
+  return m.kamien;
+}
+
+/** Dodatkowy mnoznik ery rekrutacji na już przeskalowanym koszcie bazowym (jedno miejsce stosowania). */
+function applyUnitRecruitEraExtra(scaledCost: number, epoka: number | string | null | undefined): number {
+  if (!Number.isFinite(scaledCost) || scaledCost <= 0) return scaledCost;
+  const mult = unitRecruitEraExtraMultiplier(epoka);
+  return mult === 1 ? scaledCost : Math.max(1, Math.round(scaledCost * mult));
+}
+
+/**
+ * Baza kosztu REKRUTACJI jednostki w Pieniadzu (przed ulgami cywilizacji, tempem i trudnoscia):
+ * itemCost('jednostka') (baza x epoka Kamien/Braz/Zelazo) x kosztRekrutacjiDodatkowyMnoznikEpoki.
+ * Wszystkie sciezki rekrutacji i wymiany jednostek uzywaja tej funkcji; itemCost pozostaje
+ * bez zmian (np. loot bojowy battle-loot.ts liczy na nim dawna wartosc).
+ */
+export function unitRecruitBaseMoneyCost(u: UnitDef): number {
+  return applyUnitRecruitEraExtra(scaleCostByEpoch(unitCostFromDef(u), u.Epoka), u.Epoka);
+}
+
 // ---------------------------------------------------------------------------
 // ProductionItem builders
 // ---------------------------------------------------------------------------
@@ -461,7 +494,7 @@ export function unitProductionItem(
     id: u.Jednostka,
     nazwa: u.Jednostka,
     koszt: unitMoneyCost(
-      itemCost('jednostka', u.Jednostka, data, 1),
+      unitRecruitBaseMoneyCost(u),
       civBonusy,
       kosztJednostekPace,
       ownerId,
@@ -644,7 +677,10 @@ export function unitMoneyCost(
     koszt = Math.max(1, Math.floor(koszt * (1 - recDisc)));
   }
   const afterPace = pace ? applyUnitCostPace(koszt, pace) : koszt;
-  return applyDifficultyCostMultiplier(afterPace, ownerId, difficulty);
+  // Trudnosc NIE wplywa na koszt jednostek (decyzja wlasciciela 2026-11-19, DODATEK 1):
+  // skale kosztu jednostek steruje wylacznie 'Koszty jednostek' (applyUnitCostPace).
+  // ownerId/difficulty zostaja w sygnaturze dla zgodnosci wywolan (ignorowane).
+  return Math.max(1, Math.round(afterPace));
 }
 
 /** Minimalny ksztalt bonusy[] — bez importu economy (unikamy cyklu z production). */
@@ -1262,7 +1298,7 @@ export function availableProduction(
     // działa samoczynnie, bo aliveUnitTypeNames liczy się z bieżącego rosteru).
     if (u['Super-jednostka'] === 'TAK' && ctx.aliveUnitTypeNames?.has(u.Jednostka)) continue;
     const koszt = unitMoneyCost(
-      itemCost('jednostka', u.Jednostka, data, 1),
+      unitRecruitBaseMoneyCost(u),
       ctx.civBonusy,
       ctx.kosztJednostekPace,
       ownerId,
@@ -1393,7 +1429,7 @@ export function availableReplacementsFor(
 
   function costOf(u: UnitDef): number {
     return unitMoneyCost(
-      itemCost('jednostka', u.Jednostka, data, 1),
+      unitRecruitBaseMoneyCost(u),
       ctx.civBonusy,
       ctx.kosztJednostekPace,
       ownerId,
@@ -2602,7 +2638,7 @@ export function unitPurchaseCost(
   difficulty: GameDifficulty = 'normal',
 ): number {
   return unitMoneyCost(
-    scaleCostByEpoch(unitCostFromDef(def), def.Epoka),
+    unitRecruitBaseMoneyCost(def),
     civBonusy,
     kosztJednostekPace,
     ownerId,

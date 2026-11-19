@@ -88,17 +88,20 @@ const uNormal = upkeepAt(2, 'normal');
 const uHard = upkeepAt(2, 'hard');
 ok(uEasy > 0, `B0 jednostki spoza tabeli maja utrzymanie > 0 (easy=${uEasy})`);
 ok(uEasy <= uNormal && uNormal <= uHard, `B1 monotonicznosc easy<=normal<=hard (${uEasy}/${uNormal}/${uHard})`);
-ok(uHard > uEasy, `B2 hard > easy dla tych samych jednostek spoza tabeli (${uHard} > ${uEasy})`);
+// DECYZJA WLASCICIELA 2026-11-19 (DODATEK 1): poziom trudnosci NIE wplywa na utrzymanie jednostek -> hard == easy.
+ok(uHard === uEasy, `B2 hard == easy dla tych samych jednostek spoza tabeli (utrzymanie jednostek bez trudnosci) (${uHard} == ${uEasy})`);
 eq(upkeepAt(2, 'easy', realUnits), upkeepAt(2, 'hard', realUnits),
   'B5 realne jednostki z wlasnym utrzymaniem: poziom bez wplywu (zgodnosc)');
 // Dwa AI na różnych poziomach: ten sam zestaw jednostek, różny upkeep.
 const aiA = upkeepAt(2, effectiveGameDifficultyForOwnerPure(2, 'easy', 'normal', csOwners));
 const aiB = upkeepAt(3, effectiveGameDifficultyForOwnerPure(3, 'hard', 'normal', csOwners));
-ok(aiA !== aiB, `B3 dwa AI na roznych poziomach -> rozny upkeep (${aiA} vs ${aiB})`);
+// DECYZJA 2026-11-19 (DODATEK 1): dwa AI na roznych poziomach maja ten sam upkeep jednostek (pin odwrocony).
+ok(aiA === aiB, `B3 dwa AI na roznych poziomach -> ten sam upkeep jednostek (${aiA} vs ${aiB})`);
 // Miasto-państwo na poziomie CS vs na poziomie menu: różnica tylko przez poziom.
 const csLow = upkeepAt(CS, effectiveGameDifficultyForOwnerPure(CS, 'hard', 'easy', csOwners));
 const csHigh = upkeepAt(CS, effectiveGameDifficultyForOwnerPure(CS, 'easy', 'hard', csOwners));
-ok(csHigh > csLow, `B4 miasto-panstwo na CS=hard ma wiekszy upkeep niz na CS=easy (${csHigh} > ${csLow})`);
+// DECYZJA 2026-11-19 (DODATEK 1): miasto-panstwo na CS=hard = CS=easy (trudnosc bez wplywu na jednostki).
+ok(csHigh === csLow, `B4 miasto-panstwo CS=hard == CS=easy (utrzymanie jednostek bez trudnosci) (${csHigh} == ${csLow})`);
 
 // ---------------- C. advanceCityEconomy z resolverem ----------------
 console.log('--- C: advanceCityEconomy upkeepByOwner z resolverem per owner ---');
@@ -128,18 +131,19 @@ if (tickErr) {
   const ubCsNoRes = tickNoRes.upkeepByOwner.get(CS);
   const ubAiNoRes = tickNoRes.upkeepByOwner.get(2);
   ok(ubCs && ubAi, 'C1 upkeepByOwner zawiera miasto-panstwo i AI');
-  ok(ubCs.utrzymanieJednostki > ubAi.utrzymanieJednostki,
-    `C2 CS (hard) ma wiekszy upkeep jednostek niz AI (normal) (${ubCs.utrzymanieJednostki} > ${ubAi.utrzymanieJednostki})`);
+  // DECYZJA 2026-11-19 (DODATEK 1): CS (hard) i AI (normal) maja ten sam upkeep jednostek.
+  ok(ubCs.utrzymanieJednostki === ubAi.utrzymanieJednostki,
+    `C2 CS (hard) == AI (normal) upkeep jednostek (${ubCs.utrzymanieJednostki} == ${ubAi.utrzymanieJednostki})`);
   eq(ubAi.utrzymanieJednostki, ubAiNoRes.utrzymanieJednostki, 'C3 AI bez zmian wzgledem globalnego normal');
-  ok(ubCs.utrzymanieJednostki > ubCsNoRes.utrzymanieJednostki,
-    'C4 CS liczony wg cityStateDifficulty (hard), nie globalnego normal (bez resolvera)');
+  ok(ubCs.utrzymanieJednostki === ubCsNoRes.utrzymanieJednostki,
+    'C4 CS z resolverem == bez resolvera (DECYZJA 2026-11-19: trudnosc nie wplywa na utrzymanie jednostek)');
 }
 
 // ---------------- D. liczby nietknięte ----------------
 console.log('--- D: liczby econ-params.json bez zmian ---');
 eq(loadUpkeepParams(econParams, 'easy').jednostkaUtrzymanieStd, 1, 'D1 jednostka easy = 1');
 eq(loadUpkeepParams(econParams, 'normal').jednostkaUtrzymanieStd, 1, 'D2 jednostka normal = 1');
-eq(loadUpkeepParams(econParams, 'hard').jednostkaUtrzymanieStd, 2, 'D3 jednostka hard = 2');
+eq(loadUpkeepParams(econParams, 'hard').jednostkaUtrzymanieStd, 1, 'D3 jednostka hard = 1 (DECYZJA 2026-11-19: ujednolicenie do normalnej)');
 
 console.log(`\nupkeep-difficulty-per-owner-test: ${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);
