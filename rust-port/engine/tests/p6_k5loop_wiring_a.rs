@@ -431,3 +431,41 @@ fn wynik_jako_dane() {
         }
     }
 }
+
+fn fnv(s: &str) -> u64 {
+    let mut h: u64 = 0xcbf2_9ce4_8422_2325;
+    for b in s.bytes() {
+        h ^= u64::from(b);
+        h = h.wrapping_mul(0x0100_0000_01b3);
+    }
+    h
+}
+
+/// Złote wyniki sesji (RUST-ONLY, zamrożenie regresji; parytet całej bitwy z pinem = BLOKADA w raporcie): skrót wyniku
+/// (zwycięzca, tura, wyłom, rzuty, HP bit w bit i flagi każdej jednostki) i liczników akcji 6 scenariuszy przewijania
+/// oraz 2 bitew w czasie rzeczywistym. Każda zmiana składania ciosu, kary morale, kolejności rzutów albo sterownika
+/// czasu zmienia skrót.
+#[test]
+fn zlote_wyniki_sesji() {
+    use civ_engine::domain::siege_tactics_actions::BattleAction;
+    let mut all = String::new();
+    for (name, s) in scenarios() {
+        let (o, actions) = run_skip(&s);
+        all.push_str(&format!("{name}={}#{};", summary(&o), actions.len()));
+    }
+    for i in [1usize, 5] {
+        let (name, s) = scenarios()[i].clone();
+        let (o, actions) = run_realtime(&s, &[16.0]);
+        let dmg = actions
+            .iter()
+            .filter(|a| matches!(a.action, BattleAction::Damage { .. }))
+            .count();
+        all.push_str(&format!(
+            "{name}-rt={}#{}#{dmg};",
+            summary(&o),
+            actions.len()
+        ));
+    }
+    eprintln!("ZLOTE {:016x}", fnv(&all));
+    assert_eq!(format!("{:016x}", fnv(&all)), "dcd224435100671a", "{all}");
+}
