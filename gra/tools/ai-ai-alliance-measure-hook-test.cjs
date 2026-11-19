@@ -87,8 +87,9 @@ function loadPlanner(tickText) {
 function behaviorFails(tickText) {
   let M;
   try { M = loadPlanner(tickText); } catch (e) { return ['BUILD:' + String(e && e.message || e).slice(0, 60)]; }
-  const enemies = { 0: [2, 3], 1: [2] };
-  const allies = { 1: [3] };
+  // Sojusznik proponenta (4) jest wrogiem celu (1) -> sojusznikWrogaProponenta musi być true (mutant na false czerwieni B1).
+  const enemies = { 0: [2, 3], 1: [2, 4] };
+  const allies = { 0: [4], 1: [3] };
   const r = M.planAiAiAllianceTickFull({
     turn: 8,
     owners: [0, 1],
@@ -106,7 +107,7 @@ function behaviorFails(tickText) {
   const d = (r.probyDetale || []).find(x => x.proponent === 0 && x.cel === 1);
   if (!d) return ['brak-proby-0-1'];
   const oczekiwane = { gotowosc: 0.7, relacja: 123, zaufanie: 45, respekt: 33, militaryRatio: 1.5, typCelu: 'zulus',
-    wspolnaGranica: true, wspolnyWrog: true, sojusznikWrogaCelu: true, sojusznikWrogaProponenta: false, accept: false };
+    wspolnaGranica: true, wspolnyWrog: true, sojusznikWrogaCelu: true, sojusznikWrogaProponenta: true, accept: false };
   return Object.keys(oczekiwane).filter(k => d[k] !== oczekiwane[k]);
 }
 
@@ -140,6 +141,7 @@ const MUTANTS = [
   ['M22 Zaufanie próby = 0', 'tick', '      relacja: info.relacja,\n      zaufanie: info.zaufanie,\n      respekt: info.pomiar?.respekt ?? null,', '      relacja: info.relacja,\n      zaufanie: 0,\n      respekt: info.pomiar?.respekt ?? null,'],
   ['M23 wspólna granica = false', 'tick', 'wspolnaGranica: info.sharesBorder,', 'wspolnaGranica: false,'],
   ['M24 wspólny wróg = false', 'tick', 'wspolnyWrog: sideP.enemies.some(x => sideT.enemies.includes(x)),', 'wspolnyWrog: false,'],
+  ['M26 sojusznik wroga proponenta = false', 'tick', '      sojusznikWrogaProponenta: sideP.allies.some(x => sideT.enemies.includes(x)),', '      sojusznikWrogaProponenta: false,'],
   ['M25 przestarzałe zawsze false', 'main', 'przestarzale: aiAiAllianceOstatniaProby.tura !== turn,', 'przestarzale: false,'],
 ];
 
