@@ -175,7 +175,15 @@ fn storm(st: PlayableState, chunks: &[f64]) -> (PlayableState, SiegeBattleResult
 
 #[test]
 fn szturm_z_wylomem_zdobywa_miasto_przez_most() {
-    let (st, res) = storm(state(11, true), &[]);
+    // `playerEverOwnedCityByOwner.add(atkOwner)` (`main.ts:36218`): flaga gracza po wczytaniu = false (pin jej nie
+    // zapisuje), zdobycie ją ustawia.
+    let mut st0 = state(11, true);
+    st0.gracz_kiedys_mial_miasto = false;
+    let (st, res) = storm(st0, &[]);
+    assert!(
+        st.gracz_kiedys_mial_miasto,
+        "playerEverOwnedCityByOwner.add"
+    );
     assert_eq!(res.winner, BattleWinner::Atakujacy, "scenariusz: wygrana");
     assert!(res.wall_breached, "scenariusz: wylom (taran)");
     let cap = res
