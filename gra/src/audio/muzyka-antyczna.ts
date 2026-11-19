@@ -1829,7 +1829,21 @@ function stopOverlay(pl: FilePlaylist): void {
 export function startDiplomacyMusic(civId?: string): void {
   const pl = diplomacyPlaylistForCiv(civId);
   diplomacyOverlayPlaylist = pl;
-  startOverlay(pl, { fadeInMs: DIPLOMACY_FADE_IN_MS });
+  if (overlayActive === pl) return; // ta sama playlista już gra — bez dubla i bez restartu
+  const prev = overlayActive;
+  if (prev === null) {
+    startOverlay(pl, { fadeInMs: DIPLOMACY_FADE_IN_MS });
+    return;
+  }
+  // Przekazanie między nakładkami dyplomacji (przywitanie -> audiencja): poprzednia
+  // nakładka cichnie, a nowa startuje dopiero PO jej zatrzymaniu. Nigdy dwie naraz
+  // i bez powrotu muzyki gry w przerwie (stopOverlay wznawia ją tylko przy zwykłym stop).
+  overlayActive = pl;
+  prev.stop(() => {
+    if (overlayActive !== pl) return; // w międzyczasie zatrzymano dyplomację
+    pl.setVolume(volume);
+    pl.startWithFadeIn(DIPLOMACY_FADE_IN_MS);
+  });
 }
 /** Koniec muzyki dyplomacji — powrót do muzyki gry (fade-out przez stop()). */
 export function stopDiplomacyMusic(): void {
