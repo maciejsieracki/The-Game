@@ -1,3 +1,9 @@
+## ROBOCZA f1a64eb6 -- 2026-11-18 -- FALA 861: R-WEB-UI-HUD-SHORTAGE-ALERT-TOOLTIP-Q1: alert niedoboru w naglowku, chip Surowce i tooltip Brutto-netto liczone z netto HUD (po odjeciu wejsc konwerterow) (testowa)
+
+- gra/src/game/resource-gross-net.ts (resourceIsShortage, tekst tooltipu), gra/src/main.ts, gra/src/ui/hud.ts, test hud-shortage-alert-converter-test. Zmiana semantyki: niedobor = netto HUD < 0 (zaokraglone, uwzglednia zuzycie); tooltip pokazuje wiersz Wejscia przetworstwa gdy >0.
+- Weryfikacja: tsc 0, logic 213/213, hud-shortage-alert-converter 17/0, converter-inputs 18/0, deficit-red 41/0, ai-economy-hook 23/23, FC jednorazowy test w Chromium: wiersz tooltipu OK
+- Limity: Ceramika 77 vs 67: hipoteza drenazu Spichlerza (10/t) z kodu, NIE ZMIERZONO na zywo; resStateOf karty surowca (empireDetailPanel.ts:3408) nadal po ratePerTurn<0; wiazanie main.ts testowane statycznie
+
 ## ROBOCZA 7670a3a5 -- 2026-11-18 -- FALA 860: R-WEB-DIPLO-ALL-FLAGS-MEASURE-RUNNER-Q1: hak testowy __diploAllFlagsMeasure i runner pomiaru lacznego flag dyplomacji (bez zmian w grze) (testowa)
 
 - gra/src/main.ts (tylko blok hakow civTest __diploAllFlagsMeasure), gra/tools: runner --all-flags, analizator OFF vs ON, liczniki, testy. Flagi domyslnie OFF - zachowanie gry bez zmian.
