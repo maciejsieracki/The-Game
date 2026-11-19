@@ -96,8 +96,10 @@ M.setImprovementCostOwnerEraForTest(false);
 for (const key of M.IMPROVEMENT_KEYS) {
   const row = DATA[key];
   const meta = M.getImprovementMeta(key);
-  const baseStone = row && typeof row.koszt_praca === 'number'
-    ? Math.max(1, Math.round(row.koszt_praca * 2))
+  // Flaga OFF = wartosc sprzed zmiany (kopalnie rudy: koszt_praca_przed_x2 = 22; pozostale wiersze: koszt_praca).
+  const rawOff = row && (row.koszt_praca_przed_x2 ?? row.koszt_praca);
+  const baseStone = row && typeof rawOff === 'number'
+    ? Math.max(1, Math.round(rawOff * 2))
     : 0;
   const multiplier = M.terrainImprovementConstructionEraMultiplier(row && row.epoka);
   const expected = baseStone > 0 ? baseStone * multiplier : 0;

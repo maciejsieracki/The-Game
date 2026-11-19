@@ -73,7 +73,10 @@ const { pickAutoImprovements } = M.AIMP;
 const isCityLimitExhausted = M.AIMP.isCityLimitExhausted || (() => { throw new Error('brak isCityLimitExhausted'); });
 const { decideAITurn, canFoundCity, territoryOwnerAt, axialDistance, getImprovementMeta } = M;
 // Koszt z danych (skalowany epoka: scaleTerrainImprovementWorkCost) — testy nie zakladaja stalej liczby.
-const FORT_COST = getImprovementMeta('fort').kosztPraca;
+// R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1: koszt wg EPOKI WŁAŚCICIELA. Fixtura pickera ma playerEra: 3
+// (callK2), więc koszt fortu = mnożnik Żelaza (×2); dla AI z era 1 patrz FORT_COST_AI1.
+const FORT_COST = getImprovementMeta('fort', 3).kosztPraca;
+const FORT_COST_AI1 = getImprovementMeta('fort', 1).kosztPraca;
 
 let passed = 0, failed = 0;
 function ok(cond, msg) {
@@ -233,9 +236,9 @@ function aiCmds(map, over = {}) {
   ok(!aiCmds(map, { era: 3, cityLimitBase: 1 }).some(c => c.key === 'fort'), 'AI era 3 -> limit 11 > 1 miasto -> 0 fortow (parytet z canFoundCity)');
   ok(!aiCmds(map, { era: 1, cityLimitBase: 1, defensiveCopy: true }).some(c => c.key === 'fort'), 'miasto-panstwo (defensiveCopy) -> 0 fortow (jak planExpansionFortBuilding)');
   // AI: budzet 100% puli (improvementBudgetCap = pula) — fort przechodzi przy niskiej puli >= koszt (+ bramka wejscia AI)
-  const poolOk = FORT_COST + 80;
+  const poolOk = FORT_COST_AI1 + 80;
   ok(aiCmds(map, { era: 1, cityLimitBase: 1, pool: poolOk }).some(c => c.key === 'fort'), `AI pula ${poolOk} (100% puli, bez sufitu %) -> fort stawiany`);
-  ok(!aiCmds(map, { era: 1, cityLimitBase: 1, pool: FORT_COST - 1 }).some(c => c.key === 'fort'), 'AI pula < koszt -> 0');
+  ok(!aiCmds(map, { era: 1, cityLimitBase: 1, pool: FORT_COST_AI1 - 1 }).some(c => c.key === 'fort'), 'AI pula < koszt (era 1) -> 0');
 }
 
 // =========================================================================
@@ -362,15 +365,18 @@ console.log('P. parytet isCityLimitExhausted z canFoundCity');
 // =========================================================================
 console.log('K. m7: niedobor czekajacy na Prace wstrzymuje fort (stadnina drozsza od fortu)');
 {
-  const costs = ks => ks.map(k => `${k}=${getImprovementMeta(k)?.kosztPraca}`).join(' ');
+  const costs = ks => ks.map(k => `${k}=${getImprovementMeta(k, 3)?.kosztPraca}`).join(' ');
   console.log('  [info] koszty produkcyjne: ' + costs(['fort', 'posterunek', 'tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_cyny', 'warzelnia_soli', 'stadnina']));
   // (a) dane produkcyjne: kazde ulepszenie niedoboru tansze od fortu -> m7 rownowazny; pin tej zaleznosci.
   const DEF_KEYS = ['tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_cyny', 'warzelnia_soli', 'stadnina'];
-  const maxDef = Math.max(...DEF_KEYS.map(k => getImprovementMeta(k).kosztPraca));
-  ok(maxDef < FORT_COST, `dane produkcyjne: najdrozsze ulepszenie niedoboru (${maxDef}) < fort (${FORT_COST}) — m7 rownowazny na tych danych (patrz wariant nizej)`);
+  const maxDef = Math.max(...DEF_KEYS.map(k => getImprovementMeta(k, 3).kosztPraca));
+  // RE-BASELINE (R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1, decyzja 2026-11-19): kopalnie x2 w danych
+  // sprawiaja, ze najdrozsze niedobor (kopalnia zelaza w Zelazie) PRZEWYZSZA fort. Stara pinowana zaleznosc (maxDef < fort)
+  // przestala byc prawdziwa ZAMIERZENIE; m7 zabija wariant (b) ponizej, wiec wykrywanie m7 nie slabnie.
+  ok(maxDef > FORT_COST, `dane produkcyjne (zamierzone po x2 kopalni): najdrozsze ulepszenie niedoboru (${maxDef}) > fort (${FORT_COST}) — m7 NIE jest na tych danych rownowazny; wykrywa go wariant (b)`);
   // (b) wariant z kosztami podmienionymi: stadnina x10 -> drozsza od fortu; to zabija m7.
   const G = MC.AIMP, getMetaC = MC.getImprovementMeta;
-  const STAD = getMetaC('stadnina').kosztPraca, FORTC = getMetaC('fort').kosztPraca;
+  const STAD = getMetaC('stadnina', 3).kosztPraca, FORTC = getMetaC('fort', 3).kosztPraca;
   console.log(`  [info] wariant kosztowy: stadnina=${STAD}, fort=${FORTC}`);
   ok(STAD > FORTC, `fixtura: stadnina (${STAD}) drozsza od fortu (${FORTC})`);
   const map = makeMap({ mountains: [[CQ + 5, CR]] });
@@ -427,6 +433,28 @@ console.log('M. fort drozszy od sufitu % gracza na stale: drogi wstrzymane (udok
   ok(picks.length === 0, `sufit ${pct}% z 1000 < koszt fortu: ani fort, ani droga (got ${JSON.stringify(picks.map(p => p.key))}) — ZAMIERZONE: wzorzec jak E1-E5 (cel czekajacy na Prace wstrzymuje nizsze priorytety)`);
   const picks2 = callK2(map, { pool: 1000, pct: pct + 3, placed: placedR, extra: { getWorkedHexKeys: () => wR } });
   ok(forts(picks2).length === 1, 'po podniesieniu sufitu % gracza fort jest stawiany i blokada znika');
+}
+
+// =========================================================================
+console.log('Q. koszt wg EPOKI WLASCICIELA w sciezkach pickera (playerEra) i AI (civEra) — R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1');
+{
+  const map = makeMap({ mountains: [[CQ + 5, CR]] });
+  const COST1 = getImprovementMeta('fort', 1).kosztPraca;
+  const COST3 = getImprovementMeta('fort', 3).kosztPraca;
+  ok(COST3 > COST1 && COST1 > 0, `fort: koszt Kamien ${COST1} < koszt Zelazo ${COST3} (epoka wlasciciela zmienia koszt)`);
+  // picker (auto-improvements): playerEra = epoka wlasciciela; ten sam pool, inny wynik
+  const poolP = COST1 + 30;
+  ok(forts(callK2(map, { pool: poolP, extra: { playerEra: 1 } })).length === 1,
+    `picker playerEra 1: fort za ${COST1} miesci sie w puli ${poolP} (got ${JSON.stringify(callK2(map, { pool: poolP, extra: { playerEra: 1 } }).map(p => p.key))})`);
+  ok(forts(callK2(map, { pool: poolP, extra: { playerEra: 3 } })).length === 0,
+    `picker playerEra 3: fort za ${COST3} NIE miesci sie w puli ${poolP} (koszt wg epoki wlasciciela)`);
+  // AI (ai.ts): opts.civEra = epoka wlasciciela; limit miast wyczerpany w obu erach (base -9: era1 -9, era3 1, 1 miasto)
+  const LIM = -9;
+  const poolA = COST3 - 1; // tuz pod kosztem ery 3: era 1 jeszcze miesci fort, era 3 juz nie
+  ok(aiCmds(map, { era: 1, cityLimitBase: LIM, pool: poolA }).some(c => c.key === 'fort'),
+    `AI civEra 1: fort za koszt ery 1 (${COST1}) stawiany w puli ${poolA}`);
+  ok(!aiCmds(map, { era: 3, cityLimitBase: LIM, pool: poolA }).some(c => c.key === 'fort'),
+    `AI civEra 3: ten sam fort kosztuje ${COST3} -> w puli ${poolA} NIE stawiany (ai.ts czyta opts.civEra)`);
 }
 
 console.log(`\nauto-fort-claim-test: ${passed} passed, ${failed} failed`);

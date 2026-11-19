@@ -98,7 +98,7 @@ for (const [base, era] of [[20, 1], [20, 2], [20, 3], [44, 2], [44, 3], [25, 3],
   }
 }
 same(M.getImprovementMeta('farma', 3)?.kosztPraca, 20, 'flaga OFF: farma u wlasciciela Zelaza nadal 20 (epoka ulepszenia)');
-same(M.getImprovementMeta('kopalnia_zelaza', 2)?.kosztPraca, 176, 'flaga OFF: kopalnia zelaza nadal 176 (epoka ulepszenia 3 x dane 44 x2)');
+same(M.getImprovementMeta('kopalnia_zelaza', 2)?.kosztPraca, 88, 'flaga OFF: kopalnia zelaza = 88 jak przed zmiana (epoka ulepszenia 3 x dane przed x2 22 x2)');
 M.setImprovementCostOwnerEraForTest(null);
 ok(M.isImprovementCostOwnerEraEnabled() === true, 'override null -> wartosc z danych (ON)');
 

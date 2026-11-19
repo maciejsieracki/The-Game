@@ -43,7 +43,7 @@ import {
   getImprovementLockHint,
   type ImprovementActionTyp,
 } from '../game/improvement-tech';
-import { scaleTerrainImprovementWorkCostForOwner } from '../game/terrain-improvements';
+import { baseKosztPracaUlepszenia, scaleTerrainImprovementWorkCostForOwner } from '../game/terrain-improvements';
 
 // ---------------------------------------------------------------------------
 // Typy kontraktu
@@ -973,11 +973,11 @@ export function isHexNearRiver(
   return false;
 }
 
-type JsonImprovement = { koszt_praca?: number; nazwa?: string; epoka?: number };
+type JsonImprovement = { koszt_praca?: number; koszt_praca_przed_x2?: number; nazwa?: string; epoka?: number };
 
 function readWorkCost(key: ImprovementKey, ownerEra?: number): number {
   const entry = (terrainImprovements as unknown as Record<string, JsonImprovement>)[key];
-  return scaleTerrainImprovementWorkCostForOwner(entry?.koszt_praca ?? 20, entry?.epoka, ownerEra);
+  return scaleTerrainImprovementWorkCostForOwner(entry?.koszt_praca === undefined ? 20 : baseKosztPracaUlepszenia(entry), entry?.epoka, ownerEra);
 }
 
 const NAKLADKI_ZWIERZECZE = new Set<Nakladka>([

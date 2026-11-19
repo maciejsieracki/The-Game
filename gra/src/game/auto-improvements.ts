@@ -710,6 +710,8 @@ interface FortClaimArgs {
  * Filtr `onlyWorked` (Zasada 2) tu NIE obowiązuje: cenny teren na granicy z definicji nie jest pracowany.
  */
 function pickFortClaims(a: FortClaimArgs): AutoImprovementPick[] {
+  // Koszt wg epoki WŁAŚCICIELA (ta sama definicja co koszt budowy): `playerEra` = epoka właściciela pickera.
+  const fortOwnerEra = a.opts.playerEra ?? 1;
   const { opts, workingPlaced, qualifies } = a;
   const { map, ownerId } = opts;
   const territoryNodes = opts.territoryNodes ?? [];
@@ -744,7 +746,7 @@ function pickFortClaims(a: FortClaimArgs): AutoImprovementPick[] {
   let pracaLeft = a.pracaLeft;
   let globalSpent = 0;
   const nodesNow: TerritoryNode[] = [...territoryNodes];
-  const keys = FORT_CLAIM_KEYS.filter(k => !!getImprovementMeta(k)
+  const keys = FORT_CLAIM_KEYS.filter(k => !!getImprovementMeta(k, fortOwnerEra)
     && isImprovementTechUnlocked(k, a.unlockedTechs) && a.civGate(k, opts.civArchetype));
   const sink = resolveDecisionSink(opts.onDecision);
   if (keys.length === 0) {
@@ -787,7 +789,7 @@ function pickFortClaims(a: FortClaimArgs): AutoImprovementPick[] {
         const q = Number(qs); const r = Number(rs);
         if ((workingPlaced.get(hk) ?? []).some(k => k === 'fort' || k === 'posterunek')) continue;
         for (const key of keys) {
-          const meta = getImprovementMeta(key);
+          const meta = getImprovementMeta(key, fortOwnerEra);
           if (!meta) continue;
           const rad = radiusOf(key);
           // „Jeden fort na obszar, bez nakładania zasięgów”: okręgi fortów/posterunków rozłączne.
@@ -1770,7 +1772,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       for (const key of defensePriority) {
         if (globalSpent >= effectiveCityCap) break;
         if (pracaLeft <= reserve) break;
-        const meta = getImprovementMeta(key);
+        const meta = getImprovementMeta(key, (playerEra ?? 1));
         if (!meta) continue;
         if (!isImprovementTechUnlocked(key, unlockedTechs)) continue;
         if (!civGate(key, civArchetype)) continue;
@@ -1872,7 +1874,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // poniżej, więc obie strony zgadzają się co do tego, kiedy wyrąb na rzece dojdzie.
     // Warunki = dokładnie to, co wyrąb na rzece faktycznie wymaga (bez budżetu — budżet
     // jest przejściowy, a bramka nie może blokować tartaku na stałe).
-    const wyrabMetaRzeka = getImprovementMeta('wyrab');
+    const wyrabMetaRzeka = getImprovementMeta('wyrab', (playerEra ?? 1));
     // R5 (właściciel 2026-10-31, K1/K2/K3): „wycinka tylko pod farmy” — wyrąb nigdy na zapas. Farma stoi wyłącznie na
     // Łące/Równinie bez lasu (`isFarmBaseTerrain`, improvement-build.ts:387), więc las na Wzgórzach/Górach/innym terenie
     // NIE jest karczowany przez automat żywnościowy (wyrąb tam nie prowadzi do farmy). Profile „surowce”/
@@ -2129,7 +2131,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
           && hexAllowsKey(q, r, 'wyrab')
         )
       ) {
-        const wyrabMeta = getImprovementMeta('wyrab');
+        const wyrabMeta = getImprovementMeta('wyrab', (playerEra ?? 1));
         if (
           wyrabMeta
           && isImprovementTechUnlocked('wyrab', unlockedTechs)
@@ -2154,7 +2156,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
           cityBudgetExhausted = true;
           break;
         }
-        const meta = getImprovementMeta(key);
+        const meta = getImprovementMeta(key, (playerEra ?? 1));
         if (!meta) continue;
         // R-WEB-AUTOIMPROVE-STAGES2-Q1 (właściciel 2026-10-31, budżet sztywno): koszt ponad dostępny budżet
         // (procent × pula) = ta pozycja NIE powstaje w tej turze; pula Pracy się kumuluje (main.ts nie
@@ -2215,7 +2217,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       && !cityBudgetExhausted && !demandActive && !citySkipWyrab && basePriority.includes('wyrab')
     ) {
       const key: ImprovementKey = 'wyrab';
-      const meta = getImprovementMeta(key);
+      const meta = getImprovementMeta(key, (playerEra ?? 1));
       const techOk = isImprovementTechUnlocked(key, unlockedTechs) && civGate(key, civArchetype);
       if (meta && techOk && meta.kosztPraca <= pracaLeft && pracaLeft - meta.kosztPraca >= reserve) {
         const forestCount = radiusHexes.reduce((n, { q, r }) => {
@@ -2267,7 +2269,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
         if (surplusReport.anyCandidate) break;
         const hexKey = `${q},${r}`;
         for (const key of hexPhasePriority) {
-          if (!getImprovementMeta(key)) continue;
+          if (!getImprovementMeta(key, (playerEra ?? 1))) continue;
           if (!isImprovementTechUnlocked(key, unlockedTechs)) continue;
           if (!civGate(key, civArchetype)) continue;
           if ((workingPlaced.get(hexKey) ?? []).includes(key)) continue;
@@ -2287,7 +2289,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
         if (surplusReport.filterWaitingKeys.has(hexKey)) continue;
         for (const key of hexPhasePriority) {
           if (hexAllowsKey(q, r, key)) continue; // klucz przechodzi filtr na tym heksie — nie czeka za filtrem
-          if (!getImprovementMeta(key)) continue;
+          if (!getImprovementMeta(key, (playerEra ?? 1))) continue;
           if (!isImprovementTechUnlocked(key, unlockedTechs)) continue;
           if (!civGate(key, civArchetype)) continue;
           if ((workingPlaced.get(hexKey) ?? []).includes(key)) continue;

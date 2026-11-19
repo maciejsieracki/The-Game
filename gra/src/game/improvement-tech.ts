@@ -3,7 +3,7 @@
  * Decyzja Maciej B1-Q1=B (2026-06-29): źródło prawdy bramki = terrain-improvements.json (tech 1:1).
  */
 import terrainJson from '../../data/terrain-improvements.json';
-import { scaleTerrainImprovementWorkCostForOwner } from './terrain-improvements';
+import { baseKosztPracaUlepszenia, scaleTerrainImprovementWorkCostForOwner } from './terrain-improvements';
 import { humanizeId } from './text-names';
 
 export type ImprovementActionTyp = 'wycinka' | 'ulepszenie';
@@ -28,6 +28,7 @@ type JsonRow = {
   nazwa?: string;
   epoka?: number;
   koszt_praca?: number;
+  koszt_praca_przed_x2?: number;
   tech?: string | null;
   typ?: ImprovementActionTyp;
   wycinka?: { praca_per_tura?: number; tury?: number };
@@ -104,7 +105,7 @@ function readMeta(key: string, ownerEra?: number): ImprovementMeta | null {
     nazwa: row.nazwa ?? humanizeId(key),
     epoka: row.epoka ?? 1,
     // R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1: koszt wg epoki WŁAŚCICIELA (ownerEra).
-    kosztPraca: scaleTerrainImprovementWorkCostForOwner(row.koszt_praca ?? 0, row.epoka, ownerEra),
+    kosztPraca: scaleTerrainImprovementWorkCostForOwner(baseKosztPracaUlepszenia(row), row.epoka, ownerEra),
     techId: normalizeTech(row.tech ?? null),
     typ,
     clearing,

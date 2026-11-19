@@ -127,7 +127,8 @@ const map0 = makeMap({ mountains: [[CQ + 5, CR]] });
 const SPOT = [CQ + 5, CR];
 const GAIN_F = gainAt(SPOT[0], SPOT[1], 'fort');
 const GAIN_P = gainAt(SPOT[0], SPOT[1], 'posterunek');
-const FORT_COST = getImprovementMeta('fort').kosztPraca;
+// R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1: koszt wg epoki WLASCICIELA (fixtura playerEra: 3).
+const FORT_COST = getImprovementMeta('fort', 3).kosztPraca;
 
 console.log(`Dane pomiarowe: zysk fortu na ${SPOT} = ${GAIN_F}, zysk posterunku = ${GAIN_P}, koszt fortu = ${FORT_COST}`);
 
@@ -245,8 +246,10 @@ console.log('H. druga sciezka budowy AI (planExpansionFortBuilding): te same reg
   ok(c3 === null, 'H3 limit miast NIE wyczerpany (1 < 5) -> brak fortu w sciezce ekspansji');
   const c4 = planH(modLow, {}, { turn: 60, threatFronts: 1 });
   ok(c4 === null, 'H4 okno + zagrozenie -> udzial fortow = 0 (sciezka ekspansji)');
-  const c5 = planH(modLow, { pool: FORT_COST * 4 }, inWin);
-  ok(c5 === null, `H5 okno, pula ${FORT_COST * 4} (15% < koszt) -> brak fortu przez udzial`);
+  // optsH.civEra = 1 -> koszt fortu wg epoki WLASCICIELA (Kamien) = FORT_COST_AI1; udzial 15% musi byc < ten koszt.
+  const FORT_COST_AI1 = getImprovementMeta('fort', 1).kosztPraca;
+  const c5 = planH(modLow, { pool: FORT_COST_AI1 * 4 }, inWin);
+  ok(c5 === null, `H5 okno, pula ${FORT_COST_AI1 * 4} (15% < koszt ${FORT_COST_AI1}) -> brak fortu przez udzial`);
   const c6 = planH(modLow, { pool: FORT_COST * 4 }, { turn: 100, threatFronts: 0 });
   ok(c6 && c6.key === 'fort', 'H6 poza oknem (tura 100) ten sam budzet -> fort dozwolony');
   const c7 = planH(M, { pool: 5000 }, undefined);
