@@ -3928,3 +3928,7 @@ Konsekwencje dla kolejki:
 - Worktree i dysk przetrwały. T4: Operator r1 zakończony (raport `4d649d2d2`, `refs/keep/TAGS-REST-op-r1`, push `rust-port-wip/tags-rest-q1`); Workflow wznowiony `resumeFromRunId wf_332bf894-0ad` (Operator z cache, Evaluator od nowa).
 - T6: r1c przerwana; stan `fbe3d8d2c` (`refs/keep/ADAPTER-op-r1c-wip`, push `rust-port-wip/k5loop-adapter-q1-op-r1c`), DODATEK r1d, nowy Workflow `wf_aa003b5d-05f`.
 - Dysk 7,1 GB wolnego (cache T6 5 GB w scratchpadzie zachowany celowo jako CARGO_TARGET_DIR).
+
+### Przebieg 2026-11-19 ~01:50 UTC — heartbeat, kryzys dysku
+- Dysk spadł do 2,3 GB (cache T6 `adapter/t2` 7,2 GB + T4 `tagsrest/evs/tfull`); zwolniono: worktree `wf_499692f2-310-1` (przerwana runda r1c, stan w `refs/keep/ADAPTER-op-r1c-wip`), `wf_332bf894-0ad-1` (Operator T4, `refs/keep/TAGS-REST-op-r1`), `adapter/t3`, `tgt-docdebts-obrona` → 5,2 GB. Działających buildów (T4 Evaluator, T6 Operator) nie ruszono.
+- Aktywne: T4 Evaluator, T6 Operator (Opus). Nowych tematów nie startuję (dysk < 8 GB; T7 zależny od T4/T6; renderer ≥ 12 GB).
