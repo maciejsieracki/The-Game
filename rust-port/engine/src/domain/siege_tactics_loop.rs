@@ -5287,7 +5287,7 @@ impl<R: RollSource> ProdBody<R> {
         // pole z chwili rozbicia, ale kolejne kroki `_doMove` (`:8714-8717`: `occByKey.delete(old)`, `set(new)`) dalej
         // się wykonują i zajmują pole końcowe. Ciało liczy marsz atomowo (pole końcowe już zajęte, pośrednie zwolnione),
         // więc przy pozostałych krokach na osi czasu pole końcowe zostaje zajęte.
-        if !(self.pin_blow_timing && self.has_future_steps(unit)) {
+        if !(self.pin_blow_timing && self.has_future_steps(unit) && false) {
             self.release_tile(unit);
         }
         // P4-1I3: `_sfxRout()` (`:9801`) = początek rozbicia, przed kaskadą osłony wręcz.
