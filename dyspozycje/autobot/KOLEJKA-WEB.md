@@ -25,6 +25,8 @@ Nowe starty: `df --output=avail -BG /` ≥ 6 GB (integracja `/home/user/integ` �
 
 ## DECYZJE WŁAŚCICIELA 2026-11-19 (ZAPIS PEŁNY — źródło prawdy dla autonomicznej pętli; szczegóły i cytaty w rejestrze)
 
+**ZASADA STAŁA (właściciel 2026-11-19): każdy nowy mnożnik jest DODATKOWY i mnoży obecne współczynniki w grze; nowe ustalenia nie zastępują wcześniejszych decyzji.** (Korekta: FALA 875 źle zastąpiła żywność jednostek ×3/epokę wartością ×1/×2/×4; poprawka w temacie R-WEB-ECONOMY-UNIT-UPKEEP-EXTRA-MULT-AND-FOOD-TAX-RATE-Q1: żywność ×3/epokę przywrócona, dodatkowy mnożnik utrzymania Pieniądza i Żywności 1/4/8, surowce po staremu; kurs żywność→Podatek 0,2.)
+
 **Ekonomia (rebalans wg epok):** wszystkie surowce ulepszeń bez wzrostu co epokę (stałe wartości z Kamienia); utrzymanie jednostek żywność: pierwotnie ×3/epokę, **zastąpione 2026-11-19 przez ×1/×2/×4 (Kamień/Brąz/Żelazo) dla pieniądza, surowców i żywności**; racje obywateli ×2/epokę; konwertery bez zmian („na razie tylko ulepszenia”); Praca/Drewno „najpierw zmierzyć”; flaga rebalansu ON na ROBOCZEJ (FALA 871); zrzut Żywności z Brązu miał rebalans ON.
 **Praca/ulepszenia:** kopalnie rudy (miedź, cyna, żelazo) koszt_praca ×2 (22→44) i koszt ulepszeń wg epoki WŁAŚCICIELA (Brąz/Żelazo droższe), parametr `kosztUlepszenWgEpokiWlasciciela` (temat IMPCOST, w toku); po FC deploy + pomiar 150 tur.
 **Żywność/Spichlerz:** nadwyżka ponad cap przepada dziś; decyzja: możliwość zamiany na pieniądze jak Praca (WDROŻONE FALA 876, kurs 1:1 do potwierdzenia). Drenaż Spichlerza w HUD netto (FALA 867).
@@ -48,6 +50,8 @@ Nowe starty: `df --output=avail -BG /` ≥ 6 GB (integracja `/home/user/integ` �
 
 ## GOTOWE DO STARTU (kolejność; start gdy slot < 4 i dysk ≥ 6 GB; dispatch najpierw na gałąź)
 
+00. **R-WEB-ECONOMY-UNIT-UPKEEP-EXTRA-MULT-AND-FOOD-TAX-RATE-Q1** (korekta FALI 875 + mnożnik 1/4/8 + kurs 0,2; dispatch zapisany; pomiar obowiązkowy).
+00. **R-WEB-BATTLE-FLEE-MANUAL-MODE-HARAPPA-MEASURE-Q1** (pomiar i naprawa trybu ręcznego bitwy 3D; dispatch zapisany).
 0. **R-WEB-ERA-WAR-DEFER-NOT-CANCEL-WHEN-PREVIOUS-WAR-ACTIVE-Q1** (PRIORYTET, zgłoszenie właściciela 2026-11-19; dispatch zapisany): wojna epoki Brązu/Żelaza ma być PRZESUWANA (pending, zapisywana), nie anulowana, gdy trwa wojna poprzedniej epoki; startuje zaraz po jej końcu (gracz i AI). Haiku; po FC deploy jako kolejna FALA.
 1. **R-WEB-TEST-DEBT-Q12** — pozostałe czerwone testy: auto-fort-claim, building-upkeep-resources D10 (martwy plUpkeepForm w buildingAdapter.ts), entity-card-cross-links-nested-overlay (niestabilny), fishing-boats-666 (docs nieaktualne), hodowla-las (3 asercje, po FALI 874 sprawdzić), diplo-forced-peace-pending-live-paths (środowisko). Haiku, bez ABC.
 2. **R-WEB-VERIFY-LIVE-873-ALLIANCELIMIT-Q1** — weryfikacja na żywo (jeden Chromium): pokój z cesją ≥2 miast (FALA 873), bieg 100 tur limitu 2 sojuszy z flagą ON (FALA 865), reguła wojen z graczem (863), żywa zamiana Żywności→Podatek (876), bieg dymny 60 tur po FALI 875. Wynik: tabela ZMIERZONO/NIE ZMIERZONO. Haiku.
