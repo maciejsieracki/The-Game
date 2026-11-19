@@ -70,6 +70,7 @@ import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
 import { isAiAiTreatyTickEnabled, setAiAiTreatyTickEnabledForTest, planAiAiNapTreatyTickFull, applyAiAiNapBreachRelacja, aiAiNapBreachRelacjaDelta, type AiAiWarStatus } from './game/ai-ai-treaty-tick';
 import { isAiAiAllianceTickEnabled, setAiAiAllianceTickEnabledForTest, planAiAiAllianceTickFull, type AiAiAllianceProbaDetal } from './game/ai-ai-alliance-tick';
+import { setAiAiDopłataMnoznikForTest } from './game/ai-ai-treaty-evaluate';
 import { isWarByAllianceStrengthEnabled, setWarByAllianceStrengthForTest, type BlokSojusznik } from './game/diplomacy-alliance-strength';
 import { isZeroTrustEnabled, setZeroTrustEnabledForTest, zeroZaufaniaProgTur, zeroTrustBreakOrders, zeroTrustCount, zeroTrustPreferredTarget, zeroTrustRecordBreak, zeroTrustStats, resetZeroTrustSession } from './game/diplomacy-zero-trust';
 import { isAiAiCoalitionEnabled, setAiAiCoalitionEnabledForTest, aktualizujLidera, budujKontekstKoalicji, initLiderKoalicjiStan, loadAiAiCoalitionParams, type LiderKoalicjiStan } from './game/ai-ai-coalition';
@@ -31709,6 +31710,11 @@ async function boot(): Promise<void> {
       };
       // R-WEB-AI-AI-ALLIANCES-E3 (hak testowy, NIE UI): przełącznik toru sojuszy AI↔AI i pojedynczy krok sojuszy.
       if ((window as any).__civAiAllianceMeasureForce === true) setAiAiAllianceTickEnabledForTest(true);
+      // R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-SOFTEN-MEASURE-Q1 (hak civTest, NIE UI): mnożnik dopłaty D sojuszy AI↔AI
+      // ustawiany przez wrapper pomiaru (window.__civAiDopłataMnoznikMeasure, liczba). Bez tego: wartość z danych (1,0).
+      if (isCivTestEnabled(window.location.search) && typeof (window as any).__civAiDopłataMnoznikMeasure === 'number') {
+        setAiAiDopłataMnoznikForTest((window as any).__civAiDopłataMnoznikMeasure);
+      }
       // R-WEB-DIPLO-ZERO-TRUST (hak testowy, NIE UI): przełącznik zerowego zaufania, krok zerwań i odczyt pomiaru.
       (window as any).__truceTestDebug.zeroTrustForTest = {
         setEnabled: (v: boolean | null): void => { setZeroTrustEnabledForTest(v); },

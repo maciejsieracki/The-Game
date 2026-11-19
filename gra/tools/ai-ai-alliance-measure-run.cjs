@@ -36,6 +36,11 @@ if (process.env.AI_ALLIANCE_MEASURE_CHILD === '1') {
     if (process.env.AI_ALLIANCE_MEASURE_FORCE === '1') {
       await ctx.addInitScript(() => { window.__civAiAllianceMeasureForce = true; });
     }
+    // R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-SOFTEN-MEASURE-Q1: mnożnik dopłaty D sojuszy AI↔AI (tylko pomiar, hak civTest).
+    if (process.env.AI_ALLIANCE_MEASURE_MNOZNIK !== undefined && process.env.AI_ALLIANCE_MEASURE_MNOZNIK !== '') {
+      const m = Number(process.env.AI_ALLIANCE_MEASURE_MNOZNIK);
+      await ctx.addInitScript((v) => { window.__civAiDopłataMnoznikMeasure = v; }, m);
+    }
     return ctx;
   };
 } else {
@@ -47,8 +52,16 @@ if (process.env.AI_ALLIANCE_MEASURE_CHILD === '1') {
     process.exit(2);
   }
   // Argument --alliances (wraz z wartoscia) jest zjadany tutaj; runner dostaje reszte bez zmian.
-  const rest = i >= 0 ? argv.filter((_, k) => k !== i && k !== i + 1) : argv;
-  const env = Object.assign({}, process.env, { AI_ALLIANCE_MEASURE_CHILD: '1', AI_ALLIANCE_MEASURE_FORCE: val });
+  const rest0 = i >= 0 ? argv.filter((_, k) => k !== i && k !== i + 1) : argv;
+  // --mnoznik <liczba> (opcjonalnie): mnożnik dopłaty D AI↔AI na czas biegu; zjadany tutaj jak --alliances.
+  const j = rest0.indexOf('--mnoznik');
+  const mnoznik = j >= 0 && rest0[j + 1] !== undefined ? rest0[j + 1] : '';
+  if (j >= 0 && (mnoznik === '' || !Number.isFinite(Number(mnoznik)) || Number(mnoznik) < 0)) {
+    console.error('[mnoznik] --mnoznik musi byc liczba >= 0 (podano: ' + mnoznik + ')');
+    process.exit(2);
+  }
+  const rest = j >= 0 ? rest0.filter((_, k) => k !== j && k !== j + 1) : rest0;
+  const env = Object.assign({}, process.env, { AI_ALLIANCE_MEASURE_CHILD: '1', AI_ALLIANCE_MEASURE_FORCE: val, AI_ALLIANCE_MEASURE_MNOZNIK: mnoznik });
   env.NODE_OPTIONS = ((process.env.NODE_OPTIONS || '') + ' --require ' + JSON.stringify(SELF)).trim();
   const r = spawnSync(process.execPath, [RUNNER, ...rest], { stdio: 'inherit', env });
   // R-WEB-AI-AI-ALLIANCES-E3-WILLINGNESS-MEASURE-Q1: po biegu analizator liczy rozkład gotowości (histogram 0,1 per tura,
