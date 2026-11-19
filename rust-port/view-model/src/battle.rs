@@ -509,8 +509,9 @@ impl BattleFrameDto {
 // so a lunge or a miss leaves no trace in the frame. Each action carries `t0`,
 // the virtual time (`vNow`, ms) of the scene call; a list is in the order of the
 // scene calls in the pin `07d2fbd72`. Only paths already ported in the engine
-// are produced (blow, counter, tower shot, rout, kill, end, turn); movement,
-// the shooter, the ram, the catapult and the breach are P4-1I5.
+// are produced (blow, counter, tower shot, rout, kill, end, turn; P4-1I5a: the
+// step `Move` and the unit shot `Shot`); the ram, the catapult, the breach,
+// the climb and the flight from the field are P4-1I5b.
 // ---------------------------------------------------------------------------
 
 /// Tag of a clash entry (`_pushClash(…, outcome)`, `battle/battleScene.ts:9550-9566`):
@@ -628,6 +629,44 @@ pub enum BattleActionKindDto {
         /// Winner.
         winner: BattleWinner,
     },
+    /// One step of a unit (`_doMove`, `battleScene.ts:8714-8776`; P4-1I5a,
+    /// D-WIR-6): the logical cell changes at `t0` (`ru.q = col; ru.r = row`,
+    /// `:8731`), the walk starts at `t0` (`const t0 = this._now()`, `:8752`,
+    /// after `_updateFacing`, whose turn is the separate `Facing` action with
+    /// the same `t0`) and ends at `arriveAt = t0 + MOVE_STEP_MS` (`p >= 1`,
+    /// `MOVE_STEP_MS = 240`, `:1010`).
+    #[serde(rename_all = "camelCase")]
+    Move {
+        /// Unit.
+        id: UnitId,
+        /// Column before the step (`ru.q`).
+        from_col: i32,
+        /// Row before the step (`ru.r`).
+        from_row: i32,
+        /// Column after the step.
+        to_col: i32,
+        /// Row after the step.
+        to_row: i32,
+        /// End of the walk.
+        arrive_at: f64,
+    },
+    /// Unit shot (`_doRangedAttack`, `:9179-9235`; P4-1I5a, D-WIR-7): a
+    /// projectile from the shooter's cell to the target's cell launched at
+    /// `t0` (`projectiles.push({ t0: this._now(), dur: RANGED_FLY_MS })`,
+    /// `:9218-9221`), landing at `landAt = t0 + RANGED_FLY_MS`
+    /// (`_schedule(RANGED_FLY_MS, …)`, `:9224`). The shooter's turn is the
+    /// separate `Facing` action with the same `t0` (`:9182-9184`). The
+    /// projectile kind is not carried: the renderer derives it from the
+    /// shooter as the web does (`projectileKind(attacker.bu)`, `:9203`).
+    #[serde(rename_all = "camelCase")]
+    Shot {
+        /// Shooter.
+        attacker: UnitId,
+        /// Target.
+        target: UnitId,
+        /// Moment of the hit.
+        land_at: f64,
+    },
 }
 
 /// One action with its start time (recon §2c).
@@ -693,11 +732,13 @@ fn action_text(field: String, s: &str) -> Result<(), crate::validate::ViewError>
 }
 
 impl BattleActionDto {
-    /// Checks one action: `t0` finite and `>= 0`; `hitAt`/`landAt` finite and
-    /// `>= t0`; `dmg` finite and `> 0` (`_spawnDamageLabel` and `_pushClash` are
-    /// only called for `dmg > 0`, `:9125`, `:9142`, `:4265`, doc `:9547`); `dir`
-    /// a `Dir` (`0..=3`); `roundNo >= 1` (`_beginTurn` increments before the
-    /// hint); log and clash texts non-empty; melee attacker != target.
+    /// Checks one action: `t0` finite and `>= 0`; `hitAt`/`landAt`/`arriveAt`
+    /// finite and `>= t0`; `dmg` finite and `> 0` (`_spawnDamageLabel` and
+    /// `_pushClash` are only called for `dmg > 0`, `:9125`, `:9142`, `:4265`,
+    /// doc `:9547`); `dir` a `Dir` (`0..=3`); `roundNo >= 1` (`_beginTurn`
+    /// increments before the hint); log and clash texts non-empty; melee and
+    /// shot attacker != target; a step changes the cell (`from != to`; the DTO
+    /// does not require adjacent cells, `_doMove` does not check it, D-WIR-6).
     /// `prefix` is the JSON path of the action (e.g. `actions[3]`).
     ///
     /// # Errors
@@ -754,6 +795,41 @@ impl BattleActionDto {
                 action_text(f("action.text"), text)?;
             }
             BattleActionKindDto::Log { text } => action_text(f("action.text"), text)?,
+            BattleActionKindDto::Move {
+                from_col,
+                from_row,
+                to_col,
+                to_row,
+                arrive_at,
+                ..
+            } => {
+                action_finite(f("action.arriveAt"), *arrive_at)?;
+                action_at_least(f("action.arriveAt"), *arrive_at, self.t0)?;
+                if (from_col, from_row) == (to_col, to_row) {
+                    // A step changes the cell (`_doMove` is called with a new tile); two distinct cells
+                    // expected, one found.
+                    return Err(ViewError::LengthMismatch {
+                        field: f("action.to (!= from)"),
+                        expected: 2,
+                        actual: 1,
+                    });
+                }
+            }
+            BattleActionKindDto::Shot {
+                attacker,
+                target,
+                land_at,
+            } => {
+                action_finite(f("action.landAt"), *land_at)?;
+                action_at_least(f("action.landAt"), *land_at, self.t0)?;
+                if attacker == target {
+                    return Err(ViewError::LengthMismatch {
+                        field: f("action.target (!= attacker)"),
+                        expected: 2,
+                        actual: 1,
+                    });
+                }
+            }
             BattleActionKindDto::Rout { .. }
             | BattleActionKindDto::Kill { .. }
             | BattleActionKindDto::End { .. } => {}

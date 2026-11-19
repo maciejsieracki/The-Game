@@ -13,8 +13,9 @@
 //!   `:9485-9497`).
 //!
 //! Ten moduł zawiera typy akcji, producentów tekstów logu i wpisu `_pushClash` 1:1 z pinu (luka L5) oraz konwersję
-//! do [`BattleActionDto`]. Zakres: wyłącznie ścieżki już portowane; ruch, strzelec, taran, katapulta, wyłom i
-//! wspinaczka należą do P4-1I5 (#249/#280).
+//! do [`BattleActionDto`]. Zakres: wyłącznie ścieżki już portowane; krok ruchu ([`BattleAction::Move`]) i strzał
+//! jednostki ([`BattleAction::Shot`]) mają DTO od P4-1I5a (#370, D-WIR-6/7); ucieczka z pola, ripple morale, taran,
+//! katapulta, wyłom i wspinaczka należą do P4-1I5b (#370).
 
 use civ_view_model::battle::{
     validate_actions, BattleActionDto, BattleActionKindDto, BattleActorDto, BattleClashTagDto,
@@ -84,9 +85,8 @@ pub enum BattleAction {
     /// K5LOOP-CLOSE r2 (D-K5C-r2-2): krok `_doMove` (`battleScene.ts:8714-8775`, bez planowania AUTO-batch): jednostka
     /// przechodzi z pola `from` na `to`; animacja startuje w `t0` (`const t0 = this._now()`, `:8746`, po `_updateFacing`)
     /// i kończy się, gdy `p >= 1`, czyli w `arrive_at = t0 + MOVE_STEP_MS` (`:1010`, nominalnie; kwantyzacja klatek rAF
-    /// to wejście sterownika). Pozycja logiczna (`ru.q/ru.r`, `occByKey`) zmienia się w `t0`. Pola jak w wariantach
-    /// `Melee`/`TowerShot` (jednostka + chwila końca), żeby I5 mógł dodać wariant DTO 1:1; [`BattleActionKindDto`] go
-    /// jeszcze nie ma, więc [`actions_to_dto`] zwraca [`ActionError::MoveWithoutDto`] (jawnie, bez cichego pominięcia).
+    /// to wejście sterownika). Pozycja logiczna (`ru.q/ru.r`, `occByKey`) zmienia się w `t0`. P4-1I5a (D-WIR-6):
+    /// [`actions_to_dto`] daje [`BattleActionKindDto::Move`] 1:1 (kolumny i wiersze jako `i32`).
     Move {
         unit: UnitRef,
         from: (i64, i64),
@@ -96,9 +96,9 @@ pub enum BattleAction {
     /// K5LOOP-CLOSE r3: strzał jednostki `_doRangedAttack` (`battleScene.ts:9179-9235`): zwrot strzelca ku celowi
     /// (osobna akcja `Facing`), pocisk z pola strzelca na pole celu wystrzelony w `t0` i trafiający w
     /// `land_at = t0 + RANGED_FLY_MS` (`:1012`, `_schedule(RANGED_FLY_MS, ...)` `:9223`); trafienie (`_singleBlow`
-    /// ranged) i etykieta obrażeń w `land_at`. Pola jak w `TowerShot` (cel + chwila trafienia), żeby I5 mógł dodać
-    /// wariant DTO 1:1; [`BattleActionKindDto`] go jeszcze nie ma, więc [`actions_to_dto`] zwraca
-    /// [`ActionError::ShotWithoutDto`] (jawnie, bez cichego pominięcia).
+    /// ranged) i etykieta obrażeń w `land_at`. P4-1I5a (D-WIR-7): [`actions_to_dto`] daje
+    /// [`BattleActionKindDto::Shot`] 1:1; rodzaj pocisku liczy renderer z jednostki strzelca (jak `projectileKind` w
+    /// `_doRangedAttack`, `:9203`), DTO go nie niesie.
     Shot {
         attacker: UnitRef,
         target: UnitRef,
@@ -460,11 +460,8 @@ pub enum ActionError {
     /// jednostki samym [`UnitId`] (bez strony), więc id muszą być unikalne w bitwie, jak w ramce
     /// (`BattleFrameDto::validate`, `units (unique id)`).
     DuplicateId(u64),
-    /// K5LOOP-CLOSE r2: [`BattleAction::Move`] nie ma jeszcze wariantu w [`BattleActionKindDto`] (view-model, temat I5
-    /// #280/#336). Konwersja listy z krokiem ruchu jest jawnym błędem, nie cichym pominięciem animacji.
-    MoveWithoutDto(UnitRef),
-    /// K5LOOP-CLOSE r3: [`BattleAction::Shot`] nie ma jeszcze wariantu w [`BattleActionKindDto`] (I5 #280/#336).
-    ShotWithoutDto(UnitRef),
+    /// P4-1I5a: współrzędna pola kroku ([`BattleAction::Move`]) poza `i32`.
+    Cell(i64),
     /// K5LOOP-CLOSE r4: [`BattleAction::Leave`] nie ma jeszcze wariantu w [`BattleActionKindDto`] (I5 #280/#336).
     LeaveWithoutDto(UnitRef),
     /// K5LOOP-CLOSE r4: [`BattleAction::Shaken`] nie ma jeszcze wariantu w [`BattleActionKindDto`] (I5 #280/#336).
@@ -509,6 +506,10 @@ fn row_i32(row: i64) -> Result<i32, ActionError> {
     i32::try_from(row).map_err(|_| ActionError::Row(row))
 }
 
+fn cell_i32(v: i64) -> Result<i32, ActionError> {
+    i32::try_from(v).map_err(|_| ActionError::Cell(v))
+}
+
 fn clash_tag_dto(tag: ClashTag) -> BattleClashTagDto {
     match tag {
         ClashTag::Plain => BattleClashTagDto::Plain,
@@ -529,7 +530,8 @@ pub fn winner_dto(w: LoopWinner) -> BattleWinner {
 /// Akcje silnika → [`BattleActionDto`] (id jednostek z `st`), z walidacją [`validate_actions`].
 ///
 /// # Errors
-/// [`ActionError`]: jednostka spoza rosteru, id/wiersz poza zakresem, `facing` spoza `Dir`, lista łamiąca walidację.
+/// [`ActionError`]: jednostka spoza rosteru, id/wiersz/pole poza zakresem, `facing` spoza `Dir`, lista łamiąca
+/// walidację, wariant bez DTO (I5b).
 pub fn actions_to_dto(
     actions: &[TimedAction],
     st: &TurnSeqState,
@@ -611,10 +613,28 @@ pub fn actions_to_dto(
             BattleAction::End { winner } => BattleActionKindDto::End {
                 winner: winner_dto(*winner),
             },
-            BattleAction::Move { unit, .. } => return Err(ActionError::MoveWithoutDto(*unit)),
-            BattleAction::Shot { attacker, .. } => {
-                return Err(ActionError::ShotWithoutDto(*attacker))
-            }
+            BattleAction::Move {
+                unit,
+                from,
+                to,
+                arrive_at,
+            } => BattleActionKindDto::Move {
+                id: unit_id(st, *unit)?,
+                from_col: cell_i32(from.0)?,
+                from_row: cell_i32(from.1)?,
+                to_col: cell_i32(to.0)?,
+                to_row: cell_i32(to.1)?,
+                arrive_at: *arrive_at,
+            },
+            BattleAction::Shot {
+                attacker,
+                target,
+                land_at,
+            } => BattleActionKindDto::Shot {
+                attacker: unit_id(st, *attacker)?,
+                target: unit_id(st, *target)?,
+                land_at: *land_at,
+            },
             BattleAction::Leave { unit } => return Err(ActionError::LeaveWithoutDto(*unit)),
             BattleAction::Shaken { unit, .. } => return Err(ActionError::ShakenWithoutDto(*unit)),
             BattleAction::ClimbWall { unit, .. } => {
