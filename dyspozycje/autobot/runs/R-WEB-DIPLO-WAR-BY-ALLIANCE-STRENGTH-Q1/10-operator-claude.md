@@ -1,51 +1,26 @@
-# R-WEB-DIPLO-WAR-BY-ALLIANCE-STRENGTH-Q1 — raport Operatora (runda 1/5)
-
 STATUS: PASS-WITH-NOTES
-DOMAIN: GAME (nowa funkcja AI, za flagą OFF)
+DOMAIN: GAME
 TEMAT: R-WEB-DIPLO-WAR-BY-ALLIANCE-STRENGTH-Q1
-GOAL: słaba AI z sojusznikami może wypowiedzieć wojnę siłą bloku (AI + sojusznicy) przeciw partnerowi z blokiem (partner + sojusznicy); flaga `wojnaSilaSojuszuAktywna` domyślnie false = zachowanie identyczne jak dotąd.
-BAZA: 7a8acd6b8fa2dc4b9b0666823e821ba7e64359c7 (origin/main, ancestor OK). `git rev-parse HEAD` przed commitem: 7a8acd6b8fa2dc4b9b0666823e821ba7e64359c7.
-
-ZMIANY/COMMIT:
-- nowy `gra/src/game/diplomacy-alliance-strength.ts`: `blockStrength(strona, owner, allies, wykluczone)`, `blockHasAdvantage(a, b, prog)`, flaga + hak `setWarByAllianceStrengthForTest`, typ `BlokSojusznik`.
-- nowy `gra/data/diplomacy-alliance-war-params.json` (`wojnaSilaSojuszuAktywna: false`).
-- `gra/src/game/ai.ts`: pola opcjonalne `blokSojusznicyAI` / `blokSojusznicyPartnera` w `RelacjaWejscie`; w P4 (wypowiedz_wojne) siła porównywana to siła bloku tylko za flagą; próg, Zaufanie<30, agresja, NAP, peaceLocked, okno wczesne BEZ ZMIAN; powód dopisuje `[blok sily: ...]` tylko za flagą.
-- `gra/src/main.ts`: helper `blokSojusznicyDla` (aktywne sojusze sojusz_pelny/sojusz_defensywny z `activeDeals`, bez wasali, siła sojusznika mierzona `diploMilitarySideOf(x, przeciwnik, true)`, `wojnaZAI` z `getDiploRelation`); zwraca [] przy fladze OFF; wypełnienie pól przy relacji AI↔gracz i AI↔AI.
-- `gra/src/game/diplomacy.ts`: bez zmian (typ pól jest w ai.ts).
-- nowy `gra/tools/diplomacy-alliance-strength-unit-test.cjs`.
-- commit: patrz pole sha w odpowiedzi (tylko powyższe pliki + ten raport, `git add` ścieżkami).
-
-TESTY (surowe wyniki z tego biegu):
-- `npx tsc --noEmit` (node_modules/typescript): exit 0.
-- nowy `diplomacy-alliance-strength-unit-test.cjs`: 33 OK, 0 FAIL.
-- mutacja kopii (`milAiSide` ignoruje blok): 31 OK, 2 FAIL → test czerwony; przywrócono, 33/0.
-- logic-test: LOGIC OK (213/213).
-- tech-tree-test: 20 pass, 0 fail.
-- research-test: PASSED 33 / FAILED 0.
-- unit-replace-test: 21/21.
-- ai-unit-replace-same-rules-test: 45 passed, 0 failed.
-- combat-test: 6 pass.
-- diplomacy-test: 149 passed, 0 failed.
-- ai-ai-alliance-tick-test: 19 OK.
-- diplomacy-zero-trust-unit-test: PASS=43 FAIL=0.
-- diplo-war-declare-zero-trust-test: 43 OK, 0 FAIL.
-- `git diff --check`: czysto.
-- Bieg dymny w grze: NIE (brak toru sojuszy bez flag, zgodnie z dispatchem). NIE_ZMIERZONO: metryki liczby wojen blokowych i tury pierwszej wojny blokowej (wymaga biegu z flagą ON).
-
-BLOKADY: brak.
-NIE ZROBIONO (świadomie, zgodnie z dispatchem lub poza zakresem):
-- dołączanie sojusznika bloku do wojny (opcjonalny krok) — nie zrobione, kaskada nietknięta;
-- reguła „1 wojna epoki + 1 naturalna” — nie zaimplementowana;
-- flaga pozostaje false; brak hooka w UI.
-
-ZAŁOŻENIA (luki w dispatchu):
-- Siła sojusznika mierzona wobec przeciwnika bloku (AI-strona: wobec partnera; partner-strona: wobec AI), tą samą `diploMilitarySideOf`, bez nowych źródeł danych.
-- Wasal = payer traktatu Wasalizacja (`ekonomia.payerOwnerId`); bez pola ekonomii obie strony traktowane jako wasale (ostrożnie).
-- Sojusznik w wojnie z AI wyklucza się tylko po stronie AI; po stronie partnera nie (wojna z AI nie zmniejsza bloku partnera).
-- `peacePosMil` (pozycja pokojowa) nadal liczy siłę własną — poza zakresem P4.
-
-WOJNY BLOKOWE W LOGACH (odróżnialność): przy fladzie ON powód komendy `wypowiedz_wojne` zawiera `[blok sily: AI=…, partner=…, sojusznicy AI=…, sojusznicy partnera=…]`; przy OFF powód bez zmian. Reguła 1+1 (wojny koalicyjne) nie jest jeszcze policzona — do zrobienia w osobnym temacie.
-
-NASTĘPNY KROK: Evaluator (Sonnet) — przegląd diffu ai.ts/main.ts, ocena parytetu OFF i mutacji; potem Final Control.
-RUNDY: 1/5
+GOAL: Runda 2/5 (DODATEK): rozwiazac konflikt scalenia gra/src/main.ts miedzy kodem operatora r1 (b20509f5807e512944d53df7c582c78ca77328c9) a origin/main (3f616db7c0c067b5138a7aeaf757235e1d57dc64, FALY 852/853), zachowujac obie strony.
+ZMIANY/COMMIT: branch r2-alliance-strength; commit scalenia a073d1101cd566df0003e65acbfe04449dee9963 (baza = b20509f, merge origin/main 3f616db). Jedyny konflikt: gra/src/main.ts, sekcja importow (linie 72-77). Rozwiazanie: `type AiAiAllianceProbaDetal` z ai-ai-alliance-tick (main) + import `isWarByAllianceStrengthEnabled, setWarByAllianceStrengthForTest, type BlokSojusznik` z diplomacy-alliance-strength (r1). Hak warByAllianceStrengthForTest i blokSojusznicyDla (main.ts ~45813) zachowane; ai.ts auto-merge bez konfliktu (blokSojusznicyAI/Partnera, flaga OFF = parytet). Diff wzgledem origin/main: 5 plikow, +336/-3 (diplomacy-alliance-strength.ts, diplomacy-alliance-war-params.json, ai.ts, main.ts, diplomacy-alliance-strength-unit-test.cjs).
+TESTY (z surowego wyjscia, po scaleniu):
+- tsc --noEmit: exit 0
+- logic-test: LOGIC OK (213/213)
+- tech-tree-test: 20 pass, 0 fail
+- research-test: PASSED 33 / FAILED 0
+- unit-replace-test: WSZYSTKIE TESTY ZIELONE (21/21)
+- combat-test: 6/6 pass
+- diplomacy-alliance-strength-unit-test: Wynik 33 OK, 0 FAIL
+- diplomacy-test: 149 passed, 0 failed
+- diplomacy-zero-trust-unit-test: PASS=43 FAIL=0
+- ai-ai-alliance-tick-test: suite 19/19 OK; mutants detected 8/8
+- ai-ai-alliance-measure-hook-test: WYNIK: ZIELONY
+- diplomacy-harder-unit-test: PASS 50 FAIL 0
+- git merge-base origin/main HEAD = 3f616db7c0c067b5138a7aeaf757235e1d57dc64 (origin/main jest przodkiem HEAD)
+- git diff --check 3f616db HEAD: czysto (brak wyjscia)
+Uwaga: bramki uruchomione na drzewie po scaleniu, przed commitem raportu; bundle (vite) nie budowany (zakaz w dispatchu, poza zakresem rundy).
+BLOKADY: brak. Zalozenie: w rundzie 2 nie zmieniano logiki r1 (tylko scalenie).
+RUNDY: 2/5 (ostatni werdykt FC r1 = PASS-WITH-NOTES; brak decyzji wymaganej).
+ODNOTOWANIE (do orkiestratora, bez wdrozenia): (a) wojny blokowe sa odroznialne w logach po tekscie powodu wypowiedzenia: przy fladze ON dopisek `[blok sily: AI=..., partner=..., sojusznicy AI=N, sojusznicy partnera=M]` (przy OFF tekst powodu bez zmian); (b) NIE_ZMIERZONO: metryki pomiaru (liczba wojen blokowych, tura pierwszej) - smoke nie uruchamiany w tej rundzie, zgodnie z dispatchem.
+NASTEPNY KROK: FC r2 na galezi r2-alliance-strength (SHA scalenia a073d1101cd566df0003e65acbfe04449dee9963), potem integracja przez orkiestratora.
 DEPLOY/PUSH: NIE WYKONANO
