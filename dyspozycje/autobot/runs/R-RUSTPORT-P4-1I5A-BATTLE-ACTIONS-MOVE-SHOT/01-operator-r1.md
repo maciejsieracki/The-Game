@@ -1,6 +1,6 @@
 # R-RUSTPORT-P4-1I5A-BATTLE-ACTIONS-MOVE-SHOT — Operator r1
 
-STATUS: __STATUS__
+STATUS: PASS-WITH-NOTES (Operator; nota: jawne odstępstwo od allowlisty w testach r2/r3/r4, §5)
 DOMAIN: GAME (port Rust: DTO akcji bitwy, silnik, renderer)
 TEMAT: R-RUSTPORT-P4-1I5A-BATTLE-ACTIONS-MOVE-SHOT (#370 I5a)
 GOAL: warianty `Move` i `Shot` w `BattleActionKindDto` z walidacją, konwersja w silniku (`actions_to_dto` bez
@@ -8,7 +8,9 @@ GOAL: warianty `Move` i `Shot` w `BattleActionKindDto` z walidacją, konwersja w
 `07d2fbd72` i z wektorami silnika.
 BAZA: `origin/rust-port/parity-v2` = `32006733ba65bb22ff7776b104d1afb329841491` (zgodna z dispatchem).
 GAŁĄŹ: `rust-port-wip/p4-1i5a-move-shot` (worktree `wf_2d48c121-c4f-1`).
-ZMIANY/COMMIT: __SHA__ (commity WIP po każdym kroku; lista w §6).
+ZMIANY/COMMIT: kod `841a54974` (ostatni commit kodu); raport w commicie następnym po nim na tej samej gałęzi. Commity
+WIP: `5d3bb3a09` (view-model), `43ea95518` (engine), `3caee7568` (renderer), `c32e6a217`/`6e08626b1` (szkic raportu),
+`4e6c1d64e` (siatka `tilesNow` w teście renderera), `841a54974` (test zwrotu przed krokiem). `git diff --check` czysty.
 RUNDY: 1/5.
 DEPLOY/PUSH: NIE WYKONANO (Operator nie pushuje).
 
@@ -48,7 +50,45 @@ Nie ruszano: `siege_tactics_loop.rs`, `siege_battle_*`, `bridge.rs`, `client/`, 
 
 ## 3. Testy i bramki
 
-__TESTY__
+Środowisko: `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` w scratchpadzie
+(`i5a/t-vm`, `i5a/t-eng`, `i5a/t-ren`), każdy usunięty po bramkach. Bramka renderera uruchomiona dopiero przy 14 GB wolnego
+i bez innego builda (wcześniej 6–11 GB przez równoległy build innego tematu — odczekano).
+
+| Crate | Bramka | Wynik |
+|---|---|---|
+| view-model | `cargo fmt --check` | EXIT 0 |
+| view-model | `cargo clippy --all-targets -- -D warnings` | EXIT 0 |
+| view-model | `cargo test --all-targets` | EXIT 0 (wszystkie binarki `ok`; nowy `battle_actions_move_shot`: 4/4) |
+| engine | `cargo fmt --check` | EXIT 0 |
+| engine | `cargo clippy --all-targets -- -D warnings` | EXIT 0 |
+| engine | `cargo test --all-targets` (pełny, w tle, log `i5a/engine_full.log`) | EXIT 0: 543 wyniki `test result`, 4119 passed, 0 failed, 1 ignored (istniejący przed tematem, nie dodano `#[ignore]`) |
+| engine | w tym `p4_1i5a_move_shot` | 9/9 |
+| engine | w tym `p4_1i3_actions` | 6/6 |
+| engine | w tym `bridge_contract` | ok |
+| engine | w tym `p6_k5loop_close_r2` / `r3` / `r4` | 6/6, 6/6, 10/10 |
+| renderer (bez `gpu`) | `cargo fmt --check` | EXIT 0 |
+| renderer | `cargo clippy --all-targets -- -D warnings` | EXIT 0 (także po dodaniu ostatniego testu) |
+| renderer | `cargo test --all-targets` | EXIT 0: 82 binarki, 725 passed, 0 failed, 0 ignored (log `i5a/renderer_test.log`); po dodaniu `facing_turn_before_step_matches_pin_calls` ponownie `battle_playback_move_shot` 6/6 i `battle_playback` 9/9 |
+
+DŁUG-T1-LOCK: build renderera dopisał wpisy do `rust-port/renderer/Cargo.lock`; przywrócony (`git checkout`) przed
+commitem, nie wchodzi do zmian.
+
+Zgodność z wektorami silnika (sweep po WSZYSTKICH przypadkach, progi = zmierzone liczby):
+- r2 (`vectors_r2.json`, 760+ przypadków): `actions_to_dto` 1:1 dla każdego; 572 scenariusze z ruchem, 1563 kroki `Move`
+  = kroki pinu (`from` = pole po poprzednim kroku, `t0` z wektora, `arriveAt = t0 + 240`), 581 zwrotów `_updateFacing`
+  bezpośrednio przed `Move` o tym samym `t0`.
+- r3 (`vectors_r3.json`, 1040): 328 strzałów `Shot` = strzał pinu (cel z `blows`, `t0 = t − 380`, `landAt = t`), każdy
+  poprzedzony zwrotem strzelca o tym samym `t0` z `facing` wektora; 328 etykiet `Damage` w `landAt`; 1292 kroki `Move`.
+- r4 (`vectors_r4.json`, 1220, pierwsza aktywacja): 1467 kroków i 339 strzałów przez `actions_to_dto` 1:1 (bez `Leave`/
+  `Shaken`, I5b).
+
+Scena po odtworzeniu = scena po wywołaniach pinu (fikstura `tests/fixtures/battle3d/dynamics.json`):
+- 6 kroków `move` (atk0 ×4, atk1 ×2), 22 próbki: cały `BattleScene3` P == Q, pozycja grupy i paska = wektor webu bit w bit,
+  koniec marszu w tej samej próbce co web (`p >= 1`). Uwaga: wektory webu są liczone na siatce `tilesNow` (README fikstury,
+  część 4); test ustawia ją w obu scenach (wcześniejsza wersja na `tilesRle` dawała różnicę `y` na wzgórzu — naprawione
+  w `4e6c1d64e`).
+- 4 strzały `shots` (strzała, proca, oszczep, pilum z kategorii strzelca): rodzaj = web, scena P == Q po każdym
+  wystrzale i w każdym z 10 ticków, pozycje pocisków bit w bit z webem, odpięcie przy lądowaniu, liczba w locie = web.
 
 ## 4. Mutanty (≥ 10; każdy zabity)
 
@@ -70,7 +110,22 @@ Uruchamiane skryptem (mutant → test → przywrócenie pliku), log w scratchpad
 | EM7 | błędne `t0` kroku w DTO (+1 ms) | ZABITY | 5 testów |
 | EM8 | pominięty `Facing` (zwrot nie trafia do DTO) | ZABITY | 4 testy (w tym `move_dto_zgodne_z_wektorami`: zwrot o `t0` kroku bezpośrednio przed `Move`) |
 | EM9 | id jednostki kroku z przeciwnej strony rosteru | ZABITY | 6 testów |
-__RENDER_MUT__
+| RM1 | renderer: brak kontroli `arriveAt == t0 + MOVE_STEP_MS` | ZABITY | `move_and_shot_errors_are_reported` |
+| RM2 | renderer: brak walidacji komórki bieżącej (`from`) | ZABITY | `move_and_shot_errors_are_reported` |
+| RM3 | renderer: zły rodzaj pocisku (zawsze strzała) | ZABITY | `shot_playback_equals_pin_calls_and_web_vectors` |
+| RM4 | renderer: zamienione końce lotu | ZABITY | `shot_playback_equals_pin_calls_and_web_vectors` |
+| RM5 | renderer: błędne `t0` marszu (`arriveAt` zamiast `t0`) | ZABITY | 3 testy |
+| RM6 | renderer: brak kontroli `landAt == t0 + RANGED_FLY_MS` | ZABITY | `move_and_shot_errors_are_reported` |
+| RM7b | renderer: pominięty `Facing` (zwrot bez skutku) | ZABITY | `facing_turn_before_step_matches_pin_calls` |
+| RM8 | renderer: zamienione kolumna/wiersz celu kroku | ZABITY | 3 testy |
+| RM9 | renderer: błędne `t0` pocisku (`landAt`) | ZABITY | 2 testy |
+| RM10 | renderer: marsz nie krokowany w klatce | ZABITY | 2 testy |
+| RM11 | renderer: nowy `Move` nie zastępuje marszu w locie | ZABITY | `two_steps_in_one_frame_follow_the_logical_cell` |
+
+Razem: 25 mutantów na kodzie tematu (VM 5, EM 9, RM 11), 25 zabitych, 0 równoważnych. Historia: RM7 (pierwsza wersja) PRZEŻYŁ — kroki
+fikstury nie zmieniają kierunku (facing 1 = kierunek startowy), więc pominięcie `set_facing` nie zmieniało sceny. Dodano
+test `facing_turn_before_step_matches_pin_calls` (zwrot o 180° przed krokiem, P == Q i yaw różny od sceny startowej); po
+nim RM7b ZABITY.
 
 Uwaga: pierwsza wersja VM3 trafiła (przez niejednoznaczną kotwicę) w ramię `TowerShot`, nie `Shot`, i przeżyła test
 nowego pliku (ramię `TowerShot` pilnuje `battle_actions.rs`, nie uruchomiony w tym przebiegu). Zastąpiona VM3b na właściwym
