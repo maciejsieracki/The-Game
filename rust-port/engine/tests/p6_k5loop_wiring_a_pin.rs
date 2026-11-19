@@ -591,7 +591,7 @@ fn zagrozenia_strzelcow_przeliczaja_zasieg_terenu() {
             .filter(|(&(q, _), &d)| d != 0.0 && q >= wall_col + 2)
             .map(|(&t, &d)| (t, d))
             .collect();
-        tiles.sort_by(|x, y| x.0.cmp(&y.0));
+        tiles.sort_by_key(|x| x.0);
         let stale_k = body.units[1][k].activate.range;
         let mut chosen = None;
         for &(tile, _) in &tiles {
