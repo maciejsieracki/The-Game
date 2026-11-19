@@ -1,3 +1,9 @@
+## ROBOCZA cf2bbb82 -- 2026-11-18 -- FALA 880: R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1: ustawienie nowej gry Wzrost surowcow z epoka (WYL. domyslnie = stale jak dzis) (testowa)
+
+- R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1 (decyzja wlasciciela 2026-11-19): w zaawansowanych ustawieniach nowej gry przelacznik Wzrost surowcow z epoka; WLACZONE = dawny wzrost (plony +1 Zyw/Pra/Han/Pien w Brazie, +2 w Zelazie; produkcja surowca x1,5 na epoke: 50/75/113); WYLACZONE (domyslnie) = stale wartosci z Kamienia; zapis/wczytanie z domyslna WYL. dla starych zapisow; ustawienie dotyczy tylko ulepszen terenu (nie utrzymania jednostek ani racji obywateli).
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; improvement-growth-toggle 41/0; improvement-era-scaling 144/0; econ-era-rebalance 38/0; era-improvement-cost-upkeep 124/0; improvement-cost-owner-era 49/0; zywy Chromium (2 starty): WYL. farma 3/3/3 tartak 50/50/50, WL. farma 3/4/5 tartak 50/75/113
+- Limity: Brak wpisu EN i pozycji w podsumowaniu kreatora; zywe wczytanie zapisu NIE ZMIERZONO; DOM kafelka/HUD NIE ZMIERZONO; fishing-boats-666 czerwony (dlug testowy)
+
 ## ROBOCZA 470a6309 -- 2026-11-18 -- FALA 879: R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1: Mennica ze zlotem daje przyrost (podzial Handlu metoda najwiekszych reszt), glina dzielona proporcjonalnie, HUD gliny = silnik (testowa)
 
 - R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (decyzja wlasciciela 2026-11-19, A: naprawa): podzial puli Handlu Nauka/Skarb/Zamoznosc metoda najwiekszych reszt zamiast floor (Mennica ze zlotem delta>0); konwertery o wspolnym wejsciu dziela surowiec proporcjonalnie do zapotrzebowania (glina 40: cegla 38/ceramika 11); HUD netto gliny liczy ten sam rozdzial co silnik.
