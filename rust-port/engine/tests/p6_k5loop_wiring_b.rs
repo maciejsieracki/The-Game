@@ -946,3 +946,27 @@ fn producent_wejscia_sesji_wg_pinu() {
         SiegeBattleError::NoDefendersCaptureRequested { city_id: CITY }
     );
 }
+
+#[test]
+fn zz_pomiar_finish_pending() {
+    for seed in 1..=12u32 {
+        for skip in [false, true] {
+            let mut s = scn_quick();
+            s.seed = seed;
+            let mut b = bridge_for(state_for(&s));
+            send(&mut b, start()).expect("start");
+            if skip {
+                send(&mut b, EngineCommand::SkipSiegeBattle).expect("skip");
+            } else {
+                loop {
+                    let d = send(&mut b, step(16.0)).expect("step");
+                    if battle(&d).phase == SiegeBattlePhaseDto::Finished {
+                        break;
+                    }
+                }
+            }
+            let f = send(&mut b, EngineCommand::FinishSiegeBattle).expect("fin");
+            eprintln!("POMIAR seed {seed} skip {skip}: finish actions {}", battle(&f).actions.len());
+        }
+    }
+}
