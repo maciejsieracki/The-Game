@@ -96,6 +96,15 @@ function makePage(entries, opts) {
       check('6 ' + f + ': odrzucanie przed canEnd', iRej > 0 && iEnd > iRej, { iRej, iEnd });
     }
   }
+  // 7) domyslna wartosc flagi i bramka wywolania w ai-economy (mutacja: domyslnie 0 lub wylaczona bramka -> FAIL)
+  {
+    const fs = require('fs');
+    const src = fs.readFileSync(path.resolve(__dirname, 'ai-economy-measure-run.cjs'), 'utf8');
+    check('7 ai-economy: domyslnie --reject-offers=1',
+      /const REJECT_OFFERS = arg\('reject-offers', '1'\) !== '0';/.test(src), null);
+    check('7 ai-economy: wywolanie odrzucania bramkowane flaga',
+      src.indexOf('if (REJECT_OFFERS) { countOffers(await rejectAwaitingAiOffers(page, seenOffers))') > 0, null);
+  }
   const tag = MODULE !== DEFAULT_MODULE ? ' (modul: ' + MODULE + ')' : '';
   console.log('measure-reject-offers-test: ' + passes + ' OK, ' + fails + ' FAIL' + tag);
   process.exit(fails === 0 ? 0 : 1);
