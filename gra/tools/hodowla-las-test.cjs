@@ -35,6 +35,11 @@
  * `tools/stadnina-las-test.cjs` (nowa, dedykowana — kryteria końca P-STADNINA-LAS-
  * -NIEROZSTRZYGNIETE-Q1 w pełni).
  *
+ * AKTUALIZACJA 2026-11-19 (R-WEB-IMPROVEMENT-STADNINA-DEPOSIT-ONLY-NO-FOREST-Q1, decyzja
+ * właściciela „stadnina tylko na złożu, bez lasu"): akapity AKTUALIZACJA 2026-09-03 powyżej
+ * opisują stan HISTORYCZNY. Bieżąco: zakaz lasu dla stadniny PRZYWRÓCONY — stadnina na lesie
+ * jest BLOKOWANA (asercje `isImprovementBlockedOnForest`/`computeImprovementBuildImpact` = blokada).
+ *
  * Uruchamiaj z gra/:  node tools/hodowla-las-test.cjs
  */
 
