@@ -1,3 +1,9 @@
+## ROBOCZA 34c32188 -- 2026-11-18 -- FALA 854: Wojna silą bloku sojuszniczego (etap C cz.2, za flaga, wylaczona) (testowa)
+
+- Nowy modul diplomacy-alliance-strength.ts (blockStrength, blockHasAdvantage) i parametry diplomacy-alliance-war-params.json; ai.ts priorytet 4 (wypowiedzenie wojny) porownuje sile BLOKU sojusznikow gdy flaga wojnaSilaSojuszuAktywna=true; main.ts wypelnia sojusznikow; hak warByAllianceStrengthForTest; wojny blokowe oznaczone sufiksem [blok sily: ...] w powodzie komendy; flaga false = zachowanie gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplomacy-alliance-strength 33/0 (mutacje czerwone); diplomacy-test 149/0; zero-trust 43/0; ai-ai-alliance-tick 19/19 + mutanty 8/8; ai-ai-coalition 9/9; harder 50/0
+- Limity: Flaga domyslnie wylaczona: bez efektu w rozgrywce do czasu pomiaru; metryki wojen blokowych NIE ZMIERZONO; kaskada dolaczania sojusznikow (opcjonalna) i regula 1 wojna epoki + 1 naturalna niezaimplementowane; wpiecie main.ts bez testu przegladarkowego
+
 ## ROBOCZA 96fb6cd9 -- 2026-11-18 -- FALA 853: Pomiar gotowosci sojuszy AI-AI: szczegoly prob, rozklad gotowosci, analizator (flagi wylaczone) (testowa)
 
 - Hak odczytowy toru sojuszy: szczegoly kazdej proby (gotowosc, Relacja, Zaufanie, Respekt, archetyp, wspolna granica/wrog, powod E1, znacznik przestarzalej proby), analizator z kubelkami gotowosci i para najblizszymi progowi, test haka z mutantami; scalone z zerowym zaufaniem (FALA 852); brak zmian zasad gry
