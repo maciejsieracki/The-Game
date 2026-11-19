@@ -269,6 +269,34 @@ pub struct SiegeSessionInput {
     pub world_terrain: Option<WorldTerrainInput>,
 }
 
+/// Wejście `new BattleScene(opts)` po rosterach (`main.ts:36980-37018`): `BattleUnit` obu stron w kolejności rosteru
+/// (po `BATTLE_MAX_PER_SIDE`) i pola `BattleOpts` czytane przez logikę bitwy.
+#[derive(Debug, Clone, PartialEq)]
+pub struct SceneInput {
+    /// `opts.attacker` (`rosterToBattleUnits(atkRosterRef)`).
+    pub atk: Vec<AdapterBattleUnit>,
+    /// `opts.defender`.
+    pub def: Vec<AdapterBattleUnit>,
+    /// `opts.siege.builtBuildingIds`.
+    pub built_building_ids: Vec<String>,
+    /// `opts.teren` (`dTeren`).
+    pub teren: String,
+    /// `opts.worldTerrain`.
+    pub world_terrain: Option<WorldTerrainInput>,
+    /// `opts.defenderEra` (przed `clampEra`).
+    pub defender_era: Option<f64>,
+    /// `opts.siege.defCiv`.
+    pub def_civ: Option<String>,
+    /// `(opts.defenderCivBonusy, opts.defenderDifficultyCombatMult)` dla syntetycznego strzelca wieży (`_fireOneTower`
+    /// `:4236-4244`); `None` = brak kontekstu = jawny tag `wieza-bez-kompozytora`.
+    pub defender_side: Option<(Vec<CivBonusEntry>, f64)>,
+    /// D-WIR-5: ziarno gry i numer bitwy (`SessionRolls::derive`).
+    pub seed: u32,
+    pub battle_index: u32,
+    /// Gotowe machiny miasta (zużywane po bitwie, DANE).
+    pub ready_machines: Vec<MachineKind>,
+}
+
 /// Faza sesji (pin: `started`, `finished`, `_ffActive`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SessionPhase {
@@ -690,16 +718,49 @@ impl SiegeBattleSession {
         let def_roster = cap(&rosters.def);
         let atk_bu = roster_to_battle_units(&atk_roster, Side::Atk, &ctx)?;
         let def_bu = roster_to_battle_units(&def_roster, Side::Def, &ctx)?;
-        // Pole bitwy (T5a): `new BattleScene` `:2776-2817` z `opts.siege.builtBuildingIds = cityBuilt.get(city.id)`.
+        // `opts.siege.builtBuildingIds = cityBuilt.get(city.id) ?? []` (`main.ts:36990`).
         let built: Vec<String> = state
             .stores
             .buildings_by_city
             .get(&input.city_id)
             .cloned()
             .unwrap_or_default();
-        let field = setup_battle_field(&BattleFieldInput {
+        // `defenderCivBonusy` / `defenderDifficultyCombatMult` sceny = właściciel `defRosterRef[0]` (`main.ts:36995`, `:37011`).
+        let def_owner = rosters.def.first().map_or(0, |u| u.owner_id);
+        let scene_in = SceneInput {
+            atk: atk_bu,
+            def: def_bu,
+            built_building_ids: built,
             teren: input.teren.clone(),
             world_terrain: input.world_terrain.clone(),
+            defender_era: input.defender_era,
+            def_civ: input.def_civ.clone(),
+            defender_side: input
+                .owners
+                .get(&def_owner)
+                .map(|o| (o.civ_bonusy.clone(), o.difficulty_combat_mult)),
+            seed: state.params.seed,
+            battle_index: input.battle_index,
+            ready_machines: inp.ready_machines,
+        };
+        Self::prepare_scene(&scene_in, data)
+    }
+
+    /// `new BattleScene(opts)` z gotowymi `BattleUnit` obu stron (`opts.attacker`/`opts.defender` po
+    /// `rosterToBattleUnits`, `main.ts:36980-37018`): pole T5a, rozstawienie T5b, wieżyczki, kara morale, ciało pętli.
+    /// Wejście wektorów pinu pełnej bitwy (`tests/p6_k5loop_wiring_a_gen.mjs`) i [`Self::prepare`].
+    ///
+    /// # Errors
+    /// [`SessionError`] (dane, brak muru, NaN/Inf).
+    #[allow(clippy::too_many_lines)]
+    pub fn prepare_scene(sc: &SceneInput, data: &SessionData) -> Result<Self, SessionError> {
+        let atk_bu = &sc.atk;
+        let def_bu = &sc.def;
+        let built: Vec<String> = sc.built_building_ids.clone();
+        // Pole bitwy (T5a): `new BattleScene` `:2776-2817`.
+        let field = setup_battle_field(&BattleFieldInput {
+            teren: sc.teren.clone(),
+            world_terrain: sc.world_terrain.clone(),
             attacker_count: atk_bu.len() as f64,
             defender_count: def_bu.len() as f64,
             siege: Some(SiegeFieldInput {
@@ -728,17 +789,16 @@ impl SiegeBattleSession {
         );
         // `this.atk` / `this.def` w kolejności rozstawienia.
         let ordered = |placed: &[crate::domain::battle_setup_units::PlacedUnit],
-                       bus: &[AdapterBattleUnit],
-                       roster: &[RosterUnit]| {
+                       bus: &[AdapterBattleUnit]| {
             placed
                 .iter()
-                .map(|p| (*p, bus[p.index].clone(), roster[p.index].id.clone()))
+                .map(|p| (*p, bus[p.index].clone(), bus[p.index].id.clone()))
                 .collect::<Vec<_>>()
         };
-        let atk = ordered(&placement.atk, &atk_bu, &atk_roster);
-        let def = ordered(&placement.def, &def_bu, &def_roster);
+        let atk = ordered(&placement.atk, atk_bu);
+        let def = ordered(&placement.def, def_bu);
         let env = SpawnEnv {
-            terrain: input.teren.clone(),
+            terrain: sc.teren.clone(),
             shallow_sea: false,
             // Korona = kafel muru/bramy: `combatTerrainName` = teren płaski, `terrainRangeDelta` = 0 (D-WIRA-6).
             crown_range_delta: 0.0,
@@ -780,7 +840,7 @@ impl SiegeBattleSession {
             units
                 .iter()
                 .zip(sf)
-                .map(|(bu, f)| body_unit_inputs(bu, f, &input.teren, false))
+                .map(|(bu, f)| body_unit_inputs(bu, f, &sc.teren, false))
                 .collect::<Result<Vec<BodyUnitInputs>, _>>()
         };
         let atk_in = ins(&atk_units, &atk_sf)?;
@@ -828,14 +888,14 @@ impl SiegeBattleSession {
             &layout,
             &TowerSetupInput {
                 built_building_ids: built_slice,
-                defender_era: input.defender_era,
-                def_civ: input.def_civ.as_deref(),
+                defender_era: sc.defender_era,
+                def_civ: sc.def_civ.as_deref(),
                 units: &data.tower_units,
                 params: data.towers,
             },
         );
         let scene = scene_inputs(&layout, towers)?;
-        let rolls = SessionRolls::derive(state.params.seed, input.battle_index);
+        let rolls = SessionRolls::derive(sc.seed, sc.battle_index);
         let move_terrain = FieldMoveTerrain::from_engine_data(field.map.clone())
             .map_err(SessionError::InvalidData)?;
         let mut body = ProdBody::new(
@@ -871,13 +931,12 @@ impl SiegeBattleSession {
         // (`strongestRangedUnitForEra(units, _defenderEra, _siegeDefCiv)`, `:4167`), bonusami i trudnością strony
         // obrońcy sceny (`defenderCivBonusy` / `defenderDifficultyCombatMult` z `defRosterRef[0].ownerId`,
         // `main.ts:36995`, `:37011`). Brak kontekstu właściciela = `None` = jawny tag `wieza-bez-kompozytora`.
-        let def_owner = rosters.def.first().map_or(0, |u| u.owner_id);
         let tower = strongest_ranged_unit_for_era(
             &data.tower_units,
-            clamp_era(input.defender_era),
-            input.def_civ.as_deref(),
+            clamp_era(sc.defender_era),
+            sc.def_civ.as_deref(),
         )
-        .zip(input.owners.get(&def_owner))
+        .zip(sc.defender_side.as_ref())
         .map(|(row, owner)| {
             let cu = tower_shooter_cu(row);
             let counters = atk_t
@@ -894,8 +953,8 @@ impl SiegeBattleSession {
             TowerShooterCompose {
                 attacker: attacker_from_cu(&cu),
                 cu,
-                civ_bonusy: owner.civ_bonusy.clone(),
-                diff_mult: owner.difficulty_combat_mult,
+                civ_bonusy: owner.0.clone(),
+                diff_mult: owner.1,
                 counters,
             }
         });
@@ -940,7 +999,7 @@ impl SiegeBattleSession {
                 is_city_defense_battle: true,
                 wall_defense_total_proc: wall_totals.total_proc,
                 siege_wall_col: layout.wall_col as f64,
-                city_terrain: input.teren.clone(),
+                city_terrain: sc.teren.clone(),
                 river_attack_mult: data.river_attack_mult,
                 brod_kara_obrona: data.brod_kara_obrona,
                 brod_bonus_brzegu: data.brod_bonus_brzegu,
@@ -1016,7 +1075,7 @@ impl SiegeBattleSession {
                 atk_units.iter().map(|b| b.max_hp).collect(),
                 def_units.iter().map(|b| b.max_hp).collect(),
             ],
-            ready_machines: inp.ready_machines,
+            ready_machines: sc.ready_machines.clone(),
             field,
         })
     }
