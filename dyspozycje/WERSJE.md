@@ -1,3 +1,9 @@
+## ROBOCZA 97f8eb4f -- 2026-11-18 -- FALA 874: R-WEB-IMPROVEMENT-STADNINA-DEPOSIT-ONLY-NO-FOREST-Q1: stadnina nie moze stac na heksie z lasem (zakaz lasu przywrocony; gracz, autopilot i AI) (testowa)
+
+- gra/src/map/improvement-build.ts (isStadninaBlockedOnForest, stadnina usunieta z FOREST_COEXIST), gra/data/terrain-improvements.json (warunek stadniny bez notatki dev), testy stadnina-las 28/0, stadnina-konie-stare-zapisy 29/0, map-improvement-qualify 134/0, hodowla-las (komentarze). Decyzja wlasciciela 2026-11-19 (ABC B). Koszt, przychod, epoki, odkrycie Konia bez zmian.
+- Weryfikacja: tsc 0, logic 213/213, stadnina-las 28/0, stare-zapisy 29/0, map-improvement-qualify 134/0, early-eras-deposit-only 35/0, auto-improvements 46/0; FC: tech-tree 20, research 33, unit-replace 21, combat 6, ai-territory-race 29
+- Limity: NIE ZMIERZONO: bieg dymny AI 4242 w przegladarce (seed 4242 bez zloz Konia); hodowla-las 110/3 — 3 asercje czerwone rowniez na bazie (nie z tej zmiany); stadnina poza zlozem od epoki Zelaza z Koniem zostaje (decyzja 2026-11-09, zalozenie A)
+
 ## ROBOCZA 7513d926 -- 2026-11-18 -- FALA 873: R-WEB-DIPLO-PEACE-CITIES-NOT-TRANSFERRED-AND-WAR-NEXT-TURN-Q1 (czesc glowna): zwykly pokoj z oferta AI z kilkoma miastami nie jest juz odrzucany w calosci (stara pre-kontrola odrzucala kazdy pokoj z >1 miastem) (testowa)
 
 - gra/src/game/diplomacy-value-catalog.ts (partitionPeaceCityItems — sekwencyjne zakazy), gra/src/main.ts (cityCessionFilterPayload: wykonalne miasta przechodza, niewykonalne odpadaja z komunikatem; blok calosci tylko gdy nic nie przechodzi; transfer na przefiltrowanym pakiecie), testy peace-city-cession-negotiated (19/0, mutacje czerwone), diplomacy-city-cession. Zgloszenie wlasciciela 2026-11-19 (korekta: to byl zwykly pokoj, nie wymuszony).

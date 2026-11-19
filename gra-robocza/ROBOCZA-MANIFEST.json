@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "7513d92668173a108b3d4138f26ffe32",
-  "bundleSha256": "ca54fb6dbcb31dfac023eadf58ccf03e4e1527d89d63224ecc16c9ab3b486175",
-  "bundleBytes": 14988980,
+  "bundleMd5": "97f8eb4f5b4600798d1792304eae8011",
+  "bundleSha256": "ebcab6cb736ea46a2ff6d61280527b58b6d158e715d0b217ad90d0ae559c2421",
+  "bundleBytes": 14989014,
   "sourceSnapshot": {
-    "source": "kod 04e6bd8e1 (Haiku r2 + Obrona); FC 366aa454b; przyczyna: stara cityCessionPayloadBlockReason (main.ts ~40978) odrzucala pokoj z total>1 miastem PRZED finalizePeaceTreatyBetween — pokoj nie zawarty, wojna trwala",
+    "source": "kod 7feb168dc (Haiku r1 + Obrona); FC 7a5debdcd",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 873: gra/src/game/diplomacy-value-catalog.ts (partitionPeaceCityItems — sekwencyjne zakazy), gra/src/main.ts (cityCessionFilterPayload: wykonalne miasta przechodza, niewykonalne odpadaja z komunikatem; blok calosci tylko gdy nic nie przechodzi; transfer na przefiltrowanym pakiecie), testy peace-city-cession-negotiated (19/0, mutacje czerwone), diplomacy-city-cession. Zgloszenie wlasciciela 2026-11-19 (korekta: to byl zwykly pokoj, nie wymuszony)."
+    "FALA 874: gra/src/map/improvement-build.ts (isStadninaBlockedOnForest, stadnina usunieta z FOREST_COEXIST), gra/data/terrain-improvements.json (warunek stadniny bez notatki dev), testy stadnina-las 28/0, stadnina-konie-stare-zapisy 29/0, map-improvement-qualify 134/0, hodowla-las (komentarze). Decyzja wlasciciela 2026-11-19 (ABC B). Koszt, przychod, epoki, odkrycie Konia bez zmian."
   ],
   "verification": [
-    "tsc 0, logic 213/213, peace-city-cession-negotiated 19/0 (mutacja 18/1), peace-city-cession-and-rewar 8/0, diplomacy-city-cession 79/0, forced-peace-pending 40/0"
+    "tsc 0, logic 213/213, stadnina-las 28/0, stare-zapisy 29/0, map-improvement-qualify 134/0, early-eras-deposit-only 35/0, auto-improvements 46/0; FC: tech-tree 20, research 33, unit-replace 21, combat 6, ai-territory-race 29"
   ],
   "limits": [
-    "NIE ZMIERZONO: przebieg w grze/Chromium na prawdziwej sciezce akceptacji (live), cena D/ogon po usunieciu miasta nie jest przeliczana (zgodne z decyzja ABC A), karencja po pokoju przed ponowna wojna (nie zmieniana); zalecana obserwacja na ROBOCZEJ"
+    "NIE ZMIERZONO: bieg dymny AI 4242 w przegladarce (seed 4242 bez zloz Konia); hodowla-las 110/3 — 3 asercje czerwone rowniez na bazie (nie z tej zmiany); stadnina poza zlozem od epoki Zelaza z Koniem zostaje (decyzja 2026-11-09, zalozenie A)"
   ],
-  "finalControl": "FC PASS-WITH-NOTES: potomek bazy, allowlista, bramki zielone, zarzut 1 naprawiony, zarzut 2 jako luka dowodowa",
+  "finalControl": "FC PASS-WITH-NOTES: potomek bazy, zakaz lasu dziala, mutacja czerwona, zarzuty 1,2,6,8 naprawione",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T21:04:24",
+  "hubGeneratedAt": "2026-11-19T21:07:08",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "7513d92668173a108b3d4138f26ffe32",
-      "sizeBytes": 14988980
+      "md5": "97f8eb4f5b4600798d1792304eae8011",
+      "sizeBytes": 14989014
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "7513d92668173a108b3d4138f26ffe32",
-      "sizeBytes": 14988980
+      "md5": "97f8eb4f5b4600798d1792304eae8011",
+      "sizeBytes": 14989014
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "7513d92668173a108b3d4138f26ffe32",
-      "sizeBytes": 14988980
+      "md5": "97f8eb4f5b4600798d1792304eae8011",
+      "sizeBytes": 14989014
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "7513d92668173a108b3d4138f26ffe32",
-      "sizeBytes": 14988980
+      "md5": "97f8eb4f5b4600798d1792304eae8011",
+      "sizeBytes": 14989014
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "7513d92668173a108b3d4138f26ffe32",
-      "sizeBytes": 14988980
+      "md5": "97f8eb4f5b4600798d1792304eae8011",
+      "sizeBytes": 14989014
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "7513d92668173a108b3d4138f26ffe32",
-      "sizeBytes": 14988980
+      "md5": "97f8eb4f5b4600798d1792304eae8011",
+      "sizeBytes": 14989014
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "7513d92668173a108b3d4138f26ffe32",
-      "sizeBytes": 14988980
+      "md5": "97f8eb4f5b4600798d1792304eae8011",
+      "sizeBytes": 14989014
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "7513d92668173a108b3d4138f26ffe32",
-      "sizeBytes": 14988980
+      "md5": "97f8eb4f5b4600798d1792304eae8011",
+      "sizeBytes": 14989014
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "7513d92668173a108b3d4138f26ffe32",
-      "sizeBytes": 14988980
+      "md5": "97f8eb4f5b4600798d1792304eae8011",
+      "sizeBytes": 14989014
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "7513d92668173a108b3d4138f26ffe32",
-      "sizeBytes": 14988980
+      "md5": "97f8eb4f5b4600798d1792304eae8011",
+      "sizeBytes": 14989014
     }
   ],
-  "md5": "7513d92668173a108b3d4138f26ffe32",
+  "md5": "97f8eb4f5b4600798d1792304eae8011",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
