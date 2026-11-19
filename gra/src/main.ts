@@ -1789,6 +1789,7 @@ import {
   withDiplomacyTradeEra,
   diplomacySumPn,
   planCityCession,
+  selectSequentialCityCessions,
   diplomacyPnMiasto,
   diplomacyPnZlozaMiasta,
   diplomacyMiastoZakaz,
@@ -26826,7 +26827,25 @@ async function boot(): Promise<void> {
     /** PENDING-FORCED-PEACE-Q1: pozycje planu zapłaty realnie przenoszone po akceptacji (wspólne dla okna i zapisu —
      * miasto bez poprawnej cesji odpada w obu miejscach, więc okno nie obiecuje tego, czego nie przeniesie). */
     function pendingPeaceItems(p: PendingForcedPeaceTreaty): NonNullable<WearinessTickOutcome['plan']>['items'] {
-      return (p.plan?.items ?? []).filter(i => i.kind !== 'miasto' || cityCessionPlanFor(i.id, p.loser, p.winner).ok);
+      const all = p.plan?.items ?? [];
+      // R-WEB-DIPLO-PEACE-CITIES-NOT-TRANSFERRED-AND-WAR-NEXT-TURN-Q1: miasta przechodzą SEKWENCYJNIE
+      // (zakaz „ostatniego miasta"/stolicy liczony na pozostałych miastach dawcy po poprzednich przelewach),
+      // a nie każde względem stanu wyjściowego — inaczej drugie miasto przechodziło walidację i padało przy przelewie.
+      const cityIds = all
+        .filter(i => i.kind === 'miasto' && cityCessionPlanFor(i.id, p.loser, p.winner).ok)
+        .map(i => i.id);
+      const allowed = new Set(selectSequentialCityCessions({
+        cityIds,
+        ownerCityIds: cities.filter(c => c.ownerId === p.loser).map(c => c.id),
+        capitalCityId: capitalCityIdForOwner(p.loser),
+      }));
+      const kept = new Set<string>();
+      return all.filter(i => {
+        if (i.kind !== 'miasto') return true;
+        if (!allowed.has(i.id) || kept.has(i.id)) return false;
+        kept.add(i.id);
+        return true;
+      });
     }
 
     /** PENDING-FORCED-PEACE-Q1: okno kolejnego oczekującego pokoju wymuszonego (bez opcji odmowy). */
@@ -26867,7 +26886,12 @@ async function boot(): Promise<void> {
         transferBasketItems(p.loser, p.winner, basket);
       }
       finalizePeaceTreatyBetween(p.loser, p.winner, p.lockTurns);
-      const given = items.filter(i => i.kind === 'miasto').length;
+      // Liczba FAKTYCZNIE przeniesionych miast (właściciel po przelewie), a nie zaplanowanych — komunikat nie kłamie.
+      const plannedCities = items.filter(i => i.kind === 'miasto').length;
+      const given = items.filter(i => i.kind === 'miasto' && cities.find(c => c.id === i.id)?.ownerId === p.winner).length;
+      if (given < plannedCities) {
+        console.error(`[ForcedPeace] BŁĄD: przeniesiono ${given} z ${plannedCities} miast pokoju ${p.pairKey}`);
+      }
       const humanIsLoser = p.loser === ME();
       logPeaceVazne(p.loser, p.winner, 'Pokój zawarty: ',
         `Wymuszony przez zmęczenie wojną ${Math.round(p.level * 100)}% (wojna ${p.turnsAtWar} tur, zmienione miasta ${p.citiesChanged}). ` +
