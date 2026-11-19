@@ -746,7 +746,18 @@ fn capital_plunder(
                 .push("shouldShowPlayerTriumphCityStateUnification".into());
         }
         if old_owner != HUMAN_OWNER_ID {
+            // Adapter (obrona r1, N1): pin `disbandOwnerUnits` usuwa obiekt jednostki w całości; `eliminate_owner`
+            // usuwa tylko `state.units`, więc wpisy tablicy bocznej `economy.units` jednostek ofiary kasuje tu adapter.
+            let disbanded: Vec<u64> = state
+                .units
+                .iter()
+                .filter(|u| owner_i64(u.owner_id) == old_owner)
+                .map(|u| u.id.get())
+                .collect();
             eliminate_owner(state, &mut Vec::new(), old_owner);
+            for uid in disbanded {
+                state.economy.units.remove(&uid);
+            }
             // Adapter (D-ZMA-8): pin `eliminateOwner` kasuje `diplomacyPairMeta` par z właścicielem
             // (`main.ts:35405-35409`, `diploPairKeyHasOwner`); `WarTurnState::clear_eliminated_owner_war_state` dzieli
             // klucz po `_`, a stan zapisuje klucze `min-max` (`war_turn_declare::pair_key`) — wpisy usuwa tu adapter.

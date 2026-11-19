@@ -357,6 +357,16 @@ fn diffs(sc: &Value) -> Vec<String> {
         })
         .collect();
     check("jednostki", format!("{units:?}"), format!("{want:?}"));
+    // N1 (obrona r1): w pinie jednostka to jeden obiekt — usunięcie (`wipeDefenderOnCityCenter`, `units.splice` P9,
+    // `disbandOwnerUnits` w `eliminateOwner`) usuwa też jej dane; w stanie portu tablica boczna `economy.units` musi
+    // mieć dokładnie te same klucze co `state.units` (brak osieroconych wpisów).
+    let unit_keys: BTreeSet<u64> = st.units.iter().map(|x| x.id.get()).collect();
+    let econ_keys: BTreeSet<u64> = st.economy.units.keys().copied().collect();
+    check(
+        "klucze economy.units = id jednostek",
+        format!("{econ_keys:?}"),
+        format!("{unit_keys:?}"),
+    );
     let cities: Vec<(u64, u64, u32, Option<u64>)> = st
         .cities
         .iter()
