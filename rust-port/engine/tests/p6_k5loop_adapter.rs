@@ -14,9 +14,9 @@ use civ_engine::domain::battle_setup_units::Side;
 use civ_engine::domain::city_towers::{TowerMaterial, UnitRow};
 use civ_engine::domain::civ_bonuses::{BonusValue, CivBonusEntry};
 use civ_engine::domain::siege_battle_adapter::{
-    collect_siege_rosters, stat_row_from_json, stat_rows_from_json, unit_def_index, AdapterError,
-    CityDefOptions, MachineKind, MilitiaParams, OwnerRelations, RosterCity, RosterUnit,
-    SiegeRosterInput, BATTLE_MAX_PER_SIDE,
+    cap_side, collect_siege_rosters, stat_row_from_json, stat_rows_from_json, unit_def_index,
+    AdapterError, CityDefOptions, MachineKind, MilitiaParams, OwnerRelations, RosterCity,
+    RosterUnit, SiegeRosterInput, BATTLE_MAX_PER_SIDE,
 };
 use civ_engine::domain::siege_battle_adapter_body::{
     activate_unit_for, apply_terrain_range, body_unit_inputs, clamp_era, install_body_inputs,
@@ -1522,4 +1522,20 @@ fn niezmienniki_wejsc_ciala() {
     assert!(!a.side_atk && a.on_wall_walkway && a.can_shoot && !a.shooting_disabled);
     assert!(!a.doctrine_auto && a.doctrine_manual && a.player_order_none);
     assert_eq!((a.dry_col, a.morale, a.range), (-1.0, b.morale, b.range));
+}
+
+/// `MAX_PER_SIDE = 500` (`battleScene.ts:721`, straznik linii generatora) i `attackers.slice(0, MAX_PER_SIDE)`
+/// (`:5510`): 501. jednostka odpada, kolejnosc bez zmian. Renderer ma 120 (dlug DTO-BRIDGE, D-ADP-L5) — adapter
+/// trzyma wartosc pinu (mutant M26).
+#[test]
+fn limit_strony_jak_pin() {
+    let all: Vec<RosterUnit> = (0..501)
+        .map(|i| RosterUnit::new(&format!("u{i}"), 0, "Wojownik", "miecznik", 0, 0))
+        .collect();
+    let capped = cap_side(&all);
+    assert_eq!(capped.len(), 500);
+    assert_eq!(BATTLE_MAX_PER_SIDE, 500);
+    assert_eq!(capped[0].id, "u0");
+    assert_eq!(capped[499].id, "u499");
+    assert_eq!(cap_side(&all[..120]).len(), 120);
 }
