@@ -423,8 +423,8 @@ export function isFarmBaseTerrain(teren: TerenBazowy, nakladka: Nakladka): boole
  * odpowiedź (cytat wyżej) — stadnina jest surowcowa, nie pastwiskowa, więc zakaz był
  * efektem ubocznym reguły z 07-29, nigdy zamierzonym dla niej ograniczeniem.
  */
-export function isStadninaBlockedOnForest(_key: string, _nakladka: Nakladka): boolean {
-  return false;
+export function isStadninaBlockedOnForest(key: string, nakladka: Nakladka): boolean {
+  return key === 'stadnina' && nakladka === Nakladka.Las;
 }
 
 /**
@@ -454,7 +454,7 @@ export function isStadninaBlockedOnForest(_key: string, _nakladka: Nakladka): bo
  */
 const FOREST_COEXIST_IMPROVEMENT_KEYS = new Set<string>([
   'tartak', 'oboz_lowiecki', 'glinianka',
-  'lama', 'stadnina',
+  'lama',
 ]);
 
 /**
@@ -488,6 +488,10 @@ const FOREST_BLOCKED_IMPROVEMENT_KEYS = new Set<string>([
  */
 export function isImprovementBlockedOnForest(key: string, nakladka: Nakladka): boolean {
   if (nakladka !== Nakladka.Las) return false;
+  // DECYZJA WŁAŚCICIELA 2026-11-19 (ABC, B: „stadnina tylko na złożu, bez lasu”) PRZYWRACA zakaz
+  // lasu dla stadniny — COFA ECHO z 2026-09-03 (P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1). Stadnina
+  // nie jest już w FOREST_COEXIST_IMPROVEMENT_KEYS; ten predykat jest jedynym źródłem zakazu.
+  if (isStadninaBlockedOnForest(key, nakladka)) return true;
   if (FOREST_COEXIST_IMPROVEMENT_KEYS.has(key)) return false;
   if (key === 'wyrab') return false;
   return FOREST_BLOCKED_IMPROVEMENT_KEYS.has(key);
@@ -1152,12 +1156,10 @@ function createQualifier(state: ImprovementBuildState, opts: ImprovementQualifie
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
           && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable, playerEra);
         break;
-      // P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (ECHO właściciela 2026-09-03): stadnina jest
-      // ulepszeniem SUROWCOWYM (jak glinianka/tartak/kopalnie), nie pastwiskiem — nakładka
-      // Las przestaje być przeszkodą w budowie. Dawny warunek `!isStadninaBlockedOnForest`
-      // USUNIĘTY (funkcja zawsze zwraca `false` od tej rundy, patrz jej komentarz). Warunek
-      // terenu bazowego (Łąka/Równina) BEZ ZMIAN — nakładka Las nie zastępuje terenBazowy pod
-      // spodem, więc heks Łąka/Równina z Lasem nadal spełnia `teren === Laka || Rownina`.
+      // R-WEB-IMPROVEMENT-STADNINA-DEPOSIT-ONLY-NO-FOREST-Q1 (decyzja właściciela 2026-11-19):
+      // zakaz lasu dla stadniny PRZYWRÓCONY — heks z Lasem odpada w `computeImprovementBuildImpact`
+      // przez `isImprovementBlockedOnForest` (stadnina wyjęta z FOREST_COEXIST, dodana do blokady
+      // przez `isStadninaBlockedOnForest`). Tu warunek terenu bazowego (Łąka/Równina) BEZ ZMIAN.
       // P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 2): dawny jawny `hex.nakladka ===
       // Nakladka.ZlozeKonia ||` USUNIĘTY stąd — isLivestockUnlockedForPlacement już sprawdza
       // złoże konia WEWNĄTRZ siebie (hexHasHorseDeposit), plus teraz koszt/magazyn realny.

@@ -327,14 +327,13 @@ ok(M.isImprovementBlockedOnForest('bydlo', NK.Las), 'las blokuje bydlo');
 ok(M.isImprovementBlockedOnForest('owce', NK.Las), 'las blokuje owce');
 ok(!M.isImprovementBlockedOnForest('lama', NK.Las), 'las NIE blokuje lamy');
 // P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (ECHO wlasciciela 2026-09-03): zakaz stadniny na lesie
-// COFNIETY — stadnina jest ulepszeniem surowcowym (jak glinianka/tartak/kopalnie), nie
-// pastwiskiem. Poprzednie brzmienie zostaje w komentarzu, historia decyzji jest czescia kanonu:
-//   ok(M.isStadninaBlockedOnForest('stadnina', NK.Las), 'stadnina nadal blokowana na lesie');
-//   ok(M.isImprovementBlockedOnForest('stadnina', NK.Las), 'las blokuje stadnine (gate commitu)');
-ok(!M.isStadninaBlockedOnForest('stadnina', NK.Las), 'stadnina JUZ NIE blokowana na lesie (zakaz cofniety)');
+// R-WEB-IMPROVEMENT-STADNINA-DEPOSIT-ONLY-NO-FOREST-Q1 (DECYZJA WŁAŚCICIELA 2026-11-19, ABC B:
+// „stadnina tylko na złożu, bez lasu"): zakaz lasu dla stadniny PRZYWRÓCONY (odwraca ECHO
+// z 2026-09-03, poprzednio asercje `!isStadninaBlockedOnForest`).
+ok(M.isStadninaBlockedOnForest('stadnina', NK.Las), 'stadnina BLOKOWANA na lesie (zakaz lasu 2026-11-19)');
 ok(!M.isStadninaBlockedOnForest('stadnina', NK.Brak), 'stadnina poza lasem nie blokowana');
 ok(!M.isStadninaBlockedOnForest('bydlo', NK.Las), 'predykat stadniny nie lapie bydla');
-ok(!M.isImprovementBlockedOnForest('stadnina', NK.Las), 'las NIE blokuje stadniny (gate commitu, jak glinianka)');
+ok(M.isImprovementBlockedOnForest('stadnina', NK.Las), 'las BLOKUJE stadnine (gate commitu, 2026-11-19)');
 // Zywy test przetrwania: usuniecie lasu (wyrab) NIE zabiera stadniny z heksa (niezalezna
 // od lasu, jak glinianka). R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1 (2026-09-07, ODWROCENIE
 // kanonu): tartak JUZ NIE jest kontrola "przetrwa" -- teraz znika razem z oboz_lowiecki,
@@ -350,9 +349,14 @@ ok(!stadninaPoWyrebie.includes('oboz_lowiecki'), 'kontrola: oboz lowiecki NADAL 
 // nietautologicznosci, weryfikowany przez Operatora przed commitem — patrz raport rundy).
 // R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: bramka epoki -- odblokowany Koń liczy się od epoki 3.
 const qRzymKonUnlocked = qual({ civ: 'rzym', tradeRouteKonUnlocked: true, era: 3 });
-ok(qRzymKonUnlocked('stadnina', 3, 1), 'ZYWY TEST GOAL 1: stadnina KWALIFIKUJE SIE na Lace+Las po odblokowaniu Konia');
-ok(M.computeImprovementBuildImpact('stadnina', hexes['3,1'], []) !== null,
-  'ZYWY TEST: gate commitu (computeImprovementBuildImpact) NIE blokuje stadniny na Lace+Las');
+// ZYWY TEST GOAL 1 (2026-11-19, zakaz lasu przywrocony): stadnina NIE kwalifikuje sie na Lace+Las
+// nawet po odblokowaniu Konia; KONTROLA DODATNIA: ta sama Laka BEZ lasu ZE zlozem konia — kwalifikuje
+// sie (bez niej asercja wyzej bylaby tautologia). Mutacja usuwajaca warunek lasu czerwieni test.
+hexes['2,-1'] = mkHex(2, -1, TB.Laka, NK.ZlozeKonia);
+ok(!qRzymKonUnlocked('stadnina', 3, 1), 'ZYWY TEST GOAL 1: stadnina NIE kwalifikuje SIE na Lace+Las (zakaz lasu 2026-11-19)');
+ok(qRzymKonUnlocked('stadnina', 2, -1), 'ZYWY TEST GOAL 1 kontrola: stadnina KWALIFIKUJE SIE na Lace ze zlozem konia (bez lasu)');
+ok(M.computeImprovementBuildImpact('stadnina', hexes['3,1'], []) === null,
+  'ZYWY TEST: gate commitu (computeImprovementBuildImpact) BLOKUJE stadnine na Lace+Las');
 ok(!M.computeImprovementBuildImpact('bydlo', hexes['2,1'], []), 'impact null: bydlo on las');
 ok(!qInka('irygacja', 3, 1), 'irygacja NOT on laka+las (wymaga wyrębu)');
 hexes['1,2'] = mkHex(1, 2, TB.Laka, NK.Las);
