@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "6a497e99e6c6642e174e55f0e442c6cc",
-  "bundleSha256": "960946d106e4873d0c43c03e539bf13e06020ff0c524dadfe321891b30d8fa03",
-  "bundleBytes": 14970843,
+  "bundleMd5": "96fb6cd9fece8d40230ec210d3e3fb76",
+  "bundleSha256": "21f42ac5033b29fb0d148d1c08e3dc2ed300e95070f536f64e5d2cabcece5f10",
+  "bundleBytes": 14971598,
   "sourceSnapshot": {
-    "source": "R-WEB-DIPLO-ZERO-TRUST-TREATY-BREAK-PROTECTOR-Q1 (kod 12f436fab, FC 622bf1be9)",
+    "source": "R-WEB-AI-AI-ALLIANCES-E3-WILLINGNESS-MEASURE-Q1 r2 (kod 6cc1ac0f2, FC 6f950a79c)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 852: Nowy modul diplomacy-zero-trust.ts (licznik zera Zaufania per para, plan zerwan handel/NAP, rejestr zerwan, protektor C1 jako preferowany cel w torze sojuszy AI-AI) + parametry diplomacy-zero-trust-params.json + wpiecie tickZeroTrustTreaties w main.ts przez breakTreatyVoluntarily; flaga zeroZaufaniaAktywna=false = zachowanie gry bez zmian"
+    "FALA 853: Hak odczytowy toru sojuszy: szczegoly kazdej proby (gotowosc, Relacja, Zaufanie, Respekt, archetyp, wspolna granica/wrog, powod E1, znacznik przestarzalej proby), analizator z kubelkami gotowosci i para najblizszymi progowi, test haka z mutantami; scalone z zerowym zaufaniem (FALA 852); brak zmian zasad gry"
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplomacy-test 149/0; diplomacy-harder 50/0; ai-ai-alliance-tick 19/19 + mutanty 8/8; diplomacy-zero-trust-unit 43/0 (mutacje czerwone)"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; alliance-tick 19/19 + mutanty 8/8; zero-trust 43/0; diplomacy 149/0; harder 50/0; hook-test 31 PASS (mutanty M1-M26); smoke seed 4242 30 tur z flaga ON: 302 proby, 0 sojuszy, 99,3% prob z gotowoscia 0,0-0,1"
   ],
   "limits": [
-    "Flaga domyslnie wylaczona: zerwan nie ma w rozgrywce do czasu pomiaru; bieg dymny z flaga ON NIE ZMIERZONO; tick w main.ts bez testu przegladarkowego; licznik w pamieci modulu (nie w SaveGame); lista partnerow C1 nie wyklucza gracza-wasala"
+    "Narzedzie pomiarowe bez efektu w rozgrywce; ai-ai-coalition-test czerwony (kotwica mutanta M1 usunieta w FALI 852, nie w tym temacie): osobna naprawa; rozbicie skladnikow aiDiplomacyStance NIE ZMIERZONO; flaga przestarzalych prob tylko test statyczny"
   ],
-  "finalControl": "PASS-WITH-NOTES: bramki wlasne zielone, mutacje wykryte, kandydat potomkiem bazy, allowlista zachowana",
+  "finalControl": "PASS-WITH-NOTES: bramki wlasne zielone poza dziedziczonym ai-ai-coalition-test, mutanty wykryte, kandydat potomkiem bazy, allowlista zachowana",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-18T23:39:37",
+  "hubGeneratedAt": "2026-11-19T00:08:58",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "6a497e99e6c6642e174e55f0e442c6cc",
-      "sizeBytes": 14970843
+      "md5": "96fb6cd9fece8d40230ec210d3e3fb76",
+      "sizeBytes": 14971598
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "6a497e99e6c6642e174e55f0e442c6cc",
-      "sizeBytes": 14970843
+      "md5": "96fb6cd9fece8d40230ec210d3e3fb76",
+      "sizeBytes": 14971598
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "6a497e99e6c6642e174e55f0e442c6cc",
-      "sizeBytes": 14970843
+      "md5": "96fb6cd9fece8d40230ec210d3e3fb76",
+      "sizeBytes": 14971598
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "6a497e99e6c6642e174e55f0e442c6cc",
-      "sizeBytes": 14970843
+      "md5": "96fb6cd9fece8d40230ec210d3e3fb76",
+      "sizeBytes": 14971598
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "6a497e99e6c6642e174e55f0e442c6cc",
-      "sizeBytes": 14970843
+      "md5": "96fb6cd9fece8d40230ec210d3e3fb76",
+      "sizeBytes": 14971598
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "6a497e99e6c6642e174e55f0e442c6cc",
-      "sizeBytes": 14970843
+      "md5": "96fb6cd9fece8d40230ec210d3e3fb76",
+      "sizeBytes": 14971598
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "6a497e99e6c6642e174e55f0e442c6cc",
-      "sizeBytes": 14970843
+      "md5": "96fb6cd9fece8d40230ec210d3e3fb76",
+      "sizeBytes": 14971598
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "6a497e99e6c6642e174e55f0e442c6cc",
-      "sizeBytes": 14970843
+      "md5": "96fb6cd9fece8d40230ec210d3e3fb76",
+      "sizeBytes": 14971598
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "6a497e99e6c6642e174e55f0e442c6cc",
-      "sizeBytes": 14970843
+      "md5": "96fb6cd9fece8d40230ec210d3e3fb76",
+      "sizeBytes": 14971598
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "6a497e99e6c6642e174e55f0e442c6cc",
-      "sizeBytes": 14970843
+      "md5": "96fb6cd9fece8d40230ec210d3e3fb76",
+      "sizeBytes": 14971598
     }
   ],
-  "md5": "6a497e99e6c6642e174e55f0e442c6cc",
+  "md5": "96fb6cd9fece8d40230ec210d3e3fb76",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

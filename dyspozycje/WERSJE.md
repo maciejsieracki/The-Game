@@ -1,3 +1,9 @@
+## ROBOCZA 96fb6cd9 -- 2026-11-18 -- FALA 853: Pomiar gotowosci sojuszy AI-AI: szczegoly prob, rozklad gotowosci, analizator (flagi wylaczone) (testowa)
+
+- Hak odczytowy toru sojuszy: szczegoly kazdej proby (gotowosc, Relacja, Zaufanie, Respekt, archetyp, wspolna granica/wrog, powod E1, znacznik przestarzalej proby), analizator z kubelkami gotowosci i para najblizszymi progowi, test haka z mutantami; scalone z zerowym zaufaniem (FALA 852); brak zmian zasad gry
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; alliance-tick 19/19 + mutanty 8/8; zero-trust 43/0; diplomacy 149/0; harder 50/0; hook-test 31 PASS (mutanty M1-M26); smoke seed 4242 30 tur z flaga ON: 302 proby, 0 sojuszy, 99,3% prob z gotowoscia 0,0-0,1
+- Limity: Narzedzie pomiarowe bez efektu w rozgrywce; ai-ai-coalition-test czerwony (kotwica mutanta M1 usunieta w FALI 852, nie w tym temacie): osobna naprawa; rozbicie skladnikow aiDiplomacyStance NIE ZMIERZONO; flaga przestarzalych prob tylko test statyczny
+
 ## ROBOCZA 6a497e99 -- 2026-11-18 -- FALA 852: Zerowe zaufanie (etap C cz.1, za flaga, wylaczone): licznik, zerwanie handlu/NAP po 5 turach, protektor (testowa)
 
 - Nowy modul diplomacy-zero-trust.ts (licznik zera Zaufania per para, plan zerwan handel/NAP, rejestr zerwan, protektor C1 jako preferowany cel w torze sojuszy AI-AI) + parametry diplomacy-zero-trust-params.json + wpiecie tickZeroTrustTreaties w main.ts przez breakTreatyVoluntarily; flaga zeroZaufaniaAktywna=false = zachowanie gry bez zmian

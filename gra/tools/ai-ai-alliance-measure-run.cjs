@@ -19,6 +19,7 @@
  *   node tools/ai-ai-alliance-measure-run.cjs --alliances 1 --dist <abs-dist> --profile <abs-profil> --out <abs-katalog> --seed 4242 --turns 30
  * Analiza: node tools/ai-ai-alliance-measure-analyze.cjs --off <abs-katalog-OFF> --on <abs-katalog-ON>
  */
+const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
@@ -50,5 +51,16 @@ if (process.env.AI_ALLIANCE_MEASURE_CHILD === '1') {
   const env = Object.assign({}, process.env, { AI_ALLIANCE_MEASURE_CHILD: '1', AI_ALLIANCE_MEASURE_FORCE: val });
   env.NODE_OPTIONS = ((process.env.NODE_OPTIONS || '') + ' --require ' + JSON.stringify(SELF)).trim();
   const r = spawnSync(process.execPath, [RUNNER, ...rest], { stdio: 'inherit', env });
+  // R-WEB-AI-AI-ALLIANCES-E3-WILLINGNESS-MEASURE-Q1: po biegu analizator liczy rozkład gotowości (histogram 0,1 per tura,
+  // min/mediana/max per para) z jsonl w katalogu --out i zapisuje go obok wyników. Runner ekonomii nie jest zmieniany.
+  const iOut = rest.indexOf('--out');
+  if (r.status === 0 && iOut >= 0 && rest[iOut + 1] !== undefined) {
+    const outDir = path.resolve(rest[iOut + 1]);
+    const a = spawnSync(process.execPath, [path.resolve(__dirname, 'ai-ai-alliance-measure-analyze.cjs'), '--in', outDir], { encoding: 'utf8' });
+    const txt = (a.stdout || '') + (a.stderr || '');
+    try { fs.writeFileSync(path.join(outDir, 'gotowosc-podsumowanie.txt'), txt); } catch (e) { console.error('[alliances] zapis podsumowania: ' + e.message); }
+    process.stdout.write(txt);
+    if (a.status !== 0) { console.error('[alliances] analizator zakonczyl sie kodem ' + a.status); process.exit(1); }
+  }
   process.exit(r.status === null ? 1 : r.status);
 }
