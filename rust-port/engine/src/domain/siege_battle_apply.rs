@@ -1028,8 +1028,8 @@ pub fn apply_outcome(
         LoopWinner::Draw => {
             // `post-battle-map.ts:455-462`: atakujący w stronę swojej strony, potem obrońcy od atakujących.
             let atk_dir =
-                pick_retreat_target(state, battle_hex, rp.centroid(&battle.atk_roster), false);
-            let atk_alive: Vec<RosterUnit> = live(state, &battle.atk_roster)
+                pick_retreat_target(state, battle_hex, rp.centroid(battle.atk_roster), false);
+            let atk_alive: Vec<RosterUnit> = live(state, battle.atk_roster)
                 .into_iter()
                 .cloned()
                 .collect();
@@ -1044,7 +1044,7 @@ pub fn apply_outcome(
                     Some(battle_hex),
                 );
             }
-            let def_alive: Vec<RosterUnit> = live(state, &battle.def_roster)
+            let def_alive: Vec<RosterUnit> = live(state, battle.def_roster)
                 .into_iter()
                 .cloned()
                 .collect();
@@ -1063,7 +1063,7 @@ pub fn apply_outcome(
                 .map(|u| u.id.clone());
             if let Some(lead) = lead {
                 let dir =
-                    pick_retreat_target(state, battle_hex, rp.centroid(&battle.atk_roster), true);
+                    pick_retreat_target(state, battle_hex, rp.centroid(battle.atk_roster), true);
                 place_fan_out_group(
                     state,
                     &mut rp,

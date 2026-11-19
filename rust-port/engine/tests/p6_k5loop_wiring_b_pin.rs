@@ -328,7 +328,7 @@ fn wektory_pinu_zastosowania_wyniku_bajt_w_bajt() {
 fn wektory_pokrywaja_galezie() {
     let v: Value = serde_json::from_str(VECTORS).expect("wektory");
     let scs = v["scenarios"].as_array().unwrap();
-    let has = |f: &dyn Fn(&Value) -> bool| scs.iter().any(|s| f(s));
+    let has = |f: &dyn Fn(&Value) -> bool| scs.iter().any(f);
     for w in ["atakujacy", "obronca", "remis"] {
         assert!(has(&|s| s["input"]["winner"] == w), "brak zwyciezcy {w}");
     }

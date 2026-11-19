@@ -2321,6 +2321,8 @@ mod unit_replace_error_tests {
             state: loaded,
             phase_queue: game.phase_queue.clone(),
             fog: game.fog.clone(),
+            siege_battle: None,
+            siege_battles_started: 0,
         };
         resumed.advance_turn().expect("tura po wczytaniu");
         let result = resumed.state.koniec_gry.expect("przegrana po wczytaniu");
