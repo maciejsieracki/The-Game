@@ -105,7 +105,9 @@ console.log('A. gracz -- canBuild = isImprovementAllowedForCiv && qualifies (jak
   assert(isImprovementAllowedForCiv('tarasy', 'Inkowie'), 'isImprovementAllowedForCiv: wielkosc liter ignorowana');
   assert(!isImprovementAllowedForCiv('tarasy', 'sumer'), 'isImprovementAllowedForCiv: sumer zablokowany');
   assert(isImprovementAllowedForCiv('farma', 'sumer'), 'isImprovementAllowedForCiv: ulepszenie bez pola cywilizacje = dostepne dla wszystkich');
-  assert(isImprovementAllowedForCiv('lama', 'rzymianie'), 'isImprovementAllowedForCiv: lama NIE ma pola cywilizacje (gate osobny, isIncaCiv w livestock-unlock.ts) -- ten mechanizm jej nie dotyczy');
+  // DECYZJA WŁAŚCICIELA 2026-11-19 (pkt 3): lama tylko dla Inków (terrain-improvements.json lama.cywilizacje = ["inkowie"]).
+  assert(!isImprovementAllowedForCiv('lama', 'rzymianie'), 'isImprovementAllowedForCiv: lama ZABLOKOWANA dla Rzymian (decyzja 2026-11-19 pkt 3; cywilizacje: ["inkowie"])');
+  assert(isImprovementAllowedForCiv('lama', 'inkowie'), 'isImprovementAllowedForCiv: lama DOSTĘPNA dla Inków');
 }
 
 // ===========================================================================
@@ -181,16 +183,18 @@ function buildImprovementCmds(commands) {
   const cmds = buildImprovementCmds(
     decideAITurn(AI_ID, [], [cityChiny], hillsMap, data, baseOpts(cityChiny, 'chinczycy')),
   );
-  eq(cmds.length, 1, 'AI Chinczycy: dokladnie 1 buildImprovement');
-  eq(cmds[0].key, 'tarasy', 'AI Chinczycy: typ = tarasy (jedyny kwalifikujacy sie na tej mapie)');
+  // Budżet AI = 100% puli, BEZ limitu % (właściciel 2026-10-31, ai.ts). Tarasy kosztują 25 Pracy, pula 100 --
+  // AI może postawić kilka tarasów w jednej turze (było sztywno 1). Asercja: >=1, wszystkie tarasy, koszt w budżecie.
+  assert(cmds.length >= 1 && cmds.length * 25 <= 100, `AI Chinczycy: >=1 buildImprovement w budżecie 100 Pracy (got ${cmds.length})`);
+  assert(cmds.every(c => c.key === 'tarasy'), 'AI Chinczycy: typ = tarasy (jedyny kwalifikujacy sie na tej mapie)');
 }
 {
   const cityInca = makeCity('city0', AI_ID, 15, 15);
   const cmds = buildImprovementCmds(
     decideAITurn(AI_ID, [], [cityInca], hillsMap, data, baseOpts(cityInca, 'inkowie')),
   );
-  eq(cmds.length, 1, 'AI Inkowie: dokladnie 1 buildImprovement');
-  eq(cmds[0].key, 'tarasy', 'AI Inkowie: typ = tarasy');
+  assert(cmds.length >= 1 && cmds.length * 25 <= 100, `AI Inkowie: >=1 buildImprovement w budżecie 100 Pracy (got ${cmds.length})`);
+  assert(cmds.every(c => c.key === 'tarasy'), 'AI Inkowie: typ = tarasy');
 }
 {
   const cityRzym = makeCity('city0', AI_ID, 15, 15);

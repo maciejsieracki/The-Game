@@ -18,6 +18,11 @@ const esbuild = (() => {
 })();
 
 const GRA = path.resolve(__dirname, '..');
+// Oczekiwane plony z DANYCH (nie przypinane liczby): terrain-yields.json.
+// Baza terenu zmieniona P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1 (2026-08-17); Rzeka glina x5 (R-EKONOMIA Runda 2).
+const TY = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'terrain-yields.json'), 'utf8'));
+const terrainBaza = (teren) => TY.terrain_types.find((t) => t.Teren === teren);
+const rzekaMod = TY.terrain_modifiers.find((m) => m.Modyfikator === 'Rzeka');
 const ENTRY = path.join(__dirname, '.hex-plony-magazyn-entry.ts');
 const BUNDLE = path.join(__dirname, '.hex-plony-magazyn-bundle.cjs');
 
@@ -155,10 +160,11 @@ console.log('\n-- R-HEX-PLONY-MAGAZYN B: tileYield z 👤 → magazyn + ulepszen
   const nodes = M.buildTerritoryNodesFromCities([city]);
   const worked = M.computeWorkedMagazynYieldsByCity([city], map, nodes);
   const w = worked.get(city.id);
-  ok(w && w.drewno === 0 && w.kamien === 0 && w.glina === 15,
-    'Rzeka na centrum Łąki: worked drewno=0 kamien=0 glina=15 (5 baza + 10 rzeka)');
+  const oczekGlina = terrainBaza('Łąka').Glina + rzekaMod.Glina; // 2 + 5 z danych
+  ok(w && w.drewno === 0 && w.kamien === 0 && w.glina === oczekGlina,
+    `Rzeka na centrum Łąki: worked drewno=0 kamien=0 glina=${oczekGlina} (baza Łąki + rzeka z danych)`);
   const stock = runTick(city, [], map);
-  eq(stock.glina, 15, 'magazyn: heks przy rzece → 15 glin/t (5 baza + 10 rzeka)');
+  eq(stock.glina, oczekGlina, `magazyn: heks przy rzece → ${oczekGlina} glin/t (baza Łąki + rzeka z danych)`);
 }
 
 // Sąsiad z 👤 (tryb ręczny) — Łąka +1 drewno, nie tylko centrum miasta
@@ -187,12 +193,13 @@ console.log('\n-- R-HEX-PLONY-MAGAZYN B: tileYield z 👤 → magazyn + ulepszen
   const nodes = M.buildTerritoryNodesFromCities([city]);
   const worked = M.computeWorkedMagazynYieldsByCity([city], map, nodes);
   const w = worked.get(city.id);
-  ok(w && w.drewno === 5 && w.kamien === 2 && w.glina === 5,
-    'centrum Równina + 👤 Łąka: drewno 5+0=5, kamien 2+0=2, glina 0+5=5');
+  const oczekGlinaLaka = terrainBaza('Łąka').Glina; // 2 z danych (było 5 przed P-SUROWCE Q1)
+  ok(w && w.drewno === 5 && w.kamien === 2 && w.glina === oczekGlinaLaka,
+    `centrum Równina + 👤 Łąka: drewno 5+0=5, kamien 2+0=2, glina 0+${oczekGlinaLaka}`);
   const stock = runTick(city, [], map);
   eq(stock.drewno, 5, 'magazyn: plony z obrabianego sąsiada — Drewno addytywnie');
   eq(stock.kamien, 2, 'magazyn: plony z obrabianego sąsiada — Kamień addytywnie');
-  eq(stock.glina, 5, 'magazyn: plony z obrabianego sąsiada — Glina addytywnie');
+  eq(stock.glina, oczekGlinaLaka, 'magazyn: plony z obrabianego sąsiada — Glina addytywnie (wartość z danych)');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

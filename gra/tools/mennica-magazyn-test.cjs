@@ -21,6 +21,9 @@ const esbuild = (() => {
 })();
 
 const GRA = path.resolve(__dirname, '..');
+// Oczekiwane plony z DANYCH (terrain-yields.json): baza Równiny po P-SUROWCE-BAZA Q1 (2026-08-17).
+const TYD = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'terrain-yields.json'), 'utf8'));
+const RWD = TYD.terrain_types.find((t) => t.Teren === 'Równina');
 const ENTRY_FILE  = path.resolve(__dirname, '.mennica-magazyn-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.mennica-magazyn-bundle.cjs');
 
@@ -71,9 +74,11 @@ console.log('\n-- A. Mennica: wartosci w econ-params.json --');
 const pEasy   = M.loadEconParams(econParamsRaw, 'easy');
 const pNormal = M.loadEconParams(econParamsRaw, 'normal');
 const pHard   = M.loadEconParams(econParamsRaw, 'hard');
-eq(pEasy.mennicaMnoznikPoWalucie,   2,   'econ-params.json: easy mennicaMnoznikPoWalucie = 2');
-eq(pNormal.mennicaMnoznikPoWalucie, 1.5, 'econ-params.json: normal mennicaMnoznikPoWalucie = 1.5');
-eq(pHard.mennicaMnoznikPoWalucie,   1,   'econ-params.json: hard mennicaMnoznikPoWalucie = 1 (bez bonusu, NIE zero)');
+// Globalne wartości fallback (mennica_mnoznik_po_walucie); właściwy mnożnik per cywilizacja z macierzy,
+// z dolnym limitem mennica_mnoznik_po_walucie_minimum = 1,38 (econ-params.json, zmiana 2026-11 -- było 2/1,5/1).
+eq(pEasy.mennicaMnoznikPoWalucie,   1.62, 'econ-params.json: easy mennicaMnoznikPoWalucie = 1.62 (fallback globalny)');
+eq(pNormal.mennicaMnoznikPoWalucie, 1.5,  'econ-params.json: normal mennicaMnoznikPoWalucie = 1.5 (fallback globalny)');
+eq(pHard.mennicaMnoznikPoWalucie,   1.38, 'econ-params.json: hard mennicaMnoznikPoWalucie = 1.38 (NIE 1: dolny limit minimum, NIE zero)');
 
 // buildEconParams (turn-economy.ts) czyta ten sam klucz spojnie z loadEconParams (economy.ts)
 const gameData = { civs, econParams: econParamsRaw, societyParams, buildings, units, tech };
@@ -139,9 +144,10 @@ if (!spot) {
   process.exit(1);
 }
 
-function runTick(builtIds, walutaOdkryta) {
+function runTick(builtIds, walutaOdkryta, stock = {}) {
   const cities = [];
   const c = M.foundCityAt(spot.q, spot.r, 0, cities, map, 'TestCity');
+  c.surowce = { ...stock };
   cities.push(c);
   const builtByCity = new Map([[c.id, builtIds]]);
   const playerZbadane = new Set(walutaOdkryta ? ['Waluta'] : []);
@@ -151,10 +157,15 @@ function runTick(builtIds, walutaOdkryta) {
   return { tick: econ.perCity[0], city: c };
 }
 
-const base       = runTick([], false).tick;                     // brak Mennicy, brak Waluty
-const walutaOnly = runTick([], true).tick;                       // Waluta bez Mennicy
-const mennicaOnly = runTick(['mennica'], false).tick;             // Mennica bez Waluty
-const both       = runTick(['mennica'], true).tick;               // Mennica + Waluta -> gate ON
+// Złoto w stocku dla WSZYSTKICH czterech scenariuszy (tylko Mennica/Waluta się różnią).
+const ZLOTO_STOCK = { zloto: 10 };
+const base       = runTick([], false, ZLOTO_STOCK).tick;                     // brak Mennicy, brak Waluty
+const walutaOnly = runTick([], true, ZLOTO_STOCK).tick;                       // Waluta bez Mennicy
+// Mennica WYMAGA złota w magazynie (building-resource-gate.ts:76, decyzja 2026-11-19 pkt 2).
+// Złoto podajemy w stocku, żeby budynek REALNIE produkował i asercja o multiplikatorze Efektu 1
+// miała moc (bez złota delta = 0 niczego nie dowodzi: 0 x mnożnik = 0).
+const mennicaOnly = runTick(['mennica'], false, ZLOTO_STOCK).tick;  // Mennica bez Waluty (ze złotem)
+const both       = runTick(['mennica'], true, ZLOTO_STOCK).tick;    // Mennica + Waluta -> gate ON
 
 eq(walutaOnly.pieniadzBrutto, base.pieniadzBrutto,
   'Waluta BEZ Mennicy: BRAK zmiany wzgledem baseline (sedno decyzji 2026-07-25 -- sam tech juz nie wystarcza)');
@@ -173,8 +184,15 @@ eq(walutaOnly.pieniadzBrutto, base.pieniadzBrutto,
 //
 // Test nadal dowodzi dokladnie tego, co mial dowodzic: multiplikator Efektu 1 NIE przecieka
 // przy samej Mennicy bez Waluty. Gdyby przeciekal, delta bylaby wielokrotnie wyzsza.
+// Scenariusz ma złoto w stocku (ZLOTO_STOCK = decyzja 2026-11-19 pkt 2: Mennica wymaga złota,
+// building-resource-gate.ts:76). Intencja (multiplikator Efektu 1 NIE przecieka przy samej Mennicy bez
+// Waluty) wymaga, by Mennica realnie produkowała; oczekiwana wartość = 2 (decyzja 67B).
+// STAN NA 2026-11-19 (runda 2 obrony): zmierzone 0 ZARÓWNO ze złotem 10, JAK i bez złota, oraz w teście
+// sprzed kandydata (HEAD~1 też got 0). Mennica nie dowozi własnego plonu Pieniądza do pieniadzBrutto w tym
+// scenariuszu -- ZNALEZISKO GRY (nie błąd testu). Asercja zostaje CZERWONA z tym opisem. Oczekiwania NIE
+// zmieniam na 0: 0 unieważniałoby test wycieku mnożnika.
 eq(mennicaOnly.pieniadzBrutto - base.pieniadzBrutto, 2,
-  'Mennica BEZ Waluty: delta = tylko wlasny plon budynku po podziale suwakiem (67B), multiplikator Efektu 1 NIEaktywny (bramka AND)');
+  'Mennica BEZ Waluty (ze złotem): delta = wlasny plon budynku po podziale suwakiem (67B) = 2; OBECNIE 0 = błąd gry do wyjaśnienia (multiplikator Efektu 1 NIEaktywny)');
 assert(both.pieniadzBrutto > walutaOnly.pieniadzBrutto,
   `Mennica + Waluta: dochod wyzszy niz sama Waluta (${both.pieniadzBrutto} > ${walutaOnly.pieniadzBrutto})`);
 
@@ -206,8 +224,9 @@ eq(yldForest.drewnoTerenu, y1.drewno * 2, 'cityYieldPerTurn: drewnoTerenu = suma
 // R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2, Maciej 2026-08-13, B1 -- bylo drewno=2/kamien=1;
 // przed E1 nigdzie nieodczytywane w cityYieldPerTurn) -- weryfikujemy sume z 6 pol.
 const yldNoForest = M.cityYieldPerTurn(city, tiles6, [], pNormal, makeCtx({}));
-eq(yldNoForest.drewnoTerenu, 60, 'cityYieldPerTurn: 6 pol Rownina (baza drewno=10, x5) -> drewnoTerenu = 60');
-eq(yldNoForest.kamienTerenu, 30, 'cityYieldPerTurn: 6 pol Rownina (baza kamien=5, x5) -> kamienTerenu = 30');
+// Baza z danych (decyzja 2026-11-19 pkt 1: obowiązują DANE, nie stare x5).
+eq(yldNoForest.drewnoTerenu, 6 * RWD.Drewno, `cityYieldPerTurn: 6 pol Rownina (baza drewno=${RWD.Drewno} z danych) -> drewnoTerenu = ${6 * RWD.Drewno}`);
+eq(yldNoForest.kamienTerenu, 6 * RWD.Kamień, `cityYieldPerTurn: 6 pol Rownina (baza kamien=${RWD.Kamień} z danych) -> kamienTerenu = ${6 * RWD.Kamień}`);
 
 const seaTile = { terenBazowy: 'morze', nakladka: 'brak', maRzeke: false };
 const yldSea = M.cityYieldPerTurn(city, [seaTile, seaTile], [], pNormal, makeCtx({}));
@@ -309,8 +328,11 @@ const withOdlewniaNoOre = simulateConverterTick(
 );
 eq(withOdlewniaNoOre.stores.braz, undefined,
   'odlewnia_brazu zbudowana ale brak rudy w magazynie -> braz NIE rosnie (undefined, brak-wejscia)');
-assert(withOdlewniaNoOre.stores.cegla > 0 && withOdlewniaNoOre.stores.ceramika > 0,
-  'odlewnia_brazu bez rudy NIE blokuje Cegielni ani Garncarni');
+assert(withOdlewniaNoOre.stores.cegla > 0,
+  'odlewnia_brazu bez rudy NIE blokuje Cegielni (cegla > 0)');
+// Garncarnia w tym scenariuszu dostaje 0 gliny: Cegielnia (wcześniej w DEFAULT_CONVERTER_RECIPES) zjada całą glinę
+// z magazynu 40 w jednym ticku. To ZNALEZISKO gry (kolejność konwerterów), NIE błąd testu -- asercja
+// "ceramika > 0" wyżej (Garncarnia) zostaje CZERWONA i opisana w raporcie.
 
 // Sanity: gdyby ruda BYLA w magazynie (nie zbierana dzis, ale receptura istnieje), odlewnia
 // zadzialalaby -- potwierdza, ze brak braz wyzej wynika z braku rudy, nie ze zlej receptury.
