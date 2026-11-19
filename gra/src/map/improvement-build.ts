@@ -15,6 +15,7 @@ import {
   territoryOwnerAt,
   axialDistance,
   cityTerritoryRadius,
+  fortRingBuildBlockReason,
   type CityNode,
   type TerritoryNode,
 } from './territory';
@@ -1069,6 +1070,10 @@ function createQualifier(state: ImprovementBuildState, opts: ImprovementQualifie
     }
     return isPlayerTerritoryHex(q, r, cityNodes, territoryNodes, playerOwnerIdNum);
   }
+  // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1 (blokada budowy, ABC C): budujący z WŁASNYM fortem/posterunkiem
+  // nie stawia ulepszenia w jego pierścieniu na cudzym terytorium (ulepszenie przeskoczyłoby pod ochronę fortu).
+  // Gracz, AI i autopilot — ta sama bramka (qualifies()); regułę liczy `fortRingBuildBlockReason` (map/territory.ts).
+  const hasOwnFort = territoryNodes.some(n => (n.isFort || n.isOutpost) && n.ownerId === playerOwnerIdNum);
 
   function isRoadQualified(q: number, r: number): boolean {
     return roadAdjacencyOk(state, q, r);
@@ -1082,6 +1087,8 @@ function createQualifier(state: ImprovementBuildState, opts: ImprovementQualifie
 
     const hex = map.hexes[hexKey] as HexWithZloze | undefined;
     if (!hex) return false;
+    // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1: w pierścieniu cudzego fortu — tylko na własnym terytorium.
+    if (hasOwnFort && fortRingBuildBlockReason(q, r, playerOwnerIdNum, territoryNodes) !== null) return false;
     const teren = hex.terenBazowy;
     const nakladka = hex.nakladka;
     const zloze = hexZloze(hex);

@@ -36,6 +36,9 @@
  * contestation on build).
  */
 import { axialDistance, cityTerritoryRadius, territoryOwnerAt, type CityNode, type TerritoryNode } from '../map/territory';
+
+/** Predykat ochrony heksu ulepszeniem wlasciciela fortu (typ z `TerritoryNode.shieldsHex`). */
+export type TerritoryNodeShield = NonNullable<TerritoryNode['shieldsHex']>;
 import { hexKeysWithinRadius } from './okolica';
 import type { GameMap } from '../types/map';
 
@@ -138,12 +141,19 @@ export function fortNodeAsCityNode(f: Pick<FortNode, 'q' | 'r' | 'type'>): CityN
  * `buildAllTerritoryNodes` (main.ts). `contestedUseless` (regula 3) NIE tworzy
  * terytorium. / EN: hard-territory nodes from forts/outposts.
  */
-export function fortTerritoryNodes(forts: readonly FortNode[]): TerritoryNode[] {
+export function fortTerritoryNodes(
+  forts: readonly FortNode[],
+  shieldFor?: (f: FortNode) => TerritoryNodeShield | undefined,
+): TerritoryNode[] {
   const out: TerritoryNode[] = [];
   for (const f of forts) {
     if (f.contestedUseless) continue;
     const node: TerritoryNode = { ...fortNodeAsCityNode(f), ownerId: f.ownerId };
     if (typeof f.seq === 'number') node.order = { turn: f.builtAtTurn ?? 0, seq: f.seq };
+    // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1: heks z ulepszeniem wlasciciela fortu w pierscieniu zostaje u niego.
+    // Predykat podpinany TYLKO gdy w pierscieniu jest ulepszenie (inaczej zachowany cache zakresowy).
+    const shield = shieldFor?.(f);
+    if (shield) node.shieldsHex = shield;
     out.push(node);
   }
   return out;

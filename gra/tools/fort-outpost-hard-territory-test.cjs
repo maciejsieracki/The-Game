@@ -125,7 +125,7 @@ console.log('\n--- E: straznik main.ts ---');
   const main = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
   const i = main.indexOf('function buildAllTerritoryNodes');
   const body = main.slice(i, i + 1200);
-  assert(/fortTerritoryNodes\(\s*fortNodes\s*\)/.test(body), 'E1: buildAllTerritoryNodes dolacza fortTerritoryNodes(fortNodes)');
+  assert(/fortTerritoryNodes\(\s*fortNodes\s*,/.test(body), 'E1: buildAllTerritoryNodes dolacza fortTerritoryNodes(fortNodes, fabryka predykatu per fort)');
   const j = main.indexOf('function foundingTerritoryOpts');
   const fb = main.slice(j, j + 2600);
   assert(/isHexInForeignFortTerritory\(/.test(fb), 'E2: foundingTerritoryOpts blokuje teren obcego fortu');
