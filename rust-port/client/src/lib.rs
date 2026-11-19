@@ -488,7 +488,9 @@ impl<S: RenderSource> RenderClient<S> {
 
     /// `onOpenBuild` / `onSelectFoundCity` / `onSelectWonder`
     /// (`main.ts:26702-26793`): the writer becomes [`HighlightPriority::Build`]
-    /// (`refreshBuildHighlight` runs after each, decision D-371-5b).
+    /// (`refreshBuildHighlight` runs after each, decision D-371-5b); closing
+    /// the panel makes it [`HighlightPriority::Cleared`] (`exitBuildMode` ->
+    /// `clearHighlight()`, `:16369-16372`, D-T5C-7).
     /// Opening or closing the panel (`build_mode_open` changes) clears the
     /// selection and zeroes `unit_selected_after_build_open` (`onOpenBuild`
     /// calls `clearPlayerUnitSelection()`, `:26702-26703`); closing it clears
@@ -528,7 +530,17 @@ impl<S: RenderSource> RenderClient<S> {
         frame_ui.build_mode_open = mode.build_mode_open;
         frame_ui.found_city_mode = mode.found_city_mode;
         frame_ui.wonder_active = mode.wonder_active;
-        self.update_ui(frame_ui, HighlightPriority::Build)
+        // Closing the panel (`onOpenBuild` with `buildModeOpen`,
+        // `:26702-26706`) runs `clearPlayerUnitSelection()` then
+        // `exitBuildMode()`, whose `refreshBuildHighlight()` outside build
+        // mode is `clearHighlight()` (`:16369-16372`): the last writer is
+        // Cleared, as in [`Self::exit_build_mode`] (U-EV-2, D-T5C-7).
+        let writer = if current.build_mode_open && !mode.build_mode_open {
+            HighlightPriority::Cleared
+        } else {
+            HighlightPriority::Build
+        };
+        self.update_ui(frame_ui, writer)
     }
 
     /// `exitBuildMode()` (`main.ts:16526-16541`; Escape through the

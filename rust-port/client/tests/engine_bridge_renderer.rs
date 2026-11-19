@@ -972,7 +972,14 @@ fn t5b_web_scenario_build_mode_reselect_end_to_end() {
     assert!(!ui.build_mode_open);
     assert_eq!(ui.selected_unit_id, None);
     assert_eq!(ui.active_improvement_key, None);
-    assert_eq!(client.ui().highlight_last_writer, HighlightPriority::Build);
+    // `onOpenBuild` with the panel open: `clearPlayerUnitSelection()` +
+    // `exitBuildMode()` -> `refreshBuildHighlight()` -> `clearHighlight()`
+    // (`main.ts:26702-26706`, `:16369-16372`): last writer Cleared (D-T5C-7).
+    assert_eq!(
+        client.ui().highlight_last_writer,
+        HighlightPriority::Cleared
+    );
+    assert_eq!(highlight_hexes(&client), None);
     assert_eq!(frame(&client).overlays.selection, None);
     assert_eq!(ring(&client), None);
     assert_renderer_mirrors_dto(&client, "panel closed");
@@ -1451,6 +1458,66 @@ fn t5c_u_op_3_exit_build_mode_keeps_the_selection() {
     assert_eq!(calls(&fresh), (0, 0));
     assert_eq!(fresh.ui().frame_ui, selected(WARRIOR));
     assert_eq!(fresh.ui().highlight_last_writer, HighlightPriority::Cleared);
+}
+
+/// Z-EV-1 (mutants E1/E2): `exitBuildMode()` (`main.ts:16533-16536`) zeroes
+/// `foundCityMode` and `activeWonderId` too. End to end from found city mode
+/// (`onSelectFoundCity`, `:26758-26762`) and from wonder mode
+/// (`onSelectWonder`, `:26766-26793`), both entered with a selected unit
+/// (U-OP-2 keeps it): after Escape the UI is exactly `selected(id)`, the
+/// frame has no build layer, the writer is Cleared, the ring stays and there
+/// are no discs.
+#[test]
+fn t5c_exit_build_mode_from_found_city_and_wonder_zeroes_the_modes() {
+    for (name, mode) in [
+        (
+            "found city",
+            BuildMode {
+                found_city_mode: true,
+                ..open_panel()
+            },
+        ),
+        (
+            "wonder",
+            BuildMode {
+                wonder_active: true,
+                ..open_panel()
+            },
+        ),
+    ] {
+        let mut client = started_client();
+        client.set_build_mode(open_panel()).expect("open");
+        client.select_unit(Some(WARRIOR)).expect("select");
+        let sel = frame(&client).overlays.selection.expect("selection");
+        client.set_build_mode(mode).expect(name);
+        let ui = &client.ui().frame_ui;
+        assert_eq!(ui.selected_unit_id, Some(WARRIOR), "{name}: U-OP-2");
+        assert!(ui.found_city_mode == mode.found_city_mode);
+        assert!(ui.wonder_active == mode.wonder_active);
+        let n = calls(&client);
+
+        client.exit_build_mode().expect("Escape");
+        assert_eq!(calls(&client), (n.0, n.1 + 1), "{name}: one frame");
+        let ui = &client.ui().frame_ui;
+        assert!(!ui.found_city_mode, "{name}: foundCityMode = false (E1)");
+        assert!(!ui.wonder_active, "{name}: activeWonderId = null (E2)");
+        assert_eq!(client.ui().frame_ui, selected(WARRIOR), "{name}");
+        assert_eq!(
+            client.ui().highlight_last_writer,
+            HighlightPriority::Cleared,
+            "{name}"
+        );
+        assert_active_seat_frame(&mut client, name);
+        let f = frame(&client).clone();
+        assert!(
+            f.overlays.build_highlight.hexes.is_empty(),
+            "{name}: no build layer in the frame"
+        );
+        assert_eq!(f.overlays.selection, Some(sel), "{name}: selection");
+        assert_eq!(highlight_hexes(&client), None, "{name}: no discs");
+        assert_eq!(ring(&client), Some((sel.hex.q, sel.hex.r)), "{name}: ring");
+        assert_renderer_mirrors_dto(&client, name);
+    }
 }
 
 /// D-T5C-5: in build mode the writer Build never shows the range the frame
