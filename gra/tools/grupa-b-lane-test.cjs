@@ -2,6 +2,12 @@
 /** Grupa B lane — power + empire-food + terrain-improvements. */
 const fs = require('fs');
 const path = require('path');
+// Oczekiwane wartości czytane z DANYCH (gra/data), nie przypinane liczby.
+const DATA = path.resolve(__dirname, '..', 'data');
+const TY = JSON.parse(fs.readFileSync(path.join(DATA, 'terrain-yields.json'), 'utf8'));
+const TI = JSON.parse(fs.readFileSync(path.join(DATA, 'terrain-improvements.json'), 'utf8'));
+const terrainBaza = (teren) => TY.terrain_types.find((t) => t.Teren === teren);
+const lasMod = TY.terrain_modifiers.find((m) => m.Modyfikator === 'Las (nakładka)');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
 
 const ENTRY = path.resolve(__dirname, '.grupa-b-entry.ts');
@@ -48,8 +54,11 @@ const upkeep = { jednostkaUtrzymanieStd: 1, zywnoscJednostkaRuch: 1, zywnoscJedn
 const params = M.buildEmpireFoodParams({ suwak_zywnosc_rozwoj_domyslnie: { normal: 70 }, glod_wojska_hp_frac: { normal: 0.08 } });
 const ef = M.advanceEmpireFood(econ, units, states, upkeep, params);
 const t0 = ef.byOwner.get(0);
-ok(t0.doPanstwa === 30, 'empire food 30% to state');
-ok(states.get(0).zapasyPanstwa === 15, 'empire reserve after army cost 1 (50% netto bez Spichlerza w imperium: round(29*0.5)=15)');
+// PYTANIE-85: suwak podziału żywności usunięty -> cała nadwyżka idzie do państwa (getEmpireFoodSplit = 100).
+ok(t0.doPanstwa === t0.nadwyzka && t0.doRozwoju === 0, 'empire food: suwak usunięty (PYTANIE-85), 100% nadwyżki do państwa');
+// Rezerwa = Spichlerz stolicy minus koszt armii (z danych tick), nie przypięta liczba.
+ok(t0.kosztArmii > 0 && states.get(0).zapasyPanstwa === t0.spichlerzStolicy - t0.kosztArmii,
+  'empire reserve = spichlerz stolicy - koszt armii (formuła z ticka)');
 
 const y = M.tileYield({
   terenBazowy: M.TerenBazowy.Laka,
@@ -103,10 +112,11 @@ const yForestPlain = M.tileYield({
   maRzeke: false,
 });
 ok(yForestPlain.zywnosc === 1, 'las rownina: zywnosc 2-1');
-ok(yForestPlain.handel === 0, 'las rownina: handel 1-1 floored');
+const RW = terrainBaza('Równina');
+ok(yForestPlain.handel === RW.Podatek + lasMod.Podatek, `las rownina: handel = Podatek bazy + las (${RW.Podatek}+${lasMod.Podatek} z danych)`);
 ok(yForestPlain.praca === 5, 'las rownina: praca 2+3 (Praca Rownina=2, data/terrain-yields.json)');
-// R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2 (Maciej 2026-08-13, B1): Rownina drewno 2->10, Las drewno 3->15.
-ok(yForestPlain.drewno === 25, 'las rownina: drewno 10+15 (x5, bylo 2+3=5)');
+// Drewno z danych: Równina 5 (P-SUROWCE-BAZA Q1) + Las 15 (R-EKONOMIA Runda 2, B1). Było 10+15 przed zmianą bazy.
+ok(yForestPlain.drewno === RW.Drewno + lasMod.Drewno, `las rownina: drewno = baza ${RW.Drewno} + las ${lasMod.Drewno} (z danych)`);
 
 ok(M.resolveOwnCultureShare({ ownCultureShare: 0.4 }) === 0.4, 'culture share resolve');
 const rel = M.isForeignReligionDominant(
@@ -131,7 +141,8 @@ const efB5 = M.advanceEmpireFood(
 ok(efB5.byOwner.get(0).glodWojska === true, 'B5 glodWojska large army');
 
 const wyrMeta = M.getImprovementMeta('wyrab');
-ok(wyrMeta?.kosztPraca === 5 && wyrMeta?.typ === 'wycinka', 'wyrab clearing start cost 5P');
+const wyrData = TI.wyrab;
+ok(wyrMeta?.kosztPraca === wyrData.koszt_praca && wyrMeta?.typ === 'wycinka', `wyrab clearing start cost = koszt_praca z danych (${wyrData.koszt_praca}P)`);
 const tarMeta = M.getImprovementMeta('tartak');
 ok(tarMeta?.techId === 'Obróbka drewna', 'tartak tech');
 ok(!M.isImprovementTechUnlocked('tartak', new Set()), 'tartak locked without tech');
@@ -166,9 +177,11 @@ ok(aff.ok && aff.sourceCityId === 'c2', 'evaluate afford subsequent city');
 const affFirst = M.evaluateFoundCityAffordance(0, [], 0);
 ok(affFirst.ok && affFirst.kosztPraca === 0, 'FOUND Q2A first city free');
 const clr = M.freshClearingState('wyrab', 0);
-ok(clr && clr.turnsLeft === 1, 'clearing 1 turn (decyzja Maciej 2026-07-24: 1 tura, 25 Drewna po x5 R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2, bylo 5)');
+ok(clr && clr.turnsLeft === wyrData.wycinka.tury, `clearing ${wyrData.wycinka.tury} tura (dane wycinka.tury)`);
 const t1 = M.tickHexClearing(clr);
-ok(t1.pracaGrant === 25 && t1.expired === true, 'clearing tick 25 (B2, bylo 5), expired po 1 turze');
+// praca_per_tura z danych: 50 (R-WYCINKA-DREWNO-50-I-KOMUNIKAT-CAP-Q1, 2026-09-06; było 25 przed tym).
+ok(t1.pracaGrant === wyrData.wycinka.praca_per_tura && t1.expired === true,
+  `clearing tick = praca_per_tura z danych (${wyrData.wycinka.praca_per_tura}), expired po 1 turze`);
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
 

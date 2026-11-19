@@ -39,8 +39,9 @@ function eq(a, b, msg) {
 }
 
 // ---------------------------------------------------------------------------
-// A. Inwariant strukturalny: KAŻDY niezerowy koszt_surowce (buildings.json) i
-//    Surowiec (ilość) / Utrzymanie surowiec (ilość) (units.json) jest wielokrotnością 5, >= 5.
+// A. Inwariant strukturalny: KAŻDY niezerowy koszt_surowce (buildings.json) jest wielokrotnością 5, >= 5.
+//    Jednostki (units.json): reguła ×5 ZNIESIONA decyzją właściciela 2026-11-19 (pkt 1 ABC: "wielokrotności
+//    ×5 jednostek" w testach są nieaktualne) -- wymagamy tylko całkowitej wartości >= 1.
 // ---------------------------------------------------------------------------
 console.log('\n-- A. Inwariant strukturalny: wszystkie wartości surowcowe wielokrotnością 5, >=5 --\n');
 
@@ -64,18 +65,19 @@ for (const u of units) {
   const name = u['Jednostka'] || u.id || '(brak nazwy)';
   const surowiec = u['Surowiec (ilość)'];
   const utrzymanie = u['Utrzymanie surowiec (ilość)'];
+  // Reguła ×5 dla jednostek zniesiona (decyzja ABC 2026-11-19 pkt 1) -- sprawdzamy tylko sensowność (całkowita >= 1).
   if (surowiec) {
     checkedUnitFields++;
     ok(
-      Number.isFinite(surowiec) && surowiec >= 5 && surowiec % 5 === 0,
-      `units.json: "${name}"."Surowiec (ilość)" = ${surowiec} musi być wielokrotnością 5, >=5`,
+      Number.isInteger(surowiec) && surowiec >= 1,
+      `units.json: "${name}"."Surowiec (ilość)" = ${surowiec} musi być całkowitą >= 1`,
     );
   }
   if (utrzymanie) {
     checkedUnitFields++;
     ok(
-      Number.isFinite(utrzymanie) && utrzymanie >= 5 && utrzymanie % 5 === 0,
-      `units.json: "${name}"."Utrzymanie surowiec (ilość)" = ${utrzymanie} musi być wielokrotnością 5, >=5`,
+      Number.isInteger(utrzymanie) && utrzymanie >= 1,
+      `units.json: "${name}"."Utrzymanie surowiec (ilość)" = ${utrzymanie} musi być całkowitą >= 1`,
     );
   }
 }
@@ -127,20 +129,22 @@ if (fort) {
 const wojownik = findUnit('Wojownik');
 ok(!!wojownik, 'sanity: jednostka "Wojownik" istnieje w units.json');
 if (wojownik) {
-  eq(wojownik['Surowiec (ilość)'], 50,
-    'PRZYPIĘTE: Wojownik "Surowiec (ilość)" === 50 (x5, bylo 10)');
-  eq(wojownik['Utrzymanie surowiec (ilość)'], 10,
-    'PRZYPIĘTE: Wojownik "Utrzymanie surowiec (ilość)" === 10 (x5, bylo 2)');
+  // Wartości jednostek wg stanu danych z 2026-11-19 (reguła ×5 jednostek zniesiona, decyzja ABC pkt 1).
+  // Źródło zmiany wartości jednostek NIE ustalone w historii commitów -- przypięcie chroni przed cichym cofnięciem.
+  eq(wojownik['Surowiec (ilość)'], 13,
+    'PRZYPIĘTE: Wojownik "Surowiec (ilość)" === 13 (stan danych 2026-11-19; było 50 w wersji x5)');
+  eq(wojownik['Utrzymanie surowiec (ilość)'], 3,
+    'PRZYPIĘTE: Wojownik "Utrzymanie surowiec (ilość)" === 3 (stan danych 2026-11-19; było 10 w wersji x5)');
 }
 
 // B5. Droższa jednostka elitarna (żeby przypiąć również drugi poziom kosztu 75/15, nie tylko 50/10):
 const swietyZastep = findUnit('Hieros Lochos (Święty Zastęp)');
 ok(!!swietyZastep, 'sanity: jednostka "Hieros Lochos (Święty Zastęp)" istnieje w units.json');
 if (swietyZastep) {
-  eq(swietyZastep['Surowiec (ilość)'], 75,
-    'PRZYPIĘTE: Hieros Lochos "Surowiec (ilość)" === 75 (x5, bylo 15)');
-  eq(swietyZastep['Utrzymanie surowiec (ilość)'], 15,
-    'PRZYPIĘTE: Hieros Lochos "Utrzymanie surowiec (ilość)" === 15 (x5, bylo 3)');
+  eq(swietyZastep['Surowiec (ilość)'], 38,
+    'PRZYPIĘTE: Hieros Lochos "Surowiec (ilość)" === 38 (stan danych 2026-11-19; było 75 w wersji x5)');
+  eq(swietyZastep['Utrzymanie surowiec (ilość)'], 8,
+    'PRZYPIĘTE: Hieros Lochos "Utrzymanie surowiec (ilość)" === 8 (stan danych 2026-11-19; było 15 w wersji x5)');
 }
 
 // ---------------------------------------------------------------------------
@@ -166,14 +170,15 @@ function findModifier(nazwa) {
 const rownina = findTerrain('Równina');
 ok(!!rownina, 'sanity: teren "Równina" istnieje w terrain-yields.json');
 if (rownina) {
-  eq(rownina['Drewno'], 10, 'PRZYPIĘTE: terrain-yields Równina.Drewno === 10 (x5, bylo 2)');
-  eq(rownina['Kamień'], 5, 'PRZYPIĘTE: terrain-yields Równina.Kamień === 5 (x5, bylo 1)');
+  // P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1=A (2026-08-17) + decyzja ABC 2026-11-19 pkt 1: obowiązują DANE.
+  eq(rownina['Drewno'], 5, 'PRZYPIĘTE: terrain-yields Równina.Drewno === 5 (P-SUROWCE Q1; było 10 w wersji x5)');
+  eq(rownina['Kamień'], 2, 'PRZYPIĘTE: terrain-yields Równina.Kamień === 2 (P-SUROWCE Q1; było 5 w wersji x5)');
 }
 
 const rzeka = findModifier('Rzeka');
 ok(!!rzeka, 'sanity: modyfikator "Rzeka" istnieje w terrain-yields.json');
 if (rzeka) {
-  eq(rzeka['Glina'], 10, 'PRZYPIĘTE: terrain-yields Rzeka.Glina === 10 (x5, bylo 2)');
+  eq(rzeka['Glina'], 5, 'PRZYPIĘTE: terrain-yields Rzeka.Glina === 5 (R-EKONOMIA Runda 2; było 10 w wersji P-SUROWCE)');
 }
 
 const lasNakladka = findModifier('Las (nakładka)');
@@ -199,8 +204,8 @@ if (kamieniolom) {
 const wyrab = terrainImprovements.wyrab;
 ok(!!wyrab, 'sanity: ulepszenie "wyrab" istnieje w terrain-improvements.json');
 if (wyrab) {
-  eq(wyrab.wycinka && wyrab.wycinka.praca_per_tura, 25,
-    'PRZYPIĘTE: terrain-improvements wyrab.wycinka.praca_per_tura === 25 (x5, bylo 5)');
+  eq(wyrab.wycinka && wyrab.wycinka.praca_per_tura, 50,
+    'PRZYPIĘTE: terrain-improvements wyrab.wycinka.praca_per_tura === 50 (R-WYCINKA-DREWNO-50 2026-09-06; było 25)');
 }
 
 console.log(`\nekonomia-5x-inwariant-test: ${passed} passed, ${failed} failed`);

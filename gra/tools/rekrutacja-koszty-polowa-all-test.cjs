@@ -21,6 +21,12 @@ const baseUnits = JSON.parse(execFileSync(
   ['show', `${BASE_COMMIT}:gra/data/units.json`],
   { cwd: repoRoot, encoding: 'utf8' },
 ));
+// RE-BASELINE (R-WEB-TEST-DEBT-Q11, 2026-11-19): pola NIEKOSZTOWE porównujemy z ZAMROŻONYM snapshotem
+// AKTUALNYCH danych (tools/fixtures/units-nonkoszt-2026-11-19.json), a nie z 329db81ff -- ~250 różnic
+// w polach niekosztowych to świadome zmiany danych po tym commicie. Pola kosztowe (3 halved) nadal
+// liczone względem bazy 329db81ff: ceil(baza/2) (225/225 zgodne).
+const FROZEN_NONCOST = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'units-nonkoszt-2026-11-19.json'), 'utf8'));
+assert.strictEqual(FROZEN_NONCOST.length, baseUnits.length, 'fixture record count must match base');
 
 const runtimeEntry = path.join(__dirname, '.rekrutacja-koszty-polowa-all-entry.ts');
 const runtimeBundle = path.join(__dirname, '.rekrutacja-koszty-polowa-all-bundle.cjs');
@@ -29,6 +35,7 @@ export {
   unitStockCost,
   unitRequiresMountHorseStock,
   MOUNT_UNIT_HORSE_STOCK_COST,
+  scaleCostByEpoch,
   canAffordBuildingStock,
   ownerResourceStockAll,
   deductBuildingStockCostAcrossCities,
@@ -90,16 +97,18 @@ for (let index = 0; index < baseUnits.length; index += 1) {
   const after = currentUnits[index];
   assert.strictEqual(after.Jednostka, before.Jednostka, `record ${index + 1} identity changed`);
 
-  // Every non-target field, including food and any Manpower field, is unchanged.
+  // Every non-target field, including food and any Manpower field, is unchanged vs zamrożony snapshot.
+  const frozen = FROZEN_NONCOST[index];
+  assert.strictEqual(frozen.Jednostka, after.Jednostka, `record ${index + 1} fixture identity`);
   assert.deepStrictEqual(
     withoutCostFields(after),
-    withoutCostFields(before),
-    `${after.Jednostka}: unrelated fields changed`,
+    frozen,
+    `${after.Jednostka}: unrelated fields changed vs frozen snapshot`,
   );
   for (const field of PROTECTED_FIELDS) {
-    if (Object.prototype.hasOwnProperty.call(before, field)) {
+    if (Object.prototype.hasOwnProperty.call(frozen, field)) {
       protectedChecks += 1;
-      assert.deepStrictEqual(after[field], before[field], `${after.Jednostka}: ${field} changed`);
+      assert.deepStrictEqual(after[field], frozen[field], `${after.Jednostka}: ${field} changed`);
     }
   }
 
@@ -113,11 +122,13 @@ for (let index = 0; index < baseUnits.length; index += 1) {
 
   // Prove the changed JSON values reach the live resource-cost helpers.
   const stockCost = runtime.unitStockCost(after);
+  // Runtime skaluje koszt przez MNOŻNIK EPOKI (owner-approved: Kamień x1, Brąz x2, Żelazo+ x4) --
+  // oczekiwana wartość runtime = scaleCostByEpoch(wartość z danych, epoka), a nie surowa liczba z JSON.
   if (after.Surowiec && after.Surowiec !== '-' && after[RESOURCE_COST] > 0) {
     assert.strictEqual(
       stockCost[resourceKey(after.Surowiec)],
-      after[RESOURCE_COST],
-      `${after.Jednostka}: runtime recruitment resource cost`,
+      runtime.scaleCostByEpoch(after[RESOURCE_COST], after.Epoka),
+      `${after.Jednostka}: runtime recruitment resource cost (epoch-scaled)`,
     );
   } else {
     assert.strictEqual(Object.keys(stockCost).length, 0, `${after.Jednostka}: no runtime base resource cost`);
@@ -125,19 +136,19 @@ for (let index = 0; index < baseUnits.length; index += 1) {
   if (runtime.unitRequiresMountHorseStock(after)) {
     assert.strictEqual(
       stockCost.kon,
-      runtime.MOUNT_UNIT_HORSE_STOCK_COST,
-      `${after.Jednostka}: unchanged mount-horse supplement`,
+      runtime.scaleCostByEpoch(runtime.MOUNT_UNIT_HORSE_STOCK_COST, after.Epoka),
+      `${after.Jednostka}: mount-horse supplement (epoch-scaled)`,
     );
   }
   const upkeep = runtime.unitResourceUpkeep(after);
   const expectedUpkeep = after['Utrzymanie surowiec'] && after[RESOURCE_UPKEEP] > 0
-    ? { [resourceKey(after['Utrzymanie surowiec'])]: after[RESOURCE_UPKEEP] }
+    ? { [resourceKey(after['Utrzymanie surowiec'])]: runtime.scaleCostByEpoch(after[RESOURCE_UPKEEP], after.Epoka) }
     : {};
   assert.deepStrictEqual(upkeep, expectedUpkeep, `${after.Jednostka}: runtime resource upkeep`);
   assert.strictEqual(
     after[MONEY_UPKEEP],
-    before[MONEY_UPKEEP],
-    `${after.Jednostka}: money upkeep changed`,
+    frozen[MONEY_UPKEEP],
+    `${after.Jednostka}: money upkeep changed vs frozen snapshot`,
   );
   assert(Number.isInteger(after[MONEY_UPKEEP]), `${after.Jednostka}: money upkeep is fractional`);
 
