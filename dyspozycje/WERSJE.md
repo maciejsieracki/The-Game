@@ -1,3 +1,9 @@
+## ROBOCZA 53cc1dc4 -- 2026-11-18 -- FALA 862: R-WEB-UI-HUD-RESOURCE-CARD-STATE-NET-Q1: karta surowca w panelu imperium liczy niedobor z netto HUD (resourceIsShortage), spojnie z chipem i alertem (testowa)
+
+- gra/src/ui/empireDetailPanel.ts (resStateOf -> resourceIsShortage), nowy test hud-resource-card-state-test. Deficyt ulamkowy (-0,4) nie daje stanu 'bad' (zgodnie z chipem).
+- Weryfikacja: tsc 0, logic 213/213, hud-resource-card-state 7/0 (mutant wykryty), hud-shortage-alert 17/0, deficit-red 41/0, testy kart 14/24/100
+- Limity: NIE ZMIERZONO: resource-cards-plusx-badge-test i resource-ledger-skad-dom-test (brak /usr/bin/chromium pod hardkodowana sciezka); komentarz hero ~3707-3719 w empireDetailPanel.ts nieaktualny (poza allowlista)
+
 ## ROBOCZA f1a64eb6 -- 2026-11-18 -- FALA 861: R-WEB-UI-HUD-SHORTAGE-ALERT-TOOLTIP-Q1: alert niedoboru w naglowku, chip Surowce i tooltip Brutto-netto liczone z netto HUD (po odjeciu wejsc konwerterow) (testowa)
 
 - gra/src/game/resource-gross-net.ts (resourceIsShortage, tekst tooltipu), gra/src/main.ts, gra/src/ui/hud.ts, test hud-shortage-alert-converter-test. Zmiana semantyki: niedobor = netto HUD < 0 (zaokraglone, uwzglednia zuzycie); tooltip pokazuje wiersz Wejscia przetworstwa gdy >0.

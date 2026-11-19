@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "f1a64eb6eea26ec4d5ec154aab7e7860",
-  "bundleSha256": "596c752ac3da36b5cbb706f5a6b372b289fe668133fed05ca09510a320eefe01",
-  "bundleBytes": 14981467,
+  "bundleMd5": "53cc1dc4e18808c69e8e4e4e17159a88",
+  "bundleSha256": "5324db8673499c493e450b166a12ebbe779644ab6587cd9c4956560d3b292ba8",
+  "bundleBytes": 14981458,
   "sourceSnapshot": {
-    "source": "kod 4b5e7809a (Haiku r1 + Obrona); FC 3880d6300",
+    "source": "kod e7d2fe36e (Haiku r1, bez Obrony - Evaluator bez zarzutow); FC a0363ae2e",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 861: gra/src/game/resource-gross-net.ts (resourceIsShortage, tekst tooltipu), gra/src/main.ts, gra/src/ui/hud.ts, test hud-shortage-alert-converter-test. Zmiana semantyki: niedobor = netto HUD < 0 (zaokraglone, uwzglednia zuzycie); tooltip pokazuje wiersz Wejscia przetworstwa gdy >0."
+    "FALA 862: gra/src/ui/empireDetailPanel.ts (resStateOf -> resourceIsShortage), nowy test hud-resource-card-state-test. Deficyt ulamkowy (-0,4) nie daje stanu 'bad' (zgodnie z chipem)."
   ],
   "verification": [
-    "tsc 0, logic 213/213, hud-shortage-alert-converter 17/0, converter-inputs 18/0, deficit-red 41/0, ai-economy-hook 23/23, FC jednorazowy test w Chromium: wiersz tooltipu OK"
+    "tsc 0, logic 213/213, hud-resource-card-state 7/0 (mutant wykryty), hud-shortage-alert 17/0, deficit-red 41/0, testy kart 14/24/100"
   ],
   "limits": [
-    "Ceramika 77 vs 67: hipoteza drenazu Spichlerza (10/t) z kodu, NIE ZMIERZONO na zywo; resStateOf karty surowca (empireDetailPanel.ts:3408) nadal po ratePerTurn<0; wiazanie main.ts testowane statycznie"
+    "NIE ZMIERZONO: resource-cards-plusx-badge-test i resource-ledger-skad-dom-test (brak /usr/bin/chromium pod hardkodowana sciezka); komentarz hero ~3707-3719 w empireDetailPanel.ts nieaktualny (poza allowlista)"
   ],
-  "finalControl": "FC PASS-WITH-NOTES: baza przodkiem, diff w allowliscie, bramki zielone, zarzut 2 naprawiony, 1/3/4/5 jako uwagi",
+  "finalControl": "FC PASS: potomek bazy, 3 pliki w allowliscie, brak ratePerTurn<0 w UI i main.ts, bramki zielone",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T14:06:05",
+  "hubGeneratedAt": "2026-11-19T14:32:27",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "f1a64eb6eea26ec4d5ec154aab7e7860",
-      "sizeBytes": 14981467
+      "md5": "53cc1dc4e18808c69e8e4e4e17159a88",
+      "sizeBytes": 14981458
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "f1a64eb6eea26ec4d5ec154aab7e7860",
-      "sizeBytes": 14981467
+      "md5": "53cc1dc4e18808c69e8e4e4e17159a88",
+      "sizeBytes": 14981458
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "f1a64eb6eea26ec4d5ec154aab7e7860",
-      "sizeBytes": 14981467
+      "md5": "53cc1dc4e18808c69e8e4e4e17159a88",
+      "sizeBytes": 14981458
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "f1a64eb6eea26ec4d5ec154aab7e7860",
-      "sizeBytes": 14981467
+      "md5": "53cc1dc4e18808c69e8e4e4e17159a88",
+      "sizeBytes": 14981458
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "f1a64eb6eea26ec4d5ec154aab7e7860",
-      "sizeBytes": 14981467
+      "md5": "53cc1dc4e18808c69e8e4e4e17159a88",
+      "sizeBytes": 14981458
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "f1a64eb6eea26ec4d5ec154aab7e7860",
-      "sizeBytes": 14981467
+      "md5": "53cc1dc4e18808c69e8e4e4e17159a88",
+      "sizeBytes": 14981458
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "f1a64eb6eea26ec4d5ec154aab7e7860",
-      "sizeBytes": 14981467
+      "md5": "53cc1dc4e18808c69e8e4e4e17159a88",
+      "sizeBytes": 14981458
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "f1a64eb6eea26ec4d5ec154aab7e7860",
-      "sizeBytes": 14981467
+      "md5": "53cc1dc4e18808c69e8e4e4e17159a88",
+      "sizeBytes": 14981458
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "f1a64eb6eea26ec4d5ec154aab7e7860",
-      "sizeBytes": 14981467
+      "md5": "53cc1dc4e18808c69e8e4e4e17159a88",
+      "sizeBytes": 14981458
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "f1a64eb6eea26ec4d5ec154aab7e7860",
-      "sizeBytes": 14981467
+      "md5": "53cc1dc4e18808c69e8e4e4e17159a88",
+      "sizeBytes": 14981458
     }
   ],
-  "md5": "f1a64eb6eea26ec4d5ec154aab7e7860",
+  "md5": "53cc1dc4e18808c69e8e4e4e17159a88",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
