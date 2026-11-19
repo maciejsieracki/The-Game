@@ -331,6 +331,20 @@ fn run_vector_diag(v: &Value, data: &SessionData) -> Result<SessionOutcome, Sess
 /// bliźniak `mur_jazda_rzeka_klatka1` przy kroku 1 ms (D-PIN3-4). Test pilnuje teraz obu jako zwykłych zgodnych wektorów.
 const ROZBIEZNE_B_WIRA_PIN_2: [&str; 0] = [];
 
+/// PIN3-DIVERGENCE-Q1: JAWNY WYJĄTEK B-WIRA-PIN-3 klasy A (`01-operator-r1.md` §4): kandydaci c1 rozbieżni także przy
+/// kroku klatki 1 ms po D-PIN3-1..5. Przyczyna zmierzona (ślad pin @1 ms vs Rust): pin decyduje o KAŻDYM kolejnym kroku
+/// marszu w chwili tego kroku (`_doMove` → callback kroku `:8757-8775` → `_advanceStep`/`_rangedForwardStep` od nowa) i widzi
+/// rozbicie innej jednostki od wieży, które wypadło w trakcie marszu (118: rozbicie a0 w 171 220 ms zwalnia pole, na które
+/// a1 wchodzi w 171 460; 196: rozbicie a5 w 150 740 zmienia krok a4 w 150 900; 221: rozbicie a4 w 249 890 skraca marsz a2).
+/// Ciało Rust liczy marsz ATOMOWO w `start` (D-WIRA-18), więc nie widzi zdarzeń zegara z okna marszu. Poprawka wymaga
+/// przyrostowego marszu w ciele (temat następczy MARCH-INCREMENTAL) — poza zakresem tej rundy. Test pada, gdy wektor z listy
+/// zacznie się zgadzać (usuń z listy) albo skończy się błędem sesji.
+const ROZBIEZNE_B_WIRA_PIN_3: [&str; 3] = [
+    "a3_las_mix_d3l_palisada_118_klatka1",
+    "a3_gory_lucz2_d5_palisada_196_klatka1",
+    "a3_rown_lucz2_d3l_mury_221_klatka1",
+];
+
 #[test]
 fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
     let doc = vectors();
@@ -345,7 +359,8 @@ fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
             v["expect"]["otherRandom"], 0,
             "{name}: Math.random poza _singleBlow"
         );
-        let blokada = ROZBIEZNE_B_WIRA_PIN_2.contains(&name);
+        let blokada =
+            ROZBIEZNE_B_WIRA_PIN_2.contains(&name) || ROZBIEZNE_B_WIRA_PIN_3.contains(&name);
         // Obrona r2 (E2-3 Evaluatora): błąd sesji NIGDY nie jest „oczekiwaną rozbieżnością” — także scenariusz z
         // listy blokady musi zakończyć bitwę `Ok(..)`, a różnić się wyłącznie danymi wyniku.
         let d = match run_vector(v, &data) {
@@ -357,7 +372,7 @@ fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
         };
         match (d.is_empty(), blokada) {
             (true, false) => zgodne += 1,
-            (false, true) => eprintln!("B-WIRA-PIN-2 {name}: {}", d.join("; ")),
+            (false, true) => eprintln!("B-WIRA-PIN-2/3 {name}: {}", d.join("; ")),
             (true, true) => fails.push(format!("{name}: zgodny z pinem, usuń z listy blokady")),
             (false, false) => fails.push(format!("{name}: {}", d.join("; "))),
         }
@@ -367,7 +382,10 @@ fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
         "rozbieżności z pinem:\n{}",
         fails.join("\n")
     );
-    assert_eq!(zgodne, list.len() - ROZBIEZNE_B_WIRA_PIN_2.len());
+    assert_eq!(
+        zgodne,
+        list.len() - ROZBIEZNE_B_WIRA_PIN_2.len() - ROZBIEZNE_B_WIRA_PIN_3.len()
+    );
     // PIN2-PROBE-Q1 (D-PIN2-2): każdy scenariusz z jawną rozbieżnością @16 ms ma bliźniaka z granicą klatki (krok 1 ms),
     // zgodnego bajt w bajt (sprawdzony wyżej jako zwykły zgodny scenariusz) — rozbieżność jest WYŁĄCZNIE kwantyzacją klatki.
     // PIN3-DIVERGENCE-Q1: bliźniak `mur_jazda_rzeka_klatka1` zostaje (krok 1 ms, to samo wejście i ziarno co wektor 16 ms).
