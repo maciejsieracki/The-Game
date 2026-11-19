@@ -60,8 +60,8 @@ Nowe starty: `df --output=avail -BG /` ≥ 6 GB (integracja `/home/user/integ` �
 6. **R-WEB-VERIFY-LIVE** (#38) — weryfikacja na żywo: pokój z cesją miast (873), limit 2 sojuszy (865, po ENABLEFLAGS), reguła wojen z graczem (863), żywa zamiana Żywności→Podatek (876), bieg dymny po zmianach kosztów, pomiar 150 tur rebalans — dispatch DO NAPISANIA przy starcie (Haiku).
 7. **TREASURY refresh** (#39) — odświeżyć treasury-unit-cost-model.cjs + dokument SKARBIEC po wdrożeniu kosztów jednostek — dispatch DO NAPISANIA (Haiku, dokumentacja).
 
-W TOKU (nie startować drugi raz): UPKEEPMULT (wf_e37ebeff-a98), RECRUITMULT (wf_a2968de4-ba2), FORTRING r2 (wf_2393db04-6a4), FLEEMANUAL (wf_a4b57a9a-68d).
-WDROŻONE 2026-11-19: FALE 860–881 (ostatnia 881 = wojna epoki bez partnera; ROBOCZA MD5 f20a283a).
+W TOKU (nie startować drugi raz): UPKEEPMULT (wf_e37ebeff-a98), RECRUITMULT (wf_a2968de4-ba2), FLEEMANUAL (wf_a4b57a9a-68d), ERAWARPLAYER (wf_0beac6f8-ff4, start ~23:25 UTC). FORTRING wdrożony jako FALA 882.
+WDROŻONE 2026-11-19: FALE 860–882 (ostatnia 881 = wojna epoki bez partnera; ROBOCZA MD5 f20a283a).
 PÓŹNIEJ (NIE startować): koszty badań i budynków (sekcja PÓŹNIEJ niżej).
 
 ## ZALEŻNE (START dopiero po warunku)
