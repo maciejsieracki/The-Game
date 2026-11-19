@@ -1,3 +1,9 @@
+## ROBOCZA e6bd8009 -- 2026-11-18 -- FALA 856: Regula wojen: maks. 1 wojna epoki + 1 naturalna per cywilizacja (za flaga, wylaczona) (testowa)
+
+- Nowy modul diplomacy-war-limit.ts (warLimitAllows, typ wojny epoki/naturalna) i parametry diplomacy-war-limit-params.json; wpiecie w ai.ts P4 oraz bramke wypowiedzen/kaskady sojuszniczej/wojny epoki w main.ts; typWojny w metadanych pary; analizator wspolbieznosci wojen; flaga limitWojenAktywny=false = zachowanie gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplomacy-test 149/0; war-limit unit 48/0 (mutacje czerwone); analyze 17/0; alliance-strength 33/0; zero-trust 43/0; ai-ai-alliance-tick 19/19 + mutanty 8/8; coalition zielone; smoke 40 tur seed 4242 ON: maks. 1 wojna na cywilizacje
+- Limity: Flaga wylaczona: reguly nie ma w rozgrywce do czasu pomiaru na >=3 ziarnach; wpiecie main.ts bez testu przegladarkowego (gracz jako deklarujacy, kaskada); ABC: wojny gracza jako celu w limicie epoki, panstwa-miasta w pomiarze
+
 ## ROBOCZA 8351cef3 -- 2026-11-18 -- FALA 855: Pomiar ekonomii gracza: tryb gracz sterowany przez AI (tylko biegi pomiarowe, domyslnie wylaczony) (testowa)
 
 - Hak setPlayerAiAutopilotForTest (flaga false domyslnie) w __aiEconomyMeasure: w fazie AI wlasciciel 0 dostaje decyzje AI; pula Pracy przez ownerPracaPool/setOwnerPracaPool (dla AI rownowazna dotychczasowemu aiPracaPoolByOwner); runner --player-ai 1; analizator z wierszem i sekcja Gracz (autopilot); test player-ai-autopilot-test; brak zmian zasad gry przy fladze false
