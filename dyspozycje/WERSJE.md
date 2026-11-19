@@ -1,3 +1,9 @@
+## ROBOCZA f6cdd032 -- 2026-11-18 -- FALA 875: R-WEB-ECONOMY-UNIT-UPKEEP-ERA-SCALE-Q1: zywnosc jednostek x1/x2/x4 wg epoki (zamiast x3), karta = silnik (testowa)
+
+- R-WEB-ECONOMY-UNIT-UPKEEP-ERA-SCALE-Q1 (decyzja wlasciciela 2026-11-19: utrzymanie jednostek 2x Braz, 4x Zelazo). Pieniadz i surowce jednostek juz skalowaly sie x1/x2/x4; realna zmiana: zywnosc jednostek przy fladze eraRebalansAktywny z x3/epoke (4/12/36) na x1/x2/x4 (4/8/16); karta zywnosci przy fladze OFF = silnik.
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; unit-upkeep-era-scale 16/0; econ-era-rebalance 38/0; pomiar dymny 60 tur i weryfikacja wizualna NIE ZMIERZONO
+- Limity: Spadek zywnosci jednostek w epokach 4-5 (108/324 -> 16); treasury-unit-cost-model.cjs nieaktualny
+
 ## ROBOCZA 97f8eb4f -- 2026-11-18 -- FALA 874: R-WEB-IMPROVEMENT-STADNINA-DEPOSIT-ONLY-NO-FOREST-Q1: stadnina nie moze stac na heksie z lasem (zakaz lasu przywrocony; gracz, autopilot i AI) (testowa)
 
 - gra/src/map/improvement-build.ts (isStadninaBlockedOnForest, stadnina usunieta z FOREST_COEXIST), gra/data/terrain-improvements.json (warunek stadniny bez notatki dev), testy stadnina-las 28/0, stadnina-konie-stare-zapisy 29/0, map-improvement-qualify 134/0, hodowla-las (komentarze). Decyzja wlasciciela 2026-11-19 (ABC B). Koszt, przychod, epoki, odkrycie Konia bez zmian.

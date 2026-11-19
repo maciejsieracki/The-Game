@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "97f8eb4f5b4600798d1792304eae8011",
-  "bundleSha256": "ebcab6cb736ea46a2ff6d61280527b58b6d158e715d0b217ad90d0ae559c2421",
-  "bundleBytes": 14989014,
+  "bundleMd5": "f6cdd032847a82c5907ba92684590f87",
+  "bundleSha256": "e26c963e3febfb35db2a0c6065c8d3d0055776543c2587de3cf3dcaa37a878e7",
+  "bundleBytes": 14989215,
   "sourceSnapshot": {
-    "source": "kod 7feb168dc (Haiku r1 + Obrona); FC 7a5debdcd",
+    "source": "FC e96dce29a (kod 665626e56)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 874: gra/src/map/improvement-build.ts (isStadninaBlockedOnForest, stadnina usunieta z FOREST_COEXIST), gra/data/terrain-improvements.json (warunek stadniny bez notatki dev), testy stadnina-las 28/0, stadnina-konie-stare-zapisy 29/0, map-improvement-qualify 134/0, hodowla-las (komentarze). Decyzja wlasciciela 2026-11-19 (ABC B). Koszt, przychod, epoki, odkrycie Konia bez zmian."
+    "FALA 875: R-WEB-ECONOMY-UNIT-UPKEEP-ERA-SCALE-Q1 (decyzja wlasciciela 2026-11-19: utrzymanie jednostek 2x Braz, 4x Zelazo). Pieniadz i surowce jednostek juz skalowaly sie x1/x2/x4; realna zmiana: zywnosc jednostek przy fladze eraRebalansAktywny z x3/epoke (4/12/36) na x1/x2/x4 (4/8/16); karta zywnosci przy fladze OFF = silnik."
   ],
   "verification": [
-    "tsc 0, logic 213/213, stadnina-las 28/0, stare-zapisy 29/0, map-improvement-qualify 134/0, early-eras-deposit-only 35/0, auto-improvements 46/0; FC: tech-tree 20, research 33, unit-replace 21, combat 6, ai-territory-race 29"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; unit-upkeep-era-scale 16/0; econ-era-rebalance 38/0; pomiar dymny 60 tur i weryfikacja wizualna NIE ZMIERZONO"
   ],
   "limits": [
-    "NIE ZMIERZONO: bieg dymny AI 4242 w przegladarce (seed 4242 bez zloz Konia); hodowla-las 110/3 — 3 asercje czerwone rowniez na bazie (nie z tej zmiany); stadnina poza zlozem od epoki Zelaza z Koniem zostaje (decyzja 2026-11-09, zalozenie A)"
+    "Spadek zywnosci jednostek w epokach 4-5 (108/324 -> 16); treasury-unit-cost-model.cjs nieaktualny"
   ],
-  "finalControl": "FC PASS-WITH-NOTES: potomek bazy, zakaz lasu dziala, mutacja czerwona, zarzuty 1,2,6,8 naprawione",
+  "finalControl": "Final Control PASS-WITH-NOTES",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T21:07:08",
+  "hubGeneratedAt": "2026-11-19T21:29:44",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "97f8eb4f5b4600798d1792304eae8011",
-      "sizeBytes": 14989014
+      "md5": "f6cdd032847a82c5907ba92684590f87",
+      "sizeBytes": 14989215
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "97f8eb4f5b4600798d1792304eae8011",
-      "sizeBytes": 14989014
+      "md5": "f6cdd032847a82c5907ba92684590f87",
+      "sizeBytes": 14989215
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "97f8eb4f5b4600798d1792304eae8011",
-      "sizeBytes": 14989014
+      "md5": "f6cdd032847a82c5907ba92684590f87",
+      "sizeBytes": 14989215
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "97f8eb4f5b4600798d1792304eae8011",
-      "sizeBytes": 14989014
+      "md5": "f6cdd032847a82c5907ba92684590f87",
+      "sizeBytes": 14989215
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "97f8eb4f5b4600798d1792304eae8011",
-      "sizeBytes": 14989014
+      "md5": "f6cdd032847a82c5907ba92684590f87",
+      "sizeBytes": 14989215
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "97f8eb4f5b4600798d1792304eae8011",
-      "sizeBytes": 14989014
+      "md5": "f6cdd032847a82c5907ba92684590f87",
+      "sizeBytes": 14989215
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "97f8eb4f5b4600798d1792304eae8011",
-      "sizeBytes": 14989014
+      "md5": "f6cdd032847a82c5907ba92684590f87",
+      "sizeBytes": 14989215
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "97f8eb4f5b4600798d1792304eae8011",
-      "sizeBytes": 14989014
+      "md5": "f6cdd032847a82c5907ba92684590f87",
+      "sizeBytes": 14989215
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "97f8eb4f5b4600798d1792304eae8011",
-      "sizeBytes": 14989014
+      "md5": "f6cdd032847a82c5907ba92684590f87",
+      "sizeBytes": 14989215
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "97f8eb4f5b4600798d1792304eae8011",
-      "sizeBytes": 14989014
+      "md5": "f6cdd032847a82c5907ba92684590f87",
+      "sizeBytes": 14989215
     }
   ],
-  "md5": "97f8eb4f5b4600798d1792304eae8011",
+  "md5": "f6cdd032847a82c5907ba92684590f87",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
