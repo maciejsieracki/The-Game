@@ -63,7 +63,7 @@
 //! [`super::siege_towers::tower_projectile_kind`]). The caller passes it in
 //! [`PlaybackOpts::tower_projectile`]; a `TowerShot` without it is an error.
 
-use std::collections::{HashMap, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 
 use civ_view_model::battle::{BattleActionDto, BattleActionKindDto, BattleFrameDto};
 use civ_view_model::ids::UnitId;
@@ -520,6 +520,9 @@ pub struct BattlePlayback {
     siege: SiegeTrack,
     finished: bool,
     breach_fades: Vec<(UnitId, f64)>,
+    /// `ru.routed` (`_startRout` `:9802`; never reset in the pin): from a `Rout` action or a frame with `routed`.
+    /// The breach filter skips these units (`:7699`, D-I5B-16).
+    routed: HashSet<UnitId>,
 }
 
 /// `Math.max(0, x)` (`:8991`): `NaN` stays `NaN`, `±0` and negatives give `+0`.
@@ -574,6 +577,7 @@ impl BattlePlayback {
             siege: SiegeTrack::default(),
             finished: false,
             breach_fades: Vec::new(),
+            routed: HashSet::new(),
         }
     }
 
@@ -896,6 +900,7 @@ impl BattlePlayback {
             }
             BattleActionKindDto::Rout { id } => {
                 self.slot(*id)?;
+                self.routed.insert(*id);
                 self.calls.push(SceneCall::RoutSfx { id: *id });
             }
             BattleActionKindDto::Leave { id } => self.leave(b, *id, a.t0)?,
@@ -999,10 +1004,13 @@ impl BattlePlayback {
                     label,
                 });
                 // `:7699-7701`: the defenders standing on the breached tile (catapults among them
-                // are faded, D-I5B-15).
+                // are faded, D-I5B-15); `if (u.dead || u.fadingOut || u.routed) continue` (D-I5B-16).
                 for u in &b.def {
-                    if !u.removed && u.on_wall_walkway && u.col == wall_col && u.row == *row {
-                        if let Some(id) = Self::spawn_id(u) {
+                    if u.removed || !u.on_wall_walkway || u.col != wall_col || u.row != *row {
+                        continue;
+                    }
+                    if let Some(id) = Self::spawn_id(u) {
+                        if !self.routed.contains(&id) {
                             self.breach_fades.push((id, a.t0));
                         }
                     }
@@ -1198,6 +1206,9 @@ impl BattlePlayback {
     ) -> Result<(), PlaybackError> {
         for fu in &frame.units {
             let u = self.unit(b, fu.id)?;
+            if fu.routed {
+                self.routed.insert(fu.id);
+            }
             if u.removed {
                 continue;
             }

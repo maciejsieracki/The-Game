@@ -1173,9 +1173,9 @@ fn siege_errors_are_reported() {
     }
 }
 
-/// A defender on the breached cell that is NOT faded (it retreats) keeps the breach mark only until its `LeaveField`;
-/// a `Kill` at a later `t0` is a blow again (HP bar to 0), and a `Kill` of a unit off the breached cell at the same
-/// `t0` too.
+/// The breach mark holds only within the `t0` of its `WallBreach` and only for the breached cell: a `Kill` at a later
+/// `t0` is a blow again (HP bar to 0), and a `Kill` of a unit off the breached cell at the same `t0` too. (The end of
+/// the mark at `LeaveField` within the same `t0` is `leave_field_clears_the_breach_mark_within_the_same_t0`.)
 #[test]
 fn breach_mark_is_limited_to_the_tile_and_its_t0() {
     let (_, p) = base();
@@ -1266,4 +1266,127 @@ fn retreat_without_free_cell_keeps_the_model() {
         pb.calls().last(),
         Some(SceneCall::WallRetreat { moved: false, .. })
     ));
+}
+
+// ------------------------------------------------------------ obrona r1 (Z-1, Z-2, Z-4)
+
+/// Ids of the `HpBar` calls with `hp == 0` (the killing blow of a `Kill`, `:8992`).
+fn hp_zero_ids(pb: &BattlePlayback) -> Vec<UnitId> {
+    pb.calls()
+        .iter()
+        .filter_map(|c| match c {
+            SceneCall::HpBar { id, hp } if *hp == 0.0 => Some(*id),
+            _ => None,
+        })
+        .collect()
+}
+
+/// Plays `pre`, then `WallBreach { row: 67 }` and `Kill { id: def4 }` at the same `t0` on the scene after `edit`;
+/// returns the ids whose HP bar went to 0.
+fn breach_then_kill(pre: &[BattleActionDto], edit: impl FnOnce(&mut BattleScene3)) -> Vec<UnitId> {
+    let (_, mut q) = base();
+    edit(&mut q);
+    let mut pb = BattlePlayback::new(&q, PlaybackOpts::default());
+    let d4 = uid("def4");
+    let mut acts = pre.to_vec();
+    acts.push(act(10.0, K::WallBreach { row: 67 }));
+    acts.push(act(10.0, K::Kill { id: d4 }));
+    pb.push_actions(&acts).expect("push");
+    pb.play_until(&mut q, 10.0, 0.0).expect("play");
+    hp_zero_ids(&pb)
+}
+
+/// Z-1 (mutant E12): the breach mark of a defender that retreats ends at its `LeaveField` (`:7705-7741`: only a
+/// catapult is faded, `_startFade` `:7703`); a `Kill` of the same unit at the SAME `t0` after the retreat is a blow
+/// again, so its HP bar goes to 0.
+#[test]
+fn leave_field_clears_the_breach_mark_within_the_same_t0() {
+    let (_, mut q) = base();
+    let mut pb = BattlePlayback::new(&q, PlaybackOpts::default());
+    let wc = wall_col(&q);
+    let d4 = uid("def4");
+    assert_eq!((unit(&q, d4).col, unit(&q, d4).row), (wc, 67));
+    pb.push_actions(&[
+        act(10.0, K::WallBreach { row: 67 }),
+        act(
+            10.0,
+            K::LeaveField {
+                id: d4,
+                from_col: wc,
+                from_row: 67,
+                to_col: wc,
+                to_row: 67,
+            },
+        ),
+        act(10.0, K::Kill { id: d4 }),
+    ])
+    .expect("push");
+    pb.play_until(&mut q, 10.0, 0.0).expect("play");
+    assert_eq!(hp_zero_ids(&pb), vec![d4]);
+    assert!(unit(&q, d4).removed);
+}
+
+/// Control for the filter tests below: the unchanged scene (`def4` on the crown of the breached cell, not routed)
+/// gets the mark, so its `Kill` at the same `t0` leaves the HP bar.
+#[test]
+fn breach_mark_control_unit_on_crown_gets_no_hp_bar() {
+    assert_eq!(breach_then_kill(&[], |_| {}), Vec::<UnitId>::new());
+}
+
+/// Z-2 (mutant E1): a defender on the breached cell `(wallCol, row)` that is NOT on the wall walk is outside the
+/// filter `u.onWallWalkway && u.r === wallRow && u.q === wallCol` (`:7700`): no mark, its `Kill` is a blow.
+#[test]
+fn breach_mark_needs_the_wall_walk() {
+    let d4 = uid("def4");
+    let got = breach_then_kill(&[], |q| {
+        let wc = wall_col(q);
+        let u = unit_mut(q, d4);
+        assert_eq!((u.col, u.row), (wc, 67));
+        u.on_wall_walkway = false;
+    });
+    assert_eq!(got, vec![d4]);
+}
+
+/// Z-2 (mutant E2): a defender flagged on the wall walk in the breached row but in another column fails
+/// `u.q === wallCol` (`:7700`): no mark, its `Kill` is a blow.
+#[test]
+fn breach_mark_needs_the_wall_column() {
+    let d4 = uid("def4");
+    let got = breach_then_kill(&[], |q| {
+        let wc = wall_col(q);
+        let u = unit_mut(q, d4);
+        u.col = wc + 1;
+        assert!(u.on_wall_walkway);
+        assert_eq!(u.row, 67);
+    });
+    assert_eq!(got, vec![d4]);
+}
+
+/// Z-4 (D-I5B-16): `if (u.dead || u.fadingOut || u.routed) continue` (`:7699`): a routed defender on the crown of
+/// the breached cell is neither faded nor retreated, so it gets no mark and a `Kill` of it at the same `t0` is a
+/// blow. Routed from a `Rout` action (`_startRout` `:9802`).
+#[test]
+fn breach_mark_skips_a_unit_routed_by_action() {
+    let d4 = uid("def4");
+    let got = breach_then_kill(&[act(5.0, K::Rout { id: d4 })], |_| {});
+    assert_eq!(got, vec![d4]);
+}
+
+/// Z-4 (D-I5B-16): the same with `routed` known from a frame (`BattleFrameUnitDto::routed`, `:2016`), e.g. a unit
+/// that broke before the playback started.
+#[test]
+fn breach_mark_skips_a_unit_routed_in_a_frame() {
+    let (_, mut q) = base();
+    let mut pb = BattlePlayback::new(&q, PlaybackOpts::default());
+    let d4 = uid("def4");
+    let mut fu = frame_unit(unit(&q, d4), d4, 0.0);
+    fu.routed = true;
+    pb.push_frame(&frame(5.0, vec![fu])).expect("frame");
+    pb.push_actions(&[
+        act(10.0, K::WallBreach { row: 67 }),
+        act(10.0, K::Kill { id: d4 }),
+    ])
+    .expect("push");
+    pb.play_until(&mut q, 10.0, 0.0).expect("play");
+    assert_eq!(hp_zero_ids(&pb), vec![d4]);
 }

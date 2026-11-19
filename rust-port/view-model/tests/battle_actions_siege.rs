@@ -255,7 +255,15 @@ fn walidacja_obrazen_i_hp() {
         }
     }
     // `Shaken`: morale skończone i >= 0, sojusznik != poległy.
-    for (m, ok) in [(-0.5, false), (0.0, true), (0.5, true), (f64::NAN, false)] {
+    // `+Infinity` przechodzi `>= 0`, więc odrzuca go wyłącznie `action_finite` (obrona r1, Z-3, mutant V1).
+    for (m, ok) in [
+        (-0.5, false),
+        (0.0, true),
+        (0.5, true),
+        (f64::NAN, false),
+        (f64::INFINITY, false),
+        (f64::NEG_INFINITY, false),
+    ] {
         let r = check(
             0.0,
             K::Shaken {
