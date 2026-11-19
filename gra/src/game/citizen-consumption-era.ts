@@ -20,13 +20,27 @@ import { rebalancedCitizenConsumptionMult } from './econ-era-rebalance';
 /** Przyrost mnożnika na epokę (50% bazy). */
 export const CITIZEN_CONSUMPTION_ERA_STEP = 0.5;
 
-/** m(e) = 1 + 0,5 × (e − 1); era < 1 / NaN / nie-liczba → 1. Epoki ułamkowe są zaokrąglane w dół. */
+/**
+ * Stara krzywa m(e) = 1 + 0,5 × (e − 1) BEZ rebalansu ZA FLAGA (R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1).
+ * Używana przez konwertery (przepustowość odlewni) i utrzymanie surowców obywateli — te ścieżki
+ * są poza zakresem rebalansu (dispatch: konwertery i utrzymanie surowcem bez zmian).
+ * era < 1 / NaN / nie-liczba → 1. Epoki ułamkowe są zaokrąglane w dół.
+ */
+export function legacyCitizenConsumptionEraMultiplier(era: number | null | undefined): number {
+  if (typeof era !== 'number' || !Number.isFinite(era) || era < 1) return 1;
+  return 1 + CITIZEN_CONSUMPTION_ERA_STEP * (Math.floor(era) - 1);
+}
+
+/**
+ * m(e) dla RACJI ŻYWNOŚCI obywateli (population-growth-v85). Flaga ON = 2^(e-1) (1/2/4/8/16);
+ * flaga OFF = krzywa legacy. era < 1 / NaN / nie-liczba → 1. Epoki ułamkowe zaokrąglane w dół.
+ */
 export function citizenConsumptionEraMultiplier(era: number | null | undefined): number {
   if (typeof era !== 'number' || !Number.isFinite(era) || era < 1) return 1;
   // R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: flaga ON = m(e) = 2^(e-1) (1/2/4/8/16); flaga OFF = wzor jak dotad.
   const rebalanced = rebalancedCitizenConsumptionMult(era);
   if (rebalanced !== null) return rebalanced;
-  return 1 + CITIZEN_CONSUMPTION_ERA_STEP * (Math.floor(era) - 1);
+  return legacyCitizenConsumptionEraMultiplier(era);
 }
 
 /**

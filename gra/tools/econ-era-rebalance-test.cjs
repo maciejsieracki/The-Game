@@ -11,6 +11,8 @@
  *  (E4) ON w epokach 4-5: przychody ulepszen stale; zywnosc 4*3^(e-1) (108/324 dla epok 4/5);
  *       racje m(e) = 2^(e-1) (8/16);
  *  (E5) konwersja racji i zywnosci tylko przy ON: brak NaN, era < 1 / null -> 1;
+ *  (E7) konwertery/utrzymanie surowcow poza rebalansem (ON == OFF); (E8) karta jednostki faktyczna przy ON;
+ *  (E9) nazwy epok units.json -> 1/2/3;
  *  (E6) mutanty kopii zrodel (esbuild plugin, NIE git checkout) -- kazdy musi czerwienic test.
  *
  *   node tools/econ-era-rebalance-test.cjs   # exit 0 = wszystko zielone i mutanty wykryte
@@ -26,6 +28,8 @@ const FILES = {
   terrain: path.resolve(GAME_DIR, 'terrain-improvements.ts'),
   citizen: path.resolve(GAME_DIR, 'citizen-consumption-era.ts'),
   upkeep: path.resolve(GAME_DIR, 'economy-upkeep.ts'),
+  converters: path.resolve(GAME_DIR, 'converters.ts'),
+  citizenUpkeep: path.resolve(GAME_DIR, 'citizen-resource-upkeep.ts'),
 };
 const ORIG = {};
 for (const k of Object.keys(FILES)) ORIG[k] = fs.readFileSync(FILES[k], 'utf8');
@@ -53,7 +57,9 @@ async function loadBundle(mutants) {
     "export * from './econ-era-rebalance';",
     "export { improvementYieldForEra, resourceProductionAmountForEra } from './terrain-improvements';",
     "export { citizenConsumptionEraMultiplier } from './citizen-consumption-era';",
-    "export { buildUnitFoodTable, unitFoodPerTurn } from './economy-upkeep';",
+    "export { buildUnitFoodTable, unitFoodPerTurn, unitFoodCardValue } from './economy-upkeep';",
+    "export { converterThroughputForEra } from './converters';",
+    "export { citizenUpkeepRateForEra } from './citizen-resource-upkeep';",
   ].join('\n');
   const res = await esbuild.build({
     stdin: { contents: entry, resolveDir: GAME_DIR, sourcefile: 'entry.ts', loader: 'ts' },
@@ -92,6 +98,9 @@ function measure(mod) {
     farma: [1, 2, 3, 4, 5].map(e => mod.improvementYieldForEra('farma', 'zywnosc', 3, e)),
     zywnosc: [food('u_e1'), food('u_e2'), food('u_e3'), food('u_e4'), food('u_e5')],
     m: [1, 2, 3, 4, 5].map(e => mod.citizenConsumptionEraMultiplier(e)),
+    conv: [1, 2, 3, 4, 5].map(e => mod.converterThroughputForEra('odlewnia_zelaza__zelazo', 10, e)),
+    upk: [1, 2, 3, 4, 5].map(e => mod.citizenUpkeepRateForEra(e)),
+    card: ['Kamień', 'Brąz', 'Żelazo'].map(ep => mod.unitFoodCardValue({ 'żywność/turę': 1, Epoka: ep })),
   };
 }
 
@@ -139,6 +148,18 @@ const offAgain = measure(base.mod);
 check('E5 hak false -> wartosci jak OFF', eq(offAgain, off));
 base.mod.setEraRebalanceEnabledForTest(null);
 
+// ---- (E7) konwertery i utrzymanie surowcow obywateli: POZA rebalansem (ON == OFF) ----
+check('E7 OFF konwertery odlewni 10/15/20 (e1-e3)', eq(off.conv.slice(0, 3), [10, 15, 20]), off.conv);
+check('E7 OFF utrzymanie surowcow obywateli 1/1,5/2 (e1-e3)', eq(off.upk.slice(0, 3), [1, 1.5, 2]), off.upk);
+check('E7 ON konwertery == OFF (nie x2^(e-1))', eq(on.conv, off.conv), { on: on.conv, off: off.conv });
+check('E7 ON utrzymanie surowcow == OFF (tylko racje zywnosci skalowane)', eq(on.upk, off.upk), { on: on.upk, off: off.upk });
+// ---- (E8) karty jednostek: wartosc faktyczna przy ON, surowa przy OFF ----
+check('E8 OFF karta zywnosci = surowa 1 (wszystkie epoki)', eq(off.card, [1, 1, 1]), off.card);
+check('E8 ON karta zywnosci = faktyczna 4/12/36 (x3/epoke x R_STAWKI 4)', eq(on.card, [4, 12, 36]), on.card);
+check('E8 karta: brak wartosci -> bez zmian (undefined)', base.mod.unitFoodCardValue({}) === undefined);
+// ---- (E9) epoki z units.json (nazwy) -> porzadkowy 1/2/3 ----
+check('E9 eraOrdinal nazw Kamien/Braz/Zelazo = 1/2/3', base.mod.eraOrdinal('Kamień') === 1 && base.mod.eraOrdinal('Brąz') === 2 && base.mod.eraOrdinal('Żelazo') === 3);
+
 // ---- (E6) mutanty kopii zrodel: kazdy musi czerwienic ----
 const MUTANTS = [
   { id: 'M1 flaga zawsze ON', mutants: [{ file: 'rebalance', from: '  return (ERA_REBALANCE_PARAMS.eraRebalansAktywny ?? ERA_REBALANCE_ENABLED_DEFAULT) === true;', to: '  return true;' }] },
@@ -148,6 +169,9 @@ const MUTANTS = [
   { id: 'M5 skala zywnosci wojska x2 zamiast x3', mutants: [{ file: 'rebalance', from: 'Math.pow(step, eraOrdinal(epoch) - 1)', to: 'Math.pow(2, eraOrdinal(epoch) - 1)' }] },
   { id: 'M6 bramka zywnosci jednostek usunieta', mutants: [{ file: 'upkeep', from: '      if (rebalanced !== null) base = rebalanced;', to: '' }] },
   { id: 'M7 bramka racji usunieta w citizen-consumption', mutants: [{ file: 'citizen', from: '  if (rebalanced !== null) return rebalanced;', to: '' }] },
+  { id: 'M8 konwertery odlewni na wzorze 2^(e-1)', mutants: [{ file: 'converters', from: 'return baseThroughput * legacyCitizenConsumptionEraMultiplier(era);', to: 'return baseThroughput * Math.pow(2, Math.floor(era) - 1);' }] },
+  { id: 'M9 utrzymanie surowcow obywateli na wzorze 2^(e-1)', mutants: [{ file: 'citizenUpkeep', from: 'return CITIZEN_UPKEEP_RATE_PER_CITIZEN * legacyCitizenConsumptionEraMultiplier(era);', to: 'return CITIZEN_UPKEEP_RATE_PER_CITIZEN * Math.pow(2, Math.floor(era) - 1);' }] },
+  { id: 'M10 karta jednostki bez wartosci faktycznej (surowa przy ON)', mutants: [{ file: 'upkeep', from: '  if (rebalanced === null) return direct;', to: '  if (rebalanced === null || true) return direct;' }] },
 ];
 console.log('\n== mutanty (E6) ==');
 for (const mt of MUTANTS) {
@@ -161,7 +185,7 @@ for (const mt of MUTANTS) {
   const mOn = measure(mm);
   mm.setEraRebalanceEnabledForTest(null);
   if (mm.isEraRebalanceEnabled() !== false) detected = true; // domyslna flaga musi byc OFF
-  if (!eq(mOff, off) || !eq(mOn.tartak.slice(0, 3), [50, 50, 50]) || !eq(mOn.farma.slice(0, 3), [3, 3, 3]) || !eq(mOn.zywnosc.slice(0, 3), [4, 12, 36]) || !eq(mOn.m.slice(0, 3), [1, 2, 4])) detected = true;
+  if (!eq(mOff, off) || !eq(mOn.tartak.slice(0, 3), [50, 50, 50]) || !eq(mOn.farma.slice(0, 3), [3, 3, 3]) || !eq(mOn.zywnosc.slice(0, 3), [4, 12, 36]) || !eq(mOn.m.slice(0, 3), [1, 2, 4]) || !eq(mOn.conv, off.conv) || !eq(mOn.upk, off.upk) || !eq(mOn.card, [4, 12, 36])) detected = true;
   void r;
   check(mt.id + ' wykryty (czerwony)', detected);
 }

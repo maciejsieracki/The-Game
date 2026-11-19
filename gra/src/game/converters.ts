@@ -24,7 +24,7 @@
  * gry, nie poziom budynku) -- patrz `converterThroughputForEra` niżej.
  */
 
-import { citizenConsumptionEraMultiplier } from './citizen-consumption-era';
+import { legacyCitizenConsumptionEraMultiplier } from './citizen-consumption-era';
 
 export type Difficulty = 'easy' | 'normal' | 'hard';
 
@@ -140,7 +140,7 @@ export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
  * R-WEB-FOUNDRY-THROUGHPUT-X2-ERA-MULT-Q1 (decyzja właściciela 2026-11-05): „zwiększ naturalną
  * ilość cykli z 25 do 50 dla odlewni brązu / żelaza … i w każdą epokę zwiększaj możliwości
  * zgodnie z mnożnikami 1, 1,5, 2 …". Żelazo/stal skalują PRZEPUSTOWOŚĆ
- * (cykle/turę) mnożnikiem epoki WŁAŚCICIELA m(e) = `citizenConsumptionEraMultiplier` (1 / 1,5 / 2 /
+ * (cykle/turę) mnożnikiem epoki WŁAŚCICIELA m(e) = `legacyCitizenConsumptionEraMultiplier` (poza rebalansem ZA FLAGA) (1 / 1,5 / 2 /
  * 2,5 / 3) -- jedna definicja wzoru dla konsumpcji obywateli i żelaza/stali. Brąz używa jawnych
  * parametrów per era z econ-params. Receptury (wejścia/wyjścia) bez zmian. Huta zostaje płaska;
  * Cegielnia skaluje WYJŚCIE (BRICK).
@@ -159,7 +159,7 @@ export const CONVERTER_FOUNDRY_ERA_RECIPE_IDS: ReadonlySet<string> = new Set([
  * (a) ×2: `outputAmount` Cegielni 1→2 (2 glina + 1 drewno → 2 cegły), baza przepustowości
  *     50 cykli/turę BEZ zmian (stan historyczny tej decyzji; aktualne cykle per epoka: patrz niżej).
  * (b) +50% BAZY za epokę właściciela jako MNOŻNIK WYJŚCIA (nie cykli): m(e) = 1 + 0,5 × (e − 1)
- *     = 1 / 1,5 / 2 / 2,5 / 3 -- ta sama krzywa co `citizenConsumptionEraMultiplier`
+ *     = 1 / 1,5 / 2 / 2,5 / 3 -- ta sama krzywa co `legacyCitizenConsumptionEraMultiplier`
  *     (mnożniki surowców FALA 500). Pomiar w grze pokazał, że Cegielnię ogranicza WEJŚCIE
  *     (drewno 30/30 tur), więc mnożnik na cyklach byłby martwy; mnożnik na wyjściu działa
  *     w każdym reżimie i NIE zwiększa zużycia gliny/drewna (cykle i wejścia/cykl bez zmian).
@@ -209,7 +209,8 @@ export function converterThroughputForEra(
   era: number,
 ): number {
   if (CONVERTER_FOUNDRY_ERA_RECIPE_IDS.has(recipeId)) {
-    return baseThroughput * citizenConsumptionEraMultiplier(era);
+    // R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: konwertery poza rebalansem -> krzywa legacy (flaga bez wplywu).
+    return baseThroughput * legacyCitizenConsumptionEraMultiplier(era);
   }
   return baseThroughput;
 }

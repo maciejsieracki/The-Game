@@ -1182,6 +1182,23 @@ export function unitFoodPerTurn(
 }
 
 /**
+ * R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: wartość „Żywność/turę" do KART jednostek (UI).
+ * Flaga OFF -> surowa wartość z units.json (bez zmian, jak dotad). Flaga ON -> wartość faktyczna
+ * dla własnego terytorium: baza po rebalansie epoki (x3/epokę) × R_STAWKI (×4), zgodnie z unitFoodPerTurn.
+ */
+export function unitFoodCardValue(unit: {
+  readonly 'żywność/turę'?: unknown;
+  readonly Epoka?: unknown;
+}): unknown {
+  const direct = unit['żywność/turę'];
+  if (typeof direct !== 'number' || !Number.isFinite(direct)) return direct;
+  const epoch = typeof unit.Epoka === 'number' || typeof unit.Epoka === 'string' ? unit.Epoka : undefined;
+  const rebalanced = rebalancedUnitFoodBase(direct, epoch);
+  if (rebalanced === null) return direct;
+  return rebalanced * R_STAWKI_FALA1_FALA2_MULT;
+}
+
+/**
  * R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: surowe wartości (units.json) per tabela, żeby flaga rebalansu
  * była czytana przy KAŻDYM wywołaniu (nie zapiekana przy budowie tabeli). Tabela zostaje Record<string, number>.
  */
