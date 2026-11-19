@@ -1314,9 +1314,7 @@ impl SiegeBattleSession {
     #[doc(hidden)]
     pub fn diag_set_speed_mul(&mut self, speed_mul: f64) -> Result<(), SessionError> {
         if !(speed_mul.is_finite() && speed_mul > 0.0) {
-            return Err(SessionError::InvalidData(format!(
-                "speed_mul {speed_mul}"
-            )));
+            return Err(SessionError::InvalidData(format!("speed_mul {speed_mul}")));
         }
         self.clock.speed_mul = speed_mul;
         Ok(())

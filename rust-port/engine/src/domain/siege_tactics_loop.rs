@@ -6474,7 +6474,11 @@ mod pin3_timeline_tests {
             wall_tile_hp: Vec::new(),
             siege_machine_range: 0.0,
         };
-        let mut b = ProdBody::new([vec![unit_at(0)], vec![unit_at(5)]], scene, SequenceRolls::new(Vec::new()));
+        let mut b = ProdBody::new(
+            [vec![unit_at(0)], vec![unit_at(5)]],
+            scene,
+            SequenceRolls::new(Vec::new()),
+        );
         b.pin_blow_timing = true;
         b
     }
@@ -6504,7 +6508,11 @@ mod pin3_timeline_tests {
         // Trafienie wieży w 1100 ms rozbija jednostkę (`_startRout` `:9818`: atakujący W = 3).
         b.set_now(1100.0);
         b.set_facing(A0, 3.0);
-        assert_eq!(b.facing(A0), 2.0, "bieżący zwrot = po ostatnim kroku marszu");
+        assert_eq!(
+            b.facing(A0),
+            2.0,
+            "bieżący zwrot = po ostatnim kroku marszu"
+        );
         assert_eq!(b.facing_at(A0, 1050.0), 0.0);
         assert_eq!(b.facing_at(A0, 1200.0), 3.0);
         assert_eq!(b.facing_at(A0, 1400.0), 2.0);
@@ -6521,7 +6529,11 @@ mod pin3_timeline_tests {
         b.set_now(1310.0);
         b.set_facing(A0, 3.0);
         assert_eq!(b.facing(A0), 2.0);
-        assert_eq!(b.facing_at(A0, 1310.0), 3.0, "w fazie zegara krok jeszcze nie ruszył");
+        assert_eq!(
+            b.facing_at(A0, 1310.0),
+            3.0,
+            "w fazie zegara krok jeszcze nie ruszył"
+        );
         assert_eq!(b.facing_at(A0, 1311.0), 2.0);
     }
 }

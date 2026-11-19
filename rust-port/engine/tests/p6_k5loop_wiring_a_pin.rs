@@ -389,7 +389,11 @@ fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
     // PIN2-PROBE-Q1 (D-PIN2-2): każdy scenariusz z jawną rozbieżnością @16 ms ma bliźniaka z granicą klatki (krok 1 ms),
     // zgodnego bajt w bajt (sprawdzony wyżej jako zwykły zgodny scenariusz) — rozbieżność jest WYŁĄCZNIE kwantyzacją klatki.
     // PIN3-DIVERGENCE-Q1: bliźniak `mur_jazda_rzeka_klatka1` zostaje (krok 1 ms, to samo wejście i ziarno co wektor 16 ms).
-    for name in ROZBIEZNE_B_WIRA_PIN_2.iter().copied().chain(["mur_jazda_rzeka"]) {
+    for name in ROZBIEZNE_B_WIRA_PIN_2
+        .iter()
+        .copied()
+        .chain(["mur_jazda_rzeka"])
+    {
         let twin = format!("{name}_klatka1");
         let v = list
             .iter()
