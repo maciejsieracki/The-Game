@@ -86,14 +86,22 @@ for (const [nazwa, m] of Object.entries(mutacje)) {
 // ---- C) wiazanie runnera (zawsze, bez przegladarki; R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1) ----
 /** Runner ma podpiete: autopilot gracza (--player-ai), pokoj wymuszony i zamykanie blokad. Mutacja kopii MUSI byc wykryta. */
 function runnerWired(src) {
-  return src.includes('setPlayerAiAutopilotForTest(true)') && src.includes('acceptForcedPeace(page') && src.includes("require('./measure-forced-peace.cjs')")
-    && src.includes("arg('player-ai', '1')") && src.includes('forcedPeaceAccepted: COUNTERS.forcedPeaceAccepted');
+  // Strazniki sprawdzane strukturalnie (nie sam tekst): domyslnosc i zgodnosc flagi, wywolanie autopilota
+  // wewnatrz if (PLAYER_AI), wywolanie pokoju wymuszonego jako osobna instrukcja w petli tury.
+  return /const PLAYER_AI = arg\('player-ai', '1'\) !== '0';/.test(src)
+    && /if \(PLAYER_AI\) \{\s*await page\.evaluate\(\(\) => window\.__aiEconomyMeasure\.setPlayerAiAutopilotForTest\(true\)\);/.test(src)
+    && /^\s*await acceptForcedPeace\(page, COUNTERS, wait\);\s*$/m.test(src)
+    && src.includes("require('./measure-forced-peace.cjs')")
+    && src.includes('forcedPeaceAccepted: COUNTERS.forcedPeaceAccepted');
 }
 {
   const runnerSrc = fs.readFileSync(path.join(__dirname, 'diplomacy-harder-measure-run.cjs'), 'utf8');
-  check('C1 runner podpiety: autopilot, pokoj wymuszony, licznik w wierszu, domyslne --player-ai 1', runnerWired(runnerSrc));
-  check('C2 mutacja kopii (bez acceptForcedPeace) jest wykryta', !runnerWired(runnerSrc.replace('acceptForcedPeace(page, COUNTERS, wait)', '0')));
+  check('C1 runner podpiety: autopilot w if (PLAYER_AI), pokoj wymuszony, licznik w wierszu, domyslne --player-ai 1', runnerWired(runnerSrc));
+  check('C2 mutacja kopii (bez acceptForcedPeace) jest wykryta', !runnerWired(runnerSrc.replace('await acceptForcedPeace(page, COUNTERS, wait);', '0;')));
   check('C3 mutacja kopii (bez autopilota) jest wykryta', !runnerWired(runnerSrc.replace('setPlayerAiAutopilotForTest(true)', 'setPlayerAiAutopilotForTest(false)')));
+  check('C4 mutacja kopii (odwrocona semantyka --player-ai, === 0) jest wykryta', !runnerWired(runnerSrc.replace("arg('player-ai', '1') !== '0'", "arg('player-ai', '1') === '0'")));
+  check('C5 mutacja kopii (if (PLAYER_AI) zastapione if (false)) jest wykryta', !runnerWired(runnerSrc.replace('if (PLAYER_AI) {', 'if (false) {')));
+  check('C6 mutacja kopii (pokoj wymuszony zakomentowany) jest wykryta', !runnerWired(runnerSrc.replace('await acceptForcedPeace(page, COUNTERS, wait);', '// await acceptForcedPeace(page, COUNTERS, wait);')));
 }
 
 // ---- B) przegladarka ----
