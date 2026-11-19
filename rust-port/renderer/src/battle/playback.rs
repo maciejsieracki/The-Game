@@ -19,6 +19,8 @@
 //! | `Damage` | `bu.hp = Math.max(0, bu.hp - dmg)` + `_updateHpBar` (`:8991-8992`), then `_spawnDamageLabel` (`:9125`, `:9142`, `:9940-9971`) | [`update_hp_bar`] + [`FloatLabel::damage`] |
 //! | `Kill` | `_startFade` → `_removeUnitFromScene` (`:9927-9938`, `:9910-9925`) after the killing blow set `hp = 0` and `_updateHpBar` (`:8991-8992`, `:9045-9047`) | [`update_hp_bar`] (`hp = 0`) + [`kill_unit`] |
 //! | `Rout` | `_startRout` (`:9799-9825`): `_sfxRout` only; its turn is the separate `Facing` (`:9817-9818`) | — (recorded, audio) |
+//! | `Move` | `_doMove` 3D (`:8714-8776`): `ru.q = col; ru.r = row` (`:8731`), walk from `t0` (`:8752`) to `t0 + MOVE_STEP_MS`; its turn is the separate `Facing` with the same `t0` (`_updateFacing`, `:8750`) | [`MoveAnim::start`] (stepped by [`BattlePlayback::play_until`]) |
+//! | `Shot` | `_doRangedAttack` 3D (`:9179-9221`): projectile of `projectileKind(attacker.bu)` (`:9203`) from the shooter's to the target's torso (`:9200-9201`), hit at `t0 + RANGED_FLY_MS` (`:9224`); its turn is the separate `Facing` (`:9182-9184`), the hit is the separate `Damage` (`:9226`) | [`projectile_kind`] + [`ranged_shot_endpoints`] + [`launch_projectile`], [`tick_projectiles`] |
 //! | `Turn`, `Log`, `Clash`, `End` | `hint`, `this.log.push`, `_pushClash`, `_showEndScreen` | — (DOM / P5; recorded) |
 //!
 //! [`BattleFrameDto`] → bars: morale ([`update_morale_bar`], pin `_updateMoraleBar`
@@ -32,12 +34,12 @@
 //! `Damage` because `_spawnDamageLabel` returns at once, `:9943`) is
 //! [`BattlePlayback::apply_snapshot`], called explicitly by the caller.
 //!
-//! Not consumed here (no DTO variant yet, P4-1I5 #249/#280, blocked by the
-//! siege loop K5LOOP): walking ([`super::dynamics::MoveAnim`]), unit shots
-//! ([`super::dynamics::launch_projectile`] from `_doRangedAttack`), the ram
-//! ([`super::dynamics::RamAnim`]), the catapult ([`super::dynamics::Boulder`])
-//! and the breaches (`breach_*`). The DTO shapes of P4-1I2 / P4-1I3 are not
-//! changed.
+//! Not consumed here (no DTO variant yet, P4-1I5b #370): the ram
+//! ([`super::dynamics::RamAnim`]), the catapult ([`super::dynamics::Boulder`]),
+//! the breaches (`breach_*`), the climb onto the wall and the flight from the
+//! field. Walking and unit shots are P4-1I5a (D-WIR-6/7/8): the `match` over
+//! [`BattleActionKindDto`] stays exhaustive (no `_ =>` arm), so a new variant
+//! does not compile until it has a consumer.
 //!
 //! Gap of the DTO (reported, not filled in): `TowerShot` carries no projectile
 //! kind; the web derives it from the tower shooter row
@@ -51,7 +53,8 @@ use civ_view_model::battle::{BattleActionDto, BattleActionKindDto, BattleFrameDt
 use civ_view_model::ids::UnitId;
 
 use super::dynamics::{
-    set_facing, tick_projectiles, FloatLabel, MeleeLunge, Projectile, ProjectileKind, BLOW_HIT_T,
+    launch_projectile, projectile_kind, ranged_shot_endpoints, set_facing, tick_projectiles,
+    FloatLabel, MeleeLunge, MoveAnim, Projectile, ProjectileKind, BLOW_HIT_T, MOVE_STEP_MS,
     RANGED_FLY_MS,
 };
 use super::siege_towers::{fire_one_tower, TowerTarget};
@@ -101,6 +104,28 @@ pub enum SceneCall {
         row: i32,
         /// Target.
         target: UnitId,
+        /// `t0`.
+        t0: f64,
+    },
+    /// [`MoveAnim::start`] of a `Move` (`_doMove`).
+    MoveStart {
+        /// Unit.
+        id: UnitId,
+        /// Cell before the step.
+        from: (i32, i32),
+        /// Cell after the step.
+        to: (i32, i32),
+        /// `t0`.
+        t0: f64,
+    },
+    /// [`launch_projectile`] of a `Shot` (`_doRangedAttack`).
+    UnitProjectile {
+        /// Shooter.
+        attacker: UnitId,
+        /// Target.
+        target: UnitId,
+        /// `projectileKind(attacker.bu)`.
+        kind: ProjectileKind,
         /// `t0`.
         t0: f64,
     },
@@ -198,6 +223,31 @@ pub enum PlaybackError {
     },
     /// `TowerShot` without [`PlaybackOpts::tower_projectile`].
     MissingTowerProjectileKind,
+    /// `Move.arriveAt != t0 + MOVE_STEP_MS` ([`MoveAnim`] ends at
+    /// `MOVE_STEP_MS`, `:1010`, `:8754`).
+    ArriveAt {
+        /// `t0`.
+        t0: f64,
+        /// `arriveAt`.
+        arrive_at: f64,
+    },
+    /// `Move.from` is not the unit's current cell in the scene (the steps of
+    /// a unit chain: each starts where the previous one ended, `:8731`).
+    MoveFrom {
+        /// Unit.
+        id: UnitId,
+        /// `from` of the action.
+        expected: (i32, i32),
+        /// The unit's cell in the scene.
+        actual: (i32, i32),
+    },
+    /// `Shot.landAt != t0 + RANGED_FLY_MS` (`:9224`).
+    ShotLandAt {
+        /// `t0`.
+        t0: f64,
+        /// `landAt`.
+        land_at: f64,
+    },
 }
 
 impl std::fmt::Display for PlaybackError {
@@ -209,6 +259,16 @@ impl std::fmt::Display for PlaybackError {
             Self::LandAt { t0, land_at } => write!(f, "tower shot at {t0} lands at {land_at}"),
             Self::NoTower { row } => write!(f, "no siege tower on row {row}"),
             Self::MissingTowerProjectileKind => write!(f, "tower shot without projectile kind"),
+            Self::ArriveAt { t0, arrive_at } => write!(f, "step at {t0} arrives at {arrive_at}"),
+            Self::MoveFrom {
+                id,
+                expected,
+                actual,
+            } => write!(
+                f,
+                "unit {id} steps from {expected:?} but stands on {actual:?}"
+            ),
+            Self::ShotLandAt { t0, land_at } => write!(f, "unit shot at {t0} lands at {land_at}"),
         }
     }
 }
@@ -236,6 +296,12 @@ struct ActiveLunge {
     lunge: MeleeLunge,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct ActiveMove {
+    id: UnitId,
+    anim: MoveAnim,
+}
+
 /// The playback state: queued items, animations in flight, tracked HP,
 /// damage labels and the trace of scene calls.
 ///
@@ -257,6 +323,7 @@ pub struct BattlePlayback {
     queue: VecDeque<Item>,
     last_queued: f64,
     lunges: Vec<ActiveLunge>,
+    moves: Vec<ActiveMove>,
     projectiles: Vec<Projectile>,
     labels: Vec<DamageLabel>,
     calls: Vec<SceneCall>,
@@ -304,6 +371,7 @@ impl BattlePlayback {
             queue: VecDeque::new(),
             last_queued: f64::NEG_INFINITY,
             lunges: Vec::new(),
+            moves: Vec::new(),
             projectiles: Vec::new(),
             labels: Vec::new(),
             calls: Vec::new(),
@@ -438,8 +506,9 @@ impl BattlePlayback {
     ///
     /// # Errors
     /// [`PlaybackError`] for a unit / tower the scene does not have, a
-    /// `hitAt` / `landAt` other than the pin constants, or a tower shot
-    /// without [`PlaybackOpts::tower_projectile`].
+    /// `hitAt` / `landAt` / `arriveAt` other than the pin constants, a step
+    /// whose `from` is not the unit's cell, or a tower shot without
+    /// [`PlaybackOpts::tower_projectile`].
     pub fn apply_action(
         &mut self,
         b: &mut BattleScene3,
@@ -551,6 +620,73 @@ impl BattlePlayback {
                     dmg: *dmg,
                 });
             }
+            BattleActionKindDto::Move {
+                id,
+                from_col,
+                from_row,
+                to_col,
+                to_row,
+                arrive_at,
+            } => {
+                if *arrive_at != a.t0 + MOVE_STEP_MS {
+                    return Err(PlaybackError::ArriveAt {
+                        t0: a.t0,
+                        arrive_at: *arrive_at,
+                    });
+                }
+                let u = match self.slot(*id)? {
+                    (BattleSide::Atk, i) => &mut b.atk[i],
+                    (BattleSide::Def, i) => &mut b.def[i],
+                };
+                let from = (*from_col, *from_row);
+                if (u.col, u.row) != from {
+                    return Err(PlaybackError::MoveFrom {
+                        id: *id,
+                        expected: from,
+                        actual: (u.col, u.row),
+                    });
+                }
+                // `_doMove` (`:8721-8731`): both tile tops read before `ru.q/ru.r` move, then the cell
+                // changes at `t0`; the walk is stepped from `t0` (`:8752-8771`).
+                let anim = MoveAnim::start(&b.field.grid, u, *to_col, *to_row, a.t0);
+                // One walk per unit (the pin chains the steps through `done()`, `:8770`): a new
+                // step replaces a walk still in flight; the new one starts from the logical cell.
+                self.moves.retain(|m| m.id != *id);
+                self.moves.push(ActiveMove { id: *id, anim });
+                self.calls.push(SceneCall::MoveStart {
+                    id: *id,
+                    from,
+                    to: (*to_col, *to_row),
+                    t0: a.t0,
+                });
+            }
+            BattleActionKindDto::Shot {
+                attacker,
+                target,
+                land_at,
+            } => {
+                if *land_at != a.t0 + RANGED_FLY_MS {
+                    return Err(PlaybackError::ShotLandAt {
+                        t0: a.t0,
+                        land_at: *land_at,
+                    });
+                }
+                let ua = self.unit(b, *attacker)?;
+                let ud = self.unit(b, *target)?;
+                // `projectileKind(attacker.bu)` (`:9203`, `:1661-1671`): `bu.kategoria` and
+                // `stats.Jednostka ?? bu.nazwa` = `spawn.category` / `spawn.model_name`.
+                let kind = projectile_kind(&ua.spawn.category, &ua.spawn.model_name);
+                let (from, to) =
+                    ranged_shot_endpoints(&b.field.grid, (ua.col, ua.row), (ud.col, ud.row));
+                let p = launch_projectile(&mut b.field.field.scene, kind, from, to, a.t0);
+                self.projectiles.push(p);
+                self.calls.push(SceneCall::UnitProjectile {
+                    attacker: *attacker,
+                    target: *target,
+                    kind,
+                    t0: a.t0,
+                });
+            }
             BattleActionKindDto::Rout { id } => {
                 self.slot(*id)?;
                 self.calls.push(SceneCall::RoutSfx { id: *id });
@@ -638,10 +774,22 @@ impl BattlePlayback {
         self.apply_frame(b, frame)
     }
 
-    /// One animation frame at `now`: every lunge in flight
+    /// One animation frame at `now`: every walk in flight ([`MoveAnim::step`],
+    /// `_doMove` `step`, `:8753-8771`), every lunge in flight
     /// ([`MeleeLunge::step`] with `attacker_alive = !removed`, `:9147`) and
     /// the projectiles ([`tick_projectiles`]); finished ones are dropped.
     fn step_animations(&mut self, b: &mut BattleScene3, now: f64) {
+        let mut keep_moves = Vec::with_capacity(self.moves.len());
+        for m in std::mem::take(&mut self.moves) {
+            let Ok(u) = self.unit(b, m.id) else {
+                continue;
+            };
+            let u = u.clone();
+            if !m.anim.step(&mut b.field.field.scene, &u, now) {
+                keep_moves.push(m);
+            }
+        }
+        self.moves = keep_moves;
         let mut keep = Vec::with_capacity(self.lunges.len());
         for mut l in std::mem::take(&mut self.lunges) {
             let Ok(u) = self.unit(b, l.attacker) else {
@@ -680,6 +828,12 @@ impl BattlePlayback {
     #[must_use]
     pub fn lunges_in_flight(&self) -> usize {
         self.lunges.len()
+    }
+
+    /// Walks (`Move`) still in flight.
+    #[must_use]
+    pub fn moves_in_flight(&self) -> usize {
+        self.moves.len()
     }
 
     /// Projectiles still in flight.
