@@ -772,6 +772,19 @@ impl<B: LoopBody> SiegeLoop<B> {
         stop
     }
 
+    /// K5LOOP-WIRING-A (#369, D-WIR-3): jedna klatka czasu rzeczywistego `_startLoop` poza przewijaniem
+    /// (`battleScene.ts:9274-9277`): `_advanceVClock(wall)` (`:9500-9511`, pierwsza klatka tylko ustawia `vLastWall`), potem
+    /// `_drainTimers()` (`:9616-9634`). `_ffActive = false`, więc ciało emituje [`BattleAction::Damage`]
+    /// (`_spawnDamageLabel` `:9943`). `_tickProjectiles`/`_tickFades` (`:9283-9284`) nie zmieniają stanu pętli (jak
+    /// `FfEvent::TickProjectiles`/`TickFades` w [`Self::resume`]). Sufit tur działa tu przez `_checkEnd`
+    /// (`_roundCapVerdict` wspólny, `:9440-9447`); `_updateStallWatch` w oblężeniu nic nie liczy (`:5571`). Zwraca liczbę
+    /// odpalonych klocków zegara.
+    pub fn step_realtime(&mut self, clock: &mut VirtualClock<LoopTimer>, wall: f64) -> u32 {
+        self.env.body.set_ff_active(false);
+        clock.advance_v_clock(wall);
+        clock.drain_timers(|c, t| self.fire(c, t))
+    }
+
     /// Start bitwy i przewijanie aż do zakończenia albo wyczerpania `max_steps` pełnych iteracji.
     /// Równoważne `start` + `resume`.
     pub fn run(&mut self, clock: &mut VirtualClock<LoopTimer>, max_steps: u32) -> FfStop {
@@ -1436,6 +1449,36 @@ pub struct ProdBody<R: RollSource> {
     /// wystartować inna aktywacja z ucieczką, a `complete` dotyczy tej samej jednostki (twarda asercja w każdym profilu).
     /// Zmiana stanu jednostek przez zegar w tym oknie NIE jest już naruszeniem kontraktu (łączenie zamiast nadpisania).
     flee_after: Option<ProdFleeAfter>,
+    /// K5LOOP-WIRING-A (#369, długi U5/F4 T4 i D-ADP-6 T6): kompozytor wejścia ciosu w chwili ciosu. `Some` = KAŻDY cios
+    /// (główny, kontratak, strzał) dostaje wejście z [`BlowComposer::compose`] liczone z bieżących pozycji, `facing`,
+    /// `onWallWalkway` i `engaged`, jak `_singleBlow` (`battleScene.ts:8811-8960`); szablony [`ProdUnit::blow`],
+    /// [`ProdUnit::counter_blows`] i [`Self::ranged_blows`] są wtedy nieużywane, a tagi `*-bez-szablonu` nieosiągalne.
+    /// `None` (domyślnie) = dotychczasowe zachowanie (szablony adaptera testów).
+    pub blow_composer: Option<Box<dyn BlowComposer>>,
+}
+
+/// K5LOOP-WIRING-A (#369): miejsce jednego ciosu `_singleBlow(attacker, defender, ranged)` w chwili ciosu.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct BlowSite {
+    pub attacker: UnitRef,
+    pub target: UnitRef,
+    /// Argument `ranged` (`_doRangedAttack` = `true`, `_doMeleeAttack`/`_defenderCounters` = `false`).
+    pub ranged: bool,
+    /// `attacker.q`, `attacker.r` w chwili ciosu.
+    pub attacker_cell: (i64, i64),
+    /// `defender.q`, `defender.r` w chwili ciosu.
+    pub target_cell: (i64, i64),
+    /// `defender.onWallWalkway` w chwili ciosu.
+    pub target_on_wall: bool,
+    /// `firstBlow = !this.engaged.has(key)` (`:8896`) policzone przed ciosem (dla `ranged` bez znaczenia).
+    pub first_blow: bool,
+}
+
+/// K5LOOP-WIRING-A (#369): składanie [`FullBlowInput`] w chwili ciosu (pin `_singleBlow` `:8811-8960`: `toCombatUnit`,
+/// teren kafli obu stron, `_wallBonusProcFor`, brod, `civCombatStatMultipliers` z `isChargeRound`, trudność, kontry).
+/// `hit_arc`, `first_blow_of_pair` i `defender_state` nadpisuje dalej [`ProdBody`] (jak dotąd dla szablonów).
+pub trait BlowComposer {
+    fn compose(&self, site: &BlowSite) -> FullBlowInput;
 }
 
 /// K5LOOP-CLOSE r4: wynik ucieczki wykonanej w `start` (patrz [`ProdBody::flee_after`]).
@@ -1968,6 +2011,7 @@ impl<R: RollSource> ProdBody<R> {
             ],
             flee_stuck: [vec![0.0; units[0].len()], vec![0.0; units[1].len()]],
             flee_after: None,
+            blow_composer: None,
             terrain: None,
             units,
             scene,
@@ -3657,7 +3701,7 @@ impl<R: RollSource> ProdBody<R> {
     /// `strzal-bez-szablonu` i brak strzału.
     fn begin_shot(&mut self, unit: UnitRef, target: usize, at: f64) -> Option<ProdShot> {
         let ix = side_ix(unit.side);
-        if !self.ranged_blows[ix][unit.idx].contains_key(&target) {
+        if self.blow_composer.is_none() && !self.ranged_blows[ix][unit.idx].contains_key(&target) {
             self.unported.push((unit, "strzal-bez-szablonu"));
             return None;
         }
@@ -3709,7 +3753,10 @@ impl<R: RollSource> ProdBody<R> {
             side: opposite(unit.side),
             idx: shot.target,
         };
-        let Some(input) = self.ranged_blows[ix][unit.idx].get(&shot.target).cloned() else {
+        let Some(input) = self.composed_or(
+            true,
+            self.ranged_blows[ix][unit.idx].get(&shot.target).cloned(),
+        ) else {
             return;
         };
         let saved = self.now;
@@ -4301,7 +4348,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             }
         }
         if let Some(target) = pend.attack {
-            if pu.melee_target != Some(target) || pu.blow.is_none() {
+            if self.blow_composer.is_none() && (pu.melee_target != Some(target) || pu.blow.is_none()) {
                 self.unported.push((unit, "cios-bez-szablonu"));
                 pend.attack = None;
             }
@@ -4415,7 +4462,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             side: opposite(unit.side),
             idx: target,
         };
-        let Some(input) = self.units[ix][unit.idx].blow.clone() else {
+        let Some(input) = self.composed_or(false, self.units[ix][unit.idx].blow.clone()) else {
             return;
         };
         let rec = self.strike(st, unit, tref, input, false);
@@ -4435,6 +4482,18 @@ impl<R: RollSource> ProdBody<R> {
     /// Jeden cios `_singleBlow` (pin): łuk względem facing celu, pierwsza para z `engaged`, stan celu z `st`, jeden rzut,
     /// skutki HP/zabicia, wpis do `engaged`. Wspólne dla ciosu głównego i kontrataku. Efekty `_resolveBlowOutcome`
     /// (morale/rout po ciosie) NIE są tu stosowane: zapis w `unported`.
+    /// K5LOOP-WIRING-A: przy [`Self::blow_composer`] wejście składa [`Self::strike`] w chwili ciosu, więc tu zastępczy
+    /// szablon niosący tylko `ranged` (nadpisywany w całości); bez kompozytora szablon adaptera (`None` = brak).
+    fn composed_or(&self, ranged: bool, template: Option<FullBlowInput>) -> Option<FullBlowInput> {
+        if self.blow_composer.is_some() {
+            let mut p = neutral_tower_shot_template();
+            p.ranged = ranged;
+            Some(p)
+        } else {
+            template
+        }
+    }
+
     fn strike(
         &mut self,
         st: &mut TurnSeqState,
@@ -4478,7 +4537,22 @@ impl<R: RollSource> ProdBody<R> {
             &JsVal::Num(dr as f64),
         );
         // Para jest „pierwsza", dopóki jej klucza nie ma w `engaged` (`firstBlow = !this.engaged.has(key)`, :8896).
-        input.first_blow_of_pair = !self.engaged.contains(&(attacker, target));
+        let first_blow = !self.engaged.contains(&(attacker, target));
+        // K5LOOP-WIRING-A: wejście złożone w chwili ciosu (pin `_singleBlow` `:8811-8960`) zamiast szablonu.
+        if let Some(c) = &self.blow_composer {
+            let hit_arc = input.hit_arc;
+            input = c.compose(&BlowSite {
+                attacker,
+                target,
+                ranged: input.ranged,
+                attacker_cell: (aq, ar),
+                target_cell: (dq, dr),
+                target_on_wall: self.units[tix][target.idx].activate.on_wall_walkway,
+                first_blow,
+            });
+            input.hit_arc = hit_arc;
+        }
+        input.first_blow_of_pair = first_blow;
         input.defender_state = DefenderState {
             hp: tc.hp,
             max_hp: input.defender_state.max_hp,
@@ -4940,11 +5014,13 @@ impl<R: RollSource> ProdBody<R> {
         if da.primary_ranged && da.can_shoot {
             return;
         }
-        let Some(cin) = self.units[dix][defender.idx]
-            .counter_blows
-            .get(attacker.idx)
-            .cloned()
-        else {
+        let Some(cin) = self.composed_or(
+            false,
+            self.units[dix][defender.idx]
+                .counter_blows
+                .get(attacker.idx)
+                .cloned(),
+        ) else {
             self.unported.push((defender, "kontratak-bez-szablonu"));
             return;
         };
