@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4555747901385869a85cdc341ccb2184",
-  "bundleSha256": "e0d2588f43d11afd6b7786c9311e9bf4e7b423c6ff9de00d21bf30583d9ba6a4",
-  "bundleBytes": 14983038,
+  "bundleMd5": "48132a8232a9dd8c1aeab6486bfd7152",
+  "bundleSha256": "364d4b237a8e11bb01aa725234ce6ee18b932a56851b2393df761d756d00537a",
+  "bundleBytes": 14983971,
   "sourceSnapshot": {
-    "source": "kod b740a8845 (Haiku r2 + Obrona); FC 0c78176d8",
+    "source": "kod fffd41afe (Haiku r1 + Obrona); FC addabeda4",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 864: gra/src/game/econ-era-rebalance.ts + gra/data/econ-era-rebalance-params.json (nowe), terrain-improvements.ts, economy-upkeep.ts (zywnosc wojska + wartosc karty), citizen-consumption-era.ts, converters.ts i citizen-resource-upkeep.ts (legacy mnoznik - konwertery i utrzymanie bez zmian), karty jednostek, main.ts (hak __econRebalanceMeasure), ai-economy-measure-run.cjs --rebalance. Flaga OFF = gra bez zmian."
+    "FALA 865: nowy gra/src/game/ai-ai-alliance-limit.ts, gra/src/main.ts (bramki limitu w torze, galezi siostr i applyProposalOutcomeImpl), testy ai-ai-alliance-limit-test/audit. Flaga OFF = gra bez zmian."
   ],
   "verification": [
-    "tsc 0, logic 213/213, econ-era-rebalance-test 37/0 (mutanty M8-M10 czerwone), citizen-consumption-era-mult PASS, foundry 159/0, citizen-upkeep-era-mult 681/0, hud 17/18/7, ai-economy-measure-hook 23/23"
+    "tsc 0, logic 213/213, limit-test OK (mutanty 4/4 + wiazania 4/4), alliance-tick 19/19 + mutanty 8/8, zero-trust 43/0"
   ],
   "limits": [
-    "NIE ZMIERZONO: bieg 150 tur OFF/ON (robi orkiestrator); czerwone na bazie rowniez: unit-epoch-cost-test 56/1, citizen-resource-upkeep-test 122/2 (nie z tego tematu); units.json ma tylko epoki 1-3"
+    "NIE ZMIERZONO: bieg 100 tur ON seed 4242 (max sojuszy na civ <=2 w t100); zachowanie OFF vs ON biegiem; przyczyna przekroczen (para 1-19, sciezka siostr) niepotwierdzona na poziomie id traktatu"
   ],
-  "finalControl": "FC PASS-WITH-NOTES: potomek bazy, zarzuty Evaluatora zamkniete, zmiany poza allowlista konieczne i zaakceptowane",
+  "finalControl": "FC PASS-WITH-NOTES: potomek bazy, wszystkie sciezki sojuszu objete wspolnym limitem, bramki zielone, zarzuty 2 i 3 naprawione",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T17:04:17",
+  "hubGeneratedAt": "2026-11-19T17:27:40",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4555747901385869a85cdc341ccb2184",
-      "sizeBytes": 14983038
+      "md5": "48132a8232a9dd8c1aeab6486bfd7152",
+      "sizeBytes": 14983971
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4555747901385869a85cdc341ccb2184",
-      "sizeBytes": 14983038
+      "md5": "48132a8232a9dd8c1aeab6486bfd7152",
+      "sizeBytes": 14983971
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "4555747901385869a85cdc341ccb2184",
-      "sizeBytes": 14983038
+      "md5": "48132a8232a9dd8c1aeab6486bfd7152",
+      "sizeBytes": 14983971
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "4555747901385869a85cdc341ccb2184",
-      "sizeBytes": 14983038
+      "md5": "48132a8232a9dd8c1aeab6486bfd7152",
+      "sizeBytes": 14983971
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "4555747901385869a85cdc341ccb2184",
-      "sizeBytes": 14983038
+      "md5": "48132a8232a9dd8c1aeab6486bfd7152",
+      "sizeBytes": 14983971
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "4555747901385869a85cdc341ccb2184",
-      "sizeBytes": 14983038
+      "md5": "48132a8232a9dd8c1aeab6486bfd7152",
+      "sizeBytes": 14983971
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "4555747901385869a85cdc341ccb2184",
-      "sizeBytes": 14983038
+      "md5": "48132a8232a9dd8c1aeab6486bfd7152",
+      "sizeBytes": 14983971
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "4555747901385869a85cdc341ccb2184",
-      "sizeBytes": 14983038
+      "md5": "48132a8232a9dd8c1aeab6486bfd7152",
+      "sizeBytes": 14983971
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "4555747901385869a85cdc341ccb2184",
-      "sizeBytes": 14983038
+      "md5": "48132a8232a9dd8c1aeab6486bfd7152",
+      "sizeBytes": 14983971
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "4555747901385869a85cdc341ccb2184",
-      "sizeBytes": 14983038
+      "md5": "48132a8232a9dd8c1aeab6486bfd7152",
+      "sizeBytes": 14983971
     }
   ],
-  "md5": "4555747901385869a85cdc341ccb2184",
+  "md5": "48132a8232a9dd8c1aeab6486bfd7152",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
