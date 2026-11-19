@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "8351cef32d2576061c171dd969bfe848",
-  "bundleSha256": "847b7a7914cf37f2c8ba2d3c9b466de64cd86bf93709ede92b078d9755362f4c",
-  "bundleBytes": 14973644,
+  "bundleMd5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+  "bundleSha256": "c2217f8a419bf860cf09ed52df06ae609afcc3fabbfa73c068d58858015e6e91",
+  "bundleBytes": 14980267,
   "sourceSnapshot": {
-    "source": "R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1 (kod 91da14b98, FC 7504d55d4)",
+    "source": "R-WEB-AI-TERRITORY-RACE-FORTS-OUTPOSTS-DESIGN-Q1 r3 (kod 93e5f008f, FC 982c9ded7)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 855: Hak setPlayerAiAutopilotForTest (flaga false domyslnie) w __aiEconomyMeasure: w fazie AI wlasciciel 0 dostaje decyzje AI; pula Pracy przez ownerPracaPool/setOwnerPracaPool (dla AI rownowazna dotychczasowemu aiPracaPoolByOwner); runner --player-ai 1; analizator z wierszem i sekcja Gracz (autopilot); test player-ai-autopilot-test; brak zmian zasad gry przy fladze false"
+    "FALA 858: Odczytowy hak metryk terytorium w __aiEconomyMeasure (forty, posterunki, heksy z miast i z fortow/posterunkow, heksy sporne); runner territory-race-measure-run.cjs (domyslnie --player-ai 1 i --reject-offers 1), opcja --reject-offers w ai-economy-measure-run.cjs (domyslnie 0), analizator territory-race-measure-analyze.cjs, sekcja Pomiar w dokumencie projektu; brak zmian zasad gry"
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; ai-economy-measure-hook-test 23/23; player-ai-autopilot-test 5/5 (mutacje czerwone); parytet flagi OFF z baza: 29/29 wierszy jsonl identyczne; smoke 30 tur seed 4242 z autopilotem: miasta gracza 1/2/4 w t10/20/30, budynki w t30, 0 NaN"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-economy-measure-hook-test 23/23; smoke seed 4242 40 tur z autopilotem gracza: 0 NaN, w t40 5 z 13 cywilizacji AI z fortem lub posterunkiem"
   ],
   "limits": [
-    "Narzedzie pomiarowe, bez efektu w rozgrywce przy fladze false; zmiana puli Pracy w 3 miejscach main.ts wykracza poza litere dispatchu (konieczna, rownowazna dla AI); bieg 150 tur i ekonomia gracza w pozniejszej grze NIE ZMIERZONO; analizator powiela stan ostatniej tury w wierszach kontrolnych bez danych"
+    "Narzedzie pomiarowe bez efektu w rozgrywce; test haka sprawdza tylko ksztalt pol; pomiar 3 ziarna x 150 tur NIE ZMIERZONO (robi orkiestrator); owner != 0 w danych obejmuje placeholdery i panstwa-miasta; +14 linii w ai-economy-measure-run.cjs poza allowlista, zaakceptowane (domyslnie wylaczone)"
   ],
-  "finalControl": "PASS-WITH-NOTES: bramki wlasne zielone, mutacje wykryte, kandydat potomkiem bazy",
+  "finalControl": "PASS-WITH-NOTES: bramki wlasne zielone, kandydat potomkiem bazy",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T00:45:46",
+  "hubGeneratedAt": "2026-11-19T01:36:04",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "8351cef32d2576061c171dd969bfe848",
-      "sizeBytes": 14973644
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "8351cef32d2576061c171dd969bfe848",
-      "sizeBytes": 14973644
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "8351cef32d2576061c171dd969bfe848",
-      "sizeBytes": 14973644
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "8351cef32d2576061c171dd969bfe848",
-      "sizeBytes": 14973644
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "8351cef32d2576061c171dd969bfe848",
-      "sizeBytes": 14973644
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "8351cef32d2576061c171dd969bfe848",
-      "sizeBytes": 14973644
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "8351cef32d2576061c171dd969bfe848",
-      "sizeBytes": 14973644
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "8351cef32d2576061c171dd969bfe848",
-      "sizeBytes": 14973644
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "8351cef32d2576061c171dd969bfe848",
-      "sizeBytes": 14973644
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "8351cef32d2576061c171dd969bfe848",
-      "sizeBytes": 14973644
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     }
   ],
-  "md5": "8351cef32d2576061c171dd969bfe848",
+  "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

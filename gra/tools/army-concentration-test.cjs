@@ -381,8 +381,26 @@ function runTurns(myUnits, cities, map, nTurns) {
   }
   ok(clustersAtEnd !== null && clustersAtEnd < 10,
     `scenario 4: 5 miast z 1 nieszkodliwym barbarzyńcą każde (5 obsłużonych "frontów") -- po 40 turach klastrów=${clustersAtEnd}, MUSI być < 10 (przed naprawą: 10, każda jednostka osobno -- front-merge nigdy nie łączył wolnych jednostek, bo obsłużone zagrożenia liczyły się DODATKOWO jako fronty)`);
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r4): ORYGINALNA asercja (bez zmiany oczekiwania) zachowana OBOK
+  // nowych dowodow nizej. Kolizja z regula wlasciciela: 5 garnizonow zostaje w miastach (5 klastrow) + 5
+  // obroncow domu osobno => liczba klastrow wszystkich jednostek >= 10 -- DECISION_REQUIRED (patrz raport r4).
   ok(clustersAtEnd !== null && clustersAtEnd <= 6,
-    `scenario 4: mutation guard na dokładną wartość zmierzoną po naprawie (klastrów=${clustersAtEnd}, oczekiwane <=6 -- 5 obrońców domu poprawnie zostają osobno + wolne jednostki realnie się łączą)`);
+    `scenario 4 (ORYGINAL): mutation guard na dokładną wartość zmierzoną po naprawie (klastrów=${clustersAtEnd}, oczekiwane <=6 -- 5 obrońców domu poprawnie zostają osobno + wolne jednostki realnie się łączą)`);
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r3): garnizon (najslabsza bojowa na heksie miasta)
+  // nie wchodzi do zbiorki ani scalania, wiec ZOSTAJE w miescie przez cale 40 tur (dowod 1), a
+  // prog scalania jednostek POZA garnizonami wraca do dawnego <=6 (dowod 2) -- zamiast rozluznienia
+  // progu na 9 (ktore ukrywalo, ze garnizony byly liczone jako klastry).
+  const cityHexes4 = new Set(cities4.map(c => `${c.q},${c.r}`));
+  // Wyjatek (zmierzony, NIE zmieniany w tej rundzie): stolica 'cap' wysyla OBIE jednostki ku
+  // barbarzyncy w polu (homeDefenderPool + kworum obrony domu; osobna decyzja wlasciciela
+  // "CZEKA NA RANO"), wiec dowod dotyczy 4 pozostalych miast.
+  const stayingCities4 = cities4.filter(c => c.id !== 'cap' && myUnits4.some(u => u.q === c.q && u.r === c.r)).length;
+  ok(stayingCities4 === cities4.length - 1,
+    `scenario 4: kazde z ${cities4.length - 1} miast (poza stolica z kworum obrony domu) nadal ma jednostke na swoim heksie po 40 turach (garnizon nie dolaczyl do zbiorki): ${stayingCities4}/${cities4.length - 1}`);
+  const fieldUnits4 = myUnits4.filter(u => !cityHexes4.has(`${u.q},${u.r}`));
+  const fieldClusters4 = C.clusterUnitsByProximity(fieldUnits4, C.ARMY_CONCENTRATION_RADIUS).length;
+  ok(fieldClusters4 <= 6,
+    `scenario 4: mutation guard -- klastry jednostek POZA heksami miast=${fieldClusters4}, oczekiwane <=6 (5 obroncow domu osobno + wolne jednostki realnie sie lacza)`);
 }
 
 // ---------------------------------------------------------------------------

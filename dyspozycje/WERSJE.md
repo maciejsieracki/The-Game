@@ -1,3 +1,21 @@
+## ROBOCZA 422310f1 -- 2026-11-18 -- FALA 858: Wyscig o terytorium: hak pomiarowy fortow/posterunkow/terytorium, runner i analizator (tylko pomiar) (testowa)
+
+- Odczytowy hak metryk terytorium w __aiEconomyMeasure (forty, posterunki, heksy z miast i z fortow/posterunkow, heksy sporne); runner territory-race-measure-run.cjs (domyslnie --player-ai 1 i --reject-offers 1), opcja --reject-offers w ai-economy-measure-run.cjs (domyslnie 0), analizator territory-race-measure-analyze.cjs, sekcja Pomiar w dokumencie projektu; brak zmian zasad gry
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-economy-measure-hook-test 23/23; smoke seed 4242 40 tur z autopilotem gracza: 0 NaN, w t40 5 z 13 cywilizacji AI z fortem lub posterunkiem
+- Limity: Narzedzie pomiarowe bez efektu w rozgrywce; test haka sprawdza tylko ksztalt pol; pomiar 3 ziarna x 150 tur NIE ZMIERZONO (robi orkiestrator); owner != 0 w danych obejmuje placeholdery i panstwa-miasta; +14 linii w ai-economy-measure-run.cjs poza allowlista, zaakceptowane (domyslnie wylaczone)
+
+## ROBOCZA 5f4a492f -- 2026-11-18 -- FALA 857: Garnizon: min. 1 jednostka bojowa w kazdym miescie AI takze w pokoju (rezerwacja z priorytetem) (testowa)
+
+- Wspolna funkcja ai-city-garrison.ts; garnizon wykluczony z marszow, koncentracji, front-merge, seeks-army, planHomeWar (poza pula przydzialu), kampanii wodza, all-in, marszu panstw-miast po chatki; garnizonem jest najtansza dostepna jednostka bojowa (nie tylko Wojownik); pierwsza jednostka do pustego miasta ma priorytet zakupu z rezerwa zlota (parametr garnizon_rezerwa_max_miast=3 w ai-params.json); homeDefenderPool bez zmian
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-city-garrison-min-one 38/0; ai-war-city-garrison 21/0; ai-war-defend-home 30/0; siege-relief 23/0; war-limit 48/0; pomiar zywy seed 4242 t60: puste miasta AI 167/193 -> 16/188 (8,5%); koszt utrzymania jednostek AI +14%
+- Limity: CZERWONE 4 oryginalne asercje (ai-home-defense-vs-barbarians 50/2 T2(b),T4(b); army-concentration 56/2 sc.4) - zakladaja marsz jedynej jednostki miasta, sprzeczne z regula wlasciciela, do decyzji ABC; t30 w pokoju nadal 36/96 pustych (brak drewna, ubogie skarbce, bramka NNS AI); sufit rezerwy 3 miasta = zalozenie robocze; garnizon poza pula planHomeWar ogranicza reakcje domowa przed barbarzyncami (decyzja o homeDefenderPool otwarta)
+
+## ROBOCZA e6bd8009 -- 2026-11-18 -- FALA 856: Regula wojen: maks. 1 wojna epoki + 1 naturalna per cywilizacja (za flaga, wylaczona) (testowa)
+
+- Nowy modul diplomacy-war-limit.ts (warLimitAllows, typ wojny epoki/naturalna) i parametry diplomacy-war-limit-params.json; wpiecie w ai.ts P4 oraz bramke wypowiedzen/kaskady sojuszniczej/wojny epoki w main.ts; typWojny w metadanych pary; analizator wspolbieznosci wojen; flaga limitWojenAktywny=false = zachowanie gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplomacy-test 149/0; war-limit unit 48/0 (mutacje czerwone); analyze 17/0; alliance-strength 33/0; zero-trust 43/0; ai-ai-alliance-tick 19/19 + mutanty 8/8; coalition zielone; smoke 40 tur seed 4242 ON: maks. 1 wojna na cywilizacje
+- Limity: Flaga wylaczona: reguly nie ma w rozgrywce do czasu pomiaru na >=3 ziarnach; wpiecie main.ts bez testu przegladarkowego (gracz jako deklarujacy, kaskada); ABC: wojny gracza jako celu w limicie epoki, panstwa-miasta w pomiarze
+
 ## ROBOCZA 8351cef3 -- 2026-11-18 -- FALA 855: Pomiar ekonomii gracza: tryb gracz sterowany przez AI (tylko biegi pomiarowe, domyslnie wylaczony) (testowa)
 
 - Hak setPlayerAiAutopilotForTest (flaga false domyslnie) w __aiEconomyMeasure: w fazie AI wlasciciel 0 dostaje decyzje AI; pula Pracy przez ownerPracaPool/setOwnerPracaPool (dla AI rownowazna dotychczasowemu aiPracaPoolByOwner); runner --player-ai 1; analizator z wierszem i sekcja Gracz (autopilot); test player-ai-autopilot-test; brak zmian zasad gry przy fladze false

@@ -23,7 +23,7 @@ const os = require('os');
 const path = require('path');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
 
-const REC_LINE = 'if (atWar || threatened) out.add(city.id);';
+const REC_LINE = 'if (cityNeedsGarrison(city, myUnits, city.ownerId)) out.add(city.id);';
 const PINNED_LINE = 'let planned = eligible.filter(u => !keep.has(u.id) && !garrisonIds.has(u.id));';
 const WORK = fs.mkdtempSync(path.join(process.env.GARRISON_TMP || os.tmpdir(), 'wcg-'));
 
@@ -48,7 +48,7 @@ export { hexDistance } from ${JSON.stringify(path.resolve(__dirname, '..', 'src'
         if (mutateRecruit) {
           if (text.split(REC_LINE).length !== 2) throw new Error('mutacja: nie znaleziono linii out.add garnizonu');
           // mutant: rekrutacja garnizonow pustych miast wylaczona (zawsze pusty zbior)
-          text = text.replace(REC_LINE, 'void atWar; void threatened;');
+          text = text.replace(REC_LINE, 'void myUnits;');
         }
         return { contents: text, loader: 'ts' };
       });
@@ -226,14 +226,22 @@ const movesOf = (cmds, id) => cmds.filter(c => c.type === 'move' && c.unitId ===
     ok(JSON.stringify(cmds) === JSON.stringify(decideWith(GOOD, us)), 'G6: determinizm rekrutacji garnizonow');
     const peace = decideWith(GOOD, [bW], noWar);
     const peaceBase = decideWith(MUTR, [bW], noWar);
-    ok(JSON.stringify(buildsOf(peace)) === JSON.stringify(buildsOf(peaceBase)),
-      'G7: w pokoju bez zagrozenia rekrutacja garnizonow nie zmienia polecen build');
+    // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (korekta kontraktu G7/G9): garnizon min. 1 bojowa
+    // w KAZDYM miescie AI, takze w pokoju (wymog wlasciciela 2026-11-18). Puste miasta A i C
+    // dostaja garnizon w pokoju; miasto B z jednostka bojowa nie dostaje dodatkowego.
+    // Uwaga: przy pustym data.units zwykla produkcja tez zwraca Wojownika, wiec ten test
+    // potwierdza jedynie priorytet (indeks 0); dyskryminujacy dowod rekrutacji w pokoju na
+    // realnym units.json jest w tools/ai-city-garrison-min-one-test.cjs.
+    const peaceIdxA = buildsOf(peace).findIndex(c => c.cityId === CITY_A.id);
+    ok(peaceIdxA === 0, `G7: w pokoju puste miasto A dostaje garnizon z priorytetem (idx ${peaceIdxA})`);
+    ok(cntW(peace, CITY_B.id) === cntW(peaceBase, CITY_B.id),
+      'G7b: w pokoju miasto B z jednostka bojowa nie dostaje dodatkowego garnizonu');
     const barb = { id: 'barb1', ownerId: -1, typeId: 'Wojownik', category: 'miecznik', q: CITY_A.q + 3, r: CITY_A.r, ruch: 2, ruchLeft: 2 };
     const threat = decideWith(GOOD, [bW, barb], noWar);
     const threatBase = decideWith(MUTR, [bW, barb], noWar);
     const firstA = buildsOf(threat).findIndex(c => c.cityId === CITY_A.id);
     ok(firstA === 0 && cntW(threat, CITY_A.id) === 1, `G8: zagrozone puste miasto A (wrog w zasiegu) dostaje garnizon z priorytetem w pokoju z cywilizacjami (idx ${firstA})`);
-    ok(cntW(threat, CITY_C.id) === cntW(threatBase, CITY_C.id), 'G9: niezagrozone miasto C w pokoju nie dostaje garnizonu');
+    ok(cntW(threat, CITY_C.id) === 1, `G9: niezagrozone puste miasto C w pokoju dostaje garnizon (${cntW(threat, CITY_C.id)})`);
   }
   // G10 (r4): realny data/units.json -- zastapienie produkcji jednostki bojowej garnizonem
   // (jeden build na miasto, bez fallbackIds z Wojownikiem). Dowod na danych, nie na pustej tablicy.

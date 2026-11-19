@@ -27,6 +27,7 @@ import {
 import { armyFieldPower, type UnitPowerInput } from './unit-power';
 import { estimateUnitCombatStrength } from './siegeAi';
 import { isHomeWarDefenseEnabled, planHomeWar } from './ai-war-home-defense';
+import { cityNeedsGarrison, garrisonUnitIdSet, getCityGarrisonUnitIds, rankGarrisonUnitIds } from './ai-city-garrison';
 import {
   planSiegeRelief,
   SIEGE_RELIEF_DEFAULT_MIN_ADVANTAGE,
@@ -183,6 +184,10 @@ export interface AICmdBuild {
    * Gdy brak/puste — zero regresji (dokładnie jak dziś, jedna próba).
    */
   fallbackIds?: readonly string[];
+  /** R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r4): polecenie rekrutacji garnizonu pustego miasta (priorytet wariantu C). */
+  garrison?: true;
+  /** r4: wszystkie typy garnizonu (najtanszy pierwszy) -- kazdy z nich ma priorytet wariantu C, gdy miasto jest puste. */
+  garrisonIds?: readonly string[];
 }
 
 /**
@@ -1944,6 +1949,25 @@ function applyArmyCompositionProgram(
 export const EMPTY_CITY_GARRISON_UNIT_ID = 'Wojownik';
 
 /**
+ * R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r4): typ jednostki garnizonu pustego miasta. Z bramka
+ * produkcji (`opts.isProductionAllowed`) = najtansza dostepna i oplacalna (surowce) jednostka bojowa
+ * (Wojownik jest dostepny tylko w Kamieniu -- diagnoza r4); bez bramki (stare wywolania/testy) = Wojownik.
+ * null = brak mozliwego garnizonu w tym miescie w tej turze.
+ */
+/**
+ * Wszystkie kwalifikujace sie typy garnizonu (od najtanszego) -- kolejne sluza jako fallback przy
+ * wykonaniu, gdy pula surowcow wlasciciela zostala w tej turze zuzyta przez wczesniejsze miasta.
+ */
+function garrisonUnitCandidatesForCity(cityId: string, data: GameData, opts: AITurnOpts): string[] {
+  if (!opts.isProductionAllowed) return [EMPTY_CITY_GARRISON_UNIT_ID];
+  return rankGarrisonUnitIds(
+    data.units,
+    id => opts.isProductionAllowed!(cityId, id),
+    id => (opts.canAfford ? opts.canAfford(cityId, id) : true),
+  );
+}
+
+/**
  * R-WEB-AI-WAR-CITY-GARRISON-ONE-REST-TO-GENERAL-Q1 (r3): ktore miasta AI maja dostac rekrutowany garnizon.
  * Warunek: AI w wojnie z cywilizacja (atWarWithCiv / cele wojny) ALBO wrog (aiCanEngageOwner) w zasiegu
  * `ekspansja_zagroz_zasieg` od miasta, ORAZ brak w miescie jakiejkolwiek jednostki wojskowej (cywile,
@@ -1953,21 +1977,18 @@ export const EMPTY_CITY_GARRISON_UNIT_ID = 'Wojownik';
 export function emptyCityGarrisonRecruitIds(
   myCities: readonly AICity[],
   myUnits: readonly RuntimeUnit[],
-  enemyUnitsAll: readonly RuntimeUnit[],
-  opts: AITurnOpts,
-  data: GameData,
+  _enemyUnitsAll: readonly RuntimeUnit[],
+  _opts: AITurnOpts,
+  _data: GameData,
 ): Set<string> {
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1: stały garnizon min. 1 jednostki bojowej w KAŻDYM
+  // mieście AI, także w pokoju (wymóg właściciela 2026-11-18). Rekrutacja dotyczy każdego
+  // miasta bez kwalifikującej się jednostki bojowej (cywile/zwiadowcy/wódz się nie liczą).
+  // Wcześniejszy warunek wojna/zagrożenie został zniesiony; ochronę przed "pustym miastem"
+  // w wojnie zachowuje ta sama reguła, tylko stała.
   const out = new Set<string>();
-  const atWar = opts.atWarWithCiv === true
-    || (opts.warAllIn !== undefined && opts.warAllIn.targets.length > 0);
-  const threatRange = getAiParam(data, 'ekspansja_zagroz_zasieg', AI_THREAT_RANGE_DEFAULT);
-  const hostile = enemyUnitsAll.filter(u => aiCanEngageOwner(opts, u.ownerId));
   for (const city of myCities) {
-    const hasMilitary = myUnits.some(u => u.q === city.q && u.r === city.r
-      && !isCivilianUnit(u) && !isScoutUnit(u) && u.isGeneral !== true && u.embarked !== true);
-    if (hasMilitary) continue;
-    const threatened = hostile.some(eu => hexDistance(city.q, city.r, eu.q, eu.r) <= threatRange);
-    if (atWar || threatened) out.add(city.id);
+    if (cityNeedsGarrison(city, myUnits, city.ownerId)) out.add(city.id);
   }
   return out;
 }
@@ -3744,6 +3765,8 @@ function applyHomeWarPriorities(
     hasContactWith: o => aiHasContactWith(opts, o),
     lockedUnitIds: locked,
     isOwnTerritory,
+    garrisonUnitIds: garrisonUnitIdSet(
+      getCityGarrisonUnitIds(myCities, units, playerId, u => aiUnitCombatStrength(u, data))),
     isRelevantSiege: cityId => endsThreat(cityById.get(cityId)),
     strengthOf: u => aiUnitCombatStrength(u, data),
     isFieldUnit: isField,
@@ -3835,14 +3858,11 @@ function applyArmySeeksEnemyArmy(
   const defaultMove = getAiParam(data, 'ai_wojna_armia_szuka_armii_ruch_domyslny', ARMY_SEEKS_ARMY_DEFAULTS.defaultMove);
   const toSeek = (u: RuntimeUnit): SeekUnit => ({ id: u.id, q: u.q, r: u.r, ownerId: u.ownerId, ruch: u.ruch ?? defaultMove });
   // Armia = jednostki bojowe poza garnizonem (najslabsza jednostka na heksie wlasnego miasta zostaje).
-  const cityHexes = new Set(myCities.map(c => keyOf(c.q, c.r)));
   const mine = units.filter(u => u.ownerId === playerId && isField(u));
-  const garrison = new Set<string>();
-  for (const k of cityHexes) {
-    const here = mine.filter(u => keyOf(u.q, u.r) === k)
-      .sort((a, b) => aiUnitCombatStrength(a, data) - aiUnitCombatStrength(b, data) || (a.id < b.id ? -1 : 1));
-    if (here.length > 0) garrison.add(here[0]!.id);
-  }
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1: garnizon = wspólna funkcja (ai-city-garrison.ts).
+  const garrison = garrisonUnitIdSet(
+    getCityGarrisonUnitIds(myCities, units, playerId, u => aiUnitCombatStrength(u, data)),
+  );
   const locked = new Set<string>();
   for (const c of commands) if (c.type === 'attack') locked.add(c.unitId);
   const byId = new Map(units.map(u => [u.id, u] as const));
@@ -4049,14 +4069,16 @@ function decideAITurnCore(
       city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, difficultyParams,
     );
     const isGarrisonCity = garrisonRecruitCityIds.has(city.id);
-    if (isGarrisonCity) {
-      const rest = buildId === null ? [] : [buildId, ...(opts.lastProductionFallbackIds ?? [])];
+    const garrisonCands = isGarrisonCity ? garrisonUnitCandidatesForCity(city.id, data, opts) : [];
+    const garrisonUnitId = garrisonCands[0] ?? null;
+    if (garrisonUnitId !== null) {
+      const rest = [...garrisonCands.slice(1), ...(buildId === null ? [] : [buildId, ...(opts.lastProductionFallbackIds ?? [])])];
       garrisonCmds.push({
-        type: 'build', cityId: city.id, buildingId: EMPTY_CITY_GARRISON_UNIT_ID,
-        fallbackIds: rest.filter(id => id !== EMPTY_CITY_GARRISON_UNIT_ID),
+        type: 'build', cityId: city.id, buildingId: garrisonUnitId, garrison: true, garrisonIds: garrisonCands,
+        fallbackIds: rest.filter(id => id !== garrisonUnitId),
       });
       // Gdy wybrana produkcja to jednostka bojowa, garnizon ja zastepuje (jeden zakup wojska na miasto).
-      if (buildId === null || buildId === EMPTY_CITY_GARRISON_UNIT_ID
+      if (buildId === null || buildId === garrisonUnitId
         || data.units.some(u => u.Jednostka === buildId && armyClassOfUnit(u) !== null)) continue;
     }
     if (buildId !== null) {
@@ -4252,10 +4274,16 @@ function decideAITurnCore(
       )
       .map(u => u.id),
   );
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1: garnizon miasta (min. 1 bojowa, także w pokoju)
+  // NIE wchodzi do zbiórki/scalania (planArmyConcentration, planArmyFrontMerge).
+  const cityGarrisonUnitIds = garrisonUnitIdSet(
+    getCityGarrisonUnitIds(myCities, myUnits, playerId, u => aiUnitCombatStrength(u, data)),
+  );
   const concentrationExcludedUnitIds = new Set<string>([
     ...homeDefenderAssignments.keys(),
     ...activeFlankingUnitIds,
     ...activeWaveUnitIds,
+    ...cityGarrisonUnitIds,
   ]);
   // R-WEB-ARMY-CONSOLIDATION-Q1: w POKOJU (flaga ON) jedyny mechanizm zbiorki to zbiorka w
   // stolicy nizej; lokalna planArmyConcentration i front-merge nie dzialaja (jeden punkt
@@ -4415,6 +4443,7 @@ function decideAITurnCore(
         && !homeDefenderAssignments.has(u.id)
         && !activeFlankingUnitIds.has(u.id)
         && !activeWaveUnitIds.has(u.id)
+        && !cityGarrisonUnitIds.has(u.id)
         && !combatEngagedIds.has(u.id)
         && isEligibleForArmyConcentration(u, playerId));
       if (candidates.length > 0) {
@@ -4562,6 +4591,12 @@ function decideAITurnCore(
       handledThreatIds.add(adjacentEnemy.id);
       continue;
     }
+
+    // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r3, diagnoza pomiaru: w pokoju garnizon odchodzil
+    // po wioski/cele/patrol/idle -- 437 odejsc w 60 turach): stały garnizon miasta po ataku
+    // sasiedniego wroga (wyzej) NIE opuszcza miasta -- ani po wioske, ani na marsz, ani na patrol.
+    // Wyjatek: przydzial obroncy domu (homeDefenderPool -- decyzja wlasciciela "CZEKA NA RANO").
+    if (cityGarrisonUnitIds.has(unit.id) && !homeDefenderAssignments.has(unit.id)) continue;
 
     // 4b: adjacent enemy city -> move onto it (engine handles capture)
     // CYWIL NIE ZDOBYWA (P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1, obrona
@@ -4867,18 +4902,16 @@ function applyWarAllInCapitalToCommands(
   // jednostek idzie do marszu/zbiorki jak dotad. Miasta puste NIE sa tu uzupelniane (proba
   // przesuniecia najblizszej jednostki ustawiala ja poza obroncy domu -- ai-war-defend-home-test
   // gubil miasto; patrz runda 1 raportu). Rekrutacja NIE jest zmieniana.
-  const compareIds = (a: RuntimeUnit, b: RuntimeUnit): number => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r3): garnizon = wspolna funkcja (ai-city-garrison.ts),
+  // ta sama co w koncentracji/front-merge/marszu "armia szuka armii" -- najslabsza kwalifikujaca sie
+  // jednostka na heksie miasta, takze gdy jest jedyna (zasada wlasciciela: garnizon nie dolacza do
+  // armii). Jednostka z rozkazem w `keep` (atak/wejscie na wrogie miasto/obronca domu) go zachowuje.
   const garrisonIds = new Set<string>();
-  for (const city of cities.filter(c => c.ownerId === playerId).sort(
-    (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+  for (const id of garrisonUnitIdSet(
+    getCityGarrisonUnitIds(cities.filter(c => c.ownerId === playerId), myUnits, playerId,
+      u => aiUnitCombatStrength(u, data)),
   )) {
-    const atCity = myUnits.filter(u => u.q === city.q && u.r === city.r && !keep.has(u.id)
-      && !isCivilianUnit(u) && !isScoutUnit(u) && u.isGeneral !== true && u.embarked !== true);
-    // Jednostka bojowa bez pozostalego ruchu (ruchLeft <= 0) i tak zostaje w miescie -- ono juz
-    // ma garnizon; druga jednostka nie jest zatrzymywana bez potrzeby.
-    if (atCity.some(u => u.ruchLeft <= 0)) continue;
-    const stayers = atCity.filter(u => eligibleIds.has(u.id)).sort(compareIds);
-    if (stayers.length > 0) garrisonIds.add(stayers[0]!.id);
+    if (!keep.has(id)) garrisonIds.add(id);
   }
   let planned = eligible.filter(u => !keep.has(u.id) && !garrisonIds.has(u.id));
   const plannedIds = new Set(planned.map(u => u.id));
@@ -5445,6 +5478,12 @@ function appendAiGeneralCampaignOrders(
   const general = campaign.generalUnitId
     ? myUnits.find(unit => unit.id === campaign.generalUnitId && unit.isGeneral === true)
     : undefined;
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r3): garnizon miasta NIE idzie do wodza (zbiorka
+  // recruiting/gathering, rezerwa drugiego wodza, rozwijanie stosow) -- zostaje w miescie.
+  const campaignGarrisonIds = garrisonUnitIdSet(
+    getCityGarrisonUnitIds(cities.filter(c => c.ownerId === playerId), myUnits, playerId,
+      u => aiUnitCombatStrength(u, data)),
+  );
   if (campaign.stage === 'recruiting' || campaign.stage === 'gathering') {
     const rallyQ = general?.q ?? campaign.rallyQ;
     const rallyR = general?.r ?? campaign.rallyR;
@@ -5457,6 +5496,7 @@ function appendAiGeneralCampaignOrders(
       .filter(l => !blockedIds.includes(l.id));
     for (const unit of myUnits) {
       if (!isEligibleForArmyConcentration(unit, playerId)) continue;
+      if (campaignGarrisonIds.has(unit.id)) continue;
       // Jeden wodz -> bez wyboru (bez kosztu liczenia trasy), zachowanie jak dotad.
       const choice = leaders.length > 1
         ? pickNearestAvailableLeader(unit, leaders, leaderPathLengthFor(unit, map, units))
@@ -5505,6 +5545,7 @@ function appendAiGeneralCampaignOrders(
         for (const unit of myUnits) {
           if (unit.isGeneral === true || barbDefense.defenderIds.has(unit.id)) continue;
           if (!isEligibleForArmyConcentration(unit, playerId)) continue;
+          if (campaignGarrisonIds.has(unit.id)) continue;
           const pathLen = leaderPathLengthFor(unit, map, units);
           const dMain = unit.q === general.q && unit.r === general.r ? 0 : pathLen(unit, general) ?? Infinity;
           let best: RuntimeUnit | null = null;
@@ -5549,6 +5590,7 @@ function appendAiGeneralCampaignOrders(
     const stackGroups = new Map<string, RuntimeUnit[]>();
     for (const unit of myUnits) {
       if (!isEligibleForArmyConcentration(unit, playerId)) continue;
+      if (campaignGarrisonIds.has(unit.id)) continue;
       const key = keyOf(unit.q, unit.r);
       const group = stackGroups.get(key) ?? [];
       group.push(unit);
@@ -5602,10 +5644,24 @@ function decideDefensiveCopyTurn(
   // potem PEŁNA kolejka jak zwykłe miasto AI (budynki gospodarcze, Koszary, jednostki);
   // bez ekspansji (Osadnik/foundCity zablokowane w chooseCityProduction i tutaj nigdzie
   // nie emitujemy foundCity). Zero bonusu: identyczna funkcja co dla zwykłego AI.
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1: miasta-państwa (defensiveCopy) też mają stały
+  // garnizon min. 1 bojowej; ta sama reguła i ten sam wybór miast co w decideAITurn.
+  const dcGarrisonRecruitCityIds = emptyCityGarrisonRecruitIds(myCities, myUnits, [], opts, data);
   for (const city of myCities) {
     const buildId = chooseCityProduction(
       city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, difficultyParams,
     );
+    const dcGarrisonCands = dcGarrisonRecruitCityIds.has(city.id) ? garrisonUnitCandidatesForCity(city.id, data, opts) : [];
+    const dcGarrisonUnitId = dcGarrisonCands[0] ?? null;
+    if (dcGarrisonUnitId !== null) {
+      const rest = [...dcGarrisonCands.slice(1), ...(buildId === null ? [] : [buildId, ...(opts.lastProductionFallbackIds ?? [])])];
+      commands.push({
+        type: 'build', cityId: city.id, buildingId: dcGarrisonUnitId, garrison: true, garrisonIds: dcGarrisonCands,
+        fallbackIds: rest.filter(id => id !== dcGarrisonUnitId),
+      });
+      if (buildId === null || buildId === dcGarrisonUnitId
+        || data.units.some(u => u.Jednostka === buildId && armyClassOfUnit(u) !== null)) continue;
+    }
     if (buildId !== null) {
       // P-AI-MOC-GAP: dołącz fallbacki (odczyt NATYCHMIAST — kolejne miasto w tej
       // samej pętli nadpisze opts.lastProductionFallbackIds przy następnym wywołaniu).
@@ -5769,8 +5825,12 @@ function decideDefensiveCopyTurn(
   // GOAL 2 nadal realnie działa dla jednostek, które inaczej szłyby po chatkę/patrolować dom
   // (patrz test C3 w city-state-offensive-normal-easy-test.cjs, scenariusz bez widocznego wroga).
   const canConcentratePm = canConcentrateArmy(opts);
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1: garnizony miast nie wchodzą do zbiórki ani scalania.
+  const csGarrisonUnitIds = garrisonUnitIdSet(
+    getCityGarrisonUnitIds(myCities, myUnits, playerId, u => aiUnitCombatStrength(u, data)),
+  );
   const csConcentration = canConcentratePm
-    ? planArmyConcentration(playerId, myUnits, {})
+    ? planArmyConcentration(playerId, myUnits, { excludedUnitIds: csGarrisonUnitIds })
     : null;
   const csConcentrationMoveTarget = new Map<string, { q: number; r: number }>();
   if (csConcentration !== null) {
@@ -5787,6 +5847,7 @@ function decideDefensiveCopyTurn(
     const csFrontMergeExcluded = new Set<string>([
       ...(csConcentration?.unitIds ?? []),
       ...csCombatEngagedUnitIds,
+      ...csGarrisonUnitIds,
     ]);
     const csThreatFrontCount = countThreatFronts(nonSisterEnemyUnits, myCities, myUnits, map);
     const csFrontMerge = planArmyFrontMerge(playerId, myUnits, {
@@ -5854,6 +5915,8 @@ function decideDefensiveCopyTurn(
     if (
       reinforcementsSentThisTurn < RESUP_MAX_PER_TURN
       && sisterCityStates.length > 0
+      // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r3): stały garnizon miasta nie jest posiłkiem.
+      && !csGarrisonUnitIds.has(unit.id)
     ) {
       const homeCityForResup = nearest(unit.q, unit.r, myCities, c => c.q, c => c.r);
       const atHome = homeCityForResup !== undefined
@@ -5893,6 +5956,7 @@ function decideDefensiveCopyTurn(
     // Normal/Easy (offensiveSupport=false): legacy defend-only — ten blok pomijany.
     if (
       offensiveSupport
+      && !csGarrisonUnitIds.has(unit.id)
       && offensiveMovesThisTurn < maxOffensiveMovesPerTurn
       && (nonSisterEnemyUnits.length > 0 || enemyCitiesAtWar.length > 0)
     ) {
@@ -5931,6 +5995,11 @@ function decideDefensiveCopyTurn(
         continue;
       }
     }
+
+    // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r4): staly garnizon miasta-panstwa nie zbiera chatek ani
+    // nie patroluje poza miastem (diagnoza r4: 26 z 79 odejsc garnizonu w 60 turach = marsz po chatke).
+    // Pilniejsze reakcje (atak, riposta domowa, obrona) sa wyzej; garnizon zostaje w miescie.
+    if (csGarrisonUnitIds.has(unit.id)) continue;
 
     // CHATKI: brak pilniejszego zadania powyżej (atak/riposta domowa/posiłek dla siostry/
     // marsz ofensywny) — jednostka MP idzie po najbliższą wolną chatkę WE WŁASNYM terytorium,
@@ -6513,6 +6582,12 @@ export interface RelacjaWejscie {
   blokSojusznicyAI?: ReadonlyArray<BlokSojusznik>;
   /** R-WEB-DIPLO-WAR-BY-ALLIANCE-STRENGTH-Q1: aktywni sojusznicy partnera — składnik bloku partnera. */
   blokSojusznicyPartnera?: ReadonlyArray<BlokSojusznik>;
+  /**
+   * R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: true = limit wojen (flaga ON) zabrania AI otworzyć
+   * kolejną wojnę naturalną z tym partnerem (atakujący lub obrońca ma już 1 wojnę naturalną).
+   * Bez pola / false = brak blokady (parytet, flaga OFF). Liczy main.ts (warLimitPermits).
+   */
+  limitWojenNaturalnaZablokowana?: boolean;
   /**
    * R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r3, R2): moc POWER (power-objective.ts) AI i partnera — wejście wzoru
    * „P·r / P/r" (peacePwPointsByPowerRatio). Bez któregokolwiek pola AI liczy cenę pokoju jak dotąd (samo P).
@@ -7617,6 +7692,7 @@ export function decideAIDiplomacy(
       !rel.peaceLocked &&
       !rel.hasNapTreaty &&
       !earlyNoMajorWarWindow &&
+      !rel.limitWojenNaturalnaZablokowana &&
       stance.willingnessWar > 0 &&
       rel.relation.zaufanie < PROG_WOJNA_ZAUFANIE &&
       aiMaPrzewageMilitarna &&

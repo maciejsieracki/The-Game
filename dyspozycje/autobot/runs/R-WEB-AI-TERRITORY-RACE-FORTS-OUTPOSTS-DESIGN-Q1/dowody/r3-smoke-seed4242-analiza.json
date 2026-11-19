@@ -1,0 +1,139 @@
+{
+  "seed": 4242,
+  "step": 10,
+  "tabela": [
+    {
+      "tura": 10,
+      "heksySporneOgolem": 930,
+      "aiZMiastem": 41,
+      "miasta": 41,
+      "hexy": 2531,
+      "zMiast": 2531,
+      "zFortow": 0,
+      "forty": 0,
+      "posterunki": 0,
+      "aiZFortem": 0
+    },
+    {
+      "tura": 20,
+      "heksySporneOgolem": 974,
+      "aiZMiastem": 41,
+      "miasta": 41,
+      "hexy": 2590,
+      "zMiast": 2590,
+      "zFortow": 0,
+      "forty": 0,
+      "posterunki": 0,
+      "aiZFortem": 0
+    },
+    {
+      "tura": 30,
+      "heksySporneOgolem": 267,
+      "aiZMiastem": 15,
+      "miasta": 91,
+      "hexy": 4276,
+      "zMiast": 4276,
+      "zFortow": 0,
+      "forty": 0,
+      "posterunki": 0,
+      "aiZFortem": 0
+    },
+    {
+      "tura": 40,
+      "heksySporneOgolem": 1039,
+      "aiZMiastem": 15,
+      "miasta": 150,
+      "hexy": 6741,
+      "zMiast": 6487,
+      "zFortow": 254,
+      "forty": 5,
+      "posterunki": 2,
+      "aiZFortem": 5
+    }
+  ],
+  "tempoPerAI": [
+    {
+      "owner": 13,
+      "delta": 697,
+      "perTura": 23.23
+    },
+    {
+      "owner": 19,
+      "delta": 655,
+      "perTura": 21.83
+    },
+    {
+      "owner": 22,
+      "delta": 524,
+      "perTura": 17.47
+    },
+    {
+      "owner": 37,
+      "delta": 471,
+      "perTura": 15.7
+    },
+    {
+      "owner": 10,
+      "delta": 437,
+      "perTura": 14.57
+    },
+    {
+      "owner": 31,
+      "delta": 434,
+      "perTura": 14.47
+    },
+    {
+      "owner": 4,
+      "delta": 421,
+      "perTura": 14.03
+    },
+    {
+      "owner": 7,
+      "delta": 418,
+      "perTura": 13.93
+    },
+    {
+      "owner": 1,
+      "delta": 376,
+      "perTura": 12.53
+    },
+    {
+      "owner": 34,
+      "delta": 344,
+      "perTura": 11.47
+    },
+    {
+      "owner": 25,
+      "delta": 322,
+      "perTura": 10.73
+    },
+    {
+      "owner": 28,
+      "delta": 272,
+      "perTura": 9.07
+    },
+    {
+      "owner": 16,
+      "delta": 251,
+      "perTura": 8.37
+    },
+    {
+      "owner": 41,
+      "delta": 151,
+      "perTura": 5.03
+    },
+    {
+      "owner": 40,
+      "delta": -3,
+      "perTura": -0.1
+    }
+  ],
+  "pierwszyFortPerAI": {
+    "10": 37,
+    "13": 34,
+    "19": 32,
+    "22": 35,
+    "37": 40
+  },
+  "nanProblems": 0
+}

@@ -1,26 +1,30 @@
-STATUS: PASS-WITH-NOTES
-DOMAIN: GAME (narzędzia pomiarowe, bez zmian gra/src)
+STATUS: INTEGRATION_PENDING
+DOMAIN: GAME (narzedzia pomiarowe; bez zmian gra/src)
 TEMAT: R-WEB-MEASURE-RUNNERS-REJECT-AI-OFFERS-Q1
-GOAL: wspólne odrzucanie wiszących ofert AI->gracz przed sprawdzeniem canEnd w runnerach pomiarowych ekonomii (i wrapperach econ/alliance); liczniki potwierdzone vs próby rozdzielone.
-ZMIANY-COMMIT: baza 12da9f405. Nowe: gra/tools/measure-reject-offers.cjs (rejectAwaitingAiOffers -> {attempts, confirmed}), gra/tools/measure-reject-offers-test.cjs. Zmienione: gra/tools/diplomacy-harder-measure-run.cjs (używa wspólnej funkcji, to samo wywołania reject), gra/tools/ai-economy-measure-run.cjs (odrzucenie przed canEnd, druga próba gdy canEnd=false, liczniki aiOffersRejected / aiOffersRejectAttempts w ctxState, summary i wierszu jsonl). ai-ai-alliance-measure-run.cjs i econ-measure-run.cjs nie wymagały zmian (delegują do ai-economy-measure-run.cjs). SHA: patrz pole sha w odpowiedzi orkiestratorowi.
-TESTY:
-- tsc --noEmit: exit 0
+GOAL: Runner ai-economy nie staje na wiszacej ofercie AI->gracz (seed 1234, t18); jedna wspolna implementacja odrzucania w measure-reject-offers.cjs; rozdzial PROB (aiOffersRejectAttempts) od POTWIERDZONYCH (aiOffersRejected).
+ZMIANY/COMMIT: runda 2/5. Baza kandydat 11eb45c7d (r1); merge origin/main 59d04b65c; konflikt w gra/tools/ai-economy-measure-run.cjs rozwiazany: usunieta lokalna kopia rejectAwaitingAiOffers (JEDYNA implementacja = measure-reject-offers.cjs); --reject-offers domyslnie 1 (0 = wylaczone); offersRejectedTotal = ctxState.aiOffersRejected (rowne potwierdzonym); odrzucanie (pierwszy przebieg; drugi tylko gdy !canEnd) bramkowane REJECT_OFFERS. SHA: patrz wynik StructuredOutput.
+TESTY (liczby z surowego wyjscia):
+- tsc --noEmit: bez bledow (pusty wynik)
 - logic-test: LOGIC OK (213/213)
 - tech-tree-test: 20 pass, 0 fail
 - research-test: 33/33
 - unit-replace-test: 21/21
 - combat-test: 6/6
-- ai-economy-measure-hook-test: 23/23 zielone
+- ai-economy-measure-hook-test: 23/23
 - diplomacy-harder-measure-hook-test: 15 zielonych, 0 czerwonych
-- measure-reject-offers-test (nowy): 8 OK, 0 FAIL; mutacja kopii (potwierdzenie zawsze =1): 7 OK, 1 FAIL (asercja 4 "proba bez skutku: confirmed=0", confirmed=1) -> czerwona
-- Seed 1234, ai-economy, PRZED (runner z 12da9f405): cannot-end w t18 (reason cannot-end, tura 18, brak bitew/modali, pending 0)
-- Seed 1234, ai-economy, PO: t18 przeszła; dojście do t40 bez stop (stop=null), 39 wierszy jsonl (t2..t40); jedyny wiersz z ofertą: t19 aiOffersRejected=1, aiOffersRejectAttempts=1
-- Parytet seed 4242, 20 tur, PRZED vs PO: 19 wierszy, 0 różnic po pominięciu pól czasowych (sec, load1) i pól ofert; oferty 0/0 we wszystkich turach
-BLOKADY: brak. Uwagi: bundle zbudowany poza repo (scratchpad, vite build --outDir); npm ci --ignore-scripts wykonany w gra/ (node_modules, nieśledzone). Nie usunięto node_modules ani katalogów scratchpad (rm zakazane przez dispatch) — sprzątanie po stronie orkiestratora.
-RUNDY: 1/5
-NASTĘPNY KROK: Evaluator (zgodność ze spec, mutacja, parytet); decyzja pomiarowa „pasywny gracz odrzuca oferty” pozostaje do ABC właściciela (nie zmieniana).
-UWAGI-DLA-ORKIESTRATORA:
-- Semantyka zmieniona w diplomacy-harder-measure-run.cjs: pole aiOffersRejected = potwierdzone odrzucenia (wcześniej: liczba prób). Zachowanie gry w runnerze bez zmian; nowe pole aiOffersRejectAttempts.
-- W ai-economy-measure-run.cjs: liczniki aiOffersRejected/aiOffersRejectAttempts dopisane do COUNTER_KEYS (nowe pola w state/slotCounters, dla starych slotów startują od 0).
-- Pozostały poza zakresem: ewentualna dalsza analiza analizatorów (econ-measure-analyze.cjs) nie czyta nowych pól; nie zmieniano.
+- ai-ai-alliance-measure-hook-test: WYNIK: ZIELONY
+- measure-reject-offers-test: 13 OK, 0 FAIL (test mutanta NIE_ZMIERZONO osobno w tej rundzie)
+- player-ai-autopilot-test: 5/5
+- Bieg dowodowy seed 1234, 40 tur, swiezy profil, CHROME_PATH=/usr/bin/google-chrome, bundle vite poza repo: stop=null, endTurn=40, aiOffersRejected=1, aiOffersRejectAttempts=1 (tura 19), exit 0.
+- Kontrola (--reject-offers 0), swiezy profil: stop reason=cannot-end, tura=18 (ta sama przyczyna co R-WEB-MEASURE-SEED1234-T18-STALL-Q1).
+- Wznowienie z profilu po pierwszym, przerwanym segmencie padlo w openGame (crash Chromium); nie uzyto go jako dowodu, bieg powtorzono swiezym profilem.
+- Parytet dymny seed 4242 (przed/po) NIE_ZMIERZONO w tej rundzie.
+BLOKADY: brak. Zmiana semantyki: aiOffersRejected w diplomacy-harder liczylo PROBY w starych plikach (stare pliki nie sa porownywalne), opisane w naglowku measure-reject-offers.cjs.
+RUNDY: 2/5 (ostatni werdykt FC r1 = PASS-WITH-NOTES)
+NASTEPNY KROK: Evaluator/Final Control r2 (ten sam ID); integracja orkiestratora po FC.
 DEPLOY/PUSH: NIE WYKONANO
+
+UWAGI-DLA-ORKIESTRATORA:
+1. ai-ai-alliance-measure-run.cjs NIE jest podpiety pod measure-reject-offers.cjs (r1 ZADANIE pkt 2 tego wymagalo; w 11eb45c7d brak zmian w tym pliku). Nie dopisywano poza zakresem r2: do decyzji orkiestratora (runda r3 albo notatka).
+2. Dymny parytet seed 4242 (20 tur przed/po) z r1 nie wykonany w r2.
+3. W worktree zostaje gra/node_modules (npm ci --ignore-scripts) oraz bundle w scratchpadzie do sprzatania przez orkiestratora.

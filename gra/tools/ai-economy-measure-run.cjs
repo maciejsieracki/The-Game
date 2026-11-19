@@ -70,6 +70,9 @@ const SAVE_AT = parseInt(arg('save-at', '40'), 10);
 const MUTANT = arg('mutant', '0') === '1';
 /** R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1: --player-ai 1 = gracz (0) sterowany autopilotem AI (hak, domyślnie 0). */
 const PLAYER_AI = arg('player-ai', '0') === '1';
+/** --reject-offers 1|0: 1 = odrzucanie wiszacych ofert AI->gracz przed canEnd (JEDNA wspolna implementacja z
+ * measure-reject-offers.cjs); domyslnie 1 (bez tego biegi staja w t18/t36 na wiszacej ofercie); 0 = wylaczone (wsteczna zgodnosc). */
+const REJECT_OFFERS = arg('reject-offers', '1') !== '0';
 const SLOT = 'ai-econ-s' + SEED;
 const HASH_IGNORED = ['units[].stackGroupId(null)', 'cities[].budowaLista(gdy [])', 'cities[].magazynZywnosci(gdy 0)', 'cities[].postepBudynkowUsuniete(gdy {})', 'resourceLedgerHistory(#432)'];
 const CHROME = process.env.CHROME_PATH || '/usr/bin/chromium';
@@ -370,9 +373,9 @@ async function playOneTurn(page, ctxState) {
     ctxState.aiOffersRejectAttempts = (ctxState.aiOffersRejectAttempts || 0) + o.attempts;
   };
   const seenOffers = new Set(); // proby liczone raz na id oferty w tej turze
-  countOffers(await rejectAwaitingAiOffers(page, seenOffers));
+  if (REJECT_OFFERS) { countOffers(await rejectAwaitingAiOffers(page, seenOffers)); await clearBattles(page, ctxState); }
   let canEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
-  if (!canEnd) {
+  if (!canEnd && REJECT_OFFERS) {
     // Druga proba: odrzucenie moze odslonic kolejna oferte w kolejce stolu (jak w diplomacy-harder-measure-run.cjs).
     countOffers(await rejectAwaitingAiOffers(page, seenOffers));
     canEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
@@ -433,7 +436,7 @@ async function playOneTurn(page, ctxState) {
   const m = await page.evaluate(() => window.__aiEconomyMeasure.metrics());
   const rec = {
     seed: SEED, turn: after, gateBlockedBeforeEnd: blocked, bypass, battlesAuto, modalClosedThisTurn: modalDelta(),
-    owners: m.owners, diag: m.diag, niezmierzone: m.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
+    offersRejectedTotal: ctxState.aiOffersRejected || 0, owners: m.owners, terytorium: m.terytorium, diag: m.diag, niezmierzone: m.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
     load1: Math.round(os.loadavg()[0] * 100) / 100,
     ledgerRecording: LEDGER_OFF ? 'off' : 'on',
     aiOffersRejected: offersRec.confirmed, aiOffersRejectAttempts: offersRec.attempts,

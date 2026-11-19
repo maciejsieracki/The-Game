@@ -1,0 +1,14 @@
+{
+  "limitWojenAktywny": {
+    "wartosc": false,
+    "opis": "Flaga limitu wojen (R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1). false = zachowanie jak dotad (parytet). Wlaczenie wylacznie po decyzji wlasciciela."
+  },
+  "maxWojenEpoki": {
+    "wartosc": 1,
+    "opis": "Maks. rownoczesnych wojen epoki na cywilizacje (atakujacy i obronca osobno)."
+  },
+  "maxWojenNaturalnych": {
+    "wartosc": 1,
+    "opis": "Maks. rownoczesnych wojen naturalnych na cywilizacje (atakujacy i obronca osobno)."
+  }
+}
