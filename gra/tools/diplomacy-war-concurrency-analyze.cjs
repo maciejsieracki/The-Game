@@ -38,14 +38,21 @@ function analyzeRows(rows) {
     const key = `${r.seed}|${r.turn}`;
     if (!perTurn.has(key)) perTurn.set(key, { seed: r.seed, turn: r.turn, civs: new Map() });
     const slot = perTurn.get(key);
-    const bump = (civ, typ) => {
+    // Kazda cywilizacja widoczna w parze (takze bez wojny) trafia do rozkladu, takze jako 0 wojen.
+    const touch = (civ) => {
       if (!slot.civs.has(civ)) slot.civs.set(civ, { total: 0, epoki: 0, naturalna: 0 });
-      const c = slot.civs.get(civ);
+      return slot.civs.get(civ);
+    };
+    const bump = (civ, typ) => {
+      const c = touch(civ);
       c.total++;
       if (typ === 'epoki') c.epoki++; else c.naturalna++;
     };
     for (const p of r.diplo.pairs) {
-      if (!p || p.status !== 'wojna') continue;
+      if (!p) continue;
+      touch(p.a);
+      touch(p.b);
+      if (p.status !== 'wojna') continue;
       const typ = p.typWojny === 'epoki' ? 'epoki' : 'naturalna';
       bump(p.a, typ);
       bump(p.b, typ);

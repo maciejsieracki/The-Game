@@ -10,6 +10,7 @@
  * EN: pure module; at most 1 era war + 1 natural war per civilization, behind a flag (default off).
  */
 import warLimitParamsJson from '../../data/diplomacy-war-limit-params.json';
+import type { DiploPairMeta } from './diplomacy-pn-engine';
 
 /** Typ wojny. Brak pola w starym zapisie = 'naturalna' (kompatybilność wsteczna). */
 export type TypWojny = 'epoki' | 'naturalna';
@@ -57,6 +58,44 @@ export function setWarLimitEnabledForTest(value: boolean | null): void {
 export function isWarLimitEnabled(params: WarLimitParams = WAR_LIMIT_PARAMS): boolean {
   if (flagOverride !== null) return flagOverride;
   return params.limitWojenAktywny === true;
+}
+
+/** Typ wojny z meta pary (brak meta / brak pola = 'naturalna'). Meta: DiploPairMeta (bez zmiany typu w silniku). */
+export function getWarTypFromMeta(meta: DiploPairMeta | undefined): TypWojny {
+  return parseTypWojny((meta as { typWojny?: unknown } | undefined)?.typWojny);
+}
+
+/** Kopia meta pary z ustawionym typem wojny (pole dopisane poza typem DiploPairMeta; przeżywa zapis, bo serializacja kopiuje cały obiekt). */
+export function withWarTyp(meta: DiploPairMeta, typ: TypWojny): DiploPairMeta {
+  const out: DiploPairMeta & { typWojny: TypWojny } = { ...meta, typWojny: typ };
+  return out;
+}
+
+/** Wpis relacji cywilizacji `ownerId` z jedną inną stroną (wejście dla collectWarTypes). */
+export interface WarPairRow {
+  /** Strona druga pary. */
+  otherId: number;
+  /** Czy para jest w stanie 'wojna'. */
+  atWar: boolean;
+  /** Barbarzyńca — nie liczy się do limitu. */
+  isBarbarian: boolean;
+  /** Pomijany (np. wojna z celem, którego limit dotyczy osobno). */
+  excluded: boolean;
+  /** Meta pary (może być undefined). */
+  meta: DiploPairMeta | undefined;
+}
+
+/**
+ * Typy aktywnych wojen cywilizacji z wierszy relacji. Pomija: nie-wojnę, barbarzyńców, pomijanych.
+ * Państwa-miasta (nie barbarzyńcy) liczą się jak cywilizacje.
+ */
+export function collectWarTypes(rows: ReadonlyArray<WarPairRow>): TypWojny[] {
+  const out: TypWojny[] = [];
+  for (const r of rows) {
+    if (!r.atWar || r.isBarbarian || r.excluded) continue;
+    out.push(getWarTypFromMeta(r.meta));
+  }
+  return out;
 }
 
 /** Liczba wojen danego typu na liście aktywnych wojen cywilizacji. */

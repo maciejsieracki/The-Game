@@ -4,8 +4,9 @@
  * Czyste testy na prawdziwym module src/game/diplomacy-war-limit.ts (esbuild, bez DOM).
  * Pokrycie: limit epoki i naturalnej niezależnie, atakujący i obrońca, flaga OFF = parytet,
  * stare zapisy bez typWojny = 'naturalna', parser wartości JSON.
- * Poza zakresem tego testu (pokrywa main.ts, nie mierzone tutaj): barbarzyńcy wykluczani przez
- * warTypesForOwner, wpięcie w kaskadę sojuszniczą i bramkę wypowiedzenia.
+ * Barbarzyńcy, pomijany i nie-wojna wykluczani przez collectWarTypes (czysta funkcja używana przez
+ * warTypesForOwner w main.ts). Poza zakresem (main.ts, bez przeglądarki, NIE_ZMIERZONO): wpięcie w kaskadę
+ * sojuszniczą i bramkę wypowiedzenia gracza/AI jako deklarującego.
  * Run: node tools/diplomacy-war-limit-unit-test.cjs
  */
 const fs = require('fs');
@@ -81,6 +82,41 @@ eq('countWarsOfType', M.countWarsOfType(['epoki', 'naturalna', 'epoki'], 'epoki'
 // --- brzegowy: limit 0 blokuje kazda wojne danego typu ---
 const ZERO = { limitWojenAktywny: true, maxWojenEpoki: 0, maxWojenNaturalnych: 1 };
 eq('max 0 epoki: blokuje nawet pierwsza', M.warLimitAllows('epoki', [], [], ZERO), false);
+
+// --- obrońca z wojną epoki nie blokuje nowej wojny naturalnej atakującego (niezależne typy) ---
+eq('obrona epoki, atak naturalnej: wolno', M.warLimitAllows('naturalna', [], ['epoki'], ON), true);
+eq('obrona epoki, atak epoki: wolno (1 wojna epoki obrońcy = max 1 -> zabronione)', M.warLimitAllows('epoki', [], ['epoki'], ON), false);
+// --- barbarzyncy: modul nie widzi ich wojen (wywolujacy podaje tylko cywilizacje), wiec pusta lista = wolno ---
+eq('pusta lista wojen (barbarzyncy pominiete) -> wolno', M.warLimitAllows('epoki', [], [], ON), true);
+// --- flaga OFF: parytet nawet przy pelnym limicie ---
+eq('flaga OFF: zabronione-wg-limitu -> wolno (parytet)', M.warLimitAllows('epoki', ['epoki'], ['epoki'], { ...ON, limitWojenAktywny: false }), true);
+// --- parser: null / liczba / inny tekst = naturalna ---
+eq('parseTypWojny null', M.parseTypWojny(null), 'naturalna');
+eq('parseTypWojny 42', M.parseTypWojny(42), 'naturalna');
+eq('parseTypWojny epoki', M.parseTypWojny('epoki'), 'epoki');
+
+// --- typ wojny z meta (withWarTyp / getWarTypFromMeta) ---
+eq('meta bez pola = naturalna', M.getWarTypFromMeta({}), 'naturalna');
+eq('meta undefined = naturalna', M.getWarTypFromMeta(undefined), 'naturalna');
+eq('withWarTyp epoki -> getWarTypFromMeta epoki', M.getWarTypFromMeta(M.withWarTyp({ wojnaOdTury: 5 }, 'epoki')), 'epoki');
+eq('withWarTyp nie zmienia reszty meta', M.withWarTyp({ wojnaOdTury: 5 }, 'epoki').wojnaOdTury, 5);
+eq('withWarTyp przez JSON (zapis/odczyt) zachowuje typ', M.getWarTypFromMeta(JSON.parse(JSON.stringify(M.withWarTyp({}, 'epoki')))), 'epoki');
+
+// --- collectWarTypes: barbarzyńcy, pomijany, pokój nie liczą się; państwo-miasto (nie barbarzyńca) liczy się ---
+const row = (o) => ({ otherId: 1, atWar: true, isBarbarian: false, excluded: false, meta: undefined, ...o });
+eq('barbarzynca w wojnie nie liczy sie', M.collectWarTypes([row({ isBarbarian: true, meta: { typWojny: 'epoki' } })]), []);
+eq('pomijany (cel) nie liczy sie', M.collectWarTypes([row({ excluded: true })]), []);
+eq('pokoj nie liczy sie', M.collectWarTypes([row({ atWar: false })]), []);
+eq('panstwo-miasto w wojnie liczy sie jako naturalna', M.collectWarTypes([row({})]), ['naturalna']);
+eq('mieszany zestaw: epoki + naturalna + barbarzynca', M.collectWarTypes([
+  row({ meta: M.withWarTyp({}, 'epoki') }),
+  row({ otherId: 2 }),
+  row({ otherId: 3, isBarbarian: true, meta: M.withWarTyp({}, 'epoki') }),
+]), ['epoki', 'naturalna']);
+// barbarzynca z wojna epoki nie blokuje wojny epoki cywilizacji (pusta lista wojen = wolno)
+eq('barbarzynca nie blokuje wojny epoki', M.warLimitAllows('epoki', M.collectWarTypes([row({ isBarbarian: true, meta: M.withWarTyp({}, 'epoki') })]), [], ON), true);
+// kontrola: gdyby barbarzynca liczyl sie, limit epoki zablokowalby wojne
+eq('kontrola: bez filtra barbarzyncy limit by blokowal', M.warLimitAllows('epoki', ['epoki'], [], ON), false);
 
 try { fs.unlinkSync(BUNDLE); } catch (_) { /* ignore */ }
 console.log(`diplomacy-war-limit-unit-test: pass=${pass} fail=${fail}`);
