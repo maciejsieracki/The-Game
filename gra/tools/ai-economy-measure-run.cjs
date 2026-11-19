@@ -126,7 +126,8 @@ function closeModalsInPage() {
   }
   const tn = document.getElementById('civ-tech-discovery-notice-host');
   if (tn) {
-    const b = tn.querySelector('[data-act="close"]');
+    // R-WEB-MEASURE-STALL-T72-T80-Q1: aktualna karta ma ✕ `.tdn-entity-close` (bez data-act); karta boczna zamykana pierwsza.
+    const b = tn.querySelector('.tdn-side-card .tdn-entity-close') || tn.querySelector('[data-act="close"], .tdn-entity-close');
     if (b) { b.click(); closed.push('techNoticeClosed'); }
   }
   return closed;
@@ -234,6 +235,8 @@ function ensureBuild() {
 
 async function launch(chromium, profileDir) {
   const args = ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage'];
+  // R-WEB-MEASURE-STALL-T72-T80-Q1: opcjonalne dodatkowe flagi Chromium (np. "--mute-audio") z env MEASURE_CHROME_ARGS; domyslnie puste.
+  for (const a of (process.env.MEASURE_CHROME_ARGS || '').split(/\s+/).filter(Boolean)) args.push(a);
   const o = { headless: true, args, viewport: { width: 1280, height: 800 }, executablePath: CHROME };
   return chromium.launchPersistentContext(profileDir, o);
 }
@@ -253,6 +256,7 @@ function attachDiagnostics(page) {
   page.on('crash', () => log('crash', 'strona przegladarki padla'));
   page.on('close', () => log('close', 'strona zamknieta'));
   page.on('console', m => { if (m.type() === 'error') log('console-error', m.text()); });
+  require('./measure-close-modals.cjs').attachEndTurnBlockLog(page, log); // R-WEB-MEASURE-STALL-T72-T80-Q1: powody blokady „Zakoncz ture”
   page.on('framenavigated', f => { if (f === page.mainFrame()) log('navigate', f.url().slice(0, 120)); });
 }
 
