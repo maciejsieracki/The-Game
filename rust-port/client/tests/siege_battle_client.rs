@@ -937,6 +937,17 @@ fn aborted_sprzata_bitwe() {
         .expect("restart");
     assert_eq!(c.siege_battle().expect("battle").answers(), 1);
     assert_eq!(c.last_siege_battle_end(), None);
+    // r2 (E18): `Aborted` with nothing to clear in the UI asks the engine for no frame (no `StateChanged`, no UI
+    // change, D-371-4): the map is only recomposed from the cached frame.
+    c.source_mut().finish = Some(SiegeBattleError::Aborted {
+        city_id: CITY,
+        reason: "again".into(),
+    });
+    c.step_siege_battle(16.0).expect("step");
+    let frames = c.source().frame_calls;
+    c.finish_siege_battle().expect("aborted again");
+    assert!(c.siege_battle().is_none());
+    assert_eq!(c.source().frame_calls, frames, "no frame request");
 }
 
 /// D-1I6-2: an answer whose first action is earlier than the previous frame is refused before the scene changes
@@ -1266,6 +1277,10 @@ fn setup_spawn_komorka_i_mur_przed_akcjami_startu() {
     let f = start.frame.as_ref().expect("frame");
     let (a, b) = (f.units[0].id, f.units[1].id);
     for kind in [
+        BattleActionKindDto::Damage {
+            target: a,
+            dmg: 1.0,
+        },
         BattleActionKindDto::Kill { id: a },
         BattleActionKindDto::Leave { id: a },
         BattleActionKindDto::Rout { id: a },
