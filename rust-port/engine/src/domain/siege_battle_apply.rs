@@ -13,7 +13,10 @@
 //!   [`ActiveSiegeBattle`]: migawkę stanu z chwili startu, wejście sesji i listę wykonanych operacji sterownika
 //!   (`step(ms)` / `skip()`). Każda komenda odtwarza sesję tymi samymi wywołaniami (te same operacje zmiennoprzecinkowe,
 //!   ten sam strumień RNG D-WIR-5), więc stan jest identyczny z sesją trzymaną w pamięci; dowodzi tego test
-//!   niezależności od podziału kroków. Koszt O(długość bitwy) na komendę = dług wydajności (NIE_ZMIERZONO w release).
+//!   niezależności od podziału kroków i test ścieżki odtworzenia (każda komenda bez pamięci podręcznej = ten sam
+//!   wynik). Żywa sesja jest trzymana w pamięci podręcznej wątku (`LIVE_SESSION`) jako optymalizacja: komenda z tego
+//!   samego wątku kontynuuje sesję bez powtórki; chybienie (inny wątek Tauri, klon gry, błąd poprzedniej komendy)
+//!   odtwarza sesję z zapisu (koszt O(długość bitwy), NIE_ZMIERZONO w release).
 //! * **D-WIRB-2 (stan gry w trakcie bitwy).** Pin w trakcie sceny nie zmienia mapy (machiny zużywa dopiero wynik
 //!   sceny, `:37021-37023`; UI mapy zasłonięte). Port: `AdvanceTurn`, `MoveUnit`, `CancelPlannedMarch` i drugi
 //!   `StartSiegeStorm` zwracają jawny błąd „bitwa w toku”; zapis bitwy w toku poza zakresem (gra trzyma ją poza DTO).
@@ -53,8 +56,7 @@ use crate::domain::siege_battle_adapter_playable::{
 };
 use crate::domain::siege_battle_adapter_unit::OwnerContext;
 use crate::domain::siege_battle_session::{
-    SessionData, SessionError, SessionOutcome, SessionPhase, SiegeBattleSession,
-    SiegeSessionInput,
+    SessionData, SessionError, SessionOutcome, SessionPhase, SiegeBattleSession, SiegeSessionInput,
 };
 use crate::domain::siege_tactics_actions::{actions_to_dto, TimedAction};
 use crate::domain::siege_tactics_breach::WallState;
@@ -263,6 +265,56 @@ pub struct ActiveSiegeBattle {
     atk_roster: Vec<RosterUnit>,
     def_roster: Vec<RosterUnit>,
     ops: Vec<DriverOp>,
+    /// Klucz sesji żywej w pamięci podręcznej wątku ([`LIVE_SESSION`]); unikalny w procesie.
+    live_key: u64,
+}
+
+/// D-WIRB-1: pamięć podręczna sesji żywej (optymalizacja, nie źródło prawdy). Sesja nie jest `Send`, więc żyje w wątku,
+/// który ją zbudował; trafienie wymaga tego samego klucza bitwy i tej samej liczby operacji sterownika. Chybienie
+/// (inny wątek, klon gry, błąd poprzedniej komendy) = odtworzenie z zapisu [`ActiveSiegeBattle::rebuild`].
+struct LiveSession {
+    key: u64,
+    ops: usize,
+    session: SiegeBattleSession,
+}
+
+thread_local! {
+    static LIVE_SESSION: std::cell::RefCell<Option<LiveSession>> = const { std::cell::RefCell::new(None) };
+}
+
+static NEXT_LIVE_KEY: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
+
+/// Czyści pamięć podręczną sesji wątku (testy: każda komenda idzie wtedy ścieżką odtworzenia).
+pub fn clear_live_session_cache() {
+    LIVE_SESSION.with(|c| c.borrow_mut().take());
+}
+
+/// Sesja dla komendy: z pamięci podręcznej wątku, gdy pasuje klucz i liczba operacji, inaczej odtworzona.
+fn take_session(battle: &ActiveSiegeBattle) -> Result<SiegeBattleSession, SiegeBattleError> {
+    let cached = LIVE_SESSION.with(|c| {
+        let mut slot = c.borrow_mut();
+        match slot.take() {
+            Some(l) if l.key == battle.live_key && l.ops == battle.ops.len() => Some(l.session),
+            other => {
+                *slot = other;
+                None
+            }
+        }
+    });
+    match cached {
+        Some(s) => Ok(s),
+        None => battle.rebuild(),
+    }
+}
+
+fn keep_session(battle: &ActiveSiegeBattle, session: SiegeBattleSession) {
+    LIVE_SESSION.with(|c| {
+        *c.borrow_mut() = Some(LiveSession {
+            key: battle.live_key,
+            ops: battle.ops.len(),
+            session,
+        });
+    });
 }
 
 impl ActiveSiegeBattle {
@@ -510,6 +562,7 @@ pub fn prepare_storm(
         atk_roster: rosters.atk,
         def_roster: rosters.def,
         ops: Vec::new(),
+        live_key: NEXT_LIVE_KEY.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
     })
 }
 
@@ -586,7 +639,13 @@ fn payload(
     actions: &[TimedAction],
     units: bool,
 ) -> Result<SiegeBattlePayload, SiegeBattleError> {
-    let actions = actions_to_dto(actions, &s.battle_loop().st)
+    // D-WIRB-6: akcje odpowiedzi w kolejności czasu wirtualnego (sortowanie stabilne po `t0`). Ciało pętli emituje marsz
+    // wielokrokowy jednej aktywacji z przyszłymi `t0` (kolejne `_doMove` po `MOVE_STEP_MS + przerwa`), zanim zegar
+    // odpali klocki o wcześniejszym czasie (np. strzał wieży); w pinie te wywołania sceny zachodzą w kolejności czasu,
+    // a `validate_actions` (P4-1I3) wymaga niemalejącego `t0`. Remisy `t0` zachowują kolejność emisji.
+    let mut ordered = actions.to_vec();
+    ordered.sort_by(|a, b| a.t0.partial_cmp(&b.t0).unwrap_or(std::cmp::Ordering::Equal));
+    let actions = actions_to_dto(&ordered, &s.battle_loop().st)
         .map_err(|e| SiegeBattleError::Producer(format!("akcje: {e:?}")))?;
     Ok(SiegeBattlePayload {
         city_id,
@@ -607,13 +666,13 @@ fn payload(
 ///
 /// # Errors
 /// [`SiegeBattleError`].
-pub fn start_payload(
-    battle: &ActiveSiegeBattle,
-) -> Result<SiegeBattlePayload, SiegeBattleError> {
+pub fn start_payload(battle: &ActiveSiegeBattle) -> Result<SiegeBattlePayload, SiegeBattleError> {
     let data = session_data()?;
-    let s = SiegeBattleSession::start(&battle.start_state, &battle.input, data)?;
-    let actions = s.battle_loop().actions().to_vec();
-    payload(&s, battle.city_id, &actions, true)
+    let mut s = SiegeBattleSession::start(&battle.start_state, &battle.input, data)?;
+    let actions = s.battle_loop_mut().take_actions();
+    let out = payload(&s, battle.city_id, &actions, true);
+    keep_session(battle, s);
+    out
 }
 
 /// `StepSiegeBattle{wall_ms}`: krok czasu rzeczywistego; operacja zapisywana dopiero po powodzeniu.
@@ -624,10 +683,13 @@ pub fn step(
     battle: &mut ActiveSiegeBattle,
     wall_ms: f64,
 ) -> Result<SiegeBattlePayload, SiegeBattleError> {
-    let mut s = battle.rebuild()?;
+    // Błąd komendy: sesja nie wraca do pamięci podręcznej (kolejna komenda odtwarza ją z zapisu operacji).
+    let mut s = take_session(battle)?;
     let rep = s.step(wall_ms)?;
     battle.ops.push(DriverOp::Step(wall_ms));
-    payload(&s, battle.city_id, &rep.actions, false)
+    let out = payload(&s, battle.city_id, &rep.actions, false);
+    keep_session(battle, s);
+    out
 }
 
 /// `SkipSiegeBattle`: przewijanie do końca bitwy (`skip()` po starcie, `:3680-3707`).
@@ -635,10 +697,12 @@ pub fn step(
 /// # Errors
 /// [`SiegeBattleError::Session`].
 pub fn skip(battle: &mut ActiveSiegeBattle) -> Result<SiegeBattlePayload, SiegeBattleError> {
-    let mut s = battle.rebuild()?;
+    let mut s = take_session(battle)?;
     let rep = s.skip()?;
     battle.ops.push(DriverOp::Skip);
-    payload(&s, battle.city_id, &rep.actions, false)
+    let out = payload(&s, battle.city_id, &rep.actions, false);
+    keep_session(battle, s);
+    out
 }
 
 fn battle_winner(w: LoopWinner) -> BattleWinner {
@@ -763,7 +827,12 @@ fn place_fan_out_group(
 ) {
     let (dq, dr) = (direction.0 - battle.0, direction.1 - battle.1);
     let mut order: Vec<&str> = vec![lead_id];
-    order.extend(alive.iter().map(|u| u.id.as_str()).filter(|id| *id != lead_id));
+    order.extend(
+        alive
+            .iter()
+            .map(|u| u.id.as_str())
+            .filter(|id| *id != lead_id),
+    );
     for id in order {
         let Some(i) = unit_index(state, id) else {
             continue;
@@ -805,6 +874,15 @@ fn hex_distance(a: (i32, i32), b: (i32, i32)) -> i32 {
     (dq.abs() + dr.abs() + (dq + dr).abs()) / 2
 }
 
+/// Wejście zastosowania wyniku: miasto, kotwica i pełne rostery (`atkRosterRef` / `defRosterRef` z pozycjami startu).
+#[derive(Debug, Clone, Copy)]
+pub struct ApplyRosters<'a> {
+    pub city_id: u64,
+    pub anchor_unit_id: u64,
+    pub atk_roster: &'a [RosterUnit],
+    pub def_roster: &'a [RosterUnit],
+}
+
 /// Zastosowanie wyniku bitwy do stanu: `consumeReadyMachines` + `finishSiegeStormBattle` bez gałęzi zdobycia
 /// (D-WIRB-3). Kolejność jak pin: machiny (`:37023`), `applyPostBattleMap` (survivors `:168-189`, weterani
 /// `:411-429`, gałąź zwycięzcy `:443-463`, punkt ruchu `:465`), `validateActiveSieges` (`:34727`), `afterSiegeUi`
@@ -815,7 +893,7 @@ fn hex_distance(a: (i32, i32), b: (i32, i32)) -> i32 {
 #[allow(clippy::too_many_lines)]
 pub fn apply_outcome(
     state: &mut PlayableState,
-    battle: &ActiveSiegeBattle,
+    battle: &ApplyRosters<'_>,
     outcome: &SessionOutcome,
     scene_ids: &[Vec<String>; 2],
 ) -> Result<SiegeBattleResultDto, SiegeBattleError> {
@@ -827,10 +905,7 @@ pub fn apply_outcome(
         .find(|c| c.id == cid)
         .ok_or(SiegeBattleError::CityNotFound(city_id))?
         .clone();
-    let battle_hex = (
-        i32::from(city.position.x()),
-        i32::from(city.position.y()),
-    );
+    let battle_hex = (i32::from(city.position.x()), i32::from(city.position.y()));
     // `consumeReadyMachines(city)` (`main.ts:37023`, `siegeMachines.ts:74-81`).
     let consumed_machines = state.siege_machines_ready.remove(&cid).unwrap_or_default();
 
@@ -887,9 +962,9 @@ pub fn apply_outcome(
     // `registerVeteranProgressAfterBattle` (`post-battle-map.ts:411-429`, `veteran.ts:95-98`, `:291-294`).
     if winner != LoopWinner::Draw {
         let win_roster = if winner == LoopWinner::Attacker {
-            &battle.atk_roster
+            battle.atk_roster
         } else {
-            &battle.def_roster
+            battle.def_roster
         };
         let mut seen = BTreeSet::new();
         for r in win_roster {
@@ -941,7 +1016,7 @@ pub fn apply_outcome(
         }
         LoopWinner::Defender => {
             // `retreatAtkRosterToStart` (`:380-390`); `defLossesThisTurn` obrońców: pola brak w stanie (raport).
-            for r in &battle.atk_roster {
+            for r in battle.atk_roster {
                 if let Some(i) = unit_index(state, &r.id) {
                     let (q, rr) = pos_of(r);
                     if let (Ok(x), Ok(y)) = (u16::try_from(q), u16::try_from(rr)) {
@@ -952,14 +1027,12 @@ pub fn apply_outcome(
         }
         LoopWinner::Draw => {
             // `post-battle-map.ts:455-462`: atakujący w stronę swojej strony, potem obrońcy od atakujących.
-            let atk_dir = pick_retreat_target(
-                state,
-                battle_hex,
-                rp.centroid(&battle.atk_roster),
-                false,
-            );
-            let atk_alive: Vec<RosterUnit> =
-                live(state, &battle.atk_roster).into_iter().cloned().collect();
+            let atk_dir =
+                pick_retreat_target(state, battle_hex, rp.centroid(&battle.atk_roster), false);
+            let atk_alive: Vec<RosterUnit> = live(state, &battle.atk_roster)
+                .into_iter()
+                .cloned()
+                .collect();
             if !atk_alive.is_empty() {
                 place_fan_out_group(
                     state,
@@ -971,8 +1044,10 @@ pub fn apply_outcome(
                     Some(battle_hex),
                 );
             }
-            let def_alive: Vec<RosterUnit> =
-                live(state, &battle.def_roster).into_iter().cloned().collect();
+            let def_alive: Vec<RosterUnit> = live(state, &battle.def_roster)
+                .into_iter()
+                .cloned()
+                .collect();
             // `pickLiveDefLead` (`:321-328`): obrońca na heksie bitwy, inaczej pierwszy żywy.
             let lead = def_alive
                 .iter()
@@ -987,12 +1062,8 @@ pub fn apply_outcome(
                 .or_else(|| def_alive.first())
                 .map(|u| u.id.clone());
             if let Some(lead) = lead {
-                let dir = pick_retreat_target(
-                    state,
-                    battle_hex,
-                    rp.centroid(&battle.atk_roster),
-                    true,
-                );
+                let dir =
+                    pick_retreat_target(state, battle_hex, rp.centroid(&battle.atk_roster), true);
                 place_fan_out_group(
                     state,
                     &mut rp,
@@ -1007,7 +1078,7 @@ pub fn apply_outcome(
     }
 
     // `spendAttackMpOnLive` (`post-battle-map.ts:392-402`).
-    for r in &battle.atk_roster {
+    for r in battle.atk_roster {
         if is_civilian_unit(&r.category, &r.type_id) && r.id != anchor_id {
             continue;
         }
@@ -1084,7 +1155,7 @@ pub fn finish(
     state: &mut PlayableState,
     battle: &ActiveSiegeBattle,
 ) -> Result<SiegeBattlePayload, SiegeBattleError> {
-    let s = battle.rebuild()?;
+    let s = take_session(battle)?;
     let outcome = s.finish()?;
     if !outcome.unported.is_empty() {
         return Err(SiegeBattleError::Producer(format!(
@@ -1093,7 +1164,13 @@ pub fn finish(
         )));
     }
     let ids = s.roster_ids().clone();
-    let result = apply_outcome(state, battle, &outcome, &ids)?;
+    let rosters = ApplyRosters {
+        city_id: battle.city_id,
+        anchor_unit_id: battle.anchor_unit_id,
+        atk_roster: &battle.atk_roster,
+        def_roster: &battle.def_roster,
+    };
+    let result = apply_outcome(state, &rosters, &outcome, &ids)?;
     Ok(SiegeBattlePayload {
         city_id: battle.city_id,
         phase: SiegeBattlePhaseDto::Applied,

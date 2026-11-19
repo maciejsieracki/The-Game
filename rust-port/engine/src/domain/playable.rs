@@ -19,6 +19,7 @@ use super::playable_movement::{
     MARCH_FOREIGN_CITY_HINT, MARCH_NO_ROUTE_HINT,
 };
 use super::player::is_awaiting_first_player_city;
+use super::siege_battle_apply::{self, ActiveSiegeBattle, SiegeBattleError, SiegeBattlePayload};
 use super::terrain::visibility::fog_view::ExploredByHuman;
 use super::turn_war_dipl_steps::apply_dipl_deltas_to_state;
 use super::turn_war_inputs::{
@@ -34,7 +35,6 @@ use super::victory::{
     check_victory, VictoryInput, VictoryMode, VictoryResult, OSTATNIA_EPOKA_GRY_V1,
 };
 use super::war_turn_state::WarTurnState;
-use super::siege_battle_apply::{self, ActiveSiegeBattle, SiegeBattleError, SiegeBattlePayload};
 use super::{events::*, CityId, OwnerRef, PlayerId, PositionDto, UnitId};
 
 pub const PLAYABLE_STATE_VERSION: u16 = 1;
@@ -1006,7 +1006,9 @@ pub enum PlayableError {
     VictoryCheck(String),
     /// R-RUSTPORT-P6-K5LOOP-WIRING-B-Q1 (D-WIRB-2): komenda mapy w trakcie bitwy oblezniczej (pin: scena zaslania mape,
     /// `main.ts:36940-37024`); stan bez zmian.
-    SiegeBattleInProgress { city_id: u64 },
+    SiegeBattleInProgress {
+        city_id: u64,
+    },
 }
 
 impl fmt::Display for PlayableError {
@@ -1381,7 +1383,10 @@ impl PlayableGame {
     }
 
     /// Komenda `StepSiegeBattle { wall_ms }`: krok czasu rzeczywistego (D-WIR-3).
-    pub fn step_siege_battle(&mut self, wall_ms: f64) -> Result<SiegeBattlePayload, SiegeBattleError> {
+    pub fn step_siege_battle(
+        &mut self,
+        wall_ms: f64,
+    ) -> Result<SiegeBattlePayload, SiegeBattleError> {
         let battle = self
             .siege_battle
             .as_mut()

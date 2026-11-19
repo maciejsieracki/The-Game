@@ -474,6 +474,12 @@ impl Default for CivEngineAdapter {
 }
 
 impl CivEngineAdapter {
+    /// R-RUSTPORT-P6-K5LOOP-WIRING-B-Q1: adapter over an existing game (scenario or loaded game; the first
+    /// slice `CreateSession` has no enemy city to storm).
+    pub fn from_game(game: PlayableGame) -> Self {
+        Self { game }
+    }
+
     pub fn state(&self) -> &PlayableState {
         self.game.state()
     }
