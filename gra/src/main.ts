@@ -69,7 +69,8 @@ import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from
 import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
 import { isAiAiTreatyTickEnabled, setAiAiTreatyTickEnabledForTest, planAiAiNapTreatyTickFull, applyAiAiNapBreachRelacja, aiAiNapBreachRelacjaDelta, type AiAiWarStatus } from './game/ai-ai-treaty-tick';
-import { isAiAiAllianceTickEnabled, setAiAiAllianceTickEnabledForTest, planAiAiAllianceTickFull, type AiAiAllianceProbaDetal } from './game/ai-ai-alliance-tick';
+import { isAiAiAllianceTickEnabled, setAiAiAllianceTickEnabledForTest, planAiAiAllianceTickFull, aiAiMaxSojuszyNaCywilizacje, type AiAiAllianceProbaDetal } from './game/ai-ai-alliance-tick';
+import { liczbaSojuszyCywilizacji, sojuszLimitPozwala, type AiAiAllianceLimitInput } from './game/ai-ai-alliance-limit';
 import { isWarByAllianceStrengthEnabled, setWarByAllianceStrengthForTest, type BlokSojusznik } from './game/diplomacy-alliance-strength';
 import { isZeroTrustEnabled, setZeroTrustEnabledForTest, zeroZaufaniaProgTur, zeroTrustBreakOrders, zeroTrustCount, zeroTrustPreferredTarget, zeroTrustRecordBreak, zeroTrustStats, resetZeroTrustSession } from './game/diplomacy-zero-trust';
 import { isAiAiCoalitionEnabled, setAiAiCoalitionEnabledForTest, aktualizujLidera, budujKontekstKoalicji, initLiderKoalicjiStan, loadAiAiCoalitionParams, type LiderKoalicjiStan } from './game/ai-ai-coalition';
@@ -24780,6 +24781,9 @@ async function boot(): Promise<void> {
               turnsAtWar: 0,
             };
             if (!sisterAllianceEligible(playerAStub, playerBStub, rel, dipCtx, sisterParams)) continue;
+            // R-WEB-AI-AI-ALLIANCE-LIMIT-2-VIOLATED-Q1: ta sama bramka limitu co w tickAiAiAllianceRequests
+            // (wspólne liczenie z pełnego stanu activeDeals). Flaga torSojuszyAktywny=false -> zachowanie jak dotąd.
+            if (isAiAiAllianceTickEnabled() && !aiAiAllianceLimitPozwala(a, b)) continue;
 
             const [p0, p1] = pairOwnerIds(a, b);
             activeDeals = addTreaty(activeDeals, {
@@ -25664,6 +25668,33 @@ async function boot(): Promise<void> {
       }
     }
 
+    /** R-WEB-AI-AI-ALLIANCE-LIMIT-2-VIOLATED-Q1: wspólne dane limitu sojuszy (pełny stan activeDeals). */
+    function aiAiAllianceLimitInput(owners: readonly number[]): AiAiAllianceLimitInput {
+      return {
+        deals: activeDeals,
+        isAlliance: (rodzaj: unknown) => isAllianceDealKind(rodzaj as ActiveDeal['rodzaj']),
+        aiCivs: new Set<number>(owners),
+        liczoneStrony: new Set<number>([ME(), ...owners]),
+        maxSojuszy: aiAiMaxSojuszyNaCywilizacje(),
+      };
+    }
+
+    /** R-WEB-AI-AI-ALLIANCE-LIMIT-2-VIOLATED-Q1: czy nowy sojusz AI↔AI a↔b mieści się w limicie (ścieżka sióstr). */
+    function aiAiAllianceLimitPozwala(a: number, b: number): boolean {
+      const owners = Array.from(aiOwnerCivMap.keys()).filter(oid => isMajorAiCivForForcedPeace(oid)).sort((x, y) => x - y);
+      return sojuszLimitPozwala(aiAiAllianceLimitInput(owners), a, b);
+    }
+
+    /** R-WEB-AI-AI-ALLIANCE-LIMIT-2-VIOLATED-Q1: zaakceptowany wniosek dyplomatyczny z sojuszem (gracz↔AI lub AI↔AI)
+     *  nie może przebić limitu 2 na cywilizację AI; przy flagowym OFF zawsze false (zachowanie jak dotąd). */
+    function aiAiAllianceLimitBlokujeDeal(deal: ActiveDeal): boolean {
+      if (!isAiAiAllianceTickEnabled()) return false;
+      if (!isAllianceDealKind(deal.rodzaj)) return false;
+      const [a, b] = deal.strony;
+      if (a === undefined || b === undefined) return false;
+      return !aiAiAllianceLimitPozwala(a, b);
+    }
+
     function tickAiAiAllianceRequests(): void {
       if (!isAiAiAllianceTickEnabled()) return;
       refreshObjectivePowerCache();
@@ -25672,17 +25703,10 @@ async function boot(): Promise<void> {
           && !activeDeals.some(d => normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.Wasalizacja && d.strony.includes(oid)))
         .sort((x, y) => x - y);
       if (owners.length < 2) return;
-      const ownerSet = new Set<number>(owners);
       const stubOf = (oid: number): Player => ({ ownerId: oid, typCywilizacji: aiOwnerCivMap.get(oid) } as unknown as Player);
-      // Limit sojuszy liczy wyłącznie sojusze AI↔AI między `owners` (sojusze z graczem poza limitem; założenie E3).
-      const alliancesCount = new Map<number, number>(owners.map(oid => [oid, 0] as [number, number]));
-      for (const d of activeDeals) {
-        if (!isAllianceDealKind(d.rodzaj)) continue;
-        const [a, b] = d.strony;
-        if (a === undefined || b === undefined || !ownerSet.has(a) || !ownerSet.has(b)) continue;
-        alliancesCount.set(a, (alliancesCount.get(a) ?? 0) + 1);
-        alliancesCount.set(b, (alliancesCount.get(b) ?? 0) + 1);
-      }
+      // R-WEB-AI-AI-ALLIANCE-LIMIT-2-VIOLATED-Q1: licznik sojuszy z PEŁNEGO stanu activeDeals (wspólny moduł
+      // ai-ai-alliance-limit.ts; liczą się sojusze z inną główną AI i z graczem, bez państw-miast).
+      const alliancesCount = liczbaSojuszyCywilizacji(aiAiAllianceLimitInput(owners));
       const alliancesOf = (oid: number): number[] => activeDeals
         .filter(d => isAllianceDealKind(d.rodzaj) && d.strony.includes(oid))
         .map(d => (d.strony[0] === oid ? d.strony[1] : d.strony[0]));
@@ -26838,6 +26862,10 @@ async function boot(): Promise<void> {
       payload: ProposalPayload,
       cywAction: string,
     ): void {
+      // R-WEB-AI-AI-ALLIANCE-LIMIT-2-VIOLATED-Q1: ścieżka wniosków (gracz↔AI) też podlega limitowi sojuszy.
+      if (result.accepted && result.deal && aiAiAllianceLimitBlokujeDeal(result.deal)) {
+        result = { ...result, accepted: false, reason: 'Limit 2 sojuszy na cywilizację AI został osiągnięty' };
+      }
       showDiplomacyProposalBanner(result.accepted, result.reason);
       if (!result.accepted) {
         if (cywAction === 'trybut_zadanie' || cywAction === 'trybut_oferta') {
