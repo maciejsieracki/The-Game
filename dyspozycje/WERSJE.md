@@ -1,3 +1,9 @@
+## ROBOCZA cc570ee1 -- 2026-11-18 -- FALA 872: R-WEB-DIPLO-PEACE-CITIES-NOT-TRANSFERRED-AND-WAR-NEXT-TURN-Q1 (czesc A): pokoj wymuszony z cesja miast — cesja liczona sekwencyjnie (zakaz ostatniego miasta/stolicy po kolei), komunikat liczy miasta faktycznie przeniesione (testowa)
+
+- gra/src/game/diplomacy-value-catalog.ts (selectSequentialCityCessions), gra/src/main.ts (pendingPeaceItems i acceptPendingForcedPeace), test peace-city-cession-and-rewar-test (8 asercji, mutacja czerwona). Decyzja wlasciciela 2026-11-19 (ABC A): mozliwe miasta przechodza, niewykonalne usuniete z planu z komunikatem.
+- Weryfikacja: tsc 0, logic 213/213, peace-city-cession-and-rewar 8/0 (mutacja 5/3), diplomacy-city-cession 79/0 i r3 79/0, war-weariness-peace 96/0, forced-peace-pending 40/0
+- Limity: NIE ZMIERZONO: czesc B (ponowna wojna w nastepnej turze) — nie odtworzona, brak zapisu gry/logu; hipoteza: wojna epoki omija swiezy pokoj (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1); wlasciciel: brak preferencji; czesc A potwierdzona tylko testem czystym, nie scenariuszem z gry
+
 ## ROBOCZA a056b112 -- 2026-11-18 -- FALA 871: R-WEB-ECONOMY-ERA-REBALANCE-ENABLE-Q1: rebalans ekonomii wg epok WLACZONY domyslnie na ROBOCZEJ (eraRebalansAktywny=true): przychody ulepszen stale jak epoka 1, zywnosc wojska x3/epoke, racje obywateli 2^(e-1) (testowa)
 
 - gra/data/econ-era-rebalance-params.json (flaga true; cofniecie = false), 6 testow legacy z jawnie wylaczona flaga, econ-era-rebalance-test niezalezny od domyslnej flagi. Decyzja wlasciciela 2026-11-19 (ABC A po biegu 150 tur OFF/ON). Konwertery, utrzymanie surowcowe obywateli, rekrutacja, utrzymanie Pracy bez zmian.

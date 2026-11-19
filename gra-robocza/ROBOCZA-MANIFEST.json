@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "a056b112089eddb5e4ad6eb49fe8d594",
-  "bundleSha256": "d626465120e6c9c76aa2174825a0acd17a49cf69b5d481a1b6ff30776862cb6c",
-  "bundleBytes": 14986974,
+  "bundleMd5": "cc570ee153a2d92fdb6a7d779960f604",
+  "bundleSha256": "4973cb0008d2374a1cdf8943b78299c2d71ef70eb43f49c942beb971d4129bd1",
+  "bundleBytes": 14987611,
   "sourceSnapshot": {
-    "source": "kod 791a58a7a (Haiku r1 + Obrona); FC 0013ea630",
+    "source": "kod 09cd31f65 (Haiku r1 BLOCK + Obrona); FC c1a184c4b",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 871: gra/data/econ-era-rebalance-params.json (flaga true; cofniecie = false), 6 testow legacy z jawnie wylaczona flaga, econ-era-rebalance-test niezalezny od domyslnej flagi. Decyzja wlasciciela 2026-11-19 (ABC A po biegu 150 tur OFF/ON). Konwertery, utrzymanie surowcowe obywateli, rekrutacja, utrzymanie Pracy bez zmian."
+    "FALA 872: gra/src/game/diplomacy-value-catalog.ts (selectSequentialCityCessions), gra/src/main.ts (pendingPeaceItems i acceptPendingForcedPeace), test peace-city-cession-and-rewar-test (8 asercji, mutacja czerwona). Decyzja wlasciciela 2026-11-19 (ABC A): mozliwe miasta przechodza, niewykonalne usuniete z planu z komunikatem."
   ],
   "verification": [
-    "tsc 0, logic 213/213, econ-era-rebalance 37/0 (przy danych ON i OFF), citizen-consumption PASS, improvement-era-scaling 144/0, unit-epoch-cost 57/0, foundry 159/0, ai-economy-measure-hook 23/23, HUD 17/18/7/36"
+    "tsc 0, logic 213/213, peace-city-cession-and-rewar 8/0 (mutacja 5/3), diplomacy-city-cession 79/0 i r3 79/0, war-weariness-peace 96/0, forced-peace-pending 40/0"
   ],
   "limits": [
-    "NIE ZMIERZONO: smoke w przegladarce po wlaczeniu przez FC; 18 testow czerwonych niezaleznie od flagi (temat R-WEB-TEST-DEBT-Q10); bieg OFF/ON z biegu weryfikacyjnego: AI brutto -49%, gracz 4242 brutto -57%/netto -20%, populacja gracza 50->25, brak glodu"
+    "NIE ZMIERZONO: czesc B (ponowna wojna w nastepnej turze) — nie odtworzona, brak zapisu gry/logu; hipoteza: wojna epoki omija swiezy pokoj (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1); wlasciciel: brak preferencji; czesc A potwierdzona tylko testem czystym, nie scenariuszem z gry"
   ],
-  "finalControl": "FC PASS-WITH-NOTES: potomek bazy, flaga true, testy legacy z jawnie wylaczona flaga, bramki zielone",
+  "finalControl": "FC PASS-WITH-NOTES: potomek bazy, 5 plikow, test regresji i mutacja zielone/czerwone, testy pokoju i cesji zielone",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T20:25:33",
+  "hubGeneratedAt": "2026-11-19T20:44:41",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
-      "sizeBytes": 14986974
+      "md5": "cc570ee153a2d92fdb6a7d779960f604",
+      "sizeBytes": 14987611
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
-      "sizeBytes": 14986974
+      "md5": "cc570ee153a2d92fdb6a7d779960f604",
+      "sizeBytes": 14987611
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
-      "sizeBytes": 14986974
+      "md5": "cc570ee153a2d92fdb6a7d779960f604",
+      "sizeBytes": 14987611
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
-      "sizeBytes": 14986974
+      "md5": "cc570ee153a2d92fdb6a7d779960f604",
+      "sizeBytes": 14987611
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
-      "sizeBytes": 14986974
+      "md5": "cc570ee153a2d92fdb6a7d779960f604",
+      "sizeBytes": 14987611
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
-      "sizeBytes": 14986974
+      "md5": "cc570ee153a2d92fdb6a7d779960f604",
+      "sizeBytes": 14987611
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
-      "sizeBytes": 14986974
+      "md5": "cc570ee153a2d92fdb6a7d779960f604",
+      "sizeBytes": 14987611
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
-      "sizeBytes": 14986974
+      "md5": "cc570ee153a2d92fdb6a7d779960f604",
+      "sizeBytes": 14987611
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
-      "sizeBytes": 14986974
+      "md5": "cc570ee153a2d92fdb6a7d779960f604",
+      "sizeBytes": 14987611
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
-      "sizeBytes": 14986974
+      "md5": "cc570ee153a2d92fdb6a7d779960f604",
+      "sizeBytes": 14987611
     }
   ],
-  "md5": "a056b112089eddb5e4ad6eb49fe8d594",
+  "md5": "cc570ee153a2d92fdb6a7d779960f604",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
