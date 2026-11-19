@@ -1827,7 +1827,7 @@ import {
   converterThroughputForEra,
   converterOutputMultiplierForEra,
   converterBuildingIdForRecipe,
-  converterConsumedRatesForBuildings,
+  converterAllocatedConsumedRatesForCities,
   type RawConverterParamsJson,
   type ConverterBuildingUtilization,
 } from './game/converters';
@@ -4004,13 +4004,17 @@ async function boot(): Promise<void> {
     function empireConverterInputRatesForOwner(ownerId: number): Partial<Record<string, number>> {
       const rawForConverters = data.econParams as unknown as RawConverterParamsJson;
       const era = empireEpochForOwner(ownerId);
-      // Operacyjne budynki każdego miasta ownera (unikalne w obrębie miasta, jak w `converterBuildingIdForRecipe`).
-      const buildingIds: string[] = [];
-      for (const c of cities) {
-        if (c.ownerId !== ownerId) continue;
-        for (const id of new Set(operationalBuiltIds(c, cityBuilt.get(c.id) ?? []))) buildingIds.push(id);
+      // R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (runda 2): HUD = silnik -- wspólna pula ownera
+      // (suma City.surowce miast ownera) przechodzi przez miasta w kolejności listy jak w turn-economy.ts;
+      // zużycie przy konkurencji o glinę to to, co silnik realnie zjada, nie nominał.
+      const ownerCities = cities.filter(c => c.ownerId === ownerId);
+      const pool: Record<string, number> = {};
+      for (const c of ownerCities) {
+        for (const [key, v] of Object.entries(c.surowce ?? {})) pool[key] = (pool[key] ?? 0) + (v ?? 0);
       }
-      return converterConsumedRatesForBuildings(buildingIds, rawForConverters, _menuDifficulty, era);
+      // Operacyjne budynki każdego miasta ownera (unikalne w obrębie miasta, jak w `converterBuildingIdForRecipe`).
+      const perCityBuildingIds = ownerCities.map(c => [...new Set(operationalBuiltIds(c, cityBuilt.get(c.id) ?? []))]);
+      return converterAllocatedConsumedRatesForCities(perCityBuildingIds, rawForConverters, _menuDifficulty, era, pool);
     }
 
     /**

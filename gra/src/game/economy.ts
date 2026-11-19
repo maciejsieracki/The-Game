@@ -44,6 +44,7 @@ import type { TerrainModifierDef, TerrainTypeDef } from '../data/loader';
 import { buildingEffectAtLevel, cityPracaInteger, splitPraca, buildingLevelForEpoch } from './production';
 import { applyImprovementBonuses, oreYieldFromImprovements } from './terrain-improvements';
 import { applyCivMatrixParam, civMatrixParam, loadCivMatrix } from './civ-matrix';
+import { splitHandelLargestRemainder } from './cities';
 
 // ---------------------------------------------------------------------------
 // Building record shape (mirrors buildings.json)
@@ -1000,14 +1001,15 @@ export function cityYieldPerTurn(
   // Pieniadza) zostal USUNIETY 2026-07-25 -- Mennica jest teraz jednym z dwoch
   // warunkow bramki Efektu 1 powyzej (handelNetto), wiec mnozy juz i tak Skarb+
   // Nauke+Zamoznosc razem; osobne mnozenie tutaj dublowaloby efekt.
-  const pctNauka    = city.podziałHandlu.procentNauka    / 100;
-  const pctPieniadz = city.podziałHandlu.procentPieniadz / 100;
-  const pctLuksus   = city.podziałHandlu.procentLuksus   / 100;
 
-  const naukaZHandlu    = Math.floor(handelNetto * pctNauka);
-  const pieniadzZHandlu = Math.floor(handelNetto * pctPieniadz);
+  // R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (runda 2): podział metodą największych reszt
+  // (splitHandelLargestRemainder) zamiast floor() na każdej części osobno -- mała pula (np. Mennica
+  // 2 Skarbu przy 60/30/10) nie zeruje już Skarbu; suma części = floor(pula).
+  const handelSplitParts = splitHandelLargestRemainder(handelNetto, city.podziałHandlu);
+  const naukaZHandlu    = handelSplitParts.nauka;
+  const pieniadzZHandlu = handelSplitParts.pieniadz;
   // Luksus stream (Spec ss.2.1/2.2): feeds Zadowolenie downstream (society lane).
-  const luksusZHandluRaw = Math.floor(handelNetto * pctLuksus);
+  const luksusZHandluRaw = handelSplitParts.luksus;
   const luksusZHandlu = city.civKey
     ? Math.floor(applyCivMatrixParam(luksusZHandluRaw, city.civKey, 'eko_luksus_proc'))
     : luksusZHandluRaw;

@@ -618,6 +618,36 @@ export function normalizePodzialHandlu(split: CityPodzialHandlu): CityPodzialHan
   return { procentPieniadz: p, procentNauka: n, procentLuksus: l };
 }
 
+/**
+ * R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (runda 2, decyzja właściciela: napraw błąd gry):
+ * podział puli Handlu (Daniny netto) na Naukę / Skarb / Zamożność metodą NAJWIĘKSZYCH RESZT
+ * (largest remainder). Pula = pełne jednostki (floor). Każda część = floor(pula × %/100), a
+ * brakujące jednostki (pula − Σ części) trafiają do części o największej reszcie ułamkowej
+ * (remis: kolejność Nauka, Skarb, Zamożność). Suma części = pula zawsze; mała pula (np. 2 przy
+ * 60/30/10) nie zeruje Skarbu. Duża pula przy podziale 60/30/10 zmienia się tylko o ≤ 1 jednostkę
+ * na część (proporcje zachowane). / EN: largest-remainder split of the Handel pool, so the
+ * parts always sum to the pool and a small pool is not zeroed out by per-part floor().
+ */
+export function splitHandelLargestRemainder(
+  pool: number,
+  split: Pick<CityPodzialHandlu, 'procentNauka' | 'procentPieniadz' | 'procentLuksus'>,
+): { nauka: number; pieniadz: number; luksus: number } {
+  const total = Number.isFinite(pool) && pool > 0 ? Math.floor(pool) : 0;
+  const pcts = [split.procentNauka, split.procentPieniadz, split.procentLuksus]
+    .map(p => (Number.isFinite(p) && p > 0 ? p : 0));
+  if (pcts.reduce((a, b) => a + b, 0) <= 0) return { nauka: 0, pieniadz: 0, luksus: 0 };
+  const num = pcts.map(p => total * p);
+  const base = num.map(n => Math.floor(n / 100));
+  const rem = num.map((n, i) => n - base[i]! * 100);
+  let left = total - base.reduce((a, b) => a + b, 0);
+  const order = [0, 1, 2].sort((a, b) => (rem[b]! - rem[a]!) || (a - b));
+  for (let i = 0; left > 0 && i < 3 * left; i++) {
+    base[order[i % 3]!]! += 1;
+    left -= 1;
+  }
+  return { nauka: base[0]!, pieniadz: base[1]!, luksus: base[2]! };
+}
+
 /** Redystrybucja pozostałych dwóch pól tak, by suma = 100 po zmianie jednego (kroki 10%).
  *  Nauka ma limit MAX_PROCENT_NAUKA (60%) — nigdy nie może przekroczyć tej wartości,
  *  a gdy jest już na capie, pozostałe pola są prawidłowo clampowane do [0, 100].

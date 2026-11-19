@@ -92,11 +92,11 @@ async function bundle(srcFile, outName) {
   const mod = fs.readFileSync(path.join(SRC, 'game', 'resource-gross-net.ts'), 'utf8');
   ok(/function empireConverterInputRatesForOwner\(/.test(main), 'main.ts: empireConverterInputRatesForOwner zdefiniowana');
   const fnStart = main.indexOf('function empireConverterInputRatesForOwner(');
-  const fnBody = fnStart < 0 ? '' : main.slice(fnStart, fnStart + 900);
-  ok(/if \(c\.ownerId !== ownerId\) continue;/.test(fnBody),
-    'main.ts: empireConverterInputRatesForOwner filtruje miasta po wlascicielu (mutant c.ownerId !== -> === zlapany)');
-  ok(/return converterConsumedRatesForBuildings\(buildingIds,/.test(main),
-    'main.ts: wejscia konwerterow z WSPOLNEJ funkcji converters.ts (bez drugiej kopii formuly)');
+  const fnBody = fnStart < 0 ? '' : main.slice(fnStart, fnStart + 1500);
+  ok(/cities\.filter\(c => c\.ownerId === ownerId\)/.test(fnBody),
+    'main.ts: empireConverterInputRatesForOwner filtruje miasta po wlascicielu (mutant === -> !== zlapany)');
+  ok(/return converterAllocatedConsumedRatesForCities\(perCityBuildingIds,/.test(main),
+    'main.ts: wejscia konwerterow z WSPOLNEJ funkcji converters.ts (HUD = silnik, pula ownera; bez drugiej kopii formuly)');
   ok(!/inputs\[inputKey\]\s*=/.test(main), 'main.ts: brak lokalnej petli wejsc konwerterow');
   ok(/rateConverterInputPerTurn:\s*converterInputRates\[c\.id\]/.test(main), 'main.ts: wiersz HUD niesie rateConverterInputPerTurn');
   ok(/resourceGrossNetPerTurn\(r\)/.test(main), 'main.ts: naglowek liczy netto przez resourceGrossNetPerTurn');

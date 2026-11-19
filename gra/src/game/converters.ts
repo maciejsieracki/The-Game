@@ -481,20 +481,43 @@ export function converterAllocatedConsumedRatesForBuildings(
   stores: Readonly<Record<string, number>>,
   capacityOf: (resourceKey: string) => number = () => Infinity,
 ): Record<string, number> {
-  const recipes: ConverterRecipe[] = [];
-  const throughputs: Record<string, number> = {};
-  for (const buildingId of buildingIds) {
-    for (const recipe of DEFAULT_CONVERTER_RECIPES) {
-      if (converterBuildingIdForRecipe(recipe) !== buildingId) continue;
-      recipes.push(recipe);
-      throughputs[recipe.id] = converterThroughputForRecipe(recipe, rawParams, difficulty, era);
-    }
-  }
-  const { perBuilding } = runConverters(recipes, { ...stores }, throughputs, capacityOf);
+  return converterAllocatedConsumedRatesForCities([buildingIds], rawParams, difficulty, era, stores, capacityOf);
+}
+
+/**
+ * R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (runda 2, HUD = silnik): zużycie wejść konwerterów
+ * imperium Z PODZIAŁEM WSPÓLNEGO WEJŚCIA, liczone JAK SILNIK: wspólna pula właściciela (`stores`)
+ * przechodzi przez miasta w kolejności listy, a każde miasto (jego lista budynków operacyjnych)
+ * wywołuje `runConverters` na aktualnej puli -- tak jak `turn-economy.ts` (pula ownera, miasto po
+ * mieście). Zwraca łączne ZUŻYCIE per surowiec (suma `consumed` wszystkich miast).
+ */
+export function converterAllocatedConsumedRatesForCities(
+  cityBuildingIds: ReadonlyArray<ReadonlyArray<string>>,
+  rawParams: RawConverterParamsJson,
+  difficulty: Difficulty,
+  era: number,
+  stores: Readonly<Record<string, number>>,
+  capacityOf: (resourceKey: string) => number = () => Infinity,
+): Record<string, number> {
   const out: Record<string, number> = {};
-  for (const res of Object.values(perBuilding)) {
-    for (const [key, used] of Object.entries(res.consumed)) {
-      out[key] = (out[key] ?? 0) + used;
+  let pool: Record<string, number> = { ...stores };
+  for (const buildingIds of cityBuildingIds) {
+    const recipes: ConverterRecipe[] = [];
+    const throughputs: Record<string, number> = {};
+    for (const buildingId of buildingIds) {
+      for (const recipe of DEFAULT_CONVERTER_RECIPES) {
+        if (converterBuildingIdForRecipe(recipe) !== buildingId) continue;
+        recipes.push(recipe);
+        throughputs[recipe.id] = converterThroughputForRecipe(recipe, rawParams, difficulty, era);
+      }
+    }
+    if (recipes.length === 0) continue;
+    const { stores: next, perBuilding } = runConverters(recipes, pool, throughputs, capacityOf);
+    pool = next;
+    for (const res of Object.values(perBuilding)) {
+      for (const [key, used] of Object.entries(res.consumed)) {
+        out[key] = (out[key] ?? 0) + used;
+      }
     }
   }
   return out;

@@ -219,7 +219,7 @@ eq(bezZlotaMennica.pieniadzBrutto - bezZlotaBase.pieniadzBrutto, 0,
 // zaokrąglenia to decyzja właściciela (ABC). Asercja zostaje CZERWONA do tej decyzji.
 const zeZlotemDelta = mennicaOnly.pieniadzBrutto - base.pieniadzBrutto;
 assert(zeZlotemDelta > 0,
-  `Mennica ZE złotem (zloto 10): delta > 0 (got ${zeZlotemDelta}; ZNALEZISKO GRY -- zaokrąglenie podziału Handlu, decyzja ABC)`);
+  `Mennica ZE złotem (zloto 10): delta > 0 (got ${zeZlotemDelta}; regresja: podział Handlu metodą największych reszt)`);
 // (iii) Waluta + Mennica > sama Waluta (istniejąca asercja; gate ON).
 assert(both.pieniadzBrutto > walutaOnly.pieniadzBrutto,
   `Mennica + Waluta: dochod wyzszy niz sama Waluta (${both.pieniadzBrutto} > ${walutaOnly.pieniadzBrutto})`);

@@ -29,7 +29,7 @@ const ENTRY_FILE  = path.resolve(__dirname, '.converters-shared-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.converters-shared-bundle.cjs');
 
 fs.writeFileSync(ENTRY_FILE, `
-export { runConverters, runConverter, DEFAULT_CONVERTER_RECIPES, converterAllocatedConsumedRatesForBuildings, converterConsumedRatesForBuildings, converterBuildingIdForRecipe } from '../src/game/converters';
+export { runConverters, runConverter, DEFAULT_CONVERTER_RECIPES, converterAllocatedConsumedRatesForBuildings, converterAllocatedConsumedRatesForCities, converterConsumedRatesForBuildings, converterBuildingIdForRecipe } from '../src/game/converters';
 `, 'utf8');
 
 try {
@@ -168,6 +168,33 @@ console.log('\n-- E. HUD z podziałem wejścia = zużycie silnika (Δstanu) --')
   const rozne = M.converterAllocatedConsumedRatesForBuildings(B, {}, 'normal', 1, { glina: 1000, drewno: 1000 });
   assert(Math.abs(rozne.glina - nominal.glina) < 1e-9,
     `bez konkurencji (glina 1000): HUD z podziałem = nominał (${rozne.glina} vs ${nominal.glina})`);
+}
+
+// ---------------------------------------------------------------------------
+// F. HUD dla wielu miast ownera = silnik (pula ownera, miasto po mieście, jak turn-economy.ts).
+//    Kolejność miast jest częścią rachunku: pierwsze miasto zjada zapas, kolejne dostają resztę.
+//    Asercja: HUD (converterAllocatedConsumedRatesForCities) = ręczna pętla silnika runConverters
+//    po miastach na tej samej puli startowej.
+// ---------------------------------------------------------------------------
+console.log('\n-- F. HUD wielu miast ownera = pętla silnika po miastach --');
+{
+  const CITIES = [['cegielnia'], ['garncarnia']];
+  const stores = { glina: 40, drewno: 1000 };
+  const hud = M.converterAllocatedConsumedRatesForCities(CITIES, {}, 'normal', 1, stores);
+  const thr = Object.fromEntries(RECIPES.map(r => [r.id, r.throughputFallback]));
+  let pool = { ...stores };
+  const manual = {};
+  for (const ids of CITIES) {
+    const rec = RECIPES.filter(r => ids.includes(M.converterBuildingIdForRecipe(r)));
+    const res = M.runConverters(rec, pool, thr, () => CAP);
+    for (const r of Object.values(res.perBuilding)) {
+      for (const [k, v] of Object.entries(r.consumed)) manual[k] = (manual[k] ?? 0) + v;
+    }
+    pool = res.stores;
+  }
+  assert(Math.abs((hud.glina ?? 0) - (manual.glina ?? 0)) < 1e-9,
+    `HUD wielu miast = ręczna pętla silnika dla gliny (HUD ${hud.glina} vs silnik ${manual.glina})`);
+  assert(hud.glina <= 40 + 1e-9, `HUD wielu miast: zużycie gliny nie przekracza zapasu 40 (got ${hud.glina})`);
 }
 
 // --- summary ---------------------------------------------------------------
