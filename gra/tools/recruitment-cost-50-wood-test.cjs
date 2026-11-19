@@ -139,13 +139,13 @@ for (const [name, want] of Object.entries(EXPECTED)) {
   );
   eq(
     M.unitMoneyCost(want.money, [], 'niski', 0, 'hard'),
-    want.money * 2,
-    `${name}: koszt rekrutacji Niski/trudna gracz ×2`,
+    want.money,
+    `${name}: koszt rekrutacji Niski/trudna gracz ×1 (DECYZJA 2026-11-19: trudnosc nie mnozy kosztu jednostek)`,
   );
   eq(
     M.unitMoneyCost(want.money, [], 'niski', 1, 'easy'),
-    want.money * 2,
-    `${name}: koszt rekrutacji Niski/łatwa AI ×2`,
+    want.money,
+    `${name}: koszt rekrutacji Niski/łatwa AI ×1 (DECYZJA 2026-11-19: trudnosc nie mnozy kosztu jednostek)`,
   );
 
   eq(M.applyUnitCostPace(want.money, 'niski'), want.money, `${name}: tempo Niski ×1`);
