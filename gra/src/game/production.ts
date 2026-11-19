@@ -438,9 +438,8 @@ function applyUnitRecruitEraExtra(scaledCost: number, epoka: number | string | n
  * Wszystkie sciezki rekrutacji i wymiany jednostek uzywaja tej funkcji; itemCost pozostaje
  * bez zmian (np. loot bojowy battle-loot.ts liczy na nim dawna wartosc).
  */
-export function unitRecruitBaseMoneyCost(u: UnitDef, data: ProductionData): number {
-  const base = itemCost('jednostka', u.Jednostka, data, 1);
-  return applyUnitRecruitEraExtra(base, u.Epoka);
+export function unitRecruitBaseMoneyCost(u: UnitDef): number {
+  return applyUnitRecruitEraExtra(scaleCostByEpoch(unitCostFromDef(u), u.Epoka), u.Epoka);
 }
 
 // ---------------------------------------------------------------------------
@@ -495,7 +494,7 @@ export function unitProductionItem(
     id: u.Jednostka,
     nazwa: u.Jednostka,
     koszt: unitMoneyCost(
-      unitRecruitBaseMoneyCost(u, data),
+      unitRecruitBaseMoneyCost(u),
       civBonusy,
       kosztJednostekPace,
       ownerId,
@@ -1299,7 +1298,7 @@ export function availableProduction(
     // działa samoczynnie, bo aliveUnitTypeNames liczy się z bieżącego rosteru).
     if (u['Super-jednostka'] === 'TAK' && ctx.aliveUnitTypeNames?.has(u.Jednostka)) continue;
     const koszt = unitMoneyCost(
-      unitRecruitBaseMoneyCost(u, data),
+      unitRecruitBaseMoneyCost(u),
       ctx.civBonusy,
       ctx.kosztJednostekPace,
       ownerId,
@@ -1430,7 +1429,7 @@ export function availableReplacementsFor(
 
   function costOf(u: UnitDef): number {
     return unitMoneyCost(
-      unitRecruitBaseMoneyCost(u, data),
+      unitRecruitBaseMoneyCost(u),
       ctx.civBonusy,
       ctx.kosztJednostekPace,
       ownerId,
@@ -2639,7 +2638,7 @@ export function unitPurchaseCost(
   difficulty: GameDifficulty = 'normal',
 ): number {
   return unitMoneyCost(
-    applyUnitRecruitEraExtra(scaleCostByEpoch(unitCostFromDef(def), def.Epoka), def.Epoka),
+    unitRecruitBaseMoneyCost(def),
     civBonusy,
     kosztJednostekPace,
     ownerId,
