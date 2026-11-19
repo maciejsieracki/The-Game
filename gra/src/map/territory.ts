@@ -44,6 +44,13 @@ export type TerritoryNode = CityNode & {
    * / EN: build-order stamp; the earlier fort wins a hex contested by forts of different civs.
    */
   order?: { turn: number; seq: number };
+  /**
+   * R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1 (decyzja wlasciciela 2026-11-19, ABC C):
+   * tylko dla fortu/posterunku — `true` gdy na heksie (q,r) stoi ulepszenie. Heks z ulepszeniem w pierscieniu
+   * fortu NIE przechodzi pod miasto innej cywilizacji (zostaje u wlasciciela fortu).
+   * / EN: fort/outpost only; a hex (q,r) with an improvement inside the fort ring stays with the fort owner.
+   */
+  shieldsHex?: (q: number, r: number) => boolean;
 };
 
 // ============================================================
@@ -129,6 +136,7 @@ export function territoryOwnerAt(
   let bestFortOwner: number | null = null;
   let bestFortDist = Infinity;
   let bestFortOrder: { turn: number; seq: number } | undefined;
+  let bestFortShields: ((q: number, r: number) => boolean) | undefined;
   let centreFortOwner: number | null = null;
 
   for (const node of nodes) {
@@ -148,7 +156,7 @@ export function territoryOwnerAt(
       } else {
         better = dist < bestFortDist;
       }
-      if (better) { bestFortDist = dist; bestFortOwner = node.ownerId; bestFortOrder = o; }
+      if (better) { bestFortDist = dist; bestFortOwner = node.ownerId; bestFortOrder = o; bestFortShields = node.shieldsHex; }
     } else if (dist < bestCityDist) {
       bestCityDist = dist;
       bestCityOwner = node.ownerId;
@@ -161,6 +169,11 @@ export function territoryOwnerAt(
   // / EN: a hex inside any city radius is decided by cities only; forts/outposts
   // claim only city-free land.
   if (centreFortOwner !== null) return centreFortOwner;
+  // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1: heks z ulepszeniem w pierscieniu fortu/posterunku
+  // zostaje przy wlascicielu fortu, takze gdy wygralby go cudze miasto (miasto<->miasto bez zmian).
+  // / EN: an improved hex inside a fort/outpost ring stays with the fort owner even against a foreign city.
+  if (bestFortOwner !== null && bestCityOwner !== null && bestCityOwner !== bestFortOwner
+    && bestFortShields !== undefined && bestFortShields(q, r)) return bestFortOwner;
   if (bestCityOwner !== null) return bestCityOwner;
   return bestFortOwner;
 }
@@ -182,12 +195,14 @@ const NO_ORDER = -1e12;
 
 function ownerIndexPack(q: number, r: number): number { return (q + 8192) * 16384 + (r + 8192); }
 
-type NodeLike = CityNode & { ownerId?: number; order?: { turn: number; seq: number } };
+type NodeLike = CityNode & { ownerId?: number; order?: { turn: number; seq: number }; shieldsHex?: (q: number, r: number) => boolean };
 function nodeKind(nd: NodeLike): number { return nd.isFort ? 1 : nd.isOutpost ? 2 : 0; }
 
 /** Wpis rejestru dla ZAWARTOŚCI węzłów (q, r, promień, rodzaj, właściciel, order); porównanie liczbowe, bez alokacji przy trafieniu. */
 function nodesEntryFor(nodes: readonly NodeLike[]): NodesEntry | null {
   const n = nodes.length;
+  // Wezel z `shieldsHex` zalezy od ulepszen (zmieniaja sie bez zmiany zawartosci wezlow) -> bez wpisu/indeksu.
+  for (let i = 0; i < n; i++) if (nodes[i]!.shieldsHex !== undefined) return null;
   for (let e = 0; e < nodesEntries.length; e++) {
     const c = nodesEntries[e]!;
     if (c.n !== n) continue;

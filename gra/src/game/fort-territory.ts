@@ -138,12 +138,17 @@ export function fortNodeAsCityNode(f: Pick<FortNode, 'q' | 'r' | 'type'>): CityN
  * `buildAllTerritoryNodes` (main.ts). `contestedUseless` (regula 3) NIE tworzy
  * terytorium. / EN: hard-territory nodes from forts/outposts.
  */
-export function fortTerritoryNodes(forts: readonly FortNode[]): TerritoryNode[] {
+export function fortTerritoryNodes(
+  forts: readonly FortNode[],
+  improvedAt?: (q: number, r: number) => boolean,
+): TerritoryNode[] {
   const out: TerritoryNode[] = [];
   for (const f of forts) {
     if (f.contestedUseless) continue;
     const node: TerritoryNode = { ...fortNodeAsCityNode(f), ownerId: f.ownerId };
     if (typeof f.seq === 'number') node.order = { turn: f.builtAtTurn ?? 0, seq: f.seq };
+    // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1: heks z ulepszeniem w pierscieniu fortu zostaje u wlasciciela.
+    if (improvedAt) node.shieldsHex = improvedAt;
     out.push(node);
   }
   return out;

@@ -152,5 +152,46 @@ console.log('\n--- R2-zrodlo: sweepFortCaptures uzywa areEnemyOwners (wojna) i n
   assert(/getDiploRelation\(a, b\)\.status === 'wojna'/.test(areEnemy), 'R2-9: areEnemyOwners = status wojna (nie pokoj/rozejm/sojusz)');
 }
 
+// ---- RF: R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1 (ABC C 2026-11-19) ----
+// Heks z ulepszeniem w pierscieniu fortu wlasciciela NIE przechodzi pod nowe miasto innej cywilizacji.
+{
+  // Pierscien fortu gracza (0) na (0,0), r=5. Miasto AI (1) na (7,0), pop 10 -> zasieg 10, obejmuje (5,0)...(2,0).
+  // Ulepszenia (stadnina) stoja na (2,0) i (3,0); reszta bez ulepszen.
+  const improved = new Set(['2,0', '3,0']);
+  const shieldsHex = (q, r) => improved.has(q + ',' + r);
+  const mkFortNodes = (improvedAt) => FT.fortTerritoryNodes([{ q: 0, r: 0, ownerId: 0, type: 'fort', builtAtTurn: 1, seq: 0 }], improvedAt);
+  const city = { q: 7, r: 0, pop: 10, level: 1, ownerId: 1 };
+  const withShield = [city].concat(mkFortNodes(shieldsHex));
+  console.log('\n--- RF: stadnina w pierscieniu fortu gracza przy nowym miescie AI ---');
+  eq(territoryOwnerAt(2, 0, withShield), 0, 'RF-1: heks ze stadnina (2,0) w pierscieniu fortu gracza pozostaje u gracza (0)');
+  eq(territoryOwnerAt(3, 0, withShield), 0, 'RF-2: heks ze stadnina (3,0) pozostaje u gracza (0)');
+  eq(territoryOwnerAt(4, 0, withShield), 1, 'RF-3: heks BEZ ulepszenia (4,0) w zasiegu miasta AI -> miasto AI (1)');
+  eq(territoryOwnerAt(5, 0, withShield), 1, 'RF-4: heks BEZ ulepszenia (5,0) -> miasto AI (1)');
+  eq(territoryOwnerAt(0, 0, withShield), 0, 'RF-5: centrum fortu (0,0) nadal u gracza (regula centrum bez zmian)');
+  eq(territoryOwnerAt(-1, 0, withShield), 1, 'RF-6: heks BEZ ulepszenia (-1,0) w zasiegu miasta AI (dist 8 <= 10) -> miasto AI (1)');
+  // Granica promienia fortu: (6,0) jest poza promieniem fortu (5) -> nie dotyczy pierscienia; miasto wygrywa jak dawniej.
+  eq(territoryOwnerAt(6, 0, withShield), 1, 'RF-7: heks poza promieniem fortu (6,0) -> miasto AI (1), zasieg miasta bez zmian');
+  // Kontrola: bez predykatu (brak shieldsHex) stadnina nie chroni -> stara regula, miasto wygrywa.
+  const noShield = [city].concat(mkFortNodes(undefined));
+  eq(territoryOwnerAt(2, 0, noShield), 1, 'RF-8: kontrola bez predykatu: heks (2,0) -> miasto AI (stara regula)');
+  // Odwrotnie: miasto gracza przy forcie AI z ulepszeniem.
+  const cityP = { q: 7, r: 0, pop: 10, level: 1, ownerId: 0 };
+  const rev = [cityP].concat(FT.fortTerritoryNodes([{ q: 0, r: 0, ownerId: 1, type: 'posterunek', builtAtTurn: 1, seq: 0 }], shieldsHex));
+  eq(territoryOwnerAt(2, 0, rev), 1, 'RF-9: odwrotnie: stadnina w pierscieniu posterunku AI przy miescie gracza -> AI (1)');
+  eq(territoryOwnerAt(4, 0, rev), 0, 'RF-10: odwrotnie: heks bez ulepszenia (4,0) -> miasto gracza (0)');
+  // Mutacja kopii: stara regula (bez shieldsHex) daje przejecie -> RF-1 bylby czerwony.
+  const mutCity = { q: 7, r: 0, pop: 10, level: 1, ownerId: 1 };
+  const mutNodes = [mutCity].concat(mkFortNodes(undefined));
+  assert(territoryOwnerAt(2, 0, mutNodes) === 1, 'RF-M1: mutacja (bez ochrony ulepszen) oddaje stadnine miastu AI -> RF-1 czerwony');
+  // Indeks zakresowy (>=12 wezlow) nie cacheuje wynikow zaleznych od ulepszen: lookup == territoryOwnerAt po zmianie predykatu.
+  let flag = true;
+  const dyn = [city].concat(FT.fortTerritoryNodes([{ q: 0, r: 0, ownerId: 0, type: 'fort', builtAtTurn: 1, seq: 0 }], (q, r) => flag && q === 2 && r === 0));
+  const lk = M.territoryOwnerLookup(dyn);
+  eq(lk(2, 0), 0, 'RF-11: lookup przy ulepszeniu = gracz (0)');
+  flag = false;
+  eq(lk(2, 0), territoryOwnerAt(2, 0, dyn), 'RF-12: lookup po usunieciu ulepszenia zgodny z territoryOwnerAt (brak cache)');
+  eq(lk(2, 0), 1, 'RF-13: po usunieciu ulepszenia (2,0) -> miasto AI (1)');
+}
+
 console.log(`\n=== city-founding-no-fort-takeover-test: ${passed} passed, ${failed} failed ===`);
 process.exit(failed > 0 ? 1 : 0);

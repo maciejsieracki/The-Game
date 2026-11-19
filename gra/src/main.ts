@@ -5959,7 +5959,14 @@ async function boot(): Promise<void> {
       }));
       // R-WEB-OUTPOST-FORT-TERRITORY-Q1 (decyzja wlasciciela 2026-10-31, zastepuje Q2=B
       // z 2026-08-09): posterunek (r=3) i fort (r=5) = TWARDE terytorium jak miasto.
-      return fortNodes.length > 0 ? cityNodes.concat(fortTerritoryNodes(fortNodes)) : cityNodes;
+      // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1 (ABC C 2026-11-19): heks z ulepszeniem w pierscieniu
+      // fortu/posterunku zostaje u wlasciciela fortu (predykat na zywo z placedImprovements, nie kopia).
+      return fortNodes.length > 0
+        ? cityNodes.concat(fortTerritoryNodes(fortNodes, (q, r) => {
+          const layers = placedImprovements.get(keyOf(q, r));
+          return layers !== undefined && layers.length > 0;
+        }))
+        : cityNodes;
     }
 
     /**
