@@ -10,6 +10,7 @@ import sys
 
 S = 'src/domain/siege_battle_session.rs'
 L = 'src/domain/siege_tactics_loop.rs'
+ONLY = __import__('os').environ.get('ONLY')
 MUTANTS = [
     (S, 'W01 RNG: inne mieszanie ziarna', '^ 0x5349_4547; // "SIEG"', '^ 0x5349_4548; // "SIEG"'),
     (S, 'W02 RNG: bez numeru bitwy', 'seed ^ battle_index.wrapping_mul(0x9E37_79B9)', 'seed ^ 0u32.wrapping_mul(battle_index)'),
@@ -30,8 +31,8 @@ MUTANTS = [
     (L, 'B01 _applyTerrainRange nie na początku aktywacji', '        self.refresh_terrain_range(unit.side, unit.idx);\n', ''),
     (L, 'B02 ogon ciosu 0', 'self.tail[ix][unit.idx] = BLOW_LUNGE_MS + BLOW_SETTLE_MS - pu.body_ms;', 'self.tail[ix][unit.idx] = 0.0;'),
     (L, 'B03 trafienie strzału na końcu (FLY+GAP)', 'dur = at + RANGED_FLY_MS;', 'dur = at + RANGED_FLY_MS + RANGED_GAP_MS;'),
-    (L, 'B04 wieża widzi pozycję końcową marszu', '*u == unit && *t0 > self.now)', '*u == unit && *t0 > f64::INFINITY)'),
-    (L, 'B05 wieża bez czasu wystrzału', "        self.env.body.set_now(clock.v_now);\n        let Some(target) = self.env.pick_tower_for_row", "        let Some(target) = self.env.pick_tower_for_row"),
+    (L, 'B04 wieża widzi pozycję końcową marszu', '*u == unit && *t0 > v_now)', '*u == unit && *t0 > f64::INFINITY)'),
+    (L, 'B05 wieża widzi pozycję sprzed całego marszu', 'self.env.pick_tower_for_row(&self.st, row, clock.v_now)', 'self.env.pick_tower_for_row(&self.st, row, f64::NEG_INFINITY)'),
     (L, 'B06 zagrożenia strzelców bez _applyTerrainRange', '                self.refresh_terrain_range(opposite(unit.side), i);\n', ''),
     (L, 'B07 zejście z korony bez _applyTerrainRange', '            self.refresh_terrain_range(BattleSide::Defender, idx);\n', ''),
 ]
@@ -42,6 +43,8 @@ def main():
     results = []
     try:
         for f, name, old, new in MUTANTS:
+            if ONLY and not any(name.startswith(o) for o in ONLY.split(',')):
+                continue
             src = srcs[f]
             if src.count(old) != 1:
                 results.append((name, f'BRAK WZORCA ({src.count(old)})'))

@@ -135,6 +135,12 @@ pub trait LoopBody {
     fn unit_cell(&self, _unit: UnitRef) -> Option<(i64, i64)> {
         None
     }
+    /// Obrona r2 (E2-1b, D-WIRA-18): pozycja jednostki W CHWILI `v_now` (web `ru.q/ru.r` w trakcie marszu
+    /// wielokrokowego, `_doMove` zmienia je w chwili kroku). Czytana przez `pickTowerTarget` w `_fireOneTower`
+    /// (`battleScene.ts:4228-4233`). Domyślnie = [`LoopBody::unit_cell`].
+    fn unit_cell_at(&self, unit: UnitRef, _v_now: f64) -> Option<(i64, i64)> {
+        self.unit_cell(unit)
+    }
     /// Trafienie wieży (web `_singleBlow(shooter, target, true)` w `_fireOneTower`, `battleScene.ts:4262`): cios z
     /// szablonu `tmpl` na atakującego `target` (indeks w `st.atk`), skutki HP/zabicia w `st`. Domyślnie bez efektu.
     fn tower_blow(&mut self, _tmpl: &FullBlowInput, _target: usize, _st: &mut TurnSeqState) {}
@@ -522,7 +528,7 @@ impl<B: LoopBody> SiegeEnv<B> {
 
     /// Web `_fireOneTower` → `pickTowerTarget` (`battleScene.ts:4223-4232`): cel wybierany W CHWILI WYSTRZAŁU spośród
     /// żywych atakujących (filtr jak `this.atk.filter(...)` w pinie). Zwraca indeks w `st.atk`.
-    fn pick_tower_for_row(&self, st: &TurnSeqState, row: i64) -> Option<usize> {
+    fn pick_tower_for_row(&self, st: &TurnSeqState, row: i64, v_now: f64) -> Option<usize> {
         let mut refs: Vec<usize> = Vec::new();
         let mut targets: Vec<TowerTarget> = Vec::new();
         for (idx, u) in st.atk.iter().enumerate() {
@@ -530,10 +536,13 @@ impl<B: LoopBody> SiegeEnv<B> {
             if c.dead || c.fading_out || c.routed || c.removed {
                 continue;
             }
-            let Some((q, r)) = self.body.unit_cell(UnitRef {
-                side: BattleSide::Attacker,
-                idx,
-            }) else {
+            let Some((q, r)) = self.body.unit_cell_at(
+                UnitRef {
+                    side: BattleSide::Attacker,
+                    idx,
+                },
+                v_now,
+            ) else {
                 continue;
             };
             refs.push(idx);
@@ -999,9 +1008,8 @@ impl<B: LoopBody> SiegeLoop<B> {
         if !self.env.wall_tile_rows.contains(&row) {
             return;
         }
-        // Obrona r2 (E2-1b): pozycje celów W CHWILI wystrzału (oś kroków ciała, [`LoopBody::unit_cell`]).
-        self.env.body.set_now(clock.v_now);
-        let Some(target) = self.env.pick_tower_for_row(&self.st, row) else {
+        // Obrona r2 (E2-1b): pozycje celów W CHWILI wystrzału (oś kroków ciała, [`LoopBody::unit_cell_at`]).
+        let Some(target) = self.env.pick_tower_for_row(&self.st, row, clock.v_now) else {
             return;
         };
         // P4-1I3: `this.log.push('Wieza strzelnicza …')` (`:4247`), potem pocisk (`projectiles.push`, `:4260`).
@@ -3983,15 +3991,21 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
     }
     fn unit_cell(&self, unit: UnitRef) -> Option<(i64, i64)> {
         let pu = self.units[side_ix(unit.side)].get(unit.idx)?;
-        // Obrona r2 (E2-1b): krok o `t0 > now` jeszcze się nie zaczął; pozycja = `from` pierwszego takiego kroku.
-        if let Some(&(_, _, from, _)) = self
-            .move_timeline
-            .iter()
-            .find(|(u, t0, _, _)| *u == unit && *t0 > self.now)
-        {
-            return Some(from);
-        }
         Some((pu.activate.q, pu.activate.r))
+    }
+    fn unit_cell_at(&self, unit: UnitRef, v_now: f64) -> Option<(i64, i64)> {
+        // Obrona r2 (E2-1b): krok o `t0 > v_now` jeszcze się nie zaczął; pozycja = `from` pierwszego takiego kroku.
+        // Tylko w modelu czasu pinu ([`Self::pin_blow_timing`]); dawne wektory pętli liczą pozycje końcowe.
+        if self.pin_blow_timing {
+            if let Some(&(_, _, from, _)) = self
+                .move_timeline
+                .iter()
+                .find(|(u, t0, _, _)| *u == unit && *t0 > v_now)
+            {
+                return Some(from);
+            }
+        }
+        self.unit_cell(unit)
     }
     fn take_timers(&mut self) -> Vec<(f64, u64)> {
         std::mem::take(&mut self.timers)
@@ -6093,7 +6107,7 @@ mod tower_target_tests {
         // Wieża (5,3), zasięg 2. A0 (7,3) d=2 hp 10; A1 (6,4) d=2 hp 4 (remis, mniejsze HP wygrywa); A2 poza zasięgiem.
         let st = state(&[10.0, 4.0, 3.0]);
         let e = env(vec![Some((7, 3)), Some((6, 4)), Some((9, 9))]);
-        assert_eq!(e.pick_tower_for_row(&st, 3), Some(1));
+        assert_eq!(e.pick_tower_for_row(&st, 3, 0.0), Some(1));
     }
 
     #[test]
@@ -6101,7 +6115,7 @@ mod tower_target_tests {
         // A0 najbliżej (6,3), ale bez pozycji: cel to A1 (7,3).
         let st = state(&[1.0, 10.0]);
         let e = env(vec![None, Some((7, 3))]);
-        assert_eq!(e.pick_tower_for_row(&st, 3), Some(1));
+        assert_eq!(e.pick_tower_for_row(&st, 3, 0.0), Some(1));
     }
 
     #[test]
@@ -6111,16 +6125,16 @@ mod tower_target_tests {
         let mut e = env(vec![Some((7, 3)), Some((6, 4))]);
         e.fire_siege_towers(&mut st);
         assert_eq!(e.pending_tower_shots.len(), 1);
-        assert_eq!(e.pick_tower_for_row(&st, 3), Some(1));
+        assert_eq!(e.pick_tower_for_row(&st, 3, 0.0), Some(1));
         st.atk[1].c.dead = true;
-        assert_eq!(e.pick_tower_for_row(&st, 3), Some(0));
+        assert_eq!(e.pick_tower_for_row(&st, 3, 0.0), Some(0));
     }
 
     #[test]
     fn no_target_in_range_returns_none() {
         let st = state(&[10.0]);
         let e = env(vec![Some((9, 9))]);
-        assert_eq!(e.pick_tower_for_row(&st, 3), None);
+        assert_eq!(e.pick_tower_for_row(&st, 3, 0.0), None);
     }
 }
 

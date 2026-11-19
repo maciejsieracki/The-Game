@@ -469,7 +469,10 @@ fn zlote_wyniki_sesji() {
         ));
     }
     eprintln!("ZLOTE {:016x}", fnv(&all));
-    assert_eq!(format!("{:016x}", fnv(&all)), "619d9ea6ba687f71", "{all}");
+    // Obrona r2: skrót zmieniony 619d9ea6ba687f71 -> 9b17cd8895ee7c0b przez poprawki parytetu z pinem (D-WIRA-16
+    // `_applyTerrainRange` `battleScene.ts:6064`, D-WIRA-17 ogon aktywacji `:9119-9172`/`:9223-9229`, D-WIRA-18 pozycje
+    // celów wież `:4228-4233`); dowodem parytetu są wektory pinu `p6_k5loop_wiring_a_pin` (7/8 bajt w bajt).
+    assert_eq!(format!("{:016x}", fnv(&all)), "9b17cd8895ee7c0b", "{all}");
 }
 
 /// D-WIRA-3: kwantyzacja klatek 16 ms z resztą; pierwsza klatka tylko ustawia `vLastWall` (`_advanceVClock` `:9502`).
