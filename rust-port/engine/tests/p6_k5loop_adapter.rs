@@ -1539,3 +1539,128 @@ fn limit_strony_jak_pin() {
     assert_eq!(capped[499].id, "u499");
     assert_eq!(cap_side(&all[..120]).len(), 120);
 }
+
+/// `_siegeMachineRange` (`battleScene.ts:7530-7534`): `r >= 1 ? r : ...` — na granicy `r == 1` (katapulta z zasiegiem
+/// zbitym bonusem civ `walka_zasieg_proc` do 1) wynik to 1, nie 6 (mutant M04 `>= 1 -> > 1`).
+#[test]
+fn zasieg_machiny_granica_jeden() {
+    use civ_engine::domain::siege_battle_adapter_body::siege_machine_range;
+    let (units, _) = body_fixture();
+    // Katapulta spoza `units.json` (rekord zastepczy pinu, zasieg 0) -> galaz `isCatapult ? 6`.
+    assert_eq!(units[2].attack_range_for(), 0.0);
+    assert_eq!(siege_machine_range(&units[2]), 6.0);
+    let mut kat = units[2].clone();
+    kat.stats
+        .insert("Zasieg ataku (hex)".into(), UVal::Num(2.0));
+    assert!(kat.setup_unit().is_catapult());
+    // Zasieg z definicji 2: `r >= 1` -> 2.
+    assert_eq!(siege_machine_range(&kat), 2.0);
+    let base = kat.attack_range();
+    assert_eq!(base, 2.0);
+    kat.civ_bonusy = vec![CivBonusEntry {
+        typ: "bonus_walka".into(),
+        cel: "wszystko".into(),
+        wartosc: BonusValue::Number(1.0 / base - 1.0),
+        opis: None,
+        realizuje: Some("walka".into()),
+        matrix_param_id: Some("walka_zasieg_proc".into()),
+    }];
+    assert_eq!(kat.attack_range_for(), 1.0);
+    assert_eq!(siege_machine_range(&kat), 1.0);
+}
+
+/// `wallCrownShooterRange` (`city-defense.ts:139-142`): `Math.ceil(r * 2)` — ulamkowy zasieg w gore (mutant M15).
+#[test]
+fn korona_zaokragla_w_gore() {
+    use civ_engine::domain::siege_battle_adapter_unit::wall_crown_shooter_range;
+    assert_eq!(wall_crown_shooter_range(1.25), 3.0);
+    assert_eq!(wall_crown_shooter_range(2.0), 4.0);
+    assert_eq!(wall_crown_shooter_range(-1.0), 0.0);
+    assert_eq!(wall_crown_shooter_range(f64::NAN), 0.0);
+}
+
+/// `startingMoralePenaltyFrac` (`combat.ts:1349-1356`): `Math.min(sufitProc / 100, raw)` — sufit 65 % (mutant M16).
+#[test]
+fn kara_morale_sufit() {
+    use civ_engine::domain::siege_battle_adapter_unit::starting_morale_penalty_frac;
+    let p = StartingMoraleParams::pin();
+    assert_eq!(starting_morale_penalty_frac(1e9, &p), 0.65);
+    assert_eq!(starting_morale_penalty_frac(100.0, &p), 0.65);
+    assert_eq!(starting_morale_penalty_frac(1.0, &p), 0.0);
+    assert_eq!(starting_morale_penalty_frac(f64::INFINITY, &p), 0.0);
+    let r = starting_morale_penalty_frac(10.0, &p);
+    assert!((r - 0.5).abs() < 1e-15, "{r}");
+}
+
+/// `applyStartingMoralePenalty` (`combat.ts`): podloga `Math.min(morale, flee + eps)` — jednostka z morale juz
+/// ponizej progu ucieczki nie jest podnoszona do `flee + eps` (mutant M18); ponad progiem spada o kare.
+#[test]
+fn kara_morale_podloga_nie_podnosi() {
+    let d = doc();
+    let rows = stat_rows_from_json(&d["units"]).unwrap();
+    let index = unit_def_index(&rows);
+    let ow = owners();
+    let ctx = RosterBattleCtx {
+        rows: &rows,
+        index: &index,
+        militia_defs: &[],
+        owners: &ow,
+        fallback: UnitDefFallback::PinRecord,
+    };
+    let atk = roster_to_battle_units(
+        &[
+            RosterUnit::new("a1", 0, "Wojownik", "miecznik", 0, 0),
+            RosterUnit::new("a2", 0, "Wojownik", "miecznik", 0, 0),
+        ],
+        Side::Atk,
+        &ctx,
+    )
+    .unwrap();
+    let def_roster: Vec<RosterUnit> = (0..8)
+        .map(|i| RosterUnit::new(&format!("d{i}"), 1, "Wojownik", "miecznik", 0, 0))
+        .collect();
+    let def = roster_to_battle_units(&def_roster, Side::Def, &ctx).unwrap();
+    let env = SpawnEnv {
+        terrain: "Rownina".into(),
+        shallow_sea: false,
+        crown_range_delta: 0.0,
+    };
+    let mut atk_f: Vec<_> = atk
+        .iter()
+        .map(|u| spawn_fields(u, SpawnSlot::Attacker, &env).unwrap())
+        .collect();
+    let mut def_f: Vec<_> = def
+        .iter()
+        .map(|u| spawn_fields(u, SpawnSlot::DefenderInner, &env).unwrap())
+        .collect();
+    atk_f[0].flee_morale = 30.0;
+    atk_f[0].morale = 10.0;
+    atk_f[1].flee_morale = 30.0;
+    atk_f[1].morale = 100.0;
+    let def_before: Vec<f64> = def_f.iter().map(|f| f.morale).collect();
+    let opts = ToCombatUnitOpts {
+        army_hunger_stat_mult: 1.0,
+        skip_hunger: false,
+        gold_deficit_stat_mult: 1.0,
+        skip_gold_deficit: false,
+    };
+    let pen = apply_starting_morale_power_penalty(
+        &atk,
+        &def,
+        &mut atk_f,
+        &mut def_f,
+        &opts,
+        &StartingMoraleParams::pin(),
+    );
+    assert_eq!(pen.weaker, Some(Side::Atk));
+    assert!(pen.frac > 0.0 && pen.frac < 0.65, "{}", pen.frac);
+    assert_eq!(pen.changed, 2);
+    // Ponizej progu: max(min(10, 31), round(10 * (1 - frac))) = 10.
+    assert_eq!(atk_f[0].morale, 10.0);
+    // Ponad progiem: max(min(100, 31), round(100 * (1 - frac))).
+    let want = (100.0 * (1.0 - pen.frac)).round().max(31.0);
+    assert_eq!(atk_f[1].morale, want);
+    assert!(atk_f[1].morale < 100.0);
+    let def_after: Vec<f64> = def_f.iter().map(|f| f.morale).collect();
+    assert_eq!(def_before, def_after);
+}
