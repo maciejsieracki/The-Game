@@ -15,7 +15,8 @@
 //   `import.meta.glob` = `{}`; `localStorage` = pusty magazyn.
 // * `requestAnimationFrame` = kolejka klatek prowadzona przez sterownik: klatka k wykonuje (w kolejnosci rejestracji)
 //   wszystkie wywolania zarejestrowane przed nia, z czasem `t = 16 * k` ms (D-WIRA-3: klatka 16 ms, `BATTLE_FRAME_WALL_MS`).
-// * `performance.now` = prawdziwy zegar (budzet 40 ms `_runFastForward` `:9422` dzieli tylko przewijanie na porcje).
+// * `performance.now` = deterministyczny zegar +1 ms na odczyt (budzet 40 ms `_runFastForward` `:9422` dzieli tylko
+//   przewijanie na porcje; obrona r2, N2).
 // * RNG: JEDYNA podmiana tekstu pinu: `battleScene.ts:8960` `const roll   = Math.random() * 100;` ->
 //   `__blowRandom() * 100` (D-WIR-5: rzut `_singleBlow`), gdzie `__blowRandom` = LCG `domain/rng.rs`
 //   (`state = state * 1664525 + 1013904223 mod 2^32`, wynik `state / 2^32`) z ziarnem `SessionRolls::derive(seed, nr)`
@@ -102,6 +103,12 @@ globalThis.document = makeStub('document');
 globalThis.requestAnimationFrame = (cb) => { rafQ.push(cb); return rafQ.length; };
 globalThis.cancelAnimationFrame = () => {};
 globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+// Obrona r2 (N2 Evaluatora): deterministyczny zegar scienny zamiast prawdziwego `performance.now`. Pin uzywa go wylacznie
+// jako budzetu 40 ms jednej porcji `_runFastForward` (`battleScene.ts:9422-9423`) i w dzwiekach (`:11045`, `:11082`,
+// atrapa); kazdy odczyt przesuwa zegar o 1 ms, wiec podzial przewijania na porcje nie zalezy od obciazenia maszyny.
+// Pomiar obrony r2: wektory z tym zegarem = wektory z prawdziwym zegarem bajt w bajt (MD5 vectors.json 269b4da2...).
+let fakeWall = 0;
+Object.defineProperty(globalThis, 'performance', { value: { now: () => (fakeWall += 1) }, configurable: true, writable: true });
 let otherRandom = 0;
 Math.random = () => { otherRandom += 1; return 0.5; };
 
