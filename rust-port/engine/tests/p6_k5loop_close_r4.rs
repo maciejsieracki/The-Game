@@ -1149,6 +1149,167 @@ fn ucieczka_przy_murze_zgodna_z_pinem() {
     });
 }
 
+/// P4-1I5a: progi pokrycia testu DTO (zmierzone na wektorach przy bazie 32006733b, raport `01-operator-r1.md`).
+const MIN_R4_MOVES: usize = 1467;
+const MIN_R4_SHOTS: usize = 339;
+
+/// P4-1I5a (D-WIR-6/7): id jednostki w DTO = `SeqUnit::id` z rosteru pętli.
+fn dto_id(st: &TurnSeqState, u: UnitRef) -> civ_view_model::ids::UnitId {
+    let list = match u.side {
+        BattleSide::Attacker => &st.atk,
+        BattleSide::Defender => &st.def,
+    };
+    civ_view_model::ids::UnitId::try_new(list[u.idx].id).expect("id")
+}
+
+/// P4-1I5a: `actions_to_dto` przekłada akcje silnika 1:1 (ta sama kolejność i `t0`); `Facing`, `Move`, `Shot`, `Damage`
+/// pole po polu (`arriveAt = t0 + MOVE_STEP_MS`, `landAt = t0 + RANGED_FLY_MS`). Rozbieżności trafiają do `failures`.
+fn check_dto_1to1(
+    name: &str,
+    actions: &[TimedAction],
+    st: &TurnSeqState,
+    failures: &mut Vec<String>,
+) -> Vec<civ_view_model::battle::BattleActionDto> {
+    use civ_engine::domain::siege_tactics_actions::actions_to_dto;
+    use civ_engine::domain::siege_tactics_loop::{MOVE_STEP_MS as STEP, RANGED_FLY_MS as FLY};
+    use civ_view_model::battle::BattleActionKindDto as K;
+    let dto = match actions_to_dto(actions, st) {
+        Ok(d) => d,
+        Err(e) => {
+            failures.push(format!("{name}: actions_to_dto {e:?}"));
+            return Vec::new();
+        }
+    };
+    if dto.len() != actions.len() {
+        failures.push(format!(
+            "{name}: DTO {} != akcje {}",
+            dto.len(),
+            actions.len()
+        ));
+        return dto;
+    }
+    for (k, (a, d)) in actions.iter().zip(&dto).enumerate() {
+        if a.t0.to_bits() != d.t0.to_bits() {
+            failures.push(format!("{name}[{k}]: t0 {} != {}", d.t0, a.t0));
+        }
+        let ok = match (&a.action, &d.action) {
+            (BattleAction::Facing { unit, dir }, K::Facing { id, dir: dd }) => {
+                *id == dto_id(st, *unit) && f64::from(*dd) == *dir
+            }
+            (
+                BattleAction::Move {
+                    unit,
+                    from,
+                    to,
+                    arrive_at,
+                },
+                K::Move {
+                    id,
+                    from_col,
+                    from_row,
+                    to_col,
+                    to_row,
+                    arrive_at: da,
+                },
+            ) => {
+                *id == dto_id(st, *unit)
+                    && (i64::from(*from_col), i64::from(*from_row)) == *from
+                    && (i64::from(*to_col), i64::from(*to_row)) == *to
+                    && da.to_bits() == arrive_at.to_bits()
+                    && *da == d.t0 + STEP
+            }
+            (
+                BattleAction::Shot {
+                    attacker,
+                    target,
+                    land_at,
+                },
+                K::Shot {
+                    attacker: da,
+                    target: dt,
+                    land_at: dl,
+                },
+            ) => {
+                *da == dto_id(st, *attacker)
+                    && *dt == dto_id(st, *target)
+                    && dl.to_bits() == land_at.to_bits()
+                    && *dl == d.t0 + FLY
+            }
+            (
+                BattleAction::Damage { target, dmg },
+                K::Damage {
+                    target: dt,
+                    dmg: dd,
+                },
+            ) => *dt == dto_id(st, *target) && dd.to_bits() == dmg.to_bits(),
+            (
+                BattleAction::Facing { .. }
+                | BattleAction::Move { .. }
+                | BattleAction::Shot { .. }
+                | BattleAction::Damage { .. },
+                _,
+            ) => false,
+            _ => true,
+        };
+        if !ok {
+            failures.push(format!("{name}[{k}]: {:?} -> {:?}", a.action, d.action));
+        }
+    }
+    dto
+}
+
+/// P4-1I5a (D-WIR-6/7): dla KAŻDEGO wektora r4 (pierwsza aktywacja jak w `check_activation`) akcje silnika z `Move` i
+/// `Shot` przechodzą przez `actions_to_dto` 1:1. `Leave` i `Shaken` (bez DTO do I5b) są usuwane przed konwersją; ich
+/// jawny błąd pilnuje `leave_i_shaken_bez_dto_to_jawny_blad`.
+#[test]
+fn move_i_shot_dto_1do1_w_wektorach_r4() {
+    let (v, cav_mult) = load_from(VECTORS);
+    let mut failures: Vec<String> = Vec::new();
+    let (mut n_moves, mut n_shots) = (0usize, 0usize);
+    for case in v["cases"].as_array().expect("cases") {
+        let name = case["name"].as_str().expect("name");
+        let Built {
+            mut body,
+            mut st,
+            acting,
+        } = build(case, &cav_mult, true);
+        body.set_now(0.0);
+        let _ = body.take_actions();
+        body.start(acting, &st);
+        if case["expect"]["attack"]["target"].is_null() {
+            body.complete(acting, &mut st);
+        }
+        let actions: Vec<TimedAction> = body
+            .take_actions()
+            .into_iter()
+            .filter(|a| {
+                !matches!(
+                    a.action,
+                    BattleAction::Leave { .. } | BattleAction::Shaken { .. }
+                )
+            })
+            .collect();
+        n_moves += actions
+            .iter()
+            .filter(|a| matches!(a.action, BattleAction::Move { .. }))
+            .count();
+        n_shots += actions
+            .iter()
+            .filter(|a| matches!(a.action, BattleAction::Shot { .. }))
+            .count();
+        check_dto_1to1(name, &actions, &st, &mut failures);
+    }
+    assert!(
+        failures.is_empty(),
+        "{} rozbieżności, np. {:?}",
+        failures.len(),
+        &failures[..failures.len().min(5)]
+    );
+    eprintln!("r4 DTO: kroki {n_moves}, strzały {n_shots}");
+    assert!(n_moves >= MIN_R4_MOVES, "kroki {n_moves}");
+    assert!(n_shots >= MIN_R4_SHOTS, "strzały {n_shots}");
+}
+
 /// `BattleAction::Leave` i `BattleAction::Shaken` nie mają jeszcze wariantu DTO (I5): konwersja jest jawnym błędem.
 #[test]
 fn leave_i_shaken_bez_dto_to_jawny_blad() {

@@ -839,35 +839,260 @@ fn bez_terenu_jawne_tagi() {
     }
 }
 
-/// `BattleAction::Shot` nie ma jeszcze wariantu DTO (I5): konwersja jest jawnym błędem, nie cichym pominięciem.
+/// P4-1I5a: progi pokrycia testu DTO (zmierzone na wektorach przy bazie 32006733b, raport `01-operator-r1.md`).
+const MIN_R3_SHOTS: usize = 328;
+const MIN_R3_DAMAGE: usize = 328;
+const MIN_R3_MOVES: usize = 1292;
+
+/// P4-1I5a (D-WIR-6/7): id jednostki w DTO = `SeqUnit::id` z rosteru pętli.
+fn dto_id(st: &TurnSeqState, u: UnitRef) -> civ_view_model::ids::UnitId {
+    let list = match u.side {
+        BattleSide::Attacker => &st.atk,
+        BattleSide::Defender => &st.def,
+    };
+    civ_view_model::ids::UnitId::try_new(list[u.idx].id).expect("id")
+}
+
+fn i32_of(v: i64) -> i32 {
+    i32::try_from(v).expect("i32")
+}
+
+/// P4-1I5a: `actions_to_dto` przekłada akcje silnika 1:1 (ta sama kolejność i `t0`); `Facing`, `Move`, `Shot`, `Damage`
+/// pole po polu (`arriveAt = t0 + MOVE_STEP_MS`, `landAt = t0 + RANGED_FLY_MS`). Rozbieżności trafiają do `failures`.
+fn check_dto_1to1(
+    name: &str,
+    actions: &[TimedAction],
+    st: &TurnSeqState,
+    failures: &mut Vec<String>,
+) -> Vec<civ_view_model::battle::BattleActionDto> {
+    use civ_engine::domain::siege_tactics_actions::actions_to_dto;
+    use civ_engine::domain::siege_tactics_loop::{MOVE_STEP_MS as STEP, RANGED_FLY_MS as FLY};
+    use civ_view_model::battle::BattleActionKindDto as K;
+    let dto = match actions_to_dto(actions, st) {
+        Ok(d) => d,
+        Err(e) => {
+            failures.push(format!("{name}: actions_to_dto {e:?}"));
+            return Vec::new();
+        }
+    };
+    if dto.len() != actions.len() {
+        failures.push(format!(
+            "{name}: DTO {} != akcje {}",
+            dto.len(),
+            actions.len()
+        ));
+        return dto;
+    }
+    for (k, (a, d)) in actions.iter().zip(&dto).enumerate() {
+        if a.t0.to_bits() != d.t0.to_bits() {
+            failures.push(format!("{name}[{k}]: t0 {} != {}", d.t0, a.t0));
+        }
+        let ok = match (&a.action, &d.action) {
+            (BattleAction::Facing { unit, dir }, K::Facing { id, dir: dd }) => {
+                *id == dto_id(st, *unit) && f64::from(*dd) == *dir
+            }
+            (
+                BattleAction::Move {
+                    unit,
+                    from,
+                    to,
+                    arrive_at,
+                },
+                K::Move {
+                    id,
+                    from_col,
+                    from_row,
+                    to_col,
+                    to_row,
+                    arrive_at: da,
+                },
+            ) => {
+                *id == dto_id(st, *unit)
+                    && (i64::from(*from_col), i64::from(*from_row)) == *from
+                    && (i64::from(*to_col), i64::from(*to_row)) == *to
+                    && da.to_bits() == arrive_at.to_bits()
+                    && *da == d.t0 + STEP
+            }
+            (
+                BattleAction::Shot {
+                    attacker,
+                    target,
+                    land_at,
+                },
+                K::Shot {
+                    attacker: da,
+                    target: dt,
+                    land_at: dl,
+                },
+            ) => {
+                *da == dto_id(st, *attacker)
+                    && *dt == dto_id(st, *target)
+                    && dl.to_bits() == land_at.to_bits()
+                    && *dl == d.t0 + FLY
+            }
+            (
+                BattleAction::Damage { target, dmg },
+                K::Damage {
+                    target: dt,
+                    dmg: dd,
+                },
+            ) => *dt == dto_id(st, *target) && dd.to_bits() == dmg.to_bits(),
+            (
+                BattleAction::Facing { .. }
+                | BattleAction::Move { .. }
+                | BattleAction::Shot { .. }
+                | BattleAction::Damage { .. },
+                _,
+            ) => false,
+            _ => true,
+        };
+        if !ok {
+            failures.push(format!("{name}[{k}]: {:?} -> {:?}", a.action, d.action));
+        }
+    }
+    dto
+}
+
+/// P4-1I5a (D-WIR-6/7, FC-U3; zastępuje test `strzal_bez_dto_to_jawny_blad` z K5LOOP-CLOSE r3): strzał i krok mają DTO.
+/// Dla KAŻDEGO wektora r3 `actions_to_dto` przekłada akcje 1:1; `Shot` = strzał pinu (`_doRangedAttack` w `t`, cel z
+/// `blows`, `landAt = t + RANGED_FLY_MS` = chwila `_singleBlow` ranged), poprzedzony bezpośrednio zwrotem strzelca o tym
+/// samym `t0` (`:9182-9184`); `Move` = kroki pinu. FC-U3: etykieta obrażeń strzału (`Damage`, `:9225-9227`) ma
+/// `t0 = landAt` i `dmg` trafienia (`BlowRecord::dmg`), gdy `dmg > 0` i cel żyje; przy pudle brak `Damage`.
 #[test]
-fn strzal_bez_dto_to_jawny_blad() {
-    use civ_engine::domain::siege_tactics_actions::{actions_to_dto, ActionError};
+fn strzal_i_ruch_dto_zgodne_z_wektorami() {
+    use civ_view_model::battle::BattleActionKindDto as K;
     let (v, cav_mult) = load_from(VECTORS);
-    let case = v["cases"]
-        .as_array()
-        .expect("cases")
-        .iter()
-        .find(|c| {
-            c["kind"] == "ranged"
-                && c["expect"]["steps"].as_array().expect("steps").is_empty()
-                && c["expect"]["blows"].as_array().expect("blows").len() == 1
-        })
-        .expect("strzal z miejsca");
-    let Built {
-        mut body,
-        mut st,
-        acting,
-    } = build(case, &cav_mult, true);
-    body.start(acting, &st);
-    body.complete(acting, &mut st);
-    let actions = body.take_actions();
-    assert!(actions
-        .iter()
-        .any(|a| matches!(a.action, BattleAction::Shot { .. })));
-    assert_eq!(
-        actions_to_dto(&actions, &st),
-        Err(ActionError::ShotWithoutDto(acting))
+    let mut failures: Vec<String> = Vec::new();
+    let (mut n_shots, mut n_damage, mut n_miss, mut n_moves) = (0usize, 0usize, 0usize, 0usize);
+    for case in v["cases"].as_array().expect("cases") {
+        let name = case["name"].as_str().expect("name");
+        let e = &case["expect"];
+        let Built {
+            mut body,
+            mut st,
+            acting,
+        } = build(case, &cav_mult, true);
+        let start = body.unit_cell(acting).expect("pozycja");
+        body.start(acting, &st);
+        if e["attack"]["target"].is_null() {
+            body.complete(acting, &mut st);
+        }
+        let actions = body.take_actions();
+        let dto = check_dto_1to1(name, &actions, &st, &mut failures);
+        let me = dto_id(&st, acting);
+        // Kroki.
+        let got_moves: Vec<(f64, i32, i32, i32, i32)> = dto
+            .iter()
+            .filter_map(|d| match d.action {
+                K::Move {
+                    id,
+                    from_col,
+                    from_row,
+                    to_col,
+                    to_row,
+                    ..
+                } if id == me => Some((d.t0, from_col, from_row, to_col, to_row)),
+                _ => None,
+            })
+            .collect();
+        let mut want_moves = Vec::new();
+        let mut prev = start;
+        for s in e["steps"].as_array().expect("steps") {
+            let to = (int(&s["col"]), int(&s["row"]));
+            want_moves.push((
+                num(&s["t"]),
+                i32_of(prev.0),
+                i32_of(prev.1),
+                i32_of(to.0),
+                i32_of(to.1),
+            ));
+            prev = to;
+        }
+        if got_moves != want_moves {
+            failures.push(format!(
+                "{name}: DTO Move {got_moves:?} != pin {want_moves:?}"
+            ));
+        }
+        n_moves += want_moves.len();
+        // Strzał.
+        let shots: Vec<usize> = dto
+            .iter()
+            .enumerate()
+            .filter(|(_, d)| matches!(d.action, K::Shot { attacker, .. } if attacker == me))
+            .map(|(k, _)| k)
+            .collect();
+        let blows = e["blows"].as_array().expect("blows");
+        match (blows.first(), shots.as_slice()) {
+            (None, []) => {}
+            (Some(x), [k]) => {
+                n_shots += 1;
+                let hit = num(&x["t"]);
+                let tref = UnitRef {
+                    side: if acting.side == BattleSide::Attacker {
+                        BattleSide::Defender
+                    } else {
+                        BattleSide::Attacker
+                    },
+                    idx: x["target"].as_u64().expect("cel") as usize,
+                };
+                let target = dto_id(&st, tref);
+                let want_shot = K::Shot {
+                    attacker: me,
+                    target,
+                    land_at: hit,
+                };
+                let d = &dto[*k];
+                if d.action != want_shot || d.t0 != hit - RANGED_FLY_MS {
+                    failures.push(format!("{name}: Shot {d:?} != pin t={hit} {want_shot:?}"));
+                }
+                let want_f = K::Facing {
+                    id: me,
+                    dir: i32_of(num(&x["facing"]) as i64),
+                };
+                match k.checked_sub(1).map(|j| &dto[j]) {
+                    Some(f) if f.t0 == d.t0 && f.action == want_f => {}
+                    other => failures.push(format!("{name}: zwrot przed strzałem {other:?}")),
+                }
+                // FC-U3: etykieta obrażeń w chwili trafienia.
+                let rec = body.blows.first().expect("trafienie");
+                let dmg_dto: Vec<&civ_view_model::battle::BattleActionDto> = dto
+                    .iter()
+                    .filter(|a| matches!(a.action, K::Damage { target: t, .. } if t == target))
+                    .collect();
+                let tc = st.unit(tref).c;
+                if rec.dmg > 0.0 && !tc.dead && !tc.fading_out {
+                    n_damage += 1;
+                    match dmg_dto.as_slice() {
+                        [a] if a.t0 == hit
+                            && a.action
+                                == (K::Damage {
+                                    target,
+                                    dmg: rec.dmg,
+                                }) => {}
+                        other => failures.push(format!("{name}: Damage strzału {other:?}")),
+                    }
+                } else {
+                    n_miss += 1;
+                    if !dmg_dto.is_empty() {
+                        failures.push(format!("{name}: Damage przy dmg={} {dmg_dto:?}", rec.dmg));
+                    }
+                }
+            }
+            (want, got) => failures.push(format!("{name}: strzał pin {want:?} DTO {got:?}")),
+        }
+    }
+    assert!(
+        failures.is_empty(),
+        "{} rozbieżności, np. {:?}",
+        failures.len(),
+        &failures[..failures.len().min(5)]
+    );
+    // Pokrycie (liczby z przebiegu wektorów r3 przy bazie 32006733b; zapisane w raporcie rundy).
+    assert!(n_shots >= MIN_R3_SHOTS, "strzały {n_shots}");
+    assert!(n_damage >= MIN_R3_DAMAGE, "etykiety strzału {n_damage}");
+    assert!(n_moves >= MIN_R3_MOVES, "kroki {n_moves}");
+    eprintln!(
+        "r3 DTO: strzały {n_shots}, Damage {n_damage}, bez etykiety {n_miss}, kroki {n_moves}"
     );
 }
 
