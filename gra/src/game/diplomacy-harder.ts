@@ -9,6 +9,7 @@
 //    (`zazdroscNaTureDuza` gdy przewaga nad drugą ≥ `zazdroscProgPrzewagi`).
 
 import harderParamsJson from '../../data/diplomacy-harder-params.json';
+import { getDiplomacyWarLevel, scaleHarderParamsForWarLevel } from './diplomacy-war-level';
 
 export interface HarderDiplomacyParams {
   twardaDyplomacjaAktywna: boolean;
@@ -22,6 +23,15 @@ export interface HarderDiplomacyParams {
 }
 
 export const HARDER_PARAMS: HarderDiplomacyParams = harderParamsJson as HarderDiplomacyParams;
+
+/**
+ * R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: parametry napięcia/zazdrości po poziomie „Dyplomacja i wojna”
+ * (ŁATWA = HARDER_PARAMS bit-w-bit). Używane jako domyślny argument funkcji poniżej.
+ */
+export function harderParamsNow(): HarderDiplomacyParams {
+  const level = getDiplomacyWarLevel();
+  return level === 'latwa' ? HARDER_PARAMS : scaleHarderParamsForWarLevel(HARDER_PARAMS, level);
+}
 
 /** Flaga domyślna: OFF. Nie włączać bez decyzji właściciela po pomiarze (ABC). */
 export const DIPLO_HARDER_ENABLED_DEFAULT = false;
@@ -44,7 +54,7 @@ export function isHarderDiplomacyEnabled(): boolean {
  */
 export function napieciePenaltyZaTure(
   tenureTur: number,
-  p: HarderDiplomacyParams = HARDER_PARAMS,
+  p: HarderDiplomacyParams = harderParamsNow(),
 ): number {
   if (!Number.isFinite(tenureTur) || tenureTur <= 0 || p.granicaOkresTur <= 0) return 0;
   const kroki = Math.floor(tenureTur / p.granicaOkresTur);
@@ -95,7 +105,7 @@ export function resetNeighborTenureForTest(): void {
 export function karaGranicaZNapieciem(
   karaBazowa: number,
   tenureTur: number,
-  p: HarderDiplomacyParams = HARDER_PARAMS,
+  p: HarderDiplomacyParams = harderParamsNow(),
 ): number {
   if (!(karaBazowa < 0)) return karaBazowa;
   const suma = karaBazowa + napieciePenaltyZaTure(tenureTur, p);
@@ -115,7 +125,7 @@ export function harderPairDeltas(
     mocLidera: number;
     mocDrugiego: number;
   },
-  p: HarderDiplomacyParams = HARDER_PARAMS,
+  p: HarderDiplomacyParams = harderParamsNow(),
 ): { karaWspolnaGranicaDelta: number; zazdroscDelta: number } {
   return {
     karaWspolnaGranicaDelta: karaGranicaZNapieciem(args.karaBazowa, args.tenureTur, p),
@@ -131,7 +141,7 @@ export function capZaufanieZaHandel(
   zaufanieObecne: number,
   dZ: number,
   maPokojNapLubSojusz: boolean,
-  p: HarderDiplomacyParams = HARDER_PARAMS,
+  p: HarderDiplomacyParams = harderParamsNow(),
 ): number {
   if (maPokojNapLubSojusz || dZ <= 0) return dZ;
   const headroom = Math.max(0, p.handelSufitZaufania - zaufanieObecne);
@@ -151,7 +161,7 @@ export function zazdroscLidera(
     mocLidera: number;
     mocDrugiego: number;
   },
-  p: HarderDiplomacyParams = HARDER_PARAMS,
+  p: HarderDiplomacyParams = harderParamsNow(),
 ): number {
   if (!args.czyParaZLiderem || args.partnerToGracz || args.sojuszZLiderem) return 0;
   if (!(args.mocLidera > 0)) return 0;

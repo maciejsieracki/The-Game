@@ -1003,6 +1003,8 @@ import {
 } from './game/diplomacy-harder';
 // R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: rebalans ekonomii wg epok -- flaga domyslnie OFF (hak civTest).
 import { getWzrostSurowcowZEpoka, isEraRebalanceEnabled, normalizeWzrostSurowcowZEpoka, setEraRebalanceEnabledForTest, setWzrostSurowcowZEpoka } from './game/econ-era-rebalance';
+// R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: poziom „Dyplomacja i wojna” (ustawienie nowej gry / zapis).
+import { setDiplomacyWarLevel } from './game/diplomacy-war-level';
 import {
   resolveAutoBattleByPower,
   sumRosterFieldM,
@@ -49582,6 +49584,8 @@ async function boot(): Promise<void> {
       setActiveHitMode(normalizeHitMode(params.advanced?.hitMode));
       // R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1: brak pola = WYL. (stałe ulepszenia).
       setWzrostSurowcowZEpoka(normalizeWzrostSurowcowZEpoka(params.advanced?.wzrostSurowcowZEpoka));
+      // R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: brak pola = Łatwa (dziś).
+      setDiplomacyWarLevel(params.advanced?.diplomacyWarLevel);
       const VALID_TYP: TypSwiata[] = ['kontynenty', 'pangea', 'wyspy', 'ziemia'];
       const resolveTypSwiata = (): TypSwiata => {
         const raw = params.typSwiata || typSwiataFromMenuLabel(params.worldType || 'Kontynenty');
@@ -51493,6 +51497,8 @@ async function boot(): Promise<void> {
       setWzrostSurowcowZEpoka(normalizeWzrostSurowcowZEpoka(
         (saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.wzrostSurowcowZEpoka,
       ));
+      // R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: stary zapis bez pola -> Łatwa (zachowanie bez zmian).
+      setDiplomacyWarLevel((saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.diplomacyWarLevel);
       if (typeof saved.seed === 'number' && saved.seed > 0) {
         _gameSeed = saved.seed;
       }

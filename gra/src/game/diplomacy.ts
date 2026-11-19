@@ -34,6 +34,16 @@ import { isBarbarian } from './barbarians';
 import { applyWiarygodnoscTempoDoDelty, zaufanieDryfOdWiarygodnosci } from './diplomacy-credibility';
 import { capZaufanieZaHandel, isHarderDiplomacyEnabled } from './diplomacy-harder';
 import { warWearinessLevel, WAR_WEARINESS_PARAMS } from './war-weariness';
+// R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: poziom „Dyplomacja i wojna” (kary ×k, bonusy ÷k).
+import {
+  getDiplomacyWarLevel,
+  scaleDiplomacyParamsForWarLevel,
+  scalePenaltyForWarLevel,
+  scaleBonusForWarLevel,
+  scaleAggressorDeltaForWarLevel,
+  scaleWillingnessAllyForWarLevel,
+  type DiplomacyWarLevel,
+} from './diplomacy-war-level';
 
 // ---------------------------------------------------------------------------
 // Re-exported Relation interface (spec-aligned alias over RelacjaDyplomatyczna)
@@ -487,6 +497,8 @@ export function loadDiplomacyParams(json: unknown): Partial<DiplomacyParams> {
 
 /** Kanon + override z diplomacy.json (Panel-D export). Bez main.ts — czyta JSON przy bundlu. */
 let _baseDiplomacyParams: DiplomacyParams | null = null;
+/** Cache wersji po poziomie „Dyplomacja i wojna” (nie-ŁATWA). */
+let _baseDiplomacyParamsWar: { level: DiplomacyWarLevel; params: DiplomacyParams } | null = null;
 
 /** Maciej 2026-07-21: ±10 na progi relacji/zaufania/respektu wg trudności (normal = baza JSON). */
 export const DIPLOMACY_DIFFICULTY_DELTA: Record<GameDifficulty, number> = {
@@ -562,7 +574,17 @@ export function getBaseDiplomacyParams(): DiplomacyParams {
       ...loadDiplomacyParams(diplomacyData),
     };
   }
-  return _baseDiplomacyParams;
+  // R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: ŁATWA = wartości z JSON bit-w-bit; NORMALNA/TRUDNA =
+  // kary ×2/×3, bonusy ÷2/÷3 (diplomacy-war-level.ts). Wszyscy czytelnicy tej funkcji dostają to samo.
+  const level = getDiplomacyWarLevel();
+  if (level === 'latwa') return _baseDiplomacyParams;
+  if (!_baseDiplomacyParamsWar || _baseDiplomacyParamsWar.level !== level) {
+    _baseDiplomacyParamsWar = {
+      level,
+      params: scaleDiplomacyParamsForWarLevel(_baseDiplomacyParams, level),
+    };
+  }
+  return _baseDiplomacyParamsWar.params;
 }
 
 /** Skaluje wyłącznie progi bramek traktatów (nie bonusy, mnożniki ani willingness). */
@@ -614,6 +636,7 @@ export function sharedBorderPenaltyForEpochs(
 /** Testy / hot-reload — opcjonalnie reset cache. */
 export function resetEffectiveDiplomacyParamsCache(): void {
   _baseDiplomacyParams = null;
+  _baseDiplomacyParamsWar = null;
 }
 
 /** Minimalna Relacja na dobrowolną umowę — nie poniżej progUmowaMinRelacja (Maciej: >150). */
@@ -937,7 +960,7 @@ export function applyDiplomaticEvent(
       break;
 
     case 'pokoj':
-      dZ = 5;
+      dZ = scaleBonusForWarLevel(5);
       newStatus = 'pokoj';
       break;
 
@@ -1032,37 +1055,37 @@ export function applyDiplomaticEvent(
     case 'wojna_casus_belli':
       // 1.11 war WITH casus belli: -10 Relacja u wszystkich.
       // (Czysta deklaracja z karencją N1 — 'wojna_wypowiedziana' — nie obniża Zaufania.)
-      dZ = -10;
+      dZ = scalePenaltyForWarLevel(-10);
       newStatus = 'wojna';
       break;
 
     case 'ultimatum_bezpodstawne':
       // 1.9 baseless ultimatum (Respekt too low): -20 Relacja, -10 Zaufanie.
       // Split -10 Zaufanie + -10 Respekt ("smiech AI" = loss of respect) = -20 Relacja.
-      dZ = -10;
-      dR = -10;
+      dZ = scalePenaltyForWarLevel(-10);
+      dR = scalePenaltyForWarLevel(-10);
       break;
 
     case 'trybut_odmowa':
       // 1.8 tribute demand refused: -10 Relacja (possible casus belli; status left to engine).
-      dZ = -10;
+      dZ = scalePenaltyForWarLevel(-10);
       break;
 
     case 'trybut_oferta_przyjeta':
       // 1.8 tribute OFFER accepted -- payer avoids attack: +5 Relacja -> +5 Zaufanie.
-      dZ = 5;
+      dZ = scaleBonusForWarLevel(5);
       break;
 
     case 'wymiana_tech_gratis':
       // 1.6 free technology exchange (no payment): +5 Zaufanie.
-      dZ = 5;
+      dZ = scaleBonusForWarLevel(5);
       break;
 
     case 'zerwanie_handlu':
       // Dyplomacja-szablon.md §1.5: zerwanie umowy handlowej.
       // Szablon podaje: −15 Relacja / −10 Zaufanie; modelujemy −10 Zaufanie
       // (Relacja = Zaufanie + Respekt, więc −10 Z = −10 Relacja bez dotykania R).
-      dZ = -10;
+      dZ = scalePenaltyForWarLevel(-10);
       break;
 
     case 'zerwanie_handlu_bez_kary':
@@ -1075,7 +1098,7 @@ export function applyDiplomaticEvent(
       // Dobrowolne zerwanie traktatu (przycisk „Zerwij" — Makieta DYPLOMACJA v1.1):
       // -15 Zaufanie jednorazowo. Mniejsze niż 'zlamana_obietnica' (-40), bo to
       // świadoma decyzja BEZ złamania w trakcie wojny/ataku.
-      dZ = -15;
+      dZ = scalePenaltyForWarLevel(-15);
       break;
   }
 
@@ -1981,7 +2004,7 @@ export function czyAgresor(state: AggressorState, ownerId: number, turn: number)
 
 /** Mnożnik willingnessAlly wobec agresora u INNEGO AI (1 = bez zmian). */
 export function mnoznikWillingnessAlly(aktywnaFlaga: boolean, params: AggressorParams = AGGRESSOR_PARAMS): number {
-  return aktywnaFlaga ? params.wplywNaAI.willingnessAllyMnoznik : 1;
+  return aktywnaFlaga ? scaleWillingnessAllyForWarLevel(params.wplywNaAI.willingnessAllyMnoznik) : 1;
 }
 
 /**
@@ -1989,7 +2012,7 @@ export function mnoznikWillingnessAlly(aktywnaFlaga: boolean, params: AggressorP
  * podnosi próg (trudniej o sojusz/pakt), zgodnie z GOAL (4) „gorsza chęć sojuszu".
  */
 export function deltaRelacjiSojusz(aktywnaFlaga: boolean, params: AggressorParams = AGGRESSOR_PARAMS): number {
-  return aktywnaFlaga ? params.wplywNaAI.relacjaDeltaSojusz : 0;
+  return aktywnaFlaga ? scaleAggressorDeltaForWarLevel(params.wplywNaAI.relacjaDeltaSojusz) : 0;
 }
 
 /** Casus belli: klucz `requester>target` -> tura końca (wyłącznie). */
