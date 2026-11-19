@@ -527,23 +527,69 @@ export function computeGarncarniaSurplusBonus(input: GarncarniaSurplusBonusInput
   };
 }
 
+/**
+ * Rozdział WSPÓLNEGO wejścia między konwertery (Glina: Cegielnia + Garncarnia) — PROPORCJONALNIE
+ * do zapotrzebowania, nie „kto pierwszy na liście". Zapotrzebowanie receptury r na surowiec k
+ * = perCykl(r,k) × przepustowość(r) (cykle/turę). Gdy Σ zapotrzebowań > zapas (stan na początek
+ * `runConverters`), udział r = zapas × zapotrzebowanie(r,k) / Σ zapotrzebowań. Gdy nie ma
+ * konkurencji (Σ ≤ zapas) udział = pełny zapas — wynik identyczny jak dawniej.
+ * Ten sam wzór czyta HUD (resource-gross-net.ts) przez `converterConsumedRatesForBuildings`.
+ */
+function normalizedThroughput(tput: number): number {
+  return Number.isFinite(tput) && tput > 0 ? Math.floor(tput) : 0;
+}
+
 export function runConverters(
   recipes: ReadonlyArray<ConverterRecipe>,
   stores: Record<string, number>,
   throughputs: Record<string, number>,
   capacityOf: (resourceKey: string) => number,
 ): RunConvertersResult {
+  const finite = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+  const startStores: Record<string, number> = { ...stores };
   let cur: Record<string, number> = { ...stores };
   const perBuilding: Record<string, ConvertResult> = {};
 
-  for (const recipe of recipes) {
-    const tputKey = recipe.id;
-    const tput = Object.prototype.hasOwnProperty.call(throughputs, tputKey)
-      ? (throughputs[tputKey] ?? recipe.throughputFallback)
+  const plan = recipes.map(recipe => {
+    const tput = Object.prototype.hasOwnProperty.call(throughputs, recipe.id)
+      ? (throughputs[recipe.id] ?? recipe.throughputFallback)
       : recipe.throughputFallback;
     const outMult = throughputs[recipe.id + CONVERTER_OUTPUT_MULT_KEY_SUFFIX] ?? 1;
-    const res = runConverter(recipe, cur, tput, capacityOf(recipe.output), outMult);
-    cur = res.stores;
+    return { recipe, tput, outMult, cykle: normalizedThroughput(tput) };
+  });
+
+  // Zapotrzebowanie łączne per surowiec wejściowy (tylko receptury z przepustowością > 0).
+  const demand: Record<string, number> = {};
+  for (const { recipe, cykle } of plan) {
+    if (cykle <= 0) continue;
+    for (const [k, perCykl] of Object.entries(recipe.inputs)) {
+      if (!(perCykl > 0)) continue;
+      demand[k] = (demand[k] ?? 0) + perCykl * cykle;
+    }
+  }
+
+  for (const { recipe, tput, outMult, cykle } of plan) {
+    // Widok magazynu dla tej receptury: przy konkurencji o wejście — jej udział proporcjonalny.
+    const view: Record<string, number> = { ...cur };
+    if (cykle > 0) {
+      for (const [k, perCykl] of Object.entries(recipe.inputs)) {
+        if (!(perCykl > 0)) continue;
+        const D = demand[k] ?? 0;
+        const zapas = finite(startStores[k]);
+        if (D > zapas && D > 0) {
+          const udzial = (zapas * perCykl * cykle) / D;
+          view[k] = Math.min(finite(cur[k]), udzial);
+        }
+      }
+    }
+    const res = runConverter(recipe, view, tput, capacityOf(recipe.output), outMult);
+
+    const next: Record<string, number> = { ...cur };
+    for (const k of Object.keys(recipe.inputs)) {
+      if (res.consumed[k] !== undefined) next[k] = finite(cur[k]) - (res.consumed[k] ?? 0);
+    }
+    if (res.produced > 0) next[recipe.output] = finite(cur[recipe.output]) + res.produced;
+    cur = next;
     perBuilding[recipe.id] = res;
   }
 

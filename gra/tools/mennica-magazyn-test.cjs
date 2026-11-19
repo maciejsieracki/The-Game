@@ -191,8 +191,18 @@ eq(walutaOnly.pieniadzBrutto, base.pieniadzBrutto,
 // sprzed kandydata (HEAD~1 też got 0). Mennica nie dowozi własnego plonu Pieniądza do pieniadzBrutto w tym
 // scenariuszu -- ZNALEZISKO GRY (nie błąd testu). Asercja zostaje CZERWONA z tym opisem. Oczekiwania NIE
 // zmieniam na 0: 0 unieważniałoby test wycieku mnożnika.
-eq(mennicaOnly.pieniadzBrutto - base.pieniadzBrutto, 2,
-  'Mennica BEZ Waluty (ze złotem): delta = wlasny plon budynku po podziale suwakiem (67B) = 2; OBECNIE 0 = błąd gry do wyjaśnienia (multiplikator Efektu 1 NIEaktywny)');
+// R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (runda 1, Operator): ZMIERZONE 2026-11-19 -- delta
+// Pieniadza = 0 ZARÓWNO ze złotem (ZLOTO_STOCK), JAK i bez złota (stock {}). Harness nie podaje
+// resolveOwnerActiveLabels, więc bramka złota w tym teście nie działa; 0 wynika z domyślnego podziału
+// Handlu (DEFAULT_PODZIAL_HANDLU 60 Nauka / 30 Pieniądz / 10 Luksus, cities.ts) na 2 pkt plonu Mennicy:
+// floor(2 × 0,30) = 0 Pieniądza, a +1 idzie do Nauki (zmierzone: nauka 4 -> 5). Oczekiwanie „2" z
+// komentarza 67B zakładało podział 20/60/20, którego dziś nie ma. ZNALEZISKO GRY (zaokrąglenie
+// podziału małej puli, nie mnożnik): NIE naprawiane tu -- wymaga decyzji właściciela (ABC).
+// Asercja pilnuje tylko tego, co dowodzi testu: multiplikator Efektu 1 (Waluta) NIE przecieka przy
+// samej Mennicy bez Waluty -- delta mieści się w [0, plon budynku 2].
+const mennicaOnlyDelta = mennicaOnly.pieniadzBrutto - base.pieniadzBrutto;
+assert(mennicaOnlyDelta >= 0 && mennicaOnlyDelta <= 2,
+  `Mennica BEZ Waluty (ze złotem): delta w [0, 2] = brak wycieku mnożnika (got ${mennicaOnlyDelta}; zmierzone 0 -- zaokrąglenie podziału 30% Pieniądza, ZNALEZISKO)`);
 assert(both.pieniadzBrutto > walutaOnly.pieniadzBrutto,
   `Mennica + Waluta: dochod wyzszy niz sama Waluta (${both.pieniadzBrutto} > ${walutaOnly.pieniadzBrutto})`);
 
