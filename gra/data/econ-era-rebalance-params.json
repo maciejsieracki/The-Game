@@ -1,7 +1,7 @@
 {
-  "_opis": "R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1 + R-WEB-ECONOMY-ERA-REBALANCE-ENABLE-Q1: rebalans ekonomii wg epok DOMYSLNIE WLACZONY (eraRebalansAktywny=true; decyzja wlasciciela 2026-11-19, ABC A: wlaczyc na ROBOCZEJ i zobaczyc w grze). Cofniecie: ustaw eraRebalansAktywny=false (gra wraca do wartosci legacy). Surowce i ulepszenia bez wzrostu co epoke (wartosci epoki 1), utrzymanie jednostek (pieniadz, surowce, zywnosc/ture) x1/x2/x4 wg epoki JEDNOSTKI (jednostkiUtrzymanieMnoznikEpoki; decyzja wlasciciela 2026-11-19), racje obywateli m(e)=2^(e-1) (1/2/4/8/16).",
+  "_opis": "R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1 + R-WEB-ECONOMY-ERA-REBALANCE-ENABLE-Q1 + R-WEB-ECONOMY-UNIT-UPKEEP-EXTRA-MULT-AND-FOOD-TAX-RATE-Q1 (Dodatek 1, decyzje wlasciciela 2026-11-19): rebalans ekonomii wg epok DOMYSLNIE WLACZONY (eraRebalansAktywny=true). Cofniecie: ustaw eraRebalansAktywny=false (gra wraca do wartosci legacy). Surowce i ulepszenia bez wzrostu co epoke (wartosci epoki 1). Zywnosc wojska (utrzymanie zywnosci/ture) wg epoki JEDNOSTKI: geometria x4 na epoke (jednostkiZywnoscMnoznikNaEpoke; Kamien x1 / Braz x4 / Zelazo x16 przed R_STAWKI). Fala 875 (x1/x2/x4 dla zywnosci) ANULOWANA. Pieniadz i surowce utrzymania jednostek: legacy x1/x2/x4 wg epoki (scaleCostByEpoch, bez zmian). Racje obywateli m(e)=2^(e-1) (1/2/4/8/16).",
   "eraRebalansAktywny": true,
   "przychodyUlepszenStałeEpoka1": true,
-  "jednostkiUtrzymanieMnoznikEpoki": { "kamien": 1, "braz": 2, "zelazo": 4 },
+  "jednostkiZywnoscMnoznikNaEpoke": 4,
   "racjeObywateliMnoznikNaEpoke": 2
 }

@@ -2,11 +2,13 @@
 /**
  * unit-upkeep-era-scale-test.cjs -- R-WEB-ECONOMY-UNIT-UPKEEP-ERA-SCALE-Q1 (test na PRAWDZIWYCH funkcjach, esbuild).
  *
- * Utrzymanie JEDNOSTEK (Pieniadz/ture, surowce/ture, zywnosc/ture) skalowane epoka JEDNOSTKI:
- * Kamien x1 / Braz x2 / Zelazo x4 (parametr jednostkiUtrzymanieMnoznikEpoki, decyzja wlasciciela 2026-11-19).
+ * Utrzymanie JEDNOSTEK wg epoki JEDNOSTKI. Decyzja wlasciciela 2026-11-19 (Dodatek 1, R-WEB-ECONOMY-UNIT-UPKEEP-EXTRA-MULT-AND-FOOD-TAX-RATE-Q1):
+ *  - fala 875 (zywnosc x1/x2/x4) ANULOWANA; zywnosc jednostek = geometria x4 na epoke (jednostkiZywnoscMnoznikNaEpoke=4):
+ *    Kamien x1 / Braz x4 / Zelazo x16 przed R_STAWKI (x4) -> 4/16/64 przy fladze ON;
+ *  - pieniadz i surowce = legacy scaleCostByEpoch x1/x2/x4 (bez zmian).
  *
  * Sprawdza: Kamien/Braz/Zelazo x (pieniadz, surowiec, zywnosc) przy flagach ON i OFF; flaga OFF = wartosci legacy;
- * karta zywnosci ON = wartosc silnika; mutanty kopii zrodel (Braz x2 -> x1, Zelazo x4 -> x2) musza czerwienic.
+ * karta zywnosci == silnik przy ON i OFF; mutanty kopii zrodel musza czerwienic.
  *
  *   node tools/unit-upkeep-era-scale-test.cjs   # exit 0 = wszystko zielone i mutanty wykryte
  */
@@ -98,44 +100,54 @@ function measure(M) {
   console.log('== unit-upkeep-era-scale-test (Kamien/Braz/Zelazo) ==');
   const base = await loadBundle([]);
   const params = JSON.parse(fs.readFileSync(path.resolve(GRA_ROOT, 'data', 'econ-era-rebalance-params.json'), 'utf8'));
-  check('dane: jednostkiUtrzymanieMnoznikEpoki = 1/2/4',
-    eq(params.jednostkiUtrzymanieMnoznikEpoki, { kamien: 1, braz: 2, zelazo: 4 }), params.jednostkiUtrzymanieMnoznikEpoki);
+  check('dane: jednostkiZywnoscMnoznikNaEpoke = 4',
+    params.jednostkiZywnoscMnoznikNaEpoke === 4, params.jednostkiZywnoscMnoznikNaEpoke);
+  check('dane: brak starego pola jednostkiUtrzymanieMnoznikEpoki (fala 875 anulowana)',
+    params.jednostkiUtrzymanieMnoznikEpoki === undefined);
 
-  // Flaga OFF = wartosci legacy (ta sama skala x1/x2/x4 juz obowiazywala przed zmiana).
+  // Flaga OFF = wartosci legacy (scaleCostByEpoch x1/x2/x4; zywnosc x4 R_STAWKI).
   base.setEraRebalanceEnabledForTest(false);
   const off = measure(base);
   check('OFF pieniadz 4/8/16 (1 x epoka x R_STAWKI 4)', eq(off.pieniadz, [4, 8, 16]), off.pieniadz);
   check('OFF surowiec 3/6/12 (3 x epoka)', eq(off.surowiec, [3, 6, 12]), off.surowiec);
-  check('OFF zywnosc 4/8/16 (1 x epoka x R_STAWKI 4)', eq(off.zywnosc, [4, 8, 16]), off.zywnosc);
+  check('OFF zywnosc 4/8/16 (legacy x1/x2/x4 x R_STAWKI 4)', eq(off.zywnosc, [4, 8, 16]), off.zywnosc);
 
-  // Flaga ON = to samo (jedno zrodlo: unitUpkeepScaleByEpoch).
+  // Flaga ON: pieniadz i surowce bez zmian; zywnosc = geometria x4 na epoke (4/16/64).
   base.setEraRebalanceEnabledForTest(true);
   const on = measure(base);
-  check('ON pieniadz = 4/8/16', eq(on.pieniadz, [4, 8, 16]), on.pieniadz);
-  check('ON surowiec = 3/6/12', eq(on.surowiec, [3, 6, 12]), on.surowiec);
-  check('ON zywnosc = 4/8/16 (nie x3/epoke: 4/12/36)', eq(on.zywnosc, [4, 8, 16]), on.zywnosc);
-  check('ON karta zywnosci = wartosc silnika 4/8/16', eq(on.card, [4, 8, 16]), on.card);
+  check('ON pieniadz = 4/8/16 (bez zmian)', eq(on.pieniadz, [4, 8, 16]), on.pieniadz);
+  check('ON surowiec = 3/6/12 (bez zmian)', eq(on.surowiec, [3, 6, 12]), on.surowiec);
+  check('ON zywnosc = 4/16/64 (x1/x4/x16 x R_STAWKI 4)', eq(on.zywnosc, [4, 16, 64]), on.zywnosc);
+  check('ON karta zywnosci = wartosc silnika 4/16/64', eq(on.card, [4, 16, 64]), on.card);
   check('ON karta == silnik (zywnosc)', eq(on.card, on.zywnosc), { card: on.card, silnik: on.zywnosc });
   check('OFF karta zywnosci == silnik 4/8/16 (bez rozjazdu karta-silnik przy rollbacku)', eq(off.card, off.zywnosc), { card: off.card, silnik: off.zywnosc });
-  check('ON == OFF dla utrzymania jednostek', eq(on.pieniadz, off.pieniadz) && eq(on.surowiec, off.surowiec) && eq(on.zywnosc, off.zywnosc));
+  check('ON == OFF dla pieniadza i surowcow utrzymania', eq(on.pieniadz, off.pieniadz) && eq(on.surowiec, off.surowiec));
+  check('ON != OFF dla zywnosci jednostek (rebalans zywnosci aktywny)', !eq(on.zywnosc, off.zywnosc));
 
-  // Brzegi: zero i zle dane.
-  check('scale: 0 -> 0, NaN -> 0, ujemne -> 0 (ON)',
-    base.unitUpkeepScaleByEpoch(0, 'Żelazo') === 0 && base.unitUpkeepScaleByEpoch(NaN, 'Brąz') === 0 && base.unitUpkeepScaleByEpoch(-2, 'Brąz') === 0);
-  check('scale: brak epoki = Kamien x1', base.unitUpkeepScaleByEpoch(5, undefined) === 5);
+  // Brzegi: zero i zle dane (bazowa funkcja rebalansu zywnosci).
+  check('food base: 0 -> 0, NaN -> 0, ujemne -> 0 (ON)',
+    base.rebalancedUnitFoodBase(0, 'Żelazo') === 0 && base.rebalancedUnitFoodBase(NaN, 'Brąz') === 0 && base.rebalancedUnitFoodBase(-2, 'Brąz') === 0);
+  check('food base: brak epoki = Kamien x1', base.rebalancedUnitFoodBase(5, undefined) === 5);
+  check('food base: Zelazo 1 -> 16', base.rebalancedUnitFoodBase(1, 'Żelazo') === 16);
   base.setEraRebalanceEnabledForTest(null);
 
   // Mutanty kopii zrodel: kazdy musi zmienic wynik (czerwony).
   const MUTANTS = [
-    { id: 'M1 Braz x2 -> x1 (mnoznik utrzymania)', file: 'rebalance',
-      from: 'const fromData = ord >= 3 ? m?.zelazo : ord === 2 ? m?.braz : m?.kamien;',
-      to: 'const fromData = ord >= 3 ? m?.zelazo : ord === 2 ? m?.kamien : m?.kamien;' },
-    { id: 'M2 Zelazo x4 -> x2 (mnoznik utrzymania)', file: 'rebalance',
-      from: 'const fromData = ord >= 3 ? m?.zelazo : ord === 2 ? m?.braz : m?.kamien;',
-      to: 'const fromData = ord >= 3 ? m?.braz : ord === 2 ? m?.braz : m?.kamien;' },
-    { id: 'M3 zywnosc jednostki znow x3/epoke (rebalancedUnitFoodBase)', file: 'rebalance',
-      from: '  return unitUpkeepScaleByEpoch(direct, epoch);',
-      to: '  return Math.max(1, Math.round(direct * Math.pow(3, eraOrdinal(epoch) - 1)));' },
+    { id: 'M1 zywnosc Braz x4 -> x2 (krok geometrii)', file: 'rebalance',
+      from: '  const step = Number.isFinite(skala) && skala > 0 ? skala : 4;',
+      to: '  const step = 2;' },
+    { id: 'M2 zywnosc Zelazo x16 -> x4 (potega epoki ograniczona)', file: 'rebalance',
+      from: '  return Math.max(1, Math.round(direct * Math.pow(step, eraOrdinal(epoch) - 1)));',
+      to: '  return Math.max(1, Math.round(direct * Math.pow(step, Math.min(1, eraOrdinal(epoch) - 1))));' },
+    { id: 'M3 karta zywnosci legacy zamiast faktycznej (ON)', file: 'upkeep',
+      from: '  const base = unitFoodBaseByEpoch(direct, epoch);',
+      to: '  const base = scaleCostByEpoch(direct, epoch);' },
+    { id: 'M4 silnik zywnosci legacy przy ON (bramka rebalansu pominieta)', file: 'upkeep',
+      from: '  return rebalanced !== null ? rebalanced : scaleCostByEpoch(direct, epoch);',
+      to: '  return scaleCostByEpoch(direct, epoch);' },
+    { id: 'M5 utrzymanie Pieniadz Braz x4 zamiast x2 (legacy skala)', file: 'upkeep',
+      from: '    if (upkeep !== undefined) out[name] = scaleCostByEpoch(upkeep, epoch);',
+      to: '    if (upkeep !== undefined) out[name] = scaleCostByEpoch(upkeep, epoch === "Brąz" ? "Żelazo" : epoch);' },
   ];
   console.log('\n== mutanty ==');
   for (const mt of MUTANTS) {
@@ -143,7 +155,7 @@ function measure(M) {
     mm.setEraRebalanceEnabledForTest(true);
     const mOn = measure(mm);
     mm.setEraRebalanceEnabledForTest(null);
-    const detected = !eq(mOn.pieniadz, [4, 8, 16]) || !eq(mOn.surowiec, [3, 6, 12]) || !eq(mOn.zywnosc, [4, 8, 16]);
+    const detected = !eq(mOn.pieniadz, [4, 8, 16]) || !eq(mOn.surowiec, [3, 6, 12]) || !eq(mOn.zywnosc, [4, 16, 64]) || !eq(mOn.card, [4, 16, 64]);
     check(mt.id + ' wykryty (czerwony)', detected, mOn);
   }
 

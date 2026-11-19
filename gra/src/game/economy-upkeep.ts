@@ -53,7 +53,7 @@ import {
   type UnitStockCostSource,
 } from './building-stock-cost';
 import { buildingEffectAtLevel } from './production';
-import { rebalancedUnitFoodBase, unitUpkeepScaleByEpoch } from './econ-era-rebalance';
+import { rebalancedUnitFoodBase } from './econ-era-rebalance';
 import {
   R_STAWKI_FALA1_FALA2_MULT,
   R_STAWKI_FALA2_MULT,
@@ -891,7 +891,7 @@ export function unitResourceUpkeep(
   const ilosc = unitDef['Utrzymanie surowiec (ilość)'];
   if (typeof ilosc === 'number' && Number.isFinite(ilosc) && ilosc > 0) {
     const key = stripDiacriticsLower(rawName);
-    if (key) out[key] = unitUpkeepScaleByEpoch(ilosc, unitDef.Epoka);
+    if (key) out[key] = scaleCostByEpoch(ilosc, unitDef.Epoka);
   }
   return out;
 }
@@ -1119,7 +1119,7 @@ export function buildUnitUpkeepTable(
     }
     const rawEpoch = row['Epoka'];
     const epoch = typeof rawEpoch === 'number' || typeof rawEpoch === 'string' ? rawEpoch : undefined;
-    if (upkeep !== undefined) out[name] = unitUpkeepScaleByEpoch(upkeep, epoch);
+    if (upkeep !== undefined) out[name] = scaleCostByEpoch(upkeep, epoch);
   }
   return out;
 }
@@ -1159,7 +1159,7 @@ export function unitFoodPerTurn(
   let base = p.zywnoscJednostkaRuch;
   if (unit.typeId && typeof foodTable[unit.typeId] === 'number') {
     base = foodTable[unit.typeId]!;
-    // R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1 / UNIT-UPKEEP-ERA-SCALE-Q1: flaga ON = zywnosc wojska x1/x2/x4 wg epoki jednostki
+    // R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1 / EXTRA-MULT-AND-FOOD-TAX-RATE-Q1: flaga ON = zywnosc wojska x1/x4/x16 wg epoki jednostki
     // (surowe dane z buildUnitFoodTable; flaga czytana przy kazdym wywolaniu).
     const raw = UNIT_FOOD_RAW_BY_TABLE.get(foodTable)?.[unit.typeId];
     if (raw) {
@@ -1183,11 +1183,20 @@ export function unitFoodPerTurn(
 }
 
 /**
+ * Baza żywności jednostki (przed R_STAWKI, przed mnożnikiem terytorium/obozu) — JEDNO źródło dla tabeli,
+ * silnika i karty. Flaga ON -> rebalancedUnitFoodBase (geometria x4 na epokę jednostki: x1/x4/x16).
+ * Flaga OFF -> legacy scaleCostByEpoch (x1/x2/x4).
+ */
+function unitFoodBaseByEpoch(direct: number, epoch: number | string | null | undefined): number {
+  const rebalanced = rebalancedUnitFoodBase(direct, epoch);
+  return rebalanced !== null ? rebalanced : scaleCostByEpoch(direct, epoch);
+}
+
+/**
  * R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: wartość „Żywność/turę" do KART jednostek (UI).
- * Flaga OFF -> surowa wartość z units.json (bez zmian, jak dotad). Flaga ON -> wartość faktyczna
- * dla własnego terytorium: baza po skali epoki jednostki (unitUpkeepScaleByEpoch: x1/x2/x4 przy ON,
- * legacy epochCostMultiplier przy OFF) × R_STAWKI (×4), zgodnie z buildUnitFoodTable / unitFoodPerTurn.
- * Jedno źródło liczby dla karty i silnika przy obu stanach flagi (bez rozjazdu karta-silnik).
+ * Flaga OFF -> wartość legacy (scaleCostByEpoch) × R_STAWKI (×4). Flaga ON -> wartość faktyczna
+ * dla własnego terytorium: baza po geometrii epoki jednostki (x1/x4/x16) × R_STAWKI (×4), zgodnie
+ * z buildUnitFoodTable / unitFoodPerTurn (ta sama funkcja unitFoodBaseByEpoch).
  */
 export function unitFoodCardValue(unit: {
   readonly 'żywność/turę'?: unknown;
@@ -1196,7 +1205,7 @@ export function unitFoodCardValue(unit: {
   const direct = unit['żywność/turę'];
   if (typeof direct !== 'number' || !Number.isFinite(direct)) return direct;
   const epoch = typeof unit.Epoka === 'number' || typeof unit.Epoka === 'string' ? unit.Epoka : undefined;
-  const base = unitUpkeepScaleByEpoch(direct, epoch);
+  const base = unitFoodBaseByEpoch(direct, epoch);
   if (base <= 0) return 0;
   return base * R_STAWKI_FALA1_FALA2_MULT;
 }
@@ -1220,7 +1229,7 @@ export function buildUnitFoodTable(
     if (typeof direct === 'number' && Number.isFinite(direct)) {
       const rawEpoch = row['Epoka'];
       const epoch = typeof rawEpoch === 'number' || typeof rawEpoch === 'string' ? rawEpoch : undefined;
-      out[name] = unitUpkeepScaleByEpoch(direct, epoch);
+      out[name] = unitFoodBaseByEpoch(direct, epoch);
       raw[name] = { direct, epoch };
     }
   }

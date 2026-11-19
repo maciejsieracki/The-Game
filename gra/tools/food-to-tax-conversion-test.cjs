@@ -252,7 +252,8 @@ if (!CHILD) {
     'panel: limit ilosci liczony na zywo (brak zamrozonego max w HTML)');
   const params = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'econ-params.json'), 'utf8'));
   const k = params.budynki && params.budynki.targowisko_zywnosc_na_podatek_kurs;
-  ok(k && k.easy === 1 && k.normal === 1 && k.hard === 1, 'econ-params: targowisko_zywnosc_na_podatek_kurs = 1/1/1');
+  // Decyzja wlasciciela 2026-11-19 (A): kurs Zywnosc -> Podatek = 0,2 we wszystkich trudnosciach.
+  ok(k && k.easy === 0.2 && k.normal === 0.2 && k.hard === 0.2, 'econ-params: targowisko_zywnosc_na_podatek_kurs = 0,2/0,2/0,2 (decyzja wlasciciela 2026-11-19)');
   fs.rmSync(mutTmp, { recursive: true, force: true });
 }
 
