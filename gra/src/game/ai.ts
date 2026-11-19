@@ -27,7 +27,7 @@ import {
 import { armyFieldPower, type UnitPowerInput } from './unit-power';
 import { estimateUnitCombatStrength } from './siegeAi';
 import { isHomeWarDefenseEnabled, planHomeWar } from './ai-war-home-defense';
-import { cityNeedsGarrison, garrisonUnitIdSet, getCityGarrisonUnitIds, pickGarrisonUnitId } from './ai-city-garrison';
+import { cityNeedsGarrison, garrisonUnitIdSet, getCityGarrisonUnitIds, rankGarrisonUnitIds } from './ai-city-garrison';
 import {
   planSiegeRelief,
   SIEGE_RELIEF_DEFAULT_MIN_ADVANTAGE,
@@ -183,6 +183,8 @@ export interface AICmdBuild {
   fallbackIds?: readonly string[];
   /** R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r4): polecenie rekrutacji garnizonu pustego miasta (priorytet wariantu C). */
   garrison?: true;
+  /** r4: wszystkie typy garnizonu (najtanszy pierwszy) -- kazdy z nich ma priorytet wariantu C, gdy miasto jest puste. */
+  garrisonIds?: readonly string[];
 }
 
 /**
@@ -1949,9 +1951,13 @@ export const EMPTY_CITY_GARRISON_UNIT_ID = 'Wojownik';
  * (Wojownik jest dostepny tylko w Kamieniu -- diagnoza r4); bez bramki (stare wywolania/testy) = Wojownik.
  * null = brak mozliwego garnizonu w tym miescie w tej turze.
  */
-function garrisonUnitForCity(cityId: string, data: GameData, opts: AITurnOpts): string | null {
-  if (!opts.isProductionAllowed) return EMPTY_CITY_GARRISON_UNIT_ID;
-  return pickGarrisonUnitId(
+/**
+ * Wszystkie kwalifikujace sie typy garnizonu (od najtanszego) -- kolejne sluza jako fallback przy
+ * wykonaniu, gdy pula surowcow wlasciciela zostala w tej turze zuzyta przez wczesniejsze miasta.
+ */
+function garrisonUnitCandidatesForCity(cityId: string, data: GameData, opts: AITurnOpts): string[] {
+  if (!opts.isProductionAllowed) return [EMPTY_CITY_GARRISON_UNIT_ID];
+  return rankGarrisonUnitIds(
     data.units,
     id => opts.isProductionAllowed!(cityId, id),
     id => (opts.canAfford ? opts.canAfford(cityId, id) : true),
@@ -3756,6 +3762,8 @@ function applyHomeWarPriorities(
     hasContactWith: o => aiHasContactWith(opts, o),
     lockedUnitIds: locked,
     isOwnTerritory,
+    garrisonUnitIds: garrisonUnitIdSet(
+      getCityGarrisonUnitIds(myCities, units, playerId, u => aiUnitCombatStrength(u, data))),
     isRelevantSiege: cityId => endsThreat(cityById.get(cityId)),
     strengthOf: u => aiUnitCombatStrength(u, data),
     isFieldUnit: isField,
@@ -4058,11 +4066,12 @@ function decideAITurnCore(
       city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, difficultyParams,
     );
     const isGarrisonCity = garrisonRecruitCityIds.has(city.id);
-    const garrisonUnitId = isGarrisonCity ? garrisonUnitForCity(city.id, data, opts) : null;
+    const garrisonCands = isGarrisonCity ? garrisonUnitCandidatesForCity(city.id, data, opts) : [];
+    const garrisonUnitId = garrisonCands[0] ?? null;
     if (garrisonUnitId !== null) {
-      const rest = buildId === null ? [] : [buildId, ...(opts.lastProductionFallbackIds ?? [])];
+      const rest = [...garrisonCands.slice(1), ...(buildId === null ? [] : [buildId, ...(opts.lastProductionFallbackIds ?? [])])];
       garrisonCmds.push({
-        type: 'build', cityId: city.id, buildingId: garrisonUnitId, garrison: true,
+        type: 'build', cityId: city.id, buildingId: garrisonUnitId, garrison: true, garrisonIds: garrisonCands,
         fallbackIds: rest.filter(id => id !== garrisonUnitId),
       });
       // Gdy wybrana produkcja to jednostka bojowa, garnizon ja zastepuje (jeden zakup wojska na miasto).
@@ -5639,11 +5648,12 @@ function decideDefensiveCopyTurn(
     const buildId = chooseCityProduction(
       city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, difficultyParams,
     );
-    const dcGarrisonUnitId = dcGarrisonRecruitCityIds.has(city.id) ? garrisonUnitForCity(city.id, data, opts) : null;
+    const dcGarrisonCands = dcGarrisonRecruitCityIds.has(city.id) ? garrisonUnitCandidatesForCity(city.id, data, opts) : [];
+    const dcGarrisonUnitId = dcGarrisonCands[0] ?? null;
     if (dcGarrisonUnitId !== null) {
-      const rest = buildId === null ? [] : [buildId, ...(opts.lastProductionFallbackIds ?? [])];
+      const rest = [...dcGarrisonCands.slice(1), ...(buildId === null ? [] : [buildId, ...(opts.lastProductionFallbackIds ?? [])])];
       commands.push({
-        type: 'build', cityId: city.id, buildingId: dcGarrisonUnitId, garrison: true,
+        type: 'build', cityId: city.id, buildingId: dcGarrisonUnitId, garrison: true, garrisonIds: dcGarrisonCands,
         fallbackIds: rest.filter(id => id !== dcGarrisonUnitId),
       });
       if (buildId === null || buildId === dcGarrisonUnitId

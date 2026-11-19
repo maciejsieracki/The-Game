@@ -381,6 +381,11 @@ function runTurns(myUnits, cities, map, nTurns) {
   }
   ok(clustersAtEnd !== null && clustersAtEnd < 10,
     `scenario 4: 5 miast z 1 nieszkodliwym barbarzyńcą każde (5 obsłużonych "frontów") -- po 40 turach klastrów=${clustersAtEnd}, MUSI być < 10 (przed naprawą: 10, każda jednostka osobno -- front-merge nigdy nie łączył wolnych jednostek, bo obsłużone zagrożenia liczyły się DODATKOWO jako fronty)`);
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r4): ORYGINALNA asercja (bez zmiany oczekiwania) zachowana OBOK
+  // nowych dowodow nizej. Kolizja z regula wlasciciela: 5 garnizonow zostaje w miastach (5 klastrow) + 5
+  // obroncow domu osobno => liczba klastrow wszystkich jednostek >= 10 -- DECISION_REQUIRED (patrz raport r4).
+  ok(clustersAtEnd !== null && clustersAtEnd <= 6,
+    `scenario 4 (ORYGINAL): mutation guard na dokładną wartość zmierzoną po naprawie (klastrów=${clustersAtEnd}, oczekiwane <=6 -- 5 obrońców domu poprawnie zostają osobno + wolne jednostki realnie się łączą)`);
   // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r3): garnizon (najslabsza bojowa na heksie miasta)
   // nie wchodzi do zbiorki ani scalania, wiec ZOSTAJE w miescie przez cale 40 tur (dowod 1), a
   // prog scalania jednostek POZA garnizonami wraca do dawnego <=6 (dowod 2) -- zamiast rozluznienia

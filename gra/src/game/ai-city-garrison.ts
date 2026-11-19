@@ -103,7 +103,8 @@ export function isGarrisonPriorityPurchase(
  * Maksymalna liczba pustych miast, na ktore jednorazowo rezerwujemy zloto (wariant C). Sufit
  * chroni ekonomie przed zamrozeniem skarbca, gdy pustych miast jest dziesiatki (FC r2, zarzut 6):
  * garnizony i tak powstaja kolejno -- rezerwa wystarcza na najblizsze zakupy, nie na wszystkie naraz.
- * ZALOZENIE robocze (do zatwierdzenia przez wlasciciela).
+ * ZALOZENIE robocze (do zatwierdzenia przez wlasciciela). r4: wartosc zywa jest w data/ai-params.json
+ * (`garnizon_rezerwa_max_miast`); ta stala to tylko awaryjny fallback gdy parametru brak.
  */
 export const GARRISON_RESERVE_MAX_CITIES = 3;
 
@@ -156,25 +157,29 @@ export function isGarrisonClassUnitDef(def: GarrisonUnitDef): boolean {
  * utrzymanie, nazwa. `isAllowed` = bramka tech/epoka/zasoby produkcji, `canAfford` = pula surowcow.
  * Brak kandydata -> null (brak polecenia garnizonu w tej turze).
  */
-export function pickGarrisonUnitId(
+export function rankGarrisonUnitIds(
   defs: readonly GarrisonUnitDef[],
   isAllowed: (unitId: string) => boolean,
   canAfford: (unitId: string) => boolean,
-): string | null {
-  let best: GarrisonUnitDef | null = null;
+): string[] {
   const rank = (d: GarrisonUnitDef): [number, number, number] => [
     Number(d['Pieniądz (koszt)']),
     GARRISON_MELEE_TYPES.has((d.Typ ?? '').toString().trim()) ? 0 : 1,
     Number(d['Utrzymanie (Pieniądz/turę)']) || 0,
   ];
-  for (const d of defs) {
-    if (!isGarrisonClassUnitDef(d)) continue;
-    if (!isAllowed(d.Jednostka) || !canAfford(d.Jednostka)) continue;
-    if (best === null) { best = d; continue; }
-    const a = rank(d), b = rank(best);
-    let cmp = 0;
-    for (let i = 0; i < 3 && cmp === 0; i++) cmp = a[i]! - b[i]!;
-    if (cmp < 0 || (cmp === 0 && d.Jednostka < best.Jednostka)) best = d;
-  }
-  return best === null ? null : best.Jednostka;
+  const cands = defs.filter(d => isGarrisonClassUnitDef(d) && isAllowed(d.Jednostka) && canAfford(d.Jednostka));
+  cands.sort((x, y) => {
+    const a = rank(x), b = rank(y);
+    for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i]! - b[i]!;
+    return x.Jednostka < y.Jednostka ? -1 : x.Jednostka > y.Jednostka ? 1 : 0;
+  });
+  return cands.map(d => d.Jednostka);
+}
+
+export function pickGarrisonUnitId(
+  defs: readonly GarrisonUnitDef[],
+  isAllowed: (unitId: string) => boolean,
+  canAfford: (unitId: string) => boolean,
+): string | null {
+  return rankGarrisonUnitIds(defs, isAllowed, canAfford)[0] ?? null;
 }

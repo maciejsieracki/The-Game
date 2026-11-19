@@ -114,6 +114,13 @@ export interface HomeWarInput {
   lockedUnitIds: ReadonlySet<string>;
   isOwnTerritory: (q: number, r: number) => boolean;
   /**
+   * R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r4): jednostki garnizonu miast (ai-city-garrison.ts) -- zostaja
+   * w miescie: NIE wchodza do puli przydzialu (ani P2 atak/marsz, ani P1 odbicie), ale ich sila liczy sie
+   * jako obecna przy zagrozeniu. DIAGNOZA r4: ta nakladka byla glownym zrodlem odejsc garnizonu (49/60 w tescie).
+   * undefined = brak wykluczenia (zachowanie sprzed zmiany).
+   */
+  garrisonUnitIds?: ReadonlySet<string>;
+  /**
    * R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1: czy oblężenie miasta `cityId` kończy zagrożenie
    * (miasto utracone albo należy do cywilizacji zagrażającej mojemu terytorium) -- takie oblężenie
    * zostaje (wyjątek od odwołania). Inne oblężenia (cudze miasto z boku) są odwoływane do obrony.
@@ -262,7 +269,8 @@ export function planHomeWar(input: HomeWarInput): HomeWarPlan {
   for (const u of [...field].sort(cmpId)) {
     const holdsRelevantSiege = u.oblegaCityId !== undefined
       && (input.isRelevantSiege === undefined || input.isRelevantSiege(u.oblegaCityId));
-    if (u.ruchLeft > 0 && !input.lockedUnitIds.has(u.id) && !holdsRelevantSiege) pool.set(u.id, u);
+    if (u.ruchLeft > 0 && !input.lockedUnitIds.has(u.id) && !holdsRelevantSiege
+      && !(input.garrisonUnitIds?.has(u.id) ?? false)) pool.set(u.id, u);
   }
 
   const initialPoolIds = new Set(pool.keys());
