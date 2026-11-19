@@ -45602,6 +45602,11 @@ async function boot(): Promise<void> {
               ownerId === 0 && (playerEraTagNow === 'bronze' || playerEraTagNow === 'iron')
                 ? playerActiveForcedWarsInEra
                 : totalActiveForcedWarsByOwner(ownerId);
+            // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1 r3 (zarzut 6): gracz w epoce Brązu/Żelaza bez
+            // zapisanego wejścia (ścieżka bez reconcilePlayerEraFromResearch) dostawał `undefined` → od razu
+            // w puli. Brakujące wejście = pierwsza tura, w której bramka go widzi (jak legacy-restore).
+            if (playerEpochNow >= 2) backfillMissingEraEntryTurns(bronzeEraEnterTurnByOwner, new Map([[0, playerEpochNow]]), turn);
+            if (playerEpochNow === 3) backfillMissingEraEntryTurns(ironEraEnterTurnByOwner, new Map([[0, playerEpochNow]]), turn);
             // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1: ta sama bramka puli gracza (próg tur od
             // wejścia w epokę) steruje też jego udziałem jako wolnego celu fallbacku (freeTargetCandidates).
             const playerEraPoolEligible = !!playerCity

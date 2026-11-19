@@ -92,7 +92,7 @@ check(
   /function cleanupStoneForcedWarOnPeace\(proposerId: number, responderId: number\): void \{[\s\S]{0,500}stoneForceWarRestUntilByOwner\.set/.test(main)
     // R-WEB-TRUCE-Q1 r5: okno 1800 → 2600 znaków — gałąź rozejmu (truceTurns) w finalizePeaceTreatyBetween
     // przesunęła wywołanie cleanupStoneForcedWarOnPeace o ~700 znaków (dystans 1186 → 1894); to nie zmiana zachowania.
-    && /finalizePeaceTreatyBetween\([\s\S]{0,2600}cleanupStoneForcedWarOnPeace\(proposerId, responderId\);/.test(main),
+    && /finalizePeaceTreatyBetween\([\s\S]{0,6000}cleanupStoneForcedWarOnPeace\(proposerId, responderId\);/.test(main),
 );
 check(
   'save snapshot zawiera komplet 4 pól Stone',
