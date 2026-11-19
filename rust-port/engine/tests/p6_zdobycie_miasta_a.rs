@@ -444,7 +444,11 @@ fn diffs(sc: &Value) -> Vec<String> {
     );
     let ai_tr: BTreeMap<u64, f64> = st.economy.ai_treasury_by_owner.clone();
     let want_ai_tr: BTreeMap<u64, f64> = want_tr.into_iter().filter(|(o, _)| *o != HUMAN).collect();
-    check("skarbce AI", format!("{ai_tr:?}"), format!("{want_ai_tr:?}"));
+    check(
+        "skarbce AI",
+        format!("{ai_tr:?}"),
+        format!("{want_ai_tr:?}"),
+    );
     let want_praca: BTreeMap<u64, f64> = exp["praca"]
         .as_array()
         .unwrap()
@@ -567,7 +571,10 @@ fn diffs(sc: &Value) -> Vec<String> {
     }
     let elim = res.capture.as_ref().and_then(|c| c.eliminated_owner_id);
     if elim != exp["eliminated"].as_u64() {
-        out2.push(format!("{name}: eliminacja {elim:?} != {:?}", exp["eliminated"]));
+        out2.push(format!(
+            "{name}: eliminacja {elim:?} != {:?}",
+            exp["eliminated"]
+        ));
     }
     out.extend(out2);
     out
@@ -581,10 +588,15 @@ fn wektory_pinu_sha_i_pokrycie() {
     let scs = v["scenarios"].as_array().unwrap();
     let has = |p: &dyn Fn(&Value) -> bool| scs.iter().any(p);
     assert!(has(&|s| s["expected"]["captured"] == true));
-    assert!(has(&|s| s["expected"]["captured"] == false && s["input"]["breached"] == true && s["input"]["winner"] == "atakujacy"));
+    assert!(has(&|s| s["expected"]["captured"] == false
+        && s["input"]["breached"] == true
+        && s["input"]["winner"] == "atakujacy"));
     assert!(has(&|s| s["expected"]["capitalEvent"] == "przejecieStolicy"));
     assert!(has(&|s| s["expected"]["capitalEvent"] == "eliminacja"));
-    assert!(has(&|s| !s["expected"]["wonderTransfers"].as_array().unwrap().is_empty()));
+    assert!(has(&|s| !s["expected"]["wonderTransfers"]
+        .as_array()
+        .unwrap()
+        .is_empty()));
     assert!(scs.len() >= 12);
 }
 
@@ -639,7 +651,10 @@ fn kazde_wywolanie_pinu_ma_wpis_w_tabeli() {
 fn brak_zdobycia_ma_jawny_powod_i_liste_pominietych() {
     let v = vectors();
     let scs = v["scenarios"].as_array().unwrap();
-    let peace = scs.iter().find(|s| s["name"] == "pokoj_brak_zdobycia").unwrap();
+    let peace = scs
+        .iter()
+        .find(|s| s["name"] == "pokoj_brak_zdobycia")
+        .unwrap();
     let (_, res) = run(&peace["input"]);
     let cap: CityCaptureResultDto = res.capture.expect("hak wolany przy wylomie");
     assert!(!cap.captured);

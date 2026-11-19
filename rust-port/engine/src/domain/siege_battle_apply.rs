@@ -1358,10 +1358,7 @@ pub(crate) fn validate_storm_siege(state: &mut PlayableState, cid: CityId, besie
     let Some(city) = state.cities.iter().find(|c| c.id == cid) else {
         return false;
     };
-    let hex = (
-        i32::from(city.position.x()),
-        i32::from(city.position.y()),
-    );
+    let hex = (i32::from(city.position.x()), i32::from(city.position.y()));
     let at_war = u64::try_from(besieger).ok().is_some_and(|b| {
         state
             .war
@@ -1371,10 +1368,7 @@ pub(crate) fn validate_storm_siege(state: &mut PlayableState, cid: CityId, besie
     });
     let adjacent = state.units.iter().any(|u| {
         owner_i64(u.owner_id) == besieger
-            && hex_distance(
-                (i32::from(u.position.x()), i32::from(u.position.y())),
-                hex,
-            ) == 1
+            && hex_distance((i32::from(u.position.x()), i32::from(u.position.y())), hex) == 1
     });
     if !at_war || !adjacent {
         end_map_siege(state, cid);
@@ -1410,10 +1404,7 @@ pub(crate) fn enter_city_hex_after_atk_win(
         .iter()
         .find(|c| c.id == cid)
         .ok_or(SiegeBattleError::CityNotFound(battle.city_id))?;
-    let hex = (
-        i32::from(city.position.x()),
-        i32::from(city.position.y()),
-    );
+    let hex = (i32::from(city.position.x()), i32::from(city.position.y()));
     let mut out = AtkWinEntry::default();
     // `wipeDefenderOnCityCenter`: obiekt rosteru = żywa jednostka (pozycja bieżąca); jednostka usunięta / wirtualna
     // = `removeUnitById` bez skutku.
@@ -1521,7 +1512,8 @@ pub fn finish(
     // #354 (D-ZMA-2): konsument haka T8 w tej samej komendzie — w pinie zdobycie jest częścią
     // `finishSiegeStormBattle` → `applyMapBattleOutcome` (`main.ts:34646-34744`).
     if let Some(req) = result.capture_requested.clone() {
-        let capture = crate::domain::city_capture_apply::apply_storm_capture(state, &rosters, &req)?;
+        let capture =
+            crate::domain::city_capture_apply::apply_storm_capture(state, &rosters, &req)?;
         result.siege_ended = result.siege_ended || capture.siege_ended;
         result.capture = Some(capture);
     }

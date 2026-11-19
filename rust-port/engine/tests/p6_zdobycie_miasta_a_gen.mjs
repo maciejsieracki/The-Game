@@ -141,10 +141,10 @@ const u = (id, ownerId, typeId, category, q, r, extra = {}) => ({
   id, ownerId, typeId, category, q, r, hp: extra.hp ?? 10, ruchLeft: extra.ruchLeft ?? 2, ruch: 2,
   ...(extra.bs !== undefined ? { battlesSurvived: extra.bs } : {}),
 });
-// Atakujacy: kotwica 7001 + 7002 + osadnik 7004 na (6,4), 7003 i 7005 na (6,3). Obroncy: 8001, 8002 w miescie,
+// Atakujacy: kotwica 7001 (ruchLeft 3: `syncStackRuchLeft` ma skutek) + 7002 + osadnik 7004 na (6,4), 7003 i 7005 na (6,3). Obroncy: 8001, 8002 w miescie,
 // 8003 na (4,4).
 const base = () => [
-  u(7001, HUMAN, 'Wojownik', 'miecznik', 6, 4, { hp: 12, ruchLeft: 2 }),
+  u(7001, HUMAN, 'Wojownik', 'miecznik', 6, 4, { hp: 12, ruchLeft: 3 }),
   u(7002, HUMAN, 'Wojownik', 'miecznik', 6, 4, { hp: 9, ruchLeft: 1.5 }),
   u(7003, HUMAN, 'Łucznik', 'lucznik', 6, 3, { hp: 7, ruchLeft: 2 }),
   u(7004, HUMAN, 'Osadnik', 'osadnik', 6, 4, { hp: 5, ruchLeft: 2 }),

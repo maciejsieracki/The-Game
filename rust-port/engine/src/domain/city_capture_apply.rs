@@ -52,8 +52,8 @@ use crate::domain::siege_battle_apply::{
     CityCaptureRequested, SiegeBattleError,
 };
 use crate::domain::siege_capital_plunder::{
-    is_barbarian, js_max0, run_capital_capture_plunder, OwnerResourceAccess, PlunderCity, PlunderInput,
-    PlunderLabels, PlunderState,
+    is_barbarian, js_max0, run_capital_capture_plunder, OwnerResourceAccess, PlunderCity,
+    PlunderInput, PlunderLabels, PlunderState,
 };
 use crate::domain::siege_transfer_effects::{
     apply_capture_population_loss, CapturePopLossInput, CAPTURE_POP_LOSS_PIN,
@@ -73,43 +73,130 @@ use crate::domain::{CityId, PlayerId, PositionDto};
 
 /// Mapowanie wywołań pinu na port (tabela kryterium; test sprawdza kompletność wobec generatora).
 pub const PIN_STEPS: &[(&str, &str)] = &[
-    ("wipeDefenderOnCityCenter", "siege_battle_apply::enter_city_hex_after_atk_win"),
-    ("retreatDefendersAfterAtkWin", "siege_battle_apply::enter_city_hex_after_atk_win"),
-    ("moveAtkRosterOntoBattleHex", "siege_battle_apply::enter_city_hex_after_atk_win"),
-    ("isCityCaptureBlockedByDefenders", "is_city_capture_blocked_by_defenders"),
-    ("areEnemyOwners", "relacja War (D-ADP-L-BARB: brak barbarzyncow w stanie)"),
-    ("noteCityCapture", "NOT_APPLIED: civChronicleByOwner brak w stanie"),
-    ("beginWonderTransferWatch", "snapshot_wonder_territory_owners na wezlach stanu"),
-    ("wasIndependentCityStateBeforeCapture", "NOT_APPLIED: startCityState brak w stanie"),
-    ("applyCapturePopulationLoss", "siege_transfer_effects::apply_capture_population_loss"),
+    (
+        "wipeDefenderOnCityCenter",
+        "siege_battle_apply::enter_city_hex_after_atk_win",
+    ),
+    (
+        "retreatDefendersAfterAtkWin",
+        "siege_battle_apply::enter_city_hex_after_atk_win",
+    ),
+    (
+        "moveAtkRosterOntoBattleHex",
+        "siege_battle_apply::enter_city_hex_after_atk_win",
+    ),
+    (
+        "isCityCaptureBlockedByDefenders",
+        "is_city_capture_blocked_by_defenders",
+    ),
+    (
+        "areEnemyOwners",
+        "relacja War (D-ADP-L-BARB: brak barbarzyncow w stanie)",
+    ),
+    (
+        "noteCityCapture",
+        "NOT_APPLIED: civChronicleByOwner brak w stanie",
+    ),
+    (
+        "beginWonderTransferWatch",
+        "snapshot_wonder_territory_owners na wezlach stanu",
+    ),
+    (
+        "wasIndependentCityStateBeforeCapture",
+        "NOT_APPLIED: startCityState brak w stanie",
+    ),
+    (
+        "applyCapturePopulationLoss",
+        "siege_transfer_effects::apply_capture_population_loss",
+    ),
     ("isCivilianUnit", "siege_battle_adapter::is_civilian_unit"),
-    ("applyPostCaptureLawOnCapture", "NOT_APPLIED: pola Prawa/rebelii brak w stanie"),
-    ("seedCityOwnerDefaults", "NOT_APPLIED: ustawienia miasta brak w stanie"),
-    ("applyLiveSafeRationForCity", "NOT_APPLIED: racje miasta brak w stanie"),
-    ("clearCityStateFlagOnCapture", "NOT_APPLIED: startCityState brak w stanie"),
-    ("onCityCapturedCulture", "NOT_APPLIED: ownCultureShare brak w stanie"),
-    ("settleWonderTransfer", "plan_wonder_transfers + apply_wonder_transfers"),
-    ("triggerRebelProtectionWarConsequence", "no-op: rebelState brak w stanie (wasProtectedRebel = false)"),
-    ("maybeResolveRegularWarOnCityCapture", "gracz = no-op (Q3 pinu); AI-AI = blad (D-ZMA-7)"),
-    ("recordWarCityLossForPair", "record_war_city_loss_for_pair (diplomacyPairMeta.wojnaMiasta)"),
+    (
+        "applyPostCaptureLawOnCapture",
+        "NOT_APPLIED: pola Prawa/rebelii brak w stanie",
+    ),
+    (
+        "seedCityOwnerDefaults",
+        "NOT_APPLIED: ustawienia miasta brak w stanie",
+    ),
+    (
+        "applyLiveSafeRationForCity",
+        "NOT_APPLIED: racje miasta brak w stanie",
+    ),
+    (
+        "clearCityStateFlagOnCapture",
+        "NOT_APPLIED: startCityState brak w stanie",
+    ),
+    (
+        "onCityCapturedCulture",
+        "NOT_APPLIED: ownCultureShare brak w stanie",
+    ),
+    (
+        "settleWonderTransfer",
+        "plan_wonder_transfers + apply_wonder_transfers",
+    ),
+    (
+        "triggerRebelProtectionWarConsequence",
+        "no-op: rebelState brak w stanie (wasProtectedRebel = false)",
+    ),
+    (
+        "maybeResolveRegularWarOnCityCapture",
+        "gracz = no-op (Q3 pinu); AI-AI = blad (D-ZMA-7)",
+    ),
+    (
+        "recordWarCityLossForPair",
+        "record_war_city_loss_for_pair (diplomacyPairMeta.wojnaMiasta)",
+    ),
     ("sanitizeBuildQueue", "NOT_APPLIED: cityProd brak w stanie"),
-    ("sanitizeProductionQueue", "NOT_APPLIED: cityProd brak w stanie"),
-    ("onCityCapturedReligion", "NOT_APPLIED: brak portu (dlug ZMA-DL-1)"),
-    ("playerEverOwnedCityByOwner.add", "PlayableState::record_ever_owned_city"),
+    (
+        "sanitizeProductionQueue",
+        "NOT_APPLIED: cityProd brak w stanie",
+    ),
+    (
+        "onCityCapturedReligion",
+        "NOT_APPLIED: brak portu (dlug ZMA-DL-1)",
+    ),
+    (
+        "playerEverOwnedCityByOwner.add",
+        "PlayableState::record_ever_owned_city",
+    ),
     ("syncCityGarnizon", "NOT_APPLIED: garnizon brak w stanie"),
     ("endMapSiege", "siege_battle_apply::end_map_siege"),
-    ("runCapitalCapturePlunder", "siege_capital_plunder::run_capital_capture_plunder (D-ZMA-5/6)"),
+    (
+        "runCapitalCapturePlunder",
+        "siege_capital_plunder::run_capital_capture_plunder (D-ZMA-5/6)",
+    ),
     ("eliminateOwner", "eliminacja::eliminate_owner"),
     ("buildCityCaptureReportRows", "NOT_APPLIED: UI"),
-    ("recordCityCaptureEvent", "NOT_APPLIED: CaptureEventStore brak w stanie"),
-    ("validateActiveSieges", "siege_battle_apply::validate_storm_siege"),
+    (
+        "recordCityCaptureEvent",
+        "NOT_APPLIED: CaptureEventStore brak w stanie",
+    ),
+    (
+        "validateActiveSieges",
+        "siege_battle_apply::validate_storm_siege",
+    ),
     ("isBarbarian", "siege_capital_plunder::is_barbarian"),
     ("filterQueue", "NOT_APPLIED: cityProd brak w stanie"),
-    ("isCapitalOnlyBuildingCapture", "NOT_APPLIED: cityProd brak w stanie"),
-    ("capitalCityIdForOwner", "NOT_APPLIED: cityProd brak w stanie (filtr budynkow stolicy)"),
-    ("ownerPracaPool", "NOT_APPLIED: zwrot Pracy z kolejki (cityProd brak w stanie)"),
-    ("setOwnerPracaPool", "NOT_APPLIED: zwrot Pracy z kolejki (cityProd brak w stanie)"),
-    ("ownerReligionForOwnerId", "NOT_APPLIED: brak portu onCityCapturedReligion (dlug ZMA-DL-1)"),
+    (
+        "isCapitalOnlyBuildingCapture",
+        "NOT_APPLIED: cityProd brak w stanie",
+    ),
+    (
+        "capitalCityIdForOwner",
+        "NOT_APPLIED: cityProd brak w stanie (filtr budynkow stolicy)",
+    ),
+    (
+        "ownerPracaPool",
+        "NOT_APPLIED: zwrot Pracy z kolejki (cityProd brak w stanie)",
+    ),
+    (
+        "setOwnerPracaPool",
+        "NOT_APPLIED: zwrot Pracy z kolejki (cityProd brak w stanie)",
+    ),
+    (
+        "ownerReligionForOwnerId",
+        "NOT_APPLIED: brak portu onCityCapturedReligion (dlug ZMA-DL-1)",
+    ),
     ("markCityStateDirty", "NOT_APPLIED: UI"),
     ("mocLabel", "NOT_APPLIED: UI"),
     ("civLabelForOwner", "NOT_APPLIED: UI"),
@@ -300,13 +387,17 @@ fn wonder_snapshot(state: &PlayableState) -> Option<WonderTerritorySnapshot> {
         return None;
     }
     let nodes = territory_nodes(state);
-    Some(snapshot_wonder_territory_owners(&wonders_of(state), |q, r| {
-        territory_owner_at(q, r, &nodes).and_then(|o| i32::try_from(o).ok())
-    }))
+    Some(snapshot_wonder_territory_owners(
+        &wonders_of(state),
+        |q, r| territory_owner_at(q, r, &nodes).and_then(|o| i32::try_from(o).ok()),
+    ))
 }
 
 /// `settleWonderTransfer(before)` (`main.ts:4239-4268`) w zakresie stanu; zwraca przekazane cuda.
-fn settle_wonders(state: &mut PlayableState, before: Option<&WonderTerritorySnapshot>) -> Vec<String> {
+fn settle_wonders(
+    state: &mut PlayableState,
+    before: Option<&WonderTerritorySnapshot>,
+) -> Vec<String> {
     let Some(before) = before else {
         return Vec::new();
     };
@@ -348,7 +439,11 @@ fn record_war_city_loss_for_pair(
     // `getDiploPairMeta`: brak wpisu = `freshDiploPairMeta()` (`diplomacy-pn-engine.ts:143-145`).
     let mut meta: Map<String, Value> = match pos.and_then(|p| rows[p].get(1)) {
         Some(Value::Object(m)) => m.clone(),
-        Some(_) => return Err(producer(format!("diplomacyPairMeta[{key}]: meta nie jest obiektem"))),
+        Some(_) => {
+            return Err(producer(format!(
+                "diplomacyPairMeta[{key}]: meta nie jest obiektem"
+            )))
+        }
         None => {
             let mut m = Map::new();
             m.insert("trustPnGainedThisTurn".into(), json!(0));
@@ -380,7 +475,11 @@ fn record_war_city_loss_for_pair(
         })
     });
     let rec = record_war_city_loss(prev.as_ref(), od, &old_owner.to_string(), turn);
-    let utraty: Map<String, Value> = rec.utraty.iter().map(|(k, v)| (k.clone(), num(*v))).collect();
+    let utraty: Map<String, Value> = rec
+        .utraty
+        .iter()
+        .map(|(k, v)| (k.clone(), num(*v)))
+        .collect();
     let mut rec_obj = Map::new();
     rec_obj.insert("od".into(), num(rec.od));
     rec_obj.insert("utraty".into(), Value::Object(utraty));
@@ -618,7 +717,8 @@ fn capital_plunder(
         // Zwykłe miasto (miasto nie było stolicą ofiary): brak łupu.
         return Ok(());
     }
-    out.treasury_taken = StateAccess { state: &mut *state }.get_treasury(web_owner(new_owner)) - treasury_before_new;
+    out.treasury_taken =
+        StateAccess { state: &mut *state }.get_treasury(web_owner(new_owner)) - treasury_before_new;
     out.techs_copied = StateAccess { state: &mut *state }
         .get_researched_techs(web_owner(new_owner))
         .difference(&techs_before)
@@ -680,10 +780,7 @@ pub fn apply_storm_capture(
         .find(|c| c.id == cid)
         .ok_or(SiegeBattleError::CityNotFound(req.city_id))?
         .clone();
-    let hex = (
-        i32::from(city.position.x()),
-        i32::from(city.position.y()),
-    );
+    let hex = (i32::from(city.position.x()), i32::from(city.position.y()));
     let old_owner = owner_i64(city.owner_id);
     let atk_owner = i64::try_from(req.attacker_owner_id).unwrap_or(i64::MAX);
     let mut out = CityCaptureResultDto {
@@ -732,7 +829,9 @@ pub fn apply_storm_capture(
     }
     // D-ZMA-5 / D-ZMA-7: warunki wstępne przed jakąkolwiek zmianą miasta.
     if old_owner == 0 || atk_owner == 0 {
-        return Err(producer("zdobycie: wlasciciel 0 niejednoznaczny wobec id webu (D-ZMA-5)"));
+        return Err(producer(
+            "zdobycie: wlasciciel 0 niejednoznaczny wobec id webu (D-ZMA-5)",
+        ));
     }
     if old_owner != HUMAN_OWNER_ID && atk_owner != HUMAN_OWNER_ID {
         return Err(producer(
@@ -770,9 +869,7 @@ pub fn apply_storm_capture(
     // `population` stanu jest całkowite; strata = całkowity parametr pinu, wynik >= 1.
     #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     let pop_after = loss.population.max(0.0) as u32;
-    state
-        .captured_from_owner_by_city
-        .insert(cid, city.owner_id);
+    state.captured_from_owner_by_city.insert(cid, city.owner_id);
     // `units.splice`: jednostki starego właściciela na heksie miasta.
     let mut i = state.units.len();
     while i > 0 {
@@ -796,11 +893,10 @@ pub fn apply_storm_capture(
         .find(|u| u.id.get() == req.anchor_unit_id)
         .map(|u| u.position);
     for r in battle.atk_roster {
-        let Some(idx) = r
-            .id
-            .parse::<u64>()
-            .ok()
-            .and_then(|n| state.units.iter().position(|u| u.id.get() == n))
+        let Some(idx) =
+            r.id.parse::<u64>()
+                .ok()
+                .and_then(|n| state.units.iter().position(|u| u.id.get() == n))
         else {
             continue;
         };
