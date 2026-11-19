@@ -280,6 +280,13 @@ pub struct RenderClient<S> {
     inputs: Option<FrameInputs>,
     /// The renderer state; built from the first frame of a session.
     scene: Option<MapScene>,
+    /// The running siege battle (P4-1I6).
+    battle: Option<SiegeBattleView>,
+    /// How the last siege battle ended (P4-1I6, D-1I6-5).
+    battle_end: Option<SiegeBattleEnd>,
+    /// The battle screen of the last closed battle (web: the scene stays
+    /// until `bs.dispose()` after the summary, `:37030`).
+    battle_closed: Option<SiegeBattleView>,
 }
 
 impl<S: RenderSource> RenderClient<S> {
@@ -295,6 +302,9 @@ impl<S: RenderSource> RenderClient<S> {
             frame: None,
             inputs: None,
             scene: None,
+            battle: None,
+            battle_end: None,
+            battle_closed: None,
         }
     }
 
@@ -361,6 +371,12 @@ impl<S: RenderSource> RenderClient<S> {
         self.frame = None;
         self.inputs = None;
         self.scene = None;
+        // A new session has no battle (`CreateSession` = new game, D-WIRB-2)
+        // and no screen of the last one (r2, Z2: both "last battle"
+        // accessors agree).
+        self.battle = None;
+        self.battle_end = None;
+        self.battle_closed = None;
         let map = self.source.render_map().map_err(ClientError::Source)?;
         self.map = Some(MapStatic::from_dto(&map.0).map_err(ClientError::Frame)?);
         Ok(())
@@ -671,4 +687,806 @@ impl<S: RenderSource> RenderClient<S> {
         self.inputs = Some(inputs);
         Ok(())
     }
+}
+
+// ------------------------------------------------------------ siege battle (P4-1I6)
+//
+// R-RUSTPORT-P4-1I6-SIEGE-BATTLE-CLIENT-Q1 (#371): the client as the
+// production caller of the siege battle commands of the bridge
+// (`StartSiegeStorm` / `StepSiegeBattle` / `SkipSiegeBattle` /
+// `FinishSiegeBattle`, R-RUSTPORT-P6-K5LOOP-WIRING-B-Q1, D-WIRB-5) feeding the
+// renderer battle playback (`civ_renderer::battle::playback`, P4-1I4/I5).
+//
+// Pin `07d2fbd72` (`gra/src/main.ts`):
+// - `launchSiegeStormFromMap` (`:36799-37024`): `hideSiegeMapPanel()`
+//   (`:36885`), `onBattlefield` -> `new BattleScene({ attacker:
+//   rosterToBattleUnits(atkRosterRef, 0xffd54a), defender:
+//   rosterToBattleUnits(defRosterRef, 0xc84040), deployPlayerSide: 'atk',
+//   siege: { defCiv, ... } })` -> `bs.play(res => ...)` (`:36962-37033`);
+// - the scene: real-time play, the `Pomin` button (`skip()`), the end screen
+//   (`finished`);
+// - `bs.play` callback: `consumeReadyMachines(city)` + `finishSiegeStormBattle`
+//   (`:36596-36725`) -> `afterSiegeUi` (`:36628-36672`) and, after the
+//   summary, `afterSummary` -> `clearBattleUiState()` (`:36904-36908`:
+//   `clearPlayerUnitSelection()`) + `bs.dispose()`.
+//
+// Technical decisions (entered in `REJESTR-RUST.md` by the orchestrator):
+// - D-1I6-1 (seam): the bridge is included through `#[path]` by every consumer
+//   (D-371-1), so the client talks to it through [`SiegeBattleSource`] over the
+//   library types `SiegeBattlePayload` / `SiegeBattleError`; the caller maps
+//   `BridgeError` back to `SiegeBattleError` (the bridge carries only its
+//   `Display`, debt D-1I6-ERR).
+// - D-1I6-2 (order): every answer passes the client stream guard
+//   [`StreamOrder`], the rule of `BattlePlayback::check_order`
+//   (`playback.rs:584-625`: all-or-nothing actions, then the frame, times
+//   never decreasing over the whole battle), with or without a scene, so a
+//   violation is reported before any renderer state changes.
+// - D-1I6-3 (scene): the bridge answer has no `BattleSetupDto` (grid, fort,
+//   models; its producer is engine work, debt D-1I6-SETUP). The client builds
+//   the setup from the start answer (`units`, start `frame`: cells, facing,
+//   wall walk, HP, morale, ammunition; owner colours of the pin
+//   `0xffd54a` / `0xc84040`; `deployPlayerSide: 'atk'`; siege) plus the part
+//   the bridge does not carry ([`SiegeSceneStatic`]). Without it the client
+//   still drives the battle headless (guard, counts, result, map refresh).
+// - D-1I6-4 (skip): after `SkipSiegeBattle` the client plays to the frame and
+//   calls `BattlePlayback::apply_snapshot` with it (the fast-forward emits no
+//   `Damage`, contract of `BattlePlayback`).
+// - D-1I6-5 (end of battle, D-WIRB-8): `Finish` = result applied (one
+//   `GetRenderFrame`, the `StateChanged` rule D-371-4, with the UI of
+//   `clearBattleUiState`) / `NotFinished` (battle kept, `Skip` available) /
+//   `Aborted` (battle closed, game state unchanged, no `StateChanged`, the
+//   same UI exit as the web end of a battle).
+
+use civ_engine::domain::siege_battle_apply::SiegeBattleUnitRefDto;
+pub use civ_engine::domain::siege_battle_apply::{
+    SiegeBattleError, SiegeBattlePayload, SiegeBattlePhaseDto, SiegeBattleResultDto,
+};
+use civ_engine::domain::siege_battle_session::SessionError;
+pub use civ_renderer::battle::dynamics::ProjectileKind;
+pub use civ_renderer::battle::playback::{BattlePlayback, PlaybackError, PlaybackOpts};
+use civ_renderer::battle::units::build_battle_scene_with_units_fort;
+pub use civ_renderer::battle::units::BattleScene3;
+pub use civ_renderer::view::BattleAdapterError;
+use civ_view_model::battle::{
+    BattleActionDto, BattleActionKindDto, BattleFortDto, BattleFrameDto, BattleGridDto,
+    BattleSetupDto, BattleSide, BattleUnitSpawnDto, BattleWinner,
+};
+
+/// `rosterToBattleUnits(atkRosterRef, 0xffd54a)` (`main.ts:36981`).
+pub const SIEGE_ATTACKER_COLOR: u32 = 0x00ff_d54a;
+/// `rosterToBattleUnits(defRosterRef, 0xc84040)` (`main.ts:36982`).
+pub const SIEGE_DEFENDER_COLOR: u32 = 0x00c8_4040;
+
+/// One siege battle command of the bridge.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum SiegeBattleCommand {
+    /// `StartSiegeStorm { city_id, unit_id }`.
+    Start {
+        /// Stormed city.
+        city_id: u64,
+        /// Anchor unit of the human besieger.
+        unit_id: u64,
+    },
+    /// `StepSiegeBattle { wall_ms }`.
+    Step {
+        /// Wall clock of the step (ms).
+        wall_ms: f64,
+    },
+    /// `SkipSiegeBattle`.
+    Skip,
+    /// `FinishSiegeBattle`.
+    Finish,
+}
+
+/// The answer of a siege battle command: the `siegeBattle` field and whether
+/// the bridge emitted `StateChanged` (only `Finish`, D-WIRB-2).
+#[derive(Debug, Clone, PartialEq)]
+pub struct SiegeBattleAnswer {
+    /// `BridgeResponse.siege_battle`.
+    pub battle: SiegeBattlePayload,
+    /// The dispatch carried `BridgeEvent::StateChanged`.
+    pub state_changed: bool,
+}
+
+/// Error of a [`SiegeBattleSource`].
+#[derive(Debug, Clone, PartialEq)]
+pub enum SiegeSourceError<E> {
+    /// The engine rejected the command (`SiegeBattleError`, D-WIRB-7 / D-WIRB-8).
+    Battle(SiegeBattleError),
+    /// Transport / bridge error that is not a battle error.
+    Source(E),
+}
+
+/// The siege battle commands (D-1I6-1): the caller implements it over its
+/// `EngineBridge` (`EngineCommand::StartSiegeStorm` ... and
+/// `BridgeResponse.siege_battle`).
+pub trait SiegeBattleSource: RenderSource {
+    /// Sends one command.
+    ///
+    /// # Errors
+    ///
+    /// [`SiegeSourceError`].
+    fn siege_battle(
+        &mut self,
+        command: SiegeBattleCommand,
+    ) -> Result<SiegeBattleAnswer, SiegeSourceError<Self::Error>>;
+}
+
+/// The stream contract of `BattlePlayback` (D-1I6-2): the actions of one
+/// answer are all-or-nothing with non-decreasing `t0` from the last queued
+/// item, then the frame with `vNow` not lower than them; the last time lives
+/// through the whole battle.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct StreamOrder {
+    last_queued: f64,
+}
+
+impl Default for StreamOrder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl StreamOrder {
+    /// Nothing queued yet.
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            last_queued: f64::NEG_INFINITY,
+        }
+    }
+
+    /// Time of the last accepted item.
+    #[must_use]
+    pub const fn last_queued(&self) -> f64 {
+        self.last_queued
+    }
+
+    /// Checks `actions` then `frame` (one answer) and, when all pass,
+    /// advances the last time. All-or-nothing.
+    ///
+    /// # Errors
+    ///
+    /// [`PlaybackError::OutOfOrder`] with the previous time and the first
+    /// rejected time (a `NaN` time is rejected too).
+    pub fn accept(
+        &mut self,
+        actions: &[BattleActionDto],
+        frame: Option<&BattleFrameDto>,
+    ) -> Result<(), PlaybackError> {
+        let mut prev = self.last_queued;
+        for t in actions.iter().map(|a| a.t0).chain(frame.map(|f| f.v_now)) {
+            if t.is_nan() || t < prev {
+                return Err(PlaybackError::OutOfOrder { prev, t0: t });
+            }
+            prev = t;
+        }
+        self.last_queued = prev;
+        Ok(())
+    }
+}
+
+/// Unit data of the scene setup the bridge answer does not carry (D-1I6-3).
+#[derive(Debug, Clone, PartialEq)]
+pub struct SiegeUnitLook {
+    /// Battle id (`SiegeBattleUnitRefDto::battle_id`).
+    pub battle_id: u64,
+    /// `bu.kategoria`.
+    pub category: String,
+    /// `String(bu.stats?.Jednostka ?? bu.nazwa)`.
+    pub model_name: String,
+    /// `bu.maxHp`.
+    pub max_hp: f64,
+    /// `moraleMax`.
+    pub morale_max: f64,
+    /// `ammoMax`; `None` = unlimited.
+    pub ammo_max: Option<f64>,
+}
+
+/// The part of the battle scene setup the bridge answer does not carry
+/// (D-1I6-3, debt D-1I6-SETUP): terrain grid, palette, wall civ, fort and the
+/// per-unit models and maxima, plus the tower projectile kind
+/// (`PlaybackOpts::tower_projectile`).
+#[derive(Debug, Clone, PartialEq)]
+pub struct SiegeSceneStatic {
+    /// Battle grid after carving.
+    pub grid: BattleGridDto,
+    /// `terrainPreset.desertPalette`.
+    pub desert_palette: bool,
+    /// `siege_wall_civ(civ, defCiv)`.
+    pub siege_civ: String,
+    /// Wall / towers.
+    pub fort: BattleFortDto,
+    /// One entry per scene unit.
+    pub units: Vec<SiegeUnitLook>,
+    /// `projectileKind` of the tower shooter; `None` = no tower shots.
+    pub tower_projectile: Option<ProjectileKind>,
+}
+
+/// Why a siege battle call of the client failed.
+#[derive(Debug, Clone, PartialEq)]
+pub enum SiegeClientError<E> {
+    /// No map session ([`RenderClient::on_session_created`] not called).
+    NoSession,
+    /// A battle is already running (web: the scene covers the map).
+    BattleActive {
+        /// City of the running battle.
+        city_id: u64,
+    },
+    /// No battle running.
+    NoBattle,
+    /// `Step` / `Skip` after the end of the battle (the web scene shows the
+    /// end screen; only `Finish` remains). No engine call.
+    BattleFinished,
+    /// The engine rejected the command.
+    Engine(SiegeBattleError),
+    /// Transport error of the source.
+    Source(E),
+    /// The answer breaks the stream contract (D-1I6-2); nothing was queued.
+    Order(PlaybackError),
+    /// The start answer cannot give a scene setup (D-1I6-3).
+    Setup(String),
+    /// The renderer battle adapter rejected the setup.
+    Adapter(BattleAdapterError),
+    /// The renderer playback rejected an item.
+    Playback(PlaybackError),
+    /// Map refresh after the battle failed (the battle is closed).
+    Refresh(ClientError<E>),
+}
+
+impl<E: fmt::Display> fmt::Display for SiegeClientError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::NoSession => write!(f, "siege battle: no map session"),
+            Self::BattleActive { city_id } => {
+                write!(f, "siege battle at city {city_id} is running")
+            }
+            Self::NoBattle => write!(f, "siege battle: none running"),
+            Self::BattleFinished => write!(f, "siege battle: already finished"),
+            Self::Engine(e) => write!(f, "{e}"),
+            Self::Source(e) => write!(f, "siege battle source: {e}"),
+            Self::Order(e) | Self::Playback(e) => write!(f, "siege battle playback: {e}"),
+            Self::Setup(s) => write!(f, "siege battle setup: {s}"),
+            Self::Adapter(e) => write!(f, "siege battle setup: {e}"),
+            Self::Refresh(e) => write!(f, "after siege battle: {e}"),
+        }
+    }
+}
+
+impl<E: fmt::Debug + fmt::Display> std::error::Error for SiegeClientError<E> {}
+
+impl<E> From<SiegeSourceError<E>> for SiegeClientError<E> {
+    fn from(e: SiegeSourceError<E>) -> Self {
+        match e {
+            SiegeSourceError::Battle(b) => Self::Engine(b),
+            SiegeSourceError::Source(s) => Self::Source(s),
+        }
+    }
+}
+
+/// `afterSiegeUi` branch of the result (`main.ts:36628-36672`): which
+/// message and map refresh the pin shows after the scene.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SiegeAfterUi {
+    /// `winner === 'atakujacy' && city.ownerId === atkOwner && oldOwner !==
+    /// atkOwner`: `refreshMapAfterCityCapture` + "Szturm udany".
+    Captured,
+    /// `stormCaptureBlocked`: "obroncy rozbici, ale mur/palisada stoi".
+    CaptureBlocked,
+    /// `winner === 'obronca'`: "Szturm odparty".
+    Repelled,
+    /// `winner === 'remis'`: "remis ... oblezenie zniesione".
+    Draw,
+    /// None of the branches (attacker won with a breach but the city was not
+    /// taken, e.g. no war at apply time): the pin shows nothing.
+    Silent,
+}
+
+impl SiegeAfterUi {
+    /// The branch of `afterSiegeUi` for `result`, in the order of the pin's
+    /// `if` chain.
+    #[must_use]
+    pub fn of(result: &SiegeBattleResultDto) -> Self {
+        let captured = result.capture.as_ref().is_some_and(|c| c.captured);
+        if result.winner == BattleWinner::Atakujacy && captured {
+            Self::Captured
+        } else if result.capture_blocked {
+            Self::CaptureBlocked
+        } else if result.winner == BattleWinner::Obronca {
+            Self::Repelled
+        } else if result.winner == BattleWinner::Remis {
+            Self::Draw
+        } else {
+            Self::Silent
+        }
+    }
+}
+
+/// How the last battle ended (D-1I6-5).
+#[derive(Debug, Clone, PartialEq)]
+pub enum SiegeBattleEnd {
+    /// `FinishSiegeBattle` applied the result.
+    Applied {
+        /// City.
+        city_id: u64,
+        /// The result (boxed: `SiegeBattleEnd` is moved around).
+        result: Box<SiegeBattleResultDto>,
+        /// `afterSiegeUi` branch.
+        after: SiegeAfterUi,
+    },
+    /// D-WIRB-8: closed without a result, game state unchanged.
+    Aborted {
+        /// City.
+        city_id: u64,
+        /// Source error of the engine.
+        reason: String,
+    },
+}
+
+/// The battle screen of the client (web `BattleScene` + its UI).
+#[derive(Debug, Clone)]
+pub struct SiegeBattleView {
+    city_id: u64,
+    phase: SiegeBattlePhaseDto,
+    units: Vec<SiegeBattleUnitRefDto>,
+    last_frame: Option<BattleFrameDto>,
+    order: StreamOrder,
+    actions_received: usize,
+    answers: usize,
+    wall_clock: f64,
+    skipped: bool,
+    scene: Option<(BattleScene3, BattlePlayback)>,
+}
+
+impl SiegeBattleView {
+    /// City of the battle.
+    #[must_use]
+    pub const fn city_id(&self) -> u64 {
+        self.city_id
+    }
+
+    /// Phase of the last answer.
+    #[must_use]
+    pub const fn phase(&self) -> SiegeBattlePhaseDto {
+        self.phase
+    }
+
+    /// Scene units of the start answer (battle id -> roster id, side).
+    #[must_use]
+    pub fn units(&self) -> &[SiegeBattleUnitRefDto] {
+        &self.units
+    }
+
+    /// Frame of the last answer that had one.
+    #[must_use]
+    pub const fn last_frame(&self) -> Option<&BattleFrameDto> {
+        self.last_frame.as_ref()
+    }
+
+    /// Actions received so far (every answer; none is dropped).
+    #[must_use]
+    pub const fn actions_received(&self) -> usize {
+        self.actions_received
+    }
+
+    /// Answers received (start included).
+    #[must_use]
+    pub const fn answers(&self) -> usize {
+        self.answers
+    }
+
+    /// Accumulated wall clock of the steps (`vLastWall` of the labels).
+    #[must_use]
+    pub const fn wall_clock(&self) -> f64 {
+        self.wall_clock
+    }
+
+    /// `Pomin` was used.
+    #[must_use]
+    pub const fn skipped(&self) -> bool {
+        self.skipped
+    }
+
+    /// The stream guard (D-1I6-2).
+    #[must_use]
+    pub const fn order(&self) -> &StreamOrder {
+        &self.order
+    }
+
+    /// The `Pomin` button: shown while the battle runs.
+    #[must_use]
+    pub fn skip_available(&self) -> bool {
+        self.phase == SiegeBattlePhaseDto::Running
+    }
+
+    /// The end screen (`finished`): only `Finish` remains.
+    #[must_use]
+    pub fn end_screen(&self) -> bool {
+        self.phase == SiegeBattlePhaseDto::Finished
+    }
+
+    /// The renderer scene and playback (`None` = headless, D-1I6-3).
+    #[must_use]
+    pub fn scene(&self) -> Option<(&BattleScene3, &BattlePlayback)> {
+        self.scene.as_ref().map(|(s, p)| (s, p))
+    }
+}
+
+/// The battle setup of the scene (D-1I6-3) from the start answer and the
+/// static part.
+///
+/// # Errors
+///
+/// A text naming the missing piece: no start frame, a frame unit without a
+/// side in `units` or without a look in `scene.units`, an unknown side tag.
+pub fn compose_siege_battle_setup(
+    start: &SiegeBattlePayload,
+    scene: &SiegeSceneStatic,
+) -> Result<BattleSetupDto, String> {
+    let frame = start
+        .frame
+        .as_ref()
+        .ok_or_else(|| "start answer without a frame".to_owned())?;
+    // D-1I6-3b: the start frame is the scene AFTER the start actions (`t0 <=
+    // vNow`); the spawn is before them. A cell-changing action carries the
+    // cell before it, so the spawn cell of a unit is the `from` of its first
+    // one (steps chain, `MoveFrom`); a unit without one stands on its frame
+    // cell. The wall flag is rewound the same way but on its own: the flag
+    // before the first action that changes it (`ClimbWall`: off the wall
+    // before, `LeaveField`: on the wall before); a `Move` keeps the flag, so
+    // a unit without a flag-changing start action keeps the frame flag (r2,
+    // Z1: `Move` then `ClimbWall` / `LeaveField`). An action that changes HP,
+    // morale or presence cannot be rewound from the frame: such a start
+    // answer is refused, never guessed.
+    let mut spawn_cell: Vec<(u64, (i32, i32))> = Vec::new();
+    let mut spawn_wall: Vec<(u64, bool)> = Vec::new();
+    for a in &start.actions {
+        let (id, from, wall) = match &a.action {
+            BattleActionKindDto::Move {
+                id,
+                from_col,
+                from_row,
+                ..
+            } => (*id, (*from_col, *from_row), None),
+            BattleActionKindDto::ClimbWall {
+                id,
+                from_col,
+                from_row,
+                ..
+            } => (*id, (*from_col, *from_row), Some(false)),
+            BattleActionKindDto::LeaveField {
+                id,
+                from_col,
+                from_row,
+                ..
+            } => (*id, (*from_col, *from_row), Some(true)),
+            BattleActionKindDto::Damage { .. }
+            | BattleActionKindDto::Kill { .. }
+            | BattleActionKindDto::Leave { .. }
+            | BattleActionKindDto::Shaken { .. }
+            | BattleActionKindDto::Rout { .. } => {
+                return Err(format!(
+                    "start answer changes HP / morale / presence at t0 {}",
+                    a.t0
+                ));
+            }
+            _ => continue,
+        };
+        if !spawn_cell.iter().any(|(u, _)| *u == id.get()) {
+            spawn_cell.push((id.get(), from));
+        }
+        if let Some(w) = wall {
+            if !spawn_wall.iter().any(|(u, _)| *u == id.get()) {
+                spawn_wall.push((id.get(), w));
+            }
+        }
+    }
+    let mut units = Vec::with_capacity(frame.units.len());
+    for fu in &frame.units {
+        let id = fu.id.get();
+        let (col, row) = spawn_cell
+            .iter()
+            .find(|(u, _)| *u == id)
+            .map_or((fu.col, fu.row), |(_, c)| *c);
+        let on_wall_walkway = spawn_wall
+            .iter()
+            .find(|(u, _)| *u == id)
+            .map_or(fu.on_wall_walkway, |(_, w)| *w);
+        let side = match start
+            .units
+            .iter()
+            .find(|u| u.battle_id == id)
+            .map(|u| u.side.as_str())
+        {
+            Some("atk") => BattleSide::Atk,
+            Some("def") => BattleSide::Def,
+            Some(other) => return Err(format!("unit {id}: side {other:?}")),
+            None => return Err(format!("unit {id}: not in the start units")),
+        };
+        let look = scene
+            .units
+            .iter()
+            .find(|l| l.battle_id == id)
+            .ok_or_else(|| format!("unit {id}: no scene look"))?;
+        units.push(BattleUnitSpawnDto {
+            id: fu.id,
+            side,
+            category: look.category.clone(),
+            model_name: look.model_name.clone(),
+            owner_color: match side {
+                BattleSide::Atk => SIEGE_ATTACKER_COLOR,
+                BattleSide::Def => SIEGE_DEFENDER_COLOR,
+            },
+            col,
+            row,
+            facing: fu.facing,
+            on_wall_walkway,
+            hp: fu.hp,
+            max_hp: look.max_hp,
+            morale: fu.morale,
+            morale_max: look.morale_max,
+            ammo_left: fu.ammo_left,
+            ammo_max: look.ammo_max,
+        });
+    }
+    Ok(BattleSetupDto {
+        grid: scene.grid.clone(),
+        desert_palette: scene.desert_palette,
+        siege: true,
+        // `deploy: atkRosterRef.some(u => u.isGeneral)`: a general is the
+        // manual mode (`ManualModeNotPorted`, out of scope), so no deploy.
+        deploy: None,
+        siege_civ: scene.siege_civ.clone(),
+        // `deployPlayerSide: 'atk'`: the human is the besieger (`:36800`).
+        player_side: BattleSide::Atk,
+        units,
+        fort: scene.fort.clone(),
+    })
+}
+
+/// `SessionError::NotFinished`: the engine error of a `Finish` before the
+/// end (D-WIRB-8: the battle stays, `Skip` is available).
+#[must_use]
+pub const fn is_not_finished(e: &SiegeBattleError) -> bool {
+    matches!(e, SiegeBattleError::Session(SessionError::NotFinished))
+}
+
+/// Siege battle API of the client (D-1I6-1..5).
+impl<S: SiegeBattleSource> RenderClient<S> {
+    /// The running battle (`None` outside a battle).
+    #[must_use]
+    pub const fn siege_battle(&self) -> Option<&SiegeBattleView> {
+        self.battle.as_ref()
+    }
+
+    /// How the last battle ended.
+    #[must_use]
+    pub const fn last_siege_battle_end(&self) -> Option<&SiegeBattleEnd> {
+        self.battle_end.as_ref()
+    }
+
+    /// The battle screen of the last closed battle (its scene and counts;
+    /// `None` after an `Aborted` end, whose scene is dropped).
+    #[must_use]
+    pub const fn last_siege_battle_view(&self) -> Option<&SiegeBattleView> {
+        self.battle_closed.as_ref()
+    }
+
+    /// `launchSiegeStormFromMap` -> `onBattlefield` -> `bs.play`:
+    /// `StartSiegeStorm`, then the stream guard and, with `scene`, the battle
+    /// scene (D-1I6-3) fed with the start actions and frame. The siege map
+    /// panel closes (`hideSiegeMapPanel()`, `main.ts:36885`; the map is
+    /// covered, no recomposition). The game state does not change (no
+    /// `StateChanged`, no frame request).
+    ///
+    /// # Errors
+    ///
+    /// [`SiegeClientError::NoSession`], [`SiegeClientError::BattleActive`]
+    /// (no engine call); the engine / source error (no battle, UI
+    /// unchanged); setup / adapter errors (no battle in the client; the
+    /// engine battle stays open and the caller ends it); order / playback
+    /// errors of the start answer (battle kept).
+    pub fn start_siege_storm(
+        &mut self,
+        city_id: u64,
+        unit_id: u64,
+        scene: Option<&SiegeSceneStatic>,
+    ) -> Result<(), SiegeClientError<S::Error>> {
+        if self.map.is_none() {
+            return Err(SiegeClientError::NoSession);
+        }
+        if let Some(b) = &self.battle {
+            return Err(SiegeClientError::BattleActive { city_id: b.city_id });
+        }
+        let answer = self
+            .source
+            .siege_battle(SiegeBattleCommand::Start { city_id, unit_id })?;
+        let p = answer.battle;
+        let mut view = SiegeBattleView {
+            city_id: p.city_id,
+            phase: p.phase,
+            units: p.units.clone(),
+            last_frame: None,
+            order: StreamOrder::new(),
+            actions_received: 0,
+            answers: 0,
+            wall_clock: 0.0,
+            skipped: false,
+            scene: None,
+        };
+        if let Some(st) = scene {
+            let setup = compose_siege_battle_setup(&p, st).map_err(SiegeClientError::Setup)?;
+            let inputs =
+                civ_renderer::view::battle_inputs(&setup).map_err(SiegeClientError::Adapter)?;
+            let b = build_battle_scene_with_units_fort(inputs.opts, &inputs.fort);
+            let pb = BattlePlayback::new(
+                &b,
+                PlaybackOpts {
+                    tower_projectile: st.tower_projectile,
+                },
+            );
+            view.scene = Some((b, pb));
+        }
+        self.battle_end = None;
+        self.battle_closed = None;
+        self.ui.siege_map_panel_open = false;
+        let fed = feed(&mut view, &p, false);
+        self.battle = Some(view);
+        fed
+    }
+
+    /// One real-time step of `wall_ms` (the scene's rAF, D-WIR-3): the
+    /// actions and the frame of the answer pass the guard and are played up
+    /// to the frame's `vNow`.
+    ///
+    /// # Errors
+    ///
+    /// [`SiegeClientError::NoBattle`]; [`SiegeClientError::BattleFinished`]
+    /// after the end (no engine call); engine / source / order / playback
+    /// errors.
+    pub fn step_siege_battle(&mut self, wall_ms: f64) -> Result<(), SiegeClientError<S::Error>> {
+        self.running_battle()?;
+        let answer = self
+            .source
+            .siege_battle(SiegeBattleCommand::Step { wall_ms })?;
+        let view = self.battle.as_mut().ok_or(SiegeClientError::NoBattle)?;
+        view.wall_clock += wall_ms;
+        feed(view, &answer.battle, false)
+    }
+
+    /// The scene's `Pomin` (`skip()`): fast-forward to the end; the frame of
+    /// the answer resyncs all bars (`apply_snapshot`, D-1I6-4).
+    ///
+    /// # Errors
+    ///
+    /// As [`Self::step_siege_battle`].
+    pub fn skip_siege_battle(&mut self) -> Result<(), SiegeClientError<S::Error>> {
+        self.running_battle()?;
+        let answer = self.source.siege_battle(SiegeBattleCommand::Skip)?;
+        let view = self.battle.as_mut().ok_or(SiegeClientError::NoBattle)?;
+        view.skipped = true;
+        feed(view, &answer.battle, true)
+    }
+
+    /// The `bs.play` callback: `FinishSiegeBattle` (D-1I6-5, D-WIRB-8).
+    /// - result applied: the held actions are played, the battle closes, the
+    ///   UI of `afterSiegeUi` + `clearBattleUiState` (no selection, no hover,
+    ///   highlight cleared; the capture's `forceVisibleUnitId` is cleared on
+    ///   the next frame, `:36303`) and ONE `GetRenderFrame` (`StateChanged`,
+    ///   D-371-4);
+    /// - `NotFinished`: the battle stays (`Skip` available), returned as
+    ///   [`SiegeClientError::Engine`] ([`is_not_finished`]);
+    /// - `Aborted`: the battle closes, game state unchanged (no
+    ///   `StateChanged`), the same UI exit; `Ok` with
+    ///   [`SiegeBattleEnd::Aborted`].
+    ///
+    /// # Errors
+    ///
+    /// [`SiegeClientError::NoBattle`]; `NotFinished` and other engine /
+    /// source errors (battle kept); order / playback errors of the last
+    /// answer (battle closed, end kept); [`SiegeClientError::Refresh`].
+    pub fn finish_siege_battle(&mut self) -> Result<&SiegeBattleEnd, SiegeClientError<S::Error>> {
+        if self.battle.is_none() {
+            return Err(SiegeClientError::NoBattle);
+        }
+        let answer = match self.source.siege_battle(SiegeBattleCommand::Finish) {
+            Ok(a) => a,
+            Err(SiegeSourceError::Battle(SiegeBattleError::Aborted { city_id, reason })) => {
+                self.battle = None;
+                self.battle_end = Some(SiegeBattleEnd::Aborted { city_id, reason });
+                self.exit_battle_ui(false)
+                    .map_err(SiegeClientError::Refresh)?;
+                return self.battle_end.as_ref().ok_or(SiegeClientError::NoBattle);
+            }
+            Err(e) => return Err(e.into()),
+        };
+        let mut view = self.battle.take().ok_or(SiegeClientError::NoBattle)?;
+        let fed = feed(&mut view, &answer.battle, false);
+        let city_id = answer.battle.city_id;
+        self.battle_end = Some(match answer.battle.result {
+            Some(result) => SiegeBattleEnd::Applied {
+                city_id,
+                after: SiegeAfterUi::of(&result),
+                result: Box::new(result),
+            },
+            None => SiegeBattleEnd::Aborted {
+                city_id,
+                reason: "finish answer without a result".to_owned(),
+            },
+        });
+        self.battle_closed = Some(view);
+        self.exit_battle_ui(answer.state_changed)
+            .map_err(SiegeClientError::Refresh)?;
+        fed?;
+        self.battle_end.as_ref().ok_or(SiegeClientError::NoBattle)
+    }
+
+    fn running_battle(&self) -> Result<(), SiegeClientError<S::Error>> {
+        let b = self.battle.as_ref().ok_or(SiegeClientError::NoBattle)?;
+        if b.phase == SiegeBattlePhaseDto::Running {
+            Ok(())
+        } else {
+            Err(SiegeClientError::BattleFinished)
+        }
+    }
+
+    /// `clearBattleUiState` (`:36904-36908`) after `afterSiegeUi`:
+    /// selection, hover and highlight cleared, no forced visible unit
+    /// (`:36303`). With `state_changed` the engine is asked for ONE frame with
+    /// that UI; without it only a [`RenderUiParams`] change asks (D-371-4).
+    fn exit_battle_ui(&mut self, state_changed: bool) -> Result<(), ClientError<S::Error>> {
+        let mut frame_ui = self.ui.frame_ui.clone();
+        frame_ui.selected_unit_id = None;
+        frame_ui.unit_selected_after_build_open = false;
+        frame_ui.hover = None;
+        self.ui.map_ui.force_visible_unit_id = None;
+        self.ui.highlight_last_writer = HighlightPriority::Cleared;
+        if state_changed {
+            self.ui.frame_ui = frame_ui;
+            return self.on_state_changed();
+        }
+        if frame_ui != self.ui.frame_ui {
+            return self.set_frame_ui(frame_ui);
+        }
+        self.recompose()
+    }
+}
+
+/// One answer into the view: guard (D-1I6-2), counts, then the scene. A
+/// frame plays the queue up to its `vNow` (with the snapshot after `Skip`,
+/// D-1I6-4); an answer without a frame (`Finish`) plays up to its last
+/// action.
+fn feed<E>(
+    view: &mut SiegeBattleView,
+    p: &SiegeBattlePayload,
+    skip: bool,
+) -> Result<(), SiegeClientError<E>> {
+    view.order
+        .accept(&p.actions, p.frame.as_ref())
+        .map_err(SiegeClientError::Order)?;
+    view.answers += 1;
+    view.actions_received += p.actions.len();
+    view.phase = p.phase;
+    if let Some(f) = &p.frame {
+        view.last_frame = Some(f.clone());
+    }
+    let wall = view.wall_clock;
+    let Some((scene, pb)) = view.scene.as_mut() else {
+        return Ok(());
+    };
+    pb.push_actions(&p.actions)
+        .map_err(SiegeClientError::Playback)?;
+    if let Some(f) = &p.frame {
+        pb.push_frame(f).map_err(SiegeClientError::Playback)?;
+        pb.play_until(scene, f.v_now, wall)
+            .map_err(SiegeClientError::Playback)?;
+        if skip {
+            pb.apply_snapshot(scene, f)
+                .map_err(SiegeClientError::Playback)?;
+        }
+    } else if let Some(last) = p.actions.last() {
+        pb.play_until(scene, last.t0, wall)
+            .map_err(SiegeClientError::Playback)?;
+    }
+    Ok(())
 }
