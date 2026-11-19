@@ -2549,6 +2549,11 @@ async function boot(): Promise<void> {
     // (`${ownerId}:${epoka}`). Napastnik i cel (także gracz, id 0) zużywają po 1 wpisie przy
     // wypowiedzeniu; awans epoki = nowy klucz. Zapis: meta.warRulesEraWarCountByCiv.
     const eraWarCountByCivKey = new Map<string, number>();
+    // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1 (pomiar, TYLKO ODCZYT -- hak __eraWarMeasure):
+    // dzienniki prób przydziału (assignForcedWarPairings) i faktycznych wypowiedzeń wojen epoki.
+    // Nie wpływają na żadną decyzję gry.
+    const eraWarMeasureAttempts: Array<{ turn: number; ownerId: number; era: string; targetId: number | null }> = [];
+    const eraWarMeasureDeclarations: Array<{ turn: number; era: string; attacker: number; target: number; targetIsPlayer: boolean }> = [];
     // Para po pokoju z wojny epoki nie może wrócić do wojny aż do awansu napastnika
     // do następnej epoki. Jest osobne od zwykłej, 10-turowej blokady traktatowej.
     const forcedEraPeaceUntilNextEraByPairKey = new Map<string, ForcedEraPeaceLock>();
@@ -34006,6 +34011,44 @@ async function boot(): Promise<void> {
       // setEnabled = ustawienie flagi etapu A PO starcie gry (jedyny zapis; wyłącznie przez setHarderDiplomacyEnabledForTest).
       // metrics() = TYLKO ODCZYT: pary nie-barbarzyńskich właścicieli, bez wywołań mutujących (brak neighborTenureTur,
       // brak tickDiplomacy) — tura sąsiedztwa i napięcie liczy analizator z serii `sasiad`/`sasiedztwoBezPokoju`.
+      // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1: hak pomiaru wojen epoki (tylko ?civTest=1, TYLKO ODCZYT --
+      // nie zmienia żadnej decyzji gry). state() = migawka per cywilizacja i aktywne wojny epoki; attempts() = próby
+      // przydziału (assignForcedWarPairings) per tura; declarations() = faktyczne wypowiedzenia wojen epoki.
+      (window as any).__eraWarMeasure = {
+        schemaVersion: 1,
+        state: (): Record<string, unknown> => {
+          const owners = [...new Set<number>([ME(), ...cities.map(c => c.ownerId)])]
+            .filter(o => o != null && !isBarbarian(o) && !isCityStateOwner(o))
+            .sort((a, b) => a - b);
+          const wars = (
+            era: string,
+            m: ReadonlyMap<string, { attackerId: number; targetId: number; startTurn?: number }>,
+          ): Array<Record<string, unknown>> => [...m.values()].map(st => ({
+            era, attacker: st.attackerId, target: st.targetId, startTurn: st.startTurn ?? null,
+          }));
+          return {
+            turn,
+            owners: owners.map(o => ({
+              owner: o,
+              gracz: o === ME(),
+              epoka: empireEpochForOwner(o),
+              wejscieBrazTura: bronzeEraEnterTurnByOwner.get(o) ?? null,
+              wejscieZelazoTura: ironEraEnterTurnByOwner.get(o) ?? null,
+              pendingKamien: stoneForceWarPendingOwners.has(o),
+              pendingBraz: bronzeForceWarPendingOwners.has(o),
+              pendingZelazo: ironForceWarPendingOwners.has(o),
+            })),
+            wojneEpoki: [
+              ...wars('stone', stoneForceWarActiveByPairKey),
+              ...wars('bronze', bronzeForceWarActiveByPairKey),
+              ...wars('iron', ironForceWarActiveByPairKey),
+            ],
+            licznikEpoki: [...eraWarCountByCivKey.entries()].map(([k, v]) => ({ klucz: k, zuzycie: v })),
+          };
+        },
+        attempts: (): Array<Record<string, unknown>> => eraWarMeasureAttempts.map(x => ({ ...x })),
+        declarations: (): Array<Record<string, unknown>> => eraWarMeasureDeclarations.map(x => ({ ...x })),
+      };
       (window as any).__diploHarderMeasure = {
         schemaVersion: 1,
         setEnabled: (on: boolean | null): boolean => { setHarderDiplomacyEnabledForTest(on); return isHarderDiplomacyEnabled(); },
@@ -34276,7 +34319,10 @@ async function boot(): Promise<void> {
         },
       };
       (window as any).__nnsMeasureDebug = {
-        startGame: (o: { seed: number; mapSize?: string; civTypes?: number; cityStates?: number; typSwiata?: string }): void => {
+        // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1: epochId (opcjonalnie; brak = 'braz' jak dotąd) -- pomiar
+        // wojen epoki startuje z Kamienia ('kamien'), bo przejście Kamień→Brąz jest jedynym wyzwalaczem puli Brązu.
+        startGame: (o: { seed: number; mapSize?: string; civTypes?: number; cityStates?: number; typSwiata?: string; epochId?: string }): void => {
+          const startEpochId = o.epochId ?? 'braz';
           const mqTier = mapQualityTierFromQuery('high');
           const mqBundle = bundledMapQualityPreset(mqTier);
           const advanced: NewGameAdvancedOptions = {
@@ -34285,7 +34331,9 @@ async function boot(): Promise<void> {
             landFractionPercent: 30, landFractionCustom: false, cityStateDifficultyOverride: 'normal', cityLimitBase: 10,
           };
           void doStartGame({
-            civId: 'rzymianie', civName: 'Rzymianie', epoch: 'Epoka Brązu', epochId: 'braz', difficulty: 'Normalny',
+            civId: 'rzymianie', civName: 'Rzymianie',
+            epoch: startEpochId === 'kamien' ? 'Epoka Kamienia' : startEpochId === 'zelazo' ? 'Epoka Żelaza' : 'Epoka Brązu',
+            epochId: startEpochId, difficulty: 'Normalny',
             mapSize: o.mapSize ?? 'Standardowy', rivals: String(o.cityStates ?? 2), speed: 'Normalna',
             worldType: 'Kontynenty', typSwiata: o.typSwiata ?? 'kontynenty', seed: o.seed,
             mapQualityLabel: qualityTierToLabel(mqTier), mapQuality: mqTier,
@@ -45615,6 +45663,21 @@ async function boot(): Promise<void> {
             // R-WEB-ERA-WAR-DEFER-NOT-CANCEL-Q1 (runda 2): WSZYSTKIE major AI z erą (bez gracza) —
             // wspólna lista kandydatów: cel gracza (playerFirst) ORAZ wolny cel fallback dla podmiotu
             // Brązu/Żelaza bez partnera w puli triggered (bez tego pending nigdy nie wybuchał).
+            // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1 (poprawka po pomiarze, seed 4242 start Kamień):
+            // kandydat-AI do pary z graczem (playerFirst) i wolny cel fallbacku MUSI przejść próg
+            // `eraForcedWarStartTurnsFromEra` od wejścia W SWOJĄ epokę wojny. Bez tego AI4 wszedł w Żelazo
+            // w turze 66 i dostał wojnę Żelaza z graczem w turze 80 (14 tur po wejściu, próg 40).
+            // Brak wpisu wejścia = epoka od startu gry (0). Kamień: od startu gry (turn - 0).
+            const eraWarTargetDelayOk = (oid: number): boolean => {
+              if (oid === 0) return true;
+              const tagNow = empireEpochForOwner(oid);
+              const tag: ForcedEraTag | null = tagNow === 1 ? 'stone' : tagNow === 2 ? 'bronze' : tagNow === 3 ? 'iron' : null;
+              if (tag === null) return false;
+              const entry = tag === 'bronze' ? (bronzeEraEnterTurnByOwner.get(oid) ?? 0)
+                : tag === 'iron' ? (ironEraEnterTurnByOwner.get(oid) ?? 0)
+                  : 0;
+              return turn - entry >= WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra[tag];
+            };
             const forcedWarMajorAiSubjects: ForcedWarPairingSubject[] = aiOwnerList.flatMap((oid): ForcedWarPairingSubject[] => {
               if (
                 oid <= 0
@@ -45636,6 +45699,7 @@ async function boot(): Promise<void> {
                 playerOwnerId: 0,
                 isPlayerPairGateOpen: (aiOwnerId: number): boolean =>
                   !isOwnerInActiveEraWar(aiOwnerId) && !isOwnerInActiveEraWar(0)
+                  && eraWarTargetDelayOk(aiOwnerId)
                   &&
                   evaluateInterCivWarGate({
                     turn,
@@ -45687,7 +45751,7 @@ async function boot(): Promise<void> {
                   ...(playerCity && playerEraPoolEligible && (!isWarEpochPlayerFirstEnabled() || playerEpochWarEnabled)
                     ? [{ ownerId: 0, q: playerCity.q, r: playerCity.r } as ForcedWarPairingSubject]
                     : []),
-                ].filter(s => countActiveWarsForOwnerExcludingBarbarians(s.ownerId) === 0),
+                ].filter(s => countActiveWarsForOwnerExcludingBarbarians(s.ownerId) === 0 && eraWarTargetDelayOk(s.ownerId)),
                 ...forcedWarPlayerFirstOpt,
               },
             );
@@ -45702,6 +45766,10 @@ async function boot(): Promise<void> {
                 + '] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do '
                 + 'dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).',
               );
+            }
+            // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1 (pomiar, tylko odczyt): próby przydziału tej tury.
+            for (const a of forcedWarPairingResult.assignments) {
+              eraWarMeasureAttempts.push({ turn, ownerId: a.ownerId, era: String(a.era), targetId: a.targetId ?? null });
             }
             const forcedWarAssignmentByOwner = new Map(
               forcedWarPairingResult.assignments.map(a => [a.ownerId, a] as const),
@@ -47027,6 +47095,10 @@ async function boot(): Promise<void> {
                           declaredEraTag,
                           (forcedEraWarDeclaredByTag.get(declaredEraTag) ?? 0) + 1,
                         );
+                        // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1 (pomiar, tylko odczyt): faktyczne wypowiedzenie.
+                        eraWarMeasureDeclarations.push({
+                          turn, era: declaredEraTag, attacker: ownerId, target: targetId, targetIsPlayer: targetId === 0,
+                        });
                         // R-WEB-ERA-WAR-COUNTER-Q1 (1, 2): zużycie licznika per cywilizacja i epoka —
                         // napastnik i cel (także gracz) dostają po wpisie w BIEŻĄCEJ epoce.
                         if (isWarRulesMultiwarEnabled()) {
