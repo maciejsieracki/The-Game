@@ -1,3 +1,9 @@
+## ROBOCZA 7513d926 -- 2026-11-18 -- FALA 873: R-WEB-DIPLO-PEACE-CITIES-NOT-TRANSFERRED-AND-WAR-NEXT-TURN-Q1 (czesc glowna): zwykly pokoj z oferta AI z kilkoma miastami nie jest juz odrzucany w calosci (stara pre-kontrola odrzucala kazdy pokoj z >1 miastem) (testowa)
+
+- gra/src/game/diplomacy-value-catalog.ts (partitionPeaceCityItems — sekwencyjne zakazy), gra/src/main.ts (cityCessionFilterPayload: wykonalne miasta przechodza, niewykonalne odpadaja z komunikatem; blok calosci tylko gdy nic nie przechodzi; transfer na przefiltrowanym pakiecie), testy peace-city-cession-negotiated (19/0, mutacje czerwone), diplomacy-city-cession. Zgloszenie wlasciciela 2026-11-19 (korekta: to byl zwykly pokoj, nie wymuszony).
+- Weryfikacja: tsc 0, logic 213/213, peace-city-cession-negotiated 19/0 (mutacja 18/1), peace-city-cession-and-rewar 8/0, diplomacy-city-cession 79/0, forced-peace-pending 40/0
+- Limity: NIE ZMIERZONO: przebieg w grze/Chromium na prawdziwej sciezce akceptacji (live), cena D/ogon po usunieciu miasta nie jest przeliczana (zgodne z decyzja ABC A), karencja po pokoju przed ponowna wojna (nie zmieniana); zalecana obserwacja na ROBOCZEJ
+
 ## ROBOCZA cc570ee1 -- 2026-11-18 -- FALA 872: R-WEB-DIPLO-PEACE-CITIES-NOT-TRANSFERRED-AND-WAR-NEXT-TURN-Q1 (czesc A): pokoj wymuszony z cesja miast — cesja liczona sekwencyjnie (zakaz ostatniego miasta/stolicy po kolei), komunikat liczy miasta faktycznie przeniesione (testowa)
 
 - gra/src/game/diplomacy-value-catalog.ts (selectSequentialCityCessions), gra/src/main.ts (pendingPeaceItems i acceptPendingForcedPeace), test peace-city-cession-and-rewar-test (8 asercji, mutacja czerwona). Decyzja wlasciciela 2026-11-19 (ABC A): mozliwe miasta przechodza, niewykonalne usuniete z planu z komunikatem.

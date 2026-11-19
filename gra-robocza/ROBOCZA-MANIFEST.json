@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "cc570ee153a2d92fdb6a7d779960f604",
-  "bundleSha256": "4973cb0008d2374a1cdf8943b78299c2d71ef70eb43f49c942beb971d4129bd1",
-  "bundleBytes": 14987611,
+  "bundleMd5": "7513d92668173a108b3d4138f26ffe32",
+  "bundleSha256": "ca54fb6dbcb31dfac023eadf58ccf03e4e1527d89d63224ecc16c9ab3b486175",
+  "bundleBytes": 14988980,
   "sourceSnapshot": {
-    "source": "kod 09cd31f65 (Haiku r1 BLOCK + Obrona); FC c1a184c4b",
+    "source": "kod 04e6bd8e1 (Haiku r2 + Obrona); FC 366aa454b; przyczyna: stara cityCessionPayloadBlockReason (main.ts ~40978) odrzucala pokoj z total>1 miastem PRZED finalizePeaceTreatyBetween — pokoj nie zawarty, wojna trwala",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 872: gra/src/game/diplomacy-value-catalog.ts (selectSequentialCityCessions), gra/src/main.ts (pendingPeaceItems i acceptPendingForcedPeace), test peace-city-cession-and-rewar-test (8 asercji, mutacja czerwona). Decyzja wlasciciela 2026-11-19 (ABC A): mozliwe miasta przechodza, niewykonalne usuniete z planu z komunikatem."
+    "FALA 873: gra/src/game/diplomacy-value-catalog.ts (partitionPeaceCityItems — sekwencyjne zakazy), gra/src/main.ts (cityCessionFilterPayload: wykonalne miasta przechodza, niewykonalne odpadaja z komunikatem; blok calosci tylko gdy nic nie przechodzi; transfer na przefiltrowanym pakiecie), testy peace-city-cession-negotiated (19/0, mutacje czerwone), diplomacy-city-cession. Zgloszenie wlasciciela 2026-11-19 (korekta: to byl zwykly pokoj, nie wymuszony)."
   ],
   "verification": [
-    "tsc 0, logic 213/213, peace-city-cession-and-rewar 8/0 (mutacja 5/3), diplomacy-city-cession 79/0 i r3 79/0, war-weariness-peace 96/0, forced-peace-pending 40/0"
+    "tsc 0, logic 213/213, peace-city-cession-negotiated 19/0 (mutacja 18/1), peace-city-cession-and-rewar 8/0, diplomacy-city-cession 79/0, forced-peace-pending 40/0"
   ],
   "limits": [
-    "NIE ZMIERZONO: czesc B (ponowna wojna w nastepnej turze) — nie odtworzona, brak zapisu gry/logu; hipoteza: wojna epoki omija swiezy pokoj (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1); wlasciciel: brak preferencji; czesc A potwierdzona tylko testem czystym, nie scenariuszem z gry"
+    "NIE ZMIERZONO: przebieg w grze/Chromium na prawdziwej sciezce akceptacji (live), cena D/ogon po usunieciu miasta nie jest przeliczana (zgodne z decyzja ABC A), karencja po pokoju przed ponowna wojna (nie zmieniana); zalecana obserwacja na ROBOCZEJ"
   ],
-  "finalControl": "FC PASS-WITH-NOTES: potomek bazy, 5 plikow, test regresji i mutacja zielone/czerwone, testy pokoju i cesji zielone",
+  "finalControl": "FC PASS-WITH-NOTES: potomek bazy, allowlista, bramki zielone, zarzut 1 naprawiony, zarzut 2 jako luka dowodowa",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T20:44:41",
+  "hubGeneratedAt": "2026-11-19T21:04:24",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "cc570ee153a2d92fdb6a7d779960f604",
-      "sizeBytes": 14987611
+      "md5": "7513d92668173a108b3d4138f26ffe32",
+      "sizeBytes": 14988980
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "cc570ee153a2d92fdb6a7d779960f604",
-      "sizeBytes": 14987611
+      "md5": "7513d92668173a108b3d4138f26ffe32",
+      "sizeBytes": 14988980
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "cc570ee153a2d92fdb6a7d779960f604",
-      "sizeBytes": 14987611
+      "md5": "7513d92668173a108b3d4138f26ffe32",
+      "sizeBytes": 14988980
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "cc570ee153a2d92fdb6a7d779960f604",
-      "sizeBytes": 14987611
+      "md5": "7513d92668173a108b3d4138f26ffe32",
+      "sizeBytes": 14988980
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "cc570ee153a2d92fdb6a7d779960f604",
-      "sizeBytes": 14987611
+      "md5": "7513d92668173a108b3d4138f26ffe32",
+      "sizeBytes": 14988980
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "cc570ee153a2d92fdb6a7d779960f604",
-      "sizeBytes": 14987611
+      "md5": "7513d92668173a108b3d4138f26ffe32",
+      "sizeBytes": 14988980
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "cc570ee153a2d92fdb6a7d779960f604",
-      "sizeBytes": 14987611
+      "md5": "7513d92668173a108b3d4138f26ffe32",
+      "sizeBytes": 14988980
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "cc570ee153a2d92fdb6a7d779960f604",
-      "sizeBytes": 14987611
+      "md5": "7513d92668173a108b3d4138f26ffe32",
+      "sizeBytes": 14988980
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "cc570ee153a2d92fdb6a7d779960f604",
-      "sizeBytes": 14987611
+      "md5": "7513d92668173a108b3d4138f26ffe32",
+      "sizeBytes": 14988980
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "cc570ee153a2d92fdb6a7d779960f604",
-      "sizeBytes": 14987611
+      "md5": "7513d92668173a108b3d4138f26ffe32",
+      "sizeBytes": 14988980
     }
   ],
-  "md5": "cc570ee153a2d92fdb6a7d779960f604",
+  "md5": "7513d92668173a108b3d4138f26ffe32",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
