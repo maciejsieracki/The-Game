@@ -62,12 +62,29 @@
 //!   (the pin does not clear the selection on a key change); a `Some` key
 //!   switches found city and the wonder off, as `onSelectType` does;
 //! - [`RenderClient::set_build_mode`] (open/close of the panel, found city,
-//!   wonder): flag `false`, writer [`HighlightPriority::Build`]; opening or
-//!   closing the panel also clears the selection (`onOpenBuild` calls
+//!   wonder): writer [`HighlightPriority::Build`]; opening or closing the
+//!   panel clears the selection and zeroes the flag (`onOpenBuild` calls
 //!   `clearPlayerUnitSelection()`, `:26702-26703`); found city on or a
-//!   wonder switch clears the improvement key (`:26758-26770`);
+//!   wonder switch clears the improvement key (`:26758-26770`) and keeps the
+//!   selection and the flag (decision D-371-5c U-OP-2: `onSelectFoundCity` /
+//!   `onSelectWonder` do not clear the selection, `:26758-26793`);
+//! - [`RenderClient::exit_build_mode`] (`exitBuildMode`, Escape / right
+//!   click / `onExit`, `:16526-16541`): the build mode closes, the selection
+//!   stays, writer [`HighlightPriority::Cleared`] (decision D-371-5c U-OP-3);
+//! - [`RenderClient::select_unit`]`(None)` (`clearPlayerUnitSelection`,
+//!   `:7090-7101`): writer [`HighlightPriority::Cleared`] (decision D-371-5c
+//!   U-OP-4);
 //! - [`RenderClient::set_highlight_last_writer`]: the writer alone never calls
 //!   the engine (D-371-4): the cached frame is composed again.
+//!
+//! In build mode ([`in_build_mode`]) the last `refreshBuildHighlight` never
+//! shows the reachable range: an empty build set is `setHighlight(new Set())`
+//! or `clearHighlight()` (`:16351-16372`). The client therefore passes
+//! [`HighlightPriority::Cleared`] to the renderer for the writer
+//! [`HighlightPriority::Build`] in build mode with an empty
+//! `overlays.build_highlight` ([`renderer_priority`], decision D-T5C-5); the
+//! renderer default Q6-2 (build, else reachable) stays for frames outside
+//! build mode.
 //!
 //! Seat: the client always asks for the active seat (`seat = None` = web
 //! `ME()`, `bridge.rs` `GetRenderFrame`), see [`VIEWER_SEAT`].
@@ -169,6 +186,26 @@ impl Default for ClientUiState {
     fn default() -> Self {
         Self::web_initial()
     }
+}
+
+/// The priority passed to the renderer for `frame` (decision D-T5C-5): the
+/// writer [`HighlightPriority::Build`] in build mode ([`in_build_mode`]) with
+/// an empty `overlays.build_highlight` is [`HighlightPriority::Cleared`]: the
+/// last `refreshBuildHighlight` wrote `setHighlight(new Set())` (found city /
+/// wonder, `main.ts:16360`, `:16366`; improvement, `:16392-16395`) or
+/// `clearHighlight()` (no key, `:16369-16372`), never the reachable range
+/// the frame may carry with `unit_selected_after_build_open`. Every other
+/// case is [`ClientUiState::highlight_last_writer`] as is.
+#[must_use]
+pub fn renderer_priority(ui: &ClientUiState, frame: &RenderLayersDto) -> HighlightPriority {
+    let writer = ui.highlight_last_writer;
+    if writer == HighlightPriority::Build
+        && in_build_mode(&ui.frame_ui)
+        && frame.overlays.build_highlight.hexes.is_empty()
+    {
+        return HighlightPriority::Cleared;
+    }
+    writer
 }
 
 // ------------------------------------------------------------ bridge seam
@@ -421,8 +458,11 @@ impl<S: RenderSource> RenderClient<S> {
     ///   build mode), writer [`HighlightPriority::Reachable`];
     /// - `Some(id)` outside build mode: a plain selection, flag `false`,
     ///   writer [`HighlightPriority::Reachable`] (there is no build layer);
-    /// - `None`: `selected_unit_id = None`; outside build mode flag `false`;
-    ///   the writer is kept.
+    /// - `None` (`clearPlayerUnitSelection` -> `clearPlayerUnitSelectionStateOnly`,
+    ///   `:7090-7101`): `selected_unit_id = None`, flag `false` (no unit is
+    ///   selected), writer [`HighlightPriority::Cleared`] (`unitRenderer
+    ///   .clearHighlight()`, `:7100`; decision D-371-5c U-OP-4); the build
+    ///   mode is kept (the pin does not touch it).
     ///
     /// A change of [`RenderUiParams`] asks the engine (D-371-4); a change of
     /// the writer alone composes the cached frame again.
@@ -432,29 +472,34 @@ impl<S: RenderSource> RenderClient<S> {
     /// As [`Self::set_frame_ui`] / [`Self::set_highlight_last_writer`].
     pub fn select_unit(&mut self, unit_id: Option<u64>) -> Result<(), ClientError<S::Error>> {
         let mut frame_ui = self.ui.frame_ui.clone();
-        let mut writer = self.ui.highlight_last_writer;
         let build = in_build_mode(&frame_ui);
         frame_ui.selected_unit_id = unit_id;
-        if unit_id.is_some() {
+        let writer = if unit_id.is_some() {
             frame_ui.unit_selected_after_build_open = build;
-            writer = HighlightPriority::Reachable;
-        } else if !build {
+            HighlightPriority::Reachable
+        } else {
+            // `clearPlayerUnitSelectionStateOnly` (`main.ts:7097-7101`):
+            // `selectedId = null; ...; unitRenderer.clearHighlight()`.
             frame_ui.unit_selected_after_build_open = false;
-        }
+            HighlightPriority::Cleared
+        };
         self.update_ui(frame_ui, writer)
     }
 
-    /// `onOpenBuild` / `exitBuildMode` / `onSelectFoundCity` /
-    /// `onSelectWonder` (`main.ts:26702-26793`, `:16526-16541`): a change of
-    /// the build mode switches zeroes `unit_selected_after_build_open` and the
-    /// writer becomes [`HighlightPriority::Build`] (`refreshBuildHighlight`
-    /// runs after each, decision D-371-5b). Opening or closing the panel
-    /// (`build_mode_open` changes) also clears the selection (`onOpenBuild`
+    /// `onOpenBuild` / `onSelectFoundCity` / `onSelectWonder`
+    /// (`main.ts:26702-26793`): the writer becomes [`HighlightPriority::Build`]
+    /// (`refreshBuildHighlight` runs after each, decision D-371-5b).
+    /// Opening or closing the panel (`build_mode_open` changes) clears the
+    /// selection and zeroes `unit_selected_after_build_open` (`onOpenBuild`
     /// calls `clearPlayerUnitSelection()`, `:26702-26703`); closing it clears
     /// the improvement key (`exitBuildMode`, `:16533-16536`). Switching found
     /// city on (`onSelectFoundCity`, `:26758-26762`) or changing the wonder
-    /// switch (`onSelectWonder`, `:26767-26770`) clears the improvement key as
-    /// well. An equal value does nothing.
+    /// switch (`onSelectWonder`, `:26767-26770`) clears the improvement key
+    /// and keeps the selection and the flag: neither handler calls
+    /// `clearPlayerUnitSelection()` (`:26758-26793`, decision D-371-5c
+    /// U-OP-2). An equal value does nothing. Escape / right click
+    /// (`exitBuildMode` without `clearPlayerUnitSelection`) is
+    /// [`Self::exit_build_mode`].
     ///
     /// # Errors
     ///
@@ -466,7 +511,9 @@ impl<S: RenderSource> RenderClient<S> {
         }
         let mut frame_ui = self.ui.frame_ui.clone();
         if mode.build_mode_open != current.build_mode_open {
+            // `onOpenBuild`: `clearPlayerUnitSelection()` (`:26703`).
             frame_ui.selected_unit_id = None;
+            frame_ui.unit_selected_after_build_open = false;
             if !mode.build_mode_open {
                 frame_ui.active_improvement_key = None;
             }
@@ -481,8 +528,37 @@ impl<S: RenderSource> RenderClient<S> {
         frame_ui.build_mode_open = mode.build_mode_open;
         frame_ui.found_city_mode = mode.found_city_mode;
         frame_ui.wonder_active = mode.wonder_active;
-        frame_ui.unit_selected_after_build_open = false;
         self.update_ui(frame_ui, HighlightPriority::Build)
+    }
+
+    /// `exitBuildMode()` (`main.ts:16526-16541`; Escape through the
+    /// `build-mode` overlay `:16544`, `buildMode.onExit`, `:26742`):
+    /// `buildModeOpen = false; foundCityMode = false; activeImprovementKey =
+    /// null; activeWonderId = null`, then `refreshBuildHighlight()`, which
+    /// outside build mode is `clearHighlight()` (`:16369-16372`). The
+    /// selection is NOT cleared (the pin does not call
+    /// `clearPlayerUnitSelection()`, decision D-371-5c U-OP-3);
+    /// `unit_selected_after_build_open` is zeroed (the build mode is closed,
+    /// D-371-5b); the writer becomes [`HighlightPriority::Cleared`]: the ring
+    /// stays, no discs, until the next writer (`selectPlayerUnit` =
+    /// [`Self::select_unit`]). The guard `isAwaitingFirstPlayerCity()`
+    /// (`:16532`) is game state: the caller does not call this method while
+    /// it holds.
+    ///
+    /// A [`RenderUiParams`] change asks the engine (D-371-4); otherwise only
+    /// the writer changes and the cached frame is composed again.
+    ///
+    /// # Errors
+    ///
+    /// As [`Self::set_frame_ui`] / [`Self::set_highlight_last_writer`].
+    pub fn exit_build_mode(&mut self) -> Result<(), ClientError<S::Error>> {
+        let mut frame_ui = self.ui.frame_ui.clone();
+        frame_ui.build_mode_open = false;
+        frame_ui.found_city_mode = false;
+        frame_ui.active_improvement_key = None;
+        frame_ui.wonder_active = false;
+        frame_ui.unit_selected_after_build_open = false;
+        self.update_ui(frame_ui, HighlightPriority::Cleared)
     }
 
     /// `onSelectType(key)` then `refreshBuildHighlight()`
@@ -572,7 +648,7 @@ impl<S: RenderSource> RenderClient<S> {
             &frame.0,
             &self.ui.map_ui,
             self.ui.siege_map_panel_open,
-            self.ui.highlight_last_writer,
+            renderer_priority(&self.ui, &frame.0),
         )
         .map_err(ClientError::Frame)?;
         let detail = self.detail;

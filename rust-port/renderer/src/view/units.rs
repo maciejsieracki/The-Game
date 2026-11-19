@@ -59,11 +59,25 @@
 //! `refreshBuildHighlight` writes the build set (`:16351-16396`). The frame is
 //! stateless, so the client keeps the last writer and passes it as
 //! [`HighlightPriority`]: [`HighlightPriority::Build`] (default) = Q6-2 above;
-//! [`HighlightPriority::Reachable`] = the reachable range first when it is not
-//! empty (with the siege map panel open the reachable write is
-//! `clearHighlight()`, `:7253-7255`), else the build layer. The selection ring
-//! and the route are separate renderer calls (`setSelectionHex`,
-//! `setPathRoute`) and do not depend on the highlight layer.
+//! [`HighlightPriority::Reachable`] = the reachable range (with the siege map
+//! panel open the reachable write is `clearHighlight()`, `:7253-7255`). The
+//! selection ring and the route are separate renderer calls
+//! (`setSelectionHex`, `setPathRoute`) and do not depend on the highlight
+//! layer.
+//!
+//! Decision D-371-5c (#371 T5c PIN-PARITY, `R-RUSTPORT-P4-371-T5C-PIN-PARITY`):
+//! - U-OP-1: `selectPlayerUnit` writes the reachable set even when it is
+//!   EMPTY (`reachable = stackCanMove(u) && ... ? reachableWithMergeTargets(u)
+//!   : new Set(); unitRenderer.setHighlight(reachable)`, `main.ts:7256-7261`),
+//!   so [`HighlightPriority::Reachable`] with an empty `reachable` is no discs
+//!   ([`UnitHighlight::Clear`]), never the build layer underneath (the T5b
+//!   fallback to the build layer is removed);
+//! - U-OP-3 / U-OP-4: `clearHighlight()` as the last write
+//!   (`clearPlayerUnitSelectionStateOnly`, `main.ts:7097-7101`;
+//!   `refreshBuildHighlight` outside build mode after `exitBuildMode`,
+//!   `:16369-16372`, `:16526-16541`) is [`HighlightPriority::Cleared`]: no
+//!   discs whatever the frame carries, until the next `setHighlight` writer
+//!   (`selectPlayerUnit` / `refreshBuildHighlight`).
 //!
 //! No game rules here: only the order of the pin calls and the conversions.
 
@@ -133,8 +147,13 @@ pub enum HighlightPriority {
     #[default]
     Build,
     /// `selectPlayerUnit` wrote last (`main.ts:7253-7261`): the reachable
-    /// range first when it is not empty.
+    /// range, also when it is empty (= no discs, decision D-371-5c U-OP-1).
     Reachable,
+    /// `clearHighlight()` wrote last (decision D-371-5c U-OP-3 / U-OP-4):
+    /// `clearPlayerUnitSelection` (`main.ts:7090-7101`) or
+    /// `refreshBuildHighlight` outside build mode after `exitBuildMode`
+    /// (`:16369-16372`, `:16526-16541`): no discs.
+    Cleared,
 }
 
 /// The reachable call of `selectPlayerUnit` / `syncPlayerUnitSelectionOnMap`
@@ -161,9 +180,12 @@ fn reachable_call(
 /// - [`HighlightPriority::Build`] (decision Q6-2 in the module header): build
 ///   highlight first, then `reachable` unless the siege map panel is open
 ///   (`main.ts:7120-7122`), else `clearHighlight()`;
-/// - [`HighlightPriority::Reachable`] (decision D-371-5b): `reachable` first
-///   when it is not empty (`clearHighlight()` with the siege map panel open),
-///   else the build highlight, else `clearHighlight()`.
+/// - [`HighlightPriority::Reachable`] (decisions D-371-5b, D-371-5c U-OP-1):
+///   `reachable` only (`clearHighlight()` with the siege map panel open); an
+///   empty `reachable` is `setHighlight(new Set())` = `clearHighlight()`
+///   (`main.ts:7256-7261`), the build layer is never shown;
+/// - [`HighlightPriority::Cleared`] (decision D-371-5c U-OP-3 / U-OP-4):
+///   `clearHighlight()`.
 #[must_use]
 pub fn unit_highlight(
     overlays: &vm::OverlaysViewDto,
@@ -174,7 +196,11 @@ pub fn unit_highlight(
     let reach = || reachable_call(overlays, siege_map_panel_open);
     let first = match priority {
         HighlightPriority::Build => build().or_else(reach),
-        HighlightPriority::Reachable => reach().or_else(build),
+        // `selectPlayerUnit`: `setHighlight(reachable)` also for an empty set
+        // (`main.ts:7256-7261`), D-371-5c U-OP-1.
+        HighlightPriority::Reachable => reach(),
+        // `clearHighlight()` (`main.ts:7100`, `:16371`), D-371-5c U-OP-3/4.
+        HighlightPriority::Cleared => None,
     };
     first.unwrap_or(UnitHighlight::Clear)
 }
