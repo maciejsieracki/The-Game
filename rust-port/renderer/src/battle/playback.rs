@@ -22,13 +22,13 @@
 //! | `Move` | `_doMove` 3D (`:8714-8776`): `ru.q = col; ru.r = row` (`:8731`), walk from `t0` (`:8752`) to `t0 + MOVE_STEP_MS`; its turn is the separate `Facing` with the same `t0` (`_updateFacing`, `:8750`) | [`MoveAnim::start`] (stepped by [`BattlePlayback::play_until`]) |
 //! | `Shot` | `_doRangedAttack` 3D (`:9179-9221`): projectile of `projectileKind(attacker.bu)` (`:9203`) from the shooter's to the target's torso (`:9200-9201`), hit at `t0 + RANGED_FLY_MS` (`:9224`); its turn is the separate `Facing` (`:9182-9184`), the hit is the separate `Damage` (`:9226`) | [`projectile_kind`] + [`ranged_shot_endpoints`] + [`launch_projectile`], [`tick_projectiles`] |
 //! | `Turn`, `Log`, `Clash` | `hint`, `this.log.push`, `_pushClash` | — (DOM / P5; recorded) |
-//! | `End` | `this.finished = true` (`:10210`, `:9468`, `:9489`) + `_showEndScreen` | flag `finished`: the rAF callbacks of the stone and the ram snap / remove at their next frame (`:7347`, `:7584`) |
-//! | `Leave` | `_fleeStep` → `_removeUnitFromScene` (`:9853-9857`, `:9910-9925`), after the last walk of the flight ended (`done()`, `:9884`) | [`remove_unit_from_scene`] (a walk of the unit still in flight is finished at `t0` first) |
+//! | `End` | `this.finished = true` (`:10210`, `:9468`, `:9489`) + `_showEndScreen` | flag `finished`: the rAF callbacks of the stone and the ram snap / remove at their next frame (`:7347`, `:7585`) |
+//! | `Leave` | `_fleeStep` → `_removeUnitFromScene` (`:9853-9857`, `:9910-9925`), after the last walk of the flight ended (`done()`, `:9884-9890`) | [`remove_unit_from_scene`] (a walk of the unit still in flight is finished at `t0` first) |
 //! | `Shaken` | `_shakeAlliesOnLoss` → `_updateMoraleBar(a)` (`:9748-9749`) | [`update_morale_bar`] |
 //! | `ClimbWall` | `_trySiegeTowerClimb` (`:8067-8079`): `ru.q = wallCol`, model at `(x, 2.5, z)`, bars `HPBAR_Y` above | [`climb_onto_wall_walkway`] |
 //! | `Boulder` | `_attackWallTile` → `_spawnCatapultBoulder` (`:7547-7552`, `:7571-7600`), hit at `t0 + 700` (`:7555`) | [`wall_shot_endpoints`] + [`Boulder::spawn`], stepped by [`BattlePlayback::play_until`] |
 //! | `WallDamage` | the `_schedule(700)` callback (`:7556-7561`): `wallTileHp.set`, HUD, `_spawnWallLabel(…, '-' + dmg + ' (mur)', '#ff8800')` | [`FloatLabel::wall`] ([`WallLabel`]) + tracked tile HP |
-//! | `Ram` | `_attackGate` → `_animateRam(ru.group, gateDir)` (`:7316-7323`, `:7337-7360`), back at `t0 + 320` | [`RamAnim::start`] from the ram's group position, stepped by [`BattlePlayback::play_until`] |
+//! | `Ram` | `_attackGate` → `_animateRam(ru.group, gateDir)` (`:7316-7323`, `:7337-7360`), back at `t0 + 320` (`:7343`) | [`RamAnim::start`] from the ram's group position, stepped by [`BattlePlayback::play_until`] |
 //! | `GateDamage` | `gateHp = Math.max(0, gateHp - dmg)` + HUD (`:7326-7331`) | tracked gate HP (HUD = P5) |
 //! | `TowerDestroyed` | `_destroyTowerAtRow(row)` (`:4194-4200`) | [`destroy_tower_at_row`] |
 //! | `WallBreach` | `_breachWallTile(row)` scene part (`:7638-7697`): tile `Plains`, label `'MUR WYBURZONY!'` `#ff4400`, segments hidden, rubble | [`breach_wall_tile`] ([`WallLabel`]); the tower is the `TowerDestroyed` before it |
@@ -52,7 +52,7 @@
 //! does not compile until it has a consumer.
 //!
 //! `Kill` of a defender catapult standing on a breached wall tile
-//! (`_breachWallTile` → `_startFade(u)`, `:7708-7711`) is not a blow: the pin
+//! (`_breachWallTile` → `_startFade(u)`, `:7702-7704`) is not a blow: the pin
 //! does not touch its HP bar (`_startFade` `:9927-9938`). The playback marks
 //! the defenders on the breached cell at the `WallBreach` and skips the HP bar
 //! of their `Kill` at the same `t0` (D-I5B-15).
@@ -375,7 +375,7 @@ pub enum PlaybackError {
         /// `landAt`.
         land_at: f64,
     },
-    /// `Ram.until != t0 + RAM_MS` (`duration = 320`, `:7340`).
+    /// `Ram.until != t0 + RAM_MS` (`duration = 320`, `:7343`).
     RamUntil {
         /// `t0`.
         t0: f64,
@@ -393,7 +393,7 @@ pub enum PlaybackError {
         row: i32,
     },
     /// `ClimbWall` not onto the wall column, or not from beside the wall
-    /// base (`ru.q + dc === siegeWallCol - 1`, `:8061`).
+    /// base (`ru.q + dc === siegeWallCol - 1`, `:8062`).
     Climb {
         /// Unit.
         id: UnitId,
@@ -404,7 +404,7 @@ pub enum PlaybackError {
         /// `siegeWallCol`.
         wall_col: i32,
     },
-    /// `LeaveField` of a unit that is not on the wall walk (`:7704`).
+    /// `LeaveField` of a unit that is not on the wall walk (`:7701`).
     NotOnWall(UnitId),
 }
 
@@ -998,7 +998,7 @@ impl BattlePlayback {
                     color: WALL_BREACH_COLOR,
                     label,
                 });
-                // `:7701-7703`: the defenders standing on the breached tile (catapults among them
+                // `:7699-7701`: the defenders standing on the breached tile (catapults among them
                 // are faded, D-I5B-15).
                 for u in &b.def {
                     if !u.removed && u.on_wall_walkway && u.col == wall_col && u.row == *row {
@@ -1041,7 +1041,7 @@ impl BattlePlayback {
                     return Ok(());
                 }
                 // A defender catapult on a breached tile (`_breachWallTile` → `_startFade`,
-                // `:7708-7711`): no blow, the HP bar stays (D-I5B-15).
+                // `:7702-7704`): no blow, the HP bar stays (D-I5B-15).
                 let breach_fade = self.breach_fades.iter().any(|(u, _)| u == id);
                 // Otherwise the killing blow: `hp = Math.max(0, hp - dmg)` with `hp - dmg <= 0`
                 // (`_resolveBlowOutcome`, `:9044-9047`) and `_updateHpBar` (`:8992`).
@@ -1102,7 +1102,7 @@ impl BattlePlayback {
     }
 
     /// `Leave` (`_fleeStep` → `_removeUnitFromScene`): the flight's last walk ends at `done()` (`p >= 1`) before the
-    /// removal (`:9880-9884`), so a walk of the unit still in flight is stepped to `t0` and dropped first.
+    /// removal (`:9884-9890`), so a walk of the unit still in flight is stepped to `t0` and dropped first.
     fn leave(&mut self, b: &mut BattleScene3, id: UnitId, t0: f64) -> Result<(), PlaybackError> {
         let slot = self.slot(id)?;
         if let Some(k) = self.moves.iter().position(|m| m.id == id) {
@@ -1136,7 +1136,7 @@ impl BattlePlayback {
             (BattleSide::Def, i) => &mut b.def[i],
         };
         Self::check_from(u, id, from)?;
-        // `ru.q + dc === wallBase` for a `DIRS4` step (`:8060-8062`), `ru.q = wallCol` with the row kept (`:8068`).
+        // `ru.q + dc === wallBase` for a `DIRS4` step (`:8061-8062`), `ru.q = wallCol` with the row kept (`:8070`).
         let beside = (from.0 - (wall_col - 1)).abs() <= 1;
         if to != (wall_col, from.1) || !beside {
             return Err(PlaybackError::Climb {
@@ -1271,7 +1271,7 @@ impl BattlePlayback {
         }
         self.lunges = keep;
         tick_projectiles(&mut b.field.field.scene, &mut self.projectiles, now);
-        // `animRam` / `animBoulder` (`:7345-7357`, `:7583-7598`): one frame each, `this.finished` snaps / removes.
+        // `animRam` / `animBoulder` (`:7346-7360`, `:7584-7601`): one frame each, `this.finished` snaps / removes.
         let finished = self.finished;
         let mut keep_rams = Vec::with_capacity(self.rams.len());
         for r in std::mem::take(&mut self.rams) {

@@ -999,7 +999,7 @@ impl BattleActionDto {
                 action_index(f("action.toCol"), *to_col)?;
                 action_index(f("action.toRow"), *to_row)?;
                 if to_row != from_row {
-                    // `_trySiegeTowerClimb` sets only `ru.q` (`:8068`): the row stays.
+                    // `_trySiegeTowerClimb` sets only `ru.q` (`:8070`): the row stays.
                     return Err(ViewError::OutOfRange {
                         field: f("action.toRow (== fromRow)"),
                         value: i64::from(*to_row),
