@@ -1790,6 +1790,7 @@ import {
   diplomacySumPn,
   planCityCession,
   selectSequentialCityCessions,
+  partitionPeaceCityItems,
   diplomacyPnMiasto,
   diplomacyPnZlozaMiasta,
   diplomacyMiastoZakaz,
@@ -27081,12 +27082,17 @@ async function boot(): Promise<void> {
         // R-WEB-PEACE-CITY-CESSION-Q1 r4 (zarzut 3 Evaluatora): cesja miasta sprawdzana PRZED
         // jakimkolwiek przelewem i PRZED zawarciem pokoju. Gdy padnie — nic się nie przenosi,
         // pokój nie jest zawierany, gracz dostaje komunikat (zamiast cichego pokoju bez miasta).
-        const cityBlock = cityCessionPayloadBlockReason(payload, proposerId, responderId);
-        if (cityBlock) {
-          console.warn(`[Dyplomacja] pokój odrzucony — cesja miasta: ${cityBlock}`);
-          showHintMessage('Pokój nie zawarty — ' + cityBlock, 4500);
+        const cityCes = cityCessionFilterPayload(payload, proposerId, responderId);
+        if (cityCes.blockReason) {
+          console.warn(`[Dyplomacja] pokój odrzucony — cesja miasta: ${cityCes.blockReason}`);
+          showHintMessage('Pokój nie zawarty — ' + cityCes.blockReason, 6000);
           return;
         }
+        if (cityCes.dropped.length > 0) {
+          console.warn(`[Dyplomacja] pokój zawarty bez miast niewykonalnych: ${cityCes.dropped.map(d => d.cityId + ' (' + d.reason + ')').join('; ')}`);
+          showHintMessage(`Pokój zawarty — ${cityCes.dropped.length} miast nie przeniesiono: ` + cityCes.dropped.map(d => d.reason).join('; '), 6000);
+        }
+        payload = cityCes.payload;
         executePnDealTransfer(proposerId, responderId, payload);
         const turnsOptsOne = proposalPnTurnsMultiplier(payload);
         const { givePn, receivePn } = resolveProposalPn(payload, {
@@ -40944,7 +40950,7 @@ async function boot(): Promise<void> {
     /**
      * R-WEB-PEACE-CITY-CESSION-Q1 r4 (zarzut 3 Evaluatora): plan cesji miasta (`planCityCession`)
      * z aktualnego stanu gry, BEZ mutacji. Ta sama funkcja wykonuje `transferCityByTreaty` i
-     * pre-kontrolę `cityCessionPayloadBlockReason` — pokój nie zostaje zawarty, gdy cesja by padła.
+     * pre-kontrolę `cityCessionFilterPayload` (wykonalność miast; brak wykonalnych = pokój nie zawarty).
      */
     function cityCessionPlanFor(
       cityId: string,
@@ -40971,24 +40977,58 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * R-WEB-PEACE-CITY-CESSION-Q1 r4: pre-kontrola propozycji pokoju z pozycjami 'miasto'.
-     * `giveItems` = oddaje `proposerId`, `receiveItems` = oddaje `responderId` (ta sama konwencja
-     * co executePnDealTransfer). Null = wszystko wykonalne. Max 1 miasto na propozycję.
+     * R-WEB-DIPLO-PEACE-CITIES-NOT-TRANSFERRED-AND-WAR-NEXT-TURN-Q1 (runda 2): pre-kontrola miast negocjowanego
+     * pokoju/rozejmu. `giveItems` = oddaje `proposerId`, `receiveItems` = oddaje `responderId` (ta sama konwencja
+     * co executePnDealTransfer). Propozycja AI może nieść kilka miast (`dodatkoweMiasta`), więc BEZ limitu „jedno
+     * miasto" (dawny błąd: taki pokój odpadał przy każdej propozycji 2 miast i NIE był zawierany — wojna trwała).
+     * Miasta niewykonalne (zakaz stolicy/ostatniego miasta liczony sekwencyjnie, plan cesji) wypadają z listy
+     * (`dropped`, pokój zawierany z resztą); gdy NIE przechodzi żadne miasto propozycji — `blockReason`
+     * (cały pokój wraca z komunikatem, bez „pokoju bez miast po cichu").
      */
-    function cityCessionPayloadBlockReason(
+    function cityCessionFilterPayload(
       payload: ProposalPayload,
       proposerId: number,
       responderId: number,
-    ): string | null {
-      const giveCities = (payload.giveItems ?? []).filter(i => i.typ === 'miasto');
-      const recvCities = (payload.receiveItems ?? []).filter(i => i.typ === 'miasto');
-      const total = giveCities.length + recvCities.length;
-      if (total === 0) return null;
-      if (total > 1) return 'w propozycji pokoju może być tylko jedno miasto';
-      const plan = giveCities[0]
-        ? cityCessionPlanFor(giveCities[0].id, proposerId, responderId)
-        : cityCessionPlanFor(recvCities[0]!.id, responderId, proposerId);
-      return plan.ok ? null : plan.reason;
+    ): { payload: ProposalPayload; blockReason: string | null; dropped: Array<{ cityId: string; reason: string }> } {
+      const cityName = (id: string): string => cities.find(c => c.id === id)?.name ?? id;
+      const side = (items: readonly BasketItem[] | undefined, donorId: number, recipientId: number) => {
+        const ids = (items ?? []).filter(i => i.typ === 'miasto').map(i => i.id);
+        if (ids.length === 0) return { items, allowedCount: 0, dropped: [] as Array<{ cityId: string; reason: string }>, hasCities: false };
+        const part = partitionPeaceCityItems({
+          cityIds: ids,
+          ownerCityIds: cities.filter(c => c.ownerId === donorId).map(c => c.id),
+          capitalCityId: capitalCityIdForOwner(donorId),
+          planReason: id => {
+            const plan = cityCessionPlanFor(id, donorId, recipientId);
+            return plan.ok ? null : plan.reason;
+          },
+        });
+        const allowed = new Set(part.allowed);
+        const taken = new Set<string>();
+        const kept = (items ?? []).filter(i => {
+          if (i.typ !== 'miasto') return true;
+          if (!allowed.has(i.id) || taken.has(i.id)) return false;
+          taken.add(i.id);
+          return true;
+        });
+        return { items: kept, allowedCount: part.allowed.length, dropped: part.dropped, hasCities: true };
+      };
+      const give = side(payload.giveItems, proposerId, responderId);
+      const recv = side(payload.receiveItems, responderId, proposerId);
+      const dropped = [...give.dropped, ...recv.dropped];
+      if ((give.hasCities || recv.hasCities) && give.allowedCount + recv.allowedCount === 0) {
+        return {
+          payload,
+          blockReason: 'żadne miasto w propozycji nie może przejść: '
+            + dropped.map(d => `${cityName(d.cityId)} (${d.reason})`).join('; '),
+          dropped,
+        };
+      }
+      return {
+        payload: { ...payload, giveItems: give.items, receiveItems: recv.items },
+        blockReason: null,
+        dropped,
+      };
     }
 
     /** Bunt miasta: zmiana właściciela na frakcję rebeliantów + księga „Skąd zapasy” (wspólne dla pętli tury i testu realnej ścieżki). */

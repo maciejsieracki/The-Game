@@ -1089,6 +1089,38 @@ export function selectSequentialCityCessions(input: {
   return accepted;
 }
 
+/**
+ * R-WEB-DIPLO-PEACE-CITIES-NOT-TRANSFERRED-AND-WAR-NEXT-TURN-Q1 (runda 2): podział miast JEDNEJ strony
+ * propozycji pokoju (negocjowany stół, nie pokój wymuszony). Propozycja AI niesie kilka miast
+ * (`dodatkoweMiasta`), więc NIE ma limitu „jedno miasto”. Miasto przechodzi, gdy plan cesji jest wykonalny
+ * (`planReason` = null) i nie łamie zakazu liczonego SEKWENCYJNIE (stolica / ostatnie miasto dawcy po
+ * poprzednich przelewach). Pozostałe trafiają do `dropped` z powodem (do komunikatu gracza).
+ */
+export function partitionPeaceCityItems(input: {
+  cityIds: ReadonlyArray<string>;
+  ownerCityIds: ReadonlyArray<string>;
+  capitalCityId: string | null | undefined;
+  /** Powód niewykonalności cesji miasta wg planu (null = wykonalne). */
+  planReason: (cityId: string) => string | null;
+}): { allowed: string[]; dropped: Array<{ cityId: string; reason: string }> } {
+  const unique = [...new Set(input.cityIds)];
+  const feasible = unique.filter(id => input.planReason(id) === null);
+  const allowed = new Set(selectSequentialCityCessions({
+    cityIds: feasible,
+    ownerCityIds: input.ownerCityIds,
+    capitalCityId: input.capitalCityId,
+  }));
+  return {
+    allowed: unique.filter(id => allowed.has(id)),
+    dropped: unique
+      .filter(id => !allowed.has(id))
+      .map(id => ({
+        cityId: id,
+        reason: input.planReason(id) ?? 'zakaz po poprzedniej cesji (stolica lub ostatnie miasto dawcy)',
+      })),
+  };
+}
+
 /** BFS po sąsiadach od heksu miasta; zwraca pierwszy wolny, niezajęty przez plan heks. */
 function findNearestFreeHex(
   input: CityCessionInput,
