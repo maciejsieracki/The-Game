@@ -140,3 +140,65 @@ Cuda (`gra/data/wonders.json`, pole `cuda`, 19 pozycji; koszt = `kosztBudowy`, j
 - Porównanie koszt cudu z Pracą na turę (t75/t100/t150): NIE ZMIERZONE (brak biegów do t150 w tej rundzie). Próbka t10: średnia Praca/turę AI z miastem = 0,00 (41 AI).
 
 Jednostki wojskowe (koszty i utrzymanie per typ), utrzymanie budynków per typ, udział wydatków Pracy (kolejki): NIE WYKONANO w tej rundzie (brak odczytu danych i biegu).
+
+## 9. Pomiar gracza autopilot (2×150 tur) i propozycje
+
+Ten punkt dotyczy wyłącznie gracza (owner 0, autopilot AI z FALI 855; odrzucanie ofert i akceptacja wymuszonego pokoju włączone). Zmiany gry: ŻADNE. Tabele: `dyspozycje/autobot/runs/R-WEB-ECONOMY-MEASURE-ANALYSIS-Q1/dowody/tabele-gracz-2x150.md`. Surowe dane: `/tmp/econ-final/` (seed 4242 i seed 7, wiersz co turę, pole `hud`).
+
+### 9.1 Ograniczenia
+- Autopilot ≠ człowiek. Autopilot kończy z 6 budynkami (4242) i 6–9 (7), owner HUD „+153,1k” jest ~190× większy od 818 brutto autopilota. Nie da się z tego pomiaru wyjaśnić wartości właściciela.
+- n = 2 ziarna. Wnioski są kierunkowe, nie statystyczne.
+- Źródła rozbicia (territory vs. konwerter) NIE są rozdzielone w jsonl; rozbicie per surowiec jest z `hud.surowceTyp`.
+
+### 9.2 Tempo wzrostu (gracz)
+| Wskaźnik | 4242 | 7 |
+|---|---|---|
+| Surowce brutto (t50 / t100 / t150) | 381 / 794 / 818 | 14 / 1778 / 1878 |
+| Miasta / pop (t150) | 10 / 50 | 2 / 2 (pop 1–2 od t2 do t150) |
+| Praca stan (t100 / t150) | 8460 / 20454 | 0 (od t90) |
+| Praca +/turę | 221 → 254, liniowo po t90 (pop stały 49–50) | +5 (t20–70) → −31 (t80–100) → −15 |
+| Spichlerz stan / max | 2851 / 5000 (t150) | 1000 / 1000 od t90 (cap wiąże) |
+| Skarbiec stan (+/t) | 567 (+30) | 121 (−62) |
+
+Wzrost surowców nie jest wykładniczy: brutto 4242 płaskie od t120 (811–818), bo liczba miast i pop przestały rosnąć od t90. Praca rośnie liniowo bo gruby przychód jest stały, a nic jej nie zjada.
+
+### 9.3 Rozbicie „Surowce” (wg `hud.surowceTyp`, t150)
+- Seed 4242 (brutto 818): Glina 406 (50%), Drewno 260 (32%), Ceramika 150 (18%). Zapasy: Glina 22 347 (+333/t netto), Ceramika 3 094 (+77/t), Drewno 0 (zużyte: 110/t, w tym 66/t przez utrzymanie jednostek), Brąz 240.
+- Seed 7 (brutto 1878): Drewno 760 (40%), Cegła 450 (24%), Kamień 304 (16%), Ruda miedzi 120, Brąz 100, Ceramika 100, Ruda żelaza 30, Glina 14. Zapasy po t150: Drewno 52 256 (+725/t netto), Kamień 20 836 (+289/t), Ruda miedzi 8 880 (+120/t), Cegła 1 308 (+450/t, zużycie 0).
+- Kontrola zgodności z `econ-params.json`: Ceramika 150 (3 garncarnie × 50/t, epoka 2) = dokładnie przepustowość; Ceramika 100 (2×50) = OK; Brąz 100 (2 odlewnie × 50) = OK. **Cegła 450 przy 2 cegielniach w epoce 2 przekracza przepustowość 2×75 = 150/t (`budynek_cegielnia_epoka2_przepustowosc`) trzykrotnie. NIE ZMIERZONO źródła tej różnicy — do wyjaśnienia przed jakąkolwiek propozycją dotyczącą cegły.**
+- Dlaczego 2,3× przy 5× mniej miast: w 7 nie ma budynku produkującego Drewno ani Kamień (budynkiPerTyp: palac, mury_kamienne, garncarnia, cegielnia, odlewnia_brazu), a Drewno 760/t przy 82 heksach terytorium (≈9/heks) i 4242 Drewno 260/t przy 323 heksach (≈0,8/heks) wskazuje, że wydajność idzie z ulepszeń na heksach (SUROW-TERYT-01), a nie z liczby miast. Liczba ulepszeń: pracaUpkeep = 36 (7) vs 10 (4242); koszt z `computePracaUpkeepByOwner` = 1 × mnożnik epoki ulepszenia (×1/×2/×4). Wartość upkeep daje górną granicę liczby ulepszeń (przy mnożniku ×1 to dokładnie ich liczba; ×2 dla ulepszeń epoki 2 zmniejsza ją o połowę). Stąd ok. 5–36 ulepszeń. Bezpośredniego liczenia ulepszeń NIE ZMIERZONO.
+
+### 9.4 Praca: dlaczego liniowo w 4242 i 0 w 7
+- Brutto Praca (= rate + upkeep): 4242 ≈ 264/t (pop 49–50); 7 ≈ 5–21/t (pop 2). Praca zależy od populacji, nie od terytorium.
+- Wydatki Pracy są tylko ulepszeniami: `computePracaUpkeepByOwner` (turn-economy.ts:991) i `RESOURCE_UPKEEP_IMPROVEMENT_KEYS` (terrain-improvements.ts:608) = WSZYSTKIE ulepszenia poza `wycinka`. Nie ma innych odpływów Pracy w jsonl; w 4242 pula nie jest wydawana (autopilot postawił 6 budynków; DLACZEGO nie wydaje — NIE ZMIERZONO), więc narasta liniowo.
+- Seed 7: upkeep 36 > brutto ~5–21 → saldo ujemne, pula obcięta do 0 (main.ts:44633 `Math.max(0, playerPracaPool − playerUpkeep)`).
+- **SPRZECZNOŚĆ KOD vs DOKUMENTACJA (do decyzji właściciela, NIE naprawiam):** `econ-params.json` → `ulepszenie_surowcowe_upkeep_praca` deklaruje jako ZWOLNIONE ulepszenia żywnościowe (farma/irygacja/tarasy/bydlo/owce/lama/oboz_lowiecki/lodzie_rybackie) i infrastrukturę (droga/droga_brukowana/fort/posterunek). Kod pobiera upkeep z 21 ulepszeń (wszystkie poza `wycinka`, w tym te dwie grupy). Dlatego w 7 Praca spada do 0 — koszt ~36/t bierze się głównie z ulepszeń żywnościowych i infrastrukturalnych. Dispatch miał rację, że opis i kod się rozjeżdżają; poprawny stan wymaga decyzji, który z dwóch jest zamierzony.
+
+### 9.5 Kryterium nadmiaru (policzone z danych)
+- Praca 4242: pula 20 454 = ~80 tur brutto (254/t); brak wydatku ≥50 tur (pula rośnie monotonicznie t100–t150, 8 460 → 20 454). **Spełnia kryterium „brak wydatku ≥50 tur”.**
+- Spichlerz (żywność) 4242: 2 851 przy cap 5 000 (57%), +24/t. Nie spełnia „brak ujścia” — ujście jest, ale brak nadwyżki ponad cap. Seed 7: cap 1000 wiąże od t90 do t150 → nadwyżka żywności przepada (wartość NIE ZMIERZONA).
+- Skarbiec 4242: 567 przy +30/t (~19 tur), w 7: ujemny. Skarbiec NIE jest nadmiarem.
+- Surowce (magazyny, cap 100 000 na typ): 7 — Drewno osiągnie cap za ~66 tur przy obecnym +725/t (od t150); 4242 — Glina za ~233 tury (+333/t). **Nadmiar realny w 7 (Drewno, Kamień, Cegła, Ruda miedzi).**
+
+### 9.6 Kto zjada surowce (dla propozycji)
+- Utrzymanie jednostek w surowcach (`utrzymanieJednostekSurowce`): 4242 t150 Drewno 66/t (25% brutto drewna), Brąz 10/t; 7 t100 Drewno 12/t (1,6% brutto drewna).
+- Utrzymanie budynków w surowcach (`utrzymanieBudynkowSurowce`): 7 t100 Drewno 10/t, Kamień 8/t (≈2,6% brutto kamienia). 4242 t150 Drewno 5/t.
+- Utrzymanie w Pieniądzu (Skarbiec): 4242 t150 garnizon 96 + jednostki 104 + budynki 14 = 214 Pieniądza/t wobec +30 netto → wojsko JUŻ dominuje w wydatkach Skarbca.
+
+### 9.7 Propozycje (do ABC właściciela; rekomendacja pierwsza; wszystkie bez zmian w kodzie)
+Pierwsze w kolejności: **P0 — rozstrzygnąć rozjazd kod vs `econ-params`** (ulepszenia żywnościowe i infrastruktura płacą Pracę w kodzie). To nie jest balans, ale zmienia bazę każdej propozycji Pracy. Pliki: `gra/src/game/terrain-improvements.ts:608`, `gra/src/game/turn-economy.ts:991`, `gra/data/econ-params.json` (`ulepszenie_surowcowe_upkeep_praca`).
+
+Dla pomysłów właściciela (estymacja z danych, NIE ZMIERZONO na biegu z wdrożoną zmianą):
+1. **Droższe jednostki wojskowe (koszt w surowcach, np. Drewno).** Plus: adresuje nadmiar Drewna w 4242 i wojsko wprost. Minus: w 7 (największy nadmiar) utrzymanie jednostek to 1,6% brutto drewna — ×3 daje ~+24/t, czyli ~3% nadwyżki Drewna. Mały wpływ na nadmiar w 7. Pliki: `gra/data/units.json` (koszty), `gra/src/game/economy-upkeep.ts`.
+2. **Droższy upkeep budynków (`utrzymanie_surowce_wspolczynnik`, dziś 1 szt./1 Pieniądz).** Plus: działa na budynki wszystkich miast. Minus: w 7 budynki zjadają ~2,6% kamienia; ×10 daje ~+72/t dodatkowego ujścia kamienia (≈24% brutto kamienia 304/t), ale Drewno/Cegła pozostają w nadmiarze. Pliki: `gra/data/econ-params.json` (`utrzymanie_surowce_wspolczynnik`, `utrzymanie_budynek`).
+3. **Droższe cuda, nie w każdej epoce.** Inwentarz: 19 cudów, koszt 140–320 (suma 4 425), każdy max 1 na świecie. Plus: w 4242 pula Pracy 20 454 jest ~4,6× większa niż suma kosztów WSZYSTKICH cudów — obecny cennik nie ujmuje Pracy nawet przy pełnym zbudowaniu. Minus: jednostka kosztu (Praca/Skarbiec/surowce) NIE POTWIERDZONA w tej rundzie; bez tego estymacja wpływu jest NIE ZMIERZONA. Pliki: `gra/data/wonders.json` (`kosztBudowy`), `gra/src/game/wonders-data.ts`.
+4. **Ujście Pracy (cuda/projekty) — praktycznie tożsame z pkt 3.** Dodatkowo: pula Pracy rośnie 254/t bez kresu; limit puli (cap) to osobna decyzja. NIE ZMIERZONE, czy istnieje cap puli.
+5. **Nadmiar żywności (Spichlerz).** Seed 7: cap 1000 wiąże od t90 — nadwyżka przepada. Propozycja: podnieść zużycie żywności przy cap lub przeliczyć cap. Estymacja wpływu NIE ZMIERZONA (brak liczby przepadającej żywności w jsonl).
+6. **Cegła 450 przy przepustowości 150** — najpierw wyjaśnić (P0b), nie proponować zmian cegły przed tym.
+
+Rekomendacja orkiestratora (propozycja, nie decyzja): najpierw P0 i P0b (korekta danych), potem pomiar n≥3 ziaren z rozbiciem ulepszeń, dopiero potem wybór spośród 1–3. Pojedyncze pozycje 1–2 nie zamykają nadmiaru w 7 (wpływ ~3% Drewna do ~24% Kamienia, przy założonych mnożnikach).
+
+### 9.8 Czego brakuje do wyjaśnienia „+153,1k”
+- Zapis gry gracza-człowieka (save JSON z `surowceTyp` i `pracaUpkeep`), ALBO HUD z gry człowieka w tej samej turze, z rozbiciem per surowiec.
+- Liczba budynków i ulepszeń gracza-człowieka (autopilot ma 6–9 budynków; człowiek buduje dziesiątki).
+- Potwierdzenie, czy HUD sumuje po wszystkich magazynach (cap 100 000/typ) — obecny kod tak wskazuje (`buildEmpireResourceRows`, main.ts:3995), ale liczbowo NIE ZMIERZONO.
