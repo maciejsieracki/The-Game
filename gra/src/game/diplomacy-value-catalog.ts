@@ -1067,6 +1067,28 @@ export function planCityCession(input: CityCessionInput): CityCessionPlan {
   return { ok: true, unitMoves };
 }
 
+/**
+ * WYBÓR SEKWENCYJNY cesji (R-WEB-DIPLO-PEACE-CITIES-NOT-TRANSFERRED-AND-WAR-NEXT-TURN-Q1): kolejne
+ * miasta z listy przechodzą po KOLEI, a każde kolejne miasto sprawdzane jest na stanie PO poprzednich
+ * przelewach (zakaz „ostatniego miasta" i „stolicy" liczony na pozostałych miastach dawcy). Bez tego
+ * dwa miasta sprawdzone na tym samym stanie wyjściowym przechodzą walidację, a drugie pada dopiero
+ * przy przelewie (dawca zostaje z jednym miastem / przelew nie wykonany). Zwraca id przyjętych, w kolejności.
+ */
+export function selectSequentialCityCessions(input: {
+  cityIds: ReadonlyArray<string>;
+  ownerCityIds: ReadonlyArray<string>;
+  capitalCityId: string | null | undefined;
+}): string[] {
+  const remaining = [...input.ownerCityIds];
+  const accepted: string[] = [];
+  for (const cityId of input.cityIds) {
+    if (diplomacyMiastoZakaz({ cityId, capitalCityId: input.capitalCityId, ownerCityIds: remaining })) continue;
+    accepted.push(cityId);
+    remaining.splice(remaining.indexOf(cityId), 1);
+  }
+  return accepted;
+}
+
 /** BFS po sąsiadach od heksu miasta; zwraca pierwszy wolny, niezajęty przez plan heks. */
 function findNearestFreeHex(
   input: CityCessionInput,
