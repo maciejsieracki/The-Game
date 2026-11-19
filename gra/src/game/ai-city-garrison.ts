@@ -108,6 +108,23 @@ export function isGarrisonPriorityPurchase(
  */
 export const GARRISON_RESERVE_MAX_CITIES = 3;
 
+/** Klucz parametru zywego w data/ai-params.json (sufit rezerwy zlota na garnizony). */
+export const GARRISON_RESERVE_PARAM_KEY = 'garnizon_rezerwa_max_miast';
+
+/**
+ * Odczyt sufitu rezerwy z tabeli parametrow (r4, zarzut FC 6). Zwraca `wartosc` parametru
+ * (liczba >= 0, obciete do calkowitej); brak klucza, zly typ lub wartosc ujemna -> `fallback`.
+ */
+export function garrisonReserveMaxCitiesFromParams(
+  params: unknown,
+  fallback: number = GARRISON_RESERVE_MAX_CITIES,
+): number {
+  const entry = params && typeof params === 'object'
+    ? (params as Record<string, unknown>)[GARRISON_RESERVE_PARAM_KEY] : undefined;
+  const v = entry && typeof entry === 'object' ? (entry as { wartosc?: unknown }).wartosc : undefined;
+  return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.floor(v) : fallback;
+}
+
 /**
  * Czysta funkcja rezerwy zlota na garnizony: `pendingCities` pustych miast wlasciciela, `unitCost`
  * cena garnizonu (Wojownik). Rezerwa = min(pending, sufit) * cena; brak ceny/pustych miast -> 0.

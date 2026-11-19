@@ -35,6 +35,7 @@ export { decideAITurn, emptyCityGarrisonRecruitIds } from ${JSON.stringify(path.
 export {
   getCityGarrisonUnitIds, garrisonUnitIdSet, cityNeedsGarrison, isGarrisonEligibleUnit,
   isGarrisonPriorityPurchase, garrisonGoldReserve, GARRISON_RESERVE_MAX_CITIES,
+  garrisonReserveMaxCitiesFromParams, GARRISON_RESERVE_PARAM_KEY,
   rankGarrisonUnitIds, pickGarrisonUnitId,
 } from ${JSON.stringify(path.join(SRC, 'game', 'ai-city-garrison.ts'))};
 export { planHomeWar } from ${JSON.stringify(path.join(SRC, 'game', 'ai-war-home-defense.ts'))};
@@ -138,6 +139,22 @@ async function main() {
     ok(GOOD.garrisonGoldReserve(2, 10) === 20, 'H9: 2 puste miasta x 10 = rezerwa 20');
     ok(GOOD.garrisonGoldReserve(78, 10) === GOOD.GARRISON_RESERVE_MAX_CITIES * 10,
       'H10: 78 pustych miast -> rezerwa ograniczona sufitem (brak zamrozenia skarbca)');
+
+    // H11 (r4, zarzut FC 6): odczyt sufitu rezerwy z ai-params.json (klucz, typ, fallback).
+    const LIVE = require(path.resolve(__dirname, '..', 'data', 'ai-params.json'));
+    ok(LIVE[GOOD.GARRISON_RESERVE_PARAM_KEY] !== undefined && LIVE[GOOD.GARRISON_RESERVE_PARAM_KEY].wartosc === 3,
+      'H11a: zywy ai-params.json zawiera klucz garnizon_rezerwa_max_miast = 3 (zalozenie robocze)');
+    ok(GOOD.garrisonReserveMaxCitiesFromParams(LIVE) === 3, 'H11b: odczyt z zywej tabeli = 3 (nie fallback)');
+    ok(GOOD.garrisonReserveMaxCitiesFromParams({ garnizon_rezerwa_max_miast: { wartosc: 5 } }) === 5,
+      'H11c: wartosc 5 w tabeli -> 5 (odczyt, nie stala 3 -- wykrywa literowke klucza w kodzie)');
+    ok(GOOD.garrisonReserveMaxCitiesFromParams({ garnizon_rezerwa_max_miast_typo: { wartosc: 5 } }) === GOOD.GARRISON_RESERVE_MAX_CITIES,
+      'H11d: brak klucza -> fallback');
+    ok(GOOD.garrisonReserveMaxCitiesFromParams({ garnizon_rezerwa_max_miast: { wartosc: '5' } }) === GOOD.GARRISON_RESERVE_MAX_CITIES
+      && GOOD.garrisonReserveMaxCitiesFromParams({ garnizon_rezerwa_max_miast: { wartosc: -1 } }) === GOOD.GARRISON_RESERVE_MAX_CITIES
+      && GOOD.garrisonReserveMaxCitiesFromParams(null) === GOOD.GARRISON_RESERVE_MAX_CITIES,
+      'H11e: zly typ / wartosc ujemna / brak tabeli -> fallback');
+    ok(GOOD.garrisonReserveMaxCitiesFromParams({ garnizon_rezerwa_max_miast: { wartosc: 0 } }) === 0,
+      'H11f: wartosc 0 -> 0 (rezerwa wylaczona, nie fallback)');
 
     const foreign = [unit('foreign', 5, 5, { ownerId: 2, str: 0 }), unit('own', 5, 5, { str: 5 })];
     ok(GOOD.getCityGarrisonUnitIds([city], foreign, 1, strengthById).get('A') === 'own',
