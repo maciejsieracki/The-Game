@@ -182,7 +182,7 @@
         ],
         "descs": [
           "Gracz bierze udział w wojnie epoki (najbliższa cywilizacja, także nieodkryta)",
-          "Gracz nie jest celem wojny epoki (wojny tylko między AI)"
+          "Gracz nie uczestniczy w wojnach epoki (Kamień, Brąz, Żelazo): AI nie wypowiadają mu wojny epoki i nie wybierają go celem"
         ],
         "domyslny": 0
       },

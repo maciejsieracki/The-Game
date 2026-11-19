@@ -45554,8 +45554,9 @@ async function boot(): Promise<void> {
               ownerId === 0 && (playerEraTagNow === 'bronze' || playerEraTagNow === 'iron')
                 ? playerActiveForcedWarsInEra
                 : totalActiveForcedWarsByOwner(ownerId);
-            if (
-              playerCity
+            // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1: ta sama bramka puli gracza (próg tur od
+            // wejścia w epokę) steruje też jego udziałem jako wolnego celu fallbacku (freeTargetCandidates).
+            const playerEraPoolEligible = !!playerCity
               && isPlayerEligibleForEraWarPool({
                 currentTurn: turn,
                 playerEpoch: playerEpochNow,
@@ -45563,8 +45564,8 @@ async function boot(): Promise<void> {
                 activeForcedWarsInPlayerEra: playerActiveForcedWarsInEra,
                 eraEnterTurn: playerEraTagNow === 'iron' ? ironEraEnterTurnByOwner.get(0) : bronzeEraEnterTurnByOwner.get(0),
                 poolStartTurn: WOJNA_KAMIEN_WYMUSZONA_START_TURY,
-              }, WAR_RULES_PARAMS)
-            ) {
+              }, WAR_RULES_PARAMS);
+            if (playerCity && playerEraPoolEligible) {
               triggeredSubjects.push({ ownerId: 0, q: playerCity.q, r: playerCity.r });
             }
             // (R1, flaga ON): przed turą 40 pula podmiotów jest PUSTA (także gracz).
@@ -45683,7 +45684,7 @@ async function boot(): Promise<void> {
                 // „wojna epoki z udziałem gracza” ON lub flaga K2 wyłączona; te same filtry co dla AI).
                 freeTargetCandidates: [
                   ...forcedWarMajorAiSubjects,
-                  ...(playerCity && (!isWarEpochPlayerFirstEnabled() || playerEpochWarEnabled)
+                  ...(playerCity && playerEraPoolEligible && (!isWarEpochPlayerFirstEnabled() || playerEpochWarEnabled)
                     ? [{ ownerId: 0, q: playerCity.q, r: playerCity.r } as ForcedWarPairingSubject]
                     : []),
                 ].filter(s => countActiveWarsForOwnerExcludingBarbarians(s.ownerId) === 0),
