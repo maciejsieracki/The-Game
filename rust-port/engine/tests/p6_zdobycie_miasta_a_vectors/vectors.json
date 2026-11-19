@@ -364,7 +364,15 @@
     ],
     "capitalEvent": null,
     "eliminated": null,
-    "lostPowerFromRust": false
+    "lostPowerFromRust": false,
+    "hookCalled": true,
+    "removedUnitIds": [],
+    "enteredUnitIds": [
+     7001,
+     7002
+    ],
+    "treasuryTaken": 0,
+    "techsCopied": []
    }
   },
   {
@@ -721,7 +729,384 @@
     ],
     "capitalEvent": null,
     "eliminated": null,
-    "lostPowerFromRust": false
+    "lostPowerFromRust": false,
+    "hookCalled": true,
+    "removedUnitIds": [
+     8004
+    ],
+    "enteredUnitIds": [
+     7001
+    ],
+    "treasuryTaken": 0,
+    "techsCopied": []
+   }
+  },
+  {
+   "name": "wipe_i_splice",
+   "input": {
+    "w": 10,
+    "h": 9,
+    "peace": false,
+    "turn": 1,
+    "city": {
+     "id": 900,
+     "q": 5,
+     "r": 4,
+     "ownerId": 101,
+     "pop": 3
+    },
+    "capturedFrom": null,
+    "cities": [
+     {
+      "id": 901,
+      "q": 1,
+      "r": 1,
+      "ownerId": 101,
+      "pop": 2
+     }
+    ],
+    "capitals": [
+     [
+      101,
+      901
+     ]
+    ],
+    "machines": [],
+    "treasury": [],
+    "praca": [],
+    "techs": [],
+    "wonders": [],
+    "forts": [],
+    "pairMeta": null,
+    "units": [
+     {
+      "id": 7001,
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 4,
+      "hp": 12,
+      "ruchLeft": 3,
+      "ruch": 2
+     },
+     {
+      "id": 7002,
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 4,
+      "hp": 9,
+      "ruchLeft": 1.5,
+      "ruch": 2
+     },
+     {
+      "id": 7003,
+      "ownerId": 1,
+      "typeId": "Łucznik",
+      "category": "lucznik",
+      "q": 6,
+      "r": 3,
+      "hp": 7,
+      "ruchLeft": 2,
+      "ruch": 2
+     },
+     {
+      "id": 7004,
+      "ownerId": 1,
+      "typeId": "Osadnik",
+      "category": "osadnik",
+      "q": 6,
+      "r": 4,
+      "hp": 5,
+      "ruchLeft": 2,
+      "ruch": 2
+     },
+     {
+      "id": 7005,
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 3,
+      "hp": 10,
+      "ruchLeft": 0.5,
+      "ruch": 2
+     },
+     {
+      "id": 8001,
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 5,
+      "r": 4,
+      "hp": 11,
+      "ruchLeft": 2,
+      "ruch": 2
+     },
+     {
+      "id": 8002,
+      "ownerId": 101,
+      "typeId": "Łucznik",
+      "category": "lucznik",
+      "q": 5,
+      "r": 4,
+      "hp": 6,
+      "ruchLeft": 2,
+      "ruch": 2
+     },
+     {
+      "id": 8003,
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 5,
+      "r": 4,
+      "hp": 8,
+      "ruchLeft": 2,
+      "ruch": 2
+     },
+     {
+      "id": 8004,
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 5,
+      "r": 4,
+      "hp": 5,
+      "ruchLeft": 2,
+      "ruch": 2
+     }
+    ],
+    "atkRoster": [
+     {
+      "id": "7001",
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 4
+     },
+     {
+      "id": "7002",
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 4
+     },
+     {
+      "id": "7003",
+      "ownerId": 1,
+      "typeId": "Łucznik",
+      "category": "lucznik",
+      "q": 6,
+      "r": 3
+     },
+     {
+      "id": "7004",
+      "ownerId": 1,
+      "typeId": "Osadnik",
+      "category": "osadnik",
+      "q": 6,
+      "r": 4
+     },
+     {
+      "id": "7005",
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 3
+     }
+    ],
+    "defRoster": [
+     {
+      "id": "8001",
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 5,
+      "r": 4
+     },
+     {
+      "id": "8002",
+      "ownerId": 101,
+      "typeId": "Łucznik",
+      "category": "lucznik",
+      "q": 5,
+      "r": 4
+     },
+     {
+      "id": "8003",
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 5,
+      "r": 4
+     },
+     {
+      "id": "m1",
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 5,
+      "r": 4
+     }
+    ],
+    "winner": "atakujacy",
+    "breached": true,
+    "scene": {
+     "atk": [
+      {
+       "id": "7001",
+       "hp": 8,
+       "dead": false,
+       "routed": false
+      },
+      {
+       "id": "7002",
+       "hp": 6,
+       "dead": false,
+       "routed": false
+      },
+      {
+       "id": "7003",
+       "hp": 4,
+       "dead": false,
+       "routed": false
+      }
+     ],
+     "def": [
+      {
+       "id": "8001",
+       "hp": 0,
+       "dead": true,
+       "routed": false
+      },
+      {
+       "id": "8002",
+       "hp": 2,
+       "dead": true,
+       "routed": true
+      },
+      {
+       "id": "m1",
+       "hp": 0,
+       "dead": true,
+       "routed": false
+      }
+     ]
+    }
+   },
+   "expected": {
+    "units": [
+     {
+      "id": 7001,
+      "q": 5,
+      "r": 4,
+      "hp": 8,
+      "ruchLeft": 0
+     },
+     {
+      "id": 7002,
+      "q": 5,
+      "r": 4,
+      "hp": 6,
+      "ruchLeft": 0
+     },
+     {
+      "id": 7003,
+      "q": 6,
+      "r": 3,
+      "hp": 4,
+      "ruchLeft": 0
+     },
+     {
+      "id": 7004,
+      "q": 6,
+      "r": 4,
+      "hp": 5,
+      "ruchLeft": 2
+     },
+     {
+      "id": 7005,
+      "q": 6,
+      "r": 3,
+      "hp": 10,
+      "ruchLeft": 0
+     }
+    ],
+    "captured": true,
+    "cities": [
+     {
+      "id": 900,
+      "ownerId": 1,
+      "pop": 2,
+      "capturedFromOwnerId": 101
+     },
+     {
+      "id": 901,
+      "ownerId": 101,
+      "pop": 2,
+      "capturedFromOwnerId": null
+     }
+    ],
+    "oblegane": false,
+    "machinesReady": [],
+    "consumed": [],
+    "capitals": [
+     [
+      101,
+      901
+     ]
+    ],
+    "treasury": [],
+    "praca": [],
+    "techs": [],
+    "wonders": [],
+    "wonderTransfers": [],
+    "pairMeta": [
+     [
+      "1-101",
+      {
+       "trustPnGainedThisTurn": 0,
+       "dobraWolaRemainingTur": 0,
+       "wojnaStartTura": 1,
+       "wojnaMiasta": {
+        "od": 1,
+        "utraty": {
+         "101": 1
+        },
+        "ostatniaTura": 1
+       }
+      }
+     ]
+    ],
+    "relations": [
+     [
+      "1-101",
+      "wojna"
+     ]
+    ],
+    "everOwned": [
+     1
+    ],
+    "capitalEvent": null,
+    "eliminated": null,
+    "lostPowerFromRust": false,
+    "hookCalled": true,
+    "removedUnitIds": [
+     8003,
+     8004
+    ],
+    "enteredUnitIds": [
+     7001,
+     7002
+    ],
+    "treasuryTaken": 0,
+    "techsCopied": []
    }
   },
   {
@@ -1135,7 +1520,15 @@
     ],
     "capitalEvent": "przejecieStolicy",
     "eliminated": null,
-    "lostPowerFromRust": false
+    "lostPowerFromRust": false,
+    "hookCalled": true,
+    "removedUnitIds": [],
+    "enteredUnitIds": [
+     7001,
+     7002
+    ],
+    "treasuryTaken": 75.5,
+    "techsCopied": []
    }
   },
   {
@@ -1506,7 +1899,15 @@
     ],
     "capitalEvent": "przejecieStolicy",
     "eliminated": null,
-    "lostPowerFromRust": false
+    "lostPowerFromRust": false,
+    "hookCalled": true,
+    "removedUnitIds": [],
+    "enteredUnitIds": [
+     7001,
+     7002
+    ],
+    "treasuryTaken": 40,
+    "techsCopied": []
    }
   },
   {
@@ -1903,7 +2304,18 @@
     ],
     "capitalEvent": "eliminacja",
     "eliminated": 101,
-    "lostPowerFromRust": true
+    "lostPowerFromRust": true,
+    "hookCalled": true,
+    "removedUnitIds": [],
+    "enteredUnitIds": [
+     7001,
+     7002
+    ],
+    "treasuryTaken": 30,
+    "techsCopied": [
+     "brąz",
+     "pismo"
+    ]
    }
   },
   {
@@ -2256,7 +2668,15 @@
     ],
     "capitalEvent": null,
     "eliminated": null,
-    "lostPowerFromRust": false
+    "lostPowerFromRust": false,
+    "hookCalled": true,
+    "removedUnitIds": [],
+    "enteredUnitIds": [
+     7001,
+     7002
+    ],
+    "treasuryTaken": 0,
+    "techsCopied": []
    }
   },
   {
@@ -2609,7 +3029,15 @@
     ],
     "capitalEvent": null,
     "eliminated": null,
-    "lostPowerFromRust": false
+    "lostPowerFromRust": false,
+    "hookCalled": true,
+    "removedUnitIds": [],
+    "enteredUnitIds": [
+     7001,
+     7002
+    ],
+    "treasuryTaken": 0,
+    "techsCopied": []
    }
   },
   {
@@ -2665,7 +3093,7 @@
       "q": 8,
       "r": 2,
       "ownerId": 1,
-      "kind": "fort",
+      "type": "fort",
       "builtAtTurn": 3,
       "seq": 0
      }
@@ -2995,7 +3423,399 @@
     ],
     "capitalEvent": null,
     "eliminated": null,
-    "lostPowerFromRust": false
+    "lostPowerFromRust": false,
+    "hookCalled": true,
+    "removedUnitIds": [],
+    "enteredUnitIds": [
+     7001,
+     7002
+    ],
+    "treasuryTaken": 0,
+    "techsCopied": []
+   }
+  },
+  {
+   "name": "cuda_fort_decyduje",
+   "input": {
+    "w": 10,
+    "h": 9,
+    "peace": false,
+    "turn": 1,
+    "city": {
+     "id": 900,
+     "q": 5,
+     "r": 4,
+     "ownerId": 101,
+     "pop": 7
+    },
+    "capturedFrom": null,
+    "cities": [
+     {
+      "id": 901,
+      "q": 1,
+      "r": 1,
+      "ownerId": 101,
+      "pop": 2
+     }
+    ],
+    "capitals": [
+     [
+      101,
+      901
+     ]
+    ],
+    "machines": [],
+    "treasury": [],
+    "praca": [],
+    "techs": [],
+    "wonders": [
+     {
+      "wonderId": "piramidy",
+      "q": 9,
+      "r": 7,
+      "ownerId": 101
+     }
+    ],
+    "forts": [
+     {
+      "q": 9,
+      "r": 8,
+      "ownerId": 1,
+      "type": "fort",
+      "builtAtTurn": 2,
+      "seq": 0
+     }
+    ],
+    "pairMeta": null,
+    "units": [
+     {
+      "id": 7001,
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 4,
+      "hp": 12,
+      "ruchLeft": 3,
+      "ruch": 2
+     },
+     {
+      "id": 7002,
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 4,
+      "hp": 9,
+      "ruchLeft": 1.5,
+      "ruch": 2
+     },
+     {
+      "id": 7003,
+      "ownerId": 1,
+      "typeId": "Łucznik",
+      "category": "lucznik",
+      "q": 6,
+      "r": 3,
+      "hp": 7,
+      "ruchLeft": 2,
+      "ruch": 2
+     },
+     {
+      "id": 7004,
+      "ownerId": 1,
+      "typeId": "Osadnik",
+      "category": "osadnik",
+      "q": 6,
+      "r": 4,
+      "hp": 5,
+      "ruchLeft": 2,
+      "ruch": 2
+     },
+     {
+      "id": 7005,
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 3,
+      "hp": 10,
+      "ruchLeft": 0.5,
+      "ruch": 2
+     },
+     {
+      "id": 8001,
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 5,
+      "r": 4,
+      "hp": 11,
+      "ruchLeft": 2,
+      "ruch": 2
+     },
+     {
+      "id": 8002,
+      "ownerId": 101,
+      "typeId": "Łucznik",
+      "category": "lucznik",
+      "q": 5,
+      "r": 4,
+      "hp": 6,
+      "ruchLeft": 2,
+      "ruch": 2
+     },
+     {
+      "id": 8003,
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 4,
+      "r": 4,
+      "hp": 8,
+      "ruchLeft": 2,
+      "ruch": 2
+     }
+    ],
+    "atkRoster": [
+     {
+      "id": "7001",
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 4
+     },
+     {
+      "id": "7002",
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 4
+     },
+     {
+      "id": "7003",
+      "ownerId": 1,
+      "typeId": "Łucznik",
+      "category": "lucznik",
+      "q": 6,
+      "r": 3
+     },
+     {
+      "id": "7004",
+      "ownerId": 1,
+      "typeId": "Osadnik",
+      "category": "osadnik",
+      "q": 6,
+      "r": 4
+     },
+     {
+      "id": "7005",
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 3
+     }
+    ],
+    "defRoster": [
+     {
+      "id": "8001",
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 5,
+      "r": 4
+     },
+     {
+      "id": "8002",
+      "ownerId": 101,
+      "typeId": "Łucznik",
+      "category": "lucznik",
+      "q": 5,
+      "r": 4
+     },
+     {
+      "id": "8003",
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 4,
+      "r": 4
+     },
+     {
+      "id": "m1",
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 5,
+      "r": 4
+     }
+    ],
+    "winner": "atakujacy",
+    "breached": true,
+    "scene": {
+     "atk": [
+      {
+       "id": "7001",
+       "hp": 8,
+       "dead": false,
+       "routed": false
+      },
+      {
+       "id": "7002",
+       "hp": 6,
+       "dead": false,
+       "routed": false
+      },
+      {
+       "id": "7003",
+       "hp": 4,
+       "dead": false,
+       "routed": false
+      }
+     ],
+     "def": [
+      {
+       "id": "8001",
+       "hp": 0,
+       "dead": true,
+       "routed": false
+      },
+      {
+       "id": "8002",
+       "hp": 2,
+       "dead": true,
+       "routed": true
+      },
+      {
+       "id": "m1",
+       "hp": 0,
+       "dead": true,
+       "routed": false
+      }
+     ]
+    }
+   },
+   "expected": {
+    "units": [
+     {
+      "id": 7001,
+      "q": 5,
+      "r": 4,
+      "hp": 8,
+      "ruchLeft": 0
+     },
+     {
+      "id": 7002,
+      "q": 5,
+      "r": 4,
+      "hp": 6,
+      "ruchLeft": 0
+     },
+     {
+      "id": 7003,
+      "q": 6,
+      "r": 3,
+      "hp": 4,
+      "ruchLeft": 0
+     },
+     {
+      "id": 7004,
+      "q": 6,
+      "r": 4,
+      "hp": 5,
+      "ruchLeft": 2
+     },
+     {
+      "id": 7005,
+      "q": 6,
+      "r": 3,
+      "hp": 10,
+      "ruchLeft": 0
+     },
+     {
+      "id": 8003,
+      "q": 3,
+      "r": 5,
+      "hp": 8,
+      "ruchLeft": 2
+     }
+    ],
+    "captured": true,
+    "cities": [
+     {
+      "id": 900,
+      "ownerId": 1,
+      "pop": 6,
+      "capturedFromOwnerId": 101
+     },
+     {
+      "id": 901,
+      "ownerId": 101,
+      "pop": 2,
+      "capturedFromOwnerId": null
+     }
+    ],
+    "oblegane": false,
+    "machinesReady": [],
+    "consumed": [],
+    "capitals": [
+     [
+      101,
+      901
+     ]
+    ],
+    "treasury": [],
+    "praca": [],
+    "techs": [],
+    "wonders": [
+     {
+      "wonderId": "piramidy",
+      "ownerId": 1
+     }
+    ],
+    "wonderTransfers": [
+     "piramidy"
+    ],
+    "pairMeta": [
+     [
+      "1-101",
+      {
+       "trustPnGainedThisTurn": 0,
+       "dobraWolaRemainingTur": 0,
+       "wojnaStartTura": 1,
+       "wojnaMiasta": {
+        "od": 1,
+        "utraty": {
+         "101": 1
+        },
+        "ostatniaTura": 1
+       }
+      }
+     ]
+    ],
+    "relations": [
+     [
+      "1-101",
+      "wojna"
+     ]
+    ],
+    "everOwned": [
+     1
+    ],
+    "capitalEvent": null,
+    "eliminated": null,
+    "lostPowerFromRust": false,
+    "hookCalled": true,
+    "removedUnitIds": [],
+    "enteredUnitIds": [
+     7001,
+     7002
+    ],
+    "treasuryTaken": 0,
+    "techsCopied": []
    }
   },
   {
@@ -3361,7 +4181,15 @@
     ],
     "capitalEvent": null,
     "eliminated": null,
-    "lostPowerFromRust": false
+    "lostPowerFromRust": false,
+    "hookCalled": true,
+    "removedUnitIds": [],
+    "enteredUnitIds": [
+     7001,
+     7002
+    ],
+    "treasuryTaken": 0,
+    "techsCopied": []
    }
   },
   {
@@ -3696,7 +4524,15 @@
     "everOwned": [],
     "capitalEvent": null,
     "eliminated": null,
-    "lostPowerFromRust": false
+    "lostPowerFromRust": false,
+    "hookCalled": true,
+    "removedUnitIds": [],
+    "enteredUnitIds": [
+     7001,
+     7002
+    ],
+    "treasuryTaken": 0,
+    "techsCopied": []
    }
   },
   {
@@ -4031,7 +4867,12 @@
     "everOwned": [],
     "capitalEvent": null,
     "eliminated": null,
-    "lostPowerFromRust": false
+    "lostPowerFromRust": false,
+    "hookCalled": false,
+    "removedUnitIds": [],
+    "enteredUnitIds": [],
+    "treasuryTaken": 0,
+    "techsCopied": []
    }
   },
   {
@@ -4359,7 +5200,12 @@
     "everOwned": [],
     "capitalEvent": null,
     "eliminated": null,
-    "lostPowerFromRust": false
+    "lostPowerFromRust": false,
+    "hookCalled": false,
+    "removedUnitIds": [],
+    "enteredUnitIds": [],
+    "treasuryTaken": 0,
+    "techsCopied": []
    }
   }
  ],

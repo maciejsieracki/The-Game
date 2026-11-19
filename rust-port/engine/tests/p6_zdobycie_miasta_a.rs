@@ -586,6 +586,56 @@ fn diffs(sc: &Value) -> Vec<String> {
             exp["eliminated"]
         ));
     }
+    // N2 (obrona r1): pola wyniku mostu dokładną wartością z wykonania pinu (generator obserwuje id/pozycje/skarbiec
+    // wokół `applyPostBattleMap`, `applyCityCaptureAfterBattle` i `runCapitalCapturePlunder`).
+    if res.capture.is_some() != exp["hookCalled"].as_bool().unwrap() {
+        out2.push(format!(
+            "{name}: hak wolany {} != {}",
+            res.capture.is_some(),
+            exp["hookCalled"]
+        ));
+    }
+    let ids = |k: &str| -> Vec<u64> { exp[k].as_array().unwrap().iter().map(u).collect() };
+    let (removed, entered, taken, techs) = res.capture.as_ref().map_or_else(
+        || (Vec::new(), Vec::new(), 0.0, Vec::new()),
+        |c| {
+            (
+                c.removed_unit_ids.clone(),
+                c.entered_unit_ids.clone(),
+                c.treasury_taken,
+                c.techs_copied.clone(),
+            )
+        },
+    );
+    if removed != ids("removedUnitIds") {
+        out2.push(format!(
+            "{name}: removedUnitIds {removed:?} != {:?}",
+            ids("removedUnitIds")
+        ));
+    }
+    if entered != ids("enteredUnitIds") {
+        out2.push(format!(
+            "{name}: enteredUnitIds {entered:?} != {:?}",
+            ids("enteredUnitIds")
+        ));
+    }
+    if format!("{taken:?}") != format!("{:?}", f(&exp["treasuryTaken"])) {
+        out2.push(format!(
+            "{name}: treasuryTaken {taken:?} != {}",
+            exp["treasuryTaken"]
+        ));
+    }
+    let want_copied: Vec<String> = exp["techsCopied"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| s.as_str().unwrap().to_owned())
+        .collect();
+    if techs != want_copied {
+        out2.push(format!(
+            "{name}: techsCopied {techs:?} != {want_copied:?}"
+        ));
+    }
     out.extend(out2);
     out
 }
@@ -607,7 +657,16 @@ fn wektory_pinu_sha_i_pokrycie() {
         .as_array()
         .unwrap()
         .is_empty()));
-    assert!(scs.len() >= 12);
+    // N2/N3 (obrona r1): pokrycie pól wyniku i fortu rozstrzygającego terytorium cudu.
+    let nonempty = |s: &Value, k: &str| !s["expected"][k].as_array().unwrap().is_empty();
+    assert!(has(&|s| nonempty(s, "techsCopied")));
+    assert!(has(&|s| f(&s["expected"]["treasuryTaken"]) > 0.0));
+    assert!(has(&|s| s["expected"]["removedUnitIds"].as_array().unwrap().len() >= 2));
+    assert!(has(&|s| s["expected"]["enteredUnitIds"].as_array().unwrap().len() >= 2));
+    assert!(has(&|s| s["name"] == "cuda_fort_decyduje"
+        && nonempty(s, "wonderTransfers")
+        && !s["input"]["forts"].as_array().unwrap().is_empty()));
+    assert!(scs.len() >= 13);
 }
 
 #[test]

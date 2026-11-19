@@ -159,10 +159,16 @@ const SCENARIOS = [
   // Zwykle miasto (stolica 101 = 901): zdobycie bez lupu, -1 obywatel, obroncy poza miastem odchodza.
   { name: 'zwykle_miasto', breached: true, machines: ['taran'], pop: 3, capitals: [[ENEMY, 901]],
     cities: [{ id: 901, q: 1, r: 1, ownerId: ENEMY, pop: 2 }], scene: WIN },
-  // Ocalaly obronca na centrum (routed) — `wipeDefenderOnCityCenter`; drugi obronca spoza rosteru sceny na heksie
+  // Ocalaly obronca na centrum (routed; poza ocalalymi zwyciezcy -> usuniety w `applyManualSurvivors`, nie przez
+  // `wipeDefenderOnCityCenter` — obrona r1, N2); drugi obronca spoza rosteru sceny na heksie
   // (`units.splice` P9); kotwica + stos wchodza, wspierajacy z (6,3) zostaja.
   { name: 'obronca_na_centrum_i_splice', breached: true, machines: [], pop: 4, capitals: [[ENEMY, 901]],
     cities: [{ id: 901, q: 1, r: 1, ownerId: ENEMY, pop: 2 }], scene: WIN_DEF_LIVE,
+    extra: [u(8004, ENEMY, 'Wojownik', 'miecznik', 5, 4, { hp: 5 })] },
+  // N2 (obrona r1): obronca rosteru spoza logu sceny (8003) stoi na centrum miasta -> `wipeDefenderOnCityCenter`;
+  // 8004 spoza rosteru na heksie -> `units.splice` P9.
+  { name: 'wipe_i_splice', breached: true, machines: [], pop: 3, capitals: [[ENEMY, 901]],
+    cities: [{ id: 901, q: 1, r: 1, ownerId: ENEMY, pop: 2 }], scene: WIN, place: [[8003, 5, 4]],
     extra: [u(8004, ENEMY, 'Wojownik', 'miecznik', 5, 4, { hp: 5 })] },
   // Stolica wyznaczona (900), sukcesja do najstarszego z pozostalych (902 < 905); skarbiec 101 -> gracz, Praca 101 = 0.
   { name: 'stolica_sukcesja', breached: true, machines: ['wieza'], pop: 5, capitals: [[ENEMY, 900]],
@@ -186,7 +192,14 @@ const SCENARIOS = [
   { name: 'cuda_terytorium', breached: true, machines: [], pop: 6, capitals: [[ENEMY, 901]],
     cities: [{ id: 901, q: 1, r: 1, ownerId: ENEMY, pop: 3 }],
     wonders: [{ wonderId: 'piramidy', q: 5, r: 5, ownerId: ENEMY }, { wonderId: 'kolos', q: 1, r: 2, ownerId: ENEMY }],
-    forts: [{ q: 8, r: 2, ownerId: HUMAN, kind: 'fort', builtAtTurn: 3, seq: 0 }], scene: WIN },
+    forts: [{ q: 8, r: 2, ownerId: HUMAN, type: 'fort', builtAtTurn: 3, seq: 0 }], scene: WIN },
+  // N3 (obrona r1): fort rozstrzyga terytorium cudu. Przed: cud (9,7) w promieniu miasta 900 (pop 7 -> r 7, odleglosc 7)
+  // = 101. Po stracie ludnosci (pop 6 -> r 6) heks wypada z promienia miast; rozstrzyga fort gracza (9,8) -> cud
+  // przechodzi na gracza. Bez wezlow fortow heks bylby niczyj (brak przekazania).
+  { name: 'cuda_fort_decyduje', breached: true, machines: [], pop: 7, capitals: [[ENEMY, 901]],
+    cities: [{ id: 901, q: 1, r: 1, ownerId: ENEMY, pop: 2 }],
+    wonders: [{ wonderId: 'piramidy', q: 9, r: 7, ownerId: ENEMY }],
+    forts: [{ q: 9, r: 8, ownerId: HUMAN, type: 'fort', builtAtTurn: 2, seq: 0 }], scene: WIN },
   // Meta pary: wojna trwa od tury 4 (wojnaStartTura), poprzedni rekord tej samej wojny -> utraty 101 += 1.
   { name: 'meta_pary_wojna', breached: true, machines: [], pop: 3, capitals: [[ENEMY, 901]], turn: 9,
     cities: [{ id: 901, q: 1, r: 1, ownerId: ENEMY, pop: 2 }],
@@ -211,6 +224,7 @@ function run(sc) {
   const winner = sc.winner ?? 'atakujacy';
   const units = base();
   units.push(...(sc.extra ?? []).map((x) => ({ ...x })));
+  for (const [id, q, r] of sc.place ?? []) { const x = units.find((y) => y.id === id); x.q = q; x.r = r; }
   const startUnits = units.map((x) => ({ ...x }));
   const city = { id: cityId(900), name: 'Twierdza', q: 5, r: 4, ownerId: ENEMY, population: sc.pop, maMur: true, oblegane: true,
     siegeMachines: { queue: [], ready: [...sc.machines], buildProgress: 0 },
@@ -251,6 +265,17 @@ function run(sc) {
   const survivors = winner === 'remis'
     ? [...exportSurvivors(sA), ...exportSurvivors(sD)]
     : exportSurvivors(winner === 'atakujacy' ? sA : sD);
+  // N2 (obrona r1): obserwacja wykonania pinu (bez logiki): id i pozycje przed/po `applyPostBattleMap` i P9.
+  const hexOf = (x) => x.q === city.q && x.r === city.r;
+  // `wipeDefenderOnCityCenter` (`post-battle-map.ts:191-199`) usuwa przez `removeUnitById` -> `units.splice`; zapis id
+  // usunietych w tym wywolaniu (stos wywolan), bez powielania logiki.
+  const wipeRemoved = [];
+  units.splice = function (...a) {
+    const out = Array.prototype.splice.apply(this, a);
+    if (/wipeDefenderOnCityCenter/.test(new Error().stack ?? '')) for (const x of out) wipeRemoved.push(x.id);
+    return out;
+  };
+  const atHexBeforePbm = new Set(units.filter(hexOf).map((x) => x.id));
   // `applyMapBattleOutcome` (`main.ts:34462-34745`): `fortifiedCaptureBlocked = cityCaptureBlocked` (szturm).
   PBM.applyPostBattleMap({
     units, map: {}, cities, battleQ: city.q, battleR: city.r,
@@ -262,6 +287,14 @@ function run(sc) {
     cityOnBattleHex: PBM.findCityOnHex(cities, city.q, city.r) ?? null,
     holdPositionAfterWin: stormCaptureBlocked,
   });
+  delete units.splice;
+  // `moveAtkRosterOntoBattleHex`: jednostki rosteru atakujacego, ktore znalazly sie na heksie miasta (kolejnosc rosteru).
+  const enteredUnitIds = atkRoster
+    .filter((x) => !atHexBeforePbm.has(x.id) && units.some((y) => y.id === x.id && hexOf(y)))
+    .map((x) => x.id);
+  const p9Removed = [];
+  let treasuryTaken = 0;
+  let techsCopied = [];
   if (winner === 'obronca') {
     // `defLossesThisTurn` / `selectedId` poza zakresem (pola brak w stanie).
   }
@@ -354,7 +387,15 @@ function run(sc) {
     const oldOwner = city.ownerId;
     const popBefore = city.population;
     const watch = beginWonderTransferWatch();
+    const idsBeforeP9 = units.map((x) => x.id);
+    const atHexBeforeP9 = new Set(units.filter(hexOf).map((x) => x.id));
     PBM.applyCityCaptureAfterBattle(city, atkRoster, atkOwner, units, atkRoster[0].id, {});
+    // `units.splice` P9 idzie od konca tablicy.
+    const idsAfterP9 = new Set(units.map((x) => x.id));
+    for (let i = idsBeforeP9.length - 1; i >= 0; i--) if (!idsAfterP9.has(idsBeforeP9[i])) p9Removed.push(idsBeforeP9[i]);
+    for (const x of atkRoster) {
+      if (!atHexBeforeP9.has(x.id) && units.some((y) => y.id === x.id && hexOf(y)) && !enteredUnitIds.includes(x.id)) enteredUnitIds.push(x.id);
+    }
     settleWonderTransfer(watch);
     // `maybeResolveRegularWarOnCityCapture`: gracz po stronie pary = no-op (Q3, `:35986-35989`).
     recordWarCityLossForPair(oldOwner, atkOwner);
@@ -362,7 +403,11 @@ function run(sc) {
     // `endMapSiege` (`:17880-17899`).
     city.oblegane = false;
     MACH.clearSiegeMachines(city);
+    const trBefore = access.getTreasury(atkOwner);
+    const techBefore = new Set(access.getResearchedTechs(atkOwner));
     runCapitalCapturePlunder(city, oldOwner, atkOwner);
+    treasuryTaken = access.getTreasury(atkOwner) - trBefore;
+    techsCopied = [...access.getResearchedTechs(atkOwner)].filter((t) => !techBefore.has(t)).sort();
     capture = { oldOwner, newOwner: atkOwner, popBefore, popAfter: city.population };
   }
   // `validateActiveSieges` (`main.ts:34744`) dla szturmowanego miasta.
@@ -402,6 +447,11 @@ function run(sc) {
       everOwned: [...everOwned],
       capitalEvent, eliminated,
       lostPowerFromRust: capitalEvent === 'eliminacja',
+      // N2: hak T8 wolany = wygrana atakujacego z wylomem (`capture_requested`); listy puste, gdy hak nie wolany.
+      hookCalled: winner === 'atakujacy' && !stormCaptureBlocked,
+      removedUnitIds: winner === 'atakujacy' && !stormCaptureBlocked ? [...wipeRemoved, ...p9Removed] : [],
+      enteredUnitIds: winner === 'atakujacy' && !stormCaptureBlocked ? enteredUnitIds : [],
+      treasuryTaken, techsCopied,
     },
   };
 }
