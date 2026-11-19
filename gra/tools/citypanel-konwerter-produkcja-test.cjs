@@ -270,7 +270,10 @@ console.log('\n-- [2b] appendOwnedBuildingRow: wiersz produkcji ODDZIELONY od wi
   // NIE liczony drugi raz (hoisted na zasięg funkcji, przypisany przez `=`, nie `const`).
   ok(/let\s+inactiveStatus\s*:/.test(fnSrc), 'N2: inactiveStatus hoisted (let, zasięg całej funkcji), nie lokalny const w bloku nagłówka');
   ok(fnSrc.includes('bld-owned-conv-row--inactive'), 'N2: wiersz produkcji dostaje klasę bld-owned-conv-row--inactive gdy budynek nieaktywny');
-  ok(fnSrc.includes('convInactive = inactiveStatus?.inactive === true'),
+  // R-WEB-TEST-DEBT-Q10 (kotwica po refaktorze): po dołożeniu wyłącznika `toggledOff` (cityPanel.ts ~9870)
+  // wyrażenie to `convInactive = toggledOff || inactiveStatus?.inactive === true`. Intencja N2 zostaje:
+  // flaga czyta TĘ SAMĄ zmienną inactiveStatus (bez ponownego wywołania resolver-a).
+  ok(/convInactive = (?:toggledOff \|\| )?inactiveStatus\?\.inactive === true/.test(fnSrc),
     'N2: flaga nieaktywności wiersza produkcji czyta TĘ SAMĄ zmienną inactiveStatus (nie liczy jej drugi raz)');
   ok(!/resolveOwnedBuildingInactiveStatus\(id,[\s\S]*resolveOwnedBuildingInactiveStatus\(id,/.test(fnSrc),
     'REGRESJA N2: resolveOwnedBuildingInactiveStatus woływane więcej niż raz w appendOwnedBuildingRow');
