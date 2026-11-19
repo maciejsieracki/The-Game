@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "10e077d4ee47603e13551340c1ff540c",
-  "bundleSha256": "f8fd56659cf9344078a29f126bdd0fa16b1bbff9517457b86079a68297be6ec0",
-  "bundleBytes": 15000331,
+  "bundleMd5": "96011990d5220abfd6a0cf03d60788d6",
+  "bundleSha256": "f4d029e8609bafc0ad441b07aa3887a6ffc59a376183ba89e7b660a947e62829",
+  "bundleBytes": 15000193,
   "sourceSnapshot": {
-    "source": "FC fb0ce2fe2 (kod f3abd919f)",
+    "source": "FC 2024b6930 (kod d30b1a99d)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 882: R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1 (decyzja wlasciciela 2026-11-19, ABC C): zapisywany rejestr wlasciciela ulepszen na heksie (improvementOwnerByHex, save meta.improvementOwners; stare zapisy = przyblizenie z territoryOwnerAt); predykat tarczy fortu - heks z ulepszeniem wlasciciela fortu w pierscieniu nie przechodzi pod zasieg nowego miasta innej cywilizacji (ulepszenia starego miasta zostaja przy miescie); blokada budowy ulepszenia w pierscieniu cudzego fortu (improvement-build.ts qualifies); dowod w zywym Chromium: fort+stadnina gracza zostaja, heks bez ulepszenia idzie do miasta AI."
+    "FALA 883: R-WEB-ECONOMY-UNIT-UPKEEP-EXTRA-MULT-AND-FOOD-TAX-RATE-Q1 (decyzje wlasciciela 2026-11-19, zaakceptowana tabela): zywnosc utrzymania wszystkich jednostek = geometria x4 na epoke jednostki przed stalymi stawkami x4 => Kamien 4 / Braz 16 / Zelazo 64 na jednostke z baza 1 (Zwiadowca 0; oboz x0,5; poza wlasnym terytorium x2); anulowane ustalenia FALI 875 (x1/x2/x4 = 4/8/16) i dodatkowy mnoznik 1/4/8; pieniadz i surowce utrzymania bez zmian; kurs zamiany Zywnosci na Podatek 0,2 (econ-params); flaga rebalansu OFF = legacy; karta/HUD/AI te same funkcje."
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; city-founding 54/0; territory-improvement-owner 34/0; fort-outpost-hard-territory 92/0; fort-strazniaca 82/0; ai-territory-race 29/0; zywy Chromium: stadnina i fort gracza zostaja (0), heks bez ulepszenia -> AI (1)"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; unit-upkeep-era-scale 24/0 (M1-M6 wykryte); econ-era-rebalance 38/0; food-to-tax 71/0; bieg dymny 90 tur seed 4242 (Operator): bez glodu wojska, jednostki AI t90 479 vs 493; netto zywnosci HUD NIE ZMIERZONO"
   ],
   "limits": [
-    "Narzut wydajnosci 4,9x tylko dla fortu z wlasnym ulepszeniem w pierscieniu (w grze NIE ZMIERZONO); qualifies() bez testu wykonawczego; zywy round-trip zapisu NIE ZMIERZONO; rejestr trzyma pierwszego wlasciciela ulepszenia; stare zapisy to przyblizenie"
+    "empire-food-b5-test 32/2 = dlug bazowy; pomiar nie odtworzony przez Evaluatora/FC; gracz martwy po t70 w obu biegach"
   ],
   "finalControl": "Final Control PASS-WITH-NOTES",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T22:48:36",
+  "hubGeneratedAt": "2026-11-19T23:00:04",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "10e077d4ee47603e13551340c1ff540c",
-      "sizeBytes": 15000331
+      "md5": "96011990d5220abfd6a0cf03d60788d6",
+      "sizeBytes": 15000193
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "10e077d4ee47603e13551340c1ff540c",
-      "sizeBytes": 15000331
+      "md5": "96011990d5220abfd6a0cf03d60788d6",
+      "sizeBytes": 15000193
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "10e077d4ee47603e13551340c1ff540c",
-      "sizeBytes": 15000331
+      "md5": "96011990d5220abfd6a0cf03d60788d6",
+      "sizeBytes": 15000193
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "10e077d4ee47603e13551340c1ff540c",
-      "sizeBytes": 15000331
+      "md5": "96011990d5220abfd6a0cf03d60788d6",
+      "sizeBytes": 15000193
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "10e077d4ee47603e13551340c1ff540c",
-      "sizeBytes": 15000331
+      "md5": "96011990d5220abfd6a0cf03d60788d6",
+      "sizeBytes": 15000193
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "10e077d4ee47603e13551340c1ff540c",
-      "sizeBytes": 15000331
+      "md5": "96011990d5220abfd6a0cf03d60788d6",
+      "sizeBytes": 15000193
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "10e077d4ee47603e13551340c1ff540c",
-      "sizeBytes": 15000331
+      "md5": "96011990d5220abfd6a0cf03d60788d6",
+      "sizeBytes": 15000193
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "10e077d4ee47603e13551340c1ff540c",
-      "sizeBytes": 15000331
+      "md5": "96011990d5220abfd6a0cf03d60788d6",
+      "sizeBytes": 15000193
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "10e077d4ee47603e13551340c1ff540c",
-      "sizeBytes": 15000331
+      "md5": "96011990d5220abfd6a0cf03d60788d6",
+      "sizeBytes": 15000193
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "10e077d4ee47603e13551340c1ff540c",
-      "sizeBytes": 15000331
+      "md5": "96011990d5220abfd6a0cf03d60788d6",
+      "sizeBytes": 15000193
     }
   ],
-  "md5": "10e077d4ee47603e13551340c1ff540c",
+  "md5": "96011990d5220abfd6a0cf03d60788d6",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
