@@ -1,3 +1,9 @@
+## ROBOCZA 8983262b -- 2026-11-18 -- FALA 867: R-WEB-UI-HUD-NET-SPICHLERZ-DRAIN-Q1: HUD netto surowca odejmuje drenaz Spichlerza (np. Ceramika 10/t) jako osobna pozycja; wiersz w tooltipie Brutto-netto (testowa)
+
+- gra/src/game/resource-gross-net.ts (pole rateBuildingDrainPerTurn, helper spichlerzDrainRatesForOwner z kumulacja puli), gra/src/main.ts (delegacja), gra/src/ui/hud.ts (wiersz tooltipu gdy >0), test hud-net-building-drain-test. Decyzja wlasciciela 2026-11-19 (ABC A).
+- Weryfikacja: tsc 0, logic 213/213, hud-net-building-drain 36/0, resource-cards-gross-net 24/0, hud-shortage-alert 17/0, converter-inputs 18/0
+- Limity: NIE ZMIERZONO: bieg dymny na zywo (delta stanu Ceramiki vs HUD netto, >=3 tury); delegacja main.ts testowana statycznie, logika w helperze testowana behawioralnie
+
 ## ROBOCZA 7f7ddfea -- 2026-11-18 -- FALA 866: R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-SOFTEN-MEASURE-Q1: parametr dopłataDMnoznikAiAi (domyslnie 1,0 = bez zmiany) skalujacy doplate D w sojuszach AI-AI + hak civTest i runner --mnoznik (testowa)
 
 - gra/data/ai-ai-treaty-params.json (+dopłataDMnoznikAiAi=1.0), gra/src/game/ai-ai-treaty-evaluate.ts (skalowanie D), gra/src/main.ts (hak civTest), runner ai-ai-alliance-measure-run.cjs --mnoznik, test ai-ai-alliance-surcharge-test (D1-D10, mutanty M1-M4). Domyslny mnoznik 1,0 = gra bez zmian; sojusze AI-AI za flaga torSojuszyAktywny=false.
