@@ -1,3 +1,9 @@
+## ROBOCZA 5f4a492f -- 2026-11-18 -- FALA 857: Garnizon: min. 1 jednostka bojowa w kazdym miescie AI takze w pokoju (rezerwacja z priorytetem) (testowa)
+
+- Wspolna funkcja ai-city-garrison.ts; garnizon wykluczony z marszow, koncentracji, front-merge, seeks-army, planHomeWar (poza pula przydzialu), kampanii wodza, all-in, marszu panstw-miast po chatki; garnizonem jest najtansza dostepna jednostka bojowa (nie tylko Wojownik); pierwsza jednostka do pustego miasta ma priorytet zakupu z rezerwa zlota (parametr garnizon_rezerwa_max_miast=3 w ai-params.json); homeDefenderPool bez zmian
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-city-garrison-min-one 38/0; ai-war-city-garrison 21/0; ai-war-defend-home 30/0; siege-relief 23/0; war-limit 48/0; pomiar zywy seed 4242 t60: puste miasta AI 167/193 -> 16/188 (8,5%); koszt utrzymania jednostek AI +14%
+- Limity: CZERWONE 4 oryginalne asercje (ai-home-defense-vs-barbarians 50/2 T2(b),T4(b); army-concentration 56/2 sc.4) - zakladaja marsz jedynej jednostki miasta, sprzeczne z regula wlasciciela, do decyzji ABC; t30 w pokoju nadal 36/96 pustych (brak drewna, ubogie skarbce, bramka NNS AI); sufit rezerwy 3 miasta = zalozenie robocze; garnizon poza pula planHomeWar ogranicza reakcje domowa przed barbarzyncami (decyzja o homeDefenderPool otwarta)
+
 ## ROBOCZA e6bd8009 -- 2026-11-18 -- FALA 856: Regula wojen: maks. 1 wojna epoki + 1 naturalna per cywilizacja (za flaga, wylaczona) (testowa)
 
 - Nowy modul diplomacy-war-limit.ts (warLimitAllows, typ wojny epoki/naturalna) i parametry diplomacy-war-limit-params.json; wpiecie w ai.ts P4 oraz bramke wypowiedzen/kaskady sojuszniczej/wojny epoki w main.ts; typWojny w metadanych pary; analizator wspolbieznosci wojen; flaga limitWojenAktywny=false = zachowanie gry bez zmian
