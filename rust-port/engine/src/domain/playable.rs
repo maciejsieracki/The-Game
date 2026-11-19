@@ -681,6 +681,19 @@ pub struct PlayableState {
     /// literalow tej struktury. Brak id = web `undefined`. Pusty => pole pomijane w DTO i zapisie.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub captured_from_owner_by_city: BTreeMap<CityId, PlayerId>,
+    /// #354 część B: pola miasta pisane przez web `applyPostCaptureLawOnCapture` (`post-capture-law.ts:62-82`,
+    /// wołane z P9 `post-battle-map.ts:573`): `postCaptureLawTurnsRemaining`, `wasRebellionReconquest`. Brak wpisu =
+    /// pola nieobecne (web `undefined`). Pusty => pole pomijane w DTO i zapisie.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub post_capture_law_by_city: BTreeMap<CityId, crate::domain::city_capture_apply::PlayablePostCaptureLaw>,
+    /// #354 część B: web `civChronicleByOwner` (`main.ts:2268`, `ChronicleMap`), klucz = id właściciela w stanie
+    /// (gracz = 1, D-ZMA-5). Pisane przez `noteCityCapture` (`main.ts:36047`). Pusty => pole pomijane.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub civ_chronicle_by_owner: BTreeMap<u64, crate::domain::city_capture_apply::PlayableCivChronicle>,
+    /// #354 część B: web `cityProd` (`main.ts:3448`, `Map<cityId, CityProduction>`). Brak wpisu = web
+    /// `cityProd.get(id)` undefined. Przy zdobyciu przepisywane wg `main.ts:36134-36184`. Pusty => pole pomijane.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub city_prod_by_city: BTreeMap<CityId, crate::domain::city_capture_apply::PlayableCityProduction>,
     /// P4-1F3: web `City.siegeMachines.ready` (`game/cities.ts:884`, `game/siegeMachines.ts:6-26`):
     /// gotowe machiny miasta w kolejnosci tablicy. Brak wpisu = web `city.siegeMachines?.ready ?? []`
     /// (`render/siegeCampSync.ts:7-12`). Kolejka i postep budowy (`queue`, `buildProgress`) nie naleza
@@ -965,6 +978,9 @@ impl PlayableState {
             moved_by_player_this_turn: BTreeSet::new(),
             oblegane: BTreeSet::new(),
             captured_from_owner_by_city: BTreeMap::new(),
+            post_capture_law_by_city: BTreeMap::new(),
+            civ_chronicle_by_owner: BTreeMap::new(),
+            city_prod_by_city: BTreeMap::new(),
             siege_machines_ready: BTreeMap::new(),
             placed_world_wonders: Vec::new(),
         }
@@ -1221,6 +1237,9 @@ impl PlayableGame {
             moved_by_player_this_turn: BTreeSet::new(),
             oblegane: BTreeSet::new(),
             captured_from_owner_by_city: BTreeMap::new(),
+            post_capture_law_by_city: BTreeMap::new(),
+            civ_chronicle_by_owner: BTreeMap::new(),
+            city_prod_by_city: BTreeMap::new(),
             siege_machines_ready: BTreeMap::new(),
             placed_world_wonders: Vec::new(),
         };
