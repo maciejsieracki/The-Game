@@ -74,6 +74,28 @@ function makePage(entries, opts) {
     check('4 proba bez skutku: attempts=1', r.attempts === 1, r);
     check('4 proba bez skutku: confirmed=0', r.confirmed === 0, r);
   }
+  // 5) dwa wywolania w tej samej turze (wspolny seenIds): proba bez skutku liczona RAZ, reject wolany DWA razy
+  {
+    const entries = [{ id: 9, responder: 0, proposer: 2 }];
+    const { page, rejected } = makePage(entries, { noop: true });
+    const seen = new Set();
+    const r1 = await rejectAwaitingAiOffers(page, seen);
+    const r2 = await rejectAwaitingAiOffers(page, seen);
+    check('5 dwie proby: attempts liczone raz', r1.attempts + r2.attempts === 1, [r1, r2]);
+    check('5 dwie proby: confirmed=0', r1.confirmed + r2.confirmed === 0, [r1, r2]);
+    check('5 dwie proby: reject wolany 2x (zachowanie gry)', rejected.length === 2, rejected);
+  }
+  // 6) kolejnosc w runnerach: wywolanie odrzucania PRZED pierwszym canEnd w playOneTurn (statyczny odczyt zrodla)
+  {
+    const fs = require('fs');
+    for (const f of ['ai-economy-measure-run.cjs', 'diplomacy-harder-measure-run.cjs']) {
+      const src = fs.readFileSync(path.resolve(__dirname, f), 'utf8');
+      const body = src.slice(src.indexOf('async function playOneTurn'));
+      const iRej = body.indexOf('rejectAwaitingAiOffers(page');
+      const iEnd = body.indexOf('canEnd()');
+      check('6 ' + f + ': odrzucanie przed canEnd', iRej > 0 && iEnd > iRej, { iRej, iEnd });
+    }
+  }
   const tag = MODULE !== DEFAULT_MODULE ? ' (modul: ' + MODULE + ')' : '';
   console.log('measure-reject-offers-test: ' + passes + ' OK, ' + fails + ' FAIL' + tag);
   process.exit(fails === 0 ? 0 : 1);

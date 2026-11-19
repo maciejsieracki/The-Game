@@ -157,14 +157,15 @@ async function playOneTurn(page) {
   }
   await base.closeEndTurnModals(page, COUNTERS);
   const battlesAuto = await clearBattles(page);
-  const offers1 = await rejectAwaitingAiOffers(page);
+  const seenOffers = new Set(); // proby liczone raz na id oferty w tej turze
+  const offers1 = await rejectAwaitingAiOffers(page, seenOffers);
   let offersRejected = offers1.confirmed;
   let offersAttempts = offers1.attempts;
   AI_OFFERS_REJECTED += offers1.confirmed;
   AI_OFFERS_REJECT_ATTEMPTS += offers1.attempts;
   if (!(await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd()))) {
     // Druga proba: odrzucenie moze odslonic kolejna oferte w kolejce stolu.
-    const offers2 = await rejectAwaitingAiOffers(page);
+    const offers2 = await rejectAwaitingAiOffers(page, seenOffers);
     offersRejected += offers2.confirmed;
     offersAttempts += offers2.attempts;
     AI_OFFERS_REJECTED += offers2.confirmed;

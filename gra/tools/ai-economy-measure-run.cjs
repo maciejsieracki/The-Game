@@ -369,11 +369,12 @@ async function playOneTurn(page, ctxState) {
     ctxState.aiOffersRejected = (ctxState.aiOffersRejected || 0) + o.confirmed;
     ctxState.aiOffersRejectAttempts = (ctxState.aiOffersRejectAttempts || 0) + o.attempts;
   };
-  countOffers(await rejectAwaitingAiOffers(page));
+  const seenOffers = new Set(); // proby liczone raz na id oferty w tej turze
+  countOffers(await rejectAwaitingAiOffers(page, seenOffers));
   let canEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
   if (!canEnd) {
     // Druga proba: odrzucenie moze odslonic kolejna oferte w kolejce stolu (jak w diplomacy-harder-measure-run.cjs).
-    countOffers(await rejectAwaitingAiOffers(page));
+    countOffers(await rejectAwaitingAiOffers(page, seenOffers));
     canEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
   }
   // r3: odlozona auto-bitwa potrafi zalegac w kolejce (pendingAuto=true, nic nie otwarte; seed 4242 t51). Gra leczy to
