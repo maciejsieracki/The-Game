@@ -43,7 +43,8 @@ const MAX_TURNS_VALUE = 12;
 const OWNER_KEYS = ['owner', 'skarbiec', 'spichlerz', 'jednostkiWojskowe', 'jednostkiCywilne', 'rekruci', 'sumaLudkow',
   'glodWojska', 'glodWojskaAtrycja', 'glodKaraStatProc', 'glodAtrycjaHpProc', 'deficytZlota', 'miasta', 'obywatele',
   'utrzymanieBudynkowPieniadz', 'utrzymanieBudynkowSurowce', 'utrzymanieGarnizonuPieniadz',
-  'utrzymanieJednostekPieniadz', 'utrzymanieJednostekSurowce'];
+  'utrzymanieJednostekPieniadz', 'utrzymanieJednostekSurowce',
+  'forty', 'posterunki', 'hexyTerytorium', 'hexyZMiast', 'hexyZFortowPosterunkow', 'hexySporne'];
 
 const results = [];
 function check(name, ok, detail) { results.push({ name, ok: !!ok, detail: detail || '' }); console.log((ok ? 'ZIELONE ' : 'CZERWONE ') + name + (detail ? ' :: ' + detail : '')); }
@@ -54,7 +55,7 @@ function shapeProblems(metrics, requiredKeys) {
   if (!metrics || !Array.isArray(metrics.owners) || metrics.owners.length === 0) problems.push('brak owners');
   for (const o of (metrics && metrics.owners) || []) {
     for (const k of requiredKeys) if (!(k in o)) problems.push('owner ' + o.owner + ' bez ' + k);
-    for (const k of ['jednostkiWojskowe', 'jednostkiCywilne', 'miasta', 'obywatele', 'glodKaraStatProc', 'glodAtrycjaHpProc', 'utrzymanieJednostekPieniadz']) {
+    for (const k of ['jednostkiWojskowe', 'jednostkiCywilne', 'miasta', 'obywatele', 'glodKaraStatProc', 'glodAtrycjaHpProc', 'utrzymanieJednostekPieniadz', 'forty', 'posterunki', 'hexyTerytorium', 'hexyZMiast', 'hexyZFortowPosterunkow', 'hexySporne']) {
       if (typeof o[k] !== 'number' || !(o[k] >= 0)) problems.push('owner ' + o.owner + ' ' + k + ' nie jest liczba >=0');
     }
     for (const k of ['glodWojska', 'glodWojskaAtrycja', 'deficytZlota']) {

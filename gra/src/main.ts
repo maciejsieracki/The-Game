@@ -648,7 +648,7 @@ import {
   resolveMapUnitCursor,
   CURSOR_MAP_DEFAULT,
 } from './ui/mapUnitCursor';
-import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex, cityTerritoryRadius, territoryNodesContentId } from './map/territory';
+import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex, cityTerritoryRadius, territoryNodesContentId, axialDistance } from './map/territory';
 import { isTerritoryHexOwnedBy, isReczneKeyLegal, cityCenterKeys } from './map/territory-work';
 import type { CityNode, TerritoryNode } from './map/territory';
 import type { GameMap } from './types/map';
@@ -33886,6 +33886,28 @@ async function boot(): Promise<void> {
           const efP = buildEmpireFoodParams(data.econParams, _menuDifficulty);
           const upkP = loadUpkeepParams(data.econParams, _menuDifficulty);
           const unitUpkTbl = buildUnitUpkeepTable(data.units as unknown as Parameters<typeof buildUnitUpkeepTable>[0]);
+          /** R-WEB-AI-TERRITORY-RACE-FORTS-OUTPOSTS-DESIGN-Q1 (TYLKO ODCZYT): terytorium wg źródła (miasta vs forty/posterunki)
+           * oraz heksy spornych (pokryte zasięgiem węzłów ≥2 właścicieli). Węzły = buildAllTerritoryNodes (miasta + fortNodes). */
+          const terrAll = buildAllTerritoryNodes();
+          const terrCityOnly = terrAll.filter(n => !n.isFort && !n.isOutpost);
+          const terrByOwnerAll = collectTerritoryHexKeysByOwner(map, terrAll);
+          const terrByOwnerCity = collectTerritoryHexKeysByOwner(map, terrCityOnly);
+          const terrSporneByOwner = new Map<number, number>();
+          let terrSporneTotal = 0;
+          for (const key of Object.keys(map.hexes)) {
+            const parts = key.split(',');
+            const hq = Number(parts[0]);
+            const hr = Number(parts[1]);
+            if (!Number.isFinite(hq) || !Number.isFinite(hr)) continue;
+            const hexOwners = new Set<number>();
+            for (const n of terrAll) {
+              if (axialDistance(hq, hr, n.q, n.r) <= cityTerritoryRadius(n)) hexOwners.add(n.ownerId);
+            }
+            if (hexOwners.size >= 2) {
+              terrSporneTotal++;
+              for (const ow of hexOwners) terrSporneByOwner.set(ow, (terrSporneByOwner.get(ow) ?? 0) + 1);
+            }
+          }
           const per = owners.map(o => {
             const ownerUnits = units.filter(u => u.ownerId === o);
             const ownerCities = cities.filter(c => c.ownerId === o);
@@ -33934,6 +33956,17 @@ async function boot(): Promise<void> {
               glodAtrycjaHpProc: starving ? Math.round(efP.glodWojskaHpFrac * 100) : 0,
               deficytZlota: isGoldDeficit(o),
               miasta: ownerCities.length,
+              /** Forty i posterunki WŁASNE (węzły fortNodes) — tylko odczyt. */
+              forty: terrAll.filter(n => n.ownerId === o && !!n.isFort).length,
+              posterunki: terrAll.filter(n => n.ownerId === o && !!n.isOutpost).length,
+              /** Heksy terytorium ogółem (wg właściciela heksu, kolejność węzłów jak w territoryOwnerAt). */
+              hexyTerytorium: terrByOwnerAll.get(o)?.size ?? 0,
+              /** Heksy terytorium z MIAST (heks w zasięgu miasta — miasto ma pierwszeństwo). */
+              hexyZMiast: terrByOwnerCity.get(o)?.size ?? 0,
+              /** Heksy terytorium z fortów/posterunków (= ogółem − z miast; zakładamy pierwszeństwo miast, territory.ts). */
+              hexyZFortowPosterunkow: Math.max(0, (terrByOwnerAll.get(o)?.size ?? 0) - (terrByOwnerCity.get(o)?.size ?? 0)),
+              /** Heksy sporne, w których zasięg ma ten właściciel i co najmniej jeszcze jeden właściciel. */
+              hexySporne: terrSporneByOwner.get(o) ?? 0,
               obywatele: ownerCities.reduce((s, c) => s + (Number(c.population) || 0), 0),
               utrzymanieBudynkowPieniadz: r2(ownerCities.reduce((s, c) => s + (buildingUpkeepForCityId(c.id, o) || 0), 0)),
               utrzymanieBudynkowSurowce: buildingResourceUpkeepDemandForOwner(o),
@@ -33982,6 +34015,8 @@ async function boot(): Promise<void> {
           return {
             turn,
             owners: per,
+            /** Heksy spornych ogółem (≥2 właścicieli w zasięgu) i liczba heksów w mapie (tylko odczyt). */
+            terytorium: { heksySporneOgolem: terrSporneTotal, heksyMapy: Object.keys(map.hexes).length },
             /** Diagnostyka (tylko odczyt): kolejki spawnu miast AI/rywali oraz liczba aiStartHexes. */
             diag: {
               pendingForeignSpawnCities: pendingForeignSpawnCities.length,
