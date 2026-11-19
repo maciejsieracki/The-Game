@@ -140,3 +140,8 @@ dziedzińcu w lesie z bonusem leśnym (M23), by je zabić. Wymaga testu albo śc
 
 Bez zmian względem §7 raportu Operatora, z korektą: „D-WIRA-T” zastąpione przez Z2 (zakres: cały `_singleBlow` wieży,
 nie tylko teren kafla celu).
+
+
+## RUNDA 2 (Evaluator r2, 2026-11-19)
+
+Werdykt r2: **FAIL**. Pełny raport: [`02-evaluator-r2.md`](02-evaluator-r2.md). Główny zarzut (E2-1): pomiar falsyfikuje diagnozę B-WIRA-PIN-1. Pin z klatką 2 ms (krok 310 ms jak w Rust) daje ten sam wynik co z klatką 16 ms (`palisada_liczni_taran` bit w bit, `mur_wieza_obl_las` ten sam zwycięzca i tura). Pierwsza rozbieżność `mur_wieza_obl_las` (tura 12, krok łucznika `a3` 37,78→38,78) jest logiczna, nie czasowa. Kryterium r2 niespełnione: zgodność 3/8 i mutanty 3/14.
