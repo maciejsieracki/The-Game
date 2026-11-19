@@ -549,6 +549,27 @@ fn move_and_shot_errors_are_reported() {
             arrive_at: 1.0 + MOVE_STEP_MS - 1.0
         })
     );
+    // `arriveAt` later than t0 + MOVE_STEP_MS (exact equality, D-WIR-6: both sides).
+    pb.push_actions(&[mv(1.5, (c, r), (c + 1, r), 1.5 + MOVE_STEP_MS + 1.0)])
+        .expect("push");
+    assert_eq!(
+        pb.play_until(&mut q, 1.5, 0.0),
+        Err(PlaybackError::ArriveAt {
+            t0: 1.5,
+            arrive_at: 1.5 + MOVE_STEP_MS + 1.0
+        })
+    );
+    // `from` differs from the unit's cell only by the row (same column).
+    pb.push_actions(&[mv(1.75, (c, r + 1), (c + 1, r + 1), 1.75 + MOVE_STEP_MS)])
+        .expect("push");
+    assert_eq!(
+        pb.play_until(&mut q, 1.75, 0.0),
+        Err(PlaybackError::MoveFrom {
+            id,
+            expected: (c, r + 1),
+            actual: (c, r)
+        })
+    );
     // `from` != the unit's cell (from and to swapped).
     pb.push_actions(&[mv(2.0, (c + 1, r), (c, r), 2.0 + MOVE_STEP_MS)])
         .expect("push");
@@ -596,6 +617,16 @@ fn move_and_shot_errors_are_reported() {
         Err(PlaybackError::ShotLandAt {
             t0: 4.0,
             land_at: 4.0 + BLOW_LIKE_WRONG
+        })
+    );
+    // `landAt` later than t0 + RANGED_FLY_MS (exact equality, D-WIR-7: both sides).
+    pb.push_actions(&[shot(4.5, uid("def0"), id, 4.5 + RANGED_FLY_MS + 1.0)])
+        .expect("push");
+    assert_eq!(
+        pb.play_until(&mut q, 4.5, 0.0),
+        Err(PlaybackError::ShotLandAt {
+            t0: 4.5,
+            land_at: 4.5 + RANGED_FLY_MS + 1.0
         })
     );
     pb.push_actions(&[shot(5.0, ghost, id, 5.0 + RANGED_FLY_MS)])
