@@ -235,7 +235,7 @@ export interface HudState {
   /** true → czerwony/bursztynowy alert: co najmniej jeden surowiec na capie lub w niedoborze. */
   surowceAlert?: boolean;
   /** R-WEB-HUD-RESOURCE-DEFICIT-RED-Q1: etykiety surowców magazynowanych w niedoborze
-   *  (ratePerTurn<0 — ta sama definicja „niedoboru" co alert chipu „Surowce" w main.ts). */
+   *  (netto HUD < 0 wg resourceIsShortage — ta sama definicja „niedoboru" co alert chipu „Surowce" w main.ts). */
   surowceNiedoborLabels?: string[];
   /** R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: suma BRUTTO produkcji (+ przychód z umów) wszystkich
    *  magazynowanych surowców/turę (buildEmpireResourceRows.rateProductionPerTurn + diploIn). */

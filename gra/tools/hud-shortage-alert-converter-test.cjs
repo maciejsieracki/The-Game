@@ -85,5 +85,10 @@ async function bundle(srcFile, outName) {
 
   console.log('');
   console.log(`RESULT: ${passes} ok, ${fails} FAIL`);
+  fs.rmSync(TMP, { recursive: true, force: true });
   process.exit(fails ? 1 : 0);
-})().catch(e => { console.error(e); process.exit(2); });
+})().catch(e => {
+  console.error(e);
+  fs.rmSync(TMP, { recursive: true, force: true });
+  process.exit(2);
+});
