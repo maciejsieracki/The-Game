@@ -21,7 +21,7 @@ POMIAR PRZED: wykonany przez orkiestratora, **2 ziarna (4242, 7) × 150 tur**, a
 | Bonus obrony | +100% (obozowanie) | +50% (obozowanie) |
 | Warunek | teren zabezpieczony; obca cywilizacja nie buduje tam miasta/ulepszeń | jak fort, zasięg 3; odkrywa mgłę, węzeł dróg |
 
-Dane JSON NIE zawierają pola kosztu utrzymania dla fortu ani posterunku (grep `utrzymanie|upkeep` w `terrain-improvements.json` nie zwrócił wpisu dla tych kluczy). Istnieje natomiast ogólne utrzymanie ulepszeń terenu z mnożnikiem epoki 1/2/4 (`gra/src/game/terrain-improvements.ts:124`). Czy i jak obejmuje ono forty/posterunki: NIE ZWERYFIKOWANO (do następnej rundy).
+Dane JSON NIE zawierają pola kosztu utrzymania dla fortu ani posterunku (grep `utrzymanie|upkeep` w `terrain-improvements.json` nie zwrócił wpisu dla tych kluczy). Istnieje natomiast ogólne utrzymanie ulepszeń terenu z mnożnikiem epoki 1/2/4 (`gra/src/game/terrain-improvements.ts:124`). Utrzymanie fortu i posterunku: ZWERYFIKOWANO w kodzie (r5) — fort i posterunek PŁACĄ upkeep Pracy: `RESOURCE_UPKEEP_IMPROVEMENT_KEYS` (`gra/src/game/terrain-improvements.ts:608–610`) to wszystkie klucze ulepszeń o typie innym niż `wycinka`, a `fort` i `posterunek` są w `IMPROVEMENT_KEYS` (l. 92). Liczenie: `computePracaUpkeepByOwner` (`gra/src/game/turn-economy.ts:991`). UWAGA — SPRZECZNOŚĆ DANYCH Z KODEM: opis `ulepszenie_surowcowe_upkeep_praca` w `gra/data/econ-params.json` (l. 299–303) podaje jako ZWOLNIONE „infrastrukturę (droga/droga_brukowana/fort/posterunek/wyrab)” i żywnościowe, a kod ich nie wyłącza (filtr tylko po `typ !== 'wycinka'`). Która wersja jest intencją — NIE ROZSTRZYGNIĘTE; do decyzji właściciela/orkiestratora, nie zmieniano logiki.
 
 Obie to ulepszenia terenu (nie jednostki). Nie wymagają jednostki-budowniczego w danych; w kodzie AI wymagana jest własna jednostka stojąca na heksie (patrz 1.4).
 
@@ -33,9 +33,14 @@ Obie to ulepszenia terenu (nie jednostki). Nie wymagają jednostki-budowniczego 
 - `gra/src/game/ai.ts:1213` `isHexWithinAnyCityReach`: miasta + własne forty/posterunki (bez `contestedUseless`) rozszerzają zasięg zakładania miast (R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA).
 - `gra/src/game/ai.ts:3247` `planCityFounding`: AI zakłada miasto tylko w zasięgu własnego miasta/fortu (parytet z graczem, decyzja A 2026-08-09).
 
-### 1.3 Gracz
+### 1.3 Gracz (r5: inwentarz walidacji; wygląd menu NIE ZWERYFIKOWANO wizualnie)
 
-Gracz stawia forty/posterunki przez UI i przez automat ulepszeń (`gra/src/game/auto-improvements.ts`, ta sama logika `pickFortClaims`, l. 688). Szczegóły UI nie były inwentaryzowane w tej rundzie (NIE ZWERYFIKOWANO).
+- Reguły budowy gracza: `gra/src/map/improvement-build.ts:1174–1200`. POSTERUNEK: teren lądowy, własne terytorium i przyleganie do granicy (`isOutpostPlacementAllowed`). FORT: poza własnym terytorium dozwolony, o ile hex NIE należy do CUDZEGO MIASTA i stoi tam WŁASNA jednostka (fizyczna obecność, Q1 r2); w własnym terytorium bez wymogu jednostki.
+- Duplikat bramki w UI/komendach: `gra/src/main.ts:17689–17715` (`assertPlayerTerritoryForBuild`); powiadomienie o blokadzie: `showBuildTerritoryBlockedHint`.
+- Rejestr fortów gracza: `gra/src/main.ts:17094–17110` (`registerFortNodeIfNeeded`, kontestacja ustalana w chwili budowy).
+- Automat gracza: `gra/src/main.ts:44769` wywołuje `pickAutoImprovements` (ta sama logika `pickFortClaims`, `gra/src/game/auto-improvements.ts`); automat gracza „doradza” i nie przesuwa nadwyżki (komentarz l. ~44765).
+- Administrator miasta (`gra/src/game/city-administrator.ts`): ZBADANO — brak jakiejkolwiek obsługi fortów/posterunków (0 trafień `fort|posterunek`); administrator nie wpływa na budowę terenową.
+- Menu/UI budowy i podpowiedzi (`gra/src/ui/`, `gra/src/render/`): tylko sprawdzenie, że fort/posterunek mają ikony i etykiety (`improvement-icon-map.json`, `main.ts:16783`); układ menu NIE ZWERYFIKOWANO wizualnie (wymaga przeglądarki; poza tą rundą).
 
 ### 1.4 AI — gdzie już stawia forty/posterunki
 
@@ -46,18 +51,18 @@ Są TRZY ścieżki w kodzie:
    - bramki zasobów: `canAfford` (l. ~3128–3140): `pracaAvailable >= kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS`, budżet `plannedCost + kosztPraca <= improvementBudget`, technologia odblokowana;
    - pętla 1 (l. ~3146–3180): fort na heksie WŁASNEJ jednostki (nie garnizon) poza `isHexWithinAnyCityReach`, poza terytorium obcej cywilizacji, na lądzie; **bez ruchu jednostek** (komentarz l. 3101 i nast.: „Celowo NIE przesuwa/nie wysyła jednostek”);
    - pętla 2 (l. ~3180–3195): posterunek na heksie własnej jednostki, gdy `isOutpostPlacementAllowed` (własna granica). Funkcja zwraca **najwyżej jedną komendę budowy na wywołanie** (`return` po pierwszym trafieniu), czyli łącznie 1 fort LUB 1 posterunek na turę z tej ścieżki, nie „1 posterunek”. Klucz pętli 1 to `'fort'` (`EXPANSION_KEY`, `ai.ts:~3120`).
-3. **Pozostałe** — brak innych ścieżek budowy fortów/posterunków przez AI znalezionych w tej rundzie (NIE ZWERYFIKOWANO wyczerpująco).
+3. **Pozostałe (r5: przeszukanie całego `gra/src`)** — emitery komend `buildImprovement` z kluczem fort/posterunek dla AI: `ai.ts:3206` (fort, pętla 1 planera), `ai.ts:3223` (posterunek, pętla 2), oraz picker z ścieżki 1 wywoływany przez `decideAITurn` (`ai.ts:3046`, `ai.ts:3054`, z `cityLimitExhausted`). Planer ekspansji jest też w `decideDefensiveCopyTurn` (`ai.ts:5691`, bramka `defensiveCopy`). Nie znaleziono innych emiterów (przeszukanie `buildImprovement` w `gra/src`; pliki render/ nie emitują komend AI). Ścieżka `defensiveCopy` NIE została zmierzona osobno.
 
-### 1.5 Dlaczego AI rzadko stawia forty
+### 1.5 Dlaczego forty/posterunki dają mało terenu (hipotezy z kodu, przed pomiarem)
 
-Z kodu wynikają cztery bramki ograniczające budowę (hipoteza: to one powodują rzadkość; ich ilościowego wpływu NIE zmierzono):
+Teza „AI rzadko stawia forty” jest OBALONA pomiarem (sekcja 6b): 13 z 13 AI w obu ziarnach zbudowało fort lub posterunek. Poniższe cztery ograniczenia z kodu to hipotezy tłumaczące, dlaczego ich udział w terytorium jest mały; ilościowego wpływu każdego z nich NIE zmierzono:
 
 - ścieżka 1 wymaga WYCZERPANEGO limitu miast; przed tym AI nie stawia fortu przez picker;
 - ścieżka 2 wymaga, aby WŁASNA jednostka już stała poza zasięgiem — AI nie wysyła jednostek po teren, więc sytuacja zdarza się przypadkowo (zwiadowca, eskorta);
 - fort wymaga technologii Wojskowość (epoka 3), posterunek dwóch technologii; przed nimi ścieżki są zamknięte;
 - budżet pracy (`canAfford`) konkuruje z ulepszeniami żywności i surowców (kolejność w `AI_IMPROVEMENT_PRACA_SURPLUS`/`foodPriority`).
 
-Hipoteza „AI rzadko stawia forty" — po pomiarze (sekcja 6b: 13 cywilizacji AI × 2 ziarna × 150 tur) jest PRECYZOWANA, nie potwierdzona wprost: wszystkie 13 z 13 AI w obu ziarnach zbudowało fort lub posterunek (pierwszy między t31 a t128, mediana t50 / t47), więc „nie stawiają wcale" jest fałszem; prawdziwe jest, że ich udział w terytorium jest mały (≤ 5,7% w szczycie, ≤ 0,4% w t150). Liczby w 6b.
+Po pomiarze (sekcja 6b: 13 cywilizacji AI × 2 ziarna × 150 tur) wiadomo: wszystkie 13 z 13 AI w obu ziarnach zbudowało fort lub posterunek (pierwszy między t31 a t128, mediana t50 / t47), więc „nie stawiają wcale" jest fałszem; prawdziwe jest, że ich udział w terytorium jest mały (≤ 5,7% w szczycie, ≤ 0,4% w t150). Liczby w 6b.
 
 Hak pomiarowy `__aiEconomyMeasure.metrics()` (`gra/src/main.ts`) NIE zawierał pól fortów, posterunków ani terytorium na początku tematu; od r2/r3 je zawiera (tylko odczyt, `?civTest=1`; sekcja 6).
 
@@ -65,7 +70,7 @@ Hak pomiarowy `__aiEconomyMeasure.metrics()` (`gra/src/main.ts`) NIE zawierał p
 
 - Limit miast: `cityLimitBase` z konfiguracji gry (`main.ts:13939`), + 5 za każdą epokę powyżej 1 (`isCityLimitExhausted`).
 - Limit fortów/posterunków: NIE ZNALEZIONO twardego limitu liczby fortów AI (poza „maks. 1 posterunek na turę”). Brak limitu łącznego.
-- Koszt utrzymania: NIE ZWERYFIKOWANO (sekcja 1.1).
+- Koszt utrzymania: płaci (kod, sekcja 1.1; wartość w tabeli sekcji P3-B). Sprzeczność z opisem econ-params — j.w.
 
 ### 1.7 Zachowanie przy kontakcie granic
 
@@ -167,7 +172,7 @@ Wyniki 2 ziarna × 150 tur (zmierzone przez orkiestratora): patrz sekcja 6b.
 
 ## 6b. Wyniki pomiaru PRZED (2 ziarna × 150 tur)
 
-Źródło: `runs/R-WEB-AI-TERRITORY-RACE-FORTS-OUTPOSTS-DESIGN-Q1/dowody/final-2x150/` (`seed4242-terytorium.csv`, `seed7-terytorium.csv`, `seed*-kontrolne.json`, `seed*.summary.json`, `seed*-analiza.md`, `r4-okna-i-korelacja.js/.txt`). Surowe `seed*.jsonl` (≈12 MB każdy) leżą poza repo w `/tmp/territory-final/` (limit ≤1 MB dowodów). Bieg: orkiestrator, `stop=null`, 149 wierszy na ziarno (tury 2–150), autopilot gracza (`--player-ai 1`), odrzucanie ofert (7 odrzuconych w ziarnie 7), 1 wymuszony pokój zaakceptowany (ziarno 7). Mapa 20160 heksów (`heksyMapy`, w obu ziarnach), w tym woda. **Ziarno 1234: NIE ZMIERZONO.** n = 2 ziarna — wnioski mają charakter orientacyjny, nie statystyczny.
+Źródło: `runs/R-WEB-AI-TERRITORY-RACE-FORTS-OUTPOSTS-DESIGN-Q1/dowody/final-2x150/` (`seed4242-terytorium.csv`, `seed7-terytorium.csv`, `seed*-kontrolne.json`, `seed*.summary.json`, `seed*-analiza.md`, `r4-okna-i-korelacja.js/.txt`). Surowe `seed*.jsonl` (≈12 MB każdy) leżą poza repo w `/tmp/territory-final/` (limit ≤1 MB dowodów). Bieg: orkiestrator, `stop=null`, 149 wierszy na ziarno (tury 2–150), autopilot gracza (`--player-ai 1`), odrzucanie ofert (`aiOffersRejected` = 7 i `aiOffersRejectAttempts` = 7 w OBU ziarnach, `seed4242.summary.json`, `seed7.summary.json`), wymuszone pokoje zaakceptowane: **4 w ziarnie 4242** i 1 w ziarnie 7 (`forcedPeaceAccepted`, te same pliki; r5 — wcześniej podano tylko 1 dla 7). Mapa 20160 heksów (`heksyMapy`, w obu ziarnach), w tym woda. **Ziarno 1234: NIE ZMIERZONO.** n = 2 ziarna — wnioski mają charakter orientacyjny, nie statystyczny.
 
 **Definicje.** „Σ właścicieli ≠ 0" = wszystkie właściciele poza graczem 0 (13 cywilizacji AI + placeholdery do ok. t22 + 2 prawdopodobne miasta-państwa, owner 40/41; nie zweryfikowano w kodzie). „13 cywilizacji AI" = owner 1, 4, …, 37 (obecne od t2 w obu ziarnach). Heksy „z fortów/posterunków" = ogółem − z miast (miasto ma pierwszeństwo), czyli wartość NETTO: gdy miasto urośnie na heksy fortu, wartość spada mimo że fort stoi.
 
@@ -235,11 +240,12 @@ Korelacja Pearsona (n = 13 na ziarno; tura pierwszej budowy vs heksy w t150): �
 4. „Z fortów/posterunków" jest wartością netto (ogółem − z miast); nie mierzy heksów, które fort zajął, zanim wchłonęło je miasto.
 5. 2 ziarna; jeden wariant mapy 20160 heksów, 14 cywilizacji. Ziarno 1234: NIE ZMIERZONO. Biegi nie są bitowo powtarzalne względem r2/r3 (sekcja 6a).
 6. Statystyka tur kontrolnych co 10 tur; moment nasycenia ma rozdzielczość 10 tur.
+7. Wymuszone pokoje (r5): 4 w ziarnie 4242 mogą zmieniać układ granic (sąsiedzi przestają walczyć), a pomiar nie rozdziela ich wpływu na przyrost terytorium od innych czynników. Wpływu NIE ZMIERZONO; nie zakładać, że bieg jest reprezentatywny dla biegu z zawieszoną dyplomacją.
 
 ### Sprostowania (sprawdzone w kodzie w R2)
 - Zasięg miasta: `cityRangeForPopulation` = min(max(CITY_RANGE_MIN, pop), CITY_RANGE_CAP), wartości z danych (`gra/src/game/okolica.ts:37–40, 46–50`); `cityTerritoryRadius` dla miasta w `gra/src/map/territory.ts:89–93`. Forty r=5, posterunki r=3 (`territory.ts`, stałe promieni).
 - Pierwszeństwo: heks w zasięgu miasta rozstrzyga miasto; forty i posterunki zajmują tylko heksy wolne od miast (`territory.ts`, komentarz ZALOZENIE ok. l. 136–150). Stąd „z fortów/posterunków" = ogółem − z miast.
-- Koszt utrzymania fortu i posterunku: ZWERYFIKOWANO w kodzie (wcześniej NIE ZWERYFIKOWANO). `RESOURCE_UPKEEP_IMPROVEMENT_KEYS` obejmuje wszystkie klucze ulepszeń poza wycinką (`gra/src/game/terrain-improvements.ts:608–610`), a `'fort'` i `'posterunek'` są w liście kluczy (`terrain-improvements.ts:92`). Pracy/turę liczy `computePracaUpkeepByOwner` (`gra/src/game/turn-economy.ts:991`), mnożnik epoki 1/2/4 (`terrain-improvements.ts:134–137`). Kwota dla fortu i posterunku z econ-params: NIE ZMIERZONO liczbowo.
+- Koszt utrzymania fortu i posterunku: ZWERYFIKOWANO w kodzie (wcześniej NIE ZWERYFIKOWANO). `RESOURCE_UPKEEP_IMPROVEMENT_KEYS` obejmuje wszystkie klucze ulepszeń poza wycinką (`gra/src/game/terrain-improvements.ts:608–610`), a `'fort'` i `'posterunek'` są w liście kluczy (`terrain-improvements.ts:92`). Pracy/turę liczy `computePracaUpkeepByOwner` (`gra/src/game/turn-economy.ts:991`), mnożnik epoki 1/2/4 (`terrain-improvements.ts:134–137`). Kwota (r5, z kodu i danych, nie z przebiegu gry): baza `ulepszenie_surowcowe_upkeep_praca` = 1 Praca/turę na wszystkich poziomach trudności (`gra/data/econ-params.json` l. 299–303; `turn-economy.ts:977–982`); mnożnik epoki 1/2/4 (`terrain-improvements.ts:128–134`) × epoka wpisu (`terrainImprovementEraForKey`, l. 155). Fort (epoka 3) = 4 Praca/turę; posterunek (epoka 2) = 2 Praca/turę. Suma po przeliczeniu zależy od liczby fortów/posterunków (wartości w 6b). Pomiaru w grze tej wartości NIE robiono — to wynik z kodu.
 - Planer AI (`ai.ts`, ok. l. 3115) zwraca jedną komendę na wywołanie: sprostowanie Evaluatora przyjęte, NIE ZWERYFIKOWANO ponownie w tej rundzie.
 - `hexySporne` liczy heks pokryty zasięgiem co najmniej dwóch właścicieli (także miast). Suma po AI liczy ten sam heks wielokrotnie, po jednym razie dla każdego współwłaściciela.
 
@@ -261,7 +267,7 @@ Podstawa liczbowa wspólna dla P1–P5 (2 ziarna × 150 tur, n mały): teren zaj
 
 **P3. Limity AI na forty/posterunki.**
 - A (rek.): maks. liczba naraz proporcjonalna do liczby miast, propozycja 1 fort/posterunek na 3 miasta w trakcie budowy i odstęp ≥ 4 heksy między węzłami; oba progi do potwierdzenia. Plus: chroni budżet pracy i unika zalewu; dziś w t150 jest 15 fortów + 90 posterunków (4242) i 8 + 65 (7) przy limicie „1 komenda na turę". Minus: dwa nowe parametry.
-- B: bez limitu łącznego, tylko budżet pracy i koszt utrzymania (`RESOURCE_UPKEEP_IMPROVEMENT_KEYS`, `terrain-improvements.ts:608`). Plus: prostota. Minus: kwota utrzymania NIE ZMIERZONA, ryzyko niekontrolowanego kosztu.
+- B: bez limitu łącznego, tylko budżet pracy i koszt utrzymania (`RESOURCE_UPKEEP_IMPROVEMENT_KEYS`, `terrain-improvements.ts:608`). Plus: prostota. Minus: koszt utrzymania to 2 Praca/turę (posterunek) i 4 Praca/turę (fort) za sztukę wg kodu (sekcja 1.1; w grze NIE ZMIERZONO), ryzyko niekontrolowanego kosztu przy wielu fortach.
 - C: tylko limit na turę (jak dziś, 1 komenda). Plus: zgodne z kodem. Minus: wolne tempo w oknie t30–t80, gdzie liczy się szybkość.
 
 **P4. Budżet pracy i priorytet względem wojska/ekonomii.**
