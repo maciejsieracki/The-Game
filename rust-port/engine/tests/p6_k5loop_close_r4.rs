@@ -19,7 +19,7 @@
 //! WSZYSTKICH jednostek po aktywacji (morale bitowo, `routed`, `dead`, `removed`, `fadingOut`, `acted`, `facing`,
 //! `screenLostApplied`), `occByKey`, liczba rzutów = liczba `_singleBlow` pinu, `unported` PUSTE.
 
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 use civ_engine::domain::player_order_move_gate::{GroupDoctrine as GateDoctrine, GroupMeta};
 use civ_engine::domain::siege_tactics_actions::{BattleAction, TimedAction};
@@ -39,6 +39,9 @@ use civ_engine::domain::siege_tactics_move_effects::MoveTerrain;
 use civ_engine::domain::siege_tactics_turnseq::{SeqUnit, TurnSeqState, UnitRef};
 use civ_engine::domain::siege_tactics_unit::CombatUnit;
 use serde_json::Value;
+
+#[path = "p4_1i5b_support.rs"]
+mod support;
 
 const VECTORS: &str = include_str!("p6_k5loop_close_vectors/vectors_r4.json");
 const VECTORS_NAN: &str = include_str!("p6_k5loop_close_vectors/vectors_r4_nan.json");
@@ -1310,66 +1313,67 @@ fn move_i_shot_dto_1do1_w_wektorach_r4() {
     assert!(n_shots >= MIN_R4_SHOTS, "strzały {n_shots}");
 }
 
-/// `BattleAction::Leave` i `BattleAction::Shaken` nie mają jeszcze wariantu DTO (I5): konwersja jest jawnym błędem.
+/// P4-1I5b (#370, D-I5B-1/2; zastępuje test jawnych błędów `LeaveWithoutDto`/`ShakenWithoutDto`, wymuszone celem
+/// dispatchu): dla KAŻDEGO wektora r4 (pierwsza aktywacja jak w `move_i_shot_dto_1do1_w_wektorach_r4`) pełna lista akcji
+/// ZE wszystkimi `Leave` i `Shaken` przechodzi przez `actions_to_dto` 1:1 (`support::check_dto_1to1`). Kolejność pinu
+/// (`_fleeStep` `:9855-9856`: `_removeUnitFromScene` przed `_shakeAlliesOnLoss`): każdy `Shaken` ma poległego, którego
+/// `Leave` (albo `Kill`) jest wcześniej z tym samym `t0`; sojusznik jest z tej samej strony (id z tego samego rosteru).
 #[test]
-fn leave_i_shaken_bez_dto_to_jawny_blad() {
-    use civ_engine::domain::siege_tactics_actions::{actions_to_dto, ActionError};
+fn leave_i_shaken_dto_1do1_w_wektorach_r4() {
+    use civ_view_model::battle::BattleActionKindDto as K;
     let (v, cav_mult) = load_from(VECTORS);
-    let cases = v["cases"].as_array().expect("cases");
-    let leave = cases
-        .iter()
-        .find(|c| {
-            c["kind"] == "flee"
-                && !c["expect"]["leaves"].as_array().expect("l").is_empty()
-                && c["expect"]["shaken"].as_array().expect("s").is_empty()
-                && c["expect"]["steps"].as_array().expect("st").is_empty()
-                && c["expect"]["facing"].as_array().expect("f").is_empty()
-        })
-        .expect("ucieczka z pola bez ripple");
-    let Built {
-        mut body,
-        mut st,
-        acting,
-    } = build(leave, &cav_mult, true);
-    body.start(acting, &st);
-    body.complete(acting, &mut st);
-    let actions = body.take_actions();
-    assert_eq!(
-        actions_to_dto(&actions, &st),
-        Err(ActionError::LeaveWithoutDto(acting))
+    let mut failures: Vec<String> = Vec::new();
+    let mut counts: BTreeMap<&'static str, usize> = BTreeMap::new();
+    for case in v["cases"].as_array().expect("cases") {
+        let name = case["name"].as_str().expect("name");
+        let Built {
+            mut body,
+            mut st,
+            acting,
+        } = build(case, &cav_mult, true);
+        body.set_now(0.0);
+        let _ = body.take_actions();
+        body.start(acting, &st);
+        if case["expect"]["attack"]["target"].is_null() {
+            body.complete(acting, &mut st);
+        }
+        let actions = body.take_actions();
+        let dto = support::check_dto_1to1(name, &actions, &st, &mut failures, &mut counts);
+        let side_of = |id: civ_view_model::ids::UnitId| {
+            if st.atk.iter().any(|u| u.id == id.get()) {
+                0
+            } else {
+                1
+            }
+        };
+        for (k, d) in dto.iter().enumerate() {
+            if let K::Shaken { id, fallen, .. } = d.action {
+                let removed_before = dto[..k].iter().any(|x| {
+                    x.t0.to_bits() == d.t0.to_bits()
+                        && matches!(x.action, K::Leave { id: f } | K::Kill { id: f } if f == fallen)
+                });
+                if !removed_before || side_of(id) != side_of(fallen) {
+                    failures.push(format!(
+                        "{name}[{k}]: Shaken {id:?} po {fallen:?} bez Leave/Kill"
+                    ));
+                }
+            }
+        }
+    }
+    assert!(
+        failures.is_empty(),
+        "{} rozbieżności, np. {:?}",
+        failures.len(),
+        &failures[..failures.len().min(5)]
     );
-    let shaken = cases
-        .iter()
-        .find(|c| c["kind"] == "flee" && !c["expect"]["shaken"].as_array().expect("s").is_empty())
-        .expect("ripple");
-    let Built {
-        mut body,
-        mut st,
-        acting,
-    } = build(shaken, &cav_mult, true);
-    body.start(acting, &st);
-    body.complete(acting, &mut st);
-    let actions = body.take_actions();
-    let first_shaken = actions
-        .iter()
-        .find_map(|a| match a.action {
-            BattleAction::Shaken { unit, .. } => Some(unit),
-            _ => None,
-        })
-        .expect("Shaken");
-    // `Leave` poprzedza ripple (`:9855-9856`); bez niego (i bez kroków) pierwszym błędem jest `Shaken`.
-    let no_leave: Vec<TimedAction> = actions
-        .into_iter()
-        .filter(|a| {
-            !matches!(
-                a.action,
-                BattleAction::Leave { .. } | BattleAction::Move { .. }
-            )
-        })
-        .collect();
-    assert_eq!(
-        actions_to_dto(&no_leave, &st),
-        Err(ActionError::ShakenWithoutDto(first_shaken))
+    eprintln!("r4 DTO z ucieczka: {counts:?}");
+    assert!(
+        counts.get("Leave").copied().unwrap_or(0) >= 20,
+        "{counts:?}"
+    );
+    assert!(
+        counts.get("Shaken").copied().unwrap_or(0) >= 20,
+        "{counts:?}"
     );
 }
 

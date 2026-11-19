@@ -15,7 +15,7 @@
 //! Ten moduł zawiera typy akcji, producentów tekstów logu i wpisu `_pushClash` 1:1 z pinu (luka L5) oraz konwersję
 //! do [`BattleActionDto`]. Zakres: wyłącznie ścieżki już portowane; krok ruchu ([`BattleAction::Move`]) i strzał
 //! jednostki ([`BattleAction::Shot`]) mają DTO od P4-1I5a (#370, D-WIR-6/7); ucieczka z pola, ripple morale, taran,
-//! katapulta, wyłom i wspinaczka należą do P4-1I5b (#370).
+//! katapulta, wyłom i wspinaczka od P4-1I5b (#370, D-I5B-1..11). Każdy wariant ma DTO 1:1.
 
 use civ_view_model::battle::{
     validate_actions, BattleActionDto, BattleActionKindDto, BattleActorDto, BattleClashTagDto,
@@ -107,13 +107,11 @@ pub enum BattleAction {
     /// K5LOOP-CLOSE r4: uciekająca jednostka opuszcza pole (`_fleeStep` -> `_removeUnitFromScene`,
     /// `battleScene.ts:9853-9857`, `:9876-9878`, `:9887-9892`; ciało `:9910-9925`): odpięcie modelu i paska ze sceny,
     /// `removed`/`dead`, zwolnienie pola `occByKey`. Bez dźwięku i bez etykiety (inaczej niż `Kill` = `_startFade`).
-    /// [`BattleActionKindDto`] nie ma jeszcze wariantu (I5 #280/#336): [`actions_to_dto`] zwraca
-    /// [`ActionError::LeaveWithoutDto`] (jawnie, bez cichego pominięcia).
+    /// P4-1I5b (D-I5B-1): [`actions_to_dto`] daje [`BattleActionKindDto::Leave`].
     Leave { unit: UnitRef },
     /// K5LOOP-CLOSE r4: ripple `_shakeAlliesOnLoss(fallen)` (`battleScene.ts:9743-9753`): sojusznik `unit` w promieniu
     /// `MORALE_DEATH_RADIUS` traci `MORALE_ALLY_DEATH_LOSS`; `morale` = wartość po stracie (`_updateMoraleBar(a)`,
-    /// `:9749`), przed `_checkRout(a)`. [`BattleActionKindDto`] nie ma jeszcze wariantu (I5 #280/#336):
-    /// [`actions_to_dto`] zwraca [`ActionError::ShakenWithoutDto`].
+    /// `:9749`), przed `_checkRout(a)`. P4-1I5b (D-I5B-2): [`BattleActionKindDto::Shaken`].
     Shaken {
         unit: UnitRef,
         fallen: UnitRef,
@@ -123,8 +121,8 @@ pub enum BattleAction {
     /// (`battleScene.ts:8067-8082`): `occByKey` zwalnia `from`, `ru.q = wallCol`, `onWallWalkway = true`, zajęcie `to`,
     /// model ustawiony od razu na wysokości korony (`group.position.set(x, 2.5, z)`, `:8077-8079`, bez animacji
     /// `_raf`), `moveLeft = 0`, `done()` synchronicznie. Ewentualny wpis dziennika wyłomu (`this.log.push`, `:8074`)
-    /// jest osobną akcją [`BattleAction::Log`] PRZED tą (kolejność wywołań w pinie). [`BattleActionKindDto`] nie ma
-    /// jeszcze wariantu (I5b #370): [`actions_to_dto`] zwraca [`ActionError::ClimbWallWithoutDto`].
+    /// jest osobną akcją [`BattleAction::Log`] PRZED tą (kolejność wywołań w pinie). P4-1I5b (D-I5B-3):
+    /// [`BattleActionKindDto::ClimbWall`].
     ClimbWall {
         unit: UnitRef,
         from: (i64, i64),
@@ -133,37 +131,37 @@ pub enum BattleAction {
     /// K5LOOP-SIEGE-ATK-B (T2b): kamień katapulty `_attackWallTile` (`battleScene.ts:7547-7552`,
     /// `_spawnCatapultBoulder`): lot z pola katapulty w kafel muru `(wallCol, row)` wystrzelony w `t0`, trafienie po
     /// `_schedule(700)` w `land_at` (`:7555`). Obrażenia kafla to osobna akcja [`BattleAction::WallDamage`] w `land_at`.
-    /// [`BattleActionKindDto`] nie ma jeszcze wariantu (I5b #370): [`ActionError::BoulderWithoutDto`].
+    /// P4-1I5b (D-I5B-4): [`BattleActionKindDto::Boulder`].
     Boulder {
         unit: UnitRef,
         row: i64,
         land_at: f64,
     },
     /// K5LOOP-SIEGE-ATK-B (T2b): trafienie kamienia w kafel muru (callback `_schedule(700)`, `:7556-7564`):
-    /// `wallTileHp.set(row, hp_after)`, etykieta `'-' + dmg + ' (mur)'` (`_spawnWallLabel`, `:7561`). I5b #370:
-    /// [`ActionError::WallDamageWithoutDto`].
+    /// `wallTileHp.set(row, hp_after)`, etykieta `'-' + dmg + ' (mur)'` (`_spawnWallLabel`, `:7561`). P4-1I5b
+    /// (D-I5B-5): [`BattleActionKindDto::WallDamage`].
     WallDamage { row: i64, dmg: f64, hp_after: f64 },
     /// K5LOOP-SIEGE-ATK-B (T2b): animacja taranu `_animateRam` (`:7316-7323`, `:7337-7360`): uderzenie w bramę z pola
-    /// taranu, start w `t0`, powrót w `until = t0 + 320` (`duration = 320`). I5b #370: [`ActionError::RamWithoutDto`].
+    /// taranu, start w `t0`, powrót w `until = t0 + 320` (`duration = 320`). P4-1I5b (D-I5B-6): [`BattleActionKindDto::Ram`].
     Ram { unit: UnitRef, until: f64 },
     /// K5LOOP-SIEGE-ATK-B (T2b): obrażenia bramy `_attackGate` (`:7326-7331`): `gateHp = max(0, gateHp - dmg)` (HUD
-    /// `_updateSiegeHud`). I5b #370: [`ActionError::GateDamageWithoutDto`].
+    /// `_updateSiegeHud`). P4-1I5b (D-I5B-7): [`BattleActionKindDto::GateDamage`].
     GateDamage { dmg: f64, hp_after: f64 },
     /// K5LOOP-SIEGE-ATK-B (T2b): wyburzenie kafla muru `_breachWallTile(row)` (`:7638-7697`): kafel `Plains`, wyłom,
     /// etykieta `'MUR WYBURZONY!'`, ukrycie segmentu i gruz. Wcześniejsze skutki w tej samej chwili: wieża w wyłomie
     /// ([`BattleAction::TowerDestroyed`] + [`BattleAction::Log`]); późniejsze: odwrót obrońców z muru
-    /// ([`BattleAction::LeaveField`], [`BattleAction::Kill`]) i morale. I5b #370: [`ActionError::WallBreachWithoutDto`].
+    /// ([`BattleAction::LeaveField`], [`BattleAction::Kill`]) i morale. P4-1I5b (D-I5B-8): [`BattleActionKindDto::WallBreach`].
     WallBreach { row: i64 },
     /// K5LOOP-SIEGE-ATK-B (T2b): otwarcie bramy `_breachGate()` (`:7757-7811`): `gateOpen`, wyłom, kafle bramy `Plains`,
-    /// ukrycie bramy; potem morale obrońców. I5b #370: [`ActionError::GateBreachWithoutDto`].
+    /// ukrycie bramy; potem morale obrońców. P4-1I5b (D-I5B-9): [`BattleActionKindDto::GateBreach`].
     GateBreach,
     /// K5LOOP-SIEGE-ATK-B (T2b): `_destroyTowerAtRow(row)` (`:4194-4200`): wieża strzelnicza w wyłomie zburzona (mesh
-    /// ukryty); wpis dziennika to następna akcja [`BattleAction::Log`]. I5b #370: [`ActionError::TowerDestroyedWithoutDto`].
+    /// ukryty); wpis dziennika to następna akcja [`BattleAction::Log`]. P4-1I5b (D-I5B-10): [`BattleActionKindDto::TowerDestroyed`].
     TowerDestroyed { row: i64 },
     /// K5LOOP-SIEGE-ATK-B (T2b): obrońca schodzi z wyburzonego kafla muru (`_breachWallTile`, `:7700-7741`): zwolnienie
     /// `from`, nowa pozycja `to` (model postawiony od razu na terenie, bez animacji), `onWallWalkway = false`. Gdy żadne
-    /// pole nie jest wolne (`:7717`), jednostka zostaje (`to == from`), ale schodzi z korony. I5b #370:
-    /// [`ActionError::LeaveFieldWithoutDto`].
+    /// pole nie jest wolne (`:7717`), jednostka zostaje (`to == from`), ale schodzi z korony. P4-1I5b
+    /// (D-I5B-11): [`BattleActionKindDto::LeaveField`].
     LeaveField {
         unit: UnitRef,
         from: (i64, i64),
@@ -450,7 +448,8 @@ pub enum ActionError {
     UnitOutOfRange(UnitRef),
     /// Id jednostki poza zakresem JSON.
     Id(IdOutOfRange),
-    /// Wiersz wieży poza `i32`.
+    /// Wiersz wieży / kafla muru poza `i32` (`TowerShot`, `Clash` wieży; P4-1I5b: `Boulder`, `WallDamage`,
+    /// `WallBreach`, `TowerDestroyed`).
     Row(i64),
     /// `facing` nie jest liczbą całkowitą `0..=3`.
     Facing(f64),
@@ -460,31 +459,9 @@ pub enum ActionError {
     /// jednostki samym [`UnitId`] (bez strony), więc id muszą być unikalne w bitwie, jak w ramce
     /// (`BattleFrameDto::validate`, `units (unique id)`).
     DuplicateId(u64),
-    /// P4-1I5a: współrzędna pola kroku ([`BattleAction::Move`]) poza `i32`.
+    /// P4-1I5a: współrzędna pola kroku ([`BattleAction::Move`]) poza `i32`; P4-1I5b także pola
+    /// [`BattleAction::ClimbWall`] i [`BattleAction::LeaveField`].
     Cell(i64),
-    /// K5LOOP-CLOSE r4: [`BattleAction::Leave`] nie ma jeszcze wariantu w [`BattleActionKindDto`] (I5 #280/#336).
-    LeaveWithoutDto(UnitRef),
-    /// K5LOOP-CLOSE r4: [`BattleAction::Shaken`] nie ma jeszcze wariantu w [`BattleActionKindDto`] (I5 #280/#336).
-    ShakenWithoutDto(UnitRef),
-    /// K5LOOP-SIEGE-ATK-A (T2a): [`BattleAction::ClimbWall`] nie ma jeszcze wariantu w [`BattleActionKindDto`] (I5b
-    /// #370).
-    ClimbWallWithoutDto(UnitRef),
-    /// K5LOOP-SIEGE-ATK-B (T2b): [`BattleAction::Boulder`] bez wariantu DTO (I5b #370).
-    BoulderWithoutDto(UnitRef),
-    /// K5LOOP-SIEGE-ATK-B (T2b): [`BattleAction::WallDamage`] bez wariantu DTO (I5b #370); wiersz kafla.
-    WallDamageWithoutDto(i64),
-    /// K5LOOP-SIEGE-ATK-B (T2b): [`BattleAction::Ram`] bez wariantu DTO (I5b #370).
-    RamWithoutDto(UnitRef),
-    /// K5LOOP-SIEGE-ATK-B (T2b): [`BattleAction::GateDamage`] bez wariantu DTO (I5b #370).
-    GateDamageWithoutDto,
-    /// K5LOOP-SIEGE-ATK-B (T2b): [`BattleAction::WallBreach`] bez wariantu DTO (I5b #370); wiersz kafla.
-    WallBreachWithoutDto(i64),
-    /// K5LOOP-SIEGE-ATK-B (T2b): [`BattleAction::GateBreach`] bez wariantu DTO (I5b #370).
-    GateBreachWithoutDto,
-    /// K5LOOP-SIEGE-ATK-B (T2b): [`BattleAction::TowerDestroyed`] bez wariantu DTO (I5b #370); wiersz wieży.
-    TowerDestroyedWithoutDto(i64),
-    /// K5LOOP-SIEGE-ATK-B (T2b): [`BattleAction::LeaveField`] bez wariantu DTO (I5b #370).
-    LeaveFieldWithoutDto(UnitRef),
 }
 
 impl From<IdOutOfRange> for ActionError {
@@ -531,7 +508,7 @@ pub fn winner_dto(w: LoopWinner) -> BattleWinner {
 ///
 /// # Errors
 /// [`ActionError`]: jednostka spoza rosteru, id/wiersz/pole poza zakresem, `facing` spoza `Dir`, lista łamiąca
-/// walidację, wariant bez DTO (I5b).
+/// walidację. Od P4-1I5b każdy wariant [`BattleAction`] ma DTO (brak błędów „bez DTO”).
 pub fn actions_to_dto(
     actions: &[TimedAction],
     st: &TurnSeqState,
@@ -635,29 +612,57 @@ pub fn actions_to_dto(
                 target: unit_id(st, *target)?,
                 land_at: *land_at,
             },
-            BattleAction::Leave { unit } => return Err(ActionError::LeaveWithoutDto(*unit)),
-            BattleAction::Shaken { unit, .. } => return Err(ActionError::ShakenWithoutDto(*unit)),
-            BattleAction::ClimbWall { unit, .. } => {
-                return Err(ActionError::ClimbWallWithoutDto(*unit))
-            }
-            BattleAction::Boulder { unit, .. } => {
-                return Err(ActionError::BoulderWithoutDto(*unit))
-            }
-            BattleAction::WallDamage { row, .. } => {
-                return Err(ActionError::WallDamageWithoutDto(*row))
-            }
-            BattleAction::Ram { unit, .. } => return Err(ActionError::RamWithoutDto(*unit)),
-            BattleAction::GateDamage { .. } => return Err(ActionError::GateDamageWithoutDto),
-            BattleAction::WallBreach { row } => {
-                return Err(ActionError::WallBreachWithoutDto(*row))
-            }
-            BattleAction::GateBreach => return Err(ActionError::GateBreachWithoutDto),
-            BattleAction::TowerDestroyed { row } => {
-                return Err(ActionError::TowerDestroyedWithoutDto(*row))
-            }
-            BattleAction::LeaveField { unit, .. } => {
-                return Err(ActionError::LeaveFieldWithoutDto(*unit))
-            }
+            BattleAction::Leave { unit } => BattleActionKindDto::Leave {
+                id: unit_id(st, *unit)?,
+            },
+            BattleAction::Shaken {
+                unit,
+                fallen,
+                morale,
+            } => BattleActionKindDto::Shaken {
+                id: unit_id(st, *unit)?,
+                fallen: unit_id(st, *fallen)?,
+                morale: *morale,
+            },
+            BattleAction::ClimbWall { unit, from, to } => BattleActionKindDto::ClimbWall {
+                id: unit_id(st, *unit)?,
+                from_col: cell_i32(from.0)?,
+                from_row: cell_i32(from.1)?,
+                to_col: cell_i32(to.0)?,
+                to_row: cell_i32(to.1)?,
+            },
+            BattleAction::Boulder { unit, row, land_at } => BattleActionKindDto::Boulder {
+                id: unit_id(st, *unit)?,
+                row: row_i32(*row)?,
+                land_at: *land_at,
+            },
+            BattleAction::WallDamage { row, dmg, hp_after } => BattleActionKindDto::WallDamage {
+                row: row_i32(*row)?,
+                dmg: *dmg,
+                hp_after: *hp_after,
+            },
+            BattleAction::Ram { unit, until } => BattleActionKindDto::Ram {
+                id: unit_id(st, *unit)?,
+                until: *until,
+            },
+            BattleAction::GateDamage { dmg, hp_after } => BattleActionKindDto::GateDamage {
+                dmg: *dmg,
+                hp_after: *hp_after,
+            },
+            BattleAction::WallBreach { row } => BattleActionKindDto::WallBreach {
+                row: row_i32(*row)?,
+            },
+            BattleAction::GateBreach => BattleActionKindDto::GateBreach {},
+            BattleAction::TowerDestroyed { row } => BattleActionKindDto::TowerDestroyed {
+                row: row_i32(*row)?,
+            },
+            BattleAction::LeaveField { unit, from, to } => BattleActionKindDto::LeaveField {
+                id: unit_id(st, *unit)?,
+                from_col: cell_i32(from.0)?,
+                from_row: cell_i32(from.1)?,
+                to_col: cell_i32(to.0)?,
+                to_row: cell_i32(to.1)?,
+            },
         };
         out.push(BattleActionDto { t0: a.t0, action });
     }

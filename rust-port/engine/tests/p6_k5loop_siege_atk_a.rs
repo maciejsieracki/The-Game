@@ -22,7 +22,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::sync::mpsc;
 use std::time::Duration;
 
-use civ_engine::domain::siege_tactics_actions::{actions_to_dto, ActionError, BattleAction};
+use civ_engine::domain::siege_tactics_actions::BattleAction;
 use civ_engine::domain::siege_tactics_activate::{ActivateEvent, ActivateScene, ActivateUnit};
 use civ_engine::domain::siege_tactics_atk::WYLOM_LOG;
 use civ_engine::domain::siege_tactics_autobatch::cell_key;
@@ -33,7 +33,11 @@ use civ_engine::domain::siege_tactics_loop::{LoopBody, ProdBody, ProdUnit};
 use civ_engine::domain::siege_tactics_move_effects::MoveTerrain;
 use civ_engine::domain::siege_tactics_turnseq::{SeqUnit, TurnSeqState, UnitRef};
 use civ_engine::domain::siege_tactics_unit::CombatUnit;
+use civ_view_model::battle::BattleActionKindDto as K;
 use serde_json::Value;
+
+#[path = "p4_1i5b_support.rs"]
+mod support;
 
 const VECTORS: &str = include_str!("p6_k5loop_siege_atk_a_vectors/vectors.json");
 const VECTORS_NAN: &str = include_str!("p6_k5loop_siege_atk_a_vectors/vectors_nan.json");
@@ -958,33 +962,57 @@ fn bez_terenu_jawne_tagi_ruchu() {
     }
 }
 
-/// `ClimbWall` nie ma jeszcze wariantu DTO (I5b #370): konwersja to jawny błąd, nie ciche pominięcie.
+/// P4-1I5b (#370, D-I5B-3; zastępuje test jawnego błędu `ClimbWallWithoutDto`, wymuszone celem dispatchu): dla
+/// KAŻDEGO wektora T2a (`vectors.json` i `vectors_edge.json`) pełna lista akcji aktywacji (start + complete) przechodzi
+/// przez `actions_to_dto` 1:1 (`support::check_dto_1to1`), a każde `ClimbWall` = wejście z pinu (`:8067-8079`): wiersz
+/// bez zmiany, kolumna docelowa = `siegeWallCol`, kolumna startowa obok podstawy muru (`wallBase` ± 1, `:8061`).
 #[test]
-fn wejscie_na_mur_bez_dto_jawny_blad() {
-    let v = load_from(VECTORS);
-    let case = v["cases"]
-        .as_array()
-        .expect("cases")
-        .iter()
-        .find(|c| c["expect"]["branch"] == "climb")
-        .expect("climb");
-    let Built {
-        mut body,
-        st,
-        acting,
-    } = build(case, true);
-    let _ = body.start(acting, &st);
-    let actions: Vec<_> = body
-        .pending_actions()
-        .iter()
-        .filter(|a| matches!(a.action, BattleAction::ClimbWall { .. }))
-        .cloned()
-        .collect();
-    assert_eq!(actions.len(), 1);
-    assert_eq!(
-        actions_to_dto(&actions, &st),
-        Err(ActionError::ClimbWallWithoutDto(acting))
+fn wejscie_na_mur_dto_1do1_w_wektorach() {
+    let mut failures: Vec<String> = Vec::new();
+    let mut counts: BTreeMap<&'static str, usize> = BTreeMap::new();
+    let mut climbs = 0usize;
+    for src in [VECTORS, VECTORS_EDGE] {
+        let v = load_from(src);
+        for case in v["cases"].as_array().expect("cases") {
+            let name = case["name"].as_str().expect("name");
+            let Built {
+                mut body,
+                mut st,
+                acting,
+            } = build(case, true);
+            let _ = body.start(acting, &st);
+            body.complete(acting, &mut st);
+            let actions = body.take_actions();
+            let dto = support::check_dto_1to1(name, &actions, &st, &mut failures, &mut counts);
+            for d in &dto {
+                if let K::ClimbWall {
+                    from_col,
+                    from_row,
+                    to_col,
+                    to_row,
+                    ..
+                } = d.action
+                {
+                    climbs += 1;
+                    let wall = i32::try_from(st.siege_wall_col).expect("kolumna muru");
+                    if to_row != from_row || to_col != wall || (from_col - (wall - 1)).abs() > 1 {
+                        failures.push(format!(
+                            "{name}: wejscie ({from_col},{from_row}) -> ({to_col},{to_row}), mur {wall}"
+                        ));
+                    }
+                }
+            }
+        }
+    }
+    assert!(
+        failures.is_empty(),
+        "{} rozbieżności, np. {:?}",
+        failures.len(),
+        &failures[..failures.len().min(5)]
     );
+    eprintln!("T2a DTO: {counts:?}");
+    assert!(climbs >= 30, "wejścia na mur: {climbs}");
+    assert_eq!(counts.get("ClimbWall").copied().unwrap_or(0), climbs);
 }
 
 /// Pierwszy wyłom przez wieżę: wpis dziennika dokładnie raz (`!this.wallEverBreached`, `:8071`), tekst z pinu.
