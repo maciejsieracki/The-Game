@@ -1,3 +1,9 @@
+## ROBOCZA 7670a3a5 -- 2026-11-18 -- FALA 860: R-WEB-DIPLO-ALL-FLAGS-MEASURE-RUNNER-Q1: hak testowy __diploAllFlagsMeasure i runner pomiaru lacznego flag dyplomacji (bez zmian w grze) (testowa)
+
+- gra/src/main.ts (tylko blok hakow civTest __diploAllFlagsMeasure), gra/tools: runner --all-flags, analizator OFF vs ON, liczniki, testy. Flagi domyslnie OFF - zachowanie gry bez zmian.
+- Weryfikacja: tsc 0, logic 213/213, diplomacy-all-flags-measure-hook-test 34/0, diplomacy-harder-measure-hook-test 21/0 (merge-build FALI 860)
+- Limity: Bieg OFF vs ON na >=3 ziarnach x 150 tur NIE ZMIERZONO (robi orkiestrator po wdrozeniu); czesc behawioralna haka setAll(false) bez pomiaru
+
 ## ROBOCZA c64bc121 -- 2026-11-18 -- FALA 859: HUD Surowce: netto przetworstwa odejmuje wejscia konwerterow (brutto bez zmian) (testowa)
 
 - HUD netto surowca = produkcja - zuzycie - wejscia konwerterow (np. Glina zuzywana przez Garncarnie); nowa czysta funkcja sumujaca wejscia w converters.ts, wiersz w main.ts (empireConverterInputRatesForOwner, rateConverterInputPerTurn), nowy test resource-gross-net-converter-inputs-test; brutto, produkcja, zuzycie i zasady ekonomii bez zmian - wyswietlanie

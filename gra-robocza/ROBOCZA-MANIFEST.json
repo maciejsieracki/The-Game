@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "c64bc121f6347e33ca5fee66b9a08359",
-  "bundleSha256": "db8dde631221dfb6f15a1e900f795f405bbeca758403aeb8e007aca5b9288bab",
-  "bundleBytes": 14980799,
+  "bundleMd5": "7670a3a565308d970cb906b64f7f4e94",
+  "bundleSha256": "ecfb17512a4f6a36d6d41b0a5f6678c4ef36dfac87388e8f043f1db839537538",
+  "bundleBytes": 14981182,
   "sourceSnapshot": {
-    "source": "R-WEB-UI-HUD-NET-CONVERTER-INPUTS-Q1 (kod 4bb3b7001, FC ab2e0b753)",
+    "source": "kod 36fede45a (Haiku, Obrona); FC 81e1a7bd9",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 859: HUD netto surowca = produkcja - zuzycie - wejscia konwerterow (np. Glina zuzywana przez Garncarnie); nowa czysta funkcja sumujaca wejscia w converters.ts, wiersz w main.ts (empireConverterInputRatesForOwner, rateConverterInputPerTurn), nowy test resource-gross-net-converter-inputs-test; brutto, produkcja, zuzycie i zasady ekonomii bez zmian - wyswietlanie"
+    "FALA 860: gra/src/main.ts (tylko blok hakow civTest __diploAllFlagsMeasure), gra/tools: runner --all-flags, analizator OFF vs ON, liczniki, testy. Flagi domyslnie OFF - zachowanie gry bez zmian."
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; converter-inputs 18/0; resource-cards-gross-net 24/0; hud-gross-net-rest 820/0; hud-topbar-grid 1150/0; ai-economy-measure-hook 23/23; DOWOD NA ZYWO seed 4242 autopilot gracza t108-t124: Glina HUD netto 174-176 = delta stanu 174-176 (przed poprawka netto 324-326)"
+    "tsc 0, logic 213/213, diplomacy-all-flags-measure-hook-test 34/0, diplomacy-harder-measure-hook-test 21/0 (merge-build FALI 860)"
   ],
   "limits": [
-    "Ceramika: HUD netto 77 vs delta stanu 67 (roznica 10, przyczyna NIE ZBADANA, bez zmiany wzgledem stanu sprzed poprawki); alert niedoboru w naglowku nadal liczy ratePerTurn bez wejsc konwerterow (osobny temat); wejscia nominalne bez klamrowania do zapasu; tooltip karty Brutto-netto nie pokazuje wejsc (panel przywrocony do bazy)"
+    "Bieg OFF vs ON na >=3 ziarnach x 150 tur NIE ZMIERZONO (robi orkiestrator po wdrozeniu); czesc behawioralna haka setAll(false) bez pomiaru"
   ],
-  "finalControl": "PASS-WITH-NOTES: bramki wlasne zielone, hipoteza potwierdzona w kodzie i na zywo, kandydat potomkiem bazy",
+  "finalControl": "FC PASS-WITH-NOTES: baza przodkiem, zmiany w allowliscie, main.ts +27 tylko hak civTest, wlasne bramki zielone, mutacja analizatora czerwona",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T10:17:48",
+  "hubGeneratedAt": "2026-11-19T13:20:18",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "c64bc121f6347e33ca5fee66b9a08359",
-      "sizeBytes": 14980799
+      "md5": "7670a3a565308d970cb906b64f7f4e94",
+      "sizeBytes": 14981182
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "c64bc121f6347e33ca5fee66b9a08359",
-      "sizeBytes": 14980799
+      "md5": "7670a3a565308d970cb906b64f7f4e94",
+      "sizeBytes": 14981182
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "c64bc121f6347e33ca5fee66b9a08359",
-      "sizeBytes": 14980799
+      "md5": "7670a3a565308d970cb906b64f7f4e94",
+      "sizeBytes": 14981182
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "c64bc121f6347e33ca5fee66b9a08359",
-      "sizeBytes": 14980799
+      "md5": "7670a3a565308d970cb906b64f7f4e94",
+      "sizeBytes": 14981182
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "c64bc121f6347e33ca5fee66b9a08359",
-      "sizeBytes": 14980799
+      "md5": "7670a3a565308d970cb906b64f7f4e94",
+      "sizeBytes": 14981182
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "c64bc121f6347e33ca5fee66b9a08359",
-      "sizeBytes": 14980799
+      "md5": "7670a3a565308d970cb906b64f7f4e94",
+      "sizeBytes": 14981182
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "c64bc121f6347e33ca5fee66b9a08359",
-      "sizeBytes": 14980799
+      "md5": "7670a3a565308d970cb906b64f7f4e94",
+      "sizeBytes": 14981182
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "c64bc121f6347e33ca5fee66b9a08359",
-      "sizeBytes": 14980799
+      "md5": "7670a3a565308d970cb906b64f7f4e94",
+      "sizeBytes": 14981182
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "c64bc121f6347e33ca5fee66b9a08359",
-      "sizeBytes": 14980799
+      "md5": "7670a3a565308d970cb906b64f7f4e94",
+      "sizeBytes": 14981182
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "c64bc121f6347e33ca5fee66b9a08359",
-      "sizeBytes": 14980799
+      "md5": "7670a3a565308d970cb906b64f7f4e94",
+      "sizeBytes": 14981182
     }
   ],
-  "md5": "c64bc121f6347e33ca5fee66b9a08359",
+  "md5": "7670a3a565308d970cb906b64f7f4e94",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
