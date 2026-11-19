@@ -32,7 +32,7 @@
 // Uruchomienie: node rust-port/engine/tests/p6_k5loop_wiring_a_gen.mjs (Node >= 22, TypeScript z /opt/node22 albo
 // TYPESCRIPT_JS). Wynik: tests/p6_k5loop_wiring_a_pin_vectors/{vectors.json,pin_data.json} + MD5 na stdout.
 
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -204,6 +204,20 @@ const SCENARIOS = [
   // czas rzeczywisty (klatki 16 ms) dla dwoch scenariuszy: wynik ma byc identyczny z przewijaniem tylko gdy pin tak liczy.
   { name: 'rt_mur_machiny_wylom', mode: 'realtime', seed: 2, built: ['mury'], atk: [W, W, W, ['Taran', 'obleznicza'], ['Katapulta', 'obleznicza'], L], def: [W, L] },
   { name: 'rt_mury_cytadela_slaby_atak', mode: 'realtime', seed: 4, built: ['mury', 'fort', 'baszta'], atk: [['Wojownik', 'miecznik', { hp: 6 }], L], def: [['Włócznik', 'wlocznik'], ['Włócznik', 'wlocznik'], L, L] },
+  // PIN2-PROBE-Q1 (D-PIN2-2): `mur_jazda_rzeka` z krokiem przewijania 1 ms (granica klatki, NIE model produkcyjny):
+  // pin @1 ms = pin @2 ms = pin @0,25 ms (sonda), wiec wynik nie zalezy juz od remisu czasowego klatki 16 ms (t. 70,
+  // cios 150 ms vs pocisk wiezy 156 ms). Straznik logiki Rust dla jedynego scenariusza z jawna rozbieznoscia @16 ms.
+  { name: 'mur_jazda_rzeka_klatka1', mode: 'skip', ffStepMs: 1, seed: 5, built: ['mury'], world: { baza: 'Równina', las: false, rzeka: true }, atk: [['Konnica', 'konnica'], ['Falanga', 'falanga'], ['Katapulta', 'obleznicza'], W], def: [W, ['Falanga', 'falanga'], L] },
+  // PIN2-PROBE-Q1: scenariusze rozrozniajace mutant B03 (trafienie strzalu przesuniete o RANGED_GAP_MS): wielu lucznikow
+  // atakujacego strzela w oknie lotu pociskow wiez / strzelcow korony (wybrane z 293 losowych kandydatow, pomiar w
+  // 01-operator-r1.md). Las + mury + baszta (taran), Wzgorza + palisada (katapulta, wylom, sufit 400), Gory + mury + baszta.
+  { name: 'b03_las_lucznicy_mury_baszta', mode: 'skip', seed: 129, teren: 'Las', built: ['mury', 'baszta'], world: { baza: 'Las', las: true, rzeka: false }, atk: [L, L, L, L, W, W, ['Taran', 'obleznicza']], def: [W, W, L, L, L, L, L, L, L, L] },
+  { name: 'b03_wzgorza_palisada_katapulta', mode: 'skip', seed: 134, teren: 'Wzgórza', built: ['palisada'], world: { baza: 'Wzgórza', las: false, rzeka: false }, atk: [W, W, L, L, L, ['Katapulta', 'obleznicza']], def: [W, L, L, L] },
+  { name: 'b03_gory_lucznicy_mury_baszta', mode: 'skip', seed: 195, teren: 'Góry', built: ['mury', 'baszta'], world: { baza: 'Góry', las: false, rzeka: false }, atk: [L, L, L, L, W, W, ['Taran', 'obleznicza']], def: [['Włócznik', 'wlocznik'], W, L, L, L] },
+  // PIN2-PROBE-Q1 (mutant B07): katapulta wyburza kafel muru pod lucznikiem korony -> zejscie z korony (`:7699-7741`)
+  // przy zyciu; test `zejscie_z_korony_od_razu_przelicza_zasieg` sprawdza zasieg w chwili zejscia (`:7740`).
+  { name: 'b07_las_katapulta_zejscie_z_korony', mode: 'skip', seed: 107, teren: 'Las', built: ['mury', 'baszta'], world: { baza: 'Las', las: true, rzeka: false }, atk: [W, W, L, L, L, ['Katapulta', 'obleznicza']], def: [['Włócznik', 'wlocznik'], W, L, L, L] },
+  { name: 'b07_wzgorza_katapulta_zejscie_z_korony', mode: 'skip', seed: 135, teren: 'Wzgórza', built: ['mury', 'baszta'], world: { baza: 'Wzgórza', las: false, rzeka: false }, atk: [W, W, L, L, L, ['Katapulta', 'obleznicza']], def: [W, ['Włócznik', 'wlocznik'], L, L, L, L, L, L] },
 ];
 
 const f64hex = (x) => {
@@ -291,6 +305,24 @@ function runScenario(sc) {
       return out;
     };
   }
+  // PIN2-PROBE-Q1 (diagnostyka): mapa terenu pola (`WIRING_A_DUMP_TERRAIN=1` w trybie sladu): litera = `combatTerrainName`
+  // (P plaskie, L las, W wzgorza, G gory, R rzeka, ? inne), `#` = kafel muru/bramy, `.` = nieprzechodni; jednostki na
+  // starcie jako `a0..`, `d0..` w osobnej linii.
+  if (process.env.WIRING_A_TRACE === sc.name && process.env.WIRING_A_DUMP_TERRAIN) {
+    const tm = bs.terrainMap;
+    for (let r = 0; r < tm.rows; r++) {
+      let line = '';
+      for (let c = 0; c < tm.cols; c++) {
+        const n = tm.combatTerrainName(c, r);
+        let ch = n.startsWith('Las') ? 'L' : n.startsWith('Wzg') ? 'W' : n.startsWith('G') ? 'G' : n.startsWith('Rzeka') ? 'R' : n.startsWith('P') ? 'P' : '?';
+        if (bs.wallTileHp && bs.wallTileHp.has && bs.wallTileHp.has(r)) { if (c === bs.siegeWallCol) ch = '#'; }
+        if (!tm.passable(c, r)) ch = '.';
+        line += ch;
+      }
+      console.error(`TERR ${String(r).padStart(3)} ${line}`);
+    }
+    console.error('UNITS ' + [...bs.atk, ...bs.def].map((u) => `${u.bu.id}@${u.q},${u.r}`).join(' ') + ` wallCol=${bs.siegeWallCol}`);
+  }
   let res = null;
   // PIN2-PROBE-Q1: tryb i dlugosc klatki nadpisywalne WYLACZNIE w trybie sladu (`WIRING_A_TRACE`), np.
   // `WIRING_A_FRAME=2 WIRING_A_MODE=realtime`; wektory zawsze z klatka 16 ms i trybem scenariusza.
@@ -301,10 +333,13 @@ function runScenario(sc) {
   if (mode === 'skip') bs.skip();
   let t = 0;
   let frames = 0;
-  // PIN2-PROBE-Q1: krok przewijania `FF_STEP_MS = _scaledWallDelta(BATTLE_FRAME_WALL_MS)` (`:9419`) nadpisywalny
-  // WYLACZNIE w trybie sladu (`WIRING_A_FF_STEP=2`): ten sam model klatki co czas rzeczywisty z klatka N ms, ale bez
-  // kosztu petli renderu (modul pinu ladowany od nowa w kazdym scenariuszu, `modCache = new Map()`).
-  const ffStep = traced && process.env.WIRING_A_FF_STEP ? Number(process.env.WIRING_A_FF_STEP) : null;
+  // PIN2-PROBE-Q1: krok przewijania `FF_STEP_MS = _scaledWallDelta(BATTLE_FRAME_WALL_MS)` (`:2552`, `:9419`)
+  // nadpisywalny w trybie sladu (`WIRING_A_FF_STEP=2`) albo polem scenariusza `ffStepMs` (D-PIN2-2: wektor granicy
+  // klatki, NIE model produkcyjny -- produkcja = 16 ms). Ten sam model klatki co czas rzeczywisty z klatka N ms, bez
+  // kosztu petli renderu (modul pinu ladowany od nowa w kazdym scenariuszu, `modCache = new Map()`). Jedyna zmiana to
+  // wartosc statycznej wlasnosci klasy; tekst pinu bez zmian (straznik SHA-256 nietkniety).
+  const ffStep = traced && process.env.WIRING_A_FF_STEP ? Number(process.env.WIRING_A_FF_STEP) : (sc.ffStepMs ?? null);
+  if (ffStep != null && sc.mode !== 'skip') throw new Error('ffStepMs tylko dla przewijania: ' + sc.name);
   if (ffStep != null) BattleScene.BATTLE_FRAME_WALL_MS = ffStep;
   const stopRound = traced && process.env.WIRING_A_STOP_ROUND ? Number(process.env.WIRING_A_STOP_ROUND) : Infinity;
   while (!bs.finished && frames < MAX_FRAMES) {
@@ -322,6 +357,7 @@ function runScenario(sc) {
   return {
     name: sc.name,
     mode: sc.mode,
+    ...(sc.ffStepMs != null ? { frameMs: sc.ffStepMs } : {}),
     seed: sc.seed,
     battleIndex: sc.battleIndex ?? 0,
     input: {
@@ -342,7 +378,10 @@ function runScenario(sc) {
 
 const t0 = Date.now();
 const vectors = [];
-for (const sc of SCENARIOS) {
+// PIN2-PROBE-Q1: kandydaci scenariuszy (diagnostyka, np. przy szukaniu wektorow zabijajacych mutanty): `WIRING_A_EXTRA`
+// = plik JSON z lista scenariuszy w formacie `SCENARIOS`, wynik do `WIRING_A_OUT` (NIE do katalogu wektorow).
+const extra = process.env.WIRING_A_EXTRA ? JSON.parse(readFileSync(process.env.WIRING_A_EXTRA, 'utf8')) : null;
+for (const sc of extra ?? SCENARIOS) {
   if (process.env.WIRING_A_TRACE && process.env.WIRING_A_TRACE !== sc.name) continue;
   const v = runScenario(sc);
   vectors.push(v);
@@ -355,6 +394,11 @@ if (sha !== EXPECTED_SHA256) {
 }
 // Obrona r2 (N1 Evaluatora): diagnostyka (`WIRING_A_TRACE`) liczy tylko wybrany scenariusz i NIE zapisuje wektorow.
 if (process.env.WIRING_A_TRACE) process.exit(0);
+if (extra) {
+  if (!process.env.WIRING_A_OUT) throw new Error('WIRING_A_EXTRA wymaga WIRING_A_OUT');
+  writeFileSync(process.env.WIRING_A_OUT, JSON.stringify({ pin: PIN, pinSha256: sha, frameMs: 16, vectors }, null, 1) + '\n');
+  process.exit(0);
+}
 const outDir = join(here, 'p6_k5loop_wiring_a_pin_vectors');
 mkdirSync(outDir, { recursive: true });
 const pinData = {

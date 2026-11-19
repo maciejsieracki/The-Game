@@ -270,6 +270,16 @@ fn vectors() -> Value {
     assert_eq!(v["pin"], PIN);
     assert_eq!(v["pinSha256"], PIN_SHA256, "wektory z innego tekstu pinu");
     assert_eq!(f(&v["frameMs"]), FRAME_MS);
+    // PIN2-PROBE-Q1 (D-PIN2-2): wektor z własnym `frameMs` (krok przewijania pinu) tylko jako bliźniak granicy klatki.
+    for x in v["vectors"].as_array().unwrap() {
+        if !x["frameMs"].is_null() {
+            assert!(
+                x["name"].as_str().unwrap().ends_with("_klatka1") && x["mode"] == "skip",
+                "frameMs poza bliźniakiem granicy klatki: {}",
+                x["name"]
+            );
+        }
+    }
     v
 }
 
@@ -278,14 +288,16 @@ fn run_vector(v: &Value, data: &SessionData) -> Result<SessionOutcome, SessionEr
     drive(s, v["mode"].as_str().unwrap())
 }
 
-/// Rozbieżności Rust ↔ pin (obrona r2, `02a-obrona-r2.md`). Diagnoza Operatora r2 (dryf 320/310 ms) ODRZUCONA pomiarem
-/// Evaluatora (klatka 2 ms) i obrony (klatka 1 ms w Rust: wynik Rust bez zmian). Prawdziwe przyczyny naprawione w ciele:
-/// `_applyTerrainRange` na początku aktywacji (`battleScene.ts:6064`, `:7490-7502`; D-WIRA-16), ogon aktywacji po ciosie
-/// i strzale (`_doMeleeAttack` `:9119-9172`, `_doRangedAttack` `:9223-9229`; D-WIRA-17), pozycje celów wież w chwili
-/// wystrzału (`_fireOneTower` `:4228-4233` przy marszu wielokrokowym; D-WIRA-18). Pozostała JAWNA rozbieżność (B-WIRA-PIN-2,
-/// przyczyna w raporcie §E2-2); test pada, gdy scenariusz z listy zacznie się zgadzać albo gdy zgodny się rozjedzie, a
-/// także gdy scenariusz z listy zakończy się błędem sesji (E2-3).
-const ROZBIEZNE_B_WIRA_PIN_1: [&str; 1] = ["mur_jazda_rzeka"];
+/// Rozbieżności Rust ↔ pin. B-WIRA-PIN-1 (5 scenariuszy) zamknięta w WIRING-A r2 (D-WIRA-16/17/18). B-WIRA-PIN-2
+/// (`mur_jazda_rzeka`) po sondzie PIN2-PROBE-Q1 (`dyspozycje/autobot/runs/R-RUSTPORT-P6-K5LOOP-PIN2-PROBE-Q1/01-operator-r1.md`):
+/// (1) rozbicie `a0` w t. 86 przy klatce 2 ms było REALNĄ różnicą logiki Rust (`complete` przywracał morale sprzed
+/// aktywacji i cofał trafienie wieży z marszu, t. 73) — naprawione (D-PIN2-1), od tej chwili Rust = pin @1 ms = pin @2 ms
+/// = pin @0,25 ms bajt w bajt (wektor `mur_jazda_rzeka_klatka1`, test niżej); (2) jedyna pozostała różnica z wektorem
+/// produkcyjnym @16 ms to remis czasowy klatki (t. 70: cios `localT >= 150` i pocisk wieży `due` +156 ms rozstrzygane w tej
+/// samej klatce 16 ms, `_drainTimers` przed kolejką `_raf`, `battleScene.ts:9419`, `:9616-9634`) — temat FRAME-QUANT
+/// (D-PIN2-2). Test pada, gdy scenariusz z listy zacznie się zgadzać, gdy zgodny się rozjedzie, gdy scenariusz z listy
+/// skończy się błędem sesji (E2-3) albo gdy jego bliźniak `<nazwa>_klatka1` nie będzie zgodny bajt w bajt.
+const ROZBIEZNE_B_WIRA_PIN_2: [&str; 1] = ["mur_jazda_rzeka"];
 
 #[test]
 fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
@@ -301,7 +313,7 @@ fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
             v["expect"]["otherRandom"], 0,
             "{name}: Math.random poza _singleBlow"
         );
-        let blokada = ROZBIEZNE_B_WIRA_PIN_1.contains(&name);
+        let blokada = ROZBIEZNE_B_WIRA_PIN_2.contains(&name);
         // Obrona r2 (E2-3 Evaluatora): błąd sesji NIGDY nie jest „oczekiwaną rozbieżnością” — także scenariusz z
         // listy blokady musi zakończyć bitwę `Ok(..)`, a różnić się wyłącznie danymi wyniku.
         let d = match run_vector(v, &data) {
@@ -313,7 +325,7 @@ fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
         };
         match (d.is_empty(), blokada) {
             (true, false) => zgodne += 1,
-            (false, true) => eprintln!("B-WIRA-PIN-1 {name}: {}", d.join("; ")),
+            (false, true) => eprintln!("B-WIRA-PIN-2 {name}: {}", d.join("; ")),
             (true, true) => fails.push(format!("{name}: zgodny z pinem, usuń z listy blokady")),
             (false, false) => fails.push(format!("{name}: {}", d.join("; "))),
         }
@@ -323,7 +335,23 @@ fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
         "rozbieżności z pinem:\n{}",
         fails.join("\n")
     );
-    assert_eq!(zgodne, list.len() - ROZBIEZNE_B_WIRA_PIN_1.len());
+    assert_eq!(zgodne, list.len() - ROZBIEZNE_B_WIRA_PIN_2.len());
+    // PIN2-PROBE-Q1 (D-PIN2-2): każdy scenariusz z jawną rozbieżnością @16 ms ma bliźniaka z granicą klatki (krok 1 ms),
+    // zgodnego bajt w bajt (sprawdzony wyżej jako zwykły zgodny scenariusz) — rozbieżność jest WYŁĄCZNIE kwantyzacją klatki.
+    for name in ROZBIEZNE_B_WIRA_PIN_2 {
+        let twin = format!("{name}_klatka1");
+        let v = list
+            .iter()
+            .find(|v| v["name"] == twin.as_str())
+            .unwrap_or_else(|| panic!("brak bliźniaka {twin}"));
+        assert_eq!(f(&v["frameMs"]), 1.0, "{twin}: krok przewijania pinu 1 ms");
+        let base = list.iter().find(|v| v["name"] == *name).unwrap();
+        assert_eq!(
+            v["input"], base["input"],
+            "{twin}: to samo wejście co {name}"
+        );
+        assert_eq!(v["seed"], base["seed"]);
+    }
 }
 
 /// Pokrycie scenariuszy wymagane dispatchem (z/bez machin, różne liczności, wyłom, ucieczka, oba sufity tur, oba tryby).
@@ -376,6 +404,122 @@ fn pokrycie_scenariuszy() {
     );
 }
 
+/// PIN2-PROBE-Q1 (dług FC WIRING-A r2 §4, mutant B07): obrońca-strzelec zepchnięty z korony przez wyburzenie kafla
+/// muru (`battleScene.ts:7699-7741`, ZMIANA 5) traci zasięg x2 OD RAZU (`u.onWallWalkway = false;
+/// this._applyTerrainRange(u)` `:7739-7740`), nie dopiero na początku swojej kolejnej aktywacji (`:6064`). Wektory nie
+/// rozróżniają tej gałęzi (w AUTO nikt nie czyta `d.range` między zejściem a kolejną aktywacją obrońcy: po wyburzeniu
+/// kafla `_siegeApproachRestricted` jest fałszem, `:7951-7960`, więc `_siegeShooterThreats` nie jest wołane), więc test
+/// sprawdza niezmiennik pinu bezpośrednio na stanie ciała: w kroku, w którym strzelec obrońcy schodzi z korony, jego
+/// `range` = `apply_terrain_range` bez korony na nowym kaflu. Wymaga co najmniej jednego takiego zejścia w wektorach.
+#[test]
+fn zejscie_z_korony_od_razu_przelicza_zasieg() {
+    use civ_engine::domain::siege_battle_adapter_body::{apply_terrain_range, TerrainRangeUnit};
+    // Diagnostyka: `WIRING_A_ZEJSCIA_FILE` = plik kandydatów generatora (szukanie wektora z zejściem z korony).
+    let doc: Value = match std::env::var("WIRING_A_ZEJSCIA_FILE") {
+        Ok(p) => serde_json::from_str(&std::fs::read_to_string(p).unwrap()).unwrap(),
+        Err(_) => vectors(),
+    };
+    let data = pin_session_data();
+    let mut zejscia = Vec::new();
+    for v in doc["vectors"].as_array().unwrap() {
+        if v["expect"]["wallEverBreached"] != true {
+            continue;
+        }
+        let name = v["name"].as_str().unwrap();
+        let mut s = SiegeBattleSession::prepare_scene(&scene_input(v), &data).unwrap();
+        let n = s.battle_loop().env.body.units[1].len();
+        let mut on_wall: Vec<bool> = (0..n)
+            .map(|i| {
+                s.battle_loop().env.body.units[1][i]
+                    .activate
+                    .on_wall_walkway
+            })
+            .collect();
+        let mut frames = 0;
+        while s.phase() != SessionPhase::Finished {
+            s.step(FRAME_MS).unwrap();
+            frames += 1;
+            assert!(frames < MAX_FRAMES, "{name}: bitwa bez końca");
+            let lp = s.battle_loop();
+            let body = &lp.env.body;
+            for (i, was) in on_wall.iter_mut().enumerate() {
+                let a = &body.units[1][i].activate;
+                let c = &lp.st.def[i].c;
+                let zszedl = *was && !a.on_wall_walkway;
+                *was = a.on_wall_walkway;
+                if !zszedl || c.dead || c.fading_out || c.routed {
+                    continue;
+                }
+                if !body.ranged_base[1][i] || a.is_catapult || body.range_base[1][i] <= 0.0 {
+                    continue;
+                }
+                let delta = body
+                    .terrain_range_delta
+                    .as_ref()
+                    .expect("sesja z siatką zasięgu")
+                    .get(&(a.q, a.r))
+                    .copied()
+                    .unwrap_or(0.0);
+                let expected = apply_terrain_range(
+                    &TerrainRangeUnit {
+                        side_def: true,
+                        on_wall_walkway: false,
+                        ranged_base: true,
+                        is_catapult: false,
+                        range_base: body.range_base[1][i],
+                    },
+                    delta,
+                );
+                assert_eq!(
+                    a.range.to_bits(),
+                    expected.to_bits(),
+                    "{name}: d{i} zszedł z korony na {},{}: range {} != {expected} (bez :7740)",
+                    a.q,
+                    a.r,
+                    a.range
+                );
+                zejscia.push(format!("{name}:d{i}"));
+            }
+        }
+    }
+    assert!(
+        !zejscia.is_empty(),
+        "żaden wektor nie ma zejścia strzelca z korony — test bez mocy"
+    );
+    eprintln!("zejścia z korony: {zejscia:?}");
+}
+
+/// PIN2-PROBE-Q1 (diagnostyka, bez zmiennej nic nie robi): kandydaci scenariuszy z pliku wektorów generatora
+/// (`WIRING_A_EXTRA` + `WIRING_A_OUT`), ścieżka w `WIRING_A_VECTORS_FILE`. Wypisuje zgodność każdego kandydata; służy do
+/// szukania wektorów rozróżniających mutanty (binarka testu skompilowana z mutantem, ten sam plik kandydatów).
+#[test]
+fn kandydaci_z_pliku_na_zadanie() {
+    let Ok(path) = std::env::var("WIRING_A_VECTORS_FILE") else {
+        return;
+    };
+    let doc: Value = serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+    assert_eq!(
+        doc["pinSha256"], PIN_SHA256,
+        "kandydaci z innego tekstu pinu"
+    );
+    let data = pin_session_data();
+    for v in doc["vectors"].as_array().unwrap() {
+        let name = v["name"].as_str().unwrap();
+        let line = match run_vector(v, &data) {
+            Ok(out) => {
+                let d = diff(v, &out);
+                if d.is_empty() {
+                    "ZGODNY".to_owned()
+                } else {
+                    d.join("; ")
+                }
+            }
+            Err(e) => format!("BLAD {e:?}"),
+        };
+        println!("KANDYDAT {name}: {line}");
+    }
+}
+
 /// Diagnostyka rozbieżności (tylko z `WIRING_A_TRACE=<scenariusz>`; bez zmiennej test nic nie robi): ślad akcji sesji
 /// w czasie rzeczywistym w formacie śladu generatora (`DMG`/`ROUT`/`KILL`/`MOVE`).
 #[test]
@@ -407,10 +551,12 @@ fn slad_diagnostyczny_na_zadanie() {
         let r = s.battle_loop().st.round_no;
         // PIN2-PROBE-Q1 (sonda morale): po kroku z obrażeniami/rozbiciem stan morale wszystkich jednostek (do
         // porównania z `OUTCOME`/`CHECKROUT` śladu generatora).
-        let morale_dump = rep
-            .actions
-            .iter()
-            .any(|a| matches!(a.action, BattleAction::Damage { .. } | BattleAction::Rout { .. }));
+        let morale_dump = rep.actions.iter().any(|a| {
+            matches!(
+                a.action,
+                BattleAction::Damage { .. } | BattleAction::Rout { .. }
+            )
+        });
         for a in rep.actions {
             let line = match a.action {
                 BattleAction::Damage { target, dmg } => format!("DMG {} {dmg}", id(target)),
@@ -442,7 +588,10 @@ fn slad_diagnostyczny_na_zadanie() {
         if morale_dump {
             let st = &s.battle_loop().st;
             let mut parts = Vec::new();
-            for (side, list) in [(BattleSide::Attacker, &st.atk), (BattleSide::Defender, &st.def)] {
+            for (side, list) in [
+                (BattleSide::Attacker, &st.atk),
+                (BattleSide::Defender, &st.def),
+            ] {
                 for (idx, u) in list.iter().enumerate() {
                     let c = &u.c;
                     parts.push(format!(
