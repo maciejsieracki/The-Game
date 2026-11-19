@@ -8,8 +8,10 @@ GOAL: adapter PlayableState -> rostery, szablony, SetupUnit, wejscia ProdBody/Ac
 ZMIANY/COMMIT: baza 08e1af9fe (raport Evaluatora; kod 9a39bc09f). Zmiany WYLACZNIE w testach/generatorze/wektorach
                (allowlista): tests/p6_k5loop_adapter.rs, tests/p6_k5loop_adapter_gen.mjs,
                tests/p6_k5loop_adapter_vectors/vectors.json + ten raport. Kod produkcyjny adaptera bez zmian.
-               Commity: 1d9e4f527 (testy+wektory), __SHA_RAPORT__ (raport). Galaz obrona/k5loop-adapter-q1-r1d (bez push).
-TESTY: __TESTY__
+               Commity: 1d9e4f527 (testy+wektory), b9e3dcb24 (szkic raportu), ostatni = SHA zwrocony orkiestratorowi (raport koncowy). Galaz obrona/k5loop-adapter-q1-r1d (bez push).
+TESTY: fmt 0; clippy --all-targets -D warnings 0; p6_k5loop_adapter 27/27 (bylo 25); 6 testow bramki EXIT 0
+       (7/15/9/7/10/6); generator bajt w bajt (15 scenariuszy, pinSha256 bez zmian); mutanty Evaluatora 20/20 ZABITE;
+       pelny cargo test --all-targets --no-fail-fast EXIT 0 (541 binarek, 4103 ok, 0 failed, 1 ignored poza tematem)
 BLOKADY: brak
 RUNDY: 1/5 (obrona po Evaluatorze r1)
 NASTEPNY KROK: Final Control (ta sama ID)
@@ -119,7 +121,24 @@ zostaly wylacznie asercje.
 
 ## Bramki
 
-__BRAMKI__
+CARGO_INCREMENTAL=0, DEBUG=0, `CARGO_TARGET_DIR=scratchpad/adapter/t2` (cache z dodatku r1d, nie usuwany — decyzja orkiestratora).
+
+| Bramka | Wynik |
+|---|---|
+| `cargo fmt --check` | EXIT 0 |
+| `cargo clippy --all-targets -- -D warnings` | EXIT 0 |
+| `cargo test --test p6_k5loop_adapter` | 27 passed, 0 failed |
+| 6 testow bramki (`p6_battle_setup_units`, `p6_battle_setup`, `bridge_contract`, `p6_k5loop_siege_atk_a`, `p6_k5loop_siege_def`, `p6_k5doc_t8`) | 7 / 15 / 9 / 7 / 10 / 6 ok, EXIT 0 |
+| `node tests/p6_k5loop_adapter_gen.mjs` | `pinSha256 0a95f5bc…731f51` (guard OK), 15 scenariuszy, `git status` czysty = bajt w bajt |
+| pelny `cargo test --all-targets --no-fail-fast` (`setsid nohup`, `scratchpad/adapter/full_obrona.log`) | **EXIT 0**, 03:02:28Z–03:16:13Z, 541 binarek, 4103 passed, 0 failed, 1 ignored (istniejacy, poza tematem) |
+
+Pokrycie generatora po obronie: `scenariusze 15, bledy 4, wiezyczki 429, strzelec_wiezy 11, machina_zasieg_6 2, taran 4,
+wieza_obl 2, milicja 17, machiny 5, korona 14, katapulta_korona 2, jazda 4, strzelcy 30, sojusznik_atk 2, sojusznik_def 2,
+kara_atk 5, kara_def 6, weteran 3, general_obroncy 1` + `militiaDefCases` 8.
+
+Allowlista: zmienione tylko `tests/p6_k5loop_adapter.rs`, `tests/p6_k5loop_adapter_gen.mjs`,
+`tests/p6_k5loop_adapter_vectors/vectors.json`, `02a-obrona.md`. Brak `#[ignore]`, brak zmian w `src/`, `gra/**`,
+`Cargo.*`, `REJESTR-RUST.md`. Dysk po bramkach: 7,5 GB wolnego.
 
 ## Dlugi (uzupelnienie)
 - D-ADP-L-BARB (N2), T7-SOJUSZ-UMOWA (N3) — jak wyzej; pozostale dlugi bez zmian wobec `01-operator-r1.md`.
