@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "5f4a492f174f7f8a5c34237cad02a3d3",
-  "bundleSha256": "ab3763ccc2ade751b90cf4374c3a5e00b66aea4c0abe22b74498ac2e65af4a15",
-  "bundleBytes": 14979341,
+  "bundleMd5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+  "bundleSha256": "c2217f8a419bf860cf09ed52df06ae609afcc3fabbfa73c068d58858015e6e91",
+  "bundleBytes": 14980267,
   "sourceSnapshot": {
-    "source": "R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 r4 (kod 5e3c284a4, FC d3310b0dc)",
+    "source": "R-WEB-AI-TERRITORY-RACE-FORTS-OUTPOSTS-DESIGN-Q1 r3 (kod 93e5f008f, FC 982c9ded7)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 857: Wspolna funkcja ai-city-garrison.ts; garnizon wykluczony z marszow, koncentracji, front-merge, seeks-army, planHomeWar (poza pula przydzialu), kampanii wodza, all-in, marszu panstw-miast po chatki; garnizonem jest najtansza dostepna jednostka bojowa (nie tylko Wojownik); pierwsza jednostka do pustego miasta ma priorytet zakupu z rezerwa zlota (parametr garnizon_rezerwa_max_miast=3 w ai-params.json); homeDefenderPool bez zmian"
+    "FALA 858: Odczytowy hak metryk terytorium w __aiEconomyMeasure (forty, posterunki, heksy z miast i z fortow/posterunkow, heksy sporne); runner territory-race-measure-run.cjs (domyslnie --player-ai 1 i --reject-offers 1), opcja --reject-offers w ai-economy-measure-run.cjs (domyslnie 0), analizator territory-race-measure-analyze.cjs, sekcja Pomiar w dokumencie projektu; brak zmian zasad gry"
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-city-garrison-min-one 38/0; ai-war-city-garrison 21/0; ai-war-defend-home 30/0; siege-relief 23/0; war-limit 48/0; pomiar zywy seed 4242 t60: puste miasta AI 167/193 -> 16/188 (8,5%); koszt utrzymania jednostek AI +14%"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-economy-measure-hook-test 23/23; smoke seed 4242 40 tur z autopilotem gracza: 0 NaN, w t40 5 z 13 cywilizacji AI z fortem lub posterunkiem"
   ],
   "limits": [
-    "CZERWONE 4 oryginalne asercje (ai-home-defense-vs-barbarians 50/2 T2(b),T4(b); army-concentration 56/2 sc.4) - zakladaja marsz jedynej jednostki miasta, sprzeczne z regula wlasciciela, do decyzji ABC; t30 w pokoju nadal 36/96 pustych (brak drewna, ubogie skarbce, bramka NNS AI); sufit rezerwy 3 miasta = zalozenie robocze; garnizon poza pula planHomeWar ogranicza reakcje domowa przed barbarzyncami (decyzja o homeDefenderPool otwarta)"
+    "Narzedzie pomiarowe bez efektu w rozgrywce; test haka sprawdza tylko ksztalt pol; pomiar 3 ziarna x 150 tur NIE ZMIERZONO (robi orkiestrator); owner != 0 w danych obejmuje placeholdery i panstwa-miasta; +14 linii w ai-economy-measure-run.cjs poza allowlista, zaakceptowane (domyslnie wylaczone)"
   ],
-  "finalControl": "PASS-WITH-NOTES: bramki wlasne zielone poza 4 oryginalnymi asercjami czekajacymi na decyzje wlasciciela, mutacje wykryte, kandydat potomkiem bazy",
+  "finalControl": "PASS-WITH-NOTES: bramki wlasne zielone, kandydat potomkiem bazy",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T01:25:03",
+  "hubGeneratedAt": "2026-11-19T01:36:04",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "5f4a492f174f7f8a5c34237cad02a3d3",
-      "sizeBytes": 14979341
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "5f4a492f174f7f8a5c34237cad02a3d3",
-      "sizeBytes": 14979341
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "5f4a492f174f7f8a5c34237cad02a3d3",
-      "sizeBytes": 14979341
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "5f4a492f174f7f8a5c34237cad02a3d3",
-      "sizeBytes": 14979341
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "5f4a492f174f7f8a5c34237cad02a3d3",
-      "sizeBytes": 14979341
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "5f4a492f174f7f8a5c34237cad02a3d3",
-      "sizeBytes": 14979341
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "5f4a492f174f7f8a5c34237cad02a3d3",
-      "sizeBytes": 14979341
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "5f4a492f174f7f8a5c34237cad02a3d3",
-      "sizeBytes": 14979341
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "5f4a492f174f7f8a5c34237cad02a3d3",
-      "sizeBytes": 14979341
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "5f4a492f174f7f8a5c34237cad02a3d3",
-      "sizeBytes": 14979341
+      "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
+      "sizeBytes": 14980267
     }
   ],
-  "md5": "5f4a492f174f7f8a5c34237cad02a3d3",
+  "md5": "422310f13de2ed94eef0a0cd9cb6fa6c",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

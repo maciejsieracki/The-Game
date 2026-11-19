@@ -1,3 +1,9 @@
+## ROBOCZA 422310f1 -- 2026-11-18 -- FALA 858: Wyscig o terytorium: hak pomiarowy fortow/posterunkow/terytorium, runner i analizator (tylko pomiar) (testowa)
+
+- Odczytowy hak metryk terytorium w __aiEconomyMeasure (forty, posterunki, heksy z miast i z fortow/posterunkow, heksy sporne); runner territory-race-measure-run.cjs (domyslnie --player-ai 1 i --reject-offers 1), opcja --reject-offers w ai-economy-measure-run.cjs (domyslnie 0), analizator territory-race-measure-analyze.cjs, sekcja Pomiar w dokumencie projektu; brak zmian zasad gry
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-economy-measure-hook-test 23/23; smoke seed 4242 40 tur z autopilotem gracza: 0 NaN, w t40 5 z 13 cywilizacji AI z fortem lub posterunkiem
+- Limity: Narzedzie pomiarowe bez efektu w rozgrywce; test haka sprawdza tylko ksztalt pol; pomiar 3 ziarna x 150 tur NIE ZMIERZONO (robi orkiestrator); owner != 0 w danych obejmuje placeholdery i panstwa-miasta; +14 linii w ai-economy-measure-run.cjs poza allowlista, zaakceptowane (domyslnie wylaczone)
+
 ## ROBOCZA 5f4a492f -- 2026-11-18 -- FALA 857: Garnizon: min. 1 jednostka bojowa w kazdym miescie AI takze w pokoju (rezerwacja z priorytetem) (testowa)
 
 - Wspolna funkcja ai-city-garrison.ts; garnizon wykluczony z marszow, koncentracji, front-merge, seeks-army, planHomeWar (poza pula przydzialu), kampanii wodza, all-in, marszu panstw-miast po chatki; garnizonem jest najtansza dostepna jednostka bojowa (nie tylko Wojownik); pierwsza jednostka do pustego miasta ma priorytet zakupu z rezerwa zlota (parametr garnizon_rezerwa_max_miast=3 w ai-params.json); homeDefenderPool bez zmian
