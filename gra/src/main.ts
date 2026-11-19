@@ -45611,6 +45611,25 @@ async function boot(): Promise<void> {
 
             // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (Z1/Z4/K1): gracz pierwszy; bramka R1/R2 po stronie
             // AI (targetIsPlayer=true). Pusty obiekt gdy flaga OFF = wywołanie jak dotąd.
+            // R-WEB-ERA-WAR-DEFER-NOT-CANCEL-Q1 (runda 2): WSZYSTKIE major AI z erą (bez gracza) —
+            // wspólna lista kandydatów: cel gracza (playerFirst) ORAZ wolny cel fallback dla podmiotu
+            // Brązu/Żelaza bez partnera w puli triggered (bez tego pending nigdy nie wybuchał).
+            const forcedWarMajorAiSubjects: ForcedWarPairingSubject[] = aiOwnerList.flatMap((oid): ForcedWarPairingSubject[] => {
+              if (
+                oid <= 0
+                || typCityCopyOwners.has(oid)
+                || isBarbarian(oid)
+                || eliminatedOwners.has(oid)
+                || isOwnerClusterCityState(oid, ownerCityStateOpts())
+              ) return [];
+              const epochNow = empireEpochForOwner(oid);
+              const eraTag: ForcedEraTag | null = epochNow === 1 ? 'stone' : epochNow === 2 ? 'bronze' : epochNow === 3 ? 'iron' : null;
+              const capId = capitalCityIdForOwner(oid);
+              const refCity = cities.find(c => c.id === capId && c.ownerId === oid)
+                ?? cities.find(c => c.ownerId === oid);
+              if (!refCity || eraTag === null) return [];
+              return [{ ownerId: oid, q: refCity.q, r: refCity.r, era: eraTag }];
+            });
             const forcedWarPlayerFirstOpt = isWarEpochPlayerFirstEnabled() ? {
               playerFirst: {
                 playerOwnerId: 0,
@@ -45637,22 +45656,7 @@ async function boot(): Promise<void> {
                     eraWarCountByCivKey, empireEpochForOwner(aiOwnerId), empireEpochForOwner(0), WAR_RULES_PARAMS,
                   )),
                 // D1 (r2): kandydaci na partnera = WSZYSTKIE major AI z erą (nie tylko pula warless).
-                candidates: aiOwnerList.flatMap((oid): ForcedWarPairingSubject[] => {
-                  if (
-                    oid <= 0
-                    || typCityCopyOwners.has(oid)
-                    || isBarbarian(oid)
-                    || eliminatedOwners.has(oid)
-                    || isOwnerClusterCityState(oid, ownerCityStateOpts())
-                  ) return [];
-                  const epochNow = empireEpochForOwner(oid);
-                  const eraTag: ForcedEraTag | null = epochNow === 1 ? 'stone' : epochNow === 2 ? 'bronze' : epochNow === 3 ? 'iron' : null;
-                  const capId = capitalCityIdForOwner(oid);
-                  const refCity = cities.find(c => c.id === capId && c.ownerId === oid)
-                    ?? cities.find(c => c.ownerId === oid);
-                  if (!refCity || eraTag === null) return [];
-                  return [{ ownerId: oid, q: refCity.q, r: refCity.r, era: eraTag }];
-                }),
+                candidates: forcedWarMajorAiSubjects,
               },
             } : {};
             // R-WEB-ERA-WAR-COUNTER-Q1 (3): podmiot z zużytym licznikiem wojen epoki (w tej epoce,
@@ -45673,6 +45677,9 @@ async function boot(): Promise<void> {
                 hexDistanceFn: hexDistance,
                 totalActiveForcedWarsByOwner: totalActiveForcedWarsForPairing,
                 isEraWarExhausted: isWarRulesMultiwarEnabled() ? isEraWarExhausted : undefined,
+                // R-WEB-ERA-WAR-DEFER-NOT-CANCEL-Q1 (runda 3, Z4): cel fallbacku musi być WOLNY także od
+                // wojny naturalnej (jak partner z puli: `alreadyAtWarAnyRole`), inaczej ai.ts odrzuca komendę.
+                freeTargetCandidates: forcedWarMajorAiSubjects.filter(s => countActiveWarsForOwnerExcludingBarbarians(s.ownerId) === 0),
                 ...forcedWarPlayerFirstOpt,
               },
             );
