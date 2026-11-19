@@ -24,6 +24,12 @@ export interface ResourceGrossNetInput {
   usage?: { buildings: number; citizens: number; units: number };
   /** Nominalne wejścia konwerterów tego surowca na turę (przepustowość × zużycie na cykl), ≥ 0. */
   rateConverterInputPerTurn?: number;
+  /**
+   * R-WEB-UI-HUD-NET-SPICHLERZ-DRAIN-Q1: drenaż ze magazynu państwa przez budynki poza konwerterami,
+   * utrzymaniem jednostek i ulepszeń (Spichlerz: Ceramika I/II, Sól II — `paySpichlerzDrainForCity`),
+   * nominalnie na turę, ≥ 0. Brak pola = 0 (dotychczasowa formuła).
+   */
+  rateBuildingDrainPerTurn?: number;
 }
 
 export interface ResourceGrossNet {
@@ -33,7 +39,9 @@ export interface ResourceGrossNet {
   zuzycie: number;
   /** Wejścia konwerterów (nominalne) łącznie, nieujemne, zaokrąglone. */
   wejscia: number;
-  /** Netto po zużyciu i wejściach konwerterów (może być ujemne), zaokrąglone. */
+  /** Drenaż budynków (Spichlerz) na turę, nieujemny, zaokrąglony (R-WEB-UI-HUD-NET-SPICHLERZ-DRAIN-Q1). */
+  drenaz: number;
+  /** Netto po zużyciu, wejściach konwerterów i drenażu budynków (może być ujemne), zaokrąglone. */
   netto: number;
 }
 
@@ -54,13 +62,22 @@ export function resourceConverterInputSum(r: ResourceGrossNetInput): number {
   return typeof v === 'number' && Number.isFinite(v) ? Math.max(0, v) : 0;
 }
 
-/** Brutto/zużycie/wejścia/netto per surowiec na turę, zaokrąglone tak samo jak nagłówek. */
+/** Drenaż budynków (Spichlerz) per surowiec na turę (nominalny), nie mniej niż 0. */
+export function resourceBuildingDrainSum(r: ResourceGrossNetInput): number {
+  const v = r.rateBuildingDrainPerTurn;
+  return typeof v === 'number' && Number.isFinite(v) ? Math.max(0, v) : 0;
+}
+
+/** Brutto/zużycie/wejścia/drenaż/netto per surowiec na turę, zaokrąglone tak samo jak nagłówek. */
 export function resourceGrossNetPerTurn(r: ResourceGrossNetInput): ResourceGrossNet {
   return {
     brutto: Math.round(resourceGrossPerTurn(r)),
     zuzycie: Math.round(resourceUsageSum(r)),
     wejscia: Math.round(resourceConverterInputSum(r)),
-    netto: Math.round(r.ratePerTurn - resourceUsageSum(r) - resourceConverterInputSum(r)),
+    drenaz: Math.round(resourceBuildingDrainSum(r)),
+    netto: Math.round(
+      r.ratePerTurn - resourceUsageSum(r) - resourceConverterInputSum(r) - resourceBuildingDrainSum(r),
+    ),
   };
 }
 
@@ -82,4 +99,15 @@ export function resourceWejsciaTooltipText(wejscia: number | undefined): string 
   const n = Math.round(wejscia ?? 0);
   if (!(n > 0)) return null;
   return `Wejścia przetwórstwa: −${n} sztuk/turę (już odjęte od netto)`;
+}
+
+/**
+ * R-WEB-UI-HUD-NET-SPICHLERZ-DRAIN-Q1: wiersz „Drenaż budynków (Spichlerz)” w tooltipie
+ * „Brutto · netto”. Zwraca null, gdy drenażu nie ma (N ≤ 0 lub brak), żeby tooltip bez
+ * Spichlerza pozostał bez zmian.
+ */
+export function resourceDrenazTooltipText(drenaz: number | undefined): string | null {
+  const n = Math.round(drenaz ?? 0);
+  if (!(n > 0)) return null;
+  return `Drenaż budynków (Spichlerz): −${n} sztuk/turę (już odjęte od netto)`;
 }

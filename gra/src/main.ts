@@ -1182,7 +1182,12 @@ import {
 // helper population-growth-v85.ts/cityPopulationCap already require for the STRUCTURAL cap
 // flag (Spichlerz w DOWOLNYM tierze), nie miękki `maSpichlerzPop`/`maSpichlerzIIPop` zależny
 // od drainu tej tury -- patrz komentarz przy cityHasSpichlerzBuilding w building-resource-gate.ts.
-import { cityHasSpichlerzBuilding } from './game/building-resource-gate';
+import {
+  cityHasSpichlerzBuilding,
+  loadSpichlerzDrainParams,
+  paySpichlerzDrainForCity,
+  spichlerzCeramikaDrainAmount,
+} from './game/building-resource-gate';
 import { buildAutoRationSidePanelEvent } from './game/spich-auto-ration-notify';
 // R-WEB-UI-END-TURN-BLOCK-EVENT-Q1: wydarzenie-blokada „Nie można zakończyć tury” (zakładka Ważne).
 import {
@@ -3999,6 +4004,31 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-WEB-UI-HUD-NET-SPICHLERZ-DRAIN-Q1: drenaż Spichlerza z magazynu państwa ownera na turę
+     * (klucz surowca → nominalna ilość). Ta sama logika co silnik (`paySpichlerzDrainForCity`, tryb
+     * dryRun = bez mutacji) i te same parametry (`loadSpichlerzDrainParams`, econ-params wg trudności).
+     * Tylko HUD netto — nie zmienia ekonomii. Ceramika = Spichlerz I/II; Sól = tylko Spichlerz II.
+     */
+    function empireSpichlerzDrainRatesForOwner(ownerId: number): Partial<Record<string, number>> {
+      const params = loadSpichlerzDrainParams(
+        data.econParams as unknown as RawConverterParamsJson,
+        _menuDifficulty,
+      );
+      const rates: Partial<Record<string, number>> = {};
+      for (const c of cities) {
+        if (c.ownerId !== ownerId) continue;
+        const built = operationalBuiltIds(c, cityBuilt.get(c.id) ?? []);
+        if (!cityHasSpichlerzBuilding(built)) continue;
+        const pay = paySpichlerzDrainForCity(cities, ownerId, built, true, params);
+        if (pay.ceramikaPaid) {
+          rates.ceramika = (rates.ceramika ?? 0) + spichlerzCeramikaDrainAmount(built, params);
+        }
+        if (pay.solPaid) rates.sol = (rates.sol ?? 0) + params.solII;
+      }
+      return rates;
+    }
+
+    /**
      * Licznik surowców imperium (BRAZ-ILOSC=B, decyzja Macieja 2026-07-23) — zbiorczy
      * WOLUMEN wszystkich jednostek surowców zgromadzonych w magazynach miast ownera
      * (suma City.surowce). Cel: zobaczyć, ile surowców realnie leży w magazynach, zanim
@@ -4084,6 +4114,7 @@ async function boot(): Promise<void> {
       const territoryRates = empireTerritoryResourceRatesForOwner(ownerId);
       const converterRates = empireConverterResourceRatesForOwner(ownerId);
       const converterInputRates = empireConverterInputRatesForOwner(ownerId);
+      const spichlerzDrainRates = empireSpichlerzDrainRatesForOwner(ownerId);
       // SUROW-CIV-01 (Maciej 2026-07-24): cap PAŃSTWA (civ-wide) — baza + bonus×Magazyny
       // ownera; `warehouse` powyżej JEST już sumą civ-wide (citySurowceSumForOwner),
       // wystarczy dołożyć cap, żeby licznik pokazał „stock / cap" (np. „140 / 200").
@@ -4208,6 +4239,9 @@ async function boot(): Promise<void> {
           ...(diploIn > 0 ? { rateDiploInPerTurn: diploIn } : {}),
           ...((converterInputRates[c.id] ?? 0) > 0
             ? { rateConverterInputPerTurn: converterInputRates[c.id] }
+            : {}),
+          ...((spichlerzDrainRates[c.id] ?? 0) > 0
+            ? { rateBuildingDrainPerTurn: spichlerzDrainRates[c.id] }
             : {}),
           cap, capBase, capBonusPerMagazyn, zrodlo,
           ...(citizenRequired
@@ -23936,6 +23970,9 @@ async function boot(): Promise<void> {
       // R-WEB-UI-HUD-SHORTAGE-ALERT-TOOLTIP-Q1: łączne wejścia konwerterów (nominalne, ≥0) do
       // wiersza „Wejścia przetwórstwa” w tooltipie „Brutto · netto”.
       const surowceWejscia = shortageRows.reduce((a, r) => a + resourceGrossNetPerTurn(r).wejscia, 0);
+      // R-WEB-UI-HUD-NET-SPICHLERZ-DRAIN-Q1: łączny drenaż budynków (Spichlerz) — już odjęty od netto
+      // (resourceGrossNetPerTurn); tylko do wiersza „Drenaż budynków” w tooltipie.
+      const surowceDrenaz = shortageRows.reduce((a, r) => a + resourceGrossNetPerTurn(r).drenaz, 0);
       // R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: brutto/netto surowców z TYCH SAMYCH wierszy co panel
       // Surowców (bez 2. kalkulacji): brutto = produkcja własna + przychód z umów; netto =
       // ratePerTurn (produkcja − umowy wychodzące + przychodzące) − zapotrzebowanie
@@ -24129,6 +24166,7 @@ async function boot(): Promise<void> {
         surowceBrutto,
         surowceNetto,
         surowceWejscia,
+        surowceDrenaz,
         surowceBilans,
         handelIncome,
         handelRouteCount,
