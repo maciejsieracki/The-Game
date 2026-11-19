@@ -1,3 +1,9 @@
+## ROBOCZA c64bc121 -- 2026-11-18 -- FALA 859: HUD Surowce: netto przetworstwa odejmuje wejscia konwerterow (brutto bez zmian) (testowa)
+
+- HUD netto surowca = produkcja - zuzycie - wejscia konwerterow (np. Glina zuzywana przez Garncarnie); nowa czysta funkcja sumujaca wejscia w converters.ts, wiersz w main.ts (empireConverterInputRatesForOwner, rateConverterInputPerTurn), nowy test resource-gross-net-converter-inputs-test; brutto, produkcja, zuzycie i zasady ekonomii bez zmian - wyswietlanie
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; converter-inputs 18/0; resource-cards-gross-net 24/0; hud-gross-net-rest 820/0; hud-topbar-grid 1150/0; ai-economy-measure-hook 23/23; DOWOD NA ZYWO seed 4242 autopilot gracza t108-t124: Glina HUD netto 174-176 = delta stanu 174-176 (przed poprawka netto 324-326)
+- Limity: Ceramika: HUD netto 77 vs delta stanu 67 (roznica 10, przyczyna NIE ZBADANA, bez zmiany wzgledem stanu sprzed poprawki); alert niedoboru w naglowku nadal liczy ratePerTurn bez wejsc konwerterow (osobny temat); wejscia nominalne bez klamrowania do zapasu; tooltip karty Brutto-netto nie pokazuje wejsc (panel przywrocony do bazy)
+
 ## ROBOCZA 422310f1 -- 2026-11-18 -- FALA 858: Wyscig o terytorium: hak pomiarowy fortow/posterunkow/terytorium, runner i analizator (tylko pomiar) (testowa)
 
 - Odczytowy hak metryk terytorium w __aiEconomyMeasure (forty, posterunki, heksy z miast i z fortow/posterunkow, heksy sporne); runner territory-race-measure-run.cjs (domyslnie --player-ai 1 i --reject-offers 1), opcja --reject-offers w ai-economy-measure-run.cjs (domyslnie 0), analizator territory-race-measure-analyze.cjs, sekcja Pomiar w dokumencie projektu; brak zmian zasad gry
