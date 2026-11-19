@@ -1216,3 +1216,54 @@ fn breach_mark_is_limited_to_the_tile_and_its_t0() {
         .all(|c| !matches!(c, SceneCall::HpBar { .. })));
     assert!(unit(&q2, d4).removed);
 }
+
+/// No free cell next to the breached tile (`:7717`, the engine emits `LeaveField` with `to == from`): the pin only
+/// sets `onWallWalkway = false` (`:7739`) and leaves the model where it stands (on the crown); a move would put it on
+/// the tile top.
+#[test]
+fn retreat_without_free_cell_keeps_the_model() {
+    let (_, p0) = base();
+    let mut p = p0.clone();
+    let mut q = p0.clone();
+    let mut pb = BattlePlayback::new(&q, PlaybackOpts::default());
+    let d4 = uid("def4");
+    let (c, r) = {
+        let u = unit(&q, d4);
+        (u.col, u.row)
+    };
+    let before = v3(&q, d4);
+    pb.push_actions(&[
+        act(10.0, K::WallBreach { row: r }),
+        act(
+            10.0,
+            K::LeaveField {
+                id: d4,
+                from_col: c,
+                from_row: r,
+                to_col: c,
+                to_row: r,
+            },
+        ),
+    ])
+    .expect("push");
+    pb.play_until(&mut q, 10.0, 0.0).expect("play");
+    let wall = p.wall.clone();
+    let wc = wall_col(&p);
+    let _ = breach_wall_tile(
+        &mut p.field.field.scene,
+        &mut p.field.grid,
+        wall.as_ref(),
+        wc,
+        r,
+        0.0,
+    );
+    unit_mut(&mut p, d4).on_wall_walkway = false;
+    assert!(p == q, "retreat in place: playback scene != pin-call scene");
+    assert!(!unit(&q, d4).on_wall_walkway);
+    assert_eq!(v3(&q, d4), before);
+    assert_eq!(before[1], WALL_WALK_Y);
+    assert!(matches!(
+        pb.calls().last(),
+        Some(SceneCall::WallRetreat { moved: false, .. })
+    ));
+}
