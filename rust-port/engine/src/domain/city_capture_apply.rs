@@ -746,7 +746,7 @@ fn capital_plunder(
                 .push("shouldShowPlayerTriumphCityStateUnification".into());
         }
         if old_owner != HUMAN_OWNER_ID {
-            eliminate_owner(state, &mut Vec::new(), old_owner);
+            
             // Adapter (D-ZMA-8): pin `eliminateOwner` kasuje `diplomacyPairMeta` par z właścicielem
             // (`main.ts:35405-35409`, `diploPairKeyHasOwner`); `WarTurnState::clear_eliminated_owner_war_state` dzieli
             // klucz po `_`, a stan zapisuje klucze `min-max` (`war_turn_declare::pair_key`) — wpisy usuwa tu adapter.
