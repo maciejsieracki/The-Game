@@ -29,7 +29,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.mennica-magazyn-bundle.cjs');
 
 fs.writeFileSync(ENTRY_FILE, `
 export { cityYieldPerTurn, loadEconParams, tileYield } from '../src/game/economy';
-export { ensureCitySaveDefaults } from '../src/game/cities';
+export { ensureCitySaveDefaults, splitHandelLargestRemainder } from '../src/game/cities';
 export { runConverters, DEFAULT_CONVERTER_RECIPES } from '../src/game/converters';
 export { resourceStorageCapacityPerType, loadStorageParams } from '../src/game/economy-upkeep';
 export { buildEconParams, advanceCityEconomy } from '../src/game/turn-economy';
@@ -151,8 +151,14 @@ function runTick(builtIds, walutaOdkryta, stock = {}) {
   cities.push(c);
   const builtByCity = new Map([[c.id, builtIds]]);
   const playerZbadane = new Set(walutaOdkryta ? ['Waluta'] : []);
+  // R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (runda 2, zarzut 2): bramka Mennicy działa TYLKO,
+  // gdy podano resolveOwnerActiveLabels (turn-economy.ts:1782 -- bez niego filtr runtime jest pominięty).
+  // Dostęp do złota = stan magazynu państwa (jak w main.ts): zloto > 0.
+  const zlotoAccess = () => (stock.zloto ?? 0) > 0;
   const econ = M.advanceCityEconomy(
     cities, map, gameData, 'normal', [], new Map(), builtByCity, 1, playerZbadane, new Map(), new Map(),
+    undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+    zlotoAccess, () => [], () => ({ ...stock }),
   );
   return { tick: econ.perCity[0], city: c };
 }
@@ -191,10 +197,47 @@ eq(walutaOnly.pieniadzBrutto, base.pieniadzBrutto,
 // sprzed kandydata (HEAD~1 też got 0). Mennica nie dowozi własnego plonu Pieniądza do pieniadzBrutto w tym
 // scenariuszu -- ZNALEZISKO GRY (nie błąd testu). Asercja zostaje CZERWONA z tym opisem. Oczekiwania NIE
 // zmieniam na 0: 0 unieważniałoby test wycieku mnożnika.
-eq(mennicaOnly.pieniadzBrutto - base.pieniadzBrutto, 2,
-  'Mennica BEZ Waluty (ze złotem): delta = wlasny plon budynku po podziale suwakiem (67B) = 2; OBECNIE 0 = błąd gry do wyjaśnienia (multiplikator Efektu 1 NIEaktywny)');
+// R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (runda 1, Operator): ZMIERZONE 2026-11-19 -- delta
+// Pieniadza = 0 ZARÓWNO ze złotem (ZLOTO_STOCK), JAK i bez złota (stock {}). Harness nie podaje
+// resolveOwnerActiveLabels, więc bramka złota w tym teście nie działa; 0 wynika z domyślnego podziału
+// Handlu (DEFAULT_PODZIAL_HANDLU 60 Nauka / 30 Pieniądz / 10 Luksus, cities.ts) na 2 pkt plonu Mennicy:
+// floor(2 × 0,30) = 0 Pieniądza, a +1 idzie do Nauki (zmierzone: nauka 4 -> 5). Oczekiwanie „2" z
+// komentarza 67B zakładało podział 20/60/20, którego dziś nie ma. ZNALEZISKO GRY (zaokrąglenie
+// podziału małej puli, nie mnożnik): NIE naprawiane tu -- wymaga decyzji właściciela (ABC).
+// Asercja pilnuje tylko tego, co dowodzi testu: multiplikator Efektu 1 (Waluta) NIE przecieka przy
+// samej Mennicy bez Waluty -- delta mieści się w [0, plon budynku 2].
+// R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (runda 2, zarzuty 1-2): TRZY reguły rozdzielone,
+// każda z bramką złota aktywną (resolveOwnerActiveLabels + zlotoAccess w runTick).
+// (i) BEZ złota: bramka zamknięta -> Mennica nie produkuje -> delta DOKŁADNIE 0.
+const bezZlotaMennica = runTick(['mennica'], false, {}).tick;
+const bezZlotaBase = runTick([], false, {}).tick;
+eq(bezZlotaMennica.pieniadzBrutto - bezZlotaBase.pieniadzBrutto, 0,
+  'Mennica BEZ złota (stock {}): delta = 0 (bramka złota zamknięta)');
+// (ii) ZE złotem: bramka otwarta -> delta MUSI być > 0 (zgodnie z mnożnikiem / plonem budynku).
+// ZMIERZONE runda 2: 0 (floor(2 x 0,30) = 0 Pieniądza z podziału Handlu 60/30/10, cities.ts).
+// To ZNALEZISKO GRY (zaokrąglenie podziału małej puli), NIE naprawiane w tym temacie: zmiana
+// zaokrąglenia to decyzja właściciela (ABC). Asercja zostaje CZERWONA do tej decyzji.
+const zeZlotemDelta = mennicaOnly.pieniadzBrutto - base.pieniadzBrutto;
+assert(zeZlotemDelta > 0,
+  `Mennica ZE złotem (zloto 10): delta > 0 (got ${zeZlotemDelta}; regresja: podział Handlu metodą największych reszt)`);
+// (iii) Waluta + Mennica > sama Waluta (istniejąca asercja; gate ON).
 assert(both.pieniadzBrutto > walutaOnly.pieniadzBrutto,
   `Mennica + Waluta: dochod wyzszy niz sama Waluta (${both.pieniadzBrutto} > ${walutaOnly.pieniadzBrutto})`);
+
+// ---------------------------------------------------------------------------
+// C2. Rozdział gliny NA REALNYM TORZE (runda 2, zarzut 5): advanceCityEconomy -> runConverters
+//     (turn-economy.ts), nie tylko izolowane receptury. Glina 40, Cegielnia + Garncarnia.
+// ---------------------------------------------------------------------------
+console.log('\n-- C2. advanceCityEconomy: glina 40, Cegielnia+Garncarnia (tor realny) --');
+{
+  const glinaStock = { glina: 40, drewno: 40, zloto: 10 };
+  const real = runTick(['cegielnia', 'garncarnia'], false, glinaStock);
+  const s = real.city.surowce ?? {};
+  assert((s.cegla ?? 0) > 0, `tor realny: cegla > 0 (got ${s.cegla})`);
+  assert((s.ceramika ?? 0) > 0, `tor realny: ceramika > 0 (got ${s.ceramika})`);
+  assert((s.glina ?? 0) >= 0 && (s.glina ?? 0) < 40,
+    `tor realny: glina zmalala i nie jest ujemna (got ${s.glina})`);
+}
 
 // ---------------------------------------------------------------------------
 // D. Zadanie 2: City.surowce -- migracja starego zapisu (ensureCitySaveDefaults)
@@ -330,15 +373,43 @@ eq(withOdlewniaNoOre.stores.braz, undefined,
   'odlewnia_brazu zbudowana ale brak rudy w magazynie -> braz NIE rosnie (undefined, brak-wejscia)');
 assert(withOdlewniaNoOre.stores.cegla > 0,
   'odlewnia_brazu bez rudy NIE blokuje Cegielni (cegla > 0)');
-// Garncarnia w tym scenariuszu dostaje 0 gliny: Cegielnia (wcześniej w DEFAULT_CONVERTER_RECIPES) zjada całą glinę
-// z magazynu 40 w jednym ticku. To ZNALEZISKO gry (kolejność konwerterów), NIE błąd testu -- asercja
-// "ceramika > 0" wyżej (Garncarnia) zostaje CZERWONA i opisana w raporcie.
+// R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (runda 2): dawna kolejność „Cegielnia zjada całą glinę"
+// jest usunięta -- wspólne wejście rozdziela się proporcjonalnie (converters.ts, converters-shared-input-test.cjs).
+// Asercja "ceramika > 0" wyżej (Garncarnia przy glinie 40) jest ZIELONA z tego powodu.
 
 // Sanity: gdyby ruda BYLA w magazynie (nie zbierana dzis, ale receptura istnieje), odlewnia
 // zadzialalaby -- potwierdza, ze brak braz wyzej wynika z braku rudy, nie ze zlej receptury.
 const withOdlewniaWithOre = simulateConverterTick(['odlewnia_brazu'], { ruda: 4, drewno: 4, ruda_cyny: 1 });
 assert(withOdlewniaWithOre.stores.braz > 0,
   `kontrola: odlewnia_brazu Z ruda w magazynie -> braz > 0 (got ${withOdlewniaWithOre.stores.braz}) -- receptura sama w sobie sprawna`);
+
+// ---------------------------------------------------------------------------
+// I. splitHandelLargestRemainder (cities.ts) -- bezpośrednio (zarzut Evaluatora 3, runda 2).
+//    Suma części = pula; mała pula nie zeruje Skarbu; remis: Nauka, Skarb, Zamożność;
+//    pula 0 / NaN / Infinity / procenty 0 lub NaN -> same zera; duża pula 60/30/10 bez zmiany proporcji.
+// ---------------------------------------------------------------------------
+{
+  const S = M.splitHandelLargestRemainder;
+  const P = { procentNauka: 60, procentPieniadz: 30, procentLuksus: 10 };
+  const sumOf = (o) => o.nauka + o.pieniadz + o.luksus;
+  let sumOk = true;
+  for (let pool = 0; pool <= 200; pool++) {
+    for (const sp of [P, { procentNauka: 33, procentPieniadz: 33, procentLuksus: 34 }, { procentNauka: 100, procentPieniadz: 0, procentLuksus: 0 }, { procentNauka: 50, procentPieniadz: 50, procentLuksus: 0 }]) {
+      if (sumOf(S(pool, sp)) !== pool) sumOk = false;
+    }
+  }
+  assert(sumOk, 'splitHandelLargestRemainder: suma części = pula dla pul 0..200 i czterech podziałów');
+  eq(JSON.stringify(S(7, P)), JSON.stringify({ nauka: 4, pieniadz: 2, luksus: 1 }), 'pula 7 przy 60/30/10 -> 4/2/1 (największa reszta: Zamożność)');
+  eq(JSON.stringify(S(2, P)), JSON.stringify({ nauka: 1, pieniadz: 1, luksus: 0 }), 'pula 2 przy 60/30/10 -> Skarb = 1 (nie zerowany)');
+  eq(JSON.stringify(S(1, { procentNauka: 50, procentPieniadz: 50, procentLuksus: 0 })), JSON.stringify({ nauka: 1, pieniadz: 0, luksus: 0 }), 'remis 50/50 -> jednostka dla Nauki (kolejność Nauka, Skarb, Zamożność)');
+  eq(JSON.stringify(S(1000, P)), JSON.stringify({ nauka: 600, pieniadz: 300, luksus: 100 }), 'duża pula 1000 przy 60/30/10 -> dokładnie 600/300/100');
+  eq(JSON.stringify(S(7, { procentNauka: 100, procentPieniadz: 0, procentLuksus: 0 })), JSON.stringify({ nauka: 7, pieniadz: 0, luksus: 0 }), 'podział 100/0/0 -> cała pula w Nauce');
+  eq(JSON.stringify(S(0, P)), JSON.stringify({ nauka: 0, pieniadz: 0, luksus: 0 }), 'pula 0 -> zera');
+  eq(JSON.stringify(S(NaN, P)), JSON.stringify({ nauka: 0, pieniadz: 0, luksus: 0 }), 'pula NaN -> zera');
+  eq(JSON.stringify(S(Infinity, P)), JSON.stringify({ nauka: 0, pieniadz: 0, luksus: 0 }), 'pula Infinity -> zera');
+  eq(JSON.stringify(S(9, { procentNauka: 0, procentPieniadz: 0, procentLuksus: 0 })), JSON.stringify({ nauka: 0, pieniadz: 0, luksus: 0 }), 'procenty 0/0/0 -> zera');
+  eq(JSON.stringify(S(9, { procentNauka: NaN, procentPieniadz: 0, procentLuksus: 0 })), JSON.stringify({ nauka: 0, pieniadz: 0, luksus: 0 }), 'procent NaN -> zera (brak zanieczyszczenia puli)');
+}
 
 // --- summary ---------------------------------------------------------------
 console.log(`\nmennica-magazyn-test: ${passed} passed, ${failed} failed`);

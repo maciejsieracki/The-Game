@@ -380,6 +380,22 @@ export function converterBuildingIdForRecipe(recipe: ConverterRecipe): string {
   return recipe.buildingId ?? recipe.id;
 }
 
+/** Przepustowość receptury w danej epoce i trudności (wspólne dla panelu i rachunku HUD). */
+function converterThroughputForRecipe(
+  recipe: ConverterRecipe,
+  rawParams: RawConverterParamsJson,
+  difficulty: Difficulty,
+  era: number,
+): number {
+  const baseThroughput = loadThroughput(
+    rawParams, recipe.throughputParamKey, difficulty, recipe.throughputFallback,
+  );
+  const eraParamKey = converterThroughputEraParamKey(recipe, era);
+  return eraParamKey
+    ? loadThroughput(rawParams, eraParamKey, difficulty, baseThroughput)
+    : converterThroughputForEra(recipe.id, baseThroughput, era);
+}
+
 /**
  * P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE runda 2 (Maciej 2026-08-14, po
  * werdykcie FAIL Evaluatora N1): funkcja domenowa CZYSTA (bez DOM/UI) licząca
@@ -413,13 +429,7 @@ export function converterProductionDisplayForBuilding(
   const consumed: Record<string, number> = {};
   const produced: Record<string, number> = {};
   for (const recipe of recipes) {
-    const baseThroughput = loadThroughput(
-      rawParams, recipe.throughputParamKey, difficulty, recipe.throughputFallback,
-    );
-    const eraParamKey = converterThroughputEraParamKey(recipe, era);
-    const throughput = eraParamKey
-      ? loadThroughput(rawParams, eraParamKey, difficulty, baseThroughput)
-      : converterThroughputForEra(recipe.id, baseThroughput, era);
+    const throughput = converterThroughputForRecipe(recipe, rawParams, difficulty, era);
     for (const [key, perCykl] of Object.entries(recipe.inputs)) {
       if (!(perCykl > 0)) continue;
       consumed[key] = (consumed[key] ?? 0) + perCykl * throughput;
@@ -450,6 +460,64 @@ export function converterConsumedRatesForBuildings(
     if (!disp) continue;
     for (const [key, used] of Object.entries(disp.consumed)) {
       out[key] = (out[key] ?? 0) + used;
+    }
+  }
+  return out;
+}
+
+/**
+ * R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (runda 2): zużycie wejść konwerterów Z PODZIAŁEM
+ * WSPÓLNEGO WEJŚCIA -- ten sam rachunek co silnik (`runConverters`) przy magazynie `stores`
+ * (stan na początek tury). W odróżnieniu od `converterConsumedRatesForBuildings` (nominał) zwraca
+ * to, co receptury REALNIE zjadają, gdy kilka budynków konkuruje o ten sam surowiec.
+ * `capacityOf` = pojemność wyjścia (domyślnie nieograniczona; podaj realną, by odzwierciedlić
+ * ograniczenie magazynu wyjścia). Podpięcie w main.ts (HUD netto) jest POZA allowlistą tematu.
+ */
+export function converterAllocatedConsumedRatesForBuildings(
+  buildingIds: ReadonlyArray<string>,
+  rawParams: RawConverterParamsJson,
+  difficulty: Difficulty,
+  era: number,
+  stores: Readonly<Record<string, number>>,
+  capacityOf: (resourceKey: string) => number = () => Infinity,
+): Record<string, number> {
+  return converterAllocatedConsumedRatesForCities([buildingIds], rawParams, difficulty, era, stores, capacityOf);
+}
+
+/**
+ * R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (runda 2, HUD = silnik): zużycie wejść konwerterów
+ * imperium Z PODZIAŁEM WSPÓLNEGO WEJŚCIA, liczone JAK SILNIK: wspólna pula właściciela (`stores`)
+ * przechodzi przez miasta w kolejności listy, a każde miasto (jego lista budynków operacyjnych)
+ * wywołuje `runConverters` na aktualnej puli -- tak jak `turn-economy.ts` (pula ownera, miasto po
+ * mieście). Zwraca łączne ZUŻYCIE per surowiec (suma `consumed` wszystkich miast).
+ */
+export function converterAllocatedConsumedRatesForCities(
+  cityBuildingIds: ReadonlyArray<ReadonlyArray<string>>,
+  rawParams: RawConverterParamsJson,
+  difficulty: Difficulty,
+  era: number,
+  stores: Readonly<Record<string, number>>,
+  capacityOf: (resourceKey: string) => number = () => Infinity,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  let pool: Record<string, number> = { ...stores };
+  for (const buildingIds of cityBuildingIds) {
+    const recipes: ConverterRecipe[] = [];
+    const throughputs: Record<string, number> = {};
+    for (const buildingId of buildingIds) {
+      for (const recipe of DEFAULT_CONVERTER_RECIPES) {
+        if (converterBuildingIdForRecipe(recipe) !== buildingId) continue;
+        recipes.push(recipe);
+        throughputs[recipe.id] = converterThroughputForRecipe(recipe, rawParams, difficulty, era);
+      }
+    }
+    if (recipes.length === 0) continue;
+    const { stores: next, perBuilding } = runConverters(recipes, pool, throughputs, capacityOf);
+    pool = next;
+    for (const res of Object.values(perBuilding)) {
+      for (const [key, used] of Object.entries(res.consumed)) {
+        out[key] = (out[key] ?? 0) + used;
+      }
     }
   }
   return out;
@@ -527,23 +595,70 @@ export function computeGarncarniaSurplusBonus(input: GarncarniaSurplusBonusInput
   };
 }
 
+/**
+ * Rozdział WSPÓLNEGO wejścia między konwertery (Glina: Cegielnia + Garncarnia) — PROPORCJONALNIE
+ * do zapotrzebowania, nie „kto pierwszy na liście". Zapotrzebowanie receptury r na surowiec k
+ * = perCykl(r,k) × przepustowość(r) (cykle/turę). Gdy Σ zapotrzebowań > zapas (stan na początek
+ * `runConverters`), udział r = zapas × zapotrzebowanie(r,k) / Σ zapotrzebowań. Gdy nie ma
+ * konkurencji (Σ ≤ zapas) udział = pełny zapas — wynik identyczny jak dawniej.
+ * HUD: `converterAllocatedConsumedRatesForBuildings` liczy TEN SAM rachunek (przez `runConverters`).
+ * `converterConsumedRatesForBuildings` pozostaje NOMINALNE (bez magazynu) i NIE czyta tego podziału.
+ */
+function normalizedThroughput(tput: number): number {
+  return Number.isFinite(tput) && tput > 0 ? Math.floor(tput) : 0;
+}
+
 export function runConverters(
   recipes: ReadonlyArray<ConverterRecipe>,
   stores: Record<string, number>,
   throughputs: Record<string, number>,
   capacityOf: (resourceKey: string) => number,
 ): RunConvertersResult {
+  const finite = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+  const startStores: Record<string, number> = { ...stores };
   let cur: Record<string, number> = { ...stores };
   const perBuilding: Record<string, ConvertResult> = {};
 
-  for (const recipe of recipes) {
-    const tputKey = recipe.id;
-    const tput = Object.prototype.hasOwnProperty.call(throughputs, tputKey)
-      ? (throughputs[tputKey] ?? recipe.throughputFallback)
+  const plan = recipes.map(recipe => {
+    const tput = Object.prototype.hasOwnProperty.call(throughputs, recipe.id)
+      ? (throughputs[recipe.id] ?? recipe.throughputFallback)
       : recipe.throughputFallback;
     const outMult = throughputs[recipe.id + CONVERTER_OUTPUT_MULT_KEY_SUFFIX] ?? 1;
-    const res = runConverter(recipe, cur, tput, capacityOf(recipe.output), outMult);
-    cur = res.stores;
+    return { recipe, tput, outMult, cykle: normalizedThroughput(tput) };
+  });
+
+  // Zapotrzebowanie łączne per surowiec wejściowy (tylko receptury z przepustowością > 0).
+  const demand: Record<string, number> = {};
+  for (const { recipe, cykle } of plan) {
+    if (cykle <= 0) continue;
+    for (const [k, perCykl] of Object.entries(recipe.inputs)) {
+      if (!(perCykl > 0)) continue;
+      demand[k] = (demand[k] ?? 0) + perCykl * cykle;
+    }
+  }
+
+  for (const { recipe, tput, outMult, cykle } of plan) {
+    // Widok magazynu dla tej receptury: przy konkurencji o wejście — jej udział proporcjonalny.
+    const view: Record<string, number> = { ...cur };
+    if (cykle > 0) {
+      for (const [k, perCykl] of Object.entries(recipe.inputs)) {
+        if (!(perCykl > 0)) continue;
+        const D = demand[k] ?? 0;
+        const zapas = finite(startStores[k]);
+        if (D > zapas && D > 0) {
+          const udzial = (zapas * perCykl * cykle) / D;
+          view[k] = Math.min(finite(cur[k]), udzial);
+        }
+      }
+    }
+    const res = runConverter(recipe, view, tput, capacityOf(recipe.output), outMult);
+
+    const next: Record<string, number> = { ...cur };
+    for (const k of Object.keys(recipe.inputs)) {
+      if (res.consumed[k] !== undefined) next[k] = finite(cur[k]) - (res.consumed[k] ?? 0);
+    }
+    if (res.produced > 0) next[recipe.output] = finite(cur[recipe.output]) + res.produced;
+    cur = next;
     perBuilding[recipe.id] = res;
   }
 
