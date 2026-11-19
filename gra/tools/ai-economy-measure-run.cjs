@@ -45,6 +45,8 @@ const { TECH_SIDE_CLOSE_SEL, TECH_MAIN_CLOSE_SEL } = require('./measure-close-mo
 const TECH_SEL = { side: TECH_SIDE_CLOSE_SEL, main: TECH_MAIN_CLOSE_SEL };
 // R-WEB-MEASURE-RUNNERS-REJECT-AI-OFFERS-Q1: wspolne odrzucanie wiszacych ofert AI->gracz (przed sprawdzeniem canEnd).
 const { rejectAwaitingAiOffers } = require('./measure-reject-offers.cjs');
+// R-WEB-MEASURE-STALL-FORCED-PEACE-Q1: pasywny gracz akceptuje wiszacy pokoj wymuszony (przed sprawdzeniem canEnd).
+const { acceptForcedPeace } = require('./measure-forced-peace.cjs');
 
 const GRA_DIR = path.resolve(__dirname, '..');
 
@@ -89,7 +91,9 @@ const COUNTER_KEYS = ['gateActiveTurns', 'bypassApplied', 'stuckQueueHeals', 'ba
   'diploAudienceClosed', 'armyMergeClosed', 'techNoticeClosed',
   // R-WEB-MEASURE-RUNNERS-REJECT-AI-OFFERS-Q1: aiOffersRejected = POTWIERDZONE odrzucenia (wpis zniknal),
   // aiOffersRejectAttempts = PROBY (wywolania reject). Nie mieszac: proba bez skutku nie jest odrzuceniem.
-  'aiOffersRejected', 'aiOffersRejectAttempts'];
+  'aiOffersRejected', 'aiOffersRejectAttempts',
+  // R-WEB-MEASURE-STALL-FORCED-PEACE-Q1: potwierdzone akceptacje pokoju wymuszonego z graczem (klik znikl z kolejki).
+  'forcedPeaceAccepted'];
 /** Klucze blokad modalnych (= liczniki zamkniec). */
 const MODAL_KEYS = ['diploAudienceClosed', 'armyMergeClosed', 'techNoticeClosed'];
 
@@ -383,6 +387,8 @@ async function playOneTurn(page, ctxState) {
   };
   const seenOffers = new Set(); // proby liczone raz na id oferty w tej turze
   if (REJECT_OFFERS) { countOffers(await rejectAwaitingAiOffers(page, seenOffers)); await clearBattles(page, ctxState); }
+  // R-WEB-MEASURE-STALL-FORCED-PEACE-Q1: wiszacy pokoj wymuszony blokuje „Zakoncz ture” -- gracz-pomiarowy go akceptuje (no-op bez kolejki).
+  await acceptForcedPeace(page, ctxState, wait);
   let canEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
   if (!canEnd && REJECT_OFFERS) {
     // Druga proba: odrzucenie moze odslonic kolejna oferte w kolejce stolu (jak w diplomacy-harder-measure-run.cjs).
@@ -449,6 +455,7 @@ async function playOneTurn(page, ctxState) {
     load1: Math.round(os.loadavg()[0] * 100) / 100,
     ledgerRecording: LEDGER_OFF ? 'off' : 'on',
     aiOffersRejected: offersRec.confirmed, aiOffersRejectAttempts: offersRec.attempts,
+    forcedPeaceAccepted: ctxState.forcedPeaceAccepted || 0,
   };
   rec.wars = await collectWars(page, m.owners);
   rec.upkeepGate = gateDelta(gateBefore, await readGateStats(page));
