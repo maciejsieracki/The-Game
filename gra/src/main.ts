@@ -13723,6 +13723,9 @@ async function boot(): Promise<void> {
      *  (tylko ?civTest=1). Gdy true, właściciel 0 (gracz) przechodzi w fazie AI przez tę samą pętlę `ownerLoop` co AI.
      *  Domyślnie false = zero wpływu na grę. */
     let playerAiAutopilotForTest = false;
+    /** R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1 (r2): odczyt testowy -- właściciele, których pętla ownerLoop faktycznie
+     *  przetworzyła w ostatniej fazie AI (kolejność). Tylko zapis do tej tablicy; zero wpływu na stan gry. */
+    let aiPhaseOwnersForTest: number[] = [];
     /** R-WEB-TEST-HOOK-AI-TRUCE-REFUSAL-Q1: wyłącznie hak live `__truceTestDebug.forceAiTruceDecisionForTest` — jednorazowe
      *  wymuszenie decyzji AI na rozejm, którego autorem jest GRACZ (wpis stołu). Domyślnie null = zero wpływu na grę. */
     let truceTestForcedAiDecision: 'accept' | 'reject' | null = null;
@@ -33593,6 +33596,8 @@ async function boot(): Promise<void> {
          *  te same decyzje co cywilizacje AI (pętla ownerLoop). Zasady gracza bez zmian (brak automatycznej wojny). */
         setPlayerAiAutopilotForTest: (on: boolean): void => { playerAiAutopilotForTest = on === true; },
         playerAiAutopilotForTestState: (): boolean => playerAiAutopilotForTest,
+        /** R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1 (r2): właściciele przetworzeni przez ownerLoop w ostatniej fazie AI. */
+        lastAiPhaseOwnersForTest: (): number[] => aiPhaseOwnersForTest.slice(),
         /** R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 (tylko odczyt, ?civTest=1): rozmiar dziennika w pamieci (wszyscy wlasciciele). */
         ledgerStats: (): { entries: number; bytes: number } => {
           const h = ledgerHistoryToSave();
@@ -45096,11 +45101,13 @@ async function boot(): Promise<void> {
               return [lead, ...aiOwnerList.filter(oid => oid !== lead)];
             })();
 
+            if (startOi === 0) aiPhaseOwnersForTest = [];
             ownerLoop: for (let oi = startOi; oi < ownerLoopList.length; oi++) {
               const ownerId = ownerLoopList[oi]!;
               // Bezpiecznik: gdyby lista pochodziła z aiCmdResume sprzed eliminacji
               // (skasowanie w trakcie tej samej fazy AI) — pomiń bez przetwarzania.
               if (eliminatedOwners.has(ownerId)) continue;
+              aiPhaseOwnersForTest.push(ownerId); // R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1 (r2): tylko odczyt testowy
               phaseMark('AI_CIV_START', String(ownerId));
               const aiPct = 38 + Math.round((54 * (oi + 1)) / Math.max(1, ownerLoopList.length));
               setTurnTransition(aiPct, 'Ruchy i decyzje…', ownerDiploLabel(ownerId), nextTurnNum);

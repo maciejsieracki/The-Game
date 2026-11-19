@@ -107,7 +107,9 @@ function main() {
     console.log('\n=== ziarno ' + seed + ' ===');
     console.log('Tura | wl | miasta | pop | epoka | skarb.stan | skarb.+ | praca | praca+ | utrz.praca | surowce brutto | netto | spichl.stan | budynki');
     for (const r of rows) {
-      console.log([r.turaKontrolna, r.owner, r.miasta, r.populacja, r.epoka, r.skarbiecStan, r.skarbiecRate, r.praca,
+      // R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1: wiersz gracza (wl 0) oznaczony w glownej tabeli.
+      const etykieta = r.owner === 0 ? ' (gracz)' : '';
+      console.log([r.turaKontrolna, r.owner + etykieta, r.miasta, r.populacja, r.epoka, r.skarbiecStan, r.skarbiecRate, r.praca,
         r.pracaRate, r.pracaUpkeep, r.surowceBrutto, r.surowceNetto, r.spichlerzStan, r.budynki].map(fmt).join(' | '));
     }
     console.log('\nWyjasnienie HUD (suma Surowce brutto wg HUD vs 3 surowce modelu, te same rekordy):');
