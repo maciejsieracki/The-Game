@@ -4178,7 +4178,6 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         let now = self.now;
         self.move_timeline.retain(|(_, t0, _, _, _)| *t0 > now);
         // PIN3-DIVERGENCE-Q1 (D-PIN3-1): oś zwrotów jak oś kroków — przeszłe wpisy są już w `facing`.
-        self.facing_timeline.retain(|(_, t0, _, _, _)| *t0 > now);
         let seq = st.unit(unit).c;
         // K5LOOP-SIEGE-ATK-B: wejścia bramki `_doMove` (`:8689`) dla kroków tej aktywacji ([`Self::move_step_core`]).
         self.seq_wall_col = self.scene.wall_col.max(st.siege_wall_col);
