@@ -380,6 +380,22 @@ export function converterBuildingIdForRecipe(recipe: ConverterRecipe): string {
   return recipe.buildingId ?? recipe.id;
 }
 
+/** Przepustowość receptury w danej epoce i trudności (wspólne dla panelu i rachunku HUD). */
+function converterThroughputForRecipe(
+  recipe: ConverterRecipe,
+  rawParams: RawConverterParamsJson,
+  difficulty: Difficulty,
+  era: number,
+): number {
+  const baseThroughput = loadThroughput(
+    rawParams, recipe.throughputParamKey, difficulty, recipe.throughputFallback,
+  );
+  const eraParamKey = converterThroughputEraParamKey(recipe, era);
+  return eraParamKey
+    ? loadThroughput(rawParams, eraParamKey, difficulty, baseThroughput)
+    : converterThroughputForEra(recipe.id, baseThroughput, era);
+}
+
 /**
  * P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE runda 2 (Maciej 2026-08-14, po
  * werdykcie FAIL Evaluatora N1): funkcja domenowa CZYSTA (bez DOM/UI) licząca
@@ -413,13 +429,7 @@ export function converterProductionDisplayForBuilding(
   const consumed: Record<string, number> = {};
   const produced: Record<string, number> = {};
   for (const recipe of recipes) {
-    const baseThroughput = loadThroughput(
-      rawParams, recipe.throughputParamKey, difficulty, recipe.throughputFallback,
-    );
-    const eraParamKey = converterThroughputEraParamKey(recipe, era);
-    const throughput = eraParamKey
-      ? loadThroughput(rawParams, eraParamKey, difficulty, baseThroughput)
-      : converterThroughputForEra(recipe.id, baseThroughput, era);
+    const throughput = converterThroughputForRecipe(recipe, rawParams, difficulty, era);
     for (const [key, perCykl] of Object.entries(recipe.inputs)) {
       if (!(perCykl > 0)) continue;
       consumed[key] = (consumed[key] ?? 0) + perCykl * throughput;
@@ -449,6 +459,41 @@ export function converterConsumedRatesForBuildings(
     const disp = converterProductionDisplayForBuilding(buildingId, rawParams, difficulty, era);
     if (!disp) continue;
     for (const [key, used] of Object.entries(disp.consumed)) {
+      out[key] = (out[key] ?? 0) + used;
+    }
+  }
+  return out;
+}
+
+/**
+ * R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (runda 2): zużycie wejść konwerterów Z PODZIAŁEM
+ * WSPÓLNEGO WEJŚCIA -- ten sam rachunek co silnik (`runConverters`) przy magazynie `stores`
+ * (stan na początek tury). W odróżnieniu od `converterConsumedRatesForBuildings` (nominał) zwraca
+ * to, co receptury REALNIE zjadają, gdy kilka budynków konkuruje o ten sam surowiec.
+ * `capacityOf` = pojemność wyjścia (domyślnie nieograniczona; podaj realną, by odzwierciedlić
+ * ograniczenie magazynu wyjścia). Podpięcie w main.ts (HUD netto) jest POZA allowlistą tematu.
+ */
+export function converterAllocatedConsumedRatesForBuildings(
+  buildingIds: ReadonlyArray<string>,
+  rawParams: RawConverterParamsJson,
+  difficulty: Difficulty,
+  era: number,
+  stores: Readonly<Record<string, number>>,
+  capacityOf: (resourceKey: string) => number = () => Infinity,
+): Record<string, number> {
+  const recipes: ConverterRecipe[] = [];
+  const throughputs: Record<string, number> = {};
+  for (const buildingId of buildingIds) {
+    for (const recipe of DEFAULT_CONVERTER_RECIPES) {
+      if (converterBuildingIdForRecipe(recipe) !== buildingId) continue;
+      recipes.push(recipe);
+      throughputs[recipe.id] = converterThroughputForRecipe(recipe, rawParams, difficulty, era);
+    }
+  }
+  const { perBuilding } = runConverters(recipes, { ...stores }, throughputs, capacityOf);
+  const out: Record<string, number> = {};
+  for (const res of Object.values(perBuilding)) {
+    for (const [key, used] of Object.entries(res.consumed)) {
       out[key] = (out[key] ?? 0) + used;
     }
   }
@@ -533,7 +578,8 @@ export function computeGarncarniaSurplusBonus(input: GarncarniaSurplusBonusInput
  * = perCykl(r,k) × przepustowość(r) (cykle/turę). Gdy Σ zapotrzebowań > zapas (stan na początek
  * `runConverters`), udział r = zapas × zapotrzebowanie(r,k) / Σ zapotrzebowań. Gdy nie ma
  * konkurencji (Σ ≤ zapas) udział = pełny zapas — wynik identyczny jak dawniej.
- * Ten sam wzór czyta HUD (resource-gross-net.ts) przez `converterConsumedRatesForBuildings`.
+ * HUD: `converterAllocatedConsumedRatesForBuildings` liczy TEN SAM rachunek (przez `runConverters`).
+ * `converterConsumedRatesForBuildings` pozostaje NOMINALNE (bez magazynu) i NIE czyta tego podziału.
  */
 function normalizedThroughput(tput: number): number {
   return Number.isFinite(tput) && tput > 0 ? Math.floor(tput) : 0;

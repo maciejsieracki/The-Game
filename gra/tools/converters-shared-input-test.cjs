@@ -29,7 +29,7 @@ const ENTRY_FILE  = path.resolve(__dirname, '.converters-shared-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.converters-shared-bundle.cjs');
 
 fs.writeFileSync(ENTRY_FILE, `
-export { runConverters, runConverter, DEFAULT_CONVERTER_RECIPES } from '../src/game/converters';
+export { runConverters, runConverter, DEFAULT_CONVERTER_RECIPES, converterAllocatedConsumedRatesForBuildings, converterConsumedRatesForBuildings, converterBuildingIdForRecipe } from '../src/game/converters';
 `, 'utf8');
 
 try {
@@ -138,6 +138,36 @@ console.log('\n-- D. MUTACJA: stary sekwencyjny rozdział musi być czerwony --'
   const mut = runSequentialMutant(list, { glina: 40, drewno: 1000 }, tp);
   assert(!((mut.stores.ceramika ?? 0) > 0),
     `MUTANT (sekwencyjnie): Garncarnia ceramika = ${mut.stores.ceramika ?? 0} -- asercja A (ceramika > 0) byłaby czerwona`);
+}
+
+// ---------------------------------------------------------------------------
+// E. HUD z podziałem = silnik (runda 2, zarzut Evaluatora 3 i 5). Rachunek HUD
+//    (converterAllocatedConsumedRatesForBuildings) ma dać to samo zużycie co silnik
+//    (runConverters: Δstanu wejść), a nie nominał. Dla glina 40 nominał Cegielni+Garncarni
+//    = 130 gliny, silnik zjada 39. Asercje na realnym torze: budynki -> receptury -> runConverters.
+// ---------------------------------------------------------------------------
+console.log('\n-- E. HUD z podziałem wejścia = zużycie silnika (Δstanu) --');
+{
+  const B = ['cegielnia', 'garncarnia'];
+  const stores = { glina: 40, drewno: 1000 };
+  const hud = M.converterAllocatedConsumedRatesForBuildings(B, {}, 'normal', 1, stores);
+  const nominal = M.converterConsumedRatesForBuildings(B, {}, 'normal', 1);
+  const engine = M.runConverters(
+    RECIPES.filter(r => B.includes(M.converterBuildingIdForRecipe(r))),
+    stores,
+    Object.fromEntries(RECIPES.map(r => [r.id, r.throughputFallback])),
+    () => CAP,
+  );
+  const engineGlina = stores.glina - engine.stores.glina;
+  assert(hud.glina > 0 && hud.glina <= 40,
+    `HUD z podziałem: zużycie gliny w [0, 40] (got ${hud.glina})`);
+  assert(nominal.glina > 40,
+    `nominał (bez magazynu) > zapas 40 -- dowód, że nominał kłamie przy konkurencji (got ${nominal.glina})`);
+  assert(Math.abs(hud.glina - engineGlina) < 1e-9,
+    `HUD z podziałem = Δstanu silnika dla gliny (HUD ${hud.glina} vs silnik ${engineGlina})`);
+  const rozne = M.converterAllocatedConsumedRatesForBuildings(B, {}, 'normal', 1, { glina: 1000, drewno: 1000 });
+  assert(Math.abs(rozne.glina - nominal.glina) < 1e-9,
+    `bez konkurencji (glina 1000): HUD z podziałem = nominał (${rozne.glina} vs ${nominal.glina})`);
 }
 
 // --- summary ---------------------------------------------------------------

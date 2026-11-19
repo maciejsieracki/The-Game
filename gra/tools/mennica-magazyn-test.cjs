@@ -151,8 +151,14 @@ function runTick(builtIds, walutaOdkryta, stock = {}) {
   cities.push(c);
   const builtByCity = new Map([[c.id, builtIds]]);
   const playerZbadane = new Set(walutaOdkryta ? ['Waluta'] : []);
+  // R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (runda 2, zarzut 2): bramka Mennicy działa TYLKO,
+  // gdy podano resolveOwnerActiveLabels (turn-economy.ts:1782 -- bez niego filtr runtime jest pominięty).
+  // Dostęp do złota = stan magazynu państwa (jak w main.ts): zloto > 0.
+  const zlotoAccess = () => (stock.zloto ?? 0) > 0;
   const econ = M.advanceCityEconomy(
     cities, map, gameData, 'normal', [], new Map(), builtByCity, 1, playerZbadane, new Map(), new Map(),
+    undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+    zlotoAccess, () => [], () => ({ ...stock }),
   );
   return { tick: econ.perCity[0], city: c };
 }
@@ -200,11 +206,38 @@ eq(walutaOnly.pieniadzBrutto, base.pieniadzBrutto,
 // podziału małej puli, nie mnożnik): NIE naprawiane tu -- wymaga decyzji właściciela (ABC).
 // Asercja pilnuje tylko tego, co dowodzi testu: multiplikator Efektu 1 (Waluta) NIE przecieka przy
 // samej Mennicy bez Waluty -- delta mieści się w [0, plon budynku 2].
-const mennicaOnlyDelta = mennicaOnly.pieniadzBrutto - base.pieniadzBrutto;
-assert(mennicaOnlyDelta >= 0 && mennicaOnlyDelta <= 2,
-  `Mennica BEZ Waluty (ze złotem): delta w [0, 2] = brak wycieku mnożnika (got ${mennicaOnlyDelta}; zmierzone 0 -- zaokrąglenie podziału 30% Pieniądza, ZNALEZISKO)`);
+// R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (runda 2, zarzuty 1-2): TRZY reguły rozdzielone,
+// każda z bramką złota aktywną (resolveOwnerActiveLabels + zlotoAccess w runTick).
+// (i) BEZ złota: bramka zamknięta -> Mennica nie produkuje -> delta DOKŁADNIE 0.
+const bezZlotaMennica = runTick(['mennica'], false, {}).tick;
+const bezZlotaBase = runTick([], false, {}).tick;
+eq(bezZlotaMennica.pieniadzBrutto - bezZlotaBase.pieniadzBrutto, 0,
+  'Mennica BEZ złota (stock {}): delta = 0 (bramka złota zamknięta)');
+// (ii) ZE złotem: bramka otwarta -> delta MUSI być > 0 (zgodnie z mnożnikiem / plonem budynku).
+// ZMIERZONE runda 2: 0 (floor(2 x 0,30) = 0 Pieniądza z podziału Handlu 60/30/10, cities.ts).
+// To ZNALEZISKO GRY (zaokrąglenie podziału małej puli), NIE naprawiane w tym temacie: zmiana
+// zaokrąglenia to decyzja właściciela (ABC). Asercja zostaje CZERWONA do tej decyzji.
+const zeZlotemDelta = mennicaOnly.pieniadzBrutto - base.pieniadzBrutto;
+assert(zeZlotemDelta > 0,
+  `Mennica ZE złotem (zloto 10): delta > 0 (got ${zeZlotemDelta}; ZNALEZISKO GRY -- zaokrąglenie podziału Handlu, decyzja ABC)`);
+// (iii) Waluta + Mennica > sama Waluta (istniejąca asercja; gate ON).
 assert(both.pieniadzBrutto > walutaOnly.pieniadzBrutto,
   `Mennica + Waluta: dochod wyzszy niz sama Waluta (${both.pieniadzBrutto} > ${walutaOnly.pieniadzBrutto})`);
+
+// ---------------------------------------------------------------------------
+// C2. Rozdział gliny NA REALNYM TORZE (runda 2, zarzut 5): advanceCityEconomy -> runConverters
+//     (turn-economy.ts), nie tylko izolowane receptury. Glina 40, Cegielnia + Garncarnia.
+// ---------------------------------------------------------------------------
+console.log('\n-- C2. advanceCityEconomy: glina 40, Cegielnia+Garncarnia (tor realny) --');
+{
+  const glinaStock = { glina: 40, drewno: 40, zloto: 10 };
+  const real = runTick(['cegielnia', 'garncarnia'], false, glinaStock);
+  const s = real.city.surowce ?? {};
+  assert((s.cegla ?? 0) > 0, `tor realny: cegla > 0 (got ${s.cegla})`);
+  assert((s.ceramika ?? 0) > 0, `tor realny: ceramika > 0 (got ${s.ceramika})`);
+  assert((s.glina ?? 0) >= 0 && (s.glina ?? 0) < 40,
+    `tor realny: glina zmalala i nie jest ujemna (got ${s.glina})`);
+}
 
 // ---------------------------------------------------------------------------
 // D. Zadanie 2: City.surowce -- migracja starego zapisu (ensureCitySaveDefaults)
