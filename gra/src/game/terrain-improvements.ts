@@ -4,6 +4,7 @@
  * PURE — lane EKONOMIA.
  */
 import improvementsJson from '../../data/terrain-improvements.json';
+import improvementCostParamsJson from '../../data/improvement-cost-params.json';
 import { Nakladka, TerenBazowy } from '../types/hex';
 import type { TileYield } from './economy';
 import { scaleImprovementWorkCost } from './r-stawki-strojenie';
@@ -167,6 +168,71 @@ export function scaleTerrainImprovementWorkCost(
   const stoneBase = scaleImprovementWorkCost(base);
   if (stoneBase <= 0) return 0;
   return stoneBase * terrainImprovementConstructionEraMultiplier(era);
+}
+
+/**
+ * R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1: flaga „koszt budowy wg epoki
+ * WŁAŚCICIELA” z gra/data/improvement-cost-params.json (domyślnie true; false = wzór sprzed zmiany).
+ */
+export const IMPROVEMENT_COST_PARAMS: { kosztUlepszenWgEpokiWlasciciela?: boolean } =
+  improvementCostParamsJson as { kosztUlepszenWgEpokiWlasciciela?: boolean };
+
+let ownerEraCostOverride: boolean | null = null;
+
+/** Tylko testy/diagnostyka (NIE z UI). null = wartość z danych. */
+export function setImprovementCostOwnerEraForTest(value: boolean | null): void {
+  ownerEraCostOverride = value;
+}
+
+export function isImprovementCostOwnerEraEnabled(): boolean {
+  if (ownerEraCostOverride !== null) return ownerEraCostOverride;
+  return IMPROVEMENT_COST_PARAMS.kosztUlepszenWgEpokiWlasciciela !== false;
+}
+
+/**
+ * Surowa baza kosztu Pracy ulepszenia (przed skalowaniem) z flagą. Flaga ON → `koszt_praca` z danych
+ * (kopalnie rudy ×2). Flaga OFF → `koszt_praca_przed_x2` (wartość sprzed zmiany; bit-w-bit jak przed tematem).
+ * Wiersze bez pola `koszt_praca_przed_x2` czytają zawsze `koszt_praca`.
+ */
+export function baseKosztPracaUlepszenia(
+  row: { koszt_praca?: number; koszt_praca_przed_x2?: number } | null | undefined,
+): number {
+  if (!row) return 0;
+  if (isImprovementCostOwnerEraEnabled()) return row.koszt_praca ?? 0;
+  return row.koszt_praca_przed_x2 ?? row.koszt_praca ?? 0;
+}
+
+/**
+ * Epoka właściciela używana przez KARTY katalogowe (brak właściciela w danych karty). Ustawiana z main.ts
+ * (ta sama definicja co koszt budowy gracza: `empireEpochForOwner(ME())`). Domyślnie 1 (Kamień).
+ */
+let cardOwnerEraProvider: () => number = () => 1;
+export function setImprovementCardOwnerEraProvider(fn: () => number): void {
+  cardOwnerEraProvider = fn;
+}
+export function improvementCardOwnerEra(): number {
+  const v = cardOwnerEraProvider();
+  return typeof v === 'number' && Number.isFinite(v) ? v : 1;
+}
+
+/**
+ * Jedna funkcja kosztu budowy ulepszenia (Praca) dla gracza, AI i państw-miast.
+ * Flaga ON: FALA2-scaled base × mnożnik EPOKI WŁAŚCICIELA (Kamień 0,5 / Brąz 1 / Żelazo 2, dalej ×2).
+ * Flaga OFF: wzór sprzed zmiany — mnożnik epoki odblokowania ulepszenia (`improvementEra`).
+ * `ownerEra` brak / nieprawidłowy → 1 (Kamień), tak jak reszta kodu (`?? 1`).
+ */
+export function scaleTerrainImprovementWorkCostForOwner(
+  base: number,
+  improvementEra: number | undefined,
+  ownerEra: number | null | undefined = undefined,
+): number {
+  if (!isImprovementCostOwnerEraEnabled()) {
+    return scaleTerrainImprovementWorkCost(base, improvementEra);
+  }
+  const stoneBase = scaleImprovementWorkCost(base);
+  if (stoneBase <= 0) return 0;
+  const ownerNorm = typeof ownerEra === 'number' && Number.isFinite(ownerEra) ? ownerEra : 1;
+  return stoneBase * terrainImprovementConstructionEraMultiplier(ownerNorm);
 }
 
 export function normalizeImprovementKey(raw: string | undefined | null): string | undefined {

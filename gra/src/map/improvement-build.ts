@@ -43,7 +43,7 @@ import {
   getImprovementLockHint,
   type ImprovementActionTyp,
 } from '../game/improvement-tech';
-import { scaleTerrainImprovementWorkCost } from '../game/terrain-improvements';
+import { baseKosztPracaUlepszenia, scaleTerrainImprovementWorkCostForOwner } from '../game/terrain-improvements';
 
 // ---------------------------------------------------------------------------
 // Typy kontraktu
@@ -973,11 +973,11 @@ export function isHexNearRiver(
   return false;
 }
 
-type JsonImprovement = { koszt_praca?: number; nazwa?: string; epoka?: number };
+type JsonImprovement = { koszt_praca?: number; koszt_praca_przed_x2?: number; nazwa?: string; epoka?: number };
 
-function readWorkCost(key: ImprovementKey): number {
+function readWorkCost(key: ImprovementKey, ownerEra?: number): number {
   const entry = (terrainImprovements as unknown as Record<string, JsonImprovement>)[key];
-  return scaleTerrainImprovementWorkCost(entry?.koszt_praca ?? 20, entry?.epoka);
+  return scaleTerrainImprovementWorkCostForOwner(entry?.koszt_praca === undefined ? 20 : baseKosztPracaUlepszenia(entry), entry?.epoka, ownerEra);
 }
 
 const NAKLADKI_ZWIERZECZE = new Set<Nakladka>([
@@ -1657,8 +1657,10 @@ export function createImprovementBuildApi(
   // IDENTYCZNY jak przy pełnym skanie (predykat qualifies bez zmian).
   const candidateHexKeys: Set<string> = buildCandidateHexKeys(state);
 
+  // R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1: koszt wg epoki WŁAŚCICIELA (gracz = state.playerEra).
+  const ownerEraForCost = state.playerEra ?? 1;
   const getWorkCost = (key: ImprovementKey): number =>
-    getImprovementMeta(key)?.kosztPraca ?? readWorkCost(key);
+    getImprovementMeta(key, ownerEraForCost)?.kosztPraca ?? readWorkCost(key, ownerEraForCost);
 
   // R-WEB-ROAD-PAVED-DIRECT-BUILD-OR-UPGRADE-Q1: koszt Pracy na KONKRETNYM heksie. Brukowana na
   // heksie z Drogą = ulepszenie (koszt samej brukowanej); brukowana OD ZERA = Droga + Droga
@@ -1695,10 +1697,10 @@ export function createImprovementBuildApi(
     IMPROVEMENTS.filter(({ key }) =>
       isImprovementVisibleInBuildPanel(key, playerCiv, playerEraNum),
     ).map(({ key, label, epoka }) => {
-      const meta = getImprovementMeta(key);
+      const meta = getImprovementMeta(key, ownerEraForCost);
       const techId = meta?.techId ?? null;
       const typ = meta?.typ ?? 'ulepszenie';
-      const koszt = meta?.kosztPraca ?? readWorkCost(key);
+      const koszt = meta?.kosztPraca ?? readWorkCost(key, ownerEraForCost);
       const unlocked = isImprovementTechUnlocked(key, researched);
       const canPlaceAny = getQualifyingHexes(key).length > 0;
       const territoryHint = unlocked && !canPlaceAny

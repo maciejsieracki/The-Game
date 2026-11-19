@@ -943,6 +943,7 @@ import {
   migrateImprovementLayers,
   normalizeImprovementKey,
   isImprovementAllowedForCiv,
+  setImprovementCardOwnerEraProvider,
 } from './game/terrain-improvements';
 import { isLivestockAllowed, isLamaDepositVisibleForCiv, hexHasHorseDeposit, stadninaImperialKonUnlocked } from './game/livestock-unlock';
 import { hasBuiltOwnStudNeighbor } from './map/improvement-build';
@@ -17433,6 +17434,8 @@ async function boot(): Promise<void> {
 
     function refreshBuildApi(): void {
       const civArch = String(player.civType || 'rzymianie');
+      // Karty katalogowe ulepszeń (bez właściciela w danych) liczą koszt Pracy wg epoki gracza — ta sama wartość co panel budowy.
+      setImprovementCardOwnerEraProvider(() => player.era ?? 1);
       const rawBuildApi = createImprovementBuildApi(
         {
           map,
@@ -45075,7 +45078,7 @@ async function boot(): Promise<void> {
                   // (R-AUTO-ULEPSZENIA-Q4=A). Ścieżka DECYZJI jest ta sama co dla AI
                   // CYWILIZACJI (`skipWyrab: false` w tym samym pickerze); ścieżka EGZEKUCJI
                   // jest ścieżką GRACZA, bo gracz ma wieloturową wycinkę, a AI jej nie ma.
-                  if (getImprovementMeta(pick.key)?.typ === 'wycinka') {
+                  if (getImprovementMeta(pick.key, empireEpochForOwner(hOid))?.typ === 'wycinka') {
                     if (hexForImprovement.nakladka !== Nakladka.Las) continue;
                     if (hexClearingStates.has(hexKey)) continue;
                     playerPracaPool -= pick.kosztPraca;
@@ -45094,7 +45097,7 @@ async function boot(): Promise<void> {
                     const clrAuto = freshClearingState(pick.key, hOid);
                     if (clrAuto) hexClearingStates.set(hexKey, clrAuto);
                     spawnClearingMesh(hexKey);
-                    const metaWyrab = getImprovementMeta(pick.key);
+                    const metaWyrab = getImprovementMeta(pick.key, empireEpochForOwner(hOid));
                     toastLines.push(`${metaWyrab?.nazwa ?? nazwaWyswietlana(pick.key)} @ (${pick.q},${pick.r})`);
                     continue;
                   }
@@ -45133,7 +45136,7 @@ async function boot(): Promise<void> {
                   registerFortNodeIfNeeded(pick.key, pick.q, pick.r, hOid);
                   spawnImprovementMesh(hexKey);
                   syncResourceOverlayAtHex(hexKey);
-                  const meta = getImprovementMeta(pick.key);
+                  const meta = getImprovementMeta(pick.key, empireEpochForOwner(hOid));
                   toastLines.push(`${meta?.nazwa ?? nazwaWyswietlana(pick.key)} @ (${pick.q},${pick.r})`);
                 }
                 // R-HOTSEAT-ETAP6C-ECONOMY-Q1 (runda 2): toast to informacja UI dla
@@ -47965,7 +47968,7 @@ async function boot(): Promise<void> {
                   // od razu -- brak pendingImprovementsTurn/cofnięcia w tej samej turze.
                   const researchedAi = aiResearchDone.get(ownerId) ?? new Set<string>();
                   if (!isImprovementTechUnlocked(cmd.key, researchedAi)) continue;
-                  const meta = getImprovementMeta(cmd.key);
+                  const meta = getImprovementMeta(cmd.key, empireEpochForOwner(ownerId));
                   const koszt = meta?.kosztPraca ?? 0;
                   const poolBefore = aiPracaPoolByOwner.get(ownerId) ?? 0;
                   if (poolBefore < koszt) continue;

@@ -23,6 +23,7 @@ export {
   terrainImprovementEraMultiplier,
   terrainImprovementConstructionEraMultiplier,
   scaleTerrainImprovementWorkCost,
+  setImprovementCostOwnerEraForTest,
 } from ${JSON.stringify(path.join(SRC, 'game/terrain-improvements.ts'))};
 export { getImprovementMeta } from ${JSON.stringify(path.join(SRC, 'game/improvement-tech.ts'))};
 export {
@@ -88,19 +89,45 @@ ok(M.RESOURCE_UPKEEP_IMPROVEMENT_KEYS.has('droga'), 'ordinary road is in upkeep 
 ok(M.RESOURCE_UPKEEP_IMPROVEMENT_KEYS.has('droga_brukowana'), 'paved road is in upkeep set');
 ok(!M.RESOURCE_UPKEEP_IMPROVEMENT_KEYS.has('wyrab'), 'clearing action is not a persistent upkeep layer');
 
+// R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1: flaga ON (domyslnie) = koszt wg EPOKI
+// WLASCICIELA; flaga OFF = stary wzor (epoka ulepszenia). Obie sciezki sprawdzone osobno.
+// OFF: dokladnie dawna asercja (epoka danych ulepszenia, raz).
+M.setImprovementCostOwnerEraForTest(false);
 for (const key of M.IMPROVEMENT_KEYS) {
   const row = DATA[key];
   const meta = M.getImprovementMeta(key);
-  const baseStone = row && typeof row.koszt_praca === 'number'
-    ? Math.max(1, Math.round(row.koszt_praca * 2))
+  // Flaga OFF = wartosc sprzed zmiany (kopalnie rudy: koszt_praca_przed_x2 = 22; pozostale wiersze: koszt_praca).
+  const rawOff = row && (row.koszt_praca_przed_x2 ?? row.koszt_praca);
+  const baseStone = row && typeof rawOff === 'number'
+    ? Math.max(1, Math.round(rawOff * 2))
     : 0;
   const multiplier = M.terrainImprovementConstructionEraMultiplier(row && row.epoka);
   const expected = baseStone > 0 ? baseStone * multiplier : 0;
-  same(meta?.kosztPraca, expected, `${key} construction cost uses its data era exactly once`);
+  same(meta?.kosztPraca, expected, `[flaga OFF] ${key} construction cost uses its data era exactly once`);
 }
-same(M.getImprovementMeta('farma')?.kosztPraca, 20, 'Farma costs 20 Work in its Stone era');
-same(M.getImprovementMeta('droga')?.kosztPraca, 15, 'Droga uses the Stone rate');
-same(M.getImprovementMeta('droga_brukowana')?.kosztPraca, 100, 'Droga brukowana uses Iron x2');
+same(M.getImprovementMeta('farma')?.kosztPraca, 20, '[flaga OFF] Farma costs 20 Work in its Stone era');
+same(M.getImprovementMeta('droga')?.kosztPraca, 15, '[flaga OFF] Droga uses the Stone rate');
+same(M.getImprovementMeta('droga_brukowana')?.kosztPraca, 100, '[flaga OFF] Droga brukowana uses Iron x2');
+same(M.getImprovementMeta('wyrab')?.kosztPraca, 2.5, 'Wycinka start cost uses the Stone rate');
+M.setImprovementCostOwnerEraForTest(null);
+
+// ON (domyslnie, dane): koszt = baza FALA2 x mnoznik EPOKI WLASCICIELA (1=Kamien 0,5 / 2=Braz 1 / 3=Zelazo 2).
+for (const ownerEra of [1, 2, 3]) {
+  for (const key of M.IMPROVEMENT_KEYS) {
+    const row = DATA[key];
+    const baseStone = row && typeof row.koszt_praca === 'number'
+      ? Math.max(1, Math.round(row.koszt_praca * 2))
+      : 0;
+    const multiplier = M.terrainImprovementConstructionEraMultiplier(ownerEra);
+    const expected = baseStone > 0 ? baseStone * multiplier : 0;
+    same(M.getImprovementMeta(key, ownerEra)?.kosztPraca, expected, `[owner era ${ownerEra}] ${key} cost uses owner era`);
+  }
+}
+same(M.getImprovementMeta('farma', 1)?.kosztPraca, 20, 'Farma: Kamien 20');
+same(M.getImprovementMeta('farma', 2)?.kosztPraca, 40, 'Farma: Braz 40');
+same(M.getImprovementMeta('farma', 3)?.kosztPraca, 80, 'Farma: Zelazo 80');
+same(M.getImprovementMeta('droga')?.kosztPraca, 15, 'Droga uses the Stone rate (owner default era 1)');
+same(M.getImprovementMeta('droga_brukowana', 3)?.kosztPraca, 100, 'Droga brukowana: owner Iron x2 = 100');
 same(M.getImprovementMeta('wyrab')?.kosztPraca, 2.5, 'Wycinka start cost uses the Stone rate');
 
 function mkHex(q, r, layers) {

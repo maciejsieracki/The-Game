@@ -37,6 +37,8 @@ const BUILDING_PN_FACTOR = 1.1;
 
 type JsonImprovement = {
   koszt_praca?: number;
+  /** Wartość sprzed R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1 (kopalnie ×2 w `koszt_praca`). */
+  koszt_praca_przed_x2?: number;
   surowiecOdblokowany?: string | null;
 };
 
@@ -77,7 +79,8 @@ function buildResourceAccessIndex(): Map<string, number> {
   const map = new Map<string, number>();
   for (const row of Object.values(improvementMap())) {
     const key = row.surowiecOdblokowany?.trim().toLowerCase();
-    const koszt = row.koszt_praca;
+    // Wycena dyplomatyczna NIE podąża za podwojeniem kopalni rudy (poza zakresem tematu): stała wartość sprzed zmiany.
+    const koszt = row.koszt_praca_przed_x2 ?? row.koszt_praca;
     if (!key || typeof koszt !== 'number' || !Number.isFinite(koszt) || koszt <= 0) continue;
     const prev = map.get(key);
     if (prev == null || koszt < prev) map.set(key, koszt);
@@ -201,7 +204,8 @@ export function diplomacyPnTech(
 /** @internal Cennik referencyjny — tylko do indeksu surowiec_boolean; nie pozycja handlu. */
 export function diplomacyPnUlepszenie(improvementId: string): number | null {
   const row = _improvements[improvementId.trim().toLowerCase()];
-  const v = row?.koszt_praca;
+  // Wycena dyplomatyczna NIE podąża za podwojeniem kopalni rudy (poza zakresem tematu): wartość sprzed zmiany.
+  const v = row?.koszt_praca_przed_x2 ?? row?.koszt_praca;
   if (typeof v !== 'number' || !Number.isFinite(v) || v < 0) return null;
   return v;
 }

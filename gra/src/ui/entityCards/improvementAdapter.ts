@@ -25,7 +25,7 @@
  */
 import terrainImprovementsData from '../../../data/terrain-improvements.json';
 import { ROAD_BRUK_MOVE_SPEED_MULT } from '../../map/road-movement';
-import { scaleTerrainImprovementWorkCost } from '../../game/terrain-improvements';
+import { baseKosztPracaUlepszenia, improvementCardOwnerEra, scaleTerrainImprovementWorkCostForOwner } from '../../game/terrain-improvements';
 import { improvementIconSvg } from '../icons/brandAssets';
 import { resolveImprovementRow, resolveTechnologyRow, technologyIdFromName } from './registry';
 import type { ImprovementRow } from './registry';
@@ -177,7 +177,7 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
     {
       label: 'Koszt (Praca)',
       ...(hasValue(improvement.koszt_praca)
-        ? yieldValueFields('praca', `${text(scaleTerrainImprovementWorkCost(improvement.koszt_praca as number, improvement.epoka))} P`)
+        ? yieldValueFields('praca', `${text(scaleTerrainImprovementWorkCostForOwner(baseKosztPracaUlepszenia(improvement as { koszt_praca?: number; koszt_praca_przed_x2?: number }), improvement.epoka, improvementCardOwnerEra()))} P`)
         : { value: '' }),
     },
     { label: 'Warunek', ...proseRowFields(text(improvement.warunek), true) },

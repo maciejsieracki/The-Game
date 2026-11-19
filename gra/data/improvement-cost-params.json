@@ -1,0 +1,4 @@
+{
+  "_opis": "R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1: koszt BUDOWY ulepszenia (Praca) liczony wg epoki WLASCICIELA (Kamien 0,5x / Brac 1x / Zelazo 2x, dalej x2) zamiast epoki odblokowania ulepszenia. true = wlaczone (decyzja wlasciciela 2026-11-19, ABC B). false = wzor sprzed zmiany (mnoznik epoki ulepszenia). Utrzymanie Pracy ulepszen (x1/2/4) NIE jest tym parametrem objete.",
+  "kosztUlepszenWgEpokiWlasciciela": true
+}
