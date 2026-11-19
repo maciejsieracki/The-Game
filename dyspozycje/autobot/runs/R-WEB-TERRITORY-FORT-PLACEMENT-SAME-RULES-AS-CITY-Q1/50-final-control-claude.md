@@ -1,0 +1,13 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-TERRITORY-FORT-PLACEMENT-SAME-RULES-AS-CITY-Q1
+GOAL: budowa fortu/posterunku ma te same reguly wlasnosci terytorium co zakladanie miasta (gracz, automat, AI), bez zmiany promieni/kosztow.
+ZMIANY/COMMIT: kandydat 5379db2d4; merge-base --is-ancestor d6203ad7e (origin/main) = TAK. diff --stat: 6 plikow, +226/-4: fort-territory.ts (+15, helper isFortBuildBlockedByForeignTerritory), improvement-build.ts (1 uzycie), main.ts (2 uzycia: assertPlayerTerritoryForBuild + blok budowy AI ~l.47998), nowy test fort-placement-same-rules-as-city-test.cjs, raporty 10/30. Zmiana czysto refaktorowa: helper == stare wyrazenie `owner !== null && owner !== ownerId` w 3 miejscach (zachowanie bez zmian).
+TESTY (wlasne, surowe wyjscie na 5379db2d4): tsc --noEmit exit 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; city-founding-no-fort-takeover 27/0; fort-outpost-hard-territory 92/0; fort-strazniaca-zasieg-zakladania 82/0; fort-outpost-placement-rules 40/0; ai-territory-race 29 OK/0 FAIL; auto-fort-claim 66/2 (pre-existing, zgodne z dispatchem); nowy test 25/0.
+Mutacje (wlasne): M2 improvement-build rivalCityTerritory=false -> nowy test 21/4 CZERWONY; M1 helper `return false` -> 21/4 CZERWONY. Kopie przywrocone (git status czysty).
+OCENA ZARZUTOW: (1) tautologia - ODPARTY po naprawie: test wola produkcyjne buildImprovementQualifier('fort'), mutacja produkcyjna go czerwieni. (2) pozorne ujednolicenie - ODPARTE: helper uzyty w improvement-build, main.ts gracz i main.ts AI; ai.ts nie ma inline werdyktu wlasnosci fortu (wg obrony, nie sprawdzano szerzej). (3) brak biegu dymnego 90 tur - ZASADNY jako NIE ZMIERZONO, ale refaktor jest algebraicznie rownowazny, wiec wplyw na liczbe fortow AI = zero z konstrukcji; nie blokuje.
+BLOKADY: brak.
+UWAGI-DLA-ORKIESTRATORA: (a) blok AI w main.ts (~l.47998) jest poza doslowna allowlista ("main.ts tylko walidacja gracza"); zmiana 1-linijkowa, rownowazna, rekomendacja: przyjac. (b) Temat dostarcza wspolny helper wlasnosci terytorium, nie zmienia zachowania; tabela roznic miasto/fort/posterunek z numerami linii i wiersz odleglosci od cudzych miast (MIN_CITY_DISTANCE) niepelne; jesli wlasciciel oczekuje realnej zmiany regul wzgledem FALI 877, potrzebny osobny temat. (c) Bieg dymny 90 tur seed 4242: NIE ZMIERZONO. (d) Polski komunikat odrzucenia w UI: nie zweryfikowany (brak zmiany tekstu).
+RUNDY: FC 1 (po 2 rundach operatora/obrony), limit 5
+NASTEPNY KROK: integracja orkiestratora (FF/merge 5379db2d4 do main), bramki po merge, opcjonalnie pomiar 90 tur.
+DEPLOY/PUSH: NIE WYKONANO
