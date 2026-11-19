@@ -1,0 +1,36 @@
+{
+  "seed": 4242,
+  "harder": 1,
+  "allFlags": 1,
+  "playerAi": 1,
+  "graczAdnotacja": "gracz = autopilot",
+  "turnsRequested": 45,
+  "every": 1,
+  "endTurn": 45,
+  "rows": 44,
+  "stop": null,
+  "flagi": {
+    "harder": true,
+    "napTor": true,
+    "sojuszTor": true,
+    "koalicja": true,
+    "zeroZaufania": true,
+    "wojnaSilaSojuszu": true,
+    "limitWojen": true
+  },
+  "counters": {
+    "gateActiveTurns": 0,
+    "bypassApplied": 0,
+    "stuckQueueHeals": 0,
+    "battlesAuto": 0,
+    "diploAudienceClosed": 0,
+    "armyMergeClosed": 0,
+    "techNoticeClosed": 0,
+    "aiOffersRejected": 0,
+    "aiOffersRejectAttempts": 0,
+    "forcedPeaceAccepted": 0
+  },
+  "aiOffersRejected": 1,
+  "aiOffersRejectAttempts": 1,
+  "wallSec": 287
+}

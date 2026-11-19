@@ -33888,6 +33888,33 @@ async function boot(): Promise<void> {
           return { turn, flag: isHarderDiplomacyEnabled(), gracz: ME(), owners, pairs };
         },
       };
+      // R-WEB-DIPLO-ALL-FLAGS-MEASURE-RUNNER-Q1: hak pomiaru ŁĄCZNEGO pakietu flag dyplomacji (tylko ?civTest=1).
+      // setAll(on) ustawia WSZYSTKIE flagi przez istniejące settery ForTest (true dla on, null = wartość z danych dla off).
+      // status() = TYLKO ODCZYT stanu każdej flagi (przez istniejące gettery); zerwania = licznik sesji (odczyt).
+      (window as any).__diploAllFlagsMeasure = {
+        schemaVersion: 1,
+        setAll: (on: boolean): Record<string, boolean> => {
+          const v = on === true ? true : null;
+          setHarderDiplomacyEnabledForTest(v);
+          setAiAiTreatyTickEnabledForTest(v);
+          setAiAiAllianceTickEnabledForTest(v);
+          setAiAiCoalitionEnabledForTest(v);
+          setZeroTrustEnabledForTest(v);
+          setWarByAllianceStrengthForTest(v);
+          setWarLimitEnabledForTest(v);
+          return (window as any).__diploAllFlagsMeasure.status();
+        },
+        status: (): Record<string, boolean> => ({
+          harder: isHarderDiplomacyEnabled() === true,
+          napTor: isAiAiTreatyTickEnabled() === true,
+          sojuszTor: isAiAiAllianceTickEnabled() === true,
+          koalicja: isAiAiCoalitionEnabled() === true,
+          zeroZaufania: isZeroTrustEnabled() === true,
+          wojnaSilaSojuszu: isWarByAllianceStrengthEnabled() === true,
+          limitWojen: isWarLimitEnabled() === true,
+        }),
+        zerwaniaZeroZaufania: (): number => zeroTrustStats().zerwania,
+      };
       (window as any).__aiEconomyMeasure = {
         schemaVersion: 1,
         /** R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1 (tylko ?civTest=1, domyślnie OFF): gracz (0) wykonuje w fazie AI
