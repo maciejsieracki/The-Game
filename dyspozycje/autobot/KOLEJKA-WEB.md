@@ -48,6 +48,7 @@ Nowe starty: `df --output=avail -BG /` ≥ 6 GB (integracja `/home/user/integ` �
 
 ## GOTOWE DO STARTU (kolejność; start gdy slot < 4 i dysk ≥ 6 GB; dispatch najpierw na gałąź)
 
+0. **R-WEB-ERA-WAR-DEFER-NOT-CANCEL-WHEN-PREVIOUS-WAR-ACTIVE-Q1** (PRIORYTET, zgłoszenie właściciela 2026-11-19; dispatch zapisany): wojna epoki Brązu/Żelaza ma być PRZESUWANA (pending, zapisywana), nie anulowana, gdy trwa wojna poprzedniej epoki; startuje zaraz po jej końcu (gracz i AI). Haiku; po FC deploy jako kolejna FALA.
 1. **R-WEB-TEST-DEBT-Q12** — pozostałe czerwone testy: auto-fort-claim, building-upkeep-resources D10 (martwy plUpkeepForm w buildingAdapter.ts), entity-card-cross-links-nested-overlay (niestabilny), fishing-boats-666 (docs nieaktualne), hodowla-las (3 asercje, po FALI 874 sprawdzić), diplo-forced-peace-pending-live-paths (środowisko). Haiku, bez ABC.
 2. **R-WEB-VERIFY-LIVE-873-ALLIANCELIMIT-Q1** — weryfikacja na żywo (jeden Chromium): pokój z cesją ≥2 miast (FALA 873), bieg 100 tur limitu 2 sojuszy z flagą ON (FALA 865), reguła wojen z graczem (863), żywa zamiana Żywności→Podatek (876), bieg dymny 60 tur po FALI 875. Wynik: tabela ZMIERZONO/NIE ZMIERZONO. Haiku.
 3. **R-WEB-ECONOMY-FOODCONV-HOOK-Q1** (opcjonalny): hook civTest do dowodu żywego zamiany Żywności (brak w FALI 876).
