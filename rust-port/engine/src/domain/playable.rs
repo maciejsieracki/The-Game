@@ -1413,7 +1413,6 @@ impl PlayableGame {
         let mut next = self.state.clone();
         let payload = siege_battle_apply::finish(&mut next, battle)?;
         self.state = next;
-        self.siege_battle = None;
         Ok(payload)
     }
 
