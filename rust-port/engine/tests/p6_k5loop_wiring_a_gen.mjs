@@ -304,6 +304,13 @@ function runScenario(sc) {
       console.error(`T ${bs.vNow} r${bs.roundNo} BLOW ${att.bu.id}@${att.q},${att.r}f${att.facing}->${dfd.bu.id}@${dfd.q},${dfd.r}f${dfd.facing} ranged=${ranged} dmg=${out}`);
       return out;
     };
+    // PIN3-DIVERGENCE-Q1 (diagnostyka): cel jazdy (`_cavalryTarget` `:6326`).
+    const origCavT = bs._cavalryTarget;
+    bs._cavalryTarget = function (ru) {
+      const t = origCavT.call(this, ru);
+      console.error(`T ${bs.vNow} r${bs.roundNo} CAVT ${ru.bu.id}@${ru.q},${ru.r} ml=${ru.moveLeft} -> ${t ? `${t.bu.id}@${t.q},${t.r}` : 'null'} | ${[...bs.atk, ...bs.def].map((u) => `${u.bu.id}@${u.q},${u.r}${u.routed ? 'R' : ''}${u.dead ? 'D' : ''}${u.removed ? 'X' : ''}`).join(' ')}`);
+      return t;
+    };
     const origMove = bs._doMove;
     bs._doMove = function (ru, c, r, ...rest) {
       const from = `${ru.q},${ru.r}`;

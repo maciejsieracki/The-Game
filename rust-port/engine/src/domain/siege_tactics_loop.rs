@@ -2291,7 +2291,19 @@ impl<R: RollSource> ProdBody<R> {
         let prev = self.facing[ix][unit.idx];
         if self.pin_blow_timing && prev.to_bits() != dir.to_bits() {
             let synchr = self.now <= self.call_now;
-            self.facing_timeline.push((unit, self.now, prev, dir, synchr));
+            let now = self.now;
+            // PIN3-DIVERGENCE-Q1 (D-PIN3-5): zmiana z chwili WCZEŚNIEJSZEJ niż już zapisane zwroty jednostki (np.
+            // `_startRout` od trafienia wieży w trakcie jej marszu, `:9818`) nie nadpisuje bieżącego `facing`: w pinie
+            // późniejszy krok marszu (`_doMove` → `_updateFacing` `:8757`) obraca ją jeszcze raz. Bieżący stan = zwrot
+            // najpóźniejszy w czasie.
+            let later = self
+                .facing_timeline
+                .iter()
+                .any(|&(u, t0, _, _, _)| u == unit && t0 > now);
+            self.facing_timeline.push((unit, now, prev, dir, synchr));
+            if later {
+                return;
+            }
         }
         self.facing[ix][unit.idx] = dir;
     }
@@ -5258,7 +5270,13 @@ impl<R: RollSource> ProdBody<R> {
             c.acted = true;
         }
         // `this.occByKey.delete(cellKey(ru.q, ru.r))` (`battleScene.ts:9812`).
-        self.release_tile(unit);
+        // PIN3-DIVERGENCE-Q1 (D-PIN3-5): rozbicie W TRAKCIE własnego marszu (trafienie wieży między krokami): pin zwalnia
+        // pole z chwili rozbicia, ale kolejne kroki `_doMove` (`:8714-8717`: `occByKey.delete(old)`, `set(new)`) dalej
+        // się wykonują i zajmują pole końcowe. Ciało liczy marsz atomowo (pole końcowe już zajęte, pośrednie zwolnione),
+        // więc przy pozostałych krokach na osi czasu pole końcowe zostaje zajęte.
+        if !(self.pin_blow_timing && self.has_future_steps(unit)) {
+            self.release_tile(unit);
+        }
         // P4-1I3: `_sfxRout()` (`:9801`) = początek rozbicia, przed kaskadą osłony wręcz.
         self.emit(BattleAction::Rout { unit });
         // K5LOOP-TAGS-REST (`:9803-9806`): `if (ru.isArmyCommander) { _removeCommanderMoraleBonus(ru.side);
@@ -5358,6 +5376,15 @@ impl<R: RollSource> ProdBody<R> {
 
     /// `occByKey.delete(cellKey(ru.q, ru.r))`: zwolnienie pola jednostki (rout `:9812`, usuniecie `:9915`). Web usuwa
     /// klucz bez sprawdzania wlasciciela; tu tak samo.
+    /// PIN3-DIVERGENCE-Q1 (D-PIN3-5): czy jednostka ma na osi czasu ciała kroki `_doMove` jeszcze niewykonane w chwili
+    /// `self.now` ([`timeline_done`]).
+    fn has_future_steps(&self, unit: UnitRef) -> bool {
+        let now = self.now;
+        self.move_timeline
+            .iter()
+            .any(|&(u, t0, _, _, synchr)| u == unit && !timeline_done(t0, synchr, now))
+    }
+
     fn release_tile(&mut self, unit: UnitRef) {
         let pu = &self.units[side_ix(unit.side)][unit.idx].activate;
         let key = cell_key(pu.q as f64, pu.r as f64);
