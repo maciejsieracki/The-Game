@@ -105,6 +105,10 @@ const iTransfer = body.indexOf('executePnDealTransfer(proposerId, responderId, p
 const iFinalize = body.indexOf('finalizePeaceTreatyBetween(proposerId, responderId);');
 ok(iFilter > 0, 'applyProposalOutcomeImpl: wywołuje cityCessionFilterPayload w gałęzi oneShot');
 ok(iTransfer > iFilter, 'filtr miast wykonywany PRZED przelewem');
+// Zarzut 1 Evaluatora (R-WEB...-Q1 r3): przelew MUSI iść z przefiltrowanym payloadem, nie z surowym.
+// Bez tego przypisania odfiltrowane miasta byłyby dalej przekazywane, a komunikat o nieprzeniesieniu kłamałby.
+ok(iFilter > 0 && iTransfer > iFilter && body.slice(iFilter, iTransfer).includes('payload = cityCes.payload;'),
+  'wiring: payload = cityCes.payload przed executePnDealTransfer (przelew z przefiltrowanym pakietem)');
 ok(iFinalize > iTransfer, 'pokój zawierany (finalizePeaceTreatyBetween) PO przelewie miast');
 const filterBlock = mainSrc.slice(mainSrc.indexOf('function cityCessionFilterPayload('), mainSrc.indexOf('function cityCessionFilterPayload(') + 2600);
 ok(filterBlock.includes('partitionPeaceCityItems({'), 'cityCessionFilterPayload używa partitionPeaceCityItems (sekwencyjne zakazy)');
