@@ -73,6 +73,10 @@ Nowe starty: `df --output=avail -BG /` ≥ 6 GB (integracja `/home/user/integ` �
 - **Włączenie flag dyplomacji** (twarda dyplomacja, tor sojuszy, koalicja, zero zaufania, siła sojuszu, limit wojen) — dopiero po ponownym pomiarze OFF/ON po poprawce limitu sojuszy i decyzji właściciela (ABC).
 - **Dopłata D sojuszy AI↔AI (0,5?)** — dopiero po pełniejszym pomiarze seed 4242/7 t60 i decyzji.
 
+## PÓŹNIEJ (polecenie właściciela 2026-11-19; NIE startować teraz)
+
+- Analiza i balans KOSZTÓW BADAŃ oraz KOSZTÓW BUDYNKÓW (po przetestowaniu przez właściciela zmian ulepszeń i kosztów jednostek). PRIORYTET OBECNY: wdrożyć na ROBOCZĄ zmiany kosztów jednostek (UPKEEPMULT → RECRUITMULT → UPKEEPPACE), żeby właściciel mógł testować balans.
+
 ## CZEKA NA RANO / ODPOWIEDŹ WŁAŚCICIELA (ABC do zadania, gdy właściciel wraca)
 
 1. Skarbiec w Brązie: czy dodatkowa korekta kosztów jednostek (A +10%/B +20%/C +30% lub bez zmian), po ustaleniu, że pieniądz/surowce już skalują ×1/×2/×4.
