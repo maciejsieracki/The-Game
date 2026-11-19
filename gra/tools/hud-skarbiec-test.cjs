@@ -633,9 +633,13 @@ if (city) {
   // ktokolwiek doda drugie (choc martwe/nieosiagalne) wywolanie z regresem
   // gdziekolwiek w tym ciele, ponizsza petla to wykryje.
   const realArgsList = extractAllCallArgs(realFnBody, 'previewCityEconomy');
+  // R-WEB-TEST-DEBT-Q10 (a, nieaktualna liczba): po FALI z prognozą NNS w ciele funkcji doszły
+  // dwa wywołania w zamknięciach (main.ts ~23595 `previewDomyslny`, ~23702 `previewWithSplit`).
+  // Poprawka każdego wywołania (pozycje 10/11) jest nadal sprawdzana w pętli poniżej, więc
+  // kontrola regresu zostaje pełna; zmienia się tylko warunek liczby (>= 1 zamiast === 1).
   assert(
-    'MIEJSCE POPRAWKI (main.ts, refreshLiveEmpireRatesUnsafe): dokladnie jedno wywolanie previewCityEconomy(...) w ciele funkcji',
-    realArgsList.length === 1,
+    'MIEJSCE POPRAWKI (main.ts, refreshLiveEmpireRatesUnsafe): co najmniej jedno wywolanie previewCityEconomy(...) w ciele funkcji',
+    realArgsList.length >= 1,
     `liczba wywolan=${realArgsList.length}`,
   );
   const realArgs = realArgsList[0];
