@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4e325c45371d09b4167267db404f7f4a",
-  "bundleSha256": "ce7720b55e92d0b52ed4138c6660ad958f8ebf8c1e65dd062468aa6a504e7587",
+  "bundleMd5": "a056b112089eddb5e4ad6eb49fe8d594",
+  "bundleSha256": "d626465120e6c9c76aa2174825a0acd17a49cf69b5d481a1b6ff30776862cb6c",
   "bundleBytes": 14986974,
   "sourceSnapshot": {
-    "source": "kod db7940f7d (Haiku r1 + Obrona); FC cf1635f76",
+    "source": "kod 791a58a7a (Haiku r1 + Obrona); FC 0013ea630",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 870: gra/src/ui/civWelcomeScreen.ts (listHtml: pelna lista, karta flex-kolumna z przewijaniem w .cww-body, przyciski zawsze widoczne), gra/src/ui/civWelcomeLogic.ts (usuniete WELCOME_VISIBLE_*), test civ-welcome-screen-test 490 asercji. Zgloszenie wlasciciela 2026-11-19 (zrzut)."
+    "FALA 871: gra/data/econ-era-rebalance-params.json (flaga true; cofniecie = false), 6 testow legacy z jawnie wylaczona flaga, econ-era-rebalance-test niezalezny od domyslnej flagi. Decyzja wlasciciela 2026-11-19 (ABC A po biegu 150 tur OFF/ON). Konwertery, utrzymanie surowcowe obywateli, rekrutacja, utrzymanie Pracy bez zmian."
   ],
   "verification": [
-    "tsc 0, logic 213/213, civ-welcome-screen-test 490 OK (mutacje czerwone: title 54, details 1, slice 44 FAIL), audio-welcome-audience-overlap 8/0; Chromium: Rzymianie 4 plusy, Grecy 11 plusow 1280x720 i 480x800, brak poziomego scrolla, zrzuty w runie"
+    "tsc 0, logic 213/213, econ-era-rebalance 37/0 (przy danych ON i OFF), citizen-consumption PASS, improvement-era-scaling 144/0, unit-epoch-cost 57/0, foundry 159/0, ai-economy-measure-hook 23/23, HUD 17/18/7/36"
   ],
   "limits": [
-    "NIE ZMIERZONO: brand-live-test nie uruchamiany przez FC (uruchomil Evaluator: PASS 1324x1300/1024x640/480x800); inne miejsca UI ze wzorcem najedz: brak"
+    "NIE ZMIERZONO: smoke w przegladarce po wlaczeniu przez FC; 18 testow czerwonych niezaleznie od flagi (temat R-WEB-TEST-DEBT-Q10); bieg OFF/ON z biegu weryfikacyjnego: AI brutto -49%, gracz 4242 brutto -57%/netto -20%, populacja gracza 50->25, brak glodu"
   ],
-  "finalControl": "FC PASS: potomek bazy, allowlista, mutacje czerwone, zrzut Rzymian = zrzut wlasciciela",
+  "finalControl": "FC PASS-WITH-NOTES: potomek bazy, flaga true, testy legacy z jawnie wylaczona flaga, bramki zielone",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T20:09:19",
+  "hubGeneratedAt": "2026-11-19T20:25:33",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
       "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
       "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
       "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
       "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
       "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
       "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
       "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
       "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
       "sizeBytes": 14986974
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "4e325c45371d09b4167267db404f7f4a",
+      "md5": "a056b112089eddb5e4ad6eb49fe8d594",
       "sizeBytes": 14986974
     }
   ],
-  "md5": "4e325c45371d09b4167267db404f7f4a",
+  "md5": "a056b112089eddb5e4ad6eb49fe8d594",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

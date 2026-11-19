@@ -1,3 +1,9 @@
+## ROBOCZA a056b112 -- 2026-11-18 -- FALA 871: R-WEB-ECONOMY-ERA-REBALANCE-ENABLE-Q1: rebalans ekonomii wg epok WLACZONY domyslnie na ROBOCZEJ (eraRebalansAktywny=true): przychody ulepszen stale jak epoka 1, zywnosc wojska x3/epoke, racje obywateli 2^(e-1) (testowa)
+
+- gra/data/econ-era-rebalance-params.json (flaga true; cofniecie = false), 6 testow legacy z jawnie wylaczona flaga, econ-era-rebalance-test niezalezny od domyslnej flagi. Decyzja wlasciciela 2026-11-19 (ABC A po biegu 150 tur OFF/ON). Konwertery, utrzymanie surowcowe obywateli, rekrutacja, utrzymanie Pracy bez zmian.
+- Weryfikacja: tsc 0, logic 213/213, econ-era-rebalance 37/0 (przy danych ON i OFF), citizen-consumption PASS, improvement-era-scaling 144/0, unit-epoch-cost 57/0, foundry 159/0, ai-economy-measure-hook 23/23, HUD 17/18/7/36
+- Limity: NIE ZMIERZONO: smoke w przegladarce po wlaczeniu przez FC; 18 testow czerwonych niezaleznie od flagi (temat R-WEB-TEST-DEBT-Q10); bieg OFF/ON z biegu weryfikacyjnego: AI brutto -49%, gracz 4242 brutto -57%/netto -20%, populacja gracza 50->25, brak glodu
+
 ## ROBOCZA 4e325c45 -- 2026-11-18 -- FALA 870: R-WEB-UI-WELCOME-SHOW-ALL-BONUSES-Q1: ekran powitalny nowej cywilizacji pokazuje WSZYSTKIE Plusy i Minusy (bez '+ N wiecej (najedz...)' i tooltipu) (testowa)
 
 - gra/src/ui/civWelcomeScreen.ts (listHtml: pelna lista, karta flex-kolumna z przewijaniem w .cww-body, przyciski zawsze widoczne), gra/src/ui/civWelcomeLogic.ts (usuniete WELCOME_VISIBLE_*), test civ-welcome-screen-test 490 asercji. Zgloszenie wlasciciela 2026-11-19 (zrzut).
