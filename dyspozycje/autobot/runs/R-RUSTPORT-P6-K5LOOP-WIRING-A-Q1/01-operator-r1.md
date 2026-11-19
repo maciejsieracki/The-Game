@@ -107,7 +107,38 @@ Bramki: patrz §8.
 
 ## 5. Mutanty
 
-Skrypt: `/tmp/.../scratchpad/wiringa/mutanty.py` (kopia w raporcie §5a). Wyniki: §5a (uzupełniane po przebiegu).
+Skrypt: `dyspozycje/autobot/runs/R-RUSTPORT-P6-K5LOOP-WIRING-A-Q1/01-operator-r1-mutanty.py` (każdy mutant = jedna
+gałąź/warunek sesji albo zmian w pętli; zabity = `cargo test --test p6_k5loop_wiring_a` FAIL; plik przywracany po
+każdym). 24 mutanty: **20 zabitych, 4 jawnie równoważne**. Pierwszy przebieg: M07, M09, M14, M15 przeżyły → dopisane
+testy `klatki_czasu_rzeczywistego_i_zegar` i `kompozytor_ciosu_szarza_i_kontry`, drugi przebieg: zabite. M01/M03 w
+pierwszym przebiegu nie miały wzorca po `cargo fmt` (poprawione wzorce, zabite w drugim).
+
+| Mutant (gałąź) | Wynik |
+|---|---|
+| M01 RNG bez numeru bitwy | ZABITY (`rng_z_ziarna…`, `zlote…`) |
+| M02 RNG stała 0,5 | ZABITY (4 testy) |
+| M03 generał → `Adapter` zamiast `ManualModeNotPorted` | ZABITY |
+| M04 `skip` przed startem przewija | ZABITY |
+| M05 `step` w `Prepared` = błąd | ZABITY |
+| M06 `step` bez reszty klatki | ZABITY (niezależność od podziału) |
+| M07 warunek klatki `>` | ZABITY (`klatki_…`) |
+| M08 czas rzeczywisty `ff_active = true` | ZABITY (brak Damage) |
+| M09 czas rzeczywisty bez `_advanceVClock` | ZABITY (`klatki_…`) |
+| M10 `finish` przed końcem | ZABITY |
+| M11 sufit tur 10 | ZABITY (4 testy) |
+| M12 wieża bez skutków (`tower_outcome_effects`) | ZABITY (`unported`) |
+| M13 bez kompozytora ciosu | ZABITY (`unported`) |
+| M14 szarża zawsze (kompozytor) | ZABITY (`kompozytor_…`) |
+| M15 kontry odwrócone dla obrońcy | ZABITY (`kompozytor_…`) |
+| M16 `def_on_wall = false` w kompozytorze | RÓWNOWAŻNY na danych: pole steruje tylko `defOnFord` (brak brodu na polu oblężenia z presetem `None`) i `wallCivMult` (tylko przy niezerowym bonusie muru cywilizacji, `civWallDefenseMultiplier`); bonus muru korony liczy `blow_env_for` z położenia, nie z tego pola |
+| M17 łuk z szablonu (Front) zamiast `relativeHit` | ZABITY (`zlote…`) |
+| M18 bez kary morale startowej | ZABITY (`zlote…`) |
+| M19 NaN czasu przechodzi | ZABITY |
+| M20 wieża bez `_applyMoraleDamage` | ZABITY |
+| M21 `wall_now` nie rośnie | ZABITY |
+| M22 `first_blow_of_pair = false` w kompozytorze | RÓWNOWAŻNY ściśle: `ProdBody::strike` nadpisuje pole wartością z `engaged` zaraz po `compose` |
+| M23 teren obrońcy zawsze płaski (kontekst civ) | RÓWNOWAŻNY na danych: `terrain` kontekstu civ działa tylko przy bonusach leśnych (`fragment_las`); obrońcy oblężenia stoją na koronie/dziedzińcu bez lasu |
+| M24 `skip` zostawia fazę `Running` | RÓWNOWAŻNY: `after_drive` ustawia `Finished` po przewinięciu; faza `Skipping` jest obserwowalna tylko przy wyczerpaniu `SKIP_STEP_BUDGET` (błąd jawny, nieosiągalny w pinie) |
 
 ## 6. BLOKADY
 
@@ -143,10 +174,22 @@ Skrypt: `/tmp/.../scratchpad/wiringa/mutanty.py` (kopia w raporcie §5a). Wyniki
 | D-WIRA-T | szablon strzału wieży statyczny (`tower_shot_from_row`); pin liczy `_singleBlow` wieży z terenem kafla celu | NOWY |
 | B1 | wektory pinu pełnej bitwy | NOWY (osobny temat) |
 
-## 8. Bramki
+## 8. Bramki (na kodzie z §9, `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` w scratchpadzie `wiringa/target`, usunięty po bramkach)
 
-Uzupełniane: §8a.
+| Bramka | Wynik |
+|---|---|
+| `cargo fmt --all -- --check` | EXIT 0 |
+| `cargo clippy --all-targets -- -D warnings` | EXIT 0 (bez ostrzeżeń) |
+| `cargo test --test p6_k5loop_wiring_a` | 12 passed |
+| `cargo test --all-targets --no-fail-fast` (w tle, `setsid nohup`, `EXIT` w logu) | **EXIT=0**, 543 × `test result: ok`, 0 × FAILED (w tym `p6_k5loop_tags_rest`, `p6_k5loop_adapter`, `p6_k5loop_siege_*`, `p6_battle_setup*`, `bridge_contract`, `p4_1i3_actions`, `p4_1i2_frame*`) |
+| wektory generatora (MD5) | NIE DOTYCZY w tej rundzie — generator pinu pełnej bitwy nie powstał (B1) |
+
+Dysk: start 15 GB wolnego; w trakcie spadek do 6,4 GB przez inne workery (bez nowych buildów w tym czasie poza
+mutantami w istniejącym targecie); pełny test przy 10–11 GB.
 
 ## 9. Commit
 
-Uzupełniane.
+Gałąź `rust-port-wip/k5loop-wiring-a-q1` (baza `32006733b`). Commity WIP: `6e6afbd99` (raport wczesny), `bb1509b57`
+(sesja, kompozytor, krok czasu rzeczywistego), `bfcc58708` (skutki wieży, testy), `2443f8716` (złote wyniki),
+`8bbbf3288` (testy klatek i kompozytora), końcowy: patrz StructuredOutput / `git log` (raport + skrypt mutantów).
+Push na `parity-v2`: NIE (zakaz). Push zdalny gałęzi WIP: NIE WYKONANO (Operator nie pushuje; gałąź lokalna w worktree).
