@@ -447,7 +447,7 @@ impl BlowComposer for SessionBlowComposer {
             def_fortified_in_field: d.fortified_in_field,
             def_wall_civ_mult: wall_civ,
             def_braces_against_charge: d.tmpl.braces_against_charge,
-            first_blow_of_pair: site.first_blow,
+            first_blow_of_pair: false,
             counter_mult,
             env,
             defender_state: DefenderState {
