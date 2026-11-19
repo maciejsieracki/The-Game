@@ -175,9 +175,9 @@ const MUTANTS = [
   { id: 'M3 bramka przychodow ulepszen usunieta', mutants: [{ file: 'terrain', from: '  if (isEraRebalanceImprovementFlat()) return base;', to: '' }] },
   { id: 'M4 produkcja surowca bramka usunieta', mutants: [{ file: 'terrain', from: '  if (isEraRebalanceImprovementFlat()) return baseAmount;', to: '' }] },
   { id: 'M5 zywnosc jednostek Zelazo x16 -> x4 (potega epoki ograniczona)', mutants: [{ file: 'rebalance', from: '  return Math.max(1, Math.round(direct * Math.pow(step, eraOrdinal(epoch) - 1)));', to: '  return Math.max(1, Math.round(direct * Math.pow(step, Math.min(1, eraOrdinal(epoch) - 1))));' }] },
-  // M6: bramka rebalancedUnitFoodBase w unitFoodPerTurn (ON-path) psuje wynik. Przy domyslnych danych usuniecie bramki
-  // nie zmienia liczb (tabela i bramka licza to samo), wiec mutant jest zamieniony na wykrywalny: wynik x2.
-  { id: 'M6 bramka zywnosci jednostek psuje wynik (x2)', mutants: [{ file: 'upkeep', from: '      if (rebalanced !== null) base = rebalanced;', to: '      if (rebalanced !== null) base = rebalanced * 2;' }] },
+  // M6: baza zywnosci w unitFoodPerTurn (ON-path, po R-WEB-...-EXTRA-MULT Evaluator F1) psuje wynik. Mutant zamieniony
+  // na wykrywalny: wynik x2 (kotwica = unitFoodBaseByEpoch w unitFoodPerTurn; patrz unit-upkeep-era-scale-test M6 dla rollbacku w locie).
+  { id: 'M6 baza zywnosci jednostek w silniku psuje wynik (x2)', mutants: [{ file: 'upkeep', from: '    if (raw) base = unitFoodBaseByEpoch(raw.direct, raw.epoch);', to: '    if (raw) base = unitFoodBaseByEpoch(raw.direct, raw.epoch) * 2;' }] },
   { id: 'M7 bramka racji usunieta w citizen-consumption', mutants: [{ file: 'citizen', from: '  if (rebalanced !== null) return rebalanced;', to: '' }] },
   { id: 'M8 konwertery odlewni na wzorze 2^(e-1)', mutants: [{ file: 'converters', from: 'return baseThroughput * legacyCitizenConsumptionEraMultiplier(era);', to: 'return baseThroughput * Math.pow(2, Math.floor(era) - 1);' }] },
   { id: 'M9 utrzymanie surowcow obywateli na wzorze 2^(e-1)', mutants: [{ file: 'citizenUpkeep', from: 'return CITIZEN_UPKEEP_RATE_PER_CITIZEN * legacyCitizenConsumptionEraMultiplier(era);', to: 'return CITIZEN_UPKEEP_RATE_PER_CITIZEN * Math.pow(2, Math.floor(era) - 1);' }] },

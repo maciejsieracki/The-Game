@@ -1160,12 +1160,10 @@ export function unitFoodPerTurn(
   if (unit.typeId && typeof foodTable[unit.typeId] === 'number') {
     base = foodTable[unit.typeId]!;
     // R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1 / EXTRA-MULT-AND-FOOD-TAX-RATE-Q1: flaga ON = zywnosc wojska x1/x4/x16 wg epoki jednostki
-    // (surowe dane z buildUnitFoodTable; flaga czytana przy kazdym wywolaniu).
+    // (surowe dane z buildUnitFoodTable; flaga czytana przy kazdym wywolaniu -> tabela zbudowana przy ON
+    // po przelaczeniu flagi na OFF w locie daje legacy wartosc, nie zapieczona wartosc z tabeli).
     const raw = UNIT_FOOD_RAW_BY_TABLE.get(foodTable)?.[unit.typeId];
-    if (raw) {
-      const rebalanced = rebalancedUnitFoodBase(raw.direct, raw.epoch);
-      if (rebalanced !== null) base = rebalanced;
-    }
+    if (raw) base = unitFoodBaseByEpoch(raw.direct, raw.epoch);
   }
   if (base <= 0) return 0;
   if (unit.camping) {

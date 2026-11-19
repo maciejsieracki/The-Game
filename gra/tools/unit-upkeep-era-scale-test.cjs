@@ -85,6 +85,17 @@ function rows() {
   }));
 }
 
+// Tabela zbudowana przy fladze ON, potem flaga przelaczona na OFF bez przebudowy tabeli (rollback w locie).
+function staleOffFood(M) {
+  const data = rows();
+  M.setEraRebalanceEnabledForTest(true);
+  const tbl = M.buildUnitFoodTable(data);
+  M.setEraRebalanceEnabledForTest(false);
+  const out = data.map(r => M.unitFoodPerTurn({ typeId: r.Jednostka, camping: false, onOwnTerritory: true }, M.DEFAULT_UPKEEP_PARAMS, tbl));
+  M.setEraRebalanceEnabledForTest(null);
+  return out;
+}
+
 function measure(M) {
   const data = rows();
   const goldTbl = M.buildUnitUpkeepTable(data);
@@ -129,6 +140,12 @@ function measure(M) {
     base.rebalancedUnitFoodBase(0, 'Żelazo') === 0 && base.rebalancedUnitFoodBase(NaN, 'Brąz') === 0 && base.rebalancedUnitFoodBase(-2, 'Brąz') === 0);
   check('food base: brak epoki = Kamien x1', base.rebalancedUnitFoodBase(5, undefined) === 5);
   check('food base: Zelazo 1 -> 16', base.rebalancedUnitFoodBase(1, 'Żelazo') === 16);
+
+  // Rollback w locie (Evaluator F1): tabela zbudowana przy ON, potem flaga OFF -> silnik ma liczyc legacy 4/8/16,
+  // a nie zapieczona wartosc z tabeli (4/16/64). Tabela swieza przy OFF = 4/8/16 (karta == silnik).
+  const stale = staleOffFood(base);
+  check('stala tabela (zbudowana ON), flaga OFF -> silnik = legacy 4/8/16', eq(stale, [4, 8, 16]), stale);
+  check('stala tabela (ON) -> OFF: silnik == karta legacy 4/8/16', eq(stale, off.card), { stale, card: off.card });
   base.setEraRebalanceEnabledForTest(null);
 
   // Mutanty kopii zrodel: kazdy musi zmienic wynik (czerwony).
@@ -148,6 +165,9 @@ function measure(M) {
     { id: 'M5 utrzymanie Pieniadz Braz x4 zamiast x2 (legacy skala)', file: 'upkeep',
       from: '    if (upkeep !== undefined) out[name] = scaleCostByEpoch(upkeep, epoch);',
       to: '    if (upkeep !== undefined) out[name] = scaleCostByEpoch(upkeep, epoch === "Brąz" ? "Żelazo" : epoch);' },
+    { id: 'M6 silnik zywnosci bierze zapieczona wartosc tabeli (rollback w locie, F1)', file: 'upkeep',
+      from: '    if (raw) base = unitFoodBaseByEpoch(raw.direct, raw.epoch);',
+      to: '    if (raw) { const rb = rebalancedUnitFoodBase(raw.direct, raw.epoch); if (rb !== null) base = rb; }' },
   ];
   console.log('\n== mutanty ==');
   for (const mt of MUTANTS) {
@@ -155,7 +175,8 @@ function measure(M) {
     mm.setEraRebalanceEnabledForTest(true);
     const mOn = measure(mm);
     mm.setEraRebalanceEnabledForTest(null);
-    const detected = !eq(mOn.pieniadz, [4, 8, 16]) || !eq(mOn.surowiec, [3, 6, 12]) || !eq(mOn.zywnosc, [4, 16, 64]) || !eq(mOn.card, [4, 16, 64]);
+    const mStale = staleOffFood(mm);
+    const detected = !eq(mOn.pieniadz, [4, 8, 16]) || !eq(mOn.surowiec, [3, 6, 12]) || !eq(mOn.zywnosc, [4, 16, 64]) || !eq(mOn.card, [4, 16, 64]) || !eq(mStale, [4, 8, 16]);
     check(mt.id + ' wykryty (czerwony)', detected, mOn);
   }
 
