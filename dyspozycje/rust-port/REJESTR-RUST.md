@@ -3923,3 +3923,8 @@ Konsekwencje dla kolejki:
 - Operator r1b: BLOCK (TIMEOUT), kod bez commitu; Evaluator ruszył na starym commicie → Workflow `wf_d23d875e-6ad` zatrzymany, orphan `emut.py` ubity. Praca Operatora zabezpieczona jako WIP2 `73813a7dd` (`refs/keep/ADAPTER-op-wip2`, `origin/rust-port-wip/k5loop-adapter-q1-wip2`). Mutanty: 17/24 zabite, 7 przeżyło (M02, M05, M06, M07, M12, M16, M18); log i skrypt przepadły przy sprzątaniu scratchpada (lekcja: nie kasować logu mutantów przed raportem).
 - DODATEK r1c w dispatchu (baza WIP2; krótka runda; commit WIP po każdym kroku). Relaunch: Workflow `wf_499692f2-310` (Opus wszystkie etapy).
 - T4 TAGS-REST (`wf_332bf894-0ad`) w toku (Operator). Slotów: 2 z 4 (T4, T6) — powód: kolejne tematy (T7 #369 zależy od T4+T6; I5a/I5b renderer ≥12 GB, dysk 9,8 GB; T3b/T5c-docs czekają) — brak czystego tematu 3D bez zależności.
+
+### Przebieg 2026-11-19 ~01:45 UTC — drugi restart kontenera (R-INFRA-1)
+- Worktree i dysk przetrwały. T4: Operator r1 zakończony (raport `4d649d2d2`, `refs/keep/TAGS-REST-op-r1`, push `rust-port-wip/tags-rest-q1`); Workflow wznowiony `resumeFromRunId wf_332bf894-0ad` (Operator z cache, Evaluator od nowa).
+- T6: r1c przerwana; stan `fbe3d8d2c` (`refs/keep/ADAPTER-op-r1c-wip`, push `rust-port-wip/k5loop-adapter-q1-op-r1c`), DODATEK r1d, nowy Workflow `wf_aa003b5d-05f`.
+- Dysk 7,1 GB wolnego (cache T6 5 GB w scratchpadzie zachowany celowo jako CARGO_TARGET_DIR).
