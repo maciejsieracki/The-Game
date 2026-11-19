@@ -59,7 +59,7 @@ Z kodu wynikają cztery bramki ograniczające budowę (hipoteza: to one powoduj�
 
 Hipoteza „AI rzadko stawia forty" jest zgodna z kodem, ale NIE jest potwierdzona liczbą: przebadano 0 AI × 0 ziaren × 0 tur (brak pomiaru, sekcja 6). Wniosku wolno użyć dopiero po pomiarze.
 
-Hak pomiarowy `__aiEconomyMeasure.metrics()` (`gra/src/main.ts:33398-~33480`) NIE zawiera pól fortów, posterunków ani terytorium (sprawdzone: brak wpisów fort/posterunek/terytorium w bloku). Pomiar wymaga rozszerzenia haka o odczyt (tylko odczyt, `?civTest=1`).
+Hak pomiarowy `__aiEconomyMeasure.metrics()` (`gra/src/main.ts`) NIE zawierał pól fortów, posterunków ani terytorium na początku tematu; od r2/r3 je zawiera (tylko odczyt, `?civTest=1`; sekcja 6).
 
 ### 1.6 Limity i koszty
 
@@ -145,6 +145,23 @@ Zakres NIE ZMIERZONO:
 - Moment pierwszego forta AI powyżej tury 40 i udział lądu zajętego w turach kontrolnych: NIE ZMIERZONO.
 
 Dlatego wniosek „AI rzadko stawia forty" NIE jest jeszcze potwierdzony liczbą dla tur 50–150. Naprawa wznowienia (klasa defektu save-load, zob. `gra/tools/ai-economy-measure-README.md`, sekcja „Test wznowienia") jest warunkiem dokończenia pomiaru.
+
+### 6a. Metody i ograniczenia pomiaru (r3)
+
+Metody:
+- Hak (`gra/src/main.ts`, blok `metrics()` w `__aiEconomyMeasure`, tylko odczyt, za `?civTest=1`; kontrola negatywna: bez flagi hak nie istnieje): per właściciel `miasta`, `forty`, `posterunki`, `hexyTerytorium`, `hexyZMiast`, `hexyZFortowPosterunkow` (= ogółem − z miast, zakładając pierwszeństwo miast), `hexySporne`; na turze `terytorium.{heksySporneOgolem, heksyMapy}`. Test kształtu: `gra/tools/ai-economy-measure-hook-test.cjs` (23/23 zielone w r3, w tym nowe pola).
+- Runner: `gra/tools/territory-race-measure-run.cjs` (wrapper na `ai-economy-measure-run.cjs`). Domyślnie dokłada `--player-ai 1` (gracz sterowany autopilotem AI; pasywny gracz ginie ok. t75) i `--reject-offers 1` (odrzuca wiszące oferty handlowe AI do gracza, które blokują „Zakończ turę"; nowa opcja w `ai-economy-measure-run.cjs`, domyślnie 0, wzorzec z `diplomacy-harder-measure-run.cjs`). Jawne `--player-ai 0` / `--reject-offers 0` nadpisuje. `--every N` = częstotliwość zapisu slotu (wznowienia); `--stop-at` dzieli bieg na wywołania < 590 s.
+- Analizator: `gra/tools/territory-race-measure-analyze.cjs --in <katalog> --seed <S> --step 10 [--slim <plik>] [--md <plik>]`: tabela co 10 tur (Σ heksów, z miast vs z fortów/posterunków, forty/posterunki, AI z fortem, sporne, Δheksów/tura), tempo per AI, pierwszy fort per AI, kontrola NaN.
+
+Bieg dymny r3 (ziarno 4242, 40 tur, `--player-ai 1`, jeden Chromium, 105 s): `dowody/r3-smoke-seed4242-t1-40-analiza.md`, `-slim.jsonl`, `-terytorium.csv`, `-kontrolne.json`, `-analiza.json`. Brak NaN; 5 AI z fortem/posterunkiem w t40. Liczby t40 różnią się nieznacznie od r2 (6741 vs 6814 heksów AI) — bieg nie jest bitowo powtarzalny względem r2 (inne ustawienia: autopilot gracza, odrzucanie ofert); to NIE jest błąd pomiaru, ale uniemożliwia mieszanie serii r2 i r3 w jednej tabeli.
+
+Ograniczenia:
+- Hak nie podaje liczby wolnych heksów lądowych w zasięgu osadnictwa, więc „udział wolnej ziemi" i „część mapy lądowej zajęta" jako ułamek ziemi: NIE ZMIERZONO (dostępny jest tylko udział w `heksyMapy`, który obejmuje też wodę).
+- „Zajęte pierwszy raz" (historia per heks): NIE ZMIERZONO.
+- W t30 liczba właścicieli z miastem spada z 41 do 15 (w obu seriach); przyczyna NIE zbadana w tym temacie.
+- Wznowienie ze slotu t40 dawało segfault Chromium w r2; długi bieg trzeba prowadzić jednym procesem (bez wznowień) lub wznawiać ze slotu t20/t30.
+
+Wyniki 150 tur × 3 ziarna (wykonuje orkiestrator; komendę podaje raport r3): MIEJSCE NA TABELĘ — NIE ZMIERZONO do czasu biegu. Do wklejenia: wyjście `territory-race-measure-analyze.cjs --step 10` per ziarno oraz tury kontrolne 30/60/90/120/150 z `seed<S>-kontrolne.json`.
 
 ### Sprostowania (sprawdzone w kodzie w R2)
 - Zasięg miasta: `cityRangeForPopulation` = min(max(CITY_RANGE_MIN, pop), CITY_RANGE_CAP), wartości z danych (`gra/src/game/okolica.ts:37–40, 46–50`); `cityTerritoryRadius` dla miasta w `gra/src/map/territory.ts:89–93`. Forty r=5, posterunki r=3 (`territory.ts`, stałe promieni).
