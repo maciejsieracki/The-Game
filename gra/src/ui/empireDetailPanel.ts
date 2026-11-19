@@ -1556,10 +1556,12 @@ function renderPracaSection(
   // R-WEB-ECONOMY-FOOD-TO-TAX-CONVERSION-Q1: ten sam wzorzec co Praca, obok niej. Podglad efektu
   // silnika reuzywa previewOwnerWorkTaxEffect (kolejka podatku jest wspolna).
   if (empireGlobalDefaultsUi.canConvertOwnerFoodToTax?.(ownerId)) {
-    const foodMax = Math.max(0, Math.floor(empireGlobalDefaultsUi.getOwnerFoodReserve?.(ownerId) ?? 0));
-    const foodTaxRate = empireGlobalDefaultsUi.getOwnerFoodTaxRate?.(ownerId) ?? 1;
+    // Wartosci czytane NA ZYWO (zapas i kurs), nie z domkniecia z chwili renderu:
+    // po zamianie panel pokazuje aktualny zapas, a limit ilosci jest zawsze wzgledem biezacego zapasu.
+    const liveFoodMax = (): number => Math.max(0, Math.floor(empireGlobalDefaultsUi.getOwnerFoodReserve?.(ownerId) ?? 0));
+    const liveFoodRate = (): number => empireGlobalDefaultsUi.getOwnerFoodTaxRate?.(ownerId) ?? 1;
     const foodPreviewText = (food: number, withEffect: boolean): string => {
-      const tax = Math.floor(food * foodTaxRate);
+      const tax = Math.floor(food * liveFoodRate());
       const base = `${food} Żywności → ${tax} Podatku`;
       if (!withEffect || tax < 1) return base;
       const eff = empireGlobalDefaultsUi.previewOwnerWorkTaxEffect?.(ownerId, tax);
@@ -1567,34 +1569,44 @@ function renderPracaSection(
         ? `${base} · na koniec tury: +${Math.max(0, Math.round(eff.skarb))} do Skarbca, +${Math.max(0, Math.round(eff.nauka))} do Nauki (wg silnika: suwak, korupcja, Mennica)`
         : base;
     };
+    const foodMax0 = liveFoodMax();
     h += `<div class="civ-emp-box civ-emp-work-tax" data-food-tax-convert>`
       + '<div class="k">ZAMIANA ŻYWNOŚCI NA PODATEK</div>'
-      + `<div class="v">Pozostały zapas: ${foodMax} Żywności · 1 Żywność → ${foodTaxRate} Podatku</div>`
+      + `<div class="v" data-food-tax-stock>Pozostały zapas: ${foodMax0} Żywności · 1 Żywność → ${liveFoodRate()} Podatku</div>`
       + `<div class="civ-emp-work-tax-controls">`
-      + `<input type="number" min="0" max="${foodMax}" step="1" value="0" data-food-tax-amount aria-label="Żywność do zamiany na podatek" />`
-      + `<button type="button" data-food-tax-submit${foodMax < 1 ? ' disabled' : ''}>Zamień na podatek</button></div>`
+      + `<input type="number" min="0" step="1" value="0" data-food-tax-amount aria-label="Żywność do zamiany na podatek" />`
+      + `<button type="button" data-food-tax-submit${foodMax0 < 1 ? ' disabled' : ''}>Zamień na podatek</button></div>`
       + `<div class="civ-emp-foot" data-food-tax-preview>${foodPreviewText(0, false)}</div>`
       + '<div class="civ-emp-foot">Jednorazowo, ręcznie: zamiana zmniejsza zapas Żywności imperium i trafia do podatku stolicy na koniec tury (tak jak zamiana Pracy). Nie schodzi poniżej 0. Wymaga Targowiska. Niewykorzystana Żywność zostaje w zapasie.</div></div>';
     queueMicrotask(() => {
       const host = document.querySelector<HTMLElement>('[data-food-tax-convert]');
       const input = host?.querySelector<HTMLInputElement>('[data-food-tax-amount]');
       const button = host?.querySelector<HTMLButtonElement>('[data-food-tax-submit]');
+      const clampAmount = (): number => Math.max(0, Math.min(liveFoodMax(), Math.floor(Number(input?.value) || 0)));
       input?.addEventListener('input', () => {
-        const food = Math.max(0, Math.min(foodMax, Math.floor(Number(input.value) || 0)));
         const preview = host?.querySelector<HTMLElement>('[data-food-tax-preview]');
-        if (preview) preview.textContent = foodPreviewText(food, false);
+        if (preview) preview.textContent = foodPreviewText(clampAmount(), false);
       });
       input?.addEventListener('change', () => {
-        const food = Math.max(0, Math.min(foodMax, Math.floor(Number(input.value) || 0)));
         const preview = host?.querySelector<HTMLElement>('[data-food-tax-preview]');
-        if (preview) preview.textContent = foodPreviewText(food, true);
+        if (preview) preview.textContent = foodPreviewText(clampAmount(), true);
       });
       button?.addEventListener('click', () => {
         if (!input) return;
-        const amount = Math.max(0, Math.min(foodMax, Math.floor(Number(input.value) || 0)));
-        const tax = Math.floor(amount * foodTaxRate);
+        const amount = clampAmount();
+        const tax = Math.floor(amount * liveFoodRate());
+        // Pusta/zerowa ilosc lub kurs dajacy 0 podatku: silnik pokazuje komunikat powodu.
         if (amount >= 1 && tax >= 1 && !window.confirm(`Zamienić ${amount} Żywności na ${tax} Podatku?`)) return;
         empireGlobalDefaultsUi.onConvertOwnerFoodToTax?.(ownerId, amount);
+        // Odswiezenie od razu z wartosci zywych, niezaleznie od updateHud.
+        const stock = host?.querySelector<HTMLElement>('[data-food-tax-stock]');
+        const left = liveFoodMax();
+        if (stock) stock.textContent = `Pozostały zapas: ${left} Żywności · 1 Żywność → ${liveFoodRate()} Podatku`;
+        if (button) button.disabled = left < 1;
+        input.value = '0';
+        input.max = String(left);
+        const preview = host?.querySelector<HTMLElement>('[data-food-tax-preview]');
+        if (preview) preview.textContent = foodPreviewText(0, false);
       });
     });
   }

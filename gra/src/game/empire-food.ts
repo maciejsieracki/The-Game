@@ -1114,14 +1114,16 @@ export function convertFoodReserveToTax(
   rate: number,
   enabled: boolean,
 ): FoodTaxConversion {
-  const pool = Number.isFinite(reserve) ? Math.max(0, Math.floor(reserve)) : 0;
+  // Zapas zachowuje ulamek (bez floor): odejmujemy tylko calkowita ilosc Zywnosci z requestu.
+  const poolExact = Number.isFinite(reserve) ? Math.max(0, reserve) : 0;
+  const pool = Math.floor(poolExact);
   const request = Number.isFinite(requestedFood) ? Math.max(0, Math.floor(requestedFood)) : 0;
   const safeRate = Number.isFinite(rate) ? Math.max(0, rate) : 1;
   const candidateFood = enabled ? Math.min(pool, request) : 0;
   const candidateTax = Math.floor(candidateFood * safeRate);
   const foodSpent = candidateTax > 0 ? candidateFood : 0;
   return {
-    foodRemaining: pool - foodSpent,
+    foodRemaining: poolExact - foodSpent,
     foodSpent,
     taxGained: candidateTax > 0 ? candidateTax : 0,
   };
@@ -1151,21 +1153,69 @@ export function foodTaxResultMessage(
  * Cala akcja zamiany Zywnosci (wstrzykiwalna, testowalna). Kolejnosc jak w runManualWorkTaxAction:
  * projekcja PRZED -> zamiana -> markDirty+refresh (tylko przy sukcesie) -> projekcja PO -> komunikat -> HUD.
  */
+export interface FoodTaxIo {
+  getReserve: (ownerId: number) => number;
+  setReserve: (ownerId: number, value: number) => void;
+  queueTax: (ownerId: number, tax: number) => void;
+  refreshRates: () => void;
+  markDirty: () => void;
+  readRates: () => { skarb: number; nauka: number };
+  showMessage: (msg: string) => void;
+  updateHud: () => void;
+}
+
+/** Kurs Zywnosci z econ-params budynki.targowisko_zywnosc_na_podatek_kurs (fallback 1:1). */
+export function resolveFoodTaxRate(
+  budynki: Record<string, Record<string, number>> | undefined,
+  difficulty: string,
+): number {
+  const rate = budynki?.targowisko_zywnosc_na_podatek_kurs?.[difficulty];
+  return typeof rate === 'number' && Number.isFinite(rate) && rate >= 0 ? rate : 1;
+}
+
+export interface FoodTaxIoDeps<S extends { zapasyPanstwa: number }> {
+  states: Map<number, S>;
+  createFresh: () => S;
+  pendingTaxByOwner: Map<number, number>;
+  refreshRates: () => void;
+  markDirty: () => void;
+  readRates: () => { skarb: number; nauka: number };
+  showMessage: (msg: string) => void;
+  updateHud: () => void;
+}
+
+/**
+ * Adapter io dla runManualFoodTaxAction na zywych strukturach gry (empireFoodStates,
+ * pendingManualWorkTaxByOwner). Klamra zapasu do 0 jest TU, wiec test moze ja wykonac.
+ */
+export function createFoodTaxIo<S extends { zapasyPanstwa: number }>(deps: FoodTaxIoDeps<S>): FoodTaxIo {
+  return {
+    getReserve: (ownerId) => {
+      const v = deps.states.get(ownerId)?.zapasyPanstwa;
+      return typeof v === 'number' && Number.isFinite(v) ? v : 0;
+    },
+    setReserve: (ownerId, value) => {
+      const st = deps.states.get(ownerId) ?? deps.createFresh();
+      st.zapasyPanstwa = Math.max(0, value);
+      deps.states.set(ownerId, st);
+    },
+    queueTax: (ownerId, tax) => {
+      deps.pendingTaxByOwner.set(ownerId, (deps.pendingTaxByOwner.get(ownerId) ?? 0) + tax);
+    },
+    refreshRates: deps.refreshRates,
+    markDirty: deps.markDirty,
+    readRates: deps.readRates,
+    showMessage: deps.showMessage,
+    updateHud: deps.updateHud,
+  };
+}
+
 export function runManualFoodTaxAction(
   ownerId: number,
   requestedFood: number,
   rate: number,
   enabled: boolean,
-  io: {
-    getReserve: (ownerId: number) => number;
-    setReserve: (ownerId: number, value: number) => void;
-    queueTax: (ownerId: number, tax: number) => void;
-    refreshRates: () => void;
-    markDirty: () => void;
-    readRates: () => { skarb: number; nauka: number };
-    showMessage: (msg: string) => void;
-    updateHud: () => void;
-  },
+  io: FoodTaxIo,
 ): number {
   const reserveBefore = io.getReserve(ownerId);
   io.refreshRates();

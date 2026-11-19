@@ -1182,7 +1182,7 @@ import {
   autoRaiseRationsForGrowth,
   maxSafePoziomRacjiForCity,
   isCityAutoWyzywienieEnabled,
-  runManualFoodTaxAction,
+  runManualFoodTaxAction, createFoodTaxIo, resolveFoodTaxRate,
   type EmpireFoodState,
   type EmpireFoodTickResult,
   type AutoRationAdjustResult,
@@ -29739,33 +29739,26 @@ async function boot(): Promise<void> {
         getOwnerFoodReserve: (ownerId) => getEmpireFoodReserve(ownerId),
         canConvertOwnerFoodToTax: (ownerId) => ownerCanConvertWorkToTax(ownerId,
           isHuman(ownerId), cities, cityBuilt),
-        getOwnerFoodTaxRate: (_ownerId) => {
-          const rawParams = data.econParams as unknown as { budynki?: Record<string, Record<string, number>> };
-          const rate = rawParams.budynki?.targowisko_zywnosc_na_podatek_kurs?.[_menuDifficulty];
-          return typeof rate === 'number' && Number.isFinite(rate) && rate >= 0 ? rate : 1;
-        },
+        getOwnerFoodTaxRate: (_ownerId) => resolveFoodTaxRate(
+          (data.econParams as unknown as { budynki?: Record<string, Record<string, number>> }).budynki,
+          _menuDifficulty),
         onConvertOwnerFoodToTax: (ownerId, requested) => {
           const enabled = ownerCanConvertWorkToTax(ownerId, isHuman(ownerId), cities, cityBuilt);
-          const rawParams = data.econParams as unknown as { budynki?: Record<string, Record<string, number>> };
-          const configuredRate = rawParams.budynki?.targowisko_zywnosc_na_podatek_kurs?.[_menuDifficulty];
-          const rate = typeof configuredRate === 'number' && Number.isFinite(configuredRate) && configuredRate >= 0
-            ? configuredRate : 1;
-          return runManualFoodTaxAction(ownerId, requested, rate, enabled, {
-            getReserve: (id) => getEmpireFoodReserve(id),
-            setReserve: (id, value) => {
-              const st = empireFoodStates.get(id) ?? freshEmpireFoodState();
-              st.zapasyPanstwa = Math.max(0, value);
-              empireFoodStates.set(id, st);
-            },
-            queueTax: (id, tax) => pendingManualWorkTaxByOwner.set(id,
-              (pendingManualWorkTaxByOwner.get(id) ?? 0) + tax),
+          const rate = resolveFoodTaxRate(
+            (data.econParams as unknown as { budynki?: Record<string, Record<string, number>> }).budynki,
+            _menuDifficulty);
+          // Adapter io (klamra zapasu, kolejka podatku) zyje w empire-food.ts i jest testowany.
+          return runManualFoodTaxAction(ownerId, requested, rate, enabled, createFoodTaxIo({
+            states: empireFoodStates,
+            createFresh: () => freshEmpireFoodState(),
+            pendingTaxByOwner: pendingManualWorkTaxByOwner,
             refreshRates: () => refreshLiveEmpireRates(),
             // markCityStateDirty czysci _maxSafeRationCache (inwalidacja globalna).
             markDirty: () => markCityStateDirty(),
             readRates: () => ({ skarb: _lastPieniadzRate, nauka: _lastNaukaRate }),
             showMessage: (msg) => showHintMessage(msg, 6000),
             updateHud: () => updateHud(),
-          });
+          }));
         },
         getOwnerDefaultPodzialPracy: (ownerId) => ownerDefaultPodzialPracy.get(ownerId) ?? null,
         onOwnerDefaultPodzialPracyChange: (ownerId, split) => {
