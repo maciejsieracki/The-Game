@@ -212,7 +212,12 @@ try {
   deepEq(M.unitStockCost(stoneUnit), { drewno: 13 }, 'Stone unit recruitment stock');
   deepEq(M.unitStockCost(bronzeUnit), { drewno: 50 }, 'Bronze unit recruitment stock');
   deepEq(M.unitStockCost(ironUnit), { zelazo: 100 }, 'Iron unit recruitment stock');
-  deepEq(M.unitStockCost(mountUnit), { braz: 50, kon: 50 }, 'Bronze mount stock + horse supplement scales once');
+  // Konnica w units.json ma Epoka „Żelazo” (x4) i Surowiec „Brąz” 25 -> braz 25*4, a dopłata Koni
+  // MOUNT_UNIT_HORSE_STOCK_COST (25) też x4 RAZ (nie x16). Dawna wartość {braz:50,kon:50} zakładała
+  // epokę Brązu (x2) i była nieaktualna wobec danych (R-WEB-TEST-DEBT-Q9, przyczyna a/b).
+  // Źródło zmiany: R-WEB-CAVALRY-IRON-ONLY-Q1 (2026-11-11) -- właściciel zlecił przeniesienie
+  // każdego typu konnicy do Żelaza (rejestr REJESTR-PROSB-I-ZADAN.md, wpis 2026-11-11).
+  deepEq(M.unitStockCost(mountUnit), { braz: 25 * 4, kon: M.MOUNT_UNIT_HORSE_STOCK_COST * 4 }, 'Iron-era mount (Konnica) stock + horse supplement scales once');
   deepEq(M.unitStockCost({ Epoka: 'Żelazo', Typ: 'Mount', Jednostka: 'fixture', Surowiec: 'Drewno', 'Surowiec (ilość)': 7 }),
     { drewno: 28, kon: M.MOUNT_UNIT_HORSE_STOCK_COST * 4 },
     'Iron mount fixture scales resource and horse supplement');

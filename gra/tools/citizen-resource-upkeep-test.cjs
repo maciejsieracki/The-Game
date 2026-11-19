@@ -737,15 +737,17 @@ console.log('\n-- F. Wiring main.ts -> silnik tury (N1: happinessDelta + growthP
 {
   // ---------------------------------------------------------------------
   // F1. Regex strukturalny: citizenResourceHappinessDelta: citizenUpkeep.happinessDelta
-  //     WEWNĄTRZ okna wywołania `const ordPctRaw = evaluateOrderFromBreakdown(` (pierwszy
+  //     WEWNĄTRZ okna wywołania `const ordPctEvaluated = evaluateOrderFromBreakdown(` (pierwszy
   //     argument to happinessInput przekazywane 1:1 do computeHappinessBreakdown --
   //     society-breakdown.ts:632 `computeHappinessBreakdown(happinessInput, society)`).
   //     Mutant 1 (Evaluator): usunięcie tej linii z obiektu wejściowego -- wyłącza CAŁY
   //     kanał Szczęścia po cichu (pole opcjonalne, `tsc` tego nie łapie).
   // ---------------------------------------------------------------------
-  const ORD_ANCHOR = 'const ordPctRaw = evaluateOrderFromBreakdown(';
+  // R-WEB-TEST-DEBT-Q9 (przyczyna b): kotwica zmieniona przy refaktorze main.ts na `ordPctEvaluated`;
+  // to to samo wywołanie evaluateOrderFromBreakdown z happinessInput (citizenResourceHappinessDelta).
+  const ORD_ANCHOR = 'const ordPctEvaluated = evaluateOrderFromBreakdown(';
   const ordIdx = mainSrcStripped.indexOf(ORD_ANCHOR);
-  assert(ordIdx > -1, 'main.ts: kotwica "const ordPctRaw = evaluateOrderFromBreakdown(" znaleziona (po stripLineComments)');
+  assert(ordIdx > -1, 'main.ts: kotwica "const ordPctEvaluated = evaluateOrderFromBreakdown(" znaleziona (po stripLineComments)');
   const ordWindow = ordIdx > -1 ? mainSrcStripped.slice(ordIdx, ordIdx + 1200) : '';
   assert(
     /citizenResourceHappinessDelta:\s*citizenUpkeep\.happinessDelta,/.test(ordWindow),
