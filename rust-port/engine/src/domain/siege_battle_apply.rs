@@ -219,7 +219,7 @@ pub struct SiegeBattleResultDto {
     pub hp: Vec<SiegeUnitHpDto>,
     /// `consumeReadyMachines(city)` (`main.ts:37023`).
     pub consumed_machines: Vec<PlayableSiegeMachineKind>,
-    /// Oblężenie zakończone (`endMapSiege`: remis `:36660` albo `validateActiveSieges` `:34727`).
+    /// Oblężenie zakończone (`endMapSiege`: remis `:36660` albo `validateActiveSieges` `main.ts:34744`).
     pub siege_ended: bool,
 }
 
@@ -885,7 +885,7 @@ pub struct ApplyRosters<'a> {
 
 /// Zastosowanie wyniku bitwy do stanu: `consumeReadyMachines` + `finishSiegeStormBattle` bez gałęzi zdobycia
 /// (D-WIRB-3). Kolejność jak pin: machiny (`:37023`), `applyPostBattleMap` (survivors `:168-189`, weterani
-/// `:411-429`, gałąź zwycięzcy `:443-463`, punkt ruchu `:465`), `validateActiveSieges` (`:34727`), `afterSiegeUi`
+/// `:411-429`, gałąź zwycięzcy `:443-463`, punkt ruchu `:465`), `validateActiveSieges` (`main.ts:34744`), `afterSiegeUi`
 /// (remis → `endMapSiege`, `:36660`).
 ///
 /// # Errors
@@ -1088,7 +1088,7 @@ pub fn apply_outcome(
         }
     }
 
-    // `if (mapWinner === 'obronca') selectedId = null` (`main.ts:34670`).
+    // `if (mapWinner === 'obronca') selectedId = null` (`main.ts:34713`).
     if winner == LoopWinner::Defender {
         state.selected_unit_id = None;
         for u in &mut state.units {

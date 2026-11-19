@@ -133,8 +133,8 @@ const u = (id, ownerId, typeId, category, q, r, extra = {}) => ({
 });
 // Jednostki: atakujacy (owner 1) na (6,4) i (6,3), obroncy (owner 101) w miescie (5,4) i na (4,4).
 const base = () => [
-  u(7001, 1, 'Wojownik', 'miecznik', 6, 4, { hp: 12 }),
-  u(7002, 1, 'Wojownik', 'miecznik', 6, 4, { hp: 9, bs: 1 }),
+  u(7001, 1, 'Wojownik', 'miecznik', 6, 4, { hp: 12, bs: 3 }),
+  u(7002, 1, 'Wojownik', 'miecznik', 6, 4, { hp: 9, bs: 1.5 }),
   u(7003, 1, 'Łucznik', 'lucznik', 6, 3, { hp: 7, bs: 2.7 }),
   u(7004, 1, 'Osadnik', 'osadnik', 6, 4, { hp: 5 }),
   u(7005, 1, 'Wojownik', 'miecznik', 6, 3, { hp: 10, bs: 3 }),
@@ -156,8 +156,9 @@ const SCENARIOS = [
   { name: 'remis_woda_zajete', winner: 'remis', breached: true, machines: [], water: [[7, 4], [7, 3], [3, 4], [8, 5]],
     extra: [u(9001, 1, 'Wojownik', 'miecznik', 8, 4), u(9002, 101, 'Wojownik', 'miecznik', 4, 5)],
     scene: { atk: [[7001, 6, false, false], [7002, 9, false, false], [7003, 7, false, false]], def: [[8001, 2, false, false], [8002, 5, false, false], ['m1', 4, false, false]] } },
+  // 9003: jednostka oblegajacego NA heksie miasta (spoza rosteru): `isSiegeStillValid` liczy tylko odleglosc 1.
   { name: 'obronca_brak_wojsk_przy_murach', winner: 'obronca', breached: false, machines: [],
-    atkOnly: [7001, 7002],
+    atkOnly: [7001, 7002], extra: [u(9003, 1, 'Wojownik', 'miecznik', 5, 4)],
     scene: { atk: [[7001, 0, true, false], [7002, 0, true, true]], def: [[8001, 4, false, false], [8002, 6, false, false], ['m1', 3, false, false]] } },
   { name: 'atk_wylom_pokoj_konczy_oblezenie', winner: 'atakujacy', breached: true, machines: [], peace: true,
     scene: { atk: [[7001, 8, false, false], [7002, 9, false, false], [7003, 4, false, false]], def: [[8001, 0, true, false], [8002, 0, true, false], ['m1', 0, true, false]] } },
