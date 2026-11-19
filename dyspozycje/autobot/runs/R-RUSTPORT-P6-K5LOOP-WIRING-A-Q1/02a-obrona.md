@@ -196,3 +196,10 @@ Mutanty Operatora r1 M16 i M23 przestały być „równoważne na danych” (zab
 ## 7. Commit
 
 Gałąź lokalna `obrona-wiring-a` na `003e02a2a`: SHA w StructuredOutput. Push: NIE WYKONANO (Operator nie pushuje).
+
+## RUNDA 2 (obrona r2, odpowiedź na `02-evaluator-r2.md`)
+
+Pełny raport: `02a-obrona-r2.md`. Skrót: E2-1, E2-1a, E2-1b, E2-2, E2-3, N1, N2 — PRZYJĘTE. Przyczyny rozbieżności Rust ↔ pin
+naprawione w ciele (`_applyTerrainRange` na początku aktywacji D-WIRA-16, ogon aktywacji po ciosie/strzale D-WIRA-17, pozycje
+celów wież w chwili wystrzału D-WIRA-18): 7/8 scenariuszy pinu bajt w bajt (było 3/8). Jedna jawna rozbieżność B-WIRA-PIN-2
+(`mur_jazda_rzeka`): wynik samego pinu zależy tam od długości klatki (pomiar 16 ms vs 2 ms). Mutanty 16/23 zabitych.
