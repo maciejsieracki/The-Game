@@ -489,6 +489,216 @@ fn zejscie_z_korony_od_razu_przelicza_zasieg() {
     eprintln!("zejścia z korony: {zejscia:?}");
 }
 
+/// PIN2-PROBE-Q1 obrona (zarzut Z1 Evaluatora, mutant B06): `_siegeShooterThreats` (`battleScene.ts:7924-7937`) woła
+/// `this._applyTerrainRange(d)` (`:7929`, MUTACJA `d.range`) dla każdego obrońcy-strzelca, zanim przeczyta `d.range`.
+/// `d.range` bywa w pinie nieaktualne: obrońcy z `restUnits` (`:4735-4741`) startują z `range = rangeBase` bez
+/// przeliczenia terenu, a `_doMove` (`:8685-8776`) przenosi jednostkę na inny kafel bez `_applyTerrainRange` (przeliczenie
+/// dopiero na początku jej KOLEJNEJ aktywacji, `:6064`). W tym oknie tylko przeliczenie w `_siegeShooterThreats` daje
+/// właściwy zasięg zagrożenia. Wektory pełnej bitwy tego okna nie rozróżniają (obrońcy-strzelcy stoją na kaflach z
+/// deltą 0 i nie zmieniają delty przed swoją aktywacją), więc test odtwarza stan pinu strzelca z `restUnits`: strzelec
+/// `k` poza koroną, na kaflu za murem (`q >= wallCol + 2`) z deltą zasięgu != 0, `range = rangeBase`. Następnie krok
+/// atakującego objętego `_siegeApproachRestricted` (`:7951-7960`) przez `ProdBody::move_step` (bramka
+/// `_siegeMoveRefused`, `:7962-7970`) musi (1) zostawić każdemu żywemu strzelcowi obrońcy `range` =
+/// `apply_terrain_range` na jego kaflu (mutacja `d.range` jak w pinie) i (2) dać odmowę liczoną z zasięgów
+/// PRZELICZONYCH. Cel kroku leży w odległości `D` od strzelca, gdzie `D` jest między zasięgiem nieaktualnym a
+/// przeliczonym, więc odmowa pinu różni się od odmowy z zasięgu nieaktualnego (moc testu: mutant B06 = FAIL).
+#[test]
+fn zagrozenia_strzelcow_przeliczaja_zasieg_terenu() {
+    use civ_engine::domain::siege_battle_adapter_body::{apply_terrain_range, TerrainRangeUnit};
+    use civ_engine::domain::siege_tactics_approach::{
+        siege_approach_restricted, siege_move_refused, siege_shooter_threats, ApproachUnit,
+        ApproachWallState, ShooterDefender,
+    };
+    use civ_engine::domain::siege_tactics_end::BattleSide;
+    use civ_engine::domain::siege_tactics_turnseq::UnitRef;
+    let doc = vectors();
+    let data = pin_session_data();
+    let mut przypadki = Vec::new();
+    for v in doc["vectors"].as_array().unwrap() {
+        let name = v["name"].as_str().unwrap();
+        let mut s = SiegeBattleSession::prepare_scene(&scene_input(v), &data).unwrap();
+        let body = &mut s.battle_loop_mut().env.body;
+        let wall_col = body.scene.wall_col;
+        let Some(grid) = body.terrain_range_delta.clone() else {
+            continue;
+        };
+        if wall_col < 0 {
+            continue;
+        }
+        let wall = ApproachWallState {
+            wall_col_ge0: true,
+            gate_open: body.scene.gate_open,
+            wall_ever_breached: body.wall_ever_breached,
+            wall_tiles_init: body.siege_wall_tiles_init,
+            wall_tiles_alive: body.scene.wall_tile_hp.len(),
+            tower_at_wall_rows_count: body.tower_at_wall_rows.len(),
+        };
+        // Pierwszy atakujący objęty `_siegeApproachRestricted`.
+        let restricted = (0..body.units[0].len()).find_map(|a| {
+            let au = &body.units[0][a].activate;
+            if au.dead || au.fading_out || au.routed {
+                return None;
+            }
+            let approach = ApproachUnit {
+                side_atk: true,
+                routed: false,
+                on_wall_walkway: au.on_wall_walkway,
+                is_siege_unit: au.is_siege_unit,
+                primary_ranged: au.primary_ranged,
+                can_shoot: au.can_shoot,
+                shooting_disabled: !body.doctrine[0][a].shooting_enabled || au.shooting_disabled,
+                mounted: au.mounted,
+            };
+            siege_approach_restricted(&approach, &wall).then_some((a, approach))
+        });
+        let Some((a, approach)) = restricted else {
+            continue;
+        };
+        let from = (body.units[0][a].activate.q, body.units[0][a].activate.r);
+        let n_def = body.units[1].len();
+        let fresh_of = |body: &civ_engine::domain::siege_tactics_loop::ProdBody<_>, i: usize| {
+            let d = &body.units[1][i].activate;
+            apply_terrain_range(
+                &TerrainRangeUnit {
+                    side_def: true,
+                    on_wall_walkway: d.on_wall_walkway,
+                    ranged_base: body.ranged_base[1][i],
+                    is_catapult: d.is_catapult,
+                    range_base: body.range_base[1][i],
+                },
+                grid.get(&(d.q, d.r)).copied().unwrap_or(0.0),
+            )
+        };
+        let shooter = |body: &civ_engine::domain::siege_tactics_loop::ProdBody<_>, i: usize| {
+            let d = &body.units[1][i].activate;
+            !(d.dead || d.fading_out || d.routed)
+                && d.can_shoot
+                && body.range_base[1][i] > 0.0
+                && body.ranged_base[1][i]
+                && !d.is_catapult
+        };
+        let Some(k) = (0..n_def).find(|&i| shooter(body, i)) else {
+            continue;
+        };
+        // Stan pinu strzelca z `restUnits` (`:4735-4741`): `placeOne` za murem (`rearCol = wallCol + 2 + …`) z
+        // `range = rangeBase`, bez `_applyTerrainRange` (to woła tylko pętla obrońców na koronie, `:4730`).
+        body.units[1][k].activate.on_wall_walkway = false;
+        body.units[1][k].activate.range = body.range_base[1][k];
+        // Kafel za murem z deltą != 0 (kolejność deterministyczna), dla którego istnieje `D` między zasięgiem
+        // nieaktualnym a przeliczonym i krok z `from` na kafel w odległości `D` daje różną odmowę dla obu zasięgów.
+        let mut tiles: Vec<((i64, i64), f64)> = grid
+            .iter()
+            .filter(|(&(q, _), &d)| d != 0.0 && q >= wall_col + 2)
+            .map(|(&t, &d)| (t, d))
+            .collect();
+        tiles.sort_by(|x, y| x.0.cmp(&y.0));
+        let stale_k = body.units[1][k].activate.range;
+        let mut chosen = None;
+        for &(tile, _) in &tiles {
+            body.units[1][k].activate.q = tile.0;
+            body.units[1][k].activate.r = tile.1;
+            let fresh: Vec<f64> = (0..n_def).map(|i| fresh_of(body, i)).collect();
+            let stale: Vec<f64> = (0..n_def)
+                .map(|i| body.units[1][i].activate.range)
+                .collect();
+            let (lo, hi) = (fresh[k].min(stale_k), fresh[k].max(stale_k));
+            let dist = hi.floor();
+            if !(dist > lo && dist >= 1.0) {
+                continue;
+            }
+            let defenders: Vec<ShooterDefender> = (0..n_def)
+                .map(|i| {
+                    let d = &body.units[1][i].activate;
+                    ShooterDefender {
+                        q: d.q as f64,
+                        r: d.r as f64,
+                        dead: d.dead,
+                        fading_out: d.fading_out,
+                        removed: d.dead,
+                        routed: d.routed,
+                        can_shoot: d.can_shoot,
+                        range_base: body.range_base[1][i],
+                    }
+                })
+                .collect();
+            let pos =
+                |d: &ShooterDefender| defenders.iter().position(|x| std::ptr::eq(x, d)).unwrap();
+            let threats = |r: &[f64]| {
+                siege_shooter_threats(
+                    &defenders,
+                    &body.siege_towers,
+                    wall_col as f64,
+                    body.tower_range,
+                    |d| r[pos(d)],
+                )
+            };
+            let (tf, ts) = (threats(&fresh), threats(&stale));
+            // Cel w odległości `dist` od strzelca, w stronę atakującego (wzdłuż kolumny).
+            let dir = if from.0 < tile.0 { -1 } else { 1 };
+            let to = (tile.0 + dir * dist as i64, tile.1);
+            let to_f = (to.0 as f64, to.1 as f64);
+            let from_f = (from.0 as f64, from.1 as f64);
+            let exp = siege_move_refused(&approach, &wall, &tf, from_f, to_f);
+            let exp_stale = siege_move_refused(&approach, &wall, &ts, from_f, to_f);
+            if exp != exp_stale {
+                chosen = Some((tile, to, exp, fresh));
+                break;
+            }
+        }
+        let Some((tile, to, exp, fresh)) = chosen else {
+            continue;
+        };
+        body.units[1][k].activate.q = tile.0;
+        body.units[1][k].activate.r = tile.1;
+        let res = body
+            .move_step(
+                UnitRef {
+                    side: BattleSide::Attacker,
+                    idx: a,
+                },
+                to.0,
+                to.1,
+                false,
+                1.0,
+                None,
+            )
+            .unwrap();
+        // (1) mutacja `d.range` (`:7929`) dla każdego żywego strzelca obrońcy.
+        for i in (0..n_def).filter(|&i| shooter(body, i)) {
+            assert_eq!(
+                body.units[1][i].activate.range.to_bits(),
+                fresh[i].to_bits(),
+                "{name}: a{a} krok na {to:?}: d{i} range {} != {} (brak `_applyTerrainRange` w `_siegeShooterThreats`)",
+                body.units[1][i].activate.range,
+                fresh[i]
+            );
+        }
+        // (2) odmowa = `_siegeMoveRefused` z zasięgami przeliczonymi (`moveLeft = 0`, pozycja bez zmian).
+        let a_now = &body.units[0][a].activate;
+        let refused = res.outcome.done && res.move_left == 0.0 && (a_now.q, a_now.r) == from;
+        assert_eq!(
+            refused, exp,
+            "{name}: a{a} {from:?} -> {to:?}, d{k} na {tile:?} (zasięg przeliczony {}, nieaktualny {stale_k}): \
+             odmowa ciała != odmowa pinu",
+            fresh[k]
+        );
+        przypadki.push(format!(
+            "{name}: a{a} {from:?}->{to:?}, d{k} na {tile:?} zasięg {stale_k}->{} odmowa={exp}",
+            fresh[k]
+        ));
+    }
+    eprintln!("przypadki B06: {przypadki:#?}");
+    assert!(
+        przypadki.len() >= 3,
+        "za mało przypadków rozróżniających zasięg przeliczony od nieaktualnego: {przypadki:?}"
+    );
+    assert!(
+        przypadki.iter().any(|p| p.ends_with("odmowa=true"))
+            && przypadki.iter().any(|p| p.ends_with("odmowa=false")),
+        "potrzebne obie gałęzie (pin odmawia / pin nie odmawia): {przypadki:?}"
+    );
+}
+
 /// PIN2-PROBE-Q1 (diagnostyka, bez zmiennej nic nie robi): kandydaci scenariuszy z pliku wektorów generatora
 /// (`WIRING_A_EXTRA` + `WIRING_A_OUT`), ścieżka w `WIRING_A_VECTORS_FILE`. Wypisuje zgodność każdego kandydata; służy do
 /// szukania wektorów rozróżniających mutanty (binarka testu skompilowana z mutantem, ten sam plik kandydatów).

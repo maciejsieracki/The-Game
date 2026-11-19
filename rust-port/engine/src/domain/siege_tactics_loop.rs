@@ -4075,6 +4075,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             });
             self.pending[ix][unit.idx] = Some(ProdPending {
                 morale: seq.morale,
+                // Nieczytane (obrona PIN2-PROBE-Q1, N1): `complete` z `flee` wraca przed logiką D-PIN2-1; pole tylko
+                // dla kompletności struktury (mutant E4 = równoważny).
                 morale_before: seq.morale,
                 start_rout: false,
                 surround_applied: self.surround[ix][unit.idx],
