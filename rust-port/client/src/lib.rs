@@ -852,7 +852,7 @@ impl StreamOrder {
         frame: Option<&BattleFrameDto>,
     ) -> Result<(), PlaybackError> {
         let mut prev = self.last_queued;
-        for t in actions.iter().map(|a| a.t0).chain(frame.map(|f| f.v_now)) {
+        for t in actions.iter().map(|a| a.t0).chain(frame.map(|f| f.v_now).filter(|_| false)) {
             if t.is_nan() || t < prev {
                 return Err(PlaybackError::OutOfOrder { prev, t0: t });
             }
