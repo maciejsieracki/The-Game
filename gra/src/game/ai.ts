@@ -90,6 +90,9 @@ import {
   compareMilitaryStrength, peaceStanceOf, type MilitarySide, type PeaceMilitaryPosition,
   DEFAULT_MILITARY_STRENGTH_PARAMS,
 } from './diplomacy-military-strength';
+import {
+  blockStrength, isWarByAllianceStrengthEnabled, type BlokSojusznik,
+} from './diplomacy-alliance-strength';
 import { aiTruceOrPeaceMode } from './diplomacy-peace-lock';
 import {
   AI_IMPROVEMENT_PRIORITY,
@@ -6504,6 +6507,13 @@ export interface RelacjaWejscie {
   /** Siła militarna partnera (ta sama miara co silaMilitarnaAI). Bez pola = brak przewagi. */
   silaMilitarnaPartner?: Pick<MilitarySide, 'sila' | 'armiaPkt'>;
   /**
+   * R-WEB-DIPLO-WAR-BY-ALLIANCE-STRENGTH-Q1: aktywni sojusznicy AI (main.ts) — składnik bloku AI przy
+   * flagach wojnaSilaSojuszuAktywna. Bez pola / pusto = blok to sam AI (jak dotąd).
+   */
+  blokSojusznicyAI?: ReadonlyArray<BlokSojusznik>;
+  /** R-WEB-DIPLO-WAR-BY-ALLIANCE-STRENGTH-Q1: aktywni sojusznicy partnera — składnik bloku partnera. */
+  blokSojusznicyPartnera?: ReadonlyArray<BlokSojusznik>;
+  /**
    * R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r3, R2): moc POWER (power-objective.ts) AI i partnera — wejście wzoru
    * „P·r / P/r" (peacePwPointsByPowerRatio). Bez któregokolwiek pola AI liczy cenę pokoju jak dotąd (samo P).
    */
@@ -7574,12 +7584,22 @@ export function decideAIDiplomacy(
     // Zaufanie pary < PROG_WOJNA_ZAUFANIE (30) ORAZ przewaga siły militarnej AI ≥ progPrzewagiProc
     // (20%, diplomacy-military-strength-params.json). Charakter (effAgresja, willingnessWar) nadal
     // decyduje, czy AI z tej możliwości skorzysta. Brak danych siły = brak przewagi.
-    const milAiSide = rel.silaMilitarnaAI
+    const milAiSideOwn = rel.silaMilitarnaAI
       ? { id: inp.myPlayerId, sila: rel.silaMilitarnaAI.sila, armiaPkt: rel.silaMilitarnaAI.armiaPkt }
       : undefined;
-    const milPartnerSide = rel.silaMilitarnaPartner
+    const milPartnerSideOwn = rel.silaMilitarnaPartner
       ? { id: rel.partnerId, sila: rel.silaMilitarnaPartner.sila, armiaPkt: rel.silaMilitarnaPartner.armiaPkt }
       : undefined;
+    // R-WEB-DIPLO-WAR-BY-ALLIANCE-STRENGTH-Q1: flaga OFF = siła własna (jak dotąd); ON = siła BLOKU
+    // (właściciel + aktywni sojusznicy). Próg i reszta warunków bez zmian. Partner-cel nie liczy się do bloku AI,
+    // AI nie liczy się do bloku partnera.
+    const wojnaSilaSojuszu = isWarByAllianceStrengthEnabled();
+    const milAiSide = wojnaSilaSojuszu && milAiSideOwn
+      ? blockStrength('ai', milAiSideOwn, rel.blokSojusznicyAI ?? [], new Set([String(rel.partnerId)]))
+      : milAiSideOwn;
+    const milPartnerSide = wojnaSilaSojuszu && milPartnerSideOwn
+      ? blockStrength('partner', milPartnerSideOwn, rel.blokSojusznicyPartnera ?? [], new Set([String(inp.myPlayerId)]))
+      : milPartnerSideOwn;
     // R-WEB-DIPLO-WAR-CHARACTER-THRESHOLD-Q1: próg przewagi = baza 20% (JSON) + przesunięcie charakteru
     // (bias.warSilaBonus), obcięte do [10%, 35%]. Agresywna AI wypowiada przy mniejszej przewadze.
     const progPrzewagiWojnyProc = progPrzewagiWypowiedzeniaWojnyProc(
@@ -7605,7 +7625,7 @@ export function decideAIDiplomacy(
       komendy.push({
         type:     'wypowiedz_wojne',
         targetId: rel.partnerId,
-        powod:    `zaufanie pary ${rel.relation.zaufanie} < ${PROG_WOJNA_ZAUFANIE}, przewaga sily militarnej AI >= ${progPrzewagiWojnyProc.toFixed(1)}% (rw=${rw.toFixed(2)}), willingnessWar=${stance.willingnessWar.toFixed(2)}, effAgresja (${effAgresja.toFixed(2)}): wypowiadamy wojne`,
+        powod:    `zaufanie pary ${rel.relation.zaufanie} < ${PROG_WOJNA_ZAUFANIE}, przewaga sily militarnej AI >= ${progPrzewagiWojnyProc.toFixed(1)}% (rw=${rw.toFixed(2)}), willingnessWar=${stance.willingnessWar.toFixed(2)}, effAgresja (${effAgresja.toFixed(2)}): wypowiadamy wojne${wojnaSilaSojuszu ? ` [blok sily: AI=${milAiSide?.sila ?? 0}, partner=${milPartnerSide?.sila ?? 0}, sojusznicy AI=${rel.blokSojusznicyAI?.length ?? 0}, sojusznicy partnera=${rel.blokSojusznicyPartnera?.length ?? 0}]` : ''}`,
       });
       continue;
     }
