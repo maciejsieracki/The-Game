@@ -41,7 +41,7 @@ export interface CivWelcomeInfo {
   jednostka: string;
   religia: string;
   rys: string;
-  /** Pełne listy; na karcie widać początek, reszta w tooltipie. */
+  /** Pełne listy; ekran powitalny pokazuje wszystkie pozycje. */
   plusy: string[];
   minusy: string[];
 }
@@ -50,9 +50,6 @@ const CIV_ROWS = (civsRaw as { cywilizacje?: CivRow[] }).cywilizacje ?? [];
 const MATRIX_ROWS = ((civMatrixRaw as { cywilizacje?: unknown }).cywilizacje ?? []) as MatrixRow[];
 const INTRO = introRaw as unknown as Record<string, CivIntroEntry>;
 
-/** Ile pozycji plusów / minusów widać na karcie; reszta w tooltipie (zasada właściciela „najważniejsze na wierzchu”). */
-export const WELCOME_VISIBLE_PLUSES = 3;
-export const WELCOME_VISIBLE_MINUSES = 2;
 /** Liczba wariantów powitania władcy w każdej z dwóch grup (przyjazne / nieprzyjazne). */
 export const WELCOME_GREETING_VARIANTS = 3;
 

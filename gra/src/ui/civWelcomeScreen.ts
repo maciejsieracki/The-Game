@@ -17,8 +17,6 @@ import { startDiplomacyMusic, stopDiplomacyMusic } from '../audio/muzyka-antyczn
 import {
   civWelcomeInfo,
   pickWelcomeGreeting,
-  WELCOME_VISIBLE_MINUSES,
-  WELCOME_VISIBLE_PLUSES,
   type CivWelcomeInfo,
 } from './civWelcomeLogic';
 
@@ -65,13 +63,13 @@ function ensureStyles(): void {
   style.textContent = `
 #${ROOT_ID}{position:fixed;inset:0;z-index:9650;display:flex;align-items:center;justify-content:center;
   background:rgba(0,0,0,.55);padding:16px;box-sizing:border-box;}
-#${ROOT_ID} .cww-card{width:min(640px,100%);max-height:calc(100vh - 32px);overflow:auto;
+#${ROOT_ID} .cww-card{width:min(640px,100%);max-height:calc(100vh - 32px);overflow:hidden;display:flex;flex-direction:column;box-sizing:border-box;
   background-color:var(--civ-panel-bg,#121820);background-image:var(--civ-panel-gradient,linear-gradient(180deg,rgba(14,18,28,.98),rgba(8,10,16,.95)));
   color:var(--civ-text-primary,#e8e0c8);border-radius:var(--civ-radius-panel,12px);
   box-shadow:var(--civ-shadow-panel,0 12px 40px rgba(0,0,0,.65));
   border:2px solid var(--civ-gold-border-strong,rgba(232,216,138,.45));
   font-family:var(--civ-font-ui,'Segoe UI',Tahoma,sans-serif);}
-#${ROOT_ID} .cww-head{display:flex;gap:14px;align-items:center;padding:16px 18px 10px;}
+#${ROOT_ID} .cww-head{flex:0 0 auto;display:flex;gap:14px;align-items:center;padding:16px 18px 10px;}
 #${ROOT_ID} .cww-medal{width:64px;height:64px;flex:0 0 64px;border-radius:50%;overflow:hidden;
   display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);
   border:2px solid var(--civ-gold-primary,#e8d88a);}
@@ -80,18 +78,18 @@ function ensureStyles(): void {
 #${ROOT_ID} .cww-name{font-family:var(--civ-font-title,Georgia,'Times New Roman',serif);font-size:24px;font-weight:400;
   line-height:1.2;color:var(--civ-gold-primary,#e8d88a);}
 #${ROOT_ID} .cww-sub{font-size:13px;color:var(--civ-text-muted,#8a8070);margin-top:2px;}
-#${ROOT_ID} .cww-body{padding:4px 18px 8px;font-size:14px;line-height:1.5;}
+#${ROOT_ID} .cww-body{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:4px 18px 8px;font-size:14px;line-height:1.5;}
 #${ROOT_ID} .cww-sec{margin-top:12px;}
 #${ROOT_ID} .cww-sec h3{margin:0 0 4px;font-family:var(--civ-font-title,Georgia,'Times New Roman',serif);font-weight:400;
   font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--civ-gold-primary,#e8d88a);}
 #${ROOT_ID} .cww-body p{margin:0;}
 #${ROOT_ID} .cww-list{margin:0;padding-left:18px;}
-#${ROOT_ID} .cww-more{font-size:12px;color:var(--civ-text-muted,#8a8070);cursor:help;margin-top:2px;}
+#${ROOT_ID} .cww-list li{overflow-wrap:anywhere;}
 #${ROOT_ID} .cww-greet{margin:14px 0 0;padding:12px 14px;background:rgba(232,216,138,.06);
   border-left:3px solid var(--civ-gold-primary,#e8d88a);border-radius:6px;font-style:italic;
   color:var(--civ-text-pergament,#c8b898);}
 #${ROOT_ID} .cww-greet-sig{display:block;margin-top:6px;font-style:normal;font-weight:600;color:var(--civ-gold-dim,#a08030);}
-#${ROOT_ID} .cww-foot{display:flex;gap:10px;justify-content:flex-end;padding:12px 18px 16px;}
+#${ROOT_ID} .cww-foot{flex:0 0 auto;display:flex;gap:10px;justify-content:flex-end;padding:12px 18px 16px;}
 #${ROOT_ID} .cww-btn{font-family:var(--civ-font-ui,'Segoe UI',Tahoma,sans-serif);font-size:11px;font-weight:600;
   letter-spacing:.06em;text-transform:uppercase;padding:10px 20px;border-radius:var(--civ-radius-btn,6px);cursor:pointer;
   border:2px solid var(--civ-gold-primary,#e8d88a);background:transparent;color:var(--civ-gold-primary,#e8d88a);}
@@ -107,23 +105,18 @@ function ensureStyles(): void {
   document.head.appendChild(style);
 }
 
-function listHtml(items: string[], visible: number, tipLabel: string): string {
+/** Wszystkie pozycje plusów/minusów widoczne od razu (bez ucinania i bez tooltipu); karta przewija się w .cww-body. */
+function listHtml(items: string[]): string {
   if (items.length === 0) return '<div class="cww-sub">—</div>';
-  const shown = items.slice(0, visible);
-  const rest = items.length - shown.length;
-  const full = items.join('\n');
-  const more = rest > 0
-    ? `<div class="cww-more" title="${esc(tipLabel + ': ' + full)}">+ ${rest} więcej (najedź, aby zobaczyć)</div>`
-    : '';
-  return `<ul class="cww-list">${shown.map(t => `<li>${esc(t)}</li>`).join('')}</ul>${more}`;
+  return `<ul class="cww-list">${items.map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
 }
 
 function bodyHtml(info: CivWelcomeInfo, greeting: string, leader: string | null): string {
   const sig = leader ? `<span class="cww-greet-sig">— ${esc(leader)}</span>` : '';
   return `
     ${info.rys ? `<div class="cww-sec"><h3>Rys historyczny</h3><p>${esc(info.rys)}</p></div>` : ''}
-    <div class="cww-sec"><h3>Plusy</h3>${listHtml(info.plusy, WELCOME_VISIBLE_PLUSES, 'Plusy')}</div>
-    <div class="cww-sec"><h3>Minusy</h3>${listHtml(info.minusy, WELCOME_VISIBLE_MINUSES, 'Minusy')}</div>
+    <div class="cww-sec"><h3>Plusy</h3>${listHtml(info.plusy)}</div>
+    <div class="cww-sec"><h3>Minusy</h3>${listHtml(info.minusy)}</div>
     <div class="cww-sec"><h3>Jednostka specjalna</h3><p>${esc(info.jednostka || '—')}</p></div>
     <div class="cww-sec"><h3>Styl</h3><p>${esc(info.styl || '—')}</p></div>
     <div class="cww-sec"><h3>Religia</h3><p>${esc(info.religia || '—')}</p></div>

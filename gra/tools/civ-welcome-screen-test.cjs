@@ -129,6 +129,26 @@ ok(L.isFriendlyStance('Wrogi') === false, 'Wrogi powinien być nieprzyjazny');
     'diplomacyAudience.ts: brak przycisku „O cywilizacji” lub jego obsługi');
 }
 
+// 8) Ekran pokazuje WSZYSTKIE plusy i minusy (R-WEB-UI-WELCOME-SHOW-ALL-BONUSES-Q1): bez ucinania, bez tooltipu „najedź”.
+// Asercje źródłowe na civWelcomeScreen.ts (ścieżkę można podać jako argv[3] — mutacja na kopii musi dać FAIL).
+{
+  const screenPath = process.argv[3]
+    ? path.resolve(process.argv[3])
+    : path.join(root, 'src', 'ui', 'civWelcomeScreen.ts');
+  const scr = fs.readFileSync(screenPath, 'utf8');
+  ok(!/cww-more/.test(scr), 'ekran powitalny: pozostał element/styl „cww-more” (ucinanie listy)');
+  ok(!/najedź/.test(scr), 'ekran powitalny: pozostała wskazówka „najedź” (tooltip ukrywający pozycje)');
+  ok(!/WELCOME_VISIBLE_/.test(scr), 'ekran powitalny: pozostały stałe WELCOME_VISIBLE_* (limit pozycji)');
+  ok(!/\btitle="\$\{esc\(/.test(scr), 'ekran powitalny: atrybut title z pełną listą (tooltip)');
+  const m = scr.match(/function listHtml\(items: string\[\]\): string \{([\s\S]*?)\n\}/);
+  ok(!!m, 'ekran powitalny: brak funkcji listHtml(items) bez limitu');
+  ok(!!m && /items\.map\(/.test(m[1]) && !/slice\(|shown|rest/.test(m[1]),
+    'listHtml: musi renderować items.map(...) bez slice/shown/rest');
+  // Dane: najdłuższa lista plusów w danych ma co najmniej 11 pozycji (poprzedni próg = 3).
+  const maxPlus = Math.max(...keys.map(k => L.civWelcomeInfo(k).plusy.length));
+  ok(maxPlus >= 11, `dane: oczekiwano listy plusów >= 11 (test ma objąć długie listy), jest ${maxPlus}`);
+}
+
 if (failures > 0) {
   console.error(`civ-welcome-screen-test: ${failures} FAIL (zaliczone asercje: ${passes})`);
   process.exit(1);
