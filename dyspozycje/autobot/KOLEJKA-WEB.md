@@ -50,22 +50,19 @@ Nowe starty: `df --output=avail -BG /` ≥ 6 GB (integracja `/home/user/integ` �
 | WARTEMPER — lista parametrów kar/bonusów dla Łatwa/Normalna/Trudna (wf_d888bb67-4c5) | Operator HAIKU | analiza; po FC → ABC właścicielowi |
 | FORTTAKEOVER — miasto nie przejmuje fortów; zasięg fortu jak miasta; zajęcie tylko siłą (wf_67a822a6-aa1) | Operator HAIKU | po FC deploy jako kolejna FALA |
 
-## GOTOWE DO STARTU (kolejność; start gdy slot < 4 i dysk ≥ 6 GB; dispatch najpierw na gałąź)
+## GOTOWE DO STARTU (KOLEJNOŚĆ OBOWIĄZUJĄCA od 2026-11-19 ~23:00 UTC; start gdy aktywnych < 4 i dysk ≥ 6 GB; dispatch (00-dispatch + DODATEK) JUŻ zapisany dla każdej pozycji, skrypt WEB-<TAG>.js wygenerowany mkwf.sh; `cand` = SHA origin/main)
 
-0000000. **R-WEB-DIPLO-ENABLE-ALL-FLAGS-Q1** (decyzja właściciela: włączyć 6 flag dyplomacji domyślnie; dispatch zapisany; pomiar w raporcie).
-000000. **R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1** (implementacja ustawienia „Dyplomacja i wojna” Łatwa/Normalna/Trudna; decyzje właściciela, dispatch zapisany; wysoki priorytet — nie był wdrożony).
-1a. **R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1** (decyzja właściciela 2026-11-19: gracz celem wszystkich wojen epoki + pomiar + dług progów testów; zastępuje ERAWAR-MEASURE; dispatch zapisany; wysoki priorytet).
-00000. **R-WEB-ECONOMY-UNIT-RECRUIT-COST-ERA-EXTRA-MULT-Q1** (decyzja właściciela: rekrutacja Pieniądz ×2 Brąz, ×4 Żelazo dodatkowo; plus audyt kosztów wojska; dispatch zapisany).
-0000. **R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1** (decyzja właściciela: ustawienie nowej gry „Wzrost surowców z epoką”, domyślnie WYŁ.; dispatch zapisany).
-000. **R-WEB-TERRITORY-FORT-PLACEMENT-SAME-RULES-AS-CITY-Q1** (decyzja właściciela: zasięg fortu = reguły jak miasto; URUCHOMIONY 2026-11-19 ~21:55).
-00. **R-WEB-ECONOMY-UNIT-UPKEEP-EXTRA-MULT-AND-FOOD-TAX-RATE-Q1** (korekta FALI 875 + mnożnik 1/4/8 + kurs 0,2; dispatch zapisany; pomiar obowiązkowy).
-00. **R-WEB-BATTLE-FLEE-MANUAL-MODE-HARAPPA-MEASURE-Q1** (pomiar i naprawa trybu ręcznego bitwy 3D; dispatch zapisany).
-0. **R-WEB-ERA-WAR-DEFER-NOT-CANCEL-WHEN-PREVIOUS-WAR-ACTIVE-Q1** (PRIORYTET, zgłoszenie właściciela 2026-11-19; dispatch zapisany): wojna epoki Brązu/Żelaza ma być PRZESUWANA (pending, zapisywana), nie anulowana, gdy trwa wojna poprzedniej epoki; startuje zaraz po jej końcu (gracz i AI). Haiku; po FC deploy jako kolejna FALA.
-1. **R-WEB-TEST-DEBT-Q12** — pozostałe czerwone testy: auto-fort-claim, building-upkeep-resources D10 (martwy plUpkeepForm w buildingAdapter.ts), entity-card-cross-links-nested-overlay (niestabilny), fishing-boats-666 (docs nieaktualne), hodowla-las (3 asercje, po FALI 874 sprawdzić), diplo-forced-peace-pending-live-paths (środowisko). Haiku, bez ABC.
-2. **R-WEB-VERIFY-LIVE-873-ALLIANCELIMIT-Q1** — weryfikacja na żywo (jeden Chromium): pokój z cesją ≥2 miast (FALA 873), bieg 100 tur limitu 2 sojuszy z flagą ON (FALA 865), reguła wojen z graczem (863), żywa zamiana Żywności→Podatek (876), bieg dymny 60 tur po FALI 875. Wynik: tabela ZMIERZONO/NIE ZMIERZONO. Haiku.
-3. **R-WEB-ECONOMY-FOODCONV-HOOK-Q1** (opcjonalny): hook civTest do dowodu żywego zamiany Żywności (brak w FALI 876).
-4. **R-WEB-ECONOMY-TREASURY-MODEL-REFRESH-Q1**: odświeżyć `gra/tools/treasury-unit-cost-model.cjs` (zakładał brak skali epoki — nieaktualne po ustaleniu z FALI 875) i poprawić dokument SKARBIEC-BRAZ-KOSZTY-JEDNOSTEK-OPTYMALIZACJA.md. Haiku, dokumentacja.
-5. **Po FC FORTTAKEOVER:** ewentualna luka „zajęcie fortu siłą jednostką w wojnie” (jeśli Operator zgłosi brak), temat osobny.
+1. **R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1** (tag ERAWARPLAYER; zadanie #52) — gracz celem wszystkich wojen epoki + narzędzie pomiarowe + bieg 120 tur + progi testów 40.
+2. **R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1** (tag DIPLOWARLEVEL; #53) — ustawienie nowej gry „Dyplomacja i wojna” Łatwa/Normalna/Trudna.
+3. **R-WEB-DIPLO-ENABLE-ALL-FLAGS-Q1** (tag ENABLEFLAGS; #54) — włączenie 6 flag dyplomacji + pomiar 90 tur seed 4242/7.
+4. **R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1** (tag UPKEEPPACE; #50) — START dopiero po FC i integracji UPKEEPMULT i RECRUITMULT.
+5. **R-WEB-TEST-DEBT-Q12** (#37) — pozostałe czerwone testy (auto-fort-claim 66/2 droga, D10 plUpkeepForm, entity-card-cross-links, fishing-boats-666, hodowla-las, diplo-forced-peace-live-paths) — dispatch DO NAPISANIA przy starcie (Haiku, bez ABC).
+6. **R-WEB-VERIFY-LIVE** (#38) — weryfikacja na żywo: pokój z cesją miast (873), limit 2 sojuszy (865, po ENABLEFLAGS), reguła wojen z graczem (863), żywa zamiana Żywności→Podatek (876), bieg dymny po zmianach kosztów, pomiar 150 tur rebalans — dispatch DO NAPISANIA przy starcie (Haiku).
+7. **TREASURY refresh** (#39) — odświeżyć treasury-unit-cost-model.cjs + dokument SKARBIEC po wdrożeniu kosztów jednostek — dispatch DO NAPISANIA (Haiku, dokumentacja).
+
+W TOKU (nie startować drugi raz): UPKEEPMULT (wf_e37ebeff-a98), RECRUITMULT (wf_a2968de4-ba2), FORTRING r2 (wf_2393db04-6a4), FLEEMANUAL (wf_a4b57a9a-68d).
+WDROŻONE 2026-11-19: FALE 860–881 (ostatnia 881 = wojna epoki bez partnera; ROBOCZA MD5 f20a283a).
+PÓŹNIEJ (NIE startować): koszty badań i budynków (sekcja PÓŹNIEJ niżej).
 
 ## ZALEŻNE (START dopiero po warunku)
 
