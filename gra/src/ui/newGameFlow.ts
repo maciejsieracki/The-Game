@@ -229,6 +229,12 @@ export interface NewGameAdvancedOptions {
    * 'losowe' = rzut na każde uderzenie. Brak pola (stare zapisy) = 'losowe'.
    */
   hitMode?: HitMode;
+  /**
+   * R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1: „Wzrost surowców z epoką".
+   * false (domyślnie, WYŁ.) = wartości z Kamienia w każdej epoce; true (WŁ.) = dawny wzrost ulepszeń
+   * z epoką. Brak pola (stare zapisy) = false. / EN: growth-with-era toggle; missing = false.
+   */
+  wzrostSurowcowZEpoka?: boolean;
   victoryMode: VictoryMode;
   /** Koszty budynkow: niski x1 / normalny x2 / wysoki x4 (bazowy = niski). */
   buildingCostPace: BuildingCostPace;
@@ -270,6 +276,7 @@ const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
   barbariansLevel: 'normalny',
   battleAlwaysManual: true,
   hitMode: 'pewne',
+  wzrostSurowcowZEpoka: false,
   victoryMode: 'moc_i_dominacja',
   buildingCostPace: 'normalny',
   kosztJednostekPace: 'normalny',
@@ -367,6 +374,8 @@ function migrateAdvanced(raw: Record<string, unknown>): NewGameAdvancedOptions {
   if (typeof raw.landFractionCustom === 'boolean') base.landFractionCustom = raw.landFractionCustom;
   if (typeof raw.battleAlwaysManual === 'boolean') base.battleAlwaysManual = raw.battleAlwaysManual;
   if (raw.hitMode === 'pewne' || raw.hitMode === 'losowe') base.hitMode = raw.hitMode;
+  // R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1: brak/zla wartosc = WYL. (false).
+  base.wzrostSurowcowZEpoka = raw.wzrostSurowcowZEpoka === true;
   if (
     raw.barbariansLevel === 'latwy' || raw.barbariansLevel === 'normalny'
     || raw.barbariansLevel === 'trudny' || raw.barbariansLevel === 'brak'
@@ -1846,6 +1855,14 @@ function advancedSettingRows(): AdvSettingRow[] {
       opts: ['Pewne', 'Losowe'],
       getIdx: () => (advOpts.hitMode === 'losowe' ? 1 : 0),
       setIdx: (i) => { advOpts.hitMode = i === 1 ? 'losowe' : 'pewne'; },
+    },
+    {
+      key: 'wzrostSurowcowZEpoka',
+      lbl: 'Wzrost surowców z epoką',
+      hint: 'Wzrost surowców z epoką: włączone — ulepszenia dają więcej w Brązie i Żelazie (+1 Żyw/Pra/Han/Pień, produkcja surowca ×1,5 na epokę); wyłączone — wartości z Kamienia w każdej epoce. Domyślnie: Wyłączone.',
+      opts: ['Wyłączone', 'Włączone'],
+      getIdx: () => (advOpts.wzrostSurowcowZEpoka === true ? 1 : 0),
+      setIdx: (i) => { advOpts.wzrostSurowcowZEpoka = i === 1; },
     },
     advRowFromSett(
       'deals_end_turn_gate',

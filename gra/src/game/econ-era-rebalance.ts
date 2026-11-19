@@ -36,9 +36,36 @@ export function isEraRebalanceEnabled(): boolean {
   return (ERA_REBALANCE_PARAMS.eraRebalansAktywny ?? ERA_REBALANCE_ENABLED_DEFAULT) === true;
 }
 
-/** R1: czy przychody ulepszen sa stale na poziomie epoki 1 (flaga ON + parametr). */
+/**
+ * R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1 (decyzja wlasciciela 2026-11-19):
+ * ustawienie nowej gry „Wzrost surowców z epoką". WYŁ. (domyślnie) = wartości z Kamienia w każdej
+ * epoce (stałe, jak dziś przy rebalansie ON); WŁ. = dawny wzrost ulepszeń z epoką (jak przy flagach
+ * rebalansu OFF dla ulepszeń). Dotyczy plonów pola ulepszenia i produkcji surowców ulepszeń.
+ * Stan aktywny ustawiany przy starcie/wczytaniu gry (main.ts); domyślnie false (WYŁ.).
+ */
+let wzrostSurowcowZEpokaActive = false;
+
+/** Normalizacja pola z kreatora/zapisu: brak, null, zła wartość = false (WYŁ., stare zapisy). */
+export function normalizeWzrostSurowcowZEpoka(raw: unknown): boolean {
+  return raw === true;
+}
+
+export function setWzrostSurowcowZEpoka(value: boolean | undefined): void {
+  wzrostSurowcowZEpokaActive = normalizeWzrostSurowcowZEpoka(value);
+}
+
+export function getWzrostSurowcowZEpoka(): boolean {
+  return wzrostSurowcowZEpokaActive;
+}
+
+/**
+ * R1: czy przychody ulepszen sa stale na poziomie epoki 1 (flaga ON + parametr + ustawienie WYŁ.).
+ * Ustawienie WŁ. wylacza stałość ulepszeń (dawny wzrost z epoką); flaga rebalansu OFF = bez zmian.
+ */
 export function isEraRebalanceImprovementFlat(): boolean {
-  return isEraRebalanceEnabled() && ERA_REBALANCE_PARAMS.przychodyUlepszenStałeEpoka1 === true;
+  return isEraRebalanceEnabled()
+    && ERA_REBALANCE_PARAMS.przychodyUlepszenStałeEpoka1 === true
+    && !wzrostSurowcowZEpokaActive;
 }
 
 /** Porzadkowy numer epoki (1..) dla danych units.json: liczba, tekst-liczba lub nazwa epoki. */
