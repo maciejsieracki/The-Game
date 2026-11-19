@@ -945,6 +945,8 @@ import {
   normalizeImprovementKey,
   isImprovementAllowedForCiv,
   setImprovementCardOwnerEraProvider,
+  improvementYieldForEra,
+  resourceProductionAmountForEra,
 } from './game/terrain-improvements';
 import { isLivestockAllowed, isLamaDepositVisibleForCiv, hexHasHorseDeposit, stadninaImperialKonUnlocked } from './game/livestock-unlock';
 import { hasBuiltOwnStudNeighbor } from './map/improvement-build';
@@ -1000,7 +1002,7 @@ import {
   neighborTenureTur, resetNeighborTenureSession, setHarderDiplomacyEnabledForTest,
 } from './game/diplomacy-harder';
 // R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: rebalans ekonomii wg epok -- flaga domyslnie OFF (hak civTest).
-import { isEraRebalanceEnabled, setEraRebalanceEnabledForTest } from './game/econ-era-rebalance';
+import { getWzrostSurowcowZEpoka, isEraRebalanceEnabled, normalizeWzrostSurowcowZEpoka, setEraRebalanceEnabledForTest, setWzrostSurowcowZEpoka } from './game/econ-era-rebalance';
 import {
   resolveAutoBattleByPower,
   sumRosterFieldM,
@@ -32267,6 +32269,7 @@ async function boot(): Promise<void> {
         csDifficulty: 'easy' | 'normal' | 'hard',
         cityStatesCount: number,
         gameDifficulty: 'easy' | 'normal' | 'hard' = 'normal',
+        wzrostSurowcowZEpoka: boolean = false,
       ): void => {
         const mqTier = mapQualityTierFromQuery('high');
         const mqBundle = bundledMapQualityPreset(mqTier);
@@ -32282,6 +32285,8 @@ async function boot(): Promise<void> {
           landFractionCustom: false,
           cityStateDifficultyOverride: csDifficulty,
           cityLimitBase: 10,
+          // R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1: parametr testowy (domyślnie WYŁ.).
+          wzrostSurowcowZEpoka,
         };
         void doStartGame({
           civId: 'rzymianie',
@@ -32312,6 +32317,14 @@ async function boot(): Promise<void> {
           villageRewardsEnabled: true,
         } as NewGameParams);
       },
+      // R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1: żywy odczyt PRAWDZIWYCH funkcji
+      // (improvementYieldForEra / resourceProductionAmountForEra) z bieżącym stanem ustawienia
+      // ustawionym przez REALNE doStartGame -> applyMenuParams. Era podawana jawnie (1/2/3).
+      probeWzrostYields: () => ({
+        flag: getWzrostSurowcowZEpoka(),
+        farmaZywnosc: [1, 2, 3].map((e) => improvementYieldForEra('farma', 'zywnosc', 3, e)),
+        tartakProdukcja: [1, 2, 3].map((e) => resourceProductionAmountForEra('tartak', 50, e)),
+      }),
       dumpState: () => ({
         turn,
         cityStateDifficulty: _menuCityStateDifficulty,
@@ -49525,6 +49538,8 @@ async function boot(): Promise<void> {
     function applyMenuParams(params: NewGameParams): void {
       // R-WEB-BATTLE-HIT-MODE-SETTING-Q1: tryb trafień z parametrów gry (brak pola = losowe).
       setActiveHitMode(normalizeHitMode(params.advanced?.hitMode));
+      // R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1: brak pola = WYL. (stałe ulepszenia).
+      setWzrostSurowcowZEpoka(normalizeWzrostSurowcowZEpoka(params.advanced?.wzrostSurowcowZEpoka));
       const VALID_TYP: TypSwiata[] = ['kontynenty', 'pangea', 'wyspy', 'ziemia'];
       const resolveTypSwiata = (): TypSwiata => {
         const raw = params.typSwiata || typSwiataFromMenuLabel(params.worldType || 'Kontynenty');
@@ -51431,6 +51446,10 @@ async function boot(): Promise<void> {
       // R-WEB-BATTLE-HIT-MODE-SETTING-Q1: stary zapis bez pola hitMode -> 'losowe' (zachowanie bez zmian).
       setActiveHitMode(normalizeHitMode(
         (saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.hitMode,
+      ));
+      // R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1: stary zapis bez pola -> WYL. (false).
+      setWzrostSurowcowZEpoka(normalizeWzrostSurowcowZEpoka(
+        (saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.wzrostSurowcowZEpoka,
       ));
       if (typeof saved.seed === 'number' && saved.seed > 0) {
         _gameSeed = saved.seed;
