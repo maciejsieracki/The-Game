@@ -38,6 +38,7 @@ process.on('exit', cleanup);
 fs.writeFileSync(ENTRY, `
 export * from '${terrainModule}';
 export { tileYield } from '../src/game/economy';
+export { setEraRebalanceEnabledForTest } from '../src/game/econ-era-rebalance';
 export { computeTerritoryResourceYieldByCity, hexToWorkedTile, cityWorkedTilesForEconomy } from '../src/game/turn-economy';
 export { buildTerritoryNodesFromCities } from '../src/map/territory-work';
 export { yieldOfMapHex, collectWorkedHexOwnerMap, collectWorkedHexKeysForOwner, seedReczneFromAuto } from '../src/game/okolica';
@@ -53,6 +54,8 @@ await esbuild.build({
   } }],
 });
 const M = require(BUNDLE);
+// Test dotyczy reguł legacy (wartosci sprzed R-WEB-ECONOMY-ERA-REBALANCE-ENABLE-Q1): flaga rebalansu jawnie OFF; rebalans testuje econ-era-rebalance-test.
+M.setEraRebalanceEnabledForTest(false);
 const data = require('../data/terrain-improvements.json');
 
 let passed = 0;

@@ -16,10 +16,13 @@ export { DEFAULT_CONVERTER_RECIPES, loadThroughput, runConverter, converterThrou
   converterOutputMultiplierForEra, converterThroughputsForEra, CONVERTER_OUTPUT_MULT_KEY_SUFFIX, runConverters,
   converterProductionDisplayForBuilding } from '../src/game/converters';
 export { citizenConsumptionEraMultiplier } from '../src/game/citizen-consumption-era';
+export { setEraRebalanceEnabledForTest } from '../src/game/econ-era-rebalance';
 `);
 esbuild.buildSync({ entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
   loader: { '.ts': 'ts', '.json': 'json' }, outfile: BUNDLE, absWorkingDir: GRA, logLevel: 'silent' });
 const M = require(BUNDLE);
+// Test dotyczy reguł legacy (m(e) = 1 + 0,5(e-1)): flaga rebalansu jawnie OFF; rebalans testuje econ-era-rebalance-test.
+M.setEraRebalanceEnabledForTest(false);
 const D = f => require(path.join(GRA, 'data', f));
 const econ = D('econ-params.json');
 let passed = 0, failed = 0;

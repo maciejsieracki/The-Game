@@ -34,12 +34,15 @@ export {
 } from '../src/game/terrain-improvements';
 export { resourceProductionAmountForEra } from '${formulaModule}';
 export { computeTerritoryResourceYieldByCity } from '../src/game/turn-economy';
+export { setEraRebalanceEnabledForTest } from '../src/game/econ-era-rebalance';
 export { buildTerritoryNodesFromCities } from '../src/map/territory-work';
 `, 'utf8');
 esbuild.buildSync({ entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs',
   target: 'node18', loader: { '.ts': 'ts', '.json': 'json' }, outfile: BUNDLE,
   absWorkingDir: GRA, logLevel: 'silent' });
 const M = require(BUNDLE);
+// Test dotyczy reguł legacy (wartosci sprzed R-WEB-ECONOMY-ERA-REBALANCE-ENABLE-Q1): flaga rebalansu jawnie OFF; rebalans testuje econ-era-rebalance-test.
+M.setEraRebalanceEnabledForTest(false);
 const data = require('../data/terrain-improvements.json');
 let passed = 0;
 let failed = 0;
