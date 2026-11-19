@@ -1,0 +1,269 @@
+{
+  "seed": 4242,
+  "step": 10,
+  "tabela": [
+    {
+      "tura": 10,
+      "heksySporneOgolem": 930,
+      "aiZMiastem": 41,
+      "miasta": 41,
+      "hexy": 2531,
+      "zMiast": 2531,
+      "zFortow": 0,
+      "forty": 0,
+      "posterunki": 0,
+      "aiZFortem": 0
+    },
+    {
+      "tura": 20,
+      "heksySporneOgolem": 960,
+      "aiZMiastem": 41,
+      "miasta": 41,
+      "hexy": 2566,
+      "zMiast": 2566,
+      "zFortow": 0,
+      "forty": 0,
+      "posterunki": 0,
+      "aiZFortem": 0
+    },
+    {
+      "tura": 30,
+      "heksySporneOgolem": 322,
+      "aiZMiastem": 15,
+      "miasta": 96,
+      "hexy": 4353,
+      "zMiast": 4353,
+      "zFortow": 0,
+      "forty": 0,
+      "posterunki": 0,
+      "aiZFortem": 0
+    },
+    {
+      "tura": 40,
+      "heksySporneOgolem": 1172,
+      "aiZMiastem": 15,
+      "miasta": 146,
+      "hexy": 6752,
+      "zMiast": 6401,
+      "zFortow": 351,
+      "forty": 7,
+      "posterunki": 4,
+      "aiZFortem": 6
+    },
+    {
+      "tura": 50,
+      "heksySporneOgolem": 2762,
+      "aiZMiastem": 15,
+      "miasta": 175,
+      "hexy": 8585,
+      "zMiast": 8345,
+      "zFortow": 240,
+      "forty": 9,
+      "posterunki": 6,
+      "aiZFortem": 7
+    },
+    {
+      "tura": 60,
+      "heksySporneOgolem": 4424,
+      "aiZMiastem": 15,
+      "miasta": 193,
+      "hexy": 10099,
+      "zMiast": 9937,
+      "zFortow": 162,
+      "forty": 11,
+      "posterunki": 23,
+      "aiZFortem": 9
+    },
+    {
+      "tura": 70,
+      "heksySporneOgolem": 5831,
+      "aiZMiastem": 15,
+      "miasta": 213,
+      "hexy": 11235,
+      "zMiast": 11122,
+      "zFortow": 113,
+      "forty": 12,
+      "posterunki": 36,
+      "aiZFortem": 10
+    },
+    {
+      "tura": 80,
+      "heksySporneOgolem": 6869,
+      "aiZMiastem": 14,
+      "miasta": 239,
+      "hexy": 12028,
+      "zMiast": 11848,
+      "zFortow": 180,
+      "forty": 15,
+      "posterunki": 43,
+      "aiZFortem": 11
+    },
+    {
+      "tura": 90,
+      "heksySporneOgolem": 7254,
+      "aiZMiastem": 13,
+      "miasta": 252,
+      "hexy": 12254,
+      "zMiast": 12160,
+      "zFortow": 94,
+      "forty": 15,
+      "posterunki": 48,
+      "aiZFortem": 11
+    },
+    {
+      "tura": 100,
+      "heksySporneOgolem": 7485,
+      "aiZMiastem": 13,
+      "miasta": 256,
+      "hexy": 12287,
+      "zMiast": 12211,
+      "zFortow": 76,
+      "forty": 15,
+      "posterunki": 48,
+      "aiZFortem": 11
+    },
+    {
+      "tura": 110,
+      "heksySporneOgolem": 7675,
+      "aiZMiastem": 13,
+      "miasta": 260,
+      "hexy": 12316,
+      "zMiast": 12243,
+      "zFortow": 73,
+      "forty": 15,
+      "posterunki": 47,
+      "aiZFortem": 11
+    },
+    {
+      "tura": 120,
+      "heksySporneOgolem": 7726,
+      "aiZMiastem": 13,
+      "miasta": 265,
+      "hexy": 12327,
+      "zMiast": 12258,
+      "zFortow": 69,
+      "forty": 15,
+      "posterunki": 53,
+      "aiZFortem": 12
+    },
+    {
+      "tura": 130,
+      "heksySporneOgolem": 7904,
+      "aiZMiastem": 13,
+      "miasta": 269,
+      "hexy": 12361,
+      "zMiast": 12303,
+      "zFortow": 58,
+      "forty": 15,
+      "posterunki": 67,
+      "aiZFortem": 12
+    },
+    {
+      "tura": 140,
+      "heksySporneOgolem": 8008,
+      "aiZMiastem": 13,
+      "miasta": 276,
+      "hexy": 12375,
+      "zMiast": 12317,
+      "zFortow": 58,
+      "forty": 15,
+      "posterunki": 82,
+      "aiZFortem": 12
+    },
+    {
+      "tura": 150,
+      "heksySporneOgolem": 8113,
+      "aiZMiastem": 13,
+      "miasta": 279,
+      "hexy": 12374,
+      "zMiast": 12319,
+      "zFortow": 55,
+      "forty": 15,
+      "posterunki": 90,
+      "aiZFortem": 13
+    }
+  ],
+  "tempoPerAI": [
+    {
+      "owner": 19,
+      "delta": 1436,
+      "perTura": 10.26
+    },
+    {
+      "owner": 22,
+      "delta": 1410,
+      "perTura": 10.07
+    },
+    {
+      "owner": 25,
+      "delta": 1226,
+      "perTura": 8.76
+    },
+    {
+      "owner": 13,
+      "delta": 1079,
+      "perTura": 7.71
+    },
+    {
+      "owner": 16,
+      "delta": 1050,
+      "perTura": 7.5
+    },
+    {
+      "owner": 37,
+      "delta": 892,
+      "perTura": 6.37
+    },
+    {
+      "owner": 34,
+      "delta": 765,
+      "perTura": 5.46
+    },
+    {
+      "owner": 10,
+      "delta": 761,
+      "perTura": 5.44
+    },
+    {
+      "owner": 31,
+      "delta": 701,
+      "perTura": 5.01
+    },
+    {
+      "owner": 4,
+      "delta": 685,
+      "perTura": 4.89
+    },
+    {
+      "owner": 7,
+      "delta": 536,
+      "perTura": 3.83
+    },
+    {
+      "owner": 28,
+      "delta": 498,
+      "perTura": 3.56
+    },
+    {
+      "owner": 1,
+      "delta": 477,
+      "perTura": 3.41
+    }
+  ],
+  "pierwszyFortPerAI": {
+    "1": 33,
+    "4": 50,
+    "7": 118,
+    "10": 31,
+    "13": 35,
+    "16": 128,
+    "19": 36,
+    "22": 35,
+    "25": 58,
+    "28": 53,
+    "31": 63,
+    "34": 39,
+    "37": 64
+  },
+  "nanProblems": 0
+}

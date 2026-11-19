@@ -1,0 +1,801 @@
+{
+  "seed": 7,
+  "turyZapisane": [
+    2,
+    150
+  ],
+  "aiWZapisie": 41,
+  "aiZFortemLubPosterunkiem": 13,
+  "pierwszyFortLubPosterunekPerAI": {
+    "1": 47,
+    "4": 37,
+    "7": 45,
+    "10": 104,
+    "13": 38,
+    "16": 54,
+    "19": 35,
+    "22": 44,
+    "25": 79,
+    "28": 34,
+    "31": 48,
+    "34": 58,
+    "37": 49
+  },
+  "kontrolne": {
+    "30": {
+      "turaZmierzona": 30,
+      "heksySporneOgolem": 294,
+      "wlasciciele": [
+        {
+          "owner": 1,
+          "miasta": 6,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 266,
+          "hexyZMiast": 266,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 118
+        },
+        {
+          "owner": 4,
+          "miasta": 8,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 353,
+          "hexyZMiast": 353,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 0
+        },
+        {
+          "owner": 7,
+          "miasta": 6,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 278,
+          "hexyZMiast": 278,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 4
+        },
+        {
+          "owner": 10,
+          "miasta": 4,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 219,
+          "hexyZMiast": 219,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 2
+        },
+        {
+          "owner": 13,
+          "miasta": 8,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 355,
+          "hexyZMiast": 355,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 0
+        },
+        {
+          "owner": 16,
+          "miasta": 8,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 343,
+          "hexyZMiast": 343,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 27
+        },
+        {
+          "owner": 19,
+          "miasta": 8,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 357,
+          "hexyZMiast": 357,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 4
+        },
+        {
+          "owner": 22,
+          "miasta": 11,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 457,
+          "hexyZMiast": 457,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 0
+        },
+        {
+          "owner": 25,
+          "miasta": 7,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 316,
+          "hexyZMiast": 316,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 10
+        },
+        {
+          "owner": 28,
+          "miasta": 8,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 426,
+          "hexyZMiast": 426,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 0
+        },
+        {
+          "owner": 31,
+          "miasta": 10,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 379,
+          "hexyZMiast": 379,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 58
+        },
+        {
+          "owner": 34,
+          "miasta": 7,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 474,
+          "hexyZMiast": 474,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 27
+        },
+        {
+          "owner": 37,
+          "miasta": 11,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 321,
+          "hexyZMiast": 321,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 174
+        },
+        {
+          "owner": 40,
+          "miasta": 1,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 80,
+          "hexyZMiast": 80,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 69
+        },
+        {
+          "owner": 41,
+          "miasta": 1,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 56,
+          "hexyZMiast": 56,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 65
+        }
+      ]
+    },
+    "60": {
+      "turaZmierzona": 60,
+      "heksySporneOgolem": 4057,
+      "wlasciciele": [
+        {
+          "owner": 1,
+          "miasta": 14,
+          "forty": 0,
+          "posterunki": 2,
+          "hexyTerytorium": 542,
+          "hexyZMiast": 542,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 704
+        },
+        {
+          "owner": 4,
+          "miasta": 13,
+          "forty": 2,
+          "posterunki": 0,
+          "hexyTerytorium": 968,
+          "hexyZMiast": 890,
+          "hexyZFortowPosterunkow": 78,
+          "hexySporne": 932
+        },
+        {
+          "owner": 7,
+          "miasta": 15,
+          "forty": 0,
+          "posterunki": 3,
+          "hexyTerytorium": 923,
+          "hexyZMiast": 923,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 495
+        },
+        {
+          "owner": 10,
+          "miasta": 15,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 593,
+          "hexyZMiast": 593,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 380
+        },
+        {
+          "owner": 13,
+          "miasta": 15,
+          "forty": 1,
+          "posterunki": 0,
+          "hexyTerytorium": 1131,
+          "hexyZMiast": 1131,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 246
+        },
+        {
+          "owner": 16,
+          "miasta": 15,
+          "forty": 0,
+          "posterunki": 1,
+          "hexyTerytorium": 813,
+          "hexyZMiast": 813,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 945
+        },
+        {
+          "owner": 19,
+          "miasta": 15,
+          "forty": 1,
+          "posterunki": 3,
+          "hexyTerytorium": 812,
+          "hexyZMiast": 742,
+          "hexyZFortowPosterunkow": 70,
+          "hexySporne": 350
+        },
+        {
+          "owner": 22,
+          "miasta": 15,
+          "forty": 2,
+          "posterunki": 1,
+          "hexyTerytorium": 1327,
+          "hexyZMiast": 1176,
+          "hexyZFortowPosterunkow": 151,
+          "hexySporne": 667
+        },
+        {
+          "owner": 25,
+          "miasta": 15,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 678,
+          "hexyZMiast": 678,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 511
+        },
+        {
+          "owner": 28,
+          "miasta": 11,
+          "forty": 1,
+          "posterunki": 0,
+          "hexyTerytorium": 826,
+          "hexyZMiast": 826,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 655
+        },
+        {
+          "owner": 31,
+          "miasta": 16,
+          "forty": 0,
+          "posterunki": 1,
+          "hexyTerytorium": 852,
+          "hexyZMiast": 852,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 735
+        },
+        {
+          "owner": 34,
+          "miasta": 15,
+          "forty": 0,
+          "posterunki": 1,
+          "hexyTerytorium": 1352,
+          "hexyZMiast": 1352,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 902
+        },
+        {
+          "owner": 37,
+          "miasta": 15,
+          "forty": 0,
+          "posterunki": 2,
+          "hexyTerytorium": 532,
+          "hexyZMiast": 532,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 903
+        },
+        {
+          "owner": 40,
+          "miasta": 1,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 173,
+          "hexyZMiast": 173,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 229
+        },
+        {
+          "owner": 41,
+          "miasta": 1,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 79,
+          "hexyZMiast": 79,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 308
+        }
+      ]
+    },
+    "90": {
+      "turaZmierzona": 90,
+      "heksySporneOgolem": 6720,
+      "wlasciciele": [
+        {
+          "owner": 1,
+          "miasta": 20,
+          "forty": 0,
+          "posterunki": 10,
+          "hexyTerytorium": 809,
+          "hexyZMiast": 809,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1473
+        },
+        {
+          "owner": 4,
+          "miasta": 18,
+          "forty": 3,
+          "posterunki": 1,
+          "hexyTerytorium": 1208,
+          "hexyZMiast": 1195,
+          "hexyZFortowPosterunkow": 13,
+          "hexySporne": 1384
+        },
+        {
+          "owner": 7,
+          "miasta": 16,
+          "forty": 0,
+          "posterunki": 3,
+          "hexyTerytorium": 1035,
+          "hexyZMiast": 1035,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 945
+        },
+        {
+          "owner": 10,
+          "miasta": 20,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 1065,
+          "hexyZMiast": 1065,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 942
+        },
+        {
+          "owner": 13,
+          "miasta": 20,
+          "forty": 1,
+          "posterunki": 0,
+          "hexyTerytorium": 1254,
+          "hexyZMiast": 1254,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 325
+        },
+        {
+          "owner": 16,
+          "miasta": 20,
+          "forty": 0,
+          "posterunki": 1,
+          "hexyTerytorium": 918,
+          "hexyZMiast": 918,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1074
+        },
+        {
+          "owner": 19,
+          "miasta": 20,
+          "forty": 1,
+          "posterunki": 3,
+          "hexyTerytorium": 914,
+          "hexyZMiast": 903,
+          "hexyZFortowPosterunkow": 11,
+          "hexySporne": 679
+        },
+        {
+          "owner": 22,
+          "miasta": 21,
+          "forty": 3,
+          "posterunki": 5,
+          "hexyTerytorium": 1623,
+          "hexyZMiast": 1623,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1774
+        },
+        {
+          "owner": 25,
+          "miasta": 20,
+          "forty": 0,
+          "posterunki": 7,
+          "hexyTerytorium": 945,
+          "hexyZMiast": 945,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1612
+        },
+        {
+          "owner": 28,
+          "miasta": 17,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 953,
+          "hexyZMiast": 953,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1027
+        },
+        {
+          "owner": 31,
+          "miasta": 21,
+          "forty": 0,
+          "posterunki": 2,
+          "hexyTerytorium": 821,
+          "hexyZMiast": 821,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1278
+        },
+        {
+          "owner": 34,
+          "miasta": 20,
+          "forty": 0,
+          "posterunki": 3,
+          "hexyTerytorium": 1399,
+          "hexyZMiast": 1399,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1454
+        },
+        {
+          "owner": 37,
+          "miasta": 20,
+          "forty": 0,
+          "posterunki": 4,
+          "hexyTerytorium": 598,
+          "hexyZMiast": 598,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1056
+        },
+        {
+          "owner": 40,
+          "miasta": 1,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 45,
+          "hexyZMiast": 45,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 331
+        },
+        {
+          "owner": 41,
+          "miasta": 1,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 54,
+          "hexyZMiast": 54,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 331
+        }
+      ]
+    },
+    "120": {
+      "turaZmierzona": 120,
+      "heksySporneOgolem": 7682,
+      "wlasciciele": [
+        {
+          "owner": 1,
+          "miasta": 21,
+          "forty": 0,
+          "posterunki": 13,
+          "hexyTerytorium": 865,
+          "hexyZMiast": 865,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1745
+        },
+        {
+          "owner": 4,
+          "miasta": 21,
+          "forty": 3,
+          "posterunki": 2,
+          "hexyTerytorium": 1347,
+          "hexyZMiast": 1347,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1530
+        },
+        {
+          "owner": 7,
+          "miasta": 16,
+          "forty": 0,
+          "posterunki": 3,
+          "hexyTerytorium": 1086,
+          "hexyZMiast": 1086,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 963
+        },
+        {
+          "owner": 10,
+          "miasta": 21,
+          "forty": 0,
+          "posterunki": 6,
+          "hexyTerytorium": 1204,
+          "hexyZMiast": 1204,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1104
+        },
+        {
+          "owner": 13,
+          "miasta": 20,
+          "forty": 1,
+          "posterunki": 0,
+          "hexyTerytorium": 1263,
+          "hexyZMiast": 1263,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 364
+        },
+        {
+          "owner": 16,
+          "miasta": 20,
+          "forty": 0,
+          "posterunki": 1,
+          "hexyTerytorium": 892,
+          "hexyZMiast": 892,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1027
+        },
+        {
+          "owner": 19,
+          "miasta": 20,
+          "forty": 1,
+          "posterunki": 3,
+          "hexyTerytorium": 910,
+          "hexyZMiast": 903,
+          "hexyZFortowPosterunkow": 7,
+          "hexySporne": 757
+        },
+        {
+          "owner": 22,
+          "miasta": 21,
+          "forty": 3,
+          "posterunki": 5,
+          "hexyTerytorium": 1557,
+          "hexyZMiast": 1557,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 2379
+        },
+        {
+          "owner": 25,
+          "miasta": 20,
+          "forty": 0,
+          "posterunki": 13,
+          "hexyTerytorium": 988,
+          "hexyZMiast": 988,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 2490
+        },
+        {
+          "owner": 28,
+          "miasta": 20,
+          "forty": 0,
+          "posterunki": 1,
+          "hexyTerytorium": 965,
+          "hexyZMiast": 965,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1422
+        },
+        {
+          "owner": 31,
+          "miasta": 21,
+          "forty": 0,
+          "posterunki": 3,
+          "hexyTerytorium": 812,
+          "hexyZMiast": 812,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1283
+        },
+        {
+          "owner": 34,
+          "miasta": 20,
+          "forty": 0,
+          "posterunki": 3,
+          "hexyTerytorium": 1409,
+          "hexyZMiast": 1409,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1584
+        },
+        {
+          "owner": 37,
+          "miasta": 20,
+          "forty": 0,
+          "posterunki": 4,
+          "hexyTerytorium": 588,
+          "hexyZMiast": 588,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1200
+        },
+        {
+          "owner": 40,
+          "miasta": 1,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 45,
+          "hexyZMiast": 45,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 331
+        },
+        {
+          "owner": 41,
+          "miasta": 1,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 54,
+          "hexyZMiast": 54,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 331
+        }
+      ]
+    },
+    "150": {
+      "turaZmierzona": 150,
+      "heksySporneOgolem": 7737,
+      "wlasciciele": [
+        {
+          "owner": 1,
+          "miasta": 20,
+          "forty": 0,
+          "posterunki": 14,
+          "hexyTerytorium": 825,
+          "hexyZMiast": 825,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1678
+        },
+        {
+          "owner": 4,
+          "miasta": 22,
+          "forty": 3,
+          "posterunki": 2,
+          "hexyTerytorium": 1399,
+          "hexyZMiast": 1399,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1758
+        },
+        {
+          "owner": 7,
+          "miasta": 16,
+          "forty": 0,
+          "posterunki": 2,
+          "hexyTerytorium": 1086,
+          "hexyZMiast": 1086,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1010
+        },
+        {
+          "owner": 10,
+          "miasta": 22,
+          "forty": 0,
+          "posterunki": 5,
+          "hexyTerytorium": 1302,
+          "hexyZMiast": 1302,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1131
+        },
+        {
+          "owner": 13,
+          "miasta": 20,
+          "forty": 1,
+          "posterunki": 0,
+          "hexyTerytorium": 1263,
+          "hexyZMiast": 1263,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 364
+        },
+        {
+          "owner": 16,
+          "miasta": 21,
+          "forty": 0,
+          "posterunki": 1,
+          "hexyTerytorium": 942,
+          "hexyZMiast": 942,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1034
+        },
+        {
+          "owner": 19,
+          "miasta": 20,
+          "forty": 1,
+          "posterunki": 5,
+          "hexyTerytorium": 908,
+          "hexyZMiast": 901,
+          "hexyZFortowPosterunkow": 7,
+          "hexySporne": 847
+        },
+        {
+          "owner": 22,
+          "miasta": 21,
+          "forty": 3,
+          "posterunki": 6,
+          "hexyTerytorium": 1554,
+          "hexyZMiast": 1554,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 2354
+        },
+        {
+          "owner": 25,
+          "miasta": 21,
+          "forty": 0,
+          "posterunki": 17,
+          "hexyTerytorium": 1038,
+          "hexyZMiast": 1038,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 2706
+        },
+        {
+          "owner": 28,
+          "miasta": 18,
+          "forty": 0,
+          "posterunki": 3,
+          "hexyTerytorium": 919,
+          "hexyZMiast": 919,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1220
+        },
+        {
+          "owner": 31,
+          "miasta": 22,
+          "forty": 0,
+          "posterunki": 3,
+          "hexyTerytorium": 815,
+          "hexyZMiast": 815,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1335
+        },
+        {
+          "owner": 34,
+          "miasta": 20,
+          "forty": 0,
+          "posterunki": 4,
+          "hexyTerytorium": 1359,
+          "hexyZMiast": 1359,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1583
+        },
+        {
+          "owner": 37,
+          "miasta": 20,
+          "forty": 0,
+          "posterunki": 3,
+          "hexyTerytorium": 588,
+          "hexyZMiast": 588,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 1221
+        },
+        {
+          "owner": 41,
+          "miasta": 1,
+          "forty": 0,
+          "posterunki": 0,
+          "hexyTerytorium": 54,
+          "hexyZMiast": 54,
+          "hexyZFortowPosterunkow": 0,
+          "hexySporne": 331
+        }
+      ]
+    }
+  },
+  "runnerExit": 0,
+  "NIEZMIERZONE": [
+    "zajete pierwszy raz (historia per heks)",
+    "koszt utrzymania fortow/posterunkow (NIE ZWERYFIKOWANO w kodzie)"
+  ]
+}
