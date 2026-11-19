@@ -245,6 +245,14 @@ export interface ForcedWarPairingOpts {
     /** D1 (r2): wszyscy major AI z erą = kandydaci na partnera gracza, także spoza puli. Brak = pula. */
     candidates?: ForcedWarPairingSubject[];
   };
+  /**
+   * R-WEB-ERA-WAR-DEFER-NOT-CANCEL-Q1 (runda 2, B-DEFER): wszyscy major AI (bez gracza) jako
+   * kandydaci na CEL dla podmiotu Brązu/Żelaza, który nie znalazł partnera w puli warless tej
+   * tury (pending zostaje, ale bez celu nigdy nie wybuchnie). Wybierany najbliższy kandydat
+   * spoza puli triggered, bez aktywnej wojny wymuszonej, bez zablokowania NAP/sojuszu, z wolnym
+   * licznikiem. Kamień NIE korzysta (ma twardy limit R2 celu). Brak pola = zachowanie bazowe.
+   */
+  freeTargetCandidates?: ForcedWarPairingSubject[];
 }
 
 export interface ForcedWarPairingAssignment {
@@ -496,7 +504,35 @@ export function assignForcedWarPairings(
     .slice()
     .sort((a, b) => (a.attackerId - b.attackerId) || (a.targetId - b.targetId));
 
+  // R-WEB-ERA-WAR-DEFER-NOT-CANCEL-Q1 (runda 2): cele wybrane przez fallback tej tury — żeby dwa
+  // podmioty nie wybrały tego samego wolnego celu (dwa wypowiedzenia w jednej turze).
+  const freeTargetsClaimed = new Set<number>();
   for (const leftoverId of leftovers) {
+    // Podmiot Brązu/Żelaza bez partnera w puli: najpierw WOLNY cel spoza puli (B-DEFER), dopiero
+    // potem dołączenie do istniejącej pary. Dołączenie do pary, której strona toczy już wojnę
+    // (np. Kamień), kończy się odrzuceniem przez ai.ts (`stanWojny`) i pending wisi bez wybuchu.
+    const actor = byId.get(leftoverId);
+    if (leftoverId !== 0 && actor?.era != null && actor.era !== 'stone' && opts.freeTargetCandidates) {
+      let bestDist = Infinity;
+      let bestTargetId: number | null = null;
+      for (const cand of opts.freeTargetCandidates.slice().sort((a, b) => a.ownerId - b.ownerId)) {
+        if (cand.ownerId === leftoverId || cand.ownerId === 0 || byId.has(cand.ownerId)) continue;
+        if (freeTargetsClaimed.has(cand.ownerId)) continue;
+        if (opts.totalActiveForcedWarsByOwner(cand.ownerId) !== 0) continue;
+        if (exhausted(cand.ownerId, actor.era)) continue;
+        if (pairBlocked(leftoverId, cand.ownerId)) continue;
+        const dist = opts.hexDistanceFn(actor.q, actor.r, cand.q, cand.r);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestTargetId = cand.ownerId;
+        }
+      }
+      if (bestTargetId !== null) {
+        assignments.push({ ownerId: leftoverId, era: actor.era, targetId: bestTargetId });
+        freeTargetsClaimed.add(bestTargetId);
+        continue;
+      }
+    }
     let joined = false;
     for (const pair of pairsSorted) {
       if (pair.attackerId === leftoverId || pair.targetId === leftoverId) continue;

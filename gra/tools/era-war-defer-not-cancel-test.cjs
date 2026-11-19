@@ -180,5 +180,52 @@ console.log('T6 (R4) pending nie wygasa przy awansie: eligibility Zelaza nie kas
   assert(pending.has(2), 'pending Brazu zachowany po wywolaniu eligibility w epoce Zelaza');
 }
 
+// R-WEB-ERA-WAR-DEFER-NOT-CANCEL-Q1 (runda 2, B-DEFER): sam pending Brązu bez partnera w puli
+// triggered nie może wisieć bez celu — dostaje WOLNY cel spoza puli (fallback freeTargetCandidates).
+const MAJORS = [
+  { ownerId: 2, q: 0, r: 0, era: 'bronze' },
+  { ownerId: 3, q: 1, r: 0, era: 'stone' },
+  { ownerId: 4, q: 5, r: 0, era: 'bronze' },
+];
+console.log('T7 (B-DEFER) lone pending Brazu dostaje wolny cel; bez fallbacku pozostaje bez celu (stare zachowanie)');
+{
+  const base = { isPairBlocked: noBlock, hexDistanceFn: hexDist, totalActiveForcedWarsByOwner: noWars };
+  const lone = [{ ownerId: 2, q: 0, r: 0, era: 'bronze' }];
+  const withFallback = assignForcedWarPairings(lone, [], { ...base, freeTargetCandidates: MAJORS });
+  assert(withFallback.unresolvedOwnerIds.length === 0, 'z fallbackiem: brak unresolved');
+  const a2 = withFallback.assignments.find(a => a.ownerId === 2);
+  assert(a2 && a2.era === 'bronze' && a2.targetId === 3, `z fallbackiem: owner 2 -> najbliższy wolny cel 3 (got ${JSON.stringify(a2)})`);
+  const noFallback = assignForcedWarPairings(lone, [], base);
+  assert(noFallback.unresolvedOwnerIds.includes(2), 'bez fallbacku (stare wywołanie): owner 2 nieprzydzielony (zachowanie bazowe)');
+  // Kamień NIE korzysta z fallbacku (twardy limit R2 celu) -- pending Kamienia zostaje nieprzydzielony.
+  const stoneLone = assignForcedWarPairings([{ ownerId: 2, q: 0, r: 0, era: 'stone' }], [], { ...base, freeTargetCandidates: MAJORS });
+  assert(stoneLone.assignments.length === 0, 'Kamien bez partnera: fallback wyłączony (brak przydziału)');
+  // Cel zajęty aktywną wojną wymuszoną NIE jest wybierany.
+  const busy = assignForcedWarPairings(lone, [], { ...base, freeTargetCandidates: MAJORS,
+    totalActiveForcedWarsByOwner: (o) => (o === 3 ? 1 : 0) });
+  const b2 = busy.assignments.find(a => a.ownerId === 2);
+  assert(b2 && b2.targetId === 4, `cel 3 w wojnie wymuszonej pominięty, wybrany 4 (got ${JSON.stringify(b2)})`);
+  // Dwa podmioty w jednej turze nie wybierają tego samego wolnego celu.
+  // Para 2<->6 zablokowana sojuszem, więc OBA są leftover i idą do fallbacku (nie do 1v1).
+  const two = assignForcedWarPairings(
+    [{ ownerId: 2, q: 0, r: 0, era: 'bronze' }, { ownerId: 6, q: 0, r: 1, era: 'bronze' }],
+    [],
+    { ...base, isPairBlocked: (a, b) => (a === 2 && b === 6) || (a === 6 && b === 2),
+      freeTargetCandidates: [...MAJORS, { ownerId: 7, q: 9, r: 0, era: 'iron' }] },
+  );
+  const targets = two.assignments.map(a => a.targetId);
+  assert(two.assignments.length === 2 && new Set(targets).size === 2,
+    `dwa podmioty z fallbackiem dostają dwa RÓŻNE wolne cele (${JSON.stringify(targets)})`);
+}
+
+// T8 (źródłowo-behawioralne): main.ts przekazuje tę samą listę kandydatów do parowania (mutacja
+// usunięcia linii `freeTargetCandidates:` w main.ts musi zaczerwienić ten test).
+console.log('T8 (B-DEFER, wiring) main.ts przekazuje freeTargetCandidates do assignForcedWarPairings');
+{
+  const mainSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
+  assert(/freeTargetCandidates:\s*forcedWarMajorAiSubjects,/.test(mainSrc), 'main.ts: freeTargetCandidates: forcedWarMajorAiSubjects');
+  assert(/candidates:\s*forcedWarMajorAiSubjects,/.test(mainSrc), 'main.ts: playerFirst.candidates wspólna lista (bez duplikatu)');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
