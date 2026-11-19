@@ -985,3 +985,96 @@ fn kompozytor_las_cywilizacji_obroncy() {
         r.def_mods.obrona
     );
 }
+
+/// Z2 / O06, O11: kontra strzelca wieży (`towerShooterRow` typu `Distance`) na włócznika (`Distance -> Spearman +15%`,
+/// `counterMultiplier` `:8937`) i `def_on_wall` celu stojącego na koronie (atakujący po wejściu z wieży oblężniczej).
+#[test]
+fn wieza_kontra_i_cel_na_koronie() {
+    use civ_engine::domain::siege_battle_adapter_unit::counter_multiplier_pin;
+    use civ_engine::domain::siege_tactics_end::BattleSide;
+    use civ_engine::domain::siege_tactics_loop::{BlowSite, TowerBlowSite};
+    let s = Scn {
+        atk: vec!["Włócznik", "Wojownik"],
+        ..scn_base()
+    };
+    let (st, input) = state_for(&s);
+    let d = data();
+    let ses = SiegeBattleSession::start(&st, &input, &d).unwrap();
+    let anchor = input.anchor_unit_id.to_string();
+    let wi = ses.roster_ids()[0]
+        .iter()
+        .position(|x| *x == anchor)
+        .expect("wlocznik w bitwie");
+    let wall_col = ses.battle_loop().st.siege_wall_col;
+    let row = ses.battle_loop().env.tower_rows[0];
+    let target = uref(BattleSide::Attacker, wi);
+    let site = |on_wall| TowerBlowSite {
+        target,
+        shooter_cell: (wall_col, row),
+        target_cell: (wall_col, row + 1),
+        target_on_wall: on_wall,
+    };
+    let inp = ses.compose_tower_blow(&site(false)).unwrap();
+    let as_atk = ses
+        .compose_blow(&BlowSite {
+            attacker: target,
+            target: uref(BattleSide::Defender, 0),
+            ranged: false,
+            attacker_cell: (wall_col - 1, row),
+            target_cell: (wall_col, row),
+            target_on_wall: true,
+            first_blow: true,
+        })
+        .unwrap();
+    let pin = counter_multiplier_pin(
+        &inp.attacker.counter_typ,
+        &as_atk.attacker.counter_typ,
+        &d.counters,
+        d.counter_mult,
+    );
+    assert!(pin > 1.0, "kontra Distance -> Spearman ({pin})");
+    assert_eq!(inp.counter_mult, pin);
+    assert!(!inp.def_on_wall);
+    assert!(ses.compose_tower_blow(&site(true)).unwrap().def_on_wall);
+}
+
+/// Z4a / O13: `_checkRout` po okrążeniu (FACTOR 5, `_activateUnit`) też czyta BIEŻĄCY kafel: obrońca (bez doktryny przy
+/// murze) otoczony przez 3 atakujących traci `MORALE_SURROUND_HIT` i z morale między `flee - 5` a `flee` ucieka na kaflu
+/// startowym, a na wzgórzach nie.
+#[test]
+fn checkrout_okrazenie_z_biezacego_kafla() {
+    use civ_engine::domain::siege_tactics_activate::{ActivateEvent, MORALE_SURROUND_HIT};
+    use civ_engine::domain::siege_tactics_end::BattleSide;
+    use civ_engine::domain::siege_tactics_loop::LoopBody;
+    let (st, input) = state_for(&scn_base());
+    let d = data();
+    let probe = SiegeBattleSession::start(&st, &input, &d).unwrap();
+    let hills = find_cell(&probe, "Wzgorza")
+        .or_else(|| find_cell(&probe, "Gory"))
+        .expect("wzgorza na polu bitwy");
+    let unit = uref(BattleSide::Defender, 0);
+    let start = {
+        let a = &probe.battle_loop().env.body.units[1][0].activate;
+        (a.q, a.r)
+    };
+    assert!(probe.terrain_defence_mult_at(unit, start).unwrap() <= 1.0);
+    let routs = |cell: (i64, i64)| {
+        let mut ses = SiegeBattleSession::start(&st, &input, &d).unwrap();
+        let lp = ses.battle_loop_mut();
+        lp.env.body.units[1][0].activate.q = cell.0;
+        lp.env.body.units[1][0].activate.r = cell.1;
+        for (i, (dq, dr)) in [(-1, 0), (0, 1), (0, -1)].into_iter().enumerate() {
+            lp.env.body.units[0][i].activate.q = cell.0 + dq;
+            lp.env.body.units[0][i].activate.r = cell.1 + dr;
+        }
+        lp.st.def[0].c.flee_morale = 20.0;
+        lp.st.def[0].c.morale = 18.0 + MORALE_SURROUND_HIT;
+        let n = lp.env.body.trace.len();
+        lp.env.body.start(unit, &lp.st);
+        lp.env.body.trace[n..]
+            .iter()
+            .any(|(u, ev)| *u == unit && ev.contains(&ActivateEvent::StartRout))
+    };
+    assert!(routs(start), "kafel startowy: ucieczka po okrazeniu");
+    assert!(!routs(hills), "wzgorza: brak ucieczki po okrazeniu");
+}
