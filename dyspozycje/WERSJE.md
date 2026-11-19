@@ -1,3 +1,9 @@
+## ROBOCZA 25bd973d -- 2026-11-18 -- FALA 863: R-WEB-DIPLO-WAR-LIMIT-PLAYER-TARGET-Q1: wojna panstwa-miasta przeciw graczowi przechodzi przez bramke limitu wojen (za flaga limitWojenAktywny=false) (testowa)
+
+- gra/src/main.ts (+1 linia: bramka warLimitAllowsDeclaration w petli klastra panstw-miast), gra/tools/diplomacy-war-limit-unit-test.cjs (+9 asercji, wiazanie zrodlowe). Flaga OFF = zachowanie gry bez zmian.
+- Weryfikacja: tsc 0, logic 213/213, war-limit-unit 57/0 (mutacja main.ts 55/2 czerwona), war-limit-analyze 17/0
+- Limity: NIE ZMIERZONO: bieg runtime ON/OFF i przypadek panstwo-miasto -> gracz; wiazanie bramki w main.ts testowane tekstowo
+
 ## ROBOCZA 53cc1dc4 -- 2026-11-18 -- FALA 862: R-WEB-UI-HUD-RESOURCE-CARD-STATE-NET-Q1: karta surowca w panelu imperium liczy niedobor z netto HUD (resourceIsShortage), spojnie z chipem i alertem (testowa)
 
 - gra/src/ui/empireDetailPanel.ts (resStateOf -> resourceIsShortage), nowy test hud-resource-card-state-test. Deficyt ulamkowy (-0,4) nie daje stanu 'bad' (zgodnie z chipem).
