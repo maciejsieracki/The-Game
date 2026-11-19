@@ -16,7 +16,32 @@
 //!   niezależności od podziału kroków i test ścieżki odtworzenia (każda komenda bez pamięci podręcznej = ten sam
 //!   wynik). Żywa sesja jest trzymana w pamięci podręcznej wątku (`LIVE_SESSION`) jako optymalizacja: komenda z tego
 //!   samego wątku kontynuuje sesję bez powtórki; chybienie (inny wątek Tauri, klon gry, błąd poprzedniej komendy)
-//!   odtwarza sesję z zapisu (koszt O(długość bitwy), NIE_ZMIERZONO w release).
+//!   odtwarza sesję z zapisu (koszt O(długość bitwy), NIE_ZMIERZONO w release). Obrona r1 (Z3): klucz trafienia to
+//!   `(live_key, ops.len())`, a `Clone` bitwy nadaje klonowi NOWY `live_key` ([`NEXT_LIVE_KEY`]), więc klon nigdy nie
+//!   trafia w sesję oryginału ani innego klonu (rozbieżne historie o tej samej długości = różne klucze).
+//! * **D-WIRB-6 (obrona r1, Z1: kolejność strumienia dla `renderer/src/battle/playback.rs`).** Konsument kolejkuje
+//!   `push_actions(actions)` a potem `push_frame(frame)` i odrzuca każdy element o czasie mniejszym niż poprzedni
+//!   (`check_order`, `playback.rs:584-625`, stan `last_queued` przez całą bitwę). Ciało pętli emituje akcje z przyszłym
+//!   `t0` (marsz wielokrokowy jednej aktywacji, `_doMove` po `MOVE_STEP_MS`), zanim zegar dojdzie do tego czasu.
+//!   Port wstrzymuje więc akcje z `t0 > vNow` ramki odpowiedzi ([`ActiveSiegeBattle`] `pending`) i oddaje je w
+//!   odpowiedzi, której ramka ma `vNow >= t0`; reszta (`t0` za końcem bitwy) wychodzi w odpowiedzi
+//!   `FinishSiegeBattle` (bez ramki). W każdej odpowiedzi: akcje posortowane stabilnie po `t0`, ramka nie wcześniejsza
+//!   niż oddane akcje, a pierwsza akcja nie wcześniejsza niż ramka poprzedniej odpowiedzi — test
+//!   `strumien_przyjmuje_konsument_playback` odwzorowuje `check_order` konsumenta.
+//! * **D-WIRB-7 (obrona r1, Z2: bramki wejścia szturmu).** Most omija UI, więc [`prepare_storm`] odrzuca komendę, której
+//!   web nie pozwala wydać: miasto gracza (`resolveEnemyCityClick` `not_enemy`, `map-attack-city.ts:119-121`); miasto
+//!   oblegane z oblegającym w odległości 1 = ścieżka `siege_panel` (`:127-139`): kotwicą jest PIERWSZA jednostka stanu
+//!   obcego właściciela w odległości 1 (`units.find`), inna jednostka = błąd; inaczej ścieżka `attack_choice`
+//!   (`adjacentPlayerAttackers` `:66-80` + `canInitiateSiege` `mapSiegeDetect.ts:74-81`): kotwica gracza, odległość 1,
+//!   `ruchLeft > 0`, nie cywil (`hint_civilian` `:141-146`), mur; `launchSiegeStormFromMap` (`main.ts:36800`): oblegający
+//!   = gracz; wojna (`withPlayerWarConsent` `main.ts:13266-13281`: bez wojny web pyta o wypowiedzenie — most nie
+//!   wypowiada wojny w tej komendzie, wypowiedzenie = osobna komenda #305) i `siegeAllowedBetween`
+//!   (`diplomacy-siege-war-gate.ts:72-79`). Mgła (`hint_city_not_visible`): poza zakresem (sąsiedni heks jest zawsze w
+//!   zasięgu widzenia kotwicy).
+//! * **D-WIRB-8 (obrona r1, Z6: wyjście z bitwy).** `FinishSiegeBattle` jest zawsze wyjściem: wynik zastosowany albo
+//!   `NotFinished` (bitwa trwa, dostępne `Skip`), albo — przy każdym innym błędzie (ścieżka nieportowana
+//!   `outcome.unported`, `LoopUnsupported`, błąd zastosowania) — bitwa jest ZAMYKANA bez zmiany stanu i komenda zwraca
+//!   [`SiegeBattleError::Aborted`]. Web nie ma tej ścieżki (scena zawsze kończy się wynikiem); port nie zgaduje wyniku.
 //! * **D-WIRB-2 (stan gry w trakcie bitwy).** Pin w trakcie sceny nie zmienia mapy (machiny zużywa dopiero wynik
 //!   sceny, `:37021-37023`; UI mapy zasłonięte). Port: `AdvanceTurn`, `MoveUnit`, `CancelPlannedMarch` i drugi
 //!   `StartSiegeStorm` zwracają jawny błąd „bitwa w toku”; zapis bitwy w toku poza zakresem (gra trzyma ją poza DTO).
@@ -64,7 +89,9 @@ use crate::domain::siege_tactics_end::BattleSide;
 use crate::domain::siege_tactics_frame::{battle_frame, FrameInput, FrameUnitPose};
 use crate::domain::siege_tactics_loop::LoopWinner;
 use crate::domain::siege_tactics_turnseq::UnitRef;
-use crate::domain::turn_war_epoch::{empire_epoch_for_owner, game_start_era, owner_era_facts};
+use crate::domain::turn_war_epoch::{
+    empire_epoch_for_owner, game_start_era, owner_era_facts, OwnerEraFacts,
+};
 use crate::domain::turn_war_inputs::HUMAN_OWNER_ID;
 use crate::domain::{CityId, PlayerId, PositionDto, UnitId};
 
@@ -100,6 +127,19 @@ pub enum SiegeBattleError {
     Adapter(AdapterError),
     /// Producent wejść (dane trudności, cywilizacji, epoki) albo DTO (ramka, akcje) zwrócił błąd.
     Producer(String),
+    /// D-WIRB-7: miasto gracza (`resolveEnemyCityClick` → `not_enemy`, `map-attack-city.ts:119-121`).
+    NotEnemyCity { city_id: u64 },
+    /// D-WIRB-7: kotwica nie w odległości 1 od miasta (`adjacentPlayerAttackers`, `canInitiateSiege`).
+    NotAdjacent { unit_id: u64, city_id: u64 },
+    /// D-WIRB-7: miasto oblegane — szturm z panelu oblężenia wydaje pierwsza jednostka oblegająca (`siege_panel`,
+    /// `map-attack-city.ts:127-139`).
+    NotSiegeAnchor { unit_id: u64, besieger_id: u64 },
+    /// D-WIRB-7: kotwica nie może atakować (`adjacentPlayerAttackers`: `ruchLeft > 0`, nie cywil).
+    AnchorCannotAttack { unit_id: u64, reason: &'static str },
+    /// D-WIRB-7: brak wojny z właścicielem miasta (`withPlayerWarConsent` / `siegeAllowedBetween`).
+    NotAtWar { city_id: u64 },
+    /// D-WIRB-8: bitwa zamknięta bez zastosowania wyniku (stan bez zmian); `reason` = błąd źródłowy.
+    Aborted { city_id: u64, reason: String },
 }
 
 impl std::fmt::Display for SiegeBattleError {
@@ -126,6 +166,30 @@ impl std::fmt::Display for SiegeBattleError {
             Self::Session(e) => write!(f, "siege battle: {e}"),
             Self::Adapter(e) => write!(f, "siege battle roster: {e}"),
             Self::Producer(e) => write!(f, "siege battle: {e}"),
+            Self::NotEnemyCity { city_id } => {
+                write!(f, "siege storm: city {city_id} belongs to the player")
+            }
+            Self::NotAdjacent { unit_id, city_id } => write!(
+                f,
+                "siege storm: unit {unit_id} is not adjacent to city {city_id}"
+            ),
+            Self::NotSiegeAnchor {
+                unit_id,
+                besieger_id,
+            } => write!(
+                f,
+                "siege storm: besieged city is stormed by unit {besieger_id}, not {unit_id}"
+            ),
+            Self::AnchorCannotAttack { unit_id, reason } => {
+                write!(f, "siege storm: unit {unit_id} cannot attack ({reason})")
+            }
+            Self::NotAtWar { city_id } => {
+                write!(f, "siege storm: not at war with the owner of city {city_id}")
+            }
+            Self::Aborted { city_id, reason } => write!(
+                f,
+                "siege battle at city {city_id} closed without a result: {reason}"
+            ),
         }
     }
 }
@@ -188,6 +252,12 @@ pub struct SiegeUnitHpDto {
 }
 
 /// D-WIRB-3: hak T8 (#354) — `applyCityCaptureToMap` i wejście na heks miasta po wygranej z wyłomem.
+///
+/// Kontrakt dla T8 (obrona r1, U2): część B liczy `validateActiveSieges` szturmowanego miasta PRZED wejściem na heks i
+/// przed zmianą właściciela (`siegeEnded` wyniku). W pinie wywołanie jest po `applyCityCaptureToMap`
+/// (`main.ts:34744`), a zdobycie blokuje `isCityCaptureBlockedByDefenders` (`main.ts:34650-34653`). Konsument haka
+/// MUSI: (1) sprawdzić `isCityCaptureBlockedByDefenders` po `wipeDefenderOnCityCenter`/`retreatDefendersAfterAtkWin`,
+/// (2) wykonać `applyCityCaptureToMap` i (3) powtórzyć `validateActiveSieges` na stanie po zdobyciu.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CityCaptureRequested {
@@ -253,8 +323,9 @@ enum DriverOp {
     Skip,
 }
 
-/// Trwająca bitwa oblężnicza gry (D-WIRB-1).
-#[derive(Debug, Clone, PartialEq)]
+/// Trwająca bitwa oblężnicza gry (D-WIRB-1). `Clone` ręczny: klon dostaje nowy `live_key` (Z3); `PartialEq` pomija
+/// `live_key` (klucz pamięci podręcznej, nie stan bitwy).
+#[derive(Debug)]
 pub struct ActiveSiegeBattle {
     pub city_id: u64,
     pub anchor_unit_id: u64,
@@ -265,8 +336,44 @@ pub struct ActiveSiegeBattle {
     atk_roster: Vec<RosterUnit>,
     def_roster: Vec<RosterUnit>,
     ops: Vec<DriverOp>,
-    /// Klucz sesji żywej w pamięci podręcznej wątku ([`LIVE_SESSION`]); unikalny w procesie.
+    /// D-WIRB-6 (Z1): akcje już wyemitowane przez scenę, z `t0` późniejszym niż `vNow` ostatniej oddanej ramki.
+    pending: Vec<BattleActionDto>,
+    /// Klucz sesji żywej w pamięci podręcznej wątku ([`LIVE_SESSION`]); unikalny w procesie i dla każdego klonu.
     live_key: u64,
+}
+
+fn next_live_key() -> u64 {
+    NEXT_LIVE_KEY.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+}
+
+impl Clone for ActiveSiegeBattle {
+    fn clone(&self) -> Self {
+        Self {
+            city_id: self.city_id,
+            anchor_unit_id: self.anchor_unit_id,
+            start_state: self.start_state.clone(),
+            input: self.input.clone(),
+            atk_roster: self.atk_roster.clone(),
+            def_roster: self.def_roster.clone(),
+            ops: self.ops.clone(),
+            pending: self.pending.clone(),
+            // Z3: klon = osobna historia; wspólny klucz oddawałby klonowi sesję innego klonu z pamięci podręcznej.
+            live_key: next_live_key(),
+        }
+    }
+}
+
+impl PartialEq for ActiveSiegeBattle {
+    fn eq(&self, other: &Self) -> bool {
+        self.city_id == other.city_id
+            && self.anchor_unit_id == other.anchor_unit_id
+            && self.start_state == other.start_state
+            && self.input == other.input
+            && self.atk_roster == other.atk_roster
+            && self.def_roster == other.def_roster
+            && self.ops == other.ops
+            && self.pending == other.pending
+    }
 }
 
 /// D-WIRB-1: pamięć podręczna sesji żywej (optymalizacja, nie źródło prawdy). Sesja nie jest `Send`, więc żyje w wątku,
@@ -481,6 +588,31 @@ pub fn prepare_storm(
     unit_id: u64,
     battle_index: u32,
 ) -> Result<ActiveSiegeBattle, SiegeBattleError> {
+    prepare_storm_with_eras(
+        state,
+        city_id,
+        unit_id,
+        battle_index,
+        &owner_era_facts(state),
+        game_start_era(&state.params.epoch_id),
+    )
+}
+
+/// [`prepare_storm`] z jawnymi faktami epok (`empireEpochForOwner`). `PlayableState` nie niesie dziś epoki per właściciel
+/// ([`owner_era_facts`]: każdy właściciel = epoka startu), więc testy producenta wstrzykują fakty, żeby rozróżnić epokę
+/// właściciela miasta (milicja, `main.ts:34768-34771`) od epoki obrońcy (`defRosterRef[0].ownerId`, `:36999`).
+///
+/// # Errors
+/// Jak [`prepare_storm`].
+#[allow(clippy::too_many_lines)]
+pub fn prepare_storm_with_eras(
+    state: &PlayableState,
+    city_id: u64,
+    unit_id: u64,
+    battle_index: u32,
+    facts: &OwnerEraFacts,
+    start_era: f64,
+) -> Result<ActiveSiegeBattle, SiegeBattleError> {
     let data = session_data()?;
     let city = state
         .cities
@@ -492,24 +624,86 @@ pub fn prepare_storm(
         .iter()
         .find(|u| u.id.get() == unit_id)
         .ok_or(SiegeBattleError::UnitNotFound(unit_id))?;
+    // D-WIRB-7: bramki wejścia (`resolveEnemyCityClick`, `canInitiateSiege`, `launchSiegeStormFromMap`, wojna).
+    let city_hex = (i32::from(city.position.x()), i32::from(city.position.y()));
+    let dist = |u: &crate::domain::playable::PlayableUnit| {
+        hex_distance((i32::from(u.position.x()), i32::from(u.position.y())), city_hex)
+    };
+    if owner_i64(city.owner_id) == HUMAN_OWNER_ID {
+        return Err(SiegeBattleError::NotEnemyCity { city_id });
+    }
+    // `siege_panel` (`map-attack-city.ts:127-139`): `units.find(u => u.ownerId !== city.ownerId && hexDistance === 1)`.
+    let besieger = if state.oblegane.contains(&city.id) {
+        state
+            .units
+            .iter()
+            .find(|u| u.owner_id != city.owner_id && dist(u) == 1)
+    } else {
+        None
+    };
+    let attack_choice = match besieger {
+        Some(b) if b.id.get() != unit_id => {
+            return Err(SiegeBattleError::NotSiegeAnchor {
+                unit_id,
+                besieger_id: b.id.get(),
+            })
+        }
+        Some(_) => false,
+        None => true,
+    };
+    // `launchSiegeStormFromMap` (`main.ts:36800-36806`): `ctx.oblegajacyOwnerId !== 0`.
     if owner_i64(anchor.owner_id) != HUMAN_OWNER_ID {
         return Err(SiegeBattleError::NotHumanBesieger { unit_id });
+    }
+    if attack_choice {
+        // `adjacentPlayerAttackers` (`:66-80`) + `canInitiateSiege` (`mapSiegeDetect.ts:74-81`).
+        if dist(anchor) != 1 {
+            return Err(SiegeBattleError::NotAdjacent { unit_id, city_id });
+        }
+        if f64::from(anchor.movement) <= 0.0 {
+            return Err(SiegeBattleError::AnchorCannotAttack {
+                unit_id,
+                reason: "ruchLeft = 0",
+            });
+        }
+    }
+    // `withPlayerWarConsent` (`main.ts:13266-13281`) + `siegeAllowedBetween` (`diplomacy-siege-war-gate.ts:72-79`,
+    // `areEnemyOwners` `main.ts:13129-13133`).
+    let at_war = state
+        .war
+        .diplomacy
+        .relation(anchor.owner_id, city.owner_id)
+        .is_some_and(|r| r.status == RelationStatus::War);
+    if !at_war {
+        return Err(SiegeBattleError::NotAtWar { city_id });
     }
     let tile = state
         .map
         .tile(city.position)
         .ok_or(SiegeBattleError::CityTileMissing(city_id))?;
     let (teren, las) = hex_terrain(tile.terrain);
-    let facts = owner_era_facts(state);
-    let start_era = game_start_era(&state.params.epoch_id);
     let era = |owner: i64| {
-        empire_epoch_for_owner(owner, &facts, start_era)
+        empire_epoch_for_owner(owner, facts, start_era)
             .map(|(e, _)| e)
             .map_err(|e| SiegeBattleError::Producer(e.to_string()))
     };
     let city_owner = owner_i64(city.owner_id);
     let owner_era = era(city_owner)?;
     let inp = siege_inputs_with_deals(state, city_id, Some(owner_era))?;
+    if attack_choice {
+        // `hint_civilian` (`map-attack-city.ts:141-146`) / `!isCivilianUnit` w `adjacentPlayerAttackers` (`:75`).
+        let anchor_id = unit_id.to_string();
+        if inp
+            .units
+            .iter()
+            .any(|u| u.id == anchor_id && is_civilian_unit(&u.category, &u.type_id))
+        {
+            return Err(SiegeBattleError::AnchorCannotAttack {
+                unit_id,
+                reason: "cywil",
+            });
+        }
+    }
     let rosters = match collect_siege_rosters(&SiegeRosterInput {
         city: &inp.city,
         anchor_id: &unit_id.to_string(),
@@ -562,7 +756,8 @@ pub fn prepare_storm(
         atk_roster: rosters.atk,
         def_roster: rosters.def,
         ops: Vec::new(),
-        live_key: NEXT_LIVE_KEY.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
+        pending: Vec::new(),
+        live_key: next_live_key(),
     })
 }
 
@@ -633,20 +828,32 @@ pub fn session_units(s: &SiegeBattleSession) -> Vec<SiegeBattleUnitRefDto> {
     out
 }
 
+/// Stabilne sortowanie po `t0` (remisy w kolejności emisji / wstrzymania).
+fn sort_by_t0(v: &mut [BattleActionDto]) {
+    v.sort_by(|a, b| a.t0.partial_cmp(&b.t0).unwrap_or(std::cmp::Ordering::Equal));
+}
+
+/// Odpowiedź komendy sesji. D-WIRB-6: akcje wyemitowane w tej komendzie dołączają do wstrzymanych (`pending`), całość
+/// jest sortowana stabilnie po `t0` (ciało pętli emituje marsz z przyszłym `t0`, zanim zegar odpali wcześniejsze klocki,
+/// a `validate_actions` P4-1I3 wymaga niemalejącego `t0`), a oddawane są tylko akcje z `t0 <= vNow` ramki odpowiedzi
+/// (kontrakt `check_order` konsumenta `playback.rs`); reszta czeka na kolejną odpowiedź albo na `FinishSiegeBattle`.
 fn payload(
     s: &SiegeBattleSession,
     city_id: u64,
+    pending: &mut Vec<BattleActionDto>,
     actions: &[TimedAction],
     units: bool,
 ) -> Result<SiegeBattlePayload, SiegeBattleError> {
-    // D-WIRB-6: akcje odpowiedzi w kolejności czasu wirtualnego (sortowanie stabilne po `t0`). Ciało pętli emituje marsz
-    // wielokrokowy jednej aktywacji z przyszłymi `t0` (kolejne `_doMove` po `MOVE_STEP_MS + przerwa`), zanim zegar
-    // odpali klocki o wcześniejszym czasie (np. strzał wieży); w pinie te wywołania sceny zachodzą w kolejności czasu,
-    // a `validate_actions` (P4-1I3) wymaga niemalejącego `t0`. Remisy `t0` zachowują kolejność emisji.
     let mut ordered = actions.to_vec();
     ordered.sort_by(|a, b| a.t0.partial_cmp(&b.t0).unwrap_or(std::cmp::Ordering::Equal));
-    let actions = actions_to_dto(&ordered, &s.battle_loop().st)
+    let fresh = actions_to_dto(&ordered, &s.battle_loop().st)
         .map_err(|e| SiegeBattleError::Producer(format!("akcje: {e:?}")))?;
+    let frame = session_frame(s)?;
+    let mut all = std::mem::take(pending);
+    all.extend(fresh);
+    sort_by_t0(&mut all);
+    let (out, keep): (Vec<_>, Vec<_>) = all.into_iter().partition(|a| a.t0 <= frame.v_now);
+    *pending = keep;
     Ok(SiegeBattlePayload {
         city_id,
         phase: if s.phase() == SessionPhase::Finished {
@@ -655,8 +862,8 @@ fn payload(
             SiegeBattlePhaseDto::Running
         },
         units: if units { session_units(s) } else { Vec::new() },
-        actions,
-        frame: Some(session_frame(s)?),
+        actions: out,
+        frame: Some(frame),
         result: None,
     })
 }
@@ -666,11 +873,11 @@ fn payload(
 ///
 /// # Errors
 /// [`SiegeBattleError`].
-pub fn start_payload(battle: &ActiveSiegeBattle) -> Result<SiegeBattlePayload, SiegeBattleError> {
+pub fn start_payload(battle: &mut ActiveSiegeBattle) -> Result<SiegeBattlePayload, SiegeBattleError> {
     let data = session_data()?;
     let mut s = SiegeBattleSession::start(&battle.start_state, &battle.input, data)?;
     let actions = s.battle_loop_mut().take_actions();
-    let out = payload(&s, battle.city_id, &actions, true);
+    let out = payload(&s, battle.city_id, &mut battle.pending, &actions, true);
     keep_session(battle, s);
     out
 }
@@ -687,7 +894,7 @@ pub fn step(
     let mut s = take_session(battle)?;
     let rep = s.step(wall_ms)?;
     battle.ops.push(DriverOp::Step(wall_ms));
-    let out = payload(&s, battle.city_id, &rep.actions, false);
+    let out = payload(&s, battle.city_id, &mut battle.pending, &rep.actions, false);
     keep_session(battle, s);
     out
 }
@@ -700,7 +907,7 @@ pub fn skip(battle: &mut ActiveSiegeBattle) -> Result<SiegeBattlePayload, SiegeB
     let mut s = take_session(battle)?;
     let rep = s.skip()?;
     battle.ops.push(DriverOp::Skip);
-    let out = payload(&s, battle.city_id, &rep.actions, false);
+    let out = payload(&s, battle.city_id, &mut battle.pending, &rep.actions, false);
     keep_session(battle, s);
     out
 }
@@ -1171,11 +1378,14 @@ pub fn finish(
         def_roster: &battle.def_roster,
     };
     let result = apply_outcome(state, &rosters, &outcome, &ids)?;
+    // D-WIRB-6: akcje wstrzymane z `t0` za ostatnią ramką (koniec bitwy przed końcem animacji marszu), po `t0`.
+    let mut rest = battle.pending.clone();
+    sort_by_t0(&mut rest);
     Ok(SiegeBattlePayload {
         city_id: battle.city_id,
         phase: SiegeBattlePhaseDto::Applied,
         units: Vec::new(),
-        actions: Vec::new(),
+        actions: rest,
         frame: None,
         result: Some(result),
     })

@@ -166,6 +166,44 @@ fn step(ms: f64) -> EngineCommand {
     }
 }
 
+/// Obrona r1 (Z1): kontrakt konsumenta `renderer/src/battle/playback.rs` — `push_actions(actions)` (wszystko albo nic,
+/// `t0` niemalejące od `last_queued`), potem `push_frame(frame)` (`vNow >= last_queued`); `last_queued` żyje przez całą
+/// bitwę (`check_order`, `playback.rs:584-625`). Odwzorowanie testu Evaluatora `eval_playback_kontrakt_*`.
+struct PlaybackOrder {
+    last: f64,
+    bad: Vec<String>,
+}
+
+impl PlaybackOrder {
+    fn new() -> Self {
+        Self {
+            last: f64::NEG_INFINITY,
+            bad: Vec::new(),
+        }
+    }
+
+    fn feed(&mut self, k: usize, p: &SiegeBattlePayload) {
+        let mut prev = self.last;
+        for a in &p.actions {
+            if a.t0 < prev {
+                self.bad
+                    .push(format!("resp {k}: action t0 {} < {prev}", a.t0));
+                return;
+            }
+            prev = a.t0;
+        }
+        self.last = prev;
+        if let Some(f) = &p.frame {
+            if f.v_now < self.last {
+                self.bad
+                    .push(format!("resp {k}: frame vNow {} < {}", f.v_now, self.last));
+            } else {
+                self.last = f.v_now;
+            }
+        }
+    }
+}
+
 /// Bitwa przez most w czasie rzeczywistym kawałkami `chunks` (cyklicznie) do końca + `FinishSiegeBattle`.
 fn run_realtime(
     st: PlayableState,
@@ -173,6 +211,8 @@ fn run_realtime(
 ) -> (PlayableState, Vec<(f64, String)>, BridgeDispatch) {
     let mut b = bridge_for(st);
     let d = send(&mut b, start()).expect("start");
+    let mut order = PlaybackOrder::new();
+    order.feed(0, battle(&d));
     let mut acts: Vec<(f64, String)> = battle(&d)
         .actions
         .iter()
@@ -183,6 +223,7 @@ fn run_realtime(
         let d = send(&mut b, step(chunks[k % chunks.len()])).expect("step");
         k += 1;
         let p = battle(&d);
+        order.feed(k, p);
         // Każda odpowiedź: `t0` niemalejące (D-WIRB-6).
         assert!(p.actions.windows(2).all(|w| w[0].t0 <= w[1].t0));
         acts.extend(p.actions.iter().map(|a| (a.t0, format!("{a:?}"))));
@@ -192,6 +233,14 @@ fn run_realtime(
         assert!(k < 200_000, "bitwa bez konca");
     }
     let fin = send(&mut b, EngineCommand::FinishSiegeBattle).expect("finish");
+    order.feed(k + 1, battle(&fin));
+    acts.extend(battle(&fin).actions.iter().map(|a| (a.t0, format!("{a:?}"))));
+    assert!(
+        order.bad.is_empty(),
+        "{} naruszen kolejnosci konsumenta playback: {:?}",
+        order.bad.len(),
+        order.bad.iter().take(5).collect::<Vec<_>>()
+    );
     // Kolejność globalna = stabilne sortowanie po `t0` (podział na odpowiedzi zmienia tylko granice porcji).
     acts.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
     (state_of(&fin).clone(), acts, fin)
@@ -396,6 +445,12 @@ fn komendy_poza_faza_to_jawne_bledy_bez_zmiany_stanu() {
             unit_id: ANCHOR,
             force: true,
         },
+        // Obrona r1 (U1): stan w trakcie bitwy = migawka startu (scena zaslania mape).
+        EngineCommand::SelectUnit { unit_id: ANCHOR },
+        EngineCommand::AddPlayer {
+            id: 777,
+            name: "nowy".into(),
+        },
     ] {
         let e = send(&mut b, cmd.clone()).expect_err("bitwa w toku");
         assert_eq!(e.code, BridgeErrorCode::EngineRejected, "{cmd:?}");
@@ -451,10 +506,30 @@ fn bramki_startu_wg_launch_siege_storm() {
     };
     assert_eq!(err(&st, 4242, ANCHOR), SiegeBattleError::CityNotFound(4242));
     assert_eq!(err(&st, CITY, 4242), SiegeBattleError::UnitNotFound(4242));
-    // Kotwica wroga: szturm tylko oblegajacy gracz (`ctx.oblegajacyOwnerId !== 0`).
+    // Miasto oblegane: szturm z panelu oblezenia wydaje pierwsza jednostka obca w odleglosci 1 (`siege_panel`).
     assert_eq!(
         err(&st, CITY, 8001),
-        SiegeBattleError::NotHumanBesieger { unit_id: 8001 }
+        SiegeBattleError::NotSiegeAnchor {
+            unit_id: 8001,
+            besieger_id: ANCHOR
+        }
+    );
+    assert_eq!(
+        err(&st, CITY, 7002),
+        SiegeBattleError::NotSiegeAnchor {
+            unit_id: 7002,
+            besieger_id: ANCHOR
+        }
+    );
+    // Pierwszy oblegajacy to AI (trzecia strona): szturm tylko oblegajacy gracz (`ctx.oblegajacyOwnerId !== 0`).
+    let mut ai_first = st.clone();
+    let mut ai_unit = ai_first.units[0].clone();
+    ai_unit.id = UnitId::new(6001);
+    ai_unit.owner_id = PlayerId::new(ALLY);
+    ai_first.units.insert(0, ai_unit);
+    assert_eq!(
+        err(&ai_first, CITY, 6001),
+        SiegeBattleError::NotHumanBesieger { unit_id: 6001 }
     );
     // Miasto bez muru: `Miasto bez muru — uzyj zwyklej potyczki`.
     let mut no_wall = st.clone();
@@ -572,4 +647,281 @@ fn odpowiedz_bitwy_json_i_kontrakt_addytywny() {
     let back: SiegeBattlePayload =
         serde_json::from_value(v["siegeBattle"].clone()).expect("round trip");
     assert_eq!(Some(&back), d.response.siege_battle.as_ref());
+}
+
+/// Obrona r1 (Z1): strumień odpowiedzi mostu przyjmuje konsument `playback.rs` (start, kroki 16 ms i nieregularne,
+/// `Skip`, `Finish`); żadna akcja nie ginie (suma akcji = akcje sesji wywołanej bezpośrednio).
+#[test]
+fn strumien_przyjmuje_konsument_playback() {
+    let st = state_for(&scn_quick());
+    // Kroki 16 ms i nieregularne: `run_realtime` sprawdza kontrakt konsumenta w każdej odpowiedzi (z `Finish`).
+    let (_, acts16, _) = run_realtime(st.clone(), &[16.0]);
+    let (_, acts_mix, _) = run_realtime(st.clone(), &[7.5, 40.25, 1000.0, 3.0, 250.0]);
+    assert_eq!(acts16, acts_mix);
+    // Akcje sesji bez mostu (te same wywołania: start + kroki 16 ms do końca).
+    let a = siege_battle_apply::prepare_storm(&st, CITY, ANCHOR, 1).expect("bitwa");
+    let data = siege_battle_apply::session_data().expect("dane");
+    let mut s =
+        civ_engine::domain::siege_battle_session::SiegeBattleSession::start(&st, a.input(), data)
+            .expect("sesja");
+    let mut direct = s.battle_loop_mut().take_actions().len();
+    while s.phase() != civ_engine::domain::siege_battle_session::SessionPhase::Finished {
+        direct += s.step(16.0).expect("krok").actions.len();
+    }
+    assert_eq!(acts16.len(), direct, "wstrzymanie akcji nie gubi akcji");
+    // Start -> krok -> Skip -> Finish (pomiar Evaluatora: ramka startu vNow 0 przy akcji t0 930).
+    let mut b = bridge_for(st);
+    let mut order = PlaybackOrder::new();
+    for (k, cmd) in [
+        start(),
+        step(16.0),
+        EngineCommand::SkipSiegeBattle,
+        EngineCommand::FinishSiegeBattle,
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let d = send(&mut b, cmd).expect("komenda");
+        let p = battle(&d);
+        if let Some(f) = &p.frame {
+            assert!(
+                p.actions.iter().all(|x| x.t0 <= f.v_now),
+                "akcja z przyszlym t0 oddana przed ramka"
+            );
+        }
+        order.feed(k, p);
+    }
+    assert!(order.bad.is_empty(), "{:?}", order.bad);
+}
+
+/// Obrona r1 (Z2): bramki wejścia pinu — miasto gracza, odległość, wojna, cywil, punkt ruchu (ścieżka `attack_choice`).
+#[test]
+fn bramki_wejscia_szturmu_wg_pinu() {
+    let st = state_for(&scn_quick());
+    let err = |st: &PlayableState, unit| {
+        siege_battle_apply::prepare_storm(st, CITY, unit, 1).expect_err("odrzucone")
+    };
+    // Pokój: web pyta o wypowiedzenie wojny (`withPlayerWarConsent`); most nie wypowiada wojny w tej komendzie.
+    let mut peace = st.clone();
+    peace.war.diplomacy.set_relation(
+        CivilizationPair::new(PlayerId::new(HUMAN), PlayerId::new(ENEMY)),
+        Relation::new(50.0, 50.0, RelationStatus::Peace),
+    );
+    assert_eq!(
+        err(&peace, ANCHOR),
+        SiegeBattleError::NotAtWar { city_id: CITY }
+    );
+    let mut empty_peace = peace.clone();
+    empty_peace.units.retain(|u| u.owner_id.get() != ENEMY);
+    assert_eq!(
+        err(&empty_peace, ANCHOR),
+        SiegeBattleError::NotAtWar { city_id: CITY },
+        "pokoj nie daje haka zdobycia bez bitwy"
+    );
+    // Kotwica w odległości 3 (pomiar Evaluatora: bitwa startowala).
+    let mut far = st.clone();
+    for u in &mut far.units {
+        if u.owner_id.get() == HUMAN {
+            u.position = PositionDto::new(CITY_POS.0 + 3, CITY_POS.1);
+        }
+    }
+    assert_eq!(
+        err(&far, ANCHOR),
+        SiegeBattleError::NotAdjacent {
+            unit_id: ANCHOR,
+            city_id: CITY
+        }
+    );
+    // Miasto gracza (`not_enemy`).
+    let mut own = st.clone();
+    own.cities
+        .iter_mut()
+        .find(|c| c.id.get() == CITY)
+        .unwrap()
+        .owner_id = PlayerId::new(HUMAN);
+    assert_eq!(
+        err(&own, ANCHOR),
+        SiegeBattleError::NotEnemyCity { city_id: CITY }
+    );
+    // Bez oblężenia (`attack_choice`): cywil i jednostka bez ruchu nie atakują.
+    let mut open = st.clone();
+    open.oblegane.clear();
+    siege_battle_apply::prepare_storm(&open, CITY, ANCHOR, 1).expect("attack_choice");
+    let mut civ = open.clone();
+    civ.economy.units.get_mut(&ANCHOR).unwrap().type_id = Some("Osadnik".into());
+    assert_eq!(
+        err(&civ, ANCHOR),
+        SiegeBattleError::AnchorCannotAttack {
+            unit_id: ANCHOR,
+            reason: "cywil"
+        }
+    );
+    let mut tired = open.clone();
+    tired.units[0].movement = 0u8.into();
+    assert_eq!(
+        err(&tired, ANCHOR),
+        SiegeBattleError::AnchorCannotAttack {
+            unit_id: ANCHOR,
+            reason: "ruchLeft = 0"
+        }
+    );
+    // Panel oblężenia (`siege_panel`): bez wymogu ruchu (pin nie filtruje `ruchLeft` na tej ścieżce).
+    let mut tired_siege = st.clone();
+    tired_siege.units[0].movement = 0u8.into();
+    siege_battle_apply::prepare_storm(&tired_siege, CITY, ANCHOR, 1).expect("siege_panel");
+    // Przez most: błąd bez zmiany stanu.
+    let mut b = bridge_for(far.clone());
+    let e = send(&mut b, start()).expect_err("daleko");
+    assert_eq!(e.code, BridgeErrorCode::EngineRejected);
+    assert_eq!(b.adapter().state(), &far);
+}
+
+/// Obrona r1 (Z3): dwa klony gry z tą samą bitwą i rozbieżnymi krokami (test Evaluatora `eval_klony_pamiec_podreczna`).
+#[test]
+fn klony_gry_nie_dziela_sesji_z_pamieci_podrecznej() {
+    let st = state_for(&scn_quick());
+    let mut g = PlayableGame::from_state(st);
+    g.start_siege_storm(CITY, ANCHOR).expect("start");
+    let mut a = g.clone();
+    let mut bb = g.clone();
+    let mut reference = g.clone();
+    a.step_siege_battle(500.0).expect("a1");
+    bb.step_siege_battle(3000.0).expect("b1");
+    let pa = a.step_siege_battle(16.0).expect("a2");
+    siege_battle_apply::clear_live_session_cache();
+    reference.step_siege_battle(500.0).expect("r1");
+    siege_battle_apply::clear_live_session_cache();
+    let pr = reference.step_siege_battle(16.0).expect("r2");
+    assert_eq!(
+        format!("{pa:?}"),
+        format!("{pr:?}"),
+        "klon a uzyl sesji klona b z pamieci podrecznej"
+    );
+}
+
+/// Obrona r1 (Z5, E03): numer bitwy D-WIR-5 rośnie w grze (druga bitwa = 2).
+#[test]
+fn druga_bitwa_w_grze_ma_numer_2() {
+    const CITY2: u64 = 901;
+    let mut st = state_for(&scn_quick());
+    let c2 = (9u16, 7u16);
+    st.cities.push(PlayableCity {
+        id: CityId::new(CITY2),
+        owner_id: PlayerId::new(ENEMY),
+        name: "Druga".into(),
+        position: PositionDto::new(c2.0, c2.1),
+        is_capital: false,
+        population: 3,
+        culture: 0,
+    });
+    st.stores
+        .buildings_by_city
+        .insert(CITY2, vec!["palisada".to_owned()]);
+    st.oblegane.insert(CityId::new(CITY2));
+    for i in 0..6 {
+        add_unit(&mut st, 7101 + i, HUMAN, (c2.0 + 1, c2.1), "Wojownik");
+    }
+    add_unit(&mut st, 8101, ENEMY, c2, "Wojownik");
+    let mut g = PlayableGame::from_state(st);
+    g.start_siege_storm(CITY, ANCHOR).expect("start 1");
+    assert_eq!(g.siege_battle().expect("bitwa").input().battle_index, 1);
+    g.skip_siege_battle().expect("skip");
+    g.finish_siege_battle().expect("finish 1");
+    g.start_siege_storm(CITY2, 7101).expect("start 2");
+    assert_eq!(g.siege_battle().expect("bitwa").input().battle_index, 2);
+}
+
+/// Obrona r1 (Z4): producent wejścia sesji (D-WIRB-4) — trudność AI, las jako nakładka, `defCiv`, epoki właściciela
+/// miasta (milicja) i obrońcy (`defRosterRef[0].ownerId`).
+#[test]
+fn producent_wejscia_sesji_wg_pinu() {
+    use civ_engine::domain::turn_war_epoch::{EpochSource, OwnerEraFacts};
+    let st = state_for(&scn_quick());
+    let input = |s: &PlayableState| {
+        siege_battle_apply::prepare_storm(s, CITY, ANCHOR, 1)
+            .expect("bitwa")
+            .input()
+            .clone()
+    };
+    // E07: `difficultyCombatMultForOwner` = `1 + bonusWalka` poziomu dla AI, 1 dla gracza (`main.ts:9523-9527`).
+    let ai = civ_engine::data::economy_society_part2::parse_ai_params().expect("ai-params");
+    let lv1 = ai.trudnosc_poziom1_bonus_walka.wartosc;
+    let lv3 = ai.trudnosc_poziom3_bonus_walka.wartosc;
+    assert!(lv1 != 0.0 && lv3 != 0.0, "dane trudnosci rozrozniaja poziomy");
+    for (lvl, bonus) in [("Łatwy", lv1), ("Trudny", lv3)] {
+        let mut s = st.clone();
+        s.params.difficulty = lvl.into();
+        let i = input(&s);
+        assert_eq!(i.owners[&101].difficulty_combat_mult, 1.0 + bonus, "{lvl}");
+        assert_eq!(i.owners[&1].difficulty_combat_mult, 1.0, "{lvl}: gracz");
+    }
+    // E08: las = nakładka na równinie (`worldTerrainFromHex`, `main.ts:1934-1943`).
+    let mut forest = st.clone();
+    let pos = PositionDto::new(CITY_POS.0, CITY_POS.1);
+    forest
+        .map
+        .tiles
+        .iter_mut()
+        .find(|t| t.position == pos)
+        .expect("heks miasta")
+        .terrain = PlayableTerrain::Forest;
+    let w = input(&forest).world_terrain.expect("teren");
+    assert_eq!((w.baza.as_str(), w.las, w.rzeka), ("rownina", true, false));
+    let w = input(&st).world_terrain.expect("teren");
+    assert_eq!((w.baza.as_str(), w.las), ("rownina", false));
+    // E18: `defCiv` = `ikonaIdToBronzeCiv(civ właściciela miasta)` (`main.ts:36861-36863`, `:36989`).
+    assert_eq!(input(&st).def_civ.as_deref(), Some("rzym"));
+    let mut chiny = st.clone();
+    chiny
+        .players
+        .iter_mut()
+        .find(|p| p.id.get() == ENEMY)
+        .unwrap()
+        .civilization = "chinczycy".into();
+    assert_eq!(input(&chiny).def_civ.as_deref(), Some("chiny"));
+    // E15/E17: epoki z jawnych faktów (`PlayableState` nie niesie epoki per właściciel; `owner_era_facts`).
+    let facts = OwnerEraFacts {
+        human_ids: [1].into_iter().collect(),
+        human_era: [(1, (1.0, EpochSource::Tracked))].into_iter().collect(),
+        owner_era_by_owner: [(101, 3.0), (102, 4.0)].into_iter().collect(),
+    };
+    let i = siege_battle_apply::prepare_storm_with_eras(&st, CITY, ANCHOR, 1, &facts, 1.0)
+        .expect("bitwa")
+        .input()
+        .clone();
+    assert_eq!(i.owner_era, Some(3.0), "milicja: epoka wlasciciela miasta");
+    assert_eq!(i.defender_era, Some(3.0), "obronca 8001 (wlasciciel 101)");
+    // Obrońca pierwszy w rosterze należy do sojusznika (miasto bez własnych jednostek, sojusz z umowy D-ADP-11).
+    let mut ally = st.clone();
+    ally.players.push(PlayablePlayer {
+        id: PlayerId::new(ALLY),
+        name: "sojusznik".into(),
+        civilization: "grecy".into(),
+        is_human: false,
+    });
+    ally.units.retain(|u| u.owner_id.get() != ENEMY);
+    add_unit(&mut ally, 8501, ALLY, CITY_POS, "Wojownik");
+    ally.war.diplomacy.set_relation(
+        CivilizationPair::new(PlayerId::new(HUMAN), PlayerId::new(ALLY)),
+        Relation::new(50.0, 50.0, RelationStatus::War),
+    );
+    ally.war.diplomacy.deals.push(ActiveDeal::new(
+        TreatyKind::FullAlliance,
+        PlayerId::new(ENEMY),
+        PlayerId::new(ALLY),
+        ally.turn,
+        None,
+    ));
+    let a = siege_battle_apply::prepare_storm_with_eras(&ally, CITY, ANCHOR, 1, &facts, 1.0)
+        .expect("bitwa z sojusznikiem");
+    let def0 = a.rebuild().expect("sesja").roster_ids()[1][0].clone();
+    eprintln!("obronca[0] = {def0}");
+    if def0 == "8501" {
+        assert_eq!(a.input().owner_era, Some(3.0));
+        assert_eq!(
+            a.input().defender_era,
+            Some(4.0),
+            "epoka defRosterRef[0] = sojusznik"
+        );
+    }
 }

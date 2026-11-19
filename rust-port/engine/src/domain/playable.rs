@@ -1266,6 +1266,8 @@ impl PlayableGame {
     }
 
     pub fn add_player(&mut self, id: u64, name: String) -> Result<(), PlayableError> {
+        // D-WIRB-2 (obrona r1, U1): w trakcie bitwy stan gry = migawka startu bitwy.
+        self.ensure_no_siege_battle()?;
         if self
             .state
             .players
@@ -1285,6 +1287,8 @@ impl PlayableGame {
     }
 
     pub fn select_unit(&mut self, unit_id: u64) -> Result<(), PlayableError> {
+        // D-WIRB-2 (obrona r1, U1): scena zaslania mape (`main.ts:36940-37024`), zaznaczenie niedostepne.
+        self.ensure_no_siege_battle()?;
         let unit = self
             .state
             .units
@@ -1375,8 +1379,8 @@ impl PlayableGame {
             return Err(SiegeBattleError::BattleInProgress { city_id: b.city_id });
         }
         let index = self.siege_battles_started.wrapping_add(1);
-        let battle = siege_battle_apply::prepare_storm(&self.state, city_id, unit_id, index)?;
-        let payload = siege_battle_apply::start_payload(&battle)?;
+        let mut battle = siege_battle_apply::prepare_storm(&self.state, city_id, unit_id, index)?;
+        let payload = siege_battle_apply::start_payload(&mut battle)?;
         self.siege_battles_started = index;
         self.siege_battle = Some(battle);
         Ok(payload)
@@ -1404,17 +1408,33 @@ impl PlayableGame {
     }
 
     /// Komenda `FinishSiegeBattle`: wynik sceny zastosowany do stanu (`consumeReadyMachines` + `finishSiegeStormBattle`
-    /// bez zdobycia, D-WIRB-3). Przy bledzie stan i bitwa bez zmian.
+    /// bez zdobycia, D-WIRB-3). D-WIRB-8 (obrona r1, Z6): `NotFinished` = bitwa trwa (stan i bitwa bez zmian, dostepne
+    /// `Skip`); kazdy inny blad (sciezka nieportowana, `LoopUnsupported`, blad zastosowania) ZAMYKA bitwe bez zmiany
+    /// stanu i zwraca `Aborted`, wiec komendy mapy nie zostaja zablokowane na zawsze.
     pub fn finish_siege_battle(&mut self) -> Result<SiegeBattlePayload, SiegeBattleError> {
         let battle = self
             .siege_battle
             .as_ref()
             .ok_or(SiegeBattleError::NoActiveBattle)?;
         let mut next = self.state.clone();
-        let payload = siege_battle_apply::finish(&mut next, battle)?;
-        self.state = next;
-        self.siege_battle = None;
-        Ok(payload)
+        match siege_battle_apply::finish(&mut next, battle) {
+            Ok(payload) => {
+                self.state = next;
+                self.siege_battle = None;
+                Ok(payload)
+            }
+            Err(e @ SiegeBattleError::Session(super::siege_battle_session::SessionError::NotFinished)) => {
+                Err(e)
+            }
+            Err(e) => {
+                let city_id = battle.city_id;
+                self.siege_battle = None;
+                Err(SiegeBattleError::Aborted {
+                    city_id,
+                    reason: e.to_string(),
+                })
+            }
+        }
     }
 
     /// P4-1H (`R-RUSTPORT-P4-1H-CANCEL-Q2`): komenda `cancel_planned_march { unit_id, force }`,
