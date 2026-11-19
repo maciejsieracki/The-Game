@@ -20,6 +20,8 @@ const CASES = [
   { name: 'Wojownik (gracz-like) def vs Wojownik atk', atk: 'Wojownik:12', def: 'Wojownik:10', seed: 1 },
   { name: 'Straznik bram Harappy def vs Hastati atk', atk: 'Hastati:20', def: 'Strażnik bram Harappy:10', seed: 1 },
   { name: 'Strazhnik bram Harappy atk vs Hastati def', atk: 'Strażnik bram Harappy:10', def: 'Hastati:20', seed: 1 },
+  // zarzut Evaluatora 1: jednostka zlamana W TRAKCIE zamrozonej fali (galaz normalPlan) musi miec cap
+  { name: 'Wojownik zlamany w trakcie fali (normalPlan)', atk: 'Wojownik:12', def: 'Wojownik:10', seed: 1, inject: 'midwave' },
 ];
 
 (async () => {
@@ -33,7 +35,7 @@ const CASES = [
     for (const c of CASES) {
       const page = await browser.newPage({ viewport: { width: 800, height: 600 } });
       const errors = []; page.on('pageerror', e => errors.push(e.message));
-      const qs = new URLSearchParams({ mode: 'skip', seed: String(c.seed), atk: c.atk, def: c.def });
+      const qs = new URLSearchParams({ mode: 'skip', seed: String(c.seed), atk: c.atk, def: c.def, ...(c.inject ? { inject: c.inject } : {}) });
       await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tools/battle-flee-move-half-browser-entry.html?${qs.toString()}`, { waitUntil: 'load', timeout: 60000 });
       await page.waitForFunction(() => window.__e2e?.ready === true, undefined, { timeout: 60000 });
       let timedOut = false;
@@ -43,6 +45,10 @@ const CASES = [
       check(`[${c.name}] bitwa zakonczona bez bledow`, !timedOut && !errors.length && !!r, { timedOut, errors });
       if (!r) continue;
       check(`[${c.name}] byly uciekajace jednostki z krokami`, r.routed.length > 0 && r.routed.some(u => u.totalSteps > 0), r.routed);
+      if (c.inject) {
+        check(`[${c.name}] wstrzykniecie zlamania w trakcie fali zadzialo i jednostka uciekla`,
+          !!r.injected && r.routed.some(u => u.nazwa === r.injected && u.totalSteps > 0), { injected: r.injected, routed: r.routed });
+      }
       for (const u of r.routed) {
         const cap = capFor(u.normal);
         table.push({ case: c.name, id: u.id, nazwa: u.nazwa, normal: u.normal, cap, maxPerRound: u.maxPerRound, totalSteps: u.totalSteps, rounds: u.rounds });
