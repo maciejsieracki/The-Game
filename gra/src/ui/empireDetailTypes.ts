@@ -81,6 +81,11 @@ export interface EmpireResourceRow {
   rateDiploOutPerTurn?: number;
   /** Surowce otrzymywane co turę z umów handlowych (dyplomacja). */
   rateDiploInPerTurn?: number;
+  /**
+   * R-WEB-UI-HUD-NET-CONVERTER-INPUTS-Q1: nominalne wejścia konwerterów tego surowca na turę
+   * (np. glina zjadana przez Garncarnię = przepustowość × 1). Odejmowane od NETTO (nie od brutto).
+   */
+  rateConverterInputPerTurn?: number;
   assigned?: string;
   typ: 'podstawowy' | 'surowy' | 'przetworzony' | 'hodowla';
   dostep: boolean;

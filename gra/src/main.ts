@@ -3980,6 +3980,38 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-WEB-UI-HUD-NET-CONVERTER-INPUTS-Q1: NOMINALNE wejścia konwerterów imperium na turę per
+     * surowiec (przepustowość × zużycie na cykl, ta sama pętla budynków co
+     * `empireConverterResourceRatesForOwner`). Odejmowane WYŁĄCZNIE od netto (resource-gross-net.ts);
+     * brutto zostaje produkcją surowca. Nominalnie, bez klamrowania do zapasu — jak brutto konwerterów.
+     */
+    function empireConverterInputRatesForOwner(ownerId: number): Partial<Record<string, number>> {
+      const rawForConverters = data.econParams as unknown as RawConverterParamsJson;
+      const era = empireEpochForOwner(ownerId);
+      const inputs: Record<string, number> = {};
+      for (const recipe of DEFAULT_CONVERTER_RECIPES) {
+        const baseThroughput = loadThroughput(
+          rawForConverters, recipe.throughputParamKey, _menuDifficulty, recipe.throughputFallback,
+        );
+        const eraParamKey = converterThroughputEraParamKey(recipe, era);
+        const throughput = eraParamKey
+          ? loadThroughput(rawForConverters, eraParamKey, _menuDifficulty, baseThroughput)
+          : converterThroughputForEra(recipe.id, baseThroughput, era);
+        for (const c of cities) {
+          if (c.ownerId !== ownerId) continue;
+          const builtIds = operationalBuiltIds(c, cityBuilt.get(c.id) ?? []);
+          if (!builtIds.includes(converterBuildingIdForRecipe(recipe))) continue;
+          for (const inputKey of Object.keys(recipe.inputs)) {
+            const perCykl = recipe.inputs[inputKey] ?? 0;
+            if (perCykl <= 0) continue;
+            inputs[inputKey] = (inputs[inputKey] ?? 0) + throughput * perCykl;
+          }
+        }
+      }
+      return inputs;
+    }
+
+    /**
      * Licznik surowców imperium (BRAZ-ILOSC=B, decyzja Macieja 2026-07-23) — zbiorczy
      * WOLUMEN wszystkich jednostek surowców zgromadzonych w magazynach miast ownera
      * (suma City.surowce). Cel: zobaczyć, ile surowców realnie leży w magazynach, zanim
@@ -4064,6 +4096,7 @@ async function boot(): Promise<void> {
       const accessLabels = new Set(diplomacyActiveResourceLabelsForOwner(ownerId));
       const territoryRates = empireTerritoryResourceRatesForOwner(ownerId);
       const converterRates = empireConverterResourceRatesForOwner(ownerId);
+      const converterInputRates = empireConverterInputRatesForOwner(ownerId);
       // SUROW-CIV-01 (Maciej 2026-07-24): cap PAŃSTWA (civ-wide) — baza + bonus×Magazyny
       // ownera; `warehouse` powyżej JEST już sumą civ-wide (citySurowceSumForOwner),
       // wystarczy dołożyć cap, żeby licznik pokazał „stock / cap" (np. „140 / 200").
@@ -4186,6 +4219,9 @@ async function boot(): Promise<void> {
           rateProductionPerTurn: production,
           ...(diploOut > 0 ? { rateDiploOutPerTurn: diploOut } : {}),
           ...(diploIn > 0 ? { rateDiploInPerTurn: diploIn } : {}),
+          ...((converterInputRates[c.id] ?? 0) > 0
+            ? { rateConverterInputPerTurn: converterInputRates[c.id] }
+            : {}),
           cap, capBase, capBonusPerMagazyn, zrodlo,
           ...(citizenRequired
             ? {

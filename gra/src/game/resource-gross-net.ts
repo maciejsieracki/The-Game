@@ -4,8 +4,12 @@
  * BRUTTO = cała produkcja surowca (teren + konwertery) + przychód z umów dyplomatycznych
  *          (`rateDiploInPerTurn`), nieujemne. Brutto NIE odejmuje wydatków.
  * NETTO  = `ratePerTurn` (produkcja − umowy wychodzące + przychodzące) MINUS zużycie
- *          (obywatele + budynki + wojsko, `usage`) — ta sama wartość co suma na nagłówku
- *          „Brutto … → netto …” (main.ts → `surowceBilans`).
+ *          (obywatele + budynki + wojsko, `usage`) MINUS wejścia konwerterów
+ *          (`rateConverterInputPerTurn`: np. glina zjadana przez Garncarnię, drewno przez Cegielnię)
+ *          — ta sama wartość co suma na nagłówku „Brutto … → netto …” (main.ts → `surowceBilans`).
+ *          R-WEB-UI-HUD-NET-CONVERTER-INPUTS-Q1: wcześniej netto nie odejmowało wejść konwerterów,
+ *          przez co HUD pokazywał nominalny przyrost surowców przetwórstwa (np. Glina +326/t przy
+ *          realnym Δstanu +175/t). Brutto NADAL = wyłącznie produkcja surowca (bez zmiany).
  *
  * Moduł czysty (bez DOM, bez stanu): używany przez nagłówek surowców (main.ts) i przez karty
  * surowców (empireDetailPanel.ts), żeby suma kart była dokładnie równa nagłówkowi.
@@ -18,6 +22,8 @@ export interface ResourceGrossNetInput {
   rateProductionPerTurn?: number;
   rateDiploInPerTurn?: number;
   usage?: { buildings: number; citizens: number; units: number };
+  /** Nominalne wejścia konwerterów tego surowca na turę (przepustowość × zużycie na cykl), ≥ 0. */
+  rateConverterInputPerTurn?: number;
 }
 
 export interface ResourceGrossNet {
@@ -25,7 +31,9 @@ export interface ResourceGrossNet {
   brutto: number;
   /** Zużycie łącznie (obywatele + budynki + wojsko), nieujemne, zaokrąglone. */
   zuzycie: number;
-  /** Netto po zużyciu (może być ujemne), zaokrąglone. */
+  /** Wejścia konwerterów (nominalne) łącznie, nieujemne, zaokrąglone. */
+  wejscia: number;
+  /** Netto po zużyciu i wejściach konwerterów (może być ujemne), zaokrąglone. */
   netto: number;
 }
 
@@ -40,11 +48,18 @@ export function resourceUsageSum(r: ResourceGrossNetInput): number {
   return u ? u.buildings + u.citizens + u.units : 0;
 }
 
-/** Brutto/zużycie/netto per surowiec na turę, zaokrąglone tak samo jak nagłówek. */
+/** Wejścia konwerterów per surowiec na turę (nominalne), nie mniej niż 0. */
+export function resourceConverterInputSum(r: ResourceGrossNetInput): number {
+  const v = r.rateConverterInputPerTurn;
+  return typeof v === 'number' && Number.isFinite(v) ? Math.max(0, v) : 0;
+}
+
+/** Brutto/zużycie/wejścia/netto per surowiec na turę, zaokrąglone tak samo jak nagłówek. */
 export function resourceGrossNetPerTurn(r: ResourceGrossNetInput): ResourceGrossNet {
   return {
     brutto: Math.round(resourceGrossPerTurn(r)),
     zuzycie: Math.round(resourceUsageSum(r)),
-    netto: Math.round(r.ratePerTurn - resourceUsageSum(r)),
+    wejscia: Math.round(resourceConverterInputSum(r)),
+    netto: Math.round(r.ratePerTurn - resourceUsageSum(r) - resourceConverterInputSum(r)),
   };
 }
