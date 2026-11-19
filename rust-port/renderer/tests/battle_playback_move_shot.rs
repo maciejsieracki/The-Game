@@ -707,3 +707,50 @@ fn two_steps_in_one_frame_follow_the_logical_cell() {
     assert!(p == q);
     assert_eq!(pb.moves_in_flight(), 1);
 }
+
+/// The engine pair `Facing` + `Move` with a turn that really changes the direction (`_updateFacing` only writes
+/// `rotation.y` when the direction changes, `:8338-8340`): the played scene equals the pin calls `set_facing` +
+/// `MoveAnim::start`, and the unit's yaw differs from the scene before the step (the fixture steps keep facing 1).
+#[test]
+fn facing_turn_before_step_matches_pin_calls() {
+    let (_, mut p) = base();
+    let before = p.clone();
+    let mut q = p.clone();
+    let mut pb = BattlePlayback::new(&q, PlaybackOpts::default());
+    let id = uid("atk1");
+    let (c, r, f0) = {
+        let u = unit(&q, id);
+        (u.col, u.row, u.spawn.facing)
+    };
+    let dir = (f0 + 2) % 4;
+    let t0 = 50.0;
+    pb.push_actions(&[
+        act(t0, BattleActionKindDto::Facing { id, dir }),
+        act(
+            t0,
+            BattleActionKindDto::Move {
+                id,
+                from_col: c,
+                from_row: r,
+                to_col: c - 1,
+                to_row: r,
+                arrive_at: t0 + MOVE_STEP_MS,
+            },
+        ),
+    ])
+    .expect("push");
+    pb.play_until(&mut q, t0 + 100.0, 0.0).expect("play");
+    let grid = p.field.grid.clone();
+    let up = unit(&p, id).clone();
+    set_facing(&mut p.field.field.scene, &up, dir);
+    let anim = MoveAnim::start(&grid, unit_mut(&mut p, id), c - 1, r, t0);
+    let up = unit(&p, id).clone();
+    assert!(!anim.step(&mut p.field.field.scene, &up, t0 + 100.0));
+    assert!(p == q, "playback scene != pin-call scene");
+    let g = unit(&q, id).group;
+    assert_ne!(
+        q.field.field.scene.nodes[g].rotation.y.to_bits(),
+        before.field.field.scene.nodes[g].rotation.y.to_bits(),
+        "the turn reached the scene"
+    );
+}
