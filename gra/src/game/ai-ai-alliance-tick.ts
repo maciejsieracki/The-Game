@@ -57,6 +57,43 @@ export function aiAiAlliancePonowneProbyTur(): number {
   return (aiAiTreatyParamsJson as { alliancePonowneProbyTur: number }).alliancePonowneProbyTur;
 }
 
+/** R-WEB-AI-AI-ALLIANCES-E3-WILLINGNESS-MEASURE-Q1: pomiarowe dane pary (tylko odczyt, nie wpływają na decyzję). */
+export interface AiAiAlliancePomiarPary {
+  /** Respekt celu wobec proponenta (rel.respekt). */
+  respekt: number;
+  /** Stosunek siły wojskowej proponent/cel (militaryRatioFromArmyM). */
+  militaryRatio: number;
+  /** Typ cywilizacji celu (archetyp). */
+  typ: string;
+}
+
+/** Pełne dane pary do planowania: NAP-owe pole + pomiar (opcjonalny, tylko odczyt). */
+export type AiAiAlliancePairInfo = AiAiNapPairInfo & { pomiar?: AiAiAlliancePomiarPary };
+
+/**
+ * R-WEB-AI-AI-ALLIANCES-E3-WILLINGNESS-MEASURE-Q1: jedna PRÓBA toru (wywołanie evaluate) z wejściami i wynikiem.
+ * Tylko odczyt pomiaru. `gotowosc` = willingnessAlly celu wobec proponenta (wejście E1, bez zmian).
+ */
+export interface AiAiAllianceProbaDetal {
+  proponent: number;
+  cel: number;
+  gotowosc: number;
+  relacja: number;
+  zaufanie: number;
+  respekt: number | null;
+  militaryRatio: number | null;
+  typCelu: string | null;
+  wspolnaGranica: boolean;
+  wspolnyWrog: boolean;
+  /** Sojusznik celu jest wrogiem proponenta. */
+  sojusznikWrogaCelu: boolean;
+  /** Sojusznik proponenta jest wrogiem celu. */
+  sojusznikWrogaProponenta: boolean;
+  accept: boolean;
+  /** Powód E1 (liczby zastąpione przez „N” jak w histogramie). */
+  powod: string;
+}
+
 export interface AiAiAllianceAccepted {
   proposer: number;
   target: number;
@@ -79,7 +116,7 @@ export interface AiAiAlliancePlanInput {
   /** Wstępna kwalifikacja pary (proponent, cel): bez wojny/rozejmu/istniejącego sojuszu, tania. */
   pairPrefilter: (proposer: number, target: number) => boolean;
   /** Pełne dane pary (wołane tylko dla pary przechodzącej wstępną kwalifikację). */
-  pairInfo: (proposer: number, target: number) => AiAiNapPairInfo;
+  pairInfo: (proposer: number, target: number) => AiAiAlliancePairInfo;
   /** Strona traktatu (moc, sojusznicy, wrogowie). Pole treasuryGold jest ignorowane — bierze się z `treasury`. */
   sideOf: (ownerId: number) => AiAiTreatySide;
   /** Skarbce AI na początek kroku (ownerId -> PN). */
@@ -115,6 +152,8 @@ export interface AiAiAlliancePlanResult {
   odmowy: number;
   /** Histogram powodów odmów E1 w tym kroku (klucz = powód z liczbami zastąpionymi przez „N”). Odczyt pomiaru. */
   powodyOdmow: Map<string, number>;
+  /** Szczegóły każdej próby tego kroku (kolejność wykonania). Odczyt pomiaru. */
+  probyDetale: AiAiAllianceProbaDetal[];
 }
 
 /**
@@ -131,6 +170,7 @@ export function planAiAiAllianceTickFull(input: AiAiAlliancePlanInput): AiAiAlli
   let proby = 0;
   let odmowy = 0;
   const powodyOdmow = new Map<string, number>();
+  const probyDetale: AiAiAllianceProbaDetal[] = [];
   // Pary zawarte w tym kroku: prefilter czyta activeDeals dopiero po planowaniu, więc bez tego mogłyby
   // powstać dwa sojusze tej samej pary w jednej turze.
   const zawartePary = new Set<string>();
@@ -144,7 +184,7 @@ export function planAiAiAllianceTickFull(input: AiAiAlliancePlanInput): AiAiAlli
     if (ileP >= 1 && (ponowne <= 0 || input.turn % ponowne !== 0)) continue;
 
     // Kandydaci: wstępna kwalifikacja + pełne dane pary (wyłącznie sojusz, bez wojny i rozejmu).
-    let best: { t: number; premia: boolean; willingness: number; sharesEnemy: boolean; info: AiAiNapPairInfo } | null = null;
+    let best: { t: number; premia: boolean; willingness: number; sharesEnemy: boolean; info: AiAiAlliancePairInfo } | null = null;
     const sideP = input.sideOf(p);
     for (const t of owners) {
       if (t === p || zawartePary.has(kluczPary(p, t))) continue;
@@ -186,10 +226,26 @@ export function planAiAiAllianceTickFull(input: AiAiAlliancePlanInput): AiAiAlli
       hasAlliance: info.hasAlliance,
       sharesBorder: info.sharesBorder,
     });
+    const powodKlucz = String(result.reason).replace(/[-+]?\d[\d.,]*/g, 'N');
+    probyDetale.push({
+      proponent: p,
+      cel: target,
+      gotowosc: info.willingness,
+      relacja: info.relacja,
+      zaufanie: info.zaufanie,
+      respekt: info.pomiar?.respekt ?? null,
+      militaryRatio: info.pomiar?.militaryRatio ?? null,
+      typCelu: info.pomiar?.typ ?? null,
+      wspolnaGranica: info.sharesBorder,
+      wspolnyWrog: sideP.enemies.some(x => sideT.enemies.includes(x)),
+      sojusznikWrogaCelu: sideT.allies.some(x => sideP.enemies.includes(x)),
+      sojusznikWrogaProponenta: sideP.allies.some(x => sideT.enemies.includes(x)),
+      accept: result.accept,
+      powod: powodKlucz,
+    });
     if (!result.accept) {
       odmowy++;
-      const klucz = String(result.reason).replace(/[-+]?\d[\d.,]*/g, 'N');
-      powodyOdmow.set(klucz, (powodyOdmow.get(klucz) ?? 0) + 1);
+      powodyOdmow.set(powodKlucz, (powodyOdmow.get(powodKlucz) ?? 0) + 1);
       continue;
     }
 
@@ -219,7 +275,7 @@ export function planAiAiAllianceTickFull(input: AiAiAlliancePlanInput): AiAiAlli
       result,
     });
   }
-  return { accepted, treasuryPo: treasury, alliancesCountPo: counts, proby, odmowy, powodyOdmow };
+  return { accepted, treasuryPo: treasury, alliancesCountPo: counts, proby, odmowy, powodyOdmow, probyDetale };
 }
 
 /** Wersja skrócona (lista zaakceptowanych sojuszy); przelewy wg `planAiAiAllianceTickFull`. */

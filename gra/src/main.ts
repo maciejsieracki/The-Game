@@ -69,7 +69,7 @@ import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from
 import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
 import { isAiAiTreatyTickEnabled, setAiAiTreatyTickEnabledForTest, planAiAiNapTreatyTickFull, applyAiAiNapBreachRelacja, aiAiNapBreachRelacjaDelta, type AiAiWarStatus } from './game/ai-ai-treaty-tick';
-import { isAiAiAllianceTickEnabled, setAiAiAllianceTickEnabledForTest, planAiAiAllianceTickFull } from './game/ai-ai-alliance-tick';
+import { isAiAiAllianceTickEnabled, setAiAiAllianceTickEnabledForTest, planAiAiAllianceTickFull, type AiAiAllianceProbaDetal } from './game/ai-ai-alliance-tick';
 import { isZeroTrustEnabled, setZeroTrustEnabledForTest, zeroZaufaniaProgTur, zeroTrustBreakOrders, zeroTrustCount, zeroTrustPreferredTarget, zeroTrustRecordBreak, zeroTrustStats, resetZeroTrustSession } from './game/diplomacy-zero-trust';
 import { isAiAiCoalitionEnabled, setAiAiCoalitionEnabledForTest, aktualizujLidera, budujKontekstKoalicji, initLiderKoalicjiStan, loadAiAiCoalitionParams, type LiderKoalicjiStan } from './game/ai-ai-coalition';
 import { typSwiataFromMenuLabel, defaultLandFractionPercentForTyp, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
@@ -25551,6 +25551,8 @@ async function boot(): Promise<void> {
     let aiAiAllianceOdmowyLacznie = 0;
     /** R-WEB-AI-AI-ALLIANCES-E3-MEASURE-RUNNER-Q1 (runda 2): histogram powodów odmów toru (skumulowany, tylko odczyt pomiaru). */
     const aiAiAllianceOdmowyPowody = new Map<string, number>();
+    /** R-WEB-AI-AI-ALLIANCES-E3-WILLINGNESS-MEASURE-Q1: próby OSTATNIEGO kroku toru (tura + szczegóły każdej próby). Tylko odczyt pomiaru. */
+    let aiAiAllianceOstatniaProby: { tura: number; probki: AiAiAllianceProbaDetal[] } | null = null;
     /** R-WEB-AI-AI-ALLIANCES-E3-MEASURE-RUNNER-Q1: wymuszenie włączenia toru WYŁĄCZNIE pod ?civTest=1 i ustawioną flagą strony
      *  (window.__civAiAllianceMeasureForce === true, ustawianą przez wrapper pomiaru). Bez tego: zachowanie domyślne (flaga z danych). */
     function aiAiAllianceMeasureForced(): boolean {
@@ -25681,6 +25683,8 @@ async function boot(): Promise<void> {
             zaufanie: rel.zaufanie,
             // Gotowość celu t wobec proponenta p (ta sama ścieżka co krok NAP i sojusze siostrzane).
             willingness: aiDiplomacyStance(stubOf(t), stubOf(p), rel, dipCtx).willingnessAlly,
+            // R-WEB-AI-AI-ALLIANCES-E3-WILLINGNESS-MEASURE-Q1: dane tylko do pomiaru (nie wchodzą do decyzji).
+            pomiar: { respekt: rel.respekt, militaryRatio: dipCtx.militaryRatio, typ: String(aiOwnerCivMap.get(t) ?? '') },
           };
         },
         sideOf: (oid) => ({
@@ -25691,6 +25695,7 @@ async function boot(): Promise<void> {
         }),
         treasury: new Map<number, number>(owners.map(oid => [oid, aiSkarbiecByOwner.get(oid) ?? 0] as [number, number])),
       });
+      aiAiAllianceOstatniaProby = { tura: turn, probki: plan.probyDetale };
       aiAiAllianceProbyLacznie += plan.proby;
       aiAiAllianceOdmowyLacznie += plan.odmowy;
       for (const [klucz, n] of plan.powodyOdmow) aiAiAllianceOdmowyPowody.set(klucz, (aiAiAllianceOdmowyPowody.get(klucz) ?? 0) + n);
@@ -25730,6 +25735,9 @@ async function boot(): Promise<void> {
       wojnyAiAi: number;
       sojuszeAiAi: number;
       powodyOdmow: Array<{ powod: string; n: number }>;
+      /** Próby ostatniego kroku toru (tura null, gdy krok jeszcze nie biegł). `przestarzale` = true, gdy tura kroku
+       *  ≠ bieżąca tura gry (próby są kopią z wcześniejszej tury; konsument nie musi deduplikować). Tylko odczyt. */
+      probyOstatniaTura: { tura: number | null; przestarzale: boolean; probki: AiAiAllianceProbaDetal[] };
     } {
       const owners = Array.from(aiOwnerCivMap.keys())
         .filter(oid => isMajorAiCivForForcedPeace(oid)
@@ -25771,6 +25779,13 @@ async function boot(): Promise<void> {
         powodyOdmow: Array.from(aiAiAllianceOdmowyPowody.entries())
           .map(([powod, n]) => ({ powod, n }))
           .sort((x, y) => y.n - x.n || (x.powod < y.powod ? -1 : x.powod > y.powod ? 1 : 0)),
+        probyOstatniaTura: aiAiAllianceOstatniaProby
+          ? {
+            tura: aiAiAllianceOstatniaProby.tura,
+            przestarzale: aiAiAllianceOstatniaProby.tura !== turn,
+            probki: aiAiAllianceOstatniaProby.probki,
+          }
+          : { tura: null, przestarzale: false, probki: [] },
       };
     }
 
