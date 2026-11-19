@@ -816,9 +816,17 @@ fn slad_diagnostyczny_na_zadanie() {
         .ok()
         .and_then(|x| x.parse::<f64>().ok())
         .unwrap_or(FRAME_MS);
+    let mut seen = 0;
     while s.phase() != SessionPhase::Finished {
         let rep = s.step(step_ms).unwrap();
         let r = s.battle_loop().st.round_no;
+        // FRAME-QUANT-Q1 (diagnostyka): starty aktywacji (`act:<jednostka>@<vNow>` ze śladu pętli) jak `ACT` generatora.
+        for line in &s.battle_loop().trace[seen..] {
+            if let Some(rest) = line.strip_prefix("act:") {
+                eprintln!("ACT {rest}");
+            }
+        }
+        seen = s.battle_loop().trace.len();
         // PIN2-PROBE-Q1 (sonda morale): po kroku z obrażeniami/rozbiciem stan morale wszystkich jednostek (do
         // porównania z `OUTCOME`/`CHECKROUT` śladu generatora).
         let morale_dump = rep.actions.iter().any(|a| {
