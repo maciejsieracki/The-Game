@@ -128,6 +128,27 @@ function diploRow(m) {
   return { gracz: m.gracz, owners: m.owners, pairs: keep, pominietePary: pominiete, flagaOdczyt: m.flag };
 }
 
+/**
+ * R-WEB-MEASURE-SEED1234-T18-STALL-Q1: oferta handlowa AI->gracz (wpis stolu negocjacji, awaitingOwnerId = gracz)
+ * blokuje „Zakończ turę" gdy włączona jest opcja „Wymagaj rozpatrzenia ofert handlowych" (bramka hasBlockingAiTradeOfferForPlayer).
+ * Runner nie ma decyzji gracza, wiec stal w turze 18 (canEnd=false, bez bitwy, bez NNS). Zalozenie pasywnego gracza:
+ * oferte odrzucamy (hook __aiTradeWiringTestDebug.reject, = handleNegotiationReject). Wpisy z responder=0 (wlasciciel gracza
+ * w tym ziarnie) i proposer!=0 to oferty AI do gracza; propozycje gracza (proposer=0) nie sa ruszane.
+ */
+async function rejectAwaitingAiOffers(page) {
+  const ids = await page.evaluate(() => {
+    const st = window.__aiTradeWiringTestDebug.state();
+    return (st.entries || []).filter(e => e.responder === 0 && e.proposer !== 0).map(e => e.id);
+  });
+  for (const id of ids) {
+    await page.evaluate(i => window.__aiTradeWiringTestDebug.reject(i), id);
+    AI_OFFERS_REJECTED++;
+  }
+  return ids.length;
+}
+
+let AI_OFFERS_REJECTED = 0;
+
 async function playOneTurn(page) {
   const t0 = Date.now();
   const before = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
@@ -143,6 +164,12 @@ async function playOneTurn(page) {
   }
   await base.closeEndTurnModals(page, COUNTERS);
   const battlesAuto = await clearBattles(page);
+  let offersRejected = await rejectAwaitingAiOffers(page);
+  if (!(await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd()))) {
+    // Druga proba: odrzucenie moze odslonic kolejna oferte w kolejce stolu.
+    offersRejected += await rejectAwaitingAiOffers(page);
+    await clearBattles(page);
+  }
   if (!(await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd()))) {
     return { stop: 'cannot-end', tura: before };
   }
@@ -160,7 +187,7 @@ async function playOneTurn(page) {
   const modalDelta = {};
   for (const k of base.MODAL_KEYS) modalDelta[k] = COUNTERS[k] - modalBefore[k];
   const d = diploRow(m);
-  const rec = { seed: SEED, harder: HARDER ? 1 : 0, turn: after, gate: blocked, bypass, battlesAuto,
+  const rec = { seed: SEED, harder: HARDER ? 1 : 0, turn: after, gate: blocked, bypass, battlesAuto, aiOffersRejected: offersRejected,
     modal: modalDelta, sec: Math.round((Date.now() - t0) / 100) / 10, diplo: d,
     wojny: d.pairs.filter(p => p.status === 'wojna').length };
   return { rec };
@@ -197,7 +224,7 @@ async function main() {
     await ctx.close();
   }
   const summary = { seed: SEED, harder: HARDER ? 1 : 0, turnsRequested: TURNS, every: EVERY, endTurn: turn, rows, stop,
-    counters: Object.assign({}, COUNTERS), wallSec: Math.round((Date.now() - t0) / 1000) };
+    counters: Object.assign({}, COUNTERS), aiOffersRejected: AI_OFFERS_REJECTED, wallSec: Math.round((Date.now() - t0) / 1000) };
   fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
   console.log('[diplo] PODSUMOWANIE ' + JSON.stringify(summary));
 }

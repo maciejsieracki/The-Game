@@ -1,0 +1,382 @@
+{
+  "seed": 1234,
+  "stallTurn": 18,
+  "snap": {
+    "state": {
+      "turn": 18,
+      "barterCooldown": [],
+      "rejectCooldowns": [],
+      "pending": [],
+      "tableLen": 1,
+      "relAtDecision": null,
+      "playerCities": 1,
+      "relTotalAi": 91.21999999999994,
+      "digest": {
+        "units": {
+          "0": 2,
+          "1": 4,
+          "2": 1,
+          "3": 1,
+          "4": 3,
+          "5": 1,
+          "6": 0,
+          "7": 2,
+          "8": 1,
+          "9": 1,
+          "10": 3,
+          "11": 0,
+          "12": 1,
+          "13": 2,
+          "14": 1,
+          "15": 0,
+          "16": 1,
+          "17": 1,
+          "18": 1,
+          "19": 4,
+          "20": 1,
+          "21": 1,
+          "22": 2,
+          "23": 1,
+          "24": 1,
+          "25": 2,
+          "26": 1,
+          "27": 1,
+          "28": 2,
+          "29": 0,
+          "30": 0,
+          "31": 3,
+          "32": 1,
+          "33": 1,
+          "34": 4,
+          "35": 1,
+          "36": 1,
+          "37": 3,
+          "38": 0,
+          "39": 1,
+          "40": 0,
+          "41": 1
+        },
+        "treasury": {
+          "0": 178,
+          "1": 327.6,
+          "2": 5,
+          "3": 6,
+          "4": 421,
+          "5": 0,
+          "6": 2,
+          "7": 11,
+          "8": 0,
+          "9": 34,
+          "10": 45,
+          "11": 0,
+          "12": 7,
+          "13": 23,
+          "14": 0,
+          "15": 0,
+          "16": 37,
+          "17": 5,
+          "18": 58,
+          "19": 19,
+          "20": 5,
+          "21": 9,
+          "22": 19,
+          "23": 45,
+          "24": 1,
+          "25": 164,
+          "26": 5,
+          "27": 5,
+          "28": 7,
+          "29": 3,
+          "30": 1,
+          "31": 20,
+          "32": 4,
+          "33": 31,
+          "34": 174,
+          "35": 8,
+          "36": 1,
+          "37": 11,
+          "38": 5,
+          "39": 10,
+          "40": 6,
+          "41": 63
+        },
+        "stock": {
+          "0": {
+            "drewno": 36,
+            "glina": 241
+          },
+          "1": {
+            "drewno": 4,
+            "glina": 114,
+            "kamien": 17
+          },
+          "2": {
+            "glina": 221,
+            "kamien": 444
+          },
+          "3": {
+            "glina": 221,
+            "kamien": 444
+          },
+          "4": {
+            "ceramika": 98,
+            "drewno": 55,
+            "glina": 121,
+            "kamien": 518
+          },
+          "5": {
+            "glina": 221,
+            "kamien": 296
+          },
+          "6": {
+            "drewno": 341,
+            "glina": 187,
+            "kamien": 17
+          },
+          "7": {
+            "glina": 221,
+            "kamien": 740
+          },
+          "8": {
+            "drewno": 326,
+            "glina": 187,
+            "kamien": 17
+          },
+          "9": {
+            "drewno": 25,
+            "glina": 187,
+            "kamien": 17
+          },
+          "10": {
+            "drewno": 29,
+            "glina": 114,
+            "kamien": 17
+          },
+          "11": {
+            "drewno": 475,
+            "glina": 83,
+            "kamien": 51
+          },
+          "12": {
+            "drewno": 9,
+            "glina": 231,
+            "kamien": 440
+          },
+          "13": {
+            "glina": 141,
+            "kamien": 146
+          },
+          "14": {
+            "glina": 221,
+            "kamien": 444
+          },
+          "15": {
+            "drewno": 26,
+            "glina": 102,
+            "kamien": 17
+          },
+          "16": {
+            "glina": 226,
+            "kamien": 294
+          },
+          "17": {
+            "drewno": 195,
+            "glina": 221,
+            "kamien": 666
+          },
+          "18": {
+            "glina": 221,
+            "kamien": 222
+          },
+          "19": {
+            "ceramika": 88,
+            "drewno": 148,
+            "glina": 206,
+            "kamien": 713,
+            "ruda": 30
+          },
+          "20": {
+            "glina": 241,
+            "kamien": 436
+          },
+          "21": {
+            "drewno": 162,
+            "glina": 228,
+            "kamien": 452
+          },
+          "22": {
+            "glina": 226,
+            "kamien": 294
+          },
+          "23": {
+            "glina": 221,
+            "kamien": 222
+          },
+          "24": {
+            "glina": 136
+          },
+          "25": {
+            "glina": 226,
+            "kamien": 294
+          },
+          "26": {
+            "glina": 221,
+            "kamien": 222
+          },
+          "27": {
+            "drewno": 153,
+            "glina": 221
+          },
+          "28": {
+            "glina": 197,
+            "kamien": 144
+          },
+          "29": {
+            "drewno": 24,
+            "glina": 83,
+            "kamien": 51
+          },
+          "30": {
+            "glina": 187,
+            "kamien": 148
+          },
+          "31": {
+            "drewno": 5,
+            "glina": 302,
+            "kamien": 56,
+            "ruda": 90
+          },
+          "32": {
+            "glina": 221,
+            "kamien": 222
+          },
+          "33": {
+            "drewno": 15,
+            "glina": 192,
+            "kamien": 15
+          },
+          "34": {
+            "drewno": 0,
+            "glina": 305,
+            "kamien": 731,
+            "ruda": 90
+          },
+          "35": {
+            "ceramika": 47,
+            "drewno": 0,
+            "glina": 27,
+            "kamien": 51
+          },
+          "36": {
+            "glina": 136,
+            "kamien": 74
+          },
+          "37": {
+            "drewno": 9,
+            "glina": 306,
+            "kamien": 57,
+            "ruda": 90,
+            "ruda_cyny": 60
+          },
+          "38": {
+            "drewno": 62,
+            "glina": 102,
+            "kamien": 17
+          },
+          "39": {
+            "drewno": 11,
+            "glina": 162,
+            "kamien": 11,
+            "sol": 300
+          },
+          "40": {
+            "glina": 226,
+            "kamien": 442
+          },
+          "41": {
+            "ceramika": 31,
+            "glina": 126,
+            "kamien": 765
+          }
+        }
+      },
+      "entries": [
+        {
+          "id": "negot-umowa_handlowa-0-34-t18-1",
+          "actionId": "umowa_handlowa",
+          "cyclic": false,
+          "proposer": 34,
+          "responder": 0
+        }
+      ],
+      "cyclicDeals": []
+    },
+    "canEnd": false,
+    "battleState": {
+      "preBattleOpen": false,
+      "pendingAuto": false,
+      "sceneOpen": false,
+      "summaryOpen": false,
+      "resolving": false
+    },
+    "nnsGateBlocked": false,
+    "isEndTurnInProgress": false,
+    "urlHash": ""
+  },
+  "overlays": [
+    {
+      "tag": "DIV",
+      "cls": "civ-wiki-hub",
+      "id": "",
+      "text": ""
+    },
+    {
+      "tag": "DIV",
+      "cls": "",
+      "id": "civ-welcome-screen-root",
+      "text": "ODKRYŁEŚ NOWĄ CYWILIZACJĘ Rzymianie ofensywna piechota + inżynieria · Legion (Legionista) RYS HISTORYCZNY Rzymianie wyrośli z osady nad Tybrem w Lacjum i stopniowo podporządkowali sobie Półwysep Apeniński. Ich siła opierała się na dyscyplinie legionów oraz na umiejętności budowy dróg, mostów i akweduktów, które łączyły odległe prowincje. Państwo rządzone przez senat i urzędników wybieranych na kró"
+    }
+  ],
+  "endScreen": [],
+  "errors": [
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] triggerPlayerEndTurn: DONE tura 15",
+    "warning: [EndTurn] triggerPlayerEndTurn: START tura 15",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] triggerPlayerEndTurn: DONE tura 16",
+    "warning: [EndTurn] triggerPlayerEndTurn: START tura 16",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] triggerPlayerEndTurn: DONE tura 17",
+    "warning: [EndTurn] triggerPlayerEndTurn: START tura 17",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] blocked: endTurnInProgress",
+    "warning: [EndTurn] triggerPlayerEndTurn: DONE tura 18",
+    "warning: [EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza",
+    "warning: [EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza"
+  ],
+  "counters": {
+    "gateActiveTurns": 0,
+    "bypassApplied": 0,
+    "stuckQueueHeals": 0,
+    "battlesAuto": 0,
+    "diploAudienceClosed": 0,
+    "armyMergeClosed": 0,
+    "techNoticeClosed": 0
+  }
+}
