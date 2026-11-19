@@ -1585,6 +1585,17 @@ pub struct ProdBody<R: RollSource> {
     /// PIN3-DIVERGENCE-Q1 (D-PIN3-2): `vNow` bieżącego wywołania ciała ([`LoopBody::set_now`]); `self.now` bywa w ciele
     /// przesuwane na chwile kroków/ciosów, ta wartość nie.
     call_now: f64,
+    /// FRAME-QUANT-Q1 (D-FQ-1): długość klatki wirtualnej (ms), w której pin wykonuje kroki animacji i zegary
+    /// (`FF_STEP_MS = _scaledWallDelta(BATTLE_FRAME_WALL_MS)`, `battleScene.ts:9419`; klatka AUTO `_advanceVClock`
+    /// `:9500-9511`). Pin nie przesuwa `vNow` w `_drainTimers` (`:9616-9634`: `_now()` w callbacku = czas klatki), więc
+    /// każdy odcinek czasu ciała kończy się w PIERWSZEJ klatce, która go pokrywa: `_schedule(ms)` z chwili klatki `t`
+    /// odpala w klatce `t + ceil(ms / F) * F` ([`Self::frame_sched`]), a pętla `_raf(step)` (krok `_doMove` do `p >= 1`,
+    /// lunge `localT >= BLOW_HIT_T` / `>= BLOW_LUNGE_MS`) w klatce `t + max(1, ceil(ms / F)) * F` ([`Self::frame_raf`]).
+    /// Ciało liczy marsz i cios atomowo w `start`, więc kwantyzuje każdy odcinek osobno (np. 3 kroki z 2 przerwami:
+    /// `3 * 240 + 2 * 80 = 880` przy 16 ms zamiast nominalnych `860`). `0` (domyślnie, dotychczasowe testy pętli) = czasy
+    /// nominalne; sesja ustawia klatkę zegara (16 ms * `speedMul`). Przy klatce 1 ms wszystkie stałe pinu są całkowite,
+    /// więc kwantyzacja jest tożsamością.
+    pub frame_ms: f64,
 }
 
 /// K5LOOP-WIRING-A (#369): miejsce jednego ciosu `_singleBlow(attacker, defender, ranged)` w chwili ciosu.
@@ -1768,11 +1779,39 @@ pub const MOVE_STEP_MS: f64 = 240.0;
 /// K5LOOP-SIEGE-ATK-B (T2b): czas kroku `_doMove` wołanego przez ciało: `MOVE_STEP_MS`, a przy odmowie bramki muru
 /// (`ru.moveLeft = 0; done();` synchronicznie, `:8689-8692`) `0`. Ciało nie planuje AUTO-batch (`autobatch = None`),
 /// więc `outcome.done` jest prawdą wyłącznie dla odmowy ([`MoveOutcome`]: gałąź bezpośrednia ma `done = false`).
-fn step_ms(res: &MoveStepResult) -> f64 {
+/// FRAME-QUANT-Q1 (D-FQ-1): czas kroku jest kwantyzowany klatką `frame` ([`frame_raf`]).
+fn step_ms(res: &MoveStepResult, frame: f64) -> f64 {
     if res.outcome.done {
         0.0
     } else {
-        MOVE_STEP_MS
+        frame_raf(frame, MOVE_STEP_MS)
+    }
+}
+
+/// FRAME-QUANT-Q1 (D-FQ-1): odcinek `_schedule(ms, cb)` wołanego w chwili klatki `t` (`battleScene.ts:9595-9606`:
+/// `due = _now() + ms`, `_now()` = czas klatki): `_drainTimers` (`:9616-9634`) odpala go w pierwszej klatce
+/// `vNow >= due`, czyli po `ceil(ms / frame) * frame`. `frame <= 0` (albo `NaN`) = czas nominalny; `ms <= 0` bez zmian
+/// (zegar `0` z fazy zegarów odpala w tej samej klatce).
+#[must_use]
+pub fn frame_sched(frame: f64, ms: f64) -> f64 {
+    if frame > 0.0 && ms > 0.0 {
+        (ms / frame).ceil() * frame
+    } else {
+        ms
+    }
+}
+
+/// FRAME-QUANT-Q1 (D-FQ-1): odcinek pętli `_raf(step)` startującej w chwili klatki `t0` i kończącej się przy pierwszym
+/// wywołaniu z `_now() - t0 >= ms` (`_doMove` `:8746-8775`: `p = (_now() - t0) / MOVE_STEP_MS`, koniec przy `p >= 1`;
+/// lunge `_doMeleeAttack` `:9117-9172`: cios przy `localT >= BLOW_HIT_T`, koniec przy `localT >= BLOW_LUNGE_MS`). Krok
+/// `_raf` wykonuje się co klatkę (`_ffQueue` w `_runFastForward` `:9430-9435`), pierwszy najwcześniej w tej samej klatce
+/// (wywołanie z fazy zegarów) z `localT = 0`, więc koniec = `max(1, ceil(ms / frame)) * frame`. `frame <= 0` = nominalnie.
+#[must_use]
+pub fn frame_raf(frame: f64, ms: f64) -> f64 {
+    if frame > 0.0 && ms > 0.0 {
+        (ms / frame).ceil().max(1.0) * frame
+    } else {
+        ms
     }
 }
 
@@ -2201,6 +2240,7 @@ impl<R: RollSource> ProdBody<R> {
             move_timeline: Vec::new(),
             facing_timeline: Vec::new(),
             call_now: 0.0,
+            frame_ms: 0.0,
             terrain: None,
             units,
             scene,
@@ -2657,7 +2697,7 @@ impl<R: RollSource> ProdBody<R> {
                 unit,
                 from: (old_q, old_r),
                 to: (col, row),
-                arrive_at: self.now + MOVE_STEP_MS,
+                arrive_at: self.now + frame_raf(self.frame_ms, MOVE_STEP_MS),
             });
         }
         Ok(MoveStepResult {
@@ -2755,7 +2795,7 @@ impl<R: RollSource> ProdBody<R> {
                         };
                         move_left = res.move_left;
                         moved = true;
-                        elapsed += step_ms(&res);
+                        elapsed += step_ms(&res, self.frame_ms);
                         // Callback `_doMove` bloku C-FLANK (`:8222-8229`) = ten sam co marszu czołowego (`:8275-8283`),
                         // bez zapisu `lastAutoMoveFrom`.
                         let after = {
@@ -2767,7 +2807,7 @@ impl<R: RollSource> ProdBody<R> {
                         match after {
                             AfterStep::Done => break,
                             AfterStep::Schedule { ms } => {
-                                elapsed += f64::from(ms);
+                                elapsed += frame_sched(self.frame_ms, f64::from(ms));
                                 continue;
                             }
                         }
@@ -2812,7 +2852,7 @@ impl<R: RollSource> ProdBody<R> {
                     };
                     move_left = res.move_left;
                     moved = true;
-                    elapsed += step_ms(&res);
+                    elapsed += step_ms(&res, self.frame_ms);
                     // Callback `_doMove` (`:8273-8284`): najpierw `lastAutoMoveFrom = previousPosition`.
                     if let Some((q, r)) = then {
                         self.doctrine[ix][unit.idx].last_auto_move_from =
@@ -2826,7 +2866,9 @@ impl<R: RollSource> ProdBody<R> {
                     };
                     match after {
                         AfterStep::Done => break,
-                        AfterStep::Schedule { ms } => elapsed += f64::from(ms),
+                        AfterStep::Schedule { ms } => {
+                            elapsed += frame_sched(self.frame_ms, f64::from(ms));
+                        }
                     }
                 }
             }
@@ -3115,9 +3157,10 @@ impl<R: RollSource> ProdBody<R> {
         move_left: f64,
         enemies: &[EnemyRef],
     ) -> Option<(f64, f64)> {
+        let frame = self.frame_ms;
         self.move_step_core(unit, tile.0, tile.1, false, move_left, None, enemies)
             .ok()
-            .map(|r| (r.move_left, step_ms(&r)))
+            .map(|r| (r.move_left, step_ms(&r, frame)))
     }
 
     /// K5LOOP-CLOSE r2: wykonanie `_cavalryAction(ru, done)` (`battleScene.ts:6372-6412`) w ciele, z decyzjami K5DOC-T6
@@ -3511,7 +3554,7 @@ impl<R: RollSource> ProdBody<R> {
             .move_step_core(unit, tile.0, tile.1, false, move_left, None, enemies)
             .expect("teren sprawdzony w start (galaz ruchowa bez MoveTerrain ma jawny tag)");
         self.now = saved;
-        (res.move_left, step_ms(&res))
+        (res.move_left, step_ms(&res, self.frame_ms))
     }
 
     /// K5LOOP-CLOSE r3: wykonanie `_rangedAction(ru, done)` (`battleScene.ts:6656-6741`) w ciele, z klockami T5a
@@ -3656,11 +3699,14 @@ impl<R: RollSource> ProdBody<R> {
                 if move_left <= 0.0 || move_left.is_nan() {
                     break 'ra None;
                 }
-                elapsed += f64::from(STEP_GAP_MS);
+                elapsed += frame_sched(self.frame_ms, f64::from(STEP_GAP_MS));
             }
         };
         let dur = match shot {
-            Some((_, at)) => at + RANGED_FLY_MS + RANGED_GAP_MS,
+            Some((_, at)) => {
+                at + frame_sched(self.frame_ms, RANGED_FLY_MS)
+                    + frame_sched(self.frame_ms, RANGED_GAP_MS)
+            }
             None => elapsed,
         };
         RangedRun {
@@ -3738,7 +3784,9 @@ impl<R: RollSource> ProdBody<R> {
             elapsed += ms;
             match fall_back_after_move(false, move_left) {
                 AfterStep::Done => break,
-                AfterStep::Schedule { ms } => elapsed += f64::from(ms),
+                AfterStep::Schedule { ms } => {
+                            elapsed += frame_sched(self.frame_ms, f64::from(ms));
+                        }
             }
         }
         (elapsed, moved.then_some(move_left))
@@ -3835,7 +3883,7 @@ impl<R: RollSource> ProdBody<R> {
             if move_left <= 0.0 || move_left.is_nan() {
                 break;
             }
-            elapsed += f64::from(STEP_GAP_MS);
+            elapsed += frame_sched(self.frame_ms, f64::from(STEP_GAP_MS));
         }
         self.now = now0;
         if moved {
@@ -4008,16 +4056,15 @@ impl<R: RollSource> ProdBody<R> {
         self.now = t_shot;
         self.set_facing(unit, dir);
         self.emit(BattleAction::Facing { unit, dir });
+        // FRAME-QUANT-Q1 (D-FQ-1): trafienie = `_schedule(RANGED_FLY_MS)` z chwili wystrzału (kwantyzacja klatką).
+        let hit_at = t_shot + frame_sched(self.frame_ms, RANGED_FLY_MS);
         self.emit(BattleAction::Shot {
             attacker: unit,
             target: tref,
-            land_at: t_shot + RANGED_FLY_MS,
+            land_at: hit_at,
         });
         self.now = saved;
-        Some(ProdShot {
-            target,
-            hit_at: t_shot + RANGED_FLY_MS,
-        })
+        Some(ProdShot { target, hit_at })
     }
 
     /// K5LOOP-CLOSE r3: trafienie strzału (`_doRangedAttack` callback `:9223-9228`): amunicja (`ammoLeft -= 1` przy
@@ -4616,8 +4663,9 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 pend.shot = self.begin_shot(unit, target, at);
                 if self.pin_blow_timing && pend.shot.is_some() {
                     // `_doRangedAttack` (`:9223-9229`): trafienie po `RANGED_FLY_MS`, `done()` po `RANGED_GAP_MS`.
-                    dur = at + RANGED_FLY_MS;
-                    self.tail[ix][unit.idx] = RANGED_GAP_MS;
+                    // FRAME-QUANT-Q1 (D-FQ-1): oba odcinki to `_schedule` (kwantyzacja klatką).
+                    dur = at + frame_sched(self.frame_ms, RANGED_FLY_MS);
+                    self.tail[ix][unit.idx] = frame_sched(self.frame_ms, RANGED_GAP_MS);
                 }
             }
             self.pending[ix][unit.idx] = Some(pend);
@@ -4666,11 +4714,13 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             if let Some(target) = pend.attack.take() {
                 pend.shot = self.begin_shot(unit, target, attack_pre);
                 let dur = if pend.shot.is_some() {
+                    let fly = frame_sched(self.frame_ms, RANGED_FLY_MS);
+                    let gap = frame_sched(self.frame_ms, RANGED_GAP_MS);
                     if self.pin_blow_timing {
-                        self.tail[ix][unit.idx] = RANGED_GAP_MS;
-                        attack_pre + RANGED_FLY_MS
+                        self.tail[ix][unit.idx] = gap;
+                        attack_pre + fly
                     } else {
-                        attack_pre + RANGED_FLY_MS + RANGED_GAP_MS
+                        attack_pre + fly + gap
                     }
                 } else {
                     attack_pre
@@ -4687,12 +4737,17 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 pend.attack = None;
             }
         }
+        // FRAME-QUANT-Q1 (D-FQ-1): cios pada w pierwszej klatce lunge z `localT >= BLOW_HIT_T` (pętla `_raf`), lunge
+        // kończy się w pierwszej klatce z `localT >= BLOW_LUNGE_MS`, potem `_schedule(BLOW_SETTLE_MS)` z chwili tej klatki.
+        let hit = frame_raf(self.frame_ms, pu.body_ms);
         let dur = if pend.attack.is_some() {
             if self.pin_blow_timing {
                 // `_doMeleeAttack` (`:9119-9172`): `done()` po `localT >= BLOW_LUNGE_MS` i `_schedule(BLOW_SETTLE_MS)`.
-                self.tail[ix][unit.idx] = BLOW_LUNGE_MS + BLOW_SETTLE_MS - pu.body_ms;
+                self.tail[ix][unit.idx] = frame_raf(self.frame_ms, BLOW_LUNGE_MS)
+                    + frame_sched(self.frame_ms, BLOW_SETTLE_MS)
+                    - hit;
             }
-            attack_pre + pu.body_ms
+            attack_pre + hit
         } else {
             attack_pre
         };
@@ -5643,7 +5698,11 @@ impl<R: RollSource> WalkWorld for ProdSiegeWalk<'_, R> {
 
     fn do_move(&mut self, unit: &mut WalkUnit, col: i64, row: i64) -> DoMoveGate {
         // Każdy kolejny krok poprzedza `_schedule(STEP_GAP_MS)` (`:8017`): `t0` kroku k = k * (MOVE + GAP).
-        self.body.now = self.now0 + f64::from(self.moves) * (MOVE_STEP_MS + f64::from(STEP_GAP_MS));
+        // FRAME-QUANT-Q1 (D-FQ-1): oba odcinki kwantyzowane klatką.
+        let frame = self.body.frame_ms;
+        self.body.now = self.now0
+            + f64::from(self.moves)
+                * (frame_raf(frame, MOVE_STEP_MS) + frame_sched(frame, f64::from(STEP_GAP_MS)));
         match self.body.move_step_core(
             self.unit,
             col,
@@ -5869,7 +5928,8 @@ impl<R: RollSource> ProdBody<R> {
             .iter()
             .filter(|e| matches!(e, WalkEvent::Schedule { .. }))
             .count() as f64;
-        let dur = f64::from(moves) * MOVE_STEP_MS + schedules * f64::from(STEP_GAP_MS);
+        let dur = f64::from(moves) * frame_raf(self.frame_ms, MOVE_STEP_MS)
+            + schedules * frame_sched(self.frame_ms, f64::from(STEP_GAP_MS));
         // Odmowa bramki muru (`WalkEvent::Refused`): `ru.moveLeft = 0` (`:8690`) także bez wcześniejszego kroku.
         let refused = events
             .iter()
@@ -5943,7 +6003,7 @@ impl<R: RollSource> ProdBody<R> {
         arrive(
             self,
             AtkRun {
-                dur: step_ms(&res),
+                dur: step_ms(&res, self.frame_ms),
                 move_left: Some(res.move_left),
                 tag: None,
             },
