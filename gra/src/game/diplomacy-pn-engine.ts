@@ -77,6 +77,11 @@ export interface DiploPairMeta {
   /** N1 — tura, w której OSTATNIO wypowiedziano wojnę w tej parze (karencja 1 tury: atak w TEJ SAMEJ turze = kara). */
   wojnaOdTury?: number;
   /**
+   * R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: typ BIEŻĄCEJ wojny pary ('epoki' | 'naturalna'),
+   * ustawiany przy wypowiedzeniu. Brak pola = 'naturalna' (stare zapisy). Patrz diplomacy-war-limit.ts.
+   */
+  typWojny?: 'epoki' | 'naturalna';
+  /**
    * Stan przewagi militarnej gracza z partnerem dla zdarzeń Respektu (próg 50%): 'A' gracz ma przewagę,
    * 'B' partner ma przewagę, 'brak' poniżej progu. Zdarzenie odpala tylko na przejściu progu.
    * Brak pola = 'brak'.
