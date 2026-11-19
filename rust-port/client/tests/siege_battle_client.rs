@@ -793,10 +793,54 @@ fn recorded() -> (
         },
         SiegeBattleCommand::Step { wall_ms: 16.0 },
         SiegeBattleCommand::Skip,
+        SiegeBattleCommand::Finish,
     ] {
         out.push(c.source_mut().siege_battle(cmd).expect("answer").battle);
     }
     (out, map, frame)
+}
+
+/// `Finish` carrying actions held after the last frame (D-WIRB-6 v2: `t0` beyond the last `vNow`): the client plays
+/// them before closing the battle, nothing stays in the playback queue.
+#[test]
+fn finish_odtwarza_wstrzymane_akcje() {
+    let (mut answers, _, _) = recorded();
+    let last = answers[2].frame.clone().expect("skip frame");
+    let unit = last
+        .units
+        .iter()
+        .find(|u| !u.removed && !u.dead)
+        .expect("unit on the field")
+        .id;
+    let dir = (last
+        .units
+        .iter()
+        .find(|u| u.id == unit)
+        .expect("unit")
+        .facing
+        + 1)
+        % 4;
+    assert!(answers[3].frame.is_none(), "Finish has no frame");
+    answers[3].actions.push(BattleActionDto {
+        t0: last.v_now + 1.0,
+        action: BattleActionKindDto::Facing { id: unit, dir },
+    });
+    let st = siege_state(11);
+    let scene = scene_static(&st);
+    let mut c = scripted(answers, None);
+    c.start_siege_storm(CITY, ANCHOR, Some(&scene))
+        .expect("start");
+    c.step_siege_battle(16.0).expect("step");
+    c.skip_siege_battle().expect("skip");
+    c.finish_siege_battle().expect("finish");
+    let v = c.last_siege_battle_view().expect("closed view");
+    let (_, pb) = v.scene().expect("scene");
+    assert_eq!(pb.queued(), 0, "held actions played");
+    assert_eq!(
+        pb.calls().last(),
+        Some(&civ_renderer::battle::playback::SceneCall::SetFacing { id: unit, dir }),
+        "the held action is the last scene call"
+    );
 }
 
 fn scripted(
@@ -996,6 +1040,36 @@ fn setup_sceny_z_odpowiedzi_startu() {
     }
     assert!(setup.units.iter().any(|u| u.side == BattleSide::Def));
     assert!(rewound > 0, "scenario: the start answer moves units");
+    // `ClimbWall` at start: the spawn is before the climb (off the wall, `from` cell), whatever the frame says.
+    let mut climb = start.clone();
+    let cf = climb.frame.as_mut().expect("frame");
+    let (cid, ccol, crow) = (cf.units[0].id, cf.units[0].col, cf.units[0].row);
+    cf.units[0].on_wall_walkway = true;
+    climb.actions.retain(|a| match a.action {
+        BattleActionKindDto::Move { id, .. } | BattleActionKindDto::ClimbWall { id, .. } => {
+            id != cid
+        }
+        _ => true,
+    });
+    climb.actions.insert(
+        0,
+        BattleActionDto {
+            t0: 0.0,
+            action: BattleActionKindDto::ClimbWall {
+                id: cid,
+                from_col: ccol - 1,
+                from_row: crow,
+                to_col: ccol,
+                to_row: crow,
+            },
+        },
+    );
+    let cs = compose_siege_battle_setup(&climb, &scene).expect("climb setup");
+    let cu = cs.units.iter().find(|u| u.id == cid).expect("unit");
+    assert_eq!(
+        (cu.col, cu.row, cu.on_wall_walkway),
+        (ccol - 1, crow, false)
+    );
     // A start answer that changes HP cannot be rewound: refused.
     let mut hurt = start.clone();
     hurt.actions.push(BattleActionDto {
