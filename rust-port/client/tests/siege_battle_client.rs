@@ -404,13 +404,21 @@ fn storm(st: PlayableState, chunks: &[f64], with_scene: bool) -> Run {
     let frames_before = c.source().seen.frame_calls;
     c.start_siege_storm(CITY, ANCHOR, scene.as_ref())
         .expect("start");
+    // r2 (E01): the wall clock after each answer (`vLastWall` of the labels created by that answer).
+    let mut walls = vec![0.0];
+    let mut wall = 0.0;
     if chunks.is_empty() {
         c.step_siege_battle(16.0).expect("step");
+        wall += 16.0;
+        walls.push(wall);
+        assert!(!c.siege_battle().expect("battle").skipped(), "no Pomin yet");
         c.skip_siege_battle().expect("skip");
     } else {
         let mut k = 0;
         while c.siege_battle().expect("battle").phase() == SiegeBattlePhaseDto::Running {
             c.step_siege_battle(chunks[k % chunks.len()]).expect("step");
+            wall += chunks[k % chunks.len()];
+            walls.push(wall);
             k += 1;
             assert!(k < 200_000, "battle without end");
         }
@@ -418,6 +426,29 @@ fn storm(st: PlayableState, chunks: &[f64], with_scene: bool) -> Run {
     let b = c.siege_battle().expect("battle");
     assert!(b.end_screen(), "Finished: end screen");
     assert!(!b.skip_available(), "no Pomin on the end screen");
+    // r2 (E01/E02/E03): the accessors of the battle screen.
+    assert_eq!(b.wall_clock(), wall, "wall clock = sum of the steps");
+    assert_eq!(b.skipped(), chunks.is_empty(), "Pomin flag");
+    assert_eq!(
+        b.last_frame(),
+        c.source().seen.frames.last(),
+        "last frame = frame of the last answer"
+    );
+    if let Some((_, pb)) = b.scene() {
+        for l in pb.labels() {
+            assert!(
+                walls.contains(&l.label.start),
+                "label start {} is the wall clock of an answer {walls:?}",
+                l.label.start
+            );
+        }
+        if !chunks.is_empty() {
+            assert!(
+                pb.labels().iter().any(|l| l.label.start > 0.0),
+                "labels of the steps start at the accumulated wall clock"
+            );
+        }
+    }
     // D-WIRB-2: no StateChanged during the battle -> no frame request.
     assert_eq!(c.source().seen.frame_calls, frames_before);
     let end = c.finish_siege_battle().expect("finish").clone();
@@ -602,7 +633,10 @@ fn stan_ui_po_bitwie() {
     c.select_unit(Some(ANCHOR)).expect("select");
     let mut ui = c.ui().frame_ui.clone();
     ui.hover = Some(PositionDto::new(CITY_POS.0, CITY_POS.1));
+    // r2 (E04): the flag the frame may carry is zeroed by `clearBattleUiState` too.
+    ui.unit_selected_after_build_open = true;
     c.set_frame_ui(ui).expect("hover");
+    assert!(c.ui().frame_ui.unit_selected_after_build_open);
     let mut map_ui = c.ui().map_ui;
     map_ui.force_visible_unit_id = Some(civ_view_model::ids::UnitId::try_new(ANCHOR).expect("id"));
     c.set_map_ui(map_ui).expect("force");
@@ -921,6 +955,8 @@ fn naruszenie_kolejnosci_odrzucone_przed_scena() {
         .expect("an action");
     a.t0 = start_v - 1.0;
     bad.actions.insert(0, a);
+    // r2 (E22): the refused answer claims the end; the phase must not move either.
+    bad.phase = SiegeBattlePhaseDto::Finished;
     answers[1] = bad;
     let st = siege_state(11);
     let scene = scene_static(&st);
@@ -942,6 +978,8 @@ fn naruszenie_kolejnosci_odrzucone_przed_scena() {
     }
     let v = c.siege_battle().expect("battle");
     assert_eq!(v.order().last_queued(), last, "guard unchanged");
+    assert_eq!(v.phase(), SiegeBattlePhaseDto::Running, "phase unchanged");
+    assert!(v.skip_available() && !v.end_screen());
     assert_eq!(v.actions_received(), received, "nothing counted");
     assert_eq!(
         v.scene().map(|(_, pb)| pb.calls().len()),
@@ -1091,6 +1129,164 @@ fn setup_sceny_z_odpowiedzi_startu() {
     assert!(compose_siege_battle_setup(&no_frame, &scene).is_err());
 }
 
+/// The start answer with the cell / wall actions of unit 0 replaced by `kinds` (all at `t0 = 0`) and the frame wall
+/// flag of that unit set to `frame_wall`. Returns the answer, the unit and its frame cell.
+fn start_with(
+    start: &SiegeBattlePayload,
+    frame_wall: bool,
+    kinds: impl Fn(civ_view_model::ids::UnitId, i32, i32) -> Vec<BattleActionKindDto>,
+) -> (SiegeBattlePayload, civ_view_model::ids::UnitId, (i32, i32)) {
+    let mut p = start.clone();
+    let f = p.frame.as_mut().expect("frame");
+    let (id, col, row) = (f.units[0].id, f.units[0].col, f.units[0].row);
+    f.units[0].on_wall_walkway = frame_wall;
+    p.actions.retain(|a| match a.action {
+        BattleActionKindDto::Move { id: u, .. }
+        | BattleActionKindDto::ClimbWall { id: u, .. }
+        | BattleActionKindDto::LeaveField { id: u, .. } => u != id,
+        _ => true,
+    });
+    let new: Vec<BattleActionDto> = kinds(id, col, row)
+        .into_iter()
+        .map(|action| BattleActionDto { t0: 0.0, action })
+        .collect();
+    p.actions.splice(0..0, new);
+    (p, id, (col, row))
+}
+
+fn mv(id: civ_view_model::ids::UnitId, from: (i32, i32), to: (i32, i32)) -> BattleActionKindDto {
+    BattleActionKindDto::Move {
+        id,
+        from_col: from.0,
+        from_row: from.1,
+        to_col: to.0,
+        to_row: to.1,
+        arrive_at: 1.0,
+    }
+}
+
+fn climb(id: civ_view_model::ids::UnitId, from: (i32, i32), to: (i32, i32)) -> BattleActionKindDto {
+    BattleActionKindDto::ClimbWall {
+        id,
+        from_col: from.0,
+        from_row: from.1,
+        to_col: to.0,
+        to_row: to.1,
+    }
+}
+
+fn leave_field(
+    id: civ_view_model::ids::UnitId,
+    from: (i32, i32),
+    to: (i32, i32),
+) -> BattleActionKindDto {
+    BattleActionKindDto::LeaveField {
+        id,
+        from_col: from.0,
+        from_row: from.1,
+        to_col: to.0,
+        to_row: to.1,
+    }
+}
+
+/// `(col, row, on_wall_walkway)` of the spawn of `id`.
+fn spawn_of(
+    p: &SiegeBattlePayload,
+    scene: &SiegeSceneStatic,
+    id: civ_view_model::ids::UnitId,
+) -> (i32, i32, bool) {
+    let s = compose_siege_battle_setup(p, scene).expect("setup");
+    let u = s.units.iter().find(|u| u.id == id).expect("unit");
+    (u.col, u.row, u.on_wall_walkway)
+}
+
+/// r2 (Z1, E12-E15): D-1I6-3b rewinds the cell and the wall flag separately. The cell is the `from` of the FIRST
+/// cell-changing start action; the flag is the one before the FIRST flag-changing action (`ClimbWall`: off the wall,
+/// `LeaveField`: on the wall); a `Move` keeps the frame flag. HP / morale / presence changes at the start are refused.
+#[test]
+fn setup_spawn_komorka_i_mur_przed_akcjami_startu() {
+    let (answers, _, _) = recorded();
+    let st = siege_state(11);
+    let scene = scene_static(&st);
+    let start = &answers[0];
+    // Z1: Move then ClimbWall; the frame says "on the wall" (after the climb), the spawn is off the wall.
+    let (p, id, (c, r)) = start_with(start, true, |id, c, r| {
+        vec![
+            mv(id, (c + 2, r), (c + 1, r)),
+            climb(id, (c + 1, r), (c, r)),
+        ]
+    });
+    assert_eq!(
+        spawn_of(&p, &scene, id),
+        (c + 2, r, false),
+        "Move -> ClimbWall"
+    );
+    // Z1: Move then LeaveField; the frame says "off the wall", the spawn is on the wall.
+    let (p, id, (c, r)) = start_with(start, false, |id, c, r| {
+        vec![
+            mv(id, (c + 2, r), (c + 1, r)),
+            leave_field(id, (c + 1, r), (c, r)),
+        ]
+    });
+    assert_eq!(
+        spawn_of(&p, &scene, id),
+        (c + 2, r, true),
+        "Move -> LeaveField"
+    );
+    // E13: Move alone keeps the frame flag (on the wall walkway: a defender walking along the crown).
+    let (p, id, (c, r)) = start_with(start, true, |id, c, r| vec![mv(id, (c + 1, r), (c, r))]);
+    assert_eq!(
+        spawn_of(&p, &scene, id),
+        (c + 1, r, true),
+        "Move keeps the flag"
+    );
+    // E14: LeaveField first; the frame says "off the wall", the spawn is on the wall.
+    let (p, id, (c, r)) = start_with(start, false, |id, c, r| {
+        vec![leave_field(id, (c + 1, r), (c, r))]
+    });
+    assert_eq!(spawn_of(&p, &scene, id), (c + 1, r, true), "LeaveField");
+    // The FIRST flag change wins: ClimbWall then LeaveField = off the wall before the climb.
+    let (p, id, (c, r)) = start_with(start, false, |id, c, r| {
+        vec![
+            climb(id, (c + 2, r), (c + 1, r)),
+            leave_field(id, (c + 1, r), (c, r)),
+        ]
+    });
+    assert_eq!(
+        spawn_of(&p, &scene, id),
+        (c + 2, r, false),
+        "first flag change"
+    );
+    // E12: the FIRST cell change wins over the last one.
+    let (p, id, (c, r)) = start_with(start, false, |id, c, r| {
+        vec![mv(id, (c + 2, r), (c + 1, r)), mv(id, (c + 1, r), (c, r))]
+    });
+    assert_eq!(spawn_of(&p, &scene, id), (c + 2, r, false), "first step");
+    // E15: every HP / morale / presence change at the start is refused, never guessed.
+    let f = start.frame.as_ref().expect("frame");
+    let (a, b) = (f.units[0].id, f.units[1].id);
+    for kind in [
+        BattleActionKindDto::Kill { id: a },
+        BattleActionKindDto::Leave { id: a },
+        BattleActionKindDto::Rout { id: a },
+        BattleActionKindDto::Shaken {
+            id: a,
+            fallen: b,
+            morale: 1.0,
+        },
+    ] {
+        let mut p = start.clone();
+        p.actions.push(BattleActionDto {
+            t0: f.v_now,
+            action: kind.clone(),
+        });
+        assert!(
+            compose_siege_battle_setup(&p, &scene).is_err(),
+            "{kind:?} at the start is refused"
+        );
+    }
+}
+
 /// `afterSiegeUi` branches in the pin's order.
 #[test]
 fn after_siege_ui_galezie() {
@@ -1126,5 +1322,71 @@ fn nowa_sesja_porzuca_bitwe() {
     c.on_session_created().expect("map");
     assert!(c.siege_battle().is_none());
     assert!(c.last_siege_battle_end().is_none());
+    assert!(c.last_siege_battle_view().is_none());
     let _: Option<ClientError<BridgeError>> = None;
+}
+
+/// r2 (Z2, E08): a closed battle leaves its end and its screen; a new session drops both (the two "last battle"
+/// accessors agree), and a new start drops the screen of the previous battle.
+#[test]
+fn ostatnia_bitwa_po_nowej_sesji_i_nowym_starcie() {
+    let (answers, _, _) = recorded();
+    let st = siege_state(11);
+    let scene = scene_static(&st);
+    let mut c = scripted(answers.clone(), None);
+    c.start_siege_storm(CITY, ANCHOR, Some(&scene))
+        .expect("start");
+    c.step_siege_battle(16.0).expect("step");
+    c.skip_siege_battle().expect("skip");
+    c.finish_siege_battle().expect("finish");
+    assert!(c.last_siege_battle_view().is_some());
+    assert!(c.last_siege_battle_end().is_some());
+    // A new start: the previous screen and end are gone while the new battle runs.
+    c.source_mut().answers = answers.clone();
+    c.start_siege_storm(CITY, ANCHOR, Some(&scene))
+        .expect("restart");
+    assert!(
+        c.last_siege_battle_view().is_none(),
+        "start drops the screen"
+    );
+    assert!(c.last_siege_battle_end().is_none());
+    c.step_siege_battle(16.0).expect("step");
+    c.skip_siege_battle().expect("skip");
+    c.finish_siege_battle().expect("finish");
+    assert!(c.last_siege_battle_view().is_some());
+    // A new session: neither the end nor the screen of the last battle stays.
+    c.on_session_created().expect("map");
+    assert!(c.siege_battle().is_none());
+    assert!(c.last_siege_battle_end().is_none());
+    assert!(
+        c.last_siege_battle_view().is_none(),
+        "new session drops the screen (Z2)"
+    );
+}
+
+/// r2 (E09): a `Finish` answer without a result closes the battle as `Aborted` (D-1I6-5), keeps its screen and
+/// refreshes the map once (the answer carried `StateChanged`).
+#[test]
+fn finish_bez_wyniku_to_aborted() {
+    let (mut answers, _, _) = recorded();
+    answers[3].result = None;
+    let st = siege_state(11);
+    let scene = scene_static(&st);
+    let mut c = scripted(answers, None);
+    c.start_siege_storm(CITY, ANCHOR, Some(&scene))
+        .expect("start");
+    c.step_siege_battle(16.0).expect("step");
+    c.skip_siege_battle().expect("skip");
+    let frames = c.source().frame_calls;
+    let end = c.finish_siege_battle().expect("finish").clone();
+    assert_eq!(
+        end,
+        SiegeBattleEnd::Aborted {
+            city_id: CITY,
+            reason: "finish answer without a result".into()
+        }
+    );
+    assert!(c.siege_battle().is_none(), "battle closed");
+    assert!(c.last_siege_battle_view().is_some(), "screen kept");
+    assert_eq!(c.source().frame_calls, frames + 1, "one refresh");
 }

@@ -371,9 +371,12 @@ impl<S: RenderSource> RenderClient<S> {
         self.frame = None;
         self.inputs = None;
         self.scene = None;
-        // A new session has no battle (`CreateSession` = new game, D-WIRB-2).
+        // A new session has no battle (`CreateSession` = new game, D-WIRB-2)
+        // and no screen of the last one (r2, Z2: both "last battle"
+        // accessors agree).
         self.battle = None;
         self.battle_end = None;
+        self.battle_closed = None;
         let map = self.source.render_map().map_err(ClientError::Source)?;
         self.map = Some(MapStatic::from_dto(&map.0).map_err(ClientError::Frame)?);
         Ok(())
@@ -1128,9 +1131,15 @@ pub fn compose_siege_battle_setup(
     // vNow`); the spawn is before them. A cell-changing action carries the
     // cell before it, so the spawn cell of a unit is the `from` of its first
     // one (steps chain, `MoveFrom`); a unit without one stands on its frame
-    // cell. An action that changes HP, morale or presence cannot be rewound
-    // from the frame: such a start answer is refused, never guessed.
-    let mut spawn_cell: Vec<(u64, (i32, i32), bool)> = Vec::new();
+    // cell. The wall flag is rewound the same way but on its own: the flag
+    // before the first action that changes it (`ClimbWall`: off the wall
+    // before, `LeaveField`: on the wall before); a `Move` keeps the flag, so
+    // a unit without a flag-changing start action keeps the frame flag (r2,
+    // Z1: `Move` then `ClimbWall` / `LeaveField`). An action that changes HP,
+    // morale or presence cannot be rewound from the frame: such a start
+    // answer is refused, never guessed.
+    let mut spawn_cell: Vec<(u64, (i32, i32))> = Vec::new();
+    let mut spawn_wall: Vec<(u64, bool)> = Vec::new();
     for a in &start.actions {
         let (id, from, wall) = match &a.action {
             BattleActionKindDto::Move {
@@ -1163,24 +1172,26 @@ pub fn compose_siege_battle_setup(
             }
             _ => continue,
         };
-        if !spawn_cell.iter().any(|(u, _, _)| *u == id.get()) {
-            let fu_wall = frame
-                .units
-                .iter()
-                .find(|u| u.id == id)
-                .is_some_and(|u| u.on_wall_walkway);
-            spawn_cell.push((id.get(), from, wall.unwrap_or(fu_wall)));
+        if !spawn_cell.iter().any(|(u, _)| *u == id.get()) {
+            spawn_cell.push((id.get(), from));
+        }
+        if let Some(w) = wall {
+            if !spawn_wall.iter().any(|(u, _)| *u == id.get()) {
+                spawn_wall.push((id.get(), w));
+            }
         }
     }
     let mut units = Vec::with_capacity(frame.units.len());
     for fu in &frame.units {
         let id = fu.id.get();
-        let (col, row, on_wall_walkway) = spawn_cell
+        let (col, row) = spawn_cell
             .iter()
-            .find(|(u, _, _)| *u == id)
-            .map_or((fu.col, fu.row, fu.on_wall_walkway), |(_, c, w)| {
-                (c.0, c.1, *w)
-            });
+            .find(|(u, _)| *u == id)
+            .map_or((fu.col, fu.row), |(_, c)| *c);
+        let on_wall_walkway = spawn_wall
+            .iter()
+            .find(|(u, _)| *u == id)
+            .map_or(fu.on_wall_walkway, |(_, w)| *w);
         let side = match start
             .units
             .iter()
