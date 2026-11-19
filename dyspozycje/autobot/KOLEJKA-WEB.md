@@ -1,4 +1,4 @@
-# KOLEJKA WEB — stan na 2026-11-18 (baza kandydata a86a847d7; origin/main fb5b2045a = FALA 835; ROBOCZA MD5 5bc75dc23e87cde560cb71ad892d70b6)
+# KOLEJKA WEB — stan na 2026-11-19 (origin/main = źródło prawdy; ROBOCZA MD5 891481b5 = FALA 876)
 
 Czytana przez heartbeat :17 i :47. Źródła stanu (każda pozycja ma odsyłacz):
 - `git log origin/main` (commity „ROBOCZA … FALA n” i „FALA n: merge FC …”) — dla FAL 747–835,
@@ -18,56 +18,57 @@ Zakres: WYŁĄCZNIE web. Rust tylko jako dług (sekcja DŁUG RUST/REPIN).
 7. **Po każdym kroku:** wpis w rejestrze, `git push` gałęzi dispatchów, refs/keep, sprzątanie, `TaskUpdate`. Raport w czacie po polsku: tabela (temat | etap | model etapu | od kiedy); uczciwie NIE ZMIERZONO tam, gdzie nie zmierzono.
 8. **Dispatch**: zawsze z regułą „baza = origin/main, sprawdź `git merge-base --is-ancestor`, podaj `git rev-parse HEAD`”, allowlistą, zakazem sesji/zadań/harmonogramów, kryteriami binarnymi i plan testów (5 bramek referencyjnych po `npm ci`).
 
-## STAN NA DZIEŃ 2026-11-18 (ta sekcja nadpisuje historię; poprzednie wersje pliku są w git log)
+## STAN NA DZIEŃ 2026-11-19 (ta sekcja nadpisuje historię; poprzednie wersje pliku są w git log)
 
-Nowe starty: sprawdzić `df -h /` przed każdym startem (próg z kroku 4). Wartość wolnego miejsca nie jest tu zapisywana — jest zmienna między pomiarami.
-Ostatnia FALA w `git log origin/main`: 835 (fb5b2045a). Rejestr w repo kończy się na FALI 746.
+Rejestr `dyspozycje/REJESTR-PROSB-I-ZADAN.md` jest znów aktualny (wpisy FAL 860–876 i wszystkie decyzje właściciela z 2026-11-19). Wdrożone dziś na ROBOCZĄ: FALE 860–876 (ostatnie: 874 stadnina bez lasu; 875 utrzymanie jednostek ×1/×2/×4 — realnie tylko żywność jednostek 4/8/16; 876 zamiana Żywności na Podatek 1:1). Rebalans epok (flaga `eraRebalansAktywny`) jest WŁĄCZONY.
+Nowe starty: `df --output=avail -BG /` ≥ 6 GB (integracja `/home/user/integ` ≥ 4 GB). Integracja do main tylko gdy `origin/main` jest przodkiem HEAD.
 
-## WDROŻONE OSTATNIE 10 FAL (źródło: `git log origin/main`, subject commita ROBOCZEJ)
+## DECYZJE WŁAŚCICIELA 2026-11-19 (ZAPIS PEŁNY — źródło prawdy dla autonomicznej pętli; szczegóły i cytaty w rejestrze)
 
-| FAL | Commit ROBOCZEJ | Temat (jedno zdanie) | Źródło (subject commita) |
-|---|---|---|---|
-| 835 | fb5b2045a | Jeden próg gotowości AI do sojuszu 0,54; inicjatywa AI jak ocena propozycji. | „ROBOCZA 5bc75dc2 FALA 835” |
-| 834 | f91060856 | Preset testowy walka-mapy przelicza ekonomię; asercja przewijania panelu miasta. | „ROBOCZA 76db1726 FALA 834” |
-| 833 | a62b09b3c | Nośnik dopłaty D w traktatach: technologie, złoto, brąz, żelazo, rudy. | „ROBOCZA 5e3de9fb FALA 833” |
-| 832 | 13ad6b363 | Usunięcie martwych pól zmęczenia wojną w zegarze profilu. | „ROBOCZA 5bab018a FALA 832” |
-| 831 | a72c6b968 | Otwarty panel miasta i panel rekrutacji odświeżają się po końcu tury gracza. | „ROBOCZA dd31cc6f FALA 831” |
-| 830 | 0c12240a3 | Traktaty i pokój: ostatni stopień płatności; okno pokoju otwiera się samo. | „ROBOCZA fdc9f6a0 FALA 830” |
-| 829 | 1906b3f32 | Okno pokoju wymuszonego z jednym zdaniem na wierzchu; ekran powitalny nowej cywilizacji. | „ROBOCZA fbbefaa4 FALA 829” |
-| 828 | c8b0e498b | Panel miasta i panel rekrutacji odświeżają listę po odkryciu technologii. | „ROBOCZA 4eea286a FALA 828” |
-| 827 | 49ddb0012 | Okno pokoju wymuszonego: tytuł, partner, zdanie, warunki i przycisk na wierzchu; wyliczenia w tooltipach. | „ROBOCZA 76797672 FALA 827” |
-| 826 | 56bb088c1 | Parytet siły i ceny x10 dla rozejmu, NAP, przemarszu, sojuszy i wasala. | „ROBOCZA 7baf24b2 FALA 826” |
+**Ekonomia (rebalans wg epok):** wszystkie surowce ulepszeń bez wzrostu co epokę (stałe wartości z Kamienia); utrzymanie jednostek żywność: pierwotnie ×3/epokę, **zastąpione 2026-11-19 przez ×1/×2/×4 (Kamień/Brąz/Żelazo) dla pieniądza, surowców i żywności**; racje obywateli ×2/epokę; konwertery bez zmian („na razie tylko ulepszenia”); Praca/Drewno „najpierw zmierzyć”; flaga rebalansu ON na ROBOCZEJ (FALA 871); zrzut Żywności z Brązu miał rebalans ON.
+**Praca/ulepszenia:** kopalnie rudy (miedź, cyna, żelazo) koszt_praca ×2 (22→44) i koszt ulepszeń wg epoki WŁAŚCICIELA (Brąz/Żelazo droższe), parametr `kosztUlepszenWgEpokiWlasciciela` (temat IMPCOST, w toku); po FC deploy + pomiar 150 tur.
+**Żywność/Spichlerz:** nadwyżka ponad cap przepada dziś; decyzja: możliwość zamiany na pieniądze jak Praca (WDROŻONE FALA 876, kurs 1:1 do potwierdzenia). Drenaż Spichlerza w HUD netto (FALA 867).
+**Skarbiec w Brązie:** decyzja „2× Brąz, 4× Żelazo” — okazało się, że pieniądz/surowce utrzymania już tak działały (FOODGRANARY mylił się w tym punkcie). OTWARTE PYTANIE: czy dodatkowa korekta kosztów jednostek w Brązie (lekka optymalizacja) — ABC.
+**Mennica/glina:** Mennica wymaga złota (decyzja wcześniejsza), ale delta 0 ze złotem = błąd zaokrąglenia (naprawa w toku, MENNICACLAY r2); glina dzielona proporcjonalnie między Cegielnię/Garncarnię.
+**Testy/dług:** baza surowców z danych (A), Mennica wymaga złota (A), lama tylko Inkowie (A), stadnina tylko na złożu bez lasu (B, FALA 874), garnizon: nowe scenariusze zamiast starych asercji (A).
+**Dyplomacja/wojna:** limit wojen liczy gracza jako cel (A, za flagą OFF, FALA 863); dopłata D w sojuszach AI↔AI = osobny parametr (A; wartość rekomendowana 0,5, właściciel chce pełniejszy pomiar seed 4242/7 t60); limit 2 sojuszy (FALA 865, za flagą OFF); plan wymuszonego pokoju z cesją miast A; pokój z cesją miast — naprawione FALA 873 (przyczyną był stary limit 1 miasta); era wojna świeży pokój „bez preferencji”.
+**Forty AI/terytorium:** P1 A; P2 „fort gdy może objąć swoim terenem ≥ 40 nowych heksów; najpierw miasta, forty po limicie miast”; posterunek A (~16); P3 B; P4 A; P5 C; po pomiarze forty prawie nie powstają — decyzja B: zostawić jak jest (temat zamknięty).
+**NOWE 2026-11-19 (forty/miasta):** założenie miasta NIE przejmuje fortów ani ulepszeń innej cywilizacji (jak między miastami: zasięg można lekko przesunąć, nic nie znika; odwraca regułę 4+5 / Q3=A z 2026-08-09); zasięg fortu = te same reguły co zasięg miasta; zajęcie fortu TYLKO siłowe (jednostka wojskowa + wojna). Temat FORTTAKEOVER (w toku).
+**NOWE 2026-11-19 (ustawienie „Dyplomacja i wojna”):** nowe ustawienie nowej gry, poziomy ŁATWA / NORMALNA / TRUDNA. Łatwa = dziś (kary ×1, bonusy ×1); Normalna = kary ×2 (zwłaszcza sąsiedztwo i wojna) i bonusy ÷2 za wszystkie czynności dodatnie; Trudna = współczynniki ujemne ×3 „dla wszystkiego co się da” i bonusy ÷3 (m.in. sojusze). Prośba: lista parametrów ujemnych i dodatnich dla każdego poziomu (temat WARTEMPER, analiza w toku). Implementacja dopiero po akceptacji listy (ABC).
+**Błędy/UX zgłoszone i naprawione:** nakładanie muzyki powitanie→audiencja (FALA 869); ekran powitalny pełne Plusy/Minusy (870); HUD alert/tooltip niedoboru (861), karta surowca (862), HUD netto Spichlerz (867); ucieczka Harappy — autobitwa zgodna (testy w main), tryb ręczny/odwrót na mapie/animacja NIE ZMIERZONE (czekam na scenariusz właściciela).
 
-Pełna lista FAL: `git log origin/main --grep 'FALA'`. Rejestr (do FALI 746): `dyspozycje/REJESTR-PROSB-I-ZADAN.md`.
+## TRWAJĄCE WORKFLOWY (stan 2026-11-19 ~22:30 UTC)
 
-## TRWAJĄCE WORKFLOWY (stan 2026-11-18 ~23:55 UTC; origin/main 77b103c7f = FALA 851)
-
-| Temat | wf | Model etapu |
+| Temat | Model etapu | Uwagi |
 |---|---|---|
-| R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 r4 (baza b6302fcc2) | wf_7f706ef5-57c | Operator SONNET (uzasadnienie w DODATKU 2/3) |
-| R-WEB-AI-AI-ALLIANCES-E3-WILLINGNESS-MEASURE-Q1 r1 | wf_0852a31f-22a | Operator HAIKU |
-| R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1 r1 | wf_52c55d5a-0a5 | Operator HAIKU |
+| IMPCOST — koszt ulepszeń wg epoki właściciela + kopalnie rudy ×2 (wf_6ea5ebea-20b) | Evaluator SONNET | po FC deploy jako kolejna FALA + pomiar 150 tur |
+| MENNICACLAY r2 — Mennica (zaokrąglenie podziału Handlu) + HUD gliny (wf_a13e0d64-f24) | Operator HAIKU | r1 FC FAIL; baza c2342a78e |
+| WARTEMPER — lista parametrów kar/bonusów dla Łatwa/Normalna/Trudna (wf_d888bb67-4c5) | Operator HAIKU | analiza; po FC → ABC właścicielowi |
+| FORTTAKEOVER — miasto nie przejmuje fortów; zasięg fortu jak miasta; zajęcie tylko siłą (wf_67a822a6-aa1) | Operator HAIKU | po FC deploy jako kolejna FALA |
 
-Biegi orkiestratora poza workflow: pomiar dyplomacji etap A OFF/ON (/tmp/harder-out, /tmp/harder-run.sh; 3 ziarna × 90 tur).
-Wdrożone tej nocy: FALE 846–851 (pomiar ekonomii; etap A dyplomacji za flagą; sojusze AI↔AI B1 za flagą; koalicja antylidera B4 za flagą; runnery pomiarowe).
-Kolejka na później: etap C dyplomacji (Zaufanie 0), reguła wojen C po pomiarze WARMEASURE, TERRITORYRACE r3, punkt B audytu ekonomii, luki B2 (dystans, pokój bez karencji, barbarzyńcy w liczniku wojen).
+## GOTOWE DO STARTU (kolejność; start gdy slot < 4 i dysk ≥ 6 GB; dispatch najpierw na gałąź)
 
-## GOTOWE DO STARTU
-
-Brak pozycji potwierdzonych w repo (dispatch w `dyspozycje/autobot/runs/` i warunek startu). Katalogi runs/ nie zawierają dispatchów tematów AIAI E2–E6 ani TREATY-PAY krok 2.
+1. **R-WEB-TEST-DEBT-Q12** — pozostałe czerwone testy: auto-fort-claim, building-upkeep-resources D10 (martwy plUpkeepForm w buildingAdapter.ts), entity-card-cross-links-nested-overlay (niestabilny), fishing-boats-666 (docs nieaktualne), hodowla-las (3 asercje, po FALI 874 sprawdzić), diplo-forced-peace-pending-live-paths (środowisko). Haiku, bez ABC.
+2. **R-WEB-VERIFY-LIVE-873-ALLIANCELIMIT-Q1** — weryfikacja na żywo (jeden Chromium): pokój z cesją ≥2 miast (FALA 873), bieg 100 tur limitu 2 sojuszy z flagą ON (FALA 865), reguła wojen z graczem (863), żywa zamiana Żywności→Podatek (876), bieg dymny 60 tur po FALI 875. Wynik: tabela ZMIERZONO/NIE ZMIERZONO. Haiku.
+3. **R-WEB-ECONOMY-FOODCONV-HOOK-Q1** (opcjonalny): hook civTest do dowodu żywego zamiany Żywności (brak w FALI 876).
+4. **R-WEB-ECONOMY-TREASURY-MODEL-REFRESH-Q1**: odświeżyć `gra/tools/treasury-unit-cost-model.cjs` (zakładał brak skali epoki — nieaktualne po ustaleniu z FALI 875) i poprawić dokument SKARBIEC-BRAZ-KOSZTY-JEDNOSTEK-OPTYMALIZACJA.md. Haiku, dokumentacja.
+5. **Po FC FORTTAKEOVER:** ewentualna luka „zajęcie fortu siłą jednostką w wojnie” (jeśli Operator zgłosi brak), temat osobny.
 
 ## ZALEŻNE (START dopiero po warunku)
 
-Brak pozycji potwierdzonych w repo. AIAI E1 jest w main jako czysta funkcja `evaluateTreatyOffer`, niewpięta w grę (a86a847d7, merge FC 326dede8e; subject „AIAIE1: merge FC 326dede8e”). Dalsze kroki AIAI wymagają dispatchu i decyzji właściciela — wpis po ich zapisaniu w `runs/`.
+- **Implementacja ustawienia „Dyplomacja i wojna”** (UI w newGameFlow.ts, mnożniki kar/bonusów, zapis/wczytanie, domyślnie ŁATWA) — dopiero po FC WARTEMPER i akceptacji listy przez właściciela (ABC: osobny wybór niezależny od głównej trudności; czy bonusy ÷ dotyczą też gracza i AI↔AI; wartości liczbowe).
+- **Pomiar 150 tur po IMPCOST** (seed 4242/7, rebalans ON) po wdrożeniu FALI z IMPCOST.
+- **Włączenie flag dyplomacji** (twarda dyplomacja, tor sojuszy, koalicja, zero zaufania, siła sojuszu, limit wojen) — dopiero po ponownym pomiarze OFF/ON po poprawce limitu sojuszy i decyzji właściciela (ABC).
+- **Dopłata D sojuszy AI↔AI (0,5?)** — dopiero po pełniejszym pomiarze seed 4242/7 t60 i decyzji.
 
-## CZEKA NA RANO — decyzje i weryfikacja właściciela
+## CZEKA NA RANO / ODPOWIEDŹ WŁAŚCICIELA (ABC do zadania, gdy właściciel wraca)
 
-Rejestr w repo nie zawiera markerów „CZEKA NA RANO”. Poniżej pozycje „DO DECYZJI WŁAŚCICIELA” z rejestru (przegląd ograniczony do FAL 722–746; brak zamknięcia w rejestrze do wiersza 10148). Statusu po FALI 746 nie zbadano.
-
-1. Gęstość listy wojsk w oknie rozstawienia przy 640 px i wartości liczbowe premii w chipach (rejestr L10123, FALA 744: „jeszcze nie zadane”).
-2. Plakietka „+X” obok „Brutto · netto” jest redundantna — do decyzji (rejestr L10001, FALA 729); status po FALI 746 nie ustalony.
-3. Palisada w kolejce po odblokowaniu Murarstwa i awans Palisada → Mury kamienne po odblokowaniu Budownictwa (rejestr L9944).
-4. Stała C dla AI→gracz bez mnożnika cywilizacji; C 615 vs 500 zależne od tury (rejestr L9961, FALA 722).
+1. Skarbiec w Brązie: czy dodatkowa korekta kosztów jednostek (A +10%/B +20%/C +30% lub bez zmian), po ustaleniu, że pieniądz/surowce już skalują ×1/×2/×4.
+2. Kurs zamiany Żywności na Podatek (dziś 1:1) i ewentualne zabezpieczenie zapasu na utrzymanie wojska.
+3. Spadek żywności jednostek w epokach 4–5 (108/324 → 16) po FALI 875 — akceptacja lub korekta mnożnika.
+4. Ucieczka Harappy: scenariusz (bitwa 3D vs odwrót na mapie, tryb ręczny vs automatyczny).
+5. Lista „Dyplomacja i wojna” (po WARTEMPER): nazwy poziomów OK, wartości liczbowe, zakres (gracz/AI↔AI/państwa-miasta).
+6. Stare pozycje z 2026-11-15/18 (gęstość listy wojsk 640 px, plakietka „+X”, Palisada→Mury, stała C AI→gracz) — status po FALI 746 nie ustalony.
 
 ## DŁUG RUST / REPIN (źródło: rejestr, wpisy FAL 730–745)
 
