@@ -34,6 +34,7 @@ use super::victory::{
     check_victory, VictoryInput, VictoryMode, VictoryResult, OSTATNIA_EPOKA_GRY_V1,
 };
 use super::war_turn_state::WarTurnState;
+use super::siege_battle_apply::{self, ActiveSiegeBattle, SiegeBattleError, SiegeBattlePayload};
 use super::{events::*, CityId, OwnerRef, PlayerId, PositionDto, UnitId};
 
 pub const PLAYABLE_STATE_VERSION: u16 = 1;
@@ -1003,6 +1004,9 @@ pub enum PlayableError {
     GameAlreadyOver(VictoryResult),
     /// P6-ZWYCIESTWO-WIRING: wejscie warunkow zwyciestwa (moc, epoka) nie da sie zbudowac ze stanu.
     VictoryCheck(String),
+    /// R-RUSTPORT-P6-K5LOOP-WIRING-B-Q1 (D-WIRB-2): komenda mapy w trakcie bitwy oblezniczej (pin: scena zaslania mape,
+    /// `main.ts:36940-37024`); stan bez zmian.
+    SiegeBattleInProgress { city_id: u64 },
 }
 
 impl fmt::Display for PlayableError {
@@ -1054,6 +1058,9 @@ impl fmt::Display for PlayableError {
                 write!(formatter, "game is over: {:?}", result.rodzaj)
             }
             Self::VictoryCheck(message) => write!(formatter, "victory check: {message}"),
+            Self::SiegeBattleInProgress { city_id } => {
+                write!(formatter, "siege battle in progress (city {city_id})")
+            }
         }
     }
 }
@@ -1135,6 +1142,10 @@ pub struct PlayableGame {
     phase_queue: EventQueue<TurnEvent>,
     /// R-RUSTPORT-P4-364-BRIDGE-LAYERS-R2: stan mgly sesji (poza `PlayableState`).
     fog: PlayableFogSession,
+    /// R-RUSTPORT-P6-K5LOOP-WIRING-B-Q1 (D-WIRB-1): trwajaca bitwa obleznicza (poza `PlayableState`, poza zapisem).
+    siege_battle: Option<ActiveSiegeBattle>,
+    /// D-WIR-5: licznik bitew oblezniczych sesji (numer bitwy w ziarnie RNG `SessionRolls::derive`).
+    siege_battles_started: u32,
 }
 
 impl PlayableGame {
@@ -1209,6 +1220,8 @@ impl PlayableGame {
             state,
             phase_queue: EventQueue::new(),
             fog,
+            siege_battle: None,
+            siege_battles_started: 0,
         };
         game.enqueue_turn_phases(1);
         Ok(game)
@@ -1224,6 +1237,8 @@ impl PlayableGame {
             state,
             phase_queue: EventQueue::new(),
             fog,
+            siege_battle: None,
+            siege_battles_started: 0,
         };
         game.enqueue_turn_phases(turn);
         game
@@ -1311,6 +1326,7 @@ impl PlayableGame {
         destination: PositionDto,
         attack_unit_id: Option<u64>,
     ) -> Result<(), PlayableError> {
+        self.ensure_no_siege_battle()?;
         let unit = self
             .state
             .units
@@ -1333,6 +1349,69 @@ impl PlayableGame {
         .map(|_| ())
     }
 
+    /// D-WIRB-2: bramka komend mapy w trakcie bitwy oblezniczej.
+    fn ensure_no_siege_battle(&self) -> Result<(), PlayableError> {
+        match &self.siege_battle {
+            Some(b) => Err(PlayableError::SiegeBattleInProgress { city_id: b.city_id }),
+            None => Ok(()),
+        }
+    }
+
+    /// R-RUSTPORT-P6-K5LOOP-WIRING-B-Q1: trwajaca bitwa obleznicza (odczyt).
+    pub fn siege_battle(&self) -> Option<&ActiveSiegeBattle> {
+        self.siege_battle.as_ref()
+    }
+
+    /// Komenda `StartSiegeStorm { city_id, unit_id }`: web `launchSiegeStormFromMap` -> `onBattlefield` -> `new
+    /// BattleScene` -> `bs.play` (`main.ts:36799-37019`). Stan gry bez zmian (machiny zuzywa wynik, `:37023`).
+    pub fn start_siege_storm(
+        &mut self,
+        city_id: u64,
+        unit_id: u64,
+    ) -> Result<SiegeBattlePayload, SiegeBattleError> {
+        if let Some(b) = &self.siege_battle {
+            return Err(SiegeBattleError::BattleInProgress { city_id: b.city_id });
+        }
+        let index = self.siege_battles_started.wrapping_add(1);
+        let battle = siege_battle_apply::prepare_storm(&self.state, city_id, unit_id, index)?;
+        let payload = siege_battle_apply::start_payload(&battle)?;
+        self.siege_battles_started = index;
+        self.siege_battle = Some(battle);
+        Ok(payload)
+    }
+
+    /// Komenda `StepSiegeBattle { wall_ms }`: krok czasu rzeczywistego (D-WIR-3).
+    pub fn step_siege_battle(&mut self, wall_ms: f64) -> Result<SiegeBattlePayload, SiegeBattleError> {
+        let battle = self
+            .siege_battle
+            .as_mut()
+            .ok_or(SiegeBattleError::NoActiveBattle)?;
+        siege_battle_apply::step(battle, wall_ms)
+    }
+
+    /// Komenda `SkipSiegeBattle`: przewijanie do wyniku (`skip()`, `battleScene.ts:3680-3707`).
+    pub fn skip_siege_battle(&mut self) -> Result<SiegeBattlePayload, SiegeBattleError> {
+        let battle = self
+            .siege_battle
+            .as_mut()
+            .ok_or(SiegeBattleError::NoActiveBattle)?;
+        siege_battle_apply::skip(battle)
+    }
+
+    /// Komenda `FinishSiegeBattle`: wynik sceny zastosowany do stanu (`consumeReadyMachines` + `finishSiegeStormBattle`
+    /// bez zdobycia, D-WIRB-3). Przy bledzie stan i bitwa bez zmian.
+    pub fn finish_siege_battle(&mut self) -> Result<SiegeBattlePayload, SiegeBattleError> {
+        let battle = self
+            .siege_battle
+            .as_ref()
+            .ok_or(SiegeBattleError::NoActiveBattle)?;
+        let mut next = self.state.clone();
+        let payload = siege_battle_apply::finish(&mut next, battle)?;
+        self.state = next;
+        self.siege_battle = None;
+        Ok(payload)
+    }
+
     /// P4-1H (`R-RUSTPORT-P4-1H-CANCEL-Q2`): komenda `cancel_planned_march { unit_id, force }`,
     /// web `clearPlannedMarch(unitId, force)` z podanym `unitId` (`main.ts:31051-31056`); logika w
     /// `PlayableState::clear_planned_march_for_unit`. Brak planu -> `Ok(())` bez zmian (idempotencja).
@@ -1340,6 +1419,7 @@ impl PlayableGame {
     /// `REJESTR-RUST.md` 15.11, spojnie z `move_unit`; web tej sciezki nie ma). Bledy nie zmieniaja stanu.
     /// Nie wymaga zaznaczenia jednostki: web wola to takze dla jednostek z petli HUD (`:25920` i dalej).
     pub fn cancel_planned_march(&mut self, unit_id: u64, force: bool) -> Result<(), PlayableError> {
+        self.ensure_no_siege_battle()?;
         let unit = self
             .state
             .units
@@ -1565,6 +1645,7 @@ impl PlayableGame {
     }
 
     pub fn advance_turn(&mut self) -> Result<(), PlayableError> {
+        self.ensure_no_siege_battle()?;
         // P6-ZWYCIESTWO-WIRING: po koncu gry koniec tury jest odrzucany zanim cokolwiek sie zmieni (pin main.ts:37997).
         if let Some(result) = self.state.koniec_gry {
             return Err(PlayableError::GameAlreadyOver(result));
