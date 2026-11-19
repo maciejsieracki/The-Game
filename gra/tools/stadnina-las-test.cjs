@@ -10,9 +10,11 @@
  * jest tak samo czymś takim samym jak na przykład glinianka."
  *
  * KRYTERIA KOŃCA (00-dispatch.md), pilnowane niżej sekcja po sekcji:
- *   (1) Stadnina KWALIFIKUJE SIĘ do budowy na heksie Łąka/Równina z nakładką Las, gdy
- *       imperium ma odblokowany surowiec 'kon' (surowiecOdblokowany='kon') — DOKŁADNIE tam,
- *       gdzie dziś (przed poprawką) jest zablokowana.
+ *   (1) AKTUALIZACJA 2026-11-19 (R-WEB-IMPROVEMENT-STADNINA-DEPOSIT-ONLY-NO-FOREST-Q1, decyzja
+ *       właściciela „stadnina tylko na złożu, bez lasu"): zakaz lasu dla stadniny PRZYWRÓCONY.
+ *       Stadnina NIE kwalifikuje się do budowy na heksie Łąka/Równina z nakładką Las, nawet przy
+ *       odblokowanym 'kon'. Poniższe asercje (1) i (2) sprawdzają to i test przetrwania wyrębu.
+ *       (Cytat z 2026-09-03 wyżej opisuje stan HISTORYCZNY, nie bieżący.)
  *   (2) Stadnina POSTAWIONA na zalesionym heksie PRZETRWA usunięcie lasu (dowolny mechanizm
  *       gry) — ŻYWY test, nie wniosek z lektury warunku budowy (reguła przeciw
  *       samooszukiwaniu, dispatch).
@@ -153,19 +155,24 @@ ok(q('stadnina', 6, 0) === false,
   '[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej stadniny -> NIE] GOAL 1: Rownina+Las poza złożem bez sąsiada -> NIE');
 ok(q('stadnina', 7, 0) === false,
   '[R-WEB-IRON-STUD-ADJACENCY-Q1: bez sąsiedniej stadniny -> NIE] kontrola: gola Laka poza złożem bez sąsiada -> NIE');
-ok(M.computeImprovementBuildImpact('stadnina', FOREST_HEX, []) !== null,
-  'GOAL 1: gate commitu (computeImprovementBuildImpact) NIE blokuje stadniny na lesie');
-ok(M.isImprovementBlockedOnForest('stadnina', N.Las) === false,
-  'GOAL 1 + GOAL 3: kanoniczny predykat lasu NIE blokuje stadniny (jak glinianka/tartak)');
-ok(M.isStadninaBlockedOnForest('stadnina', N.Las) === false,
-  'predykat historyczny stadniny zawsze false od tej rundy');
+// R-WEB-IMPROVEMENT-STADNINA-DEPOSIT-ONLY-NO-FOREST-Q1 (decyzja właściciela 2026-11-19):
+// zakaz lasu dla stadniny PRZYWRÓCONY — asercje z 2026-09-03 odwrócone (poprzednio `!== null`/`=== false`).
+ok(M.computeImprovementBuildImpact('stadnina', FOREST_HEX, []) === null,
+  'GOAL 1 (2026-11-19): gate commitu (computeImprovementBuildImpact) BLOKUJE stadnine na lesie');
+ok(M.isImprovementBlockedOnForest('stadnina', N.Las) === true,
+  'GOAL 1 (2026-11-19): kanoniczny predykat lasu BLOKUJE stadnine');
+ok(M.isStadninaBlockedOnForest('stadnina', N.Las) === true,
+  'predykat stadniny: las blokuje (2026-11-19)');
 
 console.log('\n--- (2) KRYTERIUM 2: PRZETRWANIE po usunieciu lasu (zywy test, nie lektura kodu) ---');
 // Symulacja DOKLADNIE tej sciezki co main.ts::finalizeHexClearing: (a) postaw stadnine na
-// zalesionym hexie [budowa juz udowodniona w sekcji (1)], (b) zawolaj TA SAMA funkcje, ktora
+// zalesionym hexie — STAN ZASTANY (stadnina zbudowana PRZED reguła 2026-11-19, stary zapis),
+// bo nowa budowa na lesie jest już zablokowana (sekcja 1); (b) zawolaj TA SAMA funkcje, ktora
 // silnik woli po wyrebie (stripImprovementsWhenForestRemoved), (c) sprawdz stan PO.
+// Test przetrwania dotyczy wyłącznie wyrębu, nie bramki budowy — dlatego stan wyjściowy
+// jest legalny historycznie, a nie wynik nowej kwalifikacji.
 const warstwyPrzedWyrebem = ['stadnina'];
-ok(!M.isStadninaBlockedOnForest('stadnina', N.Las) /* build path juz sprawdzony wyzej */, 'kontrola: budowa przed wyrebem byla legalna (sekcja 1)');
+ok(M.isStadninaBlockedOnForest('stadnina', N.Las) === true, 'kontrola: zakaz lasu obowiazuje (sekcja 1); stadnina na lesie to tylko stan zastany ze starego zapisu');
 const warstwyPoWyrebie = M.stripImprovementsWhenForestRemoved(warstwyPrzedWyrebem);
 ok(warstwyPoWyrebie.includes('stadnina'),
   'GOAL 2: stadnina POZOSTAJE na hexie po zywej symulacji wyrebu (stripImprovementsWhenForestRemoved)');

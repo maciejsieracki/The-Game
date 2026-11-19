@@ -35,6 +35,11 @@
  * `tools/stadnina-las-test.cjs` (nowa, dedykowana — kryteria końca P-STADNINA-LAS-
  * -NIEROZSTRZYGNIETE-Q1 w pełni).
  *
+ * AKTUALIZACJA 2026-11-19 (R-WEB-IMPROVEMENT-STADNINA-DEPOSIT-ONLY-NO-FOREST-Q1, decyzja
+ * właściciela „stadnina tylko na złożu, bez lasu"): akapity AKTUALIZACJA 2026-09-03 powyżej
+ * opisują stan HISTORYCZNY. Bieżąco: zakaz lasu dla stadniny PRZYWRÓCONY — stadnina na lesie
+ * jest BLOKOWANA (asercje `isImprovementBlockedOnForest`/`computeImprovementBuildImpact` = blokada).
+ *
  * Uruchamiaj z gra/:  node tools/hodowla-las-test.cjs
  */
 
@@ -140,12 +145,11 @@ ok(M.isImprovementBlockedOnForest('owce', N.Las) === true, 'las nadal blokuje ow
 ok(M.isImprovementBlockedOnForest('bydlo', N.Las) === true, 'las blokuje bydlo');
 ok(M.isImprovementBlockedOnForest('lama', N.Las) === false, 'las NIE blokuje lamy');
 
-// P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): stadnina ODBLOKOWANA na lesie, jak
-// glinianka. Poprzednie brzmienie (kontrola „temat NIE rusza") zostaje w komentarzu:
-//   ok(M.isImprovementBlockedOnForest('stadnina', N.Las) === true, 'KONTROLA: stadnina NADAL blokowana na lesie');
-//   ok(M.isStadninaBlockedOnForest('stadnina', N.Las) === true, 'KONTROLA: predykat stadniny dziala');
-ok(M.isImprovementBlockedOnForest('stadnina', N.Las) === false, 'stadnina JUZ NIE blokowana na lesie (zakaz cofniety 2026-09-03)');
-ok(M.isStadninaBlockedOnForest('stadnina', N.Las) === false, 'predykat stadniny zawsze false od tej rundy');
+// R-WEB-IMPROVEMENT-STADNINA-DEPOSIT-ONLY-NO-FOREST-Q1 (DECYZJA WŁAŚCICIELA 2026-11-19, ABC B:
+// „stadnina tylko na złożu, bez lasu"): zakaz lasu dla stadniny PRZYWRÓCONY. Odwraca asercje
+// z 2026-09-03 (ECHO P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1, poprzednio: `=== false`).
+ok(M.isImprovementBlockedOnForest('stadnina', N.Las) === true, 'stadnina BLOKOWANA na lesie (zakaz lasu przywrocony 2026-11-19)');
+ok(M.isStadninaBlockedOnForest('stadnina', N.Las) === true, 'predykat stadniny: las blokuje (2026-11-19)');
 ok(M.isStadninaBlockedOnForest('stadnina', N.Brak) === false, 'stadnina poza lasem nie blokowana');
 ok(M.isStadninaBlockedOnForest('owce', N.Las) === false, 'predykat stadniny nie lapie owiec');
 ok(M.isImprovementBlockedOnForest('farma', N.Las) === true, 'KONTROLA: farma nadal zabroniona na lesie');
@@ -202,7 +206,7 @@ ok(qRzym('stadnina', 7, 0) === true, 'GRACZ: stadnina NA golej Lace (warunek ist
 // P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): odwrocone razem z regula (poprzednio
 // `=== false`, „KONTROLA GRACZ: stadnina NIE na Lace z lasem") — stadnina teraz kwalifikuje
 // sie na Lace+Las dokladnie jak bydlo (linia wyzej), bo nakladka Las juz jej nie blokuje.
-ok(qRzym('stadnina', 2, 0) === true, 'GRACZ: stadnina TERAZ NA Lace z lasem (zakaz cofniety 2026-09-03)');
+ok(qRzym('stadnina', 2, 0) === false, 'GRACZ: stadnina NIE na Lace z lasem (zakaz lasu przywrocony 2026-11-19)');
 ok(qRzym('farma', 7, 0) === true, 'KONTROLA GRACZ: farma NA golej Lace (warunek istotnosci)');
 ok(qRzym('farma', 2, 0) === false, 'KONTROLA GRACZ: farma NIE na Lace z lasem');
 
@@ -228,7 +232,7 @@ ok(M.computeImprovementBuildImpact('lama', hexes['4,0'], []) !== null, 'COMMIT: 
 ok(M.computeImprovementBuildImpact('owce', hexes['2,0'], []) === null, 'COMMIT: owce na Lace+Las nadal null');
 // P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): odwrocone razem z regula (poprzednio
 // `=== null`, „KONTROLA COMMIT: stadnina na lesie null").
-ok(M.computeImprovementBuildImpact('stadnina', hexes['2,0'], []) !== null, 'COMMIT: stadnina na Lace+Las przechodzi (zakaz cofniety)');
+ok(M.computeImprovementBuildImpact('stadnina', hexes['2,0'], []) === null, 'COMMIT: stadnina na Lace+Las ZABLOKOWANA (zakaz lasu 2026-11-19)');
 ok(M.computeImprovementBuildImpact('farma', hexes['2,0'], []) === null, 'KONTROLA COMMIT: farma na lesie null');
 ok(M.getImprovementForestBlockHint('bydlo') === 'Aby zbudować Trzodę na tym polu, najpierw usuń las.',
   'COMMIT: bydlo ma dokladny tooltip blokady lasu');
@@ -444,11 +448,9 @@ for (const seed of [90210, 777, 31415]) {
   ok(owceLas === 0, `mapa ${seed}: owce nie kwalifikuja sie na lesie`);
   ok(bydloLas === 0, `mapa ${seed}: bydlo nie kwalifikuje sie na lesie`);
   ok(lamaLas > 0, `mapa ${seed}: lama kwalifikuje sie na >0 heksach z lasem`);
-  // P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): odwrocone razem z regula (poprzednio
-  // `stadninaLas === 0`, „KONTROLA mapa ${seed}: stadnina na 0 heksach z lasem") — stadnina
-  // dolacza do owce/bydlo/lama wyzej, kwalifikuje sie teraz na realnie wygenerowanych heksach
-  // lesnych, nie tylko na syntetycznym heksie testu jednostkowego.
-  ok(stadninaLas > 0, `mapa ${seed}: stadnina kwalifikuje sie na >0 heksach z lasem (zakaz cofniety)`);
+  // R-WEB-IMPROVEMENT-STADNINA-DEPOSIT-ONLY-NO-FOREST-Q1 (2026-11-19): zakaz lasu przywrocony —
+  // stadnina nie kwalifikuje sie na zadnym heksie z lasem wygenerowanej mapy.
+  ok(stadninaLas === 0, `mapa ${seed}: stadnina na 0 heksach z lasem (zakaz lasu 2026-11-19)`);
   ok(farmaLas === 0, `KONTROLA mapa ${seed}: farma na 0 heksach z lasem`);
 }
 

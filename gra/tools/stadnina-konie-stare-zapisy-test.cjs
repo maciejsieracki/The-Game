@@ -93,7 +93,9 @@ export { TerenBazowy, Nakladka } from ${JSON.stringify(SRC + '/types/hex')};
     hx['0,3'] = mk(0, 3, T.Laka, N.Las);
     hx['3,0'] = mk(3, 0, T.Laka, N.Brak, 'owce');
     const b = api(M, hx);
-    ok(has(b, 1, 0), 'stary zapis (Las + zloze konie) -> kandydat');
+    // R-WEB-IMPROVEMENT-STADNINA-DEPOSIT-ONLY-NO-FOREST-Q1 (2026-11-19): zakaz lasu przywrocony —
+    // stary zapis Las+zloze konie NIE jest juz kandydatem (poprzednio `has === true`).
+    ok(!has(b, 1, 0), 'stary zapis (Las + zloze konie) -> NIE kandydat (zakaz lasu 2026-11-19)');
     ok(has(b, 2, 0), 'nowa mapa (ZlozeKonia) -> kandydat');
     ok(has(b, 0, 2), 'zloze " KONIE " -> kandydat');
     ok(!has(b, 0, 3), 'las bez zloza -> NIE kandydat');
