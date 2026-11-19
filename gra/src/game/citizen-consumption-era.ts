@@ -15,12 +15,17 @@
  * m(e) = 1 + 0.5 × (e − 1); invalid / < 1 eras → 1.
  */
 
+import { rebalancedCitizenConsumptionMult } from './econ-era-rebalance';
+
 /** Przyrost mnożnika na epokę (50% bazy). */
 export const CITIZEN_CONSUMPTION_ERA_STEP = 0.5;
 
 /** m(e) = 1 + 0,5 × (e − 1); era < 1 / NaN / nie-liczba → 1. Epoki ułamkowe są zaokrąglane w dół. */
 export function citizenConsumptionEraMultiplier(era: number | null | undefined): number {
   if (typeof era !== 'number' || !Number.isFinite(era) || era < 1) return 1;
+  // R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: flaga ON = m(e) = 2^(e-1) (1/2/4/8/16); flaga OFF = wzor jak dotad.
+  const rebalanced = rebalancedCitizenConsumptionMult(era);
+  if (rebalanced !== null) return rebalanced;
   return 1 + CITIZEN_CONSUMPTION_ERA_STEP * (Math.floor(era) - 1);
 }
 
