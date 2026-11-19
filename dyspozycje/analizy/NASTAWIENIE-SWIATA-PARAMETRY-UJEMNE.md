@@ -52,9 +52,9 @@ Linie JSON wg `grep -n` na bazie; linie TS wg `grep -n` na bazie.
 | `ekspansjaGranica_zaufanie_perTura` | `gra/data/diplomacy.json:28`; `gra/src/game/diplomacy.ts:163` | Zaufanie/tura | −3 | −3 | −6 | −9 | Kara za wspólną granicę w epoce Kamień (`sharedBorderPenaltyForEpochs`, `diplomacy.ts:603–612`; ctx w `main.ts:24667–24670`). | Wstrzymana w karencji po pokoju/rozejmie (`isPeaceLockedBetween`, `isTruceActive`). |
 | `ekspansjaGranicaBraz_zaufanie_perTura` | `diplomacy.json:29`; `diplomacy.ts:165` | Zaufanie/tura | −4 | −4 | −8 | −12 | Kara za granicę, epoka Brąz (para: max epoki ≥ 2). | Jak wyżej. |
 | `ekspansjaGranicaZelazo_zaufanie_perTura` | `diplomacy.json:30`; `diplomacy.ts:167` | Zaufanie/tura | −5 | −5 | −10 | −15 | Kara za granicę, epoka Żelazo (max epoki ≥ 3). | Przy `twardaDyplomacjaAktywna=ON` klamra −6 (§5.1). |
-| Napięcie sąsiedztwa `granicaPrzyrost` (1/okres) i `granicaMax` (−6) | `gra/data/diplomacy-harder-params.json:4,5,6`; `gra/src/game/diplomacy-harder.ts:45–104` | Zaufanie/tura, klamra | −1 co 10 tur, max −6 | bez zmian | przyrost −2/okres; klamra −6 po mnożniku | przyrost −3/okres; klamra −6 po mnożniku | Dodatkowa kara za granicę bez NAP/sojuszu, narastająca po okresie (`napieciePenaltyZaTure`). | **Flaga OFF** (`twardaDyplomacjaAktywna: false`). Klamra −6 ma pozostać, mnożnik tylko przyrostu? → ABC nr 5. |
+| Napięcie sąsiedztwa `granicaPrzyrost` (1/okres) i `granicaMax` (−6) | `gra/data/diplomacy-harder-params.json:4,5,6`; `gra/src/game/diplomacy-harder.ts:45–104` | Zaufanie/tura, klamra | −1 co 10 tur, max −6 | bez zmian | przyrost −2/okres; klamra −6 → −12 (mnożnik PO klamrze, ABC 5a) | przyrost −3/okres; klamra −6 → −18 (ABC 5a) | Dodatkowa kara za granicę bez NAP/sojuszu, narastająca po okresie (`napieciePenaltyZaTure`). | **Działa tylko przy flagach ON**: `harderPairDeltas` (`diplomacy-harder.ts:110–122`) wołane wyłącznie gdy `twardaDyplomacjaAktywna` = true (komentarz przy funkcji). W danych dziś `false`, więc dziś bez wpływu. Skalowanie klamry → ABC nr 5(a). |
 | `karaPrzemarszNieautoryzowany_zaufanie_perTura` | `diplomacy.json:86`; `gra/src/game/diplomacy-border-march.ts:60` (`DEFAULT_KARA = 5`); `main.ts:6322` | Zaufanie/tura (wartość dodatnia = wielkość kary) | 5 (magnitude) | 5 | 10 | 15 | Nieautoryzowany przemarsz przez cudze terytorium (koniec tury). | **Znak:** JSON trzyma wartość DODATNIĄ, loader odrzuca `≤ 0` (`border-march.ts:112`), kod traktuje jako wielkość kary. Mnożnik działa na wielkość, znak zostaje. Dyspozycja podaje „−5” — zgodne po wartości bezwzględnej. |
-| `ai_city` garnizon / siedlisko: `ekspansja_heurystyka_granica_kara` (AI, osadnictwo) | `gra/data/ai-params.json:428` | punkty rankingu heksu | −3 | −3 | −6 | −9 | Kara punktowa AI za bliskość granicy wroga (<5 pól) przy zakładaniu miasta. | To NIE jest kara dyplomatyczna — AI-osadnictwo. Do decyzji (ABC nr 7). Rekomendacja: TAK (zgodnie z „sąsiedztwo”), ale to zmiana zachowania AI niezależnie od relacji. |
+| `ekspansja_heurystyka_granica_kara` (AI, ocena miejsca na nowe miasto; użycie `gra/src/game/ai.ts:1478`) | `gra/data/ai-params.json:428` | punkty rankingu heksu | −3 | −3 | −6 | −9 | Kara punktowa AI za bliskość granicy wroga (<5 pól) przy zakładaniu miasta. | To NIE jest kara dyplomatyczna — AI-osadnictwo. Do decyzji (ABC nr 7). Rekomendacja: TAK (zgodnie z „sąsiedztwo”), ale to zmiana zachowania AI niezależnie od relacji. |
 
 ### 2.2 Zaufanie — zdarzenia jednorazowe i stany
 
@@ -130,6 +130,9 @@ Linie JSON wg `grep -n` na bazie; linie TS wg `grep -n` na bazie.
 | `progRozniceSilyPokoj` 0 | `diplomacy-war-peace-params.json:107–` | próg |
 | `cenaPokoju.cenaStartPn` 6000, `pokoj` 615 PN, `rozejm` 2000 PN, `sojusz_pelny` 5000, `nap` 2000 | `war-weariness-params.json:40`; `diplomacy-acceptance-points.json` | CENY w PN — patrz §4 |
 | `wiarygodnoscP4OknoBezWojnyTur` 30 | `diplomacy.json:128` | czas |
+| `war-weariness` wagi desperacji: `przegrywajacy.wagaZmeczenia` 0,5, `wagaSily` 0,5, `wagaStrat` 0,3, `tolerancjaZmeczenia` 0,5; `zmeczenie.wagaStratMiasta` 0,1 | `gra/data/war-weariness-params.json` (`przegrywajacy`, `zmeczenie`) | wagi | NIE mnożyć: to wagi, po których AI decyduje o ofercie pokoju (desperacja, zmęczenie), a nie kara zaufania. Mnożenie zmieniłoby moment kapitulacji AI, nie „ile kosztuje” wojna. Zmiana tylko po osobnej decyzji (ABC nr 8). |
+| `war-weariness` progi i czas: `progiStopni` 0,25 / 0,45 / 0,65; `progChetnosci` 0,5; `progWzajemnyPokoj` 0,8; `progWymuszonyPokoj` 1,0; `odrzuceniaDoKapitulacji` 3; `ofertaOdTurWojny` 3; `ofertaBezStratOdTur` 6; `ochronaMaxMiast` 3; `ochronaUtratyWojny` 3; `cooldownOfertTur` 3; `pelneTur` 40; `karencjaPoPokojuTur` 40; `karencjaChronionegoTur` 100 | `gra/data/war-weariness-params.json` | progi, czas | NIE mnożyć (progi i czas, §4). |
+| `diplomacy-tick-params.json` `p7`: `wymianaKrokPktPerEpoka` 100/200/400, `wymianaMnoznikNaEpoke` 2, `wymianaMinTurDostaw` 2, `p6.kryzysProgZaufania` 0 | `gra/data/diplomacy-tick-params.json` | PN / progi / czas | NIE mnożyć (progi PN, czas, próg kryzysu). |
 
 ---
 
@@ -175,6 +178,26 @@ Kolumny jak w liście A. Ta sama zasada: bonus dzielony przez mnożnik poziomu.
 | `wygraBitwa_respekt` | `diplomacy.json:16` | Respekt, jednorazowo | +5 | +5 | +2,5 | +1,67 | Wygrana bitwa. | — |
 | `trybut_respekt` | `diplomacy.json:17` | Respekt, jednorazowo | +10 | +10 | +5 | +3,33 | Akceptacja żądania trybutu. | — |
 | `wspolnyWrogAkceptacja_respekt` | `diplomacy.json:18` | Respekt, jednorazowo | +10 | +10 | +5 | +3,33 | Akceptacja wspólnego wroga. | — |
+
+### 3.2a Bonusy NA SZTYWNO w kodzie (nie w JSON) — zarzut 1 Evaluatora
+
+| Zdarzenie (klucz) | Plik:linia | Jednostka | Dziś | ŁATWA | NORMALNA (÷2) | TRUDNA (÷3) | Uwagi |
+|---|---|---|---|---|---|---|---|
+| `pokoj` — dZ | `gra/src/game/diplomacy.ts:939–940` (funkcja `applyDiplomaticEvent`, l.916) | Zaufanie, jednorazowo | +5 | +5 | +2,5 | +1,67 | Sztywne `dZ = 5` przy zawarciu pokoju. |
+| `trybut_oferta_przyjeta` — dZ | `diplomacy.ts:1051–1053` | Zaufanie, jednorazowo | +5 | +5 | +2,5 | +1,67 | Sztywne; komentarz w kodzie „+5 Zaufanie”. |
+| `wymiana_tech_gratis` — dZ | `diplomacy.ts:1056–1058` | Zaufanie, jednorazowo | +5 | +5 | +2,5 | +1,67 | Sztywne. |
+
+Te trzy pozycje MUSZĄ mieć ten sam mechanizm przepięcia co kary sztywne (§2.3): argument `bonus`/`warLevel` do `applyDiplomaticEvent`, bez tego asymetria kara ×2/×3 vs bonus ×1 (zarzut 1). `handel` (`diplomacy.ts` ~l.950, `dZ = 0`) nie ma bonusu sztywnego.
+
+### 3.6 Bonus Zaufania za wymianę (`diplomacy-tick-params.json`, klucz `p7`) — zarzut 2 Evaluatora
+
+| Parametr | Plik:linia | Jednostka | Dziś | ŁATWA | NORMALNA (÷2) | TRUDNA (÷3) | Co robi | Uwagi |
+|---|---|---|---|---|---|---|---|---|
+| `p7.wymianaZaufanieNaKrok` | `gra/data/diplomacy-tick-params.json` (p7) | Zaufanie za krok nadwyżki | 0,5 | 0,5 | 0,25 | 0,17 | Bonus schodkowy: `floor(nadwyżka / krok) × wymianaZaufanieNaKrok` (`gra/src/game/diplomacy-tick-war-brake.ts:81`). | DZIELIĆ (bonus). |
+| `p7.wymianaMaxPerTura` | `diplomacy-tick-params.json` (p7) | Zaufanie/tura (limit) | 5 | 5 | 2,5 | 1,67 | Limit przyrostu z wymiany. | DZIELIĆ, jak `max_zaufanie_na_ture` (§5.8). |
+| `p7.wymianaSufitZaufania` | `diplomacy-tick-params.json` (p7) | Zaufanie (sufit wartości) | 60 | 60 | 60 | 60 | `headroom = sufit − zaufanie` (`diplomacy-tick-war-brake.ts:88`). | NIE dzielić: to sufit wartości (próg), nie bonus. Decyzja: ABC nr 1(b). |
+
+Komentarz w pliku mówi, że realna domyślna wartość pakietu to `DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT = true` (`diplomacy-tick-war-brake.ts:7`), a pole `flagaDomyslna: false` nie jest czytane. Wg komentarza bonus p7 jest więc aktywny domyślnie (NIE ZWERYFIKOWANO w kodzie w tej rundzie — tylko odczyt komentarza).
 
 ### 3.3 Ocena sojuszu i punkty akceptacji (AI)
 
@@ -242,6 +265,27 @@ Skala ±100 (`diplomacy.json:` `wiarygodnoscSkalaMin/Max`). Jedna kara N2 ×3 = 
 
 ---
 
+### 5.7 Flagi `zeroZaufaniaAktywna` i `koalicjaAntyLiderAktywna` (zarzut 4)
+
+- `zeroZaufaniaAktywna` (`gra/data/diplomacy-zero-trust-params.json:4`): dziś `false`, ustawiane tylko w danych/testach (plik: „NIE w UI”). Jedyny parametr liczbowy w pliku to `zeroZaufaniaProgTur` = 5 (czas, NIE mnożyć). Plik NIE zawiera wartości ujemnej zaufania. Jego efekt w kodzie (`gra/src/game/diplomacy-zero-trust.ts`) NIE przeanalizowany w tej rundzie: NIE ZWERYFIKOWANO, czy działa przez kary ujemne. Przed włączeniem ×2/×3 wymaga osobnego przeglądu.
+- `koalicjaAntyLiderAktywna` (`gra/data/ai-ai-treaty-params.json:15`): dziś `false`, ustawiane tylko w danych/testach. Kary koalicji korzystają z `zerwanie_relacja` −30 i `zerwanie_zaufanie` −20 (`ai-ai-treaty-params.json:6–7`), które są już w §2.4 (×2: −60 / −40; ×3: −90 / −60). Próg lidera `liderProgPrzewagi` 1,5 — NIE mnożyć (próg).
+- Wniosek: przy obu flagach OFF nie ma kumulacji z mnożnikiem. Po włączeniu kumulacja jest możliwa; liczbowo NIE ZMIERZONO.
+
+### 5.8 Dwa skalowania bonusu zaufania z nadwyżki PN NIE kumulują się do ÷9 (zarzut 7: ODRZUCAM z dowodem)
+
+Wzór z §3.1 (`diplomacy.json:217–218`): przyrost zaufania z nadwyżki PN = `min(N / pn_na_zaufanie, max_zaufanie_na_ture)`, gdzie N = nadwyżka PN.
+- Baza: `min(N/100, 5)`.
+- Normalna: `pn_na_zaufanie` = 100·2 = 200, `max` = 5/2 → `min(N/200, 2,5)`.
+- Trudna: `pn_na_zaufanie` = 100·3 = 300, `max` = 5/3 → `min(N/300, 1,67)`.
+
+Dowód arytmetyczny: `min(N/(100k), 5/k) = (1/k)·min(N/100, 5)`. Obie wielkości są dzielone przez k względem bazy, więc łącznie wynik to dokładnie ÷k, a NIE ÷k² ani ÷9. Przykład Trudna, N = 1000 PN: baza min(10; 5) = 5; po zmianie min(3,33; 1,67) = 1,67 = 5/3.
+
+Wniosek projektowy: zmieniać OBA parametry jednakowo (÷k), wtedy wynik jest spójny. Zmiana tylko jednego daje mieszankę, która NIE jest ÷k (np. tylko `max` → `min(N/100, 5/3)`). To jest zalecenie implementacyjne, nie błąd dokumentu.
+
+### 5.9 Oszacowanie sojuszy AI↔AI dla Normalnej (zarzut 7, dopełnienie §5.6; NIE ZMIERZONO)
+
+Arytmetyka samego przyrostu (bez innych zdarzeń i bez podarunków): start 20 → próg 90 = 70 pkt. Przy `sojusz_zaufanie_perTura` +3: ok. 23 tury (Dziś). Normalna (+1,5/tura): ok. 47 tur. Trudna (+1/tura): ok. 70 tur. Kary ×2 (`zlamanaPaktAI` −40) i ×3 (−60) cofają postęp. To są wyliczenia, NIE pomiar.
+
 ## 6. Plan wiązania (najmniej inwazyjny) — bez zmian w tej rundzie
 
 1. `gra/src/game/diplomacy.ts` (obok `scaleDiplomacyParamsForDifficulty` ~l.569): helper `scaleDiplomacyParamsForWarLevel(base, level)` — mnoży klucze KARY, dzieli klucze BONUSU; ZBIORY KLUCZY jako stałe (jak `DIPLO_RELATION_THRESHOLD_KEYS` ~l.499), bez progów/czasu/cen.
@@ -277,7 +321,7 @@ Dodatkowo: czy przy ×3 kara N2 (−54) ma przekroczyć próg wiarołomności �
 Startowe zaufanie (rywalizacja −20, różnica kulturowa −5, start rywali −20) oraz progi i czas — **nie mnożyć** (rekomendacja). Alternatywa: mnożyć start (zmienia stan początkowy gry).
 
 **ABC 5 — Klamry i ograniczenia (kolizje z flagami):**
-- (a) Klamra `granicaMax` (−6, flaga OFF): mnożnik PO klamrze → −12 / −18 (rekomendacja) lub skalować klamrę.
+- (a) Klamra `granicaMax` (−6; działa tylko przy flagach ON, dziś OFF w danych): mnożnik PO klamrze → −12 / −18 (rekomendacja) lub skalować klamrę. (Zarzut 5: w §2.1 i §5.1 spójnie „flaga ON”; dawne „flaga OFF” w ABC było błędem redakcyjnym.)
 - (b) `willingnessAllyMnoznik` 0,7 → 0,4 / 0,1 (przeliczenie „1 − (1−x)·m”) — rekomendacja.
 - (c) Zanik urazów krok 2 → 4 / 6 (przyspiesza zanik) — rekomendacja: NIE skalować kroku zaniku, tylko wartość.
 
@@ -286,7 +330,11 @@ Czy dzielić ceny sojuszu/traktatów? Rekomendacja: **NIE** (to ceny w PN, nie b
 
 **ABC 7 — Osadnictwo AI (`ekspansja_heurystyka_granica_kara` −3) i zdarzenia sztywne:**
 - Czy kara AI za zakładanie miasta przy granicy (−3 → −6/−9) ma wejść w „Dyplomacja i wojna”? Rekomendacja: TAK (sąsiedztwo), ale to zmiana zachowania AI niezależnie od relacji.
-- Czy zdarzenia sztywne (`diplomacy.ts:1035–1078`, podgląd `penalty-preview:240`) mają iść przez mnożnik? Rekomendacja: TAK.
+- Czy zdarzenia sztywne (`diplomacy.ts:1035–1078`, podgląd `penalty-preview:240`) mają iść przez mnożnik? Rekomendacja: TAK. Dotyczy też bonusów sztywnych (§3.2a: `pokoj`, `trybut_oferta_przyjeta`, `wymiana_tech_gratis`).
+
+**ABC 8 — Wagi zmęczenia wojną (`war-weariness-params.json`, §2.6):**
+- A) Nie skalować (wagi decyzji AI o pokoju, nie kary) — rekomendacja.
+- B) Skalować wagę zmęczenia `wagaZmeczenia` ×2/×3 (AI szybciej chce pokoju) — tylko po osobnej decyzji, bo zmienia moment kapitulacji.
 
 ---
 
@@ -294,6 +342,7 @@ Czy dzielić ceny sojuszu/traktatów? Rekomendacja: **NIE** (to ceny w PN, nie b
 
 - NIE ZMIERZONO: wpływ mnożników na przebieg gry (brak runu, brak pomiaru 150 tur).
 - NIE ZMIERZONO: liczba sojuszy AI↔AI przy mnożnikach (dispatch cytuje „0→23” dla flag, nie dla mnożników).
-- NIE ZWERYFIKOWANO: miejsce zapisu `cityStateDifficultyOverride` w SaveGame (do potwierdzenia przy implementacji).
-- NIE ZWERYFIKOWANO: miejsce użycia `progSojuszKaraAllySkok` (`diplomacy.ts:248`).
+- ZWERYFIKOWANO (zarzut 6): `cityStateDifficultyOverride` — odczyt zapisanych ustawień w `gra/src/ui/newGameFlow.ts:416–421` (zmienna `raw`), wartość domyślna `newGameFlow.ts:280`, użycie `newGameFlow.ts:1773–1775`. Zapis do stanu SaveGame NIE ZWERYFIKOWANO (nie przeszukano modułu zapisu).
+- ZWERYFIKOWANO (zarzut 6): `progSojuszKaraAllySkok` (`diplomacy.ts:248`) → `allyWPenalty` (`diplomacy.ts:729`) → odejmowane `allyW = clamp(allyW − adj.allyWPenalty, 0, 1)` (`diplomacy.ts:1434`) w funkcji zaczynającej się w l.1290 (`aiDiplomacyStance`).
+- NIE ZWERYFIKOWANO liczbowo: efekt `zeroZaufaniaAktywna` (§5.7).
 - Wartości z §2–3 to wyliczenia arytmetyczne z plików na bazie; NIE są zatwierdzone przez właściciela (patrz §7).
