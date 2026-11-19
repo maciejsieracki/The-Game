@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "b0e0fecf54c6f9217a6eb1fbec44c0d0",
-  "bundleSha256": "49bb33a4adc31c12c29981ccb3af295625ad62758caf645875b85faa5c617c79",
-  "bundleBytes": 14986969,
+  "bundleMd5": "b77db2405038d11258e91cd93a936364",
+  "bundleSha256": "a4cf85e2f3f691c5cdae48d197fb34fe716f893fa714f35dfd2f7b6a850bdfff",
+  "bundleBytes": 14987101,
   "sourceSnapshot": {
-    "source": "kod 4b57117ee (Haiku r1 + Obrona); FC 87a69dec1",
+    "source": "kod 137b3f1f7 (Haiku r1); FC 52818ed95",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 868: gra/data/ai-territory-race-params.json (nowy), gra/src/game/auto-improvements.ts (progi per klucz, udzial puli, bramka zagrozenia), gra/src/game/ai.ts (przekazanie parametrow, planExpansionFortBuilding objety progami), test ai-territory-race-test. AI only; gracz i panstwa-miasta bez zmian. Decyzje wlasciciela 2026-11-19: P1 A, P2 40/16, P3 B, P4 A, P5 C."
+    "FALA 869: gra/src/audio/muzyka-antyczna.ts (startDiplomacyMusic: ta sama playlista bez restartu; inna nakladka: stop poprzedniej przed startem), gra/src/ui/civWelcomeScreen.ts (close('audience') nie zatrzymuje przywitania), test audio-welcome-audience-overlap-test (Chromium). Zgloszenie wlasciciela 2026-11-19."
   ],
   "verification": [
-    "tsc 0, logic 213/213, ai-territory-race 29/0 (mutacje czerwone), auto-improvements 46/0, ai-improvements 56/0, ai-economy-hook 23/23 (FC)"
+    "tsc 0, logic 213/213, audio-welcome-audience-overlap 8/0 (mutacje czerwone), civ-welcome-screen 309, civ-music 100/0, diplomacy-audience-close-flush 57/0; dowod w Chromium: przed 3 grajace (grecy->rzymianie), po max 1"
   ],
   "limits": [
-    "NIE ZMIERZONO: efekt w zywej grze (bieg 150 tur PRZED/PO; smoke 45 tur seed 4242 identyczny z baza); runner niedeterministyczny; interpretacje do ABC: 15% per wywolanie vs w oknie, zagrozenie poza oknem; auto-fort-claim-test 61/2 czerwone rowniez na bazie"
+    "NIE ZMIERZONO: pelna sciezka przez main.ts (showFirstContactWelcome/openDiplomacyAudience), wylaczona muzyka, audiencja bez powitania; male okno: zamkniecie audiencji w 0,4 s moze na chwile zagrac muzyke gry obok gasnacego utworu"
   ],
-  "finalControl": "FC PASS-WITH-NOTES: potomek bazy, allowlista, bramki zielone, zarzut 1 (druga sciezka planExpansionFortBuilding) naprawiony",
+  "finalControl": "FC PASS-WITH-NOTES: potomek bazy, 4 pliki w allowliscie, mutacja czerwona (6 OK/2 FAIL), testy audio/powitania zielone",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T18:28:42",
+  "hubGeneratedAt": "2026-11-19T20:04:31",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "b0e0fecf54c6f9217a6eb1fbec44c0d0",
-      "sizeBytes": 14986969
+      "md5": "b77db2405038d11258e91cd93a936364",
+      "sizeBytes": 14987101
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "b0e0fecf54c6f9217a6eb1fbec44c0d0",
-      "sizeBytes": 14986969
+      "md5": "b77db2405038d11258e91cd93a936364",
+      "sizeBytes": 14987101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "b0e0fecf54c6f9217a6eb1fbec44c0d0",
-      "sizeBytes": 14986969
+      "md5": "b77db2405038d11258e91cd93a936364",
+      "sizeBytes": 14987101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "b0e0fecf54c6f9217a6eb1fbec44c0d0",
-      "sizeBytes": 14986969
+      "md5": "b77db2405038d11258e91cd93a936364",
+      "sizeBytes": 14987101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "b0e0fecf54c6f9217a6eb1fbec44c0d0",
-      "sizeBytes": 14986969
+      "md5": "b77db2405038d11258e91cd93a936364",
+      "sizeBytes": 14987101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "b0e0fecf54c6f9217a6eb1fbec44c0d0",
-      "sizeBytes": 14986969
+      "md5": "b77db2405038d11258e91cd93a936364",
+      "sizeBytes": 14987101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "b0e0fecf54c6f9217a6eb1fbec44c0d0",
-      "sizeBytes": 14986969
+      "md5": "b77db2405038d11258e91cd93a936364",
+      "sizeBytes": 14987101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "b0e0fecf54c6f9217a6eb1fbec44c0d0",
-      "sizeBytes": 14986969
+      "md5": "b77db2405038d11258e91cd93a936364",
+      "sizeBytes": 14987101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "b0e0fecf54c6f9217a6eb1fbec44c0d0",
-      "sizeBytes": 14986969
+      "md5": "b77db2405038d11258e91cd93a936364",
+      "sizeBytes": 14987101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "b0e0fecf54c6f9217a6eb1fbec44c0d0",
-      "sizeBytes": 14986969
+      "md5": "b77db2405038d11258e91cd93a936364",
+      "sizeBytes": 14987101
     }
   ],
-  "md5": "b0e0fecf54c6f9217a6eb1fbec44c0d0",
+  "md5": "b77db2405038d11258e91cd93a936364",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

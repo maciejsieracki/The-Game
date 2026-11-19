@@ -1,3 +1,9 @@
+## ROBOCZA b77db240 -- 2026-11-18 -- FALA 869: R-WEB-AUDIO-WELCOME-TO-AUDIENCE-MUSIC-OVERLAP-Q1: po komunikacie powitalnym nowej cywilizacji wejscie w audiencje nie nakłada juz dwoch muzyk (max 1 grajacy utwor) (testowa)
+
+- gra/src/audio/muzyka-antyczna.ts (startDiplomacyMusic: ta sama playlista bez restartu; inna nakladka: stop poprzedniej przed startem), gra/src/ui/civWelcomeScreen.ts (close('audience') nie zatrzymuje przywitania), test audio-welcome-audience-overlap-test (Chromium). Zgloszenie wlasciciela 2026-11-19.
+- Weryfikacja: tsc 0, logic 213/213, audio-welcome-audience-overlap 8/0 (mutacje czerwone), civ-welcome-screen 309, civ-music 100/0, diplomacy-audience-close-flush 57/0; dowod w Chromium: przed 3 grajace (grecy->rzymianie), po max 1
+- Limity: NIE ZMIERZONO: pelna sciezka przez main.ts (showFirstContactWelcome/openDiplomacyAudience), wylaczona muzyka, audiencja bez powitania; male okno: zamkniecie audiencji w 0,4 s moze na chwile zagrac muzyke gry obok gasnacego utworu
+
 ## ROBOCZA b0e0fecf -- 2026-11-18 -- FALA 868: R-WEB-AI-TERRITORY-RACE-FORTS-IMPL-Q1: wyscig o teren — AI buduje fort od 40 nowych heksow, posterunek od 16, po wyczerpaniu limitu miast, do 15% puli Pracy w oknie t30-t90, przy zagrozeniu wojsko pierwsze (testowa)
 
 - gra/data/ai-territory-race-params.json (nowy), gra/src/game/auto-improvements.ts (progi per klucz, udzial puli, bramka zagrozenia), gra/src/game/ai.ts (przekazanie parametrow, planExpansionFortBuilding objety progami), test ai-territory-race-test. AI only; gracz i panstwa-miasta bez zmian. Decyzje wlasciciela 2026-11-19: P1 A, P2 40/16, P3 B, P4 A, P5 C.
