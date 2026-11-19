@@ -1509,7 +1509,7 @@ pub struct ProdBody<R: RollSource> {
     /// z, na)`. Ciało liczy marsz wielokrokowy atomowo w `start`, a pin zmienia `ru.q/ru.r` dopiero w chwili kroku
     /// (`_doMove` `:8714-8775`, `t0` = start kroku). Wieże (`_fireOneTower` → `pickTowerTarget` `:4228-4233`) czytają
     /// pozycje W CHWILI wystrzału, więc [`LoopBody::unit_cell`] zwraca pozycję z tej osi dla `self.now`.
-    move_timeline: Vec<(UnitRef, f64, (i64, i64), (i64, i64))>,
+    move_timeline: Vec<MoveStepAt>,
 }
 
 /// K5LOOP-WIRING-A (#369): miejsce jednego ciosu `_singleBlow(attacker, defender, ranged)` w chwili ciosu.
@@ -1704,6 +1704,9 @@ fn step_ms(res: &MoveStepResult) -> f64 {
 /// Web `RANGED_FLY_MS = 380` (`battleScene.ts:1012`): lot pocisku jednostki (`_doRangedAttack`, `_schedule(RANGED_FLY_MS)`
 /// `:9223`) od wystrzału do `_singleBlow(attacker, defender, true)`.
 pub const RANGED_FLY_MS: f64 = 380.0;
+/// Krok `_doMove` na osi czasu ciała: `(jednostka, t0, z, na)` (obrona r2, E2-1b).
+type MoveStepAt = (UnitRef, f64, (i64, i64), (i64, i64));
+
 /// Web `BLOW_LUNGE_MS = 260` (`battleScene.ts:1020`): długość lunge `_doMeleeAttack` (koniec przed `BLOW_SETTLE_MS`).
 pub const BLOW_LUNGE_MS: f64 = 260.0;
 /// Web `BLOW_SETTLE_MS = 220` (`battleScene.ts:1022`): `_schedule` po lunge przed `done()` (`:9163`).
