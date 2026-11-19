@@ -162,7 +162,19 @@ const SCENARIOS = [
     scene: { atk: [[7001, 0, true, false], [7002, 0, true, true]], def: [[8001, 4, false, false], [8002, 6, false, false], ['m1', 3, false, false]] } },
   { name: 'atk_wylom_pokoj_konczy_oblezenie', winner: 'atakujacy', breached: true, machines: [], peace: true,
     scene: { atk: [[7001, 8, false, false], [7002, 9, false, false], [7003, 4, false, false]], def: [[8001, 0, true, false], [8002, 0, true, false], ['m1', 0, true, false]] } },
+  // Obrona r1 (E05): drugie miasto OBLEGANE na heksie, ku ktoremu obroncy odchodza przy remisie (`retreatHexPassable`:
+  // `!besiegedCityAtHex`, `main.ts:33765-33775`) — kierunek odwrotu i fan-out omijaja ten heks.
+  { name: 'remis_oblegane_miasto_obok', winner: 'remis', breached: false, machines: [],
+    extraCities: [{ id: 901, q: 4, r: 5, ownerId: 101 }],
+    scene: { atk: [[7001, 6, false, false], [7002, 1, true, true], [7003, 0, true, false]], def: [[8001, 2, false, false], [8002, 5, false, false], ['m1', 4, false, false]] } },
+  // Obrona r1 (E06): kotwica = cywil (sciezka `siege_panel` bierze pierwsza jednostke obcą przy murze bez filtra cywila,
+  // `map-attack-city.ts:127-139`); `spendAttackMpOnLive` zdejmuje punkt ruchu kotwicy mimo cywila (`:392-402`).
+  { name: 'obronca_kotwica_cywil', winner: 'obronca', breached: false, machines: [], anchor: 7004,
+    scene: { atk: [[7001, 0, true, false], [7002, 3, false, false], [7003, 7, false, false]], def: [[8001, 4, false, false], [8002, 0, true, true], ['m1', 3, false, false]] } },
 ];
+// Obrona r1 (E02/E11): zaznaczona jednostka gracza przed wynikiem; `if (mapWinner === 'obronca') selectedId = null`
+// (`main.ts:34713`, klej przepisany 1:1).
+const SELECTED = 7005;
 
 const key = (q, r) => q + ',' + r;
 function run(sc) {
@@ -172,7 +184,7 @@ function run(sc) {
   units.push(...(sc.extra ?? []).map((x) => ({ ...x })));
   const startUnits = units.map((x) => ({ ...x }));
   const city = { ...CITY, maMur: true, oblegane: true, siegeMachines: { queue: [], ready: [...sc.machines], buildProgress: 0 } };
-  const cities = [city];
+  const cities = [city, ...(sc.extraCities ?? []).map((c) => ({ ...c, maMur: true, oblegane: true }))];
   const atWar = !sc.peace;
   // `areEnemyOwners` (`main.ts:13129-13133`): stan wojny w dyplomacji (gracz 1 <-> 101).
   const areEnemies = (a, b) => a !== b && atWar && ((a === 1 && b === 101) || (a === 101 && b === 1));
@@ -183,7 +195,9 @@ function run(sc) {
   const isOccupiedHex = (q, r, exceptId) => units.some((x) => x.q === q && x.r === r && x.id !== exceptId);
   // Rostery (`atkRosterRef`/`defRosterRef`): obiekty jednostek (pozycje zyja w obiektach), milicja i machiny wirtualne.
   const byId = new Map(units.map((x) => [x.id, x]));
-  const atkRoster = [7001, 7002, 7003, 7004, 7005].filter((id) => byId.has(id)).map((id) => byId.get(id));
+  // `collectSiegeAtkRoster(city, anchor)`: kotwica pierwsza (`atkRoster[0]`).
+  const atkOrder = sc.anchor ? [sc.anchor, ...[7001, 7002, 7003, 7004, 7005].filter((id) => id !== sc.anchor)] : [7001, 7002, 7003, 7004, 7005];
+  const atkRoster = atkOrder.filter((id) => byId.has(id)).map((id) => byId.get(id));
   for (const [i, m] of sc.machines.entries()) {
     atkRoster.push({ id: 'siege-' + m + '-' + i, ownerId: 1, typeId: m === 'taran' ? 'Taran' : 'Wieża oblężnicza', category: 'obleznicza', q: 6, r: 4, hp: 20, ruchLeft: 1, ruch: 1 });
   }
@@ -227,10 +241,13 @@ function run(sc) {
   if (city.oblegane && !GATE.isSiegeStillValid(city, atkRoster[0].ownerId, units, areEnemies)) endMapSiege();
   // `afterSiegeUi` remis -> `endMapSiege(city.id)` (`main.ts:36660`).
   if (sc.winner === 'remis') endMapSiege();
+  const selectedStart = byId.has(SELECTED) ? SELECTED : null;
+  const selectedId = sc.winner === 'obronca' ? null : selectedStart;
   return {
     name: sc.name,
     input: {
       w: W, h: H, water: sc.water ?? [], peace: !!sc.peace, city: CITY, machines: sc.machines,
+      extraCities: sc.extraCities ?? [], selectedId: selectedStart,
       units: startUnits, atkRoster: atkRoster.map((x) => ({ id: String(x.id), ownerId: x.ownerId, typeId: x.typeId, category: x.category, q: atkStart.get(x.id).q, r: atkStart.get(x.id).r })),
       defRoster: [...defRoster.map((x) => ({ id: String(x.id), ownerId: x.ownerId, typeId: x.typeId, category: x.category, q: x === defRoster[3] ? 5 : startUnits.find((s) => s.id === x.id).q, r: x === defRoster[3] ? 4 : startUnits.find((s) => s.id === x.id).r }))],
       winner: sc.winner, breached: sc.breached,
@@ -239,7 +256,7 @@ function run(sc) {
     expected: {
       units: units.map((x) => ({ id: x.id, q: x.q, r: x.r, hp: x.hp, ruchLeft: x.ruchLeft, battlesSurvived: x.battlesSurvived ?? null })),
       consumed, captureBlocked: stormCaptureBlocked, t8, oblegane: city.oblegane === true,
-      machinesReady: city.siegeMachines?.ready ?? [], siegeEnded,
+      machinesReady: city.siegeMachines?.ready ?? [], siegeEnded, selectedId,
     },
     t8Reference,
   };

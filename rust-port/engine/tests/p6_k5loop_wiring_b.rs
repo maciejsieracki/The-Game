@@ -234,7 +234,12 @@ fn run_realtime(
     }
     let fin = send(&mut b, EngineCommand::FinishSiegeBattle).expect("finish");
     order.feed(k + 1, battle(&fin));
-    acts.extend(battle(&fin).actions.iter().map(|a| (a.t0, format!("{a:?}"))));
+    acts.extend(
+        battle(&fin)
+            .actions
+            .iter()
+            .map(|a| (a.t0, format!("{a:?}"))),
+    );
     assert!(
         order.bad.is_empty(),
         "{} naruszen kolejnosci konsumenta playback: {:?}",
@@ -804,7 +809,7 @@ fn klony_gry_nie_dziela_sesji_z_pamieci_podrecznej() {
 fn druga_bitwa_w_grze_ma_numer_2() {
     const CITY2: u64 = 901;
     let mut st = state_for(&scn_quick());
-    let c2 = (9u16, 7u16);
+    let c2 = (1u16, 1u16);
     st.cities.push(PlayableCity {
         id: CityId::new(CITY2),
         owner_id: PlayerId::new(ENEMY),
@@ -827,7 +832,24 @@ fn druga_bitwa_w_grze_ma_numer_2() {
     assert_eq!(g.siege_battle().expect("bitwa").input().battle_index, 1);
     g.skip_siege_battle().expect("skip");
     g.finish_siege_battle().expect("finish 1");
-    g.start_siege_storm(CITY2, 7101).expect("start 2");
+    // Kotwica panelu oblężenia = pierwsza obca jednostka w odległości 1 (po fan-out pierwszej bitwy może to być inna).
+    let anchor2 = g
+        .state()
+        .units
+        .iter()
+        .find(|u| {
+            u.owner_id.get() != ENEMY && {
+                let (dq, dr) = (
+                    i32::from(u.position.x()) - i32::from(c2.0),
+                    i32::from(u.position.y()) - i32::from(c2.1),
+                );
+                (dq.abs() + dr.abs() + (dq + dr).abs()) / 2 == 1
+            }
+        })
+        .expect("oblegajacy")
+        .id
+        .get();
+    g.start_siege_storm(CITY2, anchor2).expect("start 2");
     assert_eq!(g.siege_battle().expect("bitwa").input().battle_index, 2);
 }
 
@@ -847,7 +869,10 @@ fn producent_wejscia_sesji_wg_pinu() {
     let ai = civ_engine::data::economy_society_part2::parse_ai_params().expect("ai-params");
     let lv1 = ai.trudnosc_poziom1_bonus_walka.wartosc;
     let lv3 = ai.trudnosc_poziom3_bonus_walka.wartosc;
-    assert!(lv1 != 0.0 && lv3 != 0.0, "dane trudnosci rozrozniaja poziomy");
+    assert!(
+        lv1 != 0.0 && lv3 != 0.0,
+        "dane trudnosci rozrozniaja poziomy"
+    );
     for (lvl, bonus) in [("Łatwy", lv1), ("Trudny", lv3)] {
         let mut s = st.clone();
         s.params.difficulty = lvl.into();
@@ -912,16 +937,12 @@ fn producent_wejscia_sesji_wg_pinu() {
         ally.turn,
         None,
     ));
-    let a = siege_battle_apply::prepare_storm_with_eras(&ally, CITY, ANCHOR, 1, &facts, 1.0)
-        .expect("bitwa z sojusznikiem");
-    let def0 = a.rebuild().expect("sesja").roster_ids()[1][0].clone();
-    eprintln!("obronca[0] = {def0}");
-    if def0 == "8501" {
-        assert_eq!(a.input().owner_era, Some(3.0));
-        assert_eq!(
-            a.input().defender_era,
-            Some(4.0),
-            "epoka defRosterRef[0] = sojusznik"
-        );
-    }
+    // E17: `defRosterRef[0]` należy zawsze do właściciela miasta — sam sojusznik nie broni miasta (adapter T6 =
+    // `cityHasDefenders`/`collectSiegeDefRoster`, kolejność `owner_first`), więc `defenderEra` = epoka właściciela miasta
+    // w każdym stanie osiągalnym; mutant E17 jest równoważny (obrona r1, dowód w 02a-obrona.md).
+    assert_eq!(
+        siege_battle_apply::prepare_storm_with_eras(&ally, CITY, ANCHOR, 1, &facts, 1.0)
+            .expect_err("sam sojusznik nie broni"),
+        SiegeBattleError::NoDefendersCaptureRequested { city_id: CITY }
+    );
 }

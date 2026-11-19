@@ -1423,9 +1423,11 @@ impl PlayableGame {
                 self.siege_battle = None;
                 Ok(payload)
             }
-            Err(e @ SiegeBattleError::Session(super::siege_battle_session::SessionError::NotFinished)) => {
-                Err(e)
-            }
+            Err(
+                e @ SiegeBattleError::Session(
+                    super::siege_battle_session::SessionError::NotFinished,
+                ),
+            ) => Err(e),
             Err(e) => {
                 let city_id = battle.city_id;
                 self.siege_battle = None;
@@ -2533,5 +2535,111 @@ mod r7k7c_rollback_tests {
             "skarbiec AI cofniety"
         );
         assert_eq!(game.state().turn, turn, "tura sie nie zwieksza");
+    }
+}
+
+#[cfg(test)]
+mod siege_battle_exit_tests {
+    //! R-RUSTPORT-P6-K5LOOP-WIRING-B-Q1 obrona r1 (Z6, D-WIRB-8): `FinishSiegeBattle` jest zawsze wyjsciem z bitwy.
+    //! Blad zastosowania wyniku (tu: miasto usuniete ze stanu gry poza komendami — jedyny sposob, by w tescie wywolac
+    //! blad po koncu bitwy bez sciezki nieportowanej) zamyka bitwe bez zmiany stanu i odblokowuje komendy mapy.
+    use super::*;
+    use crate::domain::diplomacy::{CivilizationPair, Relation, RelationStatus};
+    use crate::domain::siege_battle_session::SessionError;
+    use crate::domain::{CityId, PlayerId, UnitId};
+
+    const CITY: u64 = 900;
+
+    fn add_unit(st: &mut PlayableState, id: u64, owner: u64, pos: (u16, u16)) {
+        st.units.push(PlayableUnit {
+            id: UnitId::new(id),
+            owner_id: PlayerId::new(owner),
+            kind: PlayableUnitKind::Warrior,
+            position: PositionDto::new(pos.0, pos.1),
+            movement: 1u8.into(),
+            movement_max: 1u8.into(),
+            selected: false,
+        });
+        st.economy.units.insert(
+            id,
+            PlayableReplaceUnit {
+                type_id: Some("Wojownik".to_owned()),
+                ..PlayableReplaceUnit::default()
+            },
+        );
+    }
+
+    fn storm_game() -> PlayableGame {
+        let mut st = PlayableGame::new(StartGameParams {
+            seed: 11,
+            ..StartGameParams::default()
+        })
+        .expect("start")
+        .state()
+        .clone();
+        for t in &mut st.map.tiles {
+            t.terrain = PlayableTerrain::Plains;
+            t.passable = true;
+        }
+        st.units.clear();
+        st.economy.units.clear();
+        st.players.push(PlayablePlayer {
+            id: PlayerId::new(101),
+            name: "wrog".into(),
+            civilization: "rzymianie".into(),
+            is_human: false,
+        });
+        st.war.diplomacy.set_relation(
+            CivilizationPair::new(PlayerId::new(1), PlayerId::new(101)),
+            Relation::new(50.0, 50.0, RelationStatus::War),
+        );
+        st.cities.push(PlayableCity {
+            id: CityId::new(CITY),
+            owner_id: PlayerId::new(101),
+            name: "Twierdza".into(),
+            position: PositionDto::new(4, 3),
+            is_capital: false,
+            population: 3,
+            culture: 0,
+        });
+        st.stores
+            .buildings_by_city
+            .insert(CITY, vec!["palisada".to_owned()]);
+        st.oblegane.insert(CityId::new(CITY));
+        for i in 0..5 {
+            add_unit(&mut st, 7001 + i, 1, (5, 3));
+        }
+        add_unit(&mut st, 8001, 101, (4, 3));
+        PlayableGame::from_state(st)
+    }
+
+    #[test]
+    fn finish_z_bledem_zamyka_bitwe_bez_zmiany_stanu() {
+        let mut g = storm_game();
+        g.start_siege_storm(CITY, 7001).expect("start");
+        // Przed koncem: `NotFinished` nie zamyka bitwy.
+        assert_eq!(
+            g.finish_siege_battle(),
+            Err(SiegeBattleError::Session(SessionError::NotFinished))
+        );
+        assert!(g.siege_battle().is_some());
+        g.skip_siege_battle().expect("skip");
+        g.state.cities.retain(|c| c.id.get() != CITY);
+        let before = g.state.clone();
+        let e = g.finish_siege_battle().expect_err("blad zastosowania");
+        assert!(
+            matches!(e, SiegeBattleError::Aborted { city_id: CITY, .. }),
+            "{e:?}"
+        );
+        assert!(g.siege_battle().is_none(), "bitwa zamknieta");
+        assert_eq!(g.state, before, "stan bez zmian");
+        assert!(!matches!(
+            g.advance_turn(),
+            Err(PlayableError::SiegeBattleInProgress { .. })
+        ));
+        assert_eq!(
+            g.finish_siege_battle(),
+            Err(SiegeBattleError::NoActiveBattle)
+        );
     }
 }

@@ -184,7 +184,10 @@ impl std::fmt::Display for SiegeBattleError {
                 write!(f, "siege storm: unit {unit_id} cannot attack ({reason})")
             }
             Self::NotAtWar { city_id } => {
-                write!(f, "siege storm: not at war with the owner of city {city_id}")
+                write!(
+                    f,
+                    "siege storm: not at war with the owner of city {city_id}"
+                )
             }
             Self::Aborted { city_id, reason } => write!(
                 f,
@@ -627,7 +630,10 @@ pub fn prepare_storm_with_eras(
     // D-WIRB-7: bramki wejścia (`resolveEnemyCityClick`, `canInitiateSiege`, `launchSiegeStormFromMap`, wojna).
     let city_hex = (i32::from(city.position.x()), i32::from(city.position.y()));
     let dist = |u: &crate::domain::playable::PlayableUnit| {
-        hex_distance((i32::from(u.position.x()), i32::from(u.position.y())), city_hex)
+        hex_distance(
+            (i32::from(u.position.x()), i32::from(u.position.y())),
+            city_hex,
+        )
     };
     if owner_i64(city.owner_id) == HUMAN_OWNER_ID {
         return Err(SiegeBattleError::NotEnemyCity { city_id });
@@ -873,7 +879,9 @@ fn payload(
 ///
 /// # Errors
 /// [`SiegeBattleError`].
-pub fn start_payload(battle: &mut ActiveSiegeBattle) -> Result<SiegeBattlePayload, SiegeBattleError> {
+pub fn start_payload(
+    battle: &mut ActiveSiegeBattle,
+) -> Result<SiegeBattlePayload, SiegeBattleError> {
     let data = session_data()?;
     let mut s = SiegeBattleSession::start(&battle.start_state, &battle.input, data)?;
     let actions = s.battle_loop_mut().take_actions();

@@ -18,6 +18,8 @@
     "machines": [
      "taran"
     ],
+    "extraCities": [],
+    "selectedId": 7005,
     "units": [
      {
       "id": 7001,
@@ -292,7 +294,8 @@
     "t8": true,
     "oblegane": true,
     "machinesReady": [],
-    "siegeEnded": false
+    "siegeEnded": false,
+    "selectedId": 7005
    },
    "t8Reference": [
     {
@@ -336,6 +339,8 @@
      "ownerId": 101
     },
     "machines": [],
+    "extraCities": [],
+    "selectedId": 7005,
     "units": [
      {
       "id": 7001,
@@ -608,7 +613,8 @@
     "t8": false,
     "oblegane": true,
     "machinesReady": [],
-    "siegeEnded": false
+    "siegeEnded": false,
+    "selectedId": 7005
    },
    "t8Reference": null
   },
@@ -629,6 +635,8 @@
      "taran",
      "wieza"
     ],
+    "extraCities": [],
+    "selectedId": 7005,
     "units": [
      {
       "id": 7001,
@@ -904,7 +912,8 @@
     "t8": false,
     "oblegane": true,
     "machinesReady": [],
-    "siegeEnded": false
+    "siegeEnded": false,
+    "selectedId": null
    },
    "t8Reference": null
   },
@@ -924,6 +933,8 @@
     "machines": [
      "wieza"
     ],
+    "extraCities": [],
+    "selectedId": 7005,
     "units": [
      {
       "id": 7001,
@@ -1214,7 +1225,8 @@
     "t8": false,
     "oblegane": false,
     "machinesReady": [],
-    "siegeEnded": true
+    "siegeEnded": true,
+    "selectedId": 7005
    },
    "t8Reference": null
   },
@@ -1249,6 +1261,8 @@
      "ownerId": 101
     },
     "machines": [],
+    "extraCities": [],
+    "selectedId": 7005,
     "units": [
      {
       "id": 7001,
@@ -1575,7 +1589,8 @@
     "t8": false,
     "oblegane": false,
     "machinesReady": [],
-    "siegeEnded": true
+    "siegeEnded": true,
+    "selectedId": 7005
    },
    "t8Reference": null
   },
@@ -1593,6 +1608,8 @@
      "ownerId": 101
     },
     "machines": [],
+    "extraCities": [],
+    "selectedId": null,
     "units": [
      {
       "id": 7001,
@@ -1795,7 +1812,8 @@
     "t8": false,
     "oblegane": false,
     "machinesReady": [],
-    "siegeEnded": true
+    "siegeEnded": true,
+    "selectedId": null
    },
    "t8Reference": null
   },
@@ -1813,6 +1831,8 @@
      "ownerId": 101
     },
     "machines": [],
+    "extraCities": [],
+    "selectedId": 7005,
     "units": [
      {
       "id": 7001,
@@ -2085,7 +2105,8 @@
     "t8": true,
     "oblegane": false,
     "machinesReady": [],
-    "siegeEnded": true
+    "siegeEnded": true,
+    "selectedId": 7005
    },
    "t8Reference": [
     {
@@ -2119,6 +2140,591 @@
      "r": 5
     }
    ]
+  },
+  {
+   "name": "remis_oblegane_miasto_obok",
+   "input": {
+    "w": 10,
+    "h": 9,
+    "water": [],
+    "peace": false,
+    "city": {
+     "id": 900,
+     "q": 5,
+     "r": 4,
+     "ownerId": 101
+    },
+    "machines": [],
+    "extraCities": [
+     {
+      "id": 901,
+      "q": 4,
+      "r": 5,
+      "ownerId": 101
+     }
+    ],
+    "selectedId": 7005,
+    "units": [
+     {
+      "id": 7001,
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 4,
+      "hp": 12,
+      "ruchLeft": 1,
+      "ruch": 1,
+      "battlesSurvived": 3
+     },
+     {
+      "id": 7002,
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 4,
+      "hp": 9,
+      "ruchLeft": 1,
+      "ruch": 1,
+      "battlesSurvived": 1.5
+     },
+     {
+      "id": 7003,
+      "ownerId": 1,
+      "typeId": "Łucznik",
+      "category": "lucznik",
+      "q": 6,
+      "r": 3,
+      "hp": 7,
+      "ruchLeft": 1,
+      "ruch": 1,
+      "battlesSurvived": 2.7
+     },
+     {
+      "id": 7004,
+      "ownerId": 1,
+      "typeId": "Osadnik",
+      "category": "osadnik",
+      "q": 6,
+      "r": 4,
+      "hp": 5,
+      "ruchLeft": 1,
+      "ruch": 1
+     },
+     {
+      "id": 7005,
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 3,
+      "hp": 10,
+      "ruchLeft": 1,
+      "ruch": 1,
+      "battlesSurvived": 3
+     },
+     {
+      "id": 8001,
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 5,
+      "r": 4,
+      "hp": 11,
+      "ruchLeft": 1,
+      "ruch": 1
+     },
+     {
+      "id": 8002,
+      "ownerId": 101,
+      "typeId": "Łucznik",
+      "category": "lucznik",
+      "q": 5,
+      "r": 4,
+      "hp": 6,
+      "ruchLeft": 1,
+      "ruch": 1,
+      "battlesSurvived": 1
+     },
+     {
+      "id": 8003,
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 4,
+      "r": 4,
+      "hp": 8,
+      "ruchLeft": 1,
+      "ruch": 1
+     }
+    ],
+    "atkRoster": [
+     {
+      "id": "7001",
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 4
+     },
+     {
+      "id": "7002",
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 4
+     },
+     {
+      "id": "7003",
+      "ownerId": 1,
+      "typeId": "Łucznik",
+      "category": "lucznik",
+      "q": 6,
+      "r": 3
+     },
+     {
+      "id": "7004",
+      "ownerId": 1,
+      "typeId": "Osadnik",
+      "category": "osadnik",
+      "q": 6,
+      "r": 4
+     },
+     {
+      "id": "7005",
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 3
+     }
+    ],
+    "defRoster": [
+     {
+      "id": "8001",
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 5,
+      "r": 4
+     },
+     {
+      "id": "8002",
+      "ownerId": 101,
+      "typeId": "Łucznik",
+      "category": "lucznik",
+      "q": 5,
+      "r": 4
+     },
+     {
+      "id": "8003",
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 4,
+      "r": 4
+     },
+     {
+      "id": "m1",
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 5,
+      "r": 4
+     }
+    ],
+    "winner": "remis",
+    "breached": false,
+    "scene": {
+     "atk": [
+      {
+       "id": "7001",
+       "hp": 6,
+       "dead": false,
+       "routed": false
+      },
+      {
+       "id": "7002",
+       "hp": 1,
+       "dead": true,
+       "routed": true
+      },
+      {
+       "id": "7003",
+       "hp": 0,
+       "dead": true,
+       "routed": false
+      }
+     ],
+     "def": [
+      {
+       "id": "8001",
+       "hp": 2,
+       "dead": false,
+       "routed": false
+      },
+      {
+       "id": "8002",
+       "hp": 5,
+       "dead": false,
+       "routed": false
+      },
+      {
+       "id": "m1",
+       "hp": 4,
+       "dead": false,
+       "routed": false
+      }
+     ]
+    }
+   },
+   "expected": {
+    "units": [
+     {
+      "id": 7001,
+      "q": 7,
+      "r": 4,
+      "hp": 6,
+      "ruchLeft": 0,
+      "battlesSurvived": 3
+     },
+     {
+      "id": 7002,
+      "q": 8,
+      "r": 4,
+      "hp": 1,
+      "ruchLeft": 0,
+      "battlesSurvived": 1.5
+     },
+     {
+      "id": 7004,
+      "q": 9,
+      "r": 4,
+      "hp": 5,
+      "ruchLeft": 1,
+      "battlesSurvived": null
+     },
+     {
+      "id": 7005,
+      "q": 7,
+      "r": 3,
+      "hp": 10,
+      "ruchLeft": 0,
+      "battlesSurvived": 3
+     },
+     {
+      "id": 8001,
+      "q": 5,
+      "r": 4,
+      "hp": 2,
+      "ruchLeft": 1,
+      "battlesSurvived": null
+     },
+     {
+      "id": 8002,
+      "q": 5,
+      "r": 4,
+      "hp": 5,
+      "ruchLeft": 1,
+      "battlesSurvived": 1
+     },
+     {
+      "id": 8003,
+      "q": 3,
+      "r": 4,
+      "hp": 8,
+      "ruchLeft": 1,
+      "battlesSurvived": null
+     }
+    ],
+    "consumed": [],
+    "captureBlocked": false,
+    "t8": false,
+    "oblegane": false,
+    "machinesReady": [],
+    "siegeEnded": true,
+    "selectedId": 7005
+   },
+   "t8Reference": null
+  },
+  {
+   "name": "obronca_kotwica_cywil",
+   "input": {
+    "w": 10,
+    "h": 9,
+    "water": [],
+    "peace": false,
+    "city": {
+     "id": 900,
+     "q": 5,
+     "r": 4,
+     "ownerId": 101
+    },
+    "machines": [],
+    "extraCities": [],
+    "selectedId": 7005,
+    "units": [
+     {
+      "id": 7001,
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 4,
+      "hp": 12,
+      "ruchLeft": 1,
+      "ruch": 1,
+      "battlesSurvived": 3
+     },
+     {
+      "id": 7002,
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 4,
+      "hp": 9,
+      "ruchLeft": 1,
+      "ruch": 1,
+      "battlesSurvived": 1.5
+     },
+     {
+      "id": 7003,
+      "ownerId": 1,
+      "typeId": "Łucznik",
+      "category": "lucznik",
+      "q": 6,
+      "r": 3,
+      "hp": 7,
+      "ruchLeft": 1,
+      "ruch": 1,
+      "battlesSurvived": 2.7
+     },
+     {
+      "id": 7004,
+      "ownerId": 1,
+      "typeId": "Osadnik",
+      "category": "osadnik",
+      "q": 6,
+      "r": 4,
+      "hp": 5,
+      "ruchLeft": 1,
+      "ruch": 1
+     },
+     {
+      "id": 7005,
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 3,
+      "hp": 10,
+      "ruchLeft": 1,
+      "ruch": 1,
+      "battlesSurvived": 3
+     },
+     {
+      "id": 8001,
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 5,
+      "r": 4,
+      "hp": 11,
+      "ruchLeft": 1,
+      "ruch": 1
+     },
+     {
+      "id": 8002,
+      "ownerId": 101,
+      "typeId": "Łucznik",
+      "category": "lucznik",
+      "q": 5,
+      "r": 4,
+      "hp": 6,
+      "ruchLeft": 1,
+      "ruch": 1,
+      "battlesSurvived": 1
+     },
+     {
+      "id": 8003,
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 4,
+      "r": 4,
+      "hp": 8,
+      "ruchLeft": 1,
+      "ruch": 1
+     }
+    ],
+    "atkRoster": [
+     {
+      "id": "7004",
+      "ownerId": 1,
+      "typeId": "Osadnik",
+      "category": "osadnik",
+      "q": 6,
+      "r": 4
+     },
+     {
+      "id": "7001",
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 4
+     },
+     {
+      "id": "7002",
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 4
+     },
+     {
+      "id": "7003",
+      "ownerId": 1,
+      "typeId": "Łucznik",
+      "category": "lucznik",
+      "q": 6,
+      "r": 3
+     },
+     {
+      "id": "7005",
+      "ownerId": 1,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 6,
+      "r": 3
+     }
+    ],
+    "defRoster": [
+     {
+      "id": "8001",
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 5,
+      "r": 4
+     },
+     {
+      "id": "8002",
+      "ownerId": 101,
+      "typeId": "Łucznik",
+      "category": "lucznik",
+      "q": 5,
+      "r": 4
+     },
+     {
+      "id": "8003",
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 4,
+      "r": 4
+     },
+     {
+      "id": "m1",
+      "ownerId": 101,
+      "typeId": "Wojownik",
+      "category": "miecznik",
+      "q": 5,
+      "r": 4
+     }
+    ],
+    "winner": "obronca",
+    "breached": false,
+    "scene": {
+     "atk": [
+      {
+       "id": "7001",
+       "hp": 0,
+       "dead": true,
+       "routed": false
+      },
+      {
+       "id": "7002",
+       "hp": 3,
+       "dead": false,
+       "routed": false
+      },
+      {
+       "id": "7003",
+       "hp": 7,
+       "dead": false,
+       "routed": false
+      }
+     ],
+     "def": [
+      {
+       "id": "8001",
+       "hp": 4,
+       "dead": false,
+       "routed": false
+      },
+      {
+       "id": "8002",
+       "hp": 0,
+       "dead": true,
+       "routed": true
+      },
+      {
+       "id": "m1",
+       "hp": 3,
+       "dead": false,
+       "routed": false
+      }
+     ]
+    }
+   },
+   "expected": {
+    "units": [
+     {
+      "id": 7004,
+      "q": 6,
+      "r": 4,
+      "hp": 5,
+      "ruchLeft": 0,
+      "battlesSurvived": null
+     },
+     {
+      "id": 7005,
+      "q": 6,
+      "r": 3,
+      "hp": 10,
+      "ruchLeft": 0,
+      "battlesSurvived": 3
+     },
+     {
+      "id": 8001,
+      "q": 5,
+      "r": 4,
+      "hp": 4,
+      "ruchLeft": 1,
+      "battlesSurvived": 1
+     },
+     {
+      "id": 8003,
+      "q": 4,
+      "r": 4,
+      "hp": 8,
+      "ruchLeft": 1,
+      "battlesSurvived": null
+     }
+    ],
+    "consumed": [],
+    "captureBlocked": false,
+    "t8": false,
+    "oblegane": true,
+    "machinesReady": [],
+    "siegeEnded": false,
+    "selectedId": null
+   },
+   "t8Reference": null
   }
  ]
 }

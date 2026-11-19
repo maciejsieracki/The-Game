@@ -119,6 +119,23 @@ fn state_for(inp: &Value) -> PlayableState {
     let cid = CityId::new(u(&c["id"]));
     st.oblegane.clear();
     st.oblegane.insert(cid);
+    // Obrona r1 (E05): inne miasta oblegane (`besiegedCityAtHex` w `retreatHexPassable`).
+    for x in inp["extraCities"].as_array().unwrap() {
+        let id = CityId::new(u(&x["id"]));
+        st.cities.push(PlayableCity {
+            id,
+            owner_id: PlayerId::new(u(&x["ownerId"])),
+            name: "Inne".into(),
+            position: PositionDto::new(
+                u16::try_from(u(&x["q"])).unwrap(),
+                u16::try_from(u(&x["r"])).unwrap(),
+            ),
+            is_capital: false,
+            population: 3,
+            culture: 0,
+        });
+        st.oblegane.insert(id);
+    }
     st.siege_machines_ready.clear();
     let ms: Vec<PlayableSiegeMachineKind> = inp["machines"]
         .as_array()
@@ -143,7 +160,7 @@ fn state_for(inp: &Value) -> PlayableState {
             ),
             movement: f(&x["ruchLeft"]).into(),
             movement_max: f(&x["ruch"]).into(),
-            selected: false,
+            selected: inp["selectedId"].as_u64() == Some(id),
         });
         st.economy.units.insert(
             id,
@@ -155,6 +172,8 @@ fn state_for(inp: &Value) -> PlayableState {
             },
         );
     }
+    // Obrona r1 (E02/E11): zaznaczenie przed wynikiem (`selectedId`, lustro flag `PlayableUnit::selected`).
+    st.selected_unit_id = inp["selectedId"].as_u64();
     st
 }
 
@@ -301,6 +320,19 @@ fn diffs(sc: &Value) -> Vec<String> {
             out.push(format!("{name}: {what} rust={g} pin={w}"));
         }
     }
+    // `if (mapWinner === 'obronca') selectedId = null` (`main.ts:34713`): pole stanu i flagi jednostek.
+    let want_sel = exp["selectedId"].as_u64();
+    if st.selected_unit_id != want_sel {
+        out.push(format!(
+            "{name}: selectedId {:?} != {want_sel:?}",
+            st.selected_unit_id
+        ));
+    }
+    for x in &st.units {
+        if x.selected != (Some(x.id.get()) == want_sel) {
+            out.push(format!("{name}: flaga selected jednostki {}", x.id.get()));
+        }
+    }
     let ready = st
         .siege_machines_ready
         .get(&CityId::new(city_id))
@@ -316,7 +348,10 @@ fn wektory_pinu_zastosowania_wyniku_bajt_w_bajt() {
     let v: Value = serde_json::from_str(VECTORS).expect("wektory");
     assert_eq!(v["pinSha256"], PIN_SHA256, "wektory z innego tekstu pinu");
     let scs = v["scenarios"].as_array().expect("scenariusze");
-    assert!(scs.len() >= 6, "co najmniej 6 scenariuszy");
+    assert!(
+        scs.len() >= 9,
+        "co najmniej 9 scenariuszy (obrona r1: E05, E06)"
+    );
     let mut all = Vec::new();
     for sc in scs {
         all.extend(diffs(sc));
@@ -348,5 +383,22 @@ fn wektory_pokrywaja_galezie() {
     assert!(
         has(&|s| !s["expected"]["consumed"].as_array().unwrap().is_empty()),
         "machiny"
+    );
+    // Obrona r1: drugie oblegane miasto (E05), kotwica-cywil (E06), zaznaczenie czyszczone i zachowane (E02/E11).
+    assert!(
+        has(&|s| !s["input"]["extraCities"].as_array().unwrap().is_empty()),
+        "oblegane miasto obok"
+    );
+    assert!(
+        has(&|s| s["input"]["atkRoster"][0]["typeId"] == "Osadnik"),
+        "kotwica-cywil"
+    );
+    assert!(
+        has(&|s| s["input"]["selectedId"].is_u64() && s["expected"]["selectedId"].is_null()),
+        "wygrana obroncy czysci zaznaczenie"
+    );
+    assert!(
+        has(&|s| s["input"]["selectedId"].is_u64() && s["expected"]["selectedId"].is_u64()),
+        "inna wygrana zostawia zaznaczenie"
     );
 }
