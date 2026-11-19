@@ -113,7 +113,7 @@ const perform = slice('function performUnitReplace(', 'function buildPlayerCityL
 // wolanym i przez gracza (performUnitReplace), i przez AI (promoteAiUnitForEra).
 const execSrc = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'unit-replace-execute.ts'), 'utf8');
 const execDepsSrc = slice('function unitReplaceExecuteDeps(', 'function performUnitReplace(');
-assert(/executeUnitReplace\(u, newTypeId, unitReplaceExecuteDeps\(u\.ownerId, true\)\)/.test(perform) && /deductBuildingStockCostAcrossCities\(cities, ownerId, cost\)/.test(execDepsSrc) && /player\.skarbiec = value/.test(execDepsSrc),
+assert(/executeUnitReplace\(u, newTypeId, unitReplaceExecuteDeps\(u\.ownerId, true\)\)/.test(perform) && /deductBuildingStockCostAcrossCities\(cities, ownerId, cost,/.test(execDepsSrc) && /player\.skarbiec = value/.test(execDepsSrc),
   'performUnitReplace (gracz): pobiera PELNY Pieniadz + surowiec z puli panstwa (wspolny executeUnitReplace)');
 assert(!/Math\.max\(0, replaceUnitMoneyCost/.test(perform) && !/dopłat/i.test(perform), 'performUnitReplace: brak starej logiki "dopłaty"');
 assert(!/manpower|Manpower|UNIT_POPULATION_COST/.test(perform), 'performUnitReplace: nie dotyka Manpower/Ludnosci');
