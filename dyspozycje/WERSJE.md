@@ -1,3 +1,9 @@
+## ROBOCZA 891481b5 -- 2026-11-18 -- FALA 876: R-WEB-ECONOMY-FOOD-TO-TAX-CONVERSION-Q1: reczna zamiana Zywnosci na Podatek (jak Praca), kurs 1:1 w parametrze (testowa)
+
+- R-WEB-ECONOMY-FOOD-TO-TAX-CONVERSION-Q1 (decyzja wlasciciela 2026-11-19): w panelu imperium reczna, jednorazowa zamiana Zywnosci z zapasu panstwa na Podatek, wymaga Targowiska, kurs econ-params budynki.targowisko_zywnosc_na_podatek_kurs 1:1 (cap 54000 = max 54000 Podatku przed silnikiem); AI nie uzywa.
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; food-to-tax 71/0 (9 mutantow wykrytych); labor-to-tax 58/0; work-tax 10/0; zywy Chromium NIE ZMIERZONO
+- Limity: Kurs 1:1 bez decyzji wlasciciela; brak zabezpieczenia zapasu na utrzymanie wojska (Praca tez go nie ma); efekt Podatku po silniku NIE ZMIERZONO
+
 ## ROBOCZA f6cdd032 -- 2026-11-18 -- FALA 875: R-WEB-ECONOMY-UNIT-UPKEEP-ERA-SCALE-Q1: zywnosc jednostek x1/x2/x4 wg epoki (zamiast x3), karta = silnik (testowa)
 
 - R-WEB-ECONOMY-UNIT-UPKEEP-ERA-SCALE-Q1 (decyzja wlasciciela 2026-11-19: utrzymanie jednostek 2x Braz, 4x Zelazo). Pieniadz i surowce jednostek juz skalowaly sie x1/x2/x4; realna zmiana: zywnosc jednostek przy fladze eraRebalansAktywny z x3/epoke (4/12/36) na x1/x2/x4 (4/8/16); karta zywnosci przy fladze OFF = silnik.
