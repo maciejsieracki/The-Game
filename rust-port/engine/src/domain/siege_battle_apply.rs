@@ -286,6 +286,10 @@ pub struct SiegeBattleResultDto {
     /// Hak T8 (D-WIRB-3); `None` poza wygraną atakującego z wyłomem.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub capture_requested: Option<CityCaptureRequested>,
+    /// #354 (D-ZMA-2): wynik konsumenta haka w `FinishSiegeBattle` (`applyCityCaptureToMap` albo jawny brak zdobycia);
+    /// `None` poza wygraną z wyłomem i w samym [`apply_outcome`] (część B).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub capture: Option<crate::domain::city_capture_apply::CityCaptureResultDto>,
     /// Jednostki stanu usunięte (`removeUnitById`), kolejność rosteru (atakujący, potem obrońcy).
     pub removed_unit_ids: Vec<u64>,
     /// HP ustawione ocalałym, kolejność rosteru.
@@ -1313,28 +1317,8 @@ pub fn apply_outcome(
 
     // `validateActiveSieges` (`main.ts:18019-18037`) dla szturmowanego miasta: oblegający = właściciel kotwicy (pin
     // `ctx.oblegajacyOwnerId === 0`, `:36800`). Pozostałe miasta: stan nie niesie `oblegajacyOwnerId` (raport).
-    let mut siege_ended = false;
     let besieger = battle.atk_roster.first().map_or(-1, |u| u.owner_id);
-    if state.oblegane.contains(&cid) {
-        let at_war = u64::try_from(besieger).ok().is_some_and(|b| {
-            state
-                .war
-                .diplomacy
-                .relation(PlayerId::new(b), city.owner_id)
-                .is_some_and(|r| r.status == RelationStatus::War)
-        });
-        let adjacent = state.units.iter().any(|u| {
-            owner_i64(u.owner_id) == besieger
-                && hex_distance(
-                    (i32::from(u.position.x()), i32::from(u.position.y())),
-                    battle_hex,
-                ) == 1
-        });
-        if !at_war || !adjacent {
-            end_map_siege(state, cid);
-            siege_ended = true;
-        }
-    }
+    let mut siege_ended = validate_storm_siege(state, cid, besieger);
     // `afterSiegeUi` remis: `endMapSiege(city.id)` (`main.ts:36660`, R-OBLEZENIE-REMIS-MASZYNY-Q2=A).
     if winner == LoopWinner::Draw {
         end_map_siege(state, cid);
@@ -1347,6 +1331,7 @@ pub fn apply_outcome(
         wall_breached: breached,
         capture_blocked,
         capture_requested,
+        capture: None,
         removed_unit_ids: removed,
         hp: hp_set,
         consumed_machines,
@@ -1357,9 +1342,156 @@ pub fn apply_outcome(
 /// `endMapSiege(cityId)` (`main.ts:17880-17899`) w zakresie stanu: `oblegane = false`, `clearSiegeMachines(city)`.
 /// Pola `oblegajacyOwnerId`, `siegeArmyGroupId`, `siegeCapitulationPending`, `oblegaCityId`, liczniki tur oblężenia: brak w
 /// `PlayableState` (raport).
-fn end_map_siege(state: &mut PlayableState, cid: CityId) {
+pub(crate) fn end_map_siege(state: &mut PlayableState, cid: CityId) {
     state.oblegane.remove(&cid);
     state.siege_machines_ready.remove(&cid);
+}
+
+/// `validateActiveSieges` (`main.ts:18019-18037`, `isSiegeStillValid`) dla szturmowanego miasta `cid` z oblegającym
+/// `besieger`: oblężenie trwa, gdy miasto jest oblegane, para jest w wojnie i jednostka oblegającego stoi w odległości
+/// 1 od miasta; inaczej `endMapSiege`. Zwraca `true`, gdy oblężenie zostało tu zakończone. Miasto nieoblegane albo
+/// nieistniejące = `false` (brak zmiany).
+pub(crate) fn validate_storm_siege(state: &mut PlayableState, cid: CityId, besieger: i64) -> bool {
+    if !state.oblegane.contains(&cid) {
+        return false;
+    }
+    let Some(city) = state.cities.iter().find(|c| c.id == cid) else {
+        return false;
+    };
+    let hex = (
+        i32::from(city.position.x()),
+        i32::from(city.position.y()),
+    );
+    let at_war = u64::try_from(besieger).ok().is_some_and(|b| {
+        state
+            .war
+            .diplomacy
+            .relation(PlayerId::new(b), city.owner_id)
+            .is_some_and(|r| r.status == RelationStatus::War)
+    });
+    let adjacent = state.units.iter().any(|u| {
+        owner_i64(u.owner_id) == besieger
+            && hex_distance(
+                (i32::from(u.position.x()), i32::from(u.position.y())),
+                hex,
+            ) == 1
+    });
+    if !at_war || !adjacent {
+        end_map_siege(state, cid);
+        return true;
+    }
+    false
+}
+
+/// Wynik wejścia na heks miasta po wygranej atakującego (`post-battle-map.ts:445-448`).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub(crate) struct AtkWinEntry {
+    /// `wipeDefenderOnCityCenter` (`:191-199`): obrońcy rosteru na centrum miasta, kolejność rosteru.
+    pub removed: Vec<u64>,
+    /// `moveAtkRosterOntoBattleHex` (`:357-378`): jednostki, które weszły na heks bitwy, kolejność rosteru.
+    pub moved: Vec<u64>,
+}
+
+/// D-WIRB-3 / #354 (D-ZMA-1): część `applyPostBattleMap` dla wygranej atakującego z wyłomem, którą część B oddała
+/// hakowi T8 — `wipeDefenderOnCityCenter` (`post-battle-map.ts:191-199`), `retreatDefendersAfterAtkWin` (`:331-340`),
+/// `moveAtkRosterOntoBattleHex` (`:357-378`, z `syncStackRuchLeft` = minimum, `armyMerge.ts:1158-1162`, `:908-911`).
+/// [`apply_outcome`] wykonał już `spendAttackMpOnLive` (`:392-402`); kolejność jest obojętna, bo `max(0, min - 1)` =
+/// `min(max(0, a - 1), …)` (operacje monotoniczne), a `spendAttackMpOnLive` nie czyta pozycji.
+///
+/// # Errors
+/// [`SiegeBattleError::CityNotFound`].
+pub(crate) fn enter_city_hex_after_atk_win(
+    state: &mut PlayableState,
+    battle: &ApplyRosters<'_>,
+) -> Result<AtkWinEntry, SiegeBattleError> {
+    let cid = CityId::new(battle.city_id);
+    let city = state
+        .cities
+        .iter()
+        .find(|c| c.id == cid)
+        .ok_or(SiegeBattleError::CityNotFound(battle.city_id))?;
+    let hex = (
+        i32::from(city.position.x()),
+        i32::from(city.position.y()),
+    );
+    let mut out = AtkWinEntry::default();
+    // `wipeDefenderOnCityCenter`: obiekt rosteru = żywa jednostka (pozycja bieżąca); jednostka usunięta / wirtualna
+    // = `removeUnitById` bez skutku.
+    for u in battle.def_roster {
+        if let Some(i) = unit_index(state, &u.id) {
+            let p = (
+                i32::from(state.units[i].position.x()),
+                i32::from(state.units[i].position.y()),
+            );
+            if p == hex {
+                remove_unit(state, &u.id, &mut out.removed);
+            }
+        }
+    }
+    // `retreatDefendersAfterAtkWin`: ocalali obrońcy fan-out od atakujących (centrum miasta pomijane).
+    let mut rp = RosterPos {
+        pos: battle
+            .atk_roster
+            .iter()
+            .chain(battle.def_roster.iter())
+            .map(|u| (u.id.clone(), pos_of(u)))
+            .collect(),
+    };
+    let def_alive: Vec<RosterUnit> = live(state, battle.def_roster)
+        .into_iter()
+        .cloned()
+        .collect();
+    let lead = def_alive
+        .iter()
+        .find(|u| {
+            unit_index(state, &u.id).is_some_and(|i| {
+                (
+                    i32::from(state.units[i].position.x()),
+                    i32::from(state.units[i].position.y()),
+                ) == hex
+            })
+        })
+        .or_else(|| def_alive.first())
+        .map(|u| u.id.clone());
+    if let Some(lead) = lead {
+        let dir = pick_retreat_target(state, hex, rp.centroid(battle.atk_roster), true);
+        place_fan_out_group(state, &mut rp, &def_alive, &lead, hex, dir, Some(hex));
+    }
+    // `moveAtkRosterOntoBattleHex`: kotwica i jednostki ze startowego heksu kotwicy (bez cywilów poza kotwicą).
+    let anchor_id = battle.anchor_unit_id.to_string();
+    let anchor_start = battle
+        .atk_roster
+        .iter()
+        .find(|u| u.id == anchor_id)
+        .map(pos_of);
+    let mut moved_idx = Vec::new();
+    for r in live(state, battle.atk_roster) {
+        if is_civilian_unit(&r.category, &r.type_id) && r.id != anchor_id {
+            continue;
+        }
+        let on_anchor_start = r.id == anchor_id || anchor_start == Some(pos_of(r));
+        if !on_anchor_start {
+            continue;
+        }
+        if let Some(i) = unit_index(state, &r.id) {
+            #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
+            {
+                state.units[i].position = PositionDto::new(hex.0 as u16, hex.1 as u16);
+            }
+            out.moved.push(state.units[i].id.get());
+            moved_idx.push(i);
+        }
+    }
+    if moved_idx.len() > 1 {
+        let min = moved_idx
+            .iter()
+            .map(|&i| f64::from(state.units[i].movement))
+            .fold(f64::INFINITY, f64::min);
+        for &i in &moved_idx {
+            state.units[i].movement = MovementPoints::new(min);
+        }
+    }
+    Ok(out)
 }
 
 /// `FinishSiegeBattle`: wynik sesji + zastosowanie do stanu.
@@ -1385,7 +1517,14 @@ pub fn finish(
         atk_roster: &battle.atk_roster,
         def_roster: &battle.def_roster,
     };
-    let result = apply_outcome(state, &rosters, &outcome, &ids)?;
+    let mut result = apply_outcome(state, &rosters, &outcome, &ids)?;
+    // #354 (D-ZMA-2): konsument haka T8 w tej samej komendzie — w pinie zdobycie jest częścią
+    // `finishSiegeStormBattle` → `applyMapBattleOutcome` (`main.ts:34646-34744`).
+    if let Some(req) = result.capture_requested.clone() {
+        let capture = crate::domain::city_capture_apply::apply_storm_capture(state, &rosters, &req)?;
+        result.siege_ended = result.siege_ended || capture.siege_ended;
+        result.capture = Some(capture);
+    }
     // D-WIRB-6: akcje wstrzymane z `t0` za ostatnią ramką (koniec bitwy przed końcem animacji marszu), po `t0`.
     let mut rest = battle.pending.clone();
     sort_by_t0(&mut rest);

@@ -27,6 +27,7 @@ pub mod brake_power_improvements;
 pub mod brake_power_producers;
 pub mod brake_power_rest;
 pub mod building_costs;
+pub mod city_capture_apply;
 pub mod city_growth;
 pub mod city_names;
 pub mod city_towers;

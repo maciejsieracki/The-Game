@@ -675,6 +675,12 @@ pub struct PlayableState {
     /// pomijane w DTO i zapisie (stan sprzed zmiany bajt w bajt).
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     pub oblegane: BTreeSet<CityId>,
+    /// #354 (D-ZMA-3): web `City.capturedFromOwnerId` (`game/cities.ts`, zapis w `applyCapturePopulationLoss`
+    /// `cities.ts:1235-1260` przy KAZDYM zdobyciu): poprzedni wlasciciel zdobytego miasta. Czyta go ta sama funkcja
+    /// (odzyskanie miasta = brak straty ludnosci). Trzymane obok `PlayableCity` (jak `oblegane`), zeby nie lamac
+    /// literalow tej struktury. Brak id = web `undefined`. Pusty => pole pomijane w DTO i zapisie.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub captured_from_owner_by_city: BTreeMap<CityId, PlayerId>,
     /// P4-1F3: web `City.siegeMachines.ready` (`game/cities.ts:884`, `game/siegeMachines.ts:6-26`):
     /// gotowe machiny miasta w kolejnosci tablicy. Brak wpisu = web `city.siegeMachines?.ready ?? []`
     /// (`render/siegeCampSync.ts:7-12`). Kolejka i postep budowy (`queue`, `buildProgress`) nie naleza
@@ -958,6 +964,7 @@ impl PlayableState {
             march_stop_detail: BTreeMap::new(),
             moved_by_player_this_turn: BTreeSet::new(),
             oblegane: BTreeSet::new(),
+            captured_from_owner_by_city: BTreeMap::new(),
             siege_machines_ready: BTreeMap::new(),
             placed_world_wonders: Vec::new(),
         }
@@ -1213,6 +1220,7 @@ impl PlayableGame {
             march_stop_detail: BTreeMap::new(),
             moved_by_player_this_turn: BTreeSet::new(),
             oblegane: BTreeSet::new(),
+            captured_from_owner_by_city: BTreeMap::new(),
             siege_machines_ready: BTreeMap::new(),
             placed_world_wonders: Vec::new(),
         };
