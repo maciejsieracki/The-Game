@@ -88,9 +88,11 @@ function main() {
   console.log(`cap (dekompozycja 10 I + 11 II, e=2) = ${cap}  (zrzut: 54000)`);
   console.log(`przyrost netto = ${SNAP.produkcja} − ${SNAP.wyzywienie} − ${SNAP.wojsko} = ${SNAP.produkcja - SNAP.wyzywienie - SNAP.wojsko}  (zrzut: +2005)`);
   console.log(`tury do capu (bez zmian) = ${Math.ceil((cap - SNAP.zapas) / (SNAP.produkcja - SNAP.wyzywienie - SNAP.wojsko))}  (zrzut: ~12)`);
-  console.log(`flaga OFF (m(e)=1,5, wyżywienie × ${(consumptionMult(2, false) / consumptionMult(2, true)).toFixed(2)}): ` +
-    `nadwyżka ${Math.round(SNAP.produkcja - SNAP.wyzywienie * consumptionMult(2, false) / consumptionMult(2, true) - SNAP.wojsko)}/t — ` +
-    `zrzut nie mówi, która flaga; NIE_ZMIERZONO`);
+  // Pasek w panelu = zywnoscWplywMiast (brutto PRZED armią) → zywnoscRate (netto PO armii); ZMIERZONO w empireDetailPanel.ts.
+  const offBrutto = Math.round(SNAP.produkcja - SNAP.wyzywienie * consumptionMult(2, false) / consumptionMult(2, true));
+  const onBrutto = SNAP.produkcja - SNAP.wyzywienie;
+  console.log(`brutto miast (przed armią): flaga OFF = ${offBrutto}, flaga ON = ${onBrutto}; zrzut paska = 2267 → 1954 (różnica ${2267 - 1954} ≈ wojsko ${SNAP.wojsko})`);
+  console.log(`zrzut 2267 NIE zgadza się z OFF (${offBrutto}) ani z ON (${onBrutto}); implikowane wyżywienie miast = ${SNAP.produkcja - 2267} (NIE_ZMIERZONO)`);
   console.log('');
 
   const variants = [
