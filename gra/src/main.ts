@@ -17181,11 +17181,12 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * Regula 4+5 / Q3=A (Maciej 2026-08-09): wołane z finalizeCityFounding dla
-     * KAŻDEGO nowo założonego miasta (gracz, AI, wioska, miasto-państwo — jeden
-     * wspólny hook) — przejmuje CUDZE forty/posterunki wpadające w zasięg nowego
-     * miasta (mutuje `fortNodes` in-place, patrz applyFortTakeoverOnCityFounded)
-     * i automatycznie ewakuuje jednostki POPRZEDNIEGO właściciela stacjonujące
+     * R-WEB-TERRITORY-CITY-FOUNDING-NO-FORT-TAKEOVER-Q1 (2026-11-19): regula 4 (przejęcie
+     * fortów w zasięgu miasta) ODWRÓCONA — zakładanie miasta NIE przejmuje cudzych fortów.
+     * Wołane z finalizeCityFounding dla KAŻDEGO nowo założonego miasta; poza F1 (fort na
+     * hexie miasta znika) nie zmienia `fortNodes` (patrz applyFortTakeoverOnCityFounded).
+     * Zdobycie fortu wyłącznie siłą: sweepFortCaptures (wojna + jednostka wojskowa).
+     * Ewakuuje jednostki POPRZEDNIEGO właściciela stacjonujące
      * na przejętym hexie na najbliższy heks POZA granicami nowego miasta —
      * analogia do istniejącego evictForeignUnitsFromCityHexes (wymuszone
      * wycofanie z heksu miasta obcego właściciela).

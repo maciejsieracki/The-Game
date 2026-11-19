@@ -174,14 +174,18 @@ console.log('\n--- F: fort NIE odbiera heksow sasiedniemu miastu (R2, zarzut 1) 
       const b = { q: gap, r: 0, pop: 5, level: 1, ownerId: 2 };
       const nodesBase = [a, b];
       const nodesF = nodesBase.concat(fortTerritoryNodes([{ q: 5, r: 0, ownerId: 1, type: ftype }]));
-      let lost = 0, gained = 0;
+      let lost = 0, lostOffCentre = 0, gained = 0;
       for (const k of Object.keys(map.hexes)) {
         const [q, r] = k.split(',').map(Number);
         const o0 = territoryOwnerAt(q, r, nodesBase), o1 = territoryOwnerAt(q, r, nodesF);
-        if (o0 === 2 && o1 !== 2) lost++;
+        // R-WEB-TERRITORY-CITY-FOUNDING-NO-FORT-TAKEOVER-Q1 (zarzut 1, decyzja wlasciciela (a)):
+        // JEDYNA dopuszczalna strata sasiada to heks SAMEGO nowego fortu (5,0) — zostaje u wlasciciela fortu.
+        if (o0 === 2 && o1 !== 2) { lost++; if (!(q === 5 && r === 0)) lostOffCentre++; }
         if (o0 !== 1 && o1 === 1) gained++;
       }
-      eq(lost, 0, `F6: ${ftype} AI na granicy miasta, sasiad w odl. ${gap}: strata sasiada`);
+      eq(lostOffCentre, 0, `F6: ${ftype} AI na granicy miasta, sasiad w odl. ${gap}: strata sasiada POZA heksem fortu`);
+      assert(lost <= 1, `F6: ${ftype} strata sasiada ogranicza sie do heksu fortu (lost=${lost})`);
+      eq(territoryOwnerAt(5, 0, nodesF), 1, `F6c: ${ftype} AI: heks fortu (5,0) = wlasciciel fortu`);
       assert(gained >= 0, 'F6: przyrost nieujemny');
     }
   }

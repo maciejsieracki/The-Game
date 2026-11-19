@@ -129,12 +129,17 @@ export function territoryOwnerAt(
   let bestFortOwner: number | null = null;
   let bestFortDist = Infinity;
   let bestFortOrder: { turn: number; seq: number } | undefined;
+  let centreFortOwner: number | null = null;
 
   for (const node of nodes) {
     const radius = cityTerritoryRadius(node);
     const dist = axialDistance(q, r, node.q, node.r);
     if (dist > radius) continue;
     if (node.isFort || node.isOutpost) {
+      // R-WEB-TERRITORY-CITY-FOUNDING-NO-FORT-TAKEOVER-Q1 (zarzut 1): heks SAMEGO fortu/posterunku
+      // (dist 0) nalezy do jego wlasciciela — jak centrum miasta (dist 0 wygrywa z dalszym wezlem).
+      // / EN: a fort/outpost centre hex stays with its owner even inside a foreign city radius.
+      if (dist === 0 && centreFortOwner === null) centreFortOwner = node.ownerId;
       // Q-B=B (R3): oba wezly z `order` -> wygrywa wczesniejszy fort; inaczej najblizszy (stary mechanizm).
       const o = node.order;
       let better: boolean;
@@ -155,6 +160,7 @@ export function territoryOwnerAt(
   // zajmuje tylko teren wolny od miast — nie odbiera heksow sasiedniemu miastu.
   // / EN: a hex inside any city radius is decided by cities only; forts/outposts
   // claim only city-free land.
+  if (centreFortOwner !== null) return centreFortOwner;
   if (bestCityOwner !== null) return bestCityOwner;
   return bestFortOwner;
 }
@@ -163,7 +169,7 @@ export function territoryOwnerAt(
 // R-WEB-PERF-LATE-GAME-LAG-HUD-Q2 (R6): indeks właściciela heksu
 // ============================================================
 
-interface HexOwnerCell { co: number | null; cd: number; fo: number | null; fd: number; fOrd: { turn: number; seq: number } | undefined; }
+interface HexOwnerCell { co: number | null; cd: number; fo: number | null; fd: number; fOrd: { turn: number; seq: number } | undefined; fc?: number; }
 interface NodesEntry {
   id: number; n: number;
   q: Float64Array; r: Float64Array; rad: Float64Array; kind: Uint8Array; owner: Float64Array; ot: Float64Array; os: Float64Array;
@@ -252,6 +258,8 @@ function territoryOwnerIndex(nodes: readonly TerritoryNode[]): Map<number, numbe
         let c = cells.get(k);
         if (!c) { c = { co: null, cd: Infinity, fo: null, fd: Infinity, fOrd: undefined }; cells.set(k, c); }
         if (isFortLike) {
+          // Lustro territoryOwnerAt: heks wlasnego fortu (dist 0) -> pierwszy taki wezel w tablicy.
+          if (dist === 0 && c.fc === undefined) c.fc = node.ownerId;
           let better: boolean;
           if (c.fo !== null && o && c.fOrd) {
             better = o.turn !== c.fOrd.turn ? o.turn < c.fOrd.turn : o.seq < c.fOrd.seq;
@@ -267,7 +275,7 @@ function territoryOwnerIndex(nodes: readonly TerritoryNode[]): Map<number, numbe
     }
   }
   const idx = new Map<number, number | null>();
-  for (const [k, c] of cells) idx.set(k, c.co !== null ? c.co : c.fo);
+  for (const [k, c] of cells) idx.set(k, c.fc !== undefined ? c.fc : c.co !== null ? c.co : c.fo);
   entry.idx = idx;
   return idx;
 }

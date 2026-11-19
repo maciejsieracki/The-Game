@@ -146,25 +146,23 @@ console.log('\n--- A3: isHexReservedByRivalFort — regula 1/3 kontestacja ---')
     'A3d: skontestowany (bezuzyteczny) fort NIE rezerwuje niczego dla nikogo');
 }
 
-console.log('\n--- A4: applyFortTakeoverOnCityFounded — regula 4 przejecie ---');
+console.log('\n--- A4: applyFortTakeoverOnCityFounded — R-WEB-TERRITORY-CITY-FOUNDING-NO-FORT-TAKEOVER-Q1: BRAK przejecia ---');
 {
+  // Decyzja wlasciciela 2026-11-19: zalozenie miasta NIE przejmuje cudzych fortow/posterunkow
+  // w swoim zasiegu (dawna regula 4 odwrocona). Tylko F1 (hex miasta) usuwa wezel.
   const forts = [
     { q: 3, r: 0, ownerId: 1, type: 'posterunek', contestedUseless: true },
     { q: 50, r: 0, ownerId: 1, type: 'fort' }, // za daleko od nowego miasta
-    { q: 2, r: 0, ownerId: 2, type: 'fort' },  // juz nalezy do przejmujacego -- pomijany
+    { q: 2, r: 0, ownerId: 2, type: 'fort' },  // wlasny fort przejmujacego -- bez zmian
   ];
   const events = applyFortTakeoverOnCityFounded({ q: 0, r: 0, ownerId: 2, population: 10 }, forts);
-  eq(events.length, 1, 'A4a: dokladnie 1 przejecie (hex (3,0) w promieniu nowego miasta pop=10)');
-  if (events.length === 1) {
-    eq(events[0].q, 3, 'A4b: przejety hex q');
-    eq(events[0].prevOwnerId, 1, 'A4c: poprzedni wlasciciel = 1');
-    eq(events[0].newOwnerId, 2, 'A4d: nowy wlasciciel = 2');
-  }
-  const transferred = forts.find(f => f.q === 3 && f.r === 0);
-  eq(transferred.ownerId, 2, 'A4e: fortNodes zmutowane in-place -- ownerId faktycznie zmieniony');
-  eq(transferred.contestedUseless, false, 'A4f: przejecie ZAWSZE resetuje contestedUseless (skuteczne niezaleznie od stanu kontestacji)');
+  eq(events.length, 0, 'A4a: ZERO przejec (cudzy posterunek w promieniu nowego miasta NIE przechodzi)');
+  const kept = forts.find(f => f.q === 3 && f.r === 0);
+  eq(kept.ownerId, 1, 'A4e: ownerId cudzego fortu ZOSTAJE przy wlascicielu (1)');
+  eq(kept.contestedUseless, true, 'A4f: contestedUseless nietkniety (brak przejecia = brak resetu)');
   const untouched = forts.find(f => f.q === 50);
-  eq(untouched.ownerId, 1, 'A4g: fort poza zasiegiem NIE przejety');
+  eq(untouched.ownerId, 1, 'A4g: fort poza zasiegiem NIE zmieniony');
+  eq(forts.length, 3, 'A4h: zaden wezel nie zniknal poza hexem miasta (F1 tu nie dotyczy)');
 }
 
 console.log('\n--- A4b: applyFortTakeoverOnCityFounded (F1) — fort DOKLADNIE na hexie nowego miasta znika CALKOWICIE ---');
@@ -183,7 +181,7 @@ console.log('\n--- A4b: applyFortTakeoverOnCityFounded (F1) — fort DOKLADNIE n
   // skasowany z mapy (Macierz B, main.ts finalizeCityFounding).
   const fortsRival = [{ q: 0, r: 0, ownerId: 1, type: 'fort' }];
   const eventsRival = applyFortTakeoverOnCityFounded({ q: 0, r: 0, ownerId: 2, population: 10 }, fortsRival);
-  eq(eventsRival.length, 1, 'A4b-rival-1: zdarzenie ewakuacji WCIAZ generowane (cudzy fort mial jednostki do ewakuacji)');
+  eq(eventsRival.length, 1, 'A4b-rival-1: zdarzenie ewakuacji generowane TYLKO dla hexu miasta (F1: fort fizycznie znika z hexu)');
   if (eventsRival.length === 1) {
     eq(eventsRival[0].prevOwnerId, 1, 'A4b-rival-2: poprzedni wlasciciel poprawny w zdarzeniu');
     eq(eventsRival[0].newOwnerId, 2, 'A4b-rival-3: nowy wlasciciel poprawny w zdarzeniu');
@@ -197,11 +195,11 @@ console.log('\n--- A4b: applyFortTakeoverOnCityFounded (F1) — fort DOKLADNIE n
     { q: 3, r: 0, ownerId: 1, type: 'fort' },   // w promieniu, INNY hex -> przejety, zostaje
   ];
   const eventsMixed = applyFortTakeoverOnCityFounded({ q: 0, r: 0, ownerId: 2, population: 10 }, fortsMixed);
-  eq(eventsMixed.length, 2, 'A4b-mixed-1: 2 zdarzenia (oba forty mialy obcego wlasciciela)');
+  eq(eventsMixed.length, 1, 'A4b-mixed-1: 1 zdarzenie (tylko fort na hexie miasta; sasiedni nie jest przejmowany)');
   eq(fortsMixed.length, 1, 'A4b-mixed-2: TYLKO fort na hexie miasta usuniety -- sasiedni zostaje w rejestrze');
   if (fortsMixed.length === 1) {
     eq(fortsMixed[0].q, 3, 'A4b-mixed-3: pozostaly wezel to ten POZA hexem miasta');
-    eq(fortsMixed[0].ownerId, 2, 'A4b-mixed-4: pozostaly wezel MA przejetego wlasciciela (regula 4 normalna)');
+    eq(fortsMixed[0].ownerId, 1, 'A4b-mixed-4: pozostaly wezel NADAL nalezy do wlasciciela (brak przejecia, odwrocona regula 4)');
   }
 }
 
@@ -702,7 +700,9 @@ console.log('\n--- E: applyFortTakeoverAndEvacuation (F2) -- test BEHAWIORALNY: 
 
   // Nowe miasto (ownerId=2) W ZASIEGU fortu (odleglosc 5), ale NIE na jego hexie -- F1 (usuniecie
   // wezla) NIE aplikuje sie, zeby test trafial w gale ewakuacji (regula 4+5), nie w gale F1.
-  const newCity = { q: fortQ - 5, r: fortR, ownerId: newOwnerId, population: 10 };
+  // R-WEB-TERRITORY-CITY-FOUNDING-NO-FORT-TAKEOVER-Q1: regula 4 (przejecie w zasiegu) ODWROCONA,
+  // wiec miasto ZAKLADAMY DOKLADNIE na hexie fortu (galaz F1 -> fort znika, ewakuacja z tego hexu).
+  const newCity = { q: fortQ, r: fortR, ownerId: newOwnerId, population: 10 };
   const newCityNode = { q: newCity.q, r: newCity.r, pop: newCity.population, level: 1 };
 
   // Ustal deterministycznie, ktory heks WYBRALABY findEvacuationHexOutsideCity dla TEJ SAMEJ
@@ -721,11 +721,8 @@ console.log('\n--- E: applyFortTakeoverAndEvacuation (F2) -- test BEHAWIORALNY: 
     city: newCity, fortNodesState, unitsState, citiesState, campsState,
   });
 
-  // 1) Fort FAKTYCZNIE przejety (regula 4 -- dowod, ze test trafil w galaz ewakuacji, nie w F1).
-  eq(fortNodesState.length, 1, 'E1: fort NADAL istnieje w rejestrze (przejety, nie usuniety -- F1 nie aplikuje sie)');
-  if (fortNodesState.length === 1) {
-    eq(fortNodesState[0].ownerId, newOwnerId, 'E1: fort przepisany na nowego wlasciciela (regula 4)');
-  }
+  // 1) F1: fort na hexie nowego miasta FIZYCZNIE znika z rejestru (nie przepisany -- brak przejecia).
+  eq(fortNodesState.length, 0, 'E1: fort na hexie miasta usuniety z rejestru (F1; regula 4 odwrocona)');
 
   // 2) Jednostka FAKTYCZNIE przesunieta z hexu fortu na wyliczony cel ewakuacji.
   assert(stationedUnit.q === expectedDest.q && stationedUnit.r === expectedDest.r,
