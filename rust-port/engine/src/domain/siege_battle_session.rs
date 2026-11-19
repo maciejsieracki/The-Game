@@ -1198,7 +1198,7 @@ impl SiegeBattleSession {
                     max_hp: self.max_hp[s][i],
                     dead: u.c.dead,
                     routed: u.c.routed,
-                    removed: u.c.removed,
+                    removed: u.c.dead,
                 });
             }
         }
