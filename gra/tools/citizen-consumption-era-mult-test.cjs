@@ -36,6 +36,7 @@ export { citizenConsumptionEraMultiplier, formatCitizenConsumptionMult, formatCi
 export { computeCityRationCost, rationFoodCostPerPop } from '../src/game/population-growth-v85';
 export { computeCityFoodBalanceV85, recomputeCityFoodBalancesInEcon } from '../src/game/turn-economy';
 export { computeCitizenResourceDrain, citizenUpkeepRateForEra } from '../src/game/citizen-resource-upkeep';
+export { setEraRebalanceEnabledForTest } from '../src/game/econ-era-rebalance';
 `, 'utf8');
 
 /** Buduje bundle; `mutate(filePath, text)` moze zwrocic zmieniony tekst zrodla (mutacje). */
@@ -61,6 +62,8 @@ async function buildAsync(mutate) {
 
 /** Zestaw asercji; zwraca liczbe porazek (dla mutantow oczekiwane > 0). */
 function runChecks(M, cityPanelText, log) {
+  // Test dotyczy reguł legacy (m(e) = 1 + 0,5(e-1)): flaga rebalansu jawnie OFF; rebalans testuje econ-era-rebalance-test.
+  M.setEraRebalanceEnabledForTest(false);
   let fails = 0, passes = 0;
   const eq = (a, b, msg) => {
     if (a === b || (Number.isNaN(a) && Number.isNaN(b))) passes++;
@@ -157,6 +160,7 @@ function runChecks(M, cityPanelText, log) {
   ok(/formatCitizenConsumptionNumber\(cost\)/.test(fn), 'F3b: koszt formatowany przecinkiem (formatCitizenConsumptionNumber)');
   ok(/formatCitizenConsumptionMult\(ownerEra\)/.test(fn), 'F3: tekst pokazuje mnoznik epoki z formattera');
   ok(!/\*\s*[0-9]/.test(fn.replace(/\/\/.*$/gm, '')), 'F4: brak mnozenia przez literal w etykiecie');
+  M.setEraRebalanceEnabledForTest(null);
   return { fails, passes };
 }
 

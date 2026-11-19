@@ -24,6 +24,7 @@ fs.writeFileSync(ENTRY, `
 import unitsData from '../data/units.json';
 import buildingsData from '../data/buildings.json';
 import * as buildingStockCostModule from '../src/game/building-stock-cost';
+export { setEraRebalanceEnabledForTest } from '../src/game/econ-era-rebalance';
 
 // The current-base replay intentionally runs this test before the candidate
 // helper exists.  Keep the shared-helper assertions executable there, while
@@ -144,6 +145,8 @@ function byName(rows, key, value) {
 try {
   buildBundle();
   const M = require(BUNDLE);
+  // Test dotyczy reguł legacy (wartosci sprzed R-WEB-ECONOMY-ERA-REBALANCE-ENABLE-Q1): flaga rebalansu jawnie OFF; rebalans testuje econ-era-rebalance-test.
+  M.setEraRebalanceEnabledForTest(false);
   const data = { units: M.units, buildings: M.buildings };
 
   const stoneUnit = byName(M.units, 'Jednostka', 'Wojownik');

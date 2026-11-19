@@ -19,6 +19,7 @@ export {
   computeCityRationCost,
 } from '../src/game/population-growth-v85';
 export { citizenConsumptionEraMultiplier } from '../src/game/citizen-consumption-era';
+export { setEraRebalanceEnabledForTest } from '../src/game/econ-era-rebalance';
 export {
   spichlerzGrowthBonusPercent,
   spichlerzHealthBonus,
@@ -44,6 +45,8 @@ try {
 }
 
 const M = require(BUNDLE);
+// Test dotyczy reguł legacy (wartosci sprzed R-WEB-ECONOMY-ERA-REBALANCE-ENABLE-Q1): flaga rebalansu jawnie OFF; rebalans testuje econ-era-rebalance-test.
+M.setEraRebalanceEnabledForTest(false);
 const society = require('../data/society-params.json');
 
 let passed = 0;
