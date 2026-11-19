@@ -1843,14 +1843,12 @@ pub fn frame_sched(frame: f64, ms: f64) -> f64 {
 /// wywołaniu z `_now() - t0 >= ms` (`_doMove` `:8746-8775`: `p = (_now() - t0) / MOVE_STEP_MS`, koniec przy `p >= 1`;
 /// lunge `_doMeleeAttack` `:9117-9172`: cios przy `localT >= BLOW_HIT_T`, koniec przy `localT >= BLOW_LUNGE_MS`). Krok
 /// `_raf` wykonuje się co klatkę (`_ffQueue` w `_runFastForward` `:9430-9435`), pierwszy najwcześniej w tej samej klatce
-/// (wywołanie z fazy zegarów) z `localT = 0`, więc koniec = `max(1, ceil(ms / frame)) * frame`. `frame <= 0` = nominalnie.
+/// (wywołanie z fazy zegarów) z `localT = 0`, więc koniec = pierwsza klatka `>= t0 + ms` = `ceil(ms / frame) * frame`
+/// (dla `ms > 0` co najmniej jedna klatka). Ten sam wzór co [`frame_sched`]; osobna nazwa wskazuje źródło odcinka w pinie
+/// (pętla `_raf`, a nie zegar). `frame <= 0` = nominalnie.
 #[must_use]
 pub fn frame_raf(frame: f64, ms: f64) -> f64 {
-    if frame > 0.0 && ms > 0.0 {
-        (ms / frame).ceil().max(1.0) * frame
-    } else {
-        ms
-    }
+    frame_sched(frame, ms)
 }
 
 /// Web `RANGED_FLY_MS = 380` (`battleScene.ts:1012`): lot pocisku jednostki (`_doRangedAttack`, `_schedule(RANGED_FLY_MS)`
@@ -3859,8 +3857,8 @@ impl<R: RollSource> ProdBody<R> {
             match fall_back_after_move(false, move_left) {
                 AfterStep::Done => break,
                 AfterStep::Schedule { ms } => {
-                            elapsed += self.gap_after(now0 + elapsed, f64::from(ms));
-                        }
+                    elapsed += self.gap_after(now0 + elapsed, f64::from(ms));
+                }
             }
         }
         (elapsed, moved.then_some(move_left))
@@ -4271,10 +4269,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         // Tylko w modelu czasu pinu ([`Self::pin_blow_timing`]); dawne wektory pętli liczą pozycje końcowe.
         if self.pin_blow_timing {
             // PIN3-DIVERGENCE-Q1 (D-PIN3-2): krok z `t0 == v_now` z kolejki `_raf` jeszcze się nie zaczął ([`timeline_done`]).
-            if let Some(&(_, _, from, _, _)) = self
-                .move_timeline
-                .iter()
-                .find(|(u, t0, _, _, ord)| {
+            if let Some(&(_, _, from, _, _)) =
+                self.move_timeline.iter().find(|(u, t0, _, _, ord)| {
                     *u == unit && !timeline_done(*t0, *ord, v_now, self.reader_due)
                 })
             {
@@ -4828,7 +4824,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 // FRAME-QUANT-Q1 (D-FQ-3): `_schedule(BLOW_SETTLE_MS)` z klatki końca lunge ma nominalny `due`
                 // (`koniec lunge + 220`); ogon planuje zegar sterownika z klatki ciosu, więc odcinek settle zostaje
                 // nominalny, a klatkę odpalenia wyznacza zegar.
-                self.tail[ix][unit.idx] = frame_raf(self.frame_ms, BLOW_LUNGE_MS) + BLOW_SETTLE_MS - hit;
+                self.tail[ix][unit.idx] =
+                    frame_raf(self.frame_ms, BLOW_LUNGE_MS) + BLOW_SETTLE_MS - hit;
             }
             attack_pre + hit
         } else {
@@ -5785,11 +5782,13 @@ impl<R: RollSource> WalkWorld for ProdSiegeWalk<'_, R> {
         // FRAME-QUANT-Q1 (D-FQ-1): oba odcinki kwantyzowane klatką.
         let frame = self.body.frame_ms;
         let gap = f64::from(STEP_GAP_MS);
-        self.body.now =
-            self.now0 + f64::from(self.moves) * (frame_raf(frame, MOVE_STEP_MS) + frame_sched(frame, gap));
+        self.body.now = self.now0
+            + f64::from(self.moves) * (frame_raf(frame, MOVE_STEP_MS) + frame_sched(frame, gap));
         // FRAME-QUANT-Q1 (D-FQ-2): krok po `_schedule(STEP_GAP_MS)` (nie pierwszy) dostaje nominalny `due` tego zegara.
         if self.moves > 0 {
-            let _ = self.body.gap_after(self.body.now - frame_sched(frame, gap), gap);
+            let _ = self
+                .body
+                .gap_after(self.body.now - frame_sched(frame, gap), gap);
         }
         match self.body.move_step_core(
             self.unit,
@@ -6656,6 +6655,54 @@ mod pin3_timeline_tests {
         // To samo dla czytającego zegara (wieża) o dowolnym `due` w tej klatce.
         assert!(!timeline_done(100.0, raf, 100.0, 96.0));
         assert!(timeline_done(100.0, sync, 100.0, 96.0));
+    }
+
+    /// FRAME-QUANT-Q1 (D-FQ-2): krok marszu wołany z zegara `_schedule(STEP_GAP_MS)` wykonuje się w fazie zegarów klatki
+    /// (`_drainTimers` `:9616-9634`), rosnąco po nominalnym `due`. Zegar wieży z tej samej klatki widzi krok jako wykonany
+    /// tylko przy mniejszym `due` kroku; remis `due` = wieża pierwsza (jej `id` nadany wcześniej: wystrzał planowany w
+    /// `_beginTurn`, trafienie przy wystrzale). Krok z kolejki `_raf` (`+inf`) nigdy nie jest wykonany przed zegarem klatki.
+    #[test]
+    fn krok_z_zegara_w_klatce_wg_nominalnego_due() {
+        assert!(timeline_done(1312.0, 1310.0, 1312.0, 1311.0));
+        assert!(
+            !timeline_done(1312.0, 1310.0, 1312.0, 1310.0),
+            "remis due: wieża pierwsza"
+        );
+        assert!(!timeline_done(1312.0, 1310.0, 1312.0, 1300.0));
+        assert!(!timeline_done(1312.0, f64::INFINITY, 1312.0, 1312.0));
+        assert!(timeline_done(1312.0, f64::NEG_INFINITY, 1312.0, 1297.0));
+        // Ciało czyta oś z `f64::MIN`: krok z zegara w tej samej chwili jeszcze niewykonany (dawna reguła D-PIN3-2).
+        assert!(!timeline_done(1312.0, 1310.0, 1312.0, f64::MIN));
+        let mut b = body();
+        b.frame_ms = 16.0;
+        b.set_now(1000.0);
+        // Koniec kroku w 1232 (klatka), `_schedule(70)`: due 1302, odpalenie w klatce 1312.
+        let gap = b.gap_after(1232.0, 70.0);
+        assert_eq!(gap, 80.0);
+        b.now = 1312.0;
+        assert_eq!(
+            b.timeline_ord(),
+            1302.0,
+            "krok z zegara: klucz = nominalny due"
+        );
+        b.now = 1328.0;
+        assert_eq!(
+            b.timeline_ord(),
+            f64::INFINITY,
+            "inna klatka: krok z kolejki _raf"
+        );
+        b.now = 1000.0;
+        assert_eq!(
+            b.timeline_ord(),
+            f64::NEG_INFINITY,
+            "w chwili wywołania ciała: synchroniczny"
+        );
+        // Klatka 0 (dawny model nominalny): bez klucza zegara.
+        let mut c = body();
+        c.set_now(1000.0);
+        assert_eq!(c.gap_after(1232.0, 70.0), 70.0);
+        c.now = 1302.0;
+        assert_eq!(c.timeline_ord(), f64::INFINITY);
     }
 
     #[test]

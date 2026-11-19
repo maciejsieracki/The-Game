@@ -271,10 +271,12 @@ fn vectors() -> Value {
     assert_eq!(v["pinSha256"], PIN_SHA256, "wektory z innego tekstu pinu");
     assert_eq!(f(&v["frameMs"]), FRAME_MS);
     // PIN2-PROBE-Q1 (D-PIN2-2): wektor z własnym `frameMs` (krok przewijania pinu) tylko jako bliźniak granicy klatki.
+    // FRAME-QUANT-Q1 (D-FQ-2): także `_klatka4` (krok 4 ms, kolejność kroku z zegara i wieży w jednej klatce).
     for x in v["vectors"].as_array().unwrap() {
         if !x["frameMs"].is_null() {
+            let n = x["name"].as_str().unwrap();
             assert!(
-                x["name"].as_str().unwrap().ends_with("_klatka1") && x["mode"] == "skip",
+                (n.ends_with("_klatka1") || n.ends_with("_klatka4")) && x["mode"] == "skip",
                 "frameMs poza bliźniakiem granicy klatki: {}",
                 x["name"]
             );
@@ -407,6 +409,38 @@ fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
         );
         assert_eq!(v["seed"], base["seed"]);
     }
+}
+
+/// FRAME-QUANT-Q1 (D-FQ-1): odcinek czasu ciała kończy się w pierwszej klatce, która go pokrywa. Pin nie przesuwa `vNow`
+/// w `_drainTimers` (`battleScene.ts:9616-9634`), a kroki `_raf` wykonuje raz na klatkę (`_runFastForward` `:9426-9435`),
+/// więc przy klatce 16 ms: krok `_doMove` 240 ms (bez zmian), cios `localT >= 150` w 160, koniec lunge `>= 260` w 272,
+/// `_schedule(70)` w 80, lot pocisku 380 w 384, settle 220 w 224. Przy 1 ms wszystkie stałe pinu są całkowite =
+/// tożsamość; klatka `<= 0`/`NaN` = czas nominalny.
+#[test]
+fn kwantyzacja_odcinkow_klatka_pinu() {
+    use civ_engine::domain::siege_tactics_loop::{frame_raf, frame_sched};
+    assert_eq!(frame_raf(16.0, 240.0), 240.0);
+    assert_eq!(frame_raf(16.0, 150.0), 160.0);
+    assert_eq!(frame_raf(16.0, 260.0), 272.0);
+    assert_eq!(frame_sched(16.0, 70.0), 80.0);
+    assert_eq!(frame_sched(16.0, 380.0), 384.0);
+    assert_eq!(frame_sched(16.0, 320.0), 320.0);
+    assert_eq!(frame_sched(16.0, 220.0), 224.0);
+    assert_eq!(frame_sched(16.0, 160.0), 160.0);
+    assert_eq!(frame_sched(16.0, 16.5), 32.0);
+    for ms in [70.0, 150.0, 160.0, 180.0, 220.0, 240.0, 260.0, 320.0, 380.0] {
+        assert_eq!(frame_raf(1.0, ms), ms);
+        assert_eq!(frame_sched(1.0, ms), ms);
+    }
+    // Krok `_raf` dłuższy niż odcinek: co najmniej jedna klatka (pierwszy krok z `localT = 0`, koniec w kolejnej).
+    assert_eq!(frame_raf(256.0, 150.0), 256.0);
+    assert_eq!(frame_raf(512.0, 240.0), 512.0);
+    // `_schedule(0)` odpala w tej samej klatce; klatka 0 albo NaN = nominalnie (dawne testy pętli).
+    assert_eq!(frame_sched(16.0, 0.0), 0.0);
+    assert_eq!(frame_sched(0.0, 70.0), 70.0);
+    assert_eq!(frame_raf(0.0, 150.0), 150.0);
+    assert_eq!(frame_sched(f64::NAN, 70.0), 70.0);
+    assert_eq!(frame_sched(-16.0, 70.0), 70.0);
 }
 
 /// Pokrycie scenariuszy wymagane dispatchem (z/bez machin, różne liczności, wyłom, ucieczka, oba sufity tur, oba tryby).
