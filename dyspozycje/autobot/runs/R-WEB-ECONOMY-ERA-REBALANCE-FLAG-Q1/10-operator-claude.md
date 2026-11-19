@@ -1,0 +1,19 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1
+GOAL: rebalans ekonomii wg epok za flagą (domyślnie OFF): ulepszenia stałe jak epoka 1, żywność wojska x3/epokę, racje obywateli x2/epokę.
+ZMIANY/COMMIT: e3898a7be (baza d425dd0a3). Allowlista zachowana. Zmienione: gra/data/econ-era-rebalance-params.json (nowy), gra/src/game/econ-era-rebalance.ts (nowy), gra/src/game/terrain-improvements.ts:198 (improvementYieldForEra), :344 (resourceProductionAmountForEra), gra/src/game/citizen-consumption-era.ts:24-27, gra/src/game/economy-upkeep.ts:1162 (unitFoodPerTurn), :1185-1205 (buildUnitFoodTable, tabela surowa w WeakMap), gra/src/main.ts:994 (import), :33926 (hak __econRebalanceMeasure), gra/tools/ai-economy-measure-run.cjs:80-86 (opcja --rebalance 0|1), gra/tools/econ-era-rebalance-test.cjs (nowy).
+TESTY:
+- tsc --noEmit: exit 0.
+- econ-era-rebalance-test: 26 ok / 0 FAIL (OFF 50/75/113, 3/4/5, 4/8/16, 1/1,5/2; ON 50/50/50, 3/3/3, 4/12/36, 1/2/4; epoki 4-5 ON: 108/324, m 8/16; 7 mutantów wykrytych).
+- logic-test 213/213; tech-tree 20/0; research 33/0; combat exit 0; unit-replace exit 0; ai-economy-measure-hook-test 23/23 (z buildem vite).
+- hud-shortage-alert-converter 17/0; resource-gross-net-converter-inputs 18/0; hud-resource-card-state 7/0.
+- citizen-consumption-era-mult, citizen-upkeep-era-mult (681/0), era-improvement-cost-upkeep (52/0), improvement-era-scaling (144/0), magazyn-era-scaling (58/0), upkeep (91/0), unit-resource-upkeep (7/0), population-growth-v85-bonus (65/0), tartak-glinianka-rate (1281/0), kamieniolom-kamien-epoka (37/0), foundry-throughput (159/0), ai-upkeep-wiring (4/0), ai-food-only-worked-hexes (69/0).
+- NIE-ZIELONE, poza zakresem zmian: unit-epoch-cost-test 56/1 (Bronze mount stock 100 zamiast 50; ścieżka building-stock-cost nie zmieniona); citizen-resource-upkeep-test 122/2 (kotwica main.ts `ordPctRaw = evaluateOrderFromBreakdown(` nieobecna także w HEAD d425dd0a3 = błąd przed zmianą). NIE_ZMIERZONO: porównanie z baseline dla tych dwóch.
+- Bieg dowodowy 30 tur, seed 4242, --player-ai 1, Chromium: OFF i ON zakończone (stop null), 0 NaN, 0 crashy. t30 Surowce brutto/netto: OFF 56/49, ON 42/35 (kierunek oczekiwany: ON niżej od epoki 2). Biegi rozeszły się (miasta 4 vs 3), więc to nie czyste porównanie.
+BLOKADY: brak techniczne. DECYZJA WŁAŚCICIELA (patrz NASTĘPNY KROK): konwertery.
+RUNDY: 2/5
+NASTĘPNY KROK: (1) UWAGA-DLA-ORKIESTRATORA, KONWERTERY: gra/src/game/converters.ts:212 wywołuje citizenConsumptionEraMultiplier (ta sama funkcja co racje). Przy flaga ON przepustowość konwerterów rośnie 2^(e-1) zamiast 1+0,5(e-1). Plik converters.ts jest POZA allowlistą, więc nie zmieniałem go. Potrzebna decyzja: wyłączyć rebalans dla konwerterów (dodać do allowlisty converters.ts) albo zaakceptować ten efekt. (2) Założenia: epoki 4-5 liczone wzorem (żywność 108/324, racje 8/16); zywnoscWojskaSkalaNaEpoke i racjeObywateliMnoznikNaEpoke w JSON. Zwykłe jednostki bez wpisu w tabeli zostają przy zywnoscJednostkaRuch (bez zmian). (3) Inwentarz (tylko wypis, bez zmian): converters.ts:143-212 (przepustowość Cegielni 50/75/100 i odlewni x1/1,5/2, decyzja właściciela); terrain-improvements.ts:128-141 terrainImprovementEraMultiplier (utrzymanie Pracy, nie ruszane); building-stock-cost.ts:34 epochCostMultiplier i :80 buildingEraCostMultiplier (koszty, nie ruszane). UI: cityPanel.ts:1647 używa funkcji, więc tekst zmienia się sam; NIE_ZMIERZONO, czy są zaszyte liczby w tooltipach. (4) Długi bieg 150 tur OFF vs ON zostaje dla orkiestratora (komenda: node tools/ai-economy-measure-run.cjs --dist <dist> --profile <p> --out <o> --seed 4242 --turns 150 --player-ai 1 --rebalance 0|1).
+DEPLOY/PUSH: NIE WYKONANO
+
+UWAGI-DLA-ORKIESTRATORA: bieg hook-testu zapisał log do /home/user/The-Game/.claude/worktrees/scratch-hook.log (poza worktree, nie jest w repo). Bundle i biegi są w katalogu scratchpad (econ-rebal).

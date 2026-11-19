@@ -1,0 +1,7 @@
+{
+  "_opis": "R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: rebalans ekonomii wg epok ZA FLAGA (domyslnie OFF = gra bez zmian). Decyzje wlasciciela 2026-11-19: surowce i ulepszenia bez wzrostu co epoke (wartosci epoki 1), zywnosc wojska x3 na epoke (4/12/36), racje obywateli x2 na epoke (1/2/4/8/16).",
+  "eraRebalansAktywny": false,
+  "przychodyUlepszenStałeEpoka1": true,
+  "zywnoscWojskaSkalaNaEpoke": 3,
+  "racjeObywateliMnoznikNaEpoke": 2
+}

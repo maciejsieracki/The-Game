@@ -1,3 +1,21 @@
+## ROBOCZA 48132a82 -- 2026-11-18 -- FALA 865: R-WEB-AI-AI-ALLIANCE-LIMIT-2-VIOLATED-Q1: wspolny limit 2 sojuszy na cywilizacje we wszystkich sciezkach zawierania sojuszu (tor, siostry, wnioski gracz-AI) za flaga torSojuszyAktywny=false (testowa)
+
+- nowy gra/src/game/ai-ai-alliance-limit.ts, gra/src/main.ts (bramki limitu w torze, galezi siostr i applyProposalOutcomeImpl), testy ai-ai-alliance-limit-test/audit. Flaga OFF = gra bez zmian.
+- Weryfikacja: tsc 0, logic 213/213, limit-test OK (mutanty 4/4 + wiazania 4/4), alliance-tick 19/19 + mutanty 8/8, zero-trust 43/0
+- Limity: NIE ZMIERZONO: bieg 100 tur ON seed 4242 (max sojuszy na civ <=2 w t100); zachowanie OFF vs ON biegiem; przyczyna przekroczen (para 1-19, sciezka siostr) niepotwierdzona na poziomie id traktatu
+
+## ROBOCZA 45557479 -- 2026-11-18 -- FALA 864: R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: rebalans ekonomii wg epok ZA FLAGA eraRebalansAktywny=false (ulepszenia stale jak epoka 1, zywnosc wojska x3/epoke, racje obywateli 2^(e-1)) (testowa)
+
+- gra/src/game/econ-era-rebalance.ts + gra/data/econ-era-rebalance-params.json (nowe), terrain-improvements.ts, economy-upkeep.ts (zywnosc wojska + wartosc karty), citizen-consumption-era.ts, converters.ts i citizen-resource-upkeep.ts (legacy mnoznik - konwertery i utrzymanie bez zmian), karty jednostek, main.ts (hak __econRebalanceMeasure), ai-economy-measure-run.cjs --rebalance. Flaga OFF = gra bez zmian.
+- Weryfikacja: tsc 0, logic 213/213, econ-era-rebalance-test 37/0 (mutanty M8-M10 czerwone), citizen-consumption-era-mult PASS, foundry 159/0, citizen-upkeep-era-mult 681/0, hud 17/18/7, ai-economy-measure-hook 23/23
+- Limity: NIE ZMIERZONO: bieg 150 tur OFF/ON (robi orkiestrator); czerwone na bazie rowniez: unit-epoch-cost-test 56/1, citizen-resource-upkeep-test 122/2 (nie z tego tematu); units.json ma tylko epoki 1-3
+
+## ROBOCZA 25bd973d -- 2026-11-18 -- FALA 863: R-WEB-DIPLO-WAR-LIMIT-PLAYER-TARGET-Q1: wojna panstwa-miasta przeciw graczowi przechodzi przez bramke limitu wojen (za flaga limitWojenAktywny=false) (testowa)
+
+- gra/src/main.ts (+1 linia: bramka warLimitAllowsDeclaration w petli klastra panstw-miast), gra/tools/diplomacy-war-limit-unit-test.cjs (+9 asercji, wiazanie zrodlowe). Flaga OFF = zachowanie gry bez zmian.
+- Weryfikacja: tsc 0, logic 213/213, war-limit-unit 57/0 (mutacja main.ts 55/2 czerwona), war-limit-analyze 17/0
+- Limity: NIE ZMIERZONO: bieg runtime ON/OFF i przypadek panstwo-miasto -> gracz; wiazanie bramki w main.ts testowane tekstowo
+
 ## ROBOCZA 53cc1dc4 -- 2026-11-18 -- FALA 862: R-WEB-UI-HUD-RESOURCE-CARD-STATE-NET-Q1: karta surowca w panelu imperium liczy niedobor z netto HUD (resourceIsShortage), spojnie z chipem i alertem (testowa)
 
 - gra/src/ui/empireDetailPanel.ts (resStateOf -> resourceIsShortage), nowy test hud-resource-card-state-test. Deficyt ulamkowy (-0,4) nie daje stanu 'bad' (zgodnie z chipem).

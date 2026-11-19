@@ -53,6 +53,7 @@ import {
   type UnitStockCostSource,
 } from './building-stock-cost';
 import { buildingEffectAtLevel } from './production';
+import { rebalancedUnitFoodBase } from './econ-era-rebalance';
 import {
   R_STAWKI_FALA1_FALA2_MULT,
   R_STAWKI_FALA2_MULT,
@@ -1158,6 +1159,12 @@ export function unitFoodPerTurn(
   let base = p.zywnoscJednostkaRuch;
   if (unit.typeId && typeof foodTable[unit.typeId] === 'number') {
     base = foodTable[unit.typeId]!;
+    // R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: flaga ON = zywnosc wojska x3/epoke (surowe dane z buildUnitFoodTable).
+    const raw = UNIT_FOOD_RAW_BY_TABLE.get(foodTable)?.[unit.typeId];
+    if (raw) {
+      const rebalanced = rebalancedUnitFoodBase(raw.direct, raw.epoch);
+      if (rebalanced !== null) base = rebalanced;
+    }
   }
   if (base <= 0) return 0;
   if (unit.camping) {
@@ -1174,11 +1181,35 @@ export function unitFoodPerTurn(
   return food * R_STAWKI_FALA1_FALA2_MULT;
 }
 
+/**
+ * R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: wartość „Żywność/turę" do KART jednostek (UI).
+ * Flaga OFF -> surowa wartość z units.json (bez zmian, jak dotad). Flaga ON -> wartość faktyczna
+ * dla własnego terytorium: baza po rebalansie epoki (x3/epokę) × R_STAWKI (×4), zgodnie z unitFoodPerTurn.
+ */
+export function unitFoodCardValue(unit: {
+  readonly 'żywność/turę'?: unknown;
+  readonly Epoka?: unknown;
+}): unknown {
+  const direct = unit['żywność/turę'];
+  if (typeof direct !== 'number' || !Number.isFinite(direct)) return direct;
+  const epoch = typeof unit.Epoka === 'number' || typeof unit.Epoka === 'string' ? unit.Epoka : undefined;
+  const rebalanced = rebalancedUnitFoodBase(direct, epoch);
+  if (rebalanced === null) return direct;
+  return rebalanced * R_STAWKI_FALA1_FALA2_MULT;
+}
+
+/**
+ * R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: surowe wartości (units.json) per tabela, żeby flaga rebalansu
+ * była czytana przy KAŻDYM wywołaniu (nie zapiekana przy budowie tabeli). Tabela zostaje Record<string, number>.
+ */
+const UNIT_FOOD_RAW_BY_TABLE = new WeakMap<UnitFoodTable, Record<string, { direct: number; epoch: number | string | undefined }>>();
+
 /** Build typeId -> food/turn from units.json rows. */
 export function buildUnitFoodTable(
   rows: ReadonlyArray<Record<string, unknown>>,
 ): UnitFoodTable {
   const out: Record<string, number> = {};
+  const raw: Record<string, { direct: number; epoch: number | string | undefined }> = {};
   for (const row of rows) {
     const name = row['Jednostka'];
     if (typeof name !== 'string' || name.length === 0) continue;
@@ -1187,8 +1218,10 @@ export function buildUnitFoodTable(
       const rawEpoch = row['Epoka'];
       const epoch = typeof rawEpoch === 'number' || typeof rawEpoch === 'string' ? rawEpoch : undefined;
       out[name] = scaleCostByEpoch(direct, epoch);
+      raw[name] = { direct, epoch };
     }
   }
+  UNIT_FOOD_RAW_BY_TABLE.set(out, raw);
   return out;
 }
 

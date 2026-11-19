@@ -1,0 +1,12 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-DIPLO-WAR-LIMIT-PLAYER-TARGET-Q1
+GOAL: wojna, w ktorej gracz jest celem ataku AI (w tym klaster panstw-miast -> gracz), liczy sie do limitu wojen tej AI za flaga limitWojenAktywny; flaga OFF = parytet.
+ZMIANY-COMMIT: kandydat a02529f0de84473f99326015b3d25a087de63ffd (baza d425dd0a3cef94bdc65b98ba25454fc9947eb180; merge-base --is-ancestor = TAK). git diff --stat: 4 pliki, +90/-2: gra/src/main.ts (+2: bramka warLimitAllowsDeclaration(csOwnerId, ME(), 'naturalna') w petli klastra, l.45165), gra/tools/diplomacy-war-limit-unit-test.cjs (+30/-2), raporty operatora i obrony. Allowlista: main.ts zakazany "poza ewentualnym 1 wywolaniem" -> jedna linia + komentarz, akceptowalne. Brak zmian flagi/params, gra-robocza, WERSJE.md.
+TESTY (wlasny bieg na a02529f0d, surowe wyjscie): tsc --noEmit exit 0; logic-test 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplomacy-war-limit-unit-test pass=57 fail=0; analyze-test pass=17 fail=0. Mutacja B na kopii main.ts (bez linii bramki, WAR_LIMIT_MAIN_TS): pass=55 fail=2 exit 1 (czerwona). Flaga OFF: warLimitPermits zwraca true na starcie (main.ts:25899) -> parytet bit-w-bit z baza dla nowej linii.
+OCENA ZARZUTOW: 1 (brak pokrycia main.ts) - ODDAL/rozwiazane: obrona dodala asercje zrodlowe wiazace bramke (dokladnie raz, w petli, przed chargeWarDeclarationCredibility); mutacja B jest teraz czerwona (potwierdzone). Test jest zrodlowy, nie behawioralny - slabosc odnotowana. 2 (brak biegu runtime ON/OFF) - ODDAL jako NIE ZMIERZONO: zmiana 1-liniowa za flaga domyslnie OFF, parytet OFF wynika z kodu; brak dowodu dzialania w grze. 3 (analiza PM->gracz) - ODDAL: logika pokryta testem czystym na prawdziwych funkcjach modulu i wiazaniem zrodlowym.
+BLOKADY: brak kodowych. NIE ZMIERZONO: bieg runtime ON/OFF (w tym przypadek PM->gracz), max rownoleglych wojen w t45.
+RUNDY: FC po 2/5 (operator, obrona r1)
+NASTEPNY KROK: integracja orkiestratora (merge a02529f0d do main, sprawdzic ancestor i diff --stat); osobny temat pomiaru runtime ON/OFF seed 4242 --all-flags 1 przed ewentualnym wlaczeniem flagi (decyzja wlasciciela).
+UWAGI-DLA-ORKIESTRATORA: w worktree gra/node_modules to symlink do wf_4bb175ca-428-1 (nie w commicie). Test wiazania jest tekstowy (indexOf stalych lancuchow) - kruchy na refaktor petli klastra; przy refaktorze zaktualizowac stale.
+DEPLOY/PUSH: NIE WYKONANO
