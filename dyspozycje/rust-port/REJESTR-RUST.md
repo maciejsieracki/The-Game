@@ -3955,3 +3955,7 @@ Konsekwencje dla kolejki:
 - **D-T4-2 (decyzja techniczna):** kontrakt `flee_after`: twarda asercja stanu zastąpiona łączeniem trójstronnym z jawnym tagiem `ucieczka-konflikt-zegara` (przy murze zegary zmieniają jednostki w oknie start..complete); asercja jednostki zostaje twarda; sonda Evaluatora 2700 bitew: 0 konfliktów.
 - Długi: `doktryna-rozkaz-ruchu` → K5EXEC-T3; adapter T6 ma wypełnić `army_leader_bonus_frac`, `morale_base_plain`, `is_army_commander`; T7 (#369): konflikt `ucieczka-konflikt-zegara` w pętli produkcyjnej NIE_ZMIERZONO, osiągalność `attack_pre` po kroku (mutanty E8/E22/E30) NIE_ZMIERZONO, pusty `_schedule(0)` przy `_manualCommanderGate` (U4), parytet pełnej bitwy AUTO z murem tylko w Rust (U5/F4: szablon ciosu dla każdego celu).
 - T6 (baza `1e20c2da9`, nieobjęta tym FF): po FC merge-tree vs parity-v2 `48035d3a7` (T6 dotyka innych plików).
+
+### Przebieg 2026-11-19 ~03:05 UTC — start #371 T5c PIN-PARITY
+- Start: `R-RUSTPORT-P4-371-T5C-PIN-PARITY` (dispatch `f68a52f37`, baza parity-v2 `48035d3a7`, Workflow `wf_cfb4380d-b88`, generic Opus wszystkie etapy): wyrównanie U-OP-1..4 klienta/renderera do pinu wg D-371-5c. Build renderera (jeden naraz; dysk 14 GB ≥ 12).
+- Aktywne: T5c (renderer+klient, Operator), T6 ADAPTER (Obrona r1d). Limit 2 buildów zajęty. Puste sloty 2 z 4 — powód: T7 #369 czeka na T6; T3 TAURI-GLUE dowodzi się wyłącznie z CI Windows (brak lokalnego buildu) i wymaga T5c; I5a/I5b (renderer) po #369 oraz kolidują z buildem renderera T5c.
