@@ -1783,6 +1783,13 @@ fn timeline_done(t0: f64, synchr: bool, v_now: f64) -> bool {
     t0 < v_now || (t0 == v_now && synchr)
 }
 
+/// PIN3-DIVERGENCE-Q1 (D-PIN3-2): klucz kolejności wpisów osi czasu ciała jak w klatce pinu: chwila `t0`, potem faza —
+/// wykonane w wywołaniu ciała (zegar `_drainTimers`, `synchr`) = 0, kroki z kolejki `_raf` = 1 (`_runFastForward`
+/// `:9427-9435`: zegary przed kolejką kroków tej samej klatki).
+fn timeline_key(t0: f64, synchr: bool) -> (f64, u8) {
+    (t0, u8::from(!synchr))
+}
+
 /// Web `BLOW_LUNGE_MS = 260` (`battleScene.ts:1020`): długość lunge `_doMeleeAttack` (koniec przed `BLOW_SETTLE_MS`).
 pub const BLOW_LUNGE_MS: f64 = 260.0;
 /// Web `BLOW_SETTLE_MS = 220` (`battleScene.ts:1022`): `_schedule` po lunge przed `done()` (`:9163`).
@@ -2288,18 +2295,23 @@ impl<R: RollSource> ProdBody<R> {
     /// zmiana trafia też na oś [`Self::facing_timeline`] z chwilą `self.now` (chwila kroku/ciosu na osi ciała).
     fn set_facing(&mut self, unit: UnitRef, dir: f64) {
         let ix = side_ix(unit.side);
-        let prev = self.facing[ix][unit.idx];
-        if self.pin_blow_timing && prev.to_bits() != dir.to_bits() {
+        if self.pin_blow_timing {
             let synchr = self.now <= self.call_now;
             let now = self.now;
+            // Zwrot w tej chwili osi czasu (nie bieżący stan po marszu): wartość „przed” wpisu.
+            let prev = self.facing_at(unit, now);
+            if prev.to_bits() == dir.to_bits() {
+                return;
+            }
             // PIN3-DIVERGENCE-Q1 (D-PIN3-5): zmiana z chwili WCZEŚNIEJSZEJ niż już zapisane zwroty jednostki (np.
             // `_startRout` od trafienia wieży w trakcie jej marszu, `:9818`) nie nadpisuje bieżącego `facing`: w pinie
             // późniejszy krok marszu (`_doMove` → `_updateFacing` `:8757`) obraca ją jeszcze raz. Bieżący stan = zwrot
             // najpóźniejszy w czasie.
+            let k_new = timeline_key(now, synchr);
             let later = self
                 .facing_timeline
                 .iter()
-                .any(|&(u, t0, _, _, _)| u == unit && t0 > now);
+                .any(|&(u, t0, _, _, s)| u == unit && timeline_key(t0, s) > k_new);
             self.facing_timeline.push((unit, now, prev, dir, synchr));
             if later {
                 return;
@@ -2309,26 +2321,27 @@ impl<R: RollSource> ProdBody<R> {
     }
 
     /// PIN3-DIVERGENCE-Q1 (D-PIN3-1): `ru.facing` w chwili `v_now` (pin czyta stan bieżący; ciało ma już stan po
-    /// atomowo policzonym marszu). Ostatnia wykonana zmiana ([`timeline_done`]; remis `t0` = później zapisana); gdy wszystkie
-    /// zmiany jednostki na osi są później — wartość sprzed najwcześniejszej z nich; poza modelem czasu pinu albo bez
-    /// wpisów — bieżące `facing`.
+    /// atomowo policzonym marszu). Ostatnia wykonana zmiana ([`timeline_done`]) w kolejności pinu ([`timeline_key`]: chwila,
+    /// potem faza zegara przed fazą `_raf`, remis = później zapisana); gdy wszystkie zmiany jednostki na osi są później —
+    /// wartość sprzed najwcześniejszej z nich; poza modelem czasu pinu albo bez wpisów — bieżące `facing`.
     fn facing_at(&self, unit: UnitRef, v_now: f64) -> f64 {
         let cur = self.facing[side_ix(unit.side)][unit.idx];
         if !self.pin_blow_timing {
             return cur;
         }
-        let mut past: Option<(f64, f64)> = None;
-        let mut future: Option<(f64, f64)> = None;
+        let mut past: Option<((f64, u8), f64)> = None;
+        let mut future: Option<((f64, u8), f64)> = None;
         for &(u, t0, prev, dir, synchr) in &self.facing_timeline {
             if u != unit {
                 continue;
             }
+            let k = timeline_key(t0, synchr);
             if timeline_done(t0, synchr, v_now) {
-                if past.is_none_or(|(pt, _)| t0 >= pt) {
-                    past = Some((t0, dir));
+                if past.is_none_or(|(pk, _)| k >= pk) {
+                    past = Some((k, dir));
                 }
-            } else if future.is_none_or(|(ft, _)| t0 < ft) {
-                future = Some((t0, prev));
+            } else if future.is_none_or(|(fk, _)| k < fk) {
+                future = Some((k, prev));
             }
         }
         match (past, future) {
@@ -6399,5 +6412,116 @@ mod plains_cell_tests {
         assert_eq!(unit_move_cost(&t, false, 30.0, 7.0), 1.0);
         assert_eq!(unit_move_cost(&t, true, 30.0, 7.0), 2.0);
         assert_eq!(unit_move_cost(&t, false, 31.0, 7.0), f64::INFINITY);
+    }
+}
+
+#[cfg(test)]
+mod pin3_timeline_tests {
+    //! PIN3-DIVERGENCE-Q1 (D-PIN3-2, D-PIN3-5): oś czasu ciała w kolejności klatki pinu. W `_runFastForward`
+    //! (`battleScene.ts:9427-9435`) zegary z `due <= vNow` (`_drainTimers`, np. trafienie wieży `:4262`) wykonują się PRZED
+    //! kolejką kroków animacji `_raf` (kolejne kroki `_doMove`, `:8714-8757`) tej samej klatki; pierwszy krok marszu jest
+    //! wołany synchronicznie z `_activateUnit` (w chwili wywołania ciała).
+    use super::*;
+    use crate::domain::siege_tactics_activate::ActivateUnit;
+    use crate::domain::siege_tactics_blow::SequenceRolls;
+
+    fn unit_at(q: i64) -> ProdUnit {
+        ProdUnit {
+            activate: ActivateUnit {
+                side_atk: true,
+                q,
+                r: 0,
+                dead: false,
+                fading_out: false,
+                routed: false,
+                never_rout: false,
+                surround_applied: false,
+                morale: 100.0,
+                flee_morale: 0.0,
+                terrain_defence_mult: 1.0,
+                range: 1.0,
+                on_wall_walkway: false,
+                primary_ranged: false,
+                mounted: false,
+                phalanx: false,
+                shooting_disabled: false,
+                dry_col: 0.0,
+                held_after_fallback: false,
+                player_order_none: true,
+                can_shoot: false,
+                is_siege_unit: false,
+                is_siege_tower: false,
+                is_ram: false,
+                is_catapult: false,
+                doctrine_auto: false,
+                doctrine_manual: false,
+            },
+            melee_target: None,
+            blow: None,
+            counter_blows: Vec::new(),
+            body_ms: 0.0,
+            facing: 0.0,
+        }
+    }
+
+    fn body() -> ProdBody<SequenceRolls> {
+        let scene = ActivateScene {
+            finished: false,
+            manual_mode: false,
+            is_player_side: false,
+            wall_col: -1,
+            gate_open: false,
+            wall_tile_hp: Vec::new(),
+            siege_machine_range: 0.0,
+        };
+        let mut b = ProdBody::new([vec![unit_at(0)], vec![unit_at(5)]], scene, SequenceRolls::new(Vec::new()));
+        b.pin_blow_timing = true;
+        b
+    }
+
+    const A0: UnitRef = UnitRef {
+        side: BattleSide::Attacker,
+        idx: 0,
+    };
+
+    #[test]
+    fn krok_w_tej_samej_chwili_co_zegar() {
+        // Krok z kolejki `_raf` w chwili zegara: jeszcze niewykonany; krok synchroniczny: wykonany.
+        assert!(!timeline_done(100.0, false, 100.0));
+        assert!(timeline_done(100.0, true, 100.0));
+        assert!(timeline_done(99.0, false, 100.0));
+        assert!(!timeline_done(101.0, true, 100.0));
+    }
+
+    #[test]
+    fn rozbicie_w_trakcie_marszu_nie_cofa_zwrotu_z_pozniejszego_kroku() {
+        let mut b = body();
+        // `start` aktywacji w 1000 ms: krok marszu z `_raf` w 1310 obraca jednostkę na 2.
+        b.set_now(1000.0);
+        b.now = 1310.0;
+        b.set_facing(A0, 2.0);
+        b.now = 1000.0;
+        // Trafienie wieży w 1100 ms rozbija jednostkę (`_startRout` `:9818`: atakujący W = 3).
+        b.set_now(1100.0);
+        b.set_facing(A0, 3.0);
+        assert_eq!(b.facing(A0), 2.0, "bieżący zwrot = po ostatnim kroku marszu");
+        assert_eq!(b.facing_at(A0, 1050.0), 0.0);
+        assert_eq!(b.facing_at(A0, 1200.0), 3.0);
+        assert_eq!(b.facing_at(A0, 1400.0), 2.0);
+    }
+
+    #[test]
+    fn zegar_i_krok_w_tej_samej_chwili_krok_wygrywa() {
+        let mut b = body();
+        b.set_now(1000.0);
+        b.now = 1310.0;
+        b.set_facing(A0, 2.0);
+        b.now = 1000.0;
+        // Rozbicie od zegara w tej samej chwili co krok `_raf` (1310): zegar pierwszy, krok obraca po nim.
+        b.set_now(1310.0);
+        b.set_facing(A0, 3.0);
+        assert_eq!(b.facing(A0), 2.0);
+        assert_eq!(b.facing_at(A0, 1310.0), 3.0, "w fazie zegara krok jeszcze nie ruszył");
+        assert_eq!(b.facing_at(A0, 1311.0), 2.0);
     }
 }
