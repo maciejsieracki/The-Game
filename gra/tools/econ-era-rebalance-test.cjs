@@ -4,7 +4,7 @@
  *
  * Sprawdza rebalans epok ZA FLAGA (gra/src/game/econ-era-rebalance.ts + wpiecia w terrain-improvements.ts,
  * citizen-consumption-era.ts, economy-upkeep.ts):
- *  (E1) flaga domyslnie ON w danych (eraRebalansAktywny=true, decyzja 2026-11-19); hak setEraRebalanceEnabledForTest(null) wraca do wartosci z danych;
+ *  (E1) niezalezne od domyslnej flagi: hak ON/OFF jawny; hak setEraRebalanceEnabledForTest(null) wraca do wartosci z danych (odczytanej z pliku, nie zakodowanej);
  *  (E2) flaga OFF = wartosci jak dotad: Tartak 50/75/113, farma zywnosc 3/4/5, zywnosc jednostki 4/8/16
  *       (units Epoka 1/2/3, baza 1, x4 R_STAWKI), mnoznik racji m = 1/1,5/2;
  *  (E3) flaga ON = Tartak 50/50/50, farma 3/3/3, zywnosc jednostki 4/12/36, m = 1/2/4;
@@ -114,13 +114,14 @@ async function runAll(label, mutants) {
 (async () => {
 const base = await runAll('bazowy (bez mutantow)');
 const params = JSON.parse(fs.readFileSync(path.resolve(GRA_ROOT, 'data', 'econ-era-rebalance-params.json'), 'utf8'));
-check('E1 flaga w danych = true (domyslnie ON, decyzja wlasciciela 2026-11-19 / R-WEB-ECONOMY-ERA-REBALANCE-ENABLE-Q1)', params.eraRebalansAktywny === true, params.eraRebalansAktywny);
+check('E1 flaga w danych jest typu logicznego (wartosc domyslna czytana z danych, nie zakodowana)', typeof params.eraRebalansAktywny === 'boolean', params.eraRebalansAktywny);
 check('E1 parametry: skala wojska 3, racje x2, przychody stale', params.zywnoscWojskaSkalaNaEpoke === 3 && params.racjeObywateliMnoznikNaEpoke === 2 && params.przychodyUlepszenStałeEpoka1 === true);
-check('E1 domyslnie ON (isEraRebalanceEnabled)', base.mod.isEraRebalanceEnabled() === true);
 base.mod.setEraRebalanceEnabledForTest(true);
 check('E1 hak ON -> isEraRebalanceEnabled true', base.mod.isEraRebalanceEnabled() === true);
+base.mod.setEraRebalanceEnabledForTest(false);
+check('E1 hak OFF -> isEraRebalanceEnabled false', base.mod.isEraRebalanceEnabled() === false);
 base.mod.setEraRebalanceEnabledForTest(null);
-check('E1 hak null -> wraca do danych (ON)', base.mod.isEraRebalanceEnabled() === true);
+check('E1 hak null -> wraca do danych (isEraRebalanceEnabled === eraRebalansAktywny z pliku)', base.mod.isEraRebalanceEnabled() === params.eraRebalansAktywny, base.mod.isEraRebalanceEnabled());
 
 // ---- (E2) flaga OFF = wartosci jak dotad ----
 // Testy wartosci legacy (OFF) jawnie ustawiaja flage OFF: test dotyczy regul legacy; rebalans testuje econ-era-rebalance-test.
@@ -165,7 +166,7 @@ check('E9 eraOrdinal nazw Kamien/Braz/Zelazo = 1/2/3', base.mod.eraOrdinal('Kami
 
 // ---- (E6) mutanty kopii zrodel: kazdy musi czerwienic ----
 const MUTANTS = [
-  { id: 'M1 flaga domyslna zawsze OFF (przy danych ON)', mutants: [{ file: 'rebalance', from: '  return (ERA_REBALANCE_PARAMS.eraRebalansAktywny ?? ERA_REBALANCE_ENABLED_DEFAULT) === true;', to: '  return false;' }] },
+  { id: 'M1 flaga domyslna odwrocona wzgledem danych (niezaleznie od wartosci w danych)', mutants: [{ file: 'rebalance', from: '  return (ERA_REBALANCE_PARAMS.eraRebalansAktywny ?? ERA_REBALANCE_ENABLED_DEFAULT) === true;', to: '  return !((ERA_REBALANCE_PARAMS.eraRebalansAktywny ?? ERA_REBALANCE_ENABLED_DEFAULT) === true);' }] },
   { id: 'M2 racje m(e) wzor liniowy zamiast 2^(e-1)', mutants: [{ file: 'rebalance', from: 'return Math.pow(mult, Math.floor(era) - 1);', to: 'return 1 + 0.5 * (Math.floor(era) - 1);' }] },
   { id: 'M3 bramka przychodow ulepszen usunieta', mutants: [{ file: 'terrain', from: '  if (isEraRebalanceImprovementFlat()) return base;', to: '' }] },
   { id: 'M4 produkcja surowca bramka usunieta', mutants: [{ file: 'terrain', from: '  if (isEraRebalanceImprovementFlat()) return baseAmount;', to: '' }] },
@@ -187,7 +188,7 @@ for (const mt of MUTANTS) {
   mm.setEraRebalanceEnabledForTest(true);
   const mOn = measure(mm);
   mm.setEraRebalanceEnabledForTest(null);
-  if (mm.isEraRebalanceEnabled() !== true) detected = true; // domyslna flaga musi byc ON (dane)
+  if (mm.isEraRebalanceEnabled() !== params.eraRebalansAktywny) detected = true; // domyslna flaga musi odpowiadac danym (niezaleznie od ich wartosci)
   if (!eq(mOff, off) || !eq(mOn.tartak.slice(0, 3), [50, 50, 50]) || !eq(mOn.farma.slice(0, 3), [3, 3, 3]) || !eq(mOn.zywnosc.slice(0, 3), [4, 12, 36]) || !eq(mOn.m.slice(0, 3), [1, 2, 4]) || !eq(mOn.conv, off.conv) || !eq(mOn.upk, off.upk) || !eq(mOn.card, [4, 12, 36])) detected = true;
   void r;
   check(mt.id + ' wykryty (czerwony)', detected);
