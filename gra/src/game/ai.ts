@@ -103,6 +103,8 @@ import {
   AI_RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR,
   isCityLimitExhausted,
   pickAutoImprovements,
+  aiTerritoryRaceWindowActive,
+  AI_TERRITORY_RACE,
   type AutoImprovementSurplusReport,
 } from './auto-improvements';
 // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 2): AI CYWILIZACJI liczy swoje heksy
@@ -2958,6 +2960,7 @@ function planCityImprovements(
   ownerId: number,
   map: GameMap,
   opts: AITurnOpts,
+  territoryRace?: { turn: number; threatFronts: number },
 ): AICmdBuildImprovement[] {
   const territoryNodes = opts.territoryNodes;
   if (!territoryNodes || myCities.length === 0) return [];
@@ -3045,6 +3048,8 @@ function planCityImprovements(
     // (`defensiveCopy`) są wyłączone z ekspansji terytorialnej (jak `planExpansionFortBuilding`, F4) — ZAŁOŻENIE.
     cityLimitExhausted: !opts.defensiveCopy
       && isCityLimitExhausted(myCities, opts.cityLimitBase, opts.civEra),
+    // R-WEB-AI-TERRITORY-RACE-FORTS-IMPL-Q1: progi 40/16 nowych heksów + udział 15% puli w oknie tur (tylko AI).
+    aiTerritoryRace: territoryRace,
   };
 
   // WYWOŁANIE 1 — kategoria ŻYWNOŚCIOWA: zachowanie bez zmian (onlyWorked=true), pełny
@@ -3114,6 +3119,30 @@ function planCityImprovements(
  * "AI actively plans and sends a unit to build a fort at a chosen spot" is
  * OUT OF SCOPE for this round.
  */
+/**
+ * R-WEB-AI-TERRITORY-RACE-FORTS-IMPL-Q1: liczba NOWYCH heksów (lądowych, bez właściciela wg territoryOwnerAt)
+ * w zasięgu fortu/posterunku postawionego na (q,r) — ta sama definicja zysku co pickFortClaims (auto-improvements.ts).
+ */
+function raceNewHexGain(
+  q: number,
+  r: number,
+  key: 'fort' | 'posterunek',
+  map: GameMap,
+  territoryNodes: readonly TerritoryNode[],
+): number {
+  const rad = cityTerritoryRadius({ q, r, pop: 0, level: 1, isFort: key === 'fort', isOutpost: key === 'posterunek' });
+  let gain = 0;
+  for (const nk of hexKeysWithinRadius(q, r, rad, map)) {
+    const nh = map.hexes[nk];
+    if (!nh) continue;
+    const t = nh.terenBazowy as string;
+    if (t === 'morze' || t === 'plytkie_morze') continue;
+    const [nqs, nrs] = nk.split(',');
+    if (territoryOwnerAt(Number(nqs), Number(nrs), territoryNodes) === null) gain++;
+  }
+  return gain;
+}
+
 // export tylko dla testu regresyjnego (F3/F4, fort-strazniaca-zasieg-zakladania-test.cjs) --
 // bez zmiany zachowania, wywolania produkcyjne (planCityFounding/decideDefensiveCopyTurn
 // nizej w tym pliku) nietkniete.
@@ -3125,6 +3154,8 @@ export function planExpansionFortBuilding(
   myUnits: readonly RuntimeUnit[],
   map: GameMap,
   opts: AITurnOpts,
+  /** R-WEB-AI-TERRITORY-RACE-FORTS-IMPL-Q1: ustawia WYŁĄCZNIE decideAITurnCore (AI z miastami). Brak = stara ścieżka. */
+  territoryRace?: { turn: number; threatFronts: number },
 ): AICmdBuildImprovement | null {
   // F4 fix (Evaluator runda 1, 2026-08-13): przywraca wzorzec konsekwentny w calym
   // pliku -- Miasta-Panstwa/kopie obronne (opts.defensiveCopy) sa wylaczone z
@@ -3141,6 +3172,19 @@ export function planExpansionFortBuilding(
   if (opts.defensiveCopy) return null;
   if (myCities.length === 0) return null; // brak wlasnego terytorium do rozszerzenia (parytet z founding)
   const pracaAvailable = opts.pracaAvailable ?? 0;
+  // R-WEB-AI-TERRITORY-RACE-FORTS-IMPL-Q1 (AI only, territoryRace podane): ta sama reguła co pickFortClaims —
+  // (1) najpierw miasta do limitu: forty/posterunki dopiero przy wyczerpanym limicie miast;
+  // (2) w oknie tur przy zagrożeniu udział fortów = 0 (wojsko pierwsze);
+  // (3) w oknie udział fortów (koszt Pracy) <= fortyUdzialPuliPracy x pula; (4) próg NOWYCH heksów (40 / 16).
+  const race = territoryRace;
+  const raceWindow = race !== undefined && aiTerritoryRaceWindowActive(race.turn);
+  if (race !== undefined) {
+    if (!isCityLimitExhausted(myCities, opts.cityLimitBase, opts.civEra)) return null;
+    if (raceWindow && race.threatFronts > 0) return null;
+  }
+  const raceShare = raceWindow
+    ? AI_TERRITORY_RACE.fortyUdzialPuliPracy * Math.max(0, pracaAvailable)
+    : Number.POSITIVE_INFINITY;
   // R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1 (wlasciciel 2026-11-03): ekspansja poza zasieg (jednostka stoi
   // POZA terytorium/zasiegiem, np. inna wyspa/kontynent) to wylacznie FORT -- posterunek wolno stawiac tylko
   // na wlasnym terytorium przy granicy (isOutpostPlacementAllowed), a tu hex z definicji jest poza zasiegiem.
@@ -3165,6 +3209,7 @@ export function planExpansionFortBuilding(
     const m = getImprovementMeta(key);
     if (!m) return false;
     if (pracaAvailable < m.kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS) return false;
+    if (m.kosztPraca > raceShare) return false;
     if (plannedCost + m.kosztPraca > improvementBudget) return false;
     return isImprovementTechUnlocked(key, improvementTechs);
   };
@@ -3203,6 +3248,7 @@ export function planExpansionFortBuilding(
     if (isHexWithinAnyCityReach(q, r, myCities, myFortNodes)) continue;
     const owner = territoryNodes.length > 0 ? territoryOwnerAt(q, r, territoryNodes) : null;
     if (owner !== null && owner !== playerId) continue; // teren INNEJ cywilizacji (regula 1)
+    if (race !== undefined && raceNewHexGain(q, r, EXPANSION_KEY, map, territoryNodes) < AI_TERRITORY_RACE.fortMinNoweHeksy) continue;
     return { type: 'buildImprovement', ownerId: playerId, q, r, key: EXPANSION_KEY };
   }
   // Petla 2 (obrona r1): posterunek tylko na wlasnym heksie przy granicy (jeden wspolny predykat).
@@ -3220,6 +3266,7 @@ export function planExpansionFortBuilding(
         : (layers === 'fort' || layers === 'posterunek');
       if (has) continue;
       if (!isOutpostPlacementAllowed(q, r, playerId, territoryNodes)) continue;
+      if (race !== undefined && raceNewHexGain(q, r, 'posterunek', map, territoryNodes) < AI_TERRITORY_RACE.posterunekMinNoweHeksy) continue;
       return { type: 'buildImprovement', ownerId: playerId, q, r, key: 'posterunek' };
     }
   }
@@ -4111,7 +4158,13 @@ function decideAITurnCore(
     for (const k of opts.recruitStockDeficitScratch) merged.add(k);
     opts.resourceDeficitKeys = [...merged];
   }
-  const cityImprovementCommands = planCityImprovements(myCities, playerId, map, opts);
+  // R-WEB-AI-TERRITORY-RACE-FORTS-IMPL-Q1: sygnał zagrozenia (countThreatFronts na wszystkich wrogich
+  // jednostkach zdolnych do walki — ZAŁOŻENIE: bez filtra obrony domu z kroku niżej, bo ten krok jest wcześniej).
+  const territoryRaceCtx = {
+    turn: opts.currentTurn ?? 0,
+    threatFronts: countThreatFronts(engageableEnemyUnits, myCities, myUnits, map),
+  };
+  const cityImprovementCommands = planCityImprovements(myCities, playerId, map, opts, territoryRaceCtx);
   for (const cmd of cityImprovementCommands) commands.push(cmd);
   // Krok 2 (Maciej 2026-08-09): heurystyka minimalna, patrz planExpansionFortBuilding.
   const plannedImprovementCost = cityImprovementCommands.reduce(
@@ -4124,6 +4177,7 @@ function decideAITurnCore(
     myUnits,
     map,
     { ...opts, plannedImprovementCost },
+    territoryRaceCtx,
   );
   if (expansionFortCmd !== null) commands.push(expansionFortCmd);
 

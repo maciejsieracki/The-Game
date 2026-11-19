@@ -1,0 +1,8 @@
+{
+  "_opis": "R-WEB-AI-TERRITORY-RACE-FORTS-IMPL-Q1 (decyzje wlasciciela 2026-11-19, AI only; gracz bez zmian). fortMinNoweHeksy: fort tylko gdy zyskuje >= tyle NOWYCH heksow (dzis 1). posterunekMinNoweHeksy: j.w. dla posterunku. fortyUdzialPuliPracy: udzial puli Pracy AI na forty/posterunki w oknie tur [fortyOknoOd, fortyOknoDo]; przy zagrozeniu (countThreatFronts > 0) udzial = 0. Cofniecie do stanu sprzed tematu: 1 / 1 / 0.",
+  "fortMinNoweHeksy": 40,
+  "posterunekMinNoweHeksy": 16,
+  "fortyUdzialPuliPracy": 0.15,
+  "fortyOknoOd": 30,
+  "fortyOknoDo": 90
+}
