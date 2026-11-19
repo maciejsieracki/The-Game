@@ -70,7 +70,7 @@ import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
 import { isAiAiTreatyTickEnabled, setAiAiTreatyTickEnabledForTest, planAiAiNapTreatyTickFull, applyAiAiNapBreachRelacja, aiAiNapBreachRelacjaDelta, type AiAiWarStatus } from './game/ai-ai-treaty-tick';
 import { isAiAiAllianceTickEnabled, setAiAiAllianceTickEnabledForTest, planAiAiAllianceTickFull } from './game/ai-ai-alliance-tick';
-import { isWarByAllianceStrengthEnabled, type BlokSojusznik } from './game/diplomacy-alliance-strength';
+import { isWarByAllianceStrengthEnabled, setWarByAllianceStrengthForTest, type BlokSojusznik } from './game/diplomacy-alliance-strength';
 import { isZeroTrustEnabled, setZeroTrustEnabledForTest, zeroZaufaniaProgTur, zeroTrustBreakOrders, zeroTrustCount, zeroTrustPreferredTarget, zeroTrustRecordBreak, zeroTrustStats, resetZeroTrustSession } from './game/diplomacy-zero-trust';
 import { isAiAiCoalitionEnabled, setAiAiCoalitionEnabledForTest, aktualizujLidera, budujKontekstKoalicji, initLiderKoalicjiStan, loadAiAiCoalitionParams, type LiderKoalicjiStan } from './game/ai-ai-coalition';
 import { typSwiataFromMenuLabel, defaultLandFractionPercentForTyp, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
@@ -31607,6 +31607,10 @@ async function boot(): Promise<void> {
         count: (ai: number, partner: number): number => zeroTrustCount(ai, partner),
         stats: (): ReturnType<typeof zeroTrustStats> => zeroTrustStats(),
       };
+      // R-WEB-DIPLO-WAR-BY-ALLIANCE-STRENGTH-Q1 (hak testowy, NIE UI): przełącznik wojny siłą sojuszu (domyślnie OFF).
+      (window as any).__truceTestDebug.warByAllianceStrengthForTest = {
+        setEnabled: (v: boolean | null): void => { setWarByAllianceStrengthForTest(v); },
+      };
       (window as any).__truceTestDebug.aiAiAllianceTickForTest = {
         setEnabled: (v: boolean | null): void => { setAiAiAllianceTickEnabledForTest(v); },
         runTick: (): void => { tickAiAiAllianceRequests(); },
@@ -45799,6 +45803,14 @@ async function boot(): Promise<void> {
                   if (d.ekonomia) wasaleIds.add(d.ekonomia.payerOwnerId);
                   else { wasaleIds.add(d.strony[0]); wasaleIds.add(d.strony[1]); }
                 }
+                // Sojusznik połączony sojuszem z OBIEMA stronami nie liczy się do żadnego bloku (bez podwójnego liczenia).
+                const sojusznicyPrzeciwnika = new Set<number>();
+                for (const d of activeDeals) {
+                  const k = normalizeTreatyKind(d.rodzaj);
+                  if (k !== RodzajTraktatu.SojuszPelny && k !== RodzajTraktatu.SojuszDefensywny) continue;
+                  if (d.strony[0] === przeciwnik) sojusznicyPrzeciwnika.add(d.strony[1]);
+                  else if (d.strony[1] === przeciwnik) sojusznicyPrzeciwnika.add(d.strony[0]);
+                }
                 const wynik: BlokSojusznik[] = [];
                 for (const d of activeDeals) {
                   const k = normalizeTreatyKind(d.rodzaj);
@@ -45806,6 +45818,7 @@ async function boot(): Promise<void> {
                   if (d.strony[0] !== ownerA && d.strony[1] !== ownerA) continue;
                   const x = d.strony[0] === ownerA ? d.strony[1] : d.strony[0];
                   if (x === przeciwnik || x === ownerA) continue;
+                  if (sojusznicyPrzeciwnika.has(x)) continue;
                   const side = diploMilitarySideOf(x, przeciwnik, true);
                   wynik.push({
                     id: String(x),
