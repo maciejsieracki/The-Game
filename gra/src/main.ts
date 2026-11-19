@@ -1676,6 +1676,11 @@ import {
   type DiploPairMeta,
   type ZlozeGrant,
 } from './game/diplomacy-pn-engine';
+// R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: limit 1 wojna epoki + 1 naturalna per cywilizacja (flaga OFF = parytet).
+import {
+  isWarLimitEnabled, parseTypWojny, setWarLimitEnabledForTest, warLimitAllows, type TypWojny,
+  getWarTypFromMeta, withWarTyp, collectWarTypes, type WarPairRow,
+} from './game/diplomacy-war-limit';
 import {
   addWarBattlePoints, resetWarBattlePoints, grantTributeBonus, loadMilitaryStrengthParams,
   computeMilitaryStrength, readWarBattlePoints, isTributeBonusActive, militaryBrakeOutcome, peaceStanceOf,
@@ -12479,6 +12484,8 @@ async function boot(): Promise<void> {
 
     /** P6: bramka R1 (tura ≥ 40) + R2 (Kamień: 1 wojna na cywilizację) dla wojny z progu, także gdy napastnik = gracz. */
     function diploCrisisWarGateBlocked(declarer: number, victim: number): boolean {
+      // R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: wojna z progu to wojna naturalna; gracz jako deklarujący nieograniczony.
+      if (!isMe(declarer) && !warLimitAllowsDeclaration(declarer, victim, 'naturalna')) return true;
       if (!isWarRulesMultiwarEnabled()) return false;
       return evaluateInterCivWarGate({
         turn,
@@ -12550,7 +12557,7 @@ async function boot(): Promise<void> {
         // nie jego wyborem) — dlatego bez wyjątku isMe, w przeciwieństwie do interCivWarBlockedForAi.
         if (diploCrisisWarGateBlocked(declarer, victim)) continue;
         const metaD = getDiploPairMeta(declarer, victim);
-        setDiploPairMeta(declarer, victim, { ...metaD, wojnaOdTury: turn, n1Zastosowany: false });
+        setDiploPairMeta(declarer, victim, withWarTyp({ ...metaD, wojnaOdTury: turn, n1Zastosowany: false }, 'naturalna'));
         // r3: te same skutki co ownerDeclareWarOn (sojusze, traktaty, negocjacje, UI), BEZ kary
         // Wiarygodności za wypowiedzenie i BEZ zdarzenia 'zlamana_obietnica' (casus belli).
         breakTreatiesOnWar(declarer, victim, isMe(declarer), { bezKary: true });
@@ -13165,7 +13172,7 @@ async function boot(): Promise<void> {
       // R-WEB-DIPLO-TRUCE-IMPL-Q1 (B): wojna wypowiedziana w trakcie oferty pokoju po rozejmie
       // kasuje ofertę (wpis w skrzynce + meta), żeby późna zgoda nie przywróciła pokoju w wojnie.
       clearTruceEndOffer(declarerId, targetId);
-      const meta = getDiploPairMeta(declarerId, targetId);
+      const meta = withWarTyp(getDiploPairMeta(declarerId, targetId), 'naturalna');
       setDiploPairMeta(declarerId, targetId, {
         ...meta,
         truceUntilTurn: undefined,
@@ -14200,6 +14207,8 @@ async function boot(): Promise<void> {
       } else if (isPeaceLockedBetween(attackerId, defenderId)) {
         return;
       }
+      // R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: AI jako deklarujący (bez wymuszenia) podlega limitowi wojen naturalnych.
+      if (!force && !isMe(attackerId) && !warLimitAllowsDeclaration(attackerId, defenderId, 'naturalna')) return;
       // R-WEB-TRUCE-Q1 r3 (N1): złamanie rozejmu — czytane PRZED chargeWarDeclarationCredibility (która go zrywa).
       const truceBreachNow = chargeWarDeclarationCredibility(attackerId, defenderId);
       breakTreatiesOnWar(attackerId, defenderId, isMe(attackerId));
@@ -14214,6 +14223,8 @@ async function boot(): Promise<void> {
           'wojna_wypowiedziana',
         ),
       );
+      // R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: wojna z tej ścieżki = naturalna (nadpisuje stary tag pary).
+      setDiploPairMeta(attackerId, defenderId, withWarTyp(getDiploPairMeta(attackerId, defenderId), 'naturalna'));
       // R-WEB-WAR-AGGRESSOR-FLAG-Q1: flaga agresora tylko dla przyczyny 'bez_powodu' (domyślnie
       // wyznaczanej z aktywnego casus belli napastnika wobec celu; wywołujący może podać przyczynę).
       // R-WEB-TRUCE-Q1 r3: złamanie rozejmu = przyczyna 'bez_powodu' (flaga agresora).
@@ -22610,6 +22621,11 @@ async function boot(): Promise<void> {
       }
       if (accept) {
         joinAllyToWar(recipientOwnerId, call.targetId, call.attackerId);
+        // R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: dołączona wojna gracza dziedziczy typ wojny źródłowej.
+        setDiploPairMeta(recipientOwnerId, call.targetId, withWarTyp(
+          getDiploPairMeta(recipientOwnerId, call.targetId),
+          getWarTypFromMeta(getDiploPairMeta(call.attackerId, call.victimId)),
+        ));
         recordAllianceWarCallOutcome(id, call, 'joined');
         showHintMessage('Wypełniasz sojusz — wojna z: ' + ownerDiploLabel(call.targetId), 4500);
       } else {
@@ -25828,6 +25844,43 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: typy aktywnych wojen cywilizacji `ownerId` (bez
+     * barbarzyńców i bez wojny z `pomijany`). Brak tagu typu w parze = 'naturalna' (parseTypWojny).
+     */
+    function warTypesForOwner(ownerId: number, pomijany: number): TypWojny[] {
+      const rows: WarPairRow[] = [];
+      for (const oid of allPowerOwnerIds()) {
+        if (oid === ownerId || oid === pomijany) continue;
+        const atWar = getDiploRelation(ownerId, oid).status === 'wojna';
+        rows.push({
+          otherId: oid, atWar, isBarbarian: isBarbarian(oid), excluded: false,
+          meta: atWar ? getDiploPairMeta(ownerId, oid) : undefined,
+        });
+      }
+      return collectWarTypes(rows);
+    }
+
+    /**
+     * R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: bramka limitu dla wojny typu `typ` między
+     * `attackerId` a `victimId`. Wywołujący wyłącza gracza jako deklarującego. Flaga OFF -> true.
+     * Odmowa = log konsolowy (bez UI), wojna nie wybucha, próba ponowi się w kolejnej turze.
+     */
+    function warLimitPermits(attackerId: number, victimId: number, typ: TypWojny): boolean {
+      if (!isWarLimitEnabled()) return true;
+      return warLimitAllows(
+        typ,
+        warTypesForOwner(attackerId, victimId),
+        warTypesForOwner(victimId, attackerId),
+      );
+    }
+
+    function warLimitAllowsDeclaration(attackerId: number, victimId: number, typ: TypWojny): boolean {
+      const ok = warLimitPermits(attackerId, victimId, typ);
+      if (!ok) console.debug(`[war-limit] tura ${turn}: odmowa wojny ${typ} ${attackerId}->${victimId} (limit wojen)`);
+      return ok;
+    }
+
+    /**
      * R-WEB-WAR-RULES-MULTIWAR-Q1: bramka R1 (przed turą 40) i R2 (Kamień: najwyżej 1 wojna na
      * cywilizację) dla wojen wypowiadanych/dołączanych przez AI poza główną pętlą wypowiedzi
      * (klaster państw-miast -> gracz, sojusznik dołączający do wojny). Gracz jako napastnik
@@ -25961,7 +26014,7 @@ async function boot(): Promise<void> {
       }
     }
 
-    function applyAllianceObligationsOnWar(attackerId: number, victimId: number): void {
+    function applyAllianceObligationsOnWar(attackerId: number, victimId: number, typWojny: TypWojny = 'naturalna'): void {
       const obligationsRaw = allianceObligationsForWarDeclaration(activeDeals, attackerId, victimId);
       const obligations = filterAllianceObligationsRespectingPeaceLock(
         obligationsRaw,
@@ -25980,6 +26033,8 @@ async function boot(): Promise<void> {
           // R-WEB-WAR-RULES-MULTIWAR-Q1 (R1/R2): sojusznik, który nie może dołączyć (Kamień:
           // już ma wojnę; przed turą 40) traktowany jak odmowa obowiązku sojuszu.
           if (!isMe(allyId) && interCivWarBlockedForAi(allyId, ob.mustDeclareWarOn)) continue;
+          // R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: sojusznik nie dołącza, gdy limit wojen typu T jest przekroczony.
+          if (!isMe(allyId) && !warLimitAllowsDeclaration(allyId, ob.mustDeclareWarOn, typWojny)) continue;
 
           const obCtx = buildAllianceWarObligationCtx(allyId, ob.mustDeclareWarOn, attackerId, victimId);
           if (!aiHonorsAllianceWarObligation(allyId, ob.mustDeclareWarOn, attackerId, victimId, obCtx)) {
@@ -26013,6 +26068,8 @@ async function boot(): Promise<void> {
           }
 
           joinAllyToWar(allyId, ob.mustDeclareWarOn, attackerId);
+          // R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: wojna dołączona przez sojusz dziedziczy typ wojny źródłowej.
+          setDiploPairMeta(allyId, ob.mustDeclareWarOn, withWarTyp(getDiploPairMeta(allyId, ob.mustDeclareWarOn), typWojny));
           joinedWarOwnerIds.push(allyId);
         }
       }
@@ -33769,6 +33826,8 @@ async function boot(): Promise<void> {
         schemaVersion: 1,
         setEnabled: (on: boolean | null): boolean => { setHarderDiplomacyEnabledForTest(on); return isHarderDiplomacyEnabled(); },
         isEnabled: (): boolean => isHarderDiplomacyEnabled(),
+        // R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: hak testowy flagi limitu wojen (tylko ?civTest=1, bez UI).
+        setWarLimitEnabled: (on: boolean | null): boolean => { setWarLimitEnabledForTest(on); return isWarLimitEnabled(); },
         metrics: () => {
           // R-WEB-DIPLO-HARDER-MEASURE-RUNNER-Q1 (poprawka obrony): wyłącznie gracz + główne cywilizacje AI;
           // państwa-miasta (isCityStateOwner) wykluczone, jak w dispatchu (pary głównych cywilizacji i gracza).
@@ -33795,6 +33854,7 @@ async function boot(): Promise<void> {
               pairs.push({
                 a, b, aiAi: isHuman(a) === false && isHuman(b) === false,
                 status, zaufanie: rel ? rel.zaufanie : null, respekt: rel ? rel.respekt : null,
+                typWojny: diplomacyPairMeta.has(diploPairKey(a, b)) ? getWarTypFromMeta(diplomacyPairMeta.get(diploPairKey(a, b))) : null,
                 pokoj, sasiad, sasiedztwoBezPokoju: bezPokoju,
                 karaBazowa: peaceOrTruce ? 0 : sharedBorderPenaltyForEpochs(
                   empireEpochForOwner(a), empireEpochForOwner(b), _diplomacyParams()),
@@ -46034,6 +46094,8 @@ async function boot(): Promise<void> {
                   partnerTypCywilizacji: civKeyForOwnerId(ME()),
                   // R-WEB-WAR-AGGRESSOR-FLAG-Q1: gracz jako partner — flaga agresora (u innych AI).
                   celAgresorAktywny: czyAgresorAktywny(ME(), turn),
+                  // R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: P4 (ai.ts) nie proponuje wojny naturalnej ponad limit.
+                  limitWojenNaturalnaZablokowana: !warLimitPermits(ownerId, ME(), 'naturalna'),
                   hasNapTreaty: hasTreaty(
                     activeDeals, ownerId, ME(), RodzajTraktatu.PaktNieagresji,
                   ),
@@ -46084,6 +46146,8 @@ async function boot(): Promise<void> {
                   partnerTypCywilizacji: civKeyForOwnerId(otherId),
                   // R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner AI — flaga agresora wpływa na sojusz/pakt.
                   celAgresorAktywny: czyAgresorAktywny(otherId, turn),
+                  // R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: P4 (ai.ts) nie proponuje wojny naturalnej ponad limit.
+                  limitWojenNaturalnaZablokowana: !warLimitPermits(ownerId, otherId, 'naturalna'),
                   hasNapTreaty: hasTreaty(
                     activeDeals, ownerId, otherId, RodzajTraktatu.PaktNieagresji,
                   ),
@@ -46593,9 +46657,15 @@ async function boot(): Promise<void> {
                       ) {
                         continue;
                       }
+                      // R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: limit 1 epoki + 1 naturalna per cywilizacja
+                      // (AI jako deklarujący; gracz nieograniczony). Flaga OFF -> zawsze wolno (parytet).
+                      const warTypTagAi: TypWojny = gateForcedTagAny !== null ? 'epoki' : 'naturalna';
+                      if (!isMe(ownerId) && !warLimitAllowsDeclaration(ownerId, targetId, warTypTagAi)) continue;
                       const truceBreachAi = chargeWarDeclarationCredibility(ownerId, targetId);
+                      // Typ wojny zapisany PO chargeWarDeclarationCredibility (ta funkcja ustawia wojnaOdTury i tag 'naturalna').
+                      setDiploPairMeta(ownerId, targetId, withWarTyp(getDiploPairMeta(ownerId, targetId), warTypTagAi));
                       breakTreatiesOnWar(ownerId, targetId, false);
-                      applyAllianceObligationsOnWar(ownerId, targetId);
+                      applyAllianceObligationsOnWar(ownerId, targetId, warTypTagAi);
                       const newRel = applyDiploEventTracked(
                         ownerId, targetId, getDiploRelation(ownerId, targetId), 'wojna_wypowiedziana',
                       );

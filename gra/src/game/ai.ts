@@ -6514,6 +6514,12 @@ export interface RelacjaWejscie {
   /** R-WEB-DIPLO-WAR-BY-ALLIANCE-STRENGTH-Q1: aktywni sojusznicy partnera — składnik bloku partnera. */
   blokSojusznicyPartnera?: ReadonlyArray<BlokSojusznik>;
   /**
+   * R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: true = limit wojen (flaga ON) zabrania AI otworzyć
+   * kolejną wojnę naturalną z tym partnerem (atakujący lub obrońca ma już 1 wojnę naturalną).
+   * Bez pola / false = brak blokady (parytet, flaga OFF). Liczy main.ts (warLimitPermits).
+   */
+  limitWojenNaturalnaZablokowana?: boolean;
+  /**
    * R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r3, R2): moc POWER (power-objective.ts) AI i partnera — wejście wzoru
    * „P·r / P/r" (peacePwPointsByPowerRatio). Bez któregokolwiek pola AI liczy cenę pokoju jak dotąd (samo P).
    */
@@ -7617,6 +7623,7 @@ export function decideAIDiplomacy(
       !rel.peaceLocked &&
       !rel.hasNapTreaty &&
       !earlyNoMajorWarWindow &&
+      !rel.limitWojenNaturalnaZablokowana &&
       stance.willingnessWar > 0 &&
       rel.relation.zaufanie < PROG_WOJNA_ZAUFANIE &&
       aiMaPrzewageMilitarna &&
