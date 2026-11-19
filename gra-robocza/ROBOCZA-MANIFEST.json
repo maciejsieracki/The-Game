@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "a7b576500baeb6f66394f9d2097fb493",
-  "bundleSha256": "de2816755c8fe906c13f3de79d8533abbe046903f57a32fa7a9f9c77661e409c",
-  "bundleBytes": 14994626,
+  "bundleMd5": "e1cfe6b01ee991855059f6da6a75ebac",
+  "bundleSha256": "99596d9a139614cfcb11b1a5ae2f752a8d693d6fd775c3e2059f6214e47b7809",
+  "bundleBytes": 14995480,
   "sourceSnapshot": {
-    "source": "FC 51eaf3b68 (kod 91573b398)",
+    "source": "FC 464db707c (kod 1c1bb853b)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 877: R-WEB-TERRITORY-CITY-FOUNDING-NO-FORT-TAKEOVER-Q1 (decyzja wlasciciela 2026-11-19, odwrocenie reguly 4+5): nowe miasto nie zmienia wlasciciela cudzego fortu/posterunku; centrum fortu i jego ulepszenie zostaja u wlasciciela (territory.ts); pierscien heksow w zasiegu miasta idzie do miasta jak miedzy dwoma miastami; zdobycie fortu wylacznie jednostka wojskowa w wojnie (fort-territory.ts:380)."
+    "FALA 878: R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1 (decyzja wlasciciela 2026-11-19 B): koszt budowy ulepszenia liczony wg epoki WLASCICIELA (np. farma 20/40/80 w Kamien/Braz/Zelazo) z jednej funkcji (gracz, AI, auto-ulepszenia, karta); kopalnie miedzi/cyny/zelaza koszt_praca 22->44; parametr gra/data/improvement-cost-params.json (flaga domyslnie ON); wycena dyplomatyczna zostaje na wartosci sprzed zmiany."
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; city-founding-no-fort-takeover 27/0; fort-outpost-hard-territory 92/0; fort-strazniaca 82/0; zywy Chromium NIE ZMIERZONO"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; improvement-cost-owner-era 49/0; era-improvement-cost-upkeep 124/0; diplomacy-value-catalog 82/0; auto-fort-claim 66/2 (2 = pre-existing droga); dym 45 tur seed 4242 bez NaN; porownanie Pracy ON vs baza NIE ZMIERZONO"
   ],
   "limits": [
-    "Lokalizacja fortu w cudzym zasiegu nie ujednolicona z miastem; stadniny w pierscieniu fortu moga trafic do miasta; wplyw na wyscig AI NIE ZMIERZONO"
+    "Pomiar 150 tur po zmianie NIE ZMIERZONO (zadanie); flaga OFF nie przywraca wartosci kopaln (dane x2 wspolne)"
   ],
   "finalControl": "Final Control PASS-WITH-NOTES",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T21:47:15",
+  "hubGeneratedAt": "2026-11-19T21:49:14",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "a7b576500baeb6f66394f9d2097fb493",
-      "sizeBytes": 14994626
+      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
+      "sizeBytes": 14995480
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "a7b576500baeb6f66394f9d2097fb493",
-      "sizeBytes": 14994626
+      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
+      "sizeBytes": 14995480
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "a7b576500baeb6f66394f9d2097fb493",
-      "sizeBytes": 14994626
+      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
+      "sizeBytes": 14995480
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "a7b576500baeb6f66394f9d2097fb493",
-      "sizeBytes": 14994626
+      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
+      "sizeBytes": 14995480
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "a7b576500baeb6f66394f9d2097fb493",
-      "sizeBytes": 14994626
+      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
+      "sizeBytes": 14995480
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "a7b576500baeb6f66394f9d2097fb493",
-      "sizeBytes": 14994626
+      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
+      "sizeBytes": 14995480
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "a7b576500baeb6f66394f9d2097fb493",
-      "sizeBytes": 14994626
+      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
+      "sizeBytes": 14995480
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "a7b576500baeb6f66394f9d2097fb493",
-      "sizeBytes": 14994626
+      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
+      "sizeBytes": 14995480
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "a7b576500baeb6f66394f9d2097fb493",
-      "sizeBytes": 14994626
+      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
+      "sizeBytes": 14995480
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "a7b576500baeb6f66394f9d2097fb493",
-      "sizeBytes": 14994626
+      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
+      "sizeBytes": 14995480
     }
   ],
-  "md5": "a7b576500baeb6f66394f9d2097fb493",
+  "md5": "e1cfe6b01ee991855059f6da6a75ebac",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

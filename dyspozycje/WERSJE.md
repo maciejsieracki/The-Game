@@ -1,3 +1,9 @@
+## ROBOCZA e1cfe6b0 -- 2026-11-18 -- FALA 878: R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1: koszt ulepszen wg epoki wlasciciela, kopalnie rudy x2 (testowa)
+
+- R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1 (decyzja wlasciciela 2026-11-19 B): koszt budowy ulepszenia liczony wg epoki WLASCICIELA (np. farma 20/40/80 w Kamien/Braz/Zelazo) z jednej funkcji (gracz, AI, auto-ulepszenia, karta); kopalnie miedzi/cyny/zelaza koszt_praca 22->44; parametr gra/data/improvement-cost-params.json (flaga domyslnie ON); wycena dyplomatyczna zostaje na wartosci sprzed zmiany.
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; improvement-cost-owner-era 49/0; era-improvement-cost-upkeep 124/0; diplomacy-value-catalog 82/0; auto-fort-claim 66/2 (2 = pre-existing droga); dym 45 tur seed 4242 bez NaN; porownanie Pracy ON vs baza NIE ZMIERZONO
+- Limity: Pomiar 150 tur po zmianie NIE ZMIERZONO (zadanie); flaga OFF nie przywraca wartosci kopaln (dane x2 wspolne)
+
 ## ROBOCZA a7b57650 -- 2026-11-18 -- FALA 877: R-WEB-TERRITORY-CITY-FOUNDING-NO-FORT-TAKEOVER-Q1: zalozenie miasta nie przejmuje fortow ani ich centrum; zajecie fortu tylko silowe (testowa)
 
 - R-WEB-TERRITORY-CITY-FOUNDING-NO-FORT-TAKEOVER-Q1 (decyzja wlasciciela 2026-11-19, odwrocenie reguly 4+5): nowe miasto nie zmienia wlasciciela cudzego fortu/posterunku; centrum fortu i jego ulepszenie zostaja u wlasciciela (territory.ts); pierscien heksow w zasiegu miasta idzie do miasta jak miedzy dwoma miastami; zdobycie fortu wylacznie jednostka wojskowa w wojnie (fort-territory.ts:380).
