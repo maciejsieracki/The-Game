@@ -1,3 +1,9 @@
+## ROBOCZA b0e0fecf -- 2026-11-18 -- FALA 868: R-WEB-AI-TERRITORY-RACE-FORTS-IMPL-Q1: wyscig o teren — AI buduje fort od 40 nowych heksow, posterunek od 16, po wyczerpaniu limitu miast, do 15% puli Pracy w oknie t30-t90, przy zagrozeniu wojsko pierwsze (testowa)
+
+- gra/data/ai-territory-race-params.json (nowy), gra/src/game/auto-improvements.ts (progi per klucz, udzial puli, bramka zagrozenia), gra/src/game/ai.ts (przekazanie parametrow, planExpansionFortBuilding objety progami), test ai-territory-race-test. AI only; gracz i panstwa-miasta bez zmian. Decyzje wlasciciela 2026-11-19: P1 A, P2 40/16, P3 B, P4 A, P5 C.
+- Weryfikacja: tsc 0, logic 213/213, ai-territory-race 29/0 (mutacje czerwone), auto-improvements 46/0, ai-improvements 56/0, ai-economy-hook 23/23 (FC)
+- Limity: NIE ZMIERZONO: efekt w zywej grze (bieg 150 tur PRZED/PO; smoke 45 tur seed 4242 identyczny z baza); runner niedeterministyczny; interpretacje do ABC: 15% per wywolanie vs w oknie, zagrozenie poza oknem; auto-fort-claim-test 61/2 czerwone rowniez na bazie
+
 ## ROBOCZA 8983262b -- 2026-11-18 -- FALA 867: R-WEB-UI-HUD-NET-SPICHLERZ-DRAIN-Q1: HUD netto surowca odejmuje drenaz Spichlerza (np. Ceramika 10/t) jako osobna pozycja; wiersz w tooltipie Brutto-netto (testowa)
 
 - gra/src/game/resource-gross-net.ts (pole rateBuildingDrainPerTurn, helper spichlerzDrainRatesForOwner z kumulacja puli), gra/src/main.ts (delegacja), gra/src/ui/hud.ts (wiersz tooltipu gdy >0), test hud-net-building-drain-test. Decyzja wlasciciela 2026-11-19 (ABC A).
