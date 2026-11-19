@@ -632,9 +632,7 @@ fn diffs(sc: &Value) -> Vec<String> {
         .map(|s| s.as_str().unwrap().to_owned())
         .collect();
     if techs != want_copied {
-        out2.push(format!(
-            "{name}: techsCopied {techs:?} != {want_copied:?}"
-        ));
+        out2.push(format!("{name}: techsCopied {techs:?} != {want_copied:?}"));
     }
     out.extend(out2);
     out
@@ -661,8 +659,16 @@ fn wektory_pinu_sha_i_pokrycie() {
     let nonempty = |s: &Value, k: &str| !s["expected"][k].as_array().unwrap().is_empty();
     assert!(has(&|s| nonempty(s, "techsCopied")));
     assert!(has(&|s| f(&s["expected"]["treasuryTaken"]) > 0.0));
-    assert!(has(&|s| s["expected"]["removedUnitIds"].as_array().unwrap().len() >= 2));
-    assert!(has(&|s| s["expected"]["enteredUnitIds"].as_array().unwrap().len() >= 2));
+    assert!(has(&|s| s["expected"]["removedUnitIds"]
+        .as_array()
+        .unwrap()
+        .len()
+        >= 2));
+    assert!(has(&|s| s["expected"]["enteredUnitIds"]
+        .as_array()
+        .unwrap()
+        .len()
+        >= 2));
     assert!(has(&|s| s["name"] == "cuda_fort_decyduje"
         && nonempty(s, "wonderTransfers")
         && !s["input"]["forts"].as_array().unwrap().is_empty()));
