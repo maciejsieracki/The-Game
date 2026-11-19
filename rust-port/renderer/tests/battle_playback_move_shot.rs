@@ -171,7 +171,11 @@ fn assert_bits(ctx: &str, got: &[f64], want: &[f64]) {
 fn base() -> (Vec<Value>, BattleScene3) {
     let d = load();
     let events = d["events"].as_array().expect("events").clone();
-    let b = build_battle_scene_with_units(opts_of(&d["siege"]));
+    let mut b = build_battle_scene_with_units(opts_of(&d["siege"]));
+    // `tilesNow` (README of the fixture, part 4): the grid after a few tiles next to the walking units were turned into
+    // hills / river / ford before the events, so only the `tileTopY` reads change; the web vectors of `move` / `shots`
+    // are taken on it (`battle3d_dynamics.rs` `World::grid`). The scene keeps its meshes; both P and Q read this grid.
+    b.field.grid = grid_of(&d["tilesNow"]);
     (events, b)
 }
 
@@ -410,11 +414,18 @@ fn shot_playback_equals_pin_calls_and_web_vectors() {
         tick_projectiles(&mut p.field.field.scene, &mut list, tt);
         pb.play_until(&mut q, tt, 0.0).expect("tick");
         assert!(p == q, "t={tt}: playback scene != pin-call scene");
-        for (i, (f, wv)) in flights.iter().zip(a[1].as_array().expect("pos")).enumerate() {
+        for (i, (f, wv)) in flights
+            .iter()
+            .zip(a[1].as_array().expect("pos"))
+            .enumerate()
+        {
             let active = pb.projectiles().iter().any(|x| x.node == *f);
             if wv.is_null() {
                 assert!(!active, "flight {i} t={tt} landed");
-                assert_eq!(q.field.field.scene.nodes[*f].parent, None, "flight {i} detached");
+                assert_eq!(
+                    q.field.field.scene.nodes[*f].parent, None,
+                    "flight {i} detached"
+                );
             } else {
                 assert!(active, "flight {i} t={tt} in flight");
                 let v = q.field.field.scene.nodes[*f].position;
@@ -483,10 +494,12 @@ fn shot_through_queue_lands_at_land_at() {
     pb.play_until(&mut q, t0, 0.0).expect("launch");
     assert_eq!(pb.projectiles().len(), 1);
     let node = pb.projectiles()[0].node;
-    pb.play_until(&mut q, t0 + RANGED_FLY_MS - 0.5, 0.0).expect("flight");
+    pb.play_until(&mut q, t0 + RANGED_FLY_MS - 0.5, 0.0)
+        .expect("flight");
     assert_eq!(pb.projectiles().len(), 1);
     assert!(pb.labels().is_empty());
-    pb.play_until(&mut q, t0 + RANGED_FLY_MS, 0.0).expect("land");
+    pb.play_until(&mut q, t0 + RANGED_FLY_MS, 0.0)
+        .expect("land");
     assert!(pb.projectiles().is_empty());
     assert_eq!(q.field.field.scene.nodes[node].parent, None);
     assert_eq!(pb.labels().len(), 1);
