@@ -3936,3 +3936,8 @@ Konsekwencje dla kolejki:
 ### Przebieg 2026-11-19 ~02:07 UTC — T6 ADAPTER: Operator r1d PASS-WITH-NOTES, Evaluator w toku
 - Operator r1d: `9a39bc09f` (`refs/keep/ADAPTER-op-r1d`, push `rust-port-wip/k5loop-adapter-q1-op-r1d`): 31/31 mutantów zabitych, pełny `cargo test` EXIT 0 wg raportu; parity-v2 bez zmian (`1e20c2da9`). Evaluator T6 (Opus) wystartował ~02:00.
 - T4: Evaluator nadal w toku (`tfull`). Zwolniono `adapter/ms`, `adapter/t`, worktree Operatora T6 → dysk ok. 4–5 GB (cache `adapter/t2` używany przez Evaluatora).
+
+### Przebieg 2026-11-19 ~02:22 UTC — T4 TAGS-REST: Evaluator r1 = FAIL (Z1–Z4), runda r2 po Obronie/FC
+- Evaluator: FAIL — Z1 mutant E4 (kontratak: `primary_ranged && can_shoot`, pin 9090), Z2 E14 (morale `Math.min(base, …)` pin 10002), Z3 E5/E6 (`merge_flee_unit` zegar=ucieczka ta sama wartość), Z4 E8/E22/E30 (`attack_pre` po `_advanceStep`; test albo deklaracja równoważności). Uwagi U1–U6 (U1 asercje close/close_r4 poza allowlistą — decyzja orkiestratora: ZATWIERDZONE, merytorycznie konieczne, wektory r1–r4 nietknięte; U6 usunąć furtkę `P6_TAGS_SHA_PROBE`). Bramki Evaluatora: fmt/clippy/pełny cargo test 4084 passed 0 failed.
+- Stan zabezpieczony: raport Evaluatora `2f3251db0` (`refs/keep/TAGS-REST-eval-r1`, push `rust-port-wip/tags-rest-q1-eval`). Obrona i FC jeszcze biegną w tym Workflow; po werdykcie FC — DODATEK r2 w dispatchu i kolejna runda tego samego ID (baza = `4d649d2d2`/gałąź wip).
+- T6: Evaluator w toku.
