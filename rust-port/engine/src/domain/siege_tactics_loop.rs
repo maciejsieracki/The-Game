@@ -4249,7 +4249,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         // gałąź jest nieportowana: pin stosuje je na początku `_activateUnit`, przed wyborem akcji.
         let mut pend = ProdPending {
             morale: au.morale,
-            morale_before: st.unit(unit).c.morale,
+            morale_before: au.morale,
             start_rout: res.events.contains(&ActivateEvent::StartRout),
             surround_applied: au.surround_applied,
             attack: None,
