@@ -170,7 +170,11 @@ function clean(s) { return String(s).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' 
     }
     // M2: moduł bez odjęcia zużycia (netto = ratePerTurn)
     const gnSrc = fs.readFileSync(path.join(SRC, 'game', 'resource-gross-net.ts'), 'utf8');
-    const m2Src = gnSrc.replace('netto: Math.round(r.ratePerTurn - resourceUsageSum(r)),', 'netto: Math.round(r.ratePerTurn),');
+    // R-WEB-UI-HUD-NET-CONVERTER-INPUTS-Q1: netto odejmuje też wejścia konwerterów — wzorzec mutanta zaktualizowany.
+    const m2Src = gnSrc.replace(
+      'netto: Math.round(r.ratePerTurn - resourceUsageSum(r) - resourceConverterInputSum(r)),',
+      'netto: Math.round(r.ratePerTurn),',
+    );
     if (m2Src === gnSrc) { fails++; console.log('  FAIL M2 wzorzec mutacji nie trafił'); }
     else {
       const m2Path = path.join(TMP, 'mut2-gross-net.ts');
