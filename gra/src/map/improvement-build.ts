@@ -20,7 +20,7 @@ import {
 } from './territory';
 import { isTerritoryHexOwnedBy } from './territory-work';
 import { hexKeysWithinRadius } from '../game/okolica';
-import { isOutpostPlacementAllowed } from '../game/fort-territory';
+import { isOutpostPlacementAllowed, isFortBuildBlockedByForeignTerritory } from '../game/fort-territory';
 import { isWaterTerrain } from '../units/setup';
 import terrainImprovements from '../../data/terrain-improvements.json';
 import {
@@ -1196,7 +1196,8 @@ function createQualifier(state: ImprovementBuildState, opts: ImprovementQualifie
       }
       case 'fort': {
         const owner = territoryNodes.length > 0 ? territoryOwnerAt(q, r, territoryNodes) : null;
-        const rivalCityTerritory = owner !== null && owner !== playerOwnerIdNum;
+        // R-WEB-TERRITORY-FORT-PLACEMENT-SAME-RULES-AS-CITY-Q1: wspolny werdykt wlasnosci (jak dla miasta).
+        const rivalCityTerritory = isFortBuildBlockedByForeignTerritory(owner, playerOwnerIdNum);
         // Wewnatrz WLASNEGO terytorium zachowanie sprzed kroku 2 (bez wymogu
         // jednostki -- teren juz kontrolowany/widoczny). Wymog fizycznej
         // obecnosci (Q1 doprecyzowanie) dotyczy WYLACZNIE nowej mozliwosci --
