@@ -92,7 +92,11 @@ kompozytora — wartość adaptera (stare testy). Test `checkrout_z_biezacego_ka
 (+50% dla każdej roli; las tylko vs `dystans`/`flanka`) nie ucieka. Dodatkowo na kaflu startowym wartość kompozytora =
 wartość adaptera.
 
-(b) `attack_pre` E8/E22/E30 — ZMIERZONE sondą (§3).
+(b) `attack_pre` E8/E22/E30 — ZMIERZONE sondą (§3): w 78 pełnych bitwach sesji gałąź „cios po krokach”
+(`advance_step` zwraca cel) wystąpiła 43 razy, za każdym razem z `dur = 0` (cios bez wykonanego kroku). Przypadek
+`attack_pre > 0` nie wystąpił ani razu, więc mutanty E8/E22/E30 (`attack_pre` → 0) są na tym zbiorze równoważne;
+osiągalność `attack_pre > 0` w pinie nadal wymagałaby zmiany `_canAttackFrom` w oknie `STEP_GAP_MS` (FC T4, `:8223`,
+`:8277`). Kod zostaje (odpowiada pinowi dla tego przypadku).
 
 (c) `step` — POPRAWIONE: walidacja `wall_delta_ms` przed `play()`. Test `step_niepoprawny_czas_nie_startuje_bitwy`
 (NaN, −1, +∞ → błąd, faza `Prepared`, brak tury 0).
@@ -112,18 +116,72 @@ część B (komenda mostu), gdy będzie potrzebna.
 
 ## 3. Sonda (Z4b oraz `unported` w szerszym zbiorze)
 
-WYNIK_SONDY
+Sonda tymczasowa (tekst: `02a-obrona-sonda.rs.txt`; test i `eprintln!` dopisane na czas pomiaru i cofnięte
+`git checkout`, nie ma ich w commicie): 6 scenariuszy × `battle_index` 1..12 przewijaniem (72 bitwy) + `mur_machiny` i
+`mur_taran_katapulta` × 3 w czasie rzeczywistym (6 bitew) = **78 pełnych bitew AUTO z murem**, kod po poprawkach obrony.
+
+| Pomiar | Wynik |
+|---|---|
+| `ProdBody::unported` (wszystkie tagi, w tym `wieza-bez-kompozytora`, `ucieczka-konflikt-zegara`) | **puste** w 78/78 |
+| gałąź `attack_pre = dur` (cios z `_advanceStep`) | 43 wystąpienia, wszystkie `dur = 0`; `attack_pre > 0`: 0 |
+| zwycięzcy | `mur` remis 12; `mur_machiny` atk 4 / def 8; `palisada_liczni` remis 12; `mury_kamienne_jazda` remis 12; `fort_slaby_atak` def 11 / remis 1; `mur_taran_katapulta` atk 12 |
+
+Uwaga: wyniki są wynikami Rusta; ich zgodność z pinem dalej wymaga wektorów (Z1/B1).
 
 ## 4. Testy i bramki
 
-BRAMKI
+`CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` w scratchpadzie
+(`wiringa/target`, usunięty po bramkach), kod końcowy obrony (bez wtrąceń sondy).
+
+| Bramka | Wynik |
+|---|---|
+| `cargo fmt --all -- --check` | EXIT 0 |
+| `cargo clippy --all-targets -- -D warnings` | EXIT 0 |
+| `cargo test --test p6_k5loop_wiring_a` | 22 passed (12 Operatora r1 + 10 obrony) |
+| `cargo test --all-targets --no-fail-fast` (w tle, `setsid nohup`, EXIT w logu) | **EXIT=0**; 543 × `test result: ok`; 4134 passed / 0 failed / 1 ignored (istniejący, spoza diffu) |
+| wektory generatora pinu (MD5) | BRAK — Z1/B1 |
+
+Nowe testy obrony: `wieza_sklada_cios_z_realnym_celem`, `wieza_bonusy_cywilizacji_strony_obroncy`,
+`wieza_zabicie_ripple_i_padl`, `wieza_trafienie_uciekajacego_tag_rout`, `checkrout_z_biezacego_kafla`,
+`step_niepoprawny_czas_nie_startuje_bitwy`, `kompozytor_mur_cywilizacji_obroncy`, `kompozytor_las_cywilizacji_obroncy`,
+`wieza_kontra_i_cel_na_koronie`, `checkrout_okrazenie_z_biezacego_kafla`. Asercje testów istniejących przed tematem:
+bez zmian; w testach tej rundy Operatora zmienione: skrót `zlote_wyniki_sesji` (Z2) i warunek `dead` w `wynik_jako_dane`
+(pin `:9910-9913`), oba uzasadnione w §1.
+
+Allowlista: zmienione wyłącznie `siege_battle_session.rs`, `siege_tactics_loop.rs` (trait `BlowComposer` +
+`TowerBlowSite`, `tower_shooter_cu`, gałąź kompozytora w `tower_blow_full`, `current_tdm`), `tests/p6_k5loop_wiring_a.rs`
+i pliki runu. Brak `#[ignore]`, brak `git add -A`, brak Co-Authored-By.
 
 ## 5. Mutanty obrony
 
 Skrypt: `dyspozycje/autobot/runs/R-RUSTPORT-P6-K5LOOP-WIRING-A-Q1/02a-obrona-mutanty.py` (zabity = `cargo test --test
 p6_k5loop_wiring_a` FAIL; plik przywracany po każdym).
 
-MUTANTY
+17 mutantów, **17 zabitych, 0 równoważnych** (O06, O11, O13 przeżyły pierwszy przebieg; dopisane testy
+`wieza_kontra_i_cel_na_koronie` i `checkrout_okrazenie_z_biezacego_kafla`, drugi przebieg: zabite).
+
+| Mutant | Wynik (test zabijający) |
+|---|---|
+| O01 E2: bez `kill_ripples.push(tref)` | ZABITY (`wieza_zabicie_ripple_i_padl`) |
+| O02 E3: bez `routed => Rout` | ZABITY (`wieza_trafienie_uciekajacego_tag_rout`) |
+| O03 Z2: kompozytor wieży pominięty (szablon) | ZABITY (4 testy, m.in. `zlote_wyniki_sesji`, `pelna_bitwa_…`) |
+| O04 Z2: łuk zawsze Front | ZABITY (`zlote_wyniki_sesji`) |
+| O05 Z2: `maxHp` celu = 10 | ZABITY (`wieza_sklada_cios_z_realnym_celem`, `zlote_…`) |
+| O06 Z2: kontra 1 | ZABITY (`wieza_kontra_i_cel_na_koronie`, 2. przebieg) |
+| O07 Z2: trudność strzelca 1 | ZABITY (`wieza_sklada_cios_z_realnym_celem`) |
+| O08 Z2: bez bonusów cywilizacji strzelca | ZABITY (`wieza_bonusy_cywilizacji_strony_obroncy`) |
+| O09 Z2: właściciel strzelca = atakujący | ZABITY (2 testy) |
+| O10 Z2: trudność właściciela strzelca pominięta | ZABITY (`wieza_sklada_cios_z_realnym_celem`) |
+| O11 Z2: cel na koronie bez `def_on_wall` | ZABITY (`wieza_kontra_i_cel_na_koronie`, 2. przebieg) |
+| O12 Z4a: `check_rout` z kafla startowego | ZABITY (`checkrout_z_biezacego_kafla`) |
+| O13 Z4a: aktywacja (okrążenie) z kafla startowego | ZABITY (`checkrout_okrazenie_z_biezacego_kafla`, 2. przebieg) |
+| O14 Z4a: kompozytor zawsze teren płaski | ZABITY (`checkrout_z_biezacego_kafla`) |
+| O15 Z4c: `play()` przed walidacją | ZABITY (`step_niepoprawny_czas_nie_startuje_bitwy`) |
+| O16 M16: `def_on_wall = false` w `compose` | ZABITY (`kompozytor_mur_cywilizacji_obroncy`) |
+| O17 M23: teren obrońcy zawsze płaski | ZABITY (`kompozytor_las_cywilizacji_obroncy`) |
+
+Mutanty Operatora r1 M16 i M23 przestały być „równoważne na danych” (zabite przez O16/O17). M22 i M24 bez zmian
+(równoważność ścisła/strukturalna, opis w `01-operator-r1.md` §5).
 
 ## 6. Długi (zmiany względem §7 raportu Operatora)
 

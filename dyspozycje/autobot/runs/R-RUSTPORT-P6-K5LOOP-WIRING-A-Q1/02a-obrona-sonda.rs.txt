@@ -1,0 +1,40 @@
+// Sonda obrony r1 (NIE commitowana jako test): dopisana tymczasowo na koniec tests/p6_k5loop_wiring_a.rs, plus
+// tymczasowe eprintln!("SONDA-ATTACK-PRE {dur}") w siege_tactics_loop.rs w gałęzi `Some(t) => { pend.attack = Some(t); attack_pre = dur;`.
+// Uruchomienie: cargo test --test p6_k5loop_wiring_a sonda -- --nocapture; oba wtrącenia cofnięte (git checkout) po pomiarze.
+
+#[test]
+fn sonda_attack_pre_i_unported() {
+    let mut n = 0usize;
+    let mut tags: BTreeMap<String, usize> = BTreeMap::new();
+    let mut winners: BTreeMap<String, usize> = BTreeMap::new();
+    for (name, s) in scenarios() {
+        for bi in 1..=12u32 {
+            let sc = Scn {
+                battle_index: bi,
+                ..s.clone()
+            };
+            let (o, _) = run_skip(&sc);
+            n += 1;
+            for (_, t) in &o.unported {
+                *tags.entry((*t).to_string()).or_default() += 1;
+            }
+            *winners
+                .entry(format!("{name}:{}", o.winner.label()))
+                .or_default() += 1;
+        }
+    }
+    for i in [1usize, 5] {
+        for bi in 1..=3u32 {
+            let sc = Scn {
+                battle_index: bi,
+                ..scenarios()[i].1.clone()
+            };
+            let (o, _) = run_realtime(&sc, &[16.0]);
+            n += 1;
+            for (_, t) in &o.unported {
+                *tags.entry((*t).to_string()).or_default() += 1;
+            }
+        }
+    }
+    eprintln!("SONDA bitwy={n} unported={tags:?} wyniki={winners:?}");
+}
