@@ -44,6 +44,7 @@ import { unitEngineStats } from '../unitEngineStats';
 import { resolveTechnologyRow, resolveUnitRow, technologyIdFromName, unitToSlug } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
 import { resourcesFromList, yieldValueFields } from './resourceRows';
+import { unitFoodCardValue } from '../../game/economy-upkeep';
 
 const COUNTERS = countersData as unknown as CounterDef[];
 
@@ -300,7 +301,7 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
   const upkeepRows: EntityCardRow[] = [
     { label: 'Utrzymanie Pieniądza/turę', ...yieldRowIfValue('pieniadz', text(unit['Utrzymanie (Pieniądz/turę)'])) },
     unitResourceRow('Utrzymanie surowca/turę', unit['Utrzymanie surowiec'], unit['Utrzymanie surowiec (ilość)']),
-    { label: 'Żywność/turę', ...yieldRowIfValue('zywnosc', text(unit['żywność/turę'])) },
+    { label: 'Żywność/turę', ...yieldRowIfValue('zywnosc', text(unitFoodCardValue(unit))) },
   ].filter((r) => hasValue(r.value) || (r.resources?.length ?? 0) > 0);
   sections.push({ key: 'cost-upkeep', title: 'Utrzymanie', rows: upkeepRows });
 

@@ -99,7 +99,7 @@
  * (`population-growth-v85.ts`).
  */
 import citizenUpkeepTable from '../../data/citizen-resource-upkeep.json';
-import { citizenConsumptionEraMultiplier } from './citizen-consumption-era';
+import { legacyCitizenConsumptionEraMultiplier } from './citizen-consumption-era';
 
 export interface CitizenUpkeepEraRow {
   epoka: number;
@@ -186,7 +186,8 @@ export function citizenRequiredResourcesForEra(era: number): readonly string[] {
  * / EN: per-era rate = base 1.0 × shared multiplier m(e) = 1 + 0.5 × (e − 1).
  */
 export function citizenUpkeepRateForEra(era: number): number {
-  return CITIZEN_UPKEEP_RATE_PER_CITIZEN * citizenConsumptionEraMultiplier(era);
+  // R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: utrzymanie surowcowe obywateli poza rebalansem (tylko racje zywnosci) -> krzywa legacy.
+  return CITIZEN_UPKEEP_RATE_PER_CITIZEN * legacyCitizenConsumptionEraMultiplier(era);
 }
 
 export interface CitizenUpkeepCoverage {

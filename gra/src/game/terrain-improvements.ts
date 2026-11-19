@@ -8,6 +8,7 @@ import { Nakladka, TerenBazowy } from '../types/hex';
 import type { TileYield } from './economy';
 import { scaleImprovementWorkCost } from './r-stawki-strojenie';
 import { humanizeId } from './text-names';
+import { isEraRebalanceImprovementFlat } from './econ-era-rebalance';
 
 export type ImprovementBonusKey =
   | 'zywnosc' | 'praca' | 'handel' | 'pieniadz' | 'drewno' | 'kamien' | 'glina';
@@ -194,6 +195,8 @@ export function improvementYieldForEra(
   base: number,
   era: number | undefined = 1,
 ): number {
+  // R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: flaga ON = przychody ulepszen stale jak w epoce 1 (flaga OFF = bez zmian).
+  if (isEraRebalanceImprovementFlat()) return base;
   if (!(base > 0) || (era !== 2 && era !== 3)) return base;
   if (!ERA_SCALED_YIELD_STATS.has(stat)) return base;
   return base + (era - 1);
@@ -338,6 +341,8 @@ export function resourceProductionAmountForEra(
   era: number | undefined = 1,
 ): number {
   if (!ERA_SCALED_RESOURCE_IMPROVEMENTS.has(key)) return baseAmount;
+  // R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: flaga ON = produkcja surowca stala jak w epoce 1.
+  if (isEraRebalanceImprovementFlat()) return baseAmount;
   const normalizedEra = normalizeProductionEra(era);
   return Math.round(baseAmount * Math.pow(1.5, normalizedEra - 1));
 }

@@ -178,7 +178,7 @@ function runChecks(M, cityPanelText, log) {
     },
     {
       name: 'M2: usuniecie mnoznika w surowcach (citizenUpkeepRateForEra)',
-      mutate: (f, t) => f === UPKEEP_FILE ? t.replace('CITIZEN_UPKEEP_RATE_PER_CITIZEN * citizenConsumptionEraMultiplier(era)', 'CITIZEN_UPKEEP_RATE_PER_CITIZEN') : t,
+      mutate: (f, t) => f === UPKEEP_FILE ? t.replace('CITIZEN_UPKEEP_RATE_PER_CITIZEN * legacyCitizenConsumptionEraMultiplier(era)', 'CITIZEN_UPKEEP_RATE_PER_CITIZEN') : t,
       mustChange: UPKEEP_FILE,
     },
   ];

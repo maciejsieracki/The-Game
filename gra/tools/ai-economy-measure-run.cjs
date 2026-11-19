@@ -77,6 +77,11 @@ const PLAYER_AI = arg('player-ai', '0') === '1';
 /** --reject-offers 1|0: 1 = odrzucanie wiszacych ofert AI->gracz przed canEnd (JEDNA wspolna implementacja z
  * measure-reject-offers.cjs); domyslnie 1 (bez tego biegi staja w t18/t36 na wiszacej ofercie); 0 = wylaczone (wsteczna zgodnosc). */
 const REJECT_OFFERS = arg('reject-offers', '1') !== '0';
+/** R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: --rebalance 0|1 = ustawia flagę rebalansu epok przez hak civTest
+ * (`__econRebalanceMeasure.setEnabled`). Brak opcji = hak nie jest ruszany (zachowanie sprzed zmiany).
+ * Stan flagi (odczyt po ustawieniu) zapisywany w każdym rekordzie tury (`ecoRebalance`) i w summary (`rebalance`). */
+const REBALANCE_ARG = process.argv.indexOf('--rebalance') >= 0 ? arg('rebalance', '0') === '1' : null;
+let REBALANCE_FLAG_STATE = null;
 const SLOT = 'ai-econ-s' + SEED;
 const HASH_IGNORED = ['units[].stackGroupId(null)', 'cities[].budowaLista(gdy [])', 'cities[].magazynZywnosci(gdy 0)', 'cities[].postepBudynkowUsuniete(gdy {})', 'resourceLedgerHistory(#432)'];
 const CHROME = process.env.CHROME_PATH || '/usr/bin/chromium';
@@ -276,6 +281,10 @@ async function openGame(ctx, { fresh }) {
   attachDiagnostics(page);
   await page.goto(gameUrl(), { waitUntil: 'load', timeout: 180000 });
   await page.waitForFunction(() => !!window.__aiTradeWiringTestDebug && !!window.__aiEconomyMeasure && !!window.__detHarness, null, { timeout: 180000 });
+  if (REBALANCE_ARG !== null) {
+    await page.waitForFunction(() => !!window.__econRebalanceMeasure, null, { timeout: 60000 });
+    REBALANCE_FLAG_STATE = await page.evaluate((on) => window.__econRebalanceMeasure.setEnabled(on), REBALANCE_ARG);
+  }
   if (START === 'newgame') {
     await page.evaluate(([seed]) => window.__nnsMeasureDebug.startGame({ seed }), [SEED]);
     await page.waitForFunction(() => { try { return window.__aiTradeWiringTestDebug.state().turn >= 1; } catch (_) { return false; } }, null, { timeout: 180000 });
@@ -454,6 +463,7 @@ async function playOneTurn(page, ctxState) {
     offersRejectedTotal: ctxState.aiOffersRejected || 0, owners: m.owners, terytorium: m.terytorium, diag: m.diag, niezmierzone: m.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
     load1: Math.round(os.loadavg()[0] * 100) / 100,
     ledgerRecording: LEDGER_OFF ? 'off' : 'on',
+    ecoRebalance: REBALANCE_FLAG_STATE,
     aiOffersRejected: offersRec.confirmed, aiOffersRejectAttempts: offersRec.attempts,
     forcedPeaceAccepted: ctxState.forcedPeaceAccepted || 0,
   };
@@ -578,7 +588,7 @@ async function main() {
   const resume = !!(st && st.lastTurn > 0 && st.saved === true && st.slot);
   const res = await runSeries(ctx, { resumeFromSlot: resume, stopAt: STOP_AT });
   await ctx.close();
-  const summary = { seed: SEED, startTurn: res.startTurn, endTurn: res.endTurn, stop: res.stop, counters: res.counters, wallSec: res.wallSec, resumed: resume };
+  const summary = { seed: SEED, startTurn: res.startTurn, endTurn: res.endTurn, stop: res.stop, counters: res.counters, wallSec: res.wallSec, resumed: resume, rebalance: REBALANCE_FLAG_STATE };
   fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
   console.log('[econ] PODSUMOWANIE ' + JSON.stringify(summary));
 }

@@ -991,6 +991,8 @@ import {
   capZaufanieZaHandel, harderPairDeltas, isHarderDiplomacyEnabled,
   neighborTenureTur, resetNeighborTenureSession, setHarderDiplomacyEnabledForTest,
 } from './game/diplomacy-harder';
+// R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: rebalans ekonomii wg epok -- flaga domyslnie OFF (hak civTest).
+import { isEraRebalanceEnabled, setEraRebalanceEnabledForTest } from './game/econ-era-rebalance';
 import {
   resolveAutoBattleByPower,
   sumRosterFieldM,
@@ -33920,6 +33922,17 @@ async function boot(): Promise<void> {
           limitWojen: isWarLimitEnabled() === true,
         }),
         zerwaniaZeroZaufania: (): number => zeroTrustStats().zerwania,
+      };
+      // R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: hak pomiaru rebalansu epok (tylko ?civTest=1, NIE z UI).
+      // setEnabled(true|false|null): null = wartosc z danych (OFF). status() = TYLKO ODCZYT.
+      (window as any).__econRebalanceMeasure = {
+        schemaVersion: 1,
+        setEnabled: (on: boolean | null): boolean => {
+          setEraRebalanceEnabledForTest(on === null ? null : on === true);
+          return isEraRebalanceEnabled();
+        },
+        isEnabled: (): boolean => isEraRebalanceEnabled() === true,
+        status: (): { flag: boolean } => ({ flag: isEraRebalanceEnabled() === true }),
       };
       (window as any).__aiEconomyMeasure = {
         schemaVersion: 1,
