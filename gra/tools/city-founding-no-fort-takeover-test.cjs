@@ -162,7 +162,7 @@ console.log('\n--- R2-zrodlo: sweepFortCaptures uzywa areEnemyOwners (wojna) i n
   const improved = new Set(['2,0', '3,0']);
   const ownedBy0 = (q, r, o) => o === 0 && improved.has(q + ',' + r);
   const mkFort = (pred, owner = 0, type = 'fort') =>
-    FT.fortTerritoryNodes([{ q: 0, r: 0, ownerId: owner, type, builtAtTurn: 1, seq: 0 }], pred);
+    FT.fortTerritoryNodes([{ q: 0, r: 0, ownerId: owner, type, builtAtTurn: 1, seq: 0 }], () => pred);
   const city = { q: 7, r: 0, pop: 10, level: 1, ownerId: 1 };
   const withShield = [city].concat(mkFort(ownedBy0));
   console.log('\n--- RF: stadnina gracza w pierscieniu fortu gracza przy nowym miescie AI ---');
@@ -201,7 +201,7 @@ console.log('\n--- R2-zrodlo: sweepFortCaptures uzywa areEnemyOwners (wojna) i n
     const predA = (q, r, o) => o === 0 && q === 2 && r === 0;
     const predB = (q, r, o) => o === 2 && q === 2 && r === 0;
     const nodes = [{ q: 9, r: 0, pop: 10, level: 1, ownerId: 1 }]
-      .concat(FT.fortTerritoryNodes([fA, fB], (q, r, o) => predA(q, r, o) || predB(q, r, o)));
+      .concat(FT.fortTerritoryNodes([fA, fB], () => (q, r, o) => predA(q, r, o) || predB(q, r, o)));
     eq(territoryOwnerAt(2, 0, nodes), 0, 'RF-15: sporny heks (2,0) z ulepszeniem wczesniejszego fortu A -> A (0)');
     eq(territoryOwnerAt(3, 0, nodes), 1, 'RF-15b: heks (3,0) bez ulepszenia w zasiegu miasta AI -> miasto AI (1)');
     const pads = [];
@@ -223,6 +223,21 @@ console.log('\n--- R2-zrodlo: sweepFortCaptures uzywa areEnemyOwners (wojna) i n
   flag = false;
   eq(lk2(2, 0), territoryOwnerAt(2, 0, dyn), 'RF-12: lookup po usunieciu ulepszenia zgodny z territoryOwnerAt (brak cache)');
   eq(lk2(2, 0), 1, 'RF-13: po usunieciu ulepszenia (2,0) -> miasto AI (1)');
+  // RF-16: granica promienia fortu (r=5): ulepszenie wlasciciela fortu na (5,0) (dist 5) -> fort (0);
+  // heks (6,0) (dist 6, poza fortem) nie jest chroniony -> miasto AI (1).
+  const edgeNodes = [city].concat(mkFort((q, r, o) => o === 0 && q === 5 && r === 0));
+  eq(territoryOwnerAt(5, 0, edgeNodes), 0, 'RF-16: ulepszenie na granicy promienia fortu (5,0) -> fort gracza (0)');
+  eq(territoryOwnerAt(6, 0, edgeNodes), 1, 'RF-16b: heks (6,0) poza promieniem fortu -> miasto AI (1)');
+  // RF-17: rejestr wlasciciela - ulepszenie STAREGO MIASTA (owner 1) w pierscieniu fortu gracza (0) zostaje przy miescie AI.
+  const ownerMap = new Map([['2,0', 1]]);
+  const cityOwnedImp = [city].concat(mkFort((q, r, o) => ownerMap.get(q + ',' + r) === o && o === 0));
+  eq(territoryOwnerAt(2, 0, cityOwnedImp), 1, 'RF-17: ulepszenie miasta AI (owner 1) w pierscieniu fortu gracza -> miasto AI (1)');
+  // RF-18: straznik main.ts - rejestr wlascicieli zapisany w meta, predykat podpiety per fort, brak surowych zapisow placedImprovements.
+  const mainSrc = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'main.ts'), 'utf8');
+  assert(/improvementOwners: Array\.from\(improvementOwnerByHex\.entries\(\)\)/.test(mainSrc), 'RF-18a: zapis meta.improvementOwners');
+  assert(/fortTerritoryNodes\(fortNodes, f => \(fortRingHasImprovement\(f\) \? improvedByFortOwner : undefined\)\)/.test(mainSrc), 'RF-18b: predykat podpiety per fort z ulepszeniem w pierscieniu');
+  const rawWrites = (mainSrc.match(/placedImprovements\.(set|delete|clear)\(/g) || []).length;
+  eq(rawWrites, 3, 'RF-18c: surowe zapisy placedImprovements tylko w helperach (set/delete/clear = 3)');
 }
 
 console.log(`\n=== city-founding-no-fort-takeover-test: ${passed} passed, ${failed} failed ===`);

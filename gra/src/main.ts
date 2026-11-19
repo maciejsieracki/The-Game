@@ -655,7 +655,7 @@ import {
   resolveMapUnitCursor,
   CURSOR_MAP_DEFAULT,
 } from './ui/mapUnitCursor';
-import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex, cityTerritoryRadius, territoryNodesContentId, axialDistance } from './map/territory';
+import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex, cityTerritoryRadius, territoryNodesContentId, axialDistance, FORT_TERRITORY_RADIUS, OUTPOST_TERRITORY_RADIUS } from './map/territory';
 import { isTerritoryHexOwnedBy, isReczneKeyLegal, cityCenterKeys } from './map/territory-work';
 import type { CityNode, TerritoryNode } from './map/territory';
 import type { GameMap } from './types/map';
@@ -5959,7 +5959,10 @@ async function boot(): Promise<void> {
       }));
       // R-WEB-OUTPOST-FORT-TERRITORY-Q1 (decyzja wlasciciela 2026-10-31, zastepuje Q2=B
       // z 2026-08-09): posterunek (r=3) i fort (r=5) = TWARDE terytorium jak miasto.
-      return fortNodes.length > 0 ? cityNodes.concat(fortTerritoryNodes(fortNodes)) : cityNodes;
+      // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1: predykat ochrony tylko dla fortu z ulepszeniem w pierscieniu.
+      return fortNodes.length > 0
+        ? cityNodes.concat(fortTerritoryNodes(fortNodes, f => (fortRingHasImprovement(f) ? improvedByFortOwner : undefined)))
+        : cityNodes;
     }
 
     /**
@@ -17070,6 +17073,44 @@ async function boot(): Promise<void> {
     });
     const placedImprovements = new VersionedMap<string, PlacedLayers>();
     /**
+     * R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1 (ABC C, 2026-11-19): REJESTR WLASCICIELA
+     * ulepszenia na heksie (klucz "q,r" -> ownerId). Ulepszenie zostaje przy wlascicielu nawet gdy
+     * pierscien fortu tego wlasciciela wpada pod nowe miasto innej cywilizacji. Zapisywany w meta zapisu.
+     * / EN: owner of the improvement on each hex; saved in the save-game meta.
+     */
+    const improvementOwnerByHex = new Map<string, number>();
+    /** Zapis warstw; nowy wpis dostaje `ownerId` (gdy podany), istniejacy wlasciciel zostaje. */
+    function setPlacedLayersOwned(hk: string, layers: PlacedLayers, ownerId: number | undefined): void {
+      placedImprovements.set(hk, layers);
+      if (ownerId !== undefined && !improvementOwnerByHex.has(hk)) improvementOwnerByHex.set(hk, ownerId);
+    }
+    /** Usuniecie warstw razem z wpisem wlasciciela. */
+    function deletePlacedLayersOwned(hk: string): void {
+      placedImprovements.delete(hk);
+      improvementOwnerByHex.delete(hk);
+    }
+    /** Wyczyszczenie warstw i rejestru wlascicieli. */
+    function clearPlacedLayersOwned(): void {
+      placedImprovements.clear();
+      improvementOwnerByHex.clear();
+    }
+    /** Predykat dla fortu/posterunku: heks z ulepszeniem NALEZACYM do `fortOwnerId` zostaje przy forcie. */
+    const improvedByFortOwner = (q: number, r: number, fortOwnerId: number): boolean => {
+      const hk = `${q},${r}`;
+      return improvementOwnerByHex.get(hk) === fortOwnerId && (placedImprovements.get(hk)?.length ?? 0) > 0;
+    };
+    /** Czy w promieniu fortu/posterunku jest jakiekolwiek ulepszenie (tylko wtedy podpinamy predykat — cache zakresowy zostaje). */
+    function fortRingHasImprovement(f: { q: number; r: number; isOutpost?: boolean; type?: string }): boolean {
+      const radius = f.type === 'posterunek' || f.isOutpost ? OUTPOST_TERRITORY_RADIUS : FORT_TERRITORY_RADIUS;
+      for (let dq = -radius; dq <= radius; dq++) {
+        const lo = Math.max(-radius, -dq - radius), hi = Math.min(radius, -dq + radius);
+        for (let dr = lo; dr <= hi; dr++) {
+          if (improvementOwnerByHex.has(`${f.q + dq},${f.r + dr}`)) return true;
+        }
+      }
+      return false;
+    }
+    /**
      * R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2 (Maciej 2026-08-09):
      * rejestr WSZYSTKICH postawionych Fortow/Posterunkow (dowolny wlasciciel) z
      * JAWNYM, mutowalnym `ownerId` -- patrz komentarz w game/fort-territory.ts
@@ -17307,10 +17348,10 @@ async function boot(): Promise<void> {
       hideDecorAtHex(hk);                    // schowaj teren-dekor/las pod środkiem miasta
       if (keptLayers.length > 0) {
         // Ocalałe ulepszenia (macierz B ZOSTAJE) — na pierścieniu; plony/legacy z warstw.
-        placedImprovements.set(hk, keptLayers);
+        setPlacedLayersOwned(hk, keptLayers, undefined);
         syncHexUlepszenieFields(hk, keptLayers);
       } else {
-        placedImprovements.delete(hk);
+        deletePlacedLayersOwned(hk);
         syncHexUlepszenieFields(hk, [] as PlacedLayers);
       }
       // FIX (review 2026-07-09): odbuduj mesh ZAWSZE — także dla GOŁEGO ocalałego złoża zwierzęcego
@@ -17718,10 +17759,10 @@ async function boot(): Promise<void> {
         stillExists = prev.includes(req.key);
         const nextLayers = prev.filter(k => k !== req.key);
         if (nextLayers.length) {
-          placedImprovements.set(req.hexKey, nextLayers);
+          setPlacedLayersOwned(req.hexKey, nextLayers, undefined);
           syncHexUlepszenieFields(req.hexKey, nextLayers);
         } else {
-          placedImprovements.delete(req.hexKey);
+          deletePlacedLayersOwned(req.hexKey);
           syncHexUlepszenieFields(req.hexKey, []);
         }
         spawnImprovementMesh(req.hexKey);
@@ -17957,7 +17998,7 @@ async function boot(): Promise<void> {
       }
 
       const nextLayers: PlacedLayers = [...prev, req.key];
-      placedImprovements.set(req.hexKey, nextLayers);
+      setPlacedLayersOwned(req.hexKey, nextLayers, 0);
       syncHexUlepszenieFields(req.hexKey, nextLayers);
       registerFortNodeIfNeeded(req.key, req.q, req.r, 0);
       if (req.key === 'fort' || req.key === 'posterunek') refreshFog(); // R-WEB-FORT-VISION-FOG-Q1
@@ -18151,10 +18192,10 @@ async function boot(): Promise<void> {
       const next = stripImprovementsWhenForestRemoved(prev);
       if (next.length === prev.length) return;
       if (next.length) {
-        placedImprovements.set(hexKey, next);
+        setPlacedLayersOwned(hexKey, next, undefined);
         syncHexUlepszenieFields(hexKey, next);
       } else {
-        placedImprovements.delete(hexKey);
+        deletePlacedLayersOwned(hexKey);
         syncHexUlepszenieFields(hexKey, []);
       }
       spawnImprovementMesh(hexKey);
@@ -18259,7 +18300,7 @@ async function boot(): Promise<void> {
     function restorePlacedImprovementsFromSave(
       entries: Array<[string, ImprovementKey | PlacedLayers]> | undefined,
     ): void {
-      placedImprovements.clear();
+      clearPlacedLayersOwned();
       resetImprovementRenderState(); // meshe + sieć dróg odtwarzają się z wczytanych warstw / EN: rebuilt from loaded layers
       if (entries?.length) {
         for (const [hexKey, raw] of entries) {
@@ -18269,7 +18310,7 @@ async function boot(): Promise<void> {
             hex as { zloze?: string; nakladka?: Nakladka } | undefined,
           );
           if (!layers.length) continue;
-          placedImprovements.set(hexKey, layers);
+          setPlacedLayersOwned(hexKey, layers, undefined);
           syncHexUlepszenieFields(hexKey, layers);
         }
       }
@@ -18364,7 +18405,7 @@ async function boot(): Promise<void> {
         if (!hex) continue;
         const layers = demoKeysForHex(hex);
         if (!layers.length) continue;
-        placedImprovements.set(key, layers);
+        setPlacedLayersOwned(key, layers, undefined);
         syncHexUlepszenieFields(key, layers);
         count++;
       }
@@ -30640,7 +30681,7 @@ async function boot(): Promise<void> {
       placeFort: (key: 'fort' | 'posterunek', q: number, r: number, ownerId: number): void => {
         const hexKey = keyOf(q, r);
         const nextLayers: PlacedLayers = [...(placedImprovements.get(hexKey) ?? []), key];
-        placedImprovements.set(hexKey, nextLayers);
+        setPlacedLayersOwned(hexKey, nextLayers, ownerId);
         syncHexUlepszenieFields(hexKey, nextLayers);
         registerFortNodeIfNeeded(key, q, r, ownerId);
         spawnImprovementMesh(hexKey);
@@ -32384,7 +32425,7 @@ async function boot(): Promise<void> {
         h.nakladka = Nakladka.Las;
         if (withTartak) {
           const layers = [...(placedImprovements.get(hk) ?? []), 'tartak'] as PlacedLayers;
-          placedImprovements.set(hk, layers);
+          setPlacedLayersOwned(hk, layers, 0);
           syncHexUlepszenieFields(hk, layers);
         }
         return true;
@@ -33274,7 +33315,7 @@ async function boot(): Promise<void> {
         /** Stadnina poza zlozem REALNYM commitBuildRequest (gracz); `neighborKey` dostaje wczesniej postawiona stadnine (warunek sasiedztwa). */
         stadnina: (hexKey: string, neighborKey: string): boolean => {
           const nb = placedImprovements.get(neighborKey) ?? [];
-          if (!nb.includes('stadnina')) placedImprovements.set(neighborKey, [...nb, 'stadnina'] as unknown as PlacedLayers);
+          if (!nb.includes('stadnina')) setPlacedLayersOwned(neighborKey, [...nb, 'stadnina'] as unknown as PlacedLayers, 0);
           commitBuildRequest({ hexKey, key: 'stadnina', kosztPraca: 0 } as unknown as ImprovementBuildRequest,
             { removedImprovements: [], removesForest: false } as unknown as ImprovementBuildImpact);
           return (placedImprovements.get(hexKey) ?? []).includes('stadnina');
@@ -42142,6 +42183,8 @@ async function boot(): Promise<void> {
           ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
           ownerStartEraByOwner: Array.from(ownerStartEraByOwner.entries()),
           placedImprovements: Array.from(placedImprovements.entries()),
+          // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1: rejestr wlascicieli ulepszen (stary zapis = brak pola -> fallback przy wczytaniu).
+          improvementOwners: Array.from(improvementOwnerByHex.entries()),
           // R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2 (Maciej 2026-08-09):
           // rejestr fort/posterunek z jawnym ownerId/contestedUseless -- patrz
           // restoreGameFromSave niżej. Stary zapis (bez tego pola) wczytuje się z
@@ -45136,7 +45179,7 @@ async function boot(): Promise<void> {
                     hOid, ownerLastPracaAutoUlepszeniaKoszt(hOid) + pick.kosztPraca,
                   );
                   const nextLayers: PlacedLayers = [...prevLayers, pick.key];
-                  placedImprovements.set(hexKey, nextLayers);
+                  setPlacedLayersOwned(hexKey, nextLayers, hOid);
                   workingPlaced.set(hexKey, nextLayers);
                   syncHexUlepszenieFields(hexKey, nextLayers);
                   registerFortNodeIfNeeded(pick.key, pick.q, pick.r, hOid);
@@ -48089,7 +48132,7 @@ async function boot(): Promise<void> {
                   if (prevLayers.includes(cmd.key)) continue;
                   aiPracaPoolByOwner.set(ownerId, poolBefore - koszt);
                   const nextLayers: PlacedLayers = [...prevLayers, cmd.key];
-                  placedImprovements.set(hexKey, nextLayers);
+                  setPlacedLayersOwned(hexKey, nextLayers, ownerId);
                   syncHexUlepszenieFields(hexKey, nextLayers);
                   registerFortNodeIfNeeded(cmd.key, cmd.q, cmd.r, ownerId);
                   spawnImprovementMesh(hexKey);
@@ -50340,7 +50383,7 @@ async function boot(): Promise<void> {
       activeImprovementKey = null;
       resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();
-      placedImprovements.clear();
+      clearPlacedLayersOwned();
       fortNodes.length = 0; // R-FORT-STRAZNICA krok 2: nowa gra = pusty rejestr fort/posterunek
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
@@ -50616,7 +50659,7 @@ async function boot(): Promise<void> {
       activeImprovementKey = null;
       resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();
-      placedImprovements.clear();
+      clearPlacedLayersOwned();
       fortNodes.length = 0; // R-FORT-STRAZNICA krok 2: nowa gra = pusty rejestr fort/posterunek
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
@@ -50877,7 +50920,7 @@ async function boot(): Promise<void> {
       activeImprovementKey = null;
       resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();
-      placedImprovements.clear();
+      clearPlacedLayersOwned();
       fortNodes.length = 0; // R-FORT-STRAZNICA krok 2: nowa gra = pusty rejestr fort/posterunek
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
@@ -51118,7 +51161,7 @@ async function boot(): Promise<void> {
       activeImprovementKey = null;
       resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();
-      placedImprovements.clear();
+      clearPlacedLayersOwned();
       fortNodes.length = 0; // R-FORT-STRAZNICA krok 2: nowa gra = pusty rejestr fort/posterunek
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
@@ -52686,6 +52729,23 @@ async function boot(): Promise<void> {
       }
       // R3 Q-B=B: stare zapisy bez znacznika kolejnosci -> backfill wg kolejnosci w tablicy (builtAtTurn=0).
       backfillFortOrder(fortNodes);
+      // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1: rejestr wlascicieli ulepszen z zapisu.
+      // Stary zapis (bez `improvementOwners`) = przyblizenie: wlasciciel wg biezacego territoryOwnerAt
+      // (ograniczenie zaznaczone w raporcie). Brak wlasciciela (poza kazdym zasiegiem) -> brak wpisu.
+      improvementOwnerByHex.clear();
+      const savedImprovementOwners = saved.meta?.improvementOwners as Array<[string, number]> | undefined;
+      const ownerFromSave = new Map<string, number>(
+        (savedImprovementOwners ?? []).filter(([, o]) => Number.isFinite(o)),
+      );
+      const nodesForOwnerFallback = savedImprovementOwners ? null : buildAllTerritoryNodes();
+      for (const hk of placedImprovements.keys()) {
+        const fromSave = ownerFromSave.get(hk);
+        if (fromSave !== undefined) { improvementOwnerByHex.set(hk, fromSave); continue; }
+        if (!nodesForOwnerFallback) continue;
+        const [hq, hr] = hk.split(',').map(Number) as [number, number];
+        const o = territoryOwnerAt(hq, hr, nodesForOwnerFallback);
+        if (o !== null) improvementOwnerByHex.set(hk, o);
+      }
       clearAllHexClearing();
       pendingImprovementsTurn = PendingImprovementsTurn.fromSave(
         saved.meta?.pendingImprovementsTurn as PendingImprovementEntry[] | undefined,
