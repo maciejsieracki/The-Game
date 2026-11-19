@@ -13,7 +13,7 @@
  */
 
 import { createStateFrame } from '../game/frame-memo';
-import { resourceWejsciaTooltipText } from '../game/resource-gross-net';
+import { resourceDrenazTooltipText, resourceWejsciaTooltipText } from '../game/resource-gross-net';
 import {
   createMinimapHud,
   setMinimapTurnLabel,
@@ -246,6 +246,9 @@ export interface HudState {
   /** R-WEB-UI-HUD-SHORTAGE-ALERT-TOOLTIP-Q1: suma nominalnych wejść konwerterów (≥0, już odjęta
    *  od netto) — tylko do wiersza „Wejścia przetwórstwa” w tooltipie; brak/0 = wiersz pominięty. */
   surowceWejscia?: number;
+  /** R-WEB-UI-HUD-NET-SPICHLERZ-DRAIN-Q1: suma drenażu budynków (Spichlerz, ≥0, już odjęta od netto)
+   *  — tylko do wiersza „Drenaż budynków” w tooltipie; brak/0 = wiersz pominięty. */
+  surowceDrenaz?: number;
   /** Rozbicie per surowiec (tylko magazynowane) do tooltipu i „najgorszego deficytu". */
   surowceBilans?: Array<{ label: string; brutto: number; netto: number }>;
   /** TEMAT 14 (Maciej 2026-07-24) — dochód z aktywnych tras handlowych (gracz↔obca cyw.) tej tury. */
@@ -1260,6 +1263,8 @@ function surowceChipTitle(s: HudState): string {
     title += ` · BRUTTO ${signed(s.surowceBrutto ?? 0)} → NETTO ${signed(s.surowceNetto ?? 0)} sztuk na turę (suma surowców)`;
     const wejscia = resourceWejsciaTooltipText(s.surowceWejscia);
     if (wejscia) title += ` · ${wejscia}`;
+    const drenaz = resourceDrenazTooltipText(s.surowceDrenaz);
+    if (drenaz) title += ` · ${drenaz}`;
     const worst = surowceNajgorszy(s);
     if (worst) title += ` · Najgorszy bilans: ${worst.label} ${signed(worst.netto)}/turę`;
     const lines = (s.surowceBilans ?? [])
