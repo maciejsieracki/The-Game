@@ -52,6 +52,7 @@ Nowe starty: `df --output=avail -BG /` ≥ 6 GB (integracja `/home/user/integ` �
 
 ## GOTOWE DO STARTU (kolejność; start gdy slot < 4 i dysk ≥ 6 GB; dispatch najpierw na gałąź)
 
+0000000. **R-WEB-DIPLO-ENABLE-ALL-FLAGS-Q1** (decyzja właściciela: włączyć 6 flag dyplomacji domyślnie; dispatch zapisany; pomiar w raporcie).
 000000. **R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1** (implementacja ustawienia „Dyplomacja i wojna” Łatwa/Normalna/Trudna; decyzje właściciela, dispatch zapisany; wysoki priorytet — nie był wdrożony).
 1a. **R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1** (decyzja właściciela 2026-11-19: gracz celem wszystkich wojen epoki + pomiar + dług progów testów; zastępuje ERAWAR-MEASURE; dispatch zapisany; wysoki priorytet).
 00000. **R-WEB-ECONOMY-UNIT-RECRUIT-COST-ERA-EXTRA-MULT-Q1** (decyzja właściciela: rekrutacja Pieniądz ×2 Brąz, ×4 Żelazo dodatkowo; plus audyt kosztów wojska; dispatch zapisany).
@@ -72,7 +73,7 @@ Nowe starty: `df --output=avail -BG /` ≥ 6 GB (integracja `/home/user/integ` �
 - **R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1** (decyzja właściciela C, dispatch zapisany) — START po FC i integracji FORTPLACE (te same pliki territory/fort).
 - **Implementacja ustawienia „Dyplomacja i wojna”** (UI w newGameFlow.ts, mnożniki kar/bonusów, zapis/wczytanie, domyślnie ŁATWA) — dopiero po FC WARTEMPER i akceptacji listy przez właściciela (ABC: osobny wybór niezależny od głównej trudności; czy bonusy ÷ dotyczą też gracza i AI↔AI; wartości liczbowe).
 - **Pomiar 150 tur po IMPCOST** (seed 4242/7, rebalans ON) po wdrożeniu FALI z IMPCOST.
-- **Włączenie flag dyplomacji** (twarda dyplomacja, tor sojuszy, koalicja, zero zaufania, siła sojuszu, limit wojen) — dopiero po ponownym pomiarze OFF/ON po poprawce limitu sojuszy i decyzji właściciela (ABC).
+- (ZAMKNIĘTE 2026-11-19: właściciel zdecydował o włączeniu 6 flag dyplomacji — temat R-WEB-DIPLO-ENABLE-ALL-FLAGS-Q1.)
 - **Dopłata D sojuszy AI↔AI (0,5?)** — dopiero po pełniejszym pomiarze seed 4242/7 t60 i decyzji.
 
 ## PÓŹNIEJ (polecenie właściciela 2026-11-19; NIE startować teraz)
