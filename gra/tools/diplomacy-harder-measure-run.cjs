@@ -20,6 +20,9 @@
  * Uzycie (z gra/, bundle budowany POZA repo):
  *   node tools/diplomacy-harder-measure-run.cjs --dist <abs-dist> --out <abs-katalog> --seed 4242 --turns 20 --harder 1
  *   opcje: --profile <abs> (profil Chromium; domyslnie os.tmpdir), --gold 200 --food 200 --bypass 1
+ *   --player-ai 0|1 (domyslnie 1): gracz (0) = autopilot AI (R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1); pokoj wymuszony
+ *   akceptowany przez measure-forced-peace.cjs (licznik forcedPeaceAccepted w wierszu i summary); zamykanie blokad
+ *   (w tym karty technologii) przez closeEndTurnModals z ai-economy-measure-run.cjs -> measure-close-modals.cjs (jedno zrodlo selektorow).
  *   --build 1 buduje bundle do --dist (vite, poza repo; bez tego flagi uzywa istniejacego index.html).
  *   --every N zapisuje wiersz tylko dla tur podzielnych przez N (np. 5 albo 25; ostatnia tura zawsze).
  *   Przegladarka: CHROME_PATH (domyslnie pierwsza z: /usr/bin/chromium, google-chrome). Jeden Chromium naraz.
@@ -33,6 +36,8 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const base = require('./ai-economy-measure-run.cjs');
+// R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1: pokoj wymuszony (kolejka blokuje endTurn) -- ten sam modul co runner ekonomii.
+const { acceptForcedPeace } = require('./measure-forced-peace.cjs');
 
 function arg(name, def) {
   const i = process.argv.indexOf('--' + name);
@@ -44,6 +49,9 @@ const SEED = parseInt(arg('seed', '4242'), 10);
 const TURNS = parseInt(arg('turns', '100'), 10);
 const EVERY = Math.max(1, parseInt(arg('every', '1'), 10) || 1);
 const HARDER = arg('harder', '0') === '1';
+/** R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1: --player-ai 0|1 (domyslnie 1) = gracz (0) sterowany autopilotem AI (hak
+ *  `__aiEconomyMeasure.setPlayerAiAutopilotForTest`, ustawiany po starcie gry, przed pierwszym endTurn). */
+const PLAYER_AI = arg('player-ai', '1') !== '0';
 const GOLD = parseInt(arg('gold', '200'), 10);
 const FOOD = parseInt(arg('food', '200'), 10);
 const BYPASS = arg('bypass', '1') !== '0';
@@ -87,6 +95,13 @@ async function openGame(ctx) {
   const founded = await page.evaluate(() => window.__aiTradeWiringTestDebug.foundFirstCity());
   if (!founded) throw new Error('nie udalo sie zalozyc miasta gracza (foundFirstCity=false)');
   await page.evaluate(() => { const t = window.__truceTestDebug; if (t && t.suppressVictoryForTest) t.suppressVictoryForTest(); });
+  // Autopilot gracza PO starcie gry, PRZED pierwszym endTurn (jak runner ekonomii; odczyt potwierdza ustawienie).
+  if (PLAYER_AI) {
+    await page.evaluate(() => window.__aiEconomyMeasure.setPlayerAiAutopilotForTest(true));
+    const on = await page.evaluate(() => window.__aiEconomyMeasure.playerAiAutopilotForTestState());
+    if (on !== true) throw new Error('autopilot gracza nie ustawiony (odczyt=' + on + ')');
+    console.log('[diplo] player-ai autopilot=1');
+  }
   await page.evaluate(() => window.__aiTradeWiringTestDebug.setFastMode(true));
   // Flaga PO starcie gry, PRZED pierwszym endTurn (jedyne miejsce zapisu flagi w runnerze).
   const got = await page.evaluate(on => window.__diploHarderMeasure.setEnabled(on), HARDER);
@@ -163,6 +178,8 @@ async function playOneTurn(page) {
   let offersAttempts = offers1.attempts;
   AI_OFFERS_REJECTED += offers1.confirmed;
   AI_OFFERS_REJECT_ATTEMPTS += offers1.attempts;
+  // R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1: wiszacy pokoj wymuszony blokuje „Zakoncz ture” -- gracz-pomiarowy go akceptuje.
+  await acceptForcedPeace(page, COUNTERS, wait);
   if (!(await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd()))) {
     // Druga proba: odrzucenie moze odslonic kolejna oferte w kolejce stolu.
     const offers2 = await rejectAwaitingAiOffers(page, seenOffers);
@@ -189,8 +206,8 @@ async function playOneTurn(page) {
   const modalDelta = {};
   for (const k of base.MODAL_KEYS) modalDelta[k] = COUNTERS[k] - modalBefore[k];
   const d = diploRow(m);
-  const rec = { seed: SEED, harder: HARDER ? 1 : 0, turn: after, gate: blocked, bypass, battlesAuto, aiOffersRejected: offersRejected, aiOffersRejectAttempts: offersAttempts,
-    modal: modalDelta, sec: Math.round((Date.now() - t0) / 100) / 10, diplo: d,
+  const rec = { seed: SEED, harder: HARDER ? 1 : 0, playerAi: PLAYER_AI ? 1 : 0, turn: after, gate: blocked, bypass, battlesAuto, aiOffersRejected: offersRejected, aiOffersRejectAttempts: offersAttempts,
+    forcedPeaceAccepted: COUNTERS.forcedPeaceAccepted, modal: modalDelta, sec: Math.round((Date.now() - t0) / 100) / 10, diplo: d,
     wojny: d.pairs.filter(p => p.status === 'wojna').length };
   return { rec };
 }
@@ -225,7 +242,9 @@ async function main() {
   } finally {
     await ctx.close();
   }
-  const summary = { seed: SEED, harder: HARDER ? 1 : 0, turnsRequested: TURNS, every: EVERY, endTurn: turn, rows, stop,
+  // R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1: gracz = autopilot (playerAi 1) -- adnotacja w summary; kolumny par bez zmian.
+  const summary = { seed: SEED, harder: HARDER ? 1 : 0, playerAi: PLAYER_AI ? 1 : 0, graczAdnotacja: PLAYER_AI ? 'gracz = autopilot' : 'gracz = pasywny',
+    turnsRequested: TURNS, every: EVERY, endTurn: turn, rows, stop,
     counters: Object.assign({}, COUNTERS), aiOffersRejected: AI_OFFERS_REJECTED, aiOffersRejectAttempts: AI_OFFERS_REJECT_ATTEMPTS, wallSec: Math.round((Date.now() - t0) / 1000) };
   fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
   console.log('[diplo] PODSUMOWANIE ' + JSON.stringify(summary));

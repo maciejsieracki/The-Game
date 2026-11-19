@@ -83,6 +83,19 @@ for (const [nazwa, m] of Object.entries(mutacje)) {
   check(nazwa + ' jest odrzucona', shapeProblems(m).length > 0, shapeProblems(m)[0] || 'NIE ODRZUCONO');
 }
 
+// ---- C) wiazanie runnera (zawsze, bez przegladarki; R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1) ----
+/** Runner ma podpiete: autopilot gracza (--player-ai), pokoj wymuszony i zamykanie blokad. Mutacja kopii MUSI byc wykryta. */
+function runnerWired(src) {
+  return src.includes('setPlayerAiAutopilotForTest(true)') && src.includes('acceptForcedPeace(page') && src.includes("require('./measure-forced-peace.cjs')")
+    && src.includes("arg('player-ai', '1')") && src.includes('forcedPeaceAccepted: COUNTERS.forcedPeaceAccepted');
+}
+{
+  const runnerSrc = fs.readFileSync(path.join(__dirname, 'diplomacy-harder-measure-run.cjs'), 'utf8');
+  check('C1 runner podpiety: autopilot, pokoj wymuszony, licznik w wierszu, domyslne --player-ai 1', runnerWired(runnerSrc));
+  check('C2 mutacja kopii (bez acceptForcedPeace) jest wykryta', !runnerWired(runnerSrc.replace('acceptForcedPeace(page, COUNTERS, wait)', '0')));
+  check('C3 mutacja kopii (bez autopilota) jest wykryta', !runnerWired(runnerSrc.replace('setPlayerAiAutopilotForTest(true)', 'setPlayerAiAutopilotForTest(false)')));
+}
+
 // ---- B) przegladarka ----
 async function browserChecks(distDir) {
   const { chromium } = require(path.join(PW_DIR, 'node_modules', 'playwright'));
