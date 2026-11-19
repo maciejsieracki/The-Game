@@ -103,6 +103,7 @@ import {
   AI_RIVER_CLEAR_NO_CITIZEN_POOL_FLOOR,
   isCityLimitExhausted,
   pickAutoImprovements,
+  aiTerritoryRaceWindowActive,
   type AutoImprovementSurplusReport,
 } from './auto-improvements';
 // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 2): AI CYWILIZACJI liczy swoje heksy
@@ -2958,6 +2959,7 @@ function planCityImprovements(
   ownerId: number,
   map: GameMap,
   opts: AITurnOpts,
+  territoryRace?: { turn: number; threatFronts: number },
 ): AICmdBuildImprovement[] {
   const territoryNodes = opts.territoryNodes;
   if (!territoryNodes || myCities.length === 0) return [];
@@ -3045,6 +3047,8 @@ function planCityImprovements(
     // (`defensiveCopy`) są wyłączone z ekspansji terytorialnej (jak `planExpansionFortBuilding`, F4) — ZAŁOŻENIE.
     cityLimitExhausted: !opts.defensiveCopy
       && isCityLimitExhausted(myCities, opts.cityLimitBase, opts.civEra),
+    // R-WEB-AI-TERRITORY-RACE-FORTS-IMPL-Q1: progi 40/16 nowych heksów + udział 15% puli w oknie tur (tylko AI).
+    aiTerritoryRace: territoryRace,
   };
 
   // WYWOŁANIE 1 — kategoria ŻYWNOŚCIOWA: zachowanie bez zmian (onlyWorked=true), pełny
@@ -4111,7 +4115,12 @@ function decideAITurnCore(
     for (const k of opts.recruitStockDeficitScratch) merged.add(k);
     opts.resourceDeficitKeys = [...merged];
   }
-  const cityImprovementCommands = planCityImprovements(myCities, playerId, map, opts);
+  // R-WEB-AI-TERRITORY-RACE-FORTS-IMPL-Q1: sygnał zagrozenia (countThreatFronts na wszystkich wrogich
+  // jednostkach zdolnych do walki — ZAŁOŻENIE: bez filtra obrony domu z kroku niżej, bo ten krok jest wcześniej).
+  const cityImprovementCommands = planCityImprovements(myCities, playerId, map, opts, {
+    turn: opts.currentTurn ?? 0,
+    threatFronts: countThreatFronts(engageableEnemyUnits, myCities, myUnits, map),
+  });
   for (const cmd of cityImprovementCommands) commands.push(cmd);
   // Krok 2 (Maciej 2026-08-09): heurystyka minimalna, patrz planExpansionFortBuilding.
   const plannedImprovementCost = cityImprovementCommands.reduce(

@@ -32,6 +32,24 @@ import {
 } from '../map/improvement-build';
 import { hexKeysWithinRadius } from './okolica';
 import { planRoadNetwork } from './road-network-plan';
+import aiTerritoryRaceParamsJson from '../../data/ai-territory-race-params.json';
+
+/**
+ * R-WEB-AI-TERRITORY-RACE-FORTS-IMPL-Q1 (decyzje wlasciciela 2026-11-19, AI only): parametry wyscigu o teren.
+ * Wartosci w gra/data/ai-territory-race-params.json; cofniecie do stanu sprzed tematu: 1 / 1 / 0 (brak udzialu).
+ */
+export const AI_TERRITORY_RACE = {
+  fortMinNoweHeksy: aiTerritoryRaceParamsJson.fortMinNoweHeksy,
+  posterunekMinNoweHeksy: aiTerritoryRaceParamsJson.posterunekMinNoweHeksy,
+  fortyUdzialPuliPracy: aiTerritoryRaceParamsJson.fortyUdzialPuliPracy,
+  fortyOknoOd: aiTerritoryRaceParamsJson.fortyOknoOd,
+  fortyOknoDo: aiTerritoryRaceParamsJson.fortyOknoDo,
+} as const;
+
+/** Okno tur (włącznie), w którym forty/posterunki AI mają osobny udział puli Pracy. */
+export function aiTerritoryRaceWindowActive(turn: number): boolean {
+  return turn >= AI_TERRITORY_RACE.fortyOknoOd && turn <= AI_TERRITORY_RACE.fortyOknoDo;
+}
 import { getImprovementMeta, isImprovementTechUnlocked } from './improvement-tech';
 import { isImprovementAllowedForCiv, hexHasHorseDeposit } from './terrain-improvements';
 import type { UlepszeniaFocus } from './cities';
@@ -485,6 +503,12 @@ export interface PickAutoImprovementsOpts {
    * Wylicza go wołający (`isCityLimitExhausted`): gracz — main.ts, AI — `planCityImprovements` w ai.ts.
    */
   cityLimitExhausted?: boolean;
+  /**
+   * R-WEB-AI-TERRITORY-RACE-FORTS-IMPL-Q1 (AI only): ustawia WYŁĄCZNIE `planCityImprovements` (ai.ts) dla AI z
+   * wyczerpanym limitem miast. Brak = ścieżka gracza i zachowanie sprzed tematu (próg 1, bez udziału puli).
+   * `threatFronts` = liczba frontów zagrożenia (countThreatFronts); > 0 → udział fortów = 0 („wojsko pierwsze”).
+   */
+  aiTerritoryRace?: { turn: number; threatFronts: number };
   /** Internal (E-FORT): przebieg „forty” — ustawia go WYŁĄCZNIE `pickAutoImprovements`. */
   fortClaimPass?: boolean;
   /**
@@ -727,6 +751,17 @@ function pickFortClaims(a: FortClaimArgs): AutoImprovementPick[] {
     sink?.({ cityId: a.cities[0]?.id ?? '', scope: 'fort', reason: 'e-fort: brak odblokowanego klucza (tech/cywilizacja)', detail: { klucze: FORT_CLAIM_KEYS } });
     return picks;
   }
+  // R-WEB-AI-TERRITORY-RACE-FORTS-IMPL-Q1: przy zagrożeniu wojsko pierwsze — udział fortów AI = 0.
+  const race = opts.aiTerritoryRace;
+  // Udział puli Pracy AI na forty/posterunki: tylko w oknie tur; poza oknem bez osobnego udziału (jak przed tematem).
+  const raceWindow = race !== undefined && aiTerritoryRaceWindowActive(race.turn);
+  if (raceWindow && race.threatFronts > 0) {
+    sink?.({ cityId: a.cities[0]?.id ?? '', scope: 'fort', reason: 'e-fort: zagrozenie (wojsko pierwsze), udzial fortow = 0', detail: { threatFronts: race.threatFronts } });
+    return picks;
+  }
+  const shareCap = raceWindow
+    ? AI_TERRITORY_RACE.fortyUdzialPuliPracy * a.globalPracaPulaAtEntry
+    : Number.POSITIVE_INFINITY;
   const orderedCities = [...a.cities].sort((x, y) => (x.id < y.id ? -1 : x.id > y.id ? 1 : 0));
   for (const city of orderedCities) {
     if (pracaLeft <= a.reserve) break;
@@ -765,7 +800,10 @@ function pickFortClaims(a: FortClaimArgs): AutoImprovementPick[] {
             const [nqs, nrs] = nk.split(',');
             if (territoryOwnerAt(Number(nqs), Number(nrs), nodesNow) === null) gain++;
           }
-          if (gain < FORT_CLAIM_MIN_NEW_HEXES) { rej.zyskZero++; continue; }
+          const minNowe = race
+            ? (key === 'fort' ? AI_TERRITORY_RACE.fortMinNoweHeksy : AI_TERRITORY_RACE.posterunekMinNoweHeksy)
+            : FORT_CLAIM_MIN_NEW_HEXES;
+          if (gain < minNowe) { rej.zyskZero++; continue; }
           rej.kandydaci++;
           let dist = Infinity;
           for (const n of ownNodes) dist = Math.min(dist, axialDistance(q, r, n.q, n.r));
@@ -791,6 +829,7 @@ function pickFortClaims(a: FortClaimArgs): AutoImprovementPick[] {
     if (best.kosztPraca > pracaLeft) { fortReason('e-fort: koszt > pula Pracy'); continue; }
     if (pracaLeft - best.kosztPraca < a.reserve) { fortReason('e-fort: rezerwa Pracy'); continue; }
     if (globalSpent + best.kosztPraca > effectiveCityCap) { fortReason('e-fort: sufit % budzetu'); continue; }
+    if (globalSpent + best.kosztPraca > shareCap) { fortReason('e-fort: udzial puli Pracy (forty AI, okno tur)'); continue; }
     fortReason('e-fort: wybrany');
     picks.push({ ownerId, cityId: city.id, q: best.q, r: best.r, key: best.key, kosztPraca: best.kosztPraca });
     pracaLeft -= best.kosztPraca;
