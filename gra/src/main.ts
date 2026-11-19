@@ -45654,7 +45654,9 @@ async function boot(): Promise<void> {
                 hexDistanceFn: hexDistance,
                 totalActiveForcedWarsByOwner: totalActiveForcedWarsForPairing,
                 isEraWarExhausted: isWarRulesMultiwarEnabled() ? isEraWarExhausted : undefined,
-                freeTargetCandidates: forcedWarMajorAiSubjects,
+                // R-WEB-ERA-WAR-DEFER-NOT-CANCEL-Q1 (runda 3, Z4): cel fallbacku musi być WOLNY także od
+                // wojny naturalnej (jak partner z puli: `alreadyAtWarAnyRole`), inaczej ai.ts odrzuca komendę.
+                freeTargetCandidates: forcedWarMajorAiSubjects.filter(s => countActiveWarsForOwnerExcludingBarbarians(s.ownerId) === 0),
                 ...forcedWarPlayerFirstOpt,
               },
             );

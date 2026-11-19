@@ -218,12 +218,33 @@ console.log('T7 (B-DEFER) lone pending Brazu dostaje wolny cel; bez fallbacku po
     `dwa podmioty z fallbackiem dostają dwa RÓŻNE wolne cele (${JSON.stringify(targets)})`);
 }
 
+// T9 (runda 3, Z5): Brąz/Żelazo leftover NIE dołącza do pary Kamienia (stanWojny w ai.ts);
+// dołączenie do pary Brązu zachowane; fallback wolnego celu działa dopiero po nieudanym dołączeniu.
+console.log('T9 (runda 3) leftover Brazu omija pare Kamienia; dolaczenie do pary Brazu bez zmian');
+{
+  const base = { isPairBlocked: noBlock, hexDistanceFn: hexDist, totalActiveForcedWarsByOwner: noWars };
+  const stonePair = [{ attackerId: 8, targetId: 9, era: 'stone' }];
+  const noFree = assignForcedWarPairings([{ ownerId: 2, q: 0, r: 0, era: 'bronze' }], stonePair, base);
+  assert(!noFree.assignments.some(a => a.targetId === 8 || a.targetId === 9 || a.ownerId === 8 || a.ownerId === 9),
+    'Brąz bez fallbacku nie dołącza do pary Kamienia (brak przydziału do 8/9)');
+  assert(noFree.unresolvedOwnerIds.includes(2), 'Brąz bez fallbacku: unresolved (pending czeka)');
+  const withFree = assignForcedWarPairings([{ ownerId: 2, q: 0, r: 0, era: 'bronze' }], stonePair,
+    { ...base, freeTargetCandidates: MAJORS });
+  const w2 = withFree.assignments.find(a => a.ownerId === 2);
+  assert(w2 && w2.targetId === 3, `Brąz z fallbackiem: cel wolny 3, nie para Kamienia (got ${JSON.stringify(w2)})`);
+  const bronzePair = [{ attackerId: 8, targetId: 9, era: 'bronze' }];
+  const joinB = assignForcedWarPairings([{ ownerId: 2, q: 0, r: 0, era: 'bronze' }], bronzePair, base);
+  assert(joinB.assignments.some(a => a.ownerId === 2 && (a.targetId === 8 || a.targetId === 9)),
+    'Brąz dołącza do pary Brązu (krok 4 bez zmian, także bez fallbacku)');
+}
+
 // T8 (źródłowo-behawioralne): main.ts przekazuje tę samą listę kandydatów do parowania (mutacja
 // usunięcia linii `freeTargetCandidates:` w main.ts musi zaczerwienić ten test).
 console.log('T8 (B-DEFER, wiring) main.ts przekazuje freeTargetCandidates do assignForcedWarPairings');
 {
   const mainSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
-  assert(/freeTargetCandidates:\s*forcedWarMajorAiSubjects,/.test(mainSrc), 'main.ts: freeTargetCandidates: forcedWarMajorAiSubjects');
+  assert(/freeTargetCandidates:\s*forcedWarMajorAiSubjects\.filter\(s => countActiveWarsForOwnerExcludingBarbarians\(s\.ownerId\) === 0\),/.test(mainSrc),
+    'main.ts: freeTargetCandidates = wspólna lista major AI filtrowana z wojen naturalnych (Z4)');
   assert(/candidates:\s*forcedWarMajorAiSubjects,/.test(mainSrc), 'main.ts: playerFirst.candidates wspólna lista (bez duplikatu)');
 }
 

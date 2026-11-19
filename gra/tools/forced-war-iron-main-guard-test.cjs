@@ -123,7 +123,7 @@ check(
   'wybór celu (wszystkich trzech epok naraz, w tym Żelaza) przechodzi przez assignForcedWarPairings '
     + 'z isForcedWarPairBlocked i hexDistanceFn: hexDistance',
   // R-WEB-ERA-WAR-COUNTER-Q1: dodana opcja isEraWarExhausted (licznik wojen epoki per cywilizacja).
-  /const forcedWarPairingResult = assignForcedWarPairings\(\s*\n\s*triggeredSubjects,\s*\n\s*existingActivePairsForJoin,\s*\n\s*\{\s*\n\s*isPairBlocked: isForcedWarPairBlocked,\s*\n\s*hexDistanceFn: hexDistance,\s*\n\s*totalActiveForcedWarsByOwner(?:: totalActiveForcedWarsForPairing)?,\s*\n\s*(isEraWarExhausted: [^\n]*,\s*\n\s*)?(\.\.\.forcedWarPlayerFirstOpt,\s*\n\s*)?\},\s*\n\s*\);/.test(main),
+  /const forcedWarPairingResult = assignForcedWarPairings\(\s*\n\s*triggeredSubjects,\s*\n\s*existingActivePairsForJoin,\s*\n\s*\{\s*\n\s*isPairBlocked: isForcedWarPairBlocked,\s*\n\s*hexDistanceFn: hexDistance,\s*\n\s*totalActiveForcedWarsByOwner(?:: totalActiveForcedWarsForPairing)?,\s*\n\s*(isEraWarExhausted: [^\n]*,\s*\n\s*)?(?:\/\/[^\n]*\n\s*)*(freeTargetCandidates: [^\n]*,\s*\n\s*)?(\.\.\.forcedWarPlayerFirstOpt,\s*\n\s*)?\},\s*\n\s*\);/.test(main),
 );
 check(
   'wynik przydziału Żelaza czytany z forcedWarAssignmentByOwner (nie z usuniętego pickIronForcedWarTargetId w pętli)',
