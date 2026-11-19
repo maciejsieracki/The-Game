@@ -297,6 +297,13 @@ function runScenario(sc) {
       console.error(`T ${bs.vNow} r${bs.roundNo} CHECKROUT ${b} terr=${this.terrainMap.combatTerrainName(u.q, u.r)}@${u.q},${u.r} => ${u.routed ? 'ROUT' : 'ok'}`);
       return out;
     };
+    // PIN3-DIVERGENCE-Q1 (diagnostyka): kazdy `_singleBlow` z pozycja i zwrotem obu stron (`relativeHit` `:8880`).
+    const origBlow = bs._singleBlow;
+    bs._singleBlow = function (att, dfd, ranged) {
+      const out = origBlow.call(this, att, dfd, ranged);
+      console.error(`T ${bs.vNow} r${bs.roundNo} BLOW ${att.bu.id}@${att.q},${att.r}f${att.facing}->${dfd.bu.id}@${dfd.q},${dfd.r}f${dfd.facing} ranged=${ranged} dmg=${out}`);
+      return out;
+    };
     const origMove = bs._doMove;
     bs._doMove = function (ru, c, r, ...rest) {
       const from = `${ru.q},${ru.r}`;

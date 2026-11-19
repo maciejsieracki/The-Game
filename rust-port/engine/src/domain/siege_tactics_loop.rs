@@ -625,6 +625,16 @@ pub struct SiegeLoop<B: LoopBody> {
     /// ([`TOWER_FLY_MS`]), więc trafienia przychodzą w tej samej kolejności; klocek [`LoopTimer::TowerHit`] niesie
     /// tylko cel, a wiersz potrzebny jest wpisowi `_pushClash` (`'wieza:' + row`).
     tower_in_flight: Vec<(usize, i64)>,
+    /// PIN3-DIVERGENCE-Q1 (D-PIN3-3): skutek ciała ([`LoopTimer::BodyDone`]: trafienie strzału, cios wręcz, koniec
+    /// ostatniego kroku) wykonywany w fazie kroków animacji klatki, PO `_drainTimers` (`_runFastForward` `:9427-9435`,
+    /// `_startLoop`), a nie jako zwykły zegar z numerem nadanym w chwili `start` aktywacji. W pinie te skutki planuje
+    /// kolejka `_raf` (cios `localT >= BLOW_HIT_T` w kroku lunge, ostatni krok `_doMove`) albo `_schedule` wołane z
+    /// kroku `_raf` (`_doRangedAttack` `:9223`), więc zegar wieży z tym samym `due` (zaplanowany wcześniej, w fazie
+    /// zegarów) odpala się PRZED nimi — kolejność rzutów RNG. `false` (domyślnie) = dawny model (dotychczasowe testy
+    /// pętli); sesja ustawia `true`.
+    pub body_done_raf: bool,
+    /// PIN3-DIVERGENCE-Q1 (D-PIN3-3): skutki ciała odłożone do fazy kroków bieżącej klatki, w kolejności odpaleń.
+    raf_pending: Vec<UnitRef>,
 }
 
 /// Obserwator odpaleń zegara pętli (P4-1I2): dostaje stan pętli PO kroku (tylko odczyt), `vNow` i odpalony
@@ -651,6 +661,8 @@ impl<B: LoopBody> SiegeLoop<B> {
             fire_observer: None,
             actions: Vec::new(),
             tower_in_flight: Vec::new(),
+            body_done_raf: false,
+            raf_pending: Vec::new(),
         }
     }
 
@@ -810,7 +822,29 @@ impl<B: LoopBody> SiegeLoop<B> {
     pub fn step_realtime(&mut self, clock: &mut VirtualClock<LoopTimer>, wall: f64) -> u32 {
         self.env.body.set_ff_active(false);
         clock.advance_v_clock(wall);
-        clock.drain_timers(|c, t| self.fire(c, t))
+        let fired = clock.drain_timers(|c, t| {
+            if !self.defer_to_raf(t) {
+                self.fire(c, t);
+            }
+        });
+        // PIN3-DIVERGENCE-Q1 (D-PIN3-3): faza kroków animacji klatki (`requestAnimationFrame`) po `_drainTimers`.
+        while !self.raf_pending.is_empty() {
+            let u = self.raf_pending.remove(0);
+            self.fire(clock, LoopTimer::BodyDone(u));
+        }
+        fired
+    }
+
+    /// PIN3-DIVERGENCE-Q1 (D-PIN3-3): odkłada [`LoopTimer::BodyDone`] do fazy kroków bieżącej klatki
+    /// ([`Self::body_done_raf`]). Zwraca `true`, gdy odłożono.
+    fn defer_to_raf(&mut self, t: LoopTimer) -> bool {
+        match t {
+            LoopTimer::BodyDone(u) if self.body_done_raf => {
+                self.raf_pending.push(u);
+                true
+            }
+            _ => false,
+        }
     }
 
     /// Start bitwy i przewijanie aż do zakończenia albo wyczerpania `max_steps` pełnych iteracji.
@@ -1091,11 +1125,24 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
     fn event(
         &mut self,
         clock: &mut VirtualClock<LoopTimer>,
-        _st: &mut FfLoopState<()>,
+        st: &mut FfLoopState<()>,
         ev: FfEvent<LoopTimer, ()>,
     ) {
         match ev {
-            FfEvent::TimerFired(t) => self.fire(clock, t),
+            FfEvent::TimerFired(t) => {
+                // PIN3-DIVERGENCE-Q1 (D-PIN3-3): skutek ciała do kolejki `_ffQueue` tej iteracji (po `_drainTimers`).
+                if self.defer_to_raf(t) {
+                    st.queue.push(());
+                } else {
+                    self.fire(clock, t);
+                }
+            }
+            FfEvent::RunQueued(()) => {
+                if !self.raf_pending.is_empty() {
+                    let u = self.raf_pending.remove(0);
+                    self.fire(clock, LoopTimer::BodyDone(u));
+                }
+            }
             FfEvent::RoundCapResult(v) => {
                 let w = match v {
                     RoundCapVerdict::Draw => LoopWinner::Draw,
@@ -1112,7 +1159,7 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
                     "sterownik K5-LOOP nie wchodzi w AUTO z przewijania (pending_auto zawsze false)",
                 );
             }
-            FfEvent::TickProjectiles(_) | FfEvent::TickFades(_) | FfEvent::RunQueued(()) => {}
+            FfEvent::TickProjectiles(_) | FfEvent::TickFades(_) => {}
         }
     }
 }

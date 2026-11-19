@@ -1124,8 +1124,11 @@ impl SiegeBattleSession {
             ],
             body,
         };
+        let mut lp = SiegeLoop::new(st, senv);
+        // PIN3-DIVERGENCE-Q1 (D-PIN3-3): skutek ciała w fazie kroków animacji klatki (po `_drainTimers`).
+        lp.body_done_raf = true;
         Ok(Self {
-            lp: SiegeLoop::new(st, senv),
+            lp,
             clock: VirtualClock::new(),
             phase: SessionPhase::Prepared,
             wall_acc: 0.0,
