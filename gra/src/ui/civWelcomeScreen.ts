@@ -136,7 +136,10 @@ function close(kind: 'close' | 'audience'): void {
   open = null;
   popOverlay(OVERLAY_ID);
   document.getElementById(ROOT_ID)?.remove();
-  if (cur.musicStarted) stopDiplomacyMusic();
+  // Audiencja przejmuje muzykę przywitania w startDiplomacyMusic (ta sama playlista —
+  // ciągłość, inna — przekazanie po zatrzymaniu poprzedniej). Zatrzymanie tutaj
+  // wznowiłoby muzykę gry na ułamek sekundy obok przywitania.
+  if (cur.musicStarted && kind !== 'audience') stopDiplomacyMusic();
   if (kind === 'audience') cur.opts.onAudience();
   else cur.opts.onClose();
 }
