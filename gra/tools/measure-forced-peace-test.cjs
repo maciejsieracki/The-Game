@@ -102,7 +102,8 @@ async function scenario(opts) {
   {
     const r = await scenario({ queue: 1, windowOpen: true, stuck: true });
     check('5 accepted=0 przy martwym przycisku', r.accepted === 0, r.accepted);
-    check('5 pętla skończona (klików <= MAX_ROUNDS)', r.world.clicks >= 1 && r.world.clicks <= 5, r.world.clicks);
+    // Dokładnie 1 klik: bez strażnika `if (done===0) break` pętla klika MAX_ROUNDS=5 razy (mutacja m2 -> FAIL).
+    check('5 dokladnie 1 klik przy martwym przycisku (strażnik done===0)', r.world.clicks === 1, r.world.clicks);
   }
 
   if (fails > 0) {
