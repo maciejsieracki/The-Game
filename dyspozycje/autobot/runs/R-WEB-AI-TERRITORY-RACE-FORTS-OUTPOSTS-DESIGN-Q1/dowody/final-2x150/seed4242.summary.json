@@ -1,0 +1,20 @@
+{
+  "seed": 4242,
+  "startTurn": 1,
+  "endTurn": 150,
+  "stop": null,
+  "counters": {
+    "gateActiveTurns": 3,
+    "bypassApplied": 3,
+    "stuckQueueHeals": 0,
+    "battlesAuto": 0,
+    "diploAudienceClosed": 0,
+    "armyMergeClosed": 10,
+    "techNoticeClosed": 3,
+    "aiOffersRejected": 7,
+    "aiOffersRejectAttempts": 7,
+    "forcedPeaceAccepted": 4
+  },
+  "wallSec": 3880,
+  "resumed": false
+}
