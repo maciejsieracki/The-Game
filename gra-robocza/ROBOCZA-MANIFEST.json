@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "e1cfe6b01ee991855059f6da6a75ebac",
-  "bundleSha256": "99596d9a139614cfcb11b1a5ae2f752a8d693d6fd775c3e2059f6214e47b7809",
-  "bundleBytes": 14995480,
+  "bundleMd5": "470a63090ee2f4936d77c272a5190207",
+  "bundleSha256": "29aaeab9da749db6fa8c518289ceb2276cb5cbbed612c6028065bdd966dea677",
+  "bundleBytes": 14996809,
   "sourceSnapshot": {
-    "source": "FC 464db707c (kod 1c1bb853b)",
+    "source": "FC f08a561b3 (kod 55031e022)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 878: R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1 (decyzja wlasciciela 2026-11-19 B): koszt budowy ulepszenia liczony wg epoki WLASCICIELA (np. farma 20/40/80 w Kamien/Braz/Zelazo) z jednej funkcji (gracz, AI, auto-ulepszenia, karta); kopalnie miedzi/cyny/zelaza koszt_praca 22->44; parametr gra/data/improvement-cost-params.json (flaga domyslnie ON); wycena dyplomatyczna zostaje na wartosci sprzed zmiany."
+    "FALA 879: R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (decyzja wlasciciela 2026-11-19, A: naprawa): podzial puli Handlu Nauka/Skarb/Zamoznosc metoda najwiekszych reszt zamiast floor (Mennica ze zlotem delta>0); konwertery o wspolnym wejsciu dziela surowiec proporcjonalnie do zapotrzebowania (glina 40: cegla 38/ceramika 11); HUD netto gliny liczy ten sam rozdzial co silnik."
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; improvement-cost-owner-era 49/0; era-improvement-cost-upkeep 124/0; diplomacy-value-catalog 82/0; auto-fort-claim 66/2 (2 = pre-existing droga); dym 45 tur seed 4242 bez NaN; porownanie Pracy ON vs baza NIE ZMIERZONO"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; ekonomia-5x 280/0; grupa-b 49/0; hex 14/0; zloto 45/0; tarasy 18/0; mennica-magazyn 56/0; converters-shared-input 24/0; resource-gross-net-converter-inputs 18/0; bieg dymny 45 tur bez NaN, produkcja Cegly/Ceramiki w grze NIE ZMIERZONO (brak hooka budowy)"
   ],
   "limits": [
-    "Pomiar 150 tur po zmianie NIE ZMIERZONO (zadanie); flaga OFF nie przywraca wartosci kopaln (dane x2 wspolne)"
+    "Podglad Skarbu w cityPanel.ts nadal floor (moze roznic sie o 1); HUD vs silnik pula/capacity; wplyw podzialu Handlu na tempo gospodarki (do +2 j. na miasto na ture) NIE ZMIERZONO"
   ],
   "finalControl": "Final Control PASS-WITH-NOTES",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T21:49:14",
+  "hubGeneratedAt": "2026-11-19T21:56:01",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
-      "sizeBytes": 14995480
+      "md5": "470a63090ee2f4936d77c272a5190207",
+      "sizeBytes": 14996809
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
-      "sizeBytes": 14995480
+      "md5": "470a63090ee2f4936d77c272a5190207",
+      "sizeBytes": 14996809
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
-      "sizeBytes": 14995480
+      "md5": "470a63090ee2f4936d77c272a5190207",
+      "sizeBytes": 14996809
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
-      "sizeBytes": 14995480
+      "md5": "470a63090ee2f4936d77c272a5190207",
+      "sizeBytes": 14996809
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
-      "sizeBytes": 14995480
+      "md5": "470a63090ee2f4936d77c272a5190207",
+      "sizeBytes": 14996809
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
-      "sizeBytes": 14995480
+      "md5": "470a63090ee2f4936d77c272a5190207",
+      "sizeBytes": 14996809
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
-      "sizeBytes": 14995480
+      "md5": "470a63090ee2f4936d77c272a5190207",
+      "sizeBytes": 14996809
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
-      "sizeBytes": 14995480
+      "md5": "470a63090ee2f4936d77c272a5190207",
+      "sizeBytes": 14996809
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
-      "sizeBytes": 14995480
+      "md5": "470a63090ee2f4936d77c272a5190207",
+      "sizeBytes": 14996809
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "e1cfe6b01ee991855059f6da6a75ebac",
-      "sizeBytes": 14995480
+      "md5": "470a63090ee2f4936d77c272a5190207",
+      "sizeBytes": 14996809
     }
   ],
-  "md5": "e1cfe6b01ee991855059f6da6a75ebac",
+  "md5": "470a63090ee2f4936d77c272a5190207",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

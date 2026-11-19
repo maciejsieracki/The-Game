@@ -1,3 +1,9 @@
+## ROBOCZA 470a6309 -- 2026-11-18 -- FALA 879: R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1: Mennica ze zlotem daje przyrost (podzial Handlu metoda najwiekszych reszt), glina dzielona proporcjonalnie, HUD gliny = silnik (testowa)
+
+- R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 (decyzja wlasciciela 2026-11-19, A: naprawa): podzial puli Handlu Nauka/Skarb/Zamoznosc metoda najwiekszych reszt zamiast floor (Mennica ze zlotem delta>0); konwertery o wspolnym wejsciu dziela surowiec proporcjonalnie do zapotrzebowania (glina 40: cegla 38/ceramika 11); HUD netto gliny liczy ten sam rozdzial co silnik.
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; ekonomia-5x 280/0; grupa-b 49/0; hex 14/0; zloto 45/0; tarasy 18/0; mennica-magazyn 56/0; converters-shared-input 24/0; resource-gross-net-converter-inputs 18/0; bieg dymny 45 tur bez NaN, produkcja Cegly/Ceramiki w grze NIE ZMIERZONO (brak hooka budowy)
+- Limity: Podglad Skarbu w cityPanel.ts nadal floor (moze roznic sie o 1); HUD vs silnik pula/capacity; wplyw podzialu Handlu na tempo gospodarki (do +2 j. na miasto na ture) NIE ZMIERZONO
+
 ## ROBOCZA e1cfe6b0 -- 2026-11-18 -- FALA 878: R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1: koszt ulepszen wg epoki wlasciciela, kopalnie rudy x2 (testowa)
 
 - R-WEB-ECONOMY-IMPROVEMENT-COST-OWNER-ERA-AND-ORE-MINES-X2-Q1 (decyzja wlasciciela 2026-11-19 B): koszt budowy ulepszenia liczony wg epoki WLASCICIELA (np. farma 20/40/80 w Kamien/Braz/Zelazo) z jednej funkcji (gracz, AI, auto-ulepszenia, karta); kopalnie miedzi/cyny/zelaza koszt_praca 22->44; parametr gra/data/improvement-cost-params.json (flaga domyslnie ON); wycena dyplomatyczna zostaje na wartosci sprzed zmiany.
