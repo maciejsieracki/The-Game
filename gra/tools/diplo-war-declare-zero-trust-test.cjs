@@ -185,9 +185,14 @@ async function main() {
     && src.includes('!isPeaceLockedBetween(sa, sb) && !diploZeroTrustWarned.has(key)')
     && src.includes('diploZeroTrustWarned.delete(k)');
   ok(warnCond(MAIN_SRC), 'main.ts: ostrzeżenie = flaga per epizod + blokada rozejmu/pokoju + czyszczenie przy końcu epizodu');
-  ok(!warnCond(MAIN_SRC.replace(' && !diploZeroTrustWarned.has(key)', '')),
+  // Kotwice mutacji muszą istnieć w main.ts; brak kotwicy = FAIL z nazwą (nie cichy "brak zmiany").
+  const KOT_FLAGA = ' && !diploZeroTrustWarned.has(key)';
+  const KOT_BLOKADA = '&& !isPeaceLockedBetween(sa, sb) ';
+  ok(MAIN_SRC.includes(KOT_FLAGA), 'KOTWICA mutanta flaga-per-epizod obecna w main.ts (brak = FAIL: mutant niezastosowany)');
+  ok(MAIN_SRC.includes(KOT_BLOKADA), 'KOTWICA mutanta blokada-rozejmu obecna w main.ts (brak = FAIL: mutant niezastosowany)');
+  ok(!warnCond(MAIN_SRC.replace(KOT_FLAGA, '')),
     'mutacja (usunięta flaga per epizod) czerwieni warunek ostrzeżenia');
-  ok(!warnCond(MAIN_SRC.replace('&& !isPeaceLockedBetween(sa, sb) ', '')),
+  ok(!warnCond(MAIN_SRC.replace(KOT_BLOKADA, '')),
     'mutacja (usunięta blokada rozejmu z ostrzeżenia) czerwieni warunek');
 
   // ---- (g) ----

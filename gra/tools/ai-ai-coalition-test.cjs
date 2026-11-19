@@ -261,6 +261,7 @@ const wszystkie = [...baseErrs, ...wiringErrs];
 console.log(`ai-ai-coalition-test: testy bazowe błędy=${wszystkie.length}`);
 for (const e of wszystkie) console.log('  FAIL ' + e);
 console.log(`mutanty wykryte=${wykryte.length}/${MUTANTY.length}`);
+console.log(`WYKRYTE MUTANTY: ${wykryte.join(', ') || 'brak'}`);
 for (const e of mutantBledy) console.log('  MUTANT ' + e);
 const ok = wszystkie.length === 0 && mutantBledy.length === 0;
 console.log(ok ? 'WYNIK: ZIELONE' : 'WYNIK: CZERWONE');
