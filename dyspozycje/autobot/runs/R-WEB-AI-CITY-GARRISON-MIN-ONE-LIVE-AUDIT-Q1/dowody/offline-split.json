@@ -1,0 +1,333 @@
+{
+ "control": [
+  {
+   "turn": 10,
+   "multi": {
+    "cities": 0,
+    "empty": 0,
+    "owners": 0
+   },
+   "single": {
+    "cities": 42,
+    "empty": 11,
+    "owners": 42
+   }
+  },
+  {
+   "turn": 20,
+   "multi": {
+    "cities": 0,
+    "empty": 0,
+    "owners": 0
+   },
+   "single": {
+    "cities": 42,
+    "empty": 13,
+    "owners": 42
+   }
+  },
+  {
+   "turn": 30,
+   "multi": {
+    "cities": 89,
+    "empty": 77,
+    "owners": 13
+   },
+   "single": {
+    "cities": 3,
+    "empty": 1,
+    "owners": 3
+   }
+  },
+  {
+   "turn": 40,
+   "multi": {
+    "cities": 148,
+    "empty": 137,
+    "owners": 13
+   },
+   "single": {
+    "cities": 3,
+    "empty": 1,
+    "owners": 3
+   }
+  },
+  {
+   "turn": 50,
+   "multi": {
+    "cities": 176,
+    "empty": 156,
+    "owners": 13
+   },
+   "single": {
+    "cities": 3,
+    "empty": 3,
+    "owners": 3
+   }
+  },
+  {
+   "turn": 60,
+   "multi": {
+    "cities": 193,
+    "empty": 167,
+    "owners": 14
+   },
+   "single": {
+    "cities": 0,
+    "empty": 0,
+    "owners": 1
+   }
+  }
+ ],
+ "garrisonLoss": {
+  "total": 66,
+  "war": 36,
+  "peace": 30,
+  "byMulti": 61,
+  "bySingle": 5
+ },
+ "emptyNeverGarrisoned": {
+  "turn": 60,
+  "emptyLast": 167,
+  "emptyThatHadGarrisonSomeTurn": 47,
+  "emptyNeverGarrisoned": 120
+ },
+ "cityOwnerSwitch": 6,
+ "vanishedOwners": [
+  {
+   "owner": 2,
+   "cities": [
+    "city4"
+   ],
+   "reappearAt30As": [
+    1
+   ]
+  },
+  {
+   "owner": 3,
+   "cities": [
+    "city5"
+   ],
+   "reappearAt30As": [
+    1
+   ]
+  },
+  {
+   "owner": 5,
+   "cities": [
+    "city7"
+   ],
+   "reappearAt30As": [
+    4
+   ]
+  },
+  {
+   "owner": 6,
+   "cities": [
+    "city8"
+   ],
+   "reappearAt30As": [
+    4
+   ]
+  },
+  {
+   "owner": 8,
+   "cities": [
+    "city10"
+   ],
+   "reappearAt30As": [
+    7
+   ]
+  },
+  {
+   "owner": 9,
+   "cities": [
+    "city11"
+   ],
+   "reappearAt30As": [
+    7
+   ]
+  },
+  {
+   "owner": 11,
+   "cities": [
+    "city13"
+   ],
+   "reappearAt30As": [
+    10
+   ]
+  },
+  {
+   "owner": 12,
+   "cities": [
+    "city14"
+   ],
+   "reappearAt30As": [
+    10
+   ]
+  },
+  {
+   "owner": 14,
+   "cities": [
+    "city16"
+   ],
+   "reappearAt30As": [
+    13
+   ]
+  },
+  {
+   "owner": 15,
+   "cities": [
+    "city17"
+   ],
+   "reappearAt30As": [
+    13
+   ]
+  },
+  {
+   "owner": 17,
+   "cities": [
+    "city19"
+   ],
+   "reappearAt30As": [
+    16
+   ]
+  },
+  {
+   "owner": 18,
+   "cities": [
+    "city20"
+   ],
+   "reappearAt30As": [
+    16
+   ]
+  },
+  {
+   "owner": 20,
+   "cities": [
+    "city22"
+   ],
+   "reappearAt30As": [
+    19
+   ]
+  },
+  {
+   "owner": 21,
+   "cities": [
+    "city23"
+   ],
+   "reappearAt30As": [
+    19
+   ]
+  },
+  {
+   "owner": 23,
+   "cities": [
+    "city25"
+   ],
+   "reappearAt30As": [
+    22
+   ]
+  },
+  {
+   "owner": 24,
+   "cities": [
+    "city26"
+   ],
+   "reappearAt30As": [
+    22
+   ]
+  },
+  {
+   "owner": 26,
+   "cities": [
+    "city28"
+   ],
+   "reappearAt30As": [
+    25
+   ]
+  },
+  {
+   "owner": 27,
+   "cities": [
+    "city29"
+   ],
+   "reappearAt30As": [
+    25
+   ]
+  },
+  {
+   "owner": 29,
+   "cities": [
+    "city31"
+   ],
+   "reappearAt30As": [
+    28
+   ]
+  },
+  {
+   "owner": 30,
+   "cities": [
+    "city32"
+   ],
+   "reappearAt30As": [
+    28
+   ]
+  },
+  {
+   "owner": 32,
+   "cities": [
+    "city34"
+   ],
+   "reappearAt30As": [
+    31
+   ]
+  },
+  {
+   "owner": 33,
+   "cities": [
+    "city35"
+   ],
+   "reappearAt30As": [
+    31
+   ]
+  },
+  {
+   "owner": 35,
+   "cities": [
+    "city37"
+   ],
+   "reappearAt30As": [
+    34
+   ]
+  },
+  {
+   "owner": 36,
+   "cities": [
+    "city38"
+   ],
+   "reappearAt30As": [
+    34
+   ]
+  },
+  {
+   "owner": 38,
+   "cities": [
+    "city40"
+   ],
+   "reappearAt30As": [
+    37
+   ]
+  },
+  {
+   "owner": 39,
+   "cities": [
+    "city41"
+   ],
+   "reappearAt30As": [
+    37
+   ]
+  }
+ ],
+ "vanishedCount": 26
+}

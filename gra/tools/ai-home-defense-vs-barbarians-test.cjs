@@ -194,6 +194,41 @@ console.log('\n--- T2: zagrożenie TUŻ POZA zasięgiem (dystans 10 > 9) -- obro
   const enemyCity = makeCity('ec1', 2, 2, 25, 5);
   const threat = makeUnit('barb1', 99, 25, 35); // dystans 10 (poza zasięgiem 9)
   const unit = makeUnit('u1', 1, 25, 25);
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r3, korekta setupu, nie asercji): jedyna jednostka w miescie
+  // jest teraz stalym garnizonem i nie maszeruje (wymog wlasciciela). Teza testu (zagrozenie poza
+  // zasiegiem nie wyzwala obrony domu, jednostka maszeruje na wrogie miasto) dotyczy jednostki POLOWEJ,
+  // wiec dodajemy garnizon 'a0' (najmniejsze id = garnizon) i badamy 'u1'.
+  const garrison0 = makeUnit('a0', 1, 25, 25);
+
+  eq(hexDistance(threat.q, threat.r, myCity.q, myCity.r), 10, 'T2 setup: zagrożenie 10 hex od miasta');
+
+  // (a) Domyslna konfiguracja (konsolidacja armii ON): jednostka stoi w miescie zbiorki i jest
+  //     wstrzymywana (brak komendy) -- ale w KAZDYM razie NIE rusza w strone zagrozenia.
+  const resultDefault = decideAITurn(1, [garrison0, unit, threat], [myCity, enemyCity], map, data, {});
+  const movesToThreat = resultDefault.filter(c => c.unitId === unit.id && c.type === 'move' && c.toR > 25);
+  eq(movesToThreat.length, 0, `T2(a): domyslna konfiguracja -- ZADNEGO ruchu W STRONE zagrozenia (obrona domu nie wyzwolona) (got ${JSON.stringify(movesToThreat)})`);
+
+  // (b) Konsolidacja armii OFF (izolacja pierwotnej tezy testu): marsz na wrogie miasto jak dawniej.
+  const result = withOverlays({ consolidation: false }, () =>
+    decideAITurn(1, [garrison0, unit, threat], [myCity, enemyCity], map, data, {}));
+  const cmd = result.find(c => c.unitId === unit.id);
+  assert(cmd !== undefined, 'T2(b): jednostka dostaje jakąś komendę (konsolidacja OFF)');
+  if (cmd !== undefined) {
+    eq(cmd.type, 'move', 'T2(b): komenda to ruch');
+    assert(cmd.toQ < 25, `T2(b): ruch W STRONĘ wrogiego miasta (toQ<25), obrona domu nie wyzwolona (got toQ=${cmd.toQ}, toR=${cmd.toR})`);
+    assert(cmd.toR <= 25, `T2(b): ruch NIE w strone zagrozenia (toR<=25) (got toR=${cmd.toR})`);
+  }
+}
+
+// R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r4): ORYGINALNY scenariusz (bez zmiany setupu i asercji) badany OBOK wersji z garnizonem.
+// Kolizja z regula wlasciciela (jedyna jednostka miasta = staly garnizon, nie maszeruje) -> DECISION_REQUIRED.
+console.log('\n--- T2-ORYGINAL (setup bez garnizonu; DECISION_REQUIRED, patrz raport r4)  zagrożenie TUŻ POZA zasięgiem (dystans 10 > 9) -- obrona domu NIE wyzwolona ---');
+{
+  const map = makeMap(60, 60);
+  const myCity = makeCity('c1', 1, 25, 25, 5);
+  const enemyCity = makeCity('ec1', 2, 2, 25, 5);
+  const threat = makeUnit('barb1', 99, 25, 35); // dystans 10 (poza zasięgiem 9)
+  const unit = makeUnit('u1', 1, 25, 25);
 
   eq(hexDistance(threat.q, threat.r, myCity.q, myCity.r), 10, 'T2 setup: zagrożenie 10 hex od miasta');
 
@@ -249,6 +284,37 @@ console.log('\n--- T3 (runda 3 pkt 2): miasto pop=15, zagrożenie 14 hex (poza p
 // zasięgiem 19 (dystans 20) NIE wyzwala obrony domu.
 // ---------------------------------------------------------------------------
 console.log('\n--- T4: miasto pop=15, zagrożenie 20 hex (poza realnym zasięgiem 19) -- obrona NIE wyzwolona ---');
+{
+  const map = makeMap(60, 60);
+  const myCity = makeCity('c1', 1, 25, 25, 15);
+  const enemyCity = makeCity('ec1', 2, 2, 25, 5);
+  const threat = makeUnit('barb1', 99, 25, 45); // dystans 20
+  const unit = makeUnit('u1', 1, 25, 25);
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r3, korekta setupu, nie asercji): jedyna jednostka w miescie
+  // jest teraz stalym garnizonem i nie maszeruje (wymog wlasciciela). Teza testu (zagrozenie poza
+  // zasiegiem nie wyzwala obrony domu, jednostka maszeruje na wrogie miasto) dotyczy jednostki POLOWEJ,
+  // wiec dodajemy garnizon 'a0' (najmniejsze id = garnizon) i badamy 'u1'.
+  const garrison0 = makeUnit('a0', 1, 25, 25);
+
+  eq(hexDistance(threat.q, threat.r, myCity.q, myCity.r), 20, 'T4 setup: zagrożenie 20 hex od miasta');
+  const resultDefault = decideAITurn(1, [garrison0, unit, threat], [myCity, enemyCity], map, data, {});
+  const movesToThreat = resultDefault.filter(c => c.unitId === unit.id && c.type === 'move' && c.toR > 25);
+  eq(movesToThreat.length, 0, `T4(a): domyslna konfiguracja -- ZADNEGO ruchu W STRONE zagrozenia (got ${JSON.stringify(movesToThreat)})`);
+
+  const result = withOverlays({ consolidation: false }, () =>
+    decideAITurn(1, [garrison0, unit, threat], [myCity, enemyCity], map, data, {}));
+  const cmd = result.find(c => c.unitId === unit.id);
+  assert(cmd !== undefined, 'T4(b): jednostka dostaje jakąś komendę (konsolidacja OFF)');
+  if (cmd !== undefined) {
+    eq(cmd.type, 'move', 'T4(b): komenda to ruch');
+    assert(cmd.toQ < 25, `T4(b): ruch W STRONĘ wrogiego miasta (toQ<25), obrona domu nie wyzwolona dla zagrożenia poza zasięgiem (got toQ=${cmd.toQ}, toR=${cmd.toR})`);
+    assert(cmd.toR <= 25, `T4(b): ruch NIE w strone zagrozenia (toR<=25) (got toR=${cmd.toR})`);
+  }
+}
+
+// R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r4): ORYGINALNY scenariusz (bez zmiany setupu i asercji) badany OBOK wersji z garnizonem.
+// Kolizja z regula wlasciciela (jedyna jednostka miasta = staly garnizon, nie maszeruje) -> DECISION_REQUIRED.
+console.log('\n--- T4-ORYGINAL (setup bez garnizonu; DECISION_REQUIRED, patrz raport r4)  miasto pop=15, zagrożenie 20 hex (poza realnym zasięgiem 19) -- obrona NIE wyzwolona ---');
 {
   const map = makeMap(60, 60);
   const myCity = makeCity('c1', 1, 25, 25, 15);

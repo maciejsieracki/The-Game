@@ -1,0 +1,92 @@
+== puste miasta AI (bez wojska) / miasta
+t10 pokoj 0/41 wojna 0/0 razem 0/41 (0.0%)
+t20 pokoj 2/41 wojna 0/0 razem 2/41 (4.9%)
+t30 pokoj 36/96 wojna 0/0 razem 36/96 (37.5%)
+t40 pokoj 12/74 wojna 28/73 razem 40/147 (27.2%)
+t50 pokoj 0/35 wojna 12/140 razem 12/175 (6.9%)
+t60 pokoj 6/39 wojna 10/149 razem 16/188 (8.5%)
+== per wlasciciel t60 (puste > 0)
+{"owner":13,"miasta":15,"puste":6,"poza":35,"wojsko":44,"skarbiec":7917,"wojna":true}
+{"owner":1,"miasta":10,"puste":4,"poza":2,"wojsko":29,"skarbiec":11963,"wojna":false}
+{"owner":7,"miasta":15,"puste":2,"poza":1,"wojsko":14,"skarbiec":2927,"wojna":true}
+{"owner":10,"miasta":16,"puste":2,"poza":30,"wojsko":44,"skarbiec":3833,"wojna":false}
+{"owner":19,"miasta":15,"puste":1,"poza":2,"wojsko":20,"skarbiec":5439,"wojna":true}
+{"owner":25,"miasta":15,"puste":1,"poza":3,"wojsko":17,"skarbiec":1406.4,"wojna":true}
+== odejscia jedynej jednostki bojowej z miasta wg zrodla (plik:linia komendy move; ">ownCity" = cel to wlasne miasto)
+  ai:4649 39
+  ai:5449 9
+  ai:4790 1
+== faktyczne odejscia jedynej jednostki (pozycja przed/po petli komend wlasciciela) wg ostatniej komendy jednostki
+  move:ai:4649 37
+  attack: 10
+  move:ai:5449 9
+  move:ai:4790 1
+  noCmd 1
+== wg wlasciciela|plik
+  13|ai 19
+  10|ai 9
+  31|ai 7
+  22|ai 6
+  37|ai 5
+  1|ai 2
+  25|ai 1
+== rekrutacja garnizonu: wlasciciel|powod
+  10|buy:nnsHold 1
+  10|buy:ok 21
+  10|garrisonPicked 22
+  10|pickNull 4
+  10|pickNull:fallbacks=4:gAllowed=true:gQueued=false:gAfford=false 2
+  10|pickNull:fallbacks=6:gAllowed=true:gQueued=false:gAfford=false 2
+  13|buy:ok 26
+  13|garrisonPicked 26
+  13|pickNull 135
+  13|pickNull:fallbacks=2:gAllowed=false:gQueued=false:gAfford=false 14
+  13|pickNull:fallbacks=2:gAllowed=true:gQueued=false:gAfford=false 82
+  13|pickNull:fallbacks=4:gAllowed=false:gQueued=false:gAfford=false 21
+  13|pickNull:fallbacks=4:gAllowed=true:gQueued=false:gAfford=false 18
+  16|buy:nnsHold 8
+  16|buy:ok 10
+  16|garrisonPicked 18
+  16|pickNull 3
+  16|pickNull:fallbacks=4:gAllowed=true:gQueued=false:gAfford=false 3
+  19|buy:nnsHold 22
+  19|buy:ok 13
+  19|buy:treasury<3 3
+  19|garrisonPicked 38
+  1|buy:ok 7
+  1|garrisonPicked 7
+  1|pickNull 4
+  1|pickNull:fallbacks=4:gAllowed=true:gQueued=false:gAfford=false 3
+  1|pickNull:fallbacks=6:gAllowed=true:gQueued=false:gAfford=false 1
+  22|buy:nnsHold 4
+  22|buy:ok 22
+  22|garrisonPicked 26
+  25|buy:nnsHold 12
+  25|buy:ok 16
+  25|garrisonPicked 27
+  25|pickOther 1
+  28|buy:nnsHold 13
+  28|buy:ok 14
+  28|garrisonPicked 27
+  31|buy:nnsHold 18
+  31|buy:ok 21
+  31|buy:treasury<3 1
+  31|garrisonPicked 40
+  34|buy:nnsHold 9
+  34|buy:ok 14
+  34|garrisonPicked 23
+  34|pickNull 1
+  34|pickNull:fallbacks=4:gAllowed=true:gQueued=false:gAfford=false 1
+  37|buy:nnsHold 5
+  37|buy:ok 19
+  37|garrisonPicked 24
+  4|buy:ok 14
+  4|garrisonPicked 14
+  4|pickNull 10
+  4|pickNull:fallbacks=6:gAllowed=true:gQueued=false:gAfford=false 10
+  7|buy:nnsHold 5
+  7|buy:ok 14
+  7|buy:siege 1
+  7|garrisonPicked 20
+  7|pickNull 1
+  7|pickNull:fallbacks=4:gAllowed=true:gQueued=false:gAfford=false 1

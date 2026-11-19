@@ -1,0 +1,24 @@
+t30
+{"owner":13,"miasta":10,"empty":9,"outside":1,"skarbiec":575,"upkeep":16}
+{"owner":28,"miasta":8,"empty":7,"outside":2,"skarbiec":92,"upkeep":52}
+{"owner":7,"miasta":10,"empty":2,"outside":0,"skarbiec":111,"upkeep":40}
+{"owner":10,"miasta":7,"empty":2,"outside":2,"skarbiec":465,"upkeep":36}
+{"owner":25,"miasta":7,"empty":2,"outside":0,"skarbiec":19,"upkeep":28}
+{"owner":34,"miasta":5,"empty":2,"outside":0,"skarbiec":29,"upkeep":20}
+{"owner":37,"miasta":8,"empty":2,"outside":0,"skarbiec":66,"upkeep":32}
+{"owner":1,"miasta":7,"empty":1,"outside":0,"skarbiec":1139,"upkeep":36}
+{"owner":4,"miasta":3,"empty":1,"outside":0,"skarbiec":235,"upkeep":16}
+{"owner":16,"miasta":4,"empty":1,"outside":0,"skarbiec":38,"upkeep":20}
+{"owner":22,"miasta":7,"empty":1,"outside":0,"skarbiec":186,"upkeep":32}
+{"owner":31,"miasta":4,"empty":1,"outside":0,"skarbiec":18,"upkeep":20}
+{"owner":41,"miasta":1,"empty":1,"outside":2,"skarbiec":3,"upkeep":8}
+t60
+{"owner":28,"miasta":15,"empty":15,"outside":2,"skarbiec":1530,"upkeep":28}
+{"owner":10,"miasta":15,"empty":13,"outside":45,"skarbiec":3887,"upkeep":700}
+{"owner":22,"miasta":15,"empty":11,"outside":39,"skarbiec":6067,"upkeep":464}
+{"owner":1,"miasta":11,"empty":3,"outside":4,"skarbiec":10728,"upkeep":708}
+{"owner":13,"miasta":15,"empty":3,"outside":22,"skarbiec":7446,"upkeep":480}
+{"owner":19,"miasta":16,"empty":2,"outside":9,"skarbiec":4408,"upkeep":112}
+{"owner":7,"miasta":17,"empty":1,"outside":27,"skarbiec":2320,"upkeep":180}
+{"owner":16,"miasta":14,"empty":1,"outside":2,"skarbiec":780,"upkeep":68}
+t60 empty 49 never had military 22

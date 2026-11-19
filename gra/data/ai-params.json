@@ -999,6 +999,11 @@
     "sekcja": "§9 Armia AI",
     "opis": "R-WEB-AI-WAR-ARMY-SEEKS-ENEMY-MAIN-ARMY-FIRST-Q1: ruch zakladany dla jednostki bez pola ruch (heksy na ture) przy liczeniu zasiegu."
   },
+  "garnizon_rezerwa_max_miast": {
+    "wartosc": 3,
+    "sekcja": "§9 Armia AI",
+    "opis": "R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (wariant C): sufit liczby pustych miast, na ktore AI jednorazowo rezerwuje zloto (min(puste miasta, sufit) x cena garnizonu); reszta zakupow AI nie moze wydac zarezerwowanego zlota. ZALOZENIE ROBOCZE 3 -- do zatwierdzenia przez wlasciciela (ABC w rejestrze, CZEKA NA RANO). Czytane w main.ts (aiGarrisonGoldReserve)."
+  },
   "siege_relief_min_advantage": {
     "wartosc": 0.2,
     "sekcja": "§9 Armia AI",

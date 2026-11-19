@@ -1370,7 +1370,8 @@ import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { isTechDiscoveryNoticeOpen, showTechDiscoveryNotice } from './ui/techDiscoveryNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
 import { buildAiLevers, decideAiOwnerBalance, nnsAiUnitLeverInputs, nnsUnitIdsFromPlan, isNnsAiBalanceEnabled, setNnsAiBalanceEnabled, projectTreasuryAfterTick, NNS_AI_BALANCE_TURN_MIN, type NnsAiUnitInfo, type NnsLever } from './game/no-negative-stocks';
-import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, loadAiPurchaseReserveParams, decideAIEconomySliders, aiSeedPodzialHandlu, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, AI_TRADE_BARTER_COOLDOWN_TURNS, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
+import { cityNeedsGarrison, garrisonGoldReserve, isGarrisonPriorityPurchase, garrisonReserveMaxCitiesFromParams } from './game/ai-city-garrison';
+import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, loadAiPurchaseReserveParams, decideAIEconomySliders, aiSeedPodzialHandlu, EMPTY_CITY_GARRISON_UNIT_ID, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, AI_TRADE_BARTER_COOLDOWN_TURNS, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import { aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand, MiastoWycenaWejscie } from './game/ai';
 import {
@@ -33945,6 +33946,23 @@ async function boot(): Promise<void> {
                 wojskoweJedn.map(u => ({ typeId: u.typeId })),
                 typeId => data.units.find(x => x.Jednostka === typeId),
               ),
+              /** R-WEB-AI-CITY-GARRISON-MIN-ONE-LIVE-AUDIT-Q1 (tylko odczyt, ?civTest=1): wojsko STACJONUJĄCE w
+               *  każdym mieście właściciela (ten sam predykat "jednostka wojskowa" co emptyCityGarrisonRecruitIds:
+               *  nie cywil, nie zwiadowca, nie generał, nie zaokrętowany) + flagi inGarnizon/oblężenie. */
+              miastaWojsko: ownerCities.map(c => {
+                const onHex = ownerUnits.filter(u => u.q === c.q && u.r === c.r
+                  && !isCivilianUnit(u) && !isScoutUnit(u) && u.isGeneral !== true && u.embarked !== true);
+                return {
+                  cityId: c.id, q: c.q, r: c.r,
+                  wojsko: onHex.length,
+                  ids: onHex.map(u => u.id),
+                  inGarnizon: onHex.filter(u => u.inGarnizon === true).length,
+                  oblega: units.filter(u => typeof u.oblegaCityId === 'string' && u.oblegaCityId === c.id).length,
+                };
+              }),
+              /** Wojsko właściciela (bojowe, nie generał) poza heksem swojego miasta: id. */
+              wojskoPozaMiastem: ownerUnits.filter(u => !isCivilianUnit(u) && !isScoutUnit(u) && u.isGeneral !== true
+                && u.embarked !== true && !ownerCities.some(c => c.q === u.q && c.r === u.r)).map(u => u.id),
               /** R-WEB-ECONOMY-MEASURE-EXTEND-INCOME-STOCKS-Q1: wartości jak w HUD (tylko odczyt). */
               hud: {
                 /** Epoka właściciela (empireEpochForOwner, jak w panelu). */
@@ -39047,6 +39065,24 @@ async function boot(): Promise<void> {
         unitFoodUpkeep: Math.max(0, milAfter - milBefore),
       }, { runwayTurns: cfg.runwayTurns, margin: cfg.margin });
       return allowed;
+    }
+
+    /**
+     * R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r2, wariant C -- rezerwacja z priorytetem): złoto
+     * zarezerwowane na garnizony puste miast AI (jedna jednostka bojowa na każde miasto bez
+     * kwalifikującej się jednostki). Pozostałe zakupy AI odejmują tę rezerwę od skarbca.
+     */
+    /** Typ garnizonu wybrany przez AI właściciela w bieżącej turze (r4: najtańsza dostępna jednostka bojowa). */
+    const aiGarrisonUnitIdByOwner = new Map<number, string>();
+    function aiGarrisonGoldReserve(ownerId: number, pace: Parameters<typeof unitProductionItem>[3]): number {
+      const pending = cities.filter(c => c.ownerId === ownerId && cityNeedsGarrison(c, units, ownerId)).length;
+      if (pending === 0) return 0;
+      const item = unitProductionItem(
+        aiGarrisonUnitIdByOwner.get(ownerId) ?? EMPTY_CITY_GARRISON_UNIT_ID, data, civBonusyForOwnerId(ownerId), pace,
+        ownerId, effectiveGameDifficultyForOwner(ownerId),
+      );
+      return item?.kind === 'jednostka' ? garrisonGoldReserve(
+        pending, item.koszt, garrisonReserveMaxCitiesFromParams(aiParamsRaw)) : 0;
     }
 
     function ownerTreasury(ownerId: number): number {
@@ -47624,17 +47660,28 @@ async function boot(): Promise<void> {
                     // tę samą bramkę skarbca/Manpower co zakup gracza.
                     // C2 (R-WEB-ECON-NO-NEGATIVE-STOCKS-C-Q1): AI z ujemnym skarbcem/spichlerzem po ticku
                     // nie zaczyna zakupów w tej turze (dźwignia „wstrzymanie”).
+                    // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r2, wariant C): pierwsza jednostka
+                    // BOJOWA do PUSTEGO miasta AI = garnizon z priorytetem: pomija bramkę runway
+                    // i rezerwę utrzymania (zostaje: skarbiec >= cena, Manpower, brak wstrzymania NNS).
+                    // Reszta zakupów nadal przechodzi pełną bramkę i nie może wydać złota
+                    // zarezerwowanego na garnizony (aiGarrisonGoldReserve).
+                    const isGarrisonPriority = cmd.garrison === true && (cmd.garrisonIds ?? [cmd.buildingId]).some(
+                      gid => isGarrisonPriorityPurchase(city, units, ownerId, candId, gid));
+                    if (cmd.garrison === true) aiGarrisonUnitIdByOwner.set(ownerId, cmd.buildingId);
+                    const garrisonReserve = isGarrisonPriority
+                      ? 0
+                      : aiGarrisonGoldReserve(ownerId, player.kosztJednostekPace ?? 'niski');
                     const wantsPurchase = !aiNnsHoldOwners.has(ownerId)
-                      && aiUpkeepRunwayAllows(ownerId, candId, item.koszt)
+                      && (isGarrisonPriority || aiUpkeepRunwayAllows(ownerId, candId, item.koszt))
                       && shouldAIPurchaseUnit({
-                      treasury: ownerTreasury(ownerId),
+                      treasury: ownerTreasury(ownerId) - garrisonReserve,
                       goldCost: item.koszt,
                       hasManpower: canAffordUnitManpowerEmpire(
                         cities, ownerId, city, empireEpochForOwner(ownerId),
                         UNIT_POPULATION_COST, civManpowerMultsForOwner(ownerId).maxMult, candId,
                         civManpowerMultsForOwner(ownerId).costMult,
                       ),
-                      ...aiPurchaseReserveInputs(ownerId, candId),
+                      ...(isGarrisonPriority ? {} : aiPurchaseReserveInputs(ownerId, candId)),
                     });
                     if (wantsPurchase && purchaseRecruitmentUnit(cmd.cityId, candId, item.koszt, ownerId)) {
                       console.log(`[AI ${ownerId}] Zakup jednostki za Skarbiec: ${candId}`);
