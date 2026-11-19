@@ -1095,3 +1095,143 @@ export {
   applyPostCentralPopulationGrowth as applyCentralFoodPopulationGrowth,
   type PostCentralGrowthOpts as ApplyCentralFoodGrowthOpts,
 } from './population-growth-v85';
+
+/**
+ * R-WEB-ECONOMY-FOOD-TO-TAX-CONVERSION-Q1: reczna, jednorazowa zamiana Zywnosci z puli imperium
+ * (zapasyPanstwa) na Podatek -- analogia do zamiany Pracy na Podatek (work-tax.ts). Nie uruchamia sie
+ * automatycznie. Nie schodzi ponizej 0 (ogranicza do zapasu). Podatek trafia do tej samej kolejki
+ * co zamiana Pracy (pendingManualWorkTaxByOwner), wiec zapis/wczytanie i naliczenie sa wspolne.
+ */
+export interface FoodTaxConversion {
+  foodRemaining: number;
+  foodSpent: number;
+  taxGained: number;
+}
+
+export function convertFoodReserveToTax(
+  reserve: number,
+  requestedFood: number,
+  rate: number,
+  enabled: boolean,
+): FoodTaxConversion {
+  // Zapas zachowuje ulamek (bez floor): odejmujemy tylko calkowita ilosc Zywnosci z requestu.
+  const poolExact = Number.isFinite(reserve) ? Math.max(0, reserve) : 0;
+  const pool = Math.floor(poolExact);
+  const request = Number.isFinite(requestedFood) ? Math.max(0, Math.floor(requestedFood)) : 0;
+  const safeRate = Number.isFinite(rate) ? Math.max(0, rate) : 1;
+  const candidateFood = enabled ? Math.min(pool, request) : 0;
+  const candidateTax = Math.floor(candidateFood * safeRate);
+  const foodSpent = candidateTax > 0 ? candidateFood : 0;
+  return {
+    foodRemaining: poolExact - foodSpent,
+    foodSpent,
+    taxGained: candidateTax > 0 ? candidateTax : 0,
+  };
+}
+
+/** Komunikat po zamianie Zywnosci (zawsze zgodny ze stanem: powod odmowy albo realny skutek). */
+export function foodTaxResultMessage(
+  conversion: FoodTaxConversion,
+  requestedFood: number,
+  enabled: boolean,
+  reserveBefore: number,
+  skarbDelta: number,
+  naukaDelta: number,
+): string {
+  if (!enabled) return 'Zamiana Żywności na podatek wymaga Targowiska w imperium.';
+  const req = Number.isFinite(requestedFood) ? Math.floor(requestedFood) : 0;
+  if (req < 1) return 'Podaj ilość Żywności większą od 0.';
+  if (!Number.isFinite(reserveBefore) || reserveBefore < 1) return 'Brak Żywności w zapasie imperium - nie ma czego zamienić.';
+  if (conversion.foodSpent < 1) return 'Przy tym kursie ta ilość Żywności daje 0 Podatku - Żywność nie została odjęta.';
+  const s = Math.max(0, Math.round(skarbDelta));
+  const n = Math.max(0, Math.round(naukaDelta));
+  return `Zamieniono ${conversion.foodSpent} Żywności na ${conversion.taxGained} Podatku. `
+    + `Na koniec tury: +${s} do Skarbca, +${n} do Nauki (wartości z silnika: po korupcji i Mennicy, wg suwaka Podatek/Nauka/Zamożność stolicy; Zamożność dodatkowo mnoży Skarbiec).`;
+}
+
+/**
+ * Cala akcja zamiany Zywnosci (wstrzykiwalna, testowalna). Kolejnosc jak w runManualWorkTaxAction:
+ * projekcja PRZED -> zamiana -> markDirty+refresh (tylko przy sukcesie) -> projekcja PO -> komunikat -> HUD.
+ */
+export interface FoodTaxIo {
+  getReserve: (ownerId: number) => number;
+  setReserve: (ownerId: number, value: number) => void;
+  queueTax: (ownerId: number, tax: number) => void;
+  refreshRates: () => void;
+  markDirty: () => void;
+  readRates: () => { skarb: number; nauka: number };
+  showMessage: (msg: string) => void;
+  updateHud: () => void;
+}
+
+/** Kurs Zywnosci z econ-params budynki.targowisko_zywnosc_na_podatek_kurs (fallback 1:1). */
+export function resolveFoodTaxRate(
+  budynki: Record<string, Record<string, number>> | undefined,
+  difficulty: string,
+): number {
+  const rate = budynki?.targowisko_zywnosc_na_podatek_kurs?.[difficulty];
+  return typeof rate === 'number' && Number.isFinite(rate) && rate >= 0 ? rate : 1;
+}
+
+export interface FoodTaxIoDeps<S extends { zapasyPanstwa: number }> {
+  states: Map<number, S>;
+  createFresh: () => S;
+  pendingTaxByOwner: Map<number, number>;
+  refreshRates: () => void;
+  markDirty: () => void;
+  readRates: () => { skarb: number; nauka: number };
+  showMessage: (msg: string) => void;
+  updateHud: () => void;
+}
+
+/**
+ * Adapter io dla runManualFoodTaxAction na zywych strukturach gry (empireFoodStates,
+ * pendingManualWorkTaxByOwner). Klamra zapasu do 0 jest TU, wiec test moze ja wykonac.
+ */
+export function createFoodTaxIo<S extends { zapasyPanstwa: number }>(deps: FoodTaxIoDeps<S>): FoodTaxIo {
+  return {
+    getReserve: (ownerId) => {
+      const v = deps.states.get(ownerId)?.zapasyPanstwa;
+      return typeof v === 'number' && Number.isFinite(v) ? v : 0;
+    },
+    setReserve: (ownerId, value) => {
+      const st = deps.states.get(ownerId) ?? deps.createFresh();
+      st.zapasyPanstwa = Math.max(0, value);
+      deps.states.set(ownerId, st);
+    },
+    queueTax: (ownerId, tax) => {
+      deps.pendingTaxByOwner.set(ownerId, (deps.pendingTaxByOwner.get(ownerId) ?? 0) + tax);
+    },
+    refreshRates: deps.refreshRates,
+    markDirty: deps.markDirty,
+    readRates: deps.readRates,
+    showMessage: deps.showMessage,
+    updateHud: deps.updateHud,
+  };
+}
+
+export function runManualFoodTaxAction(
+  ownerId: number,
+  requestedFood: number,
+  rate: number,
+  enabled: boolean,
+  io: FoodTaxIo,
+): number {
+  const reserveBefore = io.getReserve(ownerId);
+  io.refreshRates();
+  const before = io.readRates();
+  const conversion = convertFoodReserveToTax(reserveBefore, requestedFood, rate, enabled);
+  if (conversion.foodSpent > 0) {
+    io.setReserve(ownerId, conversion.foodRemaining);
+    io.queueTax(ownerId, conversion.taxGained);
+  }
+  if (conversion.foodSpent >= 1) {
+    io.markDirty();
+    io.refreshRates();
+  }
+  const after = io.readRates();
+  io.showMessage(foodTaxResultMessage(conversion, requestedFood, enabled, reserveBefore,
+    after.skarb - before.skarb, after.nauka - before.nauka));
+  io.updateHud();
+  return conversion.foodSpent;
+}

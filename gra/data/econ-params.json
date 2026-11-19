@@ -338,6 +338,13 @@
       "jednostka": "Podatek / Praca",
       "opis": "Kurs ręcznej, jednorazowej zamiany Pracy z puli imperium na Podatek. Wymaga co najmniej jednego Targowiska w imperium; domyślnie 1:1. Nie uruchamia się automatycznie."
     },
+    "targowisko_zywnosc_na_podatek_kurs": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
+      "jednostka": "Podatek / Żywność",
+      "opis": "Kurs ręcznej, jednorazowej zamiany Żywności z zapasu imperium na Podatek. Wymaga co najmniej jednego Targowiska w imperium; domyślnie 1:1 (kurs nieustalony przez właściciela). Nie uruchamia się automatycznie."
+    },
     "budynek_tartak_przepustowosc": {
       "easy": 3,
       "normal": 2,

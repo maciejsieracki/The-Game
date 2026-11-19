@@ -1182,6 +1182,7 @@ import {
   autoRaiseRationsForGrowth,
   maxSafePoziomRacjiForCity,
   isCityAutoWyzywienieEnabled,
+  runManualFoodTaxAction, createFoodTaxIo, resolveFoodTaxRate,
   type EmpireFoodState,
   type EmpireFoodTickResult,
   type AutoRationAdjustResult,
@@ -29731,6 +29732,33 @@ async function boot(): Promise<void> {
             showMessage: (msg) => showHintMessage(msg, 6000),
             updateHud: () => updateHud(),
           });
+        },
+        // R-WEB-ECONOMY-FOOD-TO-TAX-CONVERSION-Q1: zamiana Zywnosci z zapasu imperium (zapasyPanstwa)
+        // na Podatek, wzorem zamiany Pracy wyzej. Ta sama kolejka podatku (pendingManualWorkTaxByOwner),
+        // wiec zapis/wczytanie i naliczenie na koniec tury sa wspolne. Tylko czlowiek + Targowisko.
+        getOwnerFoodReserve: (ownerId) => getEmpireFoodReserve(ownerId),
+        canConvertOwnerFoodToTax: (ownerId) => ownerCanConvertWorkToTax(ownerId,
+          isHuman(ownerId), cities, cityBuilt),
+        getOwnerFoodTaxRate: (_ownerId) => resolveFoodTaxRate(
+          (data.econParams as unknown as { budynki?: Record<string, Record<string, number>> }).budynki,
+          _menuDifficulty),
+        onConvertOwnerFoodToTax: (ownerId, requested) => {
+          const enabled = ownerCanConvertWorkToTax(ownerId, isHuman(ownerId), cities, cityBuilt);
+          const rate = resolveFoodTaxRate(
+            (data.econParams as unknown as { budynki?: Record<string, Record<string, number>> }).budynki,
+            _menuDifficulty);
+          // Adapter io (klamra zapasu, kolejka podatku) zyje w empire-food.ts i jest testowany.
+          return runManualFoodTaxAction(ownerId, requested, rate, enabled, createFoodTaxIo({
+            states: empireFoodStates,
+            createFresh: () => freshEmpireFoodState(),
+            pendingTaxByOwner: pendingManualWorkTaxByOwner,
+            refreshRates: () => refreshLiveEmpireRates(),
+            // markCityStateDirty czysci _maxSafeRationCache (inwalidacja globalna).
+            markDirty: () => markCityStateDirty(),
+            readRates: () => ({ skarb: _lastPieniadzRate, nauka: _lastNaukaRate }),
+            showMessage: (msg) => showHintMessage(msg, 6000),
+            updateHud: () => updateHud(),
+          }));
         },
         getOwnerDefaultPodzialPracy: (ownerId) => ownerDefaultPodzialPracy.get(ownerId) ?? null,
         onOwnerDefaultPodzialPracyChange: (ownerId, split) => {
