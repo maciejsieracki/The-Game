@@ -6,6 +6,7 @@
 
 pub use civ_engine::domain::dto_bridge::RenderLayersPayload;
 pub use civ_engine::domain::render_frame::{RenderFramePayload, RenderMapPayload, RenderUiParams};
+pub use civ_engine::domain::siege_battle_apply::{SiegeBattlePayload, WallMs};
 pub use civ_engine::StartGameParams;
 use civ_engine::{PlayableGame, PlayablePlayer, PlayableState, PositionDto};
 use serde::{Deserialize, Serialize};
@@ -81,6 +82,33 @@ pub enum EngineCommand {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         ui: Option<RenderUiParams>,
     },
+    /// R-RUSTPORT-P6-K5LOOP-WIRING-B-Q1 (#369): the human besieger storms walled city `city_id` from unit
+    /// `unit_id` (web `launchSiegeStormFromMap` -> `onBattlefield` -> `new BattleScene` -> `bs.play`,
+    /// `main.ts:36799-37019` @ `07d2fbd72`). The battle lives in the session (outside `EngineState`); the
+    /// answer is `State` (unchanged state) plus `siegeBattle` (scene units, start actions, frame); no
+    /// `StateChanged`. Additive: `CONTRACT_VERSION` stays 1.
+    StartSiegeStorm { city_id: u64, unit_id: u64 },
+    /// Real-time step of the running siege battle by `wall_ms` of wall clock (D-WIR-3, 16 ms frames):
+    /// `siegeBattle` carries the actions of the step and the frame; no `StateChanged`.
+    StepSiegeBattle { wall_ms: WallMs },
+    /// Web `skip()` after start (`battleScene.ts:3680-3707`): fast-forward to the result; no `StateChanged`.
+    SkipSiegeBattle,
+    /// Apply the finished battle to the game state (web `consumeReadyMachines` + `finishSiegeStormBattle`
+    /// without the city capture, which is returned as `captureRequested` for #354); emits `StateChanged`.
+    FinishSiegeBattle,
+}
+
+impl EngineCommand {
+    /// R-RUSTPORT-P6-K5LOOP-WIRING-B-Q1: commands of the siege battle session (answered with `siegeBattle`).
+    pub const fn is_siege_battle(&self) -> bool {
+        matches!(
+            self,
+            Self::StartSiegeStorm { .. }
+                | Self::StepSiegeBattle { .. }
+                | Self::SkipSiegeBattle
+                | Self::FinishSiegeBattle
+        )
+    }
 }
 
 /// JSON request envelope sent by the frontend through Tauri `invoke`.
@@ -151,6 +179,12 @@ pub struct BridgeResponse {
     pub contract_version: u16,
     pub request_id: String,
     pub result: BridgeResult,
+    /// R-RUSTPORT-P6-K5LOOP-WIRING-B-Q1 (D-WIRB-5): answer of the siege battle commands next to `result`
+    /// (`State`). Absent for every other command, so their JSON is unchanged. A sibling field instead of a
+    /// new `BridgeResult` variant: the consumers outside the engine (`rust-port/client` tests) match
+    /// `BridgeResult` exhaustively, so a new variant would break their build.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub siege_battle: Option<SiegeBattlePayload>,
 }
 
 /// Events produced by a successful mutating command.
@@ -271,6 +305,39 @@ pub trait EnginePort {
             "get_render_frame: this adapter does not provide the renderer frame",
         ))
     }
+
+    /// R-RUSTPORT-P6-K5LOOP-WIRING-B-Q1: siege battle commands ([`EngineCommand::is_siege_battle`]). Adapters
+    /// without a game session reject them.
+    fn siege_battle(
+        &mut self,
+        command: &EngineCommand,
+    ) -> Result<(EngineState, SiegeBattlePayload), BridgeError> {
+        let _ = command;
+        Err(BridgeError::engine_rejected(
+            "siege battle: this adapter does not provide a game session",
+        ))
+    }
+}
+
+/// Runs one siege battle command on a game (shared by the real and the mock adapter).
+fn siege_battle_on_game(
+    game: &mut PlayableGame,
+    command: &EngineCommand,
+) -> Result<SiegeBattlePayload, BridgeError> {
+    let result = match command {
+        EngineCommand::StartSiegeStorm { city_id, unit_id } => {
+            game.start_siege_storm(*city_id, *unit_id)
+        }
+        EngineCommand::StepSiegeBattle { wall_ms } => game.step_siege_battle(wall_ms.0),
+        EngineCommand::SkipSiegeBattle => game.skip_siege_battle(),
+        EngineCommand::FinishSiegeBattle => game.finish_siege_battle(),
+        _ => {
+            return Err(BridgeError::internal(
+                "siege battle dispatcher called with a non-battle command",
+            ))
+        }
+    };
+    result.map_err(|error| BridgeError::engine_rejected(error.to_string()))
 }
 
 /// Result of dispatching one request, including events the Tauri shell emits.
@@ -314,6 +381,7 @@ where
                     contract_version: CONTRACT_VERSION,
                     request_id,
                     result: BridgeResult::RenderLayers { layers },
+                    siege_battle: None,
                 },
                 events: Vec::new(),
             });
@@ -326,6 +394,7 @@ where
                     contract_version: CONTRACT_VERSION,
                     request_id,
                     result: BridgeResult::RenderMap { map },
+                    siege_battle: None,
                 },
                 events: Vec::new(),
             });
@@ -338,8 +407,32 @@ where
                     contract_version: CONTRACT_VERSION,
                     request_id,
                     result: BridgeResult::RenderFrame { frame },
+                    siege_battle: None,
                 },
                 events: Vec::new(),
+            });
+        }
+        if command.is_siege_battle() {
+            // Start/Step/Skip leave `EngineState` unchanged (the battle lives in the session, web map is
+            // untouched until the scene result): no event. Finish applies the result: `StateChanged`.
+            let (state, battle) = self.adapter.siege_battle(&command)?;
+            let events = if matches!(command, EngineCommand::FinishSiegeBattle) {
+                vec![BridgeEvent::StateChanged {
+                    contract_version: CONTRACT_VERSION,
+                    request_id: request_id.clone(),
+                    state: state.clone(),
+                }]
+            } else {
+                Vec::new()
+            };
+            return Ok(BridgeDispatch {
+                response: BridgeResponse {
+                    contract_version: CONTRACT_VERSION,
+                    request_id,
+                    result: BridgeResult::State { state },
+                    siege_battle: Some(battle),
+                },
+                events,
             });
         }
         let state = self.adapter.execute(command.clone())?;
@@ -349,6 +442,7 @@ where
             result: BridgeResult::State {
                 state: state.clone(),
             },
+            siege_battle: None,
         };
         let events = if matches!(command, EngineCommand::GetState) {
             Vec::new()
@@ -436,9 +530,23 @@ impl EnginePort for CivEngineAdapter {
                     "declare_war: wiring stanu dyplomacji poza zakresem tematu CRED-HAK-WYPOWIEDZENIE-IMPL-Q1",
                 ));
             }
+            EngineCommand::StartSiegeStorm { .. }
+            | EngineCommand::StepSiegeBattle { .. }
+            | EngineCommand::SkipSiegeBattle
+            | EngineCommand::FinishSiegeBattle => {
+                return self.siege_battle(&command).map(|(state, _)| state);
+            }
         }
 
         Ok(self.game.state().clone())
+    }
+
+    fn siege_battle(
+        &mut self,
+        command: &EngineCommand,
+    ) -> Result<(EngineState, SiegeBattlePayload), BridgeError> {
+        let battle = siege_battle_on_game(&mut self.game, command)?;
+        Ok((self.game.state().clone(), battle))
     }
 
     fn render_layers(&mut self, seat: Option<u64>) -> Result<RenderLayersPayload, BridgeError> {
@@ -586,9 +694,38 @@ impl EnginePort for MockEngineAdapter {
             EngineCommand::GetRenderFrame { seat, ui } => {
                 return self.render_frame(seat, ui).map(|_| self.state.clone());
             }
+            EngineCommand::StartSiegeStorm { .. }
+            | EngineCommand::StepSiegeBattle { .. }
+            | EngineCommand::SkipSiegeBattle
+            | EngineCommand::FinishSiegeBattle => {
+                return self.siege_battle_on_mock(&command).map(|(state, _)| state);
+            }
         }
 
         Ok(self.state.clone())
+    }
+
+    fn siege_battle(
+        &mut self,
+        command: &EngineCommand,
+    ) -> Result<(EngineState, SiegeBattlePayload), BridgeError> {
+        self.calls.push(command.clone());
+        self.siege_battle_on_mock(command)
+    }
+}
+
+impl MockEngineAdapter {
+    fn siege_battle_on_mock(
+        &mut self,
+        command: &EngineCommand,
+    ) -> Result<(EngineState, SiegeBattlePayload), BridgeError> {
+        let game = self
+            .game
+            .as_mut()
+            .ok_or_else(|| BridgeError::engine_rejected("create session before a siege battle"))?;
+        let battle = siege_battle_on_game(game, command)?;
+        self.state = game.state().clone();
+        Ok((self.state.clone(), battle))
     }
 }
 
