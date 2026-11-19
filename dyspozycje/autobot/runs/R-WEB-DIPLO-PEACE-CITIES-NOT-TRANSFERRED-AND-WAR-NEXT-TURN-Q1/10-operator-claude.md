@@ -1,20 +1,42 @@
-STATUS: BLOCK
+# Raport Operatora — runda 2/5 (HAIKU)
+
+STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-WEB-DIPLO-PEACE-CITIES-NOT-TRANSFERRED-AND-WAR-NEXT-TURN-Q1
-GOAL: ustalić, czemu pokój z cesją 2 miast nie przeniósł miast i czemu ta sama cywilizacja zaatakowała w następnej turze; naprawić błędy, nie decyzje projektowe.
-ZMIANY/COMMIT: tylko raport; brak zmian kodu gry (patrz NASTĘPNY KROK). Baza: 04722f538.
-TESTY: NIE ZMIERZONO runtime (brak zapisu gry właściciela, brak odtworzenia scenariusza w grze).
- - npm ci --ignore-scripts w gra/: OK (71 pakietów). tsc --noEmit: exit 0.
- - diplomacy-city-cession-test: 79 pass / 0 fail; diplomacy-city-cession-r3-test: 79 / 0.
- - ai-war-weariness-peace-test: PASS=96 FAIL=0; diplo-war-peace-gate-test: 24 / 0; diplo-forced-peace-pending-test: PASS=40 FAIL=0.
- - Bramki logic-test 213, tech-tree 20, research 33, unit-replace 21, combat 6: NIE URUCHOMIONO (nie zlokalizowano skryptów w package.json).
- - Nowy test regresji NIE napisany: bez odtworzenia w grze nie zbudowano asercji na prawdziwych funkcjach.
-BLOKADY: brak zapisu gry właściciela; domknięcia w main.ts (applyProposalOutcomeImpl, transferCityByTreaty) nieosiągalne z testu czystego.
-ODCZYT KODU (gra/src/main.ts, nie zmieniany):
- (A) Cesja. Pre-kontrola cityCessionPayloadBlockReason (~l.40954) dopuszcza NAJWYŻEJ 1 miasto (total > 1 -> blokada, pokój nie zawarty, komunikat). Ścieżka oneShotTrade (applyProposalOutcomeImpl ~l.27056) jest jedyną z pre-kontrolą. Ścieżki omijające ją: (2) akceptacja z inboxa `zaproponuj_pokoj` (~l.22721) -> finalizePeaceTreatyBetween BEZ przelewu pozycji; (3) acceptPendingForcedPeace (~l.26865) -> transferBasketItems i zawsze finalize; (4) truce-end (z założenia bez miast). W transferBasketItems (~l.13713) błąd transferCityByTreaty tylko loguje console.error — pokój zostaje zawarty (połowiczny pokój).
- Hipoteza główna: pokój bez przeniesienia miast wynika z (2) lub (3), albo z połowicznego wykonania; NIE POTWIERDZONE.
- (B) Ponowna wojna. Zwykłe wypowiedzenie AI respektuje blokadę pokoju (isWarTreatyBlocked; peaceUntilTurn = tura+10, diplomacy-peace-lock.ts). Wojna EPOKI (powód R-EPOKA-*-WYMUSZONA-WOJNA) omija blokadę świadomie (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1: eraWar blokuje tylko sojusz, war-rules-multiwar.ts:426). Lock forcedEraPeaceUntilNextEra (main.ts:12751) działa tylko w isPeaceLockedBetween, którego wojna epoki nie sprawdza. Hipoteza: następna tura to wojna epoki zaplanowana przed pokojem; NIE POTWIERDZONE (wymaga logu tury z powodem wypowiedzenia).
- (iii) Regres po FALACH 863/865/866: NIE SPRAWDZONO.
-NASTĘPNY KROK: (1) log konsoli albo zapis gry właściciela z tury zawarcia pokoju (szukać: "pokój odrzucony — cesja", "BŁĄD: cesja miasta", powód wypowiedzenia z R-EPOKA); (2) runda 2 po tych danych; (3) PYTANIE ABC dla właściciela: czy wojna epoki ma omijać świeży pokój (obecna reguła IGNORE-TREATIES) — to decyzja projektowa, nie błąd; (4) poprawka po potwierdzeniu: pozycje cesji w ścieżkach (2)/(3) przez tę samą pre-kontrolę albo rollback pokoju przy błędzie transferu.
+GOAL: negocjowany pokój z cesją miast (oferta AI z kilkoma miastami, gracz akceptuje przy stole) ma przenieść miasta i zawrzeć pokój atomowo, albo wrócić z komunikatem.
+
+## Przyczyna (base 1213504618, plik:linia w bazie)
+- `gra/src/main.ts` ~l.40978 `cityCessionPayloadBlockReason`: limit „w propozycji pokoju może być tylko jedno miasto" (`total > 1` → blok).
+- AI tworzy oferty z wieloma miastami: `gra/src/game/ai.ts:7445` (`dodatkoweMiasta`), `gra/src/game/diplomacy-proposals.ts` `aiOfferedCityItems`.
+- `gra/src/main.ts` ~l.27084 (applyProposalOutcomeImpl, gałąź `oneShotTrade`): blok → `return` PRZED `finalizePeaceTreatyBetween` (~l.27133). Pokój nie jest zawierany, status zostaje „wojna", miasta nie przechodzą, komunikat 4,5 s. Stąd: „przyjąłem, nic nie dostałem, następnej tury znów atak".
+- Hipoteza B potwierdzona kodowo: nie ma „połowicznego pokoju" — pokój nie został zapisany. Karencja po pokoju nie była w grze, więc wojna nie została zablokowana.
+- Nie dotyczy FALI 872 (ścieżka wymuszona, `pendingPeaceItems`).
+
+## Zmiana (ABC A: wykonalne miasta przechodzą, reszta odpada z komunikatem)
+- `gra/src/game/diplomacy-value-catalog.ts` ~l.1099 nowa czysta funkcja `partitionPeaceCityItems` (sekwencyjne zakazy przez `selectSequentialCityCessions`).
+- `gra/src/main.ts` ~l.40988 `cityCessionFilterPayload` zastępuje stary blok; dopiero gdy NIC nie przechodzi — pokój wraca z komunikatem; częściowo — pokój zawarty z resztą + komunikat o pominiętych miastach.
+- `gra/tools/diplomacy-city-cession-test.cjs`: kotwica w teście wskazuje nową nazwę funkcji.
+- Nie zmieniono wartości balansu, formuł PW/D, flag ani karencji wojen.
+
+## Testy (liczby z surowego wyjścia)
+- `npx tsc --noEmit` (node typescript): exit 0.
+- `tools/logic-test.cjs`: LOGIC OK (213/213).
+- `tools/tech-tree-test.cjs`: 20 pass, 0 fail.
+- `tools/research-test.cjs`: ALL GREEN.
+- `tools/combat-test.cjs`: 6/6.
+- `tools/ai-unit-replace-same-rules-test.cjs`: 45 passed, 0 failed (gate w dispatchu mówi 21; uruchomiony plik zwraca 45).
+- Pokój/cesja/wojna: `peace-city-cession-negotiated-test.cjs` (NOWY) 18/0; `peace-city-cession-and-rewar-test.cjs` PASS=8; `diplomacy-city-cession-test.cjs` 79/0 (po poprawce kotwicy); `diplomacy-city-cession-r3-test.cjs` 79/0; `diplo-forced-peace-pending-test.cjs` 40/0; `diplo-peace-weaker-seeks-city-only-test.cjs` 35/0; `diplo-peace-tail-integration-test.cjs` 42/0; `diplo-peace-last-stage-payment-test.cjs` OK.
+- Mutacja: w nowym teście kopia starego limitu „>1 miasto" przepuszcza 0 z 2 (czerwone).
+
+## NIE ZMIERZONO
+- Przebieg w prawdziwej grze / Chromium (hak civTest, ≤45 tur) — nie uruchamiano; brak zapisu gry właściciela.
+- Regres po FALACH 863/865/866 (bramki OFF) — nie porównywano z bazą sprzed FALI 860.
+- Karencja przed ponownym wypowiedzeniem przez tę samą cywilizację — nie zbadano (poza zakresem zmiany).
+- Atomowość: sekwencyjne przeliczenie planu cesji dla drugiego miasta odbywa się na stanie po pierwszym przelewie tylko w `transferCityByTreaty`; rzadki błąd (wolne pole) zostałby zalogowany, nie cofnięty.
+
+## UWAGI-DLA-ORKIESTRATORA
+- Nazwa dawcy „Karapał" w zgłoszeniu nie występuje w danych (jak w dispatchu).
+- Pytanie ABC dla właściciela: czy przy częściowej cesji pokój ma być zawierany (obecnie tak) — zob. ABC A z dispatchu.
+
+NASTĘPNY KROK: integracja orkiestratora po Final Control; test w grze na ROBOCZEJ (zapis właściciela, jeśli dostępny).
 DEPLOY/PUSH: NIE WYKONANO
-UWAGI-DLA-ORKIESTRATORA: gra/node_modules zainstalowane w worktree (gitignored). Nie utworzono żadnych sesji ani zadań.
