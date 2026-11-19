@@ -5,8 +5,9 @@
  * Pokrycie: limit epoki i naturalnej niezależnie, atakujący i obrońca, flaga OFF = parytet,
  * stare zapisy bez typWojny = 'naturalna', parser wartości JSON.
  * Barbarzyńcy, pomijany i nie-wojna wykluczani przez collectWarTypes (czysta funkcja używana przez
- * warTypesForOwner w main.ts). Poza zakresem (main.ts, bez przeglądarki, NIE_ZMIERZONO): wpięcie w kaskadę
- * sojuszniczą i bramkę wypowiedzenia gracza/AI jako deklarującego.
+ * warTypesForOwner w main.ts). Wpięcie bramki klastra państw-miast -> gracz w main.ts sprawdzane źródłowo
+ * (sekcja R-WEB-DIPLO-WAR-LIMIT-PLAYER-TARGET-Q1 na końcu). Poza zakresem (bez przeglądarki, NIE_ZMIERZONO):
+ * zachowanie w biegu gry, kaskada sojusznicza i bramka wypowiedzenia gracza/AI jako deklarującego.
  * Run: node tools/diplomacy-war-limit-unit-test.cjs
  */
 const fs = require('fs');
@@ -128,6 +129,22 @@ eq('OFF: AI w wojnie epoki z graczem -> nowa epoka wolno (parytet)', M.warLimitA
 const CS_PLAYER_NAT = row({ otherId: 0 });
 eq('ON: panstwo-miasto w wojnie naturalnej z graczem -> nowa naturalna zabroniona', M.warLimitAllows('naturalna', M.collectWarTypes([CS_PLAYER_NAT]), [], ON), false);
 eq('OFF: panstwo-miasto w wojnie naturalnej z graczem -> wolno', M.warLimitAllows('naturalna', M.collectWarTypes([CS_PLAYER_NAT]), [], { ...ON, limitWojenAktywny: false }), true);
+
+// --- R-WEB-DIPLO-WAR-LIMIT-PLAYER-TARGET-Q1 (obrona r1): WPIECIE bramki w src/main.ts ---
+// Testy powyzej dotykaja tylko czystego modulu. Ta czesc sprawdza zrodlo main.ts: bramka limitu
+// dla klastra panstw-miast -> gracz musi stac w petli klastra, dokladnie raz, PRZED wypowiedzeniem
+// wojny (chargeWarDeclarationCredibility). Usuniecie linii z main.ts -> FAIL (test na kopii).
+const MAIN_TS = process.env.WAR_LIMIT_MAIN_TS || path.resolve(ROOT, 'src', 'main.ts');
+const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
+const CLUSTER_LOOP = 'for (const csOwnerId of clusterDowOwners) {';
+const CLUSTER_GATE = "if (!warLimitAllowsDeclaration(csOwnerId, ME(), 'naturalna')) continue;";
+const CLUSTER_DECL = 'chargeWarDeclarationCredibility(csOwnerId, ME())';
+const loopAt = mainSrc.indexOf(CLUSTER_LOOP);
+const gateAt = mainSrc.indexOf(CLUSTER_GATE);
+const declAt = mainSrc.indexOf(CLUSTER_DECL);
+eq('main.ts: petla klastra PM->gracz istnieje', loopAt >= 0, true);
+eq('main.ts: bramka limitu w klastrze PM->gracz wystepuje dokladnie raz', mainSrc.split(CLUSTER_GATE).length - 1, 1);
+eq('main.ts: bramka limitu stoi w petli klastra przed wypowiedzeniem wojny', loopAt >= 0 && gateAt > loopAt && declAt > gateAt, true);
 
 try { fs.unlinkSync(BUNDLE); } catch (_) { /* ignore */ }
 console.log(`diplomacy-war-limit-unit-test: pass=${pass} fail=${fail}`);
