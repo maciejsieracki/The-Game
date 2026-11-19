@@ -47,6 +47,7 @@ use crate::domain::civ_bonuses::{
     civ_attack_range_multiplier, civ_movement_multiplier, CivBonusEntry, CivBonusUnitShape,
 };
 use crate::domain::siege_battle_adapter::{finite, AdapterError, RosterUnit};
+use crate::domain::siege_battle_adapter_body::{apply_terrain_range, TerrainRangeUnit};
 use crate::domain::siege_tactics_blow_full::{
     attacker_from_cu, defender_from_cu, AttackerCu, DefenderCu,
 };
@@ -70,7 +71,7 @@ pub const MORALE_START: f64 = 100.0;
 /// `WALL_CROWN_RANGE_MULT` (`city-defense.ts:132`).
 pub const WALL_CROWN_RANGE_MULT: f64 = 2.0;
 /// Zasieg katapulty obroncy na koronie (`battleScene.ts:4706`).
-pub const DEF_CATAPULT_CROWN_RANGE: f64 = 5.0;
+pub const DEF_CATAPULT_CROWN_RANGE: f64 = 6.0;
 /// Mnoznik morale obroncow oblezenia na starcie (`battleScene.ts:4527`, `:4695`).
 pub const DEFENDER_MORALE_MULT: f64 = 1.5;
 
@@ -570,8 +571,8 @@ pub fn veteran_morale_ucieczki_down(base: f64, frac: f64) -> f64 {
 /// `wallCrownShooterRange(effectiveRange)` (`city-defense.ts:139-142`).
 pub fn wall_crown_shooter_range(r: f64) -> f64 {
     if !(r > 0.0) {
-        // `Math.max(0, effectiveRange || 0)`: NaN i 0 -> 0.
-        return if r.is_nan() { 0.0 } else { r.max(0.0) };
+        // `Math.max(0, effectiveRange || 0)`: NaN, -0, 0 i ujemne -> +0.
+        return 0.0;
     }
     (r * WALL_CROWN_RANGE_MULT).ceil()
 }
@@ -665,15 +666,21 @@ pub fn spawn_fields(
             )
         }
     };
-    let mut range = range_base;
-    if slot == SpawnSlot::DefenderCrown {
-        // `_applyTerrainRange(ru)` (`:7490-7502`).
-        if ranged_base && !is_catapult && range_base > 0.0 {
-            range = (range_base + env.crown_range_delta).max(0.0);
-            // `_isWallCrownShooter`: obronca, korona, `rangedBase`, nie katapulta, `rangeBase > 0`.
-            range = wall_crown_shooter_range(range);
-        }
-    }
+    let range = if slot == SpawnSlot::DefenderCrown {
+        // `_applyTerrainRange(ru)` (`:4730`, `:7490-7502`) na kaflu korony.
+        apply_terrain_range(
+            &TerrainRangeUnit {
+                side_def: true,
+                on_wall_walkway: on_wall,
+                ranged_base,
+                is_catapult,
+                range_base,
+            },
+            env.crown_range_delta,
+        )
+    } else {
+        range_base
+    };
     Ok(SpawnFields {
         move_left,
         range,

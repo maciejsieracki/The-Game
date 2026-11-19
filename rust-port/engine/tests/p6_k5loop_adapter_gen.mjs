@@ -90,6 +90,7 @@ const blockAt = (file, n, needle, indent) => {
 
 // --- wycinki battleScene.ts -------------------------------------------------------------------------------------
 const SCENE_TOP = [
+  [661, 672, 'const BF_COLS = 68;'],
   [948, 949, 'const DEFAULT_BATTLE_MOVE'],
   [1112, 1112, 'const MORALE_START'],
 ];
@@ -100,10 +101,14 @@ const SCENE_FN = [
   [1502, 'function isMounted('], [1522, 'function isAntiCavSpear('], [1538, 'function isPhalanx('],
   [1571, 'function bracesAgainstCharge('], [1592, 'function isNeverRout('], [1611, 'function moraleBaseFor('],
   [1627, 'function fleeMoraleFor('], [1648, 'function normName('],
+  [1457, 'function canShoot('], [1552, 'function isSiegeUnit('], [1561, 'function isSiegeTower('],
 ];
 const SCENE_METHODS = [
   [5597, 'private _applyStartingMoralePowerPenalty(): void {'],
+  [7402, 'private _isRam(bu: BattleUnit): boolean {'],
   [7408, 'private _isCatapult(bu: BattleUnit): boolean {'],
+  [7505, 'private _siegeStructureDamage(ru: RuntimeBattleUnit): number {'],
+  [7530, 'private _siegeMachineRange(ru: RuntimeBattleUnit): number {'],
   [7467, 'private _isWallCrownShooter(ru: RuntimeBattleUnit): boolean {'],
   [7490, 'private _applyTerrainRange(ru: RuntimeBattleUnit): void {'],
   [7515, 'private _movementPointsFor(bu: BattleUnit): number {'],
@@ -122,7 +127,23 @@ expectLine(SCENE, 4708, 'ranged: (this._isCatapult(bu) ? true : this._attackRang
 expectLine(SCENE, 4730, 'this._applyTerrainRange(ru);');
 expectLine(SCENE, 5510, 'const atkArr = attackers.slice(0, MAX_PER_SIDE);');
 expectLine(SCENE, 721, 'const MAX_PER_SIDE = 500;');
-let sceneSrc = SCENE_TOP.map(([a, b, needle]) => { expectLine(SCENE, a, needle); return lines[SCENE].slice(a - 1, b).join('\n'); }).join('\n');
+// `_placeSiegeTowers` (`:4158-4170`) i `_carveWallTiles` (wiersze muru/bramy, `:4035-4043`): wyrazenia przepisane ponizej.
+expectLine(SCENE, 4160, 'const material = towerMaterialFor(this.fortKind);');
+expectLine(SCENE, 4161, 'if (material === null) return;');
+expectLine(SCENE, 4167, 'this.towerShooterRow = strongestRangedUnitForEra(unitList, this._defenderEra, this._siegeDefCiv);');
+expectLine(SCENE, 4168, 'this.towerRange = towerRangeFor(this.towerShooterRow, minRange);');
+expectLine(SCENE, 4170, 'rowLo: rLo, rowHi: rHi,');
+expectLine(SCENE, 4171, 'gateRowLo: this.siegeGateRow - 1, gateRowHi: this.siegeGateRow,');
+expectLine(SCENE, 4036, 'const rLo = 0;');
+expectLine(SCENE, 4037, 'const rHi = BF_ROWS - 1;');
+expectLine(SCENE, 4042, 'const midRow = PLAY_MID_ROW;');
+expectLine(SCENE, 4211, "const nazwa = String(shooterRow['Jednostka'] ?? 'Strzelec');");
+expectLine(SCENE, 2741, 'this.fortKind = cityFortificationKind(opts.siege?.builtBuildingIds);');
+expectLine(SCENE, 2770, 'this._defenderEra = clampEra(opts.defenderEra);');
+expectLine(SCENE, 922, 'function clampEra(era: number | undefined): number {');
+expectLine(MAIN, 37009, 'defenderEra: empireEpochForOwner(defRosterRef[0]?.ownerId ?? 0),');
+const CLAMP_ERA = blockAt(SCENE, 922, 'function clampEra(era: number | undefined): number {', '');
+let sceneSrc = CLAMP_ERA + '\n' + SCENE_TOP.map(([a, b, needle]) => { expectLine(SCENE, a, needle); return lines[SCENE].slice(a - 1, b).join('\n'); }).join('\n');
 sceneSrc += '\n' + SCENE_FN.map(([n, needle]) => blockAt(SCENE, n, needle, '')).join('\n');
 sceneSrc += '\nclass Harness {\n' + SCENE_METHODS.map(([n, needle]) => blockAt(SCENE, n, needle, '  ')).join('\n') + '\n}';
 hash.update(sceneSrc);
@@ -157,6 +178,9 @@ const ucs = load('gra/src/game/unit-card-stats.ts');
 const ubb = load('gra/src/game/unit-building-bonuses.ts');
 const prod = load('gra/src/game/production.ts');
 const setup = load('gra/src/units/setup.ts');
+const towersMod = load('gra/src/game/city-towers.ts');
+const fortMod = load('gra/src/game/city-fortification.ts');
+const MIASTO = load('gra/data/miasto-params.json');
 const UNITS = load('gra/data/units.json');
 const COUNTERS = load('gra/data/counters.json');
 const TERRAIN = load('gra/data/terrain-combat.json');
@@ -174,9 +198,10 @@ const sceneScope = {
   hpWeightedFieldPower: combat.hpWeightedFieldPower, powerAdvantage: combat.powerAdvantage,
   startingMoralePenaltyFrac: combat.startingMoralePenaltyFrac, applyStartingMoralePenalty: combat.applyStartingMoralePenalty,
   classifyInitialBattleRole: () => { throw new Error('nieuzywane'); },
+  unitRowStat: combat.unitRowStat,
 };
 const sceneNames = Object.keys(sceneScope);
-const S = new Function(...sceneNames, transpile(sceneSrc) + '\nreturn { norm, statField, normCounters, toCombatUnit, movementPoints, civUnitShapeForBattleUnit, attackRange, isRanged, ammoCount, isPrimaryRanged, isMounted, isAntiCavSpear, isPhalanx, bracesAgainstCharge, isNeverRout, moraleBaseFor, fleeMoraleFor, normName, Harness };')(...sceneNames.map((k) => sceneScope[k]));
+const S = new Function(...sceneNames, transpile(sceneSrc) + '\nreturn { clampEra, BF_ROWS, PLAY_MID_ROW, canShoot, isSiegeUnit, isSiegeTower, norm, statField, normCounters, toCombatUnit, movementPoints, civUnitShapeForBattleUnit, attackRange, isRanged, ammoCount, isPrimaryRanged, isMounted, isAntiCavSpear, isPhalanx, bracesAgainstCharge, isNeverRout, moraleBaseFor, fleeMoraleFor, normName, Harness };')(...sceneNames.map((k) => sceneScope[k]));
 
 function mainFor(sc) {
   const owners = sc.owners;
@@ -261,6 +286,32 @@ function runScenario(sc) {
   H._applyStartingMoralePowerPenalty();
   const counters = S.normCounters(COUNTERS);
   const cuOf = (bu) => S.toCombatUnit(bu, sc.hungerMult, false, sc.deficitMult);
+  const unitRowStat = combat.unitRowStat;
+  const bodyOf = (ru) => {
+    const s = ru.bu.stats;
+    return {
+      wallAttack: unitRowStat(s, 'wallAttack', undefined, 0), missileAttack: unitRowStat(s, 'missileAttack', 'Atak dystansowy', 0),
+      impact: unitRowStat(s, 'chargeBonus', 'Uderzenie', unitRowStat(s, 'weaponDamage', 'Atak', 8)), weaponDamage: unitRowStat(s, 'weaponDamage', 'Atak', 8),
+      structDmg: H._siegeStructureDamage(ru), siegeMachineRange: H._siegeMachineRange(ru), movePointsFor: H._movementPointsFor(ru.bu),
+      canShoot: S.canShoot(ru), isSiegeUnit: S.isSiegeUnit(ru.bu), isSiegeTower: S.isSiegeTower(ru.bu), isRam: H._isRam(ru.bu),
+    };
+  };
+  const bodyBefore = { atk: H.atk.map(bodyOf), def: H.def.map(bodyOf) };
+  // `_placeSiegeTowers` (`:4158-4170`) z wejsciami `launchSiegeStormFromMap` (builtBuildingIds miasta, defCiv, epoka
+  // wlasciciela pierwszego obroncy).
+  const fortKind = fortMod.cityFortificationKind(sc.built[city.id] ?? []);
+  const material = towersMod.towerMaterialFor(fortKind);
+  let towers = { fortKind, material, rows: [], towerRange: towersMod.DEFAULT_TOWER_MIN_RANGE, shooter: null, shooterNazwa: null };
+  if (material !== null) {
+    const spacing = MIASTO?.wieze_strzeleckie_odstep_kafli?.wartosc ?? towersMod.DEFAULT_TOWER_SPACING;
+    const minRange = MIASTO?.wieze_strzeleckie_zasieg_min?.wartosc ?? towersMod.DEFAULT_TOWER_MIN_RANGE;
+    const defOwner = sc.units.find((u) => u.id === def[0]?.id)?.ownerId ?? def[0]?.ownerId ?? 0;
+    const defEra = S.clampEra(sc.era[defOwner]);
+    const row = towersMod.strongestRangedUnitForEra(UNITS, defEra, sc.defCiv ?? null);
+    const midRow = S.PLAY_MID_ROW;
+    towers = { fortKind, material, defEra, rows: towersMod.towerRows({ rowLo: 0, rowHi: S.BF_ROWS - 1, gateRowLo: midRow - 1, gateRowHi: midRow, spacing }),
+      towerRange: towersMod.towerRangeFor(row, minRange), shooter: row ? row['Jednostka'] : null, shooterNazwa: row ? String(row['Jednostka'] ?? 'Strzelec') : null };
+  }
   const unitOut = (bu, ru) => {
     const cu = cuOf(bu);
     return {
@@ -277,7 +328,7 @@ function runScenario(sc) {
     atkIds: atk.map((u) => String(u.id)), defIds: def.map((u) => String(u.id)),
     militiaDefs: [...m.militiaDefOverrides.entries()].map(([id, d]) => ({ id, def: d })),
     atk: atkBU.map((bu, i) => unitOut(bu, H.atk[i])), def: defBU.map((bu, i) => unitOut(bu, H.def[i])),
-    spawn: spawnBefore,
+    spawn: spawnBefore, body: bodyBefore, towers,
     penalty: { mAtk, mDef, weaker: adv.weakerSide, ratio: adv.ratio, frac },
     countersAtkDef: matrix(atkBU, defBU), countersDefAtk: matrix(defBU, atkBU),
     crownRangeDelta: combat.terrainRangeDelta(sc.crownTerrain, TERRAIN),
@@ -319,8 +370,16 @@ scenarios.push(base({ name: 's9-odnowa-general-obroncy', city: city('c9', 1, 2, 
   owners: { 0: { civKey: 'chinczycy', built: [], hungry: false, deficit: true, diff: 1 }, 1: { civKey: 'zulusi', built: ['akademia_wojskowa'], hungry: true, deficit: false, diff: 1.15 }, 2: { civKey: 'egipt', built: [], hungry: false, deficit: false, diff: 1 }, 3: { civKey: 'sumer', built: [], hungry: false, deficit: false, diff: 1 } },
   units: [U('m1', 0, 'Jeździec chiński', 'konnica', 1, 9), U('m2', 0, 'Hu Ben Wei (Gwardia Tygrysa)', 'miecznik', 2, 8, { battlesSurvived: 1, parametryBonusProc: 20 }), U('n1', 1, 'Impi', 'wlocznik', 2, 9, { isGeneral: true }), U('n2', 1, 'Oszczepnik Zulu (Izijula)', 'oszczepnik', 3, 9, { hp: 999 })] }));
 
+// S10: palisada (wiezyczki drewniane, Grecy), katapulta obroncy spoza units.json na koronie (rekord zastepczy
+// pinu: zasieg 0 -> `Math.max(0, 6)` i `_siegeMachineRange` 6), dwa tarany i wieza atakujacego (machiny z miasta), epoka obroncy 2.6 -> clampEra 3.
+scenarios.push(base({ name: 's10-palisada-katapulta-polowa', city: city('c10', 1, 12, 12, { population: 1, siegeMachines: { ready: ['taran', 'wieza', 'taran'] } }), built: { c10: ['palisada'] }, era: { 0: 3, 1: 2.6, 2: 1, 3: 1 }, defCiv: 'grecy', anchorId: 'r1', crownIds: ['w1', 'w2'], crownTerrain: 'Wzgorza',
+  units: [U('r1', 0, 'Triari', 'legionista', 11, 12), U('r2', 0, 'Łucznik', 'lucznik', 12, 11), U('w1', 1, 'Katapulta polowa', 'obleznicza', 12, 12), U('w2', 1, 'Łucznik', 'lucznik', 12, 12), U('w3', 1, 'Taran', 'obleznicza', 12, 12)] }));
+// S11: mur kamienny, Egipt broni (defCiv), brak epoki wlasciciela (undefined) -> clampEra 1; tylko jednostka bez wiersza dystansowego.
+scenarios.push(base({ name: 's11-mur-egipt-bez-epoki', city: city('c11', 2, 30, 30, { population: 2 }), built: { c11: ['mury_kamienne'] }, wars: [[0, 2]], era: { 0: 1, 1: 1, 3: 1 }, defCiv: 'egipt', anchorId: 't1', crownIds: ['v1'],
+  units: [U('t1', 0, 'Wojownik', 'miecznik', 29, 30), U('v1', 2, 'Łucznik egipski', 'lucznik', 30, 30), U('v2', 2, 'Włócznik', 'wlocznik', 30, 30)] }));
+
 const out = scenarios.map((sc) => ({ name: sc.name, input: sc, expected: runScenario(sc) }));
-const cover = { scenariusze: out.length, bledy: 0, milicja: 0, machiny: 0, korona: 0, katapulta_korona: 0, jazda: 0, strzelcy: 0, sojusznik_atk: 0, sojusznik_def: 0, kara_atk: 0, kara_def: 0, weteran: 0, general_obroncy: 0 };
+const cover = { scenariusze: out.length, bledy: 0, wiezyczki: 0, strzelec_wiezy: 0, machina_zasieg_6: 0, taran: 0, wieza_obl: 0, milicja: 0, machiny: 0, korona: 0, katapulta_korona: 0, jazda: 0, strzelcy: 0, sojusznik_atk: 0, sojusznik_def: 0, kara_atk: 0, kara_def: 0, weteran: 0, general_obroncy: 0 };
 for (const o of out) {
   const e = o.expected;
   if (e.error) { cover.bledy++; continue; }
@@ -336,6 +395,12 @@ for (const o of out) {
   if (e.penalty.weaker === 'def' && e.penalty.frac > 0) cover.kara_def++;
   cover.weteran += [...e.atk, ...e.def].filter((u) => u.veteranBonusFrac > 0).length;
   cover.general_obroncy += e.def.filter((u) => u.isArmyCommander).length;
+  cover.wiezyczki += e.towers.rows.length;
+  if (e.towers.shooter !== null) cover.strzelec_wiezy++;
+  const bodies = [...e.body.atk, ...e.body.def];
+  cover.machina_zasieg_6 += e.spawn.def.filter((s, i) => s.isCatapult && e.body.def[i].siegeMachineRange === 6).length;
+  cover.taran += bodies.filter((b) => b.isRam).length;
+  cover.wieza_obl += bodies.filter((b) => b.isSiegeTower).length;
 }
 const civBonusy = {};
 for (const k of ['rzymianie', 'grecy', 'egipt', 'sumer', 'chinczycy', 'zulusi']) civBonusy[k] = [...civ.civMatrixBonusyForCivKey(k), ...prod.civProductionCostBonusyForCivKey(k)];
@@ -345,7 +410,8 @@ const RAW_KEYS = new Set(['stats', 'def']);
 const enc = (v) => {
   if (typeof v === 'number') return String(v);
   if (Array.isArray(v)) return v.map(enc);
-  if (v && typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, RAW_KEYS.has(k) ? jsonSafe(x) : enc(x)]));
+  // `def` surowy tylko we wpisie Milicji (`{ id, def }`); `spawn.def`/`body.def` to wyniki (tekst).
+  if (v && typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, RAW_KEYS.has(k) && (k !== 'def' || 'id' in v) ? jsonSafe(x) : enc(x)]));
   return v;
 };
 const civEnc = Object.fromEntries(Object.entries(civBonusy).map(([k, l]) => [k, l.map((b) => ({ ...b, wartosc: typeof b.wartosc === 'number' ? { n: String(b.wartosc) } : b.wartosc }))]));

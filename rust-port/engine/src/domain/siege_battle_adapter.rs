@@ -50,6 +50,11 @@ pub enum AdapterError {
     MissingOwnerContext { owner_id: i64 },
     /// Wartosc NaN/Inf w danych wejsciowych (opis pola).
     NonFinite { what: String },
+    /// Brama z ukladu muru niepoprawna: poza murem, `gateHp` nie > 0 albo otwarta na starcie (dlug T2b N1: brak
+    /// cichego `gate_hp = 0.0`).
+    InvalidGate { what: String },
+    /// Naruszony niezmiennik wejscia ciala (np. `canShoot` przy `rangeBase < 2`, rozna liczba jednostek).
+    InvariantViolated { what: String },
 }
 
 impl std::fmt::Display for AdapterError {

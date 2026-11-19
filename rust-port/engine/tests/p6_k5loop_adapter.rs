@@ -8,12 +8,19 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::time::Instant;
 
+use civ_engine::domain::battle_setup::{carve_wall_tiles, SiegeLayout, BF_COLS, BF_ROWS};
+use civ_engine::domain::battle_setup_terrain::BattleTerrainMap;
 use civ_engine::domain::battle_setup_units::Side;
+use civ_engine::domain::city_towers::{TowerMaterial, UnitRow};
 use civ_engine::domain::civ_bonuses::{BonusValue, CivBonusEntry};
 use civ_engine::domain::siege_battle_adapter::{
     collect_siege_rosters, stat_row_from_json, stat_rows_from_json, unit_def_index, AdapterError,
     CityDefOptions, MachineKind, MilitiaParams, OwnerRelations, RosterCity, RosterUnit,
     SiegeRosterInput, BATTLE_MAX_PER_SIDE,
+};
+use civ_engine::domain::siege_battle_adapter_body::{
+    activate_unit_for, apply_terrain_range, body_unit_inputs, clamp_era, install_body_inputs,
+    scene_inputs, tower_setup_for, TerrainRangeUnit, TowerParams, TowerSetupInput, UnitPlacement,
 };
 use civ_engine::domain::siege_battle_adapter_playable::siege_inputs_from_playable;
 use civ_engine::domain::siege_battle_adapter_unit::{
@@ -21,6 +28,8 @@ use civ_engine::domain::siege_battle_adapter_unit::{
     roster_to_battle_units, spawn_fields, unit_blow_template, OwnerContext, RosterBattleCtx,
     SpawnEnv, SpawnSlot, StartingMoraleParams, UnitDefFallback,
 };
+use civ_engine::domain::siege_city_fortification::CityFortificationKind;
+use civ_engine::domain::siege_tactics_atk_b::{siege_structure_damage, GATE_MAX_HP};
 use civ_engine::domain::siege_tactics_inputs_unit::{StatRow, ToCombatUnitOpts, UVal};
 use civ_engine::{
     PlayableGame, PlayableUnit, PlayableUnitKind, PositionDto, StartGameParams, UnitId,
@@ -100,6 +109,9 @@ struct Scenario {
     owners: BTreeMap<i64, OwnerContext>,
     crown: BTreeSet<String>,
     terrain: String,
+    built: Vec<String>,
+    def_civ: Option<String>,
+    era: Value,
     hunger: f64,
     deficit: f64,
 }
@@ -215,6 +227,9 @@ fn scenario(v: &Value, civ: &Value) -> Scenario {
             .map(|x| x.as_str().unwrap().to_owned())
             .collect(),
         terrain: inp["terrain"].as_str().unwrap().to_owned(),
+        def_civ: inp.get("defCiv").and_then(Value::as_str).map(str::to_owned),
+        era: inp["era"].clone(),
+        built,
         hunger: f(&inp["hungerMult"]),
         deficit: f(&inp["deficitMult"]),
     }
@@ -231,6 +246,8 @@ fn err_name(e: &AdapterError) -> &'static str {
         AdapterError::MissingMilitiaRow { .. } => "MissingMilitiaRow",
         AdapterError::MissingOwnerContext { .. } => "MissingOwnerContext",
         AdapterError::NonFinite { .. } => "NonFinite",
+        AdapterError::InvalidGate { .. } => "InvalidGate",
+        AdapterError::InvariantViolated { .. } => "InvariantViolated",
     }
 }
 
@@ -244,6 +261,12 @@ struct Cover {
     machiny: usize,
     korona: usize,
     bledy: usize,
+    wejscia_ciala: usize,
+    wiezyczki: usize,
+    strzelec_wiezy: usize,
+    machina_zasieg_6: usize,
+    taran: usize,
+    wieza_obl: usize,
 }
 
 #[test]
@@ -256,6 +279,12 @@ fn adapter_zgodny_z_tekstem_pinu() {
     let counters = norm_counters(&d["counters"]);
     let counter_mult = f(&d["counterMultiplier"]);
     let militia = MilitiaParams::pin();
+    let unit_rows: Vec<UnitRow> = d["units"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|u| serde_json::from_value(u.clone()).unwrap())
+        .collect();
     let mut cover = Cover::default();
     let mut diffs: Vec<String> = Vec::new();
     for v in d["vectors"].as_array().unwrap() {
@@ -468,6 +497,107 @@ fn adapter_zgodny_z_tekstem_pinu() {
                 }
             }
         }
+        // Wejscia ciala (czesc 3): statystyki machin, zasieg machiny, punkty ruchu, klasy, `canShoot`.
+        for (units, fields, key) in [(&atk, &atk_f, "atk"), (&def, &def_f, "def")] {
+            for ((bu, sf), eb) in units
+                .iter()
+                .zip(fields.iter())
+                .zip(exp["body"][key].as_array().unwrap())
+            {
+                let b = body_unit_inputs(bu, sf, &sc.terrain, false)
+                    .unwrap_or_else(|e| panic!("{} {}: {e}", sc.name, bu.id));
+                cover.wejscia_ciala += 1;
+                let tag = format!("{} {key} {} cialo", sc.name, bu.id);
+                for (what, got, want) in [
+                    ("wallAttack", b.siege_stats.wall_attack, &eb["wallAttack"]),
+                    (
+                        "missileAttack",
+                        b.siege_stats.missile_attack,
+                        &eb["missileAttack"],
+                    ),
+                    ("impact", b.siege_stats.impact, &eb["impact"]),
+                    (
+                        "weaponDamage",
+                        b.siege_stats.weapon_damage,
+                        &eb["weaponDamage"],
+                    ),
+                    (
+                        "structDmg",
+                        siege_structure_damage(&b.siege_stats),
+                        &eb["structDmg"],
+                    ),
+                    (
+                        "siegeMachineRange",
+                        b.siege_machine_range,
+                        &eb["siegeMachineRange"],
+                    ),
+                    ("movePointsFor", b.move_points, &eb["movePointsFor"]),
+                ] {
+                    if !same(got, f(want)) {
+                        diffs.push(format!("{tag} {what}: rust {got} pin {want}"));
+                    }
+                }
+                for (what, got, want) in [
+                    ("canShoot", b.can_shoot, &eb["canShoot"]),
+                    ("isSiegeUnit", b.is_siege_unit, &eb["isSiegeUnit"]),
+                    ("isSiegeTower", b.is_siege_tower, &eb["isSiegeTower"]),
+                    ("isRam", b.is_ram, &eb["isRam"]),
+                ] {
+                    if Some(got) != want.as_bool() {
+                        diffs.push(format!("{tag} {what}: rust {got} pin {want}"));
+                    }
+                }
+                if b.is_catapult && b.siege_machine_range == 6.0 && key == "def" {
+                    cover.machina_zasieg_6 += 1;
+                }
+                cover.taran += usize::from(b.is_ram);
+                cover.wieza_obl += usize::from(b.is_siege_tower);
+            }
+        }
+        // Wiezyczki (`_placeSiegeTowers`) na ukladzie muru T5a (`carve_wall_tiles`).
+        let layout = pin_layout();
+        let def_owner = rs.def[0].owner_id;
+        let tw = tower_setup_for(
+            &layout,
+            &TowerSetupInput {
+                built_building_ids: &sc.built,
+                defender_era: sc.era.get(def_owner.to_string()).and_then(of),
+                def_civ: sc.def_civ.as_deref(),
+                units: &unit_rows,
+                params: TowerParams::pin(),
+            },
+        );
+        let et = &exp["towers"];
+        let fk = match tw.fort_kind {
+            CityFortificationKind::Mur => "mur",
+            CityFortificationKind::Palisada => "palisada",
+            CityFortificationKind::None => "none",
+        };
+        assert_eq!(fk, et["fortKind"].as_str().unwrap(), "{} fortKind", sc.name);
+        let mat = tw.material.map(|m| match m {
+            TowerMaterial::Drewno => "drewno",
+            TowerMaterial::Kamien => "kamien",
+        });
+        assert_eq!(mat, et["material"].as_str(), "{} material", sc.name);
+        let rows_exp: Vec<i64> = et["rows"].as_array().unwrap().iter().map(i).collect();
+        assert_eq!(tw.rows, rows_exp, "{} wiersze wiezyczek", sc.name);
+        assert!(
+            same(tw.tower_range, f(&et["towerRange"])),
+            "{} towerRange",
+            sc.name
+        );
+        match et["shooterNazwa"].as_str() {
+            Some(n) => {
+                assert!(tw.tower_shot.is_some(), "{} strzelec", sc.name);
+                assert_eq!(tw.shooter_nazwa, n, "{} nazwa strzelca", sc.name);
+                cover.strzelec_wiezy += 1;
+            }
+            None => assert!(tw.tower_shot.is_none(), "{} brak strzelca", sc.name),
+        }
+        cover.wiezyczki += tw.rows.len();
+        let scene = scene_inputs(&layout, tw).expect("scena");
+        assert_eq!(scene.gate_hp, GATE_MAX_HP);
+        assert_eq!(scene.siege_towers().len(), scene.towers.rows.len());
         let ta: Vec<_> = atk.iter().map(|b| unit_blow_template(b, &opts)).collect();
         let td: Vec<_> = def.iter().map(|b| unit_blow_template(b, &opts)).collect();
         for (t, e) in ta.iter().chain(td.iter()).zip(
@@ -533,7 +663,18 @@ fn adapter_zgodny_z_tekstem_pinu() {
     );
     // Pokrycie: wartosci z generatora (tekst pinu) i liczone tu z wynikow Rust.
     let c = &d["coverage"];
-    assert_eq!(c["scenariusze"].as_u64(), Some(9));
+    assert_eq!(c["scenariusze"].as_u64(), Some(11));
+    for (k, got) in [
+        ("wiezyczki", cover.wiezyczki),
+        ("strzelec_wiezy", cover.strzelec_wiezy),
+        ("machina_zasieg_6", cover.machina_zasieg_6),
+        ("taran", cover.taran),
+        ("wieza_obl", cover.wieza_obl),
+    ] {
+        assert_eq!(c[k].as_u64().unwrap() as usize, got, "pokrycie {k}");
+        assert!(got >= 1, "pokrycie {k} = 0");
+    }
+    assert!(cover.wejscia_ciala >= 40, "{cover:?}");
     assert_eq!(c["bledy"].as_u64().unwrap() as usize, cover.bledy);
     assert_eq!(c["milicja"].as_u64().unwrap() as usize, cover.milicja);
     assert_eq!(c["machiny"].as_u64().unwrap() as usize, cover.machiny);
@@ -994,4 +1135,331 @@ fn stan_gry_mapowany_na_wejscia_rosterow() {
         vec!["999", &format!("siege-mach-{cid}-{}-0", st.turn)]
     );
     assert!(r.def.iter().all(|u| u.militia.is_some()));
+}
+
+/// Uklad muru pinu (`_carveWallTiles`, port T5a) na pustej mapie.
+fn pin_layout() -> SiegeLayout {
+    let n = usize::try_from(BF_COLS * BF_ROWS).unwrap();
+    let mut map = BattleTerrainMap::from_tiles(
+        i32::try_from(BF_COLS).unwrap(),
+        i32::try_from(BF_ROWS).unwrap(),
+        vec![0; n],
+        false,
+    )
+    .unwrap();
+    carve_wall_tiles(&mut map)
+}
+
+/// Jednostki obu stron (taran atakujacego, lucznik i katapulta spoza `units.json` na koronie) z danymi pinu.
+fn body_fixture() -> (
+    Vec<civ_engine::domain::siege_battle_adapter_unit::AdapterBattleUnit>,
+    Vec<civ_engine::domain::siege_battle_adapter_unit::SpawnFields>,
+) {
+    let d = doc();
+    let rows = stat_rows_from_json(&d["units"]).unwrap();
+    let index = unit_def_index(&rows);
+    let ow = owners();
+    let ctx = RosterBattleCtx {
+        rows: &rows,
+        index: &index,
+        militia_defs: &[],
+        owners: &ow,
+        fallback: UnitDefFallback::PinRecord,
+    };
+    let atk = roster_to_battle_units(
+        &[RosterUnit::new("t", 0, "Taran", "obleznicza", 0, 0)],
+        Side::Atk,
+        &ctx,
+    )
+    .unwrap();
+    let def = roster_to_battle_units(
+        &[
+            RosterUnit::new("l", 1, "Łucznik", "lucznik", 0, 0),
+            RosterUnit::new("k", 1, "Katapulta polowa", "obleznicza", 0, 0),
+        ],
+        Side::Def,
+        &ctx,
+    )
+    .unwrap();
+    let env = SpawnEnv {
+        terrain: "Rownina".into(),
+        shallow_sea: false,
+        crown_range_delta: 1.0,
+    };
+    let fields = vec![
+        spawn_fields(&atk[0], SpawnSlot::Attacker, &env).unwrap(),
+        spawn_fields(&def[0], SpawnSlot::DefenderCrown, &env).unwrap(),
+        spawn_fields(&def[1], SpawnSlot::DefenderCrown, &env).unwrap(),
+    ];
+    let mut units = atk;
+    units.extend(def);
+    (units, fields)
+}
+
+fn tower_setup_none() -> civ_engine::domain::siege_battle_adapter_body::TowerSetup {
+    tower_setup_for(
+        &pin_layout(),
+        &TowerSetupInput {
+            built_building_ids: &[],
+            defender_era: Some(1.0),
+            def_civ: None,
+            units: &[],
+            params: TowerParams::pin(),
+        },
+    )
+}
+
+/// Dlug T2b N1: brama ukladu muru musi miec `gateHp > 0` i stac na murze; inaczej jawny blad, nie `gate_hp = 0.0`.
+#[test]
+fn brama_bez_hp_to_jawny_blad() {
+    let ok = scene_inputs(&pin_layout(), tower_setup_none()).unwrap();
+    assert_eq!(ok.gate_hp, GATE_MAX_HP);
+    assert_eq!(ok.gate_col, ok.wall_col);
+    let muts: [fn(&mut SiegeLayout); 9] = [
+        |l| l.gate_hp = 0.0,
+        |l| l.gate_hp = -5.0,
+        |l| l.gate_hp = f64::NAN,
+        |l| l.gate_hp = f64::INFINITY,
+        |l| l.gate_open = true,
+        |l| l.gate_col = -1,
+        |l| l.gate_col += 1,
+        |l| l.wall_col = -1,
+        |l| l.gate_row = -1,
+    ];
+    for mutate in muts {
+        let mut l = pin_layout();
+        mutate(&mut l);
+        let e = scene_inputs(&l, tower_setup_none()).unwrap_err();
+        assert_eq!(err_name(&e), "InvalidGate", "{l:?}");
+    }
+    let mut l = pin_layout();
+    l.wall_tile_hp[0].1 = f64::NAN;
+    assert_eq!(
+        err_name(&scene_inputs(&l, tower_setup_none()).unwrap_err()),
+        "NonFinite"
+    );
+}
+
+/// Bez obwarowania (`fortKind = 'none'`): brak wiezyczek, `towerRange` inicjalne 2, brak strzelca (`:2446`, `:4161`).
+#[test]
+fn bez_obwarowania_brak_wiezyczek() {
+    let t = tower_setup_none();
+    assert_eq!(t.fort_kind, CityFortificationKind::None);
+    assert!(t.material.is_none() && t.rows.is_empty() && t.tower_shot.is_none());
+    assert_eq!((t.tower_range, t.shooter_nazwa.as_str()), (2.0, "Strzelec"));
+}
+
+/// `clampEra` (`battleScene.ts:922-925`).
+#[test]
+fn clamp_era_jak_pin() {
+    for (x, want) in [
+        (None, 1.0),
+        (Some(f64::NAN), 1.0),
+        (Some(f64::INFINITY), 1.0),
+        (Some(0.0), 1.0),
+        (Some(1.49), 1.0),
+        (Some(1.5), 2.0),
+        (Some(2.6), 3.0),
+        (Some(7.0), 3.0),
+        (Some(-3.0), 1.0),
+    ] {
+        assert_eq!(clamp_era(x), want, "{x:?}");
+    }
+}
+
+/// `_applyTerrainRange` (`:7490-7502`): katapulta i jednostka wrecz bez zmian, delta terenu z podloga 0, x2 w gore
+/// tylko dla strzelca obroncy na koronie; po zejsciu z korony (`:7740`) zasieg bez x2 (D-B7).
+#[test]
+fn zasieg_terenu_i_korony() {
+    let u = |side_def, on_wall, ranged_base, is_catapult, range_base| TerrainRangeUnit {
+        side_def,
+        on_wall_walkway: on_wall,
+        ranged_base,
+        is_catapult,
+        range_base,
+    };
+    assert_eq!(
+        apply_terrain_range(&u(true, true, true, false, 3.0), 1.0),
+        8.0
+    );
+    assert_eq!(
+        apply_terrain_range(&u(true, true, true, false, 3.0), 0.5),
+        7.0
+    );
+    assert_eq!(
+        apply_terrain_range(&u(true, false, true, false, 3.0), 1.0),
+        4.0
+    );
+    assert_eq!(
+        apply_terrain_range(&u(false, true, true, false, 3.0), 1.0),
+        4.0
+    );
+    assert_eq!(
+        apply_terrain_range(&u(true, true, true, false, 3.0), -5.0),
+        0.0
+    );
+    assert_eq!(
+        apply_terrain_range(&u(true, true, true, true, 6.0), 1.0),
+        6.0
+    );
+    assert_eq!(
+        apply_terrain_range(&u(true, true, false, false, 1.0), 1.0),
+        1.0
+    );
+    assert_eq!(
+        apply_terrain_range(&u(true, true, true, false, 0.0), 1.0),
+        0.0
+    );
+    assert!(apply_terrain_range(&u(false, false, true, false, 3.0), f64::NAN).is_nan());
+}
+
+/// D-B11 + install: jedno `shootingEnabled` wypelnia `activate.shooting_disabled` i `doctrine.shooting_enabled`;
+/// pola sceny (brama 400, wiezyczki, zasieg wiezy) i jednostek (statystyki machin, `rangeBase`, `ammoLeft`,
+/// `_siegeMachineRange`, `moraleMax`) trafiaja do ciala; zla liczba jednostek = jawny blad.
+#[test]
+fn wejscia_ciala_do_prodbody() {
+    use civ_engine::domain::siege_battle_adapter_body::BodyUnitInputs;
+    use civ_engine::domain::siege_tactics_blow::SequenceRolls;
+    use civ_engine::domain::siege_tactics_loop::{ProdBody, ProdUnit};
+    let (units, fields) = body_fixture();
+    let ins: Vec<BodyUnitInputs> = units
+        .iter()
+        .zip(&fields)
+        .map(|(bu, sf)| body_unit_inputs(bu, sf, "Rownina", false).unwrap())
+        .collect();
+    let (atk_in, def_in) = ins.split_at(1);
+    // Taran: wallAttack z units.json, wrecz (bez strzelania), `_siegeMachineRange` 1.
+    assert!(atk_in[0].is_ram && atk_in[0].is_siege_unit && !atk_in[0].can_shoot);
+    assert_eq!(atk_in[0].siege_machine_range, 1.0);
+    assert!(atk_in[0].siege_stats.wall_attack > 0.0);
+    // Lucznik korony: x2 po delcie +1; katapulta spoza units.json: zasieg korony 6, `_siegeMachineRange` 6.
+    assert!(def_in[0].can_shoot && def_in[0].range > def_in[0].range_base);
+    assert_eq!((def_in[1].range, def_in[1].siege_machine_range), (6.0, 6.0));
+    let mk = |u: &BodyUnitInputs, q: i64| ProdUnit {
+        activate: activate_unit_for(
+            u,
+            &UnitPlacement {
+                q,
+                r: 5,
+                terrain_defence_mult: 1.0,
+            },
+            true,
+            false,
+        )
+        .unwrap(),
+        melee_target: None,
+        blow: None,
+        counter_blows: Vec::new(),
+        body_ms: 0.0,
+        facing: 0.0,
+    };
+    let layout = pin_layout();
+    let d = doc();
+    let unit_rows: Vec<UnitRow> = d["units"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|u| serde_json::from_value(u.clone()).unwrap())
+        .collect();
+    let built = vec!["mury".to_owned()];
+    let tw = tower_setup_for(
+        &layout,
+        &TowerSetupInput {
+            built_building_ids: &built,
+            defender_era: Some(2.0),
+            def_civ: Some("grecy"),
+            units: &unit_rows,
+            params: TowerParams::pin(),
+        },
+    );
+    let scene = scene_inputs(&layout, tw).unwrap();
+    let mut body = ProdBody::new(
+        [
+            atk_in.iter().map(|u| mk(u, 1)).collect(),
+            def_in.iter().zip(30_i64..).map(|(u, q)| mk(u, q)).collect(),
+        ],
+        scene.activate_scene(false, 1.0),
+        SequenceRolls::new(vec![]),
+    );
+    // Przed: wartosc domyslna ciala (gate_hp 0 = wylom bramy pierwszym ciosem, dlug N1).
+    assert_eq!(body.gate_hp, 0.0);
+    body.doctrine[1][0].shooting_enabled = false;
+    install_body_inputs(&mut body, &scene, [atk_in, def_in]).unwrap();
+    assert_eq!(body.gate_hp, GATE_MAX_HP);
+    assert_eq!(
+        (body.siege_gate_col, body.siege_gate_row),
+        (layout.gate_col, layout.gate_row)
+    );
+    assert_eq!(body.siege_wall_tiles_init, layout.wall_tiles_init);
+    assert_eq!(body.siege_towers.len(), scene.towers.rows.len());
+    assert!(!body.siege_towers.is_empty());
+    assert_eq!(body.tower_range, scene.towers.tower_range);
+    assert_eq!(body.tower_shooter_nazwa, scene.towers.shooter_nazwa);
+    for (s, list) in [atk_in, def_in].iter().enumerate() {
+        for (i, u) in list.iter().enumerate() {
+            assert_eq!(body.names[s][i], u.name);
+            assert_eq!(body.siege_stats[s][i], Some(u.siege_stats));
+            assert_eq!(body.range_base[s][i], u.range_base);
+            assert_eq!(body.ranged_base[s][i], u.ranged_base);
+            assert_eq!(body.ammo_left[s][i], u.ammo_left);
+            assert_eq!(body.siege_machine_range[s][i], Some(u.siege_machine_range));
+            assert_eq!(body.morale_max[s][i], u.morale_max);
+            assert_eq!(body.is_army_commander[s][i], u.is_army_commander);
+            assert_eq!(body.doctrine[s][i].anti_cav_spear, u.anti_cav_spear);
+            // D-B11: niezmiennik z jednego zrodla.
+            assert!(body.doctrine[s][i].shooting_enabled);
+            assert_eq!(
+                body.doctrine[s][i].shooting_enabled,
+                !body.units[s][i].activate.shooting_disabled
+            );
+        }
+    }
+    let e = install_body_inputs(&mut body, &scene, [atk_in, &def_in[..1]]).unwrap_err();
+    assert_eq!(err_name(&e), "InvariantViolated");
+}
+
+/// Niezmiennik Z4: `canShoot` przy `rangeBase < 2` (katapulta korony `< 6`) = jawny blad; NaN = blad.
+#[test]
+fn niezmienniki_wejsc_ciala() {
+    let (units, fields) = body_fixture();
+    let mut sf = fields[1].clone();
+    sf.range_base = 1.0;
+    let e = body_unit_inputs(&units[1], &sf, "Rownina", false).unwrap_err();
+    assert_eq!(err_name(&e), "InvariantViolated");
+    let mut sf = fields[2].clone();
+    sf.range_base = 5.0;
+    let e = body_unit_inputs(&units[2], &sf, "Rownina", false).unwrap_err();
+    assert_eq!(err_name(&e), "InvariantViolated");
+    let mut sf = fields[1].clone();
+    sf.morale = f64::NAN;
+    let e = body_unit_inputs(&units[1], &sf, "Rownina", false).unwrap_err();
+    assert_eq!(err_name(&e), "NonFinite");
+    let b = body_unit_inputs(&units[1], &fields[1], "Rownina", false).unwrap();
+    let e = activate_unit_for(
+        &b,
+        &UnitPlacement {
+            q: 0,
+            r: 0,
+            terrain_defence_mult: f64::NAN,
+        },
+        true,
+        false,
+    )
+    .unwrap_err();
+    assert_eq!(err_name(&e), "NonFinite");
+    let a = activate_unit_for(
+        &b,
+        &UnitPlacement {
+            q: 3,
+            r: 4,
+            terrain_defence_mult: 1.25,
+        },
+        false,
+        true,
+    )
+    .unwrap();
+    assert_eq!((a.q, a.r, a.terrain_defence_mult), (3, 4, 1.25));
+    assert!(!a.side_atk && a.on_wall_walkway && a.can_shoot && !a.shooting_disabled);
+    assert!(!a.doctrine_auto && a.doctrine_manual && a.player_order_none);
+    assert_eq!((a.dry_col, a.morale, a.range), (-1.0, b.morale, b.range));
 }

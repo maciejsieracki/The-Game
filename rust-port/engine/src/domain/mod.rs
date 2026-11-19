@@ -105,6 +105,7 @@ pub mod save_load;
 pub mod save_migrations;
 mod session;
 pub mod siege_battle_adapter;
+pub mod siege_battle_adapter_body;
 pub mod siege_battle_adapter_playable;
 pub mod siege_battle_adapter_unit;
 pub mod siege_capital_plunder;
