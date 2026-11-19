@@ -1,3 +1,8 @@
+// Tylko importy typów (erasowane): funkcje Spichlerza są wstrzykiwane przez `SpichlerzDrainDeps`,
+// żeby ten moduł pozostał bez zależności wykonawczych (testy bundlują kopie z TMP).
+import type { StockCitySource } from './building-stock-cost';
+import type { SpichlerzDrainParams } from './building-resource-gate';
+
 /**
  * R-WEB-UI-RESOURCE-CARDS-GROSS-AND-NET-Q1 — jedno źródło brutto/netto per surowiec na turę.
  *
@@ -68,17 +73,62 @@ export function resourceBuildingDrainSum(r: ResourceGrossNetInput): number {
   return typeof v === 'number' && Number.isFinite(v) ? Math.max(0, v) : 0;
 }
 
-/** Brutto/zużycie/wejścia/drenaż/netto per surowiec na turę, zaokrąglone tak samo jak nagłówek. */
+/**
+ * Brutto/zużycie/wejścia/drenaż/netto per surowiec na turę, zaokrąglone tak samo jak nagłówek.
+ * Drenaż (liczba całkowita po zaokrągleniu) odejmowany jest od netto po zaokrągleniu reszty —
+ * dla całkowitego drenażu `round(x) − d` = `round(x − d)`, więc wynik jak przy jednym zaokrągleniu.
+ */
 export function resourceGrossNetPerTurn(r: ResourceGrossNetInput): ResourceGrossNet {
-  return {
+  const drenaz = Math.round(resourceBuildingDrainSum(r));
+  const przedDrenazem = {
     brutto: Math.round(resourceGrossPerTurn(r)),
     zuzycie: Math.round(resourceUsageSum(r)),
     wejscia: Math.round(resourceConverterInputSum(r)),
-    drenaz: Math.round(resourceBuildingDrainSum(r)),
-    netto: Math.round(
-      r.ratePerTurn - resourceUsageSum(r) - resourceConverterInputSum(r) - resourceBuildingDrainSum(r),
-    ),
+    netto: Math.round(r.ratePerTurn - resourceUsageSum(r) - resourceConverterInputSum(r)),
   };
+  return { ...przedDrenazem, drenaz, netto: przedDrenazem.netto - drenaz };
+}
+
+/** Funkcje z building-resource-gate.ts potrzebne do drenażu (wstrzykiwane przez wywołującego). */
+export interface SpichlerzDrainDeps {
+  cityHasSpichlerzBuilding(builtIds: readonly string[]): boolean;
+  paySpichlerzDrainForCity(
+    cities: readonly StockCitySource[],
+    ownerId: number,
+    builtIds: readonly string[],
+    dryRun: boolean,
+    params: SpichlerzDrainParams,
+  ): { ceramikaPaid: boolean; solPaid: boolean };
+  spichlerzCeramikaDrainAmount(builtIds: readonly string[], params: SpichlerzDrainParams): number;
+}
+
+/**
+ * R-WEB-UI-HUD-NET-SPICHLERZ-DRAIN-Q1: drenaż Spichlerza per surowiec (klucz → nominalna ilość na turę)
+ * dla jednego ownera. Ta sama logika co silnik (`deps.paySpichlerzDrainForCity`) i te same parametry
+ * (`SpichlerzDrainParams`). Miasta są kopiowane — pula państwa jest odejmowana KUMULATYWNIE w kolejności
+ * listy (jak w silniku), więc przy wielu Spichlerzach i małej puli HUD nie zawyża drenażu.
+ * Wejście `cities` NIE jest mutowane. `builtOf` zwraca operacyjne budynki miasta.
+ */
+export function spichlerzDrainRatesForOwner<T extends StockCitySource>(
+  cities: readonly T[],
+  ownerId: number,
+  builtOf: (city: T) => readonly string[],
+  params: SpichlerzDrainParams,
+  deps: SpichlerzDrainDeps,
+): Partial<Record<string, number>> {
+  const pool: StockCitySource[] = cities.map(c => ({ ...c, surowce: c.surowce ? { ...c.surowce } : undefined }));
+  const rates: Partial<Record<string, number>> = {};
+  for (const c of pool) {
+    if (c.ownerId !== ownerId) continue;
+    const built = builtOf(c as T);
+    if (!deps.cityHasSpichlerzBuilding(built)) continue;
+    const pay = deps.paySpichlerzDrainForCity(pool, ownerId, built, false, params);
+    if (pay.ceramikaPaid) {
+      rates.ceramika = (rates.ceramika ?? 0) + deps.spichlerzCeramikaDrainAmount(built, params);
+    }
+    if (pay.solPaid) rates.sol = (rates.sol ?? 0) + params.solII;
+  }
+  return rates;
 }
 
 /**

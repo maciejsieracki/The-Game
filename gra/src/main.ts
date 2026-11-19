@@ -467,7 +467,11 @@ import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts, pendingLedg
 import { BATTLE_MODE_SETTING_VERSION, isAutomaticOnlyBattleMode } from './game/battle-mode';
 import { normalizeHitMode, setActiveHitMode } from './game/hit-mode';
 import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
-import { resourceGrossNetPerTurn, resourceIsShortage } from './game/resource-gross-net';
+import {
+  resourceGrossNetPerTurn,
+  resourceIsShortage,
+  spichlerzDrainRatesForOwner,
+} from './game/resource-gross-net';
 import {
   applyPostCaptureLawOnCapture,
   applyPostCaptureLawOverride,
@@ -4005,8 +4009,8 @@ async function boot(): Promise<void> {
 
     /**
      * R-WEB-UI-HUD-NET-SPICHLERZ-DRAIN-Q1: drenaż Spichlerza z magazynu państwa ownera na turę
-     * (klucz surowca → nominalna ilość). Ta sama logika co silnik (`paySpichlerzDrainForCity`, tryb
-     * dryRun = bez mutacji) i te same parametry (`loadSpichlerzDrainParams`, econ-params wg trudności).
+     * (klucz surowca → nominalna ilość). Logika w resource-gross-net.ts (`spichlerzDrainRatesForOwner`,
+     * kumulatywnie jak silnik, bez mutacji miast); parametry z econ-params wg trudności.
      * Tylko HUD netto — nie zmienia ekonomii. Ceramika = Spichlerz I/II; Sól = tylko Spichlerz II.
      */
     function empireSpichlerzDrainRatesForOwner(ownerId: number): Partial<Record<string, number>> {
@@ -4014,18 +4018,13 @@ async function boot(): Promise<void> {
         data.econParams as unknown as RawConverterParamsJson,
         _menuDifficulty,
       );
-      const rates: Partial<Record<string, number>> = {};
-      for (const c of cities) {
-        if (c.ownerId !== ownerId) continue;
-        const built = operationalBuiltIds(c, cityBuilt.get(c.id) ?? []);
-        if (!cityHasSpichlerzBuilding(built)) continue;
-        const pay = paySpichlerzDrainForCity(cities, ownerId, built, true, params);
-        if (pay.ceramikaPaid) {
-          rates.ceramika = (rates.ceramika ?? 0) + spichlerzCeramikaDrainAmount(built, params);
-        }
-        if (pay.solPaid) rates.sol = (rates.sol ?? 0) + params.solII;
-      }
-      return rates;
+      return spichlerzDrainRatesForOwner(
+        cities,
+        ownerId,
+        c => operationalBuiltIds(c, cityBuilt.get(c.id) ?? []),
+        params,
+        { cityHasSpichlerzBuilding, paySpichlerzDrainForCity, spichlerzCeramikaDrainAmount },
+      );
     }
 
     /**
