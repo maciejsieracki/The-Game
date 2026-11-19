@@ -24,7 +24,7 @@ const ENTRY = path.resolve(__dirname, '.city-nofort-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.city-nofort-bundle.cjs');
 fs.writeFileSync(ENTRY, `
 export * as FT from ${JSON.stringify(SRC + '/game/fort-territory')};
-export { territoryOwnerAt, cityTerritoryRadius, axialDistance } from ${JSON.stringify(SRC + '/map/territory')};
+export { territoryOwnerAt, territoryOwnerLookup, cityTerritoryRadius, axialDistance } from ${JSON.stringify(SRC + '/map/territory')};
 `);
 try {
   esbuild.buildSync({ entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
@@ -94,6 +94,35 @@ console.log('\n--- R1: sporny heks fort<->miasto = territoryOwnerAt (miasto wygr
   eq(territoryOwnerAt(7, 0, nodes), 0, 'R1-2: heks fortu -> wlasciciel fortu (nie przepisany przez miasto)');
   const nodes2 = fortTerritoryNodes([{ q: 0, r: 0, ownerId: 0, type: 'fort', builtAtTurn: 1, seq: 0 }, { q: 8, r: 0, ownerId: 1, type: 'fort', builtAtTurn: 2, seq: 1 }]);
   eq(territoryOwnerAt(4, 0, nodes2), 0, 'R1-3: spor fort-fort: wczesniejszy (tura 1) wygrywa');
+}
+
+// ---- R1-centrum: heks SAMEGO fortu zostaje przy wlascicielu (zarzut 1 Evaluatora) ----
+console.log('\n--- R1-centrum: fort gracza (0,0) + miasto AI pop 10 na (3,0) ---');
+{
+  const city = { q: 3, r: 0, pop: 10, level: 1, ownerId: 1 };
+  const nodes = [city].concat(fortTerritoryNodes([{ q: 0, r: 0, ownerId: 0, type: 'fort', builtAtTurn: 1, seq: 0 }]));
+  eq(territoryOwnerAt(0, 0, nodes), 0, 'R1c-1: heks fortu (0,0) = wlasciciel fortu (0), nie miasto AI');
+  eq(territoryOwnerAt(1, 0, nodes), 1, 'R1c-2: heks sasiedni w zasiegu miasta AI = miasto AI (przesuniecie granicy jak miasto<->miasto)');
+  eq(territoryOwnerAt(2, 0, nodes), 1, 'R1c-3: kolejny heks w zasiegu miasta AI = miasto AI');
+  // Stadnina (ulepszenie) na heksie fortu liczy sie do wlasciciela heksu => zostaje u gracza.
+  const stadninaOwner = territoryOwnerAt(0, 0, nodes);
+  eq(stadninaOwner, 0, 'R1c-4: ulepszenie na heksie fortu (stadnina) nalezy do gracza');
+}
+
+// ---- R1-indeks: territoryOwnerLookup (indeks dla >=12 wezlow) == territoryOwnerAt ----
+console.log('\n--- R1-indeks: territoryOwnerLookup zgodny z territoryOwnerAt (>=12 wezlow) ---');
+{
+  const city = { q: 3, r: 0, pop: 10, level: 1, ownerId: 1 };
+  const far = [];
+  for (let i = 0; i < 11; i++) far.push({ q: 60 + i * 3, r: 40, ownerId: 2, type: 'posterunek', builtAtTurn: 3 + i, seq: 10 + i });
+  const nodes = [city].concat(fortTerritoryNodes([{ q: 0, r: 0, ownerId: 0, type: 'fort', builtAtTurn: 1, seq: 0 }]), fortTerritoryNodes(far));
+  const lookup = M.territoryOwnerLookup(nodes);
+  let mism = 0;
+  for (let q = -12; q <= 14; q++) for (let r = -12; r <= 12; r++) {
+    if (lookup(q, r) !== territoryOwnerAt(q, r, nodes)) mism++;
+  }
+  eq(mism, 0, 'R1i-1: indeks i territoryOwnerAt zgodne na calym obszarze (0 rozbieznosci)');
+  eq(lookup(0, 0), 0, 'R1i-2: indeks: heks fortu (0,0) = wlasciciel fortu');
 }
 
 // ---- R2: zdobycie fortu wylacznie silowo (wojna + jednostka wojskowa) ----
