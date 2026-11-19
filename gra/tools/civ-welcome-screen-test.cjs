@@ -144,6 +144,41 @@ ok(L.isFriendlyStance('Wrogi') === false, 'Wrogi powinien być nieprzyjazny');
   ok(!!m, 'ekran powitalny: brak funkcji listHtml(items) bez limitu');
   ok(!!m && /items\.map\(/.test(m[1]) && !/slice\(|shown|rest/.test(m[1]),
     'listHtml: musi renderować items.map(...) bez slice/shown/rest');
+  // Brak jakiegokolwiek elementu zwijanego / wskazówki „więcej” w CAŁYM ekranie (także poza listHtml).
+  ok(!/<details|<summary/.test(scr), 'ekran powitalny: element zwijany <details>/<summary> (ukrywanie pozycji)');
+  ok(!/więcej/i.test(scr), 'ekran powitalny: pozostała wskazówka „więcej” (ucinanie listy)');
+  // Render listHtml (wyciągnięty z pliku źródłowego, bez DOM) dla każdej cywilizacji:
+  // wszystkie pozycje w HTML, brak „więcej”/„najedź”, brak atrybutu title (tooltip) w liście.
+  if (m) {
+    const fnSrc = m[0]
+      .replace('function listHtml(items: string[]): string {', 'function listHtml(items) {')
+      .replace(/\}\s*$/, '}');
+    const esc = (value) => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    let renderList;
+    try {
+      renderList = new Function('esc', fnSrc + '\nreturn listHtml;')(esc);
+    } catch (e) {
+      renderList = null;
+      fail('listHtml: nie udało się wyrenderować funkcji z pliku źródłowego: ' + e.message);
+    }
+    if (renderList) {
+      for (const k of keys) {
+        const info = L.civWelcomeInfo(k);
+        for (const list of [info.plusy, info.minusy]) {
+          if (list.length === 0) continue;
+          const html = renderList(list);
+          const liCount = (html.match(/<li>/g) || []).length;
+          ok(liCount === list.length, `${k}: listHtml pokazuje ${liCount} z ${list.length} pozycji`);
+          for (const t of list) {
+            ok(html.includes(esc(t)), `${k}: pozycja nie wyrenderowana: ${t}`);
+          }
+          ok(!/więcej|najedź/i.test(html), `${k}: listHtml zawiera wskazówkę „więcej”/„najedź”`);
+          ok(!/title=/.test(html), `${k}: listHtml zawiera atrybut title (tooltip)`);
+        }
+      }
+    }
+  }
   // Dane: najdłuższa lista plusów w danych ma co najmniej 11 pozycji (poprzedni próg = 3).
   const maxPlus = Math.max(...keys.map(k => L.civWelcomeInfo(k).plusy.length));
   ok(maxPlus >= 11, `dane: oczekiwano listy plusów >= 11 (test ma objąć długie listy), jest ${maxPlus}`);
