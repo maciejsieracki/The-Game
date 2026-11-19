@@ -1,7 +1,7 @@
 # R-RUSTPORT-P6-K5LOOP-WIRING-A-Q1 — Obrona Operatora r2 (odpowiedź na `02-evaluator-r2.md`)
 
 ```text
-STATUS: PASS-WITH-NOTES (obrona) — 7/8 scenariuszy pinu PEŁNEJ bitwy bajt w bajt (było 3/8); jedna jawna rozbieżność
+STATUS: PASS-WITH-NOTES (obrona; wszystkie bramki EXIT 0) — 7/8 scenariuszy pinu PEŁNEJ bitwy bajt w bajt (było 3/8); jedna jawna rozbieżność
         B-WIRA-PIN-2 (mur_jazda_rzeka) z pomiarem: wynik samego pinu zależy tam od długości klatki (16 ms vs 2 ms)
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-K5LOOP-WIRING-A-Q1 (#369 część A), runda 2 — obrona
@@ -33,10 +33,12 @@ DEPLOY/PUSH: NIE WYKONANO
 
 | Plik | Zmiana |
 |---|---|
-| `engine/src/domain/siege_tactics_loop.rs` | D-WIRA-16: `ProdBody::terrain_range_delta` + `refresh_terrain_range` (`apply_terrain_range` T6) wołane na początku aktywacji (`:6064`), w `_siegeShooterThreats` (`:7929`, mutacja `d.range` tylko po `_siegeApproachRestricted`) i po zejściu z korony (`:7740`). D-WIRA-17: `LoopBody::take_tail` + `LoopTimer::BodyTail`, `ProdBody::pin_blow_timing`, stałe `BLOW_LUNGE_MS`/`BLOW_SETTLE_MS`; ogon po ciosie `260 + 220 − body_ms`, strzał trafia w `at + RANGED_FLY_MS`, ogon `RANGED_GAP_MS`. D-WIRA-18: `move_timeline` (krok `_doMove` z `t0`), `unit_cell` zwraca pozycję sprzed kroku o `t0 > now`; `tower_shoot` ustawia `set_now(v_now)` przed `pickTowerTarget`. Domyślnie (`None`/`false`) zachowanie jak dotąd — dotychczasowe wektory pętli (`p6_k5loop_*`, `p4_1i*`, `p6_siege_*`) bez zmian. |
+| `engine/src/domain/siege_tactics_loop.rs` | D-WIRA-16: `ProdBody::terrain_range_delta` + `refresh_terrain_range` (`apply_terrain_range` T6) wołane na początku aktywacji (`:6064`), w `_siegeShooterThreats` (`:7929`, mutacja `d.range` tylko po `_siegeApproachRestricted`) i po zejściu z korony (`:7740`). D-WIRA-17: `LoopBody::take_tail` + `LoopTimer::BodyTail`, `ProdBody::pin_blow_timing`, stałe `BLOW_LUNGE_MS`/`BLOW_SETTLE_MS`; ogon po ciosie `260 + 220 − body_ms`, strzał trafia w `at + RANGED_FLY_MS`, ogon `RANGED_GAP_MS`. D-WIRA-18: `move_timeline` (krok `_doMove` z `t0`) i nowa metoda `LoopBody::unit_cell_at(unit, v_now)` (domyślnie = `unit_cell`), czytana przez `pick_tower_for_row` z `vNow` wystrzału; w `ProdBody` zwraca pozycję sprzed kroku o `t0 > v_now` tylko przy `pin_blow_timing` (pierwsza wersja zmieniała `unit_cell` bezwarunkowo i psuła 12 testów pętli czytających pozycje końcowe — wykryte pełnym testem, poprawione w `ce9afe0d3`). Domyślnie (`None`/`false`) zachowanie jak dotąd — dotychczasowe wektory pętli (`p6_k5loop_*`, `p4_1i*`, `p6_siege_*`) bez zmian. |
 | `engine/src/domain/siege_battle_session.rs` | `SessionData::terrain_range_rows` (`TerrainRangeRow`), `terrain_range_delta` (port `terrainRangeDelta` `combat.ts:730-742`: `normTerrain`, `−`→`-`, pierwsze `[+-]?\d+`), siatka Δ dla wszystkich kafli pola, `pin_blow_timing = true`. |
 | `engine/tests/p6_k5loop_wiring_a_pin.rs` | `terrain_range_rows` z `pin_data.json`; E2-3; lista rozbieżności 5 → 1 (`mur_jazda_rzeka`) z nowym opisem przyczyn; ślad diagnostyczny + `TURN`/`MELEE`/`SHOT`/`CLASH`. |
 | `engine/tests/p6_k5loop_wiring_a_gen.mjs` | N1, N2. Wektory i `EXPECTED_SHA256` bez zmian. |
+| `engine/tests/p6_k5loop_wiring_a.rs` | ZMIANA ASERCJI (uzasadniona): `zlote_wyniki_sesji` (skrót FNV wyników Rusta, „RUST-ONLY, zamrożenie regresji”) `619d9ea6ba687f71` → `9b17cd8895ee7c0b`, bo D-WIRA-16/17/18 zmieniają przebieg bitew sesji zgodnie z pinem (`battleScene.ts:6064`, `:9119-9172`, `:9223-9229`, `:4228-4233`); dowodem parytetu są wektory pinu (7/8). Pozostałe 21 testów pliku bez zmian. |
+| merge `origin/rust-port/parity-v2` @ `a22257a91` (P4-1I5B) | `f120c49ab`, bez konfliktów (`git merge-tree` czyste) |
 | `dyspozycje/.../02a-obrona-r2.md`, `02a-obrona-r2-mutanty.py`, dopisek w `02a-obrona.md` | raport, skrypt mutantów |
 
 Nie ruszano: `bridge.rs`, `bridge_contract.rs`, `renderer/`, `view-model/`, `client/`, `src-tauri/`, `gra/**`, `Cargo.*`,
@@ -109,8 +111,8 @@ Scenariusz zostaje w wektorach jako JAWNA rozbieżność (test pada, gdy zacznie
 | B01 `_applyTerrainRange` nie na początku aktywacji | ZABITY | |
 | B02 ogon ciosu 0 | ZABITY | |
 | B03 trafienie strzału na końcu (FLY+GAP) | PRZEŻYŁ | NIEZABITY: w 7 zgodnych scenariuszach przesunięcie trafienia strzału o 320 ms nie zmienia kolejności rzutów ani celu wież; brak wektora rozróżniającego (dług → r3/FC: scenariusz z łucznikiem strzelającym w oknie lotu pocisku wieży) |
-| B04 wieża widzi pozycję końcową marszu | ZABITY | D-WIRA-18 |
-| B05 wieża bez `set_now` przed wyborem celu | ZABITY | |
+| B04 wieża widzi pozycję końcową marszu | ZABITY | D-WIRA-18 (ponownie ZABITY po `ce9afe0d3`) |
+| B05 wieża widzi pozycję sprzed całego marszu (`v_now = −∞`) | ZABITY | (po `ce9afe0d3`; pierwsza wersja: „bez `set_now`”, też ZABITY) |
 | B06 `_siegeShooterThreats` bez `_applyTerrainRange` | PRZEŻYŁ | NIEZABITY: obrońcy-strzelcy stoją na koronie/kaflach z Δ = 0 (las tylko po stronie atakującego), więc mutacja nie zmienia `d.range` |
 | B07 zejście z korony bez `_applyTerrainRange` | PRZEŻYŁ | NIEZABITY: w zgodnych scenariuszach z wyłomem żaden strzelec nie schodzi z korony przy kafle wyburzonym przed swoją kolejną aktywacją (zasięg i tak przeliczany na jej początku) |
 
@@ -133,8 +135,24 @@ Uczciwie: B03/B06/B07 to gałęzie poprawne wg pinu (linie w §2), ale bez wekto
 
 ## 8. Bramki
 
-BRAMKI
+(`CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` w scratchpadzie
+`wiringa-obr2/target`, usunięty po bramkach; kod = HEAD po merge `parity-v2` a22257a91)
+
+| Bramka | Wynik |
+|---|---|
+| `cargo fmt --all -- --check` | EXIT 0 |
+| `cargo clippy --all-targets -- -D warnings` | EXIT 0 |
+| `cargo test --release --test p6_k5loop_wiring_a_pin` | EXIT 0, 3 passed (7/8 bajt w bajt, 1 jawna rozbieżność wymagająca `Ok`) |
+| `cargo test --all-targets --no-fail-fast` (w tle, `setsid nohup`, EXIT w logu) | **FULL_EXIT=0**, 547 × `test result: ok`, 0 FAILED (m.in. `bridge_contract` 9/9, `p6_k5loop_wiring_a` 22/22, `p6_k5loop_wiring_a_pin` 3/3, `p4_1i5b_siege_actions` 5/5, `p6_k5loop_close*`, `p6_k5loop_siege_*`, `p6_k5loop_tags_rest`, `p6_k5doc_t8`) |
+| Pierwszy pełny test (przed `ce9afe0d3`) | FULL_EXIT=101: 12 testów pętli czytających `unit_cell` po bitwie (D-WIRA-18 bez bramki) + `zlote_wyniki_sesji`; poprawione i powtórzone (wiersz wyżej) |
+| Mutanty | 16/23 + B04/B05 po zmianie D-WIRA-18 ponownie: ZABITY/ZABITY |
+| Generator (N2, deterministyczny zegar), pełna regeneracja poza repo | MD5 `269b4da23249b441e1837a2b160cb258 vectors.json`, `432eed76e34a0e8cc96ec548e88eae64 pin_data.json` = zatwierdzone; strażnik SHA-256 pinu przeszedł |
+| `git merge-tree` z `origin/rust-port/parity-v2` @ a22257a91 | czyste; merge `f120c49ab` |
+| Allowlista | tylko pliki z §2; `bridge.rs`, `bridge_contract.rs`, `gra/**`, `Cargo.*`, `REJESTR-RUST.md`, renderer nietknięte; brak `#[ignore]` |
 
 ## 9. Commity
 
-COMMITY
+Gałąź lokalna `rust-port-wip/k5loop-wiring-a-q1-r2-obrona` (baza `f681087ee`):
+`490498746` (D-WIRA-16, N1), `5a38f3d35` (D-WIRA-17, E2-3), `2ecda0ca5` (D-WIRA-18 v1), `a93f981a7` (clippy, skrypt
+mutantów), `bde79839b` (N2), `ce98555fa` (raport wstępny), `ce9afe0d3` (D-WIRA-18 z bramką, złote wyniki), `f120c49ab`
+(merge parity-v2 a22257a91), końcowy = commit z tym raportem (SHA w StructuredOutput / `git log -1`). Push: NIE.
