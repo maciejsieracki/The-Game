@@ -1,3 +1,9 @@
+## ROBOCZA 8351cef3 -- 2026-11-18 -- FALA 855: Pomiar ekonomii gracza: tryb gracz sterowany przez AI (tylko biegi pomiarowe, domyslnie wylaczony) (testowa)
+
+- Hak setPlayerAiAutopilotForTest (flaga false domyslnie) w __aiEconomyMeasure: w fazie AI wlasciciel 0 dostaje decyzje AI; pula Pracy przez ownerPracaPool/setOwnerPracaPool (dla AI rownowazna dotychczasowemu aiPracaPoolByOwner); runner --player-ai 1; analizator z wierszem i sekcja Gracz (autopilot); test player-ai-autopilot-test; brak zmian zasad gry przy fladze false
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; ai-economy-measure-hook-test 23/23; player-ai-autopilot-test 5/5 (mutacje czerwone); parytet flagi OFF z baza: 29/29 wierszy jsonl identyczne; smoke 30 tur seed 4242 z autopilotem: miasta gracza 1/2/4 w t10/20/30, budynki w t30, 0 NaN
+- Limity: Narzedzie pomiarowe, bez efektu w rozgrywce przy fladze false; zmiana puli Pracy w 3 miejscach main.ts wykracza poza litere dispatchu (konieczna, rownowazna dla AI); bieg 150 tur i ekonomia gracza w pozniejszej grze NIE ZMIERZONO; analizator powiela stan ostatniej tury w wierszach kontrolnych bez danych
+
 ## ROBOCZA 34c32188 -- 2026-11-18 -- FALA 854: Wojna silą bloku sojuszniczego (etap C cz.2, za flaga, wylaczona) (testowa)
 
 - Nowy modul diplomacy-alliance-strength.ts (blockStrength, blockHasAdvantage) i parametry diplomacy-alliance-war-params.json; ai.ts priorytet 4 (wypowiedzenie wojny) porownuje sile BLOKU sojusznikow gdy flaga wojnaSilaSojuszuAktywna=true; main.ts wypelnia sojusznikow; hak warByAllianceStrengthForTest; wojny blokowe oznaczone sufiksem [blok sily: ...] w powodzie komendy; flaga false = zachowanie gry bez zmian

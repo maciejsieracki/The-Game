@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "34c32188c1890e9ca29e87e1e1637d5c",
-  "bundleSha256": "560a4787c9cb8cbb16c60f26487d172e3f1902f78cd42bb811e779a98c9c993a",
-  "bundleBytes": 14973483,
+  "bundleMd5": "8351cef32d2576061c171dd969bfe848",
+  "bundleSha256": "847b7a7914cf37f2c8ba2d3c9b466de64cd86bf93709ede92b078d9755362f4c",
+  "bundleBytes": 14973644,
   "sourceSnapshot": {
-    "source": "R-WEB-DIPLO-WAR-BY-ALLIANCE-STRENGTH-Q1 r2 (kod 4cb86a1cb, FC de989772c)",
+    "source": "R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1 (kod 91da14b98, FC 7504d55d4)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 854: Nowy modul diplomacy-alliance-strength.ts (blockStrength, blockHasAdvantage) i parametry diplomacy-alliance-war-params.json; ai.ts priorytet 4 (wypowiedzenie wojny) porownuje sile BLOKU sojusznikow gdy flaga wojnaSilaSojuszuAktywna=true; main.ts wypelnia sojusznikow; hak warByAllianceStrengthForTest; wojny blokowe oznaczone sufiksem [blok sily: ...] w powodzie komendy; flaga false = zachowanie gry bez zmian"
+    "FALA 855: Hak setPlayerAiAutopilotForTest (flaga false domyslnie) w __aiEconomyMeasure: w fazie AI wlasciciel 0 dostaje decyzje AI; pula Pracy przez ownerPracaPool/setOwnerPracaPool (dla AI rownowazna dotychczasowemu aiPracaPoolByOwner); runner --player-ai 1; analizator z wierszem i sekcja Gracz (autopilot); test player-ai-autopilot-test; brak zmian zasad gry przy fladze false"
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; diplomacy-alliance-strength 33/0 (mutacje czerwone); diplomacy-test 149/0; zero-trust 43/0; ai-ai-alliance-tick 19/19 + mutanty 8/8; ai-ai-coalition 9/9; harder 50/0"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; ai-economy-measure-hook-test 23/23; player-ai-autopilot-test 5/5 (mutacje czerwone); parytet flagi OFF z baza: 29/29 wierszy jsonl identyczne; smoke 30 tur seed 4242 z autopilotem: miasta gracza 1/2/4 w t10/20/30, budynki w t30, 0 NaN"
   ],
   "limits": [
-    "Flaga domyslnie wylaczona: bez efektu w rozgrywce do czasu pomiaru; metryki wojen blokowych NIE ZMIERZONO; kaskada dolaczania sojusznikow (opcjonalna) i regula 1 wojna epoki + 1 naturalna niezaimplementowane; wpiecie main.ts bez testu przegladarkowego"
+    "Narzedzie pomiarowe, bez efektu w rozgrywce przy fladze false; zmiana puli Pracy w 3 miejscach main.ts wykracza poza litere dispatchu (konieczna, rownowazna dla AI); bieg 150 tur i ekonomia gracza w pozniejszej grze NIE ZMIERZONO; analizator powiela stan ostatniej tury w wierszach kontrolnych bez danych"
   ],
-  "finalControl": "PASS-WITH-NOTES: bramki wlasne zielone, mutacje wykryte, kandydat potomkiem bazy, allowlista zachowana",
+  "finalControl": "PASS-WITH-NOTES: bramki wlasne zielone, mutacje wykryte, kandydat potomkiem bazy",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T00:18:42",
+  "hubGeneratedAt": "2026-11-19T00:45:46",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "34c32188c1890e9ca29e87e1e1637d5c",
-      "sizeBytes": 14973483
+      "md5": "8351cef32d2576061c171dd969bfe848",
+      "sizeBytes": 14973644
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "34c32188c1890e9ca29e87e1e1637d5c",
-      "sizeBytes": 14973483
+      "md5": "8351cef32d2576061c171dd969bfe848",
+      "sizeBytes": 14973644
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "34c32188c1890e9ca29e87e1e1637d5c",
-      "sizeBytes": 14973483
+      "md5": "8351cef32d2576061c171dd969bfe848",
+      "sizeBytes": 14973644
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "34c32188c1890e9ca29e87e1e1637d5c",
-      "sizeBytes": 14973483
+      "md5": "8351cef32d2576061c171dd969bfe848",
+      "sizeBytes": 14973644
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "34c32188c1890e9ca29e87e1e1637d5c",
-      "sizeBytes": 14973483
+      "md5": "8351cef32d2576061c171dd969bfe848",
+      "sizeBytes": 14973644
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "34c32188c1890e9ca29e87e1e1637d5c",
-      "sizeBytes": 14973483
+      "md5": "8351cef32d2576061c171dd969bfe848",
+      "sizeBytes": 14973644
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "34c32188c1890e9ca29e87e1e1637d5c",
-      "sizeBytes": 14973483
+      "md5": "8351cef32d2576061c171dd969bfe848",
+      "sizeBytes": 14973644
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "34c32188c1890e9ca29e87e1e1637d5c",
-      "sizeBytes": 14973483
+      "md5": "8351cef32d2576061c171dd969bfe848",
+      "sizeBytes": 14973644
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "34c32188c1890e9ca29e87e1e1637d5c",
-      "sizeBytes": 14973483
+      "md5": "8351cef32d2576061c171dd969bfe848",
+      "sizeBytes": 14973644
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "34c32188c1890e9ca29e87e1e1637d5c",
-      "sizeBytes": 14973483
+      "md5": "8351cef32d2576061c171dd969bfe848",
+      "sizeBytes": 14973644
     }
   ],
-  "md5": "34c32188c1890e9ca29e87e1e1637d5c",
+  "md5": "8351cef32d2576061c171dd969bfe848",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
