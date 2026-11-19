@@ -428,6 +428,10 @@ fn storm(st: PlayableState, chunks: &[f64], with_scene: bool) -> Run {
     );
     assert!(c.siege_battle().is_none(), "battle closed");
     let v = c.last_siege_battle_view().expect("closed view");
+    if let Some((_, pb)) = v.scene() {
+        // No action is left in the playback queue: the held actions of `Finish` were played too.
+        assert_eq!(pb.queued(), 0, "every queued item played");
+    }
     let (hp, calls_len, labels) = match v.scene() {
         Some((_, pb)) => (
             v.units()
@@ -599,7 +603,7 @@ fn stan_ui_po_bitwie() {
     let mut ui = c.ui().frame_ui.clone();
     ui.hover = Some(PositionDto::new(CITY_POS.0, CITY_POS.1));
     c.set_frame_ui(ui).expect("hover");
-    let mut map_ui = c.ui().map_ui.clone();
+    let mut map_ui = c.ui().map_ui;
     map_ui.force_visible_unit_id = Some(civ_view_model::ids::UnitId::try_new(ANCHOR).expect("id"));
     c.set_map_ui(map_ui).expect("force");
     let ui_before = c.ui().clone();

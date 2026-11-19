@@ -1006,8 +1006,8 @@ pub enum SiegeBattleEnd {
     Applied {
         /// City.
         city_id: u64,
-        /// The result.
-        result: SiegeBattleResultDto,
+        /// The result (boxed: `SiegeBattleEnd` is moved around).
+        result: Box<SiegeBattleResultDto>,
         /// `afterSiegeUi` branch.
         after: SiegeAfterUi,
     },
@@ -1396,7 +1396,7 @@ impl<S: SiegeBattleSource> RenderClient<S> {
             Some(result) => SiegeBattleEnd::Applied {
                 city_id,
                 after: SiegeAfterUi::of(&result),
-                result,
+                result: Box::new(result),
             },
             None => SiegeBattleEnd::Aborted {
                 city_id,
