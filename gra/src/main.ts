@@ -45679,7 +45679,14 @@ async function boot(): Promise<void> {
                 isEraWarExhausted: isWarRulesMultiwarEnabled() ? isEraWarExhausted : undefined,
                 // R-WEB-ERA-WAR-DEFER-NOT-CANCEL-Q1 (runda 3, Z4): cel fallbacku musi być WOLNY także od
                 // wojny naturalnej (jak partner z puli: `alreadyAtWarAnyRole`), inaczej ai.ts odrzuca komendę.
-                freeTargetCandidates: forcedWarMajorAiSubjects.filter(s => countActiveWarsForOwnerExcludingBarbarians(s.ownerId) === 0),
+                // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1: gracz jako wolny cel fallbacku (gdy opcja K2
+                // „wojna epoki z udziałem gracza” ON lub flaga K2 wyłączona; te same filtry co dla AI).
+                freeTargetCandidates: [
+                  ...forcedWarMajorAiSubjects,
+                  ...(playerCity && (!isWarEpochPlayerFirstEnabled() || playerEpochWarEnabled)
+                    ? [{ ownerId: 0, q: playerCity.q, r: playerCity.r } as ForcedWarPairingSubject]
+                    : []),
+                ].filter(s => countActiveWarsForOwnerExcludingBarbarians(s.ownerId) === 0),
                 ...forcedWarPlayerFirstOpt,
               },
             );

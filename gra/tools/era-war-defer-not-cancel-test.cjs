@@ -243,7 +243,7 @@ console.log('T9 (runda 3) leftover Brazu omija pare Kamienia; dolaczenie do pary
 console.log('T8 (B-DEFER, wiring) main.ts przekazuje freeTargetCandidates do assignForcedWarPairings');
 {
   const mainSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
-  assert(/freeTargetCandidates:\s*forcedWarMajorAiSubjects\.filter\(s => countActiveWarsForOwnerExcludingBarbarians\(s\.ownerId\) === 0\),/.test(mainSrc),
+  assert(/freeTargetCandidates:[\s\S]{0,400}?countActiveWarsForOwnerExcludingBarbarians\(s\.ownerId\) === 0\)/.test(mainSrc),
     'main.ts: freeTargetCandidates = wspólna lista major AI filtrowana z wojen naturalnych (Z4)');
   assert(/candidates:\s*forcedWarMajorAiSubjects,/.test(mainSrc), 'main.ts: playerFirst.candidates wspólna lista (bez duplikatu)');
 }
