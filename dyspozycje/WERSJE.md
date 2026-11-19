@@ -1,3 +1,9 @@
+## ROBOCZA 7f7ddfea -- 2026-11-18 -- FALA 866: R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-SOFTEN-MEASURE-Q1: parametr dopłataDMnoznikAiAi (domyslnie 1,0 = bez zmiany) skalujacy doplate D w sojuszach AI-AI + hak civTest i runner --mnoznik (testowa)
+
+- gra/data/ai-ai-treaty-params.json (+dopłataDMnoznikAiAi=1.0), gra/src/game/ai-ai-treaty-evaluate.ts (skalowanie D), gra/src/main.ts (hak civTest), runner ai-ai-alliance-measure-run.cjs --mnoznik, test ai-ai-alliance-surcharge-test (D1-D10, mutanty M1-M4). Domyslny mnoznik 1,0 = gra bez zmian; sojusze AI-AI za flaga torSojuszyAktywny=false.
+- Weryfikacja: tsc 0, logic 213/213, surcharge ALL GREEN, limit 4/4+4/4, alliance-tick 19/19 + mutanty 8/8, treaty-evaluate 21/0, zero-trust 43/0
+- Limity: NIE ZMIERZONO: pomiar t60 i seed 7 (decyzja o wartosci mnoznika opiera sie na seed 4242 do t47: 1,0 -> pierwszy sojusz t42, odmowy D 102; 0,5 -> t41, 82; 0,25 -> t34, 16); hak civTest w przegladarce; czerwone na bazie: unit-replace-full-cost-test 39/1
+
 ## ROBOCZA 48132a82 -- 2026-11-18 -- FALA 865: R-WEB-AI-AI-ALLIANCE-LIMIT-2-VIOLATED-Q1: wspolny limit 2 sojuszy na cywilizacje we wszystkich sciezkach zawierania sojuszu (tor, siostry, wnioski gracz-AI) za flaga torSojuszyAktywny=false (testowa)
 
 - nowy gra/src/game/ai-ai-alliance-limit.ts, gra/src/main.ts (bramki limitu w torze, galezi siostr i applyProposalOutcomeImpl), testy ai-ai-alliance-limit-test/audit. Flaga OFF = gra bez zmian.
