@@ -1175,6 +1175,9 @@ pub struct ProdUnit {
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct ProdPending {
     morale: f64,
+    /// PIN2-PROBE-Q1 (D-PIN2-1): `ru.morale` w chwili `start` (przed okrążeniem). `complete` przepisuje [`Self::morale`]
+    /// tylko wtedy, gdy aktywacja zmieniła morale; inaczej zostaje wartość sterownika (trafienia wież w trakcie marszu).
+    morale_before: f64,
     /// Zdarzenie `StartRout` z `_activateUnit` (rout z okrążenia): w `complete` wykonuje pełne `_startRout`.
     start_rout: bool,
     surround_applied: bool,
@@ -4072,6 +4075,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             });
             self.pending[ix][unit.idx] = Some(ProdPending {
                 morale: seq.morale,
+                morale_before: seq.morale,
                 start_rout: false,
                 surround_applied: self.surround[ix][unit.idx],
                 attack: None,
@@ -4245,6 +4249,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         // gałąź jest nieportowana: pin stosuje je na początku `_activateUnit`, przed wyborem akcji.
         let mut pend = ProdPending {
             morale: au.morale,
+            morale_before: st.unit(unit).c.morale,
             start_rout: res.events.contains(&ActivateEvent::StartRout),
             surround_applied: au.surround_applied,
             attack: None,
@@ -4624,12 +4629,28 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             }
             return;
         }
-        {
+        // PIN2-PROBE-Q1 (D-PIN2-1): pin zmienia `ru.morale` na początku `_activateUnit` (okrążenie, `:6103-6117`) od
+        // razu, a trafienia wież w trakcie marszu (`_fireOneTower` -> `_resolveBlowOutcome` -> `_applyMoraleDamage`,
+        // `:9722-9735`) odejmują od bieżącej wartości; `done()` niczego nie przywraca. Ciało liczy aktywację w `start`
+        // (stan tylko do odczytu), więc dawne bezwarunkowe `c.morale = pend.morale` cofało trafienie wieży z okna
+        // start..complete (sonda `mur_jazda_rzeka`, t. 73: `a0` 50.857 -> 67.643). Teraz: aktywacja bez zmiany morale
+        // zostawia wartość sterownika; zmiana morale w aktywacji przy niezmienionym stanie sterownika = wynik aktywacji;
+        // obie zmiany naraz = jawny tag `morale-konflikt-zegara` i wartość sterownika (jak `ucieczka-konflikt-zegara`).
+        let morale_tag = {
             let c = unit_cu_mut(st, unit);
-            c.morale = pend.morale;
+            let activation_changed = pend.morale.to_bits() != pend.morale_before.to_bits();
+            let clock_changed = c.morale.to_bits() != pend.morale_before.to_bits();
+            let conflict = activation_changed && clock_changed;
+            if activation_changed && !clock_changed {
+                c.morale = pend.morale;
+            }
             if let Some(ml) = pend.move_left {
                 c.move_left = ml;
             }
+            conflict
+        };
+        if morale_tag {
+            self.unported.push((unit, "morale-konflikt-zegara"));
         }
         // `_startRout` z aktywacji (okrążenie): ten sam kod co rout po ciosie (boost wrogów, oslona, facing).
         if pend.start_rout {

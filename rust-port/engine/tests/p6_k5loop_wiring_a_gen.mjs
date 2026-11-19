@@ -257,6 +257,32 @@ function runScenario(sc) {
       for (const s of a) if (String(s).startsWith('Wieza strzelnicza')) console.error(`T ${bs.vNow} r${bs.roundNo} TOWER ${s} | ${bs.atk.map((u) => `${u.bu.id}@${u.q},${u.r}:${u.bu.hp}${u.routed ? 'R' : ''}${u.dead ? 'D' : ''}`).join(' ')}`);
       return origLogPush(...a);
     };
+    // PIN2-PROBE-Q1 (sonda morale): stan morale celu przed i po `_resolveBlowOutcome` (`battleScene.ts:9019-9068`)
+    // oraz kazdy `_checkRout` (`:9783-9797`) i `_gainMorale`. Tylko diagnostyka (bez wplywu na wynik).
+    const mor = (u) => `${u.bu.id}{hp=${u.bu.hp} m=${u.morale} mx=${u.moraleMax} fl=${u.fleeMorale}${u.routed ? ' R' : ''}${u.dead ? ' D' : ''}}`;
+    const origOutcome = bs._resolveBlowOutcome;
+    bs._resolveBlowOutcome = function (att, dfd, dmg, extra) {
+      const before = mor(dfd);
+      const ra = this._armyMoraleRatio('atk');
+      const rd = this._armyMoraleRatio('def');
+      const out = origOutcome.call(this, att, dfd, dmg, extra);
+      console.error(`T ${bs.vNow} r${bs.roundNo} OUTCOME ${att.bu.id}->${dfd.bu.id} dmg=${dmg} extra=${extra} ratioA=${ra} ratioD=${rd} ${before} => ${mor(dfd)} att=${mor(att)}`);
+      return out;
+    };
+    const origGain = bs._gainMorale;
+    bs._gainMorale = function (u, amt) {
+      const b = mor(u);
+      const out = origGain.call(this, u, amt);
+      console.error(`T ${bs.vNow} r${bs.roundNo} GAIN ${amt} ${b} => ${mor(u)}`);
+      return out;
+    };
+    const origCheck = bs._checkRout;
+    bs._checkRout = function (u) {
+      const b = mor(u);
+      const out = origCheck.call(this, u);
+      console.error(`T ${bs.vNow} r${bs.roundNo} CHECKROUT ${b} terr=${this.terrainMap.combatTerrainName(u.q, u.r)}@${u.q},${u.r} => ${u.routed ? 'ROUT' : 'ok'}`);
+      return out;
+    };
     const origMove = bs._doMove;
     bs._doMove = function (ru, c, r, ...rest) {
       const from = `${ru.q},${ru.r}`;
@@ -266,12 +292,24 @@ function runScenario(sc) {
     };
   }
   let res = null;
+  // PIN2-PROBE-Q1: tryb i dlugosc klatki nadpisywalne WYLACZNIE w trybie sladu (`WIRING_A_TRACE`), np.
+  // `WIRING_A_FRAME=2 WIRING_A_MODE=realtime`; wektory zawsze z klatka 16 ms i trybem scenariusza.
+  const traced = !!process.env.WIRING_A_TRACE;
+  const mode = traced && process.env.WIRING_A_MODE ? process.env.WIRING_A_MODE : sc.mode;
+  const frameMs = traced && process.env.WIRING_A_FRAME ? Number(process.env.WIRING_A_FRAME) : 16;
   bs.play((r) => { res = r; });
-  if (sc.mode === 'skip') bs.skip();
+  if (mode === 'skip') bs.skip();
   let t = 0;
   let frames = 0;
+  // PIN2-PROBE-Q1: krok przewijania `FF_STEP_MS = _scaledWallDelta(BATTLE_FRAME_WALL_MS)` (`:9419`) nadpisywalny
+  // WYLACZNIE w trybie sladu (`WIRING_A_FF_STEP=2`): ten sam model klatki co czas rzeczywisty z klatka N ms, ale bez
+  // kosztu petli renderu (modul pinu ladowany od nowa w kazdym scenariuszu, `modCache = new Map()`).
+  const ffStep = traced && process.env.WIRING_A_FF_STEP ? Number(process.env.WIRING_A_FF_STEP) : null;
+  if (ffStep != null) BattleScene.BATTLE_FRAME_WALL_MS = ffStep;
+  const stopRound = traced && process.env.WIRING_A_STOP_ROUND ? Number(process.env.WIRING_A_STOP_ROUND) : Infinity;
   while (!bs.finished && frames < MAX_FRAMES) {
-    t += 16;
+    if (bs.roundNo > stopRound) { console.error(`STOP r${bs.roundNo}`); process.exit(0); }
+    t += frameMs;
     frames += 1;
     const q = rafQ;
     rafQ = [];

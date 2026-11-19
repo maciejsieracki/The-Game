@@ -397,9 +397,20 @@ fn slad_diagnostyczny_na_zadanie() {
     let mut s = SiegeBattleSession::prepare_scene(&scene_input(v), &data).unwrap();
     let ids = s.roster_ids().clone();
     let id = |u: UnitRef| ids[usize::from(u.side != BattleSide::Attacker)][u.idx].clone();
+    // PIN2-PROBE-Q1: krok śladu nadpisywalny (`WIRING_A_TRACE_STEP=1`), żeby zrzut morale padał po każdym zdarzeniu.
+    let step_ms = std::env::var("WIRING_A_TRACE_STEP")
+        .ok()
+        .and_then(|x| x.parse::<f64>().ok())
+        .unwrap_or(FRAME_MS);
     while s.phase() != SessionPhase::Finished {
-        let rep = s.step(FRAME_MS).unwrap();
+        let rep = s.step(step_ms).unwrap();
         let r = s.battle_loop().st.round_no;
+        // PIN2-PROBE-Q1 (sonda morale): po kroku z obrażeniami/rozbiciem stan morale wszystkich jednostek (do
+        // porównania z `OUTCOME`/`CHECKROUT` śladu generatora).
+        let morale_dump = rep
+            .actions
+            .iter()
+            .any(|a| matches!(a.action, BattleAction::Damage { .. } | BattleAction::Rout { .. }));
         for a in rep.actions {
             let line = match a.action {
                 BattleAction::Damage { target, dmg } => format!("DMG {} {dmg}", id(target)),
@@ -427,6 +438,25 @@ fn slad_diagnostyczny_na_zadanie() {
                 _ => continue,
             };
             eprintln!("T {} r{r} {line}", a.t0);
+        }
+        if morale_dump {
+            let st = &s.battle_loop().st;
+            let mut parts = Vec::new();
+            for (side, list) in [(BattleSide::Attacker, &st.atk), (BattleSide::Defender, &st.def)] {
+                for (idx, u) in list.iter().enumerate() {
+                    let c = &u.c;
+                    parts.push(format!(
+                        "{}{{hp={} m={} fl={}{}{}}}",
+                        id(UnitRef { side, idx }),
+                        c.hp,
+                        c.morale,
+                        c.flee_morale,
+                        if c.routed { " R" } else { "" },
+                        if c.dead { " D" } else { "" }
+                    ));
+                }
+            }
+            eprintln!("r{r} MORALE {}", parts.join(" "));
         }
     }
 }
