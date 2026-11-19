@@ -140,7 +140,7 @@ export function fortNodeAsCityNode(f: Pick<FortNode, 'q' | 'r' | 'type'>): CityN
  */
 export function fortTerritoryNodes(
   forts: readonly FortNode[],
-  improvedAt?: (q: number, r: number) => boolean,
+  improvedAt?: (q: number, r: number, fortOwnerId: number) => boolean,
 ): TerritoryNode[] {
   const out: TerritoryNode[] = [];
   for (const f of forts) {

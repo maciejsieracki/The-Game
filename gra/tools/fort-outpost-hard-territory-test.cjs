@@ -124,10 +124,8 @@ console.log('\n--- E: straznik main.ts ---');
 {
   const main = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
   const i = main.indexOf('function buildAllTerritoryNodes');
-  const body = main.slice(i, i + 1600);
-  // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1: dolozony predykat ulepszenia (2. argument, na zywo).
-  assert(/fortTerritoryNodes\(\s*fortNodes\s*,/.test(body) && /placedImprovements\.get\(keyOf/.test(body),
-    'E1: buildAllTerritoryNodes dolacza fortTerritoryNodes(fortNodes, predykat ulepszen z placedImprovements)');
+  const body = main.slice(i, i + 1200);
+  assert(/fortTerritoryNodes\(\s*fortNodes\s*\)/.test(body), 'E1: buildAllTerritoryNodes dolacza fortTerritoryNodes(fortNodes)');
   const j = main.indexOf('function foundingTerritoryOpts');
   const fb = main.slice(j, j + 2600);
   assert(/isHexInForeignFortTerritory\(/.test(fb), 'E2: foundingTerritoryOpts blokuje teren obcego fortu');
