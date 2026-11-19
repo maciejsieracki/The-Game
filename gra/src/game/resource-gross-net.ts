@@ -63,3 +63,23 @@ export function resourceGrossNetPerTurn(r: ResourceGrossNetInput): ResourceGross
     netto: Math.round(r.ratePerTurn - resourceUsageSum(r) - resourceConverterInputSum(r)),
   };
 }
+
+/**
+ * R-WEB-UI-HUD-SHORTAGE-ALERT-TOOLTIP-Q1: niedobór surowca = netto HUD (ta sama wartość co
+ * wiersz „Surowce” i nagłówek) poniżej zera. Jedno źródło dla alertu, etykiet niedoboru i chipa
+ * „Surowce” — zamiast surowego `ratePerTurn < 0`, które pomijało zużycie i wejścia konwerterów.
+ */
+export function resourceIsShortage(r: ResourceGrossNetInput): boolean {
+  return resourceGrossNetPerTurn(r).netto < 0;
+}
+
+/**
+ * R-WEB-UI-HUD-SHORTAGE-ALERT-TOOLTIP-Q1: wiersz „Wejścia przetwórstwa” w tooltipie
+ * „Brutto · netto”. Zwraca null, gdy wejść nie ma (N ≤ 0 lub brak), żeby tooltip bez
+ * konwerterów pozostał bez zmian.
+ */
+export function resourceWejsciaTooltipText(wejscia: number | undefined): string | null {
+  const n = Math.round(wejscia ?? 0);
+  if (!(n > 0)) return null;
+  return `Wejścia przetwórstwa: −${n} sztuk/turę (już odjęte od netto)`;
+}
