@@ -128,6 +128,22 @@ const TREATY_PARAMS_DEFAULT: AiAiTreatyParams = {
 
 const ZERO_PARITY: AiAiTreatyParity = { S: 0, W: 0, D: 0, r: 1 };
 
+let dopłataMnoznikNadpisanieTest: number | null = null;
+
+/** Tylko testy/pomiar (hak civTest). null = wróć do wartości z danych. */
+export function setAiAiDopłataMnoznikForTest(value: number | null): void {
+  dopłataMnoznikNadpisanieTest = value;
+}
+
+/**
+ * R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-SOFTEN-MEASURE-Q1: mnożnik dopłaty D WYŁĄCZNIE dla ścieżki AI↔AI (dane:
+ * dopłataDMnoznikAiAi, domyślnie 1,0 = bez zmiany). Nieskończony / ujemny -> 1,0 (bezpieczny fallback).
+ */
+export function aiAiDopłataMnoznik(): number {
+  const v = dopłataMnoznikNadpisanieTest ?? (aiAiTreatyParamsJson as { dopłataDMnoznikAiAi?: unknown }).dopłataDMnoznikAiAi;
+  return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : 1;
+}
+
 function isAiAiTreatyAction(actionId: string): actionId is AiAiTreatyAction {
   return (AI_AI_TREATY_ACTIONS as readonly string[]).includes(actionId);
 }
@@ -226,7 +242,9 @@ export function evaluateTreatyOffer(ctx: AiAiTreatyEvalContext): AiAiTreatyEvalR
   }
 
   // 8. Dopłata D złotem od słabszej strony; skarbiec nigdy poniżej zera.
-  const D = split.D;
+  // Mnożnik dopłaty D (tylko AI↔AI, domyślnie 1,0 = bit-w-bit jak dotąd; parity.D pozostaje nieskalowane).
+  const mnoznik = aiAiDopłataMnoznik();
+  const D = mnoznik === 1 ? split.D : Math.round(split.D * mnoznik);
   if (D > 0) {
     const payer: 'proposer' | 'target' = split.strongerSide === 'a' ? 'target' : 'proposer';
     const treasury = payer === 'proposer' ? ctx.proposer.treasuryGold : ctx.target.treasuryGold;
