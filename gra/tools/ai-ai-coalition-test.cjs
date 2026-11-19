@@ -163,6 +163,9 @@ function runChecks(M) {
   const celP2 = (plan) => { const a = plan.accepted.find(x => x.proposer === 2); return a ? a.target : null; };
   check(celP2(bez) === 3, 'K7 bez koalicji proponent 2 musi wybrać wyższą willingness (3)');
   check(celP2(z) === 4, 'K7 z premią koalicji proponent 2 musi wybrać wspólnego wroga (4), mimo niższej willingness');
+  // K7b premia z preferowanyCel (zerowe zaufanie) wyprzedza willingness; bez koalicji i bez haka wybiera wyższą willingness
+  const zPref = M.planAiAiAllianceTickFull({ ...planInput({ turn: 8, owners, counts, will, enemies }), preferowanyCel: (p, t) => p === 2 && t === 4 });
+  check(celP2(zPref) === 4, 'K7b preferowanyCel musi dać premię i wyprzedzić wyższą willingness (cel 4)');
 
   // K8 limit 2 zachowany przy koalicji
   const counts8 = new Map([[1, 0], [2, 0], [3, 0], [4, 0]]);
@@ -220,7 +223,10 @@ const baseErrs = runChecks(await load(null));
 const wiringErrs = checkMainWiring();
 const MUTANTY = [
   // M1: premia wyłączona w planerze
-  { name: 'M1 premia wyłączona', tick: [['const premia = maPremieKoalicji(p, t, input.koalicja);', 'const premia = false;']] },
+  // (R-WEB-TEST-DEBT-Q7: kotwica obejmuje początek linii do `||`, bo po FALI 852 linia kończy się `|| (input.preferowanyCel ...)`)
+  { name: 'M1 premia wyłączona', tick: [['const premia = maPremieKoalicji(p, t, input.koalicja) ||', 'const premia = false ||']] },
+  // M9: haczyk preferowanyCel usunięty z premii planera
+  { name: 'M9 preferowanyCel nie daje premii', tick: [['|| (input.preferowanyCel?.(p, t) ?? false);', ';']] },
   // M2: premia nie wyprzedza willingness
   { name: 'M2 premia bez pierwszeństwa', tick: [['|| (kandydat.premia && !best.premia)', '|| false']] },
   // M3: brak histerezy (lider od pierwszej tury)
