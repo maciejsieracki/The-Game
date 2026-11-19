@@ -469,3 +469,97 @@ fn zlote_wyniki_sesji() {
     eprintln!("ZLOTE {:016x}", fnv(&all));
     assert_eq!(format!("{:016x}", fnv(&all)), "dcd224435100671a", "{all}");
 }
+
+/// D-WIRA-3: kwantyzacja klatek 16 ms z resztą; pierwsza klatka tylko ustawia `vLastWall` (`_advanceVClock` `:9502`).
+#[test]
+fn klatki_czasu_rzeczywistego_i_zegar() {
+    let (st, input) = state_for(&scenarios()[5].1);
+    let mut ses = SiegeBattleSession::start(&st, &input, &data()).unwrap();
+    assert_eq!(ses.step(16.0).unwrap().frames, 1);
+    assert_eq!(
+        ses.clock().v_now,
+        0.0,
+        "pierwsza klatka nie przesuwa zegara"
+    );
+    assert_eq!(ses.step(15.0).unwrap().frames, 0);
+    assert_eq!(ses.step(1.0).unwrap().frames, 1);
+    assert_eq!(ses.clock().v_now, 16.0);
+    assert_eq!(ses.step(40.0).unwrap().frames, 2);
+    assert_eq!(ses.clock().v_now, 48.0);
+}
+
+/// D-WIRA-1: kompozytor ciosu jak `_singleBlow` (`:8892-8930`): `isChargeRound` z pierwszego ciosu pary (bonus cywilizacji
+/// rundy szarży, `germanie`), tylko wręcz; kontra `counterMultiplier(cuA, cuD)` w kierunku ciosu.
+#[test]
+fn kompozytor_ciosu_szarza_i_kontry() {
+    use civ_engine::data::civilizations::parse_civ_matrix;
+    use civ_engine::domain::civ_bonuses::civ_matrix_bonusy_for_civ_key;
+    use civ_engine::domain::siege_battle_adapter_unit::counter_multiplier_pin;
+    use civ_engine::domain::siege_tactics_end::BattleSide;
+    use civ_engine::domain::siege_tactics_loop::BlowSite;
+    use civ_engine::domain::siege_tactics_turnseq::UnitRef;
+    let s = Scn {
+        atk: vec!["Włócznik", "Wojownik"],
+        def: vec!["Konnica"],
+        built: vec!["mury"],
+        machines: vec![],
+        battle_index: 7,
+    };
+    let (st, mut input) = state_for(&s);
+    let enemy = st.players.iter().find(|p| p.name == "wrog").unwrap().id;
+    let bonusy = civ_matrix_bonusy_for_civ_key(&parse_civ_matrix().unwrap(), "germanie");
+    input
+        .owners
+        .get_mut(&i64::try_from(enemy.get()).unwrap())
+        .unwrap()
+        .civ_bonusy = bonusy;
+    let d = data();
+    let ses = SiegeBattleSession::start(&st, &input, &d).unwrap();
+    let first = input.anchor_unit_id.to_string();
+    let ai = ses.roster_ids()[0]
+        .iter()
+        .position(|x| *x == first)
+        .expect("wlocznik w bitwie");
+    let a = UnitRef {
+        side: BattleSide::Attacker,
+        idx: ai,
+    };
+    let t = UnitRef {
+        side: BattleSide::Defender,
+        idx: 0,
+    };
+    let site = |attacker, target, ranged, first_blow| BlowSite {
+        attacker,
+        target,
+        ranged,
+        attacker_cell: (10, 70),
+        target_cell: (11, 70),
+        target_on_wall: false,
+        first_blow,
+    };
+    let c1 = ses.compose_blow(&site(a, t, false, true)).unwrap();
+    let c2 = ses.compose_blow(&site(a, t, false, false)).unwrap();
+    let c3 = ses.compose_blow(&site(a, t, true, true)).unwrap();
+    assert_ne!(
+        c1.atk_mods, c2.atk_mods,
+        "bonus rundy szarzy tylko przy pierwszym ciosie"
+    );
+    assert_eq!(c2.atk_mods, c3.atk_mods, "strzal nie jest szarza");
+    let back = ses.compose_blow(&site(t, a, false, true)).unwrap();
+    let (ta, td) = (
+        c1.attacker.counter_typ.clone(),
+        back.attacker.counter_typ.clone(),
+    );
+    assert_eq!(
+        c1.counter_mult,
+        counter_multiplier_pin(&ta, &td, &d.counters, d.counter_mult)
+    );
+    assert_eq!(
+        back.counter_mult,
+        counter_multiplier_pin(&td, &ta, &d.counters, d.counter_mult)
+    );
+    assert_ne!(
+        c1.counter_mult, back.counter_mult,
+        "kontry niesymetryczne dla pary {ta}/{td}"
+    );
+}

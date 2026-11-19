@@ -1004,6 +1004,17 @@ impl SiegeBattleSession {
         &self.field
     }
 
+    /// Wejście ciosu, jakie kompozytor sesji złożyłby dla `site` (diagnostyka i testy; `None` = ciało bez kompozytora).
+    #[must_use]
+    pub fn compose_blow(&self, site: &BlowSite) -> Option<FullBlowInput> {
+        self.lp
+            .env
+            .body
+            .blow_composer
+            .as_ref()
+            .map(|c| c.compose(site))
+    }
+
     /// Identyfikatory rosteru w kolejności `this.atk` / `this.def`.
     #[must_use]
     pub fn roster_ids(&self) -> &[Vec<String>; 2] {
