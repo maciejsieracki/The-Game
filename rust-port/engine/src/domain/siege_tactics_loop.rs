@@ -628,10 +628,17 @@ pub struct SiegeLoop<B: LoopBody> {
     /// PIN3-DIVERGENCE-Q1 (D-PIN3-3): skutek ciała ([`LoopTimer::BodyDone`]: trafienie strzału, cios wręcz, koniec
     /// ostatniego kroku) wykonywany w fazie kroków animacji klatki, PO `_drainTimers` (`_runFastForward` `:9427-9435`,
     /// `_startLoop`), a nie jako zwykły zegar z numerem nadanym w chwili `start` aktywacji. W pinie te skutki planuje
-    /// kolejka `_raf` (cios `localT >= BLOW_HIT_T` w kroku lunge, ostatni krok `_doMove`) albo `_schedule` wołane z
-    /// kroku `_raf` (`_doRangedAttack` `:9223`), więc zegar wieży z tym samym `due` (zaplanowany wcześniej, w fazie
-    /// zegarów) odpala się PRZED nimi — kolejność rzutów RNG. `false` (domyślnie) = dawny model (dotychczasowe testy
-    /// pętli); sesja ustawia `true`.
+    /// kolejka `_raf` (cios `localT >= BLOW_HIT_T` w kroku lunge, ostatni krok `_doMove`), więc zegar wieży z tym samym
+    /// `due` (zaplanowany wcześniej, w fazie zegarów) odpala się PRZED nimi — kolejność rzutów RNG.
+    /// Obrona r1 (N2): dla trafienia STRZAŁU jednostki to PRZYBLIŻENIE. W pinie trafienie strzału jest zwykłym zegarem
+    /// `_schedule(RANGED_FLY_MS)` (`_doRangedAttack` `:9227`), odpalanym w `_drainTimers` w kolejności `due`, potem `id`
+    /// (numer z chwili wystrzału), a nie w fazie `_raf`. Odłożenie daje ten sam wynik, gdy zegar wieży z tym samym `due`
+    /// ma mniejszy `id` (sonda Evaluatora: 5/5 remisów wieża/strzał na 128 c1, zawsze wieża pierwsza). Kontrprzykład
+    /// teoretyczny (NIE_ZMIERZONO, dług D-PIN3-3-SHOT-ID): synchroniczny strzał pierwszego atakującego w `_beginTurn`
+    /// (`_fireSiegeTowers` `:5643` planuje `_fireOneTower` z `delay`, potem `_activateNext` `:5688`) — w pinie strzał
+    /// może dostać mniejszy `id` niż trafienie wieży, a tu wieża wygrywa. Podobnie `dur == 0` (synchroniczne `done()`)
+    /// też jest odkładane (NIE_ZMIERZONO). `false` (domyślnie) = dawny model (dotychczasowe testy pętli); sesja ustawia
+    /// `true`.
     pub body_done_raf: bool,
     /// PIN3-DIVERGENCE-Q1 (D-PIN3-3): skutki ciała odłożone do fazy kroków bieżącej klatki, w kolejności odpaleń.
     raf_pending: Vec<UnitRef>,
@@ -818,7 +825,8 @@ impl<B: LoopBody> SiegeLoop<B> {
     /// (`_spawnDamageLabel` `:9943`). `_tickProjectiles`/`_tickFades` (`:9283-9284`) nie zmieniają stanu pętli (jak
     /// `FfEvent::TickProjectiles`/`TickFades` w [`Self::resume`]). Sufit tur działa tu przez `_checkEnd`
     /// (`_roundCapVerdict` wspólny, `:9440-9447`); `_updateStallWatch` w oblężeniu nic nie liczy (`:5571`). Zwraca liczbę
-    /// odpalonych klocków zegara.
+    /// odpalonych klocków zegara (`drain_timers` liczy każdy zdjęty klocek, także [`LoopTimer::BodyDone`], którego skutek
+    /// odłożono do fazy `_raf` — faza `_raf` niżej nie zdejmuje nowych klocków, więc nie dolicza się drugi raz).
     pub fn step_realtime(&mut self, clock: &mut VirtualClock<LoopTimer>, wall: f64) -> u32 {
         self.env.body.set_ff_active(false);
         clock.advance_v_clock(wall);
@@ -6535,5 +6543,85 @@ mod pin3_timeline_tests {
             "w fazie zegara krok jeszcze nie ruszył"
         );
         assert_eq!(b.facing_at(A0, 1311.0), 2.0);
+    }
+
+    /// Obrona r1 (N1, mutanty E1, E7): pierwszy krok marszu wykonany synchronicznie w chwili wywołania ciała jest dla
+    /// zegara z tym samym `vNow` już wykonany (`unit_cell_at` = pole po kroku), a krok z kolejki `_raf` w tej samej
+    /// chwili jeszcze nie (pole sprzed kroku).
+    #[test]
+    fn pozycja_po_kroku_synchronicznym_i_przed_krokiem_raf() {
+        let mut b = body();
+        b.units[0][0].activate.q = 1;
+        // Wywołanie ciała w 1000 ms: krok (-1,0)->(0,0) synchronicznie.
+        b.set_now(1000.0);
+        b.emit(BattleAction::Move {
+            unit: A0,
+            from: (-1, 0),
+            to: (0, 0),
+            arrive_at: 1310.0,
+        });
+        // Kolejny krok (0,0)->(1,0) z kolejki `_raf` w 1310 ms.
+        b.now = 1310.0;
+        b.emit(BattleAction::Move {
+            unit: A0,
+            from: (0, 0),
+            to: (1, 0),
+            arrive_at: 1620.0,
+        });
+        b.now = 1000.0;
+        assert_eq!(b.unit_cell_at(A0, 999.0), Some((-1, 0)));
+        assert_eq!(
+            b.unit_cell_at(A0, 1000.0),
+            Some((0, 0)),
+            "krok synchroniczny w tej samej chwili jest już wykonany"
+        );
+        assert_eq!(
+            b.unit_cell_at(A0, 1310.0),
+            Some((0, 0)),
+            "krok `_raf` w chwili zegara jeszcze się nie zaczął"
+        );
+        assert_eq!(b.unit_cell_at(A0, 1311.0), Some((1, 0)));
+    }
+
+    /// Obrona r1 (N1, mutanty E1, E4): rozbicie w chwili ostatniego kroku wykonanego synchronicznie nie widzi go jako
+    /// przyszłego (pole zostaje zwolnione, `:9812`), a krok z kolejki `_raf` w tej samej chwili jest przyszły.
+    #[test]
+    fn przyszle_kroki_przy_rozbiciu_w_chwili_kroku() {
+        let mut b = body();
+        b.set_now(1000.0);
+        b.emit(BattleAction::Move {
+            unit: A0,
+            from: (-1, 0),
+            to: (0, 0),
+            arrive_at: 1310.0,
+        });
+        assert!(
+            !b.has_future_steps(A0),
+            "krok synchroniczny w chwili rozbicia jest już wykonany"
+        );
+        b.set_now(1310.0);
+        b.emit(BattleAction::Move {
+            unit: A0,
+            from: (0, 0),
+            to: (1, 0),
+            arrive_at: 1620.0,
+        });
+        assert!(!b.has_future_steps(A0));
+        // Krok z `_raf` zapisany w ciele wywołanym wcześniej (1000), z chwilą 1310: w zegarze 1310 jeszcze przyszły.
+        b.set_now(1000.0);
+        b.now = 1310.0;
+        b.emit(BattleAction::Move {
+            unit: A0,
+            from: (0, 0),
+            to: (1, 0),
+            arrive_at: 1620.0,
+        });
+        b.set_now(1310.0);
+        assert!(
+            b.has_future_steps(A0),
+            "krok `_raf` w chwili zegara jeszcze się nie zaczął"
+        );
+        b.set_now(1311.0);
+        assert!(!b.has_future_steps(A0));
     }
 }
