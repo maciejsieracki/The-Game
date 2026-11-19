@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "891481b5fb99b84bf505fb50218a4b9e",
-  "bundleSha256": "7d2e2c0b9283bd41bf94fc38243fca03744ab9b36507a638d8feb1fdd4cf2795",
-  "bundleBytes": 14994683,
+  "bundleMd5": "a7b576500baeb6f66394f9d2097fb493",
+  "bundleSha256": "de2816755c8fe906c13f3de79d8533abbe046903f57a32fa7a9f9c77661e409c",
+  "bundleBytes": 14994626,
   "sourceSnapshot": {
-    "source": "FC 85f9bcf98 (kod 82de16608)",
+    "source": "FC 51eaf3b68 (kod 91573b398)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 876: R-WEB-ECONOMY-FOOD-TO-TAX-CONVERSION-Q1 (decyzja wlasciciela 2026-11-19): w panelu imperium reczna, jednorazowa zamiana Zywnosci z zapasu panstwa na Podatek, wymaga Targowiska, kurs econ-params budynki.targowisko_zywnosc_na_podatek_kurs 1:1 (cap 54000 = max 54000 Podatku przed silnikiem); AI nie uzywa."
+    "FALA 877: R-WEB-TERRITORY-CITY-FOUNDING-NO-FORT-TAKEOVER-Q1 (decyzja wlasciciela 2026-11-19, odwrocenie reguly 4+5): nowe miasto nie zmienia wlasciciela cudzego fortu/posterunku; centrum fortu i jego ulepszenie zostaja u wlasciciela (territory.ts); pierscien heksow w zasiegu miasta idzie do miasta jak miedzy dwoma miastami; zdobycie fortu wylacznie jednostka wojskowa w wojnie (fort-territory.ts:380)."
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; food-to-tax 71/0 (9 mutantow wykrytych); labor-to-tax 58/0; work-tax 10/0; zywy Chromium NIE ZMIERZONO"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; city-founding-no-fort-takeover 27/0; fort-outpost-hard-territory 92/0; fort-strazniaca 82/0; zywy Chromium NIE ZMIERZONO"
   ],
   "limits": [
-    "Kurs 1:1 bez decyzji wlasciciela; brak zabezpieczenia zapasu na utrzymanie wojska (Praca tez go nie ma); efekt Podatku po silniku NIE ZMIERZONO"
+    "Lokalizacja fortu w cudzym zasiegu nie ujednolicona z miastem; stadniny w pierscieniu fortu moga trafic do miasta; wplyw na wyscig AI NIE ZMIERZONO"
   ],
   "finalControl": "Final Control PASS-WITH-NOTES",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T21:32:14",
+  "hubGeneratedAt": "2026-11-19T21:47:15",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "891481b5fb99b84bf505fb50218a4b9e",
-      "sizeBytes": 14994683
+      "md5": "a7b576500baeb6f66394f9d2097fb493",
+      "sizeBytes": 14994626
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "891481b5fb99b84bf505fb50218a4b9e",
-      "sizeBytes": 14994683
+      "md5": "a7b576500baeb6f66394f9d2097fb493",
+      "sizeBytes": 14994626
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "891481b5fb99b84bf505fb50218a4b9e",
-      "sizeBytes": 14994683
+      "md5": "a7b576500baeb6f66394f9d2097fb493",
+      "sizeBytes": 14994626
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "891481b5fb99b84bf505fb50218a4b9e",
-      "sizeBytes": 14994683
+      "md5": "a7b576500baeb6f66394f9d2097fb493",
+      "sizeBytes": 14994626
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "891481b5fb99b84bf505fb50218a4b9e",
-      "sizeBytes": 14994683
+      "md5": "a7b576500baeb6f66394f9d2097fb493",
+      "sizeBytes": 14994626
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "891481b5fb99b84bf505fb50218a4b9e",
-      "sizeBytes": 14994683
+      "md5": "a7b576500baeb6f66394f9d2097fb493",
+      "sizeBytes": 14994626
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "891481b5fb99b84bf505fb50218a4b9e",
-      "sizeBytes": 14994683
+      "md5": "a7b576500baeb6f66394f9d2097fb493",
+      "sizeBytes": 14994626
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "891481b5fb99b84bf505fb50218a4b9e",
-      "sizeBytes": 14994683
+      "md5": "a7b576500baeb6f66394f9d2097fb493",
+      "sizeBytes": 14994626
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "891481b5fb99b84bf505fb50218a4b9e",
-      "sizeBytes": 14994683
+      "md5": "a7b576500baeb6f66394f9d2097fb493",
+      "sizeBytes": 14994626
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "891481b5fb99b84bf505fb50218a4b9e",
-      "sizeBytes": 14994683
+      "md5": "a7b576500baeb6f66394f9d2097fb493",
+      "sizeBytes": 14994626
     }
   ],
-  "md5": "891481b5fb99b84bf505fb50218a4b9e",
+  "md5": "a7b576500baeb6f66394f9d2097fb493",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

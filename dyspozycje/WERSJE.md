@@ -1,3 +1,9 @@
+## ROBOCZA a7b57650 -- 2026-11-18 -- FALA 877: R-WEB-TERRITORY-CITY-FOUNDING-NO-FORT-TAKEOVER-Q1: zalozenie miasta nie przejmuje fortow ani ich centrum; zajecie fortu tylko silowe (testowa)
+
+- R-WEB-TERRITORY-CITY-FOUNDING-NO-FORT-TAKEOVER-Q1 (decyzja wlasciciela 2026-11-19, odwrocenie reguly 4+5): nowe miasto nie zmienia wlasciciela cudzego fortu/posterunku; centrum fortu i jego ulepszenie zostaja u wlasciciela (territory.ts); pierscien heksow w zasiegu miasta idzie do miasta jak miedzy dwoma miastami; zdobycie fortu wylacznie jednostka wojskowa w wojnie (fort-territory.ts:380).
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; city-founding-no-fort-takeover 27/0; fort-outpost-hard-territory 92/0; fort-strazniaca 82/0; zywy Chromium NIE ZMIERZONO
+- Limity: Lokalizacja fortu w cudzym zasiegu nie ujednolicona z miastem; stadniny w pierscieniu fortu moga trafic do miasta; wplyw na wyscig AI NIE ZMIERZONO
+
 ## ROBOCZA 891481b5 -- 2026-11-18 -- FALA 876: R-WEB-ECONOMY-FOOD-TO-TAX-CONVERSION-Q1: reczna zamiana Zywnosci na Podatek (jak Praca), kurs 1:1 w parametrze (testowa)
 
 - R-WEB-ECONOMY-FOOD-TO-TAX-CONVERSION-Q1 (decyzja wlasciciela 2026-11-19): w panelu imperium reczna, jednorazowa zamiana Zywnosci z zapasu panstwa na Podatek, wymaga Targowiska, kurs econ-params budynki.targowisko_zywnosc_na_podatek_kurs 1:1 (cap 54000 = max 54000 Podatku przed silnikiem); AI nie uzywa.
