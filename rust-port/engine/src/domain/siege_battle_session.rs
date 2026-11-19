@@ -21,7 +21,7 @@
 //! Wejście ciosu (dług U5/F4 T4, D-ADP-6 T6): [`SessionBlowComposer`] składa [`FullBlowInput`] W CHWILI CIOSU jak
 //! `_singleBlow` (`:8811-8960`) z bieżących pozycji i flag, dla każdej pary (bez szablonów per cel).
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 use crate::data::units_combat::{
     parse_combat_params, parse_terrain_combat, COUNTERS_JSON, TERRAIN_COMBAT_JSON, UNITS_JSON,
@@ -69,7 +69,9 @@ use crate::domain::siege_tactics_blow_full::{AtkMods, DefMods, FullBlowInput};
 use crate::domain::siege_tactics_clock::VirtualClock;
 use crate::domain::siege_tactics_end::BattleSide;
 use crate::domain::siege_tactics_fastforward::{FfStop, BATTLE_FRAME_WALL_MS};
-use crate::domain::siege_tactics_inputs_terrain::{terrain_defense_multiplier, TerrainEntry};
+use crate::domain::siege_tactics_inputs_terrain::{
+    norm_terrain, terrain_defense_multiplier, TerrainEntry,
+};
 use crate::domain::siege_tactics_inputs_unit::CombatUnitModel;
 use crate::domain::siege_tactics_inputs_unit::{StatRow, ToCombatUnitOpts};
 use crate::domain::siege_tactics_inputs_wall::{wall_defense_totals, MiastoWallParamValues};
@@ -177,6 +179,9 @@ pub struct SessionData {
     pub counter_mult: f64,
     /// `terrain-combat.json` (`Teren`, `Bonus Obrona`).
     pub terrain_rows: Vec<TerrainRow>,
+    /// `terrain-combat.json` (`Teren`, `Δ Zasięg (dystansowi)`) dla `terrainRangeDelta` (`combat.ts:730-742`), obrona r2
+    /// E2-1a (D-WIRA-16).
+    pub terrain_range_rows: Vec<TerrainRangeRow>,
     pub river_attack_mult: f64,
     pub brod_kara_obrona: f64,
     pub brod_bonus_brzegu: f64,
@@ -227,6 +232,13 @@ impl SessionData {
                     bonus_obrona: Some(t.bonus_obrona.clone()),
                 })
                 .collect(),
+            terrain_range_rows: terrain
+                .iter()
+                .map(|t| TerrainRangeRow {
+                    teren: t.teren.clone(),
+                    delta_zasieg: Some(t.delta_zasieg_dystansowi.clone()),
+                })
+                .collect(),
             river_attack_mult: cp.river_attack_mult,
             brod_kara_obrona: cp.brod.kara_obrona,
             brod_bonus_brzegu: cp.brod.bonus_obrona_brzegu,
@@ -244,6 +256,45 @@ impl SessionData {
             fallback: UnitDefFallback::PinRecord,
         })
     }
+}
+
+/// Wiersz `terrain-combat.json` czytany przez `terrainRangeDelta` (`combat.ts:730-742`): `Teren` i surowa kolumna
+/// `Δ Zasięg (dystansowi)` (`RANGE_DELTA_KEY` `:714`; `None` = `null`/`undefined`).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TerrainRangeRow {
+    pub teren: String,
+    pub delta_zasieg: Option<String>,
+}
+
+/// `terrainRangeDelta(terrain, terrainData)` (`combat.ts:730-742`): wpis po `normTerrain` (`findTerrainEntry`
+/// `:706-710`, pusty teren albo pusta tablica = brak), surowa wartość z `−` zamienionym na `-`, pierwsze dopasowanie
+/// `/([+-]?\d+)/` i `parseInt(.., 10)`; brak wpisu, wartości albo dopasowania = `0`.
+#[must_use]
+pub fn terrain_range_delta(terrain: &str, rows: &[TerrainRangeRow]) -> f64 {
+    if terrain.is_empty() || rows.is_empty() {
+        return 0.0;
+    }
+    let want = norm_terrain(terrain);
+    let Some(entry) = rows.iter().find(|t| norm_terrain(&t.teren) == want) else {
+        return 0.0;
+    };
+    let Some(raw) = entry.delta_zasieg.as_deref() else {
+        return 0.0;
+    };
+    let s = raw.replace('\u{2212}', "-");
+    let b = s.as_bytes();
+    let digit = |i: usize| b.get(i).is_some_and(u8::is_ascii_digit);
+    // Najbardziej lewe dopasowanie `[+-]?\d+`: znak liczy się tylko, gdy po nim stoi cyfra.
+    let Some(start) =
+        (0..b.len()).find(|&i| digit(i) || (matches!(b[i], b'+' | b'-') && digit(i + 1)))
+    else {
+        return 0.0;
+    };
+    let mut end = if digit(start) { start } else { start + 1 };
+    while digit(end) {
+        end += 1;
+    }
+    s[start..end].parse::<f64>().unwrap_or(0.0)
 }
 
 /// Wejście startu sesji (pola `launchSiegeStormFromMap` / `new BattleScene` spoza `PlayableState`).
@@ -986,6 +1037,16 @@ impl SiegeBattleSession {
         )
         .map_err(SessionError::InvalidData)?;
         body.tower_outcome_effects = true;
+        // Obrona r2 (E2-1a, D-WIRA-16): `_applyTerrainRange` w ciele (`:6064`, `:7740`, `:7929`) z siatką
+        // `terrainRangeDelta(combatTerrainName(c, r))` (`:7495-7496`).
+        let mut range_grid = HashMap::new();
+        for c in 0..i64::from(field.map.cols()) {
+            for r in 0..i64::from(field.map.rows()) {
+                let name = field.map.combat_terrain_name_f(c as f64, r as f64);
+                range_grid.insert((c, r), terrain_range_delta(name, &data.terrain_range_rows));
+            }
+        }
+        body.terrain_range_delta = Some(range_grid);
         body.blow_composer = Some(Box::new(SessionBlowComposer {
             units: [
                 compose_units(&atk_units, atk_t, false),

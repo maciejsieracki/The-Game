@@ -33,6 +33,7 @@ use crate::domain::player_order_move_gate::{
     compact_attack_allows_step, should_avoid_auto_backtrack, BacktrackUnit, BlockadeSettings,
     CompactStepUnit, GroupDoctrine as GateDoctrine, GroupMeta, LineMember,
 };
+use crate::domain::siege_battle_adapter_body::{apply_terrain_range, TerrainRangeUnit};
 use crate::domain::siege_city_fortification::{melee_blocked_by_wall, MeleeWallContext};
 use crate::domain::siege_no_breach::RoundCapVerdict;
 use crate::domain::siege_tactics_actions::{
@@ -47,8 +48,8 @@ use crate::domain::siege_tactics_advance::{
     advance_after_move, advance_step_decide, AdvanceDecision, AdvanceUnit, AdvanceWorld, AfterStep,
 };
 use crate::domain::siege_tactics_approach::{
-    siege_move_refused, siege_shooter_threats, ApproachUnit, ApproachWallState, ShooterDefender,
-    SiegeTowerRef, BF_COLS, BF_ROWS,
+    siege_approach_restricted, siege_move_refused, siege_shooter_threats, ApproachUnit,
+    ApproachWallState, ShooterDefender, SiegeTowerRef, BF_COLS, BF_ROWS,
 };
 use crate::domain::siege_tactics_atk::{
     advance_toward_pick, attacker_wall_entry_is_breach, goal_holds, infantry_to_tower_plan,
@@ -1197,7 +1198,8 @@ struct ProdOps {
 
 impl ActivateOps for ProdOps {
     fn apply_terrain_range(&mut self, current: f64) -> f64 {
-        // Przeliczenie zasięgu terenu jest wejściem adaptera (`ProdUnit::activate.range`).
+        // Przeliczenie wykonuje ciało przed maszyną (`ProdBody::refresh_terrain_range`, obrona r2 E2-1a), bo wejścia
+        // `ProdOps` (cele) czytają już przeliczony zasięg; maszyna dostaje gotową wartość.
         current
     }
     fn perform_player_order(&mut self) -> bool {
@@ -1467,6 +1469,14 @@ pub struct ProdBody<R: RollSource> {
     /// `_gainMorale` strzelca pomijane). `false` (domyślnie, dotychczasowe wektory `p4_1i3`/`p4_1i2`, które stubują te
     /// skutki) = jawny tag `wieza-resolveBlowOutcome-efekty`. Sesja produkcyjna ustawia `true`.
     pub tower_outcome_effects: bool,
+    /// K5LOOP-WIRING-A obrona r2 (E2-1a, D-WIRA-16): `terrainRangeDelta(terrainMap.combatTerrainName(q, r))`
+    /// (`battleScene.ts:7495-7496`, `combat.ts:730-742`) dla każdego kafla pola, czytane przez `_applyTerrainRange(ru)`
+    /// (`:7490-7502`) w miejscach, w których woła je pin: początek aktywacji (`_activateUnit` `:6064`), `_siegeShooterThreats`
+    /// (`:7929`) i zejście z korony po wyłomie (`:7740`). Siatka jest stała przez bitwę: jedyne zmiany kafli w pinie to mur
+    /// i brama → `Plains` (`_breachWallTile` `:7644`, `:7763-7772`), a `combatTerrainName` muru, bramy i równiny jest ten
+    /// sam (`Plaskie`, delta 0). `None` (domyślnie, dotychczasowe wektory pętli ze stubami) = zasięg z adaptera bez
+    /// przeliczania (dawne D-B7); sesja produkcyjna ustawia `Some`.
+    pub terrain_range_delta: Option<HashMap<(i64, i64), f64>>,
 }
 
 /// K5LOOP-WIRING-A (#369): miejsce jednego ciosu `_singleBlow(attacker, defender, ranged)` w chwili ciosu.
@@ -2053,6 +2063,7 @@ impl<R: RollSource> ProdBody<R> {
             flee_after: None,
             blow_composer: None,
             tower_outcome_effects: false,
+            terrain_range_delta: None,
             terrain: None,
             units,
             scene,
@@ -2265,6 +2276,30 @@ impl<R: RollSource> ProdBody<R> {
         self.move_step_core(unit, col, row, refused, move_left, autobatch, &enemies)
     }
 
+    /// K5LOOP-WIRING-A obrona r2 (E2-1a): `_applyTerrainRange(ru)` (`battleScene.ts:7490-7502`) na bieżącym kaflu
+    /// jednostki: `ru.range = ru.rangeBase` dla nie-strzelca/katapulty/`rangeBase <= 0`, inaczej
+    /// `max(0, rangeBase + delta)` i podwojenie na koronie ([`apply_terrain_range`]). Bez siatki
+    /// ([`Self::terrain_range_delta`] = `None`) bez zmian (dotychczasowe wektory pętli).
+    fn refresh_terrain_range(&mut self, side: BattleSide, idx: usize) {
+        let Some(grid) = self.terrain_range_delta.as_ref() else {
+            return;
+        };
+        let ix = side_ix(side);
+        let a = &self.units[ix][idx].activate;
+        let delta = grid.get(&(a.q, a.r)).copied().unwrap_or(0.0);
+        let range = apply_terrain_range(
+            &TerrainRangeUnit {
+                side_def: side == BattleSide::Defender,
+                on_wall_walkway: a.on_wall_walkway,
+                ranged_base: self.ranged_base[ix][idx],
+                is_catapult: a.is_catapult,
+                range_base: self.range_base[ix][idx],
+            },
+            delta,
+        );
+        self.units[ix][idx].activate.range = range;
+    }
+
     /// K5LOOP-SIEGE-ATK-B (T2b): `this.siegeWallCol >= 0 && this._siegeMoveRefused(ru, col, row)` (`battleScene.ts:8689`,
     /// `:7963-7970`) dla jednostki `unit` stojącej na swoim polu. `_siegeApproachRestricted(ru)` (`:7951-7960`) z flag
     /// jednostki i stanu muru ciała; `_siegeShooterThreats()` (`:7924-7937`) z obrońców (`enemies` = `this.def` z flagami
@@ -2273,7 +2308,7 @@ impl<R: RollSource> ProdBody<R> {
     /// wieżyczek ([`Self::siege_towers`], [`Self::tower_range`]). Kolejność JS: zagrożenia liczone dopiero po bramce
     /// `_siegeApproachRestricted` (`_applyTerrainRange` nie ma tu skutku, więc kolejność nie zmienia wyniku).
     fn siege_move_refused_now(
-        &self,
+        &mut self,
         unit: UnitRef,
         col: i64,
         row: i64,
@@ -2295,8 +2330,22 @@ impl<R: RollSource> ProdBody<R> {
                 || a.shooting_disabled,
             mounted: a.mounted,
         };
+        let here = (a.q as f64, a.r as f64);
         let wall = self.approach_wall(wall_col);
         let other = side_ix(opposite(unit.side));
+        // Obrona r2 (E2-1a): `_siegeShooterThreats` (`:7929`) woła `_applyTerrainRange(d)` (MUTACJA `d.range`) dla każdego
+        // obrońcy po strażach, ale tylko gdy `_siegeApproachRestricted(ru)` przepuści (`_siegeMoveRefused` `:7964`).
+        if self.terrain_range_delta.is_some() && siege_approach_restricted(&approach, &wall) {
+            for (i, e) in enemies.iter().enumerate() {
+                if e.dead || e.fading_out || e.routed {
+                    continue;
+                }
+                if !self.units[other][i].activate.can_shoot || self.range_base[other][i] <= 0.0 {
+                    continue;
+                }
+                self.refresh_terrain_range(opposite(unit.side), i);
+            }
+        }
         let defenders: Vec<ShooterDefender> = enemies
             .iter()
             .enumerate()
@@ -2323,13 +2372,7 @@ impl<R: RollSource> ProdBody<R> {
                     .map_or(f64::NAN, |i| self.units[other][i].activate.range)
             },
         );
-        siege_move_refused(
-            &approach,
-            &wall,
-            &threats,
-            (a.q as f64, a.r as f64),
-            (col as f64, row as f64),
-        )
+        siege_move_refused(&approach, &wall, &threats, here, (col as f64, row as f64))
     }
 
     /// K5LOOP-SIEGE-ATK-B: stan muru ciała dla `_siegeApproachRestricted` (`:7951-7960`).
@@ -3966,6 +4009,9 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             });
             return dur;
         }
+        // Obrona r2 (E2-1a): `_applyTerrainRange(ru)` na początku aktywacji (`_activateUnit` `:6064`), po strażach
+        // `finished`/`dead`/`routed`, PRZED każdą gałęzią czytającą `ru.range` (cele, strzelec, marsz).
+        self.refresh_terrain_range(unit.side, unit.idx);
         let pu = self.units[ix][unit.idx].clone();
         // Gałęzie spoza zakresu sprawdzane PRZED maszyną (żeby maszyna nie wybrała ścieżki strzelca/doktryny).
         // K5LOOP-SIEGE-DEF (T1): przy murze ciało wykonuje stronę `def` (`_activateUnit` `:6087`, `:6129-6172`,
@@ -5873,6 +5919,8 @@ impl<R: RollSource> ProdBody<R> {
                     .insert(cell_key(c2 as f64, r2 as f64), unit_tag(u));
             }
             self.units[1][idx].activate.on_wall_walkway = false;
+            // `_applyTerrainRange(u)` po zejściu z korony (`:7740`): podwojenie zasięgu znika.
+            self.refresh_terrain_range(BattleSide::Defender, idx);
             self.emit(BattleAction::LeaveField {
                 unit: u,
                 from,

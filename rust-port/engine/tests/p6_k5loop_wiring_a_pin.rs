@@ -23,6 +23,7 @@ use civ_engine::domain::siege_battle_adapter_unit::{
 };
 use civ_engine::domain::siege_battle_session::{
     SceneInput, SessionData, SessionError, SessionOutcome, SessionPhase, SiegeBattleSession,
+    TerrainRangeRow,
 };
 use civ_engine::domain::siege_tactics_blow_env::TerrainRow;
 use civ_engine::domain::siege_tactics_inputs_unit::ToCombatUnitOpts;
@@ -67,6 +68,15 @@ fn pin_session_data() -> SessionData {
             .map(|t| TerrainRow {
                 teren: t["Teren"].as_str().unwrap().to_owned(),
                 bonus_obrona: t["Bonus Obrona"].as_str().map(str::to_owned),
+            })
+            .collect(),
+        terrain_range_rows: d["terrainCombat"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|t| TerrainRangeRow {
+                teren: t["Teren"].as_str().unwrap().to_owned(),
+                delta_zasieg: t["Δ Zasięg (dystansowi)"].as_str().map(str::to_owned),
             })
             .collect(),
         river_attack_mult: f(&cp["river_attack_mult"]),

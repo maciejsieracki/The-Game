@@ -308,6 +308,8 @@ if (sha !== EXPECTED_SHA256) {
   console.error('SHA-256 tekstu pinu: ' + sha);
   if (!process.env.WIRING_A_PRINT_SHA) throw new Error('straznik SHA-256 pinu: ' + sha + ' != ' + EXPECTED_SHA256);
 }
+// Obrona r2 (N1 Evaluatora): diagnostyka (`WIRING_A_TRACE`) liczy tylko wybrany scenariusz i NIE zapisuje wektorow.
+if (process.env.WIRING_A_TRACE) process.exit(0);
 const outDir = join(here, 'p6_k5loop_wiring_a_pin_vectors');
 mkdirSync(outDir, { recursive: true });
 const pinData = {
