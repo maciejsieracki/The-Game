@@ -1182,6 +1182,7 @@ import {
   autoRaiseRationsForGrowth,
   maxSafePoziomRacjiForCity,
   isCityAutoWyzywienieEnabled,
+  runManualFoodTaxAction,
   type EmpireFoodState,
   type EmpireFoodTickResult,
   type AutoRationAdjustResult,
@@ -29726,6 +29727,40 @@ async function boot(): Promise<void> {
             queueTax: (id, tax) => pendingManualWorkTaxByOwner.set(id,
               (pendingManualWorkTaxByOwner.get(id) ?? 0) + tax),
             refreshRates: () => refreshLiveEmpireRates(),
+            markDirty: () => markCityStateDirty(),
+            readRates: () => ({ skarb: _lastPieniadzRate, nauka: _lastNaukaRate }),
+            showMessage: (msg) => showHintMessage(msg, 6000),
+            updateHud: () => updateHud(),
+          });
+        },
+        // R-WEB-ECONOMY-FOOD-TO-TAX-CONVERSION-Q1: zamiana Zywnosci z zapasu imperium (zapasyPanstwa)
+        // na Podatek, wzorem zamiany Pracy wyzej. Ta sama kolejka podatku (pendingManualWorkTaxByOwner),
+        // wiec zapis/wczytanie i naliczenie na koniec tury sa wspolne. Tylko czlowiek + Targowisko.
+        getOwnerFoodReserve: (ownerId) => getEmpireFoodReserve(ownerId),
+        canConvertOwnerFoodToTax: (ownerId) => ownerCanConvertWorkToTax(ownerId,
+          isHuman(ownerId), cities, cityBuilt),
+        getOwnerFoodTaxRate: (_ownerId) => {
+          const rawParams = data.econParams as unknown as { budynki?: Record<string, Record<string, number>> };
+          const rate = rawParams.budynki?.targowisko_zywnosc_na_podatek_kurs?.[_menuDifficulty];
+          return typeof rate === 'number' && Number.isFinite(rate) && rate >= 0 ? rate : 1;
+        },
+        onConvertOwnerFoodToTax: (ownerId, requested) => {
+          const enabled = ownerCanConvertWorkToTax(ownerId, isHuman(ownerId), cities, cityBuilt);
+          const rawParams = data.econParams as unknown as { budynki?: Record<string, Record<string, number>> };
+          const configuredRate = rawParams.budynki?.targowisko_zywnosc_na_podatek_kurs?.[_menuDifficulty];
+          const rate = typeof configuredRate === 'number' && Number.isFinite(configuredRate) && configuredRate >= 0
+            ? configuredRate : 1;
+          return runManualFoodTaxAction(ownerId, requested, rate, enabled, {
+            getReserve: (id) => getEmpireFoodReserve(id),
+            setReserve: (id, value) => {
+              const st = empireFoodStates.get(id) ?? freshEmpireFoodState();
+              st.zapasyPanstwa = Math.max(0, value);
+              empireFoodStates.set(id, st);
+            },
+            queueTax: (id, tax) => pendingManualWorkTaxByOwner.set(id,
+              (pendingManualWorkTaxByOwner.get(id) ?? 0) + tax),
+            refreshRates: () => refreshLiveEmpireRates(),
+            // markCityStateDirty czysci _maxSafeRationCache (inwalidacja globalna).
             markDirty: () => markCityStateDirty(),
             readRates: () => ({ skarb: _lastPieniadzRate, nauka: _lastNaukaRate }),
             showMessage: (msg) => showHintMessage(msg, 6000),
