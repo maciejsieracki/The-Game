@@ -21,7 +21,11 @@ const capFor = (normal) => Math.max(1, Math.floor(normal * MULT));
 const CASES = [
   { name: 'Wojownik (gracz) zlamany w reczniej turze 1', atk: 'Wojownik:6', def: 'Wojownik:6', route: 'Warrior', seed: 1 },
   { name: 'Rydwan konny (gracz) zlamany w reczniej turze 1', atk: 'Rydwan konny:4', def: 'Wojownik:6', route: 'War Chariot', seed: 1 },
+  // zarzut Evaluatora 1: jednostka Harappy (Strażnik bram, normalny 3 -> limit 1) w tej samej bitwie recznej
+  { name: 'Strażnik bram Harappy (gracz, civ Harappa) zlamany w reczniej turze 1', atk: 'Strażnik bram Harappy:2', def: 'Wojownik:2', route: 'Harappan Gate Guard', civA: 'Harappa', seed: 1 },
 ];
+// Env FLEE_CASE=<indeks> uruchamia jeden przypadek (dlugie przypadki mieszcza sie w osobnych wywolaniach).
+const RUN_CASES = process.env.FLEE_CASE ? CASES.filter((_, i) => String(i) === process.env.FLEE_CASE) : CASES;
 
 (async () => {
   const server = await createServer({ root, configFile: path.join(root, 'vite.config.ts'), logLevel: 'error', server: { host: '127.0.0.1', port: 0, strictPort: false } });
@@ -32,14 +36,18 @@ const CASES = [
   check('data/combat-params.json ucieczka.mnoznik_ruchu = 0.5 (udzial wpisany w tescie)', Number(combat.ucieczka.mnoznik_ruchu) === EXPECTED_SHARE, { mnoznik: combat.ucieczka.mnoznik_ruchu });
   const table = [];
   try {
-    for (const c of CASES) {
+    for (const c of RUN_CASES) {
       const page = await browser.newPage({ viewport: { width: 800, height: 600 } });
       const errors = []; page.on('pageerror', e => errors.push(e.message));
-      const qs = new URLSearchParams({ seed: String(c.seed), atk: c.atk, def: c.def, route: c.route, rounds: '4' });
+      const qs = new URLSearchParams({ seed: String(c.seed), atk: c.atk, def: c.def, route: c.route, rounds: '4', ...(c.civA ? { civA: c.civA } : {}) });
       await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tools/battle-flee-manual-browser-entry.html?${qs.toString()}`, { waitUntil: 'load', timeout: 60000 });
       await page.waitForFunction(() => window.__e2e?.ready === true, undefined, { timeout: 60000 });
       let timedOut = false;
-      try { await page.waitForFunction(() => window.__e2e.done === true, undefined, { timeout: MAX_MS, polling: 500 }); } catch { timedOut = true; }
+      try { await page.waitForFunction(() => window.__e2e.done === true, undefined, { timeout: MAX_MS, polling: 500 }); } catch {
+        timedOut = true;
+        // diagnostyka timeoutu: stan bitwy i nazwy jednostek gracza (surowe dane)
+        console.log('DIAG: ' + JSON.stringify(await page.evaluate(() => ({ round: window.__scene.roundNo, finished: window.__scene.finished, routedId: window.__e2e.routedId, started: window.__scene.started, deploy: window.__scene.deployPhase, roster: window.__scene._playerRoster().map(u => u.bu.nazwa + '/' + u.side + '/routed=' + !!u.routed) }))));
+      }
       const r = await page.evaluate(() => window.__e2e.result);
       await page.close();
       check(`[${c.name}] bitwa reczna dala wynik bez bledow`, !errors.length && !!r, { timedOut, errors });
@@ -49,6 +57,8 @@ const CASES = [
       check(`[${c.name}] zlamana jednostka wykonala kroki ucieczki w >= 2 turach`,
         !!u && Object.keys(u.perRound).length >= 2, { routed: r.routed.map(x => x.id), routedId: r.routedId });
       if (!u) continue;
+      // zarzut Evaluatora 2: tryb reczny ma byc faktycznie aktywny w bitwie, nie tylko zapisany w api.info
+      check(`[${c.name}] bitwa dziala w trybie recznym (manualMode=true)`, u.manualMode === true, { manualMode: u.manualMode });
       const cap = capFor(u.normal);
       table.push({ case: c.name, nazwa: u.nazwa, normal: u.normal, flee: u.flee, cap, perRound: u.perRound, maxPerRound: u.maxPerRound, totalSteps: u.totalSteps });
       check(`[${c.name}] ${u.nazwa}: normalny zasieg ${u.normal}, limit ucieczki ${cap}, max krokow/tura ${u.maxPerRound}`,

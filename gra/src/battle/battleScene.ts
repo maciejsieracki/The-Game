@@ -19391,6 +19391,18 @@ export class BattleScene {
   }
 
   private _manualOrderAfterStep(ru: RuntimeBattleUnit, done: () => void): void {
+    // R-WEB-BATTLE-FLEE-MANUAL-MODE-HARAPPA-MEASURE-Q1 (zarzut Evaluatora 3): jednostka zlamana W TRAKCIE
+    // lancucha rozkazu recznego nie idzie dalej normalnym tempem; przechodzi na _fleeStep z zapasem tury =
+    // mnoznik ucieczki minus to, co juz przeszla w tej turze (ten sam wzor co zamrozona fala, normalPlan).
+    if (ru.routed) {
+      if (ru.fleeBudgetRound !== this.roundNo) {
+        const spent = Math.max(0, this._movementPointsFor(ru.bu) - ru.moveLeft);
+        ru.fleeBudgetRound = this.roundNo;
+        ru.moveLeft = Math.max(0, Math.min(ru.moveLeft, this._fleeMovePointsFor(ru.bu) - spent));
+      }
+      this._fleeStep(ru, done);
+      return;
+    }
     if (this._manualOrderChainActive(ru)) this._performPlayerOrder(ru, done);
     else done();
   }
