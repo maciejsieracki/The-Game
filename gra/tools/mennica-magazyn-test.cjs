@@ -144,9 +144,10 @@ if (!spot) {
   process.exit(1);
 }
 
-function runTick(builtIds, walutaOdkryta) {
+function runTick(builtIds, walutaOdkryta, stock = {}) {
   const cities = [];
   const c = M.foundCityAt(spot.q, spot.r, 0, cities, map, 'TestCity');
+  c.surowce = { ...stock };
   cities.push(c);
   const builtByCity = new Map([[c.id, builtIds]]);
   const playerZbadane = new Set(walutaOdkryta ? ['Waluta'] : []);
@@ -156,10 +157,15 @@ function runTick(builtIds, walutaOdkryta) {
   return { tick: econ.perCity[0], city: c };
 }
 
-const base       = runTick([], false).tick;                     // brak Mennicy, brak Waluty
-const walutaOnly = runTick([], true).tick;                       // Waluta bez Mennicy
-const mennicaOnly = runTick(['mennica'], false).tick;             // Mennica bez Waluty
-const both       = runTick(['mennica'], true).tick;               // Mennica + Waluta -> gate ON
+// Złoto w stocku dla WSZYSTKICH czterech scenariuszy (tylko Mennica/Waluta się różnią).
+const ZLOTO_STOCK = { zloto: 10 };
+const base       = runTick([], false, ZLOTO_STOCK).tick;                     // brak Mennicy, brak Waluty
+const walutaOnly = runTick([], true, ZLOTO_STOCK).tick;                       // Waluta bez Mennicy
+// Mennica WYMAGA złota w magazynie (building-resource-gate.ts:76, decyzja 2026-11-19 pkt 2).
+// Złoto podajemy w stocku, żeby budynek REALNIE produkował i asercja o multiplikatorze Efektu 1
+// miała moc (bez złota delta = 0 niczego nie dowodzi: 0 x mnożnik = 0).
+const mennicaOnly = runTick(['mennica'], false, ZLOTO_STOCK).tick;  // Mennica bez Waluty (ze złotem)
+const both       = runTick(['mennica'], true, ZLOTO_STOCK).tick;    // Mennica + Waluta -> gate ON
 
 eq(walutaOnly.pieniadzBrutto, base.pieniadzBrutto,
   'Waluta BEZ Mennicy: BRAK zmiany wzgledem baseline (sedno decyzji 2026-07-25 -- sam tech juz nie wystarcza)');
@@ -178,11 +184,15 @@ eq(walutaOnly.pieniadzBrutto, base.pieniadzBrutto,
 //
 // Test nadal dowodzi dokladnie tego, co mial dowodzic: multiplikator Efektu 1 NIE przecieka
 // przy samej Mennicy bez Waluty. Gdyby przeciekal, delta bylaby wielokrotnie wyzsza.
-// DECYZJA WŁAŚCICIELA 2026-11-19 (pkt 2): Mennica WYMAGA ZŁOTA w magazynie (building-resource-gate.ts:76
-// mennica:[ZLOTO_LABEL]). Ten scenariusz nie ma złota, więc budynek nie produkuje wcale: delta = 0.
-// Asercja nadal chroni intencję: multiplikator Efektu 1 NIE przecieka przy samej Mennicy bez Waluty.
-eq(mennicaOnly.pieniadzBrutto - base.pieniadzBrutto, 0,
-  'Mennica BEZ Waluty i BEZ złota: delta = 0 (bramka zasobu Złota, decyzja 2026-11-19 pkt 2; multiplikator Efektu 1 NIEaktywny)');
+// Scenariusz ma złoto w stocku (ZLOTO_STOCK = decyzja 2026-11-19 pkt 2: Mennica wymaga złota,
+// building-resource-gate.ts:76). Intencja (multiplikator Efektu 1 NIE przecieka przy samej Mennicy bez
+// Waluty) wymaga, by Mennica realnie produkowała; oczekiwana wartość = 2 (decyzja 67B).
+// STAN NA 2026-11-19 (runda 2 obrony): zmierzone 0 ZARÓWNO ze złotem 10, JAK i bez złota, oraz w teście
+// sprzed kandydata (HEAD~1 też got 0). Mennica nie dowozi własnego plonu Pieniądza do pieniadzBrutto w tym
+// scenariuszu -- ZNALEZISKO GRY (nie błąd testu). Asercja zostaje CZERWONA z tym opisem. Oczekiwania NIE
+// zmieniam na 0: 0 unieważniałoby test wycieku mnożnika.
+eq(mennicaOnly.pieniadzBrutto - base.pieniadzBrutto, 2,
+  'Mennica BEZ Waluty (ze złotem): delta = wlasny plon budynku po podziale suwakiem (67B) = 2; OBECNIE 0 = błąd gry do wyjaśnienia (multiplikator Efektu 1 NIEaktywny)');
 assert(both.pieniadzBrutto > walutaOnly.pieniadzBrutto,
   `Mennica + Waluta: dochod wyzszy niz sama Waluta (${both.pieniadzBrutto} > ${walutaOnly.pieniadzBrutto})`);
 

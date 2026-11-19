@@ -9,18 +9,17 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
 
 const BASE_COMMIT = '329db81ff1622360699fdbb7fc56f2c721121c86';
 const repoRoot = path.resolve(__dirname, '..');
 const unitsPath = path.join(repoRoot, 'data', 'units.json');
 const currentUnits = JSON.parse(fs.readFileSync(unitsPath, 'utf8'));
-const baseUnits = JSON.parse(execFileSync(
-  'git',
-  ['show', `${BASE_COMMIT}:gra/data/units.json`],
-  { cwd: repoRoot, encoding: 'utf8' },
-));
+// ZAMROŻONA baza kosztów (R-WEB-TEST-DEBT-Q11, runda 2 obrony): kopia units.json z 329db81ff w
+// tools/fixtures/units-baza-329db81ff.json. Commit 329db81ff NIE jest przodkiem origin/main, więc
+// `git show` padał w czystym klonie main. Test nie zależy już od historii git.
+const BASE_UNITS_FIXTURE = path.join(__dirname, 'fixtures', 'units-baza-329db81ff.json');
+const baseUnits = JSON.parse(fs.readFileSync(BASE_UNITS_FIXTURE, 'utf8'));
 // RE-BASELINE (R-WEB-TEST-DEBT-Q11, 2026-11-19): pola NIEKOSZTOWE porównujemy z ZAMROŻONYM snapshotem
 // AKTUALNYCH danych (tools/fixtures/units-nonkoszt-2026-11-19.json), a nie z 329db81ff -- ~250 różnic
 // w polach niekosztowych to świadome zmiany danych po tym commicie. Pola kosztowe (3 halved) nadal
