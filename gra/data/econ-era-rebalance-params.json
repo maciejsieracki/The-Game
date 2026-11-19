@@ -1,7 +1,7 @@
 {
-  "_opis": "R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1 + R-WEB-ECONOMY-ERA-REBALANCE-ENABLE-Q1: rebalans ekonomii wg epok DOMYSLNIE WLACZONY (eraRebalansAktywny=true; decyzja wlasciciela 2026-11-19, ABC A: wlaczyc na ROBOCZEJ i zobaczyc w grze). Cofniecie: ustaw eraRebalansAktywny=false (gra wraca do wartosci legacy). Surowce i ulepszenia bez wzrostu co epoke (wartosci epoki 1), zywnosc wojska x3 na epoke (4/12/36), racje obywateli m(e)=2^(e-1) (1/2/4/8/16).",
+  "_opis": "R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1 + R-WEB-ECONOMY-ERA-REBALANCE-ENABLE-Q1: rebalans ekonomii wg epok DOMYSLNIE WLACZONY (eraRebalansAktywny=true; decyzja wlasciciela 2026-11-19, ABC A: wlaczyc na ROBOCZEJ i zobaczyc w grze). Cofniecie: ustaw eraRebalansAktywny=false (gra wraca do wartosci legacy). Surowce i ulepszenia bez wzrostu co epoke (wartosci epoki 1), utrzymanie jednostek (pieniadz, surowce, zywnosc/ture) x1/x2/x4 wg epoki JEDNOSTKI (jednostkiUtrzymanieMnoznikEpoki; decyzja wlasciciela 2026-11-19), racje obywateli m(e)=2^(e-1) (1/2/4/8/16).",
   "eraRebalansAktywny": true,
   "przychodyUlepszenStałeEpoka1": true,
-  "zywnoscWojskaSkalaNaEpoke": 3,
+  "jednostkiUtrzymanieMnoznikEpoki": { "kamien": 1, "braz": 2, "zelazo": 4 },
   "racjeObywateliMnoznikNaEpoke": 2
 }

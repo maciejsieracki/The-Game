@@ -4,7 +4,8 @@
 // Gdy flaga ON (decyzje wlasciciela 2026-11-19):
 //  R1 przychody ulepszen terenu (zywnosc/praca/handel/pieniadz) i produkcja surowcow ulepszen
 //     = wartosci bazowe epoki 1 we WSZYSTKICH epokach (bez wzrostu co epoke).
-//  R2 zywnosc jednostek wojska = baza x skala^(epoka_jednostki - 1) (domyslnie x3/epoke: 4/12/36 po x4 R_STAWKI).
+//  R2 utrzymanie jednostek (Pieniadz, surowce, zywnosc/ture) = baza x mnoznik epoki JEDNOSTKI
+//     (Kamien x1 / Braz x2 / Zelazo x4, jednostkiUtrzymanieMnoznikEpoki; decyzja 2026-11-19). Helper: unitUpkeepScaleByEpoch.
 //  R3 mnoznik racji obywateli m(e) = mnoznik^(e - 1) (domyslnie x2/epoke: 1/2/4/8/16).
 // Konwertery/budynki/cuda/utrzymanie Pracy/koszty rekrutacji NIE sa tu zmieniane.
 
@@ -14,7 +15,7 @@ import { epochCostMultiplier } from './building-stock-cost';
 export interface EraRebalanceParams {
   eraRebalansAktywny: boolean;
   przychodyUlepszenStałeEpoka1: boolean;
-  zywnoscWojskaSkalaNaEpoke: number;
+  jednostkiUtrzymanieMnoznikEpoki: { kamien: number; braz: number; zelazo: number };
   racjeObywateliMnoznikNaEpoke: number;
 }
 
@@ -49,8 +50,30 @@ export function eraOrdinal(epoch: number | string | null | undefined): number {
 }
 
 /**
+ * R2 (jedno miejsce): utrzymanie jednostki (Pieniadz, surowce, zywnosc/ture) skalowane epoka JEDNOSTKI
+ * (units.json Epoka). Flaga ON -> mnoznik z jednostkiUtrzymanieMnoznikEpoki (domyslnie x1/x2/x4).
+ * Flaga OFF -> legacy epochCostMultiplier (ten sam wynik przy domyslnych danych).
+ * Zero i zle dane -> 0 (jak scaleCostByEpoch).
+ */
+export function unitUpkeepScaleByEpoch(
+  value: number,
+  epoch: number | string | null | undefined,
+): number {
+  if (!Number.isFinite(value) || value <= 0) return 0;
+  let mult = epochCostMultiplier(epoch);
+  if (isEraRebalanceEnabled()) {
+    const m = ERA_REBALANCE_PARAMS.jednostkiUtrzymanieMnoznikEpoki;
+    const ord = eraOrdinal(epoch);
+    const fromData = ord >= 3 ? m?.zelazo : ord === 2 ? m?.braz : m?.kamien;
+    if (typeof fromData === 'number' && Number.isFinite(fromData) && fromData > 0) mult = fromData;
+  }
+  return Math.max(1, Math.round(value * mult));
+}
+
+/**
  * R2: zywnosc jednostki (przed mnozeniem R_STAWKI) po rebalansie, albo null gdy flaga OFF
  * (wtedy wywolujacy zostaje przy wartosci z tabeli). `direct` = units.json „zywnosc/ture”.
+ * Flaga ON: ta sama skala epoki jednostki co pieniadz i surowce (x1/x2/x4).
  */
 export function rebalancedUnitFoodBase(
   direct: number,
@@ -58,9 +81,7 @@ export function rebalancedUnitFoodBase(
 ): number | null {
   if (!isEraRebalanceEnabled()) return null;
   if (!Number.isFinite(direct) || direct <= 0) return 0;
-  const skala = ERA_REBALANCE_PARAMS.zywnoscWojskaSkalaNaEpoke;
-  const step = Number.isFinite(skala) && skala > 0 ? skala : 3;
-  return Math.max(1, Math.round(direct * Math.pow(step, eraOrdinal(epoch) - 1)));
+  return unitUpkeepScaleByEpoch(direct, epoch);
 }
 
 /**

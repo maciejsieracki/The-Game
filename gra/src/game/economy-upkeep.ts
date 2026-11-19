@@ -53,7 +53,7 @@ import {
   type UnitStockCostSource,
 } from './building-stock-cost';
 import { buildingEffectAtLevel } from './production';
-import { rebalancedUnitFoodBase } from './econ-era-rebalance';
+import { rebalancedUnitFoodBase, unitUpkeepScaleByEpoch } from './econ-era-rebalance';
 import {
   R_STAWKI_FALA1_FALA2_MULT,
   R_STAWKI_FALA2_MULT,
@@ -891,7 +891,7 @@ export function unitResourceUpkeep(
   const ilosc = unitDef['Utrzymanie surowiec (ilość)'];
   if (typeof ilosc === 'number' && Number.isFinite(ilosc) && ilosc > 0) {
     const key = stripDiacriticsLower(rawName);
-    if (key) out[key] = scaleCostByEpoch(ilosc, unitDef.Epoka);
+    if (key) out[key] = unitUpkeepScaleByEpoch(ilosc, unitDef.Epoka);
   }
   return out;
 }
@@ -1119,7 +1119,7 @@ export function buildUnitUpkeepTable(
     }
     const rawEpoch = row['Epoka'];
     const epoch = typeof rawEpoch === 'number' || typeof rawEpoch === 'string' ? rawEpoch : undefined;
-    if (upkeep !== undefined) out[name] = scaleCostByEpoch(upkeep, epoch);
+    if (upkeep !== undefined) out[name] = unitUpkeepScaleByEpoch(upkeep, epoch);
   }
   return out;
 }
@@ -1217,7 +1217,7 @@ export function buildUnitFoodTable(
     if (typeof direct === 'number' && Number.isFinite(direct)) {
       const rawEpoch = row['Epoka'];
       const epoch = typeof rawEpoch === 'number' || typeof rawEpoch === 'string' ? rawEpoch : undefined;
-      out[name] = scaleCostByEpoch(direct, epoch);
+      out[name] = unitUpkeepScaleByEpoch(direct, epoch);
       raw[name] = { direct, epoch };
     }
   }
