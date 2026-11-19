@@ -1,26 +1,30 @@
 #!/usr/bin/env node
 'use strict';
 /*
- * econ-rebalance-model.cjs — R-WEB-ECONOMY-ERA-REBALANCE-PROPOSAL-Q1
+ * econ-rebalance-model.cjs — R-WEB-ECONOMY-ERA-REBALANCE-PROPOSAL-Q1 (runda 2, obrona)
  * MODEL STATYCZNY (bez sprzezenia zwrotnego, bez zmian w grze). Czyta pomiar gracza
- * (owner 0) z seed{4242,7}.jsonl i przelicza per tura PRZED / PO dla wariantow.
+ * (owner 0) z seed{4242,7}.jsonl i przelicza per ture PRZED / PO dla wariantow.
  * Uzycie: node gra/tools/econ-rebalance-model.cjs [katalog_pomiaru] [--csv]
- * Domyslny katalog: /tmp/econ-final (pliki seed*.jsonl z runu pomiarowego).
+ * Domyslny katalog: /tmp/econ-final.
  *
  * ZALOZENIA (NIE_ZMIERZONO tam, gdzie pomiar ich nie podaje):
  *  - epoka wlasciciela w pomiarze = 2 (Braz) przez caly bieg; epoka 3 to PROJEKCJA statyczna.
- *  - brutto surowcowe (Drewno/Kamien/Glina/Ceramika) pochodzi z ulepszen (gorna granica);
- *    bazowy wydajnosc ulepszenia epoki 2 = 75 (tartak 50 x1,5) -> N_imp = brutto / 75
- *    (dolna granica liczby ulepszen; farmy/tarasy nie sa liczone).
- *  - delta bonusu zywnosc/praca = (bm(e) - bm_pomiar) * N_imp * UDZIAL_ZYWN (0,5 zalozenie).
- *  - racje obywateli: poziom 1 = 2 zywnosci/os./ture; m(e) = 1 + step*(e-1); step PRZED = 0,5.
- *  - zywnosc wojska na jednostke = baza typu (sredni Braz = 2, units.json x skala epoki)
- *    x4 (R_STAWKI_FALA1_FALA2_MULT) x uF(e) x CAMP_SHARE (1 = marsz = gorna granica).
- *  - zywnosc netto pomiaru = spichlerzRate (pomiar); produkcja = netto + zuzycie PRZED.
- *  - Praca: pracaRate z pomiaru = netto po utrzymaniu (zgodnie z ujemnymi wartosciami seed 7).
- *  - Drewno zuzycie wojska = utrzymanieJednostekSurowce.drewno(t) * kU(e).
- *  - NIE uwzglednia: spadku populacji, zmiany liczby miast/jednostek, capu spichlerza
- *    (seed 4242: 1000 przy t90 -> spichRate ~ 0), sprzezenia zwrotnego.
+ *  - liczba ulepszen NIE jest zmierzona. Dwa estymatory (zakres, nie granica):
+ *      UPK = hud.pracaUpkeep / 2  (utrzymanie Pracy = 2 na ulepszenie w Brazie; liczy wszystkie
+ *            platne ulepszenia wg computePracaUpkeepByOwner)
+ *      BRU = surowceBrutto / 75   (gora: brutto zawiera lasy i Ceramike, nie tylko ulepszenia)
+ *  - delta bonusu zywnosc/praca = (bm(e) - 1) * N_imp * UDZIAL_ZYWN (UDZIAL 0,5 = NIE_ZMIERZONO).
+ *    Ta sama delta trafia tez do Pracy (uproszczenie: mozliwe podwojne liczenie).
+ *  - racje obywateli: poziom 1 = 2 zywnosci/os./ture; m(e) = 1 + step*(e-1); PRZED(2) = 1,5.
+ *  - zywnosc wojska na jednostke = units.json zywnosc/ture (=1 dla wszystkich) x skala epoki JEDNOSTKI
+ *    (Kamien x1, Braz x2, Zelazo x4) x R_STAWKI x4 x 1 (marsz, wlasne terytorium).
+ *    Skad: 4 (jednostki Kamienia) lub 8 (jednostki Brazu). Miks jednostek w pomiarze NIE_ZMIERZONO
+ *    -> oba warianty. uF(e) to mnoznik wlasciciela (nowy, propozycja).
+ *  - Drewno utrzymania jednostek = utrzymanieJednostekSurowce.drewno(t) * kU(e).
+ *  - Praca: pracaRate z pomiaru (netto po utrzymaniu); zmiana mnoznika utrzymania ulepszen
+ *    (pU(e), baza 2 w Brazie) odejmuje (pU(e) - 2) * N_imp.
+ *  - NIE uwzglednia: spadku populacji, capu spichlerza (cap 1000 w t30-t90, 3000 t120, 5000 t150
+ *    w seed 4242), zmiany liczby miast/jednostek, sprzezenia zwrotnego.
  */
 const fs = require('fs');
 const path = require('path');
@@ -31,39 +35,42 @@ const CSV = args.includes('--csv');
 
 const TURNS = [30, 60, 90, 120, 150];
 const SEEDS = [4242, 7];
-const RM_BASE = 1.5;         // rmPRZED(2): mnoznik surowcowy epoki pomiaru
-const BM_MEAS = 1;           // bmPRZED(2): dodatek zywnosc/praca w epoce pomiaru
-const M_MEAS = 1.5;          // mPRZED(2): mnoznik racji obywateli w epoce pomiaru
-const UDZIAL_ZYWN = 0.5;     // NIE_ZMIERZONO: udzial ulepszen zywnosc/praca wzgledem N_imp
-const UNIT_BASE_AVG = 2;     // NIE_ZMIERZONO: sredni typ jednostki = Braz (units.json 1 x2)
-const R_STAWKI_X4 = 4;       // R_STAWKI_KOSZT_MULT(2) x R_STAWKI_FALA2_MULT(2)
-const RATION_PER_POP = 2;    // racje poziom 1 (econ-params racje_zywnosc_1 = 2)
-const CAMP_SHARE = 1;        // 1 = marsz (gorna granica); oboz = 0,5
-const BAZA_IMP_EPOKA2 = 75;  // tartak 50 x1,5 (epoka 2)
+const RM_MEAS = 1.5;          // rm(2) w pomiarze
+const M_MEAS = 1.5;           // m(2) w pomiarze
+const RATION_PER_POP = 2;     // racje poziom 1
+const UDZIAL_ZYWN = 0.5;      // NIE_ZMIERZONO
+const CAMP_SHARE = 1;         // marsz (gorna granica zuzycia)
+const UNIT_FOOD = { KAM: 4, BRAZ: 8 }; // zywnosc/ture jednostki po skali epoki jednostki x R_STAWKI x4
+const PRACA_UPK_MEAS = 2;     // mnoznik utrzymania ulepszenia w Brazie (1/2/4)
 
-// rm(e): mnoznik surowcowy; bm(e): dodatek zywnosc/praca/handel; m(e): racje obywateli;
-// uF(e): dodatkowy mnoznik zywnosci wojska; kU(e): mnoznik utrzymania jednostek surowcem.
+// bm(e) jest CALKOWITE na ulepszenie (base + bm), bez zaokraglen. bm(e) = e-1 = dzisiejsza regula (+1/epoke).
+// Wariant ograniczony do Brazu: min(e-1, 1) => w Zelazie zamrozony na poziomie Brazu.
 const VARIANTS = {
   PRZED: {
     rm: e => Math.pow(1.5, e - 1), bm: e => e - 1, m: e => 1 + 0.5 * (e - 1),
-    uF: () => 1, kU: () => 1,
+    uF: () => 1, kU: () => 1, pU: e => Math.pow(2, e - 1),
   },
-  OSTROZNY: { // rm x1,25/epoke, bm +0,5/epoke; racje step 0,6; wojsko +25%/epoke
-    rm: e => Math.pow(1.25, e - 1), bm: e => 0.5 * (e - 1), m: e => 1 + 0.6 * (e - 1),
-    uF: e => 1 + 0.25 * (e - 1), kU: () => 1,
+  OSTROZNY: { // surowce x1,25/epoke (bez zamrozenia); bonusy bez zmian; racje step 0,6; wojsko +25%/epoke
+    rm: e => Math.pow(1.25, e - 1), bm: e => e - 1, m: e => 1 + 0.6 * (e - 1),
+    uF: e => 1 + 0.25 * (e - 1), kU: () => 1, pU: e => Math.pow(2, e - 1),
   },
-  SREDNI: { // Braz (e2): rm x1,25, bm +0,5 (wchodzi w Brazu); Zelazo (e3): ZAMROZONE na poziomie Brazu;
-            // racje step 0,75; wojsko +50%/epoke; Drewno jednostek x1,25
-    rm: e => Math.pow(1.25, Math.min(e - 1, 1)), bm: e => 0.5 * Math.min(e - 1, 1),
-    m: e => 1 + 0.75 * (e - 1), uF: e => 1 + 0.5 * (e - 1), kU: () => 1.25,
+  SREDNI: { // Braz: surowce x1,25, bonus +1 (jak dzis), racje step 0,75, wojsko +50%, Drewno jednostek x1,25;
+            // Zelazo: surowce i bonus ZAMROZONE, racje/wojsko dalej rosna; utrzymanie Pracy 3/6
+    rm: e => Math.pow(1.25, Math.min(e - 1, 1)), bm: e => Math.min(e - 1, 1),
+    m: e => 1 + 0.75 * (e - 1), uF: e => 1 + 0.5 * (e - 1),
+    kU: e => 1 + 0.25 * Math.min(e - 1, 1), pU: e => (e === 2 ? 3 : 6),
   },
-  REKOMENDOWANY: { // Braz (e2): rm x1,25, bm +0,5, racje step 0,6, wojsko x1,25; Zelazo (e3): ZAMROZONE na poziomie Brazu
-    // (wszystkie zmiany wchodza w Brazu, Zelazo nie dodaje wzrostu); Drewno jednostek bez zmian
-    rm: e => Math.pow(1.25, Math.min(e - 1, 1)), bm: e => 0.5 * Math.min(e - 1, 1),
-    m: e => 1 + 0.6 * (e - 1), uF: e => 1 + 0.25 * Math.min(e - 1, 1), kU: () => 1,
+  REKOMENDOWANY: { // Braz: surowce x1,25, bonus +1 (jak dzis, bez obciecia), racje step 0,6 (Braz 1,6; Zelazo 2,2),
+                   // wojsko x1,25 w Brazie; Zelazo: surowce, bonus i wojsko (uF) ZAMROZONE na poziomie Brazu;
+                   // Drewno jednostek x1,25 (Brąz, zamrozone); utrzymanie Pracy 2/4 bez zmian wzgledem PRZED
+    rm: e => Math.pow(1.25, Math.min(e - 1, 1)), bm: e => Math.min(e - 1, 1),
+    m: e => 1 + 0.6 * (e - 1), uF: e => 1 + 0.25 * Math.min(e - 1, 1),
+    kU: e => 1 + 0.25 * Math.min(e - 1, 1), pU: e => Math.pow(2, e - 1),
   },
-  MOCNY: { // rm 1,0 i bm 0 we wszystkich epokach (stale od Brazu); racje step 1,0; wojsko +100%/epoke; Drewno x1,5
-    rm: () => 1, bm: () => 0, m: e => 1 + 1.0 * (e - 1), uF: e => 1 + 1.0 * (e - 1), kU: () => 1.5,
+  MOCNY: { // surowce stale (x1,0), bonus 0 (farma 4 -> 3 juz w Brazie, -25%), racje step 1,0,
+           // wojsko +100%/epoke, Drewno jednostek x1,5, utrzymanie Pracy 4/8
+    rm: () => 1, bm: () => 0, m: e => 1 + 1.0 * (e - 1), uF: e => 1 + 1.0 * (e - 1),
+    kU: () => 1.5, pU: e => 2 * Math.pow(2, e - 1),
   },
 };
 
@@ -94,6 +101,7 @@ function snapshot(rows, t) {
     pop: o.obywatele,
     units: o.jednostkiWojskowe,
     pracaNet: h.pracaRate,
+    pracaUpkeep: h.pracaUpkeep || 0,
     spichNet: h.spichlerzRate,
     drewnoBrutto: drewno.brutto || 0,
     drewnoZuz: drewno.zuzycie || 0,
@@ -102,28 +110,31 @@ function snapshot(rows, t) {
   };
 }
 
-// Wynik dla wariantu v w epoce e (e = 2 pomiar; e = 3 projekcja statyczna).
-function evalVariant(v, s, e) {
-  const nImp = s.bruttoSur / BAZA_IMP_EPOKA2;               // NIE_ZMIERZONO, dolna granica
-  const bmDelta = (v.bm(e) - BM_MEAS) * nImp * UDZIAL_ZYWN;  // delta bonusu wzgledem pomiaru
+const NIMP = {
+  UPK: s => s.pracaUpkeep / PRACA_UPK_MEAS,
+  BRU: s => s.bruttoSur / 75,
+};
 
-  // Drewno: brutto przeskalowane rm(e)/RM_BASE; zuzycie cywilne bez zmian; wojsko * kU
-  const drewnoBrutto = s.drewnoBrutto * (v.rm(e) / RM_BASE);
+// Wynik dla wariantu v w epoce e (e = 2 pomiar; e = 3 projekcja statyczna).
+// nImp: liczba ulepszen (estymator); perUnit: zywnosc/ture na jednostke (miks KAM=4 / BRAZ=8).
+function evalVariant(v, s, e, nImp, perUnit) {
+  const bmDelta = (v.bm(e) - 1) * nImp * UDZIAL_ZYWN;   // wzgledem pomiaru (bm pomiaru = 1)
+
+  const drewnoBrutto = s.drewnoBrutto * (v.rm(e) / RM_MEAS);
   const drewnoZuzCywilne = s.drewnoZuz - s.drewnoUnitUpkeep;
   const drewnoNet = drewnoBrutto - drewnoZuzCywilne - s.drewnoUnitUpkeep * v.kU(e);
 
-  // Praca: netto pomiaru + delta bonusu pracy od ulepszen
-  const praca = s.pracaNet + bmDelta;
+  const pracaUpk = (v.pU(e) - PRACA_UPK_MEAS) * nImp;
+  const praca = s.pracaNet + bmDelta - pracaUpk;
 
-  // Zywnosc: produkcja z pomiaru (netto + zuzycie PRZED w epoce 2) + delta bonusu - racje - wojsko
-  const racjeMeas = s.pop * RATION_PER_POP * M_MEAS; // m_PRZED(2) = 1,5
-  const wojskoMeas = s.units * UNIT_BASE_AVG * R_STAWKI_X4 * CAMP_SHARE;
-  const prodFood = s.spichNet + racjeMeas + wojskoMeas;
+  const racjeMeas = s.pop * RATION_PER_POP * M_MEAS;
+  const wojskoMeas = s.units * perUnit * CAMP_SHARE;
+  const prodFood = s.spichNet + racjeMeas + wojskoMeas;   // produkcja odtworzona z pomiaru (zalozenie miksu)
   const racjePO = s.pop * RATION_PER_POP * v.m(e);
-  const wojskoPO = s.units * UNIT_BASE_AVG * R_STAWKI_X4 * v.uF(e) * CAMP_SHARE;
+  const wojskoPO = s.units * perUnit * v.uF(e) * CAMP_SHARE;
   const food = prodFood + bmDelta - racjePO - wojskoPO;
 
-  return { drewnoNet: drewnoNet, praca: praca, food: food, racje: racjePO, wojsko: wojskoPO, nImp: nImp };
+  return { drewnoNet, praca, food, racje: racjePO, wojsko: wojskoPO, nImp };
 }
 
 function fmt(x) {
@@ -133,17 +144,22 @@ function fmt(x) {
 
 const out = [];
 const sep = CSV ? ';' : ' | ';
+out.push(['seed', 'tura', 'epoka', 'wariant', 'estymator N_imp', 'miks jednostek', 'N_imp',
+  'Drewno netto/t', 'Praca netto/t', 'Zywnosc netto/t', 'racje obyw.', 'zywnosc wojska'].join(sep));
 for (const seed of SEEDS) {
   const rows = loadSeed(seed);
-  out.push(`## seed ${seed}`);
-  out.push(['tura', 'epoka', 'wariant', 'Drewno netto/t', 'Praca netto/t', 'Zywnosc netto/t', 'racje obyw.', 'zywnosc wojska', 'N_imp (dolna gr.)'].join(sep));
   for (const t of TURNS) {
     const s = snapshot(rows, t);
     for (const e of [2, 3]) {
       for (const name of Object.keys(VARIANTS)) {
-        const r = evalVariant(VARIANTS[name], s, e);
-        out.push([t, e === 2 ? 'Braz(2)' : 'Zelazo(3, proj)', name,
-          fmt(r.drewnoNet), fmt(r.praca), fmt(r.food), fmt(r.racje), fmt(r.wojsko), fmt(r.nImp)].join(sep));
+        for (const nm of Object.keys(NIMP)) {
+          for (const mix of Object.keys(UNIT_FOOD)) {
+            const nImp = NIMP[nm](s);
+            const r = evalVariant(VARIANTS[name], s, e, nImp, UNIT_FOOD[mix]);
+            out.push([seed, t, e === 2 ? 'Braz(2)' : 'Zelazo(3,proj)', name, nm, mix, fmt(nImp),
+              fmt(r.drewnoNet), fmt(r.praca), fmt(r.food), fmt(r.racje), fmt(r.wojsko)].join(sep));
+          }
+        }
       }
     }
   }
