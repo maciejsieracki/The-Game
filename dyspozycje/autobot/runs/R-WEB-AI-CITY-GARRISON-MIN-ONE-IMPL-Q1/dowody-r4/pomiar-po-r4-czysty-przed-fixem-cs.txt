@@ -1,0 +1,16 @@
+== puste miasta AI (bez wojska) / miasta
+t10 pokoj 11/41 wojna 0/0 razem 11/41 (26.8%)
+t20 pokoj 11/41 wojna 0/0 razem 11/41 (26.8%)
+t30 pokoj 33/89 wojna 0/0 razem 33/89 (37.1%)
+t40 pokoj 10/69 wojna 32/76 razem 42/145 (29.0%)
+t50 pokoj 2/48 wojna 16/127 razem 18/175 (10.3%)
+t60 pokoj 7/68 wojna 7/124 razem 14/192 (7.3%)
+== per wlasciciel t60 (puste > 0)
+{"owner":22,"miasta":14,"puste":4,"poza":27,"wojsko":47,"skarbiec":5893,"wojna":false}
+{"owner":10,"miasta":16,"puste":2,"poza":19,"wojsko":49,"skarbiec":3375,"wojna":false}
+{"owner":13,"miasta":15,"puste":2,"poza":35,"wojsko":48,"skarbiec":7550,"wojna":true}
+{"owner":19,"miasta":16,"puste":2,"poza":6,"wojsko":20,"skarbiec":3761,"wojna":true}
+{"owner":1,"miasta":8,"puste":1,"poza":0,"wojsko":44,"skarbiec":5117,"wojna":false}
+{"owner":7,"miasta":15,"puste":1,"poza":3,"wojsko":17,"skarbiec":2943,"wojna":true}
+{"owner":16,"miasta":14,"puste":1,"poza":1,"wojsko":14,"skarbiec":1038,"wojna":true}
+{"owner":37,"miasta":15,"puste":1,"poza":4,"wojsko":18,"skarbiec":3066.85,"wojna":true}

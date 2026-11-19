@@ -5993,6 +5993,11 @@ function decideDefensiveCopyTurn(
       }
     }
 
+    // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (r4): staly garnizon miasta-panstwa nie zbiera chatek ani
+    // nie patroluje poza miastem (diagnoza r4: 26 z 79 odejsc garnizonu w 60 turach = marsz po chatke).
+    // Pilniejsze reakcje (atak, riposta domowa, obrona) sa wyzej; garnizon zostaje w miescie.
+    if (csGarrisonUnitIds.has(unit.id)) continue;
+
     // CHATKI: brak pilniejszego zadania powyżej (atak/riposta domowa/posiłek dla siostry/
     // marsz ofensywny) — jednostka MP idzie po najbliższą wolną chatkę WE WŁASNYM terytorium,
     // zanim wróci pod miasto (P-MP-CHATKI-SKARBOW-NIE-ZBIERANE, patrz komentarz przy

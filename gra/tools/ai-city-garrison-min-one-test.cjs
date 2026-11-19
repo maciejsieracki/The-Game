@@ -35,7 +35,9 @@ export { decideAITurn, emptyCityGarrisonRecruitIds } from ${JSON.stringify(path.
 export {
   getCityGarrisonUnitIds, garrisonUnitIdSet, cityNeedsGarrison, isGarrisonEligibleUnit,
   isGarrisonPriorityPurchase, garrisonGoldReserve, GARRISON_RESERVE_MAX_CITIES,
+  rankGarrisonUnitIds, pickGarrisonUnitId,
 } from ${JSON.stringify(path.join(SRC, 'game', 'ai-city-garrison.ts'))};
+export { planHomeWar } from ${JSON.stringify(path.join(SRC, 'game', 'ai-war-home-defense.ts'))};
 export { setArmyConsolidationOverride } from ${JSON.stringify(path.join(SRC, 'game', 'army-consolidation.ts'))};
 `;
 
@@ -48,9 +50,14 @@ async function buildBundle(name, mutate) {
     setup(b) {
       b.onLoad({ filter: /game[\\/]ai\.ts$/ }, (args) => {
         let text = fs.readFileSync(args.path, 'utf8');
-        if (mutate) {
+        if (mutate === true) {
           if (text.split(CONC_LINE).length !== 2) throw new Error('mutacja: nie znaleziono wykluczenia garnizonow w concentration');
           text = text.replace(CONC_LINE, '  ]);');
+        } else if (Array.isArray(mutate)) {
+          for (const [find, repl, count] of mutate) {
+            if (text.split(find).length !== count + 1) throw new Error(`mutacja: oczekiwano ${count}x "${find}" w ai.ts`);
+            text = text.split(find).join(repl);
+          }
         }
         return { contents: text, loader: 'ts' };
       });
@@ -88,6 +95,11 @@ const testData = { units: [], buildings: [], terrainYields: { terrain_types: [] 
 async function main() {
   const GOOD = await buildBundle('good', false);
   const MUT = await buildBundle('mut', true);
+  // r4: mutanty filtrow garnizonu w sciezkach, ktorych dotad nie pilnowal zaden test.
+  const MUT_CAMPAIGN = await buildBundle('mutcamp', [['if (campaignGarrisonIds.has(unit.id)) continue;', '', 3]]);
+  const MUT_CS = await buildBundle('mutcs', [
+    ['const csGarrisonUnitIds = garrisonUnitIdSet(', 'const csGarrisonUnitIds: Set<string> = new Set(); void garrisonUnitIdSet(', 1]]);
+  const MUT_FM = await buildBundle('mutfm', [['&& !cityGarrisonUnitIds.has(u.id)', '&& true', 1]]);
   const strengthById = (u) => (u.str !== undefined ? u.str : 1);
 
   // ---- A: czysta funkcja ----
@@ -197,6 +209,77 @@ async function main() {
     GOOD.setArmyConsolidationOverride(false);
     ok(!c4Moves.some(c => c.unitId === 'a-garn'), 'C4: garnizon NIE maszeruje do stolicy w pokojowej konsolidacji (front-merge wykluczony)');
     ok(c4Moves.some(c => c.unitId === 'b-field'), 'C4b: jednostka polowa maszeruje do stolicy w pokojowej konsolidacji');
+  }
+
+  // ---- D (r4): mutanty filtrow garnizonu -- kazdy MUSI zlamac swoj scenariusz ----
+  {
+    const map = bigMap(60, 60);
+    // D1/D2: kampania wodza (recruiting): garnizon zostaje, jednostka polowa idzie na zbiorke.
+    const cityK = { id: 'K', ownerId: 1, q: 30, r: 30, name: 'K', population: 6 };
+    const enemyK = { id: 'E', ownerId: 2, q: 50, r: 30, name: 'E', population: 6 };
+    const camp = {
+      targetOwnerId: 2, stage: 'recruiting', gatherTurnsCompleted: 0, rallyQ: 45, rallyR: 30,
+      target: { ownerId: 2, cityId: 'E', q: 50, r: 30 }, turn: 40,
+    };
+    const campMoves = (B) => B.decideAITurn(1, [unit('a-garn', 30, 30), unit('b-field', 32, 30)],
+      [cityK, enemyK], map, testData, { civType: 'grecy', currentTurn: 40, canEngageOwner: () => true,
+        atWarWithCiv: true, aiGeneralWarCampaign: { ...camp } }).filter(c => c.type === 'move');
+    const gC = campMoves(GOOD), mC = campMoves(MUT_CAMPAIGN);
+    ok(!gC.some(c => c.unitId === 'a-garn') && gC.some(c => c.unitId === 'b-field'),
+      `D1: kampania wodza -- garnizon zostaje, jednostka polowa idzie na zbiorke (garn=${gC.some(c => c.unitId === 'a-garn')} field=${gC.some(c => c.unitId === 'b-field')})`);
+    ok(mC.some(c => c.unitId === 'a-garn'), 'D2: MUTACJA filtra garnizonu w kampanii wodza (3 miejsca) lamie D1');
+
+    // D3/D4: miasto-panstwo (defensiveCopy) -- garnizon nie zbiera chatki (csGarrisonUnitIds).
+    const mapH = bigMap(60, 60);
+    mapH.hexes['33,30'].wioska = { istnieje: true, ludnosc: 1 };
+    const cityS = { id: 'S', ownerId: 1, q: 30, r: 30, name: 'S', population: 6 };
+    const csMoves = (B) => B.decideAITurn(1, [unit('a-garn', 30, 30), unit('b-field', 31, 30)],
+      [cityS], mapH, testData, { civType: 'grecy', currentTurn: 40, defensiveCopy: true,
+        canEngageOwner: () => false, atWarWithCiv: false }).filter(c => c.type === 'move');
+    const gS = csMoves(GOOD), mS = csMoves(MUT_CS);
+    ok(!gS.some(c => c.unitId === 'a-garn') && gS.some(c => c.unitId === 'b-field'),
+      `D3: miasto-panstwo -- garnizon nie zbiera chatki, jednostka polowa tak (garn=${gS.some(c => c.unitId === 'a-garn')} field=${gS.some(c => c.unitId === 'b-field')})`);
+    ok(mS.some(c => c.unitId === 'a-garn'), 'D4: MUTACJA csGarrisonUnitIds (pusty zbior) lamie D3');
+
+    // D5: front-merge/konsolidacja pokojowa (ai.ts ~4443) -- ten sam scenariusz co C4 na mutancie.
+    MUT_FM.setArmyConsolidationOverride(true);
+    const capD = { id: 'CAP', ownerId: 1, q: 10, r: 10, name: 'CAP', population: 6 };
+    const cityYD = { id: 'Y', ownerId: 1, q: 30, r: 30, name: 'Y', population: 6 };
+    const peaceOpts = { civType: 'grecy', currentTurn: 40, capitalCityId: 'CAP', canEngageOwner: () => true, atWarWithCiv: false };
+    const fmMoves = MUT_FM.decideAITurn(1, [unit('a-garn', 30, 30), unit('b-field', 31, 35)], [capD, cityYD], bigMap(60, 60), testData, peaceOpts)
+      .filter(c => c.type === 'move');
+    MUT_FM.setArmyConsolidationOverride(false);
+    ok(fmMoves.some(c => c.unitId === 'a-garn'), 'D5: MUTACJA wykluczenia garnizonu we front-merge (ai.ts ~4443) lamie C4');
+  }
+
+  // D6/D7 (r4): planer obrony domu (planHomeWar, P2) -- garnizon (garrisonUnitIds) NIE trafia do puli
+  // przydzialu; jednostka polowa -- tak. Bez garrisonUnitIds (zachowanie sprzed r4) garnizon dostaje rozkaz.
+  {
+    const cityH = { id: 'H', ownerId: 1, q: 30, r: 30, name: 'H', population: 6, capturedFromOwnerId: undefined };
+    const inv = { id: 'inv', ownerId: 2, typeId: 'Wojownik', category: 'miecznik', q: 30, r: 34, ruch: 2, ruchLeft: 2 };
+    const mine = [unit('a-garn', 30, 30), unit('b-field', 31, 30)];
+    const hwInput = (extra) => ({
+      ownerId: 1, currentTurn: undefined, allUnits: [...mine, inv], myUnits: mine, myCities: [cityH], allCities: [cityH],
+      enemyUnits: [inv], canEngageOwner: () => true, lockedUnitIds: new Set(), isOwnTerritory: () => true,
+      strengthOf: () => 1, isFieldUnit: () => true, distance: (aq, ar, bq, br) => Math.max(Math.abs(aq - bq), Math.abs(ar - br)),
+      ...extra,
+    });
+    const withG = GOOD.planHomeWar(hwInput({ garrisonUnitIds: new Set(['a-garn']) })).orders.map(o => o.unitId);
+    const noG = GOOD.planHomeWar(hwInput({})).orders.map(o => o.unitId);
+    ok(!withG.includes('a-garn') && withG.includes('b-field'), `D6: planHomeWar z garnizonem -- garnizon bez rozkazu, polowa z rozkazem (${withG})`);
+    ok(noG.includes('a-garn'), `D7: bez garrisonUnitIds (mutant/stare zachowanie) garnizon dostaje rozkaz -- lamie D6 (${noG})`);
+    // D8: wybor typu garnizonu -- najtanszy dostepny; fallbacki = kolejne wg rankingu.
+    const defs = [
+      { Jednostka: 'Drogi', Typ: 'Swordsman', 'Pieniądz (koszt)': 8, 'Utrzymanie (Pieniądz/turę)': 2 },
+      { Jednostka: 'Tani', Typ: 'Distance', 'Pieniądz (koszt)': 3, 'Utrzymanie (Pieniądz/turę)': 1 },
+      { Jednostka: 'Siege', Typ: 'Siege', 'Pieniądz (koszt)': 1 },
+      { Jednostka: 'Zwiadowca', Typ: 'Swordsman', 'Pieniądz (koszt)': 1 },
+      { Jednostka: 'Super', Typ: 'Swordsman', Klasa: 'Super', 'Pieniądz (koszt)': 2 },
+      { Jednostka: 'Brak', Typ: 'Swordsman', 'Pieniądz (koszt)': 4 },
+    ];
+    const rank = GOOD.rankGarrisonUnitIds(defs, id => id !== 'Brak', () => true);
+    ok(JSON.stringify(rank) === JSON.stringify(['Tani', 'Drogi']), `D8: ranking garnizonu (bez machin/zwiadowcy-bez-wyjatku/Super/niedostepnych) = ${JSON.stringify(rank)}`);
+    ok(GOOD.pickGarrisonUnitId(defs, () => false, () => true) === null, 'D8b: brak dostepnej jednostki -> null (bez polecenia)');
   }
 
   const total = passed + failed;
