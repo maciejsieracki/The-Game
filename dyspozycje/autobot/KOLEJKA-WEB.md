@@ -66,6 +66,7 @@ Nowe starty: `df --output=avail -BG /` ≥ 6 GB (integracja `/home/user/integ` �
 
 ## ZALEŻNE (START dopiero po warunku)
 
+- **R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1** (decyzja właściciela ABC A: „Koszty jednostek” Niski/Normalny/Wysoki ×1/×2/×4 mnoży też utrzymanie Pieniądz+surowce+żywność; w domyślnej grze ×2) — START po FC i integracji UPKEEPMULT oraz RECRUITMULT (te same pliki).
 - **R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1** (decyzja właściciela C, dispatch zapisany) — START po FC i integracji FORTPLACE (te same pliki territory/fort).
 - **Implementacja ustawienia „Dyplomacja i wojna”** (UI w newGameFlow.ts, mnożniki kar/bonusów, zapis/wczytanie, domyślnie ŁATWA) — dopiero po FC WARTEMPER i akceptacji listy przez właściciela (ABC: osobny wybór niezależny od głównej trudności; czy bonusy ÷ dotyczą też gracza i AI↔AI; wartości liczbowe).
 - **Pomiar 150 tur po IMPCOST** (seed 4242/7, rebalans ON) po wdrożeniu FALI z IMPCOST.
