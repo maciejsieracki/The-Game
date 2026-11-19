@@ -7,7 +7,7 @@ GOAL: zdobycie miasta po wygranym szturmie gracza z wyłomem (hak T7b `CityCaptu
 `PlayableState` w kolejności pinu `07d2fbd72`: wejście na heks miasta → bramka zdobycia → `applyCityCaptureToMap`
 (P1) z `applyCityCaptureAfterBattle` (P9) → `validateActiveSieges`; wpięte w komendę mostu `FinishSiegeBattle`.
 BAZA: `origin/rust-port/parity-v2` = `01abcbf5e` (zgodnie z dispatchem; T7b + PIN2 w środku).
-GAŁĄŹ: `rust-port-wip/R-RUSTPORT-P6-ZDOBYCIE-MIASTA-A-Q1` (worktree workflow). SHA końcowe: w commicie raportu (sekcja „Commit”).
+GAŁĄŹ: `rust-port-wip/R-RUSTPORT-P6-ZDOBYCIE-MIASTA-A-Q1` (worktree workflow). Commit kodu + raportu: `2bb892af7` (WIP wcześniej: `606fa4c47`, `d84a3cb24`, `39d39ae0a`); ten wpis SHA w commicie następnym.
 RUNDY: 1/5
 DEPLOY/PUSH: NIE WYKONANO
 
