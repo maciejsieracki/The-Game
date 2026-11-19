@@ -1065,6 +1065,12 @@ fn doktryna_auto_ze_stanu_ciala() {
     meta.insert("g".to_owned(), (GroupDoctrine::Steady, true));
     assert!(doctrine_auto_for(None, Some("g"), &meta));
     assert!(doctrine_auto_for(None, Some(""), &meta));
+    // `if (ru.groupId)` (`:17614`, `:17625`): pusty `groupId` jest falsy — wpis `_groupMeta` pod kluczem "" nie dziala
+    // (mutant M23: `has_group = group_id.is_some()`).
+    meta.insert(String::new(), (GroupDoctrine::Steady, false));
+    assert!(doctrine_auto_for(None, Some(""), &meta));
+    meta.insert(String::new(), (GroupDoctrine::Manual, true));
+    assert!(doctrine_auto_for(None, Some(""), &meta));
 }
 
 #[test]
@@ -1567,6 +1573,37 @@ fn zasieg_machiny_granica_jeden() {
     }];
     assert_eq!(kat.attack_range_for(), 1.0);
     assert_eq!(siege_machine_range(&kat), 1.0);
+}
+
+/// Obronca wewnatrz muru (`battleScene.ts:4548-4551`) i na koronie (strzelec): `rangedBase: _attackRangeFor(bu) >= 2`
+/// — lucznik z zasiegiem zbitym bonusem civ do 1 NIE jest strzelcem (mutant M22 `>= 2 -> >= 1`).
+#[test]
+fn obronca_zasieg_jeden_nie_strzela() {
+    let (units, _) = body_fixture();
+    let mut luk = units[1].clone();
+    let base = luk.attack_range();
+    assert!(base >= 2.0, "{base}");
+    let env = SpawnEnv {
+        terrain: "Rownina".into(),
+        shallow_sea: false,
+        crown_range_delta: 0.0,
+    };
+    let f = spawn_fields(&luk, SpawnSlot::DefenderInner, &env).unwrap();
+    assert!(f.ranged_base && f.ranged);
+    luk.civ_bonusy = vec![CivBonusEntry {
+        typ: "bonus_walka".into(),
+        cel: "wszystko".into(),
+        wartosc: BonusValue::Number(1.0 / base - 1.0),
+        opis: None,
+        realizuje: Some("walka".into()),
+        matrix_param_id: Some("walka_zasieg_proc".into()),
+    }];
+    assert_eq!(luk.attack_range_for(), 1.0);
+    let f = spawn_fields(&luk, SpawnSlot::DefenderInner, &env).unwrap();
+    assert_eq!(f.range_base, 1.0);
+    assert!(!f.ranged_base && !f.ranged);
+    let c = spawn_fields(&luk, SpawnSlot::DefenderCrown, &env).unwrap();
+    assert!(!c.ranged_base && !c.ranged);
 }
 
 /// `wallCrownShooterRange` (`city-defense.ts:139-142`): `Math.ceil(r * 2)` — ulamkowy zasieg w gore (mutant M15).
