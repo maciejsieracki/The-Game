@@ -68,6 +68,17 @@ const SAVE_AT = parseInt(arg('save-at', '40'), 10);
 const MUTANT = arg('mutant', '0') === '1';
 /** R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1: --player-ai 1 = gracz (0) sterowany autopilotem AI (hak, domyślnie 0). */
 const PLAYER_AI = arg('player-ai', '0') === '1';
+/** R-WEB-AI-TERRITORY-RACE-...-Q1 r3: --reject-offers 1 = odrzucaj wiszace oferty handlowe AI->gracz (wzorzec rejectAwaitingAiOffers z diplomacy-harder-measure-run.cjs); domyślnie 0 (bez zmiany zachowania). */
+const REJECT_OFFERS = arg('reject-offers', '0') === '1';
+let AI_OFFERS_REJECTED = 0;
+async function rejectAwaitingAiOffers(page) {
+  const ids = await page.evaluate(() => {
+    const st = window.__aiTradeWiringTestDebug.state();
+    return (st.entries || []).filter(e => e.responder === 0 && e.proposer !== 0).map(e => e.id);
+  });
+  for (const id of ids) { await page.evaluate(i => window.__aiTradeWiringTestDebug.reject(i), id); AI_OFFERS_REJECTED++; }
+  return ids.length;
+}
 const SLOT = 'ai-econ-s' + SEED;
 const HASH_IGNORED = ['units[].stackGroupId(null)', 'cities[].budowaLista(gdy [])', 'cities[].magazynZywnosci(gdy 0)', 'cities[].postepBudynkowUsuniete(gdy {})', 'resourceLedgerHistory(#432)'];
 const CHROME = process.env.CHROME_PATH || '/usr/bin/chromium';
@@ -356,6 +367,7 @@ async function playOneTurn(page, ctxState) {
   await closeEndTurnModals(page, ctxState);
   const battlesAuto = await clearBattles(page, ctxState);
   ctxState.battlesAuto = (ctxState.battlesAuto || 0) + battlesAuto;
+  if (REJECT_OFFERS) { await rejectAwaitingAiOffers(page); await clearBattles(page, ctxState); }
   let canEnd = await page.evaluate(() => window.__aiTradeWiringTestDebug.canEnd());
   // r3: odlozona auto-bitwa potrafi zalegac w kolejce (pendingAuto=true, nic nie otwarte; seed 4242 t51). Gra leczy to
   // dopiero przy PROBIE zakonczenia tury (healStuckDeferredPreBattleQueueOnEndTurnAttempt, prog 8 s) -- tak jak gracz,
@@ -412,7 +424,7 @@ async function playOneTurn(page, ctxState) {
   const m = await page.evaluate(() => window.__aiEconomyMeasure.metrics());
   const rec = {
     seed: SEED, turn: after, gateBlockedBeforeEnd: blocked, bypass, battlesAuto, modalClosedThisTurn: modalDelta(),
-    owners: m.owners, diag: m.diag, niezmierzone: m.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
+    offersRejectedTotal: AI_OFFERS_REJECTED, owners: m.owners, terytorium: m.terytorium, diag: m.diag, niezmierzone: m.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
     load1: Math.round(os.loadavg()[0] * 100) / 100,
     ledgerRecording: LEDGER_OFF ? 'off' : 'on',
   };

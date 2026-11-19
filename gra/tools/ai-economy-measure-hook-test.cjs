@@ -17,6 +17,12 @@
  *     (r3: start czeka na koniec nakladki „Tworzenie swiata” -- bez tego AI=0 miast, blad harnessu, nie gry.)
  *  5) mutacja ksztaltu: zepsuty bundle (--mutant-dist) MUSI oblac ksztalt (jesli podano).
  *
+ * OGRANICZENIE (r4, zarzut Evaluatora 1; mutacja forty=0 i hexyZMiast=0 przezyla 23/23): asercja 1 sprawdza TYLKO
+ * ksztalt i typy nowych pol (number >= 0 / boolean), NIE ich wartosc. Poprawnosc liczb forty/posterunki/hexyZMiast/
+ * hexyZFortowPosterunkow/hexySporne NIE jest testowana automatycznie; jest uzasadniona czytaniem kodu (plik:linia
+ * w dyspozycje/analizy/AI-TERRITORY-RACE-DESIGN.md, sekcja 6a). Wartosciowa asercja (fort postawiony -> licznik 1)
+ * wymaga biegu gry i jest poza zakresem tej rundy.
+ *
  * Uzycie (z gra/, bundle zbudowany): node tools/ai-economy-measure-hook-test.cjs --dist <abs-dist>
  *   --modal-only 1  -- tylko asercja 0 (bez gry).
  *   --runner <abs-plik>  -- runner testowany w asercji 0 (domyslnie tools/ai-economy-measure-run.cjs; mutacja na KOPII).
@@ -43,7 +49,8 @@ const MAX_TURNS_VALUE = 12;
 const OWNER_KEYS = ['owner', 'skarbiec', 'spichlerz', 'jednostkiWojskowe', 'jednostkiCywilne', 'rekruci', 'sumaLudkow',
   'glodWojska', 'glodWojskaAtrycja', 'glodKaraStatProc', 'glodAtrycjaHpProc', 'deficytZlota', 'miasta', 'obywatele',
   'utrzymanieBudynkowPieniadz', 'utrzymanieBudynkowSurowce', 'utrzymanieGarnizonuPieniadz',
-  'utrzymanieJednostekPieniadz', 'utrzymanieJednostekSurowce'];
+  'utrzymanieJednostekPieniadz', 'utrzymanieJednostekSurowce',
+  'forty', 'posterunki', 'hexyTerytorium', 'hexyZMiast', 'hexyZFortowPosterunkow', 'hexySporne'];
 
 const results = [];
 function check(name, ok, detail) { results.push({ name, ok: !!ok, detail: detail || '' }); console.log((ok ? 'ZIELONE ' : 'CZERWONE ') + name + (detail ? ' :: ' + detail : '')); }
@@ -54,7 +61,7 @@ function shapeProblems(metrics, requiredKeys) {
   if (!metrics || !Array.isArray(metrics.owners) || metrics.owners.length === 0) problems.push('brak owners');
   for (const o of (metrics && metrics.owners) || []) {
     for (const k of requiredKeys) if (!(k in o)) problems.push('owner ' + o.owner + ' bez ' + k);
-    for (const k of ['jednostkiWojskowe', 'jednostkiCywilne', 'miasta', 'obywatele', 'glodKaraStatProc', 'glodAtrycjaHpProc', 'utrzymanieJednostekPieniadz']) {
+    for (const k of ['jednostkiWojskowe', 'jednostkiCywilne', 'miasta', 'obywatele', 'glodKaraStatProc', 'glodAtrycjaHpProc', 'utrzymanieJednostekPieniadz', 'forty', 'posterunki', 'hexyTerytorium', 'hexyZMiast', 'hexyZFortowPosterunkow', 'hexySporne']) {
       if (typeof o[k] !== 'number' || !(o[k] >= 0)) problems.push('owner ' + o.owner + ' ' + k + ' nie jest liczba >=0');
     }
     for (const k of ['glodWojska', 'glodWojskaAtrycja', 'deficytZlota']) {
