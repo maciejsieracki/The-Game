@@ -1311,6 +1311,66 @@ fn zasieg_terenu_i_korony() {
         0.0
     );
     assert!(apply_terrain_range(&u(false, false, true, false, 3.0), f64::NAN).is_nan());
+    // Poza korona `Math.max(0, rangeBase + delta)` (`:7496`): ujemna suma = +0, nie liczba ujemna (mutant M02).
+    for (side_def, on_wall) in [(true, false), (false, true), (false, false)] {
+        let r = apply_terrain_range(&u(side_def, on_wall, true, false, 3.0), -5.0);
+        assert!(
+            r == 0.0 && r.is_sign_positive(),
+            "{side_def} {on_wall}: {r}"
+        );
+    }
+    assert_eq!(
+        apply_terrain_range(&u(true, false, true, false, 3.0), -1.0),
+        2.0
+    );
+}
+
+/// `_placeSiegeTowers` (`:4166-4169`): `towerRows` dostaje `gateRowLo = siegeGateRow - 1`, `gateRowHi = siegeGateRow`,
+/// czyli wiezyczka nie stoi na zadnym z dwoch kafli bramy (`_carveWallTiles` rzezbi `Gate` w obu, `:4045-4050`).
+/// Wyrocznia: petla `towerRows` (`city-towers.ts`) przepisana z tekstu pinu; uklad z brama tak, by pierwszy slot
+/// (`rowLo + 2`) wypadl na `gateRow - 1` (mutant M11).
+#[test]
+fn wiezyczki_omijaja_oba_kafle_bramy() {
+    let units: Vec<UnitRow> = Vec::new();
+    let built = vec!["mury".to_owned()];
+    let rows_for = |layout: &SiegeLayout| {
+        tower_setup_for(
+            layout,
+            &TowerSetupInput {
+                built_building_ids: &built,
+                defender_era: Some(1.0),
+                def_civ: None,
+                units: &units,
+                params: TowerParams::pin(),
+            },
+        )
+        .rows
+    };
+    let oracle = |l: &SiegeLayout| {
+        let spacing = TowerParams::pin().spacing.max(1);
+        let mut out = Vec::new();
+        let mut r = l.row_lo + 2_i64.min((l.row_hi - l.row_lo).max(0));
+        while r <= l.row_hi {
+            if !(r >= l.gate_row - 1 && r <= l.gate_row) {
+                out.push(r);
+            }
+            r += spacing;
+        }
+        out
+    };
+    let base = pin_layout();
+    assert_eq!(rows_for(&base), oracle(&base));
+    let mut l = pin_layout();
+    l.gate_row = l.row_lo + 3;
+    let rows = rows_for(&l);
+    assert_eq!(rows, oracle(&l));
+    assert!(!rows.contains(&(l.gate_row - 1)) && !rows.contains(&l.gate_row));
+    assert!(!rows.contains(&(l.row_lo + 2)), "{rows:?}");
+    for g in (base.row_lo + 1)..=base.row_hi {
+        let mut l = pin_layout();
+        l.gate_row = g;
+        assert_eq!(rows_for(&l), oracle(&l), "gate_row {g}");
+    }
 }
 
 /// D-B11 + install: jedno `shootingEnabled` wypelnia `activate.shooting_disabled` i `doctrine.shooting_enabled`;
