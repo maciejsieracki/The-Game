@@ -313,17 +313,26 @@ fn walidacja_listy_z_ruchem_i_strzalem() {
     );
 }
 
-/// Warianty I5b nadal są jawnym błędem (nie cichym pominięciem), także gdy lista zawiera wcześniej `Move`/`Shot`.
+/// P4-1I5b (#370; dawniej „warianty I5b nadal błędem”, zmiana wymuszona celem I5b): `Move`/`Shot` i po nich ucieczka
+/// z pola (`Leave`) przechodzą razem przez `actions_to_dto` 1:1, bez błędu „bez DTO”.
 #[test]
-fn warianty_i5b_nadal_bledem_po_ruchu() {
+fn warianty_i5b_po_ruchu_maja_dto() {
+    use civ_view_model::battle::BattleActionKindDto as K;
     let st = state();
     let list = vec![
         mv(atk(0), (1, 1), (2, 1), 0.0),
         shot(atk(1), def(0), 10.0),
         ta(20.0, BattleAction::Leave { unit: atk(0) }),
     ];
+    let dto = actions_to_dto(&list, &st).expect("DTO");
+    assert_eq!(dto.len(), 3);
+    assert!(matches!(dto[0].action, K::Move { .. }));
+    assert!(matches!(dto[1].action, K::Shot { .. }));
+    assert_eq!(dto[2].t0, 20.0);
     assert_eq!(
-        actions_to_dto(&list, &st),
-        Err(ActionError::LeaveWithoutDto(atk(0)))
+        dto[2].action,
+        K::Leave {
+            id: civ_view_model::ids::UnitId::try_new(st.atk[0].id).unwrap()
+        }
     );
 }

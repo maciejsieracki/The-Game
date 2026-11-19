@@ -38,6 +38,9 @@ use civ_engine::domain::siege_tactics_turnseq::{SeqUnit, TurnSeqState, UnitRef};
 use civ_engine::domain::siege_tactics_unit::CombatUnit;
 use serde_json::Value;
 
+#[path = "p4_1i5b_support.rs"]
+mod support;
+
 const VECTORS: &str = include_str!("p6_k5loop_siege_atk_b_vectors/vectors.json");
 const VECTORS_NAN: &str = include_str!("p6_k5loop_siege_atk_b_vectors/vectors_nan.json");
 const VECTORS_EDGE: &str = include_str!("p6_k5loop_siege_atk_b_vectors/vectors_edge.json");
@@ -1302,140 +1305,155 @@ fn brak_tagow_oblezniczych_dla_atakujacego() {
     );
 }
 
-/// Akcje T2b nie mają jeszcze wariantów DTO (I5b #370): jawny błąd, bez cichego pominięcia.
+/// P4-1I5b (#370, D-I5B-4..11; zastępuje test jawnych błędów `*WithoutDto`, wymuszone celem dispatchu): dla KAŻDEGO
+/// wektora T2b (`vectors.json`, `vectors_edge.json`, `vectors_retreat.json`) pełna lista akcji aktywacji (start,
+/// complete i odpalone `_schedule(700)`) przechodzi przez `actions_to_dto` 1:1 (`support::check_dto_1to1`: pole po
+/// polu, `Boulder.landAt = t0 + 700`, `Ram.until = t0 + 320`). Kolejność wywołań pinu w DTO: trafienie kamienia
+/// (`WallDamage`) w chwili `landAt` swojego `Boulder` i w tym samym wierszu (`:7555-7561`); `GateDamage` bezpośrednio po
+/// `Ram` z tym samym `t0` (`:7322-7327`); `GateBreach` tylko po `GateDamage` z `hpAfter = 0` (`:7328`); `WallBreach`
+/// tylko po `WallDamage` z `hpAfter = 0` w tym wierszu (`:7562`), `TowerDestroyed` tuż przed `Log` wieży i przed
+/// `WallBreach` tego wiersza (`:7648`), `LeaveField` po `WallBreach` z polem startowym w kolumnie wyłomu.
 #[test]
-fn akcje_muru_i_bramy_bez_dto_jawny_blad() {
-    let v = load_from(VECTORS);
-    let mut checked = 0usize;
-    for case in v["cases"].as_array().expect("cases") {
-        if !matches!(
-            case["expect"]["branch"].as_str(),
-            Some("wall-breach" | "gate-breach")
-        ) {
-            continue;
-        }
-        let Built {
-            mut body,
-            mut st,
-            acting,
-        } = build(case, true);
-        let _ = body.start(acting, &st);
-        body.complete(acting, &mut st);
-        for (ms, id) in body.take_timers() {
-            body.set_now(ms);
-            body.fire_timer(id, &mut st);
-        }
-        let actions = body.take_actions();
-        let first = actions
-            .iter()
-            .find(|a| {
+fn akcje_muru_i_bramy_dto_1do1_w_wektorach() {
+    use civ_view_model::battle::BattleActionKindDto as K;
+    let mut failures: Vec<String> = Vec::new();
+    let mut counts: BTreeMap<&'static str, usize> = BTreeMap::new();
+    let mut cases = 0usize;
+    let mut non_finite = 0usize;
+    for src in [VECTORS, VECTORS_EDGE, VECTORS_RETREAT] {
+        let v = load_from(src);
+        for case in v["cases"].as_array().expect("cases") {
+            let name = case["name"].as_str().expect("name");
+            let Built {
+                mut body,
+                mut st,
+                acting,
+            } = build(case, true);
+            // Jak `check_case`: zegar od 0, `complete` tylko bez ciosu wręcz (generator kończy na `_doMeleeAttack`),
+            // potem odroczone `_schedule(700)`.
+            body.set_now(0.0);
+            let _ = body.start(acting, &st);
+            if case["expect"]["attack"]["target"].as_u64().is_none() {
+                body.complete(acting, &mut st);
+            }
+            for (ms, id) in body.take_timers() {
+                body.set_now(ms);
+                body.fire_timer(id, &mut st);
+            }
+            let mut actions = body.take_actions();
+            // D-I5B-13: obrażenia nieskończone (`wallAttack: Infinity` w wektorze → `Math.max(1, Math.round(Infinity))`,
+            // `:7545`, `:7516`) nie mają zapisu w JSON; konwersja kończy się jawnym `Invalid(NonFinite)` na tej akcji,
+            // a prefiks przed nią przechodzi 1:1.
+            if let Some(k) = actions.iter().position(|a| {
                 matches!(
                     a.action,
-                    BattleAction::Ram { .. }
-                        | BattleAction::Boulder { .. }
-                        | BattleAction::GateDamage { .. }
-                        | BattleAction::WallDamage { .. }
-                        | BattleAction::WallBreach { .. }
-                        | BattleAction::GateBreach
-                        | BattleAction::TowerDestroyed { .. }
-                        | BattleAction::LeaveField { .. }
+                    BattleAction::WallDamage { dmg, .. } | BattleAction::GateDamage { dmg, .. }
+                        if !dmg.is_finite()
                 )
-            })
-            .expect("akcja muru/bramy");
-        let only = vec![first.clone()];
-        let err = actions_to_dto(&only, &st).expect_err("brak DTO");
-        let ok = matches!(
-            (&first.action, &err),
-            (BattleAction::Ram { .. }, ActionError::RamWithoutDto(_))
-                | (
-                    BattleAction::Boulder { .. },
-                    ActionError::BoulderWithoutDto(_)
-                )
-                | (
-                    BattleAction::GateDamage { .. },
-                    ActionError::GateDamageWithoutDto
-                )
-                | (
-                    BattleAction::WallDamage { .. },
-                    ActionError::WallDamageWithoutDto(_)
-                )
-                | (
-                    BattleAction::WallBreach { .. },
-                    ActionError::WallBreachWithoutDto(_)
-                )
-                | (BattleAction::GateBreach, ActionError::GateBreachWithoutDto)
-                | (
-                    BattleAction::TowerDestroyed { .. },
-                    ActionError::TowerDestroyedWithoutDto(_)
-                )
-                | (
-                    BattleAction::LeaveField { .. },
-                    ActionError::LeaveFieldWithoutDto(_)
-                )
-        );
-        assert!(ok, "{}: {:?} -> {err:?}", case["name"], first.action);
-        checked += 1;
+            }) {
+                let want = format!("actions[{k}].action.dmg");
+                match actions_to_dto(&actions, &st) {
+                    Err(ActionError::Invalid(civ_view_model::ViewError::NonFinite { field }))
+                        if field == want => {}
+                    other => failures.push(format!("{name}: dmg nieskonczone -> {other:?}")),
+                }
+                non_finite += 1;
+                actions.truncate(k);
+            }
+            let dto = support::check_dto_1to1(name, &actions, &st, &mut failures, &mut counts);
+            cases += 1;
+            let mut fail = |k: usize, what: &str| failures.push(format!("{name}[{k}]: {what}"));
+            for (k, d) in dto.iter().enumerate() {
+                match &d.action {
+                    K::Boulder { row, land_at, .. } => {
+                        let hit = dto[k + 1..].iter().find(
+                            |x| matches!(x.action, K::WallDamage { row: r, .. } if r == *row),
+                        );
+                        if let Some(h) = hit {
+                            if h.t0.to_bits() != land_at.to_bits() {
+                                fail(k, "WallDamage poza landAt kamienia");
+                            }
+                        }
+                    }
+                    K::GateDamage { .. } => {
+                        let ok = k > 0
+                            && matches!(dto[k - 1].action, K::Ram { .. })
+                            && dto[k - 1].t0.to_bits() == d.t0.to_bits();
+                        if !ok {
+                            fail(k, "GateDamage bez Ram z tym samym t0 tuz przed");
+                        }
+                    }
+                    K::GateBreach {} => {
+                        let ok = k > 0
+                            && matches!(dto[k - 1].action, K::GateDamage { hp_after, .. } if hp_after == 0.0)
+                            && dto[k - 1].t0.to_bits() == d.t0.to_bits();
+                        if !ok {
+                            fail(k, "GateBreach bez GateDamage hpAfter 0 tuz przed");
+                        }
+                    }
+                    K::WallBreach { row } => {
+                        let prior = dto[..k].iter().rev().find(
+                            |x| matches!(x.action, K::WallDamage { row: r, .. } if r == *row),
+                        );
+                        let ok = matches!(
+                            prior,
+                            Some(x) if matches!(x.action, K::WallDamage { hp_after, .. } if hp_after == 0.0)
+                                && x.t0.to_bits() == d.t0.to_bits()
+                        );
+                        if !ok {
+                            fail(k, "WallBreach bez WallDamage hpAfter 0 w tym wierszu");
+                        }
+                    }
+                    K::TowerDestroyed { row } => {
+                        let ok = matches!(dto.get(k + 1).map(|x| &x.action), Some(K::Log { text }) if *text == tower_destroyed_log(i64::from(*row)))
+                            && matches!(dto.get(k + 2).map(|x| &x.action), Some(K::WallBreach { row: r }) if r == row);
+                        if !ok {
+                            fail(k, "TowerDestroyed nie przed Log i WallBreach tego wiersza");
+                        }
+                    }
+                    K::LeaveField {
+                        from_col, from_row, ..
+                    } => {
+                        let ok = dto[..k].iter().rev().any(|x| {
+                            matches!(x.action, K::WallBreach { row } if row == *from_row)
+                                && x.t0.to_bits() == d.t0.to_bits()
+                        });
+                        let wall = i32::try_from(st.siege_wall_col).expect("kolumna");
+                        if !ok || *from_col != wall {
+                            fail(
+                                k,
+                                "LeaveField bez WallBreach wiersza albo poza kolumna muru",
+                            );
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
     }
-    assert!(checked >= 150, "sprawdzone {checked}");
-    // Każdy wariant osobno.
-    let u = UnitRef {
-        side: BattleSide::Attacker,
-        idx: 0,
-    };
-    let st = build(&v["cases"][0], true).st;
-    for (a, want) in [
-        (BattleAction::GateBreach, "GateBreachWithoutDto"),
-        (
-            BattleAction::TowerDestroyed { row: 3 },
-            "TowerDestroyedWithoutDto(3)",
-        ),
-        (
-            BattleAction::WallBreach { row: 4 },
-            "WallBreachWithoutDto(4)",
-        ),
-        (
-            BattleAction::LeaveField {
-                unit: u,
-                from: (1, 1),
-                to: (2, 1),
-            },
-            "LeaveFieldWithoutDto",
-        ),
-        (
-            BattleAction::GateDamage {
-                dmg: 1.0,
-                hp_after: 2.0,
-            },
-            "GateDamageWithoutDto",
-        ),
-        (
-            BattleAction::WallDamage {
-                row: 5,
-                dmg: 1.0,
-                hp_after: 2.0,
-            },
-            "WallDamageWithoutDto(5)",
-        ),
-        (
-            BattleAction::Ram {
-                unit: u,
-                until: 320.0,
-            },
-            "RamWithoutDto",
-        ),
-        (
-            BattleAction::Boulder {
-                unit: u,
-                row: 2,
-                land_at: 700.0,
-            },
-            "BoulderWithoutDto",
-        ),
+    assert!(
+        failures.is_empty(),
+        "{} rozbieżności, np. {:?}",
+        failures.len(),
+        &failures[..failures.len().min(5)]
+    );
+    eprintln!("T2b DTO: przypadki {cases}, dmg nieskonczone {non_finite}, akcje {counts:?}");
+    assert!(non_finite >= 1, "brak przypadku dmg nieskonczonego");
+    for (k, min) in [
+        ("Boulder", 100),
+        ("WallDamage", 100),
+        ("Ram", 50),
+        ("GateDamage", 50),
+        ("GateBreach", 10),
+        ("WallBreach", 100),
+        ("TowerDestroyed", 5),
+        ("LeaveField", 50),
     ] {
-        let err = actions_to_dto(&[TimedAction { t0: 0.0, action: a }], &st).expect_err("brak DTO");
-        assert!(format!("{err:?}").starts_with(want), "{err:?} != {want}");
+        assert!(
+            counts.get(k).copied().unwrap_or(0) >= min,
+            "pokrycie {k}: {counts:?}"
+        );
     }
-    let _ = tower_destroyed_log(1);
 }
 
 /// Ciało-atrapa sterownika: pierwsza aktywacja atakującego planuje odroczone wywołanie (jak `_schedule(700)` kamienia
