@@ -33,7 +33,7 @@ const scene: any = new BattleScene({
 scene.renderer.setPixelRatio(Number(q.get('pr') ?? '0.1'));
 
 // api.steps[id][round] = liczba krokow uciekiniera w tej turze; api.info[id] = nazwa + normalny zasieg ruchu
-const api: any = { ready: true, done: false, result: null as any, steps: {} as Record<string, Record<string, number>>, info: {} as Record<string, any> };
+const api: any = { ready: true, done: false, result: null as any, injected: null as string | null, steps: {} as Record<string, Record<string, number>>, info: {} as Record<string, any> };
 (window as any).__e2e = api;
 (window as any).__scene = scene;
 
@@ -56,12 +56,28 @@ const api: any = { ready: true, done: false, result: null as any, steps: {} as R
   };
 }
 
+// R-WEB-BATTLE-FLEE-SPEED-HARAPPA-FASTER-Q1 (zarzut Evaluatora 1): ?inject=midwave -- pierwsza jednostka
+// wykonujaca zaplanowany ruch/atak (galaz normalPlan w _resolveAutoBatchMovement) zostaje oznaczona jako
+// zlamana W TRAKCIE zamrozonej fali. Wtedy idzie galezia normalPlan (cap = _fleeMovePointsFor), a nie
+// _fleeStep z juz ustawionym zapasem. Test musi byc czerwony po usunieciu capa z tej galezi.
+if (q.get('inject') === 'midwave') {
+  const origRAB = scene._resolveAutoBatchMovement.bind(scene);
+  scene._resolveAutoBatchMovement = (ru: any, resolution: any, stepIdx: number, done: () => void, normalPlan = false) => {
+    if (normalPlan && !api.injected && stepIdx === 0 && (resolution.kind === 'move' || resolution.kind === 'attack')
+      && !ru.dead && !ru.fadingOut && !ru.removed && !ru.routed && ru.mats.length > 0) {
+      ru.routed = true;
+      api.injected = ru.bu.nazwa;
+    }
+    return origRAB(ru, resolution, stepIdx, done, normalPlan);
+  };
+}
+
 function finish(): void {
   const rows = Object.keys(api.steps).map(id => {
     const per = Object.values(api.steps[id]) as number[];
     return { id, ...api.info[id], maxPerRound: Math.max(...per), totalSteps: per.reduce((a, b) => a + b, 0), rounds: per.length };
   });
-  api.result = { round: scene.roundNo, winner: scene._endWinner, routed: rows };
+  api.result = { round: scene.roundNo, winner: scene._endWinner, routed: rows, injected: api.injected ?? null };
   api.done = true;
 }
 function loop(): void {
