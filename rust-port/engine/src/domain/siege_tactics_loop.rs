@@ -999,6 +999,8 @@ impl<B: LoopBody> SiegeLoop<B> {
         if !self.env.wall_tile_rows.contains(&row) {
             return;
         }
+        // Obrona r2 (E2-1b): pozycje celów W CHWILI wystrzału (oś kroków ciała, [`LoopBody::unit_cell`]).
+        self.env.body.set_now(clock.v_now);
         let Some(target) = self.env.pick_tower_for_row(&self.st, row) else {
             return;
         };
@@ -1503,6 +1505,11 @@ pub struct ProdBody<R: RollSource> {
     /// po ciosie, `RANGED_GAP_MS` po trafieniu strzału). `false` (domyślnie, dotychczasowe wektory pętli) = dawny model:
     /// `done()` w chwili ciosu, a strzał rozliczany na końcu `RANGED_FLY_MS + RANGED_GAP_MS`. Sesja ustawia `true`.
     pub pin_blow_timing: bool,
+    /// K5LOOP-WIRING-A obrona r2 (E2-1b, D-WIRA-18): oś czasu kroków `_doMove` bieżących aktywacji `(jednostka, t0,
+    /// z, na)`. Ciało liczy marsz wielokrokowy atomowo w `start`, a pin zmienia `ru.q/ru.r` dopiero w chwili kroku
+    /// (`_doMove` `:8714-8775`, `t0` = start kroku). Wieże (`_fireOneTower` → `pickTowerTarget` `:4228-4233`) czytają
+    /// pozycje W CHWILI wystrzału, więc [`LoopBody::unit_cell`] zwraca pozycję z tej osi dla `self.now`.
+    move_timeline: Vec<(UnitRef, f64, (i64, i64), (i64, i64))>,
 }
 
 /// K5LOOP-WIRING-A (#369): miejsce jednego ciosu `_singleBlow(attacker, defender, ranged)` w chwili ciosu.
@@ -2097,6 +2104,7 @@ impl<R: RollSource> ProdBody<R> {
             tower_outcome_effects: false,
             terrain_range_delta: None,
             pin_blow_timing: false,
+            move_timeline: Vec::new(),
             terrain: None,
             units,
             scene,
@@ -2152,6 +2160,9 @@ impl<R: RollSource> ProdBody<R> {
     }
 
     fn emit(&mut self, action: BattleAction) {
+        if let BattleAction::Move { unit, from, to, .. } = action {
+            self.move_timeline.push((unit, self.now, from, to));
+        }
         // P4-1I3 (obrona r1, zarzut 1): `_spawnDamageLabel` (`:9940-9943`): `if (this._ffActive) return;`, jedyne
         // miejsce filtra (trzy wywołania: cios `:9125`, kontratak `:9142`, wieża `:4265`).
         if self.ff_active && matches!(action, BattleAction::Damage { .. }) {
@@ -3969,6 +3980,14 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
     }
     fn unit_cell(&self, unit: UnitRef) -> Option<(i64, i64)> {
         let pu = self.units[side_ix(unit.side)].get(unit.idx)?;
+        // Obrona r2 (E2-1b): krok o `t0 > now` jeszcze się nie zaczął; pozycja = `from` pierwszego takiego kroku.
+        if let Some(&(_, _, from, _)) = self
+            .move_timeline
+            .iter()
+            .find(|(u, t0, _, _)| *u == unit && *t0 > self.now)
+        {
+            return Some(from);
+        }
         Some((pu.activate.q, pu.activate.r))
     }
     fn take_timers(&mut self) -> Vec<(f64, u64)> {
@@ -3998,6 +4017,9 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
     fn start(&mut self, unit: UnitRef, st: &TurnSeqState) -> f64 {
         let ix = side_ix(unit.side);
         self.pending[ix][unit.idx] = None;
+        // Obrona r2 (E2-1b): oś kroków poprzednich aktywacji jest już w całości przeszła (`t0 <= now`).
+        let now = self.now;
+        self.move_timeline.retain(|(_, t0, _, _)| *t0 > now);
         let seq = st.unit(unit).c;
         // K5LOOP-SIEGE-ATK-B: wejścia bramki `_doMove` (`:8689`) dla kroków tej aktywacji ([`Self::move_step_core`]).
         self.seq_wall_col = self.scene.wall_col.max(st.siege_wall_col);

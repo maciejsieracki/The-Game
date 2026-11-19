@@ -278,20 +278,14 @@ fn run_vector(v: &Value, data: &SessionData) -> Result<SessionOutcome, SessionEr
     drive(s, v["mode"].as_str().unwrap())
 }
 
-/// Blokada B-WIRA-PIN-1 (raport `01-operator-r2.md` §4): scenariusze z ciosami, w których sesja Rust NIE daje wyniku
-/// pinu. Pierwsza rozbieżność (`palisada_liczni_taran`, ślad `WIRING_A_TRACE`): oś czasu kroków ruchu — pin
-/// `_doMove` (`battleScene.ts:8746-8770`, krok animowany `_raf(step)` do `p >= 1`) + `_schedule(STEP_GAP_MS)` daje
-/// 320 ms na krok (kwantyzacja klatką 16 ms: 240 + 80), Rust 310 ms (240 + 70, czas nominalny ciała,
-/// `siege_tactics_loop.rs` `MOVE_STEP_MS`); po ~50 turach dryf zmienia kolejność strzałów wież (`_fireSiegeTowers`
-/// `:4208-4220`, `pickTowerTarget` na bieżących pozycjach) względem kroków jednostek. Lista jest JAWNA: test pada,
-/// gdy scenariusz z listy zacznie się zgadzać (trzeba ją zawęzić) albo gdy zgodny scenariusz się rozjedzie.
-const ROZBIEZNE_B_WIRA_PIN_1: [&str; 5] = [
-    "mur_machiny_wylom",
-    "palisada_liczni_taran",
-    "mur_jazda_rzeka",
-    "mur_wieza_obl_las",
-    "rt_mur_machiny_wylom",
-];
+/// Rozbieżności Rust ↔ pin (obrona r2, `02a-obrona-r2.md`). Diagnoza Operatora r2 (dryf 320/310 ms) ODRZUCONA pomiarem
+/// Evaluatora (klatka 2 ms) i obrony (klatka 1 ms w Rust: wynik Rust bez zmian). Prawdziwe przyczyny naprawione w ciele:
+/// `_applyTerrainRange` na początku aktywacji (`battleScene.ts:6064`, `:7490-7502`; D-WIRA-16), ogon aktywacji po ciosie
+/// i strzale (`_doMeleeAttack` `:9119-9172`, `_doRangedAttack` `:9223-9229`; D-WIRA-17), pozycje celów wież w chwili
+/// wystrzału (`_fireOneTower` `:4228-4233` przy marszu wielokrokowym; D-WIRA-18). Pozostała JAWNA rozbieżność (B-WIRA-PIN-2,
+/// przyczyna w raporcie §E2-2); test pada, gdy scenariusz z listy zacznie się zgadzać albo gdy zgodny się rozjedzie, a
+/// także gdy scenariusz z listy zakończy się błędem sesji (E2-3).
+const ROZBIEZNE_B_WIRA_PIN_1: [&str; 1] = ["mur_jazda_rzeka"];
 
 #[test]
 fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
@@ -415,6 +409,12 @@ fn slad_diagnostyczny_na_zadanie() {
                 }
                 BattleAction::Kill { unit } => format!("KILL {}", id(unit)),
                 BattleAction::Turn { round_no } => format!("TURN {round_no}"),
+                BattleAction::Clash {
+                    attacker,
+                    target,
+                    dmg,
+                    ..
+                } => format!("CLASH {attacker:?} {} {dmg}", id(target)),
                 BattleAction::Melee {
                     attacker, target, ..
                 } => format!("MELEE {} {}", id(attacker), id(target)),
