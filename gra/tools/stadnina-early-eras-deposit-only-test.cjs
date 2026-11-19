@@ -174,7 +174,10 @@ async function main() {
     const callCount = (imp.match(/isLivestockUnlockedForPlacement\([^)]*playerEra/g) || []).length;
     ok(callCount === 4, `improvement-build.ts: 4 wywołania isLivestockUnlockedForPlacement przekazują playerEra (jest ${callCount})`);
     const auto = fs2.readFileSync(path.resolve(SRC, 'game', 'auto-improvements.ts'), 'utf8');
-    ok(/buildImprovementQualifier\(state\)/.test(auto) && /playerEra,/.test(auto),
+    // R-WEB-TEST-DEBT-Q10 (kotwica po refaktorze): wywołanie ma teraz drugi argument
+    // `buildImprovementQualifier(state, { direktBruk: false })` (auto-improvements.ts ~1418);
+    // stan nadal przekazywany jako pierwszy argument, więc sprawdzamy początek wywołania.
+    ok(/buildImprovementQualifier\(state\b/.test(auto) && /playerEra,/.test(auto),
       'auto-improvements.ts: stan dla buildImprovementQualifier niesie playerEra');
     const tip = fs2.readFileSync(path.resolve(SRC, 'ui', 'hexContextTooltip.ts'), 'utf8');
     ok(tip.includes("if (key === 'stadnina' && !hexHasHorseDeposit({ nakladka, zloze })) {"),

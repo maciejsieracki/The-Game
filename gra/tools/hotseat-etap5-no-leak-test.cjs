@@ -232,6 +232,16 @@ async function runScenarioA(chromium) {
       await audBack.first().click();
       await wait(200);
     }
+    // 2d) R-WEB-TEST-DEBT-Q10 (nieaktualna asercja po FALI 840/870): ekran powitalny nowej
+    //     cywilizacji (#civ-welcome-screen-root, dialog modalny) przechwytuje kliki w toolbar
+    //     (zdarzenie „Odkryłeś nową cywilizację" pojawia się po grantTestPraca/technologii startowych).
+    //     Realny gracz odprawia go przyciskiem „Zamknij" -- test robi dokładnie to samo.
+    for (let guard = 0; guard < 5; guard++) {
+      const welcomeClose = page.locator('#civ-welcome-screen-root [data-cww="close"]');
+      if (await welcomeClose.count() === 0 || !(await welcomeClose.first().isVisible())) break;
+      await welcomeClose.first().click();
+      await wait(200);
+    }
     // 3) Realny ruch kamery na stolicę fotela A (ta sama funkcja co KROK 6 switchActiveHuman,
     //    inny argument -- weryfikuje że handoff faktycznie ZMIENIA fokus, nie że zastaje pusty).
     await page.evaluate(() => (window).__hotSeatTestDebug.focusCameraOnOwnerCapitalForTest(0));
