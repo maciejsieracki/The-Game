@@ -467,7 +467,7 @@ import { citizenLedgerParts, recordTakenToLedger, upkeepLedgerParts, pendingLedg
 import { BATTLE_MODE_SETTING_VERSION, isAutomaticOnlyBattleMode } from './game/battle-mode';
 import { normalizeHitMode, setActiveHitMode } from './game/hit-mode';
 import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
-import { resourceGrossNetPerTurn } from './game/resource-gross-net';
+import { resourceGrossNetPerTurn, resourceIsShortage } from './game/resource-gross-net';
 import {
   applyPostCaptureLawOnCapture,
   applyPostCaptureLawOverride,
@@ -23917,20 +23917,25 @@ async function boot(): Promise<void> {
       );
       // SUROW-HUD-01 (Maciej 2026-07-24): chip „Surowce" w HUD — podsumowanie stanu
       // magazynów imperium (wiersze magazynowane, cap != null). „OK/total": OK =
-      // surowce ani w niedoborze (ratePerTurn<0), ani na capie (stock>=cap).
+      // surowce ani w niedoborze (netto HUD < 0, resourceIsShortage), ani na capie (stock>=cap).
       // P-SUROWCE-KOLEJNOSC-KART, znalezisko Evaluatora (2026-08-12): wiersz placeholder
       // (np. "Ruda cyny — wkrótce", cap=0) ma cap!=null i stock(0)>=cap(0), więc bez
       // !r.placeholder wpadał do sumy jako "surowiec na limicie" -- fałszywy alarm na stałe.
       const resourceRows = buildEmpireResourceRows(0);
       const storedResourceRows = resourceRows.filter(r => r.cap != null && !r.placeholder);
+      // R-WEB-UI-HUD-SHORTAGE-ALERT-TOOLTIP-Q1: niedobór = netto HUD (po zużyciu i wejściach
+      // konwerterów), jedno źródło resourceIsShortage — nie surowe ratePerTurn.
       const resourceAlertCount = storedResourceRows.filter(
-        r => r.ratePerTurn < 0 || r.stock >= (r.cap ?? Infinity),
+        r => resourceIsShortage(r) || r.stock >= (r.cap ?? Infinity),
       ).length;
       // Z5 hot-seat: niedobór wg imperium AKTUALNEGO fotela (ownerId), nie zawsze fotela 0 (read-only podgląd).
       const shortageRows = ownerId === 0
         ? storedResourceRows
         : buildEmpireResourceRows(ownerId).filter(r => r.cap != null && !r.placeholder);
-      const surowceNiedoborLabels = shortageRows.filter(r => r.ratePerTurn < 0).map(r => r.label);
+      const surowceNiedoborLabels = shortageRows.filter(r => resourceIsShortage(r)).map(r => r.label);
+      // R-WEB-UI-HUD-SHORTAGE-ALERT-TOOLTIP-Q1: łączne wejścia konwerterów (nominalne, ≥0) do
+      // wiersza „Wejścia przetwórstwa” w tooltipie „Brutto · netto”.
+      const surowceWejscia = shortageRows.reduce((a, r) => a + resourceGrossNetPerTurn(r).wejscia, 0);
       // R-WEB-HUD-TOPBAR-GRID-GROSS-NET-Q1: brutto/netto surowców z TYCH SAMYCH wierszy co panel
       // Surowców (bez 2. kalkulacji): brutto = produkcja własna + przychód z umów; netto =
       // ratePerTurn (produkcja − umowy wychodzące + przychodzące) − zapotrzebowanie
@@ -24123,6 +24128,7 @@ async function boot(): Promise<void> {
         surowceNiedoborLabels,
         surowceBrutto,
         surowceNetto,
+        surowceWejscia,
         surowceBilans,
         handelIncome,
         handelRouteCount,
