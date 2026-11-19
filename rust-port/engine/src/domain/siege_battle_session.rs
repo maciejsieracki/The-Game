@@ -31,6 +31,7 @@ use crate::domain::battle_setup::{
 };
 use crate::domain::battle_setup_terrain::WorldTerrainInput;
 use crate::domain::battle_setup_units::{place_units_on_field, Side};
+use crate::domain::city_towers::strongest_ranged_unit_for_era;
 use crate::domain::city_towers::UnitRow;
 use crate::domain::civ_bonuses::{
     civ_combat_stat_multipliers, civ_wall_defense_multiplier, CivBonusEntry, CivBonusUnitShape,
@@ -45,11 +46,13 @@ use crate::domain::siege_battle_adapter::{
     collect_siege_rosters, stat_rows_from_json, unit_def_index, AdapterError, MachineKind,
     MilitiaParams, RosterUnit, SiegeRosterInput, BATTLE_MAX_PER_SIDE,
 };
+use crate::domain::siege_battle_adapter_body::clamp_era;
 use crate::domain::siege_battle_adapter_body::{
     activate_unit_for, body_unit_inputs, install_body_inputs, scene_inputs, tower_setup_for,
     BodyUnitInputs, TowerParams, TowerSetupInput, UnitPlacement,
 };
 use crate::domain::siege_battle_adapter_playable::siege_inputs_from_playable;
+use crate::domain::siege_battle_adapter_unit::counter_multiplier_pin;
 use crate::domain::siege_battle_adapter_unit::{
     apply_starting_morale_power_penalty, counter_matrix, norm_counters, roster_to_battle_units,
     spawn_fields, unit_blow_template, AdapterBattleUnit, CounterRow, OwnerContext, RosterBattleCtx,
@@ -61,15 +64,18 @@ use crate::domain::siege_tactics_blow::{DefenderState, HitArc, RollSource};
 use crate::domain::siege_tactics_blow_env::{
     blow_env_for, BlowPlacement, BlowSceneCtx, TerrainRow, TileMap,
 };
+use crate::domain::siege_tactics_blow_full::{attacker_from_cu, AttackerCu};
 use crate::domain::siege_tactics_blow_full::{AtkMods, DefMods, FullBlowInput};
 use crate::domain::siege_tactics_clock::VirtualClock;
 use crate::domain::siege_tactics_end::BattleSide;
 use crate::domain::siege_tactics_fastforward::{FfStop, BATTLE_FRAME_WALL_MS};
 use crate::domain::siege_tactics_inputs_terrain::{terrain_defense_multiplier, TerrainEntry};
+use crate::domain::siege_tactics_inputs_unit::CombatUnitModel;
 use crate::domain::siege_tactics_inputs_unit::{StatRow, ToCombatUnitOpts};
 use crate::domain::siege_tactics_inputs_wall::{wall_defense_totals, MiastoWallParamValues};
 use crate::domain::siege_tactics_loop::{
-    BlowComposer, BlowSite, LoopTimer, LoopWinner, ProdBody, ProdUnit, SiegeEnv, SiegeLoop,
+    tower_shooter_cu, BlowComposer, BlowSite, LoopTimer, LoopWinner, ProdBody, ProdUnit, SiegeEnv,
+    SiegeLoop, TowerBlowSite,
 };
 use crate::domain::siege_tactics_turnseq::{SeqUnit, TurnSeqState, UnitRef};
 use crate::domain::siege_tactics_unit::CombatUnit;
@@ -330,6 +336,21 @@ struct ComposeUnit {
     max_hp: f64,
 }
 
+/// K5LOOP-WIRING-A r2 (Z2): syntetyczny strzelec wieży (`_fireOneTower` `:4236-4244`) dla [`BlowComposer::compose_tower`].
+#[derive(Debug, Clone, PartialEq)]
+struct TowerShooterCompose {
+    /// `cuA = toCombatUnit(shooter.bu)` (`stats: towerShooterRow`).
+    cu: CombatUnitModel,
+    attacker: AttackerCu,
+    /// `battleUnitCivBonusy(shooter.bu, this.defenderCivBonusy)` = `defenderCivBonusy` (syntetyczny `bu` bez
+    /// `civBonusy`; `main.ts:36995` `civBonusyForOwnerId(defRosterRef[0]?.ownerId ?? 0)`).
+    civ_bonusy: Vec<CivBonusEntry>,
+    /// `battleUnitDifficultyCombatMult(shooter.bu, this.defenderDifficultyCombatMult)` = trudność strony obrońcy.
+    diff_mult: f64,
+    /// `counterMultiplier(cuA.counterTyp, cuD.counterTyp)` dla każdego celu ze strony atakującego.
+    counters: Vec<f64>,
+}
+
 /// Kompozytor wejścia ciosu sesji: `_singleBlow` (`battleScene.ts:8811-8960`) dla dowolnej pary w chwili ciosu.
 #[derive(Debug, Clone, PartialEq)]
 pub struct SessionBlowComposer {
@@ -337,19 +358,45 @@ pub struct SessionBlowComposer {
     /// `counterMultiplier(cuA.counterTyp, cuD.counterTyp)`: `[0][a][d]` atakujący→obrońca, `[1][d][a]` obrońca→atakujący.
     counters: [Vec<Vec<f64>>; 2],
     ctx: BlowSceneCtx,
+    /// Strzelec wieży (`None` = brak wiersza strzelca = brak wystrzałów, `:4209`).
+    tower: Option<TowerShooterCompose>,
+}
+
+fn shape_of_cu(cu: &CombatUnitModel) -> CivBonusUnitShape {
+    CivBonusUnitShape {
+        typ_nazwa: cu.typ_nazwa.js_to_string(),
+        rola: cu.rola.clone(),
+        missile_attack: Some(cu.missile_attack),
+        counter_typ: Some(cu.counter_typ.clone()),
+    }
 }
 
 fn shape_of(t: &UnitBlowTemplate) -> CivBonusUnitShape {
-    CivBonusUnitShape {
-        typ_nazwa: t.cu.typ_nazwa.js_to_string(),
-        rola: t.cu.rola.clone(),
-        missile_attack: Some(t.cu.missile_attack),
-        counter_typ: Some(t.cu.counter_typ.clone()),
-    }
+    shape_of_cu(&t.cu)
 }
 
 fn mods_for(
     u: &ComposeUnit,
+    side: CombatSide,
+    terrain: &str,
+    is_charge: bool,
+    on_wall: bool,
+) -> StatMultipliersLike {
+    mods_for_parts(
+        &u.civ_bonusy,
+        &shape_of(&u.tmpl),
+        &u.building,
+        side,
+        terrain,
+        is_charge,
+        on_wall,
+    )
+}
+
+fn mods_for_parts(
+    civ_bonusy: &[CivBonusEntry],
+    shape: &CivBonusUnitShape,
+    building: &BuildingCombatBonus,
     side: CombatSide,
     terrain: &str,
     is_charge: bool,
@@ -364,7 +411,7 @@ fn mods_for(
         on_wall_walkway: on_wall,
         shallow_sea: false,
     };
-    let m = civ_combat_stat_multipliers(&u.civ_bonusy, &shape_of(&u.tmpl), &ctx);
+    let m = civ_combat_stat_multipliers(civ_bonusy, shape, &ctx);
     let mut like = StatMultipliersLike {
         atk: m.atk,
         obrona: m.obrona,
@@ -373,7 +420,7 @@ fn mods_for(
         ranged_atk: m.ranged_atk,
         health: m.health,
     };
-    merge_building_bonus_into_stat_multipliers(&mut like, Some(&u.building));
+    merge_building_bonus_into_stat_multipliers(&mut like, Some(building));
     like
 }
 
@@ -463,6 +510,104 @@ impl BlowComposer for SessionBlowComposer {
             },
             routed_after_morale: false,
         }
+    }
+
+    /// `_checkRout` (`:9790-9792`): mnożnik terenu z bieżącego kafla jednostki.
+    fn terrain_defence_mult(&self, unit: UnitRef, cell: (i64, i64)) -> Option<f64> {
+        let u = self.units[side_ix(unit.side)].get(unit.idx)?;
+        let tname = self.ctx.map.name(cell.0 as i32, cell.1 as i32);
+        Some(terrain_defense_multiplier(
+            tname,
+            &u.tmpl.cu.rola,
+            &entries(&self.ctx.terrain_data),
+        ))
+    }
+
+    /// `_singleBlow(shooter, target, true)` z `_fireOneTower` (`:4236-4264`): strzelec `side: 'def'` na `(wallCol, row)`,
+    /// `onWallWalkway: false`, `mounted: false`, bez `pancerzBonusFrac`/`parametryBonusFrac` (`{0, 0}`); `ranged` = brak
+    /// szarży (`isCharge = false`, `:8892`). `hit_arc` i stan celu nadpisuje [`ProdBody`].
+    fn compose_tower(&self, site: &TowerBlowSite) -> Option<FullBlowInput> {
+        let sh = self.tower.as_ref()?;
+        let d = &self.units[side_ix(site.target.side)][site.target.idx];
+        let p = BlowPlacement {
+            attacker: (site.shooter_cell.0 as i32, site.shooter_cell.1 as i32),
+            defender: (site.target_cell.0 as i32, site.target_cell.1 as i32),
+            defender_facing: 0,
+            defender_on_wall: site.target_on_wall,
+            defender_side_def: d.side_def,
+            atk_rola: sh.cu.rola.clone(),
+        };
+        let env = blow_env_for(&self.ctx, &p);
+        let def_terrain = if site.target_on_wall {
+            "Plaskie (rownina/laka)".to_owned()
+        } else {
+            self.ctx
+                .map
+                .name(site.target_cell.0 as i32, site.target_cell.1 as i32)
+                .to_owned()
+        };
+        let no_building = BuildingCombatBonus {
+            pancerz: 0.0,
+            other: 0.0,
+        };
+        let am = mods_for_parts(
+            &sh.civ_bonusy,
+            &shape_of_cu(&sh.cu),
+            &no_building,
+            CombatSide::Attacker,
+            &def_terrain,
+            false,
+            false,
+        );
+        let dm = mods_for(
+            d,
+            CombatSide::Defender,
+            &def_terrain,
+            false,
+            site.target_on_wall,
+        );
+        let wall_civ = if site.target_on_wall {
+            civ_wall_defense_multiplier(&d.civ_bonusy, &shape_of(&d.tmpl))
+        } else {
+            1.0
+        };
+        Some(FullBlowInput {
+            ranged: true,
+            hit_arc: HitArc::Front,
+            attacker: sh.attacker.clone(),
+            atk_mods: AtkMods {
+                atk: am.atk,
+                ranged_atk: am.ranged_atk,
+                uderzenie: am.uderzenie,
+            },
+            atk_diff_mult: sh.diff_mult,
+            atk_mounted: false,
+            defender: d.tmpl.defender.clone(),
+            def_mods: DefMods {
+                obrona: dm.obrona,
+                pancerz: dm.pancerz,
+            },
+            def_diff_mult: d.diff_mult,
+            def_on_wall: site.target_on_wall,
+            def_fortified_in_field: d.fortified_in_field,
+            def_wall_civ_mult: wall_civ,
+            def_braces_against_charge: d.tmpl.braces_against_charge,
+            first_blow_of_pair: true,
+            counter_mult: *sh.counters.get(site.target.idx)?,
+            env,
+            defender_state: DefenderState {
+                hp: 0.0,
+                max_hp: d.max_hp,
+                morale: 0.0,
+                flee_morale: 0.0,
+                dead: false,
+                fading_out: false,
+                routed: false,
+                never_rout: false,
+                removed: false,
+            },
+            routed_after_morale: false,
+        })
     }
 }
 
@@ -722,6 +867,38 @@ impl SiegeBattleSession {
             counter_matrix(&atk_t, &def_t, &data.counters, data.counter_mult),
             counter_matrix(&def_t, &atk_t, &data.counters, data.counter_mult),
         ];
+        // K5LOOP-WIRING-A r2 (Z2): strzelec wieży jak `_fireOneTower` (`:4236-4244`) z wierszem `towerShooterRow`
+        // (`strongestRangedUnitForEra(units, _defenderEra, _siegeDefCiv)`, `:4167`), bonusami i trudnością strony
+        // obrońcy sceny (`defenderCivBonusy` / `defenderDifficultyCombatMult` z `defRosterRef[0].ownerId`,
+        // `main.ts:36995`, `:37011`). Brak kontekstu właściciela = `None` = jawny tag `wieza-bez-kompozytora`.
+        let def_owner = rosters.def.first().map_or(0, |u| u.owner_id);
+        let tower = strongest_ranged_unit_for_era(
+            &data.tower_units,
+            clamp_era(input.defender_era),
+            input.def_civ.as_deref(),
+        )
+        .zip(input.owners.get(&def_owner))
+        .map(|(row, owner)| {
+            let cu = tower_shooter_cu(row);
+            let counters = atk_t
+                .iter()
+                .map(|t| {
+                    counter_multiplier_pin(
+                        &cu.counter_typ,
+                        &t.cu.counter_typ,
+                        &data.counters,
+                        data.counter_mult,
+                    )
+                })
+                .collect();
+            TowerShooterCompose {
+                attacker: attacker_from_cu(&cu),
+                cu,
+                civ_bonusy: owner.civ_bonusy.clone(),
+                diff_mult: owner.difficulty_combat_mult,
+                counters,
+            }
+        });
         let compose_units =
             |units: &[AdapterBattleUnit], t: Vec<UnitBlowTemplate>, side_def: bool| {
                 units
@@ -756,6 +933,7 @@ impl SiegeBattleSession {
                 compose_units(&def_units, def_t, true),
             ],
             counters,
+            tower,
             ctx: BlowSceneCtx {
                 map: tiles,
                 terrain_data: data.terrain_rows.clone(),
@@ -870,16 +1048,19 @@ impl SiegeBattleSession {
     /// # Errors
     /// [`SessionError::AlreadyFinished`], [`SessionError::LoopUnsupported`].
     pub fn step(&mut self, wall_delta_ms: f64) -> Result<StepReport, SessionError> {
-        match self.phase {
-            SessionPhase::Finished => return Err(SessionError::AlreadyFinished),
-            SessionPhase::Prepared => self.play(),
-            SessionPhase::Running => {}
-            SessionPhase::Skipping => return self.skip(),
+        if self.phase == SessionPhase::Finished {
+            return Err(SessionError::AlreadyFinished);
         }
+        // K5LOOP-WIRING-A r2 (Z4c Evaluatora): walidacja PRZED zmianą stanu (start bitwy w `Prepared`).
         if !(wall_delta_ms.is_finite() && wall_delta_ms >= 0.0) {
             return Err(SessionError::InvalidData(format!(
                 "wall_delta_ms {wall_delta_ms}"
             )));
+        }
+        match self.phase {
+            SessionPhase::Prepared => self.play(),
+            SessionPhase::Skipping => return self.skip(),
+            SessionPhase::Running | SessionPhase::Finished => {}
         }
         self.wall_acc += wall_delta_ms;
         let mut frames = 0;
@@ -1013,6 +1194,33 @@ impl SiegeBattleSession {
             .blow_composer
             .as_ref()
             .map(|c| c.compose(site))
+    }
+
+    /// K5LOOP-WIRING-A r2 (Z2): wejście trafienia wieży, jakie kompozytor sesji złożyłby dla `site` (diagnostyka i testy).
+    #[must_use]
+    pub fn compose_tower_blow(&self, site: &TowerBlowSite) -> Option<FullBlowInput> {
+        self.lp
+            .env
+            .body
+            .blow_composer
+            .as_ref()
+            .and_then(|c| c.compose_tower(site))
+    }
+
+    /// K5LOOP-WIRING-A r2 (Z3): mnożnik terenu `_checkRout` kompozytora dla jednostki na kaflu (diagnostyka i testy).
+    #[must_use]
+    pub fn terrain_defence_mult_at(&self, unit: UnitRef, cell: (i64, i64)) -> Option<f64> {
+        self.lp
+            .env
+            .body
+            .blow_composer
+            .as_ref()
+            .and_then(|c| c.terrain_defence_mult(unit, cell))
+    }
+
+    /// K5LOOP-WIRING-A r2 (Z3): pętla do zmiany stanu w testach gałęzi ciała (np. trafienie wieży w zadany cel).
+    pub fn battle_loop_mut(&mut self) -> &mut SiegeLoop<ProdBody<SessionRolls>> {
+        &mut self.lp
     }
 
     /// Identyfikatory rosteru w kolejności `this.atk` / `this.def`.

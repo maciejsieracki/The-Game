@@ -426,7 +426,9 @@ fn wynik_jako_dane() {
     );
     for u in &o.units {
         assert!(u.hp <= u.max_hp && u.hp.is_finite(), "{u:?}");
-        if u.dead {
+        // `_removeUnitFromScene` (`:9910-9913`) ustawia `dead = true` także uciekinierowi, który zszedł z pola z HP > 0;
+        // HP <= 0 obowiązuje tylko poległych bez ucieczki.
+        if u.dead && !u.routed {
             assert!(u.hp <= 0.0, "{u:?}");
         }
     }
@@ -467,7 +469,7 @@ fn zlote_wyniki_sesji() {
         ));
     }
     eprintln!("ZLOTE {:016x}", fnv(&all));
-    assert_eq!(format!("{:016x}", fnv(&all)), "dcd224435100671a", "{all}");
+    assert_eq!(format!("{:016x}", fnv(&all)), "619d9ea6ba687f71", "{all}");
 }
 
 /// D-WIRA-3: kwantyzacja klatek 16 ms z resztą; pierwsza klatka tylko ustawia `vLastWall` (`_advanceVClock` `:9502`).
@@ -561,5 +563,425 @@ fn kompozytor_ciosu_szarza_i_kontry() {
     assert_ne!(
         c1.counter_mult, back.counter_mult,
         "kontry niesymetryczne dla pary {ta}/{td}"
+    );
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Obrona r1 (zarzuty Evaluatora Z2, Z3, Z4): trafienie wieży przez kompozytor, gałęzie `tower_blow_full`,
+// `_checkRout` z bieżącego kafla, walidacja `step` przed startem, mutanty M16/M23.
+// ---------------------------------------------------------------------------------------------------------------
+
+fn owner_ids(st: &PlayableState) -> (i64, i64) {
+    let own = i64::try_from(st.cities[0].owner_id.get()).unwrap();
+    let enemy = i64::try_from(
+        st.players
+            .iter()
+            .find(|p| p.name == "wrog")
+            .unwrap()
+            .id
+            .get(),
+    )
+    .unwrap();
+    (own, enemy)
+}
+
+fn civ_bonusy(key: &str) -> Vec<civ_engine::domain::civ_bonuses::CivBonusEntry> {
+    use civ_engine::data::civilizations::parse_civ_matrix;
+    use civ_engine::domain::civ_bonuses::civ_matrix_bonusy_for_civ_key;
+    civ_matrix_bonusy_for_civ_key(&parse_civ_matrix().unwrap(), key)
+}
+
+fn uref(
+    side: civ_engine::domain::siege_tactics_end::BattleSide,
+    idx: usize,
+) -> civ_engine::domain::siege_tactics_turnseq::UnitRef {
+    civ_engine::domain::siege_tactics_turnseq::UnitRef { side, idx }
+}
+
+/// Pierwszy kafel pola o nazwie kombatowej `name` (`combatTerrainName`).
+fn find_cell(ses: &SiegeBattleSession, name: &str) -> Option<(i64, i64)> {
+    let m = &ses.field().map;
+    for r in 0..m.rows() {
+        for c in 0..m.cols() {
+            if m.combat_terrain_name_f(f64::from(c), f64::from(r)) == name {
+                return Some((i64::from(c), i64::from(r)));
+            }
+        }
+    }
+    None
+}
+
+/// Z2: trafienie wieży (`_fireOneTower` `:4236-4264` → `_singleBlow(shooter, target, true)` `:8811-8960`) jest składane z
+/// REALNEGO celu (`cuD`: Obrona, Pancerz, `maxHp`), z trudnością strony obrońcy dla strzelca
+/// (`battleUnitDifficultyCombatMult(shooter.bu, defenderDifficultyCombatMult)`), trudnością właściciela celu, kontrą
+/// `counterMultiplier(shooter, cuD)` i środowiskiem obrony miasta; strzelec = `towerShooterRow`.
+#[test]
+fn wieza_sklada_cios_z_realnym_celem() {
+    use civ_engine::domain::siege_battle_adapter_unit::counter_multiplier_pin;
+    use civ_engine::domain::siege_tactics_end::BattleSide;
+    use civ_engine::domain::siege_tactics_loop::{BlowSite, TowerBlowSite};
+    let s = scn_base();
+    let (st, mut input) = state_for(&s);
+    let (own, enemy) = owner_ids(&st);
+    input.owners.get_mut(&own).unwrap().difficulty_combat_mult = 1.25;
+    input.owners.get_mut(&enemy).unwrap().difficulty_combat_mult = 0.8;
+    let d = data();
+    let ses = SiegeBattleSession::start(&st, &input, &d).unwrap();
+    let lp = ses.battle_loop();
+    let wall_col = lp.st.siege_wall_col;
+    let row = *lp.env.tower_rows.first().expect("wieze na murze");
+    let tmpl = lp.env.tower_shot.clone().expect("strzelec wiezy");
+    let target = uref(BattleSide::Attacker, 0);
+    let def0 = uref(BattleSide::Defender, 0);
+    let site = TowerBlowSite {
+        target,
+        shooter_cell: (wall_col, row),
+        target_cell: (wall_col - 2, row),
+        target_on_wall: false,
+    };
+    let inp = ses
+        .compose_tower_blow(&site)
+        .expect("kompozytor zna strzelca");
+    // Ten sam `cuD`, co przy każdym innym ciosie w tę jednostkę.
+    let any = ses
+        .compose_blow(&BlowSite {
+            attacker: def0,
+            target,
+            ranged: true,
+            attacker_cell: (wall_col, row),
+            target_cell: (wall_col - 2, row),
+            target_on_wall: false,
+            first_blow: true,
+        })
+        .unwrap();
+    let as_atk = ses
+        .compose_blow(&BlowSite {
+            attacker: target,
+            target: def0,
+            ranged: false,
+            attacker_cell: (wall_col - 2, row),
+            target_cell: (wall_col, row),
+            target_on_wall: true,
+            first_blow: true,
+        })
+        .unwrap();
+    assert_eq!(inp.defender, any.defender, "cuD celu");
+    assert!(
+        inp.defender.melee_defence > 0.0,
+        "Obrona celu nie z neutralnego szablonu"
+    );
+    assert_eq!(inp.defender_state.max_hp, any.defender_state.max_hp);
+    assert_ne!(
+        inp.defender_state.max_hp, tmpl.defender_state.max_hp,
+        "maxHp celu, nie 10 z neutralnego szablonu"
+    );
+    assert_eq!(inp.attacker, tmpl.attacker, "strzelec = towerShooterRow");
+    assert!(inp.ranged);
+    assert_eq!(
+        inp.atk_diff_mult, 1.25,
+        "trudnosc strony obroncy (strzelec)"
+    );
+    assert_eq!(inp.def_diff_mult, 0.8, "trudnosc wlasciciela celu");
+    assert!(inp.env.is_city_defense_battle, "obrona miasta");
+    assert_eq!(
+        inp.counter_mult,
+        counter_multiplier_pin(
+            &inp.attacker.counter_typ,
+            &as_atk.attacker.counter_typ,
+            &d.counters,
+            d.counter_mult
+        )
+    );
+}
+
+/// Z2: bonusy cywilizacji strzelca = `defenderCivBonusy` sceny (`battleUnitCivBonusy(shooter.bu, defenderCivBonusy)`,
+/// właściciel `defRosterRef[0]`, `main.ts:36995`), nie bonusy atakującego.
+#[test]
+fn wieza_bonusy_cywilizacji_strony_obroncy() {
+    use civ_engine::data::civilizations::{parse_civ_matrix, Num};
+    use civ_engine::domain::civ_bonuses::civ_matrix_bonusy_for_civ_key;
+    use civ_engine::domain::siege_tactics_end::BattleSide;
+    use civ_engine::domain::siege_tactics_loop::TowerBlowSite;
+    let mut m = parse_civ_matrix().unwrap();
+    let row = m
+        .cywilizacje
+        .iter_mut()
+        .find(|c| c.typ_cywilizacji == "rzymianie")
+        .unwrap();
+    row.params
+        .insert("walka_atak_wszystkie".into(), Num::Float(0.5));
+    let bonus = civ_matrix_bonusy_for_civ_key(&m, "rzymianie");
+    let s = scn_base();
+    let (st, input) = state_for(&s);
+    let (own, enemy) = owner_ids(&st);
+    let d = data();
+    let compose = |input: &SiegeSessionInput| {
+        let ses = SiegeBattleSession::start(&st, input, &d).unwrap();
+        let wall_col = ses.battle_loop().st.siege_wall_col;
+        let row = ses.battle_loop().env.tower_rows[0];
+        ses.compose_tower_blow(&TowerBlowSite {
+            target: uref(BattleSide::Attacker, 0),
+            shooter_cell: (wall_col, row),
+            target_cell: (wall_col - 2, row),
+            target_on_wall: false,
+        })
+        .unwrap()
+    };
+    let base = compose(&input);
+    let mut with_def = input.clone();
+    with_def.owners.get_mut(&own).unwrap().civ_bonusy = bonus.clone();
+    let mut with_atk = input.clone();
+    with_atk.owners.get_mut(&enemy).unwrap().civ_bonusy = bonus;
+    let d_mods = compose(&with_def).atk_mods;
+    let a_mods = compose(&with_atk).atk_mods;
+    assert!(
+        d_mods.atk > base.atk_mods.atk,
+        "bonus obroncy dziala na strzelca: {d_mods:?} vs {:?}",
+        base.atk_mods
+    );
+    assert_eq!(
+        a_mods, base.atk_mods,
+        "bonus atakujacego nie dziala na strzelca"
+    );
+}
+
+/// Ciało z gotowym trafieniem wieży: sesja `mur`, wiersz pierwszej wieży, cel = atakujący 0.
+fn tower_fixture() -> (SiegeBattleSession, i64) {
+    let (st, input) = state_for(&scn_base());
+    let ses = SiegeBattleSession::start(&st, &input, &data()).unwrap();
+    let row = ses.battle_loop().env.tower_rows[0];
+    (ses, row)
+}
+
+/// Z3 / E2: zabicie przez wieżę wykonuje ripple `_shakeAlliesOnLoss(defender)` (`_resolveBlowOutcome` `:9048`) i wpis
+/// `_pushClash(..., 'padl')` z aktorem wieży.
+#[test]
+fn wieza_zabicie_ripple_i_padl() {
+    use civ_engine::domain::siege_tactics_actions::{Actor, BattleAction};
+    use civ_engine::domain::siege_tactics_blow::ClashTag;
+    use civ_engine::domain::siege_tactics_end::BattleSide;
+    use civ_engine::domain::siege_tactics_loop::LoopBody;
+    let (mut ses, row) = tower_fixture();
+    let lp = ses.battle_loop_mut();
+    let tmpl = lp.env.tower_shot.clone().unwrap();
+    let target = uref(BattleSide::Attacker, 0);
+    let mut killed = false;
+    for _ in 0..500 {
+        lp.st.atk[0].c.hp = 1e-6;
+        lp.st.atk[0].c.morale = 1e9;
+        lp.env.body.set_tower_row(row);
+        lp.env.body.tower_blow(&tmpl, 0, &mut lp.st);
+        if lp.st.atk[0].c.fading_out || lp.st.atk[0].c.dead {
+            killed = true;
+            break;
+        }
+    }
+    assert!(killed, "brak trafienia w 500 rzutach");
+    assert_eq!(
+        lp.env.body.kill_ripples,
+        vec![target],
+        "ripple przy zabiciu"
+    );
+    let acts = lp.env.body.take_actions();
+    assert!(
+        acts.iter().any(|a| matches!(
+            a.action,
+            BattleAction::Clash { attacker: Actor::Tower(r), target: t, tag: ClashTag::Padl, .. }
+                if r == row && t == target
+        )),
+        "{acts:?}"
+    );
+    assert!(lp.env.body.unported.is_empty());
+}
+
+/// Z3 / E3: trafienie (nieśmiertelne) celu, który uciekł w czasie lotu pocisku (`RANGED_FLY_MS`, `_fireOneTower`
+/// `:4263-4264` sprawdza tylko `dead`/`fadingOut`): `_resolveBlowOutcome` przechodzi do gałęzi morale i
+/// `_pushClash(..., defender.routed ? 'rout' : '')` (`:9066`) daje tag `rout`.
+#[test]
+fn wieza_trafienie_uciekajacego_tag_rout() {
+    use civ_engine::domain::siege_tactics_actions::{Actor, BattleAction};
+    use civ_engine::domain::siege_tactics_blow::ClashTag;
+    use civ_engine::domain::siege_tactics_end::BattleSide;
+    use civ_engine::domain::siege_tactics_loop::LoopBody;
+    let (mut ses, row) = tower_fixture();
+    let lp = ses.battle_loop_mut();
+    let tmpl = lp.env.tower_shot.clone().unwrap();
+    let target = uref(BattleSide::Attacker, 0);
+    let mut tag = None;
+    for _ in 0..500 {
+        lp.st.atk[0].c.hp = 1e6;
+        lp.st.atk[0].c.routed = true;
+        lp.env.body.set_tower_row(row);
+        lp.env.body.tower_blow(&tmpl, 0, &mut lp.st);
+        tag = lp
+            .env
+            .body
+            .take_actions()
+            .into_iter()
+            .find_map(|a| match a.action {
+                BattleAction::Clash {
+                    attacker: Actor::Tower(r),
+                    target: t,
+                    tag,
+                    ..
+                } if r == row && t == target => Some(tag),
+                _ => None,
+            });
+        if tag.is_some() {
+            break;
+        }
+    }
+    assert_eq!(tag, Some(ClashTag::Rout));
+    assert!(lp.env.body.kill_ripples.is_empty());
+}
+
+/// Z4a (D-WIRA-10): `_checkRout` liczy `terrainDefenseMultiplier` z BIEŻĄCEGO kafla (`combatTerrainName(ru.q, ru.r)`,
+/// `:9790-9792`). Sojusznik poległego (`_shakeAlliesOnLoss` `:9048`, strata `MORALE_ALLY_DEATH_LOSS`, potem
+/// `_checkRout`) z morale po stracie między `flee - MORALE_TERRAIN_RESIST` a `flee` ucieka na kaflu startowym (równina),
+/// a po przejściu na wzgórza (+50% Obrony dla każdej roli; las tylko vs `dystans`/`flanka`) nie.
+#[test]
+fn checkrout_z_biezacego_kafla() {
+    use civ_engine::domain::siege_tactics_end::BattleSide;
+    use civ_engine::domain::siege_tactics_loop::{LoopBody, MORALE_ALLY_DEATH_LOSS};
+    let (st, input) = state_for(&scn_base());
+    let d = data();
+    let probe = SiegeBattleSession::start(&st, &input, &d).unwrap();
+    let hills = find_cell(&probe, "Wzgorza")
+        .or_else(|| find_cell(&probe, "Gory"))
+        .expect("wzgorza na polu bitwy");
+    let ally = uref(BattleSide::Attacker, 1);
+    let tdm_hills = probe.terrain_defence_mult_at(ally, hills).unwrap();
+    assert!(tdm_hills > 1.0, "wzgorza daja bonus obrony ({tdm_hills})");
+    let start_cell = {
+        let a = &probe.battle_loop().env.body.units[0][1].activate;
+        (a.q, a.r)
+    };
+    let start_tdm = probe.battle_loop().env.body.units[0][1]
+        .activate
+        .terrain_defence_mult;
+    assert_eq!(
+        probe.terrain_defence_mult_at(ally, start_cell).unwrap(),
+        start_tdm,
+        "start: ta sama wartosc co adapter"
+    );
+    assert!(start_tdm <= 1.0, "kafel startowy bez bonusu");
+    let ally_routs = |cell: Option<(i64, i64)>| {
+        let mut ses = SiegeBattleSession::start(&st, &input, &d).unwrap();
+        let lp = ses.battle_loop_mut();
+        let row = lp.env.tower_rows[0];
+        let tmpl = lp.env.tower_shot.clone().unwrap();
+        if let Some((q, r)) = cell {
+            for i in [0, 1] {
+                lp.env.body.units[0][i].activate.q = q;
+                lp.env.body.units[0][i].activate.r = r;
+            }
+        } else {
+            lp.env.body.units[0][0].activate.q = start_cell.0;
+            lp.env.body.units[0][0].activate.r = start_cell.1;
+        }
+        lp.st.atk[1].c.flee_morale = 20.0;
+        for _ in 0..500 {
+            lp.st.atk[0].c.hp = 1e-6;
+            lp.st.atk[0].c.morale = 1e9;
+            lp.st.atk[1].c.morale = 18.0 + MORALE_ALLY_DEATH_LOSS;
+            lp.env.body.set_tower_row(row);
+            lp.env.body.tower_blow(&tmpl, 0, &mut lp.st);
+            if lp.st.atk[0].c.fading_out || lp.st.atk[0].c.dead {
+                assert_eq!(lp.st.atk[1].c.morale, 18.0, "strata ripple");
+                return lp.st.atk[1].c.routed;
+            }
+        }
+        panic!("brak trafienia w 500 rzutach");
+    };
+    assert!(ally_routs(None), "kafel startowy: ucieczka");
+    assert!(
+        !ally_routs(Some(hills)),
+        "wzgorza (biezacy kafel): brak ucieczki"
+    );
+}
+
+/// Z4c: `step` z niepoprawnym czasem w fazie `Prepared` zwraca błąd BEZ startu bitwy.
+#[test]
+fn step_niepoprawny_czas_nie_startuje_bitwy() {
+    let (st, input) = state_for(&scn_base());
+    let mut ses = SiegeBattleSession::prepare(&st, &input, &data()).unwrap();
+    for bad in [f64::NAN, -1.0, f64::INFINITY] {
+        assert!(ses.step(bad).is_err());
+        assert_eq!(ses.phase(), SessionPhase::Prepared, "{bad}");
+    }
+    assert!(ses.battle_loop().st.turn_order.is_empty(), "brak tury 0");
+}
+
+/// M16: `def_on_wall` kompozytora = `defender.onWallWalkway` (`:8839`, `wallCivMult` `:8932`): obrońca na koronie z
+/// bonusem muru cywilizacji (`hetyci`, `walka_obrona_piechota_w_murze`) ma `def_on_wall` i mnożnik ≠ 1.
+#[test]
+fn kompozytor_mur_cywilizacji_obroncy() {
+    use civ_engine::domain::siege_tactics_end::BattleSide;
+    use civ_engine::domain::siege_tactics_loop::BlowSite;
+    let s = Scn {
+        def: vec!["Wojownik", "Włócznik"],
+        ..scn_base()
+    };
+    let (st, mut input) = state_for(&s);
+    let (own, _) = owner_ids(&st);
+    input.owners.get_mut(&own).unwrap().civ_bonusy = civ_bonusy("hetyci");
+    let ses = SiegeBattleSession::start(&st, &input, &data()).unwrap();
+    let wall_col = ses.battle_loop().st.siege_wall_col;
+    let mk = |on_wall| BlowSite {
+        attacker: uref(BattleSide::Attacker, 0),
+        target: uref(BattleSide::Defender, 0),
+        ranged: false,
+        attacker_cell: (wall_col - 1, 50),
+        target_cell: (wall_col, 50),
+        target_on_wall: on_wall,
+        first_blow: true,
+    };
+    let on = ses.compose_blow(&mk(true)).unwrap();
+    let off = ses.compose_blow(&mk(false)).unwrap();
+    assert!(on.def_on_wall && !off.def_on_wall);
+    assert!(
+        on.def_wall_civ_mult > 1.0,
+        "bonus muru hetytow ({})",
+        on.def_wall_civ_mult
+    );
+    assert_eq!(off.def_wall_civ_mult, 1.0);
+}
+
+/// M23: kontekst cywilizacji ciosu dostaje `terrain: defTerrain` (`:8905-8920`). Bonus leśny (`slowianie`,
+/// `walka_obrona_piechota_teren_las`) działa, gdy nazwa terenu zawiera `las`/`dzungl`/`gor` (`bonusApplies`; uwaga:
+/// `Plaskie` zawiera `las`, więc działa też na równinie, jak w pinie), ale NIE w rzece (`Rzeka`): obrońca w rzece ma
+/// mniejszą Obronę niż na równinie. Pole z rzeką: `worldTerrain.rzeka = true`.
+#[test]
+fn kompozytor_las_cywilizacji_obroncy() {
+    use civ_engine::domain::battle_setup_terrain::WorldTerrainInput;
+    use civ_engine::domain::siege_tactics_end::BattleSide;
+    use civ_engine::domain::siege_tactics_loop::BlowSite;
+    let (st, mut input) = state_for(&scn_base());
+    let (own, _) = owner_ids(&st);
+    input.owners.get_mut(&own).unwrap().civ_bonusy = civ_bonusy("slowianie");
+    input.world_terrain = Some(WorldTerrainInput {
+        baza: "Rownina".into(),
+        las: false,
+        rzeka: true,
+    });
+    let ses = SiegeBattleSession::start(&st, &input, &data()).unwrap();
+    let river = find_cell(&ses, "Rzeka").expect("rzeka na polu bitwy");
+    let plain = find_cell(&ses, "Plaskie (rownina/laka)").expect("rownina na polu bitwy");
+    let mk = |cell: (i64, i64)| BlowSite {
+        attacker: uref(BattleSide::Attacker, 0),
+        target: uref(BattleSide::Defender, 0),
+        ranged: true,
+        attacker_cell: (cell.0 - 3, cell.1),
+        target_cell: cell,
+        target_on_wall: false,
+        first_blow: true,
+    };
+    let r = ses.compose_blow(&mk(river)).unwrap();
+    let p = ses.compose_blow(&mk(plain)).unwrap();
+    assert!(
+        p.def_mods.obrona > r.def_mods.obrona,
+        "rownina {} vs rzeka {}",
+        p.def_mods.obrona,
+        r.def_mods.obrona
     );
 }

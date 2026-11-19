@@ -346,10 +346,11 @@ pub fn tower_shooter_hp(r: &UnitRow) -> f64 {
     }
 }
 
-/// Szablon ciosu wieży dla wiersza strzelca (`to_combat_unit(wiersz)` z kategorią i HP jak w pinie).
-/// Wspólna ścieżka dla [`tower_setup_from_units`] i testów pinu (wiersz z wektora generatora).
-pub fn tower_shot_from_row(r: &UnitRow) -> FullBlowInput {
-    let cu = to_combat_unit(
+/// `toCombatUnit(shooter.bu)` strzelca wieży (pin `_fireOneTower` `:4236-4244`: `stats: shooterRow`,
+/// `kategoria = Typ ?? 'Distance'`, `hp = Health ?? health ?? 1 || 1`; bez weterana, głodu i deficytu: syntetyczny
+/// `bu` nie ma tych pól, więc `toCombatUnit` `:1355-1377` ich nie stosuje).
+pub fn tower_shooter_cu(r: &UnitRow) -> crate::domain::siege_tactics_inputs_unit::CombatUnitModel {
+    to_combat_unit(
         &BattleUnitIn {
             stats: Some(stat_row_of_unit(r)),
             kategoria: tower_shooter_kategoria(r),
@@ -359,7 +360,13 @@ pub fn tower_shot_from_row(r: &UnitRow) -> FullBlowInput {
             gold_deficit: false,
         },
         &ToCombatUnitOpts::default(),
-    );
+    )
+}
+
+/// Szablon ciosu wieży dla wiersza strzelca (`to_combat_unit(wiersz)` z kategorią i HP jak w pinie).
+/// Wspólna ścieżka dla [`tower_setup_from_units`] i testów pinu (wiersz z wektora generatora).
+pub fn tower_shot_from_row(r: &UnitRow) -> FullBlowInput {
+    let cu = tower_shooter_cu(r);
     let mut tmpl = neutral_tower_shot_template();
     tmpl.attacker = attacker_from_cu(&cu);
     tmpl
@@ -1484,6 +1491,34 @@ pub struct BlowSite {
 /// `hit_arc`, `first_blow_of_pair` i `defender_state` nadpisuje dalej [`ProdBody`] (jak dotąd dla szablonów).
 pub trait BlowComposer {
     fn compose(&self, site: &BlowSite) -> FullBlowInput;
+
+    /// K5LOOP-WIRING-A r2 (zarzut Z2 Evaluatora): trafienie wieży `_singleBlow(shooter, target, true)` (`:4264`) ze
+    /// strzelcem syntetycznym na `(wallCol, t.row)` strony `def` (`:4236-4244`), złożone jak każdy cios (`:8811-8960`):
+    /// realny `cuD` celu (Obrona, Pancerz, `maxHp`), teren miejski kafla celu, bonusy cywilizacji i trudność strony
+    /// obrońcy (`battleUnitCivBonusy(shooter.bu, defenderCivBonusy)`), kontry. `None` = kompozytor nie zna strzelca
+    /// (wtedy [`ProdBody`] zapisuje jawny tag `wieza-bez-kompozytora`, bez cichego szablonu).
+    fn compose_tower(&self, _site: &TowerBlowSite) -> Option<FullBlowInput> {
+        None
+    }
+
+    /// K5LOOP-WIRING-A r2 (Z4a): `terrainDefenseMultiplier(terrainMap.combatTerrainName(q, r), cu.rola)` jednostki
+    /// `unit` na kaflu `cell` (`_checkRout` `:9790-9792`). `None` = wartość adaptera z kafla startowego.
+    fn terrain_defence_mult(&self, _unit: UnitRef, _cell: (i64, i64)) -> Option<f64> {
+        None
+    }
+}
+
+/// K5LOOP-WIRING-A r2: miejsce trafienia wieży (`_fireOneTower` → `_singleBlow(shooter, target, true)`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct TowerBlowSite {
+    /// Cel (zawsze strona atakującego: `this.atk`, `:4228`).
+    pub target: UnitRef,
+    /// `(shooter.q, shooter.r)` = `(wallCol, t.row)`.
+    pub shooter_cell: (i64, i64),
+    /// `(target.q, target.r)` w chwili trafienia.
+    pub target_cell: (i64, i64),
+    /// `target.onWallWalkway` w chwili trafienia.
+    pub target_on_wall: bool,
 }
 
 /// K5LOOP-CLOSE r4: wynik ucieczki wykonanej w `start` (patrz [`ProdBody::flee_after`]).
@@ -3965,6 +4000,9 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         au.morale = seq.morale;
         au.flee_morale = seq.flee_morale;
         au.never_rout = seq.never_rout;
+        // K5LOOP-WIRING-A r2 (Z4a, D-WIRA-10): `_checkRout` na starcie aktywacji czyta teren BIEŻĄCEGO kafla
+        // (`combatTerrainName(ru.q, ru.r)`, `:9790-9792`).
+        au.terrain_defence_mult = self.current_tdm(unit);
         au.surround_applied = self.surround[ix][unit.idx];
         // K5DOC-T8: `meta.doctrine !== 'manual'` (`battleScene.ts:6096`) czyta `_effectiveMetaForUnit(ru).doctrine` =
         // `_getEffectiveDoctrine(ru)` (`:17634`, `:17612-17619`) ze stanu doktryny ciała; flaga wejścia adaptera jest
@@ -4501,7 +4539,41 @@ impl<R: RollSource> ProdBody<R> {
     /// `_spawnDamageLabel` (`:4265`) gdy `dmg > 0` i cel żywy.
     fn tower_blow_full(&mut self, tmpl: &FullBlowInput, tref: UnitRef, st: &mut TurnSeqState) {
         let tc = st.unit(tref).c;
-        let mut input = tmpl.clone();
+        let tix = side_ix(tref.side);
+        let (dq, dr) = (
+            self.units[tix][tref.idx].activate.q,
+            self.units[tix][tref.idx].activate.r,
+        );
+        let shooter_cell = (st.siege_wall_col, self.tower_row);
+        // K5LOOP-WIRING-A r2 (Z2): przy kompozytorze wejście składane jak `_singleBlow` (`:8811-8960`) z realnym celem;
+        // łuk `relativeHit(target.facing, wallCol, t.row, target.q, target.r)` (`:8880`).
+        let mut input = match &self.blow_composer {
+            Some(c) => {
+                let site = TowerBlowSite {
+                    target: tref,
+                    shooter_cell,
+                    target_cell: (dq, dr),
+                    target_on_wall: self.units[tix][tref.idx].activate.on_wall_walkway,
+                };
+                match c.compose_tower(&site) {
+                    Some(mut inp) => {
+                        inp.hit_arc = relative_hit(
+                            &JsVal::Num(self.facing[tix][tref.idx]),
+                            &JsVal::Num(shooter_cell.0 as f64),
+                            &JsVal::Num(shooter_cell.1 as f64),
+                            &JsVal::Num(dq as f64),
+                            &JsVal::Num(dr as f64),
+                        );
+                        inp
+                    }
+                    None => {
+                        self.unported.push((tref, "wieza-bez-kompozytora"));
+                        tmpl.clone()
+                    }
+                }
+            }
+            None => tmpl.clone(),
+        };
         input.ranged = true;
         input.defender_state = DefenderState {
             hp: tc.hp,
@@ -4520,7 +4592,7 @@ impl<R: RollSource> ProdBody<R> {
         unit_cu_mut(st, tref).hp = out.blow.def_hp_after;
         let shooter = tower_shooter_name(&self.tower_shooter_nazwa);
         let tname = self.name_of(tref);
-        self.emit_blow_log(&shooter, &tname, tmpl.hit_arc, &out, max_hp);
+        self.emit_blow_log(&shooter, &tname, input.hit_arc, &out, max_hp);
         let row = self.tower_row;
         for e in &out.blow.effects {
             match *e {
@@ -4864,6 +4936,20 @@ impl<R: RollSource> ProdBody<R> {
         best.map(|(i, _)| i)
     }
 
+    /// K5LOOP-WIRING-A r2 (Z4a, D-WIRA-10): `terrainDefenseMultiplier(combatTerrainName(ru.q, ru.r), cu.rola)` z
+    /// BIEŻĄCEGO kafla (`_checkRout` `:9790-9792`), gdy kompozytor zna mapę pola; bez kompozytora wartość adaptera.
+    fn current_tdm(&self, unit: UnitRef) -> f64 {
+        let cell = self.cell_of(unit);
+        self.blow_composer
+            .as_ref()
+            .and_then(|c| c.terrain_defence_mult(unit, cell))
+            .unwrap_or(
+                self.units[side_ix(unit.side)][unit.idx]
+                    .activate
+                    .terrain_defence_mult,
+            )
+    }
+
     fn cell_of(&self, unit: UnitRef) -> (i64, i64) {
         let a = &self.units[side_ix(unit.side)][unit.idx].activate;
         (a.q, a.r)
@@ -4873,9 +4959,7 @@ impl<R: RollSource> ProdBody<R> {
     /// ([`ProdUnit::activate`]`.terrain_defence_mult`, wejście adaptera).
     fn check_rout(&mut self, st: &mut TurnSeqState, unit: UnitRef) {
         let c = st.unit(unit).c;
-        let tdm = self.units[side_ix(unit.side)][unit.idx]
-            .activate
-            .terrain_defence_mult;
+        let tdm = self.current_tdm(unit);
         if should_rout(&c, effective_flee_threshold(c.flee_morale, tdm)) {
             self.start_rout(st, unit);
         }
