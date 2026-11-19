@@ -308,9 +308,14 @@ fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
             "{name}: Math.random poza _singleBlow"
         );
         let blokada = ROZBIEZNE_B_WIRA_PIN_1.contains(&name);
+        // Obrona r2 (E2-3 Evaluatora): błąd sesji NIGDY nie jest „oczekiwaną rozbieżnością” — także scenariusz z
+        // listy blokady musi zakończyć bitwę `Ok(..)`, a różnić się wyłącznie danymi wyniku.
         let d = match run_vector(v, &data) {
             Ok(out) => diff(v, &out),
-            Err(e) => vec![format!("błąd sesji {e:?}")],
+            Err(e) => {
+                fails.push(format!("{name}: błąd sesji {e:?}"));
+                continue;
+            }
         };
         match (d.is_empty(), blokada) {
             (true, false) => zgodne += 1,
@@ -409,6 +414,13 @@ fn slad_diagnostyczny_na_zadanie() {
                     format!("TOWER rzad {row} -> {}", id(target))
                 }
                 BattleAction::Kill { unit } => format!("KILL {}", id(unit)),
+                BattleAction::Turn { round_no } => format!("TURN {round_no}"),
+                BattleAction::Melee {
+                    attacker, target, ..
+                } => format!("MELEE {} {}", id(attacker), id(target)),
+                BattleAction::Shot {
+                    attacker, target, ..
+                } => format!("SHOT {} {}", id(attacker), id(target)),
                 BattleAction::Move { unit, from, to, .. } => {
                     format!("MOVE {} {},{}->{},{}", id(unit), from.0, from.1, to.0, to.1)
                 }

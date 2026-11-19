@@ -1037,6 +1037,8 @@ impl SiegeBattleSession {
         )
         .map_err(SessionError::InvalidData)?;
         body.tower_outcome_effects = true;
+        // Obrona r2 (E2-1b, D-WIRA-17): czas ciosu i strzału jak w pinie (skutek w chwili trafienia, `done()` po ogonie).
+        body.pin_blow_timing = true;
         // Obrona r2 (E2-1a, D-WIRA-16): `_applyTerrainRange` w ciele (`:6064`, `:7740`, `:7929`) z siatką
         // `terrainRangeDelta(combatTerrainName(c, r))` (`:7495-7496`).
         let mut range_grid = HashMap::new();

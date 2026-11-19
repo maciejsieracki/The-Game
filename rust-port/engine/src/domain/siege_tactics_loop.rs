@@ -180,6 +180,14 @@ pub trait LoopBody {
     /// muru, `:4216`), żeby stan wież ciała (zagrożenia `_siegeShooterThreats`, `:7932-7935`) był zgodny. Domyślnie bez
     /// efektu.
     fn on_tower_destroyed(&mut self, _row: i64) {}
+    /// K5LOOP-WIRING-A obrona r2 (E2-1b, D-WIRA-17): czas (ms) między [`LoopBody::complete`] a `done()` aktywacji. Pin
+    /// rozdziela chwilę skutku od końca aktywacji: cios wręcz pada w `BLOW_HIT_T`, a `done()` dopiero po końcu lunge
+    /// (`BLOW_LUNGE_MS`) i `_schedule(BLOW_SETTLE_MS)` (`_doMeleeAttack` `battleScene.ts:9119-9172`); strzał trafia po
+    /// `RANGED_FLY_MS`, a `done()` po kolejnym `_schedule(RANGED_GAP_MS)` (`_doRangedAttack` `:9223-9229`). Wołane raz,
+    /// tuż po `complete`; `0` (domyślnie) = `done()` od razu, jak dotąd.
+    fn take_tail(&mut self, _unit: UnitRef) -> f64 {
+        0.0
+    }
 }
 
 /// Stałe morale z pinu (`battleScene.ts:1129, 1141, 1144-1145`).
@@ -204,6 +212,9 @@ pub enum LoopTimer {
     TowerHit(usize),
     /// K5LOOP-SIEGE-ATK-B (T2b): odroczone wywołanie ciała `id` ([`LoopBody::take_timers`]).
     BodyTimer(u64),
+    /// Obrona r2 (E2-1b): `done()` aktywacji po ogonie ciała ([`LoopBody::take_tail`]): koniec lunge + `BLOW_SETTLE_MS`
+    /// po ciosie albo `RANGED_GAP_MS` po trafieniu strzału.
+    BodyTail(UnitRef),
 }
 
 /// Web `stagger += 180` (`battleScene.ts:4216`): odstęp między wystrzałami kolejnych wież.
@@ -943,6 +954,14 @@ impl<B: LoopBody> SiegeLoop<B> {
                 self.env.body.complete(u, &mut self.st);
                 self.drain_body();
                 self.schedule_body_timers(clock);
+                let tail = self.env.body.take_tail(u);
+                if tail > 0.0 {
+                    let _ = clock.schedule(tail, LoopTimer::BodyTail(u), false);
+                } else {
+                    activation_done(&mut self.st, &mut self.env, u, &mut out);
+                }
+            }
+            LoopTimer::BodyTail(u) => {
                 activation_done(&mut self.st, &mut self.env, u, &mut out);
             }
             LoopTimer::BodyTimer(id) => {
@@ -1308,6 +1327,8 @@ pub struct ProdBody<R: RollSource> {
     /// Flaga `surroundApplied` (jednorazowa) trzymana między aktywacjami, bo nie ma jej w [`CombatUnit`].
     surround: [Vec<bool>; 2],
     pending: [Vec<Option<ProdPending>>; 2],
+    /// Obrona r2 (E2-1b): ogon aktywacji ([`LoopBody::take_tail`]) ustawiony w `start`, odbierany po `complete`.
+    tail: [Vec<f64>; 2],
     /// Stan `facing` każdej jednostki (`ru.facing`, liczba 0..3). Zmieniany przez `_updateFacing` i `_doMeleeAttack`.
     facing: [Vec<f64>; 2],
     /// `ru.moraleMax` każdej jednostki (`_gainMorale`, `_armyMoraleRatio`). Domyślnie morale startowe z `activate.morale`.
@@ -1477,6 +1498,11 @@ pub struct ProdBody<R: RollSource> {
     /// sam (`Plaskie`, delta 0). `None` (domyślnie, dotychczasowe wektory pętli ze stubami) = zasięg z adaptera bez
     /// przeliczania (dawne D-B7); sesja produkcyjna ustawia `Some`.
     pub terrain_range_delta: Option<HashMap<(i64, i64), f64>>,
+    /// K5LOOP-WIRING-A obrona r2 (E2-1b, D-WIRA-17): czas aktywacji z ciosem/strzałem jak w pinie: skutek w chwili
+    /// trafienia (`complete`), `done()` po ogonie ([`LoopBody::take_tail`]: `BLOW_LUNGE_MS + BLOW_SETTLE_MS - body_ms`
+    /// po ciosie, `RANGED_GAP_MS` po trafieniu strzału). `false` (domyślnie, dotychczasowe wektory pętli) = dawny model:
+    /// `done()` w chwili ciosu, a strzał rozliczany na końcu `RANGED_FLY_MS + RANGED_GAP_MS`. Sesja ustawia `true`.
+    pub pin_blow_timing: bool,
 }
 
 /// K5LOOP-WIRING-A (#369): miejsce jednego ciosu `_singleBlow(attacker, defender, ranged)` w chwili ciosu.
@@ -1671,6 +1697,11 @@ fn step_ms(res: &MoveStepResult) -> f64 {
 /// Web `RANGED_FLY_MS = 380` (`battleScene.ts:1012`): lot pocisku jednostki (`_doRangedAttack`, `_schedule(RANGED_FLY_MS)`
 /// `:9223`) od wystrzału do `_singleBlow(attacker, defender, true)`.
 pub const RANGED_FLY_MS: f64 = 380.0;
+/// Web `BLOW_LUNGE_MS = 260` (`battleScene.ts:1020`): długość lunge `_doMeleeAttack` (koniec przed `BLOW_SETTLE_MS`).
+pub const BLOW_LUNGE_MS: f64 = 260.0;
+/// Web `BLOW_SETTLE_MS = 220` (`battleScene.ts:1022`): `_schedule` po lunge przed `done()` (`:9163`).
+pub const BLOW_SETTLE_MS: f64 = 220.0;
+
 /// Web `RANGED_GAP_MS = 320` (`battleScene.ts:1013`): pauza po trafieniu strzału przed `done()` (`:9229`).
 pub const RANGED_GAP_MS: f64 = 320.0;
 
@@ -2020,6 +2051,7 @@ impl<R: RollSource> ProdBody<R> {
                 .collect()
         };
         let range_base = [range_base_of(&units[0]), range_base_of(&units[1])];
+        let tail = [vec![0.0; units[0].len()], vec![0.0; units[1].len()]];
         Self {
             occ_by_key: seed_occupancy(&units),
             formation_rank,
@@ -2064,6 +2096,7 @@ impl<R: RollSource> ProdBody<R> {
             blow_composer: None,
             tower_outcome_effects: false,
             terrain_range_delta: None,
+            pin_blow_timing: false,
             terrain: None,
             units,
             scene,
@@ -2077,6 +2110,7 @@ impl<R: RollSource> ProdBody<R> {
             counter_round,
             surround,
             pending,
+            tail,
             facing,
             morale_max,
             is_army_commander,
@@ -4384,11 +4418,17 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         if ranged {
             let run = self.ranged_action(unit, st);
             pend.move_left = run.move_left;
+            let mut dur = run.dur;
             if let Some((target, at)) = run.shot {
                 pend.shot = self.begin_shot(unit, target, at);
+                if self.pin_blow_timing && pend.shot.is_some() {
+                    // `_doRangedAttack` (`:9223-9229`): trafienie po `RANGED_FLY_MS`, `done()` po `RANGED_GAP_MS`.
+                    dur = at + RANGED_FLY_MS;
+                    self.tail[ix][unit.idx] = RANGED_GAP_MS;
+                }
             }
             self.pending[ix][unit.idx] = Some(pend);
-            return run.dur;
+            return dur;
         }
         if fallback {
             let (dur, move_left) = self.fall_back(unit, st);
@@ -4433,7 +4473,12 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             if let Some(target) = pend.attack.take() {
                 pend.shot = self.begin_shot(unit, target, attack_pre);
                 let dur = if pend.shot.is_some() {
-                    attack_pre + RANGED_FLY_MS + RANGED_GAP_MS
+                    if self.pin_blow_timing {
+                        self.tail[ix][unit.idx] = RANGED_GAP_MS;
+                        attack_pre + RANGED_FLY_MS
+                    } else {
+                        attack_pre + RANGED_FLY_MS + RANGED_GAP_MS
+                    }
                 } else {
                     attack_pre
                 };
@@ -4450,6 +4495,10 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             }
         }
         let dur = if pend.attack.is_some() {
+            if self.pin_blow_timing {
+                // `_doMeleeAttack` (`:9119-9172`): `done()` po `localT >= BLOW_LUNGE_MS` i `_schedule(BLOW_SETTLE_MS)`.
+                self.tail[ix][unit.idx] = BLOW_LUNGE_MS + BLOW_SETTLE_MS - pu.body_ms;
+            }
             attack_pre + pu.body_ms
         } else {
             attack_pre
@@ -4483,6 +4532,10 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         }
         self.pending[ix][unit.idx] = Some(pend);
         dur
+    }
+
+    fn take_tail(&mut self, unit: UnitRef) -> f64 {
+        std::mem::take(&mut self.tail[side_ix(unit.side)][unit.idx])
     }
 
     fn complete(&mut self, unit: UnitRef, st: &mut TurnSeqState) {
