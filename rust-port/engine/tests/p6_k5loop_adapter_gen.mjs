@@ -186,6 +186,10 @@ const COUNTERS = load('gra/data/counters.json');
 const TERRAIN = load('gra/data/terrain-combat.json');
 const PARAMS = load('gra/data/combat-params.json');
 const PIN_SHA = hash.digest('hex');
+// Obrona r1d (N1): oczekiwany skrot wycinkow i modulow pinu; inny tekst = przerwanie generatora (test Rust porownuje
+// ta sama stala z `vectors.json`).
+const EXPECTED_PIN_SHA = '0a95f5bc085e7384c99a0f880a410503c00ea7ee2c928cf7febfff8933731f51';
+if (PIN_SHA !== EXPECTED_PIN_SHA) throw new Error(`pinSha256 ${PIN_SHA} != ${EXPECTED_PIN_SHA}`);
 
 const sceneScope = {
   combatUnitFromDef: combat.combatUnitFromDef, applyVeteranFracToCombatUnit: vet.applyVeteranFracToCombatUnit,
@@ -326,6 +330,8 @@ function runScenario(sc) {
   const matrix = (a, d) => a.map((x) => d.map((y) => combat.counterMultiplier(cuOf(x).counterTyp, cuOf(y).counterTyp, counters)));
   return {
     atkIds: atk.map((u) => String(u.id)), defIds: def.map((u) => String(u.id)),
+    // Obrona r1d (Z4): wlasciciel kazdej jednostki rosteru (w tym `siege-mach-*` i Milicji) wprost z rosteru pinu.
+    atkOwners: atk.map((u) => u.ownerId), defOwners: def.map((u) => u.ownerId),
     militiaDefs: [...m.militiaDefOverrides.entries()].map(([id, d]) => ({ id, def: d })),
     atk: atkBU.map((bu, i) => unitOut(bu, H.atk[i])), def: defBU.map((bu, i) => unitOut(bu, H.def[i])),
     spawn: spawnBefore, body: bodyBefore, towers,
@@ -378,6 +384,21 @@ scenarios.push(base({ name: 's10-palisada-katapulta-polowa', city: city('c10', 1
 scenarios.push(base({ name: 's11-mur-egipt-bez-epoki', city: city('c11', 2, 30, 30, { population: 2 }), built: { c11: ['mury_kamienne'] }, wars: [[0, 2]], era: { 0: 1, 1: 1, 3: 1 }, defCiv: 'egipt', anchorId: 't1', crownIds: ['v1'],
   units: [U('t1', 0, 'Wojownik', 'miecznik', 29, 30), U('v1', 2, 'Łucznik egipski', 'lucznik', 30, 30), U('v2', 2, 'Włócznik', 'wlocznik', 30, 30)] }));
 
+// Obrona r1d (Z3/E07): kolejnosc `units` = sojusznik, kotwica, wlasna jednostka -> pin przestawia na kotwica, wlasni,
+// sojusznicy (`battleRoster.ts:108-133`).
+scenarios.push(base({ name: 's12-kolejnosc-sojusznik-kotwica-wlasny', city: city('c12', 1, 40, 40), built: { c12: ['mury'] }, wars: [[0, 1], [2, 1]], alliances: [[0, 2]], anchorId: 'z1',
+  units: [U('z2', 2, 'Łucznik egipski', 'lucznik', 41, 40), U('z1', 0, 'Wojownik', 'miecznik', 39, 40), U('z3', 0, 'Włócznik', 'wlocznik', 40, 39), U('z9', 1, 'Wojownik', 'miecznik', 40, 40)] }));
+// Obrona r1d (Z2/E05): przy miescie tylko sojusznik obroncy (bez Garnizonu i licznika) -> pin `hasCityDefenders` false
+// (liczy tylko wlasciciela miasta) = zdobycie bez bitwy (NoDefenders), mimo niepustego rosteru obrony.
+scenarios.push(base({ name: 's13-tylko-sojusznik-obroncy', city: city('c13', 1, 50, 50), built: { c13: ['mury'] }, wars: [[0, 1], [0, 3]], alliances: [[1, 3]], anchorId: 'o1',
+  units: [U('o1', 0, 'Wojownik', 'miecznik', 49, 50), U('o2', 3, 'Włócznik sumeryjski', 'wlocznik', 50, 50)] }));
+// Obrona r1d (Z2): to samo z licznikiem `city.garnizon = 2` -> pin `hasCityDefenders` true, bitwa z sojusznikiem obroncy.
+scenarios.push(base({ name: 's14-licznik-garnizonu-sojusznik', city: city('c14', 1, 60, 60, { garnizon: 2 }), built: { c14: ['mury'] }, wars: [[0, 1], [0, 3]], alliances: [[1, 3]], anchorId: 'o1',
+  units: [U('o1', 0, 'Wojownik', 'miecznik', 59, 60), U('o2', 3, 'Włócznik sumeryjski', 'wlocznik', 60, 60)] }));
+// Obrona r1d (Z6/E18): odnowa Milicji za 1 ture (`militiaRegenAtTurn = turn + 1`) -> brak Milicji, obronca realny.
+scenarios.push(base({ name: 's15-odnowa-za-jedna-ture', city: city('c15', 1, 70, 70, { population: 4, militiaRegenAtTurn: 13 }), built: { c15: ['mury', 'garnizon'] }, anchorId: 'b1',
+  units: [U('b1', 0, 'Wojownik', 'miecznik', 69, 70), U('b2', 1, 'Włócznik', 'wlocznik', 70, 70)] }));
+
 const out = scenarios.map((sc) => ({ name: sc.name, input: sc, expected: runScenario(sc) }));
 const cover = { scenariusze: out.length, bledy: 0, wiezyczki: 0, strzelec_wiezy: 0, machina_zasieg_6: 0, taran: 0, wieza_obl: 0, milicja: 0, machiny: 0, korona: 0, katapulta_korona: 0, jazda: 0, strzelcy: 0, sojusznik_atk: 0, sojusznik_def: 0, kara_atk: 0, kara_def: 0, weteran: 0, general_obroncy: 0 };
 for (const o of out) {
@@ -415,7 +436,17 @@ const enc = (v) => {
   return v;
 };
 const civEnc = Object.fromEntries(Object.entries(civBonusy).map(([k, l]) => [k, l.map((b) => ({ ...b, wartosc: typeof b.wartosc === 'number' ? { n: String(b.wartosc) } : b.wartosc }))]));
-const doc = { pin: PIN, pinSha256: PIN_SHA, counterMultiplier: String(PARAMS.counter_multiplier), coverage: cover, units: UNITS, counters: COUNTERS, civBonusy: civEnc, vectors: out.map((o) => ({ name: o.name, input: enc(o.input), expected: enc(o.expected) })) };
+// Obrona r1d (Z6/E09, E20): `buildMilitiaDef` pinu na wierszach syntetycznych (podloga morale powyzej bazy, napisy w
+// kluczach skalowanych, zero/ujemne, brak `Morale ucieczki`). Surowe wartosci (liczba vs napis) bez kodowania.
+const MILITIA_DEF_ROWS = [
+  { Jednostka: 'Syn1', 'Morale bazowe': 4, 'Morale ucieczki': 3, Atak: 6, Obrona: 1, fieldPower: 9 },
+  { Jednostka: 'Syn2', 'Morale bazowe': '10', 'Morale ucieczki': 2, Atak: '5', meleeAttack: '7', Obrona: 3, armor: 0, Pancerz: -2, health: 1 },
+  { Jednostka: 'Syn3', 'Morale bazowe': 20, Atak: 9, Uderzenie: 3.5, Przebicie: 2.4 },
+  { Jednostka: 'Syn4', 'Morale bazowe': 2, 'Morale ucieczki': 'x', Health: 11 },
+];
+const militiaDefCases = [];
+for (const row of MILITIA_DEF_ROWS) for (const kind of ['wrecz', 'dystans']) militiaDefCases.push({ kind, row: jsonSafe(row), def: jsonSafe(sdef.buildMilitiaDef(row, kind)) });
+const doc = { pin: PIN, pinSha256: PIN_SHA, militiaDefCases, counterMultiplier: String(PARAMS.counter_multiplier), coverage: cover, units: UNITS, counters: COUNTERS, civBonusy: civEnc, vectors: out.map((o) => ({ name: o.name, input: enc(o.input), expected: enc(o.expected) })) };
 const dir = join(here, 'p6_k5loop_adapter_vectors');
 mkdirSync(dir, { recursive: true });
 writeFileSync(join(dir, 'vectors.json'), JSON.stringify(doc) + '\n');

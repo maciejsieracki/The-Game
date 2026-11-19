@@ -38,6 +38,8 @@ use serde_json::Value;
 
 const VECTORS: &str = include_str!("p6_k5loop_adapter_vectors/vectors.json");
 const TIME_GUARD_SECS: u64 = 90;
+/// Obrona r1d (N1): skrot SHA-256 wycinkow i modulow pinu wykonanych przez generator (ta sama stala w generatorze).
+const PIN_SHA256: &str = "0a95f5bc085e7384c99a0f880a410503c00ea7ee2c928cf7febfff8933731f51";
 
 fn doc() -> Value {
     serde_json::from_str(VECTORS).expect("vectors.json")
@@ -274,6 +276,7 @@ fn adapter_zgodny_z_tekstem_pinu() {
     let t0 = Instant::now();
     let d = doc();
     assert_eq!(d["pin"], "07d2fbd72f758705f8e1d59cc4968027ffbafe75");
+    assert_eq!(d["pinSha256"], PIN_SHA256, "wektory z innego tekstu pinu");
     let rows = stat_rows_from_json(&d["units"]).expect("units");
     let index = unit_def_index(&rows);
     let counters = norm_counters(&d["counters"]);
@@ -322,6 +325,21 @@ fn adapter_zgodny_z_tekstem_pinu() {
         };
         assert_eq!(ids(&rs.atk), exp_ids("atkIds"), "{} atk", sc.name);
         assert_eq!(ids(&rs.def), exp_ids("defIds"), "{} def", sc.name);
+        // Obrona r1d (Z4/E17): wlasciciel kazdej jednostki rosteru (machiny szturmu, Milicja) = pin.
+        let owners_of = |l: &[RosterUnit]| l.iter().map(|u| u.owner_id).collect::<Vec<_>>();
+        let exp_owners = |k: &str| exp[k].as_array().unwrap().iter().map(i).collect::<Vec<_>>();
+        assert_eq!(
+            owners_of(&rs.atk),
+            exp_owners("atkOwners"),
+            "{} atk ownerId",
+            sc.name
+        );
+        assert_eq!(
+            owners_of(&rs.def),
+            exp_owners("defOwners"),
+            "{} def ownerId",
+            sc.name
+        );
         let exp_mil = exp["militiaDefs"].as_array().unwrap();
         assert_eq!(rs.militia_defs.len(), exp_mil.len(), "{} milicja", sc.name);
         for ((id, def), e) in rs.militia_defs.iter().zip(exp_mil) {
@@ -663,7 +681,7 @@ fn adapter_zgodny_z_tekstem_pinu() {
     );
     // Pokrycie: wartosci z generatora (tekst pinu) i liczone tu z wynikow Rust.
     let c = &d["coverage"];
-    assert_eq!(c["scenariusze"].as_u64(), Some(11));
+    assert_eq!(c["scenariusze"].as_u64(), Some(15));
     for (k, got) in [
         ("wiezyczki", cover.wiezyczki),
         ("strzelec_wiezy", cover.strzelec_wiezy),
@@ -1450,6 +1468,26 @@ fn wejscia_ciala_do_prodbody() {
     // Przed: wartosc domyslna ciala (gate_hp 0 = wylom bramy pierwszym ciosem, dlug N1).
     assert_eq!(body.gate_hp, 0.0);
     body.doctrine[1][0].shooting_enabled = false;
+    // Obrona r1d (Z5/E19): wartownicy rozne od wejsc adaptera, zeby kazda asercja nizej byla czula na pominiecie pola.
+    body.siege_gate_col = -99;
+    body.siege_gate_row = -99;
+    body.siege_wall_tiles_init = 999_999;
+    body.tower_range = -99.0;
+    body.tower_shooter_nazwa = "WARTOWNIK".to_owned();
+    for (s, list) in [atk_in, def_in].iter().enumerate() {
+        for (i, u) in list.iter().enumerate() {
+            body.names[s][i] = "WARTOWNIK".to_owned();
+            body.siege_stats[s][i] = None;
+            body.range_base[s][i] = -99.0;
+            body.ranged_base[s][i] = !u.ranged_base;
+            body.ammo_left[s][i] = -99.0;
+            body.siege_machine_range[s][i] = None;
+            body.morale_max[s][i] = -99.0;
+            body.is_army_commander[s][i] = !u.is_army_commander;
+            body.doctrine[s][i].anti_cav_spear = !u.anti_cav_spear;
+            body.units[s][i].activate.shooting_disabled = u.shooting_enabled;
+        }
+    }
     install_body_inputs(&mut body, &scene, [atk_in, def_in]).unwrap();
     assert_eq!(body.gate_hp, GATE_MAX_HP);
     assert_eq!(
@@ -1496,6 +1534,17 @@ fn niezmienniki_wejsc_ciala() {
     sf.range_base = 5.0;
     let e = body_unit_inputs(&units[2], &sf, "Rownina", false).unwrap_err();
     assert_eq!(err_name(&e), "InvariantViolated");
+    // Obrona r1d (Z6/E15): NaN `rangeBase` strzelca (i katapulty korony) = naruszenie niezmiennika Z4, nie przepustka.
+    for k in [1, 2] {
+        let mut sf = fields[k].clone();
+        sf.range_base = f64::NAN;
+        let e = body_unit_inputs(&units[k], &sf, "Rownina", false).unwrap_err();
+        assert_eq!(
+            err_name(&e),
+            "InvariantViolated",
+            "NaN rangeBase jednostki {k}"
+        );
+    }
     let mut sf = fields[1].clone();
     sf.morale = f64::NAN;
     let e = body_unit_inputs(&units[1], &sf, "Rownina", false).unwrap_err();
@@ -1700,4 +1749,154 @@ fn kara_morale_podloga_nie_podnosi() {
     assert!(atk_f[1].morale < 100.0);
     let def_after: Vec<f64> = def_f.iter().map(|f| f.morale).collect();
     assert_eq!(def_before, def_after);
+}
+
+/// Obrona r1d (Z6/E09, E20): `buildMilitiaDef` pinu na wierszach syntetycznych z generatora (podloga morale ponad
+/// baze, napisy w kluczach skalowanych, zero/ujemne, brak `Morale ucieczki`) — port daje ten sam wiersz.
+#[test]
+fn definicja_milicji_wiersze_syntetyczne_jak_pin() {
+    use civ_engine::domain::siege_battle_adapter::{build_militia_def, MilitiaKind};
+    let d = doc();
+    let cases = d["militiaDefCases"].as_array().unwrap();
+    assert_eq!(cases.len(), 8);
+    let params = MilitiaParams::pin();
+    for c in cases {
+        let kind = match c["kind"].as_str().unwrap() {
+            "wrecz" => MilitiaKind::Wrecz,
+            "dystans" => MilitiaKind::Dystans,
+            other => panic!("rodzaj {other}"),
+        };
+        let row = stat_row_from_json(&c["row"]).unwrap();
+        let want = stat_row_from_json(&c["def"]).unwrap();
+        assert_eq!(build_militia_def(&row, kind, &params), want, "{}", c["row"]);
+    }
+}
+
+/// Obrona r1d (Z1/E01-E04): `PlayableState` z wojna i sojuszami, murami (`mury_kamienne`/`mury`/`fort`/`palisada`) i
+/// postepem jednostek w `economy.units` -> wejscia rosterow i strony bitwy (atakujacy + sojusznik, obronca + sojusznik).
+#[test]
+fn stan_gry_wojna_sojusz_mury_postep() {
+    use civ_engine::domain::diplomacy::{CivilizationPair, Relation, RelationStatus};
+    use civ_engine::domain::playable::{PlayablePlayer, PlayableReplaceUnit};
+    let mut st = PlayableGame::new(StartGameParams::default())
+        .expect("start")
+        .state()
+        .clone();
+    let city = st.cities[0].clone();
+    let cid = city.id.get();
+    let own = city.owner_id;
+    let pid = |k: u64| civ_engine::PlayerId::new(own.get() + k);
+    let (enemy, enemy_ally, def_ally, neutral) = (pid(100), pid(101), pid(102), pid(103));
+    for p in [enemy, enemy_ally, def_ally, neutral] {
+        st.players.push(PlayablePlayer {
+            id: p,
+            name: format!("p{}", p.get()),
+            civilization: "rzymianie".into(),
+            is_human: false,
+        });
+    }
+    for (a, b, s) in [
+        (own, enemy, RelationStatus::War),
+        (own, enemy_ally, RelationStatus::War),
+        (enemy, enemy_ally, RelationStatus::Alliance),
+        (own, def_ally, RelationStatus::Alliance),
+        (enemy, def_ally, RelationStatus::War),
+        (own, neutral, RelationStatus::Peace),
+    ] {
+        st.war
+            .diplomacy
+            .set_relation(CivilizationPair::new(a, b), Relation::new(50.0, 50.0, s));
+    }
+    let (x, y) = (city.position.x(), city.position.y());
+    let unit = |id: u64, owner, dx: i32, dy: i32| PlayableUnit {
+        id: UnitId::new(id),
+        owner_id: owner,
+        kind: PlayableUnitKind::Warrior,
+        position: PositionDto::new(
+            u16::try_from(i32::from(x) + dx).unwrap(),
+            u16::try_from(i32::from(y) + dy).unwrap(),
+        ),
+        movement: 1u8.into(),
+        movement_max: 1u8.into(),
+        selected: false,
+    };
+    st.units = vec![
+        unit(901, enemy, 1, 0),
+        unit(902, enemy_ally, 0, 1),
+        unit(904, def_ally, 0, 0),
+        unit(903, own, 0, 0),
+        unit(905, neutral, -1, 0),
+    ];
+    st.economy.units.insert(
+        903,
+        PlayableReplaceUnit {
+            hp: Some(7.0),
+            battles_survived: Some(2.0),
+            parametry_bonus_proc: Some(15.0),
+            ..PlayableReplaceUnit::default()
+        },
+    );
+    let o = |p: civ_engine::PlayerId| i64::try_from(p.get()).unwrap();
+    let pr = |a, b| {
+        let (a, b) = (o(a), o(b));
+        (a.min(b), a.max(b))
+    };
+    for (built, wall) in [
+        ("mury_kamienne", true),
+        ("mury", true),
+        ("fort", true),
+        ("palisada", true),
+        ("garnizon", false),
+    ] {
+        st.stores
+            .buildings_by_city
+            .insert(cid, vec![built.to_owned()]);
+        let inp = siege_inputs_from_playable(&st, cid, Some(1.0)).unwrap();
+        assert_eq!(inp.city.ma_mur, wall, "maMur dla {built}");
+        assert_eq!(inp.def_opts.garrison_completed, built == "garnizon");
+    }
+    st.stores
+        .buildings_by_city
+        .insert(cid, vec!["mury_kamienne".to_owned()]);
+    let inp = siege_inputs_from_playable(&st, cid, Some(1.0)).unwrap();
+    assert_eq!(
+        inp.relations.wars,
+        BTreeSet::from([pr(own, enemy), pr(own, enemy_ally), pr(enemy, def_ally)])
+    );
+    assert_eq!(
+        inp.relations.alliances,
+        BTreeSet::from([pr(enemy, enemy_ally), pr(own, def_ally)])
+    );
+    let by_id = |id: &str| inp.units.iter().find(|u| u.id == id).unwrap();
+    let d = by_id("903");
+    assert_eq!(
+        (d.owner_id, d.hp, d.battles_survived, d.parametry_bonus_proc),
+        (o(own), Some(7.0), Some(2.0), Some(15.0))
+    );
+    let a = by_id("901");
+    assert_eq!(
+        (a.owner_id, a.hp, a.battles_survived, a.parametry_bonus_proc),
+        (o(enemy), None, None, None)
+    );
+    let rows = small_rows();
+    let militia = MilitiaParams::pin();
+    let r = collect_siege_rosters(&SiegeRosterInput {
+        city: &inp.city,
+        anchor_id: "901",
+        units: &inp.units,
+        relations: &inp.relations,
+        def_opts: inp.def_opts.clone(),
+        ready_machines: &inp.ready_machines,
+        turn: inp.turn,
+        unit_rows: &rows,
+        militia: &militia,
+    })
+    .unwrap();
+    assert_eq!(r.attacker_owners, BTreeSet::from([o(enemy), o(enemy_ally)]));
+    assert_eq!(r.defender_owners, BTreeSet::from([o(own), o(def_ally)]));
+    let ids = |l: &[RosterUnit]| l.iter().map(|u| u.id.clone()).collect::<Vec<_>>();
+    assert_eq!(ids(&r.atk), vec!["901", "902"]);
+    // Wlasciciel miasta pierwszy (`collectSiegeDefRoster`), sojusznik obroncy po nim; neutralny 905 poza bitwa.
+    assert_eq!(ids(&r.def), vec!["903", "904"]);
+    assert_eq!(r.def[0].hp, Some(7.0));
 }
