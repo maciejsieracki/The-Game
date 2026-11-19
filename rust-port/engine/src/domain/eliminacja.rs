@@ -60,6 +60,17 @@ pub fn eliminate_owner(
 
     let pid = owner_pid(owner_id);
     let jednostki_przed = state.units.len();
+    // ZMA-DL-7 (#354 B): pin `disbandOwnerUnits` usuwa obiekt jednostki w całości, więc wpis tablicy bocznej
+    // `economy.units` (pola `RuntimeUnit` poza `PlayableUnit`) znika razem z jednostką.
+    let rozwiazane: Vec<u64> = state
+        .units
+        .iter()
+        .filter(|u| Some(u.owner_id) == pid)
+        .map(|u| u.id.get())
+        .collect();
+    for uid in &rozwiazane {
+        state.economy.units.remove(uid);
+    }
     state.units.retain(|u| Some(u.owner_id) != pid);
     let usuniete_jednostki = jednostki_przed - state.units.len();
 

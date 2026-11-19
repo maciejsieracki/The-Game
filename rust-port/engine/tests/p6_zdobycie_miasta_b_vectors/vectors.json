@@ -1,0 +1,5024 @@
+{
+ "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+ "pinSha256": "54ef001acc49f4547fbe7e76d169dd0c9c7384a3425fa61da0d558af73e2b615",
+ "dataSame": {
+  "civs": true,
+  "society": true,
+  "buildingsLokalizacja": true
+ },
+ "capitalOnly": [
+  "mennica",
+  "palac",
+  "palac_ii",
+  "palac_iii"
+ ],
+ "religionCases": [
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {},
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {},
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 1
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {},
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {},
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 4
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "Religia rzymska / kult państwa": 6
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "Religia rzymska / kult państwa": 6
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "Religia rzymska / kult państwa": 6
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "Religia rzymska / kult państwa": 6
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1,
+    "Religia rzymska / kult państwa": 6
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1,
+    "Religia rzymska / kult państwa": 6
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1,
+    "Religia rzymska / kult państwa": 6
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1,
+    "Religia rzymska / kult państwa": 6
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {},
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {}
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {},
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 1
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {},
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {},
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {}
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 1
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {}
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 1
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {}
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 1
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {}
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 1
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {}
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 1
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {}
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 1
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {}
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 1
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {}
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 1
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {}
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 1
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "rzymianie",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Religia rzymska / kult państwa",
+   "same": true,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {},
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {},
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 1
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {},
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {},
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "Religia rzymska / kult państwa": 3
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1,
+    "Religia rzymska / kult państwa": 4
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1,
+    "Religia rzymska / kult państwa": 4
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1,
+    "Religia rzymska / kult państwa": 4
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1,
+    "Religia rzymska / kult państwa": 4
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "a_kult": 2,
+    "b_kult": 1,
+    "Religia rzymska / kult państwa": 6
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "a_kult": 2,
+    "b_kult": 1,
+    "Religia rzymska / kult państwa": 6
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "a_kult": 2,
+    "b_kult": 1,
+    "Religia rzymska / kult państwa": 6
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "harappa",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "a_kult": 2,
+    "b_kult": 1,
+    "Religia rzymska / kult państwa": 6
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {},
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {},
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {},
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {},
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "harappa",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {},
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {},
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {},
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {},
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {},
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {},
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {},
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {},
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {},
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {},
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {},
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Religia egipska — faraon-bóg": 1,
+    "Politeizm olimpijski": 2
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {},
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Religia egipska — faraon-bóg": 3,
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 7
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 7
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 7
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 7
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 7
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 7
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 7
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 7
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 12
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 12
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 12
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "egipt",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": "Religia egipska — faraon-bóg",
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 12
+   }
+  },
+  {
+   "civNew": "rzymianie",
+   "civPrev": "grecy",
+   "counts": {
+    "Politeizm olimpijski": 2
+   },
+   "population": 3,
+   "newRel": "Religia rzymska / kult państwa",
+   "prevRel": "Politeizm olimpijski",
+   "same": false,
+   "sameOwner": true,
+   "out": {
+    "Politeizm olimpijski": 2
+   }
+  }
+ ],
+ "prodCases": [
+  {
+   "name": "brak_kolejki",
+   "prod": null,
+   "isNewCapital": false,
+   "poolBefore": {
+    "old": 10,
+    "atk": 3
+   },
+   "out": null,
+   "poolAfter": {
+    "old": 10,
+    "atk": 3
+   }
+  },
+  {
+   "name": "zwykly_budynek",
+   "prod": {
+    "kolejka": [
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50
+     }
+    ],
+    "postep": 12
+   },
+   "isNewCapital": false,
+   "poolBefore": {
+    "old": 10,
+    "atk": 3
+   },
+   "out": {
+    "kolejka": [
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50
+     }
+    ],
+    "postep": 12
+   },
+   "poolAfter": {
+    "old": 10,
+    "atk": 3
+   }
+  },
+  {
+   "name": "legacy_jednostka_front",
+   "prod": {
+    "kolejka": [
+     {
+      "kind": "jednostka",
+      "id": "wojownik",
+      "nazwa": "wojownik",
+      "koszt": 30
+     },
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50
+     }
+    ],
+    "postep": 9
+   },
+   "isNewCapital": false,
+   "poolBefore": {
+    "old": 10,
+    "atk": 3
+   },
+   "out": {
+    "kolejka": [
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50
+     }
+    ],
+    "postep": 0
+   },
+   "poolAfter": {
+    "old": 19,
+    "atk": 3
+   }
+  },
+  {
+   "name": "legacy_jednostka_bank",
+   "prod": {
+    "kolejka": [
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50
+     },
+     {
+      "kind": "jednostka",
+      "id": "wojownik",
+      "nazwa": "wojownik",
+      "koszt": 30,
+      "postep": 4
+     }
+    ],
+    "postep": 6
+   },
+   "isNewCapital": false,
+   "poolBefore": {
+    "old": 10,
+    "atk": 3
+   },
+   "out": {
+    "kolejka": [
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50
+     }
+    ],
+    "postep": 6
+   },
+   "poolAfter": {
+    "old": 14,
+    "atk": 3
+   }
+  },
+  {
+   "name": "stolica_front",
+   "prod": {
+    "kolejka": [
+     {
+      "kind": "budynek",
+      "id": "mennica",
+      "nazwa": "mennica",
+      "koszt": 50
+     },
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50
+     }
+    ],
+    "postep": 7
+   },
+   "isNewCapital": false,
+   "poolBefore": {
+    "old": 10,
+    "atk": 3
+   },
+   "out": {
+    "kolejka": [
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50
+     }
+    ],
+    "postep": 0
+   },
+   "poolAfter": {
+    "old": 10,
+    "atk": 10
+   }
+  },
+  {
+   "name": "stolica_bank",
+   "prod": {
+    "kolejka": [
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50
+     },
+     {
+      "kind": "budynek",
+      "id": "mennica",
+      "nazwa": "mennica",
+      "koszt": 50,
+      "postep": 5
+     }
+    ],
+    "postep": 2
+   },
+   "isNewCapital": false,
+   "poolBefore": {
+    "old": 10,
+    "atk": 3
+   },
+   "out": {
+    "kolejka": [
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50
+     }
+    ],
+    "postep": 2
+   },
+   "poolAfter": {
+    "old": 10,
+    "atk": 8
+   }
+  },
+  {
+   "name": "stolica_nowa_stolica",
+   "prod": {
+    "kolejka": [
+     {
+      "kind": "budynek",
+      "id": "mennica",
+      "nazwa": "mennica",
+      "koszt": 50
+     },
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50,
+      "postep": 3
+     }
+    ],
+    "postep": 7
+   },
+   "isNewCapital": true,
+   "poolBefore": {
+    "old": 10,
+    "atk": 3
+   },
+   "out": {
+    "kolejka": [
+     {
+      "kind": "budynek",
+      "id": "mennica",
+      "nazwa": "mennica",
+      "koszt": 50
+     },
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50,
+      "postep": 3
+     }
+    ],
+    "postep": 7
+   },
+   "poolAfter": {
+    "old": 10,
+    "atk": 3
+   }
+  },
+  {
+   "name": "mieszane",
+   "prod": {
+    "kolejka": [
+     {
+      "kind": "jednostka",
+      "id": "procarz",
+      "nazwa": "procarz",
+      "koszt": 30
+     },
+     {
+      "kind": "budynek",
+      "id": "palac",
+      "nazwa": "palac",
+      "koszt": 50,
+      "postep": 8
+     },
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50,
+      "postep": 1
+     }
+    ],
+    "postep": 11,
+    "wstrzymana": true,
+    "rekrutacja": [
+     {
+      "kind": "jednostka",
+      "id": "wojownik",
+      "nazwa": "wojownik",
+      "koszt": 30
+     }
+    ]
+   },
+   "isNewCapital": false,
+   "poolBefore": {
+    "old": 10,
+    "atk": 3
+   },
+   "out": {
+    "kolejka": [
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50
+     }
+    ],
+    "postep": 1,
+    "wstrzymana": true,
+    "rekrutacja": [
+     {
+      "kind": "jednostka",
+      "id": "wojownik",
+      "nazwa": "wojownik",
+      "koszt": 30
+     }
+    ]
+   },
+   "poolAfter": {
+    "old": 21,
+    "atk": 11
+   }
+  }
+ ],
+ "lawCases": [
+  {
+   "before": null,
+   "out": {
+    "postCaptureLawTurnsRemaining": 5,
+    "wasRebellionReconquest": false
+   }
+  },
+  {
+   "before": {
+    "postCaptureLawTurnsRemaining": 2,
+    "wasRebellionReconquest": false
+   },
+   "out": {
+    "postCaptureLawTurnsRemaining": 5,
+    "wasRebellionReconquest": false
+   }
+  },
+  {
+   "before": {
+    "postCaptureLawTurnsRemaining": 0,
+    "wasRebellionReconquest": true
+   },
+   "out": {
+    "postCaptureLawTurnsRemaining": 5,
+    "wasRebellionReconquest": false
+   }
+  }
+ ],
+ "chronicleCases": [
+  {
+   "before": [],
+   "turn": 7,
+   "out": [
+    [
+     1,
+     {
+      "produced": 0,
+      "lost": 0,
+      "destroyed": 0,
+      "battles": 0,
+      "citiesTaken": 1,
+      "citiesLost": 0,
+      "maxCities": 0,
+      "peakPop": 0,
+      "wonders": 0,
+      "vs": {},
+      "sinceTurn": 7
+     }
+    ],
+    [
+     101,
+     {
+      "produced": 0,
+      "lost": 0,
+      "destroyed": 0,
+      "battles": 0,
+      "citiesTaken": 0,
+      "citiesLost": 1,
+      "maxCities": 0,
+      "peakPop": 0,
+      "wonders": 0,
+      "vs": {},
+      "sinceTurn": 7
+     }
+    ]
+   ]
+  },
+  {
+   "before": [
+    [
+     1,
+     {
+      "citiesTaken": 2,
+      "sinceTurn": 1
+     }
+    ]
+   ],
+   "turn": 7,
+   "out": [
+    [
+     1,
+     {
+      "produced": 0,
+      "lost": 0,
+      "destroyed": 0,
+      "battles": 0,
+      "citiesTaken": 3,
+      "citiesLost": 0,
+      "maxCities": 0,
+      "peakPop": 0,
+      "wonders": 0,
+      "vs": {},
+      "sinceTurn": 1
+     }
+    ],
+    [
+     101,
+     {
+      "produced": 0,
+      "lost": 0,
+      "destroyed": 0,
+      "battles": 0,
+      "citiesTaken": 0,
+      "citiesLost": 1,
+      "maxCities": 0,
+      "peakPop": 0,
+      "wonders": 0,
+      "vs": {},
+      "sinceTurn": 7
+     }
+    ]
+   ]
+  },
+  {
+   "before": [
+    [
+     101,
+     {
+      "citiesLost": 1,
+      "sinceTurn": 3
+     }
+    ],
+    [
+     1,
+     {
+      "citiesTaken": 0,
+      "sinceTurn": 2
+     }
+    ]
+   ],
+   "turn": 7,
+   "out": [
+    [
+     1,
+     {
+      "produced": 0,
+      "lost": 0,
+      "destroyed": 0,
+      "battles": 0,
+      "citiesTaken": 1,
+      "citiesLost": 0,
+      "maxCities": 0,
+      "peakPop": 0,
+      "wonders": 0,
+      "vs": {},
+      "sinceTurn": 2
+     }
+    ],
+    [
+     101,
+     {
+      "produced": 0,
+      "lost": 0,
+      "destroyed": 0,
+      "battles": 0,
+      "citiesTaken": 0,
+      "citiesLost": 2,
+      "maxCities": 0,
+      "peakPop": 0,
+      "wonders": 0,
+      "vs": {},
+      "sinceTurn": 3
+     }
+    ]
+   ]
+  }
+ ],
+ "e2e": {
+  "civ": {
+   "1": "rzymianie",
+   "101": "grecy"
+  },
+  "religionBefore": {
+   "Politeizm olimpijski": 2,
+   "a_kult": 1
+  },
+  "religionOut": {
+   "a_kult": 2,
+   "Religia rzymska / kult państwa": 1
+  },
+  "law": {
+   "postCaptureLawTurnsRemaining": 5,
+   "wasRebellionReconquest": false,
+   "revoltGraceRemaining": null
+  },
+  "chronicle": [
+   [
+    1,
+    {
+     "produced": 0,
+     "lost": 0,
+     "destroyed": 0,
+     "battles": 0,
+     "citiesTaken": 1,
+     "citiesLost": 0,
+     "maxCities": 0,
+     "peakPop": 0,
+     "wonders": 0,
+     "vs": {},
+     "sinceTurn": 1
+    }
+   ],
+   [
+    101,
+    {
+     "produced": 0,
+     "lost": 0,
+     "destroyed": 0,
+     "battles": 0,
+     "citiesTaken": 0,
+     "citiesLost": 1,
+     "maxCities": 0,
+     "peakPop": 0,
+     "wonders": 0,
+     "vs": {},
+     "sinceTurn": 1
+    }
+   ]
+  ],
+  "turn": 1,
+  "prod": {
+   "name": "mieszane",
+   "prod": {
+    "kolejka": [
+     {
+      "kind": "jednostka",
+      "id": "procarz",
+      "nazwa": "procarz",
+      "koszt": 30
+     },
+     {
+      "kind": "budynek",
+      "id": "palac",
+      "nazwa": "palac",
+      "koszt": 50,
+      "postep": 8
+     },
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50,
+      "postep": 1
+     }
+    ],
+    "postep": 11,
+    "wstrzymana": true,
+    "rekrutacja": [
+     {
+      "kind": "jednostka",
+      "id": "wojownik",
+      "nazwa": "wojownik",
+      "koszt": 30
+     }
+    ]
+   },
+   "isNewCapital": false,
+   "poolBefore": {
+    "old": 10,
+    "atk": 3
+   },
+   "out": {
+    "kolejka": [
+     {
+      "kind": "budynek",
+      "id": "stolarnia",
+      "nazwa": "stolarnia",
+      "koszt": 50
+     }
+    ],
+    "postep": 1,
+    "wstrzymana": true,
+    "rekrutacja": [
+     {
+      "kind": "jednostka",
+      "id": "wojownik",
+      "nazwa": "wojownik",
+      "koszt": 30
+     }
+    ]
+   },
+   "poolAfter": {
+    "old": 21,
+    "atk": 11
+   }
+  }
+ }
+}

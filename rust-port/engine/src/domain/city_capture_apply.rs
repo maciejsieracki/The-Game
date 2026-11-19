@@ -50,9 +50,9 @@ use crate::domain::order_effects_culture::{
     civ_religion_for_key, default_city_religion_state, religion_own_share, total_adherents,
 };
 use crate::domain::order_effects_lane::PostCaptureLawFields;
+use crate::domain::playable::{MovementPoints, PlayableFortKind, PlayableState};
 use crate::domain::production_queue::{filter_queue, sanitize_build_queue};
 use crate::domain::production_units::{CityProduction, ProductionItem, ProductionKind};
-use crate::domain::playable::{MovementPoints, PlayableFortKind, PlayableState};
 use crate::domain::siege_battle_adapter::is_civilian_unit;
 use crate::domain::siege_battle_apply::{
     end_map_siege, enter_city_hex_after_atk_win, validate_storm_siege, ApplyRosters,
@@ -66,7 +66,9 @@ use crate::domain::siege_transfer_effects::{
     apply_capture_population_loss, apply_post_capture_law_on_capture, CapturePopLossInput,
     CAPTURE_POP_LOSS_PIN,
 };
-use crate::domain::siege_transfer_q5::{note_city_capture, ChronicleMap, CivChronicle, CivChronicleVs};
+use crate::domain::siege_transfer_q5::{
+    note_city_capture, ChronicleMap, CivChronicle, CivChronicleVs,
+};
 use crate::domain::siege_wonder_watch::{
     apply_wonder_transfers, plan_wonder_transfers, snapshot_wonder_territory_owners,
     TransferableWonder, WonderTerritorySnapshot,
@@ -74,10 +76,10 @@ use crate::domain::siege_wonder_watch::{
 use crate::domain::terrain::{CityNode, FortImprovementType, FortNode};
 use crate::domain::territory::{territory_owner_at, ReligionState, TerritoryNode};
 use crate::domain::turn_war_epoch::{empire_epoch_for_owner, game_start_era, owner_era_facts};
-use crate::domain::types::porzadek::society_params;
 use crate::domain::turn_war_inputs::{
     power_raw_for_owner, production_config, HUMAN_OWNER_ID, KEY_PAIR_META,
 };
+use crate::domain::types::porzadek::society_params;
 use crate::domain::war_turn_declare::pair_key;
 use crate::domain::{CityId, PlayerId, PositionDto};
 
@@ -156,7 +158,10 @@ pub const PIN_STEPS: &[(&str, &str)] = &[
         "recordWarCityLossForPair",
         "record_war_city_loss_for_pair (diplomacyPairMeta.wojnaMiasta)",
     ),
-    ("sanitizeBuildQueue", "production_queue::sanitize_build_queue (apply_capture_production)"),
+    (
+        "sanitizeBuildQueue",
+        "production_queue::sanitize_build_queue (apply_capture_production)",
+    ),
     (
         "sanitizeProductionQueue",
         "apply_capture_production (wonderGateOk bez portu: not_applied)",
@@ -195,10 +200,7 @@ pub const PIN_STEPS: &[(&str, &str)] = &[
         "capitalCityIdForOwner",
         "capital_city_id_for_owner (designated + oldestCityOfOwner)",
     ),
-    (
-        "ownerPracaPool",
-        "economy.praca_pool_by_owner (add_praca)",
-    ),
+    ("ownerPracaPool", "economy.praca_pool_by_owner (add_praca)"),
     (
         "setOwnerPracaPool",
         "economy.praca_pool_by_owner (add_praca, Math.max(0, v))",
@@ -752,18 +754,9 @@ fn capital_plunder(
                 .push("shouldShowPlayerTriumphCityStateUnification".into());
         }
         if old_owner != HUMAN_OWNER_ID {
-            // Adapter (obrona r1, N1): pin `disbandOwnerUnits` usuwa obiekt jednostki w całości; `eliminate_owner`
-            // usuwa tylko `state.units`, więc wpisy tablicy bocznej `economy.units` jednostek ofiary kasuje tu adapter.
-            let disbanded: Vec<u64> = state
-                .units
-                .iter()
-                .filter(|u| owner_i64(u.owner_id) == old_owner)
-                .map(|u| u.id.get())
-                .collect();
+            // ZMA-DL-7 naprawione u źródła (#354 B): `eliminate_owner` kasuje także wpisy `economy.units` jednostek
+            // ofiary (pin `disbandOwnerUnits` usuwa obiekt jednostki w całości) — adapter z obrony r1 (N1) zbędny.
             eliminate_owner(state, &mut Vec::new(), old_owner);
-            for uid in disbanded {
-                state.economy.units.remove(&uid);
-            }
             // Adapter (D-ZMA-8): pin `eliminateOwner` kasuje `diplomacyPairMeta` par z właścicielem
             // (`main.ts:35405-35409`, `diploPairKeyHasOwner`); `WarTurnState::clear_eliminated_owner_war_state` dzieli
             // klucz po `_`, a stan zapisuje klucze `min-max` (`war_turn_declare::pair_key`) — wpisy usuwa tu adapter.
@@ -1012,11 +1005,13 @@ fn civ_row(key: &str) -> Option<&'static Value> {
         .as_array()?
         .iter()
         .find(|row| {
-            ["ikonaId", "typCywilizacji", "Cywilizacja"].iter().any(|f| {
-                row.get(*f)
-                    .and_then(Value::as_str)
-                    .is_some_and(|v| v.trim().to_lowercase() == k)
-            })
+            ["ikonaId", "typCywilizacji", "Cywilizacja"]
+                .iter()
+                .any(|f| {
+                    row.get(*f)
+                        .and_then(Value::as_str)
+                        .is_some_and(|v| v.trim().to_lowercase() == k)
+                })
         })
 }
 
@@ -1195,7 +1190,12 @@ pub fn on_city_captured_religion(
 
 /// Krok `main.ts:36202-36215`: `cityRelig.set(city.id, onCityCapturedReligion(...))` (pominięte dla zdobywcy
 /// barbarzyńcy). `population` = ludność PO stracie P9 (pin czyta `city.population` po `applyCityCaptureAfterBattle`).
-fn apply_capture_religion(state: &mut PlayableState, cid: CityId, old_owner: i64, atk_owner: i64) {
+pub fn apply_capture_religion(
+    state: &mut PlayableState,
+    cid: CityId,
+    old_owner: i64,
+    atk_owner: i64,
+) {
     if is_barbarian(atk_owner) {
         return;
     }
@@ -1236,7 +1236,7 @@ fn apply_capture_religion(state: &mut PlayableState, cid: CityId, old_owner: i64
 }
 
 /// `noteCityCapture(civChronicleByOwner, oldOwner, atkOwner, turn)` (`main.ts:36047`) na polu stanu.
-fn apply_note_city_capture(state: &mut PlayableState, old_owner: i64, atk_owner: i64) {
+pub fn apply_note_city_capture(state: &mut PlayableState, old_owner: i64, atk_owner: i64) {
     let mut map: ChronicleMap = state
         .civ_chronicle_by_owner
         .iter()
@@ -1250,7 +1250,7 @@ fn apply_note_city_capture(state: &mut PlayableState, old_owner: i64, atk_owner:
 }
 
 /// P9 `if (!isBarbarian(atkOwner)) applyPostCaptureLawOnCapture(city, atkOwner, prevOwner)` (`post-battle-map.ts:573`).
-fn apply_capture_law(state: &mut PlayableState, cid: CityId, old_owner: i64, atk_owner: i64) {
+pub fn apply_capture_law(state: &mut PlayableState, cid: CityId, old_owner: i64, atk_owner: i64) {
     if is_barbarian(atk_owner) {
         return;
     }
@@ -1336,7 +1336,7 @@ fn capital_city_id_for_owner(
 }
 
 /// Kolejka produkcji przy zdobyciu (`main.ts:36134-36184`), po zmianie właściciela miasta.
-fn apply_capture_production(
+pub fn apply_capture_production(
     state: &mut PlayableState,
     cid: CityId,
     old_owner: i64,
