@@ -90,5 +90,5 @@ Kopalnia rudy (pierwszy wiersz z `koszt_praca_przed_x2` w terrain-improvements.j
 
 - Z-1 (BLOKADA odczytu): brak odczytu w grze dla punktów 3, 4 i 5. Wymagany minimalny hak do osobnego tematu (`window.__civTest`, tylko `?civTest=1`). Pliki: `gra/src/main.ts` (wiring ustawień: applyMenuParams ok. linia 49760–49762; wczytanie ok. linia 51671–51675).
 - Z-2: harness nie uruchamia kreatora ani tury. Wynik dotyczy funkcji modułów, nie pełnego przebiegu gry.
-- Z-3: kurs zamiany Żywności→Podatek 0,2 nie ma źródła w `gra/data` w tym module; test trzyma wartość z decyzji. Do potwierdzenia w wywołaniu `runManualFoodTaxAction`.
+- Z-3: PRZYJĘTE i POPRAWIONE w R-WEB-VERIFY-LIVE-B-SETTINGS-LIVE-Q1 (obrona, runda 2): kurs ma źródło w danych `gra/data/econ-params.json` → `budynki.targowisko_zywnosc_na_podatek_kurs` (easy/normal/hard = 0,2; `gra/src/game/empire-food.ts:1173` `resolveFoodTaxRate`, użycie `gra/src/main.ts:29812-29817`). Test czyta kurs przez bundle (`ECON` w harnessie + `FOOD.resolveFoodTaxRate`) i porównuje z plikiem; stała RATE usunięta.
 - Z-4: utrzymanie jednostek w Pieniądzu (economy-upkeep.ts, funkcja prywatna ok. linii 899) nie jest mierzone.

@@ -7,18 +7,61 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const os = require('node:os');
 const { execFileSync } = require('node:child_process');
 const { chromium } = require('playwright');
 const { resolveChromePath } = require('./_chrome-path.cjs');
 
 const GRA = path.resolve(__dirname, '..');
-const WORK = process.env.VERIFY_LIVE_WORK
-  || '/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/verify-live';
+// Katalog roboczy POZA repo. Harness (index.html, entry.ts, konfiguracja vite) jest GENEROWANY z tego pliku
+// przy kazdym biegu, wiec wynik zalezy wylacznie od commita (bez plikow ze scratchpadu lub innego worktree).
+const WORK = process.env.VERIFY_LIVE_WORK || fs.mkdtempSync(path.join(os.tmpdir(), 'verify-live-'));
+const HARNESS = path.join(WORK, 'harness');
 const CFG = path.join(WORK, 'vite.harness.config.mjs');
 const readData = (f) => JSON.parse(fs.readFileSync(path.join(GRA, 'data', f), 'utf8'));
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css', '.json': 'application/json', '.map': 'application/json' };
 
+// Zrodla harnessu: PRAWDZIWE moduly gry (gra/src) i dane (gra/data), sciezki wzgledem GRA (ten plik), nie worktree.
+const SRC = (rel) => path.join(GRA, rel).split(path.sep).join('/');
+const INDEX_HTML = '<!doctype html>\n<html lang="pl"><head><meta charset="utf-8"><title>verify-live harness</title></head>\n<body><script type="module" src="./entry.ts"></script></body></html>\n';
+const ENTRY_TS = [
+  `import * as WAR from '${SRC('src/game/diplomacy-war-level')}';`,
+  `import * as ERA from '${SRC('src/game/econ-era-rebalance')}';`,
+  `import * as IMP from '${SRC('src/game/terrain-improvements')}';`,
+  `import * as PACE from '${SRC('src/game/unit-cost-tempo')}';`,
+  `import * as FOOD from '${SRC('src/game/empire-food')}';`,
+  `import * as PROD from '${SRC('src/game/production')}';`,
+  `import * as UPK from '${SRC('src/game/economy-upkeep')}';`,
+  `import DIPLO from '${SRC('data/diplomacy.json')}';`,
+  `import UNITS from '${SRC('data/units.json')}';`,
+  `import TERRAIN_IMP from '${SRC('data/terrain-improvements.json')}';`,
+  `import ECON from '${SRC('data/econ-params.json')}';`,
+  `(window as any).__vl = { WAR, ERA, IMP, PACE, FOOD, PROD, UPK, ECON, DATA: { diplomacy: DIPLO, units: UNITS, terrainImp: TERRAIN_IMP }, ready: true };`,
+  '',
+].join('\n');
+const CONFIG_MJS = [
+  'const mutBase = process.env.VL_MUT_BASENAME;',
+  'const mutFile = process.env.VL_MUT_FILE;',
+  'export default {',
+  `  root: ${JSON.stringify(HARNESS)},`,
+  "  logLevel: 'warn',",
+  "  plugins: [{ name: 'vl-mutate-json', enforce: 'pre', resolveId(source) {",
+  "    if (mutBase && mutFile && source.endsWith('/' + mutBase)) return mutFile;",
+  '    return null; } }],',
+  `  build: { outDir: ${JSON.stringify(path.join(WORK, 'dist'))}, emptyOutDir: true, minify: false, sourcemap: false },`,
+  '};',
+  '',
+].join('\n');
+
+function writeHarness() {
+  fs.mkdirSync(HARNESS, { recursive: true });
+  fs.writeFileSync(path.join(HARNESS, 'index.html'), INDEX_HTML);
+  fs.writeFileSync(path.join(HARNESS, 'entry.ts'), ENTRY_TS);
+  fs.writeFileSync(CFG, CONFIG_MJS);
+}
+
 function buildBundle(mut) {
+  writeHarness();
   const tag = mut ? mut.tag : 'base';
   const outDir = path.join(WORK, `dist-${tag}`);
   const env = { ...process.env, VL_MUT_BASENAME: mut ? mut.base : '', VL_MUT_FILE: mut ? mut.file : '' };
