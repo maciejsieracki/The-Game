@@ -3472,10 +3472,9 @@ impl<R: RollSource> ProdBody<R> {
             }
         }
         let wait = match next {
-            MarchNext::StepEnd => Some((
-                MarchStage::StepEnd,
-                frame_raf(self.frame_ms, MOVE_STEP_MS),
-            )),
+            MarchNext::StepEnd => {
+                Some((MarchStage::StepEnd, frame_raf(self.frame_ms, MOVE_STEP_MS)))
+            }
             MarchNext::Gap => Some((MarchStage::Gap, f64::from(STEP_GAP_MS))),
             MarchNext::Done | MarchNext::Attack(_) | MarchNext::Shot(_) => None,
         };
@@ -7658,5 +7657,535 @@ mod pin3_timeline_tests {
         );
         b.set_now(1311.0);
         assert!(!b.has_future_steps(A0));
+    }
+}
+
+#[cfg(test)]
+mod march_incremental_tests {
+    //! MARCH-INCREMENTAL-Q1 (D-MI-1/2): marsz krok po kroku. Pin (`_advanceStep` `:8198-8285`, `_rangedForwardStep`
+    //! `:6776-6809`): pierwszy krok `_doMove` synchronicznie w `_activateUnit`, callback kroku (`p >= 1`) w fazie kroków
+    //! klatki (`_raf`), kolejne wejście z zegara `_schedule(STEP_GAP_MS)` (faza `_drainTimers`), każda decyzja ze stanu W
+    //! SWOJEJ chwili.
+    use super::*;
+    use crate::domain::siege_tactics_activate::ActivateUnit;
+    use crate::domain::siege_tactics_blow::SequenceRolls;
+    use crate::domain::siege_tactics_turnseq::SeqUnit;
+    use std::collections::BTreeSet;
+
+    struct Flat;
+
+    impl MoveTerrain for Flat {
+        fn passable(&self, _col: f64, _row: f64) -> bool {
+            true
+        }
+        fn move_cost(&self, _col: f64, _row: f64) -> f64 {
+            1.0
+        }
+        fn is_ford(&self, _col: f64, _row: f64) -> bool {
+            false
+        }
+        fn cavalry_multiplier(&self, _col: f64, _row: f64) -> f64 {
+            1.0
+        }
+    }
+
+    fn unit_at(side_atk: bool, q: i64) -> ProdUnit {
+        ProdUnit {
+            activate: ActivateUnit {
+                side_atk,
+                q,
+                r: 0,
+                dead: false,
+                fading_out: false,
+                routed: false,
+                never_rout: false,
+                surround_applied: false,
+                morale: 100.0,
+                flee_morale: 0.0,
+                terrain_defence_mult: 1.0,
+                range: 1.0,
+                on_wall_walkway: false,
+                primary_ranged: false,
+                mounted: false,
+                phalanx: false,
+                shooting_disabled: false,
+                dry_col: 0.0,
+                held_after_fallback: false,
+                player_order_none: true,
+                can_shoot: false,
+                is_siege_unit: false,
+                is_siege_tower: false,
+                is_ram: false,
+                is_catapult: false,
+                doctrine_auto: false,
+                doctrine_manual: false,
+            },
+            melee_target: None,
+            blow: None,
+            counter_blows: Vec::new(),
+            body_ms: 0.0,
+            facing: 0.0,
+        }
+    }
+
+    const A0: UnitRef = UnitRef {
+        side: BattleSide::Attacker,
+        idx: 0,
+    };
+
+    fn cu(move_left: f64) -> CombatUnit {
+        CombatUnit {
+            hp: 10.0,
+            morale: 100.0,
+            flee_morale: 0.0,
+            move_left,
+            never_rout: false,
+            dead: false,
+            fading_out: false,
+            routed: false,
+            removed: false,
+            acted: false,
+        }
+    }
+
+    /// Atakujący wręcz w (0,0), obrońca w (8,0); równina, klatka 16 ms, model czasu pinu, marsz krok po kroku.
+    fn setup(move_left: f64) -> (ProdBody<SequenceRolls>, TurnSeqState) {
+        let scene = ActivateScene {
+            finished: false,
+            manual_mode: false,
+            is_player_side: false,
+            wall_col: -1,
+            gate_open: false,
+            wall_tile_hp: Vec::new(),
+            siege_machine_range: 0.0,
+        };
+        let mut b = ProdBody::new(
+            [vec![unit_at(true, 0)], vec![unit_at(false, 8)]],
+            scene,
+            SequenceRolls::new(Vec::new()),
+        );
+        b.pin_blow_timing = true;
+        b.frame_ms = 16.0;
+        b.march_incremental = true;
+        b.terrain = Some(Box::new(Flat));
+        let st = TurnSeqState {
+            atk: vec![SeqUnit {
+                id: 0,
+                c: cu(move_left),
+            }],
+            def: vec![SeqUnit { id: 1, c: cu(0.0) }],
+            turn_order: Vec::new(),
+            turn_idx: 0,
+            round_no: 1,
+            siege_wall_col: -1,
+            manual_mode: false,
+            player_side: BattleSide::Attacker,
+            finished: false,
+            awaiting_orders: false,
+            auto_battle_suspended: false,
+            busy: false,
+            auto_batch_planning: false,
+            queued_order_ids: BTreeSet::new(),
+        };
+        (b, st)
+    }
+
+    /// Pierwsze wejście `_advanceStep` w chwili 1000 (jak synchroniczne wywołanie z `_activateUnit`).
+    fn begin(b: &mut ProdBody<SequenceRolls>, st: &TurnSeqState) {
+        b.set_now(1000.0);
+        b.pending[0][0] = Some(ProdPending {
+            morale: 100.0,
+            morale_before: 100.0,
+            start_rout: false,
+            surround_applied: false,
+            attack: None,
+            move_left: None,
+            shot: None,
+            flee: false,
+            gate_breach: false,
+        });
+        let mut c = MarchCont {
+            unit: A0,
+            kind: MarchKind::Advance,
+            stage: MarchStage::Gap,
+            id: 0,
+            move_left: st.unit(A0).c.move_left,
+            moved: false,
+            prev: None,
+        };
+        let next = b.advance_enter(st, &mut c);
+        assert_eq!(next, MarchNext::StepEnd, "pierwszy krok wykonany od razu");
+        b.march_advance(c, next);
+    }
+
+    /// Kolejne etapy marszu: koniec kroku (240 ms przy klatce 16, faza kroków), przerwa `_schedule(70)` z chwili końca
+    /// kroku (faza zegarów, nominalne `due`), kolejny krok. `done()` dopiero na końcu marszu (`moveLeft` wyczerpane).
+    #[test]
+    fn etapy_marszu_krok_po_kroku() {
+        let (mut b, mut st) = setup(2.0);
+        begin(&mut b, &st);
+        assert!(b.march_pending(A0), "marsz w toku: BodyDone nie po start");
+        assert_eq!(b.cell_of(A0), (1, 0), "pole po pierwszym kroku od razu");
+        let t = b.take_timers();
+        assert_eq!(t.len(), 1);
+        assert_eq!(t[0].0, 240.0, "koniec kroku: frame_raf(16, MOVE_STEP_MS)");
+        assert!(b.timer_raf(t[0].1), "koniec kroku w fazie kroków klatki");
+        b.set_now(1240.0);
+        b.fire_timer(t[0].1, &mut st);
+        let g = b.take_timers();
+        assert_eq!(g.len(), 1);
+        assert_eq!(
+            g[0].0,
+            f64::from(STEP_GAP_MS),
+            "przerwa nominalna, klatkę wyznacza zegar"
+        );
+        assert!(
+            !b.timer_raf(g[0].1),
+            "wejście z zegara przerwy w fazie zegarów"
+        );
+        assert!(b.take_march_done().is_none());
+        b.set_now(1328.0);
+        b.fire_timer(g[0].1, &mut st);
+        assert_eq!(
+            b.cell_of(A0),
+            (2, 0),
+            "drugi krok w chwili wejścia z zegara"
+        );
+        let t2 = b.take_timers();
+        assert_eq!(t2.len(), 1);
+        b.set_now(1568.0);
+        b.fire_timer(t2[0].1, &mut st);
+        assert!(b.take_timers().is_empty());
+        assert_eq!(
+            b.take_march_done(),
+            Some((A0, 0.0)),
+            "moveLeft 0: done() w callbacku kroku"
+        );
+        assert!(!b.march_pending(A0));
+        assert_eq!(
+            b.pending[0][0].map(|p| p.move_left),
+            Some(Some(0.0)),
+            "moveLeft po marszu do complete"
+        );
+    }
+
+    /// Pin `_advanceStep` (`:8200`): jednostka martwa w chwili kolejnego wejścia kończy marsz bez kroku.
+    #[test]
+    fn smierc_miedzy_krokami_konczy_marsz() {
+        let (mut b, mut st) = setup(3.0);
+        begin(&mut b, &st);
+        let t = b.take_timers();
+        b.set_now(1240.0);
+        b.fire_timer(t[0].1, &mut st);
+        let g = b.take_timers();
+        st.atk[0].c.dead = true;
+        b.set_now(1328.0);
+        b.fire_timer(g[0].1, &mut st);
+        assert_eq!(b.cell_of(A0), (1, 0), "bez drugiego kroku");
+        assert_eq!(b.take_march_done(), Some((A0, 0.0)));
+        assert!(b.take_timers().is_empty());
+    }
+
+    /// Pin callback kroku (`:8275`): `finished` w chwili końca kroku kończy marsz (bez przerwy).
+    #[test]
+    fn koniec_bitwy_w_trakcie_kroku_konczy_marsz() {
+        let (mut b, mut st) = setup(3.0);
+        begin(&mut b, &st);
+        let t = b.take_timers();
+        st.finished = true;
+        b.set_now(1240.0);
+        b.fire_timer(t[0].1, &mut st);
+        assert!(b.take_timers().is_empty(), "bez _schedule(STEP_GAP_MS)");
+        assert_eq!(b.take_march_done(), Some((A0, 0.0)));
+    }
+
+    /// Decyzja kolejnego kroku czyta zajętość W CHWILI wejścia: pole zajęte po starcie marszu (np. przez zegar) zmienia
+    /// krok; pole zwolnione (rozbicie od wieży, `_startRout` `:9812`) zostaje użyte. Marsz atomowy liczyłby całość ze
+    /// stanu z chwili startu.
+    #[test]
+    fn decyzja_kolejnego_kroku_ze_stanu_w_chwili_kroku() {
+        let (mut b, mut st) = setup(3.0);
+        begin(&mut b, &st);
+        let t = b.take_timers();
+        b.set_now(1240.0);
+        b.fire_timer(t[0].1, &mut st);
+        let g = b.take_timers();
+        // Pole (2,0) zajęte między krokami: najkrótsza droga omija je.
+        b.occ_by_key.insert(cell_key(2.0, 0.0), "x".to_string());
+        b.set_now(1328.0);
+        b.fire_timer(g[0].1, &mut st);
+        assert_ne!(
+            b.cell_of(A0),
+            (2, 0),
+            "krok omija pole zajęte po starcie marszu"
+        );
+        assert_ne!(b.cell_of(A0), (1, 0), "krok wykonany");
+    }
+
+    /// Pin `_siegeApproachRestricted` (`:7953`) czyta `ru.routed` w chwili KAŻDEGO kroku (bramka `_doMove` `:8689`):
+    /// rozbicie od wieży w trakcie marszu zmienia bramkę kolejnych kroków. Wejście marszu odświeża flagę z bieżącego stanu.
+    #[test]
+    fn rozbicie_w_trakcie_marszu_widoczne_w_bramce_kolejnego_kroku() {
+        let (mut b, mut st) = setup(3.0);
+        begin(&mut b, &st);
+        assert!(!b.mover_routed);
+        let t = b.take_timers();
+        b.set_now(1240.0);
+        b.fire_timer(t[0].1, &mut st);
+        let g = b.take_timers();
+        st.atk[0].c.routed = true;
+        b.set_now(1328.0);
+        b.fire_timer(g[0].1, &mut st);
+        assert!(b.mover_routed, "ru.routed w chwili kroku");
+    }
+
+    /// Strzelec (`rangedBase`, zasięg 2) zamiast jednostki wręcz z [`setup`].
+    fn shooter(b: &mut ProdBody<SequenceRolls>) {
+        let a = &mut b.units[0][0].activate;
+        a.can_shoot = true;
+        a.primary_ranged = true;
+        a.range = 2.0;
+        b.ranged_base[0][0] = true;
+    }
+
+    /// Pin `_rangedForwardStep` (`:6779`): `moveLeft <= 0` kończy przed krokiem (także przy pierwszym wejściu z
+    /// `_rangedAction`).
+    #[test]
+    fn marsz_strzelca_bez_ruchu_konczy_od_razu() {
+        let (mut b, st) = setup(0.0);
+        shooter(&mut b);
+        b.set_now(1000.0);
+        let mut c = MarchCont {
+            unit: A0,
+            kind: MarchKind::RangedForward,
+            stage: MarchStage::Gap,
+            id: 0,
+            move_left: 0.0,
+            moved: false,
+            prev: None,
+        };
+        assert_eq!(b.ranged_forward_enter(&st, &mut c), MarchNext::Done);
+        assert_eq!(b.cell_of(A0), (0, 0));
+        c.move_left = 2.0;
+        assert_eq!(b.ranged_forward_enter(&st, &mut c), MarchNext::StepEnd);
+        assert_eq!(b.cell_of(A0), (1, 0), "z ruchem: krok naprzód");
+    }
+
+    /// Pin callback `_rangedForwardStep` (`:6806`): `if (ru.moveLeft > 0) _schedule(...) else done()` — `NaN` kończy
+    /// (dokładna negacja, nie `moveLeft <= 0`).
+    #[test]
+    fn marsz_strzelca_nan_konczy_po_kroku() {
+        let (mut b, st) = setup(0.0);
+        shooter(&mut b);
+        b.set_now(1000.0);
+        let mut c = MarchCont {
+            unit: A0,
+            kind: MarchKind::RangedForward,
+            stage: MarchStage::Gap,
+            id: 0,
+            move_left: f64::NAN,
+            moved: false,
+            prev: None,
+        };
+        assert_eq!(b.ranged_forward_enter(&st, &mut c), MarchNext::StepEnd);
+        c.move_left = f64::NAN;
+        b.set_now(1240.0);
+        assert_eq!(b.ranged_step_end(&st, &mut c), MarchNext::Done);
+        c.move_left = 1.0;
+        assert_eq!(b.ranged_step_end(&st, &mut c), MarchNext::Gap);
+    }
+
+    /// Przestawia obrońcę na pole `(q, r)` (pozycja i zajętość ciała), jak ruch innej jednostki między krokami.
+    fn move_def(b: &mut ProdBody<SequenceRolls>, q: i64) {
+        let (oq, or) = b.cell_of(D0);
+        b.occ_by_key.remove(&cell_key(oq as f64, or as f64));
+        b.units[1][0].activate.q = q;
+        b.occ_by_key.insert(cell_key(q as f64, 0.0), unit_tag(D0));
+    }
+
+    const D0: UnitRef = UnitRef {
+        side: BattleSide::Defender,
+        idx: 0,
+    };
+
+    /// Pin `_advanceStep` (`:8241-8245`): wróg w zasięgu przy KOLEJNYM wejściu (z zegara przerwy) = `_doAttack` w tej
+    /// chwili (czas do skutku liczony od wejścia, nie od startu aktywacji).
+    #[test]
+    fn cios_przy_kolejnym_wejsciu_od_chwili_wejscia() {
+        let (mut b, mut st) = setup(3.0);
+        begin(&mut b, &st);
+        let t = b.take_timers();
+        b.set_now(1240.0);
+        b.fire_timer(t[0].1, &mut st);
+        let g = b.take_timers();
+        assert_eq!(g.len(), 1, "po kroku: przerwa");
+        move_def(&mut b, 2);
+        b.set_now(1328.0);
+        b.fire_timer(g[0].1, &mut st);
+        assert_eq!(b.cell_of(A0), (1, 0), "bez kroku: cios z miejsca");
+        assert!(b.take_timers().is_empty());
+        // Bez szablonu ciosu (atrapa) cios jest jawnie nieportowany; czas do skutku = 0 od chwili wejścia.
+        assert_eq!(b.take_march_done(), Some((A0, 0.0)));
+    }
+
+    /// Pin `_rangedForwardStep` (`:6777-6778`): `finished` albo martwa jednostka przy wejściu z zegara przerwy = koniec.
+    #[test]
+    fn marsz_strzelca_preludium_przy_wejsciu() {
+        let (mut b, mut st) = setup(2.0);
+        b.set_now(1000.0);
+        let mut c = MarchCont {
+            unit: A0,
+            kind: MarchKind::RangedForward,
+            stage: MarchStage::Gap,
+            id: 0,
+            move_left: 2.0,
+            moved: false,
+            prev: None,
+        };
+        st.atk[0].c.dead = true;
+        assert_eq!(b.ranged_forward_enter(&st, &mut c), MarchNext::Done);
+        st.atk[0].c.dead = false;
+        st.finished = true;
+        assert_eq!(b.ranged_forward_enter(&st, &mut c), MarchNext::Done);
+        assert_eq!(b.cell_of(A0), (0, 0));
+    }
+
+    /// Pin callbacki kroku strzelca (`:6801`, KITE `:6705`): `finished` w chwili końca kroku = `done()` bez strzału.
+    #[test]
+    fn strzelec_koniec_bitwy_w_trakcie_kroku_bez_strzalu() {
+        let (mut b, mut st) = setup(2.0);
+        move_def(&mut b, 1);
+        let mut c = MarchCont {
+            unit: A0,
+            kind: MarchKind::Kite {
+                threat_ix: Some(0),
+                threat_cell: (1, 0),
+            },
+            stage: MarchStage::StepEnd,
+            id: 0,
+            move_left: 1.0,
+            moved: true,
+            prev: None,
+        };
+        b.set_now(1240.0);
+        assert_eq!(
+            b.ranged_step_end(&st, &mut c),
+            MarchNext::Shot(0),
+            "cel w zasięgu: strzał"
+        );
+        st.finished = true;
+        assert_eq!(b.ranged_step_end(&st, &mut c), MarchNext::Done);
+        c.kind = MarchKind::RangedForward;
+        assert_eq!(b.ranged_step_end(&st, &mut c), MarchNext::Done);
+    }
+
+    /// Atrapa ciała dla sterownika: marsz z jednym odroczonym wywołaniem fazy kroków (`raf`, id 1) i jednym zwykłym (id 2,
+    /// później zaplanowanym, ten sam `due`); `done()` zgłaszane w callbacku kroku.
+    #[derive(Default)]
+    struct MarchMock {
+        fired: Vec<(u64, f64)>,
+        now: f64,
+        done: Option<(UnitRef, f64)>,
+        timers: Vec<(f64, u64)>,
+        completed: Vec<(UnitRef, f64)>,
+        pending: bool,
+    }
+
+    impl LoopBody for MarchMock {
+        fn start(&mut self, _unit: UnitRef, _st: &TurnSeqState) -> f64 {
+            self.pending = true;
+            self.timers = vec![(16.0, 1), (16.0, 2)];
+            0.0
+        }
+        fn complete(&mut self, unit: UnitRef, _st: &mut TurnSeqState) {
+            self.completed.push((unit, self.now));
+        }
+        fn set_now(&mut self, v_now: f64) {
+            self.now = v_now;
+        }
+        fn take_timers(&mut self) -> Vec<(f64, u64)> {
+            std::mem::take(&mut self.timers)
+        }
+        fn fire_timer(&mut self, id: u64, _st: &mut TurnSeqState) {
+            self.fired.push((id, self.now));
+            if id == 1 {
+                self.pending = false;
+                self.done = Some((A0, 0.0));
+            }
+        }
+        fn march_pending(&self, _unit: UnitRef) -> bool {
+            self.pending
+        }
+        fn take_march_done(&mut self) -> Option<(UnitRef, f64)> {
+            self.done.take()
+        }
+        fn timer_raf(&self, id: u64) -> bool {
+            id == 1
+        }
+        fn take_tail(&mut self, _unit: UnitRef) -> f64 {
+            1000.0
+        }
+    }
+
+    /// D-MI-2: odroczone wywołanie fazy kroków (koniec kroku) wykonuje się PO zegarach tej klatki (także później
+    /// zaplanowanych), a zgłoszone w nim `done()` od razu, w tej samej klatce (pin: `done()` z callbacku `_raf`).
+    #[test]
+    fn sterownik_koniec_kroku_po_zegarach_i_done_w_tej_samej_klatce() {
+        let mut st = TurnSeqState {
+            atk: vec![SeqUnit { id: 0, c: cu(1.0) }],
+            def: Vec::new(),
+            turn_order: Vec::new(),
+            turn_idx: 0,
+            round_no: 1,
+            siege_wall_col: -1,
+            manual_mode: false,
+            player_side: BattleSide::Attacker,
+            finished: false,
+            awaiting_orders: false,
+            auto_battle_suspended: false,
+            busy: false,
+            auto_batch_planning: false,
+            queued_order_ids: BTreeSet::new(),
+        };
+        st.busy = true;
+        let mut lp = SiegeLoop::new(
+            st,
+            SiegeEnv {
+                body: MarchMock::default(),
+                tower_rows: Vec::new(),
+                pending_tower_shots: Vec::new(),
+                tower_range: 2.0,
+                tower_shot: None,
+                wall_tile_rows: Vec::new(),
+                wall_ever_breached: false,
+                no_breach_cap: 0,
+                move_points: [Vec::new(), Vec::new()],
+                morale_max: [Vec::new(), Vec::new()],
+            },
+        );
+        lp.body_done_raf = true;
+        let mut clock = VirtualClock::new();
+        clock.v_now = 1000.0;
+        lp.apply(&mut clock, vec![SeqEvent::ActivateUnit(A0)]);
+        assert!(
+            clock
+                .timers
+                .iter()
+                .all(|t| !matches!(t.payload, LoopTimer::BodyDone(_))),
+            "marsz w toku: bez BodyDone po start"
+        );
+        // Pierwsza klatka tylko ustawia `vLastWall` (`:9500-9511`).
+        assert_eq!(lp.step_realtime(&mut clock, 5000.0), 0);
+        lp.step_realtime(&mut clock, 5016.0);
+        assert_eq!(
+            lp.env.body.fired,
+            vec![(2, 1016.0), (1, 1016.0)],
+            "zegar fazy zegarów przed końcem kroku (faza _raf), mimo wyższego id"
+        );
+        assert_eq!(
+            lp.env.body.completed,
+            vec![(A0, 1016.0)],
+            "done() z callbacku kroku w tej samej klatce"
+        );
     }
 }
