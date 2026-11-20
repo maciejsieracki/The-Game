@@ -78,6 +78,9 @@ function commitAiBuild(ctx: any): void {
   const registerFortNodeIfNeeded = (..._a: any[]) => {};
   const spawnImprovementMesh = (_k: string) => {};
   const syncResourceOverlayAtHex = (_k: string) => {};
+  // R-WEB-TEST-DEBT-Q13 r4: setPlacedLayersOwned (main.ts) zapisuje warstwy w placedImprovements; w harnessie
+  // zapis do tej samej mapy z ctx (rejestr wlasciciela improvementOwnerByHex nie jest przedmiotem tego dowodu).
+  const setPlacedLayersOwned = (hk: string, layers: PlacedLayers, _ownerId: number | undefined) => { placedImprovements.set(hk, layers); };
   for (let _once = 0; _once < 1; _once++) {
     ${SRC_COMMIT_BLOCK}
   }
@@ -186,7 +189,7 @@ ok((rDrogaBezLasu.placed ?? []).includes('droga'),
 console.log('\n=== CZĘŚĆ E: pętla automatu ulepszeń GRACZA -- strażnik lasu przy komicie ===');
 
 const PLAYER_START_ANCHOR = 'const prevLayers = workingPlaced.get(hexKey) ?? placedImprovements.get(hexKey) ?? [];';
-const PLAYER_END_ANCHOR = 'toastLines.push(`${meta?.nazwa ?? pick.key} @ (${pick.q},${pick.r})`);';
+const PLAYER_END_ANCHOR = 'toastLines.push(`${meta?.nazwa ?? nazwaWyswietlana(pick.key)} @ (${pick.q},${pick.r})`);';
 
 const iPStart = mainSrc.indexOf(PLAYER_START_ANCHOR);
 if (iPStart < 0) throw new Error('NIE ZNALEZIONO kotwicy startowej (pętla gracza) w main.ts: ' + PLAYER_START_ANCHOR);

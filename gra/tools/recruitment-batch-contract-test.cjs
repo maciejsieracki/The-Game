@@ -83,6 +83,12 @@ const ENV_NAMES = [
   'superUnitLimitViolation',
   'reservedUnitTypeNamesForOwner',
   'SUPER_UNIT_LIMIT_BLOCK_PL',
+  // R-WEB-TEST-DEBT-Q13 r4: purchaseRecruitmentUnit czyta trudność właściciela (main.ts effectiveGameDifficultyForOwner);
+  // fixture: gracz (owner 0) = _menuDifficulty 'normal', zgodnie z argumentem 'normal' powyżej.
+  'effectiveGameDifficultyForOwner',
+  // R-WEB-TEST-DEBT-Q13 r4: purchaseRecruitmentUnit przekazuje sink ledgera zasobów (main.ts pendingLedgerSink);
+  // ledger nie jest przedmiotem tego testu (asercje: złoto/Manpower/surowiec/kolejka) -> sink no-op.
+  'pendingLedgerSink',
 ];
 const STACK_LIMIT_SRC = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'army-stack-limit.ts'), 'utf8');
 const stackLimitJs = esbuild.transformSync(STACK_LIMIT_SRC.replace(/^export\s+/gm, ''), { loader: 'ts', target: 'es2020' }).code;
@@ -254,6 +260,8 @@ function makeHarness({ gold = 100, manpower = 100, homeStock = 1, depotStock = 1
     superUnitLimitViolation,
     () => new Set(),
     SUPER_UNIT_LIMIT_BLOCK_PL,
+    () => 'normal',
+    () => undefined,
   );
 
   function snapshot() {

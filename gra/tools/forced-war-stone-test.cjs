@@ -71,6 +71,8 @@ try {
   } = api;
 
   console.log('--- kontrakt Q1/Q3, R-WOJNA-WYMUSZONA-REGULY-Q1 Część A/C ---');
+  // KANDYDAT R-WEB-STONE-ERA-ENTRY-40 (R-WEB-TEST-DEBT-Q13): pin tury wejscia w epoke Kamienia = 40 zgodnie z
+  // war-rules-params.json (decyzja 2026-11-10); osobny temat R-WEB-* ma rozstrzygnac, czy kod (tura globalna) ma byc zgodny z decyzja.
   eq(startTurn, 40, 'R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): start po 40 turach (z war-rules-params.json)');
   eq(cityLimit, 2, 'pokój po 2 miastach');
   eq(restTurns, 20, 'odpoczynek 20 tur');
