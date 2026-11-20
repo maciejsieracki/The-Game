@@ -87,8 +87,8 @@ try {
   const { WOJNA_KAMIEN_WYMUSZONA_START_TURY } = require(bundle);
 
   check(
-    'stała progu wyeksportowana i równa 25 (ta sama wartość co AI)',
-    WOJNA_KAMIEN_WYMUSZONA_START_TURY === 25,
+    'stała progu wyeksportowana i równa 40 (ta sama wartość co AI; R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1)',
+    WOJNA_KAMIEN_WYMUSZONA_START_TURY === 40,
   );
 
   // Replika DOKŁADNIE warunku potwierdzonego w (A): playerCity istnieje (zawsze w tej
@@ -106,7 +106,7 @@ try {
 
   let prematureJoin = false;
   let firstJoinTurn = null;
-  for (let turn = 1; turn <= 30; turn++) {
+  for (let turn = 1; turn <= 60; turn++) {
     const joined = joinsTriggeredPool(turn, false);
     if (joined && turn < WOJNA_KAMIEN_WYMUSZONA_START_TURY) prematureJoin = true;
     if (joined && firstJoinTurn === null) firstJoinTurn = turn;

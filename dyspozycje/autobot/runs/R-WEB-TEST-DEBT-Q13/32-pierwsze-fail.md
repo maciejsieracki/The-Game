@@ -1,0 +1,158 @@
+# R-WEB-TEST-DEBT-Q13 - pierwsza linia FAIL/blad (surowe, z przebiegu po poprawkach)
+
+- administracja-stolica-test.cjs [po exit 1]: [FAIL] Sąd w stolicy: ready, brak blokady lokalizacji
+- ai-army-composition-per-civ-test.cjs [po exit 1]: FAIL: D: rzymianie/Kamień: wręcz 0.0% vs 75% (±10)
+- ai-balans-step3-test.cjs [po exit 1]: FAIL: T1d: L3 prog_koszt_x bez zmian = 70 (got 80, want 70)
+- ai-city-render-batch-test.cjs [po exit 1]: AssertionError [ERR_ASSERTION]: dirty city models flush after AI completion/errors before barbarian UI paint
+- ai-dlug-porzadki-q1-test.cjs [po exit 1]: ReferenceError: orderMultMap is not defined
+- ai-general-war-campaign-test.cjs [po exit 1]: FAIL: attack stage issues same-target movement for every stacked eligible unit (4/4) ordered general-1,infantry-2,infantry-3
+- ai-home-war-sees-own-land-test.cjs [po exit 1]: AssertionError [ERR_ASSERTION]: fog gate must be guarded by !targetOnOwnTerritory (and !targetNearLostCity, R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1)
+- ai-jednostki-tylko-zakup-test.cjs [po exit 1]: FAIL: C4: egzekutor build AI kieruje jednostke do bramki zakupu za Skarbiec
+- ai-march-avoid-foreign-territory-test.cjs [po exit 1]: [FAIL] C7 requestWarMarchPassage: brak prosby o przemarsz (no-route): prosba znika (0) -> B4c (wojna-all-in) czerwone (got 1, want 0)
+- ai-move-range-test.cjs [po exit 1]: [FAIL] G1 main.ts: executeAiCityMove dostaje truncatePath (przycinanie do ruchLeft przed zerowaniem)
+- ai-player-parity-fixes-test.cjs [po exit 1]: FAIL: fixture: globalna i właścicielska trudność dają RÓŻNY koszt (stąd asymetria)
+- ai-praca-split-parity-test.cjs [po exit 1]: FAIL: major AI wybiera farmę z absolutnego budżetu 50 (got 2, want 1)
+- ai-purchase-maintenance-reserve-test.cjs [po exit 1]: FAIL: main.ts: istnieje call site shouldAIPurchaseUnit (got false, want true)
+- ai4-popyt-obywatele-test.cjs [po exit 1]: [FAIL] Z1h/infrastruktura: identyczny wynik pickera z demandDriven i bez (1 pickow)
+- ambush-deploy-wiring-test.cjs [po exit 1]: FAIL atak gracza: deploy = generał LUB zasadzka (rozstawienie bez generała)
+- annex-citystate-spoils-test.cjs [po exit 1]: FAIL: 9h: definicja + 3 wywolania (propozycja gracz/AI, AI MP, AI major) -- wszystkie przez jedna funkcje (got 5, want 4)
+- army-leadership-test.cjs [po exit 1]: AssertionError [ERR_ASSERTION]: aggregate defeat sends a surviving attacker commander into normal rout
+- army-split-enemy-city-block-test.cjs [po exit 1]: FAIL: main.ts ma 3 wywołania findSplitDestHexes (znaleziono 0)
+- army-to-nearest-leader-test.cjs [po exit 1]: FAIL: E4 main.ts: syncGeneralMarchTargets nadpisuje cel marszu najblizszym po trasie
+- atak-adiacencja-wymagana-test.cjs [po exit 1]: ReferenceError: marchStopNotified is not defined
+- auto-wyzywienie-live-recalc-test.cjs [po exit 1]: FAIL: _maxSafeRationCache.clear() znaleziony w pobliżu wywołania advanceEmpireFood(...) (max 1500 znaków dalej)
+- autoimprove-live-hooks-test.cjs [po exit 1]: [FAIL] main.ts importuje installCivTestHooks
+- barb-camp-destruction-test.cjs [po exit 1]: FAIL: static 4c: checkBarbCampDestructionAlongPath is called on the player move-completion path
+- barbarian-cooperation-grace-maints-wiring-test.cjs [po exit 1]: ReferenceError: ME is not defined
+- barbarzyncy-krazenie-test.cjs [po exit 0]: (brak linii FAIL)
+- battle-manual-choice-contract-test.cjs [po exit 1]: throw new AssertionError(obj);
+- border-march-wygasanie-test.cjs [po exit 1]: FAIL: znaleziono onEventDismiss
+- bramki-tmpdir-unikalnosc-test.cjs [po exit 1]: FAIL zadna bramka w tools/ nie pisze do STALEJ nazwy pod os.tmpdir() -- 166 trafien
+- budynki-koszt-pracy-50-test.cjs [po exit 1]: FAIL: kuznia poziom 1: itemCost z kosztBudowy/przyrostKosztu
+- building-detail-card-entitycard-migration-test.cjs [po exit 1]: FAIL: wiersz "Praca (jednorazowo)" obecny i kończy się na "pkt Pracy" — 20 pkt
+- city-clears-forest-test.cjs [po exit 1]: [FAIL] B2 finalizeCityFounding woła applyCityFoundingToHex (czyszczenie lasu)
+- city-panel-refresh-at-turn-start-live-test.cjs [po exit 1]: if (!BUNDLE) throw new Error('Ustaw ROBOCZA_HTML=<sciezka do kopii Gra-ROBOCZA.html>');
+- city-state-alliance-test.cjs [po exit 1]: FAIL: strong: wrog dist=2 <= threatRadius=2 -- posilek wyslany (maxPerTurn=2 -> oba guardy) (got 1, want 2)
+- citypanel-tech-tile-dead-effects-test.cjs [po exit 1]: FAIL [C] Oblężnictwo „Odblokowuje budynek” nadal zawiera Katapultę (Warsztat odblokowuje Katapultę)
+- civ-matrix-ai-diplomacy-wiring-test.cjs [po exit 1]: FAIL: main AI path reads the matrix profile per owner and difficulty
+- civ-matrix-greece-test.cjs [po exit 1]: FAIL: Roman gameplay aggression resolver uses ai_agresywnosc, not dip_agresja_archetyp (got 0.75, want 0.8)
+- cluster-plan-name-test.cjs [po exit 1]: FAIL: rzymianie: seed 202 has a rejected slot
+- commander-star-emblem-test.cjs [po exit 1]: FAIL: renderer uwzględnia zarówno dowódcę w reprezentancie, jak i w reszcie stosu
+- conquest-stability-test.cjs [po exit 1]: FAIL: unstable happiness penalty (got 0, want -2)
+- culture-religion-test.cjs [po exit 1]: FAIL: B9: missing mnoznikHandelPieniadz -> multiplier = 1 (fallback) (got 2.3, want ~1)
+- currency-test.cjs [po exit 1]: FAIL: efekt1 scalony (normal x1.5): pieniadz = 10 (floor(15*0.70)) (got 11, want 10)
+- diplo-aggressor-unit-test.cjs [po exit 0]: diplo-aggressor-unit-test: 73 PASS, 0 FAIL
+- diplo-war-trust-only-test.cjs [po exit 0]: diplo-war-trust-only-test: 11 OK, 0 FAIL
+- drewno-gate-test.cjs [po exit 1]: [FAIL] Wojownik: nadal Surowiec=Drewno ×10 (bez zmian -- kontrola) -- ma={"Surowiec":"Drewno","ilosc":13}
+- dyplo-bilans-gate-n-e1-reprodukcja-runda2-test.cjs [po exit 1]: FAIL: (0a) mutacja A faktycznie usunęła 29 dodanych pól pwBalance (7 accept + 22 reject) w 6 case'ach evaluateProposal — kontrola nietautologiczna dla Testów 1/2 aktywna — 30
+- dyplo-bilans-gate-n-e1-reprodukcja-runda3-test.cjs [po exit 1]: FAIL: (0a) mutacja R2 faktycznie przywróciła formułę rundy 2 (bezwarunkowe wywołanie z relTotal wojennie ograniczonym dla obu ról) ORAZ blokadę accepted:false sprzed rundy 4 (gap>0 w gałęzi proposerIsPlayer) — kontrola n
+- dyplo-karta-duplikat-komunikat-test.cjs [po exit 1]: FAIL: A1: negotiationTable.push(entry) obecne — trwała karta stołu negocjacji bez zmian
+- dyplo-pakt-ekspansja-granica-test.cjs [po exit 1]: FAIL: D1 stan ciągły: Zaufanie 50 → 35 po 5 turach (−2/turę, nie jednorazowo)
+- egypt-movement-precedence-test.cjs [po exit 1]: AssertionError [ERR_ASSERTION]: other civilizations retain general and dedicated shallow-sea bonuses: 0.8130081300813008 != 0.6756756756756757
+- eliminacja-lup-kwoty-test.cjs [po exit 1]: FAIL: 4e: pełny raport z REALNEGO outcome silnika (1500 złota, 63 nauki, 2 techy, 420 Mocy, 90 puli pracy PRZEJĘTEJ od P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1) [<- 4e] (got null, want "Ludność: +4 · Budynki: +3 · Złot
+- elimination-spectacle-test.cjs [po exit 1]: FAIL: tick rekordów tuż po turn++
+- end-turn-hint-diplo-audience-test.cjs [po exit 1]: FAIL: wykonanie (audiencja otwarta): oczekiwano „Zamknij okno audiencji dyplomatycznej, potem zakończ turę.”, jest „undefined” błąd: pendingForcedPeaceTreaties is not defined
+- end-turn-modal-sequencing-test.cjs [po exit 1]: FAIL: [A5] function openPlayerMapUnitAttackCore(: showPreBattle ma defaultAction:'manual' i BEZ auto:true (ręczna akcja gracza, nigdy nie odraczana)
+- endturn-battle-deadlock-exec-test.cjs [po exit 1]: FAIL [B1c] klik 1 pokazuje podpowiedź blokady przy otwartym ekranie
+- epoka-merge-recruit-test.cjs [po exit 1]: [FAIL] epoch=1: WSZYSTKIE jednostki bazowe Kamienia dostepne (biezaca epoka, pelny magazyn+techy+koszary) -- brakuje=["Taran"]
+- era-change-toast-defer-test.cjs [po exit 1]: FAIL: Blok 5: ogólny mechanizm defer (showHintMessage/shouldDeferEotEvents/deferredEotHints) dla innych komunikatów EOT nienaruszony
+- era-war-bronze-player-target-test.cjs [po exit 1]: FAIL: S2c: dokładnie 20 tur -> w puli
+- escape-overlay-real-panels-test.cjs [po exit 1]: BUILD/RUNTIME ERROR: Error: Build failed with 2 errors:
+- fair-play-tier-grid-test.cjs [po exit 1]: FAIL: low: góry 35
+- forced-war-bronze-test.cjs [po exit 1]: FAIL: stała progu = 20 tur (R-WEB-ERA-DELAY-Q1, z JSON) (got 40, want 20)
+- forced-war-iron-test.cjs [po exit 1]: FAIL: próg startu Żelaza = 20 tur od wejścia w epokę (R-WEB-ERA-DELAY-Q1, z JSON)
+- forced-war-reguly-multi-turn-simulation-test.cjs [po exit 1]: FAIL: K5: stała Kamienia = 25 (nie 20) (got 40, want 25)
+- forced-war-stone-test.cjs [po exit 1]: FAIL: R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): start po 25 turach (podniesiony z 20) (got 40, want 25)
+- fortify-pole-test.cjs [po exit 1]: [FAIL] Taktyczna/Pomiń, płasko: hitChanceTw(atak, Obrona×(1+50%)×terrMult) (39%) == resolveCombat z bonusem wliczonym do meleeDefence (41%)
+- granice-relacja-dyplomatyczna-test.cjs [po exit 1]: FAIL: main.ts: relationColorFn(0) zwraca civColorFn(0) — własna obwódka w kolorze cywilizacji
+- heal-stale-blockers-pending-battle-test.cjs [po exit 1]: FAIL: [A3] gałąź 1 (aiTurnAwaitingBattle||aiCmdResume) sprawdza DOKŁADNIE !preBattle && !battleUiResolving && !hasPendingAutoPreBattle() -- N1 (runda 2) + F1 (runda 3) naprawione formułą pinowaną bajt-w-bajt; F2 (runda 3
+- hotseat-etap6d-podetap-e-source-test.cjs [po exit 1]: FAIL: negotiationPartnerOwnerIdOf: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+- hud-armia-chip-jednostki-test.cjs [po exit 1]: FAIL: main.ts zawiera funkcje buildEmpireDetailSnap(): EmpireDetailSnap
+- hud-moc-warstwa-test.cjs [po exit 1]: FAIL: sumArmyMForOwner (NOMINALNA) == 49 dla Konnicy (bez skalowania weterana) -- 98
+- idb-b1b2b3-test.cjs [po exit 1]: FAIL: (setup) mimo braku IDB, stary zapis z legacy localStorage nadal widoczny na liście (got 0)
+- json-descriptions-sync-test.cjs [po exit 1]: FAIL: a1: gra/data/war-weariness-params.json — wartości bez prefiksu _ równe wersji bazowej f196422ef (+ celowe: pelneTur 40, progWymuszonyPokoj)
+- koniec-tury-g1-g2-runda4-test.cjs [po exit 1]: FAIL: [A11] wszystkie 3 wywolania showArmyMergePanel maja flushDeferredAutoPreBattle() w KAZDYM callbacku zamykajacym (onMerge i onSeparate) -- przed runda 4 tylko 1 z 3 mial flush (got 2/3)
+- manual-rebalance-owner-era-test.cjs [po exit 1]: FAIL: Zelazo: top2 = zloto(1,0)+oboz(-1,1) (epoka wlasciciela w rankingu), got=0,1,1,0
+- march-attack-queue-persist-test.cjs [po exit 1]: FAIL: (g5) handleSelectedUnitHudAction: DOKŁADNIE 5 wywołań clearPlannedMarch(u.id, true) — skip/garnizon/sentry/scout-explore + general-follow (got 6)
+- miasta-panstwa-wylaczone-test.cjs [po exit 1]: FAIL: brak PRE-tree (origin/main) w scratchpadzie — uruchom najpierw git archive.
+- moc-ranking-rozjazd-test.cjs [po exit 1]: FAIL: sumArmyMForOwner (NOMINALNA) == 49 dla rekruta (unitDefFor, bez skalowania) -- 98
+- mur-paradoks-test.cjs [po exit 1]: [FAIL] Kontrola fixture: M bazowe Konnicy (bez zadnego bonusu) == 49 (98)
+- naval-water-access-gate-test.cjs [po exit 1]: MUTACJA: gate w availableProduction (odwrócenie warunku) -- FAIL potwierdzony, przywrócenie -- PASS potwierdzony
+- no-negative-stocks-c2-test.cjs [po exit 1]: FAIL: main.ts: bramka zakupow AI (aiNnsHoldOwners)
+- no-negative-stocks-endturn-test.cjs [po exit 1]: FAIL: (f) hintEndTurnBlocked: gałąź blokady pokazuje nnsHint.komunikat
+- okolica-ownership-change-reconcile-test.cjs [po exit 1]: FAIL: (b) wchloniecie dyplomatyczne (annexCityStateToOwner): city.ownerId = annexerId -> seedCityOwnerDefaults(city) w petli po csCities
+- open-panel-refresh-after-tech-live-test.cjs [po exit 1]: if (!BUNDLE) throw new Error('Ustaw ROBOCZA_HTML=<sciezka do kopii Gra-ROBOCZA.html>');
+- perf-endturn-ai-phase-equiv-test.cjs [po exit 1]: AssertionError [ERR_ASSERTION]: otwarcie okna tuz po deklaracji relacjeDip
+- plony-budynkow-test.cjs [po exit 1]: FAIL: Targowisko: delta finalnego Pieniadza = 4 (NIE surowe 5) -- decyzja 67B: Pieniadz budynku dzieli sie suwakiem 70/20/10 z reszta Daniny, nie trafia 1:1 do skarbca (got 3, want 4)
+- pr141-hotseat-diplomacy-owner-test.cjs [po exit 1]: FAIL actual shared diplomacy tick context does not carry religion flag (decyzja #342: religia bez wplywu na Zaufanie): isHarderDiplomacyEnabled is not defined
+- r-bitwa-kolory-gracz-przeciwnik-q1-test.cjs [po exit 1]: AssertionError [ERR_ASSERTION]: gracz niebieski, przeciwnik czerwony
+- recruitment-batch-contract-test.cjs [po exit 1]: ReferenceError: effectiveGameDifficultyForOwner is not defined
+- rekrutacja-skarbiec-only-test.cjs [po exit 1]: FAIL: zakup gracza/AI/MP odrzuca brak środków Skarbca
+- ruch-swiata-tempo-test.cjs [po exit 1]: FAIL: main.ts: load -> player.ruchSwiataPace = saved.gracz.ruchSwiataPace ?? newGameParams.advanced?.ruchSwiataPace ?? 'krotki' (stary zapis bez pola = zero zmiany zachowania)
+- rydwan-bierny-atak-test.cjs [po exit 1]: [FAIL] wróg poza zasięgiem nie wymusza ofensywnego zbliżenia
+- rydwan-konnica-x2-test.cjs [po exit 1]: FAIL: 4 niezgodnosci
+- save-load-roundtrip-state-drift-test.cjs [po exit 1]: FAIL  --dist <abs-dist> z index.html jest wymagany dla warstwy dynamicznej (podano: "")
+- stone-research-costs-test.cjs [po exit 1]: FAIL: complete technology dataset unchanged apart from the four approved costs
+- surrender-rekrutacja-build-gate-test.cjs [po exit 1]: FAIL: surrender usuwa legacy, zwraca Pracę staremu właścicielowi i filtruje kolejkę dla nowego
+- tartak-oboz-wyscig-race-test.cjs [po exit 1]: ReferenceError: setPlacedLayersOwned is not defined
+- trade-routes-income-test.cjs [po exit 1]: FAIL: H2e: one capital Mint raises tax cash in another city of the owner (mint=2, noMint=2)
+- ui-language-count-renderer-test.cjs [po exit 1]: Error: Build failed with 28 errors:
+- unit-card-ranged-mult-test.cjs [po exit 0]: (brak linii FAIL)
+- unit-stock-cost-test.cjs [po exit 1]: FAIL: Bronze Konnica: Brąz 25 and base horse stock 25 each scale x2 (got {"braz":100,"kon":100}, want {"braz":50,"kon":50})
+- villages-test.cjs [po exit 1]: FAIL: pickVillageReward wołane z opcją { excludeUnit }
+- war-allin-capital-test.cjs [po exit 1]: FAIL: 6b aiVsAi: flaga OFF == referencja 20a5bc2c7abcba1b (got "d28c8b7ffce7a3ec", want "20a5bc2c7abcba1b")
+- war-epoch-player-first-main-guard-test.cjs [po exit 1]: FAIL [baza]: main.ts: kandydaci na partnera gracza = WSZYSCY major AI (nie tylko pula)
+- war-era-counter-test.cjs [po exit 1]: WYNIK: 37 OK / 0 FAIL
+- wojna-wymuszona-parowanie-test.cjs [po exit 1]: FAIL: S2: brak nierozwiązanych -- leftover 5 znalazł parę do dołączenia (got 1, want 0)
+- wojna-wymuszona-prog-tury-gracz-test.cjs [po exit 1]: FAIL: stała progu wyeksportowana i równa 25 (ta sama wartość co AI)
+- wonder-transfer-on-conquest-test.cjs [po exit 1]: FAIL: main.ts: kapitulacja głodowa owinięta migawkami
+- zelazo-gate-test.cjs [po exit 1]: [FAIL] Legionista JEST dostepny: kopalnia na zlozu + Odlewnia zelaza -- ids=[]
+- ai-ai-treaty-live-proof-wiring-test.cjs [po exit 2]: (brak linii FAIL)
+- ambush-deploy-identity-test.cjs [po exit 2]: (brak linii FAIL)
+- memory-static-geometry-pool-test.cjs [po exit 2]: (brak linii FAIL)
+- move-pass-through-own-units-test.cjs [po exit 2]: Error: Build failed with 1 error:
+- ai-army-replacement-concentration-test.cjs [po exit 1]: FAIL: pomiar: bez bramki >10% marszow jednostek ze skupiska < 3 (stan przed poprawka)
+- ai-avoid-polar-plan-test.cjs [po exit 0]: (brak linii FAIL)
+- ai-avoid-polar-player-parity-test.cjs [po exit 0]: (brak linii FAIL)
+- ai-avoid-polar-sim-test.cjs [po exit 0]: (brak linii FAIL)
+- ai-move-full-range-test.cjs [po exit 1]: [FAIL] D2 udzial ruchow z niewykorzystanym zapasem mimo wolnej trasy PO (19.7%) <= PRZED (18.8%) + 0,5 pp tolerancji szumu
+- autoimprove-irrigation-after-farms-test.cjs [po exit 1]: [FAIL] koszt irygacji = 60 (3 x farma 20) [jest 30]
+- autoimprove-pasture-irrigation-q2-test.cjs [po exit 1]: [FAIL] (e) faza wzrostu (24 tury): 0 tur z glodzona trzoda/irygacja przy duzej puli (starved=3)
+- battle-pace-equal-line-live-test.cjs [po exit 124]: (brak linii FAIL)
+- capital-sep-pangea-test.cjs [po exit 0]: (brak linii FAIL)
+- climate-band-test.cjs [po exit 1]: FAIL: map has polar terrain (0 hexes)
+- cluster-spread-test.cjs [po exit 0]: (brak linii FAIL)
+- cluster-start-test.cjs [po exit 124]: (brak linii FAIL)
+- cyna-surowiec-test.cjs [po exit 0]: (brak linii FAIL)
+- deposit-coast-test.cjs [po exit 124]: (brak linii FAIL)
+- earth-template-test.cjs [po exit 124]: FAIL: ziemia: 0 heksów lądu poza szablonem (found 1668)
+- fair-play-grid-test.cjs [po exit 0]: (brak linii FAIL)
+- horse-resource-terrain-test.cjs [po exit 124]: (brak linii FAIL)
+- hotseat-etap6f-part2-data-test.cjs [po exit 0]: (brak linii FAIL)
+- land-sea-ratio-test.cjs [po exit 124]: (brak linii FAIL)
+- map-coast-buffer-test.cjs [po exit 124]: FAIL: kontynenty seed=1: ląd w buforze brzegu (11,0, 12,0, 13,0)
+- map-continents-rivers-test.cjs [po exit 124]: (brak linii FAIL)
+- map-gen-regression-test.cjs [po exit 124]: (brak linii FAIL)
+- map-quality-forest-parity-test.cjs [po exit 0]: (brak linii FAIL)
+- mapgen-rivers-fill-centroid-cache-test.cjs [po exit 0]: (brak linii FAIL)
+- medium-river-test.cjs [po exit 0]: (brak linii FAIL)
+- merge-decor-no-regress-test.cjs [po exit 0]: (brak linii FAIL)
+- miasta-zbyt-blisko-test.cjs [po exit 0]: (brak linii FAIL)
+- pangea-land-determinism-test.cjs [po exit 0]: (brak linii FAIL)
+- pangea-land-fraction-test.cjs [po exit 0]: (brak linii FAIL)
+- pangea-land-shape-test.cjs [po exit 0]: (brak linii FAIL)
+- pangea-river-interior-test.cjs [po exit 0]: (brak linii FAIL)
+- relief-grid-coverage-test.cjs [po exit 124]: (brak linii FAIL)
+- resource-ledger-realpath-mutation-test.cjs [po exit 124]: [m01] ZABITA (exit 1) — pominiecie lupu z bitwy :: FAIL lup z bitwy: wpis „Łup z bitwy” (lup_bitwy) dla zwyciezcy :: {}
+- river-density-test.cjs [po exit 0]: (brak linii FAIL)
+- river-grid-coverage-test.cjs [po exit 124]: FAIL: Standard kontynenty: max suchy płat nizin ≤30 hex (67)
+- river-loop-test.cjs [po exit 124]: (brak linii FAIL)
+- river-map-scale-test.cjs [po exit 124]: (brak linii FAIL)
+- river-path-adjacency-test.cjs [po exit 124]: (brak linii FAIL)
+- river-sea-buffer-test.cjs [po exit 1]: FAIL: kontynenty seed 42: główne nurty respektują bufor 2 hex (7 złych)
+- river-yield-both-sides-test.cjs [po exit 0]: (brak linii FAIL)
+- roads-city-links-only-test.cjs [po exit 0]: 57 OK, 0 FAIL
+- roads-reach-city-hex-test.cjs [po exit 0]: 24 OK, 0 FAIL
+- stranded-land-test.cjs [po exit 124]: (brak linii FAIL)
+- terrain-height-audit-test.cjs [po exit 0]: (brak linii FAIL)
+- world-density-test.cjs [po exit 1]: FAIL: rzeki sum low=582 med=565 high=567

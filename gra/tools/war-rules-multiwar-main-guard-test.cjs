@@ -118,7 +118,7 @@ check(
 
 // --- klaster państw-miast -> gracz ---
 const clusterLoopIdx = main.indexOf('for (const csOwnerId of clusterDowOwners) {');
-const clusterSlice = windowAfter(main, 'for (const csOwnerId of clusterDowOwners) {', 500);
+const clusterSlice = windowAfter(main, 'for (const csOwnerId of clusterDowOwners) {', 900);
 check(
   'klaster państw-miast: interCivWarBlockedForAi(csOwnerId, ME()) -> continue PRZED wypowiedzeniem',
   clusterLoopIdx > 0
@@ -127,7 +127,7 @@ check(
 );
 
 // --- sojusznik dołączający do wojny (applyAllianceObligationsOnWar + joinAllyToWar) ---
-const obligSlice = windowAfter(main, 'function applyAllianceObligationsOnWar(attackerId: number, victimId: number): void {', 2600);
+const obligSlice = windowAfter(main, 'function applyAllianceObligationsOnWar(attackerId: number, victimId: number, typWojny: TypWojny = \'naturalna\'): void {', 2600);
 const blockIdx = obligSlice.indexOf('if (!isMe(allyId) && interCivWarBlockedForAi(allyId, ob.mustDeclareWarOn)) continue;');
 const joinIdx = obligSlice.indexOf('joinAllyToWar(allyId, ob.mustDeclareWarOn, attackerId);');
 check(

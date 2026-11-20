@@ -216,7 +216,7 @@ const baseAi = () => [
   assert(r.toPlayer.length === 0, 'S2b: gracz nie dostaje drugiej wojny Brązu');
 }
 
-// S2c: gracz wszedł w Brąz < 20 tur temu -> nie w puli (jak AI).
+// S2c: gracz wszedł w Brąz < 40 tur temu -> nie w puli (jak AI).
 {
   const forcedPairs = [{ attackerId: 6, targetId: 0, era: 'stone' }];
   const counts = new Map(); M.recordEraForcedWarParticipation(counts, 6, 0, 1, 1);
@@ -281,7 +281,7 @@ const baseAi = () => [
   const counts = new Map(); M.recordEraForcedWarParticipation(counts, 6, 0, 1, 1);
   const r = runWave({ turn: TURN, playerCapital, ai, forcedPairs, counts });
   print('S4: tabela powodów odrzucenia (gracz w wojnie Kamienia)', r);
-  assert(r.rows.find(x => x.id === 1).reason.some(s => s.includes('próg')), 'S4: AI1 odrzucona progiem 20 tur');
+  assert(r.rows.find(x => x.id === 1).reason.some(s => s.includes('próg')), 'S4: AI1 odrzucona progiem 40 tur');
   assert(r.rows.find(x => x.id === 2).reason.some(s => s.includes('już w wojnie')), 'S4: AI2 odrzucona (już w wojnie)');
   assert(r.rows.find(x => x.id === 3).reason.some(s => s.includes('Łatwy')), 'S4: AI3 odrzucona (poziom Łatwy)');
   assert(r.rows.find(x => x.id === 5).candidate, 'S4: AI5 jest kandydatem');
