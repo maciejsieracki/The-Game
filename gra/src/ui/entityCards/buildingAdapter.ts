@@ -233,25 +233,6 @@ function formatYieldScaleRow(def: BuildingDef, baza: number, przyrost: number): 
 }
 
 /** 1:1 z `cityPanel.ts::formatBuildingUpkeepGridValue`, bez ikon inline (patrz wyżej). */
-/** Polskie odmiany (mianownik / 2-4 / dopełniacz-mnoga) dla liczebników przy utrzymaniu. */
-const UPKEEP_NOUN_FORMS: Record<string, [string, string, string]> = {
-  'pieniądz': ['Pieniądz', 'Pieniądze', 'Pieniędzy'],
-  'drewno': ['drewno', 'drewna', 'drewien'],
-  'kamień': ['kamień', 'kamienie', 'kamieni'],
-  'cegła': ['cegła', 'cegły', 'cegieł'],
-  // R-WEB-BUILDING-UPKEEP-CERAMICS-IMPL-Q1: ceramika jako surowiec utrzymania (Spichlerz II, Akwedukt, Łaźnia, Port).
-  'ceramika': ['ceramika', 'ceramiki', 'ceramiki'],
-};
-
-function plUpkeepForm(n: number, forms: [string, string, string]): string {
-  const m10 = n % 10;
-  const m100 = n % 100;
-  if (m100 >= 12 && m100 <= 14) return forms[2];
-  if (m10 === 1) return forms[0];
-  if (m10 >= 2 && m10 <= 4) return forms[1];
-  return forms[2];
-}
-
 /** Karta budynku: „2 Pieniądze, [2 ikona drewna], [2 ikona kamienia] / turę” — surowce jako DANE
  * (`resources`), renderer rysuje ikony (R-WEB-UI-RESOURCE-ICONS-ENTITYCARDS-Q1). */
 function upkeepRowFields(gold: number, resources: Record<string, number>):

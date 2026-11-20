@@ -137,6 +137,25 @@ async function main() {
     const backdropCountAfterA = await page.evaluate(() => document.querySelectorAll('.entity-card-backdrop').length);
     check('po otwarciu karty A: dokładnie 1 backdrop w DOM', backdropCountAfterA === 1, backdropCountAfterA);
 
+    // R-WEB-TEST-DEBT-Q12 (niestabilnosc): karta A wjezdza animacja; wspolrzedne przycisku mierzone w trakcie ruchu lapaly
+    // DIV karty zamiast przycisku (elementFromPoint = kind "unit"), a klik realny trafial w tlo. Czekamy, az przycisk
+    // przestanie sie przesuwac (ta sama ramka prostokata przez 3 klatki rAF) i jest pod punktem srodka.
+    try { await page.waitForFunction(() => {
+      const rows = Array.from(document.querySelectorAll('.entity-card-unit .entity-card-row'));
+      const row = rows.find((r) => r.querySelector('.entity-card-row-key')?.textContent === 'Technologia');
+      const btn = row?.querySelector('button.entity-card-row-value[data-entity-kind="technology"]');
+      if (!btn) return false;
+      const r = btn.getBoundingClientRect();
+      const key = [r.left, r.top, r.width, r.height].map((v) => Math.round(v)).join(',');
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const el = document.elementFromPoint(cx, cy);
+      const prev = window.__ecStable;
+      const n = prev && prev.key === key ? prev.n + 1 : 1;
+      window.__ecStable = { key, n };
+      return n >= 3 && !!el && (el === btn || btn.contains(el));
+    }, null, { polling: 'raf', timeout: 15000 }); } catch (e) { /* brak stabilizacji: asercje nizej raportuja stan */ }
+
     // --- wiersz "Technologia" (unitAdapter, T10) musi być klikalnym <button> z linkTo ---
     const techRowInfo = await page.evaluate(() => {
       const rows = Array.from(document.querySelectorAll('.entity-card-unit .entity-card-row'));

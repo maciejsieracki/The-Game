@@ -109,6 +109,12 @@ function makeMap({ mountains = [], deposits = [], clay = [], plainMountainsAroun
 }
 const CITY = { id: 'c0', ownerId: 0, q: CQ, r: CR, name: 'A', population: 5 }; // zasieg terytorium = 5
 const mkTN = () => [{ q: CQ, r: CR, ownerId: 0, cityId: 'c0', pop: 5, level: 1 }];
+// R-WEB-AI-ROADS-CITY-LINKS-ONLY-Q1 (2026-11-05): droga automatu = tylko heks planu sieci MIEDZY miastami (MST). Sam jeden
+// miasto nie ma krawedzi -> plan pusty -> brak drogi. Sekcja drog dostaje wiec drugie miasto (CITY2) tuz obok, by istniala krawedz
+// i heks CQ+1 lezal na sciezce miedzy miastami.
+const CITY2 = { id: 'c1', ownerId: 0, q: CQ + 2, r: CR, name: 'B', population: 5 };
+const mkTN2 = () => [...mkTN(), { q: CQ + 2, r: CR, ownerId: 0, cityId: 'c1', pop: 5, level: 1 }];
+const RCITIES = [{ ...CITY, ulepszeniaFocus: 'zrownowazone' }, { ...CITY2, ulepszeniaFocus: 'zrownowazone' }];
 
 function callK2(map, over = {}) {
   const cities = over.cities ?? [{ ...CITY, ulepszeniaFocus: 'zrownowazone' }];
@@ -287,8 +293,10 @@ console.log('H. kolejnosc: zywnosc -> fort -> drogi');
   const wR = new Set([K(CQ + 1, CR)]);
   // R-WEB-AUTOIMPROVE-PASTURE-IRRIGATION-NOT-BUILT-Q2 (2026-11-08): „zywnosc zagospodarowana” poza rzeka = farma + trzoda (trzoda dozwolona
   // poza rzeka na farmie pola obywatela); sama farma zostawialaby trzode jako czekajacy cel zywnosciowy i wstrzymywala fort/drogi.
-  const placedR = () => new Map([[K(CQ + 1, CR), ['farma', 'bydlo']]]);
-  const callR = over => callK2(mapR, { placed: placedR(), ...over, extra: { getWorkedHexKeys: () => wR, ...(over.extra ?? {}) } });
+  // Drugie miasto (CITY2) ma wlasna farme+trzode na heksie miasta: inaczej jego kandydat zywnosciowy (centrum liczy sie jako
+  // pracowane) blokowalby przebieg drog (zywnosc -> fort -> drogi, pkt H), a test sprawdza sama kolejnosc drog wzgledem fortu.
+  const placedR = () => new Map([[K(CQ + 1, CR), ['farma', 'bydlo']], [K(CQ + 2, CR), ['farma', 'bydlo']]]);
+  const callR = over => callK2(mapR, { placed: placedR(), cities: RCITIES, territoryNodes: mkTN2(), ...over, extra: { getWorkedHexKeys: () => wR, ...(over.extra ?? {}) } });
   const isRoad = p => p.key === 'droga' || p.key === 'droga_brukowana';
   const noFort = callR({ exhausted: false });
   const withFort = callR({ exhausted: true });
@@ -299,9 +307,9 @@ console.log('H. kolejnosc: zywnosc -> fort -> drogi');
   const waiting = callR({ pool: 1000, pct: Math.floor((FORT_COST - 1) / 10) });
   ok(!waiting.some(isRoad) && forts(waiting).length === 0, 'fort czeka na Prace (sufit % < koszt) -> drogi tez wstrzymane');
   // 6) po postawieniu fortu (limit nadal wyczerpany, brak kolejnych kandydatow) drogi ruszaja
-  const tnF = mkTN(); tnF.push({ q: CQ + 5, r: CR, ownerId: 0, pop: 0, level: 1, isFort: true });
+  const tnF = mkTN2(); tnF.push({ q: CQ + 5, r: CR, ownerId: 0, pop: 0, level: 1, isFort: true });
   const placedF = placedR(); placedF.set(K(CQ + 5, CR), ['fort']);
-  const afterFort = callK2(mapR, { placed: placedF, territoryNodes: tnF, extra: { getWorkedHexKeys: () => wR } });
+  const afterFort = callK2(mapR, { placed: placedF, cities: RCITIES, territoryNodes: tnF, extra: { getWorkedHexKeys: () => wR } });
   ok(afterFort.some(isRoad) && forts(afterFort).length === 0, 'fort stoi, brak innych kandydatow -> drogi ruszaja (najnizszy priorytet)');
 }
 

@@ -194,7 +194,9 @@ check(
 check(
   'finalizePeaceTreatyBetween uzbraja odpoczynek Żelaza (cleanupIronForcedWarOnPeace)',
   /function cleanupIronForcedWarOnPeace\(proposerId: number, responderId: number\): void \{[\s\S]{0,500}ironForceWarRestUntilByOwner\.set/.test(main)
-    && /function finalizePeaceTreatyBetween\([\s\S]{0,4000}cleanupIronForcedWarOnPeace\(proposerId, responderId\);/.test(main),
+    // R-WEB-TEST-DEBT-Q12: okno 4000 znakow przestalo siegac wywolania (dystans w main.ts = 4709 po rozbudowie galezi rozejmu);
+    // wywolanie cleanupIronForcedWarOnPeace nadal jest w finalizePeaceTreatyBetween — tylko okno pinu poszerzone do 6000.
+    && /function finalizePeaceTreatyBetween\([\s\S]{0,6000}cleanupIronForcedWarOnPeace\(proposerId, responderId\);/.test(main),
 );
 
 // ---------------------------------------------------------------------------
