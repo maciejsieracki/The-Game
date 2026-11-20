@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "29cd0160f414e8c1787706982734ae62",
-  "bundleSha256": "97ac7dc36db912f0d85a1986805c38696f137c79977774d80ac2dd40e6dc98b1",
-  "bundleBytes": 15000731,
+  "bundleMd5": "2e680d9c2b6f406002ea48121057204b",
+  "bundleSha256": "98fa8544ab24137d0ef1322fc11c9e08c2d204525c51ae8796bbd3f137433af1",
+  "bundleBytes": 15005322,
   "sourceSnapshot": {
-    "source": "FC 03e6c94e1 (kod 171df12b2)",
+    "source": "FC e118f4645 (kod 379cf050d)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 885: R-WEB-BATTLE-FLEE-MANUAL-MODE-HARAPPA-MEASURE-Q1 (zgloszenie wlasciciela: zbyt szybki Wojownik Harappy w bitwie 3D, tryb reczny): pomiar w zywym Chromium: Wojownik (zasieg 4, limit ucieczki 2) 2 heksy/ture, Rydwan konny (6, limit 3) 3/ture, Garnizon Harappy (3, limit 1) 1/ture - limit mnoznik_ruchu 0,5 egzekwowany w trybie recznym jak w autobitwie, bez sprintu; poprawka w battleScene.ts: zroutowana jednostka w lancuchu rozkazu recznego przechodzi na _fleeStep z zapasem tury; nowe testy battle-flee-manual (16/0), parity auto 53/0."
+    "FALA 886: R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1 (decyzje wlasciciela 2026-11-19): zaawansowane ustawienie nowej gry Dyplomacja i wojna - LATWA (domyslnie, = dzis bit-w-bit), NORMALNA (kary x2, bonusy :2), TRUDNA (kary x3, bonusy :3); helper diplomacy-war-level.ts skaluje parametry kar i bonusow dyplomacji (zaufanie, respekt, wiarygodnosc, sztywne zdarzenia, podglad kar, harder, agresor, przemarsz, AI-AI zerwanie, ekspansja AI przy granicy), ceny PN/starty/progi/czasy/zmeczenie wojna/krok zaniku NIE skalowane; stare zapisy = LATWA; N2 x3 = -54 przekracza prog -40 (swiadomie)."
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; ai-unit-replace 45/0; battle-flee-manual-test 16/0 (mutacje czerwone); battle-flee-speed-parity 53/0; zywy Chromium (rozbicie wymuszone w turze 1)"
+    "tsc 0; logic 213/213; tech-tree 20/20; research 33/33; unit-replace 21/21; combat 6/6; ai-unit-replace 45/0; diplomacy-war-level-test 28/28 (mutanty czerwone); penalty-preview 9/0; 164 testow diplo/ai-ai-treaty, czerwone tylko testy Chromium (brak /usr/bin/chromium)"
   ],
   "limits": [
-    "NIE ZMIERZONO: odwrot po bitwie na mapie, animacja/tempo kroku (moze byc zrodlem wrazenia szybkosci), rozbicie w trakcie lancucha rozkazu E2E; rozbicie w tescie wymuszone, nie organiczne"
+    "NIE ZMIERZONO: zywy dowod z Chromium (start gry Latwa/Normalna/Trudna, odczyt kary, round-trip zapisu pola), bieg 90 tur x 3 poziomy (czy na Trudnej powstaja sojusze AI-AI) - do VERIFY-LIVE; poziom czytany z globalnego stanu modulu"
   ],
   "finalControl": "Final Control PASS-WITH-NOTES",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-20T00:03:50",
+  "hubGeneratedAt": "2026-11-20T00:08:08",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "29cd0160f414e8c1787706982734ae62",
-      "sizeBytes": 15000731
+      "md5": "2e680d9c2b6f406002ea48121057204b",
+      "sizeBytes": 15005322
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "29cd0160f414e8c1787706982734ae62",
-      "sizeBytes": 15000731
+      "md5": "2e680d9c2b6f406002ea48121057204b",
+      "sizeBytes": 15005322
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "29cd0160f414e8c1787706982734ae62",
-      "sizeBytes": 15000731
+      "md5": "2e680d9c2b6f406002ea48121057204b",
+      "sizeBytes": 15005322
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "29cd0160f414e8c1787706982734ae62",
-      "sizeBytes": 15000731
+      "md5": "2e680d9c2b6f406002ea48121057204b",
+      "sizeBytes": 15005322
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "29cd0160f414e8c1787706982734ae62",
-      "sizeBytes": 15000731
+      "md5": "2e680d9c2b6f406002ea48121057204b",
+      "sizeBytes": 15005322
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "29cd0160f414e8c1787706982734ae62",
-      "sizeBytes": 15000731
+      "md5": "2e680d9c2b6f406002ea48121057204b",
+      "sizeBytes": 15005322
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "29cd0160f414e8c1787706982734ae62",
-      "sizeBytes": 15000731
+      "md5": "2e680d9c2b6f406002ea48121057204b",
+      "sizeBytes": 15005322
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "29cd0160f414e8c1787706982734ae62",
-      "sizeBytes": 15000731
+      "md5": "2e680d9c2b6f406002ea48121057204b",
+      "sizeBytes": 15005322
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "29cd0160f414e8c1787706982734ae62",
-      "sizeBytes": 15000731
+      "md5": "2e680d9c2b6f406002ea48121057204b",
+      "sizeBytes": 15005322
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "29cd0160f414e8c1787706982734ae62",
-      "sizeBytes": 15000731
+      "md5": "2e680d9c2b6f406002ea48121057204b",
+      "sizeBytes": 15005322
     }
   ],
-  "md5": "29cd0160f414e8c1787706982734ae62",
+  "md5": "2e680d9c2b6f406002ea48121057204b",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
