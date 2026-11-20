@@ -112,7 +112,7 @@ try {
   assert(!eligibility({ isAlreadyAtWarAnyRole: true }), 'brak dla ownera już w wojnie (dowolna rola)');
 
   console.log('--- R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1 + R-WEB-ERA-DELAY-Q1: próg 20 tur od WEJŚCIA W ŻELAZO ---');
-  eq(startTuryOdEpoki, 20, 'próg startu Żelaza = 20 tur od wejścia w epokę (R-WEB-ERA-DELAY-Q1, z JSON)');
+  eq(startTuryOdEpoki, 40, 'próg startu Żelaza = 40 tur od wejścia w epokę (R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1, z JSON)');
 
   // Kryterium końca 1 (dispatch): 0 tur po wejściu w Żelazo -> NIE kwalifikuje się, mimo że
   // wszystkie pozostałe warunki (główna cywilizacja AI, brak wojny) są spełnione -- dziś (przed

@@ -382,7 +382,9 @@ console.log('\n--- K4: Łatwy -- zero wypowiedzeń z mechanizmu wymuszonego prze
 // =============================================================================
 console.log('\n--- K5: próg startu -- Kamień tura 25, Brąz 25 tur od WŁASNEGO wejścia w epokę ---');
 {
-  eq(WOJNA_KAMIEN_WYMUSZONA_START_TURY, 25, 'K5: stała Kamienia = 25 (nie 20)');
+  // R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1 (2026-11-10): Kamień 40 tur (z JSON). KANDYDAT R-WEB-STONE-ERA-ENTRY-40:
+  // kod liczy turę globalną, decyzja od wejścia w epokę -- asercja firing poniżej przypina stan kodu.
+  eq(WOJNA_KAMIEN_WYMUSZONA_START_TURY, 40, 'K5: stała Kamienia = 40 (z JSON, R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1)');
   // Kamień: DWIE cywilizacje (1,4), OBIE triggered razem od tury 1 (dispatch krok 1 wymaga
   // WZAJEMNEGO triggered partnera w puli -- świadoma różnica vs stary per-owner
   // coordinated-pick, patrz komentarz K1 wyżej) -- SEDNO testu (próg 25 tur) mierzy się
@@ -391,13 +393,13 @@ console.log('\n--- K5: próg startu -- Kamień tura 25, Brąz 25 tur od WŁASNEG
   const stonePending = new Set([1, 4]);
   const stoneActive = new Map();
   let stoneFiredAtTurn = null;
-  for (let turn = 1; turn <= 30 && stoneFiredAtTurn == null; turn++) {
+  for (let turn = 1; turn <= 60 && stoneFiredAtTurn == null; turn++) {
     const { picks } = runForcedWarTurnStep(worldStone, [1, 4], turn, {
       stonePendingOwners: stonePending, stoneActiveByPairKey: stoneActive, poziomTrudnosci: 2, candidateOwnerIds: [],
     });
     if (picks.has(1)) stoneFiredAtTurn = turn;
   }
-  eq(stoneFiredAtTurn, 25, 'K5: Kamień -- pierwsze wypowiedzenie wojny wymuszonej dokładnie w turze 25, przy przejściu tura-po-turze od tury 1');
+  eq(stoneFiredAtTurn, 40, 'K5: Kamień -- pierwsze wypowiedzenie wojny wymuszonej dokładnie w turze 40 (stan kodu, tura globalna; KANDYDAT R-WEB-STONE-ERA-ENTRY-40), przy przejściu tura-po-turze od tury 1');
 
   // Brąz: DWIE PARY cywilizacji wchodzące w epokę Brąz w RÓŻNYCH turach gry (10 i 40) --
   // próg 25 tur liczy się NIEZALEŻNIE od KAŻDEJ z tych dwóch tur, nie od startu gry. Civ 6
@@ -414,7 +416,7 @@ console.log('\n--- K5: próg startu -- Kamień tura 25, Brąz 25 tur od WŁASNEG
   const eraEnterTurnByOwner = new Map();
   let firedA = null;
   let firedB = null;
-  for (let turn = 1; turn <= 70; turn++) {
+  for (let turn = 1; turn <= 90; turn++) {
     if (turn === 10) {
       bronzePending.add(1); eraEnterTurnByOwner.set(1, 10);
       bronzePending.add(6); eraEnterTurnByOwner.set(6, 10);
@@ -430,10 +432,10 @@ console.log('\n--- K5: próg startu -- Kamień tura 25, Brąz 25 tur od WŁASNEG
     if (picks.has(1) && firedA == null) firedA = turn;
     if (picks.has(2) && firedB == null) firedB = turn;
   }
-  // R-WEB-ERA-DELAY-Q1: próg Brązu 25 -> 20 tur od wejścia w epokę (decyzja właściciela 2026-11-08).
-  eq(WOJNA_WYMUSZONA_START_TURY_OD_EPOKI, 20, 'K5: stała progu Brązu = 20 tur od epoki (R-WEB-ERA-DELAY-Q1)');
-  eq(firedA, 30, 'K5: cywilizacja A weszła w Brąz w turze 10 -> pierwsza wojna wymuszona dokładnie w turze 30 (10+20)');
-  eq(firedB, 60, 'K5: cywilizacja B weszła w Brąz w turze 40 (30 tur PÓŹNIEJ niż A) -> pierwsza wojna w turze 60 (40+20), NIEZALEŻNIE od A');
+  // R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1 (decyzja właściciela 2026-11-10: 40 tur od wejścia w epokę; zastępuje 20 z R-WEB-ERA-DELAY-Q1).
+  eq(WOJNA_WYMUSZONA_START_TURY_OD_EPOKI, 40, 'K5: stała progu Brązu = 40 tur od epoki (R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1)');
+  eq(firedA, 50, 'K5: cywilizacja A weszła w Brąz w turze 10 -> pierwsza wojna wymuszona dokładnie w turze 50 (10+40)');
+  eq(firedB, 80, 'K5: cywilizacja B weszła w Brąz w turze 40 (30 tur PÓŹNIEJ niż A) -> pierwsza wojna w turze 80 (40+40), NIEZALEŻNIE od A');
 }
 
 // =============================================================================

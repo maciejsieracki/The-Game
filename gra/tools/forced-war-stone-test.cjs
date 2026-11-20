@@ -71,7 +71,10 @@ try {
   } = api;
 
   console.log('--- kontrakt Q1/Q3, R-WOJNA-WYMUSZONA-REGULY-Q1 Część A/C ---');
-  eq(startTurn, 25, 'R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): start po 25 turach (podniesiony z 20)');
+  // R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1 (decyzja właściciela 2026-11-10: Kamień 40 tur, z JSON). Stary pin 25 usunięty.
+  // KANDYDAT R-WEB-STONE-ERA-ENTRY-40 (NIE naprawiany tutaj): decyzja liczy 40 tur OD WEJŚCIA w epokę,
+  // a kod liczy tura globalna (main.ts ~45529 przekazuje `turn`); poniższe asercje przypinają stan kodu.
+  eq(startTurn, 40, 'R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1: start Kamienia = 40 tur (z JSON; stan kodu: tura globalna)');
   eq(cityLimit, 2, 'pokój po 2 miastach');
   eq(restTurns, 20, 'odpoczynek 20 tur');
   eq(cooldownTurns, 20, 'cooldown tej samej cywilizacji 20 tur');
@@ -85,12 +88,12 @@ try {
     isStoneEra: true,
     ...overrides,
   });
-  assert(!eligibility(24), 'brak wojny przed turn 25');
-  assert(eligibility(25), 'wojna dostępna od turn 25');
-  assert(eligibility(26), 'wojna nadal dostępna po turn 25');
-  assert(!eligibility(25, { isMainAiCiv: false }), 'brak dla player/miasta-państwa/barbarzyńcy');
-  assert(!eligibility(25, { isAlreadyAtWarAnyRole: true }), 'brak dla ownera już w wojnie');
-  assert(!eligibility(25, { isStoneEra: false }), 'brak dla ownera poza epoką Kamienia');
+  assert(!eligibility(39), 'brak wojny przed turn 40 (stan kodu, KANDYDAT R-WEB-STONE-ERA-ENTRY-40)');
+  assert(eligibility(40), 'wojna dostępna od turn 40 (stan kodu, KANDYDAT R-WEB-STONE-ERA-ENTRY-40)');
+  assert(eligibility(41), 'wojna nadal dostępna po turn 40');
+  assert(!eligibility(40, { isMainAiCiv: false }), 'brak dla player/miasta-państwa/barbarzyńcy');
+  assert(!eligibility(40, { isAlreadyAtWarAnyRole: true }), 'brak dla ownera już w wojnie');
+  assert(!eligibility(40, { isStoneEra: false }), 'brak dla ownera poza epoką Kamienia');
 
   console.log('--- R-WEB-PEACE-RULES-R8R9-Q1 R9: brak automatycznego końca wojny Kamienia (czas / 2 miasta) ---');
   {

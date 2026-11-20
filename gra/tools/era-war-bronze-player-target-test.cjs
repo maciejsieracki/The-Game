@@ -216,14 +216,14 @@ const baseAi = () => [
   assert(r.toPlayer.length === 0, 'S2b: gracz nie dostaje drugiej wojny Brązu');
 }
 
-// S2c: gracz wszedł w Brąz < 20 tur temu -> nie w puli (jak AI).
+// S2c: gracz wszedł w Brąz < 40 tur temu -> nie w puli (jak AI).
 {
   const forcedPairs = [{ attackerId: 6, targetId: 0, era: 'stone' }];
   const counts = new Map(); M.recordEraForcedWarParticipation(counts, 6, 0, 1, 1);
-  const r = runWave({ turn: TURN, playerCapital, ai: baseAi(), forcedPairs, counts, playerEraEnterTurn: TURN - 19 });
-  assert(!r.playerInPool && r.toPlayer.length === 0, 'S2c: 19 tur w Brązie -> brak puli');
-  const r2 = runWave({ turn: TURN, playerCapital, ai: baseAi(), forcedPairs, counts, playerEraEnterTurn: TURN - 20 });
-  assert(r2.playerInPool && r2.toPlayer.length === 1, 'S2c: dokładnie 20 tur -> w puli');
+  const r = runWave({ turn: TURN, playerCapital, ai: baseAi(), forcedPairs, counts, playerEraEnterTurn: TURN - 39 });
+  assert(!r.playerInPool && r.toPlayer.length === 0, 'S2c: 39 tur w Brązie -> brak puli (R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1)');
+  const r2 = runWave({ turn: TURN, playerCapital, ai: baseAi(), forcedPairs, counts, playerEraEnterTurn: TURN - 40 });
+  assert(r2.playerInPool && r2.toPlayer.length === 1, 'S2c: dokładnie 40 tur -> w puli');
   const r3 = runWave({ turn: TURN, playerCapital, ai: baseAi(), forcedPairs, counts, playerEraEnterTurn: undefined });
   assert(r3.playerInPool, 'S2c: brak tury wejścia (stary zapis) -> próg pominięty jak dla AI');
 }
@@ -281,7 +281,7 @@ const baseAi = () => [
   const counts = new Map(); M.recordEraForcedWarParticipation(counts, 6, 0, 1, 1);
   const r = runWave({ turn: TURN, playerCapital, ai, forcedPairs, counts });
   print('S4: tabela powodów odrzucenia (gracz w wojnie Kamienia)', r);
-  assert(r.rows.find(x => x.id === 1).reason.some(s => s.includes('próg')), 'S4: AI1 odrzucona progiem 20 tur');
+  assert(r.rows.find(x => x.id === 1).reason.some(s => s.includes('próg')), 'S4: AI1 odrzucona progiem 40 tur');
   assert(r.rows.find(x => x.id === 2).reason.some(s => s.includes('już w wojnie')), 'S4: AI2 odrzucona (już w wojnie)');
   assert(r.rows.find(x => x.id === 3).reason.some(s => s.includes('Łatwy')), 'S4: AI3 odrzucona (poziom Łatwy)');
   assert(r.rows.find(x => x.id === 5).candidate, 'S4: AI5 jest kandydatem');
@@ -306,7 +306,7 @@ const baseAi = () => [
 {
   const P = M.WAR_RULES_PARAMS;
   console.log('\nParametry: bronze start=' + P.eraForcedWarStartTurnsFromEra.bronze + ', maxEraForcedWarsPerCivPerEra=' + P.maxEraForcedWarsPerCivPerEra + ', maxConcurrentWarsFromBronze=' + P.maxConcurrentWarsFromBronze + ', maxEraForcedWarsPerEra=' + P.maxEraForcedWarsPerEra);
-  assert(P.eraForcedWarStartTurnsFromEra.bronze === 20, 'S6: próg Brązu = 20');
+  assert(P.eraForcedWarStartTurnsFromEra.bronze === 40, 'S6: próg Brązu = 40 (R-WEB-ERA-WAR-40-TURNS-NONOVERLAP-Q1, z JSON)');
   assert(P.maxEraForcedWarsPerCivPerEra === 1, 'S6: licznik per cywilizacja i epoka = 1');
 }
 
