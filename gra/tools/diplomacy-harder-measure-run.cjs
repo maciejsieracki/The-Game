@@ -76,7 +76,16 @@ const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 /** Przegladarka: CHROME_PATH; bez niego pierwsza istniejaca z listy (brak /usr/bin/chromium nie wywala launchu). */
 const CHROME = process.env.CHROME_PATH || [(require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), '/usr/bin/chromium-browser', '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable'].find(p => fs.existsSync(p)) || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const TURN_TIMEOUT_MS = 300000;
-const TAG = ALL_FLAGS === null ? `seed${SEED}-harder${HARDER ? 1 : 0}` : `seed${SEED}-all${ALL_FLAGS ? 1 : 0}`;
+/** R-WEB-DIPLO-LEVEL-MEASURE-3-LEVELS-Q1: --diplo-level latwa|normalna|trudna (brak = jak dotad). Poziom ustawiany PRAWDZIWA
+ *  sciezka nowej gry: hak __settingsLive.startNewGame z advanced.diplomacyWarLevel (ta sama funkcja co „Start” kreatora);
+ *  potwierdzany odczytem __settingsLive.getSettings() po starcie i po wczytaniu slotu. */
+const DIPLO_LEVEL = arg('diplo-level', null);
+if (DIPLO_LEVEL !== null && !['latwa', 'normalna', 'trudna'].includes(DIPLO_LEVEL)) {
+  console.error('--diplo-level: dozwolone latwa|normalna|trudna (podano ' + DIPLO_LEVEL + ').');
+  process.exit(2);
+}
+const TAG_BASE = ALL_FLAGS === null ? `seed${SEED}-harder${HARDER ? 1 : 0}` : `seed${SEED}-all${ALL_FLAGS ? 1 : 0}`;
+const TAG = DIPLO_LEVEL === null ? TAG_BASE : `${TAG_BASE}-lvl-${DIPLO_LEVEL}`;
 /** R-WEB-DIPLO-MEASURE-RESUMABLE-FLAGS-ONOFF-Q1: --stop-at <tura> (brak = przebieg do --turns jak dotad, bez wznowienia).
  *  Z --stop-at: zapis slotu co --every tur ORAZ na koncu odcinka; kolejne wywolanie z tym samym --out i --profile
  *  wczytuje slot (loadSlot) i kontynuuje od jego tury. Liczniki w state.json (slotCounters), liczone raz. */
@@ -126,6 +135,13 @@ async function applyFlags(page) {
   if (got !== HARDER) throw new Error('setEnabled(' + HARDER + ') nie ustawil flagi (odczyt=' + got + ')');
 }
 
+/** Odczyt poziomu „Dyplomacja i wojna” z realnej funkcji ustawien (getSettings); null gdy brak --diplo-level. */
+async function readDiploLevel(page) {
+  if (DIPLO_LEVEL === null) return null;
+  const st = await page.evaluate(() => window.__settingsLive.getSettings());
+  return st.diplomacyWarLevel;
+}
+
 /** Start jak runner (`newgame`): prawdziwy doStartGame + czekanie na koniec nakladki. Swiezy przebieg: zalozenie miasta
  *  gracza; wznowienie (fresh=false): loadSlot zamiast zakladania miasta. Potem autopilot, tryb szybki i flagi. */
 async function openGame(ctx, { fresh }) {
@@ -133,7 +149,26 @@ async function openGame(ctx, { fresh }) {
   const url = 'file://' + path.join(DIST, 'index.html') + '?civTest=1&civSeed=' + SEED;
   await page.goto(url, { waitUntil: 'load', timeout: 180000 });
   await page.waitForFunction(() => !!window.__aiTradeWiringTestDebug && !!window.__aiEconomyMeasure && !!window.__detHarness && !!window.__diploHarderMeasure && !!window.__diploAllFlagsMeasure, null, { timeout: 180000 });
-  await page.evaluate(([seed]) => window.__nnsMeasureDebug.startGame({ seed }), [SEED]);
+  if (DIPLO_LEVEL === null) {
+    await page.evaluate(([seed]) => window.__nnsMeasureDebug.startGame({ seed }), [SEED]);
+  } else {
+    // Ta sama konfiguracja co __nnsMeasureDebug.startGame (Rzymianie, Standardowy, 2 państwa-miasta, 15 cywilizacji, jakość wysoka),
+    // z jednym dodatkiem: advanced.diplomacyWarLevel. Start idzie przez __settingsLive.startNewGame -> doStartGame.
+    const params = {
+      civId: 'rzymianie', civName: 'Rzymianie', epoch: 'Epoka Brązu', epochId: 'braz', difficulty: 'Normalny',
+      mapSize: 'Standardowy', rivals: '2', speed: 'Normalna', worldType: 'Kontynenty', typSwiata: 'kontynenty', seed: SEED,
+      mapQualityLabel: 'Wysoka', mapQuality: 'high', renderQualityLabel: 'Wysoka', mapDetailQualityLabel: 'Wysoka',
+      renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: 15, cityStatesCount: 2,
+      worldDensityLabels: { resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie', forest: 'Normalnie', relief: 'Normalnie' },
+      advanced: {
+        barbariansLevel: 'normalny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
+        kosztJednostekPace: 'niski', wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki', landFractionPercent: 30, landFractionCustom: false,
+        cityStateDifficultyOverride: 'normal', cityLimitBase: 10, diplomacyWarLevel: DIPLO_LEVEL,
+      },
+      villageRewardsEnabled: true,
+    };
+    await page.evaluate(p => window.__settingsLive.startNewGame(p), params);
+  }
   await page.waitForFunction(() => { try { return window.__aiTradeWiringTestDebug.state().turn >= 1; } catch (_) { return false; } }, null, { timeout: 180000 });
   await page.waitForFunction(() => {
     const ov = Array.from(document.querySelectorAll('*')).some(el => el.textContent && el.textContent.includes('Tworzenie świata') && el.offsetParent !== null);
@@ -152,6 +187,11 @@ async function openGame(ctx, { fresh }) {
     const on = await page.evaluate(() => window.__aiEconomyMeasure.playerAiAutopilotForTestState());
     if (on !== true) throw new Error('autopilot gracza nie ustawiony (odczyt=' + on + ')');
     console.log('[diplo] player-ai autopilot=1');
+  }
+  if (DIPLO_LEVEL !== null) {
+    const lvl = await readDiploLevel(page);
+    if (lvl !== DIPLO_LEVEL) throw new Error('poziom dyplomacji po starcie/wczytaniu=' + lvl + ' != ' + DIPLO_LEVEL);
+    console.log('[diplo] diplo-level=' + lvl);
   }
   await page.evaluate(() => window.__aiTradeWiringTestDebug.setFastMode(true));
   // Flaga PO starcie gry (lub wczytaniu slotu), PRZED pierwszym endTurn.
@@ -269,7 +309,8 @@ async function playOneTurn(page) {
   const flagi = ALL_FLAGS === null ? null : await page.evaluate(() => window.__diploAllFlagsMeasure.status());
   // Licznik zerwan jest licznikiem SESJI przegladarki (reset po wczytaniu slotu): ZERW_OFFSET dodaje wartosc sprzed wznowienia.
   const liczniki = ALL_FLAGS === null ? null : licznikiZPar(m, ZERW_OFFSET + await page.evaluate(() => window.__diploAllFlagsMeasure.zerwaniaZeroZaufania()));
-  const rec = { seed: SEED, harder: harderLabel(), allFlags: ALL_FLAGS === null ? null : (ALL_FLAGS ? 1 : 0), liczniki, playerAi: PLAYER_AI ? 1 : 0, turn: after, gate: blocked, bypass, battlesAuto, aiOffersRejected: offersRejected, aiOffersRejectAttempts: offersAttempts,
+  const diploLevel = DIPLO_LEVEL === null ? null : await readDiploLevel(page);
+  const rec = { seed: SEED, diploLevel, harder: harderLabel(), allFlags: ALL_FLAGS === null ? null : (ALL_FLAGS ? 1 : 0), liczniki, playerAi: PLAYER_AI ? 1 : 0, turn: after, gate: blocked, bypass, battlesAuto, aiOffersRejected: offersRejected, aiOffersRejectAttempts: offersAttempts,
     forcedPeaceAccepted: COUNTERS.forcedPeaceAccepted, modal: modalDelta, sec: Math.round((Date.now() - t0) / 100) / 10, diplo: d,
     wojny: d.pairs.filter(p => p.status === 'wojna').length };
   if (flagi) rec.flagi = flagi;
@@ -346,7 +387,7 @@ async function main() {
     await ctx.close();
   }
   // R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1: gracz = autopilot (playerAi 1) -- adnotacja w summary; kolumny par bez zmian.
-  const summary = { seed: SEED, harder: harderLabel(), allFlags: ALL_FLAGS === null ? null : (ALL_FLAGS ? 1 : 0), playerAi: PLAYER_AI ? 1 : 0, graczAdnotacja: PLAYER_AI ? 'gracz = autopilot' : 'gracz = pasywny',
+  const summary = { seed: SEED, diploLevel: DIPLO_LEVEL, harder: harderLabel(), allFlags: ALL_FLAGS === null ? null : (ALL_FLAGS ? 1 : 0), playerAi: PLAYER_AI ? 1 : 0, graczAdnotacja: PLAYER_AI ? 'gracz = autopilot' : 'gracz = pasywny',
     turnsRequested: TURNS, every: EVERY, endTurn: turn, rows, stop, segment: SEGMENT, stopAt: STOP_AT, resumed: resume, slot: SLOT,
     flagi: FLAGI_START,
     counters: Object.assign({}, COUNTERS), aiOffersRejected: AI_OFFERS_REJECTED, aiOffersRejectAttempts: AI_OFFERS_REJECT_ATTEMPTS, wallSec: Math.round((Date.now() - t0) / 1000) };
