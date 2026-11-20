@@ -192,7 +192,8 @@ assert(runtimeConsumerSources.some(source => source.includes('dip_agresja_archet
   'runtime aggression path consumes dip_agresja_archetyp');
 assert(diplomacySource.includes('resolveArchetypeAggression('),
   'diplomacy stance calls the accepted aggression resolver');
-assert(mainSource.includes('civAiProfileForTyp(data, aiTyp, difficulty)'),
+// R-WEB-TEST-DEBT-Q13 r5: czytanie profilu jest dzis w civAiMatrixProfileForOwner(ownerId, difficulty) (civKey z civKeyForOwnerId).
+assert(/function civAiMatrixProfileForOwner\(ownerId: number, difficulty: GameDifficulty\)[\s\S]{0,600}civAiProfileForTyp\(data, civKey as TypCywilizacji, difficulty\)/.test(mainSource),
   'main AI path reads the matrix profile per owner and difficulty');
 
 const greekRomanStart = M.startRelationForMajorPair('grecy', 'rzymianie');
