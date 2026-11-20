@@ -345,9 +345,9 @@ fn model_name_jednostka_przed_nazwa() {
 fn def_civ_none_nieosiagalne_przez_most() {
     let mut st = state(11, &["palisada"]);
     st.players.retain(|p| p.id != PlayerId::new(ENEMY));
-    let e = siege_battle_apply::prepare_storm(&st, CITY, ANCHOR, 1)
-        .err()
-        .expect("właściciel spoza players: brak bitwy");
+    let Err(e) = siege_battle_apply::prepare_storm(&st, CITY, ANCHOR, 1) else {
+        panic!("właściciel spoza players: brak bitwy");
+    };
     assert!(
         matches!(
             e,
