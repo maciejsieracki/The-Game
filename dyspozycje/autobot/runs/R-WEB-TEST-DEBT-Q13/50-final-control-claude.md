@@ -1,25 +1,30 @@
-# R-WEB-TEST-DEBT-Q13 - Final Control (runda 4/5)
+# R-WEB-TEST-DEBT-Q13 - Final Control (runda 5/5)
 
-STATUS: FAIL (zakres tematu niespelniony; przyrost testowy d095e80a7 jest zielony i bezpieczny do integracji jako czesciowy - decyzja orkiestratora)
-DOMAIN: GAME (testy; zero zmian gra/src, gra/data)
+STATUS: PASS-WITH-NOTES (przyrost testowy 88920aa2 zielony i bezpieczny do integracji jako CZESCIOWY; zakres tematu niespelniony - LIMIT-5-EXCEEDED, dalsza praca wymaga decyzji wlasciciela)
+DOMAIN: GAME (testy; zero zmian w gra/src, gra/data)
 TEMAT: R-WEB-TEST-DEBT-Q13
-GOAL: testy czerwone do obowiazujacych regul bez oslabiania asercji; sweep zmierzony i skategoryzowany; bledy gry jako kandydaci.
-ZMIANY/COMMIT: kandydat d095e80a758b61521a714f4ad30da8d6f21ccbd5; baza d42ec85605bc26a8cba70adfc1696504acab6f48 jest jego przodkiem (merge-base --is-ancestor rc=0). git diff --stat: 19 plikow (+1910/-15): 10 testow gra/tools/*.cjs + 9 plikow runs/R-WEB-TEST-DEBT-Q13/. git diff --name-only baza..kandydat nie zawiera gra/src ani gra/data (puste). Allowlista zachowana. Przegladnieta tresc diffu gra/tools: zmiany to harnessy (atrapy Map, ME, pendingLedgerSink), progi 20/25 -> 40, garnizon i isProductionAllowed w fixture ai-test, komentarze; zadna asercja nie usunieta ani zluzowana.
-TESTY (wlasne uruchomienia na d095e80a7, wlasne npm ci --ignore-scripts, surowe wyniki):
-- tsc --noEmit exit 0; logic 213/213; tech-tree 20 pass/0 fail; research PASSED 33/FAILED 0; unit-replace 21/21; combat 6/6; unit-power 6 pass/0 fail.
-- forced-war-stone 31/0; iron 55/0; bronze 48/0; reguly-multi-turn 48/0; era-war-bronze-player-target 44/0; wojna-wymuszona-prog-tury-gracz 9/0; war-rules-multiwar-main-guard 21 PASS/0 FAIL; era-war-engine-scenario 27 OK/0; ai-test 297/0; ai-economy-measure-hook 25/25.
-- Naprawione w tej rundzie: ai-dlug-porzadki-q1 17/0; atak-adiacencja-wymagana 57/0; barbarian-cooperation-grace-maints-wiring 29/0.
-- Nadal czerwone (rc=1): recruitment-batch-contract (ReferenceError: recruitFollowGeneralForOrder is not defined), tartak-oboz-wyscig-race (ReferenceError: empireEpochForOwner is not defined).
-- Brak regresji wzgledem bazy w zmierzonych bramkach. Pelny sweep 156 NIE ponowiony przeze mnie (NIE ZMIERZONO).
+GOAL: testy czerwone do obowiazujacych regul bez oslabiania asercji; bledy gry jako kandydaci R-WEB-*.
+
+ZMIANY/COMMIT: kandydat 88920aa2bfa95a0d02af1f73df5c644f3d0883bd. `git merge-base --is-ancestor 1f0f48be 88920aa2` = TAK. `git diff --name-only 1f0f48be..88920aa2`: 46 plikow, wszystkie w allowliscie (41 x gra/tools/*-test.cjs + runs/R-WEB-TEST-DEBT-Q13/**); zero trafien w gra/src, gra/data, rust-port, gra-robocza, gra-kanon, WERSJE.md. Brak usunietych plikow w gra/tools.
+
+TESTY (wlasne uruchomienie na 88920aa2, gra/node_modules z `npm ci --ignore-scripts`, surowe):
+- tsc --noEmit exit 0; logic 213/213; tech-tree 20 pass/0 fail; research 33/0; unit-replace 21/21; combat 6/6.
+- ai-test 297 passed/0 failed; war-rules-multiwar-main-guard 21 PASS/0 FAIL; forced-war stone 31/0, iron 55/0, bronze 48/0, reguly 48/0; era-war-engine-scenario 27 OK/0; era-war-bronze-player-target 44/0; ai-economy-measure-hook 25/25.
+- Testy tematu: naval-water-access-gate 40/0; unit-stock-cost 58/0; mur-paradoks 29/0; ai-army-composition-per-civ 341/0; ai-general-war-campaign 52/0; army-leadership exit 0; recruitment-batch-contract 17/0; tartak-oboz-wyscig-race exit 0; rekrutacja-skarbiec-only 13/0.
+- NIE ZMIERZONO: wlasny sweep wszystkich 156 pozycji (liczby 69 zielonych / 87 czerwonych: A 1, B 10, D 50, E 26 pochodza z raportu operatora, niezweryfikowane niezaleznie); testy live/Chromium i E.
 
 OCENA ZARZUTOW (bez etykiet rol):
-1. Brak napraw A/B do 30 - PRAWDA, obrona przyjela. Naprawiono 3 z 18 A; 2 kolejne harnessy dotkniete, nadal czerwone. -> NAPRAW.
-2. 88 X nierozstrzygnietych, brak C i D - PRAWDA, obrona przyjela. Skrypt categorize.sh nie rozroznia B/D, wiec podzial dispatchu A-E niespelniony. -> NAPRAW.
-3. 29 E nie ponowione sekwencyjnie - PRAWDA, obrona przyjela (NIE ZMIERZONO). -> NAPRAW.
-4. Wady artefaktow - czesciowo zasadny, czesciowo naprawiony: tabela 40-triage-r3.md ma teraz poprawne kolumny, research 33/0 podane, komentarz KANDYDAT R-WEB-STONE-ERA-ENTRY-40 jest w forced-war-stone-test.cjs (grep potwierdzony w diffie). Hunki TESTDEBTQ13 zrealizowane tylko czesciowo. -> ODDAL (uwaga).
+1. D (50) nierozstrzygniete - ZASADNY. Wiersze maja "przyczyna NIE ZMIERZONO"; nie sa zweryfikowanymi bledami gry ani starymi pinami. Runda 5/5 wyczerpana, nie da sie naprawic w tym temacie -> ODDAL do decyzji wlasciciela / nowy temat R-WEB-TEST-DEBT-Q14 (analiza po 1 tescie). Nie blokuje integracji przyrostu (zero zmian kodu gry), ale blokuje zamkniecie tematu.
+2. E bez sekwencyjnego ponowienia - ZASADNY (25 timeoutow pod -P4). ODDAL do Q14/osobny runner; save-load-roundtrip i ai-ai-treaty-live-proof-wiring pozostaja czerwone/niezmierzone.
+3. 10 B nienaprawionych - ZASADNY. Dlug niezlikwidowany (87/156 czerwonych wg operatora). ODDAL; odblokowanie hud-moc-warstwa:168 i moc-ranking-rozjazd:145 zalezy od decyzji ABC (a).
+4. mur-paradoks 49->98 - ZASADNY, niezaleznosc asercji oslabiona. Zweryfikowano: units.json Konnica fieldPower = 98, Epoka Zelazo, wiec test jest zgodny z aktualnymi danymi; asercja ma warunek typeof/>0 i porownanie z danymi, a dalsze asercje testu (29/0) licza na konkretnych wartosciach. Czy 98 jest intencja (konflikt wiki 49 vs units.json) - decyzja ABC (a). Akceptuje jako notatke, nie jako FAIL, bo zmiana nie dotyka kodu gry.
+5. ai-army-composition garnizon jako "wrecz" - zasadne jako zalozenie operatora. Progi tabeli wlasciciela nietkniete, test 341/0; zmiana fixture odzwierciedla regule garnizonu min. 1 (FALA 857). Interpretacja wymaga potwierdzenia: ABC (b). Nota.
+6. Kandydaci - unit-stock-cost rozstrzygniety (stary pin, Zelazo x4; naprawione, 58/0, nie blad gry). climate-band-test.cjs:75 ("map has polar terrain (0 hexes)", generujSwiat(42,'standardowy','kontynenty')) - kandydat R-WEB-MAP-POLAR-ZERO, przyczyna NIE ZMIERZONO; ODDAL jako osobny temat po triage.
 
-BLOKADY: 15 A + 88 X + 29 E bez rozstrzygniecia; 2 harnessy tekstowe czerwone; kandydat R-WEB-STONE-ERA-ENTRY-40 nierozwiazany.
-RUNDY: 4/5; do wyczerpania zostala runda 5 (ten sam ID). Po niej LIMIT-5 i decyzja wlasciciela.
-NASTEPNY KROK: (a) orkiestrator moze zintegrowac d095e80a7 jako przyrost testowy (bramki zielone) nie zamykajac tematu; (b) runda 5: sekwencyjne ponowienie E, rozdzial X na B/D skryptem po tresci FAIL, naprawa harnessow recruitment/tartak i kolejnych A; (c) osobne tematy: przebudowa harnessow tekstowych na eksport funkcji, R-WEB-STONE-ERA-ENTRY-40.
-UWAGI-DLA-ORKIESTRATORA: harnessy tekstowe wycinajace main.ts gnija przy kazdej zmianie - warto osobny temat.
+Obrona: przyjela zarzuty 1-6 bez sporu i dodala 2 realne naprawy (naval-water-access-gate, unit-stock-cost), zweryfikowane powyzej.
+
+BLOKADY: (a) decyzja ABC: Konnica rekrut 49 czy 98; (b) czy garnizon liczy sie jako "wrecz" w pomiarze armii AI; (c) 50 D + 10 B + 26 E otwarte; (d) kandydat R-WEB-MAP-POLAR-ZERO.
+RUNDY: 5/5 zuzyte; ostatni werdykt FC = PASS-WITH-NOTES (przyrost), temat NIE zamkniety = LIMIT-5-EXCEEDED; wymagana decyzja wlasciciela: czy otworzyc R-WEB-TEST-DEBT-Q14 (D po 1 tescie, E sekwencyjnie, B po decyzji (a)).
+UWAGI-DLA-ORKIESTRATORA: harnessy tekstowe main.ts gnija przy kazdej zmianie (rozwazyc eksport funkcji); testy generatora mapy > 190 s - potrzebny osobny runner; zadna z kategorii C nie zostala oznaczona.
+NASTEPNY KROK: integracja orkiestratora przyrostu 88920aa2 (FF/merge, bramki wyzej zielone) bez READY_FOR_DEPLOY dla calego tematu; decyzje ABC (a)(b); ewentualny temat Q14.
 DEPLOY/PUSH: NIE WYKONANO
