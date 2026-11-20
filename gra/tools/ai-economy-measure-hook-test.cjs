@@ -23,6 +23,11 @@
  * w dyspozycje/analizy/AI-TERRITORY-RACE-DESIGN.md, sekcja 6a). Wartosciowa asercja (fort postawiony -> licznik 1)
  * wymaga biegu gry i jest poza zakresem tej rundy.
  *
+ * R-WEB-VERIFY-LIVE-A2 (obrona r2): przyczyny unitFlow przypinane wartoscia realnym rozwiazaniem: rozwiazanie-gracz
+ * (owner 0), rozwiazanie-ai (owner >= 1, asercja 1c + mutacja wartosci). NIE PRZYPIETE automatycznie (brak haka
+ * ustawiajacego stan: glod-armii, glod-oblezenie, deficyt-zlota, eliminacja-wlasciciela) -- tabela plik:linia w
+ * dyspozycje/analizy/POMIAR-KOSZTY-JEDNOSTEK-AI-2026-11-20.md sekcja 8.1; w biegach ich liczba 0 NIE jest dowodem braku tagu.
+ *
  * Uzycie (z gra/, bundle zbudowany): node tools/ai-economy-measure-hook-test.cjs --dist <abs-dist>
  *   --modal-only 1  -- tylko asercja 0 (bez gry).
  *   --runner <abs-plik>  -- runner testowany w asercji 0 (domyslnie tools/ai-economy-measure-run.cjs; mutacja na KOPII).
@@ -43,6 +48,7 @@ const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 const MUTANT_DIST = arg('mutant-dist', '') ? path.resolve(arg('mutant-dist', '')) : null;
 const RUNNER = path.resolve(arg('runner', path.join(GRA_DIR, 'tools', 'ai-economy-measure-run.cjs')));
 const MODAL_ONLY = arg('modal-only', '0') === '1';
+const MUTANT_ONLY = arg('mutant-only', '0') === '1';
 const CHROME = process.env.CHROME_PATH || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const SEED = 4242;
 const MAX_TURNS_VALUE = 12;
@@ -90,6 +96,57 @@ function ledgerShapeProblems(ls) {
   if (!ls || typeof ls.entries !== 'number' || !(ls.entries >= 0)) problems.push('entries nie jest liczba >=0');
   if (!ls || typeof ls.bytes !== 'number' || !(ls.bytes >= 2)) problems.push('bytes nie jest liczba >=2');
   return problems;
+}
+
+/** R-WEB-VERIFY-LIVE-A2 (obrona r2): rozwiazuje realnie jednostke wlasciciela AI (owner >= 1) przez ten sam kod co
+ *  NNS (__ledgerRealPathDebug.disband -> disbandAiSupportUnit) i zwraca przyrost z unitFlowTurn() po tej zmianie.
+ *  Wywolujacy MUSI miec wyzerowany licznik (poprzednie unitFlowTurn()). */
+async function aiDisbandProbe(page) {
+  const cands = await page.evaluate(() => {
+    const m = window.__aiEconomyMeasure.metrics();
+    const out = [];
+    for (const o of m.owners) {
+      if (o.owner < 1) continue;
+      for (const id of (o.wojskoPozaMiastem || [])) out.push({ id, owner: o.owner });
+      for (const c of o.miastaWojsko) for (const id of c.ids) out.push({ id, owner: o.owner });
+    }
+    return out.slice(0, 80);
+  });
+  let hit = null; let err = null;
+  for (const c of cands) {
+    try {
+      const ok = await page.evaluate(([id, ow]) => window.__ledgerRealPathDebug.disband(id, ow), [c.id, c.owner]);
+      if (ok === true) { hit = c; break; }
+    } catch (e) { err = String(e && e.message).slice(0, 120); break; }
+  }
+  if (!hit) return { hit: null, row: null, cands: cands.length, err };
+  const fl = await page.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
+  const row = fl.owners.find(o => o.owner === hit.owner) || null;
+  return { hit, row, cands: cands.length, err };
+}
+
+/** R-WEB-VERIFY-LIVE-A2 (obrona r2): jedna tura jak w sekcji 4 (dosypka, gdy bramka NNS blokuje, realny endTurn). */
+async function advanceOneTurn(page) {
+  const before = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
+  if (await page.evaluate(() => window.__aiTradeWiringTestDebug.nnsGateBlocked())) {
+    await page.evaluate(() => window.__aiTradeWiringTestDebug.grantPlayerGold(200));
+    await page.evaluate(() => window.__aiTradeWiringTestDebug.grantPlayerFood(200));
+  }
+  await page.evaluate(() => window.__aiTradeWiringTestDebug.endTurn());
+  await page.waitForFunction(t => window.__aiTradeWiringTestDebug.state().turn !== t && !window.__aiTradeWiringTestDebug.isEndTurnInProgress(), before, { timeout: 300000, polling: 250 });
+}
+
+/** Kandydat AI do rozwiazania pojawia sie dopiero po kilku turach (na starcie kazda jednostka AI to obronca miasta).
+ *  Probka bez kandydata nic nie zmienia (disbandAiSupportUnit zwraca false przed mutacja), wiec mozna ja powtarzac. */
+async function aiDisbandAfterTurns(page, maxTurns) {
+  let k = 0; let last = null;
+  for (k = 0; k <= maxTurns; k++) {
+    if (k > 0) await advanceOneTurn(page);
+    await page.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
+    last = await aiDisbandProbe(page);
+    if (last.hit) break;
+  }
+  return Object.assign(last, { turns: k });
 }
 
 async function openNewGame(browser, distDir) {
@@ -207,6 +264,28 @@ async function modalCheck(browser) {
   await page.close();
 }
 
+/** 5) mutacja realna: zepsuty bundle (--mutant-dist) MUSI oblac ksztalt i wartosc (--mutant-only 1 uruchamia tylko ta czesc). */
+async function mutantChecks(browser) {
+  if (MUTANT_DIST) {
+  const mpage = await openNewGame(browser, MUTANT_DIST);
+  const mm = await mpage.evaluate(() => window.__aiEconomyMeasure.metrics());
+  const mutantProbs = shapeProblems(mm, OWNER_KEYS);
+  check('mutacja realna (zepsuty hak w bundle) jest CZERWONA', mutantProbs.length > 0, mutantProbs.slice(0, 3).join('; ') || 'brak problemow -- test slepy');
+  const mfl = await mpage.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
+  const mflProbs = unitFlowShapeProblems(mfl);
+  check('mutacja realna unitFlow (zepsuty przyrost w bundle) jest CZERWONA', mflProbs.length > 0, mflProbs.slice(0, 3).join('; ') || 'brak problemow -- test slepy');
+  // Wartosc, nie ksztalt (zarzut Evaluatora 2): zepsuty tag rozwiazanie-ai musi dac wartosc != 1 albo brak kandydata (slepota).
+  const mai = await aiDisbandAfterTurns(mpage, MAX_TURNS_VALUE);
+  const maiVal = mai.row ? mai.row.zniknietePrzyczyny['rozwiazanie-ai'] : undefined;
+  check('mutacja realna rozwiazanie-ai (wartosc przyczyny w bundle) jest CZERWONA', mai.hit !== null && maiVal !== 1,
+    'rozwiazanie-ai=' + maiVal + (mai.hit ? '' : ' NIE ZMIERZONO: brak kandydata blad=' + mai.err));
+  const mls = await mpage.evaluate(() => window.__aiEconomyMeasure.ledgerStats());
+  const mlsProbs = ledgerShapeProblems(mls);
+  check('mutacja realna ledgerStats (zepsuty hak w bundle) jest CZERWONA', mlsProbs.length > 0, mlsProbs.join('; ') || 'brak problemow -- test slepy (ledgerStats=' + JSON.stringify(mls) + ')');
+  await mpage.close();
+  }
+}
+
 async function fullChecks(browser) {
   // 1) ksztalt metryk (tura 1, nowa gra).
   const page = await openNewGame(browser, DIST);
@@ -311,6 +390,7 @@ async function fullChecks(browser) {
       'owners=' + flowB.owners.length);
   }
 
+
   // 4) wartosc AI: kolejne tury z dosypkami gdy bramka blokuje (jak runner), do MAX_TURNS_VALUE.
   let ok = false; let lastDiag = null; let lastAi = null; let turnsUsed = 0; let lastZeroUnits = [];
   for (let k = 0; k < MAX_TURNS_VALUE && !ok; k++) {
@@ -334,6 +414,14 @@ async function fullChecks(browser) {
   }
   check('wartosc: kazdy AI owner ma >=1 miasto, >=90% AI ma >=1 jednostke (po ' + turnsUsed + ' turach, max ' + MAX_TURNS_VALUE + ')', ok,
     'bez jednostek=' + JSON.stringify(lastZeroUnits) + '; AI [owner,miasta,jednostki]=' + JSON.stringify(lastAi) + '; diag=' + JSON.stringify(lastDiag));
+  // 1c) R-WEB-VERIFY-LIVE-A2 (obrona r2, zarzut Evaluatora 1): sciezka AI -- tag rozwiazanie-ai przypiety wartoscia.
+  // Robione PO petli tur (sekcja 4): na starcie kazda jednostka AI to obronca miasta (nnsUnitIsDefender), wiec nie da sie jej rozwiazac.
+  // Licznik zerowany tuz przed probka, zeby przyrost dotyczyl tylko tego rozwiazania.
+  const ai = await aiDisbandAfterTurns(page, MAX_TURNS_VALUE);
+  const aiVal = ai.row ? ai.row.zniknietePrzyczyny['rozwiazanie-ai'] : undefined;
+  check('unitFlow: rozwiazanie jednostki AI (owner ' + (ai.hit ? ai.hit.owner : '?') + ') trafia do przyczyny rozwiazanie-ai (dokladnie 1, bez innych zdarzen)',
+    ai.hit !== null && aiVal === 1 && ai.row.zniknieteBezPrzyczyny === 0 && Object.keys(ai.row.zniknietePrzyczyny).length === 1,
+    ai.hit ? JSON.stringify(ai.row) + ' tur=' + ai.turns : 'NIE ZMIERZONO: kandydatow=' + ai.cands + ' tur=' + ai.turns + ' blad=' + ai.err);
   await page.close();
 
   // 2) kontrola negatywna: bez ?civTest=1 hak nie istnieje.
@@ -344,20 +432,8 @@ async function fullChecks(browser) {
   check('kontrola negatywna: bez ?civTest=1 brak haka __aiEconomyMeasure', hasHook === false);
   await plain.close();
 
-  // 5) mutacja realna: osobny, zepsuty bundle (--mutant-dist) MUSI oblac ksztalt.
-  if (MUTANT_DIST) {
-    const mpage = await openNewGame(browser, MUTANT_DIST);
-    const mm = await mpage.evaluate(() => window.__aiEconomyMeasure.metrics());
-    const mutantProbs = shapeProblems(mm, OWNER_KEYS);
-    check('mutacja realna (zepsuty hak w bundle) jest CZERWONA', mutantProbs.length > 0, mutantProbs.slice(0, 3).join('; ') || 'brak problemow -- test slepy');
-    const mfl = await mpage.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
-    const mflProbs = unitFlowShapeProblems(mfl);
-    check('mutacja realna unitFlow (zepsuty przyrost w bundle) jest CZERWONA', mflProbs.length > 0, mflProbs.slice(0, 3).join('; ') || 'brak problemow -- test slepy');
-    const mls = await mpage.evaluate(() => window.__aiEconomyMeasure.ledgerStats());
-    const mlsProbs = ledgerShapeProblems(mls);
-    check('mutacja realna ledgerStats (zepsuty hak w bundle) jest CZERWONA', mlsProbs.length > 0, mlsProbs.join('; ') || 'brak problemow -- test slepy (ledgerStats=' + JSON.stringify(mls) + ')');
-    await mpage.close();
-  }
+  await mutantChecks(browser);
+
 }
 
 /** Bez --dist: buduje bundle `vite build` (tylko npx vite, bez prebuild) do katalogu poza repo, jak sidepanel-event-header-wydarzenie-real-render-test. */
@@ -375,7 +451,8 @@ async function main() {
   const browser = await chromium.launch({ headless: true, executablePath: CHROME, args });
   try {
     await modalCheck(browser);
-    if (!MODAL_ONLY) await fullChecks(browser);
+    if (MUTANT_ONLY) await mutantChecks(browser);
+    else if (!MODAL_ONLY) await fullChecks(browser);
   } finally {
     await browser.close();
   }
