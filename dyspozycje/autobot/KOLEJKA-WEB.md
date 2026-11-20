@@ -123,3 +123,7 @@ Brak pozycji potwierdzonych w repo. Pozycje z listy zadań sesji (np. #286, #57)
 - Operatorzy NIE zakładają sesji: `create_session`, `spawn_task`, `create_trigger`, `send_later` są zakazane (zakaz właściciela 2026-11-13).
 - Heartbeat NIE zmienia balansu bez zgody właściciela (balans = pozycje z sekcji CZEKA NA RANO).
 - Po zakończeniu tematu: integracja, deploy ROBOCZA, push, sprzątanie dysku (worktree zakończonych workflowów).
+
+
+## AKTUALIZACJA 2026-11-20 ~02:00 UTC
+FALA 889 WDROŻONA (ERAWARPLAYER; ROBOCZA MD5 b69800bb, main 7cf570839). W TOKU: VERIFYLIVEA, TESTDEBTQ13. NASTĘPNE: VERIFY-LIVE-B (dispatch po scaleniu VERIFYLIVEA). OTWARTE ABC: pending Brązu blokowany sojuszami (pairing-unresolved) — czy sojusz ma blokować wojnę epoki.
