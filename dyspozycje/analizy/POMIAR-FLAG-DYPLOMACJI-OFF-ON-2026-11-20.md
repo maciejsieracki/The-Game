@@ -30,12 +30,7 @@
 | 7 | ON | 60 | 2 (1 / 1) | 1 | 0 | 2 | 0 | 2 | 0 | 0,0 | 0 (0) | 0 | 0 |
 | 7 | ON | 90 | 3 (2 / 1) | 2 | 1 | 8 | 0 | 5 | 0 | 19,3 | 1 (1) | 0 | 1 |
 
-| 4242 | OFF | 7 (t70) | 3 (t80) | 0 |
-| 4242 | ON | 8 (t70) | 3 (t70) | 12 |
-| 7 | OFF | 4 (t50) | 2 (t50) | 0 |
-| 7 | ON | 4 (t75) | 2 (t70) | 8 |
-
-Kolumny „maks.” (cała próbkowana trajektoria, tury co 5):
+Maksima z całej próbkowanej trajektorii (tury co 5; kolumny „maks.”):
 
 | Ziarno | Flagi | Maks. wojen łącznie (tura) | Maks. wojen jednej cywilizacji (tura) | Maks. sojuszy AI↔AI |
 |---|---|---|---|---|

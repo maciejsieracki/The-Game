@@ -76,7 +76,11 @@ function readRows(dir) {
 }
 const rowsA = readRows(DIR_A);
 const rowsB = readRows(DIR_B);
-if (rowsA === null || rowsB === null) {
+const podanoAB = process.argv.includes('--a') || process.argv.includes('--b');
+if (!RUN && !podanoAB) {
+  // Brak wynikow do porownania (ani --a/--b, ani --run 1): bieg niemozliwy bez danych -> NIE ZMIERZONO, nie CZERWONE.
+  console.log('NIE ZMIERZONO :: C1-C4 pominiete: brak --a/--b i --run 1 (pin P1-P8 wykonany)');
+} else if (rowsA === null || rowsB === null) {
   check('C0 wyniki obu wariantow istnieja', false, 'brak ' + TAG + '.jsonl w --a lub --b');
 } else {
   const turnsA = rowsA.map(r => r.turn);
