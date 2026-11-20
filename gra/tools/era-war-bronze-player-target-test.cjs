@@ -80,7 +80,7 @@ function runWave(world) {
   let playerInPool = false;
   const poolOk = M.isPlayerEligibleForEraWarPool({
     currentTurn: turn, playerEpoch: playerEra, activeForcedWarsTotal: totalActive(0),
-    activeForcedWarsInPlayerEra: playerInEra, eraEnterTurn: playerEraEnterTurn, poolStartTurn: 25,
+    activeForcedWarsInPlayerEra: playerInEra, eraEnterTurn: playerEraEnterTurn, poolStartTurn: M.WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.stone,
   }, M.WAR_RULES_PARAMS);
   if (poolOk && playerEpochWarEnabled) { subjects.push({ ownerId: 0, q: playerCapital.q, r: playerCapital.r }); playerInPool = true; }
   const isEraWarExhausted = (oid) => !M.canCivJoinEraForcedWar(counts, oid, epochOf(oid), M.WAR_RULES_PARAMS);
@@ -220,9 +220,9 @@ const baseAi = () => [
 {
   const forcedPairs = [{ attackerId: 6, targetId: 0, era: 'stone' }];
   const counts = new Map(); M.recordEraForcedWarParticipation(counts, 6, 0, 1, 1);
-  const r = runWave({ turn: TURN, playerCapital, ai: baseAi(), forcedPairs, counts, playerEraEnterTurn: TURN - 19 });
+  const r = runWave({ turn: TURN, playerCapital, ai: baseAi(), forcedPairs, counts, playerEraEnterTurn: TURN - (M.WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.bronze - 1) });
   assert(!r.playerInPool && r.toPlayer.length === 0, 'S2c: 19 tur w Brązie -> brak puli');
-  const r2 = runWave({ turn: TURN, playerCapital, ai: baseAi(), forcedPairs, counts, playerEraEnterTurn: TURN - 20 });
+  const r2 = runWave({ turn: TURN, playerCapital, ai: baseAi(), forcedPairs, counts, playerEraEnterTurn: TURN - M.WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.bronze });
   assert(r2.playerInPool && r2.toPlayer.length === 1, 'S2c: dokładnie 20 tur -> w puli');
   const r3 = runWave({ turn: TURN, playerCapital, ai: baseAi(), forcedPairs, counts, playerEraEnterTurn: undefined });
   assert(r3.playerInPool, 'S2c: brak tury wejścia (stary zapis) -> próg pominięty jak dla AI');
@@ -306,7 +306,7 @@ const baseAi = () => [
 {
   const P = M.WAR_RULES_PARAMS;
   console.log('\nParametry: bronze start=' + P.eraForcedWarStartTurnsFromEra.bronze + ', maxEraForcedWarsPerCivPerEra=' + P.maxEraForcedWarsPerCivPerEra + ', maxConcurrentWarsFromBronze=' + P.maxConcurrentWarsFromBronze + ', maxEraForcedWarsPerEra=' + P.maxEraForcedWarsPerEra);
-  assert(P.eraForcedWarStartTurnsFromEra.bronze === 20, 'S6: próg Brązu = 20');
+  assert(P.eraForcedWarStartTurnsFromEra.bronze === 40, 'S6: próg Brązu = 40 (z JSON)');
   assert(P.maxEraForcedWarsPerCivPerEra === 1, 'S6: licznik per cywilizacja i epoka = 1');
 }
 

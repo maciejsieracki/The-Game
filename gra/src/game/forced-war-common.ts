@@ -546,7 +546,9 @@ export function assignForcedWarPairings(
       let bestDist = Infinity;
       let bestTargetId: number | null = null;
       for (const cand of opts.freeTargetCandidates.slice().sort((a, b) => a.ownerId - b.ownerId)) {
-        if (cand.ownerId === leftoverId || cand.ownerId === 0 || byId.has(cand.ownerId)) continue;
+        // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1 (decyzja 2026-11-19): gracz (0) jest celem
+        // fallbacku na równych zasadach z AI; wykluczenie gracza wyłącznie przez opcję K2 (main.ts).
+        if (cand.ownerId === leftoverId || byId.has(cand.ownerId)) continue;
         if (freeTargetsClaimed.has(cand.ownerId)) continue;
         if (opts.totalActiveForcedWarsByOwner(cand.ownerId) !== 0) continue;
         if (exhausted(cand.ownerId, actor.era)) continue;

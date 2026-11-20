@@ -243,8 +243,13 @@ console.log('T9 (runda 3) leftover Brazu omija pare Kamienia; dolaczenie do pary
 console.log('T8 (B-DEFER, wiring) main.ts przekazuje freeTargetCandidates do assignForcedWarPairings');
 {
   const mainSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
-  assert(/freeTargetCandidates:\s*forcedWarMajorAiSubjects\.filter\(s => countActiveWarsForOwnerExcludingBarbarians\(s\.ownerId\) === 0\),/.test(mainSrc),
-    'main.ts: freeTargetCandidates = wspólna lista major AI filtrowana z wojen naturalnych (Z4)');
+  // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1 r3 (zarzut 3): warunek opóźnienia (eraWarTargetDelayOk)
+  // jest WYMAGANY w filtrze freeTargetCandidates (wersja bez niego nie przechodzi).
+  assert(/freeTargetCandidates:[\s\S]{0,400}?countActiveWarsForOwnerExcludingBarbarians\(s\.ownerId\) === 0 && eraWarTargetDelayOk\(s\.ownerId\)\)/.test(mainSrc),
+    'main.ts: freeTargetCandidates = wspólna lista major AI filtrowana z wojen naturalnych ORAZ z opóźnienia wojny epoki (eraWarTargetDelayOk)');
+  // r3 (zarzut 3): bramka playerFirst (kandydat-AI do pary z graczem) też musi nieść eraWarTargetDelayOk.
+  assert(/isPlayerPairGateOpen:[\s\S]{0,300}?eraWarTargetDelayOk\(aiOwnerId\)/.test(mainSrc),
+    'main.ts: isPlayerPairGateOpen (para z graczem) zawiera eraWarTargetDelayOk(aiOwnerId)');
   assert(/candidates:\s*forcedWarMajorAiSubjects,/.test(mainSrc), 'main.ts: playerFirst.candidates wspólna lista (bez duplikatu)');
 }
 
