@@ -8,9 +8,11 @@ GOAL: przy kroku klatki 16 ms wynik Rust bajt w bajt zgodny z pinem dla 12 kandy
       bez psucia @1 ms (>= 125/128), dawnych wektorów i bliźniaków _klatka1; mutanty >= 20
 BAZA: origin/rust-port/parity-v2 = 0522ad6df484622ad92c8f5d42956fc1ec061423 (linia BAZA dispatchu; = SHA z dispatchu)
 GAŁĄŹ: rust-port-wip/frame-quant-q1 (lokalna, worktree wf_6a1aa039-fb6-1)
-ZMIANY/COMMIT: §6, §10 (SHA)
-TESTY: §7
+ZMIANY/COMMIT: §6, §10 (SHA); kod i dane końcowe 757ac004e (+ commit raportu)
+TESTY: §7 — fmt/clippy EXIT 0; pełny cargo test --all-targets --no-fail-fast EXIT 0 (4197 ok, 0 fail, 1 ignored
+       sprzed tematu); p6_k5loop_wiring_a_pin 8/8 (42 wektory); kandydaci c1 @1 125/128, @4 125/128, @16 125/128
 BLOKADY: brak blokujących. Jedyne rozbieżne @16 ms: 118, 196, 221 = klasa A (MARCH-INCREMENTAL, poza zakresem, bez zmian).
+         Mutanty: 26 = 19 zabitych + 5 jawnie równoważnych + 2 nieobserwowalne (Q20/Q22, dług FQ-TOWER-HIT-DUE, §8).
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator r1
 DEPLOY/PUSH: NIE WYKONANO
@@ -102,16 +104,16 @@ już na nowym polu).
 
 | Plik | Zmiana |
 |---|---|
-| `engine/src/domain/siege_tactics_loop.rs` | D-FQ-1/2/3: `frame_sched`, `frame_raf`, `ProdBody::{frame_ms, reader_due, gap_due}`, `gap_after`, `timeline_ord`, nowe `timeline_done`/`timeline_key` (klucz `ord: f64` zamiast `synchr: bool`), `LoopBody::set_reader_due`, `SiegeLoop::tower_shot_due`, `due` trafienia w `tower_in_flight`; test lib `krok_z_zegara_w_klatce_wg_nominalnego_due` (+ dawne testy osi na nowej sygnaturze). |
+| `engine/src/domain/siege_tactics_loop.rs` | D-FQ-1/2/3: `frame_sched`, `frame_raf`, `ProdBody::{frame_ms, reader_due, gap_due}`, `gap_after`, `timeline_ord`, nowe `timeline_done`/`timeline_key` (klucz `ord: f64` zamiast `synchr: bool`), `LoopBody::set_reader_due`, `SiegeLoop::tower_shot_due`, `due` trafienia w `tower_in_flight`; funkcje odcinków złożonych `melee_tail_ms`, `siege_walk_step_t0`, `siege_walk_dur` (publiczne, testowane wprost); testy lib `krok_z_zegara_w_klatce_wg_nominalnego_due`, `czas_kroku_kwantyzowany_klatka` (+ dawne testy osi na nowej sygnaturze). |
 | `engine/src/domain/siege_battle_session.rs` | `body.frame_ms = BATTLE_FRAME_WALL_MS`; `diag_set_speed_mul` przelicza klatkę ciała. |
-| `engine/tests/p6_k5loop_wiring_a_gen.mjs` | 12 scenariuszy `fq_*` (klatka 16 ms) + 3 bliźniaki `fq_*_klatka4` (D-FQ-2); ślad `ACT`, `WIRING_A_TRACE_SCHED` (tylko diagnostyka). Strażnik SHA-256 pinu bez zmian. |
-| `engine/tests/p6_k5loop_wiring_a_pin_vectors/vectors.json` | 22 → 37 wektorów; 22 dawne bajt w bajt (diff = same dopiski). `pin_data.json` bez zmian. |
-| `engine/tests/p6_k5loop_wiring_a_pin.rs` | `_klatka4` dopuszczone obok `_klatka1`; test `kwantyzacja_odcinkow_klatka_pinu`; ślad `ACT` w diagnostyce. |
+| `engine/tests/p6_k5loop_wiring_a_gen.mjs` | 12 scenariuszy `fq_*` (klatka 16 ms) + bliźniaki: 3 × `_klatka4` (D-FQ-2: 125/173/174), 2 × `_klatka1` (213/214: `due` wystrzału wieży, mutant Q21), 2 × `_klatka1` + 1 × `_klatka4` (217/218 @1, 132 @4: czułość kolejności `_drainTimers`/`_raf`, mutant Q24); ślad `ACT`, `WIRING_A_TRACE_SCHED` (tylko diagnostyka). Strażnik SHA-256 pinu bez zmian. |
+| `engine/tests/p6_k5loop_wiring_a_pin_vectors/vectors.json` | 22 → 42 wektory; wszystkie dawne bajt w bajt (każdy diff = same dopiski, 0 linii usuniętych). `pin_data.json` bez zmian. |
+| `engine/tests/p6_k5loop_wiring_a_pin.rs` | `_klatka4` dopuszczone obok `_klatka1`; testy `kwantyzacja_odcinkow_klatka_pinu`, `kwantyzacja_odcinkow_zlozonych_klatka_pinu`; ślad `ACT` w diagnostyce. |
 | `dyspozycje/autobot/runs/R-RUSTPORT-P6-K5LOOP-FRAME-QUANT-Q1/` | raport, `01-operator-r1-mutanty.py`. |
 
 Nie ruszano: `bridge.rs`, `city_capture_apply.rs`, `playable.rs`, `siege_tactics_clock.rs`, `siege_tactics_fastforward.rs`
-(tylko tymczasowo w mutancie Q25, przywrócony), `client`, `renderer`, `src-tauri`, `gra/`, `Cargo.*`, `p6_k5loop_wiring_b*`
-(zmiana modelu nie zmieniła ich oczekiwań — pełny test). Brak `#[ignore]`.
+(tylko w kopii mutanta Q25 w scratchpadzie), `client`, `renderer`, `src-tauri`, `gra/`, `Cargo.*`, `p6_k5loop_wiring_b*`
+(zmiana modelu nie zmieniła ich oczekiwań — pełny test zielony). Brak `#[ignore]` (diff 0522ad6df..HEAD: 0 dodanych).
 
 ## 7. Testy / bramki
 
@@ -121,26 +123,60 @@ Nie ruszano: `bridge.rs`, `city_capture_apply.rs`, `playable.rs`, `siege_tactics
 | Bramka | Wynik |
 |---|---|
 | `cargo fmt --all -- --check` | EXIT 0 |
-| `cargo clippy --all-targets -- -D warnings` | §7a |
-| `p6_k5loop_wiring_a_pin` (release) | 7/7 ok: 37 wektorów bajt w bajt (34 @16 ms i bliźniaki 1 ms + 3 bliźniaki 4 ms), 3 wektory klasy A na liście `ROZBIEZNE_B_WIRA_PIN_3`, `kwantyzacja_odcinkow_klatka_pinu` ok |
-| `p6_k5loop_wiring_a` (release) | 22/22 ok, złoty skrót bez zmian |
-| `pin3_timeline_tests` (lib, release) | 6/6 ok |
-| Generator (pełne regeneracje) | EXIT 0, strażnik SHA-256 ok. Po `fq_*`: `vectors.json` MD5 `b1cdb16ebd84a70a8f21a1d60f2f00c2` dwa razy (odtwarzalne); po `_klatka4`: **`fefd85e4927d9fcb47110b781601cb19`**; `pin_data.json` `432eed76e34a0e8cc96ec548e88eae64` (bez zmian) |
-| Kandydaci c1 128 | @1 125/128, @16 125/128 (§3) |
-| `cargo test --all-targets --no-fail-fast` | §7a |
+| `cargo clippy --all-targets -- -D warnings` (engine, na `3f4577d6f` = cały kod Rust tematu) | **CLIPPY_EXIT=0** |
+| `cargo test --all-targets --no-fail-fast` (engine, na `3f4577d6f`, w tle) | **FULL_EXIT=0**: 4197 passed, 0 failed, 1 ignored (sprzed tematu); w tym `p6_k5loop_wiring_a*`, `p6_k5loop_wiring_b*`, `bridge_contract`, `p6_k5loop_*`, `p6_zdobycie_miasta_a*`, `pin3_timeline_tests` |
+| `p6_k5loop_wiring_a_pin` (release, na `757ac004e`, 42 wektory) | **8/8 ok**: wszystkie wektory bajt w bajt poza jawną listą klasy A (`ROZBIEZNE_B_WIRA_PIN_3`: 118/196/221 `_klatka1`); testy kwantyzacji ok |
+| Generator (pełne regeneracje) | EXIT 0, strażnik SHA-256 ok. Kolejno `vectors.json` MD5: `b1cdb16e…` (fq, 2× odtwarzalne) → `fefd85e4…` (_klatka4) → `4ad3d9bd…` (213/214) → **`ec89d91d3e9fccee3461752969757f12`** (217/218/132, końcowy); `pin_data.json` `432eed76e34a0e8cc96ec548e88eae64` (bez zmian) |
+| Kandydaci c1 128 (binarka z kodu końcowego) | **@1 125/128, @4 125/128, @16 125/128**, rozbieżne zawsze dokładnie 118, 196, 221; @32 124/128, @64 117/128 (diagn., §5) |
 
-### 7a. Clippy i pełny test
-(uzupełnione niżej po zakończeniu przebiegów w tle)
+Po `3f4577d6f` zmieniono wyłącznie dane testowe (generator + `vectors.json`) i skrypt mutantów — kod Rust bez zmian, więc
+clippy i pełny test z `3f4577d6f` obowiązują; dotknięty test `p6_k5loop_wiring_a_pin` powtórzony na `757ac004e` (wyżej).
+Targety `fq/tgt*` i kopie `fq/mut`, `fq/tw` usunięte po bramkach.
 
 ## 8. Mutanty (`01-operator-r1-mutanty.py`; kopia źródeł w scratchpadzie, źródła repo nietknięte)
 
-(wyniki niżej)
+Pełny przebieg (26 mutantów) na kopii z 37 wektorami; Q21 i Q24 dodatkowo na kopii z wektorami końcowymi. Dopisanie
+wektorów tylko zaostrza test, więc zabicia z pełnego przebiegu pozostają ważne.
+
+| Mutant | Zmiana | Wynik |
+|---|---|---|
+| Q1–Q3 | `frame_sched`: floor / round / bez kwantyzacji | ZABITE (wektory + testy kwantyzacji) |
+| Q4 | `frame_sched`: `ms > 0` → `ms >= 0` | **RÓWNOWAŻNY**: dla `ms = ±0` `ceil(0/f)·f = ±0 = ms`; NaN nie spełnia żadnego warunku |
+| Q5 | `frame_raf` nominalny | ZABITY |
+| Q6 | `step_ms` nominalny | ZABITY (`czas_kroku_kwantyzowany_klatka`) |
+| Q7 | przerwa STEP_GAP nominalna | ZABITY |
+| Q8 | cios wręcz: zmienna `hit` nominalna | **RÓWNOWAŻNY**: po wydzieleniu `melee_tail_ms` `hit` wpływa tylko na koniec aktywacji `attack_pre + hit`; `attack_pre` jest wielokrotnością klatki, a zegar sterownika odpala koniec w pierwszej klatce `>= due` (150 i 160 → klatka 160) |
+| Q9, Q10 | ogon ciosu: lunge nominalny / settle kwantyzowany | ZABITE (`kwantyzacja_odcinkow_zlozonych_klatka_pinu`) |
+| Q11 | strzał: koniec ciała `at + 380` | **RÓWNOWAŻNY**: `at` jest wielokrotnością klatki, zegar sterownika odpala `at+380` i `at+384` w tej samej klatce @16; @4/@1 380 jest już wielokrotnością klatki |
+| Q12 | strzał: `hit_at` na osi ciała nominalny | **RÓWNOWAŻNY dla wyniku bitwy**: wpisy osi mają `t0` w wielokrotnościach klatki, więc żaden nie leży w `(at+380, at+384)`; wpis `t0 = at+384` jest „niewykonany” w obu wariantach (czytelnik ciała ma `reader = f64::MIN`). Różni się tylko `land_at` akcji `Shot` dla renderera (380 vs 384) — nieporównywane z pinem (dług SHOT-LAND-AT-RENDER) |
+| Q13, Q14 | marsz oblężniczy nominalny | ZABITE |
+| Q15, Q16 | sesja bez klatki ciała / `diag_set_speed_mul` | ZABITE |
+| Q17, Q18 | `timeline_done` remis / `timeline_ord` bez D-FQ-2 | ZABITE |
+| Q19 | wystrzał wieży czyta oś jak ciało | ZABITY |
+| Q20 | trafienie wieży czyta oś jak ciało | **NIEOBSERWOWALNY** (dług FQ-TOWER-HIT-DUE) |
+| Q21 | `due` wystrzału wieży +16 | ZABITY na wektorach końcowych: `fq_rown_mix_d3l_mury_213_klatka1` (tura 59≠60, rzuty 91≠98), `…_palisada_214_klatka1` (zwycięzca atakujący≠obrońca) |
+| Q22 | `due` trafienia wieży = chwila wystrzału | **NIEOBSERWOWALNY** (dług FQ-TOWER-HIT-DUE) |
+| Q23 | `timeline_key` odwrócony | ZABITY (lib) |
+| **Q24** | **zamiana kolejności `_drainTimers`/`_raf`**: skutek ciała w `_drainTimers` (`body_done_raf = false`) | **ZABITY na wektorach końcowych (test czułości dispatchu = FAIL)**: `fq_rown_mix_d8l_mury_217_klatka1` tura 65≠56, rzuty 188≠123; `…_palisada_218_klatka1` tura 74≠60; `fq_las_lucz2_d5_palisada_132_klatka4` tura 54≠55. Przed dopisaniem tych bliźniaków PRZEŻYWAŁ — luka pokrycia wykryta tym przebiegiem i zamknięta |
+| Q25 | kolejka `_ffQueue` przed `_drainTimers` w `run_fast_forward` | **RÓWNOWAŻNY**: `st.queue` jest opróżniana (`mem::take`) na końcu każdej iteracji i napełniana tylko w `_drainTimers` tej samej iteracji, więc na początku iteracji jest zawsze pusta — mutant to no-op. Właściwy test zamiany faz to Q24 |
+| Q26 | `gap_after`: `due` = chwila klatki | ZABITY |
+
+**Bilans: 26 mutantów = 19 zabitych + 5 jawnie równoważnych (Q4, Q8, Q11, Q12, Q25) + 2 nieobserwowalne (Q20, Q22).**
+
+Szukanie scenariusza dla Q21/Q24/Q20/Q22: binarki mutantów (`bin_tw_*`) na 128 kandydatach @1/@4/@16 (+ Q20/Q22 także
+@32/@64). Q21: rozbieżne 213/214 @1 → bliźniaki `_klatka1`. Q24: rozbieżne 217/218 @1 i 132 @4 → bliźniaki. Q19 (już
+zabity): 125/173/174 @4. Q20/Q22: 640 przebiegów identycznych z bazą — mutanty zmieniają wynik tylko, gdy krok marszu
+SAMEGO CELU wołany z `_schedule(STEP_GAP_MS)` wypada w klatce trafienia z `due` mniejszym od `due` trafienia i przesunięcie
+zmienia łuk/rzut. Kod jest zgodny z pinem (`_drainTimers` `:9616-9634`: zegar trafienia czyta stan w kolejności `due`),
+równoważności nie dowiedziono → dług z numerem, jawne odstępstwo od kryterium „każdy zabity lub równoważny”.
 
 ## 9. Długi
 
 | ID | Stan |
 |---|---|
 | MARCH-INCREMENTAL (B-WIRA-PIN-3 klasa A) | 118, 196, 221 (każdy krok), 127 @32. Bez zmian, temat następczy. |
+| **FQ-TOWER-HIT-DUE** (nowy) | mutanty Q20/Q22 nieobserwowalne w 640 przebiegach kandydatów; potrzebny scenariusz celowany (krok celu z zegara w klatce trafienia wieży, zmiana łuku) albo test jednostkowy `SiegeLoop::tower_hit` z atrapą ciała. |
+| SHOT-LAND-AT-RENDER (nowy, z Q12) | `land_at` akcji `Shot` liczony z kwantyzacją (384 @16) — zgodny z klatką animacji pinu, ale nieporównywany wektorem; do pokrycia w temacie akcji bitwy (I5). |
 | FQ-SPEED (nowy) | kroki 32/64 ms (speed ×2/×4): 124/128 i 117/128; produkcyjne `_setSpeedIdx` NIEPORTOWANE. Sklasyfikowane: 127 @32 = A, 215 @64 = D-PIN3-3-SHOT-ID; reszta NIE_ZMIERZONO. Zmiana `speedMul` w trakcie aktywacji (marsz liczony atomowo z jedną klatką) — NIE_ZMIERZONO. |
 | D-PIN3-3-SHOT-ID (z PIN3) | potwierdzony przypadkiem 215 @64: trafienie strzału jednostki jako zwykły zegar z `id` z chwili `_schedule(380)` (dla strzału bez marszu `id` z aktywacji). Propozycja: strzał bez marszu = zwykły `BodyDone` z nominalnym `due` (bez odkładania do `_raf`), strzał po marszu = zegar startu strzału w fazie `_raf` + zegar trafienia. |
 | PRE-SKIP-RAF (nowy) | §5: artefakt `play()` przed `skip()`; wpływ na wynik 0/128, oś czasu tury 1 różni się (624 vs 256 ms @16). Do decyzji orkiestratora: czy emulować porcję FF generatora (39 iteracji) w Rust — nie rekomenduję (stała atrapy, w przeglądarce niedeterministyczna). |
@@ -155,6 +191,9 @@ Nie ruszano: `bridge.rs`, `city_capture_apply.rs`, `playable.rs`, `siege_tactics
 | `f5502cf4d` | D-FQ-2 (kolejność kroku z zegara wg nominalnego `due`), D-FQ-3 (ogony nominalne) |
 | `8b8020ae5` | 12 wektorów `fq_*` @16 ms, ślad `ACT`/`SCHED` |
 | `316218a3b` | bliźniaki `_klatka4`, testy kwantyzacji i osi, skrypt mutantów, `cargo fmt` |
+| `3f4577d6f` | funkcje odcinków złożonych (`melee_tail_ms`, `siege_walk_*`) z testami, raport WIP — ostatni commit kodu Rust |
+| `6ecacb737` | bliźniaki `fq_213/214_klatka1` (Q21) |
+| `757ac004e` | bliźniaki `fq_217/218_klatka1`, `fq_132_klatka4` (Q24, czułość `_drainTimers`/`_raf`) |
 | (commit raportu) | ten raport — SHA końcowy podaje wynik Workflow |
 
 ## 11. Kryteria końca dispatchu
@@ -164,6 +203,6 @@ Nie ruszano: `bridge.rs`, `city_capture_apply.rs`, `playable.rs`, `siege_tactics
 | 128 kandydatów @16 ms zgodnych poza jawną listą (docelowo 118/196/221) | **spełnione: 125/128, rozbieżne dokładnie 118, 196, 221** |
 | `mur_jazda_rzeka` @16 bajt w bajt bez wyjątku | spełnione (zwykły wektor, lista B-WIRA-PIN-2 pusta) |
 | @1 ms nadal >= 125/128 | 125/128 |
-| bliźniaki `_klatka1` zgodne | tak (+ nowe `_klatka4`) |
-| determinizm i niezależność od podziału na `StepSiegeBattle` | `czas_rzeczywisty_niezalezny_od_podzialu_krokow`, `skip_po_starcie_w_trakcie_bitwy`, `p6_k5loop_*` resume — ok (§7) |
-| mutanty >= 20 w logice kwantyzacji, w tym zamiana `_drainTimers`/`_raf` = FAIL | §8 |
+| bliźniaki `_klatka1` zgodne | tak (+ `_klatka4` i nowe `_klatka1` 213/214/217/218) |
+| determinizm i niezależność od podziału na `StepSiegeBattle` | `czas_rzeczywisty_niezalezny_od_podzialu_krokow`, `skip_po_starcie_w_trakcie_bitwy`, `p6_k5loop_*` resume — ok w pełnym teście (§7) |
+| mutanty >= 20 w logice kwantyzacji, każdy zabity lub jawnie równoważny; zamiana `_drainTimers`/`_raf` = FAIL | 26 mutantów: 19 zabitych, 5 równoważnych z uzasadnieniem, **2 nieobserwowalne (Q20/Q22) — jawne odstępstwo, dług FQ-TOWER-HIT-DUE**; Q24 (zamiana faz) = FAIL ✔ |
