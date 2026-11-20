@@ -26,7 +26,7 @@ const { createServer } = require('vite');
 
 const root = path.resolve(__dirname, '..');
 const repo = path.resolve(root, '..');
-const exe = [process.env.CHROMIUM_PATH, '/usr/bin/chromium'].find(p => p && fs.existsSync(p));
+const exe = [process.env.CHROMIUM_PATH, (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')].find(p => p && fs.existsSync(p));
 const PART = process.env.BFG_PART || 'measure';
 const SEEDS = (process.env.BFG_SEEDS || '1,2,3,4,5').split(',').map(Number);
 const MAX_MS = Number(process.env.BFG_MAX_MS || 300000);

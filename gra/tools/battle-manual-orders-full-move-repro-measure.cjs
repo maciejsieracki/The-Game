@@ -7,7 +7,7 @@ const path = require('node:path');
 const { chromium } = require('playwright');
 const { createServer } = require('vite');
 const root = path.resolve(__dirname, '..');
-const exe = [process.env.CHROMIUM_PATH, '/usr/bin/chromium'].find(p => p && fs.existsSync(p));
+const exe = [process.env.CHROMIUM_PATH, (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')].find(p => p && fs.existsSync(p));
 const MODES = (process.env.RM_MODES || 'auto,move,attack').split(',');
 const SEEDS = (process.env.RM_SEEDS || '1,2,3').split(',').map(Number);
 const CAP = Number(process.env.RM_CAP || 8);

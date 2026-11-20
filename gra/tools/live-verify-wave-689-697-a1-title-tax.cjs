@@ -20,7 +20,7 @@ async function main() {
   try { ({ chromium } = require('playwright')); } catch (_) { ({ chromium } = require('/opt/node22/lib/node_modules/playwright')); }
   const args = ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage', '--headless=new'];
   let browser;
-  try { browser = await chromium.launch({ headless: true, args }); } catch (_) { browser = await chromium.launch({ headless: true, executablePath: '/usr/bin/chromium', args }); }
+  try { browser = await chromium.launch({ headless: true, args }); } catch (_) { browser = await chromium.launch({ headless: true, executablePath: (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), args }); }
   const page = await (await browser.newContext({ viewport: { width: 1600, height: 900 }, deviceScaleFactor: 1 })).newPage();
   const res = { seed: SEED, log: [], errors: [], grantCalls: 0 };
   const log = (k, v) => { res.log.push({ k, v }); };

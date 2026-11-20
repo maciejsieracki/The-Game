@@ -203,7 +203,7 @@ async function main() {
     phase = 'browser-launch';
     browser = await chromium.launch({
       headless: true,
-      executablePath: '/usr/bin/chromium',
+      executablePath: (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'),
       args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'],
     });
     mark('browser:launched');

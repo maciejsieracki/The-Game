@@ -6,7 +6,7 @@ const url = process.env.ALLIANCE_TEST_URL || 'http://127.0.0.1:5173/?test=allian
 const slot = `alliance-war-call-live-${Date.now()}`;
 
 (async () => {
-  const browser = await chromium.launch({ headless: true, executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] });
+  const browser = await chromium.launch({ headless: true, executablePath: (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), args: ['--no-sandbox'] });
   try {
     const context = await browser.newContext();
     const page = await context.newPage();

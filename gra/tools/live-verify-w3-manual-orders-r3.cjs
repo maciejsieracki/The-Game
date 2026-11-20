@@ -19,7 +19,7 @@ const DIST = process.argv[2];
 const OUT = process.argv[3];
 const LIMIT_S = Number(process.argv[4] || 1500);
 if (!DIST || !OUT) throw new Error('usage: node live-verify-w3-manual-orders-r3.cjs <dist-dir> <out.json> [limitSekund]');
-const CHROME = process.env.W3_CHROMIUM || '/usr/bin/chromium';
+const CHROME = process.env.W3_CHROMIUM || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const { chromium } = require('playwright');
 
 const PAIRS = [

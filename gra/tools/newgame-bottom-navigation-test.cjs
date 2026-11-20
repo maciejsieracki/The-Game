@@ -81,7 +81,7 @@ async function serveBundleOverHttp() {
 function browserCandidates() {
   const explicit = process.env.CIV_CHROME_PATH || process.env.CHROME_PATH;
   const candidates = explicit ? [explicit] : [];
-  candidates.push('/usr/bin/chromium');
+  candidates.push((require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'));
   const roots = [];
   const playwrightRoot = process.env.PLAYWRIGHT_BROWSERS_PATH;
   if (playwrightRoot && playwrightRoot !== '0') roots.push(playwrightRoot);

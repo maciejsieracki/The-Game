@@ -800,7 +800,7 @@ async function main() {
     fs.rmSync(out, { recursive: true, force: true });
     return;
   }
-  const browser = await chromium.launch({ headless: true, executablePath: '/usr/bin/chromium', args: ['--no-sandbox','--use-gl=swiftshader','--enable-unsafe-swiftshader'] });
+  const browser = await chromium.launch({ headless: true, executablePath: (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), args: ['--no-sandbox','--use-gl=swiftshader','--enable-unsafe-swiftshader'] });
   const server = http.createServer((req,res) => {
     res.setHeader('content-type','text/html; charset=utf-8');
     fs.createReadStream(path.join(out,'index.html')).pipe(res);

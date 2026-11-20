@@ -22,7 +22,7 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const SCRATCH = process.argv[2] || path.join(os.tmpdir(), 'civ-defeat-summary-live-' + process.pid);
 const EVIDENCE = process.argv[3] || SCRATCH;
 const OUT_HTML = 'file://' + path.join(SCRATCH, 'index.html') + '?playtest=mapa';
-const FALLBACK_CHROME = '/usr/bin/chromium';
+const FALLBACK_CHROME = (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const PLAYER = 0;
 const SLOT = 'defeat-summary-live-slot';
 const OVERLAY_LOSE = '#__victory_screen__.vsc-overlay.lose';

@@ -321,7 +321,7 @@ async function runLiveBrowserTest() {
     }
   };
   try {
-    browser = await chromium.launch({ headless: true, executablePath: '/usr/bin/chromium',
+    browser = await chromium.launch({ headless: true, executablePath: (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'),
       args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
     await run(false);
     await run(true);

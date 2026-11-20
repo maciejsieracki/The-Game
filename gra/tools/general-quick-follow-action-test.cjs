@@ -200,7 +200,7 @@ async function main() {
     },
   );
 
-  const browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium' });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium') });
   try {
     const page = await browser.newPage();
     await page.exposeFunction('runProductionQuickFollow', runProductionAction);

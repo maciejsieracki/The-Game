@@ -24,7 +24,7 @@ const GRA = path.resolve(__dirname, '..');
 const SRC_ROOT = process.env.DIPLO_RR_GRA ? path.resolve(process.env.DIPLO_RR_GRA) : GRA;
 const TAG = process.env.DIPLO_RR_TAG || '';
 const SHOT_DIR = process.env.DIPLO_RR_SHOT_DIR || '';
-const CHROME = process.env.CHROMIUM_PATH || '/usr/bin/chromium';
+const CHROME = process.env.CHROMIUM_PATH || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const AUD = path.join(SRC_ROOT, 'src/ui/diplomacyAudience.ts');
 const NEG = path.join(SRC_ROOT, 'src/ui/diplomacyNegotiationModal.ts');
 

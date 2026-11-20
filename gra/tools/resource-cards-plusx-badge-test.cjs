@@ -138,7 +138,7 @@ async function domCheckCard(browser, P, card, expectText, expectClass, label) {
   const { P } = await bundleProbe(panel, 'real');
   const { chromium } = require(path.join(GRA, 'node_modules', 'playwright'));
   const browser = await chromium.launch({
-    executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium',
+    executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'),
     args: ['--no-sandbox', '--disable-gpu'],
   });
 

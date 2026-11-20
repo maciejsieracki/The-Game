@@ -20,7 +20,7 @@ const PORT = 18761;
 const CHROME_CANDIDATES = [
   process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE,
   '/opt/pw-browsers/chromium',
-  '/usr/bin/chromium',
+  (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'),
   '/opt/pw-browsers/chromium',
 ].filter(p => p && fs.existsSync(p));
 

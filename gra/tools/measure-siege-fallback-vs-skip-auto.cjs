@@ -34,7 +34,7 @@ const http = require('http');
 const { execSync } = require('child_process');
 
 const GRA = path.resolve(__dirname, '..');
-const CHROME = process.env.MSF_CHROMIUM || '/usr/bin/chromium';
+const CHROME = process.env.MSF_CHROMIUM || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const OUT = process.env.MSF_OUT || '';
 
 function readRows(file) {

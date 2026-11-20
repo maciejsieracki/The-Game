@@ -368,7 +368,7 @@ async function browserCardTransaction(harness) {
   `);
   await esbuild.build({ entryPoints: [entry], bundle: true, platform: 'browser', format: 'iife', target: 'es2020',
     outfile: bundle, absWorkingDir: GRA, loader: { '.ts': 'ts', '.json': 'json' }, plugins: [BRAND_STUB], logLevel: 'silent' });
-  const browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium', args: ['--no-sandbox'] });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), args: ['--no-sandbox'] });
   try {
     const page = await browser.newPage({ viewport: { width: 600, height: 500 } });
     const errors = [];

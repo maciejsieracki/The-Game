@@ -25,7 +25,7 @@ const TURNS = Number(arg('turns', '3'));
 // blok handlu zalezy od epoki umowy (FALA 742: 10/50/100) -- 100 jest wielokrotnoscia kazdego bloku (30 dawalo transfer 0)
 const TRADE_QTY = Number(arg('trade-qty', '100'));
 const PW = path.resolve(__dirname, '..', 'node_modules', 'playwright');
-const CHROME = fs.existsSync('/usr/bin/chromium') ? '/usr/bin/chromium'
+const CHROME = fs.existsSync((require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')) ? (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')
   : (fs.existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 

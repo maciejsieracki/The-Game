@@ -26,7 +26,7 @@ const BUNDLE = process.env.BUNDLE_DIR || path.join(os.tmpdir(), 'drvm-live-dist'
 const EVIDENCE_DIR = process.env.DRVM_EVIDENCE || '';
 const RESULT_FILE = process.env.DRVM_RESULT || '';
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa&civTest=1';
-const FALLBACK_CHROME = '/usr/bin/chromium';
+const FALLBACK_CHROME = (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const GIVE = 'cegla';
 const RECV = 'zelazo';
 const BIG = 400;

@@ -39,7 +39,7 @@ const http = require('http');
 const { execSync } = require('child_process');
 
 const GRA = path.resolve(__dirname, '..');
-const CHROME = process.env.WSKIP_CHROMIUM || '/usr/bin/chromium';
+const CHROME = process.env.WSKIP_CHROMIUM || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const RUN = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const TMP_ROOT = path.join(os.tmpdir(), `civ-wsiege-${RUN}`);
 fs.mkdirSync(TMP_ROOT, { recursive: true });

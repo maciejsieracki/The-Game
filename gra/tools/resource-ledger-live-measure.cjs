@@ -25,7 +25,7 @@ const OUT = path.resolve(arg('out', 'ledger-live.json'));
 const RICH = arg('rich', '1') !== '0';
 const START = arg('start', 'newgame'); // newgame = realny doStartGame (jeden gracz na starcie) | playtest = sandbox ?playtest=mapa (gracz + AI z miastem)
 const PW = path.resolve(__dirname, '..', 'node_modules', 'playwright');
-const CHROME = fs.existsSync('/usr/bin/chromium') ? '/usr/bin/chromium'
+const CHROME = fs.existsSync((require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')) ? (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')
   : (fs.existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 

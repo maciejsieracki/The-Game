@@ -7,7 +7,7 @@ const { chromium } = require(path.resolve(__dirname, '..', 'node_modules', 'play
 const GRA = path.resolve(__dirname, '..');
 const ENTRY = path.resolve(__dirname, '.empire-recruit-affordability-entry.ts');
 const OUT = path.resolve(__dirname, '.empire-recruit-affordability-bundle.js');
-const CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium';
+const CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const MUTANT = process.env.EMPIRE_RECRUIT_AFFORDABILITY_MUTANT;
 let pass = 0, fail = 0;
 function check(name, condition, detail) {

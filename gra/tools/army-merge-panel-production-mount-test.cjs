@@ -67,7 +67,7 @@ async function main() {
   try {
     browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
   } catch (_error) {
-    const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium';
+    const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
     browser = await chromium.launch({ headless: true, executablePath, args: ['--no-sandbox'] });
   }
   const page = await browser.newPage({ viewport: { width: 600, height: 413 }, deviceScaleFactor: 1.5 });

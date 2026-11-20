@@ -38,7 +38,7 @@ const BASE_SHA = 'f568e1ed3';
 const TMPDIR = fs.mkdtempSync(path.join(os.tmpdir(), 'army-merge-list-visibility-'));
 const ENTRY = path.join(TMPDIR, 'entry.ts');
 const BRAND_STUB = path.join(TMPDIR, 'brandAssets-stub.ts');
-const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium';
+const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const SHOT_DIR = process.env.AMLV_SHOT_DIR || '';
 
 let pass = 0;

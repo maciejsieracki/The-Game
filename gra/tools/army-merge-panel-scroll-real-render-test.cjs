@@ -44,7 +44,7 @@ const BODY_MOUNT_BUNDLE = path.join(TMPDIR, 'body-mount.cjs');
 const BRAND_STUB = path.join(TMPDIR, 'brandAssets-stub.ts');
 const FIXED_MODULE_PATH = path.resolve(UI_DIR, '__army_merge_panel_scroll_fixed__.ts');
 const PRE_MODULE_PATH = path.resolve(UI_DIR, '__army_merge_panel_scroll_pre__.ts');
-const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium';
+const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 
 let pass = 0;
 let fail = 0;

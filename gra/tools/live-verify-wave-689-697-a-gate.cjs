@@ -27,7 +27,7 @@ function arg(name, def) {
 const DIST = arg('dist');
 const OUT = arg('out');
 const SEED = parseInt(arg('seed', '11'), 10);
-const FALLBACK_CHROME = '/usr/bin/chromium';
+const FALLBACK_CHROME = (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const BASELINE_TREASURY_T11 = 150000; // zmierzone w tym samym seedzie (HUD: 150 000 przed sweepem)
 const wait = ms => new Promise(r => setTimeout(r, ms));
 

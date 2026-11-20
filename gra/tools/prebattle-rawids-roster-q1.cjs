@@ -181,7 +181,7 @@ async function runOne(browser, base, vp, shotsDir) {
 (async () => {
   const srv = await serve();
   const base = 'http://127.0.0.1:' + srv.address().port;
-  const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
   const out = { label: LABEL, n: N, runs: {} };
   const allFails = [];
   try {

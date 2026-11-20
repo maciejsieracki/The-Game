@@ -8,7 +8,7 @@ const { chromium } = require('playwright');
 const ROOT = path.resolve(__dirname, '..');
 const DIST = '/tmp/civ-general-purchase-runtime';
 const CHROME = process.env.CHROMIUM_PATH
-  || (fs.existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : '/opt/pw-browsers/chromium');
+  || (fs.existsSync((require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')) ? (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium') : '/opt/pw-browsers/chromium');
 let pass = 0, fail = 0;
 function check(label, ok, detail) {
   if (ok) { pass++; console.log('PASS: ' + label); }

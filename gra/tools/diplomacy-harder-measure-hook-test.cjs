@@ -30,7 +30,7 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'diplo-harder-test-dist')));
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 /** Przegladarka: CHROME_PATH; bez niego pierwsza istniejaca (poprawka obrony: brak /usr/bin/chromium nie wywala testu). */
-const CHROME = process.env.CHROME_PATH || ['/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable'].find(p => fs.existsSync(p)) || '/usr/bin/chromium';
+const CHROME = process.env.CHROME_PATH || [(require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), '/usr/bin/chromium-browser', '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable'].find(p => fs.existsSync(p)) || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const SEED = 4242;
 const STATUSY = ['wojna', 'pokoj', 'sojusz', 'neutralni'];
 const POLA_PARY = ['a', 'b', 'aiAi', 'status', 'zaufanie', 'respekt', 'pokoj', 'sasiad', 'sasiedztwoBezPokoju', 'karaBazowa'];

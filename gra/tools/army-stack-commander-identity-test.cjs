@@ -117,7 +117,7 @@ window.__saveRoundTrip = () => {
   let browser;
   try { browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] }); }
   catch (_error) {
-    browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium', args: ['--no-sandbox'] });
+    browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), args: ['--no-sandbox'] });
   }
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });

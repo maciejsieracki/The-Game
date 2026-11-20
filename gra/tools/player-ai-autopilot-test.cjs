@@ -30,7 +30,7 @@ function arg(name, def) {
   return i >= 0 && process.argv[i + 1] !== undefined ? process.argv[i + 1] : def;
 }
 const GRA_DIR = path.resolve(__dirname, '..');
-const CHROME = process.env.CHROME_PATH || '/usr/bin/chromium';
+const CHROME = process.env.CHROME_PATH || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const MUTANT = arg('mutant', '0') === '1';
 const results = [];
 function check(name, ok, detail) {

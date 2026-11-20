@@ -21,7 +21,7 @@ const BRAND_STUB = path.resolve(__dirname, '.stubs', 'recruit-card-stock-chip-br
 const ENTRY = path.resolve(__dirname, '.empire-recruit-panel-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.empire-recruit-panel-bundle.js');
 const SHOT_DIR = path.resolve(GRA, '..', 'dyspozycje', 'autobot', 'runs', 'R-WEB-UI-EMPIRE-RECRUIT-PANEL-Q1');
-const CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium';
+const CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const MUT = process.env.EMPIRE_RECRUIT_UI_MUTANT || '';
 
 const units = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'units.json'), 'utf8'));

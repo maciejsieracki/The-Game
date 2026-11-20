@@ -47,7 +47,7 @@ const CHROMIUM_CANDIDATES = [
   process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE,
   '/opt/pw-browsers/chromium',
   '/opt/pw-browsers/chromium',
-  '/usr/bin/chromium',
+  (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'),
 ].filter(p => p && fs.existsSync(p));
 
 async function main() {

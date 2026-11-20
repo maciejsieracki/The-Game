@@ -153,7 +153,7 @@ function partA(D, label, expectGreen) {
 // CZESC B -- pomiar na prawdziwej scenie
 // ---------------------------------------------------------------------------
 async function launch() {
-  try { return await chromium.launch({ executablePath: process.env.WDBR_CHROME || '/usr/bin/chromium', args: ['--no-sandbox', '--headless=new'] }); }
+  try { return await chromium.launch({ executablePath: process.env.WDBR_CHROME || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), args: ['--no-sandbox', '--headless=new'] }); }
   catch (e) { return await chromium.launch({ headless: true, args: ['--no-sandbox'] }); }
 }
 

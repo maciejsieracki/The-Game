@@ -59,7 +59,7 @@ async function main() {
   const { chromium } = require('playwright');
   const ctx = await chromium.launchPersistentContext(PROFILE, {
     headless: true,
-    executablePath: process.env.CHROME_PATH || '/usr/bin/chromium',
+    executablePath: process.env.CHROME_PATH || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'),
     viewport: { width: 1400, height: 900 },
     args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'],
   });

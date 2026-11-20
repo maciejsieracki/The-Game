@@ -36,7 +36,7 @@ const SRC = path.resolve(GRA, 'src');
 const STUB_DIR = path.resolve(__dirname, '.stubs');
 const BRAND_STUB = path.resolve(STUB_DIR, 'build-mode-lock-tip-brandAssets-stub.ts');
 const OWL_STUB = path.resolve(STUB_DIR, 'build-mode-lock-tip-scienceOwlIcon-stub.ts');
-const FALLBACK_CHROME = '/usr/bin/chromium';
+const FALLBACK_CHROME = (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 
 const shotArgIdx = process.argv.indexOf('--shot');
 const SHOT_PATH = shotArgIdx !== -1 ? process.argv[shotArgIdx + 1] : null;

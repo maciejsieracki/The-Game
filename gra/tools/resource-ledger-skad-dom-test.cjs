@@ -24,7 +24,7 @@ const { execFileSync } = require('child_process');
 
 const GRA = path.resolve(__dirname, '..');
 const esbuild = require(path.join(GRA, 'node_modules', 'esbuild'));
-const CHROMIUM = process.env.CHROMIUM || '/usr/bin/chromium';
+const CHROMIUM = process.env.CHROMIUM || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const SHOT_DIR = process.env.SKAD_SHOT_DIR || '';
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'skad-dom-'));
 const ENTRY = path.join(TMP, 'entry.ts');

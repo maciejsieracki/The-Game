@@ -110,7 +110,7 @@ const TURNS = Number(arg('turns', '100')); const SIZE = arg('size', 'Standardowy
 const list = (v) => new Set(String(v).split(',').filter(Boolean).map(Number));
 const PROBE = list(arg('probe', '1,30,60,100')); const SNAP = list(arg('snap', '60,100'));
 const SNAPDIR = arg('snapdir', '/tmp/civ-heap-q1');
-const FALLBACK_CHROME = '/usr/bin/chromium';
+const FALLBACK_CHROME = (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const OUT = path.join(OUTD, `seed${SEED}.jsonl`);
 const emit = (o) => fs.appendFileSync(OUT, JSON.stringify(o) + '\n');

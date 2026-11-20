@@ -11,7 +11,7 @@ const path = require('node:path');
 const { chromium } = require('playwright');
 const { createServer } = require('vite');
 const root = path.resolve(__dirname, '..');
-const exe = [process.env.CHROMIUM_PATH, '/usr/bin/chromium'].find(p => p && fs.existsSync(p));
+const exe = [process.env.CHROMIUM_PATH, (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')].find(p => p && fs.existsSync(p));
 const MAX_MS = Number(process.env.FLEE_MAX_MS || 280000);
 const EXPECTED_SHARE = 0.5;
 const MODE = process.env.FLEE_MODE || 'skip';

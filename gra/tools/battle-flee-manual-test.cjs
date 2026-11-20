@@ -12,7 +12,7 @@ const { chromium } = require('playwright');
 const { createServer } = require('vite');
 const root = path.resolve(__dirname, '..');
 const combat = JSON.parse(fs.readFileSync(path.join(root, 'data/combat-params.json'), 'utf8'));
-const exe = [process.env.CHROMIUM_PATH, '/usr/bin/chromium', '/usr/bin/google-chrome'].find(p => p && fs.existsSync(p));
+const exe = [process.env.CHROMIUM_PATH, (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), '/usr/bin/google-chrome'].find(p => p && fs.existsSync(p));
 const MAX_MS = Number(process.env.FLEE_MANUAL_MAX_MS || 400000);
 const EXPECTED_SHARE = 0.5; // wpisany udzial (decyzja wlasciciela 2026-11-14), nie czytany z data/
 const MULT = EXPECTED_SHARE;

@@ -300,7 +300,7 @@ function staticPreflight(args) {
   checks['playwright-package'] = fs.existsSync(modulePath) && fs.statSync(modulePath).isFile()
     ? result('PASS', 'Local Playwright package manifest exists; package was not loaded')
     : result('BLOCKED', 'Local Playwright package manifest was not found');
-  const browserPath = args['chromium-path'] || '/usr/bin/chromium';
+  const browserPath = args['chromium-path'] || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
   let browserOk = false;
   try { fs.accessSync(browserPath, fs.constants.X_OK); browserOk = fs.statSync(browserPath).isFile(); } catch { browserOk = false; }
   checks['chromium-path'] = browserOk
@@ -1966,7 +1966,7 @@ async function main() {
     const { chromium } = require('playwright');
     const browser = await withRuntimeDeadline(() => chromium.launch({
       headless: true,
-      executablePath: args['chromium-path'] || '/usr/bin/chromium',
+      executablePath: args['chromium-path'] || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'),
       timeout: remainingRuntimeMs(),
     }), 'browser-launch');
     try {
