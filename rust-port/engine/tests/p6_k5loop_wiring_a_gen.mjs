@@ -373,6 +373,17 @@ function runScenario(sc) {
         return origSched.call(this, ms, cb);
       };
     }
+    // MARCH-INCREMENTAL-Q1 (diagnostyka): kazde wejscie kroku marszu wielokrokowego (kazda metoda z
+    // `_schedule(STEP_GAP_MS, ...)`: `:6806`, `:7029`, `:7091`, `:7241`, `:7283`, `:8017`, `:8225`/`:8280`, `:9895`) z
+    // pozycja i `moveLeft` w chwili decyzji.
+    for (const m of ['_siegeWalkTo', '_advanceStep', '_rangedForwardStep', '_rangedBackStep', '_kiteStep', '_fallBackStep',
+      '_rangedApproachStep', '_fleeStep']) {
+      const origW = bs[m];
+      bs[m] = function (ru, ...rest) {
+        console.error(`T ${bs.vNow} r${bs.roundNo} WALK ${m} ${ru.bu.id}@${ru.q},${ru.r} ml=${ru.moveLeft}`);
+        return origW.call(this, ru, ...rest);
+      };
+    }
     const origMove = bs._doMove;
     bs._doMove = function (ru, c, r, ...rest) {
       const from = `${ru.q},${ru.r}`;
