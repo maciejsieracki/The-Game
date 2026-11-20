@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "099ff0e0e85258be315e0be43b4b0409",
-  "bundleSha256": "5d5c72a03ad1ddf2e58175f9b4afbe9f227eb44cd079eac4f6e71db5e8c870a0",
-  "bundleBytes": 15000486,
+  "bundleMd5": "29cd0160f414e8c1787706982734ae62",
+  "bundleSha256": "97ac7dc36db912f0d85a1986805c38696f137c79977774d80ac2dd40e6dc98b1",
+  "bundleBytes": 15000731,
   "sourceSnapshot": {
-    "source": "FC 0e84f09e0 (kod a89f4a22a)",
+    "source": "FC 03e6c94e1 (kod 171df12b2)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 884: R-WEB-ECONOMY-UNIT-RECRUIT-COST-ERA-EXTRA-MULT-Q1 (decyzje wlasciciela 2026-11-19): koszt rekrutacji jednostki w Pieniadzu x dodatkowy mnoznik epoki jednostki Kamien x1 / Braz x2 / Zelazo x4 (gra/data/unit-recruit-cost-era-params.json), efektywnie Kamien x1 / Braz x4 / Zelazo x16 wzgledem bazy, jedna funkcja unitRecruitBaseMoneyCost dla rekrutacji, kart, wymiany i zakupu; poziom trudnosci (Latwa/Normalna/Trudna) NIE mnozy juz kosztu rekrutacji jednostek, a utrzymanie jednostek per trudnosc ujednolicone do normalnej (utrzymanie_jednostka_standard, zywnosc_jednostka_ruch/oboz); budynki, badania, wzrost populacji bez zmian. Audyt Konnicy: utrzymanie 48/ture = baza 3 x epoka Zelazo x4 x stale stawki x4 (kazdy mnoznik raz); 480 = 10 x 48."
+    "FALA 885: R-WEB-BATTLE-FLEE-MANUAL-MODE-HARAPPA-MEASURE-Q1 (zgloszenie wlasciciela: zbyt szybki Wojownik Harappy w bitwie 3D, tryb reczny): pomiar w zywym Chromium: Wojownik (zasieg 4, limit ucieczki 2) 2 heksy/ture, Rydwan konny (6, limit 3) 3/ture, Garnizon Harappy (3, limit 1) 1/ture - limit mnoznik_ruchu 0,5 egzekwowany w trybie recznym jak w autobitwie, bez sprintu; poprawka w battleScene.ts: zroutowana jednostka w lancuchu rozkazu recznego przechodzi na _fleeStep z zapasem tury; nowe testy battle-flee-manual (16/0), parity auto 53/0."
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; ai-unit-replace 45/0; unit-upkeep-era-scale 16/0; ekonomia-5x 280/0; unit-recruit-cost-era-extra 9/0; unit-cost-difficulty-removed 9/0; unit-epoch-cost 57/0; piny 705/190/19/29/20/22 zielone; bieg dymny AI t30/t60 NIE ZMIERZONO (harness blokowany panelem decyzji w t1)"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; ai-unit-replace 45/0; battle-flee-manual-test 16/0 (mutacje czerwone); battle-flee-speed-parity 53/0; zywy Chromium (rozbicie wymuszone w turze 1)"
   ],
   "limits": [
-    "Ryzyko: rekrutacja Zelaza x16 moze zahamowac rekrutacje AI (niezweryfikowane); battle-loot.ts nadal na dawnym koszcie; 3 testy spoza allowlisty zmienione (piny z decyzji); utrzymanie Konnicy 48/ture decyzja wlasciciela"
+    "NIE ZMIERZONO: odwrot po bitwie na mapie, animacja/tempo kroku (moze byc zrodlem wrazenia szybkosci), rozbicie w trakcie lancucha rozkazu E2E; rozbicie w tescie wymuszone, nie organiczne"
   ],
   "finalControl": "Final Control PASS-WITH-NOTES",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-19T23:30:09",
+  "hubGeneratedAt": "2026-11-20T00:03:50",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "099ff0e0e85258be315e0be43b4b0409",
-      "sizeBytes": 15000486
+      "md5": "29cd0160f414e8c1787706982734ae62",
+      "sizeBytes": 15000731
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "099ff0e0e85258be315e0be43b4b0409",
-      "sizeBytes": 15000486
+      "md5": "29cd0160f414e8c1787706982734ae62",
+      "sizeBytes": 15000731
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "099ff0e0e85258be315e0be43b4b0409",
-      "sizeBytes": 15000486
+      "md5": "29cd0160f414e8c1787706982734ae62",
+      "sizeBytes": 15000731
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "099ff0e0e85258be315e0be43b4b0409",
-      "sizeBytes": 15000486
+      "md5": "29cd0160f414e8c1787706982734ae62",
+      "sizeBytes": 15000731
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "099ff0e0e85258be315e0be43b4b0409",
-      "sizeBytes": 15000486
+      "md5": "29cd0160f414e8c1787706982734ae62",
+      "sizeBytes": 15000731
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "099ff0e0e85258be315e0be43b4b0409",
-      "sizeBytes": 15000486
+      "md5": "29cd0160f414e8c1787706982734ae62",
+      "sizeBytes": 15000731
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "099ff0e0e85258be315e0be43b4b0409",
-      "sizeBytes": 15000486
+      "md5": "29cd0160f414e8c1787706982734ae62",
+      "sizeBytes": 15000731
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "099ff0e0e85258be315e0be43b4b0409",
-      "sizeBytes": 15000486
+      "md5": "29cd0160f414e8c1787706982734ae62",
+      "sizeBytes": 15000731
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "099ff0e0e85258be315e0be43b4b0409",
-      "sizeBytes": 15000486
+      "md5": "29cd0160f414e8c1787706982734ae62",
+      "sizeBytes": 15000731
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "099ff0e0e85258be315e0be43b4b0409",
-      "sizeBytes": 15000486
+      "md5": "29cd0160f414e8c1787706982734ae62",
+      "sizeBytes": 15000731
     }
   ],
-  "md5": "099ff0e0e85258be315e0be43b4b0409",
+  "md5": "29cd0160f414e8c1787706982734ae62",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
