@@ -1832,7 +1832,8 @@ pub fn build_city_capture_report_rows(input: &CityCaptureReportInput) -> Vec<Cap
                 .map_or(0.0, |(_, v)| *v)
         };
         let mut push = |key: &str, value: f64, rows: &mut Vec<CaptureReportRow>| {
-            if seen.contains(key) || !(value > 0.0) {
+            // Web `!(v > 0)`: NaN też pomija wiersz (`partial_cmp` = None).
+            if seen.contains(key) || value.partial_cmp(&0.0) != Some(std::cmp::Ordering::Greater) {
                 return;
             }
             seen.insert(key.to_owned());
@@ -1951,7 +1952,8 @@ pub fn build_city_capture_report_rows(input: &CityCaptureReportInput) -> Vec<Cap
 /// straty.
 #[must_use]
 pub fn capture_pop_loss_report_row(loss: f64) -> Option<CaptureRow> {
-    if !(loss > 0.0) {
+    // Web `if (!(loss > 0)) return null` (NaN też = brak wiersza).
+    if loss.partial_cmp(&0.0) != Some(std::cmp::Ordering::Greater) {
         return None;
     }
     Some(CaptureRow {
