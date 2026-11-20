@@ -115,10 +115,14 @@ eq(shouldAIPurchaseUnit({ treasury: 49, goldCost: 50, hasManpower: true }), fals
 console.log('\n-- G. Kontrakt zrodlowy: main.ts faktycznie przekazuje dane do reguly (pada na bazie fcaa10300) --');
 {
   const mainSrc = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
-  const callIdx = mainSrc.indexOf('const wantsPurchase = shouldAIPurchaseUnit({');
+  // R-WEB-TEST-DEBT-Q13 r5: call site stoi dzis w `const wantsPurchase = !aiNnsHoldOwners.has(..) && (garnizon || aiUpkeepRunwayAllows(..)) && shouldAIPurchaseUnit({`
+  // (bramki NNS i runway FALA 857/UPKEEP) -- kotwica na `&& shouldAIPurchaseUnit({` po `const wantsPurchase`.
+  const wpIdx = mainSrc.indexOf('const wantsPurchase = ');
+  const callIdx = wpIdx < 0 ? -1 : mainSrc.indexOf('&& shouldAIPurchaseUnit({', wpIdx);
   ok(callIdx > 0, 'main.ts: istnieje call site shouldAIPurchaseUnit');
   const callBlock = callIdx > 0 ? mainSrc.slice(callIdx, callIdx + 900) : '';
-  ok(/\.\.\.aiPurchaseReserveInputs\(ownerId, candId\)/.test(callBlock), 'call site spreaduje aiPurchaseReserveInputs(ownerId, candId)');
+  // Garnizon priorytetowy (FALA 857) pomija rezerwe utrzymania -- warunkowy spread `...(isGarrisonPriority ? {} : aiPurchaseReserveInputs(ownerId, candId))`.
+  ok(/\.\.\.\(isGarrisonPriority \? \{\} : aiPurchaseReserveInputs\(ownerId, candId\)\)/.test(callBlock), 'call site spreaduje aiPurchaseReserveInputs(ownerId, candId) (poza garnizonem priorytetowym)');
   const fnIdx = mainSrc.indexOf('function aiPurchaseReserveInputs(');
   ok(fnIdx > 0, 'main.ts: zdefiniowano aiPurchaseReserveInputs');
   const fnBlock = fnIdx > 0 ? mainSrc.slice(fnIdx, fnIdx + 2200) : '';
