@@ -5,7 +5,7 @@ DOMAIN: GAME
 TEMAT: R-RUSTPORT-P4-HITAT-FQ-REGRESJA-Q1
 GOAL: przywrócić zgodność kontraktu silnik ↔ renderer po FRAME-QUANT (`PlaybackError::HitAt`) przy niezmienionych 42 wektorach pinu.
 BAZA OBRONY: `a7fc6f17b` (= kod Operatora `6d3b88858` + raport Evaluatora), gałąź `rust-port-wip/hitat-fq-q1-obrona`.
-ZMIANY/COMMIT: `rust-port/engine/tests/p6_k5loop_wiring_a_pin.rs` (tylko dopisek, nowy test), ten raport. SHA: patrz commit z tym raportem (podany w odpowiedzi Workflow).
+ZMIANY/COMMIT: `rust-port/engine/tests/p6_k5loop_wiring_a_pin.rs` (tylko dopisek, nowy test), ten raport. Kod testu: `1b014bd7c`; finalny SHA raportu w odpowiedzi Workflow (commit następny po `1b014bd7c`).
 RUNDY: 1/5
 NASTĘPNY KROK: Final Control.
 DEPLOY/PUSH: NIE WYKONANO
@@ -87,7 +87,7 @@ Wolny dysk w trakcie: około 11 GB.
 | engine `cargo fmt --check` | 0 | — |
 | engine `cargo clippy --all-targets -- -D warnings` | 0 | — |
 | engine `cargo test --test p6_k5loop_wiring_a_pin` | 0 | 10 passed (w tym 42 wektory bajt w bajt, oba testy kontraktu) |
-| engine `cargo test --all-targets --no-fail-fast` (tło) | WYNIK_PELNY | WYNIK_PELNY_LICZBY |
+| engine `cargo test --all-targets --no-fail-fast` (tło) | 0 | 4226 passed, 0 failed, 1 ignored (istniejący); = 4225 Evaluatora + 1 nowy test (log `scratchpad/hitat-ob-full.log`) |
 | client / renderer | nie uruchamiano | kod `src/**` i renderer bez zmian względem `6d3b88858` (Evaluator: 36/36, 745/745) |
 
 Kod źródłowy silnika po mutantach przywrócony (`git status`: zmieniony tylko plik testu).
