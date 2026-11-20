@@ -713,21 +713,26 @@ impl<S: RenderSource> RenderClient<S> {
 // Technical decisions (entered in `REJESTR-RUST.md` by the orchestrator):
 // - D-1I6-1 (seam): the bridge is included through `#[path]` by every consumer
 //   (D-371-1), so the client talks to it through [`SiegeBattleSource`] over the
-//   library types `SiegeBattlePayload` / `SiegeBattleError`; the caller maps
-//   `BridgeError` back to `SiegeBattleError` (the bridge carries only its
-//   `Display`, debt D-1I6-ERR).
+//   library types `SiegeBattlePayload` / `SiegeBattleErrorDto`; the caller maps
+//   `BridgeError.siege_battle` (the typed battle error, D-1I6-ERR closed by
+//   R-RUSTPORT-P4-1I6-DLUGI-Q1) to [`SiegeSourceError::Battle`].
 // - D-1I6-2 (order): every answer passes the client stream guard
 //   [`StreamOrder`], the rule of `BattlePlayback::check_order`
 //   (`playback.rs:584-625`: all-or-nothing actions, then the frame, times
 //   never decreasing over the whole battle), with or without a scene, so a
 //   violation is reported before any renderer state changes.
-// - D-1I6-3 (scene): the bridge answer has no `BattleSetupDto` (grid, fort,
-//   models; its producer is engine work, debt D-1I6-SETUP). The client builds
-//   the setup from the start answer (`units`, start `frame`: cells, facing,
-//   wall walk, HP, morale, ammunition; owner colours of the pin
-//   `0xffd54a` / `0xc84040`; `deployPlayerSide: 'atk'`; siege) plus the part
-//   the bridge does not carry ([`SiegeSceneStatic`]). Without it the client
-//   still drives the battle headless (guard, counts, result, map refresh).
+// - D-1I6-3 (scene, D-1I6-SETUP closed by R-RUSTPORT-P4-1I6-DLUGI-Q1): the
+//   start answer carries the engine's `BattleSetupDto` (`siegeBattle.setup`:
+//   grid, fort, spawn of every unit, models and maxima) and the tower shooter
+//   (`siegeBattle.towerShooter` -> `PlaybackOpts::tower_projectile`); the
+//   client composes nothing. Without a scene the client still drives the
+//   battle headless (guard, counts, result, map refresh).
+// - D-1I6D-3 (no orphan battle): when the scene cannot be built from the start
+//   answer (`Setup` / `Adapter`), the client closes the engine battle with
+//   `AbortSiegeBattle` (game state unchanged) before returning the error; the
+//   end is `SiegeBattleEnd::Aborted`. Abort is only that failure path (the
+//   engine refuses it after the first `Step` / `Skip`, D-1I6D-4): the web has
+//   no way out of a running battle without its result.
 // - D-1I6-4 (skip): after `SkipSiegeBattle` the client plays to the frame and
 //   calls `BattlePlayback::apply_snapshot` with it (the fast-forward emits no
 //   `Damage`, contract of `BattlePlayback`).
@@ -739,23 +744,16 @@ impl<S: RenderSource> RenderClient<S> {
 
 use civ_engine::domain::siege_battle_apply::SiegeBattleUnitRefDto;
 pub use civ_engine::domain::siege_battle_apply::{
-    SiegeBattleError, SiegeBattlePayload, SiegeBattlePhaseDto, SiegeBattleResultDto,
+    SiegeBattleErrorDto, SiegeBattlePayload, SiegeBattlePhaseDto, SiegeBattleResultDto,
+    SiegeTowerShooterDto, SIEGE_ATTACKER_COLOR, SIEGE_DEFENDER_COLOR,
 };
-use civ_engine::domain::siege_battle_session::SessionError;
 pub use civ_renderer::battle::dynamics::ProjectileKind;
 pub use civ_renderer::battle::playback::{BattlePlayback, PlaybackError, PlaybackOpts};
+use civ_renderer::battle::siege_towers::tower_projectile_kind;
 use civ_renderer::battle::units::build_battle_scene_with_units_fort;
 pub use civ_renderer::battle::units::BattleScene3;
 pub use civ_renderer::view::BattleAdapterError;
-use civ_view_model::battle::{
-    BattleActionDto, BattleActionKindDto, BattleFortDto, BattleFrameDto, BattleGridDto,
-    BattleSetupDto, BattleSide, BattleUnitSpawnDto, BattleWinner,
-};
-
-/// `rosterToBattleUnits(atkRosterRef, 0xffd54a)` (`main.ts:36981`).
-pub const SIEGE_ATTACKER_COLOR: u32 = 0x00ff_d54a;
-/// `rosterToBattleUnits(defRosterRef, 0xc84040)` (`main.ts:36982`).
-pub const SIEGE_DEFENDER_COLOR: u32 = 0x00c8_4040;
+use civ_view_model::battle::{BattleActionDto, BattleFrameDto, BattleSetupDto, BattleWinner};
 
 /// One siege battle command of the bridge.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -776,6 +774,9 @@ pub enum SiegeBattleCommand {
     Skip,
     /// `FinishSiegeBattle`.
     Finish,
+    /// `AbortSiegeBattle` (D-1I6D-3): only after a failed scene build of the
+    /// start answer.
+    Abort,
 }
 
 /// The answer of a siege battle command: the `siegeBattle` field and whether
@@ -791,8 +792,9 @@ pub struct SiegeBattleAnswer {
 /// Error of a [`SiegeBattleSource`].
 #[derive(Debug, Clone, PartialEq)]
 pub enum SiegeSourceError<E> {
-    /// The engine rejected the command (`SiegeBattleError`, D-WIRB-7 / D-WIRB-8).
-    Battle(SiegeBattleError),
+    /// The engine rejected the command (typed battle error `BridgeError.siegeBattle`,
+    /// D-WIRB-7 / D-WIRB-8, D-1I6-ERR).
+    Battle(SiegeBattleErrorDto),
     /// Transport / bridge error that is not a battle error.
     Source(E),
 }
@@ -866,43 +868,6 @@ impl StreamOrder {
     }
 }
 
-/// Unit data of the scene setup the bridge answer does not carry (D-1I6-3).
-#[derive(Debug, Clone, PartialEq)]
-pub struct SiegeUnitLook {
-    /// Battle id (`SiegeBattleUnitRefDto::battle_id`).
-    pub battle_id: u64,
-    /// `bu.kategoria`.
-    pub category: String,
-    /// `String(bu.stats?.Jednostka ?? bu.nazwa)`.
-    pub model_name: String,
-    /// `bu.maxHp`.
-    pub max_hp: f64,
-    /// `moraleMax`.
-    pub morale_max: f64,
-    /// `ammoMax`; `None` = unlimited.
-    pub ammo_max: Option<f64>,
-}
-
-/// The part of the battle scene setup the bridge answer does not carry
-/// (D-1I6-3, debt D-1I6-SETUP): terrain grid, palette, wall civ, fort and the
-/// per-unit models and maxima, plus the tower projectile kind
-/// (`PlaybackOpts::tower_projectile`).
-#[derive(Debug, Clone, PartialEq)]
-pub struct SiegeSceneStatic {
-    /// Battle grid after carving.
-    pub grid: BattleGridDto,
-    /// `terrainPreset.desertPalette`.
-    pub desert_palette: bool,
-    /// `siege_wall_civ(civ, defCiv)`.
-    pub siege_civ: String,
-    /// Wall / towers.
-    pub fort: BattleFortDto,
-    /// One entry per scene unit.
-    pub units: Vec<SiegeUnitLook>,
-    /// `projectileKind` of the tower shooter; `None` = no tower shots.
-    pub tower_projectile: Option<ProjectileKind>,
-}
-
 /// Why a siege battle call of the client failed.
 #[derive(Debug, Clone, PartialEq)]
 pub enum SiegeClientError<E> {
@@ -918,16 +883,27 @@ pub enum SiegeClientError<E> {
     /// `Step` / `Skip` after the end of the battle (the web scene shows the
     /// end screen; only `Finish` remains). No engine call.
     BattleFinished,
-    /// The engine rejected the command.
-    Engine(SiegeBattleError),
+    /// The engine rejected the command (typed, D-1I6-ERR).
+    Engine(SiegeBattleErrorDto),
     /// Transport error of the source.
     Source(E),
     /// The answer breaks the stream contract (D-1I6-2); nothing was queued.
     Order(PlaybackError),
-    /// The start answer cannot give a scene setup (D-1I6-3).
+    /// The start answer carries no scene setup (D-1I6-3); the engine battle was
+    /// aborted (D-1I6D-3).
     Setup(String),
-    /// The renderer battle adapter rejected the setup.
+    /// The renderer battle adapter rejected the setup; the engine battle was
+    /// aborted (D-1I6D-3).
     Adapter(BattleAdapterError),
+    /// The scene could not be built (`cause`: [`Self::Setup`] /
+    /// [`Self::Adapter`]) and `AbortSiegeBattle` failed too (`abort`): the
+    /// engine battle may still be open (D-1I6D-3).
+    AbortFailed {
+        /// Why the scene could not be built.
+        cause: Box<SiegeClientError<E>>,
+        /// Why the abort failed.
+        abort: Box<SiegeClientError<E>>,
+    },
     /// The renderer playback rejected an item.
     Playback(PlaybackError),
     /// Map refresh after the battle failed (the battle is closed).
@@ -948,6 +924,9 @@ impl<E: fmt::Display> fmt::Display for SiegeClientError<E> {
             Self::Order(e) | Self::Playback(e) => write!(f, "siege battle playback: {e}"),
             Self::Setup(s) => write!(f, "siege battle setup: {s}"),
             Self::Adapter(e) => write!(f, "siege battle setup: {e}"),
+            Self::AbortFailed { cause, abort } => {
+                write!(f, "{cause}; abort of the engine battle failed: {abort}")
+            }
             Self::Refresh(e) => write!(f, "after siege battle: {e}"),
         }
     }
@@ -1112,143 +1091,42 @@ impl SiegeBattleView {
     }
 }
 
-/// The battle setup of the scene (D-1I6-3) from the start answer and the
-/// static part.
-///
-/// # Errors
-///
-/// A text naming the missing piece: no start frame, a frame unit without a
-/// side in `units` or without a look in `scene.units`, an unknown side tag.
-pub fn compose_siege_battle_setup(
-    start: &SiegeBattlePayload,
-    scene: &SiegeSceneStatic,
-) -> Result<BattleSetupDto, String> {
-    let frame = start
-        .frame
-        .as_ref()
-        .ok_or_else(|| "start answer without a frame".to_owned())?;
-    // D-1I6-3b: the start frame is the scene AFTER the start actions (`t0 <=
-    // vNow`); the spawn is before them. A cell-changing action carries the
-    // cell before it, so the spawn cell of a unit is the `from` of its first
-    // one (steps chain, `MoveFrom`); a unit without one stands on its frame
-    // cell. The wall flag is rewound the same way but on its own: the flag
-    // before the first action that changes it (`ClimbWall`: off the wall
-    // before, `LeaveField`: on the wall before); a `Move` keeps the flag, so
-    // a unit without a flag-changing start action keeps the frame flag (r2,
-    // Z1: `Move` then `ClimbWall` / `LeaveField`). An action that changes HP,
-    // morale or presence cannot be rewound from the frame: such a start
-    // answer is refused, never guessed.
-    let mut spawn_cell: Vec<(u64, (i32, i32))> = Vec::new();
-    let mut spawn_wall: Vec<(u64, bool)> = Vec::new();
-    for a in &start.actions {
-        let (id, from, wall) = match &a.action {
-            BattleActionKindDto::Move {
-                id,
-                from_col,
-                from_row,
-                ..
-            } => (*id, (*from_col, *from_row), None),
-            BattleActionKindDto::ClimbWall {
-                id,
-                from_col,
-                from_row,
-                ..
-            } => (*id, (*from_col, *from_row), Some(false)),
-            BattleActionKindDto::LeaveField {
-                id,
-                from_col,
-                from_row,
-                ..
-            } => (*id, (*from_col, *from_row), Some(true)),
-            BattleActionKindDto::Damage { .. }
-            | BattleActionKindDto::Kill { .. }
-            | BattleActionKindDto::Leave { .. }
-            | BattleActionKindDto::Shaken { .. }
-            | BattleActionKindDto::Rout { .. } => {
-                return Err(format!(
-                    "start answer changes HP / morale / presence at t0 {}",
-                    a.t0
-                ));
-            }
-            _ => continue,
-        };
-        if !spawn_cell.iter().any(|(u, _)| *u == id.get()) {
-            spawn_cell.push((id.get(), from));
-        }
-        if let Some(w) = wall {
-            if !spawn_wall.iter().any(|(u, _)| *u == id.get()) {
-                spawn_wall.push((id.get(), w));
-            }
-        }
-    }
-    let mut units = Vec::with_capacity(frame.units.len());
-    for fu in &frame.units {
-        let id = fu.id.get();
-        let (col, row) = spawn_cell
-            .iter()
-            .find(|(u, _)| *u == id)
-            .map_or((fu.col, fu.row), |(_, c)| *c);
-        let on_wall_walkway = spawn_wall
-            .iter()
-            .find(|(u, _)| *u == id)
-            .map_or(fu.on_wall_walkway, |(_, w)| *w);
-        let side = match start
-            .units
-            .iter()
-            .find(|u| u.battle_id == id)
-            .map(|u| u.side.as_str())
-        {
-            Some("atk") => BattleSide::Atk,
-            Some("def") => BattleSide::Def,
-            Some(other) => return Err(format!("unit {id}: side {other:?}")),
-            None => return Err(format!("unit {id}: not in the start units")),
-        };
-        let look = scene
-            .units
-            .iter()
-            .find(|l| l.battle_id == id)
-            .ok_or_else(|| format!("unit {id}: no scene look"))?;
-        units.push(BattleUnitSpawnDto {
-            id: fu.id,
-            side,
-            category: look.category.clone(),
-            model_name: look.model_name.clone(),
-            owner_color: match side {
-                BattleSide::Atk => SIEGE_ATTACKER_COLOR,
-                BattleSide::Def => SIEGE_DEFENDER_COLOR,
-            },
-            col,
-            row,
-            facing: fu.facing,
-            on_wall_walkway,
-            hp: fu.hp,
-            max_hp: look.max_hp,
-            morale: fu.morale,
-            morale_max: look.morale_max,
-            ammo_left: fu.ammo_left,
-            ammo_max: look.ammo_max,
-        });
-    }
-    Ok(BattleSetupDto {
-        grid: scene.grid.clone(),
-        desert_palette: scene.desert_palette,
-        siege: true,
-        // `deploy: atkRosterRef.some(u => u.isGeneral)`: a general is the
-        // manual mode (`ManualModeNotPorted`, out of scope), so no deploy.
-        deploy: None,
-        siege_civ: scene.siege_civ.clone(),
-        // `deployPlayerSide: 'atk'`: the human is the besieger (`:36800`).
-        player_side: BattleSide::Atk,
-        units,
-        fort: scene.fort.clone(),
-    })
-}
-
 /// `SessionError::NotFinished`: the engine error of a `Finish` before the
 /// end (D-WIRB-8: the battle stays, `Skip` is available).
 #[must_use]
-pub const fn is_not_finished(e: &SiegeBattleError) -> bool {
-    matches!(e, SiegeBattleError::Session(SessionError::NotFinished))
+pub const fn is_not_finished(e: &SiegeBattleErrorDto) -> bool {
+    e.is_not_finished()
+}
+
+/// `PlaybackOpts::tower_projectile` of the start answer: `projectileKind` of
+/// the tower shooter (`_fireOneTower`, `battleScene.ts:4133-4147`); `None` =
+/// no tower shots (no tower or no shooter row).
+#[must_use]
+pub fn tower_projectile_of(start: &SiegeBattlePayload) -> Option<ProjectileKind> {
+    start
+        .tower_shooter
+        .as_ref()
+        .map(|t| tower_projectile_kind(t.typ.as_deref(), t.jednostka.as_deref()))
+}
+
+/// The renderer scene of the start answer (D-1I6-3): the engine
+/// `BattleSetupDto` through the renderer adapter.
+fn scene_of<E>(
+    start: &SiegeBattlePayload,
+) -> Result<(BattleScene3, BattlePlayback), SiegeClientError<E>> {
+    let setup: &BattleSetupDto = start
+        .setup
+        .as_ref()
+        .ok_or_else(|| SiegeClientError::Setup("start answer without a setup".to_owned()))?;
+    let inputs = civ_renderer::view::battle_inputs(setup).map_err(SiegeClientError::Adapter)?;
+    let b = build_battle_scene_with_units_fort(inputs.opts, &inputs.fort);
+    let pb = BattlePlayback::new(
+        &b,
+        PlaybackOpts {
+            tower_projectile: tower_projectile_of(start),
+        },
+    );
+    Ok((b, pb))
 }
 
 /// Siege battle API of the client (D-1I6-1..5).
@@ -1265,32 +1143,39 @@ impl<S: SiegeBattleSource> RenderClient<S> {
         self.battle_end.as_ref()
     }
 
-    /// The battle screen of the last closed battle (its scene and counts;
-    /// `None` after an `Aborted` end, whose scene is dropped).
+    /// The battle screen of the last closed battle (its scene and counts).
+    /// D-1I6-DOC: after an `Aborted` end it depends on where the abort came
+    /// from: an engine `Aborted` error of `Finish` (D-WIRB-8) or an aborted
+    /// start (D-1I6D-3) drop the screen (`None`); a `Finish` answer without a
+    /// result is also an `Aborted` end, but the answer was played, so its
+    /// screen is kept (`Some`, like an applied result).
     #[must_use]
     pub const fn last_siege_battle_view(&self) -> Option<&SiegeBattleView> {
         self.battle_closed.as_ref()
     }
 
     /// `launchSiegeStormFromMap` -> `onBattlefield` -> `bs.play`:
-    /// `StartSiegeStorm`, then the stream guard and, with `scene`, the battle
-    /// scene (D-1I6-3) fed with the start actions and frame. The siege map
-    /// panel closes (`hideSiegeMapPanel()`, `main.ts:36885`; the map is
-    /// covered, no recomposition). The game state does not change (no
-    /// `StateChanged`, no frame request).
+    /// `StartSiegeStorm`, then the stream guard and, with `with_scene`, the
+    /// battle scene built from the engine setup of the answer (D-1I6-3) and
+    /// fed with the start actions and frame. The siege map panel closes
+    /// (`hideSiegeMapPanel()`, `main.ts:36885`; the map is covered, no
+    /// recomposition). The game state does not change (no `StateChanged`, no
+    /// frame request).
     ///
     /// # Errors
     ///
     /// [`SiegeClientError::NoSession`], [`SiegeClientError::BattleActive`]
     /// (no engine call); the engine / source error (no battle, UI
-    /// unchanged); setup / adapter errors (no battle in the client; the
-    /// engine battle stays open and the caller ends it); order / playback
-    /// errors of the start answer (battle kept).
+    /// unchanged); setup / adapter errors: the engine battle is closed with
+    /// `AbortSiegeBattle` (D-1I6D-3; no battle anywhere, the end is
+    /// [`SiegeBattleEnd::Aborted`], UI unchanged) or, when that fails too,
+    /// [`SiegeClientError::AbortFailed`]; order / playback errors of the start
+    /// answer (battle kept).
     pub fn start_siege_storm(
         &mut self,
         city_id: u64,
         unit_id: u64,
-        scene: Option<&SiegeSceneStatic>,
+        with_scene: bool,
     ) -> Result<(), SiegeClientError<S::Error>> {
         if self.map.is_none() {
             return Err(SiegeClientError::NoSession);
@@ -1314,18 +1199,11 @@ impl<S: SiegeBattleSource> RenderClient<S> {
             skipped: false,
             scene: None,
         };
-        if let Some(st) = scene {
-            let setup = compose_siege_battle_setup(&p, st).map_err(SiegeClientError::Setup)?;
-            let inputs =
-                civ_renderer::view::battle_inputs(&setup).map_err(SiegeClientError::Adapter)?;
-            let b = build_battle_scene_with_units_fort(inputs.opts, &inputs.fort);
-            let pb = BattlePlayback::new(
-                &b,
-                PlaybackOpts {
-                    tower_projectile: st.tower_projectile,
-                },
-            );
-            view.scene = Some((b, pb));
+        if with_scene {
+            match scene_of(&p) {
+                Ok(scene) => view.scene = Some(scene),
+                Err(cause) => return Err(self.abort_started_battle(p.city_id, cause)),
+            }
         }
         self.battle_end = None;
         self.battle_closed = None;
@@ -1391,7 +1269,7 @@ impl<S: SiegeBattleSource> RenderClient<S> {
         }
         let answer = match self.source.siege_battle(SiegeBattleCommand::Finish) {
             Ok(a) => a,
-            Err(SiegeSourceError::Battle(SiegeBattleError::Aborted { city_id, reason })) => {
+            Err(SiegeSourceError::Battle(SiegeBattleErrorDto::Aborted { city_id, reason })) => {
                 self.battle = None;
                 self.battle_end = Some(SiegeBattleEnd::Aborted { city_id, reason });
                 self.exit_battle_ui(false)
@@ -1419,6 +1297,33 @@ impl<S: SiegeBattleSource> RenderClient<S> {
             .map_err(SiegeClientError::Refresh)?;
         fed?;
         self.battle_end.as_ref().ok_or(SiegeClientError::NoBattle)
+    }
+
+    /// D-1I6D-3: the engine battle of a start whose scene could not be built
+    /// is closed (`AbortSiegeBattle`), so no battle stays open in the engine
+    /// while the client has none. Returns the error to report: `cause`, or
+    /// [`SiegeClientError::AbortFailed`] when the abort fails.
+    fn abort_started_battle(
+        &mut self,
+        city_id: u64,
+        cause: SiegeClientError<S::Error>,
+    ) -> SiegeClientError<S::Error> {
+        let reason = match &cause {
+            SiegeClientError::Setup(s) => format!("siege battle setup: {s}"),
+            SiegeClientError::Adapter(e) => format!("siege battle setup: {e}"),
+            _ => "siege battle scene not built".to_owned(),
+        };
+        match self.source.siege_battle(SiegeBattleCommand::Abort) {
+            Ok(_) => {
+                self.battle_end = Some(SiegeBattleEnd::Aborted { city_id, reason });
+                self.battle_closed = None;
+                cause
+            }
+            Err(e) => SiegeClientError::AbortFailed {
+                cause: Box::new(cause),
+                abort: Box::new(e.into()),
+            },
+        }
     }
 
     fn running_battle(&self) -> Result<(), SiegeClientError<S::Error>> {
