@@ -91,7 +91,7 @@ check(
 // nowy kontrakt na całym `main` (okno 1600 znaków od bloku R1/R2 go nie obejmuje).
 check(
   'wypowiedz_wojne: licznik epoki per cywilizacja -- evaluateEraForcedWarGate(counts: eraWarCountByCivKey, attacker+target) -> continue',
-  /const eraGateVerdict = evaluateEraForcedWarGate\(\{[\s\S]{0,400}counts: eraWarCountByCivKey[\s\S]{0,400}attackerId: ownerId[\s\S]{0,400}targetId,[\s\S]{0,600}\}, WAR_RULES_PARAMS\);\s*if \(eraGateVerdict !== 'ok'\) continue;/.test(main),
+  /const eraGateVerdict = evaluateEraForcedWarGate\(\{[\s\S]{0,400}counts: eraWarCountByCivKey[\s\S]{0,400}attackerId: ownerId[\s\S]{0,400}targetId,[\s\S]{0,600}\}, WAR_RULES_PARAMS\);\s*if \(eraGateVerdict !== 'ok'\) (?:continue;|\{[^}]*continue;\s*\})/.test(main),
 );
 check(
   'wypowiedz_wojne: R1/R2 -- evaluateInterCivWarGate z turn/era/liczbą wojen napastnika i celu',
@@ -99,7 +99,7 @@ check(
 );
 check(
   'wypowiedz_wojne: werdykt != ok -> continue (pominięcie komendy, pending nie konsumowany)',
-  /if \(gateVerdict !== 'ok'\) continue;/.test(declGateBlock),
+  /if \(gateVerdict !== 'ok'\) (?:continue;|\{[^}]*continue;\s*\})/.test(declGateBlock),
 );
 check(
   'wypowiedz_wojne: bramka wykonuje się PRZED chargeWarDeclarationCredibility(ownerId, targetId)',
