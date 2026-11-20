@@ -128,8 +128,8 @@ function bodyOf(src, header) {
   ok(/if\s*\(\s*nnsGateForPlayer\(\)\.blokada\s*\)\s*\{[^{}]*return\s+false\s*;[^{}]*\}/.test(canBody),
     '(f) canPlayerInitiateEndTurn: `if (nnsGateForPlayer().blokada) { ...; return false; }` (nie wyłączone)');
   const hintBody = bodyOf(src, 'function hintEndTurnBlocked(): void {');
-  ok(/const\s+nnsHint\s*=\s*nnsGateForPlayer\(\)\s*;\s*if\s*\(\s*nnsHint\.blokada\s*\)\s*\{\s*showHintMessage\(\s*nnsHint\.komunikat/.test(hintBody),
-    '(f) hintEndTurnBlocked: gałąź blokady pokazuje nnsHint.komunikat');
+  ok(/const\s+nnsHint\s*=\s*nnsGateForPlayer\(\)\s*;\s*if\s*\(\s*nnsHint\.blokada\s*\)\s*\{\s*(?:noteEndTurnBlockedByNns\(\)\s*;\s*)?showHintMessage\(\s*nnsHint\.komunikat/.test(hintBody),
+    '(f) hintEndTurnBlocked: gałąź blokady pokazuje nnsHint.komunikat'); // R-WEB-TEST-DEBT-Q13 r5: opcjonalne noteEndTurnBlockedByNns() przed hintem (licznik blokad NNS)
   const nnsBody = bodyOf(src, 'function nnsGateForPlayer(): NnsGateResult {');
   ok(/skarbiecPo:\s*skLive\s*\+\s*\(\s*f\.skarbiecPo\s*-\s*f\.skarbiecObecny\s*\)/.test(nnsBody) && /playerStateByHuman\.get\(ME\(\)\)\?\.skarbiec/.test(nnsBody),
     '(f) nnsGateForPlayer: saldo żywe + delta prognozy (zarzut 4)');

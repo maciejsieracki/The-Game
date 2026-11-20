@@ -191,7 +191,15 @@ const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
       if (idx >= 0 && (end < 0 || idx < end)) end = idx;
     }
     const block = end > start ? mainSrc.slice(start, end) : '';
-    const flushCount = (block.match(/flushDeferredAutoPreBattle\(\);/g) || []).length;
+    let flushCount = (block.match(/flushDeferredAutoPreBattle\(\);/g) || []).length;
+    // R-WEB-TEST-DEBT-Q13 r5: pierwsze wywolanie dostaje `onMerge: () => applyMerge(false)` -- flush onMerge stoi dzis na koncu
+    // lokalnej funkcji `const applyMerge = (autoFollow: boolean): void => { ... };` (przed wywolaniem), wiec dolicz jej flush.
+    if (/onMerge:\s*\(\)\s*=>\s*applyMerge\(/.test(block)) {
+      const amStart = mainSrc.lastIndexOf('const applyMerge = (autoFollow: boolean): void => {', start);
+      const amEnd = amStart >= 0 ? mainSrc.indexOf('\n      };', amStart) : -1;
+      const amBody = amStart >= 0 && amEnd > amStart ? mainSrc.slice(amStart, amEnd) : '';
+      if (/flushDeferredAutoPreBattle\(\);\s*$/.test(amBody)) flushCount += 1; // flush jako ostatnia instrukcja applyMerge
+    }
     // Kazde wywolanie ma DWA callbacki zamykajace (onMerge + onSeparate, ewentualnie tylko
     // jeden jest strzalka jednolinowa) -- oczekujemy >=2 flushy na wywolanie (jeden na
     // onMerge, jeden na onSeparate).

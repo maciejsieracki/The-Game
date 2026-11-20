@@ -119,7 +119,9 @@ const preBattleSrc = fs.readFileSync(PREBATTLE_TS, 'utf8');
   ok(fnStart >= 0, '[A3] znaleziono function healStaleEndTurnBlockers( w main.ts');
   const fnEnd = fnStart >= 0 ? mainSrc.indexOf('\n    function canPlayerInitiateEndTurn', fnStart) : -1;
   const fnBody = (fnStart >= 0 && fnEnd > fnStart) ? mainSrc.slice(fnStart, fnEnd) : '';
-  ok(/if \(!preBattle && !battleUiResolving && !hasPendingAutoPreBattle\(\) && \(aiTurnAwaitingBattle \|\| aiCmdResume\)\) \{/.test(fnBody),
+  // R-WEB-TEST-DEBT-Q13 r5: formula tej samej galezi (te same 3 warunki + stale AI resume) zapisana dzis przez `hasStaleAiResume`
+// (aiTurnAwaitingBattle || aiCmdResume != null) i objeta bramka `!activeWorldEndTurnPipeline` (ruch swiata w koncu tury -- nie czyscimy flag w trakcie potoku).
+ok(/const hasStaleAiResume = aiTurnAwaitingBattle \|\| aiCmdResume != null;\s*if \(!preBattle && !battleUiResolving && !hasPendingAutoPreBattle\(\) && hasStaleAiResume\) \{\s*if \(!activeWorldEndTurnPipeline\) \{/.test(fnBody),
     '[A3] gałąź 1 (aiTurnAwaitingBattle||aiCmdResume) sprawdza DOKŁADNIE !preBattle && !battleUiResolving && !hasPendingAutoPreBattle() -- N1 (runda 2) + F1 (runda 3) naprawione formułą pinowaną bajt-w-bajt; F2 (runda 3, pendingBattleStuck) PRZENIESIONE poza tę funkcję w rundzie 4 (G1/G2)');
   // Sprawdzamy WYŁĄCZNIE kod wykonywalny (nie komentarze PL/EN, które celowo wspominają
   // pendingBattleStuck jako historyczny kontekst naprawy rundy 4) -- ten sam wzorzec
@@ -130,11 +132,11 @@ const preBattleSrc = fs.readFileSync(PREBATTLE_TS, 'utf8');
 
   // A4) KONTROLA NEGATYWNA -- pozostałe 3 gałęzie NIETKNIĘTE (Evaluator zgłosił problem
   //     WYŁĄCZNIE dla gałęzi aiTurnAwaitingBattle||aiCmdResume; scope discipline C-025).
-  ok(/if \(endTurnInProgress && !isTurnTransitionActive\(\)\) \{/.test(fnBody),
+  ok(/if \(!activeWorldEndTurnPipeline && endTurnInProgress && !isTurnTransitionActive\(\)\) \{/.test(fnBody),
     '[A4a] gałąź 2 (endTurnInProgress bez overlayu) formuła niezmieniona -- bez hasPendingAutoPreBattle');
-  ok(/if \(isTurnTransitionActive\(\) && !endTurnInProgress\) \{/.test(fnBody),
+  ok(/if \(!activeWorldEndTurnPipeline && isTurnTransitionActive\(\) && !endTurnInProgress\) \{/.test(fnBody),
     '[A4b] gałąź 3 (osierocony overlay bez endTurnInProgress) formuła niezmieniona -- bez hasPendingAutoPreBattle');
-  ok(/if \(endTurnInProgress && isTurnTransitionActive\(\) && stuckMs > 8000 && !preBattle\) \{/.test(fnBody),
+  ok(/if \(!activeWorldEndTurnPipeline && endTurnInProgress && isTurnTransitionActive\(\) && stuckMs > 8000 && !preBattle\) \{/.test(fnBody),
     '[A4c] gałąź 4 (stuckMs>8000 force-clear) formuła niezmieniona -- bez hasPendingAutoPreBattle');
   // Liczymy wystąpienia WYŁĄCZNIE w kodzie wykonywalnym (liniach `if (...)`), nie w
   // komentarzach PL/EN nad gałęzią 1, które celowo tłumaczą hasPendingAutoPreBattle()
