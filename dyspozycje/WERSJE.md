@@ -1,3 +1,9 @@
+## ROBOCZA b69800bb -- 2026-11-18 -- FALA 889: gracz celem wojen epoki we wszystkich epokach (testowa)
+
+- Wojny epoki (Kamień/Brąz/Żelazo): gracz jest CELEM wymuszonych wojen epoki tak jak inne cywilizacje — także w fallbacku wolnego celu (FALA 881) i w parowaniu; zapis wejścia gracza w epokę (backfill), próg 40 tur liczony od wejścia gracza; opis reguły w ui-params zaktualizowany; hak pomiarowy tylko-do-odczytu __eraWarMeasure z powodami odrzuceń; progi testów wojen 40 tur
+- Weryfikacja: tsc 0; logic 213; engine-scenario 27/0; player-included 10/0; defer-not-cancel 29/0; delays 55/0; bronze 48/0; iron 55/0; stone 31/0; multi-turn 48/0; main-guardy 36/15/22; bieg dymny 120 tur seed 4242 i 7: po 3 wojny epoki na epokę, gracz celem Kamienia w obu ziarnach, Żelaza w seed 4242 (t117), Brązu w żadnym
+- Limity: NIE ZMIERZONO: równoważność wznowionego biegu z ciągłym; pending Brązu bywa blokowany przez sojusze (seed 4242: pairing-unresolved) — decyzja ABC; war-rules-multiwar-main-guard 18/3 to dług TESTDEBTQ13; live w grze nie sprawdzono
+
 ## ROBOCZA 1fb59909 -- 2026-11-18 -- FALA 888: R-WEB-DIPLO-ENABLE-ALL-FLAGS-Q1: wlaczone domyslnie 6 flag dyplomacji (twarda dyplomacja, tor sojuszy, koalicja antylidera, zero zaufania, sila sojuszu, limit wojen) (testowa)
 
 - R-WEB-DIPLO-ENABLE-ALL-FLAGS-Q1 (decyzja wlasciciela 2026-11-19): domyslnie ON w danych: twardaDyplomacjaAktywna (wczesniej martwa - DIPLO_HARDER_ENABLED_DEFAULT czytane teraz z danych), torSojuszyAktywny, koalicjaAntyLiderAktywna, zeroZaufaniaAktywna, wojnaSilaSojuszuAktywna, limitWojenAktywny (liczy gracza jako cel); tor NAP AI-AI (torAktywny) i dopalata D bez zmian; scalone z FALA 886 (Dyplomacja i wojna) w diplomacy-harder.ts; hak pomiarowy setAll jawne true/false.
