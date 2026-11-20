@@ -49,7 +49,7 @@ function parseDiplomacyParams(src) {
 function caseDZ(src, caseName) {
   const i = src.indexOf(`case '${caseName}':`);
   if (i < 0) return null;
-  const m = /dZ = (-?\d+)\s*;/.exec(src.slice(i, i + 900));
+  const m = /dZ = (?:scale\w+ForWarLevel\()?(-?\d+(?:\.\d+)?)\)?\s*;/.exec(src.slice(i, i + 900));  // R-WEB-DIPLO-WAR-LEVEL: opcjonalny mnożnik poziomu (wartość bazowa)
   return m ? Number(m[1]) : null;
 }
 

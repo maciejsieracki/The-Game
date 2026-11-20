@@ -1,5 +1,7 @@
 # Skarbiec w Brązie — lekka korekta kosztów jednostek (PLOC Brązu)
 
+> **NIEAKTUALNE (2026-11-20):** wzory utrzymania jednostek i żywności opisane tutaj są sprzed FAL 875–887 (skala epoki na utrzymaniu, tempo „Koszty jednostek”, żywność ×4 na epokę, dodatkowy mnożnik rekrutacji). Aktualny stan: `dyspozycje/analizy/KOSZTY-JEDNOSTEK-STAN-2026-11-20.md`. Dokument zostawiony bez przepisywania.
+
 Temat: R-WEB-ECONOMY-FOOD-GRANARY-BRONZE-OPTIMIZATION-PROPOSAL-Q1, część F (runda 1/5, obrona, Operator HAIKU 5.5).
 Baza kodu: origin/main = ea8f70197. Kandydat obrony: 5c1ef2e8e. Zero zmian w `gra/src` i `gra/data`.
 Model: `gra/tools/treasury-unit-cost-model.cjs` (uruchomienie: `node gra/tools/treasury-unit-cost-model.cjs`).

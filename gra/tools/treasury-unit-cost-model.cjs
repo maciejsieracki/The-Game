@@ -1,21 +1,28 @@
 #!/usr/bin/env node
 /**
- * treasury-unit-cost-model.cjs — statyczny model skarbca (¤/turę) dla tematu
- * R-WEB-ECONOMY-FOOD-GRANARY-BRONZE-OPTIMIZATION-PROPOSAL-Q1 (część F: koszty jednostek).
+ * treasury-unit-cost-model.cjs — model skarbca i kosztów jednostek (Pieniądz, surowce, żywność)
+ * po FALACH 875–887 (R-WEB-ECONOMY-TREASURY-MODEL-REFRESH-Q1, runda 1).
  *
- * Tylko odczyt: nie zmienia gra/src ani gra/data. Uruchomienie:
+ * Tylko odczyt: nie zmienia gra/src ani gra/data. Liczby NIE są ze wzorów przepisanych ręcznie —
+ * model ładuje PRAWDZIWE funkcje kodu przez esbuild (bundle w pamięci, bez zapisu na dysk):
+ *   economy-upkeep.ts     unitUpkeep, buildUnitUpkeepTable, unitResourceUpkeep, unitFoodPerTurn,
+ *                         buildUnitFoodTable, DEFAULT_UPKEEP_PARAMS, magazynEraMultiplier
+ *   production.ts         unitMoneyCost, unitRecruitBaseMoneyCost (rekrutacja, pace, epoka, dod. mnożnik)
+ *   unit-cost-tempo.ts    KOSZT_JEDNOSTEK_PACE (Niski ×1 / Normalny ×2 / Wysoki ×4)
+ *   econ-era-rebalance.ts setEraRebalanceEnabledForTest (flaga rebalansu: domyślnie ON w danych)
+ *   population-growth-v85.ts computeCityRationCost (racje obywateli, przy m(e) z citizen-consumption-era.ts)
+ *
+ * Uruchomienie (wymaga gra/node_modules z esbuild):
  *   node gra/tools/treasury-unit-cost-model.cjs
  *
- * Źródła w kodzie (stan origin/main ea8f70197):
- *   - utrzymanie jednostki = round(units.json „Utrzymanie (Pieniądz/turę)” × 4)  [economy-upkeep.ts unitUpkeep;
- *     R_STAWKI_FALA1_FALA2_MULT = 4 w r-stawki-strojenie.ts]. BRAK skali epoki na utrzymaniu.
- *   - koszt rekrutacji = scaleCostByEpoch(„Pieniądz (koszt)”, Epoka): Kamień ×1, Brąz ×2, Żelazo ×4
- *     [building-stock-cost.ts epochCostMultiplier; production.ts unitCostMode/cost].
- *   - budynki: buildingEraCostMultiplier dotyczy KOSZTU BUDOWY, nie utrzymania.
+ * Zakładana konfiguracja: flaga rebalansu ON (wartość z gra/data/econ-era-rebalance-params.json),
+ * domyślne parametry utrzymania (DEFAULT_UPKEEP_PARAMS), tempo podane w kolumnach.
  *
  * Dane zrzutu „Skarbiec imperium” (Brąz, 20 miast, skarbiec 7096) — z zadania właściciela:
  *   wpływy 1550, utrzymanie budynków 786, utrzymanie jednostek 376, netto skarbca 345 (wartość z panelu).
- *   UWAGA: 1550 − 1162 = 388, nie 345; różnica 43 NIE_ZMIERZONO (Administrator, zaokrąglenia lub inna pozycja).
+ *   UWAGA: 1550 − 786 − 376 = 388, nie 345; różnica 43 NIE_ZMIERZONO (Administrator, zaokrąglenia lub inna pozycja).
+ *   Skład armii w zrzucie NIE_ZMIERZONO (brak listy jednostek) — 376 nie da się przeliczyć na nowe wzory
+ *   bez składu; poniżej podane są przedziały (sekcja 4).
  *
  * Uwaga metodologiczna: model NIE ma sprzężenia zwrotnego (AI/gracz nie zmniejsza armii przy droższych jednostkach).
  */
@@ -24,119 +31,170 @@
 const fs = require('fs');
 const path = require('path');
 
-const UNITS_PATH = path.join(__dirname, '..', 'data', 'units.json');
-const R_STAWKI_MULT = 4;
-const EPOCH_COST_MULT = { 1: 1, 2: 2, 3: 4 };
-const EPOCH_NAME = { 'Kamień': 1, 'Brąz': 2, 'Żelazo': 3 };
+const GRA_ROOT = path.resolve(__dirname, '..');
+const GAME_DIR = path.join(GRA_ROOT, 'src', 'game');
+const UNITS_PATH = path.join(GRA_ROOT, 'data', 'units.json');
 
+const PACES = ['niski', 'normalny', 'wysoki'];
 const SNAP = { income: 1550, buildingUpkeep: 786, unitUpkeep: 376, netPanel: 345, treasury: 7096 };
 
-function epochOrdinal(epoka) {
-  return EPOCH_NAME[epoka] ?? 1;
+/** Przykładowa armia 10 jednostek na epokę (założenie modelu; składy NIE_ZMIERZONO w grze). */
+const ARMY_BY_ERA = {
+  'Kamień': [['Wojownik', 5], ['Łucznik', 5]],
+  'Brąz': [['Włócznik', 5], ['Procarz', 5]],
+  'Żelazo': [['Falanga', 5], ['Hastati', 5]],
+};
+const SAMPLE_UNITS = ['Wojownik', 'Łucznik', 'Rydwan (woły)', 'Zwiadowca', 'Włócznik', 'Procarz', 'Rydwan konny', 'Falanga', 'Hastati', 'Konnica'];
+
+/** Ładuje prawdziwe moduły gry (esbuild, bundle w pamięci). */
+function loadRealGame() {
+  const esbuild = require(path.join(GRA_ROOT, 'node_modules', 'esbuild'));
+  const entry = [
+    "export * from './economy-upkeep';",
+    "export { unitMoneyCost, unitRecruitBaseMoneyCost } from './production';",
+    "export { KOSZT_JEDNOSTEK_PACE, applyUnitCostPace } from './unit-cost-tempo';",
+    "export { setEraRebalanceEnabledForTest, isEraRebalanceEnabled, ERA_REBALANCE_PARAMS } from './econ-era-rebalance';",
+    "export { computeCityRationCost, rationFoodCostPerPop } from './population-growth-v85';",
+    "export { citizenConsumptionEraMultiplier } from './citizen-consumption-era';",
+  ].join('\n');
+  const result = esbuild.buildSync({
+    stdin: { contents: entry, resolveDir: GAME_DIR, sourcefile: path.join(GAME_DIR, '.treasury-model-entry.ts'), loader: 'ts' },
+    bundle: true,
+    write: false,
+    format: 'cjs',
+    platform: 'node',
+    loader: { '.json': 'json' },
+    logLevel: 'error',
+  });
+  const mod = { exports: {} };
+  new Function('module', 'exports', 'require', result.outputFiles[0].text)(mod, mod.exports, require);
+  return mod.exports;
 }
 
-function loadUnits() {
-  const rows = JSON.parse(fs.readFileSync(UNITS_PATH, 'utf8'));
-  return rows
-    .filter((r) => typeof r['Jednostka'] === 'string')
-    .map((r) => {
-      const ord = epochOrdinal(r['Epoka']);
-      const upkeepRaw = Number(r['Utrzymanie (Pieniądz/turę)']) || 0;
-      const costRaw = Number(r['Pieniądz (koszt)']) || 0;
-      return {
-        name: r['Jednostka'],
-        typ: r['Typ'] || '?',
-        epoka: r['Epoka'],
-        ord,
-        upkeepGold: upkeepRaw * R_STAWKI_MULT,
-        recruitGold: costRaw > 0 ? Math.max(1, Math.round(costRaw * (EPOCH_COST_MULT[ord] ?? 1))) : 0,
-      };
-    });
+const G = loadRealGame();
+G.setEraRebalanceEnabledForTest(null); // null = wartość z gra/data/econ-era-rebalance-params.json
+const units = JSON.parse(fs.readFileSync(UNITS_PATH, 'utf8'));
+const byName = new Map(units.map((u) => [u['Jednostka'], u]));
+const upkeepTable = G.buildUnitUpkeepTable(units);
+const foodTable = G.buildUnitFoodTable(units);
+const P = G.DEFAULT_UPKEEP_PARAMS;
+
+function recruit(name, pace) {
+  const u = byName.get(name);
+  return G.unitMoneyCost(G.unitRecruitBaseMoneyCost(u), undefined, pace, 0, 'normal', name);
+}
+function upkeepMoney(name, pace) {
+  const u = byName.get(name);
+  // Kategoria jak w unitPieniadzUpkeepCardValue (economy-upkeep.ts): Kategoria ?? 'domyslny'.
+  const kategoria = typeof u['Kategoria'] === 'string' && u['Kategoria'].length > 0 ? u['Kategoria'] : 'domyslny';
+  return G.unitUpkeep({ typeId: name, category: kategoria }, upkeepTable, P.jednostkaUtrzymanieStd, pace);
+}
+function upkeepResource(name, pace) {
+  return G.unitResourceUpkeep(byName.get(name), pace);
+}
+function food(name, pace, opts) {
+  return G.unitFoodPerTurn({ typeId: name, camping: !!opts.camping, onOwnTerritory: opts.own !== false }, P, foodTable, pace);
+}
+function fmt(n) {
+  return Number.isInteger(n) ? String(n) : (Math.round(n * 100) / 100).toFixed(2);
+}
+function mdRow(cells) {
+  return '| ' + cells.join(' | ') + ' |';
 }
 
-function summarize(units) {
-  const byEra = {};
-  for (const u of units) {
-    const k = u.epoka;
-    byEra[k] = byEra[k] || { n: 0, upkeepSum: 0, recruitSum: 0, recruitN: 0, zeroUpkeep: 0 };
-    byEra[k].n += 1;
-    byEra[k].upkeepSum += u.upkeepGold;
-    if (u.upkeepGold === 0) byEra[k].zeroUpkeep += 1;
-    if (u.recruitGold > 0) {
-      byEra[k].recruitSum += u.recruitGold;
-      byEra[k].recruitN += 1;
+function section1Units() {
+  console.log('== 1. Pojedyncze jednostki (wywołania prawdziwych funkcji; flaga rebalansu ON) ==');
+  console.log(mdRow(['Jednostka', 'Epoka', 'Rekrut. N', 'Rekrut. Nm', 'Rekrut. W', 'Utrz. Pien. N', 'Utrz. Pien. Nm', 'Utrz. Pien. W', 'Surowiec N / Nm / W', 'Żyw. own N / Nm / W', 'Żyw. obóz N / Nm / W', 'Żyw. poza N / Nm / W']));
+  console.log(mdRow(Array(12).fill('---')));
+  for (const name of SAMPLE_UNITS) {
+    const u = byName.get(name);
+    if (!u) { console.log(mdRow([name, 'BRAK W units.json'])); continue; }
+    const res = PACES.map((p) => upkeepResource(name, p));
+    const resStr = res.map((r) => {
+      const vals = Object.entries(r);
+      return vals.length ? vals.map(([k, v]) => `${k} ${fmt(v)}`).join(',') : '—';
+    }).join(' / ');
+    const foodStr = (opts) => PACES.map((p) => fmt(food(name, p, opts))).join(' / ');
+    console.log(mdRow([
+      name, String(u['Epoka']),
+      ...PACES.map((p) => fmt(recruit(name, p))),
+      ...PACES.map((p) => fmt(upkeepMoney(name, p))),
+      resStr,
+      foodStr({ own: true, camping: false }),
+      foodStr({ own: true, camping: true }),
+      foodStr({ own: false, camping: false }),
+    ]));
+  }
+}
+
+function armyForEra(era, pace) {
+  const list = ARMY_BY_ERA[era];
+  let rec = 0, up = 0, foodOwn = 0, foodCamp = 0, foodOut = 0;
+  const res = {};
+  for (const [name, n] of list) {
+    rec += recruit(name, pace) * n;
+    up += upkeepMoney(name, pace) * n;
+    foodOwn += food(name, pace, { own: true, camping: false }) * n;
+    foodCamp += food(name, pace, { own: true, camping: true }) * n;
+    foodOut += food(name, pace, { own: false, camping: false }) * n;
+    for (const [k, v] of Object.entries(upkeepResource(name, pace))) res[k] = (res[k] ?? 0) + v * n;
+  }
+  return { rec, up, res, foodOwn, foodCamp, foodOut };
+}
+
+function section2Army() {
+  console.log('');
+  console.log('== 2. Armia 10 jednostek na epokę (założony skład, patrz ARMY_BY_ERA) ==');
+  console.log(mdRow(['Epoka', 'Skład', 'Pace', 'Rekrutacja (Pien.)', 'Utrz. Pien./t', 'Surowiec/t', 'Żyw. own/t', 'Żyw. obóz/t', 'Żyw. poza/t']));
+  console.log(mdRow(Array(9).fill('---')));
+  for (const era of Object.keys(ARMY_BY_ERA)) {
+    const skład = ARMY_BY_ERA[era].map(([n, k]) => `${k}× ${n}`).join(' + ');
+    for (const p of PACES) {
+      const a = armyForEra(era, p);
+      const resStr = Object.keys(a.res).length ? Object.entries(a.res).map(([k, v]) => `${k} ${fmt(v)}`).join(', ') : '—';
+      console.log(mdRow([era, skład, p, fmt(a.rec), fmt(a.up), resStr, fmt(a.foodOwn), fmt(a.foodCamp), fmt(a.foodOut)]));
     }
   }
-  return byEra;
 }
 
-/** Wynik netto skarbca przy mnożniku utrzymania jednostek (dotyczy całej puli 376 — górna granica). */
-function netWithUnitMult(mult) {
-  const unitCost = SNAP.unitUpkeep * mult;
-  const delta = unitCost - SNAP.unitUpkeep;
-  return { mult, unitCost: round1(unitCost), net: round1(SNAP.netPanel - delta), deltaPerTurn: round1(delta) };
+function section3Treasury() {
+  console.log('');
+  console.log('== 3. Bilans skarbca Brąz, 20 miast, Normalny ×2 (przykład; składy NIE_ZMIERZONO) ==');
+  const army = armyForEra('Brąz', 'normalny');
+  const net = SNAP.income - SNAP.buildingUpkeep - army.up;
+  console.log(`wpływy brutto ${SNAP.income} − budynki ${SNAP.buildingUpkeep} − utrz. jednostek (10 × Brąz, Normalny) ${fmt(army.up)} = netto ${fmt(net)} ¤/turę`);
+  console.log(`(sama pula budynków i wpływów z zrzutu; armia z sekcji 2 — założenie modelu)`);
+  console.log('');
+  console.log('Wrażliwość: zrzut podaje utrzymanie jednostek 376 bez składu. Stare wzory (przed FALĄ 884–887): round(stawka×4), bez skali epoki i bez tempa.');
+  console.log('Nowe wzory mnożą to samo przez: skalę epoki (Kamień ×1 / Brąz ×2 / Żelazo ×4) oraz tempo (Niski ×1 / Normalny ×2 / Wysoki ×4).');
+  console.log('Współczynnik k = skala epoki × tempo; dla puli 376 w całości z jednej epoki:');
+  console.log(mdRow(['Pula (przykład)', 'k', 'Utrz. jednostek', 'Netto skarbca (1550 − 786 − X)']));
+  console.log(mdRow(['---', '---', '---', '---']));
+  for (const [label, k] of [['cała pula Kamień, Normalny', 2], ['cała pula Brąz, Normalny', 4], ['cała pula Żelazo, Normalny', 8]]) {
+    const x = SNAP.unitUpkeep * k;
+    console.log(mdRow([label, String(k), fmt(x), fmt(SNAP.income - SNAP.buildingUpkeep - x)]));
+  }
+  console.log('NIE_ZMIERZONO: skład armii w zrzucie; wartości 2/4/8 to skrajne przedziały, nie prognoza.');
 }
 
-function round1(x) {
-  return Math.round(x * 10) / 10;
+function section4Ration() {
+  console.log('');
+  console.log('== 4. Racje obywateli (computeCityRationCost, 1000 obywateli, poziom racji 2) ==');
+  console.log(mdRow(['Epoka właściciela', 'm(e) (citizenConsumptionEraMultiplier)', 'Wyżywienie/t (1000 pop.)']));
+  console.log(mdRow(['---', '---', '---']));
+  for (const era of [1, 2, 3]) {
+    const eraName = ['Kamień', 'Brąz', 'Żelazo'][era - 1];
+    const m = G.citizenConsumptionEraMultiplier(era);
+    const cost = G.computeCityRationCost(1000, 2, undefined, undefined, era);
+    console.log(mdRow([eraName, fmt(m), fmt(cost)]));
+  }
 }
 
 function main() {
-  const units = loadUnits();
-  const byEra = summarize(units);
-
-  console.log('== Utrzymanie i rekrutacja wg epoki jednostki (kod: R_STAWKI ×4 na utrzymanie; epoch x1/x2/x4 na koszt) ==');
-  console.log('epoka      | jedn. | utrz./tura śr. (po ×4) | rekrutacja śr. (¤) | utrz. 0 (np. gwardie)');
-  for (const [era, s] of Object.entries(byEra)) {
-    const avgUp = s.n ? (s.upkeepSum / s.n).toFixed(2) : '-';
-    const avgRec = s.recruitN ? (s.recruitSum / s.recruitN).toFixed(1) : '-';
-    console.log(`${era.padEnd(10)} | ${String(s.n).padStart(5)} | ${avgUp.padStart(22)} | ${avgRec.padStart(18)} | ${s.zeroUpkeep}`);
-  }
-
-  console.log('');
-  console.log('== Ile jednostek daje 376 ¤/tura (granice; mix typów NIE_ZMIERZONO) ==');
-  const brazUp = units.filter((u) => u.ord === 2 && u.upkeepGold > 0).map((u) => u.upkeepGold);
-  const minUp = Math.min(...units.filter((u) => u.upkeepGold > 0).map((u) => u.upkeepGold));
-  const maxUp = Math.max(...units.map((u) => u.upkeepGold));
-  const avgBrazUp = brazUp.reduce((a, b) => a + b, 0) / brazUp.length;
-  console.log(`min stawka ${minUp} ¤ -> max ${Math.round(SNAP.unitUpkeep / minUp)} jedn.; max stawka ${maxUp} ¤ -> min ${Math.ceil(SNAP.unitUpkeep / maxUp)} jedn.`);
-  console.log(`średnia stawka Brąz (>0) ${avgBrazUp.toFixed(2)} ¤ -> ok. ${Math.round(SNAP.unitUpkeep / avgBrazUp)} jedn. (gdyby cała pula była Brązem)`);
-
-  console.log('');
-  console.log('== Udział kosztów jednostek ==');
-  console.log(`376/1162 (koszty) = ${(100 * 376 / 1162).toFixed(1)}%   376/1550 (wpływy) = ${(100 * 376 / 1550).toFixed(1)}%   376/786 (budynki) = ${(100 * 376 / 786).toFixed(1)}%`);
-  console.log(`wpływy/koszty = ${(1550 / 1162).toFixed(2)}x   netto wg sumy = ${1550 - 1162} (panel: ${SNAP.netPanel}, różnica ${1550 - 1162 - SNAP.netPanel} NIE_ZMIERZONO)`);
-
-  console.log('');
-  console.log('== Warianty: mnożnik utrzymania pieniężnego jednostek (górna granica: cała pula 376) ==');
-  console.log('wariant            | mnożnik | koszt jedn. | Δ/tura | netto skarbca (z 345)');
-  const variants = [
-    ['V0 obecnie', 1],
-    ['V1 ostrożny +10%', 1.1],
-    ['V2 średni +20%', 1.2],
-    ['V3 mocny +30%', 1.3],
-    ['Kontrast: jak budynki ×2', 2],
-  ];
-  for (const [label, m] of variants) {
-    const r = netWithUnitMult(m);
-    console.log(`${label.padEnd(18)} | ${String(m).padStart(7)} | ${String(r.unitCost).padStart(11)} | ${String(r.deltaPerTurn).padStart(6)} | ${String(r.net).padStart(8)}`);
-  }
-
-  console.log('');
-  console.log('== Próg zerowania netto (mnożnik, przy którym netto = 0, wg panelu 345) ==');
-  const breakEven = 1 + SNAP.netPanel / SNAP.unitUpkeep;
-  console.log(`m* = 1 + 345/376 = ${breakEven.toFixed(2)} (koszt jednostek wzrósłby o ${(100 * (breakEven - 1)).toFixed(0)}%)`);
-
-  console.log('');
-  console.log('== Skarbiec: czas do wyczerpania przy netto ujemnym (tylko dla wariantów z netto<0) ==');
-  for (const [label, m] of variants) {
-    const r = netWithUnitMult(m);
-    if (r.net >= 0) {
-      console.log(`${label}: netto ${r.net} >= 0 -> skarbiec rośnie (nie wyczerpuje się; brak sufitu skarbca w modelu — NIE_ZMIERZONO)`);
-    } else {
-      console.log(`${label}: netto ${r.net} < 0 -> wyczerpanie ${Math.ceil(SNAP.treasury / -r.net)} tur`);
-    }
-  }
+  section1Units();
+  section2Army();
+  section3Treasury();
+  section4Ration();
 }
 
 main();

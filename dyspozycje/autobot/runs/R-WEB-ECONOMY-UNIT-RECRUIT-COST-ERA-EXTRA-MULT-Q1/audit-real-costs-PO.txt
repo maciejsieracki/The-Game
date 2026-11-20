@@ -1,0 +1,10 @@
+Wojownik | Kamień | raw=5 | rekr=5/10/20 | Pien/tura=4 | zyw/tura=4
+Łucznik | Kamień | raw=3 | rekr=3/6/12 | Pien/tura=4 | zyw/tura=4
+Rydwan (woły) | Kamień | raw=15 | rekr=15/30/60 | Pien/tura=12 | zyw/tura=4
+Zwiadowca | Kamień | raw=4 | rekr=4/8/16 | Pien/tura=0 | zyw/tura=0
+Włócznik | Brąz | raw=8 | rekr=32/64/128 | Pien/tura=16 | zyw/tura=8
+Procarz | Brąz | raw=4 | rekr=16/32/64 | Pien/tura=8 | zyw/tura=8
+Rydwan konny | Brąz | raw=14 | rekr=56/112/224 | Pien/tura=24 | zyw/tura=8
+Falanga | Żelazo | raw=9 | rekr=144/288/576 | Pien/tura=32 | zyw/tura=16
+Hastati | Żelazo | raw=9 | rekr=144/288/576 | Pien/tura=32 | zyw/tura=16
+Konnica | Żelazo | raw=11 | rekr=176/352/704 | Pien/tura=48 | zyw/tura=16

@@ -187,10 +187,12 @@ try {
   eq(M.itemCost('jednostka', bronzeUnit.Jednostka, data, 1), 8, 'Bronze unit catalog money');
   eq(M.itemCost('jednostka', ironUnit.Jednostka, data, 1), 36, 'Iron unit catalog money');
   eq(M.unitPurchaseCost(stoneUnit), 5, 'Stone unit purchase money');
-  eq(M.unitPurchaseCost(bronzeUnit), 8, 'Bronze unit purchase money');
-  eq(M.unitPurchaseCost(ironUnit), 36, 'Iron unit purchase money');
-  eq(M.unitProductionItem(bronzeUnit.Jednostka, data)?.koszt, 8, 'Bronze recruitment card money');
-  eq(M.unitProductionItem(ironUnit.Jednostka, data)?.koszt, 36, 'Iron recruitment card money');
+  // R-WEB-ECONOMY-UNIT-RECRUIT-COST-ERA-EXTRA-MULT-Q1 (decyzja wlasciciela 2026-11-19): koszt REKRUTACJI
+  // w Pieniadzu x2 (Braz) i x4 (Zelazo) DODATKOWO do epoki: Braz 8 -> 16, Zelazo 36 -> 144. Katalog/loot (itemCost) bez zmian.
+  eq(M.unitPurchaseCost(bronzeUnit), 16, 'Bronze unit purchase money (era extra x2)');
+  eq(M.unitPurchaseCost(ironUnit), 144, 'Iron unit purchase money (era extra x4)');
+  eq(M.unitProductionItem(bronzeUnit.Jednostka, data)?.koszt, 16, 'Bronze recruitment card money (era extra x2)');
+  eq(M.unitProductionItem(ironUnit.Jednostka, data)?.koszt, 144, 'Iron recruitment card money (era extra x4)');
 
   // Existing layers must receive the epoch-scaled base exactly once.
   const recruitmentDiscount = [{
@@ -275,7 +277,8 @@ try {
     cityProd: { c1: { kolejka: [queued], postep: 3 } },
   };
   const loaded = M.deserializeGame(M.serializeGame(saved));
-  eq(loaded.cityProd.c1.kolejka[0].koszt, 8, 'save/load preserves effective Bronze queue cost');
+  // Pin z decyzja 2026-11-19 (ekstra x2 Braz rekrutacji): 8 -> 16.
+  eq(loaded.cityProd.c1.kolejka[0].koszt, 16, 'save/load preserves effective Bronze queue cost (era extra x2)');
   eq(loaded.cities[0].surowce.drewno, 10, 'save/load preserves settled resource stock');
 
   // Mutation control: removing epoch multiplication from the shared unit

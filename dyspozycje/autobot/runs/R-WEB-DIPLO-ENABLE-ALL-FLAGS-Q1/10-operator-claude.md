@@ -28,3 +28,35 @@ BLOKADY / UWAGI-DLA-ORKIESTRATORA:
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator — sprawdzić diff (tylko allowlista), decyzja właściciela co do napTor w haku i poprawka setAll(false) w osobnym temacie.
 DEPLOY-PUSH: NIE WYKONANO
+
+---
+
+## RUNDA 2/5 — integracja: scalenie z origin/main (FALA 886)
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-DIPLO-ENABLE-ALL-FLAGS-Q1
+GOAL: scalić kod rundy 1 (46a706e4e) z origin/main 8f50028c3 i zachować obie zmiany: domyślne ON flag z danych oraz skalowanie „Dyplomacja i wojna” (FALA 886).
+ZMIANY/COMMIT: konflikt tylko w `gra/src/game/diplomacy-harder.ts` (blok `DIPLO_HARDER_ENABLED_DEFAULT`). Rozwiązanie: zachowano `harderParamsNow()` z FALI 886 oraz `DIPLO_HARDER_ENABLED_DEFAULT = HARDER_PARAMS.twardaDyplomacjaAktywna === true` (domyślnie ON z danych zamiast stałej `false` z main). Pozostałe pliki scalone automatycznie. Dane 6 z 6 flag: ON, bez zmian. Bez zmian testów (wszystkie piny zielone przy ON). Commit scalający: SHA w polu sha wyniku.
+TESTY (liczby z surowego wyjścia, uruchomione po scaleniu):
+- tsc --noEmit: exit 0
+- logic-test: LOGIC OK (213/213)
+- tech-tree-test: 20 pass, 0 fail
+- research-test: PASSED 33 / FAILED 0
+- unit-replace-test: 21/21
+- combat-test: 6/6 pass
+- ai-test: 292 passed, 5 failed (zgodnie z dispatchem: 5 przedistniejących; FAIL: poziom3 economy, T5a, T5b, T5d, T5f)
+- diplomacy-harder-unit-test: PASS 53 FAIL 0
+- diplomacy-alliance-strength-unit-test: 34 OK, 0 FAIL
+- diplomacy-zero-trust-unit-test: PASS=44 FAIL=0
+- diplomacy-war-limit-unit-test: pass=57 fail=0
+- ai-ai-alliance-tick-test: suite 19/19 OK, mutants 8/8
+- ai-ai-alliance-limit-test: limit suite OK, mutants 4/4 + wiring 4/4
+- ai-ai-coalition-test: WYNIK: ZIELONE
+- diplomacy-all-flags-measure-hook-test: 35 zielonych, 0 czerwonych
+- diplomacy-war-level-test: OK, wszystkie asercje zielone (pin „Łatwa = bazowe” przechodzi przy flagach ON; brak zmiany pinu)
+- diplomacy-penalty-preview-test: 9 pass, 0 fail
+BLOKADY: brak dla kodu. Pomiar 90 tur nie był wykonywany w tej rundzie (zgodnie z dispatchem). Pomiary z rundy 1 pozostają w katalogu runu.
+RUNDY: 2/5
+NASTĘPNY KROK: Evaluator weryfikuje scalenie i bramki; Final Control po PASS.
+DEPLOY/PUSH: NIE WYKONANO

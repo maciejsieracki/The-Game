@@ -12,6 +12,7 @@ import econParamsJson from '../../data/econ-params.json';
 import { diplomacyDepositBasePrice } from './diplomacy-deposit-trade';
 import { applyTempoKoszt, type TempoGry } from './tech-tempo';
 import { scaleRelationThreshold, getBaseDiplomacyParams } from './diplomacy';
+import { getDiplomacyWarLevel, scaleBonusForWarLevel, scalePenaltyForWarLevel } from './diplomacy-war-level';
 import type { GameDifficulty } from './difficulty-cost';
 
 /** Typ pozycji w koszyku wymiany / daru (v1.0). Ulepszenia terenu — poza koszykiem. */
@@ -751,6 +752,22 @@ function loadPnRelacjaParams(): PnRelacjaLoaded {
 const _pnRelacja = loadPnRelacjaParams();
 
 /**
+ * R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: przelicznik PN→Zaufanie po poziomie „Dyplomacja i wojna”.
+ * pn_na_zaufanie (100 PN = +1) ×k (dzielnik bonusu); max_zaufanie_na_ture i dobra_wola ÷k (bonusy).
+ * Progi (min_nadmiar, prog_dar, dobra_wola_min_nadmiar_pn, dobra_wola_tur) — bez zmian. ŁATWA = _pnRelacja.
+ */
+function pnRelacjaNow(): PnRelacjaLoaded {
+  const lvl = getDiplomacyWarLevel();
+  if (lvl === 'latwa') return _pnRelacja;
+  return {
+    ..._pnRelacja,
+    pn_na_zaufanie: scalePenaltyForWarLevel(_pnRelacja.pn_na_zaufanie, lvl),
+    max_zaufanie_na_ture: scaleBonusForWarLevel(_pnRelacja.max_zaufanie_na_ture, lvl),
+    dobra_wola_zaufanie_per_tura: scaleBonusForWarLevel(_pnRelacja.dobra_wola_zaufanie_per_tura, lvl),
+  };
+}
+
+/**
  * Minimalna suma PN, którą oddajesz przy uczciwej wymianie @ Relacji
  * (partner dostaje receivePn — ty musisz dać receivePn × 100/Rel).
  */
@@ -775,9 +792,9 @@ export function diplomacySurplusPn(
 /** Nadmiar PN → surowa zmiana Zaufania (floor); limit na turę stosuje silnik przez diplomacyClampTrustGainNaTure. */
 export function diplomacyPnToZaufanieDelta(
   surplusPn: number,
-  params: PnRelacjaParams = _pnRelacja,
+  params: PnRelacjaParams = pnRelacjaNow(),
 ): number {
-  const cfg = { ..._pnRelacja, ...params };
+  const cfg = { ...pnRelacjaNow(), ...params };
   if (surplusPn < cfg.min_nadmiar_pn) return 0;
   return Math.max(0, Math.floor(surplusPn / cfg.pn_na_zaufanie));
 }
@@ -789,9 +806,9 @@ export function diplomacyPnToZaufanieDelta(
 export function diplomacyClampTrustGainNaTure(
   proposedDelta: number,
   alreadyGainedThisTurn: number,
-  params: PnRelacjaParams = _pnRelacja,
+  params: PnRelacjaParams = pnRelacjaNow(),
 ): number {
-  const cfg = { ..._pnRelacja, ...params };
+  const cfg = { ...pnRelacjaNow(), ...params };
   const room = Math.max(0, cfg.max_zaufanie_na_ture - Math.max(0, alreadyGainedThisTurn));
   return Math.min(Math.max(0, proposedDelta), room);
 }
@@ -832,15 +849,15 @@ export function diplomacyGiftTrustFromPn(
 }
 
 export function diplomacyPnRelacjaParams(): Readonly<PnRelacjaLoaded> {
-  return _pnRelacja;
+  return pnRelacjaNow();
 }
 
 /** D3-W2-C: dobra wola +1/turę × 3 tury gdy nadmiar ≥ 100 PN. */
 export function diplomacyDobraWolaFromSurplus(
   surplusPn: number,
-  params: PnRelacjaParams = _pnRelacja,
+  params: PnRelacjaParams = pnRelacjaNow(),
 ): { active: boolean; tur: number; zaufaniePerTura: number } {
-  const cfg = { ..._pnRelacja, ...params };
+  const cfg = { ...pnRelacjaNow(), ...params };
   if (surplusPn < cfg.dobra_wola_min_nadmiar_pn) {
     return { active: false, tur: 0, zaufaniePerTura: 0 };
   }
@@ -853,10 +870,10 @@ export function diplomacyDobraWolaFromSurplus(
 
 /** D3-W3-B: minimalna Relacja na czysty dar (skalowana wg trudności). */
 export function diplomacyProgDarRelacja(
-  params: PnRelacjaParams = _pnRelacja,
+  params: PnRelacjaParams = pnRelacjaNow(),
   difficulty: GameDifficulty = 'normal',
 ): number {
-  const base = { ..._pnRelacja, ...params }.prog_dar_relacja;
+  const base = { ...pnRelacjaNow(), ...params }.prog_dar_relacja;
   return scaleRelationThreshold(base, difficulty);
 }
 

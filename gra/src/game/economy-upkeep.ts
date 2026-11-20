@@ -54,6 +54,8 @@ import {
 } from './building-stock-cost';
 import { buildingEffectAtLevel } from './production';
 import { rebalancedUnitFoodBase } from './econ-era-rebalance';
+import { mnoznikUtrzymaniaJednostek } from './unit-cost-tempo';
+import type { KosztJednostekPace } from './unit-cost-tempo';
 import {
   R_STAWKI_FALA1_FALA2_MULT,
   R_STAWKI_FALA2_MULT,
@@ -883,6 +885,8 @@ export interface UnitResourceUpkeepLike {
  */
 export function unitResourceUpkeep(
   unitDef: UnitResourceUpkeepSource | null | undefined,
+  /** R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1: tempo „Koszty jednostek" (domyślnie Niski ×1). */
+  kosztJednostekPace: KosztJednostekPace | number = 'niski',
 ): Record<string, number> {
   const out: Record<string, number> = {};
   if (!unitDef) return out;
@@ -891,7 +895,9 @@ export function unitResourceUpkeep(
   const ilosc = unitDef['Utrzymanie surowiec (ilość)'];
   if (typeof ilosc === 'number' && Number.isFinite(ilosc) && ilosc > 0) {
     const key = stripDiacriticsLower(rawName);
-    if (key) out[key] = scaleCostByEpoch(ilosc, unitDef.Epoka);
+    if (key) {
+      out[key] = scaleCostByEpoch(ilosc, unitDef.Epoka) * mnoznikUtrzymaniaJednostek(kosztJednostekPace);
+    }
   }
   return out;
 }
@@ -931,8 +937,9 @@ export const UNIT_RECRUIT_STOCK_ONLY_HINT = 'Za mało surowca w magazynie państ
 export function unitRecruitUpkeepReserve(
   unitDef: UnitResourceUpkeepSource | null | undefined,
   turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
+  kosztJednostekPace: KosztJednostekPace | number = 'niski',
 ): Record<string, number> {
-  const upkeep = unitResourceUpkeep(unitDef);
+  const upkeep = unitResourceUpkeep(unitDef, kosztJednostekPace);
   if (turns === 1) return upkeep;
   const out: Record<string, number> = {};
   for (const [k, v] of Object.entries(upkeep)) {
@@ -995,10 +1002,11 @@ export function pickUnitRecruitHint(
 export function totalUnitResourceUpkeep(
   units: ReadonlyArray<UnitResourceUpkeepLike>,
   resolveDef: (typeId: string) => UnitResourceUpkeepSource | null | undefined,
+  kosztJednostekPace: KosztJednostekPace | number = 'niski',
 ): Record<string, number> {
   const out: Record<string, number> = {};
   for (const u of units) {
-    addResourceCosts(out, unitResourceUpkeep(resolveDef(u.typeId)));
+    addResourceCosts(out, unitResourceUpkeep(resolveDef(u.typeId), kosztJednostekPace));
   }
   return out;
 }
@@ -1013,10 +1021,11 @@ export function previewOwnerTotalResourceUpkeep(
   resolveUnitDef: (typeId: string) => UnitResourceUpkeepSource | null | undefined,
   levelFor?: (bdef: any) => number,
   ratio: number = DEFAULT_BUILDING_RESOURCE_UPKEEP_RATIO,
+  kosztJednostekPace: KosztJednostekPace | number = 'niski',
 ): Record<string, number> {
   const out = previewOwnerBuildingResourceUpkeep(ownerId, cities, buildingCatalog, builtByCity, levelFor, ratio);
   const ownerUnits = units.filter(u => u.ownerId === ownerId);
-  addResourceCosts(out, totalUnitResourceUpkeep(ownerUnits, resolveUnitDef));
+  addResourceCosts(out, totalUnitResourceUpkeep(ownerUnits, resolveUnitDef, kosztJednostekPace));
   return out;
 }
 
@@ -1065,6 +1074,7 @@ export function unitUpkeep(
   unit: UnitUpkeepLike,
   table: UnitUpkeepTable,
   standardUpkeep: number,
+  kosztJednostekPace: KosztJednostekPace | number = 'niski',
 ): number {
   const byCat = DEFAULT_UNIT_UPKEEP_BY_CATEGORY[unit.category];
   if (typeof byCat === 'number' && byCat === 0) return 0;
@@ -1074,8 +1084,9 @@ export function unitUpkeep(
   else if (typeof byCat === 'number' && Number.isFinite(byCat)) base = byCat;
   else base = Number.isFinite(standardUpkeep) ? standardUpkeep : 0;
   if (base <= 0) return 0;
-  // R-STAWKI FALA1×FALA2: ×4 utrzymanie jednostek (Pieniądz/turę)
-  return Math.round(base * R_STAWKI_FALA1_FALA2_MULT);
+  // R-STAWKI FALA1×FALA2: ×4 utrzymanie jednostek (Pieniądz/turę);
+  // R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1: ostatni czynnik = tempo „Koszty jednostek".
+  return Math.round(base * R_STAWKI_FALA1_FALA2_MULT * mnoznikUtrzymaniaJednostek(kosztJednostekPace));
 }
 
 /** Total gold unit upkeep for a set of units (Spec s.6.2). */
@@ -1083,10 +1094,11 @@ export function totalUnitUpkeep(
   units: ReadonlyArray<UnitUpkeepLike>,
   table: UnitUpkeepTable,
   standardUpkeep: number,
+  kosztJednostekPace: KosztJednostekPace | number = 'niski',
 ): number {
   let sum = 0;
   for (const u of units) {
-    sum += unitUpkeep(u, table, standardUpkeep);
+    sum += unitUpkeep(u, table, standardUpkeep, kosztJednostekPace);
   }
   return sum;
 }
@@ -1155,6 +1167,8 @@ export function unitFoodPerTurn(
   unit: UnitFoodLike,
   p: UpkeepParams,
   foodTable: UnitFoodTable = {},
+  /** R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1: tempo „Koszty jednostek" — mnożnik na końcu łańcucha. */
+  kosztJednostekPace: KosztJednostekPace | number = 'niski',
 ): number {
   let base = p.zywnoscJednostkaRuch;
   if (unit.typeId && typeof foodTable[unit.typeId] === 'number') {
@@ -1176,8 +1190,8 @@ export function unitFoodPerTurn(
     : (p.zywnoscMnoznikPozaTerytorium ?? 2);
   const food = base * mnoznikTerytorium;
   if (food <= 0) return 0;
-  // R-STAWKI FALA1×FALA2: ×4 żywność wojska
-  return food * R_STAWKI_FALA1_FALA2_MULT;
+  // R-STAWKI FALA1×FALA2: ×4 żywność wojska; R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1: ×tempo (ostatni czynnik).
+  return food * R_STAWKI_FALA1_FALA2_MULT * mnoznikUtrzymaniaJednostek(kosztJednostekPace);
 }
 
 /**
@@ -1199,13 +1213,46 @@ function unitFoodBaseByEpoch(direct: number, epoch: number | string | null | und
 export function unitFoodCardValue(unit: {
   readonly 'żywność/turę'?: unknown;
   readonly Epoka?: unknown;
-}): unknown {
+}, kosztJednostekPace: KosztJednostekPace | number = 'niski'): unknown {
   const direct = unit['żywność/turę'];
   if (typeof direct !== 'number' || !Number.isFinite(direct)) return direct;
   const epoch = typeof unit.Epoka === 'number' || typeof unit.Epoka === 'string' ? unit.Epoka : undefined;
   const base = unitFoodBaseByEpoch(direct, epoch);
   if (base <= 0) return 0;
-  return base * R_STAWKI_FALA1_FALA2_MULT;
+  // Karta = wartość „na własnym terytorium" (x1,0) — ta sama kolejność mnożników co unitFoodPerTurn.
+  return base * R_STAWKI_FALA1_FALA2_MULT * mnoznikUtrzymaniaJednostek(kosztJednostekPace);
+}
+
+/**
+ * R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1 (zarzut Evaluatora 1): wartość „Utrzymanie Pieniądza/turę"
+ * do KART jednostek = ta sama liczba co silnik (unitUpkeep: tabela × R_STAWKI × tempo), z tą samą
+ * kategorią co main.ts (u.category ?? Kategoria ?? 'domyslny'). Brak liczby = zwrot surowej wartości.
+ */
+export function unitPieniadzUpkeepCardValue(unit: {
+  readonly Jednostka?: unknown;
+  readonly Kategoria?: unknown;
+  readonly Epoka?: unknown;
+  readonly 'Utrzymanie (Pieniądz/turę)'?: unknown;
+}, kosztJednostekPace: KosztJednostekPace | number = 'niski'): unknown {
+  const raw = unit['Utrzymanie (Pieniądz/turę)'];
+  const id = unit.Jednostka;
+  if (typeof raw !== 'number' || !Number.isFinite(raw) || typeof id !== 'string' || id.length === 0) return raw;
+  const kategoria = typeof unit.Kategoria === 'string' && unit.Kategoria.length > 0 ? unit.Kategoria : 'domyslny';
+  // Ta sama ścieżka co silnik: buildUnitUpkeepTable (skala epoki) -> unitUpkeep (×4 × tempo).
+  const table = buildUnitUpkeepTable([{ Jednostka: id, Epoka: unit.Epoka, 'Utrzymanie (Pieniadz/ture)': raw }]);
+  return unitUpkeep({ typeId: id, category: kategoria }, table, 0, kosztJednostekPace);
+}
+
+/**
+ * R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1 (zarzut Evaluatora 1): ilość surowca utrzymania do KART
+ * jednostek = wartość unitResourceUpkeep (epoka × tempo). Null gdy silnik nie liczy surowca.
+ */
+export function unitResourceUpkeepCardAmount(
+  unit: UnitResourceUpkeepSource | null | undefined,
+  kosztJednostekPace: KosztJednostekPace | number = 'niski',
+): number | null {
+  const vals = Object.values(unitResourceUpkeep(unit, kosztJednostekPace));
+  return vals.length > 0 ? (vals[0] ?? null) : null;
 }
 
 /**
@@ -1245,10 +1292,11 @@ export function militaryFoodConsumption(
   units: ReadonlyArray<UnitFoodLike>,
   p: UpkeepParams,
   foodTable: UnitFoodTable = {},
+  kosztJednostekPace: KosztJednostekPace | number = 'niski',
 ): number {
   let sum = 0;
   for (const u of units) {
-    sum += unitFoodPerTurn(u, p, foodTable);
+    sum += unitFoodPerTurn(u, p, foodTable, kosztJednostekPace);
   }
   return sum;
 }
@@ -1286,9 +1334,10 @@ export function upkeepBalance(
   units: ReadonlyArray<UnitUpkeepLike>,
   unitUpkeepTbl: UnitUpkeepTable,
   p: UpkeepParams,
+  kosztJednostekPace: KosztJednostekPace | number = 'niski',
 ): UpkeepBalance {
   const utrzymanieBudynki   = totalBuildingUpkeep(buildings, p.budynekUtrzymanieFlat);
-  const utrzymanieJednostki = totalUnitUpkeep(units, unitUpkeepTbl, p.jednostkaUtrzymanieStd);
+  const utrzymanieJednostki = totalUnitUpkeep(units, unitUpkeepTbl, p.jednostkaUtrzymanieStd, kosztJednostekPace);
   const utrzymanieRazem     = utrzymanieBudynki + utrzymanieJednostki;
   const inc                 = Number.isFinite(income) ? income : 0;
   const saldo               = inc - utrzymanieRazem;

@@ -1,5 +1,7 @@
 # Żywność i Spichlerz Centralny w Brązie — analiza i propozycja optymalizacji
 
+> **NIEAKTUALNE (2026-11-20):** żywność jednostek ×3^(e−1), racje obywateli m(e)=1+0,5(e−1) i brak tempa „Koszty jednostek” nie obowiązują po FALACH 875–887 (aktualnie ×4 na epokę jednostki; racje m(e)=2^(e−1) przy fladze ON). Aktualny stan: `dyspozycje/analizy/KOSZTY-JEDNOSTEK-STAN-2026-11-20.md`. Dokument zostawiony bez przepisywania.
+
 Temat: R-WEB-ECONOMY-FOOD-GRANARY-BRONZE-OPTIMIZATION-PROPOSAL-Q1, runda 1/5, obrona (Operator, HAIKU 5.5).
 Baza kodu: origin/main = ea8f70197. Kandydat obrony: 5c1ef2e8e. Zero zmian w `gra/src` i `gra/data`.
 Model: `gra/tools/food-granary-model.cjs` (uruchomienie: `node gra/tools/food-granary-model.cjs`).

@@ -105,6 +105,7 @@ import {
   type OwnerStorageParams,
   type BuildingInstanceLike,
 } from './economy-upkeep';
+import type { KosztJednostekPace } from './unit-cost-tempo';
 import { operationalBuiltByCity } from './building-toggle';
 import {
   runConverters,
@@ -1439,6 +1440,8 @@ export function militaryFoodConsumptionWithSpichlerz(
   opts?: {
     solArmyOverride?: boolean;
     solCityIdsOverride?: ReadonlySet<string>;
+    /** R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1: tempo „Koszty jednostek" (domyślnie Niski ×1). */
+    kosztJednostekPace?: KosztJednostekPace;
   },
 ): number {
   const solArmy = opts?.solArmyOverride ?? spichlerzSolArmyBonusActive(ownerId);
@@ -1447,7 +1450,7 @@ export function militaryFoodConsumptionWithSpichlerz(
   let sum = 0;
   for (const u of units) {
     if (u.ownerId !== ownerId) continue;
-    const base = unitFoodPerTurn(u, upkeepForOwner, foodTable);
+    const base = unitFoodPerTurn(u, upkeepForOwner, foodTable, opts?.kosztJednostekPace ?? 'niski');
     const mult = spichlerzArmyFoodCostMultiplier({
       solArmyBonusActive: solArmy,
       onOwnTerritory: u.onOwnTerritory ?? true,
@@ -2539,6 +2542,8 @@ export function previewOwnerUpkeep(
   resolveOwnerTech?: OwnerTechResolver,
   /** R-WEB-ADMIN-PANSTWO-MIASTO-TWO-TYPES-Q1: administrator Państwa per owner (utrzymanie raz na Państwo). */
   stateAdmByOwner: ReadonlyMap<number, CityAdministrator> = new Map(),
+  /** R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1: tempo „Koszty jednostek" (utrzymanie jednostek). */
+  kosztJednostekPace: KosztJednostekPace = 'niski',
 ): UpkeepBalance {
   // R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wylaczone (City.wylaczoneBudynki) budynki produkcyjne
   // nie biora udzialu w ekonomii -- brak produkcji/zuzycia wejsc/utrzymania/plonu z budynku.
@@ -2573,7 +2578,7 @@ export function previewOwnerUpkeep(
   // `income` nie jest tu potrzebny (wolacy chce tylko utrzymanieBudynki/Jednostki/Razem,
   // nie salda) -- 0 jest neutralne, wplywa wylacznie na pola saldo/deficyt ponizej.
   return withAdministratorUpkeep(
-    upkeepBalance(0, buildings, ounits, unitUpkeepTbl, upkeepParams),
+    upkeepBalance(0, buildings, ounits, unitUpkeepTbl, upkeepParams, kosztJednostekPace),
     totalAdministratorUpkeepForOwner(cities, builtByCity, ownerId, stateAdmByOwner.get(ownerId)),
   );
 }
@@ -2636,6 +2641,8 @@ export function advanceCityEconomy(
     productionForecastOnly?: boolean;
     /** R-WEB-UI-RESOURCE-BUILDING-UTILIZATION-PERCENT-Q1: wypelniane wykorzystaniem mocy konwerterow per miasto/budynek. */
     utilizationOut?: Map<string, Record<string, ConverterBuildingUtilization>>;
+    /** R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1: tempo „Koszty jednostek" dla utrzymania jednostek (Pieniądz/surowce). */
+    kosztJednostekPace?: KosztJednostekPace;
   },
 ): EconomyTickResult {
   // R-WEB-RESOURCE-BUILDING-ENABLE-TOGGLE-Q1: wylaczone (City.wylaczoneBudynki) budynki produkcyjne
@@ -2703,6 +2710,8 @@ export function advanceCityEconomy(
 
   // Build unit upkeep lookup table once per tick.
   const unitUpkeepTbl = buildUnitUpkeepTable(data.units as unknown as Parameters<typeof buildUnitUpkeepTable>[0]);
+  // R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1: tempo „Koszty jednostek" — jedno ustawienie gry dla gracza i AI.
+  const unitPace: KosztJednostekPace = options?.kosztJednostekPace ?? 'niski';
 
   // Pre-compute converter throughputs (from econ-params.json) -- BASE, przed
   // skalowaniem epoką (P-KONWERTERY-PRZEPUSTOWOSC-Q1 niżej).
@@ -3307,7 +3316,7 @@ export function advanceCityEconomy(
     const income  = incomeByOwner.get(oid) ?? 0;
     const ounits  = econUnits.filter(u => u.ownerId === oid) as unknown as UnitUpkeepLike[];
     const balance = withAdministratorUpkeep(
-      upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParamsForOwner(oid)),
+      upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParamsForOwner(oid), unitPace),
       totalAdministratorUpkeepForOwner(cities, builtByCity, oid, stateAdmByOwner.get(oid)),
     );
     result.upkeepByOwner.set(oid, balance);
@@ -3321,6 +3330,7 @@ export function advanceCityEconomy(
     );
     const unitsResUpkeep: Record<string, number> = totalUnitResourceUpkeep(ounits, typeId =>
       data.units.find(u => u.Jednostka === typeId),
+      unitPace,
     );
     const resUpkeep: Record<string, number> = { ...buildingsResUpkeep };
     addResourceCosts(resUpkeep, unitsResUpkeep);

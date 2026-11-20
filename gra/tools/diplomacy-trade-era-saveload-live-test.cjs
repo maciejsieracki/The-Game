@@ -16,6 +16,7 @@
  *   <scratchAbs>/b = bundle (budowany, gdy brak), PHASES=save,load zawęża zestaw, BUNDLE_DIR nadpisuje bundle.
  */
 const path = require('path');
+const { resolveChromePath } = require('./_chrome-path.cjs');
 const fs = require('fs');
 const os = require('os');
 const assert = require('node:assert/strict');
@@ -52,6 +53,10 @@ async function launchContext(chromium) {
     headless: true, viewport: { width: 1400, height: 900 },
     args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage'],
   };
+  // R-WEB-TEST-DEBT-Q12 (pozycja 8): najpierw wspolny wybor binarki (CHROME_PATH -> /usr/bin/google-chrome -> ...),
+  // potem domyslna z Playwright, na koncu FALLBACK_CHROME.
+  const chosen = resolveChromePath();
+  if (chosen) return await chromium.launchPersistentContext(PROFILE, { ...opts, executablePath: chosen });
   try { return await chromium.launchPersistentContext(PROFILE, opts); }
   catch (e) { return await chromium.launchPersistentContext(PROFILE, { ...opts, executablePath: FALLBACK_CHROME }); }
 }

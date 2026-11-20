@@ -165,8 +165,12 @@ try {
     assert(ad.includes('buildingResourceUpkeep(building, upkeepLevel, readBuildingResourceUpkeepRatio('), 'D8: karta budynku -- poziom i wspolczynnik');
     assert(!/BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE/.test(read('src/game/economy-upkeep.ts').replace(/\/\*[\s\S]*?\*\//g, '')),
       'D9: stala 5 szt./typ usunieta z kodu');
-    assert(ad.includes('stockResourceLabel(k)') && ad.includes("'pieniądz'") && ad.includes('plUpkeepForm'),
-      'D10: karta uzywa polskich etykiet i odmian (bez surowych id)');
+    // D10 (R-WEB-TEST-DEBT-Q12): martwe odmiany `plUpkeepForm`/`UPKEEP_NOUN_FORMS` usuniete z buildingAdapter.ts (nic ich nie
+    // wolalo — karta buduje chipy z id, a etykiety/ikony rysuje renderer). Asercja pilnuje tego, co realnie wystepuje w karcie:
+    // chip gotowki o id 'pieniadz' i chipy surowcow z kluczy `resources` (bez zmian logiki).
+    assert(!ad.includes('plUpkeepForm') && !ad.includes('UPKEEP_NOUN_FORMS')
+      && ad.includes("id: 'pieniadz'") && ad.includes('id: k, amount: resources[k]'),
+      'D10: karta upkeep buduje chipy z id (martwe odmiany plUpkeepForm usuniete)');
   }
 
   // -------------------------------------------------------------------------

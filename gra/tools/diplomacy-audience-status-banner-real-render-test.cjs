@@ -19,7 +19,7 @@ const { chromium } = require(path.resolve(__dirname, '..', 'node_modules', 'play
 const GRA = path.resolve(__dirname, '..');
 const SHOT_DIR = path.resolve(GRA, '..', 'dyspozycje', 'autobot', 'runs',
   'R-WEB-UI-DIPLO-AUDIENCE-STATUS-BANNER-LABEL-Q1', 'dowody');
-const CHROME = process.env.CHROMIUM_PATH || '/usr/bin/chromium';
+const CHROME = require('./_chrome-path.cjs').resolveChromePath(); // R-WEB-TEST-DEBT-Q12: CHROME_PATH -> CHROMIUM_PATH -> google-chrome -> chromium
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dip-audience-rr-'));
 const ENTRY = path.join(tmp, 'entry.ts');
 const BUNDLE = path.join(tmp, 'bundle.js');

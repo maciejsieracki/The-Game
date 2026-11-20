@@ -39,12 +39,11 @@ async function compile(value) {
     eq(M.unitMoneyCost(17, activated, 'niski', 0, 'normal', 'Impi'), Math.max(1, Math.floor(17 * (1 - .1 - discount))), 'approved F04 and G11 stack only for Impi');
     eq(M.unitMoneyCost(17, bonuses), 17, 'missing identity never gets scoped discount');
     for (const unit of [impi, warrior, nonImpiZulu]) {
-      const base = M.itemCost('jednostka', unit.Jednostka, data);
+      const base = M.unitRecruitBaseMoneyCost(unit, data); // era extra (2026-11-19); trudnosc NIE mnozy jednostek
       const relevant = unit === impi ? discount : 0;
       for (const [pace, paceMult] of [['niski', 1], ['normalny', 2], ['wysoki', 4]]) {
         for (const owner of [0, 1]) for (const difficulty of ['easy', 'normal', 'hard']) {
-          const difficultyMult = difficulty === 'easy' && owner === 1 || difficulty === 'hard' && owner === 0 ? 2 : 1;
-          const expected = (relevant > 0 ? Math.max(1, Math.floor(base * (1 - relevant))) : base) * paceMult * difficultyMult;
+          const expected = (relevant > 0 ? Math.max(1, Math.floor(base * (1 - relevant))) : base) * paceMult;
           eq(M.unitPurchaseCost(unit, bonuses, pace, owner, difficulty), expected, `${unit.Jednostka} purchase ${discount}/${pace}/${owner}/${difficulty}`);
           eq(M.unitProductionItem(unit.Jednostka, data, bonuses, pace, owner, difficulty).koszt, expected, `${unit.Jednostka} catalogue parity`);
         }
@@ -57,17 +56,18 @@ async function compile(value) {
         kosztJednostekPace: 'normalny', difficulty: 'hard', ownerId };
       const catalog = M.availableProduction({}, data, ['Brązownictwo'], context);
       const replacements = M.availableReplacementsFor('Włócznik', data, ['Brązownictwo'], context);
-      const base = M.itemCost('jednostka', 'Impi', data);
-      const expected = (discount > 0 ? Math.max(1, Math.floor(base * (1 - discount))) : base) * 2 * (ownerId === 0 ? 2 : 1);
+      // R-WEB-ECONOMY-UNIT-RECRUIT-COST-ERA-EXTRA-MULT-Q1 (decyzja 2026-11-19): baza rekrutacji = itemCost x dodatkowy mnoznik epoki; trudnosc NIE dotyczy jednostek (x1 dla gracza i AI).
+      const base = M.unitRecruitBaseMoneyCost(impi, data);
+      const expected = (discount > 0 ? Math.max(1, Math.floor(base * (1 - discount))) : base) * 2;
       eq(catalog.find(x => x.id === 'Impi')?.koszt, expected, 'real recruitment catalogue Impi price');
       eq(replacements.find(x => x.id === 'Impi')?.koszt, expected, 'real replacement Impi price');
       eq(catalog.find(x => x.id === 'Oszczepnik Zulu (Izijula)')?.koszt,
-        M.itemCost('jednostka', 'Oszczepnik Zulu (Izijula)', data) * 2 * (ownerId === 0 ? 2 : 1), 'real catalogue excludes other Zulu units');
+        M.unitRecruitBaseMoneyCost(nonImpiZulu, data) * 2, 'real catalogue excludes other Zulu units');
     }
     const combined = [...bonuses, extra];
-    eq(M.unitMoneyCost(17, combined, 'normalny', 0, 'hard', 'Impi'), (discount > 0 ? Math.max(1, Math.floor(17 * (1 - discount))) : 17) * 4, 'legacy numeric discount is inert; matrix G11 floor precedes pace/difficulty');
+    eq(M.unitMoneyCost(17, combined, 'normalny', 0, 'hard', 'Impi'), (discount > 0 ? Math.max(1, Math.floor(17 * (1 - discount))) : 17) * 2, 'legacy numeric discount is inert; matrix G11 floor precedes pace (difficulty no longer multiplies units)');
     eq(M.unitMoneyCost(17, combined, 'niski', 0, 'normal', 'Wojownik'), 17, 'legacy general numeric discount is inert');
-    const ordinaryZuluBase = M.itemCost('jednostka', nonImpiZulu.Jednostka, data);
+    const ordinaryZuluBase = M.unitRecruitBaseMoneyCost(nonImpiZulu, data);
     const zuluContext = { epoch: 2, builtBuildingIds: ['koszary'], civUnitNacja: 'Zulu',
       civBonusy: [...activated, { ...extra, wartosc: 0 }, { typ: 'jednostka_specjalna', cel: 'piechota', wartosc: ['Impi', 'Oszczepnik Zulu (Izijula)'] }], empireResourceStock: { braz: 1000, drewno: 1000 },
       kosztJednostekPace: 'niski', difficulty: 'normal', ownerId: 1 };
@@ -77,7 +77,7 @@ async function compile(value) {
     eq(M.unitMoneyCost(ordinaryZuluBase, activated, 'niski', 1, 'normal', nonImpiZulu.Jednostka), Math.max(1, Math.floor(ordinaryZuluBase * .9)), 'paid quote uses the same ordinary Zulu cost');
     eq(realCatalog.find(x => x.id === nonImpiZulu.Jednostka)?.koszt, Math.max(1, Math.floor(ordinaryZuluBase * .9)), 'owner-resolved catalog uses F04');
     eq(realReplacement.find(x => x.id === 'Impi')?.koszt,
-      Math.max(1, Math.floor(M.itemCost('jednostka', 'Impi', data) * (1 - .1 - discount))),
+      Math.max(1, Math.floor(M.unitRecruitBaseMoneyCost(impi, data) * (1 - .1 - discount))),
       'owner-resolved replacement combines distinct Impi effects');
     eq(M.unitMoneyCost(17, [legacy], 'niski', 0, 'normal', 'Wojownik'), 17, 'historical Impi scope excludes other units');
     eq(M.unitMoneyCost(17, [legacy], 'niski', 0, 'normal', 'Impi'), 17, 'legacy-only historical Impi discount is inert');

@@ -202,7 +202,9 @@ ok(qInka('lama', 2, 0) === false, 'GRACZ: lama NIE na Lace z lasem');
 ok(qRzym('bydlo', 5, 0) === false, 'GRACZ: bydlo NIE na Pustyni z lasem');
 ok(qRzym('owce', 5, 0) === false, 'GRACZ: owce NIE na Pustyni z lasem');
 ok(qRzym('lama', 1, 0) === false, 'GRACZ: lama NIE dla Rzymu (bramka cywilizacji bez zmian)');
-ok(qRzym('stadnina', 7, 0) === true, 'GRACZ: stadnina NA golej Lace (warunek istotnosci)');
+// R-WEB-TEST-DEBT-Q12 (decyzja właściciela 2026-11-19, ABC B / FALA 874: „stadnina tylko na złożu, bez lasu”): bez złoża konia
+// stadnina na golej Lace NIE kwalifikuje się (poprzednio pin `=== true` z czasów, gdy stadnina stała bez złoża).
+ok(qRzym('stadnina', 7, 0) === false, 'GRACZ: stadnina NIE na golej Lace bez zloza (tylko na zlozu konia)');
 // P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): odwrocone razem z regula (poprzednio
 // `=== false`, „KONTROLA GRACZ: stadnina NIE na Lace z lasem") — stadnina teraz kwalifikuje
 // sie na Lace+Las dokladnie jak bydlo (linia wyzej), bo nakladka Las juz jej nie blokuje.
@@ -328,22 +330,35 @@ ok(pickOn(mkHex(0, 0, T.Laka, N.Las), 'stadnina', 'rzym', 5) === false,
 // gdy `city.surowce.kon >= 50` FAKTYCZNIE dotrze do pickera (nie tylko formalnie qualifies()
 // zwraca true w izolacji) — `pickAutoImprovements` REALNIE WYBIERA budowe stadniny poza zlozem,
 // dokladnie jak REGULA PRZECIW SAMOOSZUKIWANIU tej rundy wymaga.
-function pickOffDepositStadninaWithStock(konStock) {
+function pickOffDepositStadninaWithStock(konStock, withBuiltNeighbourStud = false) {
   const cityHex = mkHex(0, 0, T.Laka);
   const openHex = mkHex(1, 0, T.Laka); // POZA zlozem konia
+  // R-WEB-TEST-DEBT-Q12 (Zarzut 1 rundy Evaluatora): wariant Z SĄSIEDNIĄ WŁASNĄ stadniną (2,0) — jedyny stan, w którym
+  // poza złożem stadnina kwalifikuje się (isLivestockUnlockedForPlacement, adjacentBuiltStudOwn=true) przy magazynie >= 50.
+  const neighbourHex = mkHex(2, 0, T.Laka);
   const one = {
-    hexes: { '0,0': cityHex, '1,0': openHex },
+    hexes: withBuiltNeighbourStud
+      ? { '0,0': cityHex, '1,0': openHex, '2,0': neighbourHex }
+      : { '0,0': cityHex, '1,0': openHex },
     riverPaths: [], startPositions: [],
   };
   const picks = M.pickAutoImprovements({
     cities: [{ id: 'c0', ownerId: 0, q: 0, r: 0, population: 1, surowce: { kon: konStock } }],
     ownerId: 0,
     map: one,
-    territoryNodes: [
-      { q: 0, r: 0, ownerId: 0, cityId: 'c0' },
-      { q: 1, r: 0, ownerId: 0, cityId: 'c0' },
-    ],
-    placedImprovements: new Map(),
+    territoryNodes: withBuiltNeighbourStud
+      ? [
+        { q: 0, r: 0, ownerId: 0, cityId: 'c0' },
+        { q: 1, r: 0, ownerId: 0, cityId: 'c0' },
+        { q: 2, r: 0, ownerId: 0, cityId: 'c0' },
+      ]
+      : [
+        { q: 0, r: 0, ownerId: 0, cityId: 'c0' },
+        { q: 1, r: 0, ownerId: 0, cityId: 'c0' },
+      ],
+    placedImprovements: withBuiltNeighbourStud
+      ? new Map([['2,0', ['stadnina']]])
+      : new Map(),
     pracaAvailable: 100000,
     unlockedTechs: TECHS,
     pracaSurplusThreshold: 0,
@@ -355,14 +370,26 @@ function pickOffDepositStadninaWithStock(konStock) {
   });
   return picks.some(p => p.key === 'stadnina' && p.q === 1 && p.r === 0);
 }
+// R-WEB-TEST-DEBT-Q12 (decyzja właściciela 2026-11-19, „stadnina tylko na złożu, bez lasu”): dawne asercje runda 3
+// (magazyn 50/500 => automat WYBIERA stadninę poza złożem) pinowały model sprzed decyzji. Stan kodu: poza złożem stadnina
+// wymaga sąsiedniej własnej stadniny (R-WEB-IRON-STUD-ADJACENCY-Q1, livestock-unlock.ts isLivestockUnlockedForPlacement),
+// a w tym fixture sąsiedniej stadniny brak — więc ŻADEN stan magazynu nie otwiera budowy poza złożem. Asercje ustawione
+// na obowiązujący stan. ROZJAZD DO DECYZJI WŁAŚCICIELA (raport): kod nadal dopuszcza stadninę poza złożem PRZY sąsiedniej
+// stadninie + magazynie >= 50 — czy to ma zostać, czy zniknąć (wtedy osobny temat R-WEB-*), NIE rozstrzygam tutaj.
 ok(pickOffDepositStadninaWithStock(49) === false,
-  'AUTOMAT/AI CYW runda 3: magazyn 49/50 (o 1 za malo) — NADAL NIE wybiera stadniny poza zlozem');
-ok(pickOffDepositStadninaWithStock(50) === true,
-  'AUTOMAT/AI CYW runda 3 (NAPRAWA Zarzutu 2): magazyn imperium DOKLADNIE 50 kon — automat/AI '
-  + 'REALNIE WYBIERA budowe stadniny poza zlozem (nie tylko formalnie kwalifikuje) — AI odzyskuje '
-  + 'zdolnosc utracona w rundzie 2, symetrycznie do gracza');
-ok(pickOffDepositStadninaWithStock(500) === true,
-  'AUTOMAT/AI CYW runda 3: magazyn z duzym zapasem (500) — stadnina poza zlozem nadal wybierana');
+  'AUTOMAT/AI CYW: magazyn 49 (o 1 za malo) — stadnina poza zlozem NIE (tylko na zlozu)');
+ok(pickOffDepositStadninaWithStock(50) === false,
+  'AUTOMAT/AI CYW (decyzja B 2026-11-19): magazyn 50 bez sasiedniej stadniny — stadnina poza zlozem NIE');
+ok(pickOffDepositStadninaWithStock(500) === false,
+  'AUTOMAT/AI CYW (decyzja B 2026-11-19): magazyn 500 bez sasiedniej stadniny — stadnina poza zlozem NIE');
+// R-WEB-TEST-DEBT-Q12 (Zarzut 1 Evaluatora): POZYTYWNE pokrycie przywrócone w tym pliku — stadnina poza złożem
+// przy SĄSIEDNIEJ własnej stadninie + magazynie >= 50 jest wybierana; poniżej progu (49) nadal NIE.
+ok(pickOffDepositStadninaWithStock(49, true) === false,
+  'AUTOMAT/AI CYW (decyzja B 2026-11-19): magazyn 49 z sasiednia stadnina — poza zlozem NIE (prog 50)');
+ok(pickOffDepositStadninaWithStock(50, true) === true,
+  'AUTOMAT/AI CYW (decyzja B 2026-11-19): magazyn 50 Z sasiednia wlasna stadnina — poza zlozem TAK (pozytywny wariant)');
+ok(pickOffDepositStadninaWithStock(500, true) === true,
+  'AUTOMAT/AI CYW (decyzja B 2026-11-19): magazyn 500 Z sasiednia wlasna stadnina — poza zlozem TAK (pozytywny wariant)');
 // Regresja ZERO: stadnina NADAL stawiana automatem na realnym zlozu konia, niezaleznie od lasu.
 // Miasto CELOWO NIE na tym samym heksie co zloze (unika kolizji "budowa na hexie miasta",
 // niezwiazanej z tym tematem) — osobny, prosty wrapper zamiast `pickOn` (ktory zawsze stawia

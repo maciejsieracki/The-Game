@@ -1,0 +1,4 @@
+{
+  "_opis": "R-WEB-ECONOMY-UNIT-RECRUIT-COST-ERA-EXTRA-MULT-Q1 (decyzja wlasciciela 2026-11-19): DODATKOWY mnoznik kosztu REKRUTACJI jednostki w Pieniadzu wg epoki JEDNOSTKI (units.json Epoka). Mnozy obecny koszt (baza x epoka Kamien x1/Braz x2/Zelazo x4 -> ulgi cywilizacji -> tempo 'Koszty jednostek' -> trudnosc NIE dotyczy jednostek). Stosowany DOKLADNIE raz w unitRecruitBaseMoneyCost (production.ts). itemCost('jednostka') NIE zmienia sie (loot bojowy zachowuje dawna wartosc). NIE dotyczy utrzymania jednostek, kosztow surowcow rekrutacji, budynkow ani ulepszen.",
+  "kosztRekrutacjiDodatkowyMnoznikEpoki": { "kamien": 1, "braz": 2, "zelazo": 4 }
+}

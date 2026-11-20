@@ -39,6 +39,7 @@ import {
   type DiplomacyParams,
 } from './diplomacy';
 import { treatyParityBaseX, type ProposalPayload } from './diplomacy-proposals';
+import { scalePenaltyForWarLevel } from './diplomacy-war-level';
 import { peacePwPointsByPowerRatio, type PeacePwPowerSplit } from './war-weariness';
 
 /** Akcje, które E1 ocenia. Wszystko inne = unsupported. */
@@ -120,13 +121,21 @@ export interface AiAiTreatyEvalResult {
 }
 
 const ACCEPTANCE_TRAKTATY = (acceptancePointsJson as { traktaty: Record<string, { prog_relacja?: number } | undefined> }).traktaty;
-const TREATY_PARAMS_DEFAULT: AiAiTreatyParams = {
-  napCzasTur: (aiAiTreatyParamsJson as { nap_czas_trwania_tur: number }).nap_czas_trwania_tur,
-  zerwanieRelacja: (aiAiTreatyParamsJson as { zerwanie_relacja: number }).zerwanie_relacja,
-  zerwanieZaufanie: (aiAiTreatyParamsJson as { zerwanie_zaufanie: number }).zerwanie_zaufanie,
-};
+/** R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: kary zerwania AI↔AI × poziom „Dyplomacja i wojna” (ŁATWA = dane). */
+function treatyParamsDefault(): AiAiTreatyParams {
+  return {
+    napCzasTur: (aiAiTreatyParamsJson as { nap_czas_trwania_tur: number }).nap_czas_trwania_tur,
+    zerwanieRelacja: scalePenaltyForWarLevel((aiAiTreatyParamsJson as { zerwanie_relacja: number }).zerwanie_relacja),
+    zerwanieZaufanie: scalePenaltyForWarLevel((aiAiTreatyParamsJson as { zerwanie_zaufanie: number }).zerwanie_zaufanie),
+  };
+}
 
 const ZERO_PARITY: AiAiTreatyParity = { S: 0, W: 0, D: 0, r: 1 };
+
+/** Test/pomiar: kara zerwania zaufania AI↔AI (−20 × poziom) z tej samej ścieżki co evaluateTreatyOffer. */
+export function aiAiBreachTrustDeltaDefault(): number {
+  return treatyParamsDefault().zerwanieZaufanie;
+}
 
 let dopłataMnoznikNadpisanieTest: number | null = null;
 
@@ -177,7 +186,7 @@ function refuse(reason: string, parity: AiAiTreatyParity = ZERO_PARITY): AiAiTre
  */
 export function evaluateTreatyOffer(ctx: AiAiTreatyEvalContext): AiAiTreatyEvalResult {
   const params = ctx.params ?? getEffectiveDiplomacyParams();
-  const treatyParams = ctx.treatyParams ?? TREATY_PARAMS_DEFAULT;
+  const treatyParams = ctx.treatyParams ?? treatyParamsDefault();
 
   // 1. Zakres: akcja obsługiwana, żadna ze stron nie jest wasalem.
   if (!isAiAiTreatyAction(ctx.actionId) || ctx.proposer.isVassal === true || ctx.target.isVassal === true) {
