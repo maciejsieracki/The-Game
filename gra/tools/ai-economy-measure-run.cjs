@@ -84,6 +84,9 @@ const REBALANCE_ARG = process.argv.indexOf('--rebalance') >= 0 ? arg('rebalance'
 /** R-WEB-VERIFY-LIVE-A-UNIT-COSTS-AI-MEASURE-Q1: --pace niski|normalny|wysoki = tempo „Koszty jednostek" gracza
  * (player.kosztJednostekPace, ustawiane hakiem ?civTest=1 PRZED pierwsza tura). Domyslnie normalny = domyslne ustawienie nowej gry. */
 const PACE = arg('pace', 'normalny');
+/** R-WEB-VERIFY-LIVE-A2-UNIT-COST-DISBAND-COUNTER-SEED7-Q1: --unit-flow 1 = w kazdym wierszu tury pole `unitFlow`
+ * (hak __aiEconomyMeasure.unitFlowTurn: przyrost id jednostek + przyczyny zejscia per wlasciciel). Domyslnie 0 (zachowanie bez zmian). */
+const UNIT_FLOW = arg('unit-flow', '0') === '1';
 if (!['niski', 'normalny', 'wysoki'].includes(PACE)) throw new Error('--pace: dozwolone niski|normalny|wysoki (podano ' + PACE + ')');
 let REBALANCE_FLAG_STATE = null;
 const SLOT = 'ai-econ-s' + SEED;
@@ -432,6 +435,7 @@ async function playOneTurn(page, ctxState) {
       modalClosedThisTurn: modalDelta(),
       owners: mH.owners, diag: mH.diag, niezmierzone: mH.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
       aiOffersRejected: offersRec.confirmed, aiOffersRejectAttempts: offersRec.attempts };
+    if (UNIT_FLOW) recH.unitFlow = await page.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
     recH.wars = await collectWars(page, mH.owners);
     recH.upkeepGate = gateDelta(gateBefore, await readGateStats(page));
     if (HASH) recH.stateHash = await stateHash(page, null);
@@ -472,6 +476,7 @@ async function playOneTurn(page, ctxState) {
     aiOffersRejected: offersRec.confirmed, aiOffersRejectAttempts: offersRec.attempts,
     forcedPeaceAccepted: ctxState.forcedPeaceAccepted || 0,
   };
+  if (UNIT_FLOW) rec.unitFlow = await page.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
   rec.wars = await collectWars(page, m.owners);
   rec.upkeepGate = gateDelta(gateBefore, await readGateStats(page));
   // R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1: rozmiar dziennika w pamieci (co 10 tur, tura koncowa i pierwsza tura po starcie segmentu; poza pomiarem tury).
@@ -529,6 +534,8 @@ async function runSeries(ctx, { resumeFromSlot, stopAt }) {
   }
   const startTurn = await turnOf(page);
   RUN_START_TURN = startTurn;
+  // Linia bazowa licznika przyrostu jednostek (po starcie lub wczytaniu slotu): delta pierwszej tury liczona od tego punktu.
+  if (UNIT_FLOW) await page.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
   let slotOk = !!resumeFromSlot;
   let slotTurn = startTurn;
   let slotCounters = countersOf(ctxState);

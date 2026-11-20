@@ -73,6 +73,18 @@ function shapeProblems(metrics, requiredKeys) {
 }
 
 /** R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 (DODATEK 2 Z4): ksztalt ledgerStats = {entries: liczba>=0, bytes: liczba>=2 ("[]")}. */
+/** R-WEB-VERIFY-LIVE-A2: ksztalt wyniku __aiEconomyMeasure.unitFlowTurn() (przyrost jednostek + przyczyny zejscia). */
+function unitFlowShapeProblems(fl) {
+  const finNum = v => typeof v === 'number' && Number.isFinite(v);
+  const probs = [];
+  if (!fl || typeof fl.baseline !== 'boolean' || !Array.isArray(fl.owners)) return ['brak {baseline, owners[]}'];
+  for (const o of fl.owners) {
+    if (!finNum(o.owner) || !finNum(o.epoka) || !finNum(o.noweId) || !finNum(o.zniknieteBezPrzyczyny) || !finNum(o.zyweNaKoniec)) probs.push('owner ' + o.owner + ': pole liczbowe');
+    if (!o.zniknietePrzyczyny || typeof o.zniknietePrzyczyny !== 'object') probs.push('owner ' + o.owner + ': zniknietePrzyczyny');
+    else for (const v of Object.values(o.zniknietePrzyczyny)) if (!finNum(v)) probs.push('owner ' + o.owner + ': przyczyna nie liczbowa');
+  }
+  return probs;
+}
 function ledgerShapeProblems(ls) {
   const problems = [];
   if (!ls || typeof ls.entries !== 'number' || !(ls.entries >= 0)) problems.push('entries nie jest liczba >=0');
@@ -239,6 +251,13 @@ async function fullChecks(browser) {
   const lsProbs = ledgerShapeProblems(ls0);
   check('ksztalt ledgerStats: {entries, bytes} liczbowe (rozmiar ksiegi N=10, hak civTest)', lsProbs.length === 0, lsProbs.join('; ') || JSON.stringify(ls0));
 
+  // 1b) przyrost jednostek (R-WEB-VERIFY-LIVE-A2): linia bazowa, pozytywna kontrola przyczyny (rozwiazanie AI
+  // przez ten sam kod co NNS: disbandAiSupportUnit), kontrola negatywna (bez zmiany stanu -> zero zdarzen).
+  const flowBase = await page.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
+  const flowProbs0 = unitFlowShapeProblems(flowBase);
+  check('unitFlow: linia bazowa (baseline=true) i komplet pol per wlasciciel', flowBase.baseline === true && flowProbs0.length === 0,
+    flowProbs0.slice(0, 3).join('; ') || (flowBase.owners.length + ' wlascicieli'));
+
   // 3) obejscie bramki NNS gracza (tura 1).
   const blockedDefault = await page.evaluate(() => window.__aiTradeWiringTestDebug.nnsGateBlocked());
   check('warunek wstepny: tura 1 bramka NNS gracza BLOKUJE', blockedDefault === true, 'nnsGateBlocked=' + blockedDefault);
@@ -255,6 +274,42 @@ async function fullChecks(browser) {
   await page.waitForFunction(t => window.__aiTradeWiringTestDebug.state().turn > t && !window.__aiTradeWiringTestDebug.isEndTurnInProgress(), t1, { timeout: 300000, polling: 250 });
   const t2 = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
   check('obejscie: realny endTurn po dosypce przechodzi ture ' + t1 + ' -> ' + t2, t2 > t1, 'tura ' + t1 + ' -> ' + t2);
+
+  // Kontrola przyrostu po realnym endTurn (wyzej): licznik zresetowany, dalej tylko zmiana z rozwiazania.
+  await page.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
+  const flowCands = await page.evaluate(() => {
+    const m = window.__aiEconomyMeasure.metrics();
+    const out = [];
+    // Gracz (0) najpierw: disbandPlayerUnit nie odmawia obrońcom; AI tylko jednostki poza miastem (nnsUnitIsDefender).
+    const owners = [...m.owners].sort((a, b) => (a.owner === 0 ? -1 : 0) - (b.owner === 0 ? -1 : 0));
+    for (const o of owners) {
+      for (const id of (o.wojskoPozaMiastem || [])) out.push({ id, owner: o.owner });
+      for (const c of o.miastaWojsko) for (const id of c.ids) out.push({ id, owner: o.owner });
+    }
+    return out.slice(0, 80);
+  });
+  let flowDisbanded = null;
+  let flowHookErr = null;
+  for (const c of flowCands) {
+    try {
+      const ok = await page.evaluate(([id, ow]) => window.__ledgerRealPathDebug.disband(id, ow), [c.id, c.owner]);
+      if (ok === true) { flowDisbanded = c; break; }
+    } catch (e) { flowHookErr = String(e && e.message).slice(0, 120); break; }
+  }
+  check('unitFlow: znaleziono jednostke AI do rozwiazania przez __ledgerRealPathDebug.disband (NIE ZMIERZONO, gdy brak)',
+    flowDisbanded !== null, flowDisbanded ? 'owner=' + flowDisbanded.owner : 'kandydatow=' + flowCands.length + ' blad=' + flowHookErr);
+  if (flowDisbanded) {
+    const flowA = await page.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
+    const rowA = flowA.owners.find(o => o.owner === flowDisbanded.owner);
+    const wantCause = flowDisbanded.owner === 0 ? 'rozwiazanie-gracz' : 'rozwiazanie-ai';
+    check('unitFlow: rozwiazanie jednostki (owner ' + flowDisbanded.owner + ') trafia do przyczyny ' + wantCause + ' (dokladnie 1, bez innych zdarzen)',
+      flowA.baseline === false && rowA && rowA.zniknietePrzyczyny[wantCause] === 1 && rowA.zniknieteBezPrzyczyny === 0,
+      JSON.stringify(rowA));
+    const flowB = await page.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
+    const quiet = flowB.owners.every(o => Object.keys(o.zniknietePrzyczyny).length === 0 && o.noweId === 0 && o.zniknieteBezPrzyczyny === 0);
+    check('unitFlow: kontrola negatywna - bez zmiany stanu kolejne wywolanie zwraca zero zdarzen', quiet === true,
+      'owners=' + flowB.owners.length);
+  }
 
   // 4) wartosc AI: kolejne tury z dosypkami gdy bramka blokuje (jak runner), do MAX_TURNS_VALUE.
   let ok = false; let lastDiag = null; let lastAi = null; let turnsUsed = 0; let lastZeroUnits = [];
@@ -295,6 +350,9 @@ async function fullChecks(browser) {
     const mm = await mpage.evaluate(() => window.__aiEconomyMeasure.metrics());
     const mutantProbs = shapeProblems(mm, OWNER_KEYS);
     check('mutacja realna (zepsuty hak w bundle) jest CZERWONA', mutantProbs.length > 0, mutantProbs.slice(0, 3).join('; ') || 'brak problemow -- test slepy');
+    const mfl = await mpage.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
+    const mflProbs = unitFlowShapeProblems(mfl);
+    check('mutacja realna unitFlow (zepsuty przyrost w bundle) jest CZERWONA', mflProbs.length > 0, mflProbs.slice(0, 3).join('; ') || 'brak problemow -- test slepy');
     const mls = await mpage.evaluate(() => window.__aiEconomyMeasure.ledgerStats());
     const mlsProbs = ledgerShapeProblems(mls);
     check('mutacja realna ledgerStats (zepsuty hak w bundle) jest CZERWONA', mlsProbs.length > 0, mlsProbs.join('; ') || 'brak problemow -- test slepy (ledgerStats=' + JSON.stringify(mls) + ')');

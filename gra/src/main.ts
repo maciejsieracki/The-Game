@@ -189,6 +189,14 @@ import { installCivTestHooks, isCivTestEnabled, civTestSeedOverride, civTestRunt
 /** R-WEB-TEST-HOOK-WARRIOR-SIDESWAP-MANUAL-MEASURE-Q1: zamiana stron sceny (hak civTest; ustawiany przez __civTest.setSwapSides). */
 let _civTestSwapSides = false;
 const civTestSwapSidesFlag = (): boolean => _civTestSwapSides && typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search);
+/** R-WEB-VERIFY-LIVE-A2-UNIT-COST-DISBAND-COUNTER-SEED7-Q1 (tylko ?civTest=1; bez parametru zero zapisu): przyczyna
+ *  zejscia jednostki wg id, zbierana przy usunieciu i zerowana przez __aiEconomyMeasure.unitFlowTurn() (tylko odczyt gry). */
+const unitLossCauseById = new Map<string, string>();
+let unitFlowPrevIds: Map<number, Set<string>> | null = null;
+const unitFlowMeasureOn = (): boolean => typeof location !== 'undefined' && isCivTestEnabled(location.search);
+function noteUnitLoss(id: string, cause: string): void {
+  if (unitFlowMeasureOn()) unitLossCauseById.set(id, cause);
+}
 /** W80B-B1 (R-WEB-LIVE-VERIFY-WAVE-689-697-B1-AI-PEACE-GATE-TRACE-Q1): ślad ścieżki pokoju AI (zapis tylko gdy `on`, ustawia hak ?civTest=1). */
 const peaceTraceState: { on: boolean; rows: Array<Record<string, unknown>> } = { on: false, rows: [] };
 import { gameStreamRng, gameIdSuffix } from './game/game-rng';
@@ -7670,6 +7678,7 @@ async function boot(): Promise<void> {
         { kind: 'zwrot', label: 'Zwrot z rozwiązania jednostki' });
       const wasGarnizon = u.inGarnizon === true;
       const cityForGarnizon = cityAtUnit(u);
+      noteUnitLoss(unitId, 'rozwiazanie-ai');
       units.splice(idx, 1);
       if (wasGarnizon && cityForGarnizon) syncGarnizonForCity(cityForGarnizon);
       clearPlannedMarch(unitId, true);
@@ -7965,6 +7974,7 @@ async function boot(): Promise<void> {
       const wasGarnizon = u.inGarnizon === true;
       const cityForGarnizon = cityAtUnit(u);
 
+      noteUnitLoss(unitId, 'rozwiazanie-gracz');
       units.splice(idx, 1);
 
       if (siegeCityId) {
@@ -34270,6 +34280,40 @@ async function boot(): Promise<void> {
           return player.kosztJednostekPace ?? 'niski';
         },
         unitCostPaceState: (): string => player.kosztJednostekPace ?? 'niski',
+        /** R-WEB-VERIFY-LIVE-A2 (tylko odczyt, ?civTest=1): przyrost id jednostek od poprzedniego wywolania i przyczyny zejscia
+         *  (glod-armii, glod-oblezenie, deficyt-zlota, rozwiazanie-gracz, rozwiazanie-ai, eliminacja-wlasciciela; reszta = bez przyczyny).
+         *  Pierwsze wywolanie w procesie = linia bazowa (baseline=true, zera). */
+        unitFlowTurn: (): { baseline: boolean; owners: Array<{ owner: number; epoka: number; noweId: number; zniknietePrzyczyny: Record<string, number>; zniknieteBezPrzyczyny: number; zyweNaKoniec: number }> } => {
+          const cur = new Map<number, Set<string>>();
+          for (const u of units) {
+            if (u.ownerId == null) continue;
+            let set = cur.get(u.ownerId);
+            if (!set) { set = new Set<string>(); cur.set(u.ownerId, set); }
+            set.add(String(u.id));
+          }
+          const prev = unitFlowPrevIds;
+          const baseline = prev === null;
+          const ownerIds = [...new Set<number>([...cur.keys(), ...(prev ? [...prev.keys()] : [])])].sort((a, b) => a - b);
+          const owners = ownerIds.map(o => {
+            const now = cur.get(o) ?? new Set<string>();
+            const before = prev?.get(o) ?? new Set<string>();
+            const przyczyny: Record<string, number> = {};
+            let bezPrzyczyny = 0;
+            let nowe = 0;
+            if (!baseline) {
+              for (const id of now) if (!before.has(id)) nowe++;
+              for (const id of before) {
+                if (now.has(id)) continue;
+                const c = unitLossCauseById.get(id);
+                if (c) przyczyny[c] = (przyczyny[c] ?? 0) + 1; else bezPrzyczyny++;
+              }
+            }
+            return { owner: o, epoka: empireEpochForOwner(o), noweId: nowe, zniknietePrzyczyny: przyczyny, zniknieteBezPrzyczyny: bezPrzyczyny, zyweNaKoniec: now.size };
+          });
+          unitFlowPrevIds = cur;
+          unitLossCauseById.clear();
+          return { baseline, owners };
+        },
         /** R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1 (r2): właściciele przetworzeni przez ownerLoop w ostatniej fazie AI. */
         lastAiPhaseOwnersForTest: (): number[] => aiPhaseOwnersForTest.slice(),
         /** R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 (tylko odczyt, ?civTest=1): rozmiar dziennika w pamieci (wszyscy wlasciciele). */
@@ -40026,6 +40070,7 @@ async function boot(): Promise<void> {
 
       const removedUnitCount = units.filter(u => u.ownerId === ownerId).length;
       if (removedUnitCount > 0) {
+        for (const u of units) if (u.ownerId === ownerId) noteUnitLoss(u.id, 'eliminacja-wlasciciela');
         const siegeCityIdsAffected = new Set<string>();
         for (const u of units) {
           if (u.ownerId !== ownerId) continue;
@@ -43705,6 +43750,7 @@ async function boot(): Promise<void> {
               // zawyżonego licznika city.garnizon. Zbiorczo dla WSZYSTKICH właścicieli
               // (parytet) w jednym przebiegu — wydajność, jeden sprzęt na turę.
               const destroyedSet = new Set(allDestroyedIds);
+              for (const id of allDestroyedIds) noteUnitLoss(id, 'glod-armii');
               const siegeCityIdsAffected = new Set<string>();
               const garnizonCitiesAffected = new Map<string, City>();
               for (const u of units) {
@@ -43935,6 +43981,7 @@ async function boot(): Promise<void> {
                   starvParams.getMaxHp,
                 );
                 if (starv.destroyedIds.length > 0) {
+                  for (const id of starv.destroyedIds) noteUnitLoss(id, 'glod-oblezenie');
                   for (let i = units.length - 1; i >= 0; i--) {
                     if (starv.destroyedIds.includes(units[i]!.id)) units.splice(i, 1);
                   }
@@ -44258,6 +44305,7 @@ async function boot(): Promise<void> {
               // Złota nie może zostawić wiszącego oblegaCityId ani zawyżonego
               // licznika city.garnizon.
               const gdDestroyedSet = new Set(gdDestroyedIds);
+              for (const id of gdDestroyedIds) noteUnitLoss(id, 'deficyt-zlota');
               const gdSiegeCityIdsAffected = new Set<string>();
               const gdGarnizonCitiesAffected = new Map<string, City>();
               for (const u of units) {

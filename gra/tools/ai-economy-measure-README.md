@@ -160,3 +160,13 @@ przed każdym „Zakończ turę”, w pętli leczenia kolejki bitew i podczas cz
 - `--pace niski|normalny|wysoki` (domyslnie `normalny`). Hak `__aiEconomyMeasure.setUnitCostPace` ustawia tempo PRZED pierwsza tura; wznowienie porownuje tempo z zapisem.
 - Pole wiersza `zywnoscArmiiTura` (zywnosc armii na ture per wlasciciel, tempo wliczone). Wiersz tury i summary: `unitCostPace`.
 - Wyniki: `dyspozycje/analizy/POMIAR-KOSZTY-JEDNOSTEK-AI-2026-11-20.md`.
+
+## Licznik przyrostu jednostek (R-WEB-VERIFY-LIVE-A2)
+
+Hak `__aiEconomyMeasure.unitFlowTurn()` (tylko `?civTest=1`, tylko odczyt stanu, zero zmiany zachowania gry bez haka):
+per właściciel od poprzedniego wywołania — `noweId` (nowe id jednostek), `zniknietePrzyczyny` (`glod-armii`,
+`glod-oblezenie`, `deficyt-zlota`, `rozwiazanie-gracz`, `rozwiazanie-ai`, `eliminacja-wlasciciela`),
+`zniknieteBezPrzyczyny` (walka i ścieżki bez znacznika, NIE rozdzielone), `zyweNaKoniec`, `epoka`.
+Runner: `--unit-flow 1` dopisuje pole `unitFlow` do każdego wiersza tury. Test: `ai-economy-measure-hook-test.cjs`
+(asercje ksztaltu, rozwiązanie gracza trafia do właściwej przyczyny, kontrola negatywna, mutacja czerwona).
+Wyniki: `dyspozycje/analizy/POMIAR-KOSZTY-JEDNOSTEK-AI-2026-11-20.md` §8.
