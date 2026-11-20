@@ -24,7 +24,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 const close = (actual, expected, label) => assert.ok(Math.abs(actual - expected) < 1e-9, `${label}: got ${actual}, expected ${expected}`);
 
 (async () => {
-  const browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium',
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'),
     args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage'] });
   const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
   const pageErrors = [];

@@ -68,7 +68,7 @@ const SAVE_AT = parseInt(arg('save-at', '40'), 10);
 const MUTANT = arg('mutant', '0') === '1';
 const SLOT = 'ai-econ-s' + SEED;
 const HASH_IGNORED = ['units[].stackGroupId(null)', 'cities[].budowaLista(gdy [])', 'cities[].magazynZywnosci(gdy 0)', 'cities[].postepBudynkowUsuniete(gdy {})', 'resourceLedgerHistory(#432)'];
-const CHROME = process.env.CHROME_PATH || '/usr/bin/chromium';
+const CHROME = process.env.CHROME_PATH || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const TURN_TIMEOUT_MS = 300000;
 /** Prefiks zrzutow migawek (diagnostyka, tylko przy SNAP_DUMP); w wznowieniu 'res'. */
 let SNAP_PREFIX = process.env.SNAP_DUMP || '';

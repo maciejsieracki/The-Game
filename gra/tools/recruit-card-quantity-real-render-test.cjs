@@ -30,7 +30,7 @@ const GRA = path.resolve(__dirname, '..');
 const BRAND_STUB = path.resolve(__dirname, '.stubs', 'recruit-card-stock-chip-brandAssets-stub.ts');
 const ENTRY = path.resolve(__dirname, '.recruit-card-quantity-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.recruit-card-quantity-bundle.js');
-const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium';
+const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 
 const units = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'units.json'), 'utf8'));
 const WOJOWNIK = units.find(u => u && u.Jednostka === 'Wojownik');

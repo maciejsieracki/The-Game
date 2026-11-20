@@ -21,7 +21,7 @@ const { execSync } = require('child_process');
 const GRA = path.resolve(__dirname, '..');
 const VITE_CFG = path.join(__dirname, '.tartak-hill-vite.config.mts');
 const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
-  || (fs.existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : '/opt/pw-browsers/chromium');
+  || (fs.existsSync((require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')) ? (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium') : '/opt/pw-browsers/chromium');
 
 const argOf = (flag) => {
   const i = process.argv.indexOf(flag);

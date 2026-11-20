@@ -30,7 +30,7 @@ const SCRATCH = process.argv[2] || path.join(os.tmpdir(), 'civ-peaceauto-live-' 
 const EVIDENCE = process.argv[3]
   || path.join(REPO_ROOT, 'dyspozycje', 'autobot', 'runs', 'R-WEB-DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1', 'evidence');
 const OUT_HTML = 'file://' + path.join(SCRATCH, 'index.html') + '?playtest=mapa&civTest=1';
-const FALLBACK_CHROME = '/usr/bin/chromium';
+const FALLBACK_CHROME = (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const PLAYER = 0;
 const AI = 1;
 

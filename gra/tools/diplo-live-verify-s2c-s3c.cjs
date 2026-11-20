@@ -35,7 +35,7 @@ const arg = (name) => { const h = process.argv.find((a) => a.startsWith('--' + n
 async function launchBrowser(chromium) {
   const args = ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage'];
   try {
-    return await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium', args });
+    return await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), args });
   } catch (e) {
     log('launch z /usr/bin/chromium nie wyszedl, probuje domyslnego:', e.message.slice(0, 120));
     return chromium.launch({ headless: true, args });

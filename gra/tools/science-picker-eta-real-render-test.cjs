@@ -73,7 +73,7 @@ async function main() {
     try { browser = await chromium.launch({ headless: true }); }
     catch (error) {
       console.log('[science-picker-eta-real-render-test] Playwright Chromium missing; using system Chromium.');
-      browser = await chromium.launch({ headless: true, executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] });
+      browser = await chromium.launch({ headless: true, executablePath: (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), args: ['--no-sandbox'] });
     }
     try {
       const page = await browser.newPage({ viewport: { width: 1240, height: 840 } });

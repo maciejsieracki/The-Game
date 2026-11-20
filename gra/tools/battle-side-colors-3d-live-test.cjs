@@ -20,7 +20,7 @@ const { createServer } = require('vite');
 const root = path.resolve(__dirname, '..');
 const SHOT_DIR = process.env.SHOT_DIR || path.join(process.cwd(), 'shots');
 fs.mkdirSync(SHOT_DIR, { recursive: true });
-const exe = ['/usr/bin/chromium', process.env.CHROMIUM_PATH].find(p => p && fs.existsSync(p));
+const exe = [(require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), process.env.CHROMIUM_PATH].find(p => p && fs.existsSync(p));
 
 const BLUE = 0x3a6ad0;
 const RED = 0xc84040;

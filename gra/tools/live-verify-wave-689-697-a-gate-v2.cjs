@@ -32,7 +32,7 @@ async function launch(chromium, profileDir) {
   const args = ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage', '--headless=new'];
   const o = { headless: true, args, viewport: { width: 1280, height: 800 } };
   try { return await chromium.launchPersistentContext(profileDir, o); } catch (_) {
-    return await chromium.launchPersistentContext(profileDir, { ...o, executablePath: '/usr/bin/chromium' });
+    return await chromium.launchPersistentContext(profileDir, { ...o, executablePath: (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium') });
   }
 }
 const S = {

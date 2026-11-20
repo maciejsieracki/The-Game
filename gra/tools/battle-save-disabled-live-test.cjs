@@ -44,7 +44,7 @@ const OUT = process.env.CIV_SAVE_TEST_OUT
 const EVIDENCE = process.env.CIV_SAVE_TEST_EVIDENCE
   ? path.resolve(process.env.CIV_SAVE_TEST_EVIDENCE)
   : path.resolve(ROOT, '..', 'dyspozycje/autobot/runs/R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1/evidence');
-const CHROME = fs.existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined;
+const CHROME = fs.existsSync((require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')) ? (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium') : undefined;
 const MSG = 'Zapis niedostępny w trakcie bitwy';
 const MAP_BOOT_MS = 180000;
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));

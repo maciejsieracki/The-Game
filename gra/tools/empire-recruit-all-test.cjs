@@ -19,7 +19,7 @@ catch (e) { console.error('playwright missing'); process.exit(1); }
 const GRA = path.resolve(__dirname, '..');
 const ENTRY = path.resolve(__dirname, '.empire-recruit-all-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.empire-recruit-all-bundle.js');
-const CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium';
+const CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 
 let pass = 0, fail = 0;
 function check(name, ok, detail) {

@@ -26,7 +26,7 @@ const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const VITE_CFG = path.join(__dirname, `.hunting-camp-vite-${RUN_ID}.config.mts`);
 const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
   || (fs.existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium'
-    : fs.existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : '/opt/pw-browsers/chromium');
+    : fs.existsSync((require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')) ? (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium') : '/opt/pw-browsers/chromium');
 const argOf = (f) => { const i = process.argv.indexOf(f); return i > -1 ? process.argv[i + 1] : null; };
 const OUTROOT = argOf('--outroot') || (fs.existsSync('/dev/shm') ? '/dev/shm' : os.tmpdir());
 const SHOTS = argOf('--shots') || path.join(os.tmpdir(), `hunting-camp-shots-${RUN_ID}`);

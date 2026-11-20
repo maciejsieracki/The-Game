@@ -16,7 +16,7 @@ function ok(label, condition) {
   console.log('  PASS ' + label);
 }
 function chromePaths() {
-  const paths = [process.env.CIV_CHROME_PATH, process.env.CHROME_PATH, '/usr/bin/chromium'];
+  const paths = [process.env.CIV_CHROME_PATH, process.env.CHROME_PATH, (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')];
   for (const dir of [path.join(os.homedir(), '.cache/ms-playwright'), '/opt/pw-browsers']) {
     try {
       for (const e of fs.readdirSync(dir).filter(x => x.startsWith('chromium')).sort().reverse()) {

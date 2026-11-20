@@ -25,7 +25,7 @@
  *   (w tym karty technologii) przez closeEndTurnModals z ai-economy-measure-run.cjs -> measure-close-modals.cjs (jedno zrodlo selektorow).
  *   --build 1 buduje bundle do --dist (vite, poza repo; bez tego flagi uzywa istniejacego index.html).
  *   --every N zapisuje wiersz tylko dla tur podzielnych przez N (np. 5 albo 25; ostatnia tura zawsze).
- *   Przegladarka: CHROME_PATH (domyslnie pierwsza z: /usr/bin/chromium, google-chrome). Jeden Chromium naraz.
+ *   Przegladarka: CHROME_PATH (domyslnie pierwsza z: /usr/bin/google-chrome, /usr/bin/chromium). Jeden Chromium naraz.
  *
  * Limity: pojedyncze polecenie Bash < 590 s. Dlugie biegi (100 tur x 3 ziarna ON/OFF) uruchamia orkiestrator
  * przez `setsid nohup node tools/diplomacy-harder-measure-run.cjs ... &` (poza tym plikiem; sam runner nie wznawia).
@@ -69,7 +69,7 @@ const PROFILE = path.resolve(arg('profile', path.join(os.tmpdir(), 'diplo-harder
 const OUT = path.resolve(arg('out', path.join(os.tmpdir(), 'diplo-harder-out')));
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 /** Przegladarka: CHROME_PATH; bez niego pierwsza istniejaca z listy (brak /usr/bin/chromium nie wywala launchu). */
-const CHROME = process.env.CHROME_PATH || ['/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable'].find(p => fs.existsSync(p)) || '/usr/bin/chromium';
+const CHROME = process.env.CHROME_PATH || [(require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), '/usr/bin/chromium-browser', '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable'].find(p => fs.existsSync(p)) || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const TURN_TIMEOUT_MS = 300000;
 const TAG = ALL_FLAGS === null ? `seed${SEED}-harder${HARDER ? 1 : 0}` : `seed${SEED}-all${ALL_FLAGS ? 1 : 0}`;
 const wait = ms => new Promise(r => setTimeout(r, ms));

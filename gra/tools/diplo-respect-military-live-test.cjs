@@ -39,7 +39,7 @@ const EVIDENCE_DIR = process.env.RESPECT_EVIDENCE || '';
 const RESULT_FILE = process.env.RESPECT_RESULT || '';
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa&civTest=1';
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
-const SYSTEM_CHROME = '/usr/bin/chromium';
+const SYSTEM_CHROME = (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const ME = 0;
 
 let pass = 0;

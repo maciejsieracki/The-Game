@@ -32,7 +32,7 @@ try {
 
 // Ścieżkę przeglądarki można podać przez env ELIM_CHROME (nie zakładamy stałej lokalizacji).
 const FALLBACK_CHROME = process.env.ELIM_CHROME || '/opt/pw-browsers/chromium';
-const SYSTEM_CHROME = '/usr/bin/chromium';
+const SYSTEM_CHROME = (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const TMPDIR = fs.mkdtempSync(path.join(os.tmpdir(), 'elim-window-scroll-'));
 const OUT = process.env.ELIM_SCROLL_OUT || TMPDIR;
 fs.mkdirSync(OUT, { recursive: true });

@@ -18,7 +18,7 @@ const http = require('http');
 const DIST = process.argv[2];
 const EVID = process.argv[3];
 if (!DIST || !EVID) throw new Error('usage: node w18r3.cjs <dist-dir> <evidence-dir>');
-const CHROME = process.env.W3_CHROMIUM || '/usr/bin/chromium';
+const CHROME = process.env.W3_CHROMIUM || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const { chromium } = require('playwright');
 const MIME = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png' };
 

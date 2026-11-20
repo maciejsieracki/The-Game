@@ -31,7 +31,7 @@ const CHECK10 = arg('check10', '0') === '1'; // pkt 3: tury 1–10 z deficytem (
 const CHECK10_UNITS = parseInt(arg('check10units', '2'), 10);
 const ME = 0; // HUMAN_OWNER_PRIMARY (main.ts: ME() === 0)
 const wait = ms => new Promise(r => setTimeout(r, ms));
-const FALLBACK_CHROME = '/usr/bin/chromium';
+const FALLBACK_CHROME = (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 
 async function launch(chromium) {
   const args = ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage', '--headless=new'];

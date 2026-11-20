@@ -71,7 +71,7 @@ check('panel dostaje isStormBlocked z main.ts', /isStormBlocked:\s*\(ctx: MapSie
 // --- (2) Chromium na prawdziwym panelu
 async function live() {
   const { chromium } = require('playwright');
-  const browser = await chromium.launch({ executablePath: process.env.CHROME_BIN || '/usr/bin/chromium', args: ['--no-sandbox', '--headless=new'] });
+  const browser = await chromium.launch({ executablePath: process.env.CHROME_BIN || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), args: ['--no-sandbox', '--headless=new'] });
   const errors = [];
   try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });

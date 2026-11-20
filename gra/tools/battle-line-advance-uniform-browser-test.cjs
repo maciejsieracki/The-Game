@@ -8,7 +8,7 @@ const path = require('node:path');
 const { chromium } = require('playwright');
 const { createServer } = require('vite');
 const root = path.resolve(__dirname, '..');
-const exe = [process.env.CHROMIUM_PATH, '/usr/bin/chromium'].find(p => p && fs.existsSync(p));
+const exe = [process.env.CHROMIUM_PATH, (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')].find(p => p && fs.existsSync(p));
 const out = process.env.LINE_OUT || path.resolve(root, '..', 'dyspozycje/autobot/runs/R-WEB-BATTLE-LINE-ADVANCE-UNIFORM-Q1/evidence');
 const SCENES = (process.env.LINE_SCENES || 'before,after').split(',');
 const SEEDS = (process.env.LINE_SEEDS || '1').split(',');

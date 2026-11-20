@@ -32,7 +32,7 @@ async function main() {
       browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
     } catch (_) {
       browser = await chromium.launch({
-        headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium',
+        headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'),
         args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'],
       });
     }

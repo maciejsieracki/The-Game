@@ -21,7 +21,7 @@ const CITY_PANEL = path.resolve(GRA, 'src', 'ui', 'cityPanel.ts');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'civ-mass-recruitment-'));
 const ENTRY = path.join(tmp, 'entry.ts');
 const BUNDLE = path.join(tmp, 'bundle.js');
-const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium';
+const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 
 let passed = 0;
 let failed = 0;

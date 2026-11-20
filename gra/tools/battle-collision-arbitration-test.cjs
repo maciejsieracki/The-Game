@@ -96,7 +96,7 @@ async function liveRun(seed, mutate, pairs) {
   const MUT = pairs || REV;
   const { chromium } = require('playwright');
   const { createServer } = require('vite');
-  const exe = [process.env.CHROMIUM_PATH, '/usr/bin/chromium'].find(p => p && fs.existsSync(p));
+  const exe = [process.env.CHROMIUM_PATH, (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')].find(p => p && fs.existsSync(p));
   const plugins = mutate ? [{ name: 'bca-mut', enforce: 'pre', transform(code, id) {
     if (!id.endsWith('autoBatchPhase.ts')) return null;
     let out = code;

@@ -23,7 +23,7 @@
  *   MSF_DIST       gotowy build (pomija vite build); bez tego build do katalogu tymczasowego poza repo
  *   MSF_TIMEOUT_S  limit czasu jednego przebiegu (domyslnie 540)
  *   MSF_TABLE=1    tylko tabela z MSF_OUT (bez Chromium)
- *   MSF_CHROMIUM   sciezka Chromium (domyslnie /usr/bin/chromium)
+ *   MSF_CHROMIUM   sciezka Chromium (domyslnie: CHROME_PATH, potem /usr/bin/google-chrome, potem /usr/bin/chromium)
  *   MSF_LAUNCH_TRIES  proby startu przegladarki (domyslnie 4)
  * Brak Chromium / playwright lub brak startu po probach -> NIE_ZMIERZONO (exit 2).
  */
@@ -34,7 +34,7 @@ const http = require('http');
 const { execSync } = require('child_process');
 
 const GRA = path.resolve(__dirname, '..');
-const CHROME = process.env.MSF_CHROMIUM || '/usr/bin/chromium';
+const CHROME = process.env.MSF_CHROMIUM || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const OUT = process.env.MSF_OUT || '';
 
 function readRows(file) {

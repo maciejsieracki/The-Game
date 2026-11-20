@@ -108,7 +108,7 @@ async function main() {
   build();
   const server = await startServer();
   const port = server.address().port;
-  const browser = await chromium.launch({ headless: true, executablePath: '/usr/bin/chromium',
+  const browser = await chromium.launch({ headless: true, executablePath: (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'),
     args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
   const errors = [];
   try {

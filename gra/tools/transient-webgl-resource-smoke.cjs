@@ -50,7 +50,7 @@ import { disposeTransientObject3D, markSharedTransientGeometry, markSharedTransi
 `, 'utf8');
   esbuild.buildSync({ entryPoints: [ENTRY], bundle: true, platform: 'browser', format: 'iife',
     target: 'es2020', outfile: BUNDLE, absWorkingDir: GRA, logLevel: 'silent' });
-  const systemChromium = ['/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/google-chrome'].find(fs.existsSync);
+  const systemChromium = [(require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), '/usr/bin/chromium-browser', '/usr/bin/google-chrome'].find(fs.existsSync);
   const browser = await chromium.launch({ ...(systemChromium ? { executablePath: systemChromium } : {}),
     headless: true, args: ['--no-sandbox', '--use-gl=angle', '--use-angle=swiftshader'] });
   try {

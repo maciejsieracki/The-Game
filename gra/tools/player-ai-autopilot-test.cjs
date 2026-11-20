@@ -18,7 +18,7 @@
  *
  * Uzycie (z gra/): node tools/player-ai-autopilot-test.cjs [--dist <abs-dist>] [--mutant 1]
  *   Bez --dist bundle budowany do os.tmpdir() (vite, poza repo). Wyjscie: 0 = zielone, 1 = czerwone.
- *   Brak przegladarki (CHROME_PATH / /usr/bin/chromium) -> SKIP, kod 0.
+ *   Brak przegladarki (CHROME_PATH / /usr/bin/google-chrome / /usr/bin/chromium) -> SKIP, kod 0.
  */
 const fs = require('fs');
 const os = require('os');
@@ -30,7 +30,7 @@ function arg(name, def) {
   return i >= 0 && process.argv[i + 1] !== undefined ? process.argv[i + 1] : def;
 }
 const GRA_DIR = path.resolve(__dirname, '..');
-const CHROME = process.env.CHROME_PATH || '/usr/bin/chromium';
+const CHROME = process.env.CHROME_PATH || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const MUTANT = arg('mutant', '0') === '1';
 const results = [];
 function check(name, ok, detail) {

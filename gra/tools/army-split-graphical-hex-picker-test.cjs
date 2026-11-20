@@ -22,7 +22,7 @@ async function main() {
   await esbuild.build({ stdin: { contents: source, resolveDir: UI_DIR, sourcefile: 'armySplitPanel.ts', loader: 'ts' },
     bundle: true, platform: 'browser', format: 'iife', outfile: OUT, logLevel: 'silent',
     plugins: [{ name: 'brand-stub', setup(b) { b.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: STUB })); } }] });
-  const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', args: ['--no-sandbox'] });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), args: ['--no-sandbox'] });
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   await page.setContent('<!doctype html><html><head></head><body style="margin:0;background:#080a12"></body></html>');
   await page.addScriptTag({ path: OUT });

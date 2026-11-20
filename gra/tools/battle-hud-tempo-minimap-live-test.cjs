@@ -29,7 +29,7 @@ const root = path.resolve(__dirname, '..');
 const evidence = path.resolve(root, '..', 'dyspozycje/autobot/runs/R-WEB-UI-BATTLE-TEMPO-MINIMAP-PANEL-BRANDBOOK-Q1/evidence');
 const SHOT_LABEL = process.env.SHOT_LABEL || '';
 const MUTATE = process.env.MUTATE === '1';
-const exe = [process.env.CHROMIUM_PATH, '/usr/bin/chromium',
+const exe = [process.env.CHROMIUM_PATH, (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'),
   ...(fs.existsSync('/opt/pw-browsers') ? fs.readdirSync('/opt/pw-browsers').filter(d => d.startsWith('chromium-')).map(d => `/opt/pw-browsers/${d}/chrome-linux/chrome`) : [])]
   .find(p => p && fs.existsSync(p));
 

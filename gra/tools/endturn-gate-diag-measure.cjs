@@ -54,7 +54,7 @@ const TYP = arg('typ', 'kontynenty'); const SEED = Number(arg('seed', '4242'));
 const TURNS = Number(arg('turns', '100')); const SIZE = arg('size', 'Standardowy');
 const CPUPROF = new Set(String(arg('cpuprof', '10,40,70,95')).split(',').filter(Boolean).map(Number));
 const PREFLIGHT_ONLY = process.argv.includes('--preflight-only');
-const FALLBACK_CHROME = '/usr/bin/chromium';
+const FALLBACK_CHROME = (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const OUT = path.join(OUTD, `seed${SEED}.jsonl`);
 const emit = (o) => fs.appendFileSync(OUT, JSON.stringify(o) + '\n');

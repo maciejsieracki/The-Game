@@ -24,7 +24,7 @@ const path = require('node:path');
 const { chromium } = require('playwright');
 const { createServer } = require('vite');
 const root = path.resolve(__dirname, '..');
-const exe = [process.env.CHROMIUM_PATH, '/usr/bin/chromium'].find(p => p && fs.existsSync(p));
+const exe = [process.env.CHROMIUM_PATH, (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')].find(p => p && fs.existsSync(p));
 const SEEDS = (process.env.BFM_SEEDS || '1,2,3').split(',').map(Number);
 const MAX_MS = Number(process.env.BFM_MAX_MS || 400000);
 const ATK = process.env.BFM_ATK || 'Hastati:8,Lucznik:6,Konnica:4';

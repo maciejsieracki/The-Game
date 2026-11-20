@@ -18,7 +18,7 @@ const TMP = path.join(os.tmpdir(), `civ-recruitment-panel-height-${TMP_RUN_ID}`)
 const FALLBACK_CHROMIUM_CANDIDATES = [
   process.env.CHROME_PATH,
   '/opt/pw-browsers/chromium',
-  '/usr/bin/chromium',
+  (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'),
   '/usr/bin/chromium-browser',
 ].filter(Boolean);
 fs.mkdirSync(TMP, { recursive: true });

@@ -24,7 +24,7 @@ const http = require('http');
 const DIST = process.argv[2];
 const EVID = process.argv[3] || null;
 if (!DIST) throw new Error('usage: node siege-panel-machines-block-fit-test.cjs <dist-dir> [evidence-dir]');
-const CHROME = process.env.W3_CHROMIUM || '/usr/bin/chromium';
+const CHROME = process.env.W3_CHROMIUM || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const { chromium } = require('playwright');
 const MIME = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png' };
 const VIEWPORTS = [[1280, 800], [1366, 768]];

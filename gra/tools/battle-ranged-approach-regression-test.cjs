@@ -18,7 +18,7 @@ async function main() {
   try {
     await server.listen();
     const address = server.httpServer.address();
-    browser = await chromium.launch({ headless: true, executablePath: '/usr/bin/chromium',
+    browser = await chromium.launch({ headless: true, executablePath: (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'),
       args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     page.on('pageerror', e => browserErrors.push({ kind: 'pageerror', text: e.message }));

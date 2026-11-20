@@ -46,7 +46,7 @@ const PW = arg('pw'); const DIST = arg('dist'); const OUT = arg('out'); const LA
 const SEED = Number(arg('seed', '4242')); const TURNS = Number(arg('turns', '50'));
 const AT = new Set(String(arg('at', '1,50')).split(',').map(Number));
 if (!PW || !DIST || !OUT) { console.error('usage: see header'); process.exit(2); }
-const FALLBACK_CHROME = '/usr/bin/chromium';
+const FALLBACK_CHROME = (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const emit = (o) => fs.appendFileSync(OUT, JSON.stringify({ label: LABEL, ...o }) + '\n');
 

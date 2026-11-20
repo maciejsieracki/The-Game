@@ -19,7 +19,7 @@ const MUTANT_FROM = '.civ-hud .civ-hud-banner-left.hud-left-fallback>.civ-hud-ba
 const MUTANT_TO = '.civ-hud .civ-hud-banner-left.hud-left-fallback>.civ-hud-banner-shell{height:56px;}';
 const esbuild = require(path.join(GRA, 'node_modules', 'esbuild'));
 const { chromium } = require(path.join(GRA, 'node_modules', 'playwright'));
-const CHROME_CANDIDATES = [process.env.CHROMIUM, '/opt/pw-browsers/chromium', '/usr/bin/chromium'];
+const CHROME_CANDIDATES = [process.env.CHROMIUM, '/opt/pw-browsers/chromium', (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')];
 const CHROME = CHROME_CANDIDATES.find((p) => p && fs.existsSync(p));
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'left-banner-chip-grid-'));
 
