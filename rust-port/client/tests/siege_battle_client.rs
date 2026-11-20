@@ -12,10 +12,11 @@
 //! (`CivEngineAdapter::from_game`), and `CreateSession` is checked separately (a storm on the start scenario is an
 //! explicit engine error, no battle in the client).
 //!
-//! The scene part the bridge does not carry ([`SiegeSceneStatic`], debt D-1I6-SETUP) is read from the engine library
-//! for the same state (`prepare_storm` + `rebuild`: grid, fort, tower rows, morale maxima, unit names; the battle is
-//! deterministic, D-WIRB-1). `category` is a fixture value (model routing only); `max_hp` / `ammo_max` are the start
-//! values of the scene (every unit of the scenario starts at full HP and full ammunition).
+//! R-RUSTPORT-P4-1I6-DLUGI-Q1: the scene comes from the engine (`siegeBattle.setup`, D-1I6-SETUP); the client composes
+//! nothing (the former fixture `SiegeSceneStatic`, debts D-1I6-FIXTURE / D-1I6-SPAWN-FACING, is gone). The rewind of
+//! the start frame (D-1I6-3b, the former client composition) stays here only as an independent cross-check of the
+//! engine setup. Battle errors arrive typed (`BridgeError.siegeBattle`, D-1I6-ERR); a scene that cannot be built
+//! aborts the engine battle (`AbortSiegeBattle`, D-1I6-ORPHAN / D-1I6-ABORT-E2E).
 
 #![allow(clippy::float_cmp)]
 
@@ -24,15 +25,15 @@
 mod bridge;
 
 use bridge::{
-    BridgeDispatch, BridgeError, BridgeErrorCode, BridgeEvent, BridgeRequest, BridgeResult,
-    CivEngineAdapter, EngineBridge, EngineCommand, StartGameParams, WallMs,
+    BridgeDispatch, BridgeError, BridgeEvent, BridgeRequest, BridgeResult, CivEngineAdapter,
+    EngineBridge, EngineCommand, StartGameParams, WallMs,
 };
 use civ_client::{
-    compose_siege_battle_setup, is_not_finished, ClientError, HighlightPriority, MapDetailQuality,
+    is_not_finished, tower_projectile_of, ClientError, HighlightPriority, MapDetailQuality,
     RenderClient, RenderFramePayload, RenderMapPayload, RenderSource, RenderUiParams, SiegeAfterUi,
-    SiegeBattleAnswer, SiegeBattleCommand, SiegeBattleEnd, SiegeBattleError, SiegeBattlePayload,
-    SiegeBattlePhaseDto, SiegeBattleSource, SiegeClientError, SiegeSceneStatic, SiegeSourceError,
-    SiegeUnitLook, StreamOrder, SIEGE_ATTACKER_COLOR, SIEGE_DEFENDER_COLOR,
+    SiegeBattleAnswer, SiegeBattleCommand, SiegeBattleEnd, SiegeBattleErrorDto, SiegeBattlePayload,
+    SiegeBattlePhaseDto, SiegeBattleSource, SiegeClientError, SiegeSourceError, StreamOrder,
+    SIEGE_ATTACKER_COLOR, SIEGE_DEFENDER_COLOR,
 };
 use civ_engine::domain::diplomacy::{CivilizationPair, Relation, RelationStatus};
 use civ_engine::domain::playable::{
@@ -40,15 +41,13 @@ use civ_engine::domain::playable::{
     PlayableState, PlayableTerrain, PlayableUnit, PlayableUnitKind,
 };
 use civ_engine::domain::siege_battle_apply;
-use civ_engine::domain::siege_battle_session::{SessionError, SessionPhase, SiegeBattleSession};
-use civ_engine::domain::siege_city_fortification::CityFortificationKind;
+use civ_engine::domain::siege_battle_session::{SessionPhase, SiegeBattleSession};
 use civ_engine::{CityId, PlayerId, PositionDto, UnitId};
 use civ_renderer::battle::playback::PlaybackError;
 use civ_renderer::battle::siege_towers::tower_projectile_kind;
-use civ_renderer::battle::units::siege_wall_civ;
 use civ_view_model::battle::{
-    BattleActionDto, BattleActionKindDto, BattleFortDto, BattleFrameDto, BattleGridDto, BattleSide,
-    BattleWinner, FortKind, TowerMaterial,
+    BattleActionDto, BattleActionKindDto, BattleFrameDto, BattleSetupDto, BattleSide,
+    BattleUnitSpawnDto, BattleWinner,
 };
 use civ_view_model::{OwnerRef, RenderLayersDto};
 
@@ -161,6 +160,9 @@ struct BridgeSource {
     bridge: EngineBridge<CivEngineAdapter>,
     next_id: u64,
     seen: Seen,
+    /// Applied to the `siegeBattle` of a start answer before the client sees it (a transport that loses or breaks the
+    /// setup, for the D-1I6-ORPHAN path); `None` = untouched.
+    tamper_start: Option<fn(&mut SiegeBattlePayload)>,
 }
 
 impl BridgeSource {
@@ -169,6 +171,7 @@ impl BridgeSource {
             bridge,
             next_id: 0,
             seen: Seen::default(),
+            tamper_start: None,
         }
     }
 
@@ -218,27 +221,13 @@ impl RenderSource for BridgeSource {
     }
 }
 
-/// D-1I6-1 / debt D-1I6-ERR: the bridge carries `SiegeBattleError` only as its `Display` (`EngineRejected`); the
-/// battle errors the client acts on (`NotFinished`, `Aborted`) are mapped back from that text.
+/// D-1I6-1 / D-1I6-ERR: the bridge carries the battle error as a type (`BridgeError.siegeBattle`); any other bridge
+/// error is a transport / source error.
 fn battle_error(e: BridgeError) -> SiegeSourceError<BridgeError> {
-    if e.code != BridgeErrorCode::EngineRejected {
-        return SiegeSourceError::Source(e);
+    match e.siege_battle.clone() {
+        Some(dto) => SiegeSourceError::Battle(dto),
+        None => SiegeSourceError::Source(e),
     }
-    let not_finished = SiegeBattleError::Session(SessionError::NotFinished);
-    if e.message == not_finished.to_string() {
-        return SiegeSourceError::Battle(not_finished);
-    }
-    if let Some(rest) = e.message.strip_prefix("siege battle at city ") {
-        if let Some((id, reason)) = rest.split_once(" closed without a result: ") {
-            if let Ok(city_id) = id.parse() {
-                return SiegeSourceError::Battle(SiegeBattleError::Aborted {
-                    city_id,
-                    reason: reason.to_owned(),
-                });
-            }
-        }
-    }
-    SiegeSourceError::Source(e)
 }
 
 impl SiegeBattleSource for BridgeSource {
@@ -258,6 +247,7 @@ impl SiegeBattleSource for BridgeSource {
             ),
             SiegeBattleCommand::Skip => ("skip", EngineCommand::SkipSiegeBattle),
             SiegeBattleCommand::Finish => ("finish", EngineCommand::FinishSiegeBattle),
+            SiegeBattleCommand::Abort => ("abort", EngineCommand::AbortSiegeBattle),
         };
         self.seen.siege.push(tag);
         let d = self.request(cmd).map_err(battle_error)?;
@@ -265,10 +255,13 @@ impl SiegeBattleSource for BridgeSource {
             .events
             .iter()
             .any(|e| matches!(e, BridgeEvent::StateChanged { .. }));
-        let battle = d
+        let mut battle = d
             .response
             .siege_battle
             .ok_or_else(|| SiegeSourceError::Source(unexpected("no siegeBattle", tag)))?;
+        if let (SiegeBattleCommand::Start { .. }, Some(f)) = (command, self.tamper_start) {
+            f(&mut battle);
+        }
         self.seen.actions.extend(battle.actions.iter().cloned());
         if let Some(f) = &battle.frame {
             self.seen.frames.push(f.clone());
@@ -281,58 +274,6 @@ impl SiegeBattleSource for BridgeSource {
 }
 
 type Client = RenderClient<BridgeSource>;
-
-// ------------------------------------------------------------ scene static (engine library, D-1I6-SETUP)
-
-/// The scene part the bridge answer does not carry, for the storm of `CITY` from `ANCHOR` on `st`.
-fn scene_static(st: &PlayableState) -> SiegeSceneStatic {
-    let a = siege_battle_apply::prepare_storm(st, CITY, ANCHOR, 1).expect("storm");
-    let s = a.rebuild().expect("session");
-    let field = s.field();
-    let siege = field.siege.as_ref().expect("siege field");
-    let (kind, material) = match siege.fort_kind {
-        CityFortificationKind::None => (FortKind::None, None),
-        CityFortificationKind::Palisada => (FortKind::Palisada, Some(TowerMaterial::Drewno)),
-        CityFortificationKind::Mur => (FortKind::Mur, Some(TowerMaterial::Kamien)),
-    };
-    let lp = s.battle_loop();
-    let body = &lp.env.body;
-    let mut units = Vec::new();
-    for (side, list) in [(0usize, &lp.st.atk), (1usize, &lp.st.def)] {
-        for (i, u) in list.iter().enumerate() {
-            let ammo = body.ammo_left[side][i];
-            assert!(u.c.hp > 0.0, "scenario: every unit starts alive");
-            units.push(SiegeUnitLook {
-                battle_id: u.id,
-                category: "INFANTRY".to_owned(),
-                model_name: body.names[side][i].clone(),
-                max_hp: u.c.hp,
-                morale_max: body.morale_max[side][i],
-                ammo_max: ammo.is_finite().then_some(ammo),
-            });
-        }
-    }
-    SiegeSceneStatic {
-        grid: BattleGridDto {
-            cols: field.map.cols(),
-            rows: field.map.rows(),
-            tiles: field.map.tiles().to_vec(),
-        },
-        desert_palette: field.desert_palette,
-        siege_civ: siege_wall_civ(None, a.input().def_civ.as_deref()).to_owned(),
-        fort: BattleFortDto {
-            kind,
-            tower_material: material,
-            tower_rows: siege
-                .tower_rows
-                .iter()
-                .map(|r| i32::try_from(*r).expect("row"))
-                .collect(),
-        },
-        units,
-        tower_projectile: Some(tower_projectile_kind(None, Some(&body.tower_shooter_nazwa))),
-    }
-}
 
 /// Number of actions the session emits when driven directly (start + `step(16)` to the end, or start + `step(16)` +
 /// `skip`), the reference of "no action is lost".
@@ -399,10 +340,9 @@ struct Run {
 
 /// The storm through the client: `chunks` real-time steps to the end (empty = one 16 ms step then `Skip`), `Finish`.
 fn storm(st: PlayableState, chunks: &[f64], with_scene: bool) -> Run {
-    let scene = with_scene.then(|| scene_static(&st));
     let mut c = client_for(st);
     let frames_before = c.source().seen.frame_calls;
-    c.start_siege_storm(CITY, ANCHOR, scene.as_ref())
+    c.start_siege_storm(CITY, ANCHOR, with_scene)
         .expect("start");
     // r2 (E01): the wall clock after each answer (`vLastWall` of the labels created by that answer).
     let mut walls = vec![0.0];
@@ -626,9 +566,7 @@ fn e2e_bez_sceny_ten_sam_wynik() {
 /// unit, the siege map panel closed at the start (`hideSiegeMapPanel`).
 #[test]
 fn stan_ui_po_bitwie() {
-    let st = siege_state(11);
-    let scene = scene_static(&st);
-    let mut c = client_for(st);
+    let mut c = client_for(siege_state(11));
     c.set_siege_map_panel_open(true).expect("panel");
     c.select_unit(Some(ANCHOR)).expect("select");
     let mut ui = c.ui().frame_ui.clone();
@@ -641,8 +579,7 @@ fn stan_ui_po_bitwie() {
     map_ui.force_visible_unit_id = Some(civ_view_model::ids::UnitId::try_new(ANCHOR).expect("id"));
     c.set_map_ui(map_ui).expect("force");
     let ui_before = c.ui().clone();
-    c.start_siege_storm(CITY, ANCHOR, Some(&scene))
-        .expect("start");
+    c.start_siege_storm(CITY, ANCHOR, true).expect("start");
     assert!(!c.ui().siege_map_panel_open, "hideSiegeMapPanel (:36885)");
     assert_eq!(
         c.ui().frame_ui,
@@ -690,7 +627,7 @@ fn faza_bitwy_not_finished_i_odmowy_bez_wolania_silnika() {
         Some(SiegeClientError::NoBattle)
     );
     assert!(c.source().seen.siege.is_empty(), "no engine call");
-    c.start_siege_storm(CITY, ANCHOR, None).expect("start");
+    c.start_siege_storm(CITY, ANCHOR, false).expect("start");
     let frames = c.source().seen.frame_calls;
     match c.finish_siege_battle() {
         Err(SiegeClientError::Engine(e)) => assert!(is_not_finished(&e), "{e:?}"),
@@ -702,7 +639,7 @@ fn faza_bitwy_not_finished_i_odmowy_bez_wolania_silnika() {
     // Second start while the battle runs: refused without an engine call.
     let n = c.source().seen.siege.len();
     assert_eq!(
-        c.start_siege_storm(CITY, ANCHOR, None).err(),
+        c.start_siege_storm(CITY, ANCHOR, false).err(),
         Some(SiegeClientError::BattleActive { city_id: CITY })
     );
     assert_eq!(c.source().seen.siege.len(), n);
@@ -744,16 +681,17 @@ fn create_session_i_bledy_startu() {
         .expect("CreateSession");
     let mut c = RenderClient::new(BridgeSource::new(bridge), MapDetailQuality::Low);
     assert_eq!(
-        c.start_siege_storm(CITY, ANCHOR, None).err(),
+        c.start_siege_storm(CITY, ANCHOR, false).err(),
         Some(SiegeClientError::NoSession)
     );
     assert!(c.source().seen.siege.is_empty());
     c.on_session_created().expect("map");
     c.on_state_changed().expect("frame");
     let ui = c.ui().clone();
-    match c.start_siege_storm(CITY, ANCHOR, None) {
-        Err(SiegeClientError::Source(e)) => {
-            assert_eq!(e.code, BridgeErrorCode::EngineRejected, "{e:?}");
+    // D-1I6-ERR: the battle error arrives typed (no city 900 in the start scenario).
+    match c.start_siege_storm(CITY, ANCHOR, false) {
+        Err(SiegeClientError::Engine(e)) => {
+            assert_eq!(e, SiegeBattleErrorDto::CityNotFound { city_id: CITY });
         }
         other => panic!("engine error expected: {other:?}"),
     }
@@ -767,7 +705,11 @@ fn create_session_i_bledy_startu() {
 /// a human storm on `PlayableState` today: its sources are `outcome.unported`, `LoopUnsupported` and apply errors).
 struct Scripted {
     answers: Vec<SiegeBattlePayload>,
-    finish: Option<SiegeBattleError>,
+    finish: Option<SiegeBattleErrorDto>,
+    /// Answer of `AbortSiegeBattle`: `None` = success (`aborted` payload), `Some` = that error.
+    abort: Option<SiegeBattleErrorDto>,
+    /// `AbortSiegeBattle` calls.
+    aborts: usize,
     frame: RenderFramePayload,
     map: RenderMapPayload,
     frame_calls: usize,
@@ -795,6 +737,16 @@ impl SiegeBattleSource for Scripted {
         command: SiegeBattleCommand,
     ) -> Result<SiegeBattleAnswer, SiegeSourceError<String>> {
         self.sent += 1;
+        if command == SiegeBattleCommand::Abort {
+            self.aborts += 1;
+            return match self.abort.take() {
+                Some(e) => Err(SiegeSourceError::Battle(e)),
+                None => Ok(SiegeBattleAnswer {
+                    battle: SiegeBattlePayload::aborted(CITY),
+                    state_changed: false,
+                }),
+            };
+        }
         if command == SiegeBattleCommand::Finish {
             if let Some(e) = self.finish.take() {
                 return Err(SiegeSourceError::Battle(e));
@@ -859,11 +811,8 @@ fn finish_odtwarza_wstrzymane_akcje() {
         t0: last.v_now + 1.0,
         action: BattleActionKindDto::Facing { id: unit, dir },
     });
-    let st = siege_state(11);
-    let scene = scene_static(&st);
     let mut c = scripted(answers, None);
-    c.start_siege_storm(CITY, ANCHOR, Some(&scene))
-        .expect("start");
+    c.start_siege_storm(CITY, ANCHOR, true).expect("start");
     c.step_siege_battle(16.0).expect("step");
     c.skip_siege_battle().expect("skip");
     c.finish_siege_battle().expect("finish");
@@ -879,13 +828,15 @@ fn finish_odtwarza_wstrzymane_akcje() {
 
 fn scripted(
     answers: Vec<SiegeBattlePayload>,
-    finish: Option<SiegeBattleError>,
+    finish: Option<SiegeBattleErrorDto>,
 ) -> RenderClient<Scripted> {
     let (_, map, frame) = recorded();
     let mut c = RenderClient::new(
         Scripted {
             answers,
             finish,
+            abort: None,
+            aborts: 0,
             frame,
             map,
             frame_calls: 0,
@@ -903,19 +854,16 @@ fn scripted(
 #[test]
 fn aborted_sprzata_bitwe() {
     let (answers, _, _) = recorded();
-    let st = siege_state(11);
-    let scene = scene_static(&st);
     let mut c = scripted(
         answers.clone(),
-        Some(SiegeBattleError::Aborted {
+        Some(SiegeBattleErrorDto::Aborted {
             city_id: CITY,
             reason: "test".into(),
         }),
     );
     c.select_unit(Some(ANCHOR)).expect("select");
     let frames = c.source().frame_calls;
-    c.start_siege_storm(CITY, ANCHOR, Some(&scene))
-        .expect("start");
+    c.start_siege_storm(CITY, ANCHOR, true).expect("start");
     c.step_siege_battle(16.0).expect("step");
     let end = c.finish_siege_battle().expect("aborted is an exit").clone();
     assert_eq!(
@@ -933,13 +881,12 @@ fn aborted_sprzata_bitwe() {
     assert_eq!(c.source().frame_calls, frames + 1);
     // A new storm starts cleanly.
     c.source_mut().answers = answers;
-    c.start_siege_storm(CITY, ANCHOR, Some(&scene))
-        .expect("restart");
+    c.start_siege_storm(CITY, ANCHOR, true).expect("restart");
     assert_eq!(c.siege_battle().expect("battle").answers(), 1);
     assert_eq!(c.last_siege_battle_end(), None);
     // r2 (E18): `Aborted` with nothing to clear in the UI asks the engine for no frame (no `StateChanged`, no UI
     // change, D-371-4): the map is only recomposed from the cached frame.
-    c.source_mut().finish = Some(SiegeBattleError::Aborted {
+    c.source_mut().finish = Some(SiegeBattleErrorDto::Aborted {
         city_id: CITY,
         reason: "again".into(),
     });
@@ -969,11 +916,8 @@ fn naruszenie_kolejnosci_odrzucone_przed_scena() {
     // r2 (E22): the refused answer claims the end; the phase must not move either.
     bad.phase = SiegeBattlePhaseDto::Finished;
     answers[1] = bad;
-    let st = siege_state(11);
-    let scene = scene_static(&st);
     let mut c = scripted(answers, None);
-    c.start_siege_storm(CITY, ANCHOR, Some(&scene))
-        .expect("start");
+    c.start_siege_storm(CITY, ANCHOR, true).expect("start");
     let v = c.siege_battle().expect("battle");
     let (last, received, calls) = (
         v.order().last_queued(),
@@ -1036,272 +980,6 @@ fn straznik_kolejnosci() {
     assert_eq!(g.last_queued(), f.v_now + 10.0);
 }
 
-/// D-1I6-3: the setup takes cells, facing, HP, morale and ammunition from the start frame, the side from `units`, the
-/// owner colours of the pin and `deployPlayerSide: 'atk'`; a unit without a look or a side is an error.
-#[test]
-fn setup_sceny_z_odpowiedzi_startu() {
-    let (answers, _, _) = recorded();
-    let st = siege_state(11);
-    let scene = scene_static(&st);
-    let start = &answers[0];
-    let setup = compose_siege_battle_setup(start, &scene).expect("setup");
-    let f = start.frame.as_ref().expect("frame");
-    assert_eq!(setup.units.len(), f.units.len());
-    assert!(setup.siege && setup.deploy.is_none());
-    assert_eq!(setup.player_side, BattleSide::Atk);
-    let mut rewound = 0;
-    for (u, fu) in setup.units.iter().zip(&f.units) {
-        assert_eq!(u.id, fu.id);
-        // D-1I6-3b: the spawn cell is the `from` of the first start step, else the frame cell.
-        let first_step = start.actions.iter().find_map(|a| match a.action {
-            BattleActionKindDto::Move {
-                id,
-                from_col,
-                from_row,
-                ..
-            } if id == fu.id => Some((from_col, from_row)),
-            _ => None,
-        });
-        if let Some(c) = first_step {
-            rewound += 1;
-            assert_eq!((u.col, u.row), c, "unit {} spawn = first step from", fu.id);
-        } else {
-            assert_eq!((u.col, u.row), (fu.col, fu.row));
-        }
-        assert_eq!(u.facing, fu.facing);
-        assert_eq!(
-            (u.hp, u.morale, u.ammo_left),
-            (fu.hp, fu.morale, fu.ammo_left)
-        );
-        assert_eq!(u.on_wall_walkway, fu.on_wall_walkway);
-        let side = &start
-            .units
-            .iter()
-            .find(|r| r.battle_id == fu.id.get())
-            .expect("ref")
-            .side;
-        let (want_side, color) = if side == "atk" {
-            (BattleSide::Atk, SIEGE_ATTACKER_COLOR)
-        } else {
-            (BattleSide::Def, SIEGE_DEFENDER_COLOR)
-        };
-        assert_eq!((u.side, u.owner_color), (want_side, color));
-    }
-    assert!(setup.units.iter().any(|u| u.side == BattleSide::Def));
-    assert!(rewound > 0, "scenario: the start answer moves units");
-    // `ClimbWall` at start: the spawn is before the climb (off the wall, `from` cell), whatever the frame says.
-    let mut climb = start.clone();
-    let cf = climb.frame.as_mut().expect("frame");
-    let (cid, ccol, crow) = (cf.units[0].id, cf.units[0].col, cf.units[0].row);
-    cf.units[0].on_wall_walkway = true;
-    climb.actions.retain(|a| match a.action {
-        BattleActionKindDto::Move { id, .. } | BattleActionKindDto::ClimbWall { id, .. } => {
-            id != cid
-        }
-        _ => true,
-    });
-    climb.actions.insert(
-        0,
-        BattleActionDto {
-            t0: 0.0,
-            action: BattleActionKindDto::ClimbWall {
-                id: cid,
-                from_col: ccol - 1,
-                from_row: crow,
-                to_col: ccol,
-                to_row: crow,
-            },
-        },
-    );
-    let cs = compose_siege_battle_setup(&climb, &scene).expect("climb setup");
-    let cu = cs.units.iter().find(|u| u.id == cid).expect("unit");
-    assert_eq!(
-        (cu.col, cu.row, cu.on_wall_walkway),
-        (ccol - 1, crow, false)
-    );
-    // A start answer that changes HP cannot be rewound: refused.
-    let mut hurt = start.clone();
-    hurt.actions.push(BattleActionDto {
-        t0: 0.0,
-        action: BattleActionKindDto::Kill { id: f.units[0].id },
-    });
-    assert!(compose_siege_battle_setup(&hurt, &scene).is_err());
-    let mut no_look = scene.clone();
-    no_look.units.pop();
-    assert!(compose_siege_battle_setup(start, &no_look).is_err());
-    let mut no_side = start.clone();
-    no_side.units.pop();
-    assert!(compose_siege_battle_setup(&no_side, &scene).is_err());
-    let mut bad_side = start.clone();
-    bad_side.units[0].side = "x".into();
-    assert!(compose_siege_battle_setup(&bad_side, &scene).is_err());
-    let mut no_frame = start.clone();
-    no_frame.frame = None;
-    assert!(compose_siege_battle_setup(&no_frame, &scene).is_err());
-}
-
-/// The start answer with the cell / wall actions of unit 0 replaced by `kinds` (all at `t0 = 0`) and the frame wall
-/// flag of that unit set to `frame_wall`. Returns the answer, the unit and its frame cell.
-fn start_with(
-    start: &SiegeBattlePayload,
-    frame_wall: bool,
-    kinds: impl Fn(civ_view_model::ids::UnitId, i32, i32) -> Vec<BattleActionKindDto>,
-) -> (SiegeBattlePayload, civ_view_model::ids::UnitId, (i32, i32)) {
-    let mut p = start.clone();
-    let f = p.frame.as_mut().expect("frame");
-    let (id, col, row) = (f.units[0].id, f.units[0].col, f.units[0].row);
-    f.units[0].on_wall_walkway = frame_wall;
-    p.actions.retain(|a| match a.action {
-        BattleActionKindDto::Move { id: u, .. }
-        | BattleActionKindDto::ClimbWall { id: u, .. }
-        | BattleActionKindDto::LeaveField { id: u, .. } => u != id,
-        _ => true,
-    });
-    let new: Vec<BattleActionDto> = kinds(id, col, row)
-        .into_iter()
-        .map(|action| BattleActionDto { t0: 0.0, action })
-        .collect();
-    p.actions.splice(0..0, new);
-    (p, id, (col, row))
-}
-
-fn mv(id: civ_view_model::ids::UnitId, from: (i32, i32), to: (i32, i32)) -> BattleActionKindDto {
-    BattleActionKindDto::Move {
-        id,
-        from_col: from.0,
-        from_row: from.1,
-        to_col: to.0,
-        to_row: to.1,
-        arrive_at: 1.0,
-    }
-}
-
-fn climb(id: civ_view_model::ids::UnitId, from: (i32, i32), to: (i32, i32)) -> BattleActionKindDto {
-    BattleActionKindDto::ClimbWall {
-        id,
-        from_col: from.0,
-        from_row: from.1,
-        to_col: to.0,
-        to_row: to.1,
-    }
-}
-
-fn leave_field(
-    id: civ_view_model::ids::UnitId,
-    from: (i32, i32),
-    to: (i32, i32),
-) -> BattleActionKindDto {
-    BattleActionKindDto::LeaveField {
-        id,
-        from_col: from.0,
-        from_row: from.1,
-        to_col: to.0,
-        to_row: to.1,
-    }
-}
-
-/// `(col, row, on_wall_walkway)` of the spawn of `id`.
-fn spawn_of(
-    p: &SiegeBattlePayload,
-    scene: &SiegeSceneStatic,
-    id: civ_view_model::ids::UnitId,
-) -> (i32, i32, bool) {
-    let s = compose_siege_battle_setup(p, scene).expect("setup");
-    let u = s.units.iter().find(|u| u.id == id).expect("unit");
-    (u.col, u.row, u.on_wall_walkway)
-}
-
-/// r2 (Z1, E12-E15): D-1I6-3b rewinds the cell and the wall flag separately. The cell is the `from` of the FIRST
-/// cell-changing start action; the flag is the one before the FIRST flag-changing action (`ClimbWall`: off the wall,
-/// `LeaveField`: on the wall); a `Move` keeps the frame flag. HP / morale / presence changes at the start are refused.
-#[test]
-fn setup_spawn_komorka_i_mur_przed_akcjami_startu() {
-    let (answers, _, _) = recorded();
-    let st = siege_state(11);
-    let scene = scene_static(&st);
-    let start = &answers[0];
-    // Z1: Move then ClimbWall; the frame says "on the wall" (after the climb), the spawn is off the wall.
-    let (p, id, (c, r)) = start_with(start, true, |id, c, r| {
-        vec![
-            mv(id, (c + 2, r), (c + 1, r)),
-            climb(id, (c + 1, r), (c, r)),
-        ]
-    });
-    assert_eq!(
-        spawn_of(&p, &scene, id),
-        (c + 2, r, false),
-        "Move -> ClimbWall"
-    );
-    // Z1: Move then LeaveField; the frame says "off the wall", the spawn is on the wall.
-    let (p, id, (c, r)) = start_with(start, false, |id, c, r| {
-        vec![
-            mv(id, (c + 2, r), (c + 1, r)),
-            leave_field(id, (c + 1, r), (c, r)),
-        ]
-    });
-    assert_eq!(
-        spawn_of(&p, &scene, id),
-        (c + 2, r, true),
-        "Move -> LeaveField"
-    );
-    // E13: Move alone keeps the frame flag (on the wall walkway: a defender walking along the crown).
-    let (p, id, (c, r)) = start_with(start, true, |id, c, r| vec![mv(id, (c + 1, r), (c, r))]);
-    assert_eq!(
-        spawn_of(&p, &scene, id),
-        (c + 1, r, true),
-        "Move keeps the flag"
-    );
-    // E14: LeaveField first; the frame says "off the wall", the spawn is on the wall.
-    let (p, id, (c, r)) = start_with(start, false, |id, c, r| {
-        vec![leave_field(id, (c + 1, r), (c, r))]
-    });
-    assert_eq!(spawn_of(&p, &scene, id), (c + 1, r, true), "LeaveField");
-    // The FIRST flag change wins: ClimbWall then LeaveField = off the wall before the climb.
-    let (p, id, (c, r)) = start_with(start, false, |id, c, r| {
-        vec![
-            climb(id, (c + 2, r), (c + 1, r)),
-            leave_field(id, (c + 1, r), (c, r)),
-        ]
-    });
-    assert_eq!(
-        spawn_of(&p, &scene, id),
-        (c + 2, r, false),
-        "first flag change"
-    );
-    // E12: the FIRST cell change wins over the last one.
-    let (p, id, (c, r)) = start_with(start, false, |id, c, r| {
-        vec![mv(id, (c + 2, r), (c + 1, r)), mv(id, (c + 1, r), (c, r))]
-    });
-    assert_eq!(spawn_of(&p, &scene, id), (c + 2, r, false), "first step");
-    // E15: every HP / morale / presence change at the start is refused, never guessed.
-    let f = start.frame.as_ref().expect("frame");
-    let (a, b) = (f.units[0].id, f.units[1].id);
-    for kind in [
-        BattleActionKindDto::Damage {
-            target: a,
-            dmg: 1.0,
-        },
-        BattleActionKindDto::Kill { id: a },
-        BattleActionKindDto::Leave { id: a },
-        BattleActionKindDto::Rout { id: a },
-        BattleActionKindDto::Shaken {
-            id: a,
-            fallen: b,
-            morale: 1.0,
-        },
-    ] {
-        let mut p = start.clone();
-        p.actions.push(BattleActionDto {
-            t0: f.v_now,
-            action: kind.clone(),
-        });
-        assert!(
-            compose_siege_battle_setup(&p, &scene).is_err(),
-            "{kind:?} at the start is refused"
-        );
-    }
-}
-
 /// `afterSiegeUi` branches in the pin's order.
 #[test]
 fn after_siege_ui_galezie() {
@@ -1332,7 +1010,7 @@ fn after_siege_ui_galezie() {
 #[test]
 fn nowa_sesja_porzuca_bitwe() {
     let mut c = client_for(siege_state(11));
-    c.start_siege_storm(CITY, ANCHOR, None).expect("start");
+    c.start_siege_storm(CITY, ANCHOR, false).expect("start");
     assert!(c.siege_battle().is_some());
     c.on_session_created().expect("map");
     assert!(c.siege_battle().is_none());
@@ -1346,11 +1024,8 @@ fn nowa_sesja_porzuca_bitwe() {
 #[test]
 fn ostatnia_bitwa_po_nowej_sesji_i_nowym_starcie() {
     let (answers, _, _) = recorded();
-    let st = siege_state(11);
-    let scene = scene_static(&st);
     let mut c = scripted(answers.clone(), None);
-    c.start_siege_storm(CITY, ANCHOR, Some(&scene))
-        .expect("start");
+    c.start_siege_storm(CITY, ANCHOR, true).expect("start");
     c.step_siege_battle(16.0).expect("step");
     c.skip_siege_battle().expect("skip");
     c.finish_siege_battle().expect("finish");
@@ -1358,8 +1033,7 @@ fn ostatnia_bitwa_po_nowej_sesji_i_nowym_starcie() {
     assert!(c.last_siege_battle_end().is_some());
     // A new start: the previous screen and end are gone while the new battle runs.
     c.source_mut().answers = answers.clone();
-    c.start_siege_storm(CITY, ANCHOR, Some(&scene))
-        .expect("restart");
+    c.start_siege_storm(CITY, ANCHOR, true).expect("restart");
     assert!(
         c.last_siege_battle_view().is_none(),
         "start drops the screen"
@@ -1385,11 +1059,8 @@ fn ostatnia_bitwa_po_nowej_sesji_i_nowym_starcie() {
 fn finish_bez_wyniku_to_aborted() {
     let (mut answers, _, _) = recorded();
     answers[3].result = None;
-    let st = siege_state(11);
-    let scene = scene_static(&st);
     let mut c = scripted(answers, None);
-    c.start_siege_storm(CITY, ANCHOR, Some(&scene))
-        .expect("start");
+    c.start_siege_storm(CITY, ANCHOR, true).expect("start");
     c.step_siege_battle(16.0).expect("step");
     c.skip_siege_battle().expect("skip");
     let frames = c.source().frame_calls;
@@ -1404,4 +1075,361 @@ fn finish_bez_wyniku_to_aborted() {
     assert!(c.siege_battle().is_none(), "battle closed");
     assert!(c.last_siege_battle_view().is_some(), "screen kept");
     assert_eq!(c.source().frame_calls, frames + 1, "one refresh");
+}
+
+// ------------------------------------------------------------ R-RUSTPORT-P4-1I6-DLUGI-Q1
+
+/// The engine setup of the start answer (`siegeBattle.setup`).
+fn engine_setup(p: &SiegeBattlePayload) -> &BattleSetupDto {
+    p.setup
+        .as_ref()
+        .expect("start answer carries the engine setup")
+}
+
+/// Independent reference (the former client composition, D-1I6-3b): the spawn rewound from the start frame and the
+/// start actions. The cell of a unit is the `from` of its first cell-changing start action, else its frame cell; the
+/// wall flag is the one before its first flag-changing action (`ClimbWall`: off, `LeaveField`: on), else the frame
+/// flag; HP, morale, ammunition and facing are those of the frame. The rest (grid, fort, models, maxima) is taken from
+/// `look`.
+fn rewound_setup(start: &SiegeBattlePayload, look: &BattleSetupDto) -> BattleSetupDto {
+    let frame = start.frame.as_ref().expect("start frame");
+    let mut cell: Vec<(u64, (i32, i32))> = Vec::new();
+    let mut wall: Vec<(u64, bool)> = Vec::new();
+    for a in &start.actions {
+        let (id, from, w) = match &a.action {
+            BattleActionKindDto::Move {
+                id,
+                from_col,
+                from_row,
+                ..
+            } => (*id, (*from_col, *from_row), None),
+            BattleActionKindDto::ClimbWall {
+                id,
+                from_col,
+                from_row,
+                ..
+            } => (*id, (*from_col, *from_row), Some(false)),
+            BattleActionKindDto::LeaveField {
+                id,
+                from_col,
+                from_row,
+                ..
+            } => (*id, (*from_col, *from_row), Some(true)),
+            BattleActionKindDto::Damage { .. }
+            | BattleActionKindDto::Kill { .. }
+            | BattleActionKindDto::Leave { .. }
+            | BattleActionKindDto::Shaken { .. }
+            | BattleActionKindDto::Rout { .. } => {
+                panic!("start answer changes HP / morale / presence")
+            }
+            _ => continue,
+        };
+        if !cell.iter().any(|(u, _)| *u == id.get()) {
+            cell.push((id.get(), from));
+        }
+        if let Some(w) = w {
+            if !wall.iter().any(|(u, _)| *u == id.get()) {
+                wall.push((id.get(), w));
+            }
+        }
+    }
+    let units = frame
+        .units
+        .iter()
+        .map(|fu| {
+            let id = fu.id.get();
+            let l = look.units.iter().find(|u| u.id == fu.id).expect("look");
+            let side = match start
+                .units
+                .iter()
+                .find(|u| u.battle_id == id)
+                .map(|u| u.side.as_str())
+            {
+                Some("atk") => BattleSide::Atk,
+                Some("def") => BattleSide::Def,
+                other => panic!("side {other:?}"),
+            };
+            let (col, row) = cell
+                .iter()
+                .find(|(u, _)| *u == id)
+                .map_or((fu.col, fu.row), |(_, c)| *c);
+            BattleUnitSpawnDto {
+                id: fu.id,
+                side,
+                category: l.category.clone(),
+                model_name: l.model_name.clone(),
+                owner_color: match side {
+                    BattleSide::Atk => SIEGE_ATTACKER_COLOR,
+                    BattleSide::Def => SIEGE_DEFENDER_COLOR,
+                },
+                col,
+                row,
+                facing: fu.facing,
+                on_wall_walkway: wall
+                    .iter()
+                    .find(|(u, _)| *u == id)
+                    .map_or(fu.on_wall_walkway, |(_, w)| *w),
+                hp: fu.hp,
+                max_hp: l.max_hp,
+                morale: fu.morale,
+                morale_max: l.morale_max,
+                ammo_left: fu.ammo_left,
+                ammo_max: l.ammo_max,
+            }
+        })
+        .collect();
+    BattleSetupDto {
+        grid: look.grid.clone(),
+        desert_palette: look.desert_palette,
+        siege: true,
+        deploy: None,
+        siege_civ: look.siege_civ.clone(),
+        player_side: BattleSide::Atk,
+        units,
+        fort: look.fort.clone(),
+    }
+}
+
+/// D-1I6-SETUP x D-1I6-3b: the engine setup equals the rewind of the start frame (cells before the start steps, wall
+/// flags, HP, morale, ammunition, facing, sides, colours, `deployPlayerSide: 'atk'`), so the client needs no composition.
+#[test]
+fn setup_silnika_rowny_cofnieciu_ramki_startu() {
+    for seed in [11, 12, 13] {
+        let (answers, _, _) = recorded_for(seed);
+        let start = &answers[0];
+        let setup = engine_setup(start);
+        assert_eq!(&rewound_setup(start, setup), setup, "seed {seed}");
+        assert!(
+            start
+                .actions
+                .iter()
+                .any(|a| matches!(a.action, BattleActionKindDto::Move { .. })),
+            "scenario: the start answer moves units (the rewind is exercised)"
+        );
+        // Only the start answer carries the setup.
+        assert!(answers[1..].iter().all(|p| p.setup.is_none()));
+        assert!(answers[1..].iter().all(|p| p.tower_shooter.is_none()));
+    }
+}
+
+/// D-1I6-3: the scene of the client is built from the engine setup (no client composition): one model per setup unit,
+/// the tower projectile from the engine shooter row.
+#[test]
+fn scena_z_setupu_silnika() {
+    let mut c = client_for(siege_state(11));
+    c.start_siege_storm(CITY, ANCHOR, true).expect("start");
+    let start = c.source().seen.siege.clone();
+    assert_eq!(start, vec!["start"]);
+    let v = c.siege_battle().expect("battle");
+    assert!(v.scene().is_some(), "scene from the engine setup");
+    let (answers, _, _) = recorded_for(11);
+    let shooter = answers[0]
+        .tower_shooter
+        .clone()
+        .expect("palisade: tower shooter");
+    assert_eq!(
+        tower_projectile_of(&answers[0]),
+        Some(tower_projectile_kind(
+            shooter.typ.as_deref(),
+            shooter.jednostka.as_deref()
+        ))
+    );
+    let mut none = answers[0].clone();
+    none.tower_shooter = None;
+    assert_eq!(
+        tower_projectile_of(&none),
+        None,
+        "no shooter, no tower shots"
+    );
+}
+
+fn drop_setup(p: &mut SiegeBattlePayload) {
+    p.setup = None;
+}
+
+fn break_grid(p: &mut SiegeBattlePayload) {
+    if let Some(s) = p.setup.as_mut() {
+        s.grid.tiles.pop();
+    }
+}
+
+/// D-1I6-ORPHAN / D-1I6-ABORT-E2E through the real bridge: the start answer loses its setup, the client cannot build
+/// the scene and closes the engine battle (`AbortSiegeBattle`): no battle in the engine (`Step` = `noActiveBattle`),
+/// game state and machines unchanged, no `StateChanged`, the end is `Aborted`, the map stays usable and a new storm
+/// starts.
+#[test]
+fn blad_setupu_porzuca_bitwe_w_silniku_e2e() {
+    for (tamper, setup_error) in [
+        (drop_setup as fn(&mut SiegeBattlePayload), true),
+        (break_grid as fn(&mut SiegeBattlePayload), false),
+    ] {
+        let mut c = client_for(siege_state(11));
+        let state_before = c.source_mut().state();
+        let frames = c.source().seen.frame_calls;
+        let ui = c.ui().clone();
+        c.source_mut().tamper_start = Some(tamper);
+        match c.start_siege_storm(CITY, ANCHOR, true) {
+            Err(SiegeClientError::Setup(_)) if setup_error => {}
+            Err(SiegeClientError::Adapter(_)) if !setup_error => {}
+            other => panic!("setup / adapter error expected: {other:?}"),
+        }
+        assert_eq!(c.source().seen.siege, vec!["start", "abort"]);
+        assert!(c.siege_battle().is_none(), "no battle in the client");
+        assert!(c.last_siege_battle_view().is_none());
+        match c.last_siege_battle_end() {
+            Some(SiegeBattleEnd::Aborted { city_id, reason }) => {
+                assert_eq!(*city_id, CITY);
+                assert!(reason.starts_with("siege battle setup"), "{reason}");
+            }
+            other => panic!("Aborted end expected: {other:?}"),
+        }
+        assert_eq!(c.source().seen.frame_calls, frames, "no StateChanged");
+        assert_eq!(c.ui(), &ui, "UI unchanged");
+        // The engine battle is closed: a battle command is `noActiveBattle`, the state is unchanged.
+        let e = c
+            .source_mut()
+            .request(EngineCommand::StepSiegeBattle {
+                wall_ms: WallMs(16.0),
+            })
+            .expect_err("no battle in the engine");
+        assert_eq!(e.siege_battle, Some(SiegeBattleErrorDto::NoActiveBattle));
+        let state_after = c.source_mut().state();
+        assert_eq!(state_after, state_before, "game state unchanged");
+        assert_eq!(
+            state_after.siege_machines_ready.get(&CityId::new(CITY)),
+            Some(&vec![PlayableSiegeMachineKind::Taran]),
+            "machines not consumed"
+        );
+        // A new storm starts (engine and client) and runs to its result.
+        c.source_mut().tamper_start = None;
+        c.start_siege_storm(CITY, ANCHOR, true).expect("restart");
+        assert!(c.last_siege_battle_end().is_none());
+        c.skip_siege_battle().expect("skip");
+        c.finish_siege_battle().expect("finish");
+        assert!(matches!(
+            c.last_siege_battle_end(),
+            Some(SiegeBattleEnd::Applied { .. })
+        ));
+    }
+}
+
+/// D-1I6-DOC (Evaluator r1, E13): an aborted start drops the screen of the EARLIER closed battle too
+/// (`last_siege_battle_view() == None`), so both "last battle" accessors describe the aborted start.
+#[test]
+fn porzucony_start_czysci_ekran_poprzedniej_bitwy() {
+    // Recorded answers (start, step, skip, finish) of a captured city, then a second start that lost its setup
+    // (on the real bridge the city is taken after the first battle, so the second start is scripted).
+    let (mut answers, _, _) = recorded();
+    let mut second = answers[0].clone();
+    drop_setup(&mut second);
+    answers.push(second);
+    let mut c = scripted(answers, None);
+    c.start_siege_storm(CITY, ANCHOR, true).expect("start");
+    c.step_siege_battle(16.0).expect("step");
+    c.skip_siege_battle().expect("skip");
+    c.finish_siege_battle().expect("finish");
+    assert!(
+        c.last_siege_battle_view().is_some(),
+        "the applied battle keeps its screen"
+    );
+    match c.start_siege_storm(CITY, ANCHOR, true) {
+        Err(SiegeClientError::Setup(_)) => {}
+        other => panic!("setup error expected: {other:?}"),
+    }
+    assert!(
+        c.last_siege_battle_view().is_none(),
+        "aborted start: no screen of the earlier battle"
+    );
+    assert!(matches!(
+        c.last_siege_battle_end(),
+        Some(SiegeBattleEnd::Aborted { city_id: CITY, .. })
+    ));
+    assert_eq!(c.source().aborts, 1, "the engine battle was closed");
+}
+
+/// The abort of D-1I6-ORPHAN fails too: both errors are reported (`AbortFailed`), nothing is kept in the client.
+#[test]
+fn nieudane_porzucenie_to_abort_failed() {
+    let (mut answers, _, _) = recorded();
+    answers[0].setup = None;
+    let mut c = scripted(answers, None);
+    c.source_mut().abort = Some(SiegeBattleErrorDto::NoActiveBattle);
+    match c.start_siege_storm(CITY, ANCHOR, true) {
+        Err(SiegeClientError::AbortFailed { cause, abort }) => {
+            assert!(matches!(*cause, SiegeClientError::Setup(_)), "{cause:?}");
+            assert_eq!(
+                *abort,
+                SiegeClientError::Engine(SiegeBattleErrorDto::NoActiveBattle)
+            );
+        }
+        other => panic!("AbortFailed expected: {other:?}"),
+    }
+    assert_eq!(c.source().aborts, 1);
+    assert!(c.siege_battle().is_none());
+    assert!(
+        c.last_siege_battle_end().is_none(),
+        "no end without an abort"
+    );
+    // Headless start does not need the setup: no abort.
+    let (mut answers, _, _) = recorded();
+    answers[0].setup = None;
+    let mut c = scripted(answers, None);
+    c.start_siege_storm(CITY, ANCHOR, false).expect("headless");
+    assert_eq!(c.source().aborts, 0);
+    assert!(c.siege_battle().is_some());
+}
+
+/// D-1I6-ERR in the client: the engine errors arrive as types (`NotFinished`, `BattleInProgress`), the order of the
+/// checks of the client is unchanged.
+#[test]
+fn bledy_silnika_typowane_w_kliencie() {
+    let mut c = client_for(siege_state(11));
+    c.start_siege_storm(CITY, ANCHOR, false).expect("start");
+    match c.finish_siege_battle() {
+        Err(SiegeClientError::Engine(e)) => {
+            assert_eq!(e, SiegeBattleErrorDto::NotFinished);
+            assert!(is_not_finished(&e));
+        }
+        other => panic!("NotFinished expected: {other:?}"),
+    }
+    // The engine refuses an abort after the end of the battle (D-1I6D-4: phase `finished`, the pin only offers
+    // "Zakończ bitwę"); the client battle is kept and finishes with its result.
+    c.step_siege_battle(16.0).expect("step");
+    c.skip_siege_battle().expect("skip");
+    let e = c
+        .source_mut()
+        .request(EngineCommand::AbortSiegeBattle)
+        .expect_err("abort after the end");
+    assert_eq!(
+        e.siege_battle,
+        Some(SiegeBattleErrorDto::AbortNotAllowed { city_id: CITY })
+    );
+    c.finish_siege_battle().expect("finish");
+    assert!(!is_not_finished(&SiegeBattleErrorDto::NoActiveBattle));
+}
+
+/// Recorded answers of start, one 16 ms step, skip and finish for `siege_state(seed)`.
+fn recorded_for(
+    seed: u32,
+) -> (
+    Vec<SiegeBattlePayload>,
+    RenderMapPayload,
+    RenderFramePayload,
+) {
+    let mut c = client_for(siege_state(seed));
+    let map = c.source_mut().render_map().expect("map");
+    let frame = c.source_mut().render_frame(None, None).expect("frame");
+    let mut out = Vec::new();
+    for cmd in [
+        SiegeBattleCommand::Start {
+            city_id: CITY,
+            unit_id: ANCHOR,
+        },
+        SiegeBattleCommand::Step { wall_ms: 16.0 },
+        SiegeBattleCommand::Skip,
+        SiegeBattleCommand::Finish,
+    ] {
+        out.push(c.source_mut().siege_battle(cmd).expect("answer").battle);
+    }
+    (out, map, frame)
 }

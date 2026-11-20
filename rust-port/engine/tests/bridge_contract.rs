@@ -31,7 +31,7 @@ fn state_from(result: &BridgeResult) -> &bridge::EngineState {
 /// `COMMAND_KINDS.len()` is the declared number of variants: a new variant needs a new arm in
 /// `command_index` (compile error otherwise), a new entry here and a new sample in `every_command`
 /// (the completeness test fails otherwise).
-const COMMAND_KINDS: [&str; 15] = [
+const COMMAND_KINDS: [&str; 16] = [
     "create_session",
     "add_player",
     "select_unit",
@@ -47,6 +47,7 @@ const COMMAND_KINDS: [&str; 15] = [
     "step_siege_battle",
     "skip_siege_battle",
     "finish_siege_battle",
+    "abort_siege_battle",
 ];
 
 /// Position of every `EngineCommand` variant in [`COMMAND_KINDS`]. Exhaustive on purpose (no
@@ -68,6 +69,7 @@ fn command_index(command: &EngineCommand) -> usize {
         EngineCommand::StepSiegeBattle { .. } => 12,
         EngineCommand::SkipSiegeBattle => 13,
         EngineCommand::FinishSiegeBattle => 14,
+        EngineCommand::AbortSiegeBattle => 15,
     }
 }
 
@@ -129,6 +131,7 @@ fn every_command() -> Vec<EngineCommand> {
         },
         EngineCommand::SkipSiegeBattle,
         EngineCommand::FinishSiegeBattle,
+        EngineCommand::AbortSiegeBattle,
     ]
 }
 
@@ -157,6 +160,10 @@ fn siege_battle_commands_have_a_fixed_wire_shape_and_old_responses_are_unchanged
         (
             EngineCommand::FinishSiegeBattle,
             json!({"kind": "finish_siege_battle"}),
+        ),
+        (
+            EngineCommand::AbortSiegeBattle,
+            json!({"kind": "abort_siege_battle"}),
         ),
     ];
     for (command, wire) in cases {
@@ -187,13 +194,35 @@ fn siege_battle_commands_have_a_fixed_wire_shape_and_old_responses_are_unchanged
         },
         EngineCommand::SkipSiegeBattle,
         EngineCommand::FinishSiegeBattle,
+        EngineCommand::AbortSiegeBattle,
     ] {
         let error = bridge
             .handle(BridgeRequest::new("battle", command))
             .expect_err("no battle in progress");
         assert_eq!(error.code, BridgeErrorCode::EngineRejected);
         assert!(error.message.contains("no battle in progress"), "{error:?}");
+        // R-RUSTPORT-P4-1I6-DLUGI-Q1 (D-1I6-ERR): the battle error travels as a type next to its text.
+        assert_eq!(
+            error.siege_battle,
+            Some(bridge::SiegeBattleErrorDto::NoActiveBattle),
+            "{error:?}"
+        );
+        let wire = serde_json::to_value(&error).expect("error serializes");
+        assert_eq!(wire["siegeBattle"], json!({"code": "no_active_battle"}));
     }
+    // Non-battle errors keep the old error JSON (no `siegeBattle` key).
+    let other = bridge
+        .handle(BridgeRequest::new(" ", EngineCommand::GetState))
+        .expect_err("blank request id");
+    assert_eq!(other.siege_battle, None);
+    let keys: Vec<String> = serde_json::to_value(&other)
+        .expect("error serializes")
+        .as_object()
+        .expect("object")
+        .keys()
+        .cloned()
+        .collect();
+    assert_eq!(keys, ["code", "message"]);
     let mut mock = EngineBridge::new(MockEngineAdapter::default());
     let error = mock
         .handle(BridgeRequest::new("battle", EngineCommand::SkipSiegeBattle))
