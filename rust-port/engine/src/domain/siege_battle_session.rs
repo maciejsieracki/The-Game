@@ -1043,6 +1043,10 @@ impl SiegeBattleSession {
         body.tower_outcome_effects = true;
         // Obrona r2 (E2-1b, D-WIRA-17): czas ciosu i strzału jak w pinie (skutek w chwili trafienia, `done()` po ogonie).
         body.pin_blow_timing = true;
+        // FRAME-QUANT-Q1 (D-FQ-1): odcinki czasu ciała kwantyzowane klatką zegara (`FF_STEP_MS = _scaledWallDelta(16)`,
+        // `:9419`; klatka czasu rzeczywistego = ta sama, [`Self::step`]). `speedMul = 1` (`VirtualClock::new`), więc 16 ms;
+        // zmiana `speedMul` przelicza klatkę ([`Self::diag_set_speed_mul`]).
+        body.frame_ms = BATTLE_FRAME_WALL_MS;
         // Obrona r2 (E2-1a, D-WIRA-16): `_applyTerrainRange` w ciele (`:6064`, `:7740`, `:7929`) z siatką
         // `terrainRangeDelta(combatTerrainName(c, r))` (`:7495-7496`).
         let mut range_grid = HashMap::new();
@@ -1321,6 +1325,8 @@ impl SiegeBattleSession {
             return Err(SessionError::InvalidData(format!("speed_mul {speed_mul}")));
         }
         self.clock.speed_mul = speed_mul;
+        // FRAME-QUANT-Q1 (D-FQ-1): klatka ciała = krok przewijania przy nowym `speedMul`.
+        self.lp.env.body.frame_ms = self.clock.scaled_wall_delta(BATTLE_FRAME_WALL_MS);
         Ok(())
     }
 

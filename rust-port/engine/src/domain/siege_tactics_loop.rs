@@ -141,6 +141,11 @@ pub trait LoopBody {
     fn unit_cell_at(&self, unit: UnitRef, _v_now: f64) -> Option<(i64, i64)> {
         self.unit_cell(unit)
     }
+    /// FRAME-QUANT-Q1 (D-FQ-2): nominalny `due` zegara, który za chwilę czyta stan ciała (wystrzał i trafienie wieży,
+    /// `_drainTimers` `:9616-9634` odpala zegary klatki w kolejności `due`, potem `id`). Krok marszu wołany z zegara
+    /// `_schedule(STEP_GAP_MS)` w tej samej klatce jest dla czytającego wykonany, gdy jego `due` jest mniejszy. `f64::MIN`
+    /// (stan po [`LoopBody::set_now`]) = czytanie przez samo ciało. Domyślnie bez efektu.
+    fn set_reader_due(&mut self, _due: f64) {}
     /// Trafienie wieży (web `_singleBlow(shooter, target, true)` w `_fireOneTower`, `battleScene.ts:4262`): cios z
     /// szablonu `tmpl` na atakującego `target` (indeks w `st.atk`), skutki HP/zabicia w `st`. Domyślnie bez efektu.
     fn tower_blow(&mut self, _tmpl: &FullBlowInput, _target: usize, _st: &mut TurnSeqState) {}
@@ -624,7 +629,11 @@ pub struct SiegeLoop<B: LoopBody> {
     /// P4-1I3: pociski wież w locie, `(cel, wiersz wieży)`, w kolejności wystrzałów. Lot ma stałą długość
     /// ([`TOWER_FLY_MS`]), więc trafienia przychodzą w tej samej kolejności; klocek [`LoopTimer::TowerHit`] niesie
     /// tylko cel, a wiersz potrzebny jest wpisowi `_pushClash` (`'wieza:' + row`).
-    tower_in_flight: Vec<(usize, i64)>,
+    tower_in_flight: Vec<(usize, i64, f64)>,
+    /// FRAME-QUANT-Q1 (D-FQ-2): nominalne `due` zaplanowanych wystrzałów wież `(indeks wieży, due)` w kolejności
+    /// planowania (`_schedule(delay, () => _fireOneTower(...))`, `due = vNow + delay`, `:9605`). Wystrzał czyta pozycje
+    /// celów ([`LoopBody::set_reader_due`]); trzeci element [`Self::tower_in_flight`] to `due` trafienia.
+    tower_shot_due: Vec<(usize, f64)>,
     /// PIN3-DIVERGENCE-Q1 (D-PIN3-3): skutek ciała ([`LoopTimer::BodyDone`]: trafienie strzału, cios wręcz, koniec
     /// ostatniego kroku) wykonywany w fazie kroków animacji klatki, PO `_drainTimers` (`_runFastForward` `:9427-9435`,
     /// `_startLoop`), a nie jako zwykły zegar z numerem nadanym w chwili `start` aktywacji. W pinie te skutki planuje
@@ -668,6 +677,7 @@ impl<B: LoopBody> SiegeLoop<B> {
             fire_observer: None,
             actions: Vec::new(),
             tower_in_flight: Vec::new(),
+            tower_shot_due: Vec::new(),
             body_done_raf: false,
             raf_pending: Vec::new(),
         }
@@ -936,8 +946,14 @@ impl<B: LoopBody> SiegeLoop<B> {
                     // Wystrzały zaplanowane w tej turze wchodzą do zegara przed kolejnymi `Schedule` (kolejność jak w pinie).
                     let planned = std::mem::take(&mut self.env.pending_tower_shots);
                     for p in planned {
+                        // FRAME-QUANT-Q1 (D-FQ-2): nominalny `due` wystrzału (`_schedule` `:9605`: `vNow + max(0, ms)`).
+                        self.tower_shot_due
+                            .push((p.tower, clock.v_now + js_max(0.0, p.ms)));
                         match clock.schedule(p.ms, LoopTimer::TowerShot(p.tower), p.planning) {
-                            ScheduleOutcome::Queued | ScheduleOutcome::Dropped => {}
+                            ScheduleOutcome::Queued => {}
+                            ScheduleOutcome::Dropped => {
+                                self.tower_shot_due.pop();
+                            }
                             ScheduleOutcome::RunNow(t) => self.fire(clock, t),
                         }
                     }
@@ -1043,6 +1059,12 @@ impl<B: LoopBody> SiegeLoop<B> {
     /// W CHWILI wystrzału (`pickTowerTarget`); brak celu = `return`. Trafienie `_singleBlow` po locie
     /// [`TOWER_FLY_MS`] (`_schedule(RANGED_FLY_MS, ...)`, pin `:4262`).
     fn tower_shoot(&mut self, clock: &mut VirtualClock<LoopTimer>, i: usize) {
+        // FRAME-QUANT-Q1 (D-FQ-2): nominalny `due` tego wystrzału (pierwszy zaplanowany dla wieży `i`).
+        let due = self
+            .tower_shot_due
+            .iter()
+            .position(|&(t, _)| t == i)
+            .map_or(clock.v_now, |k| self.tower_shot_due.remove(k).1);
         if self.st.finished {
             return;
         }
@@ -1051,7 +1073,11 @@ impl<B: LoopBody> SiegeLoop<B> {
             return;
         }
         // Obrona r2 (E2-1b): pozycje celów W CHWILI wystrzału (oś kroków ciała, [`LoopBody::unit_cell_at`]).
-        let Some(target) = self.env.pick_tower_for_row(&self.st, row, clock.v_now) else {
+        // FRAME-QUANT-Q1 (D-FQ-2): krok marszu z zegara tej samej klatki o mniejszym `due` jest już wykonany.
+        self.env.body.set_reader_due(due);
+        let picked = self.env.pick_tower_for_row(&self.st, row, clock.v_now);
+        self.env.body.set_reader_due(f64::MIN);
+        let Some(target) = picked else {
             return;
         };
         // P4-1I3: `this.log.push('Wieza strzelnicza …')` (`:4247`), potem pocisk (`projectiles.push`, `:4260`).
@@ -1071,7 +1097,8 @@ impl<B: LoopBody> SiegeLoop<B> {
         );
         let planning = self.st.auto_batch_planning;
         // Wpis „w locie” przed `schedule`: przy planowaniu trafienie odpala się synchronicznie (`RunNow`).
-        self.tower_in_flight.push((target, row));
+        self.tower_in_flight
+            .push((target, row, clock.v_now + TOWER_FLY_MS));
         match clock.schedule(TOWER_FLY_MS, LoopTimer::TowerHit(target), planning) {
             ScheduleOutcome::Queued => {}
             ScheduleOutcome::Dropped => {
@@ -1085,11 +1112,13 @@ impl<B: LoopBody> SiegeLoop<B> {
     /// pomijane po `finished`, gdy cel martwy lub znika. Inaczej `_singleBlow` wieży przez [`LoopBody::tower_blow`].
     fn tower_hit(&mut self, target: usize, v_now: f64) {
         // P4-1I3: pocisk ląduje (także gdy trafienie jest pomijane); wiersz wieży dla wpisu `_pushClash`.
-        let row = self
+        let flight = self
             .tower_in_flight
             .iter()
-            .position(|&(t, _)| t == target)
-            .map(|k| self.tower_in_flight.remove(k).1);
+            .position(|&(t, _, _)| t == target)
+            .map(|k| self.tower_in_flight.remove(k));
+        let row = flight.map(|f| f.1);
+        let due = flight.map_or(v_now, |f| f.2);
         if self.st.finished {
             return;
         }
@@ -1101,10 +1130,13 @@ impl<B: LoopBody> SiegeLoop<B> {
             return;
         };
         self.env.body.set_now(v_now);
+        // FRAME-QUANT-Q1 (D-FQ-2): `_singleBlow` wieży czyta pole i zwrot celu w kolejności `due` zegarów klatki.
+        self.env.body.set_reader_due(due);
         if let Some(row) = row {
             self.env.body.set_tower_row(row);
         }
         self.env.body.tower_blow(&tmpl, target, &mut self.st);
+        self.env.body.set_reader_due(f64::MIN);
         self.drain_body();
     }
 }
@@ -1581,10 +1613,27 @@ pub struct ProdBody<R: RollSource> {
     /// `_updateFacing(ru)` `:8757`). Trafienie wieży w trakcie marszu (`_fireOneTower` → `_singleBlow` po
     /// `RANGED_FLY_MS`, `:4262-4266`) czyta `defender.facing` (`relativeHit` `:8880`) i `defender.q/r` (teren
     /// `:8831-8833`) z TEJ chwili — [`ProdBody::facing_at`] i [`LoopBody::unit_cell_at`].
-    facing_timeline: Vec<(UnitRef, f64, f64, f64, bool)>,
+    facing_timeline: Vec<(UnitRef, f64, f64, f64, f64)>,
     /// PIN3-DIVERGENCE-Q1 (D-PIN3-2): `vNow` bieżącego wywołania ciała ([`LoopBody::set_now`]); `self.now` bywa w ciele
     /// przesuwane na chwile kroków/ciosów, ta wartość nie.
     call_now: f64,
+    /// FRAME-QUANT-Q1 (D-FQ-1): długość klatki wirtualnej (ms), w której pin wykonuje kroki animacji i zegary
+    /// (`FF_STEP_MS = _scaledWallDelta(BATTLE_FRAME_WALL_MS)`, `battleScene.ts:9419`; klatka AUTO `_advanceVClock`
+    /// `:9500-9511`). Pin nie przesuwa `vNow` w `_drainTimers` (`:9616-9634`: `_now()` w callbacku = czas klatki), więc
+    /// każdy odcinek czasu ciała kończy się w PIERWSZEJ klatce, która go pokrywa: `_schedule(ms)` z chwili klatki `t`
+    /// odpala w klatce `t + ceil(ms / F) * F` ([`Self::frame_sched`]), a pętla `_raf(step)` (krok `_doMove` do `p >= 1`,
+    /// lunge `localT >= BLOW_HIT_T` / `>= BLOW_LUNGE_MS`) w klatce `t + max(1, ceil(ms / F)) * F` ([`Self::frame_raf`]).
+    /// Ciało liczy marsz i cios atomowo w `start`, więc kwantyzuje każdy odcinek osobno (np. 3 kroki z 2 przerwami:
+    /// `3 * 240 + 2 * 80 = 880` przy 16 ms zamiast nominalnych `860`). `0` (domyślnie, dotychczasowe testy pętli) = czasy
+    /// nominalne; sesja ustawia klatkę zegara (16 ms * `speedMul`). Przy klatce 1 ms wszystkie stałe pinu są całkowite,
+    /// więc kwantyzacja jest tożsamością.
+    pub frame_ms: f64,
+    /// FRAME-QUANT-Q1 (D-FQ-2): nominalny `due` zegara czytającego oś czasu ciała ([`LoopBody::set_reader_due`]);
+    /// `f64::MIN` = czyta samo ciało (dawna reguła D-PIN3-2).
+    reader_due: f64,
+    /// FRAME-QUANT-Q1 (D-FQ-2): nominalny `due` ostatniego `_schedule(STEP_GAP_MS)` marszu w bieżącym wywołaniu
+    /// ([`Self::gap_after`]); krok, który ten zegar wywołuje, dostaje go jako klucz kolejności ([`Self::timeline_ord`]).
+    gap_due: Option<f64>,
 }
 
 /// K5LOOP-WIRING-A (#369): miejsce jednego ciosu `_singleBlow(attacker, defender, ranged)` w chwili ciosu.
@@ -1768,12 +1817,63 @@ pub const MOVE_STEP_MS: f64 = 240.0;
 /// K5LOOP-SIEGE-ATK-B (T2b): czas kroku `_doMove` wołanego przez ciało: `MOVE_STEP_MS`, a przy odmowie bramki muru
 /// (`ru.moveLeft = 0; done();` synchronicznie, `:8689-8692`) `0`. Ciało nie planuje AUTO-batch (`autobatch = None`),
 /// więc `outcome.done` jest prawdą wyłącznie dla odmowy ([`MoveOutcome`]: gałąź bezpośrednia ma `done = false`).
-fn step_ms(res: &MoveStepResult) -> f64 {
+/// FRAME-QUANT-Q1 (D-FQ-1, D-FQ-3): ogon aktywacji z ciosem wręcz od chwili ciosu do `done()` (`_doMeleeAttack`
+/// `:9117-9172`): koniec lunge w pierwszej klatce z `localT >= BLOW_LUNGE_MS` ([`frame_raf`]), potem
+/// `_schedule(BLOW_SETTLE_MS)` z tej klatki — odcinek settle zostaje nominalny (planuje go zegar sterownika, który
+/// wyznacza klatkę odpalenia i zachowuje nominalny `due`), minus chwila ciosu `frame_raf(hit_ms)`. Klatka 16 ms:
+/// `272 + 220 - 160 = 332`.
+#[must_use]
+pub fn melee_tail_ms(frame: f64, hit_ms: f64) -> f64 {
+    frame_raf(frame, BLOW_LUNGE_MS) + BLOW_SETTLE_MS - frame_raf(frame, hit_ms)
+}
+
+/// FRAME-QUANT-Q1 (D-FQ-1): chwila startu kroku `moves` marszu `_siegeWalkTo` (`:8006-8019`): każdy kolejny krok
+/// poprzedza `_schedule(STEP_GAP_MS)` (`:8017`), oba odcinki kwantyzowane klatką.
+#[must_use]
+pub fn siege_walk_step_t0(frame: f64, now0: f64, moves: u32) -> f64 {
+    now0 + f64::from(moves)
+        * (frame_raf(frame, MOVE_STEP_MS) + frame_sched(frame, f64::from(STEP_GAP_MS)))
+}
+
+/// FRAME-QUANT-Q1 (D-FQ-1): czas aktywacji marszu `_siegeWalkTo`: `moves` kroków `_doMove` i `schedules` przerw.
+#[must_use]
+pub fn siege_walk_dur(frame: f64, moves: u32, schedules: f64) -> f64 {
+    f64::from(moves) * frame_raf(frame, MOVE_STEP_MS)
+        + schedules * frame_sched(frame, f64::from(STEP_GAP_MS))
+}
+
+/// FRAME-QUANT-Q1 (D-FQ-1): czas kroku jest kwantyzowany klatką `frame` ([`frame_raf`]).
+fn step_ms(res: &MoveStepResult, frame: f64) -> f64 {
     if res.outcome.done {
         0.0
     } else {
-        MOVE_STEP_MS
+        frame_raf(frame, MOVE_STEP_MS)
     }
+}
+
+/// FRAME-QUANT-Q1 (D-FQ-1): odcinek `_schedule(ms, cb)` wołanego w chwili klatki `t` (`battleScene.ts:9595-9606`:
+/// `due = _now() + ms`, `_now()` = czas klatki): `_drainTimers` (`:9616-9634`) odpala go w pierwszej klatce
+/// `vNow >= due`, czyli po `ceil(ms / frame) * frame`. `frame <= 0` (albo `NaN`) = czas nominalny; `ms <= 0` bez zmian
+/// (zegar `0` z fazy zegarów odpala w tej samej klatce).
+#[must_use]
+pub fn frame_sched(frame: f64, ms: f64) -> f64 {
+    if frame > 0.0 && ms > 0.0 {
+        (ms / frame).ceil() * frame
+    } else {
+        ms
+    }
+}
+
+/// FRAME-QUANT-Q1 (D-FQ-1): odcinek pętli `_raf(step)` startującej w chwili klatki `t0` i kończącej się przy pierwszym
+/// wywołaniu z `_now() - t0 >= ms` (`_doMove` `:8746-8775`: `p = (_now() - t0) / MOVE_STEP_MS`, koniec przy `p >= 1`;
+/// lunge `_doMeleeAttack` `:9117-9172`: cios przy `localT >= BLOW_HIT_T`, koniec przy `localT >= BLOW_LUNGE_MS`). Krok
+/// `_raf` wykonuje się co klatkę (`_ffQueue` w `_runFastForward` `:9430-9435`), pierwszy najwcześniej w tej samej klatce
+/// (wywołanie z fazy zegarów) z `localT = 0`, więc koniec = pierwsza klatka `>= t0 + ms` = `ceil(ms / frame) * frame`
+/// (dla `ms > 0` co najmniej jedna klatka). Ten sam wzór co [`frame_sched`]; osobna nazwa wskazuje źródło odcinka w pinie
+/// (pętla `_raf`, a nie zegar). `frame <= 0` = nominalnie.
+#[must_use]
+pub fn frame_raf(frame: f64, ms: f64) -> f64 {
+    frame_sched(frame, ms)
 }
 
 /// Web `RANGED_FLY_MS = 380` (`battleScene.ts:1012`): lot pocisku jednostki (`_doRangedAttack`, `_schedule(RANGED_FLY_MS)`
@@ -1783,19 +1883,29 @@ pub const RANGED_FLY_MS: f64 = 380.0;
 /// D-PIN3-2): krok wykonany w chwili wywołania ciała (`t0 <= call_now`, np. pierwszy krok marszu wołany synchronicznie z
 /// `_activateUnit`) — w tej samej chwili jest już zrobiony. Pozostałe kroki pin robi z kolejki `_raf`/`_ffQueue`, czyli PO
 /// `_drainTimers` tej samej klatki (`_runFastForward` `:9430-9435`): zegar wieży z `due == t0` widzi jeszcze stary stan.
-type MoveStepAt = (UnitRef, f64, (i64, i64), (i64, i64), bool);
+/// FRAME-QUANT-Q1 (D-FQ-2): flaga `synchr` zastąpiona kluczem kolejności w klatce `ord` ([`ProdBody::timeline_ord`]):
+/// `-inf` = krok synchroniczny (dawne `synchr`), nominalny `due` zegara `_schedule(STEP_GAP_MS)` = krok wołany z fazy
+/// zegarów, `+inf` = krok z kolejki `_raf`.
+type MoveStepAt = (UnitRef, f64, (i64, i64), (i64, i64), f64);
 
 /// PIN3-DIVERGENCE-Q1 (D-PIN3-2): czy wpis osi czasu ciała z chwilą `t0` (zapisany w chwili wywołania gdy `synchr`) jest
 /// już wykonany w chwili `v_now` odczytu przez zegar (wieża): wcześniejszy, albo ta sama chwila i wykonany synchronicznie.
-fn timeline_done(t0: f64, synchr: bool, v_now: f64) -> bool {
-    t0 < v_now || (t0 == v_now && synchr)
+///
+/// FRAME-QUANT-Q1 (D-FQ-2): `ord` = klucz kolejności wpisu w klatce (`-inf` synchroniczny, `due` zegara kroku z fazy
+/// zegarów, `+inf` krok `_raf`), `reader` = `due` czytającego zegara (wieża) albo `f64::MIN` (ciało). W tej samej
+/// chwili wpis jest wykonany, gdy jego klucz jest mniejszy: `_drainTimers` odpala zegary klatki rosnąco po `due`
+/// (`:9622-9627`), a kroki `_raf` dopiero po wszystkich zegarach (`:9430-9435`). Przy kluczach `±inf` (klatka 0 albo krok
+/// bez zegara) to dawna reguła D-PIN3-2.
+fn timeline_done(t0: f64, ord: f64, v_now: f64, reader: f64) -> bool {
+    t0 < v_now || (t0 == v_now && ord < reader)
 }
 
 /// PIN3-DIVERGENCE-Q1 (D-PIN3-2): klucz kolejności wpisów osi czasu ciała jak w klatce pinu: chwila `t0`, potem faza —
 /// wykonane w wywołaniu ciała (zegar `_drainTimers`, `synchr`) = 0, kroki z kolejki `_raf` = 1 (`_runFastForward`
 /// `:9427-9435`: zegary przed kolejką kroków tej samej klatki).
-fn timeline_key(t0: f64, synchr: bool) -> (f64, u8) {
-    (t0, u8::from(!synchr))
+/// FRAME-QUANT-Q1 (D-FQ-2): w tej samej chwili kolejność wg klucza `ord` (synchroniczny, zegary rosnąco po `due`, `_raf`).
+fn timeline_key(t0: f64, ord: f64) -> (f64, f64) {
+    (t0, ord)
 }
 
 /// Web `BLOW_LUNGE_MS = 260` (`battleScene.ts:1020`): długość lunge `_doMeleeAttack` (koniec przed `BLOW_SETTLE_MS`).
@@ -2201,6 +2311,9 @@ impl<R: RollSource> ProdBody<R> {
             move_timeline: Vec::new(),
             facing_timeline: Vec::new(),
             call_now: 0.0,
+            frame_ms: 0.0,
+            reader_due: f64::MIN,
+            gap_due: None,
             terrain: None,
             units,
             scene,
@@ -2257,8 +2370,8 @@ impl<R: RollSource> ProdBody<R> {
 
     fn emit(&mut self, action: BattleAction) {
         if let BattleAction::Move { unit, from, to, .. } = action {
-            let synchr = self.now <= self.call_now;
-            self.move_timeline.push((unit, self.now, from, to, synchr));
+            let ord = self.timeline_ord();
+            self.move_timeline.push((unit, self.now, from, to, ord));
         }
         // P4-1I3 (obrona r1, zarzut 1): `_spawnDamageLabel` (`:9940-9943`): `if (this._ffActive) return;`, jedyne
         // miejsce filtra (trzy wywołania: cios `:9125`, kontratak `:9142`, wieża `:4265`).
@@ -2299,15 +2412,39 @@ impl<R: RollSource> ProdBody<R> {
         &self.doctrine[side_ix(unit.side)][unit.idx]
     }
 
+    /// FRAME-QUANT-Q1 (D-FQ-1, D-FQ-2): `_schedule(ms, …)` kolejnego kroku marszu wołany w chwili `at` osi ciała
+    /// (`_advanceStep` `:8283`, `_rangedForwardStep` `:6807`, `_fallBackStep`, `_fleeStep`, `_siegeWalkTo` `:8017`). Zwraca
+    /// odcinek do chwili odpalenia ([`frame_sched`]) i zapamiętuje nominalny `due = at + ms`: krok wołany z tego zegara
+    /// wykonuje się w fazie zegarów klatki, w kolejności `due` względem innych zegarów tej klatki (wieże).
+    fn gap_after(&mut self, at: f64, ms: f64) -> f64 {
+        if self.frame_ms > 0.0 {
+            self.gap_due = Some(at + ms);
+        }
+        frame_sched(self.frame_ms, ms)
+    }
+
+    /// FRAME-QUANT-Q1 (D-FQ-2): klucz kolejności wpisu osi czasu w chwili `self.now` ([`timeline_done`]): `-inf` = wpis
+    /// w chwili wywołania ciała (dawne `synchr`); nominalny `due` zegara `_schedule(STEP_GAP_MS)`, gdy ten zegar odpala w
+    /// tej klatce ([`Self::gap_after`], tylko przy klatce `> 0`); inaczej `+inf` (krok z kolejki `_raf`).
+    fn timeline_ord(&self) -> f64 {
+        if self.now <= self.call_now {
+            return f64::NEG_INFINITY;
+        }
+        match self.gap_due {
+            Some(d) if self.frame_ms > 0.0 && d <= self.now && self.now - d < self.frame_ms => d,
+            _ => f64::INFINITY,
+        }
+    }
+
     /// PIN3-DIVERGENCE-Q1 (D-PIN3-1): jedyny zapis `ru.facing` w ciele; w modelu czasu pinu ([`Self::pin_blow_timing`])
     /// zmiana trafia też na oś [`Self::facing_timeline`] z chwilą `self.now` (chwila kroku/ciosu na osi ciała).
     fn set_facing(&mut self, unit: UnitRef, dir: f64) {
         let ix = side_ix(unit.side);
         if self.pin_blow_timing {
-            let synchr = self.now <= self.call_now;
+            let ord = self.timeline_ord();
             let now = self.now;
             // Zwrot w tej chwili osi czasu (nie bieżący stan po marszu): wartość „przed” wpisu.
-            let prev = self.facing_at(unit, now);
+            let prev = self.facing_at(unit, now, f64::MIN);
             if prev.to_bits() == dir.to_bits() {
                 return;
             }
@@ -2315,12 +2452,12 @@ impl<R: RollSource> ProdBody<R> {
             // `_startRout` od trafienia wieży w trakcie jej marszu, `:9818`) nie nadpisuje bieżącego `facing`: w pinie
             // późniejszy krok marszu (`_doMove` → `_updateFacing` `:8757`) obraca ją jeszcze raz. Bieżący stan = zwrot
             // najpóźniejszy w czasie.
-            let k_new = timeline_key(now, synchr);
+            let k_new = timeline_key(now, ord);
             let later = self
                 .facing_timeline
                 .iter()
                 .any(|&(u, t0, _, _, s)| u == unit && timeline_key(t0, s) > k_new);
-            self.facing_timeline.push((unit, now, prev, dir, synchr));
+            self.facing_timeline.push((unit, now, prev, dir, ord));
             if later {
                 return;
             }
@@ -2332,19 +2469,19 @@ impl<R: RollSource> ProdBody<R> {
     /// atomowo policzonym marszu). Ostatnia wykonana zmiana ([`timeline_done`]) w kolejności pinu ([`timeline_key`]: chwila,
     /// potem faza zegara przed fazą `_raf`, remis = później zapisana); gdy wszystkie zmiany jednostki na osi są później —
     /// wartość sprzed najwcześniejszej z nich; poza modelem czasu pinu albo bez wpisów — bieżące `facing`.
-    fn facing_at(&self, unit: UnitRef, v_now: f64) -> f64 {
+    fn facing_at(&self, unit: UnitRef, v_now: f64, reader: f64) -> f64 {
         let cur = self.facing[side_ix(unit.side)][unit.idx];
         if !self.pin_blow_timing {
             return cur;
         }
-        let mut past: Option<((f64, u8), f64)> = None;
-        let mut future: Option<((f64, u8), f64)> = None;
-        for &(u, t0, prev, dir, synchr) in &self.facing_timeline {
+        let mut past: Option<((f64, f64), f64)> = None;
+        let mut future: Option<((f64, f64), f64)> = None;
+        for &(u, t0, prev, dir, ord) in &self.facing_timeline {
             if u != unit {
                 continue;
             }
-            let k = timeline_key(t0, synchr);
-            if timeline_done(t0, synchr, v_now) {
+            let k = timeline_key(t0, ord);
+            if timeline_done(t0, ord, v_now, reader) {
                 if past.is_none_or(|(pk, _)| k >= pk) {
                     past = Some((k, dir));
                 }
@@ -2657,7 +2794,7 @@ impl<R: RollSource> ProdBody<R> {
                 unit,
                 from: (old_q, old_r),
                 to: (col, row),
-                arrive_at: self.now + MOVE_STEP_MS,
+                arrive_at: self.now + frame_raf(self.frame_ms, MOVE_STEP_MS),
             });
         }
         Ok(MoveStepResult {
@@ -2755,7 +2892,7 @@ impl<R: RollSource> ProdBody<R> {
                         };
                         move_left = res.move_left;
                         moved = true;
-                        elapsed += step_ms(&res);
+                        elapsed += step_ms(&res, self.frame_ms);
                         // Callback `_doMove` bloku C-FLANK (`:8222-8229`) = ten sam co marszu czołowego (`:8275-8283`),
                         // bez zapisu `lastAutoMoveFrom`.
                         let after = {
@@ -2767,7 +2904,7 @@ impl<R: RollSource> ProdBody<R> {
                         match after {
                             AfterStep::Done => break,
                             AfterStep::Schedule { ms } => {
-                                elapsed += f64::from(ms);
+                                elapsed += self.gap_after(now0 + elapsed, f64::from(ms));
                                 continue;
                             }
                         }
@@ -2812,7 +2949,7 @@ impl<R: RollSource> ProdBody<R> {
                     };
                     move_left = res.move_left;
                     moved = true;
-                    elapsed += step_ms(&res);
+                    elapsed += step_ms(&res, self.frame_ms);
                     // Callback `_doMove` (`:8273-8284`): najpierw `lastAutoMoveFrom = previousPosition`.
                     if let Some((q, r)) = then {
                         self.doctrine[ix][unit.idx].last_auto_move_from =
@@ -2826,7 +2963,9 @@ impl<R: RollSource> ProdBody<R> {
                     };
                     match after {
                         AfterStep::Done => break,
-                        AfterStep::Schedule { ms } => elapsed += f64::from(ms),
+                        AfterStep::Schedule { ms } => {
+                            elapsed += self.gap_after(now0 + elapsed, f64::from(ms));
+                        }
                     }
                 }
             }
@@ -3115,9 +3254,10 @@ impl<R: RollSource> ProdBody<R> {
         move_left: f64,
         enemies: &[EnemyRef],
     ) -> Option<(f64, f64)> {
+        let frame = self.frame_ms;
         self.move_step_core(unit, tile.0, tile.1, false, move_left, None, enemies)
             .ok()
-            .map(|r| (r.move_left, step_ms(&r)))
+            .map(|r| (r.move_left, step_ms(&r, frame)))
     }
 
     /// K5LOOP-CLOSE r2: wykonanie `_cavalryAction(ru, done)` (`battleScene.ts:6372-6412`) w ciele, z decyzjami K5DOC-T6
@@ -3511,7 +3651,7 @@ impl<R: RollSource> ProdBody<R> {
             .move_step_core(unit, tile.0, tile.1, false, move_left, None, enemies)
             .expect("teren sprawdzony w start (galaz ruchowa bez MoveTerrain ma jawny tag)");
         self.now = saved;
-        (res.move_left, step_ms(&res))
+        (res.move_left, step_ms(&res, self.frame_ms))
     }
 
     /// K5LOOP-CLOSE r3: wykonanie `_rangedAction(ru, done)` (`battleScene.ts:6656-6741`) w ciele, z klockami T5a
@@ -3656,11 +3796,14 @@ impl<R: RollSource> ProdBody<R> {
                 if move_left <= 0.0 || move_left.is_nan() {
                     break 'ra None;
                 }
-                elapsed += f64::from(STEP_GAP_MS);
+                elapsed += self.gap_after(now0 + elapsed, f64::from(STEP_GAP_MS));
             }
         };
         let dur = match shot {
-            Some((_, at)) => at + RANGED_FLY_MS + RANGED_GAP_MS,
+            Some((_, at)) => {
+                at + frame_sched(self.frame_ms, RANGED_FLY_MS)
+                    + frame_sched(self.frame_ms, RANGED_GAP_MS)
+            }
             None => elapsed,
         };
         RangedRun {
@@ -3738,7 +3881,9 @@ impl<R: RollSource> ProdBody<R> {
             elapsed += ms;
             match fall_back_after_move(false, move_left) {
                 AfterStep::Done => break,
-                AfterStep::Schedule { ms } => elapsed += f64::from(ms),
+                AfterStep::Schedule { ms } => {
+                    elapsed += self.gap_after(now0 + elapsed, f64::from(ms));
+                }
             }
         }
         (elapsed, moved.then_some(move_left))
@@ -3835,7 +3980,7 @@ impl<R: RollSource> ProdBody<R> {
             if move_left <= 0.0 || move_left.is_nan() {
                 break;
             }
-            elapsed += f64::from(STEP_GAP_MS);
+            elapsed += self.gap_after(now0 + elapsed, f64::from(STEP_GAP_MS));
         }
         self.now = now0;
         if moved {
@@ -4008,16 +4153,15 @@ impl<R: RollSource> ProdBody<R> {
         self.now = t_shot;
         self.set_facing(unit, dir);
         self.emit(BattleAction::Facing { unit, dir });
+        // FRAME-QUANT-Q1 (D-FQ-1): trafienie = `_schedule(RANGED_FLY_MS)` z chwili wystrzału (kwantyzacja klatką).
+        let hit_at = t_shot + frame_sched(self.frame_ms, RANGED_FLY_MS);
         self.emit(BattleAction::Shot {
             attacker: unit,
             target: tref,
-            land_at: t_shot + RANGED_FLY_MS,
+            land_at: hit_at,
         });
         self.now = saved;
-        Some(ProdShot {
-            target,
-            hit_at: t_shot + RANGED_FLY_MS,
-        })
+        Some(ProdShot { target, hit_at })
     }
 
     /// K5LOOP-CLOSE r3: trafienie strzału (`_doRangedAttack` callback `:9223-9228`): amunicja (`ammoLeft -= 1` przy
@@ -4123,6 +4267,11 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
     fn set_now(&mut self, v_now: f64) {
         self.now = v_now;
         self.call_now = v_now;
+        self.reader_due = f64::MIN;
+        self.gap_due = None;
+    }
+    fn set_reader_due(&mut self, due: f64) {
+        self.reader_due = due;
     }
     fn set_tower_row(&mut self, row: i64) {
         self.tower_row = row;
@@ -4145,10 +4294,10 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         // Tylko w modelu czasu pinu ([`Self::pin_blow_timing`]); dawne wektory pętli liczą pozycje końcowe.
         if self.pin_blow_timing {
             // PIN3-DIVERGENCE-Q1 (D-PIN3-2): krok z `t0 == v_now` z kolejki `_raf` jeszcze się nie zaczął ([`timeline_done`]).
-            if let Some(&(_, _, from, _, _)) = self
-                .move_timeline
-                .iter()
-                .find(|(u, t0, _, _, synchr)| *u == unit && !timeline_done(*t0, *synchr, v_now))
+            if let Some(&(_, _, from, _, _)) =
+                self.move_timeline.iter().find(|(u, t0, _, _, ord)| {
+                    *u == unit && !timeline_done(*t0, *ord, v_now, self.reader_due)
+                })
             {
                 return Some(from);
             }
@@ -4616,7 +4765,9 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 pend.shot = self.begin_shot(unit, target, at);
                 if self.pin_blow_timing && pend.shot.is_some() {
                     // `_doRangedAttack` (`:9223-9229`): trafienie po `RANGED_FLY_MS`, `done()` po `RANGED_GAP_MS`.
-                    dur = at + RANGED_FLY_MS;
+                    // FRAME-QUANT-Q1 (D-FQ-1): trafienie w klatce zegara `_schedule(RANGED_FLY_MS)`. Ogon `RANGED_GAP_MS`
+                    // planuje zegar sterownika z chwili trafienia, więc zostaje nominalny (`due` jak w pinie, D-FQ-3).
+                    dur = at + frame_sched(self.frame_ms, RANGED_FLY_MS);
                     self.tail[ix][unit.idx] = RANGED_GAP_MS;
                 }
             }
@@ -4666,11 +4817,13 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             if let Some(target) = pend.attack.take() {
                 pend.shot = self.begin_shot(unit, target, attack_pre);
                 let dur = if pend.shot.is_some() {
+                    let fly = frame_sched(self.frame_ms, RANGED_FLY_MS);
                     if self.pin_blow_timing {
+                        // FRAME-QUANT-Q1 (D-FQ-3): ogon nominalny, kwantyzuje go zegar sterownika.
                         self.tail[ix][unit.idx] = RANGED_GAP_MS;
-                        attack_pre + RANGED_FLY_MS
+                        attack_pre + fly
                     } else {
-                        attack_pre + RANGED_FLY_MS + RANGED_GAP_MS
+                        attack_pre + fly + frame_sched(self.frame_ms, RANGED_GAP_MS)
                     }
                 } else {
                     attack_pre
@@ -4687,12 +4840,18 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 pend.attack = None;
             }
         }
+        // FRAME-QUANT-Q1 (D-FQ-1): cios pada w pierwszej klatce lunge z `localT >= BLOW_HIT_T` (pętla `_raf`), lunge
+        // kończy się w pierwszej klatce z `localT >= BLOW_LUNGE_MS`, potem `_schedule(BLOW_SETTLE_MS)` z chwili tej klatki.
+        let hit = frame_raf(self.frame_ms, pu.body_ms);
         let dur = if pend.attack.is_some() {
             if self.pin_blow_timing {
                 // `_doMeleeAttack` (`:9119-9172`): `done()` po `localT >= BLOW_LUNGE_MS` i `_schedule(BLOW_SETTLE_MS)`.
-                self.tail[ix][unit.idx] = BLOW_LUNGE_MS + BLOW_SETTLE_MS - pu.body_ms;
+                // FRAME-QUANT-Q1 (D-FQ-3): `_schedule(BLOW_SETTLE_MS)` z klatki końca lunge ma nominalny `due`
+                // (`koniec lunge + 220`); ogon planuje zegar sterownika z klatki ciosu, więc odcinek settle zostaje
+                // nominalny, a klatkę odpalenia wyznacza zegar.
+                self.tail[ix][unit.idx] = melee_tail_ms(self.frame_ms, pu.body_ms);
             }
-            attack_pre + pu.body_ms
+            attack_pre + hit
         } else {
             attack_pre
         };
@@ -4837,6 +4996,16 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
 }
 
 impl<R: RollSource> ProdBody<R> {
+    /// PIN3-DIVERGENCE-Q1 (D-PIN3-1) + FRAME-QUANT-Q1 (D-FQ-2, obrona r1 U2/E7): pole i zwrot celu trafienia wieży
+    /// W CHWILI `self.now` (`_singleBlow` `:8831-8833`, `:8880`), w kolejności `due` czytającego zegara
+    /// ([`Self::reader_due`], `_drainTimers` `:9616-9634`): krok celu wołany z zegara tej klatki z mniejszym `due` jest
+    /// już wykonany. Bez wpisu na osi = stan bieżący jednostki.
+    fn tower_target_view(&self, tref: UnitRef) -> ((i64, i64), f64) {
+        let pu = &self.units[side_ix(tref.side)][tref.idx].activate;
+        let cell = self.unit_cell_at(tref, self.now).unwrap_or((pu.q, pu.r));
+        (cell, self.facing_at(tref, self.now, self.reader_due))
+    }
+
     /// Jeden cios `_singleBlow` (pin): łuk względem facing celu, pierwsza para z `engaged`, stan celu z `st`, jeden rzut,
     /// skutki HP/zabicia, wpis do `engaged`. Wspólne dla ciosu głównego i kontrataku. Efekty `_resolveBlowOutcome`
     /// (morale/rout po ciosie) NIE są tu stosowane: zapis w `unported`.
@@ -4850,11 +5019,7 @@ impl<R: RollSource> ProdBody<R> {
         let tix = side_ix(tref.side);
         // PIN3-DIVERGENCE-Q1 (D-PIN3-1): pozycja i zwrot celu W CHWILI trafienia (`_singleBlow` `:8831-8833`, `:8880`),
         // nie po atomowo policzonym marszu ciała (krok `_doMove` zmienia `ru.q/r` i `facing` dopiero w chwili kroku).
-        let (dq, dr) = self.unit_cell_at(tref, self.now).unwrap_or((
-            self.units[tix][tref.idx].activate.q,
-            self.units[tix][tref.idx].activate.r,
-        ));
-        let target_facing = self.facing_at(tref, self.now);
+        let ((dq, dr), target_facing) = self.tower_target_view(tref);
         let shooter_cell = (st.siege_wall_col, self.tower_row);
         // K5LOOP-WIRING-A r2 (Z2): przy kompozytorze wejście składane jak `_singleBlow` (`:8811-8960`) z realnym celem;
         // łuk `relativeHit(target.facing, wallCol, t.row, target.q, target.r)` (`:8880`).
@@ -5401,9 +5566,10 @@ impl<R: RollSource> ProdBody<R> {
     /// `self.now` ([`timeline_done`]).
     fn has_future_steps(&self, unit: UnitRef) -> bool {
         let now = self.now;
+        let reader = self.reader_due;
         self.move_timeline
             .iter()
-            .any(|&(u, t0, _, _, synchr)| u == unit && !timeline_done(t0, synchr, now))
+            .any(|&(u, t0, _, _, ord)| u == unit && !timeline_done(t0, ord, now, reader))
     }
 
     fn release_tile(&mut self, unit: UnitRef) {
@@ -5643,7 +5809,16 @@ impl<R: RollSource> WalkWorld for ProdSiegeWalk<'_, R> {
 
     fn do_move(&mut self, unit: &mut WalkUnit, col: i64, row: i64) -> DoMoveGate {
         // Każdy kolejny krok poprzedza `_schedule(STEP_GAP_MS)` (`:8017`): `t0` kroku k = k * (MOVE + GAP).
-        self.body.now = self.now0 + f64::from(self.moves) * (MOVE_STEP_MS + f64::from(STEP_GAP_MS));
+        // FRAME-QUANT-Q1 (D-FQ-1): oba odcinki kwantyzowane klatką.
+        let frame = self.body.frame_ms;
+        let gap = f64::from(STEP_GAP_MS);
+        self.body.now = siege_walk_step_t0(frame, self.now0, self.moves);
+        // FRAME-QUANT-Q1 (D-FQ-2): krok po `_schedule(STEP_GAP_MS)` (nie pierwszy) dostaje nominalny `due` tego zegara.
+        if self.moves > 0 {
+            let _ = self
+                .body
+                .gap_after(self.body.now - frame_sched(frame, gap), gap);
+        }
         match self.body.move_step_core(
             self.unit,
             col,
@@ -5869,7 +6044,7 @@ impl<R: RollSource> ProdBody<R> {
             .iter()
             .filter(|e| matches!(e, WalkEvent::Schedule { .. }))
             .count() as f64;
-        let dur = f64::from(moves) * MOVE_STEP_MS + schedules * f64::from(STEP_GAP_MS);
+        let dur = siege_walk_dur(self.frame_ms, moves, schedules);
         // Odmowa bramki muru (`WalkEvent::Refused`): `ru.moveLeft = 0` (`:8690`) także bez wcześniejszego kroku.
         let refused = events
             .iter()
@@ -5943,7 +6118,7 @@ impl<R: RollSource> ProdBody<R> {
         arrive(
             self,
             AtkRun {
-                dur: step_ms(&res),
+                dur: step_ms(&res, self.frame_ms),
                 move_left: Some(res.move_left),
                 tag: None,
             },
@@ -6325,6 +6500,118 @@ mod tower_target_tests {
         let e = env(vec![Some((9, 9))]);
         assert_eq!(e.pick_tower_for_row(&st, 3, 0.0), None);
     }
+
+    /// Atrapa ciała zapisująca `due` czytającego zegara ([`LoopBody::set_reader_due`]) przy odczycie pozycji celu
+    /// (wystrzał wieży) i przy `_singleBlow` wieży (trafienie), oraz zakończone aktywacje (`complete`).
+    #[derive(Default)]
+    struct RecBody {
+        reader: f64,
+        cell_readers: std::cell::RefCell<Vec<f64>>,
+        blow_readers: Vec<f64>,
+        completed: Vec<UnitRef>,
+    }
+
+    impl LoopBody for RecBody {
+        fn start(&mut self, _unit: UnitRef, _st: &TurnSeqState) -> f64 {
+            0.0
+        }
+        fn complete(&mut self, unit: UnitRef, _st: &mut TurnSeqState) {
+            self.completed.push(unit);
+        }
+        fn unit_cell(&self, unit: UnitRef) -> Option<(i64, i64)> {
+            (unit.side == BattleSide::Attacker && unit.idx == 0).then_some((7, 3))
+        }
+        fn unit_cell_at(&self, unit: UnitRef, _v_now: f64) -> Option<(i64, i64)> {
+            self.cell_readers.borrow_mut().push(self.reader);
+            self.unit_cell(unit)
+        }
+        fn set_reader_due(&mut self, due: f64) {
+            self.reader = due;
+        }
+        fn tower_blow(&mut self, _tmpl: &FullBlowInput, _target: usize, _st: &mut TurnSeqState) {
+            self.blow_readers.push(self.reader);
+        }
+        fn take_tail(&mut self, _unit: UnitRef) -> f64 {
+            // Ogon > 0: `activation_done` dopiero w zegarze ogona (poza zakresem testu).
+            1000.0
+        }
+    }
+
+    fn rec_loop() -> SiegeLoop<RecBody> {
+        let e = env(Vec::new());
+        SiegeLoop::new(
+            state(&[10.0]),
+            SiegeEnv {
+                body: RecBody {
+                    reader: f64::MIN,
+                    ..RecBody::default()
+                },
+                tower_rows: e.tower_rows,
+                pending_tower_shots: e.pending_tower_shots,
+                tower_range: e.tower_range,
+                tower_shot: e.tower_shot,
+                wall_tile_rows: e.wall_tile_rows,
+                wall_ever_breached: e.wall_ever_breached,
+                no_breach_cap: e.no_breach_cap,
+                move_points: e.move_points,
+                morale_max: e.morale_max,
+            },
+        )
+    }
+
+    /// Obrona r1 FRAME-QUANT-Q1 (U2, mutanty Q19, Q20, Q22): wystrzał wieży czyta pozycje celów ze swoim nominalnym
+    /// `due` (planowanie `_schedule(delay)` w `_fireSiegeTowers`, `:9605`), trafienie `_schedule(RANGED_FLY_MS)` z
+    /// klatki wystrzału (`:4262`) ma nominalne `due = vNow wystrzału + 380` i z nim czyta oś celu w `_singleBlow`
+    /// (`_drainTimers` `:9616-9634`: zegary klatki rosnąco po `due`). Po odczycie czytający wraca do ciała (`f64::MIN`).
+    #[test]
+    fn wieza_czyta_os_celu_z_nominalnym_due_wystrzalu_i_trafienia() {
+        let mut lp = rec_loop();
+        let mut clock = VirtualClock::new();
+        clock.v_now = 1008.0;
+        lp.tower_shot_due.push((0, 1004.0));
+        lp.tower_shoot(&mut clock, 0);
+        assert_eq!(
+            *lp.env.body.cell_readers.borrow(),
+            vec![1004.0],
+            "wystrzał: due z planowania"
+        );
+        assert_eq!(lp.env.body.reader, f64::MIN);
+        assert_eq!(lp.tower_in_flight, vec![(0, 3, 1008.0 + TOWER_FLY_MS)]);
+        lp.tower_hit(0, 1392.0);
+        assert_eq!(
+            lp.env.body.blow_readers,
+            vec![1008.0 + TOWER_FLY_MS],
+            "trafienie: nominalny due lotu"
+        );
+        assert_eq!(lp.env.body.reader, f64::MIN);
+        assert!(lp.tower_in_flight.is_empty());
+    }
+
+    /// Obrona r1 FRAME-QUANT-Q1 (U3, mutant E2): w czasie rzeczywistym (`step_realtime`) skutek ciała odłożony do fazy
+    /// kroków (`BodyDone`, D-PIN3-3) wykonuje się w TEJ klatce, PO `_drainTimers` (`_runFastForward` `:9427-9435`, w
+    /// AUTO `_startLoop` `:9245-9291`: kroki `_raf` po zegarach). Zamiana faz (kolejka kroków przed `drain_timers`)
+    /// zostawia skutek niewykonany do następnej klatki.
+    #[test]
+    fn czas_rzeczywisty_faza_krokow_po_zegarach_tej_klatki() {
+        let mut lp = rec_loop();
+        lp.body_done_raf = true;
+        let a0 = UnitRef {
+            side: BattleSide::Attacker,
+            idx: 0,
+        };
+        let mut clock = VirtualClock::new();
+        let _ = clock.schedule(16.0, LoopTimer::BodyDone(a0), false);
+        // Pierwsza klatka tylko ustawia `vLastWall` (`:9500-9511`).
+        assert_eq!(lp.step_realtime(&mut clock, 1000.0), 0);
+        assert!(lp.env.body.completed.is_empty());
+        assert_eq!(lp.step_realtime(&mut clock, 1016.0), 1);
+        assert_eq!(
+            lp.env.body.completed,
+            vec![a0],
+            "skutek ciała w fazie kroków tej samej klatki"
+        );
+        assert!(lp.raf_pending.is_empty());
+    }
 }
 
 #[cfg(test)]
@@ -6496,13 +6783,216 @@ mod pin3_timeline_tests {
         idx: 0,
     };
 
+    const A1: UnitRef = UnitRef {
+        side: BattleSide::Defender,
+        idx: 0,
+    };
+
     #[test]
     fn krok_w_tej_samej_chwili_co_zegar() {
         // Krok z kolejki `_raf` w chwili zegara: jeszcze niewykonany; krok synchroniczny: wykonany.
-        assert!(!timeline_done(100.0, false, 100.0));
-        assert!(timeline_done(100.0, true, 100.0));
-        assert!(timeline_done(99.0, false, 100.0));
-        assert!(!timeline_done(101.0, true, 100.0));
+        // FRAME-QUANT-Q1 (D-FQ-2): `false`/`true` = klucz `+inf`/`-inf`, czytający ciało = `f64::MIN`.
+        let (raf, sync, body) = (f64::INFINITY, f64::NEG_INFINITY, f64::MIN);
+        assert!(!timeline_done(100.0, raf, 100.0, body));
+        assert!(timeline_done(100.0, sync, 100.0, body));
+        assert!(timeline_done(99.0, raf, 100.0, body));
+        assert!(!timeline_done(101.0, sync, 100.0, body));
+        // To samo dla czytającego zegara (wieża) o dowolnym `due` w tej klatce.
+        assert!(!timeline_done(100.0, raf, 100.0, 96.0));
+        assert!(timeline_done(100.0, sync, 100.0, 96.0));
+    }
+
+    /// FRAME-QUANT-Q1 (D-FQ-2): krok marszu wołany z zegara `_schedule(STEP_GAP_MS)` wykonuje się w fazie zegarów klatki
+    /// (`_drainTimers` `:9616-9634`), rosnąco po nominalnym `due`. Zegar wieży z tej samej klatki widzi krok jako wykonany
+    /// tylko przy mniejszym `due` kroku; remis `due` = wieża pierwsza (jej `id` nadany wcześniej: wystrzał planowany w
+    /// `_beginTurn`, trafienie przy wystrzale). Krok z kolejki `_raf` (`+inf`) nigdy nie jest wykonany przed zegarem klatki.
+    #[test]
+    fn czas_kroku_kwantyzowany_klatka() {
+        // FRAME-QUANT-Q1 (D-FQ-1): krok `_doMove` kończy się w pierwszej klatce z `localT >= MOVE_STEP_MS`.
+        let step = |done| MoveStepResult {
+            move_left: 1.0,
+            outcome: crate::domain::siege_tactics_move_effects::MoveOutcome { done },
+        };
+        assert_eq!(step_ms(&step(false), 16.0), 240.0);
+        assert_eq!(step_ms(&step(false), 32.0), 256.0);
+        assert_eq!(step_ms(&step(false), 100.0), 300.0);
+        assert_eq!(step_ms(&step(false), 0.0), MOVE_STEP_MS);
+        assert_eq!(step_ms(&step(true), 32.0), 0.0);
+    }
+
+    #[test]
+    fn krok_z_zegara_w_klatce_wg_nominalnego_due() {
+        assert!(timeline_done(1312.0, 1310.0, 1312.0, 1311.0));
+        assert!(
+            !timeline_done(1312.0, 1310.0, 1312.0, 1310.0),
+            "remis due: wieża pierwsza"
+        );
+        assert!(!timeline_done(1312.0, 1310.0, 1312.0, 1300.0));
+        assert!(!timeline_done(1312.0, f64::INFINITY, 1312.0, 1312.0));
+        assert!(timeline_done(1312.0, f64::NEG_INFINITY, 1312.0, 1297.0));
+        // Ciało czyta oś z `f64::MIN`: krok z zegara w tej samej chwili jeszcze niewykonany (dawna reguła D-PIN3-2).
+        assert!(!timeline_done(1312.0, 1310.0, 1312.0, f64::MIN));
+        let mut b = body();
+        b.frame_ms = 16.0;
+        b.set_now(1000.0);
+        // Koniec kroku w 1232 (klatka), `_schedule(70)`: due 1302, odpalenie w klatce 1312.
+        let gap = b.gap_after(1232.0, 70.0);
+        assert_eq!(gap, 80.0);
+        b.now = 1312.0;
+        assert_eq!(
+            b.timeline_ord(),
+            1302.0,
+            "krok z zegara: klucz = nominalny due"
+        );
+        b.now = 1328.0;
+        assert_eq!(
+            b.timeline_ord(),
+            f64::INFINITY,
+            "inna klatka: krok z kolejki _raf"
+        );
+        b.now = 1000.0;
+        assert_eq!(
+            b.timeline_ord(),
+            f64::NEG_INFINITY,
+            "w chwili wywołania ciała: synchroniczny"
+        );
+        // Klatka 0 (dawny model nominalny): bez klucza zegara.
+        let mut c = body();
+        c.set_now(1000.0);
+        assert_eq!(c.gap_after(1232.0, 70.0), 70.0);
+        c.now = 1302.0;
+        assert_eq!(c.timeline_ord(), f64::INFINITY);
+    }
+
+    struct Flat;
+
+    impl MoveTerrain for Flat {
+        fn passable(&self, _col: f64, _row: f64) -> bool {
+            true
+        }
+        fn move_cost(&self, _col: f64, _row: f64) -> f64 {
+            1.0
+        }
+        fn is_ford(&self, _col: f64, _row: f64) -> bool {
+            false
+        }
+        fn cavalry_multiplier(&self, _col: f64, _row: f64) -> f64 {
+            1.0
+        }
+    }
+
+    /// Obrona r1 FRAME-QUANT-Q1 (U1, mutant E5): marsz `_siegeWalkTo` (`:8006-8019`) — każdy krok po pierwszym poprzedza
+    /// `_schedule(STEP_GAP_MS)` (`:8017`), więc wykonuje się w FAZIE ZEGARÓW klatki z kluczem = nominalny `due` tej
+    /// przerwy (D-FQ-2). Klatka 16, start 992: krok 0 synchroniczny (`-inf`), koniec kroku 0 w 1232, przerwa `due`
+    /// 1302, krok 1 w klatce 1312 z kluczem 1302. Zegar wieży z `due` 1310 w tej klatce widzi krok 1 jako wykonany,
+    /// zegar z `due` 1302 (remis) — jeszcze nie.
+    #[test]
+    fn marsz_oblezniczy_krok_po_przerwie_ma_klucz_due_przerwy() {
+        let mut b = body();
+        b.frame_ms = 16.0;
+        b.terrain = Some(Box::new(Flat));
+        b.set_now(992.0);
+        let scene = b.atk_scene(-1);
+        let mut wu = WalkUnit {
+            q: 0,
+            r: 0,
+            move_left: 10.0,
+            dead: false,
+            fading_out: false,
+        };
+        {
+            let mut w = ProdSiegeWalk {
+                body: &mut b,
+                unit: A0,
+                scene,
+                goal: AtkGoal::TowerBase {
+                    wall_base: 100,
+                    wall_col: 101,
+                },
+                pref_row: None,
+                finished: false,
+                enemies: &[],
+                mounted: false,
+                now0: 992.0,
+                moves: 0,
+                missing: Cell::new(false),
+            };
+            assert!(matches!(w.do_move(&mut wu, 1, 0), DoMoveGate::Proceed));
+            assert!(matches!(w.do_move(&mut wu, 2, 0), DoMoveGate::Proceed));
+        }
+        let steps: Vec<(f64, f64)> = b
+            .move_timeline
+            .iter()
+            .map(|&(_, t0, _, _, ord)| (t0, ord))
+            .collect();
+        assert_eq!(
+            steps,
+            vec![(992.0, f64::NEG_INFINITY), (1312.0, 1302.0)],
+            "krok 1 marszu z zegara przerwy: klucz = nominalny due 1232 + 70"
+        );
+        b.set_now(1312.0);
+        b.set_reader_due(1310.0);
+        assert_eq!(b.unit_cell_at(A0, 1312.0), Some((2, 0)));
+        b.set_reader_due(1302.0);
+        assert_eq!(
+            b.unit_cell_at(A0, 1312.0),
+            Some((1, 0)),
+            "remis due: wieża pierwsza"
+        );
+    }
+
+    /// Obrona r1 FRAME-QUANT-Q1 (U1, mutant E8): `gap_due` jest jedno na całe ciało, więc każde wywołanie ciała
+    /// (`set_now`) musi je wyzerować. Inaczej krok innej jednostki Y z kolejki `_raf` w klatce `[d_X, d_X + F)` dostałby
+    /// fałszywy klucz `ord = d_X` z marszu jednostki X policzonego w poprzednim wywołaniu.
+    #[test]
+    fn wywolanie_ciala_zeruje_due_przerwy_poprzedniego_marszu() {
+        let mut b = body();
+        b.frame_ms = 16.0;
+        // Marsz X w wywołaniu 992: przerwa po kroku kończącym się w 1232, `due` 1302.
+        b.set_now(992.0);
+        let _ = b.gap_after(1232.0, 70.0);
+        // Wywołanie ciała Y w 1296; jego krok z kolejki `_raf` w klatce 1312 (bez własnej przerwy).
+        b.set_now(1296.0);
+        b.now = 1312.0;
+        assert_eq!(b.timeline_ord(), f64::INFINITY, "krok `_raf` jednostki Y");
+        b.emit(BattleAction::Move {
+            unit: A1,
+            from: (5, 0),
+            to: (4, 0),
+            arrive_at: 1552.0,
+        });
+        // Zegar wieży z `due` 1310 w klatce 1312: krok `_raf` Y jeszcze się nie zaczął.
+        b.set_now(1312.0);
+        b.set_reader_due(1310.0);
+        assert_eq!(b.unit_cell_at(A1, 1312.0), Some((5, 0)));
+    }
+
+    /// Obrona r1 FRAME-QUANT-Q1 (U2, mutanty E6, E7): trafienie wieży czyta oś celu ze swoim `due`
+    /// ([`ProdBody::reader_due`]) — `has_future_steps` (`_startRout` zwalnia pole, `:9812`) i zwrot celu do łuku
+    /// (`_singleBlow` `:8880`, [`ProdBody::tower_target_view`]). Krok celu z zegara przerwy (`due` 1302) w klatce 1312:
+    /// dla trafienia z `due` 1310 wykonany, dla trafienia z `due` 1302 (remis) jeszcze nie.
+    #[test]
+    fn trafienie_wiezy_czyta_os_celu_wg_due() {
+        let mut b = body();
+        b.frame_ms = 16.0;
+        b.units[0][0].activate.q = 1;
+        b.set_now(992.0);
+        let _ = b.gap_after(1232.0, 70.0);
+        b.now = 1312.0;
+        b.set_facing(A0, 2.0);
+        b.emit(BattleAction::Move {
+            unit: A0,
+            from: (0, 0),
+            to: (1, 0),
+            arrive_at: 1552.0,
+        });
+        b.set_now(1312.0);
+        b.set_reader_due(1310.0);
+        assert!(!b.has_future_steps(A0), "krok z mniejszym due już wykonany");
+        assert_eq!(b.tower_target_view(A0), ((1, 0), 2.0));
+        b.set_reader_due(1302.0);
+        assert!(b.has_future_steps(A0), "remis due: wieża pierwsza");
+        assert_eq!(b.tower_target_view(A0), ((0, 0), 0.0));
     }
 
     #[test]
@@ -6521,9 +7011,9 @@ mod pin3_timeline_tests {
             2.0,
             "bieżący zwrot = po ostatnim kroku marszu"
         );
-        assert_eq!(b.facing_at(A0, 1050.0), 0.0);
-        assert_eq!(b.facing_at(A0, 1200.0), 3.0);
-        assert_eq!(b.facing_at(A0, 1400.0), 2.0);
+        assert_eq!(b.facing_at(A0, 1050.0, f64::MIN), 0.0);
+        assert_eq!(b.facing_at(A0, 1200.0, f64::MIN), 3.0);
+        assert_eq!(b.facing_at(A0, 1400.0, f64::MIN), 2.0);
     }
 
     #[test]
@@ -6538,11 +7028,11 @@ mod pin3_timeline_tests {
         b.set_facing(A0, 3.0);
         assert_eq!(b.facing(A0), 2.0);
         assert_eq!(
-            b.facing_at(A0, 1310.0),
+            b.facing_at(A0, 1310.0, f64::MIN),
             3.0,
             "w fazie zegara krok jeszcze nie ruszył"
         );
-        assert_eq!(b.facing_at(A0, 1311.0), 2.0);
+        assert_eq!(b.facing_at(A0, 1311.0, f64::MIN), 2.0);
     }
 
     /// Obrona r1 (N1, mutanty E1, E7): pierwszy krok marszu wykonany synchronicznie w chwili wywołania ciała jest dla

@@ -271,10 +271,12 @@ fn vectors() -> Value {
     assert_eq!(v["pinSha256"], PIN_SHA256, "wektory z innego tekstu pinu");
     assert_eq!(f(&v["frameMs"]), FRAME_MS);
     // PIN2-PROBE-Q1 (D-PIN2-2): wektor z własnym `frameMs` (krok przewijania pinu) tylko jako bliźniak granicy klatki.
+    // FRAME-QUANT-Q1 (D-FQ-2): także `_klatka4` (krok 4 ms, kolejność kroku z zegara i wieży w jednej klatce).
     for x in v["vectors"].as_array().unwrap() {
         if !x["frameMs"].is_null() {
+            let n = x["name"].as_str().unwrap();
             assert!(
-                x["name"].as_str().unwrap().ends_with("_klatka1") && x["mode"] == "skip",
+                (n.ends_with("_klatka1") || n.ends_with("_klatka4")) && x["mode"] == "skip",
                 "frameMs poza bliźniakiem granicy klatki: {}",
                 x["name"]
             );
@@ -407,6 +409,64 @@ fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
         );
         assert_eq!(v["seed"], base["seed"]);
     }
+}
+
+/// FRAME-QUANT-Q1 (D-FQ-1): odcinek czasu ciała kończy się w pierwszej klatce, która go pokrywa. Pin nie przesuwa `vNow`
+/// w `_drainTimers` (`battleScene.ts:9616-9634`), a kroki `_raf` wykonuje raz na klatkę (`_runFastForward` `:9426-9435`),
+/// więc przy klatce 16 ms: krok `_doMove` 240 ms (bez zmian), cios `localT >= 150` w 160, koniec lunge `>= 260` w 272,
+/// `_schedule(70)` w 80, lot pocisku 380 w 384, settle 220 w 224. Przy 1 ms wszystkie stałe pinu są całkowite =
+/// tożsamość; klatka `<= 0`/`NaN` = czas nominalny.
+#[test]
+fn kwantyzacja_odcinkow_klatka_pinu() {
+    use civ_engine::domain::siege_tactics_loop::{frame_raf, frame_sched};
+    assert_eq!(frame_raf(16.0, 240.0), 240.0);
+    assert_eq!(frame_raf(16.0, 150.0), 160.0);
+    assert_eq!(frame_raf(16.0, 260.0), 272.0);
+    assert_eq!(frame_sched(16.0, 70.0), 80.0);
+    assert_eq!(frame_sched(16.0, 380.0), 384.0);
+    assert_eq!(frame_sched(16.0, 320.0), 320.0);
+    assert_eq!(frame_sched(16.0, 220.0), 224.0);
+    assert_eq!(frame_sched(16.0, 160.0), 160.0);
+    assert_eq!(frame_sched(16.0, 16.5), 32.0);
+    for ms in [70.0, 150.0, 160.0, 180.0, 220.0, 240.0, 260.0, 320.0, 380.0] {
+        assert_eq!(frame_raf(1.0, ms), ms);
+        assert_eq!(frame_sched(1.0, ms), ms);
+    }
+    // Krok `_raf` dłuższy niż odcinek: co najmniej jedna klatka (pierwszy krok z `localT = 0`, koniec w kolejnej).
+    assert_eq!(frame_raf(256.0, 150.0), 256.0);
+    assert_eq!(frame_raf(512.0, 240.0), 512.0);
+    // `_schedule(0)` odpala w tej samej klatce; klatka 0 albo NaN = nominalnie (dawne testy pętli).
+    assert_eq!(frame_sched(16.0, 0.0), 0.0);
+    assert_eq!(frame_sched(0.0, 70.0), 70.0);
+    assert_eq!(frame_raf(0.0, 150.0), 150.0);
+    assert_eq!(frame_sched(f64::NAN, 70.0), 70.0);
+    assert_eq!(frame_sched(-16.0, 70.0), 70.0);
+}
+
+/// FRAME-QUANT-Q1 (D-FQ-1, D-FQ-3): złożone odcinki ciała — ogon ciosu wręcz (`_doMeleeAttack` `:9117-9172`: koniec
+/// lunge w klatce, settle nominalny od tej klatki) i marsz oblężniczy `_siegeWalkTo` (`:8006-8019`: krok `_raf` +
+/// `_schedule(STEP_GAP_MS)` między krokami).
+#[test]
+fn kwantyzacja_odcinkow_zlozonych_klatka_pinu() {
+    use civ_engine::domain::siege_tactics_loop::{
+        melee_tail_ms, siege_walk_dur, siege_walk_step_t0,
+    };
+    // Klatka 16: koniec lunge 272, settle 220 nominalnie (due 492, nie 496), cios 160 -> ogon 332.
+    assert_eq!(melee_tail_ms(16.0, 150.0), 332.0);
+    assert_eq!(melee_tail_ms(1.0, 150.0), 330.0);
+    assert_eq!(melee_tail_ms(0.0, 150.0), 330.0);
+    assert_eq!(melee_tail_ms(32.0, 150.0), 288.0 + 220.0 - 160.0);
+    // Marsz oblężniczy: krok 240 (klatka 16) / 256 (klatka 32) + przerwa 80 / 96.
+    assert_eq!(siege_walk_step_t0(16.0, 1000.0, 0), 1000.0);
+    assert_eq!(
+        siege_walk_step_t0(16.0, 1000.0, 2),
+        1000.0 + 2.0 * (240.0 + 80.0)
+    );
+    assert_eq!(siege_walk_step_t0(32.0, 0.0, 1), 256.0 + 96.0);
+    assert_eq!(siege_walk_step_t0(1.0, 0.0, 3), 3.0 * 310.0);
+    assert_eq!(siege_walk_dur(16.0, 3, 2.0), 3.0 * 240.0 + 2.0 * 80.0);
+    assert_eq!(siege_walk_dur(32.0, 2, 1.0), 2.0 * 256.0 + 96.0);
+    assert_eq!(siege_walk_dur(1.0, 2, 1.0), 2.0 * 240.0 + 70.0);
 }
 
 /// Pokrycie scenariuszy wymagane dispatchem (z/bez machin, różne liczności, wyłom, ucieczka, oba sufity tur, oba tryby).
@@ -816,9 +876,17 @@ fn slad_diagnostyczny_na_zadanie() {
         .ok()
         .and_then(|x| x.parse::<f64>().ok())
         .unwrap_or(FRAME_MS);
+    let mut seen = 0;
     while s.phase() != SessionPhase::Finished {
         let rep = s.step(step_ms).unwrap();
         let r = s.battle_loop().st.round_no;
+        // FRAME-QUANT-Q1 (diagnostyka): starty aktywacji (`act:<jednostka>@<vNow>` ze śladu pętli) jak `ACT` generatora.
+        for line in &s.battle_loop().trace[seen..] {
+            if let Some(rest) = line.strip_prefix("act:") {
+                eprintln!("ACT {rest}");
+            }
+        }
+        seen = s.battle_loop().trace.len();
         // PIN2-PROBE-Q1 (sonda morale): po kroku z obrażeniami/rozbiciem stan morale wszystkich jednostek (do
         // porównania z `OUTCOME`/`CHECKROUT` śladu generatora).
         let morale_dump = rep.actions.iter().any(|a| {
