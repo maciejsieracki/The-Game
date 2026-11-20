@@ -98,7 +98,9 @@ const RE_FLUSH_WIRED_AFTER_FALSE = /endTurnTransition\(\);\s*\n\s*endTurnInProgr
 // ---------------------------------------------------------------------------
 // Sygnatura showHintMessage jest wieloliniowa i ma parametry ctx/aboveBattle (klasa A: stara
 // jednoliniowa sygnatura z 2-parametrowa lista przestała istnieć); push niesie `...ctx`.
-const RE_GENERIC_DEFER_INTACT = /function showHintMessage\(\s*\n\s*msg: string,\s*\n\s*durationMs: number = 3000,[\s\S]{0,600}?\): void \{\s*\n\s*if \(shouldDeferEotEvents\(endTurnInProgress\)\) \{\s*\n\s*deferredEotHints\.push\(\{ msg, durationMs, \.\.\.ctx \}\);\s*\n\s*return;\s*\n\s*\}/;
+const RE_GENERIC_DEFER_INTACT = /function showHintMessage\(\s*\n\s*msg: string,\s*\n\s*durationMs: number = 3000,[\s\S]{0,1200}?\): void \{\s*\n\s*if \(shouldDeferEotEvents\(endTurnInProgress\)\) \{\s*\n\s*deferredEotHints\.push\(\{ msg, durationMs, \.\.\.ctx \}\);\s*\n\s*(?:if \(!showNowDuringEot\) )?return;\s*\n\s*\}/;
+// R-WEB-TEST-DEBT-Q13 r5: sygnatura zyskala parametry aboveBattle/showNowDuringEot (R-WEB-UI-AMBUSH-SUCCESS-TOAST-IMMEDIATE-IN-AI-PHASE-Q1) z komentarzami (okno 1200);
+// push do deferredEotHints nadal bezwarunkowy, `return` warunkowy tylko dla pokazu natychmiastowego zasadzki (`if (!showNowDuringEot) return;`).
 
 // ---------------------------------------------------------------------------
 // Blok 6 — N2 (Evaluator, werdykt 6936d4d3, 2026-08-16): resetEndTurnBlockers() (wołane z
@@ -183,7 +185,8 @@ assertMutationCaught('M4: flushPendingEraChangeToast nie zeruje pendingEraChange
 // dokładnie to, przed czym ostrzega zlecenie: "nie chodzi o rozluźnienie defer dla WSZYSTKICH").
 assertMutationCaught('M5: showHintMessage przestaje w ogóle sprawdzać shouldDeferEotEvents (rozluźnienie defer dla WSZYSTKICH komunikatów)',
   src.replace(
-    "      if (shouldDeferEotEvents(endTurnInProgress)) {\n        deferredEotHints.push({ msg, durationMs, ...ctx });\n        return;\n      }",
+    // R-WEB-TEST-DEBT-Q13 r5: aktualny blok showHintMessage (push + `if (!showNowDuringEot) return;`, R-WEB-UI-AMBUSH-SUCCESS-TOAST-IMMEDIATE-IN-AI-PHASE-Q1).
+    "      if (shouldDeferEotEvents(endTurnInProgress)) {\n        deferredEotHints.push({ msg, durationMs, ...ctx });\n        if (!showNowDuringEot) return;\n      }",
     '',
   ));
 
@@ -202,8 +205,9 @@ assertMutationCaught('M6: usunięcie deklaracji pendingEraChangeToastForNextTurn
 // dziurę zgłoszoną przez Evaluatora.
 assertMutationCaught('M7: flushPendingEraChangeToast() przeniesione z finally triggerPlayerEndTurn do healStaleEndTurnBlockers (scenariusz Evaluatora)',
   src.replace(
-    "          flushPendingEraChangeToast();\n          syncPlayerUnitSelectionOnMap();",
-    "          syncPlayerUnitSelectionOnMap();",
+    // R-WEB-TEST-DEBT-Q13 r5: po flushu stoi dzis komentarz R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1 + validateRecruitGeneral(); kotwica na ten komentarz.
+    "          flushPendingEraChangeToast();\n          // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: śmierć generała",
+    "          // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: śmierć generała",
   ).replace(
     "      if (!activeWorldEndTurnPipeline && endTurnInProgress && !isTurnTransitionActive()) {\n        console.warn('[EndTurn] Clearing stale endTurnInProgress (brak overlay)');\n        endTurnInProgress = false;\n        endTurnStartedAt = 0;\n      }",
     "      if (!activeWorldEndTurnPipeline && endTurnInProgress && !isTurnTransitionActive()) {\n        console.warn('[EndTurn] Clearing stale endTurnInProgress (brak overlay)');\n        endTurnInProgress = false;\n        endTurnStartedAt = 0;\n        flushPendingEraChangeToast();\n      }",
