@@ -159,7 +159,9 @@ const yldHardBoth = M.cityYieldPerTurn(city, tiles20, [], pHard,
   makeCtx({ walutaOdkryta: true, maMennica: true }));
 eq(yldHardBoth.pieniadz, 19, 'hard x1,38: Pieniądz = floor(27,6×0,70) = 19');
 eq(yldHardBoth.nauka,     5, 'hard x1,38: Nauka = floor(27,6×0,20) = 5');
-eq(yldHardBoth.luksus,    2, 'hard x1,38: Zamożność = floor(27,6×0,10) = 2');
+// R-WEB-TEST-DEBT-Q12: podzial metoda najwiekszych reszt (economy.ts splitHandelLargestRemainder, suma = floor(pula)),
+// nie floor() osobno na kazdej czesci: pula 27 -> 19 / 5 / 3 (reszta 2 idzie do najwiekszych ulamkow: .9 i .7).
+eq(yldHardBoth.luksus,    3, 'hard x1,38: Zamożność = 3 (największe reszty; suma 19+5+3 = floor(27,6) = 27)');
 
 // ---------------------------------------------------------------------------
 // 5. Waluta + Mennica na EASY -> x1,62.
@@ -169,7 +171,8 @@ const yldEasyBoth = M.cityYieldPerTurn(city, tiles20, [], pEasy,
   makeCtx({ walutaOdkryta: true, maMennica: true }));
 // tax=20*1,62=32,4; split: Pieniądz 22, Nauka 6, Zamożność 3.
 eq(yldEasyBoth.pieniadz, 22, 'easy x1,62: Pieniądz = floor(32,4×0,70) = 22');
-eq(yldEasyBoth.nauka,     6, 'easy x1,62: Nauka = floor(32,4×0,20) = 6');
+// Pula 32: 22,4 / 6,4 / 3,2 -> reszta 1 trafia do Nauki (remis ułamków .4 rozstrzygany na Naukę); suma 22+7+3 = 32.
+eq(yldEasyBoth.nauka,     7, 'easy x1,62: Nauka = 7 (największe reszty, remis .4; suma 22+7+3 = floor(32,4) = 32)');
 eq(yldEasyBoth.luksus,    3, 'easy x1,62: Zamożność = floor(32,4×0,10) = 3');
 
 // ---------------------------------------------------------------------------

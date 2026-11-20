@@ -214,10 +214,13 @@ ok(
 }
 
 // Auto ration equalization recomputes the candidate cost using each tick's owner era.
-// R-WEB-CITIZEN-CONSUMPTION-ERA-MULT-Q1: m(e)=1+0,5(e-1) zastąpiło 1/2/4 -> Brąz m=1,5 (30*lvl<=120 => 4), Żelazo m=2 (40*lvl<=120 => 3).
+// R-WEB-TEST-DEBT-Q12 (decyzja właściciela 2026-11-19, rebalans ekonomii wg epok DOMYŚLNIE WŁĄCZONY, data/econ-era-rebalance-params.json):
+// racje obywateli m(e) = 2^(e-1) (×2 na epokę; wcześniej 1+0,5(e-1) z pinem 4/3). Koszt = pop × poziom × k × m, budżet 120, pop 10,
+// k = R_STAWKI_KOSZT_MULT = 2 -> Brąz m=2: poziom = 120/(10·2·2) = 3; Żelazo m=4: poziom = 120/(10·2·4) = 1,5 (poziom ułamkowy
+// z resolveEqualGrowthRationPlan). Test działa na domyślnym stanie flagi z danych (eraRebalansAktywny=true).
 for (const testCase of [
-  { name: 'Bronze', ownerId: 2, ownerEra: 2, expectedLevel: 4 },
-  { name: 'Iron', ownerId: 3, ownerEra: 3, expectedLevel: 3 },
+  { name: 'Bronze', ownerId: 2, ownerEra: 2, expectedLevel: 3 },
+  { name: 'Iron', ownerId: 3, ownerEra: 3, expectedLevel: 1.5 },
 ]) {
   const city = { id: testCase.name, ownerId: testCase.ownerId, population: 10, poziomRacji: 6 };
   const tick = {

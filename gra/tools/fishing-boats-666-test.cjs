@@ -34,6 +34,7 @@ function eq(a, e, m) { ok(JSON.stringify(a) === JSON.stringify(e), `${m} (got ${
 fs.writeFileSync(ENTRY, `
 export { improvementBonusForKey, improvementYieldForEra } from '../src/game/terrain-improvements';
 export { tileYield } from '../src/game/economy';
+export { setWzrostSurowcowZEpoka } from '../src/game/econ-era-rebalance';
 `, 'utf8');
 const BUNDLE = path.join(TMP, 'bundle.cjs');
 
@@ -55,8 +56,14 @@ const BUNDLE = path.join(TMP, 'bundle.cjs');
   console.log('-- (B) improvementBonusForKey + skalowanie epoki --');
   eq(M.improvementBonusForKey('lodzie_rybackie', 1), { zywnosc: 6, praca: 6, handel: 6 }, 'Kamień = 6/6/6');
   eq(M.improvementBonusForKey('lodzie_rybackie'), { zywnosc: 6, praca: 6, handel: 6 }, 'brak epoki = Kamień = 6/6/6');
-  eq(M.improvementBonusForKey('lodzie_rybackie', 2), { zywnosc: 7, praca: 7, handel: 7 }, 'Brąz = 7/7/7 (+1 za epokę)');
-  eq(M.improvementBonusForKey('lodzie_rybackie', 3), { zywnosc: 8, praca: 8, handel: 8 }, 'Żelazo = 8/8/8 (+2 za epokę)');
+  // R-WEB-TEST-DEBT-Q12 (FALA 880, ustawienie „Wzrost surowców z epoką” domyślnie WYŁ.): bez przełącznika stała wartość z Kamienia;
+  // skalowanie epoki (+1/+2) wymaga włączenia przełącznika — sprawdzane poniżej w parze ON/OFF.
+  eq(M.improvementBonusForKey('lodzie_rybackie', 2), { zywnosc: 6, praca: 6, handel: 6 }, 'WYŁ. (domyślnie): Brąz = 6/6/6 (stała)');
+  eq(M.improvementBonusForKey('lodzie_rybackie', 3), { zywnosc: 6, praca: 6, handel: 6 }, 'WYŁ. (domyślnie): Żelazo = 6/6/6 (stała)');
+  M.setWzrostSurowcowZEpoka(true);
+  eq(M.improvementBonusForKey('lodzie_rybackie', 2), { zywnosc: 7, praca: 7, handel: 7 }, 'WŁ. Brąz = 7/7/7 (+1 za epokę)');
+  eq(M.improvementBonusForKey('lodzie_rybackie', 3), { zywnosc: 8, praca: 8, handel: 8 }, 'WŁ. Żelazo = 8/8/8 (+2 za epokę)');
+  M.setWzrostSurowcowZEpoka(false);
 
   console.log('-- (C) tileYield na heksie z lodzie_rybackie (morze/wybrzeże) --');
   const SEA = { terenBazowy: 'morze', nakladka: 'brak', maRzeke: false };
@@ -68,8 +75,12 @@ const BUNDLE = path.join(TMP, 'bundle.cjs');
   };
   eq(delta(1), { zywnosc: 6, praca: 6, handel: 6 }, 'silnik: delta heksu Kamień = +6 żywn / +6 praca / +6 podatku');
   eq(delta(undefined), { zywnosc: 6, praca: 6, handel: 6 }, 'silnik: delta bez epoki właściciela = 6/6/6');
-  eq(delta(2), { zywnosc: 7, praca: 7, handel: 7 }, 'silnik: delta Brąz = 7/7/7');
-  eq(delta(3), { zywnosc: 8, praca: 8, handel: 8 }, 'silnik: delta Żelazo = 8/8/8');
+  eq(delta(2), { zywnosc: 6, praca: 6, handel: 6 }, 'silnik WYŁ. (domyślnie): delta Brąz = 6/6/6 (stała)');
+  eq(delta(3), { zywnosc: 6, praca: 6, handel: 6 }, 'silnik WYŁ. (domyślnie): delta Żelazo = 6/6/6 (stała)');
+  M.setWzrostSurowcowZEpoka(true);
+  eq(delta(2), { zywnosc: 7, praca: 7, handel: 7 }, 'silnik WŁ.: delta Brąz = 7/7/7');
+  eq(delta(3), { zywnosc: 8, praca: 8, handel: 8 }, 'silnik WŁ.: delta Żelazo = 8/8/8');
+  M.setWzrostSurowcowZEpoka(false);
 
   console.log('-- (D) karta odkrycia Żegluga (tech-cards-top5.json) --');
   const cards = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'tech-cards-top5.json'), 'utf8'));
@@ -85,7 +96,8 @@ const BUNDLE = path.join(TMP, 'bundle.cjs');
 
   console.log('-- (E) opisy: encyklopedia, poradnik, wikiBundle --');
   const enc = fs.readFileSync(path.join(REPO, 'docs/encyklopedia/ulepszenia/lodzie_rybackie.md'), 'utf8');
-  ok(enc.includes('+6 żywność/t, +6 praca/t, +6 podatek/t'), 'encyklopedia lodzie_rybackie.md: +6/+6/+6');
+  // Wording zgodny z docs/encyklopedia (R-WEB-TEST-DEBT-Q12: test pinowal inna odmiane slow; wartosci +6/+6/+6 bez zmian).
+  ok(enc.includes('+6 żywności/t, +6 pracy/t, +6 podatku/t'), 'encyklopedia lodzie_rybackie.md: +6/+6/+6');
   ok(!enc.includes('+2 żywność/t, +3 praca/t'), 'encyklopedia lodzie_rybackie.md: brak starego +2/+3');
   const cat = fs.readFileSync(path.join(REPO, 'docs/PORADNIK-GRACZA/28-katalog-ulepszen.md'), 'utf8');
   ok(cat.includes('| Łodzie rybackie | Kamień | 20 | +6 żywność, +6 praca, +6 podatek |'), 'poradnik 28-katalog: wiersz tabeli +6/+6/+6');
@@ -94,7 +106,7 @@ const BUNDLE = path.join(TMP, 'bundle.cjs');
   const boatsPage = bundleObj.encyklopedia.find(e => e.id === 'ulepszenia/lodzie_rybackie');
   ok(!!boatsPage, 'wikiBundle.json: hasło ulepszenia/lodzie_rybackie istnieje');
   const boatsTxt = JSON.stringify(boatsPage || {});
-  ok(boatsTxt.includes('+6 żywność/t, +6 praca/t, +6 podatek/t'), 'wikiBundle.json: hasło Łodzie rybackie = +6/+6/+6');
+  ok(boatsTxt.includes('+6 żywności/t, +6 pracy/t, +6 podatku/t'), 'wikiBundle.json: hasło Łodzie rybackie = +6/+6/+6');
   ok(!boatsTxt.includes('+2 żywność/t, +3 praca/t'), 'wikiBundle.json: hasło Łodzie rybackie bez starego +2/+3');
 
   console.log(`\n--- fishing-boats-666-test: ${passed} OK, ${failed} FAIL ---`);

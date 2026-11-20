@@ -50,6 +50,11 @@ function note(text) { notes.push(text); console.log(`  NOTA: ${text}`); }
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 async function launchBrowser(chromium) {
+  // R-WEB-TEST-DEBT-Q12: jawna binarka z CHROME_PATH (pierwszeństwo), potem domyślny Playwright, potem FALLBACK_CHROME.
+  if (process.env.CHROME_PATH) {
+    try { return await chromium.launch({ headless: true, executablePath: process.env.CHROME_PATH, args: ['--no-sandbox'] }); }
+    catch (e) { console.log('CHROME_PATH nie uruchomil sie: ' + e.message.split('\n')[0]); }
+  }
   try { return await chromium.launch({ headless: true }); }
   catch (e) {
     return await chromium.launch({ headless: true, executablePath: FALLBACK_CHROME, args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
