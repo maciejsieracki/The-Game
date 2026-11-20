@@ -51,8 +51,10 @@ use crate::domain::order_effects_culture::{
 };
 use crate::domain::order_effects_lane::PostCaptureLawFields;
 use crate::domain::playable::{MovementPoints, PlayableFortKind, PlayableState};
+use crate::domain::playable_movement::ruch_jednostka_of;
 use crate::domain::production_queue::{filter_queue, sanitize_build_queue};
 use crate::domain::production_units::{CityProduction, ProductionItem, ProductionKind};
+use crate::domain::save_migrations::ARMY_STACK_LIMIT;
 use crate::domain::siege_battle_adapter::is_civilian_unit;
 use crate::domain::siege_battle_apply::{
     end_map_siege, enter_city_hex_after_atk_win, validate_storm_siege, ApplyRosters,
@@ -65,6 +67,13 @@ use crate::domain::siege_capital_plunder::{
 use crate::domain::siege_capture_events::{
     CaptureEventStore, CaptureRow, CityCaptureArgs, CityCaptureDetails, CivElimDetails,
     SidePanelEvent,
+};
+use crate::domain::siege_enter_city::{
+    enter_city_after_surrender, EnterCity, EnterUnit, SiegeEnterDeps,
+};
+use crate::domain::siege_surrender::{
+    besieger_owner_for_city, resolve_surrender_path, surrender_population_after, BesiegerCity,
+    BesiegerUnit, SurrenderPath,
 };
 use crate::domain::siege_transfer_effects::{
     apply_capture_population_loss, apply_post_capture_law_on_capture, CapturePopLossInput,
@@ -85,7 +94,7 @@ use crate::domain::turn_war_inputs::{
 };
 use crate::domain::types::porzadek::society_params;
 use crate::domain::war_turn_declare::pair_key;
-use crate::domain::{CityId, PlayerId, PositionDto};
+use crate::domain::{CityId, PlayerId, PositionDto, UnitId};
 
 /// Mapowanie wywołań pinu na port (tabela kryterium; test sprawdza kompletność wobec generatora).
 pub const PIN_STEPS: &[(&str, &str)] = &[
@@ -1614,7 +1623,8 @@ pub fn apply_storm_capture(
     apply_capture_production(state, cid, old_owner, atk_owner, &designated, &mut out);
     apply_capture_religion(state, cid, old_owner, atk_owner);
     state.record_ever_owned_city(atk_pid);
-    end_map_siege(state, cid);
+    // R-RUSTPORT-P6-KAPITULACJA-Q1: `endMapSiege` gasi też pola oblężenia miasta i `oblegaCityId` jednostek.
+    end_map_siege_state(state, cid);
     out.siege_ended = true;
     let plunder = capital_plunder(state, cid, old_owner, atk_owner, &designated, &mut out)?;
     // `main.ts:36222-36258`: wiersze raportu (stolica: `capitalReport.rows`, inaczej `buildCityCaptureReportRows`
@@ -1677,6 +1687,380 @@ pub fn apply_storm_capture(
     // Krok 4: `validateActiveSieges` na stanie po zdobyciu (miasto zdobyte nie jest już oblegane).
     validate_storm_siege(state, cid, atk_owner);
     Ok(out)
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// R-RUSTPORT-P6-KAPITULACJA-Q1 (W4/W5): `resolveSiegeSurrender` (kapitulacja głodowa) na `PlayableState`.
+// ---------------------------------------------------------------------------------------------------------------
+
+/// Web `endMapSiege(cityId)` (`main.ts:17880-17899`) w zakresie stanu: `oblegane = false`, `clearSiegeMachines`
+/// ([`end_map_siege`]) + pola oblężenia miasta ([`PlayableCitySiege::end_siege`]) + `delete u.oblegaCityId` jednostek
+/// oblegających to miasto. `siegeTurnByCity`/`siegeBesiegerByCity`/`siegeAiStateByKey` (surowe `war.opaque`) i panel
+/// UI: poza stanem typowanym (raport, dług KAP-DL-3).
+pub fn end_map_siege_state(state: &mut PlayableState, cid: CityId) {
+    end_map_siege(state, cid);
+    if let Some(f) = state.siege_city.get_mut(&cid) {
+        f.end_siege();
+        if f.is_default() {
+            state.siege_city.remove(&cid);
+        }
+    }
+    state.oblega_city_by_unit.retain(|_, c| *c != cid);
+}
+
+/// Wynik `resolveSiegeSurrender` na stanie.
+#[derive(Debug, Clone, PartialEq)]
+pub struct SiegeCapitulation {
+    /// Gałąź pinu ([`SurrenderPath`]).
+    pub path: SurrenderPath,
+    /// Web `besiegerOwnerForCity(city)` (`None` = `null`; brak miasta = `None`).
+    pub besieger: Option<i64>,
+    /// Skutki przejęcia (gałąź [`SurrenderPath::Transfer`]); `not_applied` = kroki pinu bez pola stanu.
+    pub capture: Option<CityCaptureResultDto>,
+    /// Wywołania pinu w kolejności wykonania (nazwy funkcji `main.ts`; także kroki niewykonane — te są w
+    /// `capture.not_applied`). Porównywane z dziennikiem wywołań generatora wykonującego tekst pinu.
+    pub steps: Vec<&'static str>,
+}
+
+/// Kroki gałęzi przejęcia pinu bez pola w stanie (D-ZMA-4) — kapitulacja.
+pub const SURRENDER_NOT_APPLIED_ALWAYS: &[&str] = &[
+    "wasIndependentCityStateBeforeCapture",
+    "triggerRebelProtectionWarConsequence",
+    "clearCityStateFlagOnCapture",
+    "foundedByOwner",
+    "rebelState",
+    "seedCityOwnerDefaults",
+    "syncCityGarnizon",
+    "applyLiveSafeRationForCity",
+];
+
+/// Web `applyPostCaptureLawOnCapture(city, newOwner, oldOwner)` wołane BEZWARUNKOWO (kapitulacja `main.ts:17709`;
+/// P9 szturmu strzeże go `!isBarbarian`, patrz [`apply_capture_law`]).
+fn apply_capture_law_always(
+    state: &mut PlayableState,
+    cid: CityId,
+    old_owner: i64,
+    new_owner: i64,
+) {
+    let prev = state.post_capture_law_by_city.get(&cid).copied();
+    let mut fields = PostCaptureLawFields {
+        post_capture_law_turns_remaining: prev.and_then(|p| p.post_capture_law_turns_remaining),
+        was_rebellion_reconquest: prev.is_some_and(|p| p.was_rebellion_reconquest),
+        rebel_previous_owner_id: None,
+        rebel_protection_turns_remaining: None,
+    };
+    let mut grace: Option<f64> = None;
+    if apply_post_capture_law_on_capture(&mut fields, &mut grace, new_owner, old_owner).is_some() {
+        state.post_capture_law_by_city.insert(
+            cid,
+            PlayablePostCaptureLaw {
+                post_capture_law_turns_remaining: fields.post_capture_law_turns_remaining,
+                was_rebellion_reconquest: fields.was_rebellion_reconquest,
+            },
+        );
+    }
+}
+
+/// Web `resolveSiegeSurrender(cityId)` (`main.ts:17662-17878`) na stanie, kolejność kroków jak w pinie:
+/// brak miasta → `endMapSiege`; `besiegerOwnerForCity`; przy zmianie właściciela `areEnemyOwners` (pokój → `endMapSiege`
+/// bez przejęcia); gałąź przejęcia: snapshoty PRZED, `beginWonderTransferWatch`, `applyCapturePopulationLoss`
+/// (+ `capturedFromOwnerId`, W5), `applyPostCaptureLawOnCapture`, zmiana właściciela, `settleWonderTransfer`,
+/// `noteCityCapture`, `maybeResolveRegularWarOnCityCapture`, `recordWarCityLossForPair`, kolejka produkcji,
+/// `population = max(1, …)`, usunięcie obrońców, `enterCityAfterSurrender`, `playerEverOwnedCityByOwner.add` (W5),
+/// `runCapitalCapturePlunder`, `recordCityCaptureEvent`; na końcu `endMapSiege`.
+///
+/// # Errors
+/// [`SiegeBattleError::Producer`]: właściciel 0 (D-ZMA-5), zdobywca barbarzyńca (brak w stanie, D-KAP-6), dane mocy przy
+/// eliminacji, zła meta pary. Wołający (tick) cofa całą turę oblężenia.
+#[allow(clippy::too_many_lines)]
+pub fn apply_siege_capitulation(
+    state: &mut PlayableState,
+    cid: CityId,
+) -> Result<SiegeCapitulation, SiegeBattleError> {
+    let mut steps: Vec<&'static str> = Vec::new();
+    let Some(city) = state.cities.iter().find(|c| c.id == cid).cloned() else {
+        steps.push("endMapSiege");
+        end_map_siege_state(state, cid);
+        return Ok(SiegeCapitulation {
+            path: SurrenderPath::NoCity,
+            besieger: None,
+            capture: None,
+            steps,
+        });
+    };
+    let hex = (i32::from(city.position.x()), i32::from(city.position.y()));
+    let old_owner = owner_i64(city.owner_id);
+    let fields = state.siege_city.get(&cid).copied().unwrap_or_default();
+    let bunits: Vec<BesiegerUnit> = state
+        .units
+        .iter()
+        .map(|u| BesiegerUnit {
+            owner_id: owner_i64(u.owner_id),
+            q: i64::from(u.position.x()),
+            r: i64::from(u.position.y()),
+        })
+        .collect();
+    // `siegeBesiegerByCity` (surowe `war.opaque`, D-KAP-7): brak typowanego odczytu → `stored = None`.
+    let besieger = besieger_owner_for_city(
+        &BesiegerCity {
+            owner_id: old_owner,
+            q: i64::from(hex.0),
+            r: i64::from(hex.1),
+            oblegajacy_owner_id: fields.oblegajacy_owner_id.map(owner_i64),
+        },
+        None,
+        &bunits,
+    );
+    steps.push("besiegerOwnerForCity");
+    let enemy_checked = std::cell::Cell::new(false);
+    let path = resolve_surrender_path(true, old_owner, besieger, &|a, b| {
+        enemy_checked.set(true);
+        at_war(state, a, b)
+    });
+    if enemy_checked.get() {
+        steps.push("areEnemyOwners");
+    }
+    match path {
+        SurrenderPath::NotEnemy | SurrenderPath::NoCaptor => {
+            steps.push("endMapSiege");
+            end_map_siege_state(state, cid);
+            return Ok(SiegeCapitulation {
+                path,
+                besieger,
+                capture: None,
+                steps,
+            });
+        }
+        SurrenderPath::NoCity | SurrenderPath::Transfer => {}
+    }
+    let new_owner = besieger.expect("Transfer => oblegajacy istnieje");
+    if old_owner == 0 || new_owner == 0 {
+        return Err(producer(
+            "kapitulacja: wlasciciel 0 niejednoznaczny wobec id webu (D-ZMA-5)",
+        ));
+    }
+    if is_barbarian(new_owner) {
+        return Err(producer(
+            "kapitulacja: zdobywca barbarzynca - brak barbarzyncow w stanie (D-KAP-6)",
+        ));
+    }
+    let new_pid = PlayerId::new(u64::try_from(new_owner).unwrap_or(u64::MAX));
+    let mut out = CityCaptureResultDto {
+        captured: false,
+        skipped: None,
+        old_owner_id: city.owner_id.get(),
+        new_owner_id: new_pid.get(),
+        removed_unit_ids: Vec::new(),
+        entered_unit_ids: Vec::new(),
+        population_before: city.population,
+        population_after: city.population,
+        wonders_transferred: Vec::new(),
+        capital_event: None,
+        eliminated_owner_id: None,
+        treasury_taken: 0.0,
+        techs_copied: Vec::new(),
+        siege_ended: false,
+        not_applied: SURRENDER_NOT_APPLIED_ALWAYS
+            .iter()
+            .map(|s| (*s).to_owned())
+            .collect(),
+    };
+    // D-ZMA-6: wyznaczone stolice PRZED zdobyciem (`capitalCityIdByOwner`).
+    let designated: BTreeMap<i64, CityId> = state
+        .cities
+        .iter()
+        .filter(|c| c.is_capital)
+        .map(|c| (owner_i64(c.owner_id), c.id))
+        .collect();
+    // `wasIndependentCityStateBeforeCapture` (startCityState brak w stanie → false), `wasProtectedRebel` (brak
+    // buntów → false), `rebelPrevOwnerSnapshot` (`undefined`).
+    steps.push("wasIndependentCityStateBeforeCapture");
+    steps.push("beginWonderTransferWatch");
+    let wonder_before = wonder_snapshot(state);
+    steps.push("applyCapturePopulationLoss");
+    let loss = apply_capture_population_loss(
+        f64::from(city.population),
+        &CapturePopLossInput {
+            prev_owner: old_owner,
+            new_owner,
+            rebel_prev_owner_snapshot: None,
+            captured_from_owner_id: state
+                .captured_from_owner_by_city
+                .get(&cid)
+                .map(|p| owner_i64(*p)),
+            founded_by: None,
+            found_by_owner: None,
+            capture_pop_loss: CAPTURE_POP_LOSS_PIN,
+        },
+    );
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    let pop_after_loss = loss.population.max(0.0) as u32;
+    // W5: `city.capturedFromOwnerId = prevOwner` (`cities.ts`, zapis w `applyCapturePopulationLoss`).
+    state.captured_from_owner_by_city.insert(cid, city.owner_id);
+    let pop_loss = city.population.saturating_sub(pop_after_loss);
+    steps.push("applyPostCaptureLawOnCapture");
+    apply_capture_law_always(state, cid, old_owner, new_owner);
+    steps.push("triggerRebelProtectionWarConsequence");
+    if let Some(c) = state.cities.iter_mut().find(|c| c.id == cid) {
+        c.owner_id = new_pid;
+        c.population = pop_after_loss;
+    }
+    steps.push("settleWonderTransfer");
+    out.wonders_transferred = settle_wonders(state, wonder_before.as_ref());
+    steps.push("noteCityCapture");
+    apply_note_city_capture(state, old_owner, new_owner);
+    steps.push("clearCityStateFlagOnCapture");
+    steps.push("maybeResolveRegularWarOnCityCapture");
+    if old_owner != HUMAN_OWNER_ID && new_owner != HUMAN_OWNER_ID {
+        // Q3 pinu: gracz po którejkolwiek stronie = no-op. AI↔AI: licznik + auto-pokój (`main.ts:35986-36060`)
+        // nieportowany w stanie (D-KAP-8, dług KAP-DL-1) — jawnie.
+        out.not_applied
+            .push("maybeResolveRegularWarOnCityCapture(AI-AI)".into());
+    }
+    steps.push("recordWarCityLossForPair");
+    record_war_city_loss_for_pair(state, old_owner, new_owner)?;
+    if state.city_prod_by_city.contains_key(&cid) {
+        steps.push("sanitizeBuildQueue");
+        apply_capture_production(state, cid, old_owner, new_owner, &designated, &mut out);
+    }
+    steps.push("seedCityOwnerDefaults");
+    // `city.population = Math.max(1, city.population)`.
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    let pop_final = surrender_population_after(f64::from(pop_after_loss)) as u32;
+    if let Some(c) = state.cities.iter_mut().find(|c| c.id == cid) {
+        c.population = pop_final;
+    }
+    out.population_after = pop_final;
+    // `units.splice` jednostek starego właściciela na heksie miasta (pętla wsteczna; zbiór = `transfer_removal_ids`).
+    let mut i = state.units.len();
+    let mut removed: Vec<u64> = Vec::new();
+    while i > 0 {
+        i -= 1;
+        let u = &state.units[i];
+        if u.owner_id == city.owner_id
+            && i32::from(u.position.x()) == hex.0
+            && i32::from(u.position.y()) == hex.1
+        {
+            let uid = u.id.get();
+            state.units.remove(i);
+            state.economy.units.remove(&uid);
+            state.oblega_city_by_unit.remove(&UnitId::new(uid));
+            removed.push(uid);
+        }
+    }
+    removed.reverse();
+    out.removed_unit_ids = removed;
+    // `enterCityAfterSurrender(units, city, newOwner, { isCivilian, stackLimit: armyStackLimit() })`.
+    steps.push("enterCityAfterSurrender");
+    let city_key = city.id.get().to_string();
+    let mut enter_units: Vec<EnterUnit> = state
+        .units
+        .iter()
+        .map(|u| {
+            let rj = ruch_jednostka_of(state, u);
+            EnterUnit {
+                id: u.id.get().to_string(),
+                owner_id: owner_i64(u.owner_id),
+                type_id: rj.type_id.unwrap_or_default(),
+                category: rj.category,
+                q: i64::from(u.position.x()),
+                r: i64::from(u.position.y()),
+                oblega_city_id: state
+                    .oblega_city_by_unit
+                    .get(&u.id)
+                    .map(|c| c.get().to_string()),
+                ..Default::default()
+            }
+        })
+        .collect();
+    let civ = |u: &EnterUnit| is_civilian_unit(&u.category, &u.type_id);
+    let entered = enter_city_after_surrender(
+        &mut enter_units,
+        &EnterCity {
+            id: city_key,
+            q: i64::from(hex.0),
+            r: i64::from(hex.1),
+        },
+        new_owner,
+        &SiegeEnterDeps {
+            is_civilian: &civ,
+            stack_limit: Some(ARMY_STACK_LIMIT),
+        },
+    );
+    for id in &entered {
+        let Ok(n) = id.parse::<u64>() else { continue };
+        if let Some(u) = state.units.iter_mut().find(|u| u.id.get() == n) {
+            u.position = city.position;
+            out.entered_unit_ids.push(n);
+        }
+    }
+    steps.push("syncCityGarnizon");
+    // W5: `playerEverOwnedCityByOwner.add(newOwner)`.
+    state.record_ever_owned_city(new_pid);
+    steps.push("runCapitalCapturePlunder");
+    let plunder = capital_plunder(state, cid, old_owner, new_owner, &designated, &mut out)?;
+    let rows_base: Vec<CaptureRow> = match plunder.rows {
+        Some(rows) => rows.into_iter().map(|r| r.row).collect(),
+        None => build_city_capture_report_rows(&CityCaptureReportInput {
+            kind: "zwykle".to_owned(),
+            moc_etykieta: moc_label(),
+            ludnosc: f64::from(pop_final).floor().max(0.0),
+            budynki: state
+                .stores
+                .buildings_by_city
+                .get(&cid.get())
+                .map_or(0, Vec::len) as f64,
+            zloto: 0.0,
+            nauka: 0.0,
+            technologie: 0.0,
+            moc: 0.0,
+            barbarzynca_zdobywca: false,
+            surowce: state
+                .economy
+                .city_stock
+                .get(&cid.get())
+                .map(|m| m.iter().map(|(k, v)| (k.clone(), *v)).collect()),
+            zywnosc_przejeta: None,
+            zywnosc_utracona: None,
+            zywnosc_ofiary_razem: None,
+            praca_pool_przejeta: 0.0,
+        })
+        .into_iter()
+        .map(|r| r.row)
+        .collect(),
+    };
+    let mut report_rows = rows_base;
+    if let Some(r) = capture_pop_loss_report_row(f64::from(pop_loss)) {
+        report_rows.push(r);
+    }
+    steps.push("recordCityCaptureEvent");
+    let city_id_web = plunder_id(cid);
+    let victim = NoLabels.civ_label(web_owner(old_owner));
+    let captor = NoLabels.civ_label(web_owner(new_owner));
+    apply_record_city_capture_event(
+        state,
+        &CityCaptureArgs {
+            city_id: &city_id_web,
+            city_name: &city.name,
+            old_owner: web_owner(old_owner),
+            new_owner: web_owner(new_owner),
+            rows: &report_rows,
+            victim_label: &victim,
+            captor_label: &captor,
+            eliminated_civ_label: plunder.eliminated_civ_label.as_deref(),
+        },
+    );
+    out.captured = true;
+    steps.push("endMapSiege");
+    end_map_siege_state(state, cid);
+    out.siege_ended = true;
+    steps.push("applyLiveSafeRationForCity");
+    Ok(SiegeCapitulation {
+        path,
+        besieger,
+        capture: Some(out),
+        steps,
+    })
 }
 
 // ---------------------------------------------------------------------------------------------------------------

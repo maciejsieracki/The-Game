@@ -1,0 +1,8065 @@
+{
+ "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
+ "pinSha256": "17b8f1fb42402207df7284aede2b604bf3a5c5fa0545f33cf8e597c8463e78a9",
+ "dataSame": {
+  "econParams": false
+ },
+ "params": {
+  "maxPerSide": 500,
+  "capturePopLoss": 1,
+  "citiesModErr": null,
+  "glodFrac": {
+   "easy": 0.06,
+   "normal": 0.08,
+   "hard": 0.1
+  },
+  "healthWojownik": 22,
+  "n3Lines": [
+   38814,
+   38878
+  ]
+ },
+ "tickCases": [
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "legacy_gracz",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    },
+    {
+     "id": "7002",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    },
+    {
+     "id": "7003",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 3,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7003",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 3,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "7003",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 3,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         },
+         {
+          "label": "Ludność",
+          "value": "−1 (straty zdobycia)",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "pokoj",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "endMapSiege"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false,
+       "siegeCapitulationPending": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "brak_oblegajacego",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "8001",
+     "ownerId": 101,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 7,
+     "r": 7
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 7,
+       "r": 7
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "endMapSiege"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false,
+       "siegeCapitulationPending": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 7,
+       "r": 7
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "sasiad_fallback",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 4,
+     "r": 4,
+     "oblegaCityId": "city900"
+    },
+    {
+     "id": "7101",
+     "ownerId": 102,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 2
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 4,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7101",
+       "ownerId": 102,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 2
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "7101",
+       "ownerId": 102,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 2
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         },
+         {
+          "label": "Ludność",
+          "value": "−1 (straty zdobycia)",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "zapasy",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0,
+     "magazynZywnosci": 12
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "magazynZywnosci": 12
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "magazynZywnosci": 12
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 1,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "flaga_z_zapisu",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0,
+     "magazynZywnosci": 5,
+     "siegeCapitulationPending": true
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "magazynZywnosci": 5,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 5
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 5
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 5,
+        "wojnaMiasta": {
+         "od": 5,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 5
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-5-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 5
+       }
+      ],
+      "city": {
+       "capture-5-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         },
+         {
+          "label": "Ludność",
+          "value": "−1 (straty zdobycia)",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     101,
+     102
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "ai_ai",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 102
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "7101",
+     "ownerId": 102,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 102,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7101",
+       "ownerId": 102,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "101_102"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 102,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7101",
+       "ownerId": 102,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      102
+     ],
+     "chronicle": [
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       102,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "101_102"
+     ],
+     "pairMeta": [
+      [
+       "101_102",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "oblegajacy_bez_sasiada",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 6,
+     "r": 3,
+     "oblegaCityId": "city900"
+    },
+    {
+     "id": "7002",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 6,
+     "r": 3,
+     "oblegaCityId": "city900"
+    },
+    {
+     "id": "7101",
+     "ownerId": 102,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 6,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 6,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7101",
+       "ownerId": 102,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "7101",
+       "ownerId": 102,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         },
+         {
+          "label": "Ludność",
+          "value": "−1 (straty zdobycia)",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "ludnosc_0",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 0,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 0,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 1,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+1",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "ludnosc_1",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 1,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 1,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 1,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+1",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "odbicie",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 4,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0,
+     "capturedFromOwnerId": 0
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 4,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true,
+       "capturedFromOwnerId": 0
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 4,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+4",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 12,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "garnizon_glod",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "8001",
+     "ownerId": 101,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "8002",
+     "ownerId": 101,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 4,
+     "r": 3,
+     "hp": 20
+    },
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    },
+    {
+     "id": "7002",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 44
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 20
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 44
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 21,
+       "hpMax": 22
+      },
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 19,
+       "hpMax": 22
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 44
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 20,
+       "hpMax": 22
+      },
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 18,
+       "hpMax": 22
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 44
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 19,
+       "hpMax": 22
+      },
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 17,
+       "hpMax": 22
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 44
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 18,
+       "hpMax": 22
+      },
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 16,
+       "hpMax": 22
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 44
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 17,
+       "hpMax": 22
+      },
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 15,
+       "hpMax": 22
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 44
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 16,
+       "hpMax": 22
+      },
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 14,
+       "hpMax": 22
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 44
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 15,
+       "hpMax": 22
+      },
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 13,
+       "hpMax": 22
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 44
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 14,
+       "hpMax": 22
+      },
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 12,
+       "hpMax": 22
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 44
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 13,
+       "hpMax": 22
+      },
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 11,
+       "hpMax": 22
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 44
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 12,
+       "hpMax": 22
+      },
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 10,
+       "hpMax": 22
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 16
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 16
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 16,
+        "wojnaMiasta": {
+         "od": 16,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 16
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-16-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 16
+       }
+      ],
+      "city": {
+       "capture-16-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         },
+         {
+          "label": "Ludność",
+          "value": "−1 (straty zdobycia)",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 4,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "garnizon_ginie",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "8001",
+     "ownerId": 101,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 4,
+     "r": 3,
+     "hp": 1
+    },
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 22
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 1
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         },
+         {
+          "label": "Ludność",
+          "value": "−1 (straty zdobycia)",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         },
+         {
+          "label": "Ludność",
+          "value": "−1 (straty zdobycia)",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         },
+         {
+          "label": "Ludność",
+          "value": "−1 (straty zdobycia)",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 3,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "garnizon_jeden_ginie",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "8001",
+     "ownerId": 101,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 4,
+     "r": 3,
+     "hp": 1
+    },
+    {
+     "id": "8002",
+     "ownerId": 101,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "8003",
+     "ownerId": 101,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 66
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 1
+      },
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "8003",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 66
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 21,
+       "hpMax": 22
+      },
+      {
+       "id": "8003",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 21,
+       "hpMax": 22
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 66
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 20,
+       "hpMax": 22
+      },
+      {
+       "id": "8003",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 20,
+       "hpMax": 22
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "obronca_hp_0",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "8001",
+     "ownerId": 101,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 4,
+     "r": 3,
+     "hp": 0
+    },
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 0
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         },
+         {
+          "label": "Ludność",
+          "value": "−1 (straty zdobycia)",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ],
+    [
+     0,
+     102
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "dwa_miasta",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city905",
+     "ownerId": 102,
+     "name": "M905",
+     "q": 9,
+     "r": 9,
+     "population": 5,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    },
+    {
+     "id": "7002",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 10,
+     "r": 9,
+     "oblegaCityId": "city905"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city905",
+       "ownerId": 102,
+       "population": 5,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 10,
+       "r": 9,
+       "oblegaCityId": "city905"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101",
+      "0_102"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity",
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city905",
+       "ownerId": 0,
+       "population": 4,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 102,
+       "foundedBy": 102,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 9,
+       "r": 9
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 2,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       102,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [
+      102
+     ],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city905-102-0",
+        "icon": "🏴",
+        "title": "ELIMINACJA: owner102",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       },
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         },
+         {
+          "label": "Ludność",
+          "value": "−1 (straty zdobycia)",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       },
+       "capture-6-city905-102-0": {
+        "title": "ELIMINACJA!",
+        "cityName": "M905",
+        "subtitle": "owner102 — ostatnie miasto przejęte, cywilizacja wyeliminowana",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+4",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "wejscie_zablokowane",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    },
+    {
+     "id": "7201",
+     "ownerId": 103,
+     "typeId": "Osadnik",
+     "category": "osadnik",
+     "q": 4,
+     "r": 3
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7201",
+       "ownerId": 103,
+       "typeId": "Osadnik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3
+      },
+      {
+       "id": "7201",
+       "ownerId": 103,
+       "typeId": "Osadnik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         },
+         {
+          "label": "Ludność",
+          "value": "−1 (straty zdobycia)",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "cywil_obroncy",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "8001",
+     "ownerId": 101,
+     "typeId": "Osadnik",
+     "category": "osadnik",
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Osadnik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         },
+         {
+          "label": "Ludność",
+          "value": "−1 (straty zdobycia)",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     900
+    ],
+    [
+     0,
+     950
+    ]
+   ],
+   "name": "stolica_przejecie",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city901",
+     "ownerId": 101,
+     "name": "M901",
+     "q": 9,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    },
+    {
+     "id": "city950",
+     "ownerId": 0,
+     "name": "M950",
+     "q": 0,
+     "r": 8,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "treasury": [
+    [
+     0,
+     5
+    ],
+    [
+     101,
+     40
+    ]
+   ],
+   "praca": [
+    [
+     0,
+     3
+    ],
+    [
+     101,
+     7
+    ]
+   ],
+   "techs": [
+    [
+     0,
+     [
+      "t_a"
+     ]
+    ],
+    [
+     101,
+     [
+      "t_a",
+      "t_b"
+     ]
+    ]
+   ],
+   "prod": {
+    "900": {
+     "kolejka": [
+      {
+       "kind": "budynek",
+       "id": "palac",
+       "nazwa": "palac",
+       "koszt": 50
+      },
+      {
+       "kind": "budynek",
+       "id": "stolarnia",
+       "nazwa": "stolarnia",
+       "koszt": 50,
+       "postep": 3
+      }
+     ],
+     "postep": 6
+    }
+   },
+   "units": [
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    },
+    {
+     "id": "7002",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city901",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      },
+      {
+       "id": "city950",
+       "ownerId": 0,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       0,
+       "city950"
+      ],
+      [
+       101,
+       "city900"
+      ]
+     ],
+     "treasury": [
+      [
+       0,
+       5
+      ],
+      [
+       101,
+       40
+      ]
+     ],
+     "praca": [
+      [
+       0,
+       3
+      ],
+      [
+       101,
+       7
+      ]
+     ],
+     "techs": [
+      [
+       0,
+       [
+        "t_a"
+       ]
+      ],
+      [
+       101,
+       [
+        "t_a",
+        "t_b"
+       ]
+      ]
+     ],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [
+      [
+       "city900",
+       {
+        "kolejka": [
+         {
+          "kind": "budynek",
+          "id": "palac",
+          "nazwa": "palac",
+          "koszt": 50
+         },
+         {
+          "kind": "budynek",
+          "id": "stolarnia",
+          "nazwa": "stolarnia",
+          "koszt": 50,
+          "postep": 3
+         }
+        ],
+        "postep": 6
+       }
+      ]
+     ],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "sanitizeBuildQueue",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city901",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      },
+      {
+       "id": "city950",
+       "ownerId": 0,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "7002",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       0,
+       "city950"
+      ],
+      [
+       101,
+       "city901"
+      ]
+     ],
+     "treasury": [
+      [
+       0,
+       45
+      ],
+      [
+       101,
+       0
+      ]
+     ],
+     "praca": [
+      [
+       0,
+       9
+      ],
+      [
+       101,
+       0
+      ]
+     ],
+     "techs": [
+      [
+       0,
+       [
+        "t_a"
+       ]
+      ],
+      [
+       101,
+       [
+        "t_a",
+        "t_b"
+       ]
+      ]
+     ],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [
+      [
+       "city900",
+       {
+        "kolejka": [
+         {
+          "kind": "budynek",
+          "id": "stolarnia",
+          "nazwa": "stolarnia",
+          "koszt": 50
+         }
+        ],
+        "postep": 3
+       }
+      ]
+     ],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Złoto ze skarbca: +40",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Złoto ze skarbca",
+          "value": "+40",
+          "tone": "gain",
+          "group": "lup"
+         },
+         {
+          "label": "Pula pracy",
+          "value": "przepadła — nie przechodzi na zdobywcę",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     905
+    ]
+   ],
+   "name": "stolica_gdzie_indziej",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city905",
+     "ownerId": 101,
+     "name": "M905",
+     "q": 9,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    },
+    {
+     "id": "city120",
+     "ownerId": 0,
+     "name": "M120",
+     "q": 0,
+     "r": 8,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "treasury": [
+    [
+     0,
+     5
+    ],
+    [
+     101,
+     40
+    ]
+   ],
+   "praca": [
+    [
+     0,
+     3
+    ],
+    [
+     101,
+     7
+    ]
+   ],
+   "prod": {
+    "900": {
+     "kolejka": [
+      {
+       "kind": "budynek",
+       "id": "stolarnia",
+       "nazwa": "stolarnia",
+       "koszt": 50
+      },
+      {
+       "kind": "budynek",
+       "id": "mennica",
+       "nazwa": "mennica",
+       "koszt": 50,
+       "postep": 4
+      }
+     ],
+     "postep": 2
+    }
+   },
+   "units": [
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city905",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      },
+      {
+       "id": "city120",
+       "ownerId": 0,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city905"
+      ]
+     ],
+     "treasury": [
+      [
+       0,
+       5
+      ],
+      [
+       101,
+       40
+      ]
+     ],
+     "praca": [
+      [
+       0,
+       3
+      ],
+      [
+       101,
+       7
+      ]
+     ],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [
+      [
+       "city900",
+       {
+        "kolejka": [
+         {
+          "kind": "budynek",
+          "id": "stolarnia",
+          "nazwa": "stolarnia",
+          "koszt": 50
+         },
+         {
+          "kind": "budynek",
+          "id": "mennica",
+          "nazwa": "mennica",
+          "koszt": 50,
+          "postep": 4
+         }
+        ],
+        "postep": 2
+       }
+      ]
+     ],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "sanitizeBuildQueue",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city905",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      },
+      {
+       "id": "city120",
+       "ownerId": 0,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city905"
+      ]
+     ],
+     "treasury": [
+      [
+       0,
+       5
+      ],
+      [
+       101,
+       40
+      ]
+     ],
+     "praca": [
+      [
+       0,
+       7
+      ],
+      [
+       101,
+       7
+      ]
+     ],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [
+      [
+       "city900",
+       {
+        "kolejka": [
+         {
+          "kind": "budynek",
+          "id": "stolarnia",
+          "nazwa": "stolarnia",
+          "koszt": 50
+         }
+        ],
+        "postep": 2
+       }
+      ]
+     ],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         },
+         {
+          "label": "Ludność",
+          "value": "−1 (straty zdobycia)",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "kolejka_nowa_stolica_gracza",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "praca": [
+    [
+     0,
+     3
+    ],
+    [
+     101,
+     7
+    ]
+   ],
+   "prod": {
+    "900": {
+     "kolejka": [
+      {
+       "kind": "budynek",
+       "id": "palac",
+       "nazwa": "palac",
+       "koszt": 50
+      },
+      {
+       "kind": "budynek",
+       "id": "stolarnia",
+       "nazwa": "stolarnia",
+       "koszt": 50,
+       "postep": 3
+      }
+     ],
+     "postep": 6
+    }
+   },
+   "units": [
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [
+      [
+       0,
+       3
+      ],
+      [
+       101,
+       7
+      ]
+     ],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [
+      [
+       "city900",
+       {
+        "kolejka": [
+         {
+          "kind": "budynek",
+          "id": "palac",
+          "nazwa": "palac",
+          "koszt": 50
+         },
+         {
+          "kind": "budynek",
+          "id": "stolarnia",
+          "nazwa": "stolarnia",
+          "koszt": 50,
+          "postep": 3
+         }
+        ],
+        "postep": 6
+       }
+      ]
+     ],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "sanitizeBuildQueue",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [
+      [
+       0,
+       3
+      ],
+      [
+       101,
+       7
+      ]
+     ],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [
+      [
+       "city900",
+       {
+        "kolejka": [
+         {
+          "kind": "budynek",
+          "id": "palac",
+          "nazwa": "palac",
+          "koszt": 50
+         },
+         {
+          "kind": "budynek",
+          "id": "stolarnia",
+          "nazwa": "stolarnia",
+          "koszt": 50,
+          "postep": 3
+         }
+        ],
+        "postep": 6
+       }
+      ]
+     ],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         },
+         {
+          "label": "Ludność",
+          "value": "−1 (straty zdobycia)",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     900
+    ],
+    [
+     0,
+     950
+    ]
+   ],
+   "name": "eliminacja",
+   "lostPower": {
+    "101": 228
+   },
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city950",
+     "ownerId": 0,
+     "name": "M950",
+     "q": 0,
+     "r": 8,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "treasury": [
+    [
+     0,
+     5
+    ],
+    [
+     101,
+     40
+    ]
+   ],
+   "praca": [
+    [
+     0,
+     3
+    ],
+    [
+     101,
+     7
+    ]
+   ],
+   "techs": [
+    [
+     0,
+     [
+      "t_a"
+     ]
+    ],
+    [
+     101,
+     [
+      "t_a",
+      "t_b"
+     ]
+    ]
+   ],
+   "units": [
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    },
+    {
+     "id": "8009",
+     "ownerId": 101,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 9,
+     "r": 8
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city950",
+       "ownerId": 0,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      },
+      {
+       "id": "8009",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 9,
+       "r": 8
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       0,
+       "city950"
+      ],
+      [
+       101,
+       "city900"
+      ]
+     ],
+     "treasury": [
+      [
+       0,
+       5
+      ],
+      [
+       101,
+       40
+      ]
+     ],
+     "praca": [
+      [
+       0,
+       3
+      ],
+      [
+       101,
+       7
+      ]
+     ],
+     "techs": [
+      [
+       0,
+       [
+        "t_a"
+       ]
+      ],
+      [
+       101,
+       [
+        "t_a",
+        "t_b"
+       ]
+      ]
+     ],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city950",
+       "ownerId": 0,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       0,
+       "city950"
+      ]
+     ],
+     "treasury": [
+      [
+       0,
+       45
+      ]
+     ],
+     "praca": [
+      [
+       0,
+       10
+      ]
+     ],
+     "techs": [
+      [
+       0,
+       [
+        "t_a",
+        "t_b"
+       ]
+      ]
+     ],
+     "war": [],
+     "pairMeta": [],
+     "eliminated": [
+      101
+     ],
+     "zdobycze": [
+      [
+       0,
+       228
+      ]
+     ],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏴",
+        "title": "ELIMINACJA: owner101",
+        "subtitle": "Złoto ze skarbca: +40 · Technologie: +1 · Moc: +228",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "ELIMINACJA!",
+        "cityName": "M900",
+        "subtitle": "owner101 — ostatnie miasto przejęte, cywilizacja wyeliminowana",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Złoto ze skarbca",
+          "value": "+40",
+          "tone": "gain",
+          "group": "lup"
+         },
+         {
+          "label": "Technologie",
+          "value": "+1",
+          "tone": "gain",
+          "group": "lup"
+         },
+         {
+          "label": "Moc",
+          "value": "+228",
+          "tone": "gain",
+          "group": "lup"
+         },
+         {
+          "label": "Pula pracy",
+          "value": "+7 — przejęta od wyeliminowanej cywilizacji",
+          "tone": "gain",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "obroncy_poza_heksem",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "8001",
+     "ownerId": 101,
+     "typeId": "Osadnik",
+     "category": "osadnik",
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "8002",
+     "ownerId": 101,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 3,
+     "r": 3
+    },
+    {
+     "id": "8003",
+     "ownerId": 101,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 8,
+     "r": 8
+    },
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Osadnik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 3,
+       "r": 3
+      },
+      {
+       "id": "8003",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 8,
+       "r": 8
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 3,
+       "r": 3
+      },
+      {
+       "id": "8003",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 8,
+       "r": 8
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         },
+         {
+          "label": "Ludność",
+          "value": "−1 (straty zdobycia)",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "capitals": [
+    [
+     101,
+     910
+    ]
+   ],
+   "name": "obcy_wojskowy_na_heksie",
+   "cities": [
+    {
+     "id": "city900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    },
+    {
+     "id": "city910",
+     "ownerId": 101,
+     "name": "M910",
+     "q": 0,
+     "r": 0,
+     "population": 3,
+     "oblegane": false
+    }
+   ],
+   "units": [
+    {
+     "id": "7301",
+     "ownerId": 103,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "city900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7301",
+       "ownerId": 103,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "city900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [],
+      "city": {},
+      "civElim": {}
+     }
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "city900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      },
+      {
+       "id": "city910",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7301",
+       "ownerId": 103,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "capitals": [
+      [
+       101,
+       "city910"
+      ]
+     ],
+     "treasury": [],
+     "praca": [],
+     "techs": [],
+     "war": [
+      "0_101"
+     ],
+     "pairMeta": [
+      [
+       "0_101",
+       {
+        "trustPnGainedThisTurn": 0,
+        "dobraWolaRemainingTur": 0,
+        "wojnaStartTura": 6,
+        "wojnaMiasta": {
+         "od": 6,
+         "utraty": {
+          "101": 1
+         },
+         "ostatniaTura": 6
+        }
+       }
+      ]
+     ],
+     "eliminated": [],
+     "zdobycze": [],
+     "cityProd": [],
+     "captureEvents": {
+      "warEventLog": [
+       {
+        "id": "capture-6-city900-101-0",
+        "icon": "🏰",
+        "title": "Zdobyto miasto: M900",
+        "subtitle": "Łup: brak",
+        "kind": "city",
+        "negative": false,
+        "turnCreated": 6
+       }
+      ],
+      "city": {
+       "capture-6-city900-101-0": {
+        "title": "Miasto zdobyte",
+        "cityName": "M900",
+        "subtitle": "Odebrane: owner101",
+        "rows": [
+         {
+          "label": "Ludność",
+          "value": "+2",
+          "tone": "gain",
+          "group": "przejete"
+         },
+         {
+          "label": "Łup",
+          "value": "brak",
+          "tone": "info",
+          "group": "lup"
+         },
+         {
+          "label": "Ludność",
+          "value": "−1 (straty zdobycia)",
+          "tone": "loss",
+          "group": "strata"
+         }
+        ],
+        "rowsTitle": "Bilans zdobycia"
+       }
+      },
+      "civElim": {}
+     }
+    }
+   ]
+  }
+ ],
+ "noCity": {
+  "log": [
+   "endMapSiege"
+  ],
+  "cities": [
+   {
+    "id": "city900",
+    "ownerId": 101,
+    "population": 3,
+    "oblegane": true,
+    "oblegajacyOwnerId": 0
+   }
+  ],
+  "units": [],
+  "everOwned": [],
+  "chronicle": [],
+  "capitals": [],
+  "treasury": [],
+  "praca": [],
+  "techs": [],
+  "war": [
+   "0_101"
+  ],
+  "pairMeta": [],
+  "eliminated": [],
+  "zdobycze": [],
+  "cityProd": [],
+  "captureEvents": {
+   "warEventLog": [],
+   "city": {},
+   "civElim": {}
+  }
+ }
+}
