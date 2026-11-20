@@ -70,6 +70,10 @@ Dane zrzutu (od właściciela): wpływy brutto 1550, utrzymanie budynków 786, u
 - Przykład z armią 10 × Brąz (5 Włócznik + 5 Procarz) przy Normalnym: utrzymanie 240 → netto **+524 ¤/turę** (1550 − 786 − 240).
 - Wrażliwość dla puli 376: współczynnik k = skala epoki × tempo (Normalny: Kamień ×2, Brąz ×4, Żelazo ×8). Jeśli cała pula 376 byłaby z jednej epoki, utrzymanie wyniesie 752 / 1504 / 3008, a netto odpowiednio **+12 / −740 / −2244**. To są skrajne przedziały, nie prognoza.
 
+Wniosek z tej sekcji: wynik netto **zależy od składu armii, którego nie znamy**. Przykład +524 dotyczy armii 10 jednostek, a nie armii ze zrzutu; dla puli 376 zebranej w całości w Brązie netto wynosi −740. Dane nie rozstrzygają, czy skarbiec jest ciasny.
+
+Zrzut sam w sobie: 1550 − 786 − 376 = 388, a panel podaje netto 345 (różnica 43 — NIE_ZMIERZONO).
+
 Racje obywateli (ZMIERZONO, `computeCityRationCost`, 1000 obywateli, poziom 2): Kamień 4000, Brąz 8000, Żelazo 16000 na turę.
 
 Cap Spichlerza centralnego (ZMIERZONO wzorem, e=2): dla zrzutu 10 Spichlerzy I i 11 II cap = 54 000. Dekompozycja NIE_ZMIERZONO.
@@ -83,9 +87,11 @@ Cap Spichlerza centralnego (ZMIERZONO wzorem, e=2): dla zrzutu 10 Spichlerzy I i
 | „Brak mnożnika tempa na utrzymaniu” | **Nieaktualne.** Tempo „Koszty jednostek” (×1/×2/×4) mnoży rekrutację i utrzymanie Pieniądz/surowce/żywność (FALA 887). |
 | Racje obywateli m(e) = 1+0,5(e−1) | **Nieaktualne przy fladze ON.** m(e) = 2^(e−1) (1/2/4). |
 | Skarbiec: netto 345, armia 376 bez składu | Nadal zgodne z zrzutem, ale **NIE_ZMIERZONO** w nowych wzorach. |
-| Wojsko żywności 312 (zrzut) | Nowe wzory dają 320 dla armii 10 × Brąz przy Normalnym (ZMIERZONO, ten sam rząd wielkości; moment zrzutu NIE_ZMIERZONO). |
+| Wojsko żywności 312 (zrzut) | **Porównanie nieporównywalne.** 312 to stare wzory: ok. 26 jednostek po 12/t. Nowe 320 to 10 jednostek Brąz po 32/t (założenie modelu). Ta sama armia 26 × Włócznik w nowych wzorach to ok. **832/t** (ZMIERZONO stawki, skład zrzutu NIE_ZMIERZONO). |
 | Rekrutacja: tylko Pieniądz × epoka | **Nieaktualne.** Dodatkowy mnożnik epoki (Brąz ×2, Żelazo ×4, FALA 884). |
-| Kurs żywność → Podatek | Wg dispatchu zmieniony na 0,2 (FALA 883) — poza zakresem modelu, NIE_ZMIERZONO w tej rundzie. |
+| Kurs żywność → Podatek | Wg dispatchu zmieniony na 0,2 (FALA 883). **ZMIERZONO:** odczyt z `gra/data/econ-params.json`, klucz `targowisko_zywnosc_na_podatek_kurs`, pole `normal` = 0,2. Poza zakresem modelu. |
+
+Spichlerz centralny (`food-granary-model.cjs`, ZMIERZONO wzorami, skład NIE_ZMIERZONO): racje zrzutu 1046 przeskalowane ze starego m=1,5 do m(2)=2 dają **1395/t**. Cap 54 000 jest osiągany w **16 tur** przy armii 10 × Brąz (netto 1648/t) albo w **22 tury** przy armii zrzutu w nowych wzorach 832/t (netto 1136/t). Warianty V0–V3 w modelu to propozycje, nie prognoza. Wcześniejsza wersja (13 tur, racje 1046, armia 312) była zawyżona.
 
 Stare dokumenty oznaczono nagłówkiem NIEAKTUALNE (edycja tylko nagłówka):
 - `dyspozycje/analizy/SKARBIEC-BRAZ-KOSZTY-JEDNOSTEK-OPTYMALIZACJA.md`
@@ -97,7 +103,7 @@ Stare dokumenty oznaczono nagłówkiem NIEAKTUALNE (edycja tylko nagłówka):
 - A) Nie zmieniać; najpierw zmierzyć skład armii w żywej grze (VERIFY-LIVE, #38).
 - B) Obniżyć domyślne tempo kosztów jednostek do Niskiego dla Brązu.
 - C) Obniżyć mnożnik utrzymania Pieniądz (np. ×2 zamiast ×4 R_STAWKI) tylko dla Brązu.
-- **Rekomendacja: A.** Dla armii 10 jednostek netto wynosi +524 ¤/turę, czyli skarbiec nie jest ciasny. Ryzyko pojawia się tylko, gdy armia jest duża i z Żelaza albo z Brązu w całości (sekcja 4). Skład armii w zrzucie NIE_ZMIERZONO, więc decyzja powinna czekać na pomiar.
+- **Rekomendacja: A.** Powód: dane nie pozwalają rozstrzygnąć, czy skarbiec jest ciasny. Dla armii 10 × Brąz netto wynosi +524 ¤/turę, ale dla puli utrzymania 376 w całości z Brązu netto wynosi −740 (sekcja 4). Skład armii w zrzucie NIE_ZMIERZONO, więc pomiar (VERIFY-LIVE, #38) jest konieczny przed jakąkolwiek zmianą. Nie twierdzimy, że skarbiec nie jest ciasny.
 
 **B. Czy żywność Falangi poza terytorium (512 przy Wysokim) jest akceptowalna?**
 - A) Tak; kara ×2 poza terytorium ma zniechęcać do marszu.

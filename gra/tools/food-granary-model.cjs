@@ -37,6 +37,12 @@ const UNITS_PATH = path.join(GRA_ROOT, 'data', 'units.json');
 
 const SNAP = { zapas: 29086, produkcja: 3363, wyzywienie: 1046, wojsko: 312, epoka: 2, nI: 10, nII: 11 };
 const ARMY_BY_ERA_10 = [['Włócznik', 5], ['Procarz', 5]]; // założony skład 10 jednostek Brąz (jak w treasury-unit-cost-model.cjs)
+// Stary mnożnik racji w zrzucie: m(e)=1+0,5(e-1) przy e=2 → 1,5. Nowy przy fladze ON: m(2)=2 (ZMIERZONO w kodzie).
+const OLD_RATION_M_E2 = 1.5;
+// Armia z zrzutu (312) liczona starym wzorem: 26 jednostek po 12/t (26 × 12 = 312). Ten sam rząd wielkości w nowych wzorach:
+// 26 × Włócznik Brąz own Normalny (32/t) = 832/t. Skład zrzutu NIE_ZMIERZONO — to tylko założenie porównawcze.
+const DUMP_ARMY_UNITS_OLD = 26;
+const DUMP_ARMY_NEW_PER_UNIT_BRAZ = 32;
 
 function loadRealGame() {
   const esbuild = require(path.join(GRA_ROOT, 'node_modules', 'esbuild'));
@@ -131,32 +137,38 @@ function section3() {
   console.log('== 3. Spichlerz centralny, Brąz (e=2) — punkt wyjścia z zrzutu, armia i racje z sekcji 1–2 ==');
   const cap = capFor({ nI: SNAP.nI, nII: SNAP.nII, e: SNAP.epoka });
   const armyNow = armyFood(ARMY_BY_ERA_10, 'normalny', true);
-  // Wyżywienie zrzutu (1046) przyjęte bez przeliczania: skład populacji miast NIE_ZMIERZONO.
-  const consNow = SNAP.wyzywienie;
+  const armyDump = DUMP_ARMY_UNITS_OLD * DUMP_ARMY_NEW_PER_UNIT_BRAZ;
+  // Racje zrzutu przeskalowane ze starego m(e)=1,5 do nowego m(2) z kodu (ZMIERZONO m, NIE_ZMIERZONO skład populacji).
+  const mNow = G.citizenConsumptionEraMultiplier(SNAP.epoka);
+  const consNow = Math.round(SNAP.wyzywienie * mNow / OLD_RATION_M_E2);
   console.log(`cap (10 I + 11 II, e=2) = ${cap}  (zrzut: 54000; dekompozycja NIE_ZMIERZONO)`);
-  console.log(`armia 10 × Brąz (Włócznik+Procarz) żywność/t, Normalny, own = ${armyNow}  (zrzut „wojsko” ${SNAP.wojsko}; moment zrzutu NIE_ZMIERZONO)`);
-  console.log(`wyżywienie w zrzucie ${SNAP.wyzywienie} — zakładane bez zmiany (skala m(e) NIE_ZMIERZONO względem stanu zrzutu)`);
-  console.log(`netto/t przy zrzucie ${SNAP.produkcja} − ${SNAP.wyzywienie} − ${SNAP.wojsko} = ${SNAP.produkcja - SNAP.wyzywienie - SNAP.wojsko}; przy armii real ${Math.round(SNAP.produkcja - SNAP.wyzywienie - armyNow)}`);
-  console.log(`tury do capu (zrzut armii): ${Math.ceil((cap - SNAP.zapas) / (SNAP.produkcja - SNAP.wyzywienie - SNAP.wojsko))}`);
-  console.log(`(stała konsumpcja racji użyta w symulacji: ${Math.round(consNow)})`);
-  return { cap, armyNow, consNow };
+  console.log(`armia 10 × Brąz (Włócznik+Procarz) żywność/t, Normalny, own = ${armyNow}  (zrzut „wojsko” ${SNAP.wojsko} w starych wzorach; moment zrzutu NIE_ZMIERZONO)`);
+  console.log(`armia zrzutu w nowych wzorach (26 × Włócznik Brąz own Normalny) = ${armyDump}  (NIE_ZMIERZONO: skład zrzutu nieznany)`);
+  console.log(`wyżywienie: zrzut ${SNAP.wyzywienie} × m(2)=${mNow} / 1,5 (stare m) = ${consNow}/t  (ZMIERZONO m; skład populacji NIE_ZMIERZONO)`);
+  console.log(`netto/t w zrzucie (stare wzory) ${SNAP.produkcja} − ${SNAP.wyzywienie} − ${SNAP.wojsko} = ${SNAP.produkcja - SNAP.wyzywienie - SNAP.wojsko}`);
+  console.log(`netto/t po przeskalowaniu: armia 10 × Brąz = ${Math.round(SNAP.produkcja - consNow - armyNow)}; armia zrzutu = ${Math.round(SNAP.produkcja - consNow - armyDump)}`);
+  console.log(`tury do capu (netto zrzutu, stare wzory): ${Math.ceil((cap - SNAP.zapas) / (SNAP.produkcja - SNAP.wyzywienie - SNAP.wojsko))}`);
+  console.log(`(stała konsumpcja racji użyta w symulacji: ${consNow}/t)`);
+  return { cap, armies: [['10 × Brąz (założony skład)', armyNow], ['armia zrzutu (26 × Włócznik, NIE_ZMIERZONO)', armyDump]], consNow };
 }
 
 function section4(ctx) {
   console.log('');
   console.log('== 4. Warianty do decyzji (PROPOZYCJE, 60 tur) ==');
-  const { cap, armyNow, consNow } = ctx;
+  const { cap, armies, consNow } = ctx;
   const variants = [
-    ['V0 obecnie (produkcja zrzutu, armia real)', {}],
+    ['V0 bez zmian produkcji (produkcja zrzutu 3363/t)', {}],
     ['V1 ostrożny: produkcja ulepszeń −10%', { prodMult: 0.9 }],
     ['V2 średni: produkcja −20% + psucie 2%/t nad 50% capu', { prodMult: 0.8, decayRate: 0.02, decayFrom: 0.5 }],
     ['V3 mocny: produkcja −30% + konwersja 0,2 ¤/żyw. nad 70% capu', { prodMult: 0.7, convRate: 0.2, convFrom: 0.7 }],
   ];
-  console.log('| wariant | zapas po 60 t | pierwsza tura przy capie | przepadek (suma) | ¤ z konwersji | netto/t przed psuciem |');
-  console.log('| --- | --- | --- | --- | --- | --- |');
-  for (const [label, v] of variants) {
-    const r = simulate({ cap, army: armyNow, cons: consNow, ...v });
-    console.log(`| ${label} | ${r.stockEnd} | ${r.fullTurn ?? '—'} | ${r.wastedTotal} | ${r.goldTotal} | ${r.netPerTurn} |`);
+  console.log('| armia | wariant | zapas po 60 t | pierwsza tura przy capie | przepadek (suma) | ¤ z konwersji | netto/t przed psuciem |');
+  console.log('| --- | --- | --- | --- | --- | --- | --- |');
+  for (const [armyLabel, armyVal] of armies) {
+    for (const [label, v] of variants) {
+      const r = simulate({ cap, army: armyVal, cons: consNow, ...v });
+      console.log(`| ${armyLabel} | ${label} | ${r.stockEnd} | ${r.fullTurn ?? '—'} | ${r.wastedTotal} | ${r.goldTotal} | ${r.netPerTurn} |`);
+    }
   }
   console.log('');
   console.log('Uwaga: psucie „2%/t nad 50% capu” NIE zatrzymuje wzrostu przy capie (stacjonarny zapas > cap); skutek tylko przy niższej produkcji.');
