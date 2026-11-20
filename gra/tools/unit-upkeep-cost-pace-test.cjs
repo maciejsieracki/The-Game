@@ -167,6 +167,65 @@ check('militaryFoodConsumption sumuje z tempem (wojsko na 2 terytoriach)', () =>
   assert.equal(normalny, niski * 2);
 });
 
+console.log('-- Karty jednostek = wartość silnika (zarzut Evaluatora 1) --');
+for (const s of SAMPLES) {
+  for (const [pace, mult] of PACES) {
+    check(`${s.name} karta „Utrzymanie Pieniądza/turę” ${pace} = unitUpkeep (${s.pieniadz * mult})`, () => {
+      assert.equal(M.unitPieniadzUpkeepCardValue(row(s.name), pace), s.pieniadz * mult);
+    });
+    check(`${s.name} karta „Utrzymanie surowca/turę” ${pace} = unitResourceUpkeep`, () => {
+      const expected = Object.values(s.surowiec)[0] * mult;
+      assert.equal(M.unitResourceUpkeepCardAmount(row(s.name), pace), expected);
+    });
+  }
+}
+check('karta bez liczby Pieniądza zwraca surową wartość (brak wiersza, nie NaN)', () => {
+  assert.equal(M.unitPieniadzUpkeepCardValue({ Jednostka: 'X', 'Utrzymanie (Pieniądz/turę)': undefined }, 'wysoki'), undefined);
+  assert.equal(M.unitResourceUpkeepCardAmount({}, 'wysoki'), null);
+});
+
+console.log('-- Okablowanie: każde wywołanie silnika w main.ts i UI niesie tempo (zarzut Evaluatora 3) --');
+{
+  const PACE_FNS = ['unitUpkeep', 'totalUnitUpkeep', 'unitResourceUpkeep', 'totalUnitResourceUpkeep',
+    'previewOwnerTotalResourceUpkeep', 'unitRecruitUpkeepReserve', 'upkeepBalance', 'unitFoodPerTurn',
+    'militaryFoodConsumption', 'militaryFoodConsumptionWithSpichlerz', 'advanceEmpireFood', 'advanceCityEconomy'];
+  const WIRED_FILES = ['src/main.ts', 'src/game/ai.ts', 'src/game/no-negative-stocks.ts', 'src/game/empire-food.ts',
+    'src/ui/cityPanel.ts', 'src/ui/unitInfoCard.ts', 'src/ui/entityCards/unitAdapter.ts'];
+  // Wywołania w turn-economy.ts (advanceCityEconomy w forecastNextTurnProduction) celowo bez tempa:
+  // prognoza produkcji, nie utrzymanie (Evaluator: poza zakresem). Tu skanujemy tylko pliki konsumenckie.
+  const callText = (src, start) => {
+    let depth = 0;
+    for (let i = start; i < src.length; i++) {
+      if (src[i] === '(') depth++;
+      else if (src[i] === ')') { depth--; if (depth === 0) return src.slice(start, i + 1); }
+    }
+    return src.slice(start);
+  };
+  const missing = [];
+  let calls = 0;
+  for (const rel of WIRED_FILES) {
+    const src = fs.readFileSync(path.join(GRA_ROOT, rel), 'utf8');
+    for (const fn of PACE_FNS) {
+      const re = new RegExp(`(^|[^\\w.$])${fn}\\s*\\(`, 'gm');
+      let m;
+      while ((m = re.exec(src))) {
+        const line = src.slice(src.lastIndexOf('\n', m.index) + 1, src.indexOf('\n', m.index));
+        if (/^\s*(export\s+)?function\s/.test(line) || /^\s*\*|^\s*\/\//.test(line)) continue;
+        const startParen = m.index + m[0].length - 1;
+        const text = callText(src, startParen);
+        calls++;
+        if (!/kosztJednostekPace/.test(text) && !/Pace\b/.test(text)) {
+          missing.push(`${rel}:${src.slice(0, m.index).split('\n').length} ${fn}`);
+        }
+      }
+    }
+  }
+  check(`wszystkie wywołania silnika utrzymania w ${calls} miejscach niosą tempo`, () => {
+    assert.ok(calls > 20, `za mało wywołań do skanu: ${calls}`);
+    assert.deepEqual(missing, [], `bez tempa: ${missing.join('; ')}`);
+  });
+}
+
 console.log('-- Stare wywołania i zapisy (brak parametru = Niski) --');
 check('domyślny parametr = Niski (wartości sprzed zmiany)', () => {
   for (const s of SAMPLES) {

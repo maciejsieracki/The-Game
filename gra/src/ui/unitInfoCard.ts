@@ -33,7 +33,7 @@ import { unitInfographicLabel, unitInfographicMedallionHtml } from './unitInfogr
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
 import { unitEngineStats } from './unitEngineStats';
 import { isPiercingShotShooter } from '../game/combat';
-import { unitFoodCardValue } from '../game/economy-upkeep';
+import { unitFoodCardValue, unitPieniadzUpkeepCardValue, unitResourceUpkeepCardAmount } from '../game/economy-upkeep';
 import { biezacyKosztJednostekPace } from '../game/unit-cost-tempo';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
@@ -312,11 +312,12 @@ function _legacyBuildUnitInfoCard(
   appendRow(economy, 'Koszt Pieniądza', unit['Pieniądz (koszt)']);
   appendRow(economy, 'Koszt surowca', hasValue(unit.Surowiec)
     ? `${text(unit.Surowiec)} × ${text(unit['Surowiec (ilość)'])}` : null);
-  appendRow(economy, 'Utrzymanie Pieniądza/turę', unit['Utrzymanie (Pieniądz/turę)']);
+  const pace = biezacyKosztJednostekPace();
+  appendRow(economy, 'Utrzymanie Pieniądza/turę', unitPieniadzUpkeepCardValue(unit, pace));
   appendRow(economy, 'Utrzymanie surowca/turę', hasValue(unit['Utrzymanie surowiec'])
-    ? `${text(unit['Utrzymanie surowiec'])} × ${text(unit['Utrzymanie surowiec (ilość)'])}` : null);
+    ? `${text(unit['Utrzymanie surowiec'])} × ${text(unitResourceUpkeepCardAmount(unit, pace) ?? unit['Utrzymanie surowiec (ilość)'])}` : null);
   appendRow(economy, 'Ludność', unit.Ludność);
-  appendRow(economy, 'Żywność/turę', unitFoodCardValue(unit, biezacyKosztJednostekPace()));
+  appendRow(economy, 'Żywność/turę', unitFoodCardValue(unit, pace));
   commitSection(card, economy);
 
   const requirements = appendSection('Wymagania i kontry');

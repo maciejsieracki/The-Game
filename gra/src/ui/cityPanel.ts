@@ -228,6 +228,7 @@ import {
   readBuildingResourceUpkeepRatio,
   addResourceCosts,
   unitResourceUpkeep,
+  unitPieniadzUpkeepCardValue,
   canAffordUnitRecruitStock,
   isUnitRecruitStockChipMissing,
 } from '../game/economy-upkeep';
@@ -8277,8 +8278,9 @@ function _legacyBuildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement 
   appendDetailSection(card, 'Ekonomia');
   const gEco = appendDetailGrid(card);
   gridDetailRow(gEco, 'Koszt rekrutacji', u['Pieniądz (koszt)'] != null ? `${u['Pieniądz (koszt)']} 💰` : null);
-  gridDetailRow(gEco, 'Utrzymanie', u['Utrzymanie (Pieniądz/turę)'] != null
-    ? `${u['Utrzymanie (Pieniądz/turę)']} ${cityPanelChipIconWrap('res-treasury', 14)}`
+  const pieniadzUtrzymanie = unitPieniadzUpkeepCardValue(u, biezacyKosztJednostekPace());
+  gridDetailRow(gEco, 'Utrzymanie', pieniadzUtrzymanie != null
+    ? `${pieniadzUtrzymanie} ${cityPanelChipIconWrap('res-treasury', 14)}`
     : null);
   const resUpkeep = unitResourceUpkeep(u, biezacyKosztJednostekPace());
   const resUpkeepKeys = Object.keys(resUpkeep);

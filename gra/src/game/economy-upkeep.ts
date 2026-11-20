@@ -1224,6 +1224,38 @@ export function unitFoodCardValue(unit: {
 }
 
 /**
+ * R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1 (zarzut Evaluatora 1): wartość „Utrzymanie Pieniądza/turę"
+ * do KART jednostek = ta sama liczba co silnik (unitUpkeep: tabela × R_STAWKI × tempo), z tą samą
+ * kategorią co main.ts (u.category ?? Kategoria ?? 'domyslny'). Brak liczby = zwrot surowej wartości.
+ */
+export function unitPieniadzUpkeepCardValue(unit: {
+  readonly Jednostka?: unknown;
+  readonly Kategoria?: unknown;
+  readonly Epoka?: unknown;
+  readonly 'Utrzymanie (Pieniądz/turę)'?: unknown;
+}, kosztJednostekPace: KosztJednostekPace | number = 'niski'): unknown {
+  const raw = unit['Utrzymanie (Pieniądz/turę)'];
+  const id = unit.Jednostka;
+  if (typeof raw !== 'number' || !Number.isFinite(raw) || typeof id !== 'string' || id.length === 0) return raw;
+  const kategoria = typeof unit.Kategoria === 'string' && unit.Kategoria.length > 0 ? unit.Kategoria : 'domyslny';
+  // Ta sama ścieżka co silnik: buildUnitUpkeepTable (skala epoki) -> unitUpkeep (×4 × tempo).
+  const table = buildUnitUpkeepTable([{ Jednostka: id, Epoka: unit.Epoka, 'Utrzymanie (Pieniadz/ture)': raw }]);
+  return unitUpkeep({ typeId: id, category: kategoria }, table, 0, kosztJednostekPace);
+}
+
+/**
+ * R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1 (zarzut Evaluatora 1): ilość surowca utrzymania do KART
+ * jednostek = wartość unitResourceUpkeep (epoka × tempo). Null gdy silnik nie liczy surowca.
+ */
+export function unitResourceUpkeepCardAmount(
+  unit: UnitResourceUpkeepSource | null | undefined,
+  kosztJednostekPace: KosztJednostekPace | number = 'niski',
+): number | null {
+  const vals = Object.values(unitResourceUpkeep(unit, kosztJednostekPace));
+  return vals.length > 0 ? (vals[0] ?? null) : null;
+}
+
+/**
  * R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: surowe wartości (units.json) per tabela, żeby flaga rebalansu
  * była czytana przy KAŻDYM wywołaniu (nie zapiekana przy budowie tabeli). Tabela zostaje Record<string, number>.
  */

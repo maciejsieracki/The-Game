@@ -44,7 +44,7 @@ import { unitEngineStats } from '../unitEngineStats';
 import { resolveTechnologyRow, resolveUnitRow, technologyIdFromName, unitToSlug } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
 import { resourcesFromList, yieldValueFields } from './resourceRows';
-import { unitFoodCardValue } from '../../game/economy-upkeep';
+import { unitFoodCardValue, unitPieniadzUpkeepCardValue, unitResourceUpkeepCardAmount } from '../../game/economy-upkeep';
 import { biezacyKosztJednostekPace } from '../../game/unit-cost-tempo';
 
 const COUNTERS = countersData as unknown as CounterDef[];
@@ -300,8 +300,9 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
   sections.push({ key: 'cost-recruit', title: 'Koszt rekrutacji', rows: recruitRows });
 
   const upkeepRows: EntityCardRow[] = [
-    { label: 'Utrzymanie Pieniądza/turę', ...yieldRowIfValue('pieniadz', text(unit['Utrzymanie (Pieniądz/turę)'])) },
-    unitResourceRow('Utrzymanie surowca/turę', unit['Utrzymanie surowiec'], unit['Utrzymanie surowiec (ilość)']),
+    { label: 'Utrzymanie Pieniądza/turę', ...yieldRowIfValue('pieniadz', text(unitPieniadzUpkeepCardValue(unit, biezacyKosztJednostekPace()))) },
+    unitResourceRow('Utrzymanie surowca/turę', unit['Utrzymanie surowiec'],
+      unitResourceUpkeepCardAmount(unit, biezacyKosztJednostekPace()) ?? unit['Utrzymanie surowiec (ilość)']),
     { label: 'Żywność/turę', ...yieldRowIfValue('zywnosc', text(unitFoodCardValue(unit, biezacyKosztJednostekPace()))) },
   ].filter((r) => hasValue(r.value) || (r.resources?.length ?? 0) > 0);
   sections.push({ key: 'cost-upkeep', title: 'Utrzymanie', rows: upkeepRows });
