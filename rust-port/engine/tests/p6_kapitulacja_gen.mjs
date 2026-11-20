@@ -287,6 +287,11 @@ const scenarios = [
     units: [unit('7001', 0, 5, 3, { oblegaCityId: '900' })] }),
   // AI-AI.
   base({ name: 'ai_ai', war: [[101, 102]], cities: [city('900', 101, 4, 3, { oblegajacyOwnerId: 102 })], units: [unit('7101', 102, 5, 3, { oblegaCityId: '900' })] }),
+  // W4: `oblegajacyOwnerId` bez sasiedniej jednostki (armia 2 heksy od miasta) - przejecie i wejscie stosu.
+  base({ name: 'oblegajacy_bez_sasiada', cities: [city('900', 101, 4, 3, { oblegajacyOwnerId: 0 })],
+    units: [unit('7001', 0, 6, 3, { oblegaCityId: '900' }), unit('7002', 0, 6, 3, { oblegaCityId: '900' }), unit('7101', 102, 5, 3)] }),
+  // Ludnosc 0: `applyCapturePopulationLoss` bez straty, potem `Math.max(1, population)`.
+  base({ name: 'ludnosc_0', cities: [city('900', 101, 4, 3, { oblegajacyOwnerId: 0, population: 0 })], units: [unit('7001', 0, 5, 3, { oblegaCityId: '900' })] }),
   // Ludnosc 1: brak straty (max(1)).
   base({ name: 'ludnosc_1', cities: [city('900', 101, 4, 3, { oblegajacyOwnerId: 0, population: 1 })], units: [unit('7001', 0, 5, 3, { oblegaCityId: '900' })] }),
   // Odbicie: capturedFromOwnerId === newOwner -> brak straty.

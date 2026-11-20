@@ -363,7 +363,7 @@ fn vectors_guard_pin_and_params() {
             "glodWojskaHpFrac {key}"
         );
     }
-    assert_eq!(v["tickCases"].as_array().map(Vec::len), Some(14));
+    assert_eq!(v["tickCases"].as_array().map(Vec::len), Some(16));
 }
 
 #[test]
