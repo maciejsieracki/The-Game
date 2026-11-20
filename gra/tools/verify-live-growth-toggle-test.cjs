@@ -180,4 +180,66 @@ main({
     base: 'econ-era-rebalance-params.json',
     mutate: (o) => { o.przychodyUlepszenStałeEpoka1 = false; return o; },
   }],
-}).catch(e => { console.error('FAIL', e.message); process.exit(1); });
+}).then(() => liveMain()).catch(e => { console.error('FAIL', e.message); process.exit(1); });
+
+// ---- ŻYWA GRA (R-WEB-VERIFY-LIVE-B2): prawdziwy build gry z ?civTest=1 (esbuild, poza repo); start REALNYM
+// doStartGame przez hak window.__settingsLive.startNewGame (ta sama funkcja co „Start” kreatora).
+// Tu: wiazanie ustawienia „Wzrost surowców z epoką” przez start + round-trip zapisu (saveRoundTrip = persistSaveToSlot + loadGameFromSlot).
+// NIE ZMIERZONO na żywej grze: plon ulepszenia WŁ./WYŁ. (hak nie wystawia plonu; jest tylko odczyt flagi).
+const LIVE_TOOL = path.join(GRA, 'tools', 'test-hook-setcitylimit-live-bundle.cjs');
+const LIVE_OUT = path.join(WORK, 'live');
+const LIVE_PARAMS = (advanced) => ({
+  civId: 'rzymianie', civName: 'Rzymianie', epoch: 'Epoka Brązu', epochId: 'braz', difficulty: 'Normalny',
+  mapSize: 'Maly', rivals: '2', speed: 'Normalna', worldType: 'Kontynenty', typSwiata: 'kontynenty', seed: 778899,
+  mapQualityLabel: 'Wysoka', mapQuality: 'high', renderQualityLabel: 'Wysoka', mapDetailQualityLabel: 'Wysoka',
+  renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: 4, cityStatesCount: 2,
+  worldDensityLabels: { resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie', forest: 'Normalnie', relief: 'Normalnie' },
+  advanced: {
+    barbariansLevel: 'normalny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
+    wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki', landFractionPercent: 30, landFractionCustom: false,
+    cityStateDifficultyOverride: 'normal', cityLimitBase: 10, ...advanced,
+  },
+  villageRewardsEnabled: true,
+});
+function buildLiveGame() {
+  fs.mkdirSync(LIVE_OUT, { recursive: true });
+  execFileSync('node', [LIVE_TOOL, LIVE_OUT], { cwd: GRA, stdio: 'pipe', timeout: 500000 });
+  return path.join(LIVE_OUT, 'Gra-LIVE.html');
+}
+async function liveStart(browser, html, advanced) {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto('file://' + html + '?civTest=1', { waitUntil: 'load', timeout: 120000 });
+  await page.waitForFunction(() => !!window.__settingsLive, null, { timeout: 60000 });
+  await page.evaluate((p) => window.__settingsLive.startNewGame(p), LIVE_PARAMS(advanced));
+  await page.waitForTimeout(8000);
+  return { context, page, errors };
+}
+async function liveMain() {
+  const browser = await chromium.launch({ headless: true, executablePath: resolveChromePath() || '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+  try {
+    const html = buildLiveGame();
+    for (const wz of [false, true]) {
+      const s = await liveStart(browser, html, { wzrostSurowcowZEpoka: wz });
+      const st = await s.page.evaluate(() => window.__settingsLive.getSettings());
+      assert.deepEqual(s.errors, [], `brak pageerror (wz=${wz})`);
+      assert.equal(st.wzrostSurowcowZEpoka, wz, `start z Wzrost surowców z epoką = ${wz}`);
+      await s.context.close();
+    }
+    const s = await liveStart(browser, html, { wzrostSurowcowZEpoka: true, kosztJednostekPace: 'wysoki', diplomacyWarLevel: 'trudna' });
+    const rt = await s.page.evaluate(() => window.__settingsLive.saveRoundTrip());
+    assert.deepEqual(s.errors, [], 'brak pageerror (round-trip)');
+    assert.equal(rt.saved, true, 'zapis do slotu zakonczony ok');
+    assert.equal(rt.before.wzrostSurowcowZEpoka, true, 'przed zapisem: Wzrost WŁ.');
+    assert.equal(rt.before.kosztJednostekPace, 'wysoki', 'przed zapisem: Koszty jednostek Wysoki');
+    assert.equal(rt.before.diplomacyWarLevel, 'trudna', 'przed zapisem: Dyplomacja Trudna');
+    assert.deepEqual(rt.after, rt.before, 'round-trip: ustawienia po wczytaniu = przed zapisem');
+    await s.context.close();
+    console.log('ZYWA GRA ZIELONA (start wz x2, round-trip zapisu)');
+    console.log(JSON.stringify({ roundTrip: rt }));
+  } finally {
+    await browser.close();
+  }
+}

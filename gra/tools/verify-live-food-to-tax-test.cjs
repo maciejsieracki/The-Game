@@ -178,4 +178,51 @@ main({
     base: 'econ-params.json',
     mutate: (o) => { o.budynki.targowisko_zywnosc_na_podatek_kurs.normal = 0.5; return o; },
   }],
-}).catch(e => { console.error('FAIL', e.message); process.exit(1); });
+}).then(() => liveMain()).catch(e => { console.error('FAIL', e.message); process.exit(1); });
+
+// ---- ŻYWA GRA (R-WEB-VERIFY-LIVE-B2): start REALNYM doStartGame (hak __settingsLive). Odczyt: convertFoodToTax =
+// realne resolveFoodTaxRate (kurs z gra/data/econ-params.json, poziom trudności gry) + realne convertFoodReserveToTax
+// + realna bramka ownerCanConvertWorkToTax (gra/src/game/work-tax.ts: wymaga miasta właściciela z „targowisko").
+// W świeżej grze nie ma Targowiska, więc bramka jest ZAMKNIĘTA: oczekiwane enabled=false, zero zamiany.
+// NIE ZMIERZONO na żywej grze: zamiana 100 -> 20 (wymagałaby zbudowanego Targowiska; hak nie buduje budynków).
+const LIVE_TOOL = path.join(GRA, 'tools', 'test-hook-setcitylimit-live-bundle.cjs');
+const LIVE_OUT = path.join(WORK, 'live');
+const LIVE_PARAMS = () => ({
+  civId: 'rzymianie', civName: 'Rzymianie', epoch: 'Epoka Brązu', epochId: 'braz', difficulty: 'Normalny',
+  mapSize: 'Maly', rivals: '2', speed: 'Normalna', worldType: 'Kontynenty', typSwiata: 'kontynenty', seed: 778899,
+  mapQualityLabel: 'Wysoka', mapQuality: 'high', renderQualityLabel: 'Wysoka', mapDetailQualityLabel: 'Wysoka',
+  renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: 4, cityStatesCount: 2,
+  worldDensityLabels: { resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie', forest: 'Normalnie', relief: 'Normalnie' },
+  advanced: {
+    barbariansLevel: 'normalny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
+    kosztJednostekPace: 'niski', wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki', landFractionPercent: 30,
+    landFractionCustom: false, cityStateDifficultyOverride: 'normal', cityLimitBase: 10,
+  },
+  villageRewardsEnabled: true,
+});
+async function liveMain() {
+  fs.mkdirSync(LIVE_OUT, { recursive: true });
+  execFileSync('node', [LIVE_TOOL, LIVE_OUT], { cwd: GRA, stdio: 'pipe', timeout: 500000 });
+  const html = path.join(LIVE_OUT, 'Gra-LIVE.html');
+  const browser = await chromium.launch({ headless: true, executablePath: resolveChromePath() || '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+  try {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const errors = [];
+    page.on('pageerror', e => errors.push(e.message));
+    await page.goto('file://' + html + '?civTest=1', { waitUntil: 'load', timeout: 120000 });
+    await page.waitForFunction(() => !!window.__settingsLive, null, { timeout: 60000 });
+    await page.evaluate((p) => window.__settingsLive.startNewGame(p), LIVE_PARAMS());
+    await page.waitForTimeout(8000);
+    const r = await page.evaluate(() => window.__settingsLive.convertFoodToTax(0, 100, 100));
+    assert.deepEqual(errors, [], 'brak pageerror');
+    assert.equal(r.rate, RATES_DATA.normal, 'kurs zamiany z gra/data (poziom Normalny)');
+    assert.equal(r.enabled, false, 'bramka zamiany zamknieta bez Targowiska (work-tax.ts)');
+    assert.equal(r.foodSpent, 0, 'bez Targowiska zero zamiany');
+    assert.equal(r.taxGained, 0, 'bez Targowiska zero podatku');
+    console.log('ZYWA GRA ZIELONA (kurs z danych, bramka zamknieta bez Targowiska)');
+    console.log(JSON.stringify(r));
+  } finally {
+    await browser.close();
+  }
+}

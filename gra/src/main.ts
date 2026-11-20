@@ -1240,12 +1240,13 @@ import { decideEndTurnGate, projectEmpireFoodAfterTick, type NnsEndTurnLevers, t
 import { unitUpkeep, unitFoodPerTurn, loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, addResourceCosts, readBuildingResourceUpkeepRatio, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { setKosztJednostekPaceResolver, applyUnitCostPace, type KosztJednostekPace } from './game/unit-cost-tempo';
 // R-WEB-VERIFY-LIVE-B2-CIVTEST-HOOK-AND-WIZARD-Q1: importy wyłącznie dla haka __settingsLive (?civTest=1).
-import { getDiplomacyWarLevel } from './game/diplomacy-war-level';
+import { getDiplomacyWarLevel, scalePenaltyForWarLevel, scaleBonusForWarLevel } from './game/diplomacy-war-level';
 import { unitRecruitBaseMoneyCost } from './game/production';
 import { unitFoodCardValue as unitFoodCardValueLive } from './game/economy-upkeep';
-import { scaleTerrainImprovementWorkCostForOwner } from './game/terrain-improvements';
+import { scaleTerrainImprovementWorkCostForOwner, baseKosztPracaUlepszenia } from './game/terrain-improvements';
 import { convertFoodReserveToTax } from './game/empire-food';
 import unitsDataLive from '../data/units.json';
+import terrainImprovementsLive from '../data/terrain-improvements.json';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
 import { getCityResourceAccessForCity, getResourceAccessForCity } from './game/resource-access';
@@ -34196,19 +34197,35 @@ async function boot(): Promise<void> {
         unitCosts: (unitId: string, ownerId: number) => {
           const def = (unitsDataLive as unknown as Array<Record<string, unknown>>).find(u => u.Jednostka === unitId);
           if (!def) return null;
-          const pace = isHuman(ownerId) ? (player.kosztJednostekPace ?? 'niski') : 'niski';
+          // Ta sama funkcja tempa, której silnik używa dla utrzymania i tury (main.ts: totalUnitUpkeep / totalUnitResourceUpkeep).
+          // Jedno ustawienie „Koszty jednostek” dla wszystkich właścicieli; nie zaszyta wartość dla AI.
+          const pace = kosztJednostekPaceUtrzymania();
           const recruitBase = unitRecruitBaseMoneyCost(def as any);
+          const upkeepParamsLive = loadUpkeepParams(data.econParams, _menuDifficulty);
+          const upkeepTblLive = buildUnitUpkeepTable(data.units as unknown as Parameters<typeof buildUnitUpkeepTable>[0]);
+          const categoryLive = String(lookupUnitDef(unitId)?.Kategoria ?? 'domyslny');
           return {
             epoka: def.Epoka,
+            ownerId,
             recruitBase,
             recruitPaced: applyUnitCostPace(recruitBase, pace),
             foodPerTurn: unitFoodCardValueLive(def as any, pace),
+            pieniadzUpkeep: unitUpkeep(
+              { typeId: unitId, category: categoryLive } as unknown as Parameters<typeof unitUpkeep>[0],
+              upkeepTblLive, upkeepParamsLive.jednostkaUtrzymanieStd, pace),
+            resourceUpkeep: totalUnitResourceUpkeep([{ typeId: unitId }], typeId => data.units.find(u => u.Jednostka === typeId), pace),
             pace,
           };
         },
-        /** Realny koszt pracy ulepszenia wg epoki właściciela (baza z danych przekazana przez test). */
-        improvementWorkCost: (baseCost: number, improvementEra: number | undefined, ownerId: number): number =>
-          scaleTerrainImprovementWorkCostForOwner(baseCost, improvementEra, empireEpochForOwner(ownerId)),
+        /** Realne skalowanie dyplomacji wg AKTYWNEGO poziomu gry (ta sama funkcja co silnik): kara ×k lub bonus ÷k. */
+        diplomacyWarScale: (value: number, kind: 'kara' | 'bonus'): number =>
+          kind === 'kara' ? scalePenaltyForWarLevel(value) : scaleBonusForWarLevel(value),
+        /** Koszt pracy ulepszenia po id z terrain-improvements.json (ta sama formuła co map/improvement-build.ts readWorkCost). */
+        improvementWorkCost: (improvementId: string, ownerId: number): number | null => {
+          const row = (terrainImprovementsLive as unknown as Record<string, { koszt_praca?: number; koszt_praca_przed_x2?: number; epoka?: number }>)[improvementId];
+          if (!row || typeof row !== 'object' || row.koszt_praca === undefined) return null;
+          return scaleTerrainImprovementWorkCostForOwner(baseKosztPracaUlepszenia(row), row.epoka, empireEpochForOwner(ownerId));
+        },
         /** Zamiana Żywności na podatek: realny kurs (resolveFoodTaxRate) i realna reguła (convertFoodReserveToTax). */
         convertFoodToTax: (ownerId: number, foodAmount: number, reserveOverride?: number) => {
           const reserve = reserveOverride ?? getEmpireFoodReserve(ownerId);
@@ -34216,9 +34233,11 @@ async function boot(): Promise<void> {
           const rate = resolveFoodTaxRate(
             (data.econParams as unknown as { budynki?: Record<string, Record<string, number>> }).budynki,
             _menuDifficulty);
-          return convertFoodReserveToTax(reserve, foodAmount, rate, enabled);
+          return { ...convertFoodReserveToTax(reserve, foodAmount, rate, enabled), enabled, rate };
         },
-        /** Zapis i wczytanie w TEJ SAMEJ stronie (persistSaveToSlot / loadGameFromSlot); zwraca ustawienia przed i po. */
+        /** Zapis i wczytanie w TEJ SAMEJ stronie (persistSaveToSlot / loadGameFromSlot); zwraca ustawienia przed i po.
+         * ŚWIADOME ODSTĘPSTWO od „tylko odczyt": dispatch (ZADANIE 1) wymaga round-trip zapisu, a zapis idzie do
+       * slotu testowego 'civtest-settings-live-roundtrip' (localStorage) — dostępnego TYLKO pod ?civTest=1. */
         saveRoundTrip: async () => {
           const SLOT = 'civtest-settings-live-roundtrip';
           const before = (window as any).__settingsLive.getSettings();
