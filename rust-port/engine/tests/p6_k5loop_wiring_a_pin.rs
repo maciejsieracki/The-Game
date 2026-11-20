@@ -948,3 +948,54 @@ fn slad_diagnostyczny_na_zadanie() {
         }
     }
 }
+
+/// HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): kontrakt czasu akcji sesji (klatka 16 ms, `speedMul = 1`) z rendererem
+/// (`renderer/src/battle/playback.rs` `is_pin_event_time`): cios wręcz w pierwszej klatce lunge z `localT >= BLOW_HIT_T`
+/// (`_doMeleeAttack` `:9122`, `t0 + 160`), trafienie strzału jednostki w klatce zegara `_schedule(RANGED_FLY_MS)`
+/// (`:9223`, `t0 + 384`), krok `_doMove` w klatce `p >= 1` (`t0 + 240`); wieża (`_fireOneTower` `:4262`), kamień
+/// (`:7555`) i taran (`:7343`) z czasem nominalnym (renderer: równość dokładna). Zmiana tych odstępów w silniku łamie
+/// odtwarzanie klienta (`PlaybackError::HitAt` / `ShotLandAt` / ...), więc test pilnuje strony silnika kontraktu.
+#[test]
+fn kontrakt_czasu_akcji_z_rendererem_klatka_16ms() {
+    use civ_engine::domain::siege_tactics_actions::BattleAction;
+    use civ_engine::domain::siege_tactics_loop::{frame_raf, frame_sched};
+    let doc = vectors();
+    let data = pin_session_data();
+    assert_eq!(frame_raf(FRAME_MS, 150.0), 160.0);
+    assert_eq!(frame_sched(FRAME_MS, 380.0), 384.0);
+    let mut n = BTreeMap::<&str, usize>::new();
+    // Wszystkie scenariusze z krokiem produkcyjnym 16 ms (bliźniaki `_klatka1`/`_klatka4` mają inną klatkę).
+    for v in doc["vectors"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|v| v["frameMs"].is_null())
+    {
+        let name = v["name"].as_str().unwrap();
+        let mut s = SiegeBattleSession::prepare_scene(&scene_input(v), &data).unwrap();
+        let mut frames = 0;
+        while s.phase() != SessionPhase::Finished {
+            let rep = s.step(FRAME_MS).unwrap();
+            for a in rep.actions {
+                let (k, got, want) = match a.action {
+                    BattleAction::Melee { hit_at, .. } => ("melee", hit_at - a.t0, 160.0),
+                    BattleAction::Shot { land_at, .. } => ("shot", land_at - a.t0, 384.0),
+                    BattleAction::Move { arrive_at, .. } => ("move", arrive_at - a.t0, 240.0),
+                    BattleAction::TowerShot { land_at, .. } => ("tower", land_at - a.t0, 380.0),
+                    BattleAction::Boulder { land_at, .. } => ("boulder", land_at - a.t0, 700.0),
+                    BattleAction::Ram { until, .. } => ("ram", until - a.t0, 320.0),
+                    _ => continue,
+                };
+                assert_eq!(got, want, "{name}: {k} w t0 {}", a.t0);
+                *n.entry(k).or_default() += 1;
+            }
+            frames += 1;
+            assert!(frames < MAX_FRAMES, "bitwa bez końca");
+        }
+    }
+    // Pokrycie: każdy rodzaj akcji z czasem wystąpił (inaczej test niczego nie pilnuje).
+    for k in ["melee", "shot", "move", "tower"] {
+        assert!(n.get(k).copied().unwrap_or(0) > 0, "brak akcji {k}: {n:?}");
+    }
+    eprintln!("HITAT-FQ kontrakt: {n:?}");
+}

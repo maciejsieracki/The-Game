@@ -1149,12 +1149,24 @@ fn hitat_fq_pin_frame_time_matches_pin_frame_grid() {
     assert_eq!(PIN_FRAME_MS, 16.0, "BATTLE_FRAME_WALL_MS (`:2552`)");
     assert_eq!(pin_frame_time(16.0, BLOW_HIT_T), 160.0);
     assert_eq!(pin_frame_time(16.0, RANGED_FLY_MS), 384.0);
-    assert_eq!(pin_frame_time(16.0, 240.0), 240.0, "multiple of the frame stays");
+    assert_eq!(
+        pin_frame_time(16.0, 240.0),
+        240.0,
+        "multiple of the frame stays"
+    );
     assert_eq!(pin_frame_time(16.0, 1.0), 16.0, "at least one frame");
     assert_eq!(pin_frame_time(32.0, BLOW_HIT_T), 160.0);
     assert_eq!(pin_frame_time(64.0, BLOW_HIT_T), 192.0);
-    assert_eq!(pin_frame_time(1.0, BLOW_HIT_T), BLOW_HIT_T, "1 ms frame = nominal");
-    assert_eq!(pin_frame_time(0.0, BLOW_HIT_T), BLOW_HIT_T, "frame 0 = nominal");
+    assert_eq!(
+        pin_frame_time(1.0, BLOW_HIT_T),
+        BLOW_HIT_T,
+        "1 ms frame = nominal"
+    );
+    assert_eq!(
+        pin_frame_time(0.0, BLOW_HIT_T),
+        BLOW_HIT_T,
+        "frame 0 = nominal"
+    );
     assert_eq!(pin_frame_time(-16.0, BLOW_HIT_T), BLOW_HIT_T);
     assert_eq!(pin_frame_time(f64::NAN, BLOW_HIT_T), BLOW_HIT_T);
     assert_eq!(pin_frame_time(16.0, 0.0), 0.0, "zero span stays");
@@ -1162,14 +1174,20 @@ fn hitat_fq_pin_frame_time_matches_pin_frame_grid() {
 
     let t0 = 137_600.0;
     assert!(is_pin_event_time(t0, BLOW_HIT_T, t0 + 150.0), "nominal");
-    assert!(is_pin_event_time(t0, BLOW_HIT_T, t0 + 160.0), "frame grid (16 ms)");
+    assert!(
+        is_pin_event_time(t0, BLOW_HIT_T, t0 + 160.0),
+        "frame grid (16 ms)"
+    );
     for bad in [144.0, 149.0, 151.0, 159.0, 161.0, 166.0, 176.0, 0.0, 310.0] {
         assert!(!is_pin_event_time(t0, BLOW_HIT_T, t0 + bad), "hit {bad}");
     }
     assert!(is_pin_event_time(t0, RANGED_FLY_MS, t0 + 380.0));
     assert!(is_pin_event_time(t0, RANGED_FLY_MS, t0 + 384.0));
     for bad in [368.0, 379.0, 381.0, 383.0, 385.0, 396.0, 400.0] {
-        assert!(!is_pin_event_time(t0, RANGED_FLY_MS, t0 + bad), "land {bad}");
+        assert!(
+            !is_pin_event_time(t0, RANGED_FLY_MS, t0 + bad),
+            "land {bad}"
+        );
     }
     assert!(!is_pin_event_time(t0, BLOW_HIT_T, f64::NAN));
 }
