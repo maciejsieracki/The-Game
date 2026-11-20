@@ -59,9 +59,7 @@ use std::sync::OnceLock;
 
 use crate::data::units_combat::parse_units;
 use crate::domain::city_capture_apply::{apply_siege_capitulation, SiegeCapitulation};
-use crate::domain::city_growth::p6_7a::{
-    empire_food::build_empire_food_params, GameDifficulty,
-};
+use crate::domain::city_growth::p6_7a::{empire_food::build_empire_food_params, GameDifficulty};
 use crate::domain::playable::PlayableState;
 use crate::domain::playable_movement::ruch_jednostka_of;
 use crate::domain::siege_battle_adapter::is_civilian_unit;
@@ -391,7 +389,12 @@ fn garrison_of(state: &PlayableState, idx: &[usize]) -> Vec<SiegeGarrisonUnit> {
 
 /// Atrycja glodu (`main.ts:38842-38856`): `applyArmyStarvationHpLoss(realGarnizonUnits, city.ownerId, frac, getMaxHp)`,
 /// zapis `hp`/`hpMax` do `economy.units`, `units.splice` zniszczonych. Zwraca id zniszczonych (kolejnosc `units`).
-fn apply_attrition(state: &mut PlayableState, owner: PlayerId, idx: &[usize], frac: f64) -> Vec<u64> {
+fn apply_attrition(
+    state: &mut PlayableState,
+    owner: PlayerId,
+    idx: &[usize],
+    frac: f64,
+) -> Vec<u64> {
     let mut au: Vec<AttritionUnit> = idx
         .iter()
         .map(|&i| {
@@ -501,7 +504,11 @@ pub fn run_siege_turn(state: &mut PlayableState) -> Result<SiegeTickReport, Sieg
         };
         if dec.record_start {
             // Web `oblCity.siegeStarveStartMaxHp = st0.startMaxHp ?? undefined`.
-            state.siege_city.entry(cid).or_default().siege_starve_start_max_hp = dec.start_max_hp;
+            state
+                .siege_city
+                .entry(cid)
+                .or_default()
+                .siege_starve_start_max_hp = dec.start_max_hp;
         }
         let pending = state
             .siege_city

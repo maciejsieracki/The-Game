@@ -51,8 +51,10 @@ use crate::domain::order_effects_culture::{
 };
 use crate::domain::order_effects_lane::PostCaptureLawFields;
 use crate::domain::playable::{MovementPoints, PlayableFortKind, PlayableState};
+use crate::domain::playable_movement::ruch_jednostka_of;
 use crate::domain::production_queue::{filter_queue, sanitize_build_queue};
 use crate::domain::production_units::{CityProduction, ProductionItem, ProductionKind};
+use crate::domain::save_migrations::ARMY_STACK_LIMIT;
 use crate::domain::siege_battle_adapter::is_civilian_unit;
 use crate::domain::siege_battle_apply::{
     end_map_siege, enter_city_hex_after_atk_win, validate_storm_siege, ApplyRosters,
@@ -66,21 +68,19 @@ use crate::domain::siege_capture_events::{
     CaptureEventStore, CaptureRow, CityCaptureArgs, CityCaptureDetails, CivElimDetails,
     SidePanelEvent,
 };
-use crate::domain::siege_transfer_effects::{
-    apply_capture_population_loss, apply_post_capture_law_on_capture, CapturePopLossInput,
-    CAPTURE_POP_LOSS_PIN,
-};
-use crate::domain::siege_transfer_q5::{
-    note_city_capture, ChronicleMap, CivChronicle, CivChronicleVs,
-};
-use crate::domain::playable_movement::ruch_jednostka_of;
-use crate::domain::save_migrations::ARMY_STACK_LIMIT;
 use crate::domain::siege_enter_city::{
     enter_city_after_surrender, EnterCity, EnterUnit, SiegeEnterDeps,
 };
 use crate::domain::siege_surrender::{
     besieger_owner_for_city, resolve_surrender_path, surrender_population_after, BesiegerCity,
     BesiegerUnit, SurrenderPath,
+};
+use crate::domain::siege_transfer_effects::{
+    apply_capture_population_loss, apply_post_capture_law_on_capture, CapturePopLossInput,
+    CAPTURE_POP_LOSS_PIN,
+};
+use crate::domain::siege_transfer_q5::{
+    note_city_capture, ChronicleMap, CivChronicle, CivChronicleVs,
 };
 use crate::domain::siege_wonder_watch::{
     apply_wonder_transfers, plan_wonder_transfers, snapshot_wonder_territory_owners,
@@ -1736,7 +1736,12 @@ pub const SURRENDER_NOT_APPLIED_ALWAYS: &[&str] = &[
 
 /// Web `applyPostCaptureLawOnCapture(city, newOwner, oldOwner)` wołane BEZWARUNKOWO (kapitulacja `main.ts:17709`;
 /// P9 szturmu strzeże go `!isBarbarian`, patrz [`apply_capture_law`]).
-fn apply_capture_law_always(state: &mut PlayableState, cid: CityId, old_owner: i64, new_owner: i64) {
+fn apply_capture_law_always(
+    state: &mut PlayableState,
+    cid: CityId,
+    old_owner: i64,
+    new_owner: i64,
+) {
     let prev = state.post_capture_law_by_city.get(&cid).copied();
     let mut fields = PostCaptureLawFields {
         post_capture_law_turns_remaining: prev.and_then(|p| p.post_capture_law_turns_remaining),
