@@ -264,5 +264,18 @@ console.log('S9 wiring main.ts: eraWarTargetDelayOk -> isEraWarTargetDelayOk; pa
   assert(/\(prev < 2 && next >= 2\) \|\| \(next >= 2 && !bronzeEraEnterTurnByOwner\.has\(0\)\)/.test(mainSrc), 'S9: main.ts: reconcilePlayerEraFromResearch zapisuje wejście gracza w Brąz także przy braku wpisu');
 }
 
+console.log('S10 zarzut 5 (r4): backfill wejścia Żelaza po wczytaniu TYLKO dla właścicieli w epoce 3');
+{
+  // Zachowanie: właściciel w Brązie (2) nie dostaje sztucznego wpisu Żelaza = tura wczytania.
+  const ironMap = new Map();
+  const owners = new Map([[0, 2], [5, 3], [7, 1]]);
+  backfillMissingEraEntryTurns(ironMap, new Map([...owners].filter(([, e]) => e === 3)), 120);
+  assert(!ironMap.has(0), 'S10: gracz w Brązie (2) NIE dostaje wpisu Żelaza po wczytaniu');
+  assert(ironMap.get(5) === 120, 'S10: właściciel w Żelazie (3) dostaje wpis = tura wczytania');
+  assert(!ironMap.has(7), 'S10: właściciel w Kamieniu (1) NIE dostaje wpisu Żelaza');
+  const mainSrc = readMain();
+  assert(/backfillMissingEraEntryTurns\(\s*ironEraEnterTurnByOwner,\s*new Map\(\[\.\.\.restoredEraOwners\]\.filter\(\(\[, e\]\) => e === 3\)\),/.test(mainSrc), 'S10: main.ts: backfill Żelaza po wczytaniu filtruje epoka === 3');
+}
+
 console.log(`WYNIK: ${passed} OK / ${failed} FAIL`);
 if (failed > 0) process.exit(1);

@@ -45495,6 +45495,13 @@ async function boot(): Promise<void> {
                     eraEnterTurn: bronzeEraEnterTurnByOwner.get(ownerId),
                   })
                   : searchingAfterRest);
+                // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1 r4 (zarzut 4, pomiar, tylko odczyt): powód, dla którego
+                // oczekujący właściciel NIE wszedł do wyszukiwania tej tury (bez zmiany decyzji).
+                if (wasPending && !shouldSearch) {
+                  eraWarMeasureRejections.push({ turn, era: 'bronze', attacker: ownerId, target: null, targetIsPlayer: false,
+                    result: 'not-searched', reason: forcedWarDifficultyLevel === 1 ? 'poziom-trudnosci-1'
+                      : alreadyAtWarAnyRole ? 'isAlreadyAtWarAnyRole' : 'prog-tur-od-epoki' });
+                }
                 // R-WEB-ERA-WAR-COUNTER-Q1: Brąz wyłączony flagą — nie wchodzi do puli parowania.
                 if (shouldSearch && isForcedEraWarEnabled('bronze')) {
                   bronzeTriggeredSubjects.push({ ownerId, q: refCity.q, r: refCity.r, era: 'bronze' });
@@ -45530,6 +45537,11 @@ async function boot(): Promise<void> {
                     isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
                   })
                   : searchingAfterRest);
+                if (wasPending && !shouldSearch) {
+                  eraWarMeasureRejections.push({ turn, era: 'stone', attacker: ownerId, target: null, targetIsPlayer: false,
+                    result: 'not-searched', reason: forcedWarDifficultyLevel === 1 ? 'poziom-trudnosci-1'
+                      : alreadyAtWarAnyRole ? 'isAlreadyAtWarAnyRole' : 'poza-epoka-lub-tura' });
+                }
                 if (shouldSearch) {
                   stoneTriggeredSubjects.push({ ownerId, q: refCity.q, r: refCity.r, era: 'stone' });
                 }
@@ -45553,6 +45565,11 @@ async function boot(): Promise<void> {
                     eraEnterTurn: ironEraEnterTurnByOwner.get(ownerId),
                   })
                   : searchingAfterRest;
+                if (wasPending && !shouldSearch) {
+                  eraWarMeasureRejections.push({ turn, era: 'iron', attacker: ownerId, target: null, targetIsPlayer: false,
+                    result: 'not-searched', reason: forcedWarDifficultyLevel === 1 ? 'poziom-trudnosci-1'
+                      : alreadyAtWarAnyRole ? 'isAlreadyAtWarAnyRole' : 'prog-tur-od-epoki' });
+                }
                 // R-WEB-ERA-WAR-COUNTER-Q1: Żelazo wyłączone flagą — nie wchodzi do puli parowania.
                 if (shouldSearch && isForcedEraWarEnabled('iron')) {
                   ironTriggeredSubjects.push({ ownerId, q: refCity.q, r: refCity.r, era: 'iron' });
@@ -52233,7 +52250,14 @@ async function boot(): Promise<void> {
       const restoredEraOwners = new Map(ownerEraByOwner);
       restoredEraOwners.set(0, player.era ?? 1);
       backfillMissingEraEntryTurns(bronzeEraEnterTurnByOwner, restoredEraOwners, turn);
-      backfillMissingEraEntryTurns(ironEraEnterTurnByOwner, restoredEraOwners, turn);
+      // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1 r4 (zarzut 5): wejście w Żelazo backfilluje się TYLKO
+      // właścicielom faktycznie w epoce Żelaza (3). Wcześniej właściciel w Brązie (2) dostawał sztuczny wpis
+      // Żelaza = tura wczytania, co zawyżało/zaniżało przyszłe opóźnienie. Zgodne z backfillem w bramce puli.
+      backfillMissingEraEntryTurns(
+        ironEraEnterTurnByOwner,
+        new Map([...restoredEraOwners].filter(([, e]) => e === 3)),
+        turn,
+      );
       // R-WEB-ERA-WAR-COUNTER-Q1 (7): licznik wojen epoki per (cywilizacja, epoka). Zapis bez pola
       // (stary zapis) → odtwórz z AKTYWNYCH par wojen wymuszonych (obie strony = 1 w bieżącej
       // epoce), reszta 0. Odtworzenie wymaga już wczytanych epok (sekcja wyżej).
