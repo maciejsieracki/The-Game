@@ -120,6 +120,10 @@ const HINT_DEPS = {
   endTurnInProgress: false,
   aiTurnAwaitingBattle: false,
   aiCmdResume: null,
+  // R-WEB-TEST-DEBT-Q13 r5: PENDING-FORCED-PEACE-Q1 -- hintEndTurnBlocked czyta liste wiszacych pokojow wymuszonych
+  // (pusta = brak blokady; ta galaz nie jest przedmiotem tego testu) oraz ja przycina (prunePendingForcedPeace).
+  pendingForcedPeaceTreaties: [],
+  prunePendingForcedPeace: () => {},
 };
 
 // Zwraca { err, last } – ostatni komunikat podpowiedzi albo błąd wykonania.
