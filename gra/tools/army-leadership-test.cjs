@@ -47,9 +47,13 @@ async function main() {
   const wallCollapsePath = scene.slice(wallCollapseStart, wallCollapseEnd < 0 ? wallCollapseStart + 1800 : wallCollapseEnd);
   assert.match(wallCollapsePath, /this\._startFade\(u\);/,
     'wall-collapse death uses the shared immediate removal path, including commander cleanup');
-  assert.match(scene, /commandersToWithdrawAfterArmyBreak\(this\.atk/,
+  // R-WEB-TEST-DEBT-Q13 r5: zalamanie morale armii obsluguje dzis wspolna metoda _routWholeArmy(roster) (BATTLE-NEVERROUT-HOLD-FIGHT-Q1), ktora
+  // wola commandersToWithdrawAfterArmyBreak(roster, ARMY_MORALE_LOSS_THRESHOLD) i _startRout(u); wolana osobno dla this.atk i this.def.
+  assert.match(scene, /private _routWholeArmy\(roster: RuntimeBattleUnit\[\]\): void \{\s*for \(const u of commandersToWithdrawAfterArmyBreak\(roster, ARMY_MORALE_LOSS_THRESHOLD\)\) this\._startRout\(u\);/,
+    'army break routs the surviving commanders of a roster into normal rout (shared helper)');
+  assert.match(scene, /if \(brokenA\) \{ this\._routWholeArmy\(this\.atk\);/,
     'aggregate defeat sends a surviving attacker commander into normal rout');
-  assert.match(scene, /commandersToWithdrawAfterArmyBreak\(this\.def/,
+  assert.match(scene, /if \(brokenD\) \{ this\._routWholeArmy\(this\.def\);/,
     'aggregate defeat sends a surviving defender commander into normal rout');
   // Stara asercja szukała nieistniejącej już funkcji initialBattleLineOrder. Aktualny kontrakt:
   // dowódca trafia do TEJ SAMEJ, zwykłej formacji startowej (initialBattleFormation) jako rola 'commander'.
