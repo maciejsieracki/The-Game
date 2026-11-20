@@ -54,10 +54,25 @@
 //! * Z-SU-3 `food`, `pop` to `f64`; `NaN` przechodzi jak w JS (`NaN <= 0` = false; `Math.max(1, NaN)` = NaN).
 //! * Z-SU-4 wspolrzedne heksowe `i64` (web: liczby calkowite w danych gry, `hexDistance` zgodny z `max(|dq|,|dr|,|ds|)`).
 
+use std::collections::HashMap;
+use std::sync::OnceLock;
+
+use crate::data::units_combat::parse_units;
+use crate::domain::city_capture_apply::{apply_siege_capitulation, SiegeCapitulation};
+use crate::domain::city_growth::p6_7a::{
+    empire_food::build_empire_food_params, GameDifficulty,
+};
+use crate::domain::playable::PlayableState;
+use crate::domain::playable_movement::ruch_jednostka_of;
+use crate::domain::siege_battle_adapter::is_civilian_unit;
+use crate::domain::siege_battle_apply::SiegeBattleError;
 use crate::domain::siege_enter_city::EnterCity;
 use crate::domain::siege_enter_city::EnterUnit;
-use crate::domain::siege_starvation::SiegeStarvationCity;
-use crate::domain::siege_turn::SiegeTurnDecision;
+use crate::domain::siege_starvation::{SiegeGarrisonUnit, SiegeStarvationCity};
+use crate::domain::siege_turn::{siege_city_turn, SiegeTurnDecision};
+use crate::domain::turn_economy_attrition::{apply_army_starvation_hp_loss, AttritionUnit};
+use crate::domain::unit_health::unit_health;
+use crate::domain::{CityId, PlayerId, PositionDto, UnitId};
 
 /// Miasto widziane przez `besiegerOwnerForCity`: wlasciciel, heks i (opcjonalnie) `oblegajacyOwnerId`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -218,6 +233,305 @@ pub fn surrender_population_after(pop: f64) -> f64 {
     } else {
         pop.max(1.0)
     }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// R-RUSTPORT-P6-KAPITULACJA-Q1 (W3): produkcyjny tick oblezenia (`advance_turn`, faza Economy) na `PlayableState`.
+// ---------------------------------------------------------------------------------------------------------------
+
+/// Pola web `City` czytane i pisane przez tick oblezenia / kapitulacje, ktorych `PlayableCity` nie niesie
+/// (pin `game/cities.ts`: `oblegajacyOwnerId`, `siegeCapitulationPending`, `siegeStarveStartMaxHp`, `magazynZywnosci`).
+/// Trzymane obok `PlayableCity` (wzorzec `oblegane` / `captured_from_owner_by_city`). Wartosci liczbowe w stanie sa
+/// zawsze skonczone (zapis przez tick; `NaN`/`Inf` nie przychodza z JSON), stad reczne `Eq`.
+#[derive(Debug, Clone, Copy, PartialEq, Default, serde::Serialize, serde::Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct PlayableCitySiege {
+    /// Web `city.oblegajacyOwnerId` (`None` = `undefined`, `delete` w `endMapSiege`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub oblegajacy_owner_id: Option<PlayerId>,
+    /// Web `city.siegeCapitulationPending` (`false` = pole falsy).
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub siege_capitulation_pending: bool,
+    /// Web `city.siegeStarveStartMaxHp` (`None` = `undefined`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub siege_starve_start_max_hp: Option<f64>,
+    /// Web `city.magazynZywnosci` jako liczba (`None` = brak pola; `getCityFood` = `max(0, v)` albo 0).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub magazyn_zywnosci: Option<f64>,
+}
+
+impl Eq for PlayableCitySiege {}
+
+impl PlayableCitySiege {
+    #[must_use]
+    pub fn is_default(&self) -> bool {
+        *self == Self::default()
+    }
+
+    /// Web `endMapSiege` (`main.ts:17880-17886`): `delete oblegajacyOwnerId`, `siegeCapitulationPending = false`,
+    /// `delete siegeStarveStartMaxHp`. `magazynZywnosci` (pole miasta, nie oblezenia) zostaje.
+    pub fn end_siege(&mut self) {
+        self.oblegajacy_owner_id = None;
+        self.siege_capitulation_pending = false;
+        self.siege_starve_start_max_hp = None;
+    }
+}
+
+/// Web `getCityFood(city)` = `readCityFoodBuffer(city.magazynZywnosci)` (`turn-economy.ts:1053`, `:1093`): liczba
+/// skonczona -> `Math.max(0, v)`, brak pola -> 0.
+#[must_use]
+pub fn city_food_of(fields: Option<&PlayableCitySiege>) -> f64 {
+    match fields.and_then(|f| f.magazyn_zywnosci) {
+        Some(v) if v.is_finite() => v.max(0.0),
+        _ => 0.0,
+    }
+}
+
+/// Wpis raportu ticka oblezenia jednego miasta (kolejnosc = kolejnosc `cities`).
+#[derive(Debug, Clone, PartialEq)]
+pub struct SiegeTickEntry {
+    pub city_id: CityId,
+    /// Decyzja `siegeStarvationState` + atrycja (web `st0` / `surrenderNow`).
+    pub decision: SiegeTurnDecision,
+    /// Akcja kapitulacji wybrana w tym ticku (web `main.ts:38864-38868`).
+    pub action: SurrenderTickAction,
+    /// Jednostki garnizonu zniszczone atrycja glodu (`starv.destroyedIds`, kolejnosc `units`).
+    pub destroyed_unit_ids: Vec<u64>,
+    /// Wynik `resolveSiegeSurrender`, gdy wywolane.
+    pub capitulation: Option<SiegeCapitulation>,
+}
+
+/// Raport ticka oblezenia (`advance_turn`, faza Economy).
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct SiegeTickReport {
+    pub entries: Vec<SiegeTickEntry>,
+}
+
+fn econ_params_raw() -> &'static serde_json::Value {
+    static RAW: OnceLock<serde_json::Value> = OnceLock::new();
+    RAW.get_or_init(|| {
+        serde_json::from_str(include_str!("../../data/econ-params.json"))
+            .expect("econ-params.json must parse")
+    })
+}
+
+fn units_max_hp_by_type() -> &'static HashMap<String, f64> {
+    static M: OnceLock<HashMap<String, f64>> = OnceLock::new();
+    M.get_or_init(|| {
+        let mut m = HashMap::new();
+        for u in parse_units().expect("units.json must parse") {
+            // `data.units.find(u => u.Jednostka === typeId)`: pierwszy wiersz o danej nazwie.
+            let hp = unit_health(Some(&u));
+            m.entry(u.jednostka.clone()).or_insert(hp);
+        }
+        m
+    })
+}
+
+/// Web `getMaxHp(typeId)` w N3 (`main.ts:38831`): `unitHealth(data.units.find(u => u.Jednostka === typeId) ?? {})`.
+#[must_use]
+pub fn siege_unit_max_hp(type_id: &str) -> f64 {
+    units_max_hp_by_type()
+        .get(type_id)
+        .copied()
+        .unwrap_or_else(|| unit_health(None))
+}
+
+/// Web `glodWojskaHpFrac` (`buildEmpireFoodParams(data.econParams, effectiveGameDifficultyForOwner(owner))`,
+/// `main.ts:38817-38820`). D-KAP-4: trudnosc = trudnosc gry ze stanu (miasta-panstwa / `cityStateDifficulty` nie
+/// istnieja w `PlayableState`, wiec `effectiveGameDifficultyForOwner` = trudnosc menu dla kazdego wlasciciela).
+#[must_use]
+pub fn glod_wojska_hp_frac(difficulty_label: &str) -> f64 {
+    let d = match difficulty_label {
+        "Łatwy" | "easy" => GameDifficulty::Easy,
+        "Trudny" | "hard" => GameDifficulty::Hard,
+        _ => GameDifficulty::Normal,
+    };
+    build_empire_food_params(econ_params_raw(), d).glod_wojska_hp_frac
+}
+
+/// Web `siegeDefenderUnits(units, city, isCivilianUnit)` (`siege-starvation.ts:72-79`) na stanie: indeksy jednostek
+/// wlasciciela miasta na heksie miasta, niecywilnych i bez `hp <= 0` (kolejnosc `units`).
+fn defender_indices(state: &PlayableState, owner: PlayerId, pos: PositionDto) -> Vec<usize> {
+    state
+        .units
+        .iter()
+        .enumerate()
+        .filter(|(_, u)| {
+            if u.owner_id != owner || u.position != pos {
+                return false;
+            }
+            let rj = ruch_jednostka_of(state, u);
+            if is_civilian_unit(&rj.category, rj.type_id.as_deref().unwrap_or("")) {
+                return false;
+            }
+            !matches!(
+                state.economy.units.get(&u.id.get()).and_then(|r| r.hp),
+                Some(h) if h <= 0.0
+            )
+        })
+        .map(|(i, _)| i)
+        .collect()
+}
+
+fn garrison_of(state: &PlayableState, idx: &[usize]) -> Vec<SiegeGarrisonUnit> {
+    idx.iter()
+        .map(|&i| {
+            let u = &state.units[i];
+            let rep = state.economy.units.get(&u.id.get());
+            let rj = ruch_jednostka_of(state, u);
+            SiegeGarrisonUnit {
+                hp: rep.and_then(|r| r.hp),
+                hp_max: rep.and_then(|r| r.hp_max),
+                type_id: rj.type_id,
+            }
+        })
+        .collect()
+}
+
+/// Atrycja glodu (`main.ts:38842-38856`): `applyArmyStarvationHpLoss(realGarnizonUnits, city.ownerId, frac, getMaxHp)`,
+/// zapis `hp`/`hpMax` do `economy.units`, `units.splice` zniszczonych. Zwraca id zniszczonych (kolejnosc `units`).
+fn apply_attrition(state: &mut PlayableState, owner: PlayerId, idx: &[usize], frac: f64) -> Vec<u64> {
+    let mut au: Vec<AttritionUnit> = idx
+        .iter()
+        .map(|&i| {
+            let u = &state.units[i];
+            let rep = state.economy.units.get(&u.id.get());
+            let rj = ruch_jednostka_of(state, u);
+            AttritionUnit {
+                id: u.id.get().to_string(),
+                owner_id: i64::try_from(u.owner_id.get()).unwrap_or(i64::MAX),
+                type_id: rj.type_id.unwrap_or_default(),
+                category: rj.category,
+                hp: rep.and_then(|r| r.hp),
+                hp_max: rep.and_then(|r| r.hp_max),
+                oblega_city_id: None,
+                in_garnizon: false,
+                q: f64::from(u.position.x()),
+                r: f64::from(u.position.y()),
+            }
+        })
+        .collect();
+    let owner_i = i64::try_from(owner.get()).unwrap_or(i64::MAX);
+    let res = apply_army_starvation_hp_loss(&mut au, owner_i, frac, &siege_unit_max_hp);
+    for a in &au {
+        let Ok(uid) = a.id.parse::<u64>() else {
+            continue;
+        };
+        if a.hp.is_some() || a.hp_max.is_some() {
+            let e = state.economy.units.entry(uid).or_default();
+            e.hp = a.hp;
+            e.hp_max = a.hp_max;
+        }
+    }
+    let destroyed: Vec<u64> = res
+        .destroyed_ids
+        .iter()
+        .filter_map(|s| s.parse::<u64>().ok())
+        .collect();
+    if !destroyed.is_empty() {
+        state.units.retain(|u| !destroyed.contains(&u.id.get()));
+        for d in &destroyed {
+            state.economy.units.remove(d);
+            state.oblega_city_by_unit.remove(&UnitId::new(*d));
+        }
+    }
+    destroyed
+}
+
+/// Web blok N3 „TURA OBLEZENIA” (`main.ts:38808-38870`, wolany w `runWorldEndTurn` po ticku ekonomii) na stanie:
+/// dla kazdego obleganego miasta (kolejnosc `cities`) decyzja glodu
+/// [`siege_city_turn`](crate::domain::siege_turn::siege_city_turn), atrycja, zapis startu glodu, potem
+/// [`surrender_tick_action`]: flaga kapitulacji albo `resolveSiegeSurrender` ([`apply_siege_capitulation`]).
+///
+/// Decyzje (raport `01-operator-r1.md`): D-KAP-2 zapas = `getCityFood` (Rust nie wykonuje ticka ekonomii, wiec
+/// `tick.obleganyGlod` = false i `tick.magazynPoTurze` = `undefined`); D-KAP-5 pola oblezenia miasta, ktore nie jest juz
+/// oblegane (oblezenie zakonczone sciezka bez [`PlayableCitySiege::end_siege`], np. `validate_storm_siege`), sa
+/// gaszone na starcie ticka tak, jak zrobilby to `endMapSiege` pinu. `siegeTurnByCity`, `tickSiegeMachinesForCity`,
+/// `maybeAiAssaultAfterMachines` i panel UI: poza zakresem (raport, dlugi).
+///
+/// # Errors
+/// Blad kapitulacji ([`SiegeBattleError`]); wolajacy cofa caly tick (stan bez zmian).
+pub fn run_siege_turn(state: &mut PlayableState) -> Result<SiegeTickReport, SiegeBattleError> {
+    // D-KAP-5: pola oblezenia miast nieoblezanych = stan po `endMapSiege`.
+    let stale: Vec<CityId> = state
+        .siege_city
+        .keys()
+        .filter(|c| !state.oblegane.contains(c))
+        .copied()
+        .collect();
+    for c in stale {
+        if let Some(f) = state.siege_city.get_mut(&c) {
+            f.end_siege();
+            if f.is_default() {
+                state.siege_city.remove(&c);
+            }
+        }
+    }
+    let besieged: Vec<CityId> = state
+        .cities
+        .iter()
+        .filter(|c| state.oblegane.contains(&c.id))
+        .map(|c| c.id)
+        .collect();
+    let frac = glod_wojska_hp_frac(&state.params.difficulty);
+    let mut report = SiegeTickReport::default();
+    for cid in besieged {
+        let Some(city) = state.cities.iter().find(|c| c.id == cid).cloned() else {
+            continue;
+        };
+        let fields = state.siege_city.get(&cid).copied().unwrap_or_default();
+        let food = city_food_of(Some(&fields));
+        let idx = defender_indices(state, city.owner_id, city.position);
+        let garrison = garrison_of(state, &idx);
+        let starv_city = SiegeStarvationCity {
+            oblegane: Some(true),
+            siege_capitulation_pending: Some(fields.siege_capitulation_pending),
+            siege_starve_start_max_hp: fields.siege_starve_start_max_hp,
+        };
+        let mut destroyed: Vec<u64> = Vec::new();
+        let dec = {
+            let st = &mut *state;
+            let destroyed_ref = &mut destroyed;
+            siege_city_turn(&starv_city, &garrison, food, &siege_unit_max_hp, || {
+                *destroyed_ref = apply_attrition(st, city.owner_id, &idx, frac);
+                let after = defender_indices(st, city.owner_id, city.position);
+                garrison_of(st, &after)
+            })
+        };
+        if dec.record_start {
+            // Web `oblCity.siegeStarveStartMaxHp = st0.startMaxHp ?? undefined`.
+            state.siege_city.entry(cid).or_default().siege_starve_start_max_hp = dec.start_max_hp;
+        }
+        let pending = state
+            .siege_city
+            .get(&cid)
+            .is_some_and(|f| f.siege_capitulation_pending);
+        let food_now = city_food_of(state.siege_city.get(&cid));
+        let action = surrender_tick_action(&dec, pending, food_now);
+        let capitulation = match action {
+            SurrenderTickAction::CapitulationPhase(CapitulationAction::SetPending) => {
+                state
+                    .siege_city
+                    .entry(cid)
+                    .or_default()
+                    .siege_capitulation_pending = true;
+                None
+            }
+            SurrenderTickAction::CapitulationPhase(CapitulationAction::Resolve)
+            | SurrenderTickAction::Surrender => Some(apply_siege_capitulation(state, cid)?),
+            SurrenderTickAction::CapitulationPhase(CapitulationAction::Hold)
+            | SurrenderTickAction::None => None,
+        };
+        report.entries.push(SiegeTickEntry {
+            city_id: cid,
+            decision: dec,
+            action,
+            destroyed_unit_ids: destroyed,
+            capitulation,
+        });
+    }
+    Ok(report)
 }
 
 #[cfg(test)]

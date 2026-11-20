@@ -717,6 +717,17 @@ pub struct PlayableState {
     /// `main.ts:4205-4210`). Pusty => pole pomijane w DTO i zapisie.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub placed_world_wonders: Vec<PlayablePlacedWonder>,
+    /// R-RUSTPORT-P6-KAPITULACJA-Q1: pola web `City` czytane/pisane przez tick oblężenia i `resolveSiegeSurrender`
+    /// (`oblegajacyOwnerId`, `siegeCapitulationPending`, `siegeStarveStartMaxHp`, `magazynZywnosci`; pin
+    /// `main.ts:17634-17893`, `:38808-38870`). Brak wpisu = wszystkie pola nieobecne (web `undefined`). Pusty => pole
+    /// pomijane w DTO i zapisie (stan sprzed zmiany bajt w bajt).
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub siege_city: BTreeMap<CityId, crate::domain::siege_surrender::PlayableCitySiege>,
+    /// R-RUSTPORT-P6-KAPITULACJA-Q1: web `RuntimeUnit.oblegaCityId` (jednostka oblegająca miasto; czyta go
+    /// `planSurrenderEntry`, `siege-enter-city.ts:62`, kasuje `endMapSiege`, `main.ts:17890-17892`). Pusty => pole
+    /// pomijane.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub oblega_city_by_unit: BTreeMap<UnitId, CityId>,
 }
 
 /// P4-1F3: web `SiegeMachineKind` (`game/siegeMachines.ts:6`); forma serde = napisy weba.
@@ -996,6 +1007,8 @@ impl PlayableState {
             capture_events: crate::domain::city_capture_apply::PlayableCaptureEvents::default(),
             siege_machines_ready: BTreeMap::new(),
             placed_world_wonders: Vec::new(),
+            siege_city: BTreeMap::new(),
+            oblega_city_by_unit: BTreeMap::new(),
         }
     }
 }
@@ -1184,6 +1197,8 @@ pub struct PlayableGame {
     siege_battle: Option<ActiveSiegeBattle>,
     /// D-WIR-5: licznik bitew oblezniczych sesji (numer bitwy w ziarnie RNG `SessionRolls::derive`).
     siege_battles_started: u32,
+    /// R-RUSTPORT-P6-KAPITULACJA-Q1: raport ostatniego ticka oblezenia (faza Economy), poza `PlayableState`.
+    last_siege_tick: crate::domain::siege_surrender::SiegeTickReport,
 }
 
 impl PlayableGame {
@@ -1256,6 +1271,8 @@ impl PlayableGame {
             capture_events: crate::domain::city_capture_apply::PlayableCaptureEvents::default(),
             siege_machines_ready: BTreeMap::new(),
             placed_world_wonders: Vec::new(),
+            siege_city: BTreeMap::new(),
+            oblega_city_by_unit: BTreeMap::new(),
         };
         // R-RUSTPORT-P4-364-BRIDGE-LAYERS-R2: nowa gra = swieza mgla sesji (`seedStartingFog`).
         let fog = PlayableFogSession::for_new_game(&state);
@@ -1265,6 +1282,7 @@ impl PlayableGame {
             fog,
             siege_battle: None,
             siege_battles_started: 0,
+            last_siege_tick: crate::domain::siege_surrender::SiegeTickReport::default(),
         };
         game.enqueue_turn_phases(1);
         Ok(game)
@@ -1282,6 +1300,7 @@ impl PlayableGame {
             fog,
             siege_battle: None,
             siege_battles_started: 0,
+            last_siege_tick: crate::domain::siege_surrender::SiegeTickReport::default(),
         };
         game.enqueue_turn_phases(turn);
         game
@@ -1405,6 +1424,11 @@ impl PlayableGame {
     }
 
     /// R-RUSTPORT-P6-K5LOOP-WIRING-B-Q1: trwajaca bitwa obleznicza (odczyt).
+    /// R-RUSTPORT-P6-KAPITULACJA-Q1: raport ostatniego ticka oblezenia (`advance_turn`, faza Economy).
+    pub fn last_siege_tick(&self) -> &crate::domain::siege_surrender::SiegeTickReport {
+        &self.last_siege_tick
+    }
+
     pub fn siege_battle(&self) -> Option<&ActiveSiegeBattle> {
         self.siege_battle.as_ref()
     }
@@ -1745,6 +1769,24 @@ impl PlayableGame {
                     self.state.war = war_before;
                     self.state.economy = economy_before;
                     return Err(error);
+                }
+            }
+            // R-RUSTPORT-P6-KAPITULACJA-Q1: blok N3 „TURA OBLEZENIA” (pin main.ts:38808-38870, `runWorldEndTurn`, po
+            // ticku ekonomii) na fazie Economy: glod garnizonu, flaga kapitulacji, `resolveSiegeSurrender`. Tick dziala
+            // na kopii stanu; blad = cala tura odrzucona jak przy fazie Diplomacy (stan bez zmian).
+            if entry.phase() == TurnPhase::Economy {
+                let mut next = self.state.clone();
+                match crate::domain::siege_surrender::run_siege_turn(&mut next) {
+                    Ok(report) => {
+                        self.state = next;
+                        self.last_siege_tick = report;
+                    }
+                    Err(error) => {
+                        self.phase_queue = queue_before;
+                        self.state.war = war_before;
+                        self.state.economy = economy_before;
+                        return Err(PlayableError::WarTurn(format!("oblezenie: {error}")));
+                    }
                 }
             }
             // P6-ZWYCIESTWO-WIRING: sprawdzenie zwyciestwa/porazki gracza na fazie Victory (pin main.ts:43441-43483).
@@ -2386,6 +2428,7 @@ mod unit_replace_error_tests {
             fog: game.fog.clone(),
             siege_battle: None,
             siege_battles_started: 0,
+            last_siege_tick: crate::domain::siege_surrender::SiegeTickReport::default(),
         };
         resumed.advance_turn().expect("tura po wczytaniu");
         let result = resumed.state.koniec_gry.expect("przegrana po wczytaniu");
