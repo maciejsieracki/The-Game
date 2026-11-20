@@ -89,15 +89,23 @@ check('sixth owner turn starts the offensive after five complete gather turns',
 check('attack-stage target is exactly the selected enemy even with another war city present',
   attackCommands.filter(command => command.type === 'move').length > 0
     && attackCommands.filter(command => command.type === 'move').every(command => command.targetCityId === 'enemy-near'));
-const expectedAttackRoster = troops.map(u => u.id);
 const attackMovesByUnit = new Map(attackCommands.filter(command => command.type === 'move')
   .map(command => [command.unitId, command]));
+// R-WEB-TEST-DEBT-Q13 r5: od R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 / R-WEB-AI-WAR-CITY-GARRISON-ONE-REST-TO-GENERAL-Q1 (wymog wlasciciela 2026-11-18, ai.ts ~4955)
+// w wojnie kazde miasto AI zatrzymuje JEDNA najslabsza kwalifikujaca sie jednostke bojowa (nie wodza) jako garnizon -- nie dolacza do marszu;
+// reszta idzie jak dotad. Fixture ma 4 jednostki na heksie miasta 'home' (3,4): general + 3 piechoty -> garnizonem zostaje 1 piechota, 3 maszeruja.
+const unmovedAtAttack = troops.filter(u => !attackMovesByUnit.has(u.id));
+check('attack stage keeps exactly one non-general unit as home-city garrison (owner rule 2026-11-18), the rest march',
+  unmovedAtAttack.length === 1 && !unmovedAtAttack[0].isGeneral && unmovedAtAttack[0].q === 3 && unmovedAtAttack[0].r === 4,
+  { unmoved: unmovedAtAttack.map(u => u.id) });
+const marchingTroops = troops.filter(u => !unmovedAtAttack.includes(u));
+const expectedAttackRoster = marchingTroops.map(u => u.id);
 check(`attack stage issues same-target movement for every stacked eligible unit (${expectedAttackRoster.length}/${expectedAttackRoster.length})`,
   expectedAttackRoster.every(id => attackMovesByUnit.get(id)?.targetCityId === 'enemy-near'),
   `ordered ${[...attackMovesByUnit.keys()].join(',')}`);
-const gatheredIds = troops.map(t => t.id);
+const gatheredIds = marchingTroops.map(t => t.id); // maszerujace (bez garnizonu miasta)
 const gatheredMoves = attackCommands.filter(command => command.type === 'move' && gatheredIds.includes(command.unitId));
-check('all four units gathered on one hex receive the same attack-march step',
+check('all marching units gathered on one hex (everyone except the garrison) receive the same attack-march step',
   gatheredMoves.length === gatheredIds.length
     && new Set(gatheredMoves.map(command => `${command.toQ},${command.toR},${command.targetCityId}`)).size === 1,
   { expected: gatheredIds, actual: gatheredMoves });
@@ -112,10 +120,10 @@ const attackWithStragglerOpts = { currentTurn: 6, aiGeneralWarCampaign: { ...cam
 const attackWithStraggler = M.decideAITurn(1, remoteTroops, cities, map, data, attackWithStragglerOpts);
 const mainStackMoves = attackWithStraggler.filter(command => command.type === 'move'
   && troops.some(unit => unit.id === command.unitId));
-check('sixth campaign turn sends every assembled main-stack unit toward the target despite a straggler',
-  mainStackMoves.length === troops.length
+check('sixth campaign turn sends every assembled main-stack unit (except the home-city garrison) toward the target despite a straggler',
+  mainStackMoves.length === marchingTroops.length
     && mainStackMoves.every(command => command.targetCityId === 'enemy-near'),
-  { expected: troops.map(unit => unit.id), actual: mainStackMoves });
+  { expected: marchingTroops.map(unit => unit.id), actual: mainStackMoves });
 check('sixth campaign turn continues to move the separated unit toward the assembled force',
   attackWithStraggler.some(command => command.type === 'move' && command.unitId === 'infantry-remote'),
   attackWithStraggler);
