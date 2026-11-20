@@ -1817,6 +1817,31 @@ pub const MOVE_STEP_MS: f64 = 240.0;
 /// K5LOOP-SIEGE-ATK-B (T2b): czas kroku `_doMove` wołanego przez ciało: `MOVE_STEP_MS`, a przy odmowie bramki muru
 /// (`ru.moveLeft = 0; done();` synchronicznie, `:8689-8692`) `0`. Ciało nie planuje AUTO-batch (`autobatch = None`),
 /// więc `outcome.done` jest prawdą wyłącznie dla odmowy ([`MoveOutcome`]: gałąź bezpośrednia ma `done = false`).
+/// FRAME-QUANT-Q1 (D-FQ-1, D-FQ-3): ogon aktywacji z ciosem wręcz od chwili ciosu do `done()` (`_doMeleeAttack`
+/// `:9117-9172`): koniec lunge w pierwszej klatce z `localT >= BLOW_LUNGE_MS` ([`frame_raf`]), potem
+/// `_schedule(BLOW_SETTLE_MS)` z tej klatki — odcinek settle zostaje nominalny (planuje go zegar sterownika, który
+/// wyznacza klatkę odpalenia i zachowuje nominalny `due`), minus chwila ciosu `frame_raf(hit_ms)`. Klatka 16 ms:
+/// `272 + 220 - 160 = 332`.
+#[must_use]
+pub fn melee_tail_ms(frame: f64, hit_ms: f64) -> f64 {
+    frame_raf(frame, BLOW_LUNGE_MS) + BLOW_SETTLE_MS - frame_raf(frame, hit_ms)
+}
+
+/// FRAME-QUANT-Q1 (D-FQ-1): chwila startu kroku `moves` marszu `_siegeWalkTo` (`:8006-8019`): każdy kolejny krok
+/// poprzedza `_schedule(STEP_GAP_MS)` (`:8017`), oba odcinki kwantyzowane klatką.
+#[must_use]
+pub fn siege_walk_step_t0(frame: f64, now0: f64, moves: u32) -> f64 {
+    now0 + f64::from(moves)
+        * (frame_raf(frame, MOVE_STEP_MS) + frame_sched(frame, f64::from(STEP_GAP_MS)))
+}
+
+/// FRAME-QUANT-Q1 (D-FQ-1): czas aktywacji marszu `_siegeWalkTo`: `moves` kroków `_doMove` i `schedules` przerw.
+#[must_use]
+pub fn siege_walk_dur(frame: f64, moves: u32, schedules: f64) -> f64 {
+    f64::from(moves) * frame_raf(frame, MOVE_STEP_MS)
+        + schedules * frame_sched(frame, f64::from(STEP_GAP_MS))
+}
+
 /// FRAME-QUANT-Q1 (D-FQ-1): czas kroku jest kwantyzowany klatką `frame` ([`frame_raf`]).
 fn step_ms(res: &MoveStepResult, frame: f64) -> f64 {
     if res.outcome.done {
@@ -4824,8 +4849,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 // FRAME-QUANT-Q1 (D-FQ-3): `_schedule(BLOW_SETTLE_MS)` z klatki końca lunge ma nominalny `due`
                 // (`koniec lunge + 220`); ogon planuje zegar sterownika z klatki ciosu, więc odcinek settle zostaje
                 // nominalny, a klatkę odpalenia wyznacza zegar.
-                self.tail[ix][unit.idx] =
-                    frame_raf(self.frame_ms, BLOW_LUNGE_MS) + BLOW_SETTLE_MS - hit;
+                self.tail[ix][unit.idx] = melee_tail_ms(self.frame_ms, pu.body_ms);
             }
             attack_pre + hit
         } else {
@@ -5782,8 +5806,7 @@ impl<R: RollSource> WalkWorld for ProdSiegeWalk<'_, R> {
         // FRAME-QUANT-Q1 (D-FQ-1): oba odcinki kwantyzowane klatką.
         let frame = self.body.frame_ms;
         let gap = f64::from(STEP_GAP_MS);
-        self.body.now = self.now0
-            + f64::from(self.moves) * (frame_raf(frame, MOVE_STEP_MS) + frame_sched(frame, gap));
+        self.body.now = siege_walk_step_t0(frame, self.now0, self.moves);
         // FRAME-QUANT-Q1 (D-FQ-2): krok po `_schedule(STEP_GAP_MS)` (nie pierwszy) dostaje nominalny `due` tego zegara.
         if self.moves > 0 {
             let _ = self
@@ -6015,8 +6038,7 @@ impl<R: RollSource> ProdBody<R> {
             .iter()
             .filter(|e| matches!(e, WalkEvent::Schedule { .. }))
             .count() as f64;
-        let dur = f64::from(moves) * frame_raf(self.frame_ms, MOVE_STEP_MS)
-            + schedules * frame_sched(self.frame_ms, f64::from(STEP_GAP_MS));
+        let dur = siege_walk_dur(self.frame_ms, moves, schedules);
         // Odmowa bramki muru (`WalkEvent::Refused`): `ru.moveLeft = 0` (`:8690`) także bez wcześniejszego kroku.
         let refused = events
             .iter()
@@ -6661,6 +6683,20 @@ mod pin3_timeline_tests {
     /// (`_drainTimers` `:9616-9634`), rosnąco po nominalnym `due`. Zegar wieży z tej samej klatki widzi krok jako wykonany
     /// tylko przy mniejszym `due` kroku; remis `due` = wieża pierwsza (jej `id` nadany wcześniej: wystrzał planowany w
     /// `_beginTurn`, trafienie przy wystrzale). Krok z kolejki `_raf` (`+inf`) nigdy nie jest wykonany przed zegarem klatki.
+    #[test]
+    fn czas_kroku_kwantyzowany_klatka() {
+        // FRAME-QUANT-Q1 (D-FQ-1): krok `_doMove` kończy się w pierwszej klatce z `localT >= MOVE_STEP_MS`.
+        let step = |done| MoveStepResult {
+            move_left: 1.0,
+            outcome: crate::domain::siege_tactics_move_effects::MoveOutcome { done },
+        };
+        assert_eq!(step_ms(&step(false), 16.0), 240.0);
+        assert_eq!(step_ms(&step(false), 32.0), 256.0);
+        assert_eq!(step_ms(&step(false), 100.0), 300.0);
+        assert_eq!(step_ms(&step(false), 0.0), MOVE_STEP_MS);
+        assert_eq!(step_ms(&step(true), 32.0), 0.0);
+    }
+
     #[test]
     fn krok_z_zegara_w_klatce_wg_nominalnego_due() {
         assert!(timeline_done(1312.0, 1310.0, 1312.0, 1311.0));

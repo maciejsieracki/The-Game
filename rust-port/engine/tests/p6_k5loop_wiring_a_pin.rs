@@ -443,6 +443,32 @@ fn kwantyzacja_odcinkow_klatka_pinu() {
     assert_eq!(frame_sched(-16.0, 70.0), 70.0);
 }
 
+/// FRAME-QUANT-Q1 (D-FQ-1, D-FQ-3): złożone odcinki ciała — ogon ciosu wręcz (`_doMeleeAttack` `:9117-9172`: koniec
+/// lunge w klatce, settle nominalny od tej klatki) i marsz oblężniczy `_siegeWalkTo` (`:8006-8019`: krok `_raf` +
+/// `_schedule(STEP_GAP_MS)` między krokami).
+#[test]
+fn kwantyzacja_odcinkow_zlozonych_klatka_pinu() {
+    use civ_engine::domain::siege_tactics_loop::{
+        melee_tail_ms, siege_walk_dur, siege_walk_step_t0,
+    };
+    // Klatka 16: koniec lunge 272, settle 220 nominalnie (due 492, nie 496), cios 160 -> ogon 332.
+    assert_eq!(melee_tail_ms(16.0, 150.0), 332.0);
+    assert_eq!(melee_tail_ms(1.0, 150.0), 330.0);
+    assert_eq!(melee_tail_ms(0.0, 150.0), 330.0);
+    assert_eq!(melee_tail_ms(32.0, 150.0), 288.0 + 220.0 - 160.0);
+    // Marsz oblężniczy: krok 240 (klatka 16) / 256 (klatka 32) + przerwa 80 / 96.
+    assert_eq!(siege_walk_step_t0(16.0, 1000.0, 0), 1000.0);
+    assert_eq!(
+        siege_walk_step_t0(16.0, 1000.0, 2),
+        1000.0 + 2.0 * (240.0 + 80.0)
+    );
+    assert_eq!(siege_walk_step_t0(32.0, 0.0, 1), 256.0 + 96.0);
+    assert_eq!(siege_walk_step_t0(1.0, 0.0, 3), 3.0 * 310.0);
+    assert_eq!(siege_walk_dur(16.0, 3, 2.0), 3.0 * 240.0 + 2.0 * 80.0);
+    assert_eq!(siege_walk_dur(32.0, 2, 1.0), 2.0 * 256.0 + 96.0);
+    assert_eq!(siege_walk_dur(1.0, 2, 1.0), 2.0 * 240.0 + 70.0);
+}
+
 /// Pokrycie scenariuszy wymagane dispatchem (z/bez machin, różne liczności, wyłom, ucieczka, oba sufity tur, oba tryby).
 #[test]
 fn pokrycie_scenariuszy() {

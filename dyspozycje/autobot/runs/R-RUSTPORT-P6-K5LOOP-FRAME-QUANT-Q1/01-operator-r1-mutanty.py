@@ -4,7 +4,7 @@
 Każdy mutant = jedna podmiana tekstu w źródle (dokładnie jedno wystąpienie), build release testu
 `p6_k5loop_wiring_a_pin` (wspólny CARGO_TARGET_DIR), uruchomienie testów:
   * `wektory_pinu_pelnej_bitwy_bajt_w_bajt` (34 wektory pinu + 3 bliźniaki `_klatka4`, w tym 12 `fq_*` @16 ms),
-  * `kwantyzacja_odcinkow_klatka_pinu` (wzory D-FQ-1),
+  * `kwantyzacja_odcinkow_klatka_pinu`, `kwantyzacja_odcinkow_zlozonych_klatka_pinu` (wzory D-FQ-1/3),
 oraz testów osi czasu ciała w lib (`pin3_timeline_tests`) dla mutantów oznaczonych `lib=True`.
 Wynik: ZABITY (test pada albo build nie przechodzi), PRZEŻYŁ. Źródło przywracane po każdym mutancie
 (sprawdzane `git diff --quiet` na pliku).
@@ -37,18 +37,18 @@ M = [
      'frame_raf: czas nominalny (krok, cios, lunge)', False),
     ('Q6', LOOP, '        frame_raf(frame, MOVE_STEP_MS)\n    }\n}',
      '        MOVE_STEP_MS\n    }\n}',
-     'step_ms: krok nominalny 240', False),
+     'step_ms: krok nominalny 240', True),
     ('Q7', LOOP, '            self.gap_due = Some(at + ms);\n        }\n        frame_sched(self.frame_ms, ms)',
      '            self.gap_due = Some(at + ms);\n        }\n        ms',
      'gap_after: przerwa STEP_GAP nominalna (70 zamiast 80)', False),
     ('Q8', LOOP, '        let hit = frame_raf(self.frame_ms, pu.body_ms);',
      '        let hit = pu.body_ms;',
      'cios wręcz w nominalnym BLOW_HIT_T (150 zamiast 160)', False),
-    ('Q9', LOOP, '                    frame_raf(self.frame_ms, BLOW_LUNGE_MS) + BLOW_SETTLE_MS - hit;',
-     '                    BLOW_LUNGE_MS + BLOW_SETTLE_MS - hit;',
+    ('Q9', LOOP, '    frame_raf(frame, BLOW_LUNGE_MS) + BLOW_SETTLE_MS - frame_raf(frame, hit_ms)',
+     '    BLOW_LUNGE_MS + BLOW_SETTLE_MS - frame_raf(frame, hit_ms)',
      'ogon ciosu: koniec lunge nominalny (260 zamiast 272)', False),
-    ('Q10', LOOP, '                    frame_raf(self.frame_ms, BLOW_LUNGE_MS) + BLOW_SETTLE_MS - hit;',
-     '                    frame_raf(self.frame_ms, BLOW_LUNGE_MS) + frame_sched(self.frame_ms, BLOW_SETTLE_MS) - hit;',
+    ('Q10', LOOP, '    frame_raf(frame, BLOW_LUNGE_MS) + BLOW_SETTLE_MS - frame_raf(frame, hit_ms)',
+     '    frame_raf(frame, BLOW_LUNGE_MS) + frame_sched(frame, BLOW_SETTLE_MS) - frame_raf(frame, hit_ms)',
      'ogon ciosu: settle kwantyzowany z góry (due 496 zamiast 492)', False),
     ('Q11', LOOP, '                    dur = at + frame_sched(self.frame_ms, RANGED_FLY_MS);',
      '                    dur = at + RANGED_FLY_MS;',
@@ -56,11 +56,11 @@ M = [
     ('Q12', LOOP, '        let hit_at = t_shot + frame_sched(self.frame_ms, RANGED_FLY_MS);',
      '        let hit_at = t_shot + RANGED_FLY_MS;',
      'strzał jednostki: chwila trafienia na osi ciała nominalna', False),
-    ('Q13', LOOP, '            + f64::from(self.moves) * (frame_raf(frame, MOVE_STEP_MS) + frame_sched(frame, gap));',
-     '            + f64::from(self.moves) * (MOVE_STEP_MS + gap);',
+    ('Q13', LOOP, '        * (frame_raf(frame, MOVE_STEP_MS) + frame_sched(frame, f64::from(STEP_GAP_MS)))\n}',
+     '        * (MOVE_STEP_MS + f64::from(STEP_GAP_MS))\n}',
      'marsz oblężniczy (_siegeWalkTo): chwile kroków nominalne', False),
-    ('Q14', LOOP, '        let dur = f64::from(moves) * frame_raf(self.frame_ms, MOVE_STEP_MS)\n            + schedules * frame_sched(self.frame_ms, f64::from(STEP_GAP_MS));',
-     '        let dur = f64::from(moves) * MOVE_STEP_MS + schedules * f64::from(STEP_GAP_MS);',
+    ('Q14', LOOP, '    f64::from(moves) * frame_raf(frame, MOVE_STEP_MS)\n        + schedules * frame_sched(frame, f64::from(STEP_GAP_MS))',
+     '    f64::from(moves) * MOVE_STEP_MS + schedules * f64::from(STEP_GAP_MS)',
      'marsz oblężniczy: czas aktywacji nominalny', False),
     ('Q15', SESS, '        body.frame_ms = BATTLE_FRAME_WALL_MS;', '        body.frame_ms = 0.0;',
      'sesja: brak klatki ciała (dawny model nominalny)', False),
@@ -118,7 +118,7 @@ def main():
         open(path, 'w').write(src.replace(old, new))
         try:
             rc, out = run('cargo test --release --test p6_k5loop_wiring_a_pin -- '
-                          'wektory_pinu_pelnej_bitwy_bajt_w_bajt kwantyzacja_odcinkow_klatka_pinu', env)
+                          'wektory_pinu_pelnej_bitwy_bajt_w_bajt kwantyzacja_odcinkow', env)
             killed_by = []
             if rc != 0:
                 killed_by.append('wektory/kwantyzacja' if 'test result' in out else 'build')
