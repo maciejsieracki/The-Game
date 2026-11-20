@@ -12,7 +12,8 @@ ZMIANY/COMMIT: gałąź rust-port-wip/p4-1i6-dlugi-q1 nad origin/rust-port/parit
                engine/tests/bridge_contract.rs, engine/tests/p4_1i6_dlugi.rs (nowy), client/src/lib.rs,
                client/tests/siege_battle_client.rs — wszystkie w allowliście
 TESTY: §6 (engine fmt/clippy/bramki EXIT 0; client fmt/clippy/test EXIT 0; mutanty 25/25 zabite;
-       pełny test silnika partiami — wynik §6.2; renderer: NIE ODTWORZONO, dysk < 12 GB)
+       pełny test silnika partiami EXIT 0: 4206 passed / 0 failed / 1 ignored sprzed tematu; renderer: NIE ODTWORZONO,
+       dysk < 12 GB)
 BLOKADY: brak blokujących; bramka renderera nieodtworzona (dysk 3.7–4.8 GB < 12 GB; renderer 0 zmian)
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator
@@ -137,7 +138,10 @@ zostaje w bitwie, która i tak jest usuwana z gry; równoważny, poza listą).
 
 ### 6.2 Pełny test silnika
 
-WYNIK_PELNY_TEST
+`cargo test --no-fail-fast` silnika na kodzie `95be7d54d` (skrypt partii: `--lib --bins --benches --examples`, potem
+550 plików `tests/*.rs` w 19 partiach po ≤ 30 `--test`, binaria partii usuwane po przebiegu; checkout zawiera
+`dyspozycje/`): **EXIT 0**, 552 przebiegi `test result`, **4206 passed, 0 failed, 1 ignored** (ignorowany test sprzed
+tematu: `p6_order_lane::e2e::dump_tick1_econ_for_web_generator`, generator wektorów), 0 linii `FAILED`/`error`.
 
 ## 7. Długi i ryzyka (sekcja „Długi”)
 
