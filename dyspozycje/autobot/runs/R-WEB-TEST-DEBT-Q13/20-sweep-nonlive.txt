@@ -1,0 +1,1103 @@
+# Pelny przebieg nie-live (gra/tools/*-test.cjs bez chrome/puppeteer/playwright), 1101 plikow, timeout 60 s, 4 rownolegle, baza 2127238ac
+# format: exit_code|plik|ostatnia linia PASS/FAIL (surowa). exit 124 = timeout 60 s pod obciazeniem (NIE ZMIERZONO sekwencyjnie)
+0|_tmp-battle-roster-test.cjs|--- 7 ok, 0 fail
+0|_tmp-siege-test.cjs|
+0|adjust-handel-split-suma-test.cjs|adjust-handel-split-suma-test: 46 passed, 0 failed
+0|admin-dismiss-confirm-test.cjs|PASS: mutacja wykryta: usunięcie koszt-zdania z tekstu pytania
+0|admin-panstwo-city-gate-test.cjs|RESULT: 36 passed, 0 failed
+0|admin-panstwo-panel-names-test.cjs|admin-panstwo-panel-names-test: 26 pass, 0 fail
+0|administrators-wizard-test.cjs|58 passed, 0 failed
+0|ai-ai-alliance-limit-test.cjs|
+0|ai-ai-alliance-measure-hook-test.cjs|PASS mutant M25 przestarzałe zawsze false wykryty (statyczne: H25; B1: brak)
+0|ai-ai-alliance-surcharge-test.cjs|
+0|ai-ai-alliance-tick-test.cjs|
+0|ai-ai-coalition-test.cjs|
+0|ai-ai-treaty-evaluate-test.cjs|ai-ai-treaty-evaluate-test: 21 pass / 0 fail; mutanty niewykryte: 0
+0|ai-ai-treaty-nap-wiring-test.cjs|
+0|ai-army-all-civs-general-muster-test.cjs|ai-army-all-civs-general-muster-test: 26 PASS, 0 FAIL
+0|ai-army-scattered-merge-test.cjs|33 passed, 0 failed
+0|ai-avoid-polar-pick-test.cjs|16 passed, 0 failed
+0|ai-balans-step2-test.cjs|=== ai-balans-step2-test: 9 passed, 0 failed ===
+0|ai-balans-step4-test.cjs|=== ai-balans-step4-test: 10 passed, 0 failed ===
+0|ai-balans-step5-test.cjs|=== ai-balans-step5-test: 18 passed, 0 failed ===
+0|ai-citizen-hex-sibling-exclusion-test.cjs|WYNIK: 19 OK, 0 FAIL
+0|ai-city-capture-integration-test.cjs|
+0|ai-city-garrison-min-one-test.cjs|ai-city-garrison-min-one-test: 38 passed, 0 failed (of 38)
+0|ai-city-recovery-test.cjs|=== ai-city-recovery-test: 7 passed, 0 failed ===
+0|ai-city-yield-test.cjs|ai-city-yield-test: 42 PASS, 0 FAIL
+0|ai-colonization-pop-test.cjs|=== ai-colonization-pop-test: 13 passed, 0 failed ===
+0|ai-cs-absorption-test.cjs|=== ai-cs-absorption-test: 33 passed, 0 failed ===
+0|ai-cud-priorytet-b3-test.cjs|45 passed, 0 failed
+0|ai-defend-recapture-attack-priority-test.cjs|ai-defend-recapture-attack-priority-test: 55 passed, 0 failed
+0|ai-difficulty-bonus-test.cjs|ai-difficulty-bonus-test: 97 passed, 0 failed
+0|ai-early-city-founding-pace-test.cjs|ai-early-city-founding-pace-test: 2 passed, 0 failed
+0|ai-early-no-major-war-test.cjs|ai-early-no-major-war-test: 14 passed, 0 failed
+0|ai-era-unit-promotion-test.cjs|AI era promotion + Ox metadata: 17 passed, 0 failed
+0|ai-fog-test.cjs|AI fog tests PASS (9/9)
+0|ai-food-improvement-priority-stages-test.cjs|ai-food-improvement-priority-stages-test: 13 passed, 0 failed
+0|ai-food-only-worked-hexes-test.cjs|69 OK, 0 FAIL
+0|ai-founding-territory-test.cjs|=== ai-founding-territory-test: 29 passed, 0 failed ===
+0|ai-granary-prog-populacji-spojnosc-test.cjs|ai-granary-prog-populacji-spojnosc-test: 12 pass, 0 fail
+0|ai-home-defense-civilian-filter-test.cjs|ai-home-defense-civilian-filter-test: 8 passed, 0 failed
+0|ai-home-defense-vs-barbarians-test.cjs|ai-home-defense-vs-barbarians-test: 64 passed, 0 failed
+0|ai-improvements-test.cjs|AI-IMPROVEMENTS-TEST: 56 passed, 0 failed
+0|ai-losing-war-asks-peace-vs-player-test.cjs|WYNIK: 12 PASS / 0 FAIL
+0|ai-major-absorb-test.cjs|=== ai-major-absorb-test: 35 passed, 0 failed ===
+0|ai-major-economy-test.cjs|ai-major-economy-test: 31 passed, 0 failed
+0|ai-moc-diag-test.cjs|22 passed, 0 failed
+0|ai-move-range-collision-test.cjs|WYNIK: 12 passed, 0 failed
+0|ai-mp-military-cap-test.cjs|=== ai-mp-military-cap-test: 18 passed, 0 failed ===
+0|ai-mp-rekrutacja-build-gate-test.cjs|ai-mp-rekrutacja-build-gate-test: 21 passed, 0 failed
+0|ai-nauka-podzial-tura1-seed-test.cjs|8 passed, 0 failed
+0|ai-no-march-without-war-q1-test.cjs|PASS 11
+0|ai-no-siege-without-war-r2-test.cjs|PASS 10
+0|ai-ofensywa-wojna-epoki-test.cjs|ai-ofensywa-wojna-epoki-test: 7 passed, 0 failed
+0|ai-owner-progress-frame-test.cjs|ai-owner-progress-frame: 13 assertions passed
+0|ai-polar-fallback-test.cjs|8 passed, 0 failed
+0|ai-praca-budynki-ulepszenia-owner-policy-test.cjs|33 passed, 0 failed
+0|ai-praca-podzial-tura1-seed-test.cjs|9 passed, 0 failed
+0|ai-prod-fallback-test.cjs|=== ai-prod-fallback-test: 17 passed, 0 failed ===
+0|ai-prod-gate-difficulty-test.cjs|=== ai-prod-gate-difficulty-test: 8 passed, 0 failed ===
+0|ai-production-priority-test.cjs|ai-production-priority-test: 9 passed, 0 failed
+0|ai-produkcja-pokrycie-katalogu-test.cjs|ai-produkcja-pokrycie-katalogu-test: 6 passed, 0 failed
+0|ai-recruit-upkeep-gate-test.cjs|ai-recruit-upkeep-gate-test: 23 passed, 0 failed
+0|ai-rekrutacja-parytet-test.cjs|ai-rekrutacja-parytet-test: 7 passed, 0 failed
+0|ai-resource-needs-test.cjs|ai-resource-needs-test: 6 pass, 0 fail
+0|ai-siege-relief-test.cjs|WYNIK: 23 OK, 0 FAIL
+0|ai-siege-requires-war-test.cjs|--- 49 ok, 0 fail
+0|ai-slider-test.cjs|ai-slider-test: 46 passed, 0 failed
+0|ai-stadnina-fort-territory-test.cjs|17 OK, 0 FAIL
+0|ai-target-nearest-city-test.cjs|WYNIK: PASS
+0|ai-territory-race-test.cjs|WYNIK: 29 OK / 0 FAIL
+0|ai-test.cjs|ai-test: 297 passed, 0 failed
+0|ai-threat-mode-test.cjs|ai-threat-mode-test: 12 passed, 0 failed
+0|ai-trade-need-from-surplus-test.cjs|ai-trade-need-from-surplus-test: 12 passed, 0 failed
+0|ai-trade-offer-frequency-up-test.cjs|=== ai-trade-offer-frequency-up-test: 28 pass, 0 fail ===
+0|ai-trade-offer-min-one-block-test.cjs|ai-trade-offer-min-one-block-test: 12 passed, 0 failed
+0|ai-trade-oneshot-overpay-limit-test.cjs|ai-trade-oneshot-overpay-limit-test: 10 assertions passed
+0|ai-trade-proposal-branch-test.cjs|ai-trade-proposal-branch-test: 10 passed, 0 failed
+0|ai-trade-proposal-to-player-test.cjs|ai-trade-proposal-to-player-test: 25 assertions passed
+0|ai-trade-qty-cap-test.cjs|ai-trade-qty-cap-test: 18 passed, 0 failed
+0|ai-ulepszenia-malo-budowane-test.cjs|13 PASS, 0 FAIL
+0|ai-unit-replace-same-rules-test.cjs|ai-unit-replace-same-rules: 45 passed, 0 failed
+0|ai-unit-rush-test.cjs|ai-unit-rush-test: 7 passed, 0 failed
+0|ai-upkeep-runway-test.cjs|RESULT ai-upkeep-runway-test: 17 passed, 0 failed
+0|ai-upkeep-wiring-test.cjs|RESULT ai-upkeep-wiring-test: 4 passed, 0 failed
+0|ai-war-army-seeks-army-test.cjs|WYNIK: 22 PASS, 0 FAIL
+0|ai-war-city-garrison-test.cjs|ai-war-city-garrison-test: 21 PASS, 0 FAIL
+0|ai-war-defend-home-test.cjs|ai-war-defend-home-test: 30 passed, 0 failed
+0|ai-war-gate-test.cjs|ai-war-gate-test: 24 passed, 0 failed
+0|ai-war-nearest-city-peace-2t-test.cjs|WYNIK: PASS
+0|ai-war-weariness-peace-test.cjs|ai-war-weariness-peace-test: PASS=96 FAIL=0
+0|ai-zdobycie-miasta-adiacencja-test.cjs|
+0|ai2-heks-po-heksie-test.cjs|ai2-heks-po-heksie-test: 39 passed, 0 failed
+0|akwedukt-popcap-test.cjs|akwedukt-popcap-test: 7 pass, 0 fail
+0|alliance-war-call-saveload-test.cjs|7 pass / 0 fail
+0|alliance-war-obligation-test.cjs|alliance-war-obligation-test: 14 passed, 0 failed
+0|ambush-core-test.cjs|Wynik: 48 OK, 0 FAIL
+0|ambush-deploy-geometry-test.cjs|WYNIK: 20 OK / 0 FAIL
+0|ambush-deploy-line-width-test.cjs|PASS: zaskoczeni w dlugiej linii (max 3 w szeregu, konnica w linii) dla N=5/12/30/60 (240 checks)
+0|ambush-deploy-lineside-guard-test.cjs|PASS: zaskoczona linia trzyma konnice/rydwany w linii (setup+Reset, N=5/12/30/60, las 3 %), normalna bitwa ma konnice na skrzydlach (757 checks)
+0|ambush-deploy-scene-test.cjs|WYNIK: 26 OK / 0 FAIL
+0|ambush-deploy-zone-visual-test.cjs|WYNIK: 11 OK / 0 FAIL
+0|ambush-realstep-test.cjs|Wynik: 16 OK, 0 FAIL
+0|ambush-save-roundtrip-test.cjs|Wynik: 7 OK, 0 FAIL
+0|ambush-split-barb-test.cjs|MUTANT B2_alwaysComputeFullPath: FAIL (oczekiwane) -> bez zasadzki na planszy pathfinding z zasadzkami nie jest wolany
+0|ambush-ui-reason-test.cjs|Wynik: 10 OK, 0 FAIL
+0|ambush-wiring-test.cjs|Wynik: 28 OK, 0 FAIL
+0|archers-health-dist-data-test.cjs|WYNIK: 10 pass, 0 fail
+0|army-auto-recruit-general-test.cjs|32 assertions passed
+0|army-concentration-test.cjs|army-concentration-test: 58 passed, 0 failed
+0|army-consolidation-e2e-test.cjs|army-consolidation e2e: 6 passed / 0 failed
+0|army-consolidation-test.cjs|wiring (ai.ts/main.ts): 10 passed / 0 failed
+0|army-follow-leader-auto-merge-test.cjs|army-follow-leader-auto-merge-test: 14 pass, 0 fail
+0|army-hunger-combat-test.cjs|army-hunger-combat-test: 13 pass, 0 fail
+0|army-hunger-icon-unfortify-test.cjs|army-hunger-icon-unfortify-test: 4 passed, 0 failed
+0|army-merge-besieger-only-move-test.cjs|WYNIK: 8 OK / 0 FAIL
+0|army-merge-bounce-test.cjs|army-merge-bounce-test: 4 pass, 0 fail
+0|army-merge-colocated-test.cjs|army-merge-colocated-test: 4 pass, 0 fail
+0|army-merge-dismiss-bounce-test.cjs|army-merge-dismiss-bounce-test: 16 pass, 0 fail
+0|army-merge-separate-return-mainguard-test.cjs|army-merge-separate-return-mainguard-test: 73 pass, 0 fail
+0|army-merge-separate-return-test.cjs|army-merge-separate-return-test: 16 pass, 0 fail
+0|army-merge-split-direction-icons-test.cjs|PASS: production action-bar renderer produces outward split arrows and inward merge arrows.
+0|army-merge-stackgroupid-test.cjs|army-merge-stackgroupid-test: 11045 pass, 0 fail
+0|army-panel-card-move-bar-test.cjs|All army-panel-card-move-bar checks passed
+0|army-panel-recruit-rally-general-test.cjs|5 assertions passed
+0|army-recruitment-concentration-test.cjs|army-recruitment-concentration-test: 30 passed, 0 failed
+0|army-scout-not-leader-test.cjs|19 OK, 0 FAIL
+0|army-split-besieging-no-siege-lock-test.cjs|PASS 21 / FAIL 0
+0|army-split-movement-test.cjs|\narmy-split-movement-test: 4 pass, 0 fail
+0|army-split-ruch-icons-test.cjs|army-split-ruch-icons-test: 7 pass, 0 fail
+0|army-stack-ruch-test.cjs|army-stack-ruch-test: 5 pass, 0 fail
+0|army-type-chips-test.cjs|SUMMARY army-type-chips-test: 50 pass, 0 fail
+0|auto-battle-active-roster-event-test.cjs|auto-battle-active-roster-event-test: 6 pass, 0 fail
+0|auto-battle-loss-audit-test.cjs|auto-battle-loss-audit-test: 52 pass, 0 fail
+0|auto-battle-power-test.cjs|auto-battle-power-test: 14 pass, 0 fail
+0|auto-battle-przewaga-monotonicznosc-test.cjs|auto-battle-przewaga-monotonicznosc-test: 43 pass, 0 fail
+0|auto-battle-py-vs-ts-parytet-test.cjs|auto-battle-py-vs-ts-parytet-test: 150 pass, 0 fail
+0|auto-battle-simultaneous-test.cjs|auto-battle-simultaneous-test: 29 pass, 0 fail
+0|auto-fort-claim-test.cjs|auto-fort-claim-test: 68 passed, 0 failed
+0|auto-fort-diag-test.cjs|auto-fort-diag-test: 18 passed, 0 failed
+0|auto-improve-no-item-cap-test.cjs|auto-improve-no-item-cap-test: 15 passed, 0 failed
+0|auto-improvements-test.cjs|auto-improvements-test: 46 passed, 0 failed
+0|auto-manage-test.cjs|
+0|auto-manage-ulepszenia-fallback-test.cjs|
+0|auto-wyzywienie-bilans-clamp-test.cjs|auto-wyzywienie-bilans-clamp-test: 22 pass, 0 fail
+0|auto-wyzywienie-flow-balance-test.cjs|auto-wyzywienie-flow-balance-test: 17 pass, 0 fail
+0|auto-wyzywienie-kosztarmii-kryterium-test.cjs|auto-wyzywienie-kosztarmii-kryterium-test: 18 pass, 0 fail
+0|auto-wyzywienie-population-growth-live-recalc-test.cjs|42 pass, 0 fail
+0|autoclear-priority-q1-test.cjs|autoclear-priority-q1-test: 60 passed, 0 failed
+0|autoclear-river-forest-priority-test.cjs|17 OK, 0 FAIL
+0|autoimprove-river-forest-clear-no-citizen-q1-unit-test.cjs|17 OK, 0 FAIL
+0|autoimprove-river-forest-first-q1-test.cjs|12 OK, 0 FAIL
+0|autosave-quota-fail-test.cjs|=== autosave-quota-fail-test: 22 pass, 0 fail ===
+0|autowyzywienie-rowny-wzrost-test.cjs|
+0|barb-camp-blacklist-test.cjs|barb-camp-blacklist-test: 19 passed, 0 failed
+0|barb-city-behavior-test.cjs|barb-city-behavior-test: 178 passed, 0 failed
+0|barb-city-capture-cluster-test.cjs|barb-city-capture-cluster-test: 97 passed, 0 failed
+0|barb-city-owner-contract-test.cjs|[barb-city-owner-contract-test] 3/3 PASS
+0|barbarian-cooperation-grace-test.cjs|30 passed, 0 failed
+0|barbarians-test.cjs|barbarians-test: 213 passed, 0 failed
+0|barbarzyncy-podwojny-atak-prebattle-test.cjs|barbarzyncy-podwojny-atak-prebattle-test: 18 pass, 0 fail
+0|battle-attack-dir-per-selection-test.cjs|
+0|battle-attack-move-order-test.cjs|battle-attack-move-order-test: passed
+0|battle-cavalry-flank-default-test.cjs|PASS: cavalry/chariots default to the wings on plains and on rough terrain, never ahead of the body (960 checks)
+0|battle-collision-manual-unselected-test.cjs|battle-collision-manual-unselected-test: passed
+0|battle-commander-star-reset-test.cjs|Wynik: 10 PASS, 0 FAIL
+0|battle-commander-star-test.cjs|Wynik: 17 PASS, 0 FAIL
+0|battle-damage-labels-no-overlap-test.cjs|WYNIK: 23 PASS, 0 FAIL
+0|battle-dead-unit-disappearance-test.cjs|battle-dead-unit-disappearance-test: PASS — killed unit detached immediately; routed unit still flees visibly
+0|battle-dead-units-removed-test.cjs|battle-dead-units-removed-test: PASS — HP<=0 (also routed) removed at once; non-lethal rout kept
+0|battle-defeat-retreat-blocked-direction-test.cjs|battle-defeat-retreat-blocked-direction-test: 16 pass, 0 fail
+0|battle-defeat-survivor-retreat-two-hex-test.cjs|battle-defeat-survivor-retreat-two-hex-test: 44 pass, 0 fail
+0|battle-deploy-cavalry-flanks-test.cjs|PASS: default start placement keeps cavalry/chariots on the wings, level with the body (536 checks, max distance to own unit 3)
+0|battle-flank-close-formation-test.cjs|PASS: mounted units stay in close, bounded flanks (994 checks)
+0|battle-formation-rules-test.cjs|PASS: front ranks, mounted wings, Attack line pacing, and same-activation ranged fire
+0|battle-hp-display-test.cjs|PASS — 7 / 7
+0|battle-initial-placement-runtime-test.cjs|PASS: forced mounted fallback in production initial placement/reset stays close; old wide fallback mutation caught 4/4
+0|battle-line-advance-uniform-test.cjs|PASS mixedSpeed/def: max front spread 0 <= 2
+0|battle-loot-test.cjs|battle-loot-test: 12 pass, 0 fail
+0|battle-manual-orders-full-move-test.cjs|battle-manual-orders-full-move-test: passed
+0|battle-manual-orders-routing-test.cjs|battle-manual-orders-routing-test: passed
+0|battle-melee-attack-doctrine-test.cjs|PASS same 24v24 warriors advance to adjacency then strike in Atak and Szturm; PASS empty target remains no-op
+0|battle-minimap-side-colors-test.cjs|
+0|battle-mode-save-reload-contract-test.cjs|battle-mode-save-reload-contract-test: PASS — both settings roundtrip; legacy saves retain choice
+0|battle-pace-latch-test.cjs|=== battle-pace-latch-test: 5/5 pass, 0 fail; mutacja MELEE_LATCH wykryta (czerwona) ===
+0|battle-player-always-blue-test.cjs|
+0|battle-ranged-mounted-doctrine-test.cjs|  PASS Szturm sends mounted units through the cavalry maneuver planner
+0|battle-retreat-limit-test.cjs|battle-retreat-limit-test: 43 pass, 0 fail
+0|battle-roster-test.cjs|--- 7 ok, 0 fail
+0|battle-side-colors-3d-test.cjs|
+0|battle-siege-nearby-units-join-test.cjs|battle-siege-nearby-units-join-test: PASS=14 FAIL=0
+0|battle-summary-annihilation-test.cjs|battle-summary-annihilation-test: pass=20 fail=0
+0|battle-summary-test.cjs|
+0|battle-tempo-minimap-brand-test.cjs|
+0|battle-undeployed-units-test.cjs|battle-undeployed-units-test: PASS=37 FAIL=0
+0|bitwa-auto-atak-wielojednostkowy-evaluation-test.cjs|Current-candidate AUTO multi-unit evaluation: 10 passed, 0 failed
+0|bitwa-mapa-kamera-blokada-test.cjs|25 passed, 0 failed
+0|bitwa-podsumowanie-dispose-test.cjs|16 passed, 0 failed
+0|boot-error-catcher-console-error-test.cjs|PASSED: 8, FAILED: 0
+0|border-march-scan-test.cjs|border-march-scan-test: 15 pass, 0 fail
+0|bottom-bar-hud-wykonaj-overlap-test.cjs|bottom-bar-hud-wykonaj-overlap-test: 33 pass, 0 fail
+0|brick-cycles-75-100-test.cjs|brick-cycles-75-100-test: 46 passed, 0 failed
+0|brick-production-x2-test.cjs|brick-production-x2-test: 69 passed, 0 failed
+0|budowa-lista-szablony-test.cjs|11 pass, 0 fail
+0|budynek-civ-bonus-u17-test.cjs|7 passed, 0 failed
+0|build-mode-hud-affordability-test.cjs|[build-mode-hud-affordability-test] 7 pass, 0 fail
+0|building-cost-resource-availability-test.cjs|building-cost-resource-availability-test: 63 pass, 0 fail
+0|building-cost-tempo-test.cjs|
+0|building-epoch-cost-implementation-test.cjs|building-epoch-cost-implementation-test: 20 passed, 0 failed
+0|building-happiness-test.cjs|14 passed, 0 failed
+0|building-queue-refund-test.cjs|building-queue-refund-test: 5 passed, 0 failed
+0|building-stock-visibility-test.cjs|7 passed, 0 failed
+0|building-tech-gate-test.cjs|96 pass, 0 fail
+0|building-upkeep-ceramics-test.cjs|645 passed, 0 failed
+0|building-upkeep-resources-test.cjs|building-upkeep-resources-test: 48 passed, 0 failed
+0|camera-zoom-block-test.cjs|camera-zoom-block-test: 4 pass, 0 fail
+0|capital-capture-test.cjs|
+0|capital-sep-unit-test.cjs|44 passed, 0 failed
+0|capital-spacing-prop-test.cjs|ALL PASS (0 failed)
+0|capture-event-retention-test.cjs|capture-event-retention-test: PASS (20 assertions)
+0|capture-render-sync-test.cjs|capture-render-sync-test: 23 passed, 0 failed
+0|card-resource-purpose-test.cjs|[card-resource-purpose-test] 103 pass, 0 fail
+0|chariot-move-6-data-test.cjs|chariot-move-6-data-test: passed=163 failed=0
+0|chlopek-pole-warstwy-test.cjs|chlopek-pole-warstwy-test: 23 pass, 0 fail
+0|cities-buildings-production-owner-contract-test.cjs|PASSED: 53 / FAILED: 0 / TOTAL: 53
+0|citizen-auto-assign-farm-river-test.cjs|11 passed, 0 failed
+0|citizen-consumption-era-mult-test.cjs|citizen-consumption-era-mult-test: PASS
+0|citizen-resource-upkeep-test.cjs|citizen-resource-upkeep-test: 124 passed, 0 failed
+0|citizen-upkeep-era-mult-test.cjs|citizen-upkeep-era-mult-test: 681 passed, 0 failed
+0|city-administrator-economy-test.cjs|city-administrator-economy-test: 72 passed, 0 failed
+0|city-administrator-test.cjs|119 passed, 0 failed
+0|city-badge-growth-percent-test.cjs|38 passed, 0 failed
+0|city-badge-zoom-lod-test.cjs|67 passed, 0 failed
+0|city-capture-pop-loss-test.cjs|29 PASS, 0 FAIL
+0|city-defense-terrain-gate-test.cjs|=== city-defense-terrain-gate-test: 34 pass, 0 fail ===
+0|city-founding-limit-greyed-test.cjs|Wynik: 19 OK, 0 FAIL
+0|city-founding-no-fort-takeover-test.cjs|=== city-founding-no-fort-takeover-test: 54 passed, 0 failed ===
+0|city-growth-percent-rounding-parity-test.cjs|16 passed, 0 failed
+0|city-hex-movement-test.cjs|
+0|city-limit-conquered-test.cjs|=== city-limit-conquered-test: 24 passed, 0 failed ===
+0|city-map-badge-test.cjs|62 passed, 0 failed
+0|city-militia-no-defenders-test.cjs|wynik: 110 OK, 0 FAIL
+0|city-militia-no-population-loss-test.cjs|RESULT: PASS
+0|city-militia-regen-cooldown-test.cjs|city-militia-regen-cooldown-test: 53 PASS / 0 FAIL
+0|city-name-start-overlap-test.cjs|PASS przebiegow 15
+0|city-name-unique-forever-test.cjs|PASS
+0|city-names-pool-test.cjs|123 passed, 0 failed
+0|city-names-pools-test.cjs|9 passed, 0 failed
+0|city-orderstate-restore-clear-test.cjs|9 passed, 0 failed
+0|city-panel-growth-percent-separator-test.cjs|29 passed, 0 failed
+0|city-siege-wall-rules-test.cjs|WYNIK: 50 OK, 0 FAIL
+0|city-state-cluster-diff-test.cjs|=== city-state-cluster-diff-test: 31 passed, 0 failed ===
+0|city-state-mp-growth-test.cjs|=== city-state-mp-growth-test: 9 passed, 0 failed ===
+0|city-state-offensive-perf-test.cjs|WYNIK (tylko sekcja izolowana bramkuje): 3 PASS, 0 FAIL
+0|city-state-prod-audit-test.cjs|17 passed, 0 failed
+0|city-upgrade-all-button-test.cjs|Zmutowany: CZERWONY (oczekiwane — test wykrywa mutację) (fail=7)
+0|citypanel-konwerter-produkcja-test.cjs|citypanel-konwerter-produkcja-test: 108 pass, 0 fail
+0|citypanel-uwagi-abc-filter-test.cjs|citypanel-uwagi-abc-filter-test: 44 pass, 0 fail
+0|citystate-army-food-difficulty-test.cjs|Wynik: 29 PASS / 0 FAIL
+0|civ-ai-allocation-saveload-order-test.cjs|5/5 PASS
+0|civ-ai-allocation-test.cjs|11/11 PASS
+0|civ-bonusy-test.cjs|civ-bonusy-test: 56 passed, 0 failed
+0|civ-configurator-opponent-test.cjs|civ-configurator-opponent-test: 41 passed, 0 failed
+0|civ-entry-epoch-test.cjs|civ-entry-epoch-test: 11 passed, 0 failed
+0|civ-intro-texts-test.cjs|
+0|civ-matrix-difficulty-test.cjs|16 passed, 0 failed
+0|civ-matrix-meta-roster-wiring-test.cjs|civ-matrix-meta-roster-wiring-test: 63 passed, 0 failed
+0|civ-matrix-semantic-labels-test.cjs|PASS 490; FAIL 0
+0|civ-music-test.cjs|WYNIK: 100 OK, 0 FAIL
+0|civ-names-test.cjs|109 passed, 0 failed
+0|civ-roster-test.cjs|civ-roster-test: 115 passed, 0 failed
+0|civ-visual-test.cjs|56 passed, 0 failed
+0|civ-welcome-screen-test.cjs|
+0|civpedia-gra-id-mostek-test.cjs|Wszystkie testy PASS.
+0|civpedia-oslabienie-docs-guard-test.cjs|GREEN: civpedia-oslabienie-docs-guard-test: 7 PASS, 0 FAIL
+0|civtest-addunit-typeid-test.cjs|PASS  civ-test-hooks.ts: typ deps.addUnit zawiera typeId opcjonalny
+0|cluster-start-recovery2-test.cjs|29 passed, 0 failed
+0|combat-test.cjs|All sanity checks passed.
+0|commander-unit-label-test.cjs|5/5 PASS
+0|converter-era-scaling-test.cjs|converter-era-scaling-test: 115 passed, 0 failed
+0|converters-shared-input-test.cjs|converters-shared-input-test: 24 passed, 0 failed
+0|converters-test.cjs|converters-test: 49 passed, 0 failed
+0|corruption-reduction-palace-tribunal-test.cjs|PASSED: 34 / FAILED: 0
+0|counter-migration-test.cjs|Slinger -> Spearman       (counters.json only) -      counters.json-ONLY (no units.json column, untouched by migration) 1.5000        1.5000  PASS
+0|cs-military-cap-wiring-test.cjs|WYNIK: 13 PASS, 0 FAIL
+0|cs-wave-attack-radius-test.cjs|=== cs-wave-attack-radius-test: 22 passed, 0 failed ===
+0|cuda-handel-test.cjs|cuda-handel-test: 26 passed, 0 failed
+0|currency-mult-per-civ-test.cjs|currency-mult-per-civ-test: 202 passed, 0 failed
+0|danina-podatek-nazwa-test.cjs|danina-podatek-nazwa-test: 15 pass, 0 fail
+0|danina-podatek-tooltip-ui-test.cjs|danina-podatek-tooltip-ui-test: 12 pass, 0 fail
+0|default-food-ration-test.cjs|=== default-food-ration-test: 26 passed, 0 failed ===
+0|default-labor-split-test.cjs|=== default-labor-split-test: 16 pass, 0 fail ===
+0|default-tax-split-test.cjs|=== default-tax-split-test: 28 pass, 0 fail ===
+0|defeat-last-city-test.cjs|[defeat-last-city-test] 14 passed, 0 failed (total 14).
+0|defeat-screen-summary-test.cjs|[defeat-screen-summary-test] passed=25 failed=0
+0|defense-breakdown-test.cjs|=== defense-breakdown-test: 49 pass, 0 fail ===
+0|deposit-building-gate-test.cjs|deposit-building-gate: 50 pass, 0 fail
+0|determinism-digest-stackgroup-test.cjs|PASS (e) numeracja grup idzie po id jednostek (sortowanie stabilne), nie po kolejnosci tablicy
+0|determinism-same-seed-test.cjs|WYNIK: PASS
+0|determinism-save-load-resume-test.cjs|WYNIK: PASS
+0|difficulty-bonus-city-name-test.cjs|7 passed, 0 failed
+0|difficulty-cost-test.cjs|
+0|diplo-active-treaties-resource-deals-test.cjs|15 OK, 0 FAIL
+0|diplo-aggressor-marker-unit-test.cjs|diplo-aggressor-marker-unit-test: 21 PASS, 0 FAIL
+0|diplo-aggressor-mutation-test.cjs|KILLED      silnik AI: delta progu nieuzyta | diplo-aggressor-unit-test: 72 PASS, 1 FAIL
+0|diplo-aggressor-wiring-test.cjs|diplo-aggressor-wiring-test: 15 PASS, 0 FAIL
+0|diplo-all-windows-declutter-tooltips-test.cjs|diplo-all-windows-declutter-tooltips-test: 48 pass, 0 fail
+0|diplo-alliance-gate-test.cjs|diplo-alliance-gate-test: 21 PASS, 0 FAIL
+0|diplo-city-offer-reject-own-cooldown-test.cjs|Wynik: 28 pass, 0 fail
+0|diplo-civpedia-values-test.cjs|PASS: 129 sprawdzeń, wierszy parametrów w haśle: 152
+0|diplo-deal-boards-declutter-tooltips-test.cjs|diplo-deal-boards-declutter-tooltips-test: 13 pass, 0 fail
+0|diplo-forced-peace-d2-guard-test.cjs|PASS G5d hak wearDiagForTest tylko odczyt (bez set/push/delete w ciele)
+0|diplo-forced-peace-pending-test.cjs|diplo-forced-peace-pending-test: PASS=40 FAIL=0
+0|diplo-json-descriptions-sync-test.cjs|WYNIK: 46/46 OK, FAIL: 0
+0|diplo-labels-trust-thresholds-test.cjs|mutant (próg zaufania 10 → 30): fail 5 z 21
+0|diplo-military-strength-test.cjs|RESULT: 27 PASS / 0 FAIL
+0|diplo-nap-border-threshold-test.cjs|WYNIK: 14 OK, 0 FAIL
+0|diplo-nap-trust-30-test.cjs|25/25 passed
+0|diplo-negotiation-round-counter-test.cjs|wynik: 4 ok, 0 fail
+0|diplo-panel-aiai-both-labels-test.cjs|Wynik: 17 OK, 0 FAIL
+0|diplo-panel-recruits-level-test.cjs|PASSED: 22 / FAILED: 0 / TOTAL: 22
+0|diplo-peace-ai-ai-nonnegative-test.cjs|21 PASS, 0 FAIL
+0|diplo-peace-auto-stale-offer-test.cjs|PASS=6 FAIL=0
+0|diplo-peace-balance-accept-test.cjs|diplo-peace-balance-accept-test: 32 pass / 0 fail
+0|diplo-peace-last-stage-payment-test.cjs|
+0|diplo-peace-offer-dedup-one-active-test.cjs|
+0|diplo-peace-price-decay-test.cjs|diplo-peace-price-decay-test: PASS=13 FAIL=0
+0|diplo-peace-price-production-paths-test.cjs|diplo-peace-price-production-paths-test: PASS=15 FAIL=0
+0|diplo-peace-price-wiring-test.cjs|diplo-peace-price-wiring-test: PASS=14 FAIL=0
+0|diplo-peace-pw-power-ratio-test.cjs|Wynik: 48 PASS, 0 FAIL
+0|diplo-peace-stance-wiring-test.cjs|diplo-peace-stance-wiring-test: 10 pass / 0 fail
+0|diplo-peace-tail-integration-test.cjs|diplo-peace-tail-integration-test: 42 pass / 0 fail
+0|diplo-peace-tail-proposal-test.cjs|diplo-peace-tail-proposal-test: 9 pass / 0 fail
+0|diplo-peace-weaker-seeks-city-only-test.cjs|diplo-peace-weaker-seeks-city-only-test: 35 pass / 0 fail
+0|diplo-peace-winner-proposal-flow-test.cjs|SUMA: PASS=49 FAIL=0
+0|diplo-quick-actions-labels-test.cjs|[diplo-quick-actions-labels-test] 38 OK, 0 FAIL
+0|diplo-relation-tier-trust-test.cjs|
+0|diplo-respect-battle-win-plus5-test.cjs|
+0|diplo-respect-military-edge-test.cjs|Wynik: 12 OK, 0 FAIL
+0|diplo-respect-military-events-test.cjs|Wynik: 30 OK, 0 FAIL
+0|diplo-respect-military-offset-test.cjs|RESULT: 12 OK, 0 FAIL
+0|diplo-rozejm-parity-test.cjs|diplo-rozejm-parity-test: 25 pass, 0 fail
+0|diplo-tick-war-brake-mutation-test.cjs|diplo-tick-war-brake-mutation-test: 17 pass / 0 fail (baza + 16 mutantow)
+0|diplo-tick-war-brake-test.cjs|diplo-tick-war-brake-test: 51 pass / 0 fail
+0|diplo-tick-war-brake-unit-test.cjs|diplo-tick-war-brake-unit-test: 69 pass / 0 fail
+0|diplo-tooltip-duplicate-rows-test.cjs|WYNIK: 6 PASS / 0 FAIL
+0|diplo-treaties-ai-parity-test.cjs|diplo-treaties-ai-parity-test: 80 pass / 0 fail
+0|diplo-treaties-power-parity-test.cjs|diplo-treaties-power-parity-test: 50 pass, 0 fail
+0|diplo-treaty-payment-carrier-test.cjs|diplo-treaty-payment-carrier-test: 11 pass / 0 fail; mutanty niewykryte: 0
+0|diplo-treaty-payment-wiring-test.cjs|diplo-treaty-payment-wiring-test: 468 pass, 0 fail
+0|diplo-truce-n6-saveload-test.cjs|8 pass / 0 fail
+0|diplo-truce-r1-test.cjs|diplo-truce-r1-test: 31 pass / 0 fail
+0|diplo-truce-r4-ai-test.cjs|diplo-truce-r4-ai-test: 24 pass / 0 fail
+0|diplo-truce-until-turn-test.cjs|WYNIK: 15 PASS / 0 FAIL
+0|diplo-trust-numbers-test.cjs|[diplo-trust-numbers-test] 22 pass, 0 fail
+0|diplo-trust-war-drift-test.cjs|PASS=14 FAIL=0
+0|diplo-trust-war-n6-cleanup-test.cjs|diplo-trust-war-n6-cleanup-test: 17 pass / 0 fail
+0|diplo-war-battle-counter-test.cjs|Wynik: 35 PASS / 0 FAIL
+0|diplo-war-character-threshold-test.cjs|diplo-war-character-threshold-test: 42 OK, 0 FAIL
+0|diplo-war-declare-zero-trust-test.cjs|diplo-war-declare-zero-trust-test: 45 OK, 0 FAIL
+0|diplo-war-peace-d7-test.cjs|diplo-war-peace-d7-test: 8 pass / 0 fail
+0|diplo-war-peace-gate-test.cjs|diplo-war-peace-gate-test: 24 pass / 0 fail
+0|diplo-war-peace-main-guard-test.cjs|diplo-war-peace-main-guard-test: 35 pass / 0 fail
+0|diplo-war-peace-profile-unit-test.cjs|diplo-war-peace-profile-unit-test: 124 pass / 0 fail
+0|diplo-war-peace-sim-test.cjs|diplo-war-peace-sim-test: 25 pass / 0 fail
+0|diplo-weariness-20-turns-test.cjs|diplo-weariness-20-turns-test: PASS=31 FAIL=0
+0|diplo-weariness-as-pw-peace-item-test.cjs|diplo-weariness-as-pw-peace-item-test: PASS=39 FAIL=0
+0|diplo-weariness-c615-both-cities-test.cjs|diplo-weariness-c615-both-cities-test: PASS=12 FAIL=0
+0|diplo-weariness-city-only-test.cjs|diplo-weariness-city-only-test: PASS=26 FAIL=0
+0|diplo-weariness-display-test.cjs|ALL PASSED
+0|diplo-weariness-explain-test.cjs|diplo-weariness-explain-test: 14 pass / 0 fail
+0|diplo-weariness-forced-peace-test.cjs|diplo-weariness-forced-peace-test: PASS=14 FAIL=0
+0|diplo-weariness-forced-peace-wiring-test.cjs|diplo-weariness-forced-peace-wiring-test: 13 pass / 0 fail
+0|diplo-weariness-migration-peak-test.cjs|diplo-weariness-migration-peak-test: PASS=7 FAIL=0
+0|diplo-weariness-pw-behavior-test.cjs|diplo-weariness-pw-behavior-test: 147 pass / 0 fail
+0|diplo-weariness-pw-row-ui-test.cjs|diplo-weariness-pw-row-ui-test: 15 pass / 0 fail
+0|diplo-weariness-stages-view-test.cjs|diplo-weariness-stages-view-test: 24 pass / 0 fail
+0|diplo-wiki-weariness-rate-consistency-test.cjs|PASS: diplo-wiki-weariness-rate-consistency
+0|diplo-winner-proposal-table-test.cjs|SUMA: PASS=77 FAIL=0
+0|diplomacy-acceptance-points-test.cjs|diplomacy-acceptance-points-test: 304 pass, 0 fail
+0|diplomacy-ai-balance-test.cjs|36/36 PASS
+0|diplomacy-ai-offer-balance-test.cjs|diplomacy-ai-offer-balance-test: 29 passed, 0 failed
+0|diplomacy-all-flags-measure-hook-test.cjs|
+0|diplomacy-alliance-strength-unit-test.cjs|Wynik: 34 OK, 0 FAIL
+0|diplomacy-audience-actions-test.cjs|diplomacy-audience-actions-test: 20 passed, 0 failed
+0|diplomacy-audience-status-banner-test.cjs|=== diplomacy-audience-status-banner-test: 14 pass, 0 fail ===
+0|diplomacy-barbarian-cooperation-test.cjs|\n10 passed, 0 failed
+0|diplomacy-basket-duplicate-test.cjs|21/21 PASS
+0|diplomacy-basket-duplicate-ui-test.cjs|31/31 PASS
+0|diplomacy-basket-edit-test.cjs|25/25 PASS
+0|diplomacy-basket-transfer-test.cjs|24/24 PASS
+0|diplomacy-bilans-unifikacja-test.cjs|27 testów PASS, 0 testów FAIL (diplomacy-bilans-unifikacja-test.cjs)
+0|diplomacy-border-era-penalty-test.cjs|Result: 39 pass, 0 fail
+0|diplomacy-border-march-test.cjs|43/43 PASS
+0|diplomacy-city-cession-r3-test.cjs|diplomacy-city-cession-r3-test: 79 pass, 0 fail
+0|diplomacy-city-cession-test.cjs|diplomacy-city-cession-test: 79 pass, 0 fail
+0|diplomacy-city-name-test.cjs|[diplomacy-city-name-test] 20 pass / 0 fail
+0|diplomacy-counter-offer-role-symmetry-test.cjs|17 testów PASS, 0 testów FAIL (diplomacy-counter-offer-role-symmetry-test.cjs)
+0|diplomacy-currency-trade-test.cjs|diplomacy-currency-trade-test: 5 pass, 0 fail
+0|diplomacy-cyclic-trade-duration-ui-test.cjs|12/12 PASS
+0|diplomacy-deposit-trade-test.cjs|diplomacy-deposit-trade-test: 9 pass, 0 fail
+0|diplomacy-display-test.cjs|[diplomacy-display-test] 45 OK, 0 FAIL
+0|diplomacy-economy-test.cjs|21/21 PASS
+0|diplomacy-fairness-gate-package-q2-test.cjs|diplomacy-fairness-gate-package-q2-test: 24 pass, 0 fail
+0|diplomacy-goods-kat-test.cjs|PASS 18 FAIL 0
+0|diplomacy-harder-unit-test.cjs|diplomacy-harder-unit-test: PASS 53 FAIL 0
+0|diplomacy-incoming-own-gate-recon-test.cjs|15 testów PASS, 0 testów FAIL (diplomacy-incoming-own-gate-recon-test.cjs)
+0|diplomacy-infografiki-tooltipy-test.cjs|[diplomacy-infografiki-tooltipy-test] 12 OK, 0 FAIL
+0|diplomacy-layers-test.cjs|diplomacy-layers-test: 22 passed, 0 failed
+0|diplomacy-lista-podglad-przed-wizyta-test.cjs|diplomacy-lista-podglad-przed-wizyta-test: 53 pass, 0 fail
+0|diplomacy-live-balance-preview-test.cjs|diplomacy-live-balance-preview-test: 8 pass, 0 fail
+0|diplomacy-locks-test.cjs|[diplomacy-locks-test] 88 passed, 0 failed (total 88).
+0|diplomacy-negotiation-table-test.cjs|62/62 PASS
+0|diplomacy-own-proposal-edit-test.cjs|33/33 PASS
+0|diplomacy-package-ai-counter-actionable-test.cjs|17/17 PASS
+0|diplomacy-peace-lock-test.cjs|9 pass, 0 fail
+0|diplomacy-penalty-preview-test.cjs|diplomacy-penalty-preview: 9 pass, 0 fail
+0|diplomacy-proposal-test.cjs|200/200 PASS
+0|diplomacy-rejection-cooldown-test.cjs|Wynik: 14 pass, 0 fail
+0|diplomacy-relacje-ai-ai-audiencja-test.cjs|PASSED: 20 / FAILED: 0 / TOTAL: 20
+0|diplomacy-relation-deal-text-consistent-test.cjs|diplomacy-relation-deal-text-consistent-test: 6 pass / 0 fail
+0|diplomacy-relation-labels-test.cjs|diplomacy-relation-labels-test: 23 pass / 0 fail
+0|diplomacy-resource-cyclic-trade-test.cjs|diplomacy-resource-cyclic-trade-test: 53 pass, 0 fail
+0|diplomacy-resource-trade-pick-test.cjs|diplomacy-resource-trade-pick-test: 13 passed, 0 failed
+0|diplomacy-resource-values-x5-regression-test.cjs|diplomacy-resource-values-x5-regression-test: 76 pass, 0 fail
+0|diplomacy-sensible-deals-main-guard-test.cjs|diplomacy-sensible-deals-main-guard-test: 22 passed, 0 failed
+0|diplomacy-stol-pw-sum-test.cjs|diplomacy-stol-pw-sum-test: 168 pass, 0 fail
+0|diplomacy-tech-chip-filter-and-multi-deal-test.cjs|66/66 PASS
+0|diplomacy-tech-trade-e2e-test.cjs|diplomacy-tech-trade-e2e-test: 28 passed, 0 failed
+0|diplomacy-tech-trade-execute-test.cjs|diplomacy-tech-trade-execute-test: 52 passed, 0 failed
+0|diplomacy-tech-trade-test.cjs|diplomacy-tech-trade-test: 30 passed, 0 failed
+0|diplomacy-test.cjs|[diplomacy-test] 149 passed, 0 failed (total 149).
+0|diplomacy-trade-era-ai-test.cjs|diplomacy-trade-era-ai-test: 14 pass, 0 fail
+0|diplomacy-trade-era-deal-test.cjs|diplomacy-trade-era-deal-test: 14 pass, 0 fail
+0|diplomacy-trade-era-explicit-test.cjs|diplomacy-trade-era-explicit-test: 51 pass / 0 fail
+0|diplomacy-trade-era-table-test.cjs|diplomacy-trade-era-table-test: 185 pass, 0 fail
+0|diplomacy-trade-flex-test.cjs|8/8 PASS
+0|diplomacy-treaties-test.cjs|17/17 PASS
+0|diplomacy-treaty-sweetener-edit-test.cjs|20/20 PASS
+0|diplomacy-unit-transfer-test.cjs|diplomacy-unit-transfer-test: 13 pass, 0 fail
+0|diplomacy-value-catalog-test.cjs|diplomacy-value-catalog-test: 82 pass, 0 fail
+0|diplomacy-war-gates-test.cjs|22 pass, 0 fail
+0|diplomacy-war-level-test.cjs|
+0|diplomacy-war-limit-analyze-test.cjs|diplomacy-war-limit-analyze-test: pass=17 fail=0
+0|diplomacy-war-limit-unit-test.cjs|diplomacy-war-limit-unit-test: pass=57 fail=0
+0|diplomacy-zero-trust-unit-test.cjs|diplomacy-zero-trust-unit-test: PASS=44 FAIL=0
+0|disband-refund-resources-test.cjs|45 passed, 0 failed
+0|disband-unit-mark-dirty-test.cjs|disband-unit-mark-dirty-test: 6 passed, 0 failed
+0|display-names-test.cjs|27 passed, 0 failed
+0|droga-6-ramion-geom-test.cjs|droga-6-ramion-geom-test: 61 passed, 0 failed
+0|dyplo-handel-oferta-ai-blokowana-test.cjs|20 OK, 0 FAIL
+0|dyplo-kara-granica-realna-test.cjs|10 OK, 0 FAIL
+0|dyplo-karta-decyzji-bilans-skrot-test.cjs|13/13 PASS
+0|dyplo-pokoj-kierunek-runda1-test.cjs|=== WYNIK: 18 PASS, 0 FAIL ===
+0|dyplo-rel-current-etykieta-test.cjs|PASS=5 FAIL=0
+0|econ-era-rebalance-test.cjs|WYNIK: 38 ok, 0 FAIL
+0|eko-tech-paczka1-test.cjs|eko-tech-paczka1: 13 pass, 0 fail
+0|eko-tech-paczka2-test.cjs|eko-tech-paczka2: 9 pass, 0 fail
+0|eko-tech-paczka3-test.cjs|eko-tech-paczka3: 9 pass, 0 fail
+0|eko-tech-paczka4-test.cjs|eko-tech-paczka4: 11 pass, 0 fail
+0|eko-tech-paczka5-test.cjs|eko-tech-paczka5: 12 pass, 0 fail
+0|ekonomia-5x-inwariant-test.cjs|ekonomia-5x-inwariant-test: 280 passed, 0 failed
+0|elimination-full-spoils-test.cjs|PODSUMOWANIE: 114 passed, 0 failed
+0|elimination-toast-merge-test.cjs|56 passed, 0 failed
+0|empire-armia-produkcja-test.cjs|empire-armia-produkcja-test: 51 passed, 0 failed
+0|empire-city-defaults-test.cjs|empire-city-defaults-test: 53 pass, 0 fail
+0|empire-diplo-resource-flow-test.cjs|empire-diplo-resource-flow: 7 pass, 0 fail
+0|empire-food-b5-test.cjs|empire-food-b5-test: 34 pass, 0 fail
+0|empire-miasta-table-test.cjs|empire-miasta-table-test: 96 passed, 0 failed
+0|empire-nauka-panel-coverage-test.cjs|  PASS: MUTANT (linia usunieta) lapany CZERWONO: block="nauka" -> body PUSTE (""), NIE zawiera marker
+0|empire-panel-drobiazgi-runda2-test.cjs|empire-panel-drobiazgi-runda2-test: 33 passed, 0 failed
+0|empire-panel-econ-slider-visibility-test.cjs|65 pass · 0 fail
+0|empire-panel-miasto-obywatele-content-test.cjs|116 passed, 0 failed
+0|empire-panel-moc-scroll-preserve-test.cjs|  PASS: MUTANT RUNDY 2 (galaz resetScrollOnNextRender usunieta) lapany CZERWONO przez S2: scrollTop PO przelaczeniu == 600 (blad rundy 1 odtworzony), NIE 0
+0|empire-panel-sliders-always-visible-test.cjs|empire-panel-sliders-always-visible-test (SUPERSEDED, patrz nagłówek): 8 pass, 0 fail
+0|empire-panel-split-test.cjs|25 pass · 0 fail
+0|empire-praca-panel-coverage-test.cjs|  PASS: MUTANT (linia usunieta) lapany CZERWONO: block="praca" -> body PUSTE (""), NIE zawiera marker
+0|empire-recruit-leader-first-order-test.cjs|PASS empire-recruit-leader-first-order-test: 2/2
+0|empire-recruit-plan-test.cjs|empire-recruit-plan-test: 17 passed, 0 failed
+0|empire-religia-panel-coverage-test.cjs|  PASS: MUTANT (linia usunieta) lapany CZERWONO: block="religia" -> body PUSTE (""), NIE zawiera marker
+0|empire-skarbiec-bilans-test.cjs|empire-skarbiec-bilans-test: 11 passed, 0 failed
+0|empire-skarbiec-panel-coverage-test.cjs|  PASS: MUTANT (linia usunieta) lapany CZERWONO: block="skarbiec" -> body PUSTE ("" ), NIE zawiera marker -- dokladnie "panel calkowicie pusty" z opisu Evaluatora
+0|emporion-building-test.cjs|[emporion-building-test] 47 passed, 0 failed
+0|end-details-hp-test.cjs|PASS — 5 / 5
+0|end-turn-gate-projection-only-test.cjs|end-turn-gate-projection-only-test: 49 passed, 0 failed
+0|endturn-battle-deadlock-test.cjs|endturn-battle-deadlock-test: 38 pass, 0 fail
+0|entity-card-contract-test.cjs|[entity-card-contract-test] 75 pass, 0 fail
+0|entitycard-civpedia-klik-test.cjs|WYNIK: 71 PASS / 0 FAIL
+0|eot-diplomacy-header-test.cjs|19/19 PASS
+0|eot-event-defer-test.cjs|43/43 PASS
+0|era-change-notify-test.cjs|8 pass, 0 fail
+0|era-cud-main-ts-integracja-test.cjs|-- sondy kruchości (muszą zostać PASS) --
+0|era-cud-warunek-awansu-test.cjs|38 passed, 0 failed
+0|era-gate-ui-test.cjs|51 passed, 0 failed
+0|era-improvement-cost-upkeep-test.cjs|era-improvement-cost-upkeep-test: 124 pass, 0 fail
+0|era-recruit-panel-refresh-test.cjs|4 passed, 0 failed
+0|era-war-defer-not-cancel-test.cjs|28 passed, 0 failed
+0|era-war-delays-test.cjs|WYNIK: 55 OK / 0 FAIL
+0|era-war-ignore-treaties-test.cjs|era-war-ignore-treaties-test: 22 pass, 0 fail
+0|era-war-march-before-40-test.cjs|WYNIK: 18 OK / 0 FAIL
+0|escape-fullscreen-priority-test.cjs|escape-fullscreen-priority-test: 10 pass, 0 fail
+0|escape-overlay-stack-test.cjs|escape-overlay-stack-test: 84 pass, 0 fail
+0|events-one-turn-lifetime-test.cjs|25 OK, 0 FAIL
+0|falanga-bonus-vs-spearman-test.cjs|FALANGA-BONUS-VS-SPEARMAN: ALL PASS
+0|farma-lesie-usun-istniejace-test.cjs|=== farma-lesie-usun-istniejace: 143 OK / 0 FAIL ===
+0|farma-nie-w-lesie-test.cjs|farma-nie-w-lesie-test: 138 passed, 0 failed
+0|first-player-city-test.cjs|first-player-city-test: 16 pass, 0 fail
+0|fishing-boats-666-test.cjs|--- fishing-boats-666-test: 26 OK, 0 FAIL ---
+0|flaga-mp-nie-gasnie-test.cjs|Wynik: 32 PASS, 0 FAIL
+0|followups-land-ai-test.cjs|9 passed, 0 failed
+0|food-hodowla-test.cjs|--- food-hodowla-test: 24 OK, 0 FAIL ---
+0|food-to-tax-conversion-test.cjs|71 PASS / 0 FAIL
+0|forced-war-bronze-main-guard-test.cjs|WYNIK: 22 PASS, 0 FAIL
+0|forced-war-bronze-new-game-reset-test.cjs|WYNIK: 41 PASS, 0 FAIL
+0|forced-war-iron-era-enter-turn-save-load-test.cjs|forced-war-iron-era-enter-turn-save-load-test: 20 passed, 0 failed
+0|forced-war-relation-gate-test.cjs|forced-war-relation-gate-test: 14 pass, 0 fail
+0|forced-war-stone-main-guard-test.cjs|WYNIK: 15 PASS, 0 FAIL
+0|forced-war-trojstronna-main-guard-test.cjs|WYNIK: 14 PASS, 0 FAIL
+0|forced-war-trojstronna-test.cjs|PASSED: 23 / FAILED: 0 / TOTAL: 23
+0|forced-war-waves-test.cjs|forced-war-waves-test: 17 passed, 0 failed
+0|foreign-administrator-dismissed-test.cjs|PASS 12 / FAIL 0
+0|format-pl-plural-miasta-kolejki-q1-test.cjs|Wynik: 825 pass / 0 fail
+0|format-pl-signed-minus-glif-test.cjs|13 passed, 0 failed
+0|fort-nodes-save-load-test.cjs|fort-nodes-save-load-test: 18 passed, 0 failed
+0|fort-outpost-hard-territory-test.cjs|=== fort-outpost-hard-territory-test: 92 passed, 0 failed ===
+0|fort-outpost-placement-rules-test.cjs|40 passed, 0 failed
+0|fort-placement-same-rules-as-city-test.cjs|25 passed, 0 failed
+0|fort-strazniaca-zasieg-zakladania-test.cjs|=== fort-strazniaca-zasieg-zakladania-test: 82 passed, 0 failed ===
+0|fort-vision-test.cjs|fort-vision-test: 15 passed, 0 failed
+0|fortifications-queue-cleanup-test.cjs|WYNIK: 10 OK, 0 FAIL
+0|fortifications-superseded-build-test.cjs|=== wynik: 38 pass, 0 fail ===
+0|fortifications-upgrade-chain-ai-test.cjs|WYNIK: 13 OK, 0 FAIL
+0|found-from-village-test.cjs|
+0|foundry-throughput-x2-era-mult-test.cjs|foundry-throughput-x2-era-mult-test: 159 passed, 0 failed
+0|freshwater-access-test.cjs|Wynik: 37 PASS / 0 FAIL
+0|garncarnia-throughput-30-plus-20-test.cjs|garncarnia-throughput-30-plus-20-test: 28 passed, 0 failed
+0|garnizon-exit-test.cjs|garnizon-exit-test: 26 pass, 0 fail
+0|garrison-upkeep-tooltip-explain-test.cjs|Wynik: 28 OK, 0 FAIL
+0|general-eligible-unit-roster-test.cjs|PASS 137 total checks
+0|general-hex-ring-outline-test.cjs|Wynik: 28 PASS, 0 FAIL
+0|generals-limit-invariant-test.cjs|ALL PASS
+0|glod-wojska-karencja-test.cjs|glod-wojska-karencja-test: 40 pass, 0 fail
+0|gold-deficit-test.cjs|gold-deficit-test: 55 pass, 0 fail
+0|granary2-tech-data-guard-test.cjs|granary2-tech-data-guard-test: PASS 14 / FAIL 0
+0|granice-styk-nakladanie-test.cjs|57 passed, 0 failed
+0|gross-net-numbers-only-unify-test.cjs|RESULT: 35 ok, 0 FAIL (calls=4)
+0|growthmult-compound-test.cjs|growthmult-compound-test: 24 passed, 0 failed
+0|grupa-b-lane-test.cjs|grupa-b-lane-test: 49 pass, 0 fail
+0|grupy-budynkow-test.cjs|grupy-budynkow-test: 83 pass, 0 fail
+0|handel-wymiana-tech-gate-test.cjs|=== handel-wymiana-tech-gate-test: 35 passed, 0 failed ===
+0|happiness-breakdown-test.cjs|
+0|heks-panel-tooltip-warstwa-test.cjs|22 passed, 0 failed
+0|heks-plony-warstwy-test.cjs|24 passed, 0 failed
+0|heks-plony-zloze-forward-test.cjs|5 passed, 0 failed
+0|heks-plony-zloze-parytet-ui-test.cjs|19 passed, 0 failed
+0|hex-plony-magazyn-test.cjs|14 passed, 0 failed
+0|hex-tooltip-mozliwe-ulepszenia-zloze-test.cjs|63 passed, 0 failed
+0|hex-tooltip-stadnina-kopalnia-cyny-test.cjs|32 passed, 0 failed
+0|hit-mode-consistency-test.cjs|Wynik: 8 PASS, 0 FAIL
+0|hit-mode-test.cjs|WYNIK: 18 PASS, 0 FAIL
+0|hodowla-las-test.cjs|hodowla-las-test: 116 passed, 0 failed
+0|hotseat-etap1-ownerid-test.cjs|hotseat-etap1-ownerid-test: 14 PASS, 0 FAIL
+0|hotseat-etap3-akcesory-test.cjs|hotseat-etap3-akcesory-test: 64 PASS, 0 FAIL
+0|hotseat-etap6c-economy-noop-test.cjs|hotseat-etap6c-economy-noop-test: 70 PASS, 0 FAIL
+0|hotseat-etap6d-diplomacy-engine-test.cjs|WSZYSTKIE TESTY PASS
+0|hotseat-etap6d-podetap-a-test.cjs|WSZYSTKIE TESTY PASS
+0|hotseat-etap6d-podetap-c-migracja-test.cjs|WSZYSTKIE TESTY PASS (hotseat-etap6d-podetap-c-migracja-test)
+0|hotseat-etap6f-start-migracja-test.cjs|WSZYSTKIE TESTY PASS
+0|hotseat-human-owners-test.cjs|hotseat-human-owners-test: 29 PASS, 0 FAIL
+0|hud-konwerter-dopasowanie-test.cjs|hud-konwerter-dopasowanie-test: 20 passed, 0 failed
+0|hud-miasto-stan-cywilizacji-test.cjs|hud-miasto-stan-cywilizacji-test: 20 passed, 0 failed
+0|hud-miasto-stock-tempo-test.cjs|hud-miasto-stock-tempo-test: 71 passed, 0 failed
+0|hud-net-building-drain-test.cjs|Wynik: 36 ok, 0 FAIL
+0|hud-obywatele-chip-test.cjs|  PASS: 'ludnosc' figuruje w liście dopuszczonych act w handleHudBarAction (hud.ts) -- klik faktycznie coś robi
+0|hud-resource-card-state-test.cjs|WYNIK: 7 ok, 0 FAIL
+0|hud-shortage-alert-converter-test.cjs|RESULT: 17 ok, 0 FAIL
+0|hud-skarbiec-test.cjs|hud-skarbiec-test: 40 passed, 0 failed
+0|idb-menu-continue-boot-refresh-test.cjs|=== idb-menu-continue-boot-refresh-test: 32 pass, 0 fail ===
+0|idb-storage-migration-test.cjs|=== idb-storage-migration-test: 25 pass, 0 fail ===
+0|ids-leak-audit-test.cjs|WYNIK: 1725 ok, 0 FAIL
+0|impi-recruitment-discount-test.cjs|impi-recruitment-discount-test: 705 passed, 0 failed
+0|important-event-cards-regression-test.cjs|important-event-cards-regression-test: PASS
+0|important-event-cards-test.cjs|important-event-cards-test: 10 pass, 0 fail
+0|improvement-adapter-resource-note-test.cjs|[improvement-adapter-resource-note-test] 77 pass, 0 fail
+0|improvement-administrator-test.cjs|improvement-administrator-test: 59 passed, 0 failed
+0|improvement-build-highlight-lifecycle-test.cjs|39 passed, 0 failed
+0|improvement-cost-owner-era-test.cjs|improvement-cost-owner-era-test: 49 pass, 0 fail
+0|improvement-era-scaling-test.cjs|144 PASS, 0 FAIL
+0|improvement-territory-gate-test.cjs|improvement-territory-gate-test: 6 pass, 0 fail
+0|improvements-list-order-test.cjs|WYNIK: PASS=11 FAIL=0
+0|iron-gating-impl-test.cjs|[iron-gating-impl-test] 153 OK, 0 FAIL
+0|iron-native-access-fix-test.cjs|17 passed, 0 failed
+0|irrigation-river-definition-unify-test.cjs|30 OK, 0 FAIL
+0|kamieniolom-kamien-epoka-test.cjs|37 PASS, 0 FAIL
+0|koniec-tury-f1-f4-runda3-test.cjs|koniec-tury-f1-f4-runda3-test: 39 pass, 0 fail
+0|kopalnia-cyny-render-test.cjs|23 passed, 0 failed
+0|kopalnia-podswietlenie-heksow-test.cjs|76 passed, 0 failed
+0|korupcja-test.cjs|PASSED: 18 / FAILED: 0 / TOTAL: 18
+0|koszary-gate-test.cjs|
+0|koszty-surowcowe-test.cjs|koszty-surowcowe-test: 161 pass, 0 fail
+0|labor-to-tax-conversion-gold-test.cjs|58 passed, 0 failed
+0|law-garrison-test.cjs|law-garrison-test: 3 pass, 0 fail
+0|load-fail-toast-zindex-test.cjs|15 passed, 0 failed
+0|logic-test.cjs|PASS  [213] cityfix: pop1 territory radius is 5 (B min start)
+0|longrun-100-turns-leak-q1-memo-unit-test.cjs|WYNIK: 6 PASS, 0 FAIL
+0|loss-counters-test.cjs|loss-counters-test: 35 OK, 0 FAIL
+0|magazyn-era-scaling-test.cjs|magazyn-era-scaling-test: 58 passed, 0 failed
+0|magazyn-food-cap-bez-magazynu-test.cjs|WYNIK: 16 PASS, 0 FAIL
+0|manpower-matrix-sensitivity-test.cjs|manpower-matrix-sensitivity-test: 225 passed, 0 failed
+0|manpower-test.cjs|[manpower-test] 71 OK, 0 FAIL
+0|manual-battle-rng-determinism-test.cjs|PASS main: stary zapis bez pol battleCombatSeq -> domyslnie -1/0
+0|map-attack-city-test.cjs|--- 13 ok, 0 fail
+0|map-deposits-era-test.cjs|map-deposits-era-test: 16 pass, 0 fail
+0|map-field-battle-test.cjs|--- 24 ok, 0 fail
+0|map-improvement-qualify-test.cjs|map-improvement-qualify-test: 134 pass, 0 fail
+0|map-road-movement-test.cjs|map-road-movement-test: 27 pass, 0 fail
+0|map-scale-menu-test.cjs|97 passed, 0 failed
+0|map-siege-test.cjs|--- 6 ok, 0 fail
+0|march-end-of-turn-only-test.cjs|
+0|march-resume-next-turn-test.cjs|march-resume-next-turn-test: 50 pass, 0 fail
+0|measure-forced-peace-test.cjs|
+0|measure-reject-offers-test.cjs|measure-reject-offers-test: 15 OK, 0 FAIL
+0|memory-growth-merge-index-test.cjs|WYNIK: 24 OK, 0 FAIL
+0|mennica-magazyn-test.cjs|mennica-magazyn-test: 56 passed, 0 failed
+0|mennica-uspienie-test.cjs|mennica-uspienie-test: 49 passed, 0 failed
+0|menu-game-music-transition-test.cjs|7 passed, 0 failed
+0|menu-music-delay-test.cjs|9 passed, 0 failed
+0|mgla-odkrycie-wzdluz-sciezki-test.cjs|17 pass, 0 fail
+0|mgla-sciezka-inwariant-test.cjs|42 pass, 0 fail
+0|mgla-sciezka-rzeka-test.cjs|14 pass, 0 fail
+0|mgla-teleport-koniec-tury-test.cjs|16 pass, 0 fail
+0|miasto-zdobycie-raport-test.cjs|miasto-zdobycie-raport-test: 117 passed, 0 failed
+0|militia-garrison-contract-test.cjs|--- 17 ok, 0 fail
+0|militia-garrison-router-siege-test.cjs|--- 8 ok, 0 fail
+0|mill-river-only-gate-test.cjs|ALL PASS
+0|minimap-viewport-rect-follow-test.cjs|PASS: (C) hud.ts: eksport updateMinimapViewport deleguje do minimapApi.updateViewport
+0|mp-spawn-ration-test.cjs|=== mp-spawn-ration-test: 16 passed, 0 failed ===
+0|muzyka-braz-era-playlist-test.cjs|muzyka-braz-era-playlist-test: 42 pass, 0 fail
+0|muzyka-era-cumulative-test.cjs|muzyka-era-cumulative-test: 23 pass, 0 fail
+0|nazwy-miast-rozlaczne-pule-test.cjs|9 passed, 0 failed  (nazwy-miast-rozlaczne-pule-test.cjs)
+0|no-negative-stocks-ai-from-turn1-test.cjs|no-negative-stocks-ai-from-turn1-test: 27 passed, 0 failed
+0|no-negative-stocks-ai-t2-test.cjs|no-negative-stocks-ai-t2-test: 11 passed, 0 failed
+0|no-negative-stocks-ai-test.cjs|no-negative-stocks-ai-test: 8 passed, 0 failed
+0|no-negative-stocks-end-turn-gate-levers-test.cjs|no-negative-stocks-end-turn-gate-levers-test: 34 passed, 0 failed
+0|no-negative-stocks-projection-test.cjs|no-negative-stocks-projection-test: 49 passed, 0 failed
+0|no-negative-stocks-test.cjs|no-negative-stocks-test: 25 passed, 0 failed
+0|notif-diplo-tab-count-blocking-test.cjs|Wynik: 25 OK, 0 FAIL
+0|notif-empty-queue-buildable-test.cjs|RESULT: 20 pass / 0 fail
+0|notif-empty-queue-gate-behaviour-test.cjs|RESULT: 11 pass / 0 fail
+0|notif-other-civ-diplo-tab-test.cjs|Wynik: 13 OK, 0 FAIL
+0|oblezenie-remis-endsiege-test.cjs|oblezenie-remis-endsiege-test: 271 passed, 0 failed
+0|oblezenie-siege-lifted-po-bitwie-test.cjs|oblezenie-siege-lifted-po-bitwie-test: 16 passed, 0 failed
+0|oblezenie-test.cjs|oblezenie-test: 27 passed, 0 failed
+0|oboz-lowiecki-las-test.cjs|oboz-lowiecki-las-test: 94 passed, 0 failed
+0|oboz-lowiecki-wymaga-tartaku-test.cjs|oboz-lowiecki-wymaga-tartaku-test: 16 passed, 0 failed
+0|okolica-isworkable-silnik-test.cjs|PASS: Morze (3,0) -> NIE workable (zgodne z Sekcja 3) (got false, want false)
+0|okolica-load-reconcile-test.cjs|PASS: PO usunieciu bloku resetu z petli load'u: wzorzec 4.1 faktycznie przestaje pasowac (mutacja wykryta) -- asercja nie jest tautologiczna
+0|okolica-multi-city-overlap-test.cjs|PASS: bezsporny wpis (1,0) nietkniety przez reconcileAllWorkedTiles
+0|okolica-test.cjs|
+0|okolica-tryb-reset-ownership-change-test.cjs|PASS: reconcileWorkedTilesForOwner nie odwoluje sie do okolicaTryb -- operuje wylacznie na okolicaReczne, niezaleznie od trybu miasta
+0|owned-building-detail-side-test.cjs|owned-building-detail-side-test: 17 pass, 0 fail
+0|owned-building-inactive-test.cjs|owned-building-inactive-test: 4 pass, 0 fail
+0|owner-economy-test.cjs|20 passed, 0 failed
+0|owner-epoch-test.cjs|13 passed, 0 failed
+0|p-wojna-wymuszona-trzy-naprawy-test.cjs|PASSED: 13 / FAILED: 0 / TOTAL: 13
+0|palisade-battle-wall-rules-test.cjs|WYNIK: 55 OK, 0 FAIL
+0|peace-city-cession-and-rewar-test.cjs|peace-city-cession-and-rewar-test: PASS=8 FAIL=0
+0|peace-gate-military-strength-test.cjs|Wynik: 14 PASS / 0 FAIL
+0|peace-vazne-always-test.cjs|
+0|pending-improvements-test.cjs|pending-improvements-test: 8 pass, 0 fail
+0|perf-endturn-r3-equiv-test.cjs|PASS
+0|perf-endturn-r3-visdisk-test.cjs|RESULT PASS
+0|perf-endturn-render-deferral-regression-test.cjs|
+0|perf-endturn-render-resume-flush-test.cjs|
+0|perf-endturn-resource-access-equiv-test.cjs|PASS
+0|perf-hud-frame-memo-test.cjs|WYNIK: 16 PASS, 0 FAIL
+0|perf-sibling-memo-test.cjs|RESULT: 13 PASS, 0 FAIL
+0|perf-territory-index-equiv-test.cjs|WYNIK: 6 PASS, 0 FAIL
+0|picker-test.cjs|picker-test: 140 pass, 0 fail
+0|placed-improvements-cache-q1-test.cjs|WYNIK: 15 PASS, 0 FAIL
+0|planned-march-test.cjs|planned-march-test: 18 pass, 0 fail
+0|playtest-mapa-dirty-forecast-test.cjs|=== playtest-mapa-dirty-forecast-test: 10 pass, 0 fail ===
+0|playtest-walkamapy-dirty-forecast-test.cjs|=== playtest-walkamapy-dirty-forecast-test: 5 pass, 0 fail ===
+0|plural-pl-local-copies-q1-test.cjs|76 passed, 0 failed
+0|podboj-kolejka-budynek-niemozliwy-test.cjs|podboj-kolejka-budynek-niemozliwy-test: 79 passed, 0 failed
+0|polish-language-audit-q1-guard-test.cjs|polish-language-audit-q1-guard: 7623 ok, 0 fail
+0|popcap-spichlerz2-akwedukt20-test.cjs|popcap-spichlerz2-akwedukt20-test: 46 pass, 0 fail
+0|population-civ-matrix-wiring-test.cjs|population Matrix wiring: 122 passed, 0 failed
+0|population-growth-tempo-test.cjs|
+0|population-growth-v85-bonus-test.cjs|--- wynik: 65 pass, 0 fail ---
+0|population-growth-v85-test.cjs|population-growth-v85-test: 50 passed, 0 failed
+0|post-battle-map-test.cjs|post-battle-map-test: 32 pass, 0 fail
+0|post-capture-law-test.cjs|post-capture-law-test: 25 pass, 0 fail
+0|postep-pamiec-usuniecie-test.cjs|postep-pamiec-usuniecie-test: 38 passed, 0 failed
+0|power-objective-test.cjs|[power-objective-test] 29 OK, 0 FAIL
+0|power-options-test.cjs|[power-options-test] 5 OK, 0 FAIL
+0|power-ranking-test.cjs|10 passed, 0 failed
+0|power-ranking-view-test.cjs|29 passed, 0 failed
+0|pr141-ai-production-behavior-test.cjs|pr141-ai-production-behavior-test: 23 passed, 0 failed
+0|pr141-ai-strategy-behavior-test.cjs|RESULT: 19 passed, 0 failed
+0|pr141-combat-defense-behavior-test.cjs|PASS: 59 behavioral assertions; fixed RNG=0.48; resolveCombat adapter-to-mitigation
+0|pr141-combat-defense-owner-route-test.cjs|PASS: 45 assertions; fixed RNG=0.497; source-extracted main owner resolver -> actual map field battle setup -> resolveCombat
+0|pr141-combat-offense-behavior-test.cjs|ASSERTIONS: 75 passed, 0 failed
+0|pr141-current-evidence-ledger-test.cjs|
+0|pr141-current-evidence-ledger-v3-test.cjs|
+0|pr141-current-evidence-ledger-v4-test.cjs|
+0|pr141-dip-activation-test.cjs|PASS: PR141 DIP activation consumer and all-major-pairs contract
+0|pr141-evidence-ledger-behavior-test.cjs|
+0|pr141-f04-building-speed-activation-test.cjs|PASS: 15 source zeros; actual owner-routed turn and city-panel preview paths for owners 0/7/42/AI99; fractional positive/negative progress and ETA; empty/completion overflow, carry, pause, and unit negative controls.
+0|pr141-f04-cost-activation-defense-test.cjs|pr141-f04-cost-activation-defense-test: 64 passed, 0 failed
+0|pr141-f04-cost-activation-test.cjs|pr141-f04-cost-activation-test: 20 passed, 0 failed
+0|pr141-f04-rush-activation-test.cjs|pr141-f04-rush-activation-test: 72 passed, 0 failed
+0|pr141-f04-society-activation-test.cjs|F04 society bounded activation: 34 passed, 0 failed
+0|pr141-f04-society-remaining-activation-test.cjs|pr141-f04-society-remaining-activation-test: 192 passed, 0 failed
+0|pr141-f04-unit-speed-activation-test.cjs|PASS: 15 approved source zeros; actual human/AI owner-routed gated completion and UI cadence; +20% floor neutral, +100% capacity 2, +200% capacity 3, negative minimum-one, zero-base, and missing-owner controls.
+0|pr141-f04-work-activation-test.cjs|PASS: F04 work activation for 15 owners (6 positive, 5 negative, 4 zero), split preservation, neutral/mismatch controls, difficulty invariance, and panel owner route
+0|pr141-f04-yields-activation-test.cjs|PASS: F04 yields: 135 owner/field checks, exact raw readback, route conservation/provenance, isolated synthetic +/-/0 stages, happiness recomposition, and post-capture Law preservation
+0|pr141-g1-combat-activation-test.cjs|PASS: matrix-only G1 effects, zero/missing neutrality, gates, ranged routing, canonical HP
+0|pr141-hotseat-production-owner-routing-test.cjs|PASS: actual owner-routed source callbacks/helpers cover human owners 0/7/42, AI owner 99, safe missing-city behavior, and one refund + one dequeue.
+0|pr141-matrix-only-ai-test.cjs|pr141-matrix-only-ai-test: 40 passed, 0 failed
+0|pr141-matrix-only-combat-test.cjs|pr141-matrix-only-combat-test: 36 passed, 0 failed
+0|pr141-matrix-only-data-wiki-test.cjs|pr141-matrix-only-data-wiki-test: 15 civ rows and 9 bundled CivPedia pages passed
+0|pr141-matrix-only-economy-test.cjs|pr141-matrix-only-economy-test: 92 passed, 0 failed
+0|pr141-matrix-only-owner-ui-test.cjs|PR141 matrix-only owner/UI contracts: PASS
+0|pr141-matrix-only-production-test.cjs|pr141-matrix-only-production-test: 96 passed, 0 failed
+0|pr141-population-behavior-test.cjs|population behavior: 24 passed, 0 failed
+0|pr141-population-main-happiness-hookup-test.cjs|main happiness hookup: 7 passed, 0 failed
+0|pr141-saveload-mp-f05-g11-behavior-test.cjs|RESULT BOUNDED_SOURCE_EXECUTION_PASS; this does not prove full-game save/load.
+0|pr141-semantic-consumer-consistency-test.cjs|pr141-semantic-consumer-consistency-test: 52 passed, 0 failed
+0|praca-cap-migracja-luka-test.cjs|praca-cap-migracja-luka-test: 11 passed, 0 failed
+0|praca-global-default-live-test.cjs|praca-global-default-live-test: 7 passed, 0 failed
+0|praca-jeden-podzial-kontrakt-test.cjs|--- praca-jeden-podzial-kontrakt-test: 634 OK, 0 FAIL ---
+0|praca-limit-50-test.cjs|praca-limit-50-test: 34 passed, 0 failed
+0|praca-miasto-limit-50-cap-test.cjs|[praca-miasto-limit-50-cap-test] 50 pass, 0 fail
+0|praca-miasto-limit-50-test.cjs|[praca-miasto-limit-50-test] 33 pass, 0 fail
+0|praca-na-pieniadz-test.cjs|6 passed, 0 failed
+0|praca-podzial-staly-50-50-test.cjs|praca-podzial-staly-50-50-test: 6 passed, 0 failed
+0|praca-routing-effective-unit-test.cjs|[praca-routing-effective-unit] pass=123 fail=0
+0|prawo-palac-tier-test.cjs|[prawo-palac-tier-test] 30 OK, 0 FAIL
+0|prawo-przebudowa-skali-test.cjs|[prawo-przebudowa-skali-test] 152 OK, 0 FAIL
+0|prawo-siatka-v2-test.cjs|[prawo-siatka-v2-test] 55 OK, 0 FAIL
+0|pre-battle-defender-retreat-test.cjs|
+0|pre-battle-retreat-exhausted-test.cjs|pre-battle-retreat-exhausted-test: 37 pass, 0 fail
+0|pre-battle-save-test.cjs|
+0|prereq-budynkow-test.cjs|prereq-budynkow-test: 62 pass, 0 fail
+0|procarz-piercing-shot-test.cjs|ALL PASS
+0|production-overflow-test.cjs|--- production-overflow-test: 213 OK, 0 FAIL ---
+0|promote-to-front-test.cjs|promote-to-front-test: 129 passed, 0 failed
+0|pytanie-84-stock-keys-test.cjs|pytanie-84-stock-keys-test: 14 pass, 0 fail
+0|r-manpower-hp-max-effective-currentbase-q1-test.cjs|[r-manpower-hp-max-effective-currentbase-q1-test] 15 OK, 0 FAIL
+0|r-manpower-uzupelnienie-hp-niezapisuje-q1-test.cjs|[r-manpower-uzupelnienie-hp-niezapisuje-q1-test] 17 OK, 0 FAIL
+0|r-stawki-fala2-test.cjs|[r-stawki-fala2-test] 11 OK, 0 FAIL
+0|r-wzrost-szczescie-dubel-wealth-ceramika-test.cjs|[r-wzrost-szczescie-dubel] 59 pass, 0 fail
+0|rally-point-automarch-test.cjs|rally-point-automarch-test: 30 pass, 0 fail
+0|ranged-damage-mult-test.cjs|RANGED-DAMAGE-MULT: WSZYSTKIE PASS
+0|ranged-health-card-align-test.cjs|WYNIK: 5 pass, 0 fail
+0|recruit-follow-general-origin-test.cjs|22 assertions passed
+0|recruit-list-visibility-test.cjs|9 passed, 0 failed
+0|recruit-rally-default-save-test.cjs|PASS save roundtrip preserves global default and per-unit overrides; legacy save omits them safely
+0|recruit-rally-default-ui-test.cjs|PASS production Army recruitment UI renders the rally default and persists toggle changes
+0|recruitment-cost-50-wood-test.cjs|recruitment-cost-50-wood-test: 190 passed, 0 failed
+0|recruitment-no-upkeep-gate-test.cjs|recruitment-no-upkeep-gate-test: 37 passed, 0 failed
+0|rekrutacja-koszty-polowa-all-test.cjs|[rekrutacja-koszty-polowa-all-test] PASS
+0|relief-preserving-mine-prefix-test.cjs|relief-preserving-mine-prefix-test: 24 pass, 0 fail
+0|religia-konwersja-po-podboju-test.cjs|religia-konwersja-po-podboju-test: 12 passed, 0 failed
+0|reproducible-build-contract-test.cjs|reproducible-build-contract-test: 6 passed, 0 failed
+0|research-test.cjs|PASSED: 33 / FAILED: 0 / TOTAL: 33
+0|resource-building-toggle-test.cjs|resource-building-toggle-test: 210 passed, 0 failed
+0|resource-building-utilization-test.cjs|resource-building-utilization-test: 52 passed, 0 failed
+0|resource-cards-gross-net-test.cjs|=== resource-cards-gross-net-test: 24 pass, 0 fail ===
+0|resource-gross-net-converter-inputs-test.cjs|RESULT: 18 ok, 0 FAIL
+0|resource-ledger-consume-test.cjs|resource-ledger-consume-test: 30 passed, 0 failed
+0|resource-ledger-engine-test.cjs|resource-ledger-engine-test: 20 passed, 0 failed
+0|resource-ledger-hook-gate-test.cjs|resource-ledger-hook-gate-test: 6 passed, 0 failed
+0|resource-ledger-owner-delta-test.cjs|RESULT 8 passed, 0 failed
+0|resource-ledger-save-history-test.cjs|resource-ledger-save-history-test: 15 passed, 0 failed
+0|resource-ledger-test.cjs|resource-ledger-test: 1073 passed, 0 failed
+0|resource-usage-breakdown-test.cjs|resource-usage-breakdown-test: 100 passed, 0 failed
+0|resources-map-icon-map-test.cjs|resources-map-icon-map-test: 52 pass, 0 fail
+0|retreat-garnizon-fortyfikacja-test.cjs|retreat-garnizon-fortyfikacja-test: 27 pass, 0 fail
+0|river-confluence-edge-test.cjs|river-confluence-edge-test: 2 pass, 0 fail
+0|river-fog-visibility-test.cjs|river-fog-visibility-test: 31 pass, 0 fail
+0|river-terrain-move-test.cjs|
+0|river-turn-window-test.cjs|river-turn-window-test: 10 pass, 0 fail
+0|road-build-player-parity-test.cjs|Wynik: 17 OK, 0 FAIL
+0|road-connectivity-test.cjs|road-connectivity-test: 99 passed, 0 failed
+0|road-hook-mainguard-test.cjs|road-hook-mainguard-test: 19 passed, 0 failed
+0|road-paved-direct-build-test.cjs|road-paved-direct-build-test: 15 pass, 0 fail
+0|rozmiar-label-test.cjs|13 passed, 0 failed
+0|save-label-test.cjs|
+0|save-load-budowa-priorytet-on-load-test.cjs|save-load-budowa-priorytet-on-load-test: 6 PASS / 0 FAIL
+0|save-load-ledger-history-test.cjs|Wynik: 4 PASS / 0 FAIL
+0|save-load-player-owned-city-test.cjs|RESULT: PASS
+0|save-load-sort-test.cjs|
+0|sawmill-hill-relief-test.cjs|sawmill-hill-relief-test: 8 assertions passed
+0|sawmill-quarry-50-economy-test.cjs|7 PASS, 0 FAIL
+0|science-hub-test.cjs|science-hub-test: 7 pass, 0 fail
+0|scout-auto-explore-test.cjs|Wynik: 25 OK, 0 FAIL
+0|scout-explore-deselect-cycle-test.cjs|WYNIK: 34 PASS, 0 FAIL
+0|sea-peoples-boost-test.cjs|sea-peoples-boost-test: 42 passed, 0 failed
+0|sea-peoples-wiring-test.cjs|sea-peoples-wiring-test: 23 passed, 0 failed
+0|shared-city-name-queue-test.cjs|10 passed, 0 failed
+0|side-list-hud-panel-coverage-test.cjs|  PASS: pctClamped nie dzieli przez zero (max<=0 -> 0)
+0|side-panel-unit-cycle-arrows-test.cjs|side-panel-unit-cycle-arrows-test: 20 pass, 0 fail
+0|sidepanel-event-tabs-classify-test.cjs|PASS
+0|sidepanel-events-toolbar-test.cjs|sidepanel-events-toolbar-test: 25 pass, 0 fail
+0|sidepanel-notification-tabs-test.cjs|sidepanel-notification-tabs-test: 29 pass, 0 fail
+0|sideswap-hooks-static-test.cjs|PASS sideswap-hooks-static-test (7/7 asercji)
+0|siege-ai-test.cjs|--- 17 ok, 0 fail
+0|siege-badge-zorder-test.cjs|PASS=13 FAIL=0
+0|siege-defenders-test.cjs|--- 12 ok, 0 fail
+0|siege-engines-built-during-siege-test.cjs|siege-engines-built-during-siege-test: 33 passed, 0 failed
+0|siege-last-stand-sortie-test.cjs|WYNIK: 71 OK, 0 FAIL
+0|siege-starvation-duration-test.cjs|RESULT pass=27 fail=0
+0|siege-starvation-test.cjs|RESULT pass=54 fail=0
+0|siege-surrender-enter-city-test.cjs|WYNIK: 32 OK, 0 FAIL
+0|siege-surrender-forecast-test.cjs|RESULT pass=57 fail=0
+0|simple-food-rule-no-toggles-test.cjs|36 OK, 0 FAIL
+0|small-part-lod-test.cjs|small-part-lod-test: 24 pass, 0 fail
+0|society-breakdown-test.cjs|[society-breakdown-test] 56 OK, 0 FAIL
+0|spichlerz-cap-citypanel-wiring-test.cjs|spichlerz-cap-citypanel-wiring-test: 12 pass, 0 fail
+0|spichlerz-deficyt-scalenie-test.cjs|spichlerz-deficyt-scalenie-test: 58 pass, 0 fail
+0|spichlerz-drain-keys-test.cjs|spichlerz-drain-keys-test: 56 pass, 0 fail
+0|spichlerz-drain-pipeline-test.cjs|spichlerz-drain-pipeline-test: 33 pass, 0 fail
+0|spichlerz-hud-params-parity-test.cjs|spichlerz-hud-params-parity-test: 66 pass, 0 fail
+0|spichlerz-panel-food-parity-test.cjs|11 passed, 0 failed
+0|spichlerz-widocznosc-test.cjs|spichlerz-widocznosc-test: 45 pass, 0 fail
+0|spichlerz-wzrost-test.cjs|spichlerz-wzrost-test: 14 passed, 0 failed
+0|split-output-test.cjs|
+0|stadnina-early-eras-ai-picker-test.cjs|23 OK, 0 FAIL
+0|stadnina-early-eras-deposit-only-test.cjs|stadnina-early-eras-deposit-only-test: 35 passed, 0 failed
+0|stadnina-hex-candidates-test.cjs|WYNIK: pass=15 fail=0
+0|stadnina-iron-adjacency-test.cjs|=== stadnina-iron-adjacency: 37 OK, 0 FAIL ===
+0|stadnina-kon-koszt-test.cjs|stadnina-kon-koszt-test: 17 passed, 0 failed
+0|stadnina-konie-stare-zapisy-test.cjs|WYNIK: pass=29 fail=0
+0|stadnina-las-test.cjs|stadnina-las-test: 28 passed, 0 failed
+0|start-preview-test.cjs|6 passed, 0 failed
+0|stolarnia-r5-d2-test.cjs|9 passed, 0 failed
+0|stone-walls-no-brick-cost-test.cjs|stone-walls-no-brick-cost-test: 11 PASS, 0 FAIL
+0|structure-defense-bonus-test.cjs|=== structure-defense-bonus-test: 8 pass, 0 fail ===
+0|super-unit-limit-one-test.cjs|[super-unit-limit-one-test] 40 OK, 0 FAIL
+0|surow-civ-storage-test.cjs|surow-civ-storage-test: 67 passed, 0 failed
+0|surowce-dostep-test.cjs|surowce-dostep: 13 pass, 0 fail
+0|surowce-katalog-kolejnosc-test.cjs|surowce-katalog-kolejnosc: 62 pass, 0 fail
+0|szczescie-audyt-c-prawo-osiedla-test.cjs|[szczescie-audyt-c-prawo-osiedla-test] 15 OK, 0 FAIL
+0|szczescie-audyt-d-progi-bunt-test.cjs|[szczescie-audyt-d-progi-bunt-test] 18 OK, 0 FAIL
+0|szczescie-przebudowa-skali-test.cjs|[szczescie-przebudowa-skali-test] 535 OK, 0 FAIL
+0|szczescie-skala-normalizacja-test.cjs|[szczescie-skala-normalizacja-test] 148 OK, 0 FAIL
+0|szczescie-zamoznosc-test.cjs|[szczescie-zamoznosc-test] 88 OK, 0 FAIL
+0|tarasy-cywilizacje-test.cjs|TARASY-CYWILIZACJE-TEST: 18 passed, 0 failed
+0|tartak-glinianka-rate-Q1-test.cjs|1281 passed, 0 failed
+0|tech-choice-order-test.cjs|tech-choice-order-test: 9 pass, 0 fail
+0|tech-discovery-card-click-test.cjs|13 PASS, 0 FAIL
+0|tech-pottery-fifth-test.cjs|tech-pottery-fifth-test: 45 pass, 0 fail
+0|tech-tempo-test.cjs|
+0|tech-tree-test.cjs|tech-tree-test: 20 pass, 0 fail
+0|tech-unlock-units-test.cjs|tech-unlock-units-test: 119 pass, 0 fail
+0|technology-discovery-card-visual-test.cjs|48 PASS, 0 FAIL
+0|teren-walki-etapy-test.cjs|--- 33 ok, 0 fail ---
+0|terminology-trade-vs-tax-test.cjs|[terminology-trade-vs-tax-test] 799 pass, 0 fail
+0|terrain-base-resource-yields-test.cjs|terrain-base-resource-yields-test: 10 pass, 0 fail
+0|terrain-hill-movement-test.cjs|terrain-hill-movement-test: 10 pass, 0 fail
+0|terrain-improve-farm-availability-test.cjs|36 passed, 0 failed
+0|terrain-names-equivalence-test.cjs|terrain-names-equivalence: PASS=23 FAIL=0
+0|territory-border-dense-settlement-test.cjs|territory-border-dense-settlement-test: 15 pass, 0 fail
+0|territory-border-test.cjs|territory-border-test: 9 pass, 0 fail
+0|territory-improvement-owner-test.cjs|=== territory-improvement-owner-test: 34 passed, 0 failed ===
+0|test-hook-setcitylimit-test.cjs|PASS=29 FAIL=0
+0|trade-dialog-no-rerender-test.cjs|19/19 PASS
+0|trade-grant-test.cjs|trade-grant-test: 62 passed, 0 failed
+0|trade-ilosc-test.cjs|trade-ilosc-test: 23 passed, 0 failed
+0|trade-routes-contact-only-test.cjs|trade-routes-contact-only-test: 36 passed, 0 failed
+0|trade-routes-hud-filter-test.cjs|[trade-routes-hud-filter-test] passed=58 failed=0
+0|trade-routes-limit-test.cjs|trade-routes-limit-test: 76 passed, 0 failed
+0|trade-routes-ownership-income-test.cjs|trade-routes-ownership-income-test: 18 passed, 0 failed
+0|trade-routes-test.cjs|trade-routes-test: 96 passed, 0 failed
+0|trade-sea-bonus-requires-port-test.cjs|trade-sea-bonus-requires-port-test: 30 passed, 0 failed
+0|trade-treaty-free-break-after-10-test.cjs|trade-treaty-free-break-after-10: 35 pass, 0 fail
+0|triumph-city-state-notice-test.cjs|22 passed, 0 failed
+0|triumph-city-state-test.cjs|13 passed, 0 failed
+0|ui-text-leftovers-test.cjs|PASS: C1: bundle zawiera nowy nagłówek zasad Zaufania
+0|ulepszenia-praca-percent-test.cjs|ulepszenia-praca-percent-test: 28 passed, 0 failed
+0|unfortify-all-action-bar-test.cjs|unfortify-all-action-bar-test: 16 passed, 0 failed
+0|unit-action-bar-completeness-test.cjs|unit-action-bar-completeness-test: 31 passed, 0 failed
+0|unit-building-bonuses-test.cjs|unit-building-bonuses-test: 82 passed, 0 failed
+0|unit-card-stats-engine-canon-test.cjs|PASS unit-card-stats-engine-canon-test
+0|unit-context-card-test.cjs|unit-context-card-test: 29 pass, 0 fail
+0|unit-cost-difficulty-removed-test.cjs|WYNIK: 9 ok, 0 FAIL
+0|unit-cost-tempo-test.cjs|
+0|unit-detail-card-entitycard-migration-test.cjs|[unit-detail-card-entitycard-migration-test] 40 pass, 0 fail
+0|unit-epoch-cost-test.cjs|unit-epoch-cost-test: 57 passed, 0 failed
+0|unit-info-card-army-interaction-test.cjs|unit-info-card-army-interaction-test: 7 pass, 0 fail
+0|unit-info-card-contract-test.cjs|unit-info-card-contract-test: 23 pass, 0 fail
+0|unit-info-card-entitycard-migration-test.cjs|[unit-info-card-entitycard-migration-test] 26 pass, 0 fail
+0|unit-info-card-wiring-test.cjs|unit-info-card-wiring-test: 6 pass, 0 fail
+0|unit-owner-emblem-ring-civ-color-test.cjs|unit-owner-emblem-ring-civ-color-test: 15 passed, 0 failed
+0|unit-power-sort-test.cjs|=== unit-power-sort-test: 13 pass, 0 fail ===
+0|unit-power-test.cjs|=== unit-power-test: 6 pass, 0 fail ===
+0|unit-recruit-cost-era-extra-test.cjs|WYNIK: 9 ok, 0 FAIL
+0|unit-recruit-nazwa-test.cjs|[unit-recruit-nazwa-test] 17 passed, 0 failed.
+0|unit-renderer-overlay-sync-test.cjs|unit-renderer-overlay-sync-test: 17 passed, 0 failed
+0|unit-replace-archer-slinger-test.cjs|[unit-replace-archer-slinger-test] 51 OK, 0 FAIL
+0|unit-replace-full-cost-test.cjs|unit-replace pelny koszt: 40 passed, 0 failed
+0|unit-replace-multitype-walk-test.cjs|wynik: 25 OK, 0 FAIL
+0|unit-replace-promotion-table-test.cjs|[unit-replace-promotion-table-test] PASS: 32 wpisów źródłowych, 63 krawędzi, brak cykli
+0|unit-replace-test.cjs|
+0|unit-resource-upkeep-test.cjs|unit-resource-upkeep-test: 7 passed, 0 failed
+0|unit-top3-player-language-test.cjs|
+0|unit-upkeep-cost-pace-test.cjs|WYNIK: 81 ok, 0 FAIL
+0|unit-upkeep-era-scale-test.cjs|WYNIK: 24 ok, 0 FAIL
+0|units-health-single-field-test.cjs|
+0|upgrade-budynki-test.cjs|upgrade-budynki-test: 61 pass, 0 fail
+0|upkeep-difficulty-per-owner-test.cjs|upkeep-difficulty-per-owner-test: 19 passed, 0 failed
+0|upkeep-test.cjs|upkeep-test: 91 passed, 0 failed
+0|victory-screen-test.cjs|[victory-screen-test] 11 passed, 0 failed (total 11).
+0|victory-test.cjs|[victory-test] 12 passed, 0 failed (total 12).
+0|walka-jeden-kontratak-test.cjs|
+0|walka-morale-przewaga-mocy-test.cjs|
+0|waluta-mennica-test.cjs|waluta-mennica-test: 61 passed, 0 failed
+0|war-allin-general-path-barb-defense-test.cjs|war-allin-general-path-barb-defense-test: 24 passed, 0 failed
+0|war-allin-keep-barb-defense-test.cjs|war-allin-keep-barb-defense-test: 8 passed, 0 failed
+0|war-epoch-player-first-test.cjs|war-epoch-player-first-test: 33 pass / 0 fail
+0|war-happiness-parity-test.cjs|war-happiness-parity-test: 21 passed, 0 failed
+0|war-rules-multiwar-main-guard-test.cjs|21 PASS / 0 FAIL
+0|war-rules-multiwar-test.cjs|WYNIK: 57 OK / 0 FAIL
+0|warehouse-state-cap-20pct-test.cjs|warehouse-state-cap-20pct-test: 56 passed, 0 failed
+0|water-access-port-vs-mill-test.cjs|ALL PASS
+0|wealth-test.cjs|wealth-test: 36 passed, 0 failed
+0|web-memory-leaks-test.cjs|69 passed, 0 failed
+0|weterani-test.cjs|WYNIK: 79 PASS, 0 FAIL
+0|wiarygodnosc-test.cjs|wiarygodnosc-test: 270 pass, 0 fail
+0|wire-ekonomia-test.cjs|wire-ekonomia-test: 37 passed, 0 failed
+0|wonder-availability-test.cjs|wonder-availability-test: 7 passed, 0 failed
+0|wonder-civ-tech-test.cjs|wonder-civ-tech-test: 6 passed, 0 failed
+0|wonder-early-return-highlight-test.cjs|8 pass, 0 fail
+0|wonder-haamonga-no-dead-bonuses-test.cjs|16 PASS, 0 FAIL
+0|wonder-map-build-test.cjs|6 pass, 0 fail
+0|wonder-text-no-raw-ids-test.cjs|WYNIK: 132 ok, 0 FAIL
+0|wonder-yields-test.cjs|11 passed, 0 failed
+0|work-tax-conversion-test.cjs|work-tax-conversion-test: 10 assertions passed
+0|wycinka-drewno-cap-test.cjs|[wycinka-drewno-cap-test] 13 pass, 0 fail
+0|wyrab-rzeka-d1-test.cjs|wyrab-rzeka-d1-test: 3 passed, 0 failed
+0|wyrab-rzeka-krok0-test.cjs|Wynik: 3 PASS / 0 FAIL
+0|wyrab-rzeka-r2-test.cjs|Wynik: 10 PASS / 0 FAIL
+0|zloto-szlak-test.cjs|zloto-szlak-test: 48 passed, 0 failed
+0|zloto-test.cjs|zloto-test: 45 pass, 0 fail
+0|zloze-zloto-render-test.cjs|7 passed, 0 failed
+1|administracja-stolica-test.cjs|[administracja-stolica-test] 52 OK, 1 FAIL
+1|ai-army-composition-per-civ-test.cjs|ai-army-composition-per-civ-test: 186 passed, 155 failed
+1|ai-balans-step3-test.cjs|=== ai-balans-step3-test: 7 passed, 1 failed ===
+1|ai-city-render-batch-test.cjs|
+1|ai-dlug-porzadki-q1-test.cjs|
+1|ai-general-war-campaign-test.cjs|ai-general-war-campaign-test: 47 passed, 4 failed
+1|ai-home-war-sees-own-land-test.cjs|
+1|ai-jednostki-tylko-zakup-test.cjs|ai-jednostki-tylko-zakup-test: 43 passed, 2 failed
+1|ai-march-avoid-foreign-territory-test.cjs|ai-march-avoid-foreign-territory: 98 passed, 1 failed
+1|ai-move-range-test.cjs|ai-move-range: 45 passed, 1 failed
+1|ai-player-parity-fixes-test.cjs|41 passed, 3 failed
+1|ai-praca-split-parity-test.cjs|ai-praca-split-parity-test: 23 passed, 4 failed
+1|ai-purchase-maintenance-reserve-test.cjs|ai-purchase-maintenance-reserve-test: 54 passed, 2 failed
+1|ai4-popyt-obywatele-test.cjs|ai4-popyt-obywatele-test: 38 passed, 17 failed
+1|ambush-deploy-wiring-test.cjs|FAIL atak gracza: deploy = generał LUB zasadzka (rozstawienie bez generała)
+1|annex-citystate-spoils-test.cjs|78 passed, 1 failed
+1|army-leadership-test.cjs|
+1|army-split-enemy-city-block-test.cjs|Wynik: 13 PASS, 1 FAIL
+1|army-to-nearest-leader-test.cjs|WYNIK: 42 PASS, 1 FAIL
+1|atak-adiacencja-wymagana-test.cjs|
+1|auto-wyzywienie-live-recalc-test.cjs|FAIL: _maxSafeRationCache.clear() znaleziony w pobliżu wywołania advanceEmpireFood(...) (max 1500 znaków dalej)
+1|autoimprove-live-hooks-test.cjs|autoimprove-live-hooks-test: 36 passed, 1 failed
+1|barb-camp-destruction-test.cjs|barb-camp-destruction-test: 83 passed, 2 failed
+1|barbarian-cooperation-grace-maints-wiring-test.cjs|
+1|barbarzyncy-krazenie-test.cjs|barbarzyncy-krazenie-test: 244 passed, 2 failed
+1|battle-manual-choice-contract-test.cjs|
+1|border-march-wygasanie-test.cjs|border-march-wygasanie-test: 22 pass, 4 fail
+1|bramki-tmpdir-unikalnosc-test.cjs|[bramki-tmpdir-unikalnosc-test] PASS=2 FAIL=1
+1|budynki-koszt-pracy-50-test.cjs|budynki-koszt-pracy-50-test: 141 pass, 42 fail; 44 budynków / 68 poziomów
+1|building-detail-card-entitycard-migration-test.cjs|[building-detail-card-entitycard-migration-test] 52 pass, 3 fail
+1|city-clears-forest-test.cjs|city-clears-forest-test: 17 pass / 1 fail
+1|city-panel-refresh-at-turn-start-live-test.cjs|
+1|city-state-alliance-test.cjs|city-state-alliance-test: 73 passed, 1 failed
+1|citypanel-tech-tile-dead-effects-test.cjs|[citypanel-tech-tile-dead-effects-test] 16 pass, 1 fail
+1|civ-matrix-ai-diplomacy-wiring-test.cjs|RESULT: 42 passed, 1 failed
+1|civ-matrix-greece-test.cjs|PASS 323; FAIL 6
+1|cluster-plan-name-test.cjs|2 passed, 4 failed
+1|commander-star-emblem-test.cjs|commander-star-emblem-test: 11 passed, 1 failed
+1|conquest-stability-test.cjs|conquest-stability-test: 28 passed, 1 failed
+1|culture-religion-test.cjs|culture-religion-test: 63 passed, 2 failed
+1|currency-test.cjs|currency-test: 36 passed, 1 failed
+1|diplo-aggressor-unit-test.cjs|diplo-aggressor-unit-test: 72 PASS, 1 FAIL
+1|diplo-war-trust-only-test.cjs|    at failureErrorWithLog (/home/user/The-Game/.claude/worktrees/wf_8df7df1a-9c1-1/gra/node_modules/esbuild/lib/main.js:1752:15)
+1|drewno-gate-test.cjs|  [FAIL] Wojownik: nadal Surowiec=Drewno ×10 (bez zmian -- kontrola) -- ma={"Surowiec":"Drewno","ilosc":13}
+1|dyplo-bilans-gate-n-e1-reprodukcja-runda2-test.cjs|PASS: (0d) mutacja D+C (na bundlu mutDC) faktycznie popsuła pwBalance ORAZ przywróciła starą wersję tryPayload w generateCounterOffer (bez sprawdzenia pwBalance<0) — kontrola nietautologiczna dla Testu 4 aktywna
+1|dyplo-bilans-gate-n-e1-reprodukcja-runda3-test.cjs|=== PODSUMOWANIE: 10 PASS / 17 FAIL ===
+1|dyplo-karta-duplikat-komunikat-test.cjs|12 passed, 3 failed
+1|dyplo-pakt-ekspansja-granica-test.cjs|22/26 passed
+1|egypt-movement-precedence-test.cjs|
+1|eliminacja-lup-kwoty-test.cjs|34 passed, 4 failed
+1|elimination-spectacle-test.cjs|83 PASS, 1 FAIL
+1|end-turn-hint-diplo-audience-test.cjs|end-turn-hint-diplo-audience-test: passed=9 failed=7
+1|end-turn-modal-sequencing-test.cjs|end-turn-modal-sequencing-test: 39 pass, 2 fail
+1|endturn-battle-deadlock-exec-test.cjs|endturn-battle-deadlock-exec-test: 40 pass, 9 fail
+1|epoka-merge-recruit-test.cjs|  [FAIL] epoch=3: WSZYSTKIE jednostki bazowe Zelaza dostepne (biezaca epoka) -- brakuje=["Katapulta"]
+1|era-change-toast-defer-test.cjs|=== WYNIK: FAIL ===
+1|era-war-bronze-player-target-test.cjs|42 passed, 2 failed
+1|escape-overlay-real-panels-test.cjs|    at failureErrorWithLog (/home/user/The-Game/.claude/worktrees/wf_8df7df1a-9c1-1/gra/node_modules/esbuild/lib/main.js:1752:15)
+1|fair-play-tier-grid-test.cjs|fair-play-tier-grid-test: 9 pass, 3 fail
+1|forced-war-bronze-test.cjs|SOME TESTS FAILED
+1|forced-war-iron-test.cjs|PASSED: 54 / FAILED: 1 / TOTAL: 55
+1|forced-war-reguly-multi-turn-simulation-test.cjs|SOME TESTS FAILED
+1|forced-war-stone-test.cjs|PASSED: 28 / FAILED: 3 / TOTAL: 31
+1|fortify-pole-test.cjs|=== fortify-pole-test: 39 pass, 2 fail ===
+1|granice-relacja-dyplomatyczna-test.cjs|49 passed, 3 failed
+1|heal-stale-blockers-pending-battle-test.cjs|heal-stale-blockers-pending-battle-test: 19 pass, 4 fail
+1|hotseat-etap6d-podetap-e-source-test.cjs|hotseat-etap6d-podetap-e-source-test: 60 PASS, 17 FAIL
+1|hud-armia-chip-jednostki-test.cjs|FAILED: 57 passed, 3 failed
+1|hud-moc-warstwa-test.cjs|WYNIK: 21 PASS, 7 FAIL
+1|idb-b1b2b3-test.cjs|=== idb-b1b2b3-test: 19 pass, 1 fail ===
+1|json-descriptions-sync-test.cjs|json-descriptions-sync-test: 18 pass / 1 fail
+1|koniec-tury-g1-g2-runda4-test.cjs|koniec-tury-g1-g2-runda4-test: 40 pass, 1 fail
+1|manual-rebalance-owner-era-test.cjs|manual-rebalance-owner-era: pass=4 fail=1
+1|march-attack-queue-persist-test.cjs|march-attack-queue-persist-test: 55 passed, 2 failed
+1|miasta-panstwa-wylaczone-test.cjs|FAIL: brak PRE-tree (origin/main) w scratchpadzie — uruchom najpierw git archive.
+1|moc-ranking-rozjazd-test.cjs|WYNIK: 13 PASS, 6 FAIL
+1|mur-paradoks-test.cjs|=== mur-paradoks-test: 28 pass, 1 fail ===
+1|naval-water-access-gate-test.cjs|naval-water-access-gate-test: 36 pass, 4 fail
+1|no-negative-stocks-c2-test.cjs|no-negative-stocks-c2-test: 43 passed, 1 failed
+1|no-negative-stocks-endturn-test.cjs|no-negative-stocks-endturn-test: 18 passed, 1 failed
+1|okolica-ownership-change-reconcile-test.cjs|OKOLICA-OWNERSHIP-CHANGE-RECONCILE FAIL (13/15 passed, 2 failed)
+1|open-panel-refresh-after-tech-live-test.cjs|
+1|perf-endturn-ai-phase-equiv-test.cjs|
+1|plony-budynkow-test.cjs|plony-budynkow-test: 64 passed, 4 failed
+1|pr141-hotseat-diplomacy-owner-test.cjs|FAIL actual relation breakdown treats unknown civ as neutral, not same-type primary fallback: isHarderDiplomacyEnabled is not defined
+1|r-bitwa-kolory-gracz-przeciwnik-q1-test.cjs|    " * defender's side/back is a FLANK / REAR hit -- that arc is passed to the\n" +
+1|recruitment-batch-contract-test.cjs|
+1|rekrutacja-skarbiec-only-test.cjs|rekrutacja-skarbiec-only-test: 11 passed, 2 failed
+1|ruch-swiata-tempo-test.cjs|[ruch-swiata-tempo-test] FAIL
+1|rydwan-bierny-atak-test.cjs|4 passed, 2 failed
+1|rydwan-konnica-x2-test.cjs|FAIL: 4 niezgodnosci
+1|save-load-roundtrip-state-drift-test.cjs|SAVE-LOAD ROUNDTRIP FAIL (1)
+1|stone-research-costs-test.cjs|stone-research-costs-test: 47 pass, 1 fail
+1|surrender-rekrutacja-build-gate-test.cjs|surrender-rekrutacja-build-gate-test: 10 passed, 1 failed
+1|tartak-oboz-wyscig-race-test.cjs|
+1|trade-routes-income-test.cjs|trade-routes-income-test: 133 passed, 1 failed
+1|ui-language-count-renderer-test.cjs|    at failureErrorWithLog (/home/user/The-Game/.claude/worktrees/wf_8df7df1a-9c1-1/gra/node_modules/esbuild/lib/main.js:1752:15)
+1|unit-card-ranged-mult-test.cjs|
+1|unit-stock-cost-test.cjs|unit-stock-cost-test: 56 passed, 2 failed
+1|villages-test.cjs|VILLAGES-TEST FAIL (93/94 passed, 1 failed)
+1|war-allin-capital-test.cjs|96 passed, 2 failed
+1|war-epoch-player-first-main-guard-test.cjs|war-epoch-player-first-main-guard-test: 33 pass / 2 fail
+1|war-era-counter-test.cjs|war-era-counter-test: 81 pass / 1 fail
+1|wojna-wymuszona-parowanie-test.cjs|  FAIL: S7: dokładnie jeden wpis -- Rzym dołącza do pary 2<->3 (got 0, want 1)
+1|wojna-wymuszona-prog-tury-gracz-test.cjs|PASSED: 7, FAILED: 2
+1|wonder-transfer-on-conquest-test.cjs|40 passed, 3 failed
+1|zelazo-gate-test.cjs|  [FAIL] Zastap: Legionista JEST opcja zamiany z pelnym dostepem do zelaza -- ids=[]
+2|ai-ai-treaty-live-proof-wiring-test.cjs|
+2|ambush-deploy-identity-test.cjs|
+2|memory-static-geometry-pool-test.cjs|
+2|move-pass-through-own-units-test.cjs|    at failureErrorWithLog (/home/user/The-Game/.claude/worktrees/wf_8df7df1a-9c1-1/gra/node_modules/esbuild/lib/main.js:1752:15)
+124|ai-army-replacement-concentration-test.cjs|
+124|ai-avoid-polar-plan-test.cjs|
+124|ai-avoid-polar-player-parity-test.cjs|
+124|ai-avoid-polar-sim-test.cjs|
+124|ai-move-full-range-test.cjs|
+124|autoimprove-irrigation-after-farms-test.cjs|
+124|autoimprove-pasture-irrigation-q2-test.cjs|
+124|battle-pace-equal-line-live-test.cjs|
+124|capital-sep-pangea-test.cjs|PASS N=25 obcy≥27 caps=8
+124|climate-band-test.cjs|
+124|cluster-spread-test.cjs|PASS S=12 caps=7/7 Q=4/3 spanQ=74 spanR=51 minBody=10
+124|cluster-start-test.cjs|PASS: 16-hex wyspa: playerStartHex przechodzi bramkę masy gracza
+124|cyna-surowiec-test.cjs|
+124|deposit-coast-test.cjs|
+124|earth-template-test.cjs|FAIL: ziemia: Antarktyda w szablonie nad buforem południowym (found 0 heksów przy r=85)
+124|fair-play-grid-test.cjs|
+124|horse-resource-terrain-test.cjs|
+124|hotseat-etap6f-part2-data-test.cjs|PASS: jawny secondHumanOwnerId respektowany
+124|land-sea-ratio-test.cjs|
+124|map-coast-buffer-test.cjs|FAIL: ziemia seed=2026: morze w środku lądu (21,13, 19,14, 20,14)
+124|map-continents-rivers-test.cjs|
+124|map-gen-regression-test.cjs|
+124|map-quality-forest-parity-test.cjs|
+124|mapgen-rivers-fill-centroid-cache-test.cjs|
+124|medium-river-test.cjs|PASS: Kontynenty mini seed 7: 0 medium samotnych do oceanu (0)
+124|merge-decor-no-regress-test.cjs|
+124|miasta-zbyt-blisko-test.cjs|
+124|pangea-land-determinism-test.cjs|
+124|pangea-land-fraction-test.cjs|  → seed 42 AC: ratio80/20=4.07 (≥1.6 OK) fracΔ=61.5pp (≥12 OK) actual80=81.5% (≥45 OK) annular=0 (≤120 OK) 50≠80 OK bboxArea×3.21 → PASS
+124|pangea-land-shape-test.cjs|  seed 7: masy=1 dry=1 dominująca=100.0% bboxFill=0.866 coast/√A=4.488 aspect=1.19 annular=0 → PASS
+124|pangea-river-interior-test.cjs|
+124|relief-grid-coverage-test.cjs|
+124|resource-ledger-realpath-mutation-test.cjs|[{"id":"m01","name":"pominiecie lupu z bitwy","result":"ZABITA","exit":1,"firstFails":["FAIL lup z bitwy: wpis „Łup z bitwy” (lup_bitwy) dla zwyciezcy :: {}","FAIL lup z bitwy: zmiana magazynu = suma ksiegi (roznica 0) :: [{\"owner\":0,\"resource\":\"drewno\",\"stockDelta\":52,\"ledger\":0}]"]},{"id":"m02","name":"pominiecie zwrotu z rekrutacji","result":"BUILD-FAIL"},{"id":"m03","name":"pominiecie zwrotu z rozwiazania (gracz)","result":"ZABITA","exit":1,"firstFails":["FAIL rozwiazanie gracza: wpis „Zwrot z rozwiązania jednostki” :: {}","FAIL rozwiazanie gracza: zmiana magazynu = suma ksiegi (roznica 0), niezerowa :: [{\"owner\":0,\"resource\":\"drewno\",\"stockDelta\":13,\"ledger\":0}"]},{"id":"m04","name":"pominiecie zwrotu z rozwiazania (AI)","result":"ZABITA","exit":1,"firstFails":["FAIL rozwiazanie AI: wpis „Zwrot z rozwiązania jednostki” i roznica 0 :: [{},[{\"owner\":1,\"resource\":\"drewno\",\"stockDelta\":13,\"ledger\":0}]]"]},{"id":"m05","name":"pominiecie zdobycia/oddania miasta (kapitulacja)","result":"ZABITA","exit":1,"firstFails":["FAIL zdobycie: zwyciezca ma wpis „Zdobycie miasta” :: {}","FAIL zdobycie: pokonany ma wpis „Oddanie miasta” :: {}","FAIL zdobycie: zmiana magazynu obu stron = suma ksiegi (roznica 0) :: [{\"owner\":0,\"resource\":\"glina\",\"stockDelta\":3000,\"ledger\":0},{\"owner\":"]},{"id":"m06","name":"pominiecie cesji miasta","result":"ZABITA","exit":1,"firstFails":["FAIL cesja: odbiorca (AI) ma „Cesja miasta (otrzymane)” :: {}","FAIL cesja: oddajacy (gracz) ma „Cesja miasta (oddane)” :: {}","FAIL cesja: roznica 0 :: [{\"owner\":0,\"resource\":\"glina\",\"stockDelta\":-3000,\"ledger\":0},{\"owner\":0,\"resource\":\"drewno\",\"stockDelta\":-3000,\"le"]},{"id":"m07","name":"pominiecie przylaczenia miasta-panstwa","result":"ZABITA","exit":1,"firstFails":["FAIL przylaczenie: wpis „Przyłączenie miasta-państwa” u przylaczajacego :: {}","FAIL przylaczenie: wpis „Oddanie miasta” u oddajacego :: {}","FAIL przylaczenie: roznica 0 :: [{\"owner\":0,\"resource\":\"glina\",\"stockDelta\":3000,\"ledger\":0},{\"owner\":0,\"resource\":\"drewno\",\"stockDelta\":304"]},{"id":"m08","name":"pominiecie buntu miasta","result":"ZABITA","exit":1,"firstFails":["FAIL bunt: wlasciciel ma „Bunt miasta (utrata)” :: {}","FAIL bunt: rebelianci maja „Bunt miasta (przejęte)” :: {}","FAIL bunt: roznica 0 :: [{\"owner\":0,\"resource\":\"glina\",\"stockDelta\":-3000,\"ledger\":0},{\"owner\":0,\"resource\":\"drewno\",\"stockDelta\":-3033,\"led"]},{"id":"m09","name":"pominiecie daru/umowy (strona nadawcy)","result":"ZABITA","exit":1,"firstFails":["FAIL dar: nadawca ma wpis „Dar dla …” (dar) :: {\"4\":{}}","FAIL dar: odbiorca ma wpis „Dar od …” (dar) :: {\"4\":{}}"]},{"id":"m09b","name":"pominiecie daru/umowy (strona odbiorcy)","result":"ZABITA","exit":1,"firstFails":["FAIL dar: nadawca ma wpis „Dar dla …” (dar) :: {\"0\":{}}","FAIL dar: odbiorca ma wpis „Dar od …” (dar) :: {\"0\":{}}"]},{"id":"m17","name":"bunt w petli tury: gola zmiana wlasciciela bez ksiegi","result":"PRZEZYLA"},{"id":"m10","name":"Zastap bez sinku ksiegi","result":"ZABITA","exit":1,"firstFails":["FAIL zastap (Wojownik -> Procarz): wpis „Zastąp jednostkę” (rekrutacja) jako ubytek :: {}","FAIL zastap: zmiana magazynu = suma ksiegi (roznica 0) :: [{\"owner\":0,\"resource\":\"drewno\",\"stockDelta\":-50,\"ledger\":0}]"]},{"id":"m11","name":"machina oblezmicza bez sinku ksiegi","result":"ZABITA","exit":1,"firstFails":["FAIL machina: wpis „Machina oblężnicza” (budowa) jako ubytek :: {}","FAIL machina: roznica 0 :: [{\"owner\":0,\"resource\":\"drewno\",\"stockDelta\":-19,\"ledger\":0}]"]},{"id":"m12","name":"Stadnina bez sinku ksiegi","result":"ZABITA","exit":1,"firstFails":["FAIL stadnina: wpis „Stadnina (koń)” (wejscie) jako ubytek 50 :: {}","FAIL stadnina: roznica 0 :: [{\"owner\":0,\"resource\":\"kon\",\"stockDelta\":-50,\"ledger\":0}]"]},{"id":"m13","name":"wycinka lasu gracza: kwota wpisu 0","result":"ZABITA","exit":1,"firstFails":["FAIL wycinka gracza: realny tick tury zapisal wpis „Wycinka lasu” (wycinka) w ksiedze :: {\"teren|city0\":{\"kind\":\"teren\",\"label\":\"Teren i plo","FAIL wycinka gracza: kwota wpisu > 0 i >= pracaPerTurn (plon wyrebu, z bonusem Stolarni)","FAIL wycinka gracza: drewno — zmiana magazynu = suma ksiegi (roznica 0) :: diff=10"]},{"id":"m14","name":"usuniecie commitLedgerHistoryTick","result":"ZABITA","exit":1,"firstFails":["FAIL zapis: po turach dziennik ma >= 2 ticki :: len=0","FAIL zapis: dziennik zawiera niepuste zrodla","FAIL zapis: realny buildSaveGameSnapshot zawiera pole resourceLedgerHistory z tickami :: {\"savedBytes\":2,\"savedTurns\":0,\"afterTurns\":0}"]},{"id":"m15","name":"usuniecie restoreLedgerHistoryFromSave przy wczytaniu","result":"ZABITA","exit":1,"firstFails":["FAIL stary zapis bez pola resourceLedgerHistory => pusty dziennik po wczytaniu (bez wyjatku) :: {\"savedBytes\":3577,\"savedTurns\":6,\"afterTurn","FAIL po wczytaniu kolejna tura dopisuje tick do dziennika :: len=7"]},{"id":"m16","name":"zapis dziennika wszystkich wlascicieli (bez ograniczenia rozmiaru)","result":"ZABITA","exit":1,"firstFails":["FAIL rozmiar: pole zapisu resourceLedgerHistory (N=10, gracz + 5 AI) <= 50 KB :: max=103279 B"]}]
+124|river-density-test.cjs|
+124|river-grid-coverage-test.cjs|
+124|river-loop-test.cjs|PASS: sanitize skraca pętlę (3 hex)
+124|river-map-scale-test.cjs|PASS: Maleński: główne > 0 (35)
+124|river-path-adjacency-test.cjs|
+124|river-sea-buffer-test.cjs|
+124|river-yield-both-sides-test.cjs|
+124|roads-city-links-only-test.cjs|
+124|roads-reach-city-hex-test.cjs|
+124|stranded-land-test.cjs|
+124|terrain-height-audit-test.cjs|PASS: rzeka nad polarny (top 0.460 < river 0.540)
+124|world-density-test.cjs|

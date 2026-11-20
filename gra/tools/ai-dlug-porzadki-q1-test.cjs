@@ -161,7 +161,10 @@ console.log('\n-- (b) aiSliderStateByOwner: save -> JSON -> load roundtrip (real
   const saveFn = new Function(`${saveJs}; return __save;`)();
 
   const restoreJs = esbuild.transformSync(restoreSnippet, { loader: 'ts', target: 'node18' }).code;
-  const restoreFn = new Function('aiSliderStateByOwner', 'saved', restoreJs);
+  // Harness (R-WEB-TEST-DEBT-Q13 r4): blok restore w main.ts (do aiTargetMemoryByOwner.clear()) czyści też
+  // orderMultMap/growthMultMap/orderValueMap/nnsAiOverrides; dla tego dowodu (poz. b) to atrapy Map.
+  const restoreFn = new Function('aiSliderStateByOwner', 'saved', 'orderMultMap', 'growthMultMap', 'orderValueMap', 'nnsAiOverrides', restoreJs);
+  const restoreWithStubs = (target, saved) => restoreFn(target, saved, new Map(), new Map(), new Map(), new Map());
 
   // --- Roundtrip z wartością RÓŻNĄ od domyślnej (nie tylko obecność pola w JSON) ---
   const NIEDOMYSLNA = { procentBudynki: 71, procentPuliImperiumZBudynkow: 29, lastChangeTurn: 88 };
@@ -170,7 +173,7 @@ console.log('\n-- (b) aiSliderStateByOwner: save -> JSON -> load roundtrip (real
   const jsonRoundtrip = JSON.parse(JSON.stringify({ meta: { aiSliderStateByOwner: serialized } }));
 
   const loadedMap = new Map();
-  restoreFn(loadedMap, jsonRoundtrip);
+  restoreWithStubs(loadedMap, jsonRoundtrip);
 
   assert(loadedMap.has(3), 'B4: po save->JSON->load ownerId=3 OBECNY w aiSliderStateByOwner');
   const restoredVal = loadedMap.get(3);
@@ -191,7 +194,7 @@ console.log('\n-- (b) aiSliderStateByOwner: save -> JSON -> load roundtrip (real
   const loadedOldMap = new Map([[999, { procentBudynki: 1, procentPuliImperiumZBudynkow: 1, lastChangeTurn: 1 }]]); // symuluje "przeciek" z poprzedniej gry tej samej sesji
   let threw = false;
   try {
-    restoreFn(loadedOldMap, oldSaveNoField);
+    restoreWithStubs(loadedOldMap, oldSaveNoField);
   } catch (e) {
     threw = true;
   }

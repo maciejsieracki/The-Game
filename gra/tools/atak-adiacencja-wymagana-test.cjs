@@ -84,6 +84,9 @@ function wytnijFunkcje(src, sygnatura) {
       let plannedMarches = new Map();
       let marchAttackTargets = new Map();
       let selectedId = null;
+      // Harness (R-WEB-TEST-DEBT-Q13 r4): stan modulu main.ts (marchStopNotified) potrzebny przez clearPlannedMarch.
+      const marchStopNotified = new Map();
+      const marchStopDetail = new Map();
       const openCalls = [];
       const unitRenderer = { clearPathRoute: () => {} };
       function currentVisible() { return currentVisibleSet; }

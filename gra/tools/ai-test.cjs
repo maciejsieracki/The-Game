@@ -358,9 +358,12 @@ console.log('\n--- T2b: higher difficulty → stronger economy production score 
   ];
   // koszary ZBUDOWANE w każdym mieście — żeby usunąć je z kandydatów
   const builtKoszary = { c1: ['koszary'], c2: ['koszary'], c3: ['koszary'] };
+  // R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (2026-11-18): każde miasto AI ma stały garnizon min. 1
+  // jednostki bojowej -- bez niej AI kupuje Wojownika-garnizon zamiast badanego wyboru ekonomia/wojsko.
+  const garrisonedUnits = [makeUnit('g1', 1, 1, 1), makeUnit('g2', 1, 5, 1), makeUnit('g3', 1, 8, 1)];
 
   // Level 1 (bonus=0): economyScore=100, econBuild score=240, wojownik=270 → wojownik wygra
-  const r1 = decideAITurn(1, [], citiesMid, map, diffData, {
+  const r1 = decideAITurn(1, garrisonedUnits, citiesMid, map, diffData, {
     civType: 'grecy', poziomTrudnosci: 1, cityBuildings: builtKoszary,
   });
   const build1 = r1.filter(c => c.type === 'build');
@@ -368,7 +371,7 @@ console.log('\n--- T2b: higher difficulty → stronger economy production score 
   const mil1  = build1.filter(c => c.buildingId === 'Wojownik' || c.buildingId === 'Łucznik');
 
   // Level 3 (bonus=0.25, diffProdBonus=50): economyScore=150, econBuild score=290, wojownik=270 → ekonomia wygra
-  const r3 = decideAITurn(1, [], citiesMid, map, diffData, {
+  const r3 = decideAITurn(1, garrisonedUnits, citiesMid, map, diffData, {
     civType: 'grecy', poziomTrudnosci: 3, cityBuildings: builtKoszary,
   });
   const build3 = r3.filter(c => c.type === 'build');
@@ -881,6 +884,7 @@ console.log('\n--- T5a: canAfford gate — koszary blocked, fallback to affordab
       poziomTrudnosci: 2,
       cityBuildings: {},  // nothing built yet
       canAfford,
+      isProductionAllowed: () => true,
     });
   } catch (e) {
     threw = true;
@@ -939,6 +943,7 @@ console.log('\n--- T5b: canAfford gate — all blocked -> AI saves (no build com
       poziomTrudnosci: 2,
       cityBuildings: {},
       canAfford: neverAfford,
+      isProductionAllowed: () => true,
     });
   } catch (e) {
     threw = true;
@@ -1968,6 +1973,7 @@ console.log('\n--- T5a: canAfford odfiltrowuje wszystkich -> brak build (AI oszc
     poziomTrudnosci: 2,
     cityBuildings: {},
     canAfford: (_cityId, _itemId) => false,  // nic nie stac
+    isProductionAllowed: () => true,
   });
   const buildCmds = result.filter(c => c.type === 'build');
   assert(
@@ -2028,7 +2034,8 @@ console.log('\n--- T5d: itemCost prefers cheaper items w tym samym score-band --
   const costs = { Wojownik: 20, Łucznik: 20, stolarnia: 10, cegielnia: 10, odlewnia_brazu: 10, magazyn: 10, targowisko: 10, koszary: 80, Osadnik: 50 };
   const ECON_SET = new Set(['stolarnia', 'cegielnia', 'odlewnia_brazu', 'magazyn', 'targowisko']);
 
-  const resultWithCost = decideAITurn(1, [], citiesMid3ForRatio, map, data, {
+  const garrisonF = [makeUnit('gf1', 1, 1, 1), makeUnit('gf2', 1, 5, 1), makeUnit('gf3', 1, 8, 1)];
+  const resultWithCost = decideAITurn(1, garrisonF, citiesMid3ForRatio, map, data, {
     civType: 'grecy',
     poziomTrudnosci: 2,
     cityBuildings: { f1: ['koszary'], f2: ['koszary'], f3: ['koszary'] }, // koszary juz zbudowane
@@ -2046,7 +2053,7 @@ console.log('\n--- T5d: itemCost prefers cheaper items w tym samym score-band --
   );
 
   // Bez itemCost: Wojownik (score 270) bije ekonomie (score 240)
-  const resultNoItemCost = decideAITurn(1, [], citiesMid3ForRatio, map, data, {
+  const resultNoItemCost = decideAITurn(1, garrisonF, citiesMid3ForRatio, map, data, {
     civType: 'grecy',
     poziomTrudnosci: 2,
     cityBuildings: { f1: ['koszary'], f2: ['koszary'], f3: ['koszary'] },
@@ -2100,6 +2107,7 @@ console.log('\n--- T5f: canAfford=true dla jednego, reszta false -> buduje to je
     poziomTrudnosci: 2,
     cityBuildings: {},
     canAfford: (_cityId, itemId) => itemId === 'koszary',
+    isProductionAllowed: () => true,
   });
   const buildCmds = result.filter(c => c.type === 'build');
   assert(buildCmds.length > 0, 'T5f: AI buduje koszary (jedyna dostepna)');
