@@ -312,13 +312,16 @@ ok(seaBonusLoopRe.test(mainTs), 'main.ts wpina bonus morski do tradeIncomeByCity
 const seaBonusCallRe = /computeSeaTradeBonusIncomeByCity\(\s*computeSeaTradeRouteCountByCity\(tradeRoutes\),\s*cityBuilt,?\s*\)/;
 ok(seaBonusCallRe.test(mainTs), 'main.ts woła computeSeaTradeBonusIncomeByCity(computeSeaTradeRouteCountByCity(tradeRoutes), cityBuilt)');
 
-// Pin 3 -- okno ok. 1800 znaków od "function replaceAvailabilityCtxForCity("
+// Pin 3 -- okno ok. 1800 znaków od "function productionAvailabilityCtxForCity("
+// R-WEB-TEST-DEBT-Q13 r5 (B, stary pin): replaceAvailabilityCtxForCity zostal usuniety z main.ts;
+// jego nastepca dla jednostek to replaceAvailabilityCtxEmpireWide (pin 4), a per-miasto
+// zachowuje semantyke productionAvailabilityCtxForCity -- ten pin mierzy wlasnie ja.
 {
-  const anchorIdx = mainTs.indexOf('function replaceAvailabilityCtxForCity(');
-  ok(anchorIdx >= 0, 'znaleziono kotwicę "function replaceAvailabilityCtxForCity("');
+  const anchorIdx = mainTs.indexOf('function productionAvailabilityCtxForCity(');
+  ok(anchorIdx >= 0, 'znaleziono kotwicę "function productionAvailabilityCtxForCity("');
   const win = anchorIdx >= 0 ? mainTs.slice(anchorIdx, anchorIdx + 1800) : '';
   ok(/cityHasCoastOrRiver:\s*cityHasCoastOrRiverAccess\(city\)/.test(win),
-    'replaceAvailabilityCtxForCity zawiera cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city)');
+    'productionAvailabilityCtxForCity zawiera cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city)');
 }
 
 // Pin 4 (A, R-WEB-NAVAL-DEPOSIT-GATE-TEST-DEBT-Q1: funkcja jest parametryczna `ownerId = 0`,
@@ -353,7 +356,8 @@ console.log('\nDodatkowe piny źródłowe main.ts (import, gate zakupu za złoto
   // limitów dodany przed nią); "return false;" ~2770 zn. Okno nadal ogranicza się do tej funkcji.
   const purchaseIdx = mainTs.indexOf('function purchaseRecruitmentUnit(');
   ok(purchaseIdx >= 0, 'znaleziono function purchaseRecruitmentUnit(');
-  const purchaseWin = purchaseIdx >= 0 ? mainTs.slice(purchaseIdx, purchaseIdx + 3400) : '';
+  // R-WEB-TEST-DEBT-Q13 r5 (B): bramka Naval jest ~4300 zn. od kotwicy (blok walidacji generałów/limitów przed nią) -- okno 3400 -> 4800 (pomiar: Naval przy ~4300).
+  const purchaseWin = purchaseIdx >= 0 ? mainTs.slice(purchaseIdx, purchaseIdx + 4800) : '';
   ok(/unitDefForGate\?\.Typ.*'Naval'.*!cityHasCoastOrRiverAccess\(city\)/s.test(purchaseWin),
     'purchaseRecruitmentUnit zawiera bramkę Naval + !cityHasCoastOrRiverAccess(city) (siatka bezpieczeństwa dla zakupu za złoto)');
 

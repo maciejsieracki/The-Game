@@ -49,3 +49,45 @@ BAZA: 88fc90a0f (detached, kandydat); zmiany w commicie obrony (SHA w polu sha).
 RUNDY: 4/5 (obrona)
 NASTĘPNY KROK: runda 5 (ostatnia) - przebudowa harnessów recruitment/tartak, sekwencyjne E, kategoria C/D.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+# RUNDA 5 — obrona (Operator Haiku, odpowiedzi na zarzuty Evaluatora fa328703)
+
+BAZA: `6629dbded` (kandydat). Zmiany tylko w dwóch plikach testowych; gra/src, gra/data nietknięte.
+Środowisko: `gra/node_modules` nie istniało w worktree -> `npm ci --ignore-scripts` (71 pakietów, df / 8,2 GB wolne po instalacji; node_modules nieśledzone, nie commitowane).
+
+## Odpowiedzi na zarzuty
+
+| # | Zarzut | Werdykt | Dowód / co zrobiono |
+|---|---|---|---|
+| 1 | Kategoria D (50) nierozstrzygnięta, „NIE ZMIERZONO” | PRZYJMUJĘ | Nie rozstrzygnięto w tej rundzie. Wyjątek: unit-stock-cost przeniesiony D->B i naprawiony (pkt 6). Pozostałe 49 D: bez analizy przyczyny, NIE ZMIERZONO. |
+| 2 | Kategoria E nie ponowiona sekwencyjnie | PRZYJMUJĘ | Nie ponowiono w tej rundzie (29 testów x do 300 s nie mieściło się w limicie rundy). NIE ZMIERZONO sekwencyjnie. |
+| 3 | 10 pozycji B nienaprawionych, w tym trywialne | PRZYJMUJĘ częściowo | Naprawione: naval-water-access-gate (38/2 -> **40/0**) i unit-stock-cost (56/2 -> **58/0**, patrz 6). Zostało 9 B: hud-moc-warstwa:168 i moc-ranking-rozjazd:145 (pin 49 — patrz 4), ai-player-parity:307, dyplo-bilans-r2:273 i r3:224, granice-relacja:358 (3 FAIL, nie analizowano), hotseat-etap6d:41, march-attack-queue:287, war-epoch-player-first-main-guard (FAIL [baza], nie analizowano). |
+| 4 | mur-paradoks: pin 49 -> units.json bez decyzji | PRZYJMUJĘ | Zgoda: zmiana nie ma decyzji. Stan faktyczny: `gra/data/units.json` Konnica `fieldPower` = 98 (commit 851fc3fd8 nie zmienia tej wartości, historia wartości NIE ZBADANA); dyspozycje/rust-port/p1/P1-16F-CIVPEDIA-JEDNOSTKI.md:17 pisze „Nie rozstrzygam, czy błąd jest w wiki, czy w danych” (49 wiki vs 98 dane); PYTANIA-OTWARTE.md (BUG-TOOLTIP-MOC-NIEPELNA, C-MOC-Q1) sprzeczne. Asercja po zmianie sprawdza spójność armyFieldPower z danymi, NIE wartość. **Pytanie ABC do właściciela:** Konnica rekrut = 49 (wiki/tabliczka) czy 98 (units.json)? Do czasu decyzji hud-moc i moc-ranking zostają czerwone (nie zmieniano ich). |
+| 5 | ai-army-composition: garnizon liczony jako „wręcz” | PRZYJMUJĘ jako notę | Założenie operatora, nie zatwierdzone przez właściciela. Bez zmiany kodu. **Pytanie ABC:** czy garnizon miasta ma wchodzić do klasy „wręcz” w pomiarze procentów armii? Nie weryfikowałem liczb 0,0% vs 75% z r3. |
+| 6 | Kandydaci climate-band i unit-stock-cost bez odtworzenia | PRZYJMUJĘ, z wynikami | **unit-stock-cost NIE jest błędem gry — stary pin.** `gra/data/units.json` (Konnica, „Epoka”: „Żelazo”, ok. linia 589); `gra/src/game/building-stock-cost.ts` (komentarz: „Iron and every later era x4”). Pin oczekiwał x2 (epoka Brąz). Zmieniono oczekiwania na 100/100 (25x4) i fixture 100/99 -> 100. Wynik: **58 passed, 0 failed** (było 56/2). **climate-band-test: odtworzone:** `cd gra && node tools/climate-band-test.cjs` -> `FAIL: map has polar terrain (0 hexes)`, linia `gra/tools/climate-band-test.cjs:75`, generator `generujSwiat(42, 'standardowy', 'kontynenty', ...)`. Nie ustalono, czy to regresja generatora (kandydat R-WEB-MAP-POLAR-ZERO), czy stary pin; sprawdzenie reguły C-MAP-Q3 NIE ZMIERZONO. |
+
+## Wyniki surowe (ta runda)
+
+- `naval-water-access-gate-test.cjs`: `40 pass, 0 fail` (exit 0). Zmiany: pin „replaceAvailabilityCtxForCity” (funkcja usunięta z main.ts) przepięty na `productionAvailabilityCtxForCity` (per-miasto; następca pin 4 EmpireWide); okno bramki zakupu 3400 -> 4800 (bramka Naval przy ~4300 zn. od kotwicy).
+- `unit-stock-cost-test.cjs`: `58 passed, 0 failed` (exit 0).
+- `mur-paradoks-test.cjs`: `29 pass, 0 fail` (exit 0), bez zmian w tej rundzie.
+- `unit-replace-test.cjs`: exit 0, ostatnia linia `[OK] cross-type melee matrix passes for all 15 civilizations`. Liczby passed nie zapisano.
+- Nie uruchamiano ponownie: ai-test (kod gry nietknięty), tsc, logic/tech-tree/research/combat (zmiany tylko w 2 plikach testowych .cjs, nie w gra/src).
+
+## Pytania ABC do właściciela (z tej obrony)
+
+1. Konnica rekrut: 49 czy 98 (fieldPower w units.json) — odblokowuje hud-moc, moc-ranking, mur-paradoks.
+2. Garnizon w klasie „wręcz” w pomiarze armii AI (zarzut 5).
+
+## Kandydaci R-WEB-* (nie naprawiano)
+
+- R-WEB-MAP-POLAR-ZERO: climate-band-test.cjs:75, odtworzenie jak wyżej (0 hexes polarnych dla seed 42 kontynenty).
+
+## Notatka o metodzie
+
+Przy pierwszym uruchomieniu w worktree brakowało `esbuild` (brak node_modules). Testy climate-band i granice-relacja nie startowały z tego powodu; to nie jest błąd gry. Klasyfikacja D dla climate-band pochodzi z wcześniejszego biegu, ten wynik odtworzono po `npm ci`.
+
+NASTĘPNY KROK: Evaluator/FC: ponowna weryfikacja naval (40/0), unit-stock-cost (58/0), mur-paradoks (29/0); decyzje ABC 1–2 przed rundą 6 (limit rund wyczerpany — decyzja właściciela).
+DEPLOY/PUSH: NIE WYKONANO

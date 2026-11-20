@@ -257,13 +257,15 @@ console.log('\n-- E. PYTANIE-84 U-15: koszt +5 Koni dla Typ Mount (wyjątek Rydw
   eq(M.MOUNT_HORSE_EXEMPT_UNIT, 'Rydwan (woły)', 'wyjątek: Rydwan (woły)');
 
   // These expectations include the current epoch multipliers: Stone x1, Bronze x2,
-  // Iron x4. Mount horse stock uses the same multiplier; the Ox Chariot remains exempt.
+  // Iron x4 (Konnica = Żelazo w units.json -> x4). Mount horse stock uses the same multiplier; the Ox Chariot remains exempt.
   if (konnica) {
     assert(M.unitRequiresMountHorseStock(konnica), 'Konnica wymaga Koni');
     deepEq(
       M.unitStockCost(konnica),
-      { braz: 50, kon: 50 },
-      'Bronze Konnica: Brąz 25 and base horse stock 25 each scale x2',
+      { braz: 100, kon: 100 },
+      // R-WEB-TEST-DEBT-Q13 r5 (B, stary pin): units.json ma Konnica "Epoka": "Żelazo" -> mnoznik x4
+      // (regula wlasciciela: Zelazo i pozniejsze x4, building-stock-cost.ts). Pin byl z epoki Braz (x2).
+      'Konnica (Epoka Żelazo wg units.json): Brąz 25 i koń 25 each scale x4',
     );
   }
   if (rydwanWoly) {
@@ -289,17 +291,17 @@ console.log('\n-- E. PYTANIE-84 U-15: koszt +5 Koni dla Typ Mount (wyjątek Rydw
     eq(cost.kon, 25 * multiplier, `${u.Jednostka}: Mount horse stock 25 x ${multiplier} for ${u.Epoka}`);
   }
 
-  // Recruitment gate uses the fully epoch-scaled Bronze Konnica cost (50 bronze + 50 horses).
+  // Recruitment gate uses the fully epoch-scaled Konnica cost (100 bronze + 100 horses, Żelazo x4).
   const cities = makeCities([
-    { id: 'm1', ownerId: 0, surowce: { braz: 50, kon: 49 } },
+    { id: 'm1', ownerId: 0, surowce: { braz: 100, kon: 99 } },
   ]);
   const cost = M.unitStockCost(konnica);
   const pool = M.ownerResourceStockAll(cities, 0);
-  assert(!M.canAffordBuildingStock(pool, cost), 'brak 50 Koni (jest 49) -> blokada rekrutu');
-  cities[0].surowce.kon = 50;
+  assert(!M.canAffordBuildingStock(pool, cost), 'brak 100 Koni (jest 99) -> blokada rekrutu');
+  cities[0].surowce.kon = 100;
   assert(
     M.canAffordBuildingStock(M.ownerResourceStockAll(cities, 0), cost),
-    '50 Koni + 50 Brązu -> rekrut dozwolony',
+    '100 Koni + 100 Brązu -> rekrut dozwolony',
   );
 }
 
