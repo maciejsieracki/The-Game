@@ -302,6 +302,12 @@ const scenarios = [
   // Garnizon slaby: jednostka ginie z glodu -> pusty garnizon -> kapitulacja.
   base({ name: 'garnizon_ginie', turns: 4, cities: [city('900', 101, 4, 3, { oblegajacyOwnerId: 0 })],
     units: [unit('8001', 101, 4, 3, { hp: 1 }), unit('7001', 0, 5, 3, { oblegaCityId: '900' })] }),
+  // Garnizon: jedna jednostka ginie z glodu, reszta trzyma (splice zniszczonych bez kapitulacji).
+  base({ name: 'garnizon_jeden_ginie', turns: 3, cities: [city('900', 101, 4, 3, { oblegajacyOwnerId: 0 })],
+    units: [unit('8001', 101, 4, 3, { hp: 1 }), unit('8002', 101, 4, 3), unit('8003', 101, 4, 3), unit('7001', 0, 5, 3, { oblegaCityId: '900' })] }),
+  // Obronca z hp 0 (zapis): `siegeDefenderUnits` go pomija -> sciezka bez garnizonu.
+  base({ name: 'obronca_hp_0', cities: [city('900', 101, 4, 3, { oblegajacyOwnerId: 0 })],
+    units: [unit('8001', 101, 4, 3, { hp: 0 }), unit('7001', 0, 5, 3, { oblegaCityId: '900' })] }),
   // Dwa miasta w jednym ticku (kolejnosc `cities`); drugie nie oblegane.
   base({ name: 'dwa_miasta', war: [[0, 101], [0, 102]], cities: [city('900', 101, 4, 3, { oblegajacyOwnerId: 0 }), city('905', 102, 9, 9, { oblegajacyOwnerId: 0, population: 5 }), city('910', 101, 0, 0, { oblegane: false })],
     units: [unit('7001', 0, 5, 3, { oblegaCityId: '900' }), unit('7002', 0, 10, 9, { oblegaCityId: '905' })] }),

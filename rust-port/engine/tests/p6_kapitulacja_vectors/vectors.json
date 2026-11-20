@@ -2613,6 +2613,372 @@
   },
   {
    "turn": 5,
+   "turns": 3,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "name": "garnizon_jeden_ginie",
+   "cities": [
+    {
+     "id": "900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    }
+   ],
+   "units": [
+    {
+     "id": "8001",
+     "ownerId": 101,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 4,
+     "r": 3,
+     "hp": 1
+    },
+    {
+     "id": "8002",
+     "ownerId": 101,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "8003",
+     "ownerId": 101,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 4,
+     "r": 3
+    },
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 66
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 1
+      },
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "8003",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "events": []
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 66
+      }
+     ],
+     "units": [
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 21,
+       "hpMax": 22
+      },
+      {
+       "id": "8003",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 21,
+       "hpMax": 22
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "events": []
+    },
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeStarveStartMaxHp": 66
+      }
+     ],
+     "units": [
+      {
+       "id": "8002",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 20,
+       "hpMax": 22
+      },
+      {
+       "id": "8003",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 20,
+       "hpMax": 22
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "events": []
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "turns": 2,
+   "war": [
+    [
+     0,
+     101
+    ]
+   ],
+   "name": "obronca_hp_0",
+   "cities": [
+    {
+     "id": "900",
+     "ownerId": 101,
+     "name": "M900",
+     "q": 4,
+     "r": 3,
+     "population": 3,
+     "oblegane": true,
+     "oblegajacyOwnerId": 0
+    }
+   ],
+   "units": [
+    {
+     "id": "8001",
+     "ownerId": 101,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 4,
+     "r": 3,
+     "hp": 0
+    },
+    {
+     "id": "7001",
+     "ownerId": 0,
+     "typeId": "Wojownik",
+     "category": "piechota",
+     "q": 5,
+     "r": 3,
+     "oblegaCityId": "900"
+    }
+   ],
+   "out": [
+    {
+     "log": [],
+     "cities": [
+      {
+       "id": "900",
+       "ownerId": 101,
+       "population": 3,
+       "oblegane": true,
+       "oblegajacyOwnerId": 0,
+       "siegeCapitulationPending": true
+      }
+     ],
+     "units": [
+      {
+       "id": "8001",
+       "ownerId": 101,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3,
+       "hp": 0
+      },
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 5,
+       "r": 3,
+       "oblegaCityId": "900"
+      }
+     ],
+     "everOwned": [],
+     "chronicle": [],
+     "events": []
+    },
+    {
+     "log": [
+      "besiegerOwnerForCity",
+      "areEnemyOwners",
+      "wasIndependentCityStateBeforeCapture",
+      "beginWonderTransferWatch",
+      "applyCapturePopulationLoss",
+      "applyPostCaptureLawOnCapture",
+      "triggerRebelProtectionWarConsequence",
+      "settleWonderTransfer",
+      "noteCityCapture",
+      "clearCityStateFlagOnCapture",
+      "maybeResolveRegularWarOnCityCapture",
+      "recordWarCityLossForPair",
+      "seedCityOwnerDefaults",
+      "enterCityAfterSurrender",
+      "syncCityGarnizon",
+      "runCapitalCapturePlunder",
+      "recordCityCaptureEvent",
+      "endMapSiege",
+      "applyLiveSafeRationForCity"
+     ],
+     "cities": [
+      {
+       "id": "900",
+       "ownerId": 0,
+       "population": 2,
+       "oblegane": false,
+       "siegeCapitulationPending": false,
+       "capturedFromOwnerId": 101,
+       "foundedBy": 101,
+       "postCaptureLawTurnsRemaining": 5,
+       "wasRebellionReconquest": false
+      }
+     ],
+     "units": [
+      {
+       "id": "7001",
+       "ownerId": 0,
+       "typeId": "Wojownik",
+       "q": 4,
+       "r": 3
+      }
+     ],
+     "everOwned": [
+      0
+     ],
+     "chronicle": [
+      [
+       0,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 1,
+        "citiesLost": 0,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ],
+      [
+       101,
+       {
+        "produced": 0,
+        "lost": 0,
+        "destroyed": 0,
+        "battles": 0,
+        "citiesTaken": 0,
+        "citiesLost": 1,
+        "maxCities": 0,
+        "peakPop": 0,
+        "wonders": 0,
+        "vs": {},
+        "sinceTurn": 6
+       }
+      ]
+     ],
+     "events": [
+      {
+       "cityId": "900",
+       "oldOwner": 101,
+       "newOwner": 0,
+       "eliminatedCivLabel": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "turn": 5,
    "turns": 2,
    "war": [
     [
