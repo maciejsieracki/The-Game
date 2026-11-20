@@ -284,12 +284,14 @@ try {
   console.log('--- B: okablowanie main.ts (tekstowe) ---');
   const MAIN_PATH = path.join(SRC, 'main.ts');
   const main = fs.readFileSync(MAIN_PATH, 'utf8');
+  // R-WEB-TEST-DEBT-Q13 r5: ERAWARPLAYER (FALA 889) -- epoka napastnika liczona przez eraWarCounterEpochOf(ownerId, tag) (jak epoka celu), a odrzucenie bramki
+  // zapisuje powod hakiem emRej('evaluateEraForcedWarGate:' + werdykt) przed `continue`; piny dwoch checkow ponizej dostosowane.
   const gChecks = [
     ['bypass R3 (const waveActorBypassR3) usunięty', !/const waveActorBypassR3/.test(main)],
     ['bramka dostaje licznik per cywilizacja i epoki napastnika/celu (ownerId/targetId)', /counts: eraWarCountByCivKey,/.test(main)
-      && /attackerEpoch: empireEpochForOwner\(ownerId\),/.test(main) && /targetEpoch: eraWarCounterEpochOf\(targetId, gateForcedTagAny\),/.test(main)],
+      && /attackerEpoch: eraWarCounterEpochOf\(ownerId, gateForcedTagAny\),/.test(main) && /targetEpoch: eraWarCounterEpochOf\(targetId, gateForcedTagAny\),/.test(main)],
     ['zużycie licznika przy wypowiedzeniu (napastnik + cel)', /recordEraForcedWarParticipation\(\s*\n?\s*eraWarCountByCivKey, ownerId, targetId,/.test(main)],
-    ['bramka wypowiedzenia = evaluateEraForcedWarGate (cała logika epok/liczników w czystej funkcji)', /const eraGateVerdict = evaluateEraForcedWarGate\(\{[\s\S]*?attackerId: ownerId,[\s\S]*?targetId,[\s\S]*?\}, WAR_RULES_PARAMS\);\s*\n\s*if \(eraGateVerdict !== 'ok'\) continue;/.test(main)],
+    ['bramka wypowiedzenia = evaluateEraForcedWarGate (cała logika epok/liczników w czystej funkcji)', /const eraGateVerdict = evaluateEraForcedWarGate\(\{[\s\S]*?attackerId: ownerId,[\s\S]*?targetId,[\s\S]*?\}, WAR_RULES_PARAMS\);\s*\n\s*if \(eraGateVerdict !== 'ok'\) \{ emRej\('evaluateEraForcedWarGate:' \+ String\(eraGateVerdict\)\); continue; \}/.test(main)],
     ['pending Brąz/Żelazo przy awansie epoki gated flagą', /if \(isForcedEraWarEnabled\('bronze'\)\) bronzeForceWarPendingOwners\.add\(ownerId\);/.test(main) && /if \(isForcedEraWarEnabled\('iron'\)\) ironForceWarPendingOwners\.add\(ownerId\);/.test(main)],
     ['pending w hookach debug Brąz/Żelazo gated flagą (2x Brąz, 1x Żelazo)', (main.match(/if \(isForcedEraWarEnabled\('bronze'\)\) bronzeForceWarPendingOwners\.add\(attackerId\);/g) || []).length === 2
       && /if \(isForcedEraWarEnabled\('iron'\)\) ironForceWarPendingOwners\.add\(attackerId\);/.test(main)],
