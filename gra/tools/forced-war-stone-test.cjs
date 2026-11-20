@@ -71,7 +71,7 @@ try {
   } = api;
 
   console.log('--- kontrakt Q1/Q3, R-WOJNA-WYMUSZONA-REGULY-Q1 Część A/C ---');
-  eq(startTurn, 25, 'R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): start po 25 turach (podniesiony z 20)');
+  eq(startTurn, 40, 'R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): start po 40 turach (z war-rules-params.json)');
   eq(cityLimit, 2, 'pokój po 2 miastach');
   eq(restTurns, 20, 'odpoczynek 20 tur');
   eq(cooldownTurns, 20, 'cooldown tej samej cywilizacji 20 tur');
@@ -85,12 +85,12 @@ try {
     isStoneEra: true,
     ...overrides,
   });
-  assert(!eligibility(24), 'brak wojny przed turn 25');
-  assert(eligibility(25), 'wojna dostępna od turn 25');
-  assert(eligibility(26), 'wojna nadal dostępna po turn 25');
-  assert(!eligibility(25, { isMainAiCiv: false }), 'brak dla player/miasta-państwa/barbarzyńcy');
-  assert(!eligibility(25, { isAlreadyAtWarAnyRole: true }), 'brak dla ownera już w wojnie');
-  assert(!eligibility(25, { isStoneEra: false }), 'brak dla ownera poza epoką Kamienia');
+  assert(!eligibility(39), 'brak wojny przed turn 40');
+  assert(eligibility(40), 'wojna dostępna od turn 40');
+  assert(eligibility(41), 'wojna nadal dostępna po turn 40');
+  assert(!eligibility(40, { isMainAiCiv: false }), 'brak dla player/miasta-państwa/barbarzyńcy');
+  assert(!eligibility(40, { isAlreadyAtWarAnyRole: true }), 'brak dla ownera już w wojnie');
+  assert(!eligibility(40, { isStoneEra: false }), 'brak dla ownera poza epoką Kamienia');
 
   console.log('--- R-WEB-PEACE-RULES-R8R9-Q1 R9: brak automatycznego końca wojny Kamienia (czas / 2 miasta) ---');
   {

@@ -288,6 +288,31 @@ export function backfillMissingEraEntryTurns(
   }
 }
 
+/**
+ * R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1 r4: czysta bramka opóźnienia wojny epoki dla kandydata-AI
+ * (partner pary z graczem / wolny cel fallbacku) -- wyciągnięta z main.ts (`eraWarTargetDelayOk`), żeby test
+ * silnikowy wołał TĘ SAMĄ funkcję co gra. Gracz (0) zawsze true (jego próg ma `isPlayerEligibleForEraWarPool`).
+ * Brak wpisu wejścia = epoka od startu gry (0); Kamień liczy się od startu gry.
+ */
+export function isEraWarTargetDelayOk(
+  inp: {
+    turn: number;
+    ownerId: number;
+    epoch: number;
+    bronzeEnterTurn: number | undefined;
+    ironEnterTurn: number | undefined;
+  },
+  params: WarRulesParams = WAR_RULES_PARAMS,
+): boolean {
+  if (inp.ownerId === 0) return true;
+  const tag = forcedEraTagForEpoch(inp.epoch);
+  if (tag === null) return false;
+  const entry = tag === 'bronze' ? (inp.bronzeEnterTurn ?? 0)
+    : tag === 'iron' ? (inp.ironEnterTurn ?? 0)
+      : 0;
+  return inp.turn - entry >= params.eraForcedWarStartTurnsFromEra[tag];
+}
+
 export interface PlayerEraWarPoolInput {
   currentTurn: number;
   /** Bieżąca epoka gracza. */

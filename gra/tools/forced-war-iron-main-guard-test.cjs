@@ -78,7 +78,7 @@ check(
 check(
   'guard napastnika (wspólna pętla pre-pass) wyklucza gracza, kopie typu, barbarzyńców, '
     + 'wyeliminowanych i miasta-państwa PRZED zebraniem wasPending Żelaza',
-  /const bronzeTriggeredSubjects: ForcedWarPairingSubject\[\] = \[\];[\s\S]{0,1000}?ownerId <= 0\s*\n\s*\|\| typCityCopyOwners\.has\(ownerId\)\s*\n\s*\|\| isBarbarian\(ownerId\)\s*\n\s*\|\| eliminatedOwners\.has\(ownerId\)\s*\n\s*\|\| isOwnerClusterCityState\(ownerId, ownerCityStateOpts\(\)\)\s*\n\s*\) continue;[\s\S]{0,4200}?const wasPending = ironForceWarPendingOwners\.has\(ownerId\);/.test(main),
+  /const bronzeTriggeredSubjects: ForcedWarPairingSubject\[\] = \[\];[\s\S]{0,1000}?ownerId <= 0\s*\n\s*\|\| typCityCopyOwners\.has\(ownerId\)\s*\n\s*\|\| isBarbarian\(ownerId\)\s*\n\s*\|\| eliminatedOwners\.has\(ownerId\)\s*\n\s*\|\| isOwnerClusterCityState\(ownerId, ownerCityStateOpts\(\)\)\s*\n\s*\) continue;[\s\S]{0,6000}?const wasPending = ironForceWarPendingOwners\.has\(ownerId\);/.test(main),
 );
 check(
   'kwalifikacja napastnika przechodzi przez isEligibleForIronForcedWar (isMainAiCiv + brak wojny w dowolnej roli)',
@@ -112,7 +112,7 @@ check(
     + 'dziś żadnej aktywnej wojny wymuszonej ORAZ minął próg tury (R-WOJNA-WYMUSZONA-PROG-TURY-'
     + 'GRACZ-Q1, turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY) -- bez innego specjalnego wykluczania',
   // R-WEB-ERA-WAR-COUNTER-Q1 (5): gracz liczony od STOLICY (capitalCityIdForOwner), fallback pierwsze miasto.
-  /const playerCity = pickPlayerReferenceCity\(cities, capitalCityIdForOwner\(0\), 0\);[\s\S]*?\n\s*if \(\s*\n\s*playerCity\s*\n\s*&& isPlayerEligibleForEraWarPool\(\{[\s\S]*?\}, WAR_RULES_PARAMS\)\s*\n\s*\) \{\s*\n\s*triggeredSubjects\.push\(\{ ownerId: 0, q: playerCity\.q, r: playerCity\.r \}\);/.test(main),
+  /const playerCity = pickPlayerReferenceCity\(cities, capitalCityIdForOwner\(0\), 0\);[\s\S]*?\n\s*const playerEraPoolEligible = !!playerCity\s*\n\s*&& isPlayerEligibleForEraWarPool\(\{[\s\S]*?\}, WAR_RULES_PARAMS\);\s*\n\s*if \(playerCity && playerEraPoolEligible\) \{\s*\n\s*triggeredSubjects\.push\(\{ ownerId: 0, q: playerCity\.q, r: playerCity\.r \}\);/.test(main),
 );
 check(
   'isForcedWarPairBlocked = isWarTreatyBlocked(eraWar:true) -- blokuje tylko sojusz (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1), ten sam predykat dla '
@@ -123,7 +123,11 @@ check(
   'wybór celu (wszystkich trzech epok naraz, w tym Żelaza) przechodzi przez assignForcedWarPairings '
     + 'z isForcedWarPairBlocked i hexDistanceFn: hexDistance',
   // R-WEB-ERA-WAR-COUNTER-Q1: dodana opcja isEraWarExhausted (licznik wojen epoki per cywilizacja).
-  /const forcedWarPairingResult = assignForcedWarPairings\(\s*\n\s*triggeredSubjects,\s*\n\s*existingActivePairsForJoin,\s*\n\s*\{\s*\n\s*isPairBlocked: isForcedWarPairBlocked,\s*\n\s*hexDistanceFn: hexDistance,\s*\n\s*totalActiveForcedWarsByOwner(?:: totalActiveForcedWarsForPairing)?,\s*\n\s*(isEraWarExhausted: [^\n]*,\s*\n\s*)?(?:\/\/[^\n]*\n\s*)*(freeTargetCandidates: [^\n]*,\s*\n\s*)?(\.\.\.forcedWarPlayerFirstOpt,\s*\n\s*)?\},\s*\n\s*\);/.test(main),
+  /const forcedWarPairingResult = assignForcedWarPairings\(\s*\n\s*triggeredSubjects,\s*\n\s*existingActivePairsForJoin,\s*\n\s*\{\s*\n\s*isPairBlocked: isForcedWarPairBlocked,\s*\n\s*hexDistanceFn: hexDistance,\s*\n\s*totalActiveForcedWarsByOwner(?:: totalActiveForcedWarsForPairing)?,\s*\n\s*(isEraWarExhausted: [^\n]*,\s*\n\s*)?(?:\/\/[^\n]*\n\s*)*(freeTargetCandidates: (?:[^\n]*,\s*\n\s*|\[[\s\S]*?\]\.filter\([^\n]*\),\s*\n\s*))?(\.\.\.forcedWarPlayerFirstOpt,\s*\n\s*)?\},\s*\n\s*\);/.test(main),
+);
+check(
+  'R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1: gracz w freeTargetCandidates wyłącznie przy bramce puli gracza (playerEraPoolEligible) i opcji K2',
+  /\.\.\.\(playerCity && playerEraPoolEligible && \(!isWarEpochPlayerFirstEnabled\(\) \|\| playerEpochWarEnabled\)/.test(main),
 );
 check(
   'wynik przydziału Żelaza czytany z forcedWarAssignmentByOwner (nie z usuniętego pickIronForcedWarTargetId w pętli)',
@@ -171,7 +175,7 @@ check(
 );
 check(
   'komenda DOW ma finalny guard sojuszu dla celu Żelaza',
-  /ironForceWarTargetId != null\s*\n\s*&& targetId === ironForceWarTargetId\s*\n\s*&& allianceFormalKindBetween\(activeDeals, ownerId, targetId\) !== null\s*\n\s*\) \{\s*\n\s*continue;/.test(main),
+  /ironForceWarTargetId != null\s*\n\s*&& targetId === ironForceWarTargetId\s*\n\s*&& allianceFormalKindBetween\(activeDeals, ownerId, targetId\) !== null\s*\n\s*\) \{\s*\n\s*(?:emRej\('[a-z-]+'\);\s*\n\s*)?continue;/.test(main),
 );
 
 // ---------------------------------------------------------------------------
