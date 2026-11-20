@@ -86,6 +86,25 @@ Kopalnia rudy (pierwszy wiersz z `koszt_praca_przed_x2` w terrain-improvements.j
 - Domyślna flaga zgodna z `improvement-cost-params.json` (true).
 - Mutacja (flaga → false w bundlu): CZERWONA (`flaga kosztu wg epoki wlasciciela zgodna z danymi`).
 
+## 6. Przez kreator na żywo (hak `window.__settingsLive`, ?civTest=1) — STAN R1
+
+Hak dodany w `gra/src/main.ts` (blok civTest, obok `__econRebalanceMeasure`): `startNewGame` (realny `doStartGame`),
+`getSettings`, `unitCosts`, `improvementWorkCost`, `convertFoodToTax` (realne `convertFoodReserveToTax` + `resolveFoodTaxRate`),
+`saveRoundTrip` (realne `persistSaveToSlot` + `loadGameFromSlot` w tej samej stronie). `tsc --noEmit` exit 0.
+
+| Pozycja | Surowe liczby z gry (live) | Zgodne z decyzją właściciela |
+|---|---|---|
+| Koszty jednostek Niski/Normalny/Wysoki × Kamień/Brąz/Żelazo | NIE ZMIERZONO (testy `verify-live-*` nie rozszerzone w R1) | NIE ZMIERZONO |
+| Wzrost surowców WŁ./WYŁ. | NIE ZMIERZONO | NIE ZMIERZONO |
+| Dyplomacja i wojna Łatwa/Normalna/Trudna | NIE ZMIERZONO | NIE ZMIERZONO |
+| Zamiana Żywność→Podatek (rezerwa 100, kurs 0,2) | NIE ZMIERZONO (hak gotowy, brak uruchomienia) | NIE ZMIERZONO |
+| Koszt ulepszenia wg epoki właściciela | NIE ZMIERZONO | NIE ZMIERZONO |
+| Round-trip zapisu (bez przeładowania) | NIE ZMIERZONO (hak gotowy; wynik SIGSEGV nie sprawdzony) | NIE ZMIERZONO |
+
+Ograniczenia: utrzymanie w Pieniądzu nadal nie ma odczytu na żywo (`economy-upkeep.ts`, funkcja nieeksportowana);
+`unitCosts` zwraca bazę i wartość po tempie oraz żywność/turę, ale nie wiąże pełnej ścieżki kosztu rekrutacji z UI.
+`improvementWorkCost` przyjmuje bazę z danych jako argument (struktura `terrain-improvements.json` nie została zmapowana).
+
 ## ZNALEZISKA (NIE naprawiano w tym temacie)
 
 - Z-1 (BLOKADA odczytu): brak odczytu w grze dla punktów 3, 4 i 5. Wymagany minimalny hak do osobnego tematu (`window.__civTest`, tylko `?civTest=1`). Pliki: `gra/src/main.ts` (wiring ustawień: applyMenuParams ok. linia 49760–49762; wczytanie ok. linia 51671–51675).

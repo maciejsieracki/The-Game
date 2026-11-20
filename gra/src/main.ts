@@ -1238,7 +1238,14 @@ import {
 import { isProductionBuildingEnabled, operationalBuiltIds, operationalBuiltByCity, setProductionBuildingEnabled, isToggleableProductionBuilding, buildEmpireProducersSnap } from './game/building-toggle';
 import { decideEndTurnGate, projectEmpireFoodAfterTick, type NnsEndTurnLevers, type NnsGateResult, type NnsProjection } from './game/no-negative-stocks';
 import { unitUpkeep, unitFoodPerTurn, loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, addResourceCosts, readBuildingResourceUpkeepRatio, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
-import { setKosztJednostekPaceResolver, type KosztJednostekPace } from './game/unit-cost-tempo';
+import { setKosztJednostekPaceResolver, applyUnitCostPace, type KosztJednostekPace } from './game/unit-cost-tempo';
+// R-WEB-VERIFY-LIVE-B2-CIVTEST-HOOK-AND-WIZARD-Q1: importy wyłącznie dla haka __settingsLive (?civTest=1).
+import { getDiplomacyWarLevel } from './game/diplomacy-war-level';
+import { unitRecruitBaseMoneyCost } from './game/production';
+import { unitFoodCardValue as unitFoodCardValueLive } from './game/economy-upkeep';
+import { scaleTerrainImprovementWorkCostForOwner } from './game/terrain-improvements';
+import { convertFoodReserveToTax } from './game/empire-food';
+import unitsDataLive from '../data/units.json';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
 import { getCityResourceAccessForCity, getResourceAccessForCity } from './game/resource-access';
@@ -34172,6 +34179,53 @@ async function boot(): Promise<void> {
           limitWojen: isWarLimitEnabled() === true,
         }),
         zerwaniaZeroZaufania: (): number => zeroTrustStats().zerwania,
+      };
+      // R-WEB-VERIFY-LIVE-B2-CIVTEST-HOOK-AND-WIZARD-Q1: hak __settingsLive (tylko ?civTest=1, ten blok).
+      // Każdy odczyt idzie REALNĄ funkcją gry; hak niczego nie liczy po swojemu (poza złożeniem argumentów).
+      // startNewGame = REALNY doStartGame (ta sama funkcja co „Start” kreatora). saveRoundTrip = persistSaveToSlot
+      // + loadGameFromSlot w tej samej stronie (bez przeładowania). Zero wpływu na grę bez ?civTest=1.
+      (window as any).__settingsLive = {
+        startNewGame: (menuParams: NewGameParams): void => { void doStartGame(menuParams); },
+        getSettings: () => ({
+          diplomacyWarLevel: getDiplomacyWarLevel(),
+          wzrostSurowcowZEpoka: getWzrostSurowcowZEpoka(),
+          kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
+          difficulty: _menuDifficulty,
+        }),
+        /** Koszt rekrutacji (baza production.ts + tempo unit-cost-tempo) i żywność/turę (economy-upkeep.ts) jednostki. */
+        unitCosts: (unitId: string, ownerId: number) => {
+          const def = (unitsDataLive as unknown as Array<Record<string, unknown>>).find(u => u.Jednostka === unitId);
+          if (!def) return null;
+          const pace = isHuman(ownerId) ? (player.kosztJednostekPace ?? 'niski') : 'niski';
+          const recruitBase = unitRecruitBaseMoneyCost(def as any);
+          return {
+            epoka: def.Epoka,
+            recruitBase,
+            recruitPaced: applyUnitCostPace(recruitBase, pace),
+            foodPerTurn: unitFoodCardValueLive(def as any, pace),
+            pace,
+          };
+        },
+        /** Realny koszt pracy ulepszenia wg epoki właściciela (baza z danych przekazana przez test). */
+        improvementWorkCost: (baseCost: number, improvementEra: number | undefined, ownerId: number): number =>
+          scaleTerrainImprovementWorkCostForOwner(baseCost, improvementEra, empireEpochForOwner(ownerId)),
+        /** Zamiana Żywności na podatek: realny kurs (resolveFoodTaxRate) i realna reguła (convertFoodReserveToTax). */
+        convertFoodToTax: (ownerId: number, foodAmount: number, reserveOverride?: number) => {
+          const reserve = reserveOverride ?? getEmpireFoodReserve(ownerId);
+          const enabled = ownerCanConvertWorkToTax(ownerId, isHuman(ownerId), cities, cityBuilt);
+          const rate = resolveFoodTaxRate(
+            (data.econParams as unknown as { budynki?: Record<string, Record<string, number>> }).budynki,
+            _menuDifficulty);
+          return convertFoodReserveToTax(reserve, foodAmount, rate, enabled);
+        },
+        /** Zapis i wczytanie w TEJ SAMEJ stronie (persistSaveToSlot / loadGameFromSlot); zwraca ustawienia przed i po. */
+        saveRoundTrip: async () => {
+          const SLOT = 'civtest-settings-live-roundtrip';
+          const before = (window as any).__settingsLive.getSettings();
+          const saved = (await persistSaveToSlot(SLOT, 'settings-live-roundtrip')).ok;
+          await loadGameFromSlot(SLOT, false);
+          return { saved, before, after: (window as any).__settingsLive.getSettings() };
+        },
       };
       // R-WEB-ECONOMY-ERA-REBALANCE-FLAG-Q1: hak pomiaru rebalansu epok (tylko ?civTest=1, NIE z UI).
       // setEnabled(true|false|null): null = wartosc z danych (OFF). status() = TYLKO ODCZYT.
