@@ -91,6 +91,9 @@ const context = {
   activeDeals: [],
   // main.ts:12309 (P4) jest funkcja zagniezdzona poza zakresem vm; wylaczona flaga = false/false (zachowanie testu: tozsamosc wlascicieli, nie flagi dobrej woli).
   isDiploTickWarBrakeEnabled: () => false,
+  // R-WEB-TEST-DEBT-Q13 r5: buildDiplomacyTickCtxForPair woła isHarderDiplomacyEnabled (main.ts, import z diplomacy-harder) --
+  // flaga OFF = wynik bazowy (test sprawdza tozsamosc wlascicieli, nie reguly Harder).
+  isHarderDiplomacyEnabled: () => false,
   isPeaceLockedBetween: () => false,
   isTruceActive: () => false,
   getDiploPairMeta: () => ({ truceUntilTurn: 0 }),
