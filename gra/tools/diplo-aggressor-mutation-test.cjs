@@ -27,8 +27,9 @@ const MUTATIONS = [
   ['okno: N wlacznie (<=) w obu oknach', AGG, '  return turn < doTury;', '  return turn <= doTury;', 'all'],
   ['okno: o turę krótsze', AGG, '  const doTury = turn + params.flagaAgresora.trwaTur;', '  const doTury = turn + params.flagaAgresora.trwaTur - 1;', 'one'],
   ['okno: skracanie dozwolone (brak guardu prev)', AGG, '  if (prev !== undefined && prev >= doTury) return state;', '', 'all'],
-  ['AI: delta progu z odwrotnym znakiem', AGG, '  return aktywnaFlaga ? params.wplywNaAI.relacjaDeltaSojusz : 0;', '  return aktywnaFlaga ? -params.wplywNaAI.relacjaDeltaSojusz : 0;', 'one'],
-  ['AI: mnoznik odwrocony', AGG, '  return aktywnaFlaga ? params.wplywNaAI.willingnessAllyMnoznik : 1;', '  return aktywnaFlaga ? 1 : params.wplywNaAI.willingnessAllyMnoznik;', 'one'],
+  // R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: kotwice po przejściu przez mnożnik poziomu (scale*ForWarLevel).
+  ['AI: delta progu z odwrotnym znakiem', AGG, '  return aktywnaFlaga ? scaleAggressorDeltaForWarLevel(params.wplywNaAI.relacjaDeltaSojusz) : 0;', '  return aktywnaFlaga ? -scaleAggressorDeltaForWarLevel(params.wplywNaAI.relacjaDeltaSojusz) : 0;', 'one'],
+  ['AI: mnoznik odwrocony', AGG, '  return aktywnaFlaga ? scaleWillingnessAllyForWarLevel(params.wplywNaAI.willingnessAllyMnoznik) : 1;', '  return aktywnaFlaga ? 1 : scaleWillingnessAllyForWarLevel(params.wplywNaAI.willingnessAllyMnoznik);', 'one'],
   ['casus: klucz kierunkowy odwrocony', AGG, '  return `${requester}>${target}`;', '  return `${target}>${requester}`;', 'one'],
   ['casus: self-casus dozwolony', AGG, '  if (requester === target) return state;', '', 'one'],
   ['save: brak sanityzacji wczytania', AGG, '  return serializujMape(raw as Record<string, number>);', '  return raw as Record<string, number>;', 'one'],

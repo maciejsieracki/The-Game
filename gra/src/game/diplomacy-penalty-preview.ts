@@ -5,6 +5,7 @@
 import { RodzajTraktatu } from '../types/diplomacy';
 import type { ActiveDeal } from './diplomacy-treaties';
 import { pluralPl } from '../ui/formatPl';
+import { scalePenaltyForWarLevel } from './diplomacy-war-level';
 import {
   hasTreaty,
   normalizeTreatyKind,
@@ -237,7 +238,8 @@ export function previewVoluntaryTreatyBreakPenalties(
     );
   }
 
-  pushLine(lines, 'zaufanie', isTrade ? -10 : -15,
+  // R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: ta sama kara co w applyDiplomaticEvent (×k poziomu).
+  pushLine(lines, 'zaufanie', scalePenaltyForWarLevel(isTrade ? -10 : -15),
     isTrade ? 'zerwanie umowy handlowej' : 'zerwanie traktatu');
 
   const left = tradeTreatyBreakPenaltyTurnsLeft(deal, turn);

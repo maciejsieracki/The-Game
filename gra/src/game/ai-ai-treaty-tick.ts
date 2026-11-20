@@ -19,6 +19,7 @@
  */
 import aiAiTreatyParamsJson from '../../data/ai-ai-treaty-params.json';
 import { evaluateTreatyOffer } from './ai-ai-treaty-evaluate';
+import { scalePenaltyForWarLevel } from './diplomacy-war-level';
 import type {
   AiAiTreatyEvalContext,
   AiAiTreatyEvalResult,
@@ -185,5 +186,5 @@ export function applyAiAiNapBreachRelacja<T extends { respekt: number }>(
 
 /** Wartość kary P-4 z danych (−30 Relacji). */
 export function aiAiNapBreachRelacjaDelta(): number {
-  return (aiAiTreatyParamsJson as { zerwanie_relacja: number }).zerwanie_relacja;
+  return scalePenaltyForWarLevel((aiAiTreatyParamsJson as { zerwanie_relacja: number }).zerwanie_relacja);
 }

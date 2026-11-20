@@ -64,7 +64,7 @@ function resolveDotted(obj, dotted) {
 const KOD_CHECKS = {
   'zerwanie-traktatu': () => {
     const src = readText(path.join(SRC_GAME, 'diplomacy.ts'));
-    const m = src.match(/case 'zerwanie_traktatu':[\s\S]{0,400}?dZ = (-?\d+(?:\.\d+)?);/);
+    const m = src.match(/case 'zerwanie_traktatu':[\s\S]{0,400}?dZ = (?:scale\w+ForWarLevel\()?(-?\d+(?:\.\d+)?)\)?;/);  // R-WEB-DIPLO-WAR-LEVEL: opcjonalny mnożnik poziomu (wartość bazowa = ŁATWA)
     return m ? Number(m[1]) : null;
   },
   'respekt-wzor': () => {

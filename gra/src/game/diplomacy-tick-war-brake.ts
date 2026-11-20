@@ -3,6 +3,8 @@
 // gry — silnik (main.ts) podaje wejscia, dostaje wynik. Parametry z
 // gra/data/diplomacy-tick-params.json (sekcje p6 / p7).
 
+import { scaleBonusForWarLevel } from './diplomacy-war-level';
+
 /** Wydanie ROBOCZE (R-WEB-DIPLO-RELEASE-ROBOCZA-Q1): ON domyslnie, do testow wlasciciela. */
 export const DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT = true;
 
@@ -90,7 +92,12 @@ export function tradeTrustBonusPerTura(input: TradeBonusInput, p: TradeBonusP7Pa
   const krok = krokPktWymiany(input.epoka, p);
   const pelneKroki = Math.floor(input.nadwyzkaPn / krok);
   const surowy = pelneKroki * p.wymianaZaufanieNaKrok;
-  return Math.min(surowy, p.wymianaMaxPerTura, headroom);
+  // R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: krok i limit to BONUSY — ÷k poziomu (sufit wartości bez zmian).
+  return Math.min(
+    scaleBonusForWarLevel(surowy),
+    scaleBonusForWarLevel(p.wymianaMaxPerTura),
+    headroom,
+  );
 }
 
 export interface CrisisStep {

@@ -3,6 +3,8 @@
  * Pure: traktaty / wojna / typ jednostki → delta Zaufania u pary intruz→właściciel.
  * Wykrywanie heksów: UNITS+MAPA (`border-march-scan.ts`); hook endTurn: Integrator F.
  */
+import { scalePenaltyForWarLevel } from './diplomacy-war-level';
+
 import diplomacyData from '../../data/diplomacy.json';
 import { RodzajTraktatu } from '../types/diplomacy';
 import type { Relation } from './diplomacy';
@@ -103,14 +105,15 @@ function hasWasalMarchRights(
 /** Parametr kary z diplomacy.json (Panel-D export). */
 export function loadBorderMarchParams(json: unknown = diplomacyData): BorderMarchParams {
   const def = DEFAULT_KARA;
+  // R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: kara przemarszu (wielkość) × poziom „Dyplomacja i wojna”.
   if (!json || typeof json !== 'object') {
-    return { karaPrzemarszNieautoryzowany_zaufanie_perTura: def };
+    return { karaPrzemarszNieautoryzowany_zaufanie_perTura: scalePenaltyForWarLevel(def) };
   }
   const params = (json as { params?: Record<string, unknown> }).params;
   const raw = params?.karaPrzemarszNieautoryzowany_zaufanie_perTura;
   const kara =
     typeof raw === 'number' && Number.isFinite(raw) && raw > 0 ? raw : def;
-  return { karaPrzemarszNieautoryzowany_zaufanie_perTura: kara };
+  return { karaPrzemarszNieautoryzowany_zaufanie_perTura: scalePenaltyForWarLevel(kara) };
 }
 
 /**

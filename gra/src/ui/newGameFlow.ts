@@ -221,6 +221,13 @@ export type HumanDistanceMode = 'blisko' | 'daleko' | 'losowo';
  */
 export type HitMode = 'losowe' | 'pewne';
 
+/**
+ * R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: poziom „Dyplomacja i wojna” (kary ×1/×2/×3, bonusy ×1/÷2/÷3).
+ * MUSI zostać zsynchronizowany ręcznie z `DiplomacyWarLevel` w `game/diplomacy-war-level.ts`.
+ * / EN: must stay manually in sync with `DiplomacyWarLevel` in `game/diplomacy-war-level.ts`.
+ */
+export type DiplomacyWarLevelOption = 'latwa' | 'normalna' | 'trudna';
+
 export interface NewGameAdvancedOptions {
   barbariansLevel: BarbariansLevel;
   battleAlwaysManual: boolean;
@@ -235,6 +242,12 @@ export interface NewGameAdvancedOptions {
    * z epoką. Brak pola (stare zapisy) = false. / EN: growth-with-era toggle; missing = false.
    */
   wzrostSurowcowZEpoka?: boolean;
+  /**
+   * R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1 „Dyplomacja i wojna”: Łatwa (domyślnie = dotychczasowe
+   * wartości) / Normalna (kary ×2, bonusy ÷2) / Trudna (kary ×3, bonusy ÷3). Brak pola (stare zapisy)
+   * = 'latwa'. / EN: diplomacy war level; missing = 'latwa'.
+   */
+  diplomacyWarLevel?: DiplomacyWarLevelOption;
   victoryMode: VictoryMode;
   /** Koszty budynkow: niski x1 / normalny x2 / wysoki x4 (bazowy = niski). */
   buildingCostPace: BuildingCostPace;
@@ -277,6 +290,7 @@ const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
   battleAlwaysManual: true,
   hitMode: 'pewne',
   wzrostSurowcowZEpoka: false,
+  diplomacyWarLevel: 'latwa',
   victoryMode: 'moc_i_dominacja',
   buildingCostPace: 'normalny',
   kosztJednostekPace: 'normalny',
@@ -376,6 +390,10 @@ function migrateAdvanced(raw: Record<string, unknown>): NewGameAdvancedOptions {
   if (raw.hitMode === 'pewne' || raw.hitMode === 'losowe') base.hitMode = raw.hitMode;
   // R-WEB-ECONOMY-IMPROVEMENT-GROWTH-WITH-ERA-NEWGAME-TOGGLE-Q1: brak/zla wartosc = WYL. (false).
   base.wzrostSurowcowZEpoka = raw.wzrostSurowcowZEpoka === true;
+  // R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: brak/zła wartość = Łatwa (stare zapisy = dziś).
+  base.diplomacyWarLevel = raw.diplomacyWarLevel === 'normalna' || raw.diplomacyWarLevel === 'trudna'
+    ? raw.diplomacyWarLevel
+    : 'latwa';
   if (
     raw.barbariansLevel === 'latwy' || raw.barbariansLevel === 'normalny'
     || raw.barbariansLevel === 'trudny' || raw.barbariansLevel === 'brak'
@@ -1864,6 +1882,14 @@ function advancedSettingRows(): AdvSettingRow[] {
       getIdx: () => (advOpts.wzrostSurowcowZEpoka === true ? 1 : 0),
       setIdx: (i) => { advOpts.wzrostSurowcowZEpoka = i === 1; },
     },
+    {
+      key: 'diplomacyWarLevel',
+      lbl: 'Dyplomacja i wojna',
+      hint: 'Jak surowo dyplomacja karze za zdrady, wojny i granice oraz jak wolno rośnie zaufanie — dotyczy gracza i AI. Łatwa (domyślnie) = dotychczasowe wartości. Normalna = kary ×2 (zwłaszcza sąsiedztwo i wojna), bonusy za dodatnie czynności ÷2. Trudna = kary ×3 (za wszystko, co się da), bonusy ÷3 (w tym za sojusze). Progi, startowe zaufanie, czasy i ceny PN bez zmian.',
+      opts: ['Łatwa', 'Normalna', 'Trudna'],
+      getIdx: () => (advOpts.diplomacyWarLevel === 'trudna' ? 2 : advOpts.diplomacyWarLevel === 'normalna' ? 1 : 0),
+      setIdx: (i) => { advOpts.diplomacyWarLevel = i === 2 ? 'trudna' : i === 1 ? 'normalna' : 'latwa'; },
+    },
     advRowFromSett(
       'deals_end_turn_gate',
       'Dopóki wisi oferta handlowa od AI, nie zakończysz tury — przyjmij, zmodyfikuj lub odrzuć. Wyłączone: oferty AI nie blokują końca tury.',
@@ -2336,6 +2362,7 @@ function renderGenStep(host: HTMLElement): void {
       ['Wzrost ludności', growthPaceLabel],
       ['Zasięg ruchu', ruchSwiataLabel],
       ['Trudność miast-państw', csLabel],
+      ['Dyplomacja i wojna', p.advanced.diplomacyWarLevel === 'trudna' ? 'Trudna (kary ×3, bonusy ÷3)' : p.advanced.diplomacyWarLevel === 'normalna' ? 'Normalna (kary ×2, bonusy ÷2)' : 'Łatwa (jak dotąd)'],
       ['Limit miast zakładanych (baza)', cityLimitLabel],
     );
   }
