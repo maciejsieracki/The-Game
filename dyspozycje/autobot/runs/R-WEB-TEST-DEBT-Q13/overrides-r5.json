@@ -1,0 +1,6 @@
+{
+  "ai-move-range-test.cjs": {"cat": "P", "note": "solo 46 passed / 0 failed; w sweepie rownoleglym (P3) asercja czasowa E1 (stosunek 1.32 vs limit 1.3) bywa czerwona -- test wrazliwy na obciazenie CPU (kategoria E-srodowisko dla biegu rownoleglego)"},
+  "hud-moc-warstwa-test.cjs": {"cat": "B", "note": "pin liczby 49 (M Konnicy) vs gra/data/units.json Konnica fieldPower=98 (statystyki 16/10/14); ta sama przyczyna naprawiona w mur-paradoks-test (asercja z danych); tu NIE naprawiono (wartosc weterana 58,0 wymaga przeliczenia z formuly)"},
+  "moc-ranking-rozjazd-test.cjs": {"cat": "B", "note": "pin 49/58,0 vs units.json Konnica fieldPower=98; dodatkowo piny main.ts (buildEmpireDetailSnap, callsite #3) przesuniete; NIE naprawiono w r5"},
+  "march-attack-queue-persist-test.cjs": {"cat": "B", "note": "piny LICZBOWE wywolan w main.ts (clearPlannedMarch 5 vs 6, clearPlayerUnitSelection 35 vs 36) -- nowe wywolania wymagaja przegladu legalnosci kazdego, NIE zrobiono w r5"}
+}
