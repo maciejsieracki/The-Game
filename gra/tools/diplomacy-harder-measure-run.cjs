@@ -25,7 +25,7 @@
  *   (w tym karty technologii) przez closeEndTurnModals z ai-economy-measure-run.cjs -> measure-close-modals.cjs (jedno zrodlo selektorow).
  *   --build 1 buduje bundle do --dist (vite, poza repo; bez tego flagi uzywa istniejacego index.html).
  *   --every N zapisuje wiersz tylko dla tur podzielnych przez N (np. 5 albo 25; ostatnia tura zawsze).
- *   Przegladarka: CHROME_PATH (domyslnie pierwsza z: /usr/bin/chromium, google-chrome). Jeden Chromium naraz.
+ *   Przegladarka: CHROME_PATH (domyslnie pierwsza z: /usr/bin/google-chrome, /usr/bin/chromium). Jeden Chromium naraz.
  *
  * Limity: pojedyncze polecenie Bash < 590 s. Dlugie biegi (100 tur x 3 ziarna ON/OFF) uruchamia orkiestrator
  * przez `setsid nohup node tools/diplomacy-harder-measure-run.cjs ... &` (poza tym plikiem; sam runner nie wznawia).

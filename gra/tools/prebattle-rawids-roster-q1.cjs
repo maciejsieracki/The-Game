@@ -15,7 +15,7 @@
  *
  * Usage: node tools/prebattle-rawids-roster-q1.cjs <dist-dir> <out.json> [shots-dir] [label]
  * Env: PB_N (liczba jednostek, domyslnie 12), PB_VP (np. 1024x640; domyslnie wszystkie trzy),
- *      CHROMIUM_PATH (domyslnie /usr/bin/chromium).
+ *      CHROMIUM_PATH (domyslnie: CHROME_PATH, potem /usr/bin/google-chrome, potem /usr/bin/chromium).
  */
 const fs = require('fs');
 const path = require('path');

@@ -9,7 +9,7 @@
  *   B. wiersz „Brutto · netto” zostaje bez zmian: tekst liczb i klasa koloru netto;
  *   C. karta bez produkcji i zużycia: bez plakietki i bez wiersza (jak przed zmianą);
  *   D. statyczne: w empireDetailPanel.ts nie ma resRateHtml ani reguł CSS civ-emp-res-rate*;
- *   E. prawdziwy DOM w Chromium (playwright, /usr/bin/chromium): HTML z resCardHtml wstawiony na stronę;
+ *   E. prawdziwy DOM w Chromium (playwright, sciezka z _chrome-path.cjs): HTML z resCardHtml wstawiony na stronę;
  *      0 węzłów civ-emp-res-rate*, tekst i klasa koloru węzła .civ-emp-res-gn bez zmian;
  *   M. mutant (przywrócenie plakietki „+X” przed wierszem brutto/netto) MUSI czerwienić testy A i E.
  * Zrzut Chromium (kryterium c) nie jest częścią tego skryptu — wynik zapisuje raport.

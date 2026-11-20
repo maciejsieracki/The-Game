@@ -7,7 +7,7 @@
  * wejscie relationStatus = rel.status pary. Asercje: baner ma prefiks „Stan: ”, tooltip „to nie jest propozycja”,
  * przy wojnie nie ma „POKÓJ” w banerze. Zrzuty: runs/R-WEB-UI-DIPLO-AUDIENCE-STATUS-BANNER-LABEL-Q1/dowody/.
  *
- * Przegladarka: CHROMIUM_PATH (domyslnie /usr/bin/chromium), biblioteka playwright z gra/node_modules.
+ * Przegladarka: CHROMIUM_PATH (domyslnie: CHROME_PATH, potem /usr/bin/google-chrome, potem /usr/bin/chromium), biblioteka playwright z gra/node_modules.
  * Usage (z gra/): node tools/diplomacy-audience-status-banner-real-render-test.cjs
  */
 const fs = require('fs');
