@@ -228,9 +228,11 @@ import {
   readBuildingResourceUpkeepRatio,
   addResourceCosts,
   unitResourceUpkeep,
+  unitPieniadzUpkeepCardValue,
   canAffordUnitRecruitStock,
   isUnitRecruitStockChipMissing,
 } from '../game/economy-upkeep';
+import { biezacyKosztJednostekPace } from '../game/unit-cost-tempo';
 import {
   type TradeRoute,
   computeTradeRouteBuildingBonusByCity,
@@ -6470,7 +6472,7 @@ export function appendRecruitMilitaryResourceStrip(
     const udef = findUnitDef(data, item.id);
     if (!udef) continue;
     const cost = unitStockCost(udef);
-    const upkeep = unitResourceUpkeep(udef);
+    const upkeep = unitResourceUpkeep(udef, biezacyKosztJednostekPace());
     for (const k of [...Object.keys(cost), ...Object.keys(upkeep)]) {
       if (!seen.has(k)) {
         seen.add(k);
@@ -8276,10 +8278,11 @@ function _legacyBuildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement 
   appendDetailSection(card, 'Ekonomia');
   const gEco = appendDetailGrid(card);
   gridDetailRow(gEco, 'Koszt rekrutacji', u['Pieniądz (koszt)'] != null ? `${u['Pieniądz (koszt)']} 💰` : null);
-  gridDetailRow(gEco, 'Utrzymanie', u['Utrzymanie (Pieniądz/turę)'] != null
-    ? `${u['Utrzymanie (Pieniądz/turę)']} ${cityPanelChipIconWrap('res-treasury', 14)}`
+  const pieniadzUtrzymanie = unitPieniadzUpkeepCardValue(u, biezacyKosztJednostekPace());
+  gridDetailRow(gEco, 'Utrzymanie', pieniadzUtrzymanie != null
+    ? `${pieniadzUtrzymanie} ${cityPanelChipIconWrap('res-treasury', 14)}`
     : null);
-  const resUpkeep = unitResourceUpkeep(u);
+  const resUpkeep = unitResourceUpkeep(u, biezacyKosztJednostekPace());
   const resUpkeepKeys = Object.keys(resUpkeep);
   if (resUpkeepKeys.length > 0) {
     gridDetailRow(
@@ -8461,7 +8464,7 @@ function unitStockCostChipsHtml(u: UnitDef, city: City): string {
 
 /** Chip(y) utrzymania surowcowego jednostki (units.json Utrzymanie surowiec). */
 function unitResourceUpkeepChipsHtml(u: UnitDef): string {
-  const upkeep = unitResourceUpkeep(u);
+  const upkeep = unitResourceUpkeep(u, biezacyKosztJednostekPace());
   const keys = Object.keys(upkeep);
   if (keys.length === 0) return '';
   return keys

@@ -1238,6 +1238,7 @@ import {
 import { isProductionBuildingEnabled, operationalBuiltIds, operationalBuiltByCity, setProductionBuildingEnabled, isToggleableProductionBuilding, buildEmpireProducersSnap } from './game/building-toggle';
 import { decideEndTurnGate, projectEmpireFoodAfterTick, type NnsEndTurnLevers, type NnsGateResult, type NnsProjection } from './game/no-negative-stocks';
 import { unitUpkeep, unitFoodPerTurn, loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, addResourceCosts, readBuildingResourceUpkeepRatio, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
+import { setKosztJednostekPaceResolver, type KosztJednostekPace } from './game/unit-cost-tempo';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
 import { getCityResourceAccessForCity, getResourceAccessForCity } from './game/resource-access';
@@ -2081,6 +2082,9 @@ function worldTerrainFromHex(
 // Classic (non-module) scripts in <head> run before <body> is parsed --
 // without this guard, document.body is null and appendChild throws.
 async function boot(): Promise<void> {
+  // R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1: tempo „Koszty jednostek" dla utrzymania (silnik, karty, AI).
+  // Start = Niski (×1, dawne liczby); po utworzeniu `player` podmieniane na odczyt stanu gry (niżej).
+  let kosztJednostekPaceUtrzymania: () => KosztJednostekPace = () => 'niski';
   try {
     installGlobalDiagHooks();
     diagInfo('boot', 'start');
@@ -4125,6 +4129,7 @@ async function boot(): Promise<void> {
         ?? totalUnitResourceUpkeep(
           units.filter(u => u.ownerId === ownerId).map(u => ({ typeId: u.typeId })),
           typeId => data.units.find(u => u.Jednostka === typeId),
+          kosztJednostekPaceUtrzymania(),
         );
       const accessLabels = new Set(diplomacyActiveResourceLabelsForOwner(ownerId));
       const territoryRates = empireTerritoryResourceRatesForOwner(ownerId);
@@ -7669,7 +7674,7 @@ async function boot(): Promise<void> {
         if (u.ownerId !== ownerId || u.isGeneral === true || isCivilianUnit(u)) continue;
         const c = cityAtUnit(u);
         if (!c || c.ownerId !== ownerId) continue;
-        const score = unitUpkeep({ typeId: u.typeId } as unknown as Parameters<typeof unitUpkeep>[0], nnsUnitUpkeepTblCache, std);
+        const score = unitUpkeep({ typeId: u.typeId } as unknown as Parameters<typeof unitUpkeep>[0], nnsUnitUpkeepTblCache, std, kosztJednostekPaceUtrzymania());
         const cur = best.get(c.id);
         if (!cur || score > cur.score) best.set(c.id, { id: u.id, score });
       }
@@ -7796,6 +7801,7 @@ async function boot(): Promise<void> {
             const upk = previewOwnerUpkeep(
               oid, ownerCities, data, diff, cityBuilt, eu, empireEpochForOwner(oid),
               aiResearchDone.get(oid) ?? new Set<string>(), empireEpochForOwner, unlockedTechSetForOwner, stateAdmByOwner,
+              kosztJednostekPaceUtrzymania(),
             );
             const sk0 = aiSkarbiecByOwner.get(oid) ?? 0;
             const skPo = projectTreasuryAfterTick(
@@ -7849,8 +7855,8 @@ async function boot(): Promise<void> {
               const protectedNow = nnsProtectedDefenderIds(oid);
               const infos: NnsAiUnitInfo[] = rows.filter(r => !removed.has(r.u.id)).map(r => ({
                 id: r.u.id,
-                zloto: unitUpkeep(r.e as unknown as Parameters<typeof unitUpkeep>[0], unitUpkeepTbl, ctx.upkeepParams.jednostkaUtrzymanieStd),
-                zywnosc: unitFoodPerTurn(r.e, ctx.upkeepParams, unitFoodTbl),
+                zloto: unitUpkeep(r.e as unknown as Parameters<typeof unitUpkeep>[0], unitUpkeepTbl, ctx.upkeepParams.jednostkaUtrzymanieStd, kosztJednostekPaceUtrzymania()),
+                zywnosc: unitFoodPerTurn(r.e, ctx.upkeepParams, unitFoodTbl, kosztJednostekPaceUtrzymania()),
                 obronna: nnsUnitIsDefender(r.u, oid, protectedNow),
               }));
               const levers: NnsLever[] = buildAiLevers({
@@ -9448,7 +9454,7 @@ async function boot(): Promise<void> {
         typeId: u.typeId,
         category: u.category ?? String(lookupUnitDef(u.typeId)?.Kategoria ?? 'domyslny'),
       }));
-      return totalUnitUpkeep(upkeepUnits, unitUpkeepTbl, upkeepParams.jednostkaUtrzymanieStd);
+      return totalUnitUpkeep(upkeepUnits, unitUpkeepTbl, upkeepParams.jednostkaUtrzymanieStd, kosztJednostekPaceUtrzymania());
     }
 
     function extraCityPanelConfig() {
@@ -14801,6 +14807,10 @@ async function boot(): Promise<void> {
     // this object after each economy tick, and auto-research spends the science.
     // See src/game/playerState.ts for the banking + research semantics.
     const player: PlayerState = createPlayerState();
+    // R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1: tempo „Koszty jednostek" gry dla utrzymania jednostek
+    // (Pieniądz, surowce, żywność) — jedno źródło dla silnika, kart, HUD i AI; brak = Niski (×1).
+    kosztJednostekPaceUtrzymania = (): KosztJednostekPace => (player.kosztJednostekPace ?? 'niski');
+    setKosztJednostekPaceResolver(() => kosztJednostekPaceUtrzymania());
     // R-HOTSEAT-ETAP-1-OWNERID-ISAIOWNER-Q1: pierwszy realny konsument isAiOwner
     // (gra/src/game/human-owners.ts, Etap 0). Dziś zawsze dokładnie jeden fotel
     // człowieka -- behawioralny no-op, patrz bramka hotseat-etap1-ownerid-test.cjs.
@@ -23200,7 +23210,7 @@ async function boot(): Promise<void> {
         0,
         upkeepParamsForArmy,
         unitFoodTbl,
-        { solArmyOverride: uchwalaSolAktywnaForArmy, solCityIdsOverride: solCityIdsForArmy },
+        { solArmyOverride: uchwalaSolAktywnaForArmy, solCityIdsOverride: solCityIdsForArmy, kosztJednostekPace: kosztJednostekPaceUtrzymania() },
       );
       // N1 (runda 4, Evaluator): wypełnij cache dla WSZYSTKICH miast gracza na raz, nie tylko
       // dla `cityId`. `preview` (previewCityEconomy) -- krok, który realnie kosztuje -- jest
@@ -23376,7 +23386,7 @@ async function boot(): Promise<void> {
         0,
         upkeepParams,
         unitFoodTbl,
-        { solArmyOverride: uchwalaSolAktywna, solCityIdsOverride: solCityIds },
+        { solArmyOverride: uchwalaSolAktywna, solCityIdsOverride: solCityIds, kosztJednostekPace: kosztJednostekPaceUtrzymania() },
       );
       const reserve = getEmpireFoodReserve(0);
       let central = reserve;
@@ -23582,6 +23592,7 @@ async function boot(): Promise<void> {
         0, playerCities, data, _menuDifficulty, cityBuilt, playerEconUnitsForUpkeep,
         player.era, player.zbadane, empireEpochForOwner, unlockedTechSetForOwner,
         stateAdmByOwner,
+        kosztJednostekPaceUtrzymania(),
       );
       _lastBogactwoHandel = playerEcon.pieniadzZTras;
       _lastBogactwoUtrzymanieBudynkow = bogactwoUpkeepPreview.utrzymanieBudynki;
@@ -23593,6 +23604,7 @@ async function boot(): Promise<void> {
         typeId => data.units.find(u => u.Jednostka === typeId),
         bdef => buildingLevelForOwnerBuilding(bdef, 0),
         readBuildingResourceUpkeepRatio(data.econParams, _menuDifficulty),
+        kosztJednostekPaceUtrzymania(),
       );
       _lastBogactwoRate = playerEcon.pieniadz - bogactwoUpkeepPreview.utrzymanieRazem;
       // R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: prognoza po turze (skarbiec = obecny + netto HUD, ta sama
@@ -23676,6 +23688,7 @@ async function boot(): Promise<void> {
           const nnsUpkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
           const kosztArmiiProj = militaryFoodConsumptionWithSpichlerz(
             playerEconUnitsForUpkeep, ME(), nnsUpkeepParams, unitFoodTbl,
+            { kosztJednostekPace: kosztJednostekPaceUtrzymania() },
           );
           const autoRes = autoBalanceRationsToSolvency({
             ownerId: ME(),
@@ -34176,7 +34189,7 @@ async function boot(): Promise<void> {
             const starving = isArmyStarving(o);
             const jednPieniadz = totalUnitUpkeep(
               wojskoweJedn.map(u => ({ typeId: u.typeId, category: u.category ?? String(lookupUnitDef(u.typeId)?.Kategoria ?? 'domyslny') })),
-              unitUpkTbl, upkP.jednostkaUtrzymanieStd);
+              unitUpkTbl, upkP.jednostkaUtrzymanieStd, kosztJednostekPaceUtrzymania());
             // R-WEB-ECONOMY-MEASURE-EXTEND-INCOME-STOCKS-Q1: pola HUD per właściciel. Wyłącznie odczyt,
             // te same funkcje co HUD: surowce = buildEmpireResourceRows + resourceGrossNetPerTurn
             // (filtr jak HUD: cap != null && !placeholder; suma jak surowceBrutto/surowceNetto w buildHudStateRaw);
@@ -34234,6 +34247,7 @@ async function boot(): Promise<void> {
               utrzymanieJednostekSurowce: totalUnitResourceUpkeep(
                 wojskoweJedn.map(u => ({ typeId: u.typeId })),
                 typeId => data.units.find(x => x.Jednostka === typeId),
+                kosztJednostekPaceUtrzymania(),
               ),
               /** R-WEB-AI-CITY-GARRISON-MIN-ONE-LIVE-AUDIT-Q1 (tylko odczyt, ?civTest=1): wojsko STACJONUJĄCE w
                *  każdym mieście właściciela (ten sam predykat "jednostka wojskowa" co emptyCityGarrisonRecruitIds:
@@ -34427,7 +34441,7 @@ async function boot(): Promise<void> {
           let tpl: RuntimeUnit | null = null; let best = -1;
           for (const u of units) {
             if (u.ownerId !== oid || u.isGeneral === true || isCivilianUnit(u)) continue;
-            const sc = unitUpkeep({ typeId: u.typeId } as unknown as Parameters<typeof unitUpkeep>[0], nnsUnitUpkeepTblCache, std);
+            const sc = unitUpkeep({ typeId: u.typeId } as unknown as Parameters<typeof unitUpkeep>[0], nnsUnitUpkeepTblCache, std, kosztJednostekPaceUtrzymania());
             if (sc > best) { best = sc; tpl = u; }
           }
           if (!tpl) return { added: 0, typeId: null, upkeepEach: 0 };
@@ -39297,6 +39311,7 @@ async function boot(): Promise<void> {
         empireEpochForOwner(ownerId), aiResearchDone.get(ownerId) ?? new Set<string>(),
         empireEpochForOwner, unlockedTechSetForOwner,
         stateAdmByOwner,
+        kosztJednostekPaceUtrzymania(),
       );
       const before = preview(toEcon(own));
       // R-WEB-AI-UNIT-REPLACE-SAME-RULES-AS-PLAYER-Q1 (r2): zamiana NIE dodaje jednostki -- jedna
@@ -39341,11 +39356,12 @@ async function boot(): Promise<void> {
         empireEpochForOwner(ownerId), aiResearchDone.get(ownerId) ?? new Set<string>(),
         empireEpochForOwner, unlockedTechSetForOwner,
         stateAdmByOwner,
+        kosztJednostekPaceUtrzymania(),
       );
       const before = preview(ownEcon);
       const after = preview(withNew);
-      const milBefore = militaryFoodConsumptionWithSpichlerz(ownEcon, ownerId, upkeepP, unitFoodTbl);
-      const milAfter = militaryFoodConsumptionWithSpichlerz(withNew, ownerId, upkeepP, unitFoodTbl);
+      const milBefore = militaryFoodConsumptionWithSpichlerz(ownEcon, ownerId, upkeepP, unitFoodTbl, { kosztJednostekPace: kosztJednostekPaceUtrzymania() });
+      const milAfter = militaryFoodConsumptionWithSpichlerz(withNew, ownerId, upkeepP, unitFoodTbl, { kosztJednostekPace: kosztJednostekPaceUtrzymania() });
       const allowed = aiUpkeepRunwayAllowsRecruit({
         goldStock: ownerTreasury(ownerId),
         goldCost,
@@ -43309,6 +43325,7 @@ async function boot(): Promise<void> {
             // cityStateDifficulty (osobny suwak), AI wg trudności menu, gracz wg menu.
             (oid: number) => effectiveGameDifficultyForOwner(oid),
             stateAdmByOwner,
+            { kosztJednostekPace: kosztJednostekPaceUtrzymania() },
           );
           // R-WEB-UI-RESOURCE-SOURCE-LEDGER-SKAD-ZAPASY-Q1 (partia 2b): pobory poza tickiem (budowa, rekrutacja)
           // z okna pending wchodzą do rekordu tej tury; okno czyszczone.
@@ -43406,6 +43423,7 @@ async function boot(): Promise<void> {
               // (turn-economy.ts:1622-1634).
               const kosztArmiiForOwner = militaryFoodConsumptionWithSpichlerz(
                 econUnits, ownerId, upkeepParams, unitFoodTbl,
+                { kosztJednostekPace: kosztJednostekPaceUtrzymania() },
               );
               const autoRationResult = autoBalanceRationsToSolvency({
                 ownerId,
@@ -43496,6 +43514,7 @@ async function boot(): Promise<void> {
             lastEfTickResult = advanceEmpireFood(
               econ, econUnits, empireFoodStates, upkeepParams, efParams, unitFoodTbl, cityBuilt,
               empireEpochForOwner,
+              kosztJednostekPaceUtrzymania(),
             );
             // P-WZROSTPROCENT-PLAKIETKA-ROZJAZD (blokada 1, runda 5 Evaluatora): `advanceEmpireFood`
             // zapisuje `st.zapasyPanstwa = central` (empire-food.ts) -- to koniec-tury zmiana
@@ -45830,6 +45849,7 @@ async function boot(): Promise<void> {
                   empireEpochForOwner,
                   unlockedTechSetForOwner,
                   stateAdmByOwner,
+                  kosztJednostekPaceUtrzymania(),
                 );
                 const sliderDecision = decideAIEconomySliders(
                   {
