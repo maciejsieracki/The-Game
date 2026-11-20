@@ -8077,6 +8077,12 @@ mod march_incremental_tests {
         assert_eq!(b.ranged_step_end(&st, &mut c), MarchNext::Done);
         c.kind = MarchKind::RangedForward;
         assert_eq!(b.ranged_step_end(&st, &mut c), MarchNext::Done);
+        // Wróg poza zasięgiem, ruch został: bez `finished` kolejny krok, z `finished` koniec (`:6801`).
+        move_def(&mut b, 5);
+        st.finished = false;
+        assert_eq!(b.ranged_step_end(&st, &mut c), MarchNext::Gap);
+        st.finished = true;
+        assert_eq!(b.ranged_step_end(&st, &mut c), MarchNext::Done);
     }
 
     /// Atrapa ciała dla sterownika: marsz z jednym odroczonym wywołaniem fazy kroków (`raf`, id 1) i jednym zwykłym (id 2,

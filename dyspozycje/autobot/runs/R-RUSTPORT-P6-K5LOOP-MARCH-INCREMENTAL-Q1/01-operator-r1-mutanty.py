@@ -4,6 +4,8 @@
 # wektory pinu (`wektory_pinu_pelnej_bitwy_bajt_w_bajt`) + 128 kandydatow c1 @1 i @16 (pliki pinu w scratchpadzie),
 # potem przywrocenie zrodla (`git checkout`). Wynik: ZABITY (wektor albo kandydat rozbiezny) / PRZEZYL.
 # Uzycie: python3 01-operator-r1-mutanty.py [ID ...]   (pliki tymczasowe: scratchpad/march-inc/)
+#        python3 01-operator-r1-mutanty.py --lib [ID ...]: zamiast wektorow testy lib `march_incremental_tests`
+#        (mutanty, ktore przezyly wektory i 256 kandydatow; ZABITY = co najmniej jeden test FAILED).
 import os
 import subprocess
 import sys
@@ -58,8 +60,8 @@ MUTANTS = [
      '            MarchNext::Gap => Some((MarchStage::Gap, f64::from(STEP_GAP_MS))),',
      '            MarchNext::Gap => Some((MarchStage::Gap, f64::from(STEP_GAP_MS) + 1.0)),'),
     ('A14', 'koniec kroku 1 ms wczesniej', LOOP,
-     '                frame_raf(self.frame_ms, MOVE_STEP_MS),\n            )),',
-     '                frame_raf(self.frame_ms, MOVE_STEP_MS) - 1.0,\n            )),'),
+     '                Some((MarchStage::StepEnd, frame_raf(self.frame_ms, MOVE_STEP_MS)))',
+     '                Some((MarchStage::StepEnd, frame_raf(self.frame_ms, MOVE_STEP_MS) - 1.0))'),
     ('A15', 'done() z fazy krokow przez zegar (nie od razu)', LOOP,
      '                    if self.in_raf && ms <= 0.0 {',
      '                    if self.in_raf && ms <= 0.0 && false {'),
@@ -119,8 +121,19 @@ def run(binp):
     return vec_ok, v.stdout, out
 
 
+def run_lib():
+    r = subprocess.run(['cargo', 'test', '--release', '--lib', 'march_incremental_tests'], cwd=ENG, env=ENV,
+                       capture_output=True, text=True)
+    out = r.stdout + r.stderr
+    if 'error[' in out or 'could not compile' in out:
+        return None, out
+    failed = [x.split()[1] for x in out.splitlines() if x.startswith('test ') and x.endswith('FAILED')]
+    return failed, out
+
+
 def main():
-    only = set(sys.argv[1:])
+    lib = '--lib' in sys.argv
+    only = set(a for a in sys.argv[1:] if a != '--lib')
     for mid, desc, path, old, new in MUTANTS:
         if only and mid not in only:
             continue
@@ -129,6 +142,15 @@ def main():
         assert src.count(old) == 1, (mid, src.count(old))
         open(full, 'w').write(src.replace(old, new))
         try:
+            if lib:
+                failed, out = run_lib()
+                if failed is None:
+                    print(f'{mid}\tBLAD-BUILDU\t{desc}', flush=True)
+                    print(out[-2000:], flush=True)
+                else:
+                    names = ','.join(f.split('::')[-1] for f in failed)
+                    print(f"{mid}\t{'ZABITY' if failed else 'PRZEZYL'}\tlib\t{names}\t{desc}", flush=True)
+                continue
             binp = build()
             if binp is None:
                 print(f'{mid}\tBLAD-BUILDU\t{desc}', flush=True)
