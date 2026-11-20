@@ -199,6 +199,25 @@ pub trait LoopBody {
     fn take_tail(&mut self, _unit: UnitRef) -> f64 {
         0.0
     }
+    /// MARCH-INCREMENTAL-Q1 (D-MI-1): `true` = aktywacja `unit` prowadzi marsz krok po kroku (kolejne kroki to odroczone
+    /// wywołania ciała [`LoopBody::take_timers`], jak `_schedule(STEP_GAP_MS, …)` pinu), więc chwila `done()` nie jest
+    /// znana w `start`: sterownik NIE planuje [`LoopTimer::BodyDone`] po `start`, tylko po zgłoszeniu
+    /// [`LoopBody::take_march_done`]. Domyślnie `false` (marsz atomowy, czas z `start`).
+    fn march_pending(&self, _unit: UnitRef) -> bool {
+        false
+    }
+    /// MARCH-INCREMENTAL-Q1 (D-MI-1): `done()` marszu krok po kroku zgłoszone w ostatnim [`LoopBody::fire_timer`]:
+    /// jednostka i czas (ms) od bieżącej chwili do [`LoopTimer::BodyDone`] (`0` = teraz; cios/strzał = chwila skutku).
+    /// Domyślnie brak.
+    fn take_march_done(&mut self) -> Option<(UnitRef, f64)> {
+        None
+    }
+    /// MARCH-INCREMENTAL-Q1 (D-MI-2): `true` = odroczone wywołanie `id` należy do fazy kroków animacji klatki (koniec
+    /// kroku `_doMove`: callback pętli `_raf(step)` przy `p >= 1`, `:8757-8775`), nie do fazy zegarów `_drainTimers`.
+    /// Sterownik odkłada je jak [`LoopTimer::BodyDone`] ([`SiegeLoop::body_done_raf`]). Domyślnie `false`.
+    fn timer_raf(&self, _id: u64) -> bool {
+        false
+    }
 }
 
 /// Stałe morale z pinu (`battleScene.ts:1129, 1141, 1144-1145`).
@@ -650,7 +669,12 @@ pub struct SiegeLoop<B: LoopBody> {
     /// `true`.
     pub body_done_raf: bool,
     /// PIN3-DIVERGENCE-Q1 (D-PIN3-3): skutki ciała odłożone do fazy kroków bieżącej klatki, w kolejności odpaleń.
-    raf_pending: Vec<UnitRef>,
+    /// MARCH-INCREMENTAL-Q1 (D-MI-2): także końce kroków marszu ([`LoopBody::timer_raf`]).
+    raf_pending: Vec<LoopTimer>,
+    /// MARCH-INCREMENTAL-Q1 (D-MI-2): `true` w trakcie wykonywania klocka z fazy kroków klatki ([`Self::raf_pending`]).
+    /// `done()` zgłoszone wtedy przez ciało ([`LoopBody::take_march_done`] z czasem `0`) wykonuje się od razu, w tej
+    /// samej fazie (pin: `done()` wołane z callbacku `_raf`).
+    in_raf: bool,
 }
 
 /// Obserwator odpaleń zegara pętli (P4-1I2): dostaje stan pętli PO kroku (tylko odczyt), `vNow` i odpalony
@@ -680,7 +704,19 @@ impl<B: LoopBody> SiegeLoop<B> {
             tower_shot_due: Vec::new(),
             body_done_raf: false,
             raf_pending: Vec::new(),
+            in_raf: false,
         }
+    }
+
+    /// MARCH-INCREMENTAL-Q1 (D-MI-2): wykonanie najstarszego klocka odłożonego do fazy kroków klatki.
+    fn fire_raf_next(&mut self, clock: &mut VirtualClock<LoopTimer>) {
+        if self.raf_pending.is_empty() {
+            return;
+        }
+        let t = self.raf_pending.remove(0);
+        let was = std::mem::replace(&mut self.in_raf, true);
+        self.fire(clock, t);
+        self.in_raf = was;
     }
 
     /// P4-1I3: akcje sceny zebrane od startu (albo od ostatniego [`Self::take_actions`]).
@@ -847,22 +883,24 @@ impl<B: LoopBody> SiegeLoop<B> {
         });
         // PIN3-DIVERGENCE-Q1 (D-PIN3-3): faza kroków animacji klatki (`requestAnimationFrame`) po `_drainTimers`.
         while !self.raf_pending.is_empty() {
-            let u = self.raf_pending.remove(0);
-            self.fire(clock, LoopTimer::BodyDone(u));
+            self.fire_raf_next(clock);
         }
         fired
     }
 
     /// PIN3-DIVERGENCE-Q1 (D-PIN3-3): odkłada [`LoopTimer::BodyDone`] do fazy kroków bieżącej klatki
     /// ([`Self::body_done_raf`]). Zwraca `true`, gdy odłożono.
+    /// MARCH-INCREMENTAL-Q1 (D-MI-2): także odroczone wywołanie ciała z fazy kroków ([`LoopBody::timer_raf`]).
     fn defer_to_raf(&mut self, t: LoopTimer) -> bool {
-        match t {
-            LoopTimer::BodyDone(u) if self.body_done_raf => {
-                self.raf_pending.push(u);
-                true
-            }
+        let raf = match t {
+            LoopTimer::BodyDone(_) => self.body_done_raf,
+            LoopTimer::BodyTimer(id) => self.body_done_raf && self.env.body.timer_raf(id),
             _ => false,
+        };
+        if raf {
+            self.raf_pending.push(t);
         }
+        raf
     }
 
     /// Start bitwy i przewijanie aż do zakończenia albo wyczerpania `max_steps` pełnych iteracji.
@@ -995,7 +1033,11 @@ impl<B: LoopBody> SiegeLoop<B> {
                     self.drain_body();
                     // K5LOOP-SIEGE-ATK-B: `_schedule` z wnętrza ciała przed `done()` (np. `_attackWallTile` `:7555`).
                     self.schedule_body_timers(clock);
-                    let _ = clock.schedule(dur, LoopTimer::BodyDone(u), false);
+                    // MARCH-INCREMENTAL-Q1 (D-MI-1): marsz krok po kroku zgłasza `done()` później
+                    // ([`LoopBody::take_march_done`]).
+                    if !self.env.body.march_pending(u) {
+                        let _ = clock.schedule(dur, LoopTimer::BodyDone(u), false);
+                    }
                 }
                 SeqEvent::Schedule { ms, step, planning } => {
                     match clock.schedule(ms, LoopTimer::Step(step), planning) {
@@ -1036,6 +1078,16 @@ impl<B: LoopBody> SiegeLoop<B> {
                 self.env.body.fire_timer(id, &mut self.st);
                 self.drain_body();
                 self.schedule_body_timers(clock);
+                // MARCH-INCREMENTAL-Q1 (D-MI-1): `done()` marszu krok po kroku. Z fazy kroków klatki (koniec kroku,
+                // callback `_raf`) i bez odroczenia = od razu, w tej samej fazie; inaczej zegar `BodyDone` (z fazy zegarów
+                // `0` ms = ta sama klatka, odłożony do fazy kroków jak każdy skutek ciała, D-PIN3-3).
+                if let Some((u, ms)) = self.env.body.take_march_done() {
+                    if self.in_raf && ms <= 0.0 {
+                        self.fire(clock, LoopTimer::BodyDone(u));
+                    } else {
+                        let _ = clock.schedule(ms, LoopTimer::BodyDone(u), false);
+                    }
+                }
             }
             LoopTimer::TowerShot(i) => {
                 self.tower_shoot(clock, i);
@@ -1177,12 +1229,7 @@ impl<B: LoopBody> FfHost<LoopTimer, ()> for SiegeLoop<B> {
                     self.fire(clock, t);
                 }
             }
-            FfEvent::RunQueued(()) => {
-                if !self.raf_pending.is_empty() {
-                    let u = self.raf_pending.remove(0);
-                    self.fire(clock, LoopTimer::BodyDone(u));
-                }
-            }
+            FfEvent::RunQueued(()) => self.fire_raf_next(clock),
             FfEvent::RoundCapResult(v) => {
                 let w = match v {
                     RoundCapVerdict::Draw => LoopWinner::Draw,
@@ -1288,6 +1335,58 @@ struct ProdShot {
     target: usize,
     /// Czas wirtualny trafienia (`vNow` wystrzału + [`RANGED_FLY_MS`]); akcje trafienia mają ten `t0`.
     hit_at: f64,
+}
+
+/// MARCH-INCREMENTAL-Q1 (D-MI-1): rodzaj marszu prowadzonego krok po kroku.
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum MarchKind {
+    /// `_advanceStep(ru, done)` (`battleScene.ts:8198-8285`).
+    Advance,
+    /// `_rangedForwardStep(ru, done)` (`:6776-6809`) wołane z `_rangedAction` (`:6735`).
+    RangedForward,
+    /// Krok KITE `_rangedAction` (`:6699-6716`): po kroku strzał w `_rangedTargetInRange ?? meleeThreat` (w zasięgu).
+    Kite {
+        threat_ix: Option<usize>,
+        threat_cell: (i64, i64),
+    },
+}
+
+/// MARCH-INCREMENTAL-Q1 (D-MI-1): na co czeka marsz.
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum MarchStage {
+    /// Koniec kroku `_doMove` (callback pętli `_raf(step)` przy `p >= 1`, faza kroków klatki).
+    StepEnd,
+    /// Zegar `_schedule(STEP_GAP_MS, …)` kolejnego wejścia (faza zegarów `_drainTimers`).
+    Gap,
+}
+
+/// MARCH-INCREMENTAL-Q1 (D-MI-1): stan marszu między krokami (`ru.moveLeft`, flaga ruchu, `previousPosition`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct MarchCont {
+    unit: UnitRef,
+    kind: MarchKind,
+    stage: MarchStage,
+    /// Identyfikator odroczonego wywołania ciała, na które czeka marsz.
+    id: u64,
+    move_left: f64,
+    moved: bool,
+    /// `previousPosition` `_advanceStep` (`:8272`): zapis `lastAutoMoveFrom` w callbacku kroku (`:8274`).
+    prev: Option<(i64, i64)>,
+}
+
+/// MARCH-INCREMENTAL-Q1 (D-MI-1): wynik jednego wejścia albo callbacku kroku marszu.
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum MarchNext {
+    /// `done()` teraz.
+    Done,
+    /// `_doMove` wykonany: czekaj na koniec kroku.
+    StepEnd,
+    /// `_schedule(STEP_GAP_MS, …)`: kolejne wejście.
+    Gap,
+    /// `_doAttack(ru, cel, done)` (`_advanceStep` `:8241-8245`).
+    Attack(usize),
+    /// `_doAttack` strzelca z `_rangedAction` (`_doRangedAttack`, `:9179-9229`).
+    Shot(usize),
 }
 
 /// Zapytania maszyny K5H dla [`ProdBody`] (bez skutków ubocznych).
@@ -1634,6 +1733,18 @@ pub struct ProdBody<R: RollSource> {
     /// FRAME-QUANT-Q1 (D-FQ-2): nominalny `due` ostatniego `_schedule(STEP_GAP_MS)` marszu w bieżącym wywołaniu
     /// ([`Self::gap_after`]); krok, który ten zegar wywołuje, dostaje go jako klucz kolejności ([`Self::timeline_ord`]).
     gap_due: Option<f64>,
+    /// MARCH-INCREMENTAL-Q1 (D-MI-1): marsz krok po kroku. `true` = `_advanceStep` (`:8198-8285`) i `_rangedAction` z
+    /// `_rangedForwardStep` (`:6656-6741`, `:6776-6809`) NIE są liczone atomowo w `start`: każdy krok `_doMove` wykonuje
+    /// się w chwili decyzji pinu (pierwszy synchronicznie w `start`, kolejne z zegara `_schedule(STEP_GAP_MS, …)`), a
+    /// callback kroku (`p >= 1`) w fazie kroków klatki — jako odroczone wywołania ciała ([`LoopBody::take_timers`],
+    /// [`LoopBody::timer_raf`]). Każda decyzja czyta stan W SWOJEJ chwili (rozbicie/śmierć innej jednostki od wieży w
+    /// trakcie marszu, `finished`, `dead`). `false` (domyślnie, dotychczasowe testy pętli) = marsz atomowy; sesja ustawia
+    /// `true`.
+    pub march_incremental: bool,
+    /// MARCH-INCREMENTAL-Q1 (D-MI-1): bieżący marsz krok po kroku (co najwyżej jeden: aktywacje są sekwencyjne).
+    march: Option<MarchCont>,
+    /// MARCH-INCREMENTAL-Q1 (D-MI-1): `done()` marszu do odbioru przez sterownik ([`LoopBody::take_march_done`]).
+    march_done: Option<(UnitRef, f64)>,
 }
 
 /// K5LOOP-WIRING-A (#369): miejsce jednego ciosu `_singleBlow(attacker, defender, ranged)` w chwili ciosu.
@@ -2314,6 +2425,9 @@ impl<R: RollSource> ProdBody<R> {
             frame_ms: 0.0,
             reader_due: f64::MIN,
             gap_due: None,
+            march_incremental: false,
+            march: None,
+            march_done: None,
             terrain: None,
             units,
             scene,
@@ -2972,6 +3086,455 @@ impl<R: RollSource> ProdBody<R> {
         }
         self.now = now0;
         (elapsed, moved.then_some(move_left), attack)
+    }
+
+    /// `_doAttack` po wyborze celu (`:8787-8797`; wspólne dla `start` i marszu krok po kroku, MARCH-INCREMENTAL-Q1):
+    /// strzał strzelca z amunicją (`_doRangedAttack`) albo cios wręcz (`_doMeleeAttack`), `attack_pre` = chwila ciosu
+    /// względem `self.now`. Zwraca czas do skutku (`complete`); ogon (`take_tail`) ustawia w modelu czasu pinu.
+    fn attack_tail(
+        &mut self,
+        unit: UnitRef,
+        pu: &ProdUnit,
+        pend: &mut ProdPending,
+        attack_pre: f64,
+    ) -> f64 {
+        let ix = side_ix(unit.side);
+        // K5LOOP-CLOSE r4: `_doAttack` (`:8787-8797`): `if (canShoot(attacker)) this._doRangedAttack(...)`. Strzelec z
+        // amunicją dochodzi tu tylko z `shootingEnabled = false` (inaczej `_rangedAction`, `:6241`; mur wykluczony
+        // strażnikiem `oblezenie`): cios z U7.6 (sąsiad w zasięgu strzału), kawalerii, falangi albo U7.9 jest STRZAŁEM
+        // (`Facing` + `Shot`, trafienie `_singleBlow(…, true)` po `RANGED_FLY_MS`, koniec po `RANGED_GAP_MS`), nie ciosem.
+        if pu.activate.can_shoot {
+            if let Some(target) = pend.attack.take() {
+                pend.shot = self.begin_shot(unit, target, attack_pre);
+                let dur = if pend.shot.is_some() {
+                    let fly = frame_sched(self.frame_ms, RANGED_FLY_MS);
+                    if self.pin_blow_timing {
+                        // FRAME-QUANT-Q1 (D-FQ-3): ogon nominalny, kwantyzuje go zegar sterownika.
+                        self.tail[ix][unit.idx] = RANGED_GAP_MS;
+                        attack_pre + fly
+                    } else {
+                        attack_pre + fly + frame_sched(self.frame_ms, RANGED_GAP_MS)
+                    }
+                } else {
+                    attack_pre
+                };
+                return dur;
+            }
+        }
+        if let Some(target) = pend.attack {
+            if self.blow_composer.is_none()
+                && (pu.melee_target != Some(target) || pu.blow.is_none())
+            {
+                self.unported.push((unit, "cios-bez-szablonu"));
+                pend.attack = None;
+            }
+        }
+        // FRAME-QUANT-Q1 (D-FQ-1): cios pada w pierwszej klatce lunge z `localT >= BLOW_HIT_T` (pętla `_raf`), lunge
+        // kończy się w pierwszej klatce z `localT >= BLOW_LUNGE_MS`, potem `_schedule(BLOW_SETTLE_MS)` z chwili tej klatki.
+        let hit = frame_raf(self.frame_ms, pu.body_ms);
+        let dur = if pend.attack.is_some() {
+            if self.pin_blow_timing {
+                // `_doMeleeAttack` (`:9119-9172`): `done()` po `localT >= BLOW_LUNGE_MS` i `_schedule(BLOW_SETTLE_MS)`.
+                // FRAME-QUANT-Q1 (D-FQ-3): `_schedule(BLOW_SETTLE_MS)` z klatki końca lunge ma nominalny `due`
+                // (`koniec lunge + 220`); ogon planuje zegar sterownika z klatki ciosu, więc odcinek settle zostaje
+                // nominalny, a klatkę odpalenia wyznacza zegar.
+                self.tail[ix][unit.idx] = melee_tail_ms(self.frame_ms, pu.body_ms);
+            }
+            attack_pre + hit
+        } else {
+            attack_pre
+        };
+        // P4-1I3: `_doMeleeAttack` (`:9096-9175`): zwrot atakującego ku celowi (`:9104-9105`, zawsze `rotation.y`),
+        // potem start lunge w `t0`; cios w `t0 + body_ms` (adapter: `BLOW_HIT_T`). Sam stan `facing` zmienia
+        // [`Self::strike`] w `complete` (bez zmiany logiki); tu ta sama wartość liczona z tego samego wejścia.
+        if let Some(target) = pend.attack {
+            let tref = UnitRef {
+                side: opposite(unit.side),
+                idx: target,
+            };
+            let (aq, ar) = self.cell_of(unit);
+            let (dq, dr) = self.cell_of(tref);
+            let dir = facing_toward(
+                &JsVal::Num((dq - aq) as f64),
+                &JsVal::Num((dr - ar) as f64),
+                &JsVal::Num(self.facing[ix][unit.idx]),
+            )
+            .to_number();
+            let saved = self.now;
+            self.now = saved + attack_pre;
+            self.emit(BattleAction::Facing { unit, dir });
+            let hit_at = saved + dur;
+            self.emit(BattleAction::Melee {
+                attacker: unit,
+                target: tref,
+                hit_at,
+            });
+            self.now = saved;
+        }
+        dur
+    }
+
+    /// MARCH-INCREMENTAL-Q1 (D-MI-1): jedno wejście `_advanceStep(ru, done)` (`battleScene.ts:8198-8285`) w chwili
+    /// `self.now`: preludium (`finished`, `dead`/`fadingOut`, `moveLeft <= 0`), C-FLANK (`:8204-8235`), cios z bieżącego
+    /// pola (`:8241-8246`), marsz czołowy (`:8248-8284`) — z BIEŻĄCEGO stanu `st` i ciała. Krok `_doMove` wykonuje się
+    /// od razu ([`Self::move_step_core`]); odmowa bramki muru (`:8689-8692`: `moveLeft = 0; done()`, bez callbacku) =
+    /// [`MarchNext::Done`].
+    fn advance_enter(&mut self, st: &TurnSeqState, c: &mut MarchCont) -> MarchNext {
+        let unit = c.unit;
+        let ix = side_ix(unit.side);
+        let seq = st.unit(unit).c;
+        // Preludium `:8199-8202` (`moveLeft <= 0` sprawdzają niżej C-FLANK i decyzja, jak w pętli atomowej).
+        if st.finished || seq.dead || seq.fading_out {
+            return MarchNext::Done;
+        }
+        // `_siegeApproachRestricted` (`:7953`) czyta `ru.routed` w chwili kroku.
+        self.mover_routed = seq.routed;
+        let mounted = self.units[ix][unit.idx].activate.mounted;
+        let enemies = self.enemies_of(unit.side, st);
+        let desired = desired_hit_for_direction(self.attack_direction[ix][unit.idx]);
+        if let Some(want) = desired.filter(|_| c.move_left > 0.0 || c.move_left.is_nan()) {
+            match self.flank_decide(unit, st, want, mounted) {
+                FlankDecision::Fallthrough => {}
+                FlankDecision::Done => return MarchNext::Done,
+                FlankDecision::MissingTerrain => {
+                    self.unported.push((unit, "krok-naprzod-brak-terenu"));
+                    return MarchNext::Done;
+                }
+                FlankDecision::Move((col, row)) => {
+                    // Callback bloku C-FLANK (`:8222-8229`) bez zapisu `lastAutoMoveFrom`.
+                    c.prev = None;
+                    return self.march_move(c, (col, row), &enemies, "krok-naprzod-brak-terenu");
+                }
+            }
+        }
+        let au = self.advance_unit(unit, c.move_left);
+        let bst = BatchState::new(BatchBoard {
+            atk: Vec::new(),
+            def: Vec::new(),
+            occ: self.occ_by_key.clone(),
+        });
+        let (decision, missing) = {
+            let world = self.advance_world(unit, st);
+            let mut env = ProdPathEnv {
+                terrain: self.terrain.as_deref(),
+                mounted,
+                missing: false,
+            };
+            let d = advance_step_decide(&world, &mut env, &bst, &au);
+            (d, env.missing)
+        };
+        if missing {
+            self.unported.push((unit, "krok-naprzod-brak-terenu"));
+            return MarchNext::Done;
+        }
+        match decision {
+            AdvanceDecision::Done => MarchNext::Done,
+            AdvanceDecision::Attack { .. } => {
+                let me = self.combatant(unit, st);
+                let en = self.combatants(opposite(unit.side), st);
+                match pick_adjacent_target_by_priority(&me, &en, &self.target_priorities, None) {
+                    Some(t) => MarchNext::Attack(t),
+                    None => MarchNext::Done,
+                }
+            }
+            AdvanceDecision::Move { col, row, then } => {
+                c.prev = then.map(|(q, r)| (q as i64, r as i64));
+                self.march_move(
+                    c,
+                    (col as i64, row as i64),
+                    &enemies,
+                    "krok-naprzod-brak-terenu",
+                )
+            }
+        }
+    }
+
+    /// MARCH-INCREMENTAL-Q1 (D-MI-1): callback kroku `_advanceStep` (`:8273-8284`, C-FLANK `:8222-8229`) w chwili końca
+    /// kroku: `lastAutoMoveFrom = previousPosition`, `finished`, `_canAttackFrom` z nowego pola, `moveLeft > 0`.
+    fn advance_step_end(&mut self, st: &TurnSeqState, c: &MarchCont) -> MarchNext {
+        let unit = c.unit;
+        if let Some(p) = c.prev {
+            self.doctrine[side_ix(unit.side)][unit.idx].last_auto_move_from = Some(p);
+        }
+        if st.finished {
+            return MarchNext::Done;
+        }
+        let au = self.advance_unit(unit, c.move_left);
+        let bst = BatchState::new(BatchBoard {
+            atk: Vec::new(),
+            def: Vec::new(),
+            occ: self.occ_by_key.clone(),
+        });
+        let world = self.advance_world(unit, st);
+        match advance_after_move(&world, &bst, &au) {
+            AfterStep::Done => MarchNext::Done,
+            AfterStep::Schedule { .. } => MarchNext::Gap,
+        }
+    }
+
+    /// MARCH-INCREMENTAL-Q1 (D-MI-1): `_doMove(ru, col, row, cb)` kroku marszu w chwili `self.now`. Odmowa bramki muru
+    /// (`:8689-8692`) = `done()` bez callbacku; brak terenu = jawny tag `tag`.
+    fn march_move(
+        &mut self,
+        c: &mut MarchCont,
+        tile: (i64, i64),
+        enemies: &[EnemyRef],
+        tag: &'static str,
+    ) -> MarchNext {
+        let Ok(res) =
+            self.move_step_core(c.unit, tile.0, tile.1, false, c.move_left, None, enemies)
+        else {
+            self.unported.push((c.unit, tag));
+            return MarchNext::Done;
+        };
+        c.move_left = res.move_left;
+        c.moved = true;
+        if res.outcome.done {
+            MarchNext::Done
+        } else {
+            MarchNext::StepEnd
+        }
+    }
+
+    /// MARCH-INCREMENTAL-Q1 (D-MI-1): `_rangedAction(ru, done)` (`:6656-6741`) od początku w chwili `self.now`: KITE
+    /// (`:6689-6722`), strzał z miejsca (`:6727-6731`), inaczej `_rangedForwardStep` ([`Self::ranged_forward_enter`]).
+    /// Te same klocki co [`Self::ranged_action`]; krok KITE czeka na koniec kroku (strzał z nowego pola w callbacku).
+    fn ranged_action_enter(&mut self, st: &TurnSeqState, c: &mut MarchCont) -> MarchNext {
+        let unit = c.unit;
+        let ix = side_ix(unit.side);
+        let seq = st.unit(unit).c;
+        if st.finished || seq.dead || seq.fading_out {
+            return MarchNext::Done;
+        }
+        self.mover_routed = seq.routed;
+        let mounted = self.units[ix][unit.idx].activate.mounted;
+        let range = self.units[ix][unit.idx].activate.range;
+        let kite_on = self.units[ix][unit.idx].activate.primary_ranged
+            && self.doctrine[ix][unit.idx].ranged_kite;
+        let dist = |a: (i64, i64), q: i64, r: i64| ((a.0 - q).abs() + (a.1 - r).abs()) as f64;
+        let Some((ni, nq, nr)) = self.nearest_live_enemy(unit, st) else {
+            return MarchNext::Done;
+        };
+        let d_near = dist(self.cell_of(unit), nq, nr);
+        if kite_on {
+            let (units, me_ix) = self.kite_units(unit, st);
+            let me = units[me_ix];
+            if let Some(threat) = nearest_enemy_melee(&me, &units) {
+                let gap = (me.tile.0 - threat.tile.0).abs() + (me.tile.1 - threat.tile.1).abs();
+                if gap <= MELEE_SAFE_GAP {
+                    let threat_cell = int_tile(threat.tile);
+                    let threat_ix = self
+                        .live_enemy_cells(unit, st)
+                        .into_iter()
+                        .find(|(_, q, r)| (*q, *r) == threat_cell)
+                        .map(|(i, _, _)| i);
+                    let step = {
+                        let terrain = self.terrain.as_deref().expect("teren sprawdzony w start");
+                        let occ = &self.occ_by_key;
+                        let occupied = |c: f64, r: f64| occ.contains_key(&cell_key(c, r));
+                        let passable =
+                            |c: f64, r: f64| unit_move_cost(terrain, mounted, c, r).is_finite();
+                        best_kite_shot_step(&me, threat.tile, &units, &occupied, &passable)
+                    };
+                    if let Some(key) = step {
+                        c.kind = MarchKind::Kite {
+                            threat_ix,
+                            threat_cell,
+                        };
+                        let enemies = self.enemies_of(unit.side, st);
+                        return self.march_move(c, key_tile(key), &enemies, "strzelec-brak-terenu");
+                    }
+                    let tgt = self.ranged_target_now(unit, st).unwrap_or(ni);
+                    return MarchNext::Shot(tgt);
+                }
+            }
+        }
+        if d_near >= 1.0 && d_near <= range {
+            let tgt = self.ranged_target_now(unit, st).unwrap_or(ni);
+            return MarchNext::Shot(tgt);
+        }
+        c.kind = MarchKind::RangedForward;
+        self.ranged_forward_enter(st, c)
+    }
+
+    /// MARCH-INCREMENTAL-Q1 (D-MI-1): jedno wejście `_rangedForwardStep(ru, done)` (`:6776-6798`) w chwili `self.now`.
+    fn ranged_forward_enter(&mut self, st: &TurnSeqState, c: &mut MarchCont) -> MarchNext {
+        let unit = c.unit;
+        let ix = side_ix(unit.side);
+        let seq = st.unit(unit).c;
+        if st.finished || seq.dead || seq.fading_out {
+            return MarchNext::Done;
+        }
+        self.mover_routed = seq.routed;
+        if c.move_left <= 0.0 {
+            return MarchNext::Done;
+        }
+        let mounted = self.units[ix][unit.idx].activate.mounted;
+        let range = self.units[ix][unit.idx].activate.range;
+        let Some((_, eq, er)) = self.nearest_live_enemy(unit, st) else {
+            return MarchNext::Done;
+        };
+        let (mq, mr) = self.cell_of(unit);
+        if ((mq - eq).abs() + (mr - er).abs()) as f64 <= range {
+            return MarchNext::Done;
+        }
+        let step = {
+            let terrain = self.terrain.as_deref().expect("teren sprawdzony w start");
+            let occ = &self.occ_by_key;
+            let occupied = |c: f64, r: f64| occ.contains_key(&cell_key(c, r));
+            let passable = |c: f64, r: f64| unit_move_cost(terrain, mounted, c, r).is_finite();
+            let me = self.forward_unit(unit, st, c.move_left);
+            let same: Vec<ForwardUnit> = (0..self.units[ix].len())
+                .map(|i| {
+                    self.forward_unit(
+                        UnitRef {
+                            side: unit.side,
+                            idx: i,
+                        },
+                        st,
+                        0.0,
+                    )
+                })
+                .collect();
+            best_forward_step(&me, (eq as f64, er as f64), &same, &occupied, &passable)
+        };
+        let Some(key) = step else {
+            return MarchNext::Done;
+        };
+        let tile = key_tile(key);
+        if !self.ranged_line_allows_step(unit, st, tile.0) {
+            return MarchNext::Done;
+        }
+        let enemies = self.enemies_of(unit.side, st);
+        self.march_move(c, tile, &enemies, "strzelec-brak-terenu")
+    }
+
+    /// MARCH-INCREMENTAL-Q1 (D-MI-1): callback kroku strzelca w chwili końca kroku: `_rangedForwardStep` (`:6800-6807`:
+    /// `finished`, `_nearestEnemy`, wejście w zasięg = `_rangedAction` od nowa, `moveLeft > 0` = kolejny krok) albo KITE
+    /// (`:6704-6716`: strzał w `_rangedTargetInRange ?? meleeThreat` w zasięgu, inaczej koniec tury).
+    fn ranged_step_end(&mut self, st: &TurnSeqState, c: &mut MarchCont) -> MarchNext {
+        let unit = c.unit;
+        let range = self.units[side_ix(unit.side)][unit.idx].activate.range;
+        let dist = |a: (i64, i64), q: i64, r: i64| ((a.0 - q).abs() + (a.1 - r).abs()) as f64;
+        match c.kind {
+            MarchKind::Kite { threat_ix, .. } => {
+                if st.finished {
+                    return MarchNext::Done;
+                }
+                // `meleeThreat` czytane w callbacku (`:6711-6713`): bieżące flagi i pole zagrożenia.
+                let other = opposite(unit.side);
+                let tgt = self.ranged_target_now(unit, st).or_else(|| {
+                    threat_ix.filter(|&i| {
+                        let t = UnitRef {
+                            side: other,
+                            idx: i,
+                        };
+                        let tc = st.unit(t).c;
+                        let (tq, tr) = self.cell_of(t);
+                        !tc.dead
+                            && !tc.fading_out
+                            && !tc.routed
+                            && dist(self.cell_of(unit), tq, tr) <= range
+                    })
+                });
+                tgt.map_or(MarchNext::Done, MarchNext::Shot)
+            }
+            MarchKind::RangedForward | MarchKind::Advance => {
+                if st.finished {
+                    return MarchNext::Done;
+                }
+                let Some((_, eq, er)) = self.nearest_live_enemy(unit, st) else {
+                    return MarchNext::Done;
+                };
+                if dist(self.cell_of(unit), eq, er) <= range {
+                    return self.ranged_action_enter(st, c);
+                }
+                // `if (ru.moveLeft > 0) _schedule(...) else done()`: dokładna negacja (NaN kończy).
+                if c.move_left <= 0.0 || c.move_left.is_nan() {
+                    MarchNext::Done
+                } else {
+                    MarchNext::Gap
+                }
+            }
+        }
+    }
+
+    /// MARCH-INCREMENTAL-Q1 (D-MI-1): przejście marszu po wejściu/callbacku. Krok = odroczone wywołanie końca kroku
+    /// ([`frame_raf`] `MOVE_STEP_MS`, faza kroków klatki); przerwa = zegar `_schedule(STEP_GAP_MS)` z chwili końca kroku
+    /// (nominalny `due`, klatkę wyznacza zegar sterownika); `done()`/cios/strzał = zgłoszenie
+    /// [`LoopBody::take_march_done`] z czasem do skutku ([`Self::attack_tail`]).
+    fn march_advance(&mut self, mut c: MarchCont, next: MarchNext) {
+        let unit = c.unit;
+        let ix = side_ix(unit.side);
+        if c.moved {
+            if let Some(p) = self.pending[ix][unit.idx].as_mut() {
+                p.move_left = Some(c.move_left);
+            }
+        }
+        let wait = match next {
+            MarchNext::StepEnd => {
+                Some((MarchStage::StepEnd, frame_raf(self.frame_ms, MOVE_STEP_MS)))
+            }
+            MarchNext::Gap => Some((MarchStage::Gap, f64::from(STEP_GAP_MS))),
+            MarchNext::Done | MarchNext::Attack(_) | MarchNext::Shot(_) => None,
+        };
+        if let Some((stage, ms)) = wait {
+            let id = self.next_timer;
+            self.next_timer += 1;
+            self.timers.push((ms, id));
+            c.stage = stage;
+            c.id = id;
+            self.march = Some(c);
+            return;
+        }
+        let dur = match next {
+            MarchNext::Attack(t) => match self.pending[ix][unit.idx].take() {
+                Some(mut pend) => {
+                    pend.attack = Some(t);
+                    let pu = self.units[ix][unit.idx].clone();
+                    let dur = self.attack_tail(unit, &pu, &mut pend, 0.0);
+                    self.pending[ix][unit.idx] = Some(pend);
+                    dur
+                }
+                None => 0.0,
+            },
+            MarchNext::Shot(t) => {
+                let shot = self.begin_shot(unit, t, 0.0);
+                let fly = frame_sched(self.frame_ms, RANGED_FLY_MS);
+                let dur = if self.pin_blow_timing && shot.is_some() {
+                    self.tail[ix][unit.idx] = RANGED_GAP_MS;
+                    fly
+                } else {
+                    fly + frame_sched(self.frame_ms, RANGED_GAP_MS)
+                };
+                if let Some(p) = self.pending[ix][unit.idx].as_mut() {
+                    p.shot = shot;
+                }
+                dur
+            }
+            MarchNext::Done | MarchNext::StepEnd | MarchNext::Gap => 0.0,
+        };
+        self.march_done = Some((unit, dur));
+    }
+
+    /// MARCH-INCREMENTAL-Q1 (D-MI-1): czas zwracany przez `start` po pierwszym wejściu marszu: marsz w toku = `0`
+    /// (sterownik nie planuje `BodyDone`, [`LoopBody::march_pending`]); zakończony od razu = czas do skutku.
+    fn march_start_dur(&mut self) -> f64 {
+        self.march_done.take().map_or(0.0, |(_, d)| d)
+    }
+
+    /// MARCH-INCREMENTAL-Q1 (D-MI-1): odroczone wywołanie marszu ([`LoopBody::fire_timer`]).
+    fn march_fire(&mut self, st: &TurnSeqState) {
+        let Some(mut c) = self.march.take() else {
+            return;
+        };
+        let next = match (c.stage, c.kind) {
+            (MarchStage::StepEnd, MarchKind::Advance) => self.advance_step_end(st, &c),
+            (MarchStage::StepEnd, _) => self.ranged_step_end(st, &mut c),
+            (MarchStage::Gap, MarchKind::Advance) => self.advance_enter(st, &mut c),
+            (MarchStage::Gap, _) => self.ranged_forward_enter(st, &mut c),
+        };
+        self.march_advance(c, next);
     }
 
     fn advance_unit(&self, unit: UnitRef, move_left: f64) -> AdvanceUnit {
@@ -4308,6 +4871,10 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         std::mem::take(&mut self.timers)
     }
     fn fire_timer(&mut self, id: u64, st: &mut TurnSeqState) {
+        if self.march.is_some_and(|c| c.id == id) {
+            self.march_fire(st);
+            return;
+        }
         let Some(k) = self.boulders.iter().position(|b| b.0 == id) else {
             return;
         };
@@ -4316,6 +4883,16 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
     }
     fn wall_ever_breached(&self) -> bool {
         self.wall_ever_breached
+    }
+    fn march_pending(&self, unit: UnitRef) -> bool {
+        self.march.is_some_and(|c| c.unit == unit)
+    }
+    fn take_march_done(&mut self) -> Option<(UnitRef, f64)> {
+        self.march_done.take()
+    }
+    fn timer_raf(&self, id: u64) -> bool {
+        self.march
+            .is_some_and(|c| c.id == id && c.stage == MarchStage::StepEnd)
     }
     fn on_tower_destroyed(&mut self, row: i64) {
         // `_destroyTowerAtRow` (`:4195`): pierwsza niezburzona wieża wiersza.
@@ -4757,6 +5334,22 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             self.pending[ix][unit.idx] = Some(pend);
             return 0.0;
         }
+        // MARCH-INCREMENTAL-Q1 (D-MI-1): `_rangedAction` krok po kroku (pierwsze wejście synchronicznie, jak pin).
+        if ranged && self.march_incremental {
+            let mut c = MarchCont {
+                unit,
+                kind: MarchKind::RangedForward,
+                stage: MarchStage::Gap,
+                id: 0,
+                move_left: st.unit(unit).c.move_left,
+                moved: false,
+                prev: None,
+            };
+            self.pending[ix][unit.idx] = Some(pend);
+            let next = self.ranged_action_enter(st, &mut c);
+            self.march_advance(c, next);
+            return self.march_start_dur();
+        }
         if ranged {
             let run = self.ranged_action(unit, st);
             pend.move_left = run.move_left;
@@ -4795,7 +5388,30 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         // `_advanceStep` (`:8241-8245`, osiągalny z kroku doktryny `steady`/`aggressive`) idzie wspólną ścieżką `_doAttack`.
         // K5LOOP-TAGS-REST: czas kroków `_advanceStep` przed ciosem (`_doAttack` w chwili końca ostatniego kroku).
         let mut attack_pre = 0.0;
-        if advance {
+        // MARCH-INCREMENTAL-Q1 (D-MI-1): `_advanceStep` krok po kroku. Cios z pierwszego wejścia (bez kroku) idzie wspólną
+        // ścieżką niżej (`attack_pre = 0`), jak w marszu atomowym.
+        if advance && self.march_incremental {
+            let mut c = MarchCont {
+                unit,
+                kind: MarchKind::Advance,
+                stage: MarchStage::Gap,
+                id: 0,
+                move_left: st.unit(unit).c.move_left,
+                moved: false,
+                prev: None,
+            };
+            let next = self.advance_enter(st, &mut c);
+            if c.moved {
+                pend.move_left = Some(c.move_left);
+            }
+            if let MarchNext::Attack(t) = next {
+                pend.attack = Some(t);
+            } else {
+                self.pending[ix][unit.idx] = Some(pend);
+                self.march_advance(c, next);
+                return self.march_start_dur();
+            }
+        } else if advance {
             let (dur, move_left, attack) = self.advance_step(unit, st);
             pend.move_left = move_left;
             match attack {
@@ -4809,79 +5425,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 }
             }
         }
-        // K5LOOP-CLOSE r4: `_doAttack` (`:8787-8797`): `if (canShoot(attacker)) this._doRangedAttack(...)`. Strzelec z
-        // amunicją dochodzi tu tylko z `shootingEnabled = false` (inaczej `_rangedAction`, `:6241`; mur wykluczony
-        // strażnikiem `oblezenie`): cios z U7.6 (sąsiad w zasięgu strzału), kawalerii, falangi albo U7.9 jest STRZAŁEM
-        // (`Facing` + `Shot`, trafienie `_singleBlow(…, true)` po `RANGED_FLY_MS`, koniec po `RANGED_GAP_MS`), nie ciosem.
-        if pu.activate.can_shoot {
-            if let Some(target) = pend.attack.take() {
-                pend.shot = self.begin_shot(unit, target, attack_pre);
-                let dur = if pend.shot.is_some() {
-                    let fly = frame_sched(self.frame_ms, RANGED_FLY_MS);
-                    if self.pin_blow_timing {
-                        // FRAME-QUANT-Q1 (D-FQ-3): ogon nominalny, kwantyzuje go zegar sterownika.
-                        self.tail[ix][unit.idx] = RANGED_GAP_MS;
-                        attack_pre + fly
-                    } else {
-                        attack_pre + fly + frame_sched(self.frame_ms, RANGED_GAP_MS)
-                    }
-                } else {
-                    attack_pre
-                };
-                self.pending[ix][unit.idx] = Some(pend);
-                return dur;
-            }
-        }
-        if let Some(target) = pend.attack {
-            if self.blow_composer.is_none()
-                && (pu.melee_target != Some(target) || pu.blow.is_none())
-            {
-                self.unported.push((unit, "cios-bez-szablonu"));
-                pend.attack = None;
-            }
-        }
-        // FRAME-QUANT-Q1 (D-FQ-1): cios pada w pierwszej klatce lunge z `localT >= BLOW_HIT_T` (pętla `_raf`), lunge
-        // kończy się w pierwszej klatce z `localT >= BLOW_LUNGE_MS`, potem `_schedule(BLOW_SETTLE_MS)` z chwili tej klatki.
-        let hit = frame_raf(self.frame_ms, pu.body_ms);
-        let dur = if pend.attack.is_some() {
-            if self.pin_blow_timing {
-                // `_doMeleeAttack` (`:9119-9172`): `done()` po `localT >= BLOW_LUNGE_MS` i `_schedule(BLOW_SETTLE_MS)`.
-                // FRAME-QUANT-Q1 (D-FQ-3): `_schedule(BLOW_SETTLE_MS)` z klatki końca lunge ma nominalny `due`
-                // (`koniec lunge + 220`); ogon planuje zegar sterownika z klatki ciosu, więc odcinek settle zostaje
-                // nominalny, a klatkę odpalenia wyznacza zegar.
-                self.tail[ix][unit.idx] = melee_tail_ms(self.frame_ms, pu.body_ms);
-            }
-            attack_pre + hit
-        } else {
-            attack_pre
-        };
-        // P4-1I3: `_doMeleeAttack` (`:9096-9175`): zwrot atakującego ku celowi (`:9104-9105`, zawsze `rotation.y`),
-        // potem start lunge w `t0`; cios w `t0 + body_ms` (adapter: `BLOW_HIT_T`). Sam stan `facing` zmienia
-        // [`Self::strike`] w `complete` (bez zmiany logiki); tu ta sama wartość liczona z tego samego wejścia.
-        if let Some(target) = pend.attack {
-            let tref = UnitRef {
-                side: opposite(unit.side),
-                idx: target,
-            };
-            let (aq, ar) = self.cell_of(unit);
-            let (dq, dr) = self.cell_of(tref);
-            let dir = facing_toward(
-                &JsVal::Num((dq - aq) as f64),
-                &JsVal::Num((dr - ar) as f64),
-                &JsVal::Num(self.facing[ix][unit.idx]),
-            )
-            .to_number();
-            let saved = self.now;
-            self.now = saved + attack_pre;
-            self.emit(BattleAction::Facing { unit, dir });
-            let hit_at = saved + dur;
-            self.emit(BattleAction::Melee {
-                attacker: unit,
-                target: tref,
-                hit_at,
-            });
-            self.now = saved;
-        }
+        let dur = self.attack_tail(unit, &pu, &mut pend, attack_pre);
         self.pending[ix][unit.idx] = Some(pend);
         dur
     }
@@ -7113,5 +7657,741 @@ mod pin3_timeline_tests {
         );
         b.set_now(1311.0);
         assert!(!b.has_future_steps(A0));
+    }
+}
+
+#[cfg(test)]
+mod march_incremental_tests {
+    //! MARCH-INCREMENTAL-Q1 (D-MI-1/2): marsz krok po kroku. Pin (`_advanceStep` `:8198-8285`, `_rangedForwardStep`
+    //! `:6776-6809`): pierwszy krok `_doMove` synchronicznie w `_activateUnit`, callback kroku (`p >= 1`) w fazie kroków
+    //! klatki (`_raf`), kolejne wejście z zegara `_schedule(STEP_GAP_MS)` (faza `_drainTimers`), każda decyzja ze stanu W
+    //! SWOJEJ chwili.
+    use super::*;
+    use crate::domain::siege_tactics_activate::ActivateUnit;
+    use crate::domain::siege_tactics_blow::SequenceRolls;
+    use crate::domain::siege_tactics_turnseq::SeqUnit;
+    use std::collections::BTreeSet;
+
+    struct Flat;
+
+    impl MoveTerrain for Flat {
+        fn passable(&self, _col: f64, _row: f64) -> bool {
+            true
+        }
+        fn move_cost(&self, _col: f64, _row: f64) -> f64 {
+            1.0
+        }
+        fn is_ford(&self, _col: f64, _row: f64) -> bool {
+            false
+        }
+        fn cavalry_multiplier(&self, _col: f64, _row: f64) -> f64 {
+            1.0
+        }
+    }
+
+    fn unit_at(side_atk: bool, q: i64) -> ProdUnit {
+        ProdUnit {
+            activate: ActivateUnit {
+                side_atk,
+                q,
+                r: 0,
+                dead: false,
+                fading_out: false,
+                routed: false,
+                never_rout: false,
+                surround_applied: false,
+                morale: 100.0,
+                flee_morale: 0.0,
+                terrain_defence_mult: 1.0,
+                range: 1.0,
+                on_wall_walkway: false,
+                primary_ranged: false,
+                mounted: false,
+                phalanx: false,
+                shooting_disabled: false,
+                dry_col: 0.0,
+                held_after_fallback: false,
+                player_order_none: true,
+                can_shoot: false,
+                is_siege_unit: false,
+                is_siege_tower: false,
+                is_ram: false,
+                is_catapult: false,
+                doctrine_auto: false,
+                doctrine_manual: false,
+            },
+            melee_target: None,
+            blow: None,
+            counter_blows: Vec::new(),
+            body_ms: 0.0,
+            facing: 0.0,
+        }
+    }
+
+    const A0: UnitRef = UnitRef {
+        side: BattleSide::Attacker,
+        idx: 0,
+    };
+
+    fn cu(move_left: f64) -> CombatUnit {
+        CombatUnit {
+            hp: 10.0,
+            morale: 100.0,
+            flee_morale: 0.0,
+            move_left,
+            never_rout: false,
+            dead: false,
+            fading_out: false,
+            routed: false,
+            removed: false,
+            acted: false,
+        }
+    }
+
+    /// Atakujący wręcz w (0,0), obrońca w (8,0); równina, klatka 16 ms, model czasu pinu, marsz krok po kroku.
+    fn setup(move_left: f64) -> (ProdBody<SequenceRolls>, TurnSeqState) {
+        let scene = ActivateScene {
+            finished: false,
+            manual_mode: false,
+            is_player_side: false,
+            wall_col: -1,
+            gate_open: false,
+            wall_tile_hp: Vec::new(),
+            siege_machine_range: 0.0,
+        };
+        let mut b = ProdBody::new(
+            [vec![unit_at(true, 0)], vec![unit_at(false, 8)]],
+            scene,
+            SequenceRolls::new(Vec::new()),
+        );
+        b.pin_blow_timing = true;
+        b.frame_ms = 16.0;
+        b.march_incremental = true;
+        b.terrain = Some(Box::new(Flat));
+        let st = TurnSeqState {
+            atk: vec![SeqUnit {
+                id: 0,
+                c: cu(move_left),
+            }],
+            def: vec![SeqUnit { id: 1, c: cu(0.0) }],
+            turn_order: Vec::new(),
+            turn_idx: 0,
+            round_no: 1,
+            siege_wall_col: -1,
+            manual_mode: false,
+            player_side: BattleSide::Attacker,
+            finished: false,
+            awaiting_orders: false,
+            auto_battle_suspended: false,
+            busy: false,
+            auto_batch_planning: false,
+            queued_order_ids: BTreeSet::new(),
+        };
+        (b, st)
+    }
+
+    /// Pierwsze wejście `_advanceStep` w chwili 1000 (jak synchroniczne wywołanie z `_activateUnit`).
+    fn begin(b: &mut ProdBody<SequenceRolls>, st: &TurnSeqState) {
+        b.set_now(1000.0);
+        b.pending[0][0] = Some(ProdPending {
+            morale: 100.0,
+            morale_before: 100.0,
+            start_rout: false,
+            surround_applied: false,
+            attack: None,
+            move_left: None,
+            shot: None,
+            flee: false,
+            gate_breach: false,
+        });
+        let mut c = MarchCont {
+            unit: A0,
+            kind: MarchKind::Advance,
+            stage: MarchStage::Gap,
+            id: 0,
+            move_left: st.unit(A0).c.move_left,
+            moved: false,
+            prev: None,
+        };
+        let next = b.advance_enter(st, &mut c);
+        assert_eq!(next, MarchNext::StepEnd, "pierwszy krok wykonany od razu");
+        b.march_advance(c, next);
+    }
+
+    /// Kolejne etapy marszu: koniec kroku (240 ms przy klatce 16, faza kroków), przerwa `_schedule(70)` z chwili końca
+    /// kroku (faza zegarów, nominalne `due`), kolejny krok. `done()` dopiero na końcu marszu (`moveLeft` wyczerpane).
+    #[test]
+    fn etapy_marszu_krok_po_kroku() {
+        let (mut b, mut st) = setup(2.0);
+        begin(&mut b, &st);
+        assert!(b.march_pending(A0), "marsz w toku: BodyDone nie po start");
+        assert_eq!(b.cell_of(A0), (1, 0), "pole po pierwszym kroku od razu");
+        let t = b.take_timers();
+        assert_eq!(t.len(), 1);
+        assert_eq!(t[0].0, 240.0, "koniec kroku: frame_raf(16, MOVE_STEP_MS)");
+        assert!(b.timer_raf(t[0].1), "koniec kroku w fazie kroków klatki");
+        b.set_now(1240.0);
+        b.fire_timer(t[0].1, &mut st);
+        let g = b.take_timers();
+        assert_eq!(g.len(), 1);
+        assert_eq!(
+            g[0].0,
+            f64::from(STEP_GAP_MS),
+            "przerwa nominalna, klatkę wyznacza zegar"
+        );
+        assert!(
+            !b.timer_raf(g[0].1),
+            "wejście z zegara przerwy w fazie zegarów"
+        );
+        assert!(b.take_march_done().is_none());
+        b.set_now(1328.0);
+        b.fire_timer(g[0].1, &mut st);
+        assert_eq!(
+            b.cell_of(A0),
+            (2, 0),
+            "drugi krok w chwili wejścia z zegara"
+        );
+        let t2 = b.take_timers();
+        assert_eq!(t2.len(), 1);
+        b.set_now(1568.0);
+        b.fire_timer(t2[0].1, &mut st);
+        assert!(b.take_timers().is_empty());
+        assert_eq!(
+            b.take_march_done(),
+            Some((A0, 0.0)),
+            "moveLeft 0: done() w callbacku kroku"
+        );
+        assert!(!b.march_pending(A0));
+        assert_eq!(
+            b.pending[0][0].map(|p| p.move_left),
+            Some(Some(0.0)),
+            "moveLeft po marszu do complete"
+        );
+    }
+
+    /// Pin `_advanceStep` (`:8200`): jednostka martwa w chwili kolejnego wejścia kończy marsz bez kroku.
+    #[test]
+    fn smierc_miedzy_krokami_konczy_marsz() {
+        let (mut b, mut st) = setup(3.0);
+        begin(&mut b, &st);
+        let t = b.take_timers();
+        b.set_now(1240.0);
+        b.fire_timer(t[0].1, &mut st);
+        let g = b.take_timers();
+        st.atk[0].c.dead = true;
+        b.set_now(1328.0);
+        b.fire_timer(g[0].1, &mut st);
+        assert_eq!(b.cell_of(A0), (1, 0), "bez drugiego kroku");
+        assert_eq!(b.take_march_done(), Some((A0, 0.0)));
+        assert!(b.take_timers().is_empty());
+    }
+
+    /// Pin callback kroku (`:8275`): `finished` w chwili końca kroku kończy marsz (bez przerwy).
+    #[test]
+    fn koniec_bitwy_w_trakcie_kroku_konczy_marsz() {
+        let (mut b, mut st) = setup(3.0);
+        begin(&mut b, &st);
+        let t = b.take_timers();
+        st.finished = true;
+        b.set_now(1240.0);
+        b.fire_timer(t[0].1, &mut st);
+        assert!(b.take_timers().is_empty(), "bez _schedule(STEP_GAP_MS)");
+        assert_eq!(b.take_march_done(), Some((A0, 0.0)));
+    }
+
+    /// Decyzja kolejnego kroku czyta zajętość W CHWILI wejścia: pole zajęte po starcie marszu (np. przez zegar) zmienia
+    /// krok; pole zwolnione (rozbicie od wieży, `_startRout` `:9812`) zostaje użyte. Marsz atomowy liczyłby całość ze
+    /// stanu z chwili startu.
+    #[test]
+    fn decyzja_kolejnego_kroku_ze_stanu_w_chwili_kroku() {
+        let (mut b, mut st) = setup(3.0);
+        begin(&mut b, &st);
+        let t = b.take_timers();
+        b.set_now(1240.0);
+        b.fire_timer(t[0].1, &mut st);
+        let g = b.take_timers();
+        // Pole (2,0) zajęte między krokami: najkrótsza droga omija je.
+        b.occ_by_key.insert(cell_key(2.0, 0.0), "x".to_string());
+        b.set_now(1328.0);
+        b.fire_timer(g[0].1, &mut st);
+        assert_ne!(
+            b.cell_of(A0),
+            (2, 0),
+            "krok omija pole zajęte po starcie marszu"
+        );
+        assert_ne!(b.cell_of(A0), (1, 0), "krok wykonany");
+    }
+
+    /// Pin `_siegeApproachRestricted` (`:7953`) czyta `ru.routed` w chwili KAŻDEGO kroku (bramka `_doMove` `:8689`):
+    /// rozbicie od wieży w trakcie marszu zmienia bramkę kolejnych kroków. Wejście marszu odświeża flagę z bieżącego stanu.
+    #[test]
+    fn rozbicie_w_trakcie_marszu_widoczne_w_bramce_kolejnego_kroku() {
+        let (mut b, mut st) = setup(3.0);
+        begin(&mut b, &st);
+        assert!(!b.mover_routed);
+        let t = b.take_timers();
+        b.set_now(1240.0);
+        b.fire_timer(t[0].1, &mut st);
+        let g = b.take_timers();
+        st.atk[0].c.routed = true;
+        b.set_now(1328.0);
+        b.fire_timer(g[0].1, &mut st);
+        assert!(b.mover_routed, "ru.routed w chwili kroku");
+    }
+
+    /// Strzelec (`rangedBase`, zasięg 2) zamiast jednostki wręcz z [`setup`].
+    fn shooter(b: &mut ProdBody<SequenceRolls>) {
+        let a = &mut b.units[0][0].activate;
+        a.can_shoot = true;
+        a.primary_ranged = true;
+        a.range = 2.0;
+        b.ranged_base[0][0] = true;
+    }
+
+    /// Pin `_rangedForwardStep` (`:6779`): `moveLeft <= 0` kończy przed krokiem (także przy pierwszym wejściu z
+    /// `_rangedAction`).
+    #[test]
+    fn marsz_strzelca_bez_ruchu_konczy_od_razu() {
+        let (mut b, st) = setup(0.0);
+        shooter(&mut b);
+        b.set_now(1000.0);
+        let mut c = MarchCont {
+            unit: A0,
+            kind: MarchKind::RangedForward,
+            stage: MarchStage::Gap,
+            id: 0,
+            move_left: 0.0,
+            moved: false,
+            prev: None,
+        };
+        assert_eq!(b.ranged_forward_enter(&st, &mut c), MarchNext::Done);
+        assert_eq!(b.cell_of(A0), (0, 0));
+        c.move_left = 2.0;
+        assert_eq!(b.ranged_forward_enter(&st, &mut c), MarchNext::StepEnd);
+        assert_eq!(b.cell_of(A0), (1, 0), "z ruchem: krok naprzód");
+    }
+
+    /// Pin callback `_rangedForwardStep` (`:6806`): `if (ru.moveLeft > 0) _schedule(...) else done()` — `NaN` kończy
+    /// (dokładna negacja, nie `moveLeft <= 0`).
+    #[test]
+    fn marsz_strzelca_nan_konczy_po_kroku() {
+        let (mut b, st) = setup(0.0);
+        shooter(&mut b);
+        b.set_now(1000.0);
+        let mut c = MarchCont {
+            unit: A0,
+            kind: MarchKind::RangedForward,
+            stage: MarchStage::Gap,
+            id: 0,
+            move_left: f64::NAN,
+            moved: false,
+            prev: None,
+        };
+        assert_eq!(b.ranged_forward_enter(&st, &mut c), MarchNext::StepEnd);
+        c.move_left = f64::NAN;
+        b.set_now(1240.0);
+        assert_eq!(b.ranged_step_end(&st, &mut c), MarchNext::Done);
+        c.move_left = 1.0;
+        assert_eq!(b.ranged_step_end(&st, &mut c), MarchNext::Gap);
+    }
+
+    /// Przestawia obrońcę na pole `(q, r)` (pozycja i zajętość ciała), jak ruch innej jednostki między krokami.
+    fn move_def(b: &mut ProdBody<SequenceRolls>, q: i64) {
+        let (oq, or) = b.cell_of(D0);
+        b.occ_by_key.remove(&cell_key(oq as f64, or as f64));
+        b.units[1][0].activate.q = q;
+        b.occ_by_key.insert(cell_key(q as f64, 0.0), unit_tag(D0));
+    }
+
+    const D0: UnitRef = UnitRef {
+        side: BattleSide::Defender,
+        idx: 0,
+    };
+
+    /// Pin `_advanceStep` (`:8241-8245`): wróg w zasięgu przy KOLEJNYM wejściu (z zegara przerwy) = `_doAttack` w tej
+    /// chwili (czas do skutku liczony od wejścia, nie od startu aktywacji).
+    #[test]
+    fn cios_przy_kolejnym_wejsciu_od_chwili_wejscia() {
+        let (mut b, mut st) = setup(3.0);
+        begin(&mut b, &st);
+        let t = b.take_timers();
+        b.set_now(1240.0);
+        b.fire_timer(t[0].1, &mut st);
+        let g = b.take_timers();
+        assert_eq!(g.len(), 1, "po kroku: przerwa");
+        move_def(&mut b, 2);
+        b.set_now(1328.0);
+        b.fire_timer(g[0].1, &mut st);
+        assert_eq!(b.cell_of(A0), (1, 0), "bez kroku: cios z miejsca");
+        assert!(b.take_timers().is_empty());
+        // Bez szablonu ciosu (atrapa) cios jest jawnie nieportowany; czas do skutku = 0 od chwili wejścia.
+        assert_eq!(b.take_march_done(), Some((A0, 0.0)));
+    }
+
+    /// Pin `_rangedForwardStep` (`:6777-6778`): `finished` albo martwa jednostka przy wejściu z zegara przerwy = koniec.
+    #[test]
+    fn marsz_strzelca_preludium_przy_wejsciu() {
+        let (mut b, mut st) = setup(2.0);
+        b.set_now(1000.0);
+        let mut c = MarchCont {
+            unit: A0,
+            kind: MarchKind::RangedForward,
+            stage: MarchStage::Gap,
+            id: 0,
+            move_left: 2.0,
+            moved: false,
+            prev: None,
+        };
+        st.atk[0].c.dead = true;
+        assert_eq!(b.ranged_forward_enter(&st, &mut c), MarchNext::Done);
+        st.atk[0].c.dead = false;
+        st.finished = true;
+        assert_eq!(b.ranged_forward_enter(&st, &mut c), MarchNext::Done);
+        assert_eq!(b.cell_of(A0), (0, 0));
+    }
+
+    /// Pin callbacki kroku strzelca (`:6801`, KITE `:6705`): `finished` w chwili końca kroku = `done()` bez strzału.
+    #[test]
+    fn strzelec_koniec_bitwy_w_trakcie_kroku_bez_strzalu() {
+        let (mut b, mut st) = setup(2.0);
+        move_def(&mut b, 1);
+        let mut c = MarchCont {
+            unit: A0,
+            kind: MarchKind::Kite {
+                threat_ix: Some(0),
+                threat_cell: (1, 0),
+            },
+            stage: MarchStage::StepEnd,
+            id: 0,
+            move_left: 1.0,
+            moved: true,
+            prev: None,
+        };
+        b.set_now(1240.0);
+        assert_eq!(
+            b.ranged_step_end(&st, &mut c),
+            MarchNext::Shot(0),
+            "cel w zasięgu: strzał"
+        );
+        st.finished = true;
+        assert_eq!(b.ranged_step_end(&st, &mut c), MarchNext::Done);
+        c.kind = MarchKind::RangedForward;
+        assert_eq!(b.ranged_step_end(&st, &mut c), MarchNext::Done);
+        // Wróg poza zasięgiem, ruch został: bez `finished` kolejny krok, z `finished` koniec (`:6801`).
+        move_def(&mut b, 5);
+        st.finished = false;
+        assert_eq!(b.ranged_step_end(&st, &mut c), MarchNext::Gap);
+        st.finished = true;
+        assert_eq!(b.ranged_step_end(&st, &mut c), MarchNext::Done);
+    }
+
+    /// Atrapa ciała dla sterownika: marsz z jednym odroczonym wywołaniem fazy kroków (`raf`, id 1) i jednym zwykłym (id 2,
+    /// później zaplanowanym, ten sam `due`); `done()` zgłaszane w callbacku kroku.
+    #[derive(Default)]
+    struct MarchMock {
+        fired: Vec<(u64, f64)>,
+        now: f64,
+        done: Option<(UnitRef, f64)>,
+        timers: Vec<(f64, u64)>,
+        completed: Vec<(UnitRef, f64)>,
+        pending: bool,
+    }
+
+    impl LoopBody for MarchMock {
+        fn start(&mut self, _unit: UnitRef, _st: &TurnSeqState) -> f64 {
+            self.pending = true;
+            self.timers = vec![(16.0, 1), (16.0, 2)];
+            0.0
+        }
+        fn complete(&mut self, unit: UnitRef, _st: &mut TurnSeqState) {
+            self.completed.push((unit, self.now));
+        }
+        fn set_now(&mut self, v_now: f64) {
+            self.now = v_now;
+        }
+        fn take_timers(&mut self) -> Vec<(f64, u64)> {
+            std::mem::take(&mut self.timers)
+        }
+        fn fire_timer(&mut self, id: u64, _st: &mut TurnSeqState) {
+            self.fired.push((id, self.now));
+            if id == 1 {
+                self.pending = false;
+                self.done = Some((A0, 0.0));
+            }
+        }
+        fn march_pending(&self, _unit: UnitRef) -> bool {
+            self.pending
+        }
+        fn take_march_done(&mut self) -> Option<(UnitRef, f64)> {
+            self.done.take()
+        }
+        fn timer_raf(&self, id: u64) -> bool {
+            id == 1
+        }
+        fn take_tail(&mut self, _unit: UnitRef) -> f64 {
+            1000.0
+        }
+    }
+
+    /// D-MI-2: odroczone wywołanie fazy kroków (koniec kroku) wykonuje się PO zegarach tej klatki (także później
+    /// zaplanowanych), a zgłoszone w nim `done()` od razu, w tej samej klatce (pin: `done()` z callbacku `_raf`).
+    #[test]
+    fn sterownik_koniec_kroku_po_zegarach_i_done_w_tej_samej_klatce() {
+        let mut st = TurnSeqState {
+            atk: vec![SeqUnit { id: 0, c: cu(1.0) }],
+            def: Vec::new(),
+            turn_order: Vec::new(),
+            turn_idx: 0,
+            round_no: 1,
+            siege_wall_col: -1,
+            manual_mode: false,
+            player_side: BattleSide::Attacker,
+            finished: false,
+            awaiting_orders: false,
+            auto_battle_suspended: false,
+            busy: false,
+            auto_batch_planning: false,
+            queued_order_ids: BTreeSet::new(),
+        };
+        st.busy = true;
+        let mut lp = SiegeLoop::new(
+            st,
+            SiegeEnv {
+                body: MarchMock::default(),
+                tower_rows: Vec::new(),
+                pending_tower_shots: Vec::new(),
+                tower_range: 2.0,
+                tower_shot: None,
+                wall_tile_rows: Vec::new(),
+                wall_ever_breached: false,
+                no_breach_cap: 0,
+                move_points: [Vec::new(), Vec::new()],
+                morale_max: [Vec::new(), Vec::new()],
+            },
+        );
+        lp.body_done_raf = true;
+        let mut clock = VirtualClock::new();
+        clock.v_now = 1000.0;
+        lp.apply(&mut clock, vec![SeqEvent::ActivateUnit(A0)]);
+        assert!(
+            clock
+                .timers
+                .iter()
+                .all(|t| !matches!(t.payload, LoopTimer::BodyDone(_))),
+            "marsz w toku: bez BodyDone po start"
+        );
+        // Pierwsza klatka tylko ustawia `vLastWall` (`:9500-9511`).
+        assert_eq!(lp.step_realtime(&mut clock, 5000.0), 0);
+        lp.step_realtime(&mut clock, 5016.0);
+        assert_eq!(
+            lp.env.body.fired,
+            vec![(2, 1016.0), (1, 1016.0)],
+            "zegar fazy zegarów przed końcem kroku (faza _raf), mimo wyższego id"
+        );
+        assert_eq!(
+            lp.env.body.completed,
+            vec![(A0, 1016.0)],
+            "done() z callbacku kroku w tej samej klatce"
+        );
+    }
+
+    /// Przestawia jednostkę na pole `(q, 0)` (pozycja i zajętość ciała).
+    fn place(b: &mut ProdBody<SequenceRolls>, u: UnitRef, q: i64) {
+        let (oq, or) = b.cell_of(u);
+        b.occ_by_key.remove(&cell_key(oq as f64, or as f64));
+        b.units[side_ix(u.side)][u.idx].activate.q = q;
+        b.occ_by_key.insert(cell_key(q as f64, 0.0), unit_tag(u));
+    }
+
+    /// Kontynuacja marszu strzelca na etapie `stage` (jak po wcześniejszym kroku).
+    fn ranged_cont(stage: MarchStage, move_left: f64) -> MarchCont {
+        MarchCont {
+            unit: A0,
+            kind: MarchKind::RangedForward,
+            stage,
+            id: 7,
+            move_left,
+            moved: true,
+            prev: None,
+        }
+    }
+
+    /// Obrona r1 Z1 (mutant E3): krok C-FLANK (`:8204-8235`) nie ma `previousPosition` — callback `:8222-8229` NIE zapisuje
+    /// `lastAutoMoveFrom`. Kontynuacja po wcześniejszym kroku czołowym niesie `prev` tamtego kroku; wejście C-FLANK musi
+    /// je wyzerować, inaczej koniec kroku manewru nadpisałby `lastAutoMoveFrom` starym polem.
+    #[test]
+    fn krok_c_flank_nie_zapisuje_last_auto_move_from() {
+        let (mut b, st) = setup(3.0);
+        b.attack_direction[0][0] = AttackDirection::Bok;
+        b.set_now(1328.0);
+        let stale = (-5, 4);
+        let mut c = MarchCont {
+            unit: A0,
+            kind: MarchKind::Advance,
+            stage: MarchStage::Gap,
+            id: 0,
+            move_left: 3.0,
+            moved: true,
+            prev: Some(stale),
+        };
+        let next = b.advance_enter(&st, &mut c);
+        assert_eq!(next, MarchNext::StepEnd, "krok manewru C-FLANK wykonany");
+        assert_ne!(b.cell_of(A0), (0, 0));
+        assert_eq!(c.prev, None, "C-FLANK bez previousPosition");
+        b.set_now(1568.0);
+        let _ = b.advance_step_end(&st, &c);
+        assert_eq!(
+            b.doctrine[0][0].last_auto_move_from, None,
+            "callback C-FLANK nie zapisuje lastAutoMoveFrom (:8222-8229)"
+        );
+        // Kontrola: ten sam stan z kierunkiem `front` idzie marszem czołowym, nie C-FLANK.
+        let (mut f, st2) = setup(3.0);
+        f.set_now(1328.0);
+        let mut cf = MarchCont {
+            unit: A0,
+            kind: MarchKind::Advance,
+            stage: MarchStage::Gap,
+            id: 0,
+            move_left: 3.0,
+            moved: true,
+            prev: Some(stale),
+        };
+        assert_eq!(f.advance_enter(&st2, &mut cf), MarchNext::StepEnd);
+        assert_eq!(f.cell_of(A0), (1, 0), "front: krok czołowy");
+    }
+
+    /// Obrona r1 Z2 (mutant E5): wejście z zegara przerwy strzelca to `_rangedForwardStep` (`:6806`), nie `_rangedAction`.
+    /// Zasięg 1, wróg wręcz w odległości 2: pin robi krok naprzód; `_rangedAction` weszłoby w KITE (zagrożenie <= 2,
+    /// przyparty = strzał z miejsca).
+    #[test]
+    fn przerwa_strzelca_wraca_do_ranged_forward_step() {
+        let (mut b, st) = setup(2.0);
+        shooter(&mut b);
+        b.units[0][0].activate.range = 1.0;
+        place(&mut b, A0, 3);
+        place(&mut b, D0, 5);
+        b.set_now(1328.0);
+        b.march = Some(ranged_cont(MarchStage::Gap, 2.0));
+        b.march_fire(&st);
+        assert_eq!(b.cell_of(A0), (4, 0), "krok naprzód z _rangedForwardStep");
+        assert!(b.take_march_done().is_none(), "marsz w toku (koniec kroku)");
+        assert_eq!(b.take_timers().len(), 1);
+        assert!(matches!(
+            b.march,
+            Some(MarchCont {
+                stage: MarchStage::StepEnd,
+                kind: MarchKind::RangedForward,
+                ..
+            })
+        ));
+        // Kontrola: `_rangedAction` z tego samego stanu nie robi kroku naprzód (KITE przyparty = strzał z miejsca).
+        let (mut a, _) = setup(2.0);
+        shooter(&mut a);
+        a.units[0][0].activate.range = 1.0;
+        place(&mut a, A0, 3);
+        place(&mut a, D0, 5);
+        a.set_now(1328.0);
+        let mut c = ranged_cont(MarchStage::Gap, 2.0);
+        assert_eq!(a.ranged_action_enter(&st, &mut c), MarchNext::Shot(0));
+        assert_eq!(a.cell_of(A0), (3, 0));
+    }
+
+    /// Obrona r1 Z3 (mutant E7): strzał z PIERWSZEGO wejścia `_rangedAction` w marszu krok po kroku (`:6727-6731` strzał
+    /// w miejscu; `:6719-6721` KITE przyparty) — `start` zwraca czas do skutku `_doRangedAttack` (`RANGED_FLY_MS` w
+    /// klatce; ogon `RANGED_GAP_MS` z modelem czasu pinu w `tail`, bez niego doliczony), a nie `0`.
+    #[test]
+    fn strzal_z_pierwszego_wejscia_marszu_ma_czas_do_skutku() {
+        for kite in [false, true] {
+            let (mut b, st) = setup(2.0);
+            shooter(&mut b);
+            b.doctrine[0][0].ranged_kite = kite;
+            place(&mut b, A0, 3);
+            place(&mut b, D0, 5);
+            b.set_now(1000.0);
+            b.pending[0][0] = Some(ProdPending {
+                morale: 100.0,
+                morale_before: 100.0,
+                start_rout: false,
+                surround_applied: false,
+                attack: None,
+                move_left: None,
+                shot: None,
+                flee: false,
+                gate_breach: false,
+            });
+            // Ta sama sekwencja co gałąź strzelca `start` (D-MI-1).
+            let mut c = ranged_cont(MarchStage::Gap, 2.0);
+            c.moved = false;
+            let next = b.ranged_action_enter(&st, &mut c);
+            assert_eq!(next, MarchNext::Shot(0), "kite={kite}: strzał z miejsca");
+            b.march_advance(c, next);
+            assert!(!b.march_pending(A0), "kite={kite}: bez marszu w toku");
+            assert!(b.take_timers().is_empty());
+            let shot = b.pending[0][0].and_then(|p| p.shot).is_some();
+            let fly = frame_sched(16.0, RANGED_FLY_MS);
+            let want = if shot {
+                fly
+            } else {
+                fly + frame_sched(16.0, RANGED_GAP_MS)
+            };
+            let dur = b.march_start_dur();
+            assert!(dur > 0.0, "kite={kite}: czas do skutku strzału, nie 0");
+            assert_eq!(dur, want, "kite={kite}");
+            if shot {
+                assert_eq!(b.tail[0][0], RANGED_GAP_MS, "kite={kite}: ogon strzału");
+            }
+            assert_eq!(b.cell_of(A0), (3, 0), "kite={kite}: bez kroku");
+        }
+    }
+
+    /// Obrona r1 Z4 (mutant E8): wejście w zasięg po kroku `_rangedForwardStep` woła `_rangedAction` od nowa (`:6805`):
+    /// zagrożenie wręcz <= `MELEE_SAFE_GAP` daje KITE (krok wstecz), nie strzał z nowego pola.
+    #[test]
+    fn wejscie_w_zasieg_po_kroku_wola_ranged_action_od_nowa() {
+        let (mut b, st) = setup(3.0);
+        shooter(&mut b);
+        b.units[0][0].activate.range = 3.0;
+        place(&mut b, A0, 4);
+        place(&mut b, D0, 6);
+        b.set_now(1240.0);
+        let mut c = ranged_cont(MarchStage::StepEnd, 2.0);
+        let next = b.ranged_step_end(&st, &mut c);
+        assert_eq!(next, MarchNext::StepEnd, "KITE: krok wstecz, nie strzał");
+        assert!(matches!(c.kind, MarchKind::Kite { .. }));
+        let (q, _) = b.cell_of(A0);
+        assert!(q < 4 || b.cell_of(A0).1 != 0, "krok z dala od zagrożenia");
+        // Bez KITE (doktryna `rangedKite = false`) ten sam stan = strzał z miejsca.
+        let (mut s, st2) = setup(3.0);
+        shooter(&mut s);
+        s.units[0][0].activate.range = 3.0;
+        s.doctrine[0][0].ranged_kite = false;
+        place(&mut s, A0, 4);
+        place(&mut s, D0, 6);
+        s.set_now(1240.0);
+        let mut c2 = ranged_cont(MarchStage::StepEnd, 2.0);
+        assert_eq!(s.ranged_step_end(&st2, &mut c2), MarchNext::Shot(0));
+    }
+
+    /// Obrona r1 Z5 (mutant E10): odpowiednik testu `rozbicie_w_trakcie_marszu_widoczne_w_bramce_kolejnego_kroku` dla
+    /// strzelca — `_rangedForwardStep` z zegara przerwy czyta `ru.routed` w chwili kroku (bramka `_doMove` `:8689`,
+    /// `_siegeApproachRestricted` `:7953`).
+    #[test]
+    fn strzelec_rozbicie_w_trakcie_marszu_widoczne_w_bramce_kolejnego_kroku() {
+        let (mut b, mut st) = setup(3.0);
+        shooter(&mut b);
+        b.set_now(1328.0);
+        b.march = Some(ranged_cont(MarchStage::Gap, 2.0));
+        b.march_fire(&st);
+        assert!(!b.mover_routed);
+        let t = b.take_timers();
+        assert_eq!(t.len(), 1);
+        b.set_now(1568.0);
+        b.fire_timer(t[0].1, &mut st);
+        let g = b.take_timers();
+        assert_eq!(g.len(), 1, "po kroku: przerwa");
+        st.atk[0].c.routed = true;
+        b.set_now(1656.0);
+        b.fire_timer(g[0].1, &mut st);
+        assert!(b.mover_routed, "ru.routed w chwili kroku strzelca");
     }
 }

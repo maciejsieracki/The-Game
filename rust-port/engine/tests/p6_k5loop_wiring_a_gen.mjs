@@ -266,6 +266,12 @@ const SCENARIOS = [
   { name: 'fq_rown_mix_d8l_mury_217_klatka1', mode: 'skip', ffStepMs: 1, seed: 217, teren: 'Równina', built: ['mury', 'baszta'], world: { 'baza': 'Równina', 'las': true, 'rzeka': false}, atk: [['Wojownik', 'miecznik'], ['Wojownik', 'miecznik'], ['Wojownik', 'miecznik'], ['Konnica', 'konnica'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Taran', 'obleznicza']], def: [['Wojownik', 'miecznik'], ['Wojownik', 'miecznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik']] },
   { name: 'fq_rown_mix_d8l_palisada_218_klatka1', mode: 'skip', ffStepMs: 1, seed: 218, teren: 'Równina', built: ['palisada'], world: { 'baza': 'Równina', 'las': true, 'rzeka': false}, atk: [['Wojownik', 'miecznik'], ['Wojownik', 'miecznik'], ['Wojownik', 'miecznik'], ['Konnica', 'konnica'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Taran', 'obleznicza']], def: [['Wojownik', 'miecznik'], ['Wojownik', 'miecznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik']] },
   { name: 'fq_las_lucz2_d5_palisada_132_klatka4', mode: 'skip', ffStepMs: 4, seed: 132, teren: 'Las', built: ['palisada'], world: { 'baza': 'Las', 'las': true, 'rzeka': false}, atk: [['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Wojownik', 'miecznik'], ['Wojownik', 'miecznik'], ['Taran', 'obleznicza']], def: [['Włócznik', 'wlocznik'], ['Wojownik', 'miecznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik']] },
+  // MARCH-INCREMENTAL-Q1 (D-MI-1/2): te same bitwy co dawne wyjatki klasy A (`a3_*_klatka1`), przy klatce produkcyjnej
+  // 16 ms: marsz `_advanceStep` (118, 196) i `_rangedForwardStep` (221) decyduje o kazdym kroku w chwili kroku (rozbicie
+  // innej jednostki od wiezy w trakcie marszu). Przed tematem rozbiezne takze przy 16 ms; zabijaja mutant marszu atomowego.
+  { name: 'mi_las_mix_d3l_palisada_118', mode: 'skip', seed: 118, teren: 'Las', built: ['palisada'], world: { 'baza': 'Las', 'las': true, 'rzeka': false}, atk: [['Wojownik', 'miecznik'], ['Wojownik', 'miecznik'], ['Wojownik', 'miecznik'], ['Konnica', 'konnica'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Taran', 'obleznicza']], def: [['Wojownik', 'miecznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik']] },
+  { name: 'mi_gory_lucz2_d5_palisada_196', mode: 'skip', seed: 196, teren: 'Góry', built: ['palisada'], world: { 'baza': 'Góry', 'las': false, 'rzeka': false}, atk: [['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Wojownik', 'miecznik'], ['Wojownik', 'miecznik'], ['Taran', 'obleznicza']], def: [['Włócznik', 'wlocznik'], ['Wojownik', 'miecznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik']] },
+  { name: 'mi_rown_lucz2_d3l_mury_221', mode: 'skip', seed: 221, teren: 'Równina', built: ['mury', 'baszta'], world: { 'baza': 'Równina', 'las': true, 'rzeka': false}, atk: [['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Wojownik', 'miecznik'], ['Wojownik', 'miecznik'], ['Taran', 'obleznicza']], def: [['Wojownik', 'miecznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik'], ['Łucznik', 'lucznik']] },
 ];
 
 const f64hex = (x) => {
@@ -371,6 +377,17 @@ function runScenario(sc) {
       bs._schedule = function (ms, cb) {
         console.error(`T ${bs.vNow} r${bs.roundNo} SCHED ${ms} due=${bs.vNow + Math.max(0, ms)}`);
         return origSched.call(this, ms, cb);
+      };
+    }
+    // MARCH-INCREMENTAL-Q1 (diagnostyka): kazde wejscie kroku marszu wielokrokowego (kazda metoda z
+    // `_schedule(STEP_GAP_MS, ...)`: `:6806`, `:7029`, `:7091`, `:7241`, `:7283`, `:8017`, `:8225`/`:8280`, `:9895`) z
+    // pozycja i `moveLeft` w chwili decyzji.
+    for (const m of ['_siegeWalkTo', '_advanceStep', '_rangedForwardStep', '_rangedBackStep', '_kiteStep', '_fallBackStep',
+      '_rangedApproachStep', '_fleeStep']) {
+      const origW = bs[m];
+      bs[m] = function (ru, ...rest) {
+        console.error(`T ${bs.vNow} r${bs.roundNo} WALK ${m} ${ru.bu.id}@${ru.q},${ru.r} ml=${ru.moveLeft}`);
+        return origW.call(this, ru, ...rest);
       };
     }
     const origMove = bs._doMove;
