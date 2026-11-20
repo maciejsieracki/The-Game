@@ -4,7 +4,7 @@
  * Czysta logika lidera (gra/src/game/ai-ai-coalition.ts) i premia celu w planerze sojuszy
  * (gra/src/game/ai-ai-alliance-tick.ts, planAiAiAllianceTickFull z polem `koalicja`).
  *
- *  (K1) flaga koalicjaAntyLiderAktywna = false domyślnie; hak testowy działa i wraca do danych;
+ *  (K1) flaga koalicjaAntyLiderAktywna = true domyślnie (ENABLE-ALL-FLAGS-Q1); hak testowy działa i wraca do danych;
  *  (K2) wykrycie lidera: próg przewagi (dokładnie 1,5× = lider; poniżej = brak);
  *  (K3) histereza minTur: lider dopiero po 5 kolejnych turach; zerwanie serii zeruje licznik;
  *  (K4) gracz (owner 0) może być liderem; AI-lider też;
@@ -105,11 +105,14 @@ function runChecks(M) {
   const check = (cond, msg) => { if (!cond) errs.push(msg); };
 
   // K1
-  check(M.isAiAiCoalitionEnabled() === false, 'K1 flaga domyślnie nie jest false');
+  // R-WEB-DIPLO-ENABLE-ALL-FLAGS-Q1 (decyzja właściciela 2026-11-19): domyślnie ON w danych.
+  check(M.isAiAiCoalitionEnabled() === true, 'K1 flaga domyślnie true (dane)');
+  M.setAiAiCoalitionEnabledForTest(false);
+  check(M.isAiAiCoalitionEnabled() === false, 'K1 hak false wymusza OFF');
   M.setAiAiCoalitionEnabledForTest(true);
-  check(M.isAiAiCoalitionEnabled() === true, 'K1 hak nie włącza');
+  check(M.isAiAiCoalitionEnabled() === true, 'K1 hak true nie włącza');
   M.setAiAiCoalitionEnabledForTest(null);
-  check(M.isAiAiCoalitionEnabled() === false, 'K1 hak nie wraca do danych');
+  check(M.isAiAiCoalitionEnabled() === true, 'K1 hak nie wraca do danych');
 
   // K2 próg
   let st = M.initLiderKoalicjiStan();

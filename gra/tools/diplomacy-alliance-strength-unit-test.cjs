@@ -89,13 +89,16 @@ async function main() {
   const decyzja = (inp) => wojny(decideAIDiplomacy(inp, undefined, 1, 1, 'normal')).length;
 
   // ---- (1) flaga ----
-  console.log('(1) flaga domyslnie OFF, hak testowy');
-  ok(ALLIANCE_WAR_PARAMS.wojnaSilaSojuszuAktywna === false, 'dane: wojnaSilaSojuszuAktywna = false');
-  ok(isWarByAllianceStrengthEnabled() === false, 'flaga domyslnie OFF');
+  // R-WEB-DIPLO-ENABLE-ALL-FLAGS-Q1 (decyzja właściciela 2026-11-19): domyślnie ON w danych; OFF = jawny hak false.
+  console.log('(1) flaga domyslnie ON (dane), hak OFF/ON/null');
+  ok(ALLIANCE_WAR_PARAMS.wojnaSilaSojuszuAktywna === true, 'dane: wojnaSilaSojuszuAktywna = true');
+  ok(isWarByAllianceStrengthEnabled() === true, 'flaga domyslnie ON');
+  setWarByAllianceStrengthForTest(false);
+  ok(isWarByAllianceStrengthEnabled() === false, 'hak false wymusza OFF');
   setWarByAllianceStrengthForTest(true);
   ok(isWarByAllianceStrengthEnabled() === true, 'hak ON');
   setWarByAllianceStrengthForTest(null);
-  ok(isWarByAllianceStrengthEnabled() === false, 'hak null wraca do danych (OFF)');
+  ok(isWarByAllianceStrengthEnabled() === true, 'hak null wraca do danych (ON)');
 
   // ---- (2) blockStrength ----
   console.log('(2) blockStrength: sumowanie i wykluczenia');

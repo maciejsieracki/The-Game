@@ -35,7 +35,8 @@ const OFF = { limitWojenAktywny: false, maxWojenEpoki: 1, maxWojenNaturalnych: 1
 
 // --- flaga i parametry ---
 M.setWarLimitEnabledForTest(null);
-eq('flaga domyslnie OFF (JSON)', M.isWarLimitEnabled(M.WAR_LIMIT_PARAMS), false);
+// R-WEB-DIPLO-ENABLE-ALL-FLAGS-Q1 (decyzja właściciela 2026-11-19): limit wojen domyślnie ON w danych.
+eq('flaga domyslnie ON (JSON)', M.isWarLimitEnabled(M.WAR_LIMIT_PARAMS), true);
 eq('parametr maxWojenEpoki = 1', M.WAR_LIMIT_PARAMS.maxWojenEpoki, 1);
 eq('parametr maxWojenNaturalnych = 1', M.WAR_LIMIT_PARAMS.maxWojenNaturalnych, 1);
 eq('loader: wartosc z obiektu', M.loadWarLimitParams({ limitWojenAktywny: { wartosc: true }, maxWojenEpoki: { wartosc: 2 } }).limitWojenAktywny, true);

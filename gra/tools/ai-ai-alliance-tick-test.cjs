@@ -3,7 +3,7 @@
  * ai-ai-alliance-tick-test.cjs -- R-WEB-AI-AI-ALLIANCES-E3-WIRING-FLAGGED-Q1 (etap B1).
  * Czysty krok sojuszy AI↔AI (gra/src/game/ai-ai-alliance-tick.ts): planAiAiAllianceTickFull.
  *
- *  (S1) flaga torSojuszyAktywny = false domyślnie (isAiAiAllianceTickEnabled); hak testowy działa i wraca do danych;
+ *  (S1) flaga torSojuszyAktywny = true domyślnie (ENABLE-ALL-FLAGS-Q1) (isAiAiAllianceTickEnabled); hak testowy działa i wraca do danych;
  *  (S2) limit 2 sojusze na cywilizację: sekwencja tur 8,16,...,40 z dodawaniem sojuszy -> max liczba <= 2;
  *  (S3) brak sojuszu w stanie wojny (planer odrzuca nawet przy evaluate = zawsze akceptuj);
  *  (S4) brak duplikatów pary (A->B i B->A w jednej turze, zawarte pary wykluczone);
@@ -84,13 +84,17 @@ function runSuite(M) {
     catch (e) { out.push({ name, ok: false, detail: String(e && e.message || e) }); }
   };
 
-  check('S1 flaga domyslnie false; hak testowy nadpisuje i wraca do danych', () => {
+  // R-WEB-DIPLO-ENABLE-ALL-FLAGS-Q1 (decyzja właściciela 2026-11-19): domyślnie ON w danych.
+  // Zachowanie OFF pokryte jawnym nadpisaniem false (hak), nie domyślną wartością.
+  check('S1 flaga domyslnie true (dane); hak false wymusza OFF; null wraca do danych', () => {
     M.setAiAiAllianceTickEnabledForTest(null);
-    if (M.isAiAiAllianceTickEnabled() !== false) return 'domyslnie nie false';
+    if (M.isAiAiAllianceTickEnabled() !== true) return 'domyslnie nie true';
+    M.setAiAiAllianceTickEnabledForTest(false);
+    if (M.isAiAiAllianceTickEnabled() !== false) return 'hak false nie dziala';
     M.setAiAiAllianceTickEnabledForTest(true);
     if (M.isAiAiAllianceTickEnabled() !== true) return 'hak true nie dziala';
     M.setAiAiAllianceTickEnabledForTest(null);
-    if (M.isAiAiAllianceTickEnabled() !== false) return 'powrot do danych nie dziala';
+    if (M.isAiAiAllianceTickEnabled() !== true) return 'powrot do danych nie dziala';
     return true;
   });
 
