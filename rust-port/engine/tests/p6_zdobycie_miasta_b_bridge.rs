@@ -298,3 +298,102 @@ fn czesc_b_deterministyczna_i_niezalezna_od_podzialu_krokow() {
     let back: PlayableState = serde_json::from_str(&json).unwrap();
     assert_eq!(back, a);
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Obrona r1 (Z1): karta zdobycia (`recordCityCaptureEvent`) w stanie po szturmie przez most.
+// ---------------------------------------------------------------------------------------------------------------
+
+/// Snapshot generatora (`warEventLog`/`city`/`civElim`) jako pole stanu `capture_events`.
+fn events_from(
+    v: &serde_json::Value,
+) -> civ_engine::domain::city_capture_apply::PlayableCaptureEvents {
+    serde_json::from_value(serde_json::json!({
+        "warEventLog": v["warEventLog"],
+        "cityCaptureDetails": v["city"],
+        "civElimDetails": v["civElim"],
+    }))
+    .expect("capture_events z wektora")
+}
+
+#[test]
+fn szturm_zapisuje_karte_zdobycia_zwyklego_miasta() {
+    let v = vectors();
+    let (st, res) = storm(state_b(11), &[]);
+    let cap = res.capture.as_ref().expect("capture");
+    assert!(cap.captured);
+    assert_eq!(cap.capital_event, None);
+    assert!(
+        !cap.not_applied
+            .iter()
+            .any(|n| n == "recordCityCaptureEvent"),
+        "recordCityCaptureEvent w not_applied"
+    );
+    assert_eq!(
+        st.capture_events,
+        events_from(&v["capture"]["captureEvents"]["zwykle"])
+    );
+}
+
+#[test]
+fn szturm_stolicy_zapisuje_karte_stoleczna_pierwsza() {
+    // `runCapitalCapturePlunder` zapisuje kartę stolicy (wiersze `kind:'stolica'`) PRZED wołaniem P1; P1 z wierszem
+    // straty ludności jest no-opem (deduplikacja po id karty) — wynik = wektor `stolica` generatora.
+    let v = vectors();
+    let mut st0 = state_b(11);
+    for c in &mut st0.cities {
+        if c.owner_id.get() == ENEMY {
+            c.is_capital = c.id.get() == CITY;
+        }
+    }
+    let (st, res) = storm(st0, &[]);
+    let cap = res.capture.as_ref().expect("capture");
+    assert!(cap.captured);
+    assert_eq!(
+        cap.capital_event,
+        Some(civ_engine::domain::city_capture_apply::CapitalCaptureKind::PrzejecieStolicy)
+    );
+    assert_eq!(cap.treasury_taken, 40.0);
+    assert_eq!(
+        st.capture_events,
+        events_from(&v["capture"]["captureEvents"]["stolica"])
+    );
+}
+
+#[test]
+fn eliminacja_zapisuje_karte_eliminacji_bez_wiersza_straty() {
+    // Ostatnie miasto ofiary: karta z `eliminatedCivLabel` z wnętrza `runCapitalCapturePlunder` wygrywa z P1.
+    let mut st0 = state_b(11);
+    st0.cities.retain(|c| c.id.get() != 905);
+    for c in &mut st0.cities {
+        if c.id.get() == CITY {
+            c.is_capital = true;
+        }
+    }
+    let (st, res) = storm(st0, &[]);
+    let cap = res.capture.as_ref().expect("capture");
+    assert_eq!(
+        cap.capital_event,
+        Some(civ_engine::domain::city_capture_apply::CapitalCaptureKind::Eliminacja)
+    );
+    let ev = &st.capture_events;
+    assert_eq!(ev.war_event_log.len(), 1);
+    let card = &ev.war_event_log[0];
+    assert_eq!(card.id, "capture-1-city900-101-0");
+    assert_eq!(card.title, "ELIMINACJA: owner101");
+    assert_eq!(card.icon, "\u{1F3F4}");
+    let d = &ev.city_capture_details[&card.id];
+    assert_eq!(d.title, "ELIMINACJA!");
+    assert_eq!(
+        d.subtitle,
+        "owner101 — ostatnie miasto przejęte, cywilizacja wyeliminowana"
+    );
+    assert_eq!(d.rows[0].label, "Ludność");
+    assert_eq!(d.rows[0].value, "+2");
+    assert!(
+        !d.rows.iter().any(|r| r.value.contains("straty zdobycia")),
+        "pierwszy zapis (eliminacja) wygrywa: {:?}",
+        d.rows
+    );
+    // Gracz jest zdobywcą: `recordCivElimEvent` (tylko AI↔AI) nie jest wołany.
+    assert!(ev.civ_elim_details.is_empty());
+}

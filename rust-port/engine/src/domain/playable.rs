@@ -697,6 +697,15 @@ pub struct PlayableState {
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub city_prod_by_city:
         BTreeMap<CityId, crate::domain::city_capture_apply::PlayableCityProduction>,
+    /// #354 część B (obrona r1, Z1): web `warEventLog` (`main.ts`, karty panelu WYDARZENIA) oraz
+    /// `cityCaptureEventDetails` / `civElimEventDetails` pisane przez `recordCityCaptureEvent` (`main.ts:10650`,
+    /// wołane z `applyCityCaptureToMap` `:36249` i z `runCapitalCapturePlunder`) i `recordCivElimEvent` (`:10583`).
+    /// Logika zapisu: [`crate::domain::siege_capture_events::CaptureEventStore`]. Pusty => pole pomijane.
+    #[serde(
+        default,
+        skip_serializing_if = "crate::domain::city_capture_apply::PlayableCaptureEvents::is_default"
+    )]
+    pub capture_events: crate::domain::city_capture_apply::PlayableCaptureEvents,
     /// P4-1F3: web `City.siegeMachines.ready` (`game/cities.ts:884`, `game/siegeMachines.ts:6-26`):
     /// gotowe machiny miasta w kolejnosci tablicy. Brak wpisu = web `city.siegeMachines?.ready ?? []`
     /// (`render/siegeCampSync.ts:7-12`). Kolejka i postep budowy (`queue`, `buildProgress`) nie naleza
@@ -984,6 +993,7 @@ impl PlayableState {
             post_capture_law_by_city: BTreeMap::new(),
             civ_chronicle_by_owner: BTreeMap::new(),
             city_prod_by_city: BTreeMap::new(),
+            capture_events: crate::domain::city_capture_apply::PlayableCaptureEvents::default(),
             siege_machines_ready: BTreeMap::new(),
             placed_world_wonders: Vec::new(),
         }
@@ -1243,6 +1253,7 @@ impl PlayableGame {
             post_capture_law_by_city: BTreeMap::new(),
             civ_chronicle_by_owner: BTreeMap::new(),
             city_prod_by_city: BTreeMap::new(),
+            capture_events: crate::domain::city_capture_apply::PlayableCaptureEvents::default(),
             siege_machines_ready: BTreeMap::new(),
             placed_world_wonders: Vec::new(),
         };

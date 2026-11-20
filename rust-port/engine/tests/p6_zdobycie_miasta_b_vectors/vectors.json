@@ -1,6 +1,6 @@
 {
  "pin": "07d2fbd72f758705f8e1d59cc4968027ffbafe75",
- "pinSha256": "54ef001acc49f4547fbe7e76d169dd0c9c7384a3425fa61da0d558af73e2b615",
+ "pinSha256": "f6b8e34d8df5f697637b938ccf7d233ad95d667cd715ce6901b790ab712160de",
  "dataSame": {
   "civs": true,
   "society": true,
@@ -4392,6 +4392,2572 @@
    }
   },
   {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {},
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {},
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {},
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {},
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {},
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {},
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {},
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {},
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "nieznana",
+   "civPrev": "inna_nieznana",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {},
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {},
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {},
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {},
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 3
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 7
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "",
+   "civPrev": "",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": null,
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {},
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {}
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {},
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 1
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {},
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 3
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {},
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 7
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 5
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 5
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 2,
+    "Politeizm olimpijski": 3
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 2,
+    "Politeizm olimpijski": 3
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 2,
+    "Politeizm olimpijski": 3
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 3,
+    "Religia rzymska / kult państwa": 2
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 2,
+    "Politeizm olimpijski": 3
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "Politeizm olimpijski": 2
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "Politeizm olimpijski": 2
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "Politeizm olimpijski": 2
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 2,
+    "a_kult": 1,
+    "b_kult": 1
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "Politeizm olimpijski": 2
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1,
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1,
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1,
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 1,
+    "a_kult": 2,
+    "b_kult": 2,
+    "c_kult": 2
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1,
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 1,
+    "Politeizm olimpijski": 2
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 1,
+    "Politeizm olimpijski": 2
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 1,
+    "Politeizm olimpijski": 2
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "x_kult": 3
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "x_kult": 1,
+    "Politeizm olimpijski": 2
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 4,
+    "a_kult": 0
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "Politeizm olimpijski": 2
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "Politeizm olimpijski": 2
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "Politeizm olimpijski": 2
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "a_kult": 1,
+    "b_kult": 1,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 1,
+    "Politeizm olimpijski": 2
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 3,
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 3,
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 3,
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Religia rzymska / kult państwa": 7
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "Religia rzymska / kult państwa": 3,
+    "Politeizm olimpijski": 4
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 0,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1,
+    "Politeizm olimpijski": 6
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 1,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1,
+    "Politeizm olimpijski": 6
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 3,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1,
+    "Politeizm olimpijski": 6
+   }
+  },
+  {
+   "civNew": "grecy",
+   "civPrev": "nieznana",
+   "counts": {
+    "Politeizm olimpijski": 6,
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1
+   },
+   "population": 7,
+   "newRel": "Politeizm olimpijski",
+   "prevRel": null,
+   "same": false,
+   "out": {
+    "a_kult": 3,
+    "b_kult": 2,
+    "c_kult": 1,
+    "Politeizm olimpijski": 6
+   }
+  },
+  {
    "civNew": "rzymianie",
    "civPrev": "grecy",
    "counts": {
@@ -5059,6 +7625,746 @@
    "poolAfter": {
     "old": 21,
     "atk": 11
+   }
+  }
+ },
+ "capture": {
+  "mocLabel": "Moc",
+  "reportCases": [
+   {
+    "input": {
+     "kind": "zwykle",
+     "mocEtykieta": "Moc",
+     "ludnosc": 2,
+     "budynki": 1,
+     "zloto": 0,
+     "nauka": 0,
+     "technologie": 0,
+     "moc": 0,
+     "barbarzyncaZdobywca": false,
+     "pracaPoolPrzejeta": 0
+    },
+    "rows": [
+     {
+      "label": "Ludność",
+      "value": "+2",
+      "tone": "gain",
+      "group": "przejete"
+     },
+     {
+      "label": "Budynki",
+      "value": "+1",
+      "tone": "gain",
+      "group": "przejete"
+     },
+     {
+      "label": "Łup",
+      "value": "brak",
+      "tone": "info",
+      "group": "lup"
+     }
+    ]
+   },
+   {
+    "input": {
+     "kind": "zwykle",
+     "mocEtykieta": "Moc",
+     "ludnosc": 0,
+     "budynki": 0,
+     "zloto": 0,
+     "nauka": 0,
+     "technologie": 0,
+     "moc": 0,
+     "barbarzyncaZdobywca": false,
+     "pracaPoolPrzejeta": 0
+    },
+    "rows": [
+     {
+      "label": "Łup",
+      "value": "brak",
+      "tone": "info",
+      "group": "lup"
+     }
+    ]
+   },
+   {
+    "input": {
+     "kind": "zwykle",
+     "mocEtykieta": "Moc",
+     "ludnosc": 5,
+     "budynki": 0,
+     "zloto": 0,
+     "nauka": 0,
+     "technologie": 0,
+     "moc": 0,
+     "barbarzyncaZdobywca": false,
+     "pracaPoolPrzejeta": 0,
+     "surowce": {
+      "aaa_nowy": 1,
+      "braz": 0.5,
+      "drewno": 3.7,
+      "kamien": 0,
+      "kon": -2,
+      "sol": 6,
+      "zelazo": 2,
+      "zzz_nowy": 4
+     }
+    },
+    "rows": [
+     {
+      "label": "Ludność",
+      "value": "+5",
+      "tone": "gain",
+      "group": "przejete"
+     },
+     {
+      "label": "Drewno",
+      "value": "+3",
+      "tone": "gain",
+      "group": "przejete",
+      "collapsible": true
+     },
+     {
+      "label": "Brąz",
+      "value": "+0",
+      "tone": "gain",
+      "group": "przejete",
+      "collapsible": true
+     },
+     {
+      "label": "Żelazo",
+      "value": "+2",
+      "tone": "gain",
+      "group": "przejete",
+      "collapsible": true
+     },
+     {
+      "label": "Sól",
+      "value": "+6",
+      "tone": "gain",
+      "group": "przejete",
+      "collapsible": true
+     },
+     {
+      "label": "aaa_nowy",
+      "value": "+1",
+      "tone": "gain",
+      "group": "przejete",
+      "collapsible": true
+     },
+     {
+      "label": "zzz_nowy",
+      "value": "+4",
+      "tone": "gain",
+      "group": "przejete",
+      "collapsible": true
+     },
+     {
+      "label": "Łup",
+      "value": "brak",
+      "tone": "info",
+      "group": "lup"
+     }
+    ]
+   },
+   {
+    "input": {
+     "kind": "zwykle",
+     "mocEtykieta": "Moc",
+     "ludnosc": 1,
+     "budynki": 0,
+     "zloto": 0,
+     "nauka": 0,
+     "technologie": 0,
+     "moc": 0,
+     "barbarzyncaZdobywca": false,
+     "pracaPoolPrzejeta": 0,
+     "surowce": {}
+    },
+    "rows": [
+     {
+      "label": "Ludność",
+      "value": "+1",
+      "tone": "gain",
+      "group": "przejete"
+     },
+     {
+      "label": "Łup",
+      "value": "brak",
+      "tone": "info",
+      "group": "lup"
+     }
+    ]
+   },
+   {
+    "input": {
+     "kind": "stolica",
+     "mocEtykieta": "Moc",
+     "ludnosc": 2,
+     "budynki": 1,
+     "zloto": 40,
+     "nauka": 0,
+     "technologie": 0,
+     "moc": 0,
+     "barbarzyncaZdobywca": false,
+     "pracaPoolPrzejeta": 0,
+     "surowce": {}
+    },
+    "rows": [
+     {
+      "label": "Ludność",
+      "value": "+2",
+      "tone": "gain",
+      "group": "przejete"
+     },
+     {
+      "label": "Budynki",
+      "value": "+1",
+      "tone": "gain",
+      "group": "przejete"
+     },
+     {
+      "label": "Złoto ze skarbca",
+      "value": "+40",
+      "tone": "gain",
+      "group": "lup"
+     },
+     {
+      "label": "Pula pracy",
+      "value": "przepadła — nie przechodzi na zdobywcę",
+      "tone": "loss",
+      "group": "strata"
+     }
+    ]
+   },
+   {
+    "input": {
+     "kind": "stolica",
+     "mocEtykieta": "Moc",
+     "ludnosc": 3,
+     "budynki": 0,
+     "zloto": 0,
+     "nauka": 0,
+     "technologie": 0,
+     "moc": 0,
+     "barbarzyncaZdobywca": false,
+     "pracaPoolPrzejeta": 0
+    },
+    "rows": [
+     {
+      "label": "Ludność",
+      "value": "+3",
+      "tone": "gain",
+      "group": "przejete"
+     },
+     {
+      "label": "Łup",
+      "value": "brak",
+      "tone": "info",
+      "group": "lup"
+     },
+     {
+      "label": "Pula pracy",
+      "value": "przepadła — nie przechodzi na zdobywcę",
+      "tone": "loss",
+      "group": "strata"
+     }
+    ]
+   },
+   {
+    "input": {
+     "kind": "stolica",
+     "mocEtykieta": "Moc",
+     "ludnosc": 3,
+     "budynki": 0,
+     "zloto": 9,
+     "nauka": 0,
+     "technologie": 0,
+     "moc": 0,
+     "barbarzyncaZdobywca": true,
+     "pracaPoolPrzejeta": 0
+    },
+    "rows": [
+     {
+      "label": "Ludność",
+      "value": "+3",
+      "tone": "gain",
+      "group": "przejete"
+     },
+     {
+      "label": "Łup",
+      "value": "przepadł — barbarzyńcy nie dziedziczą zdobyczy",
+      "tone": "loss",
+      "group": "lup"
+     },
+     {
+      "label": "Pula pracy",
+      "value": "przepadła — nie przechodzi na zdobywcę",
+      "tone": "loss",
+      "group": "strata"
+     }
+    ]
+   },
+   {
+    "input": {
+     "kind": "stolica",
+     "mocEtykieta": "Moc",
+     "ludnosc": 0,
+     "budynki": 0,
+     "zloto": 5,
+     "nauka": 3,
+     "technologie": 0,
+     "moc": 0,
+     "barbarzyncaZdobywca": false,
+     "pracaPoolPrzejeta": 0,
+     "zywnoscPrzejeta": 8
+    },
+    "rows": [
+     {
+      "label": "Złoto ze skarbca",
+      "value": "+5",
+      "tone": "gain",
+      "group": "lup"
+     },
+     {
+      "label": "Punkty nauki",
+      "value": "+3",
+      "tone": "gain",
+      "group": "lup"
+     },
+     {
+      "label": "Pula pracy",
+      "value": "przepadła — nie przechodzi na zdobywcę",
+      "tone": "loss",
+      "group": "strata"
+     }
+    ]
+   },
+   {
+    "input": {
+     "kind": "eliminacja",
+     "mocEtykieta": "Moc",
+     "ludnosc": 4,
+     "budynki": 2,
+     "zloto": 12,
+     "nauka": 5,
+     "technologie": 2,
+     "moc": 7.5,
+     "barbarzyncaZdobywca": false,
+     "pracaPoolPrzejeta": 6,
+     "zywnoscPrzejeta": 10,
+     "zywnoscUtracona": 3,
+     "zywnoscOfiaryRazem": 13,
+     "surowce": {
+      "aaa_nowy": 1,
+      "braz": 0.5,
+      "drewno": 3.7,
+      "kamien": 0,
+      "kon": -2,
+      "sol": 6,
+      "zelazo": 2,
+      "zzz_nowy": 4
+     }
+    },
+    "rows": [
+     {
+      "label": "Ludność",
+      "value": "+4",
+      "tone": "gain",
+      "group": "przejete"
+     },
+     {
+      "label": "Budynki",
+      "value": "+2",
+      "tone": "gain",
+      "group": "przejete"
+     },
+     {
+      "label": "Drewno",
+      "value": "+3",
+      "tone": "gain",
+      "group": "przejete",
+      "collapsible": true
+     },
+     {
+      "label": "Brąz",
+      "value": "+0",
+      "tone": "gain",
+      "group": "przejete",
+      "collapsible": true
+     },
+     {
+      "label": "Żelazo",
+      "value": "+2",
+      "tone": "gain",
+      "group": "przejete",
+      "collapsible": true
+     },
+     {
+      "label": "Sól",
+      "value": "+6",
+      "tone": "gain",
+      "group": "przejete",
+      "collapsible": true
+     },
+     {
+      "label": "aaa_nowy",
+      "value": "+1",
+      "tone": "gain",
+      "group": "przejete",
+      "collapsible": true
+     },
+     {
+      "label": "zzz_nowy",
+      "value": "+4",
+      "tone": "gain",
+      "group": "przejete",
+      "collapsible": true
+     },
+     {
+      "label": "Złoto ze skarbca",
+      "value": "+12",
+      "tone": "gain",
+      "group": "lup"
+     },
+     {
+      "label": "Żywność ze spichlerza",
+      "value": "+10 — przejęto 10 z 13 (limit pojemności)",
+      "tone": "gain",
+      "group": "lup"
+     },
+     {
+      "label": "Punkty nauki",
+      "value": "+5",
+      "tone": "gain",
+      "group": "lup"
+     },
+     {
+      "label": "Technologie",
+      "value": "+2",
+      "tone": "gain",
+      "group": "lup"
+     },
+     {
+      "label": "Moc",
+      "value": "+7.5",
+      "tone": "gain",
+      "group": "lup"
+     },
+     {
+      "label": "Pula pracy",
+      "value": "+6 — przejęta od wyeliminowanej cywilizacji",
+      "tone": "gain",
+      "group": "strata"
+     }
+    ]
+   },
+   {
+    "input": {
+     "kind": "eliminacja",
+     "mocEtykieta": "Moc",
+     "ludnosc": 1,
+     "budynki": 0,
+     "zloto": 0,
+     "nauka": 0,
+     "technologie": 0,
+     "moc": 0,
+     "barbarzyncaZdobywca": false,
+     "pracaPoolPrzejeta": 0,
+     "zywnoscPrzejeta": 4,
+     "zywnoscUtracona": 0
+    },
+    "rows": [
+     {
+      "label": "Ludność",
+      "value": "+1",
+      "tone": "gain",
+      "group": "przejete"
+     },
+     {
+      "label": "Żywność ze spichlerza",
+      "value": "+4",
+      "tone": "gain",
+      "group": "lup"
+     }
+    ]
+   },
+   {
+    "input": {
+     "kind": "eliminacja",
+     "mocEtykieta": "Moc",
+     "ludnosc": 1,
+     "budynki": 0,
+     "zloto": 0,
+     "nauka": 0,
+     "technologie": 0,
+     "moc": 0,
+     "barbarzyncaZdobywca": false,
+     "pracaPoolPrzejeta": 0,
+     "zywnoscPrzejeta": 4,
+     "zywnoscUtracona": 2
+    },
+    "rows": [
+     {
+      "label": "Ludność",
+      "value": "+1",
+      "tone": "gain",
+      "group": "przejete"
+     },
+     {
+      "label": "Żywność ze spichlerza",
+      "value": "+4 — przejęto 4 z 4 (limit pojemności)",
+      "tone": "gain",
+      "group": "lup"
+     }
+    ]
+   },
+   {
+    "input": {
+     "kind": "eliminacja",
+     "mocEtykieta": "Moc",
+     "ludnosc": 2,
+     "budynki": 0,
+     "zloto": 7,
+     "nauka": 1,
+     "technologie": 0,
+     "moc": 3,
+     "barbarzyncaZdobywca": true,
+     "pracaPoolPrzejeta": 6
+    },
+    "rows": [
+     {
+      "label": "Ludność",
+      "value": "+2",
+      "tone": "gain",
+      "group": "przejete"
+     },
+     {
+      "label": "Łup",
+      "value": "przepadł — barbarzyńcy nie dziedziczą zdobyczy",
+      "tone": "loss",
+      "group": "lup"
+     },
+     {
+      "label": "Pula pracy",
+      "value": "przepadła — barbarzyńcy nie dziedziczą zdobyczy",
+      "tone": "loss",
+      "group": "strata"
+     }
+    ]
+   },
+   {
+    "input": {
+     "kind": "eliminacja",
+     "mocEtykieta": "Moc",
+     "ludnosc": 2,
+     "budynki": 0,
+     "zloto": 0,
+     "nauka": 0,
+     "technologie": 0,
+     "moc": 0,
+     "barbarzyncaZdobywca": true,
+     "pracaPoolPrzejeta": 0
+    },
+    "rows": [
+     {
+      "label": "Ludność",
+      "value": "+2",
+      "tone": "gain",
+      "group": "przejete"
+     },
+     {
+      "label": "Łup",
+      "value": "przepadł — barbarzyńcy nie dziedziczą zdobyczy",
+      "tone": "loss",
+      "group": "lup"
+     }
+    ]
+   },
+   {
+    "input": {
+     "kind": "eliminacja",
+     "mocEtykieta": "Moc",
+     "ludnosc": 0,
+     "budynki": 0,
+     "zloto": 0,
+     "nauka": 0,
+     "technologie": 0,
+     "moc": 0,
+     "barbarzyncaZdobywca": false,
+     "pracaPoolPrzejeta": 0
+    },
+    "rows": [
+     {
+      "label": "Łup",
+      "value": "brak",
+      "tone": "info",
+      "group": "lup"
+     }
+    ]
+   },
+   {
+    "input": {
+     "kind": "eliminacja",
+     "mocEtykieta": "Moc",
+     "ludnosc": 0,
+     "budynki": 0,
+     "zloto": 0,
+     "nauka": 0,
+     "technologie": 1,
+     "moc": 0.25,
+     "barbarzyncaZdobywca": false,
+     "pracaPoolPrzejeta": 0
+    },
+    "rows": [
+     {
+      "label": "Technologie",
+      "value": "+1",
+      "tone": "gain",
+      "group": "lup"
+     },
+     {
+      "label": "Moc",
+      "value": "+0.25",
+      "tone": "gain",
+      "group": "lup"
+     }
+    ]
+   }
+  ],
+  "popLossCases": [
+   {
+    "loss": 0,
+    "row": null
+   },
+   {
+    "loss": 1,
+    "row": {
+     "label": "Ludność",
+     "value": "−1 (straty zdobycia)",
+     "tone": "loss",
+     "group": "strata"
+    }
+   },
+   {
+    "loss": 2,
+    "row": {
+     "label": "Ludność",
+     "value": "−2 (straty zdobycia)",
+     "tone": "loss",
+     "group": "strata"
+    }
+   },
+   {
+    "loss": 2.6,
+    "row": {
+     "label": "Ludność",
+     "value": "−2 (straty zdobycia)",
+     "tone": "loss",
+     "group": "strata"
+    }
+   },
+   {
+    "loss": -1,
+    "row": null
+   }
+  ],
+  "captureEvents": {
+   "zwykle": {
+    "warEventLog": [
+     {
+      "id": "capture-1-city900-101-0",
+      "icon": "🏰",
+      "title": "Zdobyto miasto: Twierdza",
+      "subtitle": "Łup: brak",
+      "kind": "city",
+      "negative": false,
+      "turnCreated": 1
+     }
+    ],
+    "city": {
+     "capture-1-city900-101-0": {
+      "title": "Miasto zdobyte",
+      "cityName": "Twierdza",
+      "subtitle": "Odebrane: owner101",
+      "rows": [
+       {
+        "label": "Ludność",
+        "value": "+2",
+        "tone": "gain",
+        "group": "przejete"
+       },
+       {
+        "label": "Budynki",
+        "value": "+1",
+        "tone": "gain",
+        "group": "przejete"
+       },
+       {
+        "label": "Łup",
+        "value": "brak",
+        "tone": "info",
+        "group": "lup"
+       },
+       {
+        "label": "Ludność",
+        "value": "−1 (straty zdobycia)",
+        "tone": "loss",
+        "group": "strata"
+       }
+      ],
+      "rowsTitle": "Bilans zdobycia"
+     }
+    },
+    "civElim": {}
+   },
+   "stolica": {
+    "warEventLog": [
+     {
+      "id": "capture-1-city900-101-0",
+      "icon": "🏰",
+      "title": "Zdobyto miasto: Twierdza",
+      "subtitle": "Złoto ze skarbca: +40",
+      "kind": "city",
+      "negative": false,
+      "turnCreated": 1
+     }
+    ],
+    "city": {
+     "capture-1-city900-101-0": {
+      "title": "Miasto zdobyte",
+      "cityName": "Twierdza",
+      "subtitle": "Odebrane: owner101",
+      "rows": [
+       {
+        "label": "Ludność",
+        "value": "+2",
+        "tone": "gain",
+        "group": "przejete"
+       },
+       {
+        "label": "Budynki",
+        "value": "+1",
+        "tone": "gain",
+        "group": "przejete"
+       },
+       {
+        "label": "Złoto ze skarbca",
+        "value": "+40",
+        "tone": "gain",
+        "group": "lup"
+       },
+       {
+        "label": "Pula pracy",
+        "value": "przepadła — nie przechodzi na zdobywcę",
+        "tone": "loss",
+        "group": "strata"
+       }
+      ],
+      "rowsTitle": "Bilans zdobycia"
+     }
+    },
+    "civElim": {}
    }
   }
  }

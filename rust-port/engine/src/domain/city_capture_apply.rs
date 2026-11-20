@@ -62,6 +62,10 @@ use crate::domain::siege_capital_plunder::{
     is_barbarian, js_max0, oldest_city_of_owner, run_capital_capture_plunder, OwnerResourceAccess,
     PlunderCity, PlunderInput, PlunderLabels, PlunderState,
 };
+use crate::domain::siege_capture_events::{
+    CaptureEventStore, CaptureRow, CityCaptureArgs, CityCaptureDetails, CivElimDetails,
+    SidePanelEvent,
+};
 use crate::domain::siege_transfer_effects::{
     apply_capture_population_loss, apply_post_capture_law_on_capture, CapturePopLossInput,
     CAPTURE_POP_LOSS_PIN,
@@ -181,10 +185,13 @@ pub const PIN_STEPS: &[(&str, &str)] = &[
         "siege_capital_plunder::run_capital_capture_plunder (D-ZMA-5/6)",
     ),
     ("eliminateOwner", "eliminacja::eliminate_owner"),
-    ("buildCityCaptureReportRows", "NOT_APPLIED: UI"),
+    (
+        "buildCityCaptureReportRows",
+        "build_city_capture_report_rows (kind zwykle; stolica/eliminacja z ui_calls planszy)",
+    ),
     (
         "recordCityCaptureEvent",
-        "NOT_APPLIED: CaptureEventStore brak w stanie",
+        "apply_record_city_capture_event (PlayableState::capture_events, CaptureEventStore)",
     ),
     (
         "validateActiveSieges",
@@ -210,9 +217,12 @@ pub const PIN_STEPS: &[(&str, &str)] = &[
         "owner_religion (civReligionForKey nad PlayablePlayer::civilization)",
     ),
     ("markCityStateDirty", "NOT_APPLIED: UI"),
-    ("mocLabel", "NOT_APPLIED: UI"),
-    ("civLabelForOwner", "NOT_APPLIED: UI"),
-    ("capturePopLossReportRow", "NOT_APPLIED: UI"),
+    ("mocLabel", "moc_label (power-params.json hud_etykieta)"),
+    (
+        "civLabelForOwner",
+        "NoLabels owner{idWebu} (D-ZMB-7: nazwa wyswietlana poza domena)",
+    ),
+    ("capturePopLossReportRow", "capture_pop_loss_report_row"),
 ];
 
 /// Kroki pinu pomijane przy każdym zdobyciu (brak pola w stanie, D-ZMA-4).
@@ -226,7 +236,6 @@ pub const NOT_APPLIED_ALWAYS: &[&str] = &[
     "onCityCapturedCulture",
     "triggerRebelProtectionWarConsequence",
     "syncCityGarnizon",
-    "recordCityCaptureEvent",
 ];
 
 /// Powód braku zdobycia mimo wygranej z wyłomem (`main.ts:34668-34677`).
@@ -612,7 +621,9 @@ impl OwnerResourceAccess for StateAccess<'_> {
     }
 }
 
-/// Etykiety UI (`civLabelForOwner`, `mocLabel`, …): poza domeną; wynik trafia wyłącznie do `ui_calls`.
+/// Etykiety UI. `civLabelForOwner`/`ownerDiploLabel` (`main.ts:36576`, `:10500`: nazwa z `resolveOwnerBaseName`,
+/// `ownerDisplayName`, nazwy miast, pule nazw) to warstwa prezentacji poza domeną: konwencja `owner{idWebu}` (D-ZMB-7) —
+/// trafia także do kart zdarzeń w `capture_events`. `mocLabel` = port pinu ([`moc_label`]).
 struct NoLabels;
 
 impl PlunderLabels for NoLabels {
@@ -620,7 +631,8 @@ impl PlunderLabels for NoLabels {
         format!("owner{owner_id}")
     }
     fn moc_label(&self) -> String {
-        String::new()
+        // Obrona r1 (Z1): etykieta trafia do wiersza raportu „Moc” karty eliminacji — port `mocLabel()` pinu.
+        moc_label()
     }
     fn civ_display_name(&self, _owner_id: i64) -> Option<String> {
         None
@@ -667,7 +679,7 @@ fn capital_plunder(
     new_owner: i64,
     designated: &BTreeMap<i64, CityId>,
     out: &mut CityCaptureResultDto,
-) -> Result<(), SiegeBattleError> {
+) -> Result<PlunderReport, SiegeBattleError> {
     let cities: Vec<PlunderCity> = state
         .cities
         .iter()
@@ -716,14 +728,20 @@ fn capital_plunder(
     let treasury_before_new = StateAccess { state: &mut *state }.get_treasury(web_owner(new_owner));
     let techs_before: BTreeSet<String> =
         StateAccess { state: &mut *state }.get_researched_techs(web_owner(new_owner));
-    let (_ret, ui) = {
+    let (ret, ui) = {
         let mut access = StateAccess { state: &mut *state };
         run_capital_capture_plunder(&input, &mut pstate, &mut access, &NoLabels)
+    };
+    // Obrona r1 (Z1): `recordCityCaptureEvent` / `recordCivElimEvent` wołane wewnątrz `runCapitalCapturePlunder`
+    // (karta stolicy/eliminacji ma pierwszeństwo — deduplikacja po id karty) — zapis do `capture_events` w miejscu pinu.
+    let report = PlunderReport {
+        rows: apply_plunder_event_calls(state, &ui),
+        eliminated_civ_label: ret.map(|r| r.eliminated_civ_label),
     };
     let called = |name: &str| ui.iter().any(|c| c["fn"] == name);
     if !called("captureReportOneLine") {
         // Zwykłe miasto (miasto nie było stolicą ofiary): brak łupu.
-        return Ok(());
+        return Ok(report);
     }
     out.treasury_taken =
         StateAccess { state: &mut *state }.get_treasury(web_owner(new_owner)) - treasury_before_new;
@@ -766,7 +784,14 @@ fn capital_plunder(
     } else {
         out.capital_event = Some(CapitalCaptureKind::PrzejecieStolicy);
     }
-    Ok(())
+    Ok(report)
+}
+
+/// Wynik `runCapitalCapturePlunder` potrzebny w P1: web `capitalCaptureReportSlot.rows` i
+/// `captureOutcome?.eliminatedCivLabel`.
+struct PlunderReport {
+    rows: Option<Vec<CaptureReportRow>>,
+    eliminated_civ_label: Option<String>,
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -1302,6 +1327,11 @@ fn is_capital_only_building(item: &ProductionItem) -> bool {
 /// Web `capitalCityIdForOwner(ownerId)` (`main.ts:34999-35003`) na stanie: jawna stolica (`designated`, sprzed
 /// zdobycia — mapa pinu zmienia się dopiero w `runCapitalCapturePlunder`) o ile nadal należy do właściciela, inaczej
 /// `oldestCityOfOwner`.
+///
+/// Celowo NIE używa `city_view::capital_city_id_for_owner` (flaga `is_capital` stanu): w chwili tego kroku zdobyte
+/// miasto ma już właściciela `atk`, ale nadal flagę stolicy OFIARY (zdejmuje ją dopiero `runCapitalCapturePlunder`),
+/// więc tamta funkcja uznałaby stolicę ofiary za stolicę zdobywcy. Pin czyta `capitalCityIdByOwner` (mapa sprzed
+/// zdobycia) = `designated`.
 fn capital_city_id_for_owner(
     state: &PlayableState,
     owner: i64,
@@ -1586,9 +1616,613 @@ pub fn apply_storm_capture(
     state.record_ever_owned_city(atk_pid);
     end_map_siege(state, cid);
     out.siege_ended = true;
-    capital_plunder(state, cid, old_owner, atk_owner, &designated, &mut out)?;
+    let plunder = capital_plunder(state, cid, old_owner, atk_owner, &designated, &mut out)?;
+    // `main.ts:36222-36258`: wiersze raportu (stolica: `capitalReport.rows`, inaczej `buildCityCaptureReportRows`
+    // `kind:'zwykle'`) + wiersz straty ludności, potem `recordCityCaptureEvent` (no-op, gdy karta stolicy/eliminacji
+    // z tej tury już istnieje).
+    let rows_base: Vec<CaptureRow> = match plunder.rows {
+        Some(rows) => rows.into_iter().map(|r| r.row).collect(),
+        None => build_city_capture_report_rows(&CityCaptureReportInput {
+            kind: "zwykle".to_owned(),
+            moc_etykieta: moc_label(),
+            ludnosc: f64::from(pop_after).floor().max(0.0),
+            budynki: state
+                .stores
+                .buildings_by_city
+                .get(&cid.get())
+                .map_or(0, Vec::len) as f64,
+            zloto: 0.0,
+            nauka: 0.0,
+            technologie: 0.0,
+            moc: 0.0,
+            barbarzynca_zdobywca: false,
+            // Web `city.surowce` = magazyn miasta w stanie (`economy.city_stock`); brak wpisu = `undefined`.
+            surowce: state
+                .economy
+                .city_stock
+                .get(&cid.get())
+                .map(|m| m.iter().map(|(k, v)| (k.clone(), *v)).collect()),
+            zywnosc_przejeta: None,
+            zywnosc_utracona: None,
+            zywnosc_ofiary_razem: None,
+            praca_pool_przejeta: 0.0,
+        })
+        .into_iter()
+        .map(|r| r.row)
+        .collect(),
+    };
+    let mut report_rows = rows_base;
+    if let Some(r) =
+        capture_pop_loss_report_row((f64::from(city.population) - f64::from(pop_after)).max(0.0))
+    {
+        report_rows.push(r);
+    }
+    let city_id_web = plunder_id(cid);
+    let victim = NoLabels.civ_label(web_owner(old_owner));
+    let captor = NoLabels.civ_label(web_owner(atk_owner));
+    apply_record_city_capture_event(
+        state,
+        &CityCaptureArgs {
+            city_id: &city_id_web,
+            city_name: &city.name,
+            old_owner: web_owner(old_owner),
+            new_owner: web_owner(atk_owner),
+            rows: &report_rows,
+            victim_label: &victim,
+            captor_label: &captor,
+            eliminated_civ_label: plunder.eliminated_civ_label.as_deref(),
+        },
+    );
     out.captured = true;
     // Krok 4: `validateActiveSieges` na stanie po zdobyciu (miasto zdobyte nie jest już oblegane).
     validate_storm_siege(state, cid, atk_owner);
     Ok(out)
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// #354 część B, obrona r1 (Z1): `recordCityCaptureEvent` (karta zdobycia) z wierszami raportu
+// (`buildCityCaptureReportRows`, `capturePopLossReportRow`) na polu stanu `capture_events`.
+// ---------------------------------------------------------------------------------------------------------------
+
+/// Web `mocLabel()` (`ui/power-labels.ts:18`): `loadPowerOpcje().hudEtykietaPl || 'Moc'`, gdzie `hudEtykietaPl` =
+/// `readStr(opcje.hud_etykieta.wartosc, 'Moc')` (`game/power-options.ts:36-46`) nad `power-params.json`.
+#[must_use]
+pub fn moc_label() -> String {
+    static LABEL: OnceLock<String> = OnceLock::new();
+    LABEL
+        .get_or_init(|| {
+            let v: Value = serde_json::from_str(crate::data::units_combat::POWER_PARAMS_JSON)
+                .expect("power-params.json must parse");
+            v.get("opcje")
+                .and_then(|o| o.get("hud_etykieta"))
+                .and_then(|o| o.get("wartosc"))
+                .and_then(Value::as_str)
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .unwrap_or("Moc")
+                .to_owned()
+        })
+        .clone()
+}
+
+/// JS `String(n)` / `'+' + n` dla liczb wierszy raportu (całkowite bez części ułamkowej, `-0` → `0`). Dla wartości
+/// niecałkowitych `Display` Rust daje najkrótszy zapis jak JS w zakresie wartości gry (bez notacji wykładniczej:
+/// |v| >= 1e21 lub < 1e-6 NIE_ZMIERZONO — nieosiągalne dla liczb raportu).
+#[must_use]
+pub fn js_number_string(v: f64) -> String {
+    if v.is_nan() {
+        return "NaN".to_owned();
+    }
+    if v.is_infinite() {
+        return if v > 0.0 { "Infinity" } else { "-Infinity" }.to_owned();
+    }
+    if v == 0.0 {
+        return "0".to_owned();
+    }
+    if v.fract() == 0.0 {
+        return format!("{v:.0}");
+    }
+    format!("{v}")
+}
+
+/// Web `CityCaptureReportInput` (`main.ts:1730-1786`).
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct CityCaptureReportInput {
+    /// `'zwykle' | 'stolica' | 'eliminacja'`.
+    pub kind: String,
+    pub moc_etykieta: String,
+    pub ludnosc: f64,
+    pub budynki: f64,
+    pub zloto: f64,
+    pub nauka: f64,
+    pub technologie: f64,
+    pub moc: f64,
+    pub barbarzynca_zdobywca: bool,
+    /// Web `surowce?: Record<string, number>` w kolejności kluczy obiektu (`None` = pole nieobecne).
+    pub surowce: Option<Vec<(String, f64)>>,
+    pub zywnosc_przejeta: Option<f64>,
+    pub zywnosc_utracona: Option<f64>,
+    pub zywnosc_ofiary_razem: Option<f64>,
+    pub praca_pool_przejeta: f64,
+}
+
+impl CityCaptureReportInput {
+    /// Wejście z obiektu argumentów (kształt pinu; tak zapisuje go `run_capital_capture_plunder` w `ui_calls`).
+    /// Liczby: brak / nie-liczba = 0 (pola wymagane w TS), pola opcjonalne `None`.
+    #[must_use]
+    pub fn from_json(v: &Value) -> Self {
+        let num = |k: &str| v.get(k).and_then(Value::as_f64).unwrap_or(0.0);
+        let opt = |k: &str| v.get(k).and_then(Value::as_f64);
+        let text = |k: &str| v.get(k).and_then(Value::as_str).unwrap_or("").to_owned();
+        CityCaptureReportInput {
+            kind: text("kind"),
+            moc_etykieta: text("mocEtykieta"),
+            ludnosc: num("ludnosc"),
+            budynki: num("budynki"),
+            zloto: num("zloto"),
+            nauka: num("nauka"),
+            technologie: num("technologie"),
+            moc: num("moc"),
+            barbarzynca_zdobywca: v.get("barbarzyncaZdobywca") == Some(&Value::Bool(true)),
+            surowce: v.get("surowce").and_then(Value::as_object).map(|m| {
+                m.iter()
+                    .map(|(k, x)| (k.clone(), x.as_f64().unwrap_or(0.0)))
+                    .collect()
+            }),
+            zywnosc_przejeta: opt("zywnoscPrzejeta"),
+            zywnosc_utracona: opt("zywnoscUtracona"),
+            zywnosc_ofiary_razem: opt("zywnoscOfiaryRazem"),
+            praca_pool_przejeta: num("pracaPoolPrzejeta"),
+        }
+    }
+}
+
+/// Wiersz raportu z polem `collapsible` (web `CaptureReportRow.collapsible`, wskazówka renderu modalu dla wierszy
+/// surowców). Magazyn kart ([`CaptureEventStore`]) trzyma [`CaptureRow`] bez tej wskazówki (D-ZMB-8).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CaptureReportRow {
+    pub row: CaptureRow,
+    pub collapsible: bool,
+}
+
+fn report_row(label: &str, value: String, tone: &str, group: &str) -> CaptureReportRow {
+    CaptureReportRow {
+        row: CaptureRow {
+            label: label.to_owned(),
+            value,
+            tone: Some(tone.to_owned()),
+            group: Some(group.to_owned()),
+        },
+        collapsible: false,
+    }
+}
+
+fn plus(v: f64) -> String {
+    format!("+{}", js_number_string(v))
+}
+
+/// Web `buildCityCaptureReportRows(input)` (`main.ts:1802-1886`), linia w linię.
+#[must_use]
+#[allow(clippy::too_many_lines)]
+pub fn build_city_capture_report_rows(input: &CityCaptureReportInput) -> Vec<CaptureReportRow> {
+    let mut rows: Vec<CaptureReportRow> = Vec::new();
+    // 1. Co przejęliśmy.
+    if input.ludnosc > 0.0 {
+        rows.push(report_row(
+            "Ludność",
+            plus(input.ludnosc),
+            "gain",
+            "przejete",
+        ));
+    }
+    if input.budynki > 0.0 {
+        rows.push(report_row(
+            "Budynki",
+            plus(input.budynki),
+            "gain",
+            "przejete",
+        ));
+    }
+    if let Some(surowce) = &input.surowce {
+        let mut seen: BTreeSet<String> = BTreeSet::new();
+        let get = |key: &str| {
+            surowce
+                .iter()
+                .find(|(k, _)| k == key)
+                .map_or(0.0, |(_, v)| *v)
+        };
+        let mut push = |key: &str, value: f64, rows: &mut Vec<CaptureReportRow>| {
+            if seen.contains(key) || !(value > 0.0) {
+                return;
+            }
+            seen.insert(key.to_owned());
+            let mut r = report_row(
+                &crate::domain::building_costs::p6_7b::stock_resource_label(key),
+                plus(value.floor()),
+                "gain",
+                "przejete",
+            );
+            r.collapsible = true;
+            rows.push(r);
+        };
+        for key in crate::domain::building_costs::p6_7b::empire_stock_resource_keys() {
+            push(key, get(key), &mut rows);
+        }
+        for (key, _) in surowce {
+            push(key, get(key), &mut rows);
+        }
+    }
+    // 2. Łup.
+    let mut lup: Vec<CaptureReportRow> = Vec::new();
+    if !input.barbarzynca_zdobywca {
+        if input.zloto > 0.0 {
+            lup.push(report_row(
+                "Złoto ze skarbca",
+                plus(input.zloto),
+                "gain",
+                "lup",
+            ));
+        }
+        if input.kind == "eliminacja" && input.zywnosc_przejeta.unwrap_or(0.0) > 0.0 {
+            let przejeta = input.zywnosc_przejeta.unwrap_or(0.0);
+            let razem = input.zywnosc_ofiary_razem.unwrap_or(przejeta);
+            let suffix = if input.zywnosc_utracona.unwrap_or(0.0) > 0.0 {
+                format!(
+                    " — przejęto {} z {} (limit pojemności)",
+                    js_number_string(przejeta),
+                    js_number_string(razem)
+                )
+            } else {
+                String::new()
+            };
+            lup.push(report_row(
+                "Żywność ze spichlerza",
+                format!("{}{suffix}", plus(przejeta)),
+                "gain",
+                "lup",
+            ));
+        }
+        if input.nauka > 0.0 {
+            lup.push(report_row("Punkty nauki", plus(input.nauka), "gain", "lup"));
+        }
+        if input.technologie > 0.0 {
+            lup.push(report_row(
+                "Technologie",
+                plus(input.technologie),
+                "gain",
+                "lup",
+            ));
+        }
+        if input.moc > 0.0 {
+            lup.push(report_row(
+                &input.moc_etykieta,
+                plus(input.moc),
+                "gain",
+                "lup",
+            ));
+        }
+    }
+    let lup_empty = lup.is_empty();
+    rows.extend(lup);
+    // 3. Co przepadło.
+    if input.barbarzynca_zdobywca {
+        rows.push(report_row(
+            "Łup",
+            "przepadł — barbarzyńcy nie dziedziczą zdobyczy".to_owned(),
+            "loss",
+            "lup",
+        ));
+    } else if lup_empty {
+        rows.push(report_row("Łup", "brak".to_owned(), "info", "lup"));
+    }
+    if input.kind == "eliminacja" {
+        if input.barbarzynca_zdobywca {
+            if input.praca_pool_przejeta > 0.0 {
+                rows.push(report_row(
+                    "Pula pracy",
+                    "przepadła — barbarzyńcy nie dziedziczą zdobyczy".to_owned(),
+                    "loss",
+                    "strata",
+                ));
+            }
+        } else if input.praca_pool_przejeta > 0.0 {
+            rows.push(report_row(
+                "Pula pracy",
+                format!(
+                    "{} — przejęta od wyeliminowanej cywilizacji",
+                    plus(input.praca_pool_przejeta)
+                ),
+                "gain",
+                "strata",
+            ));
+        }
+    } else if input.kind == "stolica" {
+        rows.push(report_row(
+            "Pula pracy",
+            "przepadła — nie przechodzi na zdobywcę".to_owned(),
+            "loss",
+            "strata",
+        ));
+    }
+    rows
+}
+
+/// Web `capturePopLossReportRow(loss)` (`cities.ts:1255-1260`): „Ludność: −N (straty zdobycia)”, `None` gdy brak
+/// straty.
+#[must_use]
+pub fn capture_pop_loss_report_row(loss: f64) -> Option<CaptureRow> {
+    if !(loss > 0.0) {
+        return None;
+    }
+    Some(CaptureRow {
+        label: "Ludność".to_owned(),
+        value: format!(
+            "\u{2212}{} (straty zdobycia)",
+            js_number_string(loss.floor())
+        ),
+        tone: Some("loss".to_owned()),
+        group: Some("strata".to_owned()),
+    })
+}
+
+/// Web `CaptureReportRow` jako pole stanu (serde). `collapsible` pominięte (D-ZMB-8).
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct PlayableCaptureRow {
+    pub label: String,
+    pub value: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tone: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub group: Option<String>,
+}
+
+/// Web `SidePanelEvent` z `warEventLog` (pola zapisywane przez rejestratory zdobycia/eliminacji).
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlayableSidePanelEvent {
+    pub id: String,
+    pub icon: String,
+    pub title: String,
+    pub subtitle: String,
+    pub kind: String,
+    pub negative: bool,
+    pub turn_created: i64,
+}
+
+/// Web `cityCaptureEventDetails` (wartość) bez `spectacle` (granica Q7).
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlayableCityCaptureDetails {
+    pub title: String,
+    pub city_name: String,
+    pub subtitle: String,
+    pub rows: Vec<PlayableCaptureRow>,
+    pub rows_title: String,
+}
+
+/// Web `civElimEventDetails` (wartość).
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlayableCivElimDetails {
+    pub civ_label: String,
+    pub details: String,
+    pub cause: String,
+}
+
+/// Pole stanu: web `warEventLog` + `cityCaptureEventDetails` + `civElimEventDetails`. Pisane wyłącznie przez
+/// [`CaptureEventStore`] (konwersja tam i z powrotem); `hud_refreshes` (`refreshD1bHud`) to efekt UI, nie stan.
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlayableCaptureEvents {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub war_event_log: Vec<PlayableSidePanelEvent>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub city_capture_details: BTreeMap<String, PlayableCityCaptureDetails>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub civ_elim_details: BTreeMap<String, PlayableCivElimDetails>,
+}
+
+fn row_to_state(r: &CaptureRow) -> PlayableCaptureRow {
+    PlayableCaptureRow {
+        label: r.label.clone(),
+        value: r.value.clone(),
+        tone: r.tone.clone(),
+        group: r.group.clone(),
+    }
+}
+
+fn row_from_state(r: &PlayableCaptureRow) -> CaptureRow {
+    CaptureRow {
+        label: r.label.clone(),
+        value: r.value.clone(),
+        tone: r.tone.clone(),
+        group: r.group.clone(),
+    }
+}
+
+impl PlayableCaptureEvents {
+    #[must_use]
+    pub fn is_default(&self) -> bool {
+        *self == Self::default()
+    }
+
+    /// Magazyn logiki Q7 nad polem stanu; `turn` = web `turn` (tura stanu).
+    #[must_use]
+    pub fn to_store(&self, turn: i64) -> CaptureEventStore {
+        CaptureEventStore {
+            turn,
+            war_event_log: self
+                .war_event_log
+                .iter()
+                .map(|e| SidePanelEvent {
+                    id: e.id.clone(),
+                    icon: e.icon.clone(),
+                    title: e.title.clone(),
+                    subtitle: e.subtitle.clone(),
+                    kind: e.kind.clone(),
+                    negative: e.negative,
+                    turn_created: e.turn_created,
+                })
+                .collect(),
+            civ_elim_details: self
+                .civ_elim_details
+                .iter()
+                .map(|(k, d)| {
+                    (
+                        k.clone(),
+                        CivElimDetails {
+                            civ_label: d.civ_label.clone(),
+                            details: d.details.clone(),
+                            cause: d.cause.clone(),
+                        },
+                    )
+                })
+                .collect(),
+            city_capture_details: self
+                .city_capture_details
+                .iter()
+                .map(|(k, d)| {
+                    (
+                        k.clone(),
+                        CityCaptureDetails {
+                            title: d.title.clone(),
+                            city_name: d.city_name.clone(),
+                            subtitle: d.subtitle.clone(),
+                            rows: d.rows.iter().map(row_from_state).collect(),
+                            rows_title: d.rows_title.clone(),
+                        },
+                    )
+                })
+                .collect(),
+            hud_refreshes: 0,
+        }
+    }
+
+    #[must_use]
+    pub fn from_store(s: &CaptureEventStore) -> Self {
+        PlayableCaptureEvents {
+            war_event_log: s
+                .war_event_log
+                .iter()
+                .map(|e| PlayableSidePanelEvent {
+                    id: e.id.clone(),
+                    icon: e.icon.clone(),
+                    title: e.title.clone(),
+                    subtitle: e.subtitle.clone(),
+                    kind: e.kind.clone(),
+                    negative: e.negative,
+                    turn_created: e.turn_created,
+                })
+                .collect(),
+            city_capture_details: s
+                .city_capture_details
+                .iter()
+                .map(|(k, d)| {
+                    (
+                        k.clone(),
+                        PlayableCityCaptureDetails {
+                            title: d.title.clone(),
+                            city_name: d.city_name.clone(),
+                            subtitle: d.subtitle.clone(),
+                            rows: d.rows.iter().map(row_to_state).collect(),
+                            rows_title: d.rows_title.clone(),
+                        },
+                    )
+                })
+                .collect(),
+            civ_elim_details: s
+                .civ_elim_details
+                .iter()
+                .map(|(k, d)| {
+                    (
+                        k.clone(),
+                        PlayableCivElimDetails {
+                            civ_label: d.civ_label.clone(),
+                            details: d.details.clone(),
+                            cause: d.cause.clone(),
+                        },
+                    )
+                })
+                .collect(),
+        }
+    }
+}
+
+/// Web `recordCityCaptureEvent(args)` (`main.ts:10650`) na polu stanu `capture_events` (tura = `state.turn`).
+/// Id właścicieli i miasta w kształcie pinu (gracz = 0, `city<N>`, D-ZMA-5).
+pub fn apply_record_city_capture_event(state: &mut PlayableState, args: &CityCaptureArgs<'_>) {
+    let mut store = state.capture_events.to_store(i64::from(state.turn));
+    store.record_city_capture_event(args);
+    state.capture_events = PlayableCaptureEvents::from_store(&store);
+}
+
+/// Web `recordCivElimEvent(csOwnerId, civLabel, details, cause)` (`main.ts:10583`) na polu stanu.
+pub fn apply_record_civ_elim_event(
+    state: &mut PlayableState,
+    cs_owner_id: i64,
+    civ_label: &str,
+    details: &str,
+    cause: Option<&str>,
+) {
+    let mut store = state.capture_events.to_store(i64::from(state.turn));
+    store.record_civ_elim_event(cs_owner_id, civ_label, details, cause);
+    state.capture_events = PlayableCaptureEvents::from_store(&store);
+}
+
+/// Wykonuje na stanie efekty zdarzeń zapisane przez `run_capital_capture_plunder` w `ui_calls`, w kolejności pinu:
+/// `recordCityCaptureEvent` (wiersze = `buildCityCaptureReportRows` z poprzedzającego wywołania) i
+/// `recordCivElimEvent`. Zwraca wiersze raportu stolicy/eliminacji (web `capitalCaptureReportSlot.rows`).
+fn apply_plunder_event_calls(
+    state: &mut PlayableState,
+    ui: &[Value],
+) -> Option<Vec<CaptureReportRow>> {
+    let mut last_rows: Option<Vec<CaptureReportRow>> = None;
+    for call in ui {
+        let args = call["args"].as_array().cloned().unwrap_or_default();
+        match call["fn"].as_str() {
+            Some("buildCityCaptureReportRows") => {
+                if let Some(a) = args.first() {
+                    last_rows = Some(build_city_capture_report_rows(
+                        &CityCaptureReportInput::from_json(a),
+                    ));
+                }
+            }
+            Some("recordCityCaptureEvent") => {
+                let Some(a) = args.first() else { continue };
+                let rows: Vec<CaptureRow> = last_rows
+                    .as_ref()
+                    .map(|r| r.iter().map(|x| x.row.clone()).collect())
+                    .unwrap_or_default();
+                let s = |k: &str| a.get(k).and_then(Value::as_str).unwrap_or("").to_owned();
+                let (city_id, city_name, victim, captor) = (
+                    s("cityId"),
+                    s("cityName"),
+                    s("victimLabel"),
+                    s("captorLabel"),
+                );
+                apply_record_city_capture_event(
+                    state,
+                    &CityCaptureArgs {
+                        city_id: &city_id,
+                        city_name: &city_name,
+                        old_owner: a["oldOwner"].as_i64().unwrap_or(0),
+                        new_owner: a["newOwner"].as_i64().unwrap_or(0),
+                        rows: &rows,
+                        victim_label: &victim,
+                        captor_label: &captor,
+                        eliminated_civ_label: a.get("eliminatedCivLabel").and_then(Value::as_str),
+                    },
+                );
+            }
+            Some("recordCivElimEvent") => {
+                let cs = args.first().and_then(Value::as_i64).unwrap_or(0);
+                let label = args.get(1).and_then(Value::as_str).unwrap_or("");
+                let details = args.get(2).and_then(Value::as_str).unwrap_or("");
+                let cause = args.get(3).and_then(Value::as_str);
+                apply_record_civ_elim_event(state, cs, label, details, cause);
+            }
+            _ => {}
+        }
+    }
+    last_rows
 }

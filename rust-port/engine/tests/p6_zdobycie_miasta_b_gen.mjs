@@ -25,7 +25,7 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 
 const PIN = '07d2fbd72f758705f8e1d59cc4968027ffbafe75';
-const EXPECTED_SHA256 = process.env.ZMB_SHA256_OVERRIDE ?? '54ef001acc49f4547fbe7e76d169dd0c9c7384a3425fa61da0d558af73e2b615';
+const EXPECTED_SHA256 = process.env.ZMB_SHA256_OVERRIDE ?? 'f6b8e34d8df5f697637b938ccf7d233ad95d667cd715ce6901b790ab712160de';
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..', '..', '..');
 const TS_JS = process.env.TYPESCRIPT_JS ?? '/opt/node22/lib/node_modules/typescript/lib/typescript.js';
@@ -109,6 +109,14 @@ const PROD = load('gra/src/game/production.ts');
 const CIVS = load('gra/data/civs.json');
 const SOC = load('gra/data/society-params.json');
 const BLD = load('gra/data/buildings.json');
+// Obrona r1 (Z1): karta zdobycia. Moduly ladowane jak wyzej; funkcje z domkniecia `main.ts` i z `cities.ts`
+// wycinane z tekstu pinu po nazwie (bez kopii logiki) i wykonywane po zdjeciu typow.
+const BSC = load('gra/src/game/building-stock-cost.ts');
+const PL = load('gra/src/ui/power-labels.ts');
+const RSP = load('gra/src/game/retained-side-panel-events.ts');
+const hashText = (p) => { const src = show(p); if (src === null) throw new Error('brak w pinie: ' + p); if (!hashed.has(p)) { hashed.add(p); hash.update(p + '\n' + src); } return src; };
+const MAIN_LINES = hashText('gra/src/main.ts').split('\n');
+const CITIES_LINES = hashText('gra/src/game/cities.ts').split('\n');
 const shaHex = hash.digest('hex');
 if (EXPECTED_SHA256 !== 'UZUPELNIJ' && shaHex !== EXPECTED_SHA256) {
   throw new Error(`SHA-256 tekstu pinu ${shaHex} != ${EXPECTED_SHA256}`);
@@ -145,7 +153,10 @@ const religionFor = (civByOwner) => (ownerId) => CR.civReligionForKey(civByOwner
 const REL_R = 'Religia rzymska / kult państwa';
 const REL_G = 'Politeizm olimpijski';
 const religionCases = [];
-const civPairs = [['rzymianie', 'grecy'], ['rzymianie', 'rzymianie'], ['rzymianie', 'harappa'], ['harappa', 'grecy'], ['', 'grecy'], ['nieznana', 'grecy'], ['grecy', 'egipt']];
+// Obrona r1 (Z2): pary z dwiema nieznanymi / pustymi cywilizacjami pokrywaja galaz `if (!row) return ''` w
+// `civKeyForOwnerId` (nieznana cywilizacja nie dziedziczy kregu: sameCultureCircle('', '') = false).
+const civPairs = [['rzymianie', 'grecy'], ['rzymianie', 'rzymianie'], ['rzymianie', 'harappa'], ['harappa', 'grecy'], ['', 'grecy'], ['nieznana', 'grecy'], ['grecy', 'egipt'],
+  ['nieznana', 'nieznana'], ['nieznana', 'inna_nieznana'], ['', ''], ['grecy', 'nieznana']];
 const counts = [
   {}, { [REL_G]: 5 }, { [REL_G]: 3, [REL_R]: 2 }, { [REL_G]: 2, a_kult: 1, b_kult: 1 },
   { [REL_G]: 1, a_kult: 2, b_kult: 2, c_kult: 2 }, { x_kult: 3 }, { [REL_G]: 4, a_kult: 0 },
@@ -247,7 +258,91 @@ const e2e = (() => {
   return { civ, religionBefore: { [REL_G]: 2, a_kult: 1 }, religionOut: rel.counts, law, chronicle: [...chron.entries()].sort((a, b2) => a[0] - b2[0]), turn: 1, prod: p };
 })();
 
-const out = { pin: PIN, pinSha256: shaHex, dataSame, capitalOnly, religionCases, prodCases, lawCases, chronicleCases, e2e };
+// --- 5. Karta zdobycia (obrona r1, Z1) ---------------------------------------------------------------------------------
+// `buildCityCaptureReportRows` (`main.ts:1802`), `captureReportOneLine`/`ShortLine`, `mirrorCaptureReportRowsForVictim`,
+// `recordCityCaptureEvent` (`main.ts:10650`) z domkniecia `main.ts`; `capturePopLossReportRow` (`cities.ts:1255`).
+function extractFn(lines, name) {
+  const re = new RegExp(`^\\s*(export )?function ${name}\\b`);
+  const start = lines.findIndex(l => re.test(l));
+  if (start < 0) throw new Error(`brak funkcji ${name}`);
+  const indent = lines[start].match(/^\s*/)[0];
+  let end = start + 1;
+  while (lines[end] !== indent + '}') end++;
+  return lines.slice(start, end + 1).join('\n').replace(/^(\s*)export /, '$1');
+}
+const FN_SRC = [
+  ...['buildCityCaptureReportRows', 'captureReportOneLine', 'captureReportShortLine', 'mirrorCaptureReportRowsForVictim', 'recordCityCaptureEvent']
+    .map(n => extractFn(MAIN_LINES, n)),
+  extractFn(CITIES_LINES, 'capturePopLossReportRow'),
+].join('\n\n');
+const ENV_TS = `
+let turn: number = 1;
+const warEventLog: any[] = [];
+const cityCaptureEventDetails = new Map<string, any>();
+const civElimEventDetails = new Map<string, any>();
+const eliminationSpectacleByLabel = new Map<string, any>();
+const CITY_CAPTURE_EVENT_PREFIX = 'capture-';
+const warEventDetailOwners = [
+  { idPrefix: CITY_CAPTURE_EVENT_PREFIX, details: cityCaptureEventDetails },
+  { idPrefix: 'elim-cs-', details: civElimEventDetails },
+] as const;
+function trimWarEventLog(): void { trimSidePanelEventLog(warEventLog, 8, warEventDetailOwners); }
+function refreshD1bHud(): void {}
+${FN_SRC}
+return {
+  setTurn(t: number) { turn = t; },
+  buildCityCaptureReportRows, capturePopLossReportRow, recordCityCaptureEvent,
+  snapshot() {
+    const sorted = (m: Map<string, any>) => Object.fromEntries([...m.keys()].sort().map(k => [k, m.get(k)]));
+    return JSON.parse(JSON.stringify({ warEventLog, city: sorted(cityCaptureEventDetails), civElim: sorted(civElimEventDetails) }));
+  },
+};`;
+const ENV_JS = ts.transpileModule(ENV_TS, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
+const mkEnv = () => new Function('trimSidePanelEventLog', 'EMPIRE_STOCK_RESOURCE_KEYS', 'stockResourceLabel', ENV_JS)(
+  RSP.trimSidePanelEventLog, BSC.EMPIRE_STOCK_RESOURCE_KEYS, BSC.stockResourceLabel);
+const R = mkEnv();
+const MOC = PL.mocLabel();
+const rin = (o) => ({ kind: 'zwykle', mocEtykieta: MOC, ludnosc: 0, budynki: 0, zloto: 0, nauka: 0, technologie: 0, moc: 0, barbarzyncaZdobywca: false, pracaPoolPrzejeta: 0, ...o });
+// Klucze surowcow spoza listy w kolejnosci alfabetycznej (JSON Rust bez preserve_order czyta obiekt posortowany).
+const SUR = { aaa_nowy: 1, braz: 0.5, drewno: 3.7, kamien: 0, kon: -2, sol: 6, zelazo: 2, zzz_nowy: 4 };
+const reportInputs = [
+  rin({ ludnosc: 2, budynki: 1 }),
+  rin({}),
+  rin({ ludnosc: 5, budynki: 0, surowce: SUR }),
+  rin({ ludnosc: 1, surowce: {} }),
+  rin({ kind: 'stolica', ludnosc: 2, budynki: 1, zloto: 40, surowce: {} }),
+  rin({ kind: 'stolica', ludnosc: 3, zloto: 0 }),
+  rin({ kind: 'stolica', ludnosc: 3, zloto: 9, barbarzyncaZdobywca: true }),
+  rin({ kind: 'stolica', zloto: 5, zywnoscPrzejeta: 8, nauka: 3 }),
+  rin({ kind: 'eliminacja', ludnosc: 4, budynki: 2, zloto: 12, nauka: 5, technologie: 2, moc: 7.5, zywnoscPrzejeta: 10, zywnoscUtracona: 3, zywnoscOfiaryRazem: 13, pracaPoolPrzejeta: 6, surowce: SUR }),
+  rin({ kind: 'eliminacja', ludnosc: 1, zywnoscPrzejeta: 4, zywnoscUtracona: 0 }),
+  rin({ kind: 'eliminacja', ludnosc: 1, zywnoscPrzejeta: 4, zywnoscUtracona: 2 }),
+  rin({ kind: 'eliminacja', ludnosc: 2, zloto: 7, nauka: 1, moc: 3, pracaPoolPrzejeta: 6, barbarzyncaZdobywca: true }),
+  rin({ kind: 'eliminacja', ludnosc: 2, pracaPoolPrzejeta: 0, barbarzyncaZdobywca: true }),
+  rin({ kind: 'eliminacja' }),
+  rin({ kind: 'eliminacja', moc: 0.25, technologie: 1 }),
+];
+const reportCases = reportInputs.map(input => ({ input, rows: R.buildCityCaptureReportRows(input) }));
+const popLossCases = [0, 1, 2, 2.6, -1].map(loss => ({ loss, row: R.capturePopLossReportRow(loss) }));
+// E2E (most): ta sama sekwencja wolan co `applyCityCaptureToMap` (`main.ts:36222-36258`) + wolanie stoleczne z wnetrza
+// `runCapitalCapturePlunder` (`main.ts:35558`), etykiety `civLabelForOwner` = konwencja `owner{id}` (D-ZMB-7).
+const captureEnv = (steps) => {
+  const env = mkEnv();
+  env.setTurn(1);
+  for (const st of steps) env.recordCityCaptureEvent(st);
+  return env.snapshot();
+};
+const popLoss1 = R.capturePopLossReportRow(Math.max(0, 3 - 2));
+const zwykleRows = R.buildCityCaptureReportRows(rin({ ludnosc: 2, budynki: 1, surowce: undefined }));
+const stolicaRows = R.buildCityCaptureReportRows(rin({ kind: 'stolica', ludnosc: 2, budynki: 1, zloto: Math.floor(40), surowce: {} }));
+const capArgs = (rows, extra = {}) => ({ cityId: 'city900', cityName: 'Twierdza', oldOwner: 101, newOwner: 0, rows, victimLabel: 'owner101', captorLabel: 'owner0', ...extra });
+const captureEvents = {
+  zwykle: captureEnv([capArgs([...zwykleRows, popLoss1], { eliminatedCivLabel: null })]),
+  stolica: captureEnv([capArgs(stolicaRows), capArgs([...stolicaRows, popLoss1], { eliminatedCivLabel: null })]),
+};
+const capture = { mocLabel: MOC, reportCases, popLossCases, captureEvents };
+
+const out = { pin: PIN, pinSha256: shaHex, dataSame, capitalOnly, religionCases, prodCases, lawCases, chronicleCases, e2e, capture };
 const dir = join(here, 'p6_zdobycie_miasta_b_vectors');
 mkdirSync(dir, { recursive: true });
 const text = JSON.stringify(out, null, 1) + '\n';

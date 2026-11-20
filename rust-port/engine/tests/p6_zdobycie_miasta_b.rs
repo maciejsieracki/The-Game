@@ -388,3 +388,123 @@ fn dummy_out() -> CityCaptureResultDto {
         not_applied: Vec::new(),
     }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Obrona r1: Z1 (karta zdobycia), Z2 (nieznane cywilizacje), Z3 (strażnik barbarzyńcy prawa), Z5 (gałąź defensywna
+// `capitalCityIdForOwner`).
+// ---------------------------------------------------------------------------------------------------------------
+
+fn opt_str(v: &Value) -> Option<String> {
+    v.as_str().map(str::to_owned)
+}
+
+#[test]
+fn wiersze_raportu_zdobycia_zgodne_z_pinem() {
+    use civ_engine::domain::city_capture_apply::{
+        build_city_capture_report_rows, moc_label, CityCaptureReportInput,
+    };
+    let v = vectors();
+    let cap = &v["capture"];
+    assert_eq!(moc_label(), cap["mocLabel"].as_str().unwrap(), "mocLabel");
+    let cases = cap["reportCases"].as_array().unwrap();
+    assert!(cases.len() >= 15);
+    let mut collapsible = 0;
+    for (i, c) in cases.iter().enumerate() {
+        let got = build_city_capture_report_rows(&CityCaptureReportInput::from_json(&c["input"]));
+        let want = c["rows"].as_array().unwrap();
+        assert_eq!(got.len(), want.len(), "przypadek {i}: {c}");
+        for (g, w) in got.iter().zip(want) {
+            assert_eq!(g.row.label, w["label"].as_str().unwrap(), "przypadek {i}");
+            assert_eq!(g.row.value, w["value"].as_str().unwrap(), "przypadek {i}");
+            assert_eq!(g.row.tone, opt_str(&w["tone"]), "przypadek {i}");
+            assert_eq!(g.row.group, opt_str(&w["group"]), "przypadek {i}");
+            assert_eq!(g.collapsible, w["collapsible"] == true, "przypadek {i}");
+            collapsible += usize::from(g.collapsible);
+        }
+    }
+    assert!(collapsible >= 6, "pokrycie wierszy surowcow");
+}
+
+#[test]
+fn wiersz_straty_ludnosci_zgodny_z_pinem() {
+    use civ_engine::domain::city_capture_apply::capture_pop_loss_report_row;
+    for c in vectors()["capture"]["popLossCases"].as_array().unwrap() {
+        let got = capture_pop_loss_report_row(c["loss"].as_f64().unwrap());
+        match got {
+            None => assert!(c["row"].is_null(), "{c}"),
+            Some(r) => {
+                assert_eq!(r.label, c["row"]["label"].as_str().unwrap());
+                assert_eq!(r.value, c["row"]["value"].as_str().unwrap(), "{c}");
+                assert_eq!(r.tone, opt_str(&c["row"]["tone"]));
+                assert_eq!(r.group, opt_str(&c["row"]["group"]));
+            }
+        }
+    }
+}
+
+#[test]
+fn nieznane_cywilizacje_nie_dziedzicza_kregu() {
+    // Z2: `civKeyForOwnerId` zwraca '' dla cywilizacji spoza civs.json, więc dwie nieznane NIE są w jednym kręgu.
+    let v = vectors();
+    let cases: Vec<&Value> = v["religionCases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|c| c["civNew"] == "nieznana" && c["civPrev"] == "nieznana")
+        .collect();
+    assert!(!cases.is_empty());
+    assert!(cases.iter().all(|c| c["same"] == false));
+    assert!(v["religionCases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|c| c["civNew"] == "nieznana" && c["civPrev"] == "inna_nieznana"));
+}
+
+#[test]
+fn prawo_po_przejeciu_pominiete_dla_zdobywcy_barbarzyncy() {
+    // Z3: P9 `if (!isBarbarian(atkOwner)) applyPostCaptureLawOnCapture(...)` (`post-battle-map.ts:573`).
+    let mut st = base("rzymianie", "grecy", 3);
+    apply_capture_law(&mut st, CityId::new(CITY), 101, -1);
+    assert!(st.post_capture_law_by_city.is_empty());
+    let before = PlayablePostCaptureLaw {
+        post_capture_law_turns_remaining: Some(2.0),
+        was_rebellion_reconquest: true,
+    };
+    st.post_capture_law_by_city
+        .insert(CityId::new(CITY), before);
+    apply_capture_law(&mut st, CityId::new(CITY), 101, -1);
+    assert_eq!(
+        st.post_capture_law_by_city.get(&CityId::new(CITY)),
+        Some(&before)
+    );
+    // Kontrola: ten sam krok dla zdobywcy nie-barbarzyńcy zmienia wpis.
+    apply_capture_law(&mut st, CityId::new(CITY), 101, 1);
+    assert_ne!(
+        st.post_capture_law_by_city.get(&CityId::new(CITY)),
+        Some(&before)
+    );
+}
+
+#[test]
+fn jawna_stolica_innego_wlasciciela_daje_najstarsze_miasto() {
+    // Z5: `capitalCityIdForOwner` (`main.ts:34999-35003`): jawny wpis stolicy, który nie należy już do właściciela,
+    // prowadzi do `oldestCityOfOwner`. Zdobywca 1 ma 900 (najstarsze) i 905; wpis wskazuje 906 (miasto 101).
+    let mut st = base("rzymianie", "grecy", 3);
+    let palace = vectors()["capitalOnly"][0].as_str().unwrap().to_owned();
+    let p: PlayableCityProduction = serde_json::from_value(serde_json::json!({
+        "kolejka": [{"kind": "budynek", "id": palace, "nazwa": "p", "koszt": 50}], "postep": 4
+    }))
+    .unwrap();
+    st.city_prod_by_city.insert(CityId::new(CITY), p.clone());
+    let designated: BTreeMap<i64, CityId> = [(1, CityId::new(906))].into_iter().collect();
+    let mut out = dummy_out();
+    apply_capture_production(&mut st, CityId::new(CITY), 101, 1, &designated, &mut out);
+    // 900 = nowa stolica zdobywcy: budynek stołeczny zostaje.
+    assert_eq!(st.city_prod_by_city.get(&CityId::new(CITY)), Some(&p));
+    // Kontrola: jawny wpis należący do zdobywcy (905) — 900 nie jest stolicą, budynek stołeczny odpada.
+    st.city_prod_by_city.insert(CityId::new(CITY), p.clone());
+    let designated: BTreeMap<i64, CityId> = [(1, CityId::new(905))].into_iter().collect();
+    apply_capture_production(&mut st, CityId::new(CITY), 101, 1, &designated, &mut out);
+    assert!(st.city_prod_by_city[&CityId::new(CITY)].kolejka.is_empty());
+}
