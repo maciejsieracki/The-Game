@@ -140,6 +140,9 @@ async function main() {
     // R-WEB-TEST-DEBT-Q12 (niestabilnosc): karta A wjezdza animacja; wspolrzedne przycisku mierzone w trakcie ruchu lapaly
     // DIV karty zamiast przycisku (elementFromPoint = kind "unit"), a klik realny trafial w tlo. Czekamy, az przycisk
     // przestanie sie przesuwac (ta sama ramka prostokata przez 3 klatki rAF) i jest pod punktem srodka.
+    // Zarzut 5 Evaluatora: brak stabilizacji NIE jest już połykany — jawna asercja z powodem timeoutu.
+    let techBtnStable = false;
+    let techBtnStableErr = '';
     try { await page.waitForFunction(() => {
       const rows = Array.from(document.querySelectorAll('.entity-card-unit .entity-card-row'));
       const row = rows.find((r) => r.querySelector('.entity-card-row-key')?.textContent === 'Technologia');
@@ -154,7 +157,8 @@ async function main() {
       const n = prev && prev.key === key ? prev.n + 1 : 1;
       window.__ecStable = { key, n };
       return n >= 3 && !!el && (el === btn || btn.contains(el));
-    }, null, { polling: 'raf', timeout: 15000 }); } catch (e) { /* brak stabilizacji: asercje nizej raportuja stan */ }
+    }, null, { polling: 'raf', timeout: 15000 }); techBtnStable = true; } catch (e) { techBtnStableErr = String(e && e.message || e).slice(0, 160); }
+    check('przycisk "Technologia" ustabilizowany przed klikiem (animacja wjazdu karty A zakończona)', techBtnStable, techBtnStableErr);
 
     // --- wiersz "Technologia" (unitAdapter, T10) musi być klikalnym <button> z linkTo ---
     const techRowInfo = await page.evaluate(() => {

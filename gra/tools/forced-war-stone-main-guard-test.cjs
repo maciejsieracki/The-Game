@@ -87,14 +87,21 @@ check(
   'resolveSiegeSurrender nadal przypisuje city.ownerId = newOwner (funnel kapitulacji bez zmian poza R9)',
   siegeSurrender.includes('city.ownerId = newOwner;'),
 );
+// R-WEB-TEST-DEBT-Q12 (Zarzut 4 Evaluatora): zamiast okna znakow (dryfuje przy kazdej zmianie galezi rozejmu)
+// wycinamy CIALO funkcji finalizePeaceTreatyBetween (od deklaracji do zamykajacego '    }' w tym samym wciecu).
+const finalizePeaceBody = (() => {
+  const i = main.indexOf('function finalizePeaceTreatyBetween(');
+  if (i < 0) return '';
+  const rest = main.slice(i);
+  const m = rest.match(/\n {4}\}\n/);
+  return m ? rest.slice(0, m.index) : rest;
+})();
 check(
   'finalizePeaceTreatyBetween ustawia Stone rest timer',
   /function cleanupStoneForcedWarOnPeace\(proposerId: number, responderId: number\): void \{[\s\S]{0,500}stoneForceWarRestUntilByOwner\.set/.test(main)
-    // R-WEB-TRUCE-Q1 r5: okno 1800 → 2600 znaków — gałąź rozejmu (truceTurns) w finalizePeaceTreatyBetween
-    // przesunęła wywołanie cleanupStoneForcedWarOnPeace o ~700 znaków (dystans 1186 → 1894); to nie zmiana zachowania.
-    // R-WEB-TEST-DEBT-Q12: okno 2600 znakow nie siega wywolania (dystans w main.ts = 4565 po rozbudowie galezi rozejmu);
-    // wywolanie cleanupStoneForcedWarOnPeace nadal jest w finalizePeaceTreatyBetween — okno pinu poszerzone do 6000.
-    && /finalizePeaceTreatyBetween\([\s\S]{0,6000}cleanupStoneForcedWarOnPeace\(proposerId, responderId\);/.test(main),
+    // R-WEB-TEST-DEBT-Q12: wywolanie szukane W CIELE finalizePeaceTreatyBetween (zamiast okna znakow — dryfowalo:
+    // dystans 1186 → 1894 → 4565). Historia okna: R-WEB-TRUCE-Q1 r5 (1800 → 2600).
+    && finalizePeaceBody.length > 0 && /\bcleanupStoneForcedWarOnPeace\(proposerId, responderId\);/.test(finalizePeaceBody),
 );
 check(
   'save snapshot zawiera komplet 4 pól Stone',
