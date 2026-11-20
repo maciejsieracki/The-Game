@@ -92,7 +92,7 @@ M = [
      'kolejność klatki: skutek ciała w _drainTimers zamiast w kolejce _raf (zamiana _drainTimers/_raf)', False),
     ('Q25', FF, '        clock.drain_timers(|c, p| host.event(c, st, FfEvent::TimerFired(p)));',
      '        let batch0 = std::mem::take(&mut st.queue);\n        for item in batch0 {\n            host.event(clock, st, FfEvent::RunQueued(item));\n        }\n        clock.drain_timers(|c, p| host.event(c, st, FfEvent::TimerFired(p)));',
-     'kolejność klatki: kolejka _raf (_ffQueue) PRZED _drainTimers (test czułości kolejności)', False),
+     'NO-OP (obrona r1, U4): DOKŁADA opróżnianie kolejki _ffQueue przed _drainTimers, nie usuwa tego po; kolejka na początku iteracji jest zawsze pusta. To NIE jest zamiana faz — prawdziwą zamianę sprawdzają Q24 i E1 Evaluatora (oba zabite)', False),
     ('Q26', LOOP, '            self.gap_due = Some(at + ms);', '            self.gap_due = Some(at + frame_sched(self.frame_ms, ms));',
      'gap_after: due kroku = chwila klatki (utrata nominalnego due)', True),
 ]

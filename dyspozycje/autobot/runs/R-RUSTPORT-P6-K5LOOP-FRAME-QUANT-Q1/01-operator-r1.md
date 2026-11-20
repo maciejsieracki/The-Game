@@ -158,7 +158,7 @@ wektorów tylko zaostrza test, więc zabicia z pełnego przebiegu pozostają wa�
 | Q22 | `due` trafienia wieży = chwila wystrzału | **NIEOBSERWOWALNY** (dług FQ-TOWER-HIT-DUE) |
 | Q23 | `timeline_key` odwrócony | ZABITY (lib) |
 | **Q24** | **zamiana kolejności `_drainTimers`/`_raf`**: skutek ciała w `_drainTimers` (`body_done_raf = false`) | **ZABITY na wektorach końcowych (test czułości dispatchu = FAIL)**: `fq_rown_mix_d8l_mury_217_klatka1` tura 65≠56, rzuty 188≠123; `…_palisada_218_klatka1` tura 74≠60; `fq_las_lucz2_d5_palisada_132_klatka4` tura 54≠55. Przed dopisaniem tych bliźniaków PRZEŻYWAŁ — luka pokrycia wykryta tym przebiegiem i zamknięta |
-| Q25 | kolejka `_ffQueue` przed `_drainTimers` w `run_fast_forward` | **RÓWNOWAŻNY**: `st.queue` jest opróżniana (`mem::take`) na końcu każdej iteracji i napełniana tylko w `_drainTimers` tej samej iteracji, więc na początku iteracji jest zawsze pusta — mutant to no-op. Właściwy test zamiany faz to Q24 |
+| Q25 | (opis poprawiony w obronie r1, U4) mutant DOKŁADA opróżnianie kolejki `_ffQueue` przed `_drainTimers` w `run_fast_forward`, NIE usuwając tego po — to NIE jest zamiana faz | **RÓWNOWAŻNY (no-op)**: `st.queue` jest opróżniana (`mem::take`) na końcu każdej iteracji i napełniana tylko w `_drainTimers` tej samej iteracji, więc na początku iteracji jest zawsze pusta — mutant to no-op. Właściwy test zamiany faz to Q24 |
 | Q26 | `gap_after`: `due` = chwila klatki | ZABITY |
 
 **Bilans: 26 mutantów = 19 zabitych + 5 jawnie równoważnych (Q4, Q8, Q11, Q12, Q25) + 2 nieobserwowalne (Q20, Q22).**
