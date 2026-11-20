@@ -52,6 +52,11 @@ const OUT = path.resolve(arg('out', path.join(os.tmpdir(), 'era-war-out')));
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 const CHROME = process.env.CHROME_PATH || ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium'].find(p => fs.existsSync(p)) || '/usr/bin/google-chrome';
 const TURN_TIMEOUT_MS = 300000;
+/** Wznawianie (runda 4): --resume 1 wczytuje slot zapisu `eraw-<seed>` z profilu (localStorage/IndexedDB profilu trwa miedzy startami)
+ *  i dopisuje do istniejacego JSONL; --ckpt N = zapis slotu co N tur (0 = wylaczony). */
+const RESUME = arg('resume', '0') === '1';
+const CKPT = parseInt(arg('ckpt', '5'), 10);
+const SLOT = 'eraw-' + SEED;
 const TAG = `era-seed${SEED}`;
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const COUNTERS = base.newCtx(null);
@@ -111,7 +116,21 @@ async function clearBattles(page) {
   }
 }
 
-async function playOneTurn(page, seenAttempts, seenDecl) {
+/** Wznowienie: otwiera strone, wczytuje slot zapisu, wlacza autopilot gracza i tryb szybki. */
+async function openResumed(ctx) {
+  const page = ctx.pages()[0] || await ctx.newPage();
+  const url = 'file://' + path.join(DIST, 'index.html') + '?civTest=1&civSeed=' + SEED;
+  await page.goto(url, { waitUntil: 'load', timeout: 180000 });
+  await page.waitForFunction(() => !!window.__aiTradeWiringTestDebug && !!window.__aiEconomyMeasure && !!window.__truceTestDebug && !!window.__eraWarMeasure, null, { timeout: 180000 });
+  await page.evaluate(slot => window.__truceTestDebug.loadForTest(slot), SLOT);
+  await page.waitForFunction(() => { try { return window.__aiTradeWiringTestDebug.state().turn >= 2 && !window.__aiTradeWiringTestDebug.isEndTurnInProgress(); } catch (_) { return false; } }, null, { timeout: 300000, polling: 500 });
+  await page.evaluate(() => { const t = window.__truceTestDebug; if (t && t.suppressVictoryForTest) t.suppressVictoryForTest(); });
+  if (PLAYER_AI) await page.evaluate(() => window.__aiEconomyMeasure.setPlayerAiAutopilotForTest(true));
+  await page.evaluate(() => window.__aiTradeWiringTestDebug.setFastMode(true));
+  return page;
+}
+
+async function playOneTurn(page, seenAttempts, seenDecl, seenRej) {
   const t0 = Date.now();
   const before = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
   const blocked = await page.evaluate(() => window.__aiTradeWiringTestDebug.nnsGateBlocked());
@@ -146,12 +165,15 @@ async function playOneTurn(page, seenAttempts, seenDecl) {
   const state = await page.evaluate(() => window.__eraWarMeasure.state());
   const attempts = await page.evaluate(() => window.__eraWarMeasure.attempts());
   const decl = await page.evaluate(() => window.__eraWarMeasure.declarations());
+  const rej = await page.evaluate(() => window.__eraWarMeasure.rejections());
+  const newRej = rej.slice(seenRej.n);
+  seenRej.n = rej.length;
   const newAttempts = attempts.slice(seenAttempts.n);
   const newDecl = decl.slice(seenDecl.n);
   seenAttempts.n = attempts.length;
   seenDecl.n = decl.length;
   return { rec: { seed: SEED, playerAi: PLAYER_AI ? 1 : 0, turn: after, gate: blocked, bypass,
-    state, newAttempts, newDeclarations: newDecl, sec: Math.round((Date.now() - t0) / 100) / 10 } };
+    state, newAttempts, newDeclarations: newDecl, newRejections: newRej, sec: Math.round((Date.now() - t0) / 100) / 10 } };
 }
 
 async function main() {
@@ -160,24 +182,34 @@ async function main() {
   ensureBuild();
   const { chromium } = require(path.join(PW_DIR, 'node_modules', 'playwright'));
   const jsonl = path.join(OUT, TAG + '.jsonl');
-  const summaryPath = path.join(OUT, TAG + '.summary.json');
-  fs.writeFileSync(jsonl, '');
+  const summaryPath = path.join(OUT, TAG + '.summary' + (RESUME ? '-resume' + Date.now() : '') + '.json');
+  if (!RESUME) fs.writeFileSync(jsonl, '');
+  if (!RESUME && CKPT > 0) { /* swiezy start: slot z poprzedniego biegu zostanie nadpisany pierwszym checkpointem */ }
   const ctx = await launch(chromium);
   const seenAttempts = { n: 0 };
   const seenDecl = { n: 0 };
+  const seenRej = { n: 0 };
   let stop = null;
   let turn = 0;
   const t0 = Date.now();
   try {
-    const page = await openGame(ctx);
+    const page = RESUME ? await openResumed(ctx) : await openGame(ctx);
     turn = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
     while (turn < TURNS) {
-      const r = await playOneTurn(page, seenAttempts, seenDecl);
+      const r = await playOneTurn(page, seenAttempts, seenDecl, seenRej);
       if (r.stop) { stop = { reason: r.stop, tura: r.tura }; break; }
       turn = r.rec.turn;
-      if (Date.now() - t0 > WALL_LIMIT_MS) { stop = { reason: 'wall-limit', tura: turn }; break; }
       fs.appendFileSync(jsonl, JSON.stringify(r.rec) + '\n');
+      if (CKPT > 0 && turn % CKPT === 0) {
+        const ok = await page.evaluate(slot => window.__truceTestDebug.saveForTest(slot), SLOT);
+        if (!ok) console.log('[era] UWAGA: zapis slotu nieudany tura=' + turn);
+      }
       console.log(`[era] ${TAG} tura=${turn} proby=${r.rec.newAttempts.length} wypowiedzenia=${r.rec.newDeclarations.length} czas=${Math.round((Date.now() - t0) / 1000)}s`);
+      if (Date.now() - t0 > WALL_LIMIT_MS) {
+        stop = { reason: 'wall-limit', tura: turn };
+        if (CKPT > 0 && turn % CKPT !== 0) { const ok2 = await page.evaluate(slot => window.__truceTestDebug.saveForTest(slot), SLOT); console.log('[era] zapis koncowy slotu ok=' + ok2 + ' tura=' + turn); }
+        break;
+      }
     }
   } finally {
     await ctx.close();

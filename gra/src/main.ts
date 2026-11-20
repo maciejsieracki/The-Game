@@ -1500,6 +1500,7 @@ import {
   eraWarCounterEpoch,
   backfillMissingEraEntryTurns,
   isPlayerEligibleForEraWarPool,
+  isEraWarTargetDelayOk,
   isPlayerEraWarSlotFree,
   type EngageArmyHex,
   type ForcedEraTag,
@@ -2552,8 +2553,10 @@ async function boot(): Promise<void> {
     // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1 (pomiar, TYLKO ODCZYT -- hak __eraWarMeasure):
     // dzienniki prób przydziału (assignForcedWarPairings) i faktycznych wypowiedzeń wojen epoki.
     // Nie wpływają na żadną decyzję gry.
-    const eraWarMeasureAttempts: Array<{ turn: number; ownerId: number; era: string; targetId: number | null }> = [];
+    const eraWarMeasureAttempts: Array<{ turn: number; ownerId: number; era: string; targetId: number | null } & Record<string, unknown>> = [];
     const eraWarMeasureDeclarations: Array<{ turn: number; era: string; attacker: number; target: number; targetIsPlayer: boolean }> = [];
+    // Próby wypowiedzenia wojny epoki (komenda AI) z wynikiem i powodem odrzucenia (bramka) + stan wojen tej chwili.
+    const eraWarMeasureRejections: Array<Record<string, unknown>> = [];
     // Para po pokoju z wojny epoki nie może wrócić do wojny aż do awansu napastnika
     // do następnej epoki. Jest osobne od zwykłej, 10-turowej blokady traktatowej.
     const forcedEraPeaceUntilNextEraByPairKey = new Map<string, ForcedEraPeaceLock>();
@@ -2741,8 +2744,10 @@ async function boot(): Promise<void> {
       syncDiplomacyTradeEra();
       // R-WEB-ERA-WAR-PLAYER-POOL-DESPITE-STONE-WAR-Q1: tura wejścia GRACZA w Brąz/Żelazo (owner 0 w
       // tych samych mapach co AI) — podstawa progu `eraForcedWarStartTurnsFromEra` dla puli celów.
-      if (prev < 2 && next >= 2) bronzeEraEnterTurnByOwner.set(0, turn);
-      if (isIronEraEntry(prev, next)) ironEraEnterTurnByOwner.set(0, turn);
+      // r4 (zarzut 6): wpis wejścia także gdy go brak mimo epoki >= 2 / 3 (ścieżka bez przejścia prev<2, np. stan
+      // przywrócony bez wpisu) -- brakujące wejście = tura pierwszej synchronizacji, nie „od razu w puli”.
+      if ((prev < 2 && next >= 2) || (next >= 2 && !bronzeEraEnterTurnByOwner.has(0))) bronzeEraEnterTurnByOwner.set(0, turn);
+      if (isIronEraEntry(prev, next) || (next >= 3 && !ironEraEnterTurnByOwner.has(0))) ironEraEnterTurnByOwner.set(0, turn);
       syncGeneralFormsForOwner(0);
       return prev !== next;
     }
@@ -34048,6 +34053,7 @@ async function boot(): Promise<void> {
         },
         attempts: (): Array<Record<string, unknown>> => eraWarMeasureAttempts.map(x => ({ ...x })),
         declarations: (): Array<Record<string, unknown>> => eraWarMeasureDeclarations.map(x => ({ ...x })),
+        rejections: (): Array<Record<string, unknown>> => eraWarMeasureRejections.map(x => ({ ...x })),
       };
       (window as any).__diploHarderMeasure = {
         schemaVersion: 1,
@@ -45673,16 +45679,13 @@ async function boot(): Promise<void> {
             // `eraForcedWarStartTurnsFromEra` od wejścia W SWOJĄ epokę wojny. Bez tego AI4 wszedł w Żelazo
             // w turze 66 i dostał wojnę Żelaza z graczem w turze 80 (14 tur po wejściu, próg 40).
             // Brak wpisu wejścia = epoka od startu gry (0). Kamień: od startu gry (turn - 0).
-            const eraWarTargetDelayOk = (oid: number): boolean => {
-              if (oid === 0) return true;
-              const tagNow = empireEpochForOwner(oid);
-              const tag: ForcedEraTag | null = tagNow === 1 ? 'stone' : tagNow === 2 ? 'bronze' : tagNow === 3 ? 'iron' : null;
-              if (tag === null) return false;
-              const entry = tag === 'bronze' ? (bronzeEraEnterTurnByOwner.get(oid) ?? 0)
-                : tag === 'iron' ? (ironEraEnterTurnByOwner.get(oid) ?? 0)
-                  : 0;
-              return turn - entry >= WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra[tag];
-            };
+            const eraWarTargetDelayOk = (oid: number): boolean => isEraWarTargetDelayOk({
+              turn,
+              ownerId: oid,
+              epoch: empireEpochForOwner(oid),
+              bronzeEnterTurn: bronzeEraEnterTurnByOwner.get(oid),
+              ironEnterTurn: ironEraEnterTurnByOwner.get(oid),
+            }, WAR_RULES_PARAMS);
             const forcedWarMajorAiSubjects: ForcedWarPairingSubject[] = aiOwnerList.flatMap((oid): ForcedWarPairingSubject[] => {
               if (
                 oid <= 0
@@ -45705,6 +45708,10 @@ async function boot(): Promise<void> {
                 isPlayerPairGateOpen: (aiOwnerId: number): boolean =>
                   !isOwnerInActiveEraWar(aiOwnerId) && !isOwnerInActiveEraWar(0)
                   && eraWarTargetDelayOk(aiOwnerId)
+                  // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1 r4 (pomiar seed 4242, t117-t120): AI już w wojnie
+                  // NATURALNEJ z graczem nie może mu wypowiedzieć wojny epoki (ai.ts wymaga `!stanWojny` względem celu) --
+                  // bez tego filtra to AI zostawało partnerem pary w każdej turze i blokowało innych kandydatów.
+                  && getDiploRelation(aiOwnerId, 0).status !== 'wojna'
                   &&
                   evaluateInterCivWarGate({
                     turn,
@@ -45774,7 +45781,18 @@ async function boot(): Promise<void> {
             }
             // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1 (pomiar, tylko odczyt): próby przydziału tej tury.
             for (const a of forcedWarPairingResult.assignments) {
-              eraWarMeasureAttempts.push({ turn, ownerId: a.ownerId, era: String(a.era), targetId: a.targetId ?? null });
+              eraWarMeasureAttempts.push({
+                turn, ownerId: a.ownerId, era: String(a.era), targetId: a.targetId ?? null,
+                targetIsPlayer: a.targetId === 0,
+                attackerNaturalWars: countActiveWarsForOwnerExcludingBarbarians(a.ownerId),
+                targetNaturalWars: a.targetId == null ? null : countActiveWarsForOwnerExcludingBarbarians(a.targetId),
+                attackerEraWarActive: isOwnerInActiveEraWar(a.ownerId),
+                targetEraWarActive: a.targetId == null ? null : isOwnerInActiveEraWar(a.targetId),
+              } as typeof eraWarMeasureAttempts[number]);
+            }
+            for (const uo of forcedWarPairingResult.unresolvedOwnerIds) {
+              eraWarMeasureRejections.push({ turn, era: null, attacker: uo, target: null, targetIsPlayer: false,
+                result: 'rejected', reason: 'pairing-unresolved(wszystkie pary zablokowane sojuszem)' });
             }
             const forcedWarAssignmentByOwner = new Map(
               forcedWarPairingResult.assignments.map(a => [a.ownerId, a] as const),
@@ -46997,10 +47015,40 @@ async function boot(): Promise<void> {
                     contactSet: diplomaticContactEstablishedByHuman.get(ME())?.has(ownerId) ?? false,
                   });
                 }
+                // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1 r4 (pomiar, TYLKO ODCZYT): komendy wojny epoki
+                // wygenerowane przez AI, ale odfiltrowane przed pętlą (warstwa mgły / brak kontaktu).
+                {
+                  const rawForced = (Array.isArray(dipCmdsRaw) ? dipCmdsRaw : []).filter(isForcedEpochWarDeclareCmd);
+                  for (const rc of rawForced) {
+                    if (dipCmds.includes(rc)) continue;
+                    const rt = parseInt(rc.targetId, 10);
+                    const rTag = forcedEraTagFromPowod(rc.powod);
+                    eraWarMeasureRejections.push({
+                      turn, era: rTag, attacker: ownerId, target: rt, targetIsPlayer: rt === 0,
+                      result: 'rejected', reason: 'filtered-before-gate(layer/contact)',
+                      attackerNaturalWars: countActiveWarsForOwnerExcludingBarbarians(ownerId),
+                      targetNaturalWars: Number.isNaN(rt) ? null : countActiveWarsForOwnerExcludingBarbarians(rt),
+                      attackerEraWarActive: isOwnerInActiveEraWar(ownerId),
+                      targetEraWarActive: Number.isNaN(rt) ? null : isOwnerInActiveEraWar(rt),
+                    });
+                  }
+                }
                 for (const cmd of dipCmds) {
                   try {
                     const targetId = parseInt(cmd.targetId, 10);
                     if (Number.isNaN(targetId)) continue;
+                    const emTag: ForcedEraTag | null = cmd.type === 'wypowiedz_wojne' ? forcedEraTagFromPowod(cmd.powod) : null;
+                    const emRej = (reason: string): void => {
+                      if (emTag === null) return;
+                      eraWarMeasureRejections.push({
+                        turn, era: emTag, attacker: ownerId, target: targetId, targetIsPlayer: targetId === 0,
+                        result: 'rejected', reason,
+                        attackerNaturalWars: countActiveWarsForOwnerExcludingBarbarians(ownerId),
+                        targetNaturalWars: countActiveWarsForOwnerExcludingBarbarians(targetId),
+                        attackerEraWarActive: isOwnerInActiveEraWar(ownerId),
+                        targetEraWarActive: isOwnerInActiveEraWar(targetId),
+                      });
+                    };
                     // R-WEB-WAR-RULES-MULTIWAR-Q1 (flaga WAR_RULES_MULTIWAR_ENABLED): bramka
                     // wypowiedzenia -- R1 (wojny między cywilizacjami dopiero od tury 40), R2
                     // (Kamień: najwyżej 1 wojna na cywilizację, także gdy cel to AI); R3 aktywne
@@ -47026,7 +47074,7 @@ async function boot(): Promise<void> {
                         // liczy się w slocie Kamienia (0:1), nie Brązu (0:2).
                         targetEpoch: eraWarCounterEpochOf(targetId, gateForcedTagAny),
                       }, WAR_RULES_PARAMS);
-                      if (eraGateVerdict !== 'ok') continue;
+                      if (eraGateVerdict !== 'ok') { emRej('evaluateEraForcedWarGate:' + String(eraGateVerdict)); continue; }
                     }
                     if (cmd.type === 'wypowiedz_wojne' && isWarRulesMultiwarEnabled()) {
                       const gateVerdict = evaluateInterCivWarGate({
@@ -47039,13 +47087,14 @@ async function boot(): Promise<void> {
                         targetEra: empireEpochForOwner(targetId),
                         targetWarCount: countActiveWarsForOwnerExcludingBarbarians(targetId),
                       });
-                      if (gateVerdict !== 'ok') continue;
+                      if (gateVerdict !== 'ok') { emRej('evaluateInterCivWarGate:' + String(gateVerdict)); continue; }
                     }
                     if (cmd.type === 'wypowiedz_wojne') {
                       if (
                         typCityCopyOwners.has(ownerId)
                         && !isOwnerPlayerSameCivType(ownerId)
                       ) {
+                        emRej('typCityCopyOwner');
                         continue;
                       }
                       // R-WEB-ERA-WAR-IGNORE-TREATIES-Q1: wojna epoki (powód R-EPOKA-*-WYMUSZONA-WOJNA)
@@ -47056,12 +47105,13 @@ async function boot(): Promise<void> {
                         hasNap: hasTreaty(activeDeals, ownerId, targetId, RodzajTraktatu.PaktNieagresji),
                         peaceLocked: isPeaceLockedBetween(ownerId, targetId),
                         hasAlliance: allianceFormalKindBetween(activeDeals, ownerId, targetId) !== null,
-                      })) continue;
+                      })) { emRej('isWarTreatyBlocked(sojusz/NAP/pokoj)'); continue; }
                       if (
                         stoneForceWarTargetId != null
                         && targetId === stoneForceWarTargetId
                         && allianceFormalKindBetween(activeDeals, ownerId, targetId) !== null
                       ) {
+                        emRej('stone-alliance-guard');
                         continue;
                       }
                       // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: ten sam ostatni guard sojuszu
@@ -47071,12 +47121,13 @@ async function boot(): Promise<void> {
                         && targetId === ironForceWarTargetId
                         && allianceFormalKindBetween(activeDeals, ownerId, targetId) !== null
                       ) {
+                        emRej('iron-alliance-guard');
                         continue;
                       }
                       // R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: limit 1 epoki + 1 naturalna per cywilizacja
                       // (AI jako deklarujący; gracz nieograniczony). Flaga OFF -> zawsze wolno (parytet).
                       const warTypTagAi: TypWojny = gateForcedTagAny !== null ? 'epoki' : 'naturalna';
-                      if (!isMe(ownerId) && !warLimitAllowsDeclaration(ownerId, targetId, warTypTagAi)) continue;
+                      if (!isMe(ownerId) && !warLimitAllowsDeclaration(ownerId, targetId, warTypTagAi)) { emRej('warLimitAllowsDeclaration'); continue; }
                       const truceBreachAi = chargeWarDeclarationCredibility(ownerId, targetId);
                       // Typ wojny zapisany PO chargeWarDeclarationCredibility (ta funkcja ustawia wojnaOdTury i tag 'naturalna').
                       setDiploPairMeta(ownerId, targetId, withWarTyp(getDiploPairMeta(ownerId, targetId), warTypTagAi));

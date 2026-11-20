@@ -175,7 +175,7 @@ check(
 );
 check(
   'komenda DOW ma finalny guard sojuszu dla celu Żelaza',
-  /ironForceWarTargetId != null\s*\n\s*&& targetId === ironForceWarTargetId\s*\n\s*&& allianceFormalKindBetween\(activeDeals, ownerId, targetId\) !== null\s*\n\s*\) \{\s*\n\s*continue;/.test(main),
+  /ironForceWarTargetId != null\s*\n\s*&& targetId === ironForceWarTargetId\s*\n\s*&& allianceFormalKindBetween\(activeDeals, ownerId, targetId\) !== null\s*\n\s*\) \{\s*\n\s*(?:emRej\('[a-z-]+'\);\s*\n\s*)?continue;/.test(main),
 );
 
 // ---------------------------------------------------------------------------

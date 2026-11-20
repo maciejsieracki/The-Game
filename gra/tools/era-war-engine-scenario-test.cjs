@@ -14,8 +14,14 @@
  *   S3 fallback pending Brązu AI: w turze 80 gracz odfiltrowany z freeTargetCandidates -> brak przydziału;
  *      w turze 117 -> przydział do gracza (ownerId 0).
  *   S4 Kamień: pending Kamienia nie dostaje fallbacku nawet przy wolnym graczu (limit R2, celowo).
- *   NIE ZMIERZONO tutaj: sekwencja Kamień trwa -> Brąz pending -> pokój -> start w pierwszej turze po pokoju
- *   (wymaga pętli main.ts i przeglądarki); mutacja kopii main.ts NIE wykonana w tej rundzie.
+ *   S6-S9 (runda 4): SEKWENCJA turowa przez realne funkcje (isEligibleForBronzeForcedWar, isEraWarTargetDelayOk -- wyciągnięta
+ *      z main.ts do war-rules-multiwar.ts --, isPlayerEligibleForEraWarPool, assignForcedWarPairings z playerFirst):
+ *      Kamień trwa -> Brąz pending -> pokój -> Brąz startuje w PIERWSZEJ turze po pokoju (gracz = cel), także gdy blokadą była
+ *      wojna naturalna; opóźnienie 40 tur AI od wejścia; zasada "AI w wojnie z graczem nie jest partnerem" (pin main.ts).
+ *   Mutacje (MUTATE=delay|wiring|gate|nobackfill): delay = isEraWarTargetDelayOk zawsze true (esbuild onLoad),
+ *      wiring = main.ts bez wywołania eraWarTargetDelayOk w parze gracza, gate = main.ts bez filtra wojny pary AI-gracz.
+ *   Pętla main.ts jako całość nie wykonuje się w node (przeglądarka) -- sekwencja jest lustrem jej kroków na realnych funkcjach;
+ *   wiązanie main.ts z tymi funkcjami pilnują piny S5/S9.
  */
 
 const fs = require('fs');
@@ -34,7 +40,18 @@ const GRA_ROOT = path.resolve(__dirname, '..');
 const AI_SRC = process.env.AI_SRC_DIR || path.resolve(GRA_ROOT, 'src');
 const ENTRY_FILE = path.resolve(__dirname, '.era-war-engine-scenario-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.era-war-engine-scenario-bundle.cjs');
-const NO_BACKFILL = process.env.MUTATE_NO_BACKFILL === '1';
+const MUTATE = process.env.MUTATE || '';
+const NO_BACKFILL = process.env.MUTATE_NO_BACKFILL === '1' || MUTATE === 'nobackfill';
+
+// Mutacja delay: kopia war-rules-multiwar.ts z isEraWarTargetDelayOk zawsze true (plik pomocniczy obok oryginału, nie do commita).
+let MULTIWAR_MODULE = AI_SRC + '/game/war-rules-multiwar';
+if (MUTATE === 'delay') {
+  const orig = fs.readFileSync(path.resolve(AI_SRC, 'game', 'war-rules-multiwar.ts'), 'utf8');
+  const needle = 'return inp.turn - entry >= params.eraForcedWarStartTurnsFromEra[tag];';
+  if (!orig.includes(needle)) { console.error('mutacja delay: brak punktu zaczepienia'); process.exit(1); }
+  fs.writeFileSync(path.resolve(AI_SRC, 'game', 'mutdelay-war-rules-multiwar.ts'), orig.replace(needle, 'return true;'), 'utf8');
+  MULTIWAR_MODULE = AI_SRC + '/game/mutdelay-war-rules-multiwar';
+}
 
 const ENTRY_TS = `
 export {
@@ -44,7 +61,9 @@ export {
   WAR_RULES_PARAMS,
   isPlayerEligibleForEraWarPool,
   backfillMissingEraEntryTurns,
-} from ${JSON.stringify(AI_SRC + '/game/war-rules-multiwar')};
+  isEraWarTargetDelayOk,
+} from ${JSON.stringify(MULTIWAR_MODULE)};
+export { isEligibleForBronzeForcedWar } from ${JSON.stringify(AI_SRC + '/game/forced-war-bronze')};
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -64,11 +83,16 @@ try {
   process.exit(1);
 }
 
+// Plik pomocniczy mutacji delay jest tylko na czas bundlowania.
+if (MUTATE === 'delay') { try { fs.unlinkSync(path.resolve(AI_SRC, 'game', 'mutdelay-war-rules-multiwar.ts')); } catch (_) { /* brak */ } }
+
 const {
   assignForcedWarPairings,
   WAR_RULES_PARAMS,
   isPlayerEligibleForEraWarPool,
   backfillMissingEraEntryTurns,
+  isEraWarTargetDelayOk,
+  isEligibleForBronzeForcedWar,
 } = require(BUNDLE_FILE);
 
 let passed = 0;
@@ -78,6 +102,12 @@ function assert(cond, msg) {
   else { failed++; console.log('  FAIL: ' + msg); }
 }
 
+function readMain() {
+  let src = fs.readFileSync(path.resolve(AI_SRC, 'main.ts'), 'utf8');
+  if (MUTATE === 'wiring') src = src.split('&& eraWarTargetDelayOk(aiOwnerId)').join('');
+  if (MUTATE === 'gate') src = src.split("&& getDiploRelation(aiOwnerId, 0).status !== 'wojna'").join('');
+  return src;
+}
 const hexDist = (aq, ar, bq, br) => Math.max(Math.abs(aq - bq), Math.abs(ar - br));
 const noBlock = () => false;
 const noWars = () => 0;
@@ -147,12 +177,91 @@ console.log('S4 Kamień: pending Kamienia bez fallbacku (limit R2) także przy w
 
 console.log('S5 wiring main.ts: backfill wejścia gracza przed bramką puli (usunięcie linii czerwieni test)');
 {
-  const mainSrc = fs.readFileSync(path.resolve(AI_SRC, 'main.ts'), 'utf8');
+  const mainSrc = readMain();
   assert(/if \(playerEpochNow >= 2\) backfillMissingEraEntryTurns\(bronzeEraEnterTurnByOwner, new Map\(\[\[0, playerEpochNow\]\]\), turn\);/.test(mainSrc),
     'S5: main.ts: backfill bronzeEraEnterTurnByOwner dla gracza (epoka >= 2) przed playerEraPoolEligible');
   const idxBackfill = mainSrc.indexOf('new Map([[0, playerEpochNow]]), turn);');
   const idxGate = mainSrc.indexOf('const playerEraPoolEligible = !!playerCity');
   assert(idxBackfill > 0 && idxGate > idxBackfill, 'S5: backfill stoi PRZED bramką playerEraPoolEligible');
+}
+
+console.log('S6-S8 sekwencja: Kamień trwa -> Brąz pending -> pokój -> start w 1. turze po pokoju (gracz = cel)');
+{
+  const BRONZE_ENTER_AI = 41;
+  const PLAYER_ENTER = 41;
+  const PEACE_TURN = 85; // pokój w turze 85 (wojna Kamienia 1<->2 kończy się); tura 86 = pierwsza po pokoju
+  const params = WAR_RULES_PARAMS;
+  const pos = { 0: [1, 0], 1: [0, 0], 2: [5, 0] };
+  // Jedna tura: lustro kroków main.ts na realnych funkcjach.
+  function turnStep(turn, st) {
+    const triggered = [];
+    const alreadyAtWarAnyRole = st.stoneWarActive || st.natural1 > 0;
+    if (isEligibleForBronzeForcedWar({ isMainAiCiv: true, isAlreadyAtWarAnyRole: alreadyAtWarAnyRole, currentTurn: turn, eraEnterTurn: BRONZE_ENTER_AI })) {
+      triggered.push({ ownerId: 1, q: pos[1][0], r: pos[1][1], era: 'bronze' });
+    }
+    const playerEligible = isPlayerEligibleForEraWarPool({ currentTurn: turn, playerEpoch: 2, activeForcedWarsTotal: 0, activeForcedWarsInPlayerEra: 0, eraEnterTurn: st.playerEnter ?? PLAYER_ENTER, poolStartTurn: 0 }, params);
+    if (playerEligible) triggered.push({ ownerId: 0, q: pos[0][0], r: pos[0][1] });
+    const candidates = [
+      { ownerId: 1, q: pos[1][0], r: pos[1][1], era: 'bronze' },
+      { ownerId: 2, q: pos[2][0], r: pos[2][1], era: 'stone' },
+    ];
+    const res = assignForcedWarPairings(triggered, [], {
+      isPairBlocked: noBlock,
+      hexDistanceFn: hexDist,
+      totalActiveForcedWarsByOwner: (oid) => (st.stoneWarActive && (oid === 1 || oid === 2) ? 1 : 0),
+      freeTargetCandidates: [],
+      playerFirst: {
+        playerOwnerId: 0,
+        // Lustro isPlayerPairGateOpen z main.ts: brak aktywnej wojny epoki, opóźnienie AI (funkcja realna), brak wojny AI<->gracz.
+        isPlayerPairGateOpen: (aiId) => !(st.stoneWarActive && (aiId === 1 || aiId === 2))
+          && isEraWarTargetDelayOk({ turn, ownerId: aiId, epoch: aiId === 1 ? 2 : 1, bronzeEnterTurn: aiId === 1 ? BRONZE_ENTER_AI : undefined, ironEnterTurn: undefined }, params)
+          && !(aiId === 1 && st.pairAtWarWithPlayer),
+        candidates,
+      },
+    });
+    return res.assignments.find((a) => a.ownerId === 1);
+  }
+  const during = turnStep(PEACE_TURN, { stoneWarActive: true, natural1: 1, pairAtWarWithPlayer: false });
+  assert(during === undefined, 'S6: w trakcie wojny Kamienia (t85) Brąz AI 1 NIE dostaje celu');
+  const first = turnStep(PEACE_TURN + 1, { stoneWarActive: false, natural1: 0, pairAtWarWithPlayer: false });
+  assert(first && first.era === 'bronze' && first.targetId === 0, `S6: tura ${PEACE_TURN + 1} (pierwsza po pokoju) -> Brąz AI 1 -> cel gracz 0, got ${JSON.stringify(first)}`);
+  // S7: blokadą była wojna NATURALNA, a drogą startu fallback wolnego celu (gracz poza grą/pulą) -- ta sama reguła "1. tura po pokoju".
+  function fallbackStep(turn, natural1) {
+    const triggered = [];
+    if (isEligibleForBronzeForcedWar({ isMainAiCiv: true, isAlreadyAtWarAnyRole: natural1 > 0, currentTurn: turn, eraEnterTurn: BRONZE_ENTER_AI })) {
+      triggered.push({ ownerId: 1, q: pos[1][0], r: pos[1][1], era: 'bronze' });
+    }
+    const free = [{ ownerId: 3, q: 9, r: 0, era: 'bronze' }].filter((c) => isEraWarTargetDelayOk({ turn, ownerId: c.ownerId, epoch: 2, bronzeEnterTurn: 41, ironEnterTurn: undefined }, params));
+    const res = assignForcedWarPairings(triggered, [], { isPairBlocked: noBlock, hexDistanceFn: hexDist, totalActiveForcedWarsByOwner: noWars, freeTargetCandidates: free });
+    return res.assignments.find((a) => a.ownerId === 1);
+  }
+  const natDuring = fallbackStep(PEACE_TURN, 1);
+  assert(natDuring === undefined, 'S7: wojna naturalna AI 1 (t85) blokuje start Brązu (fallback)');
+  const natFirst = fallbackStep(PEACE_TURN + 1, 0);
+  assert(natFirst && natFirst.era === 'bronze' && natFirst.targetId === 3, `S7: pierwsza tura po pokoju naturalnym -> Brąz startuje (cel 3), got ${JSON.stringify(natFirst)}`);
+  const natEarly = fallbackStep(51, 0);
+  assert(natEarly === undefined, 'S7: kontrola opóźnienia (t51, 10 tur po wejściu) -> brak startu');
+  // S7b: AI w wojnie naturalnej Z GRACZEM nie jest partnerem pary gracza (pin main.ts w S9; tu lustro gate).
+  const atWarWithPlayer = turnStep(PEACE_TURN + 1, { stoneWarActive: false, natural1: 1, pairAtWarWithPlayer: true });
+  assert(atWarWithPlayer === undefined, 'S7b: AI 1 w wojnie z graczem nie dostaje pary z graczem (kandydat odrzucony przez gate)');
+  const early = turnStep(51, { stoneWarActive: false, natural1: 0, pairAtWarWithPlayer: false });
+  assert(early === undefined, `S8: tura 51 (10 tur po wejściu AI) -> brak celu mimo braku wojny, got ${JSON.stringify(early)}`);
+  // S8b: gracz już dopuszczony (wejście t5), ale kandydat-AI 1 wszedł w t41 -- w t51 opóźnienie AI blokuje parę; w t81 otwiera (mutacja delay czerwona).
+  const aiDelayed = turnStep(51, { stoneWarActive: false, natural1: 0, pairAtWarWithPlayer: false, playerEnter: 5 });
+  assert(aiDelayed === undefined, `S8b: gracz dopuszczony, ale AI 1 (wejście t41) w t51 jeszcze za wcześnie -> brak pary, got ${JSON.stringify(aiDelayed)}`);
+  const d = params.eraForcedWarStartTurnsFromEra.bronze;
+  const at81 = turnStep(BRONZE_ENTER_AI + d, { stoneWarActive: false, natural1: 0, pairAtWarWithPlayer: false });
+  assert(at81 && at81.targetId === 0, `S8: tura ${BRONZE_ENTER_AI + d} (próg ${d} tur po wejściu) -> cel gracz 0, got ${JSON.stringify(at81)}`);
+}
+
+console.log('S9 wiring main.ts: eraWarTargetDelayOk -> isEraWarTargetDelayOk; para gracza z delay i filtrem wojny AI-gracz');
+{
+  const mainSrc = readMain();
+  assert(/const eraWarTargetDelayOk = \(oid: number\): boolean => isEraWarTargetDelayOk\(/.test(mainSrc), 'S9: main.ts: eraWarTargetDelayOk wola isEraWarTargetDelayOk (czysta funkcja)');
+  assert(/isPlayerPairGateOpen: \(aiOwnerId: number\): boolean =>[\s\S]{0,400}&& eraWarTargetDelayOk\(aiOwnerId\)/.test(mainSrc), 'S9: main.ts: para gracza wymaga eraWarTargetDelayOk(aiOwnerId)');
+  assert(/isPlayerPairGateOpen: \(aiOwnerId: number\): boolean =>[\s\S]{0,900}&& getDiploRelation\(aiOwnerId, 0\)\.status !== 'wojna'/.test(mainSrc), 'S9: main.ts: para gracza odrzuca AI w wojnie naturalnej z graczem');
+  assert(/freeTargetCandidates: \[[\s\S]{0,900}eraWarTargetDelayOk\(s\.ownerId\)/.test(mainSrc), 'S9: main.ts: fallback freeTargetCandidates filtruje eraWarTargetDelayOk');
+  assert(/\(prev < 2 && next >= 2\) \|\| \(next >= 2 && !bronzeEraEnterTurnByOwner\.has\(0\)\)/.test(mainSrc), 'S9: main.ts: reconcilePlayerEraFromResearch zapisuje wejście gracza w Brąz także przy braku wpisu');
 }
 
 console.log(`WYNIK: ${passed} OK / ${failed} FAIL`);
