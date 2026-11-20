@@ -80,6 +80,8 @@ function commitAiBuild(ctx: any): void {
   const syncResourceOverlayAtHex = (_k: string) => {};
   // R-WEB-TEST-DEBT-Q13 r4: setPlacedLayersOwned (main.ts) zapisuje warstwy w placedImprovements; w harnessie
   // zapis do tej samej mapy z ctx (rejestr wlasciciela improvementOwnerByHex nie jest przedmiotem tego dowodu).
+  // R-WEB-TEST-DEBT-Q13 r5: blok komitu woła empireEpochForOwner(ownerId) (main.ts) -- epoka nie jest przedmiotem dowodu.
+  const empireEpochForOwner = (_o: number) => 1;
   const setPlacedLayersOwned = (hk: string, layers: PlacedLayers, _ownerId: number | undefined) => { placedImprovements.set(hk, layers); };
   for (let _once = 0; _once < 1; _once++) {
     ${SRC_COMMIT_BLOCK}
@@ -226,10 +228,14 @@ function commitPlayerPick(ctx: any): void {
   const registerFortNodeIfNeeded = (..._a: any[]) => {};
   const spawnImprovementMesh = (_k: string) => {};
   const syncResourceOverlayAtHex = (_k: string) => {};
-  const getImprovementMeta = (key: string) => ({ nazwa: key });
+  const getImprovementMeta = (key: string, _epoka?: number) => ({ nazwa: key });
+  // R-WEB-TEST-DEBT-Q13 r5: blok woła empireEpochForOwner(hOid) (main.ts) -- epoka nie jest przedmiotem dowodu.
+  const empireEpochForOwner = (_o: number) => 1;
   // r2 (R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1): od R-HOTSEAT-ETAP6C blok komitu zapisuje cache per-fotel (setOwnerLast*, hOid) —
   // harness nie mial tych symboli (ReferenceError: setOwnerLastPraca is not defined, czerwony PRZED i PO tematem). Stuby bez efektu.
   const hOid = 0, humanOwnerId = 0;
+  // r5: main.ts zapisuje warstwy przez setPlacedLayersOwned (rejestr wlasciciela) -- tu zapis do tej samej mapy placedImprovements.
+  const setPlacedLayersOwned = (hk: string, layers: PlacedLayers, _ownerId: number | undefined) => { placedImprovements.set(hk, layers); };
   const setOwnerLastPraca = (..._a: any[]) => {};
   const setOwnerLastPracaRate = (..._a: any[]) => {};
   const ownerLastPracaRate = (..._a: any[]) => 0;
