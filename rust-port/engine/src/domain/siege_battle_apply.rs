@@ -152,12 +152,15 @@ pub enum SiegeBattleError {
     NotAtWar { city_id: u64 },
     /// D-WIRB-8: bitwa zamknięta bez zastosowania wyniku (stan bez zmian); `reason` = błąd źródłowy.
     Aborted { city_id: u64, reason: String },
-    /// P4-1I6-DLUGI (D-1I6D-3): wołający zażądał porzucenia bitwy (`AbortSiegeBattle`, np. klient nie zbudował sceny);
-    /// źródło [`Self::Aborted`] w `FinishSiegeBattle`, nie wychodzi poza grę.
+    /// P4-1I6-DLUGI (D-1I6D-3): wołający zażądał porzucenia bitwy (`AbortSiegeBattle`: klient nie zbudował sceny albo
+    /// gracz wybrał „Wycofaj się”); źródło [`Self::Aborted`] w `FinishSiegeBattle`, nie wychodzi poza grę.
     AbortRequested,
-    /// P4-1I6-DLUGI (D-1I6D-4): porzucenie dozwolone tylko zaraz po `StartSiegeStorm` (przed pierwszym `Step`/`Skip`):
-    /// web nie ma wyjścia ze sceny bez wyniku poza `onCancel` rozstawienia, więc porzucenie trwającej albo zakończonej
-    /// bitwy (ucieczka przed wynikiem) jest odrzucane; bitwa i stan bez zmian.
+    /// P4-1I6-DLUGI (D-1I6D-4, obrona r1 Z1): porzucenie bitwy ZAKOŃCZONEJ (faza `Finished`) jest odrzucane; bitwa i
+    /// stan bez zmian, zostaje `FinishSiegeBattle`. Do końca bitwy porzucenie jest dozwolone jak w pinie: przycisk
+    /// „Wycofaj się z bitwy” górnego paska sceny (`battleScene.ts:3359`, `dispose()` + `onCancel`, pasek widoczny przez
+    /// całą bitwę) woła `onCancel: () => setMood('mapa')` (`main.ts:37023`) bez `consumeReadyMachines` i bez
+    /// `finishSiegeStormBattle`. Po końcu bitwy pin pokazuje ekran końca (`_showEndScreen`, warstwa nad paskiem), którego
+    /// jedyne wyjście „Zakończ bitwę” najpierw oddaje wynik (`onFinishCb`, `:10720-10733`).
     AbortNotAllowed { city_id: u64 },
 }
 
@@ -215,7 +218,7 @@ impl std::fmt::Display for SiegeBattleError {
             Self::AbortRequested => f.write_str("siege battle aborted by the caller"),
             Self::AbortNotAllowed { city_id } => write!(
                 f,
-                "siege battle at city {city_id} is already driven: abort only right after the start"
+                "siege battle at city {city_id} is already finished: abort is refused, finish it"
             ),
         }
     }
@@ -286,7 +289,7 @@ pub enum SiegeBattleErrorDto {
     Aborted { city_id: u64, reason: String },
     /// [`SiegeBattleError::AbortRequested`] (nie wychodzi z gry: `Finish` zamienia go na `Aborted`).
     AbortRequested,
-    /// [`SiegeBattleError::AbortNotAllowed`]: porzucenie po pierwszym `Step`/`Skip` odrzucone (bitwa trwa).
+    /// [`SiegeBattleError::AbortNotAllowed`]: porzucenie zakończonej bitwy odrzucone (zostaje `Finish`).
     AbortNotAllowed { city_id: u64 },
 }
 
@@ -692,13 +695,24 @@ impl ActiveSiegeBattle {
     /// D-1I6D-3 (`AbortSiegeBattle`): oznacza bitwę do porzucenia. Gra trzyma bitwę za `&` (`PlayableGame::siege_battle`,
     /// plik gry poza zakresem tematu), więc żądanie jest flagą; najbliższe [`finish`] zwraca
     /// [`SiegeBattleError::AbortRequested`], a `PlayableGame::finish_siege_battle` (D-WIRB-8) zamyka bitwę bez zmiany
-    /// stanu i zwraca `Aborted`. Odpowiednik webu: `onCancel` sceny (`main.ts:37017`, deploy anulowany: brak wyniku,
-    /// machiny nie zużyte).
+    /// stanu i zwraca `Aborted`. Odpowiednik webu: `onCancel` sceny (`main.ts:37023`: `setMood('mapa')`, brak wyniku,
+    /// machiny nie zużyte) — z rozstawienia i z przycisku „Wycofaj się z bitwy” (`battleScene.ts:3359`) w DOWOLNEJ chwili
+    /// trwającej bitwy (D-1I6D-4, obrona r1 Z1). Sesja, której nie da się odtworzyć, nie blokuje porzucenia (bitwa i tak
+    /// nie może się zakończyć wynikiem).
     ///
     /// # Errors
-    /// [`SiegeBattleError::AbortNotAllowed`] po pierwszym `Step`/`Skip` (D-1I6D-4; flaga nieustawiona).
+    /// [`SiegeBattleError::AbortNotAllowed`] po końcu bitwy (faza `Finished`: pin ma wtedy tylko „Zakończ bitwę” z
+    /// wynikiem; flaga nieustawiona).
     pub fn request_abort(&self) -> Result<(), SiegeBattleError> {
-        if !self.ops.is_empty() {
+        let finished = match take_session(self) {
+            Ok(s) => {
+                let finished = s.phase() == SessionPhase::Finished;
+                keep_session(self, s);
+                finished
+            }
+            Err(_) => false,
+        };
+        if finished {
             return Err(SiegeBattleError::AbortNotAllowed {
                 city_id: self.city_id,
             });
@@ -1267,6 +1281,15 @@ pub const SIEGE_ATTACKER_COLOR: u32 = 0x00ff_d54a;
 /// `rosterToBattleUnits(defRosterRef, 0xc84040)` (`main.ts:36982`).
 pub const SIEGE_DEFENDER_COLOR: u32 = 0x00c8_4040;
 
+/// `String(bu.stats.Jednostka ?? bu.nazwa)` modelu jednostki sceny (`battleScene.ts` spawn, D-1I6-SETUP). Różni się od
+/// `nazwa` np. dla wodza armii (`nazwa` = tytuł wodza, `Jednostka` = typ z `units.json`).
+#[must_use]
+pub fn spawn_model_name(bu: &AdapterBattleUnit) -> String {
+    bu.setup_unit()
+        .jednostka
+        .unwrap_or_else(|| bu.nazwa.clone())
+}
+
 /// D-1I6-SETUP: producent [`BattleSetupDto`] sceny szturmu — stan `new BattleScene(opts)` przed `bs.play`
 /// (`main.ts:36980-37019`): pole T5a (`grid`, `desertPalette`), mur (`siege_wall_civ`: `(opts.siege.defCiv ??
 /// opts.siege.civ) ?? 'rzym'`, `battleScene.ts:3480`; ścieżka szturmu podaje tylko `defCiv`), `fortKind` +
@@ -1334,10 +1357,7 @@ pub fn battle_setup(
                 id: fu.id,
                 side,
                 category: bu.kategoria.clone(),
-                model_name: bu
-                    .setup_unit()
-                    .jednostka
-                    .unwrap_or_else(|| bu.nazwa.clone()),
+                model_name: spawn_model_name(bu),
                 owner_color: color,
                 col: fu.col,
                 row: fu.row,

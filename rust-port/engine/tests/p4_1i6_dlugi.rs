@@ -232,6 +232,145 @@ fn start_niesie_setup_sceny_wg_pinu() {
     }
 }
 
+/// Wiersz `units.json` (surowe dane, niezależnie od adaptera sceny).
+fn units_json_row(name: &str) -> serde_json::Value {
+    let raw = include_str!("../data/units.json");
+    let rows: Vec<serde_json::Value> = serde_json::from_str(raw).expect("units.json");
+    rows.into_iter()
+        .find(|r| r["Jednostka"] == json!(name))
+        .unwrap_or_else(|| panic!("brak {name} w units.json"))
+}
+
+/// Obrona r1, Z2 (E01/E02): `maxHp`, `hp` i `kategoria` jednostek setupu liczone NIEZALEŻNIE od setupu: `maxHp` =
+/// `unitHealth(def) = def.health ?? def.Health` (`main.ts:33093`; bez bonusów weterana/parametrów), `hp` = HP jednostki
+/// mapy (tu ranna, `hp < maxHp`), kategoria = `categoryOf(Jednostka, Rola (linia), Super, Typ)` (`unit_replace_defs`,
+/// ta sama tabela, z której mapa nadaje kategorię nowej jednostce).
+#[test]
+fn setup_hp_maxhp_kategoria_niezaleznie() {
+    const RANNY: u64 = 7002;
+    const RANNY_HP: f64 = 5.0;
+    let mut st = state(11, &["palisada"]);
+    st.economy.units.get_mut(&RANNY).expect("ranny").hp = Some(RANNY_HP);
+    let mut b = bridge_for(st.clone());
+    let d = start(&mut b);
+    let p = battle(&d);
+    let setup = setup_of(&d);
+    let mut cats = std::collections::BTreeSet::new();
+    let mut ranny_widziany = false;
+    for (su, u) in setup.units.iter().zip(&p.units) {
+        let Ok(map_id) = u.unit_id.parse::<u64>() else {
+            continue; // milicja: brak jednostki mapy
+        };
+        let ty = st.economy.units[&map_id]
+            .type_id
+            .clone()
+            .expect("typ jednostki");
+        let row = units_json_row(&ty);
+        let health = row["health"]
+            .as_f64()
+            .or_else(|| row["Health"].as_f64())
+            .expect("health");
+        assert_eq!(su.max_hp, health, "maxHp = unitHealth(def) dla {ty}");
+        let expected_cat = civ_engine::domain::unit_replace_defs::category_of(
+            row["Jednostka"].as_str().expect("Jednostka"),
+            row["Rola (linia)"].as_str().unwrap_or(""),
+            row["Super-jednostka"].as_str() == Some("TAK"),
+            row["Typ"].as_str(),
+        );
+        assert_eq!(su.category, expected_cat, "kategoria {ty}");
+        cats.insert(su.category.clone());
+        assert_eq!(su.model_name, ty, "String(Jednostka ?? nazwa)");
+        if map_id == RANNY {
+            ranny_widziany = true;
+            assert_eq!(su.hp, RANNY_HP, "hp = HP jednostki mapy");
+            assert!(su.hp < su.max_hp);
+        } else {
+            assert_eq!(su.hp, su.max_hp, "pełne HP {map_id}");
+        }
+    }
+    assert!(ranny_widziany, "ranna jednostka w setupie");
+    assert!(
+        cats.len() >= 2,
+        "wojownik i łucznik mają różne kategorie: {cats:?}"
+    );
+}
+
+/// Obrona r1, Z2 (E04): `model_name = String(stats.Jednostka ?? nazwa)`. W szturmie bez wodza `Jednostka == nazwa`, więc
+/// różnicę sprawdza producent na jednostce wodza (`nazwa` = tytuł wodza, `Jednostka` = typ z `units.json`) i na
+/// jednostce bez pola `Jednostka` (zostaje `nazwa`).
+#[test]
+fn model_name_jednostka_przed_nazwa() {
+    use civ_engine::domain::battle_setup_units::Side;
+    use civ_engine::domain::siege_battle_adapter::{unit_def_index, RosterUnit};
+    use civ_engine::domain::siege_battle_adapter_unit::{
+        roster_to_battle_units, OwnerContext, RosterBattleCtx, UnitDefFallback,
+    };
+    let data = siege_battle_apply::session_data().expect("dane");
+    let index = unit_def_index(&data.unit_rows);
+    let mut owners = std::collections::BTreeMap::new();
+    owners.insert(
+        1i64,
+        OwnerContext {
+            built_ids: Vec::new(),
+            civ_bonusy: Vec::new(),
+            army_hungry: false,
+            gold_deficit: false,
+            difficulty_combat_mult: 1.0,
+        },
+    );
+    let ctx = RosterBattleCtx {
+        rows: &data.unit_rows,
+        index: &index,
+        militia_defs: &[],
+        owners: &owners,
+        fallback: UnitDefFallback::Error,
+    };
+    let mut wodz = RosterUnit::new("g1", 1, "Wojownik", "domyslny", 0, 0);
+    wodz.is_general = true;
+    let bus = roster_to_battle_units(&[wodz], Side::Atk, &ctx).expect("wódz");
+    let bu = &bus[0];
+    assert_ne!(bu.nazwa, "Wojownik", "nazwa wodza = tytuł");
+    assert_eq!(siege_battle_apply::spawn_model_name(bu), "Wojownik");
+    let mut bez = bu.clone();
+    bez.stats.remove("Jednostka");
+    assert_eq!(siege_battle_apply::spawn_model_name(&bez), bu.nazwa);
+}
+
+/// Obrona r1, Z2 (E07): `siege_civ = (defCiv ?? civ) ?? 'rzym'` (`battleScene.ts:3480`). `def_civ = None` wymaga
+/// właściciela miasta spoza `players`; wtedy port nie znajduje obrońców (roster obrońców i kontekst właściciela
+/// `owner_contexts` pochodzą z `players`), więc szturm kończy się przed bitwą typowanym `NoDefenders*` i gałąź `'rzym'`
+/// jest przez most nieosiągalna (udokumentowane w `02a-obrona.md`, Z2/E07). Test pilnuje tej nieosiągalności: gdyby
+/// taki szturm zaczął kiedyś startować, test padnie i wymusi sprawdzenie `siege_civ == "rzym"`.
+#[test]
+fn def_civ_none_nieosiagalne_przez_most() {
+    let mut st = state(11, &["palisada"]);
+    st.players.retain(|p| p.id != PlayerId::new(ENEMY));
+    let e = siege_battle_apply::prepare_storm(&st, CITY, ANCHOR, 1)
+        .err()
+        .expect("właściciel spoza players: brak bitwy");
+    assert!(
+        matches!(
+            e,
+            SiegeBattleError::NoDefendersCaptureRequested { city_id: CITY }
+                | SiegeBattleError::NoDefendersWallIntact { city_id: CITY }
+        ),
+        "{e:?}"
+    );
+    let mut b = bridge_for(st);
+    let be = send(
+        &mut b,
+        EngineCommand::StartSiegeStorm {
+            city_id: CITY,
+            unit_id: ANCHOR,
+        },
+    )
+    .expect_err("start bez właściciela");
+    assert_eq!(be.message, e.to_string());
+    assert!(be.siege_battle.is_some(), "błąd typowany");
+    let e2 = send(&mut b, EngineCommand::FinishSiegeBattle).expect_err("brak bitwy");
+    assert_eq!(e2.siege_battle, Some(SiegeBattleErrorDto::NoActiveBattle));
+}
+
 #[test]
 fn setup_to_rozstawienie_przed_play() {
     let st = state(12, &["palisada"]);
@@ -580,10 +719,47 @@ fn abort_po_starcie_zamyka_bitwe_bez_zmiany_stanu() {
     assert!(battle(&again).setup.is_some());
 }
 
-/// D-1I6D-4: po `Step`/`Skip` porzucenie jest odrzucane (bez ucieczki przed wynikiem); bitwa trwa, `Finish` stosuje
-/// ten sam wynik co bez próby porzucenia.
+/// D-1I6D-4 (obrona r1, Z1): porzucenie TRWAJĄCEJ bitwy (po `Step`) jest dozwolone jak „Wycofaj się z bitwy” pinu
+/// (`battleScene.ts:3359` → `onCancel` → `setMood('mapa')`, `main.ts:37023`): bitwa zamknięta bez wyniku, stan gry i
+/// machiny bez zmian, brak `StateChanged`.
 #[test]
-fn abort_po_kroku_lub_koncu_odrzucony() {
+fn abort_w_trakcie_bitwy_zamyka_bez_wyniku() {
+    let st = state(18, &["palisada"]);
+    let mut b = bridge_for(st);
+    let before = state_of(&send(&mut b, EngineCommand::GetState).expect("get")).clone();
+    start(&mut b);
+    for _ in 0..3 {
+        let d = send(
+            &mut b,
+            EngineCommand::StepSiegeBattle {
+                wall_ms: WallMs(16.0),
+            },
+        )
+        .expect("step");
+        assert_eq!(battle(&d).phase, SiegeBattlePhaseDto::Running, "bitwa trwa");
+    }
+    let d = send(&mut b, EngineCommand::AbortSiegeBattle).expect("wycofanie w trakcie bitwy");
+    let p = battle(&d);
+    assert_eq!(p.phase, SiegeBattlePhaseDto::Aborted);
+    assert_eq!(p.city_id, CITY);
+    assert!(p.result.is_none() && p.frame.is_none() && p.actions.is_empty());
+    assert!(d.events.is_empty(), "brak StateChanged");
+    assert_eq!(state_of(&d), &before, "stan gry bez zmian");
+    assert_eq!(
+        state_of(&d).siege_machines_ready.get(&CityId::new(CITY)),
+        Some(&vec![PlayableSiegeMachineKind::Taran]),
+        "machiny nie zużyte"
+    );
+    let e = send(&mut b, EngineCommand::FinishSiegeBattle).expect_err("bitwa zamknięta");
+    assert_eq!(e.siege_battle, Some(SiegeBattleErrorDto::NoActiveBattle));
+    // Po `Skip` w toku (przed odczytem wyniku) — także bitwa przewinięta do końca jest już `Finished`: patrz niżej.
+}
+
+/// D-1I6D-4: po końcu bitwy (faza `Finished`, np. po `Skip`) porzucenie jest odrzucane: pin ma wtedy tylko ekran końca
+/// z „Zakończ bitwę”, które oddaje wynik (`battleScene.ts:10720-10733`). Bitwa zostaje, `Finish` stosuje ten sam wynik
+/// co bez próby porzucenia (odrzucona próba nie zostawia flagi).
+#[test]
+fn abort_po_koncu_odrzucony() {
     let st = state(18, &["palisada"]);
     let mut b = bridge_for(st.clone());
     let before = state_of(&send(&mut b, EngineCommand::GetState).expect("get")).clone();
@@ -595,22 +771,18 @@ fn abort_po_kroku_lub_koncu_odrzucony() {
         },
     )
     .expect("step");
-    let e = send(&mut b, EngineCommand::AbortSiegeBattle).expect_err("po kroku");
-    assert_eq!(
-        e.siege_battle,
-        Some(SiegeBattleErrorDto::AbortNotAllowed { city_id: CITY })
-    );
     let skip = send(&mut b, EngineCommand::SkipSiegeBattle).expect("skip trwa");
     assert_eq!(battle(&skip).phase, SiegeBattlePhaseDto::Finished);
-    let e = send(&mut b, EngineCommand::AbortSiegeBattle).expect_err("po końcu");
-    assert_eq!(
-        e.siege_battle,
-        Some(SiegeBattleErrorDto::AbortNotAllowed { city_id: CITY })
-    );
+    for _ in 0..2 {
+        let e = send(&mut b, EngineCommand::AbortSiegeBattle).expect_err("po końcu");
+        assert_eq!(
+            e.siege_battle,
+            Some(SiegeBattleErrorDto::AbortNotAllowed { city_id: CITY })
+        );
+    }
     let fin = send(&mut b, EngineCommand::FinishSiegeBattle).expect("finish");
     assert_eq!(fin.events.len(), 1);
     assert_ne!(state_of(&fin), &before);
-    // Ta sama bitwa bez prób porzucenia: identyczny wynik i stan (odrzucona próba nie zostawia flagi).
     let mut c = bridge_for(st);
     start(&mut c);
     send(
@@ -624,6 +796,43 @@ fn abort_po_kroku_lub_koncu_odrzucony() {
     let fin2 = send(&mut c, EngineCommand::FinishSiegeBattle).expect("finish");
     assert_eq!(battle(&fin2).result, battle(&fin).result);
     assert_eq!(state_of(&fin2), state_of(&fin));
+}
+
+/// Biblioteka (D-1I6D-4): `request_abort` po `step`/`skip` sesji z pamięci podręcznej i z odtworzenia (inny wątek /
+/// wyczyszczona pamięć) daje ten sam werdykt: trwająca = flaga, zakończona = `AbortNotAllowed` bez flagi.
+#[test]
+fn request_abort_wg_fazy_takze_po_odtworzeniu() {
+    for clear in [false, true] {
+        let mut g = PlayableGame::from_state(state(21, &["palisada"]));
+        g.start_siege_storm(CITY, ANCHOR).expect("start");
+        g.step_siege_battle(16.0).expect("step");
+        if clear {
+            siege_battle_apply::clear_live_session_cache();
+        }
+        let b = g.siege_battle().expect("bitwa");
+        let fresh = b.clone();
+        b.request_abort().expect("trwająca bitwa");
+        assert_ne!(&fresh, b, "flaga ustawiona");
+        assert!(matches!(
+            g.finish_siege_battle(),
+            Err(SiegeBattleError::Aborted { .. })
+        ));
+        assert!(g.siege_battle().is_none());
+
+        g.start_siege_storm(CITY, ANCHOR).expect("start 2");
+        g.skip_siege_battle().expect("skip");
+        if clear {
+            siege_battle_apply::clear_live_session_cache();
+        }
+        let b = g.siege_battle().expect("bitwa 2");
+        let fresh = b.clone();
+        assert_eq!(
+            b.request_abort(),
+            Err(SiegeBattleError::AbortNotAllowed { city_id: CITY })
+        );
+        assert_eq!(&fresh, b, "flaga nieustawiona");
+        assert!(g.finish_siege_battle().is_ok(), "zostaje Finish z wynikiem");
+    }
 }
 
 #[test]

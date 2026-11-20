@@ -25,7 +25,7 @@
 mod bridge;
 
 use bridge::{
-    BridgeDispatch, BridgeError, BridgeErrorCode, BridgeEvent, BridgeRequest, BridgeResult,
+    BridgeDispatch, BridgeError, BridgeEvent, BridgeRequest, BridgeResult,
     CivEngineAdapter, EngineBridge, EngineCommand, StartGameParams, WallMs,
 };
 use civ_client::{
@@ -695,7 +695,6 @@ fn create_session_i_bledy_startu() {
         }
         other => panic!("engine error expected: {other:?}"),
     }
-    let _ = BridgeErrorCode::EngineRejected;
     assert!(c.siege_battle().is_none());
     assert_eq!(c.ui(), &ui);
 }
@@ -1314,6 +1313,33 @@ fn blad_setupu_porzuca_bitwe_w_silniku_e2e() {
     }
 }
 
+/// D-1I6-DOC (Evaluator r1, E13): an aborted start drops the screen of the EARLIER closed battle too
+/// (`last_siege_battle_view() == None`), so both "last battle" accessors describe the aborted start.
+#[test]
+fn porzucony_start_czysci_ekran_poprzedniej_bitwy() {
+    let mut c = client_for(siege_state(11));
+    c.start_siege_storm(CITY, ANCHOR, true).expect("start");
+    c.skip_siege_battle().expect("skip");
+    c.finish_siege_battle().expect("finish");
+    assert!(
+        c.last_siege_battle_view().is_some(),
+        "the applied battle keeps its screen"
+    );
+    c.source_mut().tamper_start = Some(drop_setup);
+    match c.start_siege_storm(CITY, ANCHOR, true) {
+        Err(SiegeClientError::Setup(_)) => {}
+        other => panic!("setup error expected: {other:?}"),
+    }
+    assert!(
+        c.last_siege_battle_view().is_none(),
+        "aborted start: no screen of the earlier battle"
+    );
+    assert!(matches!(
+        c.last_siege_battle_end(),
+        Some(SiegeBattleEnd::Aborted { city_id: CITY, .. })
+    ));
+}
+
 /// The abort of D-1I6-ORPHAN fails too: both errors are reported (`AbortFailed`), nothing is kept in the client.
 #[test]
 fn nieudane_porzucenie_to_abort_failed() {
@@ -1359,17 +1385,18 @@ fn bledy_silnika_typowane_w_kliencie() {
         }
         other => panic!("NotFinished expected: {other:?}"),
     }
-    // The engine refuses an abort after the first step (D-1I6D-4); the client battle continues.
+    // The engine refuses an abort after the end of the battle (D-1I6D-4: phase `finished`, the pin only offers
+    // "Zakończ bitwę"); the client battle is kept and finishes with its result.
     c.step_siege_battle(16.0).expect("step");
+    c.skip_siege_battle().expect("skip");
     let e = c
         .source_mut()
         .request(EngineCommand::AbortSiegeBattle)
-        .expect_err("abort after a step");
+        .expect_err("abort after the end");
     assert_eq!(
         e.siege_battle,
         Some(SiegeBattleErrorDto::AbortNotAllowed { city_id: CITY })
     );
-    c.skip_siege_battle().expect("skip");
     c.finish_siege_battle().expect("finish");
     assert!(!is_not_finished(&SiegeBattleErrorDto::NoActiveBattle));
 }

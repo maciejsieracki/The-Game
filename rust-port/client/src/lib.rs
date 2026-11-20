@@ -730,9 +730,12 @@ impl<S: RenderSource> RenderClient<S> {
 // - D-1I6D-3 (no orphan battle): when the scene cannot be built from the start
 //   answer (`Setup` / `Adapter`), the client closes the engine battle with
 //   `AbortSiegeBattle` (game state unchanged) before returning the error; the
-//   end is `SiegeBattleEnd::Aborted`. Abort is only that failure path (the
-//   engine refuses it after the first `Step` / `Skip`, D-1I6D-4): the web has
-//   no way out of a running battle without its result.
+//   end is `SiegeBattleEnd::Aborted`. The engine accepts the abort at any
+//   moment before the end of the battle (D-1I6D-4: web "Wycofaj się z bitwy",
+//   `battleScene.ts:3359`, `onCancel` -> `setMood('mapa')`, `main.ts:37023`)
+//   and refuses it after the end (`abortNotAllowed`); this client sends it
+//   only on that failure path; the player's withdrawal button is debt
+//   D-1I6D-5 of the battle UI (engine command ready, no client call yet).
 // - D-1I6-4 (skip): after `SkipSiegeBattle` the client plays to the frame and
 //   calls `BattlePlayback::apply_snapshot` with it (the fast-forward emits no
 //   `Damage`, contract of `BattlePlayback`).
@@ -774,8 +777,9 @@ pub enum SiegeBattleCommand {
     Skip,
     /// `FinishSiegeBattle`.
     Finish,
-    /// `AbortSiegeBattle` (D-1I6D-3): only after a failed scene build of the
-    /// start answer.
+    /// `AbortSiegeBattle` (D-1I6D-3): the client sends it after a failed scene
+    /// build of the start answer; the engine accepts it until the battle ends
+    /// (D-1I6D-4).
     Abort,
 }
 

@@ -97,11 +97,13 @@ pub enum EngineCommand {
     /// Apply the finished battle to the game state (web `consumeReadyMachines` + `finishSiegeStormBattle`
     /// without the city capture, which is returned as `captureRequested` for #354); emits `StateChanged`.
     FinishSiegeBattle,
-    /// R-RUSTPORT-P4-1I6-DLUGI-Q1 (D-1I6D-3, debts D-1I6-ORPHAN / D-1I6-ABORT-E2E): close the running battle without a
-    /// result (the caller could not open the scene after `StartSiegeStorm`). The game state is unchanged (machines
-    /// not consumed; web `onCancel` of the scene, `main.ts:37017`); `siegeBattle.phase = aborted`; no
-    /// `StateChanged`. Without a battle: `noActiveBattle`; after the first `Step`/`Skip`: `abortNotAllowed` (D-1I6D-4,
-    /// no escape from a running or finished battle). Additive: `CONTRACT_VERSION` stays 1.
+    /// R-RUSTPORT-P4-1I6-DLUGI-Q1 (D-1I6D-3, debts D-1I6-ORPHAN / D-1I6-ABORT-E2E): close the battle without a result
+    /// at any moment before its end: the caller could not open the scene after `StartSiegeStorm`, or the player
+    /// withdrew (web: the scene's top-bar button "Wycofaj się z bitwy", `battleScene.ts:3359`, `dispose()` +
+    /// `onCancel` -> `setMood('mapa')`, `main.ts:37023`, visible through the whole battle). The game state is unchanged
+    /// (machines not consumed, no `finishSiegeStormBattle`); `siegeBattle.phase = aborted`; no `StateChanged`. Without
+    /// a battle: `noActiveBattle`; after the end of the battle (phase `finished`): `abortNotAllowed` (D-1I6D-4: the pin
+    /// then only offers "Zakończ bitwę", which delivers the result). Additive: `CONTRACT_VERSION` stays 1.
     AbortSiegeBattle,
 }
 
