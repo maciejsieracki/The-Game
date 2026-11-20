@@ -126,7 +126,9 @@ async function browserChecks(distDir) {
     const on = await page.evaluate(() => window.__diploHarderMeasure.setEnabled(true));
     check('B2a setEnabled(true) ustawia flage', on === true);
     const reset = await page.evaluate(() => window.__diploHarderMeasure.setEnabled(null));
-    check('B2b setEnabled(null) wraca do stalej (OFF)', reset === false);
+    // R-WEB-DIPLO-LEVEL-MEASURE-3-LEVELS-Q1 (pin B2b): od FALI 888 flaga domyslnie ON; setEnabled(null) wraca do wartosci z danych.
+    const dataDefault = JSON.parse(fs.readFileSync(path.join(GRA_DIR, 'data', 'diplomacy-harder-params.json'), 'utf8')).twardaDyplomacjaAktywna === true;
+    check('B2b setEnabled(null) wraca do wartosci z danych (domyslnie ON)', reset === dataDefault && reset === true);
     const off = await page.evaluate(() => window.__diploHarderMeasure.setEnabled(false));
     check('B2c setEnabled(false) ustawia OFF', off === false && (await page.evaluate(() => window.__diploHarderMeasure.isEnabled())) === false);
 
