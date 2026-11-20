@@ -5,7 +5,7 @@ DOMAIN: GAME
 TEMAT: R-RUSTPORT-P4-HITAT-FQ-REGRESJA-Q1
 GOAL: przywrócić zgodność kontraktu silnik ↔ renderer po FRAME-QUANT (`PlaybackError::HitAt` w E2E klienta) przy niezmienionych 42 wektorach pinu.
 BAZA: `origin/rust-port/parity-v2` = `3e5db0673b26c0838d23f621e8727ffd051a9c88` (merge FRAME-QUANT FC 80b97acc4). Gałąź robocza: `rust-port-wip/hitat-fq-q1`.
-ZMIANY/COMMIT: patrz §5 (SHA w stopce commita raportu).
+ZMIANY/COMMIT: kod `5e6614e00` (renderer playback + testy), `a9d96a33f` (test kontraktu silnika, fmt, raport, mutanty); gałąź `rust-port-wip/hitat-fq-q1`.
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (02-evaluator.md).
 DEPLOY/PUSH: NIE WYKONANO
@@ -63,7 +63,7 @@ Silnik: **bez zmian w kodzie** (`siege_tactics_loop.rs`, `siege_tactics_actions.
   wszystkie 30 scenariuszy z krokiem 16 ms w czasie rzeczywistym; każda akcja z czasem ma odstęp zgodny z rendererem
   (melee 160, shot 384, move 240, tower 380, boulder 700, ram 320). Pokrycie zmierzone:
   `{boulder: 1641, melee: 385, move: 9326, ram: 580, shot: 920, tower: 991}`. Wektory 42 i lista wyjątków bez zmian.
-- `dyspozycje/autobot/runs/R-RUSTPORT-P4-HITAT-FQ-REGRESJA-Q1/`: ten raport, skrypt i log mutantów.
+- `dyspozycje/autobot/runs/R-RUSTPORT-P4-HITAT-FQ-REGRESJA-Q1/`: ten raport i skrypt mutantów.
 
 Poza commitem: `rust-port/renderer/Cargo.lock` był przepisywany przez cargo (brak `civ-view-model`/`serde_json`
 w zatwierdzonym lockfile na bazie — dług istniejący, poza allowlistą); przywrócony `git checkout`, nie commitowany.
@@ -92,7 +92,7 @@ Po rozszerzeniu testu kontraktu na wszystkie 30 scenariuszy (po pełnej bramce) 
 (start 6,9 GB przy równoległej budowie innego tematu; renderer budowany przy ≥ 11 GB, jedna wspólna budowa).
 Liczba testów silnika (4225+1) różni się od „4242" z dispatchu — NIE_ZMIERZONO, skąd liczba w dispatchu.
 
-## 6. Mutanty (18; zabite 17) — `01-operator-r1-mutanty.py`, log `01-operator-r1-mutanty.log`
+## 6. Mutanty (18; zabite 17) — `01-operator-r1-mutanty.py` (log `*.log` jest w .gitignore; kopia w scratchpadzie `hitat-mut.log`)
 
 R1 ceil→floor, R2 ceil→round, R3 `frame>0`→`>=0`, R4 bez `nominal>0`, R5 `||`→`&&`, R6 tylko siatka, R7 tylko nominał,
 R8 okno zamiast siatki, R9 klatka 32, R10 melee: warunek bazy, R11 shot: warunek bazy, R12 melee ze stałą strzału,
