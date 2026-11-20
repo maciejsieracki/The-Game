@@ -34140,6 +34140,13 @@ async function boot(): Promise<void> {
          *  te same decyzje co cywilizacje AI (pętla ownerLoop). Zasady gracza bez zmian (brak automatycznej wojny). */
         setPlayerAiAutopilotForTest: (on: boolean): void => { playerAiAutopilotForTest = on === true; },
         playerAiAutopilotForTestState: (): boolean => playerAiAutopilotForTest,
+        /** R-WEB-VERIFY-LIVE-A-UNIT-COSTS-AI-MEASURE-Q1 (tylko ?civTest=1, pomiar): ustawia tempo „Koszty jednostek" gracza
+         *  (player.kosztJednostekPace) przed pierwsza tura. Wartosc spoza zbioru jest ignorowana. Zwraca stan po ustawieniu. */
+        setUnitCostPace: (p: string): string => {
+          if (p === 'niski' || p === 'normalny' || p === 'wysoki') player.kosztJednostekPace = p;
+          return player.kosztJednostekPace ?? 'niski';
+        },
+        unitCostPaceState: (): string => player.kosztJednostekPace ?? 'niski',
         /** R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1 (r2): właściciele przetworzeni przez ownerLoop w ostatniej fazie AI. */
         lastAiPhaseOwnersForTest: (): number[] => aiPhaseOwnersForTest.slice(),
         /** R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 (tylko odczyt, ?civTest=1): rozmiar dziennika w pamieci (wszyscy wlasciciele). */
@@ -34229,6 +34236,9 @@ async function boot(): Promise<void> {
               /** Forty i posterunki WŁASNE (węzły fortNodes) — tylko odczyt. */
               forty: terrAll.filter(n => n.ownerId === o && !!n.isFort).length,
               posterunki: terrAll.filter(n => n.ownerId === o && !!n.isOutpost).length,
+              /** R-WEB-VERIFY-LIVE-A (tylko odczyt): żywność/turę armii właściciela — unitFoodPerTurn (tempo wliczone). */
+              zywnoscArmiiTura: r2(wojskoweJedn.reduce((sum, u) => sum + (unitFoodPerTurn(
+                u as unknown as Parameters<typeof unitFoodPerTurn>[0], upkP, unitFoodTbl, kosztJednostekPaceUtrzymania()) || 0), 0)),
               /** Heksy terytorium ogółem (wg właściciela heksu, kolejność węzłów jak w territoryOwnerAt). */
               hexyTerytorium: terrByOwnerAll.get(o)?.size ?? 0,
               /** Heksy terytorium z MIAST (heks w zasięgu miasta — miasto ma pierwszeństwo). */
