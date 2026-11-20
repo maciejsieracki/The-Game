@@ -188,4 +188,68 @@ main({
     base: 'improvement-cost-params.json',
     mutate: (o) => { o.kosztUlepszenWgEpokiWlasciciela = false; return o; },
   }],
-}).catch(e => { console.error('FAIL', e.message); process.exit(1); });
+}).then(() => liveMain()).catch(e => { console.error('FAIL', e.message); process.exit(1); });
+
+// ---- ŻYWA GRA (R-WEB-VERIFY-LIVE-B2): prawdziwy build gry z ?civTest=1 (esbuild, poza repo); start REALNYM doStartGame.
+// Odczyt: __settingsLive.improvementWorkCost(id, owner) = realna formuła (ta sama co map/improvement-build.ts readWorkCost):
+// baseKosztPracaUlepszenia(wiersz z terrain-improvements.json) -> scaleTerrainImprovementWorkCostForOwner(epoka wiersza, epoka właściciela).
+// Oczekiwanie (Node, z gra/data): flaga kosztUlepszenWgEpokiWlasciciela z improvement-cost-params.json; R_STAWKI_FALA2 = 2
+// (gra/src/game/r-stawki-strojenie.ts:9); mnożnik epoki właściciela Brąz = 1 (terrain-improvements.ts:152).
+// Właściciel 0 startuje w Brązie (epochId 'braz' w parametrach startu; potwierdzone przez wynik 88 = 44 x 2).
+// NIE ZMIERZONO na żywej grze: Kamień/Żelazo jako epoka właściciela (start nie zmienia epoki właściciela w tym teście).
+const LIVE_TOOL = path.join(GRA, 'tools', 'test-hook-setcitylimit-live-bundle.cjs');
+const LIVE_OUT = path.join(WORK, 'live');
+const LIVE_PARAMS = (advanced) => ({
+  civId: 'rzymianie', civName: 'Rzymianie', epoch: 'Epoka Brązu', epochId: 'braz', difficulty: 'Normalny',
+  mapSize: 'Maly', rivals: '2', speed: 'Normalna', worldType: 'Kontynenty', typSwiata: 'kontynenty', seed: 778899,
+  mapQualityLabel: 'Wysoka', mapQuality: 'high', renderQualityLabel: 'Wysoka', mapDetailQualityLabel: 'Wysoka',
+  renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: 4, cityStatesCount: 2,
+  worldDensityLabels: { resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie', forest: 'Normalnie', relief: 'Normalnie' },
+  advanced: {
+    barbariansLevel: 'normalny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
+    wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki', landFractionPercent: 30, landFractionCustom: false,
+    cityStateDifficultyOverride: 'normal', cityLimitBase: 10, ...advanced,
+  },
+  villageRewardsEnabled: true,
+});
+function buildLiveGame() {
+  fs.mkdirSync(LIVE_OUT, { recursive: true });
+  execFileSync('node', [LIVE_TOOL, LIVE_OUT], { cwd: GRA, stdio: 'pipe', timeout: 500000 });
+  return path.join(LIVE_OUT, 'Gra-LIVE.html');
+}
+async function liveStart(browser, html, advanced) {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto('file://' + html + '?civTest=1', { waitUntil: 'load', timeout: 120000 });
+  await page.waitForFunction(() => !!window.__settingsLive, null, { timeout: 60000 });
+  await page.evaluate((p) => window.__settingsLive.startNewGame(p), LIVE_PARAMS(advanced));
+  await page.waitForTimeout(8000);
+  return { context, page, errors };
+}
+async function liveMain() {
+  const browser = await chromium.launch({ headless: true, executablePath: resolveChromePath() || '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+  try {
+    const html = buildLiveGame();
+    const s = await liveStart(browser, html, {});
+    const ids = ['farma', 'kopalnia_miedzi', 'kopalnia_zelaza'];
+    const live = await s.page.evaluate((list) => Object.fromEntries(list.map(id => [id, window.__settingsLive.improvementWorkCost(id, 0)])), ids);
+    assert.deepEqual(s.errors, [], 'brak pageerror');
+    const flag = IMP_P.kosztUlepszenWgEpokiWlasciciela !== false;
+    const SCALE_FALA2 = 2; // gra/src/game/r-stawki-strojenie.ts:9 (R_STAWKI_FALA2_MULT)
+    const OWNER_MULT_BRAZ = 1; // gra/src/game/terrain-improvements.ts:152 (epoka 2)
+    for (const id of ids) {
+      const row = TI[id];
+      assert.ok(row, `wiersz ${id} w terrain-improvements.json`);
+      const base = flag ? row.koszt_praca : (row.koszt_praca_przed_x2 ?? row.koszt_praca);
+      const expected = Math.max(1, Math.round(base * SCALE_FALA2)) * OWNER_MULT_BRAZ;
+      assert.equal(live[id], expected, `live koszt pracy ${id} (wlasciciel Braz, flaga ${flag})`);
+    }
+    await s.context.close();
+    console.log('ZYWA GRA ZIELONA (koszt pracy ulepszen, wlasciciel Braz)');
+    console.log(JSON.stringify(live));
+  } finally {
+    await browser.close();
+  }
+}

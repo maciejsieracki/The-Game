@@ -208,4 +208,98 @@ main({
       return arr;
     },
   }],
-}).catch(e => { console.error('FAIL', e.message); process.exit(1); });
+}).then(() => liveMain()).catch(e => { console.error('FAIL', e.message); process.exit(1); });
+
+// ---- ŻYWA GRA (R-WEB-VERIFY-LIVE-B2): prawdziwy build gry z ?civTest=1 (esbuild, poza repo), start przez
+// REALNY doStartGame (hak window.__settingsLive.startNewGame, ta sama funkcja co „Start” kreatora).
+// Odczyt: __settingsLive.unitCosts = realne production.ts / unit-cost-tempo.ts / economy-upkeep.ts w grze.
+// Oczekiwanie: te same wzory co w harnessie, liczone w Node z gra/data (nie z bundla gry).
+// NIE ZMIERZONO w tej rundzie: mutacje na żywej grze (bundle gry nie ma wstrzyknięcia mutanta).
+const LIVE_TOOL = path.join(GRA, 'tools', 'test-hook-setcitylimit-live-bundle.cjs');
+const LIVE_OUT = path.join(WORK, 'live');
+const LIVE_PARAMS = (advanced) => ({
+  civId: 'rzymianie', civName: 'Rzymianie', epoch: 'Epoka Brązu', epochId: 'braz', difficulty: 'Normalny',
+  mapSize: 'Maly', rivals: '2', speed: 'Normalna', worldType: 'Kontynenty', typSwiata: 'kontynenty', seed: 778899,
+  mapQualityLabel: 'Wysoka', mapQuality: 'high', renderQualityLabel: 'Wysoka', mapDetailQualityLabel: 'Wysoka',
+  renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: 4, cityStatesCount: 2,
+  worldDensityLabels: { resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie', forest: 'Normalnie', relief: 'Normalnie' },
+  advanced: {
+    barbariansLevel: 'normalny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
+    wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki', landFractionPercent: 30, landFractionCustom: false,
+    cityStateDifficultyOverride: 'normal', cityLimitBase: 10, ...advanced,
+  },
+  villageRewardsEnabled: true,
+});
+function buildLiveGame() {
+  fs.mkdirSync(LIVE_OUT, { recursive: true });
+  execFileSync('node', [LIVE_TOOL, LIVE_OUT], { cwd: GRA, stdio: 'pipe', timeout: 500000 });
+  return path.join(LIVE_OUT, 'Gra-LIVE.html');
+}
+async function liveStart(browser, html, advanced) {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto('file://' + html + '?civTest=1', { waitUntil: 'load', timeout: 120000 });
+  await page.waitForFunction(() => !!window.__settingsLive, null, { timeout: 60000 });
+  await page.evaluate((p) => window.__settingsLive.startNewGame(p), LIVE_PARAMS(advanced));
+  await page.waitForTimeout(8000);
+  return { context, page, errors };
+}
+async function liveMain() {
+  const browser = await chromium.launch({ headless: true, executablePath: resolveChromePath() || '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+  try {
+    const html = buildLiveGame();
+    // Kontrola negatywna: bez ?civTest=1 haka __settingsLive nie ma.
+    const neg = await browser.newContext();
+    const negPage = await neg.newPage();
+    await negPage.goto('file://' + html, { waitUntil: 'load', timeout: 120000 });
+    await negPage.waitForTimeout(4000);
+    assert.equal(await negPage.evaluate(() => typeof window.__settingsLive), 'undefined', 'bez ?civTest=1 brak haka __settingsLive');
+    await neg.close();
+    const liveOut = {};
+    for (const pace of PACES) {
+      const s = await liveStart(browser, html, { kosztJednostekPace: pace });
+      const got = await s.page.evaluate((names) => {
+        const r = {};
+        r.settings = window.__settingsLive.getSettings();
+        for (const n of names) r[n] = window.__settingsLive.unitCosts(n, 0);
+        return r;
+      }, SELECTED.map(([, u]) => u.Jednostka));
+      assert.deepEqual(s.errors, [], `brak pageerror (${pace})`);
+      liveOut[pace] = got;
+      await s.context.close();
+    }
+    for (const pace of PACES) {
+      const got = liveOut[pace];
+      assert.equal(got.settings.kosztJednostekPace, pace, `start z tempem ${pace} = ustawienie gry`);
+      for (const [label, u] of SELECTED) {
+        const row = got[u.Jednostka];
+        assert.ok(row, `live unitCosts ${u.Jednostka}`);
+        const cost = u['Pieniądz (koszt)'];
+        const base = Math.round(cost * EPOCH_MULT[u.Epoka] * EXTRA_MULT[u.Epoka]);
+        assert.equal(row.recruitBase, base, `live baza rekrutacji ${label} = harness/dane`);
+        assert.equal(row.recruitPaced, Math.max(1, Math.round(base * PACE_MULT[pace])), `live rekrutacja ${label} ${pace}`);
+        near(row.foodPerTurn, u['żywność/turę'] * R_STAWKI_FALA1_FALA2_MULT * Math.pow(4, ERA_ORD[u.Epoka] - 1) * PACE_MULT[pace], `live zywnosc ${label} ${pace}`);
+        // Utrzymanie Pieniądz: tabela z units.json x epoka (scaleCostByEpoch) x R_STAWKI (4) x tempo.
+        const upk = u['Utrzymanie (Pieniądz/turę)'];
+        assert.equal(row.pieniadzUpkeep, Math.round(upk * EPOCH_MULT[u.Epoka] * R_STAWKI_FALA1_FALA2_MULT * PACE_MULT[pace]), `live utrzymanie Pieniądz ${label} ${pace}`);
+        // Utrzymanie surowca: ilość z units.json x epoka x tempo (proporcja względem Niski).
+        // Surowiec: sprawdzany w porownaniu z przebiegiem Niski (ponizej), bo wzor surowca nie jest tu powtarzany.
+        const resName = u['Utrzymanie surowiec'];
+        if (typeof resName === 'string' && resName.length > 0) {
+          const norm = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+          const resKey = Object.keys(row.resourceUpkeep || {}).find(k => norm(k) === norm(resName));
+          assert.ok(resKey, `live utrzymanie surowca ${resName} (${label}, ${pace}) klucze=${JSON.stringify(row.resourceUpkeep)}`);
+          const baseRes = liveOut.niski[u.Jednostka].resourceUpkeep[resKey];
+          assert.ok(baseRes > 0, `surowiec ${resName} niski > 0 (${label})`);
+          assert.ok(Math.abs(row.resourceUpkeep[resKey] - baseRes * PACE_MULT[pace]) <= 1, `surowiec ${resName} ${label} ${pace} = niski x ${PACE_MULT[pace]}`);
+        }
+      }
+    }
+    console.log('ZYWA GRA ZIELONA (kosztJednostek x3 x3 jednostki, negatywna kontrola)');
+    console.log(JSON.stringify(liveOut));
+  } finally {
+    await browser.close();
+  }
+}

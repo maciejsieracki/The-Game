@@ -86,6 +86,87 @@ Kopalnia rudy (pierwszy wiersz z `koszt_praca_przed_x2` w terrain-improvements.j
 - Domyślna flaga zgodna z `improvement-cost-params.json` (true).
 - Mutacja (flaga → false w bundlu): CZERWONA (`flaga kosztu wg epoki wlasciciela zgodna z danymi`).
 
+## 6. Przez kreator na żywo (hak `window.__settingsLive`, ?civTest=1) — RUNDA 2 (obrona)
+
+Metoda: prawdziwy build gry (esbuild, `gra/tools/test-hook-setcitylimit-live-bundle.cjs`, katalog poza repo), Chromium headless,
+start przez REALNY `doStartGame` (hak `startNewGame(params)`, parametry jak w kreatorze). Liczby z surowego wyjścia
+`gra/tools/verify-live-*-test.cjs` (uruchomienia 2026-11-20). Kolumna TAK/NIE porównuje z decyzją podaną w dispatchu
+(tempo ×1/×2/×4; Wzrost WYŁ. domyślnie; Dyplomacja kara ×k, bonus ÷k; kurs 0,2).
+Uwaga: sekcja „DECYZJE WŁAŚCICIELA" w `dyspozycje/autobot/KOLEJKA-WEB.md` nie występuje w tym worktree (grep: 0 trafień);
+porównanie idzie więc do wartości z dispatchu i z `KOSZTY-JEDNOSTEK-STAN-2026-11-20.md`.
+
+Hak `window.__settingsLive` (tylko `?civTest=1`): `startNewGame`, `getSettings`, `unitCosts` (rekrutacja, utrzymanie Pieniądz,
+surowiec, żywność), `improvementWorkCost(id, owner)`, `diplomacyWarScale(wartość, kara|bonus)`, `convertFoodToTax`, `saveRoundTrip`.
+
+### 6a. Koszty jednostek (właściciel 0, epoka startu Brąz) — surowe liczby z gry
+
+| Pozycja | Niski ×1 | Normalny ×2 | Wysoki ×4 | Zgodne (TAK/NIE) |
+|---|---|---|---|---|
+| Wojownik (Kamień): rekrutacja Pieniądz | 5 | 10 | 20 | TAK |
+| Wojownik: żywność/turę | 4 | 8 | 16 | TAK |
+| Wojownik: utrzymanie Pieniądz/turę | 4 | 8 | 16 | TAK |
+| Wojownik: surowiec/turę (drewno) | 3 | 6 | 12 | TAK |
+| Procarz (Brąz): rekrutacja Pieniądz | 16 | 32 | 64 | TAK |
+| Procarz: żywność/turę | 16 | 32 | 64 | TAK |
+| Procarz: utrzymanie Pieniądz/turę | 8 | 16 | 32 | TAK |
+| Procarz: surowiec/turę (drewno) | 10 | 20 | 40 | TAK |
+| Konnica (Żelazo): rekrutacja Pieniądz | 176 | 352 | 704 | TAK |
+| Konnica: żywność/turę | 64 | 128 | 256 | TAK |
+| Konnica: utrzymanie Pieniądz/turę | 48 | 96 | 192 | TAK |
+| Konnica: surowiec/turę (brąz) | 20 | 40 | 80 | TAK |
+
+Utrzymanie Pieniądz = `Utrzymanie (Pieniądz/turę)` × mnożnik epoki (Kamień 1 / Brąz 2 / Żelazo 4) × 4 × tempo — zgodnie z
+`buildUnitUpkeepTable` (`scaleCostByEpoch`). NIE ZMIERZONO: właściciel AI (hak bierze tempo gry dla każdego właściciela; tura AI nie była mierzona).
+
+### 6b. Dyplomacja i wojna — realne skalowanie aktywnego poziomu (start w grze)
+
+| Poziom | kara 10 → | bonus 12 → | Zgodne |
+|---|---|---|---|
+| Łatwa | 10 (×1) | 12 (÷1) | TAK |
+| Normalna | 20 (×2) | 6 (÷2) | TAK |
+| Trudna | 30 (×3) | 4 (÷3) | TAK |
+
+NIE ZMIERZONO: efektywne kary w turze (hak nie wystawia silnika dyplomacji); wartości wyżej to funkcje skalowania.
+
+### 6c. Wzrost surowców z epoką
+
+- Start z domyślnymi parametrami: `wzrostSurowcowZEpoka = false` (WYŁ.) — TAK.
+- Start z `true`: odczyt `true` — TAK (także w round-trip, 6f).
+- Plon ulepszenia WŁ./WYŁ. na żywej grze: NIE ZMIERZONO (hak nie wystawia plonu). Wartości z harnessu (sekcja 2): WYŁ. 2/2/2, WŁ. 2/3/4.
+
+### 6d. Koszt pracy ulepszenia wg epoki właściciela (właściciel 0 = Brąz)
+
+| Ulepszenie (id) | koszt_praca (dane) | Gra (live) | Oczekiwane | Zgodne |
+|---|---|---|---|---|
+| farma (epoka 1) | 20 | 40 | 20 × 2 × 1 = 40 | TAK |
+| kopalnia_miedzi (epoka 2) | 44 | 88 | 44 × 2 × 1 = 88 | TAK |
+| kopalnia_zelaza (epoka 3) | 44 | 88 | 44 × 2 × 1 = 88 | TAK |
+
+Flaga `kosztUlepszenWgEpokiWlasciciela` = true (dane). NIE ZMIERZONO: właściciel w Kamieniu lub Żelazie (start nie zmienia epoki właściciela w tych testach).
+
+### 6e. Zamiana Żywność→Podatek
+
+- Kurs z danych (`econ-params.json`, poziom Normalny) w grze: 0,2 — TAK.
+- Bramka `ownerCanConvertWorkToTax` (wymaga miasta z Targowiskiem) w świeżej grze: zamknięta — `enabled=false`, zamiana 0 (`foodSpent=0`, `taxGained=0`) — TAK zgodne z `work-tax.ts`.
+- Zamiana 100 → 20 w grze: NIE ZMIERZONO (wymaga zbudowanego Targowiska; hak nie buduje budynków). Wartości 100→20 i 30→6 są z harnessu (sekcja 4).
+
+### 6f. Round-trip zapisu
+
+- Start: Wzrost WŁ., Koszty jednostek Wysoki, Dyplomacja Trudna → `saveRoundTrip()`: `saved=true`, `before == after` — TAK.
+- Odstępstwo (świadome, opisane w `main.ts` przy haku): zapis idzie do slotu testowego `civtest-settings-live-roundtrip` (localStorage, tylko `?civTest=1`), bo dispatch wymaga zapisu i wczytania.
+
+### 6g. Wczytanie po przeładowaniu (zarzut Evaluatora 3)
+
+- Procedura (jednorazowo): start → `saveRoundTrip()` → `page.reload()` → `saveRoundTrip()` (zapis i wczytanie w nowym procesie strony).
+- Wynik: `saved=true`, brak `pageerror`, brak zdarzenia `crash`, kod wyjścia 0. Stderr: tylko `ERR_FILE_NOT_FOUND` dla zasobów (brak assetów w buildzie testowym), bez SIGSEGV.
+- SIGSEGV NIE ODTWORZONO w tej sesji (1 próba, headless). Uwaga: nie testowano wczytania AKTYWNEJ gry z zapisu sprzed przeładowania; hak nie ma osobnej funkcji samego wczytania.
+
+### Ograniczenia (NIE ZMIERZONO)
+
+- Utrzymanie Pieniądz/surowiec jest czytane przez `unitUpkeep` / `totalUnitResourceUpkeep` z tego samego tempa co silnik; wzór na turę NIE został zmierzony przez turę.
+- Efektywne kary dyplomacji w turze, plon Wzrostu, zamiana 100→20 w grze, koszt ulepszenia dla Kamienia/Żelaza jako właściciela — NIE ZMIERZONO na żywej grze.
+- Mutacje dowodowe na żywej grze: NIE ZMIERZONO (mutacje działają na harnessie, sekcje 1–5).
+
 ## ZNALEZISKA (NIE naprawiano w tym temacie)
 
 - Z-1 (BLOKADA odczytu): brak odczytu w grze dla punktów 3, 4 i 5. Wymagany minimalny hak do osobnego tematu (`window.__civTest`, tylko `?civTest=1`). Pliki: `gra/src/main.ts` (wiring ustawień: applyMenuParams ok. linia 49760–49762; wczytanie ok. linia 51671–51675).

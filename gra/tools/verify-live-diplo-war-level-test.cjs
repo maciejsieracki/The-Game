@@ -196,4 +196,71 @@ main({
     base: 'diplomacy.json',
     mutate: (o) => { o.params[firstPenaltyKey] = o.params[firstPenaltyKey] + 10; return o; },
   }],
-}).catch(e => { console.error('FAIL', e.message); process.exit(1); });
+}).then(() => liveMain()).catch(e => { console.error('FAIL', e.message); process.exit(1); });
+
+// ---- ŻYWA GRA (R-WEB-VERIFY-LIVE-B2): prawdziwy build gry z ?civTest=1 (esbuild, poza repo); start REALNYM
+// doStartGame przez hak window.__settingsLive.startNewGame. Odczyt: diplomacyWarScale = realne scalePenaltyForWarLevel /
+// scaleBonusForWarLevel dla AKTYWNEGO poziomu gry (ten sam kod co silnik). Kara ×k, bonus ÷k (k = 1 / 2 / 3).
+// NIE ZMIERZONO na żywej grze: efektywne wartości konkretnych kar w turze (hak nie wystawia silnika dyplomacji).
+const LIVE_TOOL = path.join(GRA, 'tools', 'test-hook-setcitylimit-live-bundle.cjs');
+const LIVE_OUT = path.join(WORK, 'live');
+const LIVE_PARAMS = (advanced) => ({
+  civId: 'rzymianie', civName: 'Rzymianie', epoch: 'Epoka Brązu', epochId: 'braz', difficulty: 'Normalny',
+  mapSize: 'Maly', rivals: '2', speed: 'Normalna', worldType: 'Kontynenty', typSwiata: 'kontynenty', seed: 778899,
+  mapQualityLabel: 'Wysoka', mapQuality: 'high', renderQualityLabel: 'Wysoka', mapDetailQualityLabel: 'Wysoka',
+  renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: 4, cityStatesCount: 2,
+  worldDensityLabels: { resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie', forest: 'Normalnie', relief: 'Normalnie' },
+  advanced: {
+    barbariansLevel: 'normalny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
+    wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki', landFractionPercent: 30, landFractionCustom: false,
+    cityStateDifficultyOverride: 'normal', cityLimitBase: 10, ...advanced,
+  },
+  villageRewardsEnabled: true,
+});
+function buildLiveGame() {
+  fs.mkdirSync(LIVE_OUT, { recursive: true });
+  execFileSync('node', [LIVE_TOOL, LIVE_OUT], { cwd: GRA, stdio: 'pipe', timeout: 500000 });
+  return path.join(LIVE_OUT, 'Gra-LIVE.html');
+}
+async function liveStart(browser, html, advanced) {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto('file://' + html + '?civTest=1', { waitUntil: 'load', timeout: 120000 });
+  await page.waitForFunction(() => !!window.__settingsLive, null, { timeout: 60000 });
+  await page.evaluate((p) => window.__settingsLive.startNewGame(p), LIVE_PARAMS(advanced));
+  await page.waitForTimeout(8000);
+  return { context, page, errors };
+}
+async function liveMain() {
+  const browser = await chromium.launch({ headless: true, executablePath: resolveChromePath() || '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+  try {
+    const html = buildLiveGame();
+    const neg = await browser.newContext();
+    const negPage = await neg.newPage();
+    await negPage.goto('file://' + html, { waitUntil: 'load', timeout: 120000 });
+    await negPage.waitForTimeout(4000);
+    assert.equal(await negPage.evaluate(() => typeof window.__settingsLive), 'undefined', 'bez ?civTest=1 brak haka __settingsLive');
+    await neg.close();
+    const out = {};
+    for (const [lvl, k] of LEVELS) {
+      const s = await liveStart(browser, html, { diplomacyWarLevel: lvl });
+      const r = await s.page.evaluate(() => ({
+        st: window.__settingsLive.getSettings(),
+        kara: window.__settingsLive.diplomacyWarScale(10, 'kara'),
+        bonus: window.__settingsLive.diplomacyWarScale(12, 'bonus'),
+      }));
+      assert.deepEqual(s.errors, [], `brak pageerror (${lvl})`);
+      assert.equal(r.st.diplomacyWarLevel, lvl, `start: Dyplomacja i wojna = ${lvl}`);
+      near(r.kara, 10 * k, `live kara ×${k} (${lvl})`);
+      near(r.bonus, 12 / k, `live bonus ÷${k} (${lvl})`);
+      out[lvl] = r;
+      await s.context.close();
+    }
+    console.log('ZYWA GRA ZIELONA (Dyplomacja i wojna x3 przez start, kara/bonus z realnych funkcji)');
+    console.log(JSON.stringify(out));
+  } finally {
+    await browser.close();
+  }
+}
