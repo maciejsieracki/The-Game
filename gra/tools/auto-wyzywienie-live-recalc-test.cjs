@@ -460,11 +460,11 @@ if (cgbBody) {
 {
   const callIdx = src.indexOf('lastEfTickResult = advanceEmpireFood(');
   ok(callIdx >= 0, 'znaleziono wywołanie advanceEmpireFood(...) w main.ts');
-  const windowSrc = callIdx >= 0 ? src.slice(callIdx, callIdx + 1500) : '';
+  const windowSrc = callIdx >= 0 ? src.slice(callIdx, callIdx + 2000) /* R-WEB-TEST-DEBT-Q13 r5: wywolanie zyskalo argument (kosztJednostekPaceUtrzymania) + komentarz PL/EN -> odleglosc 1514 zn.; kolejnosc 'clear PRZED efTickResult' pilnuje druga asercja */ : '';
   const clearIdx = windowSrc.indexOf('_maxSafeRationCache.clear();');
   const efTickResultIdx = windowSrc.indexOf('const efTickResult = lastEfTickResult;');
   ok(clearIdx >= 0,
-    '_maxSafeRationCache.clear() znaleziony w pobliżu wywołania advanceEmpireFood(...) (max 1500 znaków dalej)');
+    '_maxSafeRationCache.clear() znaleziony w pobliżu wywołania advanceEmpireFood(...) (max 2000 znaków dalej)');
   ok(efTickResultIdx < 0 || clearIdx < 0 || clearIdx < efTickResultIdx,
     '_maxSafeRationCache.clear() następuje PRZED `const efTickResult = lastEfTickResult;` -- czyszczone od razu po ticku, nie odłożone');
 }
@@ -536,6 +536,7 @@ function runGetMaxSafePoziomRacjiForPlayerCity({
     'loadUpkeepParams', 'militaryFoodConsumptionWithSpichlerz', 'spichlerzSolArmyBonusActive',
     'units', 'unitFoodTbl', 'cityAtUnit', 'isCampingForFoodDiscount', 'territoryOwnerAt',
     'buildEconParams', 'cityPopulationCap', 'resolvePopulationCapMatrixDelta', 'cityHasSpichlerzBuilding',
+    'kosztJednostekPaceUtrzymania',
     gmsBody,
   );
   const result = fn(
@@ -548,6 +549,8 @@ function runGetMaxSafePoziomRacjiForPlayerCity({
     M.loadUpkeepParams, M.militaryFoodConsumptionWithSpichlerz, M.spichlerzSolArmyBonusActive,
     units, unitFoodTbl, cityAtUnit, isCampingForFoodDiscount, territoryOwnerAt,
     M.buildEconParams, M.cityPopulationCap, M.resolvePopulationCapMatrixDelta, M.cityHasSpichlerzBuilding,
+    // R-WEB-TEST-DEBT-Q13 r5: UPKEEPPACE (FALA 887) -- ciało czyta tempo kosztów jednostek; domyślne w main = 'niski'.
+    () => 'niski',
   );
   return { result, _maxSafeRationCache };
 }
