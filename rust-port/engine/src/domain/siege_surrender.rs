@@ -303,7 +303,16 @@ pub struct SiegeTickEntry {
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct SiegeTickReport {
     pub entries: Vec<SiegeTickEntry>,
+    /// Obrona r1 (Z4, D-KAP-3 r2): blad `resolveSiegeSurrender` przerywajacy petle miast — pin lapie wyjatek bloku N3
+    /// (`try { for (const tick of econ.perCity) ... } catch (errSiege) { console.error(...) }`, `main.ts:38809-38872`),
+    /// wiec pozostale miasta w tym ticku NIE sa przetwarzane, a tura trwa dalej. `(miasto, tresc bledu)`.
+    pub error: Option<(CityId, String)>,
 }
+
+/// Obrona r1 (Z4): faza tury, w ktorej `advance_turn` wykonuje blok N3 (pin: `runWorldEndTurn`, N3 PO ticku ekonomii
+/// `main.ts:38808`; decyzja wlasciciela W8 r7 Q2 = kolejnosc jak pin: dyplomacja -> ekonomia+oblezenie).
+pub const SIEGE_TICK_PHASE: crate::domain::events::TurnPhase =
+    crate::domain::events::TurnPhase::Economy;
 
 fn econ_params_raw() -> &'static serde_json::Value {
     static RAW: OnceLock<serde_json::Value> = OnceLock::new();
@@ -338,14 +347,18 @@ pub fn siege_unit_max_hp(type_id: &str) -> f64 {
 /// Web `glodWojskaHpFrac` (`buildEmpireFoodParams(data.econParams, effectiveGameDifficultyForOwner(owner))`,
 /// `main.ts:38817-38820`). D-KAP-4: trudnosc = trudnosc gry ze stanu (miasta-panstwa / `cityStateDifficulty` nie
 /// istnieja w `PlayableState`, wiec `effectiveGameDifficultyForOwner` = trudnosc menu dla kazdego wlasciciela).
-#[must_use]
-pub fn glod_wojska_hp_frac(difficulty_label: &str) -> f64 {
+///
+/// # Errors
+/// Obrona r1 (Z7): nieznana etykieta trudnosci = blad (jak `replace_difficulty_of` w `playable.rs`), nie cichy
+/// `Normal`; tick zapisuje go w [`SiegeTickReport::error`] (pin liczy ulamek pierwszy w petli miasta, `main.ts:38817`).
+pub fn glod_wojska_hp_frac(difficulty_label: &str) -> Result<f64, String> {
     let d = match difficulty_label {
+        "Normalny" | "normal" => GameDifficulty::Normal,
         "Łatwy" | "easy" => GameDifficulty::Easy,
         "Trudny" | "hard" => GameDifficulty::Hard,
-        _ => GameDifficulty::Normal,
+        other => return Err(format!("oblezenie: nieznana trudnosc gry `{other}`")),
     };
-    build_empire_food_params(econ_params_raw(), d).glod_wojska_hp_frac
+    Ok(build_empire_food_params(econ_params_raw(), d).glod_wojska_hp_frac)
 }
 
 /// Web `siegeDefenderUnits(units, city, isCivilianUnit)` (`siege-starvation.ts:72-79`) na stanie: indeksy jednostek
@@ -453,9 +466,12 @@ fn apply_attrition(
 /// gaszone na starcie ticka tak, jak zrobilby to `endMapSiege` pinu. `siegeTurnByCity`, `tickSiegeMachinesForCity`,
 /// `maybeAiAssaultAfterMachines` i panel UI: poza zakresem (raport, dlugi).
 ///
-/// # Errors
-/// Blad kapitulacji ([`SiegeBattleError`]); wolajacy cofa caly tick (stan bez zmian).
-pub fn run_siege_turn(state: &mut PlayableState) -> Result<SiegeTickReport, SiegeBattleError> {
+/// Blad kapitulacji (D-KAP-3 r2, semantyka pinu `try/catch` bloku N3, `main.ts:38809-38872`): petla miast konczy sie
+/// na miescie z bledem, miasta przetworzone wczesniej (i atrycja/start glodu tego miasta) ZOSTAJA, a skutki samej
+/// kapitulacji tego miasta sa cofniete w calosci (kapitulacja liczona na kopii stanu; pin zostawilby polowiczne
+/// mutacje sprzed wyjatku — Rust ich nie odtwarza, D-KAP-3). Blad trafia do [`SiegeTickReport::error`]; wolajacy
+/// (`advance_turn`) loguje go i kontynuuje ture jak pin (`console.error`).
+pub fn run_siege_turn(state: &mut PlayableState) -> SiegeTickReport {
     // D-KAP-5: pola oblezenia miast nieoblezanych = stan po `endMapSiege`.
     let stale: Vec<CityId> = state
         .siege_city
@@ -477,11 +493,17 @@ pub fn run_siege_turn(state: &mut PlayableState) -> Result<SiegeTickReport, Sieg
         .filter(|c| state.oblegane.contains(&c.id))
         .map(|c| c.id)
         .collect();
-    let frac = glod_wojska_hp_frac(&state.params.difficulty);
     let mut report = SiegeTickReport::default();
     for cid in besieged {
         let Some(city) = state.cities.iter().find(|c| c.id == cid).cloned() else {
             continue;
+        };
+        let frac = match glod_wojska_hp_frac(&state.params.difficulty) {
+            Ok(f) => f,
+            Err(e) => {
+                report.error = Some((cid, e));
+                break;
+            }
         };
         let fields = state.siege_city.get(&cid).copied().unwrap_or_default();
         let food = city_food_of(Some(&fields));
@@ -516,6 +538,7 @@ pub fn run_siege_turn(state: &mut PlayableState) -> Result<SiegeTickReport, Sieg
             .is_some_and(|f| f.siege_capitulation_pending);
         let food_now = city_food_of(state.siege_city.get(&cid));
         let action = surrender_tick_action(&dec, pending, food_now);
+        let mut failed: Option<SiegeBattleError> = None;
         let capitulation = match action {
             SurrenderTickAction::CapitulationPhase(CapitulationAction::SetPending) => {
                 state
@@ -526,7 +549,19 @@ pub fn run_siege_turn(state: &mut PlayableState) -> Result<SiegeTickReport, Sieg
                 None
             }
             SurrenderTickAction::CapitulationPhase(CapitulationAction::Resolve)
-            | SurrenderTickAction::Surrender => Some(apply_siege_capitulation(state, cid)?),
+            | SurrenderTickAction::Surrender => {
+                let mut trial = state.clone();
+                match apply_siege_capitulation(&mut trial, cid) {
+                    Ok(cap) => {
+                        *state = trial;
+                        Some(cap)
+                    }
+                    Err(e) => {
+                        failed = Some(e);
+                        None
+                    }
+                }
+            }
             SurrenderTickAction::CapitulationPhase(CapitulationAction::Hold)
             | SurrenderTickAction::None => None,
         };
@@ -537,8 +572,12 @@ pub fn run_siege_turn(state: &mut PlayableState) -> Result<SiegeTickReport, Sieg
             destroyed_unit_ids: destroyed,
             capitulation,
         });
+        if let Some(e) = failed {
+            report.error = Some((cid, e.to_string()));
+            break;
+        }
     }
-    Ok(report)
+    report
 }
 
 #[cfg(test)]

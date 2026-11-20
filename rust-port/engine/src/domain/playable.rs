@@ -1423,12 +1423,12 @@ impl PlayableGame {
         }
     }
 
-    /// R-RUSTPORT-P6-K5LOOP-WIRING-B-Q1: trwajaca bitwa obleznicza (odczyt).
     /// R-RUSTPORT-P6-KAPITULACJA-Q1: raport ostatniego ticka oblezenia (`advance_turn`, faza Economy).
     pub fn last_siege_tick(&self) -> &crate::domain::siege_surrender::SiegeTickReport {
         &self.last_siege_tick
     }
 
+    /// R-RUSTPORT-P6-K5LOOP-WIRING-B-Q1: trwajaca bitwa obleznicza (odczyt).
     pub fn siege_battle(&self) -> Option<&ActiveSiegeBattle> {
         self.siege_battle.as_ref()
     }
@@ -1771,23 +1771,17 @@ impl PlayableGame {
                     return Err(error);
                 }
             }
-            // R-RUSTPORT-P6-KAPITULACJA-Q1: blok N3 „TURA OBLEZENIA” (pin main.ts:38808-38870, `runWorldEndTurn`, po
-            // ticku ekonomii) na fazie Economy: glod garnizonu, flaga kapitulacji, `resolveSiegeSurrender`. Tick dziala
-            // na kopii stanu; blad = cala tura odrzucona jak przy fazie Diplomacy (stan bez zmian).
-            if entry.phase() == TurnPhase::Economy {
-                let mut next = self.state.clone();
-                match crate::domain::siege_surrender::run_siege_turn(&mut next) {
-                    Ok(report) => {
-                        self.state = next;
-                        self.last_siege_tick = report;
-                    }
-                    Err(error) => {
-                        self.phase_queue = queue_before;
-                        self.state.war = war_before;
-                        self.state.economy = economy_before;
-                        return Err(PlayableError::WarTurn(format!("oblezenie: {error}")));
-                    }
+            // R-RUSTPORT-P6-KAPITULACJA-Q1: blok N3 „TURA OBLEZENIA” (pin main.ts:38808-38872, `runWorldEndTurn`, po
+            // ticku ekonomii) na fazie `SIEGE_TICK_PHASE` (= Economy): glod garnizonu, flaga kapitulacji,
+            // `resolveSiegeSurrender`. Obrona r1 (Z4, D-KAP-3 r2): semantyka bledu jak w pinie — blok N3 jest w
+            // `try { ... } catch (errSiege) { console.error('[Oblezenie] Blad atrycji:', errSiege) }`, wiec blad
+            // kapitulacji jest logowany, petla miast konczy sie na nim, a tura TRWA (bez cofania tury i stanu).
+            if entry.phase() == crate::domain::siege_surrender::SIEGE_TICK_PHASE {
+                let report = crate::domain::siege_surrender::run_siege_turn(&mut self.state);
+                if let Some((city, error)) = &report.error {
+                    eprintln!("[Oblezenie] Blad atrycji (miasto {}): {error}", city.get());
                 }
+                self.last_siege_tick = report;
             }
             // P6-ZWYCIESTWO-WIRING: sprawdzenie zwyciestwa/porazki gracza na fazie Victory (pin main.ts:43441-43483).
             // Semantyka bledu jak w pinie: blad sprawdzenia jest logowany (pin: console.error w catch) i tura
