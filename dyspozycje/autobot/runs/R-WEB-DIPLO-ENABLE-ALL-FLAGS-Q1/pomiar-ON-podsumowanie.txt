@@ -1,0 +1,33 @@
+== seed4242-all1.jsonl wiersze=15
+t5 wojny=0 wojnyMax=0 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=NIE_ZMIERZONO n=0 t50=0 zerwZero=0 sec=2.5
+t10 wojny=0 wojnyMax=0 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=NIE_ZMIERZONO n=0 t50=0 zerwZero=0 sec=3
+t15 wojny=0 wojnyMax=0 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=NIE_ZMIERZONO n=0 t50=0 zerwZero=0 sec=2.8
+t20 wojny=0 wojnyMax=0 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=NIE_ZMIERZONO n=0 t50=0 zerwZero=0 sec=2.8
+t25 wojny=0 wojnyMax=0 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=58.7 n=2 t50=1 zerwZero=0 sec=2.5
+t30 wojny=0 wojnyMax=0 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=42.9 n=5 t50=1 zerwZero=0 sec=2.2
+t35 wojny=0 wojnyMax=0 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=31.7 n=8 t50=0 zerwZero=0 sec=2.7
+t40 wojny=1 wojnyMax=1 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=26.2 n=10 t50=0 zerwZero=0 sec=4.1
+t45 wojny=3 wojnyMax=1 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=26.9 n=12 t50=2 zerwZero=0 sec=5.4
+t50 wojny=4 wojnyMax=1 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=15.1 n=11 t50=0 zerwZero=0 sec=9.4
+t55 wojny=5 wojnyMax=1 sojAiAi=1 nap=0 maxSojDegPairs=1 zaufSasiadow=10.1 n=10 t50=0 zerwZero=4 sec=8.8
+t60 wojny=3 wojnyMax=1 sojAiAi=1 nap=0 maxSojDegPairs=1 zaufSasiadow=6.7 n=12 t50=0 zerwZero=8 sec=11.2
+t65 wojny=4 wojnyMax=1 sojAiAi=3 nap=1 maxSojDegPairs=2 zaufSasiadow=26.1 n=14 t50=3 zerwZero=12 sec=15.1
+t70 wojny=3 wojnyMax=1 sojAiAi=4 nap=1 maxSojDegPairs=2 zaufSasiadow=20.5 n=14 t50=2 zerwZero=16 sec=14.7
+t75 wojny=6 wojnyMax=2 sojAiAi=4 nap=1 maxSojDegPairs=2 zaufSasiadow=25.5 n=13 t50=3 zerwZero=16 sec=18.5
+statusy: neutralni,wojna,sojusz,pokoj wiersze z NaN/Infinity: 0
+== seed7-all1.jsonl wiersze=14
+t5 wojny=0 wojnyMax=0 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=NIE_ZMIERZONO n=0 t50=0 zerwZero=0 sec=2
+t10 wojny=0 wojnyMax=0 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=NIE_ZMIERZONO n=0 t50=0 zerwZero=0 sec=2.1
+t15 wojny=0 wojnyMax=0 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=NIE_ZMIERZONO n=0 t50=0 zerwZero=0 sec=4.7
+t20 wojny=0 wojnyMax=0 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=NIE_ZMIERZONO n=0 t50=0 zerwZero=0 sec=2.1
+t25 wojny=0 wojnyMax=0 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=NIE_ZMIERZONO n=0 t50=0 zerwZero=0 sec=2.1
+t30 wojny=0 wojnyMax=0 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=35.6 n=1 t50=0 zerwZero=0 sec=2.9
+t35 wojny=0 wojnyMax=0 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=34.1 n=6 t50=1 zerwZero=0 sec=3.6
+t40 wojny=2 wojnyMax=2 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=21.7 n=6 t50=1 zerwZero=0 sec=5.2
+t45 wojny=2 wojnyMax=2 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=17.8 n=7 t50=2 zerwZero=0 sec=6.7
+t50 wojny=4 wojnyMax=2 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=19.5 n=5 t50=0 zerwZero=0 sec=10.5
+t55 wojny=5 wojnyMax=2 sojAiAi=0 nap=0 maxSojDegPairs=0 zaufSasiadow=29.3 n=5 t50=1 zerwZero=0 sec=11.4
+t60 wojny=4 wojnyMax=2 sojAiAi=1 nap=0 maxSojDegPairs=1 zaufSasiadow=12.8 n=5 t50=0 zerwZero=0 sec=12.1
+t65 wojny=2 wojnyMax=2 sojAiAi=4 nap=0 maxSojDegPairs=2 zaufSasiadow=21.8 n=9 t50=2 zerwZero=0 sec=15.3
+t70 wojny=2 wojnyMax=2 sojAiAi=4 nap=0 maxSojDegPairs=2 zaufSasiadow=27.0 n=10 t50=2 zerwZero=2 sec=15.6
+statusy: neutralni,wojna,sojusz,pokoj wiersze z NaN/Infinity: 0

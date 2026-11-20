@@ -122,7 +122,9 @@ async function openGame(ctx) {
   if (ALL_FLAGS !== null) {
     const st = await page.evaluate(on => window.__diploAllFlagsMeasure.setAll(on), ALL_FLAGS);
     FLAGI_START = st;
-    const wanted = Object.keys(st).every(k => st[k] === ALL_FLAGS);
+    // Pakiet = sześć flag dyplomacji; tor NAP (napTor, torAktywny) poza pakietem — zostaje na wartości z danych (false).
+    const PAKIET = ['harder', 'sojuszTor', 'koalicja', 'zeroZaufania', 'wojnaSilaSojuszu', 'limitWojen'];
+    const wanted = PAKIET.every(k => st[k] === ALL_FLAGS);
     if (!wanted) throw new Error('setAll(' + ALL_FLAGS + ') nie ustawil wszystkich flag (odczyt=' + JSON.stringify(st) + ')');
     console.log('[diplo] all-flags=' + (ALL_FLAGS ? 1 : 0) + ' ' + JSON.stringify(st));
     return page;

@@ -73,6 +73,10 @@ async function main() {
     undefined, { timeout: 600000, polling: 500 },
   );
 
+  // R-WEB-DIPLO-ENABLE-ALL-FLAGS-Q1: limit wojen domyślnie ON w danych blokuje deklarację wojny w tym scenariuszu
+  // (para 1-2 odmówiona przez warLimitAllowsDeclaration). Ten test dotyczy wyłącznie toru NAP (Zaufanie/Respekt),
+  // więc limit wojen pinujemy jawnie OFF (hak testowy, nie zmiana danych); zachowanie limitu pokrywa diplomacy-war-limit-unit-test.
+  await page.evaluate(() => window.__diploHarderMeasure.setWarLimitEnabled(false));
   const pairs = [
     { name: 'ON', a: 1, b: 2, flag: true, z: 100, r: 50 },
     { name: 'OFF', a: 3, b: 4, flag: false, z: 100, r: 50 },

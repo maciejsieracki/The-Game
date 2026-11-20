@@ -1,5 +1,5 @@
 // R-WEB-DIPLO-WAR-BY-ALLIANCE-STRENGTH-Q1 (etap C, część 2) — wojna wypowiedziana SIŁĄ BLOKU sojuszniczego, za flagą.
-// Flaga OFF (domyślnie, data/diplomacy-alliance-war-params.json) = porównanie siły identyczne jak dotąd (ai.ts P4).
+// Flaga domyślnie ON (data/diplomacy-alliance-war-params.json, decyzja 2026-11-19); OFF = porównanie jak dotąd (ai.ts P4).
 //
 // Blok = strona porównania przy wypowiedzeniu wojny: suma siły militarnej właściciela i jego aktywnych sojuszników.
 //   Po stronie AI: AI + sojusznicy AI, z wyłączeniem wasali, sojuszników w wojnie z tym AI oraz partnera-celu.
@@ -23,7 +23,7 @@ export function setWarByAllianceStrengthForTest(value: boolean | null): void {
   flagOverride = value;
 }
 
-/** Flaga wojny siłą sojuszu. Domyślnie false (zachowanie identyczne z dotychczasowym). */
+/** Flaga wojny siłą sojuszu. Domyślnie true (dane: wojnaSilaSojuszuAktywna); false = zachowanie dotychczasowe. */
 export function isWarByAllianceStrengthEnabled(): boolean {
   if (flagOverride !== null) return flagOverride;
   return ALLIANCE_WAR_PARAMS.wojnaSilaSojuszuAktywna === true;

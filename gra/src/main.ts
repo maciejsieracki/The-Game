@@ -24883,7 +24883,7 @@ async function boot(): Promise<void> {
             };
             if (!sisterAllianceEligible(playerAStub, playerBStub, rel, dipCtx, sisterParams)) continue;
             // R-WEB-AI-AI-ALLIANCE-LIMIT-2-VIOLATED-Q1: ta sama bramka limitu co w tickAiAiAllianceRequests
-            // (wspólne liczenie z pełnego stanu activeDeals). Flaga torSojuszyAktywny=false -> zachowanie jak dotąd.
+            // (wspólne liczenie z pełnego stanu activeDeals). Flaga torSojuszyAktywny=false (hak testowy) -> zachowanie jak dotąd.
             if (isAiAiAllianceTickEnabled() && !aiAiAllianceLimitPozwala(a, b)) continue;
 
             const [p0, p1] = pairOwnerIds(a, b);
@@ -25702,7 +25702,7 @@ async function boot(): Promise<void> {
 
     /**
      * R-WEB-AI-AI-ALLIANCES-E3-WIRING-FLAGGED-Q1: krok sojuszy AI↔AI, raz na turę, PO kroku NAP (tickAiAiTreatyRequests).
-     * Działa WYŁĄCZNIE gdy `torSojuszyAktywny` (gra/data/ai-ai-treaty-params.json, domyślnie false) — przy false zero zmiany stanu.
+     * Działa WYŁĄCZNIE gdy `torSojuszyAktywny` (gra/data/ai-ai-treaty-params.json, domyślnie true) — przy false zero zmiany stanu.
      * Logika czysta: ai-ai-alliance-tick.ts (planAiAiAllianceTickFull, ocena przez E1 evaluateTreatyOffer, akcja 'sojusz_pelny').
      * Zawarcie: ta sama końcówka co sojusz AI↔AI w gałęzi sióstr (addTreaty sojusz_pelny, wygasaTura null) + syncRelationFromDeals.
      * Skutki akceptacji: dopłata D ZŁOTEM z płatnika na odbiorcę (skarbiec nigdy poniżej zera). Bez nowego UI.
@@ -34097,14 +34097,15 @@ async function boot(): Promise<void> {
         },
       };
       // R-WEB-DIPLO-ALL-FLAGS-MEASURE-RUNNER-Q1: hak pomiaru ŁĄCZNEGO pakietu flag dyplomacji (tylko ?civTest=1).
-      // setAll(on) ustawia WSZYSTKIE flagi przez istniejące settery ForTest (true dla on, null = wartość z danych dla off).
+      // setAll(on) ustawia SZEŚĆ flag pakietu (harder, sojusz-tor, koalicja, zero zaufania, siła sojuszu, limit wojen)
+      // przez istniejące settery ForTest: jawne true/false (NIE null — null = wartość z danych, a dane są ON).
+      // Tor NAP AI↔AI (torAktywny) NIE jest w pakiecie i nie jest dotykany (zostaje na wartości z danych).
       // status() = TYLKO ODCZYT stanu każdej flagi (przez istniejące gettery); zerwania = licznik sesji (odczyt).
       (window as any).__diploAllFlagsMeasure = {
         schemaVersion: 1,
         setAll: (on: boolean): Record<string, boolean> => {
-          const v = on === true ? true : null;
+          const v: boolean = on === true;
           setHarderDiplomacyEnabledForTest(v);
-          setAiAiTreatyTickEnabledForTest(v);
           setAiAiAllianceTickEnabledForTest(v);
           setAiAiCoalitionEnabledForTest(v);
           setZeroTrustEnabledForTest(v);

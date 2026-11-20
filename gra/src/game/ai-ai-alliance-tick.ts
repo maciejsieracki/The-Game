@@ -6,7 +6,7 @@
  * Wpięcie w turę robi main.ts (tickAiAiAllianceRequests), zawarcie przez tę samą końcówkę co sojusz zawierany przez tor AI↔AI
  * (addTreaty + syncRelationFromDeals), bez zmiany reguł akceptacji — ocenę wykonuje wyłącznie E1 evaluateTreatyOffer.
  *
- * PRZEŁĄCZNIK: `torSojuszyAktywny` w gra/data/ai-ai-treaty-params.json (domyślnie false). Przy false krok NIE działa
+ * PRZEŁĄCZNIK: `torSojuszyAktywny` w gra/data/ai-ai-treaty-params.json (domyślnie true, decyzja właściciela 2026-11-19). Przy false krok NIE działa
  * i zachowanie gry jest identyczne jak przed E3. Nadpisanie wyłącznie dla testów civTest:
  * `setAiAiAllianceTickEnabledForTest` (NIE z UI).
  *
@@ -41,7 +41,7 @@ export function setAiAiAllianceTickEnabledForTest(value: boolean | null): void {
   torSojuszyNadpisanieTest = value;
 }
 
-/** Czy tor sojuszy AI↔AI jest włączony. Domyślnie false (dane: torSojuszyAktywny). */
+/** Czy tor sojuszy AI↔AI jest włączony. Domyślnie true (dane: torSojuszyAktywny). */
 export function isAiAiAllianceTickEnabled(): boolean {
   if (torSojuszyNadpisanieTest !== null) return torSojuszyNadpisanieTest;
   return (aiAiTreatyParamsJson as { torSojuszyAktywny?: unknown }).torSojuszyAktywny === true;

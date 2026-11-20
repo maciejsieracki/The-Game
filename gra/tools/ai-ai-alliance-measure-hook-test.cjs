@@ -165,9 +165,9 @@ ok(real.length === 0, `hak odczytowy: reguły H1..H25 zielone (nieprzechodzące:
 const realB = behaviorFails(TICK);
 ok(realB.length === 0, `B1 behawioralny: probyDetale = wejścia (nieprzechodzące pola: ${realB.join(',') || 'brak'})`);
 
-// 2) Domyślna flaga w danych pozostaje false (pomiar nie włącza toru w kodzie).
+// 2) Domyślna flaga w danych = true (R-WEB-DIPLO-ENABLE-ALL-FLAGS-Q1, decyzja właściciela 2026-11-19).
 const params = JSON.parse(fs.readFileSync(path.resolve(GRA_ROOT, 'data', 'ai-ai-treaty-params.json'), 'utf8'));
-ok(params.torSojuszyAktywny === false, 'torSojuszyAktywny w danych = false (flaga nie włączona w kodzie)');
+ok(params.torSojuszyAktywny === true, 'torSojuszyAktywny w danych = true (ENABLE-ALL-FLAGS-Q1)');
 
 // 3) Mutanty: każdy musi czerwienić test (a sam mutant musi zmienić źródło).
 // Kotwica nieobecna = mutant NIEZASTOSOWANY = FAIL (nigdy "wykryty").

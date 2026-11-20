@@ -1,5 +1,5 @@
 // R-WEB-DIPLO-ZERO-TRUST-TREATY-BREAK-PROTECTOR-Q1 (etap C, część 1) — czysta logika "zerowego zaufania" za flagą.
-// Flaga OFF (domyślnie, data/diplomacy-zero-trust-params.json) = brak zmian w zachowaniu gry.
+// Flaga domyślnie ON (data/diplomacy-zero-trust-params.json, decyzja 2026-11-19); OFF = baza.
 //
 // C-licznik: per para (AI → partner) licznik tur z Zaufaniem <= 0; rośnie co turę, zerowany gdy Zaufanie > 0.
 //   Stan w pamięci modułu; reset przy nowej grze i wczytaniu (jak neighborSinceTurn). NIE jest w SaveGame (decyzja ABC).

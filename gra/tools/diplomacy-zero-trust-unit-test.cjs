@@ -2,7 +2,7 @@
 /**
  * diplomacy-zero-trust-unit-test.cjs — R-WEB-DIPLO-ZERO-TRUST-TREATY-BREAK-PROTECTOR-Q1 (etap C, część 1).
  * Czyste testy na prawdziwych funkcjach (esbuild): licznik zerowego zaufania (narasta / zeruje), próg 5,
- * reset, flaga domyślnie OFF (parytet), wybór protektora (C1) i premia celu w planerze sojuszy
+ * reset, flaga domyślnie ON (dane, decyzja 2026-11-19), wybór protektora (C1) i premia celu w planerze sojuszy
  * (planAiAiAllianceTickFull, tylko kolejność celu; progi E1 nietknięte).
  * Run: node tools/diplomacy-zero-trust-unit-test.cjs
  */
@@ -34,14 +34,17 @@ function eq(name, got, want) {
   else { fail++; console.log(`FAIL ${name}: got ${JSON.stringify(got)} want ${JSON.stringify(want)}`); }
 }
 
-// --- flaga i parametry (parytet: domyślnie OFF) ---
+// --- flaga i parametry (R-WEB-DIPLO-ENABLE-ALL-FLAGS-Q1, decyzja właściciela 2026-11-19: domyślnie ON w danych;
+//     zachowanie OFF pokryte jawnym hakiem false) ---
 M.resetZeroTrustSession();
-eq('flaga domyslnie OFF', M.isZeroTrustEnabled(), false);
+eq('flaga domyslnie ON (dane)', M.isZeroTrustEnabled(), true);
 eq('prog z danych = 5', M.zeroZaufaniaProgTur(), 5);
+M.setZeroTrustEnabledForTest(false);
+eq('hak OFF wymusza wylaczenie', M.isZeroTrustEnabled(), false);
 M.setZeroTrustEnabledForTest(true);
 eq('hak ON', M.isZeroTrustEnabled(), true);
 M.setZeroTrustEnabledForTest(null);
-eq('hak null wraca do danych (OFF)', M.isZeroTrustEnabled(), false);
+eq('hak null wraca do danych (ON)', M.isZeroTrustEnabled(), true);
 
 // --- licznik: narasta przy Zaufaniu 0, zeruje gdy > 0 ---
 M.resetZeroTrustSession();

@@ -12,7 +12,7 @@
  * ani p, ani t nie jest sojusznikiem lidera oraz oba są w stanie wojny z liderem („wspólny wróg = lider").
  * Premia nie zmienia progów akceptacji (E1 evaluateTreatyOffer) i nie zmusza do wojny.
  *
- * PRZEŁĄCZNIK: `koalicjaAntyLiderAktywna` w gra/data/ai-ai-treaty-params.json (domyślnie false). Przy false
+ * PRZEŁĄCZNIK: `koalicjaAntyLiderAktywna` w gra/data/ai-ai-treaty-params.json (domyślnie true, decyzja właściciela 2026-11-19). Przy false
  * wołający nie przekazuje kontekstu koalicji i zachowanie gry jest identyczne jak przed B4.
  * Nadpisanie wyłącznie dla testów civTest: `setAiAiCoalitionEnabledForTest` (NIE z UI).
  */
@@ -51,7 +51,7 @@ export function setAiAiCoalitionEnabledForTest(value: boolean | null): void {
   koalicjaNadpisanieTest = value;
 }
 
-/** Czy koalicja antylidera jest włączona. Domyślnie false (dane: koalicjaAntyLiderAktywna). */
+/** Czy koalicja antylidera jest włączona. Domyślnie true (dane: koalicjaAntyLiderAktywna). */
 export function isAiAiCoalitionEnabled(): boolean {
   if (koalicjaNadpisanieTest !== null) return koalicjaNadpisanieTest;
   return (aiAiTreatyParamsJson as { koalicjaAntyLiderAktywna?: unknown }).koalicjaAntyLiderAktywna === true;

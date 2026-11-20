@@ -1,5 +1,5 @@
 {
   "_opis": "R-WEB-DIPLO-WAR-BY-ALLIANCE-STRENGTH-Q1 (etap C, część 2; ABC właściciela 2026-11-18): po zerwaniu umowy wojna tylko z siłą sojuszu — przewaga >= progu liczona dla BLOKU sojuszników (AI + sojusznicy vs partner + sojusznicy).",
-  "_uwaga_flaga": "wojnaSilaSojuszuAktywna=false = porównanie siły identyczne jak przed tym tematem. Ustawiane wyłącznie w danych / testach civTest, NIE w UI.",
-  "wojnaSilaSojuszuAktywna": false
+  "_uwaga_flaga": "wojnaSilaSojuszuAktywna=true (domyślnie od decyzji właściciela 2026-11-19) = siła sojuszu w wojnie WŁĄCZONA; false = porównanie sprzed tematu. Ustawiane w danych / testach civTest, NIE w UI.",
+  "wojnaSilaSojuszuAktywna": true
 }
