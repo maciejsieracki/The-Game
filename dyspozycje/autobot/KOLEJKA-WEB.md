@@ -60,8 +60,8 @@ Nowe starty: `df --output=avail -BG /` ≥ 6 GB (integracja `/home/user/integ` �
 6. **R-WEB-VERIFY-LIVE** (#38) — weryfikacja na żywo: pokój z cesją miast (873), limit 2 sojuszy (865, po ENABLEFLAGS), reguła wojen z graczem (863), żywa zamiana Żywności→Podatek (876), bieg dymny po zmianach kosztów, pomiar 150 tur rebalans — dispatch DO NAPISANIA przy starcie (Haiku).
 7. **TREASURY refresh** (#39) — odświeżyć treasury-unit-cost-model.cjs + dokument SKARBIEC po wdrożeniu kosztów jednostek — dispatch DO NAPISANIA (Haiku, dokumentacja).
 
-W TOKU (nie startować drugi raz): FLEEMANUAL (wf_a4b57a9a-68d), DIPLOWARLEVEL (wf_ab68778d-3fa), ERAWARPLAYER r2 (wf_dcd6634e-ef9), ENABLEFLAGS (wf_b9ed7712-0a0). RECRUITMULT wdrożony jako FALA 884. NASTĘPNY do startu: UPKEEPPACE (warunek spełniony po FALI 884).
-WDROŻONE 2026-11-19: FALE 860–884 (ostatnia 881 = wojna epoki bez partnera; ROBOCZA MD5 f20a283a).
+W TOKU (nie startować drugi raz): DIPLOWARLEVEL (wf_ab68778d-3fa, FC), ENABLEFLAGS (wf_b9ed7712-0a0), ERAWARPLAYER r3 Sonnet (wf_d7c71990-f52), UPKEEPPACE (wf_e886f8c5-bff). FLEEMANUAL wdrożony jako FALA 885. NASTĘPNE do startu: TEST-DEBT-Q12, VERIFY-LIVE, TREASURY refresh.
+WDROŻONE 2026-11-19: FALE 860–885 (ostatnia 881 = wojna epoki bez partnera; ROBOCZA MD5 f20a283a).
 PÓŹNIEJ (NIE startować): koszty badań i budynków (sekcja PÓŹNIEJ niżej).
 
 ## ZALEŻNE (START dopiero po warunku)
