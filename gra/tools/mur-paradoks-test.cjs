@@ -234,9 +234,11 @@ const mBezBudynku = stackFieldPowerM(stack, () => combatPowerFullDisplayDef(konn
 const mMur = stackFieldPowerM(stack, () => combatPowerFullDisplayDef(konnica, ['mury'], FLAT, true));
 
 const mBazowe = armyFieldPower(konnica); // 49 -- z units.json (fieldPower precomputed)
+// R-WEB-TEST-DEBT-Q13 r5: units.json zmienil Konnice (fieldPower 49 -> 98, statystyki 16/10/14 itd.); pin do liczby 49 zastapiony wartoscia z danych
+// (konnica.fieldPower -- precomputed w units.json) -- test sprawdza, ze armyFieldPower(konnica) zwraca dokladnie ta wartosc z danych, bez zadnego bonusu.
 assert(
-  Math.abs(mBazowe - 49) < 0.05,
-  'Kontrola fixture: M bazowe Konnicy (bez zadnego bonusu) == 49 (' + mBazowe + ')',
+  typeof konnica.fieldPower === 'number' && konnica.fieldPower > 0 && Math.abs(mBazowe - konnica.fieldPower) < 0.05,
+  'Kontrola fixture: M bazowe Konnicy (bez zadnego bonusu) == konnica.fieldPower z units.json (' + mBazowe + ' vs ' + konnica.fieldPower + ')',
 );
 
 console.log('    M bez budynku obronnego (fortify-field +50%)         = ' + mBezBudynku);
