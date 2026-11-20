@@ -1,7 +1,7 @@
 {
   "limitWojenAktywny": {
     "wartosc": true,
-    "opis": "Flaga limitu wojen (R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1). false = zachowanie jak dotad (parytet). Wlaczenie wylacznie po decyzji wlasciciela."
+    "opis": "Flaga limitu wojen (R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1). true = limit wojen WŁĄCZONY (domyślnie od decyzji właściciela 2026-11-19); false = zachowanie jak dotad (parytet)."
   },
   "maxWojenEpoki": {
     "wartosc": 1,

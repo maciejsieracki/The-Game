@@ -34,7 +34,14 @@ function eq(name, got, want) {
 }
 
 const P = M.HARDER_PARAMS;
-eq('flaga domyslnie OFF', M.isHarderDiplomacyEnabled(), false);
+// Decyzja właściciela 2026-11-19: flaga domyślnie ON (wartość z danych twardaDyplomacjaAktywna=true).
+eq('flaga domyslnie ON (dane twardaDyplomacjaAktywna)', M.isHarderDiplomacyEnabled(), true);
+eq('flaga domyslnie ON zgodna z JSON', M.DIPLO_HARDER_ENABLED_DEFAULT, true);
+// Pokrycie OFF zachowane przez jawny hak override (nie przez domyślną wartość).
+M.setHarderDiplomacyEnabledForTest(false);
+eq('flaga OFF przez hak override', M.isHarderDiplomacyEnabled(), false);
+M.setHarderDiplomacyEnabledForTest(null);
+eq('po zdjęciu override wraca do ON', M.isHarderDiplomacyEnabled(), true);
 
 // --- A1: napięcie graniczne ---
 eq('A1 tura 0 -> 0', M.napieciePenaltyZaTure(0), 0);

@@ -5,7 +5,7 @@
  * Gracz jako DEKLARUJĄCY nie jest ograniczany (egzekwuje wywołujący w main.ts).
  * Barbarzyńcy nie liczą się (wywołujący podaje tylko wojny cywilizacji i państw-miast).
  *
- * Moduł czysty: bez DOM i bez silnika gry. Flaga `limitWojenAktywny` domyślnie false
+ * Moduł czysty: bez DOM i bez silnika gry. Flaga `limitWojenAktywny` domyślnie true (dane)
  * = zachowanie identyczne jak przed zmianą (parytet).
  * EN: pure module; at most 1 era war + 1 natural war per civilization, behind a flag (default off).
  */

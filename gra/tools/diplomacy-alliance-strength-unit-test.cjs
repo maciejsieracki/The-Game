@@ -4,7 +4,7 @@
  *
  * Czyste testy na prawdziwych funkcjach (esbuild): blockStrength / blockHasAdvantage oraz decideAIDiplomacy
  * (ai.ts P4) z flagą wojnaSilaSojuszuAktywna OFF/ON.
- *  (1) flaga domyślnie OFF; hak testowy wraca do danych
+ *  (1) flaga domyślnie ON (dane, decyzja 2026-11-19); hak testowy OFF/null wraca do danych
  *  (2) blockStrength: sumowanie, wykluczenia (wasal, wojna z AI po stronie AI, partner-cel, duplikaty, NaN)
  *  (3) słaba AI bez sojuszników = brak wojny (flaga ON i OFF)
  *  (4) flaga OFF = parytet: sojusznicy w danych nie zmieniają decyzji

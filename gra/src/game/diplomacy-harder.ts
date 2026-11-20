@@ -1,5 +1,5 @@
 // R-WEB-DIPLO-HARDER-RELATIONS-A-NEIGHBOR-TENSION-Q1 (etap 1, część A) — czysta logika
-// "twardszej dyplomacji" za flagą. Flaga OFF (domyślnie) = brak zmian w zachowaniu gry.
+// "twardszej dyplomacji" za flagą. Flaga domyślnie ON (dane: twardaDyplomacjaAktywna); OFF = baza.
 // Parametry: gra/data/diplomacy-harder-params.json.
 //
 // A1 narastające napięcie graniczne: kara za wspólną granicę rośnie o `granicaPrzyrost`
@@ -23,8 +23,12 @@ export interface HarderDiplomacyParams {
 
 export const HARDER_PARAMS: HarderDiplomacyParams = harderParamsJson as HarderDiplomacyParams;
 
-/** Flaga domyślna: OFF. Nie włączać bez decyzji właściciela po pomiarze (ABC). */
-export const DIPLO_HARDER_ENABLED_DEFAULT = false;
+/**
+ * Flaga domyślna = wartość z danych (`twardaDyplomacjaAktywna` w diplomacy-harder-params.json).
+ * Decyzja właściciela 2026-11-19: domyślnie ON. Źródłem prawdy są dane; OFF wymusza wyłącznie
+ * hak testowy `setHarderDiplomacyEnabledForTest(false)`.
+ */
+export const DIPLO_HARDER_ENABLED_DEFAULT: boolean = HARDER_PARAMS.twardaDyplomacjaAktywna === true;
 
 let flagOverride: boolean | null = null;
 

@@ -2,7 +2,7 @@
 /**
  * diplomacy-zero-trust-unit-test.cjs — R-WEB-DIPLO-ZERO-TRUST-TREATY-BREAK-PROTECTOR-Q1 (etap C, część 1).
  * Czyste testy na prawdziwych funkcjach (esbuild): licznik zerowego zaufania (narasta / zeruje), próg 5,
- * reset, flaga domyślnie OFF (parytet), wybór protektora (C1) i premia celu w planerze sojuszy
+ * reset, flaga domyślnie ON (dane, decyzja 2026-11-19), wybór protektora (C1) i premia celu w planerze sojuszy
  * (planAiAiAllianceTickFull, tylko kolejność celu; progi E1 nietknięte).
  * Run: node tools/diplomacy-zero-trust-unit-test.cjs
  */

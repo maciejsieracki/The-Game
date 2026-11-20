@@ -13,7 +13,7 @@
  *  - para (a,b) liczy się do limitu obu stron raz (sojusz to jeden traktat z dwiema stronami);
  *  - sojusze bez AI po obu stronach (np. gracz↔państwo-miasto) nie wchodzą do liczenia.
  *
- * Flaga torSojuszyAktywny (ai-ai-treaty-params.json, domyślnie false) decyduje o WYWOŁANIU sprawdzenia
+ * Flaga torSojuszyAktywny (ai-ai-treaty-params.json, domyślnie true) decyduje o WYWOŁANIU sprawdzenia
  * po stronie main.ts; sam moduł nie czyta flagi (jest czysty i testowalny).
  */
 

@@ -23,9 +23,10 @@ function checkHook(mainSrc, runnerSrc) {
   const a = mainSrc.indexOf('window as any).__diploAllFlagsMeasure = {');
   const blok = a < 0 ? '' : mainSrc.slice(a, a + 1600);
   chk('hak: __diploAllFlagsMeasure istnieje w main.ts', blok.length > 0);
-  // Wylaczenie daje null (wartosc z danych), wlaczenie true.
-  chk('setAll: v = on===true ? true : null', blok.includes('const v = on === true ? true : null;'));
-  for (const setter of ['setHarderDiplomacyEnabledForTest', 'setAiAiTreatyTickEnabledForTest', 'setAiAiAllianceTickEnabledForTest',
+  // Wylaczenie daje jawne false (NIE null: dane maja ON), wlaczenie true. Tor NAP (torAktywny) poza pakietem.
+  chk('setAll: const v: boolean = on===true (jawne false, nie null)', blok.includes('const v: boolean = on === true;'));
+  chk('setAll NIE dotyka toru NAP (setAiAiTreatyTickEnabledForTest)', !blok.includes('setAiAiTreatyTickEnabledForTest('));
+  for (const setter of ['setHarderDiplomacyEnabledForTest', 'setAiAiAllianceTickEnabledForTest',
     'setAiAiCoalitionEnabledForTest', 'setZeroTrustEnabledForTest', 'setWarByAllianceStrengthForTest', 'setWarLimitEnabledForTest']) {
     chk('setAll wywołuje ' + setter + '(v)', blok.includes(setter + '(v)'));
   }
@@ -51,7 +52,8 @@ for (const r of checkHook(mainSrc, runnerSrc)) ok(r.nazwa, r.ok);
 
 // Mutacje kopii: kazda MUSI dac co najmniej jeden czerwony wynik kontroli tekstowej.
 const mutMain = [
-  ['v stałe true', mainSrc.replace('const v = on === true ? true : null;', 'const v = true;')],
+  ['v stałe true', mainSrc.replace('const v: boolean = on === true;', 'const v: boolean = true;')],
+  ['v null (dane ON)', mainSrc.replace('const v: boolean = on === true;', 'const v = on === true ? true : null;')],
   ['setter wojen pominięty', mainSrc.replace('setWarLimitEnabledForTest(v);', '')],
   ['getter pominięty', mainSrc.replace('isWarLimitEnabled() === true', 'false')],
 ];
