@@ -999,3 +999,60 @@ fn kontrakt_czasu_akcji_z_rendererem_klatka_16ms() {
     }
     eprintln!("HITAT-FQ kontrakt: {n:?}");
 }
+
+/// HITAT-FQ-REGRESJA-Q1, obrona N1 (mutant E3 Operatora): cios PO krokach `_advanceStep` (`attack_pre > 0`, doktryna
+/// `steady`/`aggressive`, `:8241-8245`). Pin: `_doAttack` startuje lunge w chwili końca ostatniego kroku (`t0`), cios w
+/// pierwszej klatce z `localT >= BLOW_HIT_T`, więc odstęp `hit_at - t0` jest TEN SAM co bez kroków (`frame_raf(klatka, 150)`).
+/// Silnik liczy `hit_at = saved + attack_pre + hit` przy `t0 = saved + attack_pre`; zgubienie `attack_pre` w `hit_at`
+/// (mutant E3) skraca odstęp i daje `PlaybackError::HitAt` w kliencie. Wszystkie scenariusze wektorów (także bliźniaki
+/// `frameMs`, przy ich klatce — rozszerzenie względem testu wyżej); cios „po kroku” = `Melee`, którego atakujący ma
+/// w tym samym kroku sesji wcześniejszy `Move` z `t0` mniejszym niż `t0` ciosu.
+///
+/// Zmierzone (obrona r1): 0 takich ciosów na 537 we wszystkich wektorach. Przyczyna strukturalna: `advance_step`
+/// liczy marsz ATOMOWO (D-WIRA-18); po każdym kroku callback `advance_after_move` kończy przy `can_attack_from`
+/// (`:8273-8284`), a decyzja `Attack` kolejnej iteracji czyta TEN SAM stan, więc `attack_pre > 0` z ciosem jest dziś
+/// nieosiągalny (E3 = mutant równoważny). W pinie między krokami `_schedule(STEP_GAP)` działają inne jednostki, więc
+/// gałąź stanie się osiągalna po marszu przyrostowym (MARCH-INCREMENTAL); wtedy asercja odstępu niżej pilnuje jej od
+/// razu. Licznik jest diagnostyczny (bez asercji pokrycia, żeby nie blokować MARCH-INCREMENTAL).
+#[test]
+fn kontrakt_czasu_ciosu_po_krokach_advance_step() {
+    use civ_engine::domain::siege_tactics_actions::BattleAction;
+    use civ_engine::domain::siege_tactics_loop::frame_raf;
+    let doc = vectors();
+    let data = pin_session_data();
+    let (mut po_kroku, mut razem) = (0usize, 0usize);
+    for v in doc["vectors"].as_array().unwrap() {
+        let name = v["name"].as_str().unwrap();
+        let frame = v["frameMs"].as_f64().unwrap_or(FRAME_MS);
+        let want = frame_raf(frame, 150.0);
+        let mut s = SiegeBattleSession::prepare_scene(&scene_input(v), &data).unwrap();
+        if v["frameMs"].as_f64().is_some() {
+            s.diag_set_speed_mul(frame / FRAME_MS).unwrap();
+        }
+        let mut frames = 0;
+        while s.phase() != SessionPhase::Finished {
+            let rep = s.step(FRAME_MS).unwrap();
+            for (i, a) in rep.actions.iter().enumerate() {
+                let BattleAction::Melee {
+                    attacker, hit_at, ..
+                } = &a.action
+                else {
+                    continue;
+                };
+                assert_eq!(hit_at - a.t0, want, "{name}: cios w t0 {}", a.t0);
+                razem += 1;
+                let krok = rep.actions[..i].iter().any(|b| {
+                    matches!(&b.action, BattleAction::Move { unit, .. } if unit == attacker)
+                        && b.t0 < a.t0
+                });
+                if krok {
+                    po_kroku += 1;
+                }
+            }
+            frames += 1;
+            assert!(frames < MAX_FRAMES, "bitwa bez końca");
+        }
+    }
+    eprintln!("HITAT-FQ cios po kroku: {po_kroku}/{razem}");
+    assert!(razem > 0, "brak ciosów wręcz w wektorach");
+}
