@@ -81,6 +81,10 @@ const REJECT_OFFERS = arg('reject-offers', '1') !== '0';
  * (`__econRebalanceMeasure.setEnabled`). Brak opcji = hak nie jest ruszany (zachowanie sprzed zmiany).
  * Stan flagi (odczyt po ustawieniu) zapisywany w każdym rekordzie tury (`ecoRebalance`) i w summary (`rebalance`). */
 const REBALANCE_ARG = process.argv.indexOf('--rebalance') >= 0 ? arg('rebalance', '0') === '1' : null;
+/** R-WEB-VERIFY-LIVE-A-UNIT-COSTS-AI-MEASURE-Q1: --pace niski|normalny|wysoki = tempo „Koszty jednostek" gracza
+ * (player.kosztJednostekPace, ustawiane hakiem ?civTest=1 PRZED pierwsza tura). Domyslnie normalny = domyslne ustawienie nowej gry. */
+const PACE = arg('pace', 'normalny');
+if (!['niski', 'normalny', 'wysoki'].includes(PACE)) throw new Error('--pace: dozwolone niski|normalny|wysoki (podano ' + PACE + ')');
 let REBALANCE_FLAG_STATE = null;
 const SLOT = 'ai-econ-s' + SEED;
 const HASH_IGNORED = ['units[].stackGroupId(null)', 'cities[].budowaLista(gdy [])', 'cities[].magazynZywnosci(gdy 0)', 'cities[].postepBudynkowUsuniete(gdy {})', 'resourceLedgerHistory(#432)'];
@@ -464,6 +468,7 @@ async function playOneTurn(page, ctxState) {
     load1: Math.round(os.loadavg()[0] * 100) / 100,
     ledgerRecording: LEDGER_OFF ? 'off' : 'on',
     ecoRebalance: REBALANCE_FLAG_STATE,
+    unitCostPace: PACE,
     aiOffersRejected: offersRec.confirmed, aiOffersRejectAttempts: offersRec.attempts,
     forcedPeaceAccepted: ctxState.forcedPeaceAccepted || 0,
   };
@@ -514,6 +519,14 @@ async function runSeries(ctx, { resumeFromSlot, stopAt }) {
   const st = resumeFromSlot ? (readState() || {}) : {};
   const ctxState = newCtx(st.slotCounters || null);
   if (resumeFromSlot) { await page.evaluate(slot => window.__aiTradeWiringTestDebug.loadSlot(slot), SLOT); await suppressVictory(page); }
+  // R-WEB-VERIFY-LIVE-A: tempo kosztow jednostek. Nowa gra -> ustawiamy PACE; wznowienie -> stan z zapisu musi byc rowny PACE.
+  if (!resumeFromSlot) {
+    const got = await page.evaluate(p => window.__aiEconomyMeasure.setUnitCostPace(p), PACE);
+    if (got !== PACE) throw new Error('setUnitCostPace: oczekiwano ' + PACE + ', jest ' + got);
+  } else {
+    const got = await page.evaluate(() => window.__aiEconomyMeasure.unitCostPaceState());
+    if (got !== PACE) throw new Error('wznowienie: tempo w zapisie=' + got + ' != --pace ' + PACE);
+  }
   const startTurn = await turnOf(page);
   RUN_START_TURN = startTurn;
   let slotOk = !!resumeFromSlot;
@@ -588,7 +601,7 @@ async function main() {
   const resume = !!(st && st.lastTurn > 0 && st.saved === true && st.slot);
   const res = await runSeries(ctx, { resumeFromSlot: resume, stopAt: STOP_AT });
   await ctx.close();
-  const summary = { seed: SEED, startTurn: res.startTurn, endTurn: res.endTurn, stop: res.stop, counters: res.counters, wallSec: res.wallSec, resumed: resume, rebalance: REBALANCE_FLAG_STATE };
+  const summary = { seed: SEED, startTurn: res.startTurn, endTurn: res.endTurn, stop: res.stop, counters: res.counters, wallSec: res.wallSec, resumed: resume, rebalance: REBALANCE_FLAG_STATE, unitCostPace: PACE };
   fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
   console.log('[econ] PODSUMOWANIE ' + JSON.stringify(summary));
 }

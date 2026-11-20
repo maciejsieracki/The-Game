@@ -154,3 +154,9 @@ przed każdym „Zakończ turę”, w pętli leczenia kolejki bitew i podczas cz
   bez duplikatów; zamknięcia audiencji w t2 (2×) i t13 (1×); t51 i t57 przeszły bez zatrzymania; stuckQueueHeals 0.
   Zatrzymanie w t51 z poprzedniej rundy NIE wystąpiło w tym przebiegu, więc przyczynowo nie potwierdzono, że to
   zamknięcie je usuwa; potwierdzono, że ścieżka zamykania działa w żywej grze.
+
+## Tempo „Koszty jednostek” (R-WEB-VERIFY-LIVE-A-UNIT-COSTS-AI-MEASURE-Q1)
+
+- `--pace niski|normalny|wysoki` (domyslnie `normalny`). Hak `__aiEconomyMeasure.setUnitCostPace` ustawia tempo PRZED pierwsza tura; wznowienie porownuje tempo z zapisem.
+- Pole wiersza `zywnoscArmiiTura` (zywnosc armii na ture per wlasciciel, tempo wliczone). Wiersz tury i summary: `unitCostPace`.
+- Wyniki: `dyspozycje/analizy/POMIAR-KOSZTY-JEDNOSTEK-AI-2026-11-20.md`.

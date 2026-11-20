@@ -50,7 +50,7 @@ const OWNER_KEYS = ['owner', 'skarbiec', 'spichlerz', 'jednostkiWojskowe', 'jedn
   'glodWojska', 'glodWojskaAtrycja', 'glodKaraStatProc', 'glodAtrycjaHpProc', 'deficytZlota', 'miasta', 'obywatele',
   'utrzymanieBudynkowPieniadz', 'utrzymanieBudynkowSurowce', 'utrzymanieGarnizonuPieniadz',
   'utrzymanieJednostekPieniadz', 'utrzymanieJednostekSurowce',
-  'forty', 'posterunki', 'hexyTerytorium', 'hexyZMiast', 'hexyZFortowPosterunkow', 'hexySporne'];
+  'forty', 'posterunki', 'hexyTerytorium', 'hexyZMiast', 'hexyZFortowPosterunkow', 'hexySporne', 'zywnoscArmiiTura'];
 
 const results = [];
 function check(name, ok, detail) { results.push({ name, ok: !!ok, detail: detail || '' }); console.log((ok ? 'ZIELONE ' : 'CZERWONE ') + name + (detail ? ' :: ' + detail : '')); }
@@ -211,6 +211,24 @@ async function fullChecks(browser) {
   const hudBad = metrics.owners.filter(o => !o.hud || !finNum(o.hud.epoka) || !finNum(o.hud.surowceBrutto) || !finNum(o.hud.surowceNetto)
     || !Array.isArray(o.hud.surowceTyp) || !o.hud.budynkiPerTyp || typeof o.hud.budynkiPerTyp !== 'object').map(o => o.owner);
   check('pola HUD per wlasciciel: epoka, surowceBrutto/Netto liczbowe, surowceTyp[], budynkiPerTyp{}', hudBad.length === 0, 'bledne=' + JSON.stringify(hudBad.slice(0, 5)));
+  // R-WEB-VERIFY-LIVE-A (r2, zarzut Evaluatora 4): przypiecie haka tempa „Koszty jednostek" i pola zywnoscArmiiTura.
+  // Hak ustawia player.kosztJednostekPace; zywnosc armii (unitFoodPerTurn) MUSI rosnac przy tempie wysoki wzgledem niski.
+  const paceRes = await page.evaluate(() => {
+    const h = window.__aiEconomyMeasure;
+    const food = () => h.metrics().owners.reduce((s, o) => s + (typeof o.zywnoscArmiiTura === 'number' ? o.zywnoscArmiiTura : 0), 0);
+    const a = h.setUnitCostPace('niski');
+    const zN = food();
+    const b = h.setUnitCostPace('wysoki');
+    const zW = food();
+    const c = h.setUnitCostPace('bzdura');
+    const d = h.unitCostPaceState();
+    h.setUnitCostPace('normalny');
+    return { a, b, c, d, zN, zW, potem: h.unitCostPaceState() };
+  });
+  check('hak tempa: setUnitCostPace ustawia niski/wysoki, odrzuca wartosc spoza zbioru, unitCostPaceState czyta stan',
+    paceRes.a === 'niski' && paceRes.b === 'wysoki' && paceRes.c === 'wysoki' && paceRes.d === 'wysoki' && paceRes.potem === 'normalny', JSON.stringify(paceRes));
+  check('zywnoscArmiiTura: tempo wysoki zwieksza zywnosc armii wzgledem niski (pole zalezy od tempa; mutacja ignorujaca tempo -> czerwone)',
+    paceRes.zN > 0 && paceRes.zW > paceRes.zN, 'niski=' + paceRes.zN + ' wysoki=' + paceRes.zW);
   const hudGr = metrics.owners.find(o => o.owner === 0);
   const hudGrVals = hudGr && hudGr.hud ? [hudGr.hud.naukaRate, hudGr.hud.handelIncome, hudGr.hud.spichlerzRate, hudGr.hud.skarbiecRate] : [];
   check('pola HUD gracza (owner 0): naukaRate, handelIncome, spichlerzRate, skarbiecRate sa liczbami (buildHudState(0))',
