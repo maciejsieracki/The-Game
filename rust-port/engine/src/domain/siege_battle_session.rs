@@ -1047,6 +1047,9 @@ impl SiegeBattleSession {
         // `:9419`; klatka czasu rzeczywistego = ta sama, [`Self::step`]). `speedMul = 1` (`VirtualClock::new`), więc 16 ms;
         // zmiana `speedMul` przelicza klatkę ([`Self::diag_set_speed_mul`]).
         body.frame_ms = BATTLE_FRAME_WALL_MS;
+        // MARCH-INCREMENTAL-Q1 (D-MI-1): `_advanceStep` i `_rangedAction`/`_rangedForwardStep` krok po kroku — każda
+        // decyzja kroku w chwili kroku (`_schedule(STEP_GAP_MS, …)`, `:6806`, `:8225`, `:8280`), jak pin.
+        body.march_incremental = true;
         // Obrona r2 (E2-1a, D-WIRA-16): `_applyTerrainRange` w ciele (`:6064`, `:7740`, `:7929`) z siatką
         // `terrainRangeDelta(combatTerrainName(c, r))` (`:7495-7496`).
         let mut range_grid = HashMap::new();
