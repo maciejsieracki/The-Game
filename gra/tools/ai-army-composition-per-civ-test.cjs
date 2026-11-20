@@ -167,8 +167,14 @@ function simulate(civ, epoch, recruits, { blocked = () => false, noStock = () =>
     { id: 'cC', ownerId, q: 13, r: 13, name: 'C', population: 8, manpower: 99 },
   ];
   const scouts = [1, 2].map(i => ({ id: `s${i}`, ownerId, typeId: 'Zwiadowca', category: 'zwiadowca', q: 2, r: 2 + i, ruch: 3, ruchLeft: 3 }));
+  // R-WEB-TEST-DEBT-Q13 r5: od R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (FALA 857, wymog wlasciciela 2026-11-18) AI rekrutuje STALY garnizon min. 1 jednostki bojowej
+  // w KAZDYM miescie bez kwalifikujacej sie jednostki (cityNeedsGarrison) -- takie miasto dostaje najtanszego Wojownika/Procarza przed rekrutacja wg skladu.
+  // Fixture mial miasta bez wojska, wiec symulacja mierzyla WYLACZNIE garnizon (Procarz x60 = 0/100/0). Dodany 1 garnizon (Wojownik) na miasto --
+  // test mierzy dalej sklad rekrutacji (tabela wlasciciela 2026-11-09), nie regule garnizonu.
+  for (const c of cities) scouts.push({ id: `gar-${c.id}`, ownerId, typeId: 'Wojownik', category: 'piechota', q: c.q, r: c.r, ruch: 2, ruchLeft: 0 });
   const queued = [];
-  const counts = { wrecz: 0, dystans: 0, konnica: 0 };
+  // R-WEB-TEST-DEBT-Q13 r5: garnizon (1 Wojownik/miasto, patrz nizej) jest czescia armii, ktora AI liczy przy deficycie klas -- wchodzi do mierzonego skladu jako wrecz.
+  const counts = { wrecz: cities.length, dystans: 0, konnica: 0 };
   const names = { wrecz: {}, dystans: {}, konnica: {} };
   const nacja = M.unitNacjaForCivKey(civ);
   const allowedIds = (city) => {
@@ -190,7 +196,9 @@ function simulate(civ, epoch, recruits, { blocked = () => false, noStock = () =>
     return allowedCache.get(cityId).has(itemId);
   };
   let guard = 0;
-  while (queued.length < recruits && guard++ < recruits * 4) {
+  // r5: armia o lacznej wielkosci `recruits` = garnizon (cities.length) + rekrutowane (recruits - cities.length); dzieki temu probka ma te same N=60 jednostek co przed regula garnizonu
+  // (cele tabeli wlasciciela sa procentami CALEJ armii; przy 63 jednostkach dyskretyzacja dawala asyria 49,2% < 50% -- artefakt wielkosci probki, nie reguly).
+  while (queued.length < recruits - cities.length && guard++ < recruits * 4) {
     const opts = {
       majorAiOwnerIds: [ownerId], civType: civ, poziomTrudnosci: level, currentTurn: 100 + guard,
       cityBuildings: Object.fromEntries(cities.map(c => [c.id, ALL_BUILDINGS])),
