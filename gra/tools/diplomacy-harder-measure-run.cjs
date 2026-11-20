@@ -27,8 +27,13 @@
  *   --every N zapisuje wiersz tylko dla tur podzielnych przez N (np. 5 albo 25; ostatnia tura zawsze).
  *   Przegladarka: CHROME_PATH (domyslnie pierwsza z: /usr/bin/google-chrome, /usr/bin/chromium). Jeden Chromium naraz.
  *
- * Limity: pojedyncze polecenie Bash < 590 s. Dlugie biegi (100 tur x 3 ziarna ON/OFF) uruchamia orkiestrator
- * przez `setsid nohup node tools/diplomacy-harder-measure-run.cjs ... &` (poza tym plikiem; sam runner nie wznawia).
+ * Wznowienie (R-WEB-DIPLO-MEASURE-RESUMABLE-FLAGS-ONOFF-Q1): `--stop-at <tura>` przerywa przebieg na tej turze
+ * (zapis slotu `dipl-measure-<TAG>` co --every tur i na koncu odcinka, stan w <out>/<TAG>.state.json). Kolejne wywolanie
+ * z TYM SAMYM --out i --profile wczytuje slot (loadSlot), ponownie ustawia flagi/autopilot i gra dalej, bez duplikatow tur.
+ * Bez --stop-at: przebieg jak dotad (od nowej gry do --turns, bez zapisow slotu). Flagi sa stanem runtime (nie w zapisie),
+ * wiec po kazdym wczytaniu ssa ustawiane od nowa PRZED endTurn; licznik zerwan sesji dostaje przesuniecie z zapisu.
+ *
+ * Limity: pojedyncze polecenie Bash < 590 s. Dlugie biegi dziel na odcinki --stop-at (np. 30, 60, 90).
  */
 const fs = require('fs');
 const os = require('os');
@@ -72,6 +77,12 @@ const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 const CHROME = process.env.CHROME_PATH || [(require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), '/usr/bin/chromium-browser', '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable'].find(p => fs.existsSync(p)) || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const TURN_TIMEOUT_MS = 300000;
 const TAG = ALL_FLAGS === null ? `seed${SEED}-harder${HARDER ? 1 : 0}` : `seed${SEED}-all${ALL_FLAGS ? 1 : 0}`;
+/** R-WEB-DIPLO-MEASURE-RESUMABLE-FLAGS-ONOFF-Q1: --stop-at <tura> (brak = przebieg do --turns jak dotad, bez wznowienia).
+ *  Z --stop-at: zapis slotu co --every tur ORAZ na koncu odcinka; kolejne wywolanie z tym samym --out i --profile
+ *  wczytuje slot (loadSlot) i kontynuuje od jego tury. Liczniki w state.json (slotCounters), liczone raz. */
+const SEGMENT = process.argv.indexOf('--stop-at') >= 0;
+const STOP_AT = SEGMENT ? parseInt(arg('stop-at', String(TURNS)), 10) : TURNS;
+const SLOT = 'dipl-measure-' + TAG;
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 /** Etykieta harder w wierszu: w trybie --all-flags = stan flagi etapu A z haka (odczyt), inaczej --harder. */
@@ -92,11 +103,32 @@ function ensureBuild() {
 
 async function launch(chromium) {
   const args = ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage'];
+  // R-WEB-DIPLO-MEASURE-RESUMABLE-FLAGS-ONOFF-Q1: opcjonalne flagi Chromium z env MEASURE_CHROME_ARGS (jak runner ekonomii);
+  // "--disable-gpu --mute-audio" omija SIGSEGV przy wczytaniu slotu (znany problem srodowiska). Domyslnie puste.
+  for (const a of (process.env.MEASURE_CHROME_ARGS || '').split(/\s+/).filter(Boolean)) args.push(a);
   return chromium.launchPersistentContext(PROFILE, { headless: true, args, viewport: { width: 1280, height: 800 }, executablePath: CHROME });
 }
 
 /** Start jak runner (`newgame`): prawdziwy doStartGame + czekanie na koniec nakladki + zalozenie miasta gracza. */
-async function openGame(ctx) {
+/** Flagi pakietu (runtime, NIE w zapisie gry): po KAZDYM starcie/wczytaniu slotu ustawiane ponownie PRZED endTurn. */
+async function applyFlags(page) {
+  if (ALL_FLAGS !== null) {
+    const st = await page.evaluate(on => window.__diploAllFlagsMeasure.setAll(on), ALL_FLAGS);
+    FLAGI_START = st;
+    // Pakiet = sześć flag dyplomacji; tor NAP (napTor, torAktywny) poza pakietem — zostaje na wartości z danych (false).
+    const PAKIET = ['harder', 'sojuszTor', 'koalicja', 'zeroZaufania', 'wojnaSilaSojuszu', 'limitWojen'];
+    const wanted = PAKIET.every(k => st[k] === ALL_FLAGS);
+    if (!wanted) throw new Error('setAll(' + ALL_FLAGS + ') nie ustawil wszystkich flag (odczyt=' + JSON.stringify(st) + ')');
+    console.log('[diplo] all-flags=' + (ALL_FLAGS ? 1 : 0) + ' ' + JSON.stringify(st));
+    return;
+  }
+  const got = await page.evaluate(on => window.__diploHarderMeasure.setEnabled(on), HARDER);
+  if (got !== HARDER) throw new Error('setEnabled(' + HARDER + ') nie ustawil flagi (odczyt=' + got + ')');
+}
+
+/** Start jak runner (`newgame`): prawdziwy doStartGame + czekanie na koniec nakladki. Swiezy przebieg: zalozenie miasta
+ *  gracza; wznowienie (fresh=false): loadSlot zamiast zakladania miasta. Potem autopilot, tryb szybki i flagi. */
+async function openGame(ctx, { fresh }) {
   const page = ctx.pages()[0] || await ctx.newPage();
   const url = 'file://' + path.join(DIST, 'index.html') + '?civTest=1&civSeed=' + SEED;
   await page.goto(url, { waitUntil: 'load', timeout: 180000 });
@@ -107,8 +139,12 @@ async function openGame(ctx) {
     const ov = Array.from(document.querySelectorAll('*')).some(el => el.textContent && el.textContent.includes('Tworzenie świata') && el.offsetParent !== null);
     return !ov && window.__nnsMeasureDebug.awaitingFirstCity() === true;
   }, null, { timeout: 600000, polling: 500 });
-  const founded = await page.evaluate(() => window.__aiTradeWiringTestDebug.foundFirstCity());
-  if (!founded) throw new Error('nie udalo sie zalozyc miasta gracza (foundFirstCity=false)');
+  if (fresh) {
+    const founded = await page.evaluate(() => window.__aiTradeWiringTestDebug.foundFirstCity());
+    if (!founded) throw new Error('nie udalo sie zalozyc miasta gracza (foundFirstCity=false)');
+  } else {
+    await page.evaluate(slot => window.__aiTradeWiringTestDebug.loadSlot(slot), SLOT);
+  }
   await page.evaluate(() => { const t = window.__truceTestDebug; if (t && t.suppressVictoryForTest) t.suppressVictoryForTest(); });
   // Autopilot gracza PO starcie gry, PRZED pierwszym endTurn (jak runner ekonomii; odczyt potwierdza ustawienie).
   if (PLAYER_AI) {
@@ -118,19 +154,8 @@ async function openGame(ctx) {
     console.log('[diplo] player-ai autopilot=1');
   }
   await page.evaluate(() => window.__aiTradeWiringTestDebug.setFastMode(true));
-  // Flaga PO starcie gry, PRZED pierwszym endTurn (jedyne miejsce zapisu flagi w runnerze).
-  if (ALL_FLAGS !== null) {
-    const st = await page.evaluate(on => window.__diploAllFlagsMeasure.setAll(on), ALL_FLAGS);
-    FLAGI_START = st;
-    // Pakiet = sześć flag dyplomacji; tor NAP (napTor, torAktywny) poza pakietem — zostaje na wartości z danych (false).
-    const PAKIET = ['harder', 'sojuszTor', 'koalicja', 'zeroZaufania', 'wojnaSilaSojuszu', 'limitWojen'];
-    const wanted = PAKIET.every(k => st[k] === ALL_FLAGS);
-    if (!wanted) throw new Error('setAll(' + ALL_FLAGS + ') nie ustawil wszystkich flag (odczyt=' + JSON.stringify(st) + ')');
-    console.log('[diplo] all-flags=' + (ALL_FLAGS ? 1 : 0) + ' ' + JSON.stringify(st));
-    return page;
-  }
-  const got = await page.evaluate(on => window.__diploHarderMeasure.setEnabled(on), HARDER);
-  if (got !== HARDER) throw new Error('setEnabled(' + HARDER + ') nie ustawil flagi (odczyt=' + got + ')');
+  // Flaga PO starcie gry (lub wczytaniu slotu), PRZED pierwszym endTurn.
+  await applyFlags(page);
   return page;
 }
 
@@ -183,6 +208,14 @@ let AI_OFFERS_REJECTED = 0;
 /** R-WEB-DIPLO-ALL-FLAGS-MEASURE-RUNNER-Q1: stan wszystkich flag po ustawieniu (odczyt haka), do summary. */
 let FLAGI_START = null;
 let AI_OFFERS_REJECT_ATTEMPTS = 0;
+/** Przesuniecie licznika zerwan sesji po wznowieniu (suma = ZERW_OFFSET + odczyt sesji). */
+let ZERW_OFFSET = 0;
+
+/** Stan wznowienia (<out>/<TAG>.state.json): zapis po KAZDEJ turze w trybie --stop-at, slot i liczniki z chwili zapisu slotu. */
+function readState(p) {
+  try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (_) { return null; }
+}
+function writeState(p, s) { fs.writeFileSync(p, JSON.stringify(s, null, 2)); }
 
 async function playOneTurn(page) {
   const t0 = Date.now();
@@ -234,7 +267,8 @@ async function playOneTurn(page) {
   for (const k of base.MODAL_KEYS) modalDelta[k] = COUNTERS[k] - modalBefore[k];
   const d = diploRow(m);
   const flagi = ALL_FLAGS === null ? null : await page.evaluate(() => window.__diploAllFlagsMeasure.status());
-  const liczniki = ALL_FLAGS === null ? null : licznikiZPar(m, await page.evaluate(() => window.__diploAllFlagsMeasure.zerwaniaZeroZaufania()));
+  // Licznik zerwan jest licznikiem SESJI przegladarki (reset po wczytaniu slotu): ZERW_OFFSET dodaje wartosc sprzed wznowienia.
+  const liczniki = ALL_FLAGS === null ? null : licznikiZPar(m, ZERW_OFFSET + await page.evaluate(() => window.__diploAllFlagsMeasure.zerwaniaZeroZaufania()));
   const rec = { seed: SEED, harder: harderLabel(), allFlags: ALL_FLAGS === null ? null : (ALL_FLAGS ? 1 : 0), liczniki, playerAi: PLAYER_AI ? 1 : 0, turn: after, gate: blocked, bypass, battlesAuto, aiOffersRejected: offersRejected, aiOffersRejectAttempts: offersAttempts,
     forcedPeaceAccepted: COUNTERS.forcedPeaceAccepted, modal: modalDelta, sec: Math.round((Date.now() - t0) / 100) / 10, diplo: d,
     wojny: d.pairs.filter(p => p.status === 'wojna').length };
@@ -249,17 +283,47 @@ async function main() {
   const { chromium } = require(path.join(PW_DIR, 'node_modules', 'playwright'));
   const jsonl = path.join(OUT, TAG + '.jsonl');
   const summaryPath = path.join(OUT, TAG + '.summary.json');
-  // Start pliku: obciecie do zera (bez unlink; poprzedni wynik tego samego ziarna/flagi zostaje nadpisany).
-  fs.writeFileSync(jsonl, '');
+  const statePath = path.join(OUT, TAG + '.state.json');
+  // Wznowienie tylko w trybie --stop-at, gdy state.json wskazuje zapisany slot TEJ SAMEJ gry (TAG/SLOT).
+  const prev = SEGMENT ? readState(statePath) : null;
+  const resume = !!(prev && prev.saved === true && prev.slot === SLOT && prev.slotTurn > 0);
+  let slotTurn = resume ? prev.slotTurn : 0;
+  let slotCounters = resume ? (prev.slotCounters || null) : null;
+  let zerwaniaSuma = resume ? (prev.zerwaniaSuma || 0) : 0;
+  if (resume) {
+    // Liczniki startuja od wartosci ZAPISANYCH przy slocie (zliczone raz); jsonl obciety do tury slotu (bez duplikatow).
+    Object.assign(COUNTERS, base.newCtx(slotCounters));
+    AI_OFFERS_REJECTED = (slotCounters && slotCounters.aiOffersRejected) || 0;
+    AI_OFFERS_REJECT_ATTEMPTS = (slotCounters && slotCounters.aiOffersRejectAttempts) || 0;
+    if (fs.existsSync(jsonl)) {
+      const keep = fs.readFileSync(jsonl, 'utf8').split('\n').filter(l => l.trim() && JSON.parse(l).turn <= slotTurn);
+      fs.writeFileSync(jsonl, keep.map(l => l + '\n').join(''));
+    }
+    console.log(`[diplo] ${TAG} WZNOWIENIE ze slotu ${SLOT} (tura ${slotTurn})`);
+  } else {
+    // Start pliku: obciecie do zera (bez unlink; poprzedni wynik tego samego ziarna/flagi zostaje nadpisany).
+    fs.writeFileSync(jsonl, '');
+  }
+  const snapCounters = () => Object.assign({}, COUNTERS, { aiOffersRejected: AI_OFFERS_REJECTED, aiOffersRejectAttempts: AI_OFFERS_REJECT_ATTEMPTS });
   const ctx = await launch(chromium);
   let stop = null;
   let turn = 0;
   let rows = 0;
+  let saved = resume;
   const t0 = Date.now();
+  const writeSeg = (extra) => { if (SEGMENT) writeState(statePath, Object.assign({ seed: SEED, tag: TAG, slot: SLOT, saved, slotTurn, slotCounters, zerwaniaSuma, lastTurn: turn, counters: snapCounters() }, extra)); };
   try {
-    const page = await openGame(ctx);
+    const page = await openGame(ctx, { fresh: !resume });
     turn = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
-    while (turn < TURNS) {
+    if (resume) {
+      if (turn !== slotTurn) throw new Error('wznowienie: tura po loadSlot=' + turn + ' != tura slotu ' + slotTurn);
+      if (ALL_FLAGS !== null) {
+        // Licznik zerwan = licznik sesji (reset po wczytaniu): przesuniecie tak, by suma ciagla od zapisu.
+        const raw0 = await page.evaluate(() => window.__diploAllFlagsMeasure.zerwaniaZeroZaufania());
+        ZERW_OFFSET = zerwaniaSuma - raw0;
+      }
+    }
+    while (turn < STOP_AT) {
       const r = await playOneTurn(page);
       if (r.stop) { stop = { reason: r.stop, tura: r.tura }; break; }
       turn = r.rec.turn;
@@ -267,14 +331,23 @@ async function main() {
         fs.appendFileSync(jsonl, JSON.stringify(r.rec) + '\n');
         rows++;
       }
+      if (SEGMENT && (turn % EVERY === 0 || turn >= STOP_AT)) {
+        const ok = await page.evaluate(slot => window.__aiTradeWiringTestDebug.quickSave(slot), SLOT);
+        if (ok) {
+          saved = true; slotTurn = turn; slotCounters = snapCounters();
+          if (ALL_FLAGS !== null) zerwaniaSuma = ZERW_OFFSET + await page.evaluate(() => window.__diploAllFlagsMeasure.zerwaniaZeroZaufania());
+        }
+      }
+      writeSeg({ stop: null });
       console.log(`[diplo] ${TAG} tura=${turn} pary=${r.rec.diplo.pairs.length} wojny=${r.rec.wojny} czas=${Math.round((Date.now() - t0) / 1000)}s`);
     }
   } finally {
+    writeSeg({ stop });
     await ctx.close();
   }
   // R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1: gracz = autopilot (playerAi 1) -- adnotacja w summary; kolumny par bez zmian.
   const summary = { seed: SEED, harder: harderLabel(), allFlags: ALL_FLAGS === null ? null : (ALL_FLAGS ? 1 : 0), playerAi: PLAYER_AI ? 1 : 0, graczAdnotacja: PLAYER_AI ? 'gracz = autopilot' : 'gracz = pasywny',
-    turnsRequested: TURNS, every: EVERY, endTurn: turn, rows, stop,
+    turnsRequested: TURNS, every: EVERY, endTurn: turn, rows, stop, segment: SEGMENT, stopAt: STOP_AT, resumed: resume, slot: SLOT,
     flagi: FLAGI_START,
     counters: Object.assign({}, COUNTERS), aiOffersRejected: AI_OFFERS_REJECTED, aiOffersRejectAttempts: AI_OFFERS_REJECT_ATTEMPTS, wallSec: Math.round((Date.now() - t0) / 1000) };
   fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
