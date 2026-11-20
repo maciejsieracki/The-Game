@@ -3,7 +3,8 @@
 
 Każdy mutant = jedna podmiana tekstu w źródle (dokładnie jedno wystąpienie), build release testu
 `p6_k5loop_wiring_a_pin` (wspólny CARGO_TARGET_DIR), uruchomienie testów:
-  * `wektory_pinu_pelnej_bitwy_bajt_w_bajt` (34 wektory pinu + 3 bliźniaki `_klatka4`, w tym 12 `fq_*` @16 ms),
+  * `wektory_pinu_pelnej_bitwy_bajt_w_bajt` (42 wektory pinu: 12 `fq_*` @16 ms, bliźniaki `_klatka1`/`_klatka4`, w tym
+    `fq_*_213/214_klatka1` (Q21) i `fq_*_217/218_klatka1`, `fq_*_132_klatka4` (Q24, czułość `_drainTimers`/`_raf`)),
   * `kwantyzacja_odcinkow_klatka_pinu`, `kwantyzacja_odcinkow_zlozonych_klatka_pinu` (wzory D-FQ-1/3),
 oraz testów osi czasu ciała w lib (`pin3_timeline_tests`) dla mutantów oznaczonych `lib=True`.
 Wynik: ZABITY (test pada albo build nie przechodzi), PRZEŻYŁ. Źródło przywracane po każdym mutancie
