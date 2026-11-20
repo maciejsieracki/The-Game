@@ -2187,7 +2187,7 @@ fn apply_plunder_event_calls(
                     ));
                 }
             }
-            Some("recordCityCaptureEvent") => {
+            Some("recordCityCaptureEventX") => {
                 let Some(a) = args.first() else { continue };
                 let rows: Vec<CaptureRow> = last_rows
                     .as_ref()
