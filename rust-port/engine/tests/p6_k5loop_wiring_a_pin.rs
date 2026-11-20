@@ -948,3 +948,111 @@ fn slad_diagnostyczny_na_zadanie() {
         }
     }
 }
+
+/// HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): kontrakt czasu akcji sesji (klatka 16 ms, `speedMul = 1`) z rendererem
+/// (`renderer/src/battle/playback.rs` `is_pin_event_time`): cios wręcz w pierwszej klatce lunge z `localT >= BLOW_HIT_T`
+/// (`_doMeleeAttack` `:9122`, `t0 + 160`), trafienie strzału jednostki w klatce zegara `_schedule(RANGED_FLY_MS)`
+/// (`:9223`, `t0 + 384`), krok `_doMove` w klatce `p >= 1` (`t0 + 240`); wieża (`_fireOneTower` `:4262`), kamień
+/// (`:7555`) i taran (`:7343`) z czasem nominalnym (renderer: równość dokładna). Zmiana tych odstępów w silniku łamie
+/// odtwarzanie klienta (`PlaybackError::HitAt` / `ShotLandAt` / ...), więc test pilnuje strony silnika kontraktu.
+#[test]
+fn kontrakt_czasu_akcji_z_rendererem_klatka_16ms() {
+    use civ_engine::domain::siege_tactics_actions::BattleAction;
+    use civ_engine::domain::siege_tactics_loop::{frame_raf, frame_sched};
+    let doc = vectors();
+    let data = pin_session_data();
+    assert_eq!(frame_raf(FRAME_MS, 150.0), 160.0);
+    assert_eq!(frame_sched(FRAME_MS, 380.0), 384.0);
+    let mut n = BTreeMap::<&str, usize>::new();
+    // Wszystkie scenariusze z krokiem produkcyjnym 16 ms (bliźniaki `_klatka1`/`_klatka4` mają inną klatkę).
+    for v in doc["vectors"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|v| v["frameMs"].is_null())
+    {
+        let name = v["name"].as_str().unwrap();
+        let mut s = SiegeBattleSession::prepare_scene(&scene_input(v), &data).unwrap();
+        let mut frames = 0;
+        while s.phase() != SessionPhase::Finished {
+            let rep = s.step(FRAME_MS).unwrap();
+            for a in rep.actions {
+                let (k, got, want) = match a.action {
+                    BattleAction::Melee { hit_at, .. } => ("melee", hit_at - a.t0, 160.0),
+                    BattleAction::Shot { land_at, .. } => ("shot", land_at - a.t0, 384.0),
+                    BattleAction::Move { arrive_at, .. } => ("move", arrive_at - a.t0, 240.0),
+                    BattleAction::TowerShot { land_at, .. } => ("tower", land_at - a.t0, 380.0),
+                    BattleAction::Boulder { land_at, .. } => ("boulder", land_at - a.t0, 700.0),
+                    BattleAction::Ram { until, .. } => ("ram", until - a.t0, 320.0),
+                    _ => continue,
+                };
+                assert_eq!(got, want, "{name}: {k} w t0 {}", a.t0);
+                *n.entry(k).or_default() += 1;
+            }
+            frames += 1;
+            assert!(frames < MAX_FRAMES, "bitwa bez końca");
+        }
+    }
+    // Pokrycie: każdy rodzaj akcji z czasem wystąpił (inaczej test niczego nie pilnuje).
+    for k in ["melee", "shot", "move", "tower"] {
+        assert!(n.get(k).copied().unwrap_or(0) > 0, "brak akcji {k}: {n:?}");
+    }
+    eprintln!("HITAT-FQ kontrakt: {n:?}");
+}
+
+/// HITAT-FQ-REGRESJA-Q1, obrona N1 (mutant E3 Operatora): cios PO krokach `_advanceStep` (`attack_pre > 0`, doktryna
+/// `steady`/`aggressive`, `:8241-8245`). Pin: `_doAttack` startuje lunge w chwili końca ostatniego kroku (`t0`), cios w
+/// pierwszej klatce z `localT >= BLOW_HIT_T`, więc odstęp `hit_at - t0` jest TEN SAM co bez kroków (`frame_raf(klatka, 150)`).
+/// Silnik liczy `hit_at = saved + attack_pre + hit` przy `t0 = saved + attack_pre`; zgubienie `attack_pre` w `hit_at`
+/// (mutant E3) skraca odstęp i daje `PlaybackError::HitAt` w kliencie. Wszystkie scenariusze wektorów (także bliźniaki
+/// `frameMs`, przy ich klatce — rozszerzenie względem testu wyżej); cios „po kroku” = `Melee`, którego atakujący ma
+/// w tym samym kroku sesji wcześniejszy `Move` z `t0` mniejszym niż `t0` ciosu.
+///
+/// Zmierzone (obrona r1): 0 takich ciosów na 537 we wszystkich wektorach. Przyczyna strukturalna: `advance_step`
+/// liczy marsz ATOMOWO (D-WIRA-18); po każdym kroku callback `advance_after_move` kończy przy `can_attack_from`
+/// (`:8273-8284`), a decyzja `Attack` kolejnej iteracji czyta TEN SAM stan, więc `attack_pre > 0` z ciosem jest dziś
+/// nieosiągalny (E3 = mutant równoważny). W pinie między krokami `_schedule(STEP_GAP)` działają inne jednostki, więc
+/// gałąź stanie się osiągalna po marszu przyrostowym (MARCH-INCREMENTAL); wtedy asercja odstępu niżej pilnuje jej od
+/// razu. Licznik jest diagnostyczny (bez asercji pokrycia, żeby nie blokować MARCH-INCREMENTAL).
+#[test]
+fn kontrakt_czasu_ciosu_po_krokach_advance_step() {
+    use civ_engine::domain::siege_tactics_actions::BattleAction;
+    use civ_engine::domain::siege_tactics_loop::frame_raf;
+    let doc = vectors();
+    let data = pin_session_data();
+    let (mut po_kroku, mut razem) = (0usize, 0usize);
+    for v in doc["vectors"].as_array().unwrap() {
+        let name = v["name"].as_str().unwrap();
+        let frame = v["frameMs"].as_f64().unwrap_or(FRAME_MS);
+        let want = frame_raf(frame, 150.0);
+        let mut s = SiegeBattleSession::prepare_scene(&scene_input(v), &data).unwrap();
+        if v["frameMs"].as_f64().is_some() {
+            s.diag_set_speed_mul(frame / FRAME_MS).unwrap();
+        }
+        let mut frames = 0;
+        while s.phase() != SessionPhase::Finished {
+            let rep = s.step(FRAME_MS).unwrap();
+            for (i, a) in rep.actions.iter().enumerate() {
+                let BattleAction::Melee {
+                    attacker, hit_at, ..
+                } = &a.action
+                else {
+                    continue;
+                };
+                assert_eq!(hit_at - a.t0, want, "{name}: cios w t0 {}", a.t0);
+                razem += 1;
+                let krok = rep.actions[..i].iter().any(|b| {
+                    matches!(&b.action, BattleAction::Move { unit, .. } if unit == attacker)
+                        && b.t0 < a.t0
+                });
+                if krok {
+                    po_kroku += 1;
+                }
+            }
+            frames += 1;
+            assert!(frames < MAX_FRAMES, "bitwa bez końca");
+        }
+    }
+    eprintln!("HITAT-FQ cios po kroku: {po_kroku}/{razem}");
+    assert!(razem > 0, "brak ciosów wręcz w wektorach");
+}
