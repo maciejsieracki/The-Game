@@ -18,8 +18,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use civ_engine::domain::city_capture_apply::{
     apply_siege_capitulation, PlayableCaptureEvents, PlayableCityProduction,
 };
-use civ_engine::domain::events::{canonical_phase_order, TurnPhase};
 use civ_engine::domain::diplomacy::{CivilizationPair, Relation, RelationStatus};
+use civ_engine::domain::events::{canonical_phase_order, TurnPhase};
 use civ_engine::domain::playable::{
     PlayableCity, PlayableGame, PlayablePlayer, PlayableReplaceUnit, PlayableState, PlayableUnit,
     PlayableUnitKind, StartGameParams,
@@ -97,9 +97,17 @@ fn build_state(sc: &Value) -> PlayableState {
     st.city_prod_by_city.clear();
     st.war.opaque.remove("diplomacyPairMeta");
     st.capture_events = PlayableCaptureEvents::default();
-    let list = |k: &str| sc.get(k).and_then(Value::as_array).cloned().unwrap_or_default();
+    let list = |k: &str| {
+        sc.get(k)
+            .and_then(Value::as_array)
+            .cloned()
+            .unwrap_or_default()
+    };
     for t in list("treasury") {
-        let (o, v) = (st_owner(t[0].as_i64().expect("o")), t[1].as_f64().expect("v"));
+        let (o, v) = (
+            st_owner(t[0].as_i64().expect("o")),
+            t[1].as_f64().expect("v"),
+        );
         if o == 1 {
             st.economy.treasury = v;
         } else {
@@ -107,9 +115,10 @@ fn build_state(sc: &Value) -> PlayableState {
         }
     }
     for t in list("praca") {
-        st.economy
-            .praca_pool_by_owner
-            .insert(st_owner(t[0].as_i64().expect("o")), t[1].as_f64().expect("v"));
+        st.economy.praca_pool_by_owner.insert(
+            st_owner(t[0].as_i64().expect("o")),
+            t[1].as_f64().expect("v"),
+        );
     }
     for t in list("techs") {
         st.stores.researched_techs_by_owner.insert(
@@ -270,7 +279,12 @@ fn assert_capture_steps(name: &str, turn: usize, st: &PlayableState, snap: &Valu
     let pin_pr = pin_map("praca");
     let mut owners: BTreeSet<i64> = pin_tr.keys().chain(pin_pr.keys()).copied().collect();
     owners.insert(0);
-    owners.extend(st.economy.ai_treasury_by_owner.keys().map(|o| web_owner(*o)));
+    owners.extend(
+        st.economy
+            .ai_treasury_by_owner
+            .keys()
+            .map(|o| web_owner(*o)),
+    );
     owners.extend(st.economy.praca_pool_by_owner.keys().map(|o| web_owner(*o)));
     for o in &owners {
         let so = st_owner(*o);
@@ -775,25 +789,73 @@ fn case<'a>(v: &'a Value, name: &str) -> &'a Value {
 #[test]
 fn vectors_cover_capture_steps_from_pin() {
     let v = vectors();
-    let last = |name: &str| case(&v, name)["out"].as_array().expect("out").last().cloned().expect("tura");
+    let last = |name: &str| {
+        case(&v, name)["out"]
+            .as_array()
+            .expect("out")
+            .last()
+            .cloned()
+            .expect("tura")
+    };
     let st = last("stolica_przejecie");
-    assert_eq!(st["capitals"], serde_json::json!([[0, "city950"], [101, "city901"]]), "sukcesja stolicy");
-    assert_eq!(st["treasury"], serde_json::json!([[0, 45], [101, 0]]), "łup skarbca");
-    assert_eq!(st["praca"], serde_json::json!([[0, 9], [101, 0]]), "pula Pracy przepada, postęp Pałacu do zdobywcy");
-    assert_eq!(st["cityProd"][0][1]["kolejka"].as_array().map(Vec::len), Some(1), "Pałac usunięty z kolejki");
-    assert!(st["captureEvents"]["warEventLog"][0]["subtitle"].as_str().expect("s").contains("40"));
+    assert_eq!(
+        st["capitals"],
+        serde_json::json!([[0, "city950"], [101, "city901"]]),
+        "sukcesja stolicy"
+    );
+    assert_eq!(
+        st["treasury"],
+        serde_json::json!([[0, 45], [101, 0]]),
+        "łup skarbca"
+    );
+    assert_eq!(
+        st["praca"],
+        serde_json::json!([[0, 9], [101, 0]]),
+        "pula Pracy przepada, postęp Pałacu do zdobywcy"
+    );
+    assert_eq!(
+        st["cityProd"][0][1]["kolejka"].as_array().map(Vec::len),
+        Some(1),
+        "Pałac usunięty z kolejki"
+    );
+    assert!(st["captureEvents"]["warEventLog"][0]["subtitle"]
+        .as_str()
+        .expect("s")
+        .contains("40"));
     let el = last("eliminacja");
     assert_eq!(el["eliminated"], serde_json::json!([101]));
-    assert_eq!(el["techs"], serde_json::json!([[0, ["t_a", "t_b"]]]), "technologie skopiowane");
-    assert_eq!(el["war"], serde_json::json!([]), "relacje wyeliminowanego skasowane");
-    assert!(el["captureEvents"]["warEventLog"][0]["title"].as_str().expect("t").starts_with("ELIMINACJA"));
+    assert_eq!(
+        el["techs"],
+        serde_json::json!([[0, ["t_a", "t_b"]]]),
+        "technologie skopiowane"
+    );
+    assert_eq!(
+        el["war"],
+        serde_json::json!([]),
+        "relacje wyeliminowanego skasowane"
+    );
+    assert!(el["captureEvents"]["warEventLog"][0]["title"]
+        .as_str()
+        .expect("t")
+        .starts_with("ELIMINACJA"));
     let nc = last("kolejka_nowa_stolica_gracza");
-    assert_eq!(nc["cityProd"][0][1]["kolejka"].as_array().map(Vec::len), Some(2), "Pałac zostaje (nowa stolica)");
+    assert_eq!(
+        nc["cityProd"][0][1]["kolejka"].as_array().map(Vec::len),
+        Some(2),
+        "Pałac zostaje (nowa stolica)"
+    );
     let gi = last("stolica_gdzie_indziej");
-    assert_eq!(gi["treasury"], serde_json::json!([[0, 5], [101, 40]]), "zwykłe miasto: brak łupu (E09)");
+    assert_eq!(
+        gi["treasury"],
+        serde_json::json!([[0, 5], [101, 40]]),
+        "zwykłe miasto: brak łupu (E09)"
+    );
     let lg = last("legacy_gracz");
     assert_eq!(lg["pairMeta"][0][0], "0_101");
-    assert_eq!(lg["pairMeta"][0][1]["wojnaMiasta"]["utraty"]["101"], 1, "recordWarCityLossForPair");
+    assert_eq!(
+        lg["pairMeta"][0][1]["wojnaMiasta"]["utraty"]["101"], 1,
+        "recordWarCityLossForPair"
+    );
 }
 
 /// Z2: kapitulacja usuwa wyłącznie jednostki starego właściciela z heksu miasta.
@@ -805,7 +867,10 @@ fn capitulation_keeps_old_owner_units_outside_city_hex() {
     let st = states.last().expect("tura 2");
     let ids: BTreeSet<u64> = st.units.iter().map(|u| u.id.get()).collect();
     assert!(!ids.contains(&8001), "cywil na heksie usunięty");
-    assert!(ids.contains(&8002) && ids.contains(&8003), "jednostki poza heksem przeżywają: {ids:?}");
+    assert!(
+        ids.contains(&8002) && ids.contains(&8003),
+        "jednostki poza heksem przeżywają: {ids:?}"
+    );
 }
 
 /// Z3: obca jednostka wojskowa na heksie miasta nie jest garnizonem (ścieżka bez garnizonu: flaga, potem przejęcie).
@@ -815,9 +880,17 @@ fn foreign_military_unit_on_city_hex_is_not_garrison() {
     let sc = case(&v, "obcy_wojskowy_na_heksie");
     let mut st = build_state(sc);
     let r1 = run_siege_turn(&mut st);
-    assert!(!r1.entries[0].decision.record_start, "brak startu głodu garnizonu");
-    assert!(st.siege_city[&CityId::new(900)].siege_capitulation_pending, "flaga legacy");
-    assert!(st.siege_city[&CityId::new(900)].siege_starve_start_max_hp.is_none());
+    assert!(
+        !r1.entries[0].decision.record_start,
+        "brak startu głodu garnizonu"
+    );
+    assert!(
+        st.siege_city[&CityId::new(900)].siege_capitulation_pending,
+        "flaga legacy"
+    );
+    assert!(st.siege_city[&CityId::new(900)]
+        .siege_starve_start_max_hp
+        .is_none());
 }
 
 /// Z4: miejsce wpięcia ticka w turze = faza Economy, po Diplomacy (pin N3 po ticku ekonomii; W8 r7 Q2).
@@ -830,35 +903,77 @@ fn siege_tick_phase_is_economy_after_diplomacy() {
     let v = vectors();
     let mut game = PlayableGame::from_state(build_state(case(&v, "legacy_gracz")));
     game.advance_turn().expect("tura");
-    assert!(game.state().last_advanced_phases.contains(&SIEGE_TICK_PHASE));
-    assert_eq!(game.last_siege_tick().entries.len(), 1, "tick wykonany w tej turze");
+    assert!(game
+        .state()
+        .last_advanced_phases
+        .contains(&SIEGE_TICK_PHASE));
+    assert_eq!(
+        game.last_siege_tick().entries.len(),
+        1,
+        "tick wykonany w tej turze"
+    );
 }
 
-/// Z4 (D-KAP-3 r2): błąd kapitulacji PO mutacjach (zła meta pary) — skutki kapitulacji cofnięte w całości, błąd w
-/// raporcie, tura przechodzi dalej (pin: `try/catch` bloku N3, `console.error`).
+/// Z4 (D-KAP-3 r2): błąd kapitulacji PO mutacjach (zła meta pary: `recordWarCityLossForPair` po zmianie właściciela,
+/// straty ludności i kronice) — skutki kapitulacji cofnięte w całości, błąd w raporcie (pin: `try/catch` bloku N3).
 #[test]
-fn capitulation_error_rolls_back_city_and_turn_continues() {
+fn capitulation_error_rolls_back_city_effects() {
     let v = vectors();
     let mut st = build_state(case(&v, "flaga_z_zapisu"));
     st.war
         .opaque
         .insert("diplomacyPairMeta".into(), Value::String("zepsute".into()));
-    let mut game = PlayableGame::from_state(st);
-    let before = game.state().clone();
-    let turn = before.turn;
-    game.advance_turn().expect("tura trwa mimo błędu oblężenia");
-    let after = game.state();
-    assert_eq!(after.turn, turn + 1);
-    let err = game.last_siege_tick().error.clone().expect("błąd w raporcie");
+    let before = st.clone();
+    let r = run_siege_turn(&mut st);
+    let err = r.error.clone().expect("błąd w raporcie");
     assert_eq!(err.0, CityId::new(900));
     assert!(err.1.contains("diplomacyPairMeta"), "{err:?}");
-    let c = after.cities.iter().find(|c| c.id.get() == 900).expect("miasto");
-    assert_eq!(c.owner_id.get(), 101, "miasto nie przejęte");
-    assert_eq!(c.population, 3, "ludność bez straty");
-    assert!(!after.captured_from_owner_by_city.contains_key(&CityId::new(900)));
-    assert_eq!(after.siege_city, before.siege_city, "pola oblężenia bez zmian (flaga zostaje)");
-    assert!(after.oblegane.contains(&CityId::new(900)));
-    assert_eq!(after.civ_chronicle_by_owner, before.civ_chronicle_by_owner, "kronika bez zmian");
+    assert!(r.entries[0].capitulation.is_none());
+    assert_eq!(
+        st, before,
+        "skutki kapitulacji cofnięte (miasto, ludność, kronika, prawo, flaga)"
+    );
+}
+
+/// Z4 (D-KAP-3 r2): błąd kapitulacji nie blokuje tury — `advance_turn` loguje go i przechodzi dalej (pin
+/// `console.error`), flaga zostaje, więc następna tura próbuje ponownie.
+#[test]
+fn capitulation_error_does_not_block_advance_turn() {
+    let v = vectors();
+    let mut st = build_state(case(&v, "flaga_z_zapisu"));
+    // Oblegający = właściciel 0 (D-ZMA-5: niejednoznaczny wobec id webu) => błąd producenta przed mutacjami.
+    st.war.diplomacy.set_relation(
+        CivilizationPair::new(PlayerId::new(0), PlayerId::new(101)),
+        Relation::new(50.0, 50.0, RelationStatus::War),
+    );
+    st.siege_city
+        .get_mut(&CityId::new(900))
+        .expect("pola")
+        .oblegajacy_owner_id = Some(PlayerId::new(0));
+    let mut game = PlayableGame::from_state(st);
+    for t in 0..2 {
+        let turn = game.state().turn;
+        game.advance_turn().expect("tura trwa mimo błędu oblężenia");
+        assert_eq!(game.state().turn, turn + 1, "tura {t}");
+        let err = game
+            .last_siege_tick()
+            .error
+            .clone()
+            .expect("błąd w raporcie");
+        assert_eq!(err.0, CityId::new(900));
+        let c = game
+            .state()
+            .cities
+            .iter()
+            .find(|c| c.id.get() == 900)
+            .expect("miasto");
+        assert_eq!(
+            (c.owner_id.get(), c.population),
+            (101, 3),
+            "miasto nie przejęte"
+        );
+        assert!(game.state().siege_city[&CityId::new(900)].siege_capitulation_pending);
+    }
 }
 
 /// Z4 (D-KAP-3 r2): błąd w pierwszym mieście przerywa pętlę miast (pin: jeden `try` wokół `for`), drugie miasto nie
@@ -887,7 +1002,14 @@ fn capitulation_error_stops_city_loop_like_pin() {
     let r = run_siege_turn(&mut st);
     assert_eq!(r.error.as_ref().map(|e| e.0), Some(CityId::new(900)));
     assert_eq!(r.entries.len(), 1, "miasto 905 nieprzetworzone");
-    let owner = |s: &PlayableState, id: u64| s.cities.iter().find(|c| c.id.get() == id).expect("m").owner_id.get();
+    let owner = |s: &PlayableState, id: u64| {
+        s.cities
+            .iter()
+            .find(|c| c.id.get() == id)
+            .expect("m")
+            .owner_id
+            .get()
+    };
     assert_eq!(owner(&st, 900), 101);
     assert_eq!(owner(&st, 905), 102, "brak przejęcia 905 w tym ticku");
     assert_eq!(st, before, "bez garnizonów i bez skutków: stan bez zmian");
@@ -897,7 +1019,10 @@ fn capitulation_error_stops_city_loop_like_pin() {
 #[test]
 fn unknown_difficulty_is_reported_not_defaulted() {
     assert!(glod_wojska_hp_frac("Koszmar").is_err());
-    assert_eq!(glod_wojska_hp_frac("Normalny"), glod_wojska_hp_frac("normal"));
+    assert_eq!(
+        glod_wojska_hp_frac("Normalny"),
+        glod_wojska_hp_frac("normal")
+    );
     let v = vectors();
     let mut st = build_state(case(&v, "legacy_gracz"));
     st.params.difficulty = "Koszmar".into();

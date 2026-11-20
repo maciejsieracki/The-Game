@@ -7061,7 +7061,7 @@
    ],
    "name": "eliminacja",
    "lostPower": {
-    "101": 0
+    "101": 228
    },
    "cities": [
     {
@@ -7353,7 +7353,12 @@
      "eliminated": [
       101
      ],
-     "zdobycze": [],
+     "zdobycze": [
+      [
+       0,
+       228
+      ]
+     ],
      "cityProd": [],
      "captureEvents": {
       "warEventLog": [
@@ -7361,7 +7366,7 @@
         "id": "capture-6-city900-101-0",
         "icon": "🏴",
         "title": "ELIMINACJA: owner101",
-        "subtitle": "Złoto ze skarbca: +40 · Technologie: +1",
+        "subtitle": "Złoto ze skarbca: +40 · Technologie: +1 · Moc: +228",
         "kind": "city",
         "negative": false,
         "turnCreated": 6
@@ -7388,6 +7393,12 @@
          {
           "label": "Technologie",
           "value": "+1",
+          "tone": "gain",
+          "group": "lup"
+         },
+         {
+          "label": "Moc",
+          "value": "+228",
           "tone": "gain",
           "group": "lup"
          },

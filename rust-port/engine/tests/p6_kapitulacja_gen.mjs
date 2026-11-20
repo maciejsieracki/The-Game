@@ -479,7 +479,7 @@ const scenarios = [
   // ELIMINACJA: ostatnie miasto ofiary (wyznaczona stolica). Skarbiec, pula Pracy, technologie do zdobywcy; jednostka
   // ofiary daleko od miasta znika (`disbandOwnerUnits`); relacja i meta pary skasowane; karta ELIMINACJA.
   // `lostPower` = moc ofiary policzona przez Rust dla tego stanu (producenci mocy: wektory POWER-*).
-  base({ name: 'eliminacja', noVictimCapital: true, capitals: [[101, 900], [0, 950]], lostPower: { 101: 0 },
+  base({ name: 'eliminacja', noVictimCapital: true, capitals: [[101, 900], [0, 950]], lostPower: { 101: 228 },
     cities: [city('900', 101, 4, 3, { oblegajacyOwnerId: 0 }), city('950', 0, 0, 8, { oblegane: false })],
     treasury: [[0, 5], [101, 40]], praca: [[0, 3], [101, 7]], techs: [[0, ['t_a']], [101, ['t_a', 't_b']]],
     units: [unit('7001', 0, 5, 3, { oblegaCityId: '900' }), unit('8009', 101, 9, 8)] }),
