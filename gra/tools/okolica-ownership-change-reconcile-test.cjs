@@ -248,7 +248,8 @@ console.log('\n2.2 wszystkie 4 realne miejsca zmiany wlasciciela miasta nadal wo
     '(a) kapitulacja glodowa (resolveSiegeSurrender): city.ownerId = newOwner -> seedCityOwnerDefaults(city) w tym samym ciele');
 
   // (b) Wchloniecie dyplomatyczne (annexCityStateToOwner) -- petla po csCities, kazde dostaje nowego wlasciciela.
-  ok(/for \(const city of csCities\) \{[\s\S]{0,300}?city\.ownerId = annexerId;/.test(MAIN_TS_SRC) &&
+  // R-WEB-TEST-DEBT-Q13 r5: okno `for` -> `city.ownerId = annexerId;` poszerzone 300->900 (dojechaly stampCityFounderOnCapture, ledger zasobow, LOSS-COUNTERS).
+  ok(/for \(const city of csCities\) \{[\s\S]{0,900}?city\.ownerId = annexerId;/.test(MAIN_TS_SRC) &&
     sameFnAfter(MAIN_TS_SRC, 'city.ownerId = annexerId;', 'seedCityOwnerDefaults(city);'),
     '(b) wchloniecie dyplomatyczne (annexCityStateToOwner): city.ownerId = annexerId -> seedCityOwnerDefaults(city) w petli po csCities');
 
@@ -261,8 +262,11 @@ console.log('\n2.2 wszystkie 4 realne miejsca zmiany wlasciciela miasta nadal wo
     'post-battle-map.ts::applyCityCaptureAfterBattle: city.ownerId = atkOwner USTAWIONE przed wywolaniem onOwnerChanged (wiec reconcile widzi juz NOWEGO wlasciciela)');
 
   // (d) Rebelia (city.ownerId = REBEL_FACTION_OWNER_ID).
-  ok(/city\.ownerId = REBEL_FACTION_OWNER_ID;[\s\S]{0,300}?seedCityOwnerDefaults\(city\);/.test(MAIN_TS_SRC),
-    '(d) przejscie do rebeliantow: city.ownerId = REBEL_FACTION_OWNER_ID -> seedCityOwnerDefaults(city)');
+  // R-WEB-TEST-DEBT-Q13 r5: przypisanie wlasciciela-rebelianta siedzi dzis w helperze transferCityToRebelFactionWithLedger (ledger zasobow);
+  // miejsce wywolania w ticku buntu wola helper i NATYCHMIAST po nim seedCityOwnerDefaults(city).
+  ok(/function transferCityToRebelFactionWithLedger\(city: City\): void \{[\s\S]{0,700}?city\.ownerId = REBEL_FACTION_OWNER_ID;/.test(MAIN_TS_SRC)
+    && /transferCityToRebelFactionWithLedger\(city\);[\s\S]{0,400}?seedCityOwnerDefaults\(city\);/.test(MAIN_TS_SRC),
+    '(d) przejscie do rebeliantow: city.ownerId = REBEL_FACTION_OWNER_ID (helper z ledgerem) -> seedCityOwnerDefaults(city) w miejscu wywolania');
 }
 
 console.log('\n2.3 kontrakt "wywoluj PO kazdej zmianie city.ownerId" nadal udokumentowany w JSDoc seedCityOwnerDefaults');

@@ -149,7 +149,7 @@ const CALL_SITES = [
   { label: 'onSplit (main.ts ok. 9576) -- rozdzielenie armii na heks obozu (RUNDA 3 naprawa #3)',
     marker: 'P-BARBARZYNCY-SPLIT-Q1', call: 'checkBarbCampDestroyedAt(destQ, destR)', window: 1200 },
   { label: 'applyMarchSegmentInstant -- ruch gracza krok-po-kroku (marsz)',
-    marker: 'function applyMarchSegmentInstant(', call: 'checkBarbCampDestructionAlongPath(result.movePath)', window: 2300 },
+    marker: 'function applyMarchSegmentInstant(', call: 'checkBarbCampDestructionAlongPath(result.movePath)', window: 5000 },
   { label: 'checkBarbCampDestructionAlongPath -- pętla wewnętrzna po każdym unikalnym heksie ścieżki',
     marker: 'function checkBarbCampDestructionAlongPath(', call: 'checkBarbCampDestroyedAt(h.q, h.r)', window: 600 },
   { label: 'hak po zwycięskiej walce -- atakujący faktycznie wchodzi na heks bitwy',
@@ -331,7 +331,7 @@ const CALL_SITES = [
     // Blok gracza: applyMarchSegmentInstant (ruch player-only, `u.ownerId !== 0` return false wyżej).
     const playerFnIdx = mainTs.indexOf('function applyMarchSegmentInstant(');
     assert(playerFnIdx !== -1, 'static 4c: main.ts defines applyMarchSegmentInstant() (player-only move path)');
-    const playerFnWindow = mainTs.slice(playerFnIdx, playerFnIdx + 2500);
+    const playerFnWindow = mainTs.slice(playerFnIdx, playerFnIdx + 5000) /* R-WEB-TEST-DEBT-Q13 r5: funkcja urosla (wywolanie ~4600 zn. od sygnatury) */;
     assert(playerFnWindow.includes('checkBarbCampDestructionAlongPath(result.movePath)'),
       'static 4c: checkBarbCampDestructionAlongPath is called on the player move-completion path');
 

@@ -75,8 +75,10 @@ ok(!!resetBlockMatch,
   'borderMarchEventLog.length = 0 stoi w tym samym bloku resetu co villageEventLog.length = 0');
 
 // Dismiss: gałąź 'border-march-' w onEventDismiss celuje w borderMarchEventLog, nie warEventLog.
-const dismissIdx = src.indexOf("onEventDismiss: (id) => {");
-ok(dismissIdx >= 0, 'znaleziono onEventDismiss');
+// R-WEB-TEST-DEBT-Q13 r5: handler X to dzis nazwana funkcja handleSidePanelEventDismiss (przekazywana jako onEventDismiss: handleSidePanelEventDismiss).
+const dismissIdx = src.indexOf("function handleSidePanelEventDismiss(");
+ok(dismissIdx >= 0, 'znaleziono onEventDismiss (handleSidePanelEventDismiss)');
+ok(/onEventDismiss:\s*handleSidePanelEventDismiss/.test(src), 'onEventDismiss wpiety do handleSidePanelEventDismiss');
 const dismissWindow = dismissIdx >= 0 ? src.slice(dismissIdx, dismissIdx + 4000) : '';
 const branchStartIdx = dismissWindow.indexOf("id.startsWith('border-march-')");
 const branchEndIdx = dismissWindow.indexOf("id.startsWith('village-')", branchStartIdx);

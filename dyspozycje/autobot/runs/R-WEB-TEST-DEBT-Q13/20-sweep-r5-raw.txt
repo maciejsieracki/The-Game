@@ -1,0 +1,156 @@
+0|ai-dlug-porzadki-q1-test.cjs|17 passed, 0 failed|
+1|ai-city-render-batch-test.cjs|Node.js v22.23.5|AssertionError [ERR_ASSERTION]: dirty city models flush after AI completion/errors before barbarian UI paint
+1|administracja-stolica-test.cjs|[administracja-stolica-test] 52 OK, 1 FAIL|  [FAIL] Sąd w stolicy: ready, brak blokady lokalizacji
+1|ai-home-war-sees-own-land-test.cjs|Node.js v22.23.5|AssertionError [ERR_ASSERTION]: fog gate must be guarded by !targetOnOwnTerritory (and !targetNearLostCity, R-WEB-AI-DEFEND-RECAPTURE-ATTACK-PRIORITY-Q1)
+1|ai-balans-step3-test.cjs|=== ai-balans-step3-test: 7 passed, 1 failed ===|FAIL: T1d: L3 prog_koszt_x bez zmian = 70 (got 80, want 70)
+0|ai-general-war-campaign-test.cjs|ai-general-war-campaign-test: 52 passed, 0 failed|
+1|ai-praca-split-parity-test.cjs|ai-praca-split-parity-test: 23 passed, 4 failed|  FAIL: major AI wybiera farmę z absolutnego budżetu 50 (got 2, want 1)
+1|ai-jednostki-tylko-zakup-test.cjs|ai-jednostki-tylko-zakup-test: 43 passed, 2 failed|  FAIL: C4: egzekutor build AI kieruje jednostke do bramki zakupu za Skarbiec
+0|ai-purchase-maintenance-reserve-test.cjs|ai-purchase-maintenance-reserve-test: 56 passed, 0 failed|
+1|ambush-deploy-wiring-test.cjs|FAIL atak gracza: deploy = generał LUB zasadzka (rozstawienie bez generała)|FAIL atak gracza: deploy = generał LUB zasadzka (rozstawienie bez generała)
+0|annex-citystate-spoils-test.cjs|80 passed, 0 failed|
+0|army-leadership-test.cjs|PASS: commander title, morale, aggregate rout/death contracts, placement, and Auto/manual gate|
+0|army-split-enemy-city-block-test.cjs|Wynik: 14 PASS, 0 FAIL|Wynik: 14 PASS, 0 FAIL
+0|ai-army-composition-per-civ-test.cjs|ai-army-composition-per-civ-test: 341 passed, 0 failed|
+1|ai-player-parity-fixes-test.cjs|41 passed, 3 failed|FAIL: fixture: globalna i właścicielska trudność dają RÓŻNY koszt (stąd asymetria)
+0|atak-adiacencja-wymagana-test.cjs|atak-adiacencja-wymagana-test: 57 passed, 0 failed|
+0|auto-wyzywienie-live-recalc-test.cjs|60 pass, 0 fail|
+0|autoimprove-live-hooks-test.cjs|autoimprove-live-hooks-test: 37 passed, 0 failed|
+0|barbarian-cooperation-grace-maints-wiring-test.cjs|29 passed, 0 failed|
+1|ai4-popyt-obywatele-test.cjs|CZERWONE: Z1h/infrastruktura: identyczny wynik pickera z demandDriven i bez (1 pickow) / Z2d: WYJATEK ZLOZOWY dziala — warzelnia soli powstaje na zlozu 12,7 m|  [FAIL] Z1h/infrastruktura: identyczny wynik pickera z demandDriven i bez (1 pickow)
+1|battle-manual-choice-contract-test.cjs|Node.js v22.23.5|  throw new AssertionError(obj);
+0|border-march-wygasanie-test.cjs|border-march-wygasanie-test: 27 pass, 0 fail|
+1|bramki-tmpdir-unikalnosc-test.cjs|[bramki-tmpdir-unikalnosc-test] PASS=2 FAIL=1|  FAIL zadna bramka w tools/ nie pisze do STALEJ nazwy pod os.tmpdir() -- 169 trafien
+1|budynki-koszt-pracy-50-test.cjs|budynki-koszt-pracy-50-test: 141 pass, 42 fail; 44 budynków / 68 poziomów|FAIL: kuznia poziom 1: itemCost z kosztBudowy/przyrostKosztu
+1|building-detail-card-entitycard-migration-test.cjs|[building-detail-card-entitycard-migration-test] 52 pass, 3 fail|FAIL: wiersz "Praca (jednorazowo)" obecny i kończy się na "pkt Pracy" — 20 pkt
+0|army-to-nearest-leader-test.cjs|WYNIK: 43 PASS, 0 FAIL|WYNIK: 43 PASS, 0 FAIL
+0|city-panel-refresh-at-turn-start-live-test.cjs|PASS z ROBOCZA_HTML=build vite poza repo (exit 0)|
+1|ai-move-range-test.cjs|46 passed / 0 failed solo; w sweepie rownoleglym E1 flaky|[FAIL] E1 planer: PO nie wolniejszy niz PRZED x1,3 (stosunek 1.32)
+1|citypanel-tech-tile-dead-effects-test.cjs|[citypanel-tech-tile-dead-effects-test] 16 pass, 1 fail|  FAIL [C] Oblężnictwo „Odblokowuje budynek” nadal zawiera Katapultę (Warsztat odblokowuje Katapultę)
+1|city-state-alliance-test.cjs|city-state-alliance-test: 73 passed, 1 failed|  FAIL: strong: wrog dist=2 <= threatRadius=2 -- posilek wyslany (maxPerTurn=2 -> oba guardy) (got 1, want 2)
+0|civ-matrix-ai-diplomacy-wiring-test.cjs|RESULT: 43 passed, 0 failed|
+1|civ-matrix-greece-test.cjs|PASS 323; FAIL 6|FAIL: Roman gameplay aggression resolver uses ai_agresywnosc, not dip_agresja_archetyp (got 0.75, want 0.8)
+1|commander-star-emblem-test.cjs|commander-star-emblem-test: 11 passed, 1 failed|FAIL: renderer uwzględnia zarówno dowódcę w reprezentancie, jak i w reszcie stosu 
+1|conquest-stability-test.cjs|conquest-stability-test: 28 passed, 1 failed|  FAIL: unstable happiness penalty (got 0, want -2)
+1|culture-religion-test.cjs|culture-religion-test: 63 passed, 2 failed|  FAIL: B9: missing mnoznikHandelPieniadz -> multiplier = 1 (fallback) (got 2.3, want ~1)
+1|currency-test.cjs|currency-test: 36 passed, 1 failed|FAIL: efekt1 scalony (normal x1.5): pieniadz = 10 (floor(15*0.70)) (got 11, want 10)
+0|diplo-aggressor-unit-test.cjs|diplo-aggressor-unit-test: 73 PASS, 0 FAIL|diplo-aggressor-unit-test: 73 PASS, 0 FAIL
+0|city-clears-forest-test.cjs|city-clears-forest-test: 18 pass / 0 fail|
+0|diplo-war-trust-only-test.cjs|diplo-war-trust-only-test: 11 OK, 0 FAIL|diplo-war-trust-only-test: 11 OK, 0 FAIL
+1|drewno-gate-test.cjs|[drewno-gate-test] NIEUDANE: 1/20|  [FAIL] Wojownik: nadal Surowiec=Drewno ×10 (bez zmian -- kontrola) -- ma={"Surowiec":"Drewno","ilosc":13}
+1|dyplo-bilans-gate-n-e1-reprodukcja-runda3-test.cjs|=== PODSUMOWANIE: 10 PASS / 17 FAIL ===|FAIL: (0a) mutacja R2 faktycznie przywróciła formułę rundy 2 (bezwarunkowe wywołanie z relTotal wojennie ograniczonym dla obu ról) ORAZ blokadę accepted:false sprzed rundy 4 (gap>0 w gałęzi proposerIsPlayer) — kontrola nietautolo
+1|dyplo-bilans-gate-n-e1-reprodukcja-runda2-test.cjs|PRZERWANE: co najmniej jedna mutacja nie zadziałała — kod się przesunął, testy niżej byłyby tautologiczne.|FAIL: (0a) mutacja A faktycznie usunęła 29 dodanych pól pwBalance (7 accept + 22 reject) w 6 case'ach evaluateProposal — kontrola nietautologiczna dla Testów 1/2 aktywna — 30
+1|dyplo-karta-duplikat-komunikat-test.cjs|12 passed, 3 failed|  FAIL: A1: negotiationTable.push(entry) obecne — trwała karta stołu negocjacji bez zmian
+1|dyplo-pakt-ekspansja-granica-test.cjs|22/26 passed|  FAIL: D1 stan ciągły: Zaufanie 50 → 35 po 5 turach (−2/turę, nie jednorazowo)
+1|egypt-movement-precedence-test.cjs|}|AssertionError [ERR_ASSERTION]: other civilizations retain general and dedicated shallow-sea bonuses: 0.8130081300813008 != 0.6756756756756757
+1|eliminacja-lup-kwoty-test.cjs|34 passed, 4 failed|  FAIL: 4e: pełny raport z REALNEGO outcome silnika (1500 złota, 63 nauki, 2 techy, 420 Mocy, 90 puli pracy PRZEJĘTEJ od P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1) [<- 4e] (got null, want "Ludność: +4 · Budynki: +3 · Złoto ze skarb
+0|end-turn-hint-diplo-audience-test.cjs|end-turn-hint-diplo-audience-test: passed=16 failed=0|
+1|elimination-spectacle-test.cjs|83 PASS, 1 FAIL|  FAIL: tick rekordów tuż po turn++
+0|barb-camp-destruction-test.cjs|barb-camp-destruction-test: 85 passed, 0 failed|
+1|epoka-merge-recruit-test.cjs|[epoka-merge-recruit-test] NIEUDANE: 5/13|  [FAIL] epoch=1: WSZYSTKIE jednostki bazowe Kamienia dostepne (biezaca epoka, pelny magazyn+techy+koszary) -- brakuje=["Taran"]
+0|era-change-toast-defer-test.cjs|=== WYNIK: OK ===|
+0|era-war-bronze-player-target-test.cjs|44 passed, 0 failed|
+0|end-turn-modal-sequencing-test.cjs|end-turn-modal-sequencing-test: 41 pass, 0 fail|
+1|fair-play-tier-grid-test.cjs|fair-play-tier-grid-test: 9 pass, 3 fail|FAIL: low: góry 35
+1|endturn-battle-deadlock-exec-test.cjs|endturn-battle-deadlock-exec-test: 40 pass, 9 fail|  FAIL [B1c] klik 1 pokazuje podpowiedź blokady przy otwartym ekranie
+0|forced-war-bronze-test.cjs|ALL GREEN|PASSED: 48 / FAILED: 0 / TOTAL: 48
+0|escape-overlay-real-panels-test.cjs|escape-overlay-real-panels-test: 49 pass, 0 fail|-- C. LIFO: improvementBuildConfirm NAD build-mode (Evaluator FAIL #3, scenariusz B) --
+1|cluster-plan-name-test.cjs|2 passed, 4 failed|FAIL: rzymianie: seed 202 has a rejected slot
+0|forced-war-iron-test.cjs|PASSED: 55 / FAILED: 0 / TOTAL: 55|PASSED: 55 / FAILED: 0 / TOTAL: 55
+0|forced-war-reguly-multi-turn-simulation-test.cjs|ALL GREEN|PASSED: 48 / FAILED: 0 / TOTAL: 48
+0|forced-war-stone-test.cjs|PASSED: 31 / FAILED: 0 / TOTAL: 31|PASSED: 31 / FAILED: 0 / TOTAL: 31
+1|fortify-pole-test.cjs|=== fortify-pole-test: 39 pass, 2 fail ===|  [FAIL] Taktyczna/Pomiń, płasko: hitChanceTw(atak, Obrona×(1+50%)×terrMult) (39%) == resolveCombat z bonusem wliczonym do meleeDefence (41%)
+1|granice-relacja-dyplomatyczna-test.cjs|49 passed, 3 failed|FAIL: main.ts: relationColorFn(0) zwraca civColorFn(0) — własna obwódka w kolorze cywilizacji
+1|hotseat-etap6d-podetap-e-source-test.cjs|hotseat-etap6d-podetap-e-source-test: 60 PASS, 17 FAIL|  FAIL: negotiationPartnerOwnerIdOf: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)
+1|hud-moc-warstwa-test.cjs|========================================================================|  FAIL: sumArmyMForOwner (NOMINALNA) == 49 dla Konnicy (bez skalowania weterana) -- 98
+0|hud-armia-chip-jednostki-test.cjs|OK (60/60)|
+1|json-descriptions-sync-test.cjs|json-descriptions-sync-test: 18 pass / 1 fail|FAIL: a1: gra/data/war-weariness-params.json — wartości bez prefiksu _ równe wersji bazowej f196422ef (+ celowe: pelneTur 40, progWymuszonyPokoj)
+1|manual-rebalance-owner-era-test.cjs|manual-rebalance-owner-era: pass=4 fail=1|FAIL: Zelazo: top2 = zloto(1,0)+oboz(-1,1) (epoka wlasciciela w rankingu), got=0,1,1,0
+0|heal-stale-blockers-pending-battle-test.cjs|heal-stale-blockers-pending-battle-test: 23 pass, 0 fail|
+1|march-attack-queue-persist-test.cjs|march-attack-queue-persist-test: 55 passed, 2 failed|FAIL: (g5) handleSelectedUnitHudAction: DOKŁADNIE 5 wywołań clearPlannedMarch(u.id, true) — skip/garnizon/sentry/scout-explore + general-follow (got 6)
+0|barbarzyncy-krazenie-test.cjs|barbarzyncy-krazenie-test: 249 passed, 0 failed|
+1|idb-b1b2b3-test.cjs|=== idb-b1b2b3-test: 19 pass, 1 fail ===|  FAIL: (setup) mimo braku IDB, stary zapis z legacy localStorage nadal widoczny na liście (got 0)
+1|moc-ranking-rozjazd-test.cjs|========================================================================|  FAIL: sumArmyMForOwner (NOMINALNA) == 49 dla rekruta (unitDefFor, bez skalowania) -- 98
+0|mur-paradoks-test.cjs|=== mur-paradoks-test: 29 pass, 0 fail ===|
+0|koniec-tury-g1-g2-runda4-test.cjs|koniec-tury-g1-g2-runda4-test: 41 pass, 0 fail|
+0|no-negative-stocks-c2-test.cjs|no-negative-stocks-c2-test: 44 passed, 0 failed|
+0|no-negative-stocks-endturn-test.cjs|no-negative-stocks-endturn-test: 19 passed, 0 failed|
+1|ai-march-avoid-foreign-territory-test.cjs|ai-march-avoid-foreign-territory: 98 passed, 1 failed|  [FAIL] C7 requestWarMarchPassage: brak prosby o przemarsz (no-route): prosba znika (0) -> B4c (wojna-all-in) czerwone (got 1, want 0)
+1|naval-water-access-gate-test.cjs|naval-water-access-gate-test: 36 pass, 4 fail|MUTACJA: gate w availableProduction (odwrócenie warunku) -- FAIL potwierdzony, przywrócenie -- PASS potwierdzony
+0|open-panel-refresh-after-tech-live-test.cjs|PASS z ROBOCZA_HTML=build vite poza repo (exit 0)|
+1|perf-endturn-ai-phase-equiv-test.cjs|Node.js v22.23.5|AssertionError [ERR_ASSERTION]: otwarcie okna tuz po deklaracji relacjeDip
+1|r-bitwa-kolory-gracz-przeciwnik-q1-test.cjs|Node.js v22.23.5|AssertionError [ERR_ASSERTION]: gracz niebieski, przeciwnik czerwony
+0|recruitment-batch-contract-test.cjs|recruitment-batch-contract-test: 17 passed, 0 failed|
+0|ruch-swiata-tempo-test.cjs|[ruch-swiata-tempo-test] ZIELONY|
+0|okolica-ownership-change-reconcile-test.cjs|OKOLICA-OWNERSHIP-CHANGE-RECONCILE OK (15/15)|
+1|rydwan-konnica-x2-test.cjs|  - Jeździec z oszczepami.Atak dystansowy: oczekiwano 4 (= 2 * 2), jest 14|FAIL: 4 niezgodnosci
+124|save-load-roundtrip-state-drift-test.cjs|warstwa statyczna OK; warstwa dynamiczna (Chrome) >570 s (timeout 124)|
+1|stone-research-costs-test.cjs|stone-research-costs-test: 47 pass, 1 fail|FAIL: complete technology dataset unchanged apart from the four approved costs
+0|rekrutacja-skarbiec-only-test.cjs|rekrutacja-skarbiec-only-test: 13 passed, 0 failed|
+0|tartak-oboz-wyscig-race-test.cjs|  [info] main.ts MA strażnik lasu w bloku GRACZA -> oczekiwano PASS na E1/E2.|
+1|surrender-rekrutacja-build-gate-test.cjs|surrender-rekrutacja-build-gate-test: 10 passed, 1 failed|FAIL: surrender usuwa legacy, zwraca Pracę staremu właścicielowi i filtruje kolejkę dla nowego
+1|rydwan-bierny-atak-test.cjs|4 passed, 2 failed|[FAIL] wróg poza zasięgiem nie wymusza ofensywnego zbliżenia
+1|plony-budynkow-test.cjs|plony-budynkow-test: 64 passed, 4 failed|FAIL: Targowisko: delta finalnego Pieniadza = 4 (NIE surowe 5) -- decyzja 67B: Pieniadz budynku dzieli sie suwakiem 70/20/10 z reszta Daniny, nie trafia 1:1 do skarbca (got 3, want 4)
+1|unit-stock-cost-test.cjs|unit-stock-cost-test: 56 passed, 2 failed|FAIL: Bronze Konnica: Brąz 25 and base horse stock 25 each scale x2 (got {"braz":100,"kon":100}, want {"braz":50,"kon":50})
+0|pr141-hotseat-diplomacy-owner-test.cjs|TOTAL 10/10|
+1|trade-routes-income-test.cjs|trade-routes-income-test: 133 passed, 1 failed|  FAIL: H2e: one capital Mint raises tax cash in another city of the owner (mint=2, noMint=2)
+0|villages-test.cjs|VILLAGES-TEST OK (94/94)|
+1|war-epoch-player-first-main-guard-test.cjs|war-epoch-player-first-main-guard-test: 33 pass / 2 fail|FAIL [baza]: main.ts: kandydaci na partnera gracza = WSZYSCY major AI (nie tylko pula)
+1|wojna-wymuszona-parowanie-test.cjs|Node.js v22.23.5|  FAIL: S2: brak nierozwiązanych -- leftover 5 znalazł parę do dołączenia (got 1, want 0)
+0|war-era-counter-test.cjs|82 pass / 0 fail (po naprawie pinow, sweep byl przed naprawa)|
+0|wojna-wymuszona-prog-tury-gracz-test.cjs|PASSED: 9, FAILED: 0|PASSED: 9, FAILED: 0
+0|wonder-transfer-on-conquest-test.cjs|44 passed, 0 failed|
+1|zelazo-gate-test.cjs|[zelazo-gate-test] NIEUDANE: 4/24|  [FAIL] Legionista JEST dostepny: kopalnia na zlozu + Odlewnia zelaza -- ids=[]
+2|ai-ai-treaty-live-proof-wiring-test.cjs|Brak katalogu wyniku: undefined|
+0|ambush-deploy-identity-test.cjs|PASS z AMBUSH_BASE_GRA=<1c452ec35> (1776 pozycji)|
+0|memory-static-geometry-pool-test.cjs|PASS z --gra <gra> (18 OK / 0 FAIL)|
+0|ui-language-count-renderer-test.cjs|Wynik: 39 PASS / 0 FAIL|Wynik: 39 PASS / 0 FAIL
+0|move-pass-through-own-units-test.cjs|WYNIK: 34 OK, 0 FAIL|WYNIK: 34 OK, 0 FAIL
+0|unit-card-ranged-mult-test.cjs|OK Oszczepnik expanded card has no "obrażeń pocisku" suffix|
+1|war-allin-capital-test.cjs|96 passed, 2 failed|  FAIL: 6b aiVsAi: flaga OFF == referencja 20a5bc2c7abcba1b (got "d28c8b7ffce7a3ec", want "20a5bc2c7abcba1b")
+0|miasta-panstwa-wylaczone-test.cjs|miasta-panstwa-wylaczone-test: 55 pass, 0 fail|
+0|ai-avoid-polar-plan-test.cjs|SUMA sites=224 (AI/MP=220) onPolar=0 (AI/MP=0) r<=1=8 r<=2=12|
+1|ai-army-replacement-concentration-test.cjs|34 passed, 1 failed|FAIL: pomiar: bez bramki >10% marszow jednostek ze skupiska < 3 (stan przed poprawka)
+0|ai-avoid-polar-sim-test.cjs|RESULT {"runs":15,"aiCities":735,"onPolar":0,"r1":25,"r2":35,"aiStart":735,"founded":0,"foundedOnPolar":0,"foundedR1":0,"foundedR1WithAlt":0}|
+0|ai-avoid-polar-player-parity-test.cjs|PASS|
+1|autoimprove-pasture-irrigation-q2-test.cjs|WYNIK: 14 OK / 3 FAIL|  [FAIL] (e) faza wzrostu (24 tury): 0 tur z glodzona trzoda/irygacja przy duzej puli (starved=3)
+1|ai-move-full-range-test.cjs|ai-move-full-range: 19 passed, 1 failed|  [FAIL] D2 udzial ruchow z niewykorzystanym zapasem mimo wolnej trasy PO (19.7%) <= PRZED (18.8%) + 0,5 pp tolerancji szumu
+124|autoimprove-irrigation-after-farms-test.cjs|[civ] mapGen ms / prep=0 terrain=3 landSea=72 relief=54 coast=10 riversMain=160 riversFill=261 forest=3 deposits=6 starts=39 total=608|
+124|capital-sep-pangea-test.cjs|[Duża Pangea 240×168] seed=4242 … [civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)|
+0|hotseat-etap6f-part2-data-test.cjs|24 passed, 0 failed|
+0|cyna-surowiec-test.cjs|cyna-surowiec-test: 78 pass, 0 fail|
+0|cluster-spread-test.cjs|5 passed, 0 failed|
+1|climate-band-test.cjs|climate-band-test: FAIL (1)|FAIL: map has polar terrain (0 hexes)
+0|mapgen-rivers-fill-centroid-cache-test.cjs|PASS|
+0|medium-river-test.cjs|medium-river-test: 38 pass, 0 fail|
+0|merge-decor-no-regress-test.cjs|merge-decor-no-regress-test: 49 pass, 0 fail|
+0|map-quality-forest-parity-test.cjs|map-quality-forest-parity-test: 101 pass, 0 fail|
+124|battle-pace-equal-line-live-test.cjs||
+124|deposit-coast-test.cjs|[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)|
+124|earth-template-test.cjs|[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)|FAIL: ziemia: 0 heksów lądu poza szablonem (found 1668)
+124|cluster-start-test.cjs|PASS: klaster sumer: MP w zasięgu spójności (5 <= 35)|
+124|fair-play-grid-test.cjs|[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)|
+124|map-coast-buffer-test.cjs|[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)|FAIL: kontynenty seed=1: ląd w buforze brzegu (11,0, 12,0, 13,0)
+124|horse-resource-terrain-test.cjs|--- (B) prawdziwy generator, Standardowy ---|
+124|land-sea-ratio-test.cjs|[civ] mapGen ms / prep=15 terrain=98 landSea=1086 relief=1612 coast=312 riversMain=52517 riversFill=64414 forest=173 deposits=280 starts=1779 total=122286|
+0|pangea-land-determinism-test.cjs|PASS: hashe 3 typow identyczne z baza, Pangea 59-61%|
+124|map-gen-regression-test.cjs|[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)|
+124|miasta-zbyt-blisko-test.cjs|[civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)|
+124|map-continents-rivers-test.cjs|[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)|
+0|pangea-land-fraction-test.cjs|  3 seedów PASS: PASS (0 fail)|
+0|pangea-land-shape-test.cjs|  Super Huge AC: SKIP|
+0|pangea-river-interior-test.cjs|  5 seedów interior rzek >0: PASS (0 fail)|
+124|relief-grid-coverage-test.cjs|[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)|
+124|river-density-test.cjs|[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)|
+124|river-grid-coverage-test.cjs|[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)|
+124|river-loop-test.cjs|[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)|
+124|river-map-scale-test.cjs|[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)|
+0|roads-city-links-only-test.cjs|57 OK, 0 FAIL|57 OK, 0 FAIL
+124|river-yield-both-sides-test.cjs|[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)|
+124|river-path-adjacency-test.cjs|[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)|
+124|river-sea-buffer-test.cjs|[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)|
+0|roads-reach-city-hex-test.cjs|24 OK, 0 FAIL|24 OK, 0 FAIL
+124|world-density-test.cjs|[civ] mapGen ms / prep=3 terrain=31 landSea=916 relief=1122 coast=248 riversMain=7590 riversFill=5930 forest=49 deposits=91 starts=647 total=16625|
+124|stranded-land-test.cjs|[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)|
+124|terrain-height-audit-test.cjs|[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)|
+124|resource-ledger-realpath-mutation-test.cjs|[{"id":"m01","name":"pominiecie lupu z bitwy","result":"ZABITA","exit":1,"firstFails":["FAIL lup z bitwy: wpis „Łup z bitwy” (lup_bitwy) dla zwyciezcy :: {|[m01] ZABITA (exit 1) — pominiecie lupu z bitwy :: FAIL lup z bitwy: wpis „Łup z bitwy” (lup_bitwy) dla zwyciezcy :: {}

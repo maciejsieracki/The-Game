@@ -202,7 +202,7 @@ check(
 // fix) is ~18505/20000 chars (~7.5% headroom) -- NOT the same order of magnitude as the sibling
 // buildHudStateMatch above (~10882/20000, ~46% headroom); both anchors share the same window
 // constant (20000) but have very different headroom before exhaustion.
-const buildEmpireSnapMatch = mainTsSrc.match(/function buildEmpireDetailSnap\(\): EmpireDetailSnap \{[\s\S]{0,20000}?\n {4}\}/);
+const buildEmpireSnapMatch = mainTsSrc.match(/function buildEmpireDetailSnap\(\): EmpireDetailSnap \{[\s\S]{0,30000}?\n {4}\}/);
 check('main.ts zawiera funkcje buildEmpireDetailSnap(): EmpireDetailSnap', buildEmpireSnapMatch !== null);
 const buildEmpireSnapBody = buildEmpireSnapMatch ? buildEmpireSnapMatch[0] : '';
 check(

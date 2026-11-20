@@ -89,6 +89,14 @@ const ENV_NAMES = [
   // R-WEB-TEST-DEBT-Q13 r4: purchaseRecruitmentUnit przekazuje sink ledgera zasobów (main.ts pendingLedgerSink);
   // ledger nie jest przedmiotem tego testu (asercje: złoto/Manpower/surowiec/kolejka) -> sink no-op.
   'pendingLedgerSink',
+  // R-WEB-TEST-DEBT-Q13 r5: purchaseRecruitmentUnit zapisuje followGeneral na pozycji kolejki
+  // (main.ts recruitFollowGeneralForOrder + recruitFollowGeneralDefault) -- prawdziwa funkcja z production.ts.
+  'recruitFollowGeneralForOrder',
+  'recruitFollowGeneralDefault',
+  // R-WEB-TEST-DEBT-Q13 r5: cancelRecruitmentPurchase zapisuje zwrot w ledgerze (snapshotOwnersStock/recordOwnersStockDeltaToPending);
+  // ledger nie jest przedmiotem testu -> no-op (jak pendingLedgerSink).
+  'snapshotOwnersStock',
+  'recordOwnersStockDeltaToPending',
 ];
 const STACK_LIMIT_SRC = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'army-stack-limit.ts'), 'utf8');
 const stackLimitJs = esbuild.transformSync(STACK_LIMIT_SRC.replace(/^export\s+/gm, ''), { loader: 'ts', target: 'es2020' }).code;
@@ -107,6 +115,11 @@ const superFnSrc = sliceFunction(PRODUCTION_SRC, 'export function superUnitLimit
 const superSrc = `${superBlockMatch[0].replace('export const', 'const')}\n${superFnSrc.replace('export function', 'function')}`;
 const { superUnitLimitViolation, SUPER_UNIT_LIMIT_BLOCK_PL } = new Function(
   `${esbuild.transformSync(superSrc, { loader: 'ts', target: 'es2020' }).code}\nreturn { superUnitLimitViolation, SUPER_UNIT_LIMIT_BLOCK_PL };`,
+)();
+
+const followFnSrc = sliceFunction(PRODUCTION_SRC, 'export function recruitFollowGeneralForOrder(', '\n}\n') + '\n}\n';
+const { recruitFollowGeneralForOrder } = new Function(
+  `${esbuild.transformSync(followFnSrc.replace('export function', 'function').replace(/origin: RecruitOrigin/, "origin: 'city' | 'army'"), { loader: 'ts', target: 'es2020' }).code}\nreturn { recruitFollowGeneralForOrder };`,
 )();
 
 // eslint-disable-next-line no-new-func
@@ -261,6 +274,10 @@ function makeHarness({ gold = 100, manpower = 100, homeStock = 1, depotStock = 1
     () => new Set(),
     SUPER_UNIT_LIMIT_BLOCK_PL,
     () => 'normal',
+    () => undefined,
+    recruitFollowGeneralForOrder,
+    true,
+    () => null,
     () => undefined,
   );
 

@@ -155,7 +155,8 @@ ok(/podatekSkarbiec: podatekZysk/.test(fnBody) && /suwakZywnosc: rationZysk/.tes
 ok(!/podatekSkarbiec: 0/.test(mainTs) && !/wstrzymania: \[\]/.test(mainTs), 'main.ts: brak atrap `podatekSkarbiec: 0` / `wstrzymania: []`');
 ok(!/decideAiOwnerBalance\(turn, aiSkarb/.test(mainTs), 'main.ts: brak rownowazenia PO ticku w bankowaniu AI');
 ok(/const project = /.test(fnBody), 'main.ts: funkcja project() (jedna projekcja na wlasciciela; what-if tylko przy minusie)');
-ok(/!aiNnsHoldOwners\.has\(ownerId\)\s*&&\s*shouldAIPurchaseUnit/.test(mainTs), 'main.ts: bramka zakupow AI (aiNnsHoldOwners)');
+// R-WEB-TEST-DEBT-Q13 r5: miedzy bramka NNS a shouldAIPurchaseUnit stoi dzis bramka runway/garnizonu (`&& (isGarrisonPriority || aiUpkeepRunwayAllows(..))`, FALA 857/UPKEEP) -- NNS nadal pierwszy czlon koniunkcji.
+ok(/!aiNnsHoldOwners\.has\(ownerId\)\s*&&[^;]{0,200}?&&\s*shouldAIPurchaseUnit/.test(mainTs), 'main.ts: bramka zakupow AI (aiNnsHoldOwners)');
 ok(/if \(aiNnsHoldOwners\.has\(ownerId\)\) continue;\s*\n\s*const def = data\.buildings\.find/.test(mainTs), 'main.ts: wstrzymanie budowy AI (aiNnsHoldOwners)');
 ok(/function disbandAiSupportUnit\(unitId: string, ownerId: number\)/.test(mainTs), 'main.ts: disbandAiSupportUnit zdefiniowana');
 ok(/units\.splice\(idx, 1\);\s*\n\s*if \(wasGarnizon && cityForGarnizon\) syncGarnizonForCity\(cityForGarnizon\);\s*\n\s*clearPlannedMarch\(unitId, true\);/.test(mainTs), 'main.ts: disbandAiSupportUnit sprzata garnizon i stan marszu');

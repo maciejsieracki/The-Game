@@ -76,7 +76,11 @@ async function buildBundle(entryContents, outfile, extraPlugins) {
     platform: 'node',
     format: 'cjs',
     target: 'node18',
-    loader: { '.json': 'json' },
+    loader: { '.json': 'json', '.svg': 'text' },
+    // R-WEB-TEST-DEBT-Q13 r5: brandAssets/leaderPortraits (import.meta.glob = konstrukcja Vite) trafiaja do bundla
+    // przez inne importy niz stub -- glob zastapiony pustym obiektem (ikony/portrety nie sa przedmiotem testu Escape).
+    define: { 'import.meta.glob': '__viteGlobStub' },
+    banner: { js: 'const __viteGlobStub = () => ({});' },
     outfile,
     absWorkingDir: GRA_ROOT,
     logLevel: 'silent',

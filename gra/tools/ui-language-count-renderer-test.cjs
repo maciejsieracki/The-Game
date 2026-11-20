@@ -43,12 +43,20 @@ async function main() {
         }
         return undefined;
       });
-      build.onResolve({ filter: /game\/diplomacy-display$/ }, () => ({ path: 'diplo-display-stub', namespace: 'ui-test-stub' }));
+      // R-WEB-TEST-DEBT-Q13 r5: stub tylko dla diplomacyDealDisplay (oryginalny cel); inne moduly UI (diploListHud) importuja
+      // wiele symboli diplomacy-display -- te dostaja prawdziwy modul.
+      build.onResolve({ filter: /game\/diplomacy-display$/ }, args => (/\/ui\/diplomacyDealDisplay\.ts$/.test(args.importer)
+        ? { path: 'diplo-display-stub', namespace: 'ui-test-stub' } : undefined));
       build.onLoad({ filter: /.*/, namespace: 'ui-test-stub' }, args => {
         if (args.path === 'brand-assets-stub') return { loader: 'js', contents: `
           export const brandIconSvg = () => '';
           export const mapResourceIconSvg = () => '';
           export const unitIconSvg = () => '';
+          // R-WEB-TEST-DEBT-Q13 r5: nowe importy ikon w modulach UI wciagnietych do bundla (buildModeHud/cityPanel/diploUiSkin).
+          export const improvementIconSvg = () => '';
+          export const buildingIconSvg = () => '';
+          export const civIconSvg = () => '';
+          export const terrainIconSvg = () => '';
         ` };
         if (args.path === 'unit-setup-stub') return { loader: 'js', contents: 'export const categoryOf = () => "piechota";' };
         if (args.path === 'diplo-display-stub') return { loader: 'js', contents: `
@@ -68,6 +76,8 @@ async function main() {
   await esbuild.build({
     entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs', outfile: BUNDLE,
     absWorkingDir: GRA, loader: { '.json': 'json', '.svg': 'text', '.css': 'text' },
+    // R-WEB-TEST-DEBT-Q13 r5: import.meta.glob (Vite) w modulach UI wciagnietych do bundla -> pusty stub.
+    define: { 'import.meta.glob': '__viteGlobStub' }, banner: { js: 'const __viteGlobStub = () => ({});' },
     plugins: [stubs], logLevel: 'silent',
   });
 

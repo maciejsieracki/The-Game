@@ -219,7 +219,10 @@ console.log('9. Wiazanie main.ts (po zrodle)');
   ok(/buildCityCaptureReportRows\(\{\s*kind: 'eliminacja'/.test(body) && /annexSpoils\.surowcePrzejete/.test(body), '9f: komunikat budowany z wierszy bilansu (te same co okno zdobycia)');
   ok(/recordCivElimEvent\(csOwnerId, csLabel, annexDetails\)/.test(body), '9g: komunikat niesie annexDetails');
   const callers = (stripComments(mainSrc).match(/annexCityStateToOwner\(/g) || []).length;
-  eq(callers, 4, '9h: definicja + 3 wywolania (propozycja gracz/AI, AI MP, AI major) -- wszystkie przez jedna funkcje');
+  // R-WEB-TEST-DEBT-Q13 r5: +1 wywolanie = hak testowy civTest (`annex: (csOwnerId, annexerId) => annexCityStateToOwner(..)`, main.ts), nie sciezka gry;
+  // sciezki gry (propozycja gracz/AI, AI MP, AI major) nadal 3 -- sprawdzane osobno ponizej.
+  eq(callers, 5, '9h: definicja + 3 wywolania gry (propozycja gracz/AI, AI MP, AI major) + 1 hak testowy civTest -- wszystkie przez jedna funkcje');
+  ok(/annex:\s*\(csOwnerId: number, annexerId: number\): void => \{ annexCityStateToOwner\(csOwnerId, annexerId\); \}/.test(mainSrc), '9h2: czwarte wywolanie to hak testowy civTest');
   ok(/if \(annexPay\.ok\) \{\s*capitalCaptureResourceAccess\.setTreasury\(\s*responderId,\s*Math\.max\(0, capitalCaptureResourceAccess\.getTreasury\(responderId\) - koszt\)/.test(stripComments(mainSrc)), '9i: cena aneksji odjeta ze skarbca MP przed przejeciem (nie wraca do platnika)');
 }
 

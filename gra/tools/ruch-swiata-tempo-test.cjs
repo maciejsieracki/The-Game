@@ -164,15 +164,18 @@ assert(
   'main.ts: start nowej gry -> player.ruchSwiataPace = params.advanced?.ruchSwiataPace ?? \'krotki\'',
 );
 assert(
-  /player\.ruchSwiataPace = saved\.gracz\.ruchSwiataPace\s*\n\s*\?\? \(saved\.meta\?\.newGameParams as NewGameParams \| undefined\)\?\.advanced\?\.ruchSwiataPace\s*\n\s*\?\? 'krotki';/.test(mainSrc),
+  // R-WEB-TEST-DEBT-Q13 r5: hotseat (R-HOTSEAT-ETAP6*) -- load jest dzis per fotel: `ps.ruchSwiataPace = g.ruchSwiataPace ?? newGameParams.advanced?.ruchSwiataPace ?? 'krotki'`
+  // (g = wpis gracza z zapisu v3; ten sam lancuch fallbackow, stary zapis bez pola = 'krotki').
+  /ps\.ruchSwiataPace = g\.ruchSwiataPace\s*\n\s*\?\? \(saved\.meta\?\.newGameParams as NewGameParams \| undefined\)\?\.advanced\?\.ruchSwiataPace\s*\n\s*\?\? 'krotki';/.test(mainSrc),
   'main.ts: load -> player.ruchSwiataPace = saved.gracz.ruchSwiataPace ?? newGameParams.advanced?.ruchSwiataPace ?? \'krotki\' (stary zapis bez pola = zero zmiany zachowania)',
 );
 
 // Save serializuje ruchSwiataPace (persystencja miedzy sesjami) — bez tego kazdy load
 // spadalby na fallback newGameParams zamiast na realna wartosc z zapisu.
 assert(
-  /gracz: \{[\s\S]{0,500}?ruchSwiataPace: player\.ruchSwiataPace,/.test(mainSrc),
-  'main.ts: serializacja zapisu gry (gracz: {...}) zawiera ruchSwiataPace: player.ruchSwiataPace',
+  // R-WEB-TEST-DEBT-Q13 r5: zapis jest dzis per fotel (graczeSave: GraczSaveV3 z playerStateByHuman) -- `ruchSwiataPace: ps.ruchSwiataPace`.
+  /graczeSave: Array<\[number, GraczSaveV3\]>[\s\S]{0,900}?ruchSwiataPace: ps\.ruchSwiataPace,/.test(mainSrc),
+  'main.ts: serializacja zapisu gry (graczeSave per fotel) zawiera ruchSwiataPace: ps.ruchSwiataPace',
 );
 
 // playerState.ts — PlayerState.ruchSwiataPace + domyslne 'krotki' w createPlayerState().

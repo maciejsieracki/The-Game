@@ -133,7 +133,8 @@ console.log('Scenariusz G: wpięcie w main.ts (3 wywołania findSplitDestHexes +
   // Test źródłowy: mutacja wpięcia (cofnięcie splitTargetPassable na isHexPassableForUnit
   // w którymkolwiek z 3 wywołań, usunięcie guardu onSplit lub etykiety) musi czerwienić test.
   const mainSrc = fs.readFileSync(path.join(ROOT, 'src', 'main.ts'), 'utf8');
-  const callRe = /findSplitDestHexes\(\s*units,\s*[\w.]+,\s*[\w.]+,\s*(\w+)\(/g;
+  // R-WEB-TEST-DEBT-Q13 r5: pierwszy argument to dzis unitsForViewer(units, ME()) (R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1 r5; ukryta zasadzka), z opcjonalnym komentarzem.
+  const callRe = /findSplitDestHexes\(\s*unitsForViewer\(units,\s*ME\(\)\),(?:\s*\/\/[^\n]*)?\s*[\w.]+,\s*[\w.]+,\s*(\w+)\(/g;
   const predicates = [];
   let m;
   while ((m = callRe.exec(mainSrc)) !== null) predicates.push(m[1]);

@@ -139,7 +139,7 @@ const preBattleSrc = fs.readFileSync(PREBATTLE_TS, 'utf8');
     const lineStart = callIdx >= 0 ? mainSrc.lastIndexOf('\n', callIdx) + 1 : -1;
     const indent = lineStart >= 0 ? (mainSrc.slice(lineStart, callIdx).match(/^\s*/) || [''])[0] : '';
     const endIdx = callIdx >= 0 ? mainSrc.indexOf('\n' + indent + '});', callIdx) : -1;
-    const segment = (endIdx > callIdx && endIdx - callIdx < 4000) ? mainSrc.slice(callIdx, endIdx) : '';
+    const segment = (endIdx > callIdx && endIdx - callIdx < 6000) ? mainSrc.slice(callIdx, endIdx) : '' /* R-WEB-TEST-DEBT-Q13 r5: wywolania urosly (4171/4658 zn.); limit to tylko bezpiecznik rozmiaru */;
     ok(segment.length > 0 && /defaultAction:\s*'manual'/.test(segment) && !/\bauto:\s*true\b/.test(segment),
       '[A5] ' + marker + ': showPreBattle ma defaultAction:\'manual\' i BEZ auto:true (ręczna akcja gracza, nigdy nie odraczana)');
   }

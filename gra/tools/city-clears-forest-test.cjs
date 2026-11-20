@@ -113,8 +113,12 @@ function bodyAfter(anchor) {
     'brak przy liniach ' + JSON.stringify(missing.map(i => i + 1)));
 }
 {
+  // R-WEB-TEST-DEBT-Q13 r5: finalizeCityFounding to dzis opakowanie (watch cudu, R-WEB-WONDER-TRANSFER-FOLLOWUP-Q1) wokol finalizeCityFoundingCore;
+  // applyCityFoundingToHex wola Core -- lancuch finalizeCityFounding -> Core -> applyCityFoundingToHex.
   const f = bodyAfter('function finalizeCityFounding(');
-  ok(f !== null && /applyCityFoundingToHex\(/.test(f), 'B2 finalizeCityFounding woła applyCityFoundingToHex (czyszczenie lasu)');
+  const fCore = bodyAfter('function finalizeCityFoundingCore(');
+  ok(f !== null && /finalizeCityFoundingCore\(/.test(f)
+    && fCore !== null && /applyCityFoundingToHex\(/.test(fCore), 'B2 finalizeCityFounding (przez finalizeCityFoundingCore) woła applyCityFoundingToHex (czyszczenie lasu)');
 }
 {
   const e = bodyAfter('function enforceNoForestUnderCities(');

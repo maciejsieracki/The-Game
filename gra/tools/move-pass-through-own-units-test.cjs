@@ -22,9 +22,10 @@ const abs = (rel) => path.join(SRC, rel);
 const SETUP = 'units/setup.ts';
 const MUTS = {
   OWN_BLOCKS: { name: 'przywrocona blokada WLASNYCH jednostek', rel: SETUP,
-    from: 'if (u.ownerId !== moverOwnerId) occ.add(keyOf(u.q, u.r));', to: 'occ.add(keyOf(u.q, u.r));' },
+    // R-WEB-TEST-DEBT-Q13 r5: buildMoveOccupancy ma teraz blok z wyjatkiem zasadzki (isAtWar) -- mutacja na warunku `if`.
+    from: 'if (u.ownerId !== moverOwnerId) {\n      if (isAtWar', to: 'if (true) {\n      if (isAtWar' },
   FOREIGN_FREE: { name: 'zniesiona blokada OBCYCH jednostek', rel: SETUP,
-    from: 'if (u.ownerId !== moverOwnerId) occ.add(keyOf(u.q, u.r));', to: 'if (false) occ.add(keyOf(u.q, u.r));' },
+    from: 'if (u.ownerId !== moverOwnerId) {\n      if (isAtWar', to: 'if (false) {\n      if (isAtWar' },
   MERGE_ON_PASS: { name: 'segment konczy sie na wlasnej jednostce (propozycja laczenia przy przejsciu)', rel: SETUP,
     from: 'if (segment.length >= fullLength) return segment;', to: 'return segment;' },
 };

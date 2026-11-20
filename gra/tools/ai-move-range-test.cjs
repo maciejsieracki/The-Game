@@ -272,7 +272,8 @@ console.log('\n--- E: koszt obliczen: PRZED (mutant = path[0]) vs PO, ten sam st
 console.log('\n--- G: okablowanie w main.ts (statyczne) ---');
 {
   const mainTs = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
-  assert(/truncatePath:\s*\(fullPath\)\s*=>\s*u\.ruchLeft > 0/.test(mainTs),
+  // R-WEB-TEST-DEBT-Q13 r5: truncatePath to dzis blok: cut zasadzki (aiAmbushCutter) -> trimPathToStackRoom(.. u.ruchLeft > 0 ? truncatePathWithinBudget(fullPath, u.ruchLeft, ..) : fullPath ..).
+  assert(/truncatePath:\s*\(fullPathIn\)\s*=>\s*\{[\s\S]{0,260}u\.ruchLeft > 0\s*\?\s*truncatePathWithinBudget\(fullPath, u\.ruchLeft/.test(mainTs),
     'G1 main.ts: executeAiCityMove dostaje truncatePath (przycinanie do ruchLeft przed zerowaniem)');
 }
 

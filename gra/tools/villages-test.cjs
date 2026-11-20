@@ -421,7 +421,8 @@ console.log('\n11. checkVillageRewardAt (main.ts) -- bramka tekstowa wpięcia');
     'NIE ocenia terytorium na heksie CHATKI: brak territoryOwnerAtLive(q, r)',
   );
   assert(
-    /pickVillageReward\(Math\.random\(\), \{ excludeUnit \}\)/.test(fnBody),
+    // R-WEB-TEST-DEBT-Q13 r5: losowanie nagrody chatki idzie dzis przez deterministyczny strumien gry (gameStreamRng(_gameSeed, turn, 'village-reward:q:r', ownerId)) zamiast Math.random().
+    /pickVillageReward\(gameStreamRng\(_gameSeed, turn, 'village-reward:' \+ q \+ ':' \+ r, ownerId\)\(\), \{ excludeUnit \}\)/.test(fnBody),
     'pickVillageReward wołane z opcją { excludeUnit }',
   );
   // Runda 2: `era` jest teraz zmienną owner-aware (player.era dla gracza,

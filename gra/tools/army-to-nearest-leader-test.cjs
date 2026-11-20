@@ -392,7 +392,8 @@ function moveOf(cmds, id) { return cmds.find((c) => c.type === 'move' && c.unitI
     mainTs.includes('pickNearestLeaderForUnit(u) ?? nearestLivingGeneral(u, units)')
     && mainTs.includes('issueGeneralQuickFollow(u, commander ? [u, commander] : units'));
   check('E4 main.ts: syncGeneralMarchTargets nadpisuje cel marszu najblizszym po trasie',
-    /const best = pickNearestLeaderForUnit\(unit\);/.test(mainTs)
+    // R-WEB-TEST-DEBT-Q13 r5: wybor wodza przeszedl przez pickRallyGeneral (rally gen. z zamowienia) z fallbackiem pickNearestLeaderForUnit.
+    /const best = pickRallyGeneral\(unit, units, \(\) => pickNearestLeaderForUnit\(unit\)\);/.test(mainTs)
     && mainTs.includes('pickNearestLeaderUnit(u, units, id => plannedMarches.has(id)'));
 
   console.log(`\nWYNIK: ${passed} PASS, ${failed} FAIL`);
