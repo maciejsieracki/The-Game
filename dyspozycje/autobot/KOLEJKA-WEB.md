@@ -131,3 +131,5 @@ FALA 889 WDROŻONA (ERAWARPLAYER; ROBOCZA MD5 b69800bb, main 7cf570839). W TOKU:
 VERIFYLIVEB zintegrowany do main aba2ddd02 (testy live ustawien, bez deployu). NASTĘPNE po VERIFYLIVEA: VERIFYLIVEB-2 (hak civTest dla applyMenuParams + rekrutacja/utrzymanie/zamiana żywności/koszt budowy; przebieg przez kreator), potem VERIFY-LIVE-B pomiar flag OFF/ON + 3 poziomy dyplomacji.
 
 VERIFYLIVEA zintegrowany do main d42ec8560 (bez deployu). W TOKU 2026-11-20 ~02:50: TESTDEBTQ13, VERIFYLIVEB2 (hak __settingsLive + kreator na żywo). NASTĘPNE: pomiar flag OFF/ON + 3 poziomy dyplomacji (VERIFY-LIVE-B pomiar), licznik rozwiązań jednostek + seed 7 pomiaru kosztów jednostek (osobny temat z hakiem).
+
+VERIFYLIVEB2 zintegrowany do main 2ae9a3b87 (hak __settingsLive; bez deployu). W TOKU 2026-11-20 ~03:20: TESTDEBTQ13 r3, DIPLOMEASURE (runner wznawialny + flagi OFF/ON). NASTĘPNE (po DIPLOMEASURE, ten sam plik runnera): pomiar 3 poziomów „Dyplomacja i wojna” przez __settingsLive.startNewGame (90 tur × 2 ziarna). STONE-ERA-ENTRY-40: zamknięty bez skutku.
