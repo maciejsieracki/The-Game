@@ -37,3 +37,40 @@ export function applyUnitCostPace(
   const mnoznik = typeof pace === 'number' ? pace : KOSZT_JEDNOSTEK_PACE[pace];
   return Math.max(1, Math.round(bazowyKoszt * mnoznik));
 }
+
+/**
+ * R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1 (decyzja właściciela 2026-11-19):
+ * mnożnik tempa „Koszty jednostek” dla UTRZYMANIA jednostek (Pieniądz, surowce,
+ * żywność). Ten sam współczynnik co dla rekrutacji (KOSZT_JEDNOSTEK_PACE), bez
+ * zaokrąglania — wołający stosuje go jako ostatni czynnik łańcucha.
+ * Brak / nieznana wartość = Niski (×1), czyli dawne liczby (stare zapisy).
+ */
+export function mnoznikUtrzymaniaJednostek(
+  pace: KosztJednostekPace | number | null | undefined,
+): number {
+  if (typeof pace === 'number') return Number.isFinite(pace) && pace > 0 ? pace : 1;
+  if (pace === 'niski' || pace === 'normalny' || pace === 'wysoki') return KOSZT_JEDNOSTEK_PACE[pace];
+  return KOSZT_JEDNOSTEK_PACE.niski;
+}
+
+/**
+ * Źródło tempa „Koszty jednostek" dla warstwy UI i AI (karty, HUD, planowanie).
+ * main.ts rejestruje getter stanu gry (player.kosztJednostekPace) raz po starcie;
+ * brak rejestracji = Niski (×1), czyli dawne liczby. Wyjątki getter-a są połykane.
+ */
+let _kosztJednostekPaceResolver: (() => KosztJednostekPace | undefined) | null = null;
+
+export function setKosztJednostekPaceResolver(
+  resolver: (() => KosztJednostekPace | undefined) | null,
+): void {
+  _kosztJednostekPaceResolver = resolver;
+}
+
+export function biezacyKosztJednostekPace(): KosztJednostekPace {
+  try {
+    const p = _kosztJednostekPaceResolver?.();
+    return p === 'niski' || p === 'normalny' || p === 'wysoki' ? p : 'niski';
+  } catch {
+    return 'niski';
+  }
+}

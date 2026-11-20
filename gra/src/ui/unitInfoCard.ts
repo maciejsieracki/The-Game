@@ -34,6 +34,7 @@ import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
 import { unitEngineStats } from './unitEngineStats';
 import { isPiercingShotShooter } from '../game/combat';
 import { unitFoodCardValue } from '../game/economy-upkeep';
+import { biezacyKosztJednostekPace } from '../game/unit-cost-tempo';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 export const UNIT_3D_RENDER_HOOK = 'buildUnitModel';
@@ -315,7 +316,7 @@ function _legacyBuildUnitInfoCard(
   appendRow(economy, 'Utrzymanie surowca/turę', hasValue(unit['Utrzymanie surowiec'])
     ? `${text(unit['Utrzymanie surowiec'])} × ${text(unit['Utrzymanie surowiec (ilość)'])}` : null);
   appendRow(economy, 'Ludność', unit.Ludność);
-  appendRow(economy, 'Żywność/turę', unitFoodCardValue(unit));
+  appendRow(economy, 'Żywność/turę', unitFoodCardValue(unit, biezacyKosztJednostekPace()));
   commitSection(card, economy);
 
   const requirements = appendSection('Wymagania i kontry');

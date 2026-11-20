@@ -8,6 +8,7 @@ import type { EconomyTickResult, EconUnit, CityEconomyTick, OwnerEraResolver } f
 import { militaryFoodConsumptionWithSpichlerz, recomputeCityFoodBalancesInEcon } from './turn-economy';
 import type { UpkeepParams, UnitFoodTable } from './economy-upkeep';
 import { magazynEraMultiplier } from './economy-upkeep';
+import type { KosztJednostekPace } from './unit-cost-tempo';
 import { isBarbarian } from './barbarians';
 import { SPICHLERZ_EMPIRE_CAP_I, SPICHLERZ_EMPIRE_CAP_II_FULL, resolveSpichlerzCityBonusState } from './building-resource-gate';
 import type { SpichlerzCityBonusState } from './building-resource-gate';
@@ -209,6 +210,8 @@ export function advanceEmpireFood(
    * (main.ts::empireEpochForOwner) dla gracza (ownerId=0) i AI, zero gałęzi.
    */
   resolveOwnerEra?: OwnerEraResolver,
+  /** R-WEB-ECONOMY-UNIT-UPKEEP-COST-PACE-MULT-Q1: tempo „Koszty jednostek" (żywność jednostek; domyślnie Niski ×1). */
+  kosztJednostekPace: KosztJednostekPace = 'niski',
 ): EmpireFoodTickResult {
   const magazynCountByOwner = countMagazynByOwner(econ.perCity, builtByCity);
   const perOwner: EmpireFoodTick[] = [];
@@ -274,7 +277,9 @@ export function advanceEmpireFood(
 
     const nadwyzka = uprawaHodowla - wyzwienieLudnosci;
     const spichlerzStolicy = central;
-    const kosztArmii = militaryFoodConsumptionWithSpichlerz(units, ownerId, upkeep, foodTable);
+    const kosztArmii = militaryFoodConsumptionWithSpichlerz(units, ownerId, upkeep, foodTable, {
+      kosztJednostekPace,
+    });
     central -= kosztArmii;
 
     const ownerEra = resolveOwnerEra ? resolveOwnerEra(ownerId) : 1;

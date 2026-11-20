@@ -120,6 +120,7 @@ import {
   type CompositionUnitDef,
 } from './ai-army-composition';
 import { unitRecruitUpkeepReserve } from './economy-upkeep';
+import { biezacyKosztJednostekPace } from './unit-cost-tempo';
 import type { AiTargetMemoryEntry } from './ai-fog';
 import {
   planArmyConcentration, planArmyFrontMerge, clusterUnitsByProximity, planWarReplacementRally,
@@ -2855,7 +2856,7 @@ function collectMilitaryRecruitStockDeficits(
     if (canAfford(cityId, c.id)) continue;
     const unitDef = data.units.find(u => u.Jednostka === c.id);
     const cost = unitStockCost(unitDef);
-    const reserve = unitRecruitUpkeepReserve(unitDef);
+    const reserve = unitRecruitUpkeepReserve(unitDef, 1, biezacyKosztJednostekPace());
     for (const k of Object.keys(cost)) keys.add(k);
     for (const k of Object.keys(reserve)) keys.add(k);
   }

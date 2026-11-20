@@ -25,6 +25,7 @@
 import type { EconomyTickResult, EconUnit, OwnerEraResolver } from './turn-economy';
 import { sumEconomyForOwner, sumEconomyForPlayerCities } from './turn-economy';
 import type { UpkeepParams, UnitFoodTable } from './economy-upkeep';
+import { biezacyKosztJednostekPace } from './unit-cost-tempo';
 import {
   advanceEmpireFood,
   restoreEmpireFoodRuntime,
@@ -311,6 +312,7 @@ export function projectEmpireFoodAfterTick(input: NnsFoodProjectionInput): NnsFo
     const res = advanceEmpireFood(
       input.econ, input.units, clone, input.upkeep, input.params,
       input.foodTable, input.builtByCity, input.resolveOwnerEra,
+      biezacyKosztJednostekPace(),
     );
     const t = res.byOwner.get(input.ownerId);
     if (!t) return { spichlerzPo: obecny, zapasyPoRealne: obecny, glodWojska: false, kosztArmii: 0 };
