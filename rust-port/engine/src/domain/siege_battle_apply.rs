@@ -59,9 +59,14 @@
 //!   musi dodać ich jednostki i wojnę z każdym (temat stanu barbarzyńców), bez zmian w tej części.
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::OnceLock;
 
-use civ_view_model::battle::{BattleActionDto, BattleFrameDto, BattleWinner};
+use civ_view_model::battle::{
+    BattleActionDto, BattleFortDto, BattleFrameDto, BattleGridDto, BattleSetupDto,
+    BattleSide as VmBattleSide, BattleUnitSpawnDto, BattleWinner, FortKind,
+    TowerMaterial as VmTowerMaterial,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::data::civilizations::parse_civ_matrix;
@@ -73,13 +78,20 @@ use crate::domain::diplomacy::RelationStatus;
 use crate::domain::playable::{
     MovementPoints, PlayableReplaceUnit, PlayableSiegeMachineKind, PlayableState, PlayableTerrain,
 };
+use crate::domain::battle_setup_units::Side;
+use crate::domain::city_towers::strongest_ranged_unit_for_era;
 use crate::domain::siege_battle_adapter::{
-    collect_siege_rosters, is_civilian_unit, AdapterError, RosterUnit, SiegeRosterInput,
+    collect_siege_rosters, is_civilian_unit, unit_def_index, AdapterError, RosterUnit,
+    SiegeRosterInput, BATTLE_MAX_PER_SIDE,
 };
+use crate::domain::siege_battle_adapter_body::clamp_era;
 use crate::domain::siege_battle_adapter_playable::{
     siege_inputs_from_playable, PlayableSiegeInputs,
 };
-use crate::domain::siege_battle_adapter_unit::OwnerContext;
+use crate::domain::siege_battle_adapter_unit::{
+    roster_to_battle_units, AdapterBattleUnit, OwnerContext, RosterBattleCtx,
+};
+use crate::domain::siege_city_fortification::CityFortificationKind;
 use crate::domain::siege_battle_session::{
     SessionData, SessionError, SessionOutcome, SessionPhase, SiegeBattleSession, SiegeSessionInput,
 };
@@ -140,6 +152,9 @@ pub enum SiegeBattleError {
     NotAtWar { city_id: u64 },
     /// D-WIRB-8: bitwa zamknięta bez zastosowania wyniku (stan bez zmian); `reason` = błąd źródłowy.
     Aborted { city_id: u64, reason: String },
+    /// P4-1I6-DLUGI (D-1I6D-3): wołający zażądał porzucenia bitwy (`AbortSiegeBattle`, np. klient nie zbudował sceny);
+    /// źródło [`Self::Aborted`] w `FinishSiegeBattle`, nie wychodzi poza grę.
+    AbortRequested,
 }
 
 impl std::fmt::Display for SiegeBattleError {
@@ -193,6 +208,7 @@ impl std::fmt::Display for SiegeBattleError {
                 f,
                 "siege battle at city {city_id} closed without a result: {reason}"
             ),
+            Self::AbortRequested => f.write_str("siege battle aborted by the caller"),
         }
     }
 }
@@ -214,6 +230,186 @@ impl From<AdapterError> for SiegeBattleError {
     }
 }
 
+/// P4-1I6-DLUGI (D-1I6-ERR): błąd komendy bitwy oblężniczej na drucie mostu — kod i dane, nie tekst
+/// (`BridgeError.siegeBattle`). Pola `detail` niosą wyłącznie opis błędów wewnętrznych (sesja, adapter, producent),
+/// których typy nie są częścią kontraktu; `NotFinished` ma własny kod (D-WIRB-8: bitwa trwa, dostępne `Skip`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(
+    tag = "code",
+    rename_all = "snake_case",
+    rename_all_fields = "camelCase"
+)]
+pub enum SiegeBattleErrorDto {
+    /// [`SiegeBattleError::NoActiveBattle`].
+    NoActiveBattle,
+    /// [`SiegeBattleError::BattleInProgress`].
+    BattleInProgress { city_id: u64 },
+    /// [`SiegeBattleError::NotHumanBesieger`].
+    NotHumanBesieger { unit_id: u64 },
+    /// [`SiegeBattleError::CityNotFound`].
+    CityNotFound { city_id: u64 },
+    /// [`SiegeBattleError::UnitNotFound`].
+    UnitNotFound { unit_id: u64 },
+    /// [`SiegeBattleError::CityTileMissing`].
+    CityTileMissing { city_id: u64 },
+    /// [`SiegeBattleError::NoDefendersWallIntact`].
+    NoDefendersWallIntact { city_id: u64 },
+    /// [`SiegeBattleError::NoDefendersCaptureRequested`].
+    NoDefendersCaptureRequested { city_id: u64 },
+    /// `SiegeBattleError::Session(SessionError::NotFinished)`: `Finish` przed końcem bitwy.
+    NotFinished,
+    /// Inny błąd sesji (`detail` = opis `SessionError`).
+    Session { detail: String },
+    /// [`SiegeBattleError::Adapter`] (`detail` = opis `AdapterError`).
+    Adapter { detail: String },
+    /// [`SiegeBattleError::Producer`].
+    Producer { detail: String },
+    /// [`SiegeBattleError::NotEnemyCity`].
+    NotEnemyCity { city_id: u64 },
+    /// [`SiegeBattleError::NotAdjacent`].
+    NotAdjacent { unit_id: u64, city_id: u64 },
+    /// [`SiegeBattleError::NotSiegeAnchor`].
+    NotSiegeAnchor { unit_id: u64, besieger_id: u64 },
+    /// [`SiegeBattleError::AnchorCannotAttack`].
+    AnchorCannotAttack { unit_id: u64, reason: String },
+    /// [`SiegeBattleError::NotAtWar`].
+    NotAtWar { city_id: u64 },
+    /// [`SiegeBattleError::Aborted`]: bitwa zamknięta bez wyniku, stan gry bez zmian.
+    Aborted { city_id: u64, reason: String },
+    /// [`SiegeBattleError::AbortRequested`] (nie wychodzi z gry: `Finish` zamienia go na `Aborted`).
+    AbortRequested,
+}
+
+impl SiegeBattleErrorDto {
+    /// D-WIRB-8: `Finish` przed końcem bitwy (bitwa trwa, dostępne `Skip`).
+    #[must_use]
+    pub const fn is_not_finished(&self) -> bool {
+        matches!(self, Self::NotFinished)
+    }
+}
+
+impl From<&SiegeBattleError> for SiegeBattleErrorDto {
+    fn from(e: &SiegeBattleError) -> Self {
+        match e {
+            SiegeBattleError::NoActiveBattle => Self::NoActiveBattle,
+            SiegeBattleError::BattleInProgress { city_id } => Self::BattleInProgress {
+                city_id: *city_id,
+            },
+            SiegeBattleError::NotHumanBesieger { unit_id } => Self::NotHumanBesieger {
+                unit_id: *unit_id,
+            },
+            SiegeBattleError::CityNotFound(id) => Self::CityNotFound { city_id: *id },
+            SiegeBattleError::UnitNotFound(id) => Self::UnitNotFound { unit_id: *id },
+            SiegeBattleError::CityTileMissing(id) => Self::CityTileMissing { city_id: *id },
+            SiegeBattleError::NoDefendersWallIntact { city_id } => Self::NoDefendersWallIntact {
+                city_id: *city_id,
+            },
+            SiegeBattleError::NoDefendersCaptureRequested { city_id } => {
+                Self::NoDefendersCaptureRequested { city_id: *city_id }
+            }
+            SiegeBattleError::Session(SessionError::NotFinished) => Self::NotFinished,
+            SiegeBattleError::Session(s) => Self::Session {
+                detail: s.to_string(),
+            },
+            SiegeBattleError::Adapter(a) => Self::Adapter {
+                detail: a.to_string(),
+            },
+            SiegeBattleError::Producer(p) => Self::Producer { detail: p.clone() },
+            SiegeBattleError::NotEnemyCity { city_id } => Self::NotEnemyCity { city_id: *city_id },
+            SiegeBattleError::NotAdjacent { unit_id, city_id } => Self::NotAdjacent {
+                unit_id: *unit_id,
+                city_id: *city_id,
+            },
+            SiegeBattleError::NotSiegeAnchor {
+                unit_id,
+                besieger_id,
+            } => Self::NotSiegeAnchor {
+                unit_id: *unit_id,
+                besieger_id: *besieger_id,
+            },
+            SiegeBattleError::AnchorCannotAttack { unit_id, reason } => Self::AnchorCannotAttack {
+                unit_id: *unit_id,
+                reason: (*reason).to_owned(),
+            },
+            SiegeBattleError::NotAtWar { city_id } => Self::NotAtWar { city_id: *city_id },
+            SiegeBattleError::Aborted { city_id, reason } => Self::Aborted {
+                city_id: *city_id,
+                reason: reason.clone(),
+            },
+            SiegeBattleError::AbortRequested => Self::AbortRequested,
+        }
+    }
+}
+
+impl std::fmt::Display for SiegeBattleErrorDto {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::NotFinished => write!(
+                f,
+                "{}",
+                SiegeBattleError::Session(SessionError::NotFinished)
+            ),
+            Self::Session { detail } => write!(f, "siege battle: {detail}"),
+            Self::Adapter { detail } => write!(f, "siege battle roster: {detail}"),
+            Self::Producer { detail } => write!(f, "siege battle: {detail}"),
+            Self::AnchorCannotAttack { unit_id, reason } => {
+                write!(f, "siege storm: unit {unit_id} cannot attack ({reason})")
+            }
+            other => match other.to_error() {
+                Some(e) => write!(f, "{e}"),
+                None => write!(f, "{other:?}"),
+            },
+        }
+    }
+}
+
+impl SiegeBattleErrorDto {
+    /// Błąd biblioteki dla kodów bez pola `detail` (te same teksty `Display`).
+    fn to_error(&self) -> Option<SiegeBattleError> {
+        Some(match self {
+            Self::NoActiveBattle => SiegeBattleError::NoActiveBattle,
+            Self::BattleInProgress { city_id } => SiegeBattleError::BattleInProgress {
+                city_id: *city_id,
+            },
+            Self::NotHumanBesieger { unit_id } => SiegeBattleError::NotHumanBesieger {
+                unit_id: *unit_id,
+            },
+            Self::CityNotFound { city_id } => SiegeBattleError::CityNotFound(*city_id),
+            Self::UnitNotFound { unit_id } => SiegeBattleError::UnitNotFound(*unit_id),
+            Self::CityTileMissing { city_id } => SiegeBattleError::CityTileMissing(*city_id),
+            Self::NoDefendersWallIntact { city_id } => SiegeBattleError::NoDefendersWallIntact {
+                city_id: *city_id,
+            },
+            Self::NoDefendersCaptureRequested { city_id } => {
+                SiegeBattleError::NoDefendersCaptureRequested { city_id: *city_id }
+            }
+            Self::NotEnemyCity { city_id } => SiegeBattleError::NotEnemyCity { city_id: *city_id },
+            Self::NotAdjacent { unit_id, city_id } => SiegeBattleError::NotAdjacent {
+                unit_id: *unit_id,
+                city_id: *city_id,
+            },
+            Self::NotSiegeAnchor {
+                unit_id,
+                besieger_id,
+            } => SiegeBattleError::NotSiegeAnchor {
+                unit_id: *unit_id,
+                besieger_id: *besieger_id,
+            },
+            Self::NotAtWar { city_id } => SiegeBattleError::NotAtWar { city_id: *city_id },
+            Self::Aborted { city_id, reason } => SiegeBattleError::Aborted {
+                city_id: *city_id,
+                reason: reason.clone(),
+            },
+            Self::AbortRequested => SiegeBattleError::AbortRequested,
+            Self::AnchorCannotAttack { .. }
+            | Self::NotFinished
+            | Self::Session { .. }
+            | Self::Adapter { .. }
+            | Self::Producer { .. } => return None,
+        })
+    }
+}
+
 /// Czas ścienny kroku czasu rzeczywistego (ms). `Eq` ręczne (jak `MovementPoints`): JSON nie niesie `NaN`/`Infinity`,
 /// a wartości ujemne i nieskończone odrzuca [`SiegeBattleSession::step`] (`InvalidData`) przed zmianą stanu.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -232,6 +428,8 @@ pub enum SiegeBattlePhaseDto {
     Finished,
     /// Wynik zastosowany do stanu gry (`FinishSiegeBattle`), bitwa zamknięta.
     Applied,
+    /// P4-1I6-DLUGI (D-1I6D-3): bitwa porzucona komendą `AbortSiegeBattle` (stan gry bez zmian, bitwa zamknięta).
+    Aborted,
 }
 
 /// Jednostka sceny: identyfikator bitwy (`UnitId` w akcjach i ramce) → jednostka mapy (`RuntimeUnit.id`).
@@ -317,6 +515,44 @@ pub struct SiegeBattlePayload {
     /// Wynik zastosowany do stanu (tylko `FinishSiegeBattle`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub result: Option<SiegeBattleResultDto>,
+    /// P4-1I6-DLUGI (D-1I6-SETUP): scena startu `new BattleScene(...)` (tylko `StartSiegeStorm`; producent
+    /// [`battle_setup`]). Addytywne: odpowiedzi pozostałych komend bez klucza.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub setup: Option<BattleSetupDto>,
+    /// P4-1I6-DLUGI (D-1I6D-2): strzelec wieży sceny (`towerShooterRow`, `battleScene.ts:4209-4211`; tylko
+    /// `StartSiegeStorm`). `None` = brak wieży albo brak strzelca (pin: brak strzałów wieży).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tower_shooter: Option<SiegeTowerShooterDto>,
+}
+
+/// Strzelec wieży (`_fireOneTower` `:4133-4147`): pola wiersza `towerShooterRow` czytane przez `projectileKind`
+/// (`kategoria = String(shooterRow.Typ ?? 'Distance')`, `Jednostka ?? 'Wieza (' + ... + ')'`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SiegeTowerShooterDto {
+    /// `String(shooterRow.Typ)`; `None` = `null`/brak (`?? 'Distance'` u konsumenta).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub typ: Option<String>,
+    /// `String(shooterRow.Jednostka)`; `None` = `null`/brak (`?? 'Strzelec'` u konsumenta).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub jednostka: Option<String>,
+}
+
+impl SiegeBattlePayload {
+    /// D-1I6D-3: odpowiedź `AbortSiegeBattle` (bitwa zamknięta bez wyniku, bez akcji i ramki).
+    #[must_use]
+    pub fn aborted(city_id: u64) -> Self {
+        Self {
+            city_id,
+            phase: SiegeBattlePhaseDto::Aborted,
+            units: Vec::new(),
+            actions: Vec::new(),
+            frame: None,
+            result: None,
+            setup: None,
+            tower_shooter: None,
+        }
+    }
 }
 
 /// `BridgeResponse`/`BridgeResult` derywują `Eq`; DTO z `f64` mają `PartialEq` (wzorzec `RenderFramePayload`). Ramka i akcje
@@ -347,6 +583,8 @@ pub struct ActiveSiegeBattle {
     pending: Vec<BattleActionDto>,
     /// Klucz sesji żywej w pamięci podręcznej wątku ([`LIVE_SESSION`]); unikalny w procesie i dla każdego klonu.
     live_key: u64,
+    /// D-1I6D-3: żądanie porzucenia ([`Self::request_abort`]); zużywa je [`finish`] (błąd → `Aborted` w grze).
+    abort_requested: AtomicBool,
 }
 
 fn next_live_key() -> u64 {
@@ -366,6 +604,7 @@ impl Clone for ActiveSiegeBattle {
             pending: self.pending.clone(),
             // Z3: klon = osobna historia; wspólny klucz oddawałby klonowi sesję innego klonu z pamięci podręcznej.
             live_key: next_live_key(),
+            abort_requested: AtomicBool::new(self.abort_requested.load(Ordering::Relaxed)),
         }
     }
 }
@@ -380,6 +619,8 @@ impl PartialEq for ActiveSiegeBattle {
             && self.def_roster == other.def_roster
             && self.ops == other.ops
             && self.pending == other.pending
+            && self.abort_requested.load(Ordering::Relaxed)
+                == other.abort_requested.load(Ordering::Relaxed)
     }
 }
 
@@ -432,6 +673,15 @@ fn keep_session(battle: &ActiveSiegeBattle, session: SiegeBattleSession) {
 }
 
 impl ActiveSiegeBattle {
+    /// D-1I6D-3 (`AbortSiegeBattle`): oznacza bitwę do porzucenia. Gra trzyma bitwę za `&` (`PlayableGame::siege_battle`,
+    /// plik gry poza zakresem tematu), więc żądanie jest flagą; najbliższe [`finish`] zwraca
+    /// [`SiegeBattleError::AbortRequested`], a `PlayableGame::finish_siege_battle` (D-WIRB-8) zamyka bitwę bez zmiany
+    /// stanu i zwraca `Aborted`. Odpowiednik webu: `onCancel` sceny (`main.ts:37017`, deploy anulowany: brak wyniku,
+    /// machiny nie zużyte).
+    pub fn request_abort(&self) {
+        self.abort_requested.store(true, Ordering::Relaxed);
+    }
+
     /// Wejście sesji (testy i diagnostyka).
     #[must_use]
     pub fn input(&self) -> &SiegeSessionInput {
@@ -768,6 +1018,7 @@ pub fn prepare_storm_with_eras(
         ops: Vec::new(),
         pending: Vec::new(),
         live_key: next_live_key(),
+        abort_requested: AtomicBool::new(false),
     })
 }
 
@@ -875,6 +1126,8 @@ fn payload(
         actions: out,
         frame: Some(frame),
         result: None,
+        setup: None,
+        tower_shooter: None,
     })
 }
 
@@ -887,11 +1140,233 @@ pub fn start_payload(
     battle: &mut ActiveSiegeBattle,
 ) -> Result<SiegeBattlePayload, SiegeBattleError> {
     let data = session_data()?;
-    let mut s = SiegeBattleSession::start(&battle.start_state, &battle.input, data)?;
+    // `SiegeBattleSession::start` = `prepare` + `play`; scena startu (D-1I6-SETUP) czytana między nimi (`new
+    // BattleScene` przed `bs.play`, `main.ts:36980-37019`).
+    let mut s = SiegeBattleSession::prepare(&battle.start_state, &battle.input, data)?;
+    let setup = battle_setup(&s, battle, data)?;
+    let tower_shooter = tower_shooter(&s, &battle.input, data);
+    s.play();
     let actions = s.battle_loop_mut().take_actions();
-    let out = payload(&s, battle.city_id, &mut battle.pending, &actions, true);
+    let out = payload(&s, battle.city_id, &mut battle.pending, &actions, true).map(|mut p| {
+        p.setup = Some(setup);
+        p.tower_shooter = tower_shooter;
+        p
+    });
     keep_session(battle, s);
     out
+}
+
+/// `rosterToBattleUnits` obu stron (`main.ts:36980-36982`, `:34136-34143`) dokładnie jak w
+/// [`SiegeBattleSession::prepare`] (rostery `collect_siege_rosters` obcięte do `BATTLE_MAX_PER_SIDE`), kluczem
+/// `(strona, id rosteru)`. Sesja nie przechowuje `BattleUnit` (plik sesji poza zakresem tematu), więc producent sceny
+/// liczy je ponownie z tych samych wejść (deterministycznie).
+fn scene_battle_units(
+    state: &PlayableState,
+    input: &SiegeSessionInput,
+    data: &SessionData,
+) -> Result<BTreeMap<(usize, String), AdapterBattleUnit>, SiegeBattleError> {
+    let inp = siege_inputs_with_deals(state, input.city_id, input.owner_era)?;
+    let rosters = collect_siege_rosters(&SiegeRosterInput {
+        city: &inp.city,
+        anchor_id: &input.anchor_unit_id.to_string(),
+        units: &inp.units,
+        relations: &inp.relations,
+        def_opts: inp.def_opts.clone(),
+        ready_machines: &inp.ready_machines,
+        turn: inp.turn,
+        unit_rows: &data.unit_rows,
+        militia: &data.militia,
+    })?;
+    let index = unit_def_index(&data.unit_rows);
+    let ctx = RosterBattleCtx {
+        rows: &data.unit_rows,
+        index: &index,
+        militia_defs: &rosters.militia_defs,
+        owners: &input.owners,
+        fallback: data.fallback,
+    };
+    let mut out = BTreeMap::new();
+    for (si, roster, side) in [(0usize, &rosters.atk, Side::Atk), (1, &rosters.def, Side::Def)] {
+        let capped = &roster[..roster.len().min(BATTLE_MAX_PER_SIDE)];
+        for bu in roster_to_battle_units(capped, side, &ctx)? {
+            out.insert((si, bu.id.clone()), bu);
+        }
+    }
+    Ok(out)
+}
+
+/// `String(v)` pola wiersza danych (`null`/brak = `None`).
+fn js_string(v: Option<&serde_json::Value>) -> Option<String> {
+    match v {
+        None | Some(serde_json::Value::Null) => None,
+        Some(serde_json::Value::String(s)) => Some(s.clone()),
+        Some(other) => Some(other.to_string()),
+    }
+}
+
+/// D-1I6D-2: strzelec wieży sceny (`_placeSiegeTowers` + `towerShooterRow`, `battleScene.ts:4158-4170`, `:4209-4211`):
+/// tylko przy materiale wieży (`towerMaterialFor(fortKind)`) i wierszu `strongestRangedUnitForEra(units,
+/// clampEra(defenderEra), defCiv)`.
+fn tower_shooter(
+    s: &SiegeBattleSession,
+    input: &SiegeSessionInput,
+    data: &SessionData,
+) -> Option<SiegeTowerShooterDto> {
+    let siege = s.field().siege.as_ref()?;
+    fort_dto(siege.fort_kind).1?;
+    let row = strongest_ranged_unit_for_era(
+        &data.tower_units,
+        clamp_era(input.defender_era),
+        input.def_civ.as_deref(),
+    )?;
+    Some(SiegeTowerShooterDto {
+        typ: js_string(row.get("Typ")),
+        jednostka: js_string(row.get("Jednostka")),
+    })
+}
+
+/// `this.fortKind` sceny i `towerMaterialFor(fortKind)` (`game/city-towers.ts:23-27`) w typach DTO.
+fn fort_dto(kind: CityFortificationKind) -> (FortKind, Option<VmTowerMaterial>) {
+    match kind {
+        CityFortificationKind::None => (FortKind::None, None),
+        CityFortificationKind::Palisada => (FortKind::Palisada, Some(VmTowerMaterial::Drewno)),
+        CityFortificationKind::Mur => (FortKind::Mur, Some(VmTowerMaterial::Kamien)),
+    }
+}
+
+/// `rosterToBattleUnits(atkRosterRef, 0xffd54a)` (`main.ts:36981`).
+pub const SIEGE_ATTACKER_COLOR: u32 = 0x00ff_d54a;
+/// `rosterToBattleUnits(defRosterRef, 0xc84040)` (`main.ts:36982`).
+pub const SIEGE_DEFENDER_COLOR: u32 = 0x00c8_4040;
+
+/// D-1I6-SETUP: producent [`BattleSetupDto`] sceny szturmu — stan `new BattleScene(opts)` przed `bs.play`
+/// (`main.ts:36980-37019`): pole T5a (`grid`, `desertPalette`), mur (`siege_wall_civ`: `(opts.siege.defCiv ??
+/// opts.siege.civ) ?? 'rzym'`, `battleScene.ts:3480`; ścieżka szturmu podaje tylko `defCiv`), `fortKind` +
+/// `towerMaterialFor` + `towerRows`, jednostki w kolejności spawnu `this.atk`, `this.def` (`_placeUnits`) z pozycją,
+/// kierunkiem, koroną muru, HP, morale i amunicją z rozstawienia (po `_applyStartingMoralePowerPenalty`, jak ramka),
+/// `kategoria`, `String(stats.Jednostka ?? nazwa)`, `maxHp`, `moraleMax`, `ammoMax = ammoCount(bu)` i kolorem strony;
+/// `deploy: atkRosterRef.some(u => u.isGeneral)` ze stroną `deployPlayerSide: 'atk'`.
+///
+/// `s` = sesja po [`SiegeBattleSession::prepare`] (przed `play`).
+///
+/// # Errors
+/// [`SiegeBattleError::Producer`] (sesja po `play`, niespójna ramka, brak jednostki rosteru, NaN/Inf), błąd adaptera.
+pub fn battle_setup(
+    s: &SiegeBattleSession,
+    battle: &ActiveSiegeBattle,
+    data: &SessionData,
+) -> Result<BattleSetupDto, SiegeBattleError> {
+    let bad = |m: String| SiegeBattleError::Producer(format!("scena startu: {m}"));
+    if s.phase() != SessionPhase::Prepared {
+        return Err(bad(format!(
+            "sesja w fazie {:?}, oczekiwano Prepared",
+            s.phase()
+        )));
+    }
+    let frame = session_frame(s)?;
+    let bus = scene_battle_units(&battle.start_state, &battle.input, data)?;
+    let lp = s.battle_loop();
+    let body = &lp.env.body;
+    let ids = s.roster_ids();
+    let mut frame_units = frame.units.iter();
+    let mut units = Vec::with_capacity(frame.units.len());
+    for (si, list, side, color) in [
+        (0usize, &lp.st.atk, VmBattleSide::Atk, SIEGE_ATTACKER_COLOR),
+        (1, &lp.st.def, VmBattleSide::Def, SIEGE_DEFENDER_COLOR),
+    ] {
+        for (i, u) in list.iter().enumerate() {
+            let fu = frame_units
+                .next()
+                .ok_or_else(|| bad(format!("ramka bez jednostki {}", u.id)))?;
+            if fu.id.get() != u.id {
+                return Err(bad(format!("ramka: {} zamiast {}", fu.id.get(), u.id)));
+            }
+            let rid = ids[si]
+                .get(i)
+                .ok_or_else(|| bad(format!("brak id rosteru jednostki {}", u.id)))?;
+            let bu = bus
+                .get(&(si, rid.clone()))
+                .ok_or_else(|| bad(format!("brak BattleUnit rosteru {rid}")))?;
+            let morale_max = body.morale_max[si]
+                .get(i)
+                .copied()
+                .ok_or_else(|| bad(format!("brak moraleMax jednostki {}", u.id)))?;
+            let ammo_max = bu.ammo_count();
+            for (what, v) in [
+                ("hp", fu.hp),
+                ("maxHp", bu.max_hp),
+                ("morale", fu.morale),
+                ("moraleMax", morale_max),
+            ] {
+                if !v.is_finite() {
+                    return Err(bad(format!("{what} jednostki {} = {v}", u.id)));
+                }
+            }
+            units.push(BattleUnitSpawnDto {
+                id: fu.id,
+                side,
+                category: bu.kategoria.clone(),
+                model_name: bu
+                    .setup_unit()
+                    .jednostka
+                    .unwrap_or_else(|| bu.nazwa.clone()),
+                owner_color: color,
+                col: fu.col,
+                row: fu.row,
+                facing: fu.facing,
+                on_wall_walkway: fu.on_wall_walkway,
+                hp: fu.hp,
+                max_hp: bu.max_hp,
+                morale: fu.morale,
+                morale_max,
+                ammo_left: fu.ammo_left,
+                ammo_max: ammo_max.is_finite().then_some(ammo_max),
+            });
+        }
+    }
+    if let Some(extra) = frame_units.next() {
+        return Err(bad(format!(
+            "ramka z nadmiarową jednostką {}",
+            extra.id.get()
+        )));
+    }
+    let field = s.field();
+    let siege = field
+        .siege
+        .as_ref()
+        .ok_or_else(|| bad("pole bez muru".to_owned()))?;
+    let (kind, tower_material) = fort_dto(siege.fort_kind);
+    let tower_rows = siege
+        .tower_rows
+        .iter()
+        .map(|r| i32::try_from(*r).map_err(|_| bad(format!("wiersz wieży {r}"))))
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(BattleSetupDto {
+        grid: BattleGridDto {
+            cols: field.map.cols(),
+            rows: field.map.rows(),
+            tiles: field.map.tiles().to_vec(),
+        },
+        desert_palette: field.desert_palette,
+        siege: true,
+        deploy: battle
+            .atk_roster
+            .iter()
+            .any(|u| u.is_general)
+            .then_some(VmBattleSide::Atk),
+        siege_civ: battle
+            .input
+            .def_civ
+            .clone()
+            .unwrap_or_else(|| "rzym".to_owned()),
+        player_side: VmBattleSide::Atk,
+        units,
+        fort: BattleFortDto {
+            kind,
+            tower_material,
+            tower_rows,
+        },
+    })
 }
 
 /// `StepSiegeBattle{wall_ms}`: krok czasu rzeczywistego; operacja zapisywana dopiero po powodzeniu.
@@ -1493,6 +1968,10 @@ pub fn finish(
     state: &mut PlayableState,
     battle: &ActiveSiegeBattle,
 ) -> Result<SiegeBattlePayload, SiegeBattleError> {
+    // D-1I6D-3: porzucenie przed wynikiem (także bitwy trwającej): brak zastosowania, stan bez zmian.
+    if battle.abort_requested.swap(false, Ordering::Relaxed) {
+        return Err(SiegeBattleError::AbortRequested);
+    }
     let s = take_session(battle)?;
     let outcome = s.finish()?;
     if !outcome.unported.is_empty() {
@@ -1527,6 +2006,8 @@ pub fn finish(
         actions: rest,
         frame: None,
         result: Some(result),
+        setup: None,
+        tower_shooter: None,
     })
 }
 

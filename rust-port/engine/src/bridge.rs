@@ -6,7 +6,10 @@
 
 pub use civ_engine::domain::dto_bridge::RenderLayersPayload;
 pub use civ_engine::domain::render_frame::{RenderFramePayload, RenderMapPayload, RenderUiParams};
-pub use civ_engine::domain::siege_battle_apply::{SiegeBattlePayload, WallMs};
+pub use civ_engine::domain::siege_battle_apply::{
+    SiegeBattleErrorDto, SiegeBattlePayload, SiegeTowerShooterDto, WallMs,
+};
+use civ_engine::domain::siege_battle_apply::SiegeBattleError;
 pub use civ_engine::StartGameParams;
 use civ_engine::{PlayableGame, PlayablePlayer, PlayableState, PositionDto};
 use serde::{Deserialize, Serialize};
@@ -96,6 +99,11 @@ pub enum EngineCommand {
     /// Apply the finished battle to the game state (web `consumeReadyMachines` + `finishSiegeStormBattle`
     /// without the city capture, which is returned as `captureRequested` for #354); emits `StateChanged`.
     FinishSiegeBattle,
+    /// R-RUSTPORT-P4-1I6-DLUGI-Q1 (D-1I6D-3, debts D-1I6-ORPHAN / D-1I6-ABORT-E2E): close the running battle without a
+    /// result (the caller could not open the scene after `StartSiegeStorm`). The game state is unchanged (machines
+    /// not consumed; web `onCancel` of the scene, `main.ts:37017`); `siegeBattle.phase = aborted`; no
+    /// `StateChanged`. Without a battle: `noActiveBattle`. Additive: `CONTRACT_VERSION` stays 1.
+    AbortSiegeBattle,
 }
 
 impl EngineCommand {
@@ -107,6 +115,7 @@ impl EngineCommand {
                 | Self::StepSiegeBattle { .. }
                 | Self::SkipSiegeBattle
                 | Self::FinishSiegeBattle
+                | Self::AbortSiegeBattle
         )
     }
 }
@@ -224,6 +233,15 @@ pub enum BridgeErrorCode {
 pub struct BridgeError {
     pub code: BridgeErrorCode,
     pub message: String,
+    /// R-RUSTPORT-P4-1I6-DLUGI-Q1 (D-1I6-ERR): the siege battle error as a type (code + data) next to its text, only
+    /// for rejected siege battle commands (`code = engine_rejected`, `message` = the same `Display` as before).
+    /// Absent for every other error, so their JSON is unchanged.
+    #[serde(
+        default,
+        rename = "siegeBattle",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub siege_battle: Option<SiegeBattleErrorDto>,
 }
 
 impl BridgeError {
@@ -231,6 +249,7 @@ impl BridgeError {
         Self {
             code: BridgeErrorCode::InvalidRequest,
             message: message.into(),
+            siege_battle: None,
         }
     }
 
@@ -240,6 +259,7 @@ impl BridgeError {
             message: format!(
                 "unsupported bridge contract version {actual}; expected {CONTRACT_VERSION}"
             ),
+            siege_battle: None,
         }
     }
 
@@ -247,6 +267,7 @@ impl BridgeError {
         Self {
             code: BridgeErrorCode::EngineRejected,
             message: message.into(),
+            siege_battle: None,
         }
     }
 
@@ -254,6 +275,16 @@ impl BridgeError {
         Self {
             code: BridgeErrorCode::EventEmission,
             message: message.into(),
+            siege_battle: None,
+        }
+    }
+
+    /// D-1I6-ERR: a rejected siege battle command: `engine_rejected` with the error's `Display` and its typed form.
+    pub fn from_siege_battle(error: &SiegeBattleError) -> Self {
+        Self {
+            code: BridgeErrorCode::EngineRejected,
+            message: error.to_string(),
+            siege_battle: Some(SiegeBattleErrorDto::from(error)),
         }
     }
 
@@ -261,6 +292,7 @@ impl BridgeError {
         Self {
             code: BridgeErrorCode::Internal,
             message: message.into(),
+            siege_battle: None,
         }
     }
 }
@@ -331,13 +363,33 @@ fn siege_battle_on_game(
         EngineCommand::StepSiegeBattle { wall_ms } => game.step_siege_battle(wall_ms.0),
         EngineCommand::SkipSiegeBattle => game.skip_siege_battle(),
         EngineCommand::FinishSiegeBattle => game.finish_siege_battle(),
+        EngineCommand::AbortSiegeBattle => abort_siege_battle(game),
         _ => {
             return Err(BridgeError::internal(
                 "siege battle dispatcher called with a non-battle command",
             ))
         }
     };
-    result.map_err(|error| BridgeError::engine_rejected(error.to_string()))
+    result.map_err(|error| BridgeError::from_siege_battle(&error))
+}
+
+/// D-1I6D-3: `AbortSiegeBattle` through the D-WIRB-8 exit of `FinishSiegeBattle`: the battle is flagged
+/// (`ActiveSiegeBattle::request_abort`), `finish` turns the flag into `Aborted`, which closes the battle without touching
+/// the game state. That expected `Aborted` is the success of this command.
+fn abort_siege_battle(game: &mut PlayableGame) -> Result<SiegeBattlePayload, SiegeBattleError> {
+    let battle = game
+        .siege_battle()
+        .ok_or(SiegeBattleError::NoActiveBattle)?;
+    battle.request_abort();
+    match game.finish_siege_battle() {
+        Err(SiegeBattleError::Aborted { city_id, .. }) if game.siege_battle().is_none() => {
+            Ok(SiegeBattlePayload::aborted(city_id))
+        }
+        Err(other) => Err(other),
+        Ok(_) => Err(SiegeBattleError::Producer(
+            "abort: the battle was applied instead of aborted".to_owned(),
+        )),
+    }
 }
 
 /// Result of dispatching one request, including events the Tauri shell emits.
@@ -413,7 +465,7 @@ where
             });
         }
         if command.is_siege_battle() {
-            // Start/Step/Skip leave `EngineState` unchanged (the battle lives in the session, web map is
+            // Start/Step/Skip/Abort leave `EngineState` unchanged (the battle lives in the session, web map is
             // untouched until the scene result): no event. Finish applies the result: `StateChanged`.
             let (state, battle) = self.adapter.siege_battle(&command)?;
             let events = if matches!(command, EngineCommand::FinishSiegeBattle) {
@@ -539,7 +591,8 @@ impl EnginePort for CivEngineAdapter {
             EngineCommand::StartSiegeStorm { .. }
             | EngineCommand::StepSiegeBattle { .. }
             | EngineCommand::SkipSiegeBattle
-            | EngineCommand::FinishSiegeBattle => {
+            | EngineCommand::FinishSiegeBattle
+            | EngineCommand::AbortSiegeBattle => {
                 return self.siege_battle(&command).map(|(state, _)| state);
             }
         }
@@ -703,7 +756,8 @@ impl EnginePort for MockEngineAdapter {
             EngineCommand::StartSiegeStorm { .. }
             | EngineCommand::StepSiegeBattle { .. }
             | EngineCommand::SkipSiegeBattle
-            | EngineCommand::FinishSiegeBattle => {
+            | EngineCommand::FinishSiegeBattle
+            | EngineCommand::AbortSiegeBattle => {
                 return self.siege_battle_on_mock(&command).map(|(state, _)| state);
             }
         }
