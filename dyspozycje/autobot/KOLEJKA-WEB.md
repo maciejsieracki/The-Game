@@ -129,3 +129,5 @@ Brak pozycji potwierdzonych w repo. Pozycje z listy zadań sesji (np. #286, #57)
 FALA 889 WDROŻONA (ERAWARPLAYER; ROBOCZA MD5 b69800bb, main 7cf570839). W TOKU: VERIFYLIVEA, TESTDEBTQ13. NASTĘPNE: VERIFY-LIVE-B (dispatch po scaleniu VERIFYLIVEA). OTWARTE ABC: pending Brązu blokowany sojuszami (pairing-unresolved) — czy sojusz ma blokować wojnę epoki.
 
 VERIFYLIVEB zintegrowany do main aba2ddd02 (testy live ustawien, bez deployu). NASTĘPNE po VERIFYLIVEA: VERIFYLIVEB-2 (hak civTest dla applyMenuParams + rekrutacja/utrzymanie/zamiana żywności/koszt budowy; przebieg przez kreator), potem VERIFY-LIVE-B pomiar flag OFF/ON + 3 poziomy dyplomacji.
+
+VERIFYLIVEA zintegrowany do main d42ec8560 (bez deployu). W TOKU 2026-11-20 ~02:50: TESTDEBTQ13, VERIFYLIVEB2 (hak __settingsLive + kreator na żywo). NASTĘPNE: pomiar flag OFF/ON + 3 poziomy dyplomacji (VERIFY-LIVE-B pomiar), licznik rozwiązań jednostek + seed 7 pomiaru kosztów jednostek (osobny temat z hakiem).
