@@ -8194,4 +8194,204 @@ mod march_incremental_tests {
             "done() z callbacku kroku w tej samej klatce"
         );
     }
+
+    /// Przestawia jednostkę na pole `(q, 0)` (pozycja i zajętość ciała).
+    fn place(b: &mut ProdBody<SequenceRolls>, u: UnitRef, q: i64) {
+        let (oq, or) = b.cell_of(u);
+        b.occ_by_key.remove(&cell_key(oq as f64, or as f64));
+        b.units[side_ix(u.side)][u.idx].activate.q = q;
+        b.occ_by_key.insert(cell_key(q as f64, 0.0), unit_tag(u));
+    }
+
+    /// Kontynuacja marszu strzelca na etapie `stage` (jak po wcześniejszym kroku).
+    fn ranged_cont(stage: MarchStage, move_left: f64) -> MarchCont {
+        MarchCont {
+            unit: A0,
+            kind: MarchKind::RangedForward,
+            stage,
+            id: 7,
+            move_left,
+            moved: true,
+            prev: None,
+        }
+    }
+
+    /// Obrona r1 Z1 (mutant E3): krok C-FLANK (`:8204-8235`) nie ma `previousPosition` — callback `:8222-8229` NIE zapisuje
+    /// `lastAutoMoveFrom`. Kontynuacja po wcześniejszym kroku czołowym niesie `prev` tamtego kroku; wejście C-FLANK musi
+    /// je wyzerować, inaczej koniec kroku manewru nadpisałby `lastAutoMoveFrom` starym polem.
+    #[test]
+    fn krok_c_flank_nie_zapisuje_last_auto_move_from() {
+        let (mut b, st) = setup(3.0);
+        b.attack_direction[0][0] = AttackDirection::Bok;
+        b.set_now(1328.0);
+        let stale = (-5, 4);
+        let mut c = MarchCont {
+            unit: A0,
+            kind: MarchKind::Advance,
+            stage: MarchStage::Gap,
+            id: 0,
+            move_left: 3.0,
+            moved: true,
+            prev: Some(stale),
+        };
+        let next = b.advance_enter(&st, &mut c);
+        assert_eq!(next, MarchNext::StepEnd, "krok manewru C-FLANK wykonany");
+        assert_ne!(b.cell_of(A0), (0, 0));
+        assert_eq!(c.prev, None, "C-FLANK bez previousPosition");
+        b.set_now(1568.0);
+        let _ = b.advance_step_end(&st, &c);
+        assert_eq!(
+            b.doctrine[0][0].last_auto_move_from, None,
+            "callback C-FLANK nie zapisuje lastAutoMoveFrom (:8222-8229)"
+        );
+        // Kontrola: ten sam stan z kierunkiem `front` idzie marszem czołowym, nie C-FLANK.
+        let (mut f, st2) = setup(3.0);
+        f.set_now(1328.0);
+        let mut cf = MarchCont {
+            unit: A0,
+            kind: MarchKind::Advance,
+            stage: MarchStage::Gap,
+            id: 0,
+            move_left: 3.0,
+            moved: true,
+            prev: Some(stale),
+        };
+        assert_eq!(f.advance_enter(&st2, &mut cf), MarchNext::StepEnd);
+        assert_eq!(f.cell_of(A0), (1, 0), "front: krok czołowy");
+    }
+
+    /// Obrona r1 Z2 (mutant E5): wejście z zegara przerwy strzelca to `_rangedForwardStep` (`:6806`), nie `_rangedAction`.
+    /// Zasięg 1, wróg wręcz w odległości 2: pin robi krok naprzód; `_rangedAction` weszłoby w KITE (zagrożenie <= 2,
+    /// przyparty = strzał z miejsca).
+    #[test]
+    fn przerwa_strzelca_wraca_do_ranged_forward_step() {
+        let (mut b, st) = setup(2.0);
+        shooter(&mut b);
+        b.units[0][0].activate.range = 1.0;
+        place(&mut b, A0, 3);
+        place(&mut b, D0, 5);
+        b.set_now(1328.0);
+        b.march = Some(ranged_cont(MarchStage::Gap, 2.0));
+        b.march_fire(&st);
+        assert_eq!(b.cell_of(A0), (4, 0), "krok naprzód z _rangedForwardStep");
+        assert!(b.take_march_done().is_none(), "marsz w toku (koniec kroku)");
+        assert_eq!(b.take_timers().len(), 1);
+        assert!(matches!(
+            b.march,
+            Some(MarchCont {
+                stage: MarchStage::StepEnd,
+                kind: MarchKind::RangedForward,
+                ..
+            })
+        ));
+        // Kontrola: `_rangedAction` z tego samego stanu nie robi kroku naprzód (KITE przyparty = strzał z miejsca).
+        let (mut a, _) = setup(2.0);
+        shooter(&mut a);
+        a.units[0][0].activate.range = 1.0;
+        place(&mut a, A0, 3);
+        place(&mut a, D0, 5);
+        a.set_now(1328.0);
+        let mut c = ranged_cont(MarchStage::Gap, 2.0);
+        assert_eq!(a.ranged_action_enter(&st, &mut c), MarchNext::Shot(0));
+        assert_eq!(a.cell_of(A0), (3, 0));
+    }
+
+    /// Obrona r1 Z3 (mutant E7): strzał z PIERWSZEGO wejścia `_rangedAction` w marszu krok po kroku (`:6727-6731` strzał
+    /// w miejscu; `:6719-6721` KITE przyparty) — `start` zwraca czas do skutku `_doRangedAttack` (`RANGED_FLY_MS` w
+    /// klatce; ogon `RANGED_GAP_MS` z modelem czasu pinu w `tail`, bez niego doliczony), a nie `0`.
+    #[test]
+    fn strzal_z_pierwszego_wejscia_marszu_ma_czas_do_skutku() {
+        for kite in [false, true] {
+            let (mut b, st) = setup(2.0);
+            shooter(&mut b);
+            b.doctrine[0][0].ranged_kite = kite;
+            place(&mut b, A0, 3);
+            place(&mut b, D0, 5);
+            b.set_now(1000.0);
+            b.pending[0][0] = Some(ProdPending {
+                morale: 100.0,
+                morale_before: 100.0,
+                start_rout: false,
+                surround_applied: false,
+                attack: None,
+                move_left: None,
+                shot: None,
+                flee: false,
+                gate_breach: false,
+            });
+            // Ta sama sekwencja co gałąź strzelca `start` (D-MI-1).
+            let mut c = ranged_cont(MarchStage::Gap, 2.0);
+            c.moved = false;
+            let next = b.ranged_action_enter(&st, &mut c);
+            assert_eq!(next, MarchNext::Shot(0), "kite={kite}: strzał z miejsca");
+            b.march_advance(c, next);
+            assert!(!b.march_pending(A0), "kite={kite}: bez marszu w toku");
+            assert!(b.take_timers().is_empty());
+            let shot = b.pending[0][0].and_then(|p| p.shot).is_some();
+            let fly = frame_sched(16.0, RANGED_FLY_MS);
+            let want = if shot {
+                fly
+            } else {
+                fly + frame_sched(16.0, RANGED_GAP_MS)
+            };
+            let dur = b.march_start_dur();
+            assert!(dur > 0.0, "kite={kite}: czas do skutku strzału, nie 0");
+            assert_eq!(dur, want, "kite={kite}");
+            if shot {
+                assert_eq!(b.tail[0][0], RANGED_GAP_MS, "kite={kite}: ogon strzału");
+            }
+            assert_eq!(b.cell_of(A0), (3, 0), "kite={kite}: bez kroku");
+        }
+    }
+
+    /// Obrona r1 Z4 (mutant E8): wejście w zasięg po kroku `_rangedForwardStep` woła `_rangedAction` od nowa (`:6805`):
+    /// zagrożenie wręcz <= `MELEE_SAFE_GAP` daje KITE (krok wstecz), nie strzał z nowego pola.
+    #[test]
+    fn wejscie_w_zasieg_po_kroku_wola_ranged_action_od_nowa() {
+        let (mut b, st) = setup(3.0);
+        shooter(&mut b);
+        b.units[0][0].activate.range = 3.0;
+        place(&mut b, A0, 4);
+        place(&mut b, D0, 6);
+        b.set_now(1240.0);
+        let mut c = ranged_cont(MarchStage::StepEnd, 2.0);
+        let next = b.ranged_step_end(&st, &mut c);
+        assert_eq!(next, MarchNext::StepEnd, "KITE: krok wstecz, nie strzał");
+        assert!(matches!(c.kind, MarchKind::Kite { .. }));
+        let (q, _) = b.cell_of(A0);
+        assert!(q < 4 || b.cell_of(A0).1 != 0, "krok z dala od zagrożenia");
+        // Bez KITE (doktryna `rangedKite = false`) ten sam stan = strzał z miejsca.
+        let (mut s, st2) = setup(3.0);
+        shooter(&mut s);
+        s.units[0][0].activate.range = 3.0;
+        s.doctrine[0][0].ranged_kite = false;
+        place(&mut s, A0, 4);
+        place(&mut s, D0, 6);
+        s.set_now(1240.0);
+        let mut c2 = ranged_cont(MarchStage::StepEnd, 2.0);
+        assert_eq!(s.ranged_step_end(&st2, &mut c2), MarchNext::Shot(0));
+    }
+
+    /// Obrona r1 Z5 (mutant E10): odpowiednik testu `rozbicie_w_trakcie_marszu_widoczne_w_bramce_kolejnego_kroku` dla
+    /// strzelca — `_rangedForwardStep` z zegara przerwy czyta `ru.routed` w chwili kroku (bramka `_doMove` `:8689`,
+    /// `_siegeApproachRestricted` `:7953`).
+    #[test]
+    fn strzelec_rozbicie_w_trakcie_marszu_widoczne_w_bramce_kolejnego_kroku() {
+        let (mut b, mut st) = setup(3.0);
+        shooter(&mut b);
+        b.set_now(1328.0);
+        b.march = Some(ranged_cont(MarchStage::Gap, 2.0));
+        b.march_fire(&st);
+        assert!(!b.mover_routed);
+        let t = b.take_timers();
+        assert_eq!(t.len(), 1);
+        b.set_now(1568.0);
+        b.fire_timer(t[0].1, &mut st);
+        let g = b.take_timers();
+        assert_eq!(g.len(), 1, "po kroku: przerwa");
+        st.atk[0].c.routed = true;
+        b.set_now(1656.0);
+        b.fire_timer(g[0].1, &mut st);
+        assert!(b.mover_routed, "ru.routed w chwili kroku strzelca");
+    }
 }
