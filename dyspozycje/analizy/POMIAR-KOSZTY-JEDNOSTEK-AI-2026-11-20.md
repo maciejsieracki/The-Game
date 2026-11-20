@@ -53,7 +53,7 @@ Gracz (owner 0), tura 90: NISKI 1 jednostka, NORMALNY 1 jednostka. NIEINFORMACYJ
 ## 4. Czytanie wyników
 
 - **Utrzymanie ×2 działa.** Przy zbliżonej liczbie jednostek Pieniądz/t rośnie około ×2 (t30: 320 vs 200 przy 40 vs 47 jednostkach, czyli ok. 8,0 vs 4,3 na jednostkę). Żywność armii idzie tym samym śladem.
-- **Brak deficytu i głodu.** W obu przebiegach w każdej turze 0 AI w deficycie złota i 0 AI w głodzie wojska. Próg „> 50% AI w deficycie” NIE został osiągnięty.
+- **Brak deficytu złota; głód wojska tylko w Normalnym i tylko wczesną grą (KOREKTA Obrony r2).** Deficyt złota = 0 w każdej turze obu przebiegów. Flaga `glodWojska` w JSONL (surowe dane, tura po turze): Niski = 0 wierszy AI w głodzie w całym przebiegu; Normalny = głód u 1–4 z 41 AI w turach 2–23 (szczyt 4 właścicieli w t8–t15; po t23 brak), łącznie 58 par właściciel-tura. Pierwotne zdanie „0 AI w głodzie w każdej turze” było błędne (sprawdzano tylko t30/t60/t90). Próg „> 50% AI w deficycie” NIE został osiągnięty (max 4/41 ≈ 10%).
 - **Skarbiec nie jest ograniczeniem.** Mediana złota AI w t90: 3 995 (Niski) i 2 417 (Normalny). Spichlerz AI nie zbliża się do zera.
 - **Armia AI jest mniejsza w Normalnym**, w t60 (159 vs 208) i w t90 (317 vs 465). Spadek zbiega się z zjawiskiem zniknięcia właścicieli (§2), więc nie da się go jeszcze przypisać kosztom.
 - **Rekrutacja w Żelazie działa w obu przebiegach** (t90: Niski 303 jednostki u 7 właścicieli; Normalny 126 u 5). AI rekrutuje w epoce Żelaza, koszt ×2 tego nie blokuje całkowicie.
@@ -84,3 +84,29 @@ Przebieg (wznawialny, to samo `--out` i `--profile`; kolejne wywołania z rosną
 Zamiana `--pace niski` na `--pace normalny` (własny `--profile` i `--out`) daje drugi przebieg. Analiza: skrypt poza repo (`analyze-pace.cjs`, czyta `seed4242.jsonl`).
 
 Dane surowe (skróty gzip, w repo): `dyspozycje/autobot/runs/R-WEB-VERIFY-LIVE-A-UNIT-COSTS-AI-MEASURE-Q1/niski-seed4242.jsonl.gz` (md5 nieskompresowanego: `1013014ddae83195b0ea24ca9e7e803f`) i `normalny-seed4242.jsonl.gz` (md5: `4668ad5aac0410049b905dfc34058794`). Pełne przebiegi poza repo: katalogi `run-niski` i `run-normalny` w scratchpadzie sesji.
+
+## 7. Obrona r2 (zarzuty Evaluatora): przeliczenie z committowanego JSONL
+
+Wszystkie liczby poniżej przelicza `dyspozycje/autobot/runs/R-WEB-VERIFY-LIVE-A-UNIT-COSTS-AI-MEASURE-Q1/analyze-pace.cjs` (czyta wyłącznie `*.jsonl.gz` z repo; md5 nieskompresowanego JSONL zgodne z §6).
+
+Polecenie: `node dyspozycje/autobot/runs/R-WEB-VERIFY-LIVE-A-UNIT-COSTS-AI-MEASURE-Q1/analyze-pace.cjs <niski.jsonl.gz> 30,60,90 --pair <normalny.jsonl.gz>`
+
+**Jednostki per epoka** (epoka właściciela = `owner.hud.epoka`; zarzut 1 — teraz odtwarzalne):
+- t90 Niski: Brąz 162, Żelazo 303 (suma 465; 14 AI).
+- t90 Normalny: Brąz 191, Żelazo 126 (suma 317; 15 AI).
+- t30/t60: wyłącznie Brąz (Niski 47 / 208; Normalny 40 / 159).
+
+**Wspólni właściciele** (zarzut 3 — porównanie niewspółmierne usunięte; wspólny = AI z rekordem w obu przebiegach w tej samej turze):
+- t30: 16 wspólnych. Niski 23 jednostki, Normalny 40 (kierunek ODWROTNY do pozostałych tur; traktuję jako szum trajektorii jednego ziarna, NIE jako efekt).
+- t60: 15 wspólnych. Niski 208, Normalny 159 (−23,6%).
+- t90: 14 wspólnych. Niski 465, Normalny 315 (−32,3%).
+
+Wniosek z tabeli: próg „spadek >30% w t90” przekroczony także na wspólnych właścicielach, ale na jednym ziarnie, a w t30 kierunek jest odwrotny, więc szum jednego ziarna jest tego samego rzędu co efekt. Mechanizm NIE ZMIERZONO. Rozpadu przez deficyt złota nie ma (0 w każdej turze).
+
+**Utrzymanie i żywność per właściciel** — w JSONL są sumy AI (`utrzymanieJednostekPieniadz`, `zywnoscArmiiTura`), rozbicia per właściciel per epoka nie liczono (NIE ZMIERZONO w tej rundzie).
+
+**Liczba rozwiązanych jednostek (dezercja/głód)** (zarzut 2): NIE ZMIERZONO. Runner nie zlicza rozwiązań. Proxy z JSONL (spadki liczby jednostek właściciela między kolejnymi turami, bez rozróżnienia walki od dezercji): Niski 14 zdarzeń / 20 jednostek; Normalny 18 zdarzeń / 20 jednostek; wzrosty 234 vs 185. Proxy nie jest miarą dezercji.
+
+**Głód wojska** (korekta do §4): patrz §4, punkt „Brak deficytu złota; głód wojska tylko w Normalnym”.
+
+**Stan pozostałych zarzutów Obrony r2:** zarzut 4 — dodano do `gra/tools/ai-economy-measure-hook-test.cjs` asercje na `setUnitCostPace`/`unitCostPaceState` i `zywnoscArmiiTura` oraz pole `zywnoscArmiiTura` w `OWNER_KEYS`; wynik zielony 25/25; mutacja dowodowa (hak ignoruje tempo) daje 2 czerwone asercje, 23/25. Zarzut 5 — seed 7 i pierwszy odcinek bez flag Chromium NIE ZMIERZONO; nie ponawiano biegów.
