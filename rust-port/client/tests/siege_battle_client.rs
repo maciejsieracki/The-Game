@@ -25,8 +25,8 @@
 mod bridge;
 
 use bridge::{
-    BridgeDispatch, BridgeError, BridgeEvent, BridgeRequest, BridgeResult,
-    CivEngineAdapter, EngineBridge, EngineCommand, StartGameParams, WallMs,
+    BridgeDispatch, BridgeError, BridgeEvent, BridgeRequest, BridgeResult, CivEngineAdapter,
+    EngineBridge, EngineCommand, StartGameParams, WallMs,
 };
 use civ_client::{
     is_not_finished, tower_projectile_of, ClientError, HighlightPriority, MapDetailQuality,
@@ -1317,15 +1317,21 @@ fn blad_setupu_porzuca_bitwe_w_silniku_e2e() {
 /// (`last_siege_battle_view() == None`), so both "last battle" accessors describe the aborted start.
 #[test]
 fn porzucony_start_czysci_ekran_poprzedniej_bitwy() {
-    let mut c = client_for(siege_state(11));
+    // Recorded answers (start, step, skip, finish) of a captured city, then a second start that lost its setup
+    // (on the real bridge the city is taken after the first battle, so the second start is scripted).
+    let (mut answers, _, _) = recorded();
+    let mut second = answers[0].clone();
+    drop_setup(&mut second);
+    answers.push(second);
+    let mut c = scripted(answers, None);
     c.start_siege_storm(CITY, ANCHOR, true).expect("start");
+    c.step_siege_battle(16.0).expect("step");
     c.skip_siege_battle().expect("skip");
     c.finish_siege_battle().expect("finish");
     assert!(
         c.last_siege_battle_view().is_some(),
         "the applied battle keeps its screen"
     );
-    c.source_mut().tamper_start = Some(drop_setup);
     match c.start_siege_storm(CITY, ANCHOR, true) {
         Err(SiegeClientError::Setup(_)) => {}
         other => panic!("setup error expected: {other:?}"),
@@ -1338,6 +1344,7 @@ fn porzucony_start_czysci_ekran_poprzedniej_bitwy() {
         c.last_siege_battle_end(),
         Some(SiegeBattleEnd::Aborted { city_id: CITY, .. })
     ));
+    assert_eq!(c.source().aborts, 1, "the engine battle was closed");
 }
 
 /// The abort of D-1I6-ORPHAN fails too: both errors are reported (`AbortFailed`), nothing is kept in the client.
