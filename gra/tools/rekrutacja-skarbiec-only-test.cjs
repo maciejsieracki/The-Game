@@ -109,7 +109,8 @@ assert(aiUnitBranch.includes('purchaseRecruitmentUnit(cmd.cityId, candId, item.k
   'AI jednostkę kieruje do zakupu za Skarbiec');
 assert(!aiUnitBranch.includes('enqueue(prod0, item)'),
   'AI nie dodaje jednostki do kolejki Pracy');
-assert(mainSource.includes('if (ownerTreasury(ownerId) < koszt) return false;'),
+// R-WEB-TEST-DEBT-Q13 r5: od R-REKRUTACJA-WIELE-JEDNOSTEK-UI-Q1 bramka Skarbca liczy koszt calej partii (totalGoldCost = koszt * quantity; dla q=1 == koszt).
+assert(mainSource.includes('if (ownerTreasury(ownerId) < totalGoldCost) return false;'),
   'zakup gracza/AI/MP odrzuca brak środków Skarbca');
 assert(mainSource.includes('if (!city || city.ownerId !== ownerId) return false;'),
   'wspólna ścieżka zakupu pilnuje właściciela miasta także dla MP');
@@ -118,7 +119,8 @@ const addItemUnitBranch = cityPanelSource.slice(
   cityPanelSource.indexOf("} else if (item.kind === 'jednostka')"),
   cityPanelSource.indexOf('\n  }\n  setProd(city.id, enqueue', cityPanelSource.indexOf("} else if (item.kind === 'jednostka')")),
 );
-assert(addItemUnitBranch.includes('return;'),
+// R-WEB-TEST-DEBT-Q13 r5: addItem zwraca boolean (R-WEB-UI-CITY-UPGRADE-ALL-BUTTON-Q1) -- odrzucenie to `return false;`.
+assert(addItemUnitBranch.includes('return false;'),
   'panel budowy odrzuca jednostkę zamiast dodawać ją za Pracę');
 
 console.log(`\nrekrutacja-skarbiec-only-test: ${passed} passed, ${failed} failed`);
