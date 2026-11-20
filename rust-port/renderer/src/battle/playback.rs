@@ -14,13 +14,13 @@
 //! | action | pin call | scene function |
 //! |---|---|---|
 //! | `Facing` | `ru.group.rotation.y = dirYaw(ru.facing)` (`:8340`, `:9105`, `:9138`, `:9818`) | [`set_facing`] |
-//! | `Melee` | `_doMeleeAttack` lunge (`:9096-9175`; hit at `t0 + BLOW_HIT_T`, `:9122`) | [`MeleeLunge`] (started at `t0`, stepped by [`BattlePlayback::play_until`]) |
+//! | `Melee` | `_doMeleeAttack` lunge (`:9096-9175`; hit at `t0 + BLOW_HIT_T`, `:9122`, or its 16 ms frame-grid moment [`is_pin_event_time`]) | [`MeleeLunge`] (started at `t0`, stepped by [`BattlePlayback::play_until`]) |
 //! | `TowerShot` | `_fireOneTower` projectile (`:4250-4261`; hit at `t0 + RANGED_FLY_MS`, `:4262`) | [`fire_one_tower`] → [`super::dynamics::launch_projectile`], [`tick_projectiles`] |
 //! | `Damage` | `bu.hp = Math.max(0, bu.hp - dmg)` + `_updateHpBar` (`:8991-8992`), then `_spawnDamageLabel` (`:9125`, `:9142`, `:9940-9971`) | [`update_hp_bar`] + [`FloatLabel::damage`] |
 //! | `Kill` | `_startFade` → `_removeUnitFromScene` (`:9927-9938`, `:9910-9925`) after the killing blow set `hp = 0` and `_updateHpBar` (`:8991-8992`, `:9045-9047`) | [`update_hp_bar`] (`hp = 0`) + [`kill_unit`] |
 //! | `Rout` | `_startRout` (`:9799-9825`): `_sfxRout` only; its turn is the separate `Facing` (`:9817-9818`) | — (recorded, audio) |
 //! | `Move` | `_doMove` 3D (`:8714-8776`): `ru.q = col; ru.r = row` (`:8731`), walk from `t0` (`:8752`) to `t0 + MOVE_STEP_MS`; its turn is the separate `Facing` with the same `t0` (`_updateFacing`, `:8750`) | [`MoveAnim::start`] (stepped by [`BattlePlayback::play_until`]) |
-//! | `Shot` | `_doRangedAttack` 3D (`:9179-9221`): projectile of `projectileKind(attacker.bu)` (`:9203`) from the shooter's to the target's torso (`:9200-9201`), hit at `t0 + RANGED_FLY_MS` (`:9224`); its turn is the separate `Facing` (`:9182-9184`), the hit is the separate `Damage` (`:9226`) | [`projectile_kind`] + [`ranged_shot_endpoints`] + [`launch_projectile`], [`tick_projectiles`] |
+//! | `Shot` | `_doRangedAttack` 3D (`:9179-9221`): projectile of `projectileKind(attacker.bu)` (`:9203`) from the shooter's to the target's torso (`:9200-9201`), hit at `t0 + RANGED_FLY_MS` (`:9224`) or its 16 ms frame-grid moment ([`is_pin_event_time`]); its turn is the separate `Facing` (`:9182-9184`), the hit is the separate `Damage` (`:9226`) | [`projectile_kind`] + [`ranged_shot_endpoints`] + [`launch_projectile`], [`tick_projectiles`] |
 //! | `Turn`, `Log`, `Clash` | `hint`, `this.log.push`, `_pushClash` | — (DOM / P5; recorded) |
 //! | `End` | `this.finished = true` (`:10210`, `:9468`, `:9489`) + `_showEndScreen` | flag `finished`: the rAF callbacks of the stone and the ram snap / remove at their next frame (`:7347`, `:7585`) |
 //! | `Leave` | `_fleeStep` → `_removeUnitFromScene` (`:9853-9857`, `:9910-9925`), after the last walk of the flight ended (`done()`, `:9884-9890`) | [`remove_unit_from_scene`] (a walk of the unit still in flight is finished at `t0` first) |
@@ -81,6 +81,38 @@ use super::units::{
     update_morale_bar, BattleScene3, BattleSide, PlacedUnit,
 };
 use crate::models::cities::model::js_number_to_string;
+
+/// HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): length of the virtual frame the pin steps
+/// its `_raf` loops and `_drainTimers` in (`BATTLE_FRAME_WALL_MS = 16`,
+/// `:2552`; `FF_STEP_MS = _scaledWallDelta(BATTLE_FRAME_WALL_MS)`, `:9419`,
+/// `speedMul = 1`). The engine session quantizes the body time spans to it
+/// (FRAME-QUANT-Q1, D-FQ-1).
+pub const PIN_FRAME_MS: f64 = 16.0;
+
+/// HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): the moment, relative to `t0`, at which the
+/// pin fires an event planned `nominal` ms after `t0` when it steps frames of
+/// `frame` ms: the first frame with `localT >= nominal` (lunge `_raf`,
+/// `_doMeleeAttack` `:9122`) or `vNow >= due` (`_schedule`, `_drainTimers`
+/// `:9616-9634`), i.e. `ceil(nominal / frame) * frame`. `frame <= 0` (or
+/// `NaN`) and `nominal <= 0` give `nominal`.
+#[must_use]
+pub fn pin_frame_time(frame: f64, nominal: f64) -> f64 {
+    if frame > 0.0 && nominal > 0.0 {
+        (nominal / frame).ceil() * frame
+    } else {
+        nominal
+    }
+}
+
+/// HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): `at` is the pin time of an event planned
+/// `nominal` ms after `t0`: exactly `t0 + nominal` (nominal time line, frame
+/// 0 / 1 ms) or exactly the frame-grid moment `t0 + pin_frame_time(PIN_FRAME_MS,
+/// nominal)` of the engine session (FRAME-QUANT-Q1). Any other value — earlier,
+/// later, between the two — is rejected (exact equality, D-WIR-7).
+#[must_use]
+pub fn is_pin_event_time(t0: f64, nominal: f64, at: f64) -> bool {
+    at == t0 + nominal || at == t0 + pin_frame_time(PIN_FRAME_MS, nominal)
+}
 
 /// Options of a playback (inputs the DTOs do not carry).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -321,8 +353,8 @@ pub enum PlaybackError {
         /// Time of the rejected item.
         t0: f64,
     },
-    /// `Melee.hitAt != t0 + BLOW_HIT_T` ([`MeleeLunge`] connects at
-    /// `BLOW_HIT_T`, `:9122`).
+    /// `Melee.hitAt` neither `t0 + BLOW_HIT_T` nor its frame-grid moment
+    /// ([`is_pin_event_time`]; [`MeleeLunge`] connects at `BLOW_HIT_T`, `:9122`).
     HitAt {
         /// `t0`.
         t0: f64,
@@ -361,7 +393,8 @@ pub enum PlaybackError {
         /// The unit's cell in the scene.
         actual: (i32, i32),
     },
-    /// `Shot.landAt != t0 + RANGED_FLY_MS` (`:9224`).
+    /// `Shot.landAt` neither `t0 + RANGED_FLY_MS` nor its frame-grid moment
+    /// ([`is_pin_event_time`], `:9223-9224`).
     ShotLandAt {
         /// `t0`.
         t0: f64,
@@ -743,7 +776,9 @@ impl BattlePlayback {
                 target,
                 hit_at,
             } => {
-                if *hit_at != a.t0 + BLOW_HIT_T {
+                // HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): the pin lands the blow in the first lunge frame
+                // with `localT >= BLOW_HIT_T` (`:9122`): `t0 + 160` at 16 ms frames.
+                if !is_pin_event_time(a.t0, BLOW_HIT_T, *hit_at) {
                     return Err(PlaybackError::HitAt {
                         t0: a.t0,
                         hit_at: *hit_at,
@@ -876,7 +911,9 @@ impl BattlePlayback {
                 target,
                 land_at,
             } => {
-                if *land_at != a.t0 + RANGED_FLY_MS {
+                // HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): `_schedule(RANGED_FLY_MS)` (`:9223`) fires in the
+                // first frame with `vNow >= due`: `t0 + 384` at 16 ms frames.
+                if !is_pin_event_time(a.t0, RANGED_FLY_MS, *land_at) {
                     return Err(PlaybackError::ShotLandAt {
                         t0: a.t0,
                         land_at: *land_at,

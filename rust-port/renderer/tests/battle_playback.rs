@@ -31,7 +31,10 @@ use civ_renderer::battle::dynamics::{
     BLOW_SETTLE_MS, RANGED_FLY_MS,
 };
 use civ_renderer::battle::field::{BattleSceneOpts, TerrainGrid, BF_COLS, BF_ROWS};
-use civ_renderer::battle::playback::{BattlePlayback, PlaybackError, PlaybackOpts, SceneCall};
+use civ_renderer::battle::playback::{
+    is_pin_event_time, pin_frame_time, BattlePlayback, PlaybackError, PlaybackOpts, SceneCall,
+    PIN_FRAME_MS,
+};
 use civ_renderer::battle::siege_towers::{
     fire_one_tower, tower_projectile_kind, TowerMaterial, TowerTarget,
 };
@@ -1134,4 +1137,94 @@ fn error_does_not_stall_animations() {
     assert_ne!(pos_of(&bad, m.att), pos_of(&q, m.att), "lunge moved");
     assert!(ok == bad, "same scene as without the error");
     assert_eq!(pb_bad.lunges_in_flight(), pb_ok.lunges_in_flight());
+}
+
+// ------------------------------------------------------------ HITAT-FQ-REGRESJA-Q1
+
+/// HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): the pin moment of an event planned `nominal` ms after `t0` at frames of `frame` ms
+/// (`_doMeleeAttack` `:9122` first lunge frame with `localT >= BLOW_HIT_T`; `_schedule` / `_drainTimers`
+/// `:9595-9634` first frame with `vNow >= due`). Engine twin: `siege_tactics_loop::frame_raf` / `frame_sched`.
+#[test]
+fn hitat_fq_pin_frame_time_matches_pin_frame_grid() {
+    assert_eq!(PIN_FRAME_MS, 16.0, "BATTLE_FRAME_WALL_MS (`:2552`)");
+    assert_eq!(pin_frame_time(16.0, BLOW_HIT_T), 160.0);
+    assert_eq!(pin_frame_time(16.0, RANGED_FLY_MS), 384.0);
+    assert_eq!(pin_frame_time(16.0, 240.0), 240.0, "multiple of the frame stays");
+    assert_eq!(pin_frame_time(16.0, 1.0), 16.0, "at least one frame");
+    assert_eq!(pin_frame_time(32.0, BLOW_HIT_T), 160.0);
+    assert_eq!(pin_frame_time(64.0, BLOW_HIT_T), 192.0);
+    assert_eq!(pin_frame_time(1.0, BLOW_HIT_T), BLOW_HIT_T, "1 ms frame = nominal");
+    assert_eq!(pin_frame_time(0.0, BLOW_HIT_T), BLOW_HIT_T, "frame 0 = nominal");
+    assert_eq!(pin_frame_time(-16.0, BLOW_HIT_T), BLOW_HIT_T);
+    assert_eq!(pin_frame_time(f64::NAN, BLOW_HIT_T), BLOW_HIT_T);
+    assert_eq!(pin_frame_time(16.0, 0.0), 0.0, "zero span stays");
+    assert_eq!(pin_frame_time(16.0, -5.0), -5.0);
+
+    let t0 = 137_600.0;
+    assert!(is_pin_event_time(t0, BLOW_HIT_T, t0 + 150.0), "nominal");
+    assert!(is_pin_event_time(t0, BLOW_HIT_T, t0 + 160.0), "frame grid (16 ms)");
+    for bad in [144.0, 149.0, 151.0, 159.0, 161.0, 166.0, 176.0, 0.0, 310.0] {
+        assert!(!is_pin_event_time(t0, BLOW_HIT_T, t0 + bad), "hit {bad}");
+    }
+    assert!(is_pin_event_time(t0, RANGED_FLY_MS, t0 + 380.0));
+    assert!(is_pin_event_time(t0, RANGED_FLY_MS, t0 + 384.0));
+    for bad in [368.0, 379.0, 381.0, 383.0, 385.0, 396.0, 400.0] {
+        assert!(!is_pin_event_time(t0, RANGED_FLY_MS, t0 + bad), "land {bad}");
+    }
+    assert!(!is_pin_event_time(t0, BLOW_HIT_T, f64::NAN));
+}
+
+/// HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): regression of `Playback(HitAt { t0: 137600.0, hit_at: 137760.0 })` in the client
+/// E2E after FRAME-QUANT: the engine session quantizes the blow to the 16 ms frame (`t0 + 160`), as the pin does
+/// (`:9122`, first lunge frame with `localT >= BLOW_HIT_T`). The playback accepts it and gives the same scene as with
+/// the nominal `t0 + BLOW_HIT_T`; any other moment is still an error that reaches nothing in the scene.
+#[test]
+fn hitat_fq_melee_on_frame_grid_is_played_like_nominal() {
+    let Worlds { events, q, .. } = worlds();
+    let m = &melees(&events)[0];
+    let melee = |hit_at: f64| {
+        act(
+            m.t0,
+            BattleActionKindDto::Melee {
+                attacker: m.att,
+                target: m.def,
+                hit_at,
+            },
+        )
+    };
+    let run = |hit_at: f64| {
+        let mut s = q.clone();
+        let mut pb = BattlePlayback::new(&s, PlaybackOpts::default());
+        pb.push_actions(&[melee(hit_at)]).expect("push");
+        let r = pb.play_until(&mut s, m.t0, 0.0);
+        let r2 = pb.play_until(&mut s, m.t0 + 100.0, 0.0);
+        (s, pb, r, r2)
+    };
+    let (nominal, pb_n, rn, rn2) = run(m.t0 + BLOW_HIT_T);
+    assert_eq!(rn, Ok(()));
+    assert_eq!(rn2, Ok(()));
+    let (grid, pb_g, rg, rg2) = run(m.t0 + 160.0);
+    assert_eq!(rg, Ok(()), "frame-grid blow accepted");
+    assert_eq!(rg2, Ok(()));
+    assert_eq!(pb_g.lunges_in_flight(), 1);
+    assert_eq!(pb_g.calls(), pb_n.calls());
+    assert!(matches!(
+        pb_g.calls().last(),
+        Some(SceneCall::LungeStart { t0, .. }) if *t0 == m.t0
+    ));
+    assert!(grid == nominal, "same scene as the nominal blow");
+    assert_ne!(pos_of(&grid, m.att), pos_of(&q, m.att), "lunge moved");
+    for off in [144.0, 151.0, 159.0, 161.0, 166.0, 176.0, 192.0] {
+        let (bad, pb_b, rb, _) = run(m.t0 + off);
+        assert_eq!(
+            rb,
+            Err(PlaybackError::HitAt {
+                t0: m.t0,
+                hit_at: m.t0 + off
+            }),
+            "offset {off}"
+        );
+        assert_eq!(pb_b.lunges_in_flight(), 0, "offset {off}");
+        assert!(bad == q, "offset {off}: nothing reached the scene");
+    }
 }

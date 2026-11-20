@@ -785,3 +785,48 @@ fn facing_turn_before_step_matches_pin_calls() {
         "the turn reached the scene"
     );
 }
+
+/// HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): the engine session lands a unit shot on the 16 ms frame grid
+/// (`_schedule(RANGED_FLY_MS)`, `:9223`; `_drainTimers` fires it in the first frame with `vNow >= due`: `t0 + 384`).
+/// The playback accepts it (same scene calls and scene as the nominal `t0 + RANGED_FLY_MS`); other moments stay errors.
+#[test]
+fn hitat_fq_shot_on_frame_grid_is_played_like_nominal() {
+    let (_, q) = base();
+    let (a, d) = (uid("def0"), uid("atk2"));
+    let t0 = 30_000.0;
+    let run = |land_at: f64| {
+        let mut s = q.clone();
+        let mut pb = BattlePlayback::new(&s, PlaybackOpts::default());
+        pb.push_actions(&[act(
+            t0,
+            BattleActionKindDto::Shot {
+                attacker: a,
+                target: d,
+                land_at,
+            },
+        )])
+        .expect("push");
+        let r = pb.play_until(&mut s, t0, 0.0);
+        (s, pb, r)
+    };
+    let (nominal, pb_n, rn) = run(t0 + RANGED_FLY_MS);
+    assert_eq!(rn, Ok(()));
+    let (grid, pb_g, rg) = run(t0 + 384.0);
+    assert_eq!(rg, Ok(()), "frame-grid landing accepted");
+    assert_eq!(pb_g.projectiles().len(), 1);
+    assert_eq!(pb_g.calls(), pb_n.calls());
+    assert!(grid == nominal, "same scene as the nominal landing");
+    for off in [368.0, 379.0, 381.0, 383.0, 385.0, 396.0, 400.0] {
+        let (bad, pb_b, rb) = run(t0 + off);
+        assert_eq!(
+            rb,
+            Err(PlaybackError::ShotLandAt {
+                t0,
+                land_at: t0 + off
+            }),
+            "offset {off}"
+        );
+        assert!(pb_b.projectiles().is_empty(), "offset {off}");
+        assert!(bad == q, "offset {off}: nothing reached the scene");
+    }
+}
