@@ -6,10 +6,8 @@
 
 pub use civ_engine::domain::dto_bridge::RenderLayersPayload;
 pub use civ_engine::domain::render_frame::{RenderFramePayload, RenderMapPayload, RenderUiParams};
-pub use civ_engine::domain::siege_battle_apply::{
-    SiegeBattleErrorDto, SiegeBattlePayload, SiegeTowerShooterDto, WallMs,
-};
 use civ_engine::domain::siege_battle_apply::SiegeBattleError;
+pub use civ_engine::domain::siege_battle_apply::{SiegeBattleErrorDto, SiegeBattlePayload, WallMs};
 pub use civ_engine::StartGameParams;
 use civ_engine::{PlayableGame, PlayablePlayer, PlayableState, PositionDto};
 use serde::{Deserialize, Serialize};
@@ -102,7 +100,8 @@ pub enum EngineCommand {
     /// R-RUSTPORT-P4-1I6-DLUGI-Q1 (D-1I6D-3, debts D-1I6-ORPHAN / D-1I6-ABORT-E2E): close the running battle without a
     /// result (the caller could not open the scene after `StartSiegeStorm`). The game state is unchanged (machines
     /// not consumed; web `onCancel` of the scene, `main.ts:37017`); `siegeBattle.phase = aborted`; no
-    /// `StateChanged`. Without a battle: `noActiveBattle`. Additive: `CONTRACT_VERSION` stays 1.
+    /// `StateChanged`. Without a battle: `noActiveBattle`; after the first `Step`/`Skip`: `abortNotAllowed` (D-1I6D-4,
+    /// no escape from a running or finished battle). Additive: `CONTRACT_VERSION` stays 1.
     AbortSiegeBattle,
 }
 
@@ -380,7 +379,7 @@ fn abort_siege_battle(game: &mut PlayableGame) -> Result<SiegeBattlePayload, Sie
     let battle = game
         .siege_battle()
         .ok_or(SiegeBattleError::NoActiveBattle)?;
-    battle.request_abort();
+    battle.request_abort()?;
     match game.finish_siege_battle() {
         Err(SiegeBattleError::Aborted { city_id, .. }) if game.siege_battle().is_none() => {
             Ok(SiegeBattlePayload::aborted(city_id))

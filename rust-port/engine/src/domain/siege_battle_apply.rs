@@ -72,14 +72,14 @@ use serde::{Deserialize, Serialize};
 use crate::data::civilizations::parse_civ_matrix;
 use crate::data::economy_society_part2::parse_ai_params;
 use crate::domain::battle_setup_terrain::WorldTerrainInput;
+use crate::domain::battle_setup_units::Side;
+use crate::domain::city_towers::strongest_ranged_unit_for_era;
 use crate::domain::city_view::ikona_id_to_bronze_civ;
 use crate::domain::civ_bonuses::civ_matrix_bonusy_for_civ_key;
 use crate::domain::diplomacy::RelationStatus;
 use crate::domain::playable::{
     MovementPoints, PlayableReplaceUnit, PlayableSiegeMachineKind, PlayableState, PlayableTerrain,
 };
-use crate::domain::battle_setup_units::Side;
-use crate::domain::city_towers::strongest_ranged_unit_for_era;
 use crate::domain::siege_battle_adapter::{
     collect_siege_rosters, is_civilian_unit, unit_def_index, AdapterError, RosterUnit,
     SiegeRosterInput, BATTLE_MAX_PER_SIDE,
@@ -91,10 +91,10 @@ use crate::domain::siege_battle_adapter_playable::{
 use crate::domain::siege_battle_adapter_unit::{
     roster_to_battle_units, AdapterBattleUnit, OwnerContext, RosterBattleCtx,
 };
-use crate::domain::siege_city_fortification::CityFortificationKind;
 use crate::domain::siege_battle_session::{
     SessionData, SessionError, SessionOutcome, SessionPhase, SiegeBattleSession, SiegeSessionInput,
 };
+use crate::domain::siege_city_fortification::CityFortificationKind;
 use crate::domain::siege_tactics_actions::{actions_to_dto, TimedAction};
 use crate::domain::siege_tactics_breach::WallState;
 use crate::domain::siege_tactics_end::BattleSide;
@@ -155,6 +155,10 @@ pub enum SiegeBattleError {
     /// P4-1I6-DLUGI (D-1I6D-3): wołający zażądał porzucenia bitwy (`AbortSiegeBattle`, np. klient nie zbudował sceny);
     /// źródło [`Self::Aborted`] w `FinishSiegeBattle`, nie wychodzi poza grę.
     AbortRequested,
+    /// P4-1I6-DLUGI (D-1I6D-4): porzucenie dozwolone tylko zaraz po `StartSiegeStorm` (przed pierwszym `Step`/`Skip`):
+    /// web nie ma wyjścia ze sceny bez wyniku poza `onCancel` rozstawienia, więc porzucenie trwającej albo zakończonej
+    /// bitwy (ucieczka przed wynikiem) jest odrzucane; bitwa i stan bez zmian.
+    AbortNotAllowed { city_id: u64 },
 }
 
 impl std::fmt::Display for SiegeBattleError {
@@ -209,6 +213,10 @@ impl std::fmt::Display for SiegeBattleError {
                 "siege battle at city {city_id} closed without a result: {reason}"
             ),
             Self::AbortRequested => f.write_str("siege battle aborted by the caller"),
+            Self::AbortNotAllowed { city_id } => write!(
+                f,
+                "siege battle at city {city_id} is already driven: abort only right after the start"
+            ),
         }
     }
 }
@@ -278,6 +286,8 @@ pub enum SiegeBattleErrorDto {
     Aborted { city_id: u64, reason: String },
     /// [`SiegeBattleError::AbortRequested`] (nie wychodzi z gry: `Finish` zamienia go na `Aborted`).
     AbortRequested,
+    /// [`SiegeBattleError::AbortNotAllowed`]: porzucenie po pierwszym `Step`/`Skip` odrzucone (bitwa trwa).
+    AbortNotAllowed { city_id: u64 },
 }
 
 impl SiegeBattleErrorDto {
@@ -292,18 +302,18 @@ impl From<&SiegeBattleError> for SiegeBattleErrorDto {
     fn from(e: &SiegeBattleError) -> Self {
         match e {
             SiegeBattleError::NoActiveBattle => Self::NoActiveBattle,
-            SiegeBattleError::BattleInProgress { city_id } => Self::BattleInProgress {
-                city_id: *city_id,
-            },
-            SiegeBattleError::NotHumanBesieger { unit_id } => Self::NotHumanBesieger {
-                unit_id: *unit_id,
-            },
+            SiegeBattleError::BattleInProgress { city_id } => {
+                Self::BattleInProgress { city_id: *city_id }
+            }
+            SiegeBattleError::NotHumanBesieger { unit_id } => {
+                Self::NotHumanBesieger { unit_id: *unit_id }
+            }
             SiegeBattleError::CityNotFound(id) => Self::CityNotFound { city_id: *id },
             SiegeBattleError::UnitNotFound(id) => Self::UnitNotFound { unit_id: *id },
             SiegeBattleError::CityTileMissing(id) => Self::CityTileMissing { city_id: *id },
-            SiegeBattleError::NoDefendersWallIntact { city_id } => Self::NoDefendersWallIntact {
-                city_id: *city_id,
-            },
+            SiegeBattleError::NoDefendersWallIntact { city_id } => {
+                Self::NoDefendersWallIntact { city_id: *city_id }
+            }
             SiegeBattleError::NoDefendersCaptureRequested { city_id } => {
                 Self::NoDefendersCaptureRequested { city_id: *city_id }
             }
@@ -337,6 +347,9 @@ impl From<&SiegeBattleError> for SiegeBattleErrorDto {
                 reason: reason.clone(),
             },
             SiegeBattleError::AbortRequested => Self::AbortRequested,
+            SiegeBattleError::AbortNotAllowed { city_id } => {
+                Self::AbortNotAllowed { city_id: *city_id }
+            }
         }
     }
 }
@@ -368,18 +381,18 @@ impl SiegeBattleErrorDto {
     fn to_error(&self) -> Option<SiegeBattleError> {
         Some(match self {
             Self::NoActiveBattle => SiegeBattleError::NoActiveBattle,
-            Self::BattleInProgress { city_id } => SiegeBattleError::BattleInProgress {
-                city_id: *city_id,
-            },
-            Self::NotHumanBesieger { unit_id } => SiegeBattleError::NotHumanBesieger {
-                unit_id: *unit_id,
-            },
+            Self::BattleInProgress { city_id } => {
+                SiegeBattleError::BattleInProgress { city_id: *city_id }
+            }
+            Self::NotHumanBesieger { unit_id } => {
+                SiegeBattleError::NotHumanBesieger { unit_id: *unit_id }
+            }
             Self::CityNotFound { city_id } => SiegeBattleError::CityNotFound(*city_id),
             Self::UnitNotFound { unit_id } => SiegeBattleError::UnitNotFound(*unit_id),
             Self::CityTileMissing { city_id } => SiegeBattleError::CityTileMissing(*city_id),
-            Self::NoDefendersWallIntact { city_id } => SiegeBattleError::NoDefendersWallIntact {
-                city_id: *city_id,
-            },
+            Self::NoDefendersWallIntact { city_id } => {
+                SiegeBattleError::NoDefendersWallIntact { city_id: *city_id }
+            }
             Self::NoDefendersCaptureRequested { city_id } => {
                 SiegeBattleError::NoDefendersCaptureRequested { city_id: *city_id }
             }
@@ -401,6 +414,9 @@ impl SiegeBattleErrorDto {
                 reason: reason.clone(),
             },
             Self::AbortRequested => SiegeBattleError::AbortRequested,
+            Self::AbortNotAllowed { city_id } => {
+                SiegeBattleError::AbortNotAllowed { city_id: *city_id }
+            }
             Self::AnchorCannotAttack { .. }
             | Self::NotFinished
             | Self::Session { .. }
@@ -678,8 +694,17 @@ impl ActiveSiegeBattle {
     /// [`SiegeBattleError::AbortRequested`], a `PlayableGame::finish_siege_battle` (D-WIRB-8) zamyka bitwę bez zmiany
     /// stanu i zwraca `Aborted`. Odpowiednik webu: `onCancel` sceny (`main.ts:37017`, deploy anulowany: brak wyniku,
     /// machiny nie zużyte).
-    pub fn request_abort(&self) {
+    ///
+    /// # Errors
+    /// [`SiegeBattleError::AbortNotAllowed`] po pierwszym `Step`/`Skip` (D-1I6D-4; flaga nieustawiona).
+    pub fn request_abort(&self) -> Result<(), SiegeBattleError> {
+        if !self.ops.is_empty() {
+            return Err(SiegeBattleError::AbortNotAllowed {
+                city_id: self.city_id,
+            });
+        }
         self.abort_requested.store(true, Ordering::Relaxed);
+        Ok(())
     }
 
     /// Wejście sesji (testy i diagnostyka).
@@ -1186,7 +1211,10 @@ fn scene_battle_units(
         fallback: data.fallback,
     };
     let mut out = BTreeMap::new();
-    for (si, roster, side) in [(0usize, &rosters.atk, Side::Atk), (1, &rosters.def, Side::Def)] {
+    for (si, roster, side) in [
+        (0usize, &rosters.atk, Side::Atk),
+        (1, &rosters.def, Side::Def),
+    ] {
         let capped = &roster[..roster.len().min(BATTLE_MAX_PER_SIDE)];
         for bu in roster_to_battle_units(capped, side, &ctx)? {
             out.insert((si, bu.id.clone()), bu);
