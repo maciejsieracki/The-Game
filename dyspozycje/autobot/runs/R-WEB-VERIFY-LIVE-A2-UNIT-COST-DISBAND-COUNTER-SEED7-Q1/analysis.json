@@ -1,0 +1,218 @@
+{
+ "7": {
+  "t30": {
+   "wspolnychWlascicieli": 15,
+   "aiZywyNiski": 17,
+   "aiZywyNormalny": 16,
+   "jednostkiWspolni_niski": 68,
+   "jednostkiWspolni_normalny": 42,
+   "jednostkiWszyscy_niski": 70,
+   "jednostkiWszyscy_normalny": 43,
+   "roznicaProc_wspolni": "-38.24",
+   "przeplyw_niski": {
+    "noweId": 74,
+    "zniknieteBezPrzyczyny": 5,
+    "przyczyny": {
+     "rozwiazanie-ai": 14
+    }
+   },
+   "przeplyw_normalny": {
+    "noweId": 49,
+    "zniknieteBezPrzyczyny": 2,
+    "przyczyny": {
+     "rozwiazanie-ai": 18
+    }
+   }
+  },
+  "t60": {
+   "wspolnychWlascicieli": 15,
+   "aiZywyNiski": 17,
+   "aiZywyNormalny": 15,
+   "jednostkiWspolni_niski": 224,
+   "jednostkiWspolni_normalny": 180,
+   "jednostkiWszyscy_niski": 227,
+   "jednostkiWszyscy_normalny": 180,
+   "roznicaProc_wspolni": "-19.64",
+   "przeplyw_niski": {
+    "noweId": 233,
+    "zniknieteBezPrzyczyny": 7,
+    "przyczyny": {
+     "rozwiazanie-ai": 14
+    }
+   },
+   "przeplyw_normalny": {
+    "noweId": 197,
+    "zniknieteBezPrzyczyny": 9,
+    "przyczyny": {
+     "rozwiazanie-ai": 21
+    }
+   }
+  },
+  "t90": {
+   "wspolnychWlascicieli": 14,
+   "aiZywyNiski": 17,
+   "aiZywyNormalny": 14,
+   "jednostkiWspolni_niski": 467,
+   "jednostkiWspolni_normalny": 334,
+   "jednostkiWszyscy_niski": 473,
+   "jednostkiWszyscy_normalny": 334,
+   "roznicaProc_wspolni": "-28.48",
+   "przeplyw_niski": {
+    "noweId": 484,
+    "zniknieteBezPrzyczyny": 14,
+    "przyczyny": {
+     "rozwiazanie-ai": 14
+    }
+   },
+   "przeplyw_normalny": {
+    "noweId": 357,
+    "zniknieteBezPrzyczyny": 14,
+    "przyczyny": {
+     "rozwiazanie-ai": 21
+    }
+   }
+  },
+  "utrzymaniePerEpoka": {
+   "niski": {
+    "2": {
+     "ownerTury": 1829,
+     "srPieniadz": "44.99",
+     "srZywnosc": "43.83",
+     "srSurowceSuma": "30.36",
+     "glodTur": 0
+    },
+    "3": {
+     "ownerTury": 83,
+     "srPieniadz": "408.77",
+     "srZywnosc": "401.54",
+     "srSurowceSuma": "260.41",
+     "glodTur": 0
+    }
+   },
+   "normalny": {
+    "2": {
+     "ownerTury": 1789,
+     "srPieniadz": "64.59",
+     "srZywnosc": "63.47",
+     "srSurowceSuma": "44.81",
+     "glodTur": 45
+    },
+    "3": {
+     "ownerTury": 50,
+     "srPieniadz": "505.12",
+     "srZywnosc": "491.04",
+     "srSurowceSuma": "323.16",
+     "glodTur": 0
+    }
+   }
+  }
+ },
+ "4242": {
+  "t30": {
+   "wspolnychWlascicieli": 15,
+   "aiZywyNiski": 15,
+   "aiZywyNormalny": 16,
+   "jednostkiWspolni_niski": 63,
+   "jednostkiWspolni_normalny": 39,
+   "jednostkiWszyscy_niski": 63,
+   "jednostkiWszyscy_normalny": 40,
+   "roznicaProc_wspolni": "-38.1",
+   "przeplyw_niski": {
+    "noweId": 58,
+    "zniknieteBezPrzyczyny": 1,
+    "przyczyny": {
+     "rozwiazanie-ai": 5
+    }
+   },
+   "przeplyw_normalny": {
+    "noweId": 35,
+    "zniknieteBezPrzyczyny": 1,
+    "przyczyny": {
+     "rozwiazanie-ai": 7
+    }
+   }
+  },
+  "t60": {
+   "wspolnychWlascicieli": 15,
+   "aiZywyNiski": 15,
+   "aiZywyNormalny": 16,
+   "jednostkiWspolni_niski": 224,
+   "jednostkiWspolni_normalny": 163,
+   "jednostkiWszyscy_niski": 224,
+   "jednostkiWszyscy_normalny": 164,
+   "roznicaProc_wspolni": "-27.23",
+   "przeplyw_niski": {
+    "noweId": 223,
+    "zniknieteBezPrzyczyny": 5,
+    "przyczyny": {
+     "rozwiazanie-ai": 5
+    }
+   },
+   "przeplyw_normalny": {
+    "noweId": 166,
+    "zniknieteBezPrzyczyny": 7,
+    "przyczyny": {
+     "rozwiazanie-ai": 8
+    }
+   }
+  },
+  "t90": {
+   "wspolnychWlascicieli": 14,
+   "aiZywyNiski": 14,
+   "aiZywyNormalny": 15,
+   "jednostkiWspolni_niski": 499,
+   "jednostkiWspolni_normalny": 315,
+   "jednostkiWszyscy_niski": 499,
+   "jednostkiWszyscy_normalny": 317,
+   "roznicaProc_wspolni": "-36.87",
+   "przeplyw_niski": {
+    "noweId": 508,
+    "zniknieteBezPrzyczyny": 14,
+    "przyczyny": {
+     "rozwiazanie-ai": 5
+    }
+   },
+   "przeplyw_normalny": {
+    "noweId": 333,
+    "zniknieteBezPrzyczyny": 15,
+    "przyczyny": {
+     "rozwiazanie-ai": 14
+    }
+   }
+  },
+  "utrzymaniePerEpoka": {
+   "niski": {
+    "2": {
+     "ownerTury": 1746,
+     "srPieniadz": "41.32",
+     "srZywnosc": "40.47",
+     "srSurowceSuma": "28.61",
+     "glodTur": 1
+    },
+    "3": {
+     "ownerTury": 79,
+     "srPieniadz": "324.61",
+     "srZywnosc": "319.44",
+     "srSurowceSuma": "208.29",
+     "glodTur": 0
+    }
+   },
+   "normalny": {
+    "2": {
+     "ownerTury": 1840,
+     "srPieniadz": "56.16",
+     "srZywnosc": "55.55",
+     "srSurowceSuma": "39.78",
+     "glodTur": 58
+    },
+    "3": {
+     "ownerTury": 42,
+     "srPieniadz": "376.95",
+     "srZywnosc": "367.81",
+     "srSurowceSuma": "246.52",
+     "glodTur": 0
+    }
+   }
+  }
+ }
+}

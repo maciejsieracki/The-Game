@@ -110,3 +110,66 @@ Wniosek z tabeli: próg „spadek >30% w t90” przekroczony także na wspólnyc
 **Głód wojska** (korekta do §4): patrz §4, punkt „Brak deficytu złota; głód wojska tylko w Normalnym”.
 
 **Stan pozostałych zarzutów Obrony r2:** zarzut 4 — dodano do `gra/tools/ai-economy-measure-hook-test.cjs` asercje na `setUnitCostPace`/`unitCostPaceState` i `zywnoscArmiiTura` oraz pole `zywnoscArmiiTura` w `OWNER_KEYS`; wynik zielony 25/25; mutacja dowodowa (hak ignoruje tempo) daje 2 czerwone asercje, 23/25. Zarzut 5 — seed 7 i pierwszy odcinek bez flag Chromium NIE ZMIERZONO; nie ponawiano biegów.
+
+## 8. Licznik rozwiązań jednostek, seed 7 i mechanizm spadku (R-WEB-VERIFY-LIVE-A2-UNIT-COST-DISBAND-COUNTER-SEED7-Q1)
+
+Baza: `origin/main` 2ae9a3b87 (kod gry w tym przebiegu; bundle zbudowany poza repo). Warunki: 90 tur, rebalans ON (`--rebalance 1`), tempo `niski` vs `normalny`, ziarna 4242 i 7, runner `--unit-flow 1`. Dane surowe: `dyspozycje/autobot/runs/R-WEB-VERIFY-LIVE-A2-UNIT-COST-DISBAND-COUNTER-SEED7-Q1/*.jsonl.gz` (89 wierszy tur 2–90 na bieg, bez duplikatów). Analiza: `analyze-unit-flow.cjs` w tym samym katalogu (wynik: `analysis.json`).
+
+**Uwaga o porównaniu z §3:** liczby poniżej pochodzą z NOWEGO biegu na bieżącym main (po FALACH 880–888), nie z biegu VERIFYLIVEA; nie są bezpośrednio porównywalne z tabelą §3.
+
+### 8.1 Jednostki AI (wspólni właściciele żywi w obu biegach; suma `jednostkiWojskowe`)
+
+| Ziarno | Tura | Wspólnych | Niski | Normalny | Różnica |
+|---|---|---|---|---|---|
+| 4242 | 30 | 15 | 63 | 39 | −38,1% |
+| 4242 | 60 | 15 | 224 | 163 | −27,2% |
+| 4242 | 90 | 14 | 499 | 315 | −36,9% |
+| 7 | 30 | 15 | 68 | 42 | −38,2% |
+| 7 | 60 | 15 | 224 | 180 | −19,6% |
+| 7 | 90 | 14 | 467 | 334 | −28,5% |
+
+Spadek w t90 na wspólnych właścicielach: −36,9% (4242) i −28,5% (7). Progu decyzyjnego tu nie wskazuję (zgodnie z dispatchem); liczby podane surowo.
+
+**Zakres podgrupy (obrona r2, zarzut 4):** wspólni właściciele to 14–15 z ok. 41 AI (§3). Wszystkie liczby w §8 dotyczą tej podgrupy, nie całej populacji AI.
+
+**Zerowy bieg i liczby z nowego biegu (obrona r2, zarzut 5):** Niski seed 4242 t90 = 499 w tym biegu, a 465 w VERIFYLIVEA (§3). Różnica pochodzi z nowego biegu na main po FALACH 880–888. NIE ZWERYFIKOWANO niezależnie: każdy bieg 90 tur wykonano jeden raz (per ziarno × tempo), bez powtórzeń.
+
+### 8.2 Przepływ jednostek AI od tury 2 do 90 (skumulowany, wspólni właściciele)
+
+| Ziarno | Tempo | Nowe id (`noweId`) | Rozwiązane (`rozwiazanie-ai`) | Zniknięte bez przyczyny | Zmiana stanu |
+|---|---|---|---|---|---|
+| 4242 | niski | 508 | 5 | 14 | +489 |
+| 4242 | normalny | 333 | 14 | 15 | +304 |
+| 7 | niski | 484 | 14 | 14 | +456 |
+| 7 | normalny | 357 | 21 | 14 | +322 |
+
+- Brak usunięć z przyczyną `glod-armii`, `glod-oblezenie` i `deficyt-zlota` we wszystkich czterech biegach (0 zdarzeń). Uwaga: tagi tych trzech przyczyn NIE są przypięte testem (brak haka ustawiającego stan; test hook przypina `rozwiazanie-gracz` i `rozwiazanie-ai`). Zero zdarzeń jest więc zmierzonym zerem w tych biegach, a nie dowodem poprawności tagu. Miejsca (plik:linia): `main.ts:43753` (`glod-armii`, głód armii `hp<=0`), `main.ts:43984` (`glod-oblezenie`), `main.ts:44308` (`deficyt-zlota`), `main.ts:40073` (`eliminacja-wlasciciela`), `main.ts:7681` (`rozwiazanie-ai`), `main.ts:7977` (`rozwiazanie-gracz`).
+- `eliminacja-wlasciciela` (wszystkie właściciele, nie tylko wspólni): 24–26 zdarzeń jednostek na bieg; nie wchodzi do tabeli wspólnych.
+- Zniknięte bez przyczyny = walka po bitwie (`post-battle-map.ts` `removeUnitById`) i inne ścieżki bez znacznika (w tym przejęcie miasta, `main.ts` ok. linii 19115); NIE ROZDZIELONO walki od pozostałych — NIE ZMIERZONO osobno.
+- `noweId` = każde nowe id jednostki od poprzedniej tury (rekrutacja i ewentualne inne tworzenie); NIE rozdzielono rekrutacji od innych źródeł. Nie ma osobnego licznika rekrutacji: teza „rekrutacja, nie rozpad” jest WNIOSKIEM ze zmiany stanu i liczby nowych id, a nie pomiarem rekrutacji.
+
+### 8.3 Główna przyczyna różnicy Niski vs Normalny
+
+Różnica zmiany stanu (niski − normalny) w t90: 4242 = 185; 7 = 134. Różnica `noweId` (niski − normalny) w t90: 4242 = 175 (95% różnicy stanu); 7 = 127 (95%). Różnica usunięć jest mała i w obu ziarnach ma znak przeciwny (Normalny usuwa 10 i 7 jednostek więcej). Wniosek (wnioskowanie ze zmiany stanu, nie pomiar rekrutacji): główną przyczyną różnicy są mniej nowe id w tempie Normalnym, a usunięcia z przyczyną (głód, deficyt, rozwiązanie) nie tłumaczą różnicy. Dlaczego nowych id jest mniej (koszt ×2 vs popyt na armię) — NIE ZMIERZONO.
+
+### 8.4 Utrzymanie armii per epoka (AI, owner-tury z jednostkami; średnia na właściciela-turę)
+
+| Ziarno | Tempo | Epoka | Owner-tury | Pieniądz | Żywność | Surowce (suma) | Tury z głodem |
+|---|---|---|---|---|---|---|---|
+| 4242 | niski | 2 | 1746 | 41,3 | 40,5 | 28,6 | 1 |
+| 4242 | niski | 3 | 79 | 324,6 | 319,4 | 208,3 | 0 |
+| 4242 | normalny | 2 | 1840 | 56,2 | 55,6 | 39,8 | 58 |
+| 4242 | normalny | 3 | 42 | 377,0 | 367,8 | 246,5 | 0 |
+| 7 | niski | 2 | 1829 | 45,0 | 43,8 | 30,4 | 0 |
+| 7 | niski | 3 | 83 | 408,8 | 401,5 | 260,4 | 0 |
+| 7 | normalny | 2 | 1789 | 64,6 | 63,5 | 44,8 | 45 |
+| 7 | normalny | 3 | 50 | 505,1 | 491,0 | 323,2 | 0 |
+
+Epoka 3 ma mało owner-tur (późne tury, mało właścicieli); epoka 1 i 4 nie występują w tych biegach z jednostkami AI.
+
+### 8.5 Wniosek (tylko liczby)
+
+- Spadek liczby jednostek AI w t90 na wspólnych właścicielach: −36,9% (4242) i −28,5% (7). Na ziarnie 7 spadek jest poniżej 30%, więc nie powtarza się z progiem dispatchu.
+- Mechanizm w obu ziarnach (wnioskowany z liczb, patrz 8.3): mniej NOWYCH id w tempie Normalnym (95% różnicy stanu), usunięcia podobne lub mniejsze. Nie zaobserwowano usunięć z przyczyną głód lub deficyt złota (0 zdarzeń; tagi nieprzypięte, patrz 8.2). Usunięcia bez przyczyny (w tym walka) nie są rozdzielone, więc rozpadu armii przez walkę NIE WYKLUCZONO.
+- Głód wojska w tempie Normalnym: 58 (4242) i 45 (7) owner-tur z głodem; w Niskim 1 i 0. Ten głód nie usuwa jednostek w tym pomiarze (atrycja HP nie była liczona).
+- NIE ZMIERZONO: powód mniejszej liczby nowych id (koszt ×2 vs popyt); osobny licznik rekrutacji; udział walki w `zniknięte bez przyczyny`; wpływ głodu na HP; niezależne powtórzenie biegów 90 tur; tagi glod-armii, glod-oblezenie, deficyt-zlota, eliminacja-wlasciciela (nieprzypięte testem).
