@@ -251,13 +251,17 @@ between(/import\s*\{[^}]*snapshotWonderTerritoryOwners[^}]*planWonderTransfers[^
 between(/function settleWonderTransfer\([^)]*\)[^{]*\{[\s\S]{0,400}?planWonderTransfers\(placedWorldWonders[\s\S]{0,200}?applyWonderTransfers\(placedWorldWonders, plan\)[\s\S]{0,1800}?syncWonderRender\(\);[\s\S]{0,200}?markCityStateDirty\(\);/,
   'main.ts: settle stosuje plan na placedWorldWonders, odświeża render i ekonomię');
 between(/Zdobyto cud:[\s\S]{0,400}?Utracono cud:/, 'main.ts: powiadomienia „Zdobyto cud" / „Utracono cud"');
-between(/const wonderWatchSurrender = beginWonderTransferWatch\(\);[\s\S]{0,6000}?city\.ownerId = newOwner;\s*settleWonderTransfer\(wonderWatchSurrender\);/,
+// R-WEB-TEST-DEBT-Q13 r5: okno 6000 -> 16000 (funkcja urosla ~13,4 tys. zn.) + opcjonalny wpis ledgera zasobow (recordOwnersStockDeltaToPending) miedzy przypisaniem wlasciciela a settle.
+between(/const wonderWatchSurrender = beginWonderTransferWatch\(\);[\s\S]{0,16000}?city\.ownerId = newOwner;\s*(?:recordOwnersStockDeltaToPending\([^;]*;\s*)?settleWonderTransfer\(wonderWatchSurrender\);/,
   'main.ts: kapitulacja głodowa owinięta migawkami');
 between(/const wonderWatchAnnex = beginWonderTransferWatch\(\);[\s\S]{0,1500}?for \(const city of csCities\) \{[\s\S]{0,500}?city\.ownerId = annexerId;[\s\S]{0,1500}?\}\s*settleWonderTransfer\(wonderWatchAnnex\);/,
   'main.ts: aneksja miasta-państwa owinięta migawkami');
-between(/const wonderWatchCession = beginWonderTransferWatch\(\);[\s\S]{0,700}?city\.ownerId = toOwnerId;\s*settleWonderTransfer\(wonderWatchCession\);/,
+between(/const wonderWatchCession = beginWonderTransferWatch\(\);[\s\S]{0,1200}?city\.ownerId = toOwnerId;\s*(?:recordOwnersStockDeltaToPending\([^;]*;\s*)?settleWonderTransfer\(wonderWatchCession\);/,
   'main.ts: cesja w pokoju owinięta migawkami');
-between(/const wonderWatchRebel = beginWonderTransferWatch\(\);[^\n]*\n\s*markCityRebellionStarted\(city\);[\s\S]{0,200}?city\.ownerId = REBEL_FACTION_OWNER_ID;\s*settleWonderTransfer\(wonderWatchRebel\);/,
+// R-WEB-TEST-DEBT-Q13 r5: przypisanie REBEL_FACTION_OWNER_ID jest dzis w helperze transferCityToRebelFactionWithLedger (sprawdzany osobno nizej); settle stoi zaraz po wywolaniu helpera.
+between(/function transferCityToRebelFactionWithLedger\(city: City\): void \{[\s\S]{0,700}?city\.ownerId = REBEL_FACTION_OWNER_ID;/,
+  'main.ts: helper buntu przypisuje REBEL_FACTION_OWNER_ID');
+between(/const wonderWatchRebel = beginWonderTransferWatch\(\);[^\n]*\n\s*markCityRebellionStarted\(city\);[\s\S]{0,400}?transferCityToRebelFactionWithLedger\(city\);\s*settleWonderTransfer\(wonderWatchRebel\);/,
   'main.ts: rewolta owinięta migawkami');
 between(/const wonderWatchFort = beginWonderTransferWatch\(\);[\s\S]{0,400}?if \(evs\.length === 0\) return 0;\s*settleWonderTransfer\(wonderWatchFort\);/,
   'main.ts: zdobycie fortu (sweepFortCaptures) owinięte migawkami');
