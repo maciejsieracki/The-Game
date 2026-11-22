@@ -160,3 +160,5 @@ Uzupełnienie 2026-11-22 (druga seria ABC):
 9. Tor NAP AI↔AI (pomiar dał 0): **zostawić jak jest**.
 10. Stare pozycje UI z 2026-11-15/18 (lista wojsk 640 px, plakietka „+X”, Palisada→Mury, stała C AI→gracz): **uznane za zamknięte**.
 11. Pytania o wyścig o terytorium (P1–P5), drenaż Spichlerza i garnizon AI (sufit rezerwy, homeDefenderPool) były już rozstrzygnięte i wdrożone wcześniej (forty: decyzja B; Spichlerz: ABC A, FALA 867; garnizon: FALA 857) — wpisy w taskach usunięte jako nieaktualne.
+
+FALA 890 WDROŻONA (2026-11-22): AI bez utrzymania jednostek w turach 1–40 (ROBOCZA MD5 668f6110, main aa96cfc61). NASTĘPNE po poleceniu właściciela: polar A1 → Q14 (z Konnicą 98 i garnizonem) → parowanie wojen epoki → dopłata D 0,5. NIE ZMIERZONO skutku na żywo (Wysoki ×4); do weryfikacji w grze przez właściciela.
