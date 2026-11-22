@@ -31,7 +31,7 @@ fs.writeFileSync(ENTRY, [
   `export * from ${JSON.stringify(path.join(GRA, 'src/game/ai-free-unit-upkeep'))};`,
   `export * from ${JSON.stringify(path.join(GRA, 'src/game/unit-cost-tempo'))};`,
   `export * from ${JSON.stringify(path.join(GRA, 'src/game/ai-upkeep-runway'))};`,
-  `export { previewOwnerUpkeep, totalUnitUpkeep, unitFoodPerTurn, buildUnitUpkeepTable, buildUnitFoodTable } from ${JSON.stringify(path.join(GRA, 'src/game/economy-upkeep'))};`,
+  `export { previewOwnerUpkeep, totalUnitUpkeep, totalUnitResourceUpkeep, unitFoodPerTurn, buildUnitUpkeepTable, buildUnitFoodTable } from ${JSON.stringify(path.join(GRA, 'src/game/economy-upkeep'))};`,
   `export { previewOwnerUpkeep as previewTurn, militaryFoodConsumptionWithSpichlerz } from ${JSON.stringify(path.join(GRA, 'src/game/turn-economy'))};`,
   `export { loadUpkeepParams } from ${JSON.stringify(path.join(GRA, 'src/game/economy-upkeep'))};`,
 ].join('\n') + '\n', 'utf8');
@@ -115,16 +115,24 @@ const upkeepParams = M.loadUpkeepParams(data.econParams, 'normal');
 const unitUpkeepTbl = M.buildUnitUpkeepTable(data.units);
 const foodTbl = M.buildUnitFoodTable(data.units);
 
-const previewFor = (ownerId, turn, pace, params = P_ON) => {
+const previewFor = (ownerId, turn, pace, params = P_ON, n = 3) => {
   M.setAiFreeUnitUpkeepContext({ getTurn: () => turn, isHumanOwner: (o) => o === HUMAN, params });
   try {
-    return M.previewTurn(ownerId, [], data, 'normal', new Map(), mkUnits(ownerId, 3), 1, new Set(), undefined, undefined, new Map(), pace);
+    return M.previewTurn(ownerId, [], data, 'normal', new Map(), mkUnits(ownerId, n), 1, new Set(), undefined, undefined, new Map(), pace);
   } finally { M.setAiFreeUnitUpkeepContext(null); }
 };
 const foodFor = (ownerId, turn, pace, params = P_ON) => {
   M.setAiFreeUnitUpkeepContext({ getTurn: () => turn, isHumanOwner: (o) => o === HUMAN, params });
   try {
     return M.militaryFoodConsumptionWithSpichlerz(mkUnits(ownerId, 3), ownerId, upkeepParams, foodTbl, { kosztJednostekPace: pace });
+  } finally { M.setAiFreeUnitUpkeepContext(null); }
+};
+// Surowce utrzymania jednostek: ta sama funkcja, którą tick woła dla właściciela (turn-economy.ts).
+const resFor = (ownerId, turn, pace, params = P_ON) => {
+  M.setAiFreeUnitUpkeepContext({ getTurn: () => turn, isHumanOwner: (o) => o === HUMAN, params });
+  try {
+    const r = M.totalUnitResourceUpkeep(mkUnits(ownerId, 3), tid => data.units.find(u => u.Jednostka === tid), M.paceUtrzymaniaWlasciciela(ownerId, pace));
+    return Object.values(r).reduce((s, v) => s + (Number(v) || 0), 0);
   } finally { M.setAiFreeUnitUpkeepContext(null); }
 };
 
@@ -159,29 +167,69 @@ t('zywnosc gracz tura 40 wysoki > 0', () => {
   assert.ok(foodFor(HUMAN, 40, 'wysoki') > 0);
 });
 
-console.log('-- (d) bramka rekrutacji AI: okno vs po oknie --');
-const gateP = { runwayTurns: 15, margin: 0.1 };
-const base = { goldStock: 100, goldCost: 10, foodStock: 100, foodNetPerTurn: 5, unitFoodUpkeep: 1, unitGoldUpkeep: 4 };
-t('okno (netto zlota = przychod, utrzymanie 0): zakup dozwolony', () => {
-  assert.equal(M.aiUpkeepRunwayAllowsRecruit({ ...base, goldNetPerTurn: 5 }, gateP), true);
+t('surowce AI tura 40 wysoki = 0 (totalUnitResourceUpkeep przez okno)', () => {
+  assert.equal(resFor(AI, 40, 'wysoki'), 0);
 });
-t('po oknie (utrzymanie 30/tura): zakup zablokowany', () => {
-  assert.equal(M.aiUpkeepRunwayAllowsRecruit({ ...base, goldNetPerTurn: 5 - 30 }, gateP), false);
+t('surowce AI tura 41 wysoki > 0 i = 4 x niski', () => {
+  const hi = resFor(AI, 41, 'wysoki');
+  const lo = resFor(AI, 41, 'niski');
+  assert.ok(hi > 0, `hi=${hi}`);
+  assert.ok(Math.abs(hi - 4 * lo) < 1e-6, `hi=${hi} lo=${lo}`);
+});
+t('surowce gracz tura 40 wysoki > 0', () => {
+  assert.ok(resFor(HUMAN, 40, 'wysoki') > 0);
 });
 
-console.log('-- (e) wiring (pin tekstowy) --');
-const readSrc = (rel) => fs.readFileSync(path.join(GRA, rel), 'utf8');
-t('turn-economy: tick (upkeepBalance + totalUnitResourceUpkeep) przez paceUtrzymaniaWlasciciela', () => {
-  const s = readSrc('src/game/turn-economy.ts');
-  assert.ok(s.includes('paceUtrzymaniaWlasciciela(oid, unitPace)'), 'tick pin missing');
-  assert.ok(s.includes('paceUtrzymaniaWlasciciela(ownerId, kosztJednostekPace)'), 'preview pin missing');
-  assert.ok(s.includes('paceUtrzymaniaWlasciciela(ownerId, opts?.kosztJednostekPace'), 'food pin missing');
+console.log('-- (d) bramka rekrutacji AI: okno vs po oknie (dane z silnika) --');
+const gateP = { runwayTurns: 15, margin: 0.1 };
+const base = { goldStock: 100, goldCost: 10, foodStock: 100, foodNetPerTurn: 5, unitFoodUpkeep: 1, unitGoldUpkeep: 4 };
+t('syntetyczne: okno (netto zlota = przychod, utrzymanie 0): zakup dozwolony', () => {
+  assert.equal(M.aiUpkeepRunwayAllowsRecruit({ ...base, goldNetPerTurn: 5 }, gateP), true);
 });
-t('main.ts: garnizon, podglad rezerwy i bramka rekrutacji AI przez paceUtrzymaniaWlasciciela', () => {
+t('syntetyczne: po oknie (utrzymanie 30/tura): zakup zablokowany', () => {
+  assert.equal(M.aiUpkeepRunwayAllowsRecruit({ ...base, goldNetPerTurn: 5 - 30 }, gateP), false);
+});
+// Ta sama konstrukcja wejścia co aiUpkeepRunwayAllows (main.ts): przed = 3 jednostki, po = 4 jednostki,
+// utrzymanie złota z previewTurn (silnik + okno). Dowodzi, że bramka dostaje 0 w oknie, a pełny koszt po nim.
+const gateFromEngine = (turn) => {
+  const before = previewFor(AI, turn, 'wysoki', P_ON, 3).utrzymanieRazem;
+  const after = previewFor(AI, turn, 'wysoki', P_ON, 4).utrzymanieRazem;
+  return M.aiUpkeepRunwayAllowsRecruit({
+    goldStock: 100, goldCost: 10, goldNetPerTurn: 5 - before,
+    unitGoldUpkeep: Math.max(0, after - before),
+    foodStock: 100, foodNetPerTurn: 5, unitFoodUpkeep: 0,
+  }, gateP);
+};
+t('bramka z silnika: tura 40 (okno) -> unitGoldUpkeep 0 -> zakup dozwolony', () => {
+  assert.equal(gateFromEngine(40), true);
+});
+t('bramka z silnika: tura 41 -> pełny koszt -> zakup zablokowany', () => {
+  assert.equal(gateFromEngine(41), false);
+});
+
+console.log('-- (e) wiring (pin tekstowy, liczony) --');
+const readSrc = (rel) => fs.readFileSync(path.join(GRA, rel), 'utf8');
+const count = (s, needle) => s.split(needle).length - 1;
+t('turn-economy: tick (upkeepBalance + totalUnitResourceUpkeep) = 2 pinы, preview 1, food 1', () => {
+  const s = readSrc('src/game/turn-economy.ts');
+  assert.equal(count(s, 'paceUtrzymaniaWlasciciela(oid, unitPace)'), 2, 'tick pins (oczekiwane 2)');
+  assert.equal(count(s, 'paceUtrzymaniaWlasciciela(ownerId, kosztJednostekPace)'), 1, 'preview pin');
+  assert.equal(count(s, 'paceUtrzymaniaWlasciciela(ownerId, opts?.kosztJednostekPace'), 1, 'food pin');
+});
+t('main.ts: okno AI ustawiane w tickach (override) i zdejmowane przed faza AI i w finally', () => {
+  const s = readSrc('src/main.ts');
+  assert.ok(s.includes('getTurn: () => aiUpkeepTickTurnOverride ?? turn'), 'getTurn override missing');
+  assert.equal(count(s, 'aiUpkeepTickTurnOverride = turn - 1;'), 1, 'set after turn++');
+  assert.equal(count(s, 'aiUpkeepTickTurnOverride = null;'), 2, 'clear before runAiPhase + finally');
+  assert.ok(s.includes('aiUpkeepTickTurnOverride = null;\n          await runAiPhase();'), 'clear not directly before runAiPhase');
+});
+t('main.ts: wszystkie punkty utrzymania (garnizon, rezerwa, NNS, karty, statystyki AI) przez paceUtrzymaniaWlasciciela', () => {
   const s = readSrc('src/main.ts');
   assert.ok(s.includes('paceUtrzymaniaWlasciciela(city.ownerId'), 'garrison pin missing');
-  const n = s.split('paceUtrzymaniaWlasciciela(ownerId, kosztJednostekPaceUtrzymania())').length - 1;
-  assert.equal(n, 2, 'expected 2 preview pins, got ' + n);
+  assert.equal(count(s, 'paceUtrzymaniaWlasciciela(ownerId, kosztJednostekPaceUtrzymania())'), 4, 'podglad armii/rezerwa/bramka AI/NNS (4: 4161, 7707, 39513, 39558)');
+  assert.equal(count(s, 'paceUtrzymaniaWlasciciela(oid, kosztJednostekPaceUtrzymania())'), 2, 'NNS zloto+zywnosc (2)');
+  assert.equal(count(s, 'paceUtrzymaniaWlasciciela(o, kosztJednostekPaceUtrzymania())'), 3, 'statystyki AI: pieniadz, zywnosc, surowce (3)');
+  assert.ok(s.includes('paceUtrzymaniaWlasciciela(ownerId, pace)'), 'karta jednostki: utrzymanie (nie rekrutacja)');
   assert.ok(s.includes('setAiFreeUnitUpkeepContext({'), 'context install missing');
 });
 
