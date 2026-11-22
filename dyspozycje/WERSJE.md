@@ -1,3 +1,9 @@
+## ROBOCZA 668f6110 -- 2026-11-18 -- FALA 890: AI: darmowe utrzymanie jednostek wojskowych w turach 1-40 (testowa)
+
+- Cywilizacje AI nie płacą utrzymania jednostek wojskowych (złoto, surowce, żywność) w turach 1–40 włącznie; od tury 41 pełny koszt wg ustawienia „Koszty jednostek”. Rekrutacja nadal płatna; gracz bez zmian; bramka rekrutacji AI widzi utrzymanie 0 w oknie. Dane: gra/data/ai-free-unit-upkeep-params.json (wlaczone, tury=40).
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-free-unit-upkeep-test 34/0 (mutacje czerwone); unit-resource-upkeep 7/0; ai-upkeep-runway 17/0; ai-upkeep-wiring 4/0; upkeep-test 91/0; unit-cost-tempo 9/0; recruitment-no-upkeep-gate 37/0
+- Limity: Pomiar na żywo PRZED/PO (Wysoki ×4, seed 4242) NIE ZMIERZONO; karty jednostek i suwak AI pokazują globalne tempo (tylko wyświetlanie); wyjątki państw-miast i barbarzyńców niewdrożone (tylko człowiek/AI); unit-upkeep-cost-pace-test 1 FAIL istniał już na bazie
+
 ## ROBOCZA b69800bb -- 2026-11-18 -- FALA 889: gracz celem wojen epoki we wszystkich epokach (testowa)
 
 - Wojny epoki (Kamień/Brąz/Żelazo): gracz jest CELEM wymuszonych wojen epoki tak jak inne cywilizacje — także w fallbacku wolnego celu (FALA 881) i w parowaniu; zapis wejścia gracza w epokę (backfill), próg 40 tur liczony od wejścia gracza; opis reguły w ui-params zaktualizowany; hak pomiarowy tylko-do-odczytu __eraWarMeasure z powodami odrzuceń; progi testów wojen 40 tur
