@@ -997,6 +997,9 @@ import terrainCombatData from '../data/terrain-combat.json';
 import miastoParams from '../data/miasto-params.json';
 import aiParamsRaw from '../data/ai-params.json';
 import aiUpkeepParamsRaw from '../data/ai-upkeep-params.json';
+// R-WEB-AI-FREE-UNIT-UPKEEP-40-TURNS-Q1: darmowe utrzymanie jednostek AI w turach 1..tury (flaga w danych).
+import aiFreeUnitUpkeepParamsRaw from '../data/ai-free-unit-upkeep-params.json';
+import { setAiFreeUnitUpkeepContext, paceUtrzymaniaWlasciciela, type AiFreeUnitUpkeepParams } from './game/ai-free-unit-upkeep';
 import { aiUpkeepRunwayAllowsRecruit } from './game/ai-upkeep-runway';
 // R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2: P3/P4/P6/P7 — wszystko za flagą isDiploTickWarBrakeEnabled().
 import diplomacyTickParams from '../data/diplomacy-tick-params.json';
@@ -4155,7 +4158,7 @@ async function boot(): Promise<void> {
         ?? totalUnitResourceUpkeep(
           units.filter(u => u.ownerId === ownerId).map(u => ({ typeId: u.typeId })),
           typeId => data.units.find(u => u.Jednostka === typeId),
-          kosztJednostekPaceUtrzymania(),
+          paceUtrzymaniaWlasciciela(ownerId, kosztJednostekPaceUtrzymania()),
         );
       const accessLabels = new Set(diplomacyActiveResourceLabelsForOwner(ownerId));
       const territoryRates = empireTerritoryResourceRatesForOwner(ownerId);
@@ -7701,7 +7704,7 @@ async function boot(): Promise<void> {
         if (u.ownerId !== ownerId || u.isGeneral === true || isCivilianUnit(u)) continue;
         const c = cityAtUnit(u);
         if (!c || c.ownerId !== ownerId) continue;
-        const score = unitUpkeep({ typeId: u.typeId } as unknown as Parameters<typeof unitUpkeep>[0], nnsUnitUpkeepTblCache, std, kosztJednostekPaceUtrzymania());
+        const score = unitUpkeep({ typeId: u.typeId } as unknown as Parameters<typeof unitUpkeep>[0], nnsUnitUpkeepTblCache, std, paceUtrzymaniaWlasciciela(ownerId, kosztJednostekPaceUtrzymania()));
         const cur = best.get(c.id);
         if (!cur || score > cur.score) best.set(c.id, { id: u.id, score });
       }
@@ -7882,8 +7885,8 @@ async function boot(): Promise<void> {
               const protectedNow = nnsProtectedDefenderIds(oid);
               const infos: NnsAiUnitInfo[] = rows.filter(r => !removed.has(r.u.id)).map(r => ({
                 id: r.u.id,
-                zloto: unitUpkeep(r.e as unknown as Parameters<typeof unitUpkeep>[0], unitUpkeepTbl, ctx.upkeepParams.jednostkaUtrzymanieStd, kosztJednostekPaceUtrzymania()),
-                zywnosc: unitFoodPerTurn(r.e, ctx.upkeepParams, unitFoodTbl, kosztJednostekPaceUtrzymania()),
+                zloto: unitUpkeep(r.e as unknown as Parameters<typeof unitUpkeep>[0], unitUpkeepTbl, ctx.upkeepParams.jednostkaUtrzymanieStd, paceUtrzymaniaWlasciciela(oid, kosztJednostekPaceUtrzymania())),
+                zywnosc: unitFoodPerTurn(r.e, ctx.upkeepParams, unitFoodTbl, paceUtrzymaniaWlasciciela(oid, kosztJednostekPaceUtrzymania())),
                 obronna: nnsUnitIsDefender(r.u, oid, protectedNow),
               }));
               const levers: NnsLever[] = buildAiLevers({
@@ -9482,7 +9485,7 @@ async function boot(): Promise<void> {
         typeId: u.typeId,
         category: u.category ?? String(lookupUnitDef(u.typeId)?.Kategoria ?? 'domyslny'),
       }));
-      return totalUnitUpkeep(upkeepUnits, unitUpkeepTbl, upkeepParams.jednostkaUtrzymanieStd, kosztJednostekPaceUtrzymania());
+      return totalUnitUpkeep(upkeepUnits, unitUpkeepTbl, upkeepParams.jednostkaUtrzymanieStd, paceUtrzymaniaWlasciciela(city.ownerId, kosztJednostekPaceUtrzymania()));
     }
 
     function extraCityPanelConfig() {
@@ -14767,6 +14770,9 @@ async function boot(): Promise<void> {
     /** Jednostka w animacji ruchu — widoczna mimo ukrycia w stosie. */
     let forceVisibleUnitId: string | null = null;
     let turn = 1;
+    // R-WEB-AI-FREE-UNIT-UPKEEP-40-TURNS-Q1: tura, z której liczy się tick ekonomii (N, gdy turn == N+1).
+    // null poza tickiem runWorldEndTurn -- wtedy okno darmowe AI czyta bieżące `turn`.
+    let aiUpkeepTickTurnOverride: number | null = null;
     /** Wznowienie pętli AI po preBattle (atak na gracza). */
     type AiCmdResume = {
       ownerList: number[];
@@ -14839,6 +14845,15 @@ async function boot(): Promise<void> {
     // (Pieniądz, surowce, żywność) — jedno źródło dla silnika, kart, HUD i AI; brak = Niski (×1).
     kosztJednostekPaceUtrzymania = (): KosztJednostekPace => (player.kosztJednostekPace ?? 'niski');
     setKosztJednostekPaceResolver(() => kosztJednostekPaceUtrzymania());
+    // R-WEB-AI-FREE-UNIT-UPKEEP-40-TURNS-Q1: okno darmowego utrzymania AI (tury 1..40) — tura = `turn`
+    // (turn++ w pętli tur), fotele ludzkie = isHuman(). Gracz-człowiek zawsze płaci pełny koszt.
+    // Tick kończący turę N (runWorldEndTurn: turn++ jest PRZED tickiem) widzi N dzięki
+    // aiUpkeepTickTurnOverride = N (ustawiane po turn++, zdejmowane przed fazą AI i w finally).
+    setAiFreeUnitUpkeepContext({
+      getTurn: () => aiUpkeepTickTurnOverride ?? turn,
+      isHumanOwner: (oid: number) => isHuman(oid),
+      params: aiFreeUnitUpkeepParamsRaw as AiFreeUnitUpkeepParams,
+    });
     // R-HOTSEAT-ETAP-1-OWNERID-ISAIOWNER-Q1: pierwszy realny konsument isAiOwner
     // (gra/src/game/human-owners.ts, Etap 0). Dziś zawsze dokładnie jeden fotel
     // człowieka -- behawioralny no-op, patrz bramka hotseat-etap1-ownerid-test.cjs.
@@ -34219,11 +34234,13 @@ async function boot(): Promise<void> {
             ownerId,
             recruitBase,
             recruitPaced: applyUnitCostPace(recruitBase, pace),
-            foodPerTurn: unitFoodCardValueLive(def as any, pace),
+            // Utrzymanie (żywność/Pieniądz/surowce) per właściciel: okno darmowe AI (ai-free-unit-upkeep.ts).
+            // Rekrutacja (recruitPaced) nadal wg tempa gracza -- celowo NIE przez paceUtrzymaniaWlasciciela.
+            foodPerTurn: unitFoodCardValueLive(def as any, paceUtrzymaniaWlasciciela(ownerId, pace)),
             pieniadzUpkeep: unitUpkeep(
               { typeId: unitId, category: categoryLive } as unknown as Parameters<typeof unitUpkeep>[0],
-              upkeepTblLive, upkeepParamsLive.jednostkaUtrzymanieStd, pace),
-            resourceUpkeep: totalUnitResourceUpkeep([{ typeId: unitId }], typeId => data.units.find(u => u.Jednostka === typeId), pace),
+              upkeepTblLive, upkeepParamsLive.jednostkaUtrzymanieStd, paceUtrzymaniaWlasciciela(ownerId, pace)),
+            resourceUpkeep: totalUnitResourceUpkeep([{ typeId: unitId }], typeId => data.units.find(u => u.Jednostka === typeId), paceUtrzymaniaWlasciciela(ownerId, pace)),
             pace,
           };
         },
@@ -34363,7 +34380,7 @@ async function boot(): Promise<void> {
             const starving = isArmyStarving(o);
             const jednPieniadz = totalUnitUpkeep(
               wojskoweJedn.map(u => ({ typeId: u.typeId, category: u.category ?? String(lookupUnitDef(u.typeId)?.Kategoria ?? 'domyslny') })),
-              unitUpkTbl, upkP.jednostkaUtrzymanieStd, kosztJednostekPaceUtrzymania());
+              unitUpkTbl, upkP.jednostkaUtrzymanieStd, paceUtrzymaniaWlasciciela(o, kosztJednostekPaceUtrzymania()));
             // R-WEB-ECONOMY-MEASURE-EXTEND-INCOME-STOCKS-Q1: pola HUD per właściciel. Wyłącznie odczyt,
             // te same funkcje co HUD: surowce = buildEmpireResourceRows + resourceGrossNetPerTurn
             // (filtr jak HUD: cap != null && !placeholder; suma jak surowceBrutto/surowceNetto w buildHudStateRaw);
@@ -34405,7 +34422,7 @@ async function boot(): Promise<void> {
               posterunki: terrAll.filter(n => n.ownerId === o && !!n.isOutpost).length,
               /** R-WEB-VERIFY-LIVE-A (tylko odczyt): żywność/turę armii właściciela — unitFoodPerTurn (tempo wliczone). */
               zywnoscArmiiTura: r2(wojskoweJedn.reduce((sum, u) => sum + (unitFoodPerTurn(
-                u as unknown as Parameters<typeof unitFoodPerTurn>[0], upkP, unitFoodTbl, kosztJednostekPaceUtrzymania()) || 0), 0)),
+                u as unknown as Parameters<typeof unitFoodPerTurn>[0], upkP, unitFoodTbl, paceUtrzymaniaWlasciciela(o, kosztJednostekPaceUtrzymania())) || 0), 0)),
               /** Heksy terytorium ogółem (wg właściciela heksu, kolejność węzłów jak w territoryOwnerAt). */
               hexyTerytorium: terrByOwnerAll.get(o)?.size ?? 0,
               /** Heksy terytorium z MIAST (heks w zasięgu miasta — miasto ma pierwszeństwo). */
@@ -34424,7 +34441,7 @@ async function boot(): Promise<void> {
               utrzymanieJednostekSurowce: totalUnitResourceUpkeep(
                 wojskoweJedn.map(u => ({ typeId: u.typeId })),
                 typeId => data.units.find(x => x.Jednostka === typeId),
-                kosztJednostekPaceUtrzymania(),
+                paceUtrzymaniaWlasciciela(o, kosztJednostekPaceUtrzymania()),
               ),
               /** R-WEB-AI-CITY-GARRISON-MIN-ONE-LIVE-AUDIT-Q1 (tylko odczyt, ?civTest=1): wojsko STACJONUJĄCE w
                *  każdym mieście właściciela (ten sam predykat "jednostka wojskowa" co emptyCityGarrisonRecruitIds:
@@ -39493,7 +39510,7 @@ async function boot(): Promise<void> {
         empireEpochForOwner(ownerId), aiResearchDone.get(ownerId) ?? new Set<string>(),
         empireEpochForOwner, unlockedTechSetForOwner,
         stateAdmByOwner,
-        kosztJednostekPaceUtrzymania(),
+        paceUtrzymaniaWlasciciela(ownerId, kosztJednostekPaceUtrzymania()),
       );
       const before = preview(toEcon(own));
       // R-WEB-AI-UNIT-REPLACE-SAME-RULES-AS-PLAYER-Q1 (r2): zamiana NIE dodaje jednostki -- jedna
@@ -39538,7 +39555,7 @@ async function boot(): Promise<void> {
         empireEpochForOwner(ownerId), aiResearchDone.get(ownerId) ?? new Set<string>(),
         empireEpochForOwner, unlockedTechSetForOwner,
         stateAdmByOwner,
-        kosztJednostekPaceUtrzymania(),
+        paceUtrzymaniaWlasciciela(ownerId, kosztJednostekPaceUtrzymania()),
       );
       const before = preview(ownEcon);
       const after = preview(withNew);
@@ -43286,6 +43303,8 @@ async function boot(): Promise<void> {
           resetRetreatCountOfUnit(u);
         }
         turn++;
+        // R-WEB-AI-FREE-UNIT-UPKEEP-40-TURNS-Q1: tick tej funkcji kończy turę N = turn-1.
+        aiUpkeepTickTurnOverride = turn - 1;
         // PENDING-FORCED-PEACE-Q1: oczekujący pokój wymuszony wraca na wierzch na początku tury gracza.
         if (pendingForcedPeaceTreaties.length > 0) showNextPendingForcedPeace();
         chronicleTickEmpireSizes(); // R-WEB-ELIMINATION-SCREEN-SPECTACULAR-Q1
@@ -48524,6 +48543,8 @@ async function boot(): Promise<void> {
               scanAutoSiegesAfterAiTurn();
             }
           };
+          // R-WEB-AI-FREE-UNIT-UPKEEP-40-TURNS-Q1: faza AI działa już w nowej turze (turn) -- zdejmij override.
+          aiUpkeepTickTurnOverride = null;
           await runAiPhase();
           phaseMark('AI_END');
         } catch (eAILoop) {
@@ -49245,7 +49266,12 @@ async function boot(): Promise<void> {
           }
           phaseMark('PLAYER_BATTLE_WAIT_END');
         }
-        await runWorldEndTurn(humanOwnerId);
+        try {
+          await runWorldEndTurn(humanOwnerId);
+        } finally {
+          // R-WEB-AI-FREE-UNIT-UPKEEP-40-TURNS-Q1: nigdy nie zostawiaj override po wyjściu (błąd/wczesny powrót).
+          aiUpkeepTickTurnOverride = null;
+        }
         // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 1): świat/AI właśnie
         // przeszedł (runda była KOMPLETNA -- advanceSeat() woła endActiveHumanTurn()
         // wyłącznie dla OSTATNIEGO fotela w rundzie) -- nowa runda zaczyna się od
