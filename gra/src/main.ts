@@ -997,6 +997,9 @@ import terrainCombatData from '../data/terrain-combat.json';
 import miastoParams from '../data/miasto-params.json';
 import aiParamsRaw from '../data/ai-params.json';
 import aiUpkeepParamsRaw from '../data/ai-upkeep-params.json';
+// R-WEB-AI-FREE-UNIT-UPKEEP-40-TURNS-Q1: darmowe utrzymanie jednostek AI w turach 1..tury (flaga w danych).
+import aiFreeUnitUpkeepParamsRaw from '../data/ai-free-unit-upkeep-params.json';
+import { setAiFreeUnitUpkeepContext, paceUtrzymaniaWlasciciela, type AiFreeUnitUpkeepParams } from './game/ai-free-unit-upkeep';
 import { aiUpkeepRunwayAllowsRecruit } from './game/ai-upkeep-runway';
 // R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2: P3/P4/P6/P7 — wszystko za flagą isDiploTickWarBrakeEnabled().
 import diplomacyTickParams from '../data/diplomacy-tick-params.json';
@@ -9482,7 +9485,7 @@ async function boot(): Promise<void> {
         typeId: u.typeId,
         category: u.category ?? String(lookupUnitDef(u.typeId)?.Kategoria ?? 'domyslny'),
       }));
-      return totalUnitUpkeep(upkeepUnits, unitUpkeepTbl, upkeepParams.jednostkaUtrzymanieStd, kosztJednostekPaceUtrzymania());
+      return totalUnitUpkeep(upkeepUnits, unitUpkeepTbl, upkeepParams.jednostkaUtrzymanieStd, paceUtrzymaniaWlasciciela(city.ownerId, kosztJednostekPaceUtrzymania()));
     }
 
     function extraCityPanelConfig() {
@@ -14839,6 +14842,13 @@ async function boot(): Promise<void> {
     // (Pieniądz, surowce, żywność) — jedno źródło dla silnika, kart, HUD i AI; brak = Niski (×1).
     kosztJednostekPaceUtrzymania = (): KosztJednostekPace => (player.kosztJednostekPace ?? 'niski');
     setKosztJednostekPaceResolver(() => kosztJednostekPaceUtrzymania());
+    // R-WEB-AI-FREE-UNIT-UPKEEP-40-TURNS-Q1: okno darmowego utrzymania AI (tury 1..40) — tura = `turn`
+    // (turn++ w pętli tur), fotele ludzkie = isHuman(). Gracz-człowiek zawsze płaci pełny koszt.
+    setAiFreeUnitUpkeepContext({
+      getTurn: () => turn,
+      isHumanOwner: (oid: number) => isHuman(oid),
+      params: aiFreeUnitUpkeepParamsRaw as AiFreeUnitUpkeepParams,
+    });
     // R-HOTSEAT-ETAP-1-OWNERID-ISAIOWNER-Q1: pierwszy realny konsument isAiOwner
     // (gra/src/game/human-owners.ts, Etap 0). Dziś zawsze dokładnie jeden fotel
     // człowieka -- behawioralny no-op, patrz bramka hotseat-etap1-ownerid-test.cjs.
@@ -39493,7 +39503,7 @@ async function boot(): Promise<void> {
         empireEpochForOwner(ownerId), aiResearchDone.get(ownerId) ?? new Set<string>(),
         empireEpochForOwner, unlockedTechSetForOwner,
         stateAdmByOwner,
-        kosztJednostekPaceUtrzymania(),
+        paceUtrzymaniaWlasciciela(ownerId, kosztJednostekPaceUtrzymania()),
       );
       const before = preview(toEcon(own));
       // R-WEB-AI-UNIT-REPLACE-SAME-RULES-AS-PLAYER-Q1 (r2): zamiana NIE dodaje jednostki -- jedna
@@ -39538,7 +39548,7 @@ async function boot(): Promise<void> {
         empireEpochForOwner(ownerId), aiResearchDone.get(ownerId) ?? new Set<string>(),
         empireEpochForOwner, unlockedTechSetForOwner,
         stateAdmByOwner,
-        kosztJednostekPaceUtrzymania(),
+        paceUtrzymaniaWlasciciela(ownerId, kosztJednostekPaceUtrzymania()),
       );
       const before = preview(ownEcon);
       const after = preview(withNew);

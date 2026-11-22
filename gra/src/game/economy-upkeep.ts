@@ -54,7 +54,16 @@ import {
 } from './building-stock-cost';
 import { buildingEffectAtLevel } from './production';
 import { rebalancedUnitFoodBase } from './econ-era-rebalance';
-import { mnoznikUtrzymaniaJednostek } from './unit-cost-tempo';
+import { mnoznikUtrzymaniaJednostek as mnoznikTempaBazowy } from './unit-cost-tempo';
+
+/**
+ * R-WEB-AI-FREE-UNIT-UPKEEP-40-TURNS-Q1: tempo 0 = okno darmowego utrzymania AI (ai-free-unit-upkeep.ts).
+ * Dla pozostałych wartości identycznie jak mnoznikUtrzymaniaJednostek (unit-cost-tempo.ts).
+ */
+function mnoznikUtrzymaniaJednostek(pace: KosztJednostekPace | number | null | undefined): number {
+  if (pace === 0) return 0;
+  return mnoznikTempaBazowy(pace);
+}
 import type { KosztJednostekPace } from './unit-cost-tempo';
 import {
   R_STAWKI_FALA1_FALA2_MULT,
