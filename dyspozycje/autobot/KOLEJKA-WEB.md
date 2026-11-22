@@ -142,3 +142,21 @@ VERIFYLIVEB2 zintegrowany do main 2ae9a3b87 (hak __settingsLive; bez deployu). W
 - NIE ZMIERZONO (zbiorczo): równoważność wznowionego biegu save/load; liczba miast AI i zerwania traktatów poza zerowym zaufaniem; powód mniejszej rekrutacji przy Normalny ×2; tura AI i zamiana Żywność→Podatek z Targowiskiem w żywej grze; wczytanie aktywnej gry po reloadzie (SIGSEGV Chromium).
 
 AKTUALIZACJA KOŃCOWA 2026-11-20 ~11:45 UTC: DIPLOLEVELS ZAKOŃCZONY i zintegrowany do main (bez deployu) — NIE MA już trwających workflowów. Sekcja STAN KOŃCOWY wyżej: pozycja „JEDYNY TRWAJĄCY: DIPLOLEVELS” jest NIEAKTUALNA. Zostają wyłącznie pytania ABC do właściciela (lista wyżej) oraz tematy PÓŹNIEJ. Nowe tematy startować dopiero po odpowiedziach właściciela.
+
+## DZIENNIK DECYZJI WŁAŚCICIELA 2026-11-22 (zapis, NIC NIE STARTOWANE — właściciel: „na razie nie zaczynam żadnych nowych rzeczy”)
+
+1. Polar na mapach „Kontynenty”: **A1** — przywrócić pas polarny w generatorze (werdykt POLARZERO: 40a29e4c6 go zabrał). Ryzyko: hashe map/testy determinizmu. Deploy ROBOCZA jako kolejna FALA (890+).
+2. Konnica fieldPower: **98 jak w units.json**; poprawić wiki (49→98) i piny (hud-moc-warstwa-test:168, moc-ranking-rozjazd-test:145, mur-paradoks-test).
+3. Garnizon min. 1 w mieście AI: **nie liczy się jako „wręcz”** w pomiarze składu armii (ai-army-composition-per-civ).
+4. −28…−37% jednostek AI przy „Koszty jednostek: Normalny ×2”: **zostaje bez zmian**.
+5. Sojusz a wojna epoki: **sojusz NIE blokuje wojny epoki**. Parowanie ma dobierać innych graczy AI do skutku, aż wszystkie pary będą dobrane (nie każdy ma sojusz ze wszystkimi); gdy par brak — wojny po trzech (ustalone wcześniej). Poprawka silnika (pending Brązu seed 4242 stał 68 tur). Deploy ROBOCZA.
+6. Dopłata D sojuszy AI↔AI: **0,5** (dziś 1,0). Deploy ROBOCZA.
+7. R-WEB-TEST-DEBT-Q14 (87 czerwonych testów): **otworzyć po decyzjach 1–3**. Start dopiero na polecenie właściciela.
+
+Zadania #66–#71 zaktualizowane. Kolejność po poleceniu „startuj”: Q14 (testy z decyzji 2–3) oraz tematy gry 1, 5, 6 jako osobne ID z Operatorem Haiku.
+
+Uzupełnienie 2026-11-22 (druga seria ABC):
+8. Poziomy „Dyplomacja i wojna” (tabela POMIAR-POZIOMY-DYPLOMACJI-2026-11-20.md): **korekta wartości** — właściciel poda, który poziom i co zmienić; do tego czasu bez implementacji.
+9. Tor NAP AI↔AI (pomiar dał 0): **zostawić jak jest**.
+10. Stare pozycje UI z 2026-11-15/18 (lista wojsk 640 px, plakietka „+X”, Palisada→Mury, stała C AI→gracz): **uznane za zamknięte**.
+11. Pytania o wyścig o terytorium (P1–P5), drenaż Spichlerza i garnizon AI (sufit rezerwy, homeDefenderPool) były już rozstrzygnięte i wdrożone wcześniej (forty: decyzja B; Spichlerz: ABC A, FALA 867; garnizon: FALA 857) — wpisy w taskach usunięte jako nieaktualne.
