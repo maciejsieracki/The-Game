@@ -53,6 +53,16 @@
 const fs = require('fs');
 const path = require('path');
 const esbuild = require('esbuild');
+// R-WEB-TEST-DEBT-Q15 (runda 3): realny eksport modułu src/ (bundle esbuild w pamięci), nie replika.
+function loadRealSrcExports(relPath) {
+  const r = esbuild.buildSync({
+    entryPoints: [path.join(__dirname, '..', relPath)], bundle: true, write: false,
+    format: 'cjs', platform: 'node', target: 'node18', loader: { '.json': 'json' },
+  });
+  const m = { exports: {} };
+  new Function('module', 'exports', r.outputFiles[0].text)(m, m.exports);
+  return m.exports;
+}
 
 const GRA = path.resolve(__dirname, '..');
 const MAIN_TS_PATH = path.join(GRA, 'src', 'main.ts');
@@ -95,12 +105,85 @@ function extractAnchoredBlock(src, anchorLiteral) {
   throw new Error(`Brace-matching nie domknięty dla kotwicy: ${anchorLiteral}`);
 }
 
+// R-WEB-TEST-DEBT-Q15 (runda 3): wolne identyfikatory bloku rozwiązywane w 3 krokach (jak w
+// podetapie B): (1) mock z `mocks`; (2) funkcja zdefiniowana w main.ts -- kompilowana REALNIE
+// (brace-matching po `function NAME(`, leniwie, z tym samym zakresem); (3) eksport z modułu src/
+// (realny bundle esbuild). Brak wszystkiego -> głośny wyjątek UNMOCKED (nie cichy ReferenceError).
+function extractMainFunctionSource(src, name) {
+  const m = new RegExp('function\\s+' + name + '\\s*\\(').exec(src);
+  if (!m) return null;
+  const open = src.indexOf('{', src.indexOf(')', m.index));
+  let depth = 0;
+  for (let i = open; i < src.length; i++) {
+    if (src[i] === '{') depth++;
+    else if (src[i] === '}') { depth--; if (depth === 0) return src.slice(m.index, i + 1); }
+  }
+  return null;
+}
+let _srcExportIndex = null;
+function srcExportIndex() {
+  if (_srcExportIndex) return _srcExportIndex;
+  _srcExportIndex = new Map();
+  const walk = (dir) => {
+    for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, ent.name);
+      if (ent.isDirectory()) walk(full);
+      else if (ent.name.endsWith('.ts')) {
+        const txt = fs.readFileSync(full, 'utf8');
+        for (const m of txt.matchAll(/export (?:function|const) (\w+)/g)) {
+          if (!_srcExportIndex.has(m[1])) _srcExportIndex.set(m[1], path.relative(path.join(__dirname, '..'), full));
+        }
+      }
+    }
+  };
+  walk(path.join(__dirname, '..', 'src'));
+  return _srcExportIndex;
+}
+const _srcModCache = new Map();
+function makeAnchoredScope(mocks, label) {
+  const cache = new Map();
+  const scope = new Proxy({}, {
+    has(_t, k) {
+      if (typeof k !== 'string' || k === '__scope') return false;
+      if (Object.prototype.hasOwnProperty.call(mocks, k)) return true;
+      if (k in globalThis) return false;
+      return /^[A-Za-z_$][\w$]*$/.test(k);
+    },
+    get(_t, k) {
+      if (k === Symbol.unscopables) return undefined;
+      if (Object.prototype.hasOwnProperty.call(mocks, k)) return mocks[k];
+      if (cache.has(k)) return cache.get(k);
+      if (typeof k === 'string') {
+        const modFile = srcExportIndex().get(k);
+        if (modFile) {
+          if (!_srcModCache.has(modFile)) {
+            const r = esbuild.buildSync({ entryPoints: [path.join(__dirname, '..', modFile)], bundle: true, write: false, format: 'cjs', platform: 'node', target: 'node18', loader: { '.json': 'json' } });
+            const m = { exports: {} };
+            new Function('module', 'exports', r.outputFiles[0].text)(m, m.exports);
+            _srcModCache.set(modFile, m.exports);
+          }
+          const v = _srcModCache.get(modFile)[k];
+          if (v !== undefined) { cache.set(k, v); return v; }
+        }
+      }
+      // Stan modułu main.ts zadeklarowany jako pusty kontener (`let|const NAME = new Map|Set(...)`):
+      // stan domyślny = pusty kontener (ten sam, co po starcie gry), nie stub.
+      if (typeof k === 'string') {
+        const decl = new RegExp('\\b(?:let|const)\\s+' + k + '\\s*(?::[^=]*)?=\\s*new (Map|Set)\\b').exec(mainSrc);
+        if (decl) { const v = decl[1] === 'Map' ? new Map() : new Set(); cache.set(k, v); return v; }
+      }
+      return () => { throw new Error(`UNMOCKED w harnessie: ${String(k)} (w ${label})`); };
+    },
+  });
+  return scope;
+}
 function compileAnchoredBlock(src, anchorLiteral, freeVarNames, mocks) {
   const tsSrc = extractAnchoredBlock(src, anchorLiteral);
   const { code } = esbuild.transformSync(tsSrc, { loader: 'ts', format: 'cjs', target: 'node18' });
-  const factory = new Function(...freeVarNames, code);
-  const args = freeVarNames.map(v => mocks[v]);
-  return { run: () => factory(...args), tsSrc, code };
+  const scope = makeAnchoredScope(mocks, anchorLiteral.slice(0, 40));
+  const factory = new Function('__scope', `with (__scope) { return (function () { ${code} })(); }`);
+  // Wyjątek w bloku NIE przerywa testu: liczy się jako FAIL z komunikatem (widoczny dowód, nie cicha pauza).
+  return { run: () => { try { return factory(scope); } catch (e) { fail++; console.error('  FAIL: blok nie dokończył (UNMOCKED/błąd wykonania):', e.message); return undefined; } }, tsSrc, code };
 }
 
 console.log('hotseat-etap6d-podetap-d-exec-test (R-HOTSEAT-ETAP6D-PODETAP-D-Q1, runda 2)\n');
@@ -186,6 +269,32 @@ function runBlockA(src, ME, calls) {
     setDiploRelation: (a, b, rel) => { calls.setDiploRelation.push([a, b]); },
     pruneTributeNegotiationsBetween: (a, b) => { calls.pruneTributeNegotiationsBetween.push([a, b]); },
     recordWarDeclarationEvent: (a, b) => { calls.recordWarDeclarationEvent.push([a, b]); },
+    // R-WEB-TEST-DEBT-Q15 (runda 3): main.ts `interCivWarBlockedForAi` (L26098) -- bramka R1/R2 wojen
+    // multiwar. Blok A testuje ROUTING ME() po wypowiedzeniu wojny (DOW), nie bramkę; mock = "bramka przepuszcza"
+    // (false = nie blokuje). Bez mocka: ReferenceError łapany w bloku, asercje czerwone (r2 BLOKADA).
+    interCivWarBlockedForAi: () => false,
+    // R-WEB-TEST-DEBT-Q15 (runda 3): main.ts `warLimitAllowsDeclaration` (L26086, limit wojen gracza/AI) --
+    // blok A testuje routing ME() po DOW; limit przepuszcza (true). Bez mocka: ReferenceError w bloku.
+    warLimitAllowsDeclaration: () => true,
+    // main.ts L1679 importuje `zarejestrujWypowiedzenie` z src/game/diplomacy.ts (zapis rejestru wypowiedzeń).
+    // Blok A bada ME() jako argument, nie rejestr -- spy bez efektu.
+    zarejestrujWypowiedzenie: () => {},
+    // R-WEB-TEST-DEBT-Q15 (runda 3): stan pary dyplomacji (main.ts moduł-poziomu, Map) czytany przez getDiploPairMeta.
+    diplomacyPairMeta: new Map(),
+    // R-WEB-TEST-DEBT-Q15 (runda 3): getDiploPairMeta (main.ts L12287) -- stan pary bez wpisów (domyślny).
+    getDiploPairMeta: () => ({ dobraWolaRemainingTur: 0 }),
+    // R-WEB-TEST-DEBT-Q15 (runda 3): diploBrakeBonusFlags (main.ts L12590) -- bramka hamulca tury: flagi wyłączone.
+    diploBrakeBonusFlags: () => ({ dobraWolaAktywna: false, wspolnyWrog: false }),
+    // R-WEB-TEST-DEBT-Q15 (runda 3): civKeyForOwnerId (main.ts L10547) -- typ cywilizacji właściciela (mock stały).
+    civKeyForOwnerId: () => 'grecy',
+    // R-WEB-TEST-DEBT-Q15 (runda 3): empireEpochForOwner -- epoka właściciela (mock: epoka 1).
+    empireEpochForOwner: () => 1,
+    // R-WEB-TEST-DEBT-Q15 (runda 3): _diplomacyParams (parametry dyplomacji, main.ts) -- domyślne progi testu.
+    _diplomacyParams: () => ({}),
+    // R-WEB-TEST-DEBT-Q15 (runda 3): stół negocjacji (main.ts, tablica) -- pusty stan domyślny.
+    negotiationTable: [],
+    // main.ts importuje `respektZKorektaMilitarna` z src/game/diplomacy-military-strength.ts (realny eksport).
+    respektZKorektaMilitarna: loadRealSrcExports('src/game/diplomacy-military-strength.ts').respektZKorektaMilitarna,
     showHintMessage: () => {},
     ownerDiploLabel: (id) => 'PM-' + id,
     isDiplomacyPanelOpen: () => false,
@@ -278,6 +387,23 @@ function runBlockB(src, ME, calls) {
     aiTyp: 'grecy',
     aiDiplomacyStance: (aiStub, humanStub) => { calls.aiDiplomacyStanceHumanStub = humanStub; return undefined; },
     objectivePowerByOwner: new Map([[AI, { power: 10 }], [PLAYER, { power: 20 }]]),
+    // R-WEB-TEST-DEBT-Q15 (runda 3): main.ts `diploWarStateFor` (L12315) -- stan wojny (licznik tur) dla
+    // ME(); mock spy zwraca stan zerowy; sprawdzany jest tylko 2. argument (ME()).
+    diploWarStateFor: (a, b) => { calls.diploWarStateForArgs = [a, b]; return { turnsAtWar: 0, lostCities: 0, turnsSinceCityChange: 0 }; },
+    respektZKorektaMilitarna: loadRealSrcExports('src/game/diplomacy-military-strength.ts').respektZKorektaMilitarna,
+    diplomacyPairMeta: new Map(),
+    // R-WEB-TEST-DEBT-Q15 (runda 3): getDiploPairMeta (main.ts L12287) -- stan pary bez wpisów (domyślny).
+    getDiploPairMeta: () => ({ dobraWolaRemainingTur: 0 }),
+    // R-WEB-TEST-DEBT-Q15 (runda 3): diploBrakeBonusFlags (main.ts L12590) -- bramka hamulca tury: flagi wyłączone.
+    diploBrakeBonusFlags: () => ({ dobraWolaAktywna: false, wspolnyWrog: false }),
+    // R-WEB-TEST-DEBT-Q15 (runda 3): civKeyForOwnerId (main.ts L10547) -- typ cywilizacji właściciela (mock stały).
+    civKeyForOwnerId: () => 'grecy',
+    // R-WEB-TEST-DEBT-Q15 (runda 3): empireEpochForOwner -- epoka właściciela (mock: epoka 1).
+    empireEpochForOwner: () => 1,
+    // R-WEB-TEST-DEBT-Q15 (runda 3): _diplomacyParams (parametry dyplomacji, main.ts) -- domyślne progi testu.
+    _diplomacyParams: () => ({}),
+    // R-WEB-TEST-DEBT-Q15 (runda 3): stół negocjacji (main.ts, tablica) -- pusty stan domyślny.
+    negotiationTable: [],
     computeRespekt: () => 0.5,
     activeDeals,
     dealInvolvesOwners: (d, a, b) => { calls.dealInvolvesOwners.push([a, b]); return d.strony.includes(a) && d.strony.includes(b); },
