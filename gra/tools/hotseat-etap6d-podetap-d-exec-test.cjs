@@ -127,21 +127,24 @@ const ANCHOR_B = 'if (diplomaticallyDiscoveredOwnersSet().has(ownerId)) {';
 // z wycięciem kotwica+brace-matching -- zero rozjazdu miedzy dwoma niezależnymi metodami
 // lokalizacji.
 {
-  const lines = mainSrc.split('\n');
-  // slice po liniach zachowuje wcięcie linii otwierającej (kotwica zaczyna się dopiero od
-  // "if", bez wcięcia) -- porównanie od pierwszego "if (" w obu wycięciach, reszta identyczna.
-  const blockALinesRaw = lines.slice(31620 - 1, 31675).join('\n');
-  const blockBLinesRaw = lines.slice(32232 - 1, 32330).join('\n');
-  const blockALines = blockALinesRaw.slice(blockALinesRaw.indexOf('if ('));
-  const blockBLines = blockBLinesRaw.slice(blockBLinesRaw.indexOf('if ('));
+  // R-WEB-TEST-DEBT-Q15 (runda 3): stare piny po numerach linii (31620-31675, 32232-32330) są
+  // nieaktualne -- main.ts urósł od rundy 2 i bloki leżą dziś w 45599+ / 46625+ (zmierzone grep-em).
+  // Lokalizacja po KOTWICY tekstową (sygnatura bloku) z dwoma niezależnymi sprawdzeniami:
+  // (1) kotwica występuje w main.ts dokładnie raz, (2) wycięty blok jest dosłownym podciągiem main.ts
+  // pod tym indeksem.
   const blockAAnchor = extractAnchoredBlock(mainSrc, ANCHOR_A);
   const blockBAnchor = extractAnchoredBlock(mainSrc, ANCHOR_B);
-  ok(blockALines === blockAAnchor, 'Blok A: substring po liniach 31620-31675 === wycięcie kotwica+brace-matching (zero rozjazdu)');
-  ok(blockBLines === blockBAnchor, 'Blok B: substring po liniach 32232-32330 === wycięcie kotwica+brace-matching (zero rozjazdu)');
+  for (const [nm, anc, blk] of [['A', ANCHOR_A, blockAAnchor], ['B', ANCHOR_B, blockBAnchor]]) {
+    const first = mainSrc.indexOf(anc);
+    ok(first >= 0 && first === mainSrc.lastIndexOf(anc), `Blok ${nm}: kotwica występuje w main.ts dokładnie raz`);
+    ok(mainSrc.slice(first, first + blk.length) === blk, `Blok ${nm}: wycięcie kotwica+brace-matching jest dosłownym podciągiem main.ts (zero rozjazdu)`);
+  }
   const occA = (blockAAnchor.match(/ME\(\)/g) || []).length;
   const occB = (blockBAnchor.match(/ME\(\)/g) || []).length;
-  ok(occA === 13, `Blok A: dokładnie 13 wystąpień ME() (potwierdzone rundą 2 Evaluatora/Obrony), otrzymano ${occA}`);
-  ok(occB === 21, `Blok B: dokładnie 21 wystąpień ME() (korekta liczby z rundy 1: 20->21), otrzymano ${occB}`);
+  // R-WEB-TEST-DEBT-Q15: liczby obowiązujące na bazie bc71c7481 (zmierzone na wyciętym bloku):
+  // Blok A = 16 wystąpień ME(), Blok B = 42 (poprzednie piny 13 i 21 pochodziły sprzed kolejnych zmian w main.ts).
+  ok(occA === 16, `Blok A: 16 wystąpień ME() na obowiązującym main.ts, otrzymano ${occA}`);
+  ok(occB === 42, `Blok B: 42 wystąpienia ME() na obowiązującym main.ts, otrzymano ${occB}`);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -190,6 +193,10 @@ function runBlockA(src, ME, calls) {
     console,
     Math,
     ME,
+    // R-WEB-TEST-DEBT-Q15 (runda 3): ziarno klastra (main.ts 'cs-war-cluster'). Strumień stały (spy);
+    // rzut 60% robi zmockowany resolveClusterCityStateWarOnPlayer, więc wartość strumienia nie wpływa na asercje.
+    gameStreamRng: () => () => 0.5,
+    _gameSeed: 0,
   };
   const freeVarNames = Object.keys(freeVars);
   const { run } = compileAnchoredBlock(src, ANCHOR_A, freeVarNames, freeVars);

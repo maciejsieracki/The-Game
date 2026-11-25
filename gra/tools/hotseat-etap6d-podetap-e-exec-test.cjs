@@ -191,11 +191,36 @@ console.log('\n2. collectTurnEvents — realne wykonanie (fragment stołu negocj
     negotiationSummary: () => 'summary',
     NEGOTIATION_MAX_ROUNDS,
     dismissedSidePanelEventIds: new Set(),
+    // R-WEB-TEST-DEBT-Q15 (runda 3): src/main.ts (R-WEB-PERF-LATE-GAME-LAG-HUD-Q2) dodał ramkę zdarzeń:
+    // collectTurnEvents czyta `turnEventsFrame` i owija listę w `withOwnerScopeMemo`. Poza ramką
+    // (`turnEventsFrame === undefined`) ścieżka to czyste `withOwnerScopeMemo(collectTurnEventsUncached)`;
+    // mock przepuszczający (memo bez cache) nie zmienia wyniku pojedynczego wywołania.
+    turnEventsFrame: undefined,
+    withOwnerScopeMemo: (fn) => fn(),
   };
-  const freeVars = Object.keys(mocks);
+  // R-WEB-TEST-DEBT-Q15 (runda 3): właściwa logika stołu negocjacyjnego (pętla po negotiationTable,
+  // filtr isMe) przeniesiona w src/main.ts do collectTurnEventsUncached; collectTurnEvents jest już
+  // tylko opakowaniem (ramka + memo). Test wycina OBIE funkcje z main.ts i wykonuje je realnie.
+  const uncachedExtra = {
+    applyFarmAssignHints: () => {},
+    HUMAN_OWNER_PRIMARY: 0,
+    turn: 1,
+    map: [],
+    yieldOfMapHex: () => 0,
+    empireEpochForOwner: () => 0,
+    nnsEndTurnBlockEvent: () => null,
+    prunePendingForcedPeace: () => {},
+    pendingForcedPeaceTreaties: [],
+    ME: () => PLAYER,
+    END_TURN_BLOCK_EVENT_TITLE: 'KONIEC',
+    negotiationRoundCounterText: (r, m) => `${r}/${m}`,
+  };
 
   function run(isMe) {
-    const fn = compileRealFunction('collectTurnEvents', freeVars, { ...mocks, isMe });
+    const uncachedMocks = { ...mocks, ...uncachedExtra, isMe };
+    const uncached = compileRealFunction('collectTurnEventsUncached', Object.keys(uncachedMocks), uncachedMocks);
+    const outerMocks = { ...mocks, isMe, collectTurnEventsUncached: uncached };
+    const fn = compileRealFunction('collectTurnEvents', Object.keys(outerMocks), outerMocks);
     return fn();
   }
 
@@ -247,6 +272,12 @@ console.log('\n3+4. resolveNegotiationEntryAt / resolvePendingNegotiationsForOwn
       refreshD1bHud: () => {},
       isDiplomacyPanelOpen: () => false,
       updateDiplomacyPanel: () => {},
+      // R-WEB-TEST-DEBT-Q15 (runda 3): hak testowy wymuszenia decyzji AI (main.ts:13855); poza testem = null.
+      truceTestForcedAiDecision: null,
+      // Odmowa adresata z casus belli (main.ts:21999/22161): spy, wywołanie nie jest tu asercjonowane.
+      zarejestrujCasusBelli: () => {},
+      // Import z game/diplomacy-peace-proposal-timing (main.ts:1653); sufiks komunikatu odmowy pokoju, poza asercjami tej sekcji.
+      peaceRejectReasonSuffix: () => '',
     };
   }
 

@@ -56,14 +56,29 @@ if (process.argv.includes('--list')) { for (const m of MUTATIONS) console.log(m.
 // R-WEB-TEST-DEBT-Q15 (runda 2): SIGKILL nie daje się przechwycić, więc po takim przerwaniu main.ts
 // zostaje zmutowany, a kopia wisi w tmpdir. PRZED odczytaniem `original` przywracamy main.ts z
 // osieroconych kopii (inaczej `original` byłby już zmutowany), potem kasujemy kopię.
-(() => {
+// Kopia nazwana `civ-ledger-mut-backup-<pid>-<hex>.ts`. Osierocona = pid procesu, który ją zapisał,
+// już nie żyje (process.kill(pid, 0) rzuca ESRCH). Kopie żywych przebiegów (np. równoległy test)
+// NIE są ruszane. Ten sam dobór pliku działa po starcie i po zakończeniu (cleanupOrphans poniżej).
+const pidAlive = (pid) => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } };
+const cleanupOrphans = (verbose) => {
   const tmp = require('os').tmpdir();
-  let stale = [];
-  try { stale = fs.readdirSync(tmp).filter((f) => /^civ-ledger-mut-backup-.*\.ts$/.test(f)).map((f) => path.join(tmp, f)); } catch (e) { /* ignore */ }
-  for (const f of stale) {
-    try { fs.writeFileSync(MAIN, fs.readFileSync(f, 'utf8'), 'utf8'); fs.unlinkSync(f); console.log(`[recover] przywrócono main.ts z osieroconej kopii ${path.basename(f)}`); } catch (e) { /* ignore */ }
+  let files = [];
+  try { files = fs.readdirSync(tmp).filter((f) => /^civ-ledger-mut-backup-\d+-[0-9a-f]+\.ts$/.test(f)); } catch (e) { /* ignore */ }
+  for (const name of files) {
+    const pid = Number(name.split('-')[4]);
+    if (pid === process.pid || pidAlive(pid)) continue;
+    const f = path.join(tmp, name);
+    try {
+      const copy = fs.readFileSync(f, 'utf8');
+      // przywracamy tylko gdy main.ts jest nadal zmutowany (różni się od kopii) — inaczej to tylko śmieć
+      if (fs.readFileSync(MAIN, 'utf8') !== copy) fs.writeFileSync(MAIN, copy, 'utf8');
+      fs.unlinkSync(f);
+      console.log(`[recover] przywrócono main.ts z osieroconej kopii ${name} (pid ${pid} martwy)`);
+    } catch (e) { /* ignore */ }
+    if (verbose) console.log(`[cleanup] usunięto osieroconą kopię ${name}`);
   }
-})();
+};
+cleanupOrphans(false);
 const original = fs.readFileSync(MAIN, 'utf8');
 // R-WEB-TEST-DEBT-Q15: kopia źródła POZA repo (odporna na SIGKILL: przy następnym uruchomieniu
 // wykrywana i przywracana) + przywracanie: finally, 'exit', SIGINT/SIGTERM/uncaughtException.
@@ -116,6 +131,7 @@ const runAsync = (cmd, args, opts) => new Promise((resolve) => {
       else { survived++; summary.push({ id: m.id, name: m.name, result: 'PRZEZYLA' }); console.log(`[${m.id}] PRZEZYLA (test zielony mimo mutacji!) — ${m.name}`); }
     }
   } finally { restore(); }
+  cleanupOrphans(true);
   console.log(`\nMUTACJE: zabite=${killed} przezyly/bledy=${survived}`);
   process.exit(survived === 0 ? 0 : 1);
 })();
