@@ -278,6 +278,9 @@ console.log('\n3+4. resolveNegotiationEntryAt / resolvePendingNegotiationsForOwn
       zarejestrujCasusBelli: () => {},
       // Import z game/diplomacy-peace-proposal-timing (main.ts:1653); sufiks komunikatu odmowy pokoju, poza asercjami tej sekcji.
       peaceRejectReasonSuffix: () => '',
+      // R-WEB-TEST-DEBT-Q15 (runda 3): peaceProposalIsTooEarly (main.ts, bramka czasu wojny dla pokoju; commit 271fcf39f).
+      // Ten test dowodzi ścieżki negocjacji ME(), nie bramki czasu -- mock = "wolno" (jak w teście B).
+      peaceProposalIsTooEarly: () => false,
     };
   }
 
@@ -403,6 +406,8 @@ console.log('\n5. handleNegotiationCounter — realne wykonanie (uzupełnienie, 
         calls.applyCounterOffer.push([entry.id, uiPayload, authorOwnerId, turn]);
         return { ...entry, payload: uiPayload, round: entry.round + 1, authorOwnerId, awaitingOwnerId: authorOwnerId === PLAYER ? AI : PLAYER };
       },
+      // R-WEB-TEST-DEBT-Q15 (runda 3): handleNegotiationCounter -> peaceProposalIsTooEarly (bramka czasu pokoju; mock = "wolno").
+      peaceProposalIsTooEarly: () => false,
       refreshD1bHud: () => {},
       updateDiplomacyAudience: () => {},
       isDiplomacyPanelOpen: () => false,
