@@ -8788,14 +8788,14 @@ mod march_incremental_tests {
     /// przyparty = strzał z miejsca).
     #[test]
     fn przerwa_strzelca_wraca_do_ranged_forward_step() {
-        let (mut b, st) = setup(2.0);
+        let (mut b, mut st) = setup(2.0);
         shooter(&mut b);
         b.units[0][0].activate.range = 1.0;
         place(&mut b, A0, 3);
         place(&mut b, D0, 5);
         b.set_now(1328.0);
         b.march = Some(ranged_cont(MarchStage::Gap, 2.0));
-        b.march_fire(&st);
+        b.march_fire(&mut st);
         assert_eq!(b.cell_of(A0), (4, 0), "krok naprzód z _rangedForwardStep");
         assert!(b.take_march_done().is_none(), "marsz w toku (koniec kroku)");
         assert_eq!(b.take_timers().len(), 1);
@@ -8904,7 +8904,7 @@ mod march_incremental_tests {
         shooter(&mut b);
         b.set_now(1328.0);
         b.march = Some(ranged_cont(MarchStage::Gap, 2.0));
-        b.march_fire(&st);
+        b.march_fire(&mut st);
         assert!(!b.mover_routed);
         let t = b.take_timers();
         assert_eq!(t.len(), 1);
@@ -8916,5 +8916,356 @@ mod march_incremental_tests {
         b.set_now(1656.0);
         b.fire_timer(g[0].1, &mut st);
         assert!(b.mover_routed, "ru.routed w chwili kroku strzelca");
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // MARCH-RESZTA-Q1 (D-MR-1): pozostałe marsze krok po kroku (`_fallBackStep`, `_fleeStep`, jazda, `_siegeWalkTo`).
+    // ---------------------------------------------------------------------------------------------------------------
+
+    /// `pending` jak po `start` (wejście marszu zapisuje `moveLeft` do `complete`).
+    fn pend(b: &mut ProdBody<SequenceRolls>, flee: bool) {
+        b.pending[0][0] = Some(ProdPending {
+            morale: 100.0,
+            morale_before: 100.0,
+            start_rout: false,
+            surround_applied: false,
+            attack: None,
+            move_left: None,
+            shot: None,
+            flee,
+            gate_breach: false,
+        });
+    }
+
+    fn cont(kind: MarchKind, move_left: f64) -> MarchCont {
+        MarchCont {
+            unit: A0,
+            kind,
+            stage: MarchStage::Gap,
+            id: 0,
+            move_left,
+            moved: false,
+            prev: None,
+        }
+    }
+
+    /// Odpala jedyny oczekujący etap marszu w chwili `at`; zwraca, czy był etapem fazy kroków (`timer_raf`).
+    fn step(b: &mut ProdBody<SequenceRolls>, st: &mut TurnSeqState, at: f64) -> bool {
+        let t = b.take_timers();
+        assert_eq!(t.len(), 1, "dokładnie jeden etap marszu");
+        let raf = b.timer_raf(t[0].1);
+        b.set_now(at);
+        b.fire_timer(t[0].1, st);
+        raf
+    }
+
+    /// Pin `_fallBackStep` (`:7228-7243`): krok od razu, callback (faza kroków) `moveLeft > 0` = `_schedule(STEP_GAP_MS)`,
+    /// kolejne wejście ze stanu w swojej chwili; śmierć przed wejściem kończy odwrót bez kroku.
+    #[test]
+    fn odwrot_krok_po_kroku_i_smierc_przed_kolejnym_wejsciem() {
+        let (mut b, mut st) = setup(3.0);
+        place(&mut b, A0, 4);
+        place(&mut b, D0, 6);
+        b.set_now(1000.0);
+        pend(&mut b, false);
+        let mut c = cont(MarchKind::FallBack, 3.0);
+        let next = b.fall_back_enter(&st, &mut c);
+        assert_eq!(next, MarchNext::StepEnd, "pierwszy krok odwrotu od razu");
+        b.march_advance(c, next);
+        assert_eq!(b.cell_of(A0), (3, 0), "krok w tył (od wroga)");
+        assert!(step(&mut b, &mut st, 1240.0), "koniec kroku w fazie kroków");
+        assert!(b.take_march_done().is_none());
+        st.atk[0].c.dead = true;
+        assert!(
+            !step(&mut b, &mut st, 1328.0),
+            "kolejne wejście z zegara przerwy"
+        );
+        assert_eq!(b.cell_of(A0), (3, 0), "martwy: bez drugiego kroku");
+        assert_eq!(b.take_march_done(), Some((A0, 0.0)));
+        assert_eq!(b.pending[0][0].map(|p| p.move_left), Some(Some(2.0)));
+    }
+
+    /// Pin callback `_fallBackStep` (`:7240`): `finished` w chwili końca kroku = `done()` bez przerwy.
+    #[test]
+    fn odwrot_koniec_bitwy_w_callbacku() {
+        let (mut b, mut st) = setup(3.0);
+        place(&mut b, A0, 4);
+        place(&mut b, D0, 6);
+        b.set_now(1000.0);
+        pend(&mut b, false);
+        let mut c = cont(MarchKind::FallBack, 3.0);
+        let next = b.fall_back_enter(&st, &mut c);
+        b.march_advance(c, next);
+        st.finished = true;
+        step(&mut b, &mut st, 1240.0);
+        assert!(b.take_timers().is_empty(), "bez _schedule(STEP_GAP_MS)");
+        assert_eq!(b.take_march_done(), Some((A0, 0.0)));
+    }
+
+    /// Pin `_fleeStep` (`:9845-9897`): krok po kroku ku krawędzi; zejście z pola (`_removeUnitFromScene`) w chwili
+    /// callbacku kroku, który osiągnął krawędź (stan sterownika, nie kopia z `start`).
+    #[test]
+    fn ucieczka_krok_po_kroku_zejscie_w_chwili_kroku() {
+        let (mut b, mut st) = setup(4.0);
+        place(&mut b, A0, 2);
+        st.atk[0].c.routed = true;
+        b.set_now(1000.0);
+        pend(&mut b, true);
+        let mut c = cont(MarchKind::Flee, 4.0);
+        let next = b.flee_enter(&mut st, &mut c);
+        assert_eq!(next, MarchNext::StepEnd);
+        assert!(
+            b.mover_routed,
+            "uciekający nie dostaje odmowy bramki muru"
+        );
+        b.march_advance(c, next);
+        assert_eq!(b.cell_of(A0), (1, 0));
+        assert!(step(&mut b, &mut st, 1240.0));
+        assert!(!st.atk[0].c.removed, "przed krawędzią: jeszcze na polu");
+        assert!(
+            !step(&mut b, &mut st, 1328.0),
+            "wejście z zegara przerwy"
+        );
+        assert_eq!(b.cell_of(A0), (0, 0));
+        assert!(step(&mut b, &mut st, 1568.0));
+        assert!(
+            st.atk[0].c.removed && st.atk[0].c.dead,
+            "zejście z pola w callbacku kroku"
+        );
+        assert_eq!(b.take_march_done(), Some((A0, 0.0)));
+        assert!(
+            b.pending_actions().iter().any(|a| a.t0 == 1568.0
+                && matches!(a.action, BattleAction::Leave { unit } if unit == A0)),
+            "akcja zejścia w chwili końca kroku"
+        );
+    }
+
+    /// Pin callback `_fleeStep` (`:9886`): jednostka zabita w trakcie kroku (np. przez wieżę) kończy ucieczkę BEZ zejścia
+    /// z pola i bez `_shakeAlliesOnLoss` (marsz atomowy prowadziłby ją dalej i zdejmował z pola).
+    #[test]
+    fn ucieczka_smierc_w_trakcie_kroku_bez_zejscia() {
+        let (mut b, mut st) = setup(4.0);
+        place(&mut b, A0, 1);
+        st.atk[0].c.routed = true;
+        b.set_now(1000.0);
+        pend(&mut b, true);
+        let mut c = cont(MarchKind::Flee, 4.0);
+        let next = b.flee_enter(&mut st, &mut c);
+        b.march_advance(c, next);
+        st.atk[0].c.dead = true;
+        step(&mut b, &mut st, 1240.0);
+        assert!(!st.atk[0].c.removed, "martwy: bez _removeUnitFromScene");
+        assert_eq!(b.take_march_done(), Some((A0, 0.0)));
+        assert!(b.take_timers().is_empty());
+    }
+
+    /// Pin `_fleeStep` (`:9864-9873`): pole docelowe z zajętości W CHWILI wejścia (zajęte po starcie = kolejny wiersz).
+    #[test]
+    fn ucieczka_pole_z_chwili_wejscia() {
+        let (mut b, mut st) = setup(4.0);
+        place(&mut b, A0, 4);
+        st.atk[0].c.routed = true;
+        b.set_now(1000.0);
+        pend(&mut b, true);
+        let mut c = cont(MarchKind::Flee, 4.0);
+        let next = b.flee_enter(&mut st, &mut c);
+        b.march_advance(c, next);
+        step(&mut b, &mut st, 1240.0);
+        b.occ_by_key.insert(cell_key(2.0, 0.0), "x".to_string());
+        step(&mut b, &mut st, 1328.0);
+        assert_eq!(
+            b.cell_of(A0),
+            (2, 1),
+            "wiersz +1, bo (2,0) zajęte po starcie marszu"
+        );
+    }
+
+    /// Ucieczka z `start` (rozbita jednostka): marsz krok po kroku, `moveLeft` po marszu trafia do stanu w `complete`
+    /// (poza kopią stanu ucieczki, bez konfliktu łączenia).
+    #[test]
+    fn ucieczka_ze_start_move_left_w_complete() {
+        let (mut b, mut st) = setup(3.0);
+        place(&mut b, A0, 5);
+        st.atk[0].c.routed = true;
+        b.set_now(1000.0);
+        assert_eq!(b.start(A0, &st), 0.0);
+        assert!(b.march_pending(A0), "ucieczka w toku");
+        assert_eq!(b.cell_of(A0), (4, 0));
+        let mut t = 1000.0;
+        while b.march_pending(A0) {
+            t += 100.0;
+            step(&mut b, &mut st, t);
+        }
+        assert_eq!(b.cell_of(A0), (2, 0), "trzy kroki");
+        assert_eq!(b.take_march_done(), Some((A0, 0.0)));
+        b.complete(A0, &mut st);
+        assert_eq!(st.atk[0].c.move_left, 0.0, "moveLeft ucieczki w complete");
+        assert!(
+            b.unported.is_empty(),
+            "bez konfliktu łączenia: {:?}",
+            b.unported
+        );
+    }
+
+    /// Pin `_cavManeuverStep` (`:6489-6500`): callback kroku decyduje o KOLEJNYM kroku od razu (nowy `_doMove` w fazie
+    /// kroków, bez `_schedule`); `done()` gdy dobry sąsiad.
+    #[test]
+    fn jazda_kolejny_krok_z_callbacku_bez_przerwy() {
+        let (mut b, mut st) = setup(4.0);
+        b.units[0][0].activate.mounted = true;
+        place(&mut b, A0, 0);
+        place(&mut b, D0, 4);
+        b.set_now(1000.0);
+        pend(&mut b, false);
+        let mut c = cont(MarchKind::CavManeuver, 4.0);
+        let next = b.cav_enter(&st, &mut c);
+        assert_eq!(next, MarchNext::StepEnd);
+        assert_eq!(c.kind, MarchKind::CavManeuver);
+        b.march_advance(c, next);
+        assert_eq!(b.cell_of(A0), (1, 0));
+        assert!(step(&mut b, &mut st, 1240.0), "koniec kroku w fazie kroków");
+        assert_eq!(b.cell_of(A0), (2, 0), "kolejny krok od razu w callbacku");
+        assert!(
+            step(&mut b, &mut st, 1480.0),
+            "znowu koniec kroku, bez przerwy"
+        );
+        assert_eq!(b.cell_of(A0), (3, 0));
+        assert!(step(&mut b, &mut st, 1720.0));
+        assert_eq!(
+            b.take_march_done(),
+            Some((A0, 0.0)),
+            "sąsiad nie-włócznik: done()"
+        );
+        assert_eq!(b.pending[0][0].map(|p| p.move_left), Some(Some(1.0)));
+    }
+
+    /// Pin callback jazdy (`:6493`, `:6496-6497`): cel z chwili callbacku — cel zabity w trakcie kroku (wieża) = brak celu
+    /// `_cavalryTarget` = `done()`; `finished` w chwili końca kroku = `done()`.
+    #[test]
+    fn jazda_cel_i_koniec_bitwy_z_chwili_callbacku() {
+        for finish in [false, true] {
+            let (mut b, mut st) = setup(4.0);
+            b.units[0][0].activate.mounted = true;
+            place(&mut b, A0, 0);
+            place(&mut b, D0, 5);
+            b.set_now(1000.0);
+            pend(&mut b, false);
+            let mut c = cont(MarchKind::CavManeuver, 4.0);
+            let next = b.cav_enter(&st, &mut c);
+            b.march_advance(c, next);
+            if finish {
+                st.finished = true;
+            } else {
+                st.def[0].c.dead = true;
+            }
+            step(&mut b, &mut st, 1240.0);
+            assert_eq!(b.cell_of(A0), (1, 0), "bez kolejnego kroku");
+            assert_eq!(b.take_march_done(), Some((A0, 0.0)));
+            assert!(b.take_timers().is_empty());
+        }
+    }
+
+    /// Taran pod bramę (`_siegeWalkTo` `:8006-8019`, cel `GateApproach`).
+    fn ram(b: &mut ProdBody<SequenceRolls>) -> MarchKind {
+        let a = &mut b.units[0][0].activate;
+        a.is_siege_unit = true;
+        a.is_ram = true;
+        MarchKind::SiegeWalk {
+            goal: AtkGoal::GateApproach {
+                wall_col: 9,
+                lo: 0,
+                hi: 1,
+            },
+            pref_row: None,
+            arrive_base: Some(2),
+            wall_col: 9,
+        }
+    }
+
+    /// Pin `_siegeWalkTo`: krok od razu, callback `moveLeft <= 0` = `done` (`arrive` wieży: `towerAtWallRows.add`),
+    /// przerwa `_schedule(STEP_GAP_MS)` między krokami.
+    #[test]
+    fn marsz_machiny_krok_po_kroku_i_arrive() {
+        let (mut b, mut st) = setup(2.0);
+        let kind = ram(&mut b);
+        place(&mut b, A0, 0);
+        place(&mut b, D0, 9);
+        b.set_now(1000.0);
+        pend(&mut b, false);
+        let mut c = cont(kind, 2.0);
+        let next = b.walk_enter(&st, &mut c);
+        assert_eq!(next, MarchNext::StepEnd);
+        b.march_advance(c, next);
+        assert_eq!(b.cell_of(A0), (1, 0));
+        assert!(
+            b.tower_at_wall_rows.is_empty(),
+            "arrive dopiero przy done()"
+        );
+        assert!(step(&mut b, &mut st, 1240.0));
+        assert!(
+            !step(&mut b, &mut st, 1328.0),
+            "kolejne wejście z zegara przerwy"
+        );
+        assert_eq!(b.cell_of(A0), (2, 0));
+        assert!(step(&mut b, &mut st, 1568.0));
+        assert_eq!(b.take_march_done(), Some((A0, 0.0)));
+        assert!(
+            b.tower_at_wall_rows.contains(&0),
+            "arrive: q >= wallBase"
+        );
+    }
+
+    /// Pin callback `_siegeWalkTo` (`:8016`): machina zniszczona w trakcie kroku (`ru.dead`) kończy marsz bez kolejnego
+    /// kroku (marsz atomowy prowadziłby ją dalej).
+    #[test]
+    fn marsz_machiny_smierc_w_trakcie_kroku() {
+        let (mut b, mut st) = setup(3.0);
+        let kind = ram(&mut b);
+        place(&mut b, A0, 0);
+        place(&mut b, D0, 9);
+        b.set_now(1000.0);
+        pend(&mut b, false);
+        let mut c = cont(kind, 3.0);
+        let next = b.walk_enter(&st, &mut c);
+        b.march_advance(c, next);
+        st.atk[0].c.dead = true;
+        step(&mut b, &mut st, 1240.0);
+        assert!(b.take_timers().is_empty(), "bez przerwy");
+        assert_eq!(b.cell_of(A0), (1, 0));
+        assert_eq!(b.take_march_done(), Some((A0, 0.0)));
+    }
+
+    /// Pin `_siegeWalkTo` (`:8011-8012`): `isGoal`/BFS z zajętości W CHWILI wejścia — pole zajęte po starcie marszu
+    /// omijane.
+    #[test]
+    fn marsz_machiny_bfs_z_chwili_wejscia() {
+        let (mut b, mut st) = setup(3.0);
+        let kind = ram(&mut b);
+        place(&mut b, A0, 0);
+        place(&mut b, D0, 9);
+        b.set_now(1000.0);
+        pend(&mut b, false);
+        let mut c = cont(kind, 3.0);
+        let next = b.walk_enter(&st, &mut c);
+        b.march_advance(c, next);
+        step(&mut b, &mut st, 1240.0);
+        b.occ_by_key.insert(cell_key(2.0, 0.0), "x".to_string());
+        step(&mut b, &mut st, 1328.0);
+        assert_eq!(
+            b.cell_of(A0),
+            (1, 1),
+            "BFS omija pole zajęte po starcie marszu"
+        );
+    }
+
+    /// N1 (MARCH-INCREMENTAL, dług): jeden slot `ProdBody::march` — drugi marsz w toku = błąd kontraktu (debug).
+    #[cfg(debug_assertions)]
+    #[test]
+    #[should_panic(expected = "N1")]
+    fn drugi_marsz_w_slocie_to_blad_kontraktu() {
+        let (mut b, _st) = setup(3.0);
+        b.march = Some(cont(MarchKind::FallBack, 1.0));
+        let c = cont(MarchKind::Flee, 1.0);
+        b.march_advance(c, MarchNext::StepEnd);
     }
 }
