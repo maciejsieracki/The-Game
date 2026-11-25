@@ -71,7 +71,11 @@ try {
   const techDataDigest = crypto.createHash('sha256')
     .update(JSON.stringify(rows))
     .digest('hex');
-  check(techDataDigest === '3b7ab35bb94196dca015c34068c25c787aa9cc9c21e998835ee0d5ece05ee754',
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): skrót całego zbioru był zgodny ze stanem d3216eb2a / 0764ab4d6
+  // (3b7ab35b...). Późniejsze, zamierzone zmiany tech.json (a33354586 mury/cegła, 38d6ba0ec kawaleria i
+  // oblężnicze za Żelazem, 2ca45a090 gramatyka/ID) przesunęły skrót. Pin przepięty na obecny zbiór
+  // (po normalizacji czterech kosztów zatwierdzonych); pozostałe asercje pól i kosztów bez zmian.
+  check(techDataDigest === 'db84a9b6bc310d6beb33e3f63086c22df6cbe0e6e5e6b669a4fde88a98a8c795',
     'complete technology dataset unchanged apart from the four approved costs');
 
   const wikiEntries = JSON.parse(fs.readFileSync(path.join(root, 'src/data/wikiBundle.json'), 'utf8')).encyklopedia;
