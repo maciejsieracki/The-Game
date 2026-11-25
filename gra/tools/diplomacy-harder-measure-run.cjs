@@ -45,6 +45,8 @@ const base = require('./ai-economy-measure-run.cjs');
 // R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1: pokoj wymuszony (kolejka blokuje endTurn) -- ten sam modul co runner ekonomii.
 const { acceptForcedPeace } = require('./measure-forced-peace.cjs');
 const { licznikiZPar } = require('./diplomacy-all-flags-measure-counters.cjs');
+// R-WEB-HARNESS-CHROME-SAVE-RESUME-SIGSEGV-Q1: ponawianie startu ze slotu przy padnieciu Chromium (logika i testy w tym module).
+const { openWithRetry } = require('./measure-resume-retry.cjs');
 
 function arg(name, def) {
   const i = process.argv.indexOf('--' + name);
@@ -141,6 +143,20 @@ async function readDiploLevel(page) {
   if (DIPLO_LEVEL === null) return null;
   const st = await page.evaluate(() => window.__settingsLive.getSettings());
   return st.diplomacyWarLevel;
+}
+
+/** R-WEB-HARNESS-CHROME-SAVE-RESUME-SIGSEGV-Q1: start ze slotu (wznowienie) bywa przerywany padnieciem renderera Chromium
+ *  (SIGSEGV; Playwright: "Target page, context or browser has been closed"). Przed pierwsza tura nic nie zapisano, wiec
+ *  ponawiany jest CALY start (launch + openGame ze slotu), max 3 proby; logika w measure-resume-retry.cjs (openWithRetry). */
+async function openGameRetry(chromium, fresh) {
+  return openWithRetry({
+    launch: () => launch(chromium),
+    open: ctx => openGame(ctx, { fresh }),
+    fresh,
+    profileDir: PROFILE,
+    attempts: 3,
+    log: msg => console.log(msg),
+  });
 }
 
 /** Start jak runner (`newgame`): prawdziwy doStartGame + czekanie na koniec nakladki. Swiezy przebieg: zalozenie miasta
@@ -347,7 +363,7 @@ async function main() {
     fs.writeFileSync(jsonl, '');
   }
   const snapCounters = () => Object.assign({}, COUNTERS, { aiOffersRejected: AI_OFFERS_REJECTED, aiOffersRejectAttempts: AI_OFFERS_REJECT_ATTEMPTS });
-  const ctx = await launch(chromium);
+  let ctx = null;
   let stop = null;
   let turn = 0;
   let rows = 0;
@@ -355,7 +371,9 @@ async function main() {
   const t0 = Date.now();
   const writeSeg = (extra) => { if (SEGMENT) writeState(statePath, Object.assign({ seed: SEED, tag: TAG, slot: SLOT, saved, slotTurn, slotCounters, zerwaniaSuma, lastTurn: turn, counters: snapCounters() }, extra)); };
   try {
-    const page = await openGame(ctx, { fresh: !resume });
+    const opened = await openGameRetry(chromium, !resume);
+    ctx = opened.ctx;
+    const page = opened.page;
     turn = await page.evaluate(() => window.__aiTradeWiringTestDebug.state().turn);
     if (resume) {
       if (turn !== slotTurn) throw new Error('wznowienie: tura po loadSlot=' + turn + ' != tura slotu ' + slotTurn);
@@ -385,7 +403,7 @@ async function main() {
     }
   } finally {
     writeSeg({ stop });
-    await ctx.close();
+    if (ctx) await ctx.close();
   }
   // R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1: gracz = autopilot (playerAi 1) -- adnotacja w summary; kolumny par bez zmian.
   const summary = { seed: SEED, diploLevel: DIPLO_LEVEL, harder: harderLabel(), allFlags: ALL_FLAGS === null ? null : (ALL_FLAGS ? 1 : 0), playerAi: PLAYER_AI ? 1 : 0, graczAdnotacja: PLAYER_AI ? 'gracz = autopilot' : 'gracz = pasywny',
