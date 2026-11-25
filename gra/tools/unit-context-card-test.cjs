@@ -149,22 +149,25 @@ async function main() {
 
   // 6) Moc pola — Konnica-podobna jednostka (niezerowy weaponDamage/piercing/chargeBonus,
   // missileAttack=0), świeży rekrut bez bonusów budynkowych/weterana (Base === Effective).
-  // Referencja: gra/data/units.json "Konnica" ma precomputed fieldPower=49 dla tych statów.
+  // Referencja: gra/data/units.json "Konnica" (meleeAttack 16, meleeDefence 10, armor 8, health 56,
+  // weaponDamage 14, piercing 12, chargeBonus 20, missileAttack 0) ma precomputed fieldPower=98.
+  // R-WEB-TEST-DEBT-Q14: fixture przepięty na realne staty Konnicy (wcześniej wartości wymyślone,
+  // dające 49, co już nie zgadzało się z units.json; decyzja właściciela 2026-11-22: Konnica Moc 98).
   {
     const konnicaCombat = {
-      atakBase: 8, atakEffective: 8,
-      obronaBase: 5, obronaEffective: 5,
-      hpMaxBase: 28, hpMaxEffective: 28,
-      pancerzBase: 4, pancerzEffective: 4,
-      weaponDamageBase: 7, weaponDamageEffective: 7,
-      piercingBase: 6, piercingEffective: 6,
-      chargeBonusBase: 10, chargeBonusEffective: 10,
+      atakBase: 16, atakEffective: 16,
+      obronaBase: 10, obronaEffective: 10,
+      hpMaxBase: 56, hpMaxEffective: 56,
+      pancerzBase: 8, pancerzEffective: 8,
+      weaponDamageBase: 14, weaponDamageEffective: 14,
+      piercingBase: 12, piercingEffective: 12,
+      chargeBonusBase: 20, chargeBonusEffective: 20,
       missileAttackBase: 0, missileAttackEffective: 0,
     };
     const html = M.buildUnitContextTooltipHtml({ ...base, displayName: 'Konnica', combat: konnicaCombat });
-    // attack = 8+7+6+10/2+0/2 = 26 ; defense = 5+4+28/2 = 23 ; total = 49 (== units.json fieldPower).
-    ok(html.includes('Atak 26') && html.includes('Obrona 23') && html.includes('Razem 49'),
-      '6) Konnica rekrut Moc pola = 49 (matches units.json precomputed fieldPower, was 31 before fix)');
+    // attack = 16+14+12+20/2+0/2 = 52 ; defense = 10+8+56/2 = 46 ; total = 98 (== units.json fieldPower).
+    ok(html.includes('Atak 52') && html.includes('Obrona 46') && html.includes('Razem 98'),
+      '6) Konnica rekrut Moc pola = 98 (matches units.json fieldPower 98, R-WEB-TEST-DEBT-Q14)');
   }
 
   // 7) Moc pola — Łucznik-podobna jednostka dystansowa (niezerowy missileAttack,
