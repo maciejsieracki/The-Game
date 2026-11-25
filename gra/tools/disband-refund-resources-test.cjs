@@ -162,9 +162,9 @@ console.log('\n-- D. Brak zwrotu pieniędzy --');
   assert(disbandSrc !== null, 'disbandPlayerUnit znaleziony w main.ts');
   if (disbandSrc) {
     assert(!/setOwnerTreasury\(/.test(disbandSrc), 'disbandPlayerUnit nie zmienia skarbca (brak zwrotu złota)');
-    assert(/disbandStockRefundCredit\(cities, 0, u, stockRefundCap\)/.test(disbandSrc),
+    assert(/disbandStockRefundCredit\(cities, (?:0|ME\(\)), u, stockRefundCap\)/.test(disbandSrc),
       'disbandPlayerUnit zwraca surowce z śladu jednostki przez disbandStockRefundCredit (cap)');
-    assert(/refundManpowerToEmpire\(cities, 0, ep, mpRefund/.test(disbandSrc), 'F. regresja: zwrot Manpower zachowany');
+    assert(/refundManpowerToEmpire\(cities, (?:0|ME\(\)), ep, mpRefund/.test(disbandSrc), 'F. regresja: zwrot Manpower zachowany');
     assert(/zwrot surowców/.test(disbandSrc), 'E. hint zawiera „zwrot surowców”');
     assert(/formatDisbandStockRefundHint\(stockRefundCredited\)/.test(disbandSrc), 'E. hint składany przez formatDisbandStockRefundHint');
   }

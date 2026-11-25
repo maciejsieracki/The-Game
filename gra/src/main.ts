@@ -4418,7 +4418,7 @@ async function boot(): Promise<void> {
     function playerWonderInProgressIds(): string[] {
       const ids: string[] = [];
       for (const c of cities) {
-        if (c.ownerId !== 0) continue;
+        if (c.ownerId !== ME()) continue;
         const kolejka = cityProd.get(c.id)?.kolejka ?? [];
         for (const it of kolejka) {
           const wid = parseWonderProdId(it.id);
@@ -4434,7 +4434,7 @@ async function boot(): Promise<void> {
         era: player.era,
         techRows: data.tech as import('./data/loader').TechDef[],
         done: player.zbadane,
-        civType: civTypeForOwner(0),
+        civType: civTypeForOwner(ME()),
         completedWonderIds: completedWorldWonders,
         inProgressWonderIds: playerWonderInProgressIds(),
       });
@@ -5549,7 +5549,7 @@ async function boot(): Promise<void> {
       const buildingIds = new Set(
         wonderBuildSites.filter(s => isMe(s.ownerId)).map(s => s.wonderId),
       );
-      return listBuildableWondersForOwner(0).map(w => ({
+      return listBuildableWondersForOwner(ME()).map(w => ({
         id: w.id,
         label: w.nazwa,
         kosztPraca: scaledWonderWorkCost(w.kosztBudowy),
@@ -5770,7 +5770,7 @@ async function boot(): Promise<void> {
         : 'Brak miasta gracza — załóż stolicę.';
       wondersPickerEl.appendChild(sub);
 
-      const list = listBuildableWondersForOwner(0);
+      const list = listBuildableWondersForOwner(ME());
       if (list.length === 0) {
         const empty = document.createElement('div');
         empty.style.cssText = 'font-size:0.9em;opacity:0.8;';
@@ -7144,7 +7144,7 @@ async function boot(): Promise<void> {
         // R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: ta sama bramka Konia co silnik
         // (horseStockAvailable/tradeRouteKonUnlocked przy buildImprovementState, main.ts ~15667).
         konImperialUnlocked: stadninaImperialKonUnlocked(
-          hasTradeRouteResourceAccess(tradeRouteResourceGrants, 0, 'kon'),
+          hasTradeRouteResourceAccess(tradeRouteResourceGrants, ME(), 'kon'),
           citySurowceSumForOwner(0).kon ?? 0,
         ),
         // R-WEB-IRON-STUD-ADJACENCY-Q1: bezpośredni sąsiad = zbudowana stadnina we własnym terytorium (ta sama reguła co silnik).
@@ -9293,7 +9293,7 @@ async function boot(): Promise<void> {
 
     function selectPlayerResearchSlug(techSlug: string): void {
       const techName = techNameFromSlug(techSlug) ?? humanizeId(techSlug);
-      const ok = setPlayerResearchTarget(player, techName, data.tech, researchGateForOwner(0));
+      const ok = setPlayerResearchTarget(player, techName, data.tech, researchGateForOwner(ME()));
       if (ok) {
         console.log('[Nauka] Gracz wybrał cel:', techName);
         updateHud();
@@ -11243,7 +11243,7 @@ async function boot(): Promise<void> {
 
     /** Konsolidacja klastra / auto-wojna PM — wyłącznie typ gracza (nie obce civ/MP). */
     function isOwnerPlayerSameCivType(ownerId: number): boolean {
-      const playerCiv = civTypeForOwner(0);
+      const playerCiv = civTypeForOwner(ME());
       if (!playerCiv) return false;
       return aiOwnerCivMap.get(ownerId) === playerCiv;
     }
@@ -17548,11 +17548,11 @@ async function boot(): Promise<void> {
           // CHWILI sprawdzania — ten sam odczyt co citySurowceSumForOwner/panel Surowców —
           // dowieziony do bramki qualifies()/isLivestockUnlockedForPlacement (koszt 50 poza
           // złożem konia, patrz commitBuildRequest niżej dla realnego odjęcia przy budowie).
-          horseStockAvailable: citySurowceSumForOwner(0).kon ?? 0,
+          horseStockAvailable: citySurowceSumForOwner(ME()).kon ?? 0,
           // R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2, Q1=B doprecyzowanie:
           // wymóg fizycznej obecności WŁASNEJ jednostki przy budowie fort/posterunek
           // POZA własnym terytorium.
-          ownUnitHexKeys: ownUnitHexKeysForOwner(0),
+          ownUnitHexKeys: ownUnitHexKeysForOwner(ME()),
         },
         {
           activeKey: activeImprovementKey,
@@ -18005,7 +18005,7 @@ async function boot(): Promise<void> {
       // wzorem istniejącego zapasowego komunikatu Pracy tuż wyżej.
       const stadninaPozaZlozem = req.key === 'stadnina' && !hexHasHorseDeposit(hex as { nakladka?: Nakladka; zloze?: string });
       if (stadninaPozaZlozem) {
-        const horseStockNow = citySurowceSumForOwner(0).kon ?? 0;
+        const horseStockNow = citySurowceSumForOwner(ME()).kon ?? 0;
         if (horseStockNow < 50) {
           showHintMessage(
             'Za mało koni: potrzeba 50, masz ' + Math.floor(horseStockNow)
@@ -18681,7 +18681,7 @@ async function boot(): Promise<void> {
         emitOrDeferNotice('tech-discovery', humanSeats.activeHumanOwnerId, () => showTechDiscoveryNotice({
           techName: eraTechName,
           eraIndex: eraIdx,
-          onOpenTree: () => showTechTreeView(0),
+          onOpenTree: () => showTechTreeView(ME()),
         }));
       }
     }
@@ -20349,7 +20349,7 @@ async function boot(): Promise<void> {
           // Ten sam widok, który oferuje popup odkrycia epokowego tuż obok emitera karty
           // (`showTechDiscoveryNotice({ onOpenTree: () => showTechTreeView(0) })`,
           // notifyPlayerEraChangeIfAdvanced) — bez wymyślania nowego ekranu „historii epok".
-          showTechTreeView(0);
+          showTechTreeView(ME());
           return true;
       }
     }

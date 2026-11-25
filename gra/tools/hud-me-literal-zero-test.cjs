@@ -421,7 +421,7 @@ const RESIDUAL_ROWS = [
   ["getEmpireFoodReserve(ME())", 1, 2],
   ["if (bId === undefined || bId === ME() || city.ownerId === bId) return;", 1, 1],
   ["if (city.ownerId !== ME()) return false;", 1, 1],
-  ["listBuildableWondersForOwner(ME())", 1, 1],
+  ["listBuildableWondersForOwner(ME())", 1, 3],
   ["if (toOwnerId === ME()) {", 1, 1],
   ["for (const t of basketTransferCtx.researchedByOwner.get(ME()) ?? []) {", 1, 1],
   ["if (su.ownerId === ME()) {", 1, 1],
@@ -436,7 +436,21 @@ const RESIDUAL_ROWS = [
   ["const playerCityIdOf = (r: TradeRoute): string => (r.ownerId === ME() ? r.fromCityId : r.toCityId);", 1, 1],
   ["const civLabel = wewnetrzna ? 'handel wewnętrzny' : ownerDiploLabel(route.ownerId === ME() ? route.toOwnerId : route.ownerId);", 1, 1],
   ["if (ownerId === ME()) return String(player.civType || _menuCivId || 'gracz');", 1, 1],
-  ["getNaukaRate: (ownerId: number) => buildHudState(ownerId).naukaRate ?? 0,", 1, 1]
+  ["getNaukaRate: (ownerId: number) => buildHudState(ownerId).naukaRate ?? 0,", 1, 1],
+  // R-WEB-HUD-ME-RESIDUAL-Q1 (runda 3, zarzut FC nr 5): literały 0 w roli gracza aktywnego -> ME().
+  // Każdy wiersz = jedna zmieniona linia main.ts; przywrócenie literału 0 zmienia liczbę wystąpień.
+  ["if (c.ownerId !== ME()) continue;", 1, 1],
+  ["civType: civTypeForOwner(ME()),", 1, 1],
+  ["return listBuildableWondersForOwner(ME()).map(w => ({", 1, 1],
+  ["const list = listBuildableWondersForOwner(ME());", 1, 1],
+  ["hasTradeRouteResourceAccess(tradeRouteResourceGrants, ME(), 'kon'),", 1, 1],
+  ["const ok = setPlayerResearchTarget(player, techName, data.tech, researchGateForOwner(ME()));", 1, 1],
+  ["const playerCiv = civTypeForOwner(ME());", 1, 1],
+  ["horseStockAvailable: citySurowceSumForOwner(ME()).kon ?? 0,", 1, 1],
+  ["ownUnitHexKeys: ownUnitHexKeysForOwner(ME()),", 1, 1],
+  ["const horseStockNow = citySurowceSumForOwner(ME()).kon ?? 0;", 1, 1],
+  ["onOpenTree: () => showTechTreeView(ME()),", 1, 1],
+  ["showTechTreeView(ME());", 1, 1],
 ];
 for (const [text, changes, expectedOcc] of RESIDUAL_ROWS) {
   const occ = src.split(text).length - 1;

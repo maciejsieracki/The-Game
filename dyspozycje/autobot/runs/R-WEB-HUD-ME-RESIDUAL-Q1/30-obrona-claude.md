@@ -1,62 +1,97 @@
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-WEB-HUD-ME-RESIDUAL-Q1
-GOAL: ostatnie literały właściciela 0 w roli gracza aktywnego (hotseat) podstawione ME(); w grze jednoosobowej zachowanie bit-w-bit (ME() = 0). Obrona: domknięcie zarzutów Evaluatora 1–5.
-ZMIANY-COMMIT: baza kandydata 85ca46865 (runda 1 Operatora). Poprawki w tej rundzie: gra/src/main.ts (27 par linii -/+ względem 85ca46865, tylko podstawienie właściciela, w tym 1 cofnięcie 12212 do literału 0), gra/tools/hud-me-literal-zero-test.cjs (RESIDUAL_ROWS: usunięty wiersz sc.ownerId, dodane 21 wierszy dla nowych miejsc), dyspozycje/autobot/runs/R-WEB-HUD-ME-RESIDUAL-Q1/30-obrona-claude.md. SHA commita obrony: patrz pole sha w wyniku. Commit tylko tych ścieżek (bez -A).
+GOAL: ostatnie literały właściciela 0 w roli gracza aktywnego (hotseat) podstawione ME(); w grze jednoosobowej zachowanie bit-w-bit (ME() = 0). Obrona rundy 2 po FC r1 (zarzuty 1–7 Evaluatora).
+ZMIANY-COMMIT: baza obrony = kandydat 9ab57259e (runda 2 Operatora). Ta obrona: gra/src/main.ts (12 linii zmienionych względem 9ab57259e: 12 podstawień 0 -> ME(), lista niżej), gra/tools/hud-me-literal-zero-test.cjs (+12 wierszy RESIDUAL_ROWS, wiersz listBuildableWondersForOwner(ME()) z 1 na 3 wystąpienia), gra/tools/disband-refund-resources-test.cjs (kotwice: 0 -> (?:0|ME())), gra/tools/era-cud-main-ts-integracja-test.cjs (kotwice 3b/4a/4b i mutacje M10/4a: 0 -> (?:0|ME())), gra/tools/pr141-hotseat-diplomacy-owner-test.cjs (stub ME: () => 0 w kontekście vm), dyspozycje/autobot/runs/R-WEB-HUD-ME-RESIDUAL-Q1/30-obrona-claude.md.
+UWAGA ALLOWLISTA: 3 pliki testów (disband, era-cud, pr141-diplomacy) są poza pierwotną allowlistą dispatchu. Zmiany w nich dotyczą wyłącznie wzorców kotwic po podstawieniu ME() i stubu ME(); bez nich testy czerwieniłyby się na poprawnej zmianie głównej. Do decyzji orkiestratora przy FC.
+SHA: patrz pole sha w wyniku StructuredOutput (czubek tej rundy).
 
 ## Odpowiedź na zarzuty Evaluatora
 
-### Zarzut 1 — rodzina `ownerId !== 0` bez decyzji: PRZYJMUJĘ (poprawione)
-Decyzje dla każdego wystąpienia (rola gracz aktywny = zmień na ME(); 0 jako fotel AI/wartość domyślna = zostaw):
-- 7959 disbandPlayerUnit: predykat + `empireEpochForOwner(0)`, `civManpowerMultsForOwner(0)`, `refundManpowerToEmpire(cities,0,…)`, `ownerResourceCap(…,0,…)`, `snapshotOwnersStock([0])`, `disbandStockRefundCredit(cities,0,…)` → ME() (ta sama funkcja, spójność z pozostałymi zmianami w rozbiórce).
-- 8757 openUnitReplacePicker → ME() (zarzut 2 też).
-- 8859 performUnitReplace → ME().
-- 6840, 6855 applyCityPodzialPracyChange / toggleCityPodzialPracyOverride; 7014 applyOkolicaTileAdjust; 9568, 9590, 9608 (onCityRationChange, onPoziomRacjiOverrideToggle, onCityAutoWyzywienieChange); 10084 onLeaveGarrison; 19863 cityHasAffordableWonderEnqueue (+ `listBuildableWondersForOwner(0)` → ME()) → ME() (akcje gracza z UI na własnych miastach/jednostkach).
-- 16153 planSpawnedUnitFollowGeneral, 16164 afterPlayerUnitSpawned → ME().
-- 16597 routy handlowe `route.ownerId !== 0 && route.toOwnerId !== 0` → ME() (zarzut 2).
-- 18711 maybeHintArmyFoodOnFirstPlayerUnit (+ `getEmpireFoodReserve(0)` → ME()) → ME().
-- 13664 i 13813 (`proposerId === 0 || responderId === 0` → updateHud po umowie z graczem) → ME().
-- 19466 maybeAiAssaultAfterMachines: `bId === 0` (oblegający = gracz, AI nie atakuje) → ME().
-- 4421 `c.ownerId !== 0` (applyPodzial... poprzedzające zakres 4504–20463 z dispatchu): ZOSTAW — poza zakresem wskazanym w dispatchu (zakres 4504–20463); wymaga osobnego tematu, jeśli orkiestrator chce to domknąć.
-- 6559, 6608 `ai.ownerId === 0`: ZOSTAW (obiekt AI, domyślna polityka).
-- 12212 `sc.ownerId`: COFNIĘTE do `=== 0` — PRZYJMUJĘ zarzut 5. Dowód: ścieżka spawnu (komentarz 12210–12211) tworzy wyłącznie właścicieli AI (miasto-państwo/cywilizacja), więc sc.ownerId nigdy nie jest fotelem gracza; wartość 0 nie jest tu rolą aktywną. Zmiana na ME() była neutralna, ale nie spełniała reguły „0 = gracz aktywny”. Wiersz testu `sc.ownerId === ME()` usunięty.
-- Komentarze (11200, 13013, 14890, 15010, 19124, 19381, 11426): ZOSTAW (nie kod).
+### Zarzut 1 — pr141-hotseat-diplomacy-owner-test ME is not defined: PRZYJMUJĘ (naprawione)
+Dowód: po dodaniu `ME: () => 0` do kontekstu vm: `node gra/tools/pr141-hotseat-diplomacy-owner-test.cjs` -> `TOTAL 10/10`, exit 0 (przed: 9/10).
 
-Łącznie po poprawce: 27 linii zmienionych względem 85ca46865 (wszystkie z powyższej tabeli poza 12212, które wraca do literału).
+### Zarzut 2 — disband-refund-resources-test (ME, zwrot surowców/Manpower): PRZYJMUJĘ (naprawione)
+Przyczyna: test jest kotwicą tekstową i szukał `disbandStockRefundCredit(cities, 0, u, stockRefundCap)` oraz `refundManpowerToEmpire(cities, 0, ep, mpRefund`. Kod ma już ME() (zmiana zamierzona, r2). Wzorce przyjmują teraz `(?:0|ME())`. Nie osłabiono żadnej asercji semantycznej (dalej wymagany zwrot przez disbandStockRefundCredit z capem i zwrot Manpower).
+Dowód: `node gra/tools/disband-refund-resources-test.cjs` -> `45 passed, 0 failed`, exit 0 (przed: exit 1, 43/2).
 
-### Zarzut 2 — niespójność hotseat (8757 vs 8569/8600/8884; 16597 vs 20029/20032/20053): PRZYJMUJĘ (poprawione)
-- 8757 `openUnitReplacePicker` → `u.ownerId !== ME()` (zgodnie z sąsiadami 8569/8600/8884).
-- 16597 trasy handlowe → `route.ownerId !== ME() && route.toOwnerId !== ME()` (zgodnie z isPlayerRoute 20029/20032/20053).
+### Zarzut 3 — era-cud-main-ts-integracja-test (Blok 3b, 4a, 4b, M1/M2/M5/M10): PRZYJMUJĘ (naprawione)
+Przyczyna: kotwice RE_3B / RE_4A / RE_4B i mutacje M10/4a miały literał `=== 0`; kod ma `=== ME()`. Zmieniono wyłącznie wzorce (0 -> (?:0|ME())) i tekst mutanta M4a (0 -> ME()). Mutacje nadal dotykają tej samej linii (`if (site.ownerId === ME())` / `if (city.ownerId === ME())`).
+Dowód: `node gra/tools/era-cud-main-ts-integracja-test.cjs` -> `15 passed, 0 failed`, `grep -c MUT-FAIL` = 0 (wszystkie mutacje złapane), exit 0 (przed: exit 1, 12/3, MUT-FAIL x4).
 
-### Zarzut 3 — raport bez SHA i z niespójnymi liczbami: PRZYJMUJĘ (poprawione)
-- Liczba zmian w rundzie 1 była podana jako „52+1 / 39 unikalnych”; faktycznie `git diff 94d71743..85ca46865` = 56 linii usuniętych/dodanych (28 par), a w tej rundzie 27 linii zmienionych względem 85ca46865. Podany wcześniej opis „AI-owner predicates 14502/14685” był mylący: 14502 to `su.ownerId === ME()` (hint dla obudzonego wojska gracza), 14685 to `u.ownerId === ME()` (pomija jednostki gracza przy wrogiej edukacji weteranów) — obie są predykatami gracza aktywnego, nie AI.
-- SHA kandydata bazy: 85ca46865a4eba7a5fde6d071c6f6cc1e6a3fb63; SHA commita obrony w polu `sha` wyniku.
+### Zarzut 4 — skan Operatora r2 niekompletny: PRZYJMUJĘ (uzupełniony skan)
+Przed podjęciem decyzji uruchomiłem wszystkie testy wycinające funkcje, które zmienia ta runda lub które mają kotwice na zmienionych liniach (lista wyników niżej w TESTY). Każdy z trzech regresji z zarzutu 1–3 jest teraz zielony. Pełnego przebiegu wszystkich 801 testów używających main.ts nie wykonano (koszt czasu; wiele to przeglądarkowe testy live, które w tym środowisku nie działają — patrz BLOKADY).
 
-### Zarzut 4 — brak dowodu runtime hotseat: PRZYJMUJĘ jako ograniczenie; NIE ZMIERZONO
-Runtime z aktywnym fotelem ≠ 0 nie był uruchamiany (brak środowiska przeglądarkowego w tej rundzie). Testy źródłowe (licznik wystąpień tekstu) i testy jednoosobowe są jedynym dowodem. Nie ma zapewnienia zachowania hotseat w grze; ryzyko zostaje otwarte.
+### Zarzut 5 — niekompletna tabela decyzji: PRZYJMUJĘ CZĘŚCIOWO (wymienione pozycje rozstrzygnięte; zakres poszerzony skanem — NIE ROZSTRZYGNIĘTE)
+Decyzje dla pozycji wymienionych w zarzucie (0 = rola gracza aktywnego -> ZMIEŃ na ME(); 0 jako fotel AI / fotel startowy / partner dyplomacji -> ZOSTAW z uzasadnieniem):
 
-### Zarzut 5 — 12212: PRZYJMUJĘ (cofnięte do 0), patrz wyżej.
+| plik:linia (kandydat 9ab57259e) | rola | decyzja | dowód / uzasadnienie |
+|---|---|---|---|
+| main.ts 4421 playerWonderInProgressIds `c.ownerId !== 0` | aktywny | ZMIEŃ -> ME() | lista cudów gracza do panelu epok; w grze 1-os. ME()=0 |
+| main.ts 4437 computeEraGateInfo `civTypeForOwner(0)` | aktywny | ZMIEŃ -> ME() | obok `era: player.era` (gracz) |
+| main.ts 5552 wonderHudEntries `listBuildableWondersForOwner(0)` | aktywny | ZMIEŃ -> ME() | sąsiedni filtr `isMe(s.ownerId)` |
+| main.ts 5773 wondersPicker `listBuildableWondersForOwner(0)` | aktywny | ZMIEŃ -> ME() | komunikat „Brak miasta gracza” — gracz aktywny |
+| main.ts 7148 buildImprovementState `hasTradeRouteResourceAccess(...,0,'kon')` | aktywny | ZMIEŃ -> ME() | bramka Konia dla imperium gracza (ta sama co w silniku) |
+| main.ts 9296 selectPlayerResearchSlug `researchGateForOwner(0)` | aktywny | ZMIEŃ -> ME() | wybór badania przez gracza |
+| main.ts 11246 isOwnerPlayerSameCivType `civTypeForOwner(0)` | aktywny | ZMIEŃ -> ME() | funkcja porównuje z „typem gracza” (dokument funkcji) |
+| main.ts 17551 buildCheck `citySurowceSumForOwner(0).kon` | aktywny | ZMIEŃ -> ME() | stan magazynu konia imperium gracza przy budowie |
+| main.ts 17555 `ownUnitHexKeysForOwner(0)` | aktywny | ZMIEŃ -> ME() | własna jednostka gracza przy budowie fortu |
+| main.ts 18008 `citySurowceSumForOwner(0).kon` (defensywny drugi punkt) | aktywny | ZMIEŃ -> ME() | ten sam magazyn co 17551 |
+| main.ts 18684 onOpenTree (awans epoki) `showTechTreeView(0)` | aktywny | ZMIEŃ -> ME() | powiadomienie dla aktywnego fotela; techTreeView.ts:931 używa `activeOwner` |
+| main.ts 20352 case 'tech-tree' `showTechTreeView(0)` | aktywny | ZMIEŃ -> ME() | ten sam widok co 18684 |
+| main.ts 12212 `sc.ownerId === 0 ? freshOwnerDefaultPodzialHandlu()` | fotel startowy | ZOSTAW (literał 0) | Ścieżka spawnu miast-państw/cywilizacji (komentarz 12210–12211). Zamiana na ME() zmieniłaby zachowanie dla fotela startowego w hotseat; wymaga osobnej decyzji, nie „podstawienia”. Poprzednie twierdzenie o zmianie 12212 w rundzie 2 było BŁĘDNE — linia nie była zmieniona (deklarowana zmiana dotyczyła su.ownerId, l.14502, które już było ME()). |
+| main.ts 13525 `partnerOwnerId: 0` i 13573 `clampAiProposalPayloadToRealResources(aiOwnerId, 0, payload)` | adresat AI | ZOSTAW (literał 0) | Adresat propozycji AI w hotseat: zmiana zmienia ADRESATA dyplomacji (routing), nie tylko podstawienie właściciela. Wymaga ABC/osobnego tematu. NIE ZWERYFIKOWANO runtime. |
 
-## Testy (liczby z surowego wyjścia tej rundy)
-- `node gra/tools/hud-me-literal-zero-test.cjs` → `Wynik: 138 PASS / 0 FAIL` (poprzednio 118).
-- `node gra/tools/hud-owner-hotseat-source-test.cjs` → `Wynik: 58 PASS / 0 FAIL`.
-- Składnia main.ts: parser TypeScript (typescript@5.6.3 w katalogu scratchpad, poza repo) → 0 błędów składni.
-- `git diff --check` → czysto.
-- Mutacje: dla każdego nowo dodanego wiersza RESIDUAL_ROWS wycofanie podstawienia zmniejsza licznik wystąpień tekstu ME() i daje FAIL (mechanizm licznika). Pełnej mutacji runtime dla każdej linii NIE ZMIERZONO w tej rundzie.
-- tsc --noEmit: NIE ZMIERZONO — worktree nie ma gra/node_modules (instalacja poza zakresem tej rundy). Ryzyko typów: ME() zwraca number, wszystkie nowe wywołania przyjmują number; ME() jest w zakresie boot (używany już w tym pliku).
-- Pozostałe bramki z dispatchu (logic, tech-tree, research, unit-replace, combat, ai-test, hud-moc-warstwa, moc-ranking-rozjazd, war-rules, hotseat-etap6d B/D/E, bramki-tmpdir): NIE ZMIERZONO w tej rundzie (wymagają node_modules i dłuższych przebiegów). Orkiestrator powinien je uruchomić przed FC.
+Zakres poszerzony skanem: `grep` po main.ts znajduje dodatkowe literały 0 w roli gracza, których NIE rozstrzygałem w tej rundzie (przykłady, nie komplet): showTechTreeView(0) w liniach 29174, 29257, 30237, 30243, 35208, 36456, 44274; researchGateForOwner(0) w 30219, 35156, 35184, 36428; ulepszeniaEmpireForOwner(0) w 29468, 29481, 29490, 29501, 29521, 45242; buildHudState(0) w 33061, 34418; capitalCityIdForOwner(0) w 39840, 39884, 42092, 45832; empireEpochForOwner(0) 45836; civBonusyForOwnerId(0) 42050; civDisplayNameForOwner(0) 40496; totalActiveForcedWarsByOwner(0) 45845, 45862; setOwnerTreasury(0) 33017; oraz ok. 30 filtrów `u.ownerId === 0` / `c.ownerId === 0`. To jest zakres większy niż zarzut 5 i wymaga decyzji orkiestratora (osobny temat albo rozszerzenie tej rundy). NIE ROZSTRZYGNIĘTE.
+
+### Zarzut 6 — rozbieżność raport vs diff (12212, su.ownerId): PRZYJMUJĘ
+Potwierdzone: `git diff 94d717438 9ab57259e -- gra/src/main.ts` nie zawiera zmiany linii 12212 (nadal `sc.ownerId === 0`); zmiana 14502 dotyczy `su.ownerId === ME()`. Raport rundy 2 był błędny w opisie 12212; korygują to wiersze tabeli powyżej (ZOSTAW).
+
+### Zarzut 7 — nota: test RESIDUAL_ROWS kruchy na identyczne linie: PRZYJMUJĘ jako notę, BEZ zmiany
+Nowe wiersze stosują ten sam mechanizm licznika (wystąpienia tekstu). Ryzyko kruchości pozostaje i jest jawnie opisane w komentarzu nad wierszami. Nie zmieniano w tej rundzie.
+
+## Dowody mutacyjne (liczby z surowego wyjścia tej rundy)
+- Mutacja każdej z 12 zmienionych linii main.ts (przywrócenie literała 0 w kopii, `HUD_ME_GUARD_MAIN`): `KILLED 12/12` — każda kopia czerwona (exit 1).
+- era-cud: 0 x MUT-FAIL (wszystkie mutacje złapane).
+
+## TESTY (surowe wyniki tej rundy)
+- `gra/node_modules/.bin/tsc --noEmit -p gra/` (uruchomione z katalogu gra/): exit 0.
+- `node gra/tools/logic-test.cjs` -> `LOGIC OK (213/213)`.
+- `node gra/tools/hud-me-literal-zero-test.cjs` -> `Wynik: 150 PASS / 0 FAIL`.
+- `node gra/tools/hud-owner-hotseat-source-test.cjs` -> `Wynik: 58 PASS / 0 FAIL`.
+- `node gra/tools/hud-moc-warstwa-test.cjs` -> `WYNIK: 28 PASS, 0 FAIL`.
+- `node gra/tools/pr141-hotseat-diplomacy-owner-test.cjs` -> `TOTAL 10/10`.
+- `node gra/tools/pr141-hotseat-production-owner-routing-test.cjs` -> wszystkie PASS, exit 0 (ostatnia linia: `PASS: actual owner-routed source callbacks/helpers cover human owners 0/7/42, AI`).
+- `node gra/tools/disband-refund-resources-test.cjs` -> `45 passed, 0 failed`.
+- `node gra/tools/era-cud-main-ts-integracja-test.cjs` -> `15 passed, 0 failed`.
+- `node gra/tools/recruitment-batch-contract-test.cjs` -> `17 passed, 0 failed`.
+- `node gra/tools/unit-replace-test.cjs` -> `WSZYSTKIE TESTY ZIELONE (21/21)`.
+- `node gra/tools/unit-replace-multitype-walk-test.cjs` -> `wynik: 25 OK, 0 FAIL`.
+- `node gra/tools/trade-grant-test.cjs` -> `62 passed, 0 failed`; `trade-ilosc-test` -> `23 passed, 0 failed`; `zloto-szlak-test` -> `48 passed, 0 failed`.
+- `node gra/tools/improvement-card-callsites-test.cjs` -> `36 pass, 0 fail`; `iron-native-access-fix-test` -> `17 passed, 0 failed`; `granice-relacja-dyplomatyczna-test` -> `52 passed, 0 failed`.
+- `node gra/tools/era-recruit-panel-refresh-test.cjs` -> `4 passed, 0 failed`; `disband-unit-mark-dirty-test` -> `6 passed, 0 failed`.
+- `node gra/tools/hotseat-etap6d-podetap-d-exec-test.cjs` -> `46 PASS, 0 FAIL`.
+- `node gra/tools/diplomacy-city-name-test.cjs` -> `20 pass / 0 fail`; `difficulty-bonus-city-name-test` -> `7 passed, 0 failed`; `city-names-pool-test` -> `123 passed, 0 failed`.
+- `node gra/tools/ai-cud-priorytet-b3-test.cjs` -> `45 passed, 0 failed`; `eko-tech-paczka1-test` -> `13 pass, 0 fail`.
+- `node gra/tools/stadnina-kon-koszt-test.cjs` -> `17 passed, 0 failed`; `mennica-uspienie-test` -> `49 passed, 0 failed`.
+- `node gra/tools/tech-discovery-notice-resource-chips-test.cjs` -> `6 pass, 0 fail`; `shared-city-name-queue-test` -> `10 passed, 0 failed`; `march-attack-queue-persist-test` -> `57 passed, 0 failed`.
+- `git diff --check` -> czysto (exit 0).
 
 ## BLOKADY
-- Brak blokad procesowych. Runtime hotseat NIE ZMIERZONO (zarzut 4). tsc i pełne bramki NIE ZMIERZONO (brak node_modules w worktree).
+- Zarzut 5 (zakres poszerzony skanem, kilkadziesiąt wystąpień): NIE ROZSTRZYGNIĘTE — wymaga decyzji orkiestratora.
+- Runtime hotseat z aktywnym fotelem != 0: NIE ZMIERZONO (brak przeglądarki w tej rundzie).
+- `hotseat-etap6e-render-noop-test.cjs`: NIE ZMIERZONO — test wymaga Chromium (w środowisku: `domyślny Chromium niedostępny, fallback` i przerwanie przez limit czasu).
+- Bramki z dispatchu NIE ZMIERZONO w tej rundzie: tech-tree 20, research 33, combat 6, ai-test 297/0, moc-ranking-rozjazd 19/0, war-rules-multiwar-main-guard 21/0, hotseat-etap6d B 48/0 i E 24/0 (uruchomiono tylko podetap D exec 46/0), bramki-tmpdir. Orkiestrator powinien je uruchomić przed FC.
+- Zarzut 4: pełny przebieg 801 testów używających main.ts NIE WYKONANY (koszt czasu; w tym wiele testów live).
 
 ## RUNDY
-2/5 (runda 1 = 85ca46865; runda obrony = ta).
+3/5 (runda 1 = 85ca46865; runda 2 = 9ab57259e; ta obrona = runda 3 z raportem Operatora).
 
 ## UWAGI-DLA-ORKIESTRATORA
-- 4421 (`c.ownerId !== 0`) leży poniżej zakresu dispatchu (4504); do decyzji, czy osobny temat.
-- buildHudState(0) w linii ~33061 (poza zakresem, jak w rundzie 1) — kandydat na osobny temat.
-- victory.ts i singleton `player` — poza zakresem.
-- 13664/13813 zmieniono na ME() (diplomacja, updateHud): nie było to w tabeli rundy 1; zweryfikować przy FC.
+- Trzy pliki testów poza pierwotną allowlistą (disband, era-cud, pr141-diplomacy): tylko kotwice i stub ME(), patrz ZMIANY-COMMIT.
+- 12212 i 13525/13573 pozostają literałem 0 świadomie (ZOSTAW z uzasadnieniem). 13525/13573 wymagają ABC (adresat propozycji AI w hotseat).
+- Pozostały zakres literałów 0 w roli gracza (patrz zarzut 5) — rekomenduję osobny temat R-WEB-HUD-ME-RESIDUAL-Q2 z pełnym skanem i mutacjami per linia.
+- Gra/node_modules zainstalowane w worktree (npm ci --ignore-scripts) na potrzeby bramek; nie są w commicie. Usunąć przed sprzątaniem worktree.
 
-NASTĘPNY KROK: Evaluator (Sonnet) weryfikuje nową tabelę (zwłaszcza 7959 disband, 13664/13813, 19466) i wykonuje bramki z dispatchu; następnie Final Control.
+NASTĘPNY KROK: Evaluator (Sonnet) weryfikuje tabelę (12 podstawień + 2 ZOSTAW) i bramki z listy BLOKADY; decyzja orkiestratora w sprawie zakresu poszerzonego (zarzut 5).
 DEPLOY/PUSH: NIE WYKONANO

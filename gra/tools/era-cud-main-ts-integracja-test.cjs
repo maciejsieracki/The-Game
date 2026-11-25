@@ -71,7 +71,7 @@ const RE_3A_CHATKA_ERAADVANCED = /const (\w+) = shouldNotifyPlayerEraChange\((\w
 // przez Evaluatora (zwalidowana w rundzie dispatchu tego zadania), dopasowana do
 // faktycznych nazw parametrów (techId: string, toOwnerId: number).
 // ---------------------------------------------------------------------------
-const RE_3B_TECH_TRADE = /function grantTechToOwnerWithSideEffects\(\s*(\w+)\s*:\s*string\s*,\s*(\w+)\s*:\s*number\s*\)[\s\S]{0,400}?if\s*\(\s*\2\s*===\s*0\s*\)\s*\{[\s\S]{0,900}?const grantedDef = data\.tech\.find\(t => t\.Technologia === \1\);[\s\S]{0,300}?if \(grantedDef\) \{[\s\S]{0,300}?reconcilePlayerEraFromResearch\(\);/;
+const RE_3B_TECH_TRADE = /function grantTechToOwnerWithSideEffects\(\s*(\w+)\s*:\s*string\s*,\s*(\w+)\s*:\s*number\s*\)[\s\S]{0,400}?if\s*\(\s*\2\s*===\s*(?:0|ME\(\))\s*\)\s*\{[\s\S]{0,900}?const grantedDef = data\.tech\.find\(t => t\.Technologia === \1\);[\s\S]{0,300}?if \(grantedDef\) \{[\s\S]{0,300}?reconcilePlayerEraFromResearch\(\);/;
 
 // Impact-analiza C-026: DWA call site'y grantTechToOwnerWithSideEffects muszą nadal istnieć
 // (koszyk transferBasketItems::case 'tech' + akcja 6 executeTechTradeDeal::grantTech).
@@ -88,8 +88,8 @@ const RE_3C_KONIEC_TURY = /Auto-research: spend banked science on the cheapest a
 // ---------------------------------------------------------------------------
 // Blok 4 — ukończenie cudu (oba miejsca)
 // ---------------------------------------------------------------------------
-const RE_4A_WONDER_HEX = /completedWorldWonders\.push\(wonderId\);[\s\S]{0,500}?syncWonderRender\(\);[\s\S]{0,700}?if \(site\.ownerId === 0\) \{[\s\S]{0,300}?reconcilePlayerEraFromResearch\(\)[\s\S]{0,400}?\} else \{[\s\S]{0,200}?syncOwnerEraFromResearch\(site\.ownerId\)/;
-const RE_4B_WONDER_FALLBACK = /if \(!hex\) \{[\s\S]{0,100}?completedWorldWonders\.push\(wonderId\);[\s\S]{0,700}?if \(city\.ownerId === 0\) \{[\s\S]{0,300}?reconcilePlayerEraFromResearch\(\)[\s\S]{0,400}?\} else \{[\s\S]{0,200}?syncOwnerEraFromResearch\(city\.ownerId\)/;
+const RE_4A_WONDER_HEX = /completedWorldWonders\.push\(wonderId\);[\s\S]{0,500}?syncWonderRender\(\);[\s\S]{0,700}?if \(site\.ownerId === (?:0|ME\(\))\) \{[\s\S]{0,300}?reconcilePlayerEraFromResearch\(\)[\s\S]{0,400}?\} else \{[\s\S]{0,200}?syncOwnerEraFromResearch\(site\.ownerId\)/;
+const RE_4B_WONDER_FALLBACK = /if \(!hex\) \{[\s\S]{0,100}?completedWorldWonders\.push\(wonderId\);[\s\S]{0,700}?if \(city\.ownerId === (?:0|ME\(\))\) \{[\s\S]{0,300}?reconcilePlayerEraFromResearch\(\)[\s\S]{0,400}?\} else \{[\s\S]{0,200}?syncOwnerEraFromResearch\(city\.ownerId\)/;
 
 assert(RE_IMPORT.test(src), 'Blok 1: import computeMainCivEraFromResearch z owner-epoch.ts');
 assert(RE_SYNC_BRANCH.test(src), 'Blok 2: syncOwnerEraFromResearch rozgałęzia się dla main-civ (!isBarbarian && !isCityStateOwner) i woła computeMainCivEraFromResearch z civTypeForOwner(ownerId) + completedWorldWonders');
@@ -182,8 +182,8 @@ assertMutationCaught('M4: usunięcie reconcile z końca tury (auto-research)',
 // M5: przeniesienie reconcile z gałęzi gracza do gałęzi AI (completeWonderOnHex)
 assertMutationCaught('M5: reconcile w completeWonderOnHex przeniesiony do gałęzi AI zamiast gracza',
   src.replace(
-    /if \(site\.ownerId === 0\) \{\s*\n\s*const prevPlayerEra = player\.era;\s*\n\s*if \(reconcilePlayerEraFromResearch\(\)\) \{/,
-    'if (site.ownerId === 0) {\n        const prevPlayerEra = player.era;\n        if (false) {',
+    /if \(site\.ownerId === (?:0|ME\(\))\) \{\s*\n\s*const prevPlayerEra = player\.era;\s*\n\s*if \(reconcilePlayerEraFromResearch\(\)\) \{/,
+    'if (site.ownerId === ME()) {\n        const prevPlayerEra = player.era;\n        if (false) {',
   ));
 
 // M6: usunięcie rozgałęzienia isCityStateOwner w syncOwnerEraFromResearch (main-civ i city-state
@@ -230,7 +230,7 @@ assertMutationCaught('M9: usunięcie wywołania grantTechToOwnerWithSideEffects 
 // M10: usunięcie reconcile z fallbacku bez wolnego heksa (blok 4b)
 assertMutationCaught('M10: usunięcie reconcile z fallbacku completeWonderBuilt (brak wolnego heksa)',
   src.replace(
-    /(console\.warn\(`\[Cuda\] Brak wolnego heksa[^`]*`\);\s*\n\s*\/\/[^\n]*\n\s*\/\/[^\n]*\n\s*if \(city\.ownerId === 0\) \{\s*\n\s*const prevPlayerEra = player\.era;\s*\n\s*if \()reconcilePlayerEraFromResearch\(\)(\) \{)/,
+    /(console\.warn\(`\[Cuda\] Brak wolnego heksa[^`]*`\);\s*\n\s*\/\/[^\n]*\n\s*\/\/[^\n]*\n\s*if \(city\.ownerId === (?:0|ME\(\))\) \{\s*\n\s*const prevPlayerEra = player\.era;\s*\n\s*if \()reconcilePlayerEraFromResearch\(\)(\) \{)/,
     '$1false$2',
   ));
 
@@ -308,7 +308,7 @@ assertProbeSafe('P7: dodatkowy whitespace/tabulacja wokół reconcilePlayerEraFr
   ));
 assertProbeSafe('P8: rename zmiennej prevPlayerEra->prevEraX w bloku 4a (razem z użyciami)',
   src.replace(
-    /if \(site\.ownerId === 0\) \{\s*\n\s*const prevPlayerEra = player\.era;\s*\n\s*if \(reconcilePlayerEraFromResearch\(\)\) \{\s*\n\s*overlayDepositEra = player\.era;\s*\n\s*rebuildResourceOverlays\(\);\s*\n\s*setEra\(player\.era\);\s*\n\s*notifyPlayerEraChangeIfAdvanced\(prevPlayerEra\);/,
+    /if \(site\.ownerId === (?:0|ME\(\))\) \{\s*\n\s*const prevPlayerEra = player\.era;\s*\n\s*if \(reconcilePlayerEraFromResearch\(\)\) \{\s*\n\s*overlayDepositEra = player\.era;\s*\n\s*rebuildResourceOverlays\(\);\s*\n\s*setEra\(player\.era\);\s*\n\s*notifyPlayerEraChangeIfAdvanced\(prevPlayerEra\);/,
     (m) => m.replace(/prevPlayerEra/g, 'prevEraX'),
   ));
 assertProbeSafe('P9: dodanie console.log debug niepowiązanego z logiką tuż przed 3a hookiem',
