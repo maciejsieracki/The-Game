@@ -15,3 +15,14 @@ gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifest, rust-port/, npm run bu
 tsc 0; logic 213; tech-tree 20; research 33; unit-replace zielone; combat 6; ai-test 297/0. Zacommituj i zwróć SHA.
 ## Binarne kryterium
 Każdy z 6 testów ma klasyfikację z dowodem; naprawione zielone solo z mutacją czerwoną; realpath-mutation przywraca plik po ubiciu (dowód); bramki zielone.
+
+## DODATEK rundy 2/5 (orkiestrator, 2026-11-25) — BAZA = bc71c7481fed607736412dfb8c8c8cc710469f06 (potomek ca19244c1; w nim: restore po SIGTERM w realpath-mutation, harness hotseat-B częściowo, deserialize-fields-audit zielony z --dist)
+Runda 1: Evaluator FAIL (7 zarzutów), FC FAIL — hotseat B/D/E nadal czerwone, roundtrip i deserialize bez klasyfikacji, backup w /tmp po realpath-mutation. Zakres rundy 2 (NAPRAW, nie opisuj; po jednym teście, commit po każdym):
+1. hotseat-etap6d-podetap-b-exec: pada na mergedResourceRatesForOwner 'budynki' — dokończ loader (realne moduły src przez esbuild, brakujące stuby wg wzorca z D1/D1B w repo), asercje bez osłabienia; mutacja czerwona na bieżącym kodzie. Jeśli po 2 próbach loader nadal nie dochodzi do końca → NIE-ZMIERZONO z listą sprawdzonych brakujących zależności (konkretne symbole), nie opis ogólny.
+2. hotseat-etap6d-podetap-d-exec: STARY-PIN — wycinki po numerach linii (31620–31675, 32232–32330) zastąp wycinkami po sygnaturach funkcji (kotwice tekstowe), ME() 16 zamiast 13 i 42 zamiast 21 przelicz na obowiązujące liczby z komentarzem 'R-WEB-TEST-DEBT-Q15' + commit zmieniający (git log -S zawężony do gra/src); ReferenceError clusterWarMembers — znajdź gdzie symbol żyje (grep) i dostarcz go w harnessie.
+3. hotseat-etap6d-podetap-e-exec: ReferenceError turnEventsFrame — jak wyżej (symbol w harnessie), dokończ do końca testu.
+4. save-load-roundtrip-state-drift: uruchom z limitem 25 min: setsid nohup timeout 1500 node gra/tools/save-load-roundtrip-state-drift-test.cjs [--dist <bundle poza repo>] > log & i czekaj Monitor/until-pętlą; sklasyfikuj z dowodem (warstwa statyczna OK; dynamiczna Chrome).
+5. save-load-deserialize-fields-audit (plik gra/tools/save-load-deserialize-fields-audit.cjs, bez '-test'): zielony z --dist (dowód z r2 obrony) — sklasyfikuj jako HARNESS (wymaga --dist), dodaj w nagłówku testu instrukcję uruchomienia; evidence/ poza allowlistą nie zostawiać w repo.
+6. resource-ledger-realpath-mutation: dołóż usuwanie osieroconych kopii civ-ledger-mut-backup-*.ts z os.tmpdir() przy starcie i po zakończeniu (tylko własne, po pidzie martwego procesu); SIGKILL — NIE-ZMIERZONO z powodem lub test z kill -KILL własnego dziecka (PID dziecka, bez pkill).
+ZAKAZ statusu BLOCK/INCOMPLETE bez blokady technicznej; każdy punkt kończy się klasyfikacją z dowodem albo NIE-ZMIERZONO z konkretnym powodem.
+Allowlista poprawiona: gra/tools/save-load-deserialize-fields-audit.cjs (bez -test).
