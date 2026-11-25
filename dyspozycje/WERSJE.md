@@ -1,3 +1,9 @@
+## ROBOCZA b4cc40a5 -- 2026-11-25 -- FALA 909: Powód końca wojny w Wydarzeniach na świecie (testowa)
+
+- Wpisy „Wydarzenia na świecie” o pokojach i wojnach między innymi cywilizacjami niosą powód (pokój wymuszony po 40 turach, oferta zmęczenia, pokój po 2 zdobytych miastach, prośba o pokój, wypowiedzenie AI/wojna epoki); log diagnostyczny pod ?civTest=1
+- Weryfikacja: tsc 0; logic 213/213; war-end-reason-log 41/0 (mutacje czerwone); diplo-world-news 67/0; era-war-end-like-classic 17/0; ai-war-nearest-city-peace-2t PASS; main-guard 21/0; truce-end-war-notice PASS; era-war-start-at-entry 32/0; hud-me-literal-zero 150/0; hotseat e-source 77/0; bramki-tmpdir 18/0; ai-test 297/0; vite 0
+- Limity: Powód tylko dla P10/P11/P12/P20 i wypowiedzeń AI; pokój z propozycji/po rozejmie/zdobycie miasta bez powodu; testy live i wygląd w oknie NIE ZMIERZONO; pre-existing czerwony diplo-forced-peace-pending 39/1
+
 ## ROBOCZA 8d3b4ba0 -- 2026-11-25 -- FALA 908: Wojny epoki AI↔AI kończą się jak klasyczne (testowa)
 
 - Wojny epoki między cywilizacjami AI kończą się teraz tak samo jak zwykłe: auto-pokój po 2 zdobytych miastach i prośby o pokój AI↔AI obejmują też wojny epoki (sprzątanie i karencja po pokoju bez zmian); wojna z graczem bez zmian
