@@ -1,6 +1,6 @@
 # R-WEB-WAR-END-REASON-LOG-Q1 — powód końca wojny (i wybuchu) zapisany w grze i pokazany w „Wydarzeniach na świecie”
 
-DOMAIN: GAME (log + tekst wpisu; zgłoszenie właściciela: „wojny kończą się szybciej niż po 40 turach”, luki L1/L3/L7 z analizy) | Operator HAIKU 5.5 | runda 1/5 | BAZA = origin/main (SHA podaje orkiestrator po FALI 908). Wdrożenie jako FALA po FC PASS.
+DOMAIN: GAME (log + tekst wpisu; zgłoszenie właściciela: „wojny kończą się szybciej niż po 40 turach”, luki L1/L3/L7 z analizy) | Operator HAIKU 5.5 | runda 1/5 | BAZA = origin/main 60986fe852487eb0569fef8ceecea61384d436bb (po FALI 908). Wdrożenie jako FALA po FC PASS.
 
 ## Kontekst
 dyspozycje/analizy/WOJNA-SCIEZKI-KONCA-2026-11-25.md (P1–P21, sekcja 7a tabela), gra/src/game/diplo-world-news.ts (FALA 905/907: wpis o wojnie/pokoju bez powodu), setDiploRelation (gra/src/main.ts ~12245, 63 wywołania, bez parametru powodu), console.log w ścieżkach AI↔AI (P10 pokój wymuszony, P11 oferta zmęczenia, P12 auto-pokój po 2 miastach, P20 prośba o pokój). Dziś nie da się zmierzyć ani pokazać graczowi PRZYCZYNY końca wojny.
