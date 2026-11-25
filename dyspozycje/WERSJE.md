@@ -1,3 +1,9 @@
+## ROBOCZA 4b938717 -- 2026-11-25 -- FALA 894: HUD: moc i respekt liczone dla aktywnego gracza (ME()) (testowa)
+
+- gra/src/main.ts: dwa miejsca (respekt względem przeciwnika i licznik Mocy w HUD) liczyły moc właściciela 0 zamiast aktywnego gracza; nowy test strażnik
+- Weryfikacja: tsc 0; logic 213/213; hud-moc-warstwa 28/0; hud-me-literal-zero 5/0 (mutacja czerwona); moc-ranking 19/0; ai-test 297/0; vite build OK
+- Limity: w grze 1-graczowej zmiana bez skutku (ME()=0); skutek w hotseat NIE ZMIERZONO w grze; getEmpireFoodReserve(0) w buildHudState nadal literał 0 (poza zakresem)
+
 ## ROBOCZA c9e30e4d -- 2026-11-25 -- FALA 893: Wiki: Konnica Moc 98; porządki testów (dług Q14-B/D1) (testowa)
 
 - gra/src/data/wikiBundle.json + docs/PORADNIK-GRACZA/57-katalog-jednostek.md: Moc pola Konnicy 49→98 zgodnie z units.json; zmiany wyłącznie w testach gra/tools (Q14-B, Q14-D1)
