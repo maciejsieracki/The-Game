@@ -68,12 +68,25 @@ const cleanupOrphans = (verbose) => {
     const pid = Number(name.split('-')[4]);
     if (pid === process.pid || pidAlive(pid)) continue;
     const f = path.join(tmp, name);
+    const applied = path.join(tmp, name.replace('civ-ledger-mut-backup-', 'civ-ledger-mut-applied-'));
     try {
-      const copy = fs.readFileSync(f, 'utf8');
-      // przywracamy tylko gdy main.ts jest nadal zmutowany (różni się od kopii) — inaczej to tylko śmieć
-      if (fs.readFileSync(MAIN, 'utf8') !== copy) fs.writeFileSync(MAIN, copy, 'utf8');
+      const orig = fs.readFileSync(f, 'utf8');
+      const mainNow = fs.readFileSync(MAIN, 'utf8');
+      // R-WEB-TEST-DEBT-Q15 (runda 3, zarzut Evaluatora 5): przywracamy TYLKO gdy main.ts == dokładnie ten
+      // zmutowany tekst, który martwy przebieg zapisał (kopia `applied`). Jeśli main.ts różni się od obu
+      // (np. legalna edycja po przerwaniu) -- NIE nadpisujemy, zostawiamy kopie i wypisujemy ostrzeżenie.
+      const mutatedCopy = fs.existsSync(applied) ? fs.readFileSync(applied, 'utf8') : null;
+      if (mainNow === orig) {
+        // już przywrócony
+      } else if (mutatedCopy !== null && mainNow === mutatedCopy) {
+        fs.writeFileSync(MAIN, orig, 'utf8');
+        console.log(`[recover] przywrócono main.ts z osieroconej kopii ${name} (pid ${pid} martwy)`);
+      } else {
+        console.log(`[recover] UWAGA: main.ts różni się od zapisu zmutowanego przebiegu pid ${pid} -- NIE nadpisuję; kopia zostaje: ${f}`);
+        continue;
+      }
       fs.unlinkSync(f);
-      console.log(`[recover] przywrócono main.ts z osieroconej kopii ${name} (pid ${pid} martwy)`);
+      try { fs.unlinkSync(applied); } catch (e) { /* ignore */ }
     } catch (e) { /* ignore */ }
     if (verbose) console.log(`[cleanup] usunięto osieroconą kopię ${name}`);
   }
@@ -85,13 +98,16 @@ const original = fs.readFileSync(MAIN, 'utf8');
 // Child (vite/live) idzie przez async spawn, więc handler sygnału działa w trakcie mutacji
 // (spawnSync blokuje pętlę zdarzeń i odkładałby handler do końca dziecka).
 const BACKUP = path.join(require('os').tmpdir(), `civ-ledger-mut-backup-${TMPDIR_RUN_ID}.ts`);
+// Kopia ZMUTOWANEGO tekstu (zapisywana PRZED każdą mutacją) -- po SIGKILL pozwala odróżnić stan z przerwanego
+// przebiegu od legalnej edycji main.ts (zob. cleanupOrphans).
+const APPLIED = path.join(require('os').tmpdir(), `civ-ledger-mut-applied-${TMPDIR_RUN_ID}.ts`);
 let activeChild = null;
 const restore = () => {
   try {
     if (fs.readFileSync(MAIN, 'utf8') !== original) fs.writeFileSync(MAIN, original, 'utf8');
   } catch (e) { /* ignore */ }
   // kopia kasowana dopiero PO przywróceniu (osierocona kopia = sygnał do odzyskania przy starcie)
-  try { if (fs.readFileSync(MAIN, 'utf8') === original) fs.unlinkSync(BACKUP); } catch (e) { /* ignore */ }
+  try { if (fs.readFileSync(MAIN, 'utf8') === original) { fs.unlinkSync(BACKUP); try { fs.unlinkSync(APPLIED); } catch (e2) { /* ignore */ } } } catch (e) { /* ignore */ }
 };
 const killChild = () => { if (activeChild && activeChild.exitCode === null) { try { activeChild.kill('SIGTERM'); } catch (e) { /* ignore */ } } };
 process.on('exit', restore);
@@ -117,7 +133,9 @@ const runAsync = (cmd, args, opts) => new Promise((resolve) => {
       if (IDS.length && !IDS.includes(m.id)) continue;
       const count = original.split(m.find).length - 1;
       if (count !== 1) { console.log(`[${m.id}] BLAD: wzorzec wystepuje ${count}x (wymagane 1) — ${m.name}`); survived++; summary.push({ id: m.id, name: m.name, result: 'PATTERN-' + count }); continue; }
-      fs.writeFileSync(MAIN, original.replace(m.find, m.replace), 'utf8');
+      const mutatedText = original.replace(m.find, m.replace);
+      fs.writeFileSync(APPLIED, mutatedText, 'utf8');
+      fs.writeFileSync(MAIN, mutatedText, 'utf8');
       const b = await runAsync('node', ['./node_modules/vite/bin/vite.js', 'build', '--outDir', DIST, '--emptyOutDir'], { cwd: GRA, timeoutMs: 400000 });
       restore();
       if (b.status !== 0) { console.log(`[${m.id}] BLAD BUILDU mutacji: ${(b.stderr || b.stdout || '').slice(-300)}`); survived++; summary.push({ id: m.id, name: m.name, result: 'BUILD-FAIL' }); continue; }
