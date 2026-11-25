@@ -172,6 +172,132 @@ check(
     && /militaryFoodConsumptionWithSpichlerz\(\s*playerUnits\s*,\s*ownerId\s*,/.test(projCode),
 );
 
+// R-WEB-HUD-ME-REMAINING-Q1: pozostałe miejsca, w których literał 0 był podstawieniem
+// gracza aktywnego (buildHudStateRaw: pobór, religia, zasoby, handel, rekruci, nazwa/kolor;
+// buildEmpireFoodSnap: zapas/cap/tick żywności dla ME()). Kotwice po sygnaturach funkcji.
+const REMAINING_RAW = [
+  [/ownerReligionForOwnerId\(\s*0\s*\)/, 'ownerReligionForOwnerId(0)'],
+  [/buildEmpireResourceRows\(\s*0\s*\)/, 'buildEmpireResourceRows(0)'],
+  [/wonderTradeRouteBonusForOwner\(\s*0\s*,/, 'wonderTradeRouteBonusForOwner(0,'],
+  [/civManpowerMultsForOwner\(\s*0\s*\)/, 'civManpowerMultsForOwner(0)'],
+  [/civKolorHexFn\(\s*0\s*\)/, 'civKolorHexFn(0)'],
+  [/leaderNameForOwnerId\(\s*0\s*\)/, 'leaderNameForOwnerId(0)'],
+  [/civDisplayNameForOwner\(\s*0\s*\)/, 'civDisplayNameForOwner(0)'],
+  [/empirePoborTotals\(\s*cities\s*,\s*0\s*,/, 'empirePoborTotals(cities, 0,'],
+  [/r\.toOwnerId\s*===\s*0\b/, 'r.toOwnerId === 0'],
+  [/\bplayer\.era\b/, 'player.era'],
+  [/player\.civType\b/, 'player.civType'],
+];
+for (const [re, label] of REMAINING_RAW) {
+  check(
+    'buildHudStateRaw: brak ' + label + ' (fotel wyświetlany, nie literał 0)',
+    rawCode !== null && !re.test(rawCode),
+    'literał 0 zamiast ownerId/ps -- regresja migracji hotseat',
+  );
+}
+const REMAINING_RAW_GOOD = [
+  'ownerReligionForOwnerId(ownerId)',
+  'buildEmpireResourceRows(ownerId)',
+  'wonderTradeRouteBonusForOwner(ownerId, r.medium)',
+  'civManpowerMultsForOwner(ownerId)',
+  'civKolorHexFn(ownerId)',
+  'leaderNameForOwnerId(ownerId)',
+  'civDisplayNameForOwner(ownerId)',
+  'empirePoborTotals(cities, ownerId, ps.era',
+  'r.toOwnerId === ownerId',
+];
+for (const good of REMAINING_RAW_GOOD) {
+  check(
+    'buildHudStateRaw: obecne ' + good,
+    rawCode !== null && rawCode.includes(good),
+  );
+}
+
+// buildEmpireFoodSnap (zasilane ME() w buildEmpireDetailSnap): zapas/cap/tick = fotel aktywny.
+const foodSnapBody = braceBody(/function buildEmpireFoodSnap\(/);
+const foodSnapCode = foodSnapBody === null ? null : stripComments(foodSnapBody);
+const FOOD_SNAP_LITERALS = [
+  [/getLastEmpireFoodTick\(\s*0\s*\)/, 'getLastEmpireFoodTick(0)'],
+  [/getEmpireFoodReserve\(\s*0\s*\)/, 'getEmpireFoodReserve(0)'],
+  [/getEmpireFoodMaxCap\(\s*0\s*\)/, 'getEmpireFoodMaxCap(0)'],
+  [/projectPlayerFoodMaxCap\(\s*\)/, 'projectPlayerFoodMaxCap()'],
+];
+for (const [re, label] of FOOD_SNAP_LITERALS) {
+  check(
+    'buildEmpireFoodSnap: brak ' + label,
+    foodSnapCode !== null && !re.test(foodSnapCode),
+    'literał 0 zamiast ME() -- regresja migracji hotseat',
+  );
+}
+check(
+  'buildEmpireFoodSnap: zapas/cap/tick liczone dla ME()',
+  foodSnapCode !== null
+    && foodSnapCode.includes('getLastEmpireFoodTick(ME())')
+    && foodSnapCode.includes('getEmpireFoodReserve(ME())')
+    && foodSnapCode.includes('getEmpireFoodMaxCap(ME())')
+    && foodSnapCode.includes('projectPlayerFoodMaxCap(ME())'),
+);
+
+// R-WEB-HUD-ME-REMAINING-Q1: podglądy (panel Handel / Imperium, prognoza producentów,
+// przegląd religii) — literał 0 w roli gracza aktywnego zamieniony na ME() / stan fotela.
+// Ciało wycinane do następnej funkcji na tym samym poziomie wcięcia (bez klamer w typie zwracanym).
+function sliceToNextFn(startRe) {
+  const m = startRe.exec(src);
+  if (!m) return null;
+  const next = src.indexOf('\n    function ', m.index + m[0].length);
+  return next > m.index ? src.slice(m.index, next) : null;
+}
+const forecastCode = (() => { const b = sliceToNextFn(/function producersForecastArgs\(/); return b === null ? null : stripComments(b); })();
+const tradeCode = (() => { const b = sliceToNextFn(/function buildEmpireTradeSnap\(/); return b === null ? null : stripComments(b); })();
+const religionOvCode = (() => { const b = sliceToNextFn(/function buildReligionOverlayData\(/); return b === null ? null : stripComments(b); })();
+
+const PANEL_LITERALS = [
+  ['producersForecastArgs', forecastCode, /\bplayer\.era\b/, 'player.era'],
+  ['producersForecastArgs', forecastCode, /\bplayer\.zbadane\b/, 'player.zbadane'],
+  ['producersForecastArgs', forecastCode, /\bplayer\.civType\b/, 'player.civType'],
+  ['buildEmpireTradeSnap', tradeCode, /wonderTradeRouteBonusForOwner\(\s*0\s*,/, 'wonderTradeRouteBonusForOwner(0,'],
+  ['buildEmpireTradeSnap', tradeCode, /capitalCityIdForOwner\(\s*0\s*\)/, 'capitalCityIdForOwner(0)'],
+  ['buildEmpireTradeSnap', tradeCode, /unlockedTechsForOwner\(\s*0\s*\)/, 'unlockedTechsForOwner(0)'],
+  ['buildEmpireTradeSnap', tradeCode, /ownerZlotoAccessForMennicaEffective\(\s*0\s*\)/, 'ownerZlotoAccessForMennicaEffective(0)'],
+  ['buildEmpireTradeSnap', tradeCode, /strony\.includes\(\s*0\s*\)/, 'strony.includes(0)'],
+  ['buildEmpireTradeSnap', tradeCode, /strony\[0\]\s*===\s*0\b/, 'strony[0] === 0'],
+  ['buildReligionOverlayData', religionOvCode, /ownerReligionForOwnerId\(\s*0\s*\)/, 'ownerReligionForOwnerId(0)'],
+];
+for (const [fn, code, re, label] of PANEL_LITERALS) {
+  check(
+    fn + ': brak ' + label + ' (gracz aktywny = ME() / stan fotela)',
+    code !== null && !re.test(code),
+    'literał 0 zamiast fotela aktywnego -- regresja migracji hotseat',
+  );
+}
+check(
+  'producersForecastArgs: stan fotela aktywnego (psMe) w base',
+  forecastCode !== null
+    && forecastCode.includes('playerStateByHuman.get(me) ?? player')
+    && forecastCode.includes('playerEra: psMe.era')
+    && forecastCode.includes('playerZbadane: psMe.zbadane'),
+);
+check(
+  'buildEmpireTradeSnap: ME() jako właściciel panelu Handel/Imperium',
+  tradeCode !== null
+    && tradeCode.includes('wonderTradeRouteBonusForOwner(ME(), r.medium)')
+    && tradeCode.includes('capitalCityIdForOwner(ME())')
+    && tradeCode.includes('unlockedTechsForOwner(ME())')
+    && tradeCode.includes('ownerZlotoAccessForMennicaEffective(ME())')
+    && tradeCode.includes('wonderTradeRouteBonusForOwner(ME(), \'lad\')')
+    && tradeCode.includes('wonderTradeRouteBonusForOwner(ME(), \'morze\')')
+    && tradeCode.includes('deal.strony.includes(ME())'),
+);
+const powerOvBody = (() => { const m = /function buildPowerOverlayData\(/.exec(src); if (!m) return null; const n = src.indexOf('\n    function ', m.index + m[0].length); return n > m.index ? stripComments(src.slice(m.index, n)) : null; })();
+check(
+  'buildPowerOverlayData: objectivePowerForOwnerEffective(ME()), bez literału 0',
+  powerOvBody !== null && powerOvBody.includes('buildObjectivePowerForOwnerEffective(ME())') && !/buildObjectivePowerForOwnerEffective\(\s*0\s*\)/.test(powerOvBody),
+);
+check(
+  'buildReligionOverlayData: ownerReligionForOwnerId(ME())',
+  religionOvCode !== null && religionOvCode.includes('ownerReligionForOwnerId(ME())'),
+);
+
 console.log('\nWynik: ' + passCount + ' PASS / ' + failCount + ' FAIL');
 if (failCount > 0) {
   process.exit(1);

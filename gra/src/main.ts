@@ -20571,7 +20571,8 @@ async function boot(): Promise<void> {
 
     function buildPowerOverlayData(): PowerOverlayData {
       // R-MOC-RANKING-ROZJAZD-Q1=B: panel Mocy widoczny dla gracza -> Moc EFEKTYWNA.
-      const obj = buildObjectivePowerForOwnerEffective(0);
+      // R-WEB-HUD-ME-REMAINING-Q1: panel Mocy = fotel aktywny (ME()), nie literał 0.
+      const obj = buildObjectivePowerForOwnerEffective(ME());
       const power = obj.power;
       const maxPts = Math.max(1, ...obj.components.map(c => c.points));
       const components = obj.components.map(c => ({
@@ -20661,9 +20662,9 @@ async function boot(): Promise<void> {
     }
 
     function buildEmpireFoodSnap(): EmpireFoodSnap {
-      const tick = getLastEmpireFoodTick(0);
-      const zapasy = Math.floor(getEmpireFoodReserve(0));
-      const maxCap = getEmpireFoodMaxCap(0) || projectPlayerFoodMaxCap();
+      const tick = getLastEmpireFoodTick(ME());
+      const zapasy = Math.floor(getEmpireFoodReserve(ME()));
+      const maxCap = getEmpireFoodMaxCap(ME()) || projectPlayerFoodMaxCap(ME());
       const cityNameById = new Map(cities.filter(c => isMe(c.ownerId)).map(c => [c.id, c.name]));
       const perCityRows = (tick?.perCityRows ?? []).map(r => ({
         cityId: r.cityId,
@@ -21084,11 +21085,13 @@ async function boot(): Promise<void> {
     } {
       try {
         const me = ME();
+        // R-WEB-HUD-ME-REMAINING-Q1: stan FOTELA AKTYWNEGO (nie singleton `player` = fotel 0).
+        const psMe = playerStateByHuman.get(me) ?? player;
         const ownerCivMap = new Map<number, string>();
-        ownerCivMap.set(me, (player.civType as string) || 'grecy');
+        ownerCivMap.set(me, (psMe.civType as string) || 'grecy');
         const base = {
           cities, map, data, difficulty: _menuDifficulty, builtByCity: cityBuilt,
-          playerEra: player.era, playerZbadane: player.zbadane, ownerCivByOwnerId: ownerCivMap,
+          playerEra: psMe.era, playerZbadane: psMe.zbadane, ownerCivByOwnerId: ownerCivMap,
           resolveOwnerEra: empireEpochForOwner, resolveOwnerTech: unlockedTechSetForOwner,
           resolveOwnerZlotoAccess: makeOwnerZlotoAccessResolver(
             predictMennicaZlotoAccessForNextTick(mennicaZlotoGraceState, ownerHasZlotoAccessNow)),
@@ -21239,7 +21242,7 @@ async function boot(): Promise<void> {
           // inaczej trzy miejsca pokazywałyby trzy różne liczby dla tego samego dochodu.
           // R2-2: bonus cudów liczony dla GRACZA (0), nie dla `r.ownerId` — po
           // generalizacji `r.ownerId` bywa cywilizacją obcą (gracz jako strona `to`).
-          const bonus = wonderTradeRouteBonusForOwner(0, r.medium);
+          const bonus = wonderTradeRouteBonusForOwner(ME(), r.medium);
           const base = tradeRouteIncomeForRoute(r, incomeParams);
           const myRouteBonus = targowiskoTradeRouteBonusForCity(side.myCityId);
           const perSideBase = bonus === 0 ? base : Math.floor(base * (1 + bonus));
@@ -21297,17 +21300,17 @@ async function boot(): Promise<void> {
       // Decyzje 65B/66B: panel imperium jest zawsze widokiem gracza (ownerId=0),
       // wiec etykieta Danina/Podatek liczona jest dla ownerId=0 -- patrz
       // EmpireTradeSnap.daninaLabel (empireDetailTypes.ts).
-      const playerCapitalId = capitalCityIdForOwner(0);
-      const walutaOdkrytaPlayer = unlockedTechsForOwner(0).includes('Waluta');
+      const playerCapitalId = capitalCityIdForOwner(ME());
+      const walutaOdkrytaPlayer = unlockedTechsForOwner(ME()).includes('Waluta');
       const daninaLbl = resolveDaninaLabel(
         walutaOdkrytaPlayer,
         mennicaWStolicy(playerCapitalId, playerCapitalId ? cityBuilt.get(playerCapitalId) : undefined),
         // PYTANIE 83=B + 77-DOP=B: nazwa wraca na "Danina" gdy brak efektywnego dostępu (łaska wliczona).
-        ownerZlotoAccessForMennicaEffective(0),
+        ownerZlotoAccessForMennicaEffective(ME()),
       );
       // DYSPOZYCJA 85: bonus % cudów handel_procent gracza, osobno ląd/morze (foot panelu).
-      const wonderBonusLadPct = Math.round(wonderTradeRouteBonusForOwner(0, 'lad') * 100);
-      const wonderBonusMorzePct = Math.round(wonderTradeRouteBonusForOwner(0, 'morze') * 100);
+      const wonderBonusLadPct = Math.round(wonderTradeRouteBonusForOwner(ME(), 'lad') * 100);
+      const wonderBonusMorzePct = Math.round(wonderTradeRouteBonusForOwner(ME(), 'morze') * 100);
       // DYSPOZYCJA 85: surowce, do których gracz ma dostęp DZIĘKI aktywnej trasie —
       // zebrane tu (panel Handel), USUNIĘTE z panelu miasta (patrz cityPanel.ts).
       const resourceGrants: EmpireDetailSnap['trade']['resourceGrants'] = [];
@@ -21331,8 +21334,8 @@ async function boot(): Promise<void> {
       const activeDealsRows: EmpireDetailSnap['trade']['activeDeals'] = [];
       for (const deal of activeDeals) {
         if (normalizeTreatyKind(deal.rodzaj) !== RodzajTraktatu.UmowaSzlakow) continue;
-        if (!deal.strony.includes(0)) continue;
-        const partnerId = deal.strony[0] === 0 ? deal.strony[1] : deal.strony[0];
+        if (!deal.strony.includes(ME())) continue;
+        const partnerId = deal.strony[0] === ME() ? deal.strony[1] : deal.strony[0];
         if (seenDealPartners.has(partnerId)) continue;
         seenDealPartners.add(partnerId);
         // R2-2 (zarzut 4 Evaluatora, runda 2): filtr SYMETRYCZNY. Do rundy 1 warunek
@@ -21393,7 +21396,7 @@ async function boot(): Promise<void> {
     function buildReligionOverlayData(): ReligionOverlayData {
       const rp = loadReligionParams(data.societyParams, _menuDifficulty);
       const pc = cities.filter(c => isMe(c.ownerId));
-      const stateRel = ownerReligionForOwnerId(0) ?? '—';
+      const stateRel = ownerReligionForOwnerId(ME()) ?? '—';
       let dominantCityCount = 0;
       let foreignCityCount = 0;
       const cityRows = pc.map(c => {
@@ -24035,7 +24038,7 @@ async function boot(): Promise<void> {
       }
       const pc = cities.filter(c => isMe(c.ownerId));
       const pop = pc.reduce((s, c) => s + c.population, 0);
-      const pobor = empirePoborTotals(cities, 0, player.era, civManpowerMultsForOwner(0).maxMult);
+      const pobor = empirePoborTotals(cities, ownerId, ps.era, civManpowerMultsForOwner(ownerId).maxMult);
       const chips = collectDiploChipCounts();
       // R-MOC-HUD-GLOWNY-Q1=C (Maciej 2026-08-08): licznik Mocy w HUD (klikalny,
       // otwiera panel Mocy który już liczy efektywnie — d1f7b91) -> EFEKTYWNA,
@@ -24052,7 +24055,7 @@ async function boot(): Promise<void> {
       // atrycji HP wojska, gdy zapasy państwa są ujemne ale karencja jeszcze nie minęła.
       const glodWojskaKarencjaTurHud = buildEmpireFoodParams(data.econParams, _menuDifficulty).glodWojskaKarencjaTur;
       const foodStarvationCountdown = getArmyStarvationCountdown(ownerId, glodWojskaKarencjaTurHud);
-      const stateRel = ownerReligionForOwnerId(0);
+      const stateRel = ownerReligionForOwnerId(ownerId);
       const relAgg = aggregateReligionEmpire(
         pc.map(c => ({
           state: resolvedCityReligion(c),
@@ -24066,7 +24069,7 @@ async function boot(): Promise<void> {
       // P-SUROWCE-KOLEJNOSC-KART, znalezisko Evaluatora (2026-08-12): wiersz placeholder
       // (np. "Ruda cyny — wkrótce", cap=0) ma cap!=null i stock(0)>=cap(0), więc bez
       // !r.placeholder wpadał do sumy jako "surowiec na limicie" -- fałszywy alarm na stałe.
-      const resourceRows = buildEmpireResourceRows(0);
+      const resourceRows = buildEmpireResourceRows(ownerId);
       const storedResourceRows = resourceRows.filter(r => r.cap != null && !r.placeholder);
       // R-WEB-UI-HUD-SHORTAGE-ALERT-TOOLTIP-Q1: niedobór = netto HUD (po zużyciu i wejściach
       // konwerterów), jedno źródło resourceIsShortage — nie surowe ratePerTurn.
@@ -24138,13 +24141,13 @@ async function boot(): Promise<void> {
       for (const r of tradeRoutes) {
         if (r.status !== 'polaczony') continue;
         const fromPlayer = isMe(r.ownerId);
-        const toPlayer = r.toOwnerId === 0;
+        const toPlayer = r.toOwnerId === ownerId;
         if (!fromPlayer && !toPlayer) continue; // R2-1: cudza trasa (AI↔AI / wewnętrzna obcych)
         // CUDA-HANDEL-01: chip HUD musi odzwierciedlać ten sam bonus % cudów, co
         // realny wpis do skarbca (tradeIncomeByCity) — inaczej HUD i skarbiec by się rozjechały.
-        // Bonus liczony dla WŁAŚCICIELA 0 (gracza), nie dla `r.ownerId` — po generalizacji
+        // Bonus liczony dla WŁAŚCICIELA wyświetlanego fotela (ownerId), nie dla `r.ownerId` — po generalizacji
         // gracz bywa stroną `to`, a wtedy `r.ownerId` to cudza cywilizacja.
-        const bonus = wonderTradeRouteBonusForOwner(0, r.medium);
+        const bonus = wonderTradeRouteBonusForOwner(ownerId, r.medium);
         const base = tradeRouteIncomeForRoute(r, handelIncomeParams);
         const perSide = bonus === 0 ? base : Math.floor(base * (1 + bonus));
         const myCityId = fromPlayer ? r.fromCityId : r.toCityId;
@@ -24159,10 +24162,10 @@ async function boot(): Promise<void> {
         handelIncome += routeIncome;
         handelRouteCount++;
       }
-      const mpMults = civManpowerMultsForOwner(0);
+      const mpMults = civManpowerMultsForOwner(ownerId);
       let rekruciRegenPerTurn = 0;
       for (const c of pc) {
-        rekruciRegenPerTurn += cityManpowerSnapshot(c, player.era, mpMults.regenMult, mpMults.maxMult).regenPerTurn;
+        rekruciRegenPerTurn += cityManpowerSnapshot(c, ps.era, mpMults.regenMult, mpMults.maxMult).regenPerTurn;
       }
       const armyUnitsOnMap = units.filter(u => isMe(u.ownerId) && u.category !== 'osadnik').length;
       // P-SPICHLERZ-ZERO-MYLACE (ECHO C Maciej 2026-08-10): ta sama liczba miast niedokarmionych,
@@ -24266,11 +24269,11 @@ async function boot(): Promise<void> {
         sojusze: chips.sojusze,
         pakty: chips.pakty,
         wojny: chips.wojny,
-        civIconId: String(playerCivTypeByHuman.get(ownerId) ?? player.civType ?? _menuCivId ?? 'grecy'),
-        civKolorHex: civKolorHexFn(0),
+        civIconId: String(playerCivTypeByHuman.get(ownerId) ?? ps.civType ?? _menuCivId ?? 'grecy'),
+        civKolorHex: civKolorHexFn(ownerId),
         playerEra: ps.era,
-        playerWodz: leaderNameForOwnerId(0) ?? undefined,
-        nacja: civDisplayNameForOwner(0) ?? undefined,
+        playerWodz: leaderNameForOwnerId(ownerId) ?? undefined,
+        nacja: civDisplayNameForOwner(ownerId) ?? undefined,
         surowceSummary: surowceTotal > 0 ? `${surowceOk}/${surowceTotal}` : '—',
         surowceAlert: resourceAlertCount > 0,
         surowceNiedoborLabels,
