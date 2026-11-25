@@ -78,6 +78,13 @@ async function main() {
 
     const endTurn = async () => {
       const before = await page.evaluate(() => window.__eraTestDebug.getWorldState().turn);
+      // R-WEB-HARNESS-LIVE-WELCOME-TRUCE-Q1: bramka NNS (no-negative-stocks) blokuje koniec tury gracza od tury 1,
+      // gdy prognoza < 0 i jest dźwignia. Runner pomiaru dosypuje dodatnie zasoby (jak inne testy live z
+      // nnsGateBlocked). Ta sama reguła w trybach A/B/C, więc porównanie deterministyczne pozostaje.
+      await page.evaluate(() => {
+        const d = window.__aiTradeWiringTestDebug;
+        if (d && d.nnsGateBlocked()) { d.grantPlayerGold(200); d.grantPlayerFood(200); }
+      });
       await page.evaluate(() => window.__eraTestDebug.endTurn());
       const t1 = Date.now();
       for (;;) {

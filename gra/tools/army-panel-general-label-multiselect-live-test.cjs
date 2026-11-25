@@ -12,6 +12,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { execFileSync, spawn } = require('node:child_process');
 const { chromium } = require('playwright');
+const { closeCivWelcome } = require('./_live-ready.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const DIST = process.env.ARMY_LIVE_DIST || fs.mkdtempSync(path.join(os.tmpdir(), 'army-panel-live-dist-'));
@@ -64,6 +65,7 @@ async function main() {
     const fixture = await page.evaluate(() => window.__armyLive.setupStack());
     if (fixture.error) fail('fixture: ' + fixture.error);
     const { q, r, ids } = fixture;
+    await closeCivWelcome(page);
     await page.evaluate(() => window.__armyLive.selectUnit('live-w0'));
     await page.waitForSelector('.sp-unit-stack-card', { timeout: 10000 });
     const cardCount = await page.locator('.sp-unit-stack-card').count();
@@ -101,6 +103,7 @@ async function main() {
 
     // (4) „Zaznacz wszystko” bez generała; „Odznacz” czyści zbiór.
     // Wybrana jednostka (w0) została rozwiązana: wybierz ocalałą, żeby panel stosu pozostał otwarty.
+    await closeCivWelcome(page);
     await page.evaluate(() => window.__armyLive.selectUnit('live-w3'));
     await page.waitForSelector('.sp-unit-stack-card', { timeout: 10000 });
     await page.locator('[data-act="pick-all"]').click();
