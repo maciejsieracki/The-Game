@@ -1,0 +1,44 @@
+{
+ "schema": "fortring-measure-v1",
+ "variant": "off",
+ "seed": 4242,
+ "turnsRequested": 60,
+ "turnsDone": 59,
+ "ringOff": true,
+ "msMedian": 9674.8,
+ "msP95": 24113.9,
+ "msMax": 26637.2,
+ "msTotal": 723234.7999999998,
+ "fortsFirst": 0,
+ "fortsLast": 0,
+ "fortsMax": 0,
+ "hashes": [
+  {
+   "turn": 30,
+   "sha256": "145f972f2ac037fee2d71d3eb1925d4ae3a0d7e9f6074c6e5007ce3d77c0b595"
+  },
+  {
+   "turn": 60,
+   "sha256": "b8a50fae60949a4644e8be948a129c7abeb04e4c79e6030d7e969bf4f18c08e9"
+  }
+ ],
+ "roundTrip": {
+  "saved": true,
+  "shaBefore": "b8a50fae60949a4644e8be948a129c7abeb04e4c79e6030d7e969bf4f18c08e9",
+  "shaAfter": "b8a50fae60949a4644e8be948a129c7abeb04e4c79e6030d7e969bf4f18c08e9",
+  "identical": true,
+  "fortsBefore": 0,
+  "fortsAfter": 0,
+  "fortsEqual": true,
+  "diffTopKeys": [],
+  "diff": []
+ },
+ "counters": {
+  "gateBypass": 1,
+  "battlesAuto": 0,
+  "offersRejected": 0,
+  "forcedPeaceAccepted": 0
+ },
+ "resumedChunks": 7,
+ "pageErrors": []
+}

@@ -375,6 +375,11 @@ export function fortRingHasOwnImprovement(
   return false;
 }
 
+/** R-WEB-MEASURE-FORTRING-FLEEMANUAL-RUNNERS-Q1 (hak civTest): przełącznik reguły pierścienia. Ustawiany WYŁĄCZNIE
+ *  z main.ts (`__settingsLive.setFortRingOff`, który sam wymaga ?civTest=1). Domyślnie false = reguła ON = zachowanie gry. */
+let civTestFortRingOff = false;
+export function setCivTestFortRingOff(off: boolean): void { civTestFortRingOff = off; }
+
 /**
  * Blokada budowy (ABC C): budujący B nie stawia ulepszenia na heksie, który leży w pierścieniu SWOJEGO fortu/posterunku,
  * a którego terytorium należy do kogoś innego — inaczej ulepszenie należące do B „przeskoczyłoby” pod ochronę fortu.
@@ -388,6 +393,7 @@ export function fortRingBuildBlockReason(
   builderOwner: number,
   nodes: readonly TerritoryNode[],
 ): string | null {
+  if (civTestFortRingOff) return null;
   let inOwnRing = false;
   for (const n of nodes) {
     if (!(n.isFort || n.isOutpost) || n.ownerId !== builderOwner) continue;
