@@ -1,0 +1,26 @@
+# R-RUSTPORT-P4-FQ-SPEED-Q1 — prędkość bitwy (speedMul ≠ 1): pełna zgodność z pinem i klatka przez PlaybackOpts
+
+STATUS: dispatch orkiestratora. Opus, wszystkie etapy Opus. Zadanie #401. Podstawa: `REJESTR-RUST.md` wpisy FRAME-QUANT (dług FQ-SPEED), MARCH-INCREMENTAL (c1 @32: 127/128, pozostaje `k_wzg_mix_d5_mury_155`), HITAT (N3: `PIN_FRAME_MS=16` stałe w rendererze) i LANDAT-TOWER-BOULDER (E-4).
+BAZA: `origin/rust-port/parity-v2` = `ee1ceda3ebed21f90ec207f9e541e792738f7abc` w dniu dispatchu (wpisz faktyczny SHA: `git fetch origin && git checkout -B <gałąź> origin/rust-port/parity-v2`).
+
+## KONTEKST
+Pin `07d2fbd72` (`gra/src/battle/battleScene.ts`, `git show 07d2fbd72:gra/src/battle/battleScene.ts`): `SPEED_STEPS = [1,2,4,8,16,32,64,128,256,512]` (`:2551`), `speedMul` (`:2555`), `_setSpeedIdx` (`:9518-9526`), `_scaledWallDelta` (`:9499-9515`, clamp ścienny × speedMul), `FF_STEP_MS = _scaledWallDelta(BATTLE_FRAME_WALL_MS)` (`:9419`). Silnik: `VirtualClock::scaled_wall_delta` (`siege_tactics_clock.rs`), `body.frame_ms = clock.scaled_wall_delta(BATTLE_FRAME_WALL_MS)` (`siege_battle_session.rs:1048-1049, 1326-1332` `diag_set_speed_mul`), `ff_step_ms`. Renderer: `PIN_FRAME_MS = 16` stałe w `renderer/src/battle/playback.rs` (`pin_frame_time`, `is_pin_event_time`) — przy `speedMul ≠ 1` klatka pinu to `16 × speedMul`, więc `Melee`/`Shot`/`TowerShot`/`Boulder` dostają od silnika czasy z innej siatki niż renderer akceptuje. Dziś speedMul ≠ 1 ustawia tylko `diag_set_speed_mul` (diagnostyka), ale web ma przyciski prędkości (`_cycleSpeed`, panel ±, `:9530-9536`), więc port musi je obsłużyć.
+
+## GOAL
+NAJPIERW web (pin): jak zmiana `speedMul` wpływa na `_raf`/`_drainTimers`/`_schedule` i które kroki `SPEED_STEPS` są osiągalne (zbadaj, czy clamp w `_scaledWallDelta` ogranicza efektywną klatkę przy 256/512). Następnie:
+1. Zmierz zgodność silnika z pinem dla kandydatów c1 (128) i wektorów K5LOOP-WIRING-A przy klatkach odpowiadających speedMul 2, 4, 8, 16, 32, 64 (generator `engine/tests/p6_k5loop_wiring_a_gen.mjs` obsługuje już bliźniaki @1/@4 i kandydatów @1/@16/@32/@64 — sprawdź, co faktycznie mierzy). Cel: lista rozbieżności pusta tam, gdzie pin jest deterministyczny (@1, @16 muszą zostać 128/128; @32 = 128/128; @64 zmierzone i rozbieżności albo naprawione, albo jawnie wyjaśnione jako D-PIN3-3-SHOT-ID/inny dług z numerem). Naprawy w `siege_tactics_loop.rs`/`siege_tactics_clock.rs`/`siege_battle_session.rs` tylko wg pinu.
+2. Renderer: klatka siatki (`pin_frame_time`/`is_pin_event_time`) pochodzi z `PlaybackOpts` (nowe pole `frame_ms`, domyślnie 16), nie ze stałej; `client/src/lib.rs` przekazuje klatkę z sesji (zgodnie z `speedMul`). Test: ta sama scena przy speedMul 1 i 4 (i ≥ 1 wyższym) przechodzi walidację; złe punkty odrzucone.
+3. Komenda mostu do zmiany prędkości bitwy — TYLKO jeśli pin ma gracza-sterowaną prędkość w tej ścieżce (jest: `_setSpeedIdx`); jeśli to wymaga zmiany kontraktu `bridge.rs`, zrób minimalnie (addytywnie, `CONTRACT_VERSION` bez zmian) albo zostaw jako dług z numerem i uzasadnieniem — nie rozszerzaj zakresu bez potrzeby.
+Poza zakresem: MARCH-RESZTA (#402), DTO-BRIDGE-WIRE (#403), `gra/`, `src-tauri`. Pytanie ABC tylko dla odstępstwa gameplay od webu.
+
+## ALLOWLISTA
+`rust-port/engine/src/domain/siege_tactics_loop.rs`, `siege_tactics_clock.rs`, `siege_tactics_fastforward.rs`, `siege_battle_session.rs`, `engine/src/bridge.rs` (tylko jeśli konieczna komenda prędkości), `engine/tests/p6_k5loop_wiring_a_pin.rs`, `engine/tests/p6_k5loop_wiring_a_gen.mjs` + wektory `p6_k5loop_wiring_a_pin_vectors/` (jeśli pomiar @2..@64 wymaga rozszerzenia; stare 45 wektorów bajt w bajt), `engine/tests/bridge_contract.rs`, nowe `engine/tests/p4_fq_speed*.rs`, `rust-port/renderer/src/battle/playback.rs`, `renderer/tests/battle_playback*.rs`, `rust-port/client/src/lib.rs`, `client/tests/siege_battle_client.rs`, `dyspozycje/autobot/runs/R-RUSTPORT-P4-FQ-SPEED-Q1/*`. Nie ruszać: `gra/`, `src-tauri`, `view-model`, `Cargo.lock`.
+
+## KRYTERIA KOŃCA
+Zmierzona tabela zgodności (kandydaci c1 i wektory) dla klatek 1/2/4/8/16/32/64 ms (pominięte kroki uzasadnione); @1 i @16 nadal 128/128 i 45/45; renderer akceptuje siatkę z `PlaybackOpts.frame_ms`; klient przekazuje klatkę; mutanty ≥ 12; tabela „zamknięte / zostaje długiem” (FQ-SPEED, E-4, N3).
+
+## BRAMKI (EXIT 0)
+Zmiana strumienia akcji i kontraktu klienta/renderera ⇒ trzy crate'y: engine fmt/clippy `-D warnings`/pełny `cargo test --all-targets --no-fail-fast`; client fmt/clippy/test; renderer (gpu OFF) fmt/clippy/test. `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, własny `CARGO_TARGET_DIR` z nazwą tematu, w tle `setsid nohup`, po bramce usuń własny target. Bramka renderera tylko przy ≥ 12 GB wolnego i bez równoległego builda renderera, inaczej NIE ODTWORZONO. Pliki tymczasowe z ID tematu w nazwie. Build renderera przepisuje `renderer/Cargo.lock` — cofnij, nie commituj.
+
+## ZAKAZY
+Brak push na `parity-v2`/deploy/integracji, brak `git add -A`, brak `#[ignore]`, brak linii z nazwą modelu w commitach (dozwolona `Claude-Session:`). Commituj WIP wcześnie. Raporty: `01-operator-r1.md`, `02-evaluator.md`, `02a-obrona.md`, `03-final-control.md`; sekcja „Długi”.
