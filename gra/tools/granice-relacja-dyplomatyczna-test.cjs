@@ -354,10 +354,12 @@ console.log('\n3. Wpięcie w main.ts (asercje na źródle)');
 
 const mainSrc = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
 
-ok(/function relationColorFn\(ownerId: number\): number \{[\s\S]{0,400}?if \(ownerId === 0\) return civColorFn\(0\);/.test(mainSrc),
-  'main.ts: relationColorFn(0) zwraca civColorFn(0) — własna obwódka w kolorze cywilizacji');
-ok(/function relationColorFn[\s\S]{0,400}?relationBorderColor\(getDiploRelation\(0, ownerId\)\.status\)/.test(mainSrc),
-  'main.ts: relationColorFn czyta getDiploRelation(0, ownerId).status');
+// R-WEB-TEST-DEBT-Q14 (STARY-PIN/HARNESS): main.ts przeszedl z literalu 0 na isMe()/ME()
+// (ME() = aktywny gracz, dla jednego gracza = 0). Ta sama semantyka, asercja nie oslabiona.
+ok(/function relationColorFn\(ownerId: number\): number \{[\s\S]{0,400}?if \(isMe\(ownerId\)\) return civColorFn\(ME\(\)\);/.test(mainSrc),
+  'main.ts: relationColorFn(gracz) zwraca civColorFn(ME()) — własna obwódka w kolorze cywilizacji');
+ok(/function relationColorFn[\s\S]{0,400}?relationBorderColor\(getDiploRelation\(ME\(\), ownerId\)\.status\)/.test(mainSrc),
+  'main.ts: relationColorFn czyta getDiploRelation(ME(), ownerId).status');
 ok(/buildTerritoryBorderGroup\(\s*map,\s*byOwner,\s*civColorFn,[\s\S]{0,200}?relationColorFn,/.test(mainSrc),
   'main.ts: relationColorFn wpięte w wywołanie buildTerritoryBorderGroup');
 // Ciało setDiploRelation wycięte po nazwie funkcji i pierwszym domknięciu na jej wcięciu —
@@ -373,7 +375,7 @@ ok(/buildTerritoryBorderGroup\(\s*map,\s*byOwner,\s*civColorFn,[\s\S]{0,200}?rel
     'main.ts: setDiploRelation zapamiętuje poprzedni status PRZED zapisem');
   ok(/prevStatus !== rel\.status/.test(body),
     'main.ts: odświeżenie tylko przy realnej zmianie STATUSU (nie co turę przy zaufaniu/respekcie)');
-  ok(/\(a === 0 \|\| b === 0\)/.test(body),
+  ok(/\(isMe\(a\) \|\| isMe\(b\)\)/.test(body),
     'main.ts: odświeżenie tylko dla par z graczem (AI↔AI nie zmienia koloru żadnej obwódki)');
 }
 

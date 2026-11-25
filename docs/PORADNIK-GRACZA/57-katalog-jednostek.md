@@ -32,7 +32,7 @@ W grze jest **73** jednostki — standardowe (dla wielu cywilizacji), specjalne 
 | Włócznik | Brąz | Wręcz | 16 | 1 | Brązownictwo | Standardowa | 44 | 50 | [Włócznik](../encyklopedia/jednostki/w-ocznik.md) |
 | Wojownik z mieczem i tarczą | Brąz | Wręcz | 16 | 1 | Brązownictwo | Standardowa | 39 | 0 | [Wojownik z mieczem i tarczą](../encyklopedia/jednostki/wojownik-z-mieczem-i-tarcza.md) |
 | Rydwan (woły) | Brąz | Flanka | 30 | 1 | Koło | Standardowa | 52 | 0 | [Rydwan (woły)](../encyklopedia/jednostki/rydwan-wo-y.md) |
-| Konnica | Żelazo | Flanka | 22 | 1 | Sztuka wojenna | Standardowa | 49 | 0 | [Konnica](../encyklopedia/jednostki/konnica.md) |
+| Konnica | Żelazo | Flanka | 22 | 1 | Sztuka wojenna | Standardowa | 98 | 0 | [Konnica](../encyklopedia/jednostki/konnica.md) |
 | Galera | Brąz | Morska | 18 | 1 | Żegluga | Standardowa | 25 | 0 | [Galera](../encyklopedia/jednostki/galera.md) |
 | Falanga | Żelazo | Wręcz | 18 | 1 | Hutnictwo żelaza | Specjalna | 58.5 | 50 | [Falanga](../encyklopedia/jednostki/falanga.md) |
 | Hieros Lochos (Święty Zastęp) | Żelazo | Wręcz | 0 (super) | 1 | — | Super | 63 | 50 | [Hieros Lochos (Święty Zastęp)](../encyklopedia/jednostki/hieros-lochos-swiety-zastep.md) |

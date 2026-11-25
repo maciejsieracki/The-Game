@@ -28,7 +28,7 @@
  *      przeskalowanym przez applyVeteranFracToCombatUnit (efektywna -- dokladnie
  *      main.ts::veteranScaledDefFor, ktorego sumArmyMForOwnerEffective dzis wola
  *      wprost).
- *   3. Ten sam fixture (Konnica, units.json) i ten sam wynik (49 -> 58.0) co
+ *   3. Ten sam fixture (Konnica, units.json) i ten sam wynik (98 -> 116.0) co
  *      weterani-test.cjs sekcje 9-10 i commit 304eff9 -- bezposrednio
  *      porownywalny "ta sama armia, dwie liczby Mocy" przyklad.
  *   4. Asercje zrodlowe na main.ts (regex/substring), zeby cofniecie wpiecia
@@ -152,12 +152,12 @@ console.log('1. Ta sama armia (Konnica ★★★), dwa warianty sumArmyMForOwner
 const armySumNominalRekrut = armyFieldPower(konnicaRaw); // unitDefFor(u) -- surowy wiersz
 const armySumNominalWeteran = armyFieldPower(konnicaRaw); // NOMINALNA nie czyta battlesSurvived w ogole
 check(
-  'sumArmyMForOwner (NOMINALNA) == 49 dla rekruta (unitDefFor, bez skalowania)',
-  approxEq(armySumNominalRekrut, 49, 0.05),
+  'sumArmyMForOwner (NOMINALNA) == 98 dla rekruta (unitDefFor, bez skalowania)',
+  approxEq(armySumNominalRekrut, 98, 0.05),
   armySumNominalRekrut,
 );
 check(
-  'sumArmyMForOwner (NOMINALNA) IDENTYCZNA dla rekruta i weterana ★★★ (49 == 49) -- '
+  'sumArmyMForOwner (NOMINALNA) IDENTYCZNA dla rekruta i weterana ★★★ (98 == 98) -- '
     + 'unitDefFor() nie zna battlesSurvived, to jest ZRODLO rozjazdu z tabliczka',
   approxEq(armySumNominalRekrut, armySumNominalWeteran, 1e-9),
   armySumNominalRekrut + ' vs ' + armySumNominalWeteran,
@@ -168,12 +168,12 @@ const armySumEffectiveWeteran = armyFieldPower(veteranScaledUnitRow(konnicaRaw, 
 const konnicaArmor = konnicaRaw.armor;
 const expectedEffectiveWeteran = Math.round((armySumEffectiveRekrut * 1.20 - konnicaArmor * 0.20) * 10) / 10;
 check(
-  'sumArmyMForOwnerEffective (EFEKTYWNA) == 58.0 dla weterana ★★★ (veteranScaledDefFor, R-MOC-TABLICZKA-VS-CIVPOWER-Q1)',
+  'sumArmyMForOwnerEffective (EFEKTYWNA) == 116.0 dla weterana ★★★ (veteranScaledDefFor, R-MOC-TABLICZKA-VS-CIVPOWER-Q1)',
   approxEq(armySumEffectiveWeteran, expectedEffectiveWeteran, 0.05),
   armySumEffectiveWeteran + ' vs oczekiwane ' + expectedEffectiveWeteran,
 );
 check(
-  'sumArmyMForOwnerEffective ROSNIE z weteranstwem (49 -> 58.0), w odroznieniu od NOMINALNEJ',
+  'sumArmyMForOwnerEffective ROSNIE z weteranstwem (98 -> 116.0), w odroznieniu od NOMINALNEJ',
   armySumEffectiveWeteran > armySumEffectiveRekrut,
   armySumEffectiveRekrut + ' -> ' + armySumEffectiveWeteran,
 );
@@ -183,25 +183,25 @@ console.log('');
 // 2. Przeliczony przyklad "ta sama armia, panel Mocy PRZED/PO":
 //    PRZED tym zleceniem panel Mocy (buildPowerRankingByOwner) czytal
 //    objectivePowerForOwner -> sumArmyMForOwner (NOMINALNA), wiec skladnik
-//    "armia" Mocy imperium = 49 pkt niezaleznie od gwiazdek. PO: panel Mocy
+//    "armia" Mocy imperium = 98 pkt niezaleznie od gwiazdek. PO: panel Mocy
 //    czyta objectivePowerForOwnerEffective -> sumArmyMForOwnerEffective, wiec
-//    skladnik "armia" = 58.0 pkt dla tej samej armii weteranow -- zgodnie z
-//    tabliczka jednostki (304eff9: Konnica ★★★ 49 -> 58.0 na tokenie).
-//    militaryRatioFromArmyM (AI) w OBU wariantach nadal czyta 49 -- progi
+//    skladnik "armia" = 116.0 pkt dla tej samej armii weteranow -- zgodnie z
+//    tabliczka jednostki (304eff9: Konnica ★★★ 98 -> 116.0 na tokenie (R-WEB-TEST-DEBT-Q14)).
+//    militaryRatioFromArmyM (AI) w OBU wariantach nadal czyta 98 -- progi
 //    wojny/dyplomacji AI sie NIE przesuwaja.
 // ---------------------------------------------------------------------------
 console.log('2. Przeliczony przyklad: panel Mocy PRZED/PO, militaryRatioFromArmyM niezmieniony');
 check(
-  'Panel Mocy PRZED (nominalna, ta decyzja jeszcze nie wdrozona): skladnik "armia" = 49 pkt',
-  approxEq(armySumNominalWeteran, 49, 0.05),
+  'Panel Mocy PRZED (nominalna, ta decyzja jeszcze nie wdrozona): skladnik "armia" = 98 pkt',
+  approxEq(armySumNominalWeteran, 98, 0.05),
 );
 check(
-  'Panel Mocy PO (R-MOC-RANKING-ROZJAZD-Q1=B): skladnik "armia" = 58.0 pkt (+18,37%)',
-  approxEq(armySumEffectiveWeteran, 58.0, 0.05),
+  'Panel Mocy PO (R-MOC-RANKING-ROZJAZD-Q1=B): skladnik "armia" = 116.0 pkt (+18,37%)',
+  approxEq(armySumEffectiveWeteran, 116.0, 0.05),
 );
 check(
-  'militaryRatioFromArmyM (AI, sumArmyMForOwner) NIEZMIENIONY: nadal czyta 49, nie 58.0',
-  approxEq(armySumNominalWeteran, 49, 0.05) && !approxEq(armySumNominalWeteran, 58.0, 0.5),
+  'militaryRatioFromArmyM (AI, sumArmyMForOwner) NIEZMIENIONY: nadal czyta 98, nie 116.0',
+  approxEq(armySumNominalWeteran, 98, 0.05) && !approxEq(armySumNominalWeteran, 116.0, 0.5),
 );
 console.log('');
 
@@ -226,7 +226,7 @@ check(
 );
 check(
   'buildPowerOverlayData: "obj" czyta buildObjectivePowerForOwnerEffective(0), nie cache nominalny',
-  /function buildPowerOverlayData\(\): PowerOverlayData \{[\s\S]{0,200}?const obj = buildObjectivePowerForOwnerEffective\(0\);/.test(mainTsSrc),
+  /function buildPowerOverlayData\(\): PowerOverlayData \{[\s\S]{0,200}?const obj = buildObjectivePowerForOwnerEffective\((?:0|ME\(\))\);/.test(mainTsSrc),
 );
 check(
   'buildPowerOverlayData: diagMajorAi liczy mocForOwner: objectivePowerForOwnerEffective',
@@ -245,7 +245,7 @@ check(
 // (nominalna) zostawialo cala bramke 18/18 zielona. Domykajaca asercja:
 check(
   'buildEmpireDetailSnap: obj liczy buildObjectivePowerForOwnerEffective(0) (NIE nominalna) -- spojnosc wewnatrz jednego ekranu z powOverlay.ranking',
-  /function buildEmpireDetailSnap\(\): EmpireDetailSnap \{[\s\S]{0,1200}?const obj = buildObjectivePowerForOwnerEffective\(0\);/.test(mainTsSrc),
+  /function buildEmpireDetailSnap\(\): EmpireDetailSnap \{[\s\S]{0,1200}?const obj = buildObjectivePowerForOwnerEffective\((?:0|ME\(\))\);/.test(mainTsSrc),
 );
 
 // (b) AI -- 4 wywolania bezposrednie sumArmyMForOwner (militaryRatioFromArmyM)
@@ -254,7 +254,7 @@ check(
 const protectedAiCallsites = [
   '            const milRatioAB = militaryRatioFromArmyM(sumArmyMForOwner(a), sumArmyMForOwner(b));',
   '        sumArmyMForOwner(proposerId),\n        sumArmyMForOwner(responderId),',
-  '                  sumArmyMForOwner(ownerId),\n                  sumArmyMForOwner(0),',
+  '                  sumArmyMForOwner(ownerId),\n                  sumArmyMForOwner(ME()),',
   '                      sumArmyMForOwner(ownerId),\n                      sumArmyMForOwner(csId),',
 ];
 for (const [i, snippet] of protectedAiCallsites.entries()) {

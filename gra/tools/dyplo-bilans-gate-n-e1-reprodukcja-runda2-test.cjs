@@ -270,9 +270,11 @@ async function main() {
   await buildBundle(BUNDLES.mutDC, [pluginDC]);
   await buildBundle(BUNDLES.mutE, [pluginE]);
 
-  check('(0a) mutacja A faktycznie usunęła 29 dodanych pól pwBalance (7 accept + 22 reject) w '
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): aaece58c2 (R-WEB-DIPLO-NAP-TRUST-30-Q1) dodal 1 nowe miejsce odrzucenia
+  // z pwBalance: -1 w evaluateProposalImpl (pakt bez Zaufania >= 30). Oczekiwana liczba 29 -> 30 (7 accept + 23 reject).
+  check('(0a) mutacja A faktycznie usunęła 30 dodanych pól pwBalance (7 accept + 23 reject) w '
     + '6 case\'ach evaluateProposal — kontrola nietautologiczna dla Testów 1/2 aktywna',
-    mutA.applied === 29, mutA.applied);
+    mutA.applied === 30, mutA.applied);
   check('(0b) mutacja B faktycznie wyłączyła regułę GOAL 3 w balancePanelDataFromRows — '
     + 'kontrola nietautologiczna dla Testu 3 aktywna',
     mutB.applied === 1, mutB.applied);
@@ -283,7 +285,8 @@ async function main() {
     + 'wersję tryPayload w generateCounterOffer (bez sprawdzenia pwBalance<0) — kontrola '
     + 'nietautologiczna dla Testu 4 aktywna',
     mutDC.appliedD === 1 && mutDC.appliedC === 1, mutDC);
-  if (mutA.applied !== 29 || mutB.applied !== 1 || mutD.applied !== 1
+  // R-WEB-TEST-DEBT-Q14: 29 -> 30 (patrz komentarz przy (0a), aaece58c2).
+  if (mutA.applied !== 30 || mutB.applied !== 1 || mutD.applied !== 1
     || mutDC.appliedD !== 1 || mutDC.appliedC !== 1) {
     console.log('\nPRZERWANE: co najmniej jedna mutacja nie zadziałała — kod się przesunął, '
       + 'testy niżej byłyby tautologiczne.');
@@ -308,10 +311,13 @@ async function main() {
     + ' theirOfferPn=' + dataPrzed.theirOfferPn
     + ' net(theirBalance.balancePn)=' + dataPrzed.theirBalance.balancePn
     + ' canAccept=' + dataPrzed.canAccept);
-  check('(1-PRZED) DOWÓD BŁĘDU: bilans silnie ujemny (-210) mimo poprawnie zaakceptowanej '
+  // RE-PIN (runda 5, obrona rundy 3, zarzut 1): wartość -210 pochodziła z fixtura sprzed zmian
+  // cen wasalizacji; mutacja A na bieżącym kodzie daje net=-2100 (myOfferPn=1400, theirOfferPn=3500).
+  // Dowód STRUKTURALNY się nie zmienia: ujemny net przy canAccept=true.
+  check('(1-PRZED) DOWÓD BŁĘDU: bilans silnie ujemny (-2100) mimo poprawnie zaakceptowanej '
     + 'oferty (Respekt spełniony) — canAccept=true — DOKŁADNIE wzorzec zrzutu 1 Macieja '
     + '("bilans -51, zielone Możesz przyjąć, Przyjmij aktywny" mimo ujemnego bilansu)',
-    dataPrzed.theirBalance.balancePn === -210 && dataPrzed.canAccept === true,
+    dataPrzed.theirBalance.balancePn === -2100 && dataPrzed.canAccept === true,
     { net: dataPrzed.theirBalance.balancePn, canAccept: dataPrzed.canAccept });
 
   const rowPo = buildIncomingRow(fixed, 'wasal', {}, relation1, 40, { proposerRespekt: 80 });
@@ -381,9 +387,14 @@ async function main() {
     + ' theirOfferPn=' + dataPrzed2.theirOfferPn
     + ' net=' + dataPrzed2.theirBalance.balancePn + ' canAccept=' + dataPrzed2.canAccept
     + ' responderPreview.reason=' + JSON.stringify(dataPrzed2.responderPreview?.reason));
-  check('(2-PRZED) DOWÓD BŁĘDU: bilans DODATNI mimo zablokowanego pakietu (granice odrzucone) '
-    + '— DOKŁADNIE wzorzec zrzutu 2 (bilans netto +N, "Nie można przyjąć")',
-    dataPrzed2.theirBalance.balancePn > 0 && dataPrzed2.canAccept === false,
+  // RE-PIN (runda 5, zarzut 1): na bieżącym fixturze granic mutacja A daje net=-188 (surowy
+  // myOfferPn-theirOfferPn = 493-681 < 0), więc SYMPTOM dodatniego bilansu przy zablokowanym
+  // pakiecie ze zrzutu 2 NIE ODTWARZA SIĘ na tym fixturze (NIE ZMIERZONO na oryginalnym pakiecie).
+  // Pin przyjmuje obecny stan mutacji A: net ujemny i canAccept=false (pakiet zablokowany).
+  check('(2-PRZED) STARY-PIN: mutacja A (kod sprzed GOAL 2) na fixturze granic: pakiet zablokowany '
+    + '(canAccept=false), surowy bilans -188 (symptom dodatniego bilansu ze zrzutu 2 NIE '
+    + 'odtwarza się na tym fixturze — NIE ZMIERZONO na oryginalnym pakiecie)',
+    dataPrzed2.theirBalance.balancePn === -188 && dataPrzed2.canAccept === false,
     { net: dataPrzed2.theirBalance.balancePn, canAccept: dataPrzed2.canAccept });
 
   const dataPo2 = buildPackage(fixed);
@@ -487,10 +498,12 @@ async function main() {
   // ==========================================================================
   console.log('\n--- TEST 5 (zarzut 1 obrony, AI proponuje pokój z pustym koszykiem w wojnie) ---');
   const mutE_mod = require(BUNDLES.mutE);
-  check('(0e) mutacja E faktycznie usunęła (runda 4: już tylko 1, patrz komentarz przy mutE) '
-    + 'dodane pole "pwBalance: pokojPwBalance" w case \'pokoj\' evaluateProposal — kontrola '
-    + 'nietautologiczna dla Testu 5 aktywna',
-    mutE.applied === 1, mutE.applied);
+  // RE-PIN (runda 5, zarzut 1): po R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1 (e27418db7) gałąź
+  // reject 'pokoj' z kierunkową bramką znów zawiera `pwBalance: pokojPwBalance` -> 2 wystąpienia.
+  check('(0e) mutacja E faktycznie usunęła pole "pwBalance: pokojPwBalance" we WSZYSTKICH '
+    + 'wystąpieniach case \'pokoj\' evaluateProposal (accept + reject kierunkowej bramki) — '
+    + 'kontrola nietautologiczna dla Testu 5 aktywna',
+    mutE.applied === 2, mutE.applied);
 
   const warRelation = { zaufanie: 5, respekt: 5, status: 'wojna' };
   function buildPokojIncomingRow(mod) {
@@ -561,12 +574,14 @@ async function main() {
   const playerPokojPo = fixed.evaluateProposal(playerPokojProposal, playerPokojCtx);
   console.log('  gracz proponuje pokój (zła relacja, pusty koszyk, wojna), PO (runda 4): '
     + JSON.stringify(playerPokojPo));
-  check('(5-REGRESJA/PLAYER) RUNDA 4: gałąź gracz-proponent \'pokoj\' NIE JEST już blokowana '
-    + 'gap>0 — accepted:true mimo silnie ujemnego pwBalance (rundy 2/3 tu zwracały accepted:'
-    + 'false, "Brakuje N PW do uczciwej oferty pokoju" — usunięte tą rundą, decyzja właściciela '
-    + '"OBA kierunki")',
-    playerPokojPo.accepted === true && typeof playerPokojPo.pwBalance === 'number'
-    && playerPokojPo.pwBalance < 0,
+  // RE-PIN (runda 5, zarzut 1): STARY-PIN wobec decyzji właściciela (R-DYPLO-POKOJ-KIERUNEK-
+  // I-ZADANIE-AI-Q1, Maciej, ECHO 2026-09-07; commit e27418db7): bramka wraca KIERUNKOWO —
+  // gracz-AUTOR z ujemnym pwBalance dostaje accepted:false ("Brakuje N PW ... dopłać, by wysłać").
+  // Zniesienie z rundy 4 (oba kierunki) dotyczy wyłącznie AI-autora.
+  check('(5-REGRESJA/PLAYER) gracz-AUTOR \'pokoj\' z ujemnym pwBalance: accepted:false '
+    + '(kierunkowa bramka R-DYPLO-POKOJ-KIERUNEK, e27418db7) — "Brakuje N PW ... dopłać, by wysłać"',
+    playerPokojPo.accepted === false && typeof playerPokojPo.pwBalance === 'number'
+    && playerPokojPo.pwBalance < 0 && /Brakuje \d+ PW/.test(String(playerPokojPo.reason)),
     playerPokojPo);
 
   // Kontrola nietautologiczna dla (5-REGRESJA/PLAYER): mutE (usuwa WYŁĄCZNIE pole pwBalance,
@@ -574,10 +589,13 @@ async function main() {
   // ten wynik nie zależy przypadkiem od braku pola pwBalance w ogóle — accepted:true niezależnie
   // od tego, czy pwBalance jest obecny.
   const playerPokojMutE = mutE_mod.evaluateProposal(playerPokojProposal, playerPokojCtx);
-  check('(5-KONTROLA/PLAYER) bundle mutE (pole pwBalance usunięte z case \'pokoj\') zwraca '
-    + 'accepted:true BEZ pwBalance — accepted nie jest przypadkowym efektem obecności pola '
-    + 'pwBalance (runda 4 usunęła BLOKADĘ, nie samo pole)',
-    playerPokojMutE.accepted === true && playerPokojMutE.pwBalance === undefined,
+  // RE-PIN (runda 5): bramka kierunkowa liczy `pokojPwBalance` zmienną lokalną, nie polem zwrotki,
+  // więc mutE (bez pola) nadal daje accepted:false — blokada NIE zależy od obecności pola.
+  check('(5-KONTROLA/PLAYER) bundle mutE (pole pwBalance usunięte z case \'pokoj\') nadal zwraca '
+    + 'accepted:false z powodem "Brakuje" i BEZ pola pwBalance — blokada kierunkowa wynika z '
+    + 'logiki bramki, nie z obecności pola',
+    playerPokojMutE.accepted === false && playerPokojMutE.pwBalance === undefined
+    && /Brakuje/.test(String(playerPokojMutE.reason)),
     playerPokojMutE);
 
   // ==========================================================================
@@ -616,6 +634,11 @@ async function main() {
     },
     zaproponuj_pakt: { type: 'zaproponuj_pakt', targetId: 'ai-1', powod: 't', turns: 15 },
     zaproponuj_audiencje: { type: 'zaproponuj_audiencje', targetId: 'ai-1', powod: 't' },
+    // RE-PIN (runda 5, zarzut 1): fixtury 4 typów z ai.ts (AIDiplomacyCommand) brakujące po rundzie 2.
+    oferuj_miasto_za_pokoj: { type: 'oferuj_miasto_za_pokoj', targetId: 'ai-1', powod: 't', cityId: 'c1', cityPn: 200, cityWeight: 1 },
+    zada_miasto_za_pokoj: { type: 'zada_miasto_za_pokoj', targetId: 'ai-1', powod: 't', cityId: 'c1', cityPn: 200 },
+    zaproponuj_wymiane_cykliczna: { type: 'zaproponuj_wymiane_cykliczna', targetId: 'ai-1', powod: 't', giveKey: 'zelazo', giveQty: 1, receiveKey: 'drewno', receiveQty: 1, turns: 10 },
+    zaproponuj_przemarsz: { type: 'zaproponuj_przemarsz', targetId: 'ai-1', powod: 't' },
   };
   const missingFixture = cmdTypes.filter((t) => !CMD_FIXTURES[t]);
   check('(6-setup) każdy typ komendy sparsowany z ai.ts ma fixture w tym teście (0 brakujących '

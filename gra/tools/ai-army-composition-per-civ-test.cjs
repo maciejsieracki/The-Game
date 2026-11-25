@@ -174,7 +174,9 @@ function simulate(civ, epoch, recruits, { blocked = () => false, noStock = () =>
   for (const c of cities) scouts.push({ id: `gar-${c.id}`, ownerId, typeId: 'Wojownik', category: 'piechota', q: c.q, r: c.r, ruch: 2, ruchLeft: 0 });
   const queued = [];
   // R-WEB-TEST-DEBT-Q13 r5: garnizon (1 Wojownik/miasto, patrz nizej) jest czescia armii, ktora AI liczy przy deficycie klas -- wchodzi do mierzonego skladu jako wrecz.
-  const counts = { wrecz: cities.length, dystans: 0, konnica: 0 };
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN, decyzja wlasciciela 2026-11-22): garnizon min. 1 w miescie AI NIE liczy sie
+  // jako "wrecz" w pomiarze skladu armii -- licznik startuje od zera, a probka to `recruits` rekrutacji (bez garnizonu).
+  const counts = { wrecz: 0, dystans: 0, konnica: 0 };
   const names = { wrecz: {}, dystans: {}, konnica: {} };
   const nacja = M.unitNacjaForCivKey(civ);
   const allowedIds = (city) => {
@@ -198,7 +200,7 @@ function simulate(civ, epoch, recruits, { blocked = () => false, noStock = () =>
   let guard = 0;
   // r5: armia o lacznej wielkosci `recruits` = garnizon (cities.length) + rekrutowane (recruits - cities.length); dzieki temu probka ma te same N=60 jednostek co przed regula garnizonu
   // (cele tabeli wlasciciela sa procentami CALEJ armii; przy 63 jednostkach dyskretyzacja dawala asyria 49,2% < 50% -- artefakt wielkosci probki, nie reguly).
-  while (queued.length < recruits - cities.length && guard++ < recruits * 4) {
+  while (queued.length < recruits && guard++ < recruits * 4) {
     const opts = {
       majorAiOwnerIds: [ownerId], civType: civ, poziomTrudnosci: level, currentTurn: 100 + guard,
       cityBuildings: Object.fromEntries(cities.map(c => [c.id, ALL_BUILDINGS])),

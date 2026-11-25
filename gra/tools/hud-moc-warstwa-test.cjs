@@ -40,7 +40,7 @@
  *
  * Konwencja jak tools/moc-ranking-rozjazd-test.cjs (ten sam dzień):
  *   1. esbuild bundluje src/game/veteran.ts i src/game/unit-power.ts do CJS,
- *      dla przeliczonego przykładu Konnica ★★★ (49 -> 58,0), grunt pod
+ *      dla przeliczonego przykładu Konnica ★★★ (98 -> 116,0), grunt pod
  *      "dlaczego to się w ogóle liczy inaczej".
  *   2. Reszta -- asercje źródłowe (regex/substring na main.ts) na KAŻDYM z
  *      nowych miejsc podłączenia, żeby ciche cofnięcie/przesunięcie było
@@ -153,9 +153,10 @@ console.log('===================================================================
 console.log('R-MOC-HUD-GLOWNY-Q1=C -- HUD + ekran dyplomacji + ranking -> Moc EFEKTYWNA');
 console.log('========================================================================\n');
 
+// R-WEB-TEST-DEBT-Q14: Konnica fieldPower = 98 (gra/data/units.json; decyzja wlasciciela 2026-11-22). Piny 49->98 (nominalna), 58.0->116.0 (efektywna = 98*1.20 - armor*0.20). Asercje nie oslabione.
 // ---------------------------------------------------------------------------
 // 1. Grunt: ta sama armia (Konnica ★★★), dwa warianty sumArmyMForOwner --
-//    dowód że "efektywna" i "nominalna" naprawdę dają RÓŻNE liczby (49 vs 58,0),
+//    dowód że "efektywna" i "nominalna" naprawdę dają RÓŻNE liczby (98 vs 116,0),
 //    ten sam fixture co moc-ranking-rozjazd-test.cjs/weterani-test.cjs.
 // ---------------------------------------------------------------------------
 console.log('1. Grunt liczbowy: Konnica ★★★, sumArmyMForOwner NOMINALNA vs EFEKTYWNA');
@@ -165,17 +166,17 @@ const armySumEffectiveWeteran = armyFieldPower(veteranScaledUnitRow(konnicaRaw, 
 const konnicaArmor = konnicaRaw.armor;
 const expectedEffectiveWeteran = Math.round((armySumNominal * 1.20 - konnicaArmor * 0.20) * 10) / 10;
 check(
-  'sumArmyMForOwner (NOMINALNA) == 49 dla Konnicy (bez skalowania weterana)',
-  approxEq(armySumNominal, 49, 0.05),
+  'sumArmyMForOwner (NOMINALNA) == 98 dla Konnicy (bez skalowania weterana)',
+  approxEq(armySumNominal, 98, 0.05),
   armySumNominal,
 );
 check(
-  'sumArmyMForOwnerEffective (EFEKTYWNA) == 58.0 dla Konnicy ★★★ (veteranScaledDefFor, R-MOC-TABLICZKA-VS-CIVPOWER-Q1)',
-  approxEq(armySumEffectiveWeteran, expectedEffectiveWeteran, 0.05) && approxEq(armySumEffectiveWeteran, 58.0, 0.05),
+  'sumArmyMForOwnerEffective (EFEKTYWNA) == 116.0 dla Konnicy ★★★ (veteranScaledDefFor, R-MOC-TABLICZKA-VS-CIVPOWER-Q1)',
+  approxEq(armySumEffectiveWeteran, expectedEffectiveWeteran, 0.05) && approxEq(armySumEffectiveWeteran, 116.0, 0.05),
   armySumEffectiveWeteran,
 );
 check(
-  'Różnica NOMINALNA vs EFEKTYWNA jest realna (49 != 58.0) -- to ta różnica, którą HUD/dyplomacja/ranking musiały przejąć',
+  'Różnica NOMINALNA vs EFEKTYWNA jest realna (98 != 116.0) -- to ta różnica, którą HUD/dyplomacja/ranking musiały przejąć',
   !approxEq(armySumNominal, armySumEffectiveWeteran, 0.5),
 );
 console.log('');
@@ -188,14 +189,14 @@ const mainTsSrc = fs.readFileSync(MAIN_TS, 'utf8');
 
 // (1) Główny licznik Mocy w HUD.
 check(
-  'buildHudState: pole "power" czyta objectivePowerForOwnerEffective(0) (NIE objectivePowerForOwner)',
-  /function buildHudState\(\): HudState \{[\s\S]{0,2500}?const power = objectivePowerForOwnerEffective\(0\);/.test(mainTsSrc),
+  'buildHudState: pole "power" czyta objectivePowerForOwnerEffective(ME()) (NIE objectivePowerForOwner) -- R-WEB-TEST-DEBT-Q14: BŁĄD-GRY kandydat, main.ts:24044 nadal literal 0 (pozostałość migracji; zero w 1 graczu); test NIE osłabiony',
+  /function buildHudState\(ownerId: number = ME\(\)\): HudState \{[\s\S]{0,2500}?const power = objectivePowerForOwnerEffective\(ME\(\)\);/.test(mainTsSrc),
 );
 
 // (2) Ekran dyplomacji -- openDiplomacyAudience: playerPower/otherPower.
 check(
   'openDiplomacyAudience: playerPower czyta objectivePowerForOwnerEffective(0)',
-  /const playerPower = objectivePowerForOwnerEffective\(0\);/.test(mainTsSrc),
+  /const playerPower = objectivePowerForOwnerEffective\(ME\(\)\);/.test(mainTsSrc),
 );
 check(
   'openDiplomacyAudience: otherPower czyta objectivePowerForOwnerEffective(ownerId) (OBIE strony efektywne)',
@@ -209,7 +210,7 @@ check(
 // (2b) buildPlayerDiploSummary -- "Moc: X" / "Ranking mocy: Y. z Z" na liście dyplomacji.
 check(
   'buildPlayerDiploSummary: militaryPower czyta objectivePowerForOwnerEffective(0)',
-  /function buildPlayerDiploSummary\(\): DiploPlayerSummary \{[\s\S]{0,400}?militaryPower: objectivePowerForOwnerEffective\(0\),/.test(mainTsSrc),
+  /function buildPlayerDiploSummary\(\): DiploPlayerSummary \{[\s\S]{0,400}?militaryPower: objectivePowerForOwnerEffective\(ME\(\)\),/.test(mainTsSrc),
 );
 
 // (3) Pozycja w rankingu na ekranie dyplomacji -> buildAbsolutePowerRankEffective.
@@ -235,8 +236,8 @@ check(
 
 // (4a) Odkrycie Operatora: lista dyplomacji -- respekt/theirRespekt per-cywilizacja.
 check(
-  'objectiveRespektPctTowardEffective() istnieje i liczy obie strony przez objectivePowerForOwnerEffective',
-  /function objectiveRespektPctTowardEffective\(theirOwnerId: number\): number \{[\s\S]{0,200}?objectivePowerForOwnerEffective\(0\),[\s\S]{0,100}?objectivePowerForOwnerEffective\(theirOwnerId\),/.test(mainTsSrc),
+  'objectiveRespektPctTowardEffective() istnieje i liczy obie strony przez objectivePowerForOwnerEffective(ME()) -- R-WEB-TEST-DEBT-Q14: BŁĄD-GRY kandydat, main.ts:3140 nadal literal 0; test NIE osłabiony',
+  /function objectiveRespektPctTowardEffective\(theirOwnerId: number\): number \{[\s\S]{0,200}?objectivePowerForOwnerEffective\(ME\(\)\),[\s\S]{0,100}?objectivePowerForOwnerEffective\(theirOwnerId\),/.test(mainTsSrc),
 );
 check(
   'buildPlayerDiploRelations: respekt czyta objectiveRespektPctTowardEffective(otherId)',
@@ -244,7 +245,7 @@ check(
 );
 check(
   'buildPlayerDiploRelations: theirRespekt czyta computeRespekt z OBOMA argumentami Effective',
-  /theirRespekt: computeRespekt\(\s*objectivePowerForOwnerEffective\(otherId\),\s*objectivePowerForOwnerEffective\(0\),\s*\),/.test(mainTsSrc),
+  /theirRespekt: computeRespekt\(\s*objectivePowerForOwnerEffective\(otherId\),\s*objectivePowerForOwnerEffective\(ME\(\)\),\s*\),/.test(mainTsSrc),
 );
 
 // (4b) Odkrycie Operatora: ekran audiencji -- pole relacjaTotal w payloadzie getState()
@@ -271,7 +272,7 @@ const protectedNominalSnippets = [
   // AI: militaryRatioFromArmyM, 4 call-site'y sumArmyMForOwner bezpośrednio.
   '            const milRatioAB = militaryRatioFromArmyM(sumArmyMForOwner(a), sumArmyMForOwner(b));',
   '        sumArmyMForOwner(proposerId),\n        sumArmyMForOwner(responderId),',
-  '                  sumArmyMForOwner(ownerId),\n                  sumArmyMForOwner(0),',
+  '                  sumArmyMForOwner(ownerId),\n                  sumArmyMForOwner(ME()),',
   '                      sumArmyMForOwner(ownerId),\n                      sumArmyMForOwner(csId),',
   // AI: sojusz -- militaryRatioAllyVsTarget nominalna.
   'const allyPower = objectivePowerForOwner(allyId);\n      const enemyPower = objectivePowerForOwner(targetId);',

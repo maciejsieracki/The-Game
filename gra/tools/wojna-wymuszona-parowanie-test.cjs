@@ -123,7 +123,10 @@ try {
       { ownerId: 2, q: 1, r: 0, era: 'bronze' },
       { ownerId: 5, q: 50, r: 0, era: 'iron' }, // leftover -- nikt inny wolny w puli
     ];
-    const existingPairs = [{ attackerId: 3, targetId: 4, era: 'stone' }];
+    // R-WEB-TEST-DEBT-Q14 (STARY-PIN): para byla 'stone', a regula R-WEB-ERA-WAR-DEFER-NOT-CANCEL-Q1 r3
+    // zabrania dolaczenia Brazu/Zelaza do pary Kamienia (strona juz toczy wojne). Para na 'bronze' -- ten sam
+    // scenariusz (leftover dolacza jako trzeci), zgodny z obowiazujaca regula. Asercje bez zmian.
+    const existingPairs = [{ attackerId: 3, targetId: 4, era: 'bronze' }];
     const result = assignForcedWarPairings(subjects, existingPairs, {
       isPairBlocked: blockedPairsOpt([]),
       hexDistanceFn: hexDistance,
@@ -141,6 +144,29 @@ try {
       (id) => (id === 3 || id === 4 ? 1 : 0),
       result,
     );
+  }
+
+  // R-WEB-TEST-DEBT-Q14 (jawna asercja negatywna do S2, zgłoszenie Evaluatora): regula
+  // DEFER-NOT-CANCEL-Q1 r3 -- Brąz NIE dołącza do pary Kamienia. Ten sam scenariusz co S2, ale para
+  // 'stone' (jak w pierwotnym tescie) i leftover 'bronze'. Oczekiwane: leftover (5) NIE dostaje celu
+  // 3 ani 4 (pozostaje nierozwiązany albo paruje się z kimś innym, nie z parą Kamienia).
+  {
+    const subjectsK = [
+      { ownerId: 1, q: 0, r: 0, era: 'bronze' },
+      { ownerId: 2, q: 1, r: 0, era: 'bronze' },
+      { ownerId: 5, q: 50, r: 0, era: 'bronze' },
+    ];
+    const existingStone = [{ attackerId: 3, targetId: 4, era: 'stone' }];
+    const resultK = assignForcedWarPairings(subjectsK, existingStone, {
+      isPairBlocked: blockedPairsOpt([]),
+      hexDistanceFn: hexDistance,
+      totalActiveForcedWarsByOwner: (id) => (id === 3 || id === 4 ? 1 : 0),
+    });
+    const targetOfK = new Map(resultK.assignments.map(a => [a.ownerId, a.targetId]));
+    assert(targetOfK.get(5) !== 3 && targetOfK.get(5) !== 4,
+      'S2-NEG: Brąz (5) NIE dołącza do pary Kamienia 3<->4 (DEFER-NOT-CANCEL-Q1 r3) -- cel leftovera nie jest stroną pary Kamienia');
+    assert(!resultK.assignments.some(a => (a.ownerId === 3 || a.ownerId === 4) && a.targetId === 5),
+      'S2-NEG: strony pary Kamienia (3,4) nie wskazują Brązu (5) jako celu');
   }
 
   // =========================================================================
@@ -259,7 +285,9 @@ try {
       { ownerId: RZYM, q: 0, r: 0, era: 'bronze' }, // Rzym, sojusznik gracza, szuka nowego celu
     ];
     // Istniejąca para AI-AI (2,3) NIEpowiązana z Rzymem ani graczem -- jedyna dostępna do dołączenia.
-    const existingPairs = [{ attackerId: 2, targetId: 3, era: 'stone' }];
+    // R-WEB-TEST-DEBT-Q14 (STARY-PIN): para 'bronze' zamiast 'stone' -- Rzym (bronze) nie dolacza do pary
+    // Kamienia wg R-WEB-ERA-WAR-DEFER-NOT-CANCEL-Q1 r3. Scenariusz incydentu bez zmian.
+    const existingPairs = [{ attackerId: 2, targetId: 3, era: 'bronze' }];
     const isPairBlocked = (a, b) => {
       // Rzym i gracz są sojusznikami -- ta para jest zablokowana WZAJEMNIE (nieistotne tu,
       // bo gracz nie jest w tym scenariuszu w ogóle triggered/warless -- ma już wojnę).
