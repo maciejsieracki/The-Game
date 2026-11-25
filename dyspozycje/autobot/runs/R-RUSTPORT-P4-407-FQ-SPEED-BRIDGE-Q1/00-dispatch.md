@@ -1,0 +1,31 @@
+# R-RUSTPORT-P4-407-FQ-SPEED-BRIDGE-Q1 — komenda mostu zmiany prędkości bitwy oblężniczej (zadanie #407)
+
+STATUS: dispatch orkiestratora. Opus, wszystkie etapy Opus (3D/grafika Rust). Podstawa: wpis „FQ-SPEED … ZINTEGROWANE” w `REJESTR-RUST.md` (dług FQ-SPEED-BRIDGE) i rozpoznanie `dyspozycje/rust-port/P4-403-DTO-BRIDGE-WIRE-ROZPOZNANIE.md` (§3 ryzyko Z1).
+BAZA: `origin/rust-port/parity-v2` = `43512a2c32587dfd8d9cf38e5db614581d0014ca` w dniu dispatchu (wpisz faktyczny SHA: `git fetch origin && git checkout -B <gałąź> origin/rust-port/parity-v2`).
+
+## GOAL
+NAJPIERW web (pin `07d2fbd72`, `gra/src/battle/battleScene.ts`, czytaj przez `git show 07d2fbd72:gra/src/battle/battleScene.ts`): prędkość bitwy gracza to `_setSpeedIdx(idx, {clamp})` (`:9518-9527`; „Safe to call mid-battle", `:9535`), przycisk `_cycleSpeed` (`:9536`, `idx+1` z zawinięciem 512→1) i panel ± `_adjustSpeedIdx` (`:9531-9533`, `idx±1` z przycięciem), `SPEED_STEPS = [1,2,4,8,16,32,64,128,256,512]` (`:2551`), `speedMul` skaluje deltę ścienną zegara (`_scaledWallDelta` `:9512-9515`) i krok przewijania (`FF_STEP_MS`, `:9419`).
+W Rust sesja bitwy już to umie: `SiegeBattleSession::set_speed_idx` / `cycle_speed` / `adjust_speed_idx` (`rust-port/engine/src/domain/siege_battle_session.rs` ok. `:1327-1345`, FQ-SPEED-Q1), ale most NIE ma komendy (`EngineCommand` w `rust-port/engine/src/bridge.rs` ok. `:80-135`: Start/Step/Skip/Finish/Abort, bez prędkości), a klient/renderer nie zmieniają `frame_ms` playbacku po zmianie prędkości (`client/src/lib.rs` `siege_battle_frame_ms`/`playback_opts_of` ok. `:1126-1145`; `renderer/src/battle/playback.rs` `PlaybackOpts::frame_ms` ok. `:135`). Numery linii zweryfikuj w kodzie.
+Zadanie: dodaj do mostu komendę(-y) zmiany prędkości bitwy (np. `SetSiegeBattleSpeed { idx, clamp }` albo `CycleSiegeBattleSpeed` + `AdjustSiegeBattleSpeed { delta }` — decyzja techniczna wg kształtu pinu, patrz D-407-1), z odpowiedzią niosącą nowy `speedMul`/`speedIdx` w `siegeBattle`; bez `StateChanged`; bez ruchu stanu gry. Klient po odpowiedzi przelicza `frame_ms` playbacku (`16 × speedMul`), tak by animacje trafiały w nowe punkty siatki (D-FQ-1, D-HFQ-1). Komenda działa w każdej fazie bitwy (jak pin: „mid-battle"); bez bitwy → jawny błąd `noActiveBattle` (jak `AbortSiegeBattle`).
+
+## DECYZJE TECHNICZNE (orkiestrator, wiążące; wpisane do REJESTR-RUST.md)
+- D-407-1: kształt komendy wybierz wg pinu: jedna komenda `SetSiegeBattleSpeed { idx: i64, clamp: bool }` (pokrywa `_setSpeedIdx`) plus aliasy w kliencie dla cycle/± — albo dwie osobne; w każdym razie most nie wprowadza nowych reguł niż w pinie (zawijanie tylko dla `cycle`, przycięcie dla ±). Addytywnie: `CONTRACT_VERSION` zostaje 1.
+- D-407-2: stan prędkości żyje w sesji bitwy (`speed_idx`), nie w `EngineState` i nie w zapisie (zapis w trakcie bitwy jest odrzucany, DL-SLB-1).
+- D-407-3: `is_siege_battle()` rozszerz o nową komendę; reguła odświeżania klienta: zmiana prędkości NIE woła `GetRenderFrame` (brak `StateChanged`), tylko aktualizuje `frame_ms` playbacku.
+- D-407-4: bez zmian gameplay — kontrakt z pinem (351 bitew @2×…512×, `speed_vectors.json`) pozostaje bez zmian; nie ruszaj `siege_tactics_loop.rs`/`siege_tactics_clock.rs`, o ile nie jest to konieczne (jeśli tak — uzasadnij).
+
+## ALLOWLISTA
+`rust-port/engine/src/bridge.rs`, `rust-port/engine/src/domain/siege_battle_apply.rs`, `rust-port/engine/src/domain/siege_battle_session.rs` (minimalnie), `rust-port/engine/src/domain/playable.rs` (tylko jeśli konieczne), `rust-port/client/src/lib.rs`, `rust-port/renderer/src/battle/playback.rs` (tylko dostęp do zmiany `frame_ms`, bez zmiany logiki trafień), testy: `rust-port/engine/tests/bridge_contract.rs`, testy sesji bitwy w silniku (`p4_*`/`p6_k5loop_*` — sprawdź nazwy), `rust-port/client/tests/siege_battle_client.rs`, `rust-port/renderer/tests/*` dla `frame_ms`, raporty w katalogu runu. Zmiana innego pliku: uzasadnij w raporcie (Evaluator ocenia).
+
+## KRYTERIA KOŃCA
+1. Komenda(-y) w moście z odpowiedzią niosącą `speedMul` i `speedIdx`; `bridge_contract.rs` zaktualizowany (kontrakt komend), `CONTRACT_VERSION` = 1.
+2. Test E2E silnik→most→klient: Start → zmiana prędkości (idx 0→3, cycle z zawinięciem 512→1, ± z przycięciem na krańcach) → Step → akcje trafiają w punkty siatki klatki `16 × speedMul` zgodnie z `speed_vectors.json` (przypadek co najmniej @4 i @64); bez bitwy ⇒ `noActiveBattle`; po `Finish`/`Abort` ⇒ jawny błąd (decyzja wg pinu: po końcu bitwy prędkość nie ma sensu — opisz).
+3. Klient: po odpowiedzi `frame_ms` playbacku = `16 × speedMul` (test), brak `GetRenderFrame` po samej zmianie prędkości (test licznika wywołań).
+4. Mutanty (≥ 8, zabite lub jawnie równoważne): pominięcie clamp, brak zawinięcia w cycle, zła kolejność przeliczenia `frame_ms`, ignorowanie komendy poza fazą, zły `speedMul` w odpowiedzi, wołanie `GetRenderFrame` po zmianie, itp.
+5. Wektory pinu `speed_vectors.json` 351/351 i c1 128/128 @1/@16 bez regresji.
+
+## BRAMKI (EXIT 0)
+engine: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, pełny `cargo test --all-targets --no-fail-fast`. client i renderer (gpu OFF): fmt, clippy, test — zmiana kontraktu mostu ⇒ trzy crate'y (engine, client, renderer); bramka renderera wymaga ≥ 8 GB wolnego i jednego builda renderera naraz. Własny `CARGO_TARGET_DIR` w scratchpadzie tematu, usuń po bramce; env `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`. Build renderera przepisuje `renderer/Cargo.lock` (dług T1-LOCK) — cofnij przed commitem. Nie zostawiaj procesów cargo w tle po zakończeniu rundy (poprzednie tematy zostawiały osierocony `cargo test` blokujący dysk).
+
+## ZAKAZY
+Brak push na `parity-v2`/deploy/integracji, brak `git add -A`, brak `#[ignore]`, brak osłabiania asercji, brak zmian w `gra/`, brak linii z nazwą modelu w commitach (dozwolona `Claude-Session:`). Commituj WIP wcześnie. Raporty: `01-operator-r1.md`, `02-evaluator.md`, `02a-obrona.md`, `03-final-control.md` w katalogu runu; kontrakt raportu z CLAUDE.md (STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH). Kolizja plików: ten temat zmienia `client/src/lib.rs`, więc #409 CLIENT-API-GAPS startuje dopiero po jego integracji.
