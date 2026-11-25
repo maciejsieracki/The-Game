@@ -61,10 +61,10 @@ if (process.argv.includes('--list')) { for (const m of MUTATIONS) console.log(m.
 // NIE są ruszane. Ten sam dobór pliku działa po starcie i po zakończeniu (cleanupOrphans poniżej).
 const pidAlive = (pid) => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } };
 const cleanupOrphans = (verbose) => {
-  // Tylko ODCZYT katalogu (readdir + filtr po wzorcu z pidem); nic nie zapisujemy w korzeniu tmpdir.
-  // path.resolve jest no-op (os.tmpdir() zwraca juz sciezke absolutna). Owiniecie dodano, bo bramka
-  // R2 flaguje gole `= os.tmpdir()` takze przy odczycie: to obejscie heurystyki, nie zmiana semantyki.
-  const tmp = path.resolve(require('os').tmpdir());
+  // Tylko ODCZYT korzenia (readdir + filtr po wzorcu z pidem); zapis idzie wylacznie pod unikalne
+  // nazwy z listy katalogu. Bramka R2 (bramki-tmpdir-unikalnosc-test.cjs) przepuszcza te zmienna,
+  // bo kazde jej uzycie w pliku jest odczytem albo dynamiczna nazwa z listy.
+  const tmp = require('os').tmpdir();
   let files = [];
   try { files = fs.readdirSync(tmp).filter((f) => /^civ-ledger-mut-backup-\d+-[0-9a-f]+\.ts$/.test(f)); } catch (e) { /* ignore */ }
   for (const name of files) {
