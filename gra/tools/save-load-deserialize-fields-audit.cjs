@@ -49,7 +49,7 @@ const REPO = path.resolve(GRA, '..');
 const RUN_ID = 'R-WEB-SAVE-LOAD-DESERIALIZE-FIELDS-AUDIT-Q1';
 const SRC = path.resolve(arg('src', path.join(GRA, 'src')));
 // R-WEB-TEST-DEBT-Q15 (runda 3): dowody NIE trafiają do repo (poza allowlistą); domyślnie katalog tymczasowy.
-const OUT_DIR = path.resolve(arg('out-dir', path.join(os.tmpdir(), RUN_ID + '-evidence')));
+const OUT_DIR = path.resolve(arg('out-dir', path.join(os.tmpdir(), RUN_ID + '-evidence-' + require('./_tmp-unique.cjs').TMPDIR_RUN_ID)));
 const DIST = arg('dist', '') ? path.resolve(arg('dist', '')) : '';
 const RAW_A_ARG = arg('raw-a', '') ? path.resolve(arg('raw-a', '')) : '';
 const RAW_B_ARG = arg('raw-b', '') ? path.resolve(arg('raw-b', '')) : '';
