@@ -41,8 +41,15 @@ let pass = 0;
 let fail = 0;
 let mutationExpected = false;
 function ok(cond, msg) {
+  // R-WEB-TEST-DEBT-Q15 (runda 3, zarzut Evaluatora 2 / ta sama luka): w sekcji mutacyjnej `ok` NIE może
+  // przepuszczać wszystkiego. Asercja mutacji = "wartość POWINNA się zmienić": cond===false oznacza, że
+  // mutacja realnie zadziałała (PASS); cond===true = mutacja bez efektu (FAIL, test byłby tautologiczny).
+  if (mutationExpected) {
+    if (cond === false) { pass++; console.log('  OK (mutacja realnie zmieniła wynik):', msg); }
+    else { fail++; console.error('  FAIL (mutacja NIE zmieniła wyniku -- test tautologiczny):', msg); }
+    return;
+  }
   if (cond) { pass++; console.log('  OK:', msg); }
-  else if (mutationExpected) { pass++; console.log('  OK (mutacja poprawnie czerwieni):', msg); }
   else { fail++; console.error('  FAIL:', msg); }
 }
 
@@ -84,13 +91,85 @@ function extractFullFunctionSource(src, name) {
   return null;
 }
 
+/** R-WEB-TEST-DEBT-Q15: realny moduł src (bundle esbuild w pamięci) -- zamiast ręcznej repliki. */
+function loadRealModule(relPath) {
+  const r = esbuild.buildSync({
+    entryPoints: [path.join(GRA, relPath)], bundle: true, write: false,
+    format: 'cjs', platform: 'node', target: 'node18', loader: { '.json': 'json' },
+  });
+  const m = { exports: {} };
+  new Function('module', 'exports', r.outputFiles[0].text)(m, m.exports);
+  return m.exports;
+}
+const realSensible = loadRealModule('src/game/diplomacy-sensible-deals.ts');
+const realOfferBalance = loadRealModule('src/game/diplomacy-ai-offer-balance.ts');
+
+
+const moduleCache = new Map();
+function loadRealModuleCached(relPath) {
+  if (!moduleCache.has(relPath)) moduleCache.set(relPath, loadRealModule(relPath));
+  return moduleCache.get(relPath);
+}
+let _exportIndex = null;
+/** Indeks: nazwa eksportowanej funkcji -> względna ścieżka pliku w src/ (budowany raz). */
+function exportedFunctionIndex() {
+  if (_exportIndex) return _exportIndex;
+  _exportIndex = new Map();
+  const walk = (dir) => {
+    for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, ent.name);
+      if (ent.isDirectory()) walk(full);
+      else if (ent.name.endsWith('.ts')) {
+        const txt = fs.readFileSync(full, 'utf8');
+        for (const m of txt.matchAll(/export (?:function|const) (\w+)/g)) {
+          if (!_exportIndex.has(m[1])) _exportIndex.set(m[1], path.relative(GRA, full));
+        }
+      }
+    }
+  };
+  walk(path.join(GRA, 'src'));
+  return _exportIndex;
+}
+
 function compileRealFunction(name, freeVarNames, mocks) {
-  const tsSrc = extractFullFunctionSource(mainSrc, name);
-  if (!tsSrc) throw new Error(`Nie znaleziono ${name} w main.ts`);
-  const { code } = esbuild.transformSync(tsSrc, { loader: 'ts', format: 'cjs', target: 'node18' });
-  const factory = new Function(...freeVarNames, `${code}\nreturn ${name};`);
-  const args = freeVarNames.map(v => mocks[v]);
-  return factory(...args);
+  // R-WEB-TEST-DEBT-Q15: wolny identyfikator rozwiązywany tak: (1) mock z `mocks`; (2) funkcja
+  // o tej nazwie zdefiniowana w main.ts -- kompilowana REALNIE tym samym mechanizmem (leniwie, przy
+  // pierwszym użyciu, z cache); (3) inaczej stub RZUCAJĄCY przy wywołaniu (`UNMOCKED`), nie ciche
+  // ReferenceError. Wykonanie pozostaje prawdziwe; brak mocka na ścieżce testu = głośny FAIL.
+  const cache = new Map();
+  const compiled = (fnName) => {
+    const tsSrc = extractFullFunctionSource(mainSrc, fnName);
+    if (!tsSrc) throw new Error(`Nie znaleziono ${fnName} w main.ts`);
+    const { code } = esbuild.transformSync(tsSrc, { loader: 'ts', format: 'cjs', target: 'node18' });
+    const factory = new Function('__scope', `with (__scope) { return (function () { ${code}\nreturn ${fnName}; })(); }`);
+    return factory(scope);
+  };
+  const scope = new Proxy({}, {
+    has(_t, k) {
+      if (typeof k !== 'string' || k === '__scope') return false;
+      if (Object.prototype.hasOwnProperty.call(mocks, k)) return true;
+      if (k in globalThis) return false;
+      return /^[A-Za-z_$][\w$]*$/.test(k);
+    },
+    get(_t, k) {
+      if (k === Symbol.unscopables) return undefined;
+      if (Object.prototype.hasOwnProperty.call(mocks, k)) return mocks[k];
+      if (cache.has(k)) return cache.get(k);
+      if (typeof k === 'string' && extractFullFunctionSource(mainSrc, k)) {
+        const f = compiled(k);
+        cache.set(k, f);
+        return f;
+      }
+      // (3) eksport z modułu src/ (import do main.ts): realny moduł z bundla esbuild.
+      const modFile = exportedFunctionIndex().get(String(k));
+      if (modFile) {
+        const v = loadRealModuleCached(modFile)[k];
+        if (v !== undefined) { cache.set(k, v); return v; } // funkcje i stałe eksportowane (np. DEFAULT_CONVERTER_RECIPES)
+      }
+      return () => { throw new Error(`UNMOCKED w harnessie: ${String(k)} (w ${name})`); };
+    },
+  });
+  return compiled(name);
 }
 
 console.log('hotseat-etap6d-podetap-b-exec-test (R-HOTSEAT-ETAP6D-PODETAP-B-Q1)\n');
@@ -139,7 +218,7 @@ console.log('1. playerFormalRelationLabel — realne wykonanie\n');
   mutationExpected = true;
   const cBroken = run(BROKEN_isMe, BROKEN_ME);
   ok(cBroken.relArgs[0] === PLAYER, `MUTACJA ME()=>${WRONG}: getDiploRelation POWINIEN dostać ${WRONG}, nie ${PLAYER} -- czerwieni się poprawnie`);
-  ok(cBroken.ctx.hasNap === false, `MUTACJA ME()=>${WRONG}: deal.strony.includes(ME()) POWINNO być false (deal ma [${PLAYER},4], nie ${WRONG}) -- hasNap POWINNO stać się false -- czerwieni się poprawnie`);
+  ok(cBroken.ctx.hasNap === true, `MUTACJA ME()=>${WRONG}: deal.strony.includes(ME()) POWINNO być false (deal ma [${PLAYER},4], nie ${WRONG}) -- hasNap POWINNO stać się false -- czerwieni się poprawnie`);
   mutationExpected = false;
 }
 
@@ -241,9 +320,9 @@ console.log('\n3. collectDiploChipCounts — realne wykonanie\n');
 
   mutationExpected = true;
   const { out: broken, calls: brokenCalls } = run(BROKEN_isMe, BROKEN_ME);
-  ok(broken.sojusze === 0, `MUTACJA ME()=>${WRONG} ścieżka (a): d.strony.includes(${WRONG}) POWINNO być false (deal ma [${PLAYER},${AI1}]) -> sojuszPartners pusty -> sojusze POWINNO spaść z 1 do 0 -- czerwieni się poprawnie`);
+  ok(broken.sojusze === 1, `MUTACJA ME()=>${WRONG} ścieżka (a): d.strony.includes(${WRONG}) POWINNO być false (deal ma [${PLAYER},${AI1}]) -> sojuszPartners pusty -> sojusze POWINNO spaść z 1 do 0 -- czerwieni się poprawnie`);
   ok(brokenCalls.getDiploRelation[0] && brokenCalls.getDiploRelation[0][0] === PLAYER, `MUTACJA ME()=>${WRONG} ścieżka (b): getDiploRelation pierwszy arg POWINIEN być ${WRONG}, nie ${PLAYER} -- czerwieni się poprawnie`);
-  ok(brokenCalls.getDiploRelation.length === 3, `MUTACJA isMe=>zawsze false: guard L15038 NIE wyklucza już PLAYER=${PLAYER} (isMe zepsute) -> getDiploRelation wywołane 3x zamiast 2x (AI1,AI2,PLAYER wszystkie przechodzą) -- czerwieni się poprawnie, otrzymano ${brokenCalls.getDiploRelation.length}`);
+  ok(brokenCalls.getDiploRelation.length === 2, `MUTACJA isMe=>zawsze false: guard L15038 NIE wyklucza już PLAYER=${PLAYER} (isMe zepsute) -> getDiploRelation wywołane 3x zamiast 2x (AI1,AI2,PLAYER wszystkie przechodzą) -- czerwieni się poprawnie, otrzymano ${brokenCalls.getDiploRelation.length}`);
   mutationExpected = false;
 }
 
@@ -272,12 +351,53 @@ console.log('\n4. enqueueNegotiationFromAiCmd — realne wykonanie\n');
       ownerBasketAffordCtx: [],
       aiCommandToPendingProposal: [],
       hasPendingNegotiationForPair: [],
+      planAiOfferOnTable: [],
       createNegotiation: [],
       pnBalanceOpts: null,
     };
     const mocks = {
       isOwnerClusterCityState: () => false,
+      // Realne eksporty modułów (bundle): withZeroPwUndershoot i pokrewne (main.ts importuje je z modułu).
+      withZeroPwUndershoot: realOfferBalance.withZeroPwUndershoot,
+      isDiploSensibleDealsEnabled: realSensible.isDiploSensibleDealsEnabled,
+      sensibleBalanceFilterApplies: realSensible.sensibleBalanceFilterApplies,
       ownerCityStateOpts: () => ({}),
+      // R-WEB-TEST-DEBT-Q15: main.ts `enqueueNegotiationFromAiCmd` opakowuje Impl w
+      // `withDiplomacyTradeEra(dealTradeEraForOwners(...), ...)` (R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2,
+      // commit 770aa4fed). Brak tych symboli w mockach = ReferenceError (STARY-PIN harnessu).
+      // Epoka handlu nie jest czytana przez zmockowane wyceny, więc pass-through zachowuje asercje.
+      dealTradeEraForOwners: () => 1,
+      diplomacyDealTradeEra: () => 1,
+      player: { era: 1 },
+      empireEpochForOwner: () => 1,
+      // Stan modułu main.ts (let ... = null w stanie domyślnym, main.ts ~L25043): cache wyłączony.
+      aiDiploTradeGoodsCache: null,
+      aiDiploRatesCache: null, // main.ts ~L3747, stan domyślny (cache wyłączony poza oknem tury)
+      // R-WEB-TEST-DEBT-Q15 (runda 3): main.ts `empireConverterResourceRatesForOwner` (L4001-4006)
+      // czyta `data.econParams` (moduł-poziomu, `data` z src/data/loader.ts, JSON gra/data/econ-params.json)
+      // i woła `loadThroughput(raw, ...)` z `raw.budynki` (src/game/converters.ts L37). Bez tego mocka:
+      // TypeError "reading 'budynki'" (r2 BLOKADA a). Realny JSON z repo, bez stuba kształtu.
+      data: { econParams: JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'econ-params.json'), 'utf8')) },
+      _menuDifficulty: 'normal',
+      // R-WEB-TEST-DEBT-Q15 (runda 2): main.ts `tradableGoodsIndexForOwner` -> ... ->
+      // `empireActiveResourceLabelsForOwner` czyta moduły-poziomu `hudPureScope` / `ownerScope`
+      // (createScopeMemo z frame-memo, main.ts ~L3739). Bez mocka: TypeError `.cached`. Pass-through
+      // memo (bez cache) = ta sama wartość co realna funkcja Raw; asercje bez zmian.
+      hudPureScope: { active: false, cached: (_k, f) => f(), run: (f) => f() },
+      ownerScope: { cached: (_k, f) => f(), run: (f) => f() },
+      // Stan świata (main.ts moduł-poziom) dla etykiet zasobów: pusty świat = brak miast/ulepszeń
+      // gracza/AI; ścieżka ME() tego testu nie zależy od etykiet (asercje na routingu, nie na zasobach).
+      cities: [], cityBuilt: new Map(), map: {}, units: [],
+      empireBuiltIdsForOwner: () => new Set(),
+      placedImprovementsForOwner: () => [],
+      // main.ts importuje `tradableGoodsForOwner as tradableGoodsIndexForOwnerPure` z src/game/diplomacy-goods.ts
+      // (alias, nie nazwa eksportu) -- realny moduł z bundla, ta sama funkcja.
+      tradableGoodsIndexForOwnerPure: loadRealModuleCached('src/game/diplomacy-goods.ts').tradableGoodsForOwner,
+      withDiplomacyTradeEra: (era, fn) => fn(),
+      // R-WEB-TEST-DEBT-Q15: Impl (gałąź pokoju) bramkuje propozycję `peaceProposalIsTooEarly`
+      // (commit 271fcf39f, "defer peace offers ten war turns"). Ten test dowodzi routingu ME(),
+      // nie bramki czasu wojny; bramkę ma osobny test diplomacy-peace-proposal-timing. Mock = "wolno".
+      peaceProposalIsTooEarly: () => false,
       getDiploRelation: (a, b) => { calls.getDiploRelation.push([a, b]); return { status: 'pokoj' }; },
       clampAiResourceTradeCommand: (cmd) => cmd,
       buildAiResourceTradeClampCtx: () => ({}),
@@ -309,6 +429,14 @@ console.log('\n4. enqueueNegotiationFromAiCmd — realne wykonanie\n');
         calls.hasPendingNegotiationForPair.push(playerId);
         return false;
       },
+      // R-WEB-TEST-DEBT-Q15 (runda 3): main.ts L21743 woła `planAiOfferOnTable(table, ownerId, ME(), actionId)`
+      // (src/game/diplomacy-proposals.ts, DIPLO-5 474ef9561), a NIE bezpośrednio `hasPendingNegotiationForPair`
+      // (ta jest wołana WEWNĄTRZ modułu, poza zasięgiem mocków). Spy na realnej `planAiOfferOnTable` z bundla
+      // rejestruje 3. argument (playerOwnerId = ME()) bez zmiany wykonania.
+      planAiOfferOnTable: (table, aiId, playerId, actionId) => {
+        calls.planAiOfferOnTable.push(playerId);
+        return loadRealModuleCached('src/game/diplomacy-proposals.ts').planAiOfferOnTable(table, aiId, playerId, actionId);
+      },
       isOfferRejectedOnCooldown: () => false,
       rejectedOfferCooldowns: new Map(),
       negotiationTable: [],
@@ -323,6 +451,11 @@ console.log('\n4. enqueueNegotiationFromAiCmd — realne wykonanie\n');
       updateDiplomacyPanel: () => {},
       isMe, ME,
     };
+    // R-WEB-TEST-DEBT-Q15: wrapper `enqueueNegotiationFromAiCmd` deleguje do siostrzanej funkcji
+    // `enqueueNegotiationFromAiCmdImpl` (main.ts ~L21493). Impl kompilujemy realnie z tymi samymi
+    // mockami i podajemy wrapperowi jako wolną zmienną -- wykonanie pozostaje prawdziwe.
+    const implFn = compileRealFunction('enqueueNegotiationFromAiCmdImpl', Object.keys(mocks), mocks);
+    mocks.enqueueNegotiationFromAiCmdImpl = implFn;
     const fn = compileRealFunction('enqueueNegotiationFromAiCmd', Object.keys(mocks), mocks);
     fn(AI, { type: cmdType });
     return calls;
@@ -340,7 +473,7 @@ console.log('\n4. enqueueNegotiationFromAiCmd — realne wykonanie\n');
   ok(realTrade.ownerBasketAffordCtx[1] === PLAYER, `PRAWDZIWY ME() L16001 (ownerBasketAffordCtx dla theirCtx): 2. wywołanie = ME() = ${PLAYER}, otrzymano ${JSON.stringify(realTrade.ownerBasketAffordCtx)}`);
   ok(!!realTrade.pnBalanceOpts && realTrade.pnBalanceOpts.playerOwnerId === PLAYER, `PRAWDZIWY ME() L16054 (pnBalanceOpts.playerOwnerId) = ${PLAYER}, otrzymano ${JSON.stringify(realTrade.pnBalanceOpts)}`);
   ok(realTrade.aiCommandToPendingProposal[0] === PLAYER, `PRAWDZIWY ME() L15982: aiCommandToPendingProposal 3. arg (playerId) = ${PLAYER}, otrzymano ${JSON.stringify(realTrade.aiCommandToPendingProposal)}`);
-  ok(realTrade.hasPendingNegotiationForPair[0] === PLAYER, `PRAWDZIWY ME() L16085: hasPendingNegotiationForPair 2. arg = ${PLAYER}, otrzymano ${JSON.stringify(realTrade.hasPendingNegotiationForPair)}`);
+  ok(realTrade.planAiOfferOnTable[0] === PLAYER, `PRAWDZIWY ME() L21743 (planAiOfferOnTable 3. arg = playerOwnerId): = ${PLAYER}, otrzymano ${JSON.stringify(realTrade.planAiOfferOnTable)}`);
   ok(realTrade.createNegotiation[0] === PLAYER, `PRAWDZIWY ME() L16090: createNegotiation entry.responderOwnerId = ${PLAYER}, otrzymano ${JSON.stringify(realTrade.createNegotiation)}`);
 
   mutationExpected = true;
@@ -428,6 +561,9 @@ console.log('\n6. currentVisibleForOwner — realne wykonanie\n');
     const mocks = {
       computePlayerVisibility: () => new Set(['h1']),
       map: {}, units: [], cities: [], unitSight: {},
+      // R-WEB-TEST-DEBT-Q15 (runda 3): main.ts L14184 `fortSightSources(fortNodes, ownerId)` czyta moduł-poziomu
+      // `fortNodes` (pusty świat testu, bez fortów; realna funkcja z src/game/fort-territory.ts).
+      fortNodes: [],
       allianceFormalKindBetween: (deals, a, b) => {
         calls.allianceFormalKindBetween.push(a);
         return a === PLAYER ? 'sojusz' : null;
@@ -460,10 +596,18 @@ console.log('\n7. peacefulArchetypeForOwner — realne wykonanie\n');
   function run(isMe, ME) {
     const mocks = {
       aiOwnerCivMap: new Map([[4, 'grecy']]),
+      // R-WEB-TEST-DEBT-Q15 (runda 3): civKeyForOwnerId (main.ts L10547) czyta _menuCivIdByOwner (Map, L2192)
+      // i playerCivTypeByHuman; bez nich: TypeError `.get is not a function` (stan modułu nie zainicjowany).
+      _menuCivIdByOwner: new Map([[PLAYER, 'grecy']]),
+      playerCivTypeByHuman: new Map(),
+      // R-WEB-TEST-DEBT-Q15 (runda 3): effectiveGameDifficultyForOwner (main.ts L10283) -> Pure(typCityCopyOwners.has)
+      _menuDifficulty: 'normal', _menuCityStateDifficulty: 'normal', typCityCopyOwners: new Set(),
+      effectiveGameDifficultyForOwner: () => 'normal',
       civAiProfileForTyp: () => ({ sklonnoscDoPodboju: 2, agresywnosc: 1, tolerancjaRyzyka: 1 }),
       resolveArchetypeAggression: () => 0.5,
       ARCHETYPE_AGGRESSION: {},
-      data: {},
+      // R-WEB-TEST-DEBT-Q15 (runda 3): civKeyForOwnerId czyta data.civs.cywilizacje (gra/data/civs.json, realny JSON).
+      data: { civs: JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'civs.json'), 'utf8')) },
       resolveDiplomacyCivBias: () => ({ peaceful: true }),
       isMe, ME,
     };

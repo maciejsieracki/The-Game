@@ -18,6 +18,11 @@
  *      GUBIONE_PO_RESTORE -- pole było w raw A, po restore zniknęło z zapisu (NIEZALICZONE, exit 1)
  *      OK / OK_PUSTA / ZMIENIONE_PO_RESTORE / EFEMERYCZNE (savedAt) -- informacyjne
  *
+ * URUCHOMIENIE (R-WEB-TEST-DEBT-Q15): plik NIE nazywa się *-test.cjs; bramka wymaga bundla:
+ *   (1) z gra/: node ./node_modules/vite/bin/vite.js build --outDir <abs-poza-repo>/dist --emptyOutDir
+ *   (2) z gra/: node tools/save-load-deserialize-fields-audit.cjs --dist <abs-poza-repo>/dist
+ * Bez --dist skrypt kończy się błędem (tryb live wymaga przeglądarki).
+ *
  * Pola z `JUSTIFIED` (niżej) są raportowane jako UZASADNIONE i nie wywracają wyniku -- lista jest celowo pusta;
  * każdy wpis wymaga pisemnego powodu w raporcie orkiestratora.
  *
@@ -30,7 +35,7 @@
  *     dodaj --mutate <pole> do trybu 1 lub 2. Wymagane: porównanie na oryginale ZIELONE (brak GUBIONE), na mutancie
  *     CZERWONE (GUBIONE dla <pole>). Inaczej exit 1.
  *
- * Wynik: JSON w <repo>/dyspozycje/autobot/runs/R-WEB-SAVE-LOAD-DESERIALIZE-FIELDS-AUDIT-Q1/evidence/ (--out-dir nadpisuje),
+ * Wynik: JSON w <os.tmpdir()>/R-WEB-SAVE-LOAD-DESERIALIZE-FIELDS-AUDIT-Q1-evidence/ (--out-dir nadpisuje; poza repo),
  * zrzuty raw A/B zapisywane obok. Exit 0 = brak niezaliczonych pól; 1 = są GUBIONE/NIE_PRZYWROCONE/GUBIONE_PO_RESTORE
  * lub błąd narzędzia.
  */
@@ -43,7 +48,8 @@ const GRA = path.resolve(__dirname, '..');
 const REPO = path.resolve(GRA, '..');
 const RUN_ID = 'R-WEB-SAVE-LOAD-DESERIALIZE-FIELDS-AUDIT-Q1';
 const SRC = path.resolve(arg('src', path.join(GRA, 'src')));
-const OUT_DIR = path.resolve(arg('out-dir', path.join(REPO, 'dyspozycje', 'autobot', 'runs', RUN_ID, 'evidence')));
+// R-WEB-TEST-DEBT-Q15 (runda 3): dowody NIE trafiają do repo (poza allowlistą); domyślnie katalog tymczasowy.
+const OUT_DIR = path.resolve(arg('out-dir', path.join(os.tmpdir(), RUN_ID + '-evidence')));
 const DIST = arg('dist', '') ? path.resolve(arg('dist', '')) : '';
 const RAW_A_ARG = arg('raw-a', '') ? path.resolve(arg('raw-a', '')) : '';
 const RAW_B_ARG = arg('raw-b', '') ? path.resolve(arg('raw-b', '')) : '';

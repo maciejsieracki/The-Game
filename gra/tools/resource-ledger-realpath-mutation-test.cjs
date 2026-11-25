@@ -16,7 +16,7 @@
 const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const path = require('path');
-const { spawnSync } = require('child_process');
+const { spawn } = require('child_process');
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i >= 0 ? process.argv[i + 1] : d; };
 const GRA = path.resolve(__dirname, '..');
@@ -53,30 +53,103 @@ const MUTATIONS = [
 
 if (process.argv.includes('--list')) { for (const m of MUTATIONS) console.log(m.id + ' ' + m.name); process.exit(0); }
 
-const original = fs.readFileSync(MAIN, 'utf8');
-const restore = () => { try { fs.writeFileSync(MAIN, original, 'utf8'); } catch (e) { /* ignore */ } };
-process.on('SIGINT', () => { restore(); process.exit(130); });
-process.on('SIGTERM', () => { restore(); process.exit(143); });
-
-let killed = 0; let survived = 0; const summary = [];
-try {
-  for (const m of MUTATIONS) {
-    if (IDS.length && !IDS.includes(m.id)) continue;
-    const count = original.split(m.find).length - 1;
-    if (count !== 1) { console.log(`[${m.id}] BLAD: wzorzec wystepuje ${count}x (wymagane 1) — ${m.name}`); survived++; summary.push({ id: m.id, name: m.name, result: 'PATTERN-' + count }); continue; }
-    fs.writeFileSync(MAIN, original.replace(m.find, m.replace), 'utf8');
-    const b = spawnSync('node', ['./node_modules/vite/bin/vite.js', 'build', '--outDir', DIST, '--emptyOutDir'], { cwd: GRA, encoding: 'utf8', timeout: 400000 });
-    restore();
-    if (b.status !== 0) { console.log(`[${m.id}] BLAD BUILDU mutacji: ${(b.stderr || b.stdout || '').slice(-300)}`); survived++; summary.push({ id: m.id, name: m.name, result: 'BUILD-FAIL' }); continue; }
-    const args = [LIVE, '--dist', DIST, '--part', m.part].concat(m.only ? ['--only', m.only] : []).concat(m.extra || []);
-    const t = spawnSync('node', args, { cwd: GRA, encoding: 'utf8', timeout: 300000 });
-    const out = (t.stdout || '') + (t.stderr || '');
-    const failLines = out.split('\n').filter((l) => /FAIL|FATAL/.test(l)).slice(0, 3).map((l) => l.trim().slice(0, 140));
-    const red = t.status !== 0;
-    if (red) { killed++; summary.push({ id: m.id, name: m.name, result: 'ZABITA', exit: t.status, firstFails: failLines }); console.log(`[${m.id}] ZABITA (exit ${t.status}) — ${m.name} :: ${failLines[0] || ''}`); }
-    else { survived++; summary.push({ id: m.id, name: m.name, result: 'PRZEZYLA' }); console.log(`[${m.id}] PRZEZYLA (test zielony mimo mutacji!) — ${m.name}`); }
+// R-WEB-TEST-DEBT-Q15 (runda 2): SIGKILL nie daje się przechwycić, więc po takim przerwaniu main.ts
+// zostaje zmutowany, a kopia wisi w tmpdir. PRZED odczytaniem `original` przywracamy main.ts z
+// osieroconych kopii (inaczej `original` byłby już zmutowany), potem kasujemy kopię.
+// Kopia nazwana `civ-ledger-mut-backup-<pid>-<hex>.ts`. Osierocona = pid procesu, który ją zapisał,
+// już nie żyje (process.kill(pid, 0) rzuca ESRCH). Kopie żywych przebiegów (np. równoległy test)
+// NIE są ruszane. Ten sam dobór pliku działa po starcie i po zakończeniu (cleanupOrphans poniżej).
+const pidAlive = (pid) => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } };
+const cleanupOrphans = (verbose) => {
+  const tmp = require('os').tmpdir();
+  let files = [];
+  try { files = fs.readdirSync(tmp).filter((f) => /^civ-ledger-mut-backup-\d+-[0-9a-f]+\.ts$/.test(f)); } catch (e) { /* ignore */ }
+  for (const name of files) {
+    const pid = Number(name.split('-')[4]);
+    if (pid === process.pid || pidAlive(pid)) continue;
+    const f = path.join(tmp, name);
+    const applied = path.join(tmp, name.replace('civ-ledger-mut-backup-', 'civ-ledger-mut-applied-'));
+    try {
+      const orig = fs.readFileSync(f, 'utf8');
+      const mainNow = fs.readFileSync(MAIN, 'utf8');
+      // R-WEB-TEST-DEBT-Q15 (runda 3, zarzut Evaluatora 5): przywracamy TYLKO gdy main.ts == dokładnie ten
+      // zmutowany tekst, który martwy przebieg zapisał (kopia `applied`). Jeśli main.ts różni się od obu
+      // (np. legalna edycja po przerwaniu) -- NIE nadpisujemy, zostawiamy kopie i wypisujemy ostrzeżenie.
+      const mutatedCopy = fs.existsSync(applied) ? fs.readFileSync(applied, 'utf8') : null;
+      if (mainNow === orig) {
+        // już przywrócony
+      } else if (mutatedCopy !== null && mainNow === mutatedCopy) {
+        fs.writeFileSync(MAIN, orig, 'utf8');
+        console.log(`[recover] przywrócono main.ts z osieroconej kopii ${name} (pid ${pid} martwy)`);
+      } else {
+        console.log(`[recover] UWAGA: main.ts różni się od zapisu zmutowanego przebiegu pid ${pid} -- NIE nadpisuję; kopia zostaje: ${f}`);
+        continue;
+      }
+      fs.unlinkSync(f);
+      try { fs.unlinkSync(applied); } catch (e) { /* ignore */ }
+    } catch (e) { /* ignore */ }
+    if (verbose) console.log(`[cleanup] usunięto osieroconą kopię ${name}`);
   }
-} finally { restore(); }
-console.log(`\nMUTACJE: zabite=${killed} przezyly/bledy=${survived}`);
-console.log(JSON.stringify(summary));
-process.exit(survived === 0 ? 0 : 1);
+};
+cleanupOrphans(false);
+const original = fs.readFileSync(MAIN, 'utf8');
+// R-WEB-TEST-DEBT-Q15: kopia źródła POZA repo (odporna na SIGKILL: przy następnym uruchomieniu
+// wykrywana i przywracana) + przywracanie: finally, 'exit', SIGINT/SIGTERM/uncaughtException.
+// Child (vite/live) idzie przez async spawn, więc handler sygnału działa w trakcie mutacji
+// (spawnSync blokuje pętlę zdarzeń i odkładałby handler do końca dziecka).
+const BACKUP = path.join(require('os').tmpdir(), `civ-ledger-mut-backup-${TMPDIR_RUN_ID}.ts`);
+// Kopia ZMUTOWANEGO tekstu (zapisywana PRZED każdą mutacją) -- po SIGKILL pozwala odróżnić stan z przerwanego
+// przebiegu od legalnej edycji main.ts (zob. cleanupOrphans).
+const APPLIED = path.join(require('os').tmpdir(), `civ-ledger-mut-applied-${TMPDIR_RUN_ID}.ts`);
+let activeChild = null;
+const restore = () => {
+  try {
+    if (fs.readFileSync(MAIN, 'utf8') !== original) fs.writeFileSync(MAIN, original, 'utf8');
+  } catch (e) { /* ignore */ }
+  // kopia kasowana dopiero PO przywróceniu (osierocona kopia = sygnał do odzyskania przy starcie)
+  try { if (fs.readFileSync(MAIN, 'utf8') === original) { fs.unlinkSync(BACKUP); try { fs.unlinkSync(APPLIED); } catch (e2) { /* ignore */ } } } catch (e) { /* ignore */ }
+};
+const killChild = () => { if (activeChild && activeChild.exitCode === null) { try { activeChild.kill('SIGTERM'); } catch (e) { /* ignore */ } } };
+process.on('exit', restore);
+process.on('SIGINT', () => { killChild(); restore(); process.exit(130); });
+process.on('SIGTERM', () => { killChild(); restore(); process.exit(143); });
+process.on('uncaughtException', (e) => { console.error('FATAL', e && e.message); killChild(); restore(); process.exit(1); });
+fs.writeFileSync(BACKUP, original, 'utf8');
+
+const runAsync = (cmd, args, opts) => new Promise((resolve) => {
+  const child = spawn(cmd, args, { ...opts, stdio: ['ignore', 'pipe', 'pipe'] });
+  activeChild = child;
+  let stdout = ''; let stderr = '';
+  child.stdout.on('data', (d) => { stdout += d; });
+  child.stderr.on('data', (d) => { stderr += d; });
+  const timer = setTimeout(() => child.kill('SIGTERM'), opts.timeoutMs);
+  child.on('close', (code) => { clearTimeout(timer); activeChild = null; resolve({ status: code, stdout, stderr }); });
+});
+
+(async () => {
+  let killed = 0; let survived = 0; const summary = [];
+  try {
+    for (const m of MUTATIONS) {
+      if (IDS.length && !IDS.includes(m.id)) continue;
+      const count = original.split(m.find).length - 1;
+      if (count !== 1) { console.log(`[${m.id}] BLAD: wzorzec wystepuje ${count}x (wymagane 1) — ${m.name}`); survived++; summary.push({ id: m.id, name: m.name, result: 'PATTERN-' + count }); continue; }
+      const mutatedText = original.replace(m.find, m.replace);
+      fs.writeFileSync(APPLIED, mutatedText, 'utf8');
+      fs.writeFileSync(MAIN, mutatedText, 'utf8');
+      const b = await runAsync('node', ['./node_modules/vite/bin/vite.js', 'build', '--outDir', DIST, '--emptyOutDir'], { cwd: GRA, timeoutMs: 400000 });
+      restore();
+      if (b.status !== 0) { console.log(`[${m.id}] BLAD BUILDU mutacji: ${(b.stderr || b.stdout || '').slice(-300)}`); survived++; summary.push({ id: m.id, name: m.name, result: 'BUILD-FAIL' }); continue; }
+      const args = [LIVE, '--dist', DIST, '--part', m.part].concat(m.only ? ['--only', m.only] : []).concat(m.extra || []);
+      const t = await runAsync('node', args, { cwd: GRA, timeoutMs: 300000 });
+      restore();
+      const out = (t.stdout || '') + (t.stderr || '');
+      const failLines = out.split('\n').filter((l) => /FAIL|FATAL/.test(l)).slice(0, 3).map((l) => l.trim().slice(0, 140));
+      const red = t.status !== 0;
+      if (red) { killed++; summary.push({ id: m.id, name: m.name, result: 'ZABITA', exit: t.status, firstFails: failLines }); console.log(`[${m.id}] ZABITA (exit ${t.status}) — ${m.name} :: ${failLines[0] || ''}`); }
+      else { survived++; summary.push({ id: m.id, name: m.name, result: 'PRZEZYLA' }); console.log(`[${m.id}] PRZEZYLA (test zielony mimo mutacji!) — ${m.name}`); }
+    }
+  } finally { restore(); }
+  cleanupOrphans(true);
+  console.log(`\nMUTACJE: zabite=${killed} przezyly/bledy=${survived}`);
+  process.exit(survived === 0 ? 0 : 1);
+})();

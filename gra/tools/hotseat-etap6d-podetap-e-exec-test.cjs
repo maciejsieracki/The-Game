@@ -43,8 +43,15 @@ let pass = 0;
 let fail = 0;
 let mutationExpected = false; // gdy true, `ok(false, ...)` liczy się jako oczekiwane (nie FAIL globalny)
 function ok(cond, msg) {
+  // R-WEB-TEST-DEBT-Q15 (runda 3, zarzut Evaluatora 2 / ta sama luka): w sekcji mutacyjnej `ok` NIE może
+  // przepuszczać wszystkiego. Asercja mutacji = "wartość POWINNA się zmienić": cond===false oznacza, że
+  // mutacja realnie zadziałała (PASS); cond===true = mutacja bez efektu (FAIL, test byłby tautologiczny).
+  if (mutationExpected) {
+    if (cond === false) { pass++; console.log('  OK (mutacja realnie zmieniła wynik):', msg); }
+    else { fail++; console.error('  FAIL (mutacja NIE zmieniła wyniku -- test tautologiczny):', msg); }
+    return;
+  }
   if (cond) { pass++; console.log('  OK:', msg); }
-  else if (mutationExpected) { pass++; console.log('  OK (mutacja poprawnie czerwieni):', msg); }
   else { fail++; console.error('  FAIL:', msg); }
 }
 
@@ -191,11 +198,36 @@ console.log('\n2. collectTurnEvents — realne wykonanie (fragment stołu negocj
     negotiationSummary: () => 'summary',
     NEGOTIATION_MAX_ROUNDS,
     dismissedSidePanelEventIds: new Set(),
+    // R-WEB-TEST-DEBT-Q15 (runda 3): src/main.ts (R-WEB-PERF-LATE-GAME-LAG-HUD-Q2) dodał ramkę zdarzeń:
+    // collectTurnEvents czyta `turnEventsFrame` i owija listę w `withOwnerScopeMemo`. Poza ramką
+    // (`turnEventsFrame === undefined`) ścieżka to czyste `withOwnerScopeMemo(collectTurnEventsUncached)`;
+    // mock przepuszczający (memo bez cache) nie zmienia wyniku pojedynczego wywołania.
+    turnEventsFrame: undefined,
+    withOwnerScopeMemo: (fn) => fn(),
   };
-  const freeVars = Object.keys(mocks);
+  // R-WEB-TEST-DEBT-Q15 (runda 3): właściwa logika stołu negocjacyjnego (pętla po negotiationTable,
+  // filtr isMe) przeniesiona w src/main.ts do collectTurnEventsUncached; collectTurnEvents jest już
+  // tylko opakowaniem (ramka + memo). Test wycina OBIE funkcje z main.ts i wykonuje je realnie.
+  const uncachedExtra = {
+    applyFarmAssignHints: () => {},
+    HUMAN_OWNER_PRIMARY: 0,
+    turn: 1,
+    map: [],
+    yieldOfMapHex: () => 0,
+    empireEpochForOwner: () => 0,
+    nnsEndTurnBlockEvent: () => null,
+    prunePendingForcedPeace: () => {},
+    pendingForcedPeaceTreaties: [],
+    ME: () => PLAYER,
+    END_TURN_BLOCK_EVENT_TITLE: 'KONIEC',
+    negotiationRoundCounterText: (r, m) => `${r}/${m}`,
+  };
 
   function run(isMe) {
-    const fn = compileRealFunction('collectTurnEvents', freeVars, { ...mocks, isMe });
+    const uncachedMocks = { ...mocks, ...uncachedExtra, isMe };
+    const uncached = compileRealFunction('collectTurnEventsUncached', Object.keys(uncachedMocks), uncachedMocks);
+    const outerMocks = { ...mocks, isMe, collectTurnEventsUncached: uncached };
+    const fn = compileRealFunction('collectTurnEvents', Object.keys(outerMocks), outerMocks);
     return fn();
   }
 
@@ -247,6 +279,15 @@ console.log('\n3+4. resolveNegotiationEntryAt / resolvePendingNegotiationsForOwn
       refreshD1bHud: () => {},
       isDiplomacyPanelOpen: () => false,
       updateDiplomacyPanel: () => {},
+      // R-WEB-TEST-DEBT-Q15 (runda 3): hak testowy wymuszenia decyzji AI (main.ts:13855); poza testem = null.
+      truceTestForcedAiDecision: null,
+      // Odmowa adresata z casus belli (main.ts:21999/22161): spy, wywołanie nie jest tu asercjonowane.
+      zarejestrujCasusBelli: () => {},
+      // Import z game/diplomacy-peace-proposal-timing (main.ts:1653); sufiks komunikatu odmowy pokoju, poza asercjami tej sekcji.
+      peaceRejectReasonSuffix: () => '',
+      // R-WEB-TEST-DEBT-Q15 (runda 3): peaceProposalIsTooEarly (main.ts, bramka czasu wojny dla pokoju; commit 271fcf39f).
+      // Ten test dowodzi ścieżki negocjacji ME(), nie bramki czasu -- mock = "wolno" (jak w teście B).
+      peaceProposalIsTooEarly: () => false,
     };
   }
 
@@ -372,6 +413,8 @@ console.log('\n5. handleNegotiationCounter — realne wykonanie (uzupełnienie, 
         calls.applyCounterOffer.push([entry.id, uiPayload, authorOwnerId, turn]);
         return { ...entry, payload: uiPayload, round: entry.round + 1, authorOwnerId, awaitingOwnerId: authorOwnerId === PLAYER ? AI : PLAYER };
       },
+      // R-WEB-TEST-DEBT-Q15 (runda 3): handleNegotiationCounter -> peaceProposalIsTooEarly (bramka czasu pokoju; mock = "wolno").
+      peaceProposalIsTooEarly: () => false,
       refreshD1bHud: () => {},
       updateDiplomacyAudience: () => {},
       isDiplomacyPanelOpen: () => false,
