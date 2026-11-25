@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "76a37a398f2151390ba3e3dd397acfe1",
-  "bundleSha256": "6f8bf18ccc0dc4ec3ba431cdd81d24d546719defb9e164269c8b8a4d795d0147",
-  "bundleBytes": 15013556,
+  "bundleMd5": "22cadb41037c59204c8150c6ce510b73",
+  "bundleSha256": "7233f0d4f446eecc2da9507441adf012d83274198d462017ebd07ff80d11c476",
+  "bundleBytes": 15013756,
   "sourceSnapshot": {
-    "source": "R-WEB-HUD-ME-FOODRESERVE-Q1 r1 (be414ecd7 + obrona 1f757ecd6)",
+    "source": "R-WEB-WAR-LIMIT-AI-NATURAL-VIOLATION-Q1 r1 (5b975a72a + obrona 43ce4f4f6)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 895: gra/src/main.ts: HUD liczył zapas żywności, limit magazynu, odliczanie głodu, głód wojska, ostatni tick i projekcję żywności dla gracza 0 zamiast aktywnego (hotseat); dopisane asercje strażnika"
+    "FALA 896: gra/src/game/diplomacy-war-limit.ts, gra/src/main.ts: sojusznik wciągany do wojny widzi wojnę oczekującą głównego agresora przy sprawdzaniu limitu 1 wojny naturalnej na cywilizację (seed 4242: AI 28 miało 2 wojny w turach 60–67); nowy test strażnik"
   ],
   "verification": [
-    "tsc 0; logic 213/213; hud-moc-warstwa 28/0; hud-me-literal-zero 26/0 (mutacje czerwone); hotseat-etap6d 77/0; ai-test 297/0; vite build OK"
+    "tsc 0; logic 213/213; war-limit-ai-natural 15/0 (2 mutacje czerwone); war-rules-multiwar-main-guard 21/0; war-rules-multiwar 57/0; alliance-war-obligation 14/0; ai-test 297/0; vite build OK"
   ],
   "limits": [
-    "w grze jednoosobowej bez zmian; żywy test hotseat fotela 2 NIE ZMIERZONO; player.era/player.zbadane w podglądzie nadal z fotela gracza; buildEmpireFoodSnap i pozostałe *ForOwner(0) w HUD poza zakresem (kandydaci)"
+    "bieg weryfikujący seed 4242 do tury 67 NIE ZMIERZONO (Operator nie mógł zbudować bundla); ścieżka 22↔28 ustalona pośrednio z danych i kodu, bez logu; ownerDeclareWarOn z force=true (bunt/przejęcie miasta) i wojna po rozejmie omijają limit — kandydaci/decyzja właściciela"
   ],
-  "finalControl": "FC PASS-WITH-NOTES (b7c2fbd37)",
+  "finalControl": "FC PASS-WITH-NOTES (a19ecd80c)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-25T13:04:26",
+  "hubGeneratedAt": "2026-11-25T13:42:38",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "76a37a398f2151390ba3e3dd397acfe1",
-      "sizeBytes": 15013556
+      "md5": "22cadb41037c59204c8150c6ce510b73",
+      "sizeBytes": 15013756
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "76a37a398f2151390ba3e3dd397acfe1",
-      "sizeBytes": 15013556
+      "md5": "22cadb41037c59204c8150c6ce510b73",
+      "sizeBytes": 15013756
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "76a37a398f2151390ba3e3dd397acfe1",
-      "sizeBytes": 15013556
+      "md5": "22cadb41037c59204c8150c6ce510b73",
+      "sizeBytes": 15013756
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "76a37a398f2151390ba3e3dd397acfe1",
-      "sizeBytes": 15013556
+      "md5": "22cadb41037c59204c8150c6ce510b73",
+      "sizeBytes": 15013756
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "76a37a398f2151390ba3e3dd397acfe1",
-      "sizeBytes": 15013556
+      "md5": "22cadb41037c59204c8150c6ce510b73",
+      "sizeBytes": 15013756
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "76a37a398f2151390ba3e3dd397acfe1",
-      "sizeBytes": 15013556
+      "md5": "22cadb41037c59204c8150c6ce510b73",
+      "sizeBytes": 15013756
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "76a37a398f2151390ba3e3dd397acfe1",
-      "sizeBytes": 15013556
+      "md5": "22cadb41037c59204c8150c6ce510b73",
+      "sizeBytes": 15013756
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "76a37a398f2151390ba3e3dd397acfe1",
-      "sizeBytes": 15013556
+      "md5": "22cadb41037c59204c8150c6ce510b73",
+      "sizeBytes": 15013756
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "76a37a398f2151390ba3e3dd397acfe1",
-      "sizeBytes": 15013556
+      "md5": "22cadb41037c59204c8150c6ce510b73",
+      "sizeBytes": 15013756
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "76a37a398f2151390ba3e3dd397acfe1",
-      "sizeBytes": 15013556
+      "md5": "22cadb41037c59204c8150c6ce510b73",
+      "sizeBytes": 15013756
     }
   ],
-  "md5": "76a37a398f2151390ba3e3dd397acfe1",
+  "md5": "22cadb41037c59204c8150c6ce510b73",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

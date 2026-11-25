@@ -1,3 +1,9 @@
+## ROBOCZA 22cadb41 -- 2026-11-25 -- FALA 896: Wojny: limit wojen naturalnych obowiązuje także przy wciąganiu sojuszników (testowa)
+
+- gra/src/game/diplomacy-war-limit.ts, gra/src/main.ts: sojusznik wciągany do wojny widzi wojnę oczekującą głównego agresora przy sprawdzaniu limitu 1 wojny naturalnej na cywilizację (seed 4242: AI 28 miało 2 wojny w turach 60–67); nowy test strażnik
+- Weryfikacja: tsc 0; logic 213/213; war-limit-ai-natural 15/0 (2 mutacje czerwone); war-rules-multiwar-main-guard 21/0; war-rules-multiwar 57/0; alliance-war-obligation 14/0; ai-test 297/0; vite build OK
+- Limity: bieg weryfikujący seed 4242 do tury 67 NIE ZMIERZONO (Operator nie mógł zbudować bundla); ścieżka 22↔28 ustalona pośrednio z danych i kodu, bez logu; ownerDeclareWarOn z force=true (bunt/przejęcie miasta) i wojna po rozejmie omijają limit — kandydaci/decyzja właściciela
+
 ## ROBOCZA 76a37a39 -- 2026-11-25 -- FALA 895: HUD: zapas żywności, głód wojska i tempo żywności dla aktywnego gracza (testowa)
 
 - gra/src/main.ts: HUD liczył zapas żywności, limit magazynu, odliczanie głodu, głód wojska, ostatni tick i projekcję żywności dla gracza 0 zamiast aktywnego (hotseat); dopisane asercje strażnika
