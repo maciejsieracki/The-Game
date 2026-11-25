@@ -196,10 +196,14 @@ console.log('Z1h. TRZY POZOSTALE PROFILE AUTOMATU GRACZA — bez zmiany zachowan
         '7,9': { zloze: 'miedz', teren: 'wzgorza' }, '9,5': { nakladka: 'zloze_konia' },
       },
     });
+    // R-WEB-TEST-DEBT-Q14 (HARNESS): profil „infrastruktura” (droga/posterunek/fort) daje zero pickow przy JEDNYM
+    // mieście — droga łączy miasta (road-network-plan), więc fikstura potrzebuje drugiego miasta, inaczej
+    // asercja `bez.length > 0` jest czerwona bez względu na Zasadę 1. Drugie miasto stoi poza zasięgiem pierwszego.
     const city = { id: 'c0', ownerId: 0, q: 7, r: 7, population: 6, ulepszeniaFocus: focus };
+    const city2 = { id: 'c1', ownerId: 0, q: 13, r: 7, population: 6, ulepszeniaFocus: focus };
     const picks = AUTO.pickAutoImprovements({
-      cities: [city], ownerId: 0, map,
-      territoryNodes: territory(7, 7, 0, 'c0'),
+      cities: [city, city2], ownerId: 0, map,
+      territoryNodes: [...territory(7, 7, 0, 'c0'), ...territory(13, 7, 0, 'c1')],
       placedImprovements: new Map(), pracaAvailable: 100000, unlockedTechs: TECHS,
       pracaBudgetPercent: 100, skipWyrab: true, playerEra: 3,
       getFocus: c => c.ulepszeniaFocus, getOnlyWorked: () => false,
@@ -242,23 +246,27 @@ console.log('Z2. BUDOWA TYLKO PRZY OBYWATELACH — z wyjatkiem zloz');
   });
   // R4 KOREKTA F: centrum miasta jest zwyklym, ZAWSZE pracowanym heksem (okolica.ts:626) — nie jest „poza obywatelami”.
   const pozaObywatelami = picks.filter(p => !worked.has(`${p.q},${p.r}`) && !(p.q === city.q && p.r === city.r));
-  const nieZlozowePoza = pozaObywatelami.filter(p => p.key !== 'warzelnia_soli');
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): regula 2026-11-04 (auto-improvements.ts, FOOD_IMPROVEMENT_KEYS) — warzelnia soli
+  // (klucz zywnosciowy) stoi WYLACZNIE na heksie z obywatelem, bez wyjatku zlozowego. Asercja nie ma wyjatku dla 'warzelnia_soli'.
+  ok(pozaObywatelami.length === 0,
+    `Z2c: ZERO ulepszen poza polami z obywatelami — takze warzelnia soli (${pozaObywatelami.length}: `
+    + `${pozaObywatelami.map(p => p.key + '@' + p.q + ',' + p.r).slice(0, 4).join(' ')})`);
   ok(picks.length > 0, `Z2b: picker cos zbudowal (${picks.length})`);
-  ok(nieZlozowePoza.length === 0,
-    `Z2c: ZERO ulepszen NIE-zlozowych poza polami z obywatelami (${nieZlozowePoza.length}: `
-    + `${nieZlozowePoza.map(p => p.key + '@' + p.q + ',' + p.r).slice(0, 4).join(' ')})`);
-  ok(pozaObywatelami.some(p => p.key === 'warzelnia_soli' && `${p.q},${p.r}` === '12,7'),
-    'Z2d: WYJATEK ZLOZOWY dziala — warzelnia soli powstaje na zlozu 12,7 mimo braku obywateli');
+  ok(!pozaObywatelami.some(p => p.key === 'warzelnia_soli' && `${p.q},${p.r}` === '12,7'),
+    'Z2d: BRAK WYJATKU ZLOZOWEGO — warzelnia soli NIE powstaje na zlozu 12,7 bez obywateli (regula 2026-11-04)');
 
-  ok(CITIES.DEFAULT_ULEPSZENIA_ONLY_WORKED === true,
-    'Z2e: DEFAULT_ULEPSZENIA_ONLY_WORKED === true (nowa wartosc domyslna rundy 4)');
-  ok(CITIES.freshUlepszeniaEmpirePolicy().onlyWorked === true,
-    'Z2f: swieza polityka imperium ma onlyWorked === true');
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): przelacznik „tylko pola z obywatelami” USUNIETY 2026-11-04 — stale wartosci
+  // i pola nie istnieja, a regula jest zawsze aktywna (asercje o usunieciu zamiast o starym domyslnym ON).
+  ok(CITIES.DEFAULT_ULEPSZENIA_ONLY_WORKED === undefined,
+    'Z2e: stala DEFAULT_ULEPSZENIA_ONLY_WORKED USUNIETA (brak przelacznika; regula zawsze aktywna)');
+  ok(!('onlyWorked' in CITIES.freshUlepszeniaEmpirePolicy()),
+    'Z2f: swieza polityka imperium NIE ma pola onlyWorked (przelacznik usuniety 2026-11-04)');
   const pol = CITIES.freshUlepszeniaEmpirePolicy();
-  ok(CITIES.resolveEffectiveUlepszenia({ id: 'x', ownerId: 0, q: 0, r: 0, name: 'x', population: 1, ulepszeniaOverride: true }, pol).onlyWorked === true,
-    'Z2g: override miasta BEZ pola `ulepszeniaOnlyWorked` czyta sie jako true');
-  ok(CITIES.resolveEffectiveUlepszenia({ id: 'x', ownerId: 0, q: 0, r: 0, name: 'x', population: 1, ulepszeniaOverride: true, ulepszeniaOnlyWorked: false }, pol).onlyWorked === false,
-    'Z2h: JAWNE `false` w zapisie miasta jest respektowane (nie nadpisujemy wyboru gracza)');
+  ok(!('onlyWorked' in CITIES.resolveEffectiveUlepszenia({ id: 'x', ownerId: 0, q: 0, r: 0, name: 'x', population: 1, ulepszeniaOverride: true }, pol)),
+    'Z2g: override miasta BEZ pola `ulepszeniaOnlyWorked` nie niesie zadnego onlyWorked');
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): jawne `false` w zapisie nie ma juz znaczenia — pole usunięte, regula zawsze aktywna.
+  ok(!('onlyWorked' in CITIES.resolveEffectiveUlepszenia({ id: 'x', ownerId: 0, q: 0, r: 0, name: 'x', population: 1, ulepszeniaOverride: true, ulepszeniaOnlyWorked: false }, pol)),
+    'Z2h: JAWNE `false` w starym zapisie miasta NIE tworzy przelacznika (pole ignorowane, regula zawsze aktywna)');
 }
 
 console.log('Z2i. AI CYWILIZACJI faktycznie ma wpiety filtr obywateli (decideAITurn)');
@@ -414,48 +422,51 @@ console.log('RUNDA 5 — naprawy Z-3 (persist znacznika) i FC-2 (miasta-panstwa)
 
 console.log('Q2. R4-Q2 — przelacznik „wolno wycinac las" automatu GRACZA');
 {
-  ok(CITIES.DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS === false,
-    'Q2a: wartosc domyslna przelacznika = WYLACZONY (§14 — bez zmiany zachowania)');
-  ok(CITIES.freshUlepszeniaEmpirePolicy().wolnoWycinacLas === false,
-    'Q2b: swieza polityka panstwa ma wolnoWycinacLas === false');
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): przelacznik „Wolno wycinac las" USUNIETY decyzja 2026-11-04
+  // (cities.ts, R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1). Wycinka jest zawsze dozwolona pod farme/irygacje.
+  // Asercje pilnuja, ze przelacznik nie wraca (stala, pole polityki panstwa, pole miasta).
+  ok(CITIES.DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS === undefined,
+    'Q2a: stala DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS USUNIETA (wycinka zawsze dozwolona pod farme)');
   const pol = CITIES.freshUlepszeniaEmpirePolicy();
+  ok(!('wolnoWycinacLas' in pol),
+    'Q2b: swieza polityka panstwa NIE ma pola wolnoWycinacLas (przelacznik usuniety)');
   const bazoweMiasto = { id: 'x', ownerId: 0, q: 0, r: 0, name: 'x', population: 1 };
-  ok(CITIES.resolveEffectiveUlepszenia({ ...bazoweMiasto }, pol).wolnoWycinacLas === false,
-    'Q2c: miasto bez override dziedziczy wartosc panstwa');
-  ok(CITIES.resolveEffectiveUlepszenia({ ...bazoweMiasto }, { ...pol, wolnoWycinacLas: true }).wolnoWycinacLas === true,
-    'Q2d: ZAKRES PANSTWO — wlaczenie w polityce panstwa dociera do miasta bez override');
-  ok(CITIES.resolveEffectiveUlepszenia(
-    { ...bazoweMiasto, ulepszeniaOverride: true, ulepszeniaWolnoWycinacLas: true }, pol).wolnoWycinacLas === true,
-    'Q2e: ZAKRES MIASTO — override miasta przebija wylaczona polityke panstwa');
-  ok(CITIES.resolveEffectiveUlepszenia(
-    { ...bazoweMiasto, ulepszeniaOverride: true }, { ...pol, wolnoWycinacLas: true }).wolnoWycinacLas === false,
-    'Q2f: ... i w druga strone — override miasta bez pola wraca do wartosci domyslnej OFF');
+  ok(!('wolnoWycinacLas' in CITIES.resolveEffectiveUlepszenia({ ...bazoweMiasto }, pol)),
+    'Q2c: miasto bez override — brak pola wolnoWycinacLas w wynikowych ustawieniach');
+  ok(!('wolnoWycinacLas' in CITIES.resolveEffectiveUlepszenia({ ...bazoweMiasto }, { ...pol, wolnoWycinacLas: true })),
+    'Q2d: pole wolnoWycinacLas w polityce panstwa jest IGNOROWANE (jedna regula dla wszystkich miast)');
+  ok(!('wolnoWycinacLas' in CITIES.resolveEffectiveUlepszenia(
+    { ...bazoweMiasto, ulepszeniaOverride: true, ulepszeniaWolnoWycinacLas: true }, pol)),
+    'Q2e: ZAKRES MIASTO — override miasta nie niesie przelacznika (pole usuniete; zostaje focus/tryb/%)');
+  ok(!('wolnoWycinacLas' in CITIES.resolveEffectiveUlepszenia(
+    { ...bazoweMiasto, ulepszeniaOverride: true }, { ...pol, wolnoWycinacLas: true })),
+    'Q2f: ... i w druga strone — override miasta bez pola nie czyta przelacznika panstwa');
 
-  // zapis/odczyt: stare miasto bez pola dostaje OFF, jawne true przezywa migracje
+  // zapis/odczyt: stare miasto nie dostaje pola przelacznika (ensureCitySaveDefaults go juz nie uzupelnia)
   const stare = { id: 's', ownerId: 0, q: 1, r: 1, name: 's', population: 3, ulepszeniaOverride: true };
   CITIES.ensureCitySaveDefaults(stare);
-  ok(stare.ulepszeniaWolnoWycinacLas === false,
-    'Q2g: SAVE/LOAD — stary zapis bez pola dostaje przelacznik WYLACZONY');
+  ok(stare.ulepszeniaWolnoWycinacLas === undefined,
+    'Q2g: SAVE/LOAD — stary zapis bez pola NIE dostaje przelacznika (usuniety 2026-11-04)');
   const nowe = { id: 'n', ownerId: 0, q: 1, r: 1, name: 'n', population: 3, ulepszeniaOverride: true, ulepszeniaWolnoWycinacLas: true };
   CITIES.ensureCitySaveDefaults(nowe);
   ok(nowe.ulepszeniaWolnoWycinacLas === true,
     'Q2h: SAVE/LOAD — jawne `true` przezywa `ensureCitySaveDefaults`');
   const mainSrc = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
-  ok(/wolnoWycinacLas:\s*\(pol\.wolnoWycinacLas as boolean\)\s*\?\?\s*DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS/.test(mainSrc),
-    'Q2i: SAVE/LOAD — main.ts odtwarza `wolnoWycinacLas` polityki panstwa z zapisu');
+  ok(!/wolnoWycinacLas/.test(mainSrc),
+    'Q2i: SAVE/LOAD — main.ts NIE odtwarza `wolnoWycinacLas` (pole polityki usuniete 2026-11-04)');
   ok(/ulepszeniaEmpireByOwner:\s*Array\.from\(ulepszeniaEmpireByOwner\.entries\(\)\)/.test(mainSrc),
     'Q2j: SAVE/LOAD — polityka panstwa (z nowym polem) trafia do zapisu w calosci');
 
-  // PER MIASTO w JEDNYM wywolaniu: miasto z przelacznikiem wycina, drugie nie
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): bez przelacznika kazde miasto wycina las pod farme na swoich polach z obywatelami
+  // (jedna regula, zero per-miasto). Dwa miasta w jednym wywolaniu, oba powinny wycinac.
   const map = makeMap(26, 16, { nakladka: 'las', riverAt: [[5, 5], [5, 6], [5, 7], [18, 5], [18, 6], [18, 7]] });
-  const mk = (id, cx, wolno) => ({
+  const mk = (id, cx) => ({
     id, ownerId: 0, q: cx, r: 6, population: 6, ulepszeniaFocus: 'zrownowazone',
     okolicaTryb: 'reczny',
     okolicaReczne: { [`${cx},5`]: 1, [`${cx},7`]: 1, [`${cx - 1},6`]: 1 },
-    __wolno: wolno,
   });
-  const cA = mk('cA', 5, true);
-  const cB = mk('cB', 18, false);
+  const cA = mk('cA', 5);
+  const cB = mk('cB', 18);
   const tn = [...territory(5, 6, 0, 'cA'), ...territory(18, 6, 0, 'cB')];
   const workedOf = c => new Set(M.workedHexCoordsForCity(c, map, tn).map(({ q, r }) => `${q},${r}`));
   // MINIMUM LESNE miasta (runda 3) jest liczone RAZ na wejsciu w miasto, wiec oboz lowiecki
@@ -467,8 +478,8 @@ console.log('Q2. R4-Q2 — przelacznik „wolno wycinac las" automatu GRACZA');
       cities: [cA, cB], ownerId: 0, map, territoryNodes: tn,
       placedImprovements: new Map(placedQ2), pracaAvailable: 1000000, unlockedTechs: TECHS,
       pracaBudgetPercent: 100, playerEra: 3,
-      skipWyrab: true,
-      getSkipWyrab: c => !c.__wolno,
+      // jak main.ts (AI GRACZA): brak `skipWyrab` = wycinka dozwolona (przelacznik usuniety 2026-11-04)
+      skipWyrab: false,
       getFocus: c => c.ulepszeniaFocus,
       getOnlyWorked: () => true,
       getWorkedHexKeys: workedOf,
@@ -483,8 +494,8 @@ console.log('Q2. R4-Q2 — przelacznik „wolno wycinac las" automatu GRACZA');
   }
   const wyrabA = picks.filter(p => p.key === 'wyrab' && p.cityId === 'cA').length;
   const wyrabB = picks.filter(p => p.key === 'wyrab' && p.cityId === 'cB').length;
-  ok(wyrabA > 0, `Q2k: miasto z WLACZONYM przelacznikiem wycina las (${wyrabA} wyrebow)`);
-  ok(wyrabB === 0, `Q2l: miasto z WYLACZONYM przelacznikiem w TYM SAMYM wywolaniu nie wycina (${wyrabB})`);
+  ok(wyrabA > 0, `Q2k: miasto cA wycina las pod farme bez przelacznika (${wyrabA} wyrebow)`);
+  ok(wyrabB > 0, `Q2l: miasto cB wycina TAK SAMO w tym samym wywolaniu — brak przelacznika per miasto (${wyrabB} wyrebow)`);
   const farmyPoWyrebie = picks.filter(p => p.key === 'farma' && p.cityId === 'cA').length;
   ok(picks.some(p => p.key === 'wyrab' && p.cityId === 'cA'),
     `Q2m: wyrab automatu GRACZA idzie ta sama sciezka pickera co AI CYWILIZACJI `
@@ -493,8 +504,10 @@ console.log('Q2. R4-Q2 — przelacznik „wolno wycinac las" automatu GRACZA');
   // straznik konfiguracji main.ts
   const i2 = mainSrc.indexOf('const picks = pickAutoImprovements({');
   const blok = i2 >= 0 ? mainSrc.slice(i2, i2 + 3000) : '';
-  ok(/getSkipWyrab:\s*c\s*=>\s*!effectiveUlepszeniaForCity\(c as City\)\.wolnoWycinacLas/.test(blok),
-    'Q2n: main.ts (AI GRACZA) podaje `getSkipWyrab` z przelacznika, nie stala');
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): przelacznik usuniety 2026-11-04 — main.ts (AI GRACZA) NIE podaje `getSkipWyrab`
+  // ani `skipWyrab: true` (wycinka zawsze dozwolona pod farme, patrz Q2m).
+  ok(!/getSkipWyrab/.test(blok) && !/skipWyrab:\s*true/.test(blok),
+    'Q2n: main.ts (AI GRACZA) NIE podaje `getSkipWyrab` ani `skipWyrab: true` (przelacznik usuniety)');
   ok(/demandDriven:\s*true/.test(blok) && /resourceDeficitKeys:\s*resourceDeficitKeysForOwner\((0|hOid)\)/.test(blok),
     'Q2o: main.ts (AI GRACZA) podaje Zasade 1 i realne niedobory panstwa (R3: per fotel hOid zamiast stalej 0 — wielu graczy, main.ts)');
   ok(/typ\s*===\s*'wycinka'/.test(mainSrc.slice(i2, i2 + 6000)),
