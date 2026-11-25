@@ -1,6 +1,6 @@
 # R-WEB-MAP-POLAR-COMPARE-Q1 — skrócone porównanie metryk mapy PRZED/PO polarze (kandydat POLAR A1)
 
-DOMAIN: GAME (pomiar generatora) | Operator HAIKU 5.5 | runda 1/5 | KANDYDAT = origin/POLAR-ON-MAIN-wip c93090bc5cf938fb6d71baf64be9399425cd3c39; BAZA PORÓWNAWCZA = origin/main ca19244c196277a139dfc87aedd90d914dd7d41b... uwaga: w main są nowsze commity niż w kandydacie; do porównania użyj czystego worktree bazy = rodzic kandydata po stronie main, czyli: git merge-base c93090bc5 origin/main i commit main użyty do merge (git log --first-parent c93090bc5 -2). Bez deployu, zero zmian w gra/src i gra/data.
+DOMAIN: GAME (pomiar generatora) | Operator HAIKU 5.5 | runda 1/5 | KANDYDAT = origin/POLAR-ON-MAIN-wip c93090bc5cf938fb6d71baf64be9399425cd3c39; BAZA PORÓWNAWCZA = pierwszy rodzic merge'a kandydata (git rev-parse c93090bc5cf938fb6d71baf64be9399425cd3c39^1; to main bez polaru). Bez deployu, zero zmian w gra/src i gra/data.
 
 ## Kontekst
 FC polaru (R-WEB-MAP-POLAR-RESTORE-CONTINENTS-Q1) żąda przed deployem pomiaru ciężkich testów generatora; Q14-E r1 wykazał, że pełne testy (np. land-sea-ratio) przekraczają 1800 s nawet na samej bazie, więc pełne PRZED/PO jest niewykonalne. Poprawka polaru zmienia kolejność erozji lądu: 3805–5103 z 20160 heksów kontynentów różni się od bazy (nie tylko pas polarny); typy wyspy/ziemia/pangea bajt-identyczne z bazą (pangea-land-determinism PASS).
