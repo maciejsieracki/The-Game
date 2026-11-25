@@ -38,8 +38,12 @@ const REF_AI_OFF_BATTLES = 3;
 // juz obrony domu cywilom, jednostkom zaokretowanym, morskim i wodzowi kampanii (homeDefenderPool). Zmiana
 // zamierzona -- dotyka tylko aiVsAi (przebieg AI z cywilami przy barbarzyncach); pozostale hashe bez zmian.
 // Poprzednia wartosc aiVsAi: be060bceec8cef33.
+// R-WEB-TEST-DEBT-Q14 (runda 3 D2): aiVsAi i noLandPath przypiete do obowiazujacego stanu. Zmiana zamierzona:
+// f038fbd2c (R-WEB-AI-NO-MARCH-WITHOUT-WAR-Q1 R1, marsz/zbiorka wojny wymuszonej tylko przy faktycznej wojnie)
+// -- bisekt Final Control r2 wskazal ten commit jako pierwszy zly (poprzednie: 20a5bc2c7abcba1b / 3484217518ceb4ba).
+// aiVsPlayer i barbarians bez zmian (nadal zgodne z referencja).
 const REF_OFF = {
-  aiVsAi: '20a5bc2c7abcba1b', aiVsPlayer: '0ec28410234e2ed2', barbarians: 'c07e60985cb8a2ab', noLandPath: '3484217518ceb4ba',
+  aiVsAi: 'd28c8b7ffce7a3ec', aiVsPlayer: '0ec28410234e2ed2', barbarians: 'c07e60985cb8a2ab', noLandPath: 'e565af36b3773765',
 };
 // Baza origin/main fcd86933 = PRZED zmiana zasiegu ruchu (tylko wprowadzenie reguly wojny).
 // Na tej bazie sekcja 6 byla juz czerwona (6a, 6b x4, 6c) -- zob. dyspozycje/autobot/runs/R-WEB-AI-MOVE-RANGE-Q1/.
