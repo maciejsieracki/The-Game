@@ -32,7 +32,7 @@ TESTY (liczby z surowego wyjścia):
   - NIE ZMIERZONO (przerwane: przekroczenie 120 s w narzędziu, bez wyniku): resource-ledger-realpath-mutation-test, save-load-roundtrip-state-drift-test, ai-ai-alliance-limit-audit, ai-army-replacement-sim, ai-economy-measure-upkeep-onoff, barb-warrior-audit-sim, diplo-peace-price-table-a, diplo-weariness-city-table-measure, econ-rebalance-model, weary40-sim-measure.
 - Testy live (Chromium), 78 plików: NIE URUCHOMIONO żadnego. Próba hotseat-etap4-noop-test przerwana po 120 s (NIE ZMIERZONO). Zakres pokryty tylko node --check. Lista live do ręcznego biegu: wszystkie modyfikowane pliki z dopasowaniem chromium/puppeteer/playwright/chrome (w tym battle-*, hotseat-*, diplo*, perf-*, ai-*, *-real-render-*).
 - Zależności: `npm ci --ignore-scripts` w gra/ (potrzebne do esbuild dla cluster-plan-name-test); bez npm run build/dev. gra/node_modules usunięto po pracy.
-- tsc --noEmit (gra/): exit 2, 10 błędów, wszystkie w src/main.ts (linie 41382-41383 i dalsze). Nie dotknąłem gra/src; diff obejmuje wyłącznie gra/tools i dyspozycje. Nie zmierzono na bazie osobno.
+- tsc --noEmit (gra/): exit 2, 10 błędów, wszystkie w src/main.ts (m.in. linie 41382-41383). PRZYCZYNA: w katalogu roboczym worktree pojawiła się NIEZACOMMITOWANA zmiana gra/src/main.ts (2 hunki: linia ~19030 i ~41382; wywołania recordOwnersStockDeltaToPending(...) zamienione na `void (...)`, czyli komenda została zgubiona). Nie wykonywałem tej edycji (moje działania ograniczały się do gra/tools i dyspozycje), nie została scommitowana i nie wchodzi w ten commit. Do sprawdzenia przez orkiestratora, skąd się wzięła. Bez niej tsc nie był zmierzony na czystym HEAD.
 - Nieuruchomione bramki z dispatchu: logic 213, tech-tree 20, research 33, unit-replace, combat 6, ai-test 297/0. NIE URUCHOMIONO (zmiany nie dotykają gra/src; oraz czas).
 
 BLOKADY:
@@ -46,6 +46,7 @@ RUNDY: 1/5. Ostatni werdykt: brak (Operator). Decyzja wymagana: punkt BLOKADY 1.
 NASTĘPNY KROK: orkiestrator decyduje o wzorcu bitwa-obroncy (przepisanie vs wyjątek w bramce), potem Evaluator na tej samej gałęzi, z dokończeniem testów live partiami.
 
 UWAGI-DLA-ORKIESTRATORA:
+- ANOMALIA: niezacommitowana zmiana gra/src/main.ts w worktree (zob. punkt tsc w TESTACH). Nie została dodana do commita, nie została cofnięta (nie moja, poza allowlistą). Wymaga sprawdzenia przed jakimkolwiek deployem/buildem z tego worktree.
 - Zmiana zachowania dla ręcznych uruchomień par: ai-economy-measure-hook-test / ai-economy-measure-run / endturn-t57-repro / diplomacy-harder-measure-run itd. Domyślna nazwa ma teraz sufiks TMPDIR_RUN_ID. Konsument uruchomiony osobno od producenta musi dostać tę samą wartość przez env (TMPDIR_RUN_ID=...) albo argument --dist/--profile, jak dotąd. Upkeep-onoff wywołuje run.cjs z argumentem --dist, więc pozostaje spójny.
 - .gitignore:78 (`gra/tools/_tmp-*`) ignoruje przyszłe pliki helperów o takim prefiksie. Zmiana .gitignore jest poza allowlistą tego tematu; decyzja orkiestratora.
 - Nie uruchamiałem żadnego procesu w tle z mojej strony poza przerwanymi testami (zatrzymane przez TaskStop); nie zostawiłem procesów Chrome z tego worktree (sprawdzono: 0 procesów z wf_c20f7c10).
