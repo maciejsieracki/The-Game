@@ -273,7 +273,7 @@ function makeWorld() {
   const finStart = mainSrc.indexOf('function finalizePeaceTreatyBetween(');
   const finBody = finStart >= 0 ? mainSrc.slice(finStart, finStart + 5000) : '';
   check('C: finalize — rozejm (peaceFinalizeTrustEvent) ustawia tylko status, bez applyDiploEventTracked',
-    /const isTruce = peaceFinalizeTrustEvent\(truceTurns\) === null;[\s\S]{0,900}?if \(isTruce\) \{[\s\S]{0,400}?setDiploRelation\(proposerId, responderId, \{ \.\.\.cur, status: 'pokoj' \}\);/.test(finBody));
+    /const isTruce = peaceFinalizeTrustEvent\(truceTurns\) === null;[\s\S]{0,900}?if \(isTruce\) \{[\s\S]{0,400}?setDiploRelation\(proposerId, responderId, \{ \.\.\.cur, status: 'pokoj' \}(, \{ truce: true \})?\);/.test(finBody));
   check('C: finalize — applyDiploEventTracked(…,\'pokoj\') tylko w gałęzi pokoju stałego',
     /\} else \{[\s\S]{0,900}?applyDiplomaticEvent\(cur, 'pokoj'\)/.test(finBody));
   check('B: finalize zeruje truceEndOffer (zgoda gracza/AI kończy ofertę)',
