@@ -3,6 +3,7 @@
  */
 
 import { formatDiploCivListLines, RECRUITS_UNITS_TOOLTIP_PL } from '../game/diplomacy-display';
+import type { WorldDiploNewsEntry } from '../game/diplo-world-news';
 import { tierLabel } from './diplomacyPanel';
 import {
   civLeaderMedallionHtmlById,
@@ -104,6 +105,8 @@ export interface DiploListHudConfig {
   getEntries: () => DiploListEntry[];
   /** Opcjonalne — karta „Twoje państwo" u góry listy. */
   getPlayerSummary?: () => DiploPlayerSummary | null;
+  /** R-WEB-DIPLO-WORLD-NEWS-IN-DIPLOMACY-WINDOW-Q1: trwała lista „Wydarzenia na świecie” (już przefiltrowana po odkryciu). */
+  getWorldNews?: () => readonly WorldDiploNewsEntry[];
   onSelectEntry: (ownerId: number) => void;
   /** Celownik — wycentruj kamerę na stolicy państwa (bez otwierania audiencji). */
   onFocusCapital?: (ownerId: number) => void;
@@ -166,6 +169,12 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-list-hud .dl-tier-row{margin-top:0.35em;display:flex;flex-direction:column;align-items:flex-start;gap:3px;}
 .civ-diplo-list-hud.dl-filter-war .dl-head-title{color:#e08a8a;}
 .civ-diplo-list-hud .dl-hint{font-size:0.72em;color:#8a8070;margin-top:0.65em;line-height:1.45;padding:0 0.15em;}
+.civ-diplo-list-hud .dl-world-news{margin-top:0.8em;padding-top:0.6em;border-top:1px solid rgba(201,162,39,0.25);}
+.civ-diplo-list-hud .dl-world-news-title{font-size:0.8em;letter-spacing:.08em;text-transform:uppercase;color:#c9a227;margin-bottom:0.4em;}
+.civ-diplo-list-hud .dl-world-news-row{display:flex;gap:0.5em;align-items:flex-start;padding:0.3em 0;font-size:0.78em;color:#e6dcc3;}
+.civ-diplo-list-hud .dl-wn-ic{flex:0 0 auto;}
+.civ-diplo-list-hud .dl-wn-title{font-weight:600;}
+.civ-diplo-list-hud .dl-wn-sub{color:#8a8070;font-size:0.92em;}
 .civ-diplo-list-hud .dl-self{margin-top:0.45em;margin-bottom:0.35em;padding:0.85em 0.95em;border-radius:12px;
   border:1px solid rgba(232,216,138,.38);background:linear-gradient(180deg,rgba(232,216,138,.1),rgba(232,216,138,.03));
   display:flex;gap:0.85em;align-items:center;cursor:default;}
@@ -412,6 +421,39 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
           }
         });
         scroll.appendChild(row);
+      }
+      // R-WEB-DIPLO-WORLD-NEWS-IN-DIPLOMACY-WINDOW-Q1: trwała lista „Wydarzenia na świecie” (wojny i
+      // pokoje innych odkrytych cywilizacji). Tylko w widoku „Dyplomacja”; wejście już przefiltrowane
+      // po odkryciu w main.ts, a puste → sekcja się nie pokazuje.
+      const worldNews = listFilter === 'all' ? (config.getWorldNews?.() ?? []) : [];
+      if (worldNews.length > 0) {
+        const sec = document.createElement('div');
+        sec.className = 'dl-world-news';
+        sec.setAttribute('aria-label', 'Wydarzenia na świecie');
+        const secTitle = document.createElement('div');
+        secTitle.className = 'dl-world-news-title';
+        secTitle.textContent = 'Wydarzenia na świecie';
+        sec.appendChild(secTitle);
+        for (const n of worldNews) {
+          const wRow = document.createElement('div');
+          wRow.className = 'dl-world-news-row dl-wn-' + n.newsKind;
+          const wIc = document.createElement('span');
+          wIc.className = 'dl-wn-ic';
+          wIc.textContent = n.icon;
+          const wTxt = document.createElement('div');
+          const wTitle = document.createElement('div');
+          wTitle.className = 'dl-wn-title';
+          wTitle.textContent = n.title;
+          const wSub = document.createElement('div');
+          wSub.className = 'dl-wn-sub';
+          wSub.textContent = n.subtitle + ' · tura ' + n.turnCreated;
+          wTxt.appendChild(wTitle);
+          wTxt.appendChild(wSub);
+          wRow.appendChild(wIc);
+          wRow.appendChild(wTxt);
+          sec.appendChild(wRow);
+        }
+        scroll.appendChild(sec);
       }
       const hint = document.createElement('div');
       hint.className = 'dl-hint';

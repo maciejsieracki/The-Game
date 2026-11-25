@@ -182,7 +182,13 @@ import {
 import { shouldYieldAiOwnerProgressFrame } from './ui/aiOwnerProgressFrame';
 import { createDirtyRenderSync } from './game/dirtyRenderSync';
 import { trimSidePanelEventLog } from './game/retained-side-panel-events';
-import { worldDiploNewsEntry } from './game/diplo-world-news';
+import {
+  worldDiploNewsEntry,
+  worldDiploNewsPush,
+  worldDiploNewsSanitize,
+  worldDiploNewsVisibleList,
+  type WorldDiploNewsEntry,
+} from './game/diplo-world-news';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
@@ -11387,6 +11393,10 @@ async function boot(): Promise<void> {
 
     /** Wojna z udziałem gracza — wpisy w panelu WYDARZENIA (bez stałego paska na HUD). */
     const warEventLog: SidePanelEvent[] = [];
+    /** R-WEB-DIPLO-WORLD-NEWS-IN-DIPLOMACY-WINDOW-Q1: TRWAŁA lista „Wydarzenia na świecie” (okno
+     *  dyplomacji, ostatnie WORLD_DIPLO_NEWS_MAX wpisów wojen/pokojów AI↔AI). Zasilana z tego
+     *  samego hooka co warEventLog (recordAiAiWarPeaceNews); zapisywana w meta save. */
+    let worldDiploNewsList: WorldDiploNewsEntry[] = [];
 
     /**
      * R-PRZEMARSZ-ATRYBUCJA-Q1=B: heks skoku kamery dla wpisu WYDARZENIA `border-march-*`
@@ -11796,6 +11806,7 @@ async function boot(): Promise<void> {
       resetDiplomaticDiscoveryUiState();
       veteranEnemyEducationShown = false;
       warEventLog.length = 0;
+      worldDiploNewsList = []; // R-WEB-DIPLO-WORLD-NEWS-IN-DIPLOMACY-WINDOW-Q1: nowa gra = pusta lista
       borderMarchEventTargets.clear(); // N6: mapa celow kamery rowniez zerowana przy resecie
       tradeRouteEventPlayerCityIds.clear(); // N2: ten sam reset, ta sama zasada co borderMarchEventTargets
       civElimEventDetails.clear(); // RUNDA 5: para z warEventLog.length=0 wyzej, ten sam reset
@@ -12242,7 +12253,7 @@ async function boot(): Promise<void> {
       );
     }
 
-    function setDiploRelation(a: number, b: number, rel: Relation): void {
+    function setDiploRelation(a: number, b: number, rel: Relation, newsOpts?: { truce?: boolean }): void {
       const key = a < b ? `${a}_${b}` : `${b}_${a}`;
       const prevStatus = diplomacyRelations.get(key)?.status;
       diplomacyRelations.set(key, rel);
@@ -12262,7 +12273,9 @@ async function boot(): Promise<void> {
       }
       // R-WEB-DIPLO-WORLD-WAR-PEACE-NEWS-Q1: wojna/pokój między dwiema odkrytymi cywilizacjami AI
       // (bez gracza) → wpis w dzienniku Wydarzeń. Jedno miejsce dla wszystkich ścieżek zmiany statusu.
-      if (prevStatus !== undefined && prevStatus !== rel.status) recordAiAiWarPeaceNews(a, b, prevStatus, rel.status);
+      if (prevStatus !== undefined && prevStatus !== rel.status) {
+        recordAiAiWarPeaceNews(a, b, prevStatus, rel.status, newsOpts?.truce === true);
+      }
       refreshCityMapOutlines();
       // R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1: wewnętrzna obwódka granicy koduje relację
       // gracz↔właściciel, więc musi się przemalować natychmiast po wypowiedzeniu wojny /
@@ -12944,7 +12957,8 @@ async function boot(): Promise<void> {
       if (isTruce) {
         // R-WEB-DIPLO-TRUCE-IMPL-Q1 (C) + R-WEB-DIPLO-TRUST-NUMBERS-Q1: rozejm = status 'pokoj' + truceUntilTurn,
         // zaufanie ustawione na rozejm_zaufanie_ustawienie.
-        setDiploRelation(proposerId, responderId, { ...cur, status: 'pokoj' });
+        // R-WEB-DIPLO-WORLD-NEWS-IN-DIPLOMACY-WINDOW-Q1: rozejm (nie pokój stały) — wpis „Rozejm” w listach.
+        setDiploRelation(proposerId, responderId, { ...cur, status: 'pokoj' }, { truce: true });
         setDiploRelation(proposerId, responderId, { ...getDiploRelation(proposerId, responderId), zaufanie: trustSetpoint });
       } else {
         // Silnik zdarzenia 'pokoj' (+5 w applyDiplomaticEvent) nie jest tu używany do Zaufania:
@@ -27050,7 +27064,7 @@ async function boot(): Promise<void> {
      * Pary z graczem pomijamy — ich wpisy robią recordWarDeclarationEvent / logPeaceVazne.
      * Tekst PO polsku (jak pozostałe wpisy warEventLog w main.ts); brak wariantu EN — zob. raport.
      */
-    function recordAiAiWarPeaceNews(a: number, b: number, prevStatus: string, nextStatus: string): void {
+    function recordAiAiWarPeaceNews(a: number, b: number, prevStatus: string, nextStatus: string, truce = false): void {
       const entry = worldDiploNewsEntry({
         a, b, prevStatus, nextStatus, turn,
         pairKey: diploPairKey(a, b),
@@ -27058,8 +27072,13 @@ async function boot(): Promise<void> {
         labelB: ownerDiploLabel(b),
         discovered: getDiplomaticContacts(),
         skip: isMe(a) || isMe(b) || isBarbarian(a) || isBarbarian(b),
+        truce,
       });
-      if (entry === null || warEventLog.some(e => e.id === entry.id)) return;
+      if (entry === null) return;
+      // R-WEB-DIPLO-WORLD-NEWS-IN-DIPLOMACY-WINDOW-Q1: trwała lista (okno dyplomacji) — niezależna
+      // od dziennika Wydarzeń, który przycina się do 8 pozycji i czyści co turę.
+      worldDiploNewsList = worldDiploNewsPush(worldDiploNewsList, entry);
+      if (warEventLog.some(e => e.id === entry.id)) return;
       warEventLog.unshift(entry);
       trimWarEventLog();
     }
@@ -29270,6 +29289,8 @@ async function boot(): Promise<void> {
       createDiploListHud({
         getEntries: buildPlayerDiploListEntries,
         getPlayerSummary: buildPlayerDiploSummary,
+        // R-WEB-DIPLO-WORLD-NEWS-IN-DIPLOMACY-WINDOW-Q1: tylko wpisy o cywilizacjach odkrytych przez gracza.
+        getWorldNews: () => worldDiploNewsVisibleList(worldDiploNewsList, getDiplomaticContacts()),
         onSelectEntry: (ownerId) => {
           // (historia: R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA krok pośredni — pop-up
           // podsumowania (wojny/sojusze/handel) PRZED pełną audiencją, nie audiencja
@@ -42314,6 +42335,8 @@ async function boot(): Promise<void> {
             ([oid, s]) => [oid, Array.from(s)] as [number, number[]],
           ),
           veteranEnemyEducationShown,
+          // R-WEB-DIPLO-WORLD-NEWS-IN-DIPLOMACY-WINDOW-Q1: trwała lista wojen/pokojów AI↔AI (brak pola w starych zapisach = pusta).
+          worldDiploNews: worldDiploNewsList.map(e => ({ ...e })),
           diplomacyDeals: activeDeals.slice(),
           // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — propozycja/kontroferta oczekująca
           // MUSI przetrwać zapis/odczyt (zlecenie właściciela pkt 1).
@@ -50686,6 +50709,7 @@ async function boot(): Promise<void> {
       lossCounters = emptyLossCounters(); // LOSS-COUNTERS: nowa gra = zerowe liczniki strat
       veteranEnemyEducationShown = false;
       warEventLog.length = 0;
+      worldDiploNewsList = []; // R-WEB-DIPLO-WORLD-NEWS-IN-DIPLOMACY-WINDOW-Q1: nowa gra = pusta lista
       borderMarchEventTargets.clear(); // N6: mapa celow kamery rowniez zerowana przy resecie
       tradeRouteEventPlayerCityIds.clear(); // N2: ten sam reset, ta sama zasada co borderMarchEventTargets
       civElimEventDetails.clear(); // RUNDA 5: para z warEventLog.length=0 wyzej, ten sam reset
@@ -52631,6 +52655,8 @@ async function boot(): Promise<void> {
         }
       }
       veteranEnemyEducationShown = saved.meta?.veteranEnemyEducationShown === true;
+      // R-WEB-DIPLO-WORLD-NEWS-IN-DIPLOMACY-WINDOW-Q1: migracja — zapis sprzed pola → pusta lista.
+      worldDiploNewsList = worldDiploNewsSanitize(saved.meta?.worldDiploNews);
       if (veteranEnemyEducationShown) pruneVeteranEnemyEducationJournal();
       if (saved.diploRelations) {
         for (const [key, rel] of Object.entries(saved.diploRelations)) diplomacyRelations.set(key, rel as any);

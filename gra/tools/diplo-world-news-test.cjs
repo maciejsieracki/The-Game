@@ -87,14 +87,57 @@ const eOtherPair = mk({ pairKey: '1-3', b: 3, discovered: ALL });
 ok(eOtherPair && eOtherPair.id !== e1.id, 'inna para → inne id');
 
 // ---- CZĘŚĆ B: źródło main.ts ----
+// ---- CZĘŚĆ A2 (R-WEB-DIPLO-WORLD-NEWS-IN-DIPLOMACY-WINDOW-Q1): trwała lista w oknie dyplomacji ----
+console.log('CZĘŚĆ A2 — rozejm vs pokój (truce) i trwała lista');
+const eTruce = mk({ prevStatus: 'wojna', nextStatus: 'pokoj', truce: true });
+ok(eTruce && eTruce.title === 'Rozejm: Alfa i Beta' && eTruce.newsKind === 'rozejm', 'wojna→pokoj z truce = „Rozejm”, newsKind rozejm');
+ok(ePeace && ePeace.newsKind === 'pokoj' && ePeace.title.startsWith('Pokój:'), 'wojna→pokoj bez truce = „Pokój”, newsKind pokoj');
+ok(e1 && e1.a === 1 && e1.b === 2 && e1.newsKind === 'wojna', 'wpis niesie strony pary (a,b) i newsKind wojna');
+ok(eAlly && eAlly.newsKind === 'sojusz', 'sojusz: newsKind sojusz');
+
+const mkList = (n) => Array.from({ length: n }, (_, i) => mk({ turn: 100 + i, pairKey: '1-2' }));
+let lst = [];
+for (const e of mkList(3)) lst = M.worldDiploNewsPush(lst, e);
+ok(lst.length === 3 && lst[0].turnCreated === 102, 'push: najnowszy wpis na początku listy');
+const dup = M.worldDiploNewsPush(lst, lst[0]);
+ok(dup.length === 3, 'push: duplikat id nie dubluje wpisu');
+let big = [];
+for (let i = 0; i < 30; i++) big = M.worldDiploNewsPush(big, mk({ turn: i, pairKey: '1-2' }));
+ok(big.length === M.WORLD_DIPLO_NEWS_MAX && M.WORLD_DIPLO_NEWS_MAX === 20, 'lista przycinana do 20 ostatnich wpisów');
+ok(big[0].turnCreated === 29 && big[19].turnCreated === 10, 'przycięcie zachowuje najnowsze (tury 29…10)');
+const orig = lst.slice();
+M.worldDiploNewsPush(lst, mk({ turn: 999 }));
+ok(lst.length === orig.length && lst.every((e, i) => e === orig[i]), 'push nie modyfikuje wejściowej tablicy');
+
+const visList = M.worldDiploNewsVisibleList([mk({ turn: 1 }), mk({ turn: 2, discovered: ALL }), { ...mk({ turn: 3 }), a: 1, b: 9 }], new Set([1, 2, 3]));
+ok(visList.length === 2 && visList.every(e => e.b === 2), 'widok listy: pozycja z nieodkrytą stroną (b=9) ukryta przy wyświetlaniu');
+const hidden = M.worldDiploNewsVisibleList([{ ...mk({ turn: 5 }), a: 4, b: 5 }], ALL);
+ok(hidden.length === 0, 'wpis dwóch nieodkrytych cywilizacji nie trafia na listę');
+
+console.log('CZĘŚĆ A2 — zapis/wczytanie (worldDiploNewsSanitize)');
+ok(Array.isArray(M.worldDiploNewsSanitize(undefined)) && M.worldDiploNewsSanitize(undefined).length === 0, 'brak pola w starym zapisie → pusta lista');
+ok(M.worldDiploNewsSanitize('zły typ').length === 0 && M.worldDiploNewsSanitize({}).length === 0, 'zły typ → pusta lista');
+const roundTrip = JSON.parse(JSON.stringify(lst));
+const back = M.worldDiploNewsSanitize(roundTrip);
+ok(back.length === lst.length && back.every((e, i) => e.id === lst[i].id && e.title === lst[i].title && e.newsKind === lst[i].newsKind && e.a === lst[i].a && e.b === lst[i].b), 'round-trip JSON zachowuje listę 1:1');
+const cut = M.worldDiploNewsSanitize([...roundTrip, { id: 'x' }, null, 7, { ...roundTrip[0], newsKind: 'zle' }]);
+ok(cut.length === lst.length, 'niepełne / błędne pozycje pomijane');
+ok(M.worldDiploNewsSanitize(big.concat(big)).length === 20, 'odczyt przycina do 20 pozycji');
+
 console.log('CZĘŚĆ B — hook w main.ts (setDiploRelation → recordAiAiWarPeaceNews)');
 const mainSrc = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
-const fnStart = mainSrc.indexOf('function setDiploRelation(a: number, b: number, rel: Relation): void {');
+const fnStart = mainSrc.indexOf('function setDiploRelation(a: number, b: number, rel: Relation, newsOpts?: { truce?: boolean }): void {');
 const fnEnd = fnStart < 0 ? -1 : mainSrc.indexOf('\n    }\n', fnStart);
 const setBody = fnStart < 0 || fnEnd < 0 ? '' : mainSrc.slice(fnStart, fnEnd);
 ok(fnStart >= 0, 'setDiploRelation istnieje');
-ok(/prevStatus !== undefined && prevStatus !== rel\.status\)\s*recordAiAiWarPeaceNews\(a, b, prevStatus, rel\.status\)/.test(setBody),
+ok(/prevStatus !== undefined && prevStatus !== rel\.status\)\s*\{\s*recordAiAiWarPeaceNews\(a, b, prevStatus, rel\.status, /.test(setBody),
   'setDiploRelation woła recordAiAiWarPeaceNews przy realnej zmianie statusu');
+ok(/prevStatus !== undefined && prevStatus !== rel\.status\)\s*\{\s*recordAiAiWarPeaceNews\(a, b, prevStatus, rel\.status, newsOpts\?\.truce === true\)/.test(setBody),
+  'setDiploRelation przekazuje flagę rozejmu (newsOpts.truce) do hooka');
+ok(/function setDiploRelation\(a: number, b: number, rel: Relation, newsOpts\?: \{ truce\?: boolean \}\): void \{/.test(mainSrc),
+  'setDiploRelation przyjmuje opcjonalny newsOpts (rozejm)');
+ok(/setDiploRelation\(proposerId, responderId, \{ \.\.\.cur, status: 'pokoj' \}, \{ truce: true \}\);/.test(mainSrc),
+  'akceptacja rozejmu (gałąź isTruce) woła setDiploRelation z { truce: true }');
 
 const recStart = mainSrc.indexOf('function recordAiAiWarPeaceNews(');
 const recEnd = recStart < 0 ? -1 : mainSrc.indexOf('\n    }\n', recStart);
@@ -104,7 +147,16 @@ ok(/worldDiploNewsEntry\(\{/.test(recBody), 'używa worldDiploNewsEntry (ta sama
 ok(/skip: isMe\(a\) \|\| isMe\(b\) \|\| isBarbarian\(a\) \|\| isBarbarian\(b\)/.test(recBody), 'przekazuje bramkę: pomija parę z graczem i barbarzyńców');
 ok(/discovered: getDiplomaticContacts\(\)/.test(recBody), 'widoczność: zbiór odkrytych z getDiplomaticContacts');
 ok(/pairKey: diploPairKey\(a, b\)/.test(recBody), 'klucz pary z diploPairKey (część id)');
-ok(/if \(entry === null \|\| warEventLog\.some\(e => e\.id === entry\.id\)\) return;/.test(recBody), 'brak wpisu dla null oraz dedup po id przed unshift');
+ok(/if \(entry === null\) return;/.test(recBody), 'brak wpisu dla null (brak wpisu w trwałej liście)');
+ok(/worldDiploNewsList = worldDiploNewsPush\(worldDiploNewsList, entry\);/.test(recBody), 'wpis trafia do TRWAŁEJ listy (worldDiploNewsPush) niezależnie od dziennika');
+ok(/if \(warEventLog\.some\(e => e\.id === entry\.id\)\) return;/.test(recBody), 'dedup po id w dzienniku Wydarzeń przed unshift');
+ok(/let worldDiploNewsList: WorldDiploNewsEntry\[\] = \[\];/.test(mainSrc), 'trwała lista zadeklarowana w main.ts');
+ok((mainSrc.match(/worldDiploNewsList = \[\];/g) || []).length >= 1, 'nowa gra czyści trwałą listę');
+ok(/worldDiploNews: worldDiploNewsList\.map/.test(mainSrc), 'zapis: lista w meta save');
+ok(/worldDiploNewsList = worldDiploNewsSanitize\(saved\.meta\?\.worldDiploNews\);/.test(mainSrc), 'wczytanie: migracja przez worldDiploNewsSanitize (brak pola = pusta)');
+ok(/getWorldNews: \(\) => worldDiploNewsVisibleList\(worldDiploNewsList, getDiplomaticContacts\(\)\)/.test(mainSrc), 'okno dyplomacji dostaje listę przefiltrowaną po odkryciu');
+const hudSrc = fs.readFileSync(path.join(SRC, 'ui', 'diploListHud.ts'), 'utf8');
+ok(/config\.getWorldNews\?\.\(\)/.test(hudSrc) && /'Wydarzenia na świecie'/.test(hudSrc), 'okno dyplomacji renderuje sekcję „Wydarzenia na świecie”');
 ok(/warEventLog\.unshift\(entry\);/.test(recBody) && /trimWarEventLog\(\);/.test(recBody), 'wpis do warEventLog + przycięcie dziennika');
 ok(mainSrc.includes("from './game/diplo-world-news'") && mainSrc.includes('worldDiploNewsEntry'), 'main.ts importuje worldDiploNewsEntry');
 
