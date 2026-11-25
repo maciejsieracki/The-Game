@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4b9387174edcb25a88918e8e2abd2c60",
-  "bundleSha256": "4751aae9408c37b194d72102df4830f25ca00e627362f63e4e05b9637ca94874",
-  "bundleBytes": 15013529,
+  "bundleMd5": "76a37a398f2151390ba3e3dd397acfe1",
+  "bundleSha256": "6f8bf18ccc0dc4ec3ba431cdd81d24d546719defb9e164269c8b8a4d795d0147",
+  "bundleBytes": 15013556,
   "sourceSnapshot": {
-    "source": "R-WEB-HUD-ME-MIGRATION-Q1 r1 (79e5f1c4e)",
+    "source": "R-WEB-HUD-ME-FOODRESERVE-Q1 r1 (be414ecd7 + obrona 1f757ecd6)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 894: gra/src/main.ts: dwa miejsca (respekt względem przeciwnika i licznik Mocy w HUD) liczyły moc właściciela 0 zamiast aktywnego gracza; nowy test strażnik"
+    "FALA 895: gra/src/main.ts: HUD liczył zapas żywności, limit magazynu, odliczanie głodu, głód wojska, ostatni tick i projekcję żywności dla gracza 0 zamiast aktywnego (hotseat); dopisane asercje strażnika"
   ],
   "verification": [
-    "tsc 0; logic 213/213; hud-moc-warstwa 28/0; hud-me-literal-zero 5/0 (mutacja czerwona); moc-ranking 19/0; ai-test 297/0; vite build OK"
+    "tsc 0; logic 213/213; hud-moc-warstwa 28/0; hud-me-literal-zero 26/0 (mutacje czerwone); hotseat-etap6d 77/0; ai-test 297/0; vite build OK"
   ],
   "limits": [
-    "w grze 1-graczowej zmiana bez skutku (ME()=0); skutek w hotseat NIE ZMIERZONO w grze; getEmpireFoodReserve(0) w buildHudState nadal literał 0 (poza zakresem)"
+    "w grze jednoosobowej bez zmian; żywy test hotseat fotela 2 NIE ZMIERZONO; player.era/player.zbadane w podglądzie nadal z fotela gracza; buildEmpireFoodSnap i pozostałe *ForOwner(0) w HUD poza zakresem (kandydaci)"
   ],
-  "finalControl": "FC PASS (b6e889f5f)",
+  "finalControl": "FC PASS-WITH-NOTES (b7c2fbd37)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-25T11:29:32",
+  "hubGeneratedAt": "2026-11-25T13:04:26",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4b9387174edcb25a88918e8e2abd2c60",
-      "sizeBytes": 15013529
+      "md5": "76a37a398f2151390ba3e3dd397acfe1",
+      "sizeBytes": 15013556
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4b9387174edcb25a88918e8e2abd2c60",
-      "sizeBytes": 15013529
+      "md5": "76a37a398f2151390ba3e3dd397acfe1",
+      "sizeBytes": 15013556
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "4b9387174edcb25a88918e8e2abd2c60",
-      "sizeBytes": 15013529
+      "md5": "76a37a398f2151390ba3e3dd397acfe1",
+      "sizeBytes": 15013556
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "4b9387174edcb25a88918e8e2abd2c60",
-      "sizeBytes": 15013529
+      "md5": "76a37a398f2151390ba3e3dd397acfe1",
+      "sizeBytes": 15013556
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "4b9387174edcb25a88918e8e2abd2c60",
-      "sizeBytes": 15013529
+      "md5": "76a37a398f2151390ba3e3dd397acfe1",
+      "sizeBytes": 15013556
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "4b9387174edcb25a88918e8e2abd2c60",
-      "sizeBytes": 15013529
+      "md5": "76a37a398f2151390ba3e3dd397acfe1",
+      "sizeBytes": 15013556
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "4b9387174edcb25a88918e8e2abd2c60",
-      "sizeBytes": 15013529
+      "md5": "76a37a398f2151390ba3e3dd397acfe1",
+      "sizeBytes": 15013556
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "4b9387174edcb25a88918e8e2abd2c60",
-      "sizeBytes": 15013529
+      "md5": "76a37a398f2151390ba3e3dd397acfe1",
+      "sizeBytes": 15013556
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "4b9387174edcb25a88918e8e2abd2c60",
-      "sizeBytes": 15013529
+      "md5": "76a37a398f2151390ba3e3dd397acfe1",
+      "sizeBytes": 15013556
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "4b9387174edcb25a88918e8e2abd2c60",
-      "sizeBytes": 15013529
+      "md5": "76a37a398f2151390ba3e3dd397acfe1",
+      "sizeBytes": 15013556
     }
   ],
-  "md5": "4b9387174edcb25a88918e8e2abd2c60",
+  "md5": "76a37a398f2151390ba3e3dd397acfe1",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

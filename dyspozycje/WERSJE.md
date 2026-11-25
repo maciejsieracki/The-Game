@@ -1,3 +1,9 @@
+## ROBOCZA 76a37a39 -- 2026-11-25 -- FALA 895: HUD: zapas żywności, głód wojska i tempo żywności dla aktywnego gracza (testowa)
+
+- gra/src/main.ts: HUD liczył zapas żywności, limit magazynu, odliczanie głodu, głód wojska, ostatni tick i projekcję żywności dla gracza 0 zamiast aktywnego (hotseat); dopisane asercje strażnika
+- Weryfikacja: tsc 0; logic 213/213; hud-moc-warstwa 28/0; hud-me-literal-zero 26/0 (mutacje czerwone); hotseat-etap6d 77/0; ai-test 297/0; vite build OK
+- Limity: w grze jednoosobowej bez zmian; żywy test hotseat fotela 2 NIE ZMIERZONO; player.era/player.zbadane w podglądzie nadal z fotela gracza; buildEmpireFoodSnap i pozostałe *ForOwner(0) w HUD poza zakresem (kandydaci)
+
 ## ROBOCZA 4b938717 -- 2026-11-25 -- FALA 894: HUD: moc i respekt liczone dla aktywnego gracza (ME()) (testowa)
 
 - gra/src/main.ts: dwa miejsca (respekt względem przeciwnika i licznik Mocy w HUD) liczyły moc właściciela 0 zamiast aktywnego gracza; nowy test strażnik
