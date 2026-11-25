@@ -788,7 +788,7 @@ fn tower_shot_playback_equals_pin_calls() {
         &q,
         PlaybackOpts {
             tower_projectile: Some(kind),
-                ..PlaybackOpts::default()
+            ..PlaybackOpts::default()
         },
     );
     let target = uid("atk0");
@@ -1237,16 +1237,32 @@ fn hitat_fq_pin_frame_time_matches_pin_frame_grid() {
     assert_eq!(pin_frame_time(16.0, -5.0), -5.0);
 
     let t0 = 137_600.0;
-    assert!(is_pin_event_time(PIN_FRAME_MS, t0, BLOW_HIT_T, t0 + 150.0), "nominal");
+    assert!(
+        is_pin_event_time(PIN_FRAME_MS, t0, BLOW_HIT_T, t0 + 150.0),
+        "nominal"
+    );
     assert!(
         is_pin_event_time(PIN_FRAME_MS, t0, BLOW_HIT_T, t0 + 160.0),
         "frame grid (16 ms)"
     );
     for bad in [144.0, 149.0, 151.0, 159.0, 161.0, 166.0, 176.0, 0.0, 310.0] {
-        assert!(!is_pin_event_time(PIN_FRAME_MS, t0, BLOW_HIT_T, t0 + bad), "hit {bad}");
+        assert!(
+            !is_pin_event_time(PIN_FRAME_MS, t0, BLOW_HIT_T, t0 + bad),
+            "hit {bad}"
+        );
     }
-    assert!(is_pin_event_time(PIN_FRAME_MS, t0, RANGED_FLY_MS, t0 + 380.0));
-    assert!(is_pin_event_time(PIN_FRAME_MS, t0, RANGED_FLY_MS, t0 + 384.0));
+    assert!(is_pin_event_time(
+        PIN_FRAME_MS,
+        t0,
+        RANGED_FLY_MS,
+        t0 + 380.0
+    ));
+    assert!(is_pin_event_time(
+        PIN_FRAME_MS,
+        t0,
+        RANGED_FLY_MS,
+        t0 + 384.0
+    ));
     for bad in [368.0, 379.0, 381.0, 383.0, 385.0, 396.0, 400.0] {
         assert!(
             !is_pin_event_time(PIN_FRAME_MS, t0, RANGED_FLY_MS, t0 + bad),

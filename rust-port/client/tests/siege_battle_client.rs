@@ -1440,7 +1440,10 @@ fn recorded_for(
 /// played on the scene of the bridge start answer with `PlaybackOpts` from the client ([`civ_client::playback_opts_of`],
 /// frame `16 * speedMul` = `SiegeBattleSession::frame_ms`). Returns the playback error, if any, and the number of
 /// actions whose time is quantized to the frame (`Melee`, `Shot`, `TowerShot`, `Boulder`).
-fn play_session_at_speed(speed_idx: i64, frame_ms: Option<f64>) -> (Result<(), PlaybackError>, usize) {
+fn play_session_at_speed(
+    speed_idx: i64,
+    frame_ms: Option<f64>,
+) -> (Result<(), PlaybackError>, usize) {
     use civ_engine::domain::siege_tactics_actions::actions_to_dto;
     let st = siege_state(11);
     let (answers, _, _) = recorded();

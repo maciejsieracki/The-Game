@@ -1291,7 +1291,11 @@ fn predkosc_sesji_jak_set_speed_idx_pinu() {
     s.step(16.0).unwrap();
     assert_eq!(s.clock().v_now, 0.0);
     s.step(16.0).unwrap();
-    assert_eq!(s.clock().v_now, 128.0, "jedna klatka 16 ms ściany = 16 * 8 ms wirtualnych");
+    assert_eq!(
+        s.clock().v_now,
+        128.0,
+        "jedna klatka 16 ms ściany = 16 * 8 ms wirtualnych"
+    );
 }
 
 /// R-RUSTPORT-P4-FQ-SPEED-Q1: PEŁNE bitwy wektorów przy `speedMul` 2..512 (`speed_vectors.json`, generator
@@ -1307,7 +1311,10 @@ fn predkosc_bitwy_wektory_pinu_bajt_w_bajt() {
     let base = vectors();
     let doc: Value = serde_json::from_str(SPEED_VECTORS).unwrap();
     assert_eq!(doc["pin"], PIN);
-    assert_eq!(doc["pinSha256"], PIN_SHA256, "wektory prędkości z innego tekstu pinu");
+    assert_eq!(
+        doc["pinSha256"], PIN_SHA256,
+        "wektory prędkości z innego tekstu pinu"
+    );
     let data = pin_session_data();
     let by_name: BTreeMap<&str, &Value> = base["vectors"]
         .as_array()
@@ -1323,7 +1330,10 @@ fn predkosc_bitwy_wektory_pinu_bajt_w_bajt() {
         let name = sv["name"].as_str().unwrap();
         let k = f(&sv["speedMul"]);
         let bv = by_name[name];
-        assert!(bv["frameMs"].is_null(), "{name}: tylko scenariusze z klatką produkcyjną");
+        assert!(
+            bv["frameMs"].is_null(),
+            "{name}: tylko scenariusze z klatką produkcyjną"
+        );
         assert_eq!(sv["mode"], bv["mode"]);
         let mut s = SiegeBattleSession::prepare_scene(&scene_input(bv), &data).unwrap();
         assert_eq!(s.set_speed_idx(speed_idx_of(k), false), k);
@@ -1332,11 +1342,21 @@ fn predkosc_bitwy_wektory_pinu_bajt_w_bajt() {
         let mut check = |acts: &[TimedAction]| {
             for a in acts {
                 let (kind, got, want) = match a.action {
-                    BattleAction::Melee { hit_at, .. } => ("melee", hit_at - a.t0, frame_raf(frame, 150.0)),
-                    BattleAction::Shot { land_at, .. } => ("shot", land_at - a.t0, frame_raf(frame, 380.0)),
-                    BattleAction::Move { arrive_at, .. } => ("move", arrive_at - a.t0, frame_raf(frame, 240.0)),
-                    BattleAction::TowerShot { land_at, .. } => ("tower", land_at - a.t0, frame_raf(frame, 380.0)),
-                    BattleAction::Boulder { land_at, .. } => ("boulder", land_at - a.t0, frame_raf(frame, 700.0)),
+                    BattleAction::Melee { hit_at, .. } => {
+                        ("melee", hit_at - a.t0, frame_raf(frame, 150.0))
+                    }
+                    BattleAction::Shot { land_at, .. } => {
+                        ("shot", land_at - a.t0, frame_raf(frame, 380.0))
+                    }
+                    BattleAction::Move { arrive_at, .. } => {
+                        ("move", arrive_at - a.t0, frame_raf(frame, 240.0))
+                    }
+                    BattleAction::TowerShot { land_at, .. } => {
+                        ("tower", land_at - a.t0, frame_raf(frame, 380.0))
+                    }
+                    BattleAction::Boulder { land_at, .. } => {
+                        ("boulder", land_at - a.t0, frame_raf(frame, 700.0))
+                    }
                     BattleAction::Ram { until, .. } => ("ram", until - a.t0, 320.0),
                     _ => continue,
                 };
@@ -1384,7 +1404,10 @@ fn predkosc_bitwy_wektory_pinu_bajt_w_bajt() {
     let want: Vec<u64> = SPEED_STEPS[1..].iter().map(|k| *k as u64).collect();
     assert_eq!(speeds.keys().copied().collect::<Vec<_>>(), want);
     for kind in ["melee", "shot", "move", "tower", "boulder"] {
-        assert!(n_akcji.get(kind).copied().unwrap_or(0) > 0, "brak akcji {kind}: {n_akcji:?}");
+        assert!(
+            n_akcji.get(kind).copied().unwrap_or(0) > 0,
+            "brak akcji {kind}: {n_akcji:?}"
+        );
     }
     eprintln!("FQ-SPEED: {speeds:?} akcje {n_akcji:?}");
 }

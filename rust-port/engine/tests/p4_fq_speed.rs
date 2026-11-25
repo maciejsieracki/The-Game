@@ -38,7 +38,11 @@ fn set_speed_idx_zawija_albo_przycina_jak_pin() {
     assert_eq!(speed_step_index(-1, true), 0);
     assert_eq!(speed_step_index(i64::MIN, true), 0);
     assert_eq!(speed_step_index(i64::MAX, true), 9);
-    assert_eq!(speed_step_index(i64::MIN, false), 2, "i64::MIN rem_euclid 10");
+    assert_eq!(
+        speed_step_index(i64::MIN, false),
+        2,
+        "i64::MIN rem_euclid 10"
+    );
 }
 
 /// `FF_STEP_MS = _scaledWallDelta(16) = clamp(16, 0, 100) * speedMul` (`:9419`, `:9512-9515`): clamp dotyczy delty

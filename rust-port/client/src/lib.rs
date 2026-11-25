@@ -750,10 +750,10 @@ pub use civ_engine::domain::siege_battle_apply::{
     SiegeBattleErrorDto, SiegeBattlePayload, SiegeBattlePhaseDto, SiegeBattleResultDto,
     SiegeTowerShooterDto, SIEGE_ATTACKER_COLOR, SIEGE_DEFENDER_COLOR,
 };
-pub use civ_renderer::battle::dynamics::ProjectileKind;
-pub use civ_renderer::battle::playback::{BattlePlayback, PlaybackError, PlaybackOpts};
 use civ_engine::domain::siege_tactics_clock::{VirtualClock, SPEED_STEPS};
 use civ_engine::domain::siege_tactics_fastforward::BATTLE_FRAME_WALL_MS;
+pub use civ_renderer::battle::dynamics::ProjectileKind;
+pub use civ_renderer::battle::playback::{BattlePlayback, PlaybackError, PlaybackOpts};
 use civ_renderer::battle::siege_towers::tower_projectile_kind;
 use civ_renderer::battle::units::build_battle_scene_with_units_fort;
 pub use civ_renderer::battle::units::BattleScene3;
