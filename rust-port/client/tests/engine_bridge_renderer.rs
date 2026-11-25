@@ -1632,6 +1632,30 @@ mod fog_reveal_frame {
     /// A client over a game from `st`, with the session start hex / fog flag
     /// set like `seedStartingFog` + `startRevealRadius` would.
     fn client(st: PlayableState, start: Option<(i32, i32)>, fog_on: bool) -> Client {
+        client_with(st, start, fog_on, false)
+    }
+
+    /// [`client`] with the dev `revealAllLand` flag (web `M`, D-403A-4: the
+    /// session keeps it `false` in production; the path is still wired).
+    fn client_with(
+        st: PlayableState,
+        start: Option<(i32, i32)>,
+        fog_on: bool,
+        reveal_all_land: bool,
+    ) -> Client {
+        let game = game_with(st, start, fog_on, reveal_all_land);
+        let mut c = RenderClient::new(BridgeSource::with_game(game), MapDetailQuality::Low);
+        c.on_session_created().expect("GetRenderMap");
+        c.on_state_changed().expect("first frame");
+        c
+    }
+
+    fn game_with(
+        st: PlayableState,
+        start: Option<(i32, i32)>,
+        fog_on: bool,
+        reveal_all_land: bool,
+    ) -> PlayableGame {
         let mut game = PlayableGame::from_state(st);
         {
             let (_, fog) = game.fog_session_parts();
@@ -1642,11 +1666,9 @@ mod fog_reveal_frame {
             }
             fog.start_reveal_radius = RADIUS;
             fog.fog_on = fog_on;
+            fog.reveal_all_land = reveal_all_land;
         }
-        let mut c = RenderClient::new(BridgeSource::with_game(game), MapDetailQuality::Low);
-        c.on_session_created().expect("GetRenderMap");
-        c.on_state_changed().expect("first frame");
-        c
+        game
     }
 
     /// `computeVisibleAt(start, radius)` (`visibility.ts:64-79`) as `"q,r"`.
@@ -1731,17 +1753,63 @@ mod fog_reveal_frame {
         assert!(!inputs.river_fog_active);
     }
 
-    /// The client consumes the cached frame: a refresh after `StateChanged`
-    /// keeps the reveal of the engine (the circle grows only with the state).
+    /// The client consumes the frame of every refresh: the keys follow the
+    /// engine state between refreshes of the same client (awaiting -> first
+    /// city ever owned -> `None` -> awaiting again -> the circle again).
     #[test]
     fn the_reveal_follows_every_refresh() {
         let (st, start) = awaiting();
         let expected = circle(&st, start, RADIUS);
-        let mut c = client(st, Some(start), true);
-        c.on_state_changed().expect("second frame");
+        let mut founded = st.clone();
+        founded.record_ever_owned_city(PlayerId::new(HUMAN));
+        let mut c = client(st.clone(), Some(start), true);
         assert_eq!(
             c.frame_inputs().expect("inputs").river_reveal_keys.as_ref(),
             Some(&expected)
         );
+        *c.source_mut().bridge.adapter_mut() =
+            CivEngineAdapter::from_game(game_with(founded, Some(start), true, false));
+        c.on_state_changed().expect("frame after the first city");
+        assert_eq!(c.frame_inputs().expect("inputs").river_reveal_keys, None);
+        *c.source_mut().bridge.adapter_mut() =
+            CivEngineAdapter::from_game(game_with(st, Some(start), true, false));
+        c.on_state_changed().expect("frame awaiting again");
+        assert_eq!(
+            c.frame_inputs().expect("inputs").river_reveal_keys.as_ref(),
+            Some(&expected)
+        );
+    }
+
+    /// Dev `revealAllLand` with fog on (pin `useFogRender = fogOn ||
+    /// revealAllLand`, `main.ts:13485`; `landReveal: revealAllLand`,
+    /// `:13490-13494`): the flag rides the frame into `FrameInputs.land_reveal`
+    /// (kills a constant `reveal_all_land = false` in the producer).
+    #[test]
+    fn reveal_all_land_with_fog_on_reaches_the_frame_inputs() {
+        let (st, start) = awaiting();
+        let expected = circle(&st, start, RADIUS);
+        let c = client_with(st, Some(start), true, true);
+        let f = frame(&c);
+        assert!(f.viewer.fog_active);
+        assert_eq!(f.reveal.as_ref().map(|r| r.reveal_all_land), Some(true));
+        let inputs = c.frame_inputs().expect("inputs");
+        assert!(inputs.land_reveal);
+        assert!(!inputs.river_fog_active, "landReveal: no hidden river");
+        assert_eq!(inputs.river_reveal_keys.as_ref(), Some(&expected));
+    }
+
+    /// Dev `revealAllLand` with `fogOn = false`: the fog branch still runs
+    /// (`useFogRender = fogOn || revealAllLand`, `main.ts:13485`), so the
+    /// frame is gated on `fog_active`, not on `session.fog_on`.
+    #[test]
+    fn reveal_all_land_without_fog_on_still_reaches_the_frame_inputs() {
+        let (st, start) = awaiting();
+        let c = client_with(st, Some(start), false, true);
+        let f = frame(&c);
+        assert!(f.viewer.fog_active, "useFogRender = fogOn || revealAllLand");
+        assert_eq!(f.reveal.as_ref().map(|r| r.reveal_all_land), Some(true));
+        let inputs = c.frame_inputs().expect("inputs");
+        assert!(inputs.land_reveal);
+        assert!(!inputs.river_fog_active);
     }
 }

@@ -1663,8 +1663,10 @@ fn frame_with(state: &PlayableState, session: &mut PlayableFogSession) -> Render
     .expect("ramka")
 }
 
-/// Niezalezny od producenta `computeVisibleAt(start, radius)` (`visibility.ts:64-79`) w kolejnosci
-/// kontraktu (`r`-major, `q`-minor).
+/// Oczekiwane klucze: `computeVisibleAt(start, radius)` (`visibility.ts:64-79`) w kolejnosci kontraktu
+/// (`r`-major, `q`-minor). To ta sama funkcja `compute_visible_at`, ktorej uzywa producent (nie jest
+/// niezalezna od niego); jej zgodnosc z pinem trzymaja wektory w `p6_4_core.rs`. Test sprawdza wiec
+/// droge i bramkowanie (start, promien, miasto, mgla), nie sam algorytm kregu.
 fn visible_at(state: &PlayableState, start: (i32, i32), radius: f64) -> Vec<vm::HexCoord> {
     let map = civ_engine::domain::playable_movement::ruch_mapa_from_state(state);
     let mut keys: Vec<(i32, i32)> =
@@ -1754,6 +1756,30 @@ fn r403a_bez_mgly_ramka_bez_opcji() {
     assert_eq!(f.reveal, None);
     assert_eq!(frame_of(&start_state(), false).reveal, None);
     assert_eq!(frame_of(&start_state(), true).reveal, reveal_of(None));
+}
+
+/// Zarzut U1 Evaluatora (EV1/EV2): dev `revealAllLand` (web `M`, D-403A-4 trzyma go w sesji na `false`).
+/// Pin `main.ts:13485`: `useFogRender = fogOn || revealAllLand` -> ramka bramkowana `fog_active`, nie
+/// `session.fog_on`; `:13490-13494`: `landReveal: revealAllLand` -> flaga jedzie w `reveal`, nie stala.
+#[test]
+fn r403a_reveal_all_land_przy_mgle_i_bez_mgly() {
+    let (state, start) = awaiting_state();
+    let expected = visible_at(&state, start, 3.0);
+    for fog_on in [true, false] {
+        let mut session = reveal_session(&state, Some(start), 3.0);
+        session.fog_on = fog_on;
+        session.reveal_all_land = true;
+        let f = frame_with(&state, &mut session);
+        assert!(f.viewer.fog_active, "fog_on {fog_on}: useFogRender");
+        assert_eq!(
+            f.reveal,
+            Some(vm::map::FogRevealDto {
+                reveal_all_land: true,
+                river_reveal_keys: Some(expected.clone()),
+            }),
+            "fog_on {fog_on}"
+        );
+    }
 }
 
 /// Kryterium 4: `reveal = None` -> brak klucza w JSON (ramka jak przed zmiana: 14 kluczy); `Some` ->
