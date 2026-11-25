@@ -90,14 +90,20 @@ const realBuildings = JSON.parse(fs.readFileSync(
 const DATA = { buildings: realBuildings, units: realUnits };
 
 // Podstawowe jednostki bazowe (bez Nacja) po epoce -- do asercji zbiorow.
+// R-WEB-TEST-DEBT-Q14 (STARY-PIN): maszyny oblężnicze (Typ='Siege': Taran, Taran okuty, Wieża oblężnicza)
+// NIE są kupowalne w liście rekrutacji -- powstają wyłącznie podczas oblężenia (6218f2ab1, „build siege
+// engines during sieges"; production.ts passesAvailabilityGates). Wyjęte z oczekiwanego zbioru bazowego
+// i sprawdzane osobno niżej (asercja „żadna machina oblężnicza nie jest kupowalna").
+const isSiege = u => (u.Typ ?? '').toString().trim() === 'Siege';
 const KAMIEN_BASE_IDS = realUnits
-  .filter(u => (u.Epoka === 'Kamień' || u.Epoka === 'Kamien') && !(u.Nacja ?? '').trim())
+  .filter(u => (u.Epoka === 'Kamień' || u.Epoka === 'Kamien') && !(u.Nacja ?? '').trim() && !isSiege(u))
   .map(u => u.Jednostka);
 const BRAZ_BASE_IDS = realUnits
-  .filter(u => (u.Epoka === 'Brąz' || u.Epoka === 'Braz') && !(u.Nacja ?? '').trim())
+  .filter(u => (u.Epoka === 'Brąz' || u.Epoka === 'Braz') && !(u.Nacja ?? '').trim() && !isSiege(u))
   .map(u => u.Jednostka);
+const SIEGE_IDS = realUnits.filter(isSiege).map(u => u.Jednostka);
 const ZELAZO_BASE_IDS = realUnits
-  .filter(u => (u.Epoka === 'Żelazo' || u.Epoka === 'Zelazo') && !(u.Nacja ?? '').trim())
+  .filter(u => (u.Epoka === 'Żelazo' || u.Epoka === 'Zelazo') && !(u.Nacja ?? '').trim() && !isSiege(u))
   .map(u => u.Jednostka);
 
 // Zwiadowca -- WYJATEK reguly (jednostka Typ='Civilian', potwierdzone empirycznie w
@@ -127,6 +133,16 @@ const FULL_STOCK_CTX = {
   // musi to tez obejmowac, inaczej test 3 gubi Zelazo z innego powodu niz epoka.
   hasKopalniaNaZlozuZelaza: true,
 };
+
+// R-WEB-TEST-DEBT-Q14: niezmiennik zastępujący wykluczone maszyny oblężnicze (6218f2ab1).
+console.log('0. Maszyny oblężnicze (Siege) nie są kupowalne w żadnej epoce (6218f2ab1)');
+{
+  for (const ep of [1, 2, 3]) {
+    const ids = purchasableUnits(CITY, DATA, ALL_TECHS, { ...FULL_STOCK_CTX, epoch: ep }).map(i => i.id);
+    const leaked = SIEGE_IDS.filter(id => ids.includes(id));
+    assert(leaked.length === 0, `epoch=${ep}: żadna maszyna oblężnicza na liście rekrutacji`, 'wyciekły=' + JSON.stringify(leaked));
+  }
+}
 
 console.log('1. (a) Epoka Kamien (epoch=1): TYLKO jednostki Kamienia (+ Zwiadowca, ktory i tak jest Kamien), zero Brazu/Zelaza');
 {

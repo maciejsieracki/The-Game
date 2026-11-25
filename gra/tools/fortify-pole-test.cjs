@@ -179,7 +179,7 @@ esbuild.buildSync({
   outfile: COMBAT_BUNDLE,
   logLevel: 'silent',
 });
-const { resolveCombat, hitChanceTw, terrainDefenseMultiplier } = require(COMBAT_BUNDLE);
+const { resolveCombat, hitChanceTw, terrainDefenseMultiplier, rangedShotAccuracy } = require(COMBAT_BUNDLE);
 
 // ---------------------------------------------------------------------------
 // Bundle 4: unit-power.ts + auto-battle-power.ts (Auto-moc split ATK/OBR)
@@ -464,7 +464,10 @@ for (const [label, terrain] of [['płasko', FLAT], ['na wzgórzu', HILL]]) {
   const rawDef = toCombatUnit(defenderRow).meleeDefence;
   const terrMult = terrainDefenseMultiplier(terrain, atkUnit.rola, terrainRaw);
   const boostedDef = fieldFortifyDefenseBonus(rawDef, true, FORTIFY_OBRONA_PROC);
-  const expectedHit = hitChanceTw(atkUnit.meleeAttack, boostedDef * terrMult);
+  // R-WEB-TEST-DEBT-Q14 (HARNESS): firstHitPct bierze strzał z fazy dystansowej '[Dyst-ATK]' (Łucznik),
+  // a ten liczy celność jako rangedShotAccuracy = max(meleeAttack, missileAttack) (combat.ts ~1062), nie
+  // samo meleeAttack. Stara formuła porównywała więc inną wielkość (rozjazd dokładnie o missile-melee = +2).
+  const expectedHit = hitChanceTw(rangedShotAccuracy(atkUnit.meleeAttack, atkUnit.missileAttack), boostedDef * terrMult);
   assert(
     expectedHit === withFortify.atkHitPct,
     'Taktyczna/Pomiń, ' + label + ': hitChanceTw(atak, Obrona×(1+' + FORTIFY_OBRONA_PROC + '%)×terrMult) (' + expectedHit
