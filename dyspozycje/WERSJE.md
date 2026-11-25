@@ -1,3 +1,9 @@
+## ROBOCZA 9767a2f8 -- 2026-11-25 -- FALA 899: HUD hotseat: pozostałe dane dla aktywnego gracza (testowa)
+
+- HUD pobór/religia/zasoby/kolor/nazwa przywódcy czytają aktywnego gracza (ME()/ownerId) zamiast stałego gracza 0 (14 podstawień w main.ts)
+- Weryfikacja: tsc 0; logic 213/213; hud-me-literal-zero 65/0; hud-owner-hotseat-source 48/0; hud-moc 28/0; moc-ranking 19/0; main-guard 21/0; hotseat e-source 77/0, B 48/0, D 46/0, E 24/0; ai-test 297/0; vite 0
+- Limity: Runtime hotseat dla ownerId≠0 NIE ZMIERZONO; ranking Mocy isPlayer: oid===0 i nakładka zasięgu religii nadal na miejscu 0
+
 ## ROBOCZA 71999c1f -- 2026-11-25 -- FALA 898: Mapy „Kontynenty”: przywrócony pas polarny (testowa)
 
 - gra/src/map/gen-helpers.ts, generator.ts: erozja lądu nie zjada już wierszy polarnych na mapach „Kontynenty” (polar 0 → 28–404 heksów; seed 4242: 371); wyspy, Ziemia i pangea bez zmian (te same hashe); mniej odciętych skrawków lądu (8 → 0 na 15 mapach testowych)
