@@ -21,3 +21,6 @@ engine: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, pełny
 
 ## ZAKAZY
 Brak push na `parity-v2`/deploy/integracji, brak `git add -A`, brak `#[ignore]`, brak linii z nazwą modelu w commitach (dozwolona `Claude-Session:`). Commituj WIP wcześnie. Raporty: `01-operator-r1.md`, `02-evaluator.md`, `02a-obrona.md`, `03-final-control.md`; sekcja „Długi”.
+
+## DODATEK r1 (wznowienie po pauzie dyskowej, 2026-11-25 ~14:30)
+Pierwsza próba Operatora została zatrzymana z powodu braku miejsca na dysku (stan zabezpieczony). **Zacznij od jego pracy:** `git fetch origin rust-port-wip/march-reszta-q1 rust-port-wip/march-reszta-q1-dirty`; gałąź `rust-port-wip/march-reszta-q1` (`e639275ee`, 2 commity WIP, baza = parity `ee1ceda3e`) zawiera dotychczasowy kod; commit `f8b4744ac` w `rust-port-wip/march-reszta-q1-dirty` to stash niezacommitowanych zmian `siege_tactics_loop.rs` (zastosuj: `git cherry-pick`/`git stash apply f8b4744ac` albo odczytaj diff `git diff e639275ee f8b4744ac`). BAZA nadal `origin/rust-port/parity-v2` = `ee1ceda3e` (sprawdź SHA). Dysk: równolegle tylko Obrony FQ-SPEED i SAVE-LOAD-BRIDGE — własny `CARGO_TARGET_DIR`, usuń go po każdej bramce; nie uruchamiaj więcej niż jednego builda naraz. Reszta dispatchu bez zmian.
