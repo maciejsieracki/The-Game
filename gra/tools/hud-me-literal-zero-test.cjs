@@ -76,6 +76,65 @@ check(
   'literał 0 zamiast ME() -- regresja migracji hotseat',
 );
 
+// R-WEB-HUD-ME-FOODRESERVE-Q1: ciało buildHudStateRaw wycinane przez dopasowanie nawiasów
+// klamrowych (bez stałego okna znaków — odporne na wydłużanie funkcji).
+function braceBody(startRe) {
+  const m = startRe.exec(src);
+  if (!m) return null;
+  const open = src.indexOf('{', m.index + m[0].length - 1);
+  if (open < 0) return null;
+  let depth = 0;
+  for (let i = open; i < src.length; i++) {
+    const ch = src[i];
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) return src.slice(m.index, i + 1);
+    }
+  }
+  return null;
+}
+
+const rawBody = braceBody(/function buildHudStateRaw\(/);
+// Ciało bez komentarzy (komentarze wspominają literały historycznie — nie są kodem).
+function stripComments(code) {
+  return code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+}
+const rawCode = rawBody === null ? null : stripComments(rawBody);
+check(
+  'buildHudStateRaw istnieje w main.ts (wycinek nawiasowy)',
+  rawBody !== null && rawBody.length > 1000,
+);
+
+// Literały właściciela 0 w roli fotela wyświetlanego (zapas/cap/głód/tick żywności).
+const FOOD_LITERALS = [
+  [/getEmpireFoodReserve\(\s*0\s*\)/, 'getEmpireFoodReserve(0)', 'getEmpireFoodReserve(ownerId)'],
+  [/getArmyStarvationCountdown\(\s*0\s*,/, 'getArmyStarvationCountdown(0,', 'getArmyStarvationCountdown(ownerId,'],
+  [/getLastEmpireFoodTick\(\s*0\s*\)/, 'getLastEmpireFoodTick(0)', 'getLastEmpireFoodTick(ownerId)'],
+  [/isArmyHungry\(\s*0\s*\)/, 'isArmyHungry(0)', 'isArmyHungry(ownerId)'],
+];
+for (const [re, badLabel, goodLabel] of FOOD_LITERALS) {
+  check(
+    'buildHudStateRaw: brak ' + badLabel,
+    rawCode !== null && !re.test(rawCode),
+    'literał 0 zamiast fotela wyświetlanego -- regresja migracji hotseat',
+  );
+  check(
+    'buildHudStateRaw: obecne ' + goodLabel,
+    rawCode !== null && rawCode.includes(goodLabel),
+  );
+}
+check(
+  'buildHudStateRaw: projectPlayerFoodMaxCap(ownerId) (nie bez argumentu)',
+  rawCode !== null && rawCode.includes('projectPlayerFoodMaxCap(ownerId)') && !/projectPlayerFoodMaxCap\(\s*\)/.test(rawCode),
+);
+const capBody = braceBody(/function projectPlayerFoodMaxCap\(/);
+const capCode = capBody === null ? null : stripComments(capBody);
+check(
+  'projectPlayerFoodMaxCap: używa getEmpireFoodMaxCap(ownerId), nie literału 0',
+  capCode !== null && capCode.includes('getEmpireFoodMaxCap(ownerId)') && !/getEmpireFoodMaxCap\(\s*0\s*\)/.test(capCode),
+);
+
 console.log('\nWynik: ' + passCount + ' PASS / ' + failCount + ' FAIL');
 if (failCount > 0) {
   process.exit(1);
