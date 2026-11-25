@@ -19,6 +19,7 @@ use super::playable_movement::{
     MARCH_FOREIGN_CITY_HINT, MARCH_NO_ROUTE_HINT,
 };
 use super::player::is_awaiting_first_player_city;
+use super::save_load::{SaveSnapshot, SavedPlayableSession};
 use super::siege_battle_apply::{self, ActiveSiegeBattle, SiegeBattleError, SiegeBattlePayload};
 use super::terrain::visibility::fog_view::ExploredByHuman;
 use super::turn_war_dipl_steps::apply_dipl_deltas_to_state;
@@ -814,10 +815,8 @@ impl PlayableState {
     /// P6-ZWYCIESTWO-WIRING: odtworzenie flagi `graczKiedysMialMiasto` ze miast po wczytaniu zapisu
     /// (pin main.ts:46368-46370: `playerEverOwnedCityByOwner` = fotele z miastem). Wywolywac po
     /// deserializacji, PRZED pierwsza tura; bez tego flaga po wczytaniu = false (pole nie jest w zapisie).
-    /// Tylko `cfg(test)`: produkcyjnej sciezki wczytania `PlayableState` nie ma (zakres r3, osobny temat),
-    /// wiec funkcja nie moze byc czescia zwyklego kodu. Test `wczytany_zapis_odtwarza_flage_ze_miast_przed_utrata`
-    /// opisuje kontrakt; po wpieciu wczytania nalezy usunac `cfg(test)` i wolac ja z tej sciezki.
-    #[cfg(test)]
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1 (U1): wolana z produkcyjnej sciezki wczytania
+    /// [`PlayableGame::from_save_snapshot`]; test `wczytany_zapis_odtwarza_flage_ze_miast_przed_utrata` opisuje kontrakt.
     pub fn odtworz_flage_zwyciestwa_ze_miast(&mut self) {
         self.gracz_kiedys_mial_miasto = self.gracz_kiedys_mial_miasto
             || self
@@ -1901,6 +1900,243 @@ impl PlayableGame {
             self.phase_queue
                 .enqueue(turn, *phase, event_for_phase(turn, *phase));
         }
+    }
+}
+
+/// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: blad zapisu albo wczytania sesji [`PlayableGame`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PlayableSaveError {
+    /// Zapis w trakcie bitwy oblezniczej (stan bitwy `SiegeLoop`/`ProdBody` nie jest zapisywany; dlug DL-SLB-1).
+    SiegeBattleInProgress { city_id: u64 },
+    /// Stan nie daje poprawnego `GameStateDto` (rzut stanu do formatu zapisu).
+    Projection(String),
+    /// Tekst zapisu odrzucony przez produkcyjny loader `zapis_loader::load_save_snapshot`.
+    Load(String),
+    /// Zapis bez ciala sesji (`playable`): np. zapis samego `GameStateDto` sprzed tego tematu.
+    MissingPlayableSession,
+    /// Serializacja zapisu do JSON nie powiodla sie.
+    Serialize(String),
+}
+
+impl fmt::Display for PlayableSaveError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::SiegeBattleInProgress { city_id } => write!(
+                formatter,
+                "save_game: bitwa obleznicza miasta {city_id} trwa (zapis w trakcie bitwy nie jest obslugiwany)"
+            ),
+            Self::Projection(error) => write!(formatter, "save_game: stan nie daje zapisu: {error}"),
+            Self::Load(error) => write!(formatter, "load_game: {error}"),
+            Self::MissingPlayableSession => {
+                formatter.write_str("load_game: zapis nie ma ciala sesji (klucz `playable`)")
+            }
+            Self::Serialize(error) => write!(formatter, "save_game: serializacja: {error}"),
+        }
+    }
+}
+
+impl Error for PlayableSaveError {}
+
+/// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: jawne pominiecia i zmiany przy wczytaniu sesji (nic nie jest ciche).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct PlayableLoadReport {
+    /// Migracje przy wczytaniu (`SaveSnapshot::migrate_on_load`, web `main.ts:46566-46573`).
+    pub migration: super::save_migrations::LoadMigrationReport,
+    /// Pominiecia planow marszu (`restore_playable_planned_marches`).
+    pub planned_marches: super::save_load::PlannedMarchRestoreReport,
+    /// Pominiecia oblezen i cudow (`restore_playable_siege_wonders`).
+    pub siege_wonders: super::save_load::SiegeWonderRestoreReport,
+}
+
+/// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1 (D-SLB-2): rzut [`PlayableState`] na `GameStateDto` - wymagany, walidowany
+/// stan formatu zapisu v2 i nosnik migracji przy wczytaniu. Cywilizacje = gracze stanu plus kazdy inny wlasciciel
+/// miasta/jednostki (rosnaco po id; nazwa gracza albo `owner-<id>`), miasta i jednostki w kolejnosci stanu, wojna
+/// z `state.war`.
+pub fn playable_state_projection(
+    state: &PlayableState,
+) -> Result<super::GameStateDto, PlayableSaveError> {
+    use super::{
+        CityDto, CivilizationDto, MapDto, TerrainDto, TileDto, TurnDto, UnitDto, UnitKindDto,
+    };
+    fn err(error: &dyn fmt::Display) -> PlayableSaveError {
+        PlayableSaveError::Projection(error.to_string())
+    }
+    let tiles = state
+        .map
+        .tiles
+        .iter()
+        .map(|tile| {
+            let terrain = match tile.terrain {
+                PlayableTerrain::Plains => TerrainDto::Plains,
+                PlayableTerrain::Hills => TerrainDto::Hills,
+                PlayableTerrain::Forest => TerrainDto::Forest,
+                PlayableTerrain::Water => TerrainDto::Water,
+            };
+            TileDto::new(tile.position, terrain)
+        })
+        .collect();
+    let map = MapDto::new(state.map.width, state.map.height, tiles).map_err(|e| err(&e))?;
+    let mut owners: BTreeSet<PlayerId> = state.players.iter().map(|p| p.id).collect();
+    owners.extend(state.cities.iter().map(|c| c.owner_id));
+    owners.extend(state.units.iter().map(|u| u.owner_id));
+    let mut civilizations = Vec::with_capacity(owners.len());
+    for owner in owners {
+        let name = state
+            .players
+            .iter()
+            .find(|p| p.id == owner && !p.name.trim().is_empty())
+            .map_or_else(|| format!("owner-{}", owner.get()), |p| p.name.clone());
+        let cities = state
+            .cities
+            .iter()
+            .filter(|c| c.owner_id == owner)
+            .map(|c| c.id)
+            .collect();
+        let units = state
+            .units
+            .iter()
+            .filter(|u| u.owner_id == owner)
+            .map(|u| u.id)
+            .collect();
+        civilizations.push(CivilizationDto::new(owner, name, cities, units).map_err(|e| err(&e))?);
+    }
+    let cities = state
+        .cities
+        .iter()
+        .map(|c| CityDto::new(c.id, c.owner_id, c.name.clone(), c.position, c.population))
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| err(&e))?;
+    let units = state
+        .units
+        .iter()
+        .map(|u| {
+            let kind = match u.kind {
+                PlayableUnitKind::Warrior => UnitKindDto::Warrior,
+            };
+            UnitDto::new(u.id, u.owner_id, kind, u.position)
+        })
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| err(&e))?;
+    let turn = TurnDto::new(state.turn).map_err(|e| err(&e))?;
+    let projection =
+        super::GameStateDto::new(map, civilizations, cities, units, turn).map_err(|e| err(&e))?;
+    Ok(projection.with_war_turn_state(state.war.clone()))
+}
+
+impl PlayableGame {
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: zapis sesji, web `buildSaveGameSnapshot` (`main.ts:37171-37460` @ `07d2fbd72`).
+    /// Klucze w formacie weba wypelniaja istniejace `with_playable_*` (U1): `plannedMarches`/`autoMarch`
+    /// (`:37244`), `citySiege` + `meta.placedWorldWonders` (`:37450`), `exploredByHuman` (`:37229-37239`),
+    /// `activeHumanOwnerId` (`:37242`, U5); reszta stanu w ciele `playable` (D-SLB-1). Kolejka faz = `event_queue`
+    /// snapshotu; `rng` = `Rng::from_seed(params.seed)` (web `seed: _gameSeed`, `:37236`).
+    /// Zapis w trakcie bitwy oblezniczej jest odrzucany (DL-SLB-1).
+    pub fn save_snapshot(&self) -> Result<SaveSnapshot, PlayableSaveError> {
+        if let Some(battle) = &self.siege_battle {
+            return Err(PlayableSaveError::SiegeBattleInProgress {
+                city_id: battle.city_id,
+            });
+        }
+        let projection = playable_state_projection(&self.state)?;
+        let war = projection.war_turn_state().clone();
+        let mut body = self.state.clone();
+        body.war = WarTurnState::default();
+        body.planned_marches.clear();
+        body.march_attack_targets.clear();
+        body.march_stop_notified.clear();
+        body.march_stop_detail.clear();
+        body.moved_by_player_this_turn.clear();
+        body.oblegane.clear();
+        body.siege_machines_ready.clear();
+        body.placed_world_wonders.clear();
+        body.capture_events = crate::domain::city_capture_apply::PlayableCaptureEvents::default();
+        body.selected_unit_id = None;
+        for unit in &mut body.units {
+            unit.selected = false;
+        }
+        Ok(SaveSnapshot::new(
+            projection,
+            self.phase_queue.clone(),
+            super::Rng::from_seed(self.state.params.seed),
+        )
+        .with_war_turn_state(war)
+        .with_playable_planned_marches(&self.state)
+        .with_playable_siege_wonders(&self.state)
+        .with_playable_explored_by_human(&self.fog)
+        .with_active_human_owner_id(Some(self.fog.active_seat.get()))
+        .with_playable_session(Some(SavedPlayableSession {
+            state: body,
+            siege_battles_started: self.siege_battles_started,
+        })))
+    }
+
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: [`Self::save_snapshot`] jako tekst JSON (komenda mostu `SaveGame`).
+    pub fn save_json(&self) -> Result<String, PlayableSaveError> {
+        let snapshot = self.save_snapshot()?;
+        serde_json::to_string(&snapshot).map_err(|e| PlayableSaveError::Serialize(e.to_string()))
+    }
+
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: wczytanie z tekstu wylacznie produkcyjnym loaderem
+    /// `zapis_loader::load_save_snapshot` (migracje w srodku), potem [`Self::from_save_snapshot`].
+    pub fn load_json(text: &str) -> Result<(Self, PlayableLoadReport), PlayableSaveError> {
+        let (snapshot, migration) = super::zapis_loader::load_save_snapshot(text)
+            .map_err(|e| PlayableSaveError::Load(e.to_string()))?;
+        Self::from_save_snapshot(&snapshot, migration)
+    }
+
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: odtworzenie sesji z ZMIGROWANEGO snapshotu, kolejnosc jak web
+    /// `restoreGameFromSave` (`main.ts:46225-47400`): stan z ciala `playable`, wojna z `state.war` snapshotu,
+    /// pozycje jednostek przeniesionych przez migracje stosu (`migration.moved_units`, `:46566-46573`), plany
+    /// marszu (`:46272-46287`), oblezenia i cuda (`:46459-46461`), wyczyszczenie pol niezapisywanych (zaznaczenie
+    /// `selectedId = null` `:47328`, koniec gry `gameOver = false` `:47333`, dziennik zdarzen), flaga miast z miast
+    /// (`:46368-46370`), mgla (`:46385-46411`) i aktywny fotel (`:46379-46382`, U5). Bitwa obleznicza nie trwa.
+    pub fn from_save_snapshot(
+        snapshot: &SaveSnapshot,
+        migration: super::save_migrations::LoadMigrationReport,
+    ) -> Result<(Self, PlayableLoadReport), PlayableSaveError> {
+        let body = snapshot
+            .playable_session()
+            .ok_or(PlayableSaveError::MissingPlayableSession)?;
+        let mut state = body.state.clone();
+        state.war = snapshot.war_turn_state().clone();
+        for id in &migration.moved_units {
+            let moved = snapshot.state().units().iter().find(|u| u.id() == *id);
+            let unit = state.units.iter_mut().find(|u| u.id == *id);
+            if let (Some(moved), Some(unit)) = (moved, unit) {
+                unit.position = moved.position();
+            }
+        }
+        let planned_marches = snapshot.restore_planned_marches(&mut state, HUMAN_PLAYER_ID);
+        let siege_wonders = snapshot.restore_siege_wonders(&mut state);
+        state.capture_events = crate::domain::city_capture_apply::PlayableCaptureEvents::default();
+        state.selected_unit_id = None;
+        for unit in &mut state.units {
+            unit.selected = false;
+        }
+        state.koniec_gry = None;
+        state.gracz_kiedys_mial_miasto = false;
+        state.player_ever_owned_city.clear();
+        state.odtworz_flage_zwyciestwa_ze_miast();
+        let mut fog = PlayableFogSession::for_new_game(&state);
+        snapshot.restore_explored_by_human(&mut fog);
+        fog.active_seat = snapshot
+            .active_human_owner_id()
+            .map_or(HUMAN_PLAYER_ID, PlayerId::new);
+        let game = Self {
+            state,
+            phase_queue: snapshot.event_queue().clone(),
+            fog,
+            siege_battle: None,
+            siege_battles_started: body.siege_battles_started,
+            last_siege_tick: crate::domain::siege_surrender::SiegeTickReport::default(),
+        };
+        Ok((
+            game,
+            PlayableLoadReport {
+                migration,
+                planned_marches,
+                siege_wonders,
+            },
+        ))
     }
 }
 

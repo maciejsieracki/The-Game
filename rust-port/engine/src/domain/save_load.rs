@@ -180,6 +180,40 @@ pub struct SaveSnapshot {
         skip_serializing_if = "Vec::is_empty"
     )]
     explored_by_human: Vec<SavedExploredSeat>,
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1 (U5): web top-level `activeHumanOwnerId` (`game/save.ts:376-377`,
+    /// zapis `main.ts:37242`, odczyt `:46379-46382`): aktywny fotel czlowieka (`ME()`). Id = `PlayerId` sesji
+    /// Rust (fotel glowny = 1, D-FS-5). Brak => klucz pomijany (zapis bez sesji bajt w bajt jak przed zmiana);
+    /// przy odczycie brak albo nie-liczba => fotel glowny (web `typeof === 'number' ? v : 0`, `save.ts:728`).
+    #[serde(
+        rename = "activeHumanOwnerId",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    active_human_owner_id: Option<u64>,
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1 (D-SLB-1): stan `PlayableGame`, ktorego `GameStateDto` nie niesie
+    /// (pola web `units[]` / `cities[]` / map sesji Rust). Brak => klucz pomijany; zapis bez sesji jest bajt w
+    /// bajt jak przed zmiana. Zly ksztalt => blad wczytania (to forma Rust, nie weba).
+    #[serde(rename = "playable", default, skip_serializing_if = "Option::is_none")]
+    playable: Option<SavedPlayableSession>,
+}
+
+/// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1 (D-SLB-1): cialo sesji `PlayableGame` w zapisie.
+///
+/// `state` to `PlayableState` BEZ pol niesionych przez klucze w formacie weba (te zapisuje i odtwarza
+/// wolajacy, `PlayableGame::save_snapshot` / `PlayableGame::from_save_snapshot`): `war` (w `state.war`
+/// snapshotu), plany marszu (`plannedMarches` / `autoMarch`), `oblegane` / `siegeMachines.ready`
+/// (`citySiege`), `placedWorldWonders` (`meta`). Pola, ktorych pin nie zapisuje (zaznaczenie, dziennik
+/// zdarzen zdobycia, mapy powiadomien marszu), sa puste.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SavedPlayableSession {
+    /// Stan gry sesji (patrz opis typu).
+    pub state: PlayableState,
+    /// D-WIR-5: licznik bitew oblezniczych sesji = punkt kontrolny strumienia RNG bitew
+    /// (`SessionRolls::derive(seed, numer bitwy)`); web zapisuje `seed` (`main.ts:37236`), ktory jest w
+    /// `state.params.seed`. Brak pola => 0.
+    #[serde(default)]
+    pub siege_battles_started: u32,
 }
 
 /// R-RUSTPORT-P4-364-FOG-SAVE-R1: jeden wpis `exploredByHuman` zapisu - web `[ownerId, string[]]`.
@@ -729,6 +763,12 @@ struct SnapshotWire {
     /// `explored_by_human_from_save`, zly wpis/klucz = blad wczytania).
     #[serde(default, rename = "exploredByHuman")]
     explored_by_human: Option<Value>,
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1 (U5): web `activeHumanOwnerId`; nie-liczba => brak (fotel glowny).
+    #[serde(default, rename = "activeHumanOwnerId")]
+    active_human_owner_id: Option<Value>,
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1 (D-SLB-1): cialo sesji `PlayableGame` (scisle: zla forma = blad).
+    #[serde(default)]
+    playable: Option<SavedPlayableSession>,
 }
 
 /// P4-1F3: `citySiege` jako tablica; wpisy o zlej formie (i nie-tablica) sa pomijane.
@@ -806,6 +846,8 @@ impl SaveSnapshot {
             gracze: None,
             city_siege: Vec::new(),
             explored_by_human: Vec::new(),
+            active_human_owner_id: None,
+            playable: None,
         }
     }
 
@@ -998,6 +1040,28 @@ impl SaveSnapshot {
     /// wczytanie (`main.ts:46385-46411`). Zasady: [`restore_playable_explored_by_human`].
     pub fn restore_explored_by_human(&self, fog: &mut PlayableFogSession) {
         restore_playable_explored_by_human(fog, &self.explored_by_human);
+    }
+
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1 (U5): kopia z aktywnym fotelem czlowieka (web `activeHumanOwnerId`).
+    pub fn with_active_human_owner_id(mut self, owner_id: Option<u64>) -> Self {
+        self.active_human_owner_id = owner_id;
+        self
+    }
+
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1 (U5): zapisany aktywny fotel (`None` = brak lub zla forma w zapisie).
+    pub const fn active_human_owner_id(&self) -> Option<u64> {
+        self.active_human_owner_id
+    }
+
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1 (D-SLB-1): kopia z cialem sesji `PlayableGame`.
+    pub fn with_playable_session(mut self, session: Option<SavedPlayableSession>) -> Self {
+        self.playable = session;
+        self
+    }
+
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1 (D-SLB-1): cialo sesji `PlayableGame` (`None` = zapis bez sesji).
+    pub fn playable_session(&self) -> Option<&SavedPlayableSession> {
+        self.playable.as_ref()
     }
 
     /// Returns the format version stamped on this snapshot.
@@ -1441,7 +1505,15 @@ impl<'de> Deserialize<'de> for RawSnapshot {
             .with_city_siege(wire.city_siege.unwrap_or_default());
         let explored_by_human = explored_by_human_from_save(wire.explored_by_human.as_ref())
             .map_err(de::Error::custom)?;
-        let snapshot = snapshot.with_explored_by_human(explored_by_human);
+        let active_human_owner_id = wire
+            .active_human_owner_id
+            .as_ref()
+            .and_then(Value::as_f64)
+            .and_then(js_owner_id);
+        let snapshot = snapshot
+            .with_explored_by_human(explored_by_human)
+            .with_active_human_owner_id(active_human_owner_id)
+            .with_playable_session(wire.playable);
         snapshot.validate().map_err(de::Error::custom)?;
         Ok(RawSnapshot(snapshot))
     }
