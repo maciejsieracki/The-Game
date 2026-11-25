@@ -26,6 +26,7 @@ use civ_engine::domain::siege_battle_session::{
     TerrainRangeRow,
 };
 use civ_engine::domain::siege_tactics_blow_env::TerrainRow;
+use civ_engine::domain::siege_tactics_clock::SPEED_STEPS;
 use civ_engine::domain::siege_tactics_inputs_unit::ToCombatUnitOpts;
 use civ_engine::domain::siege_tactics_inputs_wall::MiastoWallParamValues;
 use civ_engine::domain::siege_tactics_loop::LoopWinner;
@@ -308,13 +309,58 @@ fn diag_speed(s: &mut SiegeBattleSession) {
     }
 }
 
+/// FQ-SPEED-Q1: krok `SPEED_STEPS` (`battleScene.ts:2551`) dla `speedMul` kandydata generatora.
+fn speed_idx_of(k: f64) -> i64 {
+    let i = SPEED_STEPS
+        .iter()
+        .position(|&x| x == k)
+        .unwrap_or_else(|| panic!("speedMul {k} poza SPEED_STEPS"));
+    i64::try_from(i).unwrap()
+}
+
+/// FQ-SPEED-Q1: sterownik kandydata z prędkością (`speedMul` = `_setSpeedIdx` przed `play`, `speedAt` = zmiana w trakcie
+/// bitwy czasu rzeczywistego w pierwszej klatce z `roundNo >= round`, jak generator). Bez pól = [`drive`].
+fn drive_speed(
+    mut s: SiegeBattleSession,
+    v: &Value,
+    mode: &str,
+) -> Result<SessionOutcome, SessionError> {
+    if let Some(k) = v["speedMul"].as_f64() {
+        assert_eq!(s.set_speed_idx(speed_idx_of(k), false), k);
+    }
+    let Some(at) = v["speedAt"].as_object() else {
+        return drive(s, mode);
+    };
+    assert_eq!(mode, "realtime", "speedAt tylko dla czasu rzeczywistego");
+    let round = at["round"].as_i64().unwrap();
+    let k = at["speedMul"].as_f64().unwrap();
+    let mut done = false;
+    let mut frames = 0;
+    while s.phase() != SessionPhase::Finished {
+        if !done && s.battle_loop().st.round_no >= round {
+            done = true;
+            assert_eq!(s.set_speed_idx(speed_idx_of(k), false), k);
+        }
+        s.step(FRAME_MS)?;
+        frames += 1;
+        assert!(frames < MAX_FRAMES, "bitwa bez końca");
+    }
+    assert_eq!(
+        Some(done),
+        v["speedAtApplied"].as_bool(),
+        "{}: zmiana prędkości w tej samej chwili co pin",
+        v["name"]
+    );
+    s.finish()
+}
+
 fn run_vector_diag(v: &Value, data: &SessionData) -> Result<SessionOutcome, SessionError> {
     let mut s = SiegeBattleSession::prepare_scene(&scene_input(v), data)?;
     if let Some(ms) = v["frameMs"].as_f64() {
         s.diag_set_speed_mul(ms / FRAME_MS)?;
     }
     diag_speed(&mut s);
-    drive(s, v["mode"].as_str().unwrap())
+    drive_speed(s, v, v["mode"].as_str().unwrap())
 }
 
 /// Rozbieżności Rust ↔ pin. B-WIRA-PIN-1 (5 scenariuszy) zamknięta w WIRING-A r2 (D-WIRA-16/17/18). B-WIRA-PIN-2

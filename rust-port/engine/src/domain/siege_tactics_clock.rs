@@ -23,6 +23,26 @@
 /// Web `BATTLE_FRAME_MAX_WALL_DELTA_MS` (`battleScene.ts:2553`): górny clamp delty ściennej (ms).
 pub const BATTLE_FRAME_MAX_WALL_DELTA_MS: f64 = 100.0;
 
+/// Web `BattleScene.SPEED_STEPS` (`battleScene.ts:2551`): mnożniki prędkości bitwy gracza (przycisk `_cycleSpeed`
+/// `:9536`, panel ± `_adjustSpeedIdx` `:9531-9533`). R-RUSTPORT-P4-FQ-SPEED-Q1: każdy krok jest osiągalny (cykl zawija
+/// przez wszystkie 10, panel ± dochodzi do 512), a `_scaledWallDelta` (`:9512-9515`) ogranicza tylko deltę ŚCIENNĄ do
+/// 100 ms PRZED mnożeniem, więc klatka przewijania `FF_STEP_MS = 16 * speedMul` (`:9419`) rośnie do 8192 ms bez sufitu.
+pub const SPEED_STEPS: [f64; 10] = [1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0, 512.0];
+
+/// Indeks kroku prędkości jak `_setSpeedIdx(idx, { clamp })` (`battleScene.ts:9518-9523`): z `clamp` przycięcie do
+/// `0..=9` (panel ±), bez — zawinięcie `((idx % n) + n) % n` (cykl `_cycleSpeed`, także ujemne).
+#[must_use]
+pub fn speed_step_index(idx: i64, clamp: bool) -> usize {
+    let n = SPEED_STEPS.len() as i64;
+    let i = if clamp {
+        idx.clamp(0, n - 1)
+    } else {
+        idx.rem_euclid(n)
+    };
+    // `i` w `0..n` z konstrukcji.
+    usize::try_from(i).unwrap_or(0)
+}
+
 /// Sufit wywołań callbacków w jednym `_drainTimers` (`battleScene.ts:9632`: `if (++guard > 100000) break;`).
 pub const DRAIN_GUARD_LIMIT: u32 = 100_000;
 

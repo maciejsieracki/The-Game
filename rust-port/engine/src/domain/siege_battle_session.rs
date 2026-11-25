@@ -65,7 +65,7 @@ use crate::domain::siege_tactics_blow_env::{
 };
 use crate::domain::siege_tactics_blow_full::{attacker_from_cu, AttackerCu};
 use crate::domain::siege_tactics_blow_full::{AtkMods, DefMods, FullBlowInput};
-use crate::domain::siege_tactics_clock::VirtualClock;
+use crate::domain::siege_tactics_clock::{speed_step_index, VirtualClock, SPEED_STEPS};
 use crate::domain::siege_tactics_end::BattleSide;
 use crate::domain::siege_tactics_fastforward::{FfStop, BATTLE_FRAME_WALL_MS};
 use crate::domain::siege_tactics_inputs_terrain::{
@@ -702,6 +702,9 @@ pub struct SiegeBattleSession {
     max_hp: [Vec<f64>; 2],
     ready_machines: Vec<MachineKind>,
     field: BattleField,
+    /// R-RUSTPORT-P4-FQ-SPEED-Q1: `speedIdx` sceny (`battleScene.ts:2554`, start 0 = 1x; `:3370` ustawia go od nowa przy
+    /// budowie sceny).
+    speed_idx: usize,
 }
 
 fn entries(rows: &[TerrainRow]) -> Vec<TerrainEntry<'_>> {
@@ -1154,6 +1157,7 @@ impl SiegeBattleSession {
             ],
             ready_machines: sc.ready_machines.clone(),
             field,
+            speed_idx: 0,
         })
     }
 
@@ -1313,6 +1317,49 @@ impl SiegeBattleSession {
     #[must_use]
     pub fn clock(&self) -> &VirtualClock<LoopTimer> {
         &self.clock
+    }
+
+    /// R-RUSTPORT-P4-FQ-SPEED-Q1: prędkość bitwy gracza jak `_setSpeedIdx(idx, { clamp })` (`battleScene.ts:9518-9527`;
+    /// przycisk `_cycleSpeed` `:9536` = `idx + 1` bez `clamp`, panel ± `_adjustSpeedIdx` `:9531-9533` = `idx ± 1` z
+    /// `clamp`). `speedMul = SPEED_STEPS[idx]` (`:2551`, `:2555`) skaluje deltę ścienną zegara (`_scaledWallDelta`
+    /// `:9512-9515`) i krok przewijania `FF_STEP_MS` (`:9419`); klatka ciała (D-FQ-1) = [`Self::frame_ms`]. Bezpieczna w
+    /// każdej fazie (pin: „Safe to call mid-battle”, `:9535`). Zwraca nowy `speedMul`.
+    pub fn set_speed_idx(&mut self, idx: i64, clamp: bool) -> f64 {
+        self.speed_idx = speed_step_index(idx, clamp);
+        self.clock.speed_mul = SPEED_STEPS[self.speed_idx];
+        // FRAME-QUANT-Q1 (D-FQ-1): klatka ciała = krok przewijania przy nowym `speedMul`.
+        self.lp.env.body.frame_ms = self.clock.scaled_wall_delta(BATTLE_FRAME_WALL_MS);
+        self.clock.speed_mul
+    }
+
+    /// `_cycleSpeed()` (`battleScene.ts:9536`): następny krok `SPEED_STEPS` z zawinięciem (512 → 1).
+    pub fn cycle_speed(&mut self) -> f64 {
+        self.set_speed_idx(self.speed_idx as i64 + 1, false)
+    }
+
+    /// `_adjustSpeedIdx(delta)` (`battleScene.ts:9531-9533`): panel ± bez zawijania (przycięcie do `0..=9`).
+    pub fn adjust_speed_idx(&mut self, delta: i64) -> f64 {
+        self.set_speed_idx((self.speed_idx as i64).saturating_add(delta), true)
+    }
+
+    /// `speedIdx` sceny (`:2554`).
+    #[must_use]
+    pub fn speed_idx(&self) -> usize {
+        self.speed_idx
+    }
+
+    /// `speedMul` zegara (`:2555`).
+    #[must_use]
+    pub fn speed_mul(&self) -> f64 {
+        self.clock.speed_mul
+    }
+
+    /// Klatka wirtualna sesji (ms): `FF_STEP_MS = _scaledWallDelta(BATTLE_FRAME_WALL_MS) = 16 * speedMul` (`:9419`) —
+    /// siatka czasu akcji, którą konsument (renderer, `PlaybackOpts::frame_ms`) musi przyjąć (HITAT D-HFQ-1 przy
+    /// `speedMul = 1` = 16 ms).
+    #[must_use]
+    pub fn frame_ms(&self) -> f64 {
+        self.clock.scaled_wall_delta(BATTLE_FRAME_WALL_MS)
     }
 
     /// PIN3-DIVERGENCE-Q1 (WYŁĄCZNIE diagnostyka/testy, bliźniak `WIRING_A_FF_STEP` generatora): mnożnik `speedMul`

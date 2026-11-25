@@ -28,7 +28,7 @@ use std::path::PathBuf;
 
 use civ_renderer::battle::dynamics::{
     set_facing, tick_projectiles, FloatLabel, MeleeLunge, MoveAnim, BLOW_HIT_T, BLOW_LUNGE_MS,
-    BLOW_SETTLE_MS, RANGED_FLY_MS,
+    BLOW_SETTLE_MS, MOVE_STEP_MS, RANGED_FLY_MS,
 };
 use civ_renderer::battle::field::{BattleSceneOpts, TerrainGrid, BF_COLS, BF_ROWS};
 use civ_renderer::battle::playback::{
@@ -788,6 +788,7 @@ fn tower_shot_playback_equals_pin_calls() {
         &q,
         PlaybackOpts {
             tower_projectile: Some(kind),
+                ..PlaybackOpts::default()
         },
     );
     let target = uid("atk0");
@@ -876,6 +877,7 @@ fn landat_tb_tower_shot_on_frame_grid_is_played_like_nominal() {
             &q,
             PlaybackOpts {
                 tower_projectile: Some(kind),
+                ..PlaybackOpts::default()
             },
         );
         pb.push_actions(&[act(
@@ -999,6 +1001,7 @@ fn invalid_steps_are_reported() {
         &q,
         PlaybackOpts {
             tower_projectile: Some(tower_projectile_kind(None, None)),
+            ..PlaybackOpts::default()
         },
     );
     pb2.push_actions(&[act(
@@ -1234,23 +1237,23 @@ fn hitat_fq_pin_frame_time_matches_pin_frame_grid() {
     assert_eq!(pin_frame_time(16.0, -5.0), -5.0);
 
     let t0 = 137_600.0;
-    assert!(is_pin_event_time(t0, BLOW_HIT_T, t0 + 150.0), "nominal");
+    assert!(is_pin_event_time(PIN_FRAME_MS, t0, BLOW_HIT_T, t0 + 150.0), "nominal");
     assert!(
-        is_pin_event_time(t0, BLOW_HIT_T, t0 + 160.0),
+        is_pin_event_time(PIN_FRAME_MS, t0, BLOW_HIT_T, t0 + 160.0),
         "frame grid (16 ms)"
     );
     for bad in [144.0, 149.0, 151.0, 159.0, 161.0, 166.0, 176.0, 0.0, 310.0] {
-        assert!(!is_pin_event_time(t0, BLOW_HIT_T, t0 + bad), "hit {bad}");
+        assert!(!is_pin_event_time(PIN_FRAME_MS, t0, BLOW_HIT_T, t0 + bad), "hit {bad}");
     }
-    assert!(is_pin_event_time(t0, RANGED_FLY_MS, t0 + 380.0));
-    assert!(is_pin_event_time(t0, RANGED_FLY_MS, t0 + 384.0));
+    assert!(is_pin_event_time(PIN_FRAME_MS, t0, RANGED_FLY_MS, t0 + 380.0));
+    assert!(is_pin_event_time(PIN_FRAME_MS, t0, RANGED_FLY_MS, t0 + 384.0));
     for bad in [368.0, 379.0, 381.0, 383.0, 385.0, 396.0, 400.0] {
         assert!(
-            !is_pin_event_time(t0, RANGED_FLY_MS, t0 + bad),
+            !is_pin_event_time(PIN_FRAME_MS, t0, RANGED_FLY_MS, t0 + bad),
             "land {bad}"
         );
     }
-    assert!(!is_pin_event_time(t0, BLOW_HIT_T, f64::NAN));
+    assert!(!is_pin_event_time(PIN_FRAME_MS, t0, BLOW_HIT_T, f64::NAN));
 }
 
 /// HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): regression of `Playback(HitAt { t0: 137600.0, hit_at: 137760.0 })` in the client
@@ -1305,5 +1308,182 @@ fn hitat_fq_melee_on_frame_grid_is_played_like_nominal() {
         );
         assert_eq!(pb_b.lunges_in_flight(), 0, "offset {off}");
         assert!(bad == q, "offset {off}: nothing reached the scene");
+    }
+}
+
+// ------------------------------------------------------------ FQ-SPEED-Q1
+
+/// `SPEED_STEPS` of the pin (`battleScene.ts:2551`): `speedMul` of the player's speed button.
+const SPEED_STEPS: [f64; 10] = [1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0, 512.0];
+
+/// R-RUSTPORT-P4-FQ-SPEED-Q1: the frame grid of the playback is `PlaybackOpts::frame_ms` = `16 * speedMul`
+/// (`FF_STEP_MS = _scaledWallDelta(BATTLE_FRAME_WALL_MS)`, `:9419`, `:9512-9515`), not the 16 ms constant. For every
+/// `SPEED_STEPS` frame the nominal moment and the frame-grid moment are accepted, every other one is rejected; the
+/// default stays 16 ms.
+#[test]
+fn fq_speed_event_time_follows_the_session_frame() {
+    assert_eq!(PlaybackOpts::default().frame_ms, PIN_FRAME_MS);
+    assert_eq!(PlaybackOpts::default().tower_projectile, None);
+    let t0 = 40_960.0;
+    // Pin frame-grid moments (first frame with `localT >= 150` / `vNow >= due`) at 16 * speedMul.
+    let melee = [
+        160.0, 160.0, 192.0, 256.0, 256.0, 512.0, 1024.0, 2048.0, 4096.0, 8192.0,
+    ];
+    let fly = [
+        384.0, 384.0, 384.0, 384.0, 512.0, 512.0, 1024.0, 2048.0, 4096.0, 8192.0,
+    ];
+    let boulder = [
+        704.0, 704.0, 704.0, 768.0, 768.0, 1024.0, 1024.0, 2048.0, 4096.0, 8192.0,
+    ];
+    // `_doMove` arrival (`MOVE_STEP_MS = 240`, first `_raf` frame with `p >= 1`).
+    let step = [
+        240.0, 256.0, 256.0, 256.0, 256.0, 512.0, 1024.0, 2048.0, 4096.0, 8192.0,
+    ];
+    for (i, k) in SPEED_STEPS.iter().enumerate() {
+        let frame = 16.0 * k;
+        for (nominal, grid) in [
+            (BLOW_HIT_T, melee[i]),
+            (RANGED_FLY_MS, fly[i]),
+            (700.0, boulder[i]),
+            (MOVE_STEP_MS, step[i]),
+        ] {
+            assert_eq!(pin_frame_time(frame, nominal), grid, "x{k} {nominal}");
+            assert!(
+                is_pin_event_time(frame, t0, nominal, t0 + nominal),
+                "x{k} nominal"
+            );
+            assert!(
+                is_pin_event_time(frame, t0, nominal, t0 + grid),
+                "x{k} grid"
+            );
+            for bad in [
+                grid - frame,
+                grid + frame,
+                grid - 1.0,
+                grid + 1.0,
+                nominal + 1.0,
+            ] {
+                if bad == nominal || bad == grid {
+                    continue;
+                }
+                assert!(
+                    !is_pin_event_time(frame, t0, nominal, t0 + bad),
+                    "x{k} {nominal}: {bad}"
+                );
+            }
+        }
+    }
+    // The 16 ms grid of speed 1 is NOT the grid of speed 4 (and back).
+    assert!(!is_pin_event_time(64.0, t0, BLOW_HIT_T, t0 + 160.0));
+    assert!(!is_pin_event_time(PIN_FRAME_MS, t0, BLOW_HIT_T, t0 + 192.0));
+    assert!(!is_pin_event_time(256.0, t0, RANGED_FLY_MS, t0 + 384.0));
+}
+
+/// R-RUSTPORT-P4-FQ-SPEED-Q1: the same melee scene at speed 1 (frame 16 ms), 4 (64 ms) and 16 (256 ms): each playback
+/// accepts its own frame-grid blow and plays it like the nominal `t0 + BLOW_HIT_T`; the blow of another speed is
+/// `HitAt` and reaches nothing in the scene.
+#[test]
+fn fq_speed_melee_scene_at_speed_1_4_16() {
+    let Worlds { events, q, .. } = worlds();
+    let m = &melees(&events)[0];
+    let run = |frame_ms: f64, hit_at: f64| {
+        let mut s = q.clone();
+        let mut pb = BattlePlayback::new(
+            &s,
+            PlaybackOpts {
+                frame_ms,
+                ..PlaybackOpts::default()
+            },
+        );
+        pb.push_actions(&[act(
+            m.t0,
+            BattleActionKindDto::Melee {
+                attacker: m.att,
+                target: m.def,
+                hit_at,
+            },
+        )])
+        .expect("push");
+        let r = pb.play_until(&mut s, m.t0 + 100.0, 0.0);
+        (s, pb, r)
+    };
+    let (nominal, pb_n, rn) = run(PIN_FRAME_MS, m.t0 + BLOW_HIT_T);
+    assert_eq!(rn, Ok(()));
+    for (k, frame, own, other) in [
+        (1.0, 16.0, 160.0, 192.0),
+        (4.0, 64.0, 192.0, 160.0),
+        (16.0, 256.0, 256.0, 192.0),
+    ] {
+        let (own_s, pb_o, ro) = run(frame, m.t0 + own);
+        assert_eq!(ro, Ok(()), "x{k}: own grid accepted");
+        assert_eq!(pb_o.calls(), pb_n.calls(), "x{k}");
+        assert!(own_s == nominal, "x{k}: same scene as the nominal blow");
+        let (bad, pb_b, rb) = run(frame, m.t0 + other);
+        assert_eq!(
+            rb,
+            Err(PlaybackError::HitAt {
+                t0: m.t0,
+                hit_at: m.t0 + other
+            }),
+            "x{k}: grid of another speed"
+        );
+        assert_eq!(pb_b.lunges_in_flight(), 0);
+        assert!(bad == q, "x{k}: nothing reached the scene");
+    }
+}
+
+/// R-RUSTPORT-P4-FQ-SPEED-Q1: tower shot at speed 16 (frame 256 ms): `_schedule(RANGED_FLY_MS)` fires at `t0 + 512`,
+/// accepted only by the playback of that frame; the 16 ms playback rejects it and the 256 ms playback rejects `+384`.
+#[test]
+fn fq_speed_tower_shot_at_speed_16() {
+    let d = load();
+    let fort = FortDto {
+        kind: FortKind::Mur,
+        tower_material: Some(TowerMaterial::Kamien),
+        tower_rows: vec![67, 73],
+    };
+    let base = build_battle_scene_with_units_fort(opts_of(&d["siege"]), &fort);
+    let kind = tower_projectile_kind(Some("Distance"), Some("Lucznik"));
+    let target = uid("atk0");
+    let t0 = 5_120.0;
+    let run = |frame_ms: f64, land_at: f64| {
+        let mut q = base.clone();
+        let mut pb = BattlePlayback::new(
+            &q,
+            PlaybackOpts {
+                tower_projectile: Some(kind),
+                frame_ms,
+            },
+        );
+        pb.push_actions(&[act(
+            t0,
+            BattleActionKindDto::TowerShot {
+                row: 67,
+                target,
+                land_at,
+            },
+        )])
+        .expect("push");
+        let r = pb.play_until(&mut q, t0 + 100.0, 0.0);
+        (q, pb, r)
+    };
+    let (nominal, pb_n, rn) = run(256.0, t0 + RANGED_FLY_MS);
+    assert_eq!(rn, Ok(()));
+    let (grid, pb_g, rg) = run(256.0, t0 + 512.0);
+    assert_eq!(rg, Ok(()), "frame-grid landing at x16 accepted");
+    assert_eq!(pb_g.calls(), pb_n.calls());
+    assert!(grid == nominal);
+    for (frame, land) in [(256.0, 384.0), (PIN_FRAME_MS, 512.0)] {
+        let (bad, pb_b, rb) = run(frame, t0 + land);
+        assert_eq!(
+            rb,
+            Err(PlaybackError::LandAt {
+                t0,
+                land_at: t0 + land
+            }),
+            "frame {frame} land {land}"
+        );
+        assert!(pb_b.projectiles().is_empty());
+        assert!(bad == base);
     }
 }
