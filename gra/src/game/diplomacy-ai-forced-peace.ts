@@ -112,8 +112,6 @@ export interface ForcedPeacePairInput {
   aIsMajorAi: boolean;
   bIsMajorAi: boolean;
   eliminated: boolean;
-  /** Para objęta wojną wymuszoną epoki (Kamień/Brąz/Żelazo) — własne zasady kończenia (decyzja R9). */
-  forcedEpochWar: boolean;
   atWar: boolean;
 }
 
@@ -121,7 +119,7 @@ export interface ForcedPeacePairInput {
 export function isForcedPeaceEligiblePair(p: ForcedPeacePairInput): boolean {
   if (p.aIsHuman || p.bIsHuman) return false;
   if (!p.aIsMajorAi || !p.bIsMajorAi) return false;
-  if (p.eliminated || p.forcedEpochWar) return false;
+  if (p.eliminated) return false;
   return p.atWar;
 }
 

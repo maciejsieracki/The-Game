@@ -40612,16 +40612,12 @@ async function boot(): Promise<void> {
 
     /** Para w zwykłej (niewymuszonej epoką) wojnie dwóch głównych AI -- kwalifikuje się do pokoju wymuszonego. */
     function aiAiForcedPeacePairEligible(a: number, b: number): boolean {
-      const pairKey = diploPairKey(a, b);
       return isForcedPeaceEligiblePair({
         aIsHuman: isHuman(a),
         bIsHuman: isHuman(b),
         aIsMajorAi: isMajorAiCivForForcedPeace(a),
         bIsMajorAi: isMajorAiCivForForcedPeace(b),
         eliminated: eliminatedOwners.has(a) || eliminatedOwners.has(b),
-        forcedEpochWar: bronzeForceWarActiveByPairKey.has(pairKey)
-          || stoneForceWarActiveByPairKey.has(pairKey)
-          || ironForceWarActiveByPairKey.has(pairKey),
         atWar: getDiploRelation(a, b).status === 'wojna',
       });
     }
@@ -40906,8 +40902,8 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: bezpiecznik dla ZWYKŁYCH (niewymuszonych epoki)
-     * wojen AI↔AI — bez niego taka wojna mogła eskalować aż do całkowitego podboju jednej
+     * R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: bezpiecznik dla wojen AI↔AI (zwykłych i epoki —
+     * R-WEB-ERA-WAR-END-LIKE-CLASSIC-Q1) — bez niego taka wojna mogła eskalować aż do całkowitego podboju jednej
      * cywilizacji przez drugą (żywy bug właściciela, `R-AI-WOJNY-PODBOJ-DOMINACJA-Q1`).
      * Reużywa DOKŁADNIE tego samego progu i cooldownu co wojny wymuszone epoki
      * (`WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE=2`,
@@ -40915,24 +40911,18 @@ async function boot(): Promise<void> {
      * SAM mechanizm, nie wymyślaj nowych progów/wartości". Wywoływana z OBU tych samych
      * funneli zmiany `city.ownerId` co trzy funkcje forced-war wyżej, ZARAZ PO nich.
      * Q3: wyłącznie AI↔AI — wojny z udziałem gracza (ownerId===0 po którejkolwiek stronie)
-     * są no-op. Pary z aktywną wojną WYMUSZONĄ (bronze/stone/iron) są no-op tutaj — mają
-     * własny mechanizm, zero podwójnego liczenia/podwójnego pokoju.
-     * EN: safety valve for REGULAR (non-forced-epoch) AI↔AI wars, reusing the exact same
-     * threshold/cooldown as the epoch forced-war mechanism per owner decision Q1. AI↔AI
-     * only (Q3); pairs already tracked by a forced-war registry are no-ops here.
+     * są no-op. R-WEB-ERA-WAR-END-LIKE-CLASSIC-Q1: pary z wojną WYMUSZONĄ epoki (bronze/stone/iron)
+     * liczą się tym samym licznikiem i kończą tym samym auto-pokojem co zwykłe (decyzja właściciela
+     * 2026-11-25: wojny epoki kończą się tak samo jak klasyczne).
+     * EN: safety valve for AI↔AI wars (regular and epoch-forced alike), reusing the exact same
+     * threshold/cooldown per owner decision Q1. AI↔AI only (Q3).
      */
     function maybeResolveRegularWarOnCityCapture(oldOwner: number, newOwner: number): void {
       if (oldOwner === newOwner) return;
       if (oldOwner === 0 || newOwner === 0) return; // Q3: wyłącznie AI↔AI, gracz bez zmian.
       const pairKey = diploPairKey(oldOwner, newOwner);
-      // Para z aktywną wojną WYMUSZONĄ epoki ma własny bezpiecznik — zero podwójnego liczenia.
-      if (
-        bronzeForceWarActiveByPairKey.has(pairKey)
-        || stoneForceWarActiveByPairKey.has(pairKey)
-        || ironForceWarActiveByPairKey.has(pairKey)
-      ) {
-        return;
-      }
+      // R-WEB-ERA-WAR-END-LIKE-CLASSIC-Q1: wojna epoki (Kamień/Brąz/Żelazo) AI↔AI kończy się jak
+      // klasyczna — ten sam licznik miast i auto-pokój; bez wyjątku dla pary wymuszonej.
       if (getDiploRelation(oldOwner, newOwner).status !== 'wojna') return;
       const ownerA = Math.min(oldOwner, newOwner);
       const ownerB = Math.max(oldOwner, newOwner);

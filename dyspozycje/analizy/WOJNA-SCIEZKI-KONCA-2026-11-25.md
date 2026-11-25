@@ -97,3 +97,47 @@ NIE ZMIERZONO: przyczyna końca wojny 1 vs 7. Najbardziej prawdopodobny kandydat
 4. R-WEB-ELIMINATED-RELATION-CLOSE — zamknięcie relacji pary z martwym ownerem (P16, L5), po sprawdzeniu wpływu na liczniki wojen.
 5. R-WEB-WAR-END-MEASURE-9T — pomiar 1 vs 7 z licznikiem przejęć miast i logiem (po L1).
 6. R-WEB-PEACE-PAIR-NO-TIME-GATE-CHECK — zbadanie, czy propozycja międzyludzka (P21) i wasalizacja (P17) mają bramkę czasu (L6).
+
+## 7. Korekta punktu 6 (R-WEB-ERA-WAR-END-LIKE-CLASSIC-Q1, 2026-11-25)
+
+Pozycja 6 ("usunięcie pominięć P12/P20 dla wojen epoki") została zrealizowana: wojny epoki (Kamień/Brąz/Żelazo) AI↔AI
+kończą się tymi samymi ścieżkami co klasyczne. Usunięte wykluczenia:
+- `gra/src/main.ts` `maybeResolveRegularWarOnCityCapture` — wczesny return dla pary z aktywną wojną wymuszoną (P12: auto-pokój po 2 miastach działa też dla wojen epoki, z tym samym warunkiem bilansu ≥ 0 u obu AI; sprzątanie i karencja idą przez `finalizePeaceTreatyBetween`).
+- `gra/src/main.ts` `aiAiForcedPeacePairEligible` i pole `forcedEpochWar` w `gra/src/game/diplomacy-ai-forced-peace.ts` `isForcedPeaceEligiblePair` (P20: prośby o pokój/rozejm AI↔AI obejmują wojny epoki; P11 bez zmian).
+Para gracz↔AI bez zmian. Test: `gra/tools/era-war-end-like-classic-test.cjs`.
+
+### 7a. Tabela P1–P21 × wojna epoki AI↔AI (PRZED i PO R-WEB-ERA-WAR-END-LIKE-CLASSIC-Q1)
+
+Kolumny: „AI↔AI epoka PRZED” / „AI↔AI epoka PO” oznaczają, czy ścieżka może zakończyć wojnę Kamienia/Brązu/Żelaza
+między dwiema głównymi AI. Para gracz↔AI w każdej ścieżce bez zmian. Jedyne wykluczenia wojen epoki w `gra/src` przed
+zmianą to `maybeResolveRegularWarOnCityCapture` (wczesny return) i `aiAiForcedPeacePairEligible` (pole `forcedEpochWar`);
+przegląd grep `forcedEpochWar` / `ForceWarActiveByPairKey.has` nie wykazał innych.
+
+| # | Ścieżka | AI↔AI epoka PRZED | AI↔AI epoka PO | Uwagi |
+|---|---|---|---|---|
+| P1 | Pokój z propozycji AI przyjęty przez gracza | NIE | NIE | ścieżka tylko z graczem |
+| P2 | Pokój z cesją miasta (AI→gracz) | NIE | NIE | ścieżka tylko z graczem |
+| P3 | Oferta pokoju AI (AI→gracz) | NIE | NIE | ścieżka tylko z graczem |
+| P4 | Żądanie miasta przez AI (AI→gracz) | NIE | NIE | ścieżka tylko z graczem |
+| P5 | Pokój/rozejm proponowany przez gracza | NIE | NIE | ścieżka tylko z graczem |
+| P6 | Rozejm (status `pokoj` + `truceUntilTurn`) | NIE | NIE | bramka gracza |
+| P7 | Koniec rozejmu → wojna | NIE | NIE | rozejm nie występuje w wojnie epoki |
+| P8 | Koniec rozejmu → oferta pokoju dla gracza | NIE | NIE | tylko gracz |
+| P9 | Gracz odrzuca pokój po rozejmie | NIE | NIE | tylko gracz |
+| P10 | Pokój wymuszony 100% zmęczenia (`tickAiAiWarWeariness`) | TAK | TAK | bez zmian; dotyczy też AI↔AI epoki |
+| P11 | Oferta przegrywającego AI↔AI przy zmęczeniu (`offer_accepted`) | TAK | TAK | bez zmian; nie był wykluczony |
+| P12 | Auto-pokój AI↔AI po 2 zdobytych miastach (`maybeResolveRegularWarOnCityCapture`) | NIE | TAK | zmiana: usunięty wczesny return |
+| P13 | Koniec wojny epoki przez pokój → sprzątanie rejestrów | TAK | TAK | `finalizePeaceTreatyBetween`, bez zmian |
+| P14 | Limit 2 miast / limit 20 tur epoki jako osobny mechanizm | NIE | NIE | martwy: liczniki epoki bez konsumenta; koniec przez miasta realizuje P12 |
+| P15 | Karencja po pokoju wymuszonym epoki (`forcedEraPeaceUntilNextEra`) | TAK | TAK | bez zmian |
+| P16 | Eliminacja strony | TAK | TAK | bez zmian; relacja kasowana przy eliminacji (test #122) |
+| P17 | Sojusz zerwany / wasalizacja | NIE | NIE | nie wchodzi w `wojna` |
+| P18 | Reset / wczytanie gry | NIE | NIE | nie jest końcem wojny |
+| P19 | Testowe hooki kończące wojnę | NIE | NIE | tylko testy |
+| P20 | Pokój AI↔AI po prośbie przegrywającej AI (`tickAiAiPeaceRequests`) | NIE | TAK | zmiana: usunięte `forcedEpochWar` z `isForcedPeaceEligiblePair` i `aiAiForcedPeacePairEligible` |
+| P21 | Pokój gracz↔gracz (hot-seat / propozycja międzyludzka) | NIE | NIE | nie dotyczy AI↔AI |
+
+Podsumowanie: zmieniły się dwie ścieżki (P12, P20). P11 i P10 działały dla wojen epoki już przed zmianą. Wpis P14 w tabeli
+§1 opisuje brak osobnego mechanizmu epoki; po zmianie koniec wojny epoki przez miasta odbywa się wyłącznie przez P12.
+Skutek uboczny do obserwacji w grze: auto-pokój po 2 miastach wymaga bilansu PW ≥ 0 u obu AI (jak klasyczna wojna),
+więc nie każda wojna epoki po 2 miastach zakończy się pokojem.
