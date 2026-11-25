@@ -237,8 +237,12 @@ console.log('\n8. Realne data/units.json: Zwiadowca (po naprawie) vs Wojownik (b
     'ma=' + JSON.stringify(zwiadowca['Surowiec']));
   assert(zwiadowca['Utrzymanie surowiec (ilość)'] === 0,
     'Zwiadowca: Utrzymanie surowiec (ilość) = 0', 'ma=' + zwiadowca['Utrzymanie surowiec (ilość)']);
-  assert(wojownik['Surowiec (ilość)'] === 10 && wojownik['Surowiec'] === 'Drewno',
-    'Wojownik: nadal Surowiec=Drewno ×10 (bez zmian -- kontrola)',
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): pin ×10 pochodzi z 5682c0664 (BUG-BRAMKA-DREWNO-BRAK); od
+  // 2b53a7934 (×50), f5a1ce518 (×25, „owner corrections: AI and recruitment costs") i 4c1126de1
+  // („apply half recruitment and resource upkeep costs", ×25→×13) wartość w units.json to 13.
+  // Kontrola nadal dotyczy wyłącznie tego, że bramka Drewna zostaje dla Wojownika.
+  assert(wojownik['Surowiec (ilość)'] === 13 && wojownik['Surowiec'] === 'Drewno',
+    'Wojownik: nadal Surowiec=Drewno ×13 (bez zmian -- kontrola, R-WEB-TEST-DEBT-Q14)',
     'ma=' + JSON.stringify({ Surowiec: wojownik['Surowiec'], ilosc: wojownik['Surowiec (ilość)'] }));
 
   const REAL_DATA = { buildings: [], units: realUnits };

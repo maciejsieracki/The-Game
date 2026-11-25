@@ -168,16 +168,18 @@ const NARZUT = NAP_GRANICA_RELACJA_NARZUT;
 {
   let r = rel(50, 50);
   for (let t = 1; t <= 5; t++) r = tickDiplomacy(r, { turn: t, karaWspolnaGranica: true });
-  ok(r.zaufanie === 40, `D1 stan ciągły: Zaufanie 50 → ${r.zaufanie} po 5 turach (−2/turę, nie jednorazowo)`);
-  ok(computeTickZaufanieDelta({ turn: 1, karaWspolnaGranica: true }, false) === -2,
-    'D2 delta per tura = −2');
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): kara sąsiedztwa to −3/turę od b65736507 (R-WEB-DIPLO-TRUST-NUMBERS-Q1,
+  // liczby zaufania); pin −2 był z pomiaru historycznego. Asercja sprawdza ciągłość (5 tur, nie jednorazowo).
+  ok(r.zaufanie === 35, `D1 stan ciągły: Zaufanie 50 → ${r.zaufanie} po 5 turach (−3/turę, nie jednorazowo)`);
+  ok(computeTickZaufanieDelta({ turn: 1, karaWspolnaGranica: true }, false) === -3,
+    'D2 delta per tura = −3 (R-WEB-TEST-DEBT-Q14: pin po b65736507)');
   const oneShot = applyDiplomaticEvent(rel(20, 30), 'tarcia_graniczne');
-  ok(oneShot.zaufanie === 18,
-    'D3 `tarcia_graniczne` to OSOBNE, jednorazowe zdarzenie (20 → 18) — nie ten sam mechanizm');
+  ok(oneShot.zaufanie === 17,
+    'D3 `tarcia_graniczne` to OSOBNE, jednorazowe zdarzenie (20 → 17, wartość ekspansjaGranica −3) — nie ten sam mechanizm');
   const row = (buildRelationBreakdown([], { karaWspolnaGranica: true }, getEffectiveDiplomacyParams('normal'))
     .negatywne || []).find(x => /granic/i.test(x.label || ''));
-  ok(!!row && row.perTurn === true && row.value === -2,
-    'D4 wiersz UI „ZA CO CIĘ NIE LUBIĄ" zgodny z pomiarem: −2, perTurn=true');
+  ok(!!row && row.perTurn === true && row.value === -3,
+    'D4 wiersz UI „ZA CO CIĘ NIE LUBIĄ" zgodny z parametrem (−3, b65736507): perTurn=true');
 }
 
 // ---------------------------------------------------------------------------

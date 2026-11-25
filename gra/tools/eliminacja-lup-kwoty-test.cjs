@@ -132,6 +132,21 @@ const callSite = sliceInclusive(mainSrc, CALL_START, CALL_END);
 }
 
 // --- Egzekucja obu wycinkow (odporna: brak wycinka => null, nigdy wyjatek) ---
+// R-WEB-TEST-DEBT-Q14 (HARNESS): blok czysty i wycinek wywołania korzystają teraz z
+// EMPIRE_STOCK_RESOURCE_KEYS i stockResourceLabel (R-PODBOJ-SUROWCE-BILANS-BRAK-WIERSZA-Q1,
+// main.ts ~1961), które żyją w src/game/building-stock-cost.ts. Ładujemy je tym samym
+// mechanizmem bundla co reszta testu, zamiast udawać globalne (ReferenceError w sandboxie).
+const STOCK_MOD = (() => {
+  const r = esbuild.buildSync({
+    stdin: { contents: "export { EMPIRE_STOCK_RESOURCE_KEYS, stockResourceLabel } from './game/building-stock-cost';",
+      resolveDir: path.resolve(__dirname, '..', 'src'), loader: 'ts' },
+    bundle: true, platform: 'node', format: 'cjs', write: false, logLevel: 'silent',
+  });
+  const m = { exports: {} };
+  new Function('require', 'module', 'exports', r.outputFiles[0].text)(require, m, m.exports);
+  return m.exports;
+})();
+
 let pureApi = null;
 if (pureBlock) {
   try {
@@ -140,7 +155,8 @@ if (pureBlock) {
       { loader: 'ts', format: 'cjs' },
     ).code;
     // eslint-disable-next-line no-new-func
-    pureApi = new Function(js)();
+    pureApi = new Function('EMPIRE_STOCK_RESOURCE_KEYS', 'stockResourceLabel', js)(
+      STOCK_MOD.EMPIRE_STOCK_RESOURCE_KEYS, STOCK_MOD.stockResourceLabel);
   } catch (e) {
     console.log('  (egzekucja BLOKU CZYSTEGO rzuciła: ' + (e && e.message) + ')');
   }
@@ -166,7 +182,7 @@ function renderEliminationReport(outcome, barbCaptor, powerGain, mocEtykieta, po
   try {
     // eslint-disable-next-line no-new-func
     const fn = new Function(
-      'buildCityCaptureReportRows', 'captureReportOneLine', 'mocLabel',
+      'buildCityCaptureReportRows', 'captureReportOneLine', 'mocLabel', 'EMPIRE_STOCK_RESOURCE_KEYS', 'stockResourceLabel',
       'city', 'cityBuilt', 'outcome', 'powerGain', 'barbCaptor',
       callSiteJs + '\nreturn { rows: eliminationRows, line: eliminatedDetails };',
     );
@@ -174,6 +190,8 @@ function renderEliminationReport(outcome, barbCaptor, powerGain, mocEtykieta, po
       pureApi.buildCityCaptureReportRows,
       pureApi.captureReportOneLine,
       () => mocEtykieta,
+      STOCK_MOD.EMPIRE_STOCK_RESOURCE_KEYS,
+      STOCK_MOD.stockResourceLabel,
       { id: 'c1', name: 'Miasto', population },
       new Map([['c1', new Array(buildings).fill('b')]]),
       outcome,
