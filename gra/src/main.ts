@@ -20571,7 +20571,8 @@ async function boot(): Promise<void> {
 
     function buildPowerOverlayData(): PowerOverlayData {
       // R-MOC-RANKING-ROZJAZD-Q1=B: panel Mocy widoczny dla gracza -> Moc EFEKTYWNA.
-      const obj = buildObjectivePowerForOwnerEffective(0);
+      // R-WEB-HUD-ME-REMAINING-Q1: panel Mocy = fotel aktywny (ME()), nie literał 0.
+      const obj = buildObjectivePowerForOwnerEffective(ME());
       const power = obj.power;
       const maxPts = Math.max(1, ...obj.components.map(c => c.points));
       const components = obj.components.map(c => ({
@@ -21084,11 +21085,13 @@ async function boot(): Promise<void> {
     } {
       try {
         const me = ME();
+        // R-WEB-HUD-ME-REMAINING-Q1: stan FOTELA AKTYWNEGO (nie singleton `player` = fotel 0).
+        const psMe = playerStateByHuman.get(me) ?? player;
         const ownerCivMap = new Map<number, string>();
-        ownerCivMap.set(me, (player.civType as string) || 'grecy');
+        ownerCivMap.set(me, (psMe.civType as string) || 'grecy');
         const base = {
           cities, map, data, difficulty: _menuDifficulty, builtByCity: cityBuilt,
-          playerEra: player.era, playerZbadane: player.zbadane, ownerCivByOwnerId: ownerCivMap,
+          playerEra: psMe.era, playerZbadane: psMe.zbadane, ownerCivByOwnerId: ownerCivMap,
           resolveOwnerEra: empireEpochForOwner, resolveOwnerTech: unlockedTechSetForOwner,
           resolveOwnerZlotoAccess: makeOwnerZlotoAccessResolver(
             predictMennicaZlotoAccessForNextTick(mennicaZlotoGraceState, ownerHasZlotoAccessNow)),
@@ -21239,7 +21242,7 @@ async function boot(): Promise<void> {
           // inaczej trzy miejsca pokazywałyby trzy różne liczby dla tego samego dochodu.
           // R2-2: bonus cudów liczony dla GRACZA (0), nie dla `r.ownerId` — po
           // generalizacji `r.ownerId` bywa cywilizacją obcą (gracz jako strona `to`).
-          const bonus = wonderTradeRouteBonusForOwner(0, r.medium);
+          const bonus = wonderTradeRouteBonusForOwner(ME(), r.medium);
           const base = tradeRouteIncomeForRoute(r, incomeParams);
           const myRouteBonus = targowiskoTradeRouteBonusForCity(side.myCityId);
           const perSideBase = bonus === 0 ? base : Math.floor(base * (1 + bonus));
@@ -21297,17 +21300,17 @@ async function boot(): Promise<void> {
       // Decyzje 65B/66B: panel imperium jest zawsze widokiem gracza (ownerId=0),
       // wiec etykieta Danina/Podatek liczona jest dla ownerId=0 -- patrz
       // EmpireTradeSnap.daninaLabel (empireDetailTypes.ts).
-      const playerCapitalId = capitalCityIdForOwner(0);
-      const walutaOdkrytaPlayer = unlockedTechsForOwner(0).includes('Waluta');
+      const playerCapitalId = capitalCityIdForOwner(ME());
+      const walutaOdkrytaPlayer = unlockedTechsForOwner(ME()).includes('Waluta');
       const daninaLbl = resolveDaninaLabel(
         walutaOdkrytaPlayer,
         mennicaWStolicy(playerCapitalId, playerCapitalId ? cityBuilt.get(playerCapitalId) : undefined),
         // PYTANIE 83=B + 77-DOP=B: nazwa wraca na "Danina" gdy brak efektywnego dostępu (łaska wliczona).
-        ownerZlotoAccessForMennicaEffective(0),
+        ownerZlotoAccessForMennicaEffective(ME()),
       );
       // DYSPOZYCJA 85: bonus % cudów handel_procent gracza, osobno ląd/morze (foot panelu).
-      const wonderBonusLadPct = Math.round(wonderTradeRouteBonusForOwner(0, 'lad') * 100);
-      const wonderBonusMorzePct = Math.round(wonderTradeRouteBonusForOwner(0, 'morze') * 100);
+      const wonderBonusLadPct = Math.round(wonderTradeRouteBonusForOwner(ME(), 'lad') * 100);
+      const wonderBonusMorzePct = Math.round(wonderTradeRouteBonusForOwner(ME(), 'morze') * 100);
       // DYSPOZYCJA 85: surowce, do których gracz ma dostęp DZIĘKI aktywnej trasie —
       // zebrane tu (panel Handel), USUNIĘTE z panelu miasta (patrz cityPanel.ts).
       const resourceGrants: EmpireDetailSnap['trade']['resourceGrants'] = [];
@@ -21331,8 +21334,8 @@ async function boot(): Promise<void> {
       const activeDealsRows: EmpireDetailSnap['trade']['activeDeals'] = [];
       for (const deal of activeDeals) {
         if (normalizeTreatyKind(deal.rodzaj) !== RodzajTraktatu.UmowaSzlakow) continue;
-        if (!deal.strony.includes(0)) continue;
-        const partnerId = deal.strony[0] === 0 ? deal.strony[1] : deal.strony[0];
+        if (!deal.strony.includes(ME())) continue;
+        const partnerId = deal.strony[0] === ME() ? deal.strony[1] : deal.strony[0];
         if (seenDealPartners.has(partnerId)) continue;
         seenDealPartners.add(partnerId);
         // R2-2 (zarzut 4 Evaluatora, runda 2): filtr SYMETRYCZNY. Do rundy 1 warunek
@@ -21393,7 +21396,7 @@ async function boot(): Promise<void> {
     function buildReligionOverlayData(): ReligionOverlayData {
       const rp = loadReligionParams(data.societyParams, _menuDifficulty);
       const pc = cities.filter(c => isMe(c.ownerId));
-      const stateRel = ownerReligionForOwnerId(0) ?? '—';
+      const stateRel = ownerReligionForOwnerId(ME()) ?? '—';
       let dominantCityCount = 0;
       let foreignCityCount = 0;
       const cityRows = pc.map(c => {

@@ -22,7 +22,10 @@ const path = require('path');
 const fs = require('fs');
 
 const GRA_DIR = path.resolve(__dirname, '..');
-const MAIN_TS = path.join(GRA_DIR, 'src/main.ts');
+// Domyślnie gra/src/main.ts; HUD_OWNER_GUARD_MAIN=<plik> -- tryb mutacji (dowód czerwieni).
+const MAIN_TS = process.env.HUD_OWNER_GUARD_MAIN
+  ? path.resolve(process.env.HUD_OWNER_GUARD_MAIN)
+  : path.join(GRA_DIR, 'src/main.ts');
 const src = fs.readFileSync(MAIN_TS, 'utf8');
 
 let passCount = 0;
@@ -137,6 +140,56 @@ check(
 check(
   'HUD (stan): era poboru z ps.era (nie player.era)',
   rawCode !== null && rawCode.includes('ps.era') && !/\bplayer\.era\b/.test(rawCode),
+);
+
+// R-WEB-HUD-ME-REMAINING-Q1 (zarzut Evaluatora nr 2): pokrycie 8 linii, które poprzednio
+// nie miały kontroli. Każda nazwa: w buildHudStateRaw brak wywołania z literałem 0
+// i obecne wywołanie z ownerId (mutacja literału 0 -> FAIL).
+const HUD_OWNER_NAMES = [
+  'ownerReligionForOwnerId',
+  'buildEmpireResourceRows',
+  'wonderTradeRouteBonusForOwner',
+  'civManpowerMultsForOwner',
+  'civKolorHexFn',
+  'leaderNameForOwnerId',
+  'civDisplayNameForOwner',
+];
+for (const name of HUD_OWNER_NAMES) {
+  const lit = new RegExp(name + '\\(\\s*0\\s*[,)]');
+  check(
+    'HUD (pokrycie): buildHudStateRaw bez ' + name + '(0',
+    rawCode !== null && !lit.test(rawCode),
+    'literał 0 zamiast ownerId -- hotseat czyta fotel 0',
+  );
+  check(
+    'HUD (pokrycie): buildHudStateRaw z ' + name + '(ownerId',
+    rawCode !== null && rawCode.includes(name + '(ownerId'),
+  );
+}
+check(
+  'HUD (pokrycie): empirePoborTotals / cityManpowerSnapshot / ps.civType bez literału i singletonu',
+  rawCode !== null
+    && !/empirePoborTotals\(\s*cities\s*,\s*0\s*,/.test(rawCode)
+    && !/\bplayer\.civType\b/.test(rawCode)
+    && rawCode.includes('ps.civType')
+    && rawCode.includes('cityManpowerSnapshot(c, ps.era'),
+);
+check(
+  'HUD (pokrycie): r.toOwnerId === ownerId (strona gracza w handlu, nie literał 0)',
+  rawCode !== null && rawCode.includes('r.toOwnerId === ownerId') && !/r\.toOwnerId\s*===\s*0\b/.test(rawCode),
+);
+
+// Żywność w buildEmpireFoodSnap (fotel aktywny = ME()): 4 wywołania bez literału 0.
+const foodSnapBody2 = braceBody(/function buildEmpireFoodSnap\(/);
+const foodSnapCode2 = foodSnapBody2 === null ? null : stripComments(foodSnapBody2);
+check(
+  'HUD (żywność, snap): tick/zapas/cap liczone dla ME(), bez literału 0 i bez projectPlayerFoodMaxCap()',
+  foodSnapCode2 !== null
+    && foodSnapCode2.includes('getLastEmpireFoodTick(ME())')
+    && foodSnapCode2.includes('getEmpireFoodReserve(ME())')
+    && foodSnapCode2.includes('getEmpireFoodMaxCap(ME())')
+    && foodSnapCode2.includes('projectPlayerFoodMaxCap(ME())')
+    && !/getLastEmpireFoodTick\(\s*0\s*\)|getEmpireFoodReserve\(\s*0\s*\)|getEmpireFoodMaxCap\(\s*0\s*\)|projectPlayerFoodMaxCap\(\s*\)/.test(foodSnapCode2),
 );
 
 console.log('\nWynik: ' + passCount + ' PASS / ' + failCount + ' FAIL');
