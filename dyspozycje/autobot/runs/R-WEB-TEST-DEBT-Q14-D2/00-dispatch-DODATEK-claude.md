@@ -28,3 +28,10 @@ Runda 1: Evaluator FAIL, FC FAIL — 19 z 25 testów bez analizy przyczyn; 7 'ka
 3. PRACUJ PACZKAMI PO 5 TESTÓW i po KAŻDEJ paczce commituj naprawy + dopisz wiersze do raportu (git add tylko ścieżki z allowlisty) — nie kończ pracy z jednym commitem na końcu.
 4. ZAKAZ statusu BLOCK bez blokady technicznej. Status raportu = PASS/PASS-WITH-NOTES gdy wszystkie 19 mają klasyfikację z dowodem, inaczej FAIL z listą niedokończonych.
 5. Tabela końcowa: test | przed (surowe) | przyczyna z dowodem | klasyfikacja | co zmieniono | po (surowe).
+
+## DODATEK rundy 3/5 (orkiestrator, 2026-11-25) — BAZA = 1e912a0d2 (refs/keep/Q14D2-r2-fc na gałęzi Q14D2-wip/fc; potomek 2735e4c19 i f96787fb7)
+Runda 2: Evaluator FAIL, FC FAIL; 15 z 20 testów naprawionych, zielone solo. ZAKRES TEJ RUNDY (tylko to):
+1. war-allin-capital-test: STARY-PIN z dowodem FC (bisekt: pierwszy zły commit f038fbd2c, R-WEB-AI-NO-MARCH-WITHOUT-WAR-Q1, zamierzona zmiana AI). Ustaw REF_OFF.aiVsAi='d28c8b7ffce7a3ec', REF_OFF.noLandPath='e565af36b3773765' z komentarzem 'R-WEB-TEST-DEBT-Q14' + powołanie na f038fbd2c; zweryfikuj, że na bieżącym kodzie oba skróty się zgadzają i że sekcja 6 NIE jest SKIP (uruchom w klonie z historią git). Mutacja: zmiana jednej decyzji AI w ścieżce -> test czerwony.
+2. zelazo-gate-test: wykonaj mutację bramki żelaza (kopia pliku, nie git checkout) i pokaż test czerwony na bieżącym kodzie; fixture Legionista nie istnieje w units.json — ustal commit (git log -S 'Legionista' -- gra/data) i zamień na obowiązującą jednostkę żelaza z zachowaniem mocy dowodowej.
+3. rydwan-bierny-atak-test i trade-routes-income H2e — NIE RUSZAJ (decyzja właściciela, ABC w rejestrze).
+4. Pokaż solo surowe wyjście wszystkich 20 testów tej połowy na kandydacie (przed zakończeniem). ZAKAZ BLOCK bez blokady technicznej. Commit po każdym teście.
