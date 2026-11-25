@@ -1,3 +1,9 @@
+## ROBOCZA ec0e9401 -- 2026-11-25 -- FALA 902: Hak testowy pierścienia fortów (civTest) + runnery pomiarowe (testowa)
+
+- Hak civTest do wyłączania pierścienia fortów (domyślnie wyłączony, gra bez ?civTest=1 bez zmian), runner pomiaru FORTRING i FLEEMANUAL, dokument pomiarowy
+- Weryfikacja: tsc 0; logic 213/213; fortring-civtest-hook 8/0; hud-me-literal-zero 79/0; hud-owner-hotseat-source 51/0; main-guard 21/0; hotseat e-source 77/0; bramki-tmpdir 18/0; ai-test 297/0; vite 0
+- Limity: Wpływ pierścienia fortów NIE ZMIERZONO (0 fortów w biegu); round-trip ON NIE ZWERYFIKOWANE; bitwy >5 tur i animacja odwrotu NIE ZMIERZONO
+
 ## ROBOCZA 1d090e19 -- 2026-11-25 -- FALA 901: HUD hotseat: panel imperium dla aktywnego gracza (testowa)
 
 - getEmpireHud (panel imperium: gracz, miasta, religia) czyta aktywnego gracza zamiast stałego 0; kolejka niedoborów HUD przez isMe()
