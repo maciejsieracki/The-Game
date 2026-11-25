@@ -958,9 +958,11 @@ fn slad_diagnostyczny_na_zadanie() {
 /// HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): kontrakt czasu akcji sesji (klatka 16 ms, `speedMul = 1`) z rendererem
 /// (`renderer/src/battle/playback.rs` `is_pin_event_time`): cios wręcz w pierwszej klatce lunge z `localT >= BLOW_HIT_T`
 /// (`_doMeleeAttack` `:9122`, `t0 + 160`), trafienie strzału jednostki w klatce zegara `_schedule(RANGED_FLY_MS)`
-/// (`:9223`, `t0 + 384`), krok `_doMove` w klatce `p >= 1` (`t0 + 240`); wieża (`_fireOneTower` `:4262`), kamień
-/// (`:7555`) i taran (`:7343`) z czasem nominalnym (renderer: równość dokładna). Zmiana tych odstępów w silniku łamie
-/// odtwarzanie klienta (`PlaybackError::HitAt` / `ShotLandAt` / ...), więc test pilnuje strony silnika kontraktu.
+/// (`:9223`, `t0 + 384`), krok `_doMove` w klatce `p >= 1` (`t0 + 240`); trafienie wieży (`_fireOneTower`
+/// `_schedule(RANGED_FLY_MS)` `:4262`, `t0 + 384`) i kamienia (`_attackWallTile` `_schedule(700)` `:7555`, `t0 + 704`) w
+/// klatce zegara (LANDAT-TOWER-BOULDER-Q1, D-LTB-1; sonda pinu `01-operator-r1-sonda.mjs`); taran (`:7343`) z czasem
+/// nominalnym (renderer: równość dokładna). Zmiana tych odstępów w silniku łamie odtwarzanie klienta
+/// (`PlaybackError::HitAt` / `ShotLandAt` / `LandAt` / `BoulderLandAt` / ...), więc test pilnuje strony silnika kontraktu.
 #[test]
 fn kontrakt_czasu_akcji_z_rendererem_klatka_16ms() {
     use civ_engine::domain::siege_tactics_actions::BattleAction;
@@ -969,6 +971,7 @@ fn kontrakt_czasu_akcji_z_rendererem_klatka_16ms() {
     let data = pin_session_data();
     assert_eq!(frame_raf(FRAME_MS, 150.0), 160.0);
     assert_eq!(frame_sched(FRAME_MS, 380.0), 384.0);
+    assert_eq!(frame_sched(FRAME_MS, 700.0), 704.0);
     let mut n = BTreeMap::<&str, usize>::new();
     // Wszystkie scenariusze z krokiem produkcyjnym 16 ms (bliźniaki `_klatka1`/`_klatka4` mają inną klatkę).
     for v in doc["vectors"]
@@ -987,8 +990,8 @@ fn kontrakt_czasu_akcji_z_rendererem_klatka_16ms() {
                     BattleAction::Melee { hit_at, .. } => ("melee", hit_at - a.t0, 160.0),
                     BattleAction::Shot { land_at, .. } => ("shot", land_at - a.t0, 384.0),
                     BattleAction::Move { arrive_at, .. } => ("move", arrive_at - a.t0, 240.0),
-                    BattleAction::TowerShot { land_at, .. } => ("tower", land_at - a.t0, 380.0),
-                    BattleAction::Boulder { land_at, .. } => ("boulder", land_at - a.t0, 700.0),
+                    BattleAction::TowerShot { land_at, .. } => ("tower", land_at - a.t0, 384.0),
+                    BattleAction::Boulder { land_at, .. } => ("boulder", land_at - a.t0, 704.0),
                     BattleAction::Ram { until, .. } => ("ram", until - a.t0, 320.0),
                     _ => continue,
                 };
@@ -1000,7 +1003,7 @@ fn kontrakt_czasu_akcji_z_rendererem_klatka_16ms() {
         }
     }
     // Pokrycie: każdy rodzaj akcji z czasem wystąpił (inaczej test niczego nie pilnuje).
-    for k in ["melee", "shot", "move", "tower"] {
+    for k in ["melee", "shot", "move", "tower", "boulder"] {
         assert!(n.get(k).copied().unwrap_or(0) > 0, "brak akcji {k}: {n:?}");
     }
     eprintln!("HITAT-FQ kontrakt: {n:?}");
@@ -1061,4 +1064,108 @@ fn kontrakt_czasu_ciosu_po_krokach_advance_step() {
     }
     eprintln!("HITAT-FQ cios po kroku: {po_kroku}/{razem}");
     assert!(razem > 0, "brak ciosów wręcz w wektorach");
+}
+
+/// LANDAT-TOWER-BOULDER-Q1 (D-LTB-1): `landAt` pocisku wieży i kamienia katapulty = chwila, w której sesja (i pin)
+/// FAKTYCZNIE wykonuje trafienie, we wszystkich scenariuszach wektorów (także bliźniaki `frameMs` przy ich klatce).
+/// Trafienie wieży to wpis `_pushClash` z aktorem `Tower(row)` na ten sam cel (`_singleBlow` w callbacku
+/// `_schedule(RANGED_FLY_MS)` `:4262-4266`, [`BattleAction::Clash`]), trafienie kamienia to `WallDamage` tego wiersza
+/// (callback `_schedule(700)` `:7555-7564`). Pary w kolejności wystrzałów (lot ma stałą długość, FIFO na klucz).
+/// Trafienie bez wpisu `_pushClash` (chybienie, cel martwy/znika `:4263`, koniec bitwy) zostaje w kolejce i jest
+/// zdejmowane przy następnym trafieniu tego klucza, gdy jego `landAt` jest wcześniejszy (liczone jako bez pary). Pin (sonda
+/// `dyspozycje/autobot/runs/R-RUSTPORT-P4-LANDAT-TOWER-BOULDER-Q1/01-operator-r1-sonda.mjs`, 45 scenariuszy): wieża
+/// `fire - t0 = ceil(380 / F) * F`, kamień `ceil(700 / F) * F` (384/704 przy 16 ms; 380/700 przy klatce 1 i 4 ms).
+/// Test sprawdza obie strony: odstęp `landAt - t0` = siatka klatki oraz `landAt` = `t0` skutku. Mutant „stary nominał”
+/// (`+ TOWER_FLY_MS` / `+ WALL_HIT_FLY_MS` w silniku) daje FAIL na obu asercjach.
+#[test]
+fn kontrakt_land_at_wiezy_i_kamienia_rowny_chwili_trafienia() {
+    use civ_engine::domain::siege_tactics_actions::{Actor, BattleAction};
+    use civ_engine::domain::siege_tactics_loop::frame_sched;
+    use std::collections::VecDeque;
+    let doc = vectors();
+    let data = pin_session_data();
+    let (mut tower_hits, mut boulder_hits, mut unpaired) = (0usize, 0usize, 0usize);
+    // Zdejmuje z czoła kolejki pociski, które wylądowały przed `t` bez skutku w strumieniu akcji.
+    let pop_before = |q: &mut VecDeque<f64>, t: f64| {
+        let mut n = 0;
+        while q.front().is_some_and(|&l| l < t) {
+            q.pop_front();
+            n += 1;
+        }
+        n
+    };
+    let mut per_frame = BTreeMap::<String, usize>::new();
+    for v in doc["vectors"].as_array().unwrap() {
+        let name = v["name"].as_str().unwrap();
+        let frame = v["frameMs"].as_f64().unwrap_or(FRAME_MS);
+        let mut s = SiegeBattleSession::prepare_scene(&scene_input(v), &data).unwrap();
+        if v["frameMs"].as_f64().is_some() {
+            s.diag_set_speed_mul(frame / FRAME_MS).unwrap();
+        }
+        // Pociski w locie: (wiersz wieży, cel) -> kolejka landAt; kamienie: wiersz muru -> kolejka landAt.
+        let mut tower_fly = BTreeMap::<(i64, String), VecDeque<f64>>::new();
+        let mut stone_fly = BTreeMap::<i64, VecDeque<f64>>::new();
+        let mut frames = 0;
+        while s.phase() != SessionPhase::Finished {
+            let rep = s.step(FRAME_MS).unwrap();
+            for a in rep.actions {
+                match a.action {
+                    BattleAction::TowerShot {
+                        row,
+                        target,
+                        land_at,
+                    } => {
+                        assert_eq!(
+                            land_at - a.t0,
+                            frame_sched(frame, 380.0),
+                            "{name}: wieża w t0 {}",
+                            a.t0
+                        );
+                        *per_frame.entry(format!("tower@{frame}")).or_default() += 1;
+                        tower_fly
+                            .entry((row, format!("{target:?}")))
+                            .or_default()
+                            .push_back(land_at);
+                    }
+                    BattleAction::Clash {
+                        attacker: Actor::Tower(row),
+                        target,
+                        ..
+                    } => {
+                        let q = tower_fly.entry((row, format!("{target:?}"))).or_default();
+                        unpaired += pop_before(q, a.t0);
+                        assert_eq!(q.pop_front(), Some(a.t0), "{name}: trafienie wieży {row}");
+                        tower_hits += 1;
+                    }
+                    BattleAction::Boulder { row, land_at, .. } => {
+                        assert_eq!(
+                            land_at - a.t0,
+                            frame_sched(frame, 700.0),
+                            "{name}: kamień w t0 {}",
+                            a.t0
+                        );
+                        *per_frame.entry(format!("boulder@{frame}")).or_default() += 1;
+                        stone_fly.entry(row).or_default().push_back(land_at);
+                    }
+                    BattleAction::WallDamage { row, .. } => {
+                        // `WallDamage` pada tylko z callbacku kamienia (`:7555-7564`).
+                        let q = stone_fly.entry(row).or_default();
+                        unpaired += pop_before(q, a.t0);
+                        assert_eq!(q.pop_front(), Some(a.t0), "{name}: trafienie kamienia w mur {row}");
+                        boulder_hits += 1;
+                    }
+                    _ => {}
+                }
+            }
+            frames += 1;
+            assert!(frames < MAX_FRAMES, "bitwa bez końca");
+        }
+    }
+    eprintln!(
+        "LANDAT-TB: trafień wieży {tower_hits}, kamienia {boulder_hits}, bez pary {unpaired}; wystrzały {per_frame:?}"
+    );
+    // Pokrycie: oba rodzaje pocisków i ich trafienia wystąpiły (inaczej test niczego nie pilnuje), także przy 16 ms.
+    assert!(tower_hits > 0 && boulder_hits > 0, "brak trafień: {per_frame:?}");
+    assert!(per_frame.get("tower@16").copied().unwrap_or(0) > 0, "{per_frame:?}");
+    assert!(per_frame.get("boulder@16").copied().unwrap_or(0) > 0, "{per_frame:?}");
 }

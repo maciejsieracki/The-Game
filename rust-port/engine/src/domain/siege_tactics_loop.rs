@@ -94,7 +94,7 @@ use crate::domain::siege_tactics_fallback::{
     fall_back_after_move, fall_back_step_decide, FallBackDecision, FallBackUnit, FallBackWorld,
 };
 use crate::domain::siege_tactics_fastforward::{
-    round_cap_verdict_step, run_fast_forward, FfEvent, FfHost, FfLoopState, FfStop,
+    ff_step_ms, round_cap_verdict_step, run_fast_forward, FfEvent, FfHost, FfLoopState, FfStop,
 };
 use crate::domain::siege_tactics_inputs_pos::{facing_toward, relative_hit, JsVal};
 use crate::domain::siege_tactics_inputs_unit::{
@@ -1139,12 +1139,18 @@ impl<B: LoopBody> SiegeLoop<B> {
         };
         let text = tower_shot_log(row, &self.env.body.unit_name(tref));
         self.emit(clock.v_now, BattleAction::Log { text });
+        // LANDAT-TOWER-BOULDER-Q1 (D-LTB-1): `landAt` = chwila, w której pin FAKTYCZNIE wykonuje trafienie. Zegar
+        // `_schedule(RANGED_FLY_MS)` z chwili klatki `vNow` odpala `_drainTimers` w pierwszej klatce z `vNow >= due`
+        // (`:9616-9634`, `vNow` nie jest przesuwane do `due`), a jedynym sterownikiem zegara jest [`run_fast_forward`] z
+        // krokiem `FF_STEP_MS = _scaledWallDelta(16)` (`:9419`), więc trafienie = `vNow + ceil(380 / F) * F` (384 przy
+        // 16 ms; sonda pinu `01-operator-r1-sonda.mjs`). Ten sam `due` nominalny zostaje w [`Self::tower_in_flight`].
+        let land_at = clock.v_now + frame_sched(ff_step_ms(clock), TOWER_FLY_MS);
         self.emit(
             clock.v_now,
             BattleAction::TowerShot {
                 row,
                 target: tref,
-                land_at: clock.v_now + TOWER_FLY_MS,
+                land_at,
             },
         );
         let planning = self.st.auto_batch_planning;
@@ -6817,7 +6823,11 @@ impl<R: RollSource> ProdBody<R> {
             return AtkRun::tagged("atak-muru-bez-szablonu");
         };
         let dmg = wall_tile_damage(&stats);
-        let land_at = self.now + WALL_HIT_FLY_MS;
+        // LANDAT-TOWER-BOULDER-Q1 (D-LTB-1): `landAt` = chwila, w której pin wykonuje trafienie kamienia: zegar
+        // `_schedule(700)` z chwili klatki odpala w pierwszej klatce z `vNow >= due` (`_drainTimers` `:9616-9634`), czyli
+        // `+ ceil(700 / F) * F` (704 przy klatce 16 ms; sonda pinu `01-operator-r1-sonda.mjs`), jak `Shot` ([`frame_sched`]).
+        // Klatka `0` (testy pętli bez klatki) = nominalne 700. Zegar w [`LoopBody::take_timers`] zostaje nominalny (`ms`).
+        let land_at = self.now + frame_sched(self.frame_ms, WALL_HIT_FLY_MS);
         self.emit(BattleAction::Boulder { unit, row, land_at });
         let id = self.next_timer;
         self.next_timer += 1;

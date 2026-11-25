@@ -35,8 +35,8 @@ use civ_engine::domain::siege_tactics_end::BattleSide;
 use civ_engine::domain::siege_tactics_endcheck::{end_check_order, EndCheckInput, EndCheckOutcome};
 use civ_engine::domain::siege_tactics_fastforward::BATTLE_FRAME_WALL_MS;
 use civ_engine::domain::siege_tactics_loop::{
-    neutral_tower_shot_template, LoopBody, LoopTimer, LoopWinner, ProdBody, ProdUnit, SiegeEnv,
-    SiegeLoop,
+    frame_sched, neutral_tower_shot_template, LoopBody, LoopTimer, LoopWinner, ProdBody, ProdUnit,
+    SiegeEnv, SiegeLoop, TOWER_FLY_MS,
 };
 use civ_engine::domain::siege_tactics_turnseq::{SeqUnit, TurnSeqState, UnitRef};
 use civ_engine::domain::siege_tactics_unit::CombatUnit;
@@ -746,7 +746,7 @@ fn tower_case(ff: bool) {
                 let t_shot = acts[s].t0;
                 let shift = num(&tw["t0"]) - t_shot;
                 let mut out = Vec::new();
-                let mut landing: Option<f64> = None;
+                let mut landing: Option<(f64, f64)> = None;
                 let mut rout_facing_pending: Vec<UnitRef> = Vec::new();
                 for (k, a) in acts[s..].iter().enumerate() {
                     // Okno: od logu wystrzału do następnej tury albo następnego wystrzału.
@@ -789,20 +789,33 @@ fn tower_case(ff: bool) {
                     // Trafienie odpala `_drainTimers` w pierwszej klatce przewijania z `vNow >= landAt` (pin
                     // `:9616-9634`; krok klatki `BATTLE_FRAME_WALL_MS`); generator woła callback dokładnie w
                     // `landAt`. Czas akcji trafienia sprowadzany do `landAt` po sprawdzeniu, że mieści się w klatce.
-                    if let Some(land) = landing {
+                    // LANDAT-TOWER-BOULDER-Q1 (D-LTB-1): silnik niesie w `landAt` chwilę klatki trafienia
+                    // (`t0 + frame_sched(16, RANGED_FLY_MS)` = `t0 + 384`); trafienie musi paść DOKŁADNIE w niej, a do
+                    // porównania z generatorem (czas ciągły) `landAt` wraca do nominału `t0 + RANGED_FLY_MS`.
+                    if let Some((land, grid)) = landing {
                         assert!(
                             a.t0 >= land && a.t0 < land + BATTLE_FRAME_WALL_MS,
                             "wieża #{id}: trafienie w {} poza klatką lądowania {land}",
                             a.t0
                         );
+                        assert!(
+                            a.t0 == grid,
+                            "wieża #{id}: trafienie w {} != landAt {grid}",
+                            a.t0
+                        );
                         moved.t0 = land;
                     }
                     if let BattleAction::TowerShot { land_at, .. } = &a.action {
-                        landing = Some(*land_at);
+                        let grid = a.t0 + frame_sched(BATTLE_FRAME_WALL_MS, TOWER_FLY_MS);
+                        assert!(
+                            *land_at == grid,
+                            "wieża #{id}: landAt {land_at} != klatka trafienia {grid}"
+                        );
+                        landing = Some((a.t0 + TOWER_FLY_MS, grid));
                     }
                     moved.t0 += shift;
                     if let BattleAction::TowerShot { land_at, .. } = &mut moved.action {
-                        *land_at += shift;
+                        *land_at = a.t0 + TOWER_FLY_MS + shift;
                     }
                     out.push(enc(&moved));
                 }
