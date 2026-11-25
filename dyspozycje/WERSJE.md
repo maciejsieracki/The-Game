@@ -1,3 +1,9 @@
+## ROBOCZA af46e78b -- 2026-11-25 -- FALA 892: Dyplomacja: dopłata D sojuszy AI-AI 0,5 (testowa)
+
+- R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-HALF-Q1: dopłata D sojuszy AI↔AI 1,0 → 0,5 (jedno źródło prawdy ai-ai-treaty-params.json, decyzja właściciela 2026-11-22)
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; ai-ai-alliance-surcharge ALL GREEN (mutant M5 = powrót do 1,0 czerwony); ai-ai-treaty-evaluate 21/0; testy dyplomacji zielone
+- Limity: NIE ZMIERZONO: skutek w grze (liczba i trwałość sojuszy AI↔AI przy 0,5)
+
 ## ROBOCZA 6daf42ce -- 2026-11-25 -- FALA 891: Wojny epoki: sojusz nie blokuje, parowanie do skutku (testowa)
 
 - R-WEB-ERA-WAR-PAIRING-ALLIANCE-NO-BLOCK-Q1: sojusz nie blokuje wojny epoki; parowanie preferuje pary bez sojuszu, fallback po trzech bez zmian (decyzja wlasciciela 2026-11-22)
