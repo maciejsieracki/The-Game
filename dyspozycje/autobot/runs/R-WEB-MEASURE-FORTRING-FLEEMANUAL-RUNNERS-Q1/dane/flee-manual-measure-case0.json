@@ -1,0 +1,40 @@
+{
+ "schema": "flee-manual-measure-v1",
+ "mnoznik": 0.5,
+ "rows": [
+  {
+   "case": "Wojownik (gracz) zlamany w reczniej turze 1",
+   "nazwa": "Warrior",
+   "normal": 4,
+   "flee": 2,
+   "cap": 2,
+   "perRound": {
+    "1": 2,
+    "2": 2,
+    "3": 2,
+    "4": 2,
+    "5": 1
+   },
+   "maxPerRound": 2,
+   "totalSteps": 9,
+   "kroki": 9,
+   "pozycjaStart": {
+    "firstCel": {
+     "col": 30,
+     "row": 74
+    }
+   },
+   "pozycjaKoniec": {
+    "col": 22,
+    "row": 74,
+    "round": 5
+   },
+   "poza_plansza": 0,
+   "kroki_bez_punktow": 0,
+   "plansza": [
+    68,
+    156
+   ]
+  }
+ ]
+}

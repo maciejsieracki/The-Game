@@ -189,6 +189,10 @@ import { installCivTestHooks, isCivTestEnabled, civTestSeedOverride, civTestRunt
 /** R-WEB-TEST-HOOK-WARRIOR-SIDESWAP-MANUAL-MEASURE-Q1: zamiana stron sceny (hak civTest; ustawiany przez __civTest.setSwapSides). */
 let _civTestSwapSides = false;
 const civTestSwapSidesFlag = (): boolean => _civTestSwapSides && typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search);
+/** R-WEB-MEASURE-FORTRING-FLEEMANUAL-RUNNERS-Q1: przełącznik pierścienia fortów (hak __settingsLive.setFortRingOff; tylko ?civTest=1).
+ * false (domyślnie) = reguła gry ON; true = bez predykatu ochrony w węzłach terytorium i bez blokady budowy w pierścieniu (main.ts). */
+let _civTestFortRingOff = false;
+const civTestFortRingOffFlag = (): boolean => _civTestFortRingOff && typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search);
 /** R-WEB-VERIFY-LIVE-A2-UNIT-COST-DISBAND-COUNTER-SEED7-Q1 (tylko ?civTest=1; bez parametru zero zapisu): przyczyna
  *  zejscia jednostki wg id, zbierana przy usunieciu i zerowana przez __aiEconomyMeasure.unitFlowTurn() (tylko odczyt gry). */
 const unitLossCauseById = new Map<string, string>();
@@ -6000,7 +6004,7 @@ async function boot(): Promise<void> {
       // z 2026-08-09): posterunek (r=3) i fort (r=5) = TWARDE terytorium jak miasto.
       // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1: predykat ochrony tylko dla fortu z ulepszeniem w pierscieniu.
       return fortNodes.length > 0
-        ? cityNodes.concat(fortTerritoryNodes(fortNodes, f => (fortRingHasOwnImprovement(f, improvementOwnerByHex) ? improvedByFortOwner : undefined)))
+        ? cityNodes.concat(fortTerritoryNodes(fortNodes, f => (!civTestFortRingOffFlag() && fortRingHasOwnImprovement(f, improvementOwnerByHex) ? improvedByFortOwner : undefined)))
         : cityNodes;
     }
 
@@ -17886,7 +17890,7 @@ async function boot(): Promise<void> {
         return;
       }
       // R-WEB-TERRITORY-FORT-RING-IMPROVEMENTS-NOT-TRANSFERRED-Q1 (ABC C): ta sama blokada co qualifies() (ścieżka bez bramki UI).
-      const fortRingBlock = fortRingBuildBlockReason(req.q, req.r, 0, buildAllTerritoryNodes());
+      const fortRingBlock = civTestFortRingOffFlag() ? null : fortRingBuildBlockReason(req.q, req.r, 0, buildAllTerritoryNodes());
       if (fortRingBlock !== null && !pendingImprovementsTurn.has(req.hexKey, req.key)) {
         showHintMessage(fortRingBlock, 4500);
         return;
@@ -34223,6 +34227,11 @@ async function boot(): Promise<void> {
       // + loadGameFromSlot w tej samej stronie (bez przeładowania). Zero wpływu na grę bez ?civTest=1.
       (window as any).__settingsLive = {
         startNewGame: (menuParams: NewGameParams): void => { void doStartGame(menuParams); },
+        /** R-WEB-MEASURE-FORTRING-FLEEMANUAL-RUNNERS-Q1: przełącznik pierścienia fortów (false = ON = reguła gry). Tylko ?civTest=1. */
+        setFortRingOff: (off: boolean): void => { _civTestFortRingOff = off; },
+        fortRingOff: (): boolean => civTestFortRingOffFlag(),
+        /** Liczba postawionych fortów/posterunków (odczyt, stan realny). */
+        fortCount: (): number => fortNodes.length,
         getSettings: () => ({
           diplomacyWarLevel: getDiplomacyWarLevel(),
           wzrostSurowcowZEpoka: getWzrostSurowcowZEpoka(),
