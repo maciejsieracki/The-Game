@@ -1,0 +1,18 @@
+# R-WEB-ALLIANCE-LIMIT-AI-T66-Q1 — limit 2 sojuszy AI↔AI przekroczony w t66–67 (seed 4242, AI 1)? ustalić i naprawić
+
+DOMAIN: GAME | Operator HAIKU 5.5 | runda 1/5 | BAZA = origin/main 536ccd093f9749059e9a1e4810a93e29b6c547c7. Wdrożenie jako kolejna FALA po FC, jeśli zmieniasz gra/src.
+
+## Kontekst (pomiar WARS4242: dyspozycje/analizy/POMIAR-WOJNY-4242-PO-FALACH-891-896-2026-11-25.md; dane runs/R-WEB-MEASURE-WARS-4242-VERIFY-Q1/dane/diplo-seed4242-harder0.jsonl.gz; analizator gra/tools/limits-measure.cjs)
+Reguła (FALA 865, flaga torSojuszyAktywny=true domyślnie, src/game/ai-ai-alliance-limit.ts, bramka sojuszLimitPozwala): maks. 2 sojusze AI↔AI na cywilizację. W biegu seed 4242 w t66–67 AI 1 ma sojusze z 10, 13 i 19 (3). Para 1–13 ma SPRZECZNE pola w danych: status=sojusz, pokoj=pokoj (w t62–65 pokoj=sojusz). W t66 powstały naraz sojusze 1–10 i 7–13. Ścieżka zawarcia NIE ZMIERZONO; dwie ścieżki: tickAiAiAllianceRequests i gałąź sojusz_siostry w main.ts, obie wołają sojuszLimitPozwala.
+## Zadanie
+1. Ustal DOKŁADNĄ regułę (rejestr FALA 865, dyspozycje/autobot/runs/*ALLIANCE-LIMIT*, ai-ai-alliance-limit.ts): czy limit liczy sojusze „pełne” i „obronne”, czy wyjątki (sojusz z graczem, sojusz po wojnie, umowa wielostronna, siostry), czy status=sojusz przy pokoj=pokoj to osobny typ umowy; zacytuj w raporcie.
+2. Ustal, czy para 1–13 jest realnym sojuszem (activeDeals AI 1 w t65–66 — zrzut): błąd danych pomiaru (pole pokoj/status), czy realny trzeci sojusz. Powtórz bieg seed 4242 ciągły do t67 (runner diplomacy-harder-measure-run.cjs z logiem zawierania umów: kto, z kim, przez którą ścieżkę, wynik sojuszLimitPozwala; bundle zbudowany POZA repo vite --outDir w /tmp; wznawianie z slotu ma teraz ponawianie startu, ale rób bieg ciągły ok. 10 min; jeden Chromium naraz).
+3. Jeśli ścieżka łamie regułę: napraw minimalnie (np. bramka liczy sojusze oczekujące/równoległe w t66, jak przy limicie wojen — wzorzec pendingPrincipalCounts w FALI 896); test behawioralny z asercją negatywną i mutacją czerwoną na rdzeniu logiki; bieg weryfikujący seed 4242 do t67: maksimum sojuszy AI ≤ 2, limits-measure 0 naruszeń. Jeśli to błąd danych pomiaru (pola) — opisz i popraw analizator/runner; jeśli wyjątek zgodny z regułą lub wątpliwość produktowa: STOP, DECISION_REQUIRED z jednym zdaniem konfliktu per wariant (bez proponowania rozwiązania).
+## Allowlista
+gra/src/game/ai-ai-alliance-limit.ts, gra/src/main.ts (TYLKO minimalne miejsca, wypisz), nowy gra/tools/alliance-limit-ai-t66-test.cjs, gra/tools/limits-measure.cjs, runner diplo (tylko log zawierania umów), dyspozycje/analizy/POMIAR-WOJNY-4242-... (dopisek), dyspozycje/autobot/runs/R-WEB-ALLIANCE-LIMIT-AI-T66-Q1/**.
+## Zakazy
+gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifest, rust-port/, npm run build/dev w gra/ (build tylko vite --outDir poza repo), osłabianie asercji, zmiana wartości balansu (limit 2 zostaje), git add -A, push, spawn_task/create_session/create_trigger/send_later, run_in_background, git log -S nad całym repo bez ścieżki. Jeden Chromium naraz; po pracy pkill własnych chrome i usuń bundle/node_modules. Dysk >= 4 GB.
+## Bramki
+tsc 0; logic 213; tech-tree 20; research 33; unit-replace zielone; combat 6; ai-test 297/0; era-war-pairing-alliance 19/0; ai-ai-alliance-surcharge ALL GREEN; testy limitu sojuszy (grep tools: alliance-limit) zielone; war-rules-multiwar-main-guard 21/0 (okno tekstowe — sprawdź po zmianie main.ts). Zacommituj i zwróć SHA.
+## Binarne kryterium
+Ścieżka t66 ustalona z dowodem (log); naprawa z asercją negatywną + mutacją czerwoną + bieg weryfikujący, albo błąd danych pomiaru opisany i poprawiony, albo DECISION_REQUIRED; bramki zielone.
