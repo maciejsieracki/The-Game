@@ -47,7 +47,7 @@ const RUN_CASES = process.env.FLEE_CASE ? CASES.filter((_, i) => String(i) === p
     for (const c of RUN_CASES) {
       const page = await browser.newPage({ viewport: { width: 800, height: 600 } });
       const errors = []; page.on('pageerror', e => errors.push(e.message));
-      const qs = new URLSearchParams({ seed: String(c.seed), atk: c.atk, def: c.def, route: c.route, rounds: '4', ...(c.civA ? { civA: c.civA } : {}) });
+      const qs = new URLSearchParams({ seed: String(c.seed), atk: c.atk, def: c.def, route: c.route, rounds: String(process.env.FLEE_ROUNDS || '4'), ...(c.civA ? { civA: c.civA } : {}) });
       await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tools/battle-flee-manual-browser-entry.html?${qs.toString()}`, { waitUntil: 'load', timeout: 60000 });
       await page.waitForFunction(() => window.__e2e?.ready === true, undefined, { timeout: 60000 });
       let timedOut = false;
@@ -69,10 +69,12 @@ const RUN_CASES = process.env.FLEE_CASE ? CASES.filter((_, i) => String(i) === p
       // wiec "przemieszczenie" = liczba roznych pol docelowych >= 2 (jednostka weszla w co najmniej dwa pola).
       const last = steps.length ? steps[steps.length - 1] : null;
       const distinct = new Set(steps.map(s => `${s.col},${s.row}`)).size;
-      const start = steps.length ? { firstCel: { col: steps[0].col, row: steps[0].row } } : null;
-      const moved = distinct >= 2;
+      // R-WEB-MEASURE-FORTRING-FLEEMANUAL-RUNNERS-Q1 (r2): pozycja startowa = pole `from` pierwszego kroku (hak wejscia, zapis przed _doMove).
+      const start = steps.length ? { col: steps[0].from.col, row: steps[0].from.row } : null;
+      const moved = !!start && !!last && (start.col !== last.col || start.row !== last.row);
+      const bitwaTury = r.round;
       const row = {
-        case: c.name, nazwa: u.nazwa, normal: u.normal, flee: u.flee, cap, perRound: u.perRound,
+        case: c.name, nazwa: u.nazwa, normal: u.normal, flee: u.flee, cap, perRound: u.perRound, bitwaTury, rundyMax: Number(process.env.FLEE_ROUNDS || 4),
         maxPerRound: u.maxPerRound, totalSteps: u.totalSteps, kroki: steps.length,
         pozycjaStart: start, pozycjaKoniec: last ? { col: last.col, row: last.row, round: last.round } : null,
         poza_plansza: offMap.length, kroki_bez_punktow: noPoints.length, plansza: [BF_COLS, BF_ROWS],
@@ -82,10 +84,11 @@ const RUN_CASES = process.env.FLEE_CASE ? CASES.filter((_, i) => String(i) === p
       check(`[${c.name}] ${u.nazwa}: limit ucieczki jest egzekwowany (max krokow/tura = ${cap})`, u.maxPerRound === cap, { maxPerRound: u.maxPerRound, cap });
       check(`[${c.name}] brak odwrotu poza plansza (${steps.length} krokow, plansza ${BF_COLS}x${BF_ROWS})`, steps.length > 0 && offMap.length === 0, { offMap: offMap.slice(0, 5) });
       check(`[${c.name}] kazdy krok ma punkty ruchu (moveLeft >= 1 przed krokiem)`, steps.length > 0 && noPoints.length === 0, { noPoints: noPoints.slice(0, 5) });
-      check(`[${c.name}] stan po odwrocie: jednostka przemiescila sie z pozycji startowej`, moved, { start, last });
+      check(`[${c.name}] stan po odwrocie: jednostka przemiescila sie z pozycji startowej (${start && start.col},${start && start.row} -> ${last && last.col},${last && last.row})`, moved, { start, last });
+      check(`[${c.name}] bitwa trwala ${bitwaTury} tur (pomiar dla bitew > 5 tur: ${bitwaTury > 5 ? 'TAK' : 'nie'})`, bitwaTury >= 1, { bitwaTury });
     }
   } finally { await browser.close(); await server.close(); }
-  const outFile = path.join(OUT, `flee-manual-measure-case${process.env.FLEE_CASE ?? 'all'}.json`);
+  const outFile = path.join(OUT, `flee-manual-measure-case${process.env.FLEE_CASE ?? 'all'}${process.env.FLEE_ROUNDS ? '-rundy' + process.env.FLEE_ROUNDS : ''}.json`);
   const body = JSON.stringify({ schema: 'flee-manual-measure-v1', mnoznik: EXPECTED_SHARE, rows: table }, null, 1);
   fs.writeFileSync(outFile, body + '\n');
   console.log(JSON.stringify(table, null, 1));

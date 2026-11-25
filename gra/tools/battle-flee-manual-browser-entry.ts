@@ -50,7 +50,8 @@ const MAX_ROUNDS = Number(q.get('rounds') ?? '6');
       const rk = String(scene.roundNo);
       per[rk] = (per[rk] ?? 0) + 1;
       api.info[id] = { nazwa: ru.bu.nazwa, side: ru.side, normal: scene._movementPointsFor(ru.bu), flee: scene._fleeMovePointsFor(ru.bu), manualMode: scene._manualMode };
-      api.log.push({ round: scene.roundNo, id, col, row, moveLeft: +ru.moveLeft.toFixed(2) });
+      // R-WEB-MEASURE-FORTRING-FLEEMANUAL-RUNNERS-Q1 (r2): `from` = pole ZAJMOWANE przed krokiem (pozycja startowa dla pierwszego kroku).
+      api.log.push({ round: scene.roundNo, id, from: { col: ru.q, row: ru.r }, col, row, moveLeft: +ru.moveLeft.toFixed(2) });
     }
     return origMove(ru, col, row, done);
   };
@@ -73,7 +74,7 @@ function finish(): void {
     const per = Object.values(api.steps[id]) as number[];
     return { id, ...api.info[id], maxPerRound: Math.max(...per), totalSteps: per.reduce((a, b) => a + b, 0), perRound: api.steps[id], rounds: per.length };
   });
-  api.result = { round: scene.roundNo, winner: scene._endWinner, routed: rows, routedId: api.routedId, routeRound: api.routeRound, log: api.log.slice(0, 200) };
+  api.result = { round: scene.roundNo, winner: scene._endWinner, routed: rows, routedId: api.routedId, routeRound: api.routeRound, log: api.log.slice(0, 2000) };
   api.done = true;
 }
 function loop(): void {
