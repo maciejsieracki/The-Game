@@ -1,3 +1,9 @@
+## ROBOCZA c9e30e4d -- 2026-11-25 -- FALA 893: Wiki: Konnica Moc 98; porządki testów (dług Q14-B/D1) (testowa)
+
+- gra/src/data/wikiBundle.json + docs/PORADNIK-GRACZA/57-katalog-jednostek.md: Moc pola Konnicy 49→98 zgodnie z units.json; zmiany wyłącznie w testach gra/tools (Q14-B, Q14-D1)
+- Weryfikacja: tsc 0; logic 213/213; granice 52/0; moc-ranking 19; mur-paradoks 29/0; wojna-wymuszona 49/0; dyplo runda2 24/0, runda3 27/0; parity 45/0; build vite OK
+- Limity: ai-army-composition-per-civ 10 czerwonych (decyzja progu wręcz: czeka na właściciela); hud-moc-warstwa 2 czerwone (literał 0 w main.ts, kandydat BŁĄD-GRY); ai-test i bramki z FC nie ponawiane na integracji poza tsc/logic
+
 ## ROBOCZA af46e78b -- 2026-11-25 -- FALA 892: Dyplomacja: dopłata D sojuszy AI-AI 0,5 (testowa)
 
 - R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-HALF-Q1: dopłata D sojuszy AI↔AI 1,0 → 0,5 (jedno źródło prawdy ai-ai-treaty-params.json, decyzja właściciela 2026-11-22)
