@@ -24,9 +24,9 @@ use civ_engine::domain::city_capture_apply::{
 };
 use civ_engine::domain::diplomacy::{CivilizationPair, Relation, RelationStatus};
 use civ_engine::domain::playable::{
-    PlayableCity, PlayableGame, PlayablePlacedWonder, PlayablePlannedMarch, PlayablePlayer,
-    PlayableReplaceUnit, PlayableSaveError, PlayableSiegeMachineKind, PlayableState,
-    PlayableTerrain, PlayableUnit, PlayableUnitKind,
+    PlayableCity, PlayableGame, PlayableMarchStopReason, PlayablePlacedWonder,
+    PlayablePlannedMarch, PlayablePlayer, PlayableReplaceUnit, PlayableSaveError,
+    PlayableSiegeMachineKind, PlayableState, PlayableTerrain, PlayableUnit, PlayableUnitKind,
 };
 use civ_engine::domain::save_load::{EventQueue, SaveSnapshot};
 use civ_engine::domain::siege_surrender::PlayableCitySiege;
@@ -960,4 +960,192 @@ fn port_bez_sesji_odrzuca_save_i_load_domyslnie() {
         BridgeErrorCode::EngineRejected
     );
     let _ = BTreeSet::<u8>::new();
+}
+
+// ---------------------------------------------------------------------------------------------
+// Obrona r1 (N1, N2, N4): luki testow wskazane mutantami Evaluatora E05, E06, E08, E09
+// ---------------------------------------------------------------------------------------------
+
+/// E05/E06: zapis w SRODKU tury po `MoveUnit` (zbior `movedByPlayerThisTurn` niepusty) i z powiadomieniami
+/// marszu. Pin ich nie zapisuje (`buildSaveGameSnapshot`) i czysci przy wczytaniu (`main.ts:46273-46280`):
+/// cialo `playable` ich nie niesie, a wczytany stan ma je puste.
+#[test]
+fn zapis_w_srodku_tury_po_ruchu_nie_niesie_pol_ruchu_ani_powiadomien_w_ciele() {
+    let mut b = session();
+    let unit = get_state(&mut b).units[0].clone();
+    send(
+        &mut b,
+        EngineCommand::SelectUnit {
+            unit_id: unit.id.get(),
+        },
+    )
+    .expect("select");
+    send(
+        &mut b,
+        EngineCommand::MoveUnit {
+            unit_id: unit.id.get(),
+            destination: PositionDto::new(6, 4),
+            attack_unit_id: None,
+        },
+    )
+    .expect("ruch w srodku tury");
+    let mut st = get_state(&mut b);
+    assert!(
+        st.is_moved_by_player_this_turn(unit.id),
+        "warunek wstepny: MoveUnit oznacza jednostke (web markPlayerMovedUnit)"
+    );
+    st.march_stop_notified
+        .insert(unit.id, PlayableMarchStopReason::NoMovement);
+    st.march_stop_detail
+        .insert(unit.id, "wstrzymane".to_owned());
+    let mut nb = bridge_for(st);
+    let text = save(&mut nb);
+    let body = &json_of(&text)["playable"]["state"];
+    for key in [
+        "movedByPlayerThisTurn",
+        "marchStopNotified",
+        "marchStopDetail",
+    ] {
+        assert!(body.get(key).is_none(), "{key} poza cialem zapisu (pin)");
+    }
+    let (mut loaded, _) = load_in_new_session(&text);
+    let got = get_state(&mut loaded);
+    assert!(got.moved_by_player_this_turn.is_empty());
+    assert!(got.march_stop_notified.is_empty());
+    assert!(got.march_stop_detail.is_empty());
+}
+
+/// E05/E06 (strona wczytania): recznie dopisane pola ruchu i powiadomien w ciele zapisu sa czyszczone
+/// przy wczytaniu jak w pinie (`main.ts:46273`, `:46280`).
+#[test]
+fn wczytanie_czysci_pola_ruchu_wpisane_recznie_do_ciala() {
+    let mut st = custom_state();
+    st.mark_player_moved_unit(UnitId::new(1));
+    st.march_stop_notified
+        .insert(UnitId::new(1), PlayableMarchStopReason::Obstacle);
+    st.march_stop_detail
+        .insert(UnitId::new(1), "przeszkoda".to_owned());
+    let wire = serde_json::to_value(&st).expect("stan");
+    let mut b = bridge_for(custom_state());
+    let mut snap = json_of(&save(&mut b));
+    for key in [
+        "movedByPlayerThisTurn",
+        "marchStopNotified",
+        "marchStopDetail",
+    ] {
+        snap["playable"]["state"][key] = wire[key].clone();
+        assert!(!snap["playable"]["state"][key].is_null(), "{key} wpisany");
+    }
+    let (mut loaded, _) = load_in_new_session(&serde_json::to_string(&snap).expect("json"));
+    let got = get_state(&mut loaded);
+    assert!(got.moved_by_player_this_turn.is_empty());
+    assert!(got.march_stop_notified.is_empty());
+    assert!(got.march_stop_detail.is_empty());
+}
+
+/// E08: pin `plannedMarchesFromSave(..., units, 0)` (`main.ts:46283`) filtruje plany po fotelu GLOWNYM, nie po
+/// aktywnym fotelu. Przy aktywnym fotelu 2 plan jednostki fotela glownego przezywa, plan jednostki fotela 2 nie.
+#[test]
+fn plany_marszu_filtrowane_po_fotelu_glownym_gdy_aktywny_fotel_jest_inny() {
+    let mut st = custom_state();
+    add_unit(&mut st, 70, 2, (2, 2), "Wojownik");
+    let main_plan = PlayablePlannedMarch {
+        unit_id: UnitId::new(1),
+        dest_q: 5,
+        dest_r: 3,
+        attack_unit_id: Some(UnitId::new(50)),
+        general_target_id: None,
+    };
+    st.planned_marches = vec![
+        main_plan.clone(),
+        PlayablePlannedMarch {
+            unit_id: UnitId::new(70),
+            dest_q: 3,
+            dest_r: 2,
+            attack_unit_id: None,
+            general_target_id: None,
+        },
+    ];
+    let mut b = bridge_for(st);
+    let snap = json_of(&save(&mut b));
+    assert_eq!(
+        snap["plannedMarches"].as_array().map(Vec::len),
+        Some(2),
+        "zapis niesie oba plany"
+    );
+    let text = with_active_seat(&serde_json::to_string(&snap).expect("json"), json!(2));
+    let (mut loaded, _) = load_in_new_session(&text);
+    assert_eq!(loaded.adapter().fog_session().active_seat, PlayerId::new(2));
+    assert_eq!(get_state(&mut loaded).planned_marches, vec![main_plan]);
+}
+
+/// E09: miasto wlasciciela spoza `players` i bez jednostek musi trafic do cywilizacji rzutu `GameStateDto`
+/// (inaczej walidacja rzutu odrzuca zapis bledem `UnknownCityOwner`).
+#[test]
+fn miasto_wlasciciela_spoza_graczy_bez_jednostek_nie_blokuje_zapisu() {
+    let mut st = custom_state();
+    st.cities.push(PlayableCity {
+        id: CityId::new(901),
+        owner_id: PlayerId::new(88),
+        name: "Wolne miasto".into(),
+        position: PositionDto::new(2, 4),
+        is_capital: false,
+        population: 2,
+        culture: 0,
+    });
+    assert!(st.units.iter().all(|u| u.owner_id != PlayerId::new(88)));
+    let mut b = bridge_for(st.clone());
+    let text = save(&mut b);
+    let civ_ids: Vec<u64> = json_of(&text)["state"]["civilizations"]
+        .as_array()
+        .expect("cywilizacje rzutu")
+        .iter()
+        .map(|c| c["id"].as_u64().expect("id"))
+        .collect();
+    assert!(civ_ids.contains(&88), "{civ_ids:?}");
+    let (mut loaded, _) = load_in_new_session(&text);
+    assert_eq!(get_state(&mut loaded).cities, st.cities);
+}
+
+/// N2 (DL-SLB-3 zawezony): pin zapisuje `meta.siegeTurnByCity` (`main.ts:37291`, odczyt `:47266`). W Rust to
+/// zarzadzany surowy klucz `war.opaque` (`war_turn_state.rs:85`), wiec przechodzi przez `state.war` snapshotu.
+#[test]
+fn surowy_licznik_tur_oblezenia_w_war_opaque_przezywa_zapis() {
+    let mut st = custom_state();
+    st.war
+        .opaque
+        .insert("siegeTurnByCity".to_owned(), json!([[CITY, 3]]));
+    let mut b = bridge_for(st);
+    let text = save(&mut b);
+    assert!(json_of(&text)["playable"]["state"].get("war").is_none());
+    let (mut loaded, _) = load_in_new_session(&text);
+    assert_eq!(
+        get_state(&mut loaded).war.opaque.get("siegeTurnByCity"),
+        Some(&json!([[CITY, 3]]))
+    );
+}
+
+/// N4: cialo `playable` jest scisle co do FORMY znanych pol, a nieznane klucze ignoruje (jak reszta
+/// `SnapshotWire`, bez `deny_unknown_fields`).
+#[test]
+fn cialo_sesji_ignoruje_nieznane_klucze_a_zla_forma_znanego_pola_to_blad() {
+    let mut b = played_session();
+    let text = save(&mut b);
+    let (mut reference, _) = load_in_new_session(&text);
+    let expected = get_state(&mut reference);
+    let mut snap = json_of(&text);
+    snap["playable"]["state"]["kluczZPrzyszlosci"] = json!(1);
+    snap["playable"]["nieznany"] = json!("x");
+    let (mut loaded, _) = load_in_new_session(&serde_json::to_string(&snap).expect("json"));
+    assert_eq!(get_state(&mut loaded), expected);
+    snap["playable"]["state"]["turn"] = json!("zla forma");
+    let mut nb = session();
+    let err = send(
+        &mut nb,
+        EngineCommand::LoadGame {
+            save: serde_json::to_string(&snap).expect("json"),
+        },
+    )
+    .expect_err("zla forma znanego pola");
+    assert!(err.message.contains("load_game:"), "{}", err.message);
 }

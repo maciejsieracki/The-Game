@@ -766,7 +766,9 @@ struct SnapshotWire {
     /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1 (U5): web `activeHumanOwnerId`; nie-liczba => brak (fotel glowny).
     #[serde(default, rename = "activeHumanOwnerId")]
     active_human_owner_id: Option<Value>,
-    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1 (D-SLB-1): cialo sesji `PlayableGame` (scisle: zla forma = blad).
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1 (D-SLB-1): cialo sesji `PlayableGame`. Scisle co do FORMY znanych pol
+    /// (zla forma = blad wczytania); nieznane klucze sa ignorowane jak w calym `SnapshotWire` (brak
+    /// `deny_unknown_fields`, zgodnosc w przod).
     #[serde(default)]
     playable: Option<SavedPlayableSession>,
 }
