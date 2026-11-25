@@ -14,13 +14,14 @@
  * Usage (z gra/):  BUNDLE_DIR=<abs> node tools/diplomacy-relation-deal-text-consistent-live-test.cjs
  *   SKIP_BUILD=1 pomija budowe (wymaga istniejacego BUNDLE_DIR/index.html); DRTC_EVIDENCE=<abs dir> zrzuty.
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
-const BUNDLE = process.env.BUNDLE_DIR || path.join(os.tmpdir(), 'drtc-live-dist');
+const BUNDLE = process.env.BUNDLE_DIR || path.join(os.tmpdir(), `drtc-live-dist-${TMPDIR_RUN_ID}`);
 const EVIDENCE_DIR = process.env.DRTC_EVIDENCE || '';
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa&civTest=1';
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium';

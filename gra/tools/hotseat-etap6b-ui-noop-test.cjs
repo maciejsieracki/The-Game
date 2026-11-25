@@ -48,6 +48,7 @@
  * Bramka (z katalogu gra/): node tools/hotseat-etap6b-ui-noop-test.cjs — exit 0 = zielona.
  */
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -63,11 +64,11 @@ const CITY_STATES_COUNT = 2;
 const EMPIRE_SECTIONS = ['skarbiec', 'kultura', 'miasta', 'handel', 'moc'];
 
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const OLD_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6b-ui-OLD-${RUN_ID}`);
-const OLD_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6b-ui-OLD-dist-${RUN_ID}`);
-const NEW_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6b-ui-NEW-dist-${RUN_ID}`);
-const MUTATED_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6b-ui-MUT-${RUN_ID}`);
-const MUTATED_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6b-ui-MUT-dist-${RUN_ID}`);
+const OLD_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6b-ui-OLD-${RUN_ID}-${TMPDIR_RUN_ID}`);
+const OLD_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6b-ui-OLD-dist-${RUN_ID}-${TMPDIR_RUN_ID}`);
+const NEW_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6b-ui-NEW-dist-${RUN_ID}-${TMPDIR_RUN_ID}`);
+const MUTATED_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6b-ui-MUT-${RUN_ID}-${TMPDIR_RUN_ID}`);
+const MUTATED_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6b-ui-MUT-dist-${RUN_ID}-${TMPDIR_RUN_ID}`);
 
 process.on('exit', () => {
   for (const d of [OLD_GRA_DIR, OLD_OUT_DIR, NEW_OUT_DIR, MUTATED_GRA_DIR, MUTATED_OUT_DIR]) {

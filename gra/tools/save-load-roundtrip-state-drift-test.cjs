@@ -23,6 +23,7 @@
  * Bundle buduje sie POZA repo: vite build --outDir <abs-dist>.  Exit 1 przy kazdym niepowodzeniu.
  */
 'use strict';
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -40,7 +41,7 @@ const SEEDS = arg('seeds', '4242,777').split(',').map(x => parseInt(x, 10)).filt
 const SAVE_AT = parseInt(arg('save-at', '6'), 10);
 const TURNS = parseInt(arg('turns', '16'), 10);
 const DIST = arg('dist', '');
-const WORK = path.resolve(arg('work', path.join(os.tmpdir(), 'save-load-drift-work')));
+const WORK = path.resolve(arg('work', path.join(os.tmpdir(), `save-load-drift-work-${TMPDIR_RUN_ID}`)));
 
 // Znana, jawna lista roznic pomijanych w haszu runnera (musi sie zgadzac z HASH_IGNORED w runnerze).
 const EXPECTED_HASH_IGNORED = [

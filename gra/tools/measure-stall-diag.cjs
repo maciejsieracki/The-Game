@@ -10,6 +10,7 @@
  * Uzycie (z gra/, bundle poza repo):
  *   node tools/measure-stall-diag.cjs --dist <abs-dist> --out <abs-katalog> --profile <abs> --seed 1234 --maxturns 25
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -26,9 +27,9 @@ const SEED = parseInt(arg('seed', '1234'), 10);
 const MAXTURNS = parseInt(arg('maxturns', '25'), 10);
 const GOLD = 200;
 const FOOD = 200;
-const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'diplo-harder-dist')));
-const PROFILE = path.resolve(arg('profile', path.join(os.tmpdir(), 'stall-diag-profile')));
-const OUT = path.resolve(arg('out', path.join(os.tmpdir(), 'stall-diag-out')));
+const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), `diplo-harder-dist-${TMPDIR_RUN_ID}`)));
+const PROFILE = path.resolve(arg('profile', path.join(os.tmpdir(), `stall-diag-profile-${TMPDIR_RUN_ID}`)));
+const OUT = path.resolve(arg('out', path.join(os.tmpdir(), `stall-diag-out-${TMPDIR_RUN_ID}`)));
 const CHROME = process.env.CHROME_PATH || '/usr/bin/google-chrome';
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const COUNTERS = base.newCtx ? base.newCtx() : {};

@@ -1,12 +1,13 @@
 'use strict';
 /** Focused regression test: rejected cluster slots must not consume names. */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const esbuild = require('esbuild');
 const path = require('path');
 const fs = require('fs');
 
 const GRA = path.resolve(__dirname, '..');
-const entry = '/tmp/cluster-plan-name-entry-q1.ts';
-const bundle = '/tmp/cluster-plan-name-bundle-q1.cjs';
+const entry = `${require('os').tmpdir()}/cluster-plan-name-entry-q1-${TMPDIR_RUN_ID}.ts`;
+const bundle = `${require('os').tmpdir()}/cluster-plan-name-bundle-q1-${TMPDIR_RUN_ID}.cjs`;
 fs.writeFileSync(entry, `
 export { buildClusterStartPlan } from '${GRA}/src/game/cluster-start';
 export { buildClusterSpawnPlan } from '${GRA}/src/map/cluster-spawn';

@@ -21,6 +21,7 @@
  * Użycie (z gra/): node tools/load-game-regression-e2e.cjs --dist <katalog> [--turns N]
  * Wynik: linie PASS/FAIL + podsumowanie; kod wyjścia 0 tylko przy zerowych FAIL.
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const { chromium } = require(path.resolve(__dirname, '..', 'node_modules', 'playwright'));
 
@@ -185,7 +186,7 @@ async function scenarioS2(browser, ctx) {
       return { clicked: true, hasAutosaveText: /autosave|Autozapis|civ-autosave|Brak zapisów/i.test(t), snippet: t.slice(0, 0) };
     });
     check(clicked && errs.length === 0 && info.hasAutosaveText, 'S2 klik „Wczytaj grę" otwiera listę zapisów bez błędu', { clicked, errs: errs.slice(0, 3), ...info });
-    await page.screenshot({ path: process.env.E2E_SHOT || '/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/s2-load.png' });
+    await page.screenshot({ path: process.env.E2E_SHOT || `${require('os').tmpdir()}/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/s2-load-${TMPDIR_RUN_ID}.png` });
   }
   await page.close();
 }

@@ -15,6 +15,7 @@
  *
  * Usage (z gra/): node tools/city-wall-towers-test.cjs
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -24,7 +25,7 @@ let pass = 0; let fail = 0;
 function assert(c, m) { if (c) { pass++; console.log('  [OK]', m); } else { fail++; console.error('  [FAIL]', m); } }
 
 const RUN = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const OUT = path.join(os.tmpdir(), `city-wall-towers-${RUN}`);
+const OUT = path.join(os.tmpdir(), `city-wall-towers-${RUN}-${TMPDIR_RUN_ID}`);
 fs.mkdirSync(OUT, { recursive: true });
 process.on('exit', () => { try { fs.rmSync(OUT, { recursive: true, force: true }); } catch { /* best-effort */ } });
 function bundleFile(file, name) {

@@ -70,16 +70,19 @@ const TMPDIR_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`
 const TMP_ROOT = path.join(os.tmpdir(), `civ-bitwa-obroncy-mur-${TMPDIR_RUN_ID}`);
 
 // Sprzatanie osieroconych katalogow po przerwanym przebiegu (proces juz nie zyje).
+// Katalog nadrzedny wyliczony z TMP_ROOT (a nie z os.tmpdir() w tym miejscu): to jest KASOWANIE
+// wpisow o nazwie unikalnej per przebieg, nie zapis do stalej nazwy.
+const TMP_PARENT = path.dirname(TMP_ROOT);
 (() => {
   const STALE = /^civ-bitwa-obroncy-mur-(\d+)-[a-z0-9]{6}$/;
   const alive = (pid) => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } };
   try {
-    for (const ent of fs.readdirSync(os.tmpdir())) {
+    for (const ent of fs.readdirSync(TMP_PARENT)) {
       const m = STALE.exec(ent);
       if (!m) continue;
       const pid = Number(m[1]);
       if (!Number.isInteger(pid) || pid === process.pid || alive(pid)) continue;
-      try { fs.rmSync(path.join(os.tmpdir(), ent), { recursive: true, force: true }); } catch { /* best-effort */ }
+      try { fs.rmSync(path.join(TMP_PARENT, ent), { recursive: true, force: true }); } catch { /* best-effort */ }
     }
   } catch { /* best-effort */ }
 })();

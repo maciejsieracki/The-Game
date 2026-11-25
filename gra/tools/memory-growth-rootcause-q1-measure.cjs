@@ -18,6 +18,7 @@
  *     W turach --snap: pelna migawka sterty -> <snapdir>/seed<S>-t<N>.heapsnapshot (analiza:
  *     memory-growth-heapsnap-summary.cjs; migawek NIE trzymac w repo).
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
@@ -109,7 +110,7 @@ const TYP = arg('typ', 'kontynenty'); const SEED = Number(arg('seed', '4242'));
 const TURNS = Number(arg('turns', '100')); const SIZE = arg('size', 'Standardowy');
 const list = (v) => new Set(String(v).split(',').filter(Boolean).map(Number));
 const PROBE = list(arg('probe', '1,30,60,100')); const SNAP = list(arg('snap', '60,100'));
-const SNAPDIR = arg('snapdir', '/tmp/civ-heap-q1');
+const SNAPDIR = arg('snapdir', `${require('os').tmpdir()}/civ-heap-q1-${TMPDIR_RUN_ID}`);
 const FALLBACK_CHROME = (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const OUT = path.join(OUTD, `seed${SEED}.jsonl`);

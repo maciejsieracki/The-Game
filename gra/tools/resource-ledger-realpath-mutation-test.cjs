@@ -13,6 +13,7 @@
  * Uzycie (z gra/): node tools/resource-ledger-realpath-mutation-test.cjs [--ids m01,m02,...] [--list]
  * Kod wyjscia 0 = wszystkie wybrane mutacje zabite.
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
@@ -20,7 +21,7 @@ const { spawnSync } = require('child_process');
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i >= 0 ? process.argv[i + 1] : d; };
 const GRA = path.resolve(__dirname, '..');
 const MAIN = path.join(GRA, 'src', 'main.ts');
-const DIST = arg('dist', '/tmp/civ-ledger-mut');
+const DIST = arg('dist', `${require('os').tmpdir()}/civ-ledger-mut-${TMPDIR_RUN_ID}`);
 const IDS = arg('ids', '').split(',').filter(Boolean);
 const LIVE = path.join(__dirname, 'resource-ledger-realpath-live-test.cjs');
 

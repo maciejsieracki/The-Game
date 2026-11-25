@@ -32,6 +32,7 @@
  *
  * Brak Chromium / playwright -> NIE_ZMIERZONO (exit 2).
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -41,7 +42,7 @@ const { execSync } = require('child_process');
 const GRA = path.resolve(__dirname, '..');
 const CHROME = process.env.WSKIP_CHROMIUM || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const RUN = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const TMP_ROOT = path.join(os.tmpdir(), `civ-wsiege-${RUN}`);
+const TMP_ROOT = path.join(os.tmpdir(), `civ-wsiege-${RUN}-${TMPDIR_RUN_ID}`);
 fs.mkdirSync(TMP_ROOT, { recursive: true });
 process.on('exit', () => { if (process.env.WSKIP_KEEP === '1') return; try { fs.rmSync(TMP_ROOT, { recursive: true, force: true }); } catch { /* best-effort */ } });
 

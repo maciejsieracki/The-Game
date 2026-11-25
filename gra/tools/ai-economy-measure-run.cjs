@@ -36,6 +36,7 @@
  *
  * Limity: pojedyncze polecenie Bash < 590 s; przebieg dzielimy na kilka wywolan --stop-at (zapis slotu co --every tur).
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -66,8 +67,9 @@ const RESUME_TEST = arg('resume-test', '0') === '1';
 const HASH = arg('hash', '0') === '1' || RESUME_TEST;
 const FAST = arg('fast', '1') !== '0';
 const LEDGER_OFF = arg('ledger-off', '0') === '1';
-const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'ai-economy-dist')));
-const PROFILE = path.resolve(arg('profile', path.join(os.tmpdir(), 'ai-economy-profile')));
+const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), `ai-economy-dist-${TMPDIR_RUN_ID}`)));
+const PROFILE = path.resolve(arg('profile', path.join(os.tmpdir(), `ai-economy-profile-${TMPDIR_RUN_ID}`)));
+console.log('[tmpdir] TMPDIR_RUN_ID=' + TMPDIR_RUN_ID + ' DIST=' + DIST + ' PROFILE=' + PROFILE + ' (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)');
 const OUT = path.resolve(arg('out', path.join(GRA_DIR, 'ai-economy-out')));
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 const SAVE_AT = parseInt(arg('save-at', '40'), 10);

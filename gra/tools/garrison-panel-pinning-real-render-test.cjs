@@ -16,6 +16,7 @@
  *   node tools/garrison-panel-pinning-real-render-test.cjs --no-shots
  */
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -24,10 +25,10 @@ const GRA = path.resolve(__dirname, '..');
 const CITY_TS = path.resolve(GRA, 'src/ui/cityPanel.ts');
 const HOVER_TS = path.resolve(GRA, 'src/ui/hoverDetailDock.ts');
 const TMP_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const TMP = path.join(os.tmpdir(), `civ-garrison-panel-${TMP_RUN_ID}`);
+const TMP = path.join(os.tmpdir(), `civ-garrison-panel-${TMP_RUN_ID}-${TMPDIR_RUN_ID}`);
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const NO_SHOTS = process.argv.includes('--no-shots');
-const SHOTS_DIR = path.join(os.tmpdir(), `civ-shots-garrison-panel-${TMP_RUN_ID}`);
+const SHOTS_DIR = path.join(os.tmpdir(), `civ-shots-garrison-panel-${TMP_RUN_ID}-${TMPDIR_RUN_ID}`);
 
 let esbuild;
 let chromium;

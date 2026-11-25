@@ -29,6 +29,7 @@
  *   (każda z limitem 120 s); PHASES=save,load zawęża zestaw (np. do mutacji).
  * Mutacja: bundle zbudowany z usuniętym zapisem/odczytem pola → faza load MUSI paść (exit 1).
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -36,7 +37,7 @@ const assert = require('node:assert/strict');
 const { execSync, spawnSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
-const SCRATCH = process.argv[2] || path.join(os.tmpdir(), 'civ-truce-saveload');
+const SCRATCH = process.argv[2] || path.join(os.tmpdir(), `civ-truce-saveload-${TMPDIR_RUN_ID}`);
 const BUNDLE = process.env.BUNDLE_DIR || path.join(SCRATCH, 'b');
 const PROFILE = path.join(SCRATCH, 'profile');
 const STATE_FILE = path.join(SCRATCH, 'state.json');

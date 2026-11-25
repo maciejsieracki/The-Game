@@ -15,6 +15,7 @@
  * Usage (z gra/): node tools/diplomacy-trade-era-saveload-live-test.cjs <scratchAbs>
  *   <scratchAbs>/b = bundle (budowany, gdy brak), PHASES=save,load zawęża zestaw, BUNDLE_DIR nadpisuje bundle.
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const { resolveChromePath } = require('./_chrome-path.cjs');
 const fs = require('fs');
@@ -23,7 +24,7 @@ const assert = require('node:assert/strict');
 const { execSync, spawnSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
-const SCRATCH = process.argv[2] || path.join(os.tmpdir(), 'civ-era-saveload');
+const SCRATCH = process.argv[2] || path.join(os.tmpdir(), `civ-era-saveload-${TMPDIR_RUN_ID}`);
 const BUNDLE = process.env.BUNDLE_DIR || path.join(SCRATCH, 'b');
 const PROFILE = path.join(SCRATCH, 'profile');
 const STATE_FILE = path.join(SCRATCH, 'state.json');

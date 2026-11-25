@@ -33,6 +33,7 @@
  *   --runner <abs-plik>  -- runner testowany w asercji 0 (domyslnie tools/ai-economy-measure-run.cjs; mutacja na KOPII).
  * Wyjscie: 0 = wszystkie asercje zielone (w tym czerwone mutacje); 1 = blad (w tym czerwona asercja 4).
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
@@ -43,7 +44,8 @@ function arg(name, def) {
 }
 const GRA_DIR = path.resolve(__dirname, '..');
 const DIST_GIVEN = process.argv.includes('--dist');
-let DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'ai-economy-dist')));
+let DIST = path.resolve(arg('dist', path.join(os.tmpdir(), `ai-economy-dist-${TMPDIR_RUN_ID}`)));
+console.log('[tmpdir] TMPDIR_RUN_ID=' + TMPDIR_RUN_ID + ' DIST=' + DIST + ' (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist)');
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 const MUTANT_DIST = arg('mutant-dist', '') ? path.resolve(arg('mutant-dist', '')) : null;
 const RUNNER = path.resolve(arg('runner', path.join(GRA_DIR, 'tools', 'ai-economy-measure-run.cjs')));

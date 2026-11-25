@@ -24,6 +24,7 @@
  *   base64 (bez spacji, alfabet base64) vs reszta (źródło skryptu). Wymóg: 0 stringów base64 > 1 MB.
  *   Do tego heap po GC (performance.memory) i PSS procesów przeglądarki (/proc, informacyjnie).
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -35,7 +36,7 @@ function arg(name, def) {
 const DIST = arg('dist');
 if (!DIST) { console.error('usage: --dist <dir> [--json out] [--snapdir dir] [--no-snap]'); process.exit(2); }
 const OUT_JSON = arg('json');
-const SNAPDIR = arg('snapdir', '/tmp/civ-mem3-heap');
+const SNAPDIR = arg('snapdir', `${require('os').tmpdir()}/civ-mem3-heap-${TMPDIR_RUN_ID}`);
 const NO_SNAP = process.argv.includes('--no-snap');
 const HTML = path.join(path.resolve(DIST), 'index.html');
 const GRA = path.resolve(__dirname, '..');

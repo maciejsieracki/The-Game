@@ -6,6 +6,7 @@
  * City objects placed on real land hexes; economic turns and rendering remain real.
  * Usage: node tools/perf-large-empire-stress-live-test.cjs [turns=100]
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('node:fs');
 const assert = require('node:assert/strict');
 const os = require('node:os');
@@ -17,7 +18,7 @@ const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
 const id = `${process.pid}-${Math.random().toString(36).slice(2,8)}`;
 const root = path.resolve(__dirname, '..');
-const out = path.join(os.tmpdir(), `large-empire-stress-${id}`);
+const out = path.join(os.tmpdir(), `large-empire-stress-${id}-${TMPDIR_RUN_ID}`);
 const abSequence = ['all', 'coalesced', 'coalesced', 'all', 'all', 'coalesced', 'coalesced', 'all'];
 const abMode = process.env.STRESS_AB === '1';
 const compactMode = process.env.STRESS_COMPACT === '1';
@@ -67,7 +68,7 @@ function boundPageEvaluations(page, evaluateTimeoutMs = PAGE_EVALUATE_TIMEOUT_MS
         const info = { at: new Date().toISOString(), id, phase, details: page.__largeEmpirePhaseDetails ?? {}, elapsedMs: Date.now() - startedAt, error: String(error) };
         console.error('[large-empire] page-evaluate failure:', JSON.stringify(info));
         const evidence = { evaluateFailure: info, phaseHistory: page.__largeEmpirePhaseHistory ?? [], errors: page.__largeEmpireCapturedErrors ?? [], warnings: page.__largeEmpireCapturedWarnings ?? [] };
-        const screenshotPath = path.join(os.tmpdir(), `large-empire-page-eval-timeout-${id}-${Date.now()}.png`);
+        const screenshotPath = path.join(os.tmpdir(), `large-empire-page-eval-timeout-${id}-${Date.now()}-${TMPDIR_RUN_ID}.png`);
         try {
           await deadline(page.screenshot({ path: screenshotPath, timeout: screenshotTimeoutMs }), screenshotTimeoutMs + 500, 'timeout screenshot');
           evidence.screenshot = screenshotPath;
@@ -85,7 +86,7 @@ function boundPageEvaluations(page, evaluateTimeoutMs = PAGE_EVALUATE_TIMEOUT_MS
         } catch (stateError) {
           evidence.stateError = String(stateError);
         }
-        const evidencePath = path.join(os.tmpdir(), `large-empire-page-eval-timeout-${id}-${Date.now()}.json`);
+        const evidencePath = path.join(os.tmpdir(), `large-empire-page-eval-timeout-${id}-${Date.now()}-${TMPDIR_RUN_ID}.json`);
         fs.writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
         page.__largeEmpireLatestEvidencePath = evidencePath;
         console.error('[large-empire] page-evaluate timeout evidence:', evidencePath);
@@ -188,9 +189,9 @@ async function runHarnessSelfTest() {
 async function runStartupOnlyProbe(page, capMs = 180000) {
   const started = Date.now();
   const rows = [];
-  const evidencePath = path.join(os.tmpdir(), `large-empire-startup-probe-${id}.json`);
+  const evidencePath = path.join(os.tmpdir(), `large-empire-startup-probe-${id}-${TMPDIR_RUN_ID}.json`);
   const screenshot = async label => {
-    const file = path.join(os.tmpdir(), `large-empire-startup-${id}-${label}-${Date.now()}.png`);
+    const file = path.join(os.tmpdir(), `large-empire-startup-${id}-${label}-${Date.now()}-${TMPDIR_RUN_ID}.png`);
     try {
       await deadline(page.screenshot({ path: file, timeout: PAGE_SCREENSHOT_TIMEOUT_MS }), PAGE_SCREENSHOT_TIMEOUT_MS + 500, `startup screenshot ${label}`);
       return file;
@@ -862,7 +863,7 @@ async function main() {
       const oldOwners=new Map(before.owners.map(c=>[c.cityId,c]));
       const transitions=after.owners.filter(c=>oldOwners.has(c.cityId)&&oldOwners.get(c.cityId).ownerId!==c.ownerId).map(c=>({cityId:c.cityId,cityName:c.cityName,oldOwnerId:oldOwners.get(c.cityId).ownerId,newOwnerId:c.ownerId}));
       const directResult={bundleSha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(out,'index.html'))).digest('hex'),fixture,before,wallMs:Date.now()-started,transitions,relationAfter:after.relation,captureCallbacks:after.captureCallbacks,captureEvents:after.captureEvents,siegeScans:after.siegeScans,stormRows:after.stormRows,outcomeRows:after.outcomeRows,worldBefore:before.world,worldAfter:after.world,errors};
-      const resultPath=path.join(os.tmpdir(),`large-empire-direct-siege-${id}.json`); fs.writeFileSync(resultPath,JSON.stringify(directResult,null,2));
+      const resultPath=path.join(os.tmpdir(),`large-empire-direct-siege-${id}-${TMPDIR_RUN_ID}.json`); fs.writeFileSync(resultPath,JSON.stringify(directResult,null,2));
       console.log('[large-empire] direct siege scan result:',JSON.stringify({...directResult,resultPath}));
       try { await deadline(browser.close(), 10000, 'browser close'); } catch { browser.process()?.kill('SIGKILL'); }
       server.close(); fs.rmSync(out,{recursive:true,force:true});
@@ -922,7 +923,7 @@ async function main() {
         }
       }
       if (!settled) {
-        const shot=path.join(os.tmpdir(),`large-empire-stress-timeout-${id}.png`);
+        const shot=path.join(os.tmpdir(),`large-empire-stress-timeout-${id}-${TMPDIR_RUN_ID}.png`);
         let screenshotError=null;
         try { await deadline(page.screenshot({path:shot,timeout:PAGE_SCREENSHOT_TIMEOUT_MS}), PAGE_SCREENSHOT_TIMEOUT_MS + 500, 'EOT timeout screenshot'); } catch (e) { screenshotError=String(e); }
         let state=failState;
@@ -1057,7 +1058,7 @@ async function main() {
     if (!compactMode) console.log('[large-empire] phase summary:',JSON.stringify({phaseSummary,remainingByTurn,baselineComparison,abComparison,yieldCountByTurn:Array.from(yieldCountByTurn.entries()),yieldBudgetFailures}));
     if (!abMode && !compactMode) console.log('[large-empire] per-owner profile:',JSON.stringify(Array.from(ownerPhaseMap.values())));
     if (abMode) {
-      const summaryPath = path.join(os.tmpdir(), `large-empire-ab-summary-${id}.json`);
+      const summaryPath = path.join(os.tmpdir(), `large-empire-ab-summary-${id}-${TMPDIR_RUN_ID}.json`);
       const compactSummary = {
         scenario: seeded,
         sequence: abSequence,
@@ -1075,7 +1076,7 @@ async function main() {
     const slowest = samples.filter(s=>s.advanced).reduce((max,s)=>Math.max(max,s.wallMs),0);
     const stopReason = samples.at(-1)?.stopReason ?? (samples.some(s=>s.advanced===false) ? 'EOT timeout or blocker' : completedTurns === turns ? 'requested turns completed' : 'stopped early');
     if (compactMode && !abMode) {
-      const summaryPath = path.join(os.tmpdir(), `large-empire-stress-summary-${id}.json`);
+      const summaryPath = path.join(os.tmpdir(), `large-empire-stress-summary-${id}-${TMPDIR_RUN_ID}.json`);
       const compactSummary = {
         startedAt: runStartedAt.toISOString(),
         completedAt: new Date().toISOString(),

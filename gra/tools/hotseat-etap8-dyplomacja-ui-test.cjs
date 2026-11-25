@@ -29,6 +29,7 @@
  * Bramka (z katalogu gra/): node tools/hotseat-etap8-dyplomacja-ui-test.cjs
  */
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -38,7 +39,7 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap8-dyplomacja-ui-${RUN_ID}`);
+const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap8-dyplomacja-ui-${RUN_ID}-${TMPDIR_RUN_ID}`);
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
 const DOWODY_DIR = path.join(GRA_DIR, '..', 'dowody');
 

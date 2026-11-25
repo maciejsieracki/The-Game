@@ -20,13 +20,14 @@
  * Uruchamianie z gra/: node tools/diplomacy-sensible-deals-live-test.cjs
  */
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
-const OUT_DIR = process.env.DEALS_LIVE_OUT || path.join(os.tmpdir(), 'deals-sensible-live-dist');
+const OUT_DIR = process.env.DEALS_LIVE_OUT || path.join(os.tmpdir(), `deals-sensible-live-dist-${TMPDIR_RUN_ID}`);
 const EVIDENCE_DIR = process.env.DEALS_LIVE_EVIDENCE || '';
 const URL_HTML = 'file://' + path.join(OUT_DIR, 'index.html') + '?playtest=mapa';
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium';

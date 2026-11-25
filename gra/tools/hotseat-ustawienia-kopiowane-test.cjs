@@ -11,6 +11,7 @@
  * Run from gra/: node tools/hotseat-ustawienia-kopiowane-test.cjs
  */
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -20,7 +21,7 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(GRA_DIR, '..');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-settings-${RUN_ID}`);
+const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-settings-${RUN_ID}-${TMPDIR_RUN_ID}`);
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
 const EVIDENCE_DIR = path.join(REPO_ROOT, 'dowody');
 

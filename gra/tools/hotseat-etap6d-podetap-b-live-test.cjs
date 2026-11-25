@@ -39,6 +39,7 @@
  * Bramka (z katalogu gra/): node tools/hotseat-etap6d-podetap-b-live-test.cjs — exit 0 = zielona.
  */
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -48,9 +49,9 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const POST_OUT_DIR = path.join(os.tmpdir(), `civ-6d-b-POST-dist-${RUN_ID}`);
-const MUT_GRA_DIR = path.join(os.tmpdir(), `civ-6d-b-MUT-${RUN_ID}`);
-const MUT_OUT_DIR = path.join(os.tmpdir(), `civ-6d-b-MUT-dist-${RUN_ID}`);
+const POST_OUT_DIR = path.join(os.tmpdir(), `civ-6d-b-POST-dist-${RUN_ID}-${TMPDIR_RUN_ID}`);
+const MUT_GRA_DIR = path.join(os.tmpdir(), `civ-6d-b-MUT-${RUN_ID}-${TMPDIR_RUN_ID}`);
+const MUT_OUT_DIR = path.join(os.tmpdir(), `civ-6d-b-MUT-dist-${RUN_ID}-${TMPDIR_RUN_ID}`);
 
 process.on('exit', () => {
   for (const d of [POST_OUT_DIR, MUT_GRA_DIR, MUT_OUT_DIR]) {

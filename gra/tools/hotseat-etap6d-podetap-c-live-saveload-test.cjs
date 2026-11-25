@@ -43,6 +43,7 @@
  * Bramka (z katalogu gra/): node tools/hotseat-etap6d-podetap-c-live-saveload-test.cjs
  */
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -54,9 +55,9 @@ const TURNS_BEFORE_SAVE = 3;
 const TURNS_AFTER_LOAD = 3;
 
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const NEW_OUT_DIR = path.join(os.tmpdir(), `civ-podetap-c-NEW-dist-${RUN_ID}`);
-const MUTATED_GRA_DIR = path.join(os.tmpdir(), `civ-podetap-c-MUT-${RUN_ID}`);
-const MUTATED_OUT_DIR = path.join(os.tmpdir(), `civ-podetap-c-MUT-dist-${RUN_ID}`);
+const NEW_OUT_DIR = path.join(os.tmpdir(), `civ-podetap-c-NEW-dist-${RUN_ID}-${TMPDIR_RUN_ID}`);
+const MUTATED_GRA_DIR = path.join(os.tmpdir(), `civ-podetap-c-MUT-${RUN_ID}-${TMPDIR_RUN_ID}`);
+const MUTATED_OUT_DIR = path.join(os.tmpdir(), `civ-podetap-c-MUT-dist-${RUN_ID}-${TMPDIR_RUN_ID}`);
 
 process.on('exit', () => {
   for (const d of [NEW_OUT_DIR, MUTATED_GRA_DIR, MUTATED_OUT_DIR]) {

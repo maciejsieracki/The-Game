@@ -10,6 +10,7 @@
  */
 'use strict';
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -18,7 +19,7 @@ const { execSync } = require('child_process');
 const GRA_DIR = path.resolve(__dirname, '..');
 const ESBUILD_BIN = path.join(GRA_DIR, 'node_modules/.bin/esbuild');
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const OUT_DIR = path.join(os.tmpdir(), `procarz-piercing-${RUN_ID}`);
+const OUT_DIR = path.join(os.tmpdir(), `procarz-piercing-${RUN_ID}-${TMPDIR_RUN_ID}`);
 fs.mkdirSync(OUT_DIR, { recursive: true });
 process.on('exit', () => {
   try { fs.rmSync(OUT_DIR, { recursive: true, force: true }); } catch { /* best-effort */ }

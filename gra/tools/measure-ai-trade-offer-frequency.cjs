@@ -32,13 +32,14 @@
  *   MEAS_ARM: natural | prepared (domyslnie natural). MEAS_MAX_SEC: limit czasu przebiegu (domyslnie 480 s);
  *   po limicie zapisuje raport czesciowy z `turnsRun`. Bundle: BUNDLE_DIR (budowany osobno poza repo; SKIP_BUILD=1 pomija build).
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
-const BUNDLE = process.env.BUNDLE_DIR || path.join(os.tmpdir(), 'measure-ai-trade-dist');
+const BUNDLE = process.env.BUNDLE_DIR || path.join(os.tmpdir(), `measure-ai-trade-dist-${TMPDIR_RUN_ID}`);
 const TURNS = parseInt(process.env.MEAS_TURNS || '150', 10);
 const ARM = process.env.MEAS_ARM === 'prepared' ? 'prepared' : 'natural';
 // R-WEB-AI-TRADE-OFFER-FREQUENCY-MEASURE-Q1: ziarno (?civSeed, tylko z civTest=1) i Relacja (total 0–200; haki setRelationTotal).

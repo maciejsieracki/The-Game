@@ -1,12 +1,13 @@
 'use strict';
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync, spawn } = require('node:child_process');
 const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
-const DIST = '/tmp/civ-general-purchase-runtime';
+const DIST = `${require('os').tmpdir()}/civ-general-purchase-runtime-${TMPDIR_RUN_ID}`;
 const CHROME = process.env.CHROMIUM_PATH
   || (fs.existsSync((require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')) ? (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium') : '/opt/pw-browsers/chromium');
 let pass = 0, fail = 0;

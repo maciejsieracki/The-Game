@@ -60,6 +60,7 @@
  * Dowód mutacyjny (z katalogu gra/): node tools/hotseat-etap6c-lastpraca-per-fotel-test.cjs --assert-mutant
  */
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -71,9 +72,9 @@ const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const ASSERT_MUTANT = process.argv.includes('--assert-mutant');
 
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-lastpraca-per-fotel-${RUN_ID}`);
+const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-lastpraca-per-fotel-${RUN_ID}-${TMPDIR_RUN_ID}`);
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
-const MUTANT_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-lastpraca-mutant-src-${RUN_ID}`);
+const MUTANT_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-lastpraca-mutant-src-${RUN_ID}-${TMPDIR_RUN_ID}`);
 const SHOT_DIR = path.resolve(REPO_ROOT, 'dowody');
 const BUILD_DIR = ASSERT_MUTANT ? MUTANT_GRA_DIR : GRA_DIR;
 

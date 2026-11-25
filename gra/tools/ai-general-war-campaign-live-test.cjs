@@ -1,12 +1,13 @@
 'use strict';
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync, spawn } = require('node:child_process');
 const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
-const DIST = '/tmp/civ-ai-general-war-campaign-live';
+const DIST = `${require('os').tmpdir()}/civ-ai-general-war-campaign-live-${TMPDIR_RUN_ID}`;
 const CHROME = process.env.CHROMIUM_PATH
   || (fs.existsSync((require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')) ? (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium') : '/opt/pw-browsers/chromium');
 const TOTAL_TIMEOUT_MS = 5 * 60 * 1000;

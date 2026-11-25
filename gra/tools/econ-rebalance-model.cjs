@@ -5,7 +5,9 @@
  * MODEL STATYCZNY (bez sprzezenia zwrotnego, bez zmian w grze). Czyta pomiar gracza
  * (owner 0) z seed{4242,7}.jsonl i przelicza per ture PRZED / PO dla wariantow.
  * Uzycie: node gra/tools/econ-rebalance-model.cjs [katalog_pomiaru] [--csv]
- * Domyslny katalog: /tmp/econ-final.
+ * Domyslny katalog: <os.tmpdir()>/econ-final-<TMPDIR_RUN_ID> (per przebieg, patrz _tmp-unique.cjs).
+ * Dane z osobnego biegu pomiaru podaj JAWNIE jako katalog_pomiaru (albo TMPDIR_RUN_ID=<id producenta>),
+ * bo domyslna nazwa nie wskazuje juz na stale /tmp/econ-final sprzed zmiany higieny nazw.
  *
  * ZALOZENIA (NIE_ZMIERZONO tam, gdzie pomiar ich nie podaje):
  *  - epoka wlasciciela w pomiarze = 2 (Braz) przez caly bieg; epoka 3 to PROJEKCJA statyczna.
@@ -26,11 +28,12 @@
  *  - NIE uwzglednia: spadku populacji, capu spichlerza (cap 1000 w t30-t90, 3000 t120, 5000 t150
  *    w seed 4242), zmiany liczby miast/jednostek, sprzezenia zwrotnego.
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const path = require('path');
 
 const args = process.argv.slice(2);
-const dir = args.find(a => !a.startsWith('--')) || '/tmp/econ-final';
+const dir = args.find(a => !a.startsWith('--')) || `${require('os').tmpdir()}/econ-final-${TMPDIR_RUN_ID}`;
 const CSV = args.includes('--csv');
 
 const TURNS = [30, 60, 90, 120, 150];

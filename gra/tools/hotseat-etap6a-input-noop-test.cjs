@@ -53,6 +53,7 @@
  * Bramka (z katalogu gra/): node tools/hotseat-etap6a-input-noop-test.cjs — exit 0 = zielona.
  */
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -67,9 +68,9 @@ const RNG_SEED = 135797;
 const CITY_STATES_COUNT = 2;
 
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const OLD_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6a-input-OLD-${RUN_ID}`);
-const OLD_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6a-input-OLD-dist-${RUN_ID}`);
-const NEW_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6a-input-NEW-dist-${RUN_ID}`);
+const OLD_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6a-input-OLD-${RUN_ID}-${TMPDIR_RUN_ID}`);
+const OLD_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6a-input-OLD-dist-${RUN_ID}-${TMPDIR_RUN_ID}`);
+const NEW_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6a-input-NEW-dist-${RUN_ID}-${TMPDIR_RUN_ID}`);
 
 process.on('exit', () => {
   for (const d of [OLD_GRA_DIR, OLD_OUT_DIR, NEW_OUT_DIR, MUTATED_GRA_DIR, MUTATED_OUT_DIR]) {
@@ -101,8 +102,8 @@ function prepareOldGraDir() {
 // --- ZEPSUTY (nietautologiczność): kopia bieżącego (PO) kodu z `isMe()` na sztywno
 // `false` -- dowodzi, że ta bramka realnie reaguje na złamanie migracji klastrów A-H,
 // a nie jest zielona niezależnie od kodu (REGUŁA PRZECIW SAMOOSZUKIWANIU dispatchu).
-const MUTATED_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6a-input-MUT-${RUN_ID}`);
-const MUTATED_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6a-input-MUT-dist-${RUN_ID}`);
+const MUTATED_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6a-input-MUT-${RUN_ID}-${TMPDIR_RUN_ID}`);
+const MUTATED_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6a-input-MUT-dist-${RUN_ID}-${TMPDIR_RUN_ID}`);
 
 function prepareMutatedGraDir() {
   log('przygotowanie katalogu "ZEPSUTY" (isMe() na sztywno false, dowód nietautologiczności)...');
