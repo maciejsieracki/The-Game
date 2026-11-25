@@ -114,12 +114,14 @@ function main() {
   const legacyBronzeEntries = new Map();
   const legacyIronEntries = new Map();
   const loadedOwnerEras = new Map([[0, 2], [7, 2], [8, 3], [9, 1]]);
-  M.backfillMissingEraEntryTurns(legacyBronzeEntries, loadedOwnerEras, 219);
-  M.backfillMissingEraEntryTurns(legacyIronEntries, loadedOwnerEras, 219);
-  eq(JSON.stringify([...legacyBronzeEntries]), JSON.stringify([[0, 219], [7, 219], [8, 219]]), 'missing legacy timestamps are initialized at load only for Bronze/Iron owners');
-  eq(JSON.stringify([...legacyIronEntries]), JSON.stringify([[0, 219], [7, 219], [8, 219]]), 'legacy Iron map receives same conservative load turn');
-  // Ryzyko (raport, DO POTWIERDZENIA): próg 0 => owner bez znacznika w zapisie jest eligible od tury wczytania.
-  eq(bronzeIn(219, legacyBronzeEntries.get(7)), true, 'legacy Bronze owner eligible at load turn (próg 0; patrz raport: seria przy wczytaniu)');
+  // R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1 (zarzut 2): zapis legacy startuje 40-turowe czekanie od wczytania
+  // (LEGACY_ERA_ENTRY_WAIT_TURNS = 40, jak przed zmianą) -- brak nagłej serii wojen przy wczytaniu.
+  M.backfillMissingEraEntryTurns(legacyBronzeEntries, loadedOwnerEras, 219, 40);
+  M.backfillMissingEraEntryTurns(legacyIronEntries, loadedOwnerEras, 219, 40);
+  eq(JSON.stringify([...legacyBronzeEntries]), JSON.stringify([[0, 259], [7, 259], [8, 259]]), 'missing legacy timestamps = wczytanie + 40 tur (tylko Brąz/Żelazo)');
+  eq(JSON.stringify([...legacyIronEntries]), JSON.stringify([[0, 259], [7, 259], [8, 259]]), 'legacy Iron map: wczytanie + 40 tur');
+  eq(bronzeIn(258, legacyBronzeEntries.get(7)), false, 'legacy Bronze owner remains blocked after 39 turns (brak serii przy wczytaniu)');
+  eq(bronzeIn(259, legacyBronzeEntries.get(7)), true, 'legacy Bronze owner opens after 40 turns');
   const knownEntries = new Map([[7, 180], [8, 190]]);
   M.backfillMissingEraEntryTurns(knownEntries, loadedOwnerEras, 219);
   eq(JSON.stringify([...knownEntries]), JSON.stringify([[7, 180], [8, 190], [0, 219]]), 'known saved entry turns survive backfill unchanged');

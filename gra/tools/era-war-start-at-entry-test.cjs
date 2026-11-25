@@ -27,6 +27,7 @@ const J = (p) => JSON.stringify(path.join(SRC, p));
 fs.writeFileSync(entry, `
 export {
   WAR_RULES_PARAMS, isEraWarTargetDelayOk, isPlayerEligibleForEraWarPool,
+  backfillMissingEraEntryTurns, LEGACY_ERA_ENTRY_WAIT_TURNS,
 } from ${J('game/war-rules-multiwar')};
 export { assignForcedWarPairings } from ${J('game/forced-war-common')};
 export { isEligibleForBronzeForcedWar, WOJNA_WYMUSZONA_START_TURY_OD_EPOKI } from ${J('game/forced-war-bronze')};
@@ -112,6 +113,55 @@ function main() {
   console.log('--- D2: Kamień nadal 40 (wejście gracza w Kamień nie zmienia progu Kamienia) ---');
   eq(M.isEraWarTargetDelayOk({ turn: 40, ownerId: 3, epoch: 1, bronzeEnterTurn: undefined, ironEnterTurn: undefined }, M.WAR_RULES_PARAMS), true,
     'D2: Kamień t40 OK');
+
+  console.log('--- D3: GRACZ w wojnie Kamienia przy wejściu w Brąz -> Brąz czeka na pokój (nie równolegle, nie przepada) ---');
+  // Gracz (0) jest w puli subjectów z era 'bronze' (próg 0 od wejścia; licznik tylko tej epoki = 0).
+  // Aktywna wojna Kamienia wyklucza go przez isEraWarExhausted (ta sama bramka co dla AI).
+  // Gracz idzie przez playerFirst (partner = AI-kandydat z erą; bramka isPlayerPairGateOpen).
+  const pairP = (stoneWarActive) => M.assignForcedWarPairings([{ ownerId: 0, q: 0, r: 0, era: 'bronze' }], [], {
+    isPairBlocked: noBlock,
+    hexDistanceFn: hexDist,
+    totalActiveForcedWarsByOwner: noWars,
+    isEraWarExhausted: (oid) => (oid === 0 && stoneWarActive),
+    playerFirst: {
+      playerOwnerId: 0,
+      candidates: [{ ownerId: 3, q: 9, r: 0, era: 'bronze' }],
+      isPlayerPairGateOpen: () => true,
+    },
+  });
+  const playerPair = (res) => res.assignments.find((a) => a.ownerId === 0 || a.targetId === 0);
+  eq(playerPair(pairP(true)), undefined, 'D3a: gracz w wojnie Kamienia -> Brąz NIE startuje');
+  const pAfter = playerPair(pairP(false));
+  assert(pAfter && pAfter.era === 'bronze' && pAfter.targetId === 0 && pAfter.ownerId === 3,
+    `D3b: gracz po pokoju Kamienia -> Brąz startuje (partner 3), got ${JSON.stringify(pAfter)}`);
+
+  console.log('--- L: zapis legacy bez wejść w epokę -> brak nagłej serii przy wczytaniu ---');
+  eq(M.LEGACY_ERA_ENTRY_WAIT_TURNS, 40, 'L0: legacy wait = 40 (jak przed zmianą)');
+  const legacy = new Map();
+  M.backfillMissingEraEntryTurns(legacy, new Map([[3, 2], [5, 3], [7, 1]]), 100, M.LEGACY_ERA_ENTRY_WAIT_TURNS);
+  eq(legacy.get(3), 140, 'L1: legacy Brąz owner 3 = wczytanie + 40');
+  eq(legacy.get(5), 140, 'L2: legacy Żelazo owner 5 = wczytanie + 40');
+  eq(legacy.has(7), false, 'L3: Kamień nie backfilluje wejścia');
+  eq(M.isEligibleForBronzeForcedWar({ isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 100, eraEnterTurn: legacy.get(3) }), false,
+    'L4: legacy owner NIE eligible w turze wczytania');
+  eq(M.isEligibleForBronzeForcedWar({ isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 140, eraEnterTurn: legacy.get(3) }), true,
+    'L5: legacy owner eligible po 40 turach od wczytania');
+  const runtimeMap = new Map();
+  M.backfillMissingEraEntryTurns(runtimeMap, new Map([[0, 2]]), 100);
+  eq(runtimeMap.get(0), 100, 'L6: ścieżka runtime (domyślne 0) bez zmian: wejście = tura bieżąca');
+
+  console.log('--- G: strażnik źródłowy main.ts (zarzut: test D1 na stubie, mutacja 45992 bez czerwieni) ---');
+  const mainSrc = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
+  const exhaustedIdx = mainSrc.indexOf('const isEraWarExhausted = (oid: number, era?: ForcedEraTag): boolean =>');
+  assert(exhaustedIdx >= 0, 'G1: definicja isEraWarExhausted w main.ts istnieje');
+  const exhaustedBlock = exhaustedIdx >= 0 ? mainSrc.slice(exhaustedIdx, exhaustedIdx + 400) : '';
+  assert(/isOwnerInActiveEraWar\(oid\)\s*\n?\s*\|\|/.test(exhaustedBlock),
+    'G2: isEraWarExhausted zawiera isOwnerInActiveEraWar(oid) (podmiot w aktywnej wojnie epoki wyłączony)');
+  assert(mainSrc.includes('isEraWarExhausted: isWarRulesMultiwarEnabled() ? isEraWarExhausted : undefined'),
+    'G3: assignForcedWarPairings dostaje isEraWarExhausted (bramka dla gracza i AI)');
+  assert(mainSrc.includes('backfillMissingEraEntryTurns(bronzeEraEnterTurnByOwner, restoredEraOwners, turn, LEGACY_ERA_ENTRY_WAIT_TURNS)'),
+    'G4: load-time backfill Brązu używa LEGACY_ERA_ENTRY_WAIT_TURNS (bez serii przy wczytaniu)');
+  assert(mainSrc.includes('isOwnerInActiveEraWar(0)') || mainSrc.includes('isOwnerInActiveEraWar(oid)'), 'G5: sprawdzenie aktywnej wojny epoki obecne');
 
   console.log(`\nWYNIK: ${passed} OK / ${failed} FAIL`);
   if (failed > 0) process.exitCode = 1;
