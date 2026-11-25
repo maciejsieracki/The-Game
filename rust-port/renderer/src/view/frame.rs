@@ -72,10 +72,15 @@
 //! `render/cities.ts:740-763`, `wonderRenderer.ts`), and the selection /
 //! highlight calls come after the unit sync.
 //!
+//! The `setFog` options of the same `refreshFog` pass (`FogRevealDto`:
+//! `revealAllLand`, `riverRevealKeys`, gaps L1/L2) come with the frame
+//! (`RenderLayersDto::reveal`, R-RUSTPORT-P4-403A-FOG-REVEAL-FRAME-Q1) and go
+//! through [`FogReveal::from_dto`] into [`FrameInputs::land_reveal`],
+//! [`FrameInputs::river_reveal_keys`] and [`FrameInputs::river_fog_active`].
+//! [`MapScene`] draws no river ribbons, so the two river fields are data for
+//! the river consumer only (debt RIVER-SCENE).
+//!
 //! Not carried by `RenderLayersDto` (so not invented here):
-//! - `FogRevealDto` (`revealAllLand`, `riverRevealKeys`, gaps L1/L2): the frame
-//!   has none, so the frame takes the pin start state `revealAllLand = false`
-//!   (`main.ts:12803`), i.e. `landReveal = false` (see [`FrameInputs::land_reveal`]);
 //! - the unit renderer resolvers set once by `wireUnitRendererRingStance`
 //!   (`main.ts:10344-10384`: ring stance, owner colour, owner emblem) are not
 //!   set by [`MapScene`]; they stay the renderer defaults
@@ -110,7 +115,7 @@ use civ_view_model as vm;
 
 use super::cities::{apply_city_fog, apply_wonder_fog, CityAdapterError, CityInputs, WonderInputs};
 use super::convert::{pick_hex, terrain};
-use super::fog::FogSets;
+use super::fog::{FogReveal, FogRevealError, FogSets};
 use super::overlays::{
     overlay_layers, MapUiState, OverlayAdapterError, OverlayLayers, OverlayLayersInput,
 };
@@ -154,6 +159,15 @@ pub enum FrameError {
     Overlay(OverlayAdapterError),
     /// [`MapUnitRenderer::sync`] (missing unit model builder).
     Units(NotYetPorted),
+    /// [`FogReveal::from_dto`]: `reveal` contradicts the map or the fog of
+    /// the same frame.
+    Reveal(FogRevealError),
+}
+
+impl From<FogRevealError> for FrameError {
+    fn from(e: FogRevealError) -> Self {
+        Self::Reveal(e)
+    }
 }
 
 impl From<ViewAdapterError> for FrameError {
@@ -191,6 +205,7 @@ impl std::fmt::Display for FrameError {
             Self::City(e) => e.fmt(f),
             Self::Overlay(e) => e.fmt(f),
             Self::Units(e) => write!(f, "units: {e:?}"),
+            Self::Reveal(e) => write!(f, "reveal: {e}"),
         }
     }
 }
@@ -262,6 +277,14 @@ impl MapStatic {
 
 // ------------------------------------------------------------ frame inputs
 
+/// `setFog(…)` called without options (`opts?.landReveal ?? false`,
+/// `opts?.riverRevealKeys ?? null`, `scene.ts:3531-3532`): the reading of a
+/// frame with `reveal = None`.
+const NO_SET_FOG_OPTIONS: vm::map::FogRevealDto = vm::map::FogRevealDto {
+    reveal_all_land: false,
+    river_reveal_keys: None,
+};
+
 /// Every adapter input of one frame (`GetRenderFrame` result + UI state).
 #[derive(Debug, Clone, PartialEq)]
 pub struct FrameInputs {
@@ -273,10 +296,21 @@ pub struct FrameInputs {
     pub terrain: TerrainData,
     /// [`FogSets::from_dto`] of `fog` with `viewer.fog_active`.
     pub fog: FogSets,
-    /// `landReveal` of `setFog` (`main.ts:13491-13494`). `RenderLayersDto`
-    /// carries no `FogRevealDto` (gaps L1/L2), so this is the pin start state
-    /// `revealAllLand = false` (`main.ts:12803`).
+    /// `landReveal` of `setFog` (`main.ts:13491-13494`, `scene.ts:3532`):
+    /// [`FogReveal::land_reveal`] of `reveal` (`false` without options).
     pub land_reveal: bool,
+    /// `lastRiverRevealKeys` (`scene.ts:3531`): [`FogReveal::river_reveal_keys`]
+    /// of `reveal` — the `"q,r"` keys of the start circle while the viewer
+    /// awaits the first city (`startRevealKeysForRiverFog`,
+    /// `main.ts:13074-13080`), else `None` (`null`). Data only: [`MapScene`]
+    /// has no river ribbons (debt RIVER-SCENE); the reader is
+    /// `decor::river_lod::merged_river_visible_in_fog` (`reveal`).
+    pub river_reveal_keys: Option<HashSet<String>>,
+    /// `lastAnyHidden = anyHiddenFinal && !landReveal` (`scene.ts:3629`,
+    /// `:3654`): [`FogReveal::river_fog_active`] — the `fog_active` argument
+    /// of `decor::river_lod::merged_river_visible_in_fog`. Data only, as
+    /// [`Self::river_reveal_keys`].
+    pub river_fog_active: bool,
     /// [`CityInputs::from_dto`] of `owners` + `cities`.
     pub cities: CityInputs,
     /// [`WonderInputs::from_dto`] of `owners` + `wonders`.
@@ -307,7 +341,8 @@ impl FrameInputs {
     ///   CONTRACT_VERSION`;
     /// - [`FrameError::View`] for `hex_state` / `fog.state` not parallel to
     ///   `map.hexes` (and other conversion errors);
-    /// - [`FrameError::City`], [`FrameError::Overlay`] from the adapters.
+    /// - [`FrameError::City`], [`FrameError::Overlay`] from the adapters;
+    /// - [`FrameError::Reveal`] from [`FogReveal::from_dto`].
     pub fn from_dto(
         map: &MapStatic,
         layers: &vm::RenderLayersDto,
@@ -347,6 +382,15 @@ impl FrameInputs {
         let m = &map.map;
         let terrain = terrain_data(m, &layers.hex_state)?;
         let fog = FogSets::from_dto(m, &layers.fog, layers.viewer.fog_active)?;
+        // `setFog(vis, exploredForRender, opts)` (`main.ts:13489-13494`); no
+        // options = `setFog(ALL_KEYS, ALL_KEYS)` (`:13506`): `landReveal =
+        // false`, `riverRevealKeys = null` (`scene.ts:3531-3532`).
+        let reveal = FogReveal::from_dto(
+            m,
+            &fog,
+            layers.reveal.as_ref().unwrap_or(&NO_SET_FOG_OPTIONS),
+        )?;
+        let river_fog_active = reveal.river_fog_active(&fog);
         let okolica = okolica_map(m, &layers.hex_state)?;
         let cities = CityInputs::from_dto(&layers.owners, &layers.cities)?;
         let wonders = WonderInputs::from_dto(&layers.owners, &layers.wonders)?;
@@ -369,7 +413,9 @@ impl FrameInputs {
             turn: layers.turn,
             terrain,
             fog,
-            land_reveal: false,
+            land_reveal: reveal.land_reveal,
+            river_reveal_keys: reveal.river_reveal_keys,
+            river_fog_active,
             cities,
             wonders,
             overlays,

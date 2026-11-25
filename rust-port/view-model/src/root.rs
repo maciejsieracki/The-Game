@@ -2,7 +2,7 @@
 //! D-DTO-3 = B (static map once, dynamic layers in full).
 
 use crate::battle::BattleViewDto;
-use crate::map::{FogViewDto, HexDynDto, MapViewDto};
+use crate::map::{FogRevealDto, FogViewDto, HexDynDto, MapViewDto};
 use crate::overlays::{OverlaysViewDto, PlacedWonderDto, SiegeViewDto, TerritoryViewDto};
 use crate::owners::{CityViewDto, OwnerViewDto, ViewerDto};
 use crate::units::{StackViewDto, UnitViewDto};
@@ -88,6 +88,23 @@ pub struct RenderLayersDto {
     pub overlays: OverlaysViewDto,
     /// Battle.
     pub battle: Option<BattleViewDto>,
+    /// R-RUSTPORT-P4-403A-FOG-REVEAL-FRAME-Q1 (D-403A-1): the `setFog`
+    /// options of the same `refreshFog` pass (`main.ts:13489-13494`), so one
+    /// frame query per refresh carries them like the pin. `Some` = the fog
+    /// branch (`useFogRender`, `:13485`), which passes `{ landReveal,
+    /// riverRevealKeys }`; `None` = no options, i.e. the no-fog branch
+    /// `setFog(ALL_KEYS, ALL_KEYS)` (`:13505-13506`), read by the renderer as
+    /// `landReveal = false`, `riverRevealKeys = null` (`scene.ts:3531-3532`).
+    ///
+    /// Additive and optional: absent from the JSON when `None`
+    /// (`skip_serializing_if`), accepted when missing (`default`), so a frame
+    /// without it serialises byte for byte as before and the bridge
+    /// `CONTRACT_VERSION` stays (precedent D-WIRB-5). Not part of
+    /// [`RenderViewDto`]: [`RenderViewDto::split`] gives `None` and
+    /// [`RenderViewDto::join`] drops it (the full snapshot is the start/load
+    /// shape; the options travel with every frame).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reveal: Option<FogRevealDto>,
 }
 
 impl RenderViewDto {
@@ -128,6 +145,7 @@ impl RenderViewDto {
                 territory,
                 overlays,
                 battle,
+                reveal: None,
             },
         )
     }
@@ -151,6 +169,7 @@ impl RenderViewDto {
             territory,
             overlays,
             battle,
+            reveal: _,
         } = layers;
         Self {
             contract_version,

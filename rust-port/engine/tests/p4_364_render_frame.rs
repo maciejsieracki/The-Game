@@ -1608,3 +1608,215 @@ fn obrona_r2_ev11_fort_poza_terytorium_przy_wlasnej_jednostce() {
     rest.retain(|h| *h != (7, 2));
     assert_eq!(rest, without, "pozostale heksy bez zmian");
 }
+
+// R-RUSTPORT-P4-403A-FOG-REVEAL-FRAME-Q1 (#408): `reveal` w ramce ------------------------------------------
+//
+// Pin `07d2fbd72`: `refreshFog` (`main.ts:13475-13513`) w galezi mgly (`useFogRender`, `:13485`) wola
+// `setFog(vis, exploredForRender, { landReveal: revealAllLand, riverRevealKeys:
+// startRevealKeysForRiverFog() })` (`:13490-13494`), bez mgly `setFog(ALL_KEYS, ALL_KEYS)` BEZ opcji
+// (`:13505-13506`). `startRevealKeysForRiverFog` (`:13074-13080`): `!isAwaitingFirstPlayerCity() ||
+// meStartHex === null` -> `undefined`, inaczej `computeVisibleAt(start.q, start.r, map, startRevealRadius)`.
+
+/// Stan "przed pierwszym miastem": scenariusz startowy bez miast gracza i bez wpisu w
+/// `playerEverOwnedCityByOwner`; zwraca stan i heks startu (dawna stolica, web `playerStartHexFor(ME())`).
+fn awaiting_state() -> (PlayableState, (i32, i32)) {
+    let mut state = start_state();
+    let capital = state
+        .cities
+        .iter()
+        .find(|c| c.owner_id == PlayerId::new(HUMAN) && c.is_capital)
+        .expect("stolica scenariusza");
+    let start = (
+        i32::from(capital.position.x()),
+        i32::from(capital.position.y()),
+    );
+    state.cities.retain(|c| c.owner_id != PlayerId::new(HUMAN));
+    state.gracz_kiedys_mial_miasto = false;
+    state.player_ever_owned_city.clear();
+    assert!(state.is_awaiting_first_city(PlayerId::new(HUMAN)));
+    (state, start)
+}
+
+fn reveal_session(
+    state: &PlayableState,
+    start: Option<(i32, i32)>,
+    radius: f64,
+) -> PlayableFogSession {
+    let mut session = PlayableFogSession::for_new_game(state);
+    session.player_start_hex_by_owner.clear();
+    if let Some(s) = start {
+        session
+            .player_start_hex_by_owner
+            .insert(PlayerId::new(HUMAN), s);
+    }
+    session.start_reveal_radius = radius;
+    session
+}
+
+fn frame_with(state: &PlayableState, session: &mut PlayableFogSession) -> RenderLayersDto {
+    build_render_frame(
+        state,
+        session,
+        PlayerId::new(HUMAN),
+        &RenderUiParams::default(),
+    )
+    .expect("ramka")
+}
+
+/// Niezalezny od producenta `computeVisibleAt(start, radius)` (`visibility.ts:64-79`) w kolejnosci
+/// kontraktu (`r`-major, `q`-minor).
+fn visible_at(state: &PlayableState, start: (i32, i32), radius: f64) -> Vec<vm::HexCoord> {
+    let map = civ_engine::domain::playable_movement::ruch_mapa_from_state(state);
+    let mut keys: Vec<(i32, i32)> =
+        civ_engine::domain::terrain::visibility::compute_visible_at(start.0, start.1, &map, radius)
+            .into_iter()
+            .collect();
+    keys.sort_by_key(|&(q, r)| (r, q));
+    keys.into_iter()
+        .map(|(q, r)| vm::HexCoord::new(q, r))
+        .collect()
+}
+
+fn reveal_of(keys: Option<Vec<vm::HexCoord>>) -> Option<vm::map::FogRevealDto> {
+    Some(vm::map::FogRevealDto {
+        reveal_all_land: false,
+        river_reveal_keys: keys,
+    })
+}
+
+/// Kryterium 2a: przed pierwszym miastem ramka niesie klucze kregu startu = `computeVisibleAt(start,
+/// radius)`; granica promienia: inny promien daje inne klucze (mutant promienia ginie).
+#[test]
+fn r403a_przed_pierwszym_miastem_ramka_niesie_krag_startu() {
+    let (state, start) = awaiting_state();
+    for radius in [2.0, 3.0, 8.0] {
+        let mut session = reveal_session(&state, Some(start), radius);
+        let f = frame_with(&state, &mut session);
+        assert!(f.viewer.fog_active);
+        let expected = visible_at(&state, start, radius);
+        assert!(!expected.is_empty());
+        assert_eq!(f.reveal, reveal_of(Some(expected)), "promien {radius}");
+    }
+    // Granica promienia rozroznia kregi (krag 2 jest scisle mniejszy od kregu 3).
+    let r2 = visible_at(&state, start, 2.0);
+    let r3 = visible_at(&state, start, 3.0);
+    assert!(r2.len() < r3.len(), "{} < {}", r2.len(), r3.len());
+    assert!(r2.iter().all(|h| r3.contains(h)));
+    // Klucze to heksy mapy (kontrakt `FogRevealDto`).
+    let m = render_map(&state).expect("mapa");
+    let mut session = reveal_session(&state, Some(start), 3.0);
+    let keys = frame_with(&state, &mut session)
+        .reveal
+        .and_then(|r| r.river_reveal_keys)
+        .expect("klucze");
+    assert!(keys.iter().all(|k| m.hexes.iter().any(|h| h.coord == *k)));
+}
+
+/// Kryterium 2b: po zalozeniu miasta (lub wpisie w `playerEverOwnedCityByOwner`) i bez heksu startu ->
+/// `riverRevealKeys = undefined` (`None`); opcje nadal sa (galaz mgly) -> `Some({false, None})`.
+#[test]
+fn r403a_po_miescie_lub_bez_startu_brak_kluczy() {
+    let (state, start) = awaiting_state();
+    // Miasto gracza (zalozenie, `main.ts:16508`): miasto wygrywa ze startem.
+    let mut founded = state.clone();
+    founded.cities.push(city(55, HUMAN, 1, 1));
+    founded.record_ever_owned_city(PlayerId::new(HUMAN));
+    let mut session = reveal_session(&founded, Some(start), 3.0);
+    assert_eq!(frame_with(&founded, &mut session).reveal, reveal_of(None));
+    // Samo miasto (bez wpisu w zbiorze) - `computeAwaitingFirstPlayerCity` widzi miasto.
+    let mut city_only = state.clone();
+    city_only.cities.push(city(56, HUMAN, 1, 1));
+    let mut session = reveal_session(&city_only, Some(start), 3.0);
+    assert_eq!(frame_with(&city_only, &mut session).reveal, reveal_of(None));
+    // Sam wpis w zbiorze (miasto utracone) - nadal nie czeka.
+    let mut ever = state.clone();
+    ever.record_ever_owned_city(PlayerId::new(HUMAN));
+    let mut session = reveal_session(&ever, Some(start), 3.0);
+    assert_eq!(frame_with(&ever, &mut session).reveal, reveal_of(None));
+    // Bez heksu startu (`meStartHex === null`).
+    let mut session = reveal_session(&state, None, 3.0);
+    assert_eq!(frame_with(&state, &mut session).reveal, reveal_of(None));
+    // Scenariusz startowy (stolica) = po pierwszym miescie.
+    let st = start_state();
+    let mut session = PlayableFogSession::for_new_game(&st);
+    assert_eq!(frame_with(&st, &mut session).reveal, reveal_of(None));
+}
+
+/// Kryterium 2c: `fogOn = false` -> `setFog(ALL_KEYS, ALL_KEYS)` bez opcji -> `reveal = None`, nawet gdy
+/// fotel czeka na pierwsze miasto (D-403A-2).
+#[test]
+fn r403a_bez_mgly_ramka_bez_opcji() {
+    let (state, start) = awaiting_state();
+    let mut session = reveal_session(&state, Some(start), 3.0);
+    session.fog_on = false;
+    let f = frame_with(&state, &mut session);
+    assert!(!f.viewer.fog_active);
+    assert_eq!(f.reveal, None);
+    assert_eq!(frame_of(&start_state(), false).reveal, None);
+    assert_eq!(frame_of(&start_state(), true).reveal, reveal_of(None));
+}
+
+/// Kryterium 4: `reveal = None` -> brak klucza w JSON (ramka jak przed zmiana: 14 kluczy); `Some` ->
+/// klucz `reveal` camelCase; odczyt JSON bez klucza daje `None` (addytywnie, `CONTRACT_VERSION` mostu 1).
+#[test]
+fn r403a_json_ramki_addytywny() {
+    let old_keys: BTreeSet<&str> = [
+        "contractVersion",
+        "viewer",
+        "turn",
+        "hexState",
+        "fog",
+        "owners",
+        "cities",
+        "units",
+        "stacks",
+        "sieges",
+        "wonders",
+        "territory",
+        "overlays",
+        "battle",
+    ]
+    .into_iter()
+    .collect();
+    let off = frame_of(&start_state(), false);
+    let v = serde_json::to_value(&off).expect("json");
+    let keys: BTreeSet<&str> = v
+        .as_object()
+        .expect("obiekt")
+        .keys()
+        .map(String::as_str)
+        .collect();
+    assert_eq!(keys, old_keys, "reveal = None nie zmienia JSON ramki");
+    let back: RenderLayersDto = serde_json::from_value(v).expect("odczyt");
+    assert_eq!(back, off);
+
+    let (state, start) = awaiting_state();
+    let mut session = reveal_session(&state, Some(start), 2.0);
+    let on = frame_with(&state, &mut session);
+    let v = serde_json::to_value(&on).expect("json");
+    assert_eq!(v["reveal"]["revealAllLand"], json!(false));
+    assert!(v["reveal"]["riverRevealKeys"]
+        .as_array()
+        .is_some_and(|a| !a.is_empty()));
+    let back: RenderLayersDto = serde_json::from_value(v.clone()).expect("odczyt");
+    assert_eq!(back, on);
+    let mut without = v;
+    without.as_object_mut().expect("obiekt").remove("reveal");
+    let back: RenderLayersDto = serde_json::from_value(without).expect("bez klucza");
+    assert_eq!(back.reveal, None);
+    assert_eq!(CONTRACT_VERSION, 1);
+}
+
+/// Most: `GetRenderFrame` na scenariuszu startowym (stolica, mgla ON) niesie opcje bez kluczy.
+#[test]
+fn r403a_most_get_render_frame_niesie_reveal() {
+    let mut bridge = session_bridge();
+    let d = bridge
+        .handle(BridgeRequest::new("f", frame_cmd(None, None)))
+        .expect("frame");
+    let v: Value = serde_json::to_value(&d.response).expect("json");
+    assert_eq!(
+        v["result"]["frame"]["reveal"],
+        json!({"revealAllLand": false, "riverRevealKeys": null})
+    );
+}

@@ -304,6 +304,7 @@ fn layers() -> vm::RenderLayersDto {
         territory: territory(),
         overlays: overlays(),
         battle: None,
+        reveal: None,
     }
 }
 
@@ -484,6 +485,8 @@ fn frame_inputs_hold_every_adapter_input() {
     assert_eq!(f.turn, 5);
     assert_eq!(f.viewer, viewer());
     assert!(!f.land_reveal);
+    assert_eq!(f.river_reveal_keys, None);
+    assert!(!f.river_fog_active);
     // terrain_data: every hex, map seed.
     assert_eq!(f.terrain.hexes.len(), 8);
     assert_eq!(f.terrain.seed, 11);
@@ -942,4 +945,95 @@ fn t5c_empty_range_and_cleared_writer_on_the_frame() {
             opacity: civ_renderer::map_units::consts::IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY,
         }
     );
+}
+
+// ------------------------------------------------------------ 403A FOG-REVEAL-FRAME
+
+/// R-RUSTPORT-P4-403A-FOG-REVEAL-FRAME-Q1: `reveal` of the frame goes through
+/// `FogReveal::from_dto` into the frame inputs (was the constant `false`).
+fn with_reveal(all_land: bool, keys: Option<Vec<vm::HexCoord>>) -> vm::RenderLayersDto {
+    let mut l = layers();
+    l.reveal = Some(vm::map::FogRevealDto {
+        reveal_all_land: all_land,
+        river_reveal_keys: keys,
+    });
+    l
+}
+
+fn keys(k: &[&str]) -> Option<HashSet<String>> {
+    Some(k.iter().map(|s| (*s).to_owned()).collect())
+}
+
+/// Start circle keys (`startRevealKeysForRiverFog`, `main.ts:13074-13080`)
+/// reach `river_reveal_keys` as `"q,r"`; `Some(empty)` stays distinct from
+/// `None` (a truthy empty JS `Set`).
+#[test]
+fn reveal_river_keys_come_from_the_frame() {
+    let f = frame(&with_reveal(false, Some(vec![hx(0, 0), hx(1, 0)])), false);
+    assert_eq!(f.river_reveal_keys, keys(&["0,0", "1,0"]));
+    assert!(!f.land_reveal);
+    let empty = frame(&with_reveal(false, Some(Vec::new())), false);
+    assert_eq!(empty.river_reveal_keys, keys(&[]));
+    let none = frame(&with_reveal(false, None), false);
+    assert_eq!(none.river_reveal_keys, None);
+    // `reveal = None` (no `setFog` options) reads as `{ false, null }`.
+    assert_eq!(none, frame(&layers(), false));
+}
+
+/// `landReveal` comes from the frame and reaches the terrain: with a hidden
+/// hex the ocean backdrop shows only through `landReveal`
+/// (`scene.ts:3548`), and the river fog is off (`scene.ts:3654`).
+#[test]
+fn reveal_land_comes_from_the_frame_and_reaches_the_scene() {
+    // Hidden hex (1,1) under active fog, but `revealAllLand` needs every
+    // land hex explored (`isRevealLandTeren`), so the hidden one is ocean.
+    let mut st_map = map();
+    st_map.hexes[5].teren_bazowy = vm::Terrain::Morze;
+    let st = MapStatic::from_dto(&st_map).unwrap();
+    let mut off = layers();
+    off.fog.state[5] = vm::FogState::from_code(0).unwrap();
+    let mut on = off.clone();
+    on.reveal = Some(vm::map::FogRevealDto {
+        reveal_all_land: true,
+        river_reveal_keys: None,
+    });
+    let f_off = FrameInputs::from_dto(&st, &off, &UI, false).unwrap();
+    let f_on = FrameInputs::from_dto(&st, &on, &UI, false).unwrap();
+    assert!(!f_off.land_reveal);
+    assert!(f_off.river_fog_active, "hidden hex, no landReveal");
+    assert!(f_on.land_reveal);
+    assert!(!f_on.river_fog_active, "lastAnyHidden = anyHidden && !landReveal");
+    let mut s_off = MapScene::new(&st, &f_off, DETAIL);
+    s_off.apply(&f_off).unwrap();
+    let mut s_on = MapScene::new(&st, &f_on, DETAIL);
+    s_on.apply(&f_on).unwrap();
+    assert!(!s_off.show_ocean_backdrop());
+    assert!(s_on.show_ocean_backdrop());
+}
+
+/// Fog off (`setFog(ALL_KEYS, ALL_KEYS)` without options, `main.ts:13506`):
+/// keys tolerated and ignored, `revealAllLand` rejected as a typed error.
+#[test]
+fn reveal_without_fog_is_no_reveal_or_an_error() {
+    let mut l = with_reveal(false, Some(vec![hx(0, 0)]));
+    l.viewer.fog_active = false;
+    let f = frame(&l, false);
+    assert_eq!(f.river_reveal_keys, None);
+    assert!(!f.land_reveal);
+    assert!(!f.river_fog_active);
+    let mut bad = with_reveal(true, None);
+    bad.viewer.fog_active = false;
+    assert!(matches!(
+        FrameInputs::from_dto(&statik(), &bad, &UI, false),
+        Err(FrameError::Reveal(_))
+    ));
+}
+
+/// A river key outside the map is a typed frame error, not a silent drop.
+#[test]
+fn reveal_key_outside_the_map_is_a_frame_error() {
+    let l = with_reveal(false, Some(vec![hx(9, 9)]));
+    let err = FrameInputs::from_dto(&statik(), &l, &UI, false).unwrap_err();
+    assert!(matches!(err, FrameError::Reveal(_)), "{err:?}");
+    assert!(err.to_string().starts_with("reveal: "), "{err}");
 }

@@ -909,7 +909,9 @@ fn territory_view(
 /// [`build_view_layers`]; `owners`/`cities` = [`owner_views`]/[`city_views`]; `units`/`stacks` = filtr
 /// mgly + [`compute_stack_display`]; `sieges` = [`siege_views`]; `wonders` = [`wonder_views`];
 /// `territory` = [`collect_territory_hex_keys_by_owner`]; `overlays` = [`unit_overlays_view`] +
-/// [`trade_routes_view`]; `battle` = `None` (stan nie ma otwartej bitwy).
+/// [`trade_routes_view`]; `battle` = `None` (stan nie ma otwartej bitwy); `reveal` = opcje `setFog`
+/// ([`civ_view_model::map::FogRevealDto`] z [`build_view_layers`]) tylko przy aktywnej mgle, inaczej
+/// `None` (R-RUSTPORT-P4-403A-FOG-REVEAL-FRAME-Q1, D-403A-1/2).
 ///
 /// # Errors
 ///
@@ -934,6 +936,13 @@ pub fn build_render_frame(
     let layers = layers?;
     let fog_on = session.fog_on;
     let visible = &layers.fog.visible;
+    // R-RUSTPORT-P4-403A-FOG-REVEAL-FRAME-Q1 (D-403A-1, D-403A-2): opcje `setFog` tego samego przebiegu
+    // `refreshFog` - galaz mgly (`useFogRender`, `main.ts:13485-13494`) podaje `{ landReveal,
+    // riverRevealKeys }`, galaz bez mgly (`:13505-13506`) wola `setFog(ALL_KEYS, ALL_KEYS)` BEZ opcji -> `None`.
+    let reveal = layers
+        .fog
+        .fog_active
+        .then(|| layers.fog.reveal.clone());
 
     // Heksy dynamiczne: miasta = pozycje wszystkich miast (Z-Q3-3).
     let snapshot = snapshot_map_of(state);
@@ -1009,6 +1018,7 @@ pub fn build_render_frame(
         territory,
         overlays,
         battle: None,
+        reveal,
     })
 }
 

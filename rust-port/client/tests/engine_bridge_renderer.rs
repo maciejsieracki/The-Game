@@ -1575,3 +1575,172 @@ fn t5c_build_writer_in_build_mode_never_shows_the_range() {
         assert_eq!(civ_client::renderer_priority(&ui, &f), w);
     }
 }
+
+// ------------------------------------------------------------ 403A FOG-REVEAL-FRAME
+
+/// R-RUSTPORT-P4-403A-FOG-REVEAL-FRAME-Q1 (#408): `setFog` options of the
+/// engine (`FogRevealDto`) ride the frame (`GetRenderFrame` ->
+/// `RenderLayersDto::reveal`) into `FrameInputs` (`FogReveal::from_dto`):
+/// engine -> bridge -> client -> renderer, pin `main.ts:13074-13080`,
+/// `:13489-13494`, `:13505-13506` @ `07d2fbd72`.
+mod fog_reveal_frame {
+    use super::*;
+    use civ_engine::domain::playable_movement::ruch_mapa_from_state;
+    use civ_engine::domain::terrain::visibility::compute_visible_at;
+    use civ_engine::{PlayableGame, PlayableState};
+    use std::collections::HashSet;
+
+    const RADIUS: f64 = 3.0;
+
+    impl BridgeSource {
+        fn with_game(game: PlayableGame) -> Self {
+            Self {
+                bridge: EngineBridge::new(CivEngineAdapter::from_game(game)),
+                next_id: 0,
+                map_calls: 0,
+                frame_calls: 0,
+            }
+        }
+    }
+
+    fn start_state() -> PlayableState {
+        PlayableGame::new(StartGameParams::default())
+            .expect("start scenario")
+            .state()
+            .clone()
+    }
+
+    /// Start scenario without the human cities and without an entry in
+    /// `playerEverOwnedCityByOwner` (web `isAwaitingFirstPlayerCity()`), and
+    /// the start hex (the former capital, web `playerStartHexFor(ME())`).
+    fn awaiting() -> (PlayableState, (i32, i32)) {
+        let mut st = start_state();
+        let me = PlayerId::new(HUMAN);
+        let cap = st
+            .cities
+            .iter()
+            .find(|c| c.owner_id == me && c.is_capital)
+            .expect("capital");
+        let start = (i32::from(cap.position.x()), i32::from(cap.position.y()));
+        st.cities.retain(|c| c.owner_id != me);
+        st.gracz_kiedys_mial_miasto = false;
+        st.player_ever_owned_city.clear();
+        assert!(st.is_awaiting_first_city(me));
+        (st, start)
+    }
+
+    /// A client over a game from `st`, with the session start hex / fog flag
+    /// set like `seedStartingFog` + `startRevealRadius` would.
+    fn client(st: PlayableState, start: Option<(i32, i32)>, fog_on: bool) -> Client {
+        let mut game = PlayableGame::from_state(st);
+        {
+            let (_, fog) = game.fog_session_parts();
+            fog.player_start_hex_by_owner.clear();
+            if let Some(s) = start {
+                fog.player_start_hex_by_owner.insert(PlayerId::new(HUMAN), s);
+            }
+            fog.start_reveal_radius = RADIUS;
+            fog.fog_on = fog_on;
+        }
+        let mut c = RenderClient::new(BridgeSource::with_game(game), MapDetailQuality::Low);
+        c.on_session_created().expect("GetRenderMap");
+        c.on_state_changed().expect("first frame");
+        c
+    }
+
+    /// `computeVisibleAt(start, radius)` (`visibility.ts:64-79`) as `"q,r"`.
+    fn circle(st: &PlayableState, start: (i32, i32), radius: f64) -> HashSet<String> {
+        compute_visible_at(start.0, start.1, &ruch_mapa_from_state(st), radius)
+            .into_iter()
+            .map(|(q, r)| format!("{q},{r}"))
+            .collect()
+    }
+
+    /// Before the first city: the start circle reaches the frame inputs
+    /// (river data), `landReveal` = `revealAllLand` = `false`.
+    #[test]
+    fn before_first_city_the_start_circle_reaches_the_frame_inputs() {
+        let (st, start) = awaiting();
+        let expected = circle(&st, start, RADIUS);
+        assert!(!expected.is_empty());
+        assert_ne!(expected, circle(&st, start, RADIUS - 1.0), "radius bound");
+        let c = client(st, Some(start), true);
+        let f = frame(&c);
+        assert!(f.viewer.fog_active);
+        let dto_keys = f
+            .reveal
+            .as_ref()
+            .and_then(|r| r.river_reveal_keys.as_ref())
+            .expect("frame carries the start circle");
+        assert_eq!(dto_keys.len(), expected.len());
+        let inputs = c.frame_inputs().expect("inputs");
+        assert_eq!(inputs.river_reveal_keys.as_ref(), Some(&expected));
+        assert!(!inputs.land_reveal);
+        // The scene took the frame (ocean backdrop = `!anyHidden || landReveal`).
+        let scene = c.scene().expect("scene");
+        assert_eq!(
+            scene.show_ocean_backdrop(),
+            !inputs.river_fog_active,
+            "landReveal = false: backdrop = !anyHidden = !riverFogActive"
+        );
+    }
+
+    /// After the first city (or with no start hex): `riverRevealKeys =
+    /// undefined` -> `None` in the frame inputs; the fog options are still
+    /// there (`Some`), only without keys.
+    #[test]
+    fn after_first_city_or_without_start_hex_there_are_no_keys() {
+        let (st, start) = awaiting();
+        let mut founded = st.clone();
+        founded.record_ever_owned_city(PlayerId::new(HUMAN));
+        for (label, state, hex) in [
+            ("ever owned a city", founded, Some(start)),
+            ("no start hex", st, None),
+            ("start scenario (capital)", start_state(), Some(start)),
+        ] {
+            let c = client(state, hex, true);
+            let f = frame(&c);
+            assert_eq!(
+                f.reveal,
+                Some(vm::map::FogRevealDto {
+                    reveal_all_land: false,
+                    river_reveal_keys: None,
+                }),
+                "{label}"
+            );
+            let inputs = c.frame_inputs().expect("inputs");
+            assert_eq!(inputs.river_reveal_keys, None, "{label}");
+            assert!(!inputs.land_reveal, "{label}");
+        }
+    }
+
+    /// `fogOn = false`: `setFog(ALL_KEYS, ALL_KEYS)` without options -> no
+    /// `reveal` in the frame, no keys, no land reveal, no river fog, even while
+    /// the seat awaits its first city.
+    #[test]
+    fn without_fog_the_frame_has_no_options() {
+        let (st, start) = awaiting();
+        let c = client(st, Some(start), false);
+        let f = frame(&c);
+        assert!(!f.viewer.fog_active);
+        assert_eq!(f.reveal, None);
+        let inputs = c.frame_inputs().expect("inputs");
+        assert_eq!(inputs.river_reveal_keys, None);
+        assert!(!inputs.land_reveal);
+        assert!(!inputs.river_fog_active);
+    }
+
+    /// The client consumes the cached frame: a refresh after `StateChanged`
+    /// keeps the reveal of the engine (the circle grows only with the state).
+    #[test]
+    fn the_reveal_follows_every_refresh() {
+        let (st, start) = awaiting();
+        let expected = circle(&st, start, RADIUS);
+        let mut c = client(st, Some(start), true);
+        c.on_state_changed().expect("second frame");
+        assert_eq!(
+            c.frame_inputs().expect("inputs").river_reveal_keys.as_ref(),
+            Some(&expected)
+        );
+    }
+}
