@@ -3137,7 +3137,7 @@ async function boot(): Promise<void> {
       return respektBarWithMilitaryOffset(
         theirOwnerId,
         computeRespekt(
-          objectivePowerForOwnerEffective(0),
+          objectivePowerForOwnerEffective(ME()),
           objectivePowerForOwnerEffective(theirOwnerId),
         ),
       );
@@ -24041,7 +24041,7 @@ async function boot(): Promise<void> {
       // R-MOC-HUD-GLOWNY-Q1=C (Maciej 2026-08-08): licznik Mocy w HUD (klikalny,
       // otwiera panel Mocy który już liczy efektywnie — d1f7b91) -> EFEKTYWNA,
       // dla spójności z panelem, który się pod nim otwiera.
-      const power = objectivePowerForOwnerEffective(0);
+      const power = objectivePowerForOwnerEffective(ME());
       const foodReserve = Math.floor(getEmpireFoodReserve(0));
       const foodMaxCap = projectPlayerFoodMaxCap();
       const foodProj = projectPlayerFoodProjection();
