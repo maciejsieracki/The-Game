@@ -1,9 +1,11 @@
 // Wspolny bundler: buduje CJS z gra/src do repro/ (nie zapisuje nic w gra/).
 const fs = require('fs');
 const path = require('path');
-const GRA = '/home/user/The-Game/.claude/worktrees/wf_ee19efe9-055-1/gra';
-const esbuild = require(path.join(GRA, 'node_modules', 'esbuild'));
 const HERE = __dirname;
+// Katalog gra/ wzgledem tego pliku: repro -> R-WEB-... -> runs -> autobot -> dyspozycje -> korzen repo (5x '..').
+// Mozna nadpisac zmienna GRA_DIR (bezwzgledna sciezka do gra/ z node_modules).
+const GRA = process.env.GRA_DIR || path.resolve(HERE, '..', '..', '..', '..', '..', 'gra');
+const esbuild = require(path.join(GRA, 'node_modules', 'esbuild'));
 module.exports = function build(name, body) {
   const entry = path.join(HERE, '.entry-' + name + '.ts');
   const out = path.join(HERE, '.bundle-' + name + '.cjs');

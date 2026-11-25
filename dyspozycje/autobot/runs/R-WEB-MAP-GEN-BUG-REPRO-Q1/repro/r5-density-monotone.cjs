@@ -1,5 +1,5 @@
 'use strict';
-// R5: monotonia gęstości świata (world-density-test.cjs, linie ~101-104 i ~115 w pliku testu).
+// R5: monotonia gęstości świata — metryki i sumy jak w gra/tools/world-density-test.cjs (linie 48-72, 104-142).
 // Sumy po 5 ziarnach dla tierów low/medium/high: złoża, rzeki, pustynia, las, góry+wzgórza.
 const M = require('./bundle.cjs')('r5', `
 export { generujSwiat } from '../src/map/generator';
@@ -9,10 +9,12 @@ export { TerenBazowy, Nakladka } from '../src/types/hex';
 `);
 const preset = (resources, rivers, desert, forest, relief = 'medium') => ({ resources, rivers, desert, forest, relief });
 const genOpts = (p) => ({ worldDensity: p, mapSizeMenuLabel: 'Mały' });
-const countDeposits = (m) => Object.values(m.hexes).filter((h) => h.zloze || h.deposit).length;
+// Definicje zgodne z gra/tools/world-density-test.cjs (countDeposits/countForest/countTerrain, linie 48-72):
+// złoże = pole `zloze` albo nakładka inna niż Brak i Las; las = NAKŁADKA Las (nie typ terenu).
+const countDeposits = (m) => Object.values(m.hexes).filter((h) => h.zloze || (h.nakladka !== M.Nakladka.Brak && h.nakladka !== M.Nakladka.Las)).length;
 const countRiverPaths = (m) => (m.riverPaths ?? []).length;
 const countTerrain = (m, t) => Object.values(m.hexes).filter((h) => h.terenBazowy === t).length;
-const countForest = (m) => Object.values(m.hexes).filter((h) => h.terenBazowy === M.TerenBazowy.Las).length;
+const countForest = (m) => Object.values(m.hexes).filter((h) => h.nakladka === M.Nakladka.Las).length;
 const seeds = [1, 7, 42, 99, 2026];
 const S = { depLow: 0, depMed: 0, depHigh: 0, rivLow: 0, rivMed: 0, rivHigh: 0, desLow: 0, desMed: 0, desHigh: 0, forLow: 0, forMed: 0, forHigh: 0, mtnLow: 0, mtnMed: 0, mtnHigh: 0 };
 const perSeed = [];
