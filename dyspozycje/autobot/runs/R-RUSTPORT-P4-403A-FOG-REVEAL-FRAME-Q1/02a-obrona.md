@@ -44,8 +44,8 @@ Odnotowuję. W obronie nie zmieniałem kodu renderera, a bramka klienta (kompilu
 Pomiar Evaluatora na `15a27fb7a` (z 02-evaluator.md): fmt ×4 EXIT 0; clippy `-D warnings`: view-model, engine, renderer (gpu OFF) i client EXIT 0; view-model 119/0; renderer 757/0; client 45/0; pełny engine 4343 passed / 0 failed / 1 ignored (ignorowany test jest starszy niż ten temat).
 
 Pomiar Obrony (commit obrony; zmiany tylko w testach engine i client; env `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_TARGET_DIR` w scratchpadzie, usunięty po bramkach):
-- engine: `cargo fmt --check` EXIT 0; `cargo clippy --all-targets -- -D warnings` EXIT 0; `cargo test --test p4_364_render_frame r403a` 6/6; pełny `cargo test --all-targets --no-fail-fast`: WYNIK_ENGINE.
-- client: `cargo fmt --check` EXIT 0; `cargo test --test engine_bridge_renderer fog_reveal_frame` 6/6; clippy i pełny test: WYNIK_CLIENT.
+- engine: `cargo fmt --check` EXIT 0; `cargo clippy --all-targets -- -D warnings` EXIT 0; `cargo test --test p4_364_render_frame r403a` 6/6; pełny `cargo test --all-targets --no-fail-fast` EXIT 0: 4344 passed, 0 failed, 1 ignored (Evaluator miał 4343; +1 to nowy test `r403a_reveal_all_land_*`; ignorowany test jest starszy).
+- client: `cargo fmt --check` EXIT 0; `cargo test --test engine_bridge_renderer fog_reveal_frame` 6/6; `cargo clippy --all-targets -- -D warnings` EXIT 0; pełny `cargo test --all-targets --no-fail-fast` EXIT 0: 47 passed, 0 failed (Evaluator miał 45; +2 nowe testy `reveal_all_land_*`). Wolne na dysku przed buildem: 12 GB, bez równoległych buildów renderera.
 - view-model i renderer: kod bez zmian względem `15a27fb7a`, więc obowiązuje pomiar Evaluatora (renderer kompiluje się też w bramce klienta).
 - Mutanty EV1 i EV2: zabite (tabela w Z1).
 - `git diff --check` czysty, brak `#[ignore]`, brak osłabionych asercji, `renderer/Cargo.lock` poza commitem.
