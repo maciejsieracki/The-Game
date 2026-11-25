@@ -1,3 +1,9 @@
+## ROBOCZA 201a9191 -- 2026-11-25 -- FALA 905: Wiadomości o wojnach i pokojach innych cywilizacji (Wydarzenia) (testowa)
+
+- Gdy dwie inne cywilizacje, które gracz zna, zaczną wojnę, zawrą pokój lub sojusz, gracz dostaje wpis w dzienniku Wydarzeń (pary z graczem bez zmian; nieznane cywilizacje bez wpisu)
+- Weryfikacja: tsc 0; logic 213/213; diplo-world-news 39/0 (mutacje czerwone); truce-end-war-notice PASS; hud-me-literal-zero 150/0; main-guard 21/0; hotseat e-source 77/0, B 48/0, D 46/0, E 24/0; bramki-tmpdir 18/0; ai-test 297/0; vite 0
+- Limity: Wpis żyje jedną turę w dzienniku Wydarzeń (nie w oknie dyplomacji); rozejm jako Pokój; tekst tylko PL; wygląd w grze i testy live NIE ZMIERZONO
+
 ## ROBOCZA fd40604d -- 2026-11-25 -- FALA 904: Wpis dla gracza przy powrocie do wojny po rozejmie (testowa)
 
 - Gdy rozejm wygasa i para z udziałem gracza wraca do wojny, gracz dostaje jeden wpis w Ważnych (wcześniej cicho); pary AI↔AI bez zmian
