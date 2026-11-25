@@ -677,6 +677,26 @@ fn flaga_miast_gracza_odtworzona_ze_miast_przy_wczytaniu() {
 }
 
 #[test]
+fn jednostka_wlasciciela_spoza_graczy_i_miast_nie_blokuje_zapisu() {
+    // Rzut `GameStateDto` (D-SLB-2) wymaga cywilizacji kazdego wlasciciela jednostki: wlasciciel 77 nie jest
+    // graczem i nie ma miasta (np. barbarzyncy / rebelianci sesji).
+    let mut st = custom_state();
+    add_unit(&mut st, 60, 77, (6, 4), "Wojownik");
+    let mut b = bridge_for(st.clone());
+    let text = save(&mut b);
+    let snap = json_of(&text);
+    let civ_ids: Vec<u64> = snap["state"]["civilizations"]
+        .as_array()
+        .expect("cywilizacje rzutu")
+        .iter()
+        .map(|c| c["id"].as_u64().expect("id"))
+        .collect();
+    assert!(civ_ids.contains(&77), "{civ_ids:?}");
+    let (mut loaded, _) = load_in_new_session(&text);
+    assert_eq!(get_state(&mut loaded).units, st.units);
+}
+
+#[test]
 fn stan_wojny_jest_w_state_war_snapshotu_a_nie_w_ciele() {
     let st = siege_state(11);
     let war = st.war.clone();
