@@ -5391,11 +5391,9 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                     // planuje zegar sterownika z chwili trafienia, więc zostaje nominalny (`due` jak w pinie, D-FQ-3).
                     dur = at + frame_sched(self.frame_ms, RANGED_FLY_MS);
                     self.tail[ix][unit.idx] = RANGED_GAP_MS;
-                    if at == 0.0 {
-                        // FQ-SPEED-Q1 (D-FQS-1): strzał bez kroków = zegar `_schedule(RANGED_FLY_MS)` z chwili aktywacji.
-                        self.shot_done_timer[ix][unit.idx] = true;
-                        dur = RANGED_FLY_MS;
-                    }
+                    // FQ-SPEED-Q1 obrona r1 (Z2): bez D-FQS-1. Ta gałąź (`_rangedAction` atomowo) działa tylko bez
+                    // [`Self::march_incremental`], a sesja produkcyjna ustawia go zawsze (`siege_battle_session.rs`);
+                    // strzał w chwili wywołania ciała w sesji idzie przez `MarchNext::Shot` ([`Self::march_advance`]).
                 }
             }
             self.pending[ix][unit.idx] = Some(pend);
@@ -8384,6 +8382,154 @@ mod march_incremental_tests {
                 assert_eq!(b.tail[0][0], RANGED_GAP_MS, "kite={kite}: ogon strzału");
             }
             assert_eq!(b.cell_of(A0), (3, 0), "kite={kite}: bez kroku");
+        }
+    }
+
+    /// FQ-SPEED-Q1 obrona r1 (Z2, mutanty S3 i E7; D-FQS-1): strzał z PIERWSZEGO wejścia `_rangedAction` (`MarchNext::Shot`)
+    /// pada w chwili wywołania ciała, więc jego trafienie to w pinie zwykły zegar `_schedule(RANGED_FLY_MS)` z tej chwili
+    /// (`_doRangedAttack` `:9223-9229`, `_schedule` `:9595-9605`: `due = vNow + 380`), odpalany w `_drainTimers` w
+    /// kolejności `due`/`id` (`:9616-9634`). Przy każdej klatce sesji (16 ms = x1, 64 = x4, 256 = x16) `start` zwraca
+    /// NOMINALNE 380 (klatkę odpalenia wyznacza zegar sterownika; skwantyzowane 384/384/512 przestawiłoby kolejność z
+    /// zegarami o `due` w `(380, 384]`/`(380, 512]` tej samej klatki), a `BodyDone` jest zegarem
+    /// ([`LoopBody::done_is_timer`]), nie skutkiem fazy kroków. `complete` i kolejny `start` czyszczą flagę.
+    #[test]
+    fn strzal_z_wejscia_marszu_jest_zegarem_z_nominalnym_due() {
+        for frame in [16.0, 64.0, 256.0] {
+            let (mut b, st) = setup(2.0);
+            b.frame_ms = frame;
+            shooter(&mut b);
+            // Szablon strzału na cel 0 (wejście adaptera `ranged_blows`): bez niego `begin_shot` = `strzal-bez-szablonu`.
+            b.ranged_blows[0][0].insert(0, neutral_tower_shot_template());
+            place(&mut b, A0, 3);
+            place(&mut b, D0, 5);
+            b.set_now(1000.0);
+            b.pending[0][0] = Some(ProdPending {
+                morale: 100.0,
+                morale_before: 100.0,
+                start_rout: false,
+                surround_applied: false,
+                attack: None,
+                move_left: None,
+                shot: None,
+                flee: false,
+                gate_breach: false,
+            });
+            let mut c = ranged_cont(MarchStage::Gap, 2.0);
+            c.moved = false;
+            let next = b.ranged_action_enter(&st, &mut c);
+            assert_eq!(next, MarchNext::Shot(0), "frame {frame}: strzał z miejsca");
+            b.march_advance(c, next);
+            assert!(
+                b.pending[0][0].and_then(|p| p.shot).is_some(),
+                "frame {frame}: strzał wykonany"
+            );
+            assert_eq!(
+                b.march_start_dur(),
+                RANGED_FLY_MS,
+                "frame {frame}: nominalny due trafienia, nie {}",
+                frame_sched(frame, RANGED_FLY_MS)
+            );
+            assert!(b.done_is_timer(A0), "frame {frame}: trafienie = zegar");
+            assert_eq!(b.tail[0][0], RANGED_GAP_MS, "frame {frame}: ogon strzału");
+        }
+    }
+
+    /// Atrapa ciała dla sterownika: aktywacja z `BodyDone` po 380 ms (trafienie strzału) i jednym zwykłym zegarem ciała
+    /// (id 5, `due` + 383 ms, ta sama klatka). `shot` = [`LoopBody::done_is_timer`].
+    #[derive(Default)]
+    struct ShotTimerMock {
+        log: Vec<(&'static str, f64)>,
+        now: f64,
+        timers: Vec<(f64, u64)>,
+        shot: bool,
+        flag: bool,
+    }
+
+    impl LoopBody for ShotTimerMock {
+        fn start(&mut self, _unit: UnitRef, _st: &TurnSeqState) -> f64 {
+            self.shot = self.flag;
+            self.timers = vec![(383.0, 5)];
+            RANGED_FLY_MS
+        }
+        fn complete(&mut self, _unit: UnitRef, _st: &mut TurnSeqState) {
+            self.log.push(("trafienie", self.now));
+            self.shot = false;
+        }
+        fn set_now(&mut self, v_now: f64) {
+            self.now = v_now;
+        }
+        fn take_timers(&mut self) -> Vec<(f64, u64)> {
+            std::mem::take(&mut self.timers)
+        }
+        fn fire_timer(&mut self, _id: u64, _st: &mut TurnSeqState) {
+            self.log.push(("zegar", self.now));
+        }
+        fn done_is_timer(&self, _unit: UnitRef) -> bool {
+            self.shot
+        }
+        fn take_tail(&mut self, _unit: UnitRef) -> f64 {
+            1000.0
+        }
+    }
+
+    /// FQ-SPEED-Q1 obrona r1 (Z2; D-FQS-1 w sterowniku): trafienie strzału ([`LoopBody::done_is_timer`]) odpala się w fazie
+    /// zegarów klatki w kolejności `due` (pin `_drainTimers` `:9616-9634`): `due + 380` PRZED zegarem `due + 383` tej samej
+    /// klatki. Bez flagi (model D-PIN3-3, mutant S3) ten sam `BodyDone` jest odkładany do fazy kroków, czyli PO zegarze.
+    #[test]
+    fn trafienie_strzalu_w_fazie_zegarow_wg_due() {
+        for flag in [true, false] {
+            let st = TurnSeqState {
+                atk: vec![SeqUnit { id: 0, c: cu(1.0) }],
+                def: Vec::new(),
+                turn_order: Vec::new(),
+                turn_idx: 0,
+                round_no: 1,
+                siege_wall_col: -1,
+                manual_mode: false,
+                player_side: BattleSide::Attacker,
+                finished: false,
+                awaiting_orders: false,
+                auto_battle_suspended: false,
+                busy: true,
+                auto_batch_planning: false,
+                queued_order_ids: BTreeSet::new(),
+            };
+            let mut lp = SiegeLoop::new(
+                st,
+                SiegeEnv {
+                    body: ShotTimerMock {
+                        flag,
+                        ..ShotTimerMock::default()
+                    },
+                    tower_rows: Vec::new(),
+                    pending_tower_shots: Vec::new(),
+                    tower_range: 2.0,
+                    tower_shot: None,
+                    wall_tile_rows: Vec::new(),
+                    wall_ever_breached: false,
+                    no_breach_cap: 0,
+                    move_points: [Vec::new(), Vec::new()],
+                    morale_max: [Vec::new(), Vec::new()],
+                },
+            );
+            lp.body_done_raf = true;
+            let mut clock = VirtualClock::new();
+            clock.v_now = 1000.0;
+            lp.apply(&mut clock, vec![SeqEvent::ActivateUnit(A0)]);
+            // Pierwsza klatka tylko ustawia `vLastWall` (`:9500-9511`).
+            assert_eq!(lp.step_realtime(&mut clock, 5000.0), 0);
+            for k in 1..=25 {
+                lp.step_realtime(&mut clock, 5000.0 + 16.0 * f64::from(k));
+            }
+            let log = &lp.env.body.log;
+            assert_eq!(log.len(), 2, "flag {flag}: {log:?}");
+            assert_eq!(log[0].1, log[1].1, "flag {flag}: ta sama klatka");
+            let want = if flag {
+                ["trafienie", "zegar"]
+            } else {
+                ["zegar", "trafienie"]
+            };
+            assert_eq!([log[0].0, log[1].0], want, "flag {flag}");
         }
     }
 
