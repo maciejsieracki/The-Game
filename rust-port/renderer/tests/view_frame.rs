@@ -1002,7 +1002,10 @@ fn reveal_land_comes_from_the_frame_and_reaches_the_scene() {
     assert!(!f_off.land_reveal);
     assert!(f_off.river_fog_active, "hidden hex, no landReveal");
     assert!(f_on.land_reveal);
-    assert!(!f_on.river_fog_active, "lastAnyHidden = anyHidden && !landReveal");
+    assert!(
+        !f_on.river_fog_active,
+        "lastAnyHidden = anyHidden && !landReveal"
+    );
     let mut s_off = MapScene::new(&st, &f_off, DETAIL);
     s_off.apply(&f_off).unwrap();
     let mut s_on = MapScene::new(&st, &f_on, DETAIL);

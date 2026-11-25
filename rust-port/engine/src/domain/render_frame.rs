@@ -939,10 +939,7 @@ pub fn build_render_frame(
     // R-RUSTPORT-P4-403A-FOG-REVEAL-FRAME-Q1 (D-403A-1, D-403A-2): opcje `setFog` tego samego przebiegu
     // `refreshFog` - galaz mgly (`useFogRender`, `main.ts:13485-13494`) podaje `{ landReveal,
     // riverRevealKeys }`, galaz bez mgly (`:13505-13506`) wola `setFog(ALL_KEYS, ALL_KEYS)` BEZ opcji -> `None`.
-    let reveal = layers
-        .fog
-        .fog_active
-        .then(|| layers.fog.reveal.clone());
+    let reveal = layers.fog.fog_active.then(|| layers.fog.reveal.clone());
 
     // Heksy dynamiczne: miasta = pozycje wszystkich miast (Z-Q3-3).
     let snapshot = snapshot_map_of(state);

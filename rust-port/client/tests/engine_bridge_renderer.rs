@@ -1637,7 +1637,8 @@ mod fog_reveal_frame {
             let (_, fog) = game.fog_session_parts();
             fog.player_start_hex_by_owner.clear();
             if let Some(s) = start {
-                fog.player_start_hex_by_owner.insert(PlayerId::new(HUMAN), s);
+                fog.player_start_hex_by_owner
+                    .insert(PlayerId::new(HUMAN), s);
             }
             fog.start_reveal_radius = RADIUS;
             fog.fog_on = fog_on;
