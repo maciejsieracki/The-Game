@@ -20661,9 +20661,9 @@ async function boot(): Promise<void> {
     }
 
     function buildEmpireFoodSnap(): EmpireFoodSnap {
-      const tick = getLastEmpireFoodTick(0);
-      const zapasy = Math.floor(getEmpireFoodReserve(0));
-      const maxCap = getEmpireFoodMaxCap(0) || projectPlayerFoodMaxCap();
+      const tick = getLastEmpireFoodTick(ME());
+      const zapasy = Math.floor(getEmpireFoodReserve(ME()));
+      const maxCap = getEmpireFoodMaxCap(ME()) || projectPlayerFoodMaxCap(ME());
       const cityNameById = new Map(cities.filter(c => isMe(c.ownerId)).map(c => [c.id, c.name]));
       const perCityRows = (tick?.perCityRows ?? []).map(r => ({
         cityId: r.cityId,
@@ -24035,7 +24035,7 @@ async function boot(): Promise<void> {
       }
       const pc = cities.filter(c => isMe(c.ownerId));
       const pop = pc.reduce((s, c) => s + c.population, 0);
-      const pobor = empirePoborTotals(cities, 0, player.era, civManpowerMultsForOwner(0).maxMult);
+      const pobor = empirePoborTotals(cities, ownerId, ps.era, civManpowerMultsForOwner(ownerId).maxMult);
       const chips = collectDiploChipCounts();
       // R-MOC-HUD-GLOWNY-Q1=C (Maciej 2026-08-08): licznik Mocy w HUD (klikalny,
       // otwiera panel Mocy który już liczy efektywnie — d1f7b91) -> EFEKTYWNA,
@@ -24052,7 +24052,7 @@ async function boot(): Promise<void> {
       // atrycji HP wojska, gdy zapasy państwa są ujemne ale karencja jeszcze nie minęła.
       const glodWojskaKarencjaTurHud = buildEmpireFoodParams(data.econParams, _menuDifficulty).glodWojskaKarencjaTur;
       const foodStarvationCountdown = getArmyStarvationCountdown(ownerId, glodWojskaKarencjaTurHud);
-      const stateRel = ownerReligionForOwnerId(0);
+      const stateRel = ownerReligionForOwnerId(ownerId);
       const relAgg = aggregateReligionEmpire(
         pc.map(c => ({
           state: resolvedCityReligion(c),
@@ -24066,7 +24066,7 @@ async function boot(): Promise<void> {
       // P-SUROWCE-KOLEJNOSC-KART, znalezisko Evaluatora (2026-08-12): wiersz placeholder
       // (np. "Ruda cyny — wkrótce", cap=0) ma cap!=null i stock(0)>=cap(0), więc bez
       // !r.placeholder wpadał do sumy jako "surowiec na limicie" -- fałszywy alarm na stałe.
-      const resourceRows = buildEmpireResourceRows(0);
+      const resourceRows = buildEmpireResourceRows(ownerId);
       const storedResourceRows = resourceRows.filter(r => r.cap != null && !r.placeholder);
       // R-WEB-UI-HUD-SHORTAGE-ALERT-TOOLTIP-Q1: niedobór = netto HUD (po zużyciu i wejściach
       // konwerterów), jedno źródło resourceIsShortage — nie surowe ratePerTurn.
@@ -24138,13 +24138,13 @@ async function boot(): Promise<void> {
       for (const r of tradeRoutes) {
         if (r.status !== 'polaczony') continue;
         const fromPlayer = isMe(r.ownerId);
-        const toPlayer = r.toOwnerId === 0;
+        const toPlayer = r.toOwnerId === ownerId;
         if (!fromPlayer && !toPlayer) continue; // R2-1: cudza trasa (AI↔AI / wewnętrzna obcych)
         // CUDA-HANDEL-01: chip HUD musi odzwierciedlać ten sam bonus % cudów, co
         // realny wpis do skarbca (tradeIncomeByCity) — inaczej HUD i skarbiec by się rozjechały.
-        // Bonus liczony dla WŁAŚCICIELA 0 (gracza), nie dla `r.ownerId` — po generalizacji
+        // Bonus liczony dla WŁAŚCICIELA wyświetlanego fotela (ownerId), nie dla `r.ownerId` — po generalizacji
         // gracz bywa stroną `to`, a wtedy `r.ownerId` to cudza cywilizacja.
-        const bonus = wonderTradeRouteBonusForOwner(0, r.medium);
+        const bonus = wonderTradeRouteBonusForOwner(ownerId, r.medium);
         const base = tradeRouteIncomeForRoute(r, handelIncomeParams);
         const perSide = bonus === 0 ? base : Math.floor(base * (1 + bonus));
         const myCityId = fromPlayer ? r.fromCityId : r.toCityId;
@@ -24159,10 +24159,10 @@ async function boot(): Promise<void> {
         handelIncome += routeIncome;
         handelRouteCount++;
       }
-      const mpMults = civManpowerMultsForOwner(0);
+      const mpMults = civManpowerMultsForOwner(ownerId);
       let rekruciRegenPerTurn = 0;
       for (const c of pc) {
-        rekruciRegenPerTurn += cityManpowerSnapshot(c, player.era, mpMults.regenMult, mpMults.maxMult).regenPerTurn;
+        rekruciRegenPerTurn += cityManpowerSnapshot(c, ps.era, mpMults.regenMult, mpMults.maxMult).regenPerTurn;
       }
       const armyUnitsOnMap = units.filter(u => isMe(u.ownerId) && u.category !== 'osadnik').length;
       // P-SPICHLERZ-ZERO-MYLACE (ECHO C Maciej 2026-08-10): ta sama liczba miast niedokarmionych,
@@ -24266,11 +24266,11 @@ async function boot(): Promise<void> {
         sojusze: chips.sojusze,
         pakty: chips.pakty,
         wojny: chips.wojny,
-        civIconId: String(playerCivTypeByHuman.get(ownerId) ?? player.civType ?? _menuCivId ?? 'grecy'),
-        civKolorHex: civKolorHexFn(0),
+        civIconId: String(playerCivTypeByHuman.get(ownerId) ?? ps.civType ?? _menuCivId ?? 'grecy'),
+        civKolorHex: civKolorHexFn(ownerId),
         playerEra: ps.era,
-        playerWodz: leaderNameForOwnerId(0) ?? undefined,
-        nacja: civDisplayNameForOwner(0) ?? undefined,
+        playerWodz: leaderNameForOwnerId(ownerId) ?? undefined,
+        nacja: civDisplayNameForOwner(ownerId) ?? undefined,
         surowceSummary: surowceTotal > 0 ? `${surowceOk}/${surowceTotal}` : '—',
         surowceAlert: resourceAlertCount > 0,
         surowceNiedoborLabels,

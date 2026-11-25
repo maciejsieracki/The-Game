@@ -172,6 +172,72 @@ check(
     && /militaryFoodConsumptionWithSpichlerz\(\s*playerUnits\s*,\s*ownerId\s*,/.test(projCode),
 );
 
+// R-WEB-HUD-ME-REMAINING-Q1: pozostałe miejsca, w których literał 0 był podstawieniem
+// gracza aktywnego (buildHudStateRaw: pobór, religia, zasoby, handel, rekruci, nazwa/kolor;
+// buildEmpireFoodSnap: zapas/cap/tick żywności dla ME()). Kotwice po sygnaturach funkcji.
+const REMAINING_RAW = [
+  [/ownerReligionForOwnerId\(\s*0\s*\)/, 'ownerReligionForOwnerId(0)'],
+  [/buildEmpireResourceRows\(\s*0\s*\)/, 'buildEmpireResourceRows(0)'],
+  [/wonderTradeRouteBonusForOwner\(\s*0\s*,/, 'wonderTradeRouteBonusForOwner(0,'],
+  [/civManpowerMultsForOwner\(\s*0\s*\)/, 'civManpowerMultsForOwner(0)'],
+  [/civKolorHexFn\(\s*0\s*\)/, 'civKolorHexFn(0)'],
+  [/leaderNameForOwnerId\(\s*0\s*\)/, 'leaderNameForOwnerId(0)'],
+  [/civDisplayNameForOwner\(\s*0\s*\)/, 'civDisplayNameForOwner(0)'],
+  [/empirePoborTotals\(\s*cities\s*,\s*0\s*,/, 'empirePoborTotals(cities, 0,'],
+  [/r\.toOwnerId\s*===\s*0\b/, 'r.toOwnerId === 0'],
+  [/\bplayer\.era\b/, 'player.era'],
+  [/player\.civType\b/, 'player.civType'],
+];
+for (const [re, label] of REMAINING_RAW) {
+  check(
+    'buildHudStateRaw: brak ' + label + ' (fotel wyświetlany, nie literał 0)',
+    rawCode !== null && !re.test(rawCode),
+    'literał 0 zamiast ownerId/ps -- regresja migracji hotseat',
+  );
+}
+const REMAINING_RAW_GOOD = [
+  'ownerReligionForOwnerId(ownerId)',
+  'buildEmpireResourceRows(ownerId)',
+  'wonderTradeRouteBonusForOwner(ownerId, r.medium)',
+  'civManpowerMultsForOwner(ownerId)',
+  'civKolorHexFn(ownerId)',
+  'leaderNameForOwnerId(ownerId)',
+  'civDisplayNameForOwner(ownerId)',
+  'empirePoborTotals(cities, ownerId, ps.era',
+  'r.toOwnerId === ownerId',
+];
+for (const good of REMAINING_RAW_GOOD) {
+  check(
+    'buildHudStateRaw: obecne ' + good,
+    rawCode !== null && rawCode.includes(good),
+  );
+}
+
+// buildEmpireFoodSnap (zasilane ME() w buildEmpireDetailSnap): zapas/cap/tick = fotel aktywny.
+const foodSnapBody = braceBody(/function buildEmpireFoodSnap\(/);
+const foodSnapCode = foodSnapBody === null ? null : stripComments(foodSnapBody);
+const FOOD_SNAP_LITERALS = [
+  [/getLastEmpireFoodTick\(\s*0\s*\)/, 'getLastEmpireFoodTick(0)'],
+  [/getEmpireFoodReserve\(\s*0\s*\)/, 'getEmpireFoodReserve(0)'],
+  [/getEmpireFoodMaxCap\(\s*0\s*\)/, 'getEmpireFoodMaxCap(0)'],
+  [/projectPlayerFoodMaxCap\(\s*\)/, 'projectPlayerFoodMaxCap()'],
+];
+for (const [re, label] of FOOD_SNAP_LITERALS) {
+  check(
+    'buildEmpireFoodSnap: brak ' + label,
+    foodSnapCode !== null && !re.test(foodSnapCode),
+    'literał 0 zamiast ME() -- regresja migracji hotseat',
+  );
+}
+check(
+  'buildEmpireFoodSnap: zapas/cap/tick liczone dla ME()',
+  foodSnapCode !== null
+    && foodSnapCode.includes('getLastEmpireFoodTick(ME())')
+    && foodSnapCode.includes('getEmpireFoodReserve(ME())')
+    && foodSnapCode.includes('getEmpireFoodMaxCap(ME())')
+    && foodSnapCode.includes('projectPlayerFoodMaxCap(ME())'),
+);
+
 console.log('\nWynik: ' + passCount + ' PASS / ' + failCount + ' FAIL');
 if (failCount > 0) {
   process.exit(1);
