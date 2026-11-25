@@ -1,3 +1,9 @@
+## ROBOCZA 71999c1f -- 2026-11-25 -- FALA 898: Mapy „Kontynenty”: przywrócony pas polarny (testowa)
+
+- gra/src/map/gen-helpers.ts, generator.ts: erozja lądu nie zjada już wierszy polarnych na mapach „Kontynenty” (polar 0 → 28–404 heksów; seed 4242: 371); wyspy, Ziemia i pangea bez zmian (te same hashe); mniej odciętych skrawków lądu (8 → 0 na 15 mapach testowych)
+- Weryfikacja: tsc 0; logic 213/213; climate-band PASS; map-polar-continents PASS (polar 387/402/404/371); pangea-land-determinism PASS; determinism-same-seed PASS; porównanie PRZED/PO 15 map (malenki/maly/standardowy × 5 seedów): bez regresji w udziale lądu, skrawkach, rzekach, złożach; vite build OK
+- Limity: SKUTKI UBOCZNE (regresje kierunkowe bez zielonej asercji): kształt kontynentów zmienia się też poza pasem polarnym (3805–5103 z 20160 heksów); liczba mas lądu 159→245 (+54% na 15 mapach: lądy bardziej rozdrobnione); morza śródlądowe 4078→4978 (+22%); ląd przy krawędzi mapy 737→837; map-coast-buffer czerwony już przed zmianą; pełne ciężkie testy generatora NIE ZMIERZONO (base >1800 s); czas generacji NIE ZMIERZONO czysto
+
 ## ROBOCZA a9069f1f -- 2026-11-25 -- FALA 897: Porządki w kodzie: usunięta martwa sonda księgi zasobów (testowa)
 
 - gra/src/main.ts: usunięte dwie nieużywane deklaracje i odczyt sondy ledgerAuditE3c (zawsze 0), gra/tools/resource-ledger-live-measure.cjs: pole e3c = n/d; nowy test strażnik; zachowanie gry bez zmian

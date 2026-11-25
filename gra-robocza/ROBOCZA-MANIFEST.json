@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "a9069f1f915fe3ba5575301c047aeb5d",
-  "bundleSha256": "b168257669981fd26a069940410105ba9ff96d913d9a9c8e3fd7ac8e3ed224f8",
-  "bundleBytes": 15013718,
+  "bundleMd5": "71999c1f3b5f9433e0c582598464e2e0",
+  "bundleSha256": "4a29a2af6f64ea14d40662fcf73bc62ce789c17dbef0ee64340944f2c36b7811",
+  "bundleBytes": 15014613,
   "sourceSnapshot": {
-    "source": "R-WEB-CLEAN-DEAD-LEDGER-PROBE-Q1 r1 (975e1893b)",
+    "source": "R-WEB-MAP-POLAR-RESTORE-CONTINENTS-Q1 (f931c9536) + R-WEB-MAP-POLAR-COMPARE-Q1 (42bab2847)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 897: gra/src/main.ts: usunięte dwie nieużywane deklaracje i odczyt sondy ledgerAuditE3c (zawsze 0), gra/tools/resource-ledger-live-measure.cjs: pole e3c = n/d; nowy test strażnik; zachowanie gry bez zmian"
+    "FALA 898: gra/src/map/gen-helpers.ts, generator.ts: erozja lądu nie zjada już wierszy polarnych na mapach „Kontynenty” (polar 0 → 28–404 heksów; seed 4242: 371); wyspy, Ziemia i pangea bez zmian (te same hashe); mniej odciętych skrawków lądu (8 → 0 na 15 mapach testowych)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; dead-ledger-probe-absent 5/0 (mutacja czerwona); war-rules-multiwar-main-guard 21/0; hotseat-etap6d-source 77/0; ai-test 297/0; resource-ledger 1073/0; vite build OK"
+    "tsc 0; logic 213/213; climate-band PASS; map-polar-continents PASS (polar 387/402/404/371); pangea-land-determinism PASS; determinism-same-seed PASS; porównanie PRZED/PO 15 map (malenki/maly/standardowy × 5 seedów): bez regresji w udziale lądu, skrawkach, rzekach, złożach; vite build OK"
   ],
   "limits": [
-    "zero zmiany zachowania; NIE ZMIERZONO: resource-ledger-live-measure na żywo (Chromium); resource-ledger-realpath-mutation-test (timeout 590 s); 5 testów czerwonych także na bazie: hotseat-etap6d podetap-b/d/e-exec (ReferenceError withDiplomacyTradeEra), save-load-roundtrip-state-drift, save-load-deserialize-fields-audit"
+    "SKUTKI UBOCZNE (regresje kierunkowe bez zielonej asercji): kształt kontynentów zmienia się też poza pasem polarnym (3805–5103 z 20160 heksów); liczba mas lądu 159→245 (+54% na 15 mapach: lądy bardziej rozdrobnione); morza śródlądowe 4078→4978 (+22%); ląd przy krawędzi mapy 737→837; map-coast-buffer czerwony już przed zmianą; pełne ciężkie testy generatora NIE ZMIERZONO (base >1800 s); czas generacji NIE ZMIERZONO czysto"
   ],
-  "finalControl": "FC PASS-WITH-NOTES (bac878346)",
+  "finalControl": "FC PASS-WITH-NOTES (2c39916ea, polar; compare FC bez zmian kodu)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-25T14:48:32",
+  "hubGeneratedAt": "2026-11-25T16:22:38",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "a9069f1f915fe3ba5575301c047aeb5d",
-      "sizeBytes": 15013718
+      "md5": "71999c1f3b5f9433e0c582598464e2e0",
+      "sizeBytes": 15014613
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "a9069f1f915fe3ba5575301c047aeb5d",
-      "sizeBytes": 15013718
+      "md5": "71999c1f3b5f9433e0c582598464e2e0",
+      "sizeBytes": 15014613
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "a9069f1f915fe3ba5575301c047aeb5d",
-      "sizeBytes": 15013718
+      "md5": "71999c1f3b5f9433e0c582598464e2e0",
+      "sizeBytes": 15014613
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "a9069f1f915fe3ba5575301c047aeb5d",
-      "sizeBytes": 15013718
+      "md5": "71999c1f3b5f9433e0c582598464e2e0",
+      "sizeBytes": 15014613
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "a9069f1f915fe3ba5575301c047aeb5d",
-      "sizeBytes": 15013718
+      "md5": "71999c1f3b5f9433e0c582598464e2e0",
+      "sizeBytes": 15014613
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "a9069f1f915fe3ba5575301c047aeb5d",
-      "sizeBytes": 15013718
+      "md5": "71999c1f3b5f9433e0c582598464e2e0",
+      "sizeBytes": 15014613
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "a9069f1f915fe3ba5575301c047aeb5d",
-      "sizeBytes": 15013718
+      "md5": "71999c1f3b5f9433e0c582598464e2e0",
+      "sizeBytes": 15014613
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "a9069f1f915fe3ba5575301c047aeb5d",
-      "sizeBytes": 15013718
+      "md5": "71999c1f3b5f9433e0c582598464e2e0",
+      "sizeBytes": 15014613
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "a9069f1f915fe3ba5575301c047aeb5d",
-      "sizeBytes": 15013718
+      "md5": "71999c1f3b5f9433e0c582598464e2e0",
+      "sizeBytes": 15014613
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "a9069f1f915fe3ba5575301c047aeb5d",
-      "sizeBytes": 15013718
+      "md5": "71999c1f3b5f9433e0c582598464e2e0",
+      "sizeBytes": 15014613
     }
   ],
-  "md5": "a9069f1f915fe3ba5575301c047aeb5d",
+  "md5": "71999c1f3b5f9433e0c582598464e2e0",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
