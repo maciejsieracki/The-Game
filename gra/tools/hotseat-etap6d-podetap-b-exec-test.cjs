@@ -41,8 +41,15 @@ let pass = 0;
 let fail = 0;
 let mutationExpected = false;
 function ok(cond, msg) {
+  // R-WEB-TEST-DEBT-Q15 (runda 3, zarzut Evaluatora 2 / ta sama luka): w sekcji mutacyjnej `ok` NIE może
+  // przepuszczać wszystkiego. Asercja mutacji = "wartość POWINNA się zmienić": cond===false oznacza, że
+  // mutacja realnie zadziałała (PASS); cond===true = mutacja bez efektu (FAIL, test byłby tautologiczny).
+  if (mutationExpected) {
+    if (cond === false) { pass++; console.log('  OK (mutacja realnie zmieniła wynik):', msg); }
+    else { fail++; console.error('  FAIL (mutacja NIE zmieniła wyniku -- test tautologiczny):', msg); }
+    return;
+  }
   if (cond) { pass++; console.log('  OK:', msg); }
-  else if (mutationExpected) { pass++; console.log('  OK (mutacja poprawnie czerwieni):', msg); }
   else { fail++; console.error('  FAIL:', msg); }
 }
 
@@ -211,7 +218,7 @@ console.log('1. playerFormalRelationLabel — realne wykonanie\n');
   mutationExpected = true;
   const cBroken = run(BROKEN_isMe, BROKEN_ME);
   ok(cBroken.relArgs[0] === PLAYER, `MUTACJA ME()=>${WRONG}: getDiploRelation POWINIEN dostać ${WRONG}, nie ${PLAYER} -- czerwieni się poprawnie`);
-  ok(cBroken.ctx.hasNap === false, `MUTACJA ME()=>${WRONG}: deal.strony.includes(ME()) POWINNO być false (deal ma [${PLAYER},4], nie ${WRONG}) -- hasNap POWINNO stać się false -- czerwieni się poprawnie`);
+  ok(cBroken.ctx.hasNap === true, `MUTACJA ME()=>${WRONG}: deal.strony.includes(ME()) POWINNO być false (deal ma [${PLAYER},4], nie ${WRONG}) -- hasNap POWINNO stać się false -- czerwieni się poprawnie`);
   mutationExpected = false;
 }
 
@@ -313,9 +320,9 @@ console.log('\n3. collectDiploChipCounts — realne wykonanie\n');
 
   mutationExpected = true;
   const { out: broken, calls: brokenCalls } = run(BROKEN_isMe, BROKEN_ME);
-  ok(broken.sojusze === 0, `MUTACJA ME()=>${WRONG} ścieżka (a): d.strony.includes(${WRONG}) POWINNO być false (deal ma [${PLAYER},${AI1}]) -> sojuszPartners pusty -> sojusze POWINNO spaść z 1 do 0 -- czerwieni się poprawnie`);
+  ok(broken.sojusze === 1, `MUTACJA ME()=>${WRONG} ścieżka (a): d.strony.includes(${WRONG}) POWINNO być false (deal ma [${PLAYER},${AI1}]) -> sojuszPartners pusty -> sojusze POWINNO spaść z 1 do 0 -- czerwieni się poprawnie`);
   ok(brokenCalls.getDiploRelation[0] && brokenCalls.getDiploRelation[0][0] === PLAYER, `MUTACJA ME()=>${WRONG} ścieżka (b): getDiploRelation pierwszy arg POWINIEN być ${WRONG}, nie ${PLAYER} -- czerwieni się poprawnie`);
-  ok(brokenCalls.getDiploRelation.length === 3, `MUTACJA isMe=>zawsze false: guard L15038 NIE wyklucza już PLAYER=${PLAYER} (isMe zepsute) -> getDiploRelation wywołane 3x zamiast 2x (AI1,AI2,PLAYER wszystkie przechodzą) -- czerwieni się poprawnie, otrzymano ${brokenCalls.getDiploRelation.length}`);
+  ok(brokenCalls.getDiploRelation.length === 2, `MUTACJA isMe=>zawsze false: guard L15038 NIE wyklucza już PLAYER=${PLAYER} (isMe zepsute) -> getDiploRelation wywołane 3x zamiast 2x (AI1,AI2,PLAYER wszystkie przechodzą) -- czerwieni się poprawnie, otrzymano ${brokenCalls.getDiploRelation.length}`);
   mutationExpected = false;
 }
 
