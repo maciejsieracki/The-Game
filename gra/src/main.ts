@@ -182,7 +182,7 @@ import {
 import { shouldYieldAiOwnerProgressFrame } from './ui/aiOwnerProgressFrame';
 import { createDirtyRenderSync } from './game/dirtyRenderSync';
 import { trimSidePanelEventLog } from './game/retained-side-panel-events';
-import { worldDiploNewsKind, worldDiploNewsVisible } from './game/diplo-world-news';
+import { worldDiploNewsEntry } from './game/diplo-world-news';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
@@ -27037,25 +27037,16 @@ async function boot(): Promise<void> {
      * Tekst PO polsku (jak pozostałe wpisy warEventLog w main.ts); brak wariantu EN — zob. raport.
      */
     function recordAiAiWarPeaceNews(a: number, b: number, prevStatus: string, nextStatus: string): void {
-      const kind = worldDiploNewsKind(prevStatus, nextStatus);
-      if (kind === null) return;
-      if (isMe(a) || isMe(b)) return;
-      if (isBarbarian(a) || isBarbarian(b)) return;
-      if (!worldDiploNewsVisible(a, b, getDiplomaticContacts())) return;
-      const evId = `ai-diplo-news-${turn}-${diploPairKey(a, b)}-${kind}`;
-      if (warEventLog.some(e => e.id === evId)) return;
-      const pairLabel = ownerDiploLabel(a) + ' i ' + ownerDiploLabel(b);
-      const isWar = kind === 'wojna';
-      warEventLog.unshift({
-        id: evId,
-        icon: isWar ? '⚔' : '☮',
-        title: (isWar ? 'Wojna: ' : kind === 'sojusz' ? 'Sojusz: ' : 'Pokój: ') + pairLabel,
-        subtitle: isWar
-          ? 'Wojna między innymi cywilizacjami'
-          : kind === 'sojusz' ? 'Sojusz zawarty po wojnie między innymi cywilizacjami' : 'Zawarcie pokoju między innymi cywilizacjami',
-        kind: 'diplo',
-        turnCreated: turn,
+      const entry = worldDiploNewsEntry({
+        a, b, prevStatus, nextStatus, turn,
+        pairKey: diploPairKey(a, b),
+        labelA: ownerDiploLabel(a),
+        labelB: ownerDiploLabel(b),
+        discovered: getDiplomaticContacts(),
+        skip: isMe(a) || isMe(b) || isBarbarian(a) || isBarbarian(b),
       });
+      if (entry === null || warEventLog.some(e => e.id === entry.id)) return;
+      warEventLog.unshift(entry);
       trimWarEventLog();
     }
 

@@ -31,3 +31,52 @@ export function worldDiploNewsKind(prev: string | undefined, next: string): Worl
 export function worldDiploNewsVisible(a: number, b: number, discovered: ReadonlySet<number>): boolean {
   return discovered.has(a) && discovered.has(b);
 }
+
+/** Wpis dziennika Wydarzeń (kształt zgodny z warEventLog w main.ts). */
+export interface WorldDiploNewsEntry {
+  id: string;
+  icon: string;
+  title: string;
+  subtitle: string;
+  kind: 'diplo';
+  turnCreated: number;
+}
+
+export interface WorldDiploNewsInput {
+  a: number;
+  b: number;
+  prevStatus: string | undefined;
+  nextStatus: string;
+  turn: number;
+  /** Klucz pary (diploPairKey w main.ts) — część id wpisu, dedup w turze. */
+  pairKey: string;
+  labelA: string;
+  labelB: string;
+  /** `getDiplomaticContacts()` — cywilizacje odkryte przez gracza. */
+  discovered: ReadonlySet<number>;
+  /** true dla pary z graczem lub barbarzyńcą (wpis tworzą inne ścieżki / nie ma wpisu). */
+  skip: boolean;
+}
+
+/**
+ * Pełna decyzja i budowa wpisu: null, gdy brak wiadomości (brak zmiany wojny/pokoju, pominięta
+ * para, strona nieodkryta). Czysta funkcja — testowana wprost w tools/diplo-world-news-test.cjs.
+ */
+export function worldDiploNewsEntry(p: WorldDiploNewsInput): WorldDiploNewsEntry | null {
+  const kind = worldDiploNewsKind(p.prevStatus, p.nextStatus);
+  if (kind === null) return null;
+  if (p.skip) return null;
+  if (!worldDiploNewsVisible(p.a, p.b, p.discovered)) return null;
+  const isWar = kind === 'wojna';
+  const pairLabel = p.labelA + ' i ' + p.labelB;
+  return {
+    id: `ai-diplo-news-${p.turn}-${p.pairKey}-${kind}`,
+    icon: isWar ? '⚔' : '☮',
+    title: (isWar ? 'Wojna: ' : kind === 'sojusz' ? 'Sojusz: ' : 'Pokój: ') + pairLabel,
+    subtitle: isWar
+      ? 'Wojna między innymi cywilizacjami'
+      : kind === 'sojusz' ? 'Sojusz zawarty po wojnie między innymi cywilizacjami' : 'Zawarcie pokoju między innymi cywilizacjami',
+    kind: 'diplo',
+    turnCreated: p.turn,
+  };
+}
