@@ -190,6 +190,7 @@ console.log('hotseat-etap6d-podetap-d-exec-test (R-HOTSEAT-ETAP6D-PODETAP-D-Q1, 
 
 const mainSrc = fs.readFileSync(MAIN_TS_PATH, 'utf8');
 
+const AI_OWNER_B = 4; // właściciel AI w bloku B (runBlockB używa tej samej wartości)
 const PLAYER = 7; // celowo NIE 0 -- ME() musi realnie różnić się od literału 0 w tym teście
 const WRONG = 0;  // wartość mutacji ME()->WRONG (dokładnie to, co migracja tego podetapu usuwa)
 function makeME(id) { return () => id; }
@@ -390,6 +391,10 @@ function runBlockB(src, ME, calls) {
     // R-WEB-TEST-DEBT-Q15 (runda 3): main.ts `diploWarStateFor` (L12315) -- stan wojny (licznik tur) dla
     // ME(); mock spy zwraca stan zerowy; sprawdzany jest tylko 2. argument (ME()).
     diploWarStateFor: (a, b) => { calls.diploWarStateForArgs = [a, b]; return { turnsAtWar: 0, lostCities: 0, turnsSinceCityChange: 0 }; },
+    // R-WEB-TEST-DEBT-Q15 (runda 3, dodatek operatora): main.ts `diploMilitarySideOf` (L12383, funkcja zagnieżdżona w runWorldEndTurn)
+    // -- blok B woła ją z ME() jako 2. argumentem (silaMilitarnaAI) i 1. argumentem (silaMilitarnaPartner).
+    // Mock = spy (rejestruje argumenty, zwraca stałą siłę); realna logika siły militarnej NIE jest dowodzona tym testem.
+    diploMilitarySideOf: (a, b) => { (calls.diploMilitarySideOfArgs ||= []).push([a, b]); return { sila: a === PLAYER ? 50 : 30, armiaPkt: 0 }; },
     respektZKorektaMilitarna: loadRealSrcExports('src/game/diplomacy-military-strength.ts').respektZKorektaMilitarna,
     diplomacyPairMeta: new Map(),
     // R-WEB-TEST-DEBT-Q15 (runda 3): getDiploPairMeta (main.ts L12287) -- stan pary bez wpisów (domyślny).
@@ -397,7 +402,9 @@ function runBlockB(src, ME, calls) {
     // R-WEB-TEST-DEBT-Q15 (runda 3): diploBrakeBonusFlags (main.ts L12590) -- bramka hamulca tury: flagi wyłączone.
     diploBrakeBonusFlags: () => ({ dobraWolaAktywna: false, wspolnyWrog: false }),
     // R-WEB-TEST-DEBT-Q15 (runda 3): civKeyForOwnerId (main.ts L10547) -- typ cywilizacji właściciela (mock stały).
-    civKeyForOwnerId: () => 'grecy',
+    // R-WEB-TEST-DEBT-Q15 (runda 3, dodatek operatora): blok B woła civKeyForOwnerId(ME()) i civKeyForOwnerId(ownerId)
+    // (main.ts L46666) -- mock zależy od id (ME -> 'rzymianie', AI -> 'grecy'), jak civKeyForOwner w tym bloku.
+    civKeyForOwnerId: (id) => (id === PLAYER ? 'rzymianie' : 'grecy'),
     // R-WEB-TEST-DEBT-Q15 (runda 3): empireEpochForOwner -- epoka właściciela (mock: epoka 1).
     empireEpochForOwner: () => 1,
     // R-WEB-TEST-DEBT-Q15 (runda 3): _diplomacyParams (parametry dyplomacji, main.ts) -- domyślne progi testu.
@@ -405,6 +412,26 @@ function runBlockB(src, ME, calls) {
     // R-WEB-TEST-DEBT-Q15 (runda 3): stół negocjacji (main.ts, tablica) -- pusty stan domyślny.
     negotiationTable: [],
     computeRespekt: () => 0.5,
+    // R-WEB-TEST-DEBT-Q15 (runda 3, dodatek operatora): main.ts `blokSojusznicyDla` (L46566, arrow zagnieżdżony w runWorldEndTurn)
+    // -- blok B woła go (ownerId, ME()) i (ME(), ownerId). Mock = spy rejestrujący argumenty, zwraca pusty
+    // blok sojuszników (realna logika bloku sojuszników NIE jest tu dowodzona).
+    blokSojusznicyDla: (a, b) => { (calls.blokSojusznicyDlaArgs ||= []).push([a, b]); return []; },
+    // R-WEB-TEST-DEBT-Q15 (runda 3, dodatek operatora): main.ts `objectivePowerForOwner` (L3116, funkcja zagnieżdżona) -- blok B
+    // woła ją jako mocAI (ownerId) i mocPartner (ME()). Mock = spy zwracający stałą moc (realna wycena mocy NIE
+    // jest dowodzona tym testem); zapisuje argumenty do asercji ME().
+    objectivePowerForOwner: (id) => { (calls.objectivePowerForOwnerArgs ||= []).push(id); return id === PLAYER ? 50 : 30; },
+    // R-WEB-TEST-DEBT-Q15 (runda 3, dodatek operatora): main.ts `warLimitPermits` (L26077, funkcja zagnieżdżona) -- blok B woła
+    // warLimitPermits(ownerId, ME(), 'naturalna') (L46771). Mock = spy, limit przepuszcza (true = nie blokuje).
+    warLimitPermits: (a, b, typ) => { (calls.warLimitPermitsArgs ||= []).push([a, b, typ]); return true; },
+    // R-WEB-TEST-DEBT-Q15 (runda 3, dodatek operatora): main.ts `diploMiastaWycenaDla` (L41431, funkcja zagnieżdżona) -- blok B:
+    // miastaPartnera: diploMiastaWycenaDla(ME()). Mock = spy: pusta wycena miast (domyślna, bez miast gracza w teście).
+    diploMiastaWycenaDla: (id) => { (calls.diploMiastaWycenaDlaArgs ||= []).push(id); return []; },
+    // R-WEB-TEST-DEBT-Q15 (runda 3, dodatek operatora): main.ts `pickAiPlayerCyclicBarter` (L25288) -- blok B: wybór cyklicznego
+    // handlu surowcami AI (gałąź warunkowa). Mock = spy, brak oferty (null).
+    pickAiPlayerCyclicBarter: (id) => { (calls.pickAiPlayerCyclicBarterArgs ||= []).push(id); return null; },
+    // R-WEB-TEST-DEBT-Q15 (runda 3, dodatek operatora): main.ts `diploRelWarFields` (L12461) -- blok B: diploRelWarFields(ownerId, ME())
+    // (L46776, spread do relacji). Mock = spy, stan wojny zerowy (brak wojny w teście).
+    diploRelWarFields: (a, b) => { (calls.diploRelWarFieldsArgs ||= []).push([a, b]); return { turnsAtWar: 0, lostCitiesInWar: 0, turnsSinceCityChange: 0 }; },
     activeDeals,
     dealInvolvesOwners: (d, a, b) => { calls.dealInvolvesOwners.push([a, b]); return d.strony.includes(a) && d.strony.includes(b); },
     normalizeTreatyKind: (r) => r,
@@ -475,8 +502,19 @@ console.log('\nBLOK B — per-AI-owner tick dyplomacji — realne wykonanie\n');
     `PRAWDZIWY ME(): hasActiveResourceTradeDealForPair(ME()=${PLAYER}, ownerId) x${calls.hasActiveResourceTradeDealForPair.length}, otrzymano ${JSON.stringify(calls.hasActiveResourceTradeDealForPair)}`);
   ok(calls.hasTreaty.every(([, b]) => b === PLAYER),
     `PRAWDZIWY ME(): hasTreaty(deals, ownerId, ME()=${PLAYER}, ...), otrzymano ${JSON.stringify(calls.hasTreaty)}`);
-  ok(calls.isPeaceLockedBetween.every(([, b]) => b === PLAYER),
-    `PRAWDZIWY ME(): isPeaceLockedBetween(ownerId, ME()=${PLAYER}), otrzymano ${JSON.stringify(calls.isPeaceLockedBetween)}`);
+  // R-WEB-TEST-DEBT-Q15 (runda 3, dodatek operatora): main.ts blok B woła isPeaceLockedBetween w DWU orientacjach: (ME(), ownerId)
+  // (karaWspolnaGranica) i (ownerId, ME()) (peaceLocked). Asercja r2 (tylko drugi arg = ME()) była zbyt wąska.
+  ok(calls.isPeaceLockedBetween.some(([a, b]) => a === PLAYER && b === AI_OWNER_B)
+    && calls.isPeaceLockedBetween.some(([a, b]) => a === AI_OWNER_B && b === PLAYER),
+    `PRAWDZIWY ME(): isPeaceLockedBetween wywołane z ME() w obu pozycjach (karaWspolnaGranica: ME() pierwszy; peaceLocked: ME() drugi), otrzymano ${JSON.stringify(calls.isPeaceLockedBetween)}`);
+  ok(!!calls.warLimitPermitsArgs && calls.warLimitPermitsArgs.some(([a, b, t]) => a === AI_OWNER_B && b === PLAYER && t === 'naturalna'),
+    `PRAWDZIWY ME(): warLimitPermits(ownerId=${AI_OWNER_B}, ME()=${PLAYER}, 'naturalna'), otrzymano ${JSON.stringify(calls.warLimitPermitsArgs)}`);
+  ok(!!calls.objectivePowerForOwnerArgs && calls.objectivePowerForOwnerArgs.includes(PLAYER) && calls.objectivePowerForOwnerArgs.includes(AI_OWNER_B),
+    `PRAWDZIWY ME(): objectivePowerForOwner(ME()=${PLAYER}) i (ownerId=${AI_OWNER_B}) -- oba wywołania, otrzymano ${JSON.stringify(calls.objectivePowerForOwnerArgs)}`);
+  ok(!!calls.blokSojusznicyDlaArgs
+    && calls.blokSojusznicyDlaArgs.some(([a, b]) => a === AI_OWNER_B && b === PLAYER)
+    && calls.blokSojusznicyDlaArgs.some(([a, b]) => a === PLAYER && b === AI_OWNER_B),
+    `PRAWDZIWY ME(): blokSojusznicyDla wywołany z ME() w obu pozycjach (ownerId,ME()) i (ME(),ownerId), otrzymano ${JSON.stringify(calls.blokSojusznicyDlaArgs)}`);
 
   // MUTACJA na WYCIĘTYM TEKŚCIE: ME()->0.
   const brokenCalls = {
