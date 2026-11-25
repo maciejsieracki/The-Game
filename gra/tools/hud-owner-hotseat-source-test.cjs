@@ -229,6 +229,40 @@ check(
     && !/buildHudState\(\s*\)/.test(empireHudCode),
 );
 
+// R-WEB-HUD-ME-RESIDUAL-Q1: hotseat (ownerId != 0). Ostatnie literały 0 w roli gracza
+// aktywnego podstawione ME(); fotel przekazywany przez parametr tam, gdzie wcześniej stał 0.
+check(
+  'buildHudState: domyślny fotel = ME() (wywołanie bez argumentu = gracz aktywny)',
+  /function buildHudState\(ownerId: number = ME\(\)\): HudState \{/.test(src),
+);
+check(
+  'getNaukaRate: używa przekazanego ownerId (nie buildHudState() ignorujące argument)',
+  src.includes('getNaukaRate: (ownerId: number) => buildHudState(ownerId).naukaRate ?? 0,')
+    && !src.includes('getNaukaRate: (_ownerId: number) => buildHudState().naukaRate'),
+);
+check(
+  'replaceUnitMoneyCost: koszt liczony z bonusami fotela ME() (nie civBonusyForOwnerId(0))',
+  src.includes('typeId, data, civBonusyForOwnerId(ME()), player.kosztJednostekPace')
+    && !src.includes('typeId, data, civBonusyForOwnerId(0), player.kosztJednostekPace'),
+);
+check(
+  'onBudowaListaLoadAllCities: nadpisuje listę we wszystkich miastach fotela ME()',
+  src.includes('for (const c of cities.filter(c => c.ownerId === ME())) {')
+    && !src.includes('for (const c of cities.filter(c => c.ownerId === 0)) {'),
+);
+check(
+  'buildAudienceOtherRelations: partner = gracz gdy id === ME() (nie id === 0)',
+  src.includes('isPlayer: id === ME(),') && !src.includes('isPlayer: id === 0,'),
+);
+check(
+  'buildAudienceOtherRelations: wojna strony ME() zostaje bez przeliczania',
+  src.includes('if (w.ownerId === ME()) return w;') && !src.includes('if (w.ownerId === 0) return w;'),
+);
+check(
+  'battle preset: attackerCivBonusy(0) zostawione (preset playtest, label Rzym, obrońca stały fotel 1)',
+  src.includes('attackerCivBonusy: civBonusyForOwnerId(0),') && src.includes('defenderCivBonusy: civBonusyForOwnerId(1),'),
+);
+
 console.log('\nWynik: ' + passCount + ' PASS / ' + failCount + ' FAIL');
 if (failCount > 0) {
   process.exit(1);

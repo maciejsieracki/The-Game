@@ -4422,7 +4422,7 @@ async function boot(): Promise<void> {
     function playerWonderInProgressIds(): string[] {
       const ids: string[] = [];
       for (const c of cities) {
-        if (c.ownerId !== 0) continue;
+        if (c.ownerId !== ME()) continue;
         const kolejka = cityProd.get(c.id)?.kolejka ?? [];
         for (const it of kolejka) {
           const wid = parseWonderProdId(it.id);
@@ -4438,7 +4438,7 @@ async function boot(): Promise<void> {
         era: player.era,
         techRows: data.tech as import('./data/loader').TechDef[],
         done: player.zbadane,
-        civType: civTypeForOwner(0),
+        civType: civTypeForOwner(ME()),
         completedWonderIds: completedWorldWonders,
         inProgressWonderIds: playerWonderInProgressIds(),
       });
@@ -4505,10 +4505,10 @@ async function boot(): Promise<void> {
     function playerWonderTargetCityId(): string | null {
       const openId = getOpenCityPanelCityId();
       if (openId) {
-        const openCity = cities.find(c => c.id === openId && c.ownerId === 0);
+        const openCity = cities.find(c => c.id === openId && c.ownerId === ME());
         if (openCity) return openCity.id;
       }
-      return cities.find(c => c.ownerId === 0)?.id ?? null;
+      return cities.find(c => c.ownerId === ME())?.id ?? null;
     }
 
     function wonderIsRuin(wonderId: string, ownerId: number): boolean {
@@ -4646,7 +4646,7 @@ async function boot(): Promise<void> {
         console.warn(`[Cuda] Brak wolnego heksa w terytorium ${city.name} — cud bez modelu mapy`);
         // R-EPOKA-CUD-WARUNEK-AWANSU: cud liczy się do bramki awansu epoki nawet bez
         // modelu na mapie (brak heksa nie unieważnia ukończenia cudu w silniku).
-        if (city.ownerId === 0) {
+        if (city.ownerId === ME()) {
           const prevPlayerEra = player.era;
           if (reconcilePlayerEraFromResearch()) {
             overlayDepositEra = player.era;
@@ -4722,7 +4722,7 @@ async function boot(): Promise<void> {
       if (wonderId) {
         if (completedWorldWonders.includes(wonderId)) {
           console.log(`[Cuda] ${city.name}: wyścig przegrany — ${wonderId} już na świecie`);
-          if (city.ownerId === 0) {
+          if (city.ownerId === ME()) {
             const w = getWonderById(wonderId);
             const label = w?.nazwa ?? wonderId;
             const placed = placedWorldWonders.find(p => p.wonderId === wonderId);
@@ -4748,7 +4748,7 @@ async function boot(): Promise<void> {
         // buildingUnlockFlagFor (game/production.ts) po analize regresji 'fort'.
         const unlockFlag = buildingUnlockFlagFor(completed.id, data.buildings);
         if (unlockFlag) (city as unknown as Record<string, boolean>)[unlockFlag] = true;
-        if (completed.id === 'spichlerz' && city.ownerId === 0) updateHud();
+        if (completed.id === 'spichlerz' && city.ownerId === ME()) updateHud();
         console.log(`[Produkcja] Tura ${turn} ${city.name}: budynek ${completed.id}`);
         return { prod: prodAfterAdvance };
       }
@@ -4817,7 +4817,7 @@ async function boot(): Promise<void> {
         isGeneral: completed.isGeneral === true && generalMaySpawnForOwner(city.ownerId),
         // R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: jednostka z kolejki produkcji miasta = zamówienie
         // bezpośrednio w mieście -> „Idź do wodza” domyślnie OFF (niezależnie od globalnego przełącznika).
-        ...(city.ownerId === 0 ? { followGeneral: recruitFollowGeneralForOrder('city', recruitFollowGeneralDefault) } : {}),
+        ...(city.ownerId === ME() ? { followGeneral: recruitFollowGeneralForOrder('city', recruitFollowGeneralDefault) } : {}),
         category: categoryOf(completed.id, role, isSuper, def['Typ']),
         q: city.q,
         r: city.r,
@@ -4830,7 +4830,7 @@ async function boot(): Promise<void> {
       });
       chronicleNoteProducedUnit(units[units.length - 1]);
       maybeHintArmyFoodOnFirstPlayerUnit(city.ownerId);
-      if (city.ownerId === 0) {
+      if (city.ownerId === ME()) {
         if (endTurnInProgress) {
           deferredPlayerUnitRevealIds.add(newUnitId);
         } else {
@@ -4958,7 +4958,7 @@ async function boot(): Promise<void> {
       if (!city || city.ownerId !== ownerId) return false;
       // R-WEB-SIEGE-BLOCKADE-NO-RECRUIT-REINFORCE-Q1: oblężone miasto nie rekrutuje (gracz i AI, jedna bramka).
       if (isCityUnderSiege(cities, city)) {
-        if (ownerId === 0) showHintMessage(CITY_SIEGE_RECRUIT_BLOCK_PL, 2800);
+        if (ownerId === ME()) showHintMessage(CITY_SIEGE_RECRUIT_BLOCK_PL, 2800);
         return false;
       }
       // R-WEB-ARMY-STACK-LIMIT-Q1: nie mozna zbudowac armii wiekszej niz limit -- jednostki w miescie
@@ -4990,12 +4990,12 @@ async function boot(): Promise<void> {
       {
         const superMsg = superUnitLimitViolation(unitDefForGate, itemId, reservedUnitTypeNamesForOwner(ownerId), requestedQuantity);
         if (superMsg) {
-          if (ownerId === 0) showHintMessage(superMsg, 3200);
+          if (ownerId === ME()) showHintMessage(superMsg, 3200);
           return false;
         }
       }
       if ((unitDefForGate?.Typ ?? '').toString().trim() === 'Naval' && !cityHasCoastOrRiverAccess(city)) {
-        if (ownerId === 0) {
+        if (ownerId === ME()) {
           showHintMessage('Jednostka morska wymaga dostępu do wody (morze lub rzeka)', 2800);
         }
         return false;
@@ -5003,7 +5003,7 @@ async function boot(): Promise<void> {
       const ep = empireEpochForOwner(ownerId);
       const mpMults = civManpowerMultsForOwner(ownerId);
       if (!canAffordUnitManpowerEmpire(cities, ownerId, city, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId, mpMults.costMult)) {
-        if (ownerId === 0) {
+        if (ownerId === ME()) {
           showHintMessage('Za mało rekrutów (Manpower) w imperium', 2800);
         }
         return false;
@@ -5033,13 +5033,13 @@ async function boot(): Promise<void> {
       if (requestedQuantity === 1) {
         const recruitHint = pickUnitRecruitHint(ownerPool, unitDef);
         if (recruitHint) {
-          if (ownerId === 0) showHintMessage(recruitHint, 2800);
+          if (ownerId === ME()) showHintMessage(recruitHint, 2800);
           return false;
         }
       } else {
         const stockMissing = missingStockFor(ownerPool, batchStockCost);
         if (Object.keys(stockMissing).length > 0) {
-          if (ownerId === 0) {
+          if (ownerId === ME()) {
             const detail = Object.entries(stockMissing)
               .map(([key, amount]) => `${amount} ${stockResourceLabel(key)}`)
               .join(', ');
@@ -5054,7 +5054,7 @@ async function boot(): Promise<void> {
           cities, cityId, ownerId, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId, mpMults.costMult,
         );
         if (!d.ok) {
-          if (ownerId === 0) {
+          if (ownerId === ME()) {
             showHintMessage('Za mało rekrutów (Manpower) w imperium', 2800);
           }
           return false;
@@ -5063,13 +5063,13 @@ async function boot(): Promise<void> {
       } else {
         const totalManpowerCost = kosztManpower * requestedQuantity;
         if (totalManpowerCost > 0 && empireManpowerCurrent(cities, ownerId, ep, mpMults.maxMult) < totalManpowerCost) {
-          if (ownerId === 0) {
+          if (ownerId === ME()) {
             showHintMessage('Za mało rekrutów (Manpower) w imperium', 2800);
           }
           return false;
         }
         if (!deductManpowerFromEmpire(cities, ownerId, ep, totalManpowerCost, mpMults.maxMult)) {
-          if (ownerId === 0) {
+          if (ownerId === ME()) {
             showHintMessage('Za mało rekrutów (Manpower) w imperium', 2800);
           }
           return false;
@@ -5084,7 +5084,7 @@ async function boot(): Promise<void> {
       // R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: intencja „Idź do wodza” trwa w zamówieniu do zrodzenia.
       // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: zamówienie z panelu Rekrutacja niesie id wybranego generała
       // (marsz do NIEGO); bez niego — dotychczasowa reguła (najbliższy generał wg przełącznika).
-      const followIntent = city.ownerId === 0
+      const followIntent = city.ownerId === ME()
         ? (opts.rallyGeneralId
           ? recruitRallyStamp(opts.rallyGeneralId)
           : { followGeneral: recruitFollowGeneralForOrder(opts.origin ?? 'city', recruitFollowGeneralDefault) })
@@ -5098,7 +5098,7 @@ async function boot(): Promise<void> {
         });
       }
       cityProd.set(cityId, nextProd);
-      if (ownerId === 0) {
+      if (ownerId === ME()) {
         updateHud();
         refreshCityPanelIfOpen();
       }
@@ -5128,7 +5128,7 @@ async function boot(): Promise<void> {
       const city = cities.find(ct => ct.id === cityId);
       if (!city || city.ownerId !== ownerId) return false;
       if (isCityUnderSiege(cities, city)) {
-        if (ownerId === 0) showHintMessage(CITY_SIEGE_RECRUIT_BLOCK_PL, 2800);
+        if (ownerId === ME()) showHintMessage(CITY_SIEGE_RECRUIT_BLOCK_PL, 2800);
         return false;
       }
       // R-WEB-ARMY-STACK-LIMIT-Q1: partia nie moze przekroczyc limitu stosu miasta (jak w purchaseRecruitmentUnit).
@@ -5153,12 +5153,12 @@ async function boot(): Promise<void> {
       {
         const superMsg = superUnitLimitViolation(unitDef, itemId, reservedUnitTypeNamesForOwner(ownerId), count);
         if (superMsg) {
-          if (ownerId === 0) showHintMessage(superMsg, 3200);
+          if (ownerId === ME()) showHintMessage(superMsg, 3200);
           return false;
         }
       }
       if ((unitDef.Typ ?? '').toString().trim() === 'Naval' && !cityHasCoastOrRiverAccess(city)) {
-        if (ownerId === 0) {
+        if (ownerId === ME()) {
           showHintMessage('Jednostka morska wymaga dostępu do wody (morze lub rzeka)', 2800);
         }
         return false;
@@ -5167,7 +5167,7 @@ async function boot(): Promise<void> {
       const totalGold = item.koszt * count;
       if (!Number.isFinite(totalGold) || totalGold < 0 || !Number.isSafeInteger(totalGold)) return false;
       if (ownerTreasury(ownerId) < totalGold) {
-        if (ownerId === 0) showHintMessage(`Za mało złota na ${count} jedn. rekrutacji`, 2800);
+        if (ownerId === ME()) showHintMessage(`Za mało złota na ${count} jedn. rekrutacji`, 2800);
         return false;
       }
 
@@ -5180,7 +5180,7 @@ async function boot(): Promise<void> {
       }
       const ownerPool = ownerResourceStockAll(cities, ownerId);
       if (!canAffordBuildingStock(ownerPool, totalStockCost)) {
-        if (ownerId === 0) {
+        if (ownerId === ME()) {
           const missing = missingStockFor(ownerPool, totalStockCost);
           const detail = Object.entries(missing)
             .map(([key, amount]) => `${amount} ${stockResourceLabel(key)}`)
@@ -5196,7 +5196,7 @@ async function boot(): Promise<void> {
       const totalManpower = manpowerCost * count;
       if (!Number.isFinite(totalManpower) || totalManpower < 0 || !Number.isSafeInteger(totalManpower)) return false;
       if (empireManpowerCurrent(cities, ownerId, ep, mpMults.maxMult) < totalManpower) {
-        if (ownerId === 0) showHintMessage(`Za mało rekrutów (Manpower) na ${count} jedn.`, 2800);
+        if (ownerId === ME()) showHintMessage(`Za mało rekrutów (Manpower) na ${count} jedn.`, 2800);
         return false;
       }
 
@@ -5209,7 +5209,7 @@ async function boot(): Promise<void> {
       }
       let prod = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       // R-WEB-RECRUIT-FOLLOW-GENERAL-BY-ORIGIN-Q1: partia z Armii/Rekrutacji dziedziczy globalny przełącznik.
-      const batchFollowIntent = ownerId === 0
+      const batchFollowIntent = ownerId === ME()
         ? { followGeneral: recruitFollowGeneralForOrder('army', recruitFollowGeneralDefault) }
         : {};
       for (let i = 0; i < count; i++) {
@@ -5217,7 +5217,7 @@ async function boot(): Promise<void> {
       }
       cityProd.set(cityId, prod);
       markCityStateDirty();
-      if (ownerId === 0) {
+      if (ownerId === ME()) {
         updateHud();
         refreshCityPanelIfOpen();
       }
@@ -5410,7 +5410,7 @@ async function boot(): Promise<void> {
       recordOwnersStockDeltaToPending(ledgerRecruitRefundBefore, o => ownerResourceStockAll(cities, o), 'zwrot-rekrutacja',
         { kind: 'zwrot', label: 'Zwrot z rekrutacji' });
       markCityStateDirty();
-      if (ownerId === 0) {
+      if (ownerId === ME()) {
         updateHud();
         refreshCityPanelIfOpen();
       }
@@ -5553,7 +5553,7 @@ async function boot(): Promise<void> {
       const buildingIds = new Set(
         wonderBuildSites.filter(s => isMe(s.ownerId)).map(s => s.wonderId),
       );
-      return listBuildableWondersForOwner(0).map(w => ({
+      return listBuildableWondersForOwner(ME()).map(w => ({
         id: w.id,
         label: w.nazwa,
         kosztPraca: scaledWonderWorkCost(w.kosztBudowy),
@@ -5589,7 +5589,7 @@ async function boot(): Promise<void> {
       // R-EPOKA-CUD-WARUNEK-AWANSU: cud własny (E) ukończony może właśnie odblokować
       // awans epoki (komplet tech epoki + cud) — przeliczyć natychmiast, nie czekać
       // do końca tury/następnego badania.
-      if (site.ownerId === 0) {
+      if (site.ownerId === ME()) {
         const prevPlayerEra = player.era;
         if (reconcilePlayerEraFromResearch()) {
           overlayDepositEra = player.era;
@@ -5606,7 +5606,7 @@ async function boot(): Promise<void> {
       const city = sourceCity ?? cities.find(c => c.ownerId === site.ownerId);
       const cityName = city?.name ?? 'terytorium';
       console.log(`[Cuda] Tura ${turn} ${cityName}: ukończono ${label} @ ${site.q},${site.r}`);
-      if (site.ownerId === 0) {
+      if (site.ownerId === ME()) {
         const civLabel = civWonderDisplayName(player.civType as string);
         showWonderCompletedNoticeDeferred({
           variant: 'mine',
@@ -5683,7 +5683,7 @@ async function boot(): Promise<void> {
         playerPracaPool -= used;
         _lastPraca = playerPracaPool;
       }
-      const site = wonderBuildSites.find(s => s.wonderId === wonderId && s.ownerId === 0);
+      const site = wonderBuildSites.find(s => s.wonderId === wonderId && s.ownerId === ME());
       if (site) {
         showHintMessage(
           `Budowa: <b>${w.nazwa}</b> @ ${q},${r} (${site.postep}/${scaledKoszt} Pracy)`,
@@ -5774,7 +5774,7 @@ async function boot(): Promise<void> {
         : 'Brak miasta gracza — załóż stolicę.';
       wondersPickerEl.appendChild(sub);
 
-      const list = listBuildableWondersForOwner(0);
+      const list = listBuildableWondersForOwner(ME());
       if (list.length === 0) {
         const empty = document.createElement('div');
         empty.style.cssText = 'font-size:0.9em;opacity:0.8;';
@@ -5847,7 +5847,7 @@ async function boot(): Promise<void> {
     }
 
     function ownerCivKeyForReligion(ownerId: number): string | null {
-      if (ownerId === 0) {
+      if (ownerId === ME()) {
         const k = String(player.civType || _menuCivId || '');
         return k.length > 0 ? k : null;
       }
@@ -6841,7 +6841,7 @@ async function boot(): Promise<void> {
      */
     function applyCityPodzialPracyChange(cityId: string, procentBudynkiRaw: number): void {
       const c = cities.find(ct => ct.id === cityId);
-      if (!c || c.ownerId !== 0) return;
+      if (!c || c.ownerId !== ME()) return;
       const next = applyPodzialPracyLocalChange(
         procentBudynkiRaw,
         ownerDefaultPodzialPracy.get(c.ownerId),
@@ -6856,7 +6856,7 @@ async function boot(): Promise<void> {
     /** Reczne przelaczenie „Indywidualne" (pin) — zostaje jako jawna kontrola gracza. */
     function toggleCityPodzialPracyOverride(cityId: string): void {
       const c = cities.find(ct => ct.id === cityId);
-      if (!c || c.ownerId !== 0) return;
+      if (!c || c.ownerId !== ME()) return;
       const next = !c.podzialPracyOverride;
       if (next) {
         // Zamroź bieżącą (globalną) wartość jako lokalną punkt startowy override.
@@ -7015,7 +7015,7 @@ async function boot(): Promise<void> {
 
     function applyOkolicaTileAdjust(cityId: string, q: number, r: number, _delta: number): void {
       const city = cities.find(c => c.id === cityId);
-      if (!city || city.ownerId !== 0) return;
+      if (!city || city.ownerId !== ME()) return;
       const res = toggleTileWorker(city, map, q, r, undefined, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city));
       if (res.ok) {
         city.okolicaReczne = res.reczne;
@@ -7148,7 +7148,7 @@ async function boot(): Promise<void> {
         // R-WEB-STABLE-STADNINA-ONLY-ON-HORSE-DEPOSIT-EARLY-ERAS-Q1: ta sama bramka Konia co silnik
         // (horseStockAvailable/tradeRouteKonUnlocked przy buildImprovementState, main.ts ~15667).
         konImperialUnlocked: stadninaImperialKonUnlocked(
-          hasTradeRouteResourceAccess(tradeRouteResourceGrants, 0, 'kon'),
+          hasTradeRouteResourceAccess(tradeRouteResourceGrants, ME(), 'kon'),
           citySurowceSumForOwner(0).kon ?? 0,
         ),
         // R-WEB-IRON-STUD-ADJACENCY-Q1: bezpośredni sąsiad = zbudowana stadnina we własnym terytorium (ta sama reguła co silnik).
@@ -7960,21 +7960,21 @@ async function boot(): Promise<void> {
       const idx = units.findIndex(x => x.id === unitId);
       if (idx < 0) return false;
       const u = units[idx]!;
-      if (u.ownerId !== 0) return false;
+      if (u.ownerId !== ME()) return false;
 
-      const ep = empireEpochForOwner(0);
-      const mpMults = civManpowerMultsForOwner(0);
+      const ep = empireEpochForOwner(ME());
+      const mpMults = civManpowerMultsForOwner(ME());
       const mpRefund = unitManpowerCostForType(u.typeId, ep, mpMults.maxMult, mpMults.costMult);
-      refundManpowerToEmpire(cities, 0, ep, mpRefund, mpMults.maxMult);
+      refundManpowerToEmpire(cities, ME(), ep, mpRefund, mpMults.maxMult);
 
       // R-WEB-DISBAND-REFUND-RESOURCES-Q1: 100% surowców zużytych przy werbunku wraca do PUli
       // PAŃSTWA (ten sam mechanizm co zwrot anulowanej rekrutacji, z capem magazynu jak
       // przy produkcji). Pieniądz NIE wraca. Brak śladu (stockPaid) = zero zwrotu.
       // EN: 100% of stock consumed at recruitment returns to the state pool (capped like
       // production); gold is NOT refunded; no trace (stockPaid) = no refund.
-      const stockRefundCap = ownerResourceCap(cities, cityBuilt, 0, data, _menuDifficulty, ep);
-      const ledgerDisbandBefore = snapshotOwnersStock([0], o => ownerResourceStockAll(cities, o));
-      const stockRefundCredited = disbandStockRefundCredit(cities, 0, u, stockRefundCap);
+      const stockRefundCap = ownerResourceCap(cities, cityBuilt, ME(), data, _menuDifficulty, ep);
+      const ledgerDisbandBefore = snapshotOwnersStock([ME()], o => ownerResourceStockAll(cities, o));
+      const stockRefundCredited = disbandStockRefundCredit(cities, ME(), u, stockRefundCap);
       recordOwnersStockDeltaToPending(ledgerDisbandBefore, o => ownerResourceStockAll(cities, o), 'zwrot-rozwiazanie',
         { kind: 'zwrot', label: 'Zwrot z rozwiązania jednostki' });
 
@@ -8016,7 +8016,7 @@ async function boot(): Promise<void> {
       // ekonomii (tooltip i bramka „Zakończ turę”, dirty-gated) musi się przeliczyć natychmiast.
       // EN: unit removal changes upkeep -> the economy forecast (dirty-gated) must recompute now.
       markCityStateDirty();
-      const cityLabel = cityAtUnit(u)?.name ?? cities.find(c => c.ownerId === 0)?.name ?? 'imperium';
+      const cityLabel = cityAtUnit(u)?.name ?? cities.find(c => c.ownerId === ME())?.name ?? 'imperium';
       const stockRefundParts = formatDisbandStockRefundHint(stockRefundCredited);
       showHintMessage(
         u.typeId + ' rozwiązany — +' + formatManpowerCompact(mpRefund) + ' rekrutów → pula imperium (' + cityLabel + ')'
@@ -8552,7 +8552,7 @@ async function boot(): Promise<void> {
     /** Pełny koszt rekrutacji Pieniądzem jednostki `typeId` (koszt "Zastąp" = pełna rekrutacja nowej). */
     function replaceUnitMoneyCost(typeId: string): number {
       const item = unitProductionItem(
-        typeId, data, civBonusyForOwnerId(0), player.kosztJednostekPace ?? 'niski', 0, _menuDifficulty,
+        typeId, data, civBonusyForOwnerId(ME()), player.kosztJednostekPace ?? 'niski', 0, _menuDifficulty,
       );
       return item?.koszt ?? 0;
     }
@@ -8570,7 +8570,7 @@ async function boot(): Promise<void> {
     }
 
     function unitReplaceEligible(u: RuntimeUnit): boolean {
-      return u.ownerId === 0 && isUnitInPlayerTerritory(u) && u.replaceUsedThisTurn !== true
+      return u.ownerId === ME() && isUnitInPlayerTerritory(u) && u.replaceUsedThisTurn !== true
         && computeUnitReplacements(u).length > 0;
     }
 
@@ -8601,7 +8601,7 @@ async function boot(): Promise<void> {
       let otherSkipped = 0;
       for (const t of targets) {
         if (eligibleSet.has(t)) continue;
-        if (t.ownerId === 0 && isUnitInPlayerTerritory(t) && t.replaceUsedThisTurn !== true) {
+        if (t.ownerId === ME() && isUnitInPlayerTerritory(t) && t.replaceUsedThisTurn !== true) {
           const label = (t.isGeneral === true ? '★ Wódz: ' : '') + t.typeId;
           noReplacement.set(label, (noReplacement.get(label) ?? 0) + 1);
         } else {
@@ -8758,7 +8758,7 @@ async function boot(): Promise<void> {
 
     /** Otwórz modal wyboru zamiennika dla jednostki `u` (pojedyncza jednostka; komunikaty przyczyn). */
     function openUnitReplacePicker(u: RuntimeUnit): void {
-      if (u.ownerId !== 0) return;
+      if (u.ownerId !== ME()) return;
       if (!isUnitInPlayerTerritory(u)) {
         showHintMessage('Zastąp: dostępne tylko na własnym terytorium.', 3000);
         return;
@@ -8860,7 +8860,7 @@ async function boot(): Promise<void> {
     /** Wykonaj zamianę jednostki `unitId` na `newTypeId` (runtime, po wyborze w modalu). */
     function performUnitReplace(unitId: string, newTypeId: string, quiet = false): boolean {
       const u = units.find(x => x.id === unitId);
-      if (!u || u.ownerId !== 0) return false;
+      if (!u || u.ownerId !== ME()) return false;
       if (!isUnitInPlayerTerritory(u)) return false;
       if (u.replaceUsedThisTurn) return false;
       if (!lookupUnitDef(newTypeId)) return false;
@@ -8885,7 +8885,7 @@ async function boot(): Promise<void> {
 
       // Etykieta miasta w toaście: garnizon jednostki, a poza miastem (całe terytorium
       // gracza) — pierwsze miasto gracza jako fallback (ten sam wzorzec co disbandPlayerUnit).
-      const replaceCity = unitReplaceGarrisonCity(u) ?? cities.find(c => c.ownerId === 0);
+      const replaceCity = unitReplaceGarrisonCity(u) ?? cities.find(c => c.ownerId === ME());
       if (quiet) return true;
       const fullCost = { money: result.money, stock: result.stock };
       showHintMessage(
@@ -9158,13 +9158,13 @@ async function boot(): Promise<void> {
       const toPartner = (id: number): AudienceRelationPartner => ({
         ownerId: id,
         name: ownerDiploLabel(id),
-        isPlayer: id === 0,
+        isPlayer: id === ME(),
       });
       const naps = dealPartnerIdsForOwner(activeDeals, otherOwnerId, 'nap').map(toPartner);
       // R-WEB-UI-DIPLO-WEARINESS-DESPAIR-DISPLAY-Q1: wojny AI↔AI — jedna wartość dla rozmówcy (strona otherOwnerId).
       // R-WEB-UI-DIPLO-PANEL-AIAI-BOTH-LABELS-Q1: obie strony wojny AI↔AI (rozmówca = own, partner = rival); tylko odczyt.
       const wars = base.wars.map(w => {
-        if (w.ownerId === 0) return w;
+        if (w.ownerId === ME()) return w;
         const side = warWearinessSideView(diploWarWearinessPairView(otherOwnerId, w.ownerId, 'tick'), String(otherOwnerId));
         return { ...w, warWeariness: side.own, warWearinessPartner: side.rival };
       });
@@ -9297,7 +9297,7 @@ async function boot(): Promise<void> {
 
     function selectPlayerResearchSlug(techSlug: string): void {
       const techName = techNameFromSlug(techSlug) ?? humanizeId(techSlug);
-      const ok = setPlayerResearchTarget(player, techName, data.tech, researchGateForOwner(0));
+      const ok = setPlayerResearchTarget(player, techName, data.tech, researchGateForOwner(ME()));
       if (ok) {
         console.log('[Nauka] Gracz wybrał cel:', techName);
         updateHud();
@@ -9569,7 +9569,7 @@ async function boot(): Promise<void> {
         getCachedMaxSafePoziomRacji: (cityId: string) => _maxSafeRationCache.get(cityId),
         onCityRationChange: (cityId: string, level: PoziomRacji) => {
           const city = cities.find(c => c.id === cityId);
-          if (!city || city.ownerId !== 0) return;
+          if (!city || city.ownerId !== ME()) return;
           const maxSafe = getMaxSafePoziomRacjiForPlayerCity(cityId);
           const clamped = clampPoziomRacji(Math.min(level, maxSafe));
           // R-USTAWIENIA-GLOBALNE-LOKALNE (Żywność, Maciej 2026-08-10): bez override —
@@ -9591,7 +9591,7 @@ async function boot(): Promise<void> {
         getPoziomRacjiOverride: (cityId: string) => cities.find(c => c.id === cityId)?.poziomRacjiOverride === true,
         onPoziomRacjiOverrideToggle: (cityId: string) => {
           const city = cities.find(c => c.id === cityId);
-          if (!city || city.ownerId !== 0) return;
+          if (!city || city.ownerId !== ME()) return;
           const next = !city.poziomRacjiOverride;
           city.poziomRacjiOverride = next;
           if (!next) {
@@ -9609,7 +9609,7 @@ async function boot(): Promise<void> {
         },
         onCityAutoWyzywienieChange: (cityId: string, enabled: boolean) => {
           const city = cities.find(c => c.id === cityId);
-          if (!city || city.ownerId !== 0) return;
+          if (!city || city.ownerId !== ME()) return;
           city.autoWyzywienie = enabled;
           // C-026: gdy gracz WŁĄCZA Auto Wyżywienie przy poziomRacji > maxSafe, przelicz
           // natychmiast -- przed tym przełączeniem `applyLiveSafeRationForCity` był no-opem
@@ -10051,7 +10051,7 @@ async function boot(): Promise<void> {
           const deduped = dedupeBudowaLista(lista);
           const msg = `Wgraj Listę budowy do wszystkich twoich miast?\n\nNadpisze tryb Lista i kolejność budynków we wszystkich miastach (${deduped.length} pozycji).`;
           if (!window.confirm(msg)) return;
-          for (const c of cities.filter(c => c.ownerId === 0)) {
+          for (const c of cities.filter(c => c.ownerId === ME())) {
             c.budowaLista = [...deduped];
             c.budowaTryb = 'lista';
             // Tryb Lista jest z natury per-miasto — pinuje wszystkie miasta poza
@@ -10085,7 +10085,7 @@ async function boot(): Promise<void> {
         // na heksie miasta, widoczna na mapie ze sterowaniem ruchem.
         onLeaveGarrison: (unitId: string) => {
           const u = units.find(x => x.id === unitId);
-          if (!u || u.ownerId !== 0 || u.inGarnizon !== true) return;
+          if (!u || u.ownerId !== ME() || u.inGarnizon !== true) return;
           const city = cityAtUnit(u);
           if (!exitGarnizon(u)) return;
           if (city) syncGarnizonForCity(city);
@@ -11247,7 +11247,7 @@ async function boot(): Promise<void> {
 
     /** Konsolidacja klastra / auto-wojna PM — wyłącznie typ gracza (nie obce civ/MP). */
     function isOwnerPlayerSameCivType(ownerId: number): boolean {
-      const playerCiv = civTypeForOwner(0);
+      const playerCiv = civTypeForOwner(ME());
       if (!playerCiv) return false;
       return aiOwnerCivMap.get(ownerId) === playerCiv;
     }
@@ -13588,8 +13588,8 @@ async function boot(): Promise<void> {
       const r = grantTechToOwner(techId, toOwnerId, basketTransferCtx);
       basketTransferCtx = r.context;
       if (!r.granted) return { granted: false, reason: r.reason };
-      if (toOwnerId === 0) {
-        for (const t of basketTransferCtx.researchedByOwner.get(0) ?? []) {
+      if (toOwnerId === ME()) {
+        for (const t of basketTransferCtx.researchedByOwner.get(ME()) ?? []) {
           player.zbadane.add(t);
         }
         // #66 + R-EPOKA-CUD-WARUNEK-AWANSU: awans liczony wyłącznie przez
@@ -13665,7 +13665,7 @@ async function boot(): Promise<void> {
           onCancelled: (reason) => showHintMessage(reason, 3500),
         },
       );
-      if (executed && (proposerId === 0 || responderId === 0)) updateHud();
+      if (executed && (proposerId === ME() || responderId === ME())) updateHud();
     }
 
     function transferBasketItems(
@@ -13814,7 +13814,7 @@ async function boot(): Promise<void> {
       if (gold > 0) {
         const treasury = buildDiploTreasury();
         applyOneShotGoldTransfer(proposerId, responderId, gold, treasury);
-        if (responderId === 0 || proposerId === 0) updateHud();
+        if (responderId === ME() || proposerId === ME()) updateHud();
       }
     }
 
@@ -14503,7 +14503,7 @@ async function boot(): Promise<void> {
         );
         if (enemyNear) {
           su.sentry = false;
-          if (su.ownerId === 0) {
+          if (su.ownerId === ME()) {
             showHintMessage(su.typeId + ' obudzony — wróg w polu widzenia!', 3000);
           }
         }
@@ -14537,7 +14537,7 @@ async function boot(): Promise<void> {
           const gain = applyCityVisitBonusGain(u, built, data.buildings);
           if (!gain.changed) continue;
           anyChanged = true;
-          if (showPlayerHints && u.ownerId === 0) {
+          if (showPlayerHints && u.ownerId === ME()) {
             const msg = formatBuildingBonusGainHint(u.typeId, city.name, gain);
             if (msg) showHintMessage(msg, 4500);
           }
@@ -14686,7 +14686,7 @@ async function boot(): Promise<void> {
         return;
       }
       for (const u of units) {
-        if (u.ownerId === 0) continue;
+        if (u.ownerId === ME()) continue;
         if (!visible.has(keyOf(u.q, u.r))) continue;
         if (veteranStarCount(u) < 2) continue;
         veteranEnemyEducationShown = true;
@@ -15757,7 +15757,7 @@ async function boot(): Promise<void> {
     // TEMAT #15 — embarkacja: czy właściciel zna Żeglugę (gracz / AI).
     // Barbarzyńcy (ownerId ujemne): pływają tylko już-zaokrętowani (Ludy Morza).
     function ownerHasSeafaring(ownerId: number): boolean {
-      if (ownerId === 0) return player.zbadane.has(EMBARK_TECH);
+      if (ownerId === ME()) return player.zbadane.has(EMBARK_TECH);
       if (isAiOwner(humanSeats, ownerId)) return aiResearchDone.get(ownerId)?.has(EMBARK_TECH) === true;
       return false;
     }
@@ -16154,7 +16154,7 @@ async function boot(): Promise<void> {
 
     function planSpawnedUnitFollowGeneral(newUnitId: string): boolean {
       const u = units.find(x => x.id === newUnitId);
-      if (!u || u.ownerId !== 0) return false;
+      if (!u || u.ownerId !== ME()) return false;
       // R-WEB-ARMY-TO-NEAREST-LEADER-Q1: najblizszy dostepny wodz (trasa), nie pierwszy na liscie.
       // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: jednostka z panelu Rekrutacja idzie do WYBRANEGO generała.
       const general = pickRallyGeneral(u, units, () => pickNearestLeaderForUnit(u));
@@ -16165,7 +16165,7 @@ async function boot(): Promise<void> {
     function afterPlayerUnitSpawned(newUnitId: string, generalMarchPreplanned = false): void {
       syncUnitsRender();
       const u = units.find(x => x.id === newUnitId);
-      if (!u || u.ownerId !== 0) return;
+      if (!u || u.ownerId !== ME()) return;
       const coLocated = coLocatedForMergePrompt(units, u.q, u.r, u.ownerId)
         .filter(x => x.id !== newUnitId);
       const autoMarchingToGeneral = u.followGeneral === true && (generalMarchPreplanned
@@ -16598,7 +16598,7 @@ async function boot(): Promise<void> {
       const inputs: TradeRouteOverlayInput[] = [];
       for (const route of tradeRoutes) {
         if (route.status !== 'polaczony') continue;
-        if (route.ownerId !== 0 && route.toOwnerId !== 0) continue; // R2-3: cudza trasa (AI↔AI / wewnętrzna obcych) — nie na mapie gracza
+        if (route.ownerId !== ME() && route.toOwnerId !== ME()) continue; // R2-3: cudza trasa (AI↔AI / wewnętrzna obcych) — nie na mapie gracza
         const from = cityById.get(route.fromCityId);
         const to = cityById.get(route.toCityId);
         if (!from || !to) continue;
@@ -17451,7 +17451,7 @@ async function boot(): Promise<void> {
 
     function playerCityNodes(): CityNode[] {
       return cities
-        .filter(c => c.ownerId === 0)
+        .filter(c => c.ownerId === ME())
         .map(c => ({ q: c.q, r: c.r, pop: c.population, level: 1 }));
     }
 
@@ -17552,11 +17552,11 @@ async function boot(): Promise<void> {
           // CHWILI sprawdzania — ten sam odczyt co citySurowceSumForOwner/panel Surowców —
           // dowieziony do bramki qualifies()/isLivestockUnlockedForPlacement (koszt 50 poza
           // złożem konia, patrz commitBuildRequest niżej dla realnego odjęcia przy budowie).
-          horseStockAvailable: citySurowceSumForOwner(0).kon ?? 0,
+          horseStockAvailable: citySurowceSumForOwner(ME()).kon ?? 0,
           // R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2, Q1=B doprecyzowanie:
           // wymóg fizycznej obecności WŁASNEJ jednostki przy budowie fort/posterunek
           // POZA własnym terytorium.
-          ownUnitHexKeys: ownUnitHexKeysForOwner(0),
+          ownUnitHexKeys: ownUnitHexKeysForOwner(ME()),
         },
         {
           activeKey: activeImprovementKey,
@@ -17871,7 +17871,7 @@ async function boot(): Promise<void> {
         const owner = nodes.length > 0 ? territoryOwnerAt(q, r, nodes) : null;
         // R-WEB-TERRITORY-FORT-PLACEMENT-SAME-RULES-AS-CITY-Q1: wspolny werdykt wlasnosci (jak dla miasta).
         const rivalCityTerritory = isFortBuildBlockedByForeignTerritory(owner, 0);
-        const ownUnitHere = units.some(u => u.ownerId === 0 && u.q === q && u.r === r);
+        const ownUnitHere = units.some(u => u.ownerId === ME() && u.q === q && u.r === r);
         if (!rivalCityTerritory && ownUnitHere) return true;
       }
       showBuildTerritoryBlockedHint(q, r);
@@ -18009,7 +18009,7 @@ async function boot(): Promise<void> {
       // wzorem istniejącego zapasowego komunikatu Pracy tuż wyżej.
       const stadninaPozaZlozem = req.key === 'stadnina' && !hexHasHorseDeposit(hex as { nakladka?: Nakladka; zloze?: string });
       if (stadninaPozaZlozem) {
-        const horseStockNow = citySurowceSumForOwner(0).kon ?? 0;
+        const horseStockNow = citySurowceSumForOwner(ME()).kon ?? 0;
         if (horseStockNow < 50) {
           showHintMessage(
             'Za mało koni: potrzeba 50, masz ' + Math.floor(horseStockNow)
@@ -18685,7 +18685,7 @@ async function boot(): Promise<void> {
         emitOrDeferNotice('tech-discovery', humanSeats.activeHumanOwnerId, () => showTechDiscoveryNotice({
           techName: eraTechName,
           eraIndex: eraIdx,
-          onOpenTree: () => showTechTreeView(0),
+          onOpenTree: () => showTechTreeView(ME()),
         }));
       }
     }
@@ -18712,9 +18712,9 @@ async function boot(): Promise<void> {
 
     /** Po pierwszej jednostce gracza — przypomnienie o magazynie centralnym (PYTANIE-85). */
     function maybeHintArmyFoodOnFirstPlayerUnit(ownerId: number): void {
-      if (ownerId !== 0 || playerArmyFoodHintShown) return;
+      if (ownerId !== ME() || playerArmyFoodHintShown) return;
       playerArmyFoodHintShown = true;
-      const reserve = getEmpireFoodReserve(0);
+      const reserve = getEmpireFoodReserve(ME());
       if (reserve >= 0) return;
       showHintMessage(
         'Masz wojsko, a magazyn centralny jest ujemny — wojsko może głodować. ' +
@@ -19294,7 +19294,7 @@ async function boot(): Promise<void> {
         endMapSiege(cityId);
         if (selectedId !== null) {
           const u = units.find(x => x.id === selectedId);
-          if (u && u.ownerId === 0 && stackCanMove(u) && !u.oblegaCityId) {
+          if (u && u.ownerId === ME() && stackCanMove(u) && !u.oblegaCityId) {
             reachable = reachableWithMergeTargets(u);
             unitRenderer.setHighlight(reachable);
           }
@@ -19324,7 +19324,7 @@ async function boot(): Promise<void> {
       const city = ctx.city;
       // R-WEB-AI-SIEGE-WITHOUT-WAR-Q1: JEDNA bramka — oblężenie tylko między stronami w wojnie.
       if (!siegeAllowedBetween(ctx.oblegajacyOwnerId, city.ownerId, areEnemyOwners)) {
-        if (ctx.oblegajacyOwnerId === 0) {
+        if (ctx.oblegajacyOwnerId === ME()) {
           showHintMessage(city.name + ': oblężenie możliwe tylko w stanie wojny.', 4000);
         }
         return;
@@ -19342,7 +19342,7 @@ async function boot(): Promise<void> {
       city.siegeArmyGroupId = isHuman(ctx.oblegajacyOwnerId) ? stackGroupIdOfAnchor(ctx.atakujacy) : undefined;
       refreshSiegeMarkers();
       syncSiegePanelMeta(city);
-      if (ctx.oblegajacyOwnerId === 0) {
+      if (ctx.oblegajacyOwnerId === ME()) {
         showSiegeMapPanel(ctx, siegePanelActions, 1);
         selectPlayerUnit(ctx.atakujacy.id, true);
         unitRenderer.clearPathRoute();
@@ -19467,7 +19467,7 @@ async function boot(): Promise<void> {
 
     function maybeAiAssaultAfterMachines(city: City, siegeTurn: number): void {
       const bId = city.oblegajacyOwnerId ?? siegeBesiegerByCity.get(city.id);
-      if (bId === undefined || bId === 0 || city.ownerId === bId) return;
+      if (bId === undefined || bId === ME() || city.ownerId === bId) return;
       const anchor = units.find(
         u => u.ownerId === bId && hexDistance(u.q, u.r, city.q, city.r) === 1,
       );
@@ -19864,8 +19864,8 @@ async function boot(): Promise<void> {
     }
 
     function cityHasAffordableWonderEnqueue(city: City): boolean {
-      if (city.ownerId !== 0) return false;
-      const wonders = listBuildableWondersForOwner(0);
+      if (city.ownerId !== ME()) return false;
+      const wonders = listBuildableWondersForOwner(ME());
       if (wonders.length === 0) return false;
       const prod = cityProd.get(city.id);
       const queuedWonderIds = new Set(
@@ -20030,10 +20030,10 @@ async function boot(): Promise<void> {
       const diff = diffTradeRoutes(prevRoutes, nextRoutes);
       // R2-4: raportujemy WYŁĄCZNIE trasy, w których gracz jest stroną — reszta
       // (AI↔AI, handel wewnętrzny obcych) nie należy do dziennika gracza.
-      const isPlayerRoute = (r: TradeRoute): boolean => r.ownerId === 0 || r.toOwnerId === 0;
+      const isPlayerRoute = (r: TradeRoute): boolean => r.ownerId === ME() || r.toOwnerId === ME();
       // R2-4: która strona trasy jest miastem GRACZA (kotwica wpisu/linku). Dla trasy
       // wewnętrznej gracza obie są — bierzemy `fromCityId`, wpis powstaje raz.
-      const playerCityIdOf = (r: TradeRoute): string => (r.ownerId === 0 ? r.fromCityId : r.toCityId);
+      const playerCityIdOf = (r: TradeRoute): string => (r.ownerId === ME() ? r.fromCityId : r.toCityId);
       const added = diff.added.filter(isPlayerRoute);
       const removed = diff.removed.filter(isPlayerRoute);
       if (added.length === 0 && removed.length === 0) return;
@@ -20054,7 +20054,7 @@ async function boot(): Promise<void> {
         const toName = to?.name ?? route.toCityId;
         // R2-4: jw. — etykieta drugiej strony względem gracza.
         const wewnetrzna = route.ownerId === route.toOwnerId;
-        const civLabel = wewnetrzna ? 'handel wewnętrzny' : ownerDiploLabel(route.ownerId === 0 ? route.toOwnerId : route.ownerId);
+        const civLabel = wewnetrzna ? 'handel wewnętrzny' : ownerDiploLabel(route.ownerId === ME() ? route.toOwnerId : route.ownerId);
 
         // Powod — tylko tanie, deterministyczne sprawdzenia (bez ponownego BFS
         // poza jednym findCityConnection, ktory i tak jest cache'owany).
@@ -20353,7 +20353,7 @@ async function boot(): Promise<void> {
           // Ten sam widok, który oferuje popup odkrycia epokowego tuż obok emitera karty
           // (`showTechDiscoveryNotice({ onOpenTree: () => showTechTreeView(0) })`,
           // notifyPlayerEraChangeIfAdvanced) — bez wymyślania nowego ekranu „historii epok".
-          showTechTreeView(0);
+          showTechTreeView(ME());
           return true;
       }
     }
@@ -20466,7 +20466,7 @@ async function boot(): Promise<void> {
       if (knownCivKey) return knownCivKey;
       // Legacy placeholders are retained only for existing presentation paths.
       // Gameplay effects must use civKeyForOwnerId so an unknown owner stays neutral.
-      if (ownerId === 0) return String(player.civType || _menuCivId || 'gracz');
+      if (ownerId === ME()) return String(player.civType || _menuCivId || 'gracz');
       return aiOwnerCivMap.get(ownerId) ?? `oid-${ownerId}`;
     }
 
@@ -35193,7 +35193,7 @@ async function boot(): Promise<void> {
         availableTechs(data.tech, player.zbadane, researchGateForOwner(0)).map(t =>
           techToSlug((t.Technologia ?? '').trim()),
         ),
-      getNaukaRate: (_ownerId: number) => buildHudState().naukaRate ?? 0,
+      getNaukaRate: (ownerId: number) => buildHudState(ownerId).naukaRate ?? 0,
       getTempoGry: (_ownerId: number) => player.tempoGry ?? 'standardowa',
       getDifficulty: (_ownerId: number) => _menuDifficulty,
       isBuildingGateMet: (ownerId: number, techName: string) => {

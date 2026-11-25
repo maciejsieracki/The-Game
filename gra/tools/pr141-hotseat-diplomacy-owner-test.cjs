@@ -65,6 +65,8 @@ const cultureByKey = new Map([
 ]);
 const context = {
   HUMAN_OWNER_PRIMARY: 0,
+  // R-WEB-HUD-ME-RESIDUAL-Q1 (FC r1 zarzut 1): ownerDiploLabel/ME() w wycinanym ciele; stub = fotel 0 (test tozsamosci wlascicieli).
+  ME: () => 0,
   _menuCivIdByOwner: new Map([[0, 'rzymianie'], [7, 'zulusi'], [42, 'chinczycy']]),
   playerCivTypeByHuman: new Map([[0, 'rzymianie'], [7, 'zulusi'], [42, 'chinczycy']]),
   player: { civType: 'rzymianie' },

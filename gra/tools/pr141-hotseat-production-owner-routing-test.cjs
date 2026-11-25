@@ -96,6 +96,8 @@ const treasury = new Map();
 const bonusLookups = [];
 const helperCalls = [];
 const context = {
+  // R-WEB-HUD-ME-RESIDUAL-Q1 r2: purchaseRecruitmentUnit czyta ME() (gracz aktywny); stub = fotel jednoosobowy 0.
+  ME: () => 0,
   cities: [],
   cityProd,
   data: { units: [] },
