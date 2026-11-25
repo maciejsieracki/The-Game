@@ -1,3 +1,9 @@
+## ROBOCZA fd40604d -- 2026-11-25 -- FALA 904: Wpis dla gracza przy powrocie do wojny po rozejmie (testowa)
+
+- Gdy rozejm wygasa i para z udziałem gracza wraca do wojny, gracz dostaje jeden wpis w Ważnych (wcześniej cicho); pary AI↔AI bez zmian
+- Weryfikacja: tsc 0; logic 213/213; truce-end-war-notice PASS (mutacje czerwone); hud-me-literal-zero 150/0; eliminated-relation-source 6/0; main-guard 21/0; hotseat e-source 77/0; bramki-tmpdir 18/0; ai-test 297/0; vite 0
+- Limity: Wygląd wpisu w panelu Ważne i testy live NIE ZMIERZONO; tekst tylko PL; wpis dostaje też gracz odrzucający ofertę
+
 ## ROBOCZA 2325253d -- 2026-11-25 -- FALA 903: HUD hotseat: ostatnie miejsca gracza 0 → aktywny gracz (testowa)
 
 - Ostatnie 12 literałów gracza 0 w roli gracza aktywnego (cuda w budowie, cywilizacja, zasoby miast, bramka badań, drzewo technologii) czytają aktywnego gracza (ME()); w grze jednoosobowej bez zmian
