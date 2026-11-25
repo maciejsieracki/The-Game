@@ -43,6 +43,19 @@ któregokolwiek → zgłoszenie zgubione. Ta komenda żyje TAKŻE w
 bo `playbook.md` i `README.md` wymagają świadomego `Read` i po kompaktowaniu
 długiej sesji potrafią zniknąć z pola widzenia. Historia incydentu: `playbook.md` → C-031.
 
+## ⚠ ZASADY PYTAŃ ABC DO WŁAŚCICIELA (właściciel, 2026-11-25; OBOWIĄZUJĄ w KAŻDEJ pracy, także subagentów; czytaj PRZED każdym AskUserQuestion)
+
+Źródła pełne: [`R-PROC-AUTOBOT.md`](docs/decyzje/R-PROC-AUTOBOT.md) §5, §10, §10a; [`R-PROC-AUTOBOT-ABC-TURNIEJ.md`](docs/decyzje/R-PROC-AUTOBOT-ABC-TURNIEJ.md); `playbook.md` C-018.
+Incydent 2026-11-25: zadałem właścicielowi pytania o progi testów w żargonie (nazwy testów, „pp”, tolerancja) — właściciel odpowiedział „nie wiem o co chodzi, zadaj pytanie prawidłowo”.
+
+1. **Czy to w ogóle pytanie do właściciela?** Do właściciela idą TYLKO sprawy wpływające na grę: zakres, balans, ekonomia, mechanika, wygląd, koszt, ryzyko, kolejność prac. Decyzje inżynierskie bez wpływu na grę (progi i asercje testów, dopasowanie harnessu, nazwy, format artefaktów, kolejność bramek, rozbicie tematu) rozstrzyga orkiestrator/Operator SAM i tylko informuje w raporcie. Pytanie techniczne do właściciela to przerzucenie decyzji, a nie ostrożność.
+2. **Język pytania = skutek dla gry i gracza, nie mechanizm.** W zdaniu pytania i w opisach opcji NIE WOLNO używać: nazw plików, testów, funkcji, narzędzi, numerów paragrafów, SHA, skrótów typu „pp”, „tolerancja”, „hash”, „FALA”, „FC”. Takie odnośniki idą do osobnej linii „Szczegóły:” pod pytaniem. **Sprawdzian (§10a):** usuń nazwy własne — jeśli zdanie przestaje cokolwiek znaczyć, pytanie jest o mechanizm i NIE jest gotowe. Pytanie musi dać się przeczytać na głos osobie spoza projektu. Liczby podawaj w słowach gry („o 1 ruch na 100 więcej”, „9 na 100 marszów”).
+3. **Struktura każdego pytania:** pełne ID tematu (nie samo „Q1”) · sytuacja (co się dzieje w grze) · cel · dlaczego teraz · warianty A/B/C, każdy z: co zobaczy gracz/jak zmieni się gra, co najmniej dwa za i dwa przeciw, **konsekwencja implementacyjna** (co trzeba napisać/przepisać, ile pracy, które części gry), **konsekwencja testowa** (które testy/bramki się zmienią) · rekomendacja z uzasadnieniem (rekomendowana opcja pierwsza, z dopiskiem „(Rekomendowane)”). Warianty różnią się SKUTKIEM, nie sposobem wykonania.
+4. **Turniej (C-018):** każde NOWE pytanie o grę (bez odpowiedzi literą) przechodzi przez dwa niezależne projekty i Sędziego (Evaluator) PRZED pokazaniem właścicielowi. Wyjątek: właściciel już odpowiedział literą (wtedy tylko ECHO), decyzja czysto inżynierska, albo ustalenie z żywej rozmowy.
+5. **Odpowiedź i ECHO:** decyzją jest wyłącznie jednoznaczna odpowiedź literą dla pełnego ID. „Chyba”, luźna rozmowa i moja rekomendacja NIE są decyzją. Po odpowiedzi: zapis ECHO w `dyspozycje/PYTANIA-OTWARTE.md` i rejestrze, ten sam ID, uruchomienie kolejnej bramki.
+6. **Jedno pytanie = jedna decyzja; max 3 pytania naraz; nie pytaj dwa razy o to samo** (najpierw sprawdź rejestr i KOLEJKA-WEB.md, czy właściciel już nie odpowiedział). Gdy dialog zostanie przerwany/zamknięty — NIE traktuj tego jako odmowy ani zgody; zapisz pytanie w rejestrze jako „CZEKA NA WŁAŚCICIELA” i zadaj ponownie w zwykłym tekście czatu.
+7. **Subagenci** nie pytają właściciela: zwracają `DECISION_REQUIRED` z jednym zdaniem konfliktu per wariant (bez proponowania rozwiązania), a orkiestrator redaguje pytanie wg punktów 1–4.
+
 ## ⚠ ZASADA MODELI — ZRÓŻNICOWANIE RÓL (właściciel, 2026-11-12; NIE WYMAGA PRZYPOMINANIA; czytaj przed KAŻDYM uruchomieniem Workflow)
 
 Limit zużycia schodzi szybko, więc role MAJĄ być zróżnicowane (zasada 2 niżej jest wiążąca, nie „wyjątkowa”):
