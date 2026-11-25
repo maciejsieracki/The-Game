@@ -1,6 +1,6 @@
 # R-WEB-ERA-WAR-END-LIKE-CLASSIC-Q1 — wojny epoki AI↔AI mają kończyć się tak samo jak klasyczne (usunięcie pozostałości po R9)
 
-DOMAIN: GAME (naprawa niezgodności z decyzją właściciela; właściciel 2026-11-25: „Ustaliliśmy, że wojny epoki mają się kończyć tak samo jak klasyczne wojny”) | Operator HAIKU 5.5 | runda 1/5 | BAZA = origin/main e2b06492da239f25dd5421dd57231e139f43c55e. Wdrożenie jako FALA po FC PASS. UWAGA: ten temat dotyka tych samych plików co R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1 (forced-war-*, main.ts) — startuje po zakończeniu tamtego.
+DOMAIN: GAME (naprawa niezgodności z decyzją właściciela; właściciel 2026-11-25: „Ustaliliśmy, że wojny epoki mają się kończyć tak samo jak klasyczne wojny”) | Operator HAIKU 5.5 | runda 1/5 | BAZA = origin/main 18eefa311665201d5a32fb329bbaf6120055f18c. Wdrożenie jako FALA po FC PASS. UWAGA: ten temat dotyka tych samych plików co R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1 (forced-war-*, main.ts) — (ERASTART — wdrożony jako FALA 906, więc start teraz).
 
 ## Kontekst
 Decyzja R9 (R-WEB-PEACE-RULES-R8R9-Q1): usunięto automatyczny koniec wojen wymuszonych (czas i 2 zdobyte miasta); „wojna wymuszona kończy się pokojem jak zwykła”. Analiza dyspozycje/analizy/WOJNA-SCIEZKI-KONCA-2026-11-25.md + sprawdzenie orkiestratora 2026-11-25 pokazało pozostałości, przez które AI↔AI wojny epoki NIE kończą się jak klasyczne:
