@@ -1,5 +1,13 @@
 'use strict';
 /** Focused regression test: rejected cluster slots must not consume names. */
+// MUTANT rivalIndex (+1 -> +2) w src/map/cluster-spawn.ts (licznik rywali przekazywany do
+// clusterRivalCityName) — OZNACZONY JAKO RÓWNOWAŻNY (nie wykrywalny z zasady), bez nowej asercji.
+// Dowód (R-WEB-TEST-HARDEN-TMPGATE-CLUSTER-Q1): runtime zawsze podaje zbiór usedNames, więc
+// clusterRivalFromPool bierze pierwszą wolną pozycję wspólnej kolejki i nie czyta rivalIndex.
+// Indeks wpływa tylko na tekst fallbacku „Rywal N”, który pickNextCityNameFromNames nie zwraca,
+// gdy kolejka (110 pozycji, wszystkie 15 cywilizacji ma pulę) ma choć jedną niepustą nazwę.
+// Pomiar: 48 przebiegów (24 ziarna × 6 cywilizacji) plan startowy + plan klastra oraz
+// 192 sondy clusterRivalCityName (z pulą i bez, indeks 1–12) — 0 różnic wyjścia.
 const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const esbuild = require('esbuild');
 const path = require('path');
