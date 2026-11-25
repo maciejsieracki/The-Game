@@ -308,7 +308,7 @@ const POWERRANK_LINES = [
   ['nakładka religii: ownerReligionForOwnerId(ME())', /const stateRel = ownerReligionForOwnerId\(ME\(\)\);\s*const keys = collectReligionRangeHexKeys\(/],
   ['nakładka religii: collectReligionRangeHexKeys(..., ME())', /collectReligionRangeHexKeys\(\s*map, rangeCityInputs\(\), cityRelig, stateRel, rp, ME\(\),/],
   ['lista zwycięstwa: typCywilizacji = ME()', /typCywilizacji: oid === ME\(\) \? player\.civType/],
-  ['lista zwycięstwa: ai = oid !== ME()', /ai: oid !== ME\(\),/],
+  ['lista zwycięstwa: ai = !isHuman(oid) (dowolny fotel człowieka nie jest AI)', /ai: !isHuman\(oid\),/],
 ];
 const POWERRANK_LITERALS = [
   /civDisplayNameForKey\(civKeyForOwner\(0\)\)/,

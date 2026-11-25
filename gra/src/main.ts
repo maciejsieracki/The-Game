@@ -48976,7 +48976,7 @@ async function boot(): Promise<void> {
               vPlayers.push({
                 id: oid,
                 typCywilizacji: oid === ME() ? player.civType : (aiOwnerCivMap.get(oid) ?? 'grecy'),
-                ai: oid !== ME(),
+                ai: !isHuman(oid),
               });
             }
 
