@@ -172,7 +172,7 @@ async function runOne(browserType, seed, recording) {
       const after = await page.evaluate(() => Object.keys(window.__ledgerTestDebug.pendingPeek()).length);
       res.newGameReset = { pendingOwnersBeforeNewGame: before, pendingOwnersAfterNewGame: after };
     }
-    res.e3c = await page.evaluate(() => { const s = window.__ledgerTestDebug.snapshot(); return { fires: s.e3cFires, last: s.e3cLast }; });
+    res.e3c = 'n/d'; // sonda E3c usunieta (martwa, R-WEB-CLEAN-DEAD-LEDGER-PROBE-Q1)
     res.done = true;
   } finally {
     await browser.close();

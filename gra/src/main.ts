@@ -10499,8 +10499,6 @@ async function boot(): Promise<void> {
     /** Hak testowy ?civTest=1 (__ledgerTestDebug): rekordy księgi ostatniego ticku ekonomii i licznik ticków (tylko odczyt). */
     let ledgerAuditLastTick: Map<number, ResourceLedgerTurn> | null = null;
     let ledgerAuditTickSeq = 0;
-    let ledgerAuditE3cLast: Array<{ routeId: string; resourceKey: string; fromOwnerId: number; toOwnerId: number; amount: number }> = [];
-    let ledgerAuditE3cFires = 0;
 
     /** Pełny reset UI / flag przed wczytaniem innej gry (nie czyści mapy — to robi rebuild). */
     function prepareSessionForLoad(): void {
@@ -33173,7 +33171,7 @@ async function boot(): Promise<void> {
           }
           const pending: Record<string, unknown> = {};
           for (const [o, t] of peekPendingLedger()) pending[o] = plain(t);
-          return { turn, tickSeq: ledgerAuditTickSeq, owners, stock, tick, pending, e3cLast: ledgerAuditE3cLast, e3cFires: ledgerAuditE3cFires };
+          return { turn, tickSeq: ledgerAuditTickSeq, owners, stock, tick, pending };
         },
         /**
          * R-WEB-TRADE-ROUTE-REMOVE-STOCK-FLOW-E3C-Q1 (tylko ?civTest=1, odczyt): aktywne trasy i dochod
