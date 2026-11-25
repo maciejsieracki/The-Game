@@ -25,5 +25,9 @@ tsc --noEmit exit 0; logic-test 213, tech-tree-test 20, research-test 33, unit-r
 ## Binarne kryterium
 PRAWDA: każda pozycja B + wymienione dodatkowe ma status zielony (z uzasadnieniem re-pinu) albo jawny status BŁĄD-GRY/NIE-ZMIERZONO z przyczyną; Konnica w wiki = 98; żadna asercja nie osłabiona; bramki zielone.
 
-## DODATEK orkiestratora (runda 1)
-Środowisko: worktree izolowany od kandydata (git checkout --detach <cand>); w gra/ uruchom `npm ci`. Zgoda właściciela: „realizuj po kolei” (2026-11-25). Raport: dyspozycje/autobot/runs/R-WEB-TEST-DEBT-Q14-B/10-operator-claude.md. Uwagi spoza zakresu → UWAGI-DLA-ORKIESTRATORA. Model: Operator HAIKU 5.5.
+## DODATEK rundy 3/5 (orkiestrator, 2026-11-25) — BAZA = 27a4680758b9fe7058ec06fdb326901e5fbdbabc (potomek f96787fb7; Konnica 98 wiki+piny, parity/granice/hotseat/wojna-wymuszona zielone — NIE RUSZAJ)
+Runda 2: Evaluator FAIL (zarzuty 1,2), FC FAIL. Zakres tej rundy (TYLKO to):
+1. dyplo-bilans-gate-n-e1-reprodukcja-runda2-test (6 FAIL) i -runda3-test (17 FAIL): przepisz needle/oczekiwane wartości do reguły po e253e64a6/e27418db7 (kierunkowa bramka pokoju; case 'pokoj' w diplomacy-proposals.ts ~2051-2117). Dla każdego FAIL: przyczyna z dowodem (git log -S), klasyfikacja STARY-PIN/HARNESS/BŁĄD-GRY; stare piny pokaż jako mutację czerwoną na bieżącym kodzie (mutacja przez kopię pliku, nie git checkout). Nie osłabiaj asercji; gdzie reguła zmieniła oczekiwanie (np. pwBalance -554/+554/0, accepted=false dla autora) zapisz nową wartość z powołaniem na commit. Paczki po 5 FAIL, commit po każdej paczce.
+2. ai-ai-treaty-live-proof-wiring A3 (decyzja orkiestratora): dopłata D obowiązuje przy SOJUSZU (FALA 892, ai-ai-treaty-params.json), nie przy NAP — owner potwierdził 'NAP AI↔AI zostaje', ale dopłata dotyczy sojuszu. Przepisz A3 tak, by akceptowało dopłatę D przy sojuszu (NAP z dopłatą opcjonalny), z mutacją czerwoną (usunięcie dopłaty z toru → A3 czerwone). Przebieg live ziarno 4242, 60 tur; SIGSEGV Chromium przy wznowieniu — rób świeży przebieg.
+3. ai-army-composition-per-civ (10 FAIL) — NIE RUSZAJ, czeka na decyzję właściciela (ABC). main.ts literał 0 (:3140, :24044) — NIE RUSZAJ gra/src (osobny temat R-WEB-HUD-ME-MIGRATION-Q1); hud-moc-warstwa zostaje 26/2 jako BŁĄD-GRY kandydat.
+4. ZAKAZ statusu BLOCK bez blokady technicznej.
