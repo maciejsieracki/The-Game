@@ -1065,7 +1065,10 @@ fn checkrout_okrazenie_z_biezacego_kafla() {
     };
     assert!(probe.terrain_defence_mult_at(unit, start).unwrap() <= 1.0);
     let routs = |cell: (i64, i64)| {
-        let mut ses = SiegeBattleSession::start(&st, &input, &d).unwrap();
+        // R-RUSTPORT-P4-MARCH-RESZTA-Q1 (N1): sonda woła `start` ciała wprost, poza sterownikiem; po `play()` ciało ma już
+        // marsz krok po kroku pierwszej aktywacji w jedynym slocie `ProdBody::march`, a ucieczka z okrążenia jest teraz też
+        // marszem krok po kroku (D-MR-1), więc sonda działa na scenie przed `play()` (`prepare`, ten sam układ jednostek).
+        let mut ses = SiegeBattleSession::prepare(&st, &input, &d).unwrap();
         let lp = ses.battle_loop_mut();
         lp.env.body.units[1][0].activate.q = cell.0;
         lp.env.body.units[1][0].activate.r = cell.1;
