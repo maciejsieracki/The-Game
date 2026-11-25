@@ -6,6 +6,18 @@ Czytana przez heartbeat :17 i :47. Źródła stanu (każda pozycja ma odsyłacz)
 - listy zadań sesji orkiestratora NIE są źródłem tego pliku (nie są w repo); pozycje z nich wpisane tylko po potwierdzeniu w repo.
 Zakres: WYŁĄCZNIE web. Rust tylko jako dług (sekcja DŁUG RUST/REPIN).
 
+## AKTUALIZACJA ZASAD I KOLEJKI 2026-11-25 (polecenie właściciela: „rozpisz zadania … realizuj po kolei” + „zaktualizuj zadania oraz zasady Autobot”)
+
+Ta sekcja NADPISUJE listę „GOTOWE DO STARTU” niżej (pochodzi z 2026-11-19; pozycje 1–6 są wdrożone/zamknięte do FALI 890). Zasady stałe bez zmian (CLAUDE.md): cała praca przez Workflow; Operator HAIKU 5.5, Evaluator SONNET 5.5, Obrona HAIKU, FC SONNET; Sonnet na Operatorze tylko po 2 nieudanych rundach Haiku (args.haikuFailures>=2 + sonnetWhy); deploy tylko ROBOCZA; decyzje i progi → ABC; `cand` = SHA origin/main; nie kasować /tmp/code-sign; raporty z NIE ZMIERZONO tam, gdzie nie zmierzono. Zgoda na starty tematów: TYLKO na wyraźne polecenie właściciela (dziś: „realizuj po kolei” = start kolejki poniżej). Bez nowego polecenia heartbeat NIE startuje tematów.
+
+KOLEJKA 2026-11-25 (kolejność realizacji; start równoległy tylko tam, gdzie pliki się nie pokrywają, integracja ZAWSZE po kolei):
+1. **R-WEB-MAP-POLAR-RESTORE-CONTINENTS-Q1** (tag POLARA1; #66) — pas polarny „kontynenty” (A1) → FALA 891.
+2. **R-WEB-ERA-WAR-PAIRING-ALLIANCE-NO-BLOCK-Q1** (tag ERAPAIR; #71) — sojusz nie blokuje wojny epoki, parowanie do skutku, fallback po trzech.
+3. **R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-HALF-Q1** (tag SURCHARGED; #80) — dopłata D 1,0 → 0,5.
+4. **R-WEB-TEST-DEBT-Q14** (#69, z #67 Konnica 98 i #68 garnizon nie „wręcz”) — START PO integracji 1–3 (piny testów mają odpowiadać stanowi końcowemu kodu); tests/docs, bez deployu. Dispatch do napisania przy starcie.
+5. Dalej: #72/#79 pomiary NIE ZMIERZONO, #78 dług FAL 728–746, #38 VERIFY-LIVE, #56 balans kosztów badań/budynków (PÓŹNIEJ, tylko na polecenie).
+Oczekuje właściciela: ocena FALI 890 w grze przy „Koszty jednostek: Wysoki ×4” (NIE ZMIERZONO).
+
 ## PROCEDURA NOCNA (obowiązuje heartbeat i orkiestratora; kolejność ważna)
 
 1. **Policz aktywne workflowy** (`subagents/workflows/*/`: `agent-*.jsonl` zmieniony <10 min ORAZ brak wyniku FC w `journal.jsonl`). Cel: 4. Brak aktywności >30 min przy braku procesów w worktree = ZWIS → `TaskStop` i wznowienie rundy (nie ślepe czekanie).
