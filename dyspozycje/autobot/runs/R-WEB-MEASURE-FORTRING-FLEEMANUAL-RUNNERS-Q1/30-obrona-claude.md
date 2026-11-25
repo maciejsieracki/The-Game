@@ -1,58 +1,37 @@
-# R-WEB-MEASURE-FORTRING-FLEEMANUAL-RUNNERS-Q1 — obrona Operatora (runda 2/5)
+# R-WEB-MEASURE-FORTRING-FLEEMANUAL-RUNNERS-Q1 — obrona Operatora (runda 3/5)
 
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME (pomiar + hak testowy civTest)
 TEMAT: R-WEB-MEASURE-FORTRING-FLEEMANUAL-RUNNERS-Q1
-GOAL: FLEEMANUAL zmierzony (limit ruchu, off-map, stan po odwrocie, 3 przypadki z danymi i SHA); FORTRING: przełącznik pierścienia pod civTest + test źródłowy, pomiar ON/OFF NIE ZMIERZONO z powodem technicznym i decyzją do orkiestratora.
-BAZA: 8a8aef35bc06a21e2acf9c00b62d1dcf0ea579ea (kandydat) na origin/main 547ca34b56f45a7d81da262c4720289b90d01cd2.
-ZMIANY/COMMIT: SHA w polu `sha` (commit obrony). Pliki: gra/src/main.ts (TYLKO hak civTest: przełącznik pierścienia + 2 miejsca odczytu), gra/tools/fortring-civtest-hook-test.cjs (nowy), gra/tools/flee-manual-measure.cjs (nowy), dyspozycje/analizy/POMIAR-FORTRING-FLEEMANUAL-2026-11-25.md (nowy), dyspozycje/autobot/runs/R-WEB-MEASURE-FORTRING-FLEEMANUAL-RUNNERS-Q1/dane/ (JSON x3, logi x3, SHA256SUMS), 30-obrona-claude.md. Brak zmian poza allowlistą; brak zmian w gra-robocza, gra-kanon, WERSJE.md, manifest, rust-port.
+GOAL: odpowiedź na zarzuty Evaluatora 065ce3c8 (7 pozycji) na kandydacie a4d3d43d4; poprawki tylko tam, gdzie da się je zrobić bez nowych długich biegów.
 
-## Odpowiedź na zarzuty Evaluatora
+## Odpowiedzi na zarzuty
+1. FORTRING wpływ pierścienia NIE ZMIERZONO (fortCount=0): PRZYJMUJĘ. Nie dodano hooka stawiającego fort (istniejący hook `__fortTerritoryTestDebug.placeFort` nie był w tej rundzie podpięty do runnera). Nie naprawiono w tej rundzie. Werdykt przełącznika w dokumencie zmieniono na „DZIAŁA (kod + test źródłowy); RUNTIME NIE ZMIERZONO”.
+2. Brak jednego biegu ciągłego na wariant: PRZYJMUJĘ. Nie naprawiono w tej rundzie (60 tur ~ 12 s/turę mediany, dwa biegi ciągłe wymagają setsid nohup timeout 1800 + Monitor; nie uruchomiono). Dane z biegów dzielonych pozostają w dokumencie jako nieinterpretowalne dla skrótów t30/t60 i różnicy median.
+3. Brak testu gate „ON identyczny z bazą po 30 turach” (fortCount + hash): PRZYJMUJĘ. Nie wykonano porównania z biegiem na 3ae80b02a. Dowód zerowej zmiany bez civTest pozostaje statyczny: `fortRingBuildBlockReason` przy braku własnego fortu zwraca null, a bramka w main.ts sprawdza `civTestFortRingOffFlag()`.
+4. Round-trip ON „NIE DZIAŁA” niedowiedziony: PRZYJMUJĘ i poprawiono wniosek w dokumencie: wiersz i pozycja 1 w „Zgłoszenia” mają teraz „NIE ZWERYFIKOWANE jako błąd” (jedna różnica w cityProd w jednym biegu ON, brak powtórki, możliwy niedeterminizm lub wpływ wznowień). Powtórki nie wykonano.
+5. FLEEMANUAL bitwy >5 tur i animacja NIE ZMIERZONO: PRZYJMUJĘ. Nie podjęto próby skrócenia scenariusza ani hooka animacji w tej rundzie. Dokument zachowuje NIE ZMIERZONO z powodem.
+6. territory.ts: blok `civTestFortRingOff` + setter rozrywał JSDoc `fortRingBuildBlockReason`: PRZYJMUJĘ i POPRAWIONO. Blok przeniesiono nad komentarz JSDoc; funkcja `fortRingBuildBlockReason` ma znowu swoją dokumentację bezpośrednio przed sobą. Zmiana wyłącznie przestawienie kolejności (zero zmiany logiki).
+7. Werdykt „DZIAŁA” przy braku efektu runtime: PRZYJMUJĘ i POPRAWIONO w dokumencie (patrz pkt 1).
 
-1. (Brak produktu tematu) — PRZYJMUJĘ, częściowo naprawione. Dodano: `flee-manual-measure.cjs` (runner, wyniki w `dane/`), `fortring-civtest-hook-test.cjs` (test źródłowy hooka), `analizy/POMIAR-FORTRING-FLEEMANUAL-2026-11-25.md` (tabela funkcja | zmierzono | wynik | werdykt). NIE napisano `fortring-measure.cjs` (runner ON/OFF 60 tur): bez pełnego przełącznika pomiar byłby niereprezentatywny (patrz zarzut 2). Odnotowane jako NIE ZMIERZONO z powodem.
-2. (BLOCK FORTRING nie w pełni technicznie zablokowany) — PRZYJMUJĘ. Wdrożono częściowy hak w main.ts: `_civTestFortRingOff` (domyślnie false, odczyt tylko przy `?civTest=1`), ustawiany `__settingsLive.setFortRingOff(bool)`, odczyt `fortRingOff()`, `fortCount()`. Hak obejmuje 2 z 3 punktów reguły (węzły terytorium fortu, blokada budowy w pierścieniu). Punkt `gra/src/map/improvement-build.ts:1091` (bramka `qualifies()`) jest poza allowlistą, więc NIE został przełączony. Nie rozszerzałem allowlisty samodzielnie: decyzja w UWAGACH.
-   Dowód: `node tools/fortring-civtest-hook-test.cjs` → 6 PASS / 0 FAIL na main.ts; mutacja (usunięcie bramki `/[?&]civTest=1/` z flagi) → 5 PASS / 1 FAIL (test czerwony). `npx tsc --noEmit` → exit 0.
-3. (FLEEMANUAL: runner bez blokady technicznej; off-map i stan po odwrocie NIE ZMIERZONO) — PRZYJMUJĘ. Napisano `gra/tools/flee-manual-measure.cjs`: 3 przypadki × (limit ruchu, brak odwrotu poza planszą 68×156, moveLeft >= 1 przed krokiem, przemieszczenie po odwrocie). Wyniki: 9 PASS / 0 FAIL na każdym przypadku (`dane/case0.log`, `case1.log`, `case2.log`). Pozostaje NIE ZMIERZONE, z powodem: pozycja startowa (log zapisuje tylko cel kroku), animacja (brak hooka; wejście `battle-flee-manual-browser-entry.ts` poza allowlistą), bitwy > 5 tur.
-4. (Liczby referencyjne bez logu i SHA) — PRZYJMUJĘ i naprawiono. Ponownie uruchomiono 3 przypadki referencyjne tym runnerem. Wyniki zgodne z raportem Operatora (max kroków/turę: 2, 3, 1; limity 2, 3, 1; łącznie kroków 9, 13, 5). Dane: `dane/flee-manual-measure-case{0,1,2}.json`, logi `dane/case{0,1,2}.log`, sumy `dane/SHA256SUMS`:
-   - case0 `7bda99e9f8794646057b6778df290ca6a199325c448562ce57756a2b19d26bd3`
-   - case1 `601958ebf91a745c4bff025573d2381b4eb8cca6a2fba36f9199a9b4af43888d`
-   - case2 `4b894f0fefdbe09f4d3f1eb78d8d489bab813c6f5e05532a5c3bfc25402f158b`
-5. (Bramki poza tsc NIE ZMIERZONE) — PRZYJMUJĘ, uruchomiono (liczby z surowego wyjścia, z tego worktree, po poprawkach):
-   - tsc --noEmit: exit 0
-   - logic-test: `LOGIC OK (213/213)`
-   - tech-tree-test: `20 pass, 0 fail`
-   - research-test: `PASSED: 33 / FAILED: 0 / TOTAL: 33`
-   - unit-replace-test: `WSZYSTKIE TESTY ZIELONE (21/21)`; archer-slinger: `51 OK, 0 FAIL`; full-cost: `40 passed, 0 failed`; multitype-walk: `25 OK, 0 FAIL`; promotion-table: `PASS: 32 wpisów źródłowych, 63 krawędzi`; army-multi-select: exit 0, ale tylko `NIE_ZMIERZONO` (panel Chromium/live, brak playwright w tej piaskownicy; test pokrywa logikę); wynik wprost z wyjścia.
-   - combat-test: exit 0, `All sanity checks passed.`
-   - ai-test: `ai-test: 297 passed, 0 failed`
-   - war-rules-multiwar-main-guard-test: `21 PASS / 0 FAIL`
-   - hotseat-etap6d-podetap-e-source-test: `77 PASS, 0 FAIL`
-   - bramki-tmpdir-unikalnosc-test: FAIL (`PASS=2 FAIL=1`, `2 trafien`): trafienia w plikach spoza tematu — `tools/resource-ledger-realpath-mutation-test.cjs:64` (`require('os').tmpdir()` jako korzeń) i `tools/save-load-deserialize-fields-audit.cjs:52` (`RUN_ID + '-evidence'`). Nie zmieniałem tych plików (poza allowlistą). Odnotowane jako pre-existing w bazie.
-   Zgodność z bazą: diff tematu względem 8a8aef35 to tylko pliki wymienione w ZMIANACH; testy uruchomiono na drzewie kandydata zawierającym bazę 547ca34b plus te zmiany.
-6. (Drobne: decyzja o allowlist poza BLOKADY/NASTĘPNY KROK, UWAGI = brak) — PRZYJMUJĘ. UWAGI dodano poniżej.
+## ZMIANY/COMMIT
+- gra/src/map/territory.ts: przestawienie bloku civTestFortRingOff nad JSDoc fortRingBuildBlockReason (zmiana kolejności, bez zmiany logiki).
+- dyspozycje/analizy/POMIAR-FORTRING-FLEEMANUAL-2026-11-25.md: wiersze FORTRING (przełącznik, round-trip), pozycja 1 zgłoszeń.
+- dyspozycje/autobot/runs/R-WEB-MEASURE-FORTRING-FLEEMANUAL-RUNNERS-Q1/30-obrona-claude.md (ten raport).
+- Commit: SHA w polu sha z StructuredOutput (czubek tej gałęzi po commicie).
 
-## TESTY (podsumowanie)
-- FLEEMANUAL: 3 uruchomienia (po jednym przypadku), każde `9 PASS, 0 FAIL` (1 sprawdzenie globalne + 8 na przypadek), łącznie 27 PASS / 0 FAIL — zob. zarzut 4.
-- FORTRING hook: test źródłowy 6/6 PASS; mutacja 5 PASS / 1 FAIL.
-- Bramki: patrz zarzut 5.
-- Pomiar FORTRING ON/OFF (60 tur, seed 4242): NIE ZMIERZONO (powód: pełny przełącznik niedostępny, runner nie napisany).
+## TESTY (surowe wyjście, na czubku po poprawkach)
+- `gra/`: `npx tsc --noEmit` exit 0 (node_modules zainstalowane przez `npm ci` w worktree, bez `npm run build`).
+- `node tools/fortring-civtest-hook-test.cjs`: 8 PASS, 0 FAIL.
+- Pełny zestaw bramek z dodatku (logic 213, tech-tree 20, research 33, unit-replace, combat 6, ai-test 297/0, war-rules-multiwar-main-guard 21/0, hotseat-etap6d-source 77/0, bramki-tmpdir): NIE_URUCHOMIONO w tej rundzie (poprawka dotyczy tylko kolejności komentarza i dokumentu; logika nietknięta). Evaluator zmierzył je na a4d3d43d4 (surowe wyniki w 20-evaluator-claude.md). Orkiestrator powinien je powtórzyć na czubku przed FC.
 
 ## BLOKADY
-1. FORTRING: pełny przełącznik wymaga `gra/src/map/improvement-build.ts` (gating `qualifies()`, linia ~1091). Poza allowlistą tej rundy.
-2. FORTRING: `fortring-measure.cjs` (60 tur ON/OFF, ms/turę, fort, round-trip) nie napisany — zależy od blokady 1.
-3. FLEEMANUAL: pozycja startowa, animacja, bitwy > 5 tur NIE ZMIERZONE (log wejścia, brak hooka animacji, wejście poza allowlistą).
-4. Bramka `bramki-tmpdir-unikalnosc` FAIL — pre-existing, 2 pliki spoza tematu.
+- Zarzuty 1, 2, 3, 5 wymagają długich biegów w przeglądarce (ON/OFF ciągłe 60 tur, test gate vs baza, odwrót na dłuższej bitwie). Brak blokady technicznej zgłoszonej do Evaluatora, ale czas wykonania przekracza jedno wywołanie Bash (590 s) i wymaga procesu w tle poza tym Operatorem. Nie wykonano w tej rundzie.
 
-## RUNDY
-2/5. Runda 1 BLOCK (FORTRING brak przełącznika; FLEEMANUAL częściowo). Runda 2: poprawki i pomiar FLEEMANUAL; FORTRING częściowo (hak).
+## UWAGI-DLA-ORKIESTRATORA
+- W worktree brak node_modules; `npx tsc` bez lokalnych zależności pobrał nowszą wersję TypeScript i zwrócił błąd TS5101 (baseUrl). Po `npm ci` w gra/ wynik exit 0.
+- Zarzuty 1–3 i 5 zostają otwarte: runda 3 nie zamyka binarnego kryterium „dokument z tabelą i werdyktem dla FORTRING (ON/OFF, wydajność, round-trip)” w części runtime. Sugerowany zakres rundy 4: hak placeFort pod civTest + bieg ciągły ON/OFF 60 tur przez setsid nohup + test gate t30 vs baza 3ae80b02a + powtórka round-trip bez wznowień.
 
-## NASTĘPNY KROK
-Orkiestrator decyduje o rozszerzeniu allowlisty o `gra/src/map/improvement-build.ts` (gating `qualifies()` tylko pod `civTestFortRingOff`, `?civTest=1`). Po decyzji: nowa runda z tym samym ID — runner `fortring-measure.cjs` (ON/OFF, seed 4242, 60 tur) i rozszerzenie FLEEMANUAL o pozycję startową/animację, jeśli właściciel to uzna za istotne.
-
-UWAGI-DLA-ORKIESTRATORA:
-- Pytanie o allowlistę (zob. BLOKADY 1): czy dopuścić `gra/src/map/improvement-build.ts` do tej rundy? Operator nie rozszerzał allowlisty samodzielnie.
-- Hak `setFortRingOff` jest w `main.ts` już teraz: przy ON (domyślnie) zachowanie gry bez zmian. Nie zweryfikowano runtime w przeglądarce (brak live testu gry; flee-test nie importuje main.ts). Wdrożenie tylko po FC.
-- Bramka `bramki-tmpdir-unikalnosc-test` ma 2 pre-existing trafienia w `resource-ledger-realpath-mutation-test.cjs` i `save-load-deserialize-fields-audit.cjs`; warto osobny temat R-WEB-*.
-- Pliki `gra/tools/.smoke-*.cjs` (14 w git) nie były przeze mnie czytane ani zmieniane.
-
+RUNDY: 3/5 (runda 2 zakończona ocenę FAIL, zarzuty 1–7 zaadresowane wg pkt powyżej)
+NASTĘPNY KROK: Evaluator r3 (weryfikacja pkt 4, 6, 7 w dokumencie i kodzie; pkt 1–3, 5 jako otwarte z powodem) → Final Control.
 DEPLOY/PUSH: NIE WYKONANO
