@@ -127,7 +127,8 @@ check(
 );
 
 // --- sojusznik dołączający do wojny (applyAllianceObligationsOnWar + joinAllyToWar) ---
-const obligSlice = windowAfter(main, 'function applyAllianceObligationsOnWar(attackerId: number, victimId: number, typWojny: TypWojny = \'naturalna\'): void {', 2600);
+// Okno 3200 (było 2600): po dopisaniu pendingPrincipal joinAllyToWar jest w ~2771 znaku od początku funkcji.
+const obligSlice = windowAfter(main, 'function applyAllianceObligationsOnWar(attackerId: number, victimId: number, typWojny: TypWojny = \'naturalna\'): void {', 3200);
 const blockIdx = obligSlice.indexOf('if (!isMe(allyId) && interCivWarBlockedForAi(allyId, ob.mustDeclareWarOn)) continue;');
 const joinIdx = obligSlice.indexOf('joinAllyToWar(allyId, ob.mustDeclareWarOn, attackerId);');
 check(

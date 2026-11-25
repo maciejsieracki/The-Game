@@ -122,3 +122,29 @@ export function warLimitAllows(
   if (countWarsOfType(defenderWars, typ) >= max) return false;
   return true;
 }
+
+/**
+ * R-WEB-WAR-LIMIT-AI-NATURAL-VIOLATION-Q1: wojna główna (a↔b) wypowiadana, ale jeszcze NIE zapisana
+ * w relacjach (applyAllianceObligationsOnWar wciąga sojuszników PRZED setDiploRelation wojny głównej).
+ */
+export interface PendingPrincipalWar {
+  a: number;
+  b: number;
+  typ: TypWojny;
+}
+
+/**
+ * Czy oczekująca wojna główna liczy się dla `ownerId` przy sprawdzaniu pary z `pomijany`.
+ * Liczy się, gdy para zawiera ownerId, partner nie jest ownerId ani `pomijany`, a relacja
+ * ownerId↔partner nie jest jeszcze 'wojna'. `statusOf(x, y)` zwraca status relacji pary.
+ */
+export function pendingPrincipalCounts(
+  ownerId: number,
+  pomijany: number,
+  pending: PendingPrincipalWar,
+  statusOf: (x: number, y: number) => string,
+): boolean {
+  const partner = pending.a === ownerId ? pending.b : pending.b === ownerId ? pending.a : -1;
+  if (partner < 0 || partner === ownerId || partner === pomijany) return false;
+  return statusOf(ownerId, partner) !== 'wojna';
+}
