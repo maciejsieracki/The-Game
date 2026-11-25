@@ -65,12 +65,13 @@ const battleFlush = aiBody.lastIndexOf('flushAiCityRenderBatch();', battleStart)
 assert.ok(battleStart >= 0 && battleFlush >= 0 && battleFlush < battleStart,
   'dirty city models flush before handing control to a battle');
 
-// R-WEB-TEST-DEBT-Q14 (HARNESS): okno szukania catch od barbStart-700 zgniło po dopisaniu
-// komentarza w main.ts (catch jest ~1000 znaków przed granicą barbarzyńców). Szukanie od
-// początku fazy AI (aiStart) zachowuje moc dowodową: catch musi leżeć w fazie AI i przed granicą.
-const catchStart = mainSource.indexOf("} catch (eAILoop) {", aiStart);
-const turnBarbBoundary = mainSource.indexOf("setTurnTransition(94, 'Barbarzyńcy…'", catchStart);
-assert.ok(catchStart >= 0 && turnBarbBoundary > catchStart
+// R-WEB-TEST-DEBT-Q14 (HARNESS): stałe okno szukania catch od barbStart-700 zgniło po dopisaniu
+// komentarza w main.ts (catch jest ~977 znaków przed granicą barbarzyńców). Zamiast poszerzać okno:
+// bierzemy NAJBLIŻSZY catch(eAILoop) przed granicą barbarzyńców (lastIndexOf, bez okna liczbowego)
+// i wymagamy, by leżał w fazie AI. Jedyny catch(eAILoop) w main.ts, więc nie ma dowolności wyboru.
+const catchStart = mainSource.lastIndexOf("} catch (eAILoop) {", barbStart);
+const turnBarbBoundary = barbStart;
+assert.ok(catchStart > aiStart && turnBarbBoundary > catchStart
   && mainSource.slice(catchStart, turnBarbBoundary).includes('flushAiCityRenderBatch();'),
   'dirty city models flush after AI completion/errors before barbarian UI paint');
 

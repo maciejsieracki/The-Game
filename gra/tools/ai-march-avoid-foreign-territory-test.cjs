@@ -371,10 +371,11 @@ async function main() {
   const M_ALLOW = await makeBundle('mut-allow', [MUT_ALLOW]);
   const M_ALLOW_KEYS = await makeBundle('mut-allow-keys', [MUT_ALLOW_KEYS]);
   const M_REQ = await makeBundle('mut-req', [MUT_REQ]);
-  // R-WEB-TEST-DEBT-Q14 (HARNESS): prosba no-route w scenariuszu wojennym ma drugie źródło
-  // (guardedMarchPath, ogon `deferred++ ; requestPassage('no-route') ; return []`), które
-  // MUT_REQ_WAR sam nie wycina -- mutacja była niepełna (got 1). Dokładamy MUT_REQ (ten sam
-  // wzorzec, już używany w C6), by C7 mierzyło zniknięcie WSZYSTKICH prób no-route.
+  // R-WEB-TEST-DEBT-Q14 (HARNESS): w scenariuszu wojennym prośba no-route pochodzi z DWÓCH miejsc
+  // w ai.ts: requestWarMarchPassage (MUT_REQ_WAR, ~l.1129) i ogon guardedMarchPath (MUT_REQ, ~l.1134).
+  // Sama MUT_REQ_WAR zostawia 1 prośbę (zmierzone: got 1), więc nie dowodzi niczego. Świadomie
+  // używamy SUMY obu mutacji: C7 twierdzi wtedy „wszystkie prośby no-route w wojnie znikają"
+  // (nie „tylko wojenna"). Asercja requests.length === 0 niezmieniona.
   const M_REQ_WAR = await makeBundle('mut-req-war', [MUT_REQ_WAR, MUT_REQ]);
   const M_CDF = await makeBundle('mut-cdf', [MUT_COOLDOWN_FUTURE]);
   const M_NOSEA_WAR = await makeBundle('mut-nosea-war', [MUT_NOSEA_WAR]);
@@ -502,7 +503,7 @@ async function main() {
     const m6 = runScenario(M_REQ, 'corridor', { guard: true, war: false });
     eq(m6.requests.length, 0, `C6 ${MUT_REQ.name}: prosba znika (0) -> B4c (firstStep) czerwone`);
     const m7 = runScenario(M_REQ_WAR, 'corridor', { guard: true, war: true });
-    eq(m7.requests.length, 0, `C7 ${MUT_REQ_WAR.name}: prosba znika (0) -> B4c (wojna-all-in) czerwone`);
+    eq(m7.requests.length, 0, `C7 ${MUT_REQ_WAR.name} + ${MUT_REQ.name}: wszystkie prosby no-route w wojnie znikaja (0) -> B4c (wojna-all-in) czerwone`);
     const m8 = runScenario(M_NOSEA, 'corridor-sea', { guard: true, war: false, sea: true, turns: 60 });
     assert(!(m8.guard.stats.seaRoutes > 0 && m8.maxQ > 21 + m8.R2), `C8 ${MUT_NOSEA.name}: marsz morski znika (seaRoutes=${m8.guard.stats.seaRoutes}) -> B7 (firstStep) czerwone`);
     const m10 = runScenario(M_NOSEA_WAR, 'corridor-sea', { guard: true, war: true, sea: true, turns: 60 });
