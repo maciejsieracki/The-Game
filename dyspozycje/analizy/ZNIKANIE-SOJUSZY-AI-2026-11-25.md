@@ -1,57 +1,71 @@
-# Którą ścieżką znikają sojusze AI↔AI — R-WEB-ALLIANCE-REMOVAL-PATH-Q1
+# Znikanie sojuszy AI↔AI — którą ścieżką umowy znikają z activeDeals (R-WEB-ALLIANCE-REMOVAL-PATH-Q1)
 
-Data: 2026-11-25 · Baza kodu: origin/main `8f7b4981f` (gra/src bez zmian w repo) · Seed 4242, tryb `--harder 1`, gracz = autopilot.
-Raport operatora: `dyspozycje/autobot/runs/R-WEB-ALLIANCE-REMOVAL-PATH-Q1/10-operator-claude.md`.
-Dane i SHA256: `dyspozycje/autobot/runs/R-WEB-ALLIANCE-REMOVAL-PATH-Q1/dane/`.
+Data: 2026-11-25 · Baza kodu: origin/main 8f7b4981f (gra/ identyczne w kandydacie 4ba7b5d38; `git diff 8f7b4981f 4ba7b5d38 -- gra` puste) · Bieg: seed 4242, `--harder 0`, ciągły, bez wznowień (`resumed:false`), tury 2–67, 66 wierszy.
 
-## 1. Wynik w jednym zdaniu
+## Wynik w skrócie
 
-Na bazie `8f7b4981f` (seed 4242, tury 2–67) **nie zaobserwowano utraty żadnego sojuszu AI↔AI**: sojusze 1–4 i 1–16 powstały w turze 38 i trwały do tury 67. Zdarzenie z danych ALLY66 (umowy 1–13 i 1–19 znikające w turach 62–66) **nie odtworzyło się** — na tej bazie te pary nie zawarły sojuszu w ogóle. Ścieżka, którą zniknęły tamte umowy, pozostaje **NIE ZMIERZONO**.
+- Na bazie 8f7b4981f w biegu seed 4242 / harder 0 **pary AI 1-13 i AI 1-19 nie zawarły sojuszu** (sojusz_pelny). Zdarzenie z ALLY66 (utrata sojuszu 1-13 i 1-19 w t62–66) **nie odtworzyło się**, więc jego ścieżka pozostaje **NIE ZMIERZONO** (brak zdarzenia do zalogowania).
+- W t62–66 na tym biegu **nie było utraty sojuszu AI 1** (zero wpisów `sojusz_pelny` z AI 1 w tym oknie). W całym biegu sojusz AI 1 zniknął raz: `sojusz_aiai_1_16_t30` przez `odmowa-sojuszu-finalize` w t55 (poza oknem).
+- Wszystkie umowy AI 1 znikające w t60–67 to `umowa_szlakow` (szlak handlowy) kończące termin: `expireTreaties`, zgodnie z kodem `wygasaTura <= tura`. To nie są sojusze.
+- Instrumentacja działa (96 wpisów `[AA-REMOVE]` w logu biegu). Brak wpisów dla sojuszu w t62–66 jest więc **danymi**, nie brakiem hooka.
 
-## 2. Wszystkie miejsca usuwające lub zamykające umowę w `activeDeals` (gra/src, baza 8f7b4981f)
+## Lista ścieżek usuwania umowy z activeDeals (gra/src, baza 8f7b4981f = 4ba7b5d38)
 
-| # | Plik:linia | Funkcja (wywołująca) | Ścieżka | Reguła w kodzie |
-|---|---|---|---|---|
-| 1 | gra/src/main.ts:22806 | resolveAllianceWarCall (22748) | odmowa obowiązku sojuszu (wezwanie do wojny sojusznika odrzucone) | `treatiesBrokenByRefusal` (diplomacy-treaties.ts:365) |
-| 2 | gra/src/main.ts:24644 | breakTreatyVoluntarily (24612) | zerwanie dobrowolne (przycisk gracza lub AI) | kara wiarygodności inicjatora; wywoływane też przez tickZeroTrustTreaties (25789 → 25803) |
-| 3 | gra/src/main.ts:25662 | breakTreatiesOnWar (25654) | wojna: zerwanie umów z `BREAK_ON_WAR` | `treatiesBrokenByWar` (diplomacy-treaties.ts:424); zbiór `BREAK_ON_WAR` (diplomacy-treaties.ts:399) zawiera PaktNieagresji, SojuszWojskowy, sojusz_defensywny, sojusz_pelny, OtwartGranice, … |
-| 4 | gra/src/main.ts:26224 | finalizeAllianceObligationRefusals (26189) | odmowa obowiązku sojuszniczego przy wezwaniu (finalizacja) | `treatiesBrokenByRefusal` |
-| 5 | gra/src/main.ts:26615 | runDiplomacyTurnTick (26613) | wygaśnięcie naturalne: `wygasaTura` <= tura | `expireTreaties` (diplomacy-treaties.ts:303: zostaje `wygasaTura === null || wygasaTura > turn`) |
-| 6 | gra/src/main.ts:26678 | runDiplomacyTurnTick (26613) | płatność nie wykonana (tribut/handel) | `tickDiplomacyPayments` (diplomacy-economy.ts:78) zwraca `broken` |
-| 7 | gra/src/main.ts:27104 | applyProposalOutcomeImpl (27045) | wchłonięcie miasta-państwa (wasal) | `findWasalDeal` |
-| 8 | gra/src/main.ts:40244 | eliminateOwner (40109) | eliminacja właściciela: usunięcie wszystkich umów z jego udziałem | filtr `strony.includes(ownerId)` |
-| 9 | gra/src/main.ts:11802, 50607, 52837 | reset nowej gry / wczytanie zapisu | `activeDeals = []` | nie ścieżka w trakcie gry |
-| 10 | gra/src/main.ts:30637 | hak testowy civTest | `splice` umowy `test-domino-alliance` | tylko test; poza grą |
+Usunięcia w trakcie tury (ścieżki, które usuwają umowę z activeDeals w grze):
 
-Uwagi:
-- `syncRelationFromDeals` (gra/src/main.ts:24708) **nie usuwa** umów. Ustawia status `sojusz` tylko gdy w `activeDeals` jest umowa sojuszu, a `pokoj` gdy jest PaktNieagresji. Brak gałęzi „else” oznacza, że status `sojusz` **nie jest zdejmowany**, gdy umowa znika. To jest mechanizm opisany w ALLY66 (status vs `activeDeals`) i odpowiada na pytanie ABC #103, które tu tylko opisujemy, nie zadajemy.
-- Nie znaleziono innych przypisań `activeDeals =` w gra/src/game/ai-ai-*.ts; ich użycia `activeDeals` są tylko odczytem (prefilter), co potwierdzają komentarze w ai-ai-treaty-tick.ts:104 i ai-ai-alliance-tick.ts:174.
+| Plik:linia | Funkcja / ścieżka | Etykieta w logu `sciezka=` |
+|---|---|---|
+| gra/src/main.ts:22806 | odmowa obowiązku sojuszu (resolveAllianceWarCall) | odmowa-obowiazku-sojuszu |
+| gra/src/main.ts:24644 | breakTreatyVoluntarily (zerwanie dobrowolne) | zerwanie-dobrowolne-breakTreatyVoluntarily |
+| gra/src/main.ts:25662 | breakTreatiesOnWar (wojna) | wojna-breakTreatiesOnWar |
+| gra/src/main.ts:26224 | finalizeAllianceObligationRefusals (odmowa wejścia do wojny sojusznika) | odmowa-sojuszu-finalize |
+| gra/src/main.ts:26615 | expireTreaties w runDiplomacyTurnTick (wygaśnięcie terminu) | wygasniecie-expireTreaties |
+| gra/src/main.ts:26678 | tickDiplomacyPayments — płatność niewykonana | platnosc-broken-tickDiplomacyPayments |
+| gra/src/main.ts:27104 | applyProposalOutcomeImpl — wchłonięcie wasala | wchloniecie-wasal |
+| gra/src/main.ts:40244 | eliminateOwner (filter po stronach właściciela) | eliminateOwner |
 
-## 3. Pomiar na bazie 8f7b4981f
+Poza tym: `gra/src/main.ts:30637` to wyłącznie hak testowy (`test-domino-alliance`, splice). Resety `activeDeals = []` w main.ts:11802 (start nowej gry), :50607 (start generacji mapy) i :52837 (wczytanie zapisu; po nim :52849 `hydrateActiveDeals`) nie są usunięciami w trakcie tury i nie są logowane; w tym biegu nie wystąpiły (bieg ciągły, bez wczytania). Wywołania `removeTreatiesById` / `expireTreaties` w gra/tools/*.cjs to testy, nie gra.
 
-Instrumentacja: kopia drzewa poza repo (`/tmp/claude-0/aaq1/gra`), patch `dyspozycje/autobot/runs/R-WEB-ALLIANCE-REMOVAL-PATH-Q1/instrumentacja-AA-REMOVE.patch`. Każde miejsce z tabeli (1–8) wywołuje `removeTreatiesByIdLogged` lub `expireTreatiesLogged`, które zapisują `[AA-REMOVE] tura, ścieżka, id, rodzaj, strony, wygasaTura`. Bundle zbudowany `vite build` poza repo (`--outDir` w /tmp). Runner `diplomacy-harder-measure-run.cjs`, seed 4242, `--harder 1`, odcinki `--stop-at` 40 / 63 / 50 / 67 (jeden Chromium).
+Kompletność sprawdzono grepem po `activeDeals\s*=`, `removeTreatiesById(`, `removeTreaty(`, `expireTreaties(` w gra/src (wszystkie trafienia powyżej).
 
-Wynik z `seed4242-harder1.jsonl` (66 wierszy, tury 2–67):
-- Sojusze AI↔AI (status `sojusz`): zdarzenia tylko **GAIN t38 1-4** i **GAIN t38 1-16**. Żadnej utraty (LOSS) w turach 2–67.
-- Pary 1–13 i 1–19: `neutralni` przez cały bieg.
-- Plik logu `[AA-REMOVE]` nie powstał (brak wpisów). Patrz ograniczenia.
+## Instrumentacja i jej walidacja
 
-Porównanie z danymi ALLY66 (`runs/R-WEB-ALLIANCE-LIMIT-AI-T66-Q1/dane/seed4242-alliance-log-t67.txt`): tam `sojusz_aiai_1_13_t40` i `sojusz_aiai_1_19_t58` istniały w activeDeals (t58 i dalej). Na bazie 8f7b4981f ten przebieg się nie odtwarza, więc nie da się wskazać ścieżki dla umów 1–13 i 1–19 z tego pomiaru.
+- Patch gry (w kopii poza repo): `runs/R-WEB-ALLIANCE-REMOVAL-PATH-Q1/instrumentacja-AA-REMOVE.patch`. Zamienia 8 wywołań na wersje `…Logged` (diplomacy-treaties.ts: `removeTreatiesByIdLogged`, `expireTreatiesLogged`). Każde usunięcie loguje `[AA-REMOVE] t<tura> sciezka=<etykieta> id=… rodzaj=… strony=… wygasaTura=… zawarta=…`. Logika usuwania bez zmian (te same filtry).
+- Poprawka hooka (zarzut 1): runner `gra/tools/diplomacy-harder-measure-run.cjs` zapisuje do `<TAG>.alliance-log.txt` wiersze zaczynające się od `[ALLIANCE-` **oraz** `[AA-` (`runs/…/runner-hook-AA.diff`). Patch poprzedniej rundy działał tylko w ai-economy-measure-run.cjs, którego ten runner nie używa.
+- Walidacja: 96 wpisów `[AA-REMOVE]` w logu biegu, w tym `eliminateOwner`, `wygasniecie-expireTreaties`, `platnosc-broken-tickDiplomacyPayments`, `odmowa-sojuszu-finalize`. Hak działa.
 
-## 4. Klasyfikacja
+## Wyniki biegu (seed 4242, harder 0, ciągły)
 
-- Dla utrat sojuszu AI 1 w turach 62–66: **brak przypadków na bazie 8f7b4981f** — nic do sklasyfikowania. Klasa dla zdarzenia z ALLY66: **NIE ZMIERZONO** (zdarzenia nie ma w biegu na tej bazie; źródło z danych ALLY66 pochodzi z innego stanu gry).
-- Ścieżki 1–8 mają jawną regułę w kodzie (odmowa, zerwanie, wojna, wygaśnięcie, płatność, wasal, eliminacja). Nie zgłaszam żadnej jako ŁAMIE REGUŁĘ, bo nie zaobserwowano jej działania w tym biegu.
-- Osobno: status `sojusz` pozostający po zniknięciu umowy (`syncRelationFromDeals`) — to pytanie do właściciela (#103), nie błąd do naprawy w tym temacie.
+- Pliki: `dane/seed4242-harder0.alliance-log.txt` (13 338 B), `dane/seed4242-harder0-base8f7b4981.jsonl.gz`, `dane/seed4242-harder0.summary.json`, `dane/seed4242-harder0.run.log`.
+- Parametry z summary: `harder 0`, `resumed false`, `endTurn 67`, `rows 66`, `wallSec 547`, `playerAi 1`.
+- Sojusze AI↔AI w logu: jedyny `sojusz_aiai_1_16_t30` (usunięty t55, `odmowa-sojuszu-finalize`); `sojusz_siostry_*` poza AI 1.
+- AI 1 w t60–67: wygasania `umowa_szlakow` (1-22 t60, 1-16 t61, 1-25 t62, 1-26 t63, 1-4 t64, 1-28 t65, 1-31 t66, 1-7 t67) oraz `eliminateOwner` 1-26 t66 (umowa szlakow zawarta t63). Żadna z nich nie jest sojuszem.
 
-## 5. Ograniczenia (jawnie)
+## Klasyfikacja
 
-1. Pełnego dowodu na działanie hooka logującego nie ma: runner otrzymuje konsolę przeglądarki przez `page.on('console')` w kopii `ai-economy-measure-run.cjs`, a plik `aa.log` nie powstał. Brak wpisów `[AA-REMOVE]` może więc oznaczać brak usunięć (dowiedziony tylko dla umów sojuszu przez jsonl), a nie dowód, że hook działa. NIE ZMIERZONO: poprawność przechwytywania konsoli.
-2. Bieg z `--harder 1` nie był porównywany z biegiem ALLY66 na identycznej bazie; różnica stanu gry jest faktem, przyczyna nie jest zbadana.
-3. Pojedynczy seed (4242); brak powtórki na seedzie 7.
+- Ścieżki sojuszu (sojusz_pelny) znikające w tym biegu: tylko `odmowa-sojuszu-finalize` (1-16, t55, poza oknem t62–66) i `eliminateOwner` (sojusze sióstr 11-12, 40-41; nie AI 1). Klasyfikacja: **NIE ZBADANO reguły w rejestrze/przewodniku** (reguły nie cytuję; ścieżka istnieje w kodzie jako odmowa wejścia do wojny sojusznika). Nie stwierdzono ŁAMANIA REGUŁY.
+- Utrata sojuszu AI 1 w t62–66: **brak zdarzenia na tym biegu**. Klasyfikacja dla ALLY66 1-13 / 1-19: **NIE ZMIERZONO** (pary nie zawarły sojuszu na bazie 8f7b4981f).
+- `umowa_szlakow` wygasające z terminu: ZGODNE z kodem (`expireTreaties`: zostaje tylko `wygasaTura === null || wygasaTura > tura`).
 
-## 6. Pliki
+## Odpowiedzi na zarzuty z rundy 1
 
-- Raport: `dyspozycje/autobot/runs/R-WEB-ALLIANCE-REMOVAL-PATH-Q1/10-operator-claude.md`
-- Patch instrumentacji: `dyspozycje/autobot/runs/R-WEB-ALLIANCE-REMOVAL-PATH-Q1/instrumentacja-AA-REMOVE.patch`
-- Dane (SHA256 w `dane/SHA256SUMS.txt`): `seed4242-harder1-base8f7b4981.jsonl.gz`, `seed4242-harder1.summary.json`, logi biegu `run1–4.log`, `build.log`, `tsc.log`
+1. Hak martwy — PRZYJĘTE i naprawione (runner-hook-AA.diff, 96 wpisów w biegu).
+2. Brak logu utrat AI 1 w t62–66 z klasyfikacją — PRZYJĘTE częściowo: bieg powtórzony, ale zdarzenie nie wystąpiło. Stan: brak zdarzenia = NIE ZMIERZONO dla ALLY66, nie „zgodne z regułą”.
+3. Warunki (harder 0 vs harder 1, segmenty) — PRZYJĘTE: ten bieg to harder 0, ciągły, bez wznowień. Stary bieg harder 1 (`seed4242-harder1*` w dane/) pozostawiony jako artefakt wcześniejszej rundy i NIE jest dowodem dla tego wniosku.
+4. Wzorzec „sojusz zastąpiony przez nowy id” (1-13 t33→t40, 1-19 t33→t58) — PRZYJĘTE, NIE ZBADANE: w tym biegu pary nie tworzą sojuszu, więc wzorca nie da się odtworzyć. Hipoteza (nie zweryfikowana): wygaśnięcie terminu `sojusz_pelny` i ponowne podpisanie przez AI. Wymaga biegu z tą parą.
+5. SHA256SUMS — PRZYJĘTE: zestaw przeliczony dla plików faktycznie obecnych w `dane/`.
+6. Bramki — PRZYJĘTE: uruchomione na kodzie kandydata (kopia gra/ z 4ba7b5d38, poza repo): tsc 0; logic 213/213; ai-test 297 passed / 0 failed.
+
+## Ograniczenia (NIE ZMIERZONO)
+
+- Nie odtworzono warunków ALLY66. Nie zweryfikowano różnicy kodu między bazą ALLY66 (b610e71a wg dispatchu oryginalnego) a 8f7b4981f; logi ALLY66 nie zawierają SHA kodu.
+- Kolejność wygaśnięć `sojusz_pelny` (termin ustawiany przy zawarciu) nie była analizowana.
+- Pytanie ABC #103 (status „sojusz” po zniknięciu umowy) — opisane, NIE zadane (zgodnie z dispatchem).
+- Stary bieg `seed4242-harder1` (w dane/) nie jest objęty tym wnioskiem.
+
+## Pliki
+
+- Analiza: `dyspozycje/analizy/ZNIKANIE-SOJUSZY-AI-2026-11-25.md` (ten plik).
+- Patch gry: `dyspozycje/autobot/runs/R-WEB-ALLIANCE-REMOVAL-PATH-Q1/instrumentacja-AA-REMOVE.patch`.
+- Patch runnera: `dyspozycje/autobot/runs/R-WEB-ALLIANCE-REMOVAL-PATH-Q1/runner-hook-AA.diff`.
+- Dane: `dyspozycje/autobot/runs/R-WEB-ALLIANCE-REMOVAL-PATH-Q1/dane/` (SHA256SUMS.txt).
