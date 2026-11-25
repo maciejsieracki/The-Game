@@ -44,6 +44,8 @@ const base = require('./ai-economy-measure-run.cjs');
 // R-WEB-MEASURE-HARDER-RUNNER-LONG-RUN-Q1: pokoj wymuszony (kolejka blokuje endTurn) -- ten sam modul co runner ekonomii.
 const { acceptForcedPeace } = require('./measure-forced-peace.cjs');
 const { licznikiZPar } = require('./diplomacy-all-flags-measure-counters.cjs');
+// R-WEB-HARNESS-CHROME-SAVE-RESUME-SIGSEGV-Q1: ponawianie startu ze slotu przy padnieciu Chromium (logika i testy w tym module).
+const { openWithRetry } = require('./measure-resume-retry.cjs');
 
 function arg(name, def) {
   const i = process.argv.indexOf('--' + name);
@@ -144,23 +146,16 @@ async function readDiploLevel(page) {
 
 /** R-WEB-HARNESS-CHROME-SAVE-RESUME-SIGSEGV-Q1: start ze slotu (wznowienie) bywa przerywany padnieciem renderera Chromium
  *  (SIGSEGV; Playwright: "Target page, context or browser has been closed"). Przed pierwsza tura nic nie zapisano, wiec
- *  ponawiany jest CALY start (nowy kontekst + openGame ze slotu), max 3 proby; tylko dla wznowienia, tylko przy padnieciu.
- *  Nieudany kontekst jest zamykany; przy ostatniej probie blad leci dalej bez zwracania kontekstu. */
+ *  ponawiany jest CALY start (launch + openGame ze slotu), max 3 proby; logika w measure-resume-retry.cjs (openWithRetry). */
 async function openGameRetry(chromium, fresh) {
-  const attempts = fresh ? 1 : 3;
-  for (let i = 1; ; i++) {
-    const ctx = await launch(chromium);
-    try {
-      const page = await openGame(ctx, { fresh });
-      return { ctx, page };
-    } catch (e) {
-      const msg = String((e && e.message) || e);
-      const crashed = /has been closed|crash/i.test(msg);
-      await ctx.close().catch(() => {});
-      if (i >= attempts || !crashed) throw e;
-      console.log(`[diplo] wznowienie: proba ${i}/${attempts} przerwana (${msg.split('\n')[0].slice(0, 120)}) -- ponawiam start ze slotu`);
-    }
-  }
+  return openWithRetry({
+    launch: () => launch(chromium),
+    open: ctx => openGame(ctx, { fresh }),
+    fresh,
+    profileDir: PROFILE,
+    attempts: 3,
+    log: msg => console.log(msg),
+  });
 }
 
 /** Start jak runner (`newgame`): prawdziwy doStartGame + czekanie na koniec nakladki. Swiezy przebieg: zalozenie miasta

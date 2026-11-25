@@ -59,3 +59,12 @@ NIE ZMIERZONO: dokładny mechanizm (brak symboli Chromium; brak dmesg; brak powt
 - Rozważyć zgłoszenie do właściciela jako problem środowiska Chromium 153 (for Testing) w tym kontenerze; mechanizm nieustalony.
 - Pomiary z wznowieniem (#72, pomiar pod #96) mogą iść odcinkowo z retry; przed dużym biegiem zalecane sprawdzenie stdout pod kątem `proba … przerwana`.
 - Retry obejmuje tylko `has been closed`/`crash`; inne błędy startu nadal przerywają bieg.
+
+## Korekta po obronie (runda 2, 30-obrona-claude.md)
+
+- Trzy kolejne wznowienia bez padnięcia (próby 6–8) nie dowodzą poprawki: ścieżka retry nie została wywołana, a przed poprawką padało 4 z 5. Wynik przyjmujemy jako „3 kolejne bez padnięcia”, bez przypisywania przyczyny łagodzeniu.
+- Ścieżka retry sprawdzona testem atrap: `gra/tools/diplomacy-resume-retry-test.cjs` (16 PASS, 0 FAIL). Na żywo NIE ZMIERZONO.
+- Retry obejmuje teraz także padnięcie na samym uruchomieniu przeglądarki, nie ponawia przy wiszącym `ctx.close()` i czyści pliki `Singleton*` profilu przed kolejną próbą. Wzorzec padnięcia zawęziony do `has been closed|Browser closed|Target crashed`.
+- Równoważność odcinkowa vs ciągła: potwierdzona do tury 6; tury 7–10 NIE ZMIERZONO.
+- dmesg: czytelny, bez trafień `segfault|SEGV|chrome|oom|killed` w buforze. Brak dowodu, że jądro loguje SIGSEGV procesów użytkownika, więc to dowód słaby.
+- Porównanie trybów headless (nowy/stary) NIE ZMIERZONO.
