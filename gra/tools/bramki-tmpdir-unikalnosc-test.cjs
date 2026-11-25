@@ -347,7 +347,8 @@ function scanSource(rel, src) {
   }
   const R7_ALT = '(?:' + r7Alts.join('|') + ')';
   const r7Patterns = [
-    { kind: 'tpl', re: new RegExp('\\$\\{\\s*' + R7_ALT + '\\s*\\}(?=/)', 'g') },
+    // Runda Q1-obrona (zarzut 1): separator `${path.sep}` zamiast dosłownego `/` — ta sama stała nazwa.
+    { kind: 'tpl', re: new RegExp('\\$\\{\\s*' + R7_ALT + '\\s*\\}(?=/|\\$\\{\\s*path\\.sep\\s*\\})', 'g') },
     { kind: 'lit', re: new RegExp('\\[\\s*' + R7_ALT + '\\s*,\\s*([\'"`])([^\'"`\\n]*)\\1', 'g') },
     { kind: 'lit', re: new RegExp(R7_ALT + '\\s*\\.concat\\(\\s*([\'"`])([^\'"`\\n]*)\\1', 'g') },
     { kind: 'lit', re: new RegExp('path\\.(?:(?:posix|win32)\\.)?(?:join|resolve)\\(\\s*' + R7_ALT + '\\s*,\\s*([\'"`])([^\'"`\\n]*)\\1', 'g') },
@@ -364,7 +365,7 @@ function scanSource(rel, src) {
       let tailStart = q7.index + q7[0].length;
       if (p7.kind === 'tpl') {
         seg7 = templateSegmentAfter(src.slice(tailStart));
-        if (!/^\/[A-Za-z0-9_.-]/.test(seg7)) continue;
+        if (!/^(?:\/|\$\{\s*path\.sep\s*\})\/?[A-Za-z0-9_.-]/.test(seg7)) continue;
         tailStart += seg7.length;
       } else {
         seg7 = q7[2];
@@ -452,12 +453,23 @@ for (const file of files) scanSource(path.relative(TOOLS_DIR, file), fs.readFile
   const fixturePosixJoinVar = fx(["const T = @TMP@;", "const p = path.posix.join(T, 'civ-stala');", "fs.writeFileSync(p, 'x');"]);
   const fixturePosixJoinInline = fx(["fs.writeFileSync(path.posix.join(@TMPOS@, 'civ-stala'), 'x');"]);
   const fixtureArrayJoinInline = fx(["const p = [@TMPOS@, 'civ-stala'].join('/');", "fs.writeFileSync(p, 'x');"]);
-  check('samotest R7: szablon `${T}/stała` w osobnej instrukcji = FAIL', countFixture(fixtureTplAcrossStmt) >= 1);
-  check('samotest R7: T.concat(\'/stała\') w osobnej instrukcji = FAIL', countFixture(fixtureConcatAcrossStmt) >= 1);
-  check('samotest R7: [T, \'stała\'].join(\'/\') przez zmienną = FAIL', countFixture(fixtureArrayJoinVar) >= 1);
-  check('samotest R7: path.posix.join(T, \'stała\') przez zmienną = FAIL', countFixture(fixturePosixJoinVar) >= 1);
+  // Runda Q1-obrona (zarzut 3): asercje R7 wymagają trafienia REGUŁY R7 (nie dowolnej reguły).
+  // Bez tego fixture'y, które łapie też R2, zostawały zielone po wyłączeniu R7.
+  const rulesFixture = (src) => {
+    const mark = findings.length;
+    scanSource('SAMOTEST.cjs', src);
+    const r = findings.slice(mark).map((f) => f.rule);
+    findings.length = mark;
+    return r;
+  };
+  const fixtureTplSepAcrossStmt = fx(["const T = @TMP@;", "const p = `${T}${path.sep}civ-stala`;", "fs.writeFileSync(p, 'x');"]);
+  check('samotest R7: szablon `${T}${path.sep}stała` w osobnej instrukcji = FAIL (reguła R7)', rulesFixture(fixtureTplSepAcrossStmt).includes('R7'));
+  check('samotest R7: szablon `${T}/stała` w osobnej instrukcji = FAIL (reguła R7)', rulesFixture(fixtureTplAcrossStmt).includes('R7'));
+  check('samotest R7: T.concat(\'/stała\') w osobnej instrukcji = FAIL (reguła R7)', rulesFixture(fixtureConcatAcrossStmt).includes('R7'));
+  check('samotest R7: [T, \'stała\'].join(\'/\') przez zmienną = FAIL (reguła R7)', rulesFixture(fixtureArrayJoinVar).includes('R7'));
+  check('samotest R7: path.posix.join(T, \'stała\') przez zmienną = FAIL (reguła R7)', rulesFixture(fixturePosixJoinVar).includes('R7'));
   check('samotest R1: posix-join korzenia wprost (bez zmiennej) = FAIL', countFixture(fixturePosixJoinInline) >= 1);
-  check('samotest R7: tablica z korzeniem wprost + join = FAIL', countFixture(fixtureArrayJoinInline) >= 1);
+  check('samotest R7: tablica z korzeniem wprost + join = FAIL (reguła R7)', rulesFixture(fixtureArrayJoinInline).includes('R7'));
   // Fixture odczytu bez trafienia: odczyt readdir i dynamiczna nazwa z listy katalogu.
   const fixtureReadDynamic = fx([
     'const T = @TMP@;',
