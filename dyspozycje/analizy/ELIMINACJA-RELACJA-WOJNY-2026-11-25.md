@@ -27,13 +27,23 @@ Klasyfikacja: **bez wpływu na liczniki i limity wojen (porządkowe)**. Kod gry 
 
 Uwaga do dowodu: `allPowerOwnerIds()` (20457–20462) NIE filtruje `eliminatedOwners`, bo zawiera właścicieli z `aiStartHexes`, a `eliminateOwner` nie usuwa wpisów z `aiStartHexes`. Martwy właściciel zostaje więc na liście iteracji, ale każdy odczyt jego pary daje neutral, więc nie zmienia wyniku liczników.
 
+Dodatkowe ustalenia (odpowiedź na zarzut 3 Evaluatora):
+- `eliminateOwner` ma early return `if (ownerId === 0 || eliminatedOwners.has(ownerId)) return;` (`main.ts:40110`). Gracz (ownerId 0) nie przechodzi tą ścieżką, więc jego relacje nie są czyszczone tym mechanizmem. Wniosek L5 dotyczy wyłącznie AI, a gracz nie jest martwy w tej ścieżce.
+- Pętle po `allPowerOwnerIds()` (28 wystąpień, m.in. 3115, 13166, 20488–20612, 24735, 25728, 25879, 25929, 26034, 26051, 26063, 29964, 30277–30594, 31593, 32095, 37880): **zapisy relacji w tych pętlach są chronione albo odczytem statusu, albo filtrem**:
+  - 13166–13172 (`applyMilitaryRespektEdgeTick`): filtr `eliminatedOwners.has(o)` przed zapisem `setDiploRelation(gracz, o, next)` (13205).
+  - 30277, 30323, 30382, 30467, 30589, 30594 (wymuszenia wojny epoki) oraz 30009, 30722, 32308, 32733: zapis `setDiploRelation(..., { ...rel, status: 'neutralni'|'pokoj' })` tylko `if (rel.status === 'wojna')`. Martwa para czyta neutral, więc nie zapisuje.
+  - 26686–26700 (dobra wola): iteruje `getDiplomaticContacts()`; `diplomacyPairMeta` martwej pary jest usuwana (`main.ts:40224–40226`), więc `meta.dobraWolaRemainingTur` = 0 i `setDiploRelation` nie jest wywołane.
+  - 12580–12585 i 12712: odczyt/filtr jak wyżej.
+- Zastrzeżenie: nie otwarto każdego z 28 wystąpień osobno. Część (3115, 20545, 24735, 37880, 25728/25879/25929, 29964, 31593, 32095) to odczyty lub filtry, ale ich linii nie czytano w całości. Ten wniosek opiera się na przeglądzie zapisów relacji (lista `setDiploRelation(`/`diplomacyRelations.set(`), nie na pełnym przejściu każdego wystąpienia pętli.
+
 ## Zastrzeżenia (porządkowe, nie wpływają na wojny)
 
-1. **Odtwarzanie neutralnych wpisów martwych par.** `tickDiploAiAiPairsWithBrake` (12708–12718) iteruje `allPowerOwnerIds()` przefiltrowane tylko przez `diploOwnerEligibleForBrake`; jeśli ten filtr przepuszcza martwego, `getDiploRelation` odtworzy wpis neutralny, a `diplomacyRelations.set` go zapisze. Skutek: pusty wpis w mapie i w zapisie (`diploSave`, 42131). Nie zmienia statusu wojny. NIE ZBADANO, czy `diploOwnerEligibleForBrake` (12563) odfiltrowuje eliminowanych — do potwierdzenia w osobnym temacie porządkowym.
+1. **Odtwarzanie neutralnych wpisów martwych par — ZBADANE: nie występuje.** `tickDiploAiAiPairsWithBrake` (`main.ts:12711–12712`) iteruje `allPowerOwnerIds().filter(o => !isMe(o) && diploOwnerEligibleForBrake(o))`. `diploOwnerEligibleForBrake` (`main.ts:12564–12570`) przekazuje `eliminated: eliminatedOwners.has(o)`, a `isAiAiEligibleOwner` (`gra/src/game/diplomacy-tick-war-brake.ts:239–241`) zwraca `!o.eliminated && ...`. Martwy właściciel jest więc odfiltrowany przed `aiAiPairs`; ta pętla nie odtwarza wpisów neutralnych martwych par ani ich nie zapisuje (`diplomacyRelations.set` w 12718 dotyczy tylko par z przeliczonych właścicieli). Dodatkowo `diploAiOwnersEligible` (12575) i `diploSharedEnemyOrBarbarianCoop` (12580–12585, odczyt + `eliminatedOwners.has(c)`) stosują ten sam filtr. Wniosek: osobny temat porządkowy 2 jest zbędny; nie wymaga zmian.
 2. **Stan zmęczenia wojną dla martwych par.** `warWearinessByPairKey` nie jest czyszczony w `eliminateOwner`. `runWarWearinessTick` (`src/game/war-weariness.ts`, ~363) przelicza tylko pary przekazane w `pairs`, więc wpis martwej pary zostaje nieruszony i jest zapisywany (42397). Nie jest czytany jako wojna (tickAiAiWarWeariness buduje pary tylko z `wojna`). Skutek: martwy wpis w zapisie.
-3. **Weryfikacja behawioralna NIE ZMIERZONO.** Wniosek opiera się na analizie statycznej ścieżek odczytu. Nie uruchomiono testu na żywo ani testu źródłowego eliminacji; bramki gry nie były potrzebne, bo kod się nie zmienia.
+3. **Weryfikacja behawioralna NIE ZMIERZONO.** Wniosek opiera się na analizie statycznej ścieżek odczytu. Nie uruchomiono testu na żywo ani scenariusza eliminacji w silniku (vm); bramki gry nie były potrzebne, bo `gra/src` się nie zmienia.
+4. **Dowód statyczny jako bramka tekstowa.** Dodano `gra/tools/eliminated-relation-source-test.cjs` (6 PASS / 0 FAIL, exit 0), który sprawdza cytowane fragmenty: kasowanie `diplomacyRelations`/`diplomacyPairMeta` z `ownerId` w `eliminateOwner`, early return dla `ownerId === 0`, `!o.eliminated` w `isAiAiEligibleOwner`, `eliminated: eliminatedOwners.has(o)` w `diploOwnerEligibleForBrake` i filtr `diploOwnerEligibleForBrake` w `tickDiploAiAiPairsWithBrake`. Test nie wykonuje mutanta (NIE ZMIERZONO); jest to strażnik zapisu, nie dowód zachowania w grze.
 
 ## Decyzja i następny krok
 
-- Brak zmiany kodu (zgodnie z pkt 3 dispatchu). Test strażnik nie wymagany.
-- Zastrzeżenia 1–2 zapisać jako zadanie porządkowe (czyszczenie wpisów martwych par w `eliminateOwner` i w `warWearinessByPairKey`), bez wpływu na grę.
+- Brak zmiany zachowania gry (`gra/src` nietknięte). Klasyfikacja: bez wpływu na liczniki i limity wojen.
+- Zostaje jedno zadanie porządkowe: zastrzeżenie 2 (czyszczenie `warWearinessByPairKey` przy eliminacji — martwy wpis w zapisie). Zastrzeżenie 1 jest zamknięte (nie występuje).
