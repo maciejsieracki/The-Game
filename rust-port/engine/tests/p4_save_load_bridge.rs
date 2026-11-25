@@ -244,6 +244,7 @@ fn storm() -> EngineCommand {
 #[test]
 fn save_game_odpowiada_stanem_i_tekstem_bez_zdarzen() {
     let mut b = played_session();
+    send(&mut b, EngineCommand::SelectUnit { unit_id: 1 }).expect("zaznaczenie przed zapisem");
     let before = get_state(&mut b);
     let d = send(&mut b, EngineCommand::SaveGame).expect("SaveGame");
     assert!(d.events.is_empty());
@@ -257,6 +258,13 @@ fn save_game_odpowiada_stanem_i_tekstem_bez_zdarzen() {
     assert_eq!(snap["version"], json!(2));
     assert!(snap.get("playable").is_some(), "cialo sesji w zapisie");
     assert_eq!(snap["activeHumanOwnerId"], json!(HUMAN));
+    // Web nie zapisuje `selectedId` (brak w `SaveGame`): cialo sesji bez zaznaczenia.
+    assert_eq!(
+        before.selected_unit_id,
+        Some(1),
+        "scenariusz ma zaznaczenie"
+    );
+    assert_eq!(snap["playable"]["state"]["selectedUnitId"], Value::Null);
     // Inne komendy nie maja klucza `saveGame` (JSON bez zmian).
     let other = send(&mut b, EngineCommand::GetState).expect("GetState");
     let other_wire = serde_json::to_value(&other.response).expect("odpowiedz");
@@ -889,6 +897,19 @@ fn mock_odrzuca_zapis_bez_sesji_i_obsluguje_zapis_z_sesja() {
         ],
         "mock zapisuje wywolania save/load"
     );
+    // Zapis innej (rozegranej) sesji wczytany w mocku: kolejny zapis mocka = ten sam tekst.
+    let foreign = save(&mut played_session());
+    mock.handle(BridgeRequest::new(
+        "l2",
+        EngineCommand::LoadGame {
+            save: foreign.clone(),
+        },
+    ))
+    .expect("wczytanie obcego zapisu");
+    let again = mock
+        .handle(BridgeRequest::new("s2", EngineCommand::SaveGame))
+        .expect("zapis po wczytaniu");
+    assert_eq!(again.response.save_game, Some(foreign));
     // Zly zapis w mocku: blad, stan mocka bez zmian.
     let before = mock.adapter().state().clone();
     mock.handle(BridgeRequest::new(
