@@ -298,6 +298,35 @@ check(
   religionOvCode !== null && religionOvCode.includes('ownerReligionForOwnerId(ME())'),
 );
 
+// R-WEB-HUD-ME-POWERRANK-RELIGION-Q1: ranking Mocy, nakładka zasięgu religii i lista graczy
+// zwycięstwa — literał 0 był podstawieniem gracza aktywnego; zamieniony na ME() (kotwice po
+// sygnaturach/nazwach pól, każda linia osobno — mutacja cofająca linię daje FAIL).
+const POWERRANK_LINES = [
+  ['buildAbsolutePowerRank: civ = ME()', /civ: oid === ME\(\) \? civDisplayNameForKey\(civKeyForOwner\(oid\)\) : ownerDiploLabel\(oid\),/],
+  ['buildAbsolutePowerRank: isPlayer = ME()', /isPlayer: oid === ME\(\),/],
+  ['buildPowerDiag labelForOwner = ME()', /labelForOwner: \(oid\) => oid === ME\(\)\s*\? civDisplayNameForKey\(civKeyForOwner\(oid\)\)/],
+  ['nakładka religii: ownerReligionForOwnerId(ME())', /const stateRel = ownerReligionForOwnerId\(ME\(\)\);\s*const keys = collectReligionRangeHexKeys\(/],
+  ['nakładka religii: collectReligionRangeHexKeys(..., ME())', /collectReligionRangeHexKeys\(\s*map, rangeCityInputs\(\), cityRelig, stateRel, rp, ME\(\),/],
+  ['lista zwycięstwa: typCywilizacji = ME()', /typCywilizacji: oid === ME\(\) \? player\.civType/],
+  ['lista zwycięstwa: ai = oid !== ME()', /ai: oid !== ME\(\),/],
+];
+const POWERRANK_LITERALS = [
+  /civDisplayNameForKey\(civKeyForOwner\(0\)\)/,
+  /isPlayer: oid === 0,/,
+  /const stateRel = ownerReligionForOwnerId\(0\);\s*const keys = collectReligionRangeHexKeys\(/,
+  /rangeCityInputs\(\), cityRelig, stateRel, rp, 0,/,
+  /typCywilizacji: oid === 0 /,
+  /ai: oid !== 0,/,
+];
+for (const [label, re] of POWERRANK_LINES) {
+  check(label, re.test(src));
+}
+check(
+  'R-WEB-HUD-ME-POWERRANK-RELIGION-Q1: brak literału 0 w miejscach rankingu/religii/zwycięstwa',
+  !POWERRANK_LITERALS.some(re => re.test(src)),
+  'literał 0 zamiast gracza aktywnego -- regresja hotseat',
+);
+
 console.log('\nWynik: ' + passCount + ' PASS / ' + failCount + ' FAIL');
 if (failCount > 0) {
   process.exit(1);

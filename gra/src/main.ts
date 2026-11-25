@@ -16843,9 +16843,9 @@ async function boot(): Promise<void> {
       }
       if (religionRangeVisible) {
         const rp = loadReligionParams(data.societyParams, _menuDifficulty);
-        const stateRel = ownerReligionForOwnerId(0);
+        const stateRel = ownerReligionForOwnerId(ME());
         const keys = collectReligionRangeHexKeys(
-          map, rangeCityInputs(), cityRelig, stateRel, rp, 0,
+          map, rangeCityInputs(), cityRelig, stateRel, rp, ME(),
         );
         if (keys.size > 0) {
           religionRangeGroup = buildRangeOverlayGroup(map, keys, RELIGION_RANGE_STYLE);
@@ -20515,11 +20515,11 @@ async function boot(): Promise<void> {
           else powerEconomic += c.points;
         }
         return {
-          civ: oid === 0 ? civDisplayNameForKey(civKeyForOwner(0)) : ownerDiploLabel(oid),
+          civ: oid === ME() ? civDisplayNameForKey(civKeyForOwner(oid)) : ownerDiploLabel(oid),
           power: objectivePowerForOwnerEffective(oid),
           powerMilitary: Math.round(powerMilitary),
           powerEconomic: Math.round(powerEconomic),
-          isPlayer: oid === 0,
+          isPlayer: oid === ME(),
           rank: 0,
           wiarygodnosc: getWiarygodnosc(oid),
         };
@@ -20604,8 +20604,8 @@ async function boot(): Promise<void> {
       const absoluteRank = buildAbsolutePowerRankEffective();
       const diagMajorAi = buildAiMocDiagRows({
         ownerIds: allPowerOwnerIds(),
-        labelForOwner: (oid) => oid === 0
-          ? civDisplayNameForKey(civKeyForOwner(0))
+        labelForOwner: (oid) => oid === ME()
+          ? civDisplayNameForKey(civKeyForOwner(oid))
           : ownerDiploLabel(oid),
         mocForOwner: objectivePowerForOwnerEffective,
         pracaPoolForOwner: ownerPracaPool,
@@ -48975,8 +48975,8 @@ async function boot(): Promise<void> {
             for (const oid of allOwners) {
               vPlayers.push({
                 id: oid,
-                typCywilizacji: oid === 0 ? player.civType : (aiOwnerCivMap.get(oid) ?? 'grecy'),
-                ai: oid !== 0,
+                typCywilizacji: oid === ME() ? player.civType : (aiOwnerCivMap.get(oid) ?? 'grecy'),
+                ai: oid !== ME(),
               });
             }
 
