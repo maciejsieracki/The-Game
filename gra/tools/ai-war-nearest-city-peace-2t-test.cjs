@@ -253,7 +253,7 @@ function suite(E) {
     return (o.action === 'accept_paid' && hist.surowiec_ilosc === 0 && hist.zloto === 0 && hist.miasto === 1) || JSON.stringify(hist);
   });
   t('B8 gracz nie jest zmuszany: para z czlowiekiem nieuprawniona; prosba usuwana', () => {
-    const base = { aIsHuman: false, bIsHuman: false, aIsMajorAi: true, bIsMajorAi: true, eliminated: false, forcedEpochWar: false, atWar: true };
+    const base = { aIsHuman: false, bIsHuman: false, aIsMajorAi: true, bIsMajorAi: true, eliminated: false, atWar: true };
     const okPair = P.isForcedPeaceEligiblePair(base) === true
       && P.isForcedPeaceEligiblePair({ ...base, bIsHuman: true }) === false
       && P.isForcedPeaceEligiblePair({ ...base, aIsHuman: true, aIsMajorAi: false }) === false;
@@ -261,9 +261,9 @@ function suite(E) {
     const o = tick(h, 12);
     return (okPair && o[0].action === 'dropped_ineligible' && h.log.fin.length === 0 && h.store.size === 0) || 'uprawnienie pary';
   });
-  t('B9 wojna wymuszona epoki / miasto-panstwo / brak wojny: nieuprawnione', () => {
-    const base = { aIsHuman: false, bIsHuman: false, aIsMajorAi: true, bIsMajorAi: true, eliminated: false, forcedEpochWar: false, atWar: true };
-    return P.isForcedPeaceEligiblePair({ ...base, forcedEpochWar: true }) === false
+  t('B9 miasto-panstwo / brak wojny: nieuprawnione; wojna epoki (ERA-WAR-END-LIKE-CLASSIC-Q1) uprawniona', () => {
+    const base = { aIsHuman: false, bIsHuman: false, aIsMajorAi: true, bIsMajorAi: true, eliminated: false, atWar: true };
+    return P.isForcedPeaceEligiblePair(base) === true
       && P.isForcedPeaceEligiblePair({ ...base, bIsMajorAi: false }) === false
       && P.isForcedPeaceEligiblePair({ ...base, atWar: false }) === false || 'wyjatki';
   });
@@ -408,8 +408,6 @@ const MUTATIONS = [
     from: 'if (inp.plan.full || balanceAfter >= -inp.tolerancePn) {', to: 'if (true) {' },
   { name: 'gracz tez zmuszany', file: 'game/diplomacy-ai-forced-peace.ts',
     from: 'if (p.aIsHuman || p.bIsHuman) return false;', to: '' },
-  { name: 'wojna wymuszona tez objeta', file: 'game/diplomacy-ai-forced-peace.ts',
-    from: 'if (p.eliminated || p.forcedEpochWar) return false;', to: 'if (p.eliminated) return false;' },
   { name: 'cesja stolicy dozwolona', file: 'game/diplomacy-ai-forced-peace.ts',
     from: "a.kind === 'miasto' && !a.forbidden && a.pn > 0", to: "a.kind === 'miasto' && a.pn > 0" },
   { name: 'rozejm traktowany jak pokoj', file: 'game/diplomacy-ai-forced-peace.ts',

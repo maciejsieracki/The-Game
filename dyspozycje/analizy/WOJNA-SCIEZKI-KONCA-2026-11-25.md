@@ -97,3 +97,11 @@ NIE ZMIERZONO: przyczyna końca wojny 1 vs 7. Najbardziej prawdopodobny kandydat
 4. R-WEB-ELIMINATED-RELATION-CLOSE — zamknięcie relacji pary z martwym ownerem (P16, L5), po sprawdzeniu wpływu na liczniki wojen.
 5. R-WEB-WAR-END-MEASURE-9T — pomiar 1 vs 7 z licznikiem przejęć miast i logiem (po L1).
 6. R-WEB-PEACE-PAIR-NO-TIME-GATE-CHECK — zbadanie, czy propozycja międzyludzka (P21) i wasalizacja (P17) mają bramkę czasu (L6).
+
+## 7. Korekta punktu 6 (R-WEB-ERA-WAR-END-LIKE-CLASSIC-Q1, 2026-11-25)
+
+Pozycja 6 ("usunięcie pominięć P12/P20 dla wojen epoki") została zrealizowana: wojny epoki (Kamień/Brąz/Żelazo) AI↔AI
+kończą się tymi samymi ścieżkami co klasyczne. Usunięte wykluczenia:
+- `gra/src/main.ts` `maybeResolveRegularWarOnCityCapture` — wczesny return dla pary z aktywną wojną wymuszoną (P12: auto-pokój po 2 miastach działa też dla wojen epoki, z tym samym warunkiem bilansu ≥ 0 u obu AI; sprzątanie i karencja idą przez `finalizePeaceTreatyBetween`).
+- `gra/src/main.ts` `aiAiForcedPeacePairEligible` i pole `forcedEpochWar` w `gra/src/game/diplomacy-ai-forced-peace.ts` `isForcedPeaceEligiblePair` (P20: prośby o pokój/rozejm AI↔AI obejmują wojny epoki; P11 bez zmian).
+Para gracz↔AI bez zmian. Test: `gra/tools/era-war-end-like-classic-test.cjs`.
