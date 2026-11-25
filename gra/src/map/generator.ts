@@ -89,6 +89,7 @@ import {
   thickenCoastAndSmoothInlets,
   applyCoastRing,
   enforceTargetDryLandFraction,
+  purgeOpenOceanLandSpecks,
   pangeaLandLayoutParams,
   type StartPosition,
   type TypSwiata,
@@ -318,7 +319,7 @@ export function generateMap(
   enforceMapBorderOcean(hexes, width, height);
   enforceLatitudinalOceanBuffer(hexes, width, height, typ === 'ziemia');
   if ((typ === 'kontynenty' || typ === 'wyspy') && zoneOf) {
-    applyLandFractionByContinent(hexes, landScores, zoneOf, nZones, landFraction, width, height);
+    applyLandFractionByContinent(hexes, landScores, zoneOf, nZones, landFraction, width, height, typ === 'kontynenty');
     applyMarginalLandZoneCaps(hexes, landScores, width, height);
     applyJaggedCoastNoise(hexes, perm, width, height, 2);
     removeTinyLandIslands(hexes, typ === 'wyspy' ? 4 : 5);
@@ -330,7 +331,7 @@ export function generateMap(
     rebalanceLandFractionPangea(hexes, landScores, landFraction, width, height, perm);
     snapPangeaBagelAudit('02_po_rebalance1', hexes, width, height);
   } else {
-    rebalanceLandFractionWithMargins(hexes, landScores, landFraction, width, height);
+    rebalanceLandFractionWithMargins(hexes, landScores, landFraction, width, height, typ === 'kontynenty');
   }
   enforceMapBorderOcean(hexes, width, height);
   enforceLatitudinalOceanBuffer(hexes, width, height, typ === 'ziemia');
@@ -385,7 +386,7 @@ export function generateMap(
     rebalanceLandFractionPangea(hexes, landScores, landFraction, width, height, perm);
     snapPangeaBagelAudit('03_po_rebalance2', hexes, width, height);
   } else {
-    rebalanceLandFractionWithMargins(hexes, landScores, landFraction, width, height);
+    rebalanceLandFractionWithMargins(hexes, landScores, landFraction, width, height, typ === 'kontynenty');
   }
   if (typ !== 'ziemia' && typ !== 'pangea') {
     applyJaggedCoastNoise(hexes, perm, width, height, 1);
@@ -452,7 +453,14 @@ export function generateMap(
       undefined,
       typ === 'pangea' ? 'mask' : 'center',
       pangeaFillMin,
+      typ === 'kontynenty',
     );
+    // Pas polarny po konwersji klimatu może zostawić samotne heksy lądu (otwarte morze):
+    // usuń je, jak robi to finalizeLandMassAfterCoast (tylko kontynenty — jedyny typ z
+    // przywracanym pasem polarnym; wyspy i pangea zostają bez zmian).
+    if (typ === 'kontynenty') {
+      purgeOpenOceanLandSpecks(hexes);
+    }
     if (typ === 'pangea') {
       snapPangeaBagelAudit('05_po_enforceLandPct', hexes, width, height);
       // Po ścięciu % lądu (często znów otwiera dolinę pierścienia) — most NATYCHMIAST.

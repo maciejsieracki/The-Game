@@ -3449,6 +3449,7 @@ export function applyLandFractionByScore(
   height?: number,
   fillBias: LandFractionFillBias = 'center',
   minMaskFillScore = PANGEA_LAND_FILL_MIN_SCORE,
+  protectPolarBand = false,
 ): number {
   const clamped = Math.max(0.15, Math.min(0.85, targetLandFraction));
   const keys = Object.keys(hexes);
@@ -3518,7 +3519,7 @@ export function applyLandFractionByScore(
       width ?? 1,
       height ?? 1,
     );
-    for (const k of landCandidates) {
+    for (const k of polarBandLastForErosion(landCandidates, height, protectPolarBand)) {
       if (land <= targetLand) break;
       setHexToMorze(hexes[k]!);
       land--;
@@ -3535,11 +3536,12 @@ export function rebalanceLandFractionWithMargins(
   targetLandFraction: number,
   width: number,
   height: number,
+  protectPolarBand = false,
 ): void {
-  applyLandFractionByScore(hexes, landScores, targetLandFraction, width, height);
+  applyLandFractionByScore(hexes, landScores, targetLandFraction, width, height, 'center', undefined, protectPolarBand);
   applyMarginalLandZoneCaps(hexes, landScores, width, height);
   enforceMapBorderOcean(hexes, width, height);
-  applyLandFractionByScore(hexes, landScores, targetLandFraction, width, height);
+  applyLandFractionByScore(hexes, landScores, targetLandFraction, width, height, 'center', undefined, protectPolarBand);
   applyMarginalLandZoneCaps(hexes, landScores, width, height);
   enforceMapBorderOcean(hexes, width, height);
   applyDoubleCoastRing(hexes);
@@ -3856,6 +3858,7 @@ export function applyLandFractionByContinent(
   targetLandFraction: number,
   width?: number,
   height?: number,
+  protectPolarBand = false,
 ): number {
   const clamped = Math.max(0.15, Math.min(0.85, targetLandFraction));
   const total = Object.keys(hexes).length;
@@ -3916,7 +3919,7 @@ export function applyLandFractionByContinent(
         width ?? 1,
         height ?? 1,
       );
-      for (const k of landCandidates) {
+      for (const k of polarBandLastForErosion(landCandidates, height, protectPolarBand)) {
         if (land <= quota) break;
         setHexToMorze(hexes[k]!);
         land--;
@@ -4031,6 +4034,28 @@ export function rebalanceLandSeaRatio(
 /** Suchy ląd — bez morza i wybrzeża (surowce lądowe tylko tutaj; ryby = osobne ulepszenie). */
 export function isDryLandTerrain(tb: TerenBazowy): boolean {
   return !isWaterTerrainLocal(tb);
+}
+
+/**
+ * Pas polarny przy erozji lądu (MAP-POLAR-ZERO, A1 2026-11-25). Od 40a29e4c6 liczenie/erozja
+ * lądu pomija Wybrzeże i sortowanie "najpierw krawędź" zjadało cały ląd wierszy polarnych
+ * (kontynenty: 0 heksów Polarny). Tu kandydaci z grywalnego pasa polarnego (bez bufora oceanu)
+ * idą NA KOŃCU kolejki erozji: nadmiar lądu jest zdejmowany najpierw ze środka, a pas polarny
+ * traci ląd dopiero, gdy nie ma innego kandydata. Wyłączenie całkowite dawało wyspy-szumy.
+ */
+function isPolarBandInteriorKey(k: string, height: number): boolean {
+  const { q, r } = parseHexKey(k);
+  const buf = latitudinalOceanBufferRows(height, false);
+  if (r < buf || r >= height - buf) return false;
+  return isPolarClimateBand(climateBandAt(q, r, height, false));
+}
+
+function polarBandLastForErosion(keys: string[], height: number | undefined, enabled: boolean): string[] {
+  if (!enabled || height == null || height < 1) return keys;
+  const inner: string[] = [];
+  const polar: string[] = [];
+  for (const k of keys) (isPolarBandInteriorKey(k, height) ? polar : inner).push(k);
+  return inner.concat(polar);
 }
 
 /**
@@ -5236,6 +5261,7 @@ export function enforceTargetDryLandFraction(
   tolerancePctPoints = DRY_LAND_FRACTION_TOLERANCE_PP,
   fillBias: LandFractionFillBias = 'center',
   minMaskFillScore = PANGEA_LAND_FILL_MIN_SCORE,
+  protectPolarBand = false,
 ): number {
   const clamped = Math.max(0.15, Math.min(0.85, targetLandFraction));
   const total = Object.keys(hexes).length;
@@ -5243,7 +5269,7 @@ export function enforceTargetDryLandFraction(
   const toleranceHexes = Math.max(1, Math.round(total * tolerancePctPoints / 100));
   let adjusted = 0;
 
-  adjusted += applyLandFractionByScore(hexes, landScores, clamped, width, height, fillBias, minMaskFillScore);
+  adjusted += applyLandFractionByScore(hexes, landScores, clamped, width, height, fillBias, minMaskFillScore, protectPolarBand);
   enforceMapBorderOcean(hexes, width, height);
 
   finalizeCoastAndInlandWater(hexes, width, height, 1, coastOpts);
@@ -5251,12 +5277,12 @@ export function enforceTargetDryLandFraction(
 
   let { land } = countLandSeaHexes(hexes);
   if (Math.abs(land - targetLand) > toleranceHexes) {
-    adjusted += applyLandFractionByScore(hexes, landScores, clamped, width, height, fillBias, minMaskFillScore);
+    adjusted += applyLandFractionByScore(hexes, landScores, clamped, width, height, fillBias, minMaskFillScore, protectPolarBand);
     enforceMapBorderOcean(hexes, width, height);
     applyCoastRing(hexes);
     land = countLandSeaHexes(hexes).land;
     if (Math.abs(land - targetLand) > toleranceHexes) {
-      adjusted += applyLandFractionByScore(hexes, landScores, clamped, width, height, fillBias, minMaskFillScore);
+      adjusted += applyLandFractionByScore(hexes, landScores, clamped, width, height, fillBias, minMaskFillScore, protectPolarBand);
       enforceMapBorderOcean(hexes, width, height);
     }
   }
