@@ -1,48 +1,63 @@
-# R-WEB-TEST-DEBT-Q14-D2 — raport Operatora (runda 2/5, odpowiedź na FAIL r2 Final Control)
+# R-WEB-TEST-DEBT-Q14-D2 — raport Operatora (runda 3/5, zakres z DODATKU r3)
 
 STATUS: FAIL
 DOMAIN: GAME (testy)
-TEMAT: R-WEB-TEST-DEBT-Q14-D2 (kat. D, 2. połowa: 20 testów do analizy przyczyn; unit-stock-cost-test zielony, 4 naprawy z r1 zachowane)
-GOAL: przy każdym teście z listy ustalić przyczynę na dowodzie, sklasyfikować i naprawić tam, gdzie STARY-PIN lub HARNESS; bez osłabiania asercji; bramki zielone.
-BAZA: kandydat 2735e4c19c8b792a7696cf019ee77e3fa4fefe0b (origin/main f96787fb7 + r1 + 4 naprawy r1). Zero zmian w gra/src i gra/data.
+TEMAT: R-WEB-TEST-DEBT-Q14-D2 (kat. D, 2. połowa, 20 testów)
+GOAL: zamknąć zakres rundy 3: war-allin-capital (STARY-PIN + mutacja), zelazo-gate (fixture + mutacja), rydwan i H2e nietknięte, solo-wyjście 20 testów, bramki zielone.
+BAZA: 1e912a0d27a90d957e6cb295b7e9d835cabe427f (origin/main lineage; zawiera feff53ab6 z obrony r3). Zero zmian w gra/src i gra/data.
+SHA (czubek pracy): ostatni commit raportu tej rundy (patrz pole sha w odpowiedzi); commity kodu: b7dc56f57 (war-allin), ac5217ff6 (zelazo).
 
 ZMIANY/COMMIT:
-- 58b27f716 — paczka 1/4 (drewno-gate, dyplo-karta-duplikat, dyplo-pakt-ekspansja-granica, egypt-movement-precedence, eliminacja-lup-kwoty)
-- 84dbae4d5 — paczka 2/4 (elimination-spectacle, endturn-battle-deadlock-exec, fair-play-tier-grid, fortify-pole, epoka-merge-recruit)
-- c2fa6782e — paczka 3/4 (idb-b1b2b3, r-bitwa-kolory-gracz-przeciwnik-q1, stone-research-costs, perf-endturn-ai-phase-equiv, surrender-rekrutacja-build-gate)
-- SHA raportu: patrz commit „paczka 4/4 + raport" (ostatni commit gałęzi roboczej, zawiera wyłącznie ten plik).
-- Allowlista zachowana: wyłącznie gra/tools/*-test.cjs z tej połowy + dyspozycje/autobot/runs/R-WEB-TEST-DEBT-Q14-D2/**. Asercje nie osłabione (zmieniane są piny do obowiązujących wartości, dopasowania harnessu lub stuby sandboxu — każda zmiana ma komentarz „R-WEB-TEST-DEBT-Q14").
+- b7dc56f57 — gra/tools/war-allin-capital-test.cjs: REF_OFF.aiVsAi `20a5bc2c7abcba1b` -> `d28c8b7ffce7a3ec`, REF_OFF.noLandPath `3484217518ceb4ba` -> `e565af36b3773765`, komentarz R-WEB-TEST-DEBT-Q14 z powołaniem na f038fbd2c. aiVsPlayer i barbarians bez zmian. Asercje nie osłabione.
+- ac5217ff6 — gra/tools/zelazo-gate-test.cjs: fixture `Legionista` -> `Hastati` (realna jednostka Żelazo z units.json, koszt 25). Asercje bez zmian.
+- Allowlista zachowana. Nic poza gra/tools/*-test.cjs i tym raportem nie zmienione. Raport zacommitowany przez `git add` ścieżki raportu.
 
-## Tabela (test | przed (surowe, solo) | przyczyna z dowodem | klasyfikacja | co zmieniono | po (surowe))
+## Weryfikacja war-allin-capital (DODATEK r3 pkt 1)
+- Pin: oba skróty z DODATKU zgadzają się z bieżącym kodem: `[INFO] aiVsAi ... OFF=d28c8b7ffce7a3ec`, `[INFO] noLandPath ... OFF=e565af36b3773765` (surowe, sekcja 6).
+- Sekcja 6 NIE jest SKIP: baza z git archive fcd86933 załadowana (`6a` przeszło, `6b0` przeszło).
+- Solo po pinie: `98 passed, 0 failed`, exit 0.
+- **Mutacja NIE osiągnięta (kryterium niespełnione):** próbowałem 4 mutacji w gra/src/game/ai.ts (kopia `ai.ts.orig` przywrócona i sprawdzona cmp po każdej):
+  1. odwrócenie bramki `aiCanEngageOwner` w `appendAiGeneralCampaignOrders` -> `if (false)`: `98 passed, 0 failed`.
+  2. helper `aiCanEngageOwner` -> zawsze `true` (harness przekazuje `canEngageOwner: atWar`): `98 passed, 0 failed`.
+  3. cofnięcie hunku f038fbd2c w `forcedWarAttack` (usunięty `&& aiCanEngageOwner(...)`): `98 passed, 0 failed`.
+  4. `forcedWarAttack = false && ...`: `98 passed, 0 failed`.
+  Wniosek: te linie AI nie wpływają na 4 hashe sekcji 6 w scenariuszach harnessu; test nie jest czuły na tę decyzję AI. Nie udało się więc pokazać czerwieni mutacją.
+- **Atrybucja do f038fbd2c NIE potwierdzona przeze mnie:** próba odtworzenia pre-f038 `gra/src/game/ai.ts` (`f038fbd2c^`) nie kompiluje się na bieżącym drzewie (esbuild: brak eksportu `offerMultiplier` z war-weariness.ts), więc bisekt reverse-patch nie jest wykonalny bez większej pracy. Pin oparty na bisekcie FC r2 (wskazanym przez orkiestratora); nie zweryfikowałem go samodzielnie.
 
-| # | test | przed | przyczyna z dowodem | klasyfikacja | co zmieniono | po |
-|---|---|---|---|---|---|---|
-| 1 | drewno-gate-test | exit 1, 1/20: `[FAIL] Wojownik: nadal Surowiec=Drewno ×10 ... ma={"Surowiec":"Drewno","ilosc":13}` | units.json: Wojownik „Surowiec (ilość)”=13. Historia (units.json): 10 (5682c0664) → 50 (2b53a7934) → 25 (f5a1ce518) → 13 (4c1126de1, 09-16). Pin ×10 z 08-08. | STARY-PIN | pin ×10 → ×13 + komentarz z łańcuchem commitów | exit 0, `WSZYSTKIE TESTY ZIELONE (20/20)` |
-| 2 | dyplo-karta-duplikat-komunikat-test | exit 1, 12/3: `FAIL: A1: negotiationTable.push(entry) obecne` | Refaktor R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2: ciało `enqueueNegotiationFromAiCmd` to delegat; logika (push, brak toastu) siedzi w `enqueueNegotiationFromAiCmdImpl` — test czytał wrapper. E1: liczba wystąpień `showHintMessage(DIPLOMACY_MSG_PREFIX` = 4 (dodane w `enqueueTruceEndOffer`, R-WEB-DIPLO-TRUCE-IMPL-Q1, skrzynka gracza, nie karta stołu AI), pin 3. | HARNESS (A) + STARY-PIN (E1) | kotwica testu → `...Impl(`; pin E1 3 → 4 z wyliczeniem lokalizacji | exit 0, `15 passed, 0 failed` |
-| 3 | dyplo-pakt-ekspansja-granica-test | exit 1, 22/26: `D1 stan ciągły: Zaufanie 50 → 35 po 5 turach (−2/turę)` (+ D2, D3, D4) | data/diplomacy.json `ekspansjaGranica_zaufanie_perTura` = −3 od b65736507 (2026-11-13, R-WEB-DIPLO-TRUST-NUMBERS-Q1). Pin −2 z pomiaru historycznego. D3 (tarcia_graniczne) bierze tę samą wartość. | STARY-PIN | D1 40→35, D2 −2→−3, D3 18→17, D4 −2→−3 (komentarze z powołaniem na b65736507) | exit 0, `26/26 passed` |
-| 4 | egypt-movement-precedence-test | exit 1: `other civilizations retain general and dedicated shallow-sea bonuses: 0.8130 != 0.6756` | Fixture wpisu „dedykowanego” bonusu nie ma `realizuje:'walka'` ani `matrixCivKey`; `isKnownMatrixCombatEntry` (civ-bonuses.ts:278-283) odrzuca wpis. Prawdziwe wpisy mają je (civ-bonuses.ts:294, 307). Asercja i wartości bez zmian. | HARNESS | kształt fixture jak w civMatrixBonusyForCivKey | exit 0, `24 passed, 0 failed` |
-| 5 | eliminacja-lup-kwoty-test | exit 1, 34/4: `4e: ... got null`; log: `egzekucja miejsca wywołania rzuciła: EMPIRE_STOCK_RESOURCE_KEYS is not defined` | Blok czysty main.ts (R-PODBOJ-SUROWCE-BILANS-BRAK-WIERSZA-Q1, ~main.ts:1961) używa `EMPIRE_STOCK_RESOURCE_KEYS` i `stockResourceLabel` z src/game/building-stock-cost.ts; sandbox ich nie dostarczał. | HARNESS | ładowanie obu przez bundle (resolveDir src/) i przekazanie jako parametry Function | exit 0, `38 passed, 0 failed` |
-| 6 | elimination-spectacle-test | exit 1: `FAIL: tick rekordów tuż po turn++` | main.ts ~43305-43310: między `turn++;` a `chronicleTickEmpireSizes();` dodano `aiUpkeepTickTurnOverride` (AI-FREE-UNIT-UPKEEP-40-TURNS-Q1) i `showNextPendingForcedPeace()` (PENDING-FORCED-PEACE-Q1). Tick nadal po turn++ w tym samym bloku. | HARNESS | regex: tick po turn++ bez innego turn++ pomiędzy (≤800 znaków) | exit 0, `84 PASS, 0 FAIL` |
-| 7 | endturn-battle-deadlock-exec-test | exit 1, 40/9: `[B1c]`, `[B2]`, `[D2/D3 ×2]`, `[G5]`, `[F-M4]`; surowe: `threw: pendingForcedPeaceTreaties is not defined` oraz `nnsGateForPlayer is not defined` | `canPlayerInitiateEndTurn` w main.ts (~43125-43140) wywołuje `nnsGateForPlayer()` (R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1) i `prunePendingForcedPeace()` (PENDING-FORCED-PEACE-Q1). Sandbox fabryki ich nie ma → ReferenceError → sztuczny deadlock. | HARNESS | stuby w fabryce sandboxu (brak wiszącego pokoju, brak blokady NNS) z komentarzem; scenariusze bez zmian | exit 0, `49 pass, 0 fail` (wszystkie mutacje F-M1..M7 nadal czerwone tam, gdzie miały) |
-| 8 | fair-play-tier-grid-test | exit 1, 9/3: `low: góry 35`, `medium: góry 25`, `high: góry 20` | src/map/gen-helpers.ts `ironCoverageCellSize` = 21/15/12 od 4de68b3ec (FALA 110, relief 15×15). Pin z f2df10f2a (2026-07-06). | STARY-PIN | iron 35/25/20 → 21/15/12 | exit 0, `12 pass, 0 fail` |
-| 9 | fortify-pole-test | exit 1, 39/2: `hitChanceTw(...) (39%) == resolveCombat ... (41%)` (płasko); `(37.5%)` vs `(39.5%)` (wzgórze) | `resolveCombat` liczy celność strzału dystansowego `[Dyst-ATK]` jako `rangedShotAccuracy = max(meleeAttack, missileAttack)` (combat.ts:1062). Test używał samego meleeAttack (2) zamiast 4 (Łucznik missileAttack 4). | HARNESS | formuła oczekiwana przez `rangedShotAccuracy` (import z bundla combat.ts) | exit 0, `41 pass, 0 fail` |
-| 10 | epoka-merge-recruit-test | exit 1, 5/13: `epoch=1: WSZYSTKIE jednostki bazowe Kamienia ... brakuje=["Taran"]` (+ Brąz: Taran okuty, Wieża oblężnicza; Żelazo: Katapulta) | Maszyny oblężnicze (Typ `Siege`) nie są kupowalne z listy rekrutacji — powstają podczas oblężenia: commit 6218f2ab1 (2026-11-10, „build siege engines during sieges"), production.ts `passesAvailabilityGates`. Test oczekiwał ich w zbiorze bazowym. | STARY-PIN | zbiory bazowe bez Siege + nowy niezmiennik „żadna maszyna oblężnicza nie jest kupowalna” dla epok 1–3 | exit 0, `WSZYSTKIE TESTY ZIELONE (16/16)` |
-| 11 | idb-b1b2b3-test | exit 1, 19/1: `(setup) mimo braku IDB, stary zapis z legacy localStorage nadal widoczny na liście (got 0)` | save.ts:714 `deserializeGame` odrzuca zapis `wersja < 3` (SAVE_VERSION=3, bez migracji, R-HOTSEAT-ETAP7-SAVELOAD-Q1). Fixture scenariusza miał `wersja: 2`, więc wiersz nie trafiał na listę. | STARY-PIN | fixture scenariusza `wersja: 3` (stary = znacznik czasu/tura) | exit 0, `20 pass, 0 fail` |
-| 12 | manual-rebalance-owner-era-test | exit 1, 4/1: `Zelazo: top2 = zloto(1,0)+oboz(-1,1) ... got=0,1,1,0` | Ranking okolicy dla ownerEra=3 zwraca miedź (0,1) zamiast obozu (-1,1). Przyczyna nieustalona w tej rundzie (sprawdzone: okolica.ts / turn-economy.ts / population-growth-v85.ts pod kątem ownerEra; nie zidentyfikowano commita). | NIE-ZMIERZONO | — | exit 1, `pass=4 fail=1` |
-| 13 | perf-endturn-ai-phase-equiv-test | exit 1: `AssertionError: otwarcie okna tuz po deklaracji relacjeDip` | Między deklaracją `relacjeDip` (main.ts ~46550) a resetem `aiDiploRatesCache` (~46590) wstawiono domknięcie `blokSojusznicyDla` (R-WEB-DIPLO-WAR-BY-ALLIANCE-STRENGTH-Q1, czysta funkcja) — przekracza próg 200 znaków. | HARNESS | warunek treści: w przedziale nie ma `relacjeDip.push(` ani odczytu cache | exit 0, `OK 1 testow` |
-| 14 | r-bitwa-kolory-gracz-przeciwnik-q1-test | exit 1: `gracz niebieski, przeciwnik czerwony` (potem `minimapa używa właściciela`, `brak rolowej tabeli kolorów`) | Kolory wyniesione do src/battle/battleHudTheme.ts: `BATTLE_PLAYER='#3a6ad0'`, `BATTLE_ENEMY='#c84040'` (cfa7447d6). `sideColor` zwraca `SIDE_COLOR_PLAYER/ENEMY` (wartości hex identyczne z pinem), karta używa `isPlayer ? BATTLE_PLAYER : BATTLE_ENEMY`. Zakaz „SIDE_COLOR” w `lacks` był zbyt szeroki (łapał stałe stron). | HARNESS | regexy wiążą się z motywem; wartości hex sprawdzane w battleHudTheme.ts; zakaz zawężony do nazw rolowych (SIDE_COLOR_ATK/DEF, FACTION_*) | exit 0, `R-BITWA-KOLORY-...: PASS (28 checks)` |
-| 15 | rydwan-bierny-atak-test | exit 1, 4/2: `[FAIL] wróg poza zasięgiem nie wymusza ofensywnego zbliżenia`; `[FAIL] rydwan z 1 pozostałym punktem ruchu nie goni celu odległego o 4 heksy` | Repro (decideAITurn, surowe komendy): scen. C — rydwan (2,2), wróg Wojownik (10,2): brak ataku, `move (2,2)→(6,2)` (zbliżenie o 4). Scen. D — rydwan ruchLeft=1, cel (6,2): `move (2,2)→(3,2)` (zbliżenie). Test pinuje brak pościgu; commit 64d5ac663 (2026-09-27, „rydwany aktywnie atakują/okrążają zamiast stać bezczynnie”) wprowadził aktywne okrążanie — intencja i asercja są w sprzeczności. Która reguła obowiązuje — nieustalone. | BŁĄD-GRY (kandydat, NIEZWERYFIKOWANY regułą) | — (test zostaje czerwony) | exit 1, `4 passed, 2 failed` |
-| 16 | stone-research-costs-test | exit 1, 47/1: `complete technology dataset unchanged apart from the four approved costs` | Pin sha256 całego zbioru = stan d3216eb2a / 0764ab4d6 (prefiks 3b7ab35bb941, zweryfikowany skryptem po historii data/tech.json). Późniejsze zamierzone commity tech.json (a33354586 mury/cegła, 38d6ba0ec kawaleria i oblężnicze za Żelazem, 2ca45a090 ID/gramatyka) przesunęły skrót. | STARY-PIN | pin przepięty na obecny zbiór (db84a9b6…c795), po normalizacji czterech kosztów | exit 0, `48 pass, 0 fail` |
-| 17 | surrender-rekrutacja-build-gate-test | exit 1, 10/1: `surrender usuwa legacy, zwraca Pracę ... i filtruje kolejkę dla nowego` | Matcher pinował `cityProd.set(city.id, sanitizeProductionQueue(newOwner, migrated.prod))`; obecny kod (main.ts ~19068-19116, R-PODBOJ-KOLEJKA-BUDYNEK-NIEMOZLIWY-Q1) ustawia `capitalFilteredSurrenderProd`, poprzedzone `sanitizeProductionQueue(newOwner, migrated.prod)`. | HARNESS | matcher: sanitize → filtr stolicy → set | exit 0, `11 passed, 0 failed` |
-| 18 | trade-routes-income-test | exit 1, 133/1: `H2e: one capital Mint raises tax cash in another city of the owner (mint=2, noMint=2)` | NIE-ZMIERZONO (kandydat). Test pinuje zasięg Mennicy stolicy na całe imperium. Commit 8ad10c70a (2026-11-11, „mnożnik Waluta+Mennica per civ”) zmienił formułę. Nie potwierdzono, czy zmiana zasięgu jest zamierzona. | NIE-ZMIERZONO | — | exit 1, `trade-routes-income-test: 133 passed, 1 failed` (sprawdzone w tej rundzie) |
-| 19 | war-allin-capital-test | exit 1, 96/2: `6b aiVsAi: flaga OFF == referencja 20a5bc2c7abcba1b (got "d28c8b7ffce7a3ec")` | Referencja z 24ab89a1e (2026-11-05). Późniejsze zmiany AI (np. b090128c6, FALA 890: darmowe utrzymanie jednostek t1–40) — NIE potwierdzono, który commit przesunął wynik. Ponowny pin bez tego dowodu byłby zgadywaniem. | NIE-ZMIERZONO (kandydat STARY-PIN) | — | exit 1, `96 passed, 2 failed` (sprawdzone w tej rundzie) |
-| 20 | zelazo-gate-test | exit 1, 4/24: `Legionista JEST dostepny: kopalnia na zlozu + Odlewnia zelaza -- ids=[]` | Fixture „Legionista” nie istnieje w data/units.json (git log -S na units.json: brak). `availableProduction` zwraca [] także dla epoki 3 z Odlewnią. Dodanie `Surowiec (ilość)` do fixture nie zmienia wyniku (sprawdzone: nadal 4/24). Przyczyna nieustalona. | NIE-ZMIERZONO | — | exit 1, `[zelazo-gate-test] NIEUDANE: 4/24` (sprawdzone w tej rundzie) |
+## Weryfikacja zelazo-gate (DODATEK r3 pkt 2)
+- Przyczyna Legionisty: `git log -S 'Legionista' -- gra/data/units.json` nie zwraca żadnego commita (jednostka nigdy nie była w units.json; wpisy `Legionista` istnieją tylko w civs.json jako „Legion (Legionista)” i w fixture testu). Odnalezione w units.json: `Hastati` (Epoka Żelazo, Surowiec „Żelazo”, koszt 25, Wręcz).
+- Zamiana: `Legionista` -> `Hastati`, koszt fixture 15 -> 25 (zgodnie z units.json). Surowiec fixture pozostał `zelazo` (ta sama reprezentacja wewnętrzna co wcześniej) — moc dowodowa asercji bramki kopalnia+odlewnia bez zmian.
+- Solo: `[zelazo-gate-test] WSZYSTKIE TESTY ZIELONE (24/24)`, exit 0.
+- Mutacja (wykonana): `gra/src/game/zelazo-access.ts` kopia do `.orig`, `return hasStock && cityHasOdlewniaZelaza(builtIds);` -> `return hasStock || true;` (bramka Odlewni zdjęta). Wynik: `[FAIL] zelazo w magazynie, brak Odlewni -> false`, `[FAIL] Odlewnia=true, brak zelaza w magazynie -> false`, `[FAIL] brak stocku -> false (fail-closed)`, `NIEUDANE: 3/24`, exit 1. Plik przywrócony z kopii (cmp OK).
 
-Podsumowanie klasyfikacji (20 testów): STARY-PIN 7 (1, 3, 8, 10, 11, 16; + E1 w #2), HARNESS 9 (2-A, 4, 5, 6, 7, 9, 13, 14, 17), BŁĄD-GRY kandydat 1 (15), NIE-ZMIERZONO 4 (12, 18, 19, 20), zielone po naprawie: 15 (#1–11, #13, #14, #16, #17). Liczba: 15 zielonych + 5 czerwonych = 20.
+## Tabela: 20 testów kat. D, połowa 2 (solo, sekwencyjnie, surowe wyjście na kandydacie b7dc56f57+ac5217ff6)
 
-Uwaga do liczenia: test #2 ma dwie przyczyny (A: HARNESS, E1: STARY-PIN); #6 i #13 bez zmian w pinach. Testy #12, #18, #19, #20 są czerwone i NIE mają klasyfikacji z pełnym dowodem.
+| # | test | wynik solo (exit / ostatnia linia) | status |
+|---|---|---|---|
+| 1 | drewno-gate-test | 0 / `WSZYSTKIE TESTY ZIELONE (20/20)` | zielony |
+| 2 | dyplo-karta-duplikat-komunikat-test | 0 / `15 passed, 0 failed` | zielony |
+| 3 | dyplo-pakt-ekspansja-granica-test | 0 / `26/26 passed` | zielony |
+| 4 | egypt-movement-precedence-test | 0 / `24 passed, 0 failed` | zielony |
+| 5 | eliminacja-lup-kwoty-test | 0 / `38 passed, 0 failed` | zielony |
+| 6 | elimination-spectacle-test | 0 / `84 PASS, 0 FAIL` | zielony |
+| 7 | endturn-battle-deadlock-exec-test | 0 / `49 pass, 0 fail` | zielony |
+| 8 | fair-play-tier-grid-test | 0 / `12 pass, 0 fail` | zielony |
+| 9 | fortify-pole-test | 0 / `41 pass, 0 fail` | zielony |
+| 10 | epoka-merge-recruit-test | 0 / `WSZYSTKIE TESTY ZIELONE (16/16)` | zielony |
+| 11 | idb-b1b2b3-test | 0 / `20 pass, 0 fail` | zielony |
+| 12 | manual-rebalance-owner-era-test | 0 / `pass=6 fail=0` | zielony (r3 obrona) |
+| 13 | perf-endturn-ai-phase-equiv-test | 0 / `OK 1 testow` | zielony |
+| 14 | r-bitwa-kolory-gracz-przeciwnik-q1-test | 0 / `PASS (28 checks)` | zielony |
+| 15 | rydwan-bierny-atak-test | 1 / `4 passed, 2 failed` (`[FAIL] wróg poza zasięgiem nie wymusza ofensywnego zbliżenia`) | czerwony — DECYZJA WŁAŚCICIELA, nietknięty |
+| 16 | stone-research-costs-test | 0 / `48 pass, 0 fail` | zielony |
+| 17 | surrender-rekrutacja-build-gate-test | 0 / `11 passed, 0 failed` | zielony |
+| 18 | trade-routes-income-test | 1 / `133 passed, 1 failed` (`H2e: one capital Mint raises tax cash in another city`) | czerwony — kandydat BŁĄD-GRY, nietknięty (decyzja właściciela) |
+| 19 | war-allin-capital-test | 0 / `98 passed, 0 failed` | zielony (pin; mutacja NIE osiągnięta — patrz wyżej) |
+| 20 | zelazo-gate-test | 0 / `WSZYSTKIE TESTY ZIELONE (24/24)` | zielony (fixture; mutacja 3/24) |
 
-## Bramki (surowe wyjście, worktree 84dbae4d5 + paczka 3, po `npm ci` w gra/)
+Podsumowanie: 18 zielonych solo, 2 czerwone celowo (rydwan-bierny-atak, trade-routes-income H2e) zgodnie z DODATKIEM r3 pkt 3.
+
+## Bramki (surowe wyjście, na czubku pracy; node_modules w gra/ zainstalowane przez `npm ci`, usunięte po bramkach)
 - tsc --noEmit: exit 0
 - logic-test: exit 0, `LOGIC OK (213/213)`
 - tech-tree-test: exit 0, `tech-tree-test: 20 pass, 0 fail`
@@ -52,20 +67,18 @@ Uwaga do liczenia: test #2 ma dwie przyczyny (A: HARNESS, E1: STARY-PIN); #6 i #
 - ai-test: exit 0, `ai-test: 297 passed, 0 failed`
 - era-war-pairing-alliance-test: exit 0, `19 pass, 0 fail`
 - ai-ai-alliance-surcharge-test: exit 0, `RESULT: ALL GREEN (live + mutants detected)`
-- gra/node_modules usunięty po bramkach (dysk).
 
 ## BLOKADY
-Techniczna: brak. Procesowa: 5 testów czerwonych bez pełnego dowodu przyczyny (#12, #18, #19, #20 — NIE-ZMIERZONO; #15 — BŁĄD-GRY tylko kandydat). Zgodnie z regułą statusu raport ma STATUS: FAIL z listą niedokończonych.
+- Techniczna: brak.
+- Procesowa: (a) mutacja war-allin-capital NIE dała czerwieni w 4 wariantach (test nieczuły na te decyzje AI w harnessie); kryterium „Mutacja -> test czerwony” niespełnione; (b) atrybucja pinu do f038fbd2c nie zweryfikowana samodzielnie (pre-f038 ai.ts nie kompiluje się na bieżącym drzewie).
 
 ## UWAGI-DLA-ORKIESTRATORA
-- Kandydaci BŁĄD-GRY (do weryfikacji w osobnym temacie R-WEB-*, NIE potwierdzone regułą):
-  - rydwan-bierny-atak-test (#15): repro w tabeli; sprzeczność między asercją (brak pościgu poza zasięgiem) a intencją 64d5ac663 (okrążanie). Wymaga decyzji właściciela, która zasada obowiązuje.
-  - trade-routes-income-test H2e (#18): zasięg Mennicy stolicy vs 8ad10c70a — do potwierdzenia, czy zamierzony.
-- Pozostają NIE-ZMIERZONO (#12 manual-rebalance-owner-era, #19 war-allin-capital, #20 zelazo-gate) — szczegóły w tabeli; sugerowany krok: git bisect na konkretnym teście (solo) przeciwko commitom od 24ab89a1e (war-allin) i 4de68b3ec/Zelazo fixture (zelazo).
-- Dane zamierzonych zmian, które przesunęły piny (informacja dla orkiestratora, nie błąd): Wojownik ×13 (4c1126de1), ekspansja granicy −3 (b65736507), żelazo gór 21/15/12 (4de68b3ec), maszyny oblężnicze poza kupnem (6218f2ab1), zapis v2 odrzucany (R-HOTSEAT-ETAP7).
-- Poza zakresem (nie ruszane): gra/tools/climate-band-test.cjs i testy generatora map — zgodnie z dispatchem.
-- Dwa pliki tymczasowe testów (tools/.dyplo-*, .eliminacja-*) sprzątane przez same testy; nic nie zostało w repo poza zmienionymi testami.
+- Kandydat BŁĄD-GRY (bez zmian, do decyzji właściciela, nie R-WEB-* jeszcze): trade-routes-income H2e — cytat obowiązującej reguły: docs/PORADNIK-GRACZA/08-ekonomia-imperium.md §49.3b l.71 („dla **całej** cywilizacji”). Wymaga potwierdzenia przez właściciela, że przewodnik obowiązuje.
+- Decyzja właściciela (nie BŁĄD-GRY bez reguły): rydwan-bierny-atak — asercje C/D sprzeczne z commitem 64d5ac663 („aktywnie zbliża się do najbliższej wrogiej jednostki w zasięgu ruchu”). Propozycja pytania ABC: zachować kod (aktywne zbliżenie) i przepisać asercje.
+- Do rozważenia przez orkiestratora: test war-allin-capital sekcja 6b/7/8 jest nieczuła na mutacje w gałęzi forcedWar/general campaign (pozostaje pytanie, czy są inne decyzje AI pokryte harnessem). Osobny temat R-WEB-* na wzmocnienie mutacyjne, jeśli właściciel chce.
+- Bisekt war-allin z FC r2 do weryfikacji w osobnym temacie (wymaga naprawy harnessu dla starszych drzew).
+- Operator nie integrował, nie deployował, nie pushował. Nie tworzono sesji/zadań/harmonogramów. Brak run_in_background.
 
-NASTĘPNY KROK: runda 3 Operatora do TEGO SAMEGO ID (na bazie SHA raportu): #12, #18, #19, #20 (git bisect solo na pinowanych wartościach) oraz decyzja właściciela dla #15 (rydwan) i #18 (Mennica). Po tym — Evaluator i Final Control.
-RUNDY: 2/5 (zostają 3).
+RUNDY: 3/5
+NASTĘPNY KROK: Evaluator i Final Control na SHA czubka (b7dc56f57, ac5217ff6, plus commit raportu). Decyzje ABC: rydwan (DECYZJA WŁAŚCICIELA), H2e (potwierdzenie przewodnika §49.3b). Orkiestrator decyduje, czy zaakceptować mutację war-allin jako NIE-ZMIERZONO z notą, czy zlecić r4 (tylko mutacja war-allin).
 DEPLOY/PUSH: NIE WYKONANO
