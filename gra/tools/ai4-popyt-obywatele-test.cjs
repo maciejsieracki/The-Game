@@ -264,8 +264,9 @@ console.log('Z2. BUDOWA TYLKO PRZY OBYWATELACH — z wyjatkiem zloz');
   const pol = CITIES.freshUlepszeniaEmpirePolicy();
   ok(!('onlyWorked' in CITIES.resolveEffectiveUlepszenia({ id: 'x', ownerId: 0, q: 0, r: 0, name: 'x', population: 1, ulepszeniaOverride: true }, pol)),
     'Z2g: override miasta BEZ pola `ulepszeniaOnlyWorked` nie niesie zadnego onlyWorked');
-  ok(CITIES.resolveEffectiveUlepszenia({ id: 'x', ownerId: 0, q: 0, r: 0, name: 'x', population: 1, ulepszeniaOverride: true, ulepszeniaOnlyWorked: false }, pol).onlyWorked === false,
-    'Z2h: JAWNE `false` w zapisie miasta jest respektowane (nie nadpisujemy wyboru gracza)');
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): jawne `false` w zapisie nie ma juz znaczenia — pole usunięte, regula zawsze aktywna.
+  ok(!('onlyWorked' in CITIES.resolveEffectiveUlepszenia({ id: 'x', ownerId: 0, q: 0, r: 0, name: 'x', population: 1, ulepszeniaOverride: true, ulepszeniaOnlyWorked: false }, pol)),
+    'Z2h: JAWNE `false` w starym zapisie miasta NIE tworzy przelacznika (pole ignorowane, regula zawsze aktywna)');
 }
 
 console.log('Z2i. AI CYWILIZACJI faktycznie ma wpiety filtr obywateli (decideAITurn)');
@@ -421,16 +422,19 @@ console.log('RUNDA 5 — naprawy Z-3 (persist znacznika) i FC-2 (miasta-panstwa)
 
 console.log('Q2. R4-Q2 — przelacznik „wolno wycinac las" automatu GRACZA');
 {
-  ok(CITIES.DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS === false,
-    'Q2a: wartosc domyslna przelacznika = WYLACZONY (§14 — bez zmiany zachowania)');
-  ok(CITIES.freshUlepszeniaEmpirePolicy().wolnoWycinacLas === false,
-    'Q2b: swieza polityka panstwa ma wolnoWycinacLas === false');
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): przelacznik „Wolno wycinac las" USUNIETY decyzja 2026-11-04
+  // (cities.ts, R-WEB-AUTOIMPROVE-SIMPLE-FOOD-RULE-NO-TOGGLES-Q1). Wycinka jest zawsze dozwolona pod farme/irygacje.
+  // Asercje pilnuja, ze przelacznik nie wraca (stala, pole polityki panstwa, pole miasta).
+  ok(CITIES.DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS === undefined,
+    'Q2a: stala DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS USUNIETA (wycinka zawsze dozwolona pod farme)');
   const pol = CITIES.freshUlepszeniaEmpirePolicy();
+  ok(!('wolnoWycinacLas' in pol),
+    'Q2b: swieza polityka panstwa NIE ma pola wolnoWycinacLas (przelacznik usuniety)');
   const bazoweMiasto = { id: 'x', ownerId: 0, q: 0, r: 0, name: 'x', population: 1 };
-  ok(CITIES.resolveEffectiveUlepszenia({ ...bazoweMiasto }, pol).wolnoWycinacLas === false,
-    'Q2c: miasto bez override dziedziczy wartosc panstwa');
-  ok(CITIES.resolveEffectiveUlepszenia({ ...bazoweMiasto }, { ...pol, wolnoWycinacLas: true }).wolnoWycinacLas === true,
-    'Q2d: ZAKRES PANSTWO — wlaczenie w polityce panstwa dociera do miasta bez override');
+  ok(!('wolnoWycinacLas' in CITIES.resolveEffectiveUlepszenia({ ...bazoweMiasto }, pol)),
+    'Q2c: miasto bez override — brak pola wolnoWycinacLas w wynikowych ustawieniach');
+  ok(!('wolnoWycinacLas' in CITIES.resolveEffectiveUlepszenia({ ...bazoweMiasto }, { ...pol, wolnoWycinacLas: true })),
+    'Q2d: pole wolnoWycinacLas w polityce panstwa jest IGNOROWANE (jedna regula dla wszystkich miast)');
   ok(CITIES.resolveEffectiveUlepszenia(
     { ...bazoweMiasto, ulepszeniaOverride: true, ulepszeniaWolnoWycinacLas: true }, pol).wolnoWycinacLas === true,
     'Q2e: ZAKRES MIASTO — override miasta przebija wylaczona polityke panstwa');
