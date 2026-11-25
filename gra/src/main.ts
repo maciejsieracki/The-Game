@@ -1722,6 +1722,7 @@ import {
 import {
   isWarLimitEnabled, parseTypWojny, setWarLimitEnabledForTest, warLimitAllows, type TypWojny,
   getWarTypFromMeta, withWarTyp, collectWarTypes, type WarPairRow,
+  type PendingPrincipalWar, pendingPrincipalCounts,
 } from './game/diplomacy-war-limit';
 import {
   addWarBattlePoints, resetWarBattlePoints, grantTributeBonus, loadMilitaryStrengthParams,
@@ -26030,9 +26031,6 @@ async function boot(): Promise<void> {
       return n;
     }
 
-    /** R-WEB-WAR-LIMIT-AI-NATURAL-VIOLATION-Q1: wojna główna jeszcze nie zapisana w relacjach (typ + para). */
-    type PendingPrincipalWar = { a: number; b: number; typ: TypWojny };
-
     // P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (a): WYŁĄCZNIE dla bramki wymuszonej wojny
     // (Kamień/Brąz/Żelazo, trzy wywołania niżej) — barbarzyńcy (C-BARB-Q1) są
     // STRUKTURALNIE zawsze 'wojna' dla każdego ownera, więc `countActiveWarsForOwner`
@@ -26067,15 +26065,10 @@ async function boot(): Promise<void> {
       // R-WEB-WAR-LIMIT-AI-NATURAL-VIOLATION-Q1: główna wojna wypowiadana jeszcze NIE jest w
       // diplomacyRelations, gdy sojusznicy są wciągani (applyAllianceObligationsOnWar). Bez
       // tego drugi sojusznik/obrońca nie widzi pierwszej wojny i limit 1 naturalnej jest łamany.
-      if (pending && pendingPrincipalCounts(ownerId, pomijany, pending)) wars.push(pending.typ);
+      if (pending && pendingPrincipalCounts(ownerId, pomijany, pending, (x, y) => getDiploRelation(x, y).status)) {
+        wars.push(pending.typ);
+      }
       return wars;
-    }
-
-    /** R-WEB-WAR-LIMIT-AI-NATURAL-VIOLATION-Q1: czy oczekująca wojna główna (a↔b) liczy się dla `ownerId` przy sprawdzeniu pary z `pomijany`. */
-    function pendingPrincipalCounts(ownerId: number, pomijany: number, pending: PendingPrincipalWar): boolean {
-      const partner = pending.a === ownerId ? pending.b : pending.b === ownerId ? pending.a : -1;
-      if (partner < 0 || partner === ownerId || partner === pomijany) return false;
-      return getDiploRelation(ownerId, partner).status !== 'wojna';
     }
 
     /**

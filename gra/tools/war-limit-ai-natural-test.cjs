@@ -59,6 +59,44 @@ if (limitMod) {
   ok('epoka nie blokuje naturalnej', limitMod.warLimitAllows('naturalna', [], ['epoki'], P) === true);
 }
 
+// (a2) zachowanie rdzenia: pendingPrincipalCounts (wywoływane z warTypesForOwner w main.ts).
+// statusOf: mapa par (klucz "min-max"); domyślnie 'pokoj'. Kontrolne przypadki:
+//  - obrońca 28, wojna oczekująca 1↔28, pomijany 22 -> liczy się (true);
+//  - pomijany = partner (1) -> nie liczy się (false), bo para główna jest pomijana;
+//  - oczekująca wojna już zapisana jako 'wojna' -> nie liczy się drugi raz (false);
+//  - ownerId nie w parze (owner 22 vs para 1↔28) -> false (sojusznik nie jest stroną wojny głównej);
+//  - atakujący 1 z pomijanym 28 (para główna) -> false.
+let coreMod = null;
+try {
+  const esbuild = require(path.resolve(ROOT, 'node_modules', 'esbuild'));
+  const BUNDLE_CORE = path.resolve(__dirname, '.war-limit-ai-natural-core-bundle.cjs');
+  esbuild.buildSync({
+    entryPoints: [path.resolve(ROOT, 'src', 'game', 'diplomacy-war-limit.ts')],
+    bundle: true, format: 'cjs', platform: 'node', outfile: BUNDLE_CORE, logLevel: 'silent',
+  });
+  coreMod = require(BUNDLE_CORE);
+  try { fs.unlinkSync(BUNDLE_CORE); } catch (_) { /* ignore */ }
+} catch (e) {
+  console.log('UWAGA: brak esbuild/node_modules, pomijam test rdzenia: ' + String(e && e.message).slice(0, 120));
+}
+if (coreMod) {
+  const mk = (pairs) => (x, y) => {
+    const k = Math.min(x, y) + '-' + Math.max(x, y);
+    return pairs[k] || 'pokoj';
+  };
+  const pend = { a: 1, b: 28, typ: 'naturalna' };
+  ok('rdzeń: obrońca 28 z oczekującą 1↔28 liczy się',
+    coreMod.pendingPrincipalCounts(28, 22, pend, mk({})) === true);
+  ok('rdzeń: pomijany = partner -> nie liczy się',
+    coreMod.pendingPrincipalCounts(28, 1, pend, mk({})) === false);
+  ok('rdzeń: para już w stanie wojna -> nie liczy się drugi raz',
+    coreMod.pendingPrincipalCounts(28, 22, pend, mk({ '1-28': 'wojna' })) === false);
+  ok('rdzeń: owner spoza pary -> false',
+    coreMod.pendingPrincipalCounts(22, 28, pend, mk({})) === false);
+  ok('rdzeń: atakujący 1 z pomijanym 28 (para główna) -> false',
+    coreMod.pendingPrincipalCounts(1, 28, pend, mk({})) === false);
+}
+
 // (b) źródło main.ts: bramka dołączenia sojusznika musi dostać wojnę główną.
 const allyGateWithPending = 'if (!isMe(allyId) && !warLimitAllowsDeclaration(allyId, ob.mustDeclareWarOn, typWojny, pendingPrincipal)) continue;';
 const allyGateOld = 'if (!isMe(allyId) && !warLimitAllowsDeclaration(allyId, ob.mustDeclareWarOn, typWojny)) continue;';
@@ -67,11 +105,16 @@ ok('stara bramka bez pendingPrincipal nieobecna', count(mainSrc, allyGateOld) ==
 ok('pendingPrincipal zbudowany w applyAllianceObligationsOnWar',
   count(mainSrc, 'const pendingPrincipal: PendingPrincipalWar = { a: attackerId, b: victimId, typ: typWojny };') === 1);
 
-// (c) helper liczenia wojny oczekującej w warTypesForOwner.
+// (c) warTypesForOwner dopisuje wojnę oczekującą przez czysty helper z modułu (zob. (a2)).
 ok('warTypesForOwner przyjmuje pending', count(mainSrc, 'function warTypesForOwner(ownerId: number, pomijany: number, pending?: PendingPrincipalWar): TypWojny[]') === 1);
 ok('warTypesForOwner dopisuje wojnę oczekującą',
-  count(mainSrc, 'if (pending && pendingPrincipalCounts(ownerId, pomijany, pending)) wars.push(pending.typ);') === 1);
-ok('pendingPrincipalCounts istnieje', count(mainSrc, 'function pendingPrincipalCounts(ownerId: number, pomijany: number, pending: PendingPrincipalWar): boolean') === 1);
+  count(mainSrc, 'if (pending && pendingPrincipalCounts(ownerId, pomijany, pending, (x, y) => getDiploRelation(x, y).status)) {') === 1
+    && count(mainSrc, 'wars.push(pending.typ);') >= 1);
+ok('helper pendingPrincipalCounts importowany z diplomacy-war-limit',
+  count(mainSrc, 'type PendingPrincipalWar, pendingPrincipalCounts,') === 1);
+ok('helper pendingPrincipalCounts zdefiniowany w module czystym',
+  count(fs.readFileSync(path.resolve(ROOT, 'src', 'game', 'diplomacy-war-limit.ts'), 'utf8'),
+    'export function pendingPrincipalCounts(') === 1);
 
 console.log(`war-limit-ai-natural-test: PASS ${pass} / FAIL ${fail}`);
 process.exit(fail === 0 ? 0 : 1);
