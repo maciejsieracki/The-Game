@@ -130,9 +130,9 @@ const fnStart = mainSrc.indexOf('function setDiploRelation(a: number, b: number,
 const fnEnd = fnStart < 0 ? -1 : mainSrc.indexOf('\n    }\n', fnStart);
 const setBody = fnStart < 0 || fnEnd < 0 ? '' : mainSrc.slice(fnStart, fnEnd);
 ok(fnStart >= 0, 'setDiploRelation istnieje');
-ok(/prevStatus !== undefined && prevStatus !== rel\.status\)\s*\{\s*recordAiAiWarPeaceNews\(a, b, prevStatus, rel\.status, /.test(setBody),
+ok(/prevStatus !== undefined && prevStatus !== rel\.status\)\s*\{[\s\S]*?recordAiAiWarPeaceNews\(a, b, prevStatus, rel\.status, /.test(setBody),
   'setDiploRelation woła recordAiAiWarPeaceNews przy realnej zmianie statusu');
-ok(/prevStatus !== undefined && prevStatus !== rel\.status\)\s*\{\s*recordAiAiWarPeaceNews\(a, b, prevStatus, rel\.status, newsOpts\?\.truce === true\)/.test(setBody),
+ok(/prevStatus !== undefined && prevStatus !== rel\.status\)\s*\{[\s\S]*?recordAiAiWarPeaceNews\(a, b, prevStatus, rel\.status, newsOpts\?\.truce === true, powodPary, prevWojnaStartTura\)/.test(setBody),
   'setDiploRelation przekazuje flagę rozejmu (newsOpts.truce) do hooka');
 ok(/function setDiploRelation\(a: number, b: number, rel: Relation, newsOpts\?: \{ truce\?: boolean \}\): void \{/.test(mainSrc),
   'setDiploRelation przyjmuje opcjonalny newsOpts (rozejm)');
@@ -144,7 +144,7 @@ const recEnd = recStart < 0 ? -1 : mainSrc.indexOf('\n    }\n', recStart);
 const recBody = recStart < 0 || recEnd < 0 ? '' : mainSrc.slice(recStart, recEnd);
 ok(recStart >= 0, 'recordAiAiWarPeaceNews istnieje');
 ok(/worldDiploNewsEntry\(\{/.test(recBody), 'używa worldDiploNewsEntry (ta sama funkcja, którą wykonuje część A)');
-ok(/skip: isMe\(a\) \|\| isMe\(b\) \|\| isBarbarian\(a\) \|\| isBarbarian\(b\)/.test(recBody), 'przekazuje bramkę: pomija parę z graczem i barbarzyńców');
+ok(/const skipPair = isMe\(a\) \|\| isMe\(b\) \|\| isBarbarian\(a\) \|\| isBarbarian\(b\)/.test(recBody) && /skip: skipPair,/.test(recBody), 'przekazuje bramkę: pomija parę z graczem i barbarzyńców');
 ok(/discovered: getDiplomaticContacts\(\)/.test(recBody), 'widoczność: zbiór odkrytych z getDiplomaticContacts');
 ok(/pairKey: diploPairKey\(a, b\)/.test(recBody), 'klucz pary z diploPairKey (część id)');
 ok(/if \(entry === null\) return;/.test(recBody), 'brak wpisu dla null (brak wpisu w trwałej liście)');

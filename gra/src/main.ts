@@ -187,7 +187,9 @@ import {
   worldDiploNewsPush,
   worldDiploNewsSanitize,
   worldDiploNewsVisibleList,
+  powodZmeczeniaPokoju,
   type WorldDiploNewsEntry,
+  type WorldDiploReason,
 } from './game/diplo-world-news';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
@@ -1747,7 +1749,7 @@ import {
   registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
-import { runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, wearinessPeaceCashPn, peacePowerSidesForPair, peaceAiAiPaymentPn, aiTreatyParityDuePn, treatyParityBasePnFromData, type WarWearinessStore, type WarWearinessPairState, type WearinessTickOutcome } from './game/war-weariness';
+import { WAR_WEARINESS_PARAMS, runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, wearinessPeaceCashPn, peacePowerSidesForPair, peaceAiAiPaymentPn, aiTreatyParityDuePn, treatyParityBasePnFromData, type WarWearinessStore, type WarWearinessPairState, type WearinessTickOutcome } from './game/war-weariness';
 import { warWearinessPairView, peakForCurrentWar, warWearinessSideView, type WarWearinessPairView, type WarWearinessReference } from './game/war-weariness-view';
 import {
   isPeaceTreatyLocked,
@@ -12254,9 +12256,32 @@ async function boot(): Promise<void> {
       );
     }
 
+    /**
+     * R-WEB-WAR-END-REASON-LOG-Q1: powód zmiany relacji ustawiany na czas wywołania (bez zmiany
+     * sygnatury setDiploRelation). Przywracany w finally. Dotyczy zmian statusu wykonanych w obrębie
+     * `fn` i TYLKO dla zmiany statusu tej pary (a,b) — kaskady innych par dostają wpis bez powodu.
+     * Brak kontekstu = wpis bez powodu.
+     * EN: reason context for the status change of pair (a,b) inside `fn`; restored in finally.
+     */
+    type DiploWarReasonCtx = { kod: string; zmeczenie?: number; miasta?: number; pairKey: string };
+    let diploWarReasonCtx: DiploWarReasonCtx | null = null;
+    function withDiploWarReason<T>(
+      a: number, b: number, ctx: { kod: string; zmeczenie?: number; miasta?: number }, fn: () => T,
+    ): T {
+      const prev = diploWarReasonCtx;
+      const pairKey = a < b ? `${a}_${b}` : `${b}_${a}`;
+      diploWarReasonCtx = { ...ctx, pairKey };
+      try { return fn(); } finally { diploWarReasonCtx = prev; }
+    }
+    /** R-WEB-WAR-END-REASON-LOG-Q1: dziennik diagnostyczny powodu końca wojny — TYLKO pod ?civTest=1. */
+    const diploWarEndLogOn = (): boolean =>
+      typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search);
+
     function setDiploRelation(a: number, b: number, rel: Relation, newsOpts?: { truce?: boolean }): void {
       const key = a < b ? `${a}_${b}` : `${b}_${a}`;
       const prevStatus = diplomacyRelations.get(key)?.status;
+      // R-WEB-WAR-END-REASON-LOG-Q1: start bieżącej wojny sprzed zmiany (czyszczony niżej) — do turyWojny.
+      const prevWojnaStartTura = (diplomacyPairMeta.get(diploPairKey(a, b)) as (DiploPairMeta & { wojnaStartTura?: number }) | undefined)?.wojnaStartTura;
       diplomacyRelations.set(key, rel);
       // Stamp every transition at its sole status mutation point. This captures declarations,
       // forced wars, and truce expiry on the exact turn, and preserves the start through save/load.
@@ -12275,7 +12300,8 @@ async function boot(): Promise<void> {
       // R-WEB-DIPLO-WORLD-WAR-PEACE-NEWS-Q1: wojna/pokój między dwiema odkrytymi cywilizacjami AI
       // (bez gracza) → wpis w dzienniku Wydarzeń. Jedno miejsce dla wszystkich ścieżek zmiany statusu.
       if (prevStatus !== undefined && prevStatus !== rel.status) {
-        recordAiAiWarPeaceNews(a, b, prevStatus, rel.status, newsOpts?.truce === true);
+        const powodPary = diploWarReasonCtx !== null && diploWarReasonCtx.pairKey === key ? diploWarReasonCtx : null;
+        recordAiAiWarPeaceNews(a, b, prevStatus, rel.status, newsOpts?.truce === true, powodPary, prevWojnaStartTura);
       }
       refreshCityMapOutlines();
       // R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1: wewnętrzna obwódka granicy koduje relację
@@ -27065,15 +27091,30 @@ async function boot(): Promise<void> {
      * Pary z graczem pomijamy — ich wpisy robią recordWarDeclarationEvent / logPeaceVazne.
      * Tekst PO polsku (jak pozostałe wpisy warEventLog w main.ts); brak wariantu EN — zob. raport.
      */
-    function recordAiAiWarPeaceNews(a: number, b: number, prevStatus: string, nextStatus: string, truce = false): void {
+    function recordAiAiWarPeaceNews(
+      a: number, b: number, prevStatus: string, nextStatus: string, truce = false,
+      reasonCtx: { kod: string; zmeczenie?: number; miasta?: number } | null = null,
+      wojnaStartTura?: number,
+    ): void {
+      const skipPair = isMe(a) || isMe(b) || isBarbarian(a) || isBarbarian(b);
+      // R-WEB-WAR-END-REASON-LOG-Q1: liczba tur wojny kończonej tą zmianą (tylko gdy wojna się kończy).
+      const turyWojny = prevStatus === 'wojna' && wojnaStartTura !== undefined ? turn - wojnaStartTura : undefined;
+      if (diploWarEndLogOn() && !skipPair) {
+        const w = window as unknown as { __diploWarEndLog?: unknown[] };
+        (w.__diploWarEndLog ??= []).push({
+          tura: turn, a, b, rodzaj: nextStatus, powod: reasonCtx?.kod ?? null,
+          turyWojny: turyWojny ?? null, zmeczenie: reasonCtx?.zmeczenie ?? null, miastaZmienione: reasonCtx?.miasta ?? null,
+        });
+      }
       const entry = worldDiploNewsEntry({
         a, b, prevStatus, nextStatus, turn,
         pairKey: diploPairKey(a, b),
         labelA: ownerDiploLabel(a),
         labelB: ownerDiploLabel(b),
         discovered: getDiplomaticContacts(),
-        skip: isMe(a) || isMe(b) || isBarbarian(a) || isBarbarian(b),
+        skip: skipPair,
         truce,
+        powod: reasonCtx ? { kod: reasonCtx.kod, turyWojny } as WorldDiploReason : undefined,
       });
       if (entry === null) return;
       // R-WEB-DIPLO-WORLD-NEWS-IN-DIPLOMACY-WINDOW-Q1: trwała lista (okno dyplomacji) — niezależna
@@ -40788,7 +40829,9 @@ async function boot(): Promise<void> {
           transferBasketItems(loser, winner, basket);
         },
         finalize: (loser, winner, kind) => {
-          finalizePeaceTreatyBetween(loser, winner, undefined, kind === 'rozejm' ? TRUCE_DEFAULT_TURNS : undefined);
+          withDiploWarReason(loser, winner, { kod: 'prosba_o_pokoj_ai' }, () => {
+            finalizePeaceTreatyBetween(loser, winner, undefined, kind === 'rozejm' ? TRUCE_DEFAULT_TURNS : undefined);
+          });
         },
         log: msg => console.log(`[Dyplomacja] R-AI-PEACE-2T: ${msg}`),
       });
@@ -40874,7 +40917,16 @@ async function boot(): Promise<void> {
           transferBasketItems(loser, winner, basket);
         },
         // LIVE-AUDIT-Q1 r2: karencja z war-weariness-params.json (domyslne 10 tur dawalo re-wojne po ~10 turach).
-        finalize: (loser, winner, lockTurns) => { finalizePeaceTreatyBetween(loser, winner, lockTurns); },
+        // R-WEB-WAR-END-REASON-LOG-Q1: powód — wymuszony (peak >= próg 100%, war-weariness.ts runWarWearinessTick
+        // ustawia peak = poziom przed decyzją) albo oferta przegranego; liczba tur do wpisu liczona w recordAiAiWarPeaceNews.
+        finalize: (loser, winner, lockTurns) => {
+          const zm = warWearinessByPairKey.get(diploPairKey(loser, winner))?.peak ?? 0;
+          withDiploWarReason(
+            loser, winner,
+            { kod: powodZmeczeniaPokoju(zm, WAR_WEARINESS_PARAMS.zmeczenie.progWymuszonyPokoj), zmeczenie: zm, miasta: diploWarStateForRead(loser, winner).lostCities },
+            () => finalizePeaceTreatyBetween(loser, winner, lockTurns),
+          );
+        },
         // PENDING-FORCED-PEACE-Q1: pokój wymuszony z udziałem gracza czeka na akceptację (bramka „Zakończ turę”).
         deferForcedPeace: (loser, winner) => loser === humanOwner || winner === humanOwner,
         log: msg => console.log(`[Dyplomacja] R-WEB-WEARINESS: ${msg}`),
@@ -40952,7 +41004,9 @@ async function boot(): Promise<void> {
         `[Dyplomacja] R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA: auto-pokój AI${ownerA}↔AI${ownerB} `
         + `(zdobyte ${st.capturedByA}/stracone ${st.capturedByB})`,
       );
-      finalizePeaceTreatyBetween(ownerA, ownerB, WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR);
+      withDiploWarReason(ownerA, ownerB, { kod: 'auto_pokoj_dwa_miasta', miasta: st.capturedByA + st.capturedByB }, () => {
+        finalizePeaceTreatyBetween(ownerA, ownerB, WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR);
+      });
     }
 
     /** ST-2/ST-3: przejęcie miasta — tylko obrońca na centrum (B); pierścień zostaje. */
@@ -47425,7 +47479,10 @@ async function boot(): Promise<void> {
                       const newRel = applyDiploEventTracked(
                         ownerId, targetId, getDiploRelation(ownerId, targetId), 'wojna_wypowiedziana',
                       );
-                      setDiploRelation(ownerId, targetId, newRel);
+                      // R-WEB-WAR-END-REASON-LOG-Q1: powód wybuchu — wojna epoki (wymuszona) albo zwykłe wypowiedzenie AI.
+                      withDiploWarReason(ownerId, targetId, { kod: gateForcedTagAny !== null ? 'wojna_epoki' : 'wypowiedzenie_ai' }, () => {
+                        setDiploRelation(ownerId, targetId, newRel);
+                      });
                       // R-WEB-WAR-AGGRESSOR-FLAG-Q1: wojna wymuszona epoki NIE nadaje flagi agresora;
                       // zwykłe wypowiedzenie AI — flaga tylko bez aktywnego casus belli wobec celu.
                       zarejestrujWypowiedzenie(ownerId, turn, przyczynaWypowiedzenia({

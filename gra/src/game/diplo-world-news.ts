@@ -34,6 +34,54 @@ export function worldDiploNewsVisible(a: number, b: number, discovered: Readonly
   return discovered.has(a) && discovered.has(b);
 }
 
+/**
+ * R-WEB-WAR-END-REASON-LOG-Q1 — kod powodu zmiany statusu pary (ustawiany w main.ts tuż przed
+ * setDiploRelation przez withDiploWarReason; brak kodu = wpis jak dotąd, bez powodu).
+ * EN: reason code for a status change; absent code = entry without reason.
+ */
+export type WorldDiploReasonCode =
+  | 'pokoj_wymuszony_zmeczenie'
+  | 'oferta_zmeczenia'
+  | 'auto_pokoj_dwa_miasta'
+  | 'prosba_o_pokoj_ai'
+  | 'wojna_epoki'
+  | 'wypowiedzenie_ai';
+
+/**
+ * Kod powodu pokoju po wojnie zmęczeniem: 'pokoj_wymuszony_zmeczenie' gdy poziom zmęczenia (peak,
+ * sprzed decyzji) dosięgnął progu wymuszenia, inaczej 'oferta_zmeczenia' (oferta przegranego).
+ * Czysta funkcja — próg podaje wołający (WAR_WEARINESS_PARAMS.zmeczenie.progWymuszonyPokoj).
+ */
+export function powodZmeczeniaPokoju(peak: number, progWymuszony: number): WorldDiploReasonCode {
+  return peak >= progWymuszony ? 'pokoj_wymuszony_zmeczenie' : 'oferta_zmeczenia';
+}
+
+/** Powód wpisu przekazywany do worldDiploNewsEntry: kod + tury wojny (dla pokoju po wojnie). */
+export interface WorldDiploReason {
+  kod: string;
+  /** Liczba tur wojny, która się właśnie zakończyła (undefined = nieznana / wojna startuje). */
+  turyWojny?: number;
+}
+
+/**
+ * Polski opis powodu do wpisu „Wydarzenia na świecie”; null dla kodu nieznanego
+ * (wpis zostaje bez powodu). Czysta funkcja.
+ */
+export function worldDiploReasonLabel(kod: string, turyWojny?: number): string | null {
+  switch (kod) {
+    case 'pokoj_wymuszony_zmeczenie':
+      return turyWojny !== undefined
+        ? `Pokój wymuszony po ${turyWojny} turach wojny`
+        : 'Pokój wymuszony zmęczeniem wojną';
+    case 'oferta_zmeczenia': return 'Pokój z oferty przegranego zmęczonego wojną';
+    case 'auto_pokoj_dwa_miasta': return 'Pokój po zdobyciu 2 miast';
+    case 'prosba_o_pokoj_ai': return 'Pokój na prośbę przegrywającej cywilizacji';
+    case 'wojna_epoki': return 'Wojna epoki';
+    case 'wypowiedzenie_ai': return 'Wypowiedzenie wojny przez AI';
+    default: return null;
+  }
+}
+
 /** Wpis dziennika Wydarzeń (kształt zgodny z warEventLog w main.ts) + pola trwałej listy. */
 export interface WorldDiploNewsEntry {
   id: string;
@@ -47,6 +95,8 @@ export interface WorldDiploNewsEntry {
   b: number;
   /** Rodzaj do wyświetlenia w liście; 'rozejm' = pokój z truceUntilTurn w silniku. */
   newsKind: 'wojna' | 'pokoj' | 'rozejm' | 'sojusz';
+  /** Polski opis powodu (R-WEB-WAR-END-REASON-LOG-Q1); brak = wpis bez powodu (stare zapisy). */
+  powod?: string;
 }
 
 /** Ile ostatnich wpisów trzyma trwała lista „Wydarzenia na świecie” w oknie dyplomacji. */
@@ -68,6 +118,8 @@ export interface WorldDiploNewsInput {
   skip: boolean;
   /** true, gdy silnik zapisuje pokój jako rozejm (relacja 'pokoj' z truceUntilTurn). */
   truce?: boolean;
+  /** Powód zmiany statusu (R-WEB-WAR-END-REASON-LOG-Q1); brak = wpis jak dotąd. */
+  powod?: WorldDiploReason;
 }
 
 /**
@@ -84,22 +136,25 @@ export function worldDiploNewsEntry(p: WorldDiploNewsInput): WorldDiploNewsEntry
   const pairLabel = p.labelA + ' i ' + p.labelB;
   const newsKind: WorldDiploNewsEntry['newsKind'] =
     isWar ? 'wojna' : kind === 'sojusz' ? 'sojusz' : isTruce ? 'rozejm' : 'pokoj';
-  return {
-    id: `ai-diplo-news-${p.turn}-${p.pairKey}-${kind}`,
-    icon: isWar ? '⚔' : '☮',
-    title: (isWar ? 'Wojna: ' : kind === 'sojusz' ? 'Sojusz: ' : isTruce ? 'Rozejm: ' : 'Pokój: ') + pairLabel,
-    subtitle: isWar
+  const powodTekst = p.powod ? worldDiploReasonLabel(p.powod.kod, p.powod.turyWojny) : null;
+  const baseSubtitle = isWar
       ? 'Wojna między innymi cywilizacjami'
       : kind === 'sojusz'
         ? 'Sojusz zawarty po wojnie między innymi cywilizacjami'
         : isTruce
           ? 'Rozejm między innymi cywilizacjami'
-          : 'Zawarcie pokoju między innymi cywilizacjami',
+          : 'Zawarcie pokoju między innymi cywilizacjami';
+  return {
+    id: `ai-diplo-news-${p.turn}-${p.pairKey}-${kind}`,
+    icon: isWar ? '⚔' : '☮',
+    title: (isWar ? 'Wojna: ' : kind === 'sojusz' ? 'Sojusz: ' : isTruce ? 'Rozejm: ' : 'Pokój: ') + pairLabel,
+    subtitle: powodTekst !== null ? baseSubtitle + ' · ' + powodTekst : baseSubtitle,
     kind: 'diplo',
     turnCreated: p.turn,
     a: p.a,
     b: p.b,
     newsKind,
+    ...(powodTekst !== null ? { powod: powodTekst } : {}),
   };
 }
 
@@ -139,6 +194,7 @@ export function worldDiploNewsSanitize(raw: unknown): WorldDiploNewsEntry[] {
       a: e.a,
       b: e.b,
       newsKind: nk,
+      ...(typeof e.powod === 'string' ? { powod: e.powod } : {}),
     });
   }
   return out.slice(0, WORLD_DIPLO_NEWS_MAX);
