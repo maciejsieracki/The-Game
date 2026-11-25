@@ -377,13 +377,18 @@ console.log('7. citySupportLevel=strong -- latwiej wyzwolic posilek (radius 2)')
     citySupportLevel: 'strong',
     sisterCityStates: [{ ownerId: SISTER_ID, q: SISTER_Q, r: SISTER_R }],
   });
+  // R-WEB-TEST-DEBT-Q14: STARY-PIN. Od R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1 (FALA 857) jeden strażnik
+  // miasta jest jego stałym garnizonem (getCityGarrisonUnitIds -> csGarrisonUnitIds) i NIE jest posiłkiem.
+  // Przy dwóch strażnikach posiłek mógłby iść tylko jednym (1 = wynik poprawny), więc test dokłada trzeciego
+  // strażnika (g3): zostają dwie nadwyżki, a maxPerTurn=2 (strong) nadal pinuje oba marsze.
   const scen2 = makeSceneryUnits(2);
-  const cmdsStrong = decideAITurn(PLAYER_ID, scen2.units, [city], map, data, optsStrong);
-  const movesStrong = resupMoves(cmdsStrong, new Set(['g1', 'g2']))
+  const guard3 = makeGuard('g3', PLAYER_ID, CITY_Q, CITY_R);
+  const cmdsStrong = decideAITurn(PLAYER_ID, [...scen2.units, guard3], [city], map, data, optsStrong);
+  const movesStrong = resupMoves(cmdsStrong, new Set(['g1', 'g2', 'g3']))
     .filter(m => hexDistance(m.toQ, m.toR, SISTER_Q, SISTER_R) < hexDistance(CITY_Q, CITY_R, SISTER_Q, SISTER_R));
-  // strong.maxPerTurn=2 i oba guardy (g1,g2) kwalifikuja sie (minGuard=1) -> OBIE ida
+  // strong.maxPerTurn=2 i dwie nadwyżki (g1..g3 minus stały garnizon) -> OBIE ida
   // (pinuje jednoczesnie threatRadius=2 ODBLOKOWUJACY posilek ORAZ maxPerTurn=2).
-  eq(movesStrong.length, 2, 'strong: wrog dist=2 <= threatRadius=2 -- posilek wyslany (maxPerTurn=2 -> oba guardy)');
+  eq(movesStrong.length, 2, 'strong: wrog dist=2 <= threatRadius=2 -- posilek wyslany (maxPerTurn=2 -> dwie nadwyzki, garnizon 1 zostaje)');
 }
 
 // ===========================================================================
