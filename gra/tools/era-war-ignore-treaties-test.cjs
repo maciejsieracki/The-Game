@@ -55,8 +55,8 @@ assert(blocked({ eraWar: true, hasNap: true, peaceLocked: true }) === false, 'er
 assert(blocked({ eraWar: true }) === false, 'era: brak umów -> dozwolona');
 
 console.log('--- A2: sojusz formalny blokuje wojnę epoki (jedyny blokujący warunek) ---');
-assert(blocked({ eraWar: true, hasAlliance: true }) === true, 'era: sojusz BLOKUJE');
-assert(blocked({ eraWar: true, hasAlliance: true, hasNap: true, peaceLocked: true }) === true, 'era: sojusz + NAP + pokój BLOKUJĄ');
+assert(blocked({ eraWar: true, hasAlliance: true }) === false, 'era: sojusz NIE blokuje (R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1)');
+assert(blocked({ eraWar: true, hasAlliance: true, hasNap: true, peaceLocked: true }) === false, 'era: sojusz + NAP + pokój NIE blokują');
 
 console.log('--- A3: zwykłe (nie-epokowe) wypowiedzenie nadal respektuje NAP i blokadę pokoju ---');
 assert(blocked({ eraWar: false, hasNap: true }) === true, 'zwykłe: NAP blokuje');
@@ -101,8 +101,8 @@ assert(
   'B6: ai.ts guardy wojny epoki (Brąz/Kamień/Żelazo) nie wykluczają NAP ani blokady pokoju',
 );
 assert(
-  (aiSrc.match(/&& !forcedRel\.hasAllianceTreaty\s*\n?\s*\)/g) || []).length >= 3,
-  'B7: ai.ts guardy Brązu/Kamienia/Żelaza nadal wykluczają sojusz z celem',
+  (aiSrc.match(/&& !forcedRel\.hasAllianceTreaty\s*\n?\s*\)/g) || []).length === 0,
+  'B7 (R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1): ai.ts guardy Brązu/Kamienia/Żelaza NIE wykluczają sojuszu z celem',
 );
 
 // Część C -- zachowanie decideAIDiplomacy (PRAWDZIWY moduł game/ai.ts, esbuild).
@@ -142,8 +142,8 @@ if (aiApi) {
   console.log('--- C2: decideAIDiplomacy -- sojusz formalny blokuje wczesny zwrot wojny epoki ---');
   const allied = decide({ hasAllianceTreaty: true }, { bronzeForceWarTargetId: 2 });
   assert(
-    !allied.some(c => String(c.powod || '').includes(ERA)),
-    'sojusz z celem: wczesny zwrot wojny epoki NIE zachodzi',
+    allied.some(c => String(c.powod || '').includes(ERA)),
+    'sojusz z celem: wczesny zwrot wojny epoki ZACHODZI (sojusz nie blokuje)',
   );
 }
 

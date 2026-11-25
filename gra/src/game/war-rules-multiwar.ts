@@ -448,7 +448,10 @@ export function isWarTreatyBlocked(input: {
   peaceLocked: boolean;
   hasAlliance: boolean;
 }): boolean {
-  if (input.eraWar) return input.hasAlliance;
+  // R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1 (decyzja właściciela 2026-11-22): sojusz formalny NIE blokuje
+  // wojny epoki (wcześniej R-WEB-ERA-WAR-IGNORE-TREATIES-Q1 blokował). Preferencja bez sojuszu
+  // żyje w assignForcedWarPairings (forced-war-common.ts), nie tutaj.
+  if (input.eraWar) return false;
   return input.hasNap || input.peaceLocked;
 }
 

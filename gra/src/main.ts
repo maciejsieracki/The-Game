@@ -45975,6 +45975,8 @@ async function boot(): Promise<void> {
               existingActivePairsForJoin,
               {
                 isPairBlocked: isForcedWarPairBlocked,
+                // R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1: sojusz nie blokuje; tylko preferencja pary bez sojuszu.
+                isAllied: (a: number, b: number): boolean => allianceFormalKindBetween(activeDeals, a, b) !== null,
                 hexDistanceFn: hexDistance,
                 totalActiveForcedWarsByOwner: totalActiveForcedWarsForPairing,
                 isEraWarExhausted: isWarRulesMultiwarEnabled() ? isEraWarExhausted : undefined,
@@ -47331,24 +47333,8 @@ async function boot(): Promise<void> {
                         peaceLocked: isPeaceLockedBetween(ownerId, targetId),
                         hasAlliance: allianceFormalKindBetween(activeDeals, ownerId, targetId) !== null,
                       })) { emRej('isWarTreatyBlocked(sojusz/NAP/pokoj)'); continue; }
-                      if (
-                        stoneForceWarTargetId != null
-                        && targetId === stoneForceWarTargetId
-                        && allianceFormalKindBetween(activeDeals, ownerId, targetId) !== null
-                      ) {
-                        emRej('stone-alliance-guard');
-                        continue;
-                      }
                       // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: ten sam ostatni guard sojuszu
                       // co dla Kamienia — wymuszona wojna Żelaza nie zrywa własnego sojuszu.
-                      if (
-                        ironForceWarTargetId != null
-                        && targetId === ironForceWarTargetId
-                        && allianceFormalKindBetween(activeDeals, ownerId, targetId) !== null
-                      ) {
-                        emRej('iron-alliance-guard');
-                        continue;
-                      }
                       // R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: limit 1 epoki + 1 naturalna per cywilizacja
                       // (AI jako deklarujący; gracz nieograniczony). Flaga OFF -> zawsze wolno (parytet).
                       const warTypTagAi: TypWojny = gateForcedTagAny !== null ? 'epoki' : 'naturalna';

@@ -245,8 +245,8 @@ try {
       'guard istniejący (gracz już w wojnie z tą stroną) nadal blokuje DOW mimo wpisu z nowego rdzenia',
     );
     assert(
-      !dominoCommand({ relation: { status: 'sojusz', zaufanie: 0, respekt: 50 }, hasAllianceTreaty: true }).some(c => c.type === 'wypowiedz_wojne'),
-      'sojusz gracz<->strona na poziomie ai.ts nadal blokuje DOW (obrona w głąb, niezależna od gate\'u main.ts)',
+      dominoCommand({ relation: { status: 'sojusz', zaufanie: 0, respekt: 50 }, hasAllianceTreaty: true }).some(c => c.type === 'wypowiedz_wojne'),
+      'R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1: sojusz gracz<->strona NIE blokuje DOW wojny epoki na poziomie ai.ts',
     );
   }
 

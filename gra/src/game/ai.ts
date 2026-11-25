@@ -7247,7 +7247,6 @@ export function decideAIDiplomacy(
     if (
       forcedRel
       && !forcedRel.stanWojny
-      && !forcedRel.hasAllianceTreaty
     ) {
       return [{
         type:     'wypowiedz_wojne',
@@ -7267,7 +7266,6 @@ export function decideAIDiplomacy(
     if (
       forcedRel
       && !forcedRel.stanWojny
-      && !forcedRel.hasAllianceTreaty
     ) {
       return [{
         type:     'wypowiedz_wojne',
@@ -7291,7 +7289,6 @@ export function decideAIDiplomacy(
     if (
       forcedRel
       && !forcedRel.stanWojny
-      && !forcedRel.hasAllianceTreaty
     ) {
       return [{
         type:     'wypowiedz_wojne',

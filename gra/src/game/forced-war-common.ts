@@ -219,6 +219,13 @@ export interface ForcedWarPairingOpts {
   /** Symetryczny predykat pary (main.ts). Dla wojny epoki blokuje TYLKO aktywny sojusz MIĘDZY a i b (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1, `isWarTreatyBlocked`); NAP / peaceLocked / Relacja nie blokują. Zwykłe wypowiedzenie respektuje NAP i peaceLocked w main.ts. */
   isPairBlocked: (a: number, b: number) => boolean;
   /**
+   * R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1 (decyzja właściciela 2026-11-22): sojusz formalny NIE blokuje
+   * wojny epoki. Predykat (symetryczny) używany WYŁĄCZNIE jako PREFERENCJA: pary bez sojuszu
+   * między stronami są brane pierwsze (dopasowanie maks. liczności, potem minimum par sojuszniczych);
+   * sojusznicy parują się dopiero, gdy nie ma innej możliwości. Brak = brak preferencji.
+   */
+  isAllied?: (a: number, b: number) => boolean;
+  /**
    * R-WEB-ERA-WAR-COUNTER-Q1: `true` = podmiot ZUŻYŁ już wojnę epoki w bieżącej epoce
    * (licznik per (cywilizacja, epoka), napastnik LUB cel). Taki podmiot odpada z puli
    * warless, z kandydatów partnera gracza i nie może zostać stroną dołączanej pary.
@@ -358,8 +365,11 @@ export function assignForcedWarPairings(
         if (pairBlocked(playerFirst.playerOwnerId, cand.ownerId)) continue;
         if (!playerFirst.isPlayerPairGateOpen(cand.ownerId)) continue;
         const dist = opts.hexDistanceFn(playerSubject.q, playerSubject.r, cand.q, cand.r);
-        if (dist < bestDist) {
-          bestDist = dist;
+        // Preferencja bez sojuszu (sojusz nie blokuje, ale najpierw wybieramy niesojuszniczego).
+        const allied = opts.isAllied?.(playerFirst.playerOwnerId, cand.ownerId) === true ? 1 : 0;
+        const dRank = allied * 1e9 + dist;
+        if (dRank < bestDist) {
+          bestDist = dRank;
           playerFirstPartnerId = cand.ownerId;
           playerFirstPartner = cand;
         }
@@ -417,6 +427,10 @@ export function assignForcedWarPairings(
     const ids = remaining.slice();
     const n = ids.length;
     const blockedIdx: boolean[][] = ids.map(a => ids.map(b => a !== b && pairBlocked(a, b)));
+    // R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1: waga pary = 1000 (liczność dominuje, maks. 12 par)
+    // + 1 gdy para bez sojuszu. Maksymalna suma = najpierw maks. liczba par, potem najmniej par sojuszniczych.
+    const pairWeight = (i: number, j: number): number =>
+      1000 + (opts.isAllied?.(ids[i]!, ids[j]!) === true ? 0 : 1);
     const memo = new Map<number, number>();
     const lowestBitIndex = (mask: number): number => {
       let i = 0;
@@ -431,7 +445,7 @@ export function assignForcedWarPairings(
       let best = dp(mask & ~(1 << i));
       for (let j = 0; j < n; j++) {
         if (j === i || (mask & (1 << j)) === 0 || blockedIdx[i]![j]) continue;
-        const val = 1 + dp(mask & ~(1 << i) & ~(1 << j));
+        const val = pairWeight(i, j) + dp(mask & ~(1 << i) & ~(1 << j));
         if (val > best) best = val;
       }
       memo.set(mask, best);
@@ -461,7 +475,7 @@ export function assignForcedWarPairings(
       });
       let matched = -1;
       for (const j of candIdxs) {
-        const val = 1 + dp(maskWithoutSeeker & ~(1 << j));
+        const val = pairWeight(i, j) + dp(maskWithoutSeeker & ~(1 << j));
         if (val === targetBest) { matched = j; break; }
       }
       if (matched === -1) {
@@ -510,7 +524,16 @@ export function assignForcedWarPairings(
   for (const leftoverId of leftovers) {
     const actor = byId.get(leftoverId);
     let joined = false;
-    for (const pair of pairsSorted) {
+    // R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1: preferuj parę, której ŻADNA strona nie jest sojusznikiem
+    // leftover (stabilnie: najpierw 0 sojuszy, potem 1, potem 2; remis = kolejność pairsSorted).
+    const alliedSides = (pair: ForcedWarPairingExistingPair): number =>
+      (opts.isAllied?.(leftoverId, pair.attackerId) === true ? 1 : 0)
+      + (opts.isAllied?.(leftoverId, pair.targetId) === true ? 1 : 0);
+    const pairsByPreference = pairsSorted
+      .map((p, idx) => ({ p, idx, k: alliedSides(p) }))
+      .sort((a, b) => (a.k - b.k) || (a.idx - b.idx))
+      .map(x => x.p);
+    for (const pair of pairsByPreference) {
       if (pair.attackerId === leftoverId || pair.targetId === leftoverId) continue;
       // R-WEB-ERA-WAR-DEFER-NOT-CANCEL-Q1 (runda 3, Z5/B-DEFER): Brąz/Żelazo NIE dołącza do pary
       // Kamienia -- strona takiej pary toczy już wojnę, ai.ts odrzuca komendę (`stanWojny`),
@@ -553,9 +576,11 @@ export function assignForcedWarPairings(
         if (opts.totalActiveForcedWarsByOwner(cand.ownerId) !== 0) continue;
         if (exhausted(cand.ownerId, actor.era)) continue;
         if (pairBlocked(leftoverId, cand.ownerId)) continue;
-        const dist = opts.hexDistanceFn(actor.q, actor.r, cand.q, cand.r);
-        if (dist < bestDist) {
-          bestDist = dist;
+        // Preferencja bez sojuszu z leftover; potem najbliższy (sojusz nie blokuje).
+        const allied = opts.isAllied?.(leftoverId, cand.ownerId) === true ? 1 : 0;
+        const dRank = allied * 1e9 + opts.hexDistanceFn(actor.q, actor.r, cand.q, cand.r);
+        if (dRank < bestDist) {
+          bestDist = dRank;
           bestTargetId = cand.ownerId;
         }
       }
