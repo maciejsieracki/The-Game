@@ -1,6 +1,6 @@
 # R-WEB-DIPLO-WORLD-NEWS-IN-DIPLOMACY-WINDOW-Q1 — „Co dzieje się na świecie” w oknie dyplomacji (wojny i pokoje innych odkrytych cywilizacji)
 
-DOMAIN: GAME (UI; dokończenie polecenia właściciela 2026-11-25) | Operator HAIKU 5.5 | runda 1/5 | BAZA = origin/main po FALI 905 (SHA podaje orkiestrator). Wdrożenie jako FALA po FC PASS.
+DOMAIN: GAME (UI; dokończenie polecenia właściciela 2026-11-25) | Operator HAIKU 5.5 | runda 1/5 | BAZA = origin/main 262823dde115b2626610391686d891b5058de0ac (FALA 905). Wdrożenie jako FALA po FC PASS.
 
 ## Polecenie właściciela (dosłownie)
 „Gracz w dyplomacji powinien widzieć informację o tym, że jakieś cywilizacje zaczęły ze sobą wojnę lub zawarły pokój. Oczywiście, jeżeli ma odkrytą tą cywilizację.”
