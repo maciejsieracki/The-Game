@@ -1770,6 +1770,9 @@ fn fq_speed_bridge_bez_bitwy() {
     );
 }
 
+/// A transport that changes the `siegeBattle` of an answer.
+type Tamper = fn(&mut SiegeBattlePayload);
+
 fn drop_speed(p: &mut SiegeBattlePayload) {
     p.speed_mul = None;
 }
@@ -1783,8 +1786,7 @@ fn wrong_speed(p: &mut SiegeBattlePayload) {
 /// they were (the engine call happened). Headless view: the speed is tracked without a scene.
 #[test]
 fn fq_speed_bridge_klatka_tylko_z_przyjetej_odpowiedzi() {
-    let cases: [(fn(&mut SiegeBattlePayload), &str); 2] =
-        [(drop_speed, "missing"), (wrong_speed, "wrong")];
+    let cases: [(Tamper, &str); 2] = [(drop_speed, "missing"), (wrong_speed, "wrong")];
     for (tamper, what) in cases {
         let mut c = client_for(siege_state(11));
         c.start_siege_storm(CITY, ANCHOR, true).expect("start");
