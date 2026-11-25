@@ -1,0 +1,19 @@
+# R-WEB-MEASURE-FORTRING-FLEEMANUAL-RUNNERS-Q1 — runnery pomiarowe: pierścień fortów (wydajność, zapis) i ręczny odwrót
+
+DOMAIN: GAME (pomiar + hak testowy) | Operator HAIKU 5.5 | runda 1/5 | BAZA = origin/main 547ca34b56f45a7d81da262c4720289b90d01cd2. Bez deployu, chyba że zmieniasz gra/src (wtedy tylko hak ?civTest=1 — wdrożenie jako FALA po FC; zachowanie gry bez zmian).
+
+## Kontekst
+Raport MEAS79 (dyspozycje/analizy/POMIAR-LIMITY-FLEE-FORTRING-2026-11-25.md): (c) FORTRING (FALA 882: wydajność w grze i round-trip zapisu) i (d) FLEEMANUAL (FALA 885: ręczny odwrót, zgodność z limitem ruchu, odwrót na mapie/animacja) — NIE ZMIERZONO: brak hooka przełączającego pierścień fortów i brak runnera odwrotu. Dostępne: hak ?civTest=1 window.__settingsLive (startNewGame, getSettings, saveRoundTrip, …), gra/tools/diplomacy-harder-measure-run.cjs (runner z ponawianiem startu ze slotu), helper Chrome, gra/tools/limits-measure.cjs (analizator). Zasady: jeden Chromium naraz; wznawianie ze slotu może dać SIGSEGV (ponawianie włączone).
+## Zadanie
+1. FORTRING: sprawdź w gra/src (grep fortRing/pierścień/FORTRING, rejestr FALA 882) co robi pierścień fortów i czy jest przełącznik (flaga, ustawienie, data/*.json). Jeśli nie ma hooka przełączania w trybie ?civTest=1 — dodaj MINIMALNY hak testowy (tylko pod ?civTest=1, zero wpływu na grę bez parametru) w gra/src/main.ts; test źródłowy pilnujący, że hak istnieje wyłącznie pod civTest. Runner gra/tools/fortring-measure.cjs: seed 4242, 60 tur, pierścień ON i OFF (jeden bieg ciągły każdy), mierzy czas tury AI (ms/turę, mediana i p95), liczbę fortów, round-trip zapisu (saveRoundTrip: stan po wczytaniu = stan przed). Tabela ON/OFF + werdykt.
+2. FLEEMANUAL: runner gra/tools/flee-manual-measure.cjs: scenariusz na żywo (startNewGame + hak do ustawienia dwóch jednostek w bitwie/starciu wg istniejących testów live battle-flee-manu*), ręczny odwrót gracza: sprawdź zgodność z limitem ruchu (odwrót nie przekracza ruchLeft), brak odwrotu poza mapą, animacja/odwrót na mapie (stan po odwrocie: pozycja, ruch). Wynik per przypadek PASS/FAIL z liczbami; porównaj z istniejącymi testami battle-flee-manual* (uruchom je solo jako punkt odniesienia).
+3. Dokument dyspozycje/analizy/POMIAR-FORTRING-FLEEMANUAL-2026-11-25.md (tabela: funkcja | co zmierzono | wynik | werdykt DZIAŁA/NIE DZIAŁA/NIE ZMIERZONO + powód) oraz dane jsonl.gz + SHA256 w runs/…/dane/. Wynik negatywny → NIE naprawiaj gry; opis minimalnego odtworzenia jako kandydat R-WEB-*.
+Paczki, commit po każdej funkcji. ZAKAZ BLOCK bez blokady technicznej.
+## Allowlista
+nowe gra/tools/fortring-measure.cjs, gra/tools/flee-manual-measure.cjs, test źródłowy hooka (nowy gra/tools/fortring-civtest-hook-test.cjs), gra/src/main.ts (TYLKO hak ?civTest=1), dyspozycje/analizy/POMIAR-FORTRING-FLEEMANUAL-2026-11-25.md, dyspozycje/autobot/runs/R-WEB-MEASURE-FORTRING-FLEEMANUAL-RUNNERS-Q1/**.
+## Zakazy
+gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifest, rust-port/, npm run build/dev w gra/ (bundle: vite --outDir poza repo), zmiana zachowania gry bez ?civTest=1, osłabianie asercji, git add -A, push, spawn_task/create_session/create_trigger/send_later, parametr run_in_background narzędzia Bash; długie biegi (>10 min) tylko setsid nohup timeout … w pierwszym planie i czekanie Monitor/until-pętlą. Jeden Chromium naraz; po pracy zabij WŁASNE procesy po PID; usuń bundle/logi/node_modules z /tmp; przywróć śledzone pliki zmienione przez testy. Dysk >= 4 GB.
+## Bramki
+tsc 0; logic 213; tech-tree 20; research 33; unit-replace zielone; combat 6; ai-test 297/0; war-rules-multiwar-main-guard 21/0 i hotseat-etap6d-podetap-e-source 77/0 (okna tekstowe main.ts); bramki-tmpdir-unikalnosc PASS. Zacommituj i zwróć SHA.
+## Binarne kryterium
+Dokument z tabelą i werdyktem dla FORTRING (ON/OFF, wydajność, round-trip) i FLEEMANUAL; albo NIE ZMIERZONO z konkretnym powodem i śladem prób; hak tylko pod civTest (test czerwony po mutacji); bramki zielone.
