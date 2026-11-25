@@ -116,16 +116,22 @@ console.log('B. Reachable enemy unit without an enemy city gets a closing move')
   }
 }
 
-console.log('C. Enemy outside movement range is not treated as an immediate chase target');
+// Decyzja właściciela 2026-11-25 (R-WEB-TEST-DEBT-Q14-C, pkt 2): obowiązuje KOD (commit 64d5ac663):
+// rydwan aktywnie zbliża się do najbliższej wrogiej jednostki. Asercja przepisana na to zachowanie:
+// wróg poza zasięgiem ruchu NIE daje ataku, a ruch rydwanu mieści się w budżecie ruchu (ruch 4)
+// i zmniejsza dystans do wroga.
+console.log('C. Enemy outside movement range: no attack, budget-bounded approach toward nearest enemy');
 {
   const units = [chariot('c', 2, 2), warrior('enemy', 0, 10, 2)];
   const commands = commandsFor(units, [ownCity(1)]);
   const attack = commands.find(c => c.type === 'attack' && c.unitId === 'c');
   const move = commands.find(c => c.type === 'move' && c.unitId === 'c');
   ok(attack === undefined, 'brak ataku, gdy wróg jest poza zasięgiem');
-  ok(move === undefined || distance({ q: move.toQ, r: move.toR }, { q: 10, r: 2 })
-    >= distance({ q: 2, r: 2 }, { q: 10, r: 2 }),
-  'wróg poza zasięgiem nie wymusza ofensywnego zbliżenia');
+  ok(move !== undefined
+    && distance({ q: 2, r: 2 }, { q: move.toQ, r: move.toR }) <= 4
+    && distance({ q: move.toQ, r: move.toR }, { q: 10, r: 2 })
+      < distance({ q: 2, r: 2 }, { q: 10, r: 2 }),
+  'rydwan zbliża się do wroga poza zasięgiem w granicach budżetu ruchu (ruch 4)');
 }
 
 console.log('D. Partial movement uses remaining points, not the unit maximum');
@@ -138,11 +144,13 @@ console.log('D. Partial movement uses remaining points, not the unit maximum');
   // isolates the flanking chase guard from the separate defense assignment.
   const commands = commandsFor(units, [{ id: 'home', ownerId: 1, q: 0, r: 15, population: 1, name: 'home' }]);
   const move = commands.find(c => c.type === 'move' && c.unitId === 'c');
+  // Decyzja właściciela 2026-11-25 (pkt 2): obowiązuje KOD -- rydwan aktywnie zbliża się do wroga
+  // w zasięgu ruchu, ale budżet to autorytatywne ruchLeft (=1): krok nie może przekroczyć 1 heksa.
   const beforeDistance = distance({ q: unit.q, r: unit.r }, target);
-  const offensiveChase = move !== undefined
-    && distance({ q: move.toQ, r: move.toR }, target) < beforeDistance;
-  ok(!offensiveChase,
-    'rydwan z 1 pozostałym punktem ruchu nie goni celu odległego o 4 heksy');
+  ok(move !== undefined
+    && distance({ q: unit.q, r: unit.r }, { q: move.toQ, r: move.toR }) <= 1
+    && distance({ q: move.toQ, r: move.toR }, target) < beforeDistance,
+  'rydwan z 1 pozostałym punktem ruchu zbliża się o najwyżej 1 heks (budżet ruchu nie jest przekraczany)');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);
