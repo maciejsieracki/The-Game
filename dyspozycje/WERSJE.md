@@ -1,3 +1,9 @@
+## ROBOCZA 023ddaf2 -- 2026-11-25 -- FALA 906: Wojna epoki brązu i żelaza od pierwszej tury wejścia w epokę (testowa)
+
+- Wojna wymuszona epoki Brązu i Żelaza może wybuchnąć od pierwszej tury po wejściu w epokę (było: 40 tur później; Kamień bez zmian); gdy cywilizacja prowadzi jeszcze wojnę wcześniejszej epoki, nowa zaczyna się po jej pokoju; stare zapisy: wojna epoki dopiero 40 tur po wczytaniu
+- Weryfikacja: tsc 0; logic 213/213; era-war-start-at-entry 32/0; era-war-delays 55/0; forced-war-bronze 48/0; reguly-multi-turn 48/0; engine-scenario 27/0; main-guard 21/0; diplo-world-news 39/0; truce-end-war-notice PASS; hud-me-literal-zero 150/0; hotseat e-source 77/0; bramki-tmpdir 18/0; ai-test 297/0; vite 0
+- Limity: Założenia: AI po własnym wejściu; zapisy legacy +40 tur; wojny naturalne nie blokują — do potwierdzenia przez właściciela; wczytanie zapisu i przebieg silnika na żywo NIE ZMIERZONO; pre-existing czerwone: forced-war-iron 2 FAIL (sojusz), era-war-bronze-player-target S5
+
 ## ROBOCZA 201a9191 -- 2026-11-25 -- FALA 905: Wiadomości o wojnach i pokojach innych cywilizacji (Wydarzenia) (testowa)
 
 - Gdy dwie inne cywilizacje, które gracz zna, zaczną wojnę, zawrą pokój lub sojusz, gracz dostaje wpis w dzienniku Wydarzeń (pary z graczem bez zmian; nieznane cywilizacje bez wpisu)
