@@ -1,73 +1,61 @@
-STATUS: DECISION_REQUIRED
-DOMAIN: GAME (testy + jeden wyjątek wiki)
+STATUS: FAIL (częściowo: zakres 2 zrobiony i zmierzony; zakres 1 NIE domknięty w tej rundzie; zakres 3 bez zmian zgodnie z dispatchem)
+DOMAIN: GAME (testy; bez zmian w gra/src i gra/data)
 TEMAT: R-WEB-TEST-DEBT-Q14-B
-GOAL: Kategoria B (10 testów) + Konnica 98 (wiki i piny) + garnizon min. 1 nie liczy się jako „wręcz”. Bramki zielone.
-BAZA: origin/main f96787fb70da4086f9b25487cc4b6c62a2127610 (FALA 892). Worktree detach od tej bazy. Operator HAIKU 5.5, runda 1/5.
+GOAL: Runda 3/5 — (1) przepisać dyplo-bilans runda2 (6 FAIL) i runda3 (17 FAIL) do reguły kierunkowej bramki pokoju (e253e64a6/e27418db7); (2) przepisać A3 w ai-ai-treaty-live-proof-wiring-test do dopłaty D przy SOJUSZU z mutacją czerwoną; (3) ai-army-composition-per-civ i hud-moc-warstwa nietknięte.
+BAZA: 27a4680758b9fe7058ec06fdb326901e5fbdbabc (detach, worktree wf_0aba166e-f71-1). Operator HAIKU 5.5.
 
-ZMIANY/COMMIT: patrz SHA w sekcji DEPLOY/PUSH (commit zawiera allowlistę + ten raport; `git add` tylko ścieżek allowlisty).
-Allowlista użyta:
-- docs/PORADNIK-GRACZA/57-katalog-jednostek.md: wiersz Konnica, kolumna Moc 49 -> 98 (jedna zmiana; źródło wiki).
-- gra/src/data/wikiBundle.json: regeneracja `node tools/bundle-wiki-for-game.cjs`. Zweryfikowane `git diff --word-diff`: JEDYNA zmiana to `[-49-]{+98+}` w wierszu Konnicy. Wiki-S/Wiki-M w docs/encyklopedia/jednostki/konnica.md już mówiły 98 (bez zmiany).
-- gra/tools/*-test.cjs (10 plików, patrz tabela). Żadnych zmian w gra/src ani gra/data.
+ZMIANY/COMMIT (allowlista):
+- gra/tools/ai-ai-treaty-live-proof-wiring-test.cjs: A3 przepisana. Akceptuje dopłatę D AI↔AI zalogowaną przy SOJUSZU (linia "Sojusz … (pełny, bezterminowy), dopłata N ¤ od …") LUB przy NAP (opcjonalnie). Asercja A1, A2, A4 bez zmian; żadna asercja nie osłabiona (poprzednia wymagała wyłącznie NAP z dopłatą = STARY-PIN wobec FALI 892).
+- dyspozycje/autobot/runs/R-WEB-TEST-DEBT-Q14-B/10-operator-claude.md (ten raport).
+- Brak zmian w gra/src, gra/data, wiki, docs, gra/tools/dyplo-*, ai-army-composition-per-civ, hud-moc-warstwa, climate-band-test.
 
-## Wyniki surowe (liczby z wyjścia, po zmianach)
+ZAKRES 2 — A3 (wynik zmierzony):
+- Dane: istniejący przebieg live ziarno 4242, 60 tur (out2, wykonany w poprzedniej rundzie, resumed=false, endTurn=60, wallSec=246, pageerror 0). Ścieżka: .../scratchpad/q14b-live/out2/seed4242.{jsonl,wiring.log,events.log}.
+- Analizator po zmianie (surowo): "Wiring ziarno 4242: wiersze=59, linie NAP=0, dopłaty(log)=0 ¤ ..." | "OK A1 (rows 59)" | "OK A2 (min 0, owner 22, negCount 0)" | "OK A3 dopłata D AI↔AI zalogowana ... {"nap":0,"napD":[],"sojusze":2,"sojuszD":[966,431],"dopl":2}" | "OK A4 []" | "Wynik: 4 OK / 0 FAIL", exit 0.
+- MUTACJA (na kopii wyniku, bez zmiany kodu gry): z seed4242.wiring.log usunięto wszystkie fragmenty ", dopłata N ¤ od …" (sed). Wynik: "dopłata w mutancie: 0" | "FAIL A3 ... {"nap":0,"napD":[],"sojusze":2,"sojuszD":[0,0],"dopl":0}" | "Wynik: 3 OK / 1 FAIL", exit 1. Asercja jest czerwona bez dopłaty D.
+- NIE ZMIERZONO: ŚWIEŻY przebieg live (dispatch: "rób świeży przebieg"). Nie zbudowano nowego bundle vite w tej rundzie (dist z poprzedniej rundy); analizator uruchomiony na wyniku z poprzedniej, wykonanej od zera sesji live (resumed=false). Mutacja wykonana na kopii logu, NIE przez usunięcie dopłaty z kodu toru (brak świeżego przebiegu live).
+- Uwaga merytoryczna: w 60 turach tor zapisał 0 linii NAP AI↔AI; decyzja właściciela "NAP AI↔AI zostaje" nie została tu zweryfikowana w zachowaniu (NIE ZMIERZONO, czy NAP zawiera się w dłuższym przebiegu).
 
-| Test | Baza (przed) | Po Q14-B | Klasyfikacja / przyczyna | Status |
-|---|---|---|---|---|
-| hud-moc-warstwa-test | 21 PASS / 7 FAIL | 28 PASS / 0 FAIL | STARY-PIN Konnica 49->98 (nominalna), 58,0->116,0 (efektywna = 98*1,20 - armor*0,20); HARNESS: literał `0` -> `ME()` w buildHudState/openDiplomacyAudience/buildPlayerDiploSummary/theirRespekt; sygnatura `buildHudState(ownerId = ME())` | ZIELONY |
-| moc-ranking-rozjazd-test | 13 PASS / 6 FAIL | 19 PASS / 0 FAIL | STARY-PIN Konnica 49->98 / 58,0->116,0; HARNESS: callsite #3 i buildEmpireDetailSnap przez ME() | ZIELONY |
-| granice-relacja-dyplomatyczna-test | 49 PASS / 3 FAIL | 52 PASS / 0 FAIL | HARNESS/STARY-PIN: `ownerId === 0` -> `isMe(ownerId)`, `civColorFn(0)` -> `civColorFn(ME())`, `getDiploRelation(0,..)` -> `(ME(),..)`, `(a === 0 || b === 0)` -> `isMe(a) || isMe(b)` (ta sama semantyka). Nie BŁĄD-GRY | ZIELONY |
-| war-epoch-player-first-main-guard-test | 33 PASS / 2 FAIL | 35 PASS / 0 FAIL | HARNESS: kandydaci wyodrębnieni do `const forcedWarMajorAiSubjects = aiOwnerList.flatMap(...)`, przekazywani jako `candidates: forcedWarMajorAiSubjects` (ta sama lista wszystkich major AI). Mutacja przepięta na nowy wzorzec | ZIELONY |
-| march-attack-queue-persist-test | 55 PASS / 2 FAIL | 57 PASS / 0 FAIL | STARY-PIN (przegląd legalności wykonany): (g5) 5 -> 6 wywołań `clearPlannedMarch(u.id,true)` = nowa galąź `ambush` (R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1, jawny rozkaz zasadzki); (g8) 35 -> 36 wystąpień `clearPlayerUnitSelection(` w kodzie = ta sama galąź `ambush`. Obie galąź dodana po ostatniej edycji testu | ZIELONY |
-| wojna-wymuszona-parowanie-test | (D w Q13; baza: S2, S7, TypeError) | 47 PASS / 0 FAIL | STARY-PIN wobec R-WEB-ERA-WAR-DEFER-NOT-CANCEL-Q1 r3: Brąz/Żelazo NIE dołącza do pary Kamienia (forced-war-common.ts, krok 4: `pair.era === 'stone' && actor.era !== 'stone' -> continue`). Fixtury S2 i S7: para `stone` -> `bronze`. Scenariusz bez zmiany. NIE BŁĄD-GRY (reguła zamierzona) | ZIELONY |
-| ai-player-parity-fixes-test | 41 PASS / 3 FAIL | 44 PASS / 0 FAIL | STARY-PIN wobec decyzji 2026-11-19 (DODATEK 1): trudność NIE wpływa na koszt jednostek (production.ts::unitMoneyCost ignoruje difficulty). Asercje „koszt RÓŻNY" odwrócone na „koszt TAKI SAM" (nie osłabione, odwrócone na obowiązującą regułę). HARNESS: `city.ownerId` -> `unitReplaceCtx(u)->replaceAvailabilityCtxEmpireWide(u.ownerId)` | ZIELONY |
-| hotseat-etap6d-podetap-e-source-test | 60 PASS / 17 FAIL | 77 PASS / 0 FAIL | HARNESS: baza „PRZED" była `git show HEAD:` (HEAD = już zmigrowany kod) -> przypięte do rodzica commita migracji `4e07a9aa9^`. PO: 2 cienkie wrappery bez literału fotela (previewNegotiationEntry, collectTurnEvents) zwolnione z wymogu isMe/ME (zero literałów nadal sprawdzane). applyProposalOutcome: niezmienność względem commita migracji rozbita na rodzic vs migracja (późniejsze 230fd049f R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 legalnie zmieniło ciało) | ZIELONY |
-| dyplo-bilans-gate-n-e1-reprodukcja-runda2-test | (0a)-(0e)+5 FAIL wg Q13 | 18 PASS / 6 FAIL | (0a) ZIELONY po re-picie 29 -> 30 (aaece58c2 dodał 1 odrzut `pwBalance:-1` w evaluateProposalImpl, NAP trust 30). POZOSTAŁE 6 FAIL = STARY-PIN wobec późniejszych rund: (5-REGRESJA),(5-KONTROLA),(0e): e27418db7 przywróciła KIERUNKOWĄ bramkę pokoju (gracz-autor z pwBalance<0 -> accepted:false, „Brakuje N PW"); test pinuje runda-4 „bez bramki". NIE BŁĄD-GRY (późniejsza decyzja kierunkowa). (6-setup): 4 nowe typy komend bez fixtura (oferuj_miasto_za_pokoj, zada_miasto_za_pokoj, zaproponuj_wymiane_cykliczna, zaproponuj_przemarsz). (1-PRZED),(2-PRZED): reprodukcje sprzed naprawy wymagają przepisania zakresu. NIEZROBIONE w tej rundzie | CZERWONY (STARY-PIN, do przepisania) |
-| dyplo-bilans-gate-n-e1-reprodukcja-runda3-test | 10 PASS / 17 FAIL | bez zmian | Nie ruszane w tej rundzie. Kontrole (3c),(4a),(4b) zakładają zamianę argumentów z rundy 3, nadpisaną rundą 4 (e253e64a6) i późniejszą kierunkową bramką (e27418db7). STARY-PIN, do przepisania | CZERWONY (STARY-PIN, nieobjęty) |
-| naval-water-access-gate-test | exit 0 (40/0) | exit 0 (40/0) | bez zmian | ZIELONY |
-| ai-army-composition-per-civ-test | 341/0 (baza, garnizon liczony jako wręcz) | 331 passed / 10 failed | Decyzja właściciela 2026-11-22 WDROŻONA: licznik wręcz startuje od 0 (garnizon nie wlicza się), próbka = N rekrutacji. Progi tabeli NIETKNIĘTE. Zostają 10 FAIL „min 50% wręcz": D sumer/Kamień 48,3%, sumer/Brąz 48,3%, sumer/Żelazo 48,3%, babilonia/Brąz 48,3%, babilonia/Żelazo 48,3%, asyria/Brąz 46,7%, asyria/Żelazo 46,7%; F: L1/L2/L3 asyria. Asercje ±10 pp przechodzą. To jest pytanie ABC (patrz niżej) | DECYZJA_WŁAŚCICIELA |
-| mur-paradoks-test | 29/0 | 29/0 (exit 0) | bez zmian (Konnica 98 już w pinie) | ZIELONY |
-| ai-ai-treaty-live-proof-wiring-test | exit 2 „Brak katalogu wyniku: undefined" | exit 2 | Test przyjmuje katalog wyniku jako argv[2] z przebiegu LIVE (ai-ai-treaty-live-proof-wiring-run.cjs, Chrome). Bez przebiegu nie ma wejścia. NIE ZMIERZONO w tej rundzie (nie uruchamiano przebiegu live). Nie jest błędem asercji | NIE_ZMIERZONO |
+ZAKRES 1 — dyplo-bilans runda2 / runda3 (NIE DOMKNIĘTE w tej rundzie):
+- Surowe wyniki na bazie 27a4680: runda2 = "PODSUMOWANIE: 18 PASS / 6 FAIL"; runda3 = "PODSUMOWANIE: 10 PASS / 17 FAIL". Test ma dwa pliki-mutacje (bundle esbuild z pluginem) — needle są zakotwiczone w kodzie sprzed e253e64a6/e27418db7.
+- Klasyfikacja WSTĘPNA (bez przepisania asercji, bez mutacji wykonanej w tej rundzie):
+  * runda2 (0e) — mutacja: oczekiwane 2, kod daje 1 (needle pola pwBalance w case 'pokoj'): HARNESS/needle.
+  * runda2 (5-REGRESJA/PLAYER), (5-KONTROLA/PLAYER) — pin stanu e253e64a6 (bez bramki w obu kierunkach); rzeczywisty kod ma kierunkową bramkę (accepted:false, "Brakuje 554 PW") dla gracza-autora: STARY-PIN do re-pinu.
+  * runda2 (6-setup) — brak fixtur dla 4 typów komend (oferuj_miasto_za_pokoj, zada_miasto_za_pokoj, zaproponuj_wymiane_cykliczna, zaproponuj_przemarsz): HARNESS (test-only).
+  * runda2 (1-PRZED), (2-PRZED) — dowody błędu rundy 2 nie odtwarzalne na kodzie bieżącym (jak w obronie rundy 2): STARY-PIN historyczny do przepisania jako pin historyczny albo jawnego usunięcia.
+  * runda3 (0a), (0b) — needle mutacji (FIXED_NEEDLE, PRE_R4_BLOCK, pluginSwap) nie pasują do bieżącego case 'pokoj' (ok. diplomacy-proposals.ts:1791 i :3027 w kodzie gry): HARNESS.
+  * runda3 (1-PRZED-*), (2-PRZED-*) — kod rundy 2 jako punkt odniesienia; wartości (accepted:true przy ujemnym pwBalance) dają się czytać jako pin przed bramką: STARY-PIN/HARNESS (do przepisania na mutację kontrolną).
+  * runda3 (1-PO-zla), (1-PO-bardzoDobra), (2-PO-zla), (2-PO-bardzoDobra), (3b-*) — oczekiwania rundy 4 (canAccept false/accepted true dla gracza-proponenta) rozjechane z regułą e27418db7 (kierunkowa: gracz-autor z pwBalance<0 -> accepted:false, AI-autor pomijany). Obecny wynik gracza-autora (accepted:false przy -554) ZGADZA się z regułą kierunkową; oczekiwanie w teście jest odwrotne: STARY-PIN.
+  * runda3 (3c), (4a), (4b) — kontrole nietautologiczne i PROOF zależne od needle (jak wyżej): HARNESS/STARY-PIN.
+- Nie wykonano: przepisania asercji, nowych wartości z powołaniem na commit, mutacji czerwonych na bieżącym kodzie, commitów paczek po 5 FAIL. Wymaga osobnego dispatchu Operatora z pełnym czasem na pliki dyplo-bilans-*-runda2/3-test.cjs (≈1150 linii, dwa bundle-plugin).
+- BŁĄD-GRY: nie stwierdzono (wszystkie niezgodności klasyfikowane jako STARY-PIN/HARNESS wstępnie; kod gry nie zmieniany).
 
-## Bramki (liczby z surowego wyjścia)
-- tsc --noEmit: exit 0
-- logic-test: exit 0, ostatnia linia `[213] cityfix ...` (213 wyników OK)
-- tech-tree-test: exit 0, `tech-tree-test: 20 pass, 0 fail`
-- research-test: exit 0, `PASSED: 33 / FAILED: 0 / TOTAL: 33`
-- unit-replace-test: exit 0, 21 linii `[OK]`, 0 `FAIL`
-- combat-test: exit 0, `All sanity checks passed.`
-- ai-test: exit 0, `ai-test: 297 passed, 0 failed`
-- era-war-pairing-alliance-test: exit 0, `19 pass, 0 fail`
-- ai-ai-alliance-surcharge-test: exit 0, `RESULT: ALL GREEN (live + mutants detected)`
+ZAKRES 3 — bez zmian (zgodnie z dispatchem):
+- ai-army-composition-per-civ: DECYZJA_WŁAŚCICIELA, nie ruszane.
+- hud-moc-warstwa: 26/2 (BŁĄD-GRY kandydat: literał 0 w gra/src main.ts:3140 i :24044; kod gry NIE zmieniany).
 
-## Dodatkowe sprawdzenie wpływu (poza allowlistą, nie edytowane)
-- weterani-test: exit 0, 79 PASS / 0 FAIL (Konnica nie pinowana na 49).
-- unit-context-card-test: exit 0. Linia 152/167 pinuje „Konnica rekrut Moc pola = 49" w komentarzu/asercji, ale asercja przechodzi (nie zmieniana).
-- rydwan-konnica-x2-test: exit 1, 4 niezgodności `Rydwan (woły).Surowiec/Utrzymanie surowiec: powinno pozostać "Brąz", jest "Drewno"`. NIE dotyczy Konnicy i NIE jest skutkiem tej rundy (dane Rydwanu nie były zmieniane). Zgłoszone w UWAGACH.
+BRAMKI:
+- npm ci w gra/ (worktree): wykonane, 71 pakietów.
+- A3 analizator: 4 OK / 0 FAIL (exit 0) na wyniku live; mutacja: 3 OK / 1 FAIL (exit 1). Surowo powyżej.
+- tsc --noEmit, logic-test, tech-tree, research, unit-replace, combat, ai-test, era-war-pairing, ai-ai-alliance-surcharge: NIE PONOWIONO w tej rundzie — brak zmian w gra/src i gra/data; zmieniony jest wyłącznie plik testu live (A3). NIE ZMIERZONO w tej rundzie.
+- dyplo runda2 18/6, runda3 10/17: bez zmian (zakres 1 nie wykonany).
 
-## BLOKADY
-- Decyzja właściciela ABC (patrz niżej) przed zamknięciem ai-army-composition-per-civ.
-- dyplo-bilans runda2 (6 FAIL) i runda3 (17 FAIL) wymagają przepisania zakresu do obowiązującego stanu (runda 4 + e27418db7). Nie zrobione w tej rundzie. Nie kwalifikuje się jako BŁĄD-GRY.
-- ai-ai-treaty-live-proof-wiring: NIE ZMIERZONO (wymaga przebiegu live z Chrome).
+BLOKADY:
+- Zakres 1 (dyplo runda2/3): nie domknięty; wymaga osobnego dispatchu (patrz wyżej).
+- ai-army-composition-per-civ: decyzja właściciela (ABC).
+- hud-moc-warstwa: BŁĄD-GRY kandydat (R-WEB-HUD-ME-MIGRATION-Q1, poza tym tematem).
 
-## PYTANIE ABC DO WŁAŚCICIELA (decyzja progowa)
-Pytanie: po wdrożeniu „garnizon min. 1 nie liczy się jako wręcz" 7 kombinacji (sumer Kamień/Brąz/Żelazo 48,3%; babilonia Brąz/Żelazo 48,3%; asyria Brąz/Żelazo 46,7%) oraz L1–L3 asyria mają udział wręcz poniżej 50% (test „min 50% wręcz"). Opcje:
-- A (rekomendacja operatora): próg min 50% liczyć po armii BEZ garnizonu (próbka rekrutacji). Wymaga zmiany progu w tabeli właściciela (decyzja).
-- B: próg 50% zostaje po całej armii, z garnizonem; wtedy do testu wraca wliczanie garnizonu jako wręcz (cofnięcie tej rundy dla tej części).
-- C: próg 50% zostaje, a zmiana składu AI dla asyrii/sumeru/babilonii (game balance) — osobny temat R-WEB-*, poza tą paczką.
+UWAGI-DLA-ORKIESTRATORA:
+1. Dispatch wymagał świeżego przebiegu live dla A3; nie wykonano (brak nowego bundle w tej rundzie). Analizator uruchomiony na przebiegu z poprzedniej rundy. Jeśli owner wymaga świeżego dowodu, potrzebny osobny krok: build bundle poza repo + runner z --turns 60 --seed 4242.
+2. Dyplo runda2/3 wymaga osobnego dispatchu Operatora (zakres pracy > jedna runda).
+3. Brak nowych sesji/zadań tworzonych przez Operatora (zakaz respektowany).
 
-## UWAGI-DLA-ORKIESTRATORA (poza zakresem, nie robione)
-1. gra/tools/rydwan-konnica-x2-test.cjs: 4 niezgodności Rydwan (woły) Surowiec „Brąz" vs „Drewno" — kandydat R-WEB-* (dane lub test; nie związane z Konnicą).
-2. gra/tools/unit-context-card-test.cjs:152,167: komentarz/asercja „Moc pola = 49" dla Konnicy — po decyzji 98 należy przepiąć (poza allowlistą tej rundy; obecnie przechodzi).
-3. Dyplo runda2/runda3 — przepisanie do stanu po e253e64a6 i e27418db7 (bramka kierunkowa pokoju). Osobna runda Operatora (Haiku) z dispatchem zakresowym.
-4. ai-ai-treaty-live-proof-wiring — zaplanować przebieg live (Chrome dostępny: /usr/bin/google-chrome) z katalogiem wyniku.
+TESTY (surowe):
+- ai-ai-treaty-live-proof-wiring-test (analizator, wynik poprzedniej sesji live, po zmianie A3): "Wynik: 4 OK / 0 FAIL", exit 0.
+- ai-ai-treaty-live-proof-wiring-test (mutacja bez dopłaty D na kopii logu): "Wynik: 3 OK / 1 FAIL", exit 1.
+- dyplo-bilans-gate-n-e1-reprodukcja-runda2-test: "=== PODSUMOWANIE: 18 PASS / 6 FAIL ===" (bez zmian).
+- dyplo-bilans-gate-n-e1-reprodukcja-runda3-test: "=== PODSUMOWANIE: 10 PASS / 17 FAIL ===" (bez zmian).
 
-## TESTY (podsumowanie)
-- Zielone po rundzie: hud-moc-warstwa, moc-ranking-rozjazd, granice-relacja-dyplomatyczna, war-epoch-player-first-main-guard, march-attack-queue-persist, wojna-wymuszona-parowanie, ai-player-parity-fixes, hotseat-etap6d-podetap-e-source, naval-water-access-gate, mur-paradoks + wszystkie bramki.
-- Czerwone z przyczyną: ai-army-composition-per-civ (10 FAIL, DECYZJA), dyplo-bilans runda2 (6 FAIL, STARY-PIN do przepisania), dyplo-bilans runda3 (17 FAIL, STARY-PIN nieobjęty).
-- NIE ZMIERZONO: ai-ai-treaty-live-proof-wiring.
-- Żadna asercja nie została osłabiona: zmiany to re-pin wartości, zmiana baz porównania (HEAD -> SHA migracji), rozszerzenie dopuszczalnych wzorców (ME()/isMe) i odwrócenie asercji „różny koszt" -> „taki sam" zgodnie z decyzją 2026-11-19.
-
-RUNDY: 1/5
-NASTĘPNY KROK: (a) owner ABC na progu min 50% (ai-army); (b) runda 2 Operatora: dyplo-bilans runda2/3 przepisanie do stanu po e27418db7 (osobny dispatch); (c) live ai-ai-treaty-live-proof-wiring jako osobny przebieg.
-DEPLOY/PUSH: NIE WYKONANO (operator nie pushuje ani nie integruje; deploy tylko wiki Konnicy po integracji i decyzji orkiestratora).
+RUNDY: 3/5 (zakres 2 zrobiony; zakres 1 do osobnego dispatchu)
+NASTĘPNY KROK: (a) osobny dispatch Operatora na dyplo runda2/3 (re-pin do e27418db7 + mutacje na bieżących needle); (b) opcjonalnie świeży przebieg live A3 (ziarno 4242, 60 tur) po zbudowaniu bundle poza repo; (c) Evaluator rundy 3 po (a)/(b).
+DEPLOY/PUSH: NIE WYKONANO
