@@ -121,7 +121,8 @@ use crate::domain::siege_tactics_unit::{
     effective_flee_threshold, should_rout, side_alive_end, CombatUnit,
 };
 use crate::domain::siege_tactics_walk::{
-    siege_walk_to, DoMoveGate, WalkEvent, WalkUnit, WalkWorld, STEP_GAP_MS,
+    siege_walk_to, walk_after_move, walk_decide, AfterMove, DoMoveGate, WalkDecision, WalkEvent,
+    WalkUnit, WalkWorld, STEP_GAP_MS,
 };
 
 /// Wejście ciała jednostki (web `_activateUnit`): czas trwania i zakończenie.
@@ -1355,6 +1356,28 @@ enum MarchKind {
         threat_ix: Option<usize>,
         threat_cell: (i64, i64),
     },
+    /// MARCH-RESZTA-Q1 (D-MR-1): `_fallBackStep(ru, done)` (`:7228-7243`); callback `finished`, `moveLeft > 0` =
+    /// `_schedule(STEP_GAP_MS)` i kolejne wejście.
+    FallBack,
+    /// MARCH-RESZTA-Q1 (D-MR-1): `_fleeStep(ru, done)` (`:9845-9897`); wejście i callback czytają bieżący stan
+    /// (`finished`, `dead`/`fadingOut`/`removed`, `occByKey`), zejście z pola w chwili pinu.
+    Flee,
+    /// MARCH-RESZTA-Q1 (D-MR-1): `_cavDirectedManeuverStep(ru, done, tgt, desired)` (`:6426-6446`); callback kroku
+    /// decyduje o KOLEJNYM kroku od razu (bez `_schedule`), cel `_cavalryTarget(ru) ?? tgt` z chwili callbacku.
+    CavDirected { tgt: usize, want: HitArc },
+    /// MARCH-RESZTA-Q1 (D-MR-1): `_cavManeuverStep(ru, done, tgt)` (`:6457-6501`); jak wyżej, cel `_cavalryTarget(ru)`.
+    CavManeuver,
+    /// MARCH-RESZTA-Q1 (D-MR-1): krok szarży `_bestChargeStepKey` (`:6403-6409`): jeden `_doMove(ru, nc, nr, done)`,
+    /// `done()` w callbacku kroku.
+    CavCharge,
+    /// MARCH-RESZTA-Q1 (D-MR-1): `_siegeWalkTo(ru, isGoal, done|arrive, undefined, prefRow)` (`:8006-8019`); `isGoal`
+    /// czyta bieżącą zajętość i wieże w chwili wejścia/callbacku; `arrive_base` = callback `arrive` wieży (`:8044-8047`).
+    SiegeWalk {
+        goal: AtkGoal,
+        pref_row: Option<i64>,
+        arrive_base: Option<i64>,
+        wall_col: i64,
+    },
 }
 
 /// MARCH-INCREMENTAL-Q1 (D-MI-1): na co czeka marsz.
@@ -1751,6 +1774,9 @@ pub struct ProdBody<R: RollSource> {
     march: Option<MarchCont>,
     /// MARCH-INCREMENTAL-Q1 (D-MI-1): `done()` marszu do odbioru przez sterownik ([`LoopBody::take_march_done`]).
     march_done: Option<(UnitRef, f64)>,
+    /// MARCH-RESZTA-Q1 (D-MR-1): marsz `_siegeWalkTo` po pierwszym wejściu, przekazywany przez `start` do
+    /// [`Self::march_advance`] po zapisie `pending` (gałęzie atakującego przy murze zwracają [`AtkRun`]).
+    walk_deferred: Option<(MarchCont, MarchNext)>,
 }
 
 /// K5LOOP-WIRING-A (#369): miejsce jednego ciosu `_singleBlow(attacker, defender, ranged)` w chwili ciosu.
@@ -2434,6 +2460,7 @@ impl<R: RollSource> ProdBody<R> {
             march_incremental: false,
             march: None,
             march_done: None,
+            walk_deferred: None,
             terrain: None,
             units,
             scene,
@@ -3445,7 +3472,7 @@ impl<R: RollSource> ProdBody<R> {
                 });
                 tgt.map_or(MarchNext::Done, MarchNext::Shot)
             }
-            MarchKind::RangedForward | MarchKind::Advance => {
+            _ => {
                 if st.finished {
                     return MarchNext::Done;
                 }
@@ -3485,6 +3512,12 @@ impl<R: RollSource> ProdBody<R> {
             MarchNext::Done | MarchNext::Attack(_) | MarchNext::Shot(_) => None,
         };
         if let Some((stage, ms)) = wait {
+            // MARCH-RESZTA-Q1 (N1 MARCH-INCREMENTAL): jeden slot marszu wystarcza, bo aktywacje są sekwencyjne (marsz
+            // innej jednostki nie startuje przed `done()` bieżącego); `march_fire` zdejmuje slot przed kolejnym etapem.
+            debug_assert!(
+                self.march.is_none(),
+                "drugi marsz krok po kroku w jednym slocie ProdBody::march (N1)"
+            );
             let id = self.next_timer;
             self.next_timer += 1;
             self.timers.push((ms, id));
@@ -3530,17 +3563,396 @@ impl<R: RollSource> ProdBody<R> {
     }
 
     /// MARCH-INCREMENTAL-Q1 (D-MI-1): odroczone wywołanie marszu ([`LoopBody::fire_timer`]).
-    fn march_fire(&mut self, st: &TurnSeqState) {
+    fn march_fire(&mut self, st: &mut TurnSeqState) {
         let Some(mut c) = self.march.take() else {
             return;
         };
         let next = match (c.stage, c.kind) {
             (MarchStage::StepEnd, MarchKind::Advance) => self.advance_step_end(st, &c),
-            (MarchStage::StepEnd, _) => self.ranged_step_end(st, &mut c),
             (MarchStage::Gap, MarchKind::Advance) => self.advance_enter(st, &mut c),
+            (MarchStage::StepEnd, MarchKind::FallBack) => self.fall_back_step_end(st, &c),
+            (MarchStage::Gap, MarchKind::FallBack) => self.fall_back_enter(st, &mut c),
+            (MarchStage::StepEnd, MarchKind::Flee) => self.flee_step_end(st, &c),
+            (MarchStage::Gap, MarchKind::Flee) => self.flee_enter(st, &mut c),
+            (
+                MarchStage::StepEnd,
+                MarchKind::CavDirected { .. } | MarchKind::CavManeuver | MarchKind::CavCharge,
+            ) => self.cav_step_end(st, &mut c),
+            (MarchStage::StepEnd, MarchKind::SiegeWalk { .. }) => self.walk_step_end(st, &c),
+            (MarchStage::Gap, MarchKind::SiegeWalk { .. }) => self.walk_enter(st, &mut c),
+            (MarchStage::StepEnd, _) => self.ranged_step_end(st, &mut c),
+            // Jazda nie planuje `_schedule` (kolejny krok w callbacku), więc przerwa jazdy nie występuje.
+            (MarchStage::Gap, MarchKind::CavDirected { .. } | MarchKind::CavManeuver | MarchKind::CavCharge) => {
+                MarchNext::Done
+            }
             (MarchStage::Gap, _) => self.ranged_forward_enter(st, &mut c),
         };
         self.march_advance(c, next);
+    }
+
+    /// MARCH-RESZTA-Q1 (D-MR-1): jedno wejście `_fallBackStep(ru, done)` (`:7228-7238`) w chwili `self.now`: preludium
+    /// (`finished`, `dead`/`fadingOut`, `moveLeft <= 0`) i krok `_bestFallBackStep` z BIEŻĄCYCH pozycji wrogów i zajętości
+    /// (te same klocki K5DOC-T7b co [`Self::fall_back`]).
+    fn fall_back_enter(&mut self, st: &TurnSeqState, c: &mut MarchCont) -> MarchNext {
+        let unit = c.unit;
+        let ix = side_ix(unit.side);
+        let seq = st.unit(unit).c;
+        self.mover_routed = seq.routed;
+        let mounted = self.units[ix][unit.idx].activate.mounted;
+        let decision = {
+            let (mq, mr) = self.cell_of(unit);
+            let mut cells: Vec<PathTile> = self
+                .live_enemy_cells(unit, st)
+                .into_iter()
+                .map(|(_, q, r)| (q as f64, r as f64))
+                .collect();
+            let mut nearest: Option<(usize, f64)> = None;
+            for (k, t) in cells.iter().enumerate() {
+                let d = (mq as f64 - t.0).abs() + (mr as f64 - t.1).abs();
+                if nearest.is_none_or(|(_, bd)| d < bd) {
+                    nearest = Some((k, d));
+                }
+            }
+            if let Some((k, _)) = nearest {
+                let n = cells.remove(k);
+                cells.insert(0, n);
+            }
+            let Some(terrain) = self.terrain.as_deref() else {
+                self.unported.push((unit, "odwrot-brak-terenu"));
+                return MarchNext::Done;
+            };
+            let world = ProdFallBackWorld {
+                enemies: cells,
+                occ: &self.occ_by_key,
+                terrain,
+                mounted,
+            };
+            fall_back_step_decide(
+                &world,
+                st.finished,
+                &FallBackUnit {
+                    id: unit_tag(unit),
+                    q: mq as f64,
+                    r: mr as f64,
+                    is_atk: unit.side == BattleSide::Attacker,
+                    dead: seq.dead,
+                    fading_out: seq.fading_out,
+                    move_left: c.move_left,
+                },
+            )
+        };
+        let FallBackDecision::Move { col, row } = decision else {
+            return MarchNext::Done;
+        };
+        let enemies = self.enemies_of(unit.side, st);
+        self.march_move(c, int_tile((col, row)), &enemies, "odwrot-brak-terenu")
+    }
+
+    /// MARCH-RESZTA-Q1 (D-MR-1): callback kroku `_fallBackStep` (`:7239-7242`): `finished` = koniec, `moveLeft > 0` =
+    /// `_schedule(STEP_GAP_MS)`, inaczej koniec (`NaN` kończy).
+    fn fall_back_step_end(&mut self, st: &TurnSeqState, c: &MarchCont) -> MarchNext {
+        match fall_back_after_move(st.finished, c.move_left) {
+            AfterStep::Done => MarchNext::Done,
+            AfterStep::Schedule { .. } => MarchNext::Gap,
+        }
+    }
+
+    /// MARCH-RESZTA-Q1 (D-MR-1): jedno wejście `_fleeStep(ru, done)` (`:9845-9882`) w chwili `self.now` na stanie `st`
+    /// (pierwsze wejście: kopia stanu z `start`, patrz [`Self::flee_after`]; kolejne: stan sterownika). Preludium,
+    /// krawędź własnej strony = `_removeUnitFromScene` + `_shakeAlliesOnLoss`, pole docelowe z BIEŻĄCEJ zajętości,
+    /// zablokowanie (`fleeStuck`), krok `_doMove`. Te same reguły co [`Self::flee_run`].
+    fn flee_enter(&mut self, st: &mut TurnSeqState, c: &mut MarchCont) -> MarchNext {
+        let unit = c.unit;
+        let ix = side_ix(unit.side);
+        let atk = unit.side == BattleSide::Attacker;
+        let seq = st.unit(unit).c;
+        // `_siegeApproachRestricted` (`:7953`): uciekająca jednostka (`ru.routed`) nigdy nie dostaje odmowy bramki.
+        self.mover_routed = true;
+        if st.finished || seq.dead || seq.fading_out || seq.removed || c.move_left <= 0.0 {
+            return MarchNext::Done;
+        }
+        let (q, r) = self.cell_of(unit);
+        if Self::flee_at_home(atk, q) {
+            self.leave_field(st, unit);
+            return MarchNext::Done;
+        }
+        let mounted = self.units[ix][unit.idx].activate.mounted;
+        let nc = q + if atk { -1 } else { 1 };
+        let Some(terrain) = self.terrain.as_deref() else {
+            self.unported.push((unit, "ucieczka-routed"));
+            return MarchNext::Done;
+        };
+        let target = [0_i64, 1, -1, 2, -2].into_iter().find_map(|dr| {
+            let nr = r + dr;
+            if !(0..BF_COLS).contains(&nc) || !(0..BF_ROWS).contains(&nr) {
+                return None;
+            }
+            if self
+                .occ_by_key
+                .contains_key(&cell_key(nc as f64, nr as f64))
+            {
+                return None;
+            }
+            if !unit_move_cost(terrain, mounted, nc as f64, nr as f64).is_finite() {
+                return None;
+            }
+            Some((nc, nr))
+        });
+        let Some(tile) = target else {
+            let stuck = &mut self.flee_stuck[ix][unit.idx];
+            *stuck += 1.0;
+            if *stuck >= 2.0 {
+                self.leave_field(st, unit);
+            }
+            return MarchNext::Done;
+        };
+        self.flee_stuck[ix][unit.idx] = 0.0;
+        let enemies = self.enemies_of(unit.side, st);
+        self.march_move(c, tile, &enemies, "ucieczka-routed")
+    }
+
+    /// MARCH-RESZTA-Q1 (D-MR-1): callback kroku `_fleeStep` (`:9884-9896`) na stanie sterownika: `finished`,
+    /// `removed`/`dead` (np. zabity przez wieżę w trakcie kroku) = koniec; krawędź = zejście z pola; `moveLeft > 0` =
+    /// `_schedule(STEP_GAP_MS)`.
+    fn flee_step_end(&mut self, st: &mut TurnSeqState, c: &MarchCont) -> MarchNext {
+        let unit = c.unit;
+        let seq = st.unit(unit).c;
+        if st.finished || seq.removed || seq.dead {
+            return MarchNext::Done;
+        }
+        if Self::flee_at_home(unit.side == BattleSide::Attacker, self.cell_of(unit).0) {
+            self.leave_field(st, unit);
+            return MarchNext::Done;
+        }
+        if c.move_left <= 0.0 || c.move_left.is_nan() {
+            MarchNext::Done
+        } else {
+            MarchNext::Gap
+        }
+    }
+
+    /// MARCH-RESZTA-Q1 (D-MR-1): pierwsze wejście `_fleeStep` z `_activateUnit` (`:6055`, `:6117`) na kopii stanu `st`
+    /// (wynik trafia do [`Self::flee_after`]); `moveLeft` marszu idzie przez `pending` ([`Self::march_advance`]), NIE
+    /// przez kopię, więc łączenie w `complete` nie widzi go jako zmiany ucieczki.
+    fn flee_first(&mut self, unit: UnitRef, st: &mut TurnSeqState) -> (MarchCont, MarchNext) {
+        let mut c = MarchCont {
+            unit,
+            kind: MarchKind::Flee,
+            stage: MarchStage::Gap,
+            id: 0,
+            move_left: st.unit(unit).c.move_left,
+            moved: false,
+            prev: None,
+        };
+        let next = self.flee_enter(st, &mut c);
+        (c, next)
+    }
+
+    /// `_fleeStep` (`:9851-9852`, `:9888`): krawędź własnej strony (atak `q <= 0`, obrona `q >= BF_COLS - 1`).
+    fn flee_at_home(atk: bool, q: i64) -> bool {
+        if atk {
+            q <= 0
+        } else {
+            q >= BF_COLS - 1
+        }
+    }
+
+    /// MARCH-RESZTA-Q1 (D-MR-1): pierwsze wejście `_cavalryAction(ru, done)` (`:6372-6412`) w chwili `self.now`; te same
+    /// klocki K5DOC-T6 co [`Self::cavalry_action`]. Krok manewru = marsz krok po kroku (callback [`Self::cav_step_end`]).
+    fn cav_enter(&mut self, st: &TurnSeqState, c: &mut MarchCont) -> MarchNext {
+        let unit = c.unit;
+        let ix = side_ix(unit.side);
+        let mounted = self.units[ix][unit.idx].activate.mounted;
+        let reach = self.reach_of(unit);
+        let en = self.combatants(opposite(unit.side), st);
+        let enemies = self.enemies_of(unit.side, st);
+        let gate = |ml: f64| i64::from(ml > 0.0 || ml.is_nan());
+        let me = self.combatant(unit, st);
+        if let Some(i) = cav_adjacent_non_spear(&me, &en) {
+            return MarchNext::Attack(i);
+        }
+        let Some(tgt) = cavalry_target(&me, &en) else {
+            return MarchNext::Done;
+        };
+        let occ = self.occupied_tiles();
+        if let Some(want) = desired_hit_for_direction(self.attack_direction[ix][unit.idx]) {
+            let step = self
+                .with_cav_terrain(unit, mounted, reach, &en, |ct| {
+                    cav_directed_maneuver_step(&me, &en, tgt, want, gate(c.move_left), &occ, ct)
+                })
+                .0;
+            if let Some(s) = step {
+                c.kind = MarchKind::CavDirected { tgt, want };
+                return self.march_move(c, s, &enemies, "kawaleria-brak-terenu");
+            }
+        }
+        let step = self
+            .with_cav_terrain(unit, mounted, reach, &en, |ct| {
+                cav_maneuver_step(&me, &en, tgt, gate(c.move_left), &occ, ct)
+            })
+            .0;
+        if let Some(s) = step {
+            c.kind = MarchKind::CavManeuver;
+            return self.march_move(c, s, &enemies, "kawaleria-brak-terenu");
+        }
+        if let Some((i, _)) = enemies_of_cmb(&en)
+            .into_iter()
+            .find(|(_, e)| (me.q - e.q).abs() + (me.r - e.r).abs() == 1)
+        {
+            return MarchNext::Attack(i);
+        }
+        let charge = self
+            .with_cav_terrain(unit, mounted, reach, &en, |ct| {
+                best_charge_step(&me, &en, tgt, &occ, ct)
+            })
+            .0;
+        match charge {
+            Some(s) if c.move_left > 0.0 => {
+                c.kind = MarchKind::CavCharge;
+                self.march_move(c, s, &enemies, "kawaleria-brak-terenu")
+            }
+            _ => MarchNext::Done,
+        }
+    }
+
+    /// MARCH-RESZTA-Q1 (D-MR-1): callback kroku jazdy w chwili końca kroku (faza kroków klatki): C-FLANK
+    /// (`:6436-6443`) i manewr (`:6492-6499`): `finished` = koniec, dobry sąsiad = koniec, `moveLeft > 0` = kolejny krok
+    /// od razu (nowy `_doMove` z callbacku, BEZ `_schedule`) z celem i zajętością z TEJ chwili; szarża = `done`.
+    fn cav_step_end(&mut self, st: &TurnSeqState, c: &mut MarchCont) -> MarchNext {
+        let unit = c.unit;
+        if st.finished || c.kind == MarchKind::CavCharge {
+            return MarchNext::Done;
+        }
+        let ix = side_ix(unit.side);
+        let mounted = self.units[ix][unit.idx].activate.mounted;
+        let reach = self.reach_of(unit);
+        let en = self.combatants(opposite(unit.side), st);
+        let me = self.combatant(unit, st);
+        // `ru.moveLeft > 0` (`:6439`/`:6496`): `NaN` kończy.
+        if cav_adjacent_non_spear(&me, &en).is_some() || c.move_left <= 0.0 || c.move_left.is_nan() {
+            return MarchNext::Done;
+        }
+        let gate = |ml: f64| i64::from(ml > 0.0 || ml.is_nan());
+        let occ = self.occupied_tiles();
+        let step = match c.kind {
+            MarchKind::CavDirected { tgt, want } => {
+                let t2 = cavalry_target(&me, &en).unwrap_or(tgt);
+                c.kind = MarchKind::CavDirected { tgt: t2, want };
+                self.with_cav_terrain(unit, mounted, reach, &en, |ct| {
+                    cav_directed_maneuver_step(&me, &en, t2, want, gate(c.move_left), &occ, ct)
+                })
+                .0
+            }
+            _ => {
+                let Some(t2) = cavalry_target(&me, &en) else {
+                    return MarchNext::Done;
+                };
+                self.with_cav_terrain(unit, mounted, reach, &en, |ct| {
+                    cav_maneuver_step(&me, &en, t2, gate(c.move_left), &occ, ct)
+                })
+                .0
+            }
+        };
+        let Some(s) = step else {
+            return MarchNext::Done;
+        };
+        let enemies = self.enemies_of(unit.side, st);
+        self.march_move(c, s, &enemies, "kawaleria-brak-terenu")
+    }
+
+    /// MARCH-RESZTA-Q1 (D-MR-1): `isGoal`/`_bfsFirstStep` marszu `_siegeWalkTo` z bieżącego stanu (świat K1b
+    /// [`ProdSiegeWalk`] tylko do odczytu: decyzja [`walk_decide`] albo callback [`walk_after_move`]).
+    fn walk_query<T>(
+        &mut self,
+        st: &TurnSeqState,
+        c: &MarchCont,
+        f: impl FnOnce(&ProdSiegeWalk<'_, R>, &WalkUnit) -> T,
+    ) -> (T, bool) {
+        let MarchKind::SiegeWalk {
+            goal,
+            pref_row,
+            wall_col,
+            ..
+        } = c.kind
+        else {
+            unreachable!("walk_query tylko dla marszu _siegeWalkTo");
+        };
+        let unit = c.unit;
+        let a = self.units[side_ix(unit.side)][unit.idx].activate.clone();
+        let seq = st.unit(unit).c;
+        let wu = WalkUnit {
+            q: a.q,
+            r: a.r,
+            move_left: c.move_left,
+            dead: seq.dead,
+            fading_out: seq.fading_out,
+        };
+        let scene = self.atk_scene(wall_col);
+        let now0 = self.now;
+        let world = ProdSiegeWalk {
+            body: self,
+            unit,
+            scene,
+            goal,
+            pref_row,
+            finished: st.finished,
+            enemies: &[],
+            mounted: a.mounted,
+            now0,
+            moves: 0,
+            missing: Cell::new(false),
+        };
+        let out = f(&world, &wu);
+        let missing = world.missing.get();
+        (out, missing)
+    }
+
+    /// MARCH-RESZTA-Q1 (D-MR-1): koniec marszu `_siegeWalkTo` = `done`/`arrive` (`:8044-8047`: `if (ru.q >= wallBase)
+    /// towerAtWallRows.add(ru.r)`), w chwili `done()` pinu.
+    fn walk_done(&mut self, c: &MarchCont) -> MarchNext {
+        if let MarchKind::SiegeWalk {
+            arrive_base: Some(base),
+            ..
+        } = c.kind
+        {
+            let (q, r) = self.cell_of(c.unit);
+            if q >= base {
+                self.tower_at_wall_rows.insert(r);
+            }
+        }
+        MarchNext::Done
+    }
+
+    /// MARCH-RESZTA-Q1 (D-MR-1): jedno wejście `_siegeWalkTo` (`:8009-8015`) w chwili `self.now`: preludium, `isGoal`,
+    /// `_bfsFirstStep` na BIEŻĄCEJ zajętości, `_doMove` (bramka muru = `moveLeft = 0; done()`).
+    fn walk_enter(&mut self, st: &TurnSeqState, c: &mut MarchCont) -> MarchNext {
+        // `_siegeApproachRestricted` (`:7953`) czyta `ru.routed` w chwili kroku.
+        self.mover_routed = st.unit(c.unit).c.routed;
+        let (decision, missing) = self.walk_query(st, c, |w, u| walk_decide(w, u));
+        if missing {
+            self.unported.push((c.unit, "marsz-brak-terenu"));
+            return MarchNext::Done;
+        }
+        let WalkDecision::Move { col, row } = decision else {
+            return self.walk_done(c);
+        };
+        // Teren był czytany w decyzji (`passable_free`), więc `march_move` nie zgłasza tu braku terenu; `Done` = odmowa
+        // bramki muru (`:8689-8692`: `moveLeft = 0; done()` = `arrive`).
+        let enemies = self.enemies_of(c.unit.side, st);
+        match self.march_move(c, (col, row), &enemies, "marsz-brak-terenu") {
+            MarchNext::Done => self.walk_done(c),
+            next => next,
+        }
+    }
+
+    /// MARCH-RESZTA-Q1 (D-MR-1): callback kroku `_siegeWalkTo` (`:8016-8017`): `finished`, `dead`, `isGoal` z nowego pola
+    /// (bieżąca zajętość), `moveLeft <= 0` = `done`; inaczej `_schedule(STEP_GAP_MS)`.
+    fn walk_step_end(&mut self, st: &TurnSeqState, c: &MarchCont) -> MarchNext {
+        let (after, _) = self.walk_query(st, c, |w, u| walk_after_move(w, u));
+        match after {
+            AfterMove::Done => self.walk_done(c),
+            AfterMove::ScheduleNext { .. } => MarchNext::Gap,
+        }
     }
 
     fn advance_unit(&self, unit: UnitRef, move_left: f64) -> AdvanceUnit {
@@ -4944,7 +5356,13 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 return 0.0;
             }
             let mut st2 = st.clone();
-            let dur = self.flee_run(unit, &mut st2);
+            // MARCH-RESZTA-Q1 (D-MR-1): `_fleeStep` krok po kroku; pierwsze wejście synchronicznie na kopii stanu.
+            let flee_march = self.march_incremental.then(|| self.flee_first(unit, &mut st2));
+            let dur = if flee_march.is_some() {
+                0.0
+            } else {
+                self.flee_run(unit, &mut st2)
+            };
             self.flee_after = Some(ProdFleeAfter {
                 unit,
                 before_atk: st.atk.clone(),
@@ -4965,6 +5383,10 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 flee: true,
                 gate_breach: false,
             });
+            if let Some((c, next)) = flee_march {
+                self.march_advance(c, next);
+                return self.march_start_dur();
+            }
             return dur;
         }
         // Obrona r2 (E2-1a): `_applyTerrainRange(ru)` na początku aktywacji (`_activateUnit` `:6064`), po strażach
@@ -5220,7 +5642,13 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             }
             // `_siegeApproachRestricted` (`:7953`) czyta `ru.routed` w chwili kroku, czyli PO `_startRout` (`:6116`).
             self.mover_routed = st2.unit(unit).c.routed;
-            let dur = self.flee_run(unit, &mut st2);
+            // MARCH-RESZTA-Q1 (D-MR-1): `_fleeStep` krok po kroku; pierwsze wejście synchronicznie na kopii stanu.
+            let flee_march = self.march_incremental.then(|| self.flee_first(unit, &mut st2));
+            let dur = if flee_march.is_some() {
+                0.0
+            } else {
+                self.flee_run(unit, &mut st2)
+            };
             self.flee_after = Some(ProdFleeAfter {
                 unit,
                 before_atk: st.atk.clone(),
@@ -5231,6 +5659,10 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             pend.start_rout = false;
             pend.flee = true;
             self.pending[ix][unit.idx] = Some(pend);
+            if let Some((c, next)) = flee_march {
+                self.march_advance(c, next);
+                return self.march_start_dur();
+            }
             return dur;
         }
         // K5DOC-T8: krok doktryny (`:6092-6099`). Maszyna kończy aktywację po `DoctrineStep` (`return`), więc nie ma
@@ -5302,6 +5734,11 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 pend.move_left = run.move_left;
                 pend.gate_breach = std::mem::take(&mut self.pending_gate_breach);
                 self.pending[ix][unit.idx] = Some(pend);
+                // MARCH-RESZTA-Q1 (D-MR-1): marsz `_siegeWalkTo` krok po kroku.
+                if let Some((c, next)) = self.walk_deferred.take() {
+                    self.march_advance(c, next);
+                    return self.march_start_dur();
+                }
                 return run.dur;
             }
         }
@@ -5314,6 +5751,31 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 self.pending[ix][unit.idx] = Some(pend);
                 return 0.0;
             }
+            // MARCH-RESZTA-Q1 (D-MR-1): `_cavalryAction` krok po kroku (pierwsze wejście synchronicznie, jak pin).
+            if self.march_incremental {
+                let mut c = MarchCont {
+                    unit,
+                    kind: MarchKind::CavManeuver,
+                    stage: MarchStage::Gap,
+                    id: 0,
+                    move_left: st.unit(unit).c.move_left,
+                    moved: false,
+                    prev: None,
+                };
+                let next = self.cav_enter(st, &mut c);
+                if c.moved {
+                    pend.move_left = Some(c.move_left);
+                }
+                if let MarchNext::Attack(t) = next {
+                    pend.attack = Some(t);
+                } else {
+                    self.pending[ix][unit.idx] = Some(pend);
+                    self.march_advance(c, next);
+                    return self.march_start_dur();
+                }
+            }
+        }
+        if cavalry && !self.march_incremental {
             let (dur, move_left, attack) = self.cavalry_action(unit, st);
             pend.move_left = move_left;
             match attack {
@@ -5372,6 +5834,22 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             }
             self.pending[ix][unit.idx] = Some(pend);
             return dur;
+        }
+        // MARCH-RESZTA-Q1 (D-MR-1): `_fallBackStep` krok po kroku (pierwsze wejście synchronicznie, jak pin).
+        if fallback && self.march_incremental {
+            let mut c = MarchCont {
+                unit,
+                kind: MarchKind::FallBack,
+                stage: MarchStage::Gap,
+                id: 0,
+                move_left: st.unit(unit).c.move_left,
+                moved: false,
+                prev: None,
+            };
+            self.pending[ix][unit.idx] = Some(pend);
+            let next = self.fall_back_enter(st, &mut c);
+            self.march_advance(c, next);
+            return self.march_start_dur();
         }
         if fallback {
             let (dur, move_left) = self.fall_back(unit, st);
@@ -5458,9 +5936,17 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 fa.unit, unit,
                 "complete innej jednostki niz start ucieczki (kontrakt flee_after)"
             );
+            // MARCH-RESZTA-Q1 (D-MR-1): `moveLeft` ucieczki krok po kroku (poza kopią stanu, patrz [`Self::flee_first`]).
+            let flee_move_left = pend.move_left;
+            let apply_move_left = |st: &mut TurnSeqState| {
+                if let Some(ml) = flee_move_left {
+                    unit_cu_mut(st, unit).move_left = ml;
+                }
+            };
             if same_seq_units(&st.atk, &fa.before_atk) && same_seq_units(&st.def, &fa.before_def) {
                 st.atk = fa.atk;
                 st.def = fa.def;
+                apply_move_left(st);
                 return;
             }
             // K5LOOP-TAGS-REST: przy murze zegar sterownika (trafienia wież `TowerHit`, odroczone wywołania ciała
@@ -5485,6 +5971,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             if conflict {
                 self.unported.push((unit, "ucieczka-konflikt-zegara"));
             }
+            apply_move_left(st);
             return;
         }
         // PIN2-PROBE-Q1 (D-PIN2-1): pin zmienia `ru.morale` na początku `_activateUnit` (okrążenie, `:6103-6117`) od
@@ -6561,6 +7048,32 @@ impl<R: RollSource> ProdBody<R> {
         enemies: &[EnemyRef],
     ) -> AtkRun {
         let ix = side_ix(unit.side);
+        // MARCH-RESZTA-Q1 (D-MR-1): `_siegeWalkTo` krok po kroku (pierwsze wejście synchronicznie, jak pin); dalsze
+        // etapy prowadzi [`Self::march_fire`], a `start` przekazuje marsz po zapisie `pending` ([`Self::walk_deferred`]).
+        if self.march_incremental {
+            let mut c = MarchCont {
+                unit,
+                kind: MarchKind::SiegeWalk {
+                    goal,
+                    pref_row,
+                    arrive_base,
+                    wall_col,
+                },
+                stage: MarchStage::Gap,
+                id: 0,
+                move_left: st.unit(unit).c.move_left,
+                moved: false,
+                prev: None,
+            };
+            let next = self.walk_enter(st, &mut c);
+            let move_left = c.moved.then_some(c.move_left);
+            self.walk_deferred = Some((c, next));
+            return AtkRun {
+                dur: 0.0,
+                move_left,
+                tag: None,
+            };
+        }
         let a = self.units[ix][unit.idx].activate.clone();
         let seq = st.unit(unit).c;
         let mut wu = WalkUnit {
