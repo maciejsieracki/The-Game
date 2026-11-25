@@ -743,6 +743,68 @@ fn landat_tb_boulder_on_frame_grid_is_played_like_nominal() {
     }
 }
 
+/// Obrona r1 FQ-SPEED-Q1 (Z1, mutant R5): the `Boulder` branch checks `land_at` on the grid of
+/// [`PlaybackOpts::frame_ms`], not of the constant 16 ms. `_schedule(700)` (`:7555`) fires in the first frame with
+/// `vNow >= due`: at `speedMul = 8` / `16` (frame 128 / 256 ms, `FF_STEP_MS = 16 * speedMul`, `:9419`) that is
+/// `t0 + 768`, a moment the 16 ms grid does not contain (16 ms: `t0 + 704`; at x4 both grids give 704). The
+/// session-frame playback plays `t0 + 768` like the nominal landing and rejects the 16 ms moment `t0 + 704`; the 16 ms
+/// playback rejects `t0 + 768`. A rejected stone leaves the scene untouched.
+#[test]
+fn fq_speed_boulder_lands_on_the_session_frame_grid() {
+    let (_, p) = base();
+    let cat = uid("atk20");
+    let t0 = 30_720.0;
+    let run = |frame_ms: f64, land_at: f64| {
+        let mut q = p.clone();
+        let mut pb = BattlePlayback::new(
+            &q,
+            PlaybackOpts {
+                frame_ms,
+                ..PlaybackOpts::default()
+            },
+        );
+        pb.push_actions(&[act(
+            t0,
+            K::Boulder {
+                id: cat,
+                row: 70,
+                land_at,
+            },
+        )])
+        .expect("push");
+        let r = pb.play_until(&mut q, t0 + 300.0, 5.0);
+        (q, pb, r)
+    };
+    for frame in [128.0, 256.0] {
+        let (nominal, pb_n, rn) = run(frame, t0 + BOULDER_MS);
+        assert_eq!(rn, Ok(()), "frame {frame}: nominal landing accepted");
+        let (grid, pb_g, rg) = run(frame, t0 + 768.0);
+        assert_eq!(rg, Ok(()), "frame {frame}: frame-grid landing accepted");
+        assert_eq!(pb_g.boulders().len(), 1);
+        assert_eq!(pb_g.calls(), pb_n.calls());
+        assert!(
+            grid == nominal,
+            "frame {frame}: same scene as the nominal landing"
+        );
+    }
+    for (frame, land) in [(128.0, 704.0), (256.0, 704.0), (16.0, 768.0)] {
+        let (bad, pb_b, rb) = run(frame, t0 + land);
+        assert_eq!(
+            rb,
+            Err(PlaybackError::BoulderLandAt {
+                t0,
+                land_at: t0 + land
+            }),
+            "frame {frame} land {land}"
+        );
+        assert!(pb_b.boulders().is_empty(), "frame {frame} land {land}");
+        assert!(
+            bad == p,
+            "frame {frame} land {land}: nothing reached the scene"
+        );
+    }
+}
+
 /// The flight of the fixture (`flee`, `_fleeStep` `:9845-9893`): the rout turn, two walking steps and the removal at
 /// the end of the last walk (`done()` → `_removeUnitFromScene`), then the ripple `Shaken` of an ally: the played scene
 /// equals the pin-call scene at every web frame and the positions equal the web vectors.

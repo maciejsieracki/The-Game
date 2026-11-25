@@ -432,6 +432,20 @@ function runScenario(sc) {
   const traced = !!process.env.WIRING_A_TRACE;
   const mode = traced && process.env.WIRING_A_MODE ? process.env.WIRING_A_MODE : sc.mode;
   const frameMs = traced && process.env.WIRING_A_FRAME ? Number(process.env.WIRING_A_FRAME) : 16;
+  // FQ-SPEED-Q1 (pomiar predkosci, tylko kandydaci `WIRING_A_EXTRA`/`WIRING_A_SWEEP_FRAME`): `speedMul` sceny ustawiany
+  // METODA PINU `_setSpeedIdx` (`:9518-9527`; ta sama co przycisk `_cycleSpeed` `:9536` i panel ± `_adjustSpeedIdx`
+  // `:9531-9533`) przed `play()`; przewijanie liczy wtedy `FF_STEP_MS = _scaledWallDelta(16) = 16 * speedMul` (`:9419`),
+  // czas rzeczywisty `vNow += clamp(dw, 0, 100) * speedMul` (`:9500-9515`). Tekst pinu i strażnik SHA-256 bez zmian.
+  if (sc.speedMul != null) {
+    const idx = BattleScene.SPEED_STEPS.indexOf(sc.speedMul);
+    if (idx < 0) throw new Error('speedMul poza SPEED_STEPS: ' + sc.name + ' ' + sc.speedMul);
+    bs._setSpeedIdx(idx);
+    if (bs.speedMul !== sc.speedMul || bs.speedIdx !== idx) throw new Error('_setSpeedIdx: ' + sc.name);
+  }
+  // FQ-SPEED-Q1: zmiana predkosci w trakcie bitwy (`speedAt = { round, speedMul }`, tylko czas rzeczywisty): `_setSpeedIdx`
+  // miedzy klatkami rAF (jak klik gracza), w pierwszej klatce z `roundNo >= round`.
+  let speedAtDone = false;
+  if (sc.speedAt != null && sc.mode !== 'realtime') throw new Error('speedAt tylko dla czasu rzeczywistego: ' + sc.name);
   bs.play((r) => { res = r; });
   if (mode === 'skip') bs.skip();
   let t = 0;
@@ -447,6 +461,12 @@ function runScenario(sc) {
   const stopRound = traced && process.env.WIRING_A_STOP_ROUND ? Number(process.env.WIRING_A_STOP_ROUND) : Infinity;
   while (!bs.finished && frames < MAX_FRAMES) {
     if (bs.roundNo > stopRound) { console.error(`STOP r${bs.roundNo}`); process.exit(0); }
+    if (sc.speedAt != null && !speedAtDone && bs.roundNo >= sc.speedAt.round) {
+      speedAtDone = true;
+      const idx = BattleScene.SPEED_STEPS.indexOf(sc.speedAt.speedMul);
+      if (idx < 0) throw new Error('speedAt.speedMul poza SPEED_STEPS: ' + sc.name);
+      bs._setSpeedIdx(idx);
+    }
     t += frameMs;
     frames += 1;
     const q = rafQ;
@@ -461,6 +481,8 @@ function runScenario(sc) {
     name: sc.name,
     mode: sc.mode,
     ...(sc.ffStepMs != null ? { frameMs: sc.ffStepMs } : {}),
+    ...(sc.speedMul != null ? { speedMul: sc.speedMul } : {}),
+    ...(sc.speedAt != null ? { speedAt: sc.speedAt, speedAtApplied: speedAtDone } : {}),
     seed: sc.seed,
     battleIndex: sc.battleIndex ?? 0,
     input: {
@@ -479,12 +501,53 @@ function runScenario(sc) {
   };
 }
 
+// FQ-SPEED-Q1: wektory predkosci bitwy (`WIRING_A_SPEED_VECTORS=32,64,...` = klatki pinu 16 * speedMul): kazdy scenariusz
+// `SCENARIOS` z klatka produkcyjna (bez bliźniakow `ffStepMs`) liczony przy `speedMul = klatka / 16` ustawionym metoda pinu
+// `_setSpeedIdx` przed `play()`. Zapis WYLACZNIE `speed_vectors.json` (zwiezle: nazwa scenariusza, tryb, `speedMul`,
+// `expect`; wejscie test bierze z `vectors.json` po nazwie), `vectors.json` i `pin_data.json` bez zmian.
+if (process.env.WIRING_A_SPEED_VECTORS) {
+  const tS = Date.now();
+  const frames = process.env.WIRING_A_SPEED_VECTORS.split(',').map(Number);
+  const speedVectors = [];
+  for (const F of frames) {
+    for (const sc0 of SCENARIOS) {
+      if (sc0.ffStepMs != null) continue;
+      const v = runScenario({ ...sc0, speedMul: F / 16 });
+      speedVectors.push({ name: sc0.name, mode: sc0.mode, speedMul: F / 16, expect: v.expect });
+      console.error(`x${F / 16} ${sc0.name}: ${v.expect.winner} tura ${v.expect.roundNo} rzuty ${v.expect.rollsDrawn} (${Date.now() - tS} ms)`);
+    }
+  }
+  const shaS = hash.digest('hex');
+  if (shaS !== EXPECTED_SHA256) throw new Error('straznik SHA-256 pinu: ' + shaS + ' != ' + EXPECTED_SHA256);
+  const txt = JSON.stringify({ pin: PIN, pinSha256: shaS, frames, vectors: speedVectors }, null, 1) + '\n';
+  writeFileSync(join(here, 'p6_k5loop_wiring_a_pin_vectors', 'speed_vectors.json'), txt);
+  console.log(createHash('md5').update(txt).digest('hex') + '  speed_vectors.json');
+  process.exit(0);
+}
+
 const t0 = Date.now();
 const vectors = [];
 // PIN2-PROBE-Q1: kandydaci scenariuszy (diagnostyka, np. przy szukaniu wektorow zabijajacych mutanty): `WIRING_A_EXTRA`
 // = plik JSON z lista scenariuszy w formacie `SCENARIOS`, wynik do `WIRING_A_OUT` (NIE do katalogu wektorow).
-const extra = process.env.WIRING_A_EXTRA ? JSON.parse(readFileSync(process.env.WIRING_A_EXTRA, 'utf8')) : null;
-for (const sc of extra ?? SCENARIOS) {
+const extra0 = process.env.WIRING_A_EXTRA ? JSON.parse(readFileSync(process.env.WIRING_A_EXTRA, 'utf8')) : null;
+// FQ-SPEED-Q1 (pomiar, NIE wektory): `WIRING_A_SWEEP_FRAME=<ms>` liczy scenariusze (kandydatow `WIRING_A_EXTRA` albo
+// wbudowane `SCENARIOS`) przy jednej klatce pinu, wynik WYLACZNIE do `WIRING_A_OUT`. `ms >= 16`: `speedMul = ms / 16`
+// z `SPEED_STEPS` (`_setSpeedIdx`, model produkcyjny przycisku predkosci; wlasny krok bliźniaka `ffStepMs` pominiety);
+// `ms < 16`: krok przewijania `ffStepMs = ms` (granica klatki, jak bliźniaki `_klatka1`/`_klatka4`; czas rzeczywisty
+// pominiety, bo `speedMul < 1` nie istnieje w pinie).
+const sweep = process.env.WIRING_A_SWEEP_FRAME ? Number(process.env.WIRING_A_SWEEP_FRAME) : null;
+if (sweep != null && !process.env.WIRING_A_OUT) throw new Error('WIRING_A_SWEEP_FRAME wymaga WIRING_A_OUT');
+const sweepOf = (sc) => {
+  if (sweep == null) return sc;
+  const { ffStepMs: _drop, speedMul: _drop2, ...base } = sc;
+  if (sweep >= 16) return { ...base, speedMul: sweep / 16 };
+  if (sc.mode !== 'skip') return null;
+  return { ...base, ffStepMs: sweep };
+};
+const extra = extra0 ?? (sweep != null ? SCENARIOS : null);
+for (const sc0 of extra ?? SCENARIOS) {
+  const sc = sweepOf(sc0);
+  if (sc == null) { console.error(`${sc0.name}: pominiety przy klatce ${sweep} ms (czas rzeczywisty)`); continue; }
   if (process.env.WIRING_A_TRACE && process.env.WIRING_A_TRACE !== sc.name) continue;
   const v = runScenario(sc);
   vectors.push(v);

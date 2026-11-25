@@ -750,6 +750,8 @@ pub use civ_engine::domain::siege_battle_apply::{
     SiegeBattleErrorDto, SiegeBattlePayload, SiegeBattlePhaseDto, SiegeBattleResultDto,
     SiegeTowerShooterDto, SIEGE_ATTACKER_COLOR, SIEGE_DEFENDER_COLOR,
 };
+use civ_engine::domain::siege_tactics_clock::{VirtualClock, SPEED_STEPS};
+use civ_engine::domain::siege_tactics_fastforward::BATTLE_FRAME_WALL_MS;
 pub use civ_renderer::battle::dynamics::ProjectileKind;
 pub use civ_renderer::battle::playback::{BattlePlayback, PlaybackError, PlaybackOpts};
 use civ_renderer::battle::siege_towers::tower_projectile_kind;
@@ -1113,6 +1115,36 @@ pub fn tower_projectile_of(start: &SiegeBattlePayload) -> Option<ProjectileKind>
         .map(|t| tower_projectile_kind(t.typ.as_deref(), t.jednostka.as_deref()))
 }
 
+/// R-RUSTPORT-P4-FQ-SPEED-Q1: `speedMul` of the engine session when the
+/// battle starts: `SPEED_STEPS[0]` (`battleScene.ts:2554-2555`; the scene
+/// constructor resets it with `_setSpeedIdx(this.speedIdx)`, `:3370`, and
+/// `SiegeBattleSession` starts with `speed_idx = 0`). The bridge has no speed
+/// command yet (debt FQ-SPEED-BRIDGE), so it is the speed of the whole battle.
+pub const SIEGE_BATTLE_START_SPEED_MUL: f64 = SPEED_STEPS[0];
+
+/// R-RUSTPORT-P4-FQ-SPEED-Q1: the virtual frame of the engine session at
+/// `speed_mul` = `SiegeBattleSession::frame_ms`: `FF_STEP_MS =
+/// _scaledWallDelta(BATTLE_FRAME_WALL_MS) = clamp(16, 0, 100) * speedMul`
+/// (`battleScene.ts:9419`, `:9512-9515`), the same function of the engine clock
+/// (`VirtualClock::scaled_wall_delta`).
+#[must_use]
+pub fn siege_battle_frame_ms(speed_mul: f64) -> f64 {
+    let mut clock: VirtualClock<()> = VirtualClock::new();
+    clock.speed_mul = speed_mul;
+    clock.scaled_wall_delta(BATTLE_FRAME_WALL_MS)
+}
+
+/// `PlaybackOpts` of a battle (D-1I6D-2 + FQ-SPEED-Q1): the tower projectile
+/// of the start answer and the session frame at `speed_mul`
+/// ([`siege_battle_frame_ms`]) the action times are quantized to.
+#[must_use]
+pub fn playback_opts_of(start: &SiegeBattlePayload, speed_mul: f64) -> PlaybackOpts {
+    PlaybackOpts {
+        tower_projectile: tower_projectile_of(start),
+        frame_ms: siege_battle_frame_ms(speed_mul),
+    }
+}
+
 /// The renderer scene of the start answer (D-1I6-3): the engine
 /// `BattleSetupDto` through the renderer adapter.
 fn scene_of<E>(
@@ -1124,12 +1156,7 @@ fn scene_of<E>(
         .ok_or_else(|| SiegeClientError::Setup("start answer without a setup".to_owned()))?;
     let inputs = civ_renderer::view::battle_inputs(setup).map_err(SiegeClientError::Adapter)?;
     let b = build_battle_scene_with_units_fort(inputs.opts, &inputs.fort);
-    let pb = BattlePlayback::new(
-        &b,
-        PlaybackOpts {
-            tower_projectile: tower_projectile_of(start),
-        },
-    );
+    let pb = BattlePlayback::new(&b, playback_opts_of(start, SIEGE_BATTLE_START_SPEED_MUL));
     Ok((b, pb))
 }
 

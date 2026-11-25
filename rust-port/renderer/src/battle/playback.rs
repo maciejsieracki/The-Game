@@ -14,19 +14,19 @@
 //! | action | pin call | scene function |
 //! |---|---|---|
 //! | `Facing` | `ru.group.rotation.y = dirYaw(ru.facing)` (`:8340`, `:9105`, `:9138`, `:9818`) | [`set_facing`] |
-//! | `Melee` | `_doMeleeAttack` lunge (`:9096-9175`; hit at `t0 + BLOW_HIT_T`, `:9122`, or its 16 ms frame-grid moment [`is_pin_event_time`]) | [`MeleeLunge`] (started at `t0`, stepped by [`BattlePlayback::play_until`]) |
-//! | `TowerShot` | `_fireOneTower` projectile (`:4250-4261`; hit at `t0 + RANGED_FLY_MS`, `:4262`, or its 16 ms frame-grid moment [`is_pin_event_time`]) | [`fire_one_tower`] → [`super::dynamics::launch_projectile`], [`tick_projectiles`] |
+//! | `Melee` | `_doMeleeAttack` lunge (`:9096-9175`; hit at `t0 + BLOW_HIT_T`, `:9122`, or its frame-grid moment (`PlaybackOpts::frame_ms`) [`is_pin_event_time`]) | [`MeleeLunge`] (started at `t0`, stepped by [`BattlePlayback::play_until`]) |
+//! | `TowerShot` | `_fireOneTower` projectile (`:4250-4261`; hit at `t0 + RANGED_FLY_MS`, `:4262`, or its frame-grid moment (`PlaybackOpts::frame_ms`) [`is_pin_event_time`]) | [`fire_one_tower`] → [`super::dynamics::launch_projectile`], [`tick_projectiles`] |
 //! | `Damage` | `bu.hp = Math.max(0, bu.hp - dmg)` + `_updateHpBar` (`:8991-8992`), then `_spawnDamageLabel` (`:9125`, `:9142`, `:9940-9971`) | [`update_hp_bar`] + [`FloatLabel::damage`] |
 //! | `Kill` | `_startFade` → `_removeUnitFromScene` (`:9927-9938`, `:9910-9925`) after the killing blow set `hp = 0` and `_updateHpBar` (`:8991-8992`, `:9045-9047`) | [`update_hp_bar`] (`hp = 0`) + [`kill_unit`] |
 //! | `Rout` | `_startRout` (`:9799-9825`): `_sfxRout` only; its turn is the separate `Facing` (`:9817-9818`) | — (recorded, audio) |
-//! | `Move` | `_doMove` 3D (`:8714-8776`): `ru.q = col; ru.r = row` (`:8731`), walk from `t0` (`:8752`) to `t0 + MOVE_STEP_MS`; its turn is the separate `Facing` with the same `t0` (`_updateFacing`, `:8750`) | [`MoveAnim::start`] (stepped by [`BattlePlayback::play_until`]) |
-//! | `Shot` | `_doRangedAttack` 3D (`:9179-9221`): projectile of `projectileKind(attacker.bu)` (`:9203`) from the shooter's to the target's torso (`:9200-9201`), hit at `t0 + RANGED_FLY_MS` (`:9224`) or its 16 ms frame-grid moment ([`is_pin_event_time`]); its turn is the separate `Facing` (`:9182-9184`), the hit is the separate `Damage` (`:9226`) | [`projectile_kind`] + [`ranged_shot_endpoints`] + [`launch_projectile`], [`tick_projectiles`] |
+//! | `Move` | `_doMove` 3D (`:8714-8776`): `ru.q = col; ru.r = row` (`:8731`), walk from `t0` (`:8752`) to `t0 + MOVE_STEP_MS` (arrival also accepted at its frame-grid moment, [`is_pin_event_time`], FQ-SPEED-Q1); its turn is the separate `Facing` with the same `t0` (`_updateFacing`, `:8750`) | [`MoveAnim::start`] (stepped by [`BattlePlayback::play_until`]) |
+//! | `Shot` | `_doRangedAttack` 3D (`:9179-9221`): projectile of `projectileKind(attacker.bu)` (`:9203`) from the shooter's to the target's torso (`:9200-9201`), hit at `t0 + RANGED_FLY_MS` (`:9224`) or its frame-grid moment (`PlaybackOpts::frame_ms`) ([`is_pin_event_time`]); its turn is the separate `Facing` (`:9182-9184`), the hit is the separate `Damage` (`:9226`) | [`projectile_kind`] + [`ranged_shot_endpoints`] + [`launch_projectile`], [`tick_projectiles`] |
 //! | `Turn`, `Log`, `Clash` | `hint`, `this.log.push`, `_pushClash` | — (DOM / P5; recorded) |
 //! | `End` | `this.finished = true` (`:10210`, `:9468`, `:9489`) + `_showEndScreen` | flag `finished`: the rAF callbacks of the stone and the ram snap / remove at their next frame (`:7347`, `:7585`) |
 //! | `Leave` | `_fleeStep` → `_removeUnitFromScene` (`:9853-9857`, `:9910-9925`), after the last walk of the flight ended (`done()`, `:9884-9890`) | [`remove_unit_from_scene`] (a walk of the unit still in flight is finished at `t0` first) |
 //! | `Shaken` | `_shakeAlliesOnLoss` → `_updateMoraleBar(a)` (`:9748-9749`) | [`update_morale_bar`] |
 //! | `ClimbWall` | `_trySiegeTowerClimb` (`:8067-8079`): `ru.q = wallCol`, model at `(x, 2.5, z)`, bars `HPBAR_Y` above | [`climb_onto_wall_walkway`] |
-//! | `Boulder` | `_attackWallTile` → `_spawnCatapultBoulder` (`:7547-7552`, `:7571-7600`), hit at `t0 + 700` (`:7555`) or its 16 ms frame-grid moment ([`is_pin_event_time`]) | [`wall_shot_endpoints`] + [`Boulder::spawn`], stepped by [`BattlePlayback::play_until`] |
+//! | `Boulder` | `_attackWallTile` → `_spawnCatapultBoulder` (`:7547-7552`, `:7571-7600`), hit at `t0 + 700` (`:7555`) or its frame-grid moment (`PlaybackOpts::frame_ms`) ([`is_pin_event_time`]) | [`wall_shot_endpoints`] + [`Boulder::spawn`], stepped by [`BattlePlayback::play_until`] |
 //! | `WallDamage` | the `_schedule(700)` callback (`:7556-7561`): `wallTileHp.set`, HUD, `_spawnWallLabel(…, '-' + dmg + ' (mur)', '#ff8800')` | [`FloatLabel::wall`] ([`WallLabel`]) + tracked tile HP |
 //! | `Ram` | `_attackGate` → `_animateRam(ru.group, gateDir)` (`:7316-7323`, `:7337-7360`), back at `t0 + 320` (`:7343`) | [`RamAnim::start`] from the ram's group position, stepped by [`BattlePlayback::play_until`] |
 //! | `GateDamage` | `gateHp = Math.max(0, gateHp - dmg)` + HUD (`:7326-7331`) | tracked gate HP (HUD = P5) |
@@ -83,10 +83,12 @@ use super::units::{
 use crate::models::cities::model::js_number_to_string;
 
 /// HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): length of the virtual frame the pin steps
-/// its `_raf` loops and `_drainTimers` in (`BATTLE_FRAME_WALL_MS = 16`,
-/// `:2552`; `FF_STEP_MS = _scaledWallDelta(BATTLE_FRAME_WALL_MS)`, `:9419`,
-/// `speedMul = 1`). The engine session quantizes the body time spans to it
-/// (FRAME-QUANT-Q1, D-FQ-1).
+/// its `_raf` loops and `_drainTimers` in at `speedMul = 1`
+/// (`BATTLE_FRAME_WALL_MS = 16`, `:2552`; `FF_STEP_MS =
+/// _scaledWallDelta(BATTLE_FRAME_WALL_MS)`, `:9419`). The engine session
+/// quantizes the body time spans to its frame (FRAME-QUANT-Q1, D-FQ-1).
+/// R-RUSTPORT-P4-FQ-SPEED-Q1: only the DEFAULT of [`PlaybackOpts::frame_ms`];
+/// at `speedMul = k` (`SPEED_STEPS`, `:2551`) the frame is `16 * k`.
 pub const PIN_FRAME_MS: f64 = 16.0;
 
 /// HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): the moment, relative to `t0`, at which the
@@ -106,21 +108,40 @@ pub fn pin_frame_time(frame: f64, nominal: f64) -> f64 {
 
 /// HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): `at` is the pin time of an event planned
 /// `nominal` ms after `t0`: exactly `t0 + nominal` (nominal time line, frame
-/// 0 / 1 ms) or exactly the frame-grid moment `t0 + pin_frame_time(PIN_FRAME_MS,
+/// 0 / 1 ms) or exactly the frame-grid moment `t0 + pin_frame_time(frame,
 /// nominal)` of the engine session (FRAME-QUANT-Q1). Any other value — earlier,
 /// later, between the two — is rejected (exact equality, D-WIR-7).
+/// R-RUSTPORT-P4-FQ-SPEED-Q1: `frame` is the session frame of the playback
+/// ([`PlaybackOpts::frame_ms`], `16 * speedMul`), not a constant.
 #[must_use]
-pub fn is_pin_event_time(t0: f64, nominal: f64, at: f64) -> bool {
-    at == t0 + nominal || at == t0 + pin_frame_time(PIN_FRAME_MS, nominal)
+pub fn is_pin_event_time(frame: f64, t0: f64, nominal: f64, at: f64) -> bool {
+    at == t0 + nominal || at == t0 + pin_frame_time(frame, nominal)
 }
 
 /// Options of a playback (inputs the DTOs do not carry).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PlaybackOpts {
     /// `projectileKind` of the tower shooter (`_fireOneTower`, `:4238-4245`;
     /// [`super::siege_towers::tower_projectile_kind`]). `None` = no tower
     /// shot expected.
     pub tower_projectile: Option<ProjectileKind>,
+    /// R-RUSTPORT-P4-FQ-SPEED-Q1: the virtual frame of the engine session (ms)
+    /// the hit / landing moments of `Melee`, `Shot`, `TowerShot` and
+    /// `Boulder` are quantized to ([`is_pin_event_time`]): `FF_STEP_MS =
+    /// _scaledWallDelta(BATTLE_FRAME_WALL_MS) = 16 * speedMul` (`:9419`,
+    /// `:9512-9515`; `SPEED_STEPS` `:2551`). Default [`PIN_FRAME_MS`]
+    /// (`speedMul = 1`). `<= 0` / `NaN` accept only the nominal moment
+    /// ([`pin_frame_time`]).
+    pub frame_ms: f64,
+}
+
+impl Default for PlaybackOpts {
+    fn default() -> Self {
+        Self {
+            tower_projectile: None,
+            frame_ms: PIN_FRAME_MS,
+        }
+    }
 }
 
 /// One scene call made by the playback, in call order (the trace the tests
@@ -376,8 +397,9 @@ pub enum PlaybackError {
     },
     /// `TowerShot` without [`PlaybackOpts::tower_projectile`].
     MissingTowerProjectileKind,
-    /// `Move.arriveAt != t0 + MOVE_STEP_MS` ([`MoveAnim`] ends at
-    /// `MOVE_STEP_MS`, `:1010`, `:8754`).
+    /// `Move.arriveAt` neither `t0 + MOVE_STEP_MS` ([`MoveAnim`] ends at
+    /// `MOVE_STEP_MS`, `:1010`, `:8754`) nor its frame-grid moment
+    /// ([`is_pin_event_time`], FQ-SPEED-Q1).
     ArriveAt {
         /// `t0`.
         t0: f64,
@@ -779,8 +801,9 @@ impl BattlePlayback {
                 hit_at,
             } => {
                 // HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): the pin lands the blow in the first lunge frame
-                // with `localT >= BLOW_HIT_T` (`:9122`): `t0 + 160` at 16 ms frames.
-                if !is_pin_event_time(a.t0, BLOW_HIT_T, *hit_at) {
+                // with `localT >= BLOW_HIT_T` (`:9122`): `t0 + 160` at 16 ms frames
+                // (`ceil(150 / frame) * frame` at `PlaybackOpts::frame_ms`, FQ-SPEED-Q1).
+                if !is_pin_event_time(self.opts.frame_ms, a.t0, BLOW_HIT_T, *hit_at) {
                     return Err(PlaybackError::HitAt {
                         t0: a.t0,
                         hit_at: *hit_at,
@@ -808,7 +831,7 @@ impl BattlePlayback {
                 // LANDAT-TOWER-BOULDER-Q1 (D-LTB-1): `_schedule(RANGED_FLY_MS)` (`:4262`) fires in
                 // the first frame with `vNow >= due` (`t0 + 384` at 16 ms); the projectile itself
                 // keeps `dur = RANGED_FLY_MS` (`:4261`). Exactly the two pin moments are accepted.
-                if !is_pin_event_time(a.t0, RANGED_FLY_MS, *land_at) {
+                if !is_pin_event_time(self.opts.frame_ms, a.t0, RANGED_FLY_MS, *land_at) {
                     return Err(PlaybackError::LandAt {
                         t0: a.t0,
                         land_at: *land_at,
@@ -879,7 +902,11 @@ impl BattlePlayback {
                 to_row,
                 arrive_at,
             } => {
-                if *arrive_at != a.t0 + MOVE_STEP_MS {
+                // R-RUSTPORT-P4-FQ-SPEED-Q1: `_doMove` ends in the first `_raf` frame with
+                // `p >= 1` (`:8746-8775`): `t0 + MOVE_STEP_MS` at 16 ms (240 is on the grid), the
+                // frame-grid moment at `speedMul > 1` (`t0 + 256` at 32..256 ms frames). The walk
+                // itself keeps `MOVE_STEP_MS`.
+                if !is_pin_event_time(self.opts.frame_ms, a.t0, MOVE_STEP_MS, *arrive_at) {
                     return Err(PlaybackError::ArriveAt {
                         t0: a.t0,
                         arrive_at: *arrive_at,
@@ -918,7 +945,7 @@ impl BattlePlayback {
             } => {
                 // HITAT-FQ-REGRESJA-Q1 (D-HFQ-1): `_schedule(RANGED_FLY_MS)` (`:9223`) fires in the
                 // first frame with `vNow >= due`: `t0 + 384` at 16 ms frames.
-                if !is_pin_event_time(a.t0, RANGED_FLY_MS, *land_at) {
+                if !is_pin_event_time(self.opts.frame_ms, a.t0, RANGED_FLY_MS, *land_at) {
                     return Err(PlaybackError::ShotLandAt {
                         t0: a.t0,
                         land_at: *land_at,
@@ -966,7 +993,7 @@ impl BattlePlayback {
             BattleActionKindDto::Boulder { id, row, land_at } => {
                 // LANDAT-TOWER-BOULDER-Q1 (D-LTB-1): `_schedule(700)` (`:7555`) fires in the first
                 // frame with `vNow >= due` (`t0 + 704` at 16 ms); the stone flight stays `BOULDER_MS`.
-                if !is_pin_event_time(a.t0, BOULDER_MS, *land_at) {
+                if !is_pin_event_time(self.opts.frame_ms, a.t0, BOULDER_MS, *land_at) {
                     return Err(PlaybackError::BoulderLandAt {
                         t0: a.t0,
                         land_at: *land_at,

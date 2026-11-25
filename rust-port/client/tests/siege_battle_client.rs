@@ -1433,3 +1433,91 @@ fn recorded_for(
     }
     (out, map, frame)
 }
+
+// ------------------------------------------------------------ FQ-SPEED-Q1
+
+/// R-RUSTPORT-P4-FQ-SPEED-Q1: the actions of the engine session at `speedMul` (`_setSpeedIdx`, `battleScene.ts:9518`)
+/// played on the scene of the bridge start answer with `PlaybackOpts` from the client ([`civ_client::playback_opts_of`],
+/// frame `16 * speedMul` = `SiegeBattleSession::frame_ms`). Returns the playback error, if any, and the number of
+/// actions whose time is quantized to the frame (`Melee`, `Shot`, `TowerShot`, `Boulder`).
+fn play_session_at_speed(
+    speed_idx: i64,
+    frame_ms: Option<f64>,
+) -> (Result<(), PlaybackError>, usize) {
+    use civ_engine::domain::siege_tactics_actions::actions_to_dto;
+    let st = siege_state(11);
+    let (answers, _, _) = recorded();
+    let start = &answers[0];
+    let a = siege_battle_apply::prepare_storm(&st, CITY, ANCHOR, 1).expect("storm");
+    let data = siege_battle_apply::session_data().expect("data");
+    let mut s = SiegeBattleSession::prepare(&st, a.input(), data).expect("session");
+    let k = s.set_speed_idx(speed_idx, false);
+    assert_eq!(s.frame_ms(), civ_client::siege_battle_frame_ms(k));
+    s.play();
+    let mut timed = s.battle_loop_mut().take_actions();
+    let mut steps = 0;
+    while s.phase() != SessionPhase::Finished {
+        timed.extend(s.step(16.0).expect("step").actions);
+        steps += 1;
+        assert!(steps < 2_000_000, "battle without end");
+    }
+    timed.sort_by(|x, y| x.t0.partial_cmp(&y.t0).unwrap_or(std::cmp::Ordering::Equal));
+    let dto = actions_to_dto(&timed, &s.battle_loop().st).expect("dto");
+    let quantized = dto
+        .iter()
+        .filter(|x| {
+            matches!(
+                x.action,
+                BattleActionKindDto::Melee { .. }
+                    | BattleActionKindDto::Shot { .. }
+                    | BattleActionKindDto::TowerShot { .. }
+                    | BattleActionKindDto::Boulder { .. }
+            )
+        })
+        .count();
+    let setup = civ_renderer::view::battle_inputs(engine_setup(start)).expect("inputs");
+    let mut scene =
+        civ_renderer::battle::units::build_battle_scene_with_units_fort(setup.opts, &setup.fort);
+    let mut opts = civ_client::playback_opts_of(start, k);
+    if let Some(f) = frame_ms {
+        opts.frame_ms = f;
+    }
+    let mut pb = civ_client::BattlePlayback::new(&scene, opts);
+    let last = dto.last().map_or(0.0, |x| x.t0);
+    let r = pb
+        .push_actions(&dto)
+        .and_then(|()| pb.play_until(&mut scene, last + 10_000.0, 0.0));
+    (r, quantized)
+}
+
+/// R-RUSTPORT-P4-FQ-SPEED-Q1: the same storm at speed 1, 4 and 16: the playback built from the client's
+/// `PlaybackOpts` (frame of the session speed) accepts every action of the session; with the 16 ms frame of speed 1
+/// the faster battles are rejected (a step arrival / hit / landing time off the 16 ms grid), so the frame really comes
+/// from the speed.
+#[test]
+fn fq_speed_klatka_playbacku_z_predkosci_sesji() {
+    assert_eq!(civ_client::SIEGE_BATTLE_START_SPEED_MUL, 1.0);
+    for (k, f) in [(1.0, 16.0), (2.0, 32.0), (4.0, 64.0), (512.0, 8192.0)] {
+        assert_eq!(civ_client::siege_battle_frame_ms(k), f);
+    }
+    let (r1, q1) = play_session_at_speed(0, None);
+    assert_eq!(r1, Ok(()), "x1");
+    assert!(q1 > 0, "x1: quantized actions present");
+    for idx in [2, 4] {
+        let (r, q) = play_session_at_speed(idx, None);
+        assert_eq!(r, Ok(()), "speed idx {idx}");
+        assert!(q > 0, "speed idx {idx}: quantized actions present");
+        let (bad, _) = play_session_at_speed(idx, Some(16.0));
+        assert!(
+            matches!(
+                bad,
+                Err(PlaybackError::HitAt { .. }
+                    | PlaybackError::ArriveAt { .. }
+                    | PlaybackError::LandAt { .. }
+                    | PlaybackError::ShotLandAt { .. }
+                    | PlaybackError::BoulderLandAt { .. })
+            ),
+            "speed idx {idx} with the 16 ms frame: {bad:?}"
+        );
+    }
+}

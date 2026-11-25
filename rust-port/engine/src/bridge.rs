@@ -105,6 +105,15 @@ pub enum EngineCommand {
     /// a battle: `noActiveBattle`; after the end of the battle (phase `finished`): `abortNotAllowed` (D-1I6D-4: the pin
     /// then only offers "Zakończ bitwę", which delivers the result). Additive: `CONTRACT_VERSION` stays 1.
     AbortSiegeBattle,
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: save the session (web `buildSaveGameSnapshot`, `main.ts:37171` @
+    /// `07d2fbd72`). Answered with `State` (unchanged state) plus `saveGame` (the snapshot JSON text,
+    /// `PlayableGame::save_json`); no `StateChanged`. Rejected during a siege battle (debt DL-SLB-1). Additive:
+    /// `CONTRACT_VERSION` stays 1.
+    SaveGame,
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: replace the session with the save `save` (web `restoreGameFromSave`,
+    /// `main.ts:46225`), loaded only through `zapis_loader::load_save_snapshot` (migrations inside). Emits
+    /// `StateChanged`; a rejected save leaves the current session untouched. Additive: `CONTRACT_VERSION` stays 1.
+    LoadGame { save: String },
 }
 
 impl EngineCommand {
@@ -195,6 +204,10 @@ pub struct BridgeResponse {
     /// `BridgeResult` exhaustively, so a new variant would break their build.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub siege_battle: Option<SiegeBattlePayload>,
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: snapshot JSON text of [`EngineCommand::SaveGame`] next to `result`
+    /// (`State`), like `siegeBattle` (D-WIRB-5: no new `BridgeResult` variant). Absent for every other command.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub save_game: Option<String>,
 }
 
 /// Events produced by a successful mutating command.
@@ -350,6 +363,37 @@ pub trait EnginePort {
             "siege battle: this adapter does not provide a game session",
         ))
     }
+
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: [`EngineCommand::SaveGame`]: the current state and the save text.
+    /// Adapters without a game session reject it.
+    fn save_game(&mut self) -> Result<(EngineState, String), BridgeError> {
+        Err(BridgeError::engine_rejected(
+            "save_game: this adapter does not provide a game session",
+        ))
+    }
+
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: [`EngineCommand::LoadGame`]: replace the session with the loaded save.
+    /// Adapters without a game session reject it.
+    fn load_game(&mut self, save: &str) -> Result<EngineState, BridgeError> {
+        let _ = save;
+        Err(BridgeError::engine_rejected(
+            "load_game: this adapter does not provide a game session",
+        ))
+    }
+}
+
+/// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: save of a game session (shared by the real and the mock adapter).
+fn save_game_text(game: &PlayableGame) -> Result<String, BridgeError> {
+    game.save_json()
+        .map_err(|error| BridgeError::engine_rejected(error.to_string()))
+}
+
+/// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: a game loaded from a save through the production loader (shared by both
+/// adapters). The load report (migrations, skipped entries) stays engine-side: the bridge answers with the state.
+fn load_game_text(save: &str) -> Result<PlayableGame, BridgeError> {
+    PlayableGame::load_json(save)
+        .map(|(game, _report)| game)
+        .map_err(|error| BridgeError::engine_rejected(error.to_string()))
 }
 
 /// Runs one siege battle command on a game (shared by the real and the mock adapter).
@@ -435,6 +479,7 @@ where
                     request_id,
                     result: BridgeResult::RenderLayers { layers },
                     siege_battle: None,
+                    save_game: None,
                 },
                 events: Vec::new(),
             });
@@ -448,6 +493,7 @@ where
                     request_id,
                     result: BridgeResult::RenderMap { map },
                     siege_battle: None,
+                    save_game: None,
                 },
                 events: Vec::new(),
             });
@@ -461,6 +507,21 @@ where
                     request_id,
                     result: BridgeResult::RenderFrame { frame },
                     siege_battle: None,
+                    save_game: None,
+                },
+                events: Vec::new(),
+            });
+        }
+        if matches!(command, EngineCommand::SaveGame) {
+            // R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: saving does not change `EngineState`: no event.
+            let (state, save) = self.adapter.save_game()?;
+            return Ok(BridgeDispatch {
+                response: BridgeResponse {
+                    contract_version: CONTRACT_VERSION,
+                    request_id,
+                    result: BridgeResult::State { state },
+                    siege_battle: None,
+                    save_game: Some(save),
                 },
                 events: Vec::new(),
             });
@@ -484,6 +545,7 @@ where
                     request_id,
                     result: BridgeResult::State { state },
                     siege_battle: Some(battle),
+                    save_game: None,
                 },
                 events,
             });
@@ -496,6 +558,7 @@ where
                 state: state.clone(),
             },
             siege_battle: None,
+            save_game: None,
         };
         let events = if matches!(command, EngineCommand::GetState) {
             Vec::new()
@@ -596,8 +659,22 @@ impl EnginePort for CivEngineAdapter {
             | EngineCommand::AbortSiegeBattle => {
                 return self.siege_battle(&command).map(|(state, _)| state);
             }
+            EngineCommand::SaveGame => {
+                return self.save_game().map(|(state, _)| state);
+            }
+            EngineCommand::LoadGame { save } => return self.load_game(&save),
         }
 
+        Ok(self.game.state().clone())
+    }
+
+    fn save_game(&mut self) -> Result<(EngineState, String), BridgeError> {
+        let save = save_game_text(&self.game)?;
+        Ok((self.game.state().clone(), save))
+    }
+
+    fn load_game(&mut self, save: &str) -> Result<EngineState, BridgeError> {
+        self.game = load_game_text(save)?;
         Ok(self.game.state().clone())
     }
 
@@ -761,6 +838,14 @@ impl EnginePort for MockEngineAdapter {
             | EngineCommand::AbortSiegeBattle => {
                 return self.siege_battle_on_mock(&command).map(|(state, _)| state);
             }
+            EngineCommand::SaveGame => {
+                return self.save_game_on_mock().map(|(state, _)| state);
+            }
+            EngineCommand::LoadGame { save } => {
+                let game = load_game_text(&save)?;
+                self.state = game.state().clone();
+                self.game = Some(game);
+            }
         }
 
         Ok(self.state.clone())
@@ -773,9 +858,31 @@ impl EnginePort for MockEngineAdapter {
         self.calls.push(command.clone());
         self.siege_battle_on_mock(command)
     }
+
+    fn save_game(&mut self) -> Result<(EngineState, String), BridgeError> {
+        self.calls.push(EngineCommand::SaveGame);
+        self.save_game_on_mock()
+    }
+
+    fn load_game(&mut self, save: &str) -> Result<EngineState, BridgeError> {
+        self.execute(EngineCommand::LoadGame {
+            save: save.to_owned(),
+        })
+    }
 }
 
 impl MockEngineAdapter {
+    /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: save of the mock session (no session = rejected).
+    fn save_game_on_mock(&mut self) -> Result<(EngineState, String), BridgeError> {
+        let game = self
+            .game
+            .as_ref()
+            .ok_or_else(|| BridgeError::engine_rejected("create session before saving the game"))?;
+        let save = save_game_text(game)?;
+        self.state = game.state().clone();
+        Ok((self.state.clone(), save))
+    }
+
     fn siege_battle_on_mock(
         &mut self,
         command: &EngineCommand,

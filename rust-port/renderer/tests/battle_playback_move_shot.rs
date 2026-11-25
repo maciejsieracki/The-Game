@@ -830,3 +830,120 @@ fn hitat_fq_shot_on_frame_grid_is_played_like_nominal() {
         assert!(bad == q, "offset {off}: nothing reached the scene");
     }
 }
+
+/// R-RUSTPORT-P4-FQ-SPEED-Q1 (D-FQS-2): `_doMove` ends in the first `_raf` frame with `p >= 1` (`:8746-8775`), so at
+/// `speedMul = 4` (frame 64 ms) the step arrives at `t0 + 256`, not `t0 + MOVE_STEP_MS`. The playback of that frame
+/// plays it like the nominal arrival (same scene calls, same scene); the 16 ms playback rejects it (`ArriveAt`) and
+/// nothing reaches the scene.
+#[test]
+fn fq_speed_move_arrives_on_the_session_frame_grid() {
+    let (_, q) = base();
+    let id = uid("atk0");
+    let (c, r) = {
+        let u = unit(&q, id);
+        (u.col, u.row)
+    };
+    let t0 = 1_024.0;
+    let run = |frame_ms: f64, arrive_at: f64| {
+        let mut s = q.clone();
+        let mut pb = BattlePlayback::new(
+            &s,
+            PlaybackOpts {
+                frame_ms,
+                ..PlaybackOpts::default()
+            },
+        );
+        pb.push_actions(&[act(
+            t0,
+            BattleActionKindDto::Move {
+                id,
+                from_col: c,
+                from_row: r,
+                to_col: c + 1,
+                to_row: r,
+                arrive_at,
+            },
+        )])
+        .expect("push");
+        let res = pb.play_until(&mut s, t0, 0.0);
+        (s, pb, res)
+    };
+    let (nominal, pb_n, rn) = run(16.0, t0 + MOVE_STEP_MS);
+    assert_eq!(rn, Ok(()));
+    let (grid, pb_g, rg) = run(64.0, t0 + 256.0);
+    assert_eq!(rg, Ok(()), "x4: frame-grid arrival accepted");
+    assert_eq!(pb_g.calls(), pb_n.calls());
+    assert!(grid == nominal, "same scene as the nominal arrival");
+    let (bad, _, rb) = run(16.0, t0 + 256.0);
+    assert_eq!(
+        rb,
+        Err(PlaybackError::ArriveAt {
+            t0,
+            arrive_at: t0 + 256.0
+        }),
+        "16 ms playback rejects the x4 arrival"
+    );
+    assert!(bad == q, "nothing reached the scene");
+}
+
+/// Obrona r1 FQ-SPEED-Q1 (Z1, mutant R4): the `Shot` branch checks `land_at` on the grid of
+/// [`PlaybackOpts::frame_ms`], not of the constant 16 ms. `_schedule(RANGED_FLY_MS)` (`:9223`) fires in the first frame
+/// with `vNow >= due`: at `speedMul = 16` / `32` (frame 256 / 512 ms, `FF_STEP_MS = 16 * speedMul`, `:9419`) that is
+/// `t0 + 512`, a moment the 16 ms grid does not contain (16 ms: `t0 + 384`; at x4 both grids give 384, so x4 cannot
+/// tell them apart). The session-frame playback plays `t0 + 512` like the nominal landing and rejects the 16 ms moment
+/// `t0 + 384`; the 16 ms playback rejects `t0 + 512`. A rejected shot leaves the scene untouched.
+#[test]
+fn fq_speed_shot_lands_on_the_session_frame_grid() {
+    let (_, q) = base();
+    let (a, d) = (uid("def0"), uid("atk2"));
+    let t0 = 30_720.0;
+    let run = |frame_ms: f64, land_at: f64| {
+        let mut s = q.clone();
+        let mut pb = BattlePlayback::new(
+            &s,
+            PlaybackOpts {
+                frame_ms,
+                ..PlaybackOpts::default()
+            },
+        );
+        pb.push_actions(&[act(
+            t0,
+            BattleActionKindDto::Shot {
+                attacker: a,
+                target: d,
+                land_at,
+            },
+        )])
+        .expect("push");
+        let r = pb.play_until(&mut s, t0, 0.0);
+        (s, pb, r)
+    };
+    for frame in [256.0, 512.0] {
+        let (nominal, pb_n, rn) = run(frame, t0 + RANGED_FLY_MS);
+        assert_eq!(rn, Ok(()), "frame {frame}: nominal landing accepted");
+        let (grid, pb_g, rg) = run(frame, t0 + 512.0);
+        assert_eq!(rg, Ok(()), "frame {frame}: frame-grid landing accepted");
+        assert_eq!(pb_g.projectiles().len(), 1);
+        assert_eq!(pb_g.calls(), pb_n.calls());
+        assert!(
+            grid == nominal,
+            "frame {frame}: same scene as the nominal landing"
+        );
+    }
+    for (frame, land) in [(256.0, 384.0), (512.0, 384.0), (16.0, 512.0)] {
+        let (bad, pb_b, rb) = run(frame, t0 + land);
+        assert_eq!(
+            rb,
+            Err(PlaybackError::ShotLandAt {
+                t0,
+                land_at: t0 + land
+            }),
+            "frame {frame} land {land}"
+        );
+        assert!(pb_b.projectiles().is_empty(), "frame {frame} land {land}");
+        assert!(
+            bad == q,
+            "frame {frame} land {land}: nothing reached the scene"
+        );
+    }
+}
