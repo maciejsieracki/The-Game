@@ -1,3 +1,9 @@
+## ROBOCZA a9069f1f -- 2026-11-25 -- FALA 897: Porządki w kodzie: usunięta martwa sonda księgi zasobów (testowa)
+
+- gra/src/main.ts: usunięte dwie nieużywane deklaracje i odczyt sondy ledgerAuditE3c (zawsze 0), gra/tools/resource-ledger-live-measure.cjs: pole e3c = n/d; nowy test strażnik; zachowanie gry bez zmian
+- Weryfikacja: tsc 0; logic 213/213; dead-ledger-probe-absent 5/0 (mutacja czerwona); war-rules-multiwar-main-guard 21/0; hotseat-etap6d-source 77/0; ai-test 297/0; resource-ledger 1073/0; vite build OK
+- Limity: zero zmiany zachowania; NIE ZMIERZONO: resource-ledger-live-measure na żywo (Chromium); resource-ledger-realpath-mutation-test (timeout 590 s); 5 testów czerwonych także na bazie: hotseat-etap6d podetap-b/d/e-exec (ReferenceError withDiplomacyTradeEra), save-load-roundtrip-state-drift, save-load-deserialize-fields-audit
+
 ## ROBOCZA 22cadb41 -- 2026-11-25 -- FALA 896: Wojny: limit wojen naturalnych obowiązuje także przy wciąganiu sojuszników (testowa)
 
 - gra/src/game/diplomacy-war-limit.ts, gra/src/main.ts: sojusznik wciągany do wojny widzi wojnę oczekującą głównego agresora przy sprawdzaniu limitu 1 wojny naturalnej na cywilizację (seed 4242: AI 28 miało 2 wojny w turach 60–67); nowy test strażnik
