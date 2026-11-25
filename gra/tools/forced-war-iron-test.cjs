@@ -261,8 +261,14 @@ try {
   assert(!ironCommand({ stanWojny: true }).some(c => c.type === 'wypowiedz_wojne'), 'target już w wojnie blokuje DOW');
   assert(ironCommand({ peaceLocked: true }).some(c => c.type === 'wypowiedz_wojne'), 'peace lock (w tym cooldown pary) NIE blokuje wojny epoki (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1)');
   assert(ironCommand({ hasNapTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'NAP NIE blokuje wojny epoki (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1)');
-  assert(!ironCommand({ hasAllianceTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'sojusz z celem nadal blokuje wojnę Żelaza');
-  assert(!ironCommand({ hasAllianceTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'sojusz z celem blokuje DOW');
+  // R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1 (decyzja właściciela 2026-11-22; zmiana 69c7a0a25 usunęła guard
+  // hasAllianceTreaty z ai.ts): sojusz formalny z celem NIE wyklucza wojny Żelaza. Preferencja pary
+  // bez sojuszu żyje w assignForcedWarPairings (forced-war-common.ts), nie w tej funkcji.
+  const allianceCmds = ironCommand({ hasAllianceTreaty: true }).filter(c => c.type === 'wypowiedz_wojne');
+  assert(
+    allianceCmds.length === 1 && allianceCmds[0].targetId === '7' && /ZELAZO-WYMUSZONA-WOJNA/.test(allianceCmds[0].powod),
+    'sojusz z celem NIE blokuje wojny Żelaza: dokładnie jedno DOW na cel 7 z powodem Żelaza',
+  );
 
   console.log('--- ironForceWarTargetId bez pasującej relacji (żaden target, w tym gracz) ---');
   // P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (c) (2026-08-30): od tej decyzji main.ts MOŻE

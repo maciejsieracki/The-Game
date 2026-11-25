@@ -296,11 +296,13 @@ const baseAi = () => [
   assert(norm(withPlayerOff) === norm(withBlockingStone), 'S2e: pary AI<->AI identyczne niezależnie od wojny Kamienia gracza');
 }
 
-// S5: gracz warless, ale WSZYSTKIE AI sojusznikami -> nikt nie ma jak wypowiedzieć (sojusz blokuje).
+// S5: gracz warless, WSZYSTKIE AI sojusznikami -> sojusz formalny NIE blokuje wojny epoki (R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1,
+// decyzja właściciela 2026-11-22; isWarTreatyBlocked(eraWar=true) = false). Gracz dostaje dokładnie jeden przydział, bramka ok.
 {
   const r = runWave({ turn: TURN, playerCapital, ai: baseAi(), forcedPairs: [], counts: new Map(), alliances: [[0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6]] });
   print('S5: gracz warless, sojusz formalny z każdą AI', r);
-  assert(r.toPlayer.length === 0, 'S5: sojusz formalny blokuje wojnę epoki z graczem');
+  assert(r.toPlayer.length === 1 && r.toPlayer[0].ownerId === 1, 'S5: sojusz formalny NIE blokuje wojny epoki: dokładnie jeden przydział AI1 -> gracz');
+  assert(r.gateVerdicts.length === 1 && r.gateVerdicts[0].verdict === 'ok', 'S5: bramka wypowiedzenia na gracza = ok mimo sojuszu');
 }
 
 // S6: parametry z JSON (dowód wartości).
