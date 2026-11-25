@@ -1,0 +1,15 @@
+# R-WEB-MEASURE-LIMITS-FLEE-FORTRING-Q1 — pomiary NIE ZMIERZONO (4 funkcje), bez zmian gry
+
+DOMAIN: GAME (pomiar) | Operator HAIKU 5.5 | runda 1/5 | BAZA = origin/main 35f601ae304471593c4921a61bfecbddbb9de14a. Bez deployu, zero zmian w gra/src i gra/data.
+
+## Kontekst
+Cztery funkcje wdrożone na ROBOCZEJ bez pomiaru w żywej grze (rejestr: FALA 863, 865, 882, 885): (a) limit wojen z graczem (flaga, FALA 863), (b) limit 2 sojuszy AI↔AI (flaga, FALA 865; po ENABLEFLAGS 888 flagi dyplomacji są domyślnie ON — sprawdź faktyczny stan), (c) FORTRING (wydajność w grze i round-trip zapisu, FALA 882), (d) FLEEMANUAL (ręczny odwrót, zgodność z limitem ruchu, odwrót na mapie/animacja, FALA 885). Istniejące narzędzia: runnery gra/tools/*-measure*.cjs, diplomacy-harder-measure-run.cjs (wznawialny, --stop-at, slot), hak ?civTest=1 window.__settingsLive, helper Chrome (CHROMEHELPER; SIGSEGV przy wznowieniu zapisu — rób świeże przebiegi). Dokumenty wzorcowe: dyspozycje/analizy/POMIAR-*.md.
+## Zadanie
+Dla każdej z 4 funkcji: (1) napisz/wykorzystaj wznawialny runner pomiaru (nowy plik gra/tools/<nazwa>-measure.cjs; nie ruszaj istniejących bez potrzeby); (2) zmierz na żywej grze (Chromium przez helper, seed 4242 i 7 gdzie dotyczy; (a),(b): 90 tur; (c): wydajność tury z włączonym i wyłączonym pierścieniem fortów + round-trip zapisu; (d): scenariusz odwrotu ręcznego); (3) zapisz wynik w dyspozycje/analizy/POMIAR-LIMITY-FLEE-FORTRING-2026-11-25.md (tabela: funkcja | co zmierzono | wynik liczbowy | werdykt DZIAŁA / NIE DZIAŁA / NIE ZMIERZONO + powód). Pracuj funkcją po funkcji, commit po każdej. Gdy funkcja jest niemierzalna w obecnej infrastrukturze — wpisz NIE ZMIERZONO z konkretnym powodem i śladem (co próbowałeś); nie zgaduj wyników. Jeśli pomiar ujawni błąd gry: opisz minimalne odtworzenie i cytat obowiązującej reguły, NIE naprawiaj gry (kandydat R-WEB-*).
+## Allowlista
+nowe gra/tools/*-measure.cjs (limits/flee/fortring), dyspozycje/analizy/POMIAR-LIMITY-FLEE-FORTRING-2026-11-25.md, dyspozycje/autobot/runs/R-WEB-MEASURE-LIMITS-FLEE-FORTRING-Q1/**.
+## Zakazy: gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifest, rust-port/, npm run build/dev w gra/, osłabianie lub usuwanie asercji (poza zakresem wprost opisanym niżej), git add -A, push, NOWE SESJE/ZADANIA/HARMONOGRAMY (spawn_task, create_session, create_trigger, send_later), run_in_background, git log -S nad całym repo bez ścieżki (zawiesza >120 s — zawężaj do gra/src gra/data gra/tools). Dysk >= 4 GB; po bramkach usuń gra/node_modules. Procesy Chromium po pomiarze zabij (pkill chrome własnych biegów); jeden Chromium naraz (maszyna 4 rdzenie).
+## Bramki
+tsc 0; logic 213; tech-tree 20; research 33; unit-replace 21; combat 6; ai-test 297/0 (kod gry bez zmian — wystarczy tsc + logic + ai-test). Zacommituj i zwróć SHA.
+## Binarne kryterium
+Dokument pomiaru istnieje; każda z 4 funkcji ma werdykt z liczbami albo NIE ZMIERZONO z konkretnym powodem; runner wznawialny (test: bieg w dwóch odcinkach = bieg ciągły, lub NIE ZMIERZONO z powodem).
