@@ -1750,6 +1750,7 @@ import {
   truceEndTickPair,
   truceEndToWarCore,
   clearTruceEndOfferCore,
+  truceEndOfferTarget,
   type TruceEndPorts,
 } from './game/diplomacy-peace-lock';
 import {
@@ -13105,10 +13106,14 @@ async function boot(): Promise<void> {
           // na cywilizację, FALA 863) — podlega bramce jak zwykłe wypowiedzenie. Podczas rozejmu para nie
           // jest liczona jako wojna, więc w międzyczasie mogła powstać inna wojna; wtedy wznowienie jest
           // odrzucone, rozejm dostaje +1 turę i próba ponowi się w kolejnej turze (bez wybuchu wojny).
-          const typWojnyRozejm = getWarTypFromMeta(getDiploPairMeta(a, b));
-          if (!warLimitAllowsDeclaration(a, b, typWojnyRozejm)) {
-            const metaOdmowa = getDiploPairMeta(a, b);
-            setDiploPairMeta(a, b, { ...metaOdmowa, truceUntilTurn: turn + 1 });
+          // Deklarujący wznowienie = adresat propozycji (strona niebędąca inicjatorem rozejmu, odmowa = wojna).
+          // Gracz jako deklarujący nie jest ograniczany (jak w pozostałych bramkach); brak inicjatora → bramka.
+          const metaWznow = getDiploPairMeta(a, b);
+          const deklarujacyWznowienia = truceEndOfferTarget(metaWznow.truceInitiatorId, a, b);
+          const graczDeklaruje = deklarujacyWznowienia != null && isMe(deklarujacyWznowienia);
+          const typWojnyRozejm = getWarTypFromMeta(metaWznow);
+          if (!graczDeklaruje && !warLimitAllowsDeclaration(a, b, typWojnyRozejm)) {
+            setDiploPairMeta(a, b, { ...metaWznow, truceUntilTurn: turn + 1 });
             return;
           }
           const cur = getDiploRelation(a, b);
