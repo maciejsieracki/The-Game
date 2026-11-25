@@ -9495,6 +9495,103 @@ mod march_incremental_tests {
         );
     }
 
+    /// Obrona Z1 (mutant E1): pin `_bestFallBackStep` (`:7189-7190`) liczy `dNow` z `_nearestEnemy(ru)`, a NIE z
+    /// pierwszego wroga na liście. Najbliższy wróg (D1 w (7,0), `dNow = 3`) jest DRUGI w `live_enemy_cells`; daleki
+    /// (D0 w (12,0)) jest pierwszy. Krok (3,0) ma `dMin = 4 >= 3`, więc pin go wybiera; `dNow` z dalekiego wroga (8)
+    /// odrzuciłby każdy kafel (`dMin < dNow`) i odwrót skończyłby się bez kroku.
+    #[test]
+    fn odwrot_dnow_z_najblizszego_wroga_nie_z_pierwszego() {
+        let (mut b, st) = setup_defs(3.0, vec![unit_at(false, 12), unit_at(false, 7)]);
+        place(&mut b, A0, 4);
+        b.set_now(1000.0);
+        pend(&mut b, false);
+        assert_eq!(
+            b.live_enemy_cells(A0, &st)
+                .iter()
+                .map(|e| e.1)
+                .collect::<Vec<_>>(),
+            vec![12, 7],
+            "najbliższy wróg NIE jest pierwszy na liście"
+        );
+        let mut c = cont(MarchKind::FallBack, 3.0);
+        let next = b.fall_back_enter(&st, &mut c);
+        assert_eq!(next, MarchNext::StepEnd, "krok odwrotu z dNow = 3");
+        assert_eq!(b.cell_of(A0), (3, 0), "krok w tył (dMin 4 >= dNow 3)");
+    }
+
+    /// Obrona Z2 (mutant E8): pin callback C-FLANK (`:6438-6444`): gdy kolejny krok skierowany nie istnieje
+    /// (`_cavDirectedManeuverStep` zwraca `false`), callback woła `done()` — NIE przechodzi do `_cavManeuverStep`.
+    /// Tu po pierwszym kroku C-FLANK wszystkie pola obok celu są zajęte (BFS nie ma celu), a zwykły krok manewru
+    /// istnieje (wolni sąsiedzi jazdy).
+    #[test]
+    fn jazda_c_flank_brak_kroku_skierowanego_konczy_bez_manewru() {
+        let (mut b, mut st) = setup_defs(4.0, vec![unit_at(false, 6)]);
+        b.units[0][0].activate.mounted = true;
+        b.attack_direction[0][0] = AttackDirection::Tyl;
+        place(&mut b, A0, 0);
+        b.set_now(1000.0);
+        pend(&mut b, false);
+        let mut c = cont(MarchKind::CavManeuver, 4.0);
+        let next = b.cav_enter(&st, &mut c);
+        assert_eq!(next, MarchNext::StepEnd);
+        assert!(
+            matches!(c.kind, MarchKind::CavDirected { tgt: 0, .. }),
+            "pierwszy krok C-FLANK: {:?}",
+            c.kind
+        );
+        b.march_advance(c, next);
+        let first = b.cell_of(A0);
+        for (q, r) in [(5.0, 0.0), (7.0, 0.0), (6.0, 1.0)] {
+            b.occ_by_key.insert(cell_key(q, r), "x".to_string());
+        }
+        step(&mut b, &mut st, 1240.0);
+        assert_eq!(b.cell_of(A0), first, "bez kroku _cavManeuverStep");
+        assert_eq!(b.take_march_done(), Some((A0, 0.0)), "done() w callbacku");
+        assert!(b.take_timers().is_empty());
+    }
+
+    /// Obrona Z3 (mutant E6): pin `_cavalryAction` (`:6404-6405`): krok szarży `_bestChargeStepKey` tylko przy
+    /// `ru.moveLeft > 0`; przy `moveLeft = 0` (manewry już odpadły przez `moveLeft <= 0`) = `done()` bez ruchu, choć
+    /// krok szarży istnieje.
+    #[test]
+    fn jazda_szarza_bez_ruchu_konczy_bez_kroku() {
+        let (mut b, st) = setup(0.0);
+        b.units[0][0].activate.mounted = true;
+        place(&mut b, A0, 0);
+        place(&mut b, D0, 4);
+        b.set_now(1000.0);
+        pend(&mut b, false);
+        let mut c = cont(MarchKind::CavManeuver, 0.0);
+        assert_eq!(b.cav_enter(&st, &mut c), MarchNext::Done);
+        assert_eq!(b.cell_of(A0), (0, 0), "bez kroku szarży");
+        assert!(!c.moved);
+        // Kontrola: z ruchem ta sama scena daje krok (manewr), więc `Done` wyżej wynika ze strażnika `moveLeft`.
+        let mut c = cont(MarchKind::CavManeuver, 4.0);
+        assert_eq!(b.cav_enter(&st, &mut c), MarchNext::StepEnd);
+    }
+
+    /// Obrona Z3 (mutant E7): pin callbacki jazdy (`:6439`, `:6496`) `if (ru.moveLeft > 0)` — `NaN` daje `false`,
+    /// więc `done()`; z `moveLeft = 1` ten sam callback robi kolejny krok.
+    #[test]
+    fn jazda_callback_nan_konczy() {
+        let (mut b, st) = setup(4.0);
+        b.units[0][0].activate.mounted = true;
+        place(&mut b, A0, 1);
+        place(&mut b, D0, 5);
+        b.set_now(1240.0);
+        pend(&mut b, false);
+        let mut c = cont(MarchKind::CavManeuver, f64::NAN);
+        c.stage = MarchStage::StepEnd;
+        c.moved = true;
+        assert_eq!(b.cav_step_end(&st, &mut c), MarchNext::Done);
+        assert_eq!(b.cell_of(A0), (1, 0), "NaN: bez kolejnego kroku");
+        let mut c = cont(MarchKind::CavManeuver, 1.0);
+        c.stage = MarchStage::StepEnd;
+        c.moved = true;
+        assert_eq!(b.cav_step_end(&st, &mut c), MarchNext::StepEnd);
+        assert_eq!(b.cell_of(A0), (2, 0), "moveLeft 1: kolejny krok");
+    }
+
     /// Strzelec bez amunicji z `start` (`_activateUnit` `:6249-6276` -> `_fallBackStep`): odwrót krok po kroku (marsz
     /// w toku po `start`).
     #[test]

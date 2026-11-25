@@ -228,6 +228,13 @@ client+renderer przy integracji (orkiestrator) są potrzebne.
 ## Długi
 
 1. **MARCH-ATOMIC-TESTONLY** — gałęzie `!march_incremental` w `ProdBody` używane tylko przez testy poza sesją (§5).
+   Dopisek Obrony (zarzut Z4 Evaluatora): wejścia i callbacki krokowe (`fall_back_enter`, `flee_enter`/`flee_step_end`,
+   `cav_enter`/`cav_step_end`, `walk_enter`) są DUPLIKATAMI logiki kopii atomowej (`fall_back`, `flee_run`,
+   `cavalry_action`, marsz `_siegeWalkTo` w kopii). Testy kopii atomowej (K5DOC-T6/T7) nie pilnują duplikatu
+   krokowego; do rundy r1 testy `march_incremental_tests` NIE obejmowały mutantów Evaluatora E1 (`dNow` z
+   najbliższego wroga), E6 (strażnik `moveLeft > 0` szarży), E7 (`NaN` w callbacku jazdy) ani E8 (C-FLANK bez
+   kroku = `done()`). Obrona dodała 4 testy lib, które je zabijają (`02a-obrona.md`). Do czasu usunięcia
+   duplikatu każda zmiana reguły ruchu musi trafić w obie kopie i mieć test lib dla kopii krokowej.
 2. **MORALE-START-IN-COMPLETE** — skutki morale/`start_rout` aktywacji nie-ucieczkowej nadal w `complete` (tag
    `morale-konflikt-zegara`); kandydat na rozszerzenie `after_start` (NIE_ZMIERZONO osobnym generatorem).
 3. **DIAG-BUDGET-1MS** — przy `WIRING_A_RUST_FF_STEP=1` bitwy do sufitu 400 tur przekraczają `SKIP_STEP_BUDGET`
