@@ -163,6 +163,9 @@ async function openGameRetry(chromium, fresh) {
  *  gracza; wznowienie (fresh=false): loadSlot zamiast zakladania miasta. Potem autopilot, tryb szybki i flagi. */
 async function openGame(ctx, { fresh }) {
   const page = ctx.pages()[0] || await ctx.newPage();
+  // R-WEB-ALLIANCE-LIMIT-AI-T66-Q1: log zawierania/zrywania sojuszy AI (wiersze [ALLIANCE-*] z konsoli gry) do <out>/<TAG>.alliance-log.txt.
+  fs.mkdirSync(OUT, { recursive: true });
+  page.on('console', m => { const t = m.text(); if (t.startsWith('[ALLIANCE-')) fs.appendFileSync(path.join(OUT, TAG + '.alliance-log.txt'), t + '\n'); });
   const url = 'file://' + path.join(DIST, 'index.html') + '?civTest=1&civSeed=' + SEED;
   await page.goto(url, { waitUntil: 'load', timeout: 180000 });
   await page.waitForFunction(() => !!window.__aiTradeWiringTestDebug && !!window.__aiEconomyMeasure && !!window.__detHarness && !!window.__diploHarderMeasure && !!window.__diploAllFlagsMeasure, null, { timeout: 180000 });

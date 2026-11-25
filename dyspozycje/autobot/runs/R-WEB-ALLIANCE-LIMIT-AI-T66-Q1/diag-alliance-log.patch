@@ -1,0 +1,58 @@
+diff --git a/gra/src/main.ts b/gra/src/main.ts
+index 7e7848347..d2dcc1b2d 100644
+--- a/gra/src/main.ts
++++ b/gra/src/main.ts
+@@ -24635,6 +24635,7 @@ async function boot(): Promise<void> {
+       }
+ 
+       activeDeals = removeTreatiesById(activeDeals, [dealId]);
++      if (wasAlliance) console.log(`[ALLIANCE-REMOVE] t${turn} ${dealId} ${a}-${b} sciezka=zerwanie-dobrowolne`);
+       zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, dealId);
+ 
+       // R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1 (GOAL 2/3, decision-abc.md pkt 2) — jednostronne
+@@ -24705,6 +24706,8 @@ async function boot(): Promise<void> {
+         d => dealInvolvesOwners(d, a, b) && isAllianceDealKind(d.rodzaj),
+       );
+       const hasNap = hasTreaty(activeDeals, a, b, RodzajTraktatu.PaktNieagresji);
++      // R-WEB-ALLIANCE-LIMIT-AI-T66-Q1: log diagnostyczny (tylko gdy sojusz w relacji lub w activeDeals).
++      if (hasSojusz || rel.status === 'sojusz') console.log(`[ALLIANCE-SYNC] t${turn} ${a}-${b} sojuszWDeals=${hasSojusz} statusPrzed=${rel.status} deals=${JSON.stringify(activeDeals.filter(d => dealInvolvesOwners(d, a, b)).map(d => [d.id, d.rodzaj, d.strony]))}`);
+       if (hasSojusz) {
+         setDiploRelation(a, b, { ...rel, status: 'sojusz' });
+       } else if (hasNap) {
+@@ -25652,6 +25655,7 @@ async function boot(): Promise<void> {
+       // Zaufanie (−20) nalicza istniejące zdarzenie 'zlamana_obietnica_ai' niżej; tu tylko dopisek relacji.
+       const napAiAiZerwany = isAiAiTreatyTickEnabled() && !isHuman(a) && !isHuman(b) && !opts?.bezKary
+         && activeDeals.some(d => brokenIds.includes(d.id) && normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.PaktNieagresji);
++      if (activeDeals.some(d => brokenIds.includes(d.id) && isAllianceDealKind(d.rodzaj))) console.log(`[ALLIANCE-REMOVE] t${turn} ${brokenIds.join(',')} ${a}-${b} sciezka=wojna`);
+       activeDeals = removeTreatiesById(activeDeals, brokenIds);
+       for (const id of brokenIds) {
+         zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, id);
+@@ -25830,7 +25834,11 @@ async function boot(): Promise<void> {
+     /** R-WEB-AI-AI-ALLIANCE-LIMIT-2-VIOLATED-Q1: czy nowy sojusz AI↔AI a↔b mieści się w limicie (ścieżka sióstr). */
+     function aiAiAllianceLimitPozwala(a: number, b: number): boolean {
+       const owners = Array.from(aiOwnerCivMap.keys()).filter(oid => isMajorAiCivForForcedPeace(oid)).sort((x, y) => x - y);
+-      return sojuszLimitPozwala(aiAiAllianceLimitInput(owners), a, b);
++      const input = aiAiAllianceLimitInput(owners);
++      const ok = sojuszLimitPozwala(input, a, b);
++      // R-WEB-ALLIANCE-LIMIT-AI-T66-Q1: log diagnostyczny (odczyt, bez wpływu na wynik).
++      console.log(`[ALLIANCE-GATE] t${turn} ${a}-${b} ok=${ok} licznik=${JSON.stringify([...liczbaSojuszyCywilizacji(input)])}`);
++      return ok;
+     }
+ 
+     /** R-WEB-AI-AI-ALLIANCE-LIMIT-2-VIOLATED-Q1: zaakceptowany wniosek dyplomatyczny z sojuszem (gracz↔AI lub AI↔AI)
+@@ -25855,6 +25863,7 @@ async function boot(): Promise<void> {
+       // R-WEB-AI-AI-ALLIANCE-LIMIT-2-VIOLATED-Q1: licznik sojuszy z PEŁNEGO stanu activeDeals (wspólny moduł
+       // ai-ai-alliance-limit.ts; liczą się sojusze z inną główną AI i z graczem, bez państw-miast).
+       const alliancesCount = liczbaSojuszyCywilizacji(aiAiAllianceLimitInput(owners));
++      console.log(`[ALLIANCE-PLAN] t${turn} licznik=${JSON.stringify([...alliancesCount])}`);
+       const alliancesOf = (oid: number): number[] => activeDeals
+         .filter(d => isAllianceDealKind(d.rodzaj) && d.strony.includes(oid))
+         .map(d => (d.strony[0] === oid ? d.strony[1] : d.strony[0]));
+@@ -26608,6 +26617,7 @@ async function boot(): Promise<void> {
+       activeDeals = expireTreaties(activeDeals, turn);
+       for (const d of dealsBeforeExpire) {
+         if (activeDeals.some(x => x.id === d.id)) continue;
++        if (isAllianceDealKind(d.rodzaj)) console.log(`[ALLIANCE-REMOVE] t${turn} ${d.id} ${d.strony.join('-')} sciezka=wygasniecie`);
+         zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, d.id);
+         // WIARYGODNOSC §3 tabela B (FINISZ P1/P2/P3) — traktat zniknął TU, w
+         // expireTreaties, czyli wygasł NATURALNIE (zerwania dobrowolne i zerwania

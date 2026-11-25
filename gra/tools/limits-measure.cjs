@@ -21,8 +21,24 @@ const LIMIT_ALLIANCE = 2;
 const LIMIT_EPOKI = 1;
 const LIMIT_NATURALNA = 1;
 
+/**
+ * R-WEB-ALLIANCE-LIMIT-AI-T66-Q1: limit liczy sojusze z activeDeals (ai-ai-alliance-limit.ts), a nie pole `status`
+ * (relacja diplomacyRelations, które po zniknięciu sojuszu bywa zostawione na 'sojusz'; ślad runtime:
+ * dyspozycje/autobot/runs/R-WEB-ALLIANCE-LIMIT-AI-T66-Q1/dane/seed4242-alliance-log-t67.txt, ALLIANCE-SYNC
+ * sojuszWDeals=false statusPrzed=sojusz). Źródłem prawdy w wierszu jest `pokoj` (resolvePokojTrustTier nad activeDeals).
+ * Brak pola `pokoj` (undefined w JSON) = brak umowy/kontaktu/wojna, więc NIE jest sojuszem. Rozbieżności
+ * status/pokoj są jawnie liczone w `rozbieznosciStatusPokoj`.
+ */
+function jestSojuszemDeal(p) {
+  return p.pokoj === 'sojusz';
+}
+
 function analyze(file) {
   const rows = fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
+  return analyzeRows(rows, file);
+}
+
+function analyzeRows(rows, file) {
   const out = {
     plik: file,
     wiersze: rows.length,
@@ -38,6 +54,7 @@ function analyze(file) {
     sojuszyZGraczemMax: 0,
     turyNaruszenWojen: [],
     turyNaruszenSojuszy: [],
+    rozbieznosciStatusPokoj: 0,
     wojnyNaTurze: [],
     sojuszeNaTurze: [],
   };
@@ -54,11 +71,12 @@ function analyze(file) {
     let liczbaWojen = 0;
     let liczbaSojuszy = 0;
     for (const p of pairs) {
+      if ((p.status === 'sojusz') !== (p.pokoj === 'sojusz')) out.rozbieznosciStatusPokoj++;
       if (p.status === 'wojna') {
         liczbaWojen++;
         addW(p.a, p.typWojny);
         addW(p.b, p.typWojny);
-      } else if (p.status === 'sojusz') {
+      } else if (jestSojuszemDeal(p)) {
         liczbaSojuszy++;
         sojusze[p.a] = (sojusze[p.a] || 0) + 1;
         sojusze[p.b] = (sojusze[p.b] || 0) + 1;
@@ -111,4 +129,4 @@ if (require.main === module) {
   console.log(JSON.stringify(wyniki, null, 1));
 }
 
-module.exports = { analyze, LIMIT_ALLIANCE, LIMIT_EPOKI, LIMIT_NATURALNA };
+module.exports = { analyze, analyzeRows, jestSojuszemDeal, LIMIT_ALLIANCE, LIMIT_EPOKI, LIMIT_NATURALNA };
