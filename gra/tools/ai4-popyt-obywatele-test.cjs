@@ -196,10 +196,14 @@ console.log('Z1h. TRZY POZOSTALE PROFILE AUTOMATU GRACZA — bez zmiany zachowan
         '7,9': { zloze: 'miedz', teren: 'wzgorza' }, '9,5': { nakladka: 'zloze_konia' },
       },
     });
+    // R-WEB-TEST-DEBT-Q14 (HARNESS): profil „infrastruktura” (droga/posterunek/fort) daje zero pickow przy JEDNYM
+    // mieście — droga łączy miasta (road-network-plan), więc fikstura potrzebuje drugiego miasta, inaczej
+    // asercja `bez.length > 0` jest czerwona bez względu na Zasadę 1. Drugie miasto stoi poza zasięgiem pierwszego.
     const city = { id: 'c0', ownerId: 0, q: 7, r: 7, population: 6, ulepszeniaFocus: focus };
+    const city2 = { id: 'c1', ownerId: 0, q: 13, r: 7, population: 6, ulepszeniaFocus: focus };
     const picks = AUTO.pickAutoImprovements({
-      cities: [city], ownerId: 0, map,
-      territoryNodes: territory(7, 7, 0, 'c0'),
+      cities: [city, city2], ownerId: 0, map,
+      territoryNodes: [...territory(7, 7, 0, 'c0'), ...territory(13, 7, 0, 'c1')],
       placedImprovements: new Map(), pracaAvailable: 100000, unlockedTechs: TECHS,
       pracaBudgetPercent: 100, skipWyrab: true, playerEra: 3,
       getFocus: c => c.ulepszeniaFocus, getOnlyWorked: () => false,
@@ -242,21 +246,24 @@ console.log('Z2. BUDOWA TYLKO PRZY OBYWATELACH — z wyjatkiem zloz');
   });
   // R4 KOREKTA F: centrum miasta jest zwyklym, ZAWSZE pracowanym heksem (okolica.ts:626) — nie jest „poza obywatelami”.
   const pozaObywatelami = picks.filter(p => !worked.has(`${p.q},${p.r}`) && !(p.q === city.q && p.r === city.r));
-  const nieZlozowePoza = pozaObywatelami.filter(p => p.key !== 'warzelnia_soli');
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): regula 2026-11-04 (auto-improvements.ts, FOOD_IMPROVEMENT_KEYS) — warzelnia soli
+  // (klucz zywnosciowy) stoi WYLACZNIE na heksie z obywatelem, bez wyjatku zlozowego. Asercja nie ma wyjatku dla 'warzelnia_soli'.
+  ok(pozaObywatelami.length === 0,
+    `Z2c: ZERO ulepszen poza polami z obywatelami — takze warzelnia soli (${pozaObywatelami.length}: `
+    + `${pozaObywatelami.map(p => p.key + '@' + p.q + ',' + p.r).slice(0, 4).join(' ')})`);
   ok(picks.length > 0, `Z2b: picker cos zbudowal (${picks.length})`);
-  ok(nieZlozowePoza.length === 0,
-    `Z2c: ZERO ulepszen NIE-zlozowych poza polami z obywatelami (${nieZlozowePoza.length}: `
-    + `${nieZlozowePoza.map(p => p.key + '@' + p.q + ',' + p.r).slice(0, 4).join(' ')})`);
-  ok(pozaObywatelami.some(p => p.key === 'warzelnia_soli' && `${p.q},${p.r}` === '12,7'),
-    'Z2d: WYJATEK ZLOZOWY dziala — warzelnia soli powstaje na zlozu 12,7 mimo braku obywateli');
+  ok(!pozaObywatelami.some(p => p.key === 'warzelnia_soli' && `${p.q},${p.r}` === '12,7'),
+    'Z2d: BRAK WYJATKU ZLOZOWEGO — warzelnia soli NIE powstaje na zlozu 12,7 bez obywateli (regula 2026-11-04)');
 
-  ok(CITIES.DEFAULT_ULEPSZENIA_ONLY_WORKED === true,
-    'Z2e: DEFAULT_ULEPSZENIA_ONLY_WORKED === true (nowa wartosc domyslna rundy 4)');
-  ok(CITIES.freshUlepszeniaEmpirePolicy().onlyWorked === true,
-    'Z2f: swieza polityka imperium ma onlyWorked === true');
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): przelacznik „tylko pola z obywatelami” USUNIETY 2026-11-04 — stale wartosci
+  // i pola nie istnieja, a regula jest zawsze aktywna (asercje o usunieciu zamiast o starym domyslnym ON).
+  ok(CITIES.DEFAULT_ULEPSZENIA_ONLY_WORKED === undefined,
+    'Z2e: stala DEFAULT_ULEPSZENIA_ONLY_WORKED USUNIETA (brak przelacznika; regula zawsze aktywna)');
+  ok(!('onlyWorked' in CITIES.freshUlepszeniaEmpirePolicy()),
+    'Z2f: swieza polityka imperium NIE ma pola onlyWorked (przelacznik usuniety 2026-11-04)');
   const pol = CITIES.freshUlepszeniaEmpirePolicy();
-  ok(CITIES.resolveEffectiveUlepszenia({ id: 'x', ownerId: 0, q: 0, r: 0, name: 'x', population: 1, ulepszeniaOverride: true }, pol).onlyWorked === true,
-    'Z2g: override miasta BEZ pola `ulepszeniaOnlyWorked` czyta sie jako true');
+  ok(!('onlyWorked' in CITIES.resolveEffectiveUlepszenia({ id: 'x', ownerId: 0, q: 0, r: 0, name: 'x', population: 1, ulepszeniaOverride: true }, pol)),
+    'Z2g: override miasta BEZ pola `ulepszeniaOnlyWorked` nie niesie zadnego onlyWorked');
   ok(CITIES.resolveEffectiveUlepszenia({ id: 'x', ownerId: 0, q: 0, r: 0, name: 'x', population: 1, ulepszeniaOverride: true, ulepszeniaOnlyWorked: false }, pol).onlyWorked === false,
     'Z2h: JAWNE `false` w zapisie miasta jest respektowane (nie nadpisujemy wyboru gracza)');
 }
