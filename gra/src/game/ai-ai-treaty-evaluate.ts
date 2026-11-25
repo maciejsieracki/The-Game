@@ -146,7 +146,7 @@ export function setAiAiDopłataMnoznikForTest(value: number | null): void {
 
 /**
  * R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-SOFTEN-MEASURE-Q1: mnożnik dopłaty D WYŁĄCZNIE dla ścieżki AI↔AI (dane:
- * dopłataDMnoznikAiAi, domyślnie 1,0 = bez zmiany). Nieskończony / ujemny -> 1,0 (bezpieczny fallback).
+ * dopłataDMnoznikAiAi, domyślnie 0,5 — R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-HALF-Q1). Nieskończony / ujemny -> 1,0 (bezpieczny fallback).
  */
 export function aiAiDopłataMnoznik(): number {
   const v = dopłataMnoznikNadpisanieTest ?? (aiAiTreatyParamsJson as { dopłataDMnoznikAiAi?: unknown }).dopłataDMnoznikAiAi;

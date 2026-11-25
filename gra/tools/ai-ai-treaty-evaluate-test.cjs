@@ -6,7 +6,7 @@
  *  (A1) NAP: równe moce -> akceptacja, D = 0, płatnik null, durationTurns = 15;
  *  (A2) próg gotowości 0,54 z danych (granica 0,539 odmowa / 0,54 akceptacja);
  *  (A3) r = 1 => D = 0 (brak płatnika);
- *  (A4) słabsza strona płaci D ZŁOTEM (płatnik = słabszy, paymentGold = D);
+ *  (A4) słabsza strona płaci D ZŁOTEM (płatnik = słabszy, paymentGold = round(D * 0,5), mnożnik z danych; R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-HALF-Q1);
  *  (A5) skarbiec płatnika za mały => odmowa „brakuje X PN”; skarbiec = D => akceptacja;
  *  (A6) wasal (proposer/target) i akcja spoza zakresu => unsupported, accept = false;
  *  (A7) wojna między stronami => odmowa;
@@ -102,7 +102,7 @@ function runSuite(M) {
     const r = ev({ proposer: { power: 1000, treasuryGold: 1e9, allies: [], enemies: [] }, target: { power: 2000, treasuryGold: 500, allies: [], enemies: [] } });
     if (!r.accept) return `odmowa: ${r.reason}`;
     if (r.payer !== 'proposer') return `płatnik=${r.payer}`;
-    if (!(r.parity.D > 0) || r.paymentGold !== r.parity.D) return `paymentGold=${r.paymentGold} D=${r.parity.D}`;
+    if (!(r.parity.D > 0) || r.paymentGold !== Math.round(r.parity.D * 0.5)) return `paymentGold=${r.paymentGold} D=${r.parity.D}`;
     return true;
   });
 
@@ -110,21 +110,21 @@ function runSuite(M) {
     const r = ev({ proposer: { power: 2000, treasuryGold: 500, allies: [], enemies: [] }, target: { power: 1000, treasuryGold: 1e9, allies: [], enemies: [] } });
     if (!r.accept) return `odmowa: ${r.reason}`;
     if (r.payer !== 'target') return `płatnik=${r.payer}`;
-    if (!(r.parity.D > 0) || r.paymentGold !== r.parity.D) return `paymentGold=${r.paymentGold} D=${r.parity.D}`;
+    if (!(r.parity.D > 0) || r.paymentGold !== Math.round(r.parity.D * 0.5)) return `paymentGold=${r.paymentGold} D=${r.parity.D}`;
     return true;
   });
 
   check('A5a skarbiec o 1 PN za mały => odmowa „brakuje 1 PN”', () => {
     const probe = ev({ proposer: { power: 1000, treasuryGold: 1e9, allies: [], enemies: [] }, target: { power: 2000, treasuryGold: 0, allies: [], enemies: [] } });
-    const D = probe.parity.D;
-    const r = ev({ proposer: { power: 1000, treasuryGold: D - 1, allies: [], enemies: [] }, target: { power: 2000, treasuryGold: 0, allies: [], enemies: [] } });
+    const need = Math.round(probe.parity.D * 0.5);
+    const r = ev({ proposer: { power: 1000, treasuryGold: need - 1, allies: [], enemies: [] }, target: { power: 2000, treasuryGold: 0, allies: [], enemies: [] } });
     if (r.accept) return 'zaakceptowano przy za małym skarbcu';
     if (!/brakuje 1 PN/.test(r.reason)) return `powód: ${r.reason}`;
     return true;
   });
 
   check('A5b skarbiec = D => akceptacja (skarbiec nie schodzi poniżej zera)', () => {
-    const D = ev({ proposer: { power: 1000, treasuryGold: 1e9, allies: [], enemies: [] }, target: { power: 2000, treasuryGold: 0, allies: [], enemies: [] } }).parity.D;
+    const D = Math.round(ev({ proposer: { power: 1000, treasuryGold: 1e9, allies: [], enemies: [] }, target: { power: 2000, treasuryGold: 0, allies: [], enemies: [] } }).parity.D * 0.5);
     const r = ev({ proposer: { power: 1000, treasuryGold: D, allies: [], enemies: [] }, target: { power: 2000, treasuryGold: 0, allies: [], enemies: [] } });
     return r.accept ? true : `odmowa: ${r.reason}`;
   });
