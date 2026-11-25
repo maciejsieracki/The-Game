@@ -44,15 +44,17 @@ export type WorldDiploReasonCode =
   | 'oferta_zmeczenia'
   | 'auto_pokoj_dwa_miasta'
   | 'prosba_o_pokoj_ai'
-  | 'pokoj_z_propozycji'
-  | 'pokoj_po_rozejmie'
-  | 'rozejm_wygasl'
   | 'wojna_epoki'
-  | 'wypowiedzenie_ai'
-  | 'wypowiedzenie_gracza'
-  | 'zdobycie_miasta'
-  | 'bunt'
-  | 'inny';
+  | 'wypowiedzenie_ai';
+
+/**
+ * Kod powodu pokoju po wojnie zmęczeniem: 'pokoj_wymuszony_zmeczenie' gdy poziom zmęczenia (peak,
+ * sprzed decyzji) dosięgnął progu wymuszenia, inaczej 'oferta_zmeczenia' (oferta przegranego).
+ * Czysta funkcja — próg podaje wołający (WAR_WEARINESS_PARAMS.zmeczenie.progWymuszonyPokoj).
+ */
+export function powodZmeczeniaPokoju(peak: number, progWymuszony: number): WorldDiploReasonCode {
+  return peak >= progWymuszony ? 'pokoj_wymuszony_zmeczenie' : 'oferta_zmeczenia';
+}
 
 /** Powód wpisu przekazywany do worldDiploNewsEntry: kod + tury wojny (dla pokoju po wojnie). */
 export interface WorldDiploReason {
@@ -62,7 +64,7 @@ export interface WorldDiploReason {
 }
 
 /**
- * Polski opis powodu do wpisu „Wydarzenia na świecie”; null dla kodu nieznanego lub 'inny'
+ * Polski opis powodu do wpisu „Wydarzenia na świecie”; null dla kodu nieznanego
  * (wpis zostaje bez powodu). Czysta funkcja.
  */
 export function worldDiploReasonLabel(kod: string, turyWojny?: number): string | null {
@@ -74,14 +76,8 @@ export function worldDiploReasonLabel(kod: string, turyWojny?: number): string |
     case 'oferta_zmeczenia': return 'Pokój z oferty przegranego zmęczonego wojną';
     case 'auto_pokoj_dwa_miasta': return 'Pokój po zdobyciu 2 miast';
     case 'prosba_o_pokoj_ai': return 'Pokój na prośbę przegrywającej cywilizacji';
-    case 'pokoj_z_propozycji': return 'Pokój z propozycji';
-    case 'pokoj_po_rozejmie': return 'Pokój po zakończeniu rozejmu';
-    case 'rozejm_wygasl': return 'Rozejm wygasł, wojna wraca';
     case 'wojna_epoki': return 'Wojna epoki';
     case 'wypowiedzenie_ai': return 'Wypowiedzenie wojny przez AI';
-    case 'wypowiedzenie_gracza': return 'Wypowiedzenie wojny przez gracza';
-    case 'zdobycie_miasta': return 'Zdobycie miasta';
-    case 'bunt': return 'Bunt miasta';
     default: return null;
   }
 }

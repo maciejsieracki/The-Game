@@ -48,8 +48,17 @@ ok(M.worldDiploReasonLabel('prosba_o_pokoj_ai') !== null, 'prosba_o_pokoj_ai →
 ok(M.worldDiploReasonLabel('oferta_zmeczenia') !== null, 'oferta_zmeczenia → opis');
 ok(M.worldDiploReasonLabel('wypowiedzenie_ai') !== null, 'wypowiedzenie_ai → opis');
 ok(M.worldDiploReasonLabel('wojna_epoki') !== null, 'wojna_epoki → opis');
-ok(M.worldDiploReasonLabel('inny') === null, "'inny' → null (wpis bez powodu)");
-ok(M.worldDiploReasonLabel('kod_nieznany') === null, 'nieznany kod → null');
+ok(M.worldDiploReasonLabel('kod_nieznany') === null, 'nieznany kod → null (wpis bez powodu)');
+ok(M.worldDiploReasonLabel('') === null, 'pusty kod → null');
+ok(M.worldDiploReasonLabel('pokoj_po_rozejmie') === null, 'kod bez ścieżki w grze (usunięty) → null');
+
+console.log('CZĘŚĆ A — klasyfikacja pokoju zmęczeniem (próg z parametrów):');
+ok(M.powodZmeczeniaPokoju(100, 100) === 'pokoj_wymuszony_zmeczenie', 'peak == próg → wymuszony');
+ok(M.powodZmeczeniaPokoju(120, 100) === 'pokoj_wymuszony_zmeczenie', 'peak > próg → wymuszony');
+ok(M.powodZmeczeniaPokoju(99, 100) === 'oferta_zmeczenia', 'peak tuż pod progiem → oferta przegranego');
+ok(M.powodZmeczeniaPokoju(0, 100) === 'oferta_zmeczenia', 'peak 0 → oferta przegranego');
+ok(M.worldDiploReasonLabel(M.powodZmeczeniaPokoju(100, 100), 40) === 'Pokój wymuszony po 40 turach wojny',
+  'klasyfikacja + opis: wymuszony z 40 turami');
 
 console.log('CZĘŚĆ A — wpis z powodem i bez powodu:');
 const withR = M.worldDiploNewsEntry({ ...base, powod: { kod: 'pokoj_wymuszony_zmeczenie', turyWojny: 40 } });
@@ -85,13 +94,14 @@ const main = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
 const has = (re, m) => ok(re.test(main), m);
 has(/function withDiploWarReason</, 'withDiploWarReason zdefiniowane');
 has(/finally \{ diploWarReasonCtx = prev; \}/, 'kontekst powodu przywracany w finally');
-has(/recordAiAiWarPeaceNews\(a, b, prevStatus, rel\.status, newsOpts\?\.truce === true, diploWarReasonCtx, prevWojnaStartTura\)/,
-  'setDiploRelation przekazuje powód i start wojny do wpisu');
-has(/kod: wymuszony \? 'pokoj_wymuszony_zmeczenie' : 'oferta_zmeczenia'/, 'P10/P11: kody powodu zmęczenia (wymuszony / oferta)');
-has(/zm >= WAR_WEARINESS_PARAMS\.zmeczenie\.progWymuszonyPokoj/, 'P10: próg wymuszenia z parametrów wojny zmęczenia');
-has(/withDiploWarReason\(\{ kod: 'prosba_o_pokoj_ai' \}/, 'P20: prośba przegrywającej AI');
-has(/withDiploWarReason\(\{ kod: 'auto_pokoj_dwa_miasta', miasta: st\.capturedByA \+ st\.capturedByB \}/, 'P12: auto-pokój po 2 miastach');
-has(/kod: gateForcedTagAny !== null \? 'wojna_epoki' : 'wypowiedzenie_ai'/, 'wypowiedzenie AI / wojna epoki');
+has(/diploWarReasonCtx\.pairKey === key \? diploWarReasonCtx : null/, 'powód przypisany tylko do zmiany statusu tej pary (bez kaskad)');
+has(/recordAiAiWarPeaceNews\(a, b, prevStatus, rel\.status, newsOpts\?\.truce === true, powodPary, prevWojnaStartTura\)/,
+  'setDiploRelation przekazuje powód pary i start wojny do wpisu');
+has(/kod: powodZmeczeniaPokoju\(zm, WAR_WEARINESS_PARAMS\.zmeczenie\.progWymuszonyPokoj\)/, 'P10/P11: kod powodu zmęczenia przez klasyfikator');
+has(/WAR_WEARINESS_PARAMS\.zmeczenie\.progWymuszonyPokoj/, 'P10: próg wymuszenia z parametrów wojny zmęczenia');
+has(/withDiploWarReason\(loser, winner, \{ kod: 'prosba_o_pokoj_ai' \}/, 'P20: prośba przegrywającej AI');
+has(/withDiploWarReason\(ownerA, ownerB, \{ kod: 'auto_pokoj_dwa_miasta', miasta: st\.capturedByA \+ st\.capturedByB \}/, 'P12: auto-pokój po 2 miastach');
+has(/withDiploWarReason\(ownerId, targetId, \{ kod: gateForcedTagAny !== null \? 'wojna_epoki' : 'wypowiedzenie_ai'/, 'wypowiedzenie AI / wojna epoki');
 has(/__diploWarEndLog/, 'log window.__diploWarEndLog');
 has(/diploWarEndLogOn\(\) && !skipPair/, 'log pod bramką diploWarEndLogOn (i pomija pary z graczem)');
 has(/const diploWarEndLogOn = \(\): boolean =>[\s\S]{0,120}civTest=1/, 'bramka logu = ?civTest=1');
