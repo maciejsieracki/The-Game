@@ -19,6 +19,7 @@ use super::playable_movement::{
     MARCH_FOREIGN_CITY_HINT, MARCH_NO_ROUTE_HINT,
 };
 use super::player::is_awaiting_first_player_city;
+#[cfg(not(test))]
 use super::save_load::{SaveSnapshot, SavedPlayableSession};
 use super::siege_battle_apply::{self, ActiveSiegeBattle, SiegeBattleError, SiegeBattlePayload};
 use super::terrain::visibility::fog_view::ExploredByHuman;
@@ -1938,6 +1939,7 @@ impl fmt::Display for PlayableSaveError {
 impl Error for PlayableSaveError {}
 
 /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: jawne pominiecia i zmiany przy wczytaniu sesji (nic nie jest ciche).
+#[cfg(not(test))]
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct PlayableLoadReport {
     /// Migracje przy wczytaniu (`SaveSnapshot::migrate_on_load`, web `main.ts:46566-46573`).
@@ -2023,6 +2025,9 @@ pub fn playable_state_projection(
     Ok(projection.with_war_turn_state(state.war.clone()))
 }
 
+// `cfg(not(test))`: `save_load` i `zapis_loader` sa w `domain/mod.rs` bramkowane `#[cfg(not(test))]` (testy
+// integracyjne laduja je przez `#[path]`), wiec sciezka zapisu sesji istnieje tylko w budowie nie-testowej.
+#[cfg(not(test))]
 impl PlayableGame {
     /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: zapis sesji, web `buildSaveGameSnapshot` (`main.ts:37171-37460` @ `07d2fbd72`).
     /// Klucze w formacie weba wypelniaja istniejace `with_playable_*` (U1): `plannedMarches`/`autoMarch`
