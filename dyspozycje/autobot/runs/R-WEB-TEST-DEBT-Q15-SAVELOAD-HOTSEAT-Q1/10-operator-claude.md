@@ -1,0 +1,25 @@
+STATUS: FAIL
+DOMAIN: GAME (testy)
+TEMAT: R-WEB-TEST-DEBT-Q15-SAVELOAD-HOTSEAT-Q1
+GOAL: 6 czerwonych testów (hotseat B/D/E, save-load roundtrip, deserialize audit, realpath-mutation) sklasyfikowanych z dowodem i naprawionych do obowiązujących reguł; realpath-mutation przywraca plik po ubiciu.
+ZMIANY/COMMIT: baza ca19244c196277a139dfc87aedd90d914dd7d41b; zmienione tylko gra/tools/hotseat-etap6d-podetap-b-exec-test.cjs (harness, nadal CZERWONY) i gra/tools/resource-ledger-realpath-mutation-test.cjs (bezpieczne przywracanie) oraz ten raport. gra/src i gra/data nietknięte (md5 gra/src/main.ts = e750abbd7d945a4e406cf3a9388a839e = HEAD).
+TESTY:
+- tsc --noEmit: exit 0
+- logic-test: LOGIC OK (213/213)
+- tech-tree-test: 20 pass, 0 fail
+- research-test: PASSED 33
+- unit-replace-test: WSZYSTKIE TESTY ZIELONE (21/21)
+- combat-test: exit 0 ("All sanity checks passed")
+- ai-test: 297 passed, 0 failed
+- hotseat-etap6d-podetap-b-exec-test (solo, exit 1, ~0 s): po poprawkach harnessu nadal czerwony. Przyczyna: wrapper enqueueNegotiationFromAiCmd (main.ts ~L21493, commit 770aa4fed, R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2) deleguje do Impl (~L21498), a Impl od commitów 271fcf39f (odroczenie pokoju) i 230fd049f/770aa4fed zależy od kolejnych stanów main.ts (aiDiploTradeGoodsCache, sensibleUmowaBasketCheck z cache, withZeroPwUndershoot). Klasyfikacja: STARY-PIN/HARNESS, nie BŁĄD-GRY (gra liczy poprawnie; test nie nadąża za zależnościami). Dodane w harnessie: realne moduły src przez bundle esbuild (diplomacy-sensible-deals, diplomacy-ai-offer-balance), leniwe kompilowanie funkcji main.ts i eksportów src, stub UNMOCKED zamiast cichego ReferenceError; mocki: dealTradeEraForOwners/diplomacyDealTradeEra/withDiplomacyTradeEra (pass-through, epoka nie jest czytana przez zmockowane wyceny), peaceProposalIsTooEarly (wolno; bramka ma osobny test), player.era, empireEpochForOwner, aiDiploTradeGoodsCache=null. Asercje NIE osłabione. Stan na koniec rundy: błąd UNMOCKED/sensibleUmowaBasketCheck (`.cached` nie jest funkcją) — do dokończenia w rundzie 2. Mutacja: NIE-ZMIERZONO (test nie dociera do asercji).
+- hotseat-etap6d-podetap-d-exec-test (solo, exit 1): Blok A i B — 4 FAIL: wycięcia po stałych numerach linii (31620-31675, 32232-32330) nieaktualne; asercja "dokładnie 13 wystąpień ME()" -> zastane 16. Klasyfikacja: STARY-PIN. Naprawa wymaga przeliczenia pinów i weryfikacji 3 nowych wystąpień ME() (nie zrobione w tej rundzie; NIE-ZMIERZONO).
+- hotseat-etap6d-podetap-e-exec-test (solo, exit 1): 6 OK, potem ReferenceError: turnEventsFrame is not defined (zmienna stanu ramki w main.ts ~L20131, `let turnEventsFrame`). Klasyfikacja: STARY-PIN/HARNESS (ten sam mechanizm: stan closure nie jest mockowany). NIE-ZMIERZONO w tej rundzie.
+- save-load-roundtrip-state-drift-test: NIE-ZMIERZONO — nie uruchomiony w tej rundzie (dynamiczna część Chrome >570 s; wymaga osobnego biegu w pierwszym planie w kilku wywołaniach, jeden Chromium).
+- save-load-deserialize-fields-audit: NIE-ZMIERZONO. Plik w repo to tools/save-load-deserialize-fields-audit.cjs (dispatch podaje -test.cjs). Solo bez argumentów: FATAL "podaj --dist <abs> (tryb live) albo --raw-a i --raw-b". Wymaga bundla albo zrzutów; nie uruchomiony z bundlem w tej rundzie.
+- resource-ledger-realpath-mutation (dowód przerwania): runner przepisany na asynchroniczny spawn (spawnSync blokował obsługę SIGTERM do końca dziecka); backup źródła w tmpdir; przywracanie w finally + 'exit' + SIGINT/SIGTERM/uncaughtException; sygnał zabija dziecko. Pełny bieg `--ids m01`: ZABITA (exit 1, "FAIL lup z bitwy"), MUTACJE zabite=1; md5 gra/src/main.ts po biegu = HEAD. Dowód kill -TERM w trakcie buildu: `timeout -s TERM 5 node tools/resource-ledger-realpath-mutation-test.cjs --ids m01` -> exit 124, brak wyniku, md5 gra/src/main.ts = e750abbd7d945a4e406cf3a9388a839e (= HEAD). Ograniczenie: SIGKILL nie da się przechwycić — plik zostałby zmutowany; kopia w tmpdir (civ-ledger-mut-backup-*.ts) nie jest jeszcze przywracana przy starcie (do zrobienia w rundzie 2).
+BLOKADY: harness hotseat-B/D/E wymaga rozszerzenia (STARY-PIN) — to nie blokada techniczna środowiska; zostaje czerwony. Roundtrip i deserialize nie zmierzone w tej rundzie.
+BŁĘDY GRY (kandydaci R-WEB-*): nie stwierdzono. Wszystkie zaobserwowane czerwienie to harness/piny.
+UWAGI-DLA-ORKIESTRATORA: (1) Testy hotseat wykonują ciała funkcji main.ts z mockami; im więcej zależności, tym częściej pękają — rozważyć wspólny loader main.ts zamiast ręcznych mocków. (2) Allowlista dispatchu podaje save-load-deserialize-fields-audit-test.cjs, a plik ma nazwę save-load-deserialize-fields-audit.cjs. (3) Żadnego Chromium nie uruchomiono w tej rundzie.
+RUNDY: 1/5 — ostatni werdykt FAIL (harness hotseat-B/D/E; roundtrip i deserialize nie zmierzone).
+NASTĘPNY KROK: runda 2: dokończyć loader hotseat-B (sensibleUmowaBasketCheck i stan cache), przeliczyć piny hotseat-D, dodać mock turnEventsFrame w hotseat-E; zmierzyć roundtrip (jeden Chromium, pierwszy plan, kilka wywołań) i deserialize z --dist; w realpath dodać przywracanie kopii przy starcie.
+DEPLOY/PUSH: NIE WYKONANO

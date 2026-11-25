@@ -84,13 +84,85 @@ function extractFullFunctionSource(src, name) {
   return null;
 }
 
+/** R-WEB-TEST-DEBT-Q15: realny moduł src (bundle esbuild w pamięci) -- zamiast ręcznej repliki. */
+function loadRealModule(relPath) {
+  const r = esbuild.buildSync({
+    entryPoints: [path.join(GRA, relPath)], bundle: true, write: false,
+    format: 'cjs', platform: 'node', target: 'node18', loader: { '.json': 'json' },
+  });
+  const m = { exports: {} };
+  new Function('module', 'exports', r.outputFiles[0].text)(m, m.exports);
+  return m.exports;
+}
+const realSensible = loadRealModule('src/game/diplomacy-sensible-deals.ts');
+const realOfferBalance = loadRealModule('src/game/diplomacy-ai-offer-balance.ts');
+
+
+const moduleCache = new Map();
+function loadRealModuleCached(relPath) {
+  if (!moduleCache.has(relPath)) moduleCache.set(relPath, loadRealModule(relPath));
+  return moduleCache.get(relPath);
+}
+let _exportIndex = null;
+/** Indeks: nazwa eksportowanej funkcji -> względna ścieżka pliku w src/ (budowany raz). */
+function exportedFunctionIndex() {
+  if (_exportIndex) return _exportIndex;
+  _exportIndex = new Map();
+  const walk = (dir) => {
+    for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, ent.name);
+      if (ent.isDirectory()) walk(full);
+      else if (ent.name.endsWith('.ts')) {
+        const txt = fs.readFileSync(full, 'utf8');
+        for (const m of txt.matchAll(/export function (\w+)/g)) {
+          if (!_exportIndex.has(m[1])) _exportIndex.set(m[1], path.relative(GRA, full));
+        }
+      }
+    }
+  };
+  walk(path.join(GRA, 'src'));
+  return _exportIndex;
+}
+
 function compileRealFunction(name, freeVarNames, mocks) {
-  const tsSrc = extractFullFunctionSource(mainSrc, name);
-  if (!tsSrc) throw new Error(`Nie znaleziono ${name} w main.ts`);
-  const { code } = esbuild.transformSync(tsSrc, { loader: 'ts', format: 'cjs', target: 'node18' });
-  const factory = new Function(...freeVarNames, `${code}\nreturn ${name};`);
-  const args = freeVarNames.map(v => mocks[v]);
-  return factory(...args);
+  // R-WEB-TEST-DEBT-Q15: wolny identyfikator rozwiązywany tak: (1) mock z `mocks`; (2) funkcja
+  // o tej nazwie zdefiniowana w main.ts -- kompilowana REALNIE tym samym mechanizmem (leniwie, przy
+  // pierwszym użyciu, z cache); (3) inaczej stub RZUCAJĄCY przy wywołaniu (`UNMOCKED`), nie ciche
+  // ReferenceError. Wykonanie pozostaje prawdziwe; brak mocka na ścieżce testu = głośny FAIL.
+  const cache = new Map();
+  const compiled = (fnName) => {
+    const tsSrc = extractFullFunctionSource(mainSrc, fnName);
+    if (!tsSrc) throw new Error(`Nie znaleziono ${fnName} w main.ts`);
+    const { code } = esbuild.transformSync(tsSrc, { loader: 'ts', format: 'cjs', target: 'node18' });
+    const factory = new Function('__scope', `with (__scope) { return (function () { ${code}\nreturn ${fnName}; })(); }`);
+    return factory(scope);
+  };
+  const scope = new Proxy({}, {
+    has(_t, k) {
+      if (typeof k !== 'string' || k === '__scope') return false;
+      if (Object.prototype.hasOwnProperty.call(mocks, k)) return true;
+      if (k in globalThis) return false;
+      return /^[A-Za-z_$][\w$]*$/.test(k);
+    },
+    get(_t, k) {
+      if (k === Symbol.unscopables) return undefined;
+      if (Object.prototype.hasOwnProperty.call(mocks, k)) return mocks[k];
+      if (cache.has(k)) return cache.get(k);
+      if (typeof k === 'string' && extractFullFunctionSource(mainSrc, k)) {
+        const f = compiled(k);
+        cache.set(k, f);
+        return f;
+      }
+      // (3) eksport z modułu src/ (import do main.ts): realny moduł z bundla esbuild.
+      const modFile = exportedFunctionIndex().get(String(k));
+      if (modFile) {
+        const v = loadRealModuleCached(modFile)[k];
+        if (typeof v === 'function') { cache.set(k, v); return v; }
+      }
+      return () => { throw new Error(`UNMOCKED w harnessie: ${String(k)} (w ${name})`); };
+    },
+  });
+  return compiled(name);
 }
 
 console.log('hotseat-etap6d-podetap-b-exec-test (R-HOTSEAT-ETAP6D-PODETAP-B-Q1)\n');
@@ -277,7 +349,26 @@ console.log('\n4. enqueueNegotiationFromAiCmd — realne wykonanie\n');
     };
     const mocks = {
       isOwnerClusterCityState: () => false,
+      // Realne eksporty modułów (bundle): withZeroPwUndershoot i pokrewne (main.ts importuje je z modułu).
+      withZeroPwUndershoot: realOfferBalance.withZeroPwUndershoot,
+      isDiploSensibleDealsEnabled: realSensible.isDiploSensibleDealsEnabled,
+      sensibleBalanceFilterApplies: realSensible.sensibleBalanceFilterApplies,
       ownerCityStateOpts: () => ({}),
+      // R-WEB-TEST-DEBT-Q15: main.ts `enqueueNegotiationFromAiCmd` opakowuje Impl w
+      // `withDiplomacyTradeEra(dealTradeEraForOwners(...), ...)` (R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2,
+      // commit 770aa4fed). Brak tych symboli w mockach = ReferenceError (STARY-PIN harnessu).
+      // Epoka handlu nie jest czytana przez zmockowane wyceny, więc pass-through zachowuje asercje.
+      dealTradeEraForOwners: () => 1,
+      diplomacyDealTradeEra: () => 1,
+      player: { era: 1 },
+      empireEpochForOwner: () => 1,
+      // Stan modułu main.ts (let ... = null w stanie domyślnym, main.ts ~L25043): cache wyłączony.
+      aiDiploTradeGoodsCache: null,
+      withDiplomacyTradeEra: (era, fn) => fn(),
+      // R-WEB-TEST-DEBT-Q15: Impl (gałąź pokoju) bramkuje propozycję `peaceProposalIsTooEarly`
+      // (commit 271fcf39f, "defer peace offers ten war turns"). Ten test dowodzi routingu ME(),
+      // nie bramki czasu wojny; bramkę ma osobny test diplomacy-peace-proposal-timing. Mock = "wolno".
+      peaceProposalIsTooEarly: () => false,
       getDiploRelation: (a, b) => { calls.getDiploRelation.push([a, b]); return { status: 'pokoj' }; },
       clampAiResourceTradeCommand: (cmd) => cmd,
       buildAiResourceTradeClampCtx: () => ({}),
@@ -323,6 +414,11 @@ console.log('\n4. enqueueNegotiationFromAiCmd — realne wykonanie\n');
       updateDiplomacyPanel: () => {},
       isMe, ME,
     };
+    // R-WEB-TEST-DEBT-Q15: wrapper `enqueueNegotiationFromAiCmd` deleguje do siostrzanej funkcji
+    // `enqueueNegotiationFromAiCmdImpl` (main.ts ~L21493). Impl kompilujemy realnie z tymi samymi
+    // mockami i podajemy wrapperowi jako wolną zmienną -- wykonanie pozostaje prawdziwe.
+    const implFn = compileRealFunction('enqueueNegotiationFromAiCmdImpl', Object.keys(mocks), mocks);
+    mocks.enqueueNegotiationFromAiCmdImpl = implFn;
     const fn = compileRealFunction('enqueueNegotiationFromAiCmd', Object.keys(mocks), mocks);
     fn(AI, { type: cmdType });
     return calls;
