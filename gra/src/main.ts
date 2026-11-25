@@ -40881,8 +40881,8 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: bezpiecznik dla ZWYKŁYCH (niewymuszonych epoki)
-     * wojen AI↔AI — bez niego taka wojna mogła eskalować aż do całkowitego podboju jednej
+     * R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: bezpiecznik dla wojen AI↔AI (zwykłych i epoki —
+     * R-WEB-ERA-WAR-END-LIKE-CLASSIC-Q1) — bez niego taka wojna mogła eskalować aż do całkowitego podboju jednej
      * cywilizacji przez drugą (żywy bug właściciela, `R-AI-WOJNY-PODBOJ-DOMINACJA-Q1`).
      * Reużywa DOKŁADNIE tego samego progu i cooldownu co wojny wymuszone epoki
      * (`WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE=2`,
@@ -40901,7 +40901,7 @@ async function boot(): Promise<void> {
       if (oldOwner === 0 || newOwner === 0) return; // Q3: wyłącznie AI↔AI, gracz bez zmian.
       const pairKey = diploPairKey(oldOwner, newOwner);
       // R-WEB-ERA-WAR-END-LIKE-CLASSIC-Q1: wojna epoki (Kamień/Brąz/Żelazo) AI↔AI kończy się jak
-      // klasyczna — ten sam licznik miast i auto-pokój; brak wczesnego return dla pary wymuszonej.
+      // klasyczna — ten sam licznik miast i auto-pokój; bez wyjątku dla pary wymuszonej.
       if (getDiploRelation(oldOwner, newOwner).status !== 'wojna') return;
       const ownerA = Math.min(oldOwner, newOwner);
       const ownerB = Math.max(oldOwner, newOwner);

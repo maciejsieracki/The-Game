@@ -8,10 +8,10 @@
  *     epoki, startTurn cofnięty o 30 tur (> dawny limit 25 tur), relacja 'wojna'.
  *  2. REALNY endTurn (`__eraTestDebug.endTurn`): wojna wymuszona NADAL trwa (dawniej: auto-koniec
  *     po czasie).
- *  3. Zdobycie 2 miast przez REALNE applyCityCaptureToMap: wojna NADAL trwa, relacja 'wojna'
- *     (dawniej: auto-pokój po 2 miastach).
- *  4. Pokój przez REALNE finalizePeaceTreatyBetween: wpis rejestru znika, relacja != 'wojna',
- *     odpoczynek napastnika uzbrojony (cleanup po pokoju działa).
+ *  3. Zdobycie 2 miast przez REALNE applyCityCaptureToMap: wojna epoki AI↔AI kończy się auto-pokojem
+ *     jak klasyczna (R-WEB-ERA-WAR-END-LIKE-CLASSIC-Q1, P12; warunek: bilans PW >= 0 u obu AI).
+ *     Wpis rejestru znika, relacja != 'wojna', odpoczynek napastnika uzbrojony (cleanup po pokoju
+ *     działa, finalizePeaceTreatyBetween). Limit czasu wojny epoki nie kończy wojny (krok 2).
  *  5. Zdobyte miasta wracają do właściciela (przywrócenie stanu między epokami).
  * Zero pageerror / console.error w całym scenariuszu.
  *
@@ -133,16 +133,13 @@ async function runEra(browser, era, errors) {
   const cntB = await dOn('getCityCountForOwner', b);
   assert(`[${era}] 2 miasta przejęte realnym applyCityCaptureToMap (obrońca nie zeliminowany: miasta > 0)`,
     cap1 && cap2 && cntB >= 1, { cap1, cap2, cntB });
-  assert(`[${era}] po zdobyciu 2 miast wojna wymuszona NADAL trwa (bez auto-pokoju)`,
-    s3.active && s3.status === 'wojna', s3);
-
-  // 4. koniec wyłącznie pokojem: realny finalizePeaceTreatyBetween
-  await dOn('endWarByPeaceForTest', a, b);
-  const s4 = await dOn('getForcedWarForTest', era, a, b);
-  assert(`[${era}] pokój kończy wojnę wymuszoną (wpis rejestru usunięty, relacja != 'wojna')`,
-    !s4.active && s4.status !== 'wojna', s4);
-  assert(`[${era}] cleanup po pokoju: odpoczynek napastnika uzbrojony (restUntil > tura)`,
-    s4.restUntil !== null && s4.restUntil > s4.turn, s4);
+  // Po 2 miastach wojna epoki AI↔AI kończy się auto-pokojem (ta sama ścieżka co klasyczna wojna,
+  // P12 w dyspozycje/analizy/WOJNA-SCIEZKI-KONCA-2026-11-25.md, sekcja 7). Pokój idzie przez
+  // finalizePeaceTreatyBetween, więc sprzątanie i karencja muszą zadziałać tak samo jak przy pokoju ręcznym.
+  assert(`[${era}] po zdobyciu 2 miast wojna epoki kończy się pokojem jak klasyczna (wpis rejestru usunięty, relacja != 'wojna')`,
+    !s3.active && s3.status !== 'wojna', s3);
+  assert(`[${era}] cleanup po auto-pokoju: odpoczynek napastnika uzbrojony (restUntil > tura)`,
+    s3.restUntil !== null && s3.restUntil > s3.turn, s3);
 
   // 5. przywrócenie właścicieli miast (stan między epokami)
   await dOn('captureCityForTest', cityIds[0], b);

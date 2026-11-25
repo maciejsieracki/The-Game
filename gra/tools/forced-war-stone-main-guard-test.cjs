@@ -77,10 +77,11 @@ check(
   'udany DOW mutuje active/cycle i konsumuje pending Stone',
   /if \(stoneForceWarTargetId != null && targetId === stoneForceWarTargetId\) \{[\s\S]{0,500}stoneForceWarActiveByPairKey\.set[\s\S]{0,500}stoneForceWarCycleOwners\.add\(ownerId\)[\s\S]{0,500}stoneForceWarPendingOwners\.delete\(ownerId\)/.test(main),
 );
-// R-WEB-PEACE-RULES-R8R9-Q1 R9: jedyna asercja negatywna auto-końca Kamienia (hak licznika
-// miast i limit czasu usunięte z main.ts). Żywy dowód zachowania: forced-war-r9-no-auto-end-live-test.cjs.
+// R-WEB-PEACE-RULES-R8R9-Q1 R9: brak dedykowanych hooków auto-końca Kamienia (limit czasu usunięty z main.ts).
+// Od R-WEB-ERA-WAR-END-LIKE-CLASSIC-Q1 2 miasta kończą wojnę epoki wspólnym licznikiem klasycznym, więc ta
+// asercja nie dowodzi braku auto-pokoju po miastach. Żywy dowód: forced-war-r9-no-auto-end-live-test.cjs.
 check(
-  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
+  'R-WEB-PEACE-RULES-R8R9-Q1 R9: brak dedykowanego auto-końca wojny epoki (brak maybeResolve*ForcedWarOnCityCapture/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
   !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
 );
 check(

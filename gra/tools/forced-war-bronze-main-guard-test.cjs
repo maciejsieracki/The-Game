@@ -45,10 +45,10 @@ console.log('===================================================================
 // ---------------------------------------------------------------------------
 // B1: hak licznika wołany z OBU miejsc, gdzie city.ownerId zmienia się w wyniku wojny.
 // ---------------------------------------------------------------------------
-console.log('1. R9 (R-WEB-PEACE-RULES-R8R9-Q1) -- wojna Brązu NIE kończy się automatycznie');
+console.log('1. R9 (R-WEB-PEACE-RULES-R8R9-Q1) -- brak dedykowanego auto-końca wojny Brązu (2 miasta: wspólny licznik klasyczny, R-WEB-ERA-WAR-END-LIKE-CLASSIC-Q1)');
 
 check(
-  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
+  'R-WEB-PEACE-RULES-R8R9-Q1 R9: brak dedykowanego auto-końca wojny epoki (brak maybeResolve*ForcedWarOnCityCapture/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
   !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(mainSrc),
 );
 

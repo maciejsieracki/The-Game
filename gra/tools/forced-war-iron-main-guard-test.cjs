@@ -179,12 +179,14 @@ check(
 );
 
 // ---------------------------------------------------------------------------
-// 6. R9 (R-WEB-PEACE-RULES-R8R9-Q1): brak auto-pokoju wojny Żelaza po 2 miastach / limicie czasu.
+// 6. R9 (R-WEB-PEACE-RULES-R8R9-Q1): brak dedykowanego auto-końca wojny Żelaza (limit czasu usunięty).
 // ---------------------------------------------------------------------------
-// Jedyna asercja negatywna R9 dla Żelaza. Dowód zachowania (nie tylko tekstu źródła) daje
-// `tools/forced-war-r9-no-auto-end-live-test.cjs` (żywy Chromium: 2 miasta + tura po limicie).
+// Negatywna asercja R9 dla Żelaza: brak dedykowanych hooków auto-końca. Od R-WEB-ERA-WAR-END-LIKE-CLASSIC-Q1
+// wojna epoki AI↔AI kończy się po 2 miastach wspólnym licznikiem klasycznym (maybeResolveRegularWarOnCityCapture),
+// więc ta asercja NIE dowodzi braku auto-pokoju po miastach. Dowód zachowania (limit czasu: brak końca;
+// 2 miasta: pokój) daje `tools/forced-war-r9-no-auto-end-live-test.cjs` (żywy Chromium).
 check(
-  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
+  'R-WEB-PEACE-RULES-R8R9-Q1 R9: brak dedykowanego auto-końca wojny epoki (brak maybeResolve*ForcedWarOnCityCapture/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
   !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
 );
 check(

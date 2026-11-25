@@ -103,6 +103,16 @@ check('B4 maybeResolveRegularWarOnCityCapture: brak wczesnego return dla pary wo
 check('B5 maybeResolveRegularWarOnCityCapture nadal liczy miasta i kończy auto-pokojem',
   /shouldEndForcedWarByCityCount\(/.test(resolveSlice)
   && /finalizePeaceTreatyBetween\(ownerA, ownerB,/.test(resolveSlice));
+// B4b: wykluczenie może wrócić też przez pomocniczą funkcję / inną nazwę rejestru. Zamiast nazw helperów
+// (zbyt dowolne) pilnujemy STRUKTURY: przed sprawdzeniem relacji 'wojna' są wyłącznie dwa strażniki
+// właścicieli (oldOwner===newOwner, właściciel 0), bez odwołań do rejestrów i bez innych wczesnych wyjść.
+const beforeRelation = resolveSlice.slice(0, Math.max(0, resolveSlice.indexOf('getDiploRelation(')));
+check('B4b maybeResolveRegularWarOnCityCapture: przed sprawdzeniem relacji tylko 2 strażniki właścicieli, zero odwołań do rejestrów wojen',
+  beforeRelation.length > 0
+  && (beforeRelation.match(/\breturn\b/g) || []).length === 2
+  && !/ByPairKey|ForceWar|forcedEpoch|EpochWar|\.has\(/.test(beforeRelation));
+check('B4c maybeResolveRegularWarOnCityCapture: w całej funkcji brak jakiegokolwiek odwołania do rejestrów wojen wymuszonych',
+  resolveSlice.length > 0 && !/ForceWarActive|ForceWarCycle|ForceWarPending/.test(resolveSlice));
 
 const finalizeSlice = functionSlice(
   main,
