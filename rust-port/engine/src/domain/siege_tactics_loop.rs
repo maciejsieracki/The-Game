@@ -1344,6 +1344,10 @@ struct ProdShot {
     hit_at: f64,
 }
 
+fn mr_mut(id: &str) -> bool {
+    std::env::var("MR_MUT").is_ok_and(|v| v == id)
+}
+
 /// MARCH-INCREMENTAL-Q1 (D-MI-1): rodzaj marszu prowadzonego krok po kroku.
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum MarchKind {
@@ -3635,7 +3639,7 @@ impl<R: RollSource> ProdBody<R> {
                     q: mq as f64,
                     r: mr as f64,
                     is_atk: unit.side == BattleSide::Attacker,
-                    dead: seq.dead,
+                    dead: seq.dead && !mr_mut("M15"),
                     fading_out: seq.fading_out,
                     move_left: c.move_left,
                 },
@@ -3651,7 +3655,7 @@ impl<R: RollSource> ProdBody<R> {
     /// MARCH-RESZTA-Q1 (D-MR-1): callback kroku `_fallBackStep` (`:7239-7242`): `finished` = koniec, `moveLeft > 0` =
     /// `_schedule(STEP_GAP_MS)`, inaczej koniec (`NaN` kończy).
     fn fall_back_step_end(&mut self, st: &TurnSeqState, c: &MarchCont) -> MarchNext {
-        match fall_back_after_move(st.finished, c.move_left) {
+        match fall_back_after_move(st.finished && !mr_mut("M14"), c.move_left) {
             AfterStep::Done => MarchNext::Done,
             AfterStep::Schedule { .. } => MarchNext::Gap,
         }
@@ -3667,8 +3671,8 @@ impl<R: RollSource> ProdBody<R> {
         let atk = unit.side == BattleSide::Attacker;
         let seq = st.unit(unit).c;
         // `_siegeApproachRestricted` (`:7953`): uciekająca jednostka (`ru.routed`) nigdy nie dostaje odmowy bramki.
-        self.mover_routed = true;
-        if st.finished || seq.dead || seq.fading_out || seq.removed || c.move_left <= 0.0 {
+        self.mover_routed = !mr_mut("M17");
+        if st.finished || (seq.dead && !mr_mut("M6")) || seq.fading_out || seq.removed || c.move_left <= 0.0 {
             return MarchNext::Done;
         }
         let (q, r) = self.cell_of(unit);
@@ -3717,14 +3721,14 @@ impl<R: RollSource> ProdBody<R> {
     fn flee_step_end(&mut self, st: &mut TurnSeqState, c: &MarchCont) -> MarchNext {
         let unit = c.unit;
         let seq = st.unit(unit).c;
-        if st.finished || seq.removed || seq.dead {
+        if st.finished || ((seq.removed || seq.dead) && !mr_mut("M5")) {
             return MarchNext::Done;
         }
-        if Self::flee_at_home(unit.side == BattleSide::Attacker, self.cell_of(unit).0) {
+        if Self::flee_at_home(unit.side == BattleSide::Attacker, self.cell_of(unit).0) && !mr_mut("M7") {
             self.leave_field(st, unit);
             return MarchNext::Done;
         }
-        if c.move_left <= 0.0 || c.move_left.is_nan() {
+        if c.move_left <= 0.0 || c.move_left.is_nan() || mr_mut("M19") {
             MarchNext::Done
         } else {
             MarchNext::Gap
@@ -3820,7 +3824,7 @@ impl<R: RollSource> ProdBody<R> {
     /// od razu (nowy `_doMove` z callbacku, BEZ `_schedule`) z celem i zajętością z TEJ chwili; szarża = `done`.
     fn cav_step_end(&mut self, st: &TurnSeqState, c: &mut MarchCont) -> MarchNext {
         let unit = c.unit;
-        if st.finished || c.kind == MarchKind::CavCharge {
+        if (st.finished && !mr_mut("M8")) || c.kind == MarchKind::CavCharge {
             return MarchNext::Done;
         }
         let ix = side_ix(unit.side);
@@ -3829,14 +3833,17 @@ impl<R: RollSource> ProdBody<R> {
         let en = self.combatants(opposite(unit.side), st);
         let me = self.combatant(unit, st);
         // `ru.moveLeft > 0` (`:6439`/`:6496`): `NaN` kończy.
-        if cav_adjacent_non_spear(&me, &en).is_some() || c.move_left <= 0.0 || c.move_left.is_nan() {
+        if (cav_adjacent_non_spear(&me, &en).is_some() && !mr_mut("M9")) || c.move_left <= 0.0 || c.move_left.is_nan() {
+            return MarchNext::Done;
+        }
+        if mr_mut("M10") {
             return MarchNext::Done;
         }
         let gate = |ml: f64| i64::from(ml > 0.0 || ml.is_nan());
         let occ = self.occupied_tiles();
         let step = match c.kind {
             MarchKind::CavDirected { tgt, want } => {
-                let t2 = cavalry_target(&me, &en).unwrap_or(tgt);
+                let t2 = if mr_mut("M20") { tgt } else { cavalry_target(&me, &en).unwrap_or(tgt) };
                 c.kind = MarchKind::CavDirected { tgt: t2, want };
                 self.with_cav_terrain(unit, mounted, reach, &en, |ct| {
                     cav_directed_maneuver_step(&me, &en, t2, want, gate(c.move_left), &occ, ct)
@@ -3884,7 +3891,7 @@ impl<R: RollSource> ProdBody<R> {
             q: a.q,
             r: a.r,
             move_left: c.move_left,
-            dead: seq.dead,
+            dead: seq.dead && !mr_mut("M11"),
             fading_out: seq.fading_out,
         };
         let scene = self.atk_scene(wall_col);
@@ -3916,7 +3923,7 @@ impl<R: RollSource> ProdBody<R> {
         } = c.kind
         {
             let (q, r) = self.cell_of(c.unit);
-            if q >= base {
+            if q >= base && !mr_mut("M12") {
                 self.tower_at_wall_rows.insert(r);
             }
         }
@@ -3927,7 +3934,9 @@ impl<R: RollSource> ProdBody<R> {
     /// `_bfsFirstStep` na BIEŻĄCEJ zajętości, `_doMove` (bramka muru = `moveLeft = 0; done()`).
     fn walk_enter(&mut self, st: &TurnSeqState, c: &mut MarchCont) -> MarchNext {
         // `_siegeApproachRestricted` (`:7953`) czyta `ru.routed` w chwili kroku.
-        self.mover_routed = st.unit(c.unit).c.routed;
+        if !mr_mut("M13") {
+            self.mover_routed = st.unit(c.unit).c.routed;
+        }
         let (decision, missing) = self.walk_query(st, c, |w, u| walk_decide(w, u));
         if missing {
             self.unported.push((c.unit, "marsz-brak-terenu"));
@@ -3940,6 +3949,7 @@ impl<R: RollSource> ProdBody<R> {
         // bramki muru (`:8689-8692`: `moveLeft = 0; done()` = `arrive`).
         let enemies = self.enemies_of(c.unit.side, st);
         match self.march_move(c, (col, row), &enemies, "marsz-brak-terenu") {
+            MarchNext::Done if mr_mut("M18") => MarchNext::Done,
             MarchNext::Done => self.walk_done(c),
             next => next,
         }
@@ -5357,7 +5367,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             }
             let mut st2 = st.clone();
             // MARCH-RESZTA-Q1 (D-MR-1): `_fleeStep` krok po kroku; pierwsze wejście synchronicznie na kopii stanu.
-            let flee_march = self.march_incremental.then(|| self.flee_first(unit, &mut st2));
+            let flee_march = (self.march_incremental && !mr_mut("M1")).then(|| self.flee_first(unit, &mut st2));
             let dur = if flee_march.is_some() {
                 0.0
             } else {
@@ -5643,7 +5653,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             // `_siegeApproachRestricted` (`:7953`) czyta `ru.routed` w chwili kroku, czyli PO `_startRout` (`:6116`).
             self.mover_routed = st2.unit(unit).c.routed;
             // MARCH-RESZTA-Q1 (D-MR-1): `_fleeStep` krok po kroku; pierwsze wejście synchronicznie na kopii stanu.
-            let flee_march = self.march_incremental.then(|| self.flee_first(unit, &mut st2));
+            let flee_march = (self.march_incremental && !mr_mut("M1")).then(|| self.flee_first(unit, &mut st2));
             let dur = if flee_march.is_some() {
                 0.0
             } else {
@@ -5752,7 +5762,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 return 0.0;
             }
             // MARCH-RESZTA-Q1 (D-MR-1): `_cavalryAction` krok po kroku (pierwsze wejście synchronicznie, jak pin).
-            if self.march_incremental {
+            if self.march_incremental && !mr_mut("M2") {
                 let mut c = MarchCont {
                     unit,
                     kind: MarchKind::CavManeuver,
@@ -5775,7 +5785,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 }
             }
         }
-        if cavalry && !self.march_incremental {
+        if cavalry && (!self.march_incremental || mr_mut("M2")) {
             let (dur, move_left, attack) = self.cavalry_action(unit, st);
             pend.move_left = move_left;
             match attack {
@@ -5836,7 +5846,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             return dur;
         }
         // MARCH-RESZTA-Q1 (D-MR-1): `_fallBackStep` krok po kroku (pierwsze wejście synchronicznie, jak pin).
-        if fallback && self.march_incremental {
+        if fallback && self.march_incremental && !mr_mut("M3") {
             let mut c = MarchCont {
                 unit,
                 kind: MarchKind::FallBack,
@@ -5939,7 +5949,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             // MARCH-RESZTA-Q1 (D-MR-1): `moveLeft` ucieczki krok po kroku (poza kopią stanu, patrz [`Self::flee_first`]).
             let flee_move_left = pend.move_left;
             let apply_move_left = |st: &mut TurnSeqState| {
-                if let Some(ml) = flee_move_left {
+                if let Some(ml) = flee_move_left.filter(|_| !mr_mut("M16")) {
                     unit_cu_mut(st, unit).move_left = ml;
                 }
             };
@@ -7050,7 +7060,7 @@ impl<R: RollSource> ProdBody<R> {
         let ix = side_ix(unit.side);
         // MARCH-RESZTA-Q1 (D-MR-1): `_siegeWalkTo` krok po kroku (pierwsze wejście synchronicznie, jak pin); dalsze
         // etapy prowadzi [`Self::march_fire`], a `start` przekazuje marsz po zapisie `pending` ([`Self::walk_deferred`]).
-        if self.march_incremental {
+        if self.march_incremental && !mr_mut("M4") {
             let mut c = MarchCont {
                 unit,
                 kind: MarchKind::SiegeWalk {
