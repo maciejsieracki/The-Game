@@ -1463,6 +1463,21 @@ impl PlayableGame {
         siege_battle_apply::step(battle, wall_ms)
     }
 
+    /// R-RUSTPORT-P4-407-FQ-SPEED-BRIDGE-Q1: komenda `SetSiegeBattleSpeed { idx, clamp }` = `_setSpeedIdx(idx, { clamp })`
+    /// (`battleScene.ts:9518-9527`) trwającej bitwy ([`siege_battle_apply::set_speed`]); stan gry bez zmian (D-407-2:
+    /// prędkość żyje w sesji bitwy, nie w stanie ani w zapisie). Bez bitwy (także po `Finish`/`Abort`): `NoActiveBattle`.
+    pub fn set_siege_battle_speed(
+        &mut self,
+        idx: i64,
+        clamp: bool,
+    ) -> Result<SiegeBattlePayload, SiegeBattleError> {
+        let battle = self
+            .siege_battle
+            .as_mut()
+            .ok_or(SiegeBattleError::NoActiveBattle)?;
+        siege_battle_apply::set_speed(battle, idx, clamp)
+    }
+
     /// Komenda `SkipSiegeBattle`: przewijanie do wyniku (`skip()`, `battleScene.ts:3680-3707`).
     pub fn skip_siege_battle(&mut self) -> Result<SiegeBattlePayload, SiegeBattleError> {
         let battle = self

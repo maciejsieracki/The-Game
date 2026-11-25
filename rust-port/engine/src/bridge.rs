@@ -105,6 +105,19 @@ pub enum EngineCommand {
     /// a battle: `noActiveBattle`; after the end of the battle (phase `finished`): `abortNotAllowed` (D-1I6D-4: the pin
     /// then only offers "Zakończ bitwę", which delivers the result). Additive: `CONTRACT_VERSION` stays 1.
     AbortSiegeBattle,
+    /// R-RUSTPORT-P4-407-FQ-SPEED-BRIDGE-Q1 (D-407-1): the player's battle speed, web `_setSpeedIdx(idx, { clamp })`
+    /// (`battleScene.ts:9518-9527` @ `07d2fbd72`): `clamp = false` wraps `((idx % 10) + 10) % 10` (the speed button
+    /// `_cycleSpeed` = `speedIdx + 1`, `:9536`, 512x -> 1x), `clamp = true` clamps to `0..=9` (the tempo panel ±
+    /// `_adjustSpeedIdx` = `speedIdx ± 1`, `:9531-9533`); `speedMul = SPEED_STEPS[idx]` (`:2551`). Safe at any moment of
+    /// a running battle ("Safe to call mid-battle", `:9535`). The answer is `State` (unchanged state) plus `siegeBattle`
+    /// with `speedIdx` / `speedMul` and no actions or frame; no `StateChanged` (D-407-3). The speed lives in the battle
+    /// session only (D-407-2). Without a battle (also after `Finish` / `Abort`): `noActiveBattle`. Additive:
+    /// `CONTRACT_VERSION` stays 1.
+    SetSiegeBattleSpeed {
+        idx: i64,
+        #[serde(default)]
+        clamp: bool,
+    },
     /// R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1: save the session (web `buildSaveGameSnapshot`, `main.ts:37171` @
     /// `07d2fbd72`). Answered with `State` (unchanged state) plus `saveGame` (the snapshot JSON text,
     /// `PlayableGame::save_json`); no `StateChanged`. Rejected during a siege battle (debt DL-SLB-1). Additive:
@@ -126,6 +139,7 @@ impl EngineCommand {
                 | Self::SkipSiegeBattle
                 | Self::FinishSiegeBattle
                 | Self::AbortSiegeBattle
+                | Self::SetSiegeBattleSpeed { .. }
         )
     }
 }
@@ -409,6 +423,9 @@ fn siege_battle_on_game(
         EngineCommand::SkipSiegeBattle => game.skip_siege_battle(),
         EngineCommand::FinishSiegeBattle => game.finish_siege_battle(),
         EngineCommand::AbortSiegeBattle => abort_siege_battle(game),
+        EngineCommand::SetSiegeBattleSpeed { idx, clamp } => {
+            game.set_siege_battle_speed(*idx, *clamp)
+        }
         _ => {
             return Err(BridgeError::internal(
                 "siege battle dispatcher called with a non-battle command",
@@ -527,7 +544,7 @@ where
             });
         }
         if command.is_siege_battle() {
-            // Start/Step/Skip/Abort leave `EngineState` unchanged (the battle lives in the session, web map is
+            // Start/Step/Skip/Abort/SetSpeed leave `EngineState` unchanged (the battle lives in the session, web map is
             // untouched until the scene result): no event. Finish applies the result: `StateChanged`.
             let (state, battle) = self.adapter.siege_battle(&command)?;
             let events = if matches!(command, EngineCommand::FinishSiegeBattle) {
@@ -656,7 +673,8 @@ impl EnginePort for CivEngineAdapter {
             | EngineCommand::StepSiegeBattle { .. }
             | EngineCommand::SkipSiegeBattle
             | EngineCommand::FinishSiegeBattle
-            | EngineCommand::AbortSiegeBattle => {
+            | EngineCommand::AbortSiegeBattle
+            | EngineCommand::SetSiegeBattleSpeed { .. } => {
                 return self.siege_battle(&command).map(|(state, _)| state);
             }
             EngineCommand::SaveGame => {
@@ -835,7 +853,8 @@ impl EnginePort for MockEngineAdapter {
             | EngineCommand::StepSiegeBattle { .. }
             | EngineCommand::SkipSiegeBattle
             | EngineCommand::FinishSiegeBattle
-            | EngineCommand::AbortSiegeBattle => {
+            | EngineCommand::AbortSiegeBattle
+            | EngineCommand::SetSiegeBattleSpeed { .. } => {
                 return self.siege_battle_on_mock(&command).map(|(state, _)| state);
             }
             EngineCommand::SaveGame => {

@@ -542,6 +542,16 @@ pub struct SiegeBattlePayload {
     /// `StartSiegeStorm`). `None` = brak wieży albo brak strzelca (pin: brak strzałów wieży).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tower_shooter: Option<SiegeTowerShooterDto>,
+    /// R-RUSTPORT-P4-407-FQ-SPEED-BRIDGE-Q1 (D-407-1): `speedIdx` sceny po komendzie `SetSiegeBattleSpeed`
+    /// (`battleScene.ts:2554`, indeks w `SPEED_STEPS` `:2551`). Tylko odpowiedź tej komendy; addytywne: odpowiedzi
+    /// pozostałych komend bez klucza.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub speed_idx: Option<u64>,
+    /// R-RUSTPORT-P4-407-FQ-SPEED-BRIDGE-Q1: `speedMul = SPEED_STEPS[speedIdx]` (`:2555`) po `SetSiegeBattleSpeed`;
+    /// klient przelicza z niego klatkę playbacku `16 * speedMul` (`FF_STEP_MS`, `:9419`; D-FQ-1, D-HFQ-1). Tylko
+    /// odpowiedź tej komendy.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub speed_mul: Option<f64>,
 }
 
 /// Strzelec wieży (`_fireOneTower` `:4133-4147`): pola wiersza `towerShooterRow` czytane przez `projectileKind`
@@ -570,6 +580,8 @@ impl SiegeBattlePayload {
             result: None,
             setup: None,
             tower_shooter: None,
+            speed_idx: None,
+            speed_mul: None,
         }
     }
 }
@@ -583,6 +595,9 @@ impl Eq for SiegeBattlePayload {}
 enum DriverOp {
     Step(f64),
     Skip,
+    /// R-RUSTPORT-P4-407-FQ-SPEED-BRIDGE-Q1 (D-407-2): `_setSpeedIdx` w trakcie bitwy; zapisany ROZSTRZYGNIĘTY indeks
+    /// `SPEED_STEPS` (po zawinięciu / przycięciu), więc powtórka nie zależy od reguły `clamp`.
+    Speed(usize),
 }
 
 /// Trwająca bitwa oblężnicza gry (D-WIRB-1). `Clone` ręczny: klon dostaje nowy `live_key` (Z3); `PartialEq` pomija
@@ -742,6 +757,10 @@ impl ActiveSiegeBattle {
                 }
                 DriverOp::Skip => {
                     s.skip()?;
+                }
+                DriverOp::Speed(idx) => {
+                    // Indeks już rozstrzygnięty (`0..SPEED_STEPS.len()`): `clamp` go nie zmienia.
+                    s.set_speed_idx(i64::try_from(*idx).unwrap_or(0), true);
                 }
             }
         }
@@ -1167,6 +1186,8 @@ fn payload(
         result: None,
         setup: None,
         tower_shooter: None,
+        speed_idx: None,
+        speed_mul: None,
     })
 }
 
@@ -1445,6 +1466,45 @@ pub fn skip(battle: &mut ActiveSiegeBattle) -> Result<SiegeBattlePayload, SiegeB
     let out = payload(&s, battle.city_id, &mut battle.pending, &rep.actions, false);
     keep_session(battle, s);
     out
+}
+
+/// R-RUSTPORT-P4-407-FQ-SPEED-BRIDGE-Q1 (`SetSiegeBattleSpeed { idx, clamp }`): prędkość bitwy gracza jak
+/// `_setSpeedIdx(idx, { clamp })` pinu (`battleScene.ts:9518-9527`; przycisk `_cycleSpeed` `:9536` = `idx + 1` bez
+/// `clamp`, panel ± `_adjustSpeedIdx` `:9531-9533` = `idx ± 1` z `clamp`) — [`SiegeBattleSession::set_speed_idx`].
+/// Bezpieczna w każdej fazie trwającej bitwy (pin: „Safe to call mid-battle”, `:9535`), także po końcu (`Finished`,
+/// przed `FinishSiegeBattle`: nie zmienia wyniku). Bez akcji i bez ramki (zegar i kolejka akcji `pending` bez zmian:
+/// zmiana prędkości działa od następnego kroku, jak `_advanceVClock` `:9500-9511`); odpowiedź niesie `speedIdx` i
+/// `speedMul`. Operacja zapisywana do powtórki (D-WIRB-1) jako rozstrzygnięty indeks.
+///
+/// # Errors
+/// [`SiegeBattleError::Session`] (sesja nie do odtworzenia).
+pub fn set_speed(
+    battle: &mut ActiveSiegeBattle,
+    idx: i64,
+    clamp: bool,
+) -> Result<SiegeBattlePayload, SiegeBattleError> {
+    let mut s = take_session(battle)?;
+    let speed_mul = s.set_speed_idx(idx, clamp);
+    let speed_idx = s.speed_idx();
+    battle.ops.push(DriverOp::Speed(speed_idx));
+    let out = SiegeBattlePayload {
+        city_id: battle.city_id,
+        phase: if s.phase() == SessionPhase::Finished {
+            SiegeBattlePhaseDto::Finished
+        } else {
+            SiegeBattlePhaseDto::Running
+        },
+        units: Vec::new(),
+        actions: Vec::new(),
+        frame: None,
+        result: None,
+        setup: None,
+        tower_shooter: None,
+        speed_idx: Some(speed_idx as u64),
+        speed_mul: Some(speed_mul),
+    };
+    keep_session(battle, s);
+    Ok(out)
 }
 
 fn battle_winner(w: LoopWinner) -> BattleWinner {
@@ -2056,6 +2116,8 @@ pub fn finish(
         result: Some(result),
         setup: None,
         tower_shooter: None,
+        speed_idx: None,
+        speed_mul: None,
     })
 }
 

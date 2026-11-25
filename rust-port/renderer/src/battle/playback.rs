@@ -638,6 +638,23 @@ impl BattlePlayback {
         }
     }
 
+    /// The options of the playback (the current session frame included).
+    #[must_use]
+    pub const fn opts(&self) -> PlaybackOpts {
+        self.opts
+    }
+
+    /// R-RUSTPORT-P4-407-FQ-SPEED-BRIDGE-Q1: the session frame changed with
+    /// the player's battle speed (`_setSpeedIdx`, `battleScene.ts:9518-9527`;
+    /// `FF_STEP_MS = 16 * speedMul`, `:9419`): the hit / landing moments of
+    /// the actions applied from now on are checked against the new grid
+    /// ([`is_pin_event_time`]). Actions already applied keep the check they
+    /// had; the caller sets it after the engine accepted the speed and before
+    /// it pushes the actions of the next step.
+    pub fn set_frame_ms(&mut self, frame_ms: f64) {
+        self.opts.frame_ms = frame_ms;
+    }
+
     fn check_order(&mut self, t: f64) -> Result<(), PlaybackError> {
         if t < self.last_queued {
             return Err(PlaybackError::OutOfOrder {

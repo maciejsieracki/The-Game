@@ -783,6 +783,15 @@ pub enum SiegeBattleCommand {
     /// build of the start answer; the engine accepts it until the battle ends
     /// (D-1I6D-4).
     Abort,
+    /// R-RUSTPORT-P4-407-FQ-SPEED-BRIDGE-Q1: `SetSiegeBattleSpeed { idx, clamp }`
+    /// (web `_setSpeedIdx(idx, { clamp })`, `battleScene.ts:9518-9527`).
+    SetSpeed {
+        /// Index into `SPEED_STEPS` before the wrap / clamp.
+        idx: i64,
+        /// `true` = clamp to `0..=9` (tempo panel ±), `false` = wrap (speed
+        /// button).
+        clamp: bool,
+    },
 }
 
 /// The answer of a siege battle command: the `siegeBattle` field and whether
@@ -912,6 +921,10 @@ pub enum SiegeClientError<E> {
     },
     /// The renderer playback rejected an item.
     Playback(PlaybackError),
+    /// R-RUSTPORT-P4-407-FQ-SPEED-BRIDGE-Q1: the answer of `SetSiegeBattleSpeed`
+    /// has no `speedIdx` / `speedMul`, or `speedMul != SPEED_STEPS[speedIdx]`;
+    /// the speed of the view and the playback frame are unchanged.
+    SpeedAnswer(String),
     /// Map refresh after the battle failed (the battle is closed).
     Refresh(ClientError<E>),
 }
@@ -929,6 +942,7 @@ impl<E: fmt::Display> fmt::Display for SiegeClientError<E> {
             Self::Source(e) => write!(f, "siege battle source: {e}"),
             Self::Order(e) | Self::Playback(e) => write!(f, "siege battle playback: {e}"),
             Self::Setup(s) => write!(f, "siege battle setup: {s}"),
+            Self::SpeedAnswer(s) => write!(f, "siege battle speed answer: {s}"),
             Self::Adapter(e) => write!(f, "siege battle setup: {e}"),
             Self::AbortFailed { cause, abort } => {
                 write!(f, "{cause}; abort of the engine battle failed: {abort}")
@@ -1020,6 +1034,8 @@ pub struct SiegeBattleView {
     answers: usize,
     wall_clock: f64,
     skipped: bool,
+    speed_idx: usize,
+    speed_mul: f64,
     scene: Option<(BattleScene3, BattlePlayback)>,
 }
 
@@ -1072,6 +1088,27 @@ impl SiegeBattleView {
         self.skipped
     }
 
+    /// R-RUSTPORT-P4-407-FQ-SPEED-BRIDGE-Q1: `speedIdx` of the battle (`0` at
+    /// the start, `battleScene.ts:2554`, `:3370`; then the last accepted
+    /// `SetSiegeBattleSpeed` answer).
+    #[must_use]
+    pub const fn speed_idx(&self) -> usize {
+        self.speed_idx
+    }
+
+    /// `speedMul = SPEED_STEPS[speedIdx]` (`:2555`) of the battle.
+    #[must_use]
+    pub const fn speed_mul(&self) -> f64 {
+        self.speed_mul
+    }
+
+    /// The session frame the playback quantizes the action times to
+    /// ([`siege_battle_frame_ms`] of [`Self::speed_mul`], `16 * speedMul`).
+    #[must_use]
+    pub fn frame_ms(&self) -> f64 {
+        siege_battle_frame_ms(self.speed_mul)
+    }
+
     /// The stream guard (D-1I6-2).
     #[must_use]
     pub const fn order(&self) -> &StreamOrder {
@@ -1118,8 +1155,9 @@ pub fn tower_projectile_of(start: &SiegeBattlePayload) -> Option<ProjectileKind>
 /// R-RUSTPORT-P4-FQ-SPEED-Q1: `speedMul` of the engine session when the
 /// battle starts: `SPEED_STEPS[0]` (`battleScene.ts:2554-2555`; the scene
 /// constructor resets it with `_setSpeedIdx(this.speedIdx)`, `:3370`, and
-/// `SiegeBattleSession` starts with `speed_idx = 0`). The bridge has no speed
-/// command yet (debt FQ-SPEED-BRIDGE), so it is the speed of the whole battle.
+/// `SiegeBattleSession` starts with `speed_idx = 0`). R-RUSTPORT-P4-407-FQ-SPEED-
+/// BRIDGE-Q1: changed during the battle by
+/// [`RenderClient::set_siege_battle_speed`] (`SetSiegeBattleSpeed`).
 pub const SIEGE_BATTLE_START_SPEED_MUL: f64 = SPEED_STEPS[0];
 
 /// R-RUSTPORT-P4-FQ-SPEED-Q1: the virtual frame of the engine session at
@@ -1228,6 +1266,8 @@ impl<S: SiegeBattleSource> RenderClient<S> {
             answers: 0,
             wall_clock: 0.0,
             skipped: false,
+            speed_idx: 0,
+            speed_mul: SIEGE_BATTLE_START_SPEED_MUL,
             scene: None,
         };
         if with_scene {
@@ -1275,6 +1315,92 @@ impl<S: SiegeBattleSource> RenderClient<S> {
         let view = self.battle.as_mut().ok_or(SiegeClientError::NoBattle)?;
         view.skipped = true;
         feed(view, &answer.battle, true)
+    }
+
+    /// R-RUSTPORT-P4-407-FQ-SPEED-BRIDGE-Q1: the player's battle speed, web
+    /// `_setSpeedIdx(idx, { clamp })` (`battleScene.ts:9518-9527`; "Safe to
+    /// call mid-battle", `:9535`): `SetSiegeBattleSpeed { idx, clamp }`. Only
+    /// AFTER the engine accepted it, the view takes `speedIdx` / `speedMul`
+    /// of the answer (the engine is the source of the wrap / clamp) and the
+    /// playback frame becomes `16 * speedMul` ([`siege_battle_frame_ms`],
+    /// D-FQ-1 / D-HFQ-1), before the actions of the next step are pushed. The
+    /// game state does not change: no `StateChanged`, no `GetRenderFrame`, no
+    /// recomposition of the map (D-407-3). Allowed in every phase of a battle
+    /// (also on the end screen, before `Finish`).
+    ///
+    /// # Errors
+    ///
+    /// [`SiegeClientError::NoBattle`] (no engine call); engine / source
+    /// errors and [`SiegeClientError::SpeedAnswer`] (speed and frame
+    /// unchanged).
+    pub fn set_siege_battle_speed(
+        &mut self,
+        idx: i64,
+        clamp: bool,
+    ) -> Result<(), SiegeClientError<S::Error>> {
+        if self.battle.is_none() {
+            return Err(SiegeClientError::NoBattle);
+        }
+        let answer = self
+            .source
+            .siege_battle(SiegeBattleCommand::SetSpeed { idx, clamp })?;
+        let p = &answer.battle;
+        let (Some(speed_idx), Some(speed_mul)) = (p.speed_idx, p.speed_mul) else {
+            return Err(SiegeClientError::SpeedAnswer(
+                "answer without speedIdx / speedMul".to_owned(),
+            ));
+        };
+        let speed_idx = usize::try_from(speed_idx)
+            .ok()
+            .filter(|i| SPEED_STEPS.get(*i) == Some(&speed_mul))
+            .ok_or_else(|| {
+                SiegeClientError::SpeedAnswer(format!(
+                    "speedMul {speed_mul} is not SPEED_STEPS[{speed_idx}]"
+                ))
+            })?;
+        let view = self.battle.as_mut().ok_or(SiegeClientError::NoBattle)?;
+        view.speed_idx = speed_idx;
+        view.speed_mul = speed_mul;
+        view.phase = p.phase;
+        let frame_ms = view.frame_ms();
+        if let Some((_, pb)) = view.scene.as_mut() {
+            pb.set_frame_ms(frame_ms);
+        }
+        Ok(())
+    }
+
+    /// The scene's speed button `_cycleSpeed()` (`battleScene.ts:9536`):
+    /// `_setSpeedIdx(speedIdx + 1)` without clamp (512x -> 1x), from the
+    /// current `speedIdx` of the view.
+    ///
+    /// # Errors
+    ///
+    /// As [`Self::set_siege_battle_speed`].
+    pub fn cycle_siege_battle_speed(&mut self) -> Result<(), SiegeClientError<S::Error>> {
+        let idx = self
+            .battle
+            .as_ref()
+            .ok_or(SiegeClientError::NoBattle)?
+            .speed_idx;
+        self.set_siege_battle_speed(i64::try_from(idx).unwrap_or(0) + 1, false)
+    }
+
+    /// The tempo panel ± `_adjustSpeedIdx(delta)` (`battleScene.ts:9531-9533`):
+    /// `_setSpeedIdx(speedIdx + delta, { clamp: true })`.
+    ///
+    /// # Errors
+    ///
+    /// As [`Self::set_siege_battle_speed`].
+    pub fn adjust_siege_battle_speed(
+        &mut self,
+        delta: i64,
+    ) -> Result<(), SiegeClientError<S::Error>> {
+        let idx = self
+            .battle
+            .as_ref()
+            .ok_or(SiegeClientError::NoBattle)?
+            .speed_idx;
+        self.set_siege_battle_speed(i64::try_from(idx).unwrap_or(0).saturating_add(delta), true)
     }
 
     /// The `bs.play` callback: `FinishSiegeBattle` (D-1I6-5, D-WIRB-8).

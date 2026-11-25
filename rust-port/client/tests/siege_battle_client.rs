@@ -163,6 +163,8 @@ struct BridgeSource {
     /// Applied to the `siegeBattle` of a start answer before the client sees it (a transport that loses or breaks the
     /// setup, for the D-1I6-ORPHAN path); `None` = untouched.
     tamper_start: Option<fn(&mut SiegeBattlePayload)>,
+    /// R-RUSTPORT-P4-407-FQ-SPEED-BRIDGE-Q1: applied to the `siegeBattle` of a `SetSiegeBattleSpeed` answer.
+    tamper_speed: Option<fn(&mut SiegeBattlePayload)>,
 }
 
 impl BridgeSource {
@@ -172,6 +174,7 @@ impl BridgeSource {
             next_id: 0,
             seen: Seen::default(),
             tamper_start: None,
+            tamper_speed: None,
         }
     }
 
@@ -248,6 +251,9 @@ impl SiegeBattleSource for BridgeSource {
             SiegeBattleCommand::Skip => ("skip", EngineCommand::SkipSiegeBattle),
             SiegeBattleCommand::Finish => ("finish", EngineCommand::FinishSiegeBattle),
             SiegeBattleCommand::Abort => ("abort", EngineCommand::AbortSiegeBattle),
+            SiegeBattleCommand::SetSpeed { idx, clamp } => {
+                ("speed", EngineCommand::SetSiegeBattleSpeed { idx, clamp })
+            }
         };
         self.seen.siege.push(tag);
         let d = self.request(cmd).map_err(battle_error)?;
@@ -260,6 +266,9 @@ impl SiegeBattleSource for BridgeSource {
             .siege_battle
             .ok_or_else(|| SiegeSourceError::Source(unexpected("no siegeBattle", tag)))?;
         if let (SiegeBattleCommand::Start { .. }, Some(f)) = (command, self.tamper_start) {
+            f(&mut battle);
+        }
+        if let (SiegeBattleCommand::SetSpeed { .. }, Some(f)) = (command, self.tamper_speed) {
             f(&mut battle);
         }
         self.seen.actions.extend(battle.actions.iter().cloned());
@@ -1520,4 +1529,286 @@ fn fq_speed_klatka_playbacku_z_predkosci_sesji() {
             "speed idx {idx} with the 16 ms frame: {bad:?}"
         );
     }
+}
+
+// ------------------------------------------------------------ FQ-SPEED-BRIDGE-Q1 (#407)
+
+/// R-RUSTPORT-P4-407-FQ-SPEED-BRIDGE-Q1: `(speedIdx, speedMul, playback frame)` of the running battle.
+fn speed_of(c: &Client) -> (usize, f64, f64) {
+    let b = c.siege_battle().expect("battle");
+    let (_, pb) = b.scene().expect("scene");
+    assert_eq!(
+        pb.opts().frame_ms,
+        b.frame_ms(),
+        "playback frame = frame of the view"
+    );
+    (b.speed_idx(), b.speed_mul(), pb.opts().frame_ms)
+}
+
+/// The quantized actions (`Melee` / `Shot` / `TowerShot` / `Move` / `Boulder`) of `acts` with `t0 > after` sit on the
+/// grid of `frame` (`frame_raf(frame, nominal)`, the contract of `speed_vectors.json`); returns how many were checked.
+fn on_grid(acts: &[BattleActionDto], after: f64, frame: f64) -> usize {
+    use civ_engine::domain::siege_tactics_loop::frame_raf;
+    let mut n = 0;
+    for a in acts.iter().filter(|a| a.t0 > after) {
+        let (got, nominal) = match &a.action {
+            BattleActionKindDto::Melee { hit_at, .. } => (hit_at - a.t0, 150.0),
+            BattleActionKindDto::Shot { land_at, .. }
+            | BattleActionKindDto::TowerShot { land_at, .. } => (land_at - a.t0, 380.0),
+            BattleActionKindDto::Move { arrive_at, .. } => (arrive_at - a.t0, 240.0),
+            BattleActionKindDto::Boulder { land_at, .. } => (land_at - a.t0, 700.0),
+            _ => continue,
+        };
+        assert_eq!(got, frame_raf(frame, nominal), "frame {frame}: {a:?}");
+        n += 1;
+    }
+    n
+}
+
+/// Kryterium 2/3 (E2E engine -> bridge -> client -> renderer playback): Start, speed `idx` (4x / 64x and others)
+/// before the first step, 16 ms steps to the end, Finish. The view and the playback take `speedMul` of the answer, the
+/// frame is `16 * speedMul`; every action of the battle is accepted by the playback on that grid; the speed change
+/// alone asks no `GetRenderFrame` and recomposes nothing; the battle is shorter in wall time at a higher speed.
+#[test]
+fn fq_speed_bridge_e2e_klatka_playbacku_po_zmianie() {
+    let mut steps_at = Vec::new();
+    for (idx, k) in [(2_i64, 4.0), (6, 64.0), (0, 1.0), (9, 512.0)] {
+        let mut c = client_for(siege_state(11));
+        c.start_siege_storm(CITY, ANCHOR, true).expect("start");
+        assert_eq!(
+            speed_of(&c),
+            (0, 1.0, 16.0),
+            "start: speedIdx 0 (`:2554`, `:3370`)"
+        );
+        let frames = c.source().seen.frame_calls;
+        let map_frame = c.last_frame().cloned();
+        let answers = c.siege_battle().expect("battle").answers();
+        c.set_siege_battle_speed(idx, false).expect("speed");
+        assert_eq!(speed_of(&c), (usize::try_from(idx).unwrap(), k, 16.0 * k));
+        assert_eq!(
+            c.source().seen.frame_calls,
+            frames,
+            "no GetRenderFrame after a speed change"
+        );
+        assert_eq!(c.last_frame().cloned(), map_frame, "map frame unchanged");
+        assert_eq!(
+            c.siege_battle().expect("battle").answers(),
+            answers,
+            "the speed answer is not a stream item"
+        );
+        assert_eq!(c.source().seen.siege.last(), Some(&"speed"));
+        let before = c.source().seen.actions.len();
+        let mut n = 0;
+        while c.siege_battle().expect("battle").phase() == SiegeBattlePhaseDto::Running {
+            c.step_siege_battle(16.0).expect("step at the new speed");
+            n += 1;
+            assert!(n < 200_000, "battle without end");
+        }
+        let checked = on_grid(&c.source().seen.actions[before..], 0.0, 16.0 * k);
+        assert!(checked > 0, "x{k}: quantized actions after the change");
+        assert_eq!(
+            c.source().seen.frame_calls,
+            frames,
+            "no GetRenderFrame during the battle"
+        );
+        c.finish_siege_battle().expect("finish");
+        assert_eq!(
+            c.source().seen.frame_calls,
+            frames + 1,
+            "ONE GetRenderFrame after the result"
+        );
+        let v = c.last_siege_battle_view().expect("closed view");
+        assert_eq!(
+            v.scene().expect("scene").1.queued(),
+            0,
+            "every action played"
+        );
+        steps_at.push((k, n));
+    }
+    assert!(
+        steps_at[1].1 < steps_at[2].1,
+        "64x ends in fewer wall frames than 1x: {steps_at:?}"
+    );
+}
+
+/// Kryterium 2: the change in the MIDDLE of the battle (after 1x steps) and the scene buttons: `cycle` wraps 512x -> 1x,
+/// the panel ± clamps at both ends; after every change the next steps play on the grid of the new frame and the whole
+/// battle is accepted by the playback (Finish included).
+#[test]
+fn fq_speed_bridge_zmiana_w_trakcie_cycle_i_panel() {
+    let mut c = client_for(siege_state(11));
+    c.start_siege_storm(CITY, ANCHOR, true).expect("start");
+    for _ in 0..30 {
+        c.step_siege_battle(16.0).expect("step x1");
+    }
+    // Panel ±: from 0 down = clamp at 0.
+    c.adjust_siege_battle_speed(-1).expect("minus at 0");
+    assert_eq!(speed_of(&c), (0, 1.0, 16.0));
+    // 0 -> 3 (8x).
+    c.set_siege_battle_speed(3, false).expect("idx 3");
+    assert_eq!(speed_of(&c), (3, 8.0, 128.0));
+    let mut v_change = c
+        .siege_battle()
+        .expect("b")
+        .last_frame()
+        .expect("frame")
+        .v_now;
+    let mut from = c.source().seen.actions.len();
+    for _ in 0..20 {
+        c.step_siege_battle(16.0).expect("step x8");
+    }
+    assert!(
+        on_grid(&c.source().seen.actions[from..], v_change, 128.0) > 0,
+        "x8 actions on the 128 ms grid"
+    );
+    // Panel +: 3 -> 4 (16x), then up to the top and clamp at 9 (512x).
+    c.adjust_siege_battle_speed(1).expect("plus");
+    assert_eq!(speed_of(&c), (4, 16.0, 256.0));
+    c.adjust_siege_battle_speed(100).expect("plus many");
+    assert_eq!(speed_of(&c), (9, 512.0, 8192.0));
+    c.adjust_siege_battle_speed(1).expect("plus at 9");
+    assert_eq!(speed_of(&c), (9, 512.0, 8192.0), "panel ± does not wrap");
+    // `_cycleSpeed`: 512x -> 1x -> 2x.
+    c.cycle_siege_battle_speed().expect("cycle at 9");
+    assert_eq!(
+        speed_of(&c),
+        (0, 1.0, 16.0),
+        "the speed button wraps 512x -> 1x"
+    );
+    c.cycle_siege_battle_speed().expect("cycle");
+    assert_eq!(speed_of(&c), (1, 2.0, 32.0));
+    // 4x for the rest of the battle (the steps after the change on the 64 ms grid).
+    c.set_siege_battle_speed(2, true).expect("idx 2");
+    assert_eq!(speed_of(&c), (2, 4.0, 64.0));
+    v_change = c
+        .siege_battle()
+        .expect("b")
+        .last_frame()
+        .expect("frame")
+        .v_now;
+    from = c.source().seen.actions.len();
+    let frames = c.source().seen.frame_calls;
+    let mut n = 0;
+    while c.siege_battle().expect("battle").phase() == SiegeBattlePhaseDto::Running {
+        c.step_siege_battle(16.0).expect("step x4");
+        n += 1;
+        assert!(n < 200_000, "battle without end");
+    }
+    on_grid(&c.source().seen.actions[from..], v_change, 64.0);
+    // End screen: the speed may still change (the engine accepts it in `Finished`).
+    c.set_siege_battle_speed(5, false)
+        .expect("speed on the end screen");
+    assert_eq!(
+        c.siege_battle().expect("b").phase(),
+        SiegeBattlePhaseDto::Finished
+    );
+    assert_eq!(c.source().seen.frame_calls, frames, "no GetRenderFrame");
+    let speeds = c
+        .source()
+        .seen
+        .siege
+        .iter()
+        .filter(|t| **t == "speed")
+        .count();
+    assert_eq!(speeds, 9, "every speed change is one engine call");
+    c.finish_siege_battle().expect("finish");
+    assert!(c.last_siege_battle_end().is_some());
+}
+
+/// Kryterium 2/3: without a battle the client refuses with no engine call; after `Finish` likewise (the battle is
+/// closed); the engine itself answers `noActiveBattle` (typed) when asked directly.
+#[test]
+fn fq_speed_bridge_bez_bitwy() {
+    let mut c = client_for(siege_state(11));
+    assert!(matches!(
+        c.set_siege_battle_speed(1, false),
+        Err(SiegeClientError::NoBattle)
+    ));
+    assert!(matches!(
+        c.cycle_siege_battle_speed(),
+        Err(SiegeClientError::NoBattle)
+    ));
+    assert!(matches!(
+        c.adjust_siege_battle_speed(1),
+        Err(SiegeClientError::NoBattle)
+    ));
+    assert!(c.source().seen.siege.is_empty(), "no engine call");
+    let e = c
+        .source_mut()
+        .siege_battle(SiegeBattleCommand::SetSpeed {
+            idx: 1,
+            clamp: false,
+        })
+        .expect_err("engine without a battle");
+    assert_eq!(
+        e,
+        SiegeSourceError::Battle(SiegeBattleErrorDto::NoActiveBattle)
+    );
+    c.start_siege_storm(CITY, ANCHOR, false).expect("start");
+    c.skip_siege_battle().expect("skip");
+    c.finish_siege_battle().expect("finish");
+    let calls = c.source().seen.siege.len();
+    assert!(matches!(
+        c.set_siege_battle_speed(1, false),
+        Err(SiegeClientError::NoBattle)
+    ));
+    assert_eq!(
+        c.source().seen.siege.len(),
+        calls,
+        "no engine call after Finish"
+    );
+    let e = c
+        .source_mut()
+        .siege_battle(SiegeBattleCommand::SetSpeed {
+            idx: 1,
+            clamp: true,
+        })
+        .expect_err("engine after Finish");
+    assert_eq!(
+        e,
+        SiegeSourceError::Battle(SiegeBattleErrorDto::NoActiveBattle)
+    );
+}
+
+fn drop_speed(p: &mut SiegeBattlePayload) {
+    p.speed_mul = None;
+}
+
+fn wrong_speed(p: &mut SiegeBattlePayload) {
+    p.speed_mul = Some(2.0);
+}
+
+/// Kryterium 3 (order of the frame update): the frame changes only from an ACCEPTED answer and with ITS `speedMul`; an
+/// answer without the speed or with `speedMul != SPEED_STEPS[speedIdx]` leaves the speed and the playback frame as
+/// they were (the engine call happened). Headless view: the speed is tracked without a scene.
+#[test]
+fn fq_speed_bridge_klatka_tylko_z_przyjetej_odpowiedzi() {
+    let cases: [(fn(&mut SiegeBattlePayload), &str); 2] =
+        [(drop_speed, "missing"), (wrong_speed, "wrong")];
+    for (tamper, what) in cases {
+        let mut c = client_for(siege_state(11));
+        c.start_siege_storm(CITY, ANCHOR, true).expect("start");
+        c.set_siege_battle_speed(2, false).expect("4x");
+        c.source_mut().tamper_speed = Some(tamper);
+        let e = c.set_siege_battle_speed(6, false).expect_err(what);
+        assert!(
+            matches!(e, SiegeClientError::SpeedAnswer(_)),
+            "{what}: {e:?}"
+        );
+        assert_eq!(
+            speed_of(&c),
+            (2, 4.0, 64.0),
+            "{what}: speed and frame unchanged"
+        );
+    }
+    // Headless: no scene, the view still follows the engine.
+    let mut c = client_for(siege_state(11));
+    c.start_siege_storm(CITY, ANCHOR, false).expect("start");
+    c.set_siege_battle_speed(-1, false).expect("wrap");
+    let b = c.siege_battle().expect("battle");
+    assert_eq!(
+        (b.speed_idx(), b.speed_mul(), b.frame_ms()),
+        (9, 512.0, 8192.0)
+    );
+    assert!(b.scene().is_none());
 }

@@ -31,7 +31,7 @@ fn state_from(result: &BridgeResult) -> &bridge::EngineState {
 /// `COMMAND_KINDS.len()` is the declared number of variants: a new variant needs a new arm in
 /// `command_index` (compile error otherwise), a new entry here and a new sample in `every_command`
 /// (the completeness test fails otherwise).
-const COMMAND_KINDS: [&str; 18] = [
+const COMMAND_KINDS: [&str; 19] = [
     "create_session",
     "add_player",
     "select_unit",
@@ -50,6 +50,7 @@ const COMMAND_KINDS: [&str; 18] = [
     "abort_siege_battle",
     "save_game",
     "load_game",
+    "set_siege_battle_speed",
 ];
 
 /// Position of every `EngineCommand` variant in [`COMMAND_KINDS`]. Exhaustive on purpose (no
@@ -74,6 +75,7 @@ fn command_index(command: &EngineCommand) -> usize {
         EngineCommand::AbortSiegeBattle => 15,
         EngineCommand::SaveGame => 16,
         EngineCommand::LoadGame { .. } => 17,
+        EngineCommand::SetSiegeBattleSpeed { .. } => 18,
     }
 }
 
@@ -140,6 +142,10 @@ fn every_command() -> Vec<EngineCommand> {
         EngineCommand::LoadGame {
             save: "{}".to_owned(),
         },
+        EngineCommand::SetSiegeBattleSpeed {
+            idx: 3,
+            clamp: false,
+        },
     ]
 }
 
@@ -173,12 +179,50 @@ fn siege_battle_commands_have_a_fixed_wire_shape_and_old_responses_are_unchanged
             EngineCommand::AbortSiegeBattle,
             json!({"kind": "abort_siege_battle"}),
         ),
+        // R-RUSTPORT-P4-407-FQ-SPEED-BRIDGE-Q1 (D-407-1): `_setSpeedIdx(idx, { clamp })`.
+        (
+            EngineCommand::SetSiegeBattleSpeed {
+                idx: -1,
+                clamp: true,
+            },
+            json!({"kind": "set_siege_battle_speed", "idx": -1, "clamp": true}),
+        ),
+        (
+            EngineCommand::SetSiegeBattleSpeed {
+                idx: 10,
+                clamp: false,
+            },
+            json!({"kind": "set_siege_battle_speed", "idx": 10, "clamp": false}),
+        ),
     ];
     for (command, wire) in cases {
         assert_eq!(serde_json::to_value(&command).expect("serializes"), wire);
         let back: EngineCommand = serde_json::from_value(wire).expect("deserializes");
         assert_eq!(back, command);
     }
+    // `clamp` omitted on the wire = `_setSpeedIdx(idx)` without options (wrap, the `_cycleSpeed` path).
+    let no_clamp: EngineCommand =
+        serde_json::from_value(json!({"kind": "set_siege_battle_speed", "idx": 4}))
+            .expect("deserializes");
+    assert_eq!(
+        no_clamp,
+        EngineCommand::SetSiegeBattleSpeed {
+            idx: 4,
+            clamp: false
+        }
+    );
+    assert!(
+        serde_json::from_value::<EngineCommand>(json!({"kind": "set_siege_battle_speed"})).is_err()
+    );
+    assert!(EngineCommand::SetSiegeBattleSpeed {
+        idx: 0,
+        clamp: true
+    }
+    .is_siege_battle());
+    assert_eq!(
+        CONTRACT_VERSION, 1,
+        "additive command, contract version unchanged"
+    );
     let mut bridge = EngineBridge::new(CivEngineAdapter::default());
     let read = bridge
         .handle(BridgeRequest::new("read", EngineCommand::GetState))
@@ -203,6 +247,10 @@ fn siege_battle_commands_have_a_fixed_wire_shape_and_old_responses_are_unchanged
         EngineCommand::SkipSiegeBattle,
         EngineCommand::FinishSiegeBattle,
         EngineCommand::AbortSiegeBattle,
+        EngineCommand::SetSiegeBattleSpeed {
+            idx: 3,
+            clamp: false,
+        },
     ] {
         let error = bridge
             .handle(BridgeRequest::new("battle", command))
