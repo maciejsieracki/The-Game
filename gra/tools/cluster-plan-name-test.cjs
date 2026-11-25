@@ -29,7 +29,10 @@ esbuild.buildSync({
 const M = require(bundle);
 const civs = require('../data/civs.json');
 const pools = require('../data/city-names-pools.json');
-const seed = 202;
+// STARY-PIN (R-WEB-TEST-DEBT-CLUSTERPLAN-Q1): seed 202 przestal dawac odrzucony slot po df32bf05a
+// (sep stolic proporcjonalny + sufit wykonalnosci -> 5). Seed 38 na obecnym generatorze daje
+// odrzucone sloty u obu typow (rzymianie 1/5, inkowie 4/5), wiec test zachowuje swoj cel.
+const seed = 38;
 const map = M.generateMap(50, 50, seed, 'kontynenty');
 const raw = M.buildClusterSpawnPlan({
   map,
