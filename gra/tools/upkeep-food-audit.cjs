@@ -13,11 +13,14 @@
  *   - warunek `base`: start gry bez dodatkowych jednostek (jednostki startowe gry);
  *   - warunek `army`: jak `base` + 9 jednostek gracza dosadzonych w miescie stolicy (4x Wojownik/Kamien,
  *     3x Procarz/Braz, 2x Konnica/Zelazo) przez hak civTest.addUnit;
- *   - w kazdym biegu: setPlayerGranary(500), potem 3 zakonczenia tury; odczyt zapasu zywnosci panstwa
- *     gracza PRZED i PO kazdej turze (hak grantPlayerFood(1e-9) zwraca zapas z dopisem 1e-9, odejmowany).
- * Z roznic zapasu miedzy tempami wyznaczany jest zuzycie zywnosci przez jednostki na turze:
- *   U1 = (delta_niski - delta_normalny)  oraz  U1 = (delta_niski - delta_wysoki)/3   (C(p) = C0 + U1*p).
- * Roznica warunkow army - base daje zuzycie tylko przez dodane jednostki.
+ *   - w kazdym biegu: przed KAZDA z 3 tur setPlayerGranary(GRANARY_START=950), zakonczenie tury, odczyt zapasu
+ *     zywnosci panstwa gracza PRZED i PO turze (hak grantPlayerFood(1e-9) zwraca zapas z dopisem 1e-9, odejmowany).
+ *     Zapas jest resetowany przed kazda tura, wiec 3 tury daja TE SAME delty = 3 powtorzenia jednego pomiaru.
+ * Delta tury = netto (produkcja - zuzycie) zapasu; ujemna = ubytek. Stolica gracza (myCity) moze sie roznic
+ * miedzy biegami mimo tego samego seeda: wtedy produkcja netto tez sie rozni (patrz dane i raport).
+ * Funkcja analyze wylicza nachylenie per warunek (U1 = roznica delt miedzy tempami, z zalozeniem liniowosci
+ * C(p) = C0 + U1*p) oraz roznice army - base PRZY TYM SAMYM TEMPIE; roznica miedzy stolicami nie jest
+ * odfiltrowana, wiec wynik army - base jest czysty tylko tam, gdzie myCity sa takie same (w danych: niski).
  * Gra NIE jest modyfikowana: wylacznie odczyt haków civTest/__nnsMeasureDebug/__settingsLive.
  */
 const fs = require('node:fs');
