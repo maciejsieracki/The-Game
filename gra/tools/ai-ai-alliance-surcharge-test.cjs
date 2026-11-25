@@ -3,8 +3,9 @@
  * ai-ai-alliance-surcharge-test.cjs -- R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-SOFTEN-MEASURE-Q1.
  * Mnożnik dopłaty D (parytet siły) WYŁĄCZNIE dla ścieżki sojuszy AI↔AI (gra/src/game/ai-ai-treaty-evaluate.ts).
  *
- *  (D1) domyślny mnożnik z danych = 1,0 (bez zmiany);
- *  (D2) mnożnik 1,0 -> paymentGold = parity.D (bit-w-bit jak przed zmianą);
+ *  (D1) domyślny mnożnik z danych = 0,5 (R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-HALF-Q1, decyzja właściciela 2026-11-22);
+ *  (D2) mnożnik 1,0 (jawnie ustawiony) -> paymentGold = parity.D (bit-w-bit jak przed zmianą);
+ *  (D11) pin danych: dopłataDMnoznikAiAi w gra/data/ai-ai-treaty-params.json = 0,5 (jedyne źródło prawdy);
  *  (D3) mnożnik 0,5 -> paymentGold = round(D * 0,5); parity.D nieskalowane;
  *  (D4) mnożnik 0,25 -> paymentGold = round(D * 0,25);
  *  (D5) setter null -> powrót do wartości z danych (1,0);
@@ -12,7 +13,8 @@
  *  (D7) skarbiec płatnika: przy mnożniku 0,5 i skarbcu round(D*0,5) -> akceptacja; o 1 PN mniej -> odmowa „brakuje”;
  *  (D8) statycznie: moduły importujące ai-ai-treaty-evaluate to wyłącznie ai-ai-* (ścieżka AI↔AI).
  *  Mutanty (kopia źródła w pamięci, esbuild) — każdy musi czerwienić test:
- *  M1 skalowanie D usunięte; M2 mnożnik zafiksowany na 1; M3 setter bez efektu.
+ *  M1 skalowanie D usunięte; M2 mnożnik zafiksowany na 1; M3 setter bez efektu;
+ *  M4 fallback usunięty; M5 powrót do 1,0 w ścieżce danych (dopłata D = 1,0 zamiast 0,5).
  *
  *   node tools/ai-ai-alliance-surcharge-test.cjs   # exit 0 = wszystko zielone i mutanty wykryte
  */
@@ -68,18 +70,24 @@ function runSuite(M) {
   const ev = (over) => M.evaluateTreatyOffer(base(over));
   const reset = () => M.setAiAiDopłataMnoznikForTest(null);
 
-  check('D1 domyślny mnożnik z danych = 1,0', () => {
+  check('D1 domyślny mnożnik z danych = 0,5', () => {
     reset();
     const m = M.aiAiDopłataMnoznik();
-    return m === 1 ? true : `mnożnik=${m}`;
+    return m === 0.5 ? true : `mnożnik=${m}`;
   });
 
-  check('D2 mnożnik 1,0: paymentGold = parity.D (bez zmiany)', () => {
-    reset();
+  check('D2 mnożnik 1,0 (jawnie): paymentGold = parity.D (bez zmiany)', () => {
+    M.setAiAiDopłataMnoznikForTest(1);
     const r = ev();
+    reset();
     if (!r.accept) return `odmowa: ${r.reason}`;
     if (!(r.parity.D > 0)) return `D=${r.parity.D} (scenariusz bez dopłaty)`;
     return r.paymentGold === r.parity.D && r.payer === 'proposer' ? true : `paymentGold=${r.paymentGold} D=${r.parity.D} payer=${r.payer}`;
+  });
+
+  check('D11 pin danych: ai-ai-treaty-params.json dopłataDMnoznikAiAi = 0,5', () => {
+    const params = JSON.parse(fs.readFileSync(path.resolve(GRA_ROOT, 'data', 'ai-ai-treaty-params.json'), 'utf8'));
+    return params.dopłataDMnoznikAiAi === 0.5 ? true : `wartość=${params.dopłataDMnoznikAiAi}`;
   });
 
   check('D3 mnożnik 0,5: paymentGold = round(D*0,5); parity.D bez zmian', () => {
@@ -102,11 +110,11 @@ function runSuite(M) {
     return r.paymentGold === Math.round(D * 0.25) ? true : `paymentGold=${r.paymentGold} D=${D}`;
   });
 
-  check('D5 setter null wraca do wartości z danych', () => {
+  check('D5 setter null wraca do wartości z danych (0,5)', () => {
     M.setAiAiDopłataMnoznikForTest(0.5);
     M.setAiAiDopłataMnoznikForTest(null);
     const r = ev();
-    return r.paymentGold === r.parity.D ? true : `paymentGold=${r.paymentGold} D=${r.parity.D}`;
+    return r.paymentGold === Math.round(r.parity.D * 0.5) ? true : `paymentGold=${r.paymentGold} D=${r.parity.D}`;
   });
 
   check('D6 r = 1 (równe moce): D = 0, płatnik null przy mnożniku 0,5', () => {
@@ -169,6 +177,7 @@ const MUTANTS = [
   ['M2 mnożnik zafiksowany na 1', [['const mnoznik = aiAiDopłataMnoznik();', 'const mnoznik = 1;']]],
   ['M3 setter bez efektu', [['const v = dopłataMnoznikNadpisanieTest ?? ', 'const v = ']]],
   ['M4 fallback usunięty (ujemny/NaN przepuszczone)', [['return typeof v === \'number\' && Number.isFinite(v) && v >= 0 ? v : 1;', 'return v;']]],
+  ['M5 powrót do 1,0 w ścieżce danych', [['(aiAiTreatyParamsJson as { dopłataDMnoznikAiAi?: unknown }).dopłataDMnoznikAiAi;', '1;']]],
 ];
 
 let allOk = liveRes.every(r => r.ok);

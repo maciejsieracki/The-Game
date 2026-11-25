@@ -15,6 +15,6 @@
   "koalicjaAntyLiderAktywna": true,
   "liderProgPrzewagi": 1.5,
   "liderMinTur": 5,
-  "_uwaga_dopłata_d": "R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-SOFTEN-MEASURE-Q1: dopłataDMnoznikAiAi skaluje WYŁĄCZNIE dopłatę D (parytet siły) w ścieżce sojuszy AI↔AI (ai-ai-treaty-evaluate.ts, evaluateTreatyOffer). 1,0 = bez zmiany (bit-w-bit). Gracz, NAP i przemarsz nie są objęte. Wartość docelowa wybiera właściciel po pomiarze (ABC).",
-  "dopłataDMnoznikAiAi": 1.0
+  "_uwaga_dopłata_d": "R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-SOFTEN-MEASURE-Q1: dopłataDMnoznikAiAi skaluje WYŁĄCZNIE dopłatę D (parytet siły) w ścieżce sojuszy AI↔AI (ai-ai-treaty-evaluate.ts, evaluateTreatyOffer). 1,0 = bez zmiany (bit-w-bit). Gracz, NAP i przemarsz nie są objęte. R-WEB-DIPLO-ALLIANCE-SURCHARGE-D-HALF-Q1 (decyzja właściciela 2026-11-22): wartość 0,5 (z 1,0). Mnożnik jest jedynym źródłem prawdy dla dopłaty D AI↔AI.",
+  "dopłataDMnoznikAiAi": 0.5
 }
