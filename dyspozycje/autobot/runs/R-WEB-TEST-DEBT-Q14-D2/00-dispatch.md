@@ -20,3 +20,11 @@ tsc --noEmit exit 0; logic-test 213, tech-tree-test 20, research-test 33, unit-r
 
 ## Binarne kryterium
 PRAWDA: każdy z ~25 testów ma w raporcie klasyfikację i status; naprawione testy są zielone solo (surowe wyjście), asercje nie osłabione; bramki zielone.
+
+## DODATEK rundy 2/5 (orkiestrator, 2026-11-25) — BAZA = 2735e4c19c8b792a7696cf019ee77e3fa4fefe0b (potomek origin/main f96787fb7; w nim 4 poprawne naprawy z r1: json-descriptions-sync, plony-budynkow, rydwan-konnica-x2, wojna-wymuszona-parowanie)
+Runda 1: Evaluator FAIL, FC FAIL — 19 z 25 testów bez analizy przyczyn; 7 'kandydatów BŁĄD-GRY' bez dowodu. NAPRAWA (NAPRAW, nie dyskutuj):
+1. Zacznij od git checkout --detach 2735e4c19c8b792a7696cf019ee77e3fa4fefe0b; git merge-base --is-ancestor f96787fb70da4086f9b25487cc4b6c62a2127610 HEAD.
+2. Dla KAŻDEGO z 19 pozostałych testów (lista = 25 testów tej połowy minus 4 naprawione minus unit-stock-cost-test który jest zielony; weź z raportu 50-final-control-claude.md i 10-operator-claude.md w runs/R-WEB-TEST-DEBT-Q14-D2): (a) uruchom solo i wklej pierwszą linię FAIL + exit; (b) ustal przyczynę: przeczytaj asercję w teście, znajdź pinowaną wartość, git log -S '<wartość>' -- gra/data gra/src (+ decyzje w dyspozycje/autobot/KOLEJKA-WEB.md i REJESTR-PROSB-I-ZADAN.md), porównaj z obecnym kodem/danymi; (c) sklasyfikuj STARY-PIN (napraw test: pin → obowiązująca wartość/reguła z komentarzem 'R-WEB-TEST-DEBT-Q14' i powołaniem na commit/decyzję), HARNESS (napraw dopasowanie), BŁĄD-GRY (WYMAGA dowodu: minimalne odtworzenie i cytat obowiązującej reguły; test zostaje czerwony), OBCIĄŻENIE (przechodzi solo), NIE-ZMIERZONO (tylko gdy po (b) naprawdę nie wiesz — wpisz konkretnie co sprawdziłeś).
+3. PRACUJ PACZKAMI PO 5 TESTÓW i po KAŻDEJ paczce commituj naprawy + dopisz wiersze do raportu (git add tylko ścieżki z allowlisty) — nie kończ pracy z jednym commitem na końcu.
+4. ZAKAZ statusu BLOCK bez blokady technicznej. Status raportu = PASS/PASS-WITH-NOTES gdy wszystkie 19 mają klasyfikację z dowodem, inaczej FAIL z listą niedokończonych.
+5. Tabela końcowa: test | przed (surowe) | przyczyna z dowodem | klasyfikacja | co zmieniono | po (surowe).
