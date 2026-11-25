@@ -26030,6 +26030,9 @@ async function boot(): Promise<void> {
       return n;
     }
 
+    /** R-WEB-WAR-LIMIT-AI-NATURAL-VIOLATION-Q1: wojna główna jeszcze nie zapisana w relacjach (typ + para). */
+    type PendingPrincipalWar = { a: number; b: number; typ: TypWojny };
+
     // P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (a): WYŁĄCZNIE dla bramki wymuszonej wojny
     // (Kamień/Brąz/Żelazo, trzy wywołania niżej) — barbarzyńcy (C-BARB-Q1) są
     // STRUKTURALNIE zawsze 'wojna' dla każdego ownera, więc `countActiveWarsForOwner`
@@ -26050,7 +26053,7 @@ async function boot(): Promise<void> {
      * R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: typy aktywnych wojen cywilizacji `ownerId` (bez
      * barbarzyńców i bez wojny z `pomijany`). Brak tagu typu w parze = 'naturalna' (parseTypWojny).
      */
-    function warTypesForOwner(ownerId: number, pomijany: number): TypWojny[] {
+    function warTypesForOwner(ownerId: number, pomijany: number, pending?: PendingPrincipalWar): TypWojny[] {
       const rows: WarPairRow[] = [];
       for (const oid of allPowerOwnerIds()) {
         if (oid === ownerId || oid === pomijany) continue;
@@ -26060,7 +26063,19 @@ async function boot(): Promise<void> {
           meta: atWar ? getDiploPairMeta(ownerId, oid) : undefined,
         });
       }
-      return collectWarTypes(rows);
+      const wars = collectWarTypes(rows);
+      // R-WEB-WAR-LIMIT-AI-NATURAL-VIOLATION-Q1: główna wojna wypowiadana jeszcze NIE jest w
+      // diplomacyRelations, gdy sojusznicy są wciągani (applyAllianceObligationsOnWar). Bez
+      // tego drugi sojusznik/obrońca nie widzi pierwszej wojny i limit 1 naturalnej jest łamany.
+      if (pending && pendingPrincipalCounts(ownerId, pomijany, pending)) wars.push(pending.typ);
+      return wars;
+    }
+
+    /** R-WEB-WAR-LIMIT-AI-NATURAL-VIOLATION-Q1: czy oczekująca wojna główna (a↔b) liczy się dla `ownerId` przy sprawdzeniu pary z `pomijany`. */
+    function pendingPrincipalCounts(ownerId: number, pomijany: number, pending: PendingPrincipalWar): boolean {
+      const partner = pending.a === ownerId ? pending.b : pending.b === ownerId ? pending.a : -1;
+      if (partner < 0 || partner === ownerId || partner === pomijany) return false;
+      return getDiploRelation(ownerId, partner).status !== 'wojna';
     }
 
     /**
@@ -26068,17 +26083,17 @@ async function boot(): Promise<void> {
      * `attackerId` a `victimId`. Wywołujący wyłącza gracza jako deklarującego. Flaga OFF -> true.
      * Odmowa = log konsolowy (bez UI), wojna nie wybucha, próba ponowi się w kolejnej turze.
      */
-    function warLimitPermits(attackerId: number, victimId: number, typ: TypWojny): boolean {
+    function warLimitPermits(attackerId: number, victimId: number, typ: TypWojny, pending?: PendingPrincipalWar): boolean {
       if (!isWarLimitEnabled()) return true;
       return warLimitAllows(
         typ,
-        warTypesForOwner(attackerId, victimId),
-        warTypesForOwner(victimId, attackerId),
+        warTypesForOwner(attackerId, victimId, pending),
+        warTypesForOwner(victimId, attackerId, pending),
       );
     }
 
-    function warLimitAllowsDeclaration(attackerId: number, victimId: number, typ: TypWojny): boolean {
-      const ok = warLimitPermits(attackerId, victimId, typ);
+    function warLimitAllowsDeclaration(attackerId: number, victimId: number, typ: TypWojny, pending?: PendingPrincipalWar): boolean {
+      const ok = warLimitPermits(attackerId, victimId, typ, pending);
       if (!ok) console.debug(`[war-limit] tura ${turn}: odmowa wojny ${typ} ${attackerId}->${victimId} (limit wojen)`);
       return ok;
     }
@@ -26218,6 +26233,8 @@ async function boot(): Promise<void> {
     }
 
     function applyAllianceObligationsOnWar(attackerId: number, victimId: number, typWojny: TypWojny = 'naturalna'): void {
+      // R-WEB-WAR-LIMIT-AI-NATURAL-VIOLATION-Q1: wszystkie wywołania są PRZED setDiploRelation wojny głównej.
+      const pendingPrincipal: PendingPrincipalWar = { a: attackerId, b: victimId, typ: typWojny };
       const obligationsRaw = allianceObligationsForWarDeclaration(activeDeals, attackerId, victimId);
       const obligations = filterAllianceObligationsRespectingPeaceLock(
         obligationsRaw,
@@ -26237,7 +26254,7 @@ async function boot(): Promise<void> {
           // już ma wojnę; przed turą 40) traktowany jak odmowa obowiązku sojuszu.
           if (!isMe(allyId) && interCivWarBlockedForAi(allyId, ob.mustDeclareWarOn)) continue;
           // R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: sojusznik nie dołącza, gdy limit wojen typu T jest przekroczony.
-          if (!isMe(allyId) && !warLimitAllowsDeclaration(allyId, ob.mustDeclareWarOn, typWojny)) continue;
+          if (!isMe(allyId) && !warLimitAllowsDeclaration(allyId, ob.mustDeclareWarOn, typWojny, pendingPrincipal)) continue;
 
           const obCtx = buildAllianceWarObligationCtx(allyId, ob.mustDeclareWarOn, attackerId, victimId);
           if (!aiHonorsAllianceWarObligation(allyId, ob.mustDeclareWarOn, attackerId, victimId, obCtx)) {
